@@ -1,0 +1,11 @@
+{
+  "expo": {
+    "name": "rik-expo-app",
+    "slug": "rik-expo-app",
+    "scheme": "rik",
+    "plugins": [
+      "expo-router",
+      "expo-audio"
+    ]
+  }
+}

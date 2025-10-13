@@ -1,0 +1,185 @@
+// app/(tabs)/security.tsx
+import React, { useCallback, useState } from 'react';
+import {
+  View, Text, TextInput, Pressable, ScrollView, StyleSheet, Platform, Alert,
+} from 'react-native';
+import { supabase } from '../../src/lib/supabaseClient';
+
+export default function SecurityScreen() {
+  const [enrolling, setEnrolling] = useState(false);
+  const [verifying, setVerifying] = useState(false);
+  const [unenrolling, setUnenrolling] = useState(false);
+
+  const [factorId, setFactorId] = useState<string | null>(null);
+  const [qrSvg, setQrSvg] = useState<string | null>(null);
+  const [uri, setUri] = useState<string | null>(null);
+  const [secret, setSecret] = useState<string | null>(null);
+
+  const [code, setCode] = useState('');
+  const [enabled, setEnabled] = useState(false);
+
+  const enrollTotp = useCallback(async () => {
+    try {
+      setEnrolling(true);
+      // 1) Регистрируем TOTP-фактор
+      const { data, error } = await supabase.auth.mfa.enroll({
+        factorType: 'totp',
+        friendlyName: 'Основное устройство',
+      });
+      if (error) throw error;
+      // Ожидаем структуру: { id, type, friendlyName?, totp: { qr_code, uri, secret } }
+      setFactorId(data.id);
+      // На web удобно показать SVG-QR, на мобильных — выдать URI/секрет
+      // @ts-ignore (web-only элемент)
+      setQrSvg(data.totp?.qr_code ?? null);
+      setUri(data.totp?.uri ?? null);
+      setSecret(data.totp?.secret ?? null);
+      Alert.alert('TOTP', 'Сканируй QR в приложении-аутентификаторе, затем введи 6-значный код ниже.');
+    } catch (e: any) {
+      Alert.alert('Ошибка', e?.message ?? 'Не удалось включить TOTP');
+    } finally {
+      setEnrolling(false);
+    }
+  }, []);
+
+  const verifyTotp = useCallback(async () => {
+    if (!factorId) { Alert.alert('Ошибка', 'Сначала включи TOTP'); return; }
+    const clean = code.replace(/\s+/g, '');
+    if (clean.length < 6) { Alert.alert('Код', 'Введи 6-значный код из приложения'); return; }
+
+    try {
+      setVerifying(true);
+      // 2) Запрашиваем challenge
+      const ch = await supabase.auth.mfa.challenge({ factorId });
+      if (ch.error) throw ch.error;
+
+      // 3) Проверяем код
+      const vr = await supabase.auth.mfa.verify({
+        factorId,
+        challengeId: ch.data.id,
+        code: clean,
+      });
+      if (vr.error) throw vr.error;
+
+      setEnabled(true);
+      Alert.alert('Готово', 'TOTP включён для вашей учётной записи.');
+    } catch (e: any) {
+      Alert.alert('Ошибка', e?.message ?? 'Неверный код или ошибка верификации');
+    } finally {
+      setVerifying(false);
+    }
+  }, [factorId, code]);
+
+  const unenrollTotp = useCallback(async () => {
+    if (!factorId) { Alert.alert('Ошибка', 'Нет активного фактора'); return; }
+    try {
+      setUnenrolling(true);
+      const { error } = await supabase.auth.mfa.unenroll({ factorId });
+      if (error) throw error;
+      setEnabled(false);
+      setFactorId(null);
+      setQrSvg(null);
+      setUri(null);
+      setSecret(null);
+      setCode('');
+      Alert.alert('Отключено', 'TOTP-фактор удалён.');
+    } catch (e: any) {
+      Alert.alert('Ошибка', e?.message ?? 'Не удалось отключить TOTP');
+    } finally {
+      setUnenrolling(false);
+    }
+  }, [factorId]);
+
+  return (
+    <ScrollView contentContainerStyle={s.wrap}>
+      <Text style={s.h1}>Безопасность</Text>
+
+      <View style={s.card}>
+        <Text style={s.h2}>TOTP-аутентификатор</Text>
+        <Text style={s.meta}>
+          Используйте приложение (Google Authenticator, 1Password, Authy и т. п.).
+        </Text>
+
+        {!factorId && (
+          <Pressable
+            onPress={enrollTotp}
+            disabled={enrolling}
+            style={[s.btn, enrolling ? s.btnDisabled : s.btnPrimary]}
+          >
+            <Text style={s.btnTxt}>{enrolling ? 'Включаю…' : 'Включить TOTP'}</Text>
+          </Pressable>
+        )}
+
+        {!!factorId && (
+          <>
+            {Platform.OS === 'web' && !!qrSvg ? (
+              // На web показываем SVG-QR прямо в интерфейсе
+              // eslint-disable-next-line react/no-danger
+              <View style={{ borderWidth: 1, borderColor: '#e5e7eb', padding: 10, borderRadius: 8, marginTop: 10 }}>
+                {/* @ts-ignore: web only */}
+                <div dangerouslySetInnerHTML={{ __html: qrSvg as string }} />
+              </View>
+            ) : (
+              // На iOS/Android даём URI/секрет для ручного добавления
+              <View style={{ marginTop: 10 }}>
+                {!!uri && <Text selectable style={s.kv}>URI: <Text style={s.code}>{uri}</Text></Text>}
+                {!!secret && <Text selectable style={s.kv}>Секрет: <Text style={s.code}>{secret}</Text></Text>}
+                <Text style={[s.meta, { marginTop: 6 }]}>
+                  Откройте приложение-аутентификатор → «Добавить» → «Ввести ключ вручную» и используйте секрет.
+                </Text>
+              </View>
+            )}
+
+            <View style={{ marginTop: 12 }}>
+              <Text>Код из приложения:</Text>
+              <TextInput
+                value={code}
+                onChangeText={setCode}
+                placeholder="123456"
+                keyboardType="number-pad"
+                style={s.input}
+              />
+            </View>
+
+            <View style={{ flexDirection: 'row', gap: 8, marginTop: 8 }}>
+              <Pressable
+                onPress={verifyTotp}
+                disabled={verifying}
+                style={[s.btn, verifying ? s.btnDisabled : s.btnPrimary]}
+              >
+                <Text style={s.btnTxt}>{verifying ? 'Проверяю…' : 'Подтвердить код'}</Text>
+              </Pressable>
+
+              <Pressable
+                onPress={unenrollTotp}
+                disabled={unenrolling}
+                style={[s.btn, unenrolling ? s.btnDisabled : s.btnNeutral]}
+              >
+                <Text style={s.btnTxt}>{unenrolling ? 'Отключаю…' : 'Отключить'}</Text>
+              </Pressable>
+            </View>
+
+            {enabled && <Text style={[s.ok, { marginTop: 8 }]}>TOTP активен ✅</Text>}
+          </>
+        )}
+      </View>
+    </ScrollView>
+  );
+}
+
+const s = StyleSheet.create({
+  wrap: { padding: 16, paddingBottom: 40, backgroundColor: '#fff' },
+  h1: { fontSize: 20, fontWeight: '700', marginBottom: 10 },
+  h2: { fontSize: 16, fontWeight: '700', marginTop: 4 },
+  meta: { color: '#6b7280', marginTop: 4 },
+  card: { borderWidth: 1, borderColor: '#e5e7eb', borderRadius: 12, padding: 12 },
+  kv: { marginTop: 6 },
+  code: { fontFamily: Platform.OS === 'web' ? 'monospace' : undefined },
+  input: { borderWidth: 1, borderColor: '#ccc', borderRadius: 10, padding: 10, marginTop: 6 },
+  btn: { paddingVertical: 10, paddingHorizontal: 14, borderRadius: 10, borderWidth: 1, alignItems: 'center' },
+  btnPrimary: { backgroundColor: '#0b7285', borderColor: '#0b7285' },
+  btnNeutral: { backgroundColor: '#6b7280', borderColor: '#6b7280' },
+  btnDisabled: { backgroundColor: '#bbb', borderColor: '#bbb' },
+  btnTxt: { color: '#fff', fontWeight: '700' },
+  ok: { color: '#2e7d32', fontWeight: '700' },
+});
