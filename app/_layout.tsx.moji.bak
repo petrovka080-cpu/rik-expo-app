@@ -1,0 +1,42 @@
+// app/_layout.tsx
+import React from "react";
+import { Platform, LogBox, Text } from "react-native";
+import { Slot } from "expo-router";
+
+// Web: дефолтный шрифт с кириллицей + глобальный CSS
+if (Platform.OS === "web") {
+  // @ts-expect-error: defaultProps есть у RNW Text
+  Text.defaultProps = Text.defaultProps || {};
+  const prev = (Text.defaultProps as any).style;
+  (Text.defaultProps as any).style = [
+    { fontFamily: 'Segoe UI, Roboto, "Noto Sans", Arial, sans-serif' },
+    prev,
+  ];
+
+  // подстрахуемся глобальным CSS (убьёт любые кривые fontFamily)
+  const style = document.createElement("style");
+  style.innerHTML = `
+    html, body, #root { height: 100%; }
+    * { font-family: Segoe UI, Roboto, "Noto Sans", Arial, sans-serif !important; }
+  `;
+  document.head.appendChild(style);
+
+  LogBox.ignoreLogs([
+    "props.pointerEvents is deprecated. Use style.pointerEvents",
+    '"shadow*" style props are deprecated. Use "boxShadow".',
+  ]);
+  const _warn = console.warn;
+  console.warn = (...args: any[]) => {
+    const msg = String(args?.[0] ?? "");
+    if (
+      msg.includes("props.pointerEvents is deprecated") ||
+      msg.includes('"shadow*" style props are deprecated')
+    ) return;
+    _warn(...args);
+  };
+}
+
+export default function RootLayout() {
+  return <Slot />;
+}
+
