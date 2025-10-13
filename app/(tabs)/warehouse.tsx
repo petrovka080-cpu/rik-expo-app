@@ -21,8 +21,8 @@ type IncomingRow = {
 
 type StockRow = {
   material_id: string;
-  rik_code?: string | null;
-  name_human?: string | null;
+  code?: string | null;
+  name?: string | null;
   uom_id?: string | null;
   qty_on_hand?: number;
   qty_reserved?: number;
@@ -36,7 +36,7 @@ type HistoryRow = {
   event_dt: string;
   event_type: string; // 'RECEIPT' | 'ISSUE'
   purchase_id?: string | null;
-  rik_code?: string | null;
+  code?: string | null;
   uom_id?: string | null;
   qty?: number | null;
   meta?: any;
@@ -56,7 +56,7 @@ type RikSearchRow = {
   kind: "material" | "work";
   ref_table: "rik_materials" | "rik_works";
   ref_id: string;
-  rik_code: string;
+  code: string;
   name: string;
   unit_id: string | null;
   unit_label?: string | null;
@@ -75,8 +75,8 @@ type InvSession = {
 type ItemRow = {
   incoming_item_id: string;
   purchase_item_id: string;
-  rik_code?: string | null;
-  name_human: string;
+  code?: string | null;
+  name: string;
   uom?: string | null;
   qty_expected: number;
   qty_received: number;
@@ -129,12 +129,12 @@ const parseNum = (v: any, d = 0): number => {
 const isUuid = (s: string) =>
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(s));
 
-// определить unit_id по rik_code
-const resolveUnitIdByCode = async (rik_code: string): Promise<string | null> => {
+// определить unit_id по code
+const resolveUnitIdByCode = async (code: string): Promise<string | null> => {
   try {
-    const m = await supabase.from("rik_materials" as any).select("unit_id").eq("mat_code", rik_code).maybeSingle();
+    const m = await supabase.from("rik_materials" as any).select("unit_id").eq("mat_code", code).maybeSingle();
     if (!m.error && m.data?.unit_id) return String(m.data.unit_id);
-    const w = await supabase.from("rik_works" as any).select("unit_id").eq("rik_code", rik_code).maybeSingle();
+    const w = await supabase.from("rik_works" as any).select("unit_id").eq("code", code).maybeSingle();
     if (!w.error && w.data?.unit_id) return String(w.data.unit_id);
     return null;
   } catch { return null; }
@@ -350,7 +350,7 @@ export default function Warehouse() {
       // 2) создаём позиции из purchase_items
       const pi = await supabase
         .from("purchase_items" as any)
-        .select("id, rik_code, name, uom, qty")
+        .select("id, code, name, uom, qty")
         .eq("purchase_id", purchaseId);
       if (!pi.error && Array.isArray(pi.data) && pi.data.length > 0) {
         const rows = (pi.data as any[]).map(x => {
@@ -363,8 +363,8 @@ export default function Warehouse() {
           return {
             incoming_id: realId,
             purchase_item_id: x.id,
-            rik_code: x.rik_code ?? null,
-            name_human: x.name ?? x.rik_code ?? null,
+            code: x.code ?? null,
+            name: x.name ?? x.code ?? null,
             uom: x.uom ?? null,
             qty_expected: qty,
             qty_received: 0,
@@ -394,7 +394,7 @@ export default function Warehouse() {
       .from("purchase_items" as any)
       .select(`
         id, request_item_id, qty, uom,
-        request_items:request_items ( rik_code, name_human, uom )
+        request_items:request_items ( code, name, uom )
       `)
       .eq("purchase_id", purchaseId);
 
@@ -413,8 +413,8 @@ export default function Warehouse() {
         incoming_id: incomingId,
         // purchase_item_id: пишем только если UUID; иначе колонка пропускается
         ...(isUuid(piId) ? { purchase_item_id: piId } : {}),
-        rik_code: ri.rik_code ?? null,
-        name_human: (ri.name_human ?? ri.rik_code ?? null),
+        code: ri.code ?? null,
+        name: (ri.name ?? ri.code ?? null),
         uom: (x.uom ?? ri.uom ?? null),
         qty_expected: Number.isFinite(qtyNum) ? qtyNum : 0,
         qty_received: 0,
@@ -462,16 +462,16 @@ export default function Warehouse() {
 
   // ===== приведение любой БД-строки к ItemRow
   const mapRow = (x: any, syntheticBase?: string): ItemRow => {
-    const rik_code =
+    const code =
       String(
-        __pick(x, ["rik_code", "mat_code", "code"], __pickDeep(x, ["request_items.rik_code"]) || "")
+        __pick(x, ["code", "mat_code", "code"], __pickDeep(x, ["request_items.code"]) || "")
         || ""
       ) || null;
 
-    const name_human =
+    const name =
       String(
-        __pick(x, ["name_human", "name", "title"], __pickDeep(x, ["request_items.name_human","request_items.name"]) || (rik_code ?? ""))
-        || (rik_code ?? "")
+        __pick(x, ["name", "name", "title"], __pickDeep(x, ["request_items.name","request_items.name"]) || (code ?? ""))
+        || (code ?? "")
       );
 
     const uom =
@@ -512,8 +512,8 @@ export default function Warehouse() {
     return {
       incoming_item_id: String(x?.incoming_item_id ?? x?.id ?? (syntheticBase ? `${syntheticBase}:${x?.id ?? ""}` : "")),
       purchase_item_id: String(__pick(x, ["purchase_item_id", "pi_id", "id"], "")),
-      rik_code,
-      name_human,
+      code,
+      name,
       uom,
       qty_expected,
       qty_received,
@@ -623,7 +623,7 @@ export default function Warehouse() {
           .select(`
             id, purchase_id, request_item_id,
             qty, uom,
-            request_items:request_items ( rik_code, name_human, uom, qty )
+            request_items:request_items ( code, name, uom, qty )
           `)
           .eq("purchase_id", purchaseId)
           .order("id", { ascending: true });
@@ -851,9 +851,9 @@ export default function Warehouse() {
 
     if (!fact.error && Array.isArray(fact.data)) {
       const rows = (fact.data || []).map((x: any) => ({
-        material_id: String(x.rik_code ?? x.material_id ?? ""),
-        rik_code: x.rik_code ?? null,
-        name_human: x.name_human ?? x.name ?? null,
+        material_id: String(x.code ?? x.material_id ?? ""),
+        code: x.code ?? null,
+        name: x.name ?? x.name ?? null,
         uom_id: x.uom_id ?? null,
         qty_on_hand: nz(x.qty_on_hand, 0),
         qty_reserved: nz(x.qty_reserved, 0),
@@ -882,9 +882,9 @@ export default function Warehouse() {
       const res = await supabase.rpc(r.fn as any, r.args as any);
       if (!res.error && Array.isArray(res.data)) {
         const rows = (res.data || []).map((x: any) => ({
-          material_id: String(x.material_id ?? x.id ?? x.rik_code ?? ""),
-          rik_code: x.rik_code ?? x.mat_code ?? null,
-          name_human: x.name_human ?? x.name ?? null,
+          material_id: String(x.material_id ?? x.id ?? x.code ?? ""),
+          code: x.code ?? x.mat_code ?? null,
+          name: x.name ?? x.name ?? null,
           uom_id: x.uom_id ?? x.uom ?? null,
           qty_on_hand: nz(x.qty_on_hand ?? x.on_hand, 0),
           qty_reserved: nz(x.qty_reserved ?? x.reserved, 0),
@@ -910,9 +910,9 @@ export default function Warehouse() {
 
     if (!v.error && Array.isArray(v.data)) {
       const rows = (v.data || []).map((x: any) => ({
-        material_id: String(x.rik_code ?? ""),
-        rik_code: x.rik_code ?? null,
-        name_human: x.name ?? null,
+        material_id: String(x.code ?? ""),
+        code: x.code ?? null,
+        name: x.name ?? null,
         uom_id: x.uom_id ?? null,
         qty_on_hand: nz(x.qty_on_hand, 0),
         qty_reserved: nz(x.qty_reserved, 0),
@@ -1092,7 +1092,7 @@ const [issueMsg, setIssueMsg] = useState<{ kind: "error" | "ok" | null; text: st
     const kind: "material" | "work" = x.ref_table === "rik_works" ? "work" : "material";
     return {
       kind, ref_table: (x.ref_table as any), ref_id: String(x.ref_id ?? ""),
-      rik_code: String(x.code ?? ""), name: String(x.name ?? x.code ?? ""),
+      code: String(x.code ?? ""), name: String(x.name ?? x.code ?? ""),
       unit_id: x.unit_id ? String(x.unit_id) : null,
       unit_label: x.unit_id ? (uoms[String(x.unit_id)] ?? String(x.unit_id)) : null,
       sector: x.sector ?? null,
@@ -1100,35 +1100,35 @@ const [issueMsg, setIssueMsg] = useState<{ kind: "error" | "ok" | null; text: st
   }, [uoms]);
 
   const mapRikItemsRow = (x: any): RikSearchRow => {
-    const rc = String(x.rik_code ?? x.code ?? "");
-    const nm = String(x.name_human ?? x.name ?? rc);
+    const rc = String(x.code ?? x.code ?? "");
+    const nm = String(x.name ?? x.name ?? rc);
     const kind: "material" | "work" = String(x.kind ?? "").toLowerCase() === "work" ? "work" : "material";
-    return { kind, ref_table: kind === "work" ? "rik_works" : "rik_materials", ref_id: String(x.ref_id ?? ""), rik_code: rc, name: nm, unit_id: null, unit_label: x.uom_code ?? x.uom ?? null, sector: x.sector ?? x.sector_code ?? null };
+    return { kind, ref_table: kind === "work" ? "rik_works" : "rik_materials", ref_id: String(x.ref_id ?? ""), code: rc, name: nm, unit_id: null, unit_label: x.uom_code ?? x.uom ?? null, sector: x.sector ?? x.sector_code ?? null };
   };
 
   function refreshAvailability(rows: RikSearchRow[]) {
     (async () => {
       try {
         let map: Record<string, number> = {};
-        const v = await supabase.from("v_warehouse_stock" as any).select("rik_code, uom_id, qty_on_hand, qty_reserved").limit(10000);
+        const v = await supabase.from("v_warehouse_stock" as any).select("code, uom_id, qty_on_hand, qty_reserved").limit(10000);
         if (!v.error && Array.isArray(v.data)) {
           for (const x of v.data as any[]) {
-            const code = String(x.rik_code ?? "");
+            const code = String(x.code ?? "");
             const avail = nz(x.qty_on_hand, 0) - nz(x.qty_reserved, 0);
             if (code) map[code] = avail;
           }
         } else {
-          const t = await supabase.from("stock_balances" as any).select("rik_code, uom_id, qty_on_hand, qty_reserved").limit(10000);
+          const t = await supabase.from("stock_balances" as any).select("code, uom_id, qty_on_hand, qty_reserved").limit(10000);
           if (!t.error && Array.isArray(t.data)) {
             for (const x of t.data as any[]) {
-              const code = String(x.rik_code ?? "");
+              const code = String(x.code ?? "");
               const avail = nz(x.qty_on_hand, 0) - nz(x.qty_reserved, 0);
               if (code) map[code] = avail;
             }
           }
         }
         const filtered: Record<string, number> = {};
-        for (const it of rows) { filtered[it.rik_code] = map[it.rik_code] ?? 0; }
+        for (const it of rows) { filtered[it.code] = map[it.code] ?? 0; }
         setAvailability(filtered);
       } catch {}
     })();
@@ -1141,9 +1141,9 @@ const [issueMsg, setIssueMsg] = useState<{ kind: "error" | "ok" | null; text: st
         const rows = (r.data as any[]).map(normalizeToRikRow);
         setAllCatalog(rows); setCatalog(rows); refreshAvailability(rows); return;
       }
-      const v = await supabase.from("rik_items" as any).select("rik_code,name_human").limit(2000);
+      const v = await supabase.from("rik_items" as any).select("code,name").limit(2000);
       if (!v.error && Array.isArray(v.data)) {
-        const rows = (v.data as any[]).map((x) => mapRikItemsRow({ rik_code: x.rik_code, name_human: x.name_human, uom: null, kind: "material", ref_id: null } as any));
+        const rows = (v.data as any[]).map((x) => mapRikItemsRow({ code: x.code, name: x.name, uom: null, kind: "material", ref_id: null } as any));
         setAllCatalog(rows); setCatalog(rows); refreshAvailability(rows);
       }
     } catch (e) { console.warn("[catalog preload]", e); }
@@ -1153,14 +1153,14 @@ const [issueMsg, setIssueMsg] = useState<{ kind: "error" | "ok" | null; text: st
     const s = norm(q);
     if (s.length === 0) { setCatalog(allCatalog); return; }
     const local = allCatalog.filter(
-      it => norm(it.name).includes(s) || norm(it.rik_code).includes(s) || (it.unit_label ? norm(it.unit_label).includes(s) : false)
+      it => norm(it.name).includes(s) || norm(it.code).includes(s) || (it.unit_label ? norm(it.unit_label).includes(s) : false)
     );
     setCatalog(local);
     if (s.length < 2) return;
 
-    const seen = new Set<string>(local.map(r => r.rik_code));
+    const seen = new Set<string>(local.map(r => r.code));
     const merged: RikSearchRow[] = [...local];
-    const pushUnique = (rows: RikSearchRow[]) => { for (const r of rows) { if (!r.rik_code) continue; if (seen.has(r.rik_code)) continue; seen.add(r.rik_code); merged.push(r); } };
+    const pushUnique = (rows: RikSearchRow[]) => { for (const r of rows) { if (!r.code) continue; if (seen.has(r.code)) continue; seen.add(r.code); merged.push(r); } };
 
     try {
       const r1 = await supabase.rpc("catalog_search" as any, { p_query: q, p_scope: "all", p_sector: null, p_limit: 2000 } as any);
@@ -1168,7 +1168,7 @@ const [issueMsg, setIssueMsg] = useState<{ kind: "error" | "ok" | null; text: st
       const r2 = await supabase.rpc("rik_search" as any, { p_q: q, lim: 2000 } as any);
       if (!r2.error && Array.isArray(r2.data)) {
         const rows = (r2.data as any[]).map((x) =>
-          normalizeToRikRow({ ref_table: x.ref_table, ref_id: x.ref_id, code: x.rik_code, name: x.name, unit_id: x.unit_id, sector: x.sector } as CatalogItem)
+          normalizeToRikRow({ ref_table: x.ref_table, ref_id: x.ref_id, code: x.code, name: x.name, unit_id: x.unit_id, sector: x.sector } as CatalogItem)
         );
         pushUnique(rows);
       }
@@ -1182,14 +1182,14 @@ const [issueMsg, setIssueMsg] = useState<{ kind: "error" | "ok" | null; text: st
         const r5 = await supabase.rpc("rik_search_catalog" as any, { q, lim: 2000 } as any);
         if (!r5.error && Array.isArray(r5.data)) {
           const rows = (r5.data as any[]).map((x) =>
-            mapRikItemsRow({ rik_code: x.rik_code ?? x.code, name_human: x.name, uom_code: x.unit ?? x.uom, kind: x.ref_table === "rik_works" ? "work" : "material", sector: x.sector, ref_id: x.ref_id } as any)
+            mapRikItemsRow({ code: x.code ?? x.code, name: x.name, uom_code: x.unit ?? x.uom, kind: x.ref_table === "rik_works" ? "work" : "material", sector: x.sector, ref_id: x.ref_id } as any)
           );
           pushUnique(rows);
         }
       } catch {}
       if (merged.length === 0) {
-        const fl = await supabase.from("rik_items" as any).select("rik_code,name_human").or(`name_human.ilike.%${q}%,rik_code.ilike.%${q}%`).limit(100);
-        if (!fl.error && Array.isArray(fl.data)) pushUnique((fl.data as any[]).map((x) => mapRikItemsRow({ rik_code: x.rik_code, name_human: x.name_human, uom: null, kind: "material", ref_id: null } as any)));
+        const fl = await supabase.from("rik_items" as any).select("code,name").or(`name.ilike.%${q}%,code.ilike.%${q}%`).limit(100);
+        if (!fl.error && Array.isArray(fl.data)) pushUnique((fl.data as any[]).map((x) => mapRikItemsRow({ code: x.code, name: x.name, uom: null, kind: "material", ref_id: null } as any)));
       }
       setCatalog(merged);
       if (merged.length > 0) refreshAvailability(merged);
@@ -1224,7 +1224,7 @@ const [issueMsg, setIssueMsg] = useState<{ kind: "error" | "ok" | null; text: st
 
     let unitId = it.unit_id;
     if (!unitId) {
-      unitId = await resolveUnitIdByCode(it.rik_code);
+      unitId = await resolveUnitIdByCode(it.code);
       if (!unitId) {
         setIssueMsg({ kind: "error", text: "Не удалось определить ед. изм. (unit_id) — проверь справочник." });
         return;
@@ -1235,7 +1235,7 @@ const [issueMsg, setIssueMsg] = useState<{ kind: "error" | "ok" | null; text: st
     const r1 = await supabase.rpc('acc_issue_create' as any, {
       p_object_id: objectOpt?.id ?? null,
       p_work_type_id: workTypeOpt?.id ?? null,
-      p_comment: `Выдача ${it.name} (${it.rik_code}) ${qty} ${it.unit_label ?? ""} — ${recipientOpt?.label ?? ""}`
+      p_comment: `Выдача ${it.name} (${it.code}) ${qty} ${it.unit_label ?? ""} — ${recipientOpt?.label ?? ""}`
     } as any);
 
     if (r1.error || !r1.data) {
@@ -1248,7 +1248,7 @@ const [issueMsg, setIssueMsg] = useState<{ kind: "error" | "ok" | null; text: st
     // 2) добавить позицию
     const r2 = await supabase.rpc('acc_issue_add_item' as any, {
       p_issue_id: issue_id,
-      p_rik_code: it.rik_code,
+      p_rik_code: it.code,
       p_uom_id: unitId,
       p_qty: qty
     } as any);
@@ -1341,7 +1341,7 @@ const StockRowView = ({ r }: { r: StockRow }) => {
           }}
           numberOfLines={2}
         >
-          {r.name_human || r.rik_code || r.material_id}
+          {r.name || r.code || r.material_id}
         </Text>
 
         <View
@@ -1361,7 +1361,7 @@ const StockRowView = ({ r }: { r: StockRow }) => {
       {/* Вторая строка: код • ед.изм • Доступно */}
       <Text style={{ marginTop: 4, color: "#475569" }}>
         <Text style={{ fontFamily: "monospace" }}>
-          {(r.rik_code ?? "—").toString()}
+          {(r.code ?? "—").toString()}
         </Text>
         {"  •  "}
         {uomLabel}
@@ -1524,9 +1524,9 @@ const renderIssue = () => {
       {/* Результаты каталога */}
       <FlatList
         data={catalog}
-        keyExtractor={(x, idx) => `${x.rik_code}-${idx}`}
+        keyExtractor={(x, idx) => `${x.code}-${idx}`}
         renderItem={({ item }) => {
-          const avail = availability[item.rik_code] ?? 0;
+          const avail = availability[item.code] ?? 0;
           const canIssue = canIssueGlobal; // используем глобальное условие
 
           return (
@@ -1542,7 +1542,7 @@ const renderIssue = () => {
             >
               <Text style={{ fontWeight: "800" }}>{item.name}</Text>
               <Text style={{ color: "#475569" }}>
-                [{item.kind === "work" ? "работа" : "материал"}] {item.rik_code} •{" "}
+                [{item.kind === "work" ? "работа" : "материал"}] {item.code} •{" "}
                 {item.unit_label ?? item.unit_id ?? "—"} • Доступно: {avail}
               </Text>
               <View style={{ flexDirection: "row", gap: 8, marginTop: 8, flexWrap: "wrap" }}>
@@ -1818,9 +1818,9 @@ const renderIssue = () => {
                               key={row.incoming_item_id}
                               style={{ padding: 10, borderBottomWidth: 1, borderColor: "#f8fafc" }}
                             >
-                              <Text style={{ fontWeight: "700" }}>{row.name_human}</Text>
+                              <Text style={{ fontWeight: "700" }}>{row.name}</Text>
                               <Text style={{ color: "#475569" }}>
-                                {(row.rik_code ? `${row.rik_code} • ` : "")}
+                                {(row.code ? `${row.code} • ` : "")}
                                 {row.uom || "—"} • Ожидается: {exp} • Принято: {rec} • Остаток: {left}
                               </Text>
 
@@ -2022,7 +2022,7 @@ if (tab === "Склад факт") {
           ) : (
             repStock.map((x, i) => (
               <Text key={i} style={{ color: "#334155" }}>
-                {(x.rik_code ?? (x as any).material_id) || "—"} • {x.uom_id || "—"} • Доступно: {nz(x.qty_available ?? (nz(x.qty_on_hand, 0) - nz(x.qty_reserved, 0)), 0)}
+                {(x.code ?? (x as any).material_id) || "—"} • {x.uom_id || "—"} • Доступно: {nz(x.qty_available ?? (nz(x.qty_on_hand, 0) - nz(x.qty_reserved, 0)), 0)}
               </Text>
             ))
           )}
@@ -2035,7 +2035,7 @@ if (tab === "Склад факт") {
           ) : (
             repMov.map((h, i) => (
               <Text key={i} style={{ color: "#334155" }}>
-                {new Date(h.event_dt).toLocaleString("ru-RU")} • {h.event_type} • {(h.rik_code || "—")} • {h.qty ?? "—"}
+                {new Date(h.event_dt).toLocaleString("ru-RU")} • {h.event_type} • {(h.code || "—")} • {h.qty ?? "—"}
               </Text>
             ))
           )}
