@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+﻿import React, { useCallback, useEffect, useState } from "react";
 import {
   View, Text, ScrollView, TextInput, Pressable,
   ActivityIndicator, Alert
@@ -63,7 +63,7 @@ export default function Reports() {
         csv += "\n";
       };
       add("Обороты склада", ["Код", "Приход", "Расход", "Баланс"],
-        turnover.map((x) => [x.rik_code, fmt(x.incoming), fmt(x.outgoing), fmt(x.balance)]));
+        turnover.map((x) => [x.code, fmt(x.incoming), fmt(x.outgoing), fmt(x.balance)]));
       add("Затраты по объектам", ["Объект", "Статья", "Кол-во", "Сумма"],
         costs.map((x) => [x.object_id || "—", humanArticle(x.article), fmt(x.fact_qty), fmt(x.fact_amount)]));
       add("Долги по контрагентам", ["Контрагент", "Выставлено", "Оплачено", "Баланс"],
@@ -106,7 +106,7 @@ async function shareFile(uri: string, title = "Report") {
       </head><body>
       <h2>Отчёт ${start} — ${end}</h2>
       ${htmlTable("Обороты склада", ["Код", "Приход", "Расход", "Баланс"],
-        turnover.map((x) => [x.rik_code, fmt(x.incoming), fmt(x.outgoing), fmt(x.balance)]))}
+        turnover.map((x) => [x.code, fmt(x.incoming), fmt(x.outgoing), fmt(x.balance)]))}
       ${htmlTable("Затраты по объектам", ["Объект", "Статья", "Кол-во", "Сумма"],
         costs.map((x) => [x.object_id || "—", humanArticle(x.article), fmt(x.fact_qty), fmt(x.fact_amount)]))}
       ${htmlTable("Долги по контрагентам", ["Контрагент", "Выставлено", "Оплачено", "Баланс"],
@@ -153,7 +153,7 @@ async function shareFile(uri: string, title = "Report") {
         <ChartTurnover data={turnover} />
         <Table
           columns={["Код", "Приход", "Расход", "Баланс"]}
-          rows={turnover.map((x) => [x.rik_code, fmt(x.incoming), fmt(x.outgoing), fmt(x.balance)])}
+          rows={turnover.map((x) => [x.code, fmt(x.incoming), fmt(x.outgoing), fmt(x.balance)])}
         />
       </ReportCard>
 
@@ -234,7 +234,7 @@ function ChartTurnover({ data }: { data: any[] }) {
   if (!data.length) return null;
   return (
     <LineChart
-      data={{ labels: data.map((x) => x.rik_code.slice(-4)), datasets: [{ data: data.map((x) => Number(x.balance || 0)) }] }}
+      data={{ labels: data.map((x) => x.code.slice(-4)), datasets: [{ data: data.map((x) => Number(x.balance || 0)) }] }}
       width={w - 48} height={180}
       chartConfig={{ backgroundColor: "#fff", backgroundGradientFrom: "#fff", backgroundGradientTo: "#fff", decimalPlaces: 0,
         color: (o) => `rgba(14,165,233,${o.opacity})` }}
@@ -262,3 +262,4 @@ function ChartPie({ data }: { data: any[] }) {
     />
   );
 }
+

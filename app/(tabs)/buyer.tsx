@@ -1,4 +1,4 @@
-// app/(tabs)/buyer.tsx — снабженец (боевой, без смены логики) + режим «Доработать»
+﻿// app/(tabs)/buyer.tsx — снабженец (боевой, без смены логики) + режим «Доработать»
 import { formatRequestDisplay } from '../../src/lib/format';
 import React, {
   useCallback, useEffect, useMemo, useRef, useState,
@@ -745,7 +745,7 @@ const supplierGroups = useMemo(() => {
       try {
         const ri = await supabase
           .from('request_items')
-          .select('id, name_human, uom, qty, app_code, rik_code')
+          .select('id, name_human, uom, qty, app_code, code')
           .in('id', ids);
         if (!ri.error && Array.isArray(ri.data)) riData = ri.data;
       } catch {}
@@ -759,7 +759,7 @@ const supplierGroups = useMemo(() => {
             uom: (r as any).uom ?? null,
             qty: (r as any).qty ?? null,
             app_code: (r as any)?.app_code ?? null,
-            rik_code: (r as any)?.rik_code ?? null,
+            code: (r as any)?.code ?? null,
           };
         });
       }
@@ -771,7 +771,7 @@ const supplierGroups = useMemo(() => {
   uom: r.uom ?? null,
   qty: r.qty ?? null,
   app_code: r.app_code ?? null,
-  rik_code: r.rik_code ?? null,
+  code: r.code ?? null,
 };
 if (m.price != null && String(m.price).trim() !== '') {
   const pv = Number(String(m.price).replace(',', '.'));
@@ -1022,7 +1022,7 @@ setTab('pending');
       const qty = Number(r?.total_qty ?? r?.qty ?? 0) || 0;
       const uom = r?.uom ?? '';
       const name = r?.name_human ?? '';
-      const rik = r?.rik_code ? ` (${r.rik_code})` : '';
+      const rik = r?.code ? ` (${r.code})` : '';
       const price = r?.price != null ? Number(r.price) : NaN;
       const sum = Number.isFinite(price) ? qty * price : NaN;
       if (Number.isFinite(sum)) total += sum;
@@ -2358,6 +2358,7 @@ const s = StyleSheet.create({
   modalTitle: { fontSize: 18, fontWeight: '800', color: COLORS.text },
   modalHelp: { fontSize: 12, color: COLORS.sub },
 });
+
 
 
 

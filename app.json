@@ -1,11 +1,36 @@
 {
   "expo": {
-    "name": "rik-expo-app",
-    "slug": "rik-expo-app",
-    "scheme": "rik",
-    "plugins": [
-      "expo-router",
-      "expo-audio"
-    ]
+    "name": "Простройка",                  // 
+    "slug": "prostroika",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",           // 
+    "scheme": "prostroika",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "bundleIdentifier": "com.yourcompany.prostroika", // 🟢 нейтральный id
+      "buildNumber": "1.0.0",
+      "supportsTablet": false,
+      "infoPlist": {
+        "NSCameraUsageDescription": "Сканирование и фото документов.",
+        "NSPhotoLibraryAddUsageDescription": "Сохранение PDF и изображений."
+      }
+    },
+    "android": {
+      "package": "com.yourcompany.prostroika", // 🟢 нейтральный id
+      "versionCode": 1,
+      "permissions": [
+        "INTERNET",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE",
+        "CAMERA"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": { "projectId": "..." }
+    }
   }
 }

@@ -1,4 +1,4 @@
-// app/(tabs)/foreman.tsx — боевой экран прораба (логика сохранена, обновлён только UI: человеко-читаемый номер заявки)
+﻿// app/(tabs)/foreman.tsx — боевой экран прораба (логика сохранена, обновлён только UI: человеко-читаемый номер заявки)
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
@@ -25,7 +25,7 @@ if (__DEV__) LogBox.ignoreAllLogs(true);
 type Timer = ReturnType<typeof setTimeout>;
 
 type PickedRow = {
-  rik_code: string;
+  code: string;
   name: string;
   uom?: string | null;
   kind?: string | null;      // Материал | Работа | Услуга
@@ -38,7 +38,7 @@ type PickedRow = {
 type GroupedRow = {
   key: string;
   name_human: string;
-  rik_code?: string | null;
+  code?: string | null;
   uom?: string | null;
   app_code?: string | null;
   total_qty: number;
@@ -90,7 +90,7 @@ function uniqBy<T>(arr: T[], key: (x: T) => string) {
 function stableKey(it: any, idx: number, prefix = 'rk') {
   if (it?.request_item_id != null) return `ri:${it.request_item_id}`;
   if (it?.id != null)              return `id:${it.id}`;
-  if (it?.rik_code)                return `${prefix}:${it.rik_code}:${idx}`;
+  if (it?.code)                return `${prefix}:${it.code}:${idx}`;
   if (it?.code)                    return `${prefix}:${it.code}:${idx}`;
   return `${prefix}:idx:${idx}`;
 }
@@ -101,7 +101,7 @@ function ruName(it: any): string {
     it?.name_ru ?? it?.name_human_ru ?? it?.display_name ?? it?.alias_ru ?? it?.name_human;
   if (direct && String(direct).trim()) return String(direct).trim();
 
-  const code: string = String(it?.rik_code ?? it?.code ?? '').toUpperCase();
+  const code: string = String(it?.code ?? it?.code ?? '').toUpperCase();
   if (!code) return '';
   const dict: Record<string, string> = {
     'MAT':'', 'WRK':'', 'SRV':'',
@@ -486,7 +486,7 @@ export default function ForemanScreen() {
   // ---------- Корзина ----------
   const toggleToCart = useCallback((it: CatalogItem) => {
     setCart(prev => {
-      const code = it.rik_code;
+      const code = it.code;
       if (!code) return prev;
       if (prev[code]) { const copy = { ...prev }; delete copy[code]; return copy; }
       const name = (it as any).name_human ?? code;
@@ -502,7 +502,7 @@ export default function ForemanScreen() {
       return {
         ...prev,
         [code]: {
-          rik_code: code,
+          code: code,
           name, uom, kind,
           qty: '',
           app_code: appDefault,
@@ -580,7 +580,7 @@ export default function ForemanScreen() {
       // добавление позиций — передаём name_human и uom
       for (const row of cartArray) {
         const q = Number(row.qty.replace(',', '.'));
-        const ok = await addRequestItemFromRik(rid, row.rik_code, q, {
+        const ok = await addRequestItemFromRik(rid, row.code, q, {
           note: row.note.trim(),
           app_code: row.app_code ?? undefined,
           kind: row.kind ?? undefined,
@@ -690,7 +690,7 @@ export default function ForemanScreen() {
     if (!items?.length) return [];
     const map = new Map<string, GroupedRow>();
     for (const it of items) {
-      const code = (it as any).rik_code ?? null;
+      const code = (it as any).code ?? null;
       const uom  = it.uom ?? null;
       const app  = it.app_code ?? null;
       const baseKey = code ? `code:${code}` : `name:${(it.name_human || '').toLowerCase()}`;
@@ -702,7 +702,7 @@ export default function ForemanScreen() {
         map.set(key, {
           key,
           name_human: it.name_human || (code || '—'),
-          rik_code: code,
+          code: code,
           uom,
           app_code: app,
           total_qty: qtyNum,
@@ -715,27 +715,27 @@ export default function ForemanScreen() {
     }
     return Array.from(map.values()).sort((a, b) =>
       (a.name_human || '').localeCompare(b.name_human || '') ||
-      (a.rik_code || '').localeCompare(b.rik_code || '')
+      (a.code || '').localeCompare(b.code || '')
     );
   }, [items]);
 
   const suggestsUniq = useMemo(
-    () => uniqBy(suggests, it => String((it as any)?.rik_code ?? (it as any)?.code ?? '')),
+    () => uniqBy(suggests, it => String((it as any)?.code ?? (it as any)?.code ?? '')),
     [suggests]
   );
 
   const SuggestRow = useCallback(({ it }: { it: CatalogItem }) => {
-    const selected = !!cart[(it as any).rik_code];
+    const selected = !!cart[(it as any).code];
     const uom  = (it as any).uom_code ?? null;
     const kind = (it as any).kind ?? '';
     return (
       <Pressable onPress={() => toggleToCart(it)} style={[s.suggest, selected && s.suggestSelected]}>
         <View style={{ flexDirection:'row', alignItems:'center', gap:8, flexWrap:'wrap' }}>
-          <Text style={[s.suggestTitle, { color: COLORS.text }]}>{(it as any).name_human ?? (it as any).rik_code}</Text>
+          <Text style={[s.suggestTitle, { color: COLORS.text }]}>{(it as any).name_human ?? (it as any).code}</Text>
           {kind ? <Chip label={kind} /> : null}
         </View>
         <Text style={[s.suggestMeta, { color: COLORS.sub }]}>
-          {(it as any).rik_code} {uom ? `• Ед.: ${uom}` : ''}
+          {(it as any).code} {uom ? `• Ед.: ${uom}` : ''}
         </Text>
       </Pressable>
     );
@@ -745,22 +745,22 @@ export default function ForemanScreen() {
     const dec = () => {
       const cur = Number((row.qty || '0').replace(',', '.')) || 0;
       const next = Math.max(0, cur - 1);
-      setQtyFor(row.rik_code, next ? String(next) : '');
+      setQtyFor(row.code, next ? String(next) : '');
     };
     const inc = () => {
       const cur = Number((row.qty || '0').replace(',', '.')) || 0;
       const next = cur + 1;
-      setQtyFor(row.rik_code, String(next));
+      setQtyFor(row.code, String(next));
     };
 
     return (
       <View style={[s.card, { backgroundColor:'#fff', borderColor: COLORS.border }]}>
         <View style={{ flexDirection:'row', alignItems:'center', gap:8, flexWrap:'wrap' }}>
-          <Text style={[s.cardTitle, { color: COLORS.text }]}>{ruName({ name_human: row.name, rik_code: row.rik_code }) || row.name}</Text>
+          <Text style={[s.cardTitle, { color: COLORS.text }]}>{ruName({ name_human: row.name, code: row.code }) || row.name}</Text>
           {row.kind ? <Chip label={row.kind} /> : null}
           {row.uom  ? <Chip label={`Ед.: ${row.uom}`} bg="#E0E7FF" fg="#3730A3" /> : null}
         </View>
-        <Text style={[s.cardMeta, { color: COLORS.sub }]}>{row.rik_code}</Text>
+        <Text style={[s.cardMeta, { color: COLORS.sub }]}>{row.code}</Text>
 
         {/* Кол-во */}
         <View style={s.row}>
@@ -769,7 +769,7 @@ export default function ForemanScreen() {
             <Pressable onPress={dec} style={[s.qtyBtn, { borderColor: COLORS.border }]}><Text style={s.qtyBtnTxt}>−</Text></Pressable>
             <TextInput
               value={row.qty}
-              onChangeText={(v) => setQtyFor(row.rik_code, v)}
+              onChangeText={(v) => setQtyFor(row.code, v)}
               keyboardType="decimal-pad"
               placeholder="введите кол-во"
               style={[s.qtyInput, { borderColor: COLORS.border, backgroundColor:'#fff' }]}
@@ -784,20 +784,20 @@ export default function ForemanScreen() {
           <View style={{ flex: 1, gap: 6 }}>
             <View style={{ flexDirection: 'row', gap: 8 }}>
               <Pressable
-                onPress={() => { setAppPickerFor(row.rik_code); setAppPickerQ(''); }}
+                onPress={() => { setAppPickerFor(row.code); setAppPickerQ(''); }}
                 style={[s.chip, { backgroundColor: '#f1f5f9', borderColor: COLORS.border }]}
               >
                 <Text style={{ color: COLORS.text }}>{row.app_code ? labelForApp(row.app_code) : 'Выбрать…'}</Text>
               </Pressable>
               {row.app_code ? (
-                <Pressable onPress={() => setAppFor(row.rik_code, null)} style={[s.chip, { borderColor: COLORS.border }]}>
+                <Pressable onPress={() => setAppFor(row.code, null)} style={[s.chip, { borderColor: COLORS.border }]}>
                   <Text style={{ color: COLORS.text }}>Очистить</Text>
                 </Pressable>
               ) : null}
             </View>
             <TextInput
               value={row.app_code ?? ''}
-              onChangeText={(v) => setAppFor(row.rik_code, v || null)}
+              onChangeText={(v) => setAppFor(row.code, v || null)}
               placeholder="или введите свою метку…"
               style={s.input}
             />
@@ -809,7 +809,7 @@ export default function ForemanScreen() {
           <Text style={{ color: COLORS.sub }}>Примечание (обязательно):</Text>
           <TextInput
             value={row.note}
-            onChangeText={(v) => setNoteFor(row.rik_code, v)}
+            onChangeText={(v) => setNoteFor(row.code, v)}
             placeholder={buildScopeNote(objectName, levelName, systemName, zoneName) || 'этаж, сектор, точка применения…'}
             multiline
             style={s.note}
@@ -842,7 +842,7 @@ export default function ForemanScreen() {
     <View style={[s.card, { backgroundColor:'#fff', borderColor: COLORS.border }]}>
       <View style={{ flexDirection:'row', alignItems:'center', gap:8, flexWrap:'wrap' }}>
         <Text style={[s.cardTitle, { color: COLORS.text }]}>{g.name_human}</Text>
-        {g.rik_code ? <Chip label={g.rik_code} /> : null}
+        {g.code ? <Chip label={g.code} /> : null}
         {g.uom ? <Chip label={`Ед.: ${g.uom}`} bg="#E0E7FF" fg="#3730A3" /> : null}
         {g.app_code ? <Chip label={labelForApp(g.app_code)} /> : null}
       </View>
@@ -1195,6 +1195,7 @@ const s = StyleSheet.create({
     }
   }),
 });
+
 
 
 

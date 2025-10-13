@@ -1,4 +1,4 @@
-// app/(tabs)/warehouse.tsx
+﻿// app/(tabs)/warehouse.tsx
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   View, Text, FlatList, Pressable, Alert, ActivityIndicator,
@@ -1141,7 +1141,7 @@ const [issueMsg, setIssueMsg] = useState<{ kind: "error" | "ok" | null; text: st
         const rows = (r.data as any[]).map(normalizeToRikRow);
         setAllCatalog(rows); setCatalog(rows); refreshAvailability(rows); return;
       }
-      const v = await supabase.from("rik_items" as any).select("code,name").limit(2000);
+      const v = await supabase.from("catalog_items" as any).select("code,name").limit(2000);
       if (!v.error && Array.isArray(v.data)) {
         const rows = (v.data as any[]).map((x) => mapRikItemsRow({ code: x.code, name: x.name, uom: null, kind: "material", ref_id: null } as any));
         setAllCatalog(rows); setCatalog(rows); refreshAvailability(rows);
@@ -1188,7 +1188,7 @@ const [issueMsg, setIssueMsg] = useState<{ kind: "error" | "ok" | null; text: st
         }
       } catch {}
       if (merged.length === 0) {
-        const fl = await supabase.from("rik_items" as any).select("code,name").or(`name.ilike.%${q}%,code.ilike.%${q}%`).limit(100);
+        const fl = await supabase.from("catalog_items" as any).select("code,name").or(`name.ilike.%${q}%,code.ilike.%${q}%`).limit(100);
         if (!fl.error && Array.isArray(fl.data)) pushUnique((fl.data as any[]).map((x) => mapRikItemsRow({ code: x.code, name: x.name, uom: null, kind: "material", ref_id: null } as any)));
       }
       setCatalog(merged);
@@ -2078,5 +2078,6 @@ if (tab === "Склад факт") {
     </View>
   );
 }
+
 
 

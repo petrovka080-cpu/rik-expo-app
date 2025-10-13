@@ -1,4 +1,4 @@
-// src/lib/catalog_api.ts
+﻿// src/lib/catalog_api.ts
 import { supabase } from "./supabaseClient";
 
 /** ========= Нейтральные типы ========= */
@@ -53,8 +53,8 @@ export async function searchCatalogItems(q: string, limit = 50, apps?: string[])
       } as any);
       if (!error && Array.isArray(data)) {
         return (data as any[]).slice(0, pLimit).map((r) => ({
-          code: r.rik_code,
-          name: r.name_human ?? r.rik_code,
+          code: r.code,
+          name: r.name_human ?? r.code,
           uom: r.uom ?? r.uom_code ?? null,
           sector_code: r.sector_code ?? null,
           spec: r.spec ?? null,
@@ -109,4 +109,5 @@ export async function listIncomingItems(incomingId: string): Promise<IncomingIte
   if (error || !Array.isArray(data)) return [];
   return data as IncomingItem[];
 }
+
 

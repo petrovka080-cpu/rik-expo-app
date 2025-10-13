@@ -1,4 +1,4 @@
-// src/lib/rik_api.ts — боевой минимальный API (стабильно, без спорных SELECT'ов)
+﻿// src/lib/catalog_api.ts — боевой минимальный API (стабильно, без спорных SELECT'ов)
 import { supabase } from './supabaseClient';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { Platform } from 'react-native';
@@ -21,7 +21,7 @@ export const proposalDecide: (...args: any[]) => Promise<void> =
 
 // ============================== Types ==============================
 export type CatalogItem = {
-  rik_code: string;
+  code: string;
   name_human?: string | null;
   name?: string | null;
   uom_code?: string | null;
@@ -62,7 +62,7 @@ export type BuyerInboxRow = {
   request_id: string;             // uuid
   request_id_old?: number | null; // для обратной совместимости
   request_item_id: string;
-  rik_code: string | null;
+  code: string | null;
   name_human: string;
   qty: string | number;
   uom?: string | null;
@@ -83,7 +83,7 @@ export type ProposalSummary = {
 
 export type ProposalItem = {
   id: number;
-  rik_code: string | null;
+  code: string | null;
   name_human: string;
   uom: string | null;
   app_code: string | null;
@@ -271,10 +271,10 @@ export async function rikQuickSearch(q: string, limit = 50, apps?: string[]) {
   let base: any[] = [];
   {
     const fb = await client
-      .from('rik_items')
-      .select('rik_code,name_human,uom_code,sector_code,spec,kind')
-      .or(`rik_code.ilike.%${pQuery}%,name_human.ilike.%${pQuery}%`)
-      .order('rik_code', { ascending: true })
+      .from('catalog_items')
+      .select('code,name_human,uom_code,sector_code,spec,kind')
+      .or(`code.ilike.%${pQuery}%,name_human.ilike.%${pQuery}%`)
+      .order('code', { ascending: true })
       .limit(pLimit * 2);
     if (!fb.error && Array.isArray(fb.data)) base = fb.data as any[];
   }
@@ -282,36 +282,36 @@ export async function rikQuickSearch(q: string, limit = 50, apps?: string[]) {
   let aliasCodes: string[] = [];
   try {
     const al = await client
-      .from('rik_aliases')
-      .select('rik_code')
+      .from('catalog_aliases')
+      .select('code')
       .ilike('alias', `%${pQuery}%`)
       .limit(pLimit * 2);
     if (!al.error && Array.isArray(al.data)) {
-      aliasCodes = Array.from(new Set((al.data as any[]).map((r) => String(r.rik_code))));
+      aliasCodes = Array.from(new Set((al.data as any[]).map((r) => String(r.code))));
     }
   } catch {}
 
   if (aliasCodes.length) {
-    const have = new Set(base.map((r) => String(r.rik_code)));
+    const have = new Set(base.map((r) => String(r.code)));
     const extraCodes = aliasCodes.filter((c) => !have.has(c));
     if (extraCodes.length) {
       const add = await client
-        .from('rik_items')
-        .select('rik_code,name_human,uom_code,sector_code,spec,kind')
-        .in('rik_code', extraCodes)
+        .from('catalog_items')
+        .select('code,name_human,uom_code,sector_code,spec,kind')
+        .in('code', extraCodes)
         .limit(pLimit * 2);
       if (!add.error && Array.isArray(add.data)) base = base.concat(add.data as any[]);
     }
   }
 
   let aliasMap: Record<string, string> = {};
-  const allCodes = Array.from(new Set(base.map((r) => String(r.rik_code)).filter(Boolean)));
+  const allCodes = Array.from(new Set(base.map((r) => String(r.code)).filter(Boolean)));
   if (allCodes.length) {
     try {
       const al2 = await client
-        .from('rik_aliases')
-        .select('rik_code,alias')
-        .in('rik_code', allCodes);
+        .from('catalog_aliases')
+        .select('code,alias')
+        .in('code', allCodes);
       if (!al2.error && Array.isArray(al2.data)) {
         const prefer = pQuery.toLowerCase();
         const byCode: Record<string, { hit?: string; any?: string }> = {};
@@ -319,7 +319,7 @@ export async function rikQuickSearch(q: string, limit = 50, apps?: string[]) {
           const a = (r.alias || '').trim();
           if (!a) continue;
           if (!/[А-Яа-яЁё]/.test(a)) continue;
-          const code = String(r.rik_code);
+          const code = String(r.code);
           byCode[code] ||= {};
           if (!byCode[code].any) byCode[code].any = a;
           if (!byCode[code].hit && a.toLowerCase().startsWith(prefer)) byCode[code].hit = a;
@@ -329,23 +329,23 @@ export async function rikQuickSearch(q: string, limit = 50, apps?: string[]) {
     } catch {}
   }
 
-  const merged = base.map((r) => ({ ...r, name_human: aliasMap[r.rik_code] ?? r.name_human ?? r.rik_code }));
+  const merged = base.map((r) => ({ ...r, name_human: aliasMap[r.code] ?? r.name_human ?? r.code }));
 
   const seen = new Set<string>();
   const qa = pQuery.toLowerCase();
   const ranked = merged.sort((a, b) => {
     const aName = String(a.name_human || '').toLowerCase();
     const bName = String(b.name_human || '').toLowerCase();
-    const aCode = String(a.rik_code || '').toLowerCase();
-    const bCode = String(b.rik_code || '').toLowerCase();
+    const aCode = String(a.code || '').toLowerCase();
+    const bCode = String(b.code || '').toLowerCase();
     const ra = aName.startsWith(qa) ? 0 : aCode.startsWith(qa) ? 1 : aName.includes(qa) ? 2 : 3;
     const rb = bName.startsWith(qa) ? 0 : bCode.startsWith(qa) ? 1 : bName.includes(qa) ? 2 : 3;
-    return ra - rb || String(a.rik_code).localeCompare(String(b.rik_code));
+    return ra - rb || String(a.code).localeCompare(String(b.code));
   });
 
   const out: CatalogItem[] = [];
   for (const r of ranked) {
-    const key = String(r.rik_code);
+    const key = String(r.code);
     if (seen.has(key)) continue;
     seen.add(key);
     out.push(r);
@@ -431,19 +431,19 @@ export async function ensureRequestSmart(currentId?: number | string, meta?: Req
 
 export async function addRequestItemFromRik(
   requestId: number | string,
-  rik_code: string,
+  code: string,
   qty: number,
   opts?: { note?: string; app_code?: string; kind?: string; name_human?: string; uom?: string | null }
 ): Promise<boolean> {
   try {
-    if (!rik_code) throw new Error('rik_code required');
+    if (!code) throw new Error('code required');
     const q = Number(qty);
     if (!Number.isFinite(q) || q <= 0) throw new Error('qty must be > 0');
 
     const rid = toFilterId(requestId);
     if (rid == null) throw new Error('request_id is empty');
 
-    const row: any = { request_id: rid as any, rik_code, qty: q };
+    const row: any = { request_id: rid as any, code, qty: q };
     if (opts?.name_human) row.name_human = opts.name_human;
     if (typeof opts?.uom !== 'undefined') row.uom = opts.uom;
     if (opts?.note) row.note = opts.note;
@@ -759,7 +759,7 @@ export async function listDirectorProposalsPending(): Promise<Array<{ id: string
 // ===== ПРОЧИТАТЬ СТРОКИ ПРЕДЛОЖЕНИЯ: TABLE → snapshot → view → rpc =====
 export type ProposalItemRow = {
   id: number;
-  rik_code: string | null;
+  code: string | null;
   name_human: string;
   uom: string | null;
   app_code: string | null;
@@ -773,16 +773,16 @@ export async function proposalItems(proposalId: string | number): Promise<Propos
   try {
     const q = await supabase
       .from('proposal_items')
-      .select('id, name_human, uom, qty, app_code, rik_code')
+      .select('id, name_human, uom, qty, app_code, code')
       .eq('proposal_id', pid)
       .order('id', { ascending: true });
 
     if (!q.error && Array.isArray(q.data) && q.data.length) {
       const key = (r: any) => [
-        String(r.name_human ?? ''), String(r.uom ?? ''), String(r.app_code ?? ''), String(r.rik_code ?? ''),
+        String(r.name_human ?? ''), String(r.uom ?? ''), String(r.app_code ?? ''), String(r.code ?? ''),
       ].join('||');
 
-      const agg = new Map<string, { id: number; name_human: string; uom: string | null; app_code: string | null; rik_code: string | null; total_qty: number }>();
+      const agg = new Map<string, { id: number; name_human: string; uom: string | null; app_code: string | null; code: string | null; total_qty: number }>();
       (q.data as any[]).forEach((r: any, i: number) => {
         const k = key(r);
         const prev = agg.get(k);
@@ -791,7 +791,7 @@ export async function proposalItems(proposalId: string | number): Promise<Propos
           name_human: String(r.name_human ?? ''),
           uom: r.uom ?? null,
           app_code: r.app_code ?? null,
-          rik_code: r.rik_code ?? null,
+          code: r.code ?? null,
           total_qty: (prev?.total_qty ?? 0) + Number(r.qty ?? 0),
         });
       });
@@ -806,7 +806,7 @@ export async function proposalItems(proposalId: string | number): Promise<Propos
     try {
       const snap = await supabase
         .from('proposal_snapshot_items')
-        .select('id, rik_code, name_human, uom, app_code, total_qty')
+        .select('id, code, name_human, uom, app_code, total_qty')
         .eq('proposal_id', pid)
         .order('id', { ascending: true });
       if (!snap.error && snap.data?.length) rows = snap.data as any[];
@@ -817,7 +817,7 @@ export async function proposalItems(proposalId: string | number): Promise<Propos
     try {
       const view = await supabase
         .from('proposal_items_view')
-        .select('id, rik_code, name_human, uom, app_code, total_qty')
+        .select('id, code, name_human, uom, app_code, total_qty')
         .eq('proposal_id', pid)
         .order('id', { ascending: true });
       if (!view.error && view.data?.length) rows = view.data as any[];
@@ -833,7 +833,7 @@ export async function proposalItems(proposalId: string | number): Promise<Propos
 
   return (rows || []).map((r: any, i: number) => ({
     id: Number(r.id ?? i),
-    rik_code: r.rik_code ?? null,
+    code: r.code ?? null,
     name_human: r.name_human ?? '',
     uom: r.uom ?? null,
     app_code: r.app_code ?? null,
@@ -954,20 +954,20 @@ export async function buildProposalPdfHtml(proposalId: number | string): Promise
     // Строки предложения (с максимумом полей)
     const { data: piRaw } = await supabase
       .from('proposal_items')
-      .select('id, request_item_id, name_human, uom, qty, app_code, rik_code, price, supplier, note')
+      .select('id, request_item_id, name_human, uom, qty, app_code, code, price, supplier, note')
       .eq('proposal_id', idFilter)
       .order('id', { ascending: true });
 
     const pi: any[] = Array.isArray(piRaw) ? piRaw : [];
 
     // Дотягиваем недостающие поля из request_items
-    const needFill = pi.filter((r) => !r?.name_human || !r?.uom || !r?.qty || !r?.app_code || !r?.rik_code);
+    const needFill = pi.filter((r) => !r?.name_human || !r?.uom || !r?.qty || !r?.app_code || !r?.code);
     if (needFill.length) {
       const ids = needFill.map((r) => r.request_item_id).filter(Boolean);
       if (ids.length) {
         const ri = await supabase
           .from('request_items')
-          .select('id,name_human,uom,qty,app_code,rik_code')
+          .select('id,name_human,uom,qty,app_code,code')
           .in('id', ids as any[]);
         if (!ri.error && Array.isArray(ri.data)) {
           const byId = new Map(ri.data.map((r: any) => [String(r.id), r]));
@@ -977,7 +977,7 @@ export async function buildProposalPdfHtml(proposalId: number | string): Promise
             r.uom        = r.uom        ?? src.uom        ?? null;
             r.qty        = r.qty        ?? src.qty        ?? null;
             r.app_code   = r.app_code   ?? src.app_code   ?? null;
-            r.rik_code   = r.rik_code   ?? src.rik_code   ?? null;
+            r.code   = r.code   ?? src.code   ?? null;
           }
         }
       }
@@ -1011,7 +1011,7 @@ export async function buildProposalPdfHtml(proposalId: number | string): Promise
       }
       const qty = num(r.qty), price = num(r.price), amount = qty * price;
       const name = r.name_human ?? '';
-      const code = r.rik_code ? `${r.rik_code} · ` : '';
+      const code = r.code ? `${r.code} · ` : '';
       const uom  = r.uom ?? '';
       const app  = r.app_code ? appNames[r.app_code] ?? r.app_code : '';
       const supplier = (r.supplier ?? '').toString();
@@ -1225,7 +1225,7 @@ export async function buildRequestPdfHtml(requestId: number | string): Promise<s
 
   const items = await client
     .from('request_items')
-    .select('id, name_human, rik_code, uom, qty, app_code, note')
+    .select('id, name_human, code, uom, qty, app_code, note')
     .eq('request_id', idFilter)
     .order('id', { ascending: true });
 
@@ -1235,8 +1235,8 @@ export async function buildRequestPdfHtml(requestId: number | string): Promise<s
     const note = r.note ? `<div class="muted">Прим.: ${esc(r.note)}</div>` : '';
     return `<tr>
       <td style="text-align:center">${i + 1}</td>
-      <td>${esc(r.name_human || r.rik_code || '')}${note}</td>
-      <td>${esc(r.rik_code || '')}</td>
+      <td>${esc(r.name_human || r.code || '')}${note}</td>
+      <td>${esc(r.code || '')}</td>
       <td style="text-align:right">${q || ''}</td>
       <td style="text-align:center">${esc(r.uom || '')}</td>
       <td>${esc(r.app_code || '')}</td>
@@ -1571,3 +1571,4 @@ export { listIncomingItems } from "./catalog_api";
 
 export type { CatalogItem, CatalogGroup, UomRef, IncomingItem } from "./catalog_api";
 export { searchCatalogItems, listCatalogGroups, listUoms, listIncomingItems } from "./catalog_api";
+

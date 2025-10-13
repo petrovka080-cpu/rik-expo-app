@@ -1,7 +1,7 @@
-// src/lib/files.ts
+﻿// src/lib/files.ts
 import { supabase } from './supabaseClient';
 
-/** Переиспользуем аплоадер из rik_api.ts */
+/** Переиспользуем аплоадер из catalog_api.ts */
 export { uploadProposalAttachment } from './catalog_api';
 
 /**
@@ -262,4 +262,5 @@ export async function openSupplierFile(
 
   return rows;
 }
+
 
