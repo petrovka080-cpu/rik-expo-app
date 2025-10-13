@@ -11,7 +11,7 @@ import {
   buildRequestPdfHtml, exportRequestPdf,
   resolveProposalPrettyTitle, // красивый заголовок
   directorReturnToBuyer, 
-} from '../../src/lib/catalog_api';
+} from '../../src/lib/rik_api';
 import { supabase, ensureSignedIn } from '../../src/lib/supabaseClient';
 
 type Tab = 'foreman' | 'buyer';
@@ -899,5 +899,4 @@ const s = StyleSheet.create({
   pillBtn: { paddingVertical: 6, paddingHorizontal: 12, borderRadius: 999 },
   pillBtnText: { color: '#fff', fontWeight: '700' },
 });
-
 

@@ -1,9 +1,9 @@
-﻿// src/lib/rik_api.ts вЂ” Р±РѕРµРІРѕР№ РјРёРЅРёРјР°Р»СЊРЅС‹Р№ API (СЃС‚Р°Р±РёР»СЊРЅРѕ, Р±РµР· СЃРїРѕСЂРЅС‹С… SELECT'РѕРІ)
+// src/lib/rik_api.ts — боевой минимальный API (стабильно, без спорных SELECT'ов)
 import { supabase } from './supabaseClient';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { Platform } from 'react-native';
 
-// --- utils: normalize UUID (СѓР±РёСЂР°РµРј # Рё РІР°Р»РёРґРёСЂСѓРµРј) ---
+// --- utils: normalize UUID (убираем # и валидируем) ---
 export function normalizeUuid(raw: string | null | undefined) {
   const s = String(raw ?? '').trim().replace(/^#/, '');
   const re = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -20,7 +20,7 @@ export const proposalDecide: (...args: any[]) => Promise<void> =
 /** ===== End shim ===== */
 
 // ============================== Types ==============================
-export type CatalogItem = {
+export type RikItem = {
   rik_code: string;
   name_human?: string | null;
   name?: string | null;
@@ -60,7 +60,7 @@ export type DirectorPendingRow = {
 
 export type BuyerInboxRow = {
   request_id: string;             // uuid
-  request_id_old?: number | null; // РґР»СЏ РѕР±СЂР°С‚РЅРѕР№ СЃРѕРІРјРµСЃС‚РёРјРѕСЃС‚Рё
+  request_id_old?: number | null; // для обратной совместимости
   request_item_id: string;
   rik_code: string | null;
   name_human: string;
@@ -75,7 +75,7 @@ export type BuyerInboxRow = {
 
 export type ProposalSummary = {
   id: number;
-  status: 'РќР° СѓС‚РІРµСЂР¶РґРµРЅРёРё' | 'РЈС‚РІРµСЂР¶РґРµРЅРѕ' | 'РћС‚РєР»РѕРЅРµРЅРѕ' | string;
+  status: 'На утверждении' | 'Утверждено' | 'Отклонено' | string;
   submitted_at?: string | null;
   decided_at?: string | null;
   reason?: string | null;
@@ -90,7 +90,7 @@ export type ProposalItem = {
   total_qty: number;
 };
 
-/** ===== Accountant types (РќРћР’Р«Р•) ===== */
+/** ===== Accountant types (НОВЫЕ) ===== */
 export type AccountantInboxRow = {
   proposal_id: string;
   supplier?: string | null;
@@ -105,12 +105,12 @@ export type AccountantInboxRow = {
   payments_count?: number | null;
 };
 
-/** ===== Suppliers (РќРћР’Р«Р•) ===== */
+/** ===== Suppliers (НОВЫЕ) ===== */
 export type Supplier = {
   id: string;
-  name: string;            // СЋСЂРёРґРёС‡РµСЃРєРѕРµ/С„Р°РєС‚РёС‡РµСЃРєРѕРµ РЅР°Р·РІР°РЅРёРµ (РѕР±СЏР·Р°С‚РµР»СЊРЅРѕ)
-  inn?: string | null;     // РРќРќ
-  bank_account?: string | null; // СЂР°СЃС‡С‘С‚РЅС‹Р№ СЃС‡С‘С‚
+  name: string;            // юридическое/фактическое название (обязательно)
+  inn?: string | null;     // ИНН
+  bank_account?: string | null; // расчётный счёт
   specialization?: string | null;
   phone?: string | null;
   email?: string | null;
@@ -134,7 +134,7 @@ const parseErr = (e: any) =>
 
 const normStr = (s?: string | null) => String(s ?? '').trim().toLowerCase();
 
-// СѓРЅРёРІРµСЂСЃР°Р»СЊРЅС‹Р№ СЂРµС‚СЂР°Р№ RPC СЃ СЂР°Р·РЅС‹РјРё РёРјРµРЅР°РјРё РїР°СЂР°РјРµС‚СЂРѕРІ/РёРјРµРЅ С„СѓРЅРєС†РёР№
+// универсальный ретрай RPC с разными именами параметров/имен функций
 async function rpcCompat<T = any>(
   variants: Array<{ fn: string; args?: Record<string, any> }>
 ): Promise<T> {
@@ -154,7 +154,7 @@ async function rpcCompat<T = any>(
   return [] as unknown as T;
 }
 
-// helper: Р±РµР·РѕРїР°СЃРЅС‹Р№ request_id РґР»СЏ С„РёР»СЊС‚СЂРѕРІ (РЅРµ РґРѕРїСѓСЃРєР°РµРј eq.=)
+// helper: безопасный request_id для фильтров (не допускаем eq.=)
 const toFilterId = (v: number | string) => {
   if (typeof v === 'number') return v;
   const s = String(v ?? '').trim();
@@ -162,7 +162,7 @@ const toFilterId = (v: number | string) => {
   return /^\d+$/.test(s) ? Number(s) : s;
 };
 
-// ============================== Suppliers API (РќРћР’РћР•) ==============================
+// ============================== Suppliers API (НОВОЕ) ==============================
 export async function listSuppliers(q?: string): Promise<Supplier[]> {
   try {
     const r = await client
@@ -200,9 +200,9 @@ export async function upsertSupplier(draft: Partial<Supplier>): Promise<Supplier
     notes: (draft.notes ?? '').trim() || null,
   };
 
-  if (!payload.name) throw new Error('РЈРєР°Р¶РёС‚Рµ РЅР°Р·РІР°РЅРёРµ РїРѕСЃС‚Р°РІС‰РёРєР°');
+  if (!payload.name) throw new Error('Укажите название поставщика');
 
-  // РµСЃР»Рё id РµСЃС‚СЊ вЂ” РѕР±РЅРѕРІР»СЏРµРј
+  // если id есть — обновляем
   if (draft.id) {
     const { data, error } = await supabase
       .from('suppliers')
@@ -215,7 +215,7 @@ export async function upsertSupplier(draft: Partial<Supplier>): Promise<Supplier
     return data as Supplier;
   }
 
-  // РµСЃР»Рё РЅРµС‚ вЂ” РІСЃС‚Р°РІР»СЏРµРј
+  // если нет — вставляем
   const { data, error } = await supabase
     .from('suppliers')
     .insert([payload])
@@ -250,21 +250,21 @@ export async function rikQuickSearch(q: string, limit = 50, apps?: string[]) {
     const { data, error } = await client.rpc('rik_quick_search_typed', {
       p_q: pQuery, p_limit: pLimit, p_apps: apps ?? null,
     } as any);
-    if (!error && Array.isArray(data)) return (data ?? []) as CatalogItem[];
+    if (!error && Array.isArray(data)) return (data ?? []) as RikItem[];
   } catch {}
 
   try {
     const { data, error } = await client.rpc('rik_quick_ru', {
       p_q: pQuery, p_limit: pLimit, p_apps: apps ?? null,
     } as any);
-    if (!error && Array.isArray(data)) return (data ?? []) as CatalogItem[];
+    if (!error && Array.isArray(data)) return (data ?? []) as RikItem[];
   } catch {}
 
   try {
     const { data, error } = await client.rpc('rik_quick_search', {
       p_q: pQuery, p_limit: pLimit, p_apps: apps ?? null,
     } as any);
-    if (!error && Array.isArray(data)) return (data ?? []) as CatalogItem[];
+    if (!error && Array.isArray(data)) return (data ?? []) as RikItem[];
   } catch {}
 
   if (!pQuery) return [];
@@ -318,7 +318,7 @@ export async function rikQuickSearch(q: string, limit = 50, apps?: string[]) {
         for (const r of (al2.data as any[])) {
           const a = (r.alias || '').trim();
           if (!a) continue;
-          if (!/[Рђ-РЇР°-СЏРЃС‘]/.test(a)) continue;
+          if (!/[А-Яа-яЁё]/.test(a)) continue;
           const code = String(r.rik_code);
           byCode[code] ||= {};
           if (!byCode[code].any) byCode[code].any = a;
@@ -343,7 +343,7 @@ export async function rikQuickSearch(q: string, limit = 50, apps?: string[]) {
     return ra - rb || String(a.rik_code).localeCompare(String(b.rik_code));
   });
 
-  const out: CatalogItem[] = [];
+  const out: RikItem[] = [];
   for (const r of ranked) {
     const key = String(r.rik_code);
     if (seen.has(key)) continue;
@@ -380,7 +380,7 @@ export async function listRequestItems(requestId: number | string): Promise<ReqI
     return rows.map((r: any) => ({
       id: r.id,
       request_id: r.request_id,
-      name_human: r.name_human ?? 'вЂ”',
+      name_human: r.name_human ?? '—',
       qty: Number(r.qty ?? 0),
       uom: r.uom ?? null,
       status: r.status ?? null,
@@ -401,7 +401,7 @@ export async function ensureRequest(requestId: number | string): Promise<number 
     if (!found.error && found.data?.id != null) return found.data.id;
   } catch {}
   try {
-    const up = await client.from('requests').upsert({ id: rid, status: 'Р§РµСЂРЅРѕРІРёРє' } as any, { onConflict: 'id' }).select('id').single();
+    const up = await client.from('requests').upsert({ id: rid, status: 'Черновик' } as any, { onConflict: 'id' }).select('id').single();
     if (!up.error && up.data?.id != null) return up.data.id;
   } catch (e) {
     console.warn('[ensureRequest/upsert]', parseErr(e));
@@ -495,11 +495,11 @@ export async function listPending(): Promise<DirectorPendingRow[]> {
     rpc = await client.rpc('listpending');
     if (!rpc.error && Array.isArray(rpc.data)) return normalize(rpc.data as any[]);
   } catch (e) {
-    console.warn('[listPending] rpc failed в†’ fallback', parseErr(e));
+    console.warn('[listPending] rpc failed → fallback', parseErr(e));
   }
 
   try {
-    const reqs = await client.from('requests').select('id, id_old').eq('status', 'РќР° СѓС‚РІРµСЂР¶РґРµРЅРёРё');
+    const reqs = await client.from('requests').select('id, id_old').eq('status', 'На утверждении');
     const ids = (reqs.data || []).map((r: any) => String(r.id));
     if (!ids.length) return [];
 
@@ -512,7 +512,7 @@ export async function listPending(): Promise<DirectorPendingRow[]> {
       .from('request_items')
       .select('id,request_id,name_human,qty,uom,status')
       .in('request_id', ids)
-      .neq('status', 'РЈС‚РІРµСЂР¶РґРµРЅРѕ')
+      .neq('status', 'Утверждено')
       .order('request_id', { ascending: true })
       .order('id', { ascending: true });
 
@@ -550,25 +550,25 @@ export async function approve(approvalId: number | string) {
   } catch {}
   const upd = await client
     .from('proposals')
-    .update({ status: 'РЈС‚РІРµСЂР¶РґРµРЅРѕ' })
+    .update({ status: 'Утверждено' })
     .eq('id', approvalId)
-    .eq('status', 'РќР° СѓС‚РІРµСЂР¶РґРµРЅРёРё')
+    .eq('status', 'На утверждении')
     .select('id')
     .maybeSingle();
   if (upd.error) throw upd.error;
   return !!upd.data;
 }
 
-export async function reject(approvalId: number | string, _reason = 'Р‘РµР· РїСЂРёС‡РёРЅС‹') {
+export async function reject(approvalId: number | string, _reason = 'Без причины') {
   try {
     const rpc = await client.rpc('reject_one', { p_proposal_id: toRpcId(approvalId) });
     if (!rpc.error) return true;
   } catch {}
   const upd = await client
     .from('proposals')
-    .update({ status: 'РћС‚РєР»РѕРЅРµРЅРѕ' })
+    .update({ status: 'Отклонено' })
     .eq('id', approvalId)
-    .eq('status', 'РќР° СѓС‚РІРµСЂР¶РґРµРЅРёРё')
+    .eq('status', 'На утверждении')
     .select('id')
     .maybeSingle();
   if (upd.error) throw upd.error;
@@ -601,8 +601,8 @@ export type DirectorInboxRow = {
   items_count: number | null;
 };
 
-// вљ™пёЏ РРЅР±РѕРєСЃ РґРёСЂРµРєС‚РѕСЂР° вЂ” СЃРєСЂС‹РІР°РµРј С€Р°РїРєРё (kind==='request'), С‡С‚РѕР±С‹ РЅРёР¶РЅРёР№ Р±Р»РѕРє РЅРµ РїРѕСЏРІР»СЏР»СЃСЏ
-export async function listDirectorInbox(status: 'РќР° СѓС‚РІРµСЂР¶РґРµРЅРёРё' | 'РЈС‚РІРµСЂР¶РґРµРЅРѕ' | 'РћС‚РєР»РѕРЅРµРЅРѕ' = 'РќР° СѓС‚РІРµСЂР¶РґРµРЅРёРё') {
+// ⚙️ Инбокс директора — скрываем шапки (kind==='request'), чтобы нижний блок не появлялся
+export async function listDirectorInbox(status: 'На утверждении' | 'Утверждено' | 'Отклонено' = 'На утверждении') {
   const { data, error } = await client.rpc('list_director_inbox', { p_status: status });
   if (error) { console.warn('[listDirectorInbox]', error.message); return []; }
   const rows = (data ?? []) as DirectorInboxRow[];
@@ -622,7 +622,7 @@ export async function requestSubmit(requestId: number | string) {
   }
   const upd = await client
     .from('requests')
-    .update({ status: 'РќР° СѓС‚РІРµСЂР¶РґРµРЅРёРё', submitted_at: new Date().toISOString() })
+    .update({ status: 'На утверждении', submitted_at: new Date().toISOString() })
     .eq('id', toFilterId(requestId) as any)
     .select('id')
     .maybeSingle();
@@ -639,7 +639,7 @@ export async function listBuyerInbox(): Promise<BuyerInboxRow[]> {
   const fb = await client
     .from('request_items')
     .select('request_id,id as request_item_id,name_human,qty,uom,app_code,status')
-    .in('status', ['РЈС‚РІРµСЂР¶РґРµРЅРѕ', 'Рљ Р·Р°РєСѓРїРєРµ'])
+    .in('status', ['Утверждено', 'К закупке'])
     .order('request_id', { ascending: true })
     .limit(1000);
   if (fb.error) {
@@ -649,7 +649,7 @@ export async function listBuyerInbox(): Promise<BuyerInboxRow[]> {
   return (fb.data ?? []) as any;
 }
 
-export async function listBuyerProposalsByStatus(status: 'РќР° СѓС‚РІРµСЂР¶РґРµРЅРёРё' | 'РЈС‚РІРµСЂР¶РґРµРЅРѕ' | 'РћС‚РєР»РѕРЅРµРЅРѕ') {
+export async function listBuyerProposalsByStatus(status: 'На утверждении' | 'Утверждено' | 'Отклонено') {
   const { data, error } = await client
     .from('proposals')
     .select('id, status, submitted_at')
@@ -703,15 +703,15 @@ export async function proposalAddItems(proposalId: number | string, requestItemI
 export async function proposalSubmit(proposalId: number | string) {
   const pid = String(proposalId);
 
-  // 1) РѕСЃРЅРѕРІРЅР°СЏ РїРѕРїС‹С‚РєР° С‡РµСЂРµР· RPC
+  // 1) основная попытка через RPC
   try {
     const { error } = await client.rpc('proposal_submit', { p_proposal_id: toRpcId(proposalId) });
     if (error) throw error;
   } catch {
-    // 2) fallback UPDATE (РєР°Рє Р±С‹Р»Рѕ)
+    // 2) fallback UPDATE (как было)
     const upd = await client
       .from('proposals')
-      .update({ status: 'РќР° СѓС‚РІРµСЂР¶РґРµРЅРёРё', submitted_at: new Date().toISOString() })
+      .update({ status: 'На утверждении', submitted_at: new Date().toISOString() })
       .eq('id', proposalId)
       .select('id')
       .maybeSingle();
@@ -719,8 +719,8 @@ export async function proposalSubmit(proposalId: number | string) {
     if (!upd.data?.id) return 0;
   }
 
-  // 3) в¬…пёЏ РњРРќР-Р¤РРљРЎ: РїСЂРё "РќР° СѓС‚РІРµСЂР¶РґРµРЅРёРё" вЂ” РіР°СЃРёРј СЃР»РµРґ Р±СѓС…РіР°Р»С‚РµСЂР°
-  //    (СЌС‚Рѕ РЅРµ РјРµРЅСЏРµС‚ Р±РёР·РЅРµСЃ-Р»РѕРіРёРєСѓ, С‚РѕР»СЊРєРѕ СѓСЃС‚СЂР°РЅСЏРµС‚ "Р·Р°Р»РёРїР°РЅРёРµ")
+  // 3) ⬅️ МИНИ-ФИКС: при "На утверждении" — гасим след бухгалтера
+  //    (это не меняет бизнес-логику, только устраняет "залипание")
   await client
     .from('proposals')
     .update({ payment_status: null, sent_to_accountant_at: null })
@@ -729,12 +729,12 @@ export async function proposalSubmit(proposalId: number | string) {
   return 1;
 }
 
-// ===== Р‘РµР·РѕРїР°СЃРЅС‹Р№ СЃРїРёСЃРѕРє В«РїСЂРµРґР»РѕР¶РµРЅРёР№ РЅР° СѓС‚РІРµСЂР¶РґРµРЅРёРёВ» РґР»СЏ РґРёСЂРµРєС‚РѕСЂР° =====
+// ===== Безопасный список «предложений на утверждении» для директора =====
 export async function listDirectorProposalsPending(): Promise<Array<{ id: string; submitted_at: string | null }>> {
   let r = await supabase
     .from('proposals')
     .select('id, submitted_at')
-    .eq('status', 'РќР° СѓС‚РІРµСЂР¶РґРµРЅРёРё')
+    .eq('status', 'На утверждении')
     .not('submitted_at', 'is', null)
     .order('submitted_at', { ascending: false });
 
@@ -756,7 +756,7 @@ export async function listDirectorProposalsPending(): Promise<Array<{ id: string
     .filter(x => x.submitted_at != null);
 }
 
-// ===== РџР РћР§РРўРђРўР¬ РЎРўР РћРљР РџР Р•Р”Р›РћР–Р•РќРРЇ: TABLE в†’ snapshot в†’ view в†’ rpc =====
+// ===== ПРОЧИТАТЬ СТРОКИ ПРЕДЛОЖЕНИЯ: TABLE → snapshot → view → rpc =====
 export type ProposalItemRow = {
   id: number;
   rik_code: string | null;
@@ -868,11 +868,11 @@ export async function uploadProposalAttachment(
   const FILES_BUCKET = 'proposal_files';
   const base = `proposals/${proposalId}/${kind}`;
 
-  // в¬‡пёЏ РґРµР»Р°РµРј Р±РµР·РѕРїР°СЃРЅРѕРµ РёРјСЏ (Р»Р°С‚РёРЅРёС†Р°/С†РёС„СЂС‹/._-), РѕСЃС‚Р°Р»СЊРЅРѕРµ в†’ '_'
+  // ⬇️ делаем безопасное имя (латиница/цифры/._-), остальное → '_'
   const safe = (filename || 'file')
     .normalize('NFKD')
-    .replace(/[\u0300-\u036f]/g, '')              // РґРёР°РєСЂРёС‚РёРєР°
-    .replace(/[^a-zA-Z0-9._-]+/g, '_')            // РІСЃС‘ В«Р»РёС€РЅРµРµВ» РІ _
+    .replace(/[\u0300-\u036f]/g, '')              // диакритика
+    .replace(/[^a-zA-Z0-9._-]+/g, '_')            // всё «лишнее» в _
     .replace(/_+/g, '_')
     .replace(/^_+|_+$/g, '');
 
@@ -898,7 +898,7 @@ export async function uploadProposalAttachment(
         proposal_id: proposalId,
         bucket_id: FILES_BUCKET,
         storage_path: storagePath,
-        file_name: safe,       // в¬…пёЏ СЃРѕС…СЂР°РЅСЏРµРј Р±РµР·РѕРїР°СЃРЅРѕРµ РёРјСЏ
+        file_name: safe,       // ⬅️ сохраняем безопасное имя
         group_key: kind,
       } as any,
       { onConflict: 'proposal_id,group_key,file_name', ignoreDuplicates: false }
@@ -909,7 +909,7 @@ export async function uploadProposalAttachment(
 
 // ============================== PDF: Proposals ==============================
 
-// Р§РёС‚Р°РµРј В«С€Р°РїРєСѓВ» С‚РѕР»СЊРєРѕ С‚РµРјРё РїРѕР»СЏРјРё, РєРѕС‚РѕСЂС‹Рµ РµСЃС‚СЊ РІ С‚РІРѕРµР№ С‚Р°Р±Р»РёС†Рµ proposals
+// Читаем «шапку» только теми полями, которые есть в твоей таблице proposals
 async function selectProposalHeadSafe(idFilter: number | string) {
   const q = await supabase
     .from('proposals')
@@ -951,7 +951,7 @@ export async function buildProposalPdfHtml(proposalId: number | string): Promise
     const buyerFio    = head.buyerFioAny;
     const approvedAt  = head.approvedAt;
 
-    // РЎС‚СЂРѕРєРё РїСЂРµРґР»РѕР¶РµРЅРёСЏ (СЃ РјР°РєСЃРёРјСѓРјРѕРј РїРѕР»РµР№)
+    // Строки предложения (с максимумом полей)
     const { data: piRaw } = await supabase
       .from('proposal_items')
       .select('id, request_item_id, name_human, uom, qty, app_code, rik_code, price, supplier, note')
@@ -960,7 +960,7 @@ export async function buildProposalPdfHtml(proposalId: number | string): Promise
 
     const pi: any[] = Array.isArray(piRaw) ? piRaw : [];
 
-    // Р”РѕС‚СЏРіРёРІР°РµРј РЅРµРґРѕСЃС‚Р°СЋС‰РёРµ РїРѕР»СЏ РёР· request_items
+    // Дотягиваем недостающие поля из request_items
     const needFill = pi.filter((r) => !r?.name_human || !r?.uom || !r?.qty || !r?.app_code || !r?.rik_code);
     if (needFill.length) {
       const ids = needFill.map((r) => r.request_item_id).filter(Boolean);
@@ -983,18 +983,18 @@ export async function buildProposalPdfHtml(proposalId: number | string): Promise
       }
     }
 
-    // РљР°СЂС‚РѕС‡РєРё РїРѕСЃС‚Р°РІС‰РёРєРѕРІ (РќРћР’РћР•): distinct РёРјРµРЅР° в†’ С‚Р°Р±Р»РёС†Р° suppliers в†’ РєР°СЂС‚РѕС‡РєРё
+    // Карточки поставщиков (НОВОЕ): distinct имена → таблица suppliers → карточки
     const distinctSupplierNames = Array.from(new Set(pi.map(r => String(r?.supplier || '').trim()).filter(Boolean)));
     let supplierCards: Supplier[] = [];
     if (distinctSupplierNames.length) {
-      const all = await listSuppliers(); // С‡РёС‚Р°РµРј РІСЃС‘ Рё СЃРѕРїРѕСЃС‚Р°РІР»СЏРµРј РїРѕ РёРјРµРЅРё Р±РµР· СЂРµРіРёСЃС‚СЂР°
+      const all = await listSuppliers(); // читаем всё и сопоставляем по имени без регистра
       supplierCards = distinctSupplierNames.map(nm => {
         const hit = all.find(s => normStr(s.name) === normStr(nm));
         return hit || ({ id: `ghost:${nm}`, name: nm } as Supplier);
       });
     }
 
-    // РЎРїСЂР°РІРѕС‡РЅРёРє РїСЂРёРјРµРЅРµРЅРёР№ (РѕРїС†РёРѕРЅР°Р»СЊРЅРѕ)
+    // Справочник применений (опционально)
     let appNames: Record<string, string> = {};
     try {
       const apps = await supabase.from('rik_apps' as any).select('app_code,name_human');
@@ -1007,15 +1007,15 @@ export async function buildProposalPdfHtml(proposalId: number | string): Promise
 
     const body = (pi.length ? pi : [{ id: 0 }]).map((r: any, i: number) => {
       if (!pi.length) {
-        return `<tr><td colspan="${includeSupplier ? 8 : 7}" class="muted">РќРµС‚ СЃС‚СЂРѕРє</td></tr>`;
+        return `<tr><td colspan="${includeSupplier ? 8 : 7}" class="muted">Нет строк</td></tr>`;
       }
       const qty = num(r.qty), price = num(r.price), amount = qty * price;
       const name = r.name_human ?? '';
-      const code = r.rik_code ? `${r.rik_code} В· ` : '';
+      const code = r.rik_code ? `${r.rik_code} · ` : '';
       const uom  = r.uom ?? '';
       const app  = r.app_code ? appNames[r.app_code] ?? r.app_code : '';
       const supplier = (r.supplier ?? '').toString();
-      const note = r.note ? `<div style="opacity:.7;font-size:11px">РџСЂРёРј.: ${esc(r.note)}</div>` : '';
+      const note = r.note ? `<div style="opacity:.7;font-size:11px">Прим.: ${esc(r.note)}</div>` : '';
       return `<tr>
         <td style="text-align:center">${i + 1}</td>
         <td>${esc(code + name)}${note}</td>
@@ -1029,20 +1029,20 @@ export async function buildProposalPdfHtml(proposalId: number | string): Promise
     }).join('');
 
     const suppliersHtml = supplierCards.length ? `
-      <h2>РџРѕСЃС‚Р°РІС‰РёРєРё</h2>
+      <h2>Поставщики</h2>
       ${supplierCards.map((s) => `
         <div class="supplier">
           <div class="s-name">${esc(s.name)}</div>
           <div class="s-meta">
-            ${s.inn ? `<span>РРќРќ: ${esc(s.inn)}</span>` : ''}
-            ${s.bank_account ? `<span>РЎС‡С‘С‚: ${esc(s.bank_account)}</span>` : ''}
-            ${s.specialization ? `<span>РЎРїРµС†.: ${esc(s.specialization)}</span>` : ''}
-            ${s.contact_name ? `<span>РљРѕРЅС‚Р°РєС‚: ${esc(s.contact_name)}</span>` : ''}
-            ${s.phone ? `<span>РўРµР».: ${esc(s.phone)}</span>` : ''}
+            ${s.inn ? `<span>ИНН: ${esc(s.inn)}</span>` : ''}
+            ${s.bank_account ? `<span>Счёт: ${esc(s.bank_account)}</span>` : ''}
+            ${s.specialization ? `<span>Спец.: ${esc(s.specialization)}</span>` : ''}
+            ${s.contact_name ? `<span>Контакт: ${esc(s.contact_name)}</span>` : ''}
+            ${s.phone ? `<span>Тел.: ${esc(s.phone)}</span>` : ''}
             ${s.email ? `<span>Email: ${esc(s.email)}</span>` : ''}
-            ${s.website ? `<span>РЎР°Р№С‚: ${esc(s.website)}</span>` : ''}
-            ${s.address ? `<span>РђРґСЂРµСЃ: ${esc(s.address)}</span>` : ''}
-            ${s.notes ? `<span>РџСЂРёРјРµС‡Р°РЅРёРµ: ${esc(s.notes)}</span>` : ''}
+            ${s.website ? `<span>Сайт: ${esc(s.website)}</span>` : ''}
+            ${s.address ? `<span>Адрес: ${esc(s.address)}</span>` : ''}
+            ${s.notes ? `<span>Примечание: ${esc(s.notes)}</span>` : ''}
           </div>
         </div>
       `).join('')}
@@ -1050,11 +1050,11 @@ export async function buildProposalPdfHtml(proposalId: number | string): Promise
 
     const total = pi.reduce((acc, r) => acc + num(r.qty) * num(r.price), 0);
     const dateStr = (submittedAt ? new Date(submittedAt) : new Date()).toLocaleString(locale);
-    const supplierTh = includeSupplier ? `<th style="width:160px">РџРѕСЃС‚Р°РІС‰РёРє</th>` : ``;
+    const supplierTh = includeSupplier ? `<th style="width:160px">Поставщик</th>` : ``;
     const sumColspan = includeSupplier ? 7 : 6;
 
     return `<!doctype html><html lang="ru"><head><meta charset="utf-8"/>
-<title>РџСЂРµРґР»РѕР¶РµРЅРёРµ #${esc(pid)}</title><meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Предложение #${esc(pid)}</title><meta name="viewport" content="width=device-width, initial-scale=1"/>
 <style>
   body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial; padding:16px; color:#111}
   h1{font-size:18px;margin:0 0 6px 0}
@@ -1076,12 +1076,12 @@ export async function buildProposalPdfHtml(proposalId: number | string): Promise
 </style></head><body>
   <div class="header">
     <div class="block">
-      <h1>РџСЂРµРґР»РѕР¶РµРЅРёРµ РЅР° Р·Р°РєСѓРїРєСѓ в„– ${esc(pid)}</h1>
-      <div class="muted">Р”Р°С‚Р°: ${esc(dateStr)}${approvedAt ? ` В· <b>РЈС‚РІРµСЂР¶РґРµРЅРѕ:</b> ${esc(new Date(approvedAt).toLocaleString(locale))}` : ''}</div>
-      ${status ? `<div class="muted">РЎС‚Р°С‚СѓСЃ: ${esc(status)}</div>` : ''}
+      <h1>Предложение на закупку № ${esc(pid)}</h1>
+      <div class="muted">Дата: ${esc(dateStr)}${approvedAt ? ` · <b>Утверждено:</b> ${esc(new Date(approvedAt).toLocaleString(locale))}` : ''}</div>
+      ${status ? `<div class="muted">Статус: ${esc(status)}</div>` : ''}
     </div>
     <div class="block">
-      ${buyerFio ? `<div><b>РЎРЅР°Р±Р¶РµРЅРµС†:</b> ${esc(buyerFio)}</div>` : ''}
+      ${buyerFio ? `<div><b>Снабженец:</b> ${esc(buyerFio)}</div>` : ''}
     </div>
   </div>
 
@@ -1090,39 +1090,39 @@ export async function buildProposalPdfHtml(proposalId: number | string): Promise
   <table>
     <thead><tr>
       <th style="width:36px;text-align:center">#</th>
-      <th>РќР°РёРјРµРЅРѕРІР°РЅРёРµ</th>
-      <th style="width:80px;text-align:right">РљРѕР»-РІРѕ</th>
-      <th style="width:64px;text-align:center">Р•Рґ.</th>
-      <th style="width:140px">РџСЂРёРјРµРЅРµРЅРёРµ</th>
+      <th>Наименование</th>
+      <th style="width:80px;text-align:right">Кол-во</th>
+      <th style="width:64px;text-align:center">Ед.</th>
+      <th style="width:140px">Применение</th>
       ${supplierTh}
-      <th style="width:110px">Р¦РµРЅР°</th>
-      <th style="width:120px">РЎСѓРјРјР°</th>
+      <th style="width:110px">Цена</th>
+      <th style="width:120px">Сумма</th>
     </tr></thead>
     <tbody>
       ${body}
-      ${pi.length ? `<tr class="sumline"><td colspan="${sumColspan}" style="text-align:right">РРўРћР“Рћ</td><td style="text-align:right">${fmt(total)}</td></tr>` : ''}
+      ${pi.length ? `<tr class="sumline"><td colspan="${sumColspan}" style="text-align:right">ИТОГО</td><td style="text-align:right">${fmt(total)}</td></tr>` : ''}
     </tbody>
   </table>
 
   <div class="signs">
     <div class="sign">
-      <div><b>РЎРЅР°Р±Р¶РµРЅРµС†</b></div>
+      <div><b>Снабженец</b></div>
       <div class="line"></div>
       <div class="muted" style="margin-top:6px">/ ${esc(buyerFio || '')} /</div>
     </div>
     <div class="sign">
-      <div><b>Р”РёСЂРµРєС‚РѕСЂ</b></div>
+      <div><b>Директор</b></div>
       <div class="line"></div>
       <div class="muted" style="margin-top:6px">/  /</div>
     </div>
   </div>
 
-  <div class="noprint" style="margin-top:14px"><button onclick="window.print()">РџРµС‡Р°С‚СЊ</button></div>
+  <div class="noprint" style="margin-top:14px"><button onclick="window.print()">Печать</button></div>
 </body></html>`;
   } catch (e: any) {
     const esc2 = (s: any) => String(s ?? '').replace(/[&<>"]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]!));
-    return `<!doctype html><meta charset="utf-8"/><title>РћС€РёР±РєР°</title>
-<pre style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; padding:16px;">РћС€РёР±РєР° РїРѕРґРіРѕС‚РѕРІРєРё PDF: ${esc2(e?.message || e)}</pre>`;
+    return `<!doctype html><meta charset="utf-8"/><title>Ошибка</title>
+<pre style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; padding:16px;">Ошибка подготовки PDF: ${esc2(e?.message || e)}</pre>`;
   }
 }
 
@@ -1152,10 +1152,10 @@ export async function exportProposalPdf(proposalId: number | string) {
 }
 
 // ============================== PDF: Requests ==============================
-// СЌРєСЃРїРѕСЂС‚РёСЂСѓРµРјС‹Р№ СЂРµР·РѕР»РІРµСЂ РєСЂР°СЃРёРІРѕРіРѕ РЅРѕРјРµСЂР° (РёСЃРїРѕР»СЊР·СѓРµРј Рё Р·Р° РїСЂРµРґРµР»Р°РјРё PDF)
+// экспортируемый резолвер красивого номера (используем и за пределами PDF)
 export async function resolveRequestLabel(rid: string | number): Promise<string> {
   const id = String(rid).trim();
-  if (!id) return '#вЂ”';
+  if (!id) return '#—';
   try {
     const { data, error } = await supabase
       .from('v_requests_display' as any)
@@ -1209,7 +1209,7 @@ export async function buildRequestPdfHtml(requestId: number | string): Promise<s
     .select('id, foreman_name, need_by, comment, status, object_type_code, level_code, system_code, zone_code')
     .eq('id', idFilter)
     .maybeSingle();
-  if (head.error || !head.data) throw new Error('Р—Р°СЏРІРєР° РЅРµ РЅР°Р№РґРµРЅР°');
+  if (head.error || !head.data) throw new Error('Заявка не найдена');
   const H: any = head.data;
 
   const [obj, lvl, sys, zn] = await Promise.all([
@@ -1232,7 +1232,7 @@ export async function buildRequestPdfHtml(requestId: number | string): Promise<s
   const rows: any[] = Array.isArray(items.data) ? items.data : [];
   const body = rows.map((r: any, i: number) => {
     const q = num(r.qty);
-    const note = r.note ? `<div class="muted">РџСЂРёРј.: ${esc(r.note)}</div>` : '';
+    const note = r.note ? `<div class="muted">Прим.: ${esc(r.note)}</div>` : '';
     return `<tr>
       <td style="text-align:center">${i + 1}</td>
       <td>${esc(r.name_human || r.rik_code || '')}${note}</td>
@@ -1246,7 +1246,7 @@ export async function buildRequestPdfHtml(requestId: number | string): Promise<s
   const dateStr = new Date().toLocaleString(locale);
 
   return `<!doctype html><html lang="ru"><head><meta charset="utf-8"/>
-<title>Р—Р°СЏРІРєР° ${esc(displayLabel)}</title><meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Заявка ${esc(displayLabel)}</title><meta name="viewport" content="width=device-width, initial-scale=1"/>
 <style>
   body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial; padding:16px; color:#111}
   h1{font-size:18px;margin:0 0 6px 0}
@@ -1263,50 +1263,50 @@ export async function buildRequestPdfHtml(requestId: number | string): Promise<s
 </style></head><body>
   <div class="header">
     <div class="block">
-      <h1>Р—Р°СЏРІРєР° ${esc(displayLabel)}</h1>
-      <div class="muted">Р”Р°С‚Р°: ${esc(dateStr)}${H.need_by ? ` В· <b>РќСѓР¶РЅРѕ Рє:</b> ${esc(H.need_by)}` : ''}</div>
-      ${H.status ? `<div class="muted">РЎС‚Р°С‚СѓСЃ: ${esc(H.status)}</div>` : ''}
-      <div><b>РџСЂРѕСЂР°Р±:</b> ${esc(H.foreman_name || '(РЅРµ СѓРєР°Р·Р°РЅ)')}</div>
-      <div><b>РћР±СЉРµРєС‚:</b> ${esc(objectName || '(РЅРµ СѓРєР°Р·Р°РЅРѕ)')}</div>
-      <div><b>Р­С‚Р°Р¶/СѓСЂРѕРІРµРЅСЊ:</b> ${esc(levelName || '(РЅРµ СѓРєР°Р·Р°РЅРѕ)')}</div>
-      ${systemName ? `<div><b>РЎРёСЃС‚РµРјР°/РІРёРґ СЂР°Р±РѕС‚:</b> ${esc(systemName)}</div>` : ''}
-      ${zoneName ? `<div><b>Р—РѕРЅР°/СѓС‡Р°СЃС‚РѕРє:</b> ${esc(zoneName)}</div>` : ''}
-      ${H.comment ? `<div class="muted">РџСЂРёРјРµС‡Р°РЅРёРµ: ${esc(H.comment)}</div>` : ''}
+      <h1>Заявка ${esc(displayLabel)}</h1>
+      <div class="muted">Дата: ${esc(dateStr)}${H.need_by ? ` · <b>Нужно к:</b> ${esc(H.need_by)}` : ''}</div>
+      ${H.status ? `<div class="muted">Статус: ${esc(H.status)}</div>` : ''}
+      <div><b>Прораб:</b> ${esc(H.foreman_name || '(не указан)')}</div>
+      <div><b>Объект:</b> ${esc(objectName || '(не указано)')}</div>
+      <div><b>Этаж/уровень:</b> ${esc(levelName || '(не указано)')}</div>
+      ${systemName ? `<div><b>Система/вид работ:</b> ${esc(systemName)}</div>` : ''}
+      ${zoneName ? `<div><b>Зона/участок:</b> ${esc(zoneName)}</div>` : ''}
+      ${H.comment ? `<div class="muted">Примечание: ${esc(H.comment)}</div>` : ''}
     </div>
   </div>
 
   <table>
     <thead><tr>
       <th style="width:36px;text-align:center">#</th>
-      <th>РќР°РёРјРµРЅРѕРІР°РЅРёРµ</th>
-      <th style="width:120px">РљРѕРґ</th>
-      <th style="width:80px;text-align:right">РљРѕР»-РІРѕ</th>
-      <th style="width:64px;text-align:center">Р•Рґ.</th>
-      <th style="width:140px">РџСЂРёРјРµРЅРµРЅРёРµ</th>
+      <th>Наименование</th>
+      <th style="width:120px">Код</th>
+      <th style="width:80px;text-align:right">Кол-во</th>
+      <th style="width:64px;text-align:center">Ед.</th>
+      <th style="width:140px">Применение</th>
     </tr></thead>
     <tbody>
-      ${body || `<tr><td colspan="6" class="muted">РќРµС‚ СЃС‚СЂРѕРє</td></tr>`}
+      ${body || `<tr><td colspan="6" class="muted">Нет строк</td></tr>`}
     </tbody>
   </table>
 
   <div class="signs">
     <div class="sign">
-      <div><b>РџСЂРѕСЂР°Р±</b></div>
+      <div><b>Прораб</b></div>
       <div class="line"></div>
       <div class="muted" style="margin-top:6px">/ ${esc(H.foreman_name || '')} /</div>
     </div>
     <div class="sign">
-      <div><b>Р”РёСЂРµРєС‚РѕСЂ</b></div>
+      <div><b>Директор</b></div>
       <div class="line"></div>
       <div class="muted" style="margin-top:6px">/  /</div>
     </div>
   </div>
 
-  <div class="noprint" style="margin-top:14px"><button onclick="window.print()">РџРµС‡Р°С‚СЊ</button></div>
+  <div class="noprint" style="margin-top:14px"><button onclick="window.print()">Печать</button></div>
 </body></html>`;
 }
 
-// cache id С‡РµСЂРЅРѕРІРёРєР° РЅР° СЃРµСЃСЃРёСЋ (uuid РёР»Рё int)
+// cache id черновика на сессию (uuid или int)
 let _draftRequestIdAny: string | number | null = null;
 
 export async function getOrCreateDraftRequestId(): Promise<string | number> {
@@ -1352,7 +1352,7 @@ export async function exportRequestPdf(requestId: number | string) {
   }
 }
 
-/* ============================== Р‘СѓС…РіР°Р»С‚РµСЂРёСЏ: RPC-РѕР±С‘СЂС‚РєРё (РќРћР’Р«Р•) ============================== */
+/* ============================== Бухгалтерия: RPC-обёртки (НОВЫЕ) ============================== */
 export async function proposalSendToAccountant(
   input:
     | { proposalId: string | number; invoiceNumber?: string; invoiceDate?: string; invoiceAmount?: number; invoiceCurrency?: string }
@@ -1408,7 +1408,7 @@ export async function accountantAddPayment(input: {
   return true;
 }
 
-// >>> added: СЃРѕРІРјРµСЃС‚РёРјР°СЏ СЃРёРіРЅР°С‚СѓСЂР° вЂ” РјРѕР¶РЅРѕ (proposalId, comment?) РёР»Рё ({ proposalId, comment? })
+// >>> added: совместимая сигнатура — можно (proposalId, comment?) или ({ proposalId, comment? })
 export async function accountantReturnToBuyer(
   a: { proposalId: string | number; comment?: string } | string | number,
   b?: string | null
@@ -1418,30 +1418,30 @@ export async function accountantReturnToBuyer(
   const c = comment?.trim();
 
   await rpcCompat<void>([
-    { fn: 'acc_return_min_auto', args: { p_proposal_id: pid, ...(c ? { p_comment: c } : {}) } }, // РіР»Р°РІРЅС‹Р№ RPC
-    { fn: 'acc_return_min',      args: { p_proposal_id: pid, ...(c ? { p_comment: c } : {}) } }, // Р°Р»РёР°СЃ
-    { fn: 'acc_return',          args: { p_proposal_id: pid, ...(c ? { p_comment: c } : {}) } }, // Р°Р»РёР°СЃ
+    { fn: 'acc_return_min_auto', args: { p_proposal_id: pid, ...(c ? { p_comment: c } : {}) } }, // главный RPC
+    { fn: 'acc_return_min',      args: { p_proposal_id: pid, ...(c ? { p_comment: c } : {}) } }, // алиас
+    { fn: 'acc_return',          args: { p_proposal_id: pid, ...(c ? { p_comment: c } : {}) } }, // алиас
   ]);
   return true;
 }
 
 
 
-/** РРЅР±РѕРєСЃ Р±СѓС…РіР°Р»С‚РµСЂР° (РїРѕ СЃС‚Р°С‚СѓСЃСѓ РёР»Рё РІСЃРµ) */
+/** Инбокс бухгалтера (по статусу или все) */
 export async function listAccountantInbox(status?: string) {
   const s = (status || '').trim();
   const norm =
     !s ? null :
-    /^РЅР° РґРѕСЂР°Р±РѕС‚РєРµ/i.test(s) ? 'РќР° РґРѕСЂР°Р±РѕС‚РєРµ' :
-    /^С‡Р°СЃС‚РёС‡РЅРѕ/i.test(s)     ? 'Р§Р°СЃС‚РёС‡РЅРѕ РѕРїР»Р°С‡РµРЅРѕ' :
-    /^РѕРїР»Р°С‡РµРЅРѕ/i.test(s)     ? 'РћРїР»Р°С‡РµРЅРѕ' :
-                               'Рљ РѕРїР»Р°С‚Рµ';
+    /^на доработке/i.test(s) ? 'На доработке' :
+    /^частично/i.test(s)     ? 'Частично оплачено' :
+    /^оплачено/i.test(s)     ? 'Оплачено' :
+                               'К оплате';
 
-  // Р“Р›РђР’РќРћР•: РІСЃРµРіРґР° POST СЃ С‚РµР»РѕРј { p_tab: ... } вЂ” РґР°Р¶Рµ РєРѕРіРґР° null
+  // ГЛАВНОЕ: всегда POST с телом { p_tab: ... } — даже когда null
   const r = await supabase.rpc('list_accountant_inbox', { p_tab: norm });
   if (!r.error && Array.isArray(r.data)) return r.data as any[];
 
-  // РЅР°РґС‘Р¶РЅС‹Р№ fallback, РµСЃР»Рё РіРґРµ-С‚Рѕ REST РµС‰С‘ РєРµС€РёС‚СЃСЏ
+  // надёжный fallback, если где-то REST ещё кешится
   if (norm == null) {
     const r2 = await supabase.rpc('list_accountant_inbox_compat', {} as any);
     if (!r2.error && Array.isArray(r2.data)) return r2.data as any[];
@@ -1450,7 +1450,7 @@ export async function listAccountantInbox(status?: string) {
   return [];
 }
 
-// >>> added: СѓРІРµРґРѕРјР»РµРЅРёСЏ РґР»СЏ РєРѕР»РѕРєРѕР»СЊС‡РёРєР° Р±СѓС…РіР°Р»С‚РµСЂР°/РґСЂ. СЂРѕР»РµР№
+// >>> added: уведомления для колокольчика бухгалтера/др. ролей
 export async function notifList(role: 'accountant'|'buyer'|'director', limit = 20) {
   try {
     const { data, error } = await supabase
@@ -1482,25 +1482,25 @@ export async function notifMarkRead(role: 'accountant'|'buyer'|'director') {
   }
 }
 
-// >>> added: РєСЂР°СЃРёРІС‹Р№ Р·Р°РіРѕР»РѕРІРѕРє РґР»СЏ РїСЂРµРґР»РѕР¶РµРЅРёСЏ (РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ СЃРЅР°СЂСѓР¶Рё)
+// >>> added: красивый заголовок для предложения (используется снаружи)
 export async function resolveProposalPrettyTitle(proposalId: string | number): Promise<string> {
   const id = String(proposalId).trim();
-  if (!id) return `РџСЂРµРґР»РѕР¶РµРЅРёРµ #вЂ”`;
-  // РїС‹С‚Р°РµРјСЃСЏ РїСЂРѕС‡РёС‚Р°С‚СЊ display_no РёР· РїСЂРµРґСЃС‚Р°РІР»РµРЅРёСЏ, РїРѕС‚РѕРј вЂ” РёР· proposals, РёРЅР°С‡Рµ вЂ” #UUID8
+  if (!id) return `Предложение #—`;
+  // пытаемся прочитать display_no из представления, потом — из proposals, иначе — #UUID8
   try {
     const v = await supabase.from('v_proposals_display' as any).select('id, display_no').eq('id', id).maybeSingle();
-    if (!v.error && v.data?.display_no) return `РџСЂРµРґР»РѕР¶РµРЅРёРµ ${String(v.data.display_no)}`;
+    if (!v.error && v.data?.display_no) return `Предложение ${String(v.data.display_no)}`;
   } catch {}
   try {
     const p = await supabase.from('proposals').select('id').eq('id', id).maybeSingle();
     if (!p.error && p.data?.id) {
-      return /^\d+$/.test(id) ? `РџСЂРµРґР»РѕР¶РµРЅРёРµ #${id}` : `РџСЂРµРґР»РѕР¶РµРЅРёРµ #${id.slice(0, 8)}`;
+      return /^\d+$/.test(id) ? `Предложение #${id}` : `Предложение #${id.slice(0, 8)}`;
     }
   } catch {}
-  return /^\d+$/.test(id) ? `РџСЂРµРґР»РѕР¶РµРЅРёРµ #${id}` : `РџСЂРµРґР»РѕР¶РµРЅРёРµ #${id.slice(0, 8)}`;
+  return /^\d+$/.test(id) ? `Предложение #${id}` : `Предложение #${id.slice(0, 8)}`;
 }
 
-// >>> added: "pretty" Р°Р»РёР°СЃ, РїРѕРєР° РїСЂРѕСЃС‚Рѕ РїСЂРѕРєРёРґС‹РІР°РµС‚ С‚РµРєСѓС‰РёР№ HTML
+// >>> added: "pretty" алиас, пока просто прокидывает текущий HTML
 export async function buildProposalPdfHtmlPretty(proposalId: number | string) {
   return buildProposalPdfHtml(proposalId);
 }
@@ -1540,31 +1540,30 @@ export const RIK_API = {
   ensureMyProfile,
   getMyRole,
 
-  // ==== Р‘СѓС…РіР°Р»С‚РµСЂРёСЏ (РЅРѕРІРѕРµ) ====
+  // ==== Бухгалтерия (новое) ====
   proposalSendToAccountant,
   accountantAddPayment,
   accountantReturnToBuyer,
   listAccountantInbox,
 
-  // ==== РџРѕСЃС‚Р°РІС‰РёРєРё (РЅРѕРІРѕРµ) ====
+  // ==== Поставщики (новое) ====
   listSuppliers,
   upsertSupplier,
   listSupplierFiles,
 
-  // ==== Р”РѕРї. СѓС‚РёР»РёС‚С‹ (РЅРѕРІРѕРµ) ====
+  // ==== Доп. утилиты (новое) ====
   notifList,            // >>> added
   notifMarkRead,        // >>> added
   resolveProposalPrettyTitle, // >>> added
   buildProposalPdfHtmlPretty, // >>> added
 };
-// ===== РІСЂРµРјРµРЅРЅС‹Рµ СЃРѕРІРјРµСЃС‚РёРјС‹Рµ СЌРєСЃРїРѕСЂС‚С‹ РїРѕРґ РЅРµР№С‚СЂР°Р»СЊРЅС‹Рµ РёРјРµРЅР° =====
+// ===== временные совместимые экспорты под нейтральные имена =====
 export type { CatalogItem } from "./catalog_api";
 export { searchCatalogItems } from "./catalog_api";
-// ===== СЃРѕРІРјРµСЃС‚РёРјС‹Рµ СЌРєСЃРїРѕСЂС‚С‹ РїРѕРґ РЅРµР№С‚СЂР°Р»СЊРЅС‹Рµ РёРјРµРЅР° (РЅРѕРІРѕРµ) =====
+// ===== совместимые экспорты под нейтральные имена (новое) =====
 export type { CatalogItem, CatalogGroup, UomRef } from "./catalog_api";
 export { searchCatalogItems, listCatalogGroups, listUoms } from "./catalog_api";
 
-// (РїРѕ Р¶РµР»Р°РЅРёСЋ, РµСЃР»Рё СЃСЂР°Р·Сѓ РїРѕРґРєР»СЋС‡Р°РµС€СЊ СЃРєР»Р°Рґ РёР· clean-view)
+// (по желанию, если сразу подключаешь склад из clean-view)
 export type { IncomingItem } from "./catalog_api";
 export { listIncomingItems } from "./catalog_api";
-

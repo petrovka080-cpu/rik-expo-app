@@ -1,7 +1,7 @@
-﻿import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { View, Text, FlatList, TextInput, Pressable, StyleSheet, Platform, Modal, Alert, ScrollView, ActivityIndicator } from 'react-native';
 import { supabase } from '../../src/lib/supabaseClient';
-import { listSuppliers, upsertSupplier, listSupplierFiles, type Supplier } from '../../src/lib/catalog_api';
+import { listSuppliers, upsertSupplier, listSupplierFiles, type Supplier } from '../../src/lib/rik_api';
 import { uploadSupplierFile } from '../../src/lib/files';
 
 const COLORS = {
@@ -34,7 +34,7 @@ export default function SuppliersScreen() {
       const list = await listSuppliers(qq);
       setRows(list);
     } catch (e: any) {
-      Alert.alert('РћС€РёР±РєР°', e?.message ?? String(e));
+      Alert.alert('Ошибка', e?.message ?? String(e));
     } finally {
       setBusy(false);
     }
@@ -84,7 +84,7 @@ export default function SuppliersScreen() {
         const f = e?.target?.files?.[0];
         if (!f) return;
         if (!editDraft?.id) {
-          Alert.alert('РЎРЅР°С‡Р°Р»Р° СЃРѕС…СЂР°РЅРёС‚Рµ РїРѕСЃС‚Р°РІС‰РёРєР°');
+          Alert.alert('Сначала сохраните поставщика');
           return;
         }
         const { url } = await uploadSupplierFile(editDraft.id!, f, f.name, 'price');
@@ -92,9 +92,9 @@ export default function SuppliersScreen() {
           { file_name: f.name, file_url: url, group_key: 'price' },
           ...prev,
         ]);
-        Alert.alert('Р“РѕС‚РѕРІРѕ', 'Р¤Р°Р№Р» Р·Р°РіСЂСѓР¶РµРЅ');
+        Alert.alert('Готово', 'Файл загружен');
       } catch (err: any) {
-        Alert.alert('РћС€РёР±РєР° Р·Р°РіСЂСѓР·РєРё', err?.message ?? String(err));
+        Alert.alert('Ошибка загрузки', err?.message ?? String(err));
       } finally {
         if (invoiceInputRef.current) (invoiceInputRef.current as any).value = '';
       }
@@ -114,7 +114,7 @@ export default function SuppliersScreen() {
       const f = res?.assets?.[0] ?? res;
       if (!f) return;
       if (!editDraft?.id) {
-        Alert.alert('РЎРЅР°С‡Р°Р»Р° СЃРѕС…СЂР°РЅРёС‚Рµ РїРѕСЃС‚Р°РІС‰РёРєР°');
+        Alert.alert('Сначала сохраните поставщика');
         return;
       }
       const { url } = await uploadSupplierFile(
@@ -127,13 +127,13 @@ export default function SuppliersScreen() {
         { file_name: f.name ?? 'file', file_url: url, group_key: 'price' },
         ...prev,
       ]);
-      Alert.alert('Р“РѕС‚РѕРІРѕ', 'Р¤Р°Р№Р» Р·Р°РіСЂСѓР¶РµРЅ');
+      Alert.alert('Готово', 'Файл загружен');
     } catch (e: any) {
-      Alert.alert('Р¤Р°Р№Р»', e?.message ?? String(e));
+      Alert.alert('Файл', e?.message ?? String(e));
     }
   }, [editDraft?.id]);
 
-  // --- Р¤РРљРЎ: СЃРѕС…СЂР°РЅСЏРµРј РІСЃРµ РїРѕР»СЏ РєР°Рє РѕР±СЉРµРєС‚
+  // --- ФИКС: сохраняем все поля как объект
   const save = useCallback(async () => {
     try {
       const payload: Partial<Supplier> = {
@@ -152,9 +152,9 @@ export default function SuppliersScreen() {
       const saved = await upsertSupplier(payload);
       setEditDraft(saved);
       await load(q);
-      Alert.alert('РЎРѕС…СЂР°РЅРµРЅРѕ', 'Р”Р°РЅРЅС‹Рµ РїРѕСЃС‚Р°РІС‰РёРєР° СЃРѕС…СЂР°РЅРµРЅС‹');
+      Alert.alert('Сохранено', 'Данные поставщика сохранены');
     } catch (e: any) {
-      Alert.alert('РћС€РёР±РєР°', e?.message ?? String(e));
+      Alert.alert('Ошибка', e?.message ?? String(e));
     }
   }, [editDraft, q, load]);
 
@@ -162,12 +162,12 @@ export default function SuppliersScreen() {
     <Pressable onPress={() => openEdit(s)} style={styles.card}>
       <Text style={styles.cardTitle}>{s.name}</Text>
       <Text style={styles.cardMeta}>
-        {(s.inn ? `РРќРќ: ${s.inn} В· ` : '')}
-        {s.specialization || 'РЎРїРµС†РёР°Р»РёР·Р°С†РёСЏ РЅРµ СѓРєР°Р·Р°РЅР°'}
+        {(s.inn ? `ИНН: ${s.inn} · ` : '')}
+        {s.specialization || 'Специализация не указана'}
       </Text>
       {s.phone || s.email || s.website ? (
         <Text style={styles.cardMeta2}>
-          {[s.phone, s.email, s.website].filter(Boolean).join(' В· ')}
+          {[s.phone, s.email, s.website].filter(Boolean).join(' · ')}
         </Text>
       ) : null}
     </Pressable>
@@ -177,7 +177,7 @@ export default function SuppliersScreen() {
     <View style={[styles.screen, { backgroundColor: COLORS.bg }]}>
       {/* toolbar */}
       <View style={styles.toolbar}>
-        <Text style={styles.title}>РџРѕСЃС‚Р°РІС‰РёРєРё</Text>
+        <Text style={styles.title}>Поставщики</Text>
         <View
           style={{
             flexDirection: 'row',
@@ -189,7 +189,7 @@ export default function SuppliersScreen() {
           <TextInput
             value={q}
             onChangeText={(t) => setQ(t)}
-            placeholder="РџРѕРёСЃРє: РЅР°Р·РІР°РЅРёРµ / РРќРќ / СЃРїРµС†РёР°Р»РёР·Р°С†РёСЏ"
+            placeholder="Поиск: название / ИНН / специализация"
             style={[styles.input, { flex: 1 }]}
           />
           <Pressable
@@ -197,7 +197,7 @@ export default function SuppliersScreen() {
             style={[styles.smallBtn, { borderColor: COLORS.primary }]}
           >
             <Text style={[styles.smallBtnText, { color: COLORS.primary }]}>
-              РќР°Р№С‚Рё
+              Найти
             </Text>
           </Pressable>
         </View>
@@ -208,7 +208,7 @@ export default function SuppliersScreen() {
             { backgroundColor: COLORS.blue, borderColor: COLORS.blue },
           ]}
         >
-          <Text style={[styles.smallBtnText, { color: '#fff' }]}>Р”РѕР±Р°РІРёС‚СЊ</Text>
+          <Text style={[styles.smallBtnText, { color: '#fff' }]}>Добавить</Text>
         </Pressable>
       </View>
 
@@ -223,7 +223,7 @@ export default function SuppliersScreen() {
           renderItem={({ item }) => <SupplierRow s={item} />}
           contentContainerStyle={{ padding: 12, gap: 12 }}
           ListEmptyComponent={
-            <Text style={{ padding: 12, color: COLORS.sub }}>РџРѕРєР° РїСѓСЃС‚Рѕ</Text>
+            <Text style={{ padding: 12, color: COLORS.sub }}>Пока пусто</Text>
           }
         />
       )}
@@ -238,19 +238,19 @@ export default function SuppliersScreen() {
         <View style={styles.modalBackdrop}>
           <View style={[styles.modalCard, { width: 760 }]}>
             <Text style={styles.modalTitle}>
-              {editDraft?.id ? 'РџСЂР°РІРєР° РїРѕСЃС‚Р°РІС‰РёРєР°' : 'РќРѕРІС‹Р№ РїРѕСЃС‚Р°РІС‰РёРє'}
+              {editDraft?.id ? 'Правка поставщика' : 'Новый поставщик'}
             </Text>
             <Text style={styles.modalHelp}>
-              РћР±СЏР·Р°С‚РµР»СЊРЅРѕРµ РїРѕР»Рµ вЂ” В«РќР°Р·РІР°РЅРёРµВ». РћСЃС‚Р°Р»СЊРЅС‹Рµ РїРѕР»СЏ Р·Р°РїРѕР»РЅСЏСЋС‚СЃСЏ РїРѕ РјРµСЂРµ
-              РЅРµРѕР±С…РѕРґРёРјРѕСЃС‚Рё.
+              Обязательное поле — «Название». Остальные поля заполняются по мере
+              необходимости.
             </Text>
 
             <View style={{ flexDirection: 'row', gap: 12, flexWrap: 'wrap' }}>
               <View style={{ flexGrow: 1, minWidth: 300 }}>
-                <Text style={styles.label}>РќР°Р·РІР°РЅРёРµ *</Text>
+                <Text style={styles.label}>Название *</Text>
                 <TextInput
                   style={styles.input}
-                  placeholder="РћРћРћ В«Р РѕРјР°С€РєР°В» / РРџ РРІР°РЅРѕРІ"
+                  placeholder="ООО «Ромашка» / ИП Иванов"
                   value={editDraft.name || ''}
                   onChangeText={(v) =>
                     setEditDraft((d) => ({ ...d, name: v }))
@@ -258,10 +258,10 @@ export default function SuppliersScreen() {
                 />
               </View>
               <View style={{ width: 220 }}>
-                <Text style={styles.label}>РРќРќ</Text>
+                <Text style={styles.label}>ИНН</Text>
                 <TextInput
                   style={styles.input}
-                  placeholder="РРќРќ"
+                  placeholder="ИНН"
                   value={editDraft.inn || ''}
                   onChangeText={(v) =>
                     setEditDraft((d) => ({ ...d, inn: v }))
@@ -269,10 +269,10 @@ export default function SuppliersScreen() {
                 />
               </View>
               <View style={{ width: 300 }}>
-                <Text style={styles.label}>РЎС‡С‘С‚</Text>
+                <Text style={styles.label}>Счёт</Text>
                 <TextInput
                   style={styles.input}
-                  placeholder="Р Р°СЃС‡С‘С‚РЅС‹Р№ СЃС‡С‘С‚"
+                  placeholder="Расчётный счёт"
                   value={editDraft.bank_account || ''}
                   onChangeText={(v) =>
                     setEditDraft((d) => ({ ...d, bank_account: v }))
@@ -280,10 +280,10 @@ export default function SuppliersScreen() {
                 />
               </View>
               <View style={{ width: 300 }}>
-                <Text style={styles.label}>РЎРїРµС†РёР°Р»РёР·Р°С†РёСЏ</Text>
+                <Text style={styles.label}>Специализация</Text>
                 <TextInput
                   style={styles.input}
-                  placeholder="Р±РµС‚РѕРЅ, Р°СЂРјР°С‚СѓСЂР°вЂ¦"
+                  placeholder="бетон, арматура…"
                   value={editDraft.specialization || ''}
                   onChangeText={(v) =>
                     setEditDraft((d) => ({ ...d, specialization: v }))
@@ -291,10 +291,10 @@ export default function SuppliersScreen() {
                 />
               </View>
               <View style={{ width: 220 }}>
-                <Text style={styles.label}>РљРѕРЅС‚Р°РєС‚РЅРѕРµ Р»РёС†Рѕ</Text>
+                <Text style={styles.label}>Контактное лицо</Text>
                 <TextInput
                   style={styles.input}
-                  placeholder="Р¤РРћ"
+                  placeholder="ФИО"
                   value={editDraft.contact_name || ''}
                   onChangeText={(v) =>
                     setEditDraft((d) => ({ ...d, contact_name: v }))
@@ -302,10 +302,10 @@ export default function SuppliersScreen() {
                 />
               </View>
               <View style={{ width: 200 }}>
-                <Text style={styles.label}>РўРµР»РµС„РѕРЅ</Text>
+                <Text style={styles.label}>Телефон</Text>
                 <TextInput
                   style={styles.input}
-                  placeholder="+996вЂ¦"
+                  placeholder="+996…"
                   value={editDraft.phone || ''}
                   onChangeText={(v) =>
                     setEditDraft((d) => ({ ...d, phone: v }))
@@ -324,10 +324,10 @@ export default function SuppliersScreen() {
                 />
               </View>
               <View style={{ width: 260 }}>
-                <Text style={styles.label}>РЎР°Р№С‚</Text>
+                <Text style={styles.label}>Сайт</Text>
                 <TextInput
                   style={styles.input}
-                  placeholder="https://вЂ¦"
+                  placeholder="https://…"
                   value={editDraft.website || ''}
                   onChangeText={(v) =>
                     setEditDraft((d) => ({ ...d, website: v }))
@@ -335,10 +335,10 @@ export default function SuppliersScreen() {
                 />
               </View>
               <View style={{ flexBasis: '100%' }}>
-                <Text style={styles.label}>РђРґСЂРµСЃ</Text>
+                <Text style={styles.label}>Адрес</Text>
                 <TextInput
                   style={styles.input}
-                  placeholder="Рі. Р‘РёС€РєРµРє, СѓР».вЂ¦"
+                  placeholder="г. Бишкек, ул.…"
                   value={editDraft.address || ''}
                   onChangeText={(v) =>
                     setEditDraft((d) => ({ ...d, address: v }))
@@ -346,10 +346,10 @@ export default function SuppliersScreen() {
                 />
               </View>
               <View style={{ flexBasis: '100%' }}>
-                <Text style={styles.label}>РљРѕРјРјРµРЅС‚Р°СЂРёР№</Text>
+                <Text style={styles.label}>Комментарий</Text>
                 <TextInput
                   style={styles.input}
-                  placeholder="РџСЂРёРјРµС‡Р°РЅРёСЏ"
+                  placeholder="Примечания"
                   value={editDraft.notes || ''}
                   onChangeText={(v) =>
                     setEditDraft((d) => ({ ...d, notes: v }))
@@ -376,7 +376,7 @@ export default function SuppliersScreen() {
                 <Text
                   style={[styles.smallBtnText, { color: '#fff' }]}
                 >
-                  РЎРѕС…СЂР°РЅРёС‚СЊ
+                  Сохранить
                 </Text>
               </Pressable>
               <Pressable
@@ -384,12 +384,12 @@ export default function SuppliersScreen() {
                 style={[styles.smallBtn, { borderColor: COLORS.border }]}
               >
                 <Text style={[styles.smallBtnText, { color: COLORS.text }]}>
-                  Р—Р°РєСЂС‹С‚СЊ
+                  Закрыть
                 </Text>
               </Pressable>
             </View>
 
-            {/* Р¤Р°Р№Р»С‹ */}
+            {/* Файлы */}
             <Text
               style={{
                 marginTop: 16,
@@ -397,7 +397,7 @@ export default function SuppliersScreen() {
                 color: COLORS.text,
               }}
             >
-              РџСЂР°Р№СЃС‹ / С„РѕС‚Рѕ (РѕРїС†РёРѕРЅР°Р»СЊРЅРѕ)
+              Прайсы / фото (опционально)
             </Text>
             {isWeb ? (
               <>
@@ -408,7 +408,7 @@ export default function SuppliersScreen() {
                   <Text
                     style={[styles.smallBtnText, { color: COLORS.primary }]}
                   >
-                    РџСЂРёРєСЂРµРїРёС‚СЊ С„Р°Р№Р»
+                    Прикрепить файл
                   </Text>
                 </Pressable>
                 <input
@@ -427,7 +427,7 @@ export default function SuppliersScreen() {
                 <Text
                   style={[styles.smallBtnText, { color: COLORS.primary }]}
                 >
-                  РџСЂРёРєСЂРµРїРёС‚СЊ С„Р°Р№Р»
+                  Прикрепить файл
                 </Text>
               </Pressable>
             )}
@@ -449,12 +449,12 @@ export default function SuppliersScreen() {
                     key={i}
                     style={{ color: COLORS.sub, paddingVertical: 2 }}
                   >
-                    вЂў {f.file_name}
+                    • {f.file_name}
                   </Text>
                 ))
               ) : (
                 <Text style={{ color: COLORS.sub }}>
-                  Р¤Р°Р№Р»С‹ РЅРµ РїСЂРёРєСЂРµРїР»РµРЅС‹
+                  Файлы не прикреплены
                 </Text>
               )}
             </View>
@@ -523,5 +523,4 @@ const styles = StyleSheet.create({
   modalHelp: { fontSize: 12, color: COLORS.sub },
   label: { fontSize: 12, color: COLORS.sub, marginBottom: 4 },
 });
-
 
