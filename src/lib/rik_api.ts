@@ -1568,3 +1568,6 @@ export { searchCatalogItems, listCatalogGroups, listUoms } from "./catalog_api";
 export type { IncomingItem } from "./catalog_api";
 export { listIncomingItems } from "./catalog_api";
 
+
+export type { CatalogItem, CatalogGroup, UomRef, IncomingItem } from "./catalog_api";
+export { searchCatalogItems, listCatalogGroups, listUoms, listIncomingItems } from "./catalog_api";
