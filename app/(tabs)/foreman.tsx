@@ -1,4 +1,4 @@
-﻿// app/(tabs)/foreman.tsx вЂ” Р±РѕРµРІРѕР№ СЌРєСЂР°РЅ РїСЂРѕСЂР°Р±Р° (Р»РѕРіРёРєР° СЃРѕС…СЂР°РЅРµРЅР°, РѕР±РЅРѕРІР»С‘РЅ С‚РѕР»СЊРєРѕ UI: С‡РµР»РѕРІРµРєРѕ-С‡РёС‚Р°РµРјС‹Р№ РЅРѕРјРµСЂ Р·Р°СЏРІРєРё)
+// app/(tabs)/foreman.tsx — боевой экран прораба (логика сохранена, обновлён только UI: человеко-читаемый номер заявки)
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
@@ -11,15 +11,15 @@ import {
   rikQuickSearch,
   addRequestItemFromRik,
   listRequestItems,
-  ensureRequestSmart,          // Р°РІС‚Рѕ-ID/РґР°С‚Р°/Р¤РРћ (РєР°Рє Р±С‹Р»Рѕ)
-  requestSubmit,               // RPC: РѕС‚РїСЂР°РІРёС‚СЊ РґРёСЂРµРєС‚РѕСЂСѓ
+  ensureRequestSmart,          // авто-ID/дата/ФИО (как было)
+  requestSubmit,               // RPC: отправить директору
   exportRequestPdf,            // PDF
-  getOrCreateDraftRequestId,   // Р±РµР·РѕРїР°СЃРЅС‹Р№ ensure РґР»СЏ С‡РµСЂРЅРѕРІРёРєР°
+  getOrCreateDraftRequestId,   // безопасный ensure для черновика
   type CatalogItem,
   type ReqItemRow,
 } from '../../src/lib/catalog_api';
 
-// --- РµСЃР»Рё РЅСѓР¶РµРЅ РІС…РѕРґ вЂ” РІС‹РїРѕР»РЅСЏРµС‚СЃСЏ РІРЅСѓС‚СЂРё ensureRequestSmart/getOrCreateDraftRequestId
+// --- если нужен вход — выполняется внутри ensureRequestSmart/getOrCreateDraftRequestId
 if (__DEV__) LogBox.ignoreAllLogs(true);
 
 type Timer = ReturnType<typeof setTimeout>;
@@ -28,11 +28,11 @@ type PickedRow = {
   rik_code: string;
   name: string;
   uom?: string | null;
-  kind?: string | null;      // РњР°С‚РµСЂРёР°Р» | Р Р°Р±РѕС‚Р° | РЈСЃР»СѓРіР°
-  qty: string;               // РІРІРѕРґ
-  app_code?: string | null;  // РїСЂРёРјРµРЅРµРЅРёРµ
-  note: string;              // РїСЂРёРјРµС‡Р°РЅРёРµ (РѕР±СЏР·Р°С‚РµР»СЊРЅРѕ)
-  appsFromItem?: string[];   // С‡РёРїСЃС‹ РёР· rik_quick_search
+  kind?: string | null;      // Материал | Работа | Услуга
+  qty: string;               // ввод
+  app_code?: string | null;  // применение
+  note: string;              // примечание (обязательно)
+  appsFromItem?: string[];   // чипсы из rik_quick_search
 };
 
 type GroupedRow = {
@@ -49,13 +49,13 @@ type AppOption = { code: string; label: string };
 type RefOption = { code: string; name: string };
 
 const KIND_TABS: Array<{ key: string; label: string }> = [
-  { key: 'all', label: 'Р’СЃРµ' },
-  { key: 'РњР°С‚РµСЂРёР°Р»', label: 'РњР°С‚РµСЂРёР°Р»С‹' },
-  { key: 'Р Р°Р±РѕС‚Р°', label: 'Р Р°Р±РѕС‚С‹' },
-  { key: 'РЈСЃР»СѓРіР°', label: 'РЈСЃР»СѓРіРё' },
+  { key: 'all', label: 'Все' },
+  { key: 'Материал', label: 'Материалы' },
+  { key: 'Работа', label: 'Работы' },
+  { key: 'Услуга', label: 'Услуги' },
 ];
 
-/* ===== РџР°Р»РёС‚СЂР° + С‡РёРїС‹ (РІ СѓРЅРёСЃРѕРЅ СЃ buyer/accountant) ===== */
+/* ===== Палитра + чипы (в унисон с buyer/accountant) ===== */
 const COLORS = {
   bg: '#F8FAFC',
   text: '#0F172A',
@@ -77,7 +77,7 @@ const Chip = ({ label, bg = '#E5E7EB', fg = '#111827' }: { label: string; bg?: s
   </View>
 );
 
-// === helpers: СѓРЅРёРєР°Р»РёР·Р°С†РёСЏ Рё СЃС‚Р°Р±РёР»СЊРЅС‹Рµ РєР»СЋС‡Рё ===
+// === helpers: уникализация и стабильные ключи ===
 function uniqBy<T>(arr: T[], key: (x: T) => string) {
   const seen = new Set<string>();
   return arr.filter(x => {
@@ -95,7 +95,7 @@ function stableKey(it: any, idx: number, prefix = 'rk') {
   return `${prefix}:idx:${idx}`;
 }
 
-// вЂ”вЂ”вЂ” Р СѓСЃСЃРєРѕРµ РѕС‚РѕР±СЂР°Р¶РµРЅРёРµ РЅР°Р·РІР°РЅРёР№ (UI only; Р±РёР·РЅРµСЃ-Р»РѕРіРёРєР° РЅРµ РјРµРЅСЏРµС‚СЃСЏ)
+// ——— Русское отображение названий (UI only; бизнес-логика не меняется)
 function ruName(it: any): string {
   const direct =
     it?.name_ru ?? it?.name_human_ru ?? it?.display_name ?? it?.alias_ru ?? it?.name_human;
@@ -105,11 +105,11 @@ function ruName(it: any): string {
   if (!code) return '';
   const dict: Record<string, string> = {
     'MAT':'', 'WRK':'', 'SRV':'',
-    'BETON':'Р‘РµС‚РѕРЅ', 'CONC':'Р‘РµС‚РѕРЅ', 'MORTAR':'Р Р°СЃС‚РІРѕСЂ',
-    'ROOF':'РљСЂРѕРІР»СЏ', 'TILE':'РџР»РёС‚РєР°',
-    'FOUND':'Р¤СѓРЅРґР°РјРµРЅС‚', 'WALL':'РЎС‚РµРЅР°', 'FLOOR':'РџРѕР»',
-    'STEEL':'РЎС‚Р°Р»СЊ', 'METAL':'РњРµС‚Р°Р»Р»', 'FRAME':'РљР°СЂРєР°СЃ', 'FORM':'РћРїР°Р»СѓР±РєР°',
-    'POUR':'Р—Р°Р»РёРІРєР°', 'CURE':'РЈС…РѕРґ', 'EXT':'РќР°СЂСѓР¶РЅ.', 'INT':'Р’РЅСѓС‚СЂ.',
+    'BETON':'Бетон', 'CONC':'Бетон', 'MORTAR':'Раствор',
+    'ROOF':'Кровля', 'TILE':'Плитка',
+    'FOUND':'Фундамент', 'WALL':'Стена', 'FLOOR':'Пол',
+    'STEEL':'Сталь', 'METAL':'Металл', 'FRAME':'Каркас', 'FORM':'Опалубка',
+    'POUR':'Заливка', 'CURE':'Уход', 'EXT':'Наружн.', 'INT':'Внутр.',
   };
   const parts = code.split(/[-_]/g)
     .filter(Boolean)
@@ -119,9 +119,9 @@ function ruName(it: any): string {
   return human ? human[0].toUpperCase() + human.slice(1) : code;
 }
 
-/* -------------------- Dropdown (СѓРЅРёРІРµСЂСЃР°Р»СЊРЅС‹Р№) -------------------- */
+/* -------------------- Dropdown (универсальный) -------------------- */
 function Dropdown({
-  label, options, value, onChange, placeholder = 'Р’С‹Р±СЂР°С‚СЊ...', searchable = true, width = 280
+  label, options, value, onChange, placeholder = 'Выбрать...', searchable = true, width = 280
 }: {
   label: string;
   options: { code: string; name: string }[];
@@ -156,7 +156,7 @@ function Dropdown({
           <View style={[s.modalSheet, { maxWidth: 420, left: 16, right: 16 }]}>
             <Text style={{ fontWeight:'700', fontSize:16, marginBottom:8, color: COLORS.text }}>{label}</Text>
             {searchable && (
-              <TextInput value={q} onChangeText={setQ} placeholder="РџРѕРёСЃРєвЂ¦" style={s.input} />
+              <TextInput value={q} onChangeText={setQ} placeholder="Поиск…" style={s.input} />
             )}
             <FlatList
               data={filtered}
@@ -175,11 +175,11 @@ function Dropdown({
             <View style={{ flexDirection:'row', justifyContent:'flex-end', marginTop:8, gap:8 }}>
               {value ? (
                 <Pressable onPress={()=>{ onChange(''); setOpen(false); }} style={[s.chip, { backgroundColor:'#eee', borderColor: COLORS.border }]}>
-                  <Text>РЎР±СЂРѕСЃРёС‚СЊ</Text>
+                  <Text>Сбросить</Text>
                 </Pressable>
               ) : null}
               <Pressable onPress={()=>setOpen(false)} style={[s.chip, { backgroundColor:'#eee', borderColor: COLORS.border }]}>
-                <Text>Р—Р°РєСЂС‹С‚СЊ</Text>
+                <Text>Закрыть</Text>
               </Pressable>
             </View>
           </View>
@@ -189,20 +189,20 @@ function Dropdown({
   );
 }
 
-/* ---------- Р’РЎРџРћРњРћР“РђРўР•Р›Р¬РќРћР•: СЃРѕР±РёСЂР°РµРј С‚РµРєСЃС‚ РѕР±Р»Р°СЃС‚Рё РїСЂРёРјРµРЅРµРЅРёСЏ ---------- */
+/* ---------- ВСПОМОГАТЕЛЬНОЕ: собираем текст области применения ---------- */
 function buildScopeNote(
   objName?: string, lvlName?: string, sysName?: string, zoneName?: string
 ) {
   const parts = [
-    objName ? `РћР±СЉРµРєС‚: ${objName}` : '',
-    lvlName ? `Р­С‚Р°Р¶/СѓСЂРѕРІРµРЅСЊ: ${lvlName}` : '',
-    sysName ? `РЎРёСЃС‚РµРјР°: ${sysName}` : '',
-    zoneName ? `Р—РѕРЅР°: ${zoneName}` : ''
+    objName ? `Объект: ${objName}` : '',
+    lvlName ? `Этаж/уровень: ${lvlName}` : '',
+    sysName ? `Система: ${sysName}` : '',
+    zoneName ? `Зона: ${zoneName}` : ''
   ].filter(Boolean);
   return parts.join('; ');
 }
 
-// ====== РЈС‚РёР»РёС‚С‹ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ РЅРѕРјРµСЂР° Р·Р°СЏРІРєРё ======
+// ====== Утилиты отображения номера заявки ======
 const shortId = (rid: string | number | null | undefined) => {
   const s = String(rid ?? '');
   if (!s) return '';
@@ -210,13 +210,13 @@ const shortId = (rid: string | number | null | undefined) => {
 };
 
 export default function ForemanScreen() {
-  // ===== РЁР°РїРєР° Р·Р°СЏРІРєРё =====
-  const [requestId, setRequestId] = useState<string>('');  // СЃРѕР·РґР°РґРёРј Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРё
-  const [foreman, setForeman]     = useState<string>('');  // Р¤РРћ РїСЂРѕСЂР°Р±Р° (РѕР±СЏР·.)
+  // ===== Шапка заявки =====
+  const [requestId, setRequestId] = useState<string>('');  // создадим автоматически
+  const [foreman, setForeman]     = useState<string>('');  // ФИО прораба (обяз.)
   const [needBy, setNeedBy]       = useState<string>('');  // YYYY-MM-DD
-  const [comment, setComment]     = useState<string>('');  // РѕР±С‰РёР№ РєРѕРјРјРµРЅС‚Р°СЂРёР№
+  const [comment, setComment]     = useState<string>('');  // общий комментарий
 
-  // ===== РќРѕРІС‹Рµ СЃРїСЂР°РІРѕС‡РЅС‹Рµ РїРѕР»СЏ (РћР±СЉРµРєС‚/Р­С‚Р°Р¶/РЎРёСЃС‚РµРјР°/Р—РѕРЅР°) =====
+  // ===== Новые справочные поля (Объект/Этаж/Система/Зона) =====
   const [objectType, setObjectType] = useState<string>('');    // required
   const [level, setLevel]           = useState<string>('');    // required
   const [system, setSystem]         = useState<string>('');    // optional
@@ -227,7 +227,7 @@ export default function ForemanScreen() {
   const [sysOptions, setSysOptions]   = useState<RefOption[]>([]);
   const [zoneOptions, setZoneOptions] = useState<RefOption[]>([]);
 
-  // ===== РџРѕРёСЃРє =====
+  // ===== Поиск =====
   const [query, setQuery] = useState('');
   const [activeKind, setActiveKind] = useState<string>('all');
   const [suggests, setSuggests] = useState<CatalogItem[]>([]);
@@ -236,7 +236,7 @@ export default function ForemanScreen() {
   const timerRef = useRef<Timer | null>(null);
   const reqIdRef = useRef(0);
 
-  // ===== Р“Р»РѕР±Р°Р»СЊРЅС‹Р№ С„РёР»СЊС‚СЂ РїРѕ РѕР±Р»Р°СЃС‚Рё РїСЂРёРјРµРЅРµРЅРёСЏ (Р РРљ) =====
+  // ===== Глобальный фильтр по области применения (РИК) =====
   const [appOptions, setAppOptions] = useState<AppOption[]>([]);
   const [appFilter, setAppFilter]   = useState<string>('');
   const appFilterCode = useMemo(() => {
@@ -251,27 +251,27 @@ export default function ForemanScreen() {
     return appOptions.find(o => o.code === code)?.label || code;
   }, [appOptions]);
 
-  // ===== РљРѕСЂР·РёРЅР° (РјСѓР»СЊС‚РёРІС‹Р±РѕСЂ) =====
+  // ===== Корзина (мультивыбор) =====
   const [cart, setCart] = useState<Record<string, PickedRow>>({});
   const cartArray = useMemo(() => Object.values(cart), [cart]);
   const cartCount = cartArray.length;
 
-  // ===== РЈР¶Рµ РґРѕР±Р°РІР»РµРЅРЅС‹Рµ СЃС‚СЂРѕРєРё Р·Р°СЏРІРєРё =====
+  // ===== Уже добавленные строки заявки =====
   const [items, setItems] = useState<ReqItemRow[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const [busy, setBusy] = useState(false);
 
-  // ===== Р РµР¶РёРј РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ =====
+  // ===== Режим отображения =====
   const [viewMode, setViewMode] = useState<'raw' | 'grouped'>('raw');
 
-  // ===== РњРѕРґР°Р» РІС‹Р±РѕСЂР° РїСЂРёРјРµРЅРµРЅРёСЏ РґР»СЏ СЃС‚СЂРѕРєРё =====
+  // ===== Модал выбора применения для строки =====
   const [appPickerFor, setAppPickerFor] = useState<string | null>(null);
   const [appPickerQ, setAppPickerQ] = useState<string>('');
 
-  // --- Р±РµР·РѕРїР°СЃРЅС‹Р№ RID РєР°Рє СЃС‚СЂРѕРєР° (СѓРЅРёРІРµСЂСЃР°Р»СЊРЅРѕ РґР»СЏ uuid/bigint) ---
+  // --- безопасный RID как строка (универсально для uuid/bigint) ---
   const ridStr = useCallback((val: string) => String(val).trim(), []);
 
-  // ====== РљР­РЁ Рё РїРѕРґРіСЂСѓР·РєР° display_no РґР»СЏ С‚РµРєСѓС‰РµР№ Р·Р°СЏРІРєРё ======
+  // ====== КЭШ и подгрузка display_no для текущей заявки ======
   const [displayNoByReq, setDisplayNoByReq] = useState<Record<string, string>>({});
   const labelForRequest = useCallback((rid?: string | number | null) => {
     const key = String(rid ?? '').trim();
@@ -296,7 +296,7 @@ export default function ForemanScreen() {
         setDisplayNoByReq(prev => ({ ...prev, [key]: String(data.display_no) }));
       }
     } catch (e) {
-      // РјСЏРіРєР°СЏ РґРµРіСЂР°РґР°С†РёСЏ вЂ” РїСЂРѕСЃС‚Рѕ РѕСЃС‚Р°РІРёРј #UUID8/С‡РёСЃР»Рѕ
+      // мягкая деградация — просто оставим #UUID8/число
       console.warn('[Foreman] preloadDisplayNo:', (e as any)?.message ?? e);
     }
   }, [displayNoByReq]);
@@ -314,7 +314,7 @@ export default function ForemanScreen() {
 
   useEffect(() => { loadItems(); }, [loadItems]);
 
-  // СЃРѕР·РґР°С‘Рј/РїРѕР»СѓС‡Р°РµРј С‡РµСЂРЅРѕРІРёРє РїСЂРё РјРѕРЅС‚РёСЂРѕРІР°РЅРёРё
+  // создаём/получаем черновик при монтировании
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -328,14 +328,14 @@ export default function ForemanScreen() {
     return () => { cancelled = true; };
   }, []);
 
-  // РїРѕРґРіСЂСѓР¶Р°РµРј display_no РїСЂРё РїРѕСЏРІР»РµРЅРёРё requestId
+  // подгружаем display_no при появлении requestId
   useEffect(() => {
     if (requestId) preloadDisplayNo(requestId);
   }, [requestId, preloadDisplayNo]);
 
-  // РЅРѕСЂРјР°Р»СЊРЅС‹Р№ ensure, РµСЃР»Рё РЅР°РґРѕ СЃРѕР·РґР°С‚СЊ РїСЂСЏРјРѕ СЃРµР№С‡Р°СЃ (СЃ СЃРѕС…СЂР°РЅРµРЅРёРµРј С€Р°РїРєРё)
+  // нормальный ensure, если надо создать прямо сейчас (с сохранением шапки)
   async function ensureAndGetId() {
-    const name = foreman.trim() || 'РџСЂРѕСЂР°Р± (РЅРµ СѓРєР°Р·Р°РЅ)';
+    const name = foreman.trim() || 'Прораб (не указан)';
     try {
       const rid = await ensureRequestSmart(undefined, {
         foreman_name: name,
@@ -351,7 +351,7 @@ export default function ForemanScreen() {
       if (idStr) {
         setRequestId(idStr);
         if (!foreman.trim()) setForeman(name);
-        // СЃСЂР°Р·Сѓ Р·Р°РіСЂСѓР·РёРј РЅРѕРјРµСЂ
+        // сразу загрузим номер
         preloadDisplayNo(idStr);
         return idStr;
       }
@@ -369,12 +369,12 @@ export default function ForemanScreen() {
         preloadDisplayNo(String(rid3));
         return String(rid3);
       } catch {}
-      Alert.alert('РћС€РёР±РєР°', e?.message ?? 'РќРµ СѓРґР°Р»РѕСЃСЊ СЃРѕР·РґР°С‚СЊ/РїРѕР»СѓС‡РёС‚СЊ Р·Р°СЏРІРєСѓ');
+      Alert.alert('Ошибка', e?.message ?? 'Не удалось создать/получить заявку');
       throw e;
     }
   }
 
-  // ---------- РЎРїСЂР°РІРѕС‡РЅРёРєРё (РћР±СЉРµРєС‚/Р­С‚Р°Р¶/РЎРёСЃС‚РµРјР°/Р—РѕРЅР°) ----------
+  // ---------- Справочники (Объект/Этаж/Система/Зона) ----------
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -400,7 +400,7 @@ export default function ForemanScreen() {
     return () => { cancelled = true; };
   }, []);
 
-  // ---------- Р’Р°СЂРёР°РЅС‚С‹ РїСЂРёРјРµРЅРµРЅРёР№ (Р РРљ) ----------
+  // ---------- Варианты применений (РИК) ----------
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -436,7 +436,7 @@ export default function ForemanScreen() {
     return () => { cancelled = true; };
   }, []);
 
-  // ---------- РџРѕРёСЃРє СЃ РґРµР±Р°СѓРЅСЃРѕРј ----------
+  // ---------- Поиск с дебаунсом ----------
   useEffect(() => {
     if (timerRef.current) clearTimeout(timerRef.current);
     if (!canSearch) { setSuggests([]); return; }
@@ -465,7 +465,7 @@ export default function ForemanScreen() {
     return () => { if (timerRef.current) clearTimeout(timerRef.current); };
   }, [query, activeKind, canSearch, appFilterCode, appOptions]);
 
-  // ---------- Р§Р•Р›РћР’Р•Р§Р•РЎРљРР• РќРђР—Р’РђРќРРЇ РўР•РљРЈР©Р•Р“Рћ Р’Р«Р‘РћР Рђ ----------
+  // ---------- ЧЕЛОВЕЧЕСКИЕ НАЗВАНИЯ ТЕКУЩЕГО ВЫБОРА ----------
   const objectName = useMemo(
     () => objOptions.find(o => o.code === objectType)?.name || '',
     [objOptions, objectType]
@@ -483,7 +483,7 @@ export default function ForemanScreen() {
     [zoneOptions, zone]
   );
 
-  // ---------- РљРѕСЂР·РёРЅР° ----------
+  // ---------- Корзина ----------
   const toggleToCart = useCallback((it: CatalogItem) => {
     setCart(prev => {
       const code = it.rik_code;
@@ -513,7 +513,7 @@ export default function ForemanScreen() {
     });
   }, [appFilterCode, appOptions, objectName, levelName, systemName, zoneName]);
 
-  // РµСЃР»Рё РїСЂРѕСЂР°Р± РїРѕРјРµРЅСЏР» РІС‹Р±РѕСЂ вЂ” РѕР±РЅРѕРІР»СЏРµРј РџРЈРЎРўР«Р• РїСЂРёРјРµС‡Р°РЅРёСЏ РІ РєРѕСЂР·РёРЅРµ
+  // если прораб поменял выбор — обновляем ПУСТЫЕ примечания в корзине
   useEffect(() => {
     const note = buildScopeNote(objectName, levelName, systemName, zoneName);
     if (!note) return;
@@ -535,32 +535,32 @@ export default function ForemanScreen() {
   const setNoteFor = useCallback((code: string, note: string) => setCart(prev => prev[code] ? ({ ...prev, [code]: { ...prev[code], note } }) : prev), []);
   const setAppFor  = useCallback((code: string, app_code: string | null) => setCart(prev => prev[code] ? ({ ...prev, [code]: { ...prev[code], app_code } }) : prev), []);
 
-  // ---------- РњР°СЃСЃРѕРІРѕРµ РґРѕР±Р°РІР»РµРЅРёРµ ----------
+  // ---------- Массовое добавление ----------
   const addCartToRequest = useCallback(async () => {
     if (!cartCount) {
-      Alert.alert('РљРѕСЂР·РёРЅР° РїСѓСЃС‚Р°', 'Р’С‹Р±РµСЂРё РїРѕР·РёС†РёРё РёР· РїРѕРёСЃРєР°');
+      Alert.alert('Корзина пуста', 'Выбери позиции из поиска');
       return;
     }
 
-    // РІР°Р»РёРґР°С†РёСЏ РєРѕСЂР·РёРЅС‹
+    // валидация корзины
     for (const row of cartArray) {
       const q = Number((row.qty || '').replace(',', '.'));
       if (!Number.isFinite(q) || q <= 0) {
-        Alert.alert('РћС€РёР±РєР° РєРѕР»РёС‡РµСЃС‚РІР°', `РќРµРІРµСЂРЅРѕРµ РєРѕР»РёС‡РµСЃС‚РІРѕ Сѓ "${row.name}": ${row.qty || '(РїСѓСЃС‚Рѕ)'}`);
+        Alert.alert('Ошибка количества', `Неверное количество у "${row.name}": ${row.qty || '(пусто)'}`);
         return;
       }
       if (!row.note || row.note.trim().length < 2) {
-        Alert.alert('РџСЂРёРјРµС‡Р°РЅРёРµ РѕР±СЏР·Р°С‚РµР»СЊРЅРѕ', `Р”РѕР±Р°РІСЊ РїСЂРёРјРµС‡Р°РЅРёРµ РґР»СЏ "${row.name}"`);
+        Alert.alert('Примечание обязательно', `Добавь примечание для "${row.name}"`);
         return;
       }
     }
 
-    let rid: string; // рџ‘€ РѕР±СЉСЏРІРёР»Рё Р’РќР• try/catch
+    let rid: string; // 👈 объявили ВНЕ try/catch
     try {
       setBusy(true);
       rid = requestId ? ridStr(requestId) : await ensureAndGetId();
 
-      // СЃРѕС…СЂР°РЅРёС‚СЊ Р°РєС‚СѓР°Р»СЊРЅС‹Рµ РїРѕР»СЏ С€Р°РїРєРё (РЅРµРѕР±СЏР·Р°С‚РµР»СЊРЅРѕ, РЅРѕ РїРѕР»РµР·РЅРѕ)
+      // сохранить актуальные поля шапки (необязательно, но полезно)
       try {
         // @ts-ignore
         const { supabase } = await import('../../src/lib/supabaseClient');
@@ -577,7 +577,7 @@ export default function ForemanScreen() {
         }
       } catch {}
 
-      // РґРѕР±Р°РІР»РµРЅРёРµ РїРѕР·РёС†РёР№ вЂ” РїРµСЂРµРґР°С‘Рј name_human Рё uom
+      // добавление позиций — передаём name_human и uom
       for (const row of cartArray) {
         const q = Number(row.qty.replace(',', '.'));
         const ok = await addRequestItemFromRik(rid, row.rik_code, q, {
@@ -588,49 +588,49 @@ export default function ForemanScreen() {
           uom: row.uom ?? null,
         });
         if (!ok) {
-          Alert.alert('РћС€РёР±РєР°', `РќРµ СѓРґР°Р»РѕСЃСЊ РґРѕР±Р°РІРёС‚СЊ: ${row.name}`);
+          Alert.alert('Ошибка', `Не удалось добавить: ${row.name}`);
           return;
         }
       }
 
       setCart({});
       await loadItems();
-      // РѕР±РЅРѕРІРёРј РєСЂР°СЃРёРІС‹Р№ РЅРѕРјРµСЂ (РЅР° СЃР»СѓС‡Р°Р№, РµСЃР»Рё РѕРЅ РїСЂРѕСЃС‚Р°РІРёР»СЃСЏ РёРјРµРЅРЅРѕ СЃРµР№С‡Р°СЃ)
+      // обновим красивый номер (на случай, если он проставился именно сейчас)
       preloadDisplayNo(rid);
-      Alert.alert('Р“РѕС‚РѕРІРѕ', `Р”РѕР±Р°РІР»РµРЅРѕ РїРѕР·РёС†РёР№: ${cartCount}`);
+      Alert.alert('Готово', `Добавлено позиций: ${cartCount}`);
     } catch (e: any) {
       console.error('[Foreman] addCartToRequest:', e?.message ?? e);
-      Alert.alert('РћС€РёР±РєР°', e?.message ?? 'РќРµ СѓРґР°Р»РѕСЃСЊ РґРѕР±Р°РІРёС‚СЊ РїРѕР·РёС†РёРё');
+      Alert.alert('Ошибка', e?.message ?? 'Не удалось добавить позиции');
     } finally {
       setBusy(false);
     }
   }, [cartArray, cartCount, requestId, needBy, comment, objectType, level, system, zone, ridStr, loadItems, preloadDisplayNo]);
 
 
-  // ---------- РћС‚РїСЂР°РІРєР° РґРёСЂРµРєС‚РѕСЂСѓ ----------
+  // ---------- Отправка директору ----------
   const submitToDirector = useCallback(async () => {
     try {
       if (!foreman.trim()) {
-        Alert.alert('Р¤РРћ РїСЂРѕСЂР°Р±Р°', 'Р—Р°РїРѕР»РЅРё Р¤РРћ РїСЂРѕСЂР°Р±Р° РїРµСЂРµРґ РѕС‚РїСЂР°РІРєРѕР№');
+        Alert.alert('ФИО прораба', 'Заполни ФИО прораба перед отправкой');
         return;
       }
       if (!objectType) {
-        Alert.alert('РћР±СЉРµРєС‚', 'Р’С‹Р±РµСЂРё В«РћР±СЉРµРєС‚ СЃС‚СЂРѕРёС‚РµР»СЊСЃС‚РІР°В» (РѕР±СЏР·Р°С‚РµР»СЊРЅРѕ)');
+        Alert.alert('Объект', 'Выбери «Объект строительства» (обязательно)');
         return;
       }
       if (!level) {
-        Alert.alert('Р­С‚Р°Р¶/СѓСЂРѕРІРµРЅСЊ', 'Р’С‹Р±РµСЂРё В«Р­С‚Р°Р¶/СѓСЂРѕРІРµРЅСЊВ» (РѕР±СЏР·Р°С‚РµР»СЊРЅРѕ)');
+        Alert.alert('Этаж/уровень', 'Выбери «Этаж/уровень» (обязательно)');
         return;
       }
       if ((items?.length ?? 0) === 0) {
-        Alert.alert('РџСѓСЃС‚Р°СЏ Р·Р°СЏРІРєР°', 'РЎРЅР°С‡Р°Р»Р° РґРѕР±Р°РІСЊ С…РѕС‚СЏ Р±С‹ РѕРґРЅСѓ РїРѕР·РёС†РёСЋ.');
+        Alert.alert('Пустая заявка', 'Сначала добавь хотя бы одну позицию.');
         return;
       }
 
       setBusy(true);
-      let rid: string = requestId ? ridStr(requestId) : await ensureAndGetId(); // рџ‘€ РѕР±СЉСЏРІР»РµРЅ Р·РґРµСЃСЊ
+      let rid: string = requestId ? ridStr(requestId) : await ensureAndGetId(); // 👈 объявлен здесь
 
-      // СЃРѕС…СЂР°РЅРёС‚СЊ Р°РєС‚СѓР°Р»СЊРЅС‹Рµ РїРѕР»СЏ С€Р°РїРєРё
+      // сохранить актуальные поля шапки
       try {
         // @ts-ignore
         const { supabase } = await import('../../src/lib/supabaseClient');
@@ -647,13 +647,13 @@ export default function ForemanScreen() {
       } catch {}
 
       await requestSubmit(rid); // RPC public.request_submit
-      // РѕР±РЅРѕРІРёРј Рё РёСЃРїРѕР»СЊР·СѓРµРј РєСЂР°СЃРёРІС‹Р№ РЅРѕРјРµСЂ
+      // обновим и используем красивый номер
       await preloadDisplayNo(rid);
-      Alert.alert('РћС‚РїСЂР°РІР»РµРЅРѕ РґРёСЂРµРєС‚РѕСЂСѓ', `Р—Р°СЏРІРєР° ${labelForRequest(rid)} РѕС‚РїСЂР°РІР»РµРЅР° РЅР° СѓС‚РІРµСЂР¶РґРµРЅРёРµ`);
+      Alert.alert('Отправлено директору', `Заявка ${labelForRequest(rid)} отправлена на утверждение`);
       await loadItems();
     } catch (e: any) {
       console.error('[Foreman] submitToDirector:', e?.message ?? e);
-      Alert.alert('РћС€РёР±РєР°', e?.message ?? 'РќРµ СѓРґР°Р»РѕСЃСЊ РѕС‚РїСЂР°РІРёС‚СЊ РЅР° СѓС‚РІРµСЂР¶РґРµРЅРёРµ');
+      Alert.alert('Ошибка', e?.message ?? 'Не удалось отправить на утверждение');
     } finally {
       setBusy(false);
     }
@@ -665,7 +665,7 @@ export default function ForemanScreen() {
     try {
       const rid = requestId ? ridStr(requestId) : await ensureAndGetId();
 
-      // РїРµСЂРµРґ РїРµС‡Р°С‚СЊСЋ СЃРѕС…СЂР°РЅСЏРµРј Р°РєС‚СѓР°Р»СЊРЅС‹Рµ РїРѕР»СЏ Р·Р°СЏРІРєРё
+      // перед печатью сохраняем актуальные поля заявки
       try {
         const { supabase } = await import('../../src/lib/supabaseClient');
         await supabase.from('requests').update({
@@ -677,15 +677,15 @@ export default function ForemanScreen() {
         }).eq('id', rid);
       } catch {}
 
-      // РїРѕРґРіСЂСѓР·РёРј РєСЂР°СЃРёРІС‹Р№ РЅРѕРјРµСЂ Рё РїРµС‡Р°С‚Р°РµРј
+      // подгрузим красивый номер и печатаем
       await preloadDisplayNo(rid);
       await exportRequestPdf(rid);
     } catch (e:any) {
-      Alert.alert('РћС€РёР±РєР°', e?.message ?? 'PDF РЅРµ СЃС„РѕСЂРјРёСЂРѕРІР°РЅ');
+      Alert.alert('Ошибка', e?.message ?? 'PDF не сформирован');
     }
   }, [requestId, ridStr, ensureAndGetId, objectType, level, system, zone, comment, preloadDisplayNo]);
 
-  // ---------- Р“СЂСѓРїРїРёСЂРѕРІРєР° РґР»СЏ СЂРµР¶РёРјР° В«РЎРіСЂСѓРїРїРёСЂРѕРІР°РЅРѕВ» ----------
+  // ---------- Группировка для режима «Сгруппировано» ----------
   const grouped = useMemo<GroupedRow[]>(() => {
     if (!items?.length) return [];
     const map = new Map<string, GroupedRow>();
@@ -701,7 +701,7 @@ export default function ForemanScreen() {
       if (!cur) {
         map.set(key, {
           key,
-          name_human: it.name_human || (code || 'вЂ”'),
+          name_human: it.name_human || (code || '—'),
           rik_code: code,
           uom,
           app_code: app,
@@ -735,7 +735,7 @@ export default function ForemanScreen() {
           {kind ? <Chip label={kind} /> : null}
         </View>
         <Text style={[s.suggestMeta, { color: COLORS.sub }]}>
-          {(it as any).rik_code} {uom ? `вЂў Р•Рґ.: ${uom}` : ''}
+          {(it as any).rik_code} {uom ? `• Ед.: ${uom}` : ''}
         </Text>
       </Pressable>
     );
@@ -758,59 +758,59 @@ export default function ForemanScreen() {
         <View style={{ flexDirection:'row', alignItems:'center', gap:8, flexWrap:'wrap' }}>
           <Text style={[s.cardTitle, { color: COLORS.text }]}>{ruName({ name_human: row.name, rik_code: row.rik_code }) || row.name}</Text>
           {row.kind ? <Chip label={row.kind} /> : null}
-          {row.uom  ? <Chip label={`Р•Рґ.: ${row.uom}`} bg="#E0E7FF" fg="#3730A3" /> : null}
+          {row.uom  ? <Chip label={`Ед.: ${row.uom}`} bg="#E0E7FF" fg="#3730A3" /> : null}
         </View>
         <Text style={[s.cardMeta, { color: COLORS.sub }]}>{row.rik_code}</Text>
 
-        {/* РљРѕР»-РІРѕ */}
+        {/* Кол-во */}
         <View style={s.row}>
-          <Text style={[s.rowLabel, { color: COLORS.sub }]}>РљРѕР»-РІРѕ:</Text>
+          <Text style={[s.rowLabel, { color: COLORS.sub }]}>Кол-во:</Text>
           <View style={s.qtyWrap}>
-            <Pressable onPress={dec} style={[s.qtyBtn, { borderColor: COLORS.border }]}><Text style={s.qtyBtnTxt}>в€’</Text></Pressable>
+            <Pressable onPress={dec} style={[s.qtyBtn, { borderColor: COLORS.border }]}><Text style={s.qtyBtnTxt}>−</Text></Pressable>
             <TextInput
               value={row.qty}
               onChangeText={(v) => setQtyFor(row.rik_code, v)}
               keyboardType="decimal-pad"
-              placeholder="РІРІРµРґРёС‚Рµ РєРѕР»-РІРѕ"
+              placeholder="введите кол-во"
               style={[s.qtyInput, { borderColor: COLORS.border, backgroundColor:'#fff' }]}
             />
-            <Pressable onPress={inc} style={[s.qtyBtn, { borderColor: COLORS.border }]}><Text style={s.qtyBtnTxt}>пј‹</Text></Pressable>
+            <Pressable onPress={inc} style={[s.qtyBtn, { borderColor: COLORS.border }]}><Text style={s.qtyBtnTxt}>＋</Text></Pressable>
           </View>
         </View>
 
-        {/* РџСЂРёРјРµРЅРµРЅРёРµ */}
+        {/* Применение */}
         <View style={s.row}>
-          <Text style={[s.rowLabel, { color: COLORS.sub }]}>РџСЂРёРјРµРЅРµРЅРёРµ:</Text>
+          <Text style={[s.rowLabel, { color: COLORS.sub }]}>Применение:</Text>
           <View style={{ flex: 1, gap: 6 }}>
             <View style={{ flexDirection: 'row', gap: 8 }}>
               <Pressable
                 onPress={() => { setAppPickerFor(row.rik_code); setAppPickerQ(''); }}
                 style={[s.chip, { backgroundColor: '#f1f5f9', borderColor: COLORS.border }]}
               >
-                <Text style={{ color: COLORS.text }}>{row.app_code ? labelForApp(row.app_code) : 'Р’С‹Р±СЂР°С‚СЊвЂ¦'}</Text>
+                <Text style={{ color: COLORS.text }}>{row.app_code ? labelForApp(row.app_code) : 'Выбрать…'}</Text>
               </Pressable>
               {row.app_code ? (
                 <Pressable onPress={() => setAppFor(row.rik_code, null)} style={[s.chip, { borderColor: COLORS.border }]}>
-                  <Text style={{ color: COLORS.text }}>РћС‡РёСЃС‚РёС‚СЊ</Text>
+                  <Text style={{ color: COLORS.text }}>Очистить</Text>
                 </Pressable>
               ) : null}
             </View>
             <TextInput
               value={row.app_code ?? ''}
               onChangeText={(v) => setAppFor(row.rik_code, v || null)}
-              placeholder="РёР»Рё РІРІРµРґРёС‚Рµ СЃРІРѕСЋ РјРµС‚РєСѓвЂ¦"
+              placeholder="или введите свою метку…"
               style={s.input}
             />
           </View>
         </View>
 
-        {/* РџСЂРёРјРµС‡Р°РЅРёРµ */}
+        {/* Примечание */}
         <View style={{ marginTop: 8 }}>
-          <Text style={{ color: COLORS.sub }}>РџСЂРёРјРµС‡Р°РЅРёРµ (РѕР±СЏР·Р°С‚РµР»СЊРЅРѕ):</Text>
+          <Text style={{ color: COLORS.sub }}>Примечание (обязательно):</Text>
           <TextInput
             value={row.note}
             onChangeText={(v) => setNoteFor(row.rik_code, v)}
-            placeholder={buildScopeNote(objectName, levelName, systemName, zoneName) || 'СЌС‚Р°Р¶, СЃРµРєС‚РѕСЂ, С‚РѕС‡РєР° РїСЂРёРјРµРЅРµРЅРёСЏвЂ¦'}
+            placeholder={buildScopeNote(objectName, levelName, systemName, zoneName) || 'этаж, сектор, точка применения…'}
             multiline
             style={s.note}
           />
@@ -823,16 +823,16 @@ export default function ForemanScreen() {
     <View style={[s.card, { backgroundColor:'#fff', borderColor: COLORS.border }]}>
       <View style={{ flexDirection:'row', alignItems:'center', gap:8, flexWrap:'wrap' }}>
         <Text style={[s.cardTitle, { color: COLORS.text }]}>{it.name_human}</Text>
-        {it.uom ? <Chip label={`Р•Рґ.: ${it.uom}`} bg="#E0E7FF" fg="#3730A3" /> : null}
+        {it.uom ? <Chip label={`Ед.: ${it.uom}`} bg="#E0E7FF" fg="#3730A3" /> : null}
         {it.app_code ? <Chip label={labelForApp(it.app_code)} /> : null}
       </View>
       <Text style={[s.cardMeta, { color: COLORS.sub, marginTop: 2 }]}>
-        РљРѕР»-РІРѕ: <Text style={{ color: COLORS.text, fontWeight:'700' }}>{it.qty ?? '-'}</Text> {it.uom ?? ''}{' '}
-        В· РЎС‚Р°С‚СѓСЃ: <Text style={{ color: COLORS.text, fontWeight:'700' }}>{it.status ?? 'вЂ”'}</Text>
+        Кол-во: <Text style={{ color: COLORS.text, fontWeight:'700' }}>{it.qty ?? '-'}</Text> {it.uom ?? ''}{' '}
+        · Статус: <Text style={{ color: COLORS.text, fontWeight:'700' }}>{it.status ?? '—'}</Text>
       </Text>
       {it.note ? (
         <Text style={[s.cardMeta, { color: COLORS.sub, marginTop: 2 }]}>
-          РџСЂРёРјРµС‡Р°РЅРёРµ: <Text style={{ color: COLORS.text }}>{it.note}</Text>
+          Примечание: <Text style={{ color: COLORS.text }}>{it.note}</Text>
         </Text>
       ) : null}
     </View>
@@ -843,16 +843,16 @@ export default function ForemanScreen() {
       <View style={{ flexDirection:'row', alignItems:'center', gap:8, flexWrap:'wrap' }}>
         <Text style={[s.cardTitle, { color: COLORS.text }]}>{g.name_human}</Text>
         {g.rik_code ? <Chip label={g.rik_code} /> : null}
-        {g.uom ? <Chip label={`Р•Рґ.: ${g.uom}`} bg="#E0E7FF" fg="#3730A3" /> : null}
+        {g.uom ? <Chip label={`Ед.: ${g.uom}`} bg="#E0E7FF" fg="#3730A3" /> : null}
         {g.app_code ? <Chip label={labelForApp(g.app_code)} /> : null}
       </View>
       <Text style={[s.cardMeta, { color: COLORS.sub, marginTop: 6, fontWeight: '700' }]}>
-        РС‚РѕРіРѕ: <Text style={{ color: COLORS.text }}>{g.total_qty} {g.uom || ''}</Text>
+        Итого: <Text style={{ color: COLORS.text }}>{g.total_qty} {g.uom || ''}</Text>
       </Text>
       <View style={{ marginTop: 6 }}>
         {g.items.map((r, i) => (
           <Text key={g.key + ':' + r.id} style={{ color: COLORS.sub }}>
-            {i + 1}. #{r.id} вЂ” {r.qty} {g.uom || ''}{r.status ? ` В· ${r.status}` : ''}
+            {i + 1}. #{r.id} — {r.qty} {g.uom || ''}{r.status ? ` · ${r.status}` : ''}
           </Text>
         ))}
       </View>
@@ -870,67 +870,67 @@ export default function ForemanScreen() {
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <View style={[s.container, { backgroundColor: COLORS.bg }]}>
         <ScrollView contentContainerStyle={s.pagePad} keyboardShouldPersistTaps="handled">
-          <Text style={[s.header, { color: COLORS.text }]}>РџСЂРѕСЂР°Р± вЂ” Р·Р°СЏРІРєР° Рё РїРѕРёСЃРє РїРѕ Р РРљ</Text>
+          <Text style={[s.header, { color: COLORS.text }]}>Прораб — заявка и поиск по РИК</Text>
 
-          {/* РЁР°РїРєР° Р·Р°СЏРІРєРё */}
+          {/* Шапка заявки */}
           <View style={s.headerRow}>
             <View style={{ flex: 1 }}>
-              <Text style={[s.small, { color: COLORS.sub }]}>Р—Р°СЏРІРєР°:</Text>
+              <Text style={[s.small, { color: COLORS.sub }]}>Заявка:</Text>
               <Text style={[s.input, { paddingVertical: 12 }]}>
-                {requestId ? labelForRequest(requestId) : 'Р±СѓРґРµС‚ СЃРѕР·РґР°РЅР° Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРё'}
+                {requestId ? labelForRequest(requestId) : 'будет создана автоматически'}
               </Text>
             </View>
             <View style={{ width: Platform.OS === 'web' ? 220 : 180 }}>
-              <Text style={[s.small, { color: COLORS.sub }]}>РќСѓР¶РЅРѕ Рє (YYYY-MM-DD):</Text>
-              <TextInput value={needBy} onChangeText={setNeedBy} placeholder="(РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ вЂ” СЃРµРіРѕРґРЅСЏ)" style={s.input} />
+              <Text style={[s.small, { color: COLORS.sub }]}>Нужно к (YYYY-MM-DD):</Text>
+              <TextInput value={needBy} onChangeText={setNeedBy} placeholder="(по умолчанию — сегодня)" style={s.input} />
             </View>
           </View>
 
-          <Text style={[s.small, { color: COLORS.sub }]}>Р¤РРћ РїСЂРѕСЂР°Р±Р° (РѕР±СЏР·Р°С‚РµР»СЊРЅРѕ):</Text>
-          <TextInput value={foreman} onChangeText={setForeman} placeholder="РРІР°РЅРѕРІ Р.Р." style={s.input} />
+          <Text style={[s.small, { color: COLORS.sub }]}>ФИО прораба (обязательно):</Text>
+          <TextInput value={foreman} onChangeText={setForeman} placeholder="Иванов И.И." style={s.input} />
 
-          {/* РќРѕРІС‹Р№ Р±Р»РѕРє: РћР±СЉРµРєС‚/Р­С‚Р°Р¶/РЎРёСЃС‚РµРјР°/Р—РѕРЅР° */}
+          {/* Новый блок: Объект/Этаж/Система/Зона */}
           <View style={{ marginTop: 10, gap: 6 }}>
             <Dropdown
-              label="РћР±СЉРµРєС‚ СЃС‚СЂРѕРёС‚РµР»СЊСЃС‚РІР° (РѕР±СЏР·Р°С‚РµР»СЊРЅРѕ)"
+              label="Объект строительства (обязательно)"
               options={objOptions}
               value={objectType}
               onChange={setObjectType}
-              placeholder="Р’С‹Р±РµСЂРёС‚Рµ РѕР±СЉРµРєС‚"
+              placeholder="Выберите объект"
               width={360}
             />
             <Dropdown
-              label="Р­С‚Р°Р¶ / СѓСЂРѕРІРµРЅСЊ (РѕР±СЏР·Р°С‚РµР»СЊРЅРѕ)"
+              label="Этаж / уровень (обязательно)"
               options={lvlOptions}
               value={level}
               onChange={setLevel}
-              placeholder="Р’С‹Р±РµСЂРёС‚Рµ СЌС‚Р°Р¶/СѓСЂРѕРІРµРЅСЊ"
+              placeholder="Выберите этаж/уровень"
               width={360}
             />
             <Dropdown
-              label="РЎРёСЃС‚РµРјР° / РІРёРґ СЂР°Р±РѕС‚ (РѕРїС†РёРѕРЅР°Р»СЊРЅРѕ)"
+              label="Система / вид работ (опционально)"
               options={sysOptions}
               value={system}
               onChange={setSystem}
-              placeholder="Р’С‹Р±РµСЂРёС‚Рµ СЃРёСЃС‚РµРјСѓ/РІРёРґ СЂР°Р±РѕС‚"
+              placeholder="Выберите систему/вид работ"
               width={360}
             />
             <Dropdown
-              label="Р—РѕРЅР° / СѓС‡Р°СЃС‚РѕРє (РѕРїС†РёРѕРЅР°Р»СЊРЅРѕ)"
+              label="Зона / участок (опционально)"
               options={zoneOptions}
               value={zone}
               onChange={setZone}
-              placeholder="Р’С‹Р±РµСЂРёС‚Рµ Р·РѕРЅСѓ/СѓС‡Р°СЃС‚РѕРє"
+              placeholder="Выберите зону/участок"
               width={360}
             />
           </View>
 
-          {/* РљРѕРјРјРµРЅС‚Р°СЂРёР№ */}
-          <Text style={[s.small, { marginTop: 12, marginBottom: 4, color: COLORS.sub }]}>РљРѕРјРјРµРЅС‚Р°СЂРёР№ Рє Р·Р°СЏРІРєРµ (РЅРµРѕР±СЏР·Р°С‚РµР»СЊРЅРѕ):</Text>
-          <TextInput value={comment} onChangeText={setComment} placeholder="РѕР±С‰РµРµ РїСЂРёРјРµС‡Р°РЅРёРµ РїРѕ Р·Р°СЏРІРєРµвЂ¦"
+          {/* Комментарий */}
+          <Text style={[s.small, { marginTop: 12, marginBottom: 4, color: COLORS.sub }]}>Комментарий к заявке (необязательно):</Text>
+          <TextInput value={comment} onChangeText={setComment} placeholder="общее примечание по заявке…"
                      multiline style={s.note} />
 
-          {/* Р¤РёР»СЊС‚СЂС‹ РїРѕ С‚РёРїСѓ */}
+          {/* Фильтры по типу */}
           <View style={s.tabs}>
             {KIND_TABS.map(tab => {
               const active = activeKind === tab.key;
@@ -943,16 +943,16 @@ export default function ForemanScreen() {
             })}
           </View>
 
-          {/* Р“Р»РѕР±Р°Р»СЊРЅС‹Р№ С„РёР»СЊС‚СЂ РїРѕ РѕР±Р»Р°СЃС‚Рё РїСЂРёРјРµРЅРµРЅРёСЏ (Р РРљ) */}
+          {/* Глобальный фильтр по области применения (РИК) */}
           <View style={{ marginTop: 8, marginBottom: 8 }}>
-            <Text style={[s.small, { color: COLORS.sub }]}>РћР±Р»Р°СЃС‚СЊ РїСЂРёРјРµРЅРµРЅРёСЏ (С„РёР»СЊС‚СЂ):</Text>
+            <Text style={[s.small, { color: COLORS.sub }]}>Область применения (фильтр):</Text>
             <TextInput
               value={appFilter}
               onChangeText={setAppFilter}
               placeholder={
                 appOptions.length
-                  ? `РќР°РїСЂРёРјРµСЂ: ${appOptions[0]?.label || 'РћС‚РґРµР»РєР°'}`
-                  : 'РІРІРµРґРёС‚Рµ РЅР°Р·РІР°РЅРёРµ РёР»Рё РєРѕРґ'
+                  ? `Например: ${appOptions[0]?.label || 'Отделка'}`
+                  : 'введите название или код'
               }
               style={s.input}
             />
@@ -972,15 +972,15 @@ export default function ForemanScreen() {
                 })}
                 {appFilter ? (
                   <Pressable onPress={() => setAppFilter('')} style={[s.chip, { borderColor: COLORS.border }]}>
-                    <Text style={{ color: COLORS.text }}>РЎР±СЂРѕСЃРёС‚СЊ</Text>
+                    <Text style={{ color: COLORS.text }}>Сбросить</Text>
                   </Pressable>
                 ) : null}
               </View>
             ) : null}
           </View>
 
-          {/* РџРѕРёСЃРє */}
-          <TextInput value={query} onChangeText={setQuery} placeholder="Р±РµС‚РѕРЅ Рњ250, РѕРєРЅРѕ РџР’РҐ, С€С‚СѓРєР°С‚СѓСЂРєР°, РґРѕСЃС‚Р°РІРєР°вЂ¦"
+          {/* Поиск */}
+          <TextInput value={query} onChangeText={setQuery} placeholder="бетон М250, окно ПВХ, штукатурка, доставка…"
                      style={s.input} />
           {loadingSuggests ? <ActivityIndicator style={{ marginTop: 6 }} /> : null}
 
@@ -1001,14 +1001,14 @@ export default function ForemanScreen() {
             </View>
           )}
 
-          {/* РљРѕСЂР·РёРЅР° */}
+          {/* Корзина */}
           <View style={{ marginBottom: 8 }}>
             <View style={{ flexDirection:'row', alignItems:'center', gap:8 }}>
-              <Text style={[s.blockTitle, { color: COLORS.text }]}>РљРѕСЂР·РёРЅР°</Text>
+              <Text style={[s.blockTitle, { color: COLORS.text }]}>Корзина</Text>
               <Chip label={`${cartCount}`} bg="#E0F2FE" fg="#075985" />
             </View>
             {cartCount === 0 ? (
-              <Text style={{ color: COLORS.sub }}>Р’С‹Р±РµСЂРё РїРѕР·РёС†РёРё РёР· РїРѕРёСЃРєР° Рё РЅР°СЃС‚СЂРѕР№ РєРѕР»РёС‡РµСЃС‚РІРѕ/РїСЂРёРјРµРЅРµРЅРёРµ/РїСЂРёРјРµС‡Р°РЅРёРµ.</Text>
+              <Text style={{ color: COLORS.sub }}>Выбери позиции из поиска и настрой количество/применение/примечание.</Text>
             ) : (
               <FlatList
                 data={cartArray}
@@ -1024,21 +1024,21 @@ export default function ForemanScreen() {
             )}
           </View>
 
-          {/* РЈР¶Рµ РґРѕР±Р°РІР»РµРЅРЅС‹Рµ РїРѕР·РёС†РёРё вЂ” СЂРµР¶РёРјС‹ */}
+          {/* Уже добавленные позиции — режимы */}
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 10, marginBottom: 6 }}>
             <View style={{ flexDirection:'row', alignItems:'center', gap:8 }}>
               <Text style={[s.blockTitle, { color: COLORS.text }]}>
-                РџРѕР·РёС†РёРё Р·Р°СЏРІРєРё {requestId ? labelForRequest(requestId) : ''}
+                Позиции заявки {requestId ? labelForRequest(requestId) : ''}
               </Text>
             </View>
             <View style={{ flexDirection: 'row', gap: 8 }}>
               <Pressable onPress={() => setViewMode('raw')}
                 style={[s.tab, viewMode === 'raw' && s.tabActive]}>
-                <Text style={{ color: viewMode === 'raw' ? '#fff' : COLORS.tabInactiveText, fontWeight:'600' }}>РџРѕР·РёС†РёРё</Text>
+                <Text style={{ color: viewMode === 'raw' ? '#fff' : COLORS.tabInactiveText, fontWeight:'600' }}>Позиции</Text>
               </Pressable>
               <Pressable onPress={() => setViewMode('grouped')}
                 style={[s.tab, viewMode === 'grouped' && s.tabActive]}>
-                <Text style={{ color: viewMode === 'grouped' ? '#fff' : COLORS.tabInactiveText, fontWeight:'600' }}>РЎРіСЂСѓРїРїРёСЂРѕРІР°РЅРѕ</Text>
+                <Text style={{ color: viewMode === 'grouped' ? '#fff' : COLORS.tabInactiveText, fontWeight:'600' }}>Сгруппировано</Text>
               </Pressable>
             </View>
           </View>
@@ -1048,7 +1048,7 @@ export default function ForemanScreen() {
               data={items}
               keyExtractor={(it, idx) => it?.id ? `ri:${it.id}` : `ri:${it.request_id}-${idx}`}
               renderItem={({ item }) => <ReqItemRowView it={item} />}
-              ListEmptyComponent={<Text style={{ textAlign: 'center', marginTop: 16, color: COLORS.sub }}>РџРѕРєР° РїСѓСЃС‚Рѕ</Text>}
+              ListEmptyComponent={<Text style={{ textAlign: 'center', marginTop: 16, color: COLORS.sub }}>Пока пусто</Text>}
               refreshControl={<RefreshControl refreshing={refreshing} onRefresh={async () => { setRefreshing(true); await loadItems(); setRefreshing(false); }} />}
               keyboardShouldPersistTaps="handled"
               removeClippedSubviews
@@ -1062,7 +1062,7 @@ export default function ForemanScreen() {
               data={grouped}
               keyExtractor={(g, idx) => `grp:${g.key}:${idx}`}
               renderItem={({ item }) => <GroupedRowView g={item} />}
-              ListEmptyComponent={<Text style={{ textAlign: 'center', marginTop: 16, color: COLORS.sub }}>РџРѕРєР° РїСѓСЃС‚Рѕ</Text>}
+              ListEmptyComponent={<Text style={{ textAlign: 'center', marginTop: 16, color: COLORS.sub }}>Пока пусто</Text>}
               refreshControl={<RefreshControl refreshing={refreshing} onRefresh={async () => { setRefreshing(true); await loadItems(); setRefreshing(false); }} />}
               keyboardShouldPersistTaps="handled"
               removeClippedSubviews
@@ -1074,16 +1074,16 @@ export default function ForemanScreen() {
           )}
         </ScrollView>
 
-        {/* Р›РёРїРєР°СЏ РїР°РЅРµР»СЊ РґРµР№СЃС‚РІРёР№ */}
+        {/* Липкая панель действий */}
         <View style={s.stickyBar} pointerEvents="box-none">
           <Pressable onPress={addCartToRequest} disabled={busy || cartCount === 0}
                      style={[s.btn, busy || cartCount === 0 ? s.btnDisabled : s.btnPrimary]}>
-            <Text style={s.btnTxt}>Р”РѕР±Р°РІРёС‚СЊ {cartCount ? `(${cartCount})` : ''}</Text>
+            <Text style={s.btnTxt}>Добавить {cartCount ? `(${cartCount})` : ''}</Text>
           </Pressable>
 
           <Pressable onPress={submitToDirector} disabled={busy || (items?.length ?? 0) === 0}
                      style={[s.btn, (busy || (items?.length ?? 0) === 0) ? s.btnDisabled : s.btnSecondary]}>
-            <Text style={s.btnTxt}>РћС‚РїСЂР°РІРёС‚СЊ РґРёСЂРµРєС‚РѕСЂСѓ</Text>
+            <Text style={s.btnTxt}>Отправить директору</Text>
           </Pressable>
 
           <Pressable onPress={onPdf} disabled={busy || !requestId}
@@ -1093,17 +1093,17 @@ export default function ForemanScreen() {
         </View>
       </View>
 
-      {/* ===== РњРћР”РђР› Р’Р«Р‘РћР Рђ РћР‘Р›РђРЎРўР РџР РРњР•РќР•РќРРЇ Р”Р›РЇ РљРћРќРљР Р•РўРќРћР™ РЎРўР РћРљР ===== */}
+      {/* ===== МОДАЛ ВЫБОРА ОБЛАСТИ ПРИМЕНЕНИЯ ДЛЯ КОНКРЕТНОЙ СТРОКИ ===== */}
       <Modal visible={!!appPickerFor} transparent animationType="fade" onRequestClose={() => setAppPickerFor(null)}>
         <Pressable style={{ flex: 1 }} onPress={() => setAppPickerFor(null)}>
           <View style={s.backdrop} />
         </Pressable>
         <View style={s.modalSheet}>
-          <Text style={{ fontWeight: '700', fontSize: 16, marginBottom: 8, color: COLORS.text }}>Р’С‹Р±СЂР°С‚СЊ РѕР±Р»Р°СЃС‚СЊ РїСЂРёРјРµРЅРµРЅРёСЏ</Text>
+          <Text style={{ fontWeight: '700', fontSize: 16, marginBottom: 8, color: COLORS.text }}>Выбрать область применения</Text>
           <TextInput
             value={appPickerQ}
             onChangeText={setAppPickerQ}
-            placeholder="РџРѕРёСЃРє РїРѕ РЅР°Р·РІР°РЅРёСЋ/РєРѕРґСѓвЂ¦"
+            placeholder="Поиск по названию/коду…"
             style={s.input}
           />
           <FlatList
@@ -1124,7 +1124,7 @@ export default function ForemanScreen() {
             style={{ maxHeight: 320, marginTop: 6 }}
           />
           <View style={{ flexDirection: 'row', justifyContent: 'flex-end', marginTop: 8, gap: 8 }}>
-            <Pressable onPress={() => setAppPickerFor(null)} style={[s.chip, { backgroundColor: '#eee', borderColor: COLORS.border }]}><Text>Р—Р°РєСЂС‹С‚СЊ</Text></Pressable>
+            <Pressable onPress={() => setAppPickerFor(null)} style={[s.chip, { backgroundColor: '#eee', borderColor: COLORS.border }]}><Text>Закрыть</Text></Pressable>
           </View>
         </View>
       </Modal>
@@ -1132,7 +1132,7 @@ export default function ForemanScreen() {
   );
 }
 
-/* ======================= Styles (С‚РѕР»СЊРєРѕ UI, Р»РѕРіРёРєР° РЅРµ С‚СЂРѕРЅСѓС‚Р°) ======================= */
+/* ======================= Styles (только UI, логика не тронута) ======================= */
 const s = StyleSheet.create({
   container: { flex: 1 },
   pagePad: { padding: 16, paddingBottom: 132 },

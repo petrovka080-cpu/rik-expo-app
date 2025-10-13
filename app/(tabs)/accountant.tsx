@@ -1,4 +1,4 @@
-﻿import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   View, Text, FlatList, Pressable, ActivityIndicator,
   RefreshControl, Modal, TextInput, Platform, ScrollView, Alert
@@ -10,17 +10,17 @@ import {
   ensureMyProfile,
   getMyRole,
   accountantReturnToBuyer,
-  // в¬‡пёЏ СѓРІРµРґРѕРјР»РµРЅРёСЏ
+  // ⬇️ уведомления
   notifList,
   notifMarkRead,
 } from '../../src/lib/catalog_api';
 import { uploadProposalAttachment, openAttachment } from '../../src/lib/files';
-// Р·РІСѓРє + РІРёР±СЂРѕ (РµСЃР»Рё РґРѕСЃС‚СѓРїРЅС‹)
+// звук + вибро (если доступны)
 import * as Haptics from 'expo-haptics';
 import { Audio } from 'expo-av';
 
-type Tab = 'Рљ РѕРїР»Р°С‚Рµ' | 'Р§Р°СЃС‚РёС‡РЅРѕ РѕРїР»Р°С‡РµРЅРѕ' | 'РћРїР»Р°С‡РµРЅРѕ' | 'РќР° РґРѕСЂР°Р±РѕС‚РєРµ (СЃРЅР°Р±Р¶РµРЅРµС†)';
-const TABS: Tab[] = ['Рљ РѕРїР»Р°С‚Рµ', 'Р§Р°СЃС‚РёС‡РЅРѕ РѕРїР»Р°С‡РµРЅРѕ', 'РћРїР»Р°С‡РµРЅРѕ', 'РќР° РґРѕСЂР°Р±РѕС‚РєРµ (СЃРЅР°Р±Р¶РµРЅРµС†)'];
+type Tab = 'К оплате' | 'Частично оплачено' | 'Оплачено' | 'На доработке (снабженец)';
+const TABS: Tab[] = ['К оплате', 'Частично оплачено', 'Оплачено', 'На доработке (снабженец)'];
 
 const COLORS = {
   bg: '#F8FAFC',
@@ -35,7 +35,7 @@ const COLORS = {
   red: '#EF4444',
 };
 
-// ---------- helper: Р±РµР·РѕРїР°СЃРЅС‹Рµ Р°Р»РµСЂС‚С‹ РЅР° web ----------
+// ---------- helper: безопасные алерты на web ----------
 const safeAlert = (title: string, msg?: string) => {
   if (Platform.OS === 'web') {
     window.alert([title, msg].filter(Boolean).join('\n'));
@@ -44,7 +44,7 @@ const safeAlert = (title: string, msg?: string) => {
   }
 };
 
-// ---------- SafeView: С„РёР»СЊС‚СЂСѓРµС‚ СЃС‹СЂРѕР№ С‚РµРєСЃС‚ РІРЅСѓС‚СЂРё View (С„РёРєСЃ RNW) ----------
+// ---------- SafeView: фильтрует сырой текст внутри View (фикс RNW) ----------
 function SafeView({ children, ...rest }: any) {
   const kids = React.Children.toArray(children).map((c, i) => {
     if (typeof c === 'string') {
@@ -55,7 +55,7 @@ function SafeView({ children, ...rest }: any) {
   return <View {...rest}>{kids}</View>;
 }
 
-// ---------- СѓРЅРёРІРµСЂСЃР°Р»СЊРЅР°СЏ РєРЅРѕРїРєР° (web: РіР°СЂР°РЅС‚РёСЂРѕРІР°РЅРЅС‹Р№ РєР»РёРє) ----------
+// ---------- универсальная кнопка (web: гарантированный клик) ----------
 function WButton({
   onPress, disabled, style, children,
 }: { onPress: () => void; disabled?: boolean; style?: any; children: React.ReactNode; }) {
@@ -63,7 +63,7 @@ function WButton({
     return (
       <View style={{ position: 'relative' }}>
         <Pressable
-          // web: РѕР±СЂР°Р±РѕС‚С‡РёРє РєР»РёРєР° С‚РѕР»СЊРєРѕ РЅР° <button> РЅРёР¶Рµ, РёРЅР°С‡Рµ РІРѕР·РјРѕР¶РµРЅ РґРІРѕР№РЅРѕР№ РІС‹Р·РѕРІ
+          // web: обработчик клика только на <button> ниже, иначе возможен двойной вызов
           onStartShouldSetResponder={() => false}
           accessibilityRole="button"
           disabled={disabled}
@@ -96,7 +96,7 @@ function WButton({
   );
 }
 
-// ========= Р°РЅС‚Рё-РјРёРіР°РЅРёРµ / СѓС‚РёР»РёС‚С‹ =========
+// ========= анти-мигание / утилиты =========
 function rowsShallowEqual(a: AccountantInboxRow[], b: AccountantInboxRow[]) {
   if (a === b) return true;
   if (a.length !== b.length) return false;
@@ -113,27 +113,27 @@ function rowsShallowEqual(a: AccountantInboxRow[], b: AccountantInboxRow[]) {
 }
 
 export default function AccountantScreen() {
-  const [tab, setTab] = useState<Tab>('Рљ РѕРїР»Р°С‚Рµ');
+  const [tab, setTab] = useState<Tab>('К оплате');
   const [rows, setRows] = useState<AccountantInboxRow[]>([]);
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [isAccountant, setIsAccountant] = useState(false);
   const [roleLoading, setRoleLoading] = useState(true);
 
-  // РєР°СЂС‚РѕС‡РєР°
+  // карточка
   const [current, setCurrent] = useState<AccountantInboxRow | null>(null);
   const [cardOpen, setCardOpen] = useState(false);
 
-  // С„РѕСЂРјР° РѕРїР»Р°С‚С‹ / РІРѕР·РІСЂР°С‚Р°
+  // форма оплаты / возврата
   const [amount, setAmount] = useState<string>('');
   const [method, setMethod] = useState<string>('');
   const [note, setNote] = useState<string>('');
 
-  // ====== Р РћР›Р¬ ======
+  // ====== РОЛЬ ======
   const [role, setRole] = useState<string | null>(null);
   const canAct = isAccountant;
 
-  // freeze РѕР±РЅРѕРІР»РµРЅРёР№ СЃРїРёСЃРєР°, РїРѕРєР° РѕС‚РєСЂС‹С‚Р° РєР°СЂС‚РѕС‡РєР° (С„РёРєСЃ В«РїСЂС‹Р¶РєРѕРІВ»)
+  // freeze обновлений списка, пока открыта карточка (фикс «прыжков»)
   const [freezeWhileOpen, setFreezeWhileOpen] = useState(false);
 
   useEffect(() => {
@@ -148,12 +148,12 @@ export default function AccountantScreen() {
     })();
   }, []);
 
-  // Р·Р°РїРѕРјРЅРёРј: RPC РґРѕСЃС‚СѓРїРµРЅ/РЅРµС‚, С‡С‚РѕР±С‹ РЅРµ СЃРїР°РјРёС‚СЊ 404
+  // запомним: RPC доступен/нет, чтобы не спамить 404
   const triedRpcOkRef = useRef<boolean>(true);
 
-  // ====== Р·Р°РіСЂСѓР·РєР° ======
+  // ====== загрузка ======
   const load = useCallback(async () => {
-    if (freezeWhileOpen) return; // РЅРµ РґС‘СЂРіР°РµРј СЃРµС‚СЊ, РїРѕРєР° РјРѕРґР°Р»РєР° РѕС‚РєСЂС‹С‚Р°
+    if (freezeWhileOpen) return; // не дёргаем сеть, пока модалка открыта
 
     setLoading(true);
     try {
@@ -176,8 +176,8 @@ export default function AccountantScreen() {
     .from('proposals')
     .select('id, status, payment_status, invoice_number, invoice_date, invoice_amount, invoice_currency, supplier, sent_to_accountant_at')
 .not('sent_to_accountant_at', 'is', null)
-    // в¬‡пёЏ Р±РµСЂС‘Рј С‚РѕР»СЊРєРѕ С‚Рѕ, С‡С‚Рѕ РёРјРµРµС‚ РѕС‚РЅРѕС€РµРЅРёРµ Рє Р±СѓС…РіР°Р»С‚РµСЂРёРё
-    .or('payment_status.eq.Рљ РѕРїР»Р°С‚Рµ,payment_status.eq.РћРїР»Р°С‡РµРЅРѕ,payment_status.ilike.Р§Р°СЃС‚РёС‡РЅРѕ%,payment_status.ilike.РќР° РґРѕСЂР°Р±РѕС‚РєРµ%')
+    // ⬇️ берём только то, что имеет отношение к бухгалтерии
+    .or('payment_status.eq.К оплате,payment_status.eq.Оплачено,payment_status.ilike.Частично%,payment_status.ilike.На доработке%')
     .order('sent_to_accountant_at', { ascending: false, nullsFirst: false });
 
   let tmp: AccountantInboxRow[] = [];
@@ -215,10 +215,10 @@ export default function AccountantScreen() {
       const filtered = (data || []).filter((r) => {
         const ps = String(r.payment_status ?? '').trim().toLowerCase();
         switch (tab) {
-          case 'Рљ РѕРїР»Р°С‚Рµ':                  return /^Рє РѕРїР»Р°С‚Рµ/.test(ps);
-          case 'Р§Р°СЃС‚РёС‡РЅРѕ РѕРїР»Р°С‡РµРЅРѕ':        return /^С‡Р°СЃС‚РёС‡РЅРѕ/.test(ps);
-          case 'РћРїР»Р°С‡РµРЅРѕ':                 return /^РѕРїР»Р°С‡РµРЅРѕ/.test(ps);
-          case 'РќР° РґРѕСЂР°Р±РѕС‚РєРµ (СЃРЅР°Р±Р¶РµРЅРµС†)': return /^РЅР° РґРѕСЂР°Р±РѕС‚РєРµ/.test(ps);
+          case 'К оплате':                  return /^к оплате/.test(ps);
+          case 'Частично оплачено':        return /^частично/.test(ps);
+          case 'Оплачено':                 return /^оплачено/.test(ps);
+          case 'На доработке (снабженец)': return /^на доработке/.test(ps);
           default: return true;
         }
       });
@@ -230,7 +230,7 @@ export default function AccountantScreen() {
   useEffect(() => { load(); }, [load]);
   const onRefresh = useCallback(async () => { setRefreshing(true); try { await load(); } finally { setRefreshing(false); } }, [load]);
 
-  // ====== рџ”” СѓРІРµРґРѕРјР»РµРЅРёСЏ: СЃРїРёСЃРѕРє/Р·РІСѓРє/РїРѕРґРїРёСЃРєР° ======
+  // ====== 🔔 уведомления: список/звук/подписка ======
   const [bellOpen, setBellOpen] = useState(false);
   const [notifs, setNotifs] = useState<any[]>([]);
   const unread = notifs.length;
@@ -240,7 +240,7 @@ export default function AccountantScreen() {
     let mounted = true;
     (async () => {
       try {
-        // РџС‹С‚Р°РµРјСЃСЏ РїРѕРґРєР»СЋС‡РёС‚СЊ Р·РІСѓРєРѕРІРѕР№ С„Р°Р№Р» РўРћР›Р¬РљРћ РµСЃР»Рё РѕРЅ РµСЃС‚СЊ.
+        // Пытаемся подключить звуковой файл ТОЛЬКО если он есть.
         // @ts-ignore
         const maybeSound = (() => { try { return require('../../assets/notify.mp3'); } catch { return null; } })();
         if (!maybeSound) return;
@@ -248,7 +248,7 @@ export default function AccountantScreen() {
         const s = new Audio.Sound();
         await s.loadAsync(maybeSound);
         if (mounted) soundRef.current = s;
-      } catch { /* Р±РµР· Р·РІСѓРєР° */ }
+      } catch { /* без звука */ }
     })();
 
     return () => {
@@ -272,7 +272,7 @@ export default function AccountantScreen() {
 
   useEffect(() => { loadNotifs(); }, [loadNotifs]);
 
-  // realtime-РїРѕРґРїРёСЃРєР°
+  // realtime-подписка
   useEffect(() => {
     const ch = supabase.channel('notif-accountant-rt')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications' }, (payload: any) => {
@@ -300,13 +300,13 @@ export default function AccountantScreen() {
     setTimeout(() => { load(); }, 0);
   }, [load]);
 
-  // ====== РґРµР№СЃС‚РІРёСЏ ======
+  // ====== действия ======
   const addPayment = useCallback(async () => {
-    if (!canAct) { safeAlert('РќРµС‚ РїСЂР°РІ', 'РќСѓР¶РЅР° СЂРѕР»СЊ В«accountantВ».'); return; }
+    if (!canAct) { safeAlert('Нет прав', 'Нужна роль «accountant».'); return; }
     if (!current?.proposal_id) return;
 
     const val = Number(String(amount).replace(',', '.'));
-    if (!val || val <= 0) { safeAlert('Р’РІРµРґРёС‚Рµ СЃСѓРјРјСѓ', 'РЎСѓРјРјР° РѕРїР»Р°С‚С‹ РґРѕР»Р¶РЅР° Р±С‹С‚СЊ Р±РѕР»СЊС€Рµ 0'); return; }
+    if (!val || val <= 0) { safeAlert('Введите сумму', 'Сумма оплаты должна быть больше 0'); return; }
 
     try {
       const args: any = { p_proposal_id: String(current.proposal_id), p_amount: val };
@@ -316,27 +316,27 @@ export default function AccountantScreen() {
       const { error } = await supabase.rpc('acc_add_payment_min', args);
       if (error) throw error;
 
-      safeAlert('РћРїР»Р°С‚Р° РґРѕР±Р°РІР»РµРЅР°', 'РџСЂРёРєСЂРµРїРёС‚Рµ РїР»Р°С‚С‘Р¶РЅС‹Р№ РґРѕРєСѓРјРµРЅС‚, РµСЃР»Рё РЅСѓР¶РЅРѕ.');
+      safeAlert('Оплата добавлена', 'Прикрепите платёжный документ, если нужно.');
       await load();
       closeCard();
     } catch (e: any) {
       const msg = e?.message ?? e?.error_description ?? e?.details ?? String(e);
-      safeAlert('РћС€РёР±РєР° РѕРїР»Р°С‚С‹', msg);
+      safeAlert('Ошибка оплаты', msg);
       console.error('[acc_add_payment_min]', msg);
     }
   }, [canAct, amount, method, note, current, load, closeCard]);
 
-  // === Р’РћР—Р’Р РђРў РќРђ Р”РћР РђР‘РћРўРљРЈ РЎРќРђР‘Р–Р•РќР¦РЈ (РЅР°РґС‘Р¶РЅС‹Р№ С†РµРїРѕС‡РЅС‹Р№ С„РѕР»Р±СЌРє)
+  // === ВОЗВРАТ НА ДОРАБОТКУ СНАБЖЕНЦУ (надёжный цепочный фолбэк)
   const onReturnToBuyer = useCallback(async () => {
-    if (!canAct) { safeAlert('РќРµС‚ РїСЂР°РІ', 'РќСѓР¶РЅР° СЂРѕР»СЊ В«accountantВ».'); return; }
+    if (!canAct) { safeAlert('Нет прав', 'Нужна роль «accountant».'); return; }
     const pid = String(current?.proposal_id || '');
     if (!pid) return;
 
     try {
-      // 1) РѕСЃРЅРѕРІРЅРѕР№ Р°РґР°РїС‚РµСЂ (РјРѕР¶РµС‚ СЃР°Рј РґРµСЂРіР°С‚СЊ РЅСѓР¶РЅС‹Рµ RPC)
+      // 1) основной адаптер (может сам дергать нужные RPC)
       await accountantReturnToBuyer({ proposalId: pid, comment: (note || '').trim() || null });
     } catch (e1: any) {
-      // 2) РїРѕРїСѓР»СЏСЂРЅС‹Р№ RPC acc_return_min_auto
+      // 2) популярный RPC acc_return_min_auto
       try {
         const { error } = await supabase.rpc('acc_return_min_auto', {
           p_proposal_id: pid,
@@ -344,7 +344,7 @@ export default function AccountantScreen() {
         });
         if (error) throw error;
       } catch (e2: any) {
-        // 3) РЅР°С€ РјРёРЅРёРјР°Р»СЊРЅС‹Р№ Р±РµР·РѕРїР°СЃРЅС‹Р№ RPC (РµСЃР»Рё 2-Р№ РѕС‚СЃСѓС‚СЃС‚РІСѓРµС‚)
+        // 3) наш минимальный безопасный RPC (если 2-й отсутствует)
         try {
           const { error } = await supabase.rpc('proposal_return_to_buyer_min', {
             p_proposal_id: pid,
@@ -353,15 +353,15 @@ export default function AccountantScreen() {
           if (error) throw error;
         } catch (e3: any) {
           const msg = e3?.message ?? e3?.error_description ?? e3?.details ?? String(e3);
-          safeAlert('РћС€РёР±РєР° РІРѕР·РІСЂР°С‚Р°', msg);
+          safeAlert('Ошибка возврата', msg);
           console.error('[return_to_buyer chain failed]', msg);
           return;
         }
       }
     }
 
-    // СѓСЃРїРµС…: РјРіРЅРѕРІРµРЅРЅРѕ СѓР±РёСЂР°РµРј РєР°СЂС‚РѕС‡РєСѓ, Р·Р°РєСЂС‹РІР°РµРј Рё РїРµСЂРµР·Р°РіСЂСѓР¶Р°РµРј
-    safeAlert('Р“РѕС‚РѕРІРѕ', 'РћС‚РїСЂР°РІР»РµРЅРѕ РЅР° РґРѕСЂР°Р±РѕС‚РєСѓ СЃРЅР°Р±Р¶РµРЅС†Сѓ.');
+    // успех: мгновенно убираем карточку, закрываем и перезагружаем
+    safeAlert('Готово', 'Отправлено на доработку снабженцу.');
     setRows(prev => prev.filter(r => String(r.proposal_id) !== pid));
     closeCard();
     await load();
@@ -371,9 +371,9 @@ export default function AccountantScreen() {
   const header = useMemo(() => (
     <SafeView style={{ paddingHorizontal: 12, paddingTop: 10, paddingBottom: 6, backgroundColor: COLORS.bg }}>
       <SafeView style={{ flexDirection: 'row', alignItems: 'center' }}>
-        <Text style={{ fontSize: 20, fontWeight: '700', color: COLORS.text }}>Р‘СѓС…РіР°Р»С‚РµСЂ</Text>
+        <Text style={{ fontSize: 20, fontWeight: '700', color: COLORS.text }}>Бухгалтер</Text>
 
-        {/* рџ”” РљРѕР»РѕРєРѕР»СЊС‡РёРє СЃРїСЂР°РІР° */}
+        {/* 🔔 Колокольчик справа */}
         <Pressable
           onPress={() => { setBellOpen(true); loadNotifs(); }}
           style={{
@@ -381,7 +381,7 @@ export default function AccountantScreen() {
             paddingVertical: 6, paddingHorizontal: 10, borderRadius: 999,
             backgroundColor: '#fff', borderWidth: 1, borderColor: COLORS.border, position:'relative'
           }}>
-          <Text style={{ fontSize: 16 }}>рџ””</Text>
+          <Text style={{ fontSize: 16 }}>🔔</Text>
           {unread > 0 && (
             <View style={{
               position: 'absolute', top: -4, right: -4, backgroundColor: '#ef4444',
@@ -407,7 +407,7 @@ export default function AccountantScreen() {
         })}
         {!isAccountant && !roleLoading && (
           <View style={{ paddingVertical: 6, paddingHorizontal: 10, backgroundColor: '#FEF3C7', borderRadius: 999, marginLeft: 'auto' }}>
-            <Text style={{ color: '#92400E', fontWeight: '600' }}>РќРµС‚ РїСЂР°РІ Р±СѓС…РіР°Р»С‚РµСЂР° вЂ” РґРµР№СЃС‚РІРёСЏ РѕС‚РєР»СЋС‡РµРЅС‹</Text>
+            <Text style={{ color: '#92400E', fontWeight: '600' }}>Нет прав бухгалтера — действия отключены</Text>
           </View>
         )}
       </SafeView>
@@ -417,11 +417,11 @@ export default function AccountantScreen() {
   const statusColors = (s?: string | null) => {
     const v = (s ?? '').trim();
     switch (v) {
-      case 'РћРїР»Р°С‡РµРЅРѕ': return { bg: '#DCFCE7', fg: '#166534' };
-      case 'Р§Р°СЃС‚РёС‡РЅРѕ РѕРїР»Р°С‡РµРЅРѕ': return { bg: '#FEF3C7', fg: '#92400E' };
-      case 'Рљ РѕРїР»Р°С‚Рµ': return { bg: '#DBEAFE', fg: '#1E3A8A' };
+      case 'Оплачено': return { bg: '#DCFCE7', fg: '#166534' };
+      case 'Частично оплачено': return { bg: '#FEF3C7', fg: '#92400E' };
+      case 'К оплате': return { bg: '#DBEAFE', fg: '#1E3A8A' };
     }
-    if (v.startsWith('РќР° РґРѕСЂР°Р±РѕС‚РєРµ')) return { bg: '#FEE2E2', fg: '#991B1B' };
+    if (v.startsWith('На доработке')) return { bg: '#FEE2E2', fg: '#991B1B' };
     return { bg: '#DBEAFE', fg: '#1E3A8A' };
   };
 
@@ -436,8 +436,8 @@ export default function AccountantScreen() {
       const total = Number(item.total_paid ?? 0);
       const sum = Number(item.invoice_amount ?? 0);
       const rest = sum > 0 ? Math.max(0, sum - total) : 0;
-      const displayStatus = item.payment_status ?? 'Рљ РѕРїР»Р°С‚Рµ';
-      const isPaidFull = rest === 0 && displayStatus === 'РћРїР»Р°С‡РµРЅРѕ';
+      const displayStatus = item.payment_status ?? 'К оплате';
+      const isPaidFull = rest === 0 && displayStatus === 'Оплачено';
       const sc = statusColors(displayStatus);
 
       return (
@@ -445,7 +445,7 @@ export default function AccountantScreen() {
           style={{ backgroundColor: '#fff', marginHorizontal: 12, marginVertical: 6, borderRadius: 14, borderWidth: 1, borderColor: COLORS.border, padding: 12 }}>
           <SafeView style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
             <Text style={{ fontWeight: '700', color: COLORS.text }}>
-              {(item.supplier || 'вЂ”') + ' вЂў ' + (item.invoice_number || 'Р±РµР· в„–') + ' (' + (item.invoice_date || 'вЂ”') + ')'}
+              {(item.supplier || '—') + ' • ' + (item.invoice_number || 'без №') + ' (' + (item.invoice_date || '—') + ')'}
             </Text>
             <Chip label={displayStatus} bg={sc.bg} fg={sc.fg} />
             {!!item.has_invoice && <Chip label="invoice" bg="#E0E7FF" fg="#3730A3" />}
@@ -453,27 +453,27 @@ export default function AccountantScreen() {
           </SafeView>
           <View style={{ height: 6 }} />
           <Text style={{ color: COLORS.sub }}>
-            РЎС‡С‘С‚: <Text style={{ fontWeight: '700', color: COLORS.text }}>{(sum || 0) + ' ' + (item.invoice_currency || 'KGS')}</Text>{' '}
-            вЂў РћРїР»Р°С‡РµРЅРѕ: <Text style={{ fontWeight: '700', color: COLORS.text }}>{total}</Text>{' '}
-            вЂў <Text style={{ fontWeight: '700', color: isPaidFull ? COLORS.green : COLORS.yellow }}>{'РћСЃС‚Р°С‚РѕРє: ' + rest}</Text>
+            Счёт: <Text style={{ fontWeight: '700', color: COLORS.text }}>{(sum || 0) + ' ' + (item.invoice_currency || 'KGS')}</Text>{' '}
+            • Оплачено: <Text style={{ fontWeight: '700', color: COLORS.text }}>{total}</Text>{' '}
+            • <Text style={{ fontWeight: '700', color: isPaidFull ? COLORS.green : COLORS.yellow }}>{'Остаток: ' + rest}</Text>
           </Text>
         </Pressable>
       );
     } catch (e) {
       console.error('[accountant renderItem]', e);
-      return <View />; // РЅРµ РІР°Р»РёРј РІРµСЃСЊ СЃРїРёСЃРѕРє
+      return <View />; // не валим весь список
     }
   }, [openCard]);
 
   const canOpenInvoice = !!current?.has_invoice || !!current?.invoice_number;
   const canOpenPayments = (current?.payments_count ?? 0) > 0;
-  const currentDisplayStatus = useMemo(() => (current?.payment_status ?? 'Рљ РѕРїР»Р°С‚Рµ'), [current]);
+  const currentDisplayStatus = useMemo(() => (current?.payment_status ?? 'К оплате'), [current]);
 
   const EmptyState = () => (
     <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 }}>
-      <Text style={{ fontSize: 40, marginBottom: 8 }}>рџ“„</Text>
-      <Text style={{ fontSize: 16, fontWeight: '700', color: COLORS.text, marginBottom: 4 }}>Р—РґРµСЃСЊ РїРѕРєР° РїСѓСЃС‚Рѕ</Text>
-      <Text style={{ color: COLORS.sub, textAlign: 'center' }}>Р’С‹Р±РµСЂРёС‚Рµ РґСЂСѓРіСѓСЋ РІРєР»Р°РґРєСѓ РёР»Рё РґРѕР¶РґРёС‚РµСЃСЊ РїСЂРµРґР»РѕР¶РµРЅРёР№ РѕС‚ СЃРЅР°Р±Р¶РµРЅС†Р°.</Text>
+      <Text style={{ fontSize: 40, marginBottom: 8 }}>📄</Text>
+      <Text style={{ fontSize: 16, fontWeight: '700', color: COLORS.text, marginBottom: 4 }}>Здесь пока пусто</Text>
+      <Text style={{ color: COLORS.sub, textAlign: 'center' }}>Выберите другую вкладку или дождитесь предложений от снабженца.</Text>
     </View>
   );
 
@@ -496,61 +496,61 @@ export default function AccountantScreen() {
       <Modal visible={cardOpen} animationType="slide" onRequestClose={closeCard}>
         <View style={{ flex: 1, padding: 12, backgroundColor: COLORS.bg }}>
           <ScrollView keyboardShouldPersistTaps="always" contentContainerStyle={{ paddingBottom: 48 }}>
-            <Text style={{ fontSize: 18, fontWeight: '700', marginBottom: 8, color: COLORS.text }}>РљР°СЂС‚РѕС‡РєР° РїСЂРµРґР»РѕР¶РµРЅРёСЏ</Text>
+            <Text style={{ fontSize: 18, fontWeight: '700', marginBottom: 8, color: COLORS.text }}>Карточка предложения</Text>
             <Text style={{ color: COLORS.sub, marginBottom: 6 }}>
-              ID: <Text style={{ color: COLORS.text, fontFamily: 'monospace' }}>{current?.proposal_id || 'вЂ”'}</Text>
+              ID: <Text style={{ color: COLORS.text, fontFamily: 'monospace' }}>{current?.proposal_id || '—'}</Text>
             </Text>
 
-            <Text style={{ color: COLORS.sub }}>РџРѕСЃС‚Р°РІС‰РёРє: <Text style={{ color: COLORS.text }}>{current?.supplier || 'вЂ”'}</Text></Text>
-            <Text style={{ color: COLORS.sub }}>РЎС‡С‘С‚: <Text style={{ color: COLORS.text }}>{current?.invoice_number || 'вЂ”'}</Text> РѕС‚ <Text style={{ color: COLORS.text }}>{current?.invoice_date || 'вЂ”'}</Text></Text>
-            <Text style={{ color: COLORS.sub }}>РЎСѓРјРјР°: <Text style={{ color: COLORS.text }}>{(Number(current?.invoice_amount ?? 0)) + ' ' + (current?.invoice_currency || 'KGS')}</Text></Text>
-            <Text style={{ color: COLORS.sub }}>РЎС‚Р°С‚СѓСЃ: <Text style={{ color: COLORS.text }}>{currentDisplayStatus}</Text></Text>
+            <Text style={{ color: COLORS.sub }}>Поставщик: <Text style={{ color: COLORS.text }}>{current?.supplier || '—'}</Text></Text>
+            <Text style={{ color: COLORS.sub }}>Счёт: <Text style={{ color: COLORS.text }}>{current?.invoice_number || '—'}</Text> от <Text style={{ color: COLORS.text }}>{current?.invoice_date || '—'}</Text></Text>
+            <Text style={{ color: COLORS.sub }}>Сумма: <Text style={{ color: COLORS.text }}>{(Number(current?.invoice_amount ?? 0)) + ' ' + (current?.invoice_currency || 'KGS')}</Text></Text>
+            <Text style={{ color: COLORS.sub }}>Статус: <Text style={{ color: COLORS.text }}>{currentDisplayStatus}</Text></Text>
 
             <View style={{ height: 12 }} />
 
-            {/* ===== Р”РѕРєСѓРјРµРЅС‚С‹ ===== */}
-            <Text style={{ fontWeight: '600', marginBottom: 6, color: COLORS.text }}>Р”РѕРєСѓРјРµРЅС‚С‹</Text>
+            {/* ===== Документы ===== */}
+            <Text style={{ fontWeight: '600', marginBottom: 6, color: COLORS.text }}>Документы</Text>
             <SafeView style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
-              {/* РћРўРљР Р«РўР¬ РЎР§РЃРў */}
+              {/* ОТКРЫТЬ СЧЁТ */}
               <View pointerEvents={canOpenInvoice ? 'auto' : 'none'} style={{ alignSelf: 'flex-start' }}>
                 <WButton
                   onPress={() => {
                     if (!current?.proposal_id) return;
                     Promise.resolve(openAttachment(String(current.proposal_id), 'invoice'))
-                      .catch((e: any) => { safeAlert('РЎС‡С‘С‚', e?.message ?? 'РЎС‡С‘С‚ РЅРµ РїСЂРёРєСЂРµРїР»С‘РЅ'); console.error('[open invoice]', e); });
+                      .catch((e: any) => { safeAlert('Счёт', e?.message ?? 'Счёт не прикреплён'); console.error('[open invoice]', e); });
                   }}
                   disabled={!canOpenInvoice}
                   style={{ padding: 10, backgroundColor: canOpenInvoice ? '#EEE' : '#E5E7EB', borderRadius: 10 }}
                 >
-                  <Text style={{ color: canOpenInvoice ? '#111' : '#9CA3AF', fontWeight: '600' }}>РћС‚РєСЂС‹С‚СЊ СЃС‡С‘С‚</Text>
+                  <Text style={{ color: canOpenInvoice ? '#111' : '#9CA3AF', fontWeight: '600' }}>Открыть счёт</Text>
                 </WButton>
               </View>
 
-              {/* РџР›РђРўРЃР–РќР«Р• Р”РћРљРЈРњР•РќРўР« */}
+              {/* ПЛАТЁЖНЫЕ ДОКУМЕНТЫ */}
               <View pointerEvents={canOpenPayments ? 'auto' : 'none'} style={{ alignSelf: 'flex-start' }}>
                 <WButton
                   onPress={() => {
                     if (!current?.proposal_id) return;
                     Promise.resolve(openAttachment(String(current.proposal_id), 'payment', { all: true }))
-                      .catch((e: any) => { safeAlert('Р”РѕРєСѓРјРµРЅС‚С‹', e?.message ?? 'РџР»Р°С‚С‘Р¶РЅС‹Рµ РґРѕРєСѓРјРµРЅС‚С‹ РЅРµ РЅР°Р№РґРµРЅС‹'); console.error('[open payment]', e); });
+                      .catch((e: any) => { safeAlert('Документы', e?.message ?? 'Платёжные документы не найдены'); console.error('[open payment]', e); });
                   }}
                   disabled={!canOpenPayments}
                   style={{ padding: 10, backgroundColor: canOpenPayments ? '#EEE' : '#E5E7EB', borderRadius: 10 }}
                 >
-                  <Text style={{ color: canOpenPayments ? '#111' : '#9CA3AF', fontWeight: '600' }}>РџР»Р°С‚С‘Р¶РЅС‹Рµ РґРѕРєСѓРјРµРЅС‚С‹</Text>
+                  <Text style={{ color: canOpenPayments ? '#111' : '#9CA3AF', fontWeight: '600' }}>Платёжные документы</Text>
                 </WButton>
               </View>
             </SafeView>
 
             <View style={{ height: 16 }} />
 
-            <Text style={{ fontWeight: '600', marginBottom: 6, color: COLORS.text }}>Р”РѕР±Р°РІРёС‚СЊ РѕРїР»Р°С‚Сѓ</Text>
+            <Text style={{ fontWeight: '600', marginBottom: 6, color: COLORS.text }}>Добавить оплату</Text>
             <View style={{ position: 'relative', zIndex: 5 }}>
-              <TextInput placeholder="РЎСѓРјРјР° (KGS)" keyboardType="decimal-pad" value={amount} onChangeText={setAmount}
+              <TextInput placeholder="Сумма (KGS)" keyboardType="decimal-pad" value={amount} onChangeText={setAmount}
                 style={{ borderWidth: 1, borderColor: COLORS.border, backgroundColor: '#fff', borderRadius: 10, padding: 10, marginBottom: 8 }} />
-              <TextInput placeholder="РЎРїРѕСЃРѕР± (Р±Р°РЅРє/РЅР°Р»)" value={method} onChangeText={setMethod}
+              <TextInput placeholder="Способ (банк/нал)" value={method} onChangeText={setMethod}
                 style={{ borderWidth: 1, borderColor: COLORS.border, backgroundColor: '#fff', borderRadius: 10, padding: 10, marginBottom: 8 }} />
-              <TextInput placeholder="РљРѕРјРјРµРЅС‚Р°СЂРёР№" value={note} onChangeText={setNote}
+              <TextInput placeholder="Комментарий" value={note} onChangeText={setNote}
                 style={{ borderWidth: 1, borderColor: COLORS.border, backgroundColor: '#fff', borderRadius: 10, padding: 10, marginBottom: 8 }} />
 
               <WButton
@@ -558,20 +558,20 @@ export default function AccountantScreen() {
                 disabled={!canAct}
                 style={{ padding: 12, borderRadius: 10, backgroundColor: canAct ? '#10B981' : '#94a3b8' }}
               >
-                <Text style={{ color: '#fff', textAlign: 'center', fontWeight: '700' }}>РЎРѕС…СЂР°РЅРёС‚СЊ РѕРїР»Р°С‚Сѓ</Text>
+                <Text style={{ color: '#fff', textAlign: 'center', fontWeight: '700' }}>Сохранить оплату</Text>
               </WButton>
             </View>
 
             <View style={{ height: 12 }} />
 
-            {currentDisplayStatus !== 'РћРїР»Р°С‡РµРЅРѕ' && (
+            {currentDisplayStatus !== 'Оплачено' && (
               <Pressable
                 onPress={onReturnToBuyer}
                 disabled={!canAct}
                 style={{ padding: 12, borderRadius: 10, backgroundColor: canAct ? COLORS.red : '#d1d5db' }}
               >
                 <Text style={{ color: canAct ? '#fff' : '#6b7280', textAlign: 'center', fontWeight: '700' }}>
-                  Р’РµСЂРЅСѓС‚СЊ РЅР° РґРѕСЂР°Р±РѕС‚РєСѓ СЃРЅР°Р±Р¶РµРЅС†Сѓ
+                  Вернуть на доработку снабженцу
                 </Text>
               </Pressable>
             )}
@@ -581,20 +581,20 @@ export default function AccountantScreen() {
               onPress={closeCard}
               style={{ padding: 12, backgroundColor: '#fff', borderRadius: 10, borderWidth: 1, borderColor: COLORS.border }}
             >
-              <Text style={{ textAlign: 'center', color: COLORS.text, fontWeight: '600' }}>Р—Р°РєСЂС‹С‚СЊ</Text>
+              <Text style={{ textAlign: 'center', color: COLORS.text, fontWeight: '600' }}>Закрыть</Text>
             </WButton>
           </ScrollView>
         </View>
       </Modal>
 
-      {/* рџ”” РњРѕРґР°Р»РєР° СЃРїРёСЃРєР° СѓРІРµРґРѕРјР»РµРЅРёР№ */}
+      {/* 🔔 Модалка списка уведомлений */}
       <Modal visible={bellOpen} animationType="fade" onRequestClose={() => setBellOpen(false)} transparent>
         <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'center', padding: 16 }}>
           <View style={{ backgroundColor: '#fff', borderRadius: 12, padding: 12, maxHeight: '70%', borderWidth: 1, borderColor: COLORS.border }}>
-            <Text style={{ fontWeight: '800', fontSize: 16, marginBottom: 8, color: COLORS.text }}>РЈРІРµРґРѕРјР»РµРЅРёСЏ</Text>
+            <Text style={{ fontWeight: '800', fontSize: 16, marginBottom: 8, color: COLORS.text }}>Уведомления</Text>
             <ScrollView contentContainerStyle={{ gap: 8 }}>
               {notifs.length === 0 ? (
-                <Text style={{ color: COLORS.sub }}>РќРµС‚ РЅРµРїСЂРѕС‡РёС‚Р°РЅРЅС‹С…</Text>
+                <Text style={{ color: COLORS.sub }}>Нет непрочитанных</Text>
               ) : notifs.map((n: any) => (
                 <View key={n.id} style={{ borderWidth: 1, borderColor: COLORS.border, borderRadius: 10, padding: 10, backgroundColor: '#fff' }}>
                   <Text style={{ fontWeight: '700', color: COLORS.text }}>{n.title}</Text>
@@ -610,12 +610,12 @@ export default function AccountantScreen() {
               <Pressable
                 onPress={markAllRead}
                 style={{ paddingVertical: 10, paddingHorizontal: 12, borderRadius: 10, backgroundColor: '#111827' }}>
-                <Text style={{ color: '#fff', fontWeight: '700' }}>РћС‚РјРµС‚РёС‚СЊ РїСЂРѕС‡РёС‚Р°РЅРЅС‹РјРё</Text>
+                <Text style={{ color: '#fff', fontWeight: '700' }}>Отметить прочитанными</Text>
               </Pressable>
               <Pressable
                 onPress={() => setBellOpen(false)}
                 style={{ paddingVertical: 10, paddingHorizontal: 12, borderRadius: 10, borderWidth: 1, borderColor: COLORS.border, backgroundColor: '#fff' }}>
-                <Text style={{ color: COLORS.text, fontWeight: '700' }}>Р—Р°РєСЂС‹С‚СЊ</Text>
+                <Text style={{ color: COLORS.text, fontWeight: '700' }}>Закрыть</Text>
               </Pressable>
             </SafeView>
           </View>
@@ -625,7 +625,7 @@ export default function AccountantScreen() {
   );
 }
 
-/** РїРёРєРµСЂ С„Р°Р№Р»Р° (web/native) */
+/** пикер файла (web/native) */
 async function pickAnyFile(): Promise<any | null> {
   try {
     if (Platform.OS === 'web') {
@@ -644,7 +644,7 @@ async function pickAnyFile(): Promise<any | null> {
       return res?.assets?.[0] ?? res ?? null;
     }
   } catch (e) {
-    safeAlert('Р¤Р°Р№Р»', (e as any)?.message ?? String(e));
+    safeAlert('Файл', (e as any)?.message ?? String(e));
     return null;
   }
 }

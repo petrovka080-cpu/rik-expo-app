@@ -1,4 +1,4 @@
-﻿const SB_URL = process.env.EXPO_PUBLIC_SUPABASE_URL!;
+const SB_URL = process.env.EXPO_PUBLIC_SUPABASE_URL!;
 const SB_ANON = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY!;
 
 export const PG_HEADERS: Record<string, string> = {

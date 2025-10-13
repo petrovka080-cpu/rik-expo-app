@@ -1,4 +1,4 @@
-﻿// app/(tabs)/buyer.tsx вЂ” СЃРЅР°Р±Р¶РµРЅРµС† (Р±РѕРµРІРѕР№, Р±РµР· СЃРјРµРЅС‹ Р»РѕРіРёРєРё) + СЂРµР¶РёРј В«Р”РѕСЂР°Р±РѕС‚Р°С‚СЊВ»
+// app/(tabs)/buyer.tsx — снабженец (боевой, без смены логики) + режим «Доработать»
 import { formatRequestDisplay } from '../../src/lib/format';
 import React, {
   useCallback, useEffect, useMemo, useRef, useState,
@@ -23,7 +23,7 @@ import {
   // @ts-ignore
   uploadProposalAttachment,
   proposalSendToAccountant,
-  // рџ‘‡ Р±Р°С‚С‡ РґР»СЏ РєСЂР°СЃРёРІС‹С… РЅРѕРјРµСЂРѕРІ Р·Р°СЏРІРѕРє
+  // 👇 батч для красивых номеров заявок
   batchResolveRequestLabels,
   resolveProposalPrettyTitle,
   buildProposalPdfHtmlPretty,
@@ -39,10 +39,10 @@ function SafeView({ children, ...rest }: any) {
 }
 
 const isWeb = Platform.OS === 'web';
-// РЅРѕСЂРјР°Р»РёР·СѓРµРј РЅР°Р·РІР°РЅРёРµ РїРѕСЃС‚Р°РІС‰РёРєР°: СѓР±РёСЂР°РµРј РєР°РІС‹С‡РєРё/Р»РёС€РЅРёРµ РїСЂРѕР±РµР»С‹/СЂРµРіРёСЃС‚СЂ
+// нормализуем название поставщика: убираем кавычки/лишние пробелы/регистр
 const normName = (s?: string | null) =>
   String(s ?? '')
-    .replace(/[В«В»"]/g, '')
+    .replace(/[«»"]/g, '')
     .replace(/\s+/g, ' ')
     .trim()
     .toLowerCase();
@@ -52,9 +52,9 @@ type Group = { request_id: string; request_id_old?: number | null; items: BuyerI
 type LineMeta = { price?: string; supplier?: string; note?: string };
 type Attachment = { name: string; url?: string; file?: any };
 type AttachmentMap = Record<string, Attachment | undefined>;
-const SUPP_NONE = 'вЂ” Р±РµР· РїРѕСЃС‚Р°РІС‰РёРєР° вЂ”';
+const SUPP_NONE = '— без поставщика —';
 
-/* ====== РџР°Р»РёС‚СЂР° (РєР°Рє Сѓ Accountant) ====== */
+/* ====== Палитра (как у Accountant) ====== */
 const COLORS = {
   bg: '#F8FAFC',
   text: '#0F172A',
@@ -72,12 +72,12 @@ const COLORS = {
   amber: '#F59E0B',
 };
 
-/* =================== РЎС‚Р°С‚СѓСЃ-С†РІРµС‚Р° =================== */
+/* =================== Статус-цвета =================== */
 const statusColors = (s?: string | null) => {
   const v = (s ?? '').trim();
-  if (v === 'РЈС‚РІРµСЂР¶РґРµРЅРѕ') return { bg: '#DCFCE7', fg: '#166534' };
-  if (v === 'РќР° СѓС‚РІРµСЂР¶РґРµРЅРёРё') return { bg: '#DBEAFE', fg: '#1E3A8A' };
-  if (v === 'РќР° РґРѕСЂР°Р±РѕС‚РєРµ' || v.startsWith('РќР° РґРѕСЂР°Р±РѕС‚РєРµ')) return { bg: '#FEE2E2', fg: '#991B1B' };
+  if (v === 'Утверждено') return { bg: '#DCFCE7', fg: '#166534' };
+  if (v === 'На утверждении') return { bg: '#DBEAFE', fg: '#1E3A8A' };
+  if (v === 'На доработке' || v.startsWith('На доработке')) return { bg: '#FEE2E2', fg: '#991B1B' };
   return { bg: '#E5E7EB', fg: '#111827' };
 };
 
@@ -87,7 +87,7 @@ const Chip = ({ label, bg, fg }: { label: string; bg: string; fg: string }) => (
   </View>
 );
 
-/* ==== helper: РєСЂР°СЃРёРІС‹Рµ РїРѕРґРїРёСЃРё + СЃСѓРјРјР° РїРѕ РїСЂРµРґР»РѕР¶РµРЅРёСЋ ==== */
+/* ==== helper: красивые подписи + сумма по предложению ==== */
 function useProposalPretty(proposalId: string | number) {
   const pid = String(proposalId);
   const [title, setTitle] = React.useState<string>('');
@@ -140,7 +140,7 @@ function useProposalPretty(proposalId: string | number) {
           label =
             uniq.length === 1 ? `${uniq[0]}` :
             uniq.length === 2 ? `${uniq[0]} + ${uniq[1]}` :
-            `${uniq[0]} + ${uniq[1]} + вЂ¦ (${uniq.length} Р·Р°СЏРІРєРё)`;
+            `${uniq[0]} + ${uniq[1]} + … (${uniq.length} заявки)`;
         }
 
         if (!dead) { setTitle(label); setTotal(sum); }
@@ -156,7 +156,7 @@ function useProposalPretty(proposalId: string | number) {
   return { title, total, busy };
 }
 
-/* ======= Р’Р»РѕР¶РµРЅРёСЏ (web) вЂ” РїРµСЂРµРёРјРµРЅРѕРІР°РЅРѕ, С‡С‚РѕР±С‹ РЅРµ Р±С‹Р»Рѕ РґСѓР±Р»СЏ ======= */
+/* ======= Вложения (web) — переименовано, чтобы не было дубля ======= */
 function AttachmentUploaderWeb({
   label, onPick, current,
 }: {
@@ -181,13 +181,13 @@ function AttachmentUploaderWeb({
   return (
     <Pressable onPress={handlePick} style={[s.smallBtn, { borderColor: COLORS.primary }]}>
       <Text style={[s.smallBtnText, { color: COLORS.primary }]}>
-        {current?.name ? `${label}: ${current.name}` : `Р’Р»РѕР¶РµРЅРёРµ: ${label}`}
+        {current?.name ? `${label}: ${current.name}` : `Вложение: ${label}`}
       </Text>
     </Pressable>
   );
 }
 
-/* =================== РњРµРјРѕ-С€Р°РїРєР° =================== */
+/* =================== Мемо-шапка =================== */
 type SummaryHandle = { flush: () => string };
 const SummaryBar = React.memo(forwardRef<SummaryHandle, {
   initialFio: string;
@@ -233,10 +233,10 @@ const SummaryBar = React.memo(forwardRef<SummaryHandle, {
 
   return (
     <View style={s.summaryWrap}>
-      <Text style={s.summaryTitle}>РЎРЅР°Р±Р¶РµРЅРµС†</Text>
+      <Text style={s.summaryTitle}>Снабженец</Text>
 
       <View style={{ minWidth: 260 }}>
-        <Text style={s.summaryMeta}>Р¤РРћ СЃРЅР°Р±Р¶РµРЅС†Р°</Text>
+        <Text style={s.summaryMeta}>ФИО снабженца</Text>
         <TextInput
           value={draft}
           onChangeText={(t) => {
@@ -244,31 +244,31 @@ const SummaryBar = React.memo(forwardRef<SummaryHandle, {
             if (deb.current) clearTimeout(deb.current);
             deb.current = setTimeout(() => commit(t), 180);
           }}
-          placeholder="РІРІРµРґРёС‚Рµ Р¤РРћ"
+          placeholder="введите ФИО"
           style={[s.input, { paddingVertical: 6, backgroundColor: '#fff', borderColor: COLORS.border }]}
         />
       </View>
 
       <View style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
-        <TabBtn id="inbox" title="РРЅР±РѕРєСЃ" />
-        <TabBtn id="pending" title={`РЈ РґРёСЂРµРєС‚РѕСЂР° (${pendingCount})`} />
-        <TabBtn id="approved" title={`РЈС‚РІРµСЂР¶РґРµРЅРѕ (${approvedCount})`} />
-        <TabBtn id="rejected" title={`РќР° РґРѕСЂР°Р±РѕС‚РєРµ (${rejectedCount})`} />
+        <TabBtn id="inbox" title="Инбокс" />
+        <TabBtn id="pending" title={`У директора (${pendingCount})`} />
+        <TabBtn id="approved" title={`Утверждено (${approvedCount})`} />
+        <TabBtn id="rejected" title={`На доработке (${rejectedCount})`} />
       </View>
 
       <View style={{ marginLeft: 'auto', flexDirection: 'row', alignItems: 'center', gap: 8 }}>
         <Text style={[s.summaryMeta, { fontWeight: '700', color: COLORS.text }]}>
-          Р’С‹Р±СЂР°РЅРѕ: {pickedCount} В· РЎСѓРјРјР°: {pickedSum.toLocaleString()} СЃРѕРј
+          Выбрано: {pickedCount} · Сумма: {pickedSum.toLocaleString()} сом
         </Text>
         <Pressable onPress={onRefresh} style={[s.smallBtn, { borderColor: COLORS.primary }]}>
-          <Text style={[s.smallBtnText, { color: COLORS.primary }]}>РћР±РЅРѕРІРёС‚СЊ</Text>
+          <Text style={[s.smallBtnText, { color: COLORS.primary }]}>Обновить</Text>
         </Pressable>
       </View>
     </View>
   );
 }));
 
-/* ============================== Р­РєСЂР°РЅ СЃРЅР°Р±Р¶РµРЅС†Р° ============================== */
+/* ============================== Экран снабженца ============================== */
 export default function BuyerScreen() {
   const [tab, setTab] = useState<Tab>('inbox');
   const [buyerFio, setBuyerFio] = useState<string>('');
@@ -278,41 +278,41 @@ export default function BuyerScreen() {
   const [loadingInbox, setLoadingInbox] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
-  // Р’С‹Р±РѕСЂ/РјРµС‚Р°
+  // Выбор/мета
   const [picked, setPicked] = useState<Record<string, boolean>>({});
   const [meta, setMeta] = useState<Record<string, LineMeta>>({});
   const [attachments, setAttachments] = useState<AttachmentMap>({});
   const [creating, setCreating] = useState(false);
 
-  // Р’РєР»Р°РґРєРё СЃС‚Р°С‚СѓСЃРѕРІ
+  // Вкладки статусов
   const [pending, setPending]   = useState<any[]>([]);
   const [approved, setApproved] = useState<any[]>([]);
   const [rejected, setRejected] = useState<any[]>([]);
   const [loadingBuckets, setLoadingBuckets] = useState(false);
 
-  // Р РµРґР°РєС‚РёСЂРѕРІР°РЅРёРµ СЃС‚СЂРѕРєРё
+  // Редактирование строки
   const [editFor, setEditFor] = useState<BuyerInboxRow | null>(null);
   const [tmpPrice, setTmpPrice] = useState('');
   const [tmpSupplier, setTmpSupplier] = useState('');
   const [tmpNote, setTmpNote] = useState('');
-  // РґР»СЏ Р°РІС‚РѕРїРѕРёСЃРєР° РїРѕСЃС‚Р°РІС‰РёРєРѕРІ
+  // для автопоиска поставщиков
   const [supSugOpen, setSupSugOpen] = useState(false);
   const [supSug, setSupSug] = useState<Supplier[]>([]);
 
-  // рџ‘‰ Р°РІС‚РѕРїРѕР»СЏ СЂРµРєРІРёР·РёС‚РѕРІ РїРѕСЃС‚Р°РІС‰РёРєР°
+  // 👉 автополя реквизитов поставщика
   const [tmpInn, setTmpInn] = useState('');
   const [tmpAccount, setTmpAccount] = useState('');
   const [tmpPhone, setTmpPhone] = useState('');
   const [tmpEmail, setTmpEmail] = useState('');
 
-  // рџ‘‰ СЃРїСЂР°РІРѕС‡РЅРёРє РїРѕСЃС‚Р°РІС‰РёРєРѕРІ
+  // 👉 справочник поставщиков
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [suppliersLoaded, setSuppliersLoaded] = useState(false);
 
 
   const summaryRef = useRef<{ flush: () => string } | null>(null);
 
-  // РјРѕРґР°Р»РєР° В«Р’ Р±СѓС…РіР°Р»С‚РµСЂРёСЋВ»
+  // модалка «В бухгалтерию»
   const [acctOpen, setAcctOpen] = useState(false);
   const [acctProposalId, setAcctProposalId] = useState<string | number | null>(null);
   const [invNumber, setInvNumber] = useState('');
@@ -321,7 +321,7 @@ export default function BuyerScreen() {
   const [invCurrency, setInvCurrency] = useState('KGS');
   const [invFile, setInvFile] = useState<any | null>(null);
   const [acctBusy, setAcctBusy] = useState(false);
-  // РєР°СЂС‚РѕС‡РєР° РїРѕСЃС‚Р°РІС‰РёРєР° РґР»СЏ РјРѕРґР°Р»РєРё Р±СѓС…РіР°Р»С‚РµСЂР° (read-only)
+  // карточка поставщика для модалки бухгалтера (read-only)
   const [acctSupp, setAcctSupp] = useState<{
     name: string;
     inn?: string | null;
@@ -330,21 +330,21 @@ export default function BuyerScreen() {
     email?: string | null;
   } | null>(null);
 
-  // РґРѕРєСѓРјРµРЅС‚ РїСЂРµРґР»РѕР¶РµРЅРёСЏ РІ РјРѕРґР°Р»РєРµ
+  // документ предложения в модалке
   const [propDocAttached, setPropDocAttached] = useState<{ name: string; url?: string } | null>(null);
   const [propDocBusy, setPropDocBusy] = useState(false);
 
-  // === РџРђРўР§: РјРіРЅРѕРІРµРЅРЅР°СЏ Р·Р°РіСЂСѓР·РєР° invoice (web/native) ===
+  // === ПАТЧ: мгновенная загрузка invoice (web/native) ===
   const invoiceInputRef = useRef<HTMLInputElement | null>(null);
   const [invoiceUploadedName, setInvoiceUploadedName] = useState<string>('');
 
-  // ====== РљР­РЁ С‡РµР»РѕРІРµРєРѕС‡РёС‚Р°РµРјС‹С… РЅРѕРјРµСЂРѕРІ Р·Р°СЏРІРѕРє ======
+  // ====== КЭШ человекочитаемых номеров заявок ======
   const [displayNoByReq, setDisplayNoByReq] = useState<Record<string, string>>({});
   const prettyLabel = useCallback((rid: string, ridOld?: number | null) => {
     const key = String(rid).trim();
     const dn = displayNoByReq[key];
-    if (dn) return `Р—Р°СЏРІРєР° ${dn}`;
-    return `Р—Р°СЏРІРєР° ${formatRequestDisplay(String(rid), ridOld ?? null)}`;
+    if (dn) return `Заявка ${dn}`;
+    return `Заявка ${formatRequestDisplay(String(rid), ridOld ?? null)}`;
   }, [displayNoByReq]);
 
   const preloadDisplayNos = useCallback(async (ids: string[]) => {
@@ -368,19 +368,19 @@ export default function BuyerScreen() {
     try {
       const f = e?.target?.files?.[0];
       if (!f) return;
-      if (!acctProposalId) { Alert.alert('РћС€РёР±РєР°', 'РќРµ РІС‹Р±СЂР°РЅ РґРѕРєСѓРјРµРЅС‚'); return; }
+      if (!acctProposalId) { Alert.alert('Ошибка', 'Не выбран документ'); return; }
       const pidStr = String(acctProposalId);
-      await uploadProposalAttachment(pidStr, f, f.name, 'invoice'); // РєР»СЋС‡: group_key='invoice'
+      await uploadProposalAttachment(pidStr, f, f.name, 'invoice'); // ключ: group_key='invoice'
       setInvoiceUploadedName(f.name);
-      Alert.alert('Р“РѕС‚РѕРІРѕ', `РЎС‡С‘С‚ РїСЂРёРєСЂРµРїР»С‘РЅ: ${f.name}`);
+      Alert.alert('Готово', `Счёт прикреплён: ${f.name}`);
     } catch (err: any) {
-      Alert.alert('РћС€РёР±РєР° Р·Р°РіСЂСѓР·РєРё', err?.message ?? String(err));
+      Alert.alert('Ошибка загрузки', err?.message ?? String(err));
     } finally {
       if (invoiceInputRef.current) (invoiceInputRef.current as any).value = '';
     }
   }, [acctProposalId]);
 
-  // Р°РІС‚Рѕ Р¤РРћ
+  // авто ФИО
   useEffect(() => {
     (async () => {
       try {
@@ -394,13 +394,13 @@ export default function BuyerScreen() {
     })();
   }, [buyerFio]);
 
-  /* ==================== Р—Р°РіСЂСѓР·РєР° ==================== */
+  /* ==================== Загрузка ==================== */
   const fetchInbox = useCallback(async () => { 
     setLoadingInbox(true);
     try {
       let inbox: BuyerInboxRow[] = [];
 
-      // 1) РїСЂРѕР±СѓРµРј RPC
+      // 1) пробуем RPC
       try {
         const { data, error } = await supabase.rpc('list_buyer_inbox');
         if (!error && Array.isArray(data)) inbox = data as BuyerInboxRow[];
@@ -413,7 +413,7 @@ export default function BuyerScreen() {
         const ri = await supabase
           .from('request_items')
           .select('request_id,id,name_human,qty,uom,app_code,status,request_id_old')
-          .in('status', ['Рљ Р·Р°РєСѓРїРєРµ', 'РЈС‚РІРµСЂР¶РґРµРЅРѕ'])
+          .in('status', ['К закупке', 'Утверждено'])
           .order('request_id', { ascending: true });
 
         if (!ri.error && Array.isArray(ri.data)) {
@@ -430,7 +430,7 @@ export default function BuyerScreen() {
         }
       }
 
-      // 3) СѓР±РёСЂР°РµРј РїРѕР·РёС†РёРё, РєРѕС‚РѕСЂС‹Рµ СѓР¶Рµ РІ proposals
+      // 3) убираем позиции, которые уже в proposals
       let taken = new Set<string>();
       try {
         const piRes = await supabase.from('proposal_items').select('request_item_id');
@@ -445,12 +445,12 @@ export default function BuyerScreen() {
 
       setRows(filtered as BuyerInboxRow[]);
 
-      // 4) РїСЂРµРґР·Р°РіСЂСѓР·РєР° РєСЂР°СЃРёРІС‹С… РЅРѕРјРµСЂРѕРІ Р·Р°СЏРІРѕРє
+      // 4) предзагрузка красивых номеров заявок
       const ids = Array.from(new Set(filtered.map(r => String(r.request_id))));
       preloadDisplayNos(ids);
     } catch (e) {
       console.error('[buyer] fetchInbox:', (e as any)?.message ?? e);
-      Alert.alert('РћС€РёР±РєР°', 'РќРµ СѓРґР°Р»РѕСЃСЊ Р·Р°РіСЂСѓР·РёС‚СЊ РёРЅР±РѕРєСЃ СЃРЅР°Р±Р¶РµРЅС†Р°');
+      Alert.alert('Ошибка', 'Не удалось загрузить инбокс снабженца');
       setRows([]);
     } finally {
       setLoadingInbox(false);
@@ -460,19 +460,19 @@ export default function BuyerScreen() {
   const fetchBuckets = useCallback(async () => {
     setLoadingBuckets(true);
     try {
-      // === РЈ Р”РР Р•РљРўРћР Рђ ===
+      // === У ДИРЕКТОРА ===
       const p = await supabase
         .from('proposals')
         .select('id, status, submitted_at')
-        .eq('status', 'РќР° СѓС‚РІРµСЂР¶РґРµРЅРёРё')
+        .eq('status', 'На утверждении')
         .order('submitted_at', { ascending: false });
       setPending(!p.error ? (p.data || []) : []);
 
-      // === РЈРўР’Р•Р Р–Р”Р•РќРћ (РµС‰С‘ РќР• РѕС‚РїСЂР°РІР»РµРЅРѕ РІ Р±СѓС….) ===
+      // === УТВЕРЖДЕНО (ещё НЕ отправлено в бух.) ===
       const apQ = await supabase
         .from('proposals')
         .select('id, status, submitted_at, sent_to_accountant_at')
-        .eq('status', 'РЈС‚РІРµСЂР¶РґРµРЅРѕ')
+        .eq('status', 'Утверждено')
         .is('sent_to_accountant_at', null)
         .order('submitted_at', { ascending: false });
 
@@ -485,26 +485,26 @@ export default function BuyerScreen() {
         : [];
       setApproved(approvedClean);
 
-      // === РќРђ Р”РћР РђР‘РћРўРљР• Сѓ СЃРЅР°Р±Р¶РµРЅС†Р° ===
-      // 1) Р’РѕР·РІСЂР°С‚С‹ РґРёСЂРµРєС‚РѕСЂР°: РґРѕРєСѓРјРµРЅС‚ РµС‰С‘ РќР• Р±С‹Р» Сѓ Р±СѓС…РіР°Р»С‚РµСЂР°
+      // === НА ДОРАБОТКЕ у снабженца ===
+      // 1) Возвраты директора: документ ещё НЕ был у бухгалтера
       const reDir = await supabase
         .from('proposals')
         .select('id, status, payment_status, submitted_at, created_at, sent_to_accountant_at')
-        .ilike('status', '%РќР° РґРѕСЂР°Р±РѕС‚РєРµ%')
+        .ilike('status', '%На доработке%')
         .is('sent_to_accountant_at', null)
         .order('submitted_at', { ascending: false, nullsLast: true })
         .order('created_at',   { ascending: false, nullsLast: true });
 
-      // 2) Р’РѕР·РІСЂР°С‚С‹ Р±СѓС…РіР°Р»С‚РµСЂР°: РїР»Р°С‚С‘Р¶РЅС‹Р№ СЃС‚Р°С‚СѓСЃ В«РќР° РґРѕСЂР°Р±РѕС‚РєРµ%В»
+      // 2) Возвраты бухгалтера: платёжный статус «На доработке%»
       const reAcc = await supabase
         .from('proposals')
         .select('id, status, payment_status, submitted_at, created_at, sent_to_accountant_at')
-        .ilike('payment_status', '%РќР° РґРѕСЂР°Р±РѕС‚РєРµ%')
+        .ilike('payment_status', '%На доработке%')
         .order('submitted_at', { ascending: false, nullsLast: true })
         .order('created_at',   { ascending: false, nullsLast: true });
 
-      // 3) РћР±СЉРµРґРёРЅСЏРµРј Р±РµР· РґСѓР±Р»РµР№ Рё СЃ СЏРІРЅРѕР№ С„РёР»СЊС‚СЂР°С†РёРµР№:
-      //    РѕСЃС‚Р°РІР»СЏРµРј РўРћР›Р¬РљРћ director-rework РР›Р accountant-rework
+      // 3) Объединяем без дублей и с явной фильтрацией:
+      //    оставляем ТОЛЬКО director-rework ИЛИ accountant-rework
       const comb = [...(reDir.data || []), ...(reAcc.data || [])];
       const seen = new Set<string>();
       const rejectedRows = comb
@@ -517,15 +517,15 @@ export default function BuyerScreen() {
           const ps   = String(x?.payment_status ?? '').toLowerCase();
           const sent = !!x?.sent_to_accountant_at;
 
-          const isDirectorRework   = st.startsWith('РЅР° РґРѕСЂР°Р±РѕС‚РєРµ') && !sent;
-          const isAccountantRework = ps.startsWith('РЅР° РґРѕСЂР°Р±РѕС‚РєРµ');
+          const isDirectorRework   = st.startsWith('на доработке') && !sent;
+          const isAccountantRework = ps.startsWith('на доработке');
           return isDirectorRework || isAccountantRework;
         })
         .map((x: any) => {
           const ps = String(x.payment_status ?? '');
           const st = String(x.status ?? '');
           const submitted_at = x.submitted_at ?? x.created_at ?? null;
-          const showStatus = ps.toLowerCase().startsWith('РЅР° РґРѕСЂР°Р±РѕС‚РєРµ') ? ps : (st || 'РќР° РґРѕСЂР°Р±РѕС‚РєРµ');
+          const showStatus = ps.toLowerCase().startsWith('на доработке') ? ps : (st || 'На доработке');
           return { id: String(x.id), status: showStatus, submitted_at };
         });
 
@@ -545,7 +545,7 @@ export default function BuyerScreen() {
       { event: 'INSERT', schema: 'public', table: 'notifications', filter: 'role=eq.buyer' },
       (payload: any) => {
         const n = payload?.new || {};
-        Alert.alert(n.title || 'РЈРІРµРґРѕРјР»РµРЅРёРµ', n.body || '');
+        Alert.alert(n.title || 'Уведомление', n.body || '');
         fetchBuckets();
       }
     );
@@ -562,7 +562,7 @@ export default function BuyerScreen() {
     setRefreshing(false);
   }, [fetchInbox, fetchBuckets]);
 
-  // в”Ђв”Ђ Р—Р°РіСЂСѓР·РєР° СЃРїСЂР°РІРѕС‡РЅРёРєР° РїРѕСЃС‚Р°РІС‰РёРєРѕРІ РѕРґРёРЅ СЂР°Р·
+  // ── Загрузка справочника поставщиков один раз
   useEffect(() => {
     (async () => {
       if (suppliersLoaded) return;
@@ -575,14 +575,14 @@ export default function BuyerScreen() {
       }
     })();
   }, [suppliersLoaded]);
-  // РїРѕРґСЃРєР°Р·РєРё: РїРѕРєР°Р·С‹РІР°РµРј СЃРѕРІРїР°РґРµРЅРёСЏ РєРѕРіРґР° РІРІРµРґРµРЅРѕ 2+ СЃРёРјРІРѕР»РѕРІ
+  // подсказки: показываем совпадения когда введено 2+ символов
   useEffect(() => {
     const q = normName(tmpSupplier);
     if (q.length < 2) {
       setSupSug([]); setSupSugOpen(false);
       return;
     }
-    // РµСЃР»Рё СЃРїСЂР°РІРѕС‡РЅРёРє РµС‰С‘ РЅРµ РїРѕРґРіСЂСѓР¶РµРЅ вЂ” Р·Р°РіСЂСѓР·РёРј
+    // если справочник ещё не подгружен — загрузим
     (async () => {
       if (!suppliersLoaded || suppliers.length === 0) {
         try {
@@ -599,7 +599,7 @@ export default function BuyerScreen() {
     })();
   }, [tmpSupplier, suppliers, suppliersLoaded]);
 
-  // в”Ђв”Ђ РђРІС‚РѕР·Р°РїРѕР»РЅРµРЅРёРµ РРќРќ / СЃС‡С‘С‚Р° / С‚РµР»РµС„РѕРЅР° / email РїСЂРё РёР·РјРµРЅРµРЅРёРё РїРѕР»СЏ В«РџРѕСЃС‚Р°РІС‰РёРєВ»
+  // ── Автозаполнение ИНН / счёта / телефона / email при изменении поля «Поставщик»
   useEffect(() => {
     const n = normName(tmpSupplier);
     if (!n || !suppliers.length) {
@@ -614,7 +614,7 @@ export default function BuyerScreen() {
   }, [tmpSupplier, suppliers]);
 
 
-  /* ==================== Р“СЂСѓРїРїРёСЂРѕРІРєР° Рё РёС‚РѕРіРё ==================== */
+  /* ==================== Группировка и итоги ==================== */
   const groups: Group[] = useMemo(() => {
     const map = new Map<string, Group>();
     for (const r of rows) {
@@ -628,7 +628,7 @@ export default function BuyerScreen() {
 
   const pickedIds = useMemo(() => Object.keys(picked).filter(k => picked[k]), [picked]);
 
-  // РїРѕРєР°Р·С‹РІР°РµРј С‡РµР»РѕРІРµРєРѕС‡РёС‚Р°РµРјРѕРµ РёРјСЏ, РЅРѕ РєР»СЋС‡ вЂ” РЅРѕСЂРјР°Р»РёР·РѕРІР°РЅРЅС‹Р№
+  // показываем человекочитаемое имя, но ключ — нормализованный
 const supplierGroups = useMemo(() => {
   const map = new Map<string, string>(); // key: normalized, val: display
   for (const id of pickedIds) {
@@ -658,7 +658,7 @@ const supplierGroups = useMemo(() => {
     return sum;
   }, [pickedIds, rows, meta]);
 
-  /* ==================== Р’С‹Р±РѕСЂ/СЂРµРґР°РєС‚РёСЂРѕРІР°РЅРёРµ ==================== */
+  /* ==================== Выбор/редактирование ==================== */
   const togglePick = useCallback((ri: BuyerInboxRow) => {
     const key = ri.request_item_id ?? '';
     if (!key) return;
@@ -675,7 +675,7 @@ const supplierGroups = useMemo(() => {
     setTmpNote(m.note ?? '');
     setEditFor(ri);
 
-    // рџ‘‡ Р°РІС‚РѕРїРѕРґСЃС‚Р°РЅРѕРІРєР° СЂРµРєРІРёР·РёС‚РѕРІ РїРѕ СѓР¶Рµ РІС‹Р±СЂР°РЅРЅРѕРјСѓ РїРѕСЃС‚Р°РІС‰РёРєСѓ РІ СЃС‚СЂРѕРєРµ
+    // 👇 автоподстановка реквизитов по уже выбранному поставщику в строке
     try {
       const sname = String(m.supplier ?? '').trim().toLowerCase();
       if (!sname) {
@@ -695,18 +695,18 @@ const supplierGroups = useMemo(() => {
     const key = editFor.request_item_id;
     const supplierName = tmpSupplier.trim();
 
-    // РёС‰РµРј РїРѕСЃС‚Р°РІС‰РёРєР° РїРѕ РЅРѕСЂРјР°Р»РёР·РѕРІР°РЅРЅРѕРјСѓ РёРјРµРЅРё
+    // ищем поставщика по нормализованному имени
     const match = suppliers.find(s => normName(s.name) === normName(supplierName));
 
     let newNote = tmpNote.trim();
     if (match) {
       const parts: string[] = [];
-      if (match.inn)          parts.push(`РРќРќ: ${match.inn}`);
-      if (match.bank_account) parts.push(`РЎС‡С‘С‚: ${match.bank_account}`);
-      if (match.phone)        parts.push(`РўРµР».: ${match.phone}`);
+      if (match.inn)          parts.push(`ИНН: ${match.inn}`);
+      if (match.bank_account) parts.push(`Счёт: ${match.bank_account}`);
+      if (match.phone)        parts.push(`Тел.: ${match.phone}`);
       if (match.email)        parts.push(`Email: ${match.email}`);
       if (parts.length) {
-        const line = parts.join(' В· ');
+        const line = parts.join(' · ');
         newNote = newNote ? `${newNote}\n${line}` : line;
       }
     }
@@ -723,7 +723,7 @@ const supplierGroups = useMemo(() => {
     setEditFor(null);
   }, [editFor, tmpPrice, tmpSupplier, tmpNote, suppliers]);
 
-  // рџ‘‡ Р°РІС‚РѕРїРѕРґСЃС‚Р°РЅРѕРІРєР° СЂРµРєРІРёР·РёС‚РѕРІ РїСЂРё СЂСѓС‡РЅРѕРј РІРІРѕРґРµ/СЃРјРµРЅРµ В«РџРѕСЃС‚Р°РІС‰РёРєВ»
+  // 👇 автоподстановка реквизитов при ручном вводе/смене «Поставщик»
   useEffect(() => {
     const name = tmpSupplier.trim().toLowerCase();
     if (!name || !suppliers.length) {
@@ -738,7 +738,7 @@ const supplierGroups = useMemo(() => {
   }, [tmpSupplier, suppliers]);
 
 
-  /* ==================== РЎРЅРёРјРѕРє РїРѕР»РµР№ РІ proposal_items ==================== */
+  /* ==================== Снимок полей в proposal_items ==================== */
   const snapshotProposalItems = useCallback(async (proposalId: number | string, ids: string[]) => {
     try {
       let riData: any[] = [];
@@ -777,7 +777,7 @@ if (m.price != null && String(m.price).trim() !== '') {
   const pv = Number(String(m.price).replace(',', '.'));
   if (Number.isFinite(pv)) upd.price = pv;
 }
-// вљ пёЏ supplier Р·РґРµСЃСЊ РќР• С‚СЂРѕРіР°РµРј вЂ” СѓР¶Рµ Р·Р°РґР°РЅ РµРґРёРЅРѕРѕР±СЂР°Р·РЅРѕ РїСЂРё С„РѕСЂРјРёСЂРѕРІР°РЅРёРё РїСЂРѕРїРѕР·Р°Р»Р°
+// ⚠️ supplier здесь НЕ трогаем — уже задан единообразно при формировании пропозала
 if (m.note) upd.note = m.note;
 
 
@@ -792,7 +792,7 @@ if (m.note) upd.note = m.note;
     }
   }, [rows, meta]);
 
-  // buyer_fio РІ proposals
+  // buyer_fio в proposals
   async function setProposalBuyerFio(propId: string | number, typedFio?: string) {
     try {
       let fio = (typedFio ?? '').trim();
@@ -801,7 +801,7 @@ if (m.note) upd.note = m.note;
         fio =
           (data?.user?.user_metadata?.full_name?.trim()) ||
           (data?.user?.user_metadata?.name?.trim()) ||
-          'РЎРЅР°Р±Р¶РµРЅРµС†';
+          'Снабженец';
       }
       await supabase.from('proposals')
         .update({ buyer_fio: fio })
@@ -811,14 +811,14 @@ if (m.note) upd.note = m.note;
     }
   }
 
-  /* ======= РҐР•Р›РџР•Р : С‡Р°РЅРєРё РїРѕ 50 РґР»СЏ Р±РµР·РѕРїР°СЃРЅРѕР№ РІСЃС‚Р°РІРєРё ======= */
+  /* ======= ХЕЛПЕР: чанки по 50 для безопасной вставки ======= */
   const chunk = <T,>(arr: T[], n = 50) => {
     const out: T[][] = [];
     for (let i = 0; i < arr.length; i += n) out.push(arr.slice(i, i + n));
     return out;
   };
 
-  /* ==================== РћС‚РїСЂР°РІРєР° РїСЂРµРґР»РѕР¶РµРЅРёР№ ==================== */
+  /* ==================== Отправка предложений ==================== */
   const validatePicked = useCallback(() => {
     const missing: string[] = [];
     for (const g of groups) {
@@ -826,11 +826,11 @@ if (m.note) upd.note = m.note;
         const key = String(it.request_item_id || `${g.request_id}:${idx}`);
         if (!picked[key]) return;
         const m = meta[key] || {};
-        if (!m.price || !m.supplier) missing.push(`вЂў ${formatRequestDisplay(g.request_id, g.request_id_old)}: ${it.name_human}`);
+        if (!m.price || !m.supplier) missing.push(`• ${formatRequestDisplay(g.request_id, g.request_id_old)}: ${it.name_human}`);
       });
     }
     if (missing.length) {
-      Alert.alert('Р—Р°РїРѕР»РЅРёС‚Рµ РґР°РЅРЅС‹Рµ', `РЈРєР°Р¶Рё С†РµРЅСѓ Рё РїРѕСЃС‚Р°РІС‰РёРєР°:\n\n${missing.slice(0,10).join('\n')}${missing.length>10?'\nвЂ¦':''}`);
+      Alert.alert('Заполните данные', `Укажи цену и поставщика:\n\n${missing.slice(0,10).join('\n')}${missing.length>10?'\n…':''}`);
       return false;
     }
     return true;
@@ -842,7 +842,7 @@ if (m.note) upd.note = m.note;
 
   const createProposalSingle = useCallback(async () => {
     const ids = pickedIds;
-    if (ids.length === 0) { Alert.alert('РџСѓСЃС‚Рѕ', 'Р’С‹Р±РµСЂРё РїРѕР·РёС†РёРё РёР· РёРЅР±РѕРєСЃР°'); return; }
+    if (ids.length === 0) { Alert.alert('Пусто', 'Выбери позиции из инбокса'); return; }
     if (!validatePicked()) return;
 
     try {
@@ -855,11 +855,11 @@ if (m.note) upd.note = m.note;
       let added = 0;
       try { added = await proposalAddItems(propId, ids); } catch {}
       if (!added) {
-        // рџ”Ѓ Р’РђР–РќРћ: Р±РµР·РѕРїР°СЃРЅР°СЏ РІСЃС‚Р°РІРєР° С‡Р°РЅРєР°РјРё РїРѕ 50
+        // 🔁 ВАЖНО: безопасная вставка чанками по 50
         for (const pack of chunk(ids, 50)) {
           const bulk = pack.map(id => ({ proposal_id: String(propId), request_item_id: id }));
           const ins = await supabase.from('proposal_items').insert(bulk).select('request_item_id');
-          if (ins.error) { Alert.alert('РћС€РёР±РєР°', 'РќРµ СѓРґР°Р»РѕСЃСЊ РґРѕР±Р°РІРёС‚СЊ СЃС‚СЂРѕРєРё'); return; }
+          if (ins.error) { Alert.alert('Ошибка', 'Не удалось добавить строки'); return; }
         }
       }
 
@@ -876,17 +876,17 @@ if (m.note) upd.note = m.note;
       await snapshotProposalItems(propId, ids);
       await proposalSubmit(propId);
 
-      try { await supabase.from('request_items').update({ status: 'РЈ РґРёСЂРµРєС‚РѕСЂР°' }).in('id', ids); } catch {}
+      try { await supabase.from('request_items').update({ status: 'У директора' }).in('id', ids); } catch {}
       removeFromInboxLocally(ids);
 
       clearPick();
-      Alert.alert('РћС‚РїСЂР°РІР»РµРЅРѕ', `РџСЂРµРґР»РѕР¶РµРЅРёРµ #${String(propId).slice(0,8)} РѕС‚РїСЂР°РІР»РµРЅРѕ РґРёСЂРµРєС‚РѕСЂСѓ`);
+      Alert.alert('Отправлено', `Предложение #${String(propId).slice(0,8)} отправлено директору`);
      await fetchInbox();
 await fetchBuckets();
 setTab('pending');
 } catch (e) {
   console.error('[buyer] createProposalsBySupplier:', (e as any)?.message ?? e);
-  Alert.alert('РћС€РёР±РєР°', (e as any)?.message ?? 'РќРµ СѓРґР°Р»РѕСЃСЊ СЃС„РѕСЂРјРёСЂРѕРІР°С‚СЊ РїСЂРµРґР»РѕР¶РµРЅРёСЏ');
+  Alert.alert('Ошибка', (e as any)?.message ?? 'Не удалось сформировать предложения');
 } finally {
   setCreating(false);
 }
@@ -895,11 +895,11 @@ setTab('pending');
 
   const createProposalsBySupplier = useCallback(async () => {
   const ids = pickedIds;
-  if (ids.length === 0) { Alert.alert('РџСѓСЃС‚Рѕ', 'Р’С‹Р±РµСЂРё РїРѕР·РёС†РёРё'); return; }
+  if (ids.length === 0) { Alert.alert('Пусто', 'Выбери позиции'); return; }
   if (!validatePicked()) return;
 
-  // --- РќРћР РњРђР›РР—РћР’РђРќРќРђРЇ РіСЂСѓРїРїРёСЂРѕРІРєР° РїРѕ РїРѕСЃС‚Р°РІС‰РёРєСѓ ---
-  // РєР»СЋС‡ = normName(raw), РѕС‚РѕР±СЂР°Р¶Р°РµРјРѕРµ РёРјСЏ = raw || SUPP_NONE
+  // --- НОРМАЛИЗОВАННАЯ группировка по поставщику ---
+  // ключ = normName(raw), отображаемое имя = raw || SUPP_NONE
   const bySupp = new Map(); // Map<string, { ids: string[]; display: string }>
   for (const id of ids) {
     const raw = (meta[id]?.supplier || '').trim();
@@ -914,41 +914,41 @@ setTab('pending');
     let count = 0;
     const fioNow = summaryRef.current?.flush() || buyerFio;
 
-    // --- СЃРѕР·РґР°С‘Рј РїСЂРµРґР»РѕР¶РµРЅРёСЏ РїРѕ РєРѕСЂР·РёРЅР°Рј ---
+    // --- создаём предложения по корзинам ---
    for (const [, bucket] of bySupp.entries()) {
   const idlist = bucket.ids;
-  const supplierDisp = bucket.display || SUPP_NONE; // С‡РµР»РѕРІРµРєРѕС‡РёС‚Р°РµРјРѕРµ РёРјСЏ РїРѕСЃС‚Р°РІС‰РёРєР° РґР»СЏ СЌС‚РѕР№ РєРѕСЂР·РёРЅС‹
+  const supplierDisp = bucket.display || SUPP_NONE; // человекочитаемое имя поставщика для этой корзины
 
   const propId = await proposalCreate();
   await setProposalBuyerFio(propId, fioNow);
 
-  // (РѕРїС†РёРѕРЅР°Р»СЊРЅРѕ) РµСЃР»Рё РІ proposals РµСЃС‚СЊ РєРѕР»РѕРЅРєР° РїРѕСЃС‚Р°РІС‰РёРєР° вЂ” Р·Р°РїРѕР»РЅРёРј; РµСЃР»Рё РЅРµС‚ вЂ” try/catch РїСЂРѕРіР»РѕС‚РёС‚
+  // (опционально) если в proposals есть колонка поставщика — заполним; если нет — try/catch проглотит
   try { await supabase.from('proposals').update({ supplier_name: supplierDisp }).eq('id', String(propId)); } catch {}
   try { await supabase.from('proposals').update({ supplier: supplierDisp }).eq('id', String(propId)); } catch {}
 
-  // РґРѕР±Р°РІР»СЏРµРј СЃС‚СЂРѕРєРё: СЃРїРµСЂРІР° RPC, РёРЅР°С‡Рµ С‡Р°РЅРєР°РјРё РїРѕ 50
+  // добавляем строки: сперва RPC, иначе чанками по 50
   let added = 0;
   try { added = await proposalAddItems(propId, idlist); } catch {}
   if (!added) {
     for (const pack of chunk(idlist, 50)) {
       const bulk = pack.map(id => ({ proposal_id: String(propId), request_item_id: id }));
       const ins = await supabase.from('proposal_items').insert(bulk).select('request_item_id');
-      if (ins.error) { Alert.alert('РћС€РёР±РєР°', 'РќРµ СѓРґР°Р»РѕСЃСЊ РґРѕР±Р°РІРёС‚СЊ СЃС‚СЂРѕРєРё'); return; }
+      if (ins.error) { Alert.alert('Ошибка', 'Не удалось добавить строки'); return; }
     }
   }
 
-  // в›” РљР РРўРР§РќРћ: СЃРЅР°РїС€РѕС‚РёРј РµРґРёРЅС‹Р№ supplier РґР»СЏ Р’РЎР•РҐ СЃС‚СЂРѕРє Р­РўРћР“Рћ РїСЂРµРґР»РѕР¶РµРЅРёСЏ
+  // ⛔ КРИТИЧНО: снапшотим единый supplier для ВСЕХ строк ЭТОГО предложения
   await proposalSnapshotItems(
     propId,
     idlist.map(id => ({
       request_item_id: id,
       price:    meta[id]?.price ?? null,
-      supplier: supplierDisp,           // в†ђ С„РёРєСЃ: РµРґРёРЅС‹Р№ РїРѕСЃС‚Р°РІС‰РёРє РґР»СЏ РїСЂРѕРїРѕР·Р°Р»Р°
+      supplier: supplierDisp,           // ← фикс: единый поставщик для пропозала
       note:     meta[id]?.note ?? null,
     }))
   );
 
-  // РїРѕРґСЃС‚СЂР°С…РѕРІРєР°: СЂРѕРІРЅСЏРµРј supplier Сѓ РІСЃРµС… СЃС‚СЂРѕРє РїСЂРѕРїРѕР·Р°Р»Р° (РµСЃР»Рё СЃРµСЂРІРµСЂ С‡С‚Рѕ-С‚Рѕ РїРµСЂРµС‚С‘СЂ)
+  // подстраховка: ровняем supplier у всех строк пропозала (если сервер что-то перетёр)
   try {
     await supabase.from('proposal_items')
       .update({ supplier: supplierDisp })
@@ -958,7 +958,7 @@ setTab('pending');
   await proposalSubmit(propId);
 
   try {
-    await supabase.from('request_items').update({ status: 'РЈ РґРёСЂРµРєС‚РѕСЂР°' }).in('id', idlist);
+    await supabase.from('request_items').update({ status: 'У директора' }).in('id', idlist);
   } catch {}
   removeFromInboxLocally(idlist);
   count++;
@@ -966,13 +966,13 @@ setTab('pending');
 
 
     clearPick();
-    Alert.alert('РћС‚РїСЂР°РІР»РµРЅРѕ', `РЎРѕР·РґР°РЅРѕ РїСЂРµРґР»РѕР¶РµРЅРёР№: ${count}`);
+    Alert.alert('Отправлено', `Создано предложений: ${count}`);
     await fetchInbox();
     await fetchBuckets();
     setTab('pending');
   } catch (e: any) {
     console.error('[buyer] createProposalsBySupplier:', e?.message ?? e);
-    Alert.alert('РћС€РёР±РєР°', e?.message ?? 'РќРµ СѓРґР°Р»РѕСЃСЊ СЃС„РѕСЂРјРёСЂРѕРІР°С‚СЊ РїСЂРµРґР»РѕР¶РµРЅРёСЏ');
+    Alert.alert('Ошибка', e?.message ?? 'Не удалось сформировать предложения');
   } finally {
     setCreating(false);
   }
@@ -988,22 +988,22 @@ setTab('pending');
 ]);
 
 
-  // ===== Fallback: СЃС‚СЂРѕРёРј РїСЂРѕСЃС‚РѕР№ HTML РЅР° РєР»РёРµРЅС‚Рµ, РµСЃР»Рё СЃРµСЂРІРµСЂРЅС‹Р№ HTML РїСѓСЃС‚ =====
+  // ===== Fallback: строим простой HTML на клиенте, если серверный HTML пуст =====
   async function buildFallbackProposalHtmlClient(pid: string | number): Promise<string> {
     const pidStr = String(pid);
 
-    // С‚СЏРЅРµРј СЃС‚СЂРѕРєРё РїСЂРµРґР»РѕР¶РµРЅРёСЏ
+    // тянем строки предложения
     let rows: any[] = [];
     try {
       const r = await proposalItems(pidStr);
       rows = Array.isArray(r) ? r : [];
     } catch { rows = []; }
 
-    // РєСЂР°СЃРёРІС‹Р№ Р·Р°РіРѕР»РѕРІРѕРє
+    // красивый заголовок
     let pretty = '';
     try { pretty = (await resolveProposalPrettyTitle(pidStr)) || ''; } catch {}
 
-    // РЅРµРјРЅРѕР¶РєРѕ РјРµС‚Р°РґР°РЅРЅС‹С…
+    // немножко метаданных
     let meta: any = {};
     try {
       const q = await supabase
@@ -1031,13 +1031,13 @@ setTab('pending');
       <td>${esc(name)}${esc(rik)}</td>
       <td>${qty}</td>
       <td>${esc(uom)}</td>
-      <td>${Number.isFinite(price) ? price.toLocaleString() : 'вЂ”'}</td>
-      <td>${Number.isFinite(sum) ? sum.toLocaleString() : 'вЂ”'}</td>
+      <td>${Number.isFinite(price) ? price.toLocaleString() : '—'}</td>
+      <td>${Number.isFinite(sum) ? sum.toLocaleString() : '—'}</td>
     </tr>`;
     }).join('');
 
     const title =
-      pretty ? `РџСЂРµРґР»РѕР¶РµРЅРёРµ: ${esc(pretty)}` : `РџСЂРµРґР»РѕР¶РµРЅРёРµ #${esc(pidStr).slice(0,8)}`;
+      pretty ? `Предложение: ${esc(pretty)}` : `Предложение #${esc(pidStr).slice(0,8)}`;
 
     return `<!doctype html>
 <html lang="ru"><head>
@@ -1058,23 +1058,23 @@ setTab('pending');
 <body>
   <h1>${title}</h1>
   <div class="meta">
-    РЎС‚Р°С‚СѓСЃ: ${esc(meta.status ?? 'вЂ”')} В· РЎРЅР°Р±Р¶РµРЅРµС†: ${esc(meta.buyer_fio ?? 'вЂ”')} В· РћС‚РїСЂР°РІР»РµРЅРѕ: ${meta.submitted_at ? new Date(meta.submitted_at).toLocaleString() : 'вЂ”'}
+    Статус: ${esc(meta.status ?? '—')} · Снабженец: ${esc(meta.buyer_fio ?? '—')} · Отправлено: ${meta.submitted_at ? new Date(meta.submitted_at).toLocaleString() : '—'}
   </div>
 
   <table>
     <thead>
-      <tr><th>#</th><th>РќР°РёРјРµРЅРѕРІР°РЅРёРµ</th><th>РљРѕР»-РІРѕ</th><th>Р•Рґ.</th><th>Р¦РµРЅР°</th><th>РЎСѓРјРјР°</th></tr>
+      <tr><th>#</th><th>Наименование</th><th>Кол-во</th><th>Ед.</th><th>Цена</th><th>Сумма</th></tr>
     </thead>
     <tbody>
-      ${trs || '<tr><td colspan="6" style="color:#64748b">РџСѓСЃС‚Рѕ</td></tr>'}
+      ${trs || '<tr><td colspan="6" style="color:#64748b">Пусто</td></tr>'}
     </tbody>
     <tfoot>
-      <tr><td colspan="5" style="text-align:right">РС‚РѕРіРѕ:</td><td>${total ? total.toLocaleString() : '0'}</td></tr>
+      <tr><td colspan="5" style="text-align:right">Итого:</td><td>${total ? total.toLocaleString() : '0'}</td></tr>
     </tfoot>
   </table>
 </body></html>`;
   }
-  /* ==================== PDF (buyer): JSON-RPC в†’ РЅРѕРІР°СЏ РІРєР»Р°РґРєР° (РЅР°РґС‘Р¶РЅРѕ) ==================== */
+  /* ==================== PDF (buyer): JSON-RPC → новая вкладка (надёжно) ==================== */
   const openPdfNewWindow = useCallback(async (pid: string | number) => {
     const writeSafe = (w: Window | null, html: string) => {
       if (!w) return;
@@ -1088,12 +1088,12 @@ setTab('pending');
       if (!isWeb) { await exportProposalPdf(pid as any); return; }
 
       const w = window.open('about:blank', '_blank');
-      if (!w) { Alert.alert('Pop-up', 'Р Р°Р·СЂРµС€РёС‚Рµ РІСЃРїР»С‹РІР°СЋС‰РёРµ РѕРєРЅР° РґР»СЏ СЃР°Р№С‚Р°.'); return; }
+      if (!w) { Alert.alert('Pop-up', 'Разрешите всплывающие окна для сайта.'); return; }
       writeSafe(
         w,
-        '<!doctype html><meta charset="utf-8"><title>Р“РѕС‚РѕРІРёРјвЂ¦</title>' +
+        '<!doctype html><meta charset="utf-8"><title>Готовим…</title>' +
         '<body style="font-family:system-ui;padding:24px;color:#0f172a">' +
-        '<h1>Р“РѕС‚РѕРІРёРј РґРѕРєСѓРјРµРЅС‚вЂ¦</h1><p>РџРѕР¶Р°Р»СѓР№СЃС‚Р°, РїРѕРґРѕР¶РґРёС‚Рµ.</p></body>'
+        '<h1>Готовим документ…</h1><p>Пожалуйста, подождите.</p></body>'
       );
 
       const html = await buildProposalPdfHtml(String(pid));
@@ -1102,18 +1102,18 @@ setTab('pending');
       const msg = e?.message ?? String(e);
       const w = window.open('', '_blank');
       if (w) {
-        writeSafe(w, `<!doctype html><meta charset="utf-8"><title>РћС€РёР±РєР°</title>
+        writeSafe(w, `<!doctype html><meta charset="utf-8"><title>Ошибка</title>
         <body style="font-family:system-ui;padding:24px;color:#0f172a">
-          <h1>РћС€РёР±РєР°</h1>
+          <h1>Ошибка</h1>
           <pre style="white-space:pre-wrap;background:#f1f5f9;padding:12px;border-radius:8px">${msg}</pre>
         </body>`);
         return;
       }
-      Alert.alert('РћС€РёР±РєР°', msg);
+      Alert.alert('Ошибка', msg);
     }
   }, [buyerFio]);
 
-  /* ====== С„Р°Р№Р» РїСЂРµРґР»РѕР¶РµРЅРёСЏ РІ РјРѕРґР°Р»РєРµ Р±СѓС…РіР°Р»С‚РµСЂР° ====== */
+  /* ====== файл предложения в модалке бухгалтера ====== */
   async function ensureProposalDocumentAttached(pidStr: string) {
     setPropDocBusy(true);
     try {
@@ -1140,10 +1140,10 @@ setTab('pending');
       setPropDocBusy(false);
     }
   }
-  // РїРѕРґС‚СЏРіРёРІР°РµРј СЃСѓРјРјСѓ Рё РєР°СЂС‚РѕС‡РєСѓ РїРѕСЃС‚Р°РІС‰РёРєР° РїРѕ proposal_id
+  // подтягиваем сумму и карточку поставщика по proposal_id
   async function prefillAccountingFromProposal(pidStr: string) {
     try {
-      // 1) СЃС‚СЂРѕРєРё РїСЂРµРґР»РѕР¶РµРЅРёСЏ вЂ” СЃС‡РёС‚Р°РµРј СЃСѓРјРјСѓ
+      // 1) строки предложения — считаем сумму
       const pi = await supabase
         .from('proposal_items')
         .select('supplier, qty, price')
@@ -1156,14 +1156,14 @@ setTab('pending');
         const price = Number(r?.price) || 0;
         total += qty * price;
       }
-      if (total > 0) setInvAmount(String(total));  // Р°РІС‚РѕРїРѕРґСЃС‚Р°РЅРѕРІРєР° СЃСѓРјРјС‹
+      if (total > 0) setInvAmount(String(total));  // автоподстановка суммы
 
-      // 2) РѕРїСЂРµРґРµР»СЏРµРј РїРѕСЃС‚Р°РІС‰РёРєР° (РµСЃР»Рё РёС… РЅРµСЃРєРѕР»СЊРєРѕ вЂ” Р±РµСЂС‘Рј РїРµСЂРІРѕРіРѕ)
+      // 2) определяем поставщика (если их несколько — берём первого)
       const names = Array.from(new Set(rows.map(r => String(r?.supplier || '').trim()).filter(Boolean)));
       const name = names[0] || '';
 
       if (name) {
-        // РёС‰РµРј РєР°СЂС‚РѕС‡РєСѓ РІ СЃРїСЂР°РІРѕС‡РЅРёРєРµ (Р±РµР· СЂРµРіРёСЃС‚СЂР°)
+        // ищем карточку в справочнике (без регистра)
         const cardQ = await supabase
           .from('suppliers')
           .select('name, inn, bank_account, phone, email')
@@ -1186,7 +1186,7 @@ setTab('pending');
     }
   }
 
-  /* ====== В«Р’ Р±СѓС…РіР°Р»С‚РµСЂРёСЋВ» ====== */
+  /* ====== «В бухгалтерию» ====== */
   function openAccountingModal(proposalId: string | number) {
     setAcctProposalId(proposalId);
     setInvNumber('');
@@ -1223,12 +1223,12 @@ setTab('pending');
         return f || null;
       }
     } catch (e) {
-      Alert.alert('Р¤Р°Р№Р»', (e as any)?.message ?? String(e));
+      Alert.alert('Файл', (e as any)?.message ?? String(e));
       return null;
     }
   }
-  // РіР°СЂР°РЅС‚РёСЂСѓРµРј, С‡С‚Рѕ РїРѕСЃР»Рµ РѕС‚РїСЂР°РІРєРё РІ Р±СѓС…РіР°Р»С‚РµСЂРёСЋ Сѓ Р·Р°СЏРІРєРё СЃС‚РѕСЏС‚ С„Р»Р°РіРё,
-  // РїРѕ РєРѕС‚РѕСЂС‹Рј РѕРЅР° Р±РѕР»СЊС€Рµ РќРРљРћР“Р”Рђ РЅРµ РІРµСЂРЅС‘С‚СЃСЏ РІ В«РЈС‚РІРµСЂР¶РґРµРЅРѕВ»
+  // гарантируем, что после отправки в бухгалтерию у заявки стоят флаги,
+  // по которым она больше НИКОГДА не вернётся в «Утверждено»
   async function ensureAccountingFlags(pidStr: string, invoiceAmountNum?: number) {
     try {
       const chk = await supabase
@@ -1237,17 +1237,17 @@ setTab('pending');
         .eq('id', pidStr)
         .maybeSingle();
 
-      if (chk.error) return; // РЅРµ РјРµС€Р°РµРј UX
+      if (chk.error) return; // не мешаем UX
 
       const ps = String(chk.data?.payment_status ?? '').trim();
       const sent = !!chk.data?.sent_to_accountant_at;
-      const shouldReset = ps.length === 0 || /^РЅР° РґРѕСЂР°Р±РѕС‚РєРµ/i.test(ps);
+      const shouldReset = ps.length === 0 || /^на доработке/i.test(ps);
 
-      // РµСЃР»Рё РЅРµС‚ sent РёР»Рё СЃС‚Р°С‚СѓСЃ РїСѓСЃС‚/В«РЅР° РґРѕСЂР°Р±РѕС‚РєРµВ» вЂ” РїРµСЂРµРІРµСЃС‚Рё РІ В«Рљ РѕРїР»Р°С‚РµВ»; РґРѕРїРёСЃР°С‚СЊ СЃСѓРјРјСѓ, РµСЃР»Рё РµС‘ РЅРµ Р±С‹Р»Рѕ
+      // если нет sent или статус пуст/«на доработке» — перевести в «К оплате»; дописать сумму, если её не было
       if (!sent || shouldReset || (chk.data?.invoice_amount == null && typeof invoiceAmountNum === 'number')) {
         const upd: any = {};
         if (!sent) upd.sent_to_accountant_at = new Date().toISOString();
-        if (shouldReset) upd.payment_status = 'Рљ РѕРїР»Р°С‚Рµ';
+        if (shouldReset) upd.payment_status = 'К оплате';
         if (chk.data?.invoice_amount == null && typeof invoiceAmountNum === 'number') {
           upd.invoice_amount = invoiceAmountNum;
         }
@@ -1257,30 +1257,30 @@ setTab('pending');
         }
       }
     } catch (e) {
-      // no-op: РЅРµ Р±Р»РѕРєРёСЂСѓРµРј UX РїСЂРё СЃРµС‚РµРІС‹С… СЃР±РѕСЏС…
+      // no-op: не блокируем UX при сетевых сбоях
     }
   }
 
   async function sendToAccounting() {
     if (!acctProposalId) return;
 
-    // 1) РІР°Р»РёРґР°С†РёСЏ РїРѕР»РµР№
+    // 1) валидация полей
     const amount = Number(String(invAmount).replace(',', '.'));
     const dateOk = /^\d{4}-\d{2}-\d{2}$/.test(invDate.trim());
-    if (!invNumber.trim()) { Alert.alert('в„– СЃС‡С‘С‚Р°', 'РЈРєР°Р¶РёС‚Рµ РЅРѕРјРµСЂ СЃС‡С‘С‚Р°'); return; }
-    if (!dateOk)          { Alert.alert('Р”Р°С‚Р° СЃС‡С‘С‚Р°', 'Р¤РѕСЂРјР°С‚ YYYY-MM-DD'); return; }
-    if (!Number.isFinite(amount) || amount <= 0) { Alert.alert('РЎСѓРјРјР°', 'Р’РІРµРґРёС‚Рµ РїРѕР»РѕР¶РёС‚РµР»СЊРЅСѓСЋ СЃСѓРјРјСѓ'); return; }
+    if (!invNumber.trim()) { Alert.alert('№ счёта', 'Укажите номер счёта'); return; }
+    if (!dateOk)          { Alert.alert('Дата счёта', 'Формат YYYY-MM-DD'); return; }
+    if (!Number.isFinite(amount) || amount <= 0) { Alert.alert('Сумма', 'Введите положительную сумму'); return; }
 
     setAcctBusy(true);
     const pidStr = String(acctProposalId);
 
     try {
-      // 2) РµСЃР»Рё РµС‰С‘ РЅРµ РіСЂСѓР·РёР»Рё РјРіРЅРѕРІРµРЅРЅРѕ вЂ” РїСЂРёРєСЂРµРїРёРј РІС‹Р±СЂР°РЅРЅС‹Р№ С„Р°Р№Р» РєР°Рє invoice
+      // 2) если ещё не грузили мгновенно — прикрепим выбранный файл как invoice
       if (!invoiceUploadedName && invFile) {
         await uploadProposalAttachment(pidStr, invFile, (invFile.name ?? 'invoice.pdf'), 'invoice');
       }
 
-      // 3) HTML РїСЂРµРґР»РѕР¶РµРЅРёСЏ (РµСЃР»Рё РµС‰С‘ РЅРµС‚) вЂ” СЃРѕР·РґР°С‘Рј/РѕР±РЅРѕРІР»СЏРµРј
+      // 3) HTML предложения (если ещё нет) — создаём/обновляем
       try {
         const html = await buildProposalPdfHtml(pidStr);
         const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
@@ -1289,7 +1289,7 @@ setTab('pending');
         console.warn('[buyer] attach proposal doc failed:', e?.message ?? e);
       }
 
-      // 4) РѕС‚РїСЂР°РІРєР° РІ Р±СѓС…РіР°Р»С‚РµСЂРёСЋ (Р°РґР°РїС‚РµСЂ РґРµСЂРіР°РµС‚ СЂР°Р±РѕС‡РёР№ RPC)
+      // 4) отправка в бухгалтерию (адаптер дергает рабочий RPC)
       let sentOk = false;
       try {
         await proposalSendToAccountant({
@@ -1311,10 +1311,10 @@ setTab('pending');
         if (error) throw error;
         sentOk = true;
       }
-      // в¬‡пёЏ Р“РђР РђРќРў-Р¤Р›РђР“Р: РїРѕРјРµС‡Р°РµРј, С‡С‚Рѕ СѓС€Р»Рѕ РІ Р±СѓС…РіР°Р»С‚РµСЂРёСЋ (Рё СЃС‚Р°РІРёРј 'Рљ РѕРїР»Р°С‚Рµ', РµСЃР»Рё РїСѓСЃС‚Рѕ)
+      // ⬇️ ГАРАНТ-ФЛАГИ: помечаем, что ушло в бухгалтерию (и ставим 'К оплате', если пусто)
       await ensureAccountingFlags(pidStr, amount);
 
-      // 5) РєРѕРЅС‚СЂРѕР»СЊ (РєР°Рє Сѓ С‚РµР±СЏ Р±С‹Р»Рѕ)
+      // 5) контроль (как у тебя было)
       const chk = await supabase
         .from('proposals')
         .select('payment_status, sent_to_accountant_at')
@@ -1322,21 +1322,21 @@ setTab('pending');
         .maybeSingle();
       if (chk.error) throw chk.error;
 
-      // Р»РѕРєР°Р»СЊРЅРѕ СѓР±СЂР°С‚СЊ РёР· В«РЈС‚РІРµСЂР¶РґРµРЅРѕВ» Рё РѕР±РЅРѕРІРёС‚СЊ Р±Р°РєРµС‚С‹
+      // локально убрать из «Утверждено» и обновить бакеты
       setApproved(prev => prev.filter(p => String(p.id) !== pidStr));
       await fetchBuckets();
 
-      Alert.alert('Р“РѕС‚РѕРІРѕ', 'РЎС‡С‘С‚ РѕС‚РїСЂР°РІР»РµРЅ Р±СѓС…РіР°Р»С‚РµСЂСѓ.');
+      Alert.alert('Готово', 'Счёт отправлен бухгалтеру.');
       setAcctOpen(false);
     } catch (e: any) {
       const msg = e?.message ?? e?.error_description ?? e?.details ?? String(e);
-      Alert.alert('РћС€РёР±РєР° РѕС‚РїСЂР°РІРєРё', msg);
+      Alert.alert('Ошибка отправки', msg);
     } finally {
       setAcctBusy(false);
     }
   }
 
-  /* ==================== Р”РћР РђР‘РћРўРљРђ (Rework) ==================== */
+  /* ==================== ДОРАБОТКА (Rework) ==================== */
   const [rwOpen, setRwOpen] = useState(false);
   const [rwBusy, setRwBusy] = useState(false);
   const [rwPid, setRwPid]   = useState<string | null>(null);
@@ -1359,39 +1359,39 @@ setTab('pending');
   const [rwInvFile, setRwInvFile] = useState<any | null>(null);
   const [rwInvUploadedName, setRwInvUploadedName] = useState('');
 
-  // РёСЃС‚РѕС‡РЅРёРє РІРѕР·РІСЂР°С‚Р°: 'director' | 'accountant'
+  // источник возврата: 'director' | 'accountant'
   const [rwSource, setRwSource] = useState<'director' | 'accountant'>('director');
 
-  // --- Р±РµР·РѕРїР°СЃРЅС‹Р№ РґРµС‚РµРєС‚РѕСЂ (РЅРµ С‚СЂРµР±СѓРµС‚ РґРѕРї. РєРѕР»РѕРЅРѕРє) ---
+  // --- безопасный детектор (не требует доп. колонок) ---
   function detectReworkSourceSafe(r: any): 'director' | 'accountant' {
     const st = String(r?.status || '').toLowerCase();
-    if (st.includes('Р±СѓС…')) return 'accountant';
-    if (st.includes('РґРёСЂ')) return 'director';
+    if (st.includes('бух')) return 'accountant';
+    if (st.includes('дир')) return 'director';
 
     const base = String(r?.return_reason || r?.accountant_comment || r?.accountant_note || '').toLowerCase();
-    if (base.includes('Р±СѓС…') || base.includes('account')) return 'accountant';
-    if (base.includes('РґРёСЂ')) return 'director';
+    if (base.includes('бух') || base.includes('account')) return 'accountant';
+    if (base.includes('дир')) return 'director';
 
     return 'director';
   }
 
-  // --- СЂР°СЃС€РёСЂРµРЅРЅС‹Р№ РґРµС‚РµРєС‚РѕСЂ (РµСЃР»Рё РµСЃС‚СЊ СЃР»СѓР¶РµР±РЅС‹Рµ РїРѕР»СЏ) ---
+  // --- расширенный детектор (если есть служебные поля) ---
   function detectReworkSource(r: any): 'director' | 'accountant' {
     if (r?.sent_to_accountant_at) return 'accountant';
     if (r?.payment_status) return 'accountant';
     if (r?.invoice_number) return 'accountant';
 
     const role = String(r?.returned_by_role || r?.return_source || '').toLowerCase();
-    if (role.includes('account') || role.includes('Р±СѓС…')) return 'accountant';
-    if (role.includes('director') || role.includes('РґРёСЂ')) return 'director';
+    if (role.includes('account') || role.includes('бух')) return 'accountant';
+    if (role.includes('director') || role.includes('дир')) return 'director';
 
     const st = String(r?.status || '').toLowerCase();
-    if (st.includes('Р±СѓС…')) return 'accountant';
-    if (st.includes('РґРёСЂ')) return 'director';
+    if (st.includes('бух')) return 'accountant';
+    if (st.includes('дир')) return 'director';
 
     const base = String(r?.return_reason || r?.accountant_comment || r?.accountant_note || '').toLowerCase();
-    if (base.includes('Р±СѓС…') || base.includes('account')) return 'accountant';
-    if (base.includes('РґРёСЂ')) return 'director';
+    if (base.includes('бух') || base.includes('account')) return 'accountant';
+    if (base.includes('дир')) return 'director';
 
     return 'director';
   }
@@ -1410,7 +1410,7 @@ setTab('pending');
     setRwInvUploadedName('');
 
     try {
-      // 1) С‡РёС‚Р°РµРј С‚РѕР»СЊРєРѕ СЂРµР°Р»СЊРЅРѕ СЃСѓС‰РµСЃС‚РІСѓСЋС‰РёРµ РїРѕР»СЏ (Р±РµР· 400)
+      // 1) читаем только реально существующие поля (без 400)
       let r: any = null;
       try {
         const pr = await supabase
@@ -1423,17 +1423,17 @@ setTab('pending');
           r = pr.data;
         }
       } catch (err) {
-        // Р±РµР·РѕРїР°СЃРЅРѕ РёРіРЅРѕСЂРёСЂСѓРµРј СЃР±РѕР№ РІС‹Р±РѕСЂРєРё
+        // безопасно игнорируем сбой выборки
       }
 
-      // 2) РёСЃС‚РѕС‡РЅРёРє: СЃРЅР°С‡Р°Р»Р° СЃС‚СЂРѕРіРѕ РїРѕ redo_source, РёРЅР°С‡Рµ Р±РµР·РѕРїР°СЃРЅР°СЏ СЌРІСЂРёСЃС‚РёРєР°
+      // 2) источник: сначала строго по redo_source, иначе безопасная эвристика
       let src: 'director' | 'accountant' =
         r?.redo_source === 'accountant' ? 'accountant'
         : r?.redo_source === 'director' ? 'director'
         : detectReworkSourceSafe(r || {});
       setRwSource(src);
 
-      // 3) РїСЂРёС‡РёРЅР°: РїСЂРёРѕСЂРёС‚РµС‚РЅРѕ redo_comment в†’ return_comment в†’ accountant_comment
+      // 3) причина: приоритетно redo_comment → return_comment → accountant_comment
       let base = String(
         r?.redo_comment ??
         r?.return_comment ??
@@ -1441,15 +1441,15 @@ setTab('pending');
         ''
       ).trim();
 
-      // РґРѕРїРёСЃС‹РІР°РµРј В«РСЃС‚РѕС‡РЅРёРє: вЂ¦В» РѕРґРёРЅ СЂР°Р· (РґР»СЏ Р±РµР№РґР¶Р°/РІРёР·СѓР°Р»РєРё)
-      if (!/РёСЃС‚РѕС‡РЅРёРє:/i.test(base)) {
+      // дописываем «Источник: …» один раз (для бейджа/визуалки)
+      if (!/источник:/i.test(base)) {
         base = base
-          ? `${base}\nРСЃС‚РѕС‡РЅРёРє: ${src === 'accountant' ? 'Р±СѓС…РіР°Р»С‚РµСЂР°' : 'РґРёСЂРµРєС‚РѕСЂР°'}`
-          : `РСЃС‚РѕС‡РЅРёРє: ${src === 'accountant' ? 'Р±СѓС…РіР°Р»С‚РµСЂР°' : 'РґРёСЂРµРєС‚РѕСЂР°'}`;
+          ? `${base}\nИсточник: ${src === 'accountant' ? 'бухгалтера' : 'директора'}`
+          : `Источник: ${src === 'accountant' ? 'бухгалтера' : 'директора'}`;
       }
       setRwReason(base);
 
-      // 4) СЃС‚СЂРѕРєРё РїСЂРµРґР»РѕР¶РµРЅРёСЏ
+      // 4) строки предложения
       const pi = await supabase
         .from('proposal_items')
         .select('request_item_id, price, supplier, note')
@@ -1457,7 +1457,7 @@ setTab('pending');
 
       const items = Array.isArray(pi.data) ? (pi.data as any[]) : [];
 
-      // РёРјРµРЅР°/РµРґРёРЅРёС†С‹/РєРѕР»РёС‡РµСЃС‚РІРѕ РїРѕ request_items
+      // имена/единицы/количество по request_items
       const ids = Array.from(new Set(items.map((x) => String(x.request_item_id)).filter(Boolean)));
       const names = new Map<string, any>();
       if (ids.length) {
@@ -1486,7 +1486,7 @@ setTab('pending');
         })
       );
     } catch (e: any) {
-      Alert.alert('РћС€РёР±РєР°', e?.message ?? 'РќРµ СѓРґР°Р»РѕСЃСЊ РѕС‚РєСЂС‹С‚СЊ РґРѕСЂР°Р±РѕС‚РєСѓ');
+      Alert.alert('Ошибка', e?.message ?? 'Не удалось открыть доработку');
     } finally {
       setRwBusy(false);
     }
@@ -1512,9 +1512,9 @@ setTab('pending');
           if (q.error) throw q.error;
         }
       }
-      Alert.alert('РЎРѕС…СЂР°РЅРµРЅРѕ', 'РР·РјРµРЅРµРЅРёСЏ РїРѕ РїРѕР·РёС†РёСЏРј СЃРѕС…СЂР°РЅРµРЅС‹');
+      Alert.alert('Сохранено', 'Изменения по позициям сохранены');
     } catch (e: any) {
-      Alert.alert('РћС€РёР±РєР° СЃРѕС…СЂР°РЅРµРЅРёСЏ', e?.message ?? String(e));
+      Alert.alert('Ошибка сохранения', e?.message ?? String(e));
     } finally {
       setRwBusy(false);
     }
@@ -1531,9 +1531,9 @@ setTab('pending');
       try {
         await uploadProposalAttachment(rwPid, f, f.name, 'invoice');
         setRwInvUploadedName(f.name);
-        Alert.alert('Р“РѕС‚РѕРІРѕ', `РЎС‡С‘С‚ РїСЂРёРєСЂРµРїР»С‘РЅ: ${f.name}`);
+        Alert.alert('Готово', `Счёт прикреплён: ${f.name}`);
       } catch (e: any) {
-        Alert.alert('РћС€РёР±РєР° Р·Р°РіСЂСѓР·РєРё', e?.message ?? String(e));
+        Alert.alert('Ошибка загрузки', e?.message ?? String(e));
       }
     };
     input.click();
@@ -1549,18 +1549,18 @@ setTab('pending');
       setRwInvFile(f || null);
       if (f?.name) setRwInvUploadedName(f.name);
     } catch (e: any) {
-      Alert.alert('Р¤Р°Р№Р»', e?.message ?? String(e));
+      Alert.alert('Файл', e?.message ?? String(e));
     }
   }, []);
 
-  // в¬‡пёЏ Р’РђР–РќРћ: С„СѓРЅРєС†РёСЏ РѕС‚РїСЂР°РІРєРё РґРёСЂРµРєС‚РѕСЂСѓ вЂ” РѕС‚РґРµР»СЊРЅС‹Р№ useCallback (РЅРµ РІРЅСѓС‚СЂРё РґСЂСѓРіРѕР№ С„СѓРЅРєС†РёРё)
-  // === Р”РћР РђР‘РћРўРљРђ в†’ Р”РР Р•РљРўРћР РЈ (Р±РµР· РёР·РјРµРЅРµРЅРёСЏ Р»РѕРіРёРєРё РјР°СЂС€СЂСѓС‚РѕРІ)
-  // РєР»СЋС‡: СЃР±СЂРѕСЃРёС‚СЊ payment_status/sent_to_accountant_at, РїРѕС‚РѕРј submit
+  // ⬇️ ВАЖНО: функция отправки директору — отдельный useCallback (не внутри другой функции)
+  // === ДОРАБОТКА → ДИРЕКТОРУ (без изменения логики маршрутов)
+  // ключ: сбросить payment_status/sent_to_accountant_at, потом submit
   const rwSendToDirector = useCallback(async () => {
     if (!rwPid) return;
     setRwBusy(true);
     try {
-      // 0) СЃРѕС…СЂР°РЅРёС‚СЊ РїСЂР°РІРєРё РїРѕР·РёС†РёР№ (РєР°Рє Р±С‹Р»Рѕ)
+      // 0) сохранить правки позиций (как было)
       for (const it of rwItems) {
         const upd: any = {};
         const pv = Number(String(it.price ?? '').replace(',', '.'));
@@ -1577,29 +1577,29 @@ setTab('pending');
         }
       }
 
-      // 1) РІРµСЂРЅСѓС‚СЊ РІР»Р°РґРµРЅРёРµ РґРёСЂРµРєС‚РѕСЂСѓ вЂ” СѓР±СЂР°С‚СЊ СЃР»РµРґ Р±СѓС…РіР°Р»С‚РµСЂР°
+      // 1) вернуть владение директору — убрать след бухгалтера
       await supabase
         .from('proposals')
         .update({ payment_status: null, sent_to_accountant_at: null })
         .eq('id', rwPid);
 
-      // 2) СЃС‚Р°С‚СѓСЃ "РќР° СѓС‚РІРµСЂР¶РґРµРЅРёРё" (РєР°Рє Рё СЂР°РЅСЊС€Рµ)
+      // 2) статус "На утверждении" (как и раньше)
       await proposalSubmit(rwPid as any);
 
-      // 3) РґСѓР±Р»СЊ-СЃС‚СЂР°С…РѕРІРєР° (РµСЃР»Рё СЃРµСЂРІРµСЂРЅС‹Р№ submit РІРґСЂСѓРі С‚СЂРѕРЅСѓР» РїРѕР»Рµ)
+      // 3) дубль-страховка (если серверный submit вдруг тронул поле)
       await supabase
         .from('proposals')
         .update({ sent_to_accountant_at: null })
         .eq('id', rwPid);
 
-      // 4) РѕР±РЅРѕРІР»СЏРµРј СЃРїРёСЃРєРё/UI (РєР°Рє Р±С‹Р»Рѕ)
+      // 4) обновляем списки/UI (как было)
       await fetchBuckets();
       setRejected(prev => prev.filter(p => String(p.id) !== rwPid));
 
-      Alert.alert('Р“РѕС‚РѕРІРѕ', 'РћС‚РїСЂР°РІР»РµРЅРѕ РґРёСЂРµРєС‚РѕСЂСѓ.');
+      Alert.alert('Готово', 'Отправлено директору.');
       setRwOpen(false);
     } catch (e:any) {
-      Alert.alert('РћС€РёР±РєР° РѕС‚РїСЂР°РІРєРё', e?.message ?? String(e));
+      Alert.alert('Ошибка отправки', e?.message ?? String(e));
     } finally {
       setRwBusy(false);
     }
@@ -1608,30 +1608,30 @@ setTab('pending');
   const rwSendToAccounting = useCallback(async () => {
     if (!rwPid) return;
 
-    // в¬‡пёЏ РІС‹С‡РёСЃР»СЏРµРј РЎРќРђР§РђР›Рђ, РїРѕС‚РѕРј РёСЃРїРѕР»СЊР·СѓРµРј
+    // ⬇️ вычисляем СНАЧАЛА, потом используем
     const amt = Number(String(rwInvAmount).replace(',', '.'));
     const dateStr = (rwInvDate || '').trim();
     const dateOk = /^\d{4}-\d{2}-\d{2}$/.test(dateStr);
 
-    if (!rwInvNumber.trim()) { Alert.alert('в„– СЃС‡С‘С‚Р°', 'РЈРєР°Р¶РёС‚Рµ РЅРѕРјРµСЂ СЃС‡С‘С‚Р°'); return; }
-    if (!dateOk)             { Alert.alert('Р”Р°С‚Р° СЃС‡С‘С‚Р°', 'Р¤РѕСЂРјР°С‚ YYYY-MM-DD'); return; }
-    if (!Number.isFinite(amt) || amt <= 0) { Alert.alert('РЎСѓРјРјР°', 'Р’РІРµРґРёС‚Рµ РїРѕР»РѕР¶РёС‚РµР»СЊРЅСѓСЋ СЃСѓРјРјСѓ'); return; }
+    if (!rwInvNumber.trim()) { Alert.alert('№ счёта', 'Укажите номер счёта'); return; }
+    if (!dateOk)             { Alert.alert('Дата счёта', 'Формат YYYY-MM-DD'); return; }
+    if (!Number.isFinite(amt) || amt <= 0) { Alert.alert('Сумма', 'Введите положительную сумму'); return; }
 
     setRwBusy(true);
     try {
-      // invoice (РµСЃР»Рё РІС‹Р±СЂР°РЅ С„Р°Р№Р») вЂ” Р’РЎР•Р“Р”Рђ РіСЂСѓР·РёРј, РЅРµ Р·Р°РІСЏР·С‹РІР°РµРјСЃСЏ РЅР° rwInvUploadedName
+      // invoice (если выбран файл) — ВСЕГДА грузим, не завязываемся на rwInvUploadedName
       if (rwInvFile) {
         await uploadProposalAttachment(rwPid, rwInvFile, (rwInvFile.name ?? 'invoice.pdf'), 'invoice');
       }
 
-      // html РїСЂРµРґР»РѕР¶РµРЅРёСЏ (РЅРµ РІР»РёСЏРµС‚ РЅР° СЃС‚Р°С‚СѓСЃС‹)
+      // html предложения (не влияет на статусы)
       try {
         const html = await buildProposalPdfHtml(rwPid);
         const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
         await uploadProposalAttachment(rwPid, blob as any, `proposal_${rwPid.slice(0,8)}.html`, 'proposal_pdf');
       } catch {}
 
-      // РѕС‚РїСЂР°РІРєР° РІ Р±СѓС…РіР°Р»С‚РµСЂРёСЋ вЂ” Р°РґР°РїС‚РµСЂ + Р¶С‘СЃС‚РєРёР№ RPC-С„РѕР»Р±СЌРє
+      // отправка в бухгалтерию — адаптер + жёсткий RPC-фолбэк
       try {
         await proposalSendToAccountant({
           proposalId: rwPid,
@@ -1644,30 +1644,30 @@ setTab('pending');
         const { error } = await supabase.rpc('proposal_send_to_accountant_min', {
           p_proposal_id: rwPid,
           p_invoice_number: rwInvNumber.trim(),
-          p_proposal_date: undefined as any, // РЅРµ РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ
+          p_proposal_date: undefined as any, // не используется
           p_invoice_date:   dateStr,
           p_invoice_amount: amt,
           p_invoice_currency: rwInvCurrency || 'KGS',
         });
         if (error) throw error;
       }
-      // в¬‡пёЏ Р“РђР РђРќРў-Р¤Р›РђР“Р РґР»СЏ вЂњРґРѕСЂР°Р±РѕС‚РєРёвЂќ С‚РѕР¶Рµ
+      // ⬇️ ГАРАНТ-ФЛАГИ для “доработки” тоже
       await ensureAccountingFlags(rwPid, amt);
 
-      // РѕР±РЅРѕРІР»СЏРµРј СЃРїРёСЃРєРё Рё РјРіРЅРѕРІРµРЅРЅРѕ СѓР±РёСЂР°РµРј РёР· В«РќР° РґРѕСЂР°Р±РѕС‚РєРµВ»
+      // обновляем списки и мгновенно убираем из «На доработке»
       await fetchBuckets();
       setRejected(prev => prev.filter(p => String(p.id) !== rwPid));
 
-      Alert.alert('Р“РѕС‚РѕРІРѕ', 'РћС‚РїСЂР°РІР»РµРЅРѕ Р±СѓС…РіР°Р»С‚РµСЂСѓ.');
+      Alert.alert('Готово', 'Отправлено бухгалтеру.');
       setRwOpen(false);
     } catch (e: any) {
-      Alert.alert('РћС€РёР±РєР° РѕС‚РїСЂР°РІРєРё', e?.message ?? String(e));
+      Alert.alert('Ошибка отправки', e?.message ?? String(e));
     } finally {
       setRwBusy(false);
     }
   }, [rwPid, rwInvNumber, rwInvDate, rwInvAmount, rwInvCurrency, rwInvFile, rwInvUploadedName, fetchBuckets]);
 
-  /* ==================== UI СЃС‚СЂРѕРєРё/РіСЂСѓРїРїС‹/РєР°СЂС‚РѕС‡РєРё ==================== */
+  /* ==================== UI строки/группы/карточки ==================== */
   const ItemRow = React.memo(({ it }: { it: BuyerInboxRow }) => {
     const key = it.request_item_id ?? '';
     const selected = !!picked[key];
@@ -1690,29 +1690,29 @@ setTab('pending');
           </View>
 
           <Text style={[s.cardMeta, { color: COLORS.sub }]}>
-            {`${prettyLabel(String(it.request_id), ridOld)} В· ${it.qty} ${it.uom || ''}`}
+            {`${prettyLabel(String(it.request_id), ridOld)} · ${it.qty} ${it.uom || ''}`}
           </Text>
 
           <View style={{ height: 6 }} />
           <View style={{ gap: 2 }}>
             <Text style={{ color: COLORS.sub }}>
-              Р¦РµРЅР°: <Text style={{ color: COLORS.text, fontWeight: '700' }}>{m.price || 'вЂ”'}</Text>{' '}
-              вЂў РџРѕСЃС‚Р°РІС‰РёРє: <Text style={{ color: COLORS.text, fontWeight: '700' }}>{m.supplier || 'вЂ”'}</Text>{' '}
-              вЂў РџСЂРёРј.: <Text style={{ color: COLORS.text, fontWeight: '700' }}>{m.note || 'вЂ”'}</Text>
+              Цена: <Text style={{ color: COLORS.text, fontWeight: '700' }}>{m.price || '—'}</Text>{' '}
+              • Поставщик: <Text style={{ color: COLORS.text, fontWeight: '700' }}>{m.supplier || '—'}</Text>{' '}
+              • Прим.: <Text style={{ color: COLORS.text, fontWeight: '700' }}>{m.note || '—'}</Text>
             </Text>
             <Text style={{ color: COLORS.sub }}>
-              РЎСѓРјРјР° РїРѕ РїРѕР·РёС†РёРё: <Text style={{ color: COLORS.text, fontWeight: '700' }}>{sum ? sum.toLocaleString() : '0'}</Text> СЃРѕРј
+              Сумма по позиции: <Text style={{ color: COLORS.text, fontWeight: '700' }}>{sum ? sum.toLocaleString() : '0'}</Text> сом
             </Text>
           </View>
 
           <View style={{ flexDirection: 'row', gap: 8, marginTop: 10 }}>
             <Pressable onPress={() => openEdit(it)} style={[s.smallBtn, { borderColor: COLORS.primary }]}>
-              <Text style={[s.smallBtnText, { color: COLORS.primary }]}>РџСЂР°РІРёС‚СЊ</Text>
+              <Text style={[s.smallBtnText, { color: COLORS.primary }]}>Править</Text>
             </Pressable>
             <View style={{ marginLeft: 'auto' }}>
               {selected
-                ? <Chip label="Р’С‹Р±СЂР°РЅРѕ" bg="#E0F2FE" fg="#075985" />
-                : <Chip label="РќР°Р¶РјРё, С‡С‚РѕР±С‹ РІС‹Р±СЂР°С‚СЊ" bg="#F1F5F9" fg="#334155" />}
+                ? <Chip label="Выбрано" bg="#E0F2FE" fg="#075985" />
+                : <Chip label="Нажми, чтобы выбрать" bg="#F1F5F9" fg="#334155" />}
             </View>
           </View>
         </Pressable>
@@ -1726,9 +1726,9 @@ setTab('pending');
       <View style={s.group}>
         <View style={s.groupHeader}>
           <Text style={[s.groupTitle, { color: COLORS.text }]}>{prettyLabel(g.request_id, g.request_id_old ?? null)}</Text>
-          <Chip label={`${g.items.length} РїРѕР·.`} bg="#E0E7FF" fg="#3730A3" />
+          <Chip label={`${g.items.length} поз.`} bg="#E0E7FF" fg="#3730A3" />
           <Text style={[s.groupMeta, { marginLeft: 'auto', fontWeight: '700', color: COLORS.text }]}>
-            РС‚РѕРіРѕ РїРѕ Р·Р°СЏРІРєРµ: {gsum.toLocaleString()} СЃРѕРј
+            Итого по заявке: {gsum.toLocaleString()} сом
           </Text>
         </View>
 
@@ -1746,7 +1746,7 @@ setTab('pending');
 
         {isWeb && (
           <View style={{ marginTop: 8 }}>
-            <Text style={{ fontWeight: '600', marginBottom: 4, color: COLORS.text }}>Р’Р»РѕР¶РµРЅРёСЏ (РїРѕ РіСЂСѓРїРїРµ РїРѕСЃС‚Р°РІС‰РёРєР°):</Text>
+            <Text style={{ fontWeight: '600', marginBottom: 4, color: COLORS.text }}>Вложения (по группе поставщика):</Text>
             <ScrollView horizontal contentContainerStyle={{ gap: 8 }}>
               {supplierGroups.map((key) => (
                 <AttachmentUploaderWeb
@@ -1770,8 +1770,8 @@ setTab('pending');
     const { title: pretty, total, busy } = useProposalPretty(pidStr);
 
     const headerText = pretty
-      ? `РџСЂРµРґР»РѕР¶РµРЅРёРµ: ${pretty}`
-      : `РџСЂРµРґР»РѕР¶РµРЅРёРµ #${pidStr.slice(0, 8)}`;
+      ? `Предложение: ${pretty}`
+      : `Предложение #${pidStr.slice(0, 8)}`;
 
     const SumBadge = (props: { value?: number | null }) => {
       if (props.value == null || !Number.isFinite(props.value)) return null;
@@ -1779,7 +1779,7 @@ setTab('pending');
       return (
         <View style={{ backgroundColor: '#DBEAFE', borderRadius: 999, paddingVertical: 4, paddingHorizontal: 10 }}>
           <Text style={{ color: '#1E3A8A', fontWeight: '700', fontSize: 12 }}>
-            РЎСѓРјРјР°: {v.toLocaleString()} СЃРѕРј
+            Сумма: {v.toLocaleString()} сом
           </Text>
         </View>
       );
@@ -1792,7 +1792,7 @@ setTab('pending');
           <Chip label={head.status} bg={sc.bg} fg={sc.fg} />
           <SumBadge value={total} />
           <Text style={[s.cardMeta, { color: COLORS.sub }]}>
-            {head.submitted_at ? new Date(head.submitted_at).toLocaleString() : 'вЂ”'}
+            {head.submitted_at ? new Date(head.submitted_at).toLocaleString() : '—'}
           </Text>
 
           <Pressable
@@ -1802,21 +1802,21 @@ setTab('pending');
             <Text style={s.smallBtnText}>{busy ? '...' : 'PDF'}</Text>
           </Pressable>
 
-          {head.status === 'РЈС‚РІРµСЂР¶РґРµРЅРѕ' && (
+          {head.status === 'Утверждено' && (
             <Pressable
               onPress={() => openAccountingModal(pidStr)}
               style={[s.smallBtn, { marginLeft: 8, backgroundColor: '#2563eb', borderColor: '#2563eb' }]}
             >
-              <Text style={[s.smallBtnText, { color: '#fff' }]}>Р’ Р±СѓС…РіР°Р»С‚РµСЂРёСЋ</Text>
+              <Text style={[s.smallBtnText, { color: '#fff' }]}>В бухгалтерию</Text>
             </Pressable>
           )}
 
-          {String(head.status).startsWith('РќР° РґРѕСЂР°Р±РѕС‚РєРµ') && (
+          {String(head.status).startsWith('На доработке') && (
             <Pressable
               onPress={() => openRework(pidStr)}
               style={[s.smallBtn, { marginLeft: 8, backgroundColor: '#f97316', borderColor: '#f97316' }]}
             >
-              <Text style={[s.smallBtnText, { color: '#fff' }]}>Р”РѕСЂР°Р±РѕС‚Р°С‚СЊ</Text>
+              <Text style={[s.smallBtnText, { color: '#fff' }]}>Доработать</Text>
             </Pressable>
           )}
         </View>
@@ -1832,7 +1832,7 @@ setTab('pending');
   return (
     <View style={[s.screen, { backgroundColor: COLORS.bg }]}>
 
-      {/* РЁР°РїРєР° */}
+      {/* Шапка */}
       <SummaryBar
         ref={summaryRef as any}
         initialFio={buyerFio}
@@ -1847,22 +1847,22 @@ setTab('pending');
         onRefresh={onRefresh}
       />
 
-      {/* РўСѓР»Р±Р°СЂ РґРµР№СЃС‚РІРёР№ (РёРЅР±РѕРєСЃ) */}
+      {/* Тулбар действий (инбокс) */}
       {tab === 'inbox' && (
         <View style={s.toolbar}>
           <Pressable disabled={creating} onPress={createProposalSingle} style={[s.actionBtn, creating && s.actionBtnDisabled]}>
-            <Text style={s.actionBtnText}>РЎС„РѕСЂРјРёСЂРѕРІР°С‚СЊ РїСЂРµРґР»РѕР¶РµРЅРёРµ</Text>
+            <Text style={s.actionBtnText}>Сформировать предложение</Text>
           </Pressable>
           <Pressable disabled={creating} onPress={createProposalsBySupplier} style={[s.actionBtn, creating && s.actionBtnDisabled]}>
-            <Text style={s.actionBtnText}>РЎС„РѕСЂРјРёСЂРѕРІР°С‚СЊ РїРѕ РїРѕСЃС‚Р°РІС‰РёРєР°Рј</Text>
+            <Text style={s.actionBtnText}>Сформировать по поставщикам</Text>
           </Pressable>
           <Pressable onPress={clearPick} style={[s.actionBtnGhost]}>
-            <Text style={s.actionBtnGhostText}>РЎР±СЂРѕСЃРёС‚СЊ РІС‹Р±РѕСЂ</Text>
+            <Text style={s.actionBtnGhostText}>Сбросить выбор</Text>
           </Pressable>
         </View>
       )}
 
-      {/* РљРѕРЅС‚РµРЅС‚ РІРєР»Р°РґРѕРє */}
+      {/* Контент вкладок */}
       <FlatList
         data={
           tab === 'inbox' ? groups :
@@ -1887,37 +1887,37 @@ setTab('pending');
         ListEmptyComponent={
           loadingInbox || loadingBuckets
             ? <SafeView style={{ padding: 24, alignItems: 'center' }}><ActivityIndicator /></SafeView>
-            : <SafeView style={{ padding: 24 }}><Text style={{ color: COLORS.sub }}>РџРѕРєР° РїСѓСЃС‚Рѕ</Text></SafeView>
+            : <SafeView style={{ padding: 24 }}><Text style={{ color: COLORS.sub }}>Пока пусто</Text></SafeView>
         }
 
         removeClippedSubviews={Platform.OS === 'web' ? false : true}
       />
 
-      {/* ======= РњРѕРґР°Р»РєР° РїСЂР°РІРєРё СЃС‚СЂРѕРєРё ======= */}
+      {/* ======= Модалка правки строки ======= */}
       <Modal visible={!!editFor} transparent animationType="fade" onRequestClose={() => setEditFor(null)}>
         <View style={s.modalBackdrop}>
           <View style={s.modalCard}>
-            <Text style={s.modalTitle}>РџСЂР°РІРєР° РїРѕР·РёС†РёРё</Text>
+            <Text style={s.modalTitle}>Правка позиции</Text>
             <Text style={s.modalHelp}>{editFor?.name_human}</Text>
 
-            <Text style={{ fontSize: 12, color: COLORS.sub, marginTop: 4 }}>Р¦РµРЅР°</Text>
+            <Text style={{ fontSize: 12, color: COLORS.sub, marginTop: 4 }}>Цена</Text>
             <TextInput
-              placeholder="Р¦РµРЅР°"
+              placeholder="Цена"
               value={tmpPrice}
               onChangeText={setTmpPrice}
               keyboardType="decimal-pad"
               style={s.input}
             />
 
-            <Text style={{ fontSize: 12, color: COLORS.sub, marginTop: 6 }}>РџРѕСЃС‚Р°РІС‰РёРє</Text>
+            <Text style={{ fontSize: 12, color: COLORS.sub, marginTop: 6 }}>Поставщик</Text>
             <TextInput
-              placeholder="РџРѕСЃС‚Р°РІС‰РёРє"
+              placeholder="Поставщик"
               value={tmpSupplier}
               onChangeText={setTmpSupplier}
               style={s.input}
             />
 
-            {/* РїРѕРґСЃРєР°Р·РєРё РїРѕСЃС‚Р°РІС‰РёРєРѕРІ */}
+            {/* подсказки поставщиков */}
             {supSugOpen && (
               <View style={s.suggestBox}>
                 <ScrollView
@@ -1940,8 +1940,8 @@ setTab('pending');
                     >
                       <Text style={{ fontWeight: '700', color: COLORS.text }}>{it.name}</Text>
                       <Text style={{ color: COLORS.sub, fontSize: 12 }}>
-                        {(it.inn ? `РРќРќ: ${it.inn} В· ` : '')}
-                        {(it.bank_account ? `РЎС‡С‘С‚: ${it.bank_account} В· ` : '')}
+                        {(it.inn ? `ИНН: ${it.inn} · ` : '')}
+                        {(it.bank_account ? `Счёт: ${it.bank_account} · ` : '')}
                         {it.phone || it.email || it.specialization || ''}
                       </Text>
                     </Pressable>
@@ -1950,24 +1950,24 @@ setTab('pending');
               </View>
             )}
 
-            {/* Р°РІС‚РѕР·Р°РїРѕР»РЅСЏРµРјС‹Рµ СЂРµРєРІРёР·РёС‚С‹ (read-only) */}
+            {/* автозаполняемые реквизиты (read-only) */}
             {tmpSupplier.trim() !== '' && (
               <View style={{ marginTop: 6 }}>
-                <Text style={{ fontSize: 12, color: COLORS.sub }}>РРќРќ</Text>
-                <TextInput placeholder="РРќРќ" value={tmpInn} editable={false} style={[s.input, { backgroundColor: '#F9FAFB' }]} />
+                <Text style={{ fontSize: 12, color: COLORS.sub }}>ИНН</Text>
+                <TextInput placeholder="ИНН" value={tmpInn} editable={false} style={[s.input, { backgroundColor: '#F9FAFB' }]} />
 
-                <Text style={{ fontSize: 12, color: COLORS.sub, marginTop: 6 }}>РЎС‡С‘С‚</Text>
-                <TextInput placeholder="Р Р°СЃС‡С‘С‚РЅС‹Р№ СЃС‡С‘С‚" value={tmpAccount} editable={false} style={[s.input, { backgroundColor: '#F9FAFB' }]} />
+                <Text style={{ fontSize: 12, color: COLORS.sub, marginTop: 6 }}>Счёт</Text>
+                <TextInput placeholder="Расчётный счёт" value={tmpAccount} editable={false} style={[s.input, { backgroundColor: '#F9FAFB' }]} />
 
-                <Text style={{ fontSize: 12, color: COLORS.sub, marginTop: 6 }}>РўРµР»РµС„РѕРЅ</Text>
-                <TextInput placeholder="РўРµР»РµС„РѕРЅ" value={tmpPhone} editable={false} style={[s.input, { backgroundColor: '#F9FAFB' }]} />
+                <Text style={{ fontSize: 12, color: COLORS.sub, marginTop: 6 }}>Телефон</Text>
+                <TextInput placeholder="Телефон" value={tmpPhone} editable={false} style={[s.input, { backgroundColor: '#F9FAFB' }]} />
 
                 <Text style={{ fontSize: 12, color: COLORS.sub, marginTop: 6 }}>Email</Text>
                 <TextInput placeholder="Email" value={tmpEmail} editable={false} style={[s.input, { backgroundColor: '#F9FAFB' }]} />
               </View>
             )}
 
-            {/* РєР°СЂС‚РѕС‡РєР° РІС‹Р±СЂР°РЅРЅРѕРіРѕ РїРѕСЃС‚Р°РІС‰РёРєР° (РїСЂРѕСЃРјРѕС‚СЂ) */}
+            {/* карточка выбранного поставщика (просмотр) */}
             {(() => {
               const m = suppliers.find(
                 s => s.name.trim().toLowerCase() === tmpSupplier.trim().toLowerCase()
@@ -1986,71 +1986,71 @@ setTab('pending');
                 >
                   <Text style={{ fontWeight: '700', color: COLORS.text }}>{m.name}</Text>
                   <Text style={{ color: COLORS.sub, marginTop: 2 }}>
-                    {m.inn ? `РРќРќ: ${m.inn}  В·  ` : ''}
-                    {m.bank_account ? `РЎС‡С‘С‚: ${m.bank_account}  В·  ` : ''}
-                    {m.phone ? `РўРµР».: ${m.phone}  В·  ` : ''}
+                    {m.inn ? `ИНН: ${m.inn}  ·  ` : ''}
+                    {m.bank_account ? `Счёт: ${m.bank_account}  ·  ` : ''}
+                    {m.phone ? `Тел.: ${m.phone}  ·  ` : ''}
                     {m.email ? `Email: ${m.email}` : ''}
                   </Text>
                 </View>
               );
             })()}
 
-            <Text style={{ fontSize: 12, color: COLORS.sub, marginTop: 6 }}>РџСЂРёРјРµС‡Р°РЅРёРµ</Text>
-            <TextInput placeholder="РџСЂРёРјРµС‡Р°РЅРёРµ" value={tmpNote} onChangeText={setTmpNote} style={s.input} />
+            <Text style={{ fontSize: 12, color: COLORS.sub, marginTop: 6 }}>Примечание</Text>
+            <TextInput placeholder="Примечание" value={tmpNote} onChangeText={setTmpNote} style={s.input} />
 
             <View style={{ flexDirection: 'row', gap: 8, marginTop: 8 }}>
               <Pressable onPress={saveEdit} style={[s.smallBtn, { backgroundColor: COLORS.blue, borderColor: COLORS.blue }]}>
-                <Text style={[s.smallBtnText, { color: '#fff' }]}>РЎРѕС…СЂР°РЅРёС‚СЊ</Text>
+                <Text style={[s.smallBtnText, { color: '#fff' }]}>Сохранить</Text>
               </Pressable>
               <Pressable onPress={() => setEditFor(null)} style={[s.smallBtn, { borderColor: COLORS.border }]}>
-                <Text style={[s.smallBtnText, { color: COLORS.text }]}>РћС‚РјРµРЅР°</Text>
+                <Text style={[s.smallBtnText, { color: COLORS.text }]}>Отмена</Text>
               </Pressable>
             </View>
           </View>
         </View>
       </Modal>
 
-      {/* ======= РњРѕРґР°Р»РєР° В«Р’ Р±СѓС…РіР°Р»С‚РµСЂРёСЋВ» ======= */}
+      {/* ======= Модалка «В бухгалтерию» ======= */}
       <Modal visible={acctOpen} transparent animationType="fade" onRequestClose={() => setAcctOpen(false)}>
         <View style={s.modalBackdrop}>
           <View style={s.modalCard}>
-            <Text style={s.modalTitle}>РћС‚РїСЂР°РІРёС‚СЊ РІ Р±СѓС…РіР°Р»С‚РµСЂРёСЋ</Text>
+            <Text style={s.modalTitle}>Отправить в бухгалтерию</Text>
 
             <Text style={s.modalHelp}>
-              {acctProposalId ? `Р”РѕРєСѓРјРµРЅС‚: #${String(acctProposalId).slice(0,8)}` : 'Р”РѕРєСѓРјРµРЅС‚ РЅРµ РІС‹Р±СЂР°РЅ'}
+              {acctProposalId ? `Документ: #${String(acctProposalId).slice(0,8)}` : 'Документ не выбран'}
             </Text>
 
             <Text style={s.modalHelp}>
-              {propDocBusy ? 'Р“РѕС‚РѕРІРёРј С„Р°Р№Р» РїСЂРµРґР»РѕР¶РµРЅРёСЏвЂ¦' : (propDocAttached ? `Р¤Р°Р№Р» РїСЂРµРґР»РѕР¶РµРЅРёСЏ: ${propDocAttached.name}` : 'Р¤Р°Р№Р» РїСЂРµРґР»РѕР¶РµРЅРёСЏ Р±СѓРґРµС‚ РїСЂРёРєСЂРµРїР»С‘РЅ')}
+              {propDocBusy ? 'Готовим файл предложения…' : (propDocAttached ? `Файл предложения: ${propDocAttached.name}` : 'Файл предложения будет прикреплён')}
             </Text>
 
-            {/* РєР°СЂС‚РѕС‡РєР° РїРѕСЃС‚Р°РІС‰РёРєР° (read-only) */}
+            {/* карточка поставщика (read-only) */}
             {acctSupp && (
               <View style={{ marginTop: 6, borderWidth: 1, borderColor: COLORS.border, borderRadius: 8, padding: 8, backgroundColor: '#fff' }}>
                 <Text style={{ fontWeight: '800', color: COLORS.text }}>{acctSupp.name}</Text>
                 <Text style={{ color: COLORS.sub, marginTop: 2 }}>
-                  {acctSupp.inn ? `РРќРќ: ${acctSupp.inn} В· ` : ''}
-                  {acctSupp.bank ? `РЎС‡С‘С‚: ${acctSupp.bank} В· ` : ''}
-                  {acctSupp.phone ? `РўРµР».: ${acctSupp.phone} В· ` : ''}
+                  {acctSupp.inn ? `ИНН: ${acctSupp.inn} · ` : ''}
+                  {acctSupp.bank ? `Счёт: ${acctSupp.bank} · ` : ''}
+                  {acctSupp.phone ? `Тел.: ${acctSupp.phone} · ` : ''}
                   {acctSupp.email ? `Email: ${acctSupp.email}` : ''}
                 </Text>
               </View>
             )}
 
-            <Text style={{ fontSize: 12, color: COLORS.sub, marginTop: 4 }}>РќРѕРјРµСЂ СЃС‡С‘С‚Р°</Text>
-            <TextInput placeholder="РќРѕРјРµСЂ СЃС‡С‘С‚Р°" value={invNumber} onChangeText={setInvNumber} style={s.input} />
-            <Text style={{ fontSize: 12, color: COLORS.sub, marginTop: 6 }}>Р”Р°С‚Р° (YYYY-MM-DD)</Text>
-            <TextInput placeholder="Р”Р°С‚Р° YYYY-MM-DD" value={invDate} onChangeText={setInvDate} style={s.input} />
-            <Text style={{ fontSize: 12, color: COLORS.sub, marginTop: 6 }}>РЎСѓРјРјР°</Text>
-            <TextInput placeholder="РЎСѓРјРјР°" value={invAmount} onChangeText={setInvAmount} keyboardType="decimal-pad" style={s.input} />
-            <Text style={{ fontSize: 12, color: COLORS.sub, marginTop: 6 }}>Р’Р°Р»СЋС‚Р°</Text>
-            <TextInput placeholder="Р’Р°Р»СЋС‚Р° (KGS)" value={invCurrency} onChangeText={setInvCurrency} style={s.input} />
+            <Text style={{ fontSize: 12, color: COLORS.sub, marginTop: 4 }}>Номер счёта</Text>
+            <TextInput placeholder="Номер счёта" value={invNumber} onChangeText={setInvNumber} style={s.input} />
+            <Text style={{ fontSize: 12, color: COLORS.sub, marginTop: 6 }}>Дата (YYYY-MM-DD)</Text>
+            <TextInput placeholder="Дата YYYY-MM-DD" value={invDate} onChangeText={setInvDate} style={s.input} />
+            <Text style={{ fontSize: 12, color: COLORS.sub, marginTop: 6 }}>Сумма</Text>
+            <TextInput placeholder="Сумма" value={invAmount} onChangeText={setInvAmount} keyboardType="decimal-pad" style={s.input} />
+            <Text style={{ fontSize: 12, color: COLORS.sub, marginTop: 6 }}>Валюта</Text>
+            <TextInput placeholder="Валюта (KGS)" value={invCurrency} onChangeText={setInvCurrency} style={s.input} />
 
             {isWeb ? (
               <>
                 <Pressable onPress={openInvoicePickerWeb} style={[s.smallBtn, { borderColor: COLORS.primary }]}>
                   <Text style={[s.smallBtnText, { color: COLORS.primary }]}>
-                    {invoiceUploadedName ? `РЎС‡С‘С‚ РїСЂРёРєСЂРµРїР»С‘РЅ: ${invoiceUploadedName}` : 'РџСЂРёРєСЂРµРїРёС‚СЊ СЃС‡С‘С‚ (PDF/JPG/PNG)'}
+                    {invoiceUploadedName ? `Счёт прикреплён: ${invoiceUploadedName}` : 'Прикрепить счёт (PDF/JPG/PNG)'}
                   </Text>
                 </Pressable>
                 <input
@@ -2063,86 +2063,86 @@ setTab('pending');
               </>
             ) : (
               <Pressable
-                onPress={async () => { const f = await pickInvoiceFile(); if (f) { setInvFile(f); Alert.alert('Р¤Р°Р№Р»', f.name ?? 'Р’С‹Р±СЂР°РЅРѕ'); } }}
+                onPress={async () => { const f = await pickInvoiceFile(); if (f) { setInvFile(f); Alert.alert('Файл', f.name ?? 'Выбрано'); } }}
                 style={[s.smallBtn, { borderColor: COLORS.primary }]}
               >
                 <Text style={[s.smallBtnText, { color: COLORS.primary }]}>
-                  {invFile?.name ? `РЎС‡С‘С‚ РїСЂРёРєСЂРµРїР»С‘РЅ: ${invFile.name}` : 'РџСЂРёРєСЂРµРїРёС‚СЊ СЃС‡С‘С‚ (PDF/JPG/PNG)'}
+                  {invFile?.name ? `Счёт прикреплён: ${invFile.name}` : 'Прикрепить счёт (PDF/JPG/PNG)'}
                 </Text>
               </Pressable>
             )}
 
             <View style={{ flexDirection: 'row', gap: 8, marginTop: 12 }}>
               <Pressable disabled={acctBusy} onPress={sendToAccounting} style={[s.smallBtn, { backgroundColor: COLORS.blue, borderColor: COLORS.blue, opacity: acctBusy ? 0.6 : 1 }]}>
-                <Text style={[s.smallBtnText, { color: '#fff' }]}>{acctBusy ? 'РћС‚РїСЂР°РІР»СЏРµРјвЂ¦' : 'РћС‚РїСЂР°РІРёС‚СЊ'}</Text>
+                <Text style={[s.smallBtnText, { color: '#fff' }]}>{acctBusy ? 'Отправляем…' : 'Отправить'}</Text>
               </Pressable>
               <Pressable disabled={acctBusy} onPress={() => setAcctOpen(false)} style={[s.smallBtn, { borderColor: COLORS.border }]}>
-                <Text style={[s.smallBtnText, { color: COLORS.text }]}>РћС‚РјРµРЅР°</Text>
+                <Text style={[s.smallBtnText, { color: COLORS.text }]}>Отмена</Text>
               </Pressable>
             </View>
           </View>
         </View>
       </Modal>
 
-      {/* ======= РњРѕРґР°Р»РєР° В«Р”РѕСЂР°Р±РѕС‚Р°С‚СЊВ» ======= */}
+      {/* ======= Модалка «Доработать» ======= */}
       <Modal visible={rwOpen} transparent animationType="fade" onRequestClose={() => setRwOpen(false)}>
         <View style={s.modalBackdrop}>
           <View style={[s.modalCard, { width: 720 }]}>
-            <Text style={s.modalTitle}>Р”РѕСЂР°Р±РѕС‚РєР° РїСЂРµРґР»РѕР¶РµРЅРёСЏ</Text>
-            <Text style={s.modalHelp}>{rwPid ? `Р”РѕРєСѓРјРµРЅС‚: #${rwPid.slice(0,8)}` : 'Р”РѕРєСѓРјРµРЅС‚ РЅРµ РІС‹Р±СЂР°РЅ'}</Text>
+            <Text style={s.modalTitle}>Доработка предложения</Text>
+            <Text style={s.modalHelp}>{rwPid ? `Документ: #${rwPid.slice(0,8)}` : 'Документ не выбран'}</Text>
 
             {!!rwReason && (
               <View style={{ padding: 10, borderWidth: 1, borderColor: COLORS.border, borderRadius: 8, backgroundColor: '#FFFBEB' }}>
-                <Text style={{ fontWeight: '700', color: '#92400E', marginBottom: 4 }}>РџСЂРёС‡РёРЅР° РІРѕР·РІСЂР°С‚Р°</Text>
-                {/РСЃС‚РѕС‡РЅРёРє:/i.test(rwReason) && (
+                <Text style={{ fontWeight: '700', color: '#92400E', marginBottom: 4 }}>Причина возврата</Text>
+                {/Источник:/i.test(rwReason) && (
                   <View style={{ marginBottom: 6, flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                     <View style={{ backgroundColor: '#E0E7FF', borderRadius: 999, paddingVertical: 4, paddingHorizontal: 10 }}>
                       <Text style={{ color: '#3730A3', fontWeight: '700', fontSize: 12 }}>
-                        {String(rwReason).split('\n').find((ln) => /РСЃС‚РѕС‡РЅРёРє:/i.test(ln))?.replace(/.*РСЃС‚РѕС‡РЅРёРє:\s*/i, 'РСЃС‚РѕС‡РЅРёРє: ').trim() || 'РСЃС‚РѕС‡РЅРёРє: вЂ”'}
+                        {String(rwReason).split('\n').find((ln) => /Источник:/i.test(ln))?.replace(/.*Источник:\s*/i, 'Источник: ').trim() || 'Источник: —'}
                       </Text>
                     </View>
                   </View>
                 )}
                 <Text style={{ color: '#78350F' }}>
-                  {String(rwReason).split('\n').filter((ln) => !/РСЃС‚РѕС‡РЅРёРє:/i.test(ln)).join('\n').trim() || 'вЂ”'}
+                  {String(rwReason).split('\n').filter((ln) => !/Источник:/i.test(ln)).join('\n').trim() || '—'}
                 </Text>
               </View>
             )}
 
-            {/* РїРµСЂРµРєР»СЋС‡Р°С‚РµР»СЊ РёСЃС‚РѕС‡РЅРёРєР° */}
+            {/* переключатель источника */}
             <View style={{ marginTop: 8, flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
-              <Text style={{ fontSize: 12, color: COLORS.sub }}>РћС‚ РєРѕРіРѕ РІРѕР·РІСЂР°С‚?</Text>
+              <Text style={{ fontSize: 12, color: COLORS.sub }}>От кого возврат?</Text>
               <Pressable
                 onPress={() => setRwSource('director')}
                 style={[s.smallBtn, { borderColor: rwSource === 'director' ? '#111827' : COLORS.border, backgroundColor: rwSource === 'director' ? '#111827' : '#fff' }]}
               >
-                <Text style={[s.smallBtnText, { color: rwSource === 'director' ? '#fff' : COLORS.text }]}>Р”РёСЂРµРєС‚РѕСЂ</Text>
+                <Text style={[s.smallBtnText, { color: rwSource === 'director' ? '#fff' : COLORS.text }]}>Директор</Text>
               </Pressable>
               <Pressable
                 onPress={() => setRwSource('accountant')}
                 style={[s.smallBtn, { borderColor: rwSource === 'accountant' ? '#2563eb' : COLORS.border, backgroundColor: rwSource === 'accountant' ? '#2563eb' : '#fff' }]}
               >
-                <Text style={[s.smallBtnText, { color: rwSource === 'accountant' ? '#fff' : COLORS.text }]}>Р‘СѓС…РіР°Р»С‚РµСЂ</Text>
+                <Text style={[s.smallBtnText, { color: rwSource === 'accountant' ? '#fff' : COLORS.text }]}>Бухгалтер</Text>
               </Pressable>
             </View>
 
             <View style={{ height: 8 }} />
 
-            {/* РўР°Р±Р»РёС†Р° РїРѕР·РёС†РёР№ */}
+            {/* Таблица позиций */}
             <View style={{ maxHeight: 340 }}>
               <ScrollView>
                 {rwItems.length === 0 ? (
-                  <Text style={s.modalHelp}>{rwBusy ? 'Р—Р°РіСЂСѓР·РєР°вЂ¦' : 'РќРµС‚ СЃС‚СЂРѕРє РІ РїСЂРµРґР»РѕР¶РµРЅРёРё'}</Text>
+                  <Text style={s.modalHelp}>{rwBusy ? 'Загрузка…' : 'Нет строк в предложении'}</Text>
                 ) : rwItems.map((it, idx) => (
                   <View key={`${it.request_item_id}-${idx}`} style={{ paddingVertical: 8, borderBottomWidth: 1, borderColor: COLORS.border }}>
-                    <Text style={{ fontWeight: '700', color: COLORS.text }}>{it.name_human || `РџРѕР·РёС†РёСЏ ${it.request_item_id}`}</Text>
-                    <Text style={s.modalHelp}>{`${it.qty ?? 'вЂ”'} ${it.uom ?? ''}`}</Text>
+                    <Text style={{ fontWeight: '700', color: COLORS.text }}>{it.name_human || `Позиция ${it.request_item_id}`}</Text>
+                    <Text style={s.modalHelp}>{`${it.qty ?? '—'} ${it.uom ?? ''}`}</Text>
 
                     <View style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap', marginTop: 6 }}>
                       <View>
-                        <Text style={{ fontSize: 12, color: COLORS.sub, marginBottom: 2 }}>Р¦РµРЅР°</Text>
+                        <Text style={{ fontSize: 12, color: COLORS.sub, marginBottom: 2 }}>Цена</Text>
                         <TextInput
-                          placeholder="Р¦РµРЅР°"
+                          placeholder="Цена"
                           keyboardType="decimal-pad"
                           value={it.price ?? ''}
                           onChangeText={(v) => { setRwItems(prev => prev.map((x, i) => i===idx ? { ...x, price: v } : x)); }}
@@ -2150,18 +2150,18 @@ setTab('pending');
                         />
                       </View>
                       <View>
-                        <Text style={{ fontSize: 12, color: COLORS.sub, marginBottom: 2 }}>РџРѕСЃС‚Р°РІС‰РёРє</Text>
+                        <Text style={{ fontSize: 12, color: COLORS.sub, marginBottom: 2 }}>Поставщик</Text>
                         <TextInput
-                          placeholder="РџРѕСЃС‚Р°РІС‰РёРє"
+                          placeholder="Поставщик"
                           value={it.supplier ?? ''}
                           onChangeText={(v) => setRwItems(prev => prev.map((x, i) => i===idx ? { ...x, supplier: v } : x))}
                           style={[s.input, { minWidth: 220 }]}
                         />
                       </View>
                       <View>
-                        <Text style={{ fontSize: 12, color: COLORS.sub, marginBottom: 2 }}>РџСЂРёРјРµС‡Р°РЅРёРµ</Text>
+                        <Text style={{ fontSize: 12, color: COLORS.sub, marginBottom: 2 }}>Примечание</Text>
                         <TextInput
-                          placeholder="РџСЂРёРјРµС‡Р°РЅРёРµ"
+                          placeholder="Примечание"
                           value={it.note ?? ''}
                           onChangeText={(v) => setRwItems(prev => prev.map((x, i) => i===idx ? { ...x, note: v } : x))}
                           style={[s.input, { minWidth: 260 }]}
@@ -2175,42 +2175,42 @@ setTab('pending');
 
             <View style={{ flexDirection: 'row', gap: 8, marginTop: 10, flexWrap: 'wrap' }}>
               <Pressable disabled={rwBusy} onPress={rwSaveItems} style={[s.smallBtn, { backgroundColor: '#10b981', borderColor: '#10b981', opacity: rwBusy ? 0.6 : 1 }]}>
-                <Text style={[s.smallBtnText, { color: '#fff' }]}>РЎРѕС…СЂР°РЅРёС‚СЊ РїСЂР°РІРєРё</Text>
+                <Text style={[s.smallBtnText, { color: '#fff' }]}>Сохранить правки</Text>
               </Pressable>
             </View>
 
             <View style={{ height: 12 }} />
 
-            {/* Р‘Р»РѕРє СЃС‡С‘С‚Р° */}
-            <Text style={{ fontWeight: '700', color: COLORS.text, marginBottom: 4 }}>РЎС‡С‘С‚ РЅР° РѕРїР»Р°С‚Сѓ</Text>
+            {/* Блок счёта */}
+            <Text style={{ fontWeight: '700', color: COLORS.text, marginBottom: 4 }}>Счёт на оплату</Text>
             <View style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap' }}>
               <View>
-                <Text style={{ fontSize: 12, color: COLORS.sub, marginBottom: 2 }}>РќРѕРјРµСЂ СЃС‡С‘С‚Р°</Text>
-                <TextInput placeholder="РќРѕРјРµСЂ СЃС‡С‘С‚Р°" value={rwInvNumber} onChangeText={setRwInvNumber} style={[s.input, { minWidth: 180 }]} />
+                <Text style={{ fontSize: 12, color: COLORS.sub, marginBottom: 2 }}>Номер счёта</Text>
+                <TextInput placeholder="Номер счёта" value={rwInvNumber} onChangeText={setRwInvNumber} style={[s.input, { minWidth: 180 }]} />
               </View>
               <View>
-                <Text style={{ fontSize: 12, color: COLORS.sub, marginBottom: 2 }}>Р”Р°С‚Р° (YYYY-MM-DD)</Text>
-                <TextInput placeholder="Р”Р°С‚Р° YYYY-MM-DD" value={rwInvDate} onChangeText={setRwInvDate} style={[s.input, { minWidth: 160 }]} />
+                <Text style={{ fontSize: 12, color: COLORS.sub, marginBottom: 2 }}>Дата (YYYY-MM-DD)</Text>
+                <TextInput placeholder="Дата YYYY-MM-DD" value={rwInvDate} onChangeText={setRwInvDate} style={[s.input, { minWidth: 160 }]} />
               </View>
               <View>
-                <Text style={{ fontSize: 12, color: COLORS.sub, marginBottom: 2 }}>РЎСѓРјРјР°</Text>
-                <TextInput placeholder="РЎСѓРјРјР°" value={rwInvAmount} onChangeText={setRwInvAmount} keyboardType="decimal-pad" style={[s.input, { minWidth: 140 }]} />
+                <Text style={{ fontSize: 12, color: COLORS.sub, marginBottom: 2 }}>Сумма</Text>
+                <TextInput placeholder="Сумма" value={rwInvAmount} onChangeText={setRwInvAmount} keyboardType="decimal-pad" style={[s.input, { minWidth: 140 }]} />
               </View>
               <View>
-                <Text style={{ fontSize: 12, color: COLORS.sub, marginBottom: 2 }}>Р’Р°Р»СЋС‚Р°</Text>
-                <TextInput placeholder="Р’Р°Р»СЋС‚Р° (KGS)" value={rwInvCurrency} onChangeText={setRwInvCurrency} style={[s.input, { minWidth: 120 }]} />
+                <Text style={{ fontSize: 12, color: COLORS.sub, marginBottom: 2 }}>Валюта</Text>
+                <TextInput placeholder="Валюта (KGS)" value={rwInvCurrency} onChangeText={setRwInvCurrency} style={[s.input, { minWidth: 120 }]} />
               </View>
 
               {isWeb ? (
                 <Pressable onPress={rwPickInvoiceWeb} style={[s.smallBtn, { borderColor: COLORS.primary }]}>
                   <Text style={[s.smallBtnText, { color: COLORS.primary }]}>
-                    {rwInvUploadedName ? `РЎС‡С‘С‚: ${rwInvUploadedName}` : 'РџСЂРёРєСЂРµРїРёС‚СЊ СЃС‡С‘С‚'}
+                    {rwInvUploadedName ? `Счёт: ${rwInvUploadedName}` : 'Прикрепить счёт'}
                   </Text>
                 </Pressable>
               ) : (
                 <Pressable onPress={rwPickInvoiceNative} style={[s.smallBtn, { borderColor: COLORS.primary }]}>
                   <Text style={[s.smallBtnText, { color: COLORS.primary }]}>
-                    {rwInvUploadedName || rwInvFile?.name ? `РЎС‡С‘С‚: ${rwInvUploadedName || rwInvFile?.name}` : 'РџСЂРёРєСЂРµРїРёС‚СЊ СЃС‡С‘С‚'}
+                    {rwInvUploadedName || rwInvFile?.name ? `Счёт: ${rwInvUploadedName || rwInvFile?.name}` : 'Прикрепить счёт'}
                   </Text>
                 </Pressable>
               )}
@@ -2223,7 +2223,7 @@ setTab('pending');
                   onPress={rwSendToAccounting}
                   style={[s.smallBtn, { backgroundColor: '#2563eb', borderColor: '#2563eb', opacity: rwBusy ? 0.6 : 1 }]}
                 >
-                  <Text style={[s.smallBtnText, { color: '#fff' }]}>{rwBusy ? 'РћС‚РїСЂР°РІР»СЏРµРјвЂ¦' : 'Р’ Р±СѓС…РіР°Р»С‚РµСЂРёСЋ'}</Text>
+                  <Text style={[s.smallBtnText, { color: '#fff' }]}>{rwBusy ? 'Отправляем…' : 'В бухгалтерию'}</Text>
                 </Pressable>
               ) : (
                 <Pressable
@@ -2231,12 +2231,12 @@ setTab('pending');
                   onPress={rwSendToDirector}
                   style={[s.smallBtn, { backgroundColor: '#111827', borderColor: '#111827', opacity: rwBusy ? 0.6 : 1 }]}
                 >
-                  <Text style={[s.smallBtnText, { color: '#fff' }]}>{rwBusy ? 'РћС‚РїСЂР°РІР»СЏРµРјвЂ¦' : 'Р”РёСЂРµРєС‚РѕСЂСѓ'}</Text>
+                  <Text style={[s.smallBtnText, { color: '#fff' }]}>{rwBusy ? 'Отправляем…' : 'Директору'}</Text>
                 </Pressable>
               )}
 
               <Pressable disabled={rwBusy} onPress={() => setRwOpen(false)} style={[s.smallBtn, { borderColor: COLORS.border }]}>
-                <Text style={[s.smallBtnText, { color: COLORS.text }]}>Р—Р°РєСЂС‹С‚СЊ</Text>
+                <Text style={[s.smallBtnText, { color: COLORS.text }]}>Закрыть</Text>
               </Pressable>
             </View>
           </View>
@@ -2246,7 +2246,7 @@ setTab('pending');
   );
 }
 
-/* ==================== РЎС‚РёР»Рё ==================== */
+/* ==================== Стили ==================== */
 const s = StyleSheet.create({
   screen: { flex: 1 },
   summaryWrap: {
@@ -2267,7 +2267,7 @@ const s = StyleSheet.create({
     borderColor: COLORS.border,
     borderRadius: 8,
     paddingHorizontal: 10,
-    paddingVertical: 6, // РєРѕРјРїР°РєС‚РЅРµРµ РґР»СЏ РїРѕРґРїРёСЃРµР№
+    paddingVertical: 6, // компактнее для подписей
     backgroundColor: '#fff',
     minWidth: 220,
   },
