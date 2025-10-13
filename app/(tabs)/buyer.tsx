@@ -28,7 +28,7 @@ import {
   resolveProposalPrettyTitle,
   buildProposalPdfHtmlPretty,
 } from '../../src/lib/catalog_api';
-import { RIK_API } from '../../src/lib/catalog_api';
+import { catalog_api } from '../../src/lib/catalog_api';
 import { supabase } from '../../src/lib/supabaseClient';
 import { listSuppliers, type Supplier } from '../../src/lib/catalog_api';
 function SafeView({ children, ...rest }: any) {

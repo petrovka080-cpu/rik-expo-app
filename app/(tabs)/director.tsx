@@ -7,7 +7,7 @@ import {
 import {
   listDirectorProposalsPending, proposalItems,
   listDirectorInbox as fetchDirectorInbox, type DirectorInboxRow,
-  RIK_API,
+  catalog_api,
   buildRequestPdfHtml, exportRequestPdf,
   resolveProposalPrettyTitle, // �������� ���������
   directorReturnToBuyer, 
@@ -160,7 +160,7 @@ export default function DirectorScreen() {
     try {
       const inbox = typeof fetchDirectorInbox === 'function'
         ? await fetchDirectorInbox('�� �����������')
-        : await (RIK_API?.listDirectorInbox?.('�� �����������') ?? []);
+        : await (catalog_api?.listDirectorInbox?.('�� �����������') ?? []);
       const reqRows = (inbox || []).filter(r => r.kind === 'request') as DirectorInboxRow[];
 
       const mapped = reqRows.map(r => ({
