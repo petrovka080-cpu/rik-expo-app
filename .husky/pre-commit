@@ -1,7 +1,8 @@
 #!/bin/sh
-. "$(git rev-parse --show-toplevel)/.husky/_/husky.sh"
 
-if git diff --cached --name-only | grep -E "(\.env($|\.))|(\.p8$)|(\.p12$)|(\.keystore$)|GoogleService-Info\.plist|google-services\.json"; then
+if git diff --cached --name-only | grep -E '(\.env($|\.))|(\.p8$)|(\.p12$)|(\.keystore$)|GoogleService-Info\.plist|google-services\.json'; then
   echo "?? ?????? ????????? .env/?????. ????????? .env ???????? ??? EAS Secrets."
   exit 1
 fi
+
+exit 0
