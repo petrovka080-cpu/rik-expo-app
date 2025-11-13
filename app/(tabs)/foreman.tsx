@@ -848,7 +848,11 @@ export default function ForemanScreen() {
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <View style={[s.container, { backgroundColor: COLORS.bg }]}>
-        <ScrollView contentContainerStyle={s.pagePad} keyboardShouldPersistTaps="handled">
+        <ScrollView
+          style={s.scrollArea}
+          contentContainerStyle={s.pagePad}
+          keyboardShouldPersistTaps="handled"
+        >
           <Text style={[s.header, { color: COLORS.text }]}>Прораб — заявка и поиск по РИК</Text>
 
           {/* Шапка заявки */}
@@ -1063,45 +1067,59 @@ export default function ForemanScreen() {
     updateCellsBatchingPeriod={50}
   />
 )}
-                 </ScrollView>
+        </ScrollView>
 
         {/* Липкая/фиксированная панель действий */}
-      <View style={s.stickyBar} pointerEvents="box-none">
-        {/* 1) Рассчитать (смета) */}
-        <LinkPressable
-          href="/calculator"
-          pressableProps={{ style: [s.btn, s.btnNeutral] }}
-        >
-          <Text style={s.btnTxt}>Рассчитать</Text>
-        </LinkPressable>
+        <View style={s.stickyBar} pointerEvents="box-none">
+          {/* 1) Рассчитать (смета) */}
+          <LinkPressable
+            href="/calculator"
+            pressableProps={{ style: [s.btn, s.btnNeutral] }}
+          >
+            <Text style={s.btnTxt}>Рассчитать (смета)</Text>
+          </LinkPressable>
 
-        {/* 2) Добавить */}
-        <Pressable
-          onPress={addCartToRequest}
-          disabled={busy || cartCount === 0}
-          style={[s.btn, busy || cartCount === 0 ? s.btnDisabled : s.btnPrimary]}
-        >
-          <Text style={s.btnTxt}>Добавить {cartCount ? `(${cartCount})` : ''}</Text>
-        </Pressable>
+          {/* 2) Добавить */}
+          <Pressable
+            onPress={addCartToRequest}
+            disabled={busy || cartCount === 0}
+            style={[s.btn, busy || cartCount === 0 ? s.btnDisabled : s.btnPrimary]}
+          >
+            <Text style={s.btnTxt}>Добавить {cartCount ? `(${cartCount})` : ''}</Text>
+          </Pressable>
 
-        {/* 3) Отправить директору */}
-        <Pressable
-          onPress={submitToDirector}
-          disabled={busy || (items?.length ?? 0) === 0}
-          style={[s.btn, (busy || (items?.length ?? 0) === 0) ? s.btnDisabled : s.btnSecondary]}
-        >
-          <Text style={s.btnTxt}>Отправить директору</Text>
-        </Pressable>
+          {/* 3) Отправить директору */}
+          <Pressable
+            onPress={submitToDirector}
+            disabled={busy || (items?.length ?? 0) === 0}
+            style={[s.btn, (busy || (items?.length ?? 0) === 0) ? s.btnDisabled : s.btnSecondary]}
+          >
+            <Text style={s.btnTxt}>Отправить директору</Text>
+          </Pressable>
 
-        {/* 4) PDF */}
-        <Pressable
-          onPress={onPdf}
-          disabled={busy || !requestId}
-          style={[s.btn, (busy || !requestId) ? s.btnDisabled : s.btnNeutral]}
-        >
-          <Text style={s.btnTxt}>PDF</Text>
-        </Pressable>
-      </View>
+          {/* 4) PDF */}
+          <Pressable
+            onPress={onPdf}
+            disabled={busy || !requestId}
+            style={[s.btn, (busy || !requestId) ? s.btnDisabled : s.btnNeutral]}
+          >
+            <Text style={s.btnTxt}>PDF</Text>
+          </Pressable>
+
+          {/* 5) История */}
+          {requestId ? (
+            <LinkPressable
+              href={{ pathname: '/request/[id]', params: { id: ridStr(requestId) } }}
+              pressableProps={{ style: [s.btn, s.btnNeutral] }}
+            >
+              <Text style={s.btnTxt}>История</Text>
+            </LinkPressable>
+          ) : (
+            <Pressable disabled style={[s.btn, s.btnDisabled]}>
+              <Text style={s.btnTxt}>История</Text>
+            </Pressable>
+          )}
+        </View>
 
     </View> {/* ← закрываем контейнер s.container */}
 
@@ -1142,7 +1160,8 @@ export default function ForemanScreen() {
 /* ======================= Styles (только UI, логика не тронута) ======================= */
 const s = StyleSheet.create({
   container: { flex: 1 },
-  pagePad: { padding: 16, paddingBottom: 320 },
+  scrollArea: { flex: 1 },
+  pagePad: { padding: 16, paddingBottom: 32 },
   header: { fontSize: 24, fontWeight: '700', textAlign: 'center', marginBottom: 10 },
   small: { fontSize: 12 },
   input: { borderWidth: 1, borderColor: '#E2E8F0', borderRadius: 10, padding: 10, backgroundColor: '#fff', color: '#0F172A' },
@@ -1177,26 +1196,39 @@ const s = StyleSheet.create({
   chip: { paddingVertical: 6, paddingHorizontal: 10, borderRadius: 16, borderWidth: 1, borderColor: '#E2E8F0', backgroundColor:'#fff' },
   chipActive: { backgroundColor: '#DEF7EC', borderColor: '#9AE6B4' },
 
-stickyBar: Platform.select({
-  web: {
-    position: 'fixed' as any,
-    left: 0, right: 0, bottom: 0,
-    zIndex: 2147483647,          // максимум, чтобы ничто не перекрывало
-    backgroundColor: '#fff',
-    borderTopWidth: 1, borderColor: '#E2E8F0',
-    padding: 12, gap: 10,
-    display: 'flex', flexDirection: 'row',
-    pointerEvents: 'auto' as any,
-  },
-  default: {
-    position: 'absolute' as any, left: 0, right: 0, bottom: 0,
-    zIndex: 5, backgroundColor: '#fff',
-    borderTopWidth: 1, borderColor: '#E2E8F0',
-    padding: 12, gap: 10, flexDirection: 'row'
-  }
-}),
+  stickyBar: Platform.select({
+    web: {
+      position: 'sticky' as any,
+      bottom: 0,
+      zIndex: 10,
+      display: 'flex',
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: 10,
+      padding: 16,
+      backgroundColor: '#fff',
+      borderTopWidth: 1,
+      borderColor: '#E2E8F0',
+      width: '100%',
+    },
+    default: {
+      backgroundColor: '#fff',
+      borderTopWidth: 1,
+      borderColor: '#E2E8F0',
+      padding: 16,
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: 10,
+      shadowColor: '#000',
+      shadowOpacity: 0.08,
+      shadowRadius: 6,
+      shadowOffset: { width: 0, height: -2 },
+      elevation: 4,
+      width: '100%',
+    }
+  }),
 
-  btn: { flex: 1, padding: 12, borderRadius: 12, borderWidth: 1, alignItems: 'center' },
+  btn: { flex: 1, padding: 12, borderRadius: 12, borderWidth: 1, alignItems: 'center', minWidth: 140 },
   btnPrimary: { backgroundColor:'#22C55E', borderColor:'#22C55E' },
   btnSecondary: { backgroundColor:'#0b7285', borderColor:'#0b7285' },
   btnNeutral: { backgroundColor:'#6b7280', borderColor:'#6b7280' },
