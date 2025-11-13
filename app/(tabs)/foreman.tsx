@@ -1070,7 +1070,13 @@ export default function ForemanScreen() {
         </ScrollView>
 
         {/* Липкая/фиксированная панель действий */}
-        <View style={[s.stickyBar, Platform.OS === 'web' && s.stickyBarWeb]}>
+        <View style={s.footerWrap}>
+          <View
+            style={[
+              s.stickyBar,
+              Platform.OS === 'web' ? s.stickyBarWeb : s.stickyBarNative,
+            ]}
+          >
           {/* 1) Рассчитать (смета) */}
           <LinkPressable
             href="/calculator"
@@ -1140,6 +1146,7 @@ export default function ForemanScreen() {
               <Text style={[s.btnText, s.btnTextDisabled]}>История</Text>
             </Pressable>
           )}
+          </View>
         </View>
 
     </View> {/* ← закрываем контейнер s.container */}
@@ -1217,10 +1224,14 @@ const s = StyleSheet.create({
   chip: { paddingVertical: 6, paddingHorizontal: 10, borderRadius: 16, borderWidth: 1, borderColor: '#E2E8F0', backgroundColor:'#fff' },
   chipActive: { backgroundColor: '#DEF7EC', borderColor: '#9AE6B4' },
 
-  stickyBar: {
+  footerWrap: {
     backgroundColor: '#fff',
     borderTopWidth: 1,
     borderTopColor: '#E2E8F0',
+    flexShrink: 0,
+  },
+  stickyBar: {
+    backgroundColor: '#fff',
     paddingHorizontal: 16,
     paddingVertical: 14,
     flexDirection: 'row',
@@ -1234,6 +1245,10 @@ const s = StyleSheet.create({
     position: 'sticky' as const,
     bottom: 0,
   },
+  stickyBarNative: Platform.select({
+    ios: { paddingBottom: 24 },
+    default: {},
+  }),
 
   btn: {
     flex: 1,
