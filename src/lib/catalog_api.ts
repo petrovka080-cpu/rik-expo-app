@@ -245,31 +245,46 @@ export async function getRequestHeader(requestId: string): Promise<RequestHeader
   return { id };
 }
 
-/** Позиции заявки: читаем из вьюшек/таблиц, что найдутся */
-export async function listRequestItems(requestId: string): Promise<RequestItem[]> {
+/** Позиции заявки: сначала RPC request_items_list, потом фолбэк в таблицу */
+export async function listRequestItems(
+  requestId: string
+): Promise<RequestItem[]> {
   const id = norm(requestId);
   if (!id) return [];
 
-  const sources = [
-    { src: "vi_request_items_display", cols: "id,request_id,line_no,code,name,uom,qty,note" },
-    { src: "vi_request_items", cols: "id,request_id,line_no,code,name,uom,qty,note" },
-    { src: "request_items", cols: "id,request_id,line_no,code,name,uom,qty,note" },
-    { src: "app_request_items", cols: "id,request_id,line_no,code,name,uom,qty,note" },
-    { src: "rik_request_items", cols: "id,request_id,line_no,code,name,uom,qty,note" },
-  ] as const;
+  // 1) Основной путь — RPC
+  try {
+    const { supabase } = await import('./supabaseClient');
 
-  for (const { src, cols } of sources) {
-    try {
-      const { data, error } = await supabase
-        .from(src)
-        .select(cols)
-        .eq("request_id", id)
-        .order("line_no", { ascending: true });
-      if (!error && Array.isArray(data)) return data as RequestItem[];
-    } catch {}
+    const { data, error } = await supabase.rpc('request_items_list', {
+      p_request_id: id
+    });
+
+    if (!error && Array.isArray(data)) {
+      return data as RequestItem[];
+    }
+
+    console.warn('[listRequestItems] RPC failed, fallback to table', error);
+  } catch (e) {
+    console.warn('[listRequestItems] RPC exception, fallback to table', e);
   }
-  return [];
+
+  // 2) Фолбэк — обычная таблица
+  const { supabase } = await import('./supabaseClient');
+  const { data, error } = await supabase
+    .from('request_items')
+    .select('id,request_id,line_no,code,name,uom,qty,note')
+    .eq('request_id', id)
+    .order('line_no');
+
+  if (error) {
+    console.error('[listRequestItems] fallback table error', error);
+    return [];
+  }
+
+  return (data ?? []) as RequestItem[];
 }
+
 export async function listSuppliers() {
   try {
     const q = await supabase.from('v_suppliers').select('id,name,inn,bank_account,phone,email').order('name');
@@ -309,3 +324,250 @@ export async function rikQuickSearch(q: string, limit = 60, apps?: string[]) {
     apps: null as null | string[],
   }));
 }
+// Добавление позиции из РИК-а через RPC request_add_item_min
+export async function addRequestItemFromRik(
+  requestId: string,
+  rikCode: string,
+  qty: number,
+  opts: {
+    note?: string;
+    app_code?: string;
+    kind?: string | null;
+    name_human?: string;
+    uom?: string | null;
+  }
+): Promise<boolean> {
+  try {
+    // базовая валидация
+    const rid = String(requestId || '').trim();
+    const code = String(rikCode || '').trim();
+    const q = Number(qty);
+
+    if (!rid || !code || !Number.isFinite(q) || q <= 0) {
+      console.warn('[catalog_api.addRequestItemFromRik] bad input', {
+        requestId,
+        rikCode,
+        qty,
+      });
+      return false;
+    }
+
+    // используем RPC-функцию request_add_item_min (она уже есть в БД)
+    const { supabase } = await import('./supabaseClient');
+
+    const { error } = await supabase.rpc('request_add_item_min', {
+      // ВАЖНО: ИМЕНА ПАРАМЕТРОВ ДОЛЖНЫ СОВПАДАТЬ С SQL-ФУНКЦИЕЙ
+      // request_add_item_min(
+      //   p_request_id uuid,
+      //   p_code       text,
+      //   p_qty        numeric,
+      //   p_note       text DEFAULT NULL,
+      //   p_app_code   text DEFAULT NULL,
+      //   p_name_human text DEFAULT NULL,
+      //   p_uom        text DEFAULT NULL,
+      //   p_kind       text DEFAULT NULL
+      // )
+      p_request_id: rid,
+      p_code: code,
+      p_qty: q,
+      p_note: opts.note ?? null,
+      p_app_code: opts.app_code ?? null,
+      p_name_human: opts.name_human ?? null,
+      p_uom: opts.uom ?? null,
+      p_kind: opts.kind ?? null,
+    });
+
+    if (error) {
+      console.warn(
+        '[catalog_api.addRequestItemFromRik] request_add_item_min error:',
+        error.message ?? error
+      );
+      return false;
+    }
+
+    return true;
+  } catch (e: any) {
+    console.warn(
+      '[catalog_api.addRequestItemFromRik] unexpected error:',
+      e?.message ?? e
+    );
+    return false;
+  }
+}
+type BuyerProposalBucket = {
+  supplierId?: string;
+  supplier_id?: string;
+  currency?: string | null;
+  requestItemIds?: string[];
+  request_item_ids?: string[];
+  items?: { request_item_id: string }[];
+};
+
+export async function createProposalsBySupplier(
+  buckets: BuyerProposalBucket[],
+  _opts?: unknown
+): Promise<boolean> {
+  try {
+    if (!Array.isArray(buckets) || buckets.length === 0) {
+      console.warn('[catalog_api.createProposalsBySupplier] empty buckets');
+      return false;
+    }
+
+    for (const bucket of buckets) {
+      const supplierId = norm(bucket.supplierId ?? bucket.supplier_id);
+      if (!supplierId) {
+        console.warn(
+          '[catalog_api.createProposalsBySupplier] bucket without supplierId',
+          bucket
+        );
+        continue;
+      }
+
+      // собираем request_item_ids
+      let ids: string[] =
+        bucket.requestItemIds ??
+        bucket.request_item_ids ??
+        (Array.isArray(bucket.items)
+          ? bucket.items.map((it) => String(it.request_item_id))
+          : []);
+
+      ids = ids.map((x) => norm(x)).filter(Boolean);
+
+      if (!ids.length) {
+        console.warn(
+          '[catalog_api.createProposalsBySupplier] bucket without items',
+          bucket
+        );
+        continue;
+      }
+
+      // 1) создаём предложение
+      const created = await proposalCreate({
+        supplierId,
+        currency: bucket.currency ?? null,
+      });
+
+      if (!created?.proposal_id) {
+        console.warn(
+          '[catalog_api.createProposalsBySupplier] proposalCreate failed for supplier',
+          supplierId
+        );
+        continue;
+      }
+
+      // 2) привязываем позиции заявки к предложению
+      try {
+        const { error } = await supabase.rpc('proposal_add_items', {
+          p_proposal_id: created.proposal_id,
+          p_request_item_ids: ids,
+        } as any);
+
+        if (error) {
+          console.warn(
+            '[catalog_api.createProposalsBySupplier] proposal_add_items error:',
+            error.message ?? error
+          );
+        }
+      } catch (e: any) {
+        console.warn(
+          '[catalog_api.createProposalsBySupplier] proposal_add_items exception:',
+          e?.message ?? e
+        );
+      }
+    }
+
+    return true;
+  } catch (err: any) {
+    console.warn(
+      '[catalog_api.createProposalsBySupplier] unexpected exception:',
+      err?.message ?? err
+    );
+    return false;
+  }
+}
+
+type ProposalCreateParams = {
+  supplierId: string;
+  currency?: string | null;
+};
+
+export async function proposalCreate(
+  params: ProposalCreateParams
+): Promise<{ proposal_id: string } | null> {
+  try {
+    const supplierId = norm(params?.supplierId);
+    if (!supplierId) {
+      console.warn('[catalog_api.proposalCreate] no supplierId', params);
+      return null;
+    }
+
+    const currency = params?.currency ?? null;
+
+    // 1) пробуем RPC proposal_create
+    try {
+      const { data, error } = await supabase.rpc('proposal_create', {
+        p_supplier_id: supplierId,
+        p_currency: currency,
+      } as any);
+
+      if (!error && data) {
+        const id =
+          (data as any).proposal_id ??
+          (data as any).id ??
+          (Array.isArray(data)
+            ? data[0]?.proposal_id ?? data[0]?.id
+            : undefined);
+
+        if (id) {
+          return { proposal_id: String(id) };
+        }
+      }
+
+      if (error) {
+        console.warn(
+          '[catalog_api.proposalCreate] proposal_create rpc error:',
+          error.message ?? error
+        );
+      }
+    } catch (e: any) {
+      console.warn(
+        '[catalog_api.proposalCreate] rpc exception:',
+        e?.message ?? e
+      );
+    }
+
+    // 2) фолбэк: прямой insert в таблицу proposals
+    try {
+      const { data, error } = await supabase
+        .from('proposals')
+        .insert([{ supplier_id: supplierId, currency }])
+        .select('id')
+        .single();
+
+      if (!error && data?.id) {
+        return { proposal_id: String((data as any).id) };
+      }
+
+      if (error) {
+        console.warn(
+          '[catalog_api.proposalCreate] insert proposals error:',
+          error.message ?? error
+        );
+      }
+    } catch (e: any) {
+      console.warn(
+        '[catalog_api.proposalCreate] insert exception:',
+        e?.message ?? e
+      );
+    }
+
+    return null;
+  } catch (err: any) {
+    console.warn(
+      '[catalog_api.proposalCreate] unexpected exception:',
+      err?.message ?? err
+    );
+    return null;
+  }
+}
+
