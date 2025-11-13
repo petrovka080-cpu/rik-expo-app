@@ -1,6 +1,6 @@
 ﻿﻿// app/(tabs)/foreman.tsx — боевой экран прораба (логика сохранена, обновлён только UI: человеко-читаемый номер заявки)
 import LinkPressable from '../../src/ui/LinkPressable'; // путь от foreman.tsx
-import { Stack, Link } from 'expo-router';
+import { Stack } from 'expo-router';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   View, Text, TextInput, FlatList, Pressable, Alert, RefreshControl,
@@ -1065,14 +1065,15 @@ export default function ForemanScreen() {
 )}
                  </ScrollView>
 
-      {/* Липкая/фиксированная панель действий */}
+        {/* Липкая/фиксированная панель действий */}
       <View style={s.stickyBar} pointerEvents="box-none">
         {/* 1) Рассчитать (смета) */}
-        <Link href="/calculator" asChild>
-          <Pressable style={[s.btn, s.btnNeutral]}>
-            <Text style={s.btnTxt}>Рассчитать</Text>
-          </Pressable>
-        </Link>
+        <LinkPressable
+          href="/calculator"
+          pressableProps={{ style: [s.btn, s.btnNeutral] }}
+        >
+          <Text style={s.btnTxt}>Рассчитать</Text>
+        </LinkPressable>
 
         {/* 2) Добавить */}
         <Pressable
