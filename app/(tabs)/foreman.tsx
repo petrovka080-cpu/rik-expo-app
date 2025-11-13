@@ -29,6 +29,8 @@ import {
   rikQuickSearch,
   addRequestItemFromRik,
   listRequestItems,
+  fetchRequestDisplayNo,
+  updateRequestMeta,
   ensureRequestSmart, // авто-ID/дата/ФИО (как было)
   requestSubmit, // RPC: отправить директору
   exportRequestPdf, // PDF
@@ -412,24 +414,12 @@ export default function ForemanScreen() {
       const key = String(rid ?? '').trim();
       if (!key || displayNoByReq[key] != null) return;
       try {
-        // @ts-ignore
-        const { supabase } = await import('../../src/lib/supabaseClient');
-        const { data, error } = await supabase
-          .from('v_requests_display')
-          .select('id, display_no')
-          .eq('id', key)
-          .single();
-        if (!error && data && data.display_no) {
-          setDisplayNoByReq((prev) => ({
-            ...prev,
-            [key]: String(data.display_no),
-          }));
+        const display = await fetchRequestDisplayNo(key);
+        if (display) {
+          setDisplayNoByReq((prev) => ({ ...prev, [key]: display }));
         }
       } catch (e) {
-        console.warn(
-          '[Foreman] preloadDisplayNo:',
-          (e as any)?.message ?? e,
-        );
+        console.warn('[Foreman] preloadDisplayNo:', (e as any)?.message ?? e);
       }
     },
     [displayNoByReq],
@@ -804,25 +794,15 @@ export default function ForemanScreen() {
       rid = requestId ? ridStr(requestId) : await ensureAndGetId();
 
       // сохранить актуальные поля шапки
-      try {
-        // @ts-ignore
-        const { supabase } = await import('../../src/lib/supabaseClient');
-        const patch: any = {};
-        if (needBy.trim()) patch.need_by = needBy.trim();
-        if (comment.trim()) patch.comment = comment.trim();
-        if (objectType) patch.object_type_code = objectType;
-        if (level) patch.level_code = level;
-        if (system) patch.system_code = system;
-        if (zone) patch.zone_code = zone;
-        if (Object.keys(patch).length) {
-          const { error } = await supabase
-            .from('requests')
-            .update(patch)
-            .eq('id', rid);
-          if (error)
-            console.warn('[Foreman] requests meta:', error.message);
-        }
-      } catch {}
+      await updateRequestMeta(rid, {
+        need_by: needBy.trim() || null,
+        comment: comment.trim() || null,
+        object_type_code: objectType || null,
+        level_code: level || null,
+        system_code: system || null,
+        zone_code: zone || null,
+        foreman_name: foreman.trim() || null,
+      });
 
       // добавление позиций
       for (const row of cartArray) {
@@ -857,6 +837,7 @@ export default function ForemanScreen() {
     cartArray,
     cartCount,
     requestId,
+    foreman,
     needBy,
     comment,
     objectType,
@@ -906,20 +887,15 @@ export default function ForemanScreen() {
         ? ridStr(requestId)
         : await ensureAndGetId();
 
-      try {
-        // @ts-ignore
-        const { supabase } = await import('../../src/lib/supabaseClient');
-        await supabase
-          .from('requests')
-          .update({
-            object_type_code: objectType || null,
-            level_code: level || null,
-            system_code: system || null,
-            zone_code: zone || null,
-            comment: comment.trim() || null,
-          })
-          .eq('id', rid);
-      } catch {}
+      await updateRequestMeta(rid, {
+        object_type_code: objectType || null,
+        level_code: level || null,
+        system_code: system || null,
+        zone_code: zone || null,
+        comment: comment.trim() || null,
+        need_by: needBy.trim() || null,
+        foreman_name: foreman.trim() || null,
+      });
 
       await requestSubmit(rid);
       await preloadDisplayNo(rid);
@@ -947,6 +923,7 @@ export default function ForemanScreen() {
     ridStr,
     loadItems,
     foreman,
+    needBy,
     objectType,
     level,
     system,
@@ -962,21 +939,15 @@ export default function ForemanScreen() {
   const onPdf = useCallback(async () => {
     try {
       const rid = requestId ? ridStr(requestId) : await ensureAndGetId();
-      try {
-        const { supabase } = await import(
-          '../../src/lib/supabaseClient'
-        );
-        await supabase
-          .from('requests')
-          .update({
-            object_type_code: objectType || null,
-            level_code: level || null,
-            system_code: system || null,
-            zone_code: zone || null,
-            comment: comment.trim() || null,
-          })
-          .eq('id', rid);
-      } catch {}
+      await updateRequestMeta(rid, {
+        object_type_code: objectType || null,
+        level_code: level || null,
+        system_code: system || null,
+        zone_code: zone || null,
+        comment: comment.trim() || null,
+        need_by: needBy.trim() || null,
+        foreman_name: foreman.trim() || null,
+      });
       await preloadDisplayNo(rid);
       await exportRequestPdf(rid);
     } catch (e: any) {
@@ -986,6 +957,8 @@ export default function ForemanScreen() {
     requestId,
     ridStr,
     ensureAndGetId,
+    foreman,
+    needBy,
     objectType,
     level,
     system,

@@ -27,6 +27,7 @@ import {
   batchResolveRequestLabels,
   resolveProposalPrettyTitle,
   buildProposalPdfHtmlPretty,
+  createProposalsBySupplier as apiCreateProposalsBySupplier,
 } from '../../src/lib/catalog_api';
 import { RIK_API } from '../../src/lib/catalog_api';
 import { supabase } from '../../src/lib/supabaseClient';
@@ -887,7 +888,7 @@ export default function BuyerScreen() {
     }
   }, [buyerFio, pickedIds, validatePicked, meta, proposalSnapshotItems, clearPick, fetchInbox, fetchBuckets, removeFromInboxLocally]);
 
-  const createProposalsBySupplier = useCallback(async () => {
+  const handleCreateProposalsBySupplier = useCallback(async () => {
     const ids = pickedIds;
     if (ids.length === 0) { Alert.alert('Пусто', 'Выбери позиции'); return; }
     if (!validatePicked()) return;
@@ -905,61 +906,35 @@ export default function BuyerScreen() {
 
     try {
       setCreating(true);
-      let count = 0;
       const fioNow = summaryRef.current?.flush() || buyerFio;
 
-      // --- создаём предложения по корзинам ---
-      for (const [, bucket] of bySupp.entries()) {
-        const idlist = bucket.ids;
-        const supplierDisp = bucket.display || SUPP_NONE; // человекочитаемое имя поставщика для этой корзины
+      const payload = Array.from(bySupp.values()).map((bucket) => ({
+        supplier: bucket.display === SUPP_NONE ? null : bucket.display,
+        request_item_ids: bucket.ids,
+        meta: bucket.ids.map((id) => ({
+          request_item_id: id,
+          price: meta[id]?.price ?? null,
+          supplier: bucket.display || SUPP_NONE,
+          note: meta[id]?.note ?? null,
+        })),
+      }));
 
-        const propId = await proposalCreate();
-        await setProposalBuyerFio(propId, fioNow);
+      const result = await apiCreateProposalsBySupplier(payload, {
+        buyerFio: fioNow,
+        requestItemStatus: 'У директора',
+      });
 
-        // (опционально) если в proposals есть колонка поставщика — заполним; если нет — try/catch проглотит
-        try { await supabase.from('proposals').update({ supplier_name: supplierDisp }).eq('id', String(propId)); } catch {}
-        try { await supabase.from('proposals').update({ supplier: supplierDisp }).eq('id', String(propId)); } catch {}
-
-        // добавляем строки: сперва RPC, иначе чанками по 50
-        let added = 0;
-        try { added = await proposalAddItems(propId, idlist); } catch {}
-        if (!added) {
-          for (const pack of chunk(idlist, 50)) {
-            const bulk = pack.map(id => ({ proposal_id: String(propId), request_item_id: id }));
-            const ins = await supabase.from('proposal_items').insert(bulk).select('request_item_id');
-            if (ins.error) { Alert.alert('Ошибка', 'Не удалось добавить строки'); return; }
-          }
-        }
-
-        // ✔ КРИТИЧНО: снапшотим единый supplier для ВСЕХ строк ЭТОГО предложения
-        await proposalSnapshotItems(
-          propId,
-          idlist.map(id => ({
-            request_item_id: id,
-            price:    meta[id]?.price ?? null,
-            supplier: supplierDisp,           // ← фикс: единый поставщик для пропозала
-            note:     meta[id]?.note ?? null,
-          }))
-        );
-
-        // подстраховка: ровняем supplier у всех строк пропозала (если сервер что-то перетёр)
-        try {
-          await supabase.from('proposal_items')
-            .update({ supplier: supplierDisp })
-            .eq('proposal_id', String(propId));
-        } catch {}
-
-        await proposalSubmit(propId);
-
-        try {
-          await supabase.from('request_items').update({ status: 'У директора' }).in('id', idlist);
-        } catch {}
-        removeFromInboxLocally(idlist);
-        count++;
+      const created = result?.proposals ?? [];
+      if (!created.length) {
+        Alert.alert('Внимание', 'Не удалось сформировать предложения');
+        return;
       }
 
+      const affectedIds = created.flatMap((p) => p.request_item_ids);
+      removeFromInboxLocally(affectedIds);
       clearPick();
-      Alert.alert('Отправлено', `Создано предложений: ${count}`);
+
+      Alert.alert('Отправлено', `Создано предложений: ${created.length}`);
       await fetchInbox();
       await fetchBuckets();
       setTab('pending');
@@ -978,6 +953,8 @@ export default function BuyerScreen() {
     fetchInbox,
     fetchBuckets,
     removeFromInboxLocally,
+    apiCreateProposalsBySupplier,
+    setTab,
   ]);
 
   // ===== Fallback: строим простой HTML на клиенте, если серверный HTML пуст =====
@@ -1841,7 +1818,7 @@ export default function BuyerScreen() {
           <Pressable disabled={creating} onPress={createProposalSingle} style={[s.actionBtn, creating && s.actionBtnDisabled]}>
             <Text style={s.actionBtnText}>Сгруппировать заявки</Text>
           </Pressable>
-          <Pressable disabled={creating} onPress={createProposalsBySupplier} style={[s.actionBtn, creating && s.actionBtnDisabled]}>
+          <Pressable disabled={creating} onPress={handleCreateProposalsBySupplier} style={[s.actionBtn, creating && s.actionBtnDisabled]}>
             <Text style={s.actionBtnText}>Сформировать по поставщикам</Text>
           </Pressable>
           <Pressable onPress={clearPick} style={[s.actionBtnGhost]}>
@@ -2236,7 +2213,7 @@ export default function BuyerScreen() {
         <Pressable disabled={creating} onPress={createProposalSingle} style={[s.actionBtn, creating && s.actionBtnDisabled, { flex: 1 }]}>
           <Text style={s.actionBtnText}>Сгруппировать заявки</Text>
         </Pressable>
-        <Pressable disabled={creating} onPress={createProposalsBySupplier} style={[s.actionBtn, creating && s.actionBtnDisabled, { flex: 1, backgroundColor: '#0b7285', borderColor: '#0b7285' }]}>
+        <Pressable disabled={creating} onPress={handleCreateProposalsBySupplier} style={[s.actionBtn, creating && s.actionBtnDisabled, { flex: 1, backgroundColor: '#0b7285', borderColor: '#0b7285' }]}>
           <Text style={s.actionBtnText}>По поставщикам</Text>
         </Pressable>
         <Pressable onPress={clearPick} style={[s.actionBtnGhost, { flex: 1 }]}>
