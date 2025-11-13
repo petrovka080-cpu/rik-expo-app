@@ -1,62 +1,34 @@
-const SB_URL  = process.env.EXPO_PUBLIC_SUPABASE_URL as string | undefined;
-const SB_ANON = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY as string | undefined;
+const SB_URL = process.env.EXPO_PUBLIC_SUPABASE_URL!;
+const SB_ANON = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY!;
 
-if (!SB_URL || !SB_ANON) {
-  throw new Error("REST env missing: EXPO_PUBLIC_SUPABASE_URL / EXPO_PUBLIC_SUPABASE_ANON_KEY");
-}
-
-export const REST_BASE = SB_URL + "/rest/v1";
-
-export const defaultHeaders: Record<string, string> = {
+export const PG_HEADERS: Record<string, string> = {
   apikey: SB_ANON,
-  Authorization: "Bearer " + SB_ANON,
-  "Content-Type": "application/json",
+  Authorization: Bearer \,
   "Accept-Profile": "public",
+  "Content-Profile": "public",
 };
 
-export function withSelect(url: string): string {
-  return url.indexOf("?") >= 0 ? url + "&select=*" : url + "?select=*";
+export function ensureSelect(url: string): string {
+  if (!url.includes("/rest/v1/")) return url;
+  const hasSelect = /[?&]select=/.test(url);
+  if (hasSelect) return url;
+  return url.includes("?") ? ${url}&select=* : ${url}?select=*;
 }
 
-async function handle<T>(res: Response): Promise<T> {
+export async function rest(url: string, init: RequestInit = {}) {
+  const finalUrl = ensureSelect(url);
+  const headers = { ...PG_HEADERS, ...(init.headers as any) };
+  const res = await fetch(finalUrl, { ...init, headers });
   if (!res.ok) {
-    const txt = await res.text().catch(() => "");
-    throw new Error("REST " + res.status + ": " + (txt || res.statusText));
+    const text = await res.text().catch(() => "");
+    throw new Error(\REST \: \\);
   }
-  if (res.status === 204) return undefined as unknown as T;
+  return res;
+}
+
+export async function restJson<T = any>(url: string, init: RequestInit = {}) {
+  const res = await rest(url, init);
   return (await res.json()) as T;
 }
 
-export async function restGet<T>(path: string, search = "", init?: RequestInit): Promise<T> {
-  const url = REST_BASE + "/" + path + search;
-  const res = await fetch(url, { method: "GET", headers: defaultHeaders, ...init });
-  return handle<T>(res);
-}
-
-export async function restPost<T>(path: string, body: unknown, init?: RequestInit): Promise<T> {
-  const url = REST_BASE + "/" + path;
-  const res = await fetch(url, {
-    method: "POST",
-    headers: defaultHeaders,
-    body: JSON.stringify(body ?? {}),
-    ...init,
-  });
-  return handle<T>(res);
-}
-
-export async function restPatch<T>(path: string, search: string, body: unknown, init?: RequestInit): Promise<T> {
-  const url = REST_BASE + "/" + path + search;
-  const res = await fetch(url, {
-    method: "PATCH",
-    headers: { ...defaultHeaders, Prefer: "return=representation" },
-    body: JSON.stringify(body ?? {}),
-    ...init,
-  });
-  return handle<T>(res);
-}
-
-export async function restDelete<T>(path: string, search: string, init?: RequestInit): Promise<T> {
-  const url = REST_BASE + "/" + path + search;
-  const res = await fetch(url, { method: "DELETE", headers: defaultHeaders, ...init });
-  return handle<T>(res);
-}
+export const REST_BASE = ${SB_URL}/rest/v1;

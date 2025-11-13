@@ -24,22 +24,22 @@ export default function RequestDetails() {
     return (
       <View style={{ flex:1, justifyContent:'center', alignItems:'center' }}>
         <ActivityIndicator size="large" />
-        <Text>Загрузка…</Text>
+        <Text>Р—Р°РіСЂСѓР·РєР°вЂ¦</Text>
       </View>
     );
   }
   if (!item) {
-    return <View style={{ padding:16 }}><Text>Заявка не найдена</Text></View>;
+    return <View style={{ padding:16 }}><Text>Р—Р°СЏРІРєР° РЅРµ РЅР°Р№РґРµРЅР°</Text></View>;
   }
 
   return (
     <View style={{ padding: 16 }}>
-      <Text style={{ fontSize: 20, fontWeight: 'bold' }}>Заявка #{item.id}</Text>
-      <Text>Объект: {item.object ?? '—'}</Text>
-      <Text>РИК: {item.rik_code ?? '—'}</Text>
-      <Text>Наименование: {item.name ?? '—'}</Text>
-      <Text>Количество: {item.qty ?? '—'} {item.uom ?? ''}</Text>
-      <Text>Статус: {item.status ?? '—'}</Text>
+      <Text style={{ fontSize: 20, fontWeight: 'bold' }}>Р—Р°СЏРІРєР° #{item.id}</Text>
+      <Text>РћР±СЉРµРєС‚: {item.object ?? 'вЂ”'}</Text>
+      <Text>Р РРљ: {item.rik_code ?? 'вЂ”'}</Text>
+      <Text>РќР°РёРјРµРЅРѕРІР°РЅРёРµ: {item.name ?? 'вЂ”'}</Text>
+      <Text>РљРѕР»РёС‡РµСЃС‚РІРѕ: {item.qty ?? 'вЂ”'} {item.uom ?? ''}</Text>
+      <Text>РЎС‚Р°С‚СѓСЃ: {item.status ?? 'вЂ”'}</Text>
     </View>
   );
 }

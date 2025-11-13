@@ -4,7 +4,7 @@ import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
 import { useEffect } from 'react';
 
-// показывать баннер даже когда вкладка активна
+// РїРѕРєР°Р·С‹РІР°С‚СЊ Р±Р°РЅРЅРµСЂ РґР°Р¶Рµ РєРѕРіРґР° РІРєР»Р°РґРєР° Р°РєС‚РёРІРЅР°
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldShowAlert: true,
@@ -13,7 +13,7 @@ Notifications.setNotificationHandler({
   }),
 });
 
-// --- ЖЁСТКИЙ ФОЛБЭК ДЛЯ WEB, если expo-notifications не показал баннер ---
+// --- Р–РЃРЎРўРљРР™ Р¤РћР›Р‘Р­Рљ Р”Р›РЇ WEB, РµСЃР»Рё expo-notifications РЅРµ РїРѕРєР°Р·Р°Р» Р±Р°РЅРЅРµСЂ ---
 async function fireBrowserNotificationFallback() {
   if (typeof window === 'undefined' || !('Notification' in window)) return false;
   let perm = Notification.permission;
@@ -21,7 +21,7 @@ async function fireBrowserNotificationFallback() {
     perm = await Notification.requestPermission();
   }
   if (perm === 'granted') {
-    new Notification('Тест (web)', { body: 'Браузерные уведомления работают ✅' });
+    new Notification('РўРµСЃС‚ (web)', { body: 'Р‘СЂР°СѓР·РµСЂРЅС‹Рµ СѓРІРµРґРѕРјР»РµРЅРёСЏ СЂР°Р±РѕС‚Р°СЋС‚ вњ…' });
     return true;
   }
   console.log('[web notif] not granted:', perm);
@@ -31,7 +31,7 @@ async function fireBrowserNotificationFallback() {
 export default function App() {
   useEffect(() => {
     (async () => {
-      // 1) права
+      // 1) РїСЂР°РІР°
       const { status } = await Notifications.getPermissionsAsync();
       let granted = status === 'granted';
       if (!granted) {
@@ -39,7 +39,7 @@ export default function App() {
         granted = ask.status === 'granted';
       }
 
-      // 2) Android канал
+      // 2) Android РєР°РЅР°Р»
       if (Device.osName === 'Android') {
         await Notifications.setNotificationChannelAsync('default', {
           name: 'default',
@@ -50,27 +50,27 @@ export default function App() {
         });
       }
 
-      // 3) сначала пробуем expo-локалку через 2 сек
+      // 3) СЃРЅР°С‡Р°Р»Р° РїСЂРѕР±СѓРµРј expo-Р»РѕРєР°Р»РєСѓ С‡РµСЂРµР· 2 СЃРµРє
       let fired = false;
       if (granted) {
         try {
           await Notifications.scheduleNotificationAsync({
-            content: { title: 'Тест уведомлений', body: 'Если видишь это — всё работает ✅', sound: 'default' },
+            content: { title: 'РўРµСЃС‚ СѓРІРµРґРѕРјР»РµРЅРёР№', body: 'Р•СЃР»Рё РІРёРґРёС€СЊ СЌС‚Рѕ вЂ” РІСЃС‘ СЂР°Р±РѕС‚Р°РµС‚ вњ…', sound: 'default' },
             trigger: { seconds: 2, channelId: 'default' },
           });
-          fired = true; // если дошли до сюда — триггер поставлен
+          fired = true; // РµСЃР»Рё РґРѕС€Р»Рё РґРѕ СЃСЋРґР° вЂ” С‚СЂРёРіРіРµСЂ РїРѕСЃС‚Р°РІР»РµРЅ
         } catch (e) {
           console.log('[expo-notifications] schedule error:', (e as any)?.message || e);
         }
       }
 
-      // 4) через 3.5 сек — браузерный фолбэк, если баннер так и не появился
-      //    (даже если пункт 3 не сработал)
+      // 4) С‡РµСЂРµР· 3.5 СЃРµРє вЂ” Р±СЂР°СѓР·РµСЂРЅС‹Р№ С„РѕР»Р±СЌРє, РµСЃР»Рё Р±Р°РЅРЅРµСЂ С‚Р°Рє Рё РЅРµ РїРѕСЏРІРёР»СЃСЏ
+      //    (РґР°Р¶Рµ РµСЃР»Рё РїСѓРЅРєС‚ 3 РЅРµ СЃСЂР°Р±РѕС‚Р°Р»)
       setTimeout(() => { fireBrowserNotificationFallback(); }, 3500);
     })();
   }, []);
 
-  // обычный expo-router
+  // РѕР±С‹С‡РЅС‹Р№ expo-router
   const ctx = require.context('./app');
   return <ExpoRoot context={ctx} />;
 }

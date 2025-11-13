@@ -1,6 +1,6 @@
-﻿﻿// app/(tabs)/foreman.tsx — боевой экран прораба (логика сохранена, обновлён только UI: человеко-читаемый номер заявки)
-import LinkPressable from '../../src/ui/LinkPressable'; // путь от foreman.tsx
-import { Stack, Link } from 'expo-router';
+﻿import { Link } from 'expo-router';
+﻿// app/(tabs)/foreman.tsx — боевой экран прораба (логика сохранена, обновлён только UI: человеко-читаемый номер заявки)
+
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   View, Text, TextInput, FlatList, Pressable, Alert, RefreshControl,
@@ -980,6 +980,16 @@ export default function ForemanScreen() {
             </View>
           )}
 
+          
+{/* Калькуляторы (переход на /calculator) */}
+<View style={{ marginTop: 10, marginBottom: 6, alignItems: 'flex-start' }}>
+  <Link href="/calculator" asChild>
+    <Pressable style={[s.btn, s.btnNeutral]}>
+      <Text style={s.btnTxt}>Рассчитать</Text>
+    </Pressable>
+  </Link>
+</View>
+
 {/* Корзина */}
 <View style={{ marginBottom: 8 }}>
   <View style={{ flexDirection:'row', alignItems:'center', gap:8 }}>
@@ -1063,86 +1073,82 @@ export default function ForemanScreen() {
     updateCellsBatchingPeriod={50}
   />
 )}
-                 </ScrollView>
 
-      {/* Липкая/фиксированная панель действий */}
-      <View style={s.stickyBar} pointerEvents="box-none">
-        {/* 1) Рассчитать (смета) */}
-        <Link href="/calculator" asChild>
-          <Pressable style={[s.btn, s.btnNeutral]}>
-            <Text style={s.btnTxt}>Рассчитать</Text>
-          </Pressable>
-        </Link>
+</ScrollView>
 
-        {/* 2) Добавить */}
+{/* Липкая панель действий */}
+<View style={s.stickyBar} pointerEvents="box-none">
+  <Pressable
+    onPress={addCartToRequest}
+    disabled={busy || cartCount === 0}
+    style={[s.btn, busy || cartCount === 0 ? s.btnDisabled : s.btnPrimary]}
+  >
+    <Text style={s.btnTxt}>Добавить {cartCount ? `(${cartCount})` : ''}</Text>
+  </Pressable>
+
+  <Pressable
+    onPress={submitToDirector}
+    disabled={busy || (items?.length ?? 0) === 0}
+    style={[s.btn, (busy || (items?.length ?? 0) === 0) ? s.btnDisabled : s.btnSecondary]}
+  >
+    <Text style={s.btnTxt}>Отправить директору</Text>
+  </Pressable>
+
+  <Pressable
+    onPress={onPdf}
+    disabled={busy || !requestId}
+    style={[s.btn, (busy || !requestId) ? s.btnDisabled : s.btnNeutral]}
+  >
+    <Text style={s.btnTxt}>PDF</Text>
+  </Pressable>
+</View>
+</View>
+
+{/* ===== МОДАЛ ВЫБОРА ОБЛАСТИ ПРИМЕНЕНИЯ ДЛЯ КОНКРЕТНОЙ СТРОКИ ===== */}
+<Modal visible={!!appPickerFor} transparent animationType="fade" onRequestClose={() => setAppPickerFor(null)}>
+  <Pressable style={{ flex: 1 }} onPress={() => setAppPickerFor(null)}>
+    <View style={s.backdrop} />
+  </Pressable>
+  <View style={s.modalSheet}>
+    <Text style={{ fontWeight: '700', fontSize: 16, marginBottom: 8, color: COLORS.text }}>Выбрать область применения</Text>
+    <TextInput
+      value={appPickerQ}
+      onChangeText={setAppPickerQ}
+      placeholder="Поиск по названию/коду…"
+      style={s.input}
+    />
+    <FlatList
+      data={filteredAppOptions}
+      keyExtractor={(o, idx) => `appopt:${o.code}:${idx}`}
+      renderItem={({ item }) => (
         <Pressable
-          onPress={addCartToRequest}
-          disabled={busy || cartCount === 0}
-          style={[s.btn, busy || cartCount === 0 ? s.btnDisabled : s.btnPrimary]}
+          onPress={() => {
+            if (appPickerFor) setAppFor(appPickerFor, item.code);
+            setAppPickerFor(null);
+          }}
+          style={[s.suggest, { borderBottomColor: '#f0f0f0' }]}
         >
-          <Text style={s.btnTxt}>Добавить {cartCount ? `(${cartCount})` : ''}</Text>
+          <Text style={{ fontWeight: '600', color: COLORS.text }}>{item.label}</Text>
+          <Text style={{ color: COLORS.sub }}>{item.code}</Text>
         </Pressable>
-
-        {/* 3) Отправить директору */}
-        <Pressable
-          onPress={submitToDirector}
-          disabled={busy || (items?.length ?? 0) === 0}
-          style={[s.btn, (busy || (items?.length ?? 0) === 0) ? s.btnDisabled : s.btnSecondary]}
-        >
-          <Text style={s.btnTxt}>Отправить директору</Text>
-        </Pressable>
-
-        {/* 4) PDF */}
-        <Pressable
-          onPress={onPdf}
-          disabled={busy || !requestId}
-          style={[s.btn, (busy || !requestId) ? s.btnDisabled : s.btnNeutral]}
-        >
-          <Text style={s.btnTxt}>PDF</Text>
-        </Pressable>
-      </View>
-
-    </View> {/* ← закрываем контейнер s.container */}
-
-    {/* ===== МОДАЛ ВЫБОРА ОБЛАСТИ ПРИМЕНЕНИЯ ===== */}
-    <Modal visible={!!appPickerFor} transparent animationType="fade" onRequestClose={() => setAppPickerFor(null)}>
-      <Pressable style={{ flex: 1 }} onPress={() => setAppPickerFor(null)}>
-        <View style={s.backdrop} />
+      )}
+      style={{ maxHeight: 320, marginTop: 6 }}
+    />
+    <View style={{ flexDirection: 'row', justifyContent: 'flex-end', marginTop: 8, gap: 8 }}>
+      <Pressable onPress={() => setAppPickerFor(null)} style={[s.chip, { backgroundColor: '#eee', borderColor: COLORS.border }]}>
+        <Text>Закрыть</Text>
       </Pressable>
-      <View style={s.modalSheet}>
-        <Text style={{ fontWeight: '700', fontSize: 16, marginBottom: 8, color: COLORS.text }}>Выбрать область применения</Text>
-        <TextInput value={appPickerQ} onChangeText={setAppPickerQ} placeholder="Поиск по названию/коду…" style={s.input} />
-        <FlatList
-          data={filteredAppOptions}
-          keyExtractor={(o, idx) => `appopt:${o.code}:${idx}`}
-          renderItem={({ item }) => (
-            <Pressable
-              onPress={() => { if (appPickerFor) setAppFor(appPickerFor, item.code); setAppPickerFor(null); }}
-              style={[s.suggest, { borderBottomColor: '#f0f0f0' }]}
-            >
-              <Text style={{ fontWeight: '600', color: COLORS.text }}>{item.label}</Text>
-              <Text style={{ color: COLORS.sub }}>{item.code}</Text>
-            </Pressable>
-          )}
-          style={{ maxHeight: 320, marginTop: 6 }}
-        />
-        <View style={{ flexDirection: 'row', justifyContent: 'flex-end', marginTop: 8, gap: 8 }}>
-          <Pressable onPress={() => setAppPickerFor(null)} style={[s.chip, { backgroundColor: '#eee', borderColor: COLORS.border }]}>
-            <Text>Закрыть</Text>
-          </Pressable>
-        </View>
-      </View>
-    </Modal>
+    </View>
+  </View>
+</Modal>
+</KeyboardAvoidingView>
 
-  </KeyboardAvoidingView>
-  );
-}
 
 /* ======================= Styles (только UI, логика не тронута) ======================= */
 const s = StyleSheet.create({
   container: { flex: 1 },
-  pagePad: { padding: 16, paddingBottom: 320 },
-  header: { fontSize: 24, fontWeight: '700', textAlign: 'center', marginBottom: 10 },
+  pagePad: { padding: 16, paddingBottom: 132 },
+  header: { fontSize: 20, fontWeight: '700', textAlign: 'center', marginBottom: 10 },
   small: { fontSize: 12 },
   input: { borderWidth: 1, borderColor: '#E2E8F0', borderRadius: 10, padding: 10, backgroundColor: '#fff', color: '#0F172A' },
   note: { borderWidth: 1, borderColor: '#E2E8F0', borderRadius: 10, padding: 10, minHeight: 44, textAlignVertical: 'top', backgroundColor: '#fff', marginBottom: 10, color: '#0F172A' },
@@ -1176,25 +1182,10 @@ const s = StyleSheet.create({
   chip: { paddingVertical: 6, paddingHorizontal: 10, borderRadius: 16, borderWidth: 1, borderColor: '#E2E8F0', backgroundColor:'#fff' },
   chipActive: { backgroundColor: '#DEF7EC', borderColor: '#9AE6B4' },
 
-stickyBar: Platform.select({
-  web: {
-    position: 'fixed' as any,
-    left: 0, right: 0, bottom: 0,
-    zIndex: 2147483647,          // максимум, чтобы ничто не перекрывало
-    backgroundColor: '#fff',
-    borderTopWidth: 1, borderColor: '#E2E8F0',
-    padding: 12, gap: 10,
-    display: 'flex', flexDirection: 'row',
-    pointerEvents: 'auto' as any,
-  },
-  default: {
-    position: 'absolute' as any, left: 0, right: 0, bottom: 0,
-    zIndex: 5, backgroundColor: '#fff',
-    borderTopWidth: 1, borderColor: '#E2E8F0',
-    padding: 12, gap: 10, flexDirection: 'row'
-  }
-}),
-
+  stickyBar: Platform.select({
+    web:    { position: 'sticky' as any, bottom: 0, zIndex: 5, backgroundColor: '#fff', borderTopWidth: 1, borderColor: '#E2E8F0', padding: 12, gap: 10, display: 'flex', flexDirection: 'row' },
+    default:{ position: 'absolute' as any, left: 0, right: 0, bottom: 0, zIndex: 5, backgroundColor: '#fff', borderTopWidth: 1, borderColor: '#E2E8F0', padding: 12, gap: 10, flexDirection: 'row' }
+  }),
   btn: { flex: 1, padding: 12, borderRadius: 12, borderWidth: 1, alignItems: 'center' },
   btnPrimary: { backgroundColor:'#22C55E', borderColor:'#22C55E' },
   btnSecondary: { backgroundColor:'#0b7285', borderColor:'#0b7285' },

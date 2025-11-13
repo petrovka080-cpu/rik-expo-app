@@ -10,21 +10,16 @@ import {
   ensureMyProfile,
   getMyRole,
   accountantReturnToBuyer,
-  // 🔔 уведомления
+  // ⬇️ уведомления
   notifList,
   notifMarkRead,
 } from '../../src/lib/catalog_api';
 import { uploadProposalAttachment, openAttachment } from '../../src/lib/files';
 // звук + вибро (если доступны)
 import * as Haptics from 'expo-haptics';
-import { initDing, playDing as playDingSound, unloadDing } from '../../src/lib/notify';
+import { Audio } from 'expo-av';
 
-type Tab =
-  | 'К оплате'
-  | 'Частично оплачено'
-  | 'Оплачено'
-  | 'На доработке (снабженец)';
-
+type Tab = 'К оплате' | 'Частично оплачено' | 'Оплачено' | 'На доработке (снабженец)';
 const TABS: Tab[] = ['К оплате', 'Частично оплачено', 'Оплачено', 'На доработке (снабженец)'];
 
 const COLORS = {
@@ -60,23 +55,44 @@ function SafeView({ children, ...rest }: any) {
   return <View {...rest}>{kids}</View>;
 }
 
-// ---------- Универсальная кнопка (web: гарантированный клик) ----------
+// ---------- универсальная кнопка (web: гарантированный клик) ----------
 function WButton({
   onPress, disabled, style, children,
 }: { onPress: () => void; disabled?: boolean; style?: any; children: React.ReactNode; }) {
+  if (Platform.OS === 'web') {
+    return (
+      <View style={{ position: 'relative' }}>
+        <Pressable
+          // web: обработчик клика только на <button> ниже, иначе возможен двойной вызов
+          onStartShouldSetResponder={() => false}
+          accessibilityRole="button"
+          disabled={disabled}
+          hitSlop={8}
+          style={[style, { position: 'relative', zIndex: 1, cursor: disabled ? 'not-allowed' : 'pointer', userSelect: 'none' }]}
+        >
+          {children}
+        </Pressable>
+        <button
+          type="button"
+          disabled={!!disabled}
+          onClick={disabled ? undefined : onPress}
+          style={{ position: 'absolute', inset: 0, opacity: 0, cursor: disabled ? 'not-allowed' : 'pointer', border: 0, background: 'transparent', zIndex: 2 }}
+        />
+      </View>
+    );
+  }
   return (
     <Pressable
-      onPress={disabled ? undefined : onPress}
+      onPress={onPress}
+      onStartShouldSetResponder={() => true}
+      onResponderRelease={onPress}
       accessibilityRole="button"
       disabled={disabled}
       hitSlop={8}
-      style={[
-        style,
-        Platform.OS === 'web'
-          ? { cursor: disabled ? 'not-allowed' : 'pointer', userSelect: 'none' }
-          : null,
-      ]}
-    ><Text>{children}</Text></Pressable>
+      style={style}
+    >
+      {children}
+    </Pressable>
   );
 }
 
@@ -108,7 +124,7 @@ export default function AccountantScreen() {
   const [current, setCurrent] = useState<AccountantInboxRow | null>(null);
   const [cardOpen, setCardOpen] = useState(false);
 
-  // форма оплаты / возврат
+  // форма оплаты / возврата
   const [amount, setAmount] = useState<string>('');
   const [method, setMethod] = useState<string>('');
   const [note, setNote] = useState<string>('');
@@ -155,54 +171,54 @@ export default function AccountantScreen() {
         }
       }
 
-      // fallback на прямые выборки
-      if (!Array.isArray(data) || data.length === 0) {
-        const { data: props } = await supabase
-          .from('proposals')
-          .select('id, status, payment_status, invoice_number, invoice_date, invoice_amount, invoice_currency, supplier, sent_to_accountant_at')
-          .not('sent_to_accountant_at', 'is', null)
-          // берём только бухгалтерские статусы
-          .or('payment_status.eq.К оплате,payment_status.eq.Оплачено,payment_status.ilike.Частично%,payment_status.ilike.На доработке%')
-          .order('sent_to_accountant_at', { ascending: false, nullsFirst: false });
+    if (!Array.isArray(data) || data.length === 0) {
+  const { data: props } = await supabase
+    .from('proposals')
+    .select('id, status, payment_status, invoice_number, invoice_date, invoice_amount, invoice_currency, supplier, sent_to_accountant_at')
+.not('sent_to_accountant_at', 'is', null)
+    // ⬇️ берём только то, что имеет отношение к бухгалтерии
+    .or('payment_status.eq.К оплате,payment_status.eq.Оплачено,payment_status.ilike.Частично%,payment_status.ilike.На доработке%')
+    .order('sent_to_accountant_at', { ascending: false, nullsFirst: false });
 
-        let tmp: AccountantInboxRow[] = [];
-        if (Array.isArray(props)) {
-          const ids = props.map(p => String(p.id));
-          let haveInvoice = new Set<string>();
-          if (ids.length) {
-            const q = await supabase
-              .from('proposal_attachments')
-              .select('proposal_id')
-              .eq('group_key','invoice')
-              .in('proposal_id', ids);
-            if (!q.error && Array.isArray(q.data)) {
-              haveInvoice = new Set(q.data.map(r => String(r.proposal_id)));
-            }
-          }
-          tmp = (props as any[]).map((p: any) => ({
-            proposal_id: String(p.id),
-            supplier: p.supplier ?? null,
-            invoice_number: p.invoice_number ?? null,
-            invoice_date: p.invoice_date ?? null,
-            invoice_amount: p.invoice_amount ?? null,
-            invoice_currency: p.invoice_currency ?? 'KGS',
-            payment_status: (p.payment_status ?? p.status ?? null) as string | null,
-            total_paid: null,
-            payments_count: null,
-            has_invoice: haveInvoice.has(String(p.id)),
-            sent_to_accountant_at: p.sent_to_accountant_at ?? null,
-          }));
-        }
-        data = tmp;
+  let tmp: AccountantInboxRow[] = [];
+  if (Array.isArray(props)) {
+    const ids = props.map(p => String(p.id));
+    let haveInvoice = new Set<string>();
+    if (ids.length) {
+      const q = await supabase
+        .from('proposal_attachments')
+        .select('proposal_id')
+        .eq('group_key','invoice')
+        .in('proposal_id', ids);
+      if (!q.error && Array.isArray(q.data)) {
+        haveInvoice = new Set(q.data.map(r => String(r.proposal_id)));
       }
+    }
+    tmp = (props as any[]).map((p: any) => ({
+      proposal_id: String(p.id),
+      supplier: p.supplier ?? null,
+      invoice_number: p.invoice_number ?? null,
+      invoice_date: p.invoice_date ?? null,
+      invoice_amount: p.invoice_amount ?? null,
+      invoice_currency: p.invoice_currency ?? 'KGS',
+      payment_status: (p.payment_status ?? p.status ?? null) as string | null,
+      total_paid: null,
+      payments_count: null,
+      has_invoice: haveInvoice.has(String(p.id)),
+      sent_to_accountant_at: p.sent_to_accountant_at ?? null,
+    }));
+  }
+  data = tmp;
+}
+
 
       const filtered = (data || []).filter((r) => {
         const ps = String(r.payment_status ?? '').trim().toLowerCase();
         switch (tab) {
-          case 'К оплате':                       return ps.startsWith('к оплате');
-          case 'Частично оплачено':              return ps.startsWith('частично');
-          case 'Оплачено':                       return ps.startsWith('оплачено');
-          case 'На доработке (снабженец)':       return ps.startsWith('на доработке');
+          case 'К оплате':                  return /^к оплате/.test(ps);
+          case 'Частично оплачено':        return /^частично/.test(ps);
+          case 'Оплачено':                 return /^оплачено/.test(ps);
+          case 'На доработке (снабженец)': return /^на доработке/.test(ps);
           default: return true;
         }
       });
@@ -219,21 +235,30 @@ export default function AccountantScreen() {
   const [notifs, setNotifs] = useState<any[]>([]);
   const unread = notifs.length;
 
-  // инициализация/освобождение звука (кроссплатформенно: web/native)
+  const soundRef = useRef<Audio.Sound | null>(null);
   useEffect(() => {
     let mounted = true;
     (async () => {
-      try { await initDing(); } catch {}
+      try {
+        // Пытаемся подключить звуковой файл ТОЛЬКО если он есть.
+        // @ts-ignore
+        const maybeSound = (() => { try { return require('../../assets/notify.mp3'); } catch { return null; } })();
+        if (!maybeSound) return;
+
+        const s = new Audio.Sound();
+        await s.loadAsync(maybeSound);
+        if (mounted) soundRef.current = s;
+      } catch { /* без звука */ }
     })();
+
     return () => {
-      if (!mounted) return;
       mounted = false;
-      try { unloadDing(); } catch {}
+      try { soundRef.current?.unloadAsync(); } catch {}
     };
   }, []);
 
   const playDing = useCallback(async () => {
-    try { await playDingSound(); } catch {}
+    try { await soundRef.current?.replayAsync(); } catch {}
     try { await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success); } catch {}
   }, []);
 
@@ -308,7 +333,7 @@ export default function AccountantScreen() {
     if (!pid) return;
 
     try {
-      // 1) основной адаптер (может сам дёргать нужные RPC)
+      // 1) основной адаптер (может сам дергать нужные RPC)
       await accountantReturnToBuyer({ proposalId: pid, comment: (note || '').trim() || null });
     } catch (e1: any) {
       // 2) популярный RPC acc_return_min_auto
@@ -446,7 +471,7 @@ export default function AccountantScreen() {
 
   const EmptyState = () => (
     <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 }}>
-      <Text style={{ fontSize: 40, marginBottom: 8 }}>📝</Text>
+      <Text style={{ fontSize: 40, marginBottom: 8 }}>📄</Text>
       <Text style={{ fontSize: 16, fontWeight: '700', color: COLORS.text, marginBottom: 4 }}>Здесь пока пусто</Text>
       <Text style={{ color: COLORS.sub, textAlign: 'center' }}>Выберите другую вкладку или дождитесь предложений от снабженца.</Text>
     </View>
@@ -521,25 +546,12 @@ export default function AccountantScreen() {
 
             <Text style={{ fontWeight: '600', marginBottom: 6, color: COLORS.text }}>Добавить оплату</Text>
             <View style={{ position: 'relative', zIndex: 5 }}>
-              <TextInput
-                placeholder="Сумма (KGS)"
-                keyboardType="decimal-pad"
-                value={amount}
-                onChangeText={setAmount}
-                style={{ borderWidth: 1, borderColor: COLORS.border, backgroundColor: '#fff', borderRadius: 10, padding: 10, marginBottom: 8 }}
-              />
-              <TextInput
-                placeholder="Способ (банк/нал)"
-                value={method}
-                onChangeText={setMethod}
-                style={{ borderWidth: 1, borderColor: COLORS.border, backgroundColor: '#fff', borderRadius: 10, padding: 10, marginBottom: 8 }}
-              />
-              <TextInput
-                placeholder="Комментарий"
-                value={note}
-                onChangeText={setNote}
-                style={{ borderWidth: 1, borderColor: COLORS.border, backgroundColor: '#fff', borderRadius: 10, padding: 10, marginBottom: 8 }}
-              />
+              <TextInput placeholder="Сумма (KGS)" keyboardType="decimal-pad" value={amount} onChangeText={setAmount}
+                style={{ borderWidth: 1, borderColor: COLORS.border, backgroundColor: '#fff', borderRadius: 10, padding: 10, marginBottom: 8 }} />
+              <TextInput placeholder="Способ (банк/нал)" value={method} onChangeText={setMethod}
+                style={{ borderWidth: 1, borderColor: COLORS.border, backgroundColor: '#fff', borderRadius: 10, padding: 10, marginBottom: 8 }} />
+              <TextInput placeholder="Комментарий" value={note} onChangeText={setNote}
+                style={{ borderWidth: 1, borderColor: COLORS.border, backgroundColor: '#fff', borderRadius: 10, padding: 10, marginBottom: 8 }} />
 
               <WButton
                 onPress={addPayment}

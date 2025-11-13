@@ -60,6 +60,7 @@ export default function SuppliersScreen() {
     setFiles([]);
     setEditOpen(true);
   };
+
   const openEdit = async (s: Supplier) => {
     setEditDraft(s);
     setEditOpen(true);
@@ -78,6 +79,7 @@ export default function SuppliersScreen() {
     if (!isWeb) return;
     invoiceInputRef.current?.click?.();
   }, []);
+
   const onFileChangeWeb = useCallback(
     async (e: any) => {
       try {
@@ -178,14 +180,7 @@ export default function SuppliersScreen() {
       {/* toolbar */}
       <View style={styles.toolbar}>
         <Text style={styles.title}>Поставщики</Text>
-        <View
-          style={{
-            flexDirection: 'row',
-            gap: 8,
-            alignItems: 'center',
-            flex: 1,
-          }}
-        >
+        <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center', flex: 1 }}>
           <TextInput
             value={q}
             onChangeText={(t) => setQ(t)}
@@ -203,10 +198,7 @@ export default function SuppliersScreen() {
         </View>
         <Pressable
           onPress={openCreate}
-          style={[
-            styles.smallBtn,
-            { backgroundColor: COLORS.blue, borderColor: COLORS.blue },
-          ]}
+          style={[styles.smallBtn, { backgroundColor: COLORS.blue, borderColor: COLORS.blue }]}
         >
           <Text style={[styles.smallBtnText, { color: '#fff' }]}>Добавить</Text>
         </Pressable>
@@ -222,27 +214,19 @@ export default function SuppliersScreen() {
           keyExtractor={(x) => x.id}
           renderItem={({ item }) => <SupplierRow s={item} />}
           contentContainerStyle={{ padding: 12, gap: 12 }}
-          ListEmptyComponent={
-            <Text style={{ padding: 12, color: COLORS.sub }}>Пока пусто</Text>
-          }
+          ListEmptyComponent={<Text style={{ padding: 12, color: COLORS.sub }}>Пока пусто</Text>}
         />
       )}
 
       {/* edit dialog */}
-      <Modal
-        visible={editOpen}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setEditOpen(false)}
-      >
+      <Modal visible={editOpen} transparent animationType="fade" onRequestClose={() => setEditOpen(false)}>
         <View style={styles.modalBackdrop}>
           <View style={[styles.modalCard, { width: 760 }]}>
             <Text style={styles.modalTitle}>
               {editDraft?.id ? 'Правка поставщика' : 'Новый поставщик'}
             </Text>
             <Text style={styles.modalHelp}>
-              Обязательное поле — «Название». Остальные поля заполняются по мере
-              необходимости.
+              Обязательное поле — «Название». Остальные поля заполняются по мере необходимости.
             </Text>
 
             <View style={{ flexDirection: 'row', gap: 12, flexWrap: 'wrap' }}>
@@ -250,11 +234,9 @@ export default function SuppliersScreen() {
                 <Text style={styles.label}>Название *</Text>
                 <TextInput
                   style={styles.input}
-                  placeholder="ООО «Ромашка» / ИП Иванов"
+                  placeholder='ООО «Ромашка» / ИП Иванов'
                   value={editDraft.name || ''}
-                  onChangeText={(v) =>
-                    setEditDraft((d) => ({ ...d, name: v }))
-                  }
+                  onChangeText={(v) => setEditDraft((d) => ({ ...d, name: v }))}
                 />
               </View>
               <View style={{ width: 220 }}>
@@ -263,9 +245,7 @@ export default function SuppliersScreen() {
                   style={styles.input}
                   placeholder="ИНН"
                   value={editDraft.inn || ''}
-                  onChangeText={(v) =>
-                    setEditDraft((d) => ({ ...d, inn: v }))
-                  }
+                  onChangeText={(v) => setEditDraft((d) => ({ ...d, inn: v }))}
                 />
               </View>
               <View style={{ width: 300 }}>
@@ -274,9 +254,7 @@ export default function SuppliersScreen() {
                   style={styles.input}
                   placeholder="Расчётный счёт"
                   value={editDraft.bank_account || ''}
-                  onChangeText={(v) =>
-                    setEditDraft((d) => ({ ...d, bank_account: v }))
-                  }
+                  onChangeText={(v) => setEditDraft((d) => ({ ...d, bank_account: v }))}
                 />
               </View>
               <View style={{ width: 300 }}>
@@ -285,9 +263,7 @@ export default function SuppliersScreen() {
                   style={styles.input}
                   placeholder="бетон, арматура…"
                   value={editDraft.specialization || ''}
-                  onChangeText={(v) =>
-                    setEditDraft((d) => ({ ...d, specialization: v }))
-                  }
+                  onChangeText={(v) => setEditDraft((d) => ({ ...d, specialization: v }))}
                 />
               </View>
               <View style={{ width: 220 }}>
@@ -296,9 +272,7 @@ export default function SuppliersScreen() {
                   style={styles.input}
                   placeholder="ФИО"
                   value={editDraft.contact_name || ''}
-                  onChangeText={(v) =>
-                    setEditDraft((d) => ({ ...d, contact_name: v }))
-                  }
+                  onChangeText={(v) => setEditDraft((d) => ({ ...d, contact_name: v }))}
                 />
               </View>
               <View style={{ width: 200 }}>
@@ -307,9 +281,7 @@ export default function SuppliersScreen() {
                   style={styles.input}
                   placeholder="+996…"
                   value={editDraft.phone || ''}
-                  onChangeText={(v) =>
-                    setEditDraft((d) => ({ ...d, phone: v }))
-                  }
+                  onChangeText={(v) => setEditDraft((d) => ({ ...d, phone: v }))}
                 />
               </View>
               <View style={{ width: 260 }}>
@@ -318,9 +290,7 @@ export default function SuppliersScreen() {
                   style={styles.input}
                   placeholder="mail@company.kg"
                   value={editDraft.email || ''}
-                  onChangeText={(v) =>
-                    setEditDraft((d) => ({ ...d, email: v }))
-                  }
+                  onChangeText={(v) => setEditDraft((d) => ({ ...d, email: v }))}
                 />
               </View>
               <View style={{ width: 260 }}>
@@ -329,9 +299,7 @@ export default function SuppliersScreen() {
                   style={styles.input}
                   placeholder="https://…"
                   value={editDraft.website || ''}
-                  onChangeText={(v) =>
-                    setEditDraft((d) => ({ ...d, website: v }))
-                  }
+                  onChangeText={(v) => setEditDraft((d) => ({ ...d, website: v }))}
                 />
               </View>
               <View style={{ flexBasis: '100%' }}>
@@ -340,9 +308,7 @@ export default function SuppliersScreen() {
                   style={styles.input}
                   placeholder="г. Бишкек, ул.…"
                   value={editDraft.address || ''}
-                  onChangeText={(v) =>
-                    setEditDraft((d) => ({ ...d, address: v }))
-                  }
+                  onChangeText={(v) => setEditDraft((d) => ({ ...d, address: v }))}
                 />
               </View>
               <View style={{ flexBasis: '100%' }}>
@@ -351,31 +317,17 @@ export default function SuppliersScreen() {
                   style={styles.input}
                   placeholder="Примечания"
                   value={editDraft.notes || ''}
-                  onChangeText={(v) =>
-                    setEditDraft((d) => ({ ...d, notes: v }))
-                  }
+                  onChangeText={(v) => setEditDraft((d) => ({ ...d, notes: v }))}
                 />
               </View>
             </View>
 
-            <View
-              style={{
-                flexDirection: 'row',
-                gap: 8,
-                marginTop: 10,
-                flexWrap: 'wrap',
-              }}
-            >
+            <View style={{ flexDirection: 'row', gap: 8, marginTop: 10, flexWrap: 'wrap' }}>
               <Pressable
                 onPress={save}
-                style={[
-                  styles.smallBtn,
-                  { backgroundColor: COLORS.blue, borderColor: COLORS.blue },
-                ]}
+                style={[styles.smallBtn, { backgroundColor: COLORS.blue, borderColor: COLORS.blue }]}
               >
-                <Text
-                  style={[styles.smallBtnText, { color: '#fff' }]}
-                >
+                <Text style={[styles.smallBtnText, { color: '#fff' }]}>
                   Сохранить
                 </Text>
               </Pressable>
@@ -390,65 +342,45 @@ export default function SuppliersScreen() {
             </View>
 
             {/* Файлы */}
-            <Text
-              style={{
-                marginTop: 16,
-                fontWeight: '800',
-                color: COLORS.text,
-              }}
-            >
+            <Text style={{ marginTop: 16, fontWeight: '800', color: COLORS.text }}>
               Прайсы / фото (опционально)
             </Text>
+
             {isWeb ? (
               <>
                 <Pressable
                   onPress={pickFileWeb}
                   style={[styles.smallBtn, { borderColor: COLORS.primary }]}
                 >
-                  <Text
-                    style={[styles.smallBtnText, { color: COLORS.primary }]}
-                  >
+                  <Text style={[styles.smallBtnText, { color: COLORS.primary }]}>
                     Прикрепить файл
                   </Text>
                 </Pressable>
                 <input
-                  ref={invoiceInputRef as any}
-                  type="file"
-                  accept=".pdf,.jpg,.jpeg,.png"
-                  onChange={onFileChangeWeb as any}
-                  style={{ display: 'none' }}
-                />
+  ref={fileRef as any}           // если у тебя другое имя — оставь своё
+  type="file"
+  accept=".pdf,.jpg,.jpeg,.png"
+  onChange={onPickSupplierFile as any}  // оставь свой обработчик
+  style={{ display: 'none' }}
+/>
               </>
             ) : (
               <Pressable
                 onPress={pickFileNative}
                 style={[styles.smallBtn, { borderColor: COLORS.primary }]}
               >
-                <Text
-                  style={[styles.smallBtnText, { color: COLORS.primary }]}
-                >
+                <Text style={[styles.smallBtnText, { color: COLORS.primary }]}>
                   Прикрепить файл
                 </Text>
               </Pressable>
             )}
 
-            <View
-              style={{
-                marginTop: 8,
-                borderWidth: 1,
-                borderColor: COLORS.border,
-                borderRadius: 8,
-                padding: 8,
-              }}
-            >
+            <View style={{ marginTop: 8, borderWidth: 1, borderColor: COLORS.border, borderRadius: 8, padding: 8 }}>
               {filesBusy ? (
                 <ActivityIndicator />
               ) : files.length ? (
                 files.map((f: any, i: number) => (
-                  <Text
-                    key={i}
-                    style={{ color: COLORS.sub, paddingVertical: 2 }}
-                  >
+                  <Text key={i} style={{ color: COLORS.sub, paddingVertical: 2 }}>
                     • {f.file_name}
                   </Text>
                 ))
@@ -523,5 +455,3 @@ const styles = StyleSheet.create({
   modalHelp: { fontSize: 12, color: COLORS.sub },
   label: { fontSize: 12, color: COLORS.sub, marginBottom: 4 },
 });
-
-

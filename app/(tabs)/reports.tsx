@@ -1,18 +1,16 @@
-﻿import React, { useCallback, useEffect, useState } from "react";
+// FILE: app/(tabs)/reports.tsx
+import React, { useCallback, useEffect, useState } from "react";
 import {
   View, Text, ScrollView, TextInput, Pressable,
-  ActivityIndicator, Alert
+  ActivityIndicator, Alert, Platform, Share, Dimensions
 } from "react-native";
 import * as Print from "expo-print";
 import * as Sharing from "expo-sharing";
 import * as FileSystem from "expo-file-system";
 import { supabase } from "../../src/lib/supabaseClient";
 import { LineChart, PieChart } from "react-native-chart-kit";
-import { Dimensions } from "react-native";
-// ВЕРХ ФАЙЛА (замени существующие импорты expo-sharing)
-import { Platform, Share } from "react-native";
-import * as ExpoSharing from "expo-sharing";  // <= алиас, чтобы точно не конфликтовало
-
+// alias (на всякий случай, чтобы не конфликтовать с именем Sharing)
+import * as ExpoSharing from "expo-sharing";
 
 const w = Dimensions.get("window").width;
 const fmt = (n: any) => Number(n ?? 0).toLocaleString("ru-RU", { maximumFractionDigits: 2 });
@@ -51,7 +49,7 @@ export default function Reports() {
     }
   }, [start, end]);
 
-  useEffect(() => { run(); }, []);
+  useEffect(() => { run(); }, []); // вызов один раз — как было
 
   // ===== Экспорт CSV =====
   const exportCSV = async () => {
@@ -62,13 +60,26 @@ export default function Reports() {
         for (const r of rows) csv += r.map((x) => String(x)).join(";") + "\n";
         csv += "\n";
       };
-      add("Обороты склада", ["Код", "Приход", "Расход", "Баланс"],
-        turnover.map((x) => [x.code, fmt(x.incoming), fmt(x.outgoing), fmt(x.balance)]));
-      add("Затраты по объектам", ["Объект", "Статья", "Кол-во", "Сумма"],
-        costs.map((x) => [x.object_id || "—", humanArticle(x.article), fmt(x.fact_qty), fmt(x.fact_amount)]));
-      add("Долги по контрагентам", ["Контрагент", "Выставлено", "Оплачено", "Баланс"],
-        aging.map((x) => [x.counterparty_id, fmt(x.total_billed), fmt(x.total_paid), fmt(x.balance)]));
-      add("Воронка закупок", ["Статус", "Кол-во"], pipe.map((x) => [humanStatus(x.status), x.cnt]));
+      add(
+        "Обороты склада",
+        ["Код", "Приход", "Расход", "Баланс"],
+        turnover.map((x) => [x.rik_code, fmt(x.incoming), fmt(x.outgoing), fmt(x.balance)])
+      );
+      add(
+        "Затраты по объектам",
+        ["Объект", "Статья", "Кол-во", "Сумма"],
+        costs.map((x) => [x.object_id || "—", humanArticle(x.article), fmt(x.fact_qty), fmt(x.fact_amount)])
+      );
+      add(
+        "Долги по контрагентам",
+        ["Контрагент", "Выставлено", "Оплачено", "Баланс"],
+        aging.map((x) => [x.counterparty_id, fmt(x.total_billed), fmt(x.total_paid), fmt(x.balance)])
+      );
+      add(
+        "Воронка закупок",
+        ["Статус", "Кол-во"],
+        pipe.map((x) => [humanStatus(x.status), x.cnt])
+      );
 
       const path = FileSystem.cacheDirectory + "reports.csv";
       await FileSystem.writeAsStringAsync(path, csv, { encoding: FileSystem.EncodingType.UTF8 });
@@ -77,17 +88,18 @@ export default function Reports() {
       Alert.alert("Ошибка экспорта", e.message);
     }
   };
-async function shareFile(uri: string, title = "Report") {
-  try {
-    if (Platform.OS === "web" || !(await Sharing.isAvailableAsync())) {
-      await Share.share({ url: uri, title, message: uri });
-      return;
+
+  async function shareFile(uri: string, title = "Report") {
+    try {
+      if (Platform.OS === "web" || !(await ExpoSharing.isAvailableAsync())) {
+        await Share.share({ url: uri, title, message: uri });
+        return;
+      }
+      await Sharing.shareAsync(uri, { dialogTitle: title });
+    } catch (e) {
+      console.warn("Share failed:", e);
     }
-    await Sharing.shareAsync(uri, { dialogTitle: title });
-  } catch (e) {
-    console.warn("Share failed:", e);
   }
-}
 
   // ===== Экспорт PDF =====
   const exportPDF = async () => {
@@ -105,14 +117,26 @@ async function shareFile(uri: string, title = "Report") {
       </style>
       </head><body>
       <h2>Отчёт ${start} — ${end}</h2>
-      ${htmlTable("Обороты склада", ["Код", "Приход", "Расход", "Баланс"],
-        turnover.map((x) => [x.code, fmt(x.incoming), fmt(x.outgoing), fmt(x.balance)]))}
-      ${htmlTable("Затраты по объектам", ["Объект", "Статья", "Кол-во", "Сумма"],
-        costs.map((x) => [x.object_id || "—", humanArticle(x.article), fmt(x.fact_qty), fmt(x.fact_amount)]))}
-      ${htmlTable("Долги по контрагентам", ["Контрагент", "Выставлено", "Оплачено", "Баланс"],
-        aging.map((x) => [x.counterparty_id, fmt(x.total_billed), fmt(x.total_paid), fmt(x.balance)]))}
-      ${htmlTable("Воронка закупок", ["Статус", "Кол-во"],
-        pipe.map((x) => [humanStatus(x.status), x.cnt]))}
+      ${htmlTable(
+        "Обороты склада",
+        ["Код", "Приход", "Расход", "Баланс"],
+        turnover.map((x) => [x.rik_code, fmt(x.incoming), fmt(x.outgoing), fmt(x.balance)])
+      )}
+      ${htmlTable(
+        "Затраты по объектам",
+        ["Объект", "Статья", "Кол-во", "Сумма"],
+        costs.map((x) => [x.object_id || "—", humanArticle(x.article), fmt(x.fact_qty), fmt(x.fact_amount)])
+      )}
+      ${htmlTable(
+        "Долги по контрагентам",
+        ["Контрагент", "Выставлено", "Оплачено", "Баланс"],
+        aging.map((x) => [x.counterparty_id, fmt(x.total_billed), fmt(x.total_paid), fmt(x.balance)])
+      )}
+      ${htmlTable(
+        "Воронка закупок",
+        ["Статус", "Кол-во"],
+        pipe.map((x) => [humanStatus(x.status), x.cnt])
+      )}
       </body></html>`;
       const { uri } = await Print.printToFileAsync({ html });
       await Sharing.shareAsync(uri);
@@ -138,7 +162,9 @@ async function shareFile(uri: string, title = "Report") {
         <View style={{ flexDirection: "row", gap: 8 }}>
           <TextInput style={inp} value={start} onChangeText={setStart} placeholder="YYYY-MM-DD" />
           <TextInput style={inp} value={end} onChangeText={setEnd} placeholder="YYYY-MM-DD" />
-          <Pressable style={btnBlue} onPress={run}><Text style={{ color: "#fff", fontWeight: "700" }}>Сформировать</Text></Pressable>
+          <Pressable style={btnBlue} onPress={run}>
+            <Text style={{ color: "#fff", fontWeight: "700" }}>Сформировать</Text>
+          </Pressable>
         </View>
         <View style={{ flexDirection: "row", gap: 8 }}>
           <Pressable style={btnGray} onPress={exportCSV}><Text>📊 Экспорт CSV</Text></Pressable>
@@ -153,7 +179,7 @@ async function shareFile(uri: string, title = "Report") {
         <ChartTurnover data={turnover} />
         <Table
           columns={["Код", "Приход", "Расход", "Баланс"]}
-          rows={turnover.map((x) => [x.code, fmt(x.incoming), fmt(x.outgoing), fmt(x.balance)])}
+          rows={turnover.map((x) => [x.rik_code, fmt(x.incoming), fmt(x.outgoing), fmt(x.balance)])}
         />
       </ReportCard>
 
@@ -223,8 +249,12 @@ function humanArticle(a: string) {
 }
 function humanStatus(s: string) {
   const m: Record<string,string> = {
-    draft: "Черновик", pending: "К приходу", partial: "Частично", confirmed: "Принято",
-    approved: "Утверждено", "На утверждении": "На утверждении"
+    draft: "Черновик",
+    pending: "К приходу",
+    partial: "Частично",
+    confirmed: "Принято",
+    approved: "Утверждено",
+    "На утверждении": "На утверждении",
   };
   return m[s] || s || "—";
 }
@@ -234,10 +264,19 @@ function ChartTurnover({ data }: { data: any[] }) {
   if (!data.length) return null;
   return (
     <LineChart
-      data={{ labels: data.map((x) => x.code.slice(-4)), datasets: [{ data: data.map((x) => Number(x.balance || 0)) }] }}
-      width={w - 48} height={180}
-      chartConfig={{ backgroundColor: "#fff", backgroundGradientFrom: "#fff", backgroundGradientTo: "#fff", decimalPlaces: 0,
-        color: (o) => `rgba(14,165,233,${o.opacity})` }}
+      data={{
+        labels: data.map((x) => String(x.rik_code ?? "").slice(-4)),
+        datasets: [{ data: data.map((x) => Number(x.balance || 0)) }],
+      }}
+      width={w - 48}
+      height={180}
+      chartConfig={{
+        backgroundColor: "#fff",
+        backgroundGradientFrom: "#fff",
+        backgroundGradientTo: "#fff",
+        decimalPlaces: 0,
+        color: (o: any) => `rgba(14,165,233,${o.opacity})`,
+      }}
       bezier
       style={{ marginVertical: 8, borderRadius: 10 }}
     />
@@ -252,9 +291,10 @@ function ChartPie({ data }: { data: any[] }) {
         population: Number(x.cnt),
         color: ["#0ea5e9", "#38bdf8", "#67e8f9", "#94a3b8"][i % 4],
         legendFontColor: "#0f172a",
-        legendFontSize: 12
+        legendFontSize: 12,
       }))}
-      width={w - 48} height={180}
+      width={w - 48}
+      height={180}
       chartConfig={{ color: () => "#0ea5e9" }}
       accessor={"population"}
       backgroundColor={"transparent"}
@@ -262,4 +302,3 @@ function ChartPie({ data }: { data: any[] }) {
     />
   );
 }
-

@@ -1,27 +1,34 @@
-// 🔇 Глушим шумные web-предупреждения от RNW/Expo
-import { Platform, LogBox } from 'react-native';
+// app/(tabs)/_layout.tsx
 
-// Попытка через LogBox (может не сработать в web, но пробуем)
-if (Platform.OS === 'web') {
+import "./_webStyleGuard"; // подключаем web-стаб сразу
+
+import React from "react";
+import { Platform, LogBox } from "react-native";
+import { Slot } from "expo-router";
+
+// Тихо глушим шумные web-предупреждения (только в браузере)
+if (Platform.OS === "web") {
   LogBox.ignoreLogs([
     'props.pointerEvents is deprecated. Use style.pointerEvents',
     '"shadow*" style props are deprecated. Use "boxShadow".',
   ]);
 
-  // Надёжный способ: перехват console.warn ТОЛЬКО для этих двух сообщений
-  const _warn = console.warn;
+  // fallback, если LogBox не перехватил
+  const originalWarn = console.warn;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   console.warn = (...args: any[]) => {
-    const msg = String(args?.[0] ?? '');
+    const msg = String(args?.[0] ?? "");
     if (
-      msg.includes('props.pointerEvents is deprecated') ||
+      msg.includes("props.pointerEvents is deprecated") ||
       msg.includes('"shadow*" style props are deprecated')
     ) {
-      return; // не логируем эти два
+      return;
     }
-    _warn.apply(console, args);
+    originalWarn.apply(console, args as unknown as []);
   };
 }
-import { Slot } from "expo-router";
+
 export default function RootLayout() {
   return <Slot />;
 }
+

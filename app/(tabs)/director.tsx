@@ -1,4 +1,4 @@
-п»ї// app/(tabs)/director.tsx пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ (пїЅпїЅпїЅпїЅпїЅпїЅ)пїЅ, пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
+// app/(tabs)/director.tsx — единый блок «Ожидает утверждения (прораб)», БЕЗ нижнего блока «шапок»
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   View, Text, FlatList, Pressable, Alert, ActivityIndicator,
@@ -7,10 +7,10 @@ import {
 import {
   listDirectorProposalsPending, proposalItems,
   listDirectorInbox as fetchDirectorInbox, type DirectorInboxRow,
-  catalog_api,
+  RIK_API,
   buildRequestPdfHtml, exportRequestPdf,
-  resolveProposalPrettyTitle, // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
-  directorReturnToBuyer, 
+  resolveProposalPrettyTitle, // красивый заголовок
+  directorReturnToBuyer,
 } from '../../src/lib/catalog_api';
 import { supabase, ensureSignedIn } from '../../src/lib/supabaseClient';
 
@@ -23,7 +23,7 @@ type PendingRow = {
   name_human: string;
   qty: number;
   uom?: string | null;
-  code?: string | null;
+  rik_code?: string | null;
   app_code?: string | null;
   note?: string | null;
 };
@@ -32,7 +32,7 @@ type Group = { request_id: number | string; items: PendingRow[] };
 type ProposalHead = { id: string; submitted_at?: string | null; pretty?: string | null };
 type ProposalItem = {
   id: number;
-  code: string | null;
+  rik_code: string | null;
   name_human: string;
   uom: string | null;
   app_code: string | null;
@@ -47,7 +47,7 @@ const toFilterId = (v: number | string | null | undefined) => {
 };
 const shortId = (rid: number | string | null | undefined) => {
   const s = String(rid ?? '');
-  if (!s || s.toLowerCase() === 'nan') return 'пїЅ';
+  if (!s || s.toLowerCase() === 'nan') return '—';
   return /^\d+$/.test(s) ? s : s.slice(0, 8);
 };
 
@@ -69,22 +69,22 @@ const UI = {
 export default function DirectorScreen() {
   const [tab, setTab] = useState<Tab>('foreman');
 
-  // ===== пїЅпїЅпїЅпїЅпїЅпїЅ =====
+  // ===== ПРОРАБ =====
   const [rows, setRows] = useState<PendingRow[]>([]);
   const [loadingRows, setLoadingRows] = useState(false);
   const [actingId, setActingId] = useState<string | null>(null);
   const [actingAll, setActingAll] = useState<number | string | null>(null);
 
-  // пїЅпїЅпїЅпїЅ-пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+  // анти-мигание
   const didInit = useRef(false);
   const fetchTicket = useRef(0);
   const lastNonEmptyRows = useRef<PendingRow[]>([]);
 
-  // ===== (пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ) =====
+  // ===== (оставил загрузку «шапок», но НЕ рендерю) =====
   const [directorReqs, setDirectorReqs] = useState<Array<{ request_id: string; items_count: number; submitted_at: string | null; doc_no?: string | null }>>([]);
   const [loadingDirReqs, setLoadingDirReqs] = useState(false);
 
-  // ===== пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ =====
+  // ===== СНАБЖЕНЕЦ =====
   const [propsHeads, setPropsHeads] = useState<ProposalHead[]>([]);
   const [loadingProps, setLoadingProps] = useState(false);
   const [expanded, setExpanded] = useState<string | null>(null);
@@ -93,7 +93,7 @@ export default function DirectorScreen() {
   const [decidingId, setDecidingId] = useState<string | null>(null);
   const [pdfHtmlByProp, setPdfHtmlByProp] = useState<Record<string, string>>({});
 
-  // ===== пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ =====
+  // ===== КЭШ НОМЕРОВ ЗАЯВОК =====
   const [displayNoByReq, setDisplayNoByReq] = useState<Record<string, string>>({});
   const labelForRequest = useCallback((rid: number | string | null | undefined, fallbackDocNo?: string | null) => {
     const key = String(rid ?? '');
@@ -137,7 +137,7 @@ export default function DirectorScreen() {
         name_human: r.name_human ?? '',
         qty: Number(r.qty ?? 0),
         uom: r.uom ?? null,
-        code: r.code ?? null,
+        rik_code: r.rik_code ?? null,
         app_code: r.app_code ?? null,
         note: r.note ?? null,
       }));
@@ -159,8 +159,8 @@ export default function DirectorScreen() {
     setLoadingDirReqs(true);
     try {
       const inbox = typeof fetchDirectorInbox === 'function'
-        ? await fetchDirectorInbox('пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ')
-        : await (catalog_api?.listDirectorInbox?.('пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ') ?? []);
+        ? await fetchDirectorInbox('На утверждении')
+        : await (RIK_API?.listDirectorInbox?.('На утверждении') ?? []);
       const reqRows = (inbox || []).filter(r => r.kind === 'request') as DirectorInboxRow[];
 
       const mapped = reqRows.map(r => ({
@@ -184,7 +184,7 @@ export default function DirectorScreen() {
   const fetchProps = useCallback(async () => {
     setLoadingProps(true);
     try {
-      // 1) пїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ: пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+      // 1) как и раньше: список «На утверждении»
       const list = await listDirectorProposalsPending();
       const heads: ProposalHead[] = (list ?? [])
         .filter((x: any) => x && x.id != null && x.submitted_at != null)
@@ -194,7 +194,7 @@ export default function DirectorScreen() {
 
       const ids = heads.map(h => h.id);
 
-      // 2) пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+      // 2) подтягиваем красивые номера И границу «миграции» (не отправлено в бухгалтерию)
       const { data, error } = await supabase
         .from('proposals')
         .select('id, doc_no, display_no, sent_to_accountant_at')
@@ -202,7 +202,7 @@ export default function DirectorScreen() {
 
       if (error || !Array.isArray(data)) { setPropsHeads(heads); return; }
 
-      // пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ, пїЅпїЅпїЅ пїЅЩЁ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+      // только те, что ЕЩЁ НЕ отправлены в бухгалтерию
       const okIds = new Set<string>(
         data.filter(r => !r?.sent_to_accountant_at).map(r => String(r.id))
       );
@@ -252,21 +252,21 @@ export default function DirectorScreen() {
         filter: "role=eq.director"
       }, (payload: any) => {
         const n = payload?.new || {};
-        Alert.alert(n.title || 'пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ', n.body || '');
+        Alert.alert(n.title || 'Уведомление', n.body || '');
         try { fetchDirectorInbox && fetchDirectorInbox(); } catch {}
       })
       .subscribe();
     return () => { try { supabase.removeChannel(ch); } catch {} };
   }, []);
 
-  /* ---------- PDF пїЅпїЅпїЅпїЅпїЅпїЅ (пїЅпїЅпїЅпїЅпїЅпїЅ) пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ window.open ---------- */
+  /* ---------- PDF заявки (прораб) с безопасным window.open ---------- */
   const openRequestPdf = useCallback(async (g: Group | { request_id: string | number; items: any[] }) => {
     try {
       const rid = g?.request_id;
-      if (!rid) throw new Error('request_id пїЅпїЅпїЅпїЅпїЅпїЅ');
+      if (!rid) throw new Error('request_id пустой');
 
       if (Platform.OS === 'web') {
-        const w = window.open('about:blank', '_blank'); // пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+        const w = window.open('about:blank', '_blank'); // открыть сразу — не блокируется
         try {
           const html = await buildRequestPdfHtml(rid as any);
           if (w) {
@@ -286,13 +286,13 @@ export default function DirectorScreen() {
       }
     } catch (e) {
       console.error('[openRequestPdf]:', (e as any)?.message ?? e);
-      Alert.alert('пїЅпїЅпїЅпїЅпїЅпїЅ', (e as any)?.message ?? 'пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ PDF');
+      Alert.alert('Ошибка', (e as any)?.message ?? 'Не удалось сформировать PDF');
     }
   }, []);
 
-  // пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ proposal_id (пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ purchase_approve)
+  // Найти связанную закупку по proposal_id (для дальнейшего purchase_approve)
   const findPurchaseIdByProposal = useCallback(async (proposalId: string): Promise<string | null> => {
-    // 1) пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ view
+    // 1) прямая связка через view
     const q = await supabase
       .from('v_purchases')
       .select('id, proposal_id')
@@ -302,7 +302,7 @@ export default function DirectorScreen() {
 
     if (!q.error && q.data?.id) return String(q.data.id);
 
-    // 2) fallback: пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ id
+    // 2) fallback: просим сервер создать связь и вернуть id
     const r = await supabase.rpc('purchase_upsert_from_proposal', { p_proposal_id: String(proposalId) });
     if (!(r as any).error && (r as any).data) return String((r as any).data);
 
@@ -320,7 +320,7 @@ export default function DirectorScreen() {
     return Array.from(map.entries()).map(([request_id, items]) => ({ request_id, items }));
   }, [rows]);
 
-  // (пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ)
+  // (оставляем уникализацию «шапок» для совместимости, но НЕ используем в рендере)
   const directorReqsUnique = useMemo(() => {
     const seen = new Set<string>();
     return directorReqs.filter(r => {
@@ -330,20 +330,20 @@ export default function DirectorScreen() {
     });
   }, [directorReqs]);
 
-  /* ===== пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ (пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ) ===== */
+  /* ===== Вспомогательная карточка предложения (СНАБЖЕНЕЦ) ===== */
   const ProposalRow = React.memo(({ p }: { p: ProposalHead }) => {
     const pidStr = String(p.id);
 
-    // 1) пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+    // 1) локальное состояние
     const [pretty, setPretty] = useState<string>(p.pretty?.trim() || '');
 
-    // 2) пїЅпїЅпїЅпїЅ props.pretty пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ
+    // 2) если props.pretty обновился после запроса — подхватить его
     useEffect(() => {
       const ext = (p.pretty || '').trim();
       if (ext && ext !== pretty) setPretty(ext);
     }, [p.pretty, pretty]);
 
-    // 3) пїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅ пїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ RPC (пїЅпїЅпїЅ пїЅпїЅпїЅпїЅ)
+    // 3) если так и нет — добить через RPC (как было)
     useEffect(() => {
       if (pretty) return;
       let dead = false;
@@ -356,8 +356,6 @@ export default function DirectorScreen() {
       return () => { dead = true; };
     }, [pidStr, pretty]);
 
-    // ... пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
-
     const isOpen = expanded === p.id;
     const key = pidStr;
     const items = itemsByProp[key] || [];
@@ -367,33 +365,33 @@ export default function DirectorScreen() {
       <View style={[s.card, { borderStyle: 'dashed' }]}>
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
           <Text style={s.cardTitle}>
-            {pretty ? `пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ: ${pretty}` : `пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ #${pidStr.slice(0, 8)}`}
+            {pretty ? `Предложение: ${pretty}` : `Предложение #${pidStr.slice(0, 8)}`}
           </Text>
           <Text style={[s.cardMeta, { marginLeft: 8 }]}>
-            пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ: {p.submitted_at ? new Date(p.submitted_at).toLocaleString() : 'пїЅ'}
+            Отправлено: {p.submitted_at ? new Date(p.submitted_at).toLocaleString() : '—'}
           </Text>
           <Pressable
             onPress={() => toggleExpand(pidStr)}
             style={[s.pillBtn, { marginLeft: 'auto', backgroundColor: UI.tabActiveBg }]}
           >
-            <Text style={s.pillBtnText}>{isOpen ? 'пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ' : 'пїЅпїЅпїЅпїЅпїЅпїЅпїЅ'}</Text>
+            <Text style={s.pillBtnText}>{isOpen ? 'Свернуть' : 'Открыть'}</Text>
           </Pressable>
         </View>
         {isOpen && (
           <>
             <View style={{ marginTop: 8 }}>
               {!loaded ? (
-                <Text style={{ opacity: 0.7, color: UI.sub }}>пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ</Text>
+                <Text style={{ opacity: 0.7, color: UI.sub }}>Загружаю состав…</Text>
               ) : items.length === 0 ? (
-                <Text style={{ opacity: 0.6, color: UI.sub }}>пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ</Text>
+                <Text style={{ opacity: 0.6, color: UI.sub }}>Состав пуст</Text>
               ) : (
                 <View>
                   {items.map((it) => (
                     <View key={`pi:${key}:${it.id}`} style={{ paddingVertical: 4 }}>
                       <Text style={{ fontWeight: '600', color: UI.text }}>{it.name_human}</Text>
                       <Text style={s.cardMeta}>
-                        {(it.code ? `${it.code} пїЅ ` : '')}
-                        {it.total_qty} {it.uom || ''}{it.app_code ? ` пїЅ ${it.app_code}` : ''}
+                        {(it.rik_code ? `${it.rik_code} · ` : '')}
+                        {it.total_qty} {it.uom || ''}{it.app_code ? ` · ${it.app_code}` : ''}
                       </Text>
                     </View>
                   ))}
@@ -407,25 +405,25 @@ export default function DirectorScreen() {
                 disabled={decidingId === p.id}
                 style={[s.pillBtn, { backgroundColor: UI.btnApprove, opacity: decidingId === p.id ? 0.6 : 1 }]}
               >
-                <Text style={s.pillBtnText}>пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ</Text>
+                <Text style={s.pillBtnText}>Утвердить</Text>
               </Pressable>
 
-              {/* пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ */}
+              {/* единственная красная кнопка — «Вернуть» */}
               <Pressable
                 onPress={async () => { await onDirectorReturn(pidStr); }}
                 disabled={decidingId === p.id}
                 style={[s.pillBtn, { backgroundColor: UI.btnReject, opacity: decidingId === p.id ? 0.6 : 1 }]}
               >
-                <Text style={s.pillBtnText}>пїЅпїЅпїЅпїЅпїЅпїЅпїЅ</Text>
+                <Text style={s.pillBtnText}>Вернуть</Text>
               </Pressable>
 
-              {/* ===== PDF (пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ) пїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ onPress ===== */}
+              {/* ===== PDF (СНАБЖЕНЕЦ) — твой безопасный onPress ===== */}
               <Pressable
                 onPress={async () => {
                   if (Platform.OS === 'web') {
                     const w = window.open('about:blank', '_blank');
                     try {
-                      const { buildProposalPdfHtml } = await import('../../src/lib/catalog_api');
+                      const { buildProposalPdfHtml } = await import('../../src/lib/rik_api');
                       const htmlDoc = await buildProposalPdfHtml(pidStr as any);
                       if (w) {
                         try { w.document.open(); w.document.write(htmlDoc); w.document.close(); w.focus(); }
@@ -437,14 +435,14 @@ export default function DirectorScreen() {
                       }
                     } catch (e) {
                       try { if (w) w.close(); } catch {}
-                      Alert.alert('пїЅпїЅпїЅпїЅпїЅпїЅ', (e as any)?.message ?? 'PDF пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ');
+                      Alert.alert('Ошибка', (e as any)?.message ?? 'PDF не сформирован');
                     }
                   } else {
                     try {
-                      const { exportProposalPdf } = await import('../../src/lib/catalog_api');
+                      const { exportProposalPdf } = await import('../../src/lib/rik_api');
                       await exportProposalPdf(pidStr as any);
                     } catch (e) {
-                      Alert.alert('пїЅпїЅпїЅпїЅпїЅпїЅ', (e as any)?.message ?? 'PDF пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ');
+                      Alert.alert('Ошибка', (e as any)?.message ?? 'PDF не сформирован');
                     }
                   }
                 }}
@@ -459,7 +457,7 @@ export default function DirectorScreen() {
     );
   });
 
-  /* ---------- toggleExpand: пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ HTML (web) ---------- */
+  /* ---------- toggleExpand: грузим состав и HTML (web) ---------- */
   const toggleExpand = useCallback(async (pid: string) => {
     const next = expanded === pid ? null : pid;
     setExpanded(next);
@@ -467,12 +465,12 @@ export default function DirectorScreen() {
     const key = String(pid);
     if (next === pid && !loadedByProp[key]) {
       try {
-        // 1) пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ snapshot
+        // 1) сначала пробуем snapshot
         let rows: any[] | null = null;
 
         const qSnap = await supabase
           .from('proposal_snapshot_items')
-          .select('id, code, name_human, uom, app_code, total_qty')
+          .select('id, rik_code, name_human, uom, app_code, total_qty')
           .eq('proposal_id', key)
           .order('id', { ascending: true });
 
@@ -480,24 +478,24 @@ export default function DirectorScreen() {
           rows = qSnap.data;
         }
 
-        // 2) пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ proposal_items
+        // 2) если снапшота нет — обычные proposal_items (view)
         if (!rows) {
           const qItems = await supabase
             .from('proposal_items_view')
-            .select('id, code, name_human, uom, app_code, total_qty')
+            .select('id, rik_code, name_human, uom, app_code, total_qty')
             .eq('proposal_id', key)
             .order('id', { ascending: true });
 
-          if (!qItems.error && Array.isArray(qItems.data)) {
+        if (!qItems.error && Array.isArray(qItems.data)) {
             rows = qItems.data;
           }
         }
 
-        // 3) пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ fallback: proposal_items
+        // 3) последний fallback: proposal_items (qty > total_qty)
         if (!rows) {
           const qPlain = await supabase
             .from('proposal_items')
-            .select('id, code, name_human, uom, app_code, qty')
+            .select('id, rik_code, name_human, uom, app_code, qty')
             .eq('proposal_id', key)
             .order('id', { ascending: true });
 
@@ -508,7 +506,7 @@ export default function DirectorScreen() {
 
         const norm = (rows ?? []).map((r: any, i: number) => ({
           id: Number(r.id ?? i),
-          code: r.code ?? null,
+          rik_code: r.rik_code ?? null,
           name_human: r.name_human ?? '',
           uom: r.uom ?? null,
           app_code: r.app_code ?? null,
@@ -517,7 +515,7 @@ export default function DirectorScreen() {
 
         setItemsByProp(prev => ({ ...prev, [key]: norm }));
       } catch (e) {
-        Alert.alert('пїЅпїЅпїЅпїЅпїЅпїЅ', (e as any)?.message ?? 'пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ');
+        Alert.alert('Ошибка', (e as any)?.message ?? 'Не удалось загрузить строки предложения');
         setItemsByProp(prev => ({ ...prev, [key]: [] }));
       } finally {
         setLoadedByProp(prev => ({ ...prev, [key]: true }));
@@ -526,32 +524,31 @@ export default function DirectorScreen() {
 
     if (Platform.OS === 'web' && !pdfHtmlByProp[key]) {
       try {
-        const { buildProposalPdfHtml } = await import('../../src/lib/catalog_api');
+        const { buildProposalPdfHtml } = await import('../../src/lib/rik_api');
         const html = await buildProposalPdfHtml(key as any);
         setPdfHtmlByProp(prev => ({ ...prev, [key]: html }));
       } catch {}
     }
   }, [expanded, loadedByProp, pdfHtmlByProp]);
 
-  /* ---------- пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ ---------- */
+  /* ---------- решения директора по предложению ---------- */
   const decide = useCallback(async (pid: string, decision: 'approved' | 'rejected') => {
     try {
       setDecidingId(pid);
 
       if (decision === 'approved') {
-        // 1) пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+        // 1) штатное утверждение
         const { data: ok, error } = await supabase.rpc('approve_one', { p_proposal_id: String(pid) });
         if (error) {
           console.warn('[approve_one] rpc error > fallback UPDATE:', error.message);
-          const upd = await supabase.from('proposals').update({ status: 'пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ' }).eq('id', pid);
+          const upd = await supabase.from('proposals').update({ status: 'Утверждено' }).eq('id', pid);
           if (upd.error) throw upd.error;
         } else if (!ok) {
-          Alert.alert('пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ', 'пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ/id');
+          Alert.alert('Внимание', 'Нечего утверждать или неправильный статус/id');
         }
 
-        // 2) пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
+        // 2) гарантируем наличие закупки и проталкиваем на склад
         try {
-          // пїЅпїЅпїЅпїЅпїЅпїЅ/пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
           const r1 = await supabase.rpc('purchase_upsert_from_proposal', { p_proposal_id: String(pid) });
           if ((r1 as any).error) throw (r1 as any).error;
 
@@ -559,7 +556,6 @@ export default function DirectorScreen() {
           if ((r1 as any)?.data) {
             purchaseId = String((r1 as any).data);
           } else {
-            // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
             const q = await supabase
               .from('v_purchases')
               .select('id')
@@ -583,16 +579,18 @@ export default function DirectorScreen() {
         const { data: ok, error } = await supabase.rpc('reject_one', { p_proposal_id: String(pid) });
         if (error) {
           console.warn('[reject_one] rpc error > fallback UPDATE:', error.message);
-          const upd = await supabase.from('proposals').update({ status: 'пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ' }).eq('id', pid);
+          const upd = await supabase.from('proposals').update({ status: 'Отклонено' }).eq('id', pid);
           if (upd.error) throw upd.error;
         }
       }
 
       await fetchProps();
-      Alert.alert(decision === 'approved' ? 'пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ' : 'пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ',
-        `пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ #${pid.slice(0,8)} ${decision === 'approved' ? 'пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ' : 'пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ'}`);
+      Alert.alert(
+        decision === 'approved' ? 'Утверждено' : 'Отклонено',
+        `Предложение #${pid.slice(0,8)} ${decision === 'approved' ? 'утверждено' : 'отклонено'}`
+      );
     } catch (e) {
-      Alert.alert('пїЅпїЅпїЅпїЅпїЅпїЅ', (e as any)?.message ?? 'пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ');
+      Alert.alert('Ошибка', (e as any)?.message ?? 'Не удалось применить решение');
     } finally {
       setDecidingId(null);
     }
@@ -602,7 +600,7 @@ export default function DirectorScreen() {
     try {
       const pid = String(proposalId);
 
-      // 0) пїЅпїЅпїЅпїЅ-пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ: пїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅ
+      // 0) пред-проверка: если уже у бухгалтерии — честно сказать об этом
       const chk = await supabase
         .from('proposals')
         .select('sent_to_accountant_at')
@@ -610,19 +608,22 @@ export default function DirectorScreen() {
         .maybeSingle();
 
       if (!chk.error && chk.data?.sent_to_accountant_at) {
-        Alert.alert('пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ', 'пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ. пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ (пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ (пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ)пїЅ).');
+        Alert.alert(
+          'Нельзя вернуть',
+          'Документ уже у бухгалтерии. Вернуть может только бухгалтер (через «На доработке (снабженец)»).'
+        );
         return;
       }
 
       setDecidingId(pid);
 
-      // 1) пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ (RPC-пїЅпїЅпїЅпїЅпїЅпїЅ)
+      // 1) реальный возврат (RPC-обёртка)
       await directorReturnToBuyer({ proposalId: pid, comment: (note || '').trim() || undefined });
 
-      Alert.alert('пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ', `пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ #${pid.slice(0,8)} пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ`);
-      await fetchProps(); // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+      Alert.alert('Возвращено', `Предложение #${pid.slice(0,8)} отправлено снабженцу на доработку`);
+      await fetchProps(); // перечитать «на утверждении»
     } catch (e) {
-      Alert.alert('пїЅпїЅпїЅпїЅпїЅпїЅ', (e as any)?.message ?? 'пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ');
+      Alert.alert('Ошибка', (e as any)?.message ?? 'Не удалось вернуть на доработку');
     } finally {
       setDecidingId(null);
     }
@@ -633,7 +634,7 @@ export default function DirectorScreen() {
     <View style={[s.container, { backgroundColor: UI.bg }]}>
       {/* Header / Tabs */}
       <View style={s.header}>
-        <Text style={s.title}>пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ</Text>
+        <Text style={s.title}>Директор</Text>
         <View style={s.tabs}>
           {(['foreman','buyer'] as Tab[]).map((t) => {
             const active = tab === t;
@@ -641,7 +642,7 @@ export default function DirectorScreen() {
               <Pressable key={t} onPress={() => setTab(t)}
                 style={[s.tab, { backgroundColor: active ? UI.tabActiveBg : UI.tabInactiveBg }]}>
                 <Text style={{ color: active ? UI.tabActiveText : UI.tabInactiveText, fontWeight: '700' }}>
-                  {t === 'foreman' ? 'пїЅпїЅпїЅпїЅпїЅпїЅ' : 'пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ'}
+                  {t === 'foreman' ? 'Прораб' : 'Снабженец'}
                 </Text>
               </Pressable>
             );
@@ -653,18 +654,18 @@ export default function DirectorScreen() {
             }}
             style={[s.refreshBtn]}
           >
-            <Text style={{ color: '#fff', fontWeight: '700' }}>пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ</Text>
+            <Text style={{ color: '#fff', fontWeight: '700' }}>Обновить</Text>
           </Pressable>
         </View>
       </View>
 
       {tab === 'foreman' ? (
         <>
-          {/* ===== пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ (пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ) ===== */}
+          {/* ===== ЕДИНЫЙ БЛОК ПРОРАБА (БЕЗ нижнего блока) ===== */}
           <View style={s.sectionHeader}>
-            <Text style={s.sectionTitle}>пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ (пїЅпїЅпїЅпїЅпїЅпїЅ)</Text>
+            <Text style={s.sectionTitle}>Ожидает утверждения (прораб)</Text>
             <Text style={s.sectionMeta}>
-              {loadingRows ? 'пїЅ' : `${rows.length} пїЅпїЅпїЅ.`}
+              {loadingRows ? '…' : `${rows.length} поз.`}
             </Text>
           </View>
 
@@ -675,10 +676,10 @@ export default function DirectorScreen() {
             renderItem={({ item }) => (
               <View style={s.group}>
                 <View style={s.groupHeader}>
-                  <Text style={s.groupTitle}>пїЅпїЅпїЅпїЅпїЅпїЅ {labelForRequest(item.request_id)}</Text>
-                  <Text style={s.groupMeta}>{item.items.length} пїЅпїЅпїЅ.</Text>
+                  <Text style={s.groupTitle}>Заявка {labelForRequest(item.request_id)}</Text>
+                  <Text style={s.groupMeta}>{item.items.length} поз.</Text>
                   <View style={{ flexDirection: 'row', gap: 8, marginLeft: 'auto' }}>
-                    {/* PDF пїЅпїЅпїЅпїЅпїЅпїЅ (пїЅпїЅпїЅпїЅпїЅпїЅ) пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ onPress */}
+                    {/* PDF заявки (прораб) — безопасный onPress */}
                     <Pressable onPress={() => openRequestPdf(item)} style={[s.pillBtn, { backgroundColor: UI.btnNeutral }]}>
                       <Text style={s.pillBtnText}>PDF</Text>
                     </Pressable>
@@ -688,22 +689,22 @@ export default function DirectorScreen() {
                         setActingAll(item.request_id);
                         try {
                           const reqId = toFilterId(item.request_id);
-                          if (reqId == null) throw new Error('request_id пїЅпїЅпїЅпїЅпїЅпїЅ');
+                          if (reqId == null) throw new Error('request_id пустой');
                           const { error } = await supabase.rpc('director_decide_request', {
                             p_request_id: String(reqId),
                             p_decision: 'approve',
                           });
                           if (error) throw error;
-                          Alert.alert('пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ', `пїЅпїЅпїЅпїЅпїЅпїЅ ${labelForRequest(item.request_id)} пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ`);
+                          Alert.alert('Отправлено', `Заявка ${labelForRequest(item.request_id)} отправлена снабженцу`);
                           await fetchRows(); await fetchDirectorReqs(); await fetchProps();
                         } catch (e) {
-                          Alert.alert('пїЅпїЅпїЅпїЅпїЅпїЅ', (e as any)?.message ?? 'пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ');
+                          Alert.alert('Ошибка', (e as any)?.message ?? 'Не удалось отправить снабженцу');
                         } finally { setActingAll(null); }
                       }}
                       disabled={actingAll === item.request_id}
                       style={[s.pillBtn, { backgroundColor: UI.btnApprove, opacity: actingAll === item.request_id ? 0.6 : 1 }]}
                     >
-                      <Text style={s.pillBtnText}>пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ</Text>
+                      <Text style={s.pillBtnText}>Отправить снабженцу</Text>
                     </Pressable>
 
                     <Pressable
@@ -711,22 +712,22 @@ export default function DirectorScreen() {
                         setActingAll(item.request_id);
                         try {
                           const reqId = toFilterId(item.request_id);
-                          if (reqId == null) throw new Error('request_id пїЅпїЅпїЅпїЅпїЅпїЅ');
+                          if (reqId == null) throw new Error('request_id пустой');
                           const { error } = await supabase.rpc('approve_request_all', { p_request_id: String(reqId) });
                           if (error) {
                             console.warn('[approve_request_all] rpc error:', error.message, '> fallback UPDATE');
-                            const upd = await supabase.from('request_items').update({ status: 'пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ' }).eq('request_id', reqId as any);
+                            const upd = await supabase.from('request_items').update({ status: 'Утверждено' }).eq('request_id', reqId as any);
                             if (upd.error) throw upd.error;
                           }
                           setRows(prev => prev.filter(r => r.request_id !== item.request_id));
                         } catch (e) {
-                          Alert.alert('пїЅпїЅпїЅпїЅпїЅпїЅ', (e as any)?.message ?? 'пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ');
+                          Alert.alert('Ошибка', (e as any)?.message ?? 'Не удалось утвердить все позиции');
                         } finally { setActingAll(null); }
                       }}
                       disabled={actingAll === item.request_id}
                       style={[s.pillBtn, { backgroundColor: UI.btnApprove, opacity: actingAll === item.request_id ? 0.6 : 1 }]}
                     >
-                      <Text style={s.pillBtnText}>пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ</Text>
+                      <Text style={s.pillBtnText}>Утвердить все</Text>
                     </Pressable>
 
                     <Pressable
@@ -734,22 +735,22 @@ export default function DirectorScreen() {
                         setActingAll(item.request_id);
                         try {
                           const reqId = toFilterId(item.request_id);
-                          if (reqId == null) throw new Error('request_id пїЅпїЅпїЅпїЅпїЅпїЅ');
+                          if (reqId == null) throw new Error('request_id пустой');
                           const { error } = await supabase.rpc('reject_request_all', { p_request_id: String(reqId), p_reason: null });
                           if (error) {
                             console.warn('[reject_request_all] rpc error:', error.message, '> fallback UPDATE');
-                            const upd = await supabase.from('request_items').update({ status: 'пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ' }).eq('request_id', reqId as any);
+                            const upd = await supabase.from('request_items').update({ status: 'Отклонено' }).eq('request_id', reqId as any);
                             if (upd.error) throw upd.error;
                           }
                           setRows(prev => prev.filter(r => r.request_id !== item.request_id));
                         } catch (e) {
-                          Alert.alert('пїЅпїЅпїЅпїЅпїЅпїЅ', (e as any)?.message ?? 'пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ');
+                          Alert.alert('Ошибка', (e as any)?.message ?? 'Не удалось отклонить все позиции');
                         } finally { setActingAll(null); }
                       }}
                       disabled={actingAll === item.request_id}
                       style={[s.pillBtn, { backgroundColor: UI.btnReject, opacity: actingAll === item.request_id ? 0.6 : 1 }]}
                     >
-                      <Text style={s.pillBtnText}>пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ</Text>
+                      <Text style={s.pillBtnText}>Отклонить все</Text>
                     </Pressable>
                   </View>
                 </View>
@@ -763,7 +764,7 @@ export default function DirectorScreen() {
                     <View style={s.card}>
                       <Text style={s.cardTitle}>{it.name_human}</Text>
                       <Text style={s.cardMeta}>
-                        {`пїЅпїЅпїЅпїЅпїЅпїЅ ${labelForRequest(it.request_id ?? item.request_id)} пїЅ ${it.qty} ${it.uom || ''}`}
+                        {`Заявка ${labelForRequest(it.request_id ?? item.request_id)} · ${it.qty} ${it.uom || ''}`}
                       </Text>
                       <View style={s.rowBtns}>
                         <Pressable
@@ -774,12 +775,12 @@ export default function DirectorScreen() {
                               const { error } = await supabase.rpc('approve_request_item', { p_request_item_id: it.request_item_id });
                               if (error) {
                                 console.warn('[approve_request_item] rpc error:', error.message, '> fallback UPDATE');
-                                const upd = await supabase.from('request_items').update({ status: 'пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ' }).eq('id', it.request_item_id);
+                                const upd = await supabase.from('request_items').update({ status: 'Утверждено' }).eq('id', it.request_item_id);
                                 if (upd.error) throw upd.error;
                               }
                               setRows(prev => it.request_item_id ? prev.filter(r => r.request_item_id !== it.request_item_id) : prev);
                             } catch (e) {
-                              Alert.alert('пїЅпїЅпїЅпїЅпїЅпїЅ', (e as any)?.message ?? 'пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ');
+                              Alert.alert('Ошибка', (e as any)?.message ?? 'Не удалось утвердить позицию');
                             } finally { setActingId(null); }
                           }}
                           disabled={!it.request_item_id || actingId === it.request_item_id}
@@ -788,7 +789,7 @@ export default function DirectorScreen() {
                             { backgroundColor: UI.btnApprove, opacity: (!it.request_item_id || actingId === it.request_item_id) ? 0.6 : 1 },
                           ]}
                         >
-                          <Text style={s.actionBtnText}>пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ</Text>
+                          <Text style={s.actionBtnText}>Утвердить</Text>
                         </Pressable>
 
                         <Pressable
@@ -799,12 +800,12 @@ export default function DirectorScreen() {
                               const { error } = await supabase.rpc('reject_request_item', { p_request_item_id: it.request_item_id, p_reason: null });
                               if (error) {
                                 console.warn('[reject_request_item] rpc error:', error.message, '> fallback UPDATE');
-                                const upd = await supabase.from('request_items').update({ status: 'пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ' }).eq('id', it.request_item_id);
+                                const upd = await supabase.from('request_items').update({ status: 'Отклонено' }).eq('id', it.request_item_id);
                                 if (upd.error) throw upd.error;
                               }
                               setRows(prev => it.request_item_id ? prev.filter(r => r.request_item_id !== it.request_item_id) : prev);
                             } catch (e) {
-                              Alert.alert('пїЅпїЅпїЅпїЅпїЅпїЅ', (e as any)?.message ?? 'пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ');
+                              Alert.alert('Ошибка', (e as any)?.message ?? 'Не удалось отклонить позицию');
                             } finally { setActingId(null); }
                           }}
                           disabled={!it.request_item_id || actingId === it.request_item_id}
@@ -813,7 +814,7 @@ export default function DirectorScreen() {
                             { backgroundColor: UI.btnReject, opacity: (!it.request_item_id || actingId === it.request_item_id) ? 0.6 : 1 },
                           ]}
                         >
-                          <Text style={s.actionBtnText}>пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ</Text>
+                          <Text style={s.actionBtnText}>Отклонить</Text>
                         </Pressable>
                       </View>
                     </View>
@@ -821,8 +822,8 @@ export default function DirectorScreen() {
                 />
               </View>
             )}
-            /* ?? пїЅпїЅпїЅпїЅпїЅпїЅпїЅ: ListFooterComponent пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ */
-            ListEmptyComponent={!loadingRows ? <Text style={{ opacity: 0.6, padding: 16, color: UI.sub }}>пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ</Text> : null}
+            /* УДАЛЕНО: ListFooterComponent со «шапками» */
+            ListEmptyComponent={!loadingRows ? <Text style={{ opacity: 0.6, padding: 16, color: UI.sub }}>Нет ожидающих позиций</Text> : null}
             refreshControl={
               <RefreshControl refreshing={false} onRefresh={async () => {
                 await ensureSignedIn();
@@ -840,8 +841,8 @@ export default function DirectorScreen() {
       ) : (
         <>
           <View style={s.sectionHeader}>
-            <Text style={s.sectionTitle}>пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ (пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ)</Text>
-            {loadingProps ? <ActivityIndicator /> : <Text style={s.sectionMeta}>{propsHeads.length} пїЅпїЅ.</Text>}
+            <Text style={s.sectionTitle}>Предложения на утверждении (снабженец)</Text>
+            {loadingProps ? <ActivityIndicator /> : <Text style={s.sectionMeta}>{propsHeads.length} шт.</Text>}
           </View>
 
           <FlatList
@@ -866,13 +867,16 @@ const s = StyleSheet.create({
   container: { flex: 1 },
 
   header: { paddingHorizontal: 16, paddingTop: 12, paddingBottom: 10, borderBottomWidth: 1, borderColor: UI.border },
-  title: { fontSize: 20, fontWeight: '800', color: UI.text, marginBottom: 8 },
+  title: { fontSize: 24, fontWeight: '800', color: UI.text, marginBottom: 8 },
   tabs: { flexDirection: 'row', gap: 8, alignItems: 'center' },
   tab: { paddingVertical: 8, paddingHorizontal: 12, borderRadius: 999 },
   refreshBtn: { marginLeft: 'auto', paddingVertical: 8, paddingHorizontal: 12, borderRadius: 10, backgroundColor: '#111827' },
 
   sectionHeader: { paddingHorizontal: 16, paddingTop: 12, paddingBottom: 6, flexDirection: 'row', alignItems: 'center', gap: 8 },
-  sectionTitle: { fontSize: 16, fontWeight: '800', color: UI.text },
+  ectionTitle: { fontSize: 20, fontWeight: '800', color: UI.text },
+
+ cardTitle: { fontWeight: '700', color: UI.text, fontSize: 16 },
+ cardMeta:  { color: UI.sub,  marginTop: 4, fontSize: 13 },
   sectionMeta: { color: UI.sub, marginLeft: 'auto' },
 
   group: { marginBottom: 14, paddingHorizontal: 16 },
@@ -899,6 +903,5 @@ const s = StyleSheet.create({
   pillBtn: { paddingVertical: 6, paddingHorizontal: 12, borderRadius: 999 },
   pillBtnText: { color: '#fff', fontWeight: '700' },
 });
-
 
 

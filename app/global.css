@@ -1,0 +1,4 @@
+html, body, #root { height: 100%; }
+body { margin: 0; }
+#root > div { min-height: 100vh; position: relative; overflow: visible !important; }
+* { box-sizing: border-box; }

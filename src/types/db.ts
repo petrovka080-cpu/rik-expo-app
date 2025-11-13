@@ -1,7 +1,7 @@
-﻿export type RequestRow = {
+export type RequestRow = {
   id: number;
   object: string | null;
-  code: string | null;
+  rik_code: string | null;
   name: string | null;
   qty: number | null;
   uom: string | null;
@@ -17,11 +17,10 @@ export type PurchaseRow = {
   request_id: number | null;
   date: string; // YYYY-MM-DD
   object: string | null;
-  code: string | null;
+  rik_code: string | null;
   name: string | null;
   qty: number | null;
   uom: string | null;
   status: 'Новая' | 'В работе' | 'Закрыта';
   created_at: string;
 };
-

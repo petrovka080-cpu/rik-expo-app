@@ -1,5 +1,5 @@
-// FILE: app/(tabs)/security.tsx
 import { SvgXml } from 'react-native-svg';
+// app/(tabs)/security.tsx
 import React, { useCallback, useState } from 'react';
 import {
   View, Text, TextInput, Pressable, ScrollView, StyleSheet, Platform, Alert,
@@ -28,7 +28,6 @@ export default function SecurityScreen() {
         friendlyName: 'Основное устройство',
       });
       if (error) throw error;
-
       // Ожидаем структуру: { id, type, friendlyName?, totp: { qr_code, uri, secret } }
       setFactorId(data.id);
       // На web удобно показать SVG-QR, на мобильных — выдать URI/секрет
@@ -36,7 +35,6 @@ export default function SecurityScreen() {
       setQrSvg(data.totp?.qr_code ?? null);
       setUri(data.totp?.uri ?? null);
       setSecret(data.totp?.secret ?? null);
-
       Alert.alert('TOTP', 'Сканируй QR в приложении-аутентификаторе, затем введи 6-значный код ниже.');
     } catch (e: any) {
       Alert.alert('Ошибка', e?.message ?? 'Не удалось включить TOTP');
@@ -115,21 +113,27 @@ export default function SecurityScreen() {
 
         {!!factorId && (
           <>
-            {!!qrSvg ? (
-  <View style={{ borderWidth: 1, borderColor: '#e5e7eb', padding: 10, borderRadius: 8, marginTop: 10, alignItems: 'center' }}>
-    <SvgXml xml={qrSvg as string} width={220} height={220} />
-  </View>
-) : (
-  // На iOS/Android даём URI/секрет для ручного добавления
-  <View style={{ marginTop: 10 }}>
-    {!!uri && <Text selectable style={s.kv}>URI: <Text style={s.code}>{uri}</Text></Text>}
-    {!!secret && <Text selectable style={s.kv}>Секрет: <Text style={s.code}>{secret}</Text></Text>}
-    <Text style={[s.meta, { marginTop: 6 }]}>
-      Откройте приложение-аутентификатор → «Добавить» → «Ввести ключ вручную» и используйте секрет.
-    </Text>
-  </View>
-)}
-
+            {Platform.OS === 'web' && !!qrSvg ? (
+              // На web показываем SVG-QR прямо в интерфейсе
+              // eslint-disable-next-line react/no-danger
+              <View style={{ borderWidth: 1, borderColor: '#e5e7eb', padding: 10, borderRadius: 8, marginTop: 10 }}>
+                {/* @ts-ignore: web only */}
+                {Platform.OS === 'web'
+  ? {Platform.OS === 'web'
+  ? <div dangerouslySetInnerHTML={{ __html: qrSvg as string }} />
+  : <SvgXml xml={qrSvg as string} />}
+  : <SvgXml xml={qrSvg as string} />}
+              </View>
+            ) : (
+              // На iOS/Android даём URI/секрет для ручного добавления
+              <View style={{ marginTop: 10 }}>
+                {!!uri && <Text selectable style={s.kv}>URI: <Text style={s.code}>{uri}</Text></Text>}
+                {!!secret && <Text selectable style={s.kv}>Секрет: <Text style={s.code}>{secret}</Text></Text>}
+                <Text style={[s.meta, { marginTop: 6 }]}>
+                  Откройте приложение-аутентификатор → «Добавить» → «Ввести ключ вручную» и используйте секрет.
+                </Text>
+              </View>
+            )}
 
             <View style={{ marginTop: 12 }}>
               <Text>Код из приложения:</Text>
@@ -160,7 +164,7 @@ export default function SecurityScreen() {
               </Pressable>
             </View>
 
-            {enabled && <Text style={[s.ok, { marginTop: 8 }]}>TOTP активен ✓</Text>}
+            {enabled && <Text style={[s.ok, { marginTop: 8 }]}>TOTP активен ✅</Text>}
           </>
         )}
       </View>
