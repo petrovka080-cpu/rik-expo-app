@@ -1,5 +1,30 @@
 // src/lib/catalog_api.ts
 import { supabase } from "./supabaseClient";
+import {
+  proposalCreate as rpcProposalCreate,
+  proposalAddItems as rpcProposalAddItems,
+  proposalSubmit as rpcProposalSubmit,
+  proposalSnapshotItems as rpcProposalSnapshotItems,
+} from "./rik_api";
+
+export { ensureRequestSmart, requestSubmit, exportRequestPdf, addRequestItemFromRik } from "./rik_api";
+export {
+  listBuyerInbox,
+  proposalCreate,
+  proposalAddItems,
+  proposalSubmit,
+  exportProposalPdf,
+  buildProposalPdfHtml,
+  proposalItems,
+  proposalSnapshotItems,
+  proposalSetItemsMeta,
+  uploadProposalAttachment,
+  proposalSendToAccountant,
+  batchResolveRequestLabels,
+  resolveProposalPrettyTitle,
+  buildProposalPdfHtmlPretty,
+} from "./rik_api";
+export type { BuyerInboxRow } from "./rik_api";
 
 /** ========= Типы ========= */
 export type CatalogItem = {
@@ -49,9 +74,99 @@ export type RequestItem = {
   note?: string | null;
 };
 
+export type ReqItemRow = {
+  id: string;
+  request_id: string;
+  name_human: string;
+  qty: number;
+  uom?: string | null;
+  status?: string | null;
+  supplier_hint?: string | null;
+  app_code?: string | null;
+  note?: string | null;
+  rik_code?: string | null;
+  line_no?: number | null;
+};
+
+export type Supplier = {
+  id: string;
+  name: string;
+  inn?: string | null;
+  bank_account?: string | null;
+  specialization?: string | null;
+  phone?: string | null;
+  email?: string | null;
+  website?: string | null;
+  address?: string | null;
+  contact_name?: string | null;
+  notes?: string | null;
+};
+
 /** ========= helpers ========= */
 const norm = (s?: string | null) => String(s ?? "").trim();
 const clamp = (n: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, n));
+const chunk = <T,>(arr: T[], size: number): T[][] => {
+  if (size <= 0) return [arr.slice()];
+  const out: T[][] = [];
+  for (let i = 0; i < arr.length; i += size) out.push(arr.slice(i, i + size));
+  return out;
+};
+const SUPPLIER_NONE_LABEL = "— без поставщика —";
+
+const mapRequestItemRow = (raw: any, requestId: string): ReqItemRow | null => {
+  const rawId = raw?.id ?? raw?.request_item_id ?? null;
+  if (!rawId) return null;
+  const qtyVal = Number(raw?.qty ?? raw?.quantity ?? raw?.total_qty ?? 0);
+  const qty = Number.isFinite(qtyVal) ? qtyVal : 0;
+  const lineNoRaw = raw?.line_no;
+  let lineNo: number | null = null;
+  if (typeof lineNoRaw === "number") lineNo = lineNoRaw;
+  else if (lineNoRaw != null) {
+    const parsed = Number(lineNoRaw);
+    if (Number.isFinite(parsed)) lineNo = parsed;
+  }
+
+  const nameHuman =
+    norm(raw?.name_human) ||
+    norm(raw?.name) ||
+    norm(raw?.display_name) ||
+    norm(raw?.code) ||
+    norm(raw?.rik_code) ||
+    "";
+
+  return {
+    id: String(rawId),
+    request_id: String(raw?.request_id ?? requestId),
+    name_human: nameHuman || String(raw?.rik_code ?? raw?.code ?? ""),
+    qty,
+    uom: raw?.uom ?? raw?.uom_code ?? null,
+    status: raw?.status ?? null,
+    supplier_hint: raw?.supplier_hint ?? raw?.supplier ?? null,
+    app_code: raw?.app_code ?? null,
+    note: raw?.note ?? raw?.comment ?? null,
+    rik_code: raw?.rik_code ?? raw?.code ?? null,
+    line_no: lineNo,
+  };
+};
+
+const mapSupplierRow = (raw: any): Supplier | null => {
+  const id = raw?.id;
+  const name = norm(raw?.name);
+  if (!id || !name) return null;
+  return {
+    id: String(id),
+    name,
+    inn: raw?.inn ?? null,
+    bank_account: raw?.bank_account ?? null,
+    specialization: raw?.specialization ?? null,
+    phone: raw?.phone ?? null,
+    email: raw?.email ?? null,
+    website: raw?.website ?? null,
+    address: raw?.address ?? null,
+    contact_name: raw?.contact_name ?? null,
+    notes: raw?.notes ?? null,
+  };
+};
 
 /** ========= Каталог: быстрый поиск ========= */
 export async function searchCatalogItems(
@@ -245,56 +360,435 @@ export async function getRequestHeader(requestId: string): Promise<RequestHeader
   return { id };
 }
 
-/** Позиции заявки: сначала RPC request_items_list, потом фолбэк в таблицу */
-export async function listRequestItems(
-  requestId: string
-): Promise<RequestItem[]> {
+export async function fetchRequestDisplayNo(requestId: string): Promise<string | null> {
+  const id = norm(requestId);
+  if (!id) return null;
+
+  const rpcVariants = ["request_display_no", "request_display", "request_label"] as const;
+  for (const fn of rpcVariants) {
+    try {
+      const { data, error } = await supabase.rpc(fn as any, { p_request_id: id } as any);
+      if (!error && data != null) {
+        if (typeof data === "string" || typeof data === "number") return String(data);
+        const obj = data as Record<string, any>;
+        const val = obj.display_no ?? obj.display ?? obj.label ?? null;
+        if (val != null) return String(val);
+      }
+    } catch (e: any) {
+      const msg = String(e?.message ?? "");
+      if (!msg.includes("function") && !msg.includes("does not exist")) {
+        console.warn(`[catalog_api.fetchRequestDisplayNo] rpc ${fn}:`, e?.message ?? e);
+      }
+    }
+  }
+
+  const views = [
+    { src: "vi_requests_display", col: "display_no" },
+    { src: "v_requests_display", col: "display_no" },
+    { src: "requests", col: "number" },
+    { src: "app_requests", col: "number" },
+    { src: "rik_requests", col: "number" },
+  ] as const;
+
+  for (const { src, col } of views) {
+    try {
+      const { data, error } = await supabase
+        .from(src as any)
+        .select(`id,${col}`)
+        .eq("id", id)
+        .maybeSingle();
+      if (!error && data && data[col] != null) return String(data[col]);
+    } catch (e: any) {
+      const msg = String(e?.message ?? "").toLowerCase();
+      if (!msg.includes("permission denied") && !msg.includes("does not exist")) {
+        console.warn(`[catalog_api.fetchRequestDisplayNo] ${src}:`, e?.message ?? e);
+      }
+    }
+  }
+
+  return null;
+}
+
+export type RequestMetaPatch = {
+  need_by?: string | null;
+  comment?: string | null;
+  object_type_code?: string | null;
+  level_code?: string | null;
+  system_code?: string | null;
+  zone_code?: string | null;
+  foreman_name?: string | null;
+};
+
+export async function updateRequestMeta(
+  requestId: string,
+  patch: RequestMetaPatch
+): Promise<boolean> {
+  const id = norm(requestId);
+  if (!id) return false;
+
+  const payload: Record<string, any> = {};
+  if (Object.prototype.hasOwnProperty.call(patch, "need_by"))
+    payload.need_by = norm(patch.need_by) || null;
+  if (Object.prototype.hasOwnProperty.call(patch, "comment"))
+    payload.comment = norm(patch.comment) || null;
+  if (Object.prototype.hasOwnProperty.call(patch, "object_type_code"))
+    payload.object_type_code = patch.object_type_code || null;
+  if (Object.prototype.hasOwnProperty.call(patch, "level_code"))
+    payload.level_code = patch.level_code || null;
+  if (Object.prototype.hasOwnProperty.call(patch, "system_code"))
+    payload.system_code = patch.system_code || null;
+  if (Object.prototype.hasOwnProperty.call(patch, "zone_code"))
+    payload.zone_code = patch.zone_code || null;
+  if (Object.prototype.hasOwnProperty.call(patch, "foreman_name"))
+    payload.foreman_name = norm(patch.foreman_name) || null;
+
+  if (!Object.keys(payload).length) return true;
+
+  const rpcArgs = {
+    p_request_id: id,
+    p_need_by: payload.need_by ?? null,
+    p_comment: payload.comment ?? null,
+    p_object_type_code: payload.object_type_code ?? null,
+    p_level_code: payload.level_code ?? null,
+    p_system_code: payload.system_code ?? null,
+    p_zone_code: payload.zone_code ?? null,
+    p_foreman_name: payload.foreman_name ?? null,
+  };
+
+  const rpcVariants = [
+    "request_update_meta",
+    "app_request_update_meta",
+    "rk_request_update_meta",
+    "request_patch_meta",
+  ] as const;
+
+  for (const fn of rpcVariants) {
+    try {
+      const { error } = await supabase.rpc(fn as any, rpcArgs as any);
+      if (!error) return true;
+      const msg = String(error.message || "");
+      if (!msg.includes("does not exist")) {
+        console.warn(`[catalog_api.updateRequestMeta] rpc ${fn}:`, error.message);
+      }
+    } catch (e: any) {
+      const msg = String(e?.message ?? "");
+      if (!msg.includes("does not exist")) {
+        console.warn(`[catalog_api.updateRequestMeta] rpc ${fn}:`, e?.message ?? e);
+      }
+    }
+  }
+
+  const tables = ["requests", "app_requests", "rik_requests"] as const;
+  for (const table of tables) {
+    try {
+      const { error } = await supabase.from(table as any).update(payload).eq("id", id);
+      if (!error) return true;
+      const msg = String(error.message || "").toLowerCase();
+      if (!msg.includes("permission denied")) {
+        console.warn(`[catalog_api.updateRequestMeta] table ${table}:`, error.message);
+      }
+    } catch (e: any) {
+      const msg = String(e?.message ?? "").toLowerCase();
+      if (!msg.includes("permission denied")) {
+        console.warn(`[catalog_api.updateRequestMeta] table ${table}:`, e?.message ?? e);
+      }
+    }
+  }
+
+  return false;
+}
+
+/** Позиции заявки: читаем из вьюшек/таблиц, что найдутся */
+export async function listRequestItems(requestId: string): Promise<ReqItemRow[]> {
   const id = norm(requestId);
   if (!id) return [];
 
-  // 1) Основной путь — RPC
   try {
-    const { supabase } = await import('./supabaseClient');
-
-    const { data, error } = await supabase.rpc('request_items_list', {
-      p_request_id: id
-    });
-
+    const { data, error } = await supabase.rpc("request_items_list" as any, {
+      p_request_id: id,
+    } as any);
     if (!error && Array.isArray(data)) {
-      return data as RequestItem[];
+      const mapped = (data as any[])
+        .map((row) => mapRequestItemRow(row, id))
+        .filter((row): row is ReqItemRow => !!row);
+      if (mapped.length) {
+        return mapped.sort(
+          (a, b) => (a.line_no ?? 0) - (b.line_no ?? 0) || a.name_human.localeCompare(b.name_human)
+        );
+      }
+    } else if (error) {
+      console.warn("[catalog_api.listRequestItems] rpc request_items_list:", error.message);
     }
-
-    console.warn('[listRequestItems] RPC failed, fallback to table', error);
-  } catch (e) {
-    console.warn('[listRequestItems] RPC exception, fallback to table', e);
+  } catch (e: any) {
+    console.warn("[catalog_api.listRequestItems] rpc request_items_list:", e?.message ?? e);
   }
 
-  // 2) Фолбэк — обычная таблица
-  const { supabase } = await import('./supabaseClient');
-  const { data, error } = await supabase
-    .from('request_items')
-    .select('id,request_id,line_no,code,name,uom,qty,note')
-    .eq('request_id', id)
-    .order('line_no');
+  const sources = [
+    {
+      src: "vi_request_items_display",
+      cols:
+        "id,request_id,line_no,rik_code,code,name_human,name,uom,uom_code,qty,status,note,app_code,supplier_hint",
+    },
+    {
+      src: "vi_request_items",
+      cols:
+        "id,request_id,line_no,rik_code,code,name_human,name,uom,uom_code,qty,status,note,app_code,supplier_hint",
+    },
+    {
+      src: "request_items_view",
+      cols:
+        "id,request_id,line_no,rik_code,code,name_human,name,uom,uom_code,qty,status,note,app_code,supplier_hint",
+    },
+    {
+      src: "request_items",
+      cols:
+        "id,request_id,line_no,rik_code,name_human,uom,qty,status,note,app_code,supplier_hint",
+    },
+    {
+      src: "app_request_items",
+      cols:
+        "id,request_id,line_no,rik_code,name_human,uom,qty,status,note,app_code,supplier_hint",
+    },
+    {
+      src: "rik_request_items",
+      cols:
+        "id,request_id,line_no,rik_code,name_human,uom,qty,status,note,app_code,supplier_hint",
+    },
+  ] as const;
 
-  if (error) {
-    console.error('[listRequestItems] fallback table error', error);
-    return [];
+  for (const { src, cols } of sources) {
+    try {
+      const { data, error } = await supabase
+        .from(src as any)
+        .select(cols)
+        .eq("request_id", id)
+        .order("line_no", { ascending: true });
+      if (error) {
+        const msg = String(error.message || "").toLowerCase();
+        if (!msg.includes("permission denied") && !msg.includes("does not exist")) {
+          console.warn(`[catalog_api.listRequestItems] ${src}:`, error.message);
+        }
+        continue;
+      }
+      if (Array.isArray(data) && data.length) {
+        const mapped = (data as any[])
+          .map((row) => mapRequestItemRow(row, id))
+          .filter((row): row is ReqItemRow => !!row);
+        if (mapped.length) {
+          return mapped.sort((a, b) => (a.line_no ?? 0) - (b.line_no ?? 0));
+        }
+      }
+    } catch (e: any) {
+      const msg = String(e?.message ?? "").toLowerCase();
+      if (!msg.includes("permission denied") && !msg.includes("does not exist")) {
+        console.warn(`[catalog_api.listRequestItems] ${src}:`, e?.message ?? e);
+      }
+    }
   }
 
-  return (data ?? []) as RequestItem[];
+  return [];
 }
 
-export async function listSuppliers() {
+export async function listSuppliers(search?: string): Promise<Supplier[]> {
+  const q = norm(search);
+
   try {
-    const q = await supabase.from('v_suppliers').select('id,name,inn,bank_account,phone,email').order('name');
-    if (!q.error && q.data) return q.data as any[];
-  } catch {}
+    const { data, error } = await supabase.rpc("suppliers_list" as any, {
+      p_search: q || null,
+    } as any);
+    if (!error && Array.isArray(data)) {
+      const mapped = (data as any[])
+        .map(mapSupplierRow)
+        .filter((row): row is Supplier => !!row)
+        .sort((a, b) => a.name.localeCompare(b.name, "ru"));
+      if (mapped.length) return mapped;
+    } else if (error) {
+      const msg = String(error.message || "");
+      if (!msg.includes("does not exist")) {
+        console.warn("[catalog_api.listSuppliers] rpc suppliers_list:", error.message);
+      }
+    }
+  } catch (e: any) {
+    if (!String(e?.message ?? "").includes("does not exist")) {
+      console.warn("[catalog_api.listSuppliers] rpc suppliers_list:", e?.message ?? e);
+    }
+  }
+
   try {
-    const q = await supabase.from('suppliers').select('id,name,inn,bank_account,phone,email').order('name');
-    if (!q.error && q.data) return q.data as any[];
-  } catch {}
+    let query = supabase
+      .from("suppliers")
+      .select(
+        "id,name,inn,bank_account,specialization,phone,email,website,address,contact_name,notes"
+      )
+      .order("name", { ascending: true });
+    if (q) {
+      query = query.or(`name.ilike.%${q}%,inn.ilike.%${q}%,specialization.ilike.%${q}%`);
+    }
+    const { data, error } = await query;
+    if (error) throw error;
+    if (Array.isArray(data)) {
+      return (data as any[])
+        .map(mapSupplierRow)
+        .filter((row): row is Supplier => !!row)
+        .sort((a, b) => a.name.localeCompare(b.name, "ru"));
+    }
+  } catch (e: any) {
+    console.warn("[catalog_api.listSuppliers] table suppliers:", e?.message ?? e);
+  }
+
   return [];
+}
+
+export type ProposalBucketInput = {
+  supplier?: string | null;
+  request_item_ids: string[];
+  meta?: Array<{
+    request_item_id: string;
+    price?: string | null;
+    supplier?: string | null;
+    note?: string | null;
+  }>;
+};
+
+export type CreateProposalsOptions = {
+  buyerFio?: string | null;
+  submit?: boolean;
+  requestItemStatus?: string | null;
+};
+
+export type CreateProposalsResult = {
+  proposals: Array<{
+    proposal_id: string;
+    supplier: string;
+    request_item_ids: string[];
+  }>;
+};
+
+export async function createProposalsBySupplier(
+  buckets: ProposalBucketInput[],
+  opts: CreateProposalsOptions = {}
+): Promise<CreateProposalsResult> {
+  const proposals: CreateProposalsResult["proposals"] = [];
+  const shouldSubmit = opts.submit !== false;
+  const statusAfter = opts.requestItemStatus ?? null;
+
+  for (const bucket of buckets) {
+    const ids = (bucket?.request_item_ids ?? []).map((id) => String(id)).filter(Boolean);
+    if (!ids.length) continue;
+
+    let proposalId: string;
+    try {
+      const created = await rpcProposalCreate();
+      proposalId = String(created);
+    } catch (e: any) {
+      console.warn("[catalog_api.createProposalsBySupplier] proposalCreate:", e?.message ?? e);
+      throw e;
+    }
+
+    const supplierDisplay = bucket?.supplier ? norm(bucket.supplier) : "";
+    const supplierLabel = supplierDisplay || SUPPLIER_NONE_LABEL;
+
+    if (opts.buyerFio) {
+      try {
+        await supabase.from("proposals").update({ buyer_fio: opts.buyerFio }).eq("id", proposalId);
+      } catch (e: any) {
+        console.warn("[catalog_api.createProposalsBySupplier] set buyer_fio:", e?.message ?? e);
+      }
+    }
+
+    if (supplierDisplay) {
+      try {
+        await supabase
+          .from("proposals")
+          .update({ supplier_name: supplierLabel, supplier: supplierLabel })
+          .eq("id", proposalId);
+      } catch (e: any) {
+        console.warn("[catalog_api.createProposalsBySupplier] set supplier:", e?.message ?? e);
+      }
+    }
+
+    let added = 0;
+    try {
+      added = await rpcProposalAddItems(proposalId, ids);
+    } catch (e: any) {
+      console.warn("[catalog_api.createProposalsBySupplier] proposalAddItems:", e?.message ?? e);
+    }
+
+    if (!added) {
+      for (const pack of chunk(ids, 50)) {
+        try {
+          const rows = pack.map((request_item_id) => ({
+            proposal_id: proposalId,
+            request_item_id,
+          }));
+          const { error } = await supabase.from("proposal_items").insert(rows);
+          if (error) throw error;
+        } catch (e: any) {
+          console.warn(
+            "[catalog_api.createProposalsBySupplier] proposal_items insert:",
+            e?.message ?? e
+          );
+          throw e;
+        }
+      }
+    }
+
+    const metaRows = (bucket.meta ?? ids.map((request_item_id) => ({ request_item_id }))).map((row) => ({
+      request_item_id: row.request_item_id,
+      price: row.price ?? null,
+      supplier: row.supplier ?? (supplierDisplay ? supplierLabel : null),
+      note: row.note ?? null,
+    }));
+
+    if (metaRows.length) {
+      try {
+        await rpcProposalSnapshotItems(proposalId, metaRows);
+      } catch (e: any) {
+        console.warn(
+          "[catalog_api.createProposalsBySupplier] proposalSnapshotItems:",
+          e?.message ?? e
+        );
+      }
+    }
+
+    if (shouldSubmit) {
+      try {
+        await rpcProposalSubmit(proposalId);
+      } catch (e: any) {
+        console.warn(
+          "[catalog_api.createProposalsBySupplier] proposalSubmit:",
+          e?.message ?? e
+        );
+      }
+    }
+
+    if (statusAfter) {
+      try {
+        const { error } = await supabase.rpc("request_items_set_status" as any, {
+          p_request_item_ids: ids,
+          p_status: statusAfter,
+        } as any);
+        if (error) throw error;
+      } catch (e: any) {
+        try {
+          await supabase.from("request_items").update({ status: statusAfter }).in("id", ids);
+        } catch (e2: any) {
+          console.warn(
+            "[catalog_api.createProposalsBySupplier] request_items status:",
+            e2?.message ?? e2
+          );
+        }
+      }
+    }
+
+    proposals.push({
+      proposal_id: proposalId,
+      supplier: supplierLabel,
+      request_item_ids: ids,
+    });
+  }
+
+  return { proposals };
 }
 
 export async function listDirectorProposalsPending() {
@@ -324,250 +818,3 @@ export async function rikQuickSearch(q: string, limit = 60, apps?: string[]) {
     apps: null as null | string[],
   }));
 }
-// Добавление позиции из РИК-а через RPC request_add_item_min
-export async function addRequestItemFromRik(
-  requestId: string,
-  rikCode: string,
-  qty: number,
-  opts: {
-    note?: string;
-    app_code?: string;
-    kind?: string | null;
-    name_human?: string;
-    uom?: string | null;
-  }
-): Promise<boolean> {
-  try {
-    // базовая валидация
-    const rid = String(requestId || '').trim();
-    const code = String(rikCode || '').trim();
-    const q = Number(qty);
-
-    if (!rid || !code || !Number.isFinite(q) || q <= 0) {
-      console.warn('[catalog_api.addRequestItemFromRik] bad input', {
-        requestId,
-        rikCode,
-        qty,
-      });
-      return false;
-    }
-
-    // используем RPC-функцию request_add_item_min (она уже есть в БД)
-    const { supabase } = await import('./supabaseClient');
-
-    const { error } = await supabase.rpc('request_add_item_min', {
-      // ВАЖНО: ИМЕНА ПАРАМЕТРОВ ДОЛЖНЫ СОВПАДАТЬ С SQL-ФУНКЦИЕЙ
-      // request_add_item_min(
-      //   p_request_id uuid,
-      //   p_code       text,
-      //   p_qty        numeric,
-      //   p_note       text DEFAULT NULL,
-      //   p_app_code   text DEFAULT NULL,
-      //   p_name_human text DEFAULT NULL,
-      //   p_uom        text DEFAULT NULL,
-      //   p_kind       text DEFAULT NULL
-      // )
-      p_request_id: rid,
-      p_code: code,
-      p_qty: q,
-      p_note: opts.note ?? null,
-      p_app_code: opts.app_code ?? null,
-      p_name_human: opts.name_human ?? null,
-      p_uom: opts.uom ?? null,
-      p_kind: opts.kind ?? null,
-    });
-
-    if (error) {
-      console.warn(
-        '[catalog_api.addRequestItemFromRik] request_add_item_min error:',
-        error.message ?? error
-      );
-      return false;
-    }
-
-    return true;
-  } catch (e: any) {
-    console.warn(
-      '[catalog_api.addRequestItemFromRik] unexpected error:',
-      e?.message ?? e
-    );
-    return false;
-  }
-}
-type BuyerProposalBucket = {
-  supplierId?: string;
-  supplier_id?: string;
-  currency?: string | null;
-  requestItemIds?: string[];
-  request_item_ids?: string[];
-  items?: { request_item_id: string }[];
-};
-
-export async function createProposalsBySupplier(
-  buckets: BuyerProposalBucket[],
-  _opts?: unknown
-): Promise<boolean> {
-  try {
-    if (!Array.isArray(buckets) || buckets.length === 0) {
-      console.warn('[catalog_api.createProposalsBySupplier] empty buckets');
-      return false;
-    }
-
-    for (const bucket of buckets) {
-      const supplierId = norm(bucket.supplierId ?? bucket.supplier_id);
-      if (!supplierId) {
-        console.warn(
-          '[catalog_api.createProposalsBySupplier] bucket without supplierId',
-          bucket
-        );
-        continue;
-      }
-
-      // собираем request_item_ids
-      let ids: string[] =
-        bucket.requestItemIds ??
-        bucket.request_item_ids ??
-        (Array.isArray(bucket.items)
-          ? bucket.items.map((it) => String(it.request_item_id))
-          : []);
-
-      ids = ids.map((x) => norm(x)).filter(Boolean);
-
-      if (!ids.length) {
-        console.warn(
-          '[catalog_api.createProposalsBySupplier] bucket without items',
-          bucket
-        );
-        continue;
-      }
-
-      // 1) создаём предложение
-      const created = await proposalCreate({
-        supplierId,
-        currency: bucket.currency ?? null,
-      });
-
-      if (!created?.proposal_id) {
-        console.warn(
-          '[catalog_api.createProposalsBySupplier] proposalCreate failed for supplier',
-          supplierId
-        );
-        continue;
-      }
-
-      // 2) привязываем позиции заявки к предложению
-      try {
-        const { error } = await supabase.rpc('proposal_add_items', {
-          p_proposal_id: created.proposal_id,
-          p_request_item_ids: ids,
-        } as any);
-
-        if (error) {
-          console.warn(
-            '[catalog_api.createProposalsBySupplier] proposal_add_items error:',
-            error.message ?? error
-          );
-        }
-      } catch (e: any) {
-        console.warn(
-          '[catalog_api.createProposalsBySupplier] proposal_add_items exception:',
-          e?.message ?? e
-        );
-      }
-    }
-
-    return true;
-  } catch (err: any) {
-    console.warn(
-      '[catalog_api.createProposalsBySupplier] unexpected exception:',
-      err?.message ?? err
-    );
-    return false;
-  }
-}
-
-type ProposalCreateParams = {
-  supplierId: string;
-  currency?: string | null;
-};
-
-export async function proposalCreate(
-  params: ProposalCreateParams
-): Promise<{ proposal_id: string } | null> {
-  try {
-    const supplierId = norm(params?.supplierId);
-    if (!supplierId) {
-      console.warn('[catalog_api.proposalCreate] no supplierId', params);
-      return null;
-    }
-
-    const currency = params?.currency ?? null;
-
-    // 1) пробуем RPC proposal_create
-    try {
-      const { data, error } = await supabase.rpc('proposal_create', {
-        p_supplier_id: supplierId,
-        p_currency: currency,
-      } as any);
-
-      if (!error && data) {
-        const id =
-          (data as any).proposal_id ??
-          (data as any).id ??
-          (Array.isArray(data)
-            ? data[0]?.proposal_id ?? data[0]?.id
-            : undefined);
-
-        if (id) {
-          return { proposal_id: String(id) };
-        }
-      }
-
-      if (error) {
-        console.warn(
-          '[catalog_api.proposalCreate] proposal_create rpc error:',
-          error.message ?? error
-        );
-      }
-    } catch (e: any) {
-      console.warn(
-        '[catalog_api.proposalCreate] rpc exception:',
-        e?.message ?? e
-      );
-    }
-
-    // 2) фолбэк: прямой insert в таблицу proposals
-    try {
-      const { data, error } = await supabase
-        .from('proposals')
-        .insert([{ supplier_id: supplierId, currency }])
-        .select('id')
-        .single();
-
-      if (!error && data?.id) {
-        return { proposal_id: String((data as any).id) };
-      }
-
-      if (error) {
-        console.warn(
-          '[catalog_api.proposalCreate] insert proposals error:',
-          error.message ?? error
-        );
-      }
-    } catch (e: any) {
-      console.warn(
-        '[catalog_api.proposalCreate] insert exception:',
-        e?.message ?? e
-      );
-    }
-
-    return null;
-  } catch (err: any) {
-    console.warn(
-      '[catalog_api.proposalCreate] unexpected exception:',
-      err?.message ?? err
-    );
-    return null;
-  }
-}
-
