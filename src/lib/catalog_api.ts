@@ -270,6 +270,95 @@ export async function listRequestItems(requestId: string): Promise<RequestItem[]
   }
   return [];
 }
+
+export async function addRequestItemFromRik(
+  requestId: string,
+  rikCode: string,
+  qty: number,
+  opts: {
+    note?: string;
+    app_code?: string;
+    kind?: string | null;
+    name_human?: string;
+    uom?: string | null;
+  }
+): Promise<boolean> {
+  const q = Number(qty);
+  if (!Number.isFinite(q) || q <= 0) {
+    return false;
+  }
+
+  const rid = norm(requestId);
+  const code = norm(rikCode);
+  if (!rid || !code) {
+    return false;
+  }
+
+  const baseRow = {
+    request_id: rid,
+    rik_code: code,
+    qty: q,
+    note: opts?.note ?? null,
+    app_code: opts?.app_code ?? null,
+    kind: typeof opts?.kind === "undefined" ? null : opts.kind,
+    name_human: opts?.name_human ?? null,
+    uom: typeof opts?.uom === "undefined" ? null : opts.uom,
+  } as const;
+
+  const rpcPayload = {
+    p_request_id: rid,
+    p_rik_code: code,
+    p_qty: q,
+    p_note: opts?.note ?? null,
+    p_app_code: opts?.app_code ?? null,
+    p_kind: typeof opts?.kind === "undefined" ? null : opts.kind,
+    p_name_human: opts?.name_human ?? null,
+    p_uom: typeof opts?.uom === "undefined" ? null : opts.uom,
+  } as const;
+
+  let lastError: unknown = null;
+
+  const rpcVariants = [
+    "add_request_item_from_rik",
+    "app_add_request_item_from_rik",
+    "rk_add_request_item_from_rik",
+  ];
+
+  for (const fn of rpcVariants) {
+    try {
+      const { error } = await supabase.rpc(fn as any, rpcPayload as any);
+      if (!error) {
+        return true;
+      }
+      lastError = error;
+    } catch (err) {
+      lastError = err;
+    }
+  }
+
+  const tableVariants = [
+    "request_items",
+    "app_request_items",
+    "rik_request_items",
+  ];
+
+  for (const table of tableVariants) {
+    try {
+      const { error } = await supabase.from(table).insert([baseRow as any]);
+      if (!error) {
+        return true;
+      }
+      lastError = error;
+    } catch (err) {
+      lastError = err;
+    }
+  }
+
+  if (lastError) {
+    console.warn("[catalog_api.addRequestItemFromRik]", lastError);
+  }
+  return false;
+}
 export async function listSuppliers() {
   try {
     const q = await supabase.from('v_suppliers').select('id,name,inn,bank_account,phone,email').order('name');
