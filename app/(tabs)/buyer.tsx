@@ -1839,7 +1839,7 @@ export default function BuyerScreen() {
       {tab === 'inbox' && (
         <View style={s.toolbar}>
           <Pressable disabled={creating} onPress={createProposalSingle} style={[s.actionBtn, creating && s.actionBtnDisabled]}>
-            <Text style={s.actionBtnText}>Сформировать предложение</Text>
+            <Text style={s.actionBtnText}>Сгруппировать заявки</Text>
           </Pressable>
           <Pressable disabled={creating} onPress={createProposalsBySupplier} style={[s.actionBtn, creating && s.actionBtnDisabled]}>
             <Text style={s.actionBtnText}>Сформировать по поставщикам</Text>
@@ -2234,7 +2234,7 @@ export default function BuyerScreen() {
       {/* Липкая/фиксированная панель действий (дублирует верхний тулбар, логика та же) */}
       <View style={s.stickyBar} pointerEvents="auto">
         <Pressable disabled={creating} onPress={createProposalSingle} style={[s.actionBtn, creating && s.actionBtnDisabled, { flex: 1 }]}>
-          <Text style={s.actionBtnText}>Одно предложение</Text>
+          <Text style={s.actionBtnText}>Сгруппировать заявки</Text>
         </Pressable>
         <Pressable disabled={creating} onPress={createProposalsBySupplier} style={[s.actionBtn, creating && s.actionBtnDisabled, { flex: 1, backgroundColor: '#0b7285', borderColor: '#0b7285' }]}>
           <Text style={s.actionBtnText}>По поставщикам</Text>
