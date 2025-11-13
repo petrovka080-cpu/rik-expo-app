@@ -1838,14 +1838,26 @@ export default function BuyerScreen() {
       {/* Тулбар действий (инбокс) */}
       {tab === 'inbox' && (
         <View style={s.toolbar}>
-          <Pressable disabled={creating} onPress={createProposalSingle} style={[s.actionBtn, creating && s.actionBtnDisabled]}>
-            <Text style={s.actionBtnText}>Сгруппировать заявки</Text>
+          <Pressable
+            disabled={creating}
+            onPress={createProposalSingle}
+            style={[s.toolbarAction, creating && s.toolbarActionDisabled]}
+          >
+            <Text style={[s.toolbarActionText, creating && s.toolbarActionTextDisabled]}>
+              Сгруппировать заявки
+            </Text>
           </Pressable>
-          <Pressable disabled={creating} onPress={createProposalsBySupplier} style={[s.actionBtn, creating && s.actionBtnDisabled]}>
-            <Text style={s.actionBtnText}>Сформировать по поставщикам</Text>
+          <Pressable
+            disabled={creating}
+            onPress={createProposalsBySupplier}
+            style={[s.toolbarAction, creating && s.toolbarActionDisabled]}
+          >
+            <Text style={[s.toolbarActionText, creating && s.toolbarActionTextDisabled]}>
+              Сформировать по поставщикам
+            </Text>
           </Pressable>
-          <Pressable onPress={clearPick} style={[s.actionBtnGhost]}>
-            <Text style={s.actionBtnGhostText}>Сбросить выбор</Text>
+          <Pressable onPress={clearPick} style={s.toolbarAction}>
+            <Text style={s.toolbarActionText}>Сбросить выбор</Text>
           </Pressable>
         </View>
       )}
@@ -2296,7 +2308,33 @@ stickyBar: Platform.select({
   }
 }),
 
-  toolbar: { padding: 12, gap: 8, flexDirection: 'row', flexWrap: 'wrap' },
+  toolbar: {
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    gap: 12,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    backgroundColor: '#fff',
+    borderBottomWidth: 1,
+    borderColor: COLORS.border,
+  },
+  toolbarAction: {
+    paddingVertical: 6,
+    paddingHorizontal: 8,
+    borderRadius: 8,
+  },
+  toolbarActionDisabled: {
+    opacity: 0.5,
+  },
+  toolbarActionText: {
+    color: COLORS.text,
+    fontWeight: '600',
+    textDecorationLine: 'underline',
+  },
+  toolbarActionTextDisabled: {
+    color: '#94A3B8',
+    textDecorationLine: 'underline',
+  },
   actionBtn: {
     backgroundColor: COLORS.primary,
     borderColor: COLORS.primary,
