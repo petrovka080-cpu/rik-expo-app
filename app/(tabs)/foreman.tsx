@@ -1189,7 +1189,7 @@ export default function ForemanScreen() {
 const s = StyleSheet.create({
   container: { flex: 1 },
   scrollArea: { flex: 1 },
-  pagePad: { padding: 16, paddingBottom: 32 },
+  pagePad: { padding: 16, paddingBottom: 32, flexGrow: 1 },
   header: { fontSize: 24, fontWeight: '700', textAlign: 'center', marginBottom: 10 },
   small: { fontSize: 12 },
   input: { borderWidth: 1, borderColor: '#E2E8F0', borderRadius: 10, padding: 10, backgroundColor: '#fff', color: '#0F172A' },
@@ -1229,6 +1229,8 @@ const s = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: '#E2E8F0',
     flexShrink: 0,
+    alignSelf: 'stretch',
+    width: '100%',
   },
   stickyBar: {
     backgroundColor: '#fff',
@@ -1244,9 +1246,12 @@ const s = StyleSheet.create({
   stickyBarWeb: {
     position: 'sticky' as const,
     bottom: 0,
+    left: 0,
+    right: 0,
   },
   stickyBarNative: Platform.select({
     ios: { paddingBottom: 24 },
+    android: { paddingBottom: 16 },
     default: {},
   }),
 
