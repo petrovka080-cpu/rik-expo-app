@@ -64,17 +64,32 @@ export default function WorkTypePicker({ visible, onClose, onSelect }: Props) {
           .order('name', { ascending: true, nullsFirst: true })
           .limit(2000);
 
+        const sanitize = (value: unknown) => {
+          if (value == null) return null;
+          const str = String(value).trim();
+          return str.length > 0 ? str : null;
+        };
+
+        const pickName = (record: any) =>
+          (sanitize(record.name_human_ru) as string | null) ??
+          (sanitize(record.name_ru) as string | null) ??
+          (sanitize(record.name) as string | null) ??
+          (sanitize(record.code) as string | null) ??
+          '';
+
+        const pickGroupName = (record: any) =>
+          (sanitize(record.group_name_ru) as string | null) ??
+          (sanitize(record.group_name) as string | null) ??
+          (sanitize(record.group_title_ru) as string | null) ??
+          (sanitize(record.group_title) as string | null) ??
+          (sanitize(record.group) as string | null) ??
+          null;
+
         const mapRow = (r: any): Row => ({
-          code: r.code,
-          name: r.name_human_ru ?? r.name_ru ?? r.name ?? r.code,
-          groupCode: r.group_code ?? null,
-          groupName:
-            r.group_name_ru ??
-            r.group_name ??
-            r.group_title_ru ??
-            r.group_title ??
-            r.group ??
-            null,
+          code: String(r.code ?? '').trim(),
+          name: pickName(r),
+          groupCode: sanitize(r.group_code) as string | null,
+          groupName: pickGroupName(r),
         });
 
         if (!primaryError && Array.isArray(data) && data.length > 0) {
