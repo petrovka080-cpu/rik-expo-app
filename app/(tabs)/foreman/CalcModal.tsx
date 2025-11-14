@@ -40,6 +40,26 @@ type Row = {
   hint: string | null;
 };
 
+type CalcRpcArgs = {
+  p_work_type_code: string;
+  p_area_m2: number | null;
+  p_perimeter_m: number | null;
+  p_length_m: number | null;
+  p_points: number | null;
+  p_volume_m3: number | null;
+  p_count: number | null;
+  p_multiplier: number;
+};
+
+const RPC_BASIS_MAP: Array<[BasisKey, keyof CalcRpcArgs]> = [
+  ['area_m2', 'p_area_m2'],
+  ['perimeter_m', 'p_perimeter_m'],
+  ['length_m', 'p_length_m'],
+  ['points', 'p_points'],
+  ['volume_m3', 'p_volume_m3'],
+  ['count', 'p_count'],
+];
+
 const formatNumber = (value: number) => {
   if (!Number.isFinite(value)) return '';
   const fixed = value.toFixed(6);
@@ -287,19 +307,27 @@ export default function CalcModal({ visible, onClose, workType, onAddToRequest }
         ? (directMultiplier as number)
         : Math.max(0, 1 + (lossValue ?? 0) / 100);
 
-      const args: Record<string, number | null> = {
+      const args: CalcRpcArgs = {
         p_work_type_code: workType.code,
+        p_area_m2: null,
+        p_perimeter_m: null,
+        p_length_m: null,
+        p_points: null,
+        p_volume_m3: null,
+        p_count: null,
         p_multiplier: effectiveMultiplier,
       };
 
-      Object.entries(parsedMeasures).forEach(([key, value]) => {
-        if (key === 'multiplier') return;
-        args[`p_${key}`] = value ?? null;
+      RPC_BASIS_MAP.forEach(([basisKey, argKey]) => {
+        const value = parsedMeasures[basisKey];
+        if (typeof value === 'number' && Number.isFinite(value)) {
+          args[argKey] = value;
+        }
       });
 
       const { data, error } = await supabase.rpc('fn_calc_kit_basic', args);
       if (error) throw error;
-      setRows(data as Row[]);
+      setRows(Array.isArray(data) ? (data as Row[]) : []);
     } catch (e: any) {
       console.error('[CalcModal]', e);
       Alert.alert(
