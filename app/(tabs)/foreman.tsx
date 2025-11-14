@@ -23,7 +23,9 @@ import {
   Modal,
 } from 'react-native';
 import { LogBox } from 'react-native';
-import { Link } from 'expo-router';
+
+import CalcModal from './foreman/CalcModal';
+import WorkTypePicker from './foreman/WorkTypePicker';
 
 import {
   rikQuickSearch,
@@ -67,6 +69,17 @@ type GroupedRow = {
 
 type AppOption = { code: string; label: string };
 type RefOption = { code: string; name: string };
+
+type CalcRow = {
+  rik_code: string;
+  qty: number;
+  uom_code?: string | null;
+  name?: string | null;
+  name_ru?: string | null;
+  name_human?: string | null;
+  work_type_code?: string | null;
+  hint?: string | null;
+};
 
 const KIND_TABS: Array<{ key: string; label: string }> = [
   { key: 'all', label: 'Все' },
@@ -386,6 +399,13 @@ export default function ForemanScreen() {
 
   // ===== Режим отображения =====
   const [viewMode, setViewMode] = useState<'raw' | 'grouped'>('raw');
+
+  // ===== Калькулятор =====
+  const [calcVisible, setCalcVisible] = useState(false);
+  const [workTypePickerVisible, setWorkTypePickerVisible] = useState(false);
+  const [selectedWorkType, setSelectedWorkType] = useState<
+    { code: string; name: string } | null
+  >(null);
 
   // ===== Модал выбора применения для строки =====
   const [appPickerFor, setAppPickerFor] = useState<string | null>(null);
@@ -759,6 +779,96 @@ export default function ForemanScreen() {
           : prev,
       ),
     [],
+  );
+
+  // ---------- Калькулятор: добавить рассчитанные позиции ----------
+  const handleCalcAddToRequest = useCallback(
+    async (rows: CalcRow[]) => {
+      if (!rows || rows.length === 0) {
+        setCalcVisible(false);
+        return;
+      }
+
+      try {
+        setBusy(true);
+        const rid = requestId ? ridStr(requestId) : await ensureAndGetId();
+
+        await updateRequestMeta(rid, {
+          need_by: needBy.trim() || null,
+          comment: comment.trim() || null,
+          object_type_code: objectType || null,
+          level_code: level || null,
+          system_code: system || null,
+          zone_code: zone || null,
+          foreman_name: foreman.trim() || null,
+        });
+
+        const note =
+          buildScopeNote(
+            objectName,
+            levelName,
+            systemName,
+            zoneName,
+          ) || 'Расчёт калькулятора';
+
+        let added = 0;
+
+        for (const row of rows) {
+          const qty = Number(row?.qty ?? 0);
+          if (!Number.isFinite(qty) || qty <= 0) {
+            continue;
+          }
+
+          const ok = await addRequestItemFromRik(rid, row.rik_code, qty, {
+            note,
+            app_code: undefined,
+            kind: undefined,
+            name_human:
+              row.name ?? row.name_human ?? row.name_ru ?? row.rik_code,
+            uom: row.uom_code ?? null,
+          });
+
+          if (!ok) {
+            Alert.alert('Ошибка', `Не удалось добавить: ${row.rik_code}`);
+            return;
+          }
+
+          added += 1;
+        }
+
+        await loadItems();
+        preloadDisplayNo(rid);
+        setCalcVisible(false);
+        setSelectedWorkType(null);
+        Alert.alert('Готово', `Добавлено позиций: ${added}`);
+      } catch (e: any) {
+        console.error('[Foreman] handleCalcAddToRequest:', e?.message ?? e);
+        Alert.alert(
+          'Ошибка',
+          e?.message ?? 'Не удалось добавить рассчитанные позиции',
+        );
+      } finally {
+        setBusy(false);
+      }
+    },
+    [
+      requestId,
+      ridStr,
+      ensureAndGetId,
+      needBy,
+      comment,
+      objectType,
+      level,
+      system,
+      zone,
+      foreman,
+      objectName,
+      levelName,
+      systemName,
+      zoneName,
+      loadItems,
+      preloadDisplayNo,
+    ],
   );
 
   // ---------- Массовое добавление ----------
@@ -1925,13 +2035,21 @@ export default function ForemanScreen() {
         <View style={s.stickyBar}>
           <View style={s.stickyRow}>
             {/* 1) Рассчитать (смета) */}
-            <Link href="/calculator" asChild>
-              <Pressable style={[s.btn, s.btnNeutral]}>
-                <Text style={s.btnTxtNeutral}>
-                  Рассчитать (смета)
-                </Text>
-              </Pressable>
-            </Link>
+            <Pressable
+              onPress={() => setWorkTypePickerVisible(true)}
+              disabled={busy}
+              style={[
+                s.btn,
+                s.btnNeutral,
+                busy ? s.btnDisabled : null,
+              ]}
+            >
+              <Text
+                style={busy ? s.btnTxtDisabled : s.btnTxtNeutral}
+              >
+                Рассчитать (смета)
+              </Text>
+            </Pressable>
 
             {/* 2) Добавить */}
             <Pressable
@@ -2004,6 +2122,26 @@ export default function ForemanScreen() {
           </View>
         </View>
       </View>
+
+      <WorkTypePicker
+        visible={workTypePickerVisible}
+        onClose={() => setWorkTypePickerVisible(false)}
+        onSelect={(wt) => {
+          setSelectedWorkType(wt);
+          setWorkTypePickerVisible(false);
+          setCalcVisible(true);
+        }}
+      />
+
+      <CalcModal
+        visible={calcVisible}
+        onClose={() => {
+          setCalcVisible(false);
+          setSelectedWorkType(null);
+        }}
+        workType={selectedWorkType}
+        onAddToRequest={handleCalcAddToRequest}
+      />
 
       {/* ===== МОДАЛ ВЫБОРА ОБЛАСТИ ПРИМЕНЕНИЯ ===== */}
       <Modal
