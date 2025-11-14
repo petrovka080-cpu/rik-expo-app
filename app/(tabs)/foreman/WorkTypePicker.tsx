@@ -99,9 +99,9 @@ export default function WorkTypePicker({ visible, onClose, onSelect }: Props) {
         const uniq = Array.from(new Set((wt2 ?? []).map((r) => (r as any).work_type_code))).sort();
         setRows(uniq.map((code) => ({ code, name: code })));
       } catch (e: any) {
-        console.error('[WorkTypePicker]', e?.message ?? e);
+        console.error('[WorkTypePicker]', e);
         setRows([]);
-        setError(e?.message ?? 'Не удалось получить список работ');
+        setError('Не удалось получить список работ');
       } finally {
         setLoading(false);
       }

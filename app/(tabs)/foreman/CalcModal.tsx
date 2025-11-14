@@ -301,8 +301,11 @@ export default function CalcModal({ visible, onClose, workType, onAddToRequest }
       if (error) throw error;
       setRows(data as Row[]);
     } catch (e: any) {
-      console.error('[CalcModal]', e?.message ?? e);
-      Alert.alert('Ошибка', e?.message ?? 'Не удалось выполнить расчёт');
+      console.error('[CalcModal]', e);
+      Alert.alert(
+        'Ошибка',
+        'Не удалось выполнить расчёт. Проверьте параметры и попробуйте ещё раз.',
+      );
     } finally {
       setCalculating(false);
     }
