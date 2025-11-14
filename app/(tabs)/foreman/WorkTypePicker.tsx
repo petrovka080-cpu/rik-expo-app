@@ -51,37 +51,62 @@ export default function WorkTypePicker({ visible, onClose, onSelect }: Props) {
         setLoading(true);
         setError(null);
 
-        const queryVariants = [
-          'code, name_ru, group_code, group_name_ru, group_name',
-          'code, name_ru, group_code, group_name_ru',
-          'code, name_ru, group_code, group_name',
-          'code, name_ru, group_code',
-          'code, name_ru',
-        ];
-
         let fetched: Row[] | null = null;
-        for (const cols of queryVariants) {
-          const { data, error: selectError } = await supabase
-            .from('reno_work_types')
-            .select(cols)
-            .order('group_code', { ascending: true, nullsFirst: true })
-            .order('name_ru', { ascending: true })
-            .limit(2000);
 
-          if (!selectError && data) {
-            fetched = (data as any[]).map((r) => ({
-              code: r.code,
-              name: r.name_ru ?? r.name ?? r.code,
-              groupCode: r.group_code ?? null,
-              groupName:
-                r.group_name_ru ??
-                r.group_name ??
-                r.group_title_ru ??
-                r.group_title ??
-                r.group ??
-                null,
-            }));
-            break;
+        const { data, error: primaryError } = await supabase
+          .from('reno_work_types')
+          .select(
+            'code, name_human_ru, name_ru, name, group_code, group_name_ru, group_name, group_title_ru, group_title, group',
+          )
+          .order('group_code', { ascending: true, nullsFirst: true })
+          .order('name_human_ru', { ascending: true, nullsFirst: true })
+          .order('name_ru', { ascending: true, nullsFirst: true })
+          .order('name', { ascending: true, nullsFirst: true })
+          .limit(2000);
+
+        const mapRow = (r: any): Row => ({
+          code: r.code,
+          name: r.name_human_ru ?? r.name_ru ?? r.name ?? r.code,
+          groupCode: r.group_code ?? null,
+          groupName:
+            r.group_name_ru ??
+            r.group_name ??
+            r.group_title_ru ??
+            r.group_title ??
+            r.group ??
+            null,
+        });
+
+        if (!primaryError && Array.isArray(data) && data.length > 0) {
+          fetched = data.map(mapRow);
+        }
+
+        if (!fetched) {
+          const queryVariants = [
+            'code, name_human_ru, name_ru, group_code, group_name_ru, group_name',
+            'code, name_human_ru, name_ru, group_code, group_name_ru',
+            'code, name_human_ru, name_ru, group_code, group_name',
+            'code, name_human_ru, name_ru, group_code',
+            'code, name_human_ru, name_ru',
+            'code, name_ru, group_code, group_name_ru, group_name',
+            'code, name_ru, group_code, group_name_ru',
+            'code, name_ru, group_code, group_name',
+            'code, name_ru, group_code',
+            'code, name_ru',
+          ];
+
+          for (const cols of queryVariants) {
+            const { data: fallbackData, error: selectError } = await supabase
+              .from('reno_work_types')
+              .select(cols)
+              .order('group_code', { ascending: true, nullsFirst: true })
+              .order('name_ru', { ascending: true })
+              .limit(2000);
+
+            if (!selectError && fallbackData) {
+              fetched = (fallbackData as any[]).map(mapRow);
+              break;
+            }
           }
         }
 
