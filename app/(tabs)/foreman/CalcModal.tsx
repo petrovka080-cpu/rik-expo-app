@@ -301,6 +301,7 @@ export default function CalcModal({ visible, onClose, workType, onAddToRequest }
 
     try {
       setCalculating(true);
+      setRows(null);
       const parsedMeasures = parseResult.measures;
       const directMultiplier = parsedMeasures.multiplier;
       const effectiveMultiplier = Number.isFinite(directMultiplier)
@@ -334,6 +335,7 @@ export default function CalcModal({ visible, onClose, workType, onAddToRequest }
         'Ошибка',
         'Не удалось выполнить расчёт. Проверьте параметры и попробуйте ещё раз.',
       );
+      setRows(null);
     } finally {
       setCalculating(false);
     }
@@ -455,37 +457,45 @@ export default function CalcModal({ visible, onClose, workType, onAddToRequest }
             </Pressable>
           </View>
 
-          {!!rows && (
+          {rows && (
             <View style={{ marginTop: 14, borderTopWidth: 1, borderTopColor: '#e5e7eb', paddingTop: 12 }}>
               <Text style={{ fontSize: 16, fontWeight: '700', marginBottom: 8 }}>Результат</Text>
-              <ScrollView style={{ maxHeight: 260 }}>
-                {rows.map((r) => (
-                  <View key={r.rik_code} style={{ paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: '#f3f4f6' }}>
-                    <Text style={{ fontWeight: '600' }}>
-                      {r.rik_code} <Text style={{ color: '#6b7280' }}>({r.section})</Text>
-                    </Text>
-                    <Text style={{ color: '#111827' }}>
-                      qty: {Number(r.qty).toFixed(3)} {r.uom_code}
-                      {r.packs && r.pack_size
-                        ? `  |  упаковка: ${r.packs}  ${Number(r.pack_size).toFixed(3)} ${r.pack_uom ?? ''}`
-                        : ''}
-                      {Number.isFinite(r.suggested_qty as any)
-                        ? `    к выдаче: ${Number(r.suggested_qty ?? 0).toFixed(3)} ${r.uom_code}`
-                        : ''}
-                    </Text>
-                    {r.hint ? <Text style={{ color: '#6b7280' }}>{r.hint}</Text> : null}
-                  </View>
-                ))}
-              </ScrollView>
+              {rows.length > 0 ? (
+                <>
+                  <ScrollView style={{ maxHeight: 260 }}>
+                    {rows.map((r) => (
+                      <View key={r.rik_code} style={{ paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: '#f3f4f6' }}>
+                        <Text style={{ fontWeight: '600' }}>
+                          {r.rik_code} <Text style={{ color: '#6b7280' }}>({r.section})</Text>
+                        </Text>
+                        <Text style={{ color: '#111827' }}>
+                          qty: {Number(r.qty).toFixed(3)} {r.uom_code}
+                          {r.packs && r.pack_size
+                            ? `  |  упаковка: ${r.packs}  ${Number(r.pack_size).toFixed(3)} ${r.pack_uom ?? ''}`
+                            : ''}
+                          {Number.isFinite(r.suggested_qty as any)
+                            ? `    к выдаче: ${Number(r.suggested_qty ?? 0).toFixed(3)} ${r.uom_code}`
+                            : ''}
+                        </Text>
+                        {r.hint ? <Text style={{ color: '#6b7280' }}>{r.hint}</Text> : null}
+                      </View>
+                    ))}
+                  </ScrollView>
 
-              <View style={{ flexDirection: 'row', gap: 8, marginTop: 10, justifyContent: 'flex-end' }}>
-                <Pressable
-                  onPress={() => onAddToRequest?.(rows)}
-                  style={{ paddingHorizontal: 16, paddingVertical: 10, borderRadius: 10, backgroundColor: '#2563eb' }}
-                >
-                  <Text style={{ fontWeight: '700', color: '#fff' }}>Добавить в заявку</Text>
-                </Pressable>
-              </View>
+                  <View style={{ flexDirection: 'row', gap: 8, marginTop: 10, justifyContent: 'flex-end' }}>
+                    <Pressable
+                      onPress={() => onAddToRequest?.(rows)}
+                      style={{ paddingHorizontal: 16, paddingVertical: 10, borderRadius: 10, backgroundColor: '#2563eb' }}
+                    >
+                      <Text style={{ fontWeight: '700', color: '#fff' }}>Добавить в заявку</Text>
+                    </Pressable>
+                  </View>
+                </>
+              ) : (
+                <Text style={{ color: '#6b7280' }}>
+                  Для указанных параметров нормы не найдены.
+                </Text>
+              )}
             </View>
           )}
         </View>

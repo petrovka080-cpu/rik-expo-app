@@ -31,6 +31,38 @@ type Section = {
 
 const toLower = (val: string | null | undefined) => (val ? String(val).toLowerCase() : '');
 
+const POSTGRES_COLUMN_NOT_EXIST = '42703';
+
+const PRIMARY_COLUMNS = [
+  'code',
+  'name_human_ru',
+  'name_ru',
+  'name',
+  'group_code',
+  'group_name_human_ru',
+  'group_name_ru',
+  'group_name',
+  'group_title_ru',
+  'group_title',
+  'group',
+];
+
+const FALLBACK_SELECTS = [
+  'code, name_human_ru, name_ru, name, group_code, group_name_human_ru, group_name_ru, group_name, group',
+  'code, name_human_ru, name_ru, name, group_code, group_name_human_ru, group_name_ru, group_name',
+  'code, name_human_ru, name_ru, name, group_code, group_name_human_ru, group_name_ru',
+  'code, name_human_ru, name_ru, name, group_code, group_name_human_ru',
+  'code, name_human_ru, name_ru, name, group_code',
+  'code, name_human_ru, name_ru, name',
+  'code, name_ru, name, group_code, group_name_human_ru, group_name_ru, group_name',
+  'code, name_ru, name, group_code, group_name_ru, group_name',
+  'code, name_ru, name, group_code, group_name_ru',
+  'code, name_ru, name, group_code',
+  'code, name_ru, name',
+  'code, name',
+  'code',
+];
+
 const normalizeGroupTitle = (row: Row) => {
   const name = row.groupName ?? row.groupCode;
   const trimmed = name ? String(name).trim() : '';
@@ -55,13 +87,7 @@ export default function WorkTypePicker({ visible, onClose, onSelect }: Props) {
 
         const { data, error: primaryError } = await supabase
           .from('reno_work_types')
-          .select(
-            'code, name_human_ru, name_ru, name, group_code, group_name_ru, group_name, group_title_ru, group_title, group',
-          )
-          .order('group_code', { ascending: true, nullsFirst: true })
-          .order('name_human_ru', { ascending: true, nullsFirst: true })
-          .order('name_ru', { ascending: true, nullsFirst: true })
-          .order('name', { ascending: true, nullsFirst: true })
+          .select(PRIMARY_COLUMNS.join(', '))
           .limit(2000);
 
         const sanitize = (value: unknown) => {
@@ -78,6 +104,7 @@ export default function WorkTypePicker({ visible, onClose, onSelect }: Props) {
           '';
 
         const pickGroupName = (record: any) =>
+          (sanitize(record.group_name_human_ru) as string | null) ??
           (sanitize(record.group_name_ru) as string | null) ??
           (sanitize(record.group_name) as string | null) ??
           (sanitize(record.group_title_ru) as string | null) ??
@@ -92,42 +119,54 @@ export default function WorkTypePicker({ visible, onClose, onSelect }: Props) {
           groupName: pickGroupName(r),
         });
 
-        if (!primaryError && Array.isArray(data) && data.length > 0) {
-          fetched = data.map(mapRow);
+        if (!primaryError && Array.isArray(data)) {
+          fetched = (data as any[]).map(mapRow);
         }
 
-        if (!fetched) {
-          const queryVariants = [
-            'code, name_human_ru, name_ru, group_code, group_name_ru, group_name',
-            'code, name_human_ru, name_ru, group_code, group_name_ru',
-            'code, name_human_ru, name_ru, group_code, group_name',
-            'code, name_human_ru, name_ru, group_code',
-            'code, name_human_ru, name_ru',
-            'code, name_ru, group_code, group_name_ru, group_name',
-            'code, name_ru, group_code, group_name_ru',
-            'code, name_ru, group_code, group_name',
-            'code, name_ru, group_code',
-            'code, name_ru',
-          ];
+        if (primaryError && primaryError.code !== POSTGRES_COLUMN_NOT_EXIST) {
+          throw primaryError;
+        }
 
-          for (const cols of queryVariants) {
+        if (!fetched && primaryError?.code === POSTGRES_COLUMN_NOT_EXIST) {
+          for (const cols of FALLBACK_SELECTS) {
             const { data: fallbackData, error: selectError } = await supabase
               .from('reno_work_types')
               .select(cols)
-              .order('group_code', { ascending: true, nullsFirst: true })
-              .order('name_ru', { ascending: true })
               .limit(2000);
 
-            if (!selectError && fallbackData) {
+            if (!selectError && Array.isArray(fallbackData)) {
               fetched = (fallbackData as any[]).map(mapRow);
               break;
+            }
+
+            if (selectError && selectError.code !== POSTGRES_COLUMN_NOT_EXIST) {
+              throw selectError;
             }
           }
         }
 
         if (fetched && fetched.length > 0) {
-          setRows(fetched);
-          return;
+          const deduped = new Map<string, Row>();
+          fetched.forEach((row) => {
+            if (!row.code) return;
+            const existing = deduped.get(row.code);
+            if (!existing) {
+              deduped.set(row.code, row);
+              return;
+            }
+
+            const existingName = existing.name?.trim();
+            const nextName = row.name?.trim();
+            if ((!existingName || existingName === existing.code) && nextName && nextName !== row.code) {
+              deduped.set(row.code, row);
+            }
+          });
+
+          const list = Array.from(deduped.values());
+          if (list.length > 0) {
+            setRows(list);
+            return;
+          }
         }
 
         const { data: wt2, error: e2 } = await supabase
