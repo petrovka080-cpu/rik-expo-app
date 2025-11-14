@@ -1,7 +1,17 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { Modal, View, Text, TextInput, Pressable, ScrollView, Platform, ActivityIndicator, Alert } from 'react-native';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import {
+  Modal,
+  View,
+  Text,
+  TextInput,
+  Pressable,
+  ScrollView,
+  Platform,
+  ActivityIndicator,
+  Alert,
+} from 'react-native';
 import { supabase } from '../../../src/lib/supabaseClient';
-import { useCalcFields, BasisKey } from './useCalcFields';
+import { useCalcFields, BasisKey, Field } from './useCalcFields';
 
 type Props = {
   visible: boolean;
@@ -11,6 +21,9 @@ type Props = {
 };
 
 type Measures = Partial<Record<BasisKey, number>>;
+type Inputs = Partial<Record<BasisKey, string>>;
+type FieldErrors = Partial<Record<BasisKey, string>>;
+
 type Row = {
   work_type_code: string;
   rik_code: string;
@@ -27,51 +40,263 @@ type Row = {
   hint: string | null;
 };
 
+const formatNumber = (value: number) => {
+  if (!Number.isFinite(value)) return '';
+  const fixed = value.toFixed(6);
+  return fixed.replace(/\.0+$/, '').replace(/(\.\d*?)0+$/, '$1');
+};
+
+const sanitizeExpression = (raw: string) =>
+  raw
+    .replace(/,/g, '.')
+    .replace(/[×хХxX]/g, '*')
+    .replace(/:/g, '/')
+    .trim();
+
+const SAFE_EXPRESSION = /^[-+*/().0-9\s]+$/;
+
+const evaluateExpression = (rawInput: string): number => {
+  const sanitized = sanitizeExpression(rawInput);
+  if (!sanitized) throw new Error('empty');
+  if (!SAFE_EXPRESSION.test(sanitized)) throw new Error('invalid_char');
+  // eslint-disable-next-line no-new-func
+  const fn = Function(`"use strict"; return (${sanitized});`);
+  const result = fn();
+  if (typeof result !== 'number' || !Number.isFinite(result)) {
+    throw new Error('not_finite');
+  }
+  return result;
+};
+
+const LOSS_ERROR_TEXT = 'Некорректное значение';
+
 export default function CalcModal({ visible, onClose, workType, onAddToRequest }: Props) {
-  const { loading: fLoading, fields } = useCalcFields(workType?.code);
+  const { loading: fLoading, fields, error: fieldsError } = useCalcFields(workType?.code);
+  const [inputs, setInputs] = useState<Inputs>({});
   const [measures, setMeasures] = useState<Measures>({});
+  const [errors, setErrors] = useState<FieldErrors>({});
   const [lossPct, setLossPct] = useState<string>('5');
+  const [lossTouched, setLossTouched] = useState(false);
   const [rows, setRows] = useState<Row[] | null>(null);
   const [calculating, setCalculating] = useState(false);
-  const multiplier = useMemo(() => {
-    const v = Number(String(lossPct).replace(',', '.'));
-    if (!Number.isFinite(v)) return 1;
-    return Math.max(0, 1 + v / 100);
-  }, [lossPct]);
+
+  const fieldMap = useMemo(() => {
+    const map = new Map<BasisKey, Field>();
+    fields.forEach((f) => map.set(f.key, f));
+    return map;
+  }, [fields]);
+
+  const hasMultiplierField = useMemo(() => fields.some((f) => f.key === 'multiplier'), [fields]);
 
   useEffect(() => {
     if (!visible) {
       setRows(null);
       setMeasures({});
+      setInputs({});
+      setErrors({});
       setLossPct('5');
+      setLossTouched(false);
+      return;
     }
-  }, [visible, workType?.code]);
+  }, [visible]);
 
-  const setNum = (key: BasisKey, val: string) => {
-    const n = Number(String(val).replace(',', '.'));
-    setMeasures(prev => ({ ...prev, [key]: Number.isFinite(n) ? n : undefined }));
+  useEffect(() => {
+    if (!visible) return;
+    setRows(null);
+    setMeasures({});
+    setInputs({});
+    setErrors({});
+    setLossPct('5');
+    setLossTouched(false);
+  }, [workType?.code, visible]);
+
+  useEffect(() => {
+    if (!visible) return;
+    setInputs((prev) => {
+      const next: Inputs = {};
+      fields.forEach((field) => {
+        if (prev[field.key] !== undefined) {
+          next[field.key] = prev[field.key];
+        } else if (field.defaultValue != null) {
+          next[field.key] = formatNumber(field.defaultValue);
+        } else {
+          next[field.key] = '';
+        }
+      });
+      return next;
+    });
+    setMeasures((prev) => {
+      const next: Measures = {};
+      fields.forEach((field) => {
+        if (prev[field.key] != null) {
+          next[field.key] = prev[field.key];
+        } else if (field.defaultValue != null) {
+          next[field.key] = field.defaultValue;
+        }
+      });
+      return next;
+    });
+    setErrors((prev) => {
+      const next: FieldErrors = { ...prev };
+      Object.keys(next).forEach((key) => {
+        if (!fieldMap.has(key)) {
+          delete next[key];
+        }
+      });
+      return next;
+    });
+  }, [fields, fieldMap, visible]);
+
+  const { lossValue, lossInvalid } = useMemo(() => {
+    const trimmed = lossPct.trim();
+    if (!trimmed) return { lossValue: 0, lossInvalid: false };
+    try {
+      const value = evaluateExpression(trimmed);
+      return { lossValue: value, lossInvalid: false };
+    } catch (err) {
+      return { lossValue: 0, lossInvalid: true };
+    }
+  }, [lossPct]);
+
+  const lossError = lossTouched && lossInvalid ? LOSS_ERROR_TEXT : null;
+
+  const multiplier = useMemo(() => {
+    if (hasMultiplierField && Number.isFinite(measures.multiplier ?? NaN)) {
+      return measures.multiplier as number;
+    }
+    if (lossInvalid) return 1;
+    return Math.max(0, 1 + (lossValue ?? 0) / 100);
+  }, [hasMultiplierField, lossInvalid, lossValue, measures.multiplier]);
+
+  const runParse = useCallback(
+    (keys: BasisKey[], showErrors = false) => {
+      const nextInputs: Inputs = { ...inputs };
+      const nextMeasures: Measures = { ...measures };
+      const nextErrors: FieldErrors = { ...errors };
+      let allValid = true;
+
+      keys.forEach((key) => {
+        const field = fieldMap.get(key);
+        if (!field) return;
+
+        const rawOriginal = inputs[key] ?? '';
+        const raw = rawOriginal.trim();
+        let errorMessage: string | undefined;
+
+        if (!raw) {
+          delete nextMeasures[key];
+          nextInputs[key] = '';
+          if (field.required) {
+            allValid = false;
+            errorMessage = 'Заполните поле';
+          }
+        } else {
+          try {
+            const numeric = evaluateExpression(rawOriginal);
+            nextMeasures[key] = numeric;
+            nextInputs[key] = formatNumber(numeric);
+          } catch (err) {
+            delete nextMeasures[key];
+            allValid = false;
+            errorMessage = 'Некорректное значение';
+          }
+        }
+
+        if (showErrors) {
+          if (errorMessage) {
+            nextErrors[key] = errorMessage;
+          } else {
+            delete nextErrors[key];
+          }
+        } else if (!errorMessage) {
+          delete nextErrors[key];
+        }
+      });
+
+      setInputs(nextInputs);
+      setMeasures(nextMeasures);
+      if (showErrors) {
+        setErrors(nextErrors);
+      } else {
+        setErrors((prev) => {
+          const updated: FieldErrors = { ...prev };
+          keys.forEach((key) => {
+            if (!nextErrors[key]) delete updated[key];
+          });
+          return updated;
+        });
+      }
+
+      return { valid: allValid, measures: nextMeasures };
+    },
+    [inputs, measures, errors, fieldMap],
+  );
+
+  const handleInputChange = useCallback((key: BasisKey, value: string) => {
+    setInputs((prev) => ({ ...prev, [key]: value }));
+    setErrors((prev) => {
+      if (!prev[key]) return prev;
+      const next = { ...prev };
+      delete next[key];
+      return next;
+    });
+  }, []);
+
+  const handleBlur = useCallback((key: BasisKey) => {
+    runParse([key], true);
+  }, [runParse]);
+
+  const handleLossChange = (value: string) => {
+    setLossPct(value);
+    setLossTouched(false);
+  };
+
+  const handleLossBlur = () => {
+    setLossTouched(true);
+    if (!lossInvalid && lossPct.trim()) {
+      setLossPct(formatNumber(lossValue));
+    }
   };
 
   const calc = async () => {
     if (!workType?.code) return;
+
+    const parseResult = runParse(
+      fields.map((f) => f.key),
+      true,
+    );
+
+    setLossTouched(true);
+    if (lossInvalid) {
+      return;
+    }
+
+    if (!parseResult.valid) {
+      return;
+    }
+
+    if (lossPct.trim() && !lossInvalid) {
+      setLossPct(formatNumber(lossValue));
+    }
+
     try {
-      const needKeys = fields.filter(f => f.required).map(f => f.key);
-      const hasValue = needKeys.some(k => Number.isFinite(measures[k]!));
-      if (!hasValue && needKeys.length) {
-        Alert.alert('Заполните параметры', `Укажите: ${fields.map(f => f.label).join(', ')}`);
-        return;
-      }
       setCalculating(true);
-      const args: any = {
+      const parsedMeasures = parseResult.measures;
+      const directMultiplier = parsedMeasures.multiplier;
+      const effectiveMultiplier = Number.isFinite(directMultiplier)
+        ? (directMultiplier as number)
+        : Math.max(0, 1 + (lossValue ?? 0) / 100);
+
+      const args: Record<string, number | null> = {
         p_work_type_code: workType.code,
-        p_area_m2: measures.area_m2 ?? null,
-        p_perimeter_m: measures.perimeter_m ?? null,
-        p_length_m: measures.length_m ?? null,
-        p_points: measures.points ?? null,
-        p_volume_m3: measures.volume_m3 ?? null,
-        p_count: measures.count ?? null,
-        p_multiplier: multiplier,
+        p_multiplier: effectiveMultiplier,
       };
+
+      Object.entries(parsedMeasures).forEach(([key, value]) => {
+        if (key === 'multiplier') return;
+        args[`p_${key}`] = value ?? null;
+      });
+
       const { data, error } = await supabase.rpc('fn_calc_kit_basic', args);
       if (error) throw error;
       setRows(data as Row[]);
@@ -83,53 +308,99 @@ export default function CalcModal({ visible, onClose, workType, onAddToRequest }
     }
   };
 
+  const renderField = (field: Field) => {
+    const value = inputs[field.key] ?? '';
+    const errorText = errors[field.key];
+    return (
+      <View key={field.key} style={{ marginBottom: 12 }}>
+        <Text style={{ fontWeight: '600', marginBottom: 4 }}>
+          {field.label}
+          {field.uom ? `, ${field.uom}` : ''}
+          {field.required ? ' *' : ''}
+        </Text>
+        <TextInput
+          keyboardType="numeric"
+          placeholder={field.hint ?? ''}
+          value={value}
+          onChangeText={(t) => handleInputChange(field.key, t)}
+          onBlur={() => handleBlur(field.key)}
+          style={{
+            borderWidth: 1,
+            borderColor: errorText ? '#ef4444' : '#e5e7eb',
+            borderRadius: 10,
+            paddingHorizontal: 12,
+            paddingVertical: Platform.OS === 'web' ? 8 : 10,
+          }}
+        />
+        {errorText ? (
+          <Text style={{ color: '#ef4444', marginTop: 4 }}>{errorText}</Text>
+        ) : field.hint ? (
+          <Text style={{ color: '#6b7280', marginTop: 4 }}>{field.hint}</Text>
+        ) : null}
+      </View>
+    );
+  };
+
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.35)', justifyContent: 'center', padding: 16 }}>
-        <View style={{ backgroundColor: '#fff', borderRadius: 16, padding: 16, maxHeight: '88%', width: '100%', maxWidth: 740, alignSelf: 'center' }}>
+        <View
+          style={{
+            backgroundColor: '#fff',
+            borderRadius: 16,
+            padding: 16,
+            maxHeight: '88%',
+            width: '100%',
+            maxWidth: 740,
+            alignSelf: 'center',
+          }}
+        >
           <Text style={{ fontSize: 18, fontWeight: '700', marginBottom: 6 }}>
             {workType?.name ?? workType?.code ?? 'Вид работ'}
           </Text>
           <Text style={{ color: '#6b7280', marginBottom: 10 }}>
-            Укажите только необходимые параметры  остальное рассчитается автоматически.
+            Укажите только необходимые параметры — остальное рассчитается автоматически.
           </Text>
 
           <ScrollView style={{ maxHeight: 280 }}>
             {fLoading ? (
-              <View style={{ paddingVertical: 24, alignItems: 'center' }}><ActivityIndicator/></View>
+              <View style={{ paddingVertical: 24, alignItems: 'center' }}>
+                <ActivityIndicator />
+              </View>
             ) : fields.length === 0 ? (
-              <Text style={{ color: '#6b7280' }}>Для этого вида работ нет активных норм.</Text>
+              <Text style={{ color: '#6b7280' }}>
+                {fieldsError ?? 'Для этого вида работ нет активных норм.'}
+              </Text>
             ) : (
               <>
-                {fields.map(f => {
-                  const val = measures[f.key] ?? '';
-                  return (
-                    <View key={f.key} style={{ marginBottom: 10 }}>
-                      <Text style={{ fontWeight: '600', marginBottom: 4 }}>
-                        {f.label}{f.uom ? `, ${f.uom}` : ''}{f.required ? ' *' : ''}
-                      </Text>
-                      <TextInput
-                        keyboardType="numeric"
-                        placeholder={f.hint ?? ''}
-                        value={String(val)}
-                        onChangeText={(t) => setNum(f.key, t)}
-                        style={{ borderWidth: 1, borderColor: '#e5e7eb', borderRadius: 10, paddingHorizontal: 12, paddingVertical: Platform.OS === 'web' ? 8 : 10 }}
-                      />
-                    </View>
-                  );
-                })}
+                {fields.map((field) => renderField(field))}
 
-                <View style={{ marginTop: 4 }}>
-                  <Text style={{ fontWeight: '600', marginBottom: 4 }}>Запас/потери, %</Text>
-                  <TextInput
-                    keyboardType="numeric"
-                    placeholder="Обычно 510%"
-                    value={lossPct}
-                    onChangeText={setLossPct}
-                    style={{ borderWidth: 1, borderColor: '#e5e7eb', borderRadius: 10, paddingHorizontal: 12, paddingVertical: Platform.OS === 'web' ? 8 : 10 }}
-                  />
-                  <Text style={{ color: '#6b7280', marginTop: 4 }}>Итоговый множитель: {multiplier.toFixed(2)}</Text>
-                </View>
+                {!hasMultiplierField && (
+                  <View style={{ marginTop: 4 }}>
+                    <Text style={{ fontWeight: '600', marginBottom: 4 }}>Запас/потери, %</Text>
+                    <TextInput
+                      keyboardType="numeric"
+                      placeholder="Обычно 5–10%"
+                      value={lossPct}
+                      onChangeText={handleLossChange}
+                      onBlur={handleLossBlur}
+                      style={{
+                        borderWidth: 1,
+                        borderColor: lossError ? '#ef4444' : '#e5e7eb',
+                        borderRadius: 10,
+                        paddingHorizontal: 12,
+                        paddingVertical: Platform.OS === 'web' ? 8 : 10,
+                      }}
+                    />
+                    {lossError ? (
+                      <Text style={{ color: '#ef4444', marginTop: 4 }}>{lossError}</Text>
+                    ) : (
+                      <Text style={{ color: '#6b7280', marginTop: 4 }}>
+                        Итоговый множитель: {multiplier.toFixed(2)}
+                      </Text>
+                    )}
+                  </View>
+                )}
               </>
             )}
           </ScrollView>
@@ -142,8 +413,11 @@ export default function CalcModal({ visible, onClose, workType, onAddToRequest }
               onPress={calc}
               disabled={calculating || fLoading || !workType?.code}
               style={{
-                paddingHorizontal: 16, paddingVertical: 10, borderRadius: 10,
-                backgroundColor: calculating ? '#86efac' : '#22c55e', opacity: (calculating || fLoading) ? 0.6 : 1
+                paddingHorizontal: 16,
+                paddingVertical: 10,
+                borderRadius: 10,
+                backgroundColor: calculating ? '#86efac' : '#22c55e',
+                opacity: calculating || fLoading ? 0.6 : 1,
               }}
             >
               <Text style={{ fontWeight: '700', color: '#fff' }}>{calculating ? 'Считаю' : 'Рассчитать'}</Text>
@@ -154,13 +428,19 @@ export default function CalcModal({ visible, onClose, workType, onAddToRequest }
             <View style={{ marginTop: 14, borderTopWidth: 1, borderTopColor: '#e5e7eb', paddingTop: 12 }}>
               <Text style={{ fontSize: 16, fontWeight: '700', marginBottom: 8 }}>Результат</Text>
               <ScrollView style={{ maxHeight: 260 }}>
-                {rows.map(r => (
+                {rows.map((r) => (
                   <View key={r.rik_code} style={{ paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: '#f3f4f6' }}>
-                    <Text style={{ fontWeight: '600' }}>{r.rik_code} <Text style={{ color: '#6b7280' }}>({r.section})</Text></Text>
+                    <Text style={{ fontWeight: '600' }}>
+                      {r.rik_code} <Text style={{ color: '#6b7280' }}>({r.section})</Text>
+                    </Text>
                     <Text style={{ color: '#111827' }}>
                       qty: {Number(r.qty).toFixed(3)} {r.uom_code}
-                      {r.packs && r.pack_size ? `  |  упаковка: ${r.packs}  ${Number(r.pack_size).toFixed(3)} ${r.pack_uom ?? ''}` : ''}
-                      {Number.isFinite(r.suggested_qty as any) ? `    к выдаче: ${Number(r.suggested_qty ?? 0).toFixed(3)} ${r.uom_code}` : ''}
+                      {r.packs && r.pack_size
+                        ? `  |  упаковка: ${r.packs}  ${Number(r.pack_size).toFixed(3)} ${r.pack_uom ?? ''}`
+                        : ''}
+                      {Number.isFinite(r.suggested_qty as any)
+                        ? `    к выдаче: ${Number(r.suggested_qty ?? 0).toFixed(3)} ${r.uom_code}`
+                        : ''}
                     </Text>
                     {r.hint ? <Text style={{ color: '#6b7280' }}>{r.hint}</Text> : null}
                   </View>
@@ -182,4 +462,3 @@ export default function CalcModal({ visible, onClose, workType, onAddToRequest }
     </Modal>
   );
 }
-
