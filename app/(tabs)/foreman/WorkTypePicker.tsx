@@ -36,30 +36,18 @@ const POSTGRES_COLUMN_NOT_EXIST = '42703';
 const PRIMARY_COLUMNS = [
   'code',
   'name_human_ru',
-  'name_ru',
   'name',
   'group_code',
-  'group_name_human_ru',
   'group_name_ru',
   'group_name',
-  'group_title_ru',
-  'group_title',
-  'group',
 ];
 
 const FALLBACK_SELECTS = [
-  'code, name_human_ru, name_ru, name, group_code, group_name_human_ru, group_name_ru, group_name, group',
-  'code, name_human_ru, name_ru, name, group_code, group_name_human_ru, group_name_ru, group_name',
-  'code, name_human_ru, name_ru, name, group_code, group_name_human_ru, group_name_ru',
-  'code, name_human_ru, name_ru, name, group_code, group_name_human_ru',
-  'code, name_human_ru, name_ru, name, group_code',
-  'code, name_human_ru, name_ru, name',
-  'code, name_ru, name, group_code, group_name_human_ru, group_name_ru, group_name',
-  'code, name_ru, name, group_code, group_name_ru, group_name',
-  'code, name_ru, name, group_code, group_name_ru',
-  'code, name_ru, name, group_code',
-  'code, name_ru, name',
-  'code, name',
+  'code, name_human_ru, group_code, group_name_ru, group_name',
+  'code, name_human_ru, group_code, group_name_ru',
+  'code, name_human_ru, group_code, group_name',
+  'code, name_human_ru, group_code',
+  'code, name_human_ru',
   'code',
 ];
 
@@ -98,18 +86,14 @@ export default function WorkTypePicker({ visible, onClose, onSelect }: Props) {
 
         const pickName = (record: any) =>
           (sanitize(record.name_human_ru) as string | null) ??
-          (sanitize(record.name_ru) as string | null) ??
           (sanitize(record.name) as string | null) ??
           (sanitize(record.code) as string | null) ??
           '';
 
         const pickGroupName = (record: any) =>
-          (sanitize(record.group_name_human_ru) as string | null) ??
           (sanitize(record.group_name_ru) as string | null) ??
           (sanitize(record.group_name) as string | null) ??
-          (sanitize(record.group_title_ru) as string | null) ??
-          (sanitize(record.group_title) as string | null) ??
-          (sanitize(record.group) as string | null) ??
+          (sanitize(record.group_code) as string | null) ??
           null;
 
         const mapRow = (r: any): Row => ({
@@ -193,7 +177,7 @@ export default function WorkTypePicker({ visible, onClose, onSelect }: Props) {
     return rows.filter((r) => {
       const name = toLower(r.name);
       const code = toLower(r.code);
-      const group = toLower(r.groupName);
+      const group = toLower(r.groupName) || toLower(r.groupCode);
       return name.includes(q) || code.includes(q) || group.includes(q);
     });
   }, [rows, query]);
@@ -265,7 +249,7 @@ export default function WorkTypePicker({ visible, onClose, onSelect }: Props) {
                     backgroundColor: pressed ? '#f3f4f6' : 'transparent',
                   })}
                 >
-                  <Text style={{ fontSize: 16 }}>{item.name}</Text>
+                  <Text style={{ fontSize: 16 }}>{item.name || item.code}</Text>
                   <Text style={{ color: '#6b7280', marginTop: 2 }}>{item.code}</Text>
                 </Pressable>
               )}

@@ -42,12 +42,12 @@ type Row = {
 
 type CalcRpcArgs = {
   p_work_type_code: string;
-  p_area_m2: number | null;
-  p_perimeter_m: number | null;
-  p_length_m: number | null;
-  p_points: number | null;
-  p_volume_m3: number | null;
-  p_count: number | null;
+  p_area_m2: number;
+  p_perimeter_m: number;
+  p_length_m: number;
+  p_points: number;
+  p_volume_m3: number;
+  p_count: number;
   p_multiplier: number;
 };
 
@@ -308,26 +308,31 @@ export default function CalcModal({ visible, onClose, workType, onAddToRequest }
         ? (directMultiplier as number)
         : Math.max(0, 1 + (lossValue ?? 0) / 100);
 
-      const args: CalcRpcArgs = {
+      const safeValue = (value: unknown, fallback: number) =>
+        typeof value === 'number' && Number.isFinite(value) ? (value as number) : fallback;
+
+      const baseArgs: CalcRpcArgs = {
         p_work_type_code: workType.code,
-        p_area_m2: null,
-        p_perimeter_m: null,
-        p_length_m: null,
-        p_points: null,
-        p_volume_m3: null,
-        p_count: null,
-        p_multiplier: effectiveMultiplier,
+        p_area_m2: 0,
+        p_perimeter_m: 0,
+        p_length_m: 0,
+        p_points: 0,
+        p_volume_m3: 0,
+        p_count: 1,
+        p_multiplier: effectiveMultiplier || 1,
       };
 
       RPC_BASIS_MAP.forEach(([basisKey, argKey]) => {
-        const value = parsedMeasures[basisKey];
-        if (typeof value === 'number' && Number.isFinite(value)) {
-          args[argKey] = value;
-        }
+        baseArgs[argKey] = safeValue(parsedMeasures[basisKey], baseArgs[argKey]);
       });
 
-      const { data, error } = await supabase.rpc('fn_calc_kit_basic', args);
-      if (error) throw error;
+      const args = baseArgs;
+
+      const { data, error } = await supabase.rpc('rpc_calc_kit_basic', args);
+      if (error) {
+        console.error('[CalcModal][rpc_calc_kit_basic]', { args, error });
+        throw error;
+      }
       setRows(Array.isArray(data) ? (data as Row[]) : []);
     } catch (e: any) {
       console.error('[CalcModal]', e);
