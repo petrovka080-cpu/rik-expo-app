@@ -127,7 +127,6 @@ export function useCalcFields(workTypeCode?: string) {
           .from('reno_norm_rules')
           .select('*')
           .eq('work_type_code', workTypeCode)
-          .order('input_order', { ascending: true, nullsFirst: true })
           .order('basis', { ascending: true })
           .limit(5000);
 
@@ -220,10 +219,10 @@ export function useCalcFields(workTypeCode?: string) {
           setFields(list);
         }
       } catch (err: any) {
-        console.error('[useCalcFields]', err?.message ?? err);
+        console.error('[useCalcFields]', err);
         if (!cancelled) {
           setFields([]);
-          setError(err?.message ?? 'Не удалось загрузить нормы');
+          setError('Не удалось загрузить нормы');
         }
       } finally {
         if (!cancelled) {
