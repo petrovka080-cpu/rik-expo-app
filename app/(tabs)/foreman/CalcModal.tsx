@@ -38,6 +38,7 @@ type Row = {
   pack_size: number | null;
   pack_uom: string | null;
   hint: string | null;
+  item_name_ru: string | null;
 };
 
 type CalcRpcArgs = {
@@ -456,7 +457,10 @@ export default function CalcModal({ visible, onClose, workType, onAddToRequest }
                     {rows.map((r) => (
                       <View key={r.rik_code} style={{ paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: '#f3f4f6' }}>
                         <Text style={{ fontWeight: '600' }}>
-                          {r.rik_code} <Text style={{ color: '#6b7280' }}>({r.section})</Text>
+                          {r.item_name_ru ?? r.rik_code}
+                          {r.section ? (
+                            <Text style={{ color: '#6b7280' }}>{` (${r.section})`}</Text>
+                          ) : null}
                         </Text>
                         <Text style={{ color: '#111827' }}>
                           qty: {Number(r.qty).toFixed(3)} {r.uom_code}

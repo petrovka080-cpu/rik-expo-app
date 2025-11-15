@@ -1199,110 +1199,180 @@ export async function buildRequestPdfHtml(requestId: number | string): Promise<s
   const locale = 'ru-RU';
 
   const esc = (s: any) =>
-    String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-  const num = (v?: any) => { const n = Number(String(v ?? '').replace(',', '.').trim()); return Number.isFinite(n) ? n : 0; };
+    String(s ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  const fmtQty = (value: any) => {
+    const num = Number(String(value ?? '').replace(',', '.'));
+    if (!Number.isFinite(num)) return '';
+    return num.toLocaleString(locale, { maximumFractionDigits: 3 });
+  };
 
   const displayLabel = await resolveRequestLabel(rid);
 
   const head = await client
     .from('requests')
-    .select('id, foreman_name, need_by, comment, status, object_type_code, level_code, system_code, zone_code')
+    .select('id, foreman_name, need_by, comment, status, created_at, object_type_code, level_code, system_code, zone_code')
     .eq('id', idFilter)
     .maybeSingle();
   if (head.error || !head.data) throw new Error('Заявка не найдена');
   const H: any = head.data;
 
   const [obj, lvl, sys, zn] = await Promise.all([
-    H.object_type_code ? client.from('ref_object_types').select('name').eq('code', H.object_type_code).maybeSingle() : Promise.resolve({ data: null } as any),
-    H.level_code      ? client.from('ref_levels').select('name').eq('code', H.level_code).maybeSingle()             : Promise.resolve({ data: null } as any),
-    H.system_code     ? client.from('ref_systems').select('name').eq('code', H.system_code).maybeSingle()           : Promise.resolve({ data: null } as any),
-    H.zone_code       ? client.from('ref_zones').select('name').eq('code', H.zone_code).maybeSingle()               : Promise.resolve({ data: null } as any),
+    H.object_type_code
+      ? client
+          .from('ref_object_types')
+          .select('name')
+          .eq('code', H.object_type_code)
+          .maybeSingle()
+      : Promise.resolve({ data: null } as any),
+    H.level_code
+      ? client
+          .from('ref_levels')
+          .select('name')
+          .eq('code', H.level_code)
+          .maybeSingle()
+      : Promise.resolve({ data: null } as any),
+    H.system_code
+      ? client
+          .from('ref_systems')
+          .select('name')
+          .eq('code', H.system_code)
+          .maybeSingle()
+      : Promise.resolve({ data: null } as any),
+    H.zone_code
+      ? client
+          .from('ref_zones')
+          .select('name')
+          .eq('code', H.zone_code)
+          .maybeSingle()
+      : Promise.resolve({ data: null } as any),
   ]);
   const objectName = (obj as any)?.data?.name || '';
-  const levelName  = (lvl as any)?.data?.name || '';
+  const levelName = (lvl as any)?.data?.name || '';
   const systemName = (sys as any)?.data?.name || '';
-  const zoneName   = (zn as any)?.data?.name || '';
+  const zoneName = (zn as any)?.data?.name || '';
+
+  const createdAt = H.created_at
+    ? new Date(H.created_at).toLocaleString(locale)
+    : '';
+  const generatedAt = new Date().toLocaleString(locale);
+
+  const metaPairs: Array<{ label: string; value: string }> = [
+    { label: 'Объект', value: objectName || '—' },
+    { label: 'Этаж / уровень', value: levelName || '—' },
+    { label: 'Система', value: systemName || '—' },
+    { label: 'Зона / участок', value: zoneName || '—' },
+    { label: 'ФИО прораба', value: H.foreman_name || '(не указано)' },
+    { label: 'Дата создания', value: createdAt || '—' },
+    { label: 'Нужно к', value: H.need_by || '—' },
+    { label: 'Статус', value: H.status || '—' },
+  ];
+
+  const metaHtml = metaPairs
+    .map(
+      (pair) =>
+        `<div class="cell"><div class="meta-label">${esc(pair.label)}</div><div class="meta-value">${esc(pair.value)}</div></div>`,
+    )
+    .join('');
 
   const items = await client
     .from('request_items')
-    .select('id, name_human, rik_code, uom, qty, app_code, note')
+    .select('id, name_human, uom, qty, note, app_code')
     .eq('request_id', idFilter)
     .order('id', { ascending: true });
 
   const rows: any[] = Array.isArray(items.data) ? items.data : [];
-  const body = rows.map((r: any, i: number) => {
-    const q = num(r.qty);
-    const note = r.note ? `<div class="muted">Прим.: ${esc(r.note)}</div>` : '';
-    return `<tr>
-      <td style="text-align:center">${i + 1}</td>
-      <td>${esc(r.name_human || r.rik_code || '')}${note}</td>
-      <td>${esc(r.rik_code || '')}</td>
-      <td style="text-align:right">${q || ''}</td>
-      <td style="text-align:center">${esc(r.uom || '')}</td>
-      <td>${esc(r.app_code || '')}</td>
+  const body = rows.length
+    ? rows
+        .map((r: any, i: number) => {
+          const notes: string[] = [];
+          if (r.note) notes.push(esc(r.note));
+          if (r.app_code)
+            notes.push(`<span class="muted">Применение: ${esc(r.app_code)}</span>`);
+          const noteHtml = notes.join('<br/>');
+          return `<tr>
+      <td class="col-num">${i + 1}</td>
+      <td class="col-name">${esc(r.name_human || '')}</td>
+      <td class="col-uom">${esc(r.uom || '')}</td>
+      <td class="col-qty">${fmtQty(r.qty)}</td>
+      <td class="col-note">${noteHtml || '—'}</td>
     </tr>`;
-  }).join('');
+        })
+        .join('')
+    : `<tr><td colspan="5" class="empty">Нет позиций</td></tr>`;
 
-  const dateStr = new Date().toLocaleString(locale);
+  const commentBlock = H.comment
+    ? `<div class="comment"><div class="meta-label">Комментарий</div><div class="meta-value">${esc(
+        H.comment,
+      )}</div></div>`
+    : '';
 
-  return `<!doctype html><html lang="ru"><head><meta charset="utf-8"/>
-<title>Заявка ${esc(displayLabel)}</title><meta name="viewport" content="width=device-width, initial-scale=1"/>
-<style>
-  body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial; padding:16px; color:#111}
-  h1{font-size:18px;margin:0 0 6px 0}
-  .muted{opacity:.75}
-  table{width:100%;border-collapse:collapse}
-  th,td{border:1px solid #ccc;padding:6px 8px;font-size:13px;vertical-align:top}
-  th{background:#f8fafc;text-align:left}
-  .header{display:flex;gap:16px;align-items:flex-start;margin-bottom:12px;flex-wrap:wrap}
-  .block{padding:10px 12px;border:1px solid #e5e7eb;border-radius:8px;background:#fff}
-  .signs{display:flex;gap:24px;margin-top:24px;flex-wrap:wrap}
-  .sign{flex:1 1 300px;border:1px dashed #cbd5e1;border-radius:8px;padding:10px 12px}
-  .line{margin-top:24px;border-bottom:1px solid #334155;width:220px}
-  @media print{.noprint{display:none}}
+  return `<!doctype html><html lang="ru"><head><meta charset="utf-8"/><title>Заявка ${esc(
+    displayLabel,
+  )}</title><meta name="viewport" content="width=device-width, initial-scale=1"/><style>
+  body{font-family:'Inter',system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;background:#f1f5f9;margin:0;padding:24px;color:#0f172a;}
+  .container{max-width:960px;margin:0 auto;background:#fff;border-radius:18px;padding:32px;box-shadow:0 20px 40px rgba(15,23,42,0.1);}
+  header{margin-bottom:24px;}
+  h1{margin:0;font-size:26px;font-weight:800;color:#111827;}
+  .subtitle{margin-top:8px;font-size:13px;color:#64748b;}
+  .meta-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:12px;}
+  .meta-grid .cell{padding:12px 14px;border:1px solid #e2e8f0;border-radius:14px;background:#f8fafc;min-height:72px;}
+  .meta-label{font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:#64748b;}
+  .meta-value{margin-top:6px;font-size:14px;font-weight:600;color:#0f172a;}
+  table{width:100%;border-collapse:collapse;margin-top:24px;}
+  th,td{border:1px solid #e2e8f0;padding:10px 12px;font-size:13px;vertical-align:top;}
+  th{background:#f1f5f9;font-weight:700;text-transform:uppercase;font-size:11px;color:#475569;letter-spacing:0.05em;}
+  .col-num{text-align:center;width:48px;}
+  .col-name{width:auto;}
+  .col-uom{text-align:center;width:70px;}
+  .col-qty{text-align:right;width:120px;}
+  .col-note{min-width:180px;}
+  .empty{text-align:center;color:#94a3b8;font-style:italic;}
+  .muted{color:#64748b;font-size:12px;}
+  .comment{margin-top:24px;}
+  .comment .meta-value{font-size:13px;font-weight:500;}
+  .signs{display:flex;gap:24px;margin-top:40px;flex-wrap:wrap;}
+  .sign{flex:1 1 240px;border:1px dashed #cbd5e1;border-radius:14px;padding:14px 16px;background:#f8fafc;}
+  .sign-label{font-size:13px;font-weight:600;color:#334155;}
+  .sign-line{margin-top:32px;border-bottom:1px solid #0f172a;height:1px;width:220px;}
+  .sign-name{margin-top:8px;font-size:12px;color:#64748b;}
+  @media print{body{background:#fff;padding:0;} .container{box-shadow:none;border-radius:0;}}
 </style></head><body>
-  <div class="header">
-    <div class="block">
+  <div class="container">
+    <header>
       <h1>Заявка ${esc(displayLabel)}</h1>
-      <div class="muted">Дата: ${esc(dateStr)}${H.need_by ? ` · <b>Нужно к:</b> ${esc(H.need_by)}` : ''}</div>
-      ${H.status ? `<div class="muted">Статус: ${esc(H.status)}</div>` : ''}
-      <div><b>Прораб:</b> ${esc(H.foreman_name || '(не указан)')}</div>
-      <div><b>Объект:</b> ${esc(objectName || '(не указано)')}</div>
-      <div><b>Этаж/уровень:</b> ${esc(levelName || '(не указано)')}</div>
-      ${systemName ? `<div><b>Система/вид работ:</b> ${esc(systemName)}</div>` : ''}
-      ${zoneName ? `<div><b>Зона/участок:</b> ${esc(zoneName)}</div>` : ''}
-      ${H.comment ? `<div class="muted">Примечание: ${esc(H.comment)}</div>` : ''}
+      <div class="subtitle">Сформировано: ${esc(generatedAt)}</div>
+    </header>
+    <section class="meta-grid">${metaHtml}</section>
+    ${commentBlock}
+    <table>
+      <thead>
+        <tr>
+          <th>№</th>
+          <th>Позиция</th>
+          <th>Ед. изм.</th>
+          <th>Количество</th>
+          <th>Примечание</th>
+        </tr>
+      </thead>
+      <tbody>${body}</tbody>
+    </table>
+    <div class="signs">
+      <div class="sign">
+        <div class="sign-label">Прораб</div>
+        <div class="sign-line"></div>
+        <div class="sign-name">${esc(H.foreman_name || '')}</div>
+      </div>
+      <div class="sign">
+        <div class="sign-label">Директор</div>
+        <div class="sign-line"></div>
+        <div class="sign-name">&nbsp;</div>
+      </div>
     </div>
   </div>
-
-  <table>
-    <thead><tr>
-      <th style="width:36px;text-align:center">#</th>
-      <th>Наименование</th>
-      <th style="width:120px">Код</th>
-      <th style="width:80px;text-align:right">Кол-во</th>
-      <th style="width:64px;text-align:center">Ед.</th>
-      <th style="width:140px">Применение</th>
-    </tr></thead>
-    <tbody>
-      ${body || `<tr><td colspan="6" class="muted">Нет строк</td></tr>`}
-    </tbody>
-  </table>
-
-  <div class="signs">
-    <div class="sign">
-      <div><b>Прораб</b></div>
-      <div class="line"></div>
-      <div class="muted" style="margin-top:6px">/ ${esc(H.foreman_name || '')} /</div>
-    </div>
-    <div class="sign">
-      <div><b>Директор</b></div>
-      <div class="line"></div>
-      <div class="muted" style="margin-top:6px">/  /</div>
-    </div>
-  </div>
-
-  <div class="noprint" style="margin-top:14px"><button onclick="window.print()">Печать</button></div>
 </body></html>`;
 }
 
@@ -1342,11 +1412,18 @@ export async function exportRequestPdf(requestId: number | string) {
       }
     } catch {}
     return uri as string;
-  } catch {
-    // web fallback
+  } catch (nativeErr) {
     if (typeof window !== 'undefined') {
-      const w = window.open('', '_blank');
-      if (w) { w.document.write(html); w.document.close(); w.focus(); }
+      try {
+        const blob = new Blob([html], {
+          type: 'text/html;charset=utf-8',
+        });
+        return URL.createObjectURL(blob);
+      } catch (blobErr) {
+        console.warn('[exportRequestPdf]', blobErr);
+      }
+    } else {
+      console.warn('[exportRequestPdf]', nativeErr);
     }
     return '';
   }
