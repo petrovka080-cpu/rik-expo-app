@@ -6,9 +6,16 @@ import {
   proposalSubmit as rpcProposalSubmit,
   proposalSnapshotItems as rpcProposalSnapshotItems,
   batchResolveRequestLabels as rpcBatchResolveRequestLabels,
+  requestCreateDraft as rpcRequestCreateDraft,
 } from "./rik_api";
 
-export { ensureRequestSmart, requestSubmit, exportRequestPdf, addRequestItemFromRik } from "./rik_api";
+export {
+  ensureRequestSmart,
+  requestCreateDraft,
+  requestSubmit,
+  exportRequestPdf,
+  addRequestItemFromRik,
+} from "./rik_api";
 export {
   listBuyerInbox,
   proposalCreate,
@@ -59,7 +66,7 @@ export type IncomingItem = {
 
 export type RequestHeader = {
   id: string;
-  number?: string | null;
+  display_no?: string | null;
   status?: string | null;
   created_at?: string | null;
 };
@@ -95,10 +102,30 @@ export type ForemanRequestSummary = {
   status?: string | null;
   created_at?: string | null;
   need_by?: string | null;
-  object_name?: string | null;
-  level_name?: string | null;
-  system_name?: string | null;
-  zone_name?: string | null;
+  object_name_ru?: string | null;
+  level_name_ru?: string | null;
+  system_name_ru?: string | null;
+  zone_name_ru?: string | null;
+};
+
+export type RequestDetails = {
+  id: string;
+  status?: string | null;
+  display_no?: string | null;
+  year?: number | null;
+  seq?: number | null;
+  created_at?: string | null;
+  need_by?: string | null;
+  comment?: string | null;
+  foreman_name?: string | null;
+  object_type_code?: string | null;
+  level_code?: string | null;
+  system_code?: string | null;
+  zone_code?: string | null;
+  object_name_ru?: string | null;
+  level_name_ru?: string | null;
+  system_name_ru?: string | null;
+  zone_name_ru?: string | null;
 };
 
 export type Supplier = {
@@ -126,6 +153,14 @@ const chunk = <T,>(arr: T[], size: number): T[][] => {
 };
 const SUPPLIER_NONE_LABEL = "— без поставщика —";
 
+const pickRefName = (ref: any) =>
+  norm(ref?.name_ru) ||
+  norm(ref?.name_human_ru) ||
+  norm(ref?.display_name) ||
+  norm(ref?.alias_ru) ||
+  norm(ref?.name) ||
+  null;
+
 const mapRequestItemRow = (raw: any, requestId: string): ReqItemRow | null => {
   const rawId = raw?.id ?? raw?.request_item_id ?? null;
   if (!rawId) return null;
@@ -140,17 +175,19 @@ const mapRequestItemRow = (raw: any, requestId: string): ReqItemRow | null => {
   }
 
   const nameHuman =
+    norm(raw?.name_human_ru) ||
     norm(raw?.name_human) ||
+    norm(raw?.name_ru) ||
     norm(raw?.name) ||
     norm(raw?.display_name) ||
-    norm(raw?.code) ||
-    norm(raw?.rik_code) ||
+    norm(raw?.alias_ru) ||
+    norm(raw?.best_name_display) ||
     "";
 
   return {
     id: String(rawId),
     request_id: String(raw?.request_id ?? requestId),
-    name_human: nameHuman || String(raw?.rik_code ?? raw?.code ?? ""),
+    name_human: nameHuman || '—',
     qty,
     uom: raw?.uom ?? raw?.uom_code ?? null,
     status: raw?.status ?? null,
@@ -300,52 +337,13 @@ export async function getOrCreateDraftRequestId(): Promise<string> {
   const cached = getLocalDraftId();
   if (cached) return cached;
 
-  // 1) RPC варианты
-  const rpcVariants = [
-    "get_or_create_draft_request",
-    "app_get_or_create_draft_request",
-    "rk_get_or_create_draft_request",
-  ];
-  for (const fn of rpcVariants) {
-    try {
-      // @ts-ignore
-      const { data, error } = await supabase.rpc(fn, {});
-      if (!error && data) {
-        const id =
-          (data as any).id ??
-          (data as any).request_id ??
-          (Array.isArray(data) ? data[0]?.id ?? data[0]?.request_id : undefined);
-        if (id) {
-          const s = String(id);
-          setLocalDraftId(s);
-          return s;
-        }
-      }
-    } catch {}
+  const created = await rpcRequestCreateDraft();
+  if (created?.id) {
+    const id = String(created.id);
+    setLocalDraftId(id);
+    return id;
   }
 
-  // 2) Прямая вставка
-  const tableVariants = [
-    { table: "requests", idCol: "id" },
-    { table: "app_requests", idCol: "id" },
-    { table: "rik_requests", idCol: "id" },
-  ] as const;
-  for (const { table, idCol } of tableVariants) {
-    try {
-      const { data, error } = await supabase
-        .from(table)
-        .insert([{ status: "draft" }])
-        .select(`${idCol}`)
-        .single();
-      if (!error && data?.[idCol]) {
-        const id = String((data as any)[idCol]);
-        setLocalDraftId(id);
-        return id;
-      }
-    } catch {}
-  }
-
-  // 3) Фолбэк — локальный UUID, чтобы UI не падал
   const fallback = getUuid();
   setLocalDraftId(fallback);
   return fallback;
@@ -357,11 +355,11 @@ export async function getRequestHeader(requestId: string): Promise<RequestHeader
   if (!id) return null;
 
   const views = [
-    { src: "vi_requests_display", cols: "id,number,status,created_at" },
-    { src: "vi_requests", cols: "id,number,status,created_at" },
-    { src: "requests", cols: "id,number,status,created_at" },
-    { src: "app_requests", cols: "id,number,status,created_at" },
-    { src: "rik_requests", cols: "id,number,status,created_at" },
+    { src: "vi_requests_display", cols: "id,display_no,status,created_at" },
+    { src: "vi_requests", cols: "id,display_no,status,created_at" },
+    { src: "requests", cols: "id,display_no,status,created_at" },
+    { src: "app_requests", cols: "id,display_no,status,created_at" },
+    { src: "rik_requests", cols: "id,display_no,status,created_at" },
   ] as const;
 
   for (const { src, cols } of views) {
@@ -376,6 +374,20 @@ export async function getRequestHeader(requestId: string): Promise<RequestHeader
 export async function fetchRequestDisplayNo(requestId: string): Promise<string | null> {
   const id = norm(requestId);
   if (!id) return null;
+
+  try {
+    const { data, error } = await supabase
+      .from("requests" as any)
+      .select("id,display_no")
+      .eq("id", id)
+      .maybeSingle();
+    if (!error && data?.display_no) return String(data.display_no);
+  } catch (e: any) {
+    const msg = String(e?.message ?? "").toLowerCase();
+    if (!msg.includes("permission denied") && !msg.includes("does not exist")) {
+      console.warn(`[catalog_api.fetchRequestDisplayNo] requests:`, e?.message ?? e);
+    }
+  }
 
   const rpcVariants = ["request_display_no", "request_display", "request_label"] as const;
   for (const fn of rpcVariants) {
@@ -398,9 +410,9 @@ export async function fetchRequestDisplayNo(requestId: string): Promise<string |
   const views = [
     { src: "vi_requests_display", col: "display_no" },
     { src: "v_requests_display", col: "display_no" },
-    { src: "requests", col: "number" },
-    { src: "app_requests", col: "number" },
-    { src: "rik_requests", col: "number" },
+    { src: "requests", col: "display_no" },
+    { src: "app_requests", col: "display_no" },
+    { src: "rik_requests", col: "display_no" },
   ] as const;
 
   for (const { src, col } of views) {
@@ -420,6 +432,58 @@ export async function fetchRequestDisplayNo(requestId: string): Promise<string |
   }
 
   return null;
+}
+
+export async function fetchRequestDetails(requestId: string): Promise<RequestDetails | null> {
+  const id = norm(requestId);
+  if (!id) return null;
+
+  try {
+    const { data, error } = await supabase
+      .from("requests" as any)
+      .select(
+        `id,status,display_no,year,seq,created_at,need_by,comment,foreman_name,
+         object_type_code,level_code,system_code,zone_code,
+         object:ref_object_types(name,name_ru),
+         level:ref_levels(name,name_ru),
+         system:ref_systems(name,name_ru),
+         zone:ref_zones(name,name_ru)`
+      )
+      .eq("id", id)
+      .maybeSingle();
+    if (error) throw error;
+    if (!data) return null;
+
+    const num = (v: any) => {
+      if (typeof v === "number" && Number.isFinite(v)) return v;
+      const parsed = Number(v);
+      return Number.isFinite(parsed) ? parsed : null;
+    };
+
+    const details: RequestDetails = {
+      id,
+      status: data.status ?? null,
+      display_no: data.display_no ?? null,
+      year: num(data.year),
+      seq: num(data.seq),
+      created_at: data.created_at ?? null,
+      need_by: data.need_by ?? null,
+      comment: data.comment ?? null,
+      foreman_name: data.foreman_name ?? null,
+      object_type_code: data.object_type_code ?? null,
+      level_code: data.level_code ?? null,
+      system_code: data.system_code ?? null,
+      zone_code: data.zone_code ?? null,
+      object_name_ru: pickRefName((data as any).object),
+      level_name_ru: pickRefName((data as any).level),
+      system_name_ru: pickRefName((data as any).system),
+      zone_name_ru: pickRefName((data as any).zone),
+    };
+    return details;
+  } catch (e: any) {
+    console.warn("[catalog_api.fetchRequestDetails]", e?.message ?? e);
+    return null;
+  }
 }
 
 export type RequestMetaPatch = {
@@ -615,14 +679,16 @@ export async function listForemanRequests(
     const { data, error } = await supabase
       .from("requests" as any)
       .select(
-        `id,status,created_at,need_by,foreman_name,
-         object:ref_object_types(name),
-         level:ref_levels(name),
-         system:ref_systems(name),
-         zone:ref_zones(name)`,
+        `id,status,created_at,need_by,display_no,
+         object_type_code,level_code,system_code,zone_code,
+         object:ref_object_types(name,name_ru),
+         level:ref_levels(name,name_ru),
+         system:ref_systems(name,name_ru),
+         zone:ref_zones(name,name_ru)`,
       )
       .eq("foreman_name", name)
       .neq("status", "draft")
+      .neq("status", "Черновик")
       .order("created_at", { ascending: false })
       .limit(take);
 
@@ -633,26 +699,33 @@ export async function listForemanRequests(
       .map((row: any) => {
         const id = String(row?.id ?? "").trim();
         if (!id) return null;
-        return {
+        const base: ForemanRequestSummary = {
           id,
           status: row?.status ?? null,
           created_at: row?.created_at ?? null,
           need_by: row?.need_by ?? null,
-          object_name: row?.object?.name ?? null,
-          level_name: row?.level?.name ?? null,
-          system_name: row?.system?.name ?? null,
-          zone_name: row?.zone?.name ?? null,
-        } as ForemanRequestSummary;
+          display_no: row?.display_no ?? null,
+          object_name_ru: pickRefName((row as any).object),
+          level_name_ru: pickRefName((row as any).level),
+          system_name_ru: pickRefName((row as any).system),
+          zone_name_ru: pickRefName((row as any).zone),
+        };
+        return base;
       })
       .filter((row): row is ForemanRequestSummary => !!row);
 
     if (!mapped.length) return [];
 
-    const labels = await rpcBatchResolveRequestLabels(mapped.map((row) => row.id));
-    return mapped.map((row) => ({
-      ...row,
-      display_no: labels[row.id] ?? null,
-    }));
+    const missing = mapped.filter((row) => !row.display_no).map((row) => row.id);
+    if (missing.length) {
+      const labels = await rpcBatchResolveRequestLabels(missing);
+      return mapped.map((row) => ({
+        ...row,
+        display_no: row.display_no ?? labels[row.id] ?? null,
+      }));
+    }
+
+    return mapped;
   } catch (e: any) {
     console.warn("[catalog_api.listForemanRequests]", e?.message ?? e);
     return [];

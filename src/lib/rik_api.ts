@@ -44,9 +44,29 @@ export type ReqItemRow = {
 };
 
 export type RequestMeta = {
-  foreman_name?: string;
-  need_by?: string;
-  comment?: string;
+  foreman_name?: string | null;
+  need_by?: string | null;
+  comment?: string | null;
+  object_type_code?: string | null;
+  level_code?: string | null;
+  system_code?: string | null;
+  zone_code?: string | null;
+};
+
+export type RequestRecord = {
+  id: string;
+  status?: string | null;
+  display_no?: string | null;
+  year?: number | null;
+  seq?: number | null;
+  foreman_name?: string | null;
+  need_by?: string | null;
+  comment?: string | null;
+  object_type_code?: string | null;
+  level_code?: string | null;
+  system_code?: string | null;
+  zone_code?: string | null;
+  created_at?: string | null;
 };
 
 export type DirectorPendingRow = {
@@ -409,20 +429,70 @@ export async function ensureRequest(requestId: number | string): Promise<number 
   return rid;
 }
 
-export async function ensureRequestSmart(currentId?: number | string, meta?: RequestMeta): Promise<number | string> {
-  try {
-    const r0 = await client.rpc('request_ensure');
-    if (!r0.error && r0.data != null) return r0.data as any;
-  } catch {}
+function mapRequestRow(raw: any): RequestRecord | null {
+  const idRaw = raw?.id ?? raw?.request_id ?? null;
+  if (!idRaw) return null;
+  const id = String(idRaw);
+  const norm = (v: any) => {
+    if (v == null) return null;
+    const s = String(v);
+    return s.trim();
+  };
+  const asNumber = (v: any) => {
+    if (typeof v === 'number' && Number.isFinite(v)) return v;
+    const parsed = Number(v);
+    return Number.isFinite(parsed) ? parsed : null;
+  };
+  return {
+    id,
+    status: raw?.status ?? null,
+    display_no: norm(raw?.display_no ?? raw?.number ?? raw?.label ?? raw?.display) || null,
+    year: asNumber(raw?.year),
+    seq: asNumber(raw?.seq),
+    foreman_name: norm(raw?.foreman_name),
+    need_by: norm(raw?.need_by),
+    comment: norm(raw?.comment),
+    object_type_code: norm(raw?.object_type_code),
+    level_code: norm(raw?.level_code),
+    system_code: norm(raw?.system_code),
+    zone_code: norm(raw?.zone_code),
+    created_at: norm(raw?.created_at),
+  };
+}
 
+export async function requestCreateDraft(meta?: RequestMeta): Promise<RequestRecord | null> {
   try {
-    const { data, error } = await client.rpc('request_ensure', {
-      p_id: currentId ?? null,
-      p_foreman_name: meta?.foreman_name ?? null,
-      p_need_by: meta?.need_by ?? null,
-      p_comment: meta?.comment ?? null,
-    } as any);
-    if (!error) return (data as any) ?? currentId ?? '';
+    const args: Record<string, any> = {};
+    if (meta?.foreman_name != null)
+      args.p_foreman_name = String(meta.foreman_name).trim() || null;
+    if (meta?.need_by != null)
+      args.p_need_by = String(meta.need_by).trim() || null;
+    if (meta?.comment != null)
+      args.p_comment = String(meta.comment).trim() || null;
+    if (meta?.object_type_code != null)
+      args.p_object_type_code = meta.object_type_code || null;
+    if (meta?.level_code != null) args.p_level_code = meta.level_code || null;
+    if (meta?.system_code != null) args.p_system_code = meta.system_code || null;
+    if (meta?.zone_code != null) args.p_zone_code = meta.zone_code || null;
+
+    const { data, error } = await client.rpc('request_create_draft', args as any);
+    if (error) throw error;
+    const row = mapRequestRow(data);
+    if (row) {
+      _draftRequestIdAny = row.id;
+      return row;
+    }
+  } catch (e) {
+    console.warn('[requestCreateDraft]', parseErr(e));
+  }
+  return null;
+}
+
+export async function ensureRequestSmart(currentId?: number | string, meta?: RequestMeta): Promise<number | string> {
+  if (currentId != null && String(currentId).trim()) return currentId;
+  try {
+    const created = await requestCreateDraft(meta);
+    if (created?.id) return created.id;
   } catch (e) {
     console.warn('[ensureRequestSmart]', parseErr(e));
   }
@@ -609,25 +679,28 @@ export async function listDirectorInbox(status: 'На утверждении' | 
   return rows.filter(r => (r?.kind ?? '') !== 'request');
 }
 
-export async function requestSubmit(requestId: number | string) {
+export async function requestSubmit(requestId: number | string): Promise<RequestRecord | null> {
+  const asStr = String(requestId ?? '').trim();
+  const ridForRpc = normalizeUuid(asStr) ?? asStr;
+  if (!ridForRpc) throw new Error('request_id is empty');
+
   try {
-    const asStr = String(requestId ?? '').trim();
-    const ridForRpc = normalizeUuid(asStr) ?? asStr;
-    if (!ridForRpc) throw new Error('request_id is empty');
-    const rpc = await client.rpc('request_submit', { p_request_id: ridForRpc as any });
-    if (rpc.error) throw rpc.error;
-    return 1;
+    const { data, error } = await client.rpc('request_submit', { p_request_id: ridForRpc as any });
+    if (error) throw error;
+    const row = mapRequestRow(data);
+    if (row) return row;
   } catch (e) {
     console.warn('[requestSubmit/rpc]', parseErr(e));
   }
+
   const upd = await client
     .from('requests')
-    .update({ status: 'На утверждении', submitted_at: new Date().toISOString() })
+    .update({ status: 'pending', submitted_at: new Date().toISOString() })
     .eq('id', toFilterId(requestId) as any)
-    .select('id')
+    .select('id, status, display_no, foreman_name, need_by, comment, object_type_code, level_code, system_code, zone_code, created_at, year, seq')
     .maybeSingle();
   if (upd.error) throw upd.error;
-  return upd.data?.id ? 1 : 0;
+  return upd.data ? mapRequestRow(upd.data) : null;
 }
 
 // ============================== Buyer: inbox & proposals ==============================
@@ -1158,7 +1231,7 @@ export async function resolveRequestLabel(rid: string | number): Promise<string>
   if (!id) return '#—';
   try {
     const { data, error } = await supabase
-      .from('v_requests_display' as any)
+      .from('requests' as any)
       .select('display_no')
       .eq('id', id)
       .maybeSingle();
@@ -1177,7 +1250,7 @@ export async function batchResolveRequestLabels(ids: Array<string | number>): Pr
   if (!uniq.length) return {};
   try {
     const { data, error } = await supabase
-      .from('v_requests_display' as any)
+      .from('requests' as any)
       .select('id, display_no')
       .in('id', uniq);
     if (error) throw error;
@@ -1209,6 +1282,44 @@ export async function buildRequestPdfHtml(requestId: number | string): Promise<s
     if (!Number.isFinite(num)) return '';
     return num.toLocaleString(locale, { maximumFractionDigits: 3 });
   };
+  const pickRefName = (row: any) => {
+    const source = (row && 'data' in row ? (row as any).data : row) ?? {};
+    const candidates = [
+      source?.name_ru,
+      source?.name_human_ru,
+      source?.display_name,
+      source?.alias_ru,
+      source?.name,
+    ];
+    for (const candidate of candidates) {
+      if (typeof candidate === 'string' && candidate.trim()) {
+        return candidate.trim();
+      }
+    }
+    return '';
+  };
+  const formatDate = (value: any) => {
+    if (!value) return '';
+    try {
+      const date = new Date(value);
+      if (!Number.isNaN(date.getTime())) {
+        return date.toLocaleDateString(locale);
+      }
+    } catch {}
+    const str = String(value ?? '').trim();
+    return str;
+  };
+  const formatDateTime = (value: any) => {
+    if (!value) return '';
+    try {
+      const date = new Date(value);
+      if (!Number.isNaN(date.getTime())) {
+        return date.toLocaleString(locale);
+      }
+    } catch {}
+    const str = String(value ?? '').trim();
+    return str;
+  };
 
   const displayLabel = await resolveRequestLabel(rid);
 
@@ -1224,41 +1335,53 @@ export async function buildRequestPdfHtml(requestId: number | string): Promise<s
     H.object_type_code
       ? client
           .from('ref_object_types')
-          .select('name')
+          .select('name,name_ru,name_human_ru,display_name,alias_ru')
           .eq('code', H.object_type_code)
           .maybeSingle()
       : Promise.resolve({ data: null } as any),
     H.level_code
       ? client
           .from('ref_levels')
-          .select('name')
+          .select('name,name_ru,name_human_ru,display_name,alias_ru')
           .eq('code', H.level_code)
           .maybeSingle()
       : Promise.resolve({ data: null } as any),
     H.system_code
       ? client
           .from('ref_systems')
-          .select('name')
+          .select('name,name_ru,name_human_ru,display_name,alias_ru')
           .eq('code', H.system_code)
           .maybeSingle()
       : Promise.resolve({ data: null } as any),
     H.zone_code
       ? client
           .from('ref_zones')
-          .select('name')
+          .select('name,name_ru,name_human_ru,display_name,alias_ru')
           .eq('code', H.zone_code)
           .maybeSingle()
       : Promise.resolve({ data: null } as any),
   ]);
-  const objectName = (obj as any)?.data?.name || '';
-  const levelName = (lvl as any)?.data?.name || '';
-  const systemName = (sys as any)?.data?.name || '';
-  const zoneName = (zn as any)?.data?.name || '';
+  const objectName = pickRefName(obj);
+  const levelName = pickRefName(lvl);
+  const systemName = pickRefName(sys);
+  const zoneName = pickRefName(zn);
 
-  const createdAt = H.created_at
-    ? new Date(H.created_at).toLocaleString(locale)
-    : '';
+  const createdAt = formatDateTime(H.created_at);
+  const needByFormatted = formatDate(H.need_by);
   const generatedAt = new Date().toLocaleString(locale);
+
+  const statusRaw = String(H.status ?? '').trim();
+  const statusKey = statusRaw.toLowerCase();
+  const statusLabel =
+    statusKey === 'draft' || statusKey === 'черновик'
+      ? 'Черновик'
+      : statusKey === 'pending' || statusKey === 'на утверждении'
+      ? 'На утверждении'
+      : statusKey === 'approved' || statusKey === 'утверждено' || statusKey === 'утверждена'
+      ? 'Утверждена'
+      : statusKey === 'rejected' || statusKey === 'отклонено' || statusKey === 'отклонена'
+      ? 'Отклонена'
+      : statusRaw;
 
   const metaPairs: Array<{ label: string; value: string }> = [
     { label: 'Объект', value: objectName || '—' },
@@ -1267,8 +1390,8 @@ export async function buildRequestPdfHtml(requestId: number | string): Promise<s
     { label: 'Зона / участок', value: zoneName || '—' },
     { label: 'ФИО прораба', value: H.foreman_name || '(не указано)' },
     { label: 'Дата создания', value: createdAt || '—' },
-    { label: 'Нужно к', value: H.need_by || '—' },
-    { label: 'Статус', value: H.status || '—' },
+    { label: 'Нужно к', value: needByFormatted || '—' },
+    { label: 'Статус', value: statusLabel || '—' },
   ];
 
   const metaHtml = metaPairs
@@ -1381,20 +1504,9 @@ let _draftRequestIdAny: string | number | null = null;
 
 export async function getOrCreateDraftRequestId(): Promise<string | number> {
   if (_draftRequestIdAny != null) return _draftRequestIdAny;
-  const { data, error } = await client.rpc('request_ensure');
-  if (error) throw error;
-
-  const idRaw = data as any;
-  const id =
-    typeof idRaw === 'number' ? idRaw :
-    typeof idRaw === 'string' ? idRaw :
-    (idRaw?.id ?? String(idRaw ?? ''));
-
-  if ((typeof id === 'number' && Number.isFinite(id) && id > 0) || (typeof id === 'string' && id.length >= 8)) {
-    _draftRequestIdAny = id;
-    return id;
-  }
-  throw new Error('request_ensure returned invalid id');
+  const created = await requestCreateDraft();
+  if (created?.id) return created.id;
+  throw new Error('request_create_draft returned invalid id');
 }
 
 export async function exportRequestPdf(requestId: number | string) {
