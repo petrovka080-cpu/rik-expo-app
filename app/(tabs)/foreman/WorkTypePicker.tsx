@@ -20,8 +20,9 @@ type Props = {
 type Row = {
   code: string;
   name: string;
-  groupCode?: string | null;
-  groupName?: string | null;
+  name_human_ru: string | null;
+  name_ru: string | null;
+  segment: string | null;
 };
 
 type Section = {
@@ -31,29 +32,17 @@ type Section = {
 
 const toLower = (val: string | null | undefined) => (val ? String(val).toLowerCase() : '');
 
-const POSTGRES_COLUMN_NOT_EXIST = '42703';
+const sanitize = (value: unknown): string | null => {
+  if (value == null) return null;
+  const str = String(value).trim();
+  return str.length > 0 ? str : null;
+};
 
-const PRIMARY_COLUMNS = [
-  'code',
-  'name_human_ru',
-  'name',
-  'group_code',
-  'group_name_ru',
-  'group_name',
-];
-
-const FALLBACK_SELECTS = [
-  'code, name_human_ru, group_code, group_name_ru, group_name',
-  'code, name_human_ru, group_code, group_name_ru',
-  'code, name_human_ru, group_code, group_name',
-  'code, name_human_ru, group_code',
-  'code, name_human_ru',
-  'code',
-];
+const pickDisplayName = (record: { name_human_ru?: unknown; name_ru?: unknown; code?: unknown }) =>
+  sanitize(record.name_human_ru) ?? sanitize(record.name_ru) ?? sanitize(record.code) ?? '';
 
 const normalizeGroupTitle = (row: Row) => {
-  const name = row.groupName ?? row.groupCode;
-  const trimmed = name ? String(name).trim() : '';
+  const trimmed = row.segment ? row.segment.trim() : '';
   if (trimmed.length > 0) return trimmed;
   return 'Прочие работы';
 };
@@ -71,78 +60,36 @@ export default function WorkTypePicker({ visible, onClose, onSelect }: Props) {
         setLoading(true);
         setError(null);
 
-        let fetched: Row[] | null = null;
-
-        const { data, error: primaryError } = await supabase
+        const { data, error: fetchError } = await supabase
           .from('reno_work_types')
-          .select(PRIMARY_COLUMNS.join(', '))
+          .select('code, name_human_ru, name_ru, segment')
+          .order('segment', { ascending: true })
+          .order('name_human_ru', { ascending: true })
           .limit(2000);
+        if (fetchError) throw fetchError;
 
-        const sanitize = (value: unknown) => {
-          if (value == null) return null;
-          const str = String(value).trim();
-          return str.length > 0 ? str : null;
-        };
-
-        const pickName = (record: any) =>
-          (sanitize(record.name_human_ru) as string | null) ??
-          (sanitize(record.name) as string | null) ??
-          (sanitize(record.code) as string | null) ??
-          '';
-
-        const pickGroupName = (record: any) =>
-          (sanitize(record.group_name_ru) as string | null) ??
-          (sanitize(record.group_name) as string | null) ??
-          (sanitize(record.group_code) as string | null) ??
-          null;
-
-        const mapRow = (r: any): Row => ({
-          code: String(r.code ?? '').trim(),
-          name: pickName(r),
-          groupCode: sanitize(r.group_code) as string | null,
-          groupName: pickGroupName(r),
-        });
-
-        if (!primaryError && Array.isArray(data)) {
-          fetched = (data as any[]).map(mapRow);
-        }
-
-        if (primaryError && primaryError.code !== POSTGRES_COLUMN_NOT_EXIST) {
-          throw primaryError;
-        }
-
-        if (!fetched && primaryError?.code === POSTGRES_COLUMN_NOT_EXIST) {
-          for (const cols of FALLBACK_SELECTS) {
-            const { data: fallbackData, error: selectError } = await supabase
-              .from('reno_work_types')
-              .select(cols)
-              .limit(2000);
-
-            if (!selectError && Array.isArray(fallbackData)) {
-              fetched = (fallbackData as any[]).map(mapRow);
-              break;
-            }
-
-            if (selectError && selectError.code !== POSTGRES_COLUMN_NOT_EXIST) {
-              throw selectError;
-            }
-          }
-        }
-
-        if (fetched && fetched.length > 0) {
+        if (Array.isArray(data)) {
           const deduped = new Map<string, Row>();
-          fetched.forEach((row) => {
-            if (!row.code) return;
-            const existing = deduped.get(row.code);
-            if (!existing) {
-              deduped.set(row.code, row);
+
+          (data as any[]).forEach((record) => {
+            const code = sanitize(record.code) ?? '';
+            if (!code) return;
+            const row: Row = {
+              code,
+              name_human_ru: sanitize(record.name_human_ru),
+              name_ru: sanitize(record.name_ru),
+              segment: sanitize(record.segment),
+              name: pickDisplayName(record),
+            };
+
+            if (!deduped.has(code)) {
+              deduped.set(code, row);
               return;
             }
 
-            const existingName = existing.name?.trim();
-            const nextName = row.name?.trim();
-            if ((!existingName || existingName === existing.code) && nextName && nextName !== row.code) {
-              deduped.set(row.code, row);
+            const existing = deduped.get(code)!;
+            if (!existing.name || existing.name === existing.code) {
+              deduped.set(code, row);
             }
           });
 
@@ -153,14 +100,7 @@ export default function WorkTypePicker({ visible, onClose, onSelect }: Props) {
           }
         }
 
-        const { data: wt2, error: e2 } = await supabase
-          .from('reno_norm_rules')
-          .select('work_type_code')
-          .limit(10000);
-
-        if (e2) throw e2;
-        const uniq = Array.from(new Set((wt2 ?? []).map((r) => (r as any).work_type_code))).sort();
-        setRows(uniq.map((code) => ({ code, name: code })));
+        setRows([]);
       } catch (e: any) {
         console.error('[WorkTypePicker]', e);
         setRows([]);
@@ -177,8 +117,8 @@ export default function WorkTypePicker({ visible, onClose, onSelect }: Props) {
     return rows.filter((r) => {
       const name = toLower(r.name);
       const code = toLower(r.code);
-      const group = toLower(r.groupName) || toLower(r.groupCode);
-      return name.includes(q) || code.includes(q) || group.includes(q);
+      const segment = toLower(r.segment);
+      return name.includes(q) || code.includes(q) || segment.includes(q);
     });
   }, [rows, query]);
 
@@ -241,7 +181,7 @@ export default function WorkTypePicker({ visible, onClose, onSelect }: Props) {
               )}
               renderItem={({ item }) => (
                 <Pressable
-                  onPress={() => onSelect(item)}
+                  onPress={() => onSelect({ code: item.code, name: item.name })}
                   style={({ pressed }) => ({
                     paddingVertical: 10,
                     paddingHorizontal: 8,
@@ -249,8 +189,9 @@ export default function WorkTypePicker({ visible, onClose, onSelect }: Props) {
                     backgroundColor: pressed ? '#f3f4f6' : 'transparent',
                   })}
                 >
-                  <Text style={{ fontSize: 16 }}>{item.name || item.code}</Text>
-                  <Text style={{ color: '#6b7280', marginTop: 2 }}>{item.code}</Text>
+                  <Text style={{ fontSize: 16 }}>
+                    {item.name_human_ru ?? item.name_ru ?? item.code}
+                  </Text>
                 </Pressable>
               )}
               SectionSeparatorComponent={() => <View style={{ height: 10 }} />}
