@@ -32,19 +32,20 @@ import {
   addRequestItemFromRik,
   listRequestItems,
   fetchRequestDisplayNo,
+  fetchRequestDetails,
   updateRequestMeta,
-  ensureRequestSmart, // авто-ID/дата/ФИО (как было)
   requestSubmit, // RPC: отправить директору
   exportRequestPdf, // PDF
   getOrCreateDraftRequestId, // безопасный ensure для черновика
-  clearLocalDraftId,
+  requestCreateDraft,
   listForemanRequests,
   type CatalogItem,
   type ReqItemRow,
   type ForemanRequestSummary,
+  type RequestDetails,
 } from '../../src/lib/catalog_api';
 
-// --- если нужен вход — выполняется внутри ensureRequestSmart/getOrCreateDraftRequestId
+// --- если нужен вход — выполняется внутри getOrCreateDraftRequestId
 if (__DEV__) LogBox.ignoreAllLogs(true);
 
 type Timer = ReturnType<typeof setTimeout>;
@@ -106,6 +107,13 @@ const COLORS = {
   red: '#EF4444',
   blue: '#3B82F6',
   amber: '#F59E0B',
+};
+
+const REQUEST_STATUS_STYLES: Record<string, { label: string; bg: string; fg: string }> = {
+  draft: { label: 'Черновик', bg: '#E2E8F0', fg: '#0F172A' },
+  pending: { label: 'На утверждении', bg: '#FEF3C7', fg: '#92400E' },
+  approved: { label: 'Утверждена', bg: '#DCFCE7', fg: '#166534' },
+  rejected: { label: 'Отклонена', bg: '#FEE2E2', fg: '#991B1B' },
 };
 
 const Chip = ({
@@ -188,6 +196,17 @@ function ruName(it: any): string {
     .filter(Boolean);
   const human = parts.join(' ').replace(/\s+/g, ' ').trim();
   return human ? human[0].toUpperCase() + human.slice(1) : code;
+}
+
+function formatDateForUi(value?: string | null) {
+  if (!value) return '';
+  try {
+    const date = new Date(value);
+    if (!Number.isNaN(date.getTime())) {
+      return date.toLocaleDateString('ru-RU');
+    }
+  } catch {}
+  return String(value);
 }
 
 /* -------------------- Dropdown (универсальный) -------------------- */
@@ -277,7 +296,6 @@ function Dropdown({
                   >
                     {item.name}
                   </Text>
-                  <Text style={{ color: COLORS.sub }}>{item.code}</Text>
                 </Pressable>
               )}
               style={{ maxHeight: 360, marginTop: 6 }}
@@ -351,6 +369,8 @@ export default function ForemanScreen() {
   const [needBy, setNeedBy] = useState<string>(''); // YYYY-MM-DD
   const [comment, setComment] = useState<string>(''); // общий комментарий
 
+  const [requestDetails, setRequestDetails] = useState<RequestDetails | null>(null);
+
   // ===== Новые справочные поля (Объект/Этаж/Система/Зона) =====
   const [objectType, setObjectType] = useState<string>(''); // required
   const [level, setLevel] = useState<string>(''); // required
@@ -370,7 +390,6 @@ export default function ForemanScreen() {
   const canSearch = query.trim().length >= 2;
   const timerRef = useRef<Timer | null>(null);
   const reqIdRef = useRef(0);
-  const draftIdRef = useRef<string | null>(null);
 
   // ===== Глобальный фильтр по области применения (РИК) =====
   const [appOptions, setAppOptions] = useState<AppOption[]>([]);
@@ -404,6 +423,7 @@ export default function ForemanScreen() {
   const [historyRequests, setHistoryRequests] = useState<ForemanRequestSummary[]>([]);
   const [historyLoading, setHistoryLoading] = useState(false);
   const [historyReloadToken, setHistoryReloadToken] = useState(0);
+  const [historyVisible, setHistoryVisible] = useState(false);
   const triggerHistoryReload = useCallback(
     () => setHistoryReloadToken((x) => x + 1),
     [],
@@ -415,14 +435,11 @@ export default function ForemanScreen() {
       setRequestId(id);
       setViewMode('raw');
       preloadDisplayNo(id);
+      loadDetails(id);
       loadItems(id);
     },
-    [loadItems, preloadDisplayNo],
+    [loadDetails, loadItems, preloadDisplayNo],
   );
-  const openDraftRequest = useCallback(() => {
-    if (!draftIdRef.current) return;
-    openRequestById(draftIdRef.current);
-  }, [openRequestById]);
 
   // ===== Режим отображения =====
   const [viewMode, setViewMode] = useState<'raw' | 'grouped'>('raw');
@@ -441,11 +458,28 @@ export default function ForemanScreen() {
   // --- безопасный RID как строка (универсально для uuid/bigint) ---
   const ridStr = useCallback((val: string | number) => String(val).trim(), []);
   const isDraftActive = useMemo(() => {
-    if (!requestId) return false;
-    const draftId = draftIdRef.current;
-    if (!draftId) return true;
-    return String(requestId) === String(draftId);
-  }, [requestId]);
+    const status = requestDetails?.status ?? 'draft';
+    return status === 'draft';
+  }, [requestDetails?.status]);
+
+  const resolveStatusInfo = useCallback((raw?: string | null) => {
+    const base = String(raw ?? '').trim();
+    const key = base.toLowerCase();
+    const normalized =
+      key === 'черновик'
+        ? 'draft'
+        : key === 'на утверждении'
+        ? 'pending'
+        : key === 'утверждена' || key === 'утверждено'
+        ? 'approved'
+        : key === 'отклонена' || key === 'отклонено'
+        ? 'rejected'
+        : key;
+    const info = REQUEST_STATUS_STYLES[normalized];
+    if (info) return info;
+    if (!base) return { label: '—', bg: '#E2E8F0', fg: '#0F172A' };
+    return { label: base, bg: '#E2E8F0', fg: '#0F172A' };
+  }, []);
 
   // ====== КЭШ и подгрузка display_no для текущей заявки ======
   const [displayNoByReq, setDisplayNoByReq] = useState<Record<string, string>>(
@@ -455,11 +489,15 @@ export default function ForemanScreen() {
     (rid?: string | number | null) => {
       const key = String(rid ?? '').trim();
       if (!key) return '';
+      if (requestId && key === String(requestId).trim()) {
+        const current = String(requestDetails?.display_no ?? '').trim();
+        if (current) return current;
+      }
       const dn = displayNoByReq[key];
       if (dn && dn.trim()) return dn.trim();
       return `#${shortId(key)}`;
     },
-    [displayNoByReq],
+    [displayNoByReq, requestDetails?.display_no, requestId],
   );
 
   const preloadDisplayNo = useCallback(
@@ -476,6 +514,38 @@ export default function ForemanScreen() {
       }
     },
     [displayNoByReq],
+  );
+
+  const loadDetails = useCallback(
+    async (rid?: string | number | null) => {
+      const key = rid != null ? ridStr(rid) : requestId;
+      if (!key) {
+        setRequestDetails(null);
+        return;
+      }
+      try {
+        const details = await fetchRequestDetails(key);
+        if (!details) {
+          setRequestDetails(null);
+          return;
+        }
+        setRequestDetails(details);
+        const display = String(details.display_no ?? '').trim();
+        if (display) {
+          setDisplayNoByReq((prev) => ({ ...prev, [key]: display }));
+        }
+        setForeman(details.foreman_name ?? '');
+        setNeedBy(details.need_by ?? '');
+        setComment(details.comment ?? '');
+        setObjectType(details.object_type_code ?? '');
+        setLevel(details.level_code ?? '');
+        setSystem(details.system_code ?? '');
+        setZone(details.zone_code ?? '');
+      } catch (e) {
+        console.warn('[Foreman] loadDetails:', (e as any)?.message ?? e);
+      }
+    },
+    [requestId, ridStr, setDisplayNoByReq],
   );
 
   const loadItems = useCallback(
@@ -497,6 +567,176 @@ export default function ForemanScreen() {
     [requestId, ridStr],
   );
 
+  const handleObjectChange = useCallback(
+    (code: string) => {
+      setObjectType(code);
+      const opt = objOptions.find((o) => o.code === code);
+      setRequestDetails((prev) =>
+        prev
+          ? {
+              ...prev,
+              object_type_code: code || null,
+              object_name_ru: opt?.name ?? prev.object_name_ru ?? null,
+            }
+          : prev,
+      );
+    },
+    [objOptions],
+  );
+
+  const handleLevelChange = useCallback(
+    (code: string) => {
+      setLevel(code);
+      const opt = lvlOptions.find((o) => o.code === code);
+      setRequestDetails((prev) =>
+        prev
+          ? {
+              ...prev,
+              level_code: code || null,
+              level_name_ru: opt?.name ?? prev.level_name_ru ?? null,
+            }
+          : prev,
+      );
+    },
+    [lvlOptions],
+  );
+
+  const handleSystemChange = useCallback(
+    (code: string) => {
+      setSystem(code);
+      const opt = sysOptions.find((o) => o.code === code);
+      setRequestDetails((prev) =>
+        prev
+          ? {
+              ...prev,
+              system_code: code || null,
+              system_name_ru: opt?.name ?? prev.system_name_ru ?? null,
+            }
+          : prev,
+      );
+    },
+    [sysOptions],
+  );
+
+  const handleZoneChange = useCallback(
+    (code: string) => {
+      setZone(code);
+      const opt = zoneOptions.find((o) => o.code === code);
+      setRequestDetails((prev) =>
+        prev
+          ? {
+              ...prev,
+              zone_code: code || null,
+              zone_name_ru: opt?.name ?? prev.zone_name_ru ?? null,
+            }
+          : prev,
+      );
+    },
+    [zoneOptions],
+  );
+
+  const handleForemanChange = useCallback((value: string) => {
+    setForeman(value);
+    setRequestDetails((prev) =>
+      prev
+        ? {
+            ...prev,
+            foreman_name: value,
+          }
+        : prev,
+    );
+  }, []);
+
+  const handleNeedByChange = useCallback((value: string) => {
+    setNeedBy(value);
+    setRequestDetails((prev) =>
+      prev
+        ? {
+            ...prev,
+            need_by: value,
+          }
+        : prev,
+    );
+  }, []);
+
+  const handleCommentChange = useCallback((value: string) => {
+    setComment(value);
+    setRequestDetails((prev) =>
+      prev
+        ? {
+            ...prev,
+            comment: value,
+          }
+        : prev,
+    );
+  }, []);
+
+  const handleNewRequest = useCallback(async () => {
+    try {
+      setBusy(true);
+      const meta = {
+        foreman_name: foreman.trim() || null,
+        need_by: needBy.trim() || null,
+        comment: comment.trim() || null,
+        object_type_code: objectType || null,
+        level_code: level || null,
+        system_code: system || null,
+        zone_code: zone || null,
+      };
+      const created = await requestCreateDraft(meta);
+      if (!created?.id) throw new Error('Не удалось создать черновик');
+      const idStr = String(created.id);
+      setRequestId(idStr);
+      setItems([]);
+      setCart({});
+      const display = String(created.display_no ?? '').trim();
+      if (display) {
+        setDisplayNoByReq((prev) => ({ ...prev, [idStr]: display }));
+      }
+      await loadDetails(idStr);
+      await loadItems(idStr);
+      const label = display || `#${shortId(idStr)}`;
+      Alert.alert('Новая заявка', `Создан черновик ${label}`);
+    } catch (e: any) {
+      Alert.alert('Ошибка', e?.message ?? 'Не удалось создать новую заявку');
+    } finally {
+      setBusy(false);
+    }
+  }, [
+    foreman,
+    needBy,
+    comment,
+    objectType,
+    level,
+    system,
+    zone,
+    loadDetails,
+    loadItems,
+    setDisplayNoByReq,
+  ]);
+
+  const handleOpenHistory = useCallback(() => {
+    if (!foreman.trim()) {
+      Alert.alert(
+        'История заявок',
+        'Укажите ФИО прораба в верхней части формы, чтобы увидеть историю.',
+      );
+      return;
+    }
+    triggerHistoryReload();
+    setHistoryVisible(true);
+  }, [foreman, triggerHistoryReload]);
+
+  const handleCloseHistory = useCallback(() => setHistoryVisible(false), []);
+
+  const handleHistorySelect = useCallback(
+    (reqId: string) => {
+      openRequestById(reqId);
+      setHistoryVisible(false);
+    },
+    [openRequestById],
+  );
+
   useEffect(() => {
     loadItems();
   }, [loadItems]);
@@ -509,8 +749,9 @@ export default function ForemanScreen() {
         const id = await getOrCreateDraftRequestId();
         if (!cancelled) {
           const str = String(id);
-          draftIdRef.current = str;
           setRequestId(str);
+          preloadDisplayNo(str);
+          await loadDetails(str);
         }
       } catch (e) {
         console.warn(
@@ -522,12 +763,13 @@ export default function ForemanScreen() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [loadDetails, preloadDisplayNo]);
 
   // подгружаем display_no при появлении requestId
   useEffect(() => {
     if (requestId) preloadDisplayNo(requestId);
-  }, [requestId, preloadDisplayNo]);
+    if (requestId) loadDetails(requestId);
+  }, [requestId, preloadDisplayNo, loadDetails]);
 
   useEffect(() => {
     const name = foreman.trim();
@@ -560,44 +802,43 @@ export default function ForemanScreen() {
 
   // нормальный ensure, если надо создать прямо сейчас (с сохранением шапки)
   async function ensureAndGetId() {
-    const name = foreman.trim() || 'Прораб (не указан)';
-    try {
-      const rid = await ensureRequestSmart(undefined, {
-        foreman_name: name,
-        need_by: needBy.trim() || undefined,
-        comment: comment.trim() || undefined,
-        object_type_code: objectType || (undefined as any),
-        level_code: level || (undefined as any),
-        system_code: system || (undefined as any),
-        zone_code: zone || (undefined as any),
-      } as any);
+    const existing = requestId ? ridStr(requestId) : '';
+    if (existing) return existing;
 
-      const idStr = String(rid || '').trim();
-      if (idStr) {
+    const meta = {
+      foreman_name: foreman.trim() || null,
+      need_by: needBy.trim() || null,
+      comment: comment.trim() || null,
+      object_type_code: objectType || null,
+      level_code: level || null,
+      system_code: system || null,
+      zone_code: zone || null,
+    };
+
+    try {
+      const created = await requestCreateDraft(meta);
+      if (created?.id) {
+        const idStr = String(created.id);
         setRequestId(idStr);
-        draftIdRef.current = idStr;
-        if (!foreman.trim()) setForeman(name);
-        preloadDisplayNo(idStr);
+        const display = String(created.display_no ?? '').trim();
+        if (display) {
+          setDisplayNoByReq((prev) => ({ ...prev, [idStr]: display }));
+        }
+        await loadDetails(idStr);
         return idStr;
       }
+    } catch (e: any) {
+      console.warn('[Foreman] ensureAndGetId/createDraft:', e?.message ?? e);
+    }
 
+    try {
       const rid2 = await getOrCreateDraftRequestId();
       const rid2Str = String(rid2);
       setRequestId(rid2Str);
-      draftIdRef.current = rid2Str;
-      if (!foreman.trim()) setForeman(name);
       preloadDisplayNo(rid2Str);
+      await loadDetails(rid2Str);
       return rid2Str;
     } catch (e: any) {
-      try {
-        const rid3 = await getOrCreateDraftRequestId();
-        const rid3Str = String(rid3);
-        setRequestId(rid3Str);
-        draftIdRef.current = rid3Str;
-        if (!foreman.trim()) setForeman(name);
-        preloadDisplayNo(rid3Str);
-        return rid3Str;
-      } catch {}
       Alert.alert(
         'Ошибка',
         e?.message ?? 'Не удалось создать/получить заявку',
@@ -617,36 +858,50 @@ export default function ForemanScreen() {
         const [obj, lvl, sys, zn] = await Promise.all([
           supabase
             .from('ref_object_types')
-            .select('code,name')
+            .select('code,name,name_ru')
             .order('name'),
           supabase
             .from('ref_levels')
-            .select('code,name,sort')
+            .select('code,name,name_ru,sort')
             .order('sort', { ascending: true }),
           supabase
             .from('ref_systems')
-            .select('code,name')
+            .select('code,name,name_ru')
             .order('name'),
           supabase
             .from('ref_zones')
-            .select('code,name')
+            .select('code,name,name_ru')
             .order('name'),
         ]);
 
         if (!cancelled) {
+          const mapName = (r: any) =>
+            String(r?.name_ru ?? r?.name ?? r?.code ?? '')
+              .trim();
           if (!obj.error && Array.isArray(obj.data))
-            setObjOptions(obj.data as RefOption[]);
+            setObjOptions(
+              (obj.data as any[])
+                .map((r) => ({ code: r.code, name: mapName(r) }))
+                .filter((r) => r.code && r.name),
+            );
           if (!lvl.error && Array.isArray(lvl.data))
             setLvlOptions(
-              (lvl.data as any[]).map((r) => ({
-                code: r.code,
-                name: r.name,
-              })),
+              (lvl.data as any[])
+                .map((r) => ({ code: r.code, name: mapName(r) }))
+                .filter((r) => r.code && r.name),
             );
           if (!sys.error && Array.isArray(sys.data))
-            setSysOptions(sys.data as RefOption[]);
+            setSysOptions(
+              (sys.data as any[])
+                .map((r) => ({ code: r.code, name: mapName(r) }))
+                .filter((r) => r.code && r.name),
+            );
           if (!zn.error && Array.isArray(zn.data))
-            setZoneOptions(zn.data as RefOption[]);
+            setZoneOptions(
+              (zn.data as any[])
+                .map((r) => ({ code: r.code, name: mapName(r) }))
+                .filter((r) => r.code && r.name),
+            );
         }
       } catch {}
     })();
@@ -741,22 +996,26 @@ export default function ForemanScreen() {
   }, [query, activeKind, canSearch, appFilterCode, appOptions]);
 
   // ---------- ЧЕЛОВЕЧЕСКИЕ НАЗВАНИЯ ТЕКУЩЕГО ВЫБОРА ----------
-  const objectName = useMemo(
-    () => objOptions.find((o) => o.code === objectType)?.name || '',
-    [objOptions, objectType],
-  );
-  const levelName = useMemo(
-    () => lvlOptions.find((o) => o.code === level)?.name || '',
-    [lvlOptions, level],
-  );
-  const systemName = useMemo(
-    () => sysOptions.find((o) => o.code === system)?.name || '',
-    [sysOptions, system],
-  );
-  const zoneName = useMemo(
-    () => zoneOptions.find((o) => o.code === zone)?.name || '',
-    [zoneOptions, zone],
-  );
+  const objectName = useMemo(() => {
+    const opt = objOptions.find((o) => o.code === objectType);
+    if (opt?.name) return opt.name;
+    return requestDetails?.object_name_ru ?? '';
+  }, [objOptions, objectType, requestDetails?.object_name_ru]);
+  const levelName = useMemo(() => {
+    const opt = lvlOptions.find((o) => o.code === level);
+    if (opt?.name) return opt.name;
+    return requestDetails?.level_name_ru ?? '';
+  }, [level, lvlOptions, requestDetails?.level_name_ru]);
+  const systemName = useMemo(() => {
+    const opt = sysOptions.find((o) => o.code === system);
+    if (opt?.name) return opt.name;
+    return requestDetails?.system_name_ru ?? '';
+  }, [requestDetails?.system_name_ru, sysOptions, system]);
+  const zoneName = useMemo(() => {
+    const opt = zoneOptions.find((o) => o.code === zone);
+    if (opt?.name) return opt.name;
+    return requestDetails?.zone_name_ru ?? '';
+  }, [requestDetails?.zone_name_ru, zone, zoneOptions]);
 
   // ---------- Корзина ----------
   const toggleToCart = useCallback(
@@ -770,10 +1029,12 @@ export default function ForemanScreen() {
           return copy;
         }
         const displayName =
-          ruName(it) ||
           (it as any).name_human_ru ||
+          (it as any).name_ru ||
           (it as any).name_human ||
-          code;
+          (it as any).display_name ||
+          ruName(it) ||
+          'Без названия';
         const kind = (it as any).kind ?? null;
         const uom = (it as any).uom_code ?? null;
         const apps = (it as any).apps ?? null;
@@ -915,7 +1176,7 @@ export default function ForemanScreen() {
               row.name_human ??
               row.name_ru ??
               row.name ??
-              ruName(row)) || row.rik_code;
+              ruName(row)) || '—';
 
           const ok = await addRequestItemFromRik(rid, row.rik_code, qty, {
             note,
@@ -1107,7 +1368,7 @@ export default function ForemanScreen() {
       }
 
       setBusy(true);
-      let rid: string = requestId
+      const rid: string = requestId
         ? ridStr(requestId)
         : await ensureAndGetId();
 
@@ -1121,7 +1382,23 @@ export default function ForemanScreen() {
         foreman_name: foreman.trim() || null,
       });
 
-      await requestSubmit(rid);
+      const submitted = await requestSubmit(rid);
+      if (submitted?.display_no) {
+        setDisplayNoByReq((prev) => ({
+          ...prev,
+          [rid]: String(submitted.display_no),
+        }));
+      }
+      setRequestDetails((prev) => ({
+        ...(prev ?? null),
+        id: rid,
+        status: submitted?.status ?? 'pending',
+        display_no: submitted?.display_no ?? prev?.display_no ?? null,
+        foreman_name: submitted?.foreman_name ?? foreman,
+        need_by: submitted?.need_by ?? needBy,
+        comment: submitted?.comment ?? comment,
+      }));
+      await loadDetails(rid);
       await preloadDisplayNo(rid);
       Alert.alert(
         'Отправлено директору',
@@ -1130,21 +1407,7 @@ export default function ForemanScreen() {
         )} отправлена на утверждение`,
       );
       triggerHistoryReload();
-
-      try {
-        clearLocalDraftId();
-        draftIdRef.current = null;
-        setCart({});
-        const nextDraft = await getOrCreateDraftRequestId();
-        const nextId = String(nextDraft);
-        draftIdRef.current = nextId;
-        setRequestId(nextId);
-        setItems([]);
-        preloadDisplayNo(nextId);
-        await loadItems(nextId);
-      } catch (draftErr) {
-        console.warn('[Foreman] new draft after submit:', draftErr);
-      }
+      setCart({});
     } catch (e: any) {
       console.error(
         '[Foreman] submitToDirector:',
@@ -1237,7 +1500,7 @@ export default function ForemanScreen() {
       if (!cur) {
         map.set(key, {
           key,
-          name_human: it.name_human || ruName(it) || (code || '—'),
+          name_human: it.name_human || ruName(it) || '—',
           rik_code: code,
           uom,
           app_code: app,
@@ -1276,10 +1539,12 @@ export default function ForemanScreen() {
       const uom = (it as any).uom_code ?? null;
       const kind = (it as any).kind ?? '';
       const title =
-        ruName(it) ||
         (it as any).name_human_ru ||
         (it as any).name_human ||
-        (it as any).rik_code;
+        (it as any).name_ru ||
+        (it as any).display_name ||
+        ruName(it) ||
+        'Без названия';
       const metaParts: string[] = [];
       if (uom) metaParts.push(`Ед.: ${uom}`);
       const meta = metaParts.join(' · ');
@@ -1691,6 +1956,22 @@ export default function ForemanScreen() {
     );
   }, [appPickerQ, appOptions]);
 
+  const currentDisplayLabel = useMemo(() => {
+    if (requestDetails?.display_no) return requestDetails.display_no;
+    if (requestId) return labelForRequest(requestId);
+    return 'будет создана автоматически';
+  }, [labelForRequest, requestDetails?.display_no, requestId]);
+
+  const statusInfo = resolveStatusInfo(requestDetails?.status);
+  const createdDisplay = useMemo(() => {
+    if (!requestDetails?.created_at) return '—';
+    try {
+      return new Date(requestDetails.created_at).toLocaleString('ru-RU');
+    } catch {
+      return requestDetails.created_at;
+    }
+  }, [requestDetails?.created_at]);
+
   return (
     <KeyboardAvoidingView
       style={{ flex: 1 }}
@@ -1714,18 +1995,29 @@ export default function ForemanScreen() {
                   { color: COLORS.sub },
                 ]}
               >
-                Заявка:
+                Заявка
               </Text>
-              <Text
-                style={[
-                  s.input,
-                  { paddingVertical: 12 },
-                ]}
-              >
-                {requestId
-                  ? labelForRequest(requestId)
-                  : 'будет создана автоматически'}
-              </Text>
+              <View style={s.requestSummaryBox}>
+                <View style={s.requestSummaryTop}>
+                  <Text style={s.requestNumber}>{currentDisplayLabel}</Text>
+                  <View
+                    style={[
+                      s.historyStatusBadge,
+                      { backgroundColor: statusInfo.bg },
+                    ]}
+                  >
+                    <Text
+                      style={{
+                        color: statusInfo.fg,
+                        fontWeight: '600',
+                      }}
+                    >
+                      {statusInfo.label}
+                    </Text>
+                  </View>
+                </View>
+                <Text style={s.requestMeta}>Создана: {createdDisplay}</Text>
+              </View>
             </View>
             <View
               style={{
@@ -1741,12 +2033,12 @@ export default function ForemanScreen() {
               >
                 Нужно к (YYYY-MM-DD):
               </Text>
-              <TextInput
-                value={needBy}
-                onChangeText={setNeedBy}
-                placeholder="(по умолчанию — сегодня)"
-                style={s.input}
-              />
+          <TextInput
+            value={needBy}
+            onChangeText={handleNeedByChange}
+            placeholder="(по умолчанию — сегодня)"
+            style={s.input}
+          />
             </View>
           </View>
 
@@ -1760,7 +2052,7 @@ export default function ForemanScreen() {
           </Text>
           <TextInput
             value={foreman}
-            onChangeText={setForeman}
+            onChangeText={handleForemanChange}
             placeholder="Иванов И.И."
             style={s.input}
           />
@@ -1771,7 +2063,7 @@ export default function ForemanScreen() {
               label="Объект строительства (обязательно)"
               options={objOptions}
               value={objectType}
-              onChange={setObjectType}
+              onChange={handleObjectChange}
               placeholder="Выберите объект"
               width={360}
             />
@@ -1779,7 +2071,7 @@ export default function ForemanScreen() {
               label="Этаж / уровень (обязательно)"
               options={lvlOptions}
               value={level}
-              onChange={setLevel}
+              onChange={handleLevelChange}
               placeholder="Выберите этаж/уровень"
               width={360}
             />
@@ -1787,7 +2079,7 @@ export default function ForemanScreen() {
               label="Система / вид работ (опционально)"
               options={sysOptions}
               value={system}
-              onChange={setSystem}
+              onChange={handleSystemChange}
               placeholder="Выберите систему/вид работ"
               width={360}
             />
@@ -1795,7 +2087,7 @@ export default function ForemanScreen() {
               label="Зона / участок (опционально)"
               options={zoneOptions}
               value={zone}
-              onChange={setZone}
+              onChange={handleZoneChange}
               placeholder="Выберите зону/участок"
               width={360}
             />
@@ -1816,7 +2108,7 @@ export default function ForemanScreen() {
           </Text>
           <TextInput
             value={comment}
-            onChangeText={setComment}
+            onChangeText={handleCommentChange}
             placeholder="общее примечание по заявке…"
             multiline
             style={s.note}
@@ -2169,142 +2461,22 @@ export default function ForemanScreen() {
             />
           )}
 
-          <View style={{ marginTop: 24 }}>
-            <View
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                flexWrap: 'wrap',
-                rowGap: 8,
-                marginBottom: 8,
-              }}
-            >
-              <Text style={[s.blockTitle, { color: COLORS.text }]}>
-                История заявок прораба
-              </Text>
-              <View
-                style={{
-                  flexDirection: 'row',
-                  gap: 8,
-                  alignItems: 'center',
-                  flexWrap: 'wrap',
-                }}
-              >
-                {draftIdRef.current ? (
-                  <Pressable
-                    onPress={openDraftRequest}
-                    style={[s.historyActionBtn, { borderColor: COLORS.border }]}
-                  >
-                    <Text style={s.historyActionText}>Открыть черновик</Text>
-                  </Pressable>
-                ) : null}
-                <Pressable
-                  onPress={triggerHistoryReload}
-                  disabled={!foreman.trim() || historyLoading}
-                  style={[
-                    s.historyActionBtn,
-                    (!foreman.trim() || historyLoading) && s.btnDisabled,
-                  ]}
-                >
-                  <Text style={s.historyActionText}>Обновить</Text>
-                </Pressable>
-              </View>
-            </View>
-
-            {requestId && !isDraftActive ? (
-              <Text style={{ color: COLORS.sub, marginBottom: 6 }}>
-                Просмотр заявки {labelForRequest(requestId)}. Добавление
-                доступно только в активном черновике.
-              </Text>
-            ) : null}
-
-            {!foreman.trim() ? (
-              <Text style={{ color: COLORS.sub }}>
-                Укажите ФИО прораба, чтобы увидеть историю заявок.
-              </Text>
-            ) : historyLoading ? (
-              <ActivityIndicator />
-            ) : historyRequests.length === 0 ? (
-              <Text style={{ color: COLORS.sub }}>
-                Заявки не найдены.
-              </Text>
-            ) : (
-              <View style={s.historyTable}>
-                <View style={[s.historyRow, s.historyHeaderRow]}>
-                  <Text style={[s.historyCell, s.historyNo]}>Номер</Text>
-                  <Text style={[s.historyCell, s.historyObject]}>Объект</Text>
-                  <Text style={[s.historyCell, s.historyLevel]}>Этаж</Text>
-                  <Text style={[s.historyCell, s.historySystem]}>Система</Text>
-                  <Text style={[s.historyCell, s.historyZone]}>Зона</Text>
-                  <Text style={[s.historyCell, s.historyDate]}>Дата</Text>
-                  <Text style={[s.historyCell, s.historyStatus]}>Статус</Text>
-                  <Text style={[s.historyCell, s.historyAction]}></Text>
-                </View>
-                {historyRequests.map((req) => {
-                  const active =
-                    requestId && String(requestId).trim() === String(req.id);
-                  const created = req.created_at
-                    ? new Date(req.created_at).toLocaleDateString('ru-RU')
-                    : '—';
-                  const needByText = req.need_by
-                    ? ` · к ${req.need_by}`
-                    : '';
-                  return (
-                    <View
-                      key={req.id}
-                      style={[
-                        s.historyRow,
-                        active ? s.historyRowActive : null,
-                      ]}
-                    >
-                      <Text style={[s.historyCell, s.historyNo]}>
-                        {req.display_no ?? shortId(req.id)}
-                      </Text>
-                      <Text
-                        style={[s.historyCell, s.historyObject]}
-                        numberOfLines={2}
-                      >
-                        {req.object_name || '—'}
-                      </Text>
-                      <Text style={[s.historyCell, s.historyLevel]}>
-                        {req.level_name || '—'}
-                      </Text>
-                      <Text
-                        style={[s.historyCell, s.historySystem]}
-                        numberOfLines={2}
-                      >
-                        {req.system_name || '—'}
-                      </Text>
-                      <Text style={[s.historyCell, s.historyZone]}>
-                        {req.zone_name || '—'}
-                      </Text>
-                      <Text style={[s.historyCell, s.historyDate]}>
-                        {created}
-                        {needByText}
-                      </Text>
-                      <Text style={[s.historyCell, s.historyStatus]}>
-                        {req.status || '—'}
-                      </Text>
-                      <View style={[s.historyCell, s.historyAction]}>
-                        <Pressable
-                          onPress={() => openRequestById(req.id)}
-                          style={s.historyActionBtn}
-                        >
-                          <Text style={s.historyActionText}>Открыть</Text>
-                        </Pressable>
-                      </View>
-                    </View>
-                  );
-                })}
-              </View>
-            )}
-          </View>
         </ScrollView>
 
         {/* Панель действий внизу (только UI, логика та же) */}
         <View style={s.stickyBar}>
           <View style={s.stickyRow}>
+            <Pressable
+              onPress={handleNewRequest}
+              disabled={busy}
+              style={[s.btn, s.btnNeutral, busy ? s.btnDisabled : null]}
+            >
+              <Text
+                style={busy ? s.btnTxtDisabled : s.btnTxtNeutral}
+              >
+                Новая заявка
+              </Text>
+            </Pressable>
             {/* 1) Рассчитать (смета) */}
             <Pressable
               onPress={() => setWorkTypePickerVisible(true)}
@@ -2394,9 +2566,96 @@ export default function ForemanScreen() {
                 PDF
               </Text>
             </Pressable>
+            <Pressable
+              onPress={handleOpenHistory}
+              disabled={busy}
+              style={[s.btn, s.btnNeutral, busy ? s.btnDisabled : null]}
+            >
+              <Text
+                style={busy ? s.btnTxtDisabled : s.btnTxtNeutral}
+              >
+                История
+              </Text>
+            </Pressable>
           </View>
         </View>
       </View>
+
+      <Modal
+        visible={historyVisible}
+        animationType="fade"
+        transparent
+        onRequestClose={handleCloseHistory}
+      >
+        <View style={s.historyModalOverlay}>
+          <Pressable
+            style={s.historyModalBackdrop}
+            onPress={handleCloseHistory}
+          />
+          <View style={s.historyModal}>
+            <View style={s.historyModalHeader}>
+              <Text style={s.historyModalTitle}>История заявок</Text>
+              <Pressable onPress={handleCloseHistory}>
+                <Text style={s.historyModalClose}>Закрыть</Text>
+              </Pressable>
+            </View>
+            <View style={s.historyModalBody}>
+              {historyLoading ? (
+                <ActivityIndicator />
+              ) : historyRequests.length === 0 ? (
+                <Text style={s.historyModalEmpty}>Заявок пока нет.</Text>
+              ) : (
+                <ScrollView style={s.historyModalList}>
+                  {historyRequests.map((req) => {
+                    const info = resolveStatusInfo(req.status);
+                    const created = req.created_at
+                      ? new Date(req.created_at).toLocaleDateString('ru-RU')
+                      : '—';
+                    const needByText = req.need_by
+                      ? `Нужно к: ${formatDateForUi(req.need_by)}`
+                      : '';
+                    return (
+                      <Pressable
+                        key={req.id}
+                        onPress={() => handleHistorySelect(req.id)}
+                        style={s.historyModalRow}
+                      >
+                        <View style={{ flex: 1 }}>
+                          <Text style={s.historyModalPrimary}>
+                            {req.display_no ?? shortId(req.id)}
+                          </Text>
+                          <Text style={s.historyModalMeta}>
+                            {req.object_name_ru || '—'}
+                          </Text>
+                          <Text style={s.historyModalMetaSecondary}>
+                            {created}
+                            {needByText ? ` · ${needByText}` : ''}
+                          </Text>
+                        </View>
+                        <View
+                          style={[
+                            s.historyStatusBadge,
+                            { backgroundColor: info.bg },
+                          ]}
+                        >
+                          <Text
+                            style={{
+                              color: info.fg,
+                              fontWeight: '600',
+                            }}
+                          >
+                            {info.label}
+                          </Text>
+                        </View>
+                      </Pressable>
+                    );
+                  })}
+                </ScrollView>
+              )}
+            </View>
+          </View>
+        </View>
+      </Modal>
 
       <WorkTypePicker
         visible={workTypePickerVisible}
@@ -2472,9 +2731,6 @@ export default function ForemanScreen() {
                   }}
                 >
                   {item.label}
-                </Text>
-                <Text style={{ color: COLORS.sub }}>
-                  {item.code}
                 </Text>
               </Pressable>
             )}
@@ -2577,81 +2833,83 @@ const s = StyleSheet.create({
 
   blockTitle: { fontSize: 16, fontWeight: '700', marginBottom: 6 },
 
-  historyTable: {
+  requestSummaryBox: {
     borderWidth: 1,
     borderColor: '#E2E8F0',
-    borderRadius: 12,
-    overflow: 'hidden',
+    borderRadius: 10,
+    padding: 12,
     backgroundColor: '#fff',
+    marginTop: 4,
+    gap: 6,
   },
-  historyRow: {
+  requestSummaryTop: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 10,
-    paddingHorizontal: 12,
+    justifyContent: 'space-between',
     gap: 12,
-    flexWrap: 'wrap',
   },
-  historyHeaderRow: {
-    backgroundColor: '#F1F5F9',
+  requestNumber: { fontSize: 16, fontWeight: '700', color: '#0F172A' },
+  requestMeta: { color: '#64748B', fontSize: 12 },
+
+  historyModalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(15,23,42,0.35)',
+    justifyContent: 'flex-end',
   },
-  historyRowActive: {
-    backgroundColor: '#ECFDF5',
+  historyModalBackdrop: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
   },
-  historyCell: {
+  historyModal: {
+    backgroundColor: '#fff',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    padding: 20,
+    paddingBottom: 32,
+    maxHeight: '80%',
+    shadowColor: '#000',
+    shadowOpacity: 0.12,
+    shadowOffset: { width: 0, height: -4 },
+    shadowRadius: 16,
+    elevation: 8,
+  },
+  historyModalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
+  historyModalTitle: { fontSize: 18, fontWeight: '700', color: '#0F172A' },
+  historyModalClose: { color: '#2563EB', fontWeight: '600' },
+  historyModalBody: { flexGrow: 1 },
+  historyModalEmpty: {
+    color: '#475569',
+    textAlign: 'center',
+    marginTop: 16,
+  },
+  historyModalList: { maxHeight: 360 },
+  historyModalRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E2E8F0',
+    gap: 12,
+  },
+  historyModalPrimary: { fontWeight: '700', fontSize: 15, color: '#0F172A' },
+  historyModalMeta: { color: '#475569', fontSize: 13, marginTop: 2 },
+  historyModalMetaSecondary: {
+    color: '#94A3B8',
     fontSize: 12,
-    color: '#0F172A',
-    flexShrink: 1,
+    marginTop: 2,
   },
-  historyNo: {
-    flexBasis: 120,
-    flexShrink: 0,
-    fontWeight: '600',
-  },
-  historyObject: {
-    flexGrow: 1.4,
-    flexShrink: 1,
-  },
-  historyLevel: {
-    flexBasis: 90,
-    flexShrink: 1,
-  },
-  historySystem: {
-    flexBasis: 120,
-    flexGrow: 1,
-    flexShrink: 1,
-  },
-  historyZone: {
-    flexBasis: 100,
-    flexShrink: 1,
-  },
-  historyDate: {
-    flexBasis: 150,
-    flexShrink: 0,
-  },
-  historyStatus: {
-    flexBasis: 130,
-    flexShrink: 0,
-    fontWeight: '600',
-  },
-  historyAction: {
-    flexBasis: 110,
-    flexShrink: 0,
-    alignItems: 'flex-end',
-  },
-  historyActionBtn: {
+  historyStatusBadge: {
+    borderRadius: 999,
     paddingVertical: 6,
     paddingHorizontal: 12,
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: '#CBD5E1',
-    backgroundColor: '#fff',
-  },
-  historyActionText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#0F172A',
-    textAlign: 'center',
   },
 
   card: {
