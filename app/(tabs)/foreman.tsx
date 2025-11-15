@@ -37,8 +37,11 @@ import {
   requestSubmit, // RPC: отправить директору
   exportRequestPdf, // PDF
   getOrCreateDraftRequestId, // безопасный ensure для черновика
+  clearLocalDraftId,
+  listForemanRequests,
   type CatalogItem,
   type ReqItemRow,
+  type ForemanRequestSummary,
 } from '../../src/lib/catalog_api';
 
 // --- если нужен вход — выполняется внутри ensureRequestSmart/getOrCreateDraftRequestId
@@ -77,6 +80,7 @@ type CalcRow = {
   name?: string | null;
   name_ru?: string | null;
   name_human?: string | null;
+  item_name_ru?: string | null;
   work_type_code?: string | null;
   hint?: string | null;
 };
@@ -366,6 +370,7 @@ export default function ForemanScreen() {
   const canSearch = query.trim().length >= 2;
   const timerRef = useRef<Timer | null>(null);
   const reqIdRef = useRef(0);
+  const draftIdRef = useRef<string | null>(null);
 
   // ===== Глобальный фильтр по области применения (РИК) =====
   const [appOptions, setAppOptions] = useState<AppOption[]>([]);
@@ -396,6 +401,28 @@ export default function ForemanScreen() {
   const [items, setItems] = useState<ReqItemRow[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [historyRequests, setHistoryRequests] = useState<ForemanRequestSummary[]>([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
+  const [historyReloadToken, setHistoryReloadToken] = useState(0);
+  const triggerHistoryReload = useCallback(
+    () => setHistoryReloadToken((x) => x + 1),
+    [],
+  );
+  const openRequestById = useCallback(
+    (targetId: string | number | null | undefined) => {
+      const id = targetId != null ? String(targetId).trim() : '';
+      if (!id) return;
+      setRequestId(id);
+      setViewMode('raw');
+      preloadDisplayNo(id);
+      loadItems(id);
+    },
+    [loadItems, preloadDisplayNo],
+  );
+  const openDraftRequest = useCallback(() => {
+    if (!draftIdRef.current) return;
+    openRequestById(draftIdRef.current);
+  }, [openRequestById]);
 
   // ===== Режим отображения =====
   const [viewMode, setViewMode] = useState<'raw' | 'grouped'>('raw');
@@ -413,6 +440,12 @@ export default function ForemanScreen() {
 
   // --- безопасный RID как строка (универсально для uuid/bigint) ---
   const ridStr = useCallback((val: string | number) => String(val).trim(), []);
+  const isDraftActive = useMemo(() => {
+    if (!requestId) return false;
+    const draftId = draftIdRef.current;
+    if (!draftId) return true;
+    return String(requestId) === String(draftId);
+  }, [requestId]);
 
   // ====== КЭШ и подгрузка display_no для текущей заявки ======
   const [displayNoByReq, setDisplayNoByReq] = useState<Record<string, string>>(
@@ -445,16 +478,24 @@ export default function ForemanScreen() {
     [displayNoByReq],
   );
 
-  const loadItems = useCallback(async () => {
-    if (!requestId) return;
-    try {
-      const rows = await listRequestItems(ridStr(requestId));
-      setItems(Array.isArray(rows) ? rows : []);
-    } catch (e) {
-      console.error('[Foreman] listRequestItems error:', e);
-      setItems([]);
-    }
-  }, [requestId, ridStr]);
+  const loadItems = useCallback(
+    async (ridOverride?: string | number | null) => {
+      const target = ridOverride ?? requestId;
+      const key = target != null ? ridStr(target) : '';
+      if (!key) {
+        setItems([]);
+        return;
+      }
+      try {
+        const rows = await listRequestItems(key);
+        setItems(Array.isArray(rows) ? rows : []);
+      } catch (e) {
+        console.error('[Foreman] listRequestItems error:', e);
+        setItems([]);
+      }
+    },
+    [requestId, ridStr],
+  );
 
   useEffect(() => {
     loadItems();
@@ -466,7 +507,11 @@ export default function ForemanScreen() {
     (async () => {
       try {
         const id = await getOrCreateDraftRequestId();
-        if (!cancelled) setRequestId(String(id));
+        if (!cancelled) {
+          const str = String(id);
+          draftIdRef.current = str;
+          setRequestId(str);
+        }
       } catch (e) {
         console.warn(
           '[Foreman] draft ensure failed:',
@@ -483,6 +528,35 @@ export default function ForemanScreen() {
   useEffect(() => {
     if (requestId) preloadDisplayNo(requestId);
   }, [requestId, preloadDisplayNo]);
+
+  useEffect(() => {
+    const name = foreman.trim();
+    if (!name) {
+      setHistoryRequests([]);
+      setHistoryLoading(false);
+      return;
+    }
+
+    let cancelled = false;
+    setHistoryLoading(true);
+    (async () => {
+      try {
+        const rows = await listForemanRequests(name, 20);
+        if (!cancelled) setHistoryRequests(rows);
+      } catch (e) {
+        if (!cancelled) {
+          console.warn('[Foreman] listForemanRequests:', e);
+          setHistoryRequests([]);
+        }
+      } finally {
+        if (!cancelled) setHistoryLoading(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [foreman, historyReloadToken]);
 
   // нормальный ensure, если надо создать прямо сейчас (с сохранением шапки)
   async function ensureAndGetId() {
@@ -501,23 +575,28 @@ export default function ForemanScreen() {
       const idStr = String(rid || '').trim();
       if (idStr) {
         setRequestId(idStr);
+        draftIdRef.current = idStr;
         if (!foreman.trim()) setForeman(name);
         preloadDisplayNo(idStr);
         return idStr;
       }
 
       const rid2 = await getOrCreateDraftRequestId();
-      setRequestId(String(rid2));
+      const rid2Str = String(rid2);
+      setRequestId(rid2Str);
+      draftIdRef.current = rid2Str;
       if (!foreman.trim()) setForeman(name);
-      preloadDisplayNo(String(rid2));
-      return String(rid2);
+      preloadDisplayNo(rid2Str);
+      return rid2Str;
     } catch (e: any) {
       try {
         const rid3 = await getOrCreateDraftRequestId();
-        setRequestId(String(rid3));
+        const rid3Str = String(rid3);
+        setRequestId(rid3Str);
+        draftIdRef.current = rid3Str;
         if (!foreman.trim()) setForeman(name);
-        preloadDisplayNo(String(rid3));
-        return String(rid3);
+        preloadDisplayNo(rid3Str);
+        return rid3Str;
       } catch {}
       Alert.alert(
         'Ошибка',
@@ -690,7 +769,11 @@ export default function ForemanScreen() {
           delete copy[code];
           return copy;
         }
-        const name = (it as any).name_human ?? code;
+        const displayName =
+          ruName(it) ||
+          (it as any).name_human_ru ||
+          (it as any).name_human ||
+          code;
         const kind = (it as any).kind ?? null;
         const uom = (it as any).uom_code ?? null;
         const apps = (it as any).apps ?? null;
@@ -713,7 +796,7 @@ export default function ForemanScreen() {
           ...prev,
           [code]: {
             rik_code: code,
-            name,
+            name: displayName,
             uom,
             kind,
             qty: '',
@@ -789,6 +872,14 @@ export default function ForemanScreen() {
         return;
       }
 
+      if (!isDraftActive) {
+        Alert.alert(
+          'Просмотр заявки',
+          'Редактирование доступно только в текущем черновике.',
+        );
+        return;
+      }
+
       try {
         setBusy(true);
         const rid = requestId ? ridStr(requestId) : await ensureAndGetId();
@@ -819,17 +910,23 @@ export default function ForemanScreen() {
             continue;
           }
 
+          const displayName =
+            ((row as any).item_name_ru ??
+              row.name_human ??
+              row.name_ru ??
+              row.name ??
+              ruName(row)) || row.rik_code;
+
           const ok = await addRequestItemFromRik(rid, row.rik_code, qty, {
             note,
             app_code: undefined,
             kind: undefined,
-            name_human:
-              row.name ?? row.name_human ?? row.name_ru ?? row.rik_code,
+            name_human: displayName,
             uom: row.uom_code ?? null,
           });
 
           if (!ok) {
-            Alert.alert('Ошибка', `Не удалось добавить: ${row.rik_code}`);
+            Alert.alert('Ошибка', `Не удалось добавить: ${displayName}`);
             return;
           }
 
@@ -868,6 +965,7 @@ export default function ForemanScreen() {
       zoneName,
       loadItems,
       preloadDisplayNo,
+      isDraftActive,
     ],
   );
 
@@ -875,6 +973,14 @@ export default function ForemanScreen() {
   const addCartToRequest = useCallback(async () => {
     if (!cartCount) {
       Alert.alert('Корзина пуста', 'Выбери позиции из поиска');
+      return;
+    }
+
+    if (!isDraftActive) {
+      Alert.alert(
+        'Просмотр заявки',
+        'Редактирование доступно только в текущем черновике.',
+      );
       return;
     }
 
@@ -958,11 +1064,19 @@ export default function ForemanScreen() {
     loadItems,
     preloadDisplayNo,
     ensureAndGetId,
+    isDraftActive,
   ]);
 
   // ---------- Отправка директору ----------
   const submitToDirector = useCallback(async () => {
     try {
+      if (!isDraftActive) {
+        Alert.alert(
+          'Просмотр заявки',
+          'Чтобы отправить, вернись к текущему черновику.',
+        );
+        return;
+      }
       if (!foreman.trim()) {
         Alert.alert(
           'ФИО прораба',
@@ -1015,7 +1129,22 @@ export default function ForemanScreen() {
           rid,
         )} отправлена на утверждение`,
       );
-      await loadItems();
+      triggerHistoryReload();
+
+      try {
+        clearLocalDraftId();
+        draftIdRef.current = null;
+        setCart({});
+        const nextDraft = await getOrCreateDraftRequestId();
+        const nextId = String(nextDraft);
+        draftIdRef.current = nextId;
+        setRequestId(nextId);
+        setItems([]);
+        preloadDisplayNo(nextId);
+        await loadItems(nextId);
+      } catch (draftErr) {
+        console.warn('[Foreman] new draft after submit:', draftErr);
+      }
     } catch (e: any) {
       console.error(
         '[Foreman] submitToDirector:',
@@ -1043,6 +1172,8 @@ export default function ForemanScreen() {
     preloadDisplayNo,
     labelForRequest,
     ensureAndGetId,
+    triggerHistoryReload,
+    isDraftActive,
   ]);
 
   // ---------- PDF ----------
@@ -1059,7 +1190,19 @@ export default function ForemanScreen() {
         foreman_name: foreman.trim() || null,
       });
       await preloadDisplayNo(rid);
-      await exportRequestPdf(rid);
+      const url = await exportRequestPdf(rid);
+      if (Platform.OS === 'web') {
+        if (url) {
+          const win = window.open(url, '_blank', 'noopener,noreferrer');
+          if (!win) {
+            Alert.alert('PDF', 'Не удалось открыть PDF. Разрешите всплывающие окна.');
+          }
+        } else {
+          Alert.alert('PDF', 'Не удалось сформировать PDF-документ');
+        }
+      } else if (!url) {
+        Alert.alert('PDF', 'Не удалось сформировать PDF-документ');
+      }
     } catch (e: any) {
       Alert.alert('Ошибка', e?.message ?? 'PDF не сформирован');
     }
@@ -1094,7 +1237,7 @@ export default function ForemanScreen() {
       if (!cur) {
         map.set(key, {
           key,
-          name_human: it.name_human || (code || '—'),
+          name_human: it.name_human || ruName(it) || (code || '—'),
           rik_code: code,
           uom,
           app_code: app,
@@ -1112,10 +1255,8 @@ export default function ForemanScreen() {
         });
       }
     }
-    return Array.from(map.values()).sort(
-      (a, b) =>
-        (a.name_human || '').localeCompare(b.name_human || '') ||
-        (a.rik_code || '').localeCompare(b.rik_code || ''),
+    return Array.from(map.values()).sort((a, b) =>
+      (a.name_human || '').localeCompare(b.name_human || ''),
     );
   }, [items]);
 
@@ -1134,6 +1275,14 @@ export default function ForemanScreen() {
       const selected = !!cart[(it as any).rik_code];
       const uom = (it as any).uom_code ?? null;
       const kind = (it as any).kind ?? '';
+      const title =
+        ruName(it) ||
+        (it as any).name_human_ru ||
+        (it as any).name_human ||
+        (it as any).rik_code;
+      const metaParts: string[] = [];
+      if (uom) metaParts.push(`Ед.: ${uom}`);
+      const meta = metaParts.join(' · ');
       return (
         <Pressable
           onPress={() => toggleToCart(it)}
@@ -1156,17 +1305,17 @@ export default function ForemanScreen() {
                 { color: COLORS.text },
               ]}
             >
-              {(it as any).name_human ??
-                (it as any).rik_code}
+              {title}
             </Text>
             {kind ? <Chip label={kind} /> : null}
           </View>
-          <Text
-            style={[s.suggestMeta, { color: COLORS.sub }]}
-          >
-            {(it as any).rik_code}{' '}
-            {uom ? `• Ед.: ${uom}` : ''}
-          </Text>
+          {meta ? (
+            <Text
+              style={[s.suggestMeta, { color: COLORS.sub }]}
+            >
+              {meta}
+            </Text>
+          ) : null}
         </Pressable>
       );
     },
@@ -1229,15 +1378,6 @@ export default function ForemanScreen() {
               />
             ) : null}
           </View>
-          <Text
-            style={[
-              s.cardMeta,
-              { color: COLORS.sub },
-            ]}
-          >
-            {row.rik_code}
-          </Text>
-
           {/* Кол-во */}
           <View style={s.row}>
             <Text
@@ -1497,7 +1637,6 @@ export default function ForemanScreen() {
           >
             {g.name_human}
           </Text>
-          {g.rik_code ? <Chip label={g.rik_code} /> : null}
           {g.uom ? (
             <Chip
               label={`Ед.: ${g.uom}`}
@@ -2029,6 +2168,138 @@ export default function ForemanScreen() {
               updateCellsBatchingPeriod={50}
             />
           )}
+
+          <View style={{ marginTop: 24 }}>
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                flexWrap: 'wrap',
+                rowGap: 8,
+                marginBottom: 8,
+              }}
+            >
+              <Text style={[s.blockTitle, { color: COLORS.text }]}>
+                История заявок прораба
+              </Text>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  gap: 8,
+                  alignItems: 'center',
+                  flexWrap: 'wrap',
+                }}
+              >
+                {draftIdRef.current ? (
+                  <Pressable
+                    onPress={openDraftRequest}
+                    style={[s.historyActionBtn, { borderColor: COLORS.border }]}
+                  >
+                    <Text style={s.historyActionText}>Открыть черновик</Text>
+                  </Pressable>
+                ) : null}
+                <Pressable
+                  onPress={triggerHistoryReload}
+                  disabled={!foreman.trim() || historyLoading}
+                  style={[
+                    s.historyActionBtn,
+                    (!foreman.trim() || historyLoading) && s.btnDisabled,
+                  ]}
+                >
+                  <Text style={s.historyActionText}>Обновить</Text>
+                </Pressable>
+              </View>
+            </View>
+
+            {requestId && !isDraftActive ? (
+              <Text style={{ color: COLORS.sub, marginBottom: 6 }}>
+                Просмотр заявки {labelForRequest(requestId)}. Добавление
+                доступно только в активном черновике.
+              </Text>
+            ) : null}
+
+            {!foreman.trim() ? (
+              <Text style={{ color: COLORS.sub }}>
+                Укажите ФИО прораба, чтобы увидеть историю заявок.
+              </Text>
+            ) : historyLoading ? (
+              <ActivityIndicator />
+            ) : historyRequests.length === 0 ? (
+              <Text style={{ color: COLORS.sub }}>
+                Заявки не найдены.
+              </Text>
+            ) : (
+              <View style={s.historyTable}>
+                <View style={[s.historyRow, s.historyHeaderRow]}>
+                  <Text style={[s.historyCell, s.historyNo]}>Номер</Text>
+                  <Text style={[s.historyCell, s.historyObject]}>Объект</Text>
+                  <Text style={[s.historyCell, s.historyLevel]}>Этаж</Text>
+                  <Text style={[s.historyCell, s.historySystem]}>Система</Text>
+                  <Text style={[s.historyCell, s.historyZone]}>Зона</Text>
+                  <Text style={[s.historyCell, s.historyDate]}>Дата</Text>
+                  <Text style={[s.historyCell, s.historyStatus]}>Статус</Text>
+                  <Text style={[s.historyCell, s.historyAction]}></Text>
+                </View>
+                {historyRequests.map((req) => {
+                  const active =
+                    requestId && String(requestId).trim() === String(req.id);
+                  const created = req.created_at
+                    ? new Date(req.created_at).toLocaleDateString('ru-RU')
+                    : '—';
+                  const needByText = req.need_by
+                    ? ` · к ${req.need_by}`
+                    : '';
+                  return (
+                    <View
+                      key={req.id}
+                      style={[
+                        s.historyRow,
+                        active ? s.historyRowActive : null,
+                      ]}
+                    >
+                      <Text style={[s.historyCell, s.historyNo]}>
+                        {req.display_no ?? shortId(req.id)}
+                      </Text>
+                      <Text
+                        style={[s.historyCell, s.historyObject]}
+                        numberOfLines={2}
+                      >
+                        {req.object_name || '—'}
+                      </Text>
+                      <Text style={[s.historyCell, s.historyLevel]}>
+                        {req.level_name || '—'}
+                      </Text>
+                      <Text
+                        style={[s.historyCell, s.historySystem]}
+                        numberOfLines={2}
+                      >
+                        {req.system_name || '—'}
+                      </Text>
+                      <Text style={[s.historyCell, s.historyZone]}>
+                        {req.zone_name || '—'}
+                      </Text>
+                      <Text style={[s.historyCell, s.historyDate]}>
+                        {created}
+                        {needByText}
+                      </Text>
+                      <Text style={[s.historyCell, s.historyStatus]}>
+                        {req.status || '—'}
+                      </Text>
+                      <View style={[s.historyCell, s.historyAction]}>
+                        <Pressable
+                          onPress={() => openRequestById(req.id)}
+                          style={s.historyActionBtn}
+                        >
+                          <Text style={s.historyActionText}>Открыть</Text>
+                        </Pressable>
+                      </View>
+                    </View>
+                  );
+                })}
+              </View>
+            )}
+          </View>
         </ScrollView>
 
         {/* Панель действий внизу (только UI, логика та же) */}
@@ -2054,17 +2325,17 @@ export default function ForemanScreen() {
             {/* 2) Добавить */}
             <Pressable
               onPress={addCartToRequest}
-              disabled={busy || cartCount === 0}
+              disabled={busy || cartCount === 0 || !isDraftActive}
               style={[
                 s.btn,
-                busy || cartCount === 0
+                busy || cartCount === 0 || !isDraftActive
                   ? s.btnDisabled
                   : s.btnPrimary,
               ]}
             >
               <Text
                 style={
-                  busy || cartCount === 0
+                  busy || cartCount === 0 || !isDraftActive
                     ? s.btnTxtDisabled
                     : s.btnTxtPrimary
                 }
@@ -2079,17 +2350,21 @@ export default function ForemanScreen() {
             {/* 3) Отправить директору */}
             <Pressable
               onPress={submitToDirector}
-              disabled={busy || (items?.length ?? 0) === 0}
+              disabled={
+                busy ||
+                (items?.length ?? 0) === 0 ||
+                !isDraftActive
+              }
               style={[
                 s.btn,
-                busy || (items?.length ?? 0) === 0
+                busy || (items?.length ?? 0) === 0 || !isDraftActive
                   ? s.btnDisabled
                   : s.btnSecondary,
               ]}
             >
               <Text
                 style={
-                  busy || (items?.length ?? 0) === 0
+                  busy || (items?.length ?? 0) === 0 || !isDraftActive
                     ? s.btnTxtDisabled
                     : s.btnTxtPrimary
                 }
@@ -2301,6 +2576,83 @@ const s = StyleSheet.create({
   suggestMeta: {},
 
   blockTitle: { fontSize: 16, fontWeight: '700', marginBottom: 6 },
+
+  historyTable: {
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderRadius: 12,
+    overflow: 'hidden',
+    backgroundColor: '#fff',
+  },
+  historyRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    gap: 12,
+    flexWrap: 'wrap',
+  },
+  historyHeaderRow: {
+    backgroundColor: '#F1F5F9',
+  },
+  historyRowActive: {
+    backgroundColor: '#ECFDF5',
+  },
+  historyCell: {
+    fontSize: 12,
+    color: '#0F172A',
+    flexShrink: 1,
+  },
+  historyNo: {
+    flexBasis: 120,
+    flexShrink: 0,
+    fontWeight: '600',
+  },
+  historyObject: {
+    flexGrow: 1.4,
+    flexShrink: 1,
+  },
+  historyLevel: {
+    flexBasis: 90,
+    flexShrink: 1,
+  },
+  historySystem: {
+    flexBasis: 120,
+    flexGrow: 1,
+    flexShrink: 1,
+  },
+  historyZone: {
+    flexBasis: 100,
+    flexShrink: 1,
+  },
+  historyDate: {
+    flexBasis: 150,
+    flexShrink: 0,
+  },
+  historyStatus: {
+    flexBasis: 130,
+    flexShrink: 0,
+    fontWeight: '600',
+  },
+  historyAction: {
+    flexBasis: 110,
+    flexShrink: 0,
+    alignItems: 'flex-end',
+  },
+  historyActionBtn: {
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#CBD5E1',
+    backgroundColor: '#fff',
+  },
+  historyActionText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#0F172A',
+    textAlign: 'center',
+  },
 
   card: {
     borderWidth: 1,

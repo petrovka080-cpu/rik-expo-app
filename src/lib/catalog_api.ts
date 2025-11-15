@@ -5,6 +5,7 @@ import {
   proposalAddItems as rpcProposalAddItems,
   proposalSubmit as rpcProposalSubmit,
   proposalSnapshotItems as rpcProposalSnapshotItems,
+  batchResolveRequestLabels as rpcBatchResolveRequestLabels,
 } from "./rik_api";
 
 export { ensureRequestSmart, requestSubmit, exportRequestPdf, addRequestItemFromRik } from "./rik_api";
@@ -86,6 +87,18 @@ export type ReqItemRow = {
   note?: string | null;
   rik_code?: string | null;
   line_no?: number | null;
+};
+
+export type ForemanRequestSummary = {
+  id: string;
+  display_no?: string | null;
+  status?: string | null;
+  created_at?: string | null;
+  need_by?: string | null;
+  object_name?: string | null;
+  level_name?: string | null;
+  system_name?: string | null;
+  zone_name?: string | null;
 };
 
 export type Supplier = {
@@ -587,6 +600,63 @@ export async function listRequestItems(requestId: string): Promise<ReqItemRow[]>
   }
 
   return [];
+}
+
+export async function listForemanRequests(
+  foremanName: string,
+  limit = 20,
+): Promise<ForemanRequestSummary[]> {
+  const name = norm(foremanName);
+  if (!name) return [];
+
+  const take = clamp(limit, 1, 100);
+
+  try {
+    const { data, error } = await supabase
+      .from("requests" as any)
+      .select(
+        `id,status,created_at,need_by,foreman_name,
+         object:ref_object_types(name),
+         level:ref_levels(name),
+         system:ref_systems(name),
+         zone:ref_zones(name)`,
+      )
+      .eq("foreman_name", name)
+      .neq("status", "draft")
+      .order("created_at", { ascending: false })
+      .limit(take);
+
+    if (error) throw error;
+
+    const rows = Array.isArray(data) ? data : [];
+    const mapped = rows
+      .map((row: any) => {
+        const id = String(row?.id ?? "").trim();
+        if (!id) return null;
+        return {
+          id,
+          status: row?.status ?? null,
+          created_at: row?.created_at ?? null,
+          need_by: row?.need_by ?? null,
+          object_name: row?.object?.name ?? null,
+          level_name: row?.level?.name ?? null,
+          system_name: row?.system?.name ?? null,
+          zone_name: row?.zone?.name ?? null,
+        } as ForemanRequestSummary;
+      })
+      .filter((row): row is ForemanRequestSummary => !!row);
+
+    if (!mapped.length) return [];
+
+    const labels = await rpcBatchResolveRequestLabels(mapped.map((row) => row.id));
+    return mapped.map((row) => ({
+      ...row,
+      display_no: labels[row.id] ?? null,
+    }));
+  } catch (e: any) {
+    console.warn("[catalog_api.listForemanRequests]", e?.message ?? e);
+    return [];
+  }
 }
 
 export async function listSuppliers(search?: string): Promise<Supplier[]> {

@@ -35,7 +35,8 @@ returns table (
   packs            numeric,
   pack_size        numeric,
   pack_uom         text,
-  hint             text
+  hint             text,
+  item_name_ru     text
 )
 language plpgsql
 security definer
@@ -56,7 +57,12 @@ begin
     r.packs,
     r.pack_size,
     r.pack_uom,
-    r.hint
+    r.hint,
+    coalesce(
+      cw.name_human_ru,
+      ci.name_human_ru,
+      r.rik_code
+    ) as item_name_ru
   from public.fn_calc_kit_basic_ru(
     p_work_type_code,
     p_area_m2,
@@ -67,7 +73,9 @@ begin
     p_count,
     p_multiplier,
     null -- p_height_m при необходимости
-  ) as r;
+  ) as r
+  left join public.catalog_items ci on ci.rik_code = r.rik_code
+  left join public.catalog_works cw on cw.rik_code = r.rik_code;
 end;
 $$;
 
