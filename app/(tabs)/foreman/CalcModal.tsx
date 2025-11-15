@@ -51,15 +51,6 @@ type CalcRpcArgs = {
   p_multiplier: number;
 };
 
-const RPC_BASIS_MAP: Array<[BasisKey, keyof CalcRpcArgs]> = [
-  ['area_m2', 'p_area_m2'],
-  ['perimeter_m', 'p_perimeter_m'],
-  ['length_m', 'p_length_m'],
-  ['points', 'p_points'],
-  ['volume_m3', 'p_volume_m3'],
-  ['count', 'p_count'],
-];
-
 const formatNumber = (value: number) => {
   if (!Number.isFinite(value)) return '';
   const fixed = value.toFixed(6);
@@ -308,29 +299,23 @@ export default function CalcModal({ visible, onClose, workType, onAddToRequest }
         ? (directMultiplier as number)
         : Math.max(0, 1 + (lossValue ?? 0) / 100);
 
-      const safeValue = (value: unknown, fallback: number) =>
+      const safe = (value: unknown, fallback: number) =>
         typeof value === 'number' && Number.isFinite(value) ? (value as number) : fallback;
 
-      const baseArgs: CalcRpcArgs = {
+      const rpcArgs: CalcRpcArgs = {
         p_work_type_code: workType.code,
-        p_area_m2: 0,
-        p_perimeter_m: 0,
-        p_length_m: 0,
-        p_points: 0,
-        p_volume_m3: 0,
-        p_count: 1,
-        p_multiplier: effectiveMultiplier || 1,
+        p_area_m2: safe(parsedMeasures.area_m2, 0),
+        p_perimeter_m: safe(parsedMeasures.perimeter_m, 0),
+        p_length_m: safe(parsedMeasures.length_m, 0),
+        p_points: safe(parsedMeasures.points, 0),
+        p_volume_m3: safe(parsedMeasures.volume_m3, 0),
+        p_count: safe(parsedMeasures.count, 1),
+        p_multiplier: safe(effectiveMultiplier, 1),
       };
 
-      RPC_BASIS_MAP.forEach(([basisKey, argKey]) => {
-        baseArgs[argKey] = safeValue(parsedMeasures[basisKey], baseArgs[argKey]);
-      });
-
-      const args = baseArgs;
-
-      const { data, error } = await supabase.rpc('rpc_calc_kit_basic', args);
+      const { data, error } = await supabase.rpc('rpc_calc_kit_basic', rpcArgs);
       if (error) {
-        console.error('[CalcModal][rpc_calc_kit_basic]', { args, error });
+        console.error('[CalcModal][rpc_calc_kit_basic]', { rpcArgs, error });
         throw error;
       }
       setRows(Array.isArray(data) ? (data as Row[]) : []);
