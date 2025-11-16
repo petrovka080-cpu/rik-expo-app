@@ -188,9 +188,12 @@ async function rpcCompat<T = any>(
 // helper: безопасный request_id для фильтров (не допускаем eq.=)
 const toFilterId = (v: number | string) => {
   if (typeof v === 'number') return v;
-  const s = String(v ?? '').trim();
-  if (!s) return null;
-  return /^\d+$/.test(s) ? Number(s) : s;
+  const raw = String(v ?? '').trim();
+  if (!raw) return null;
+  const normalized = raw.replace(/^#/, '');
+  const uuidRe = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  if (uuidRe.test(normalized)) return normalized;
+  return /^\d+$/.test(normalized) ? Number(normalized) : normalized;
 };
 
 // ============================== Suppliers API (НОВОЕ) ==============================
@@ -1536,7 +1539,7 @@ export async function getOrCreateDraftRequestId(): Promise<string | number> {
   if (_draftRequestIdAny != null) return _draftRequestIdAny;
   const created = await requestCreateDraft();
   if (created?.id) return created.id;
-  throw new Error('request_create_draft returned invalid id');
+  throw new Error('requestCreateDraft returned invalid id');
 }
 
 export async function exportRequestPdf(requestId: number | string) {
