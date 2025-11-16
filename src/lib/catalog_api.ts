@@ -285,6 +285,7 @@ const mapSupplierRow = (raw: any): Supplier | null => {
 };
 
 /** ========= Каталог: быстрый поиск ========= */
+// NOTE: оставляем функцию обычным модульным экспортом без каких-либо глобальных шин
 export async function searchCatalogItems(
   q: string,
   limit = 50,
