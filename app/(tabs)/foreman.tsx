@@ -862,6 +862,12 @@ export default function ForemanScreen() {
           '[Foreman] draft ensure failed:',
           (e as any)?.message || e,
         );
+        if (!cancelled) {
+          Alert.alert(
+            'Ошибка',
+            (e as any)?.message ?? 'Не удалось получить черновик заявки',
+          );
+        }
       }
     })();
     return () => {
@@ -1293,7 +1299,7 @@ export default function ForemanScreen() {
               row.name ??
               ruName(row)) || '—';
 
-          const ok = await addRequestItemFromRik(rid, row.rik_code, qty, {
+          await addRequestItemFromRik(rid, row.rik_code, qty, {
             note,
             app_code: undefined,
             kind: undefined,
@@ -1301,15 +1307,10 @@ export default function ForemanScreen() {
             uom: row.uom_code ?? null,
           });
 
-          if (!ok) {
-            Alert.alert('Ошибка', `Не удалось добавить: ${displayName}`);
-            return;
-          }
-
           added += 1;
         }
 
-        await loadItems();
+        await loadItems(rid);
         preloadDisplayNo(rid);
         setCalcVisible(false);
         setSelectedWorkType(null);
@@ -1386,6 +1387,7 @@ export default function ForemanScreen() {
     }
 
     let rid: string;
+    const totalAdded = cartCount;
     try {
       setBusy(true);
       rid = requestId ? ridStr(requestId) : await ensureAndGetId();
@@ -1404,23 +1406,19 @@ export default function ForemanScreen() {
       // добавление позиций
       for (const row of cartArray) {
         const q = Number(row.qty.replace(',', '.'));
-        const ok = await addRequestItemFromRik(rid, row.rik_code, q, {
+        await addRequestItemFromRik(rid, row.rik_code, q, {
           note: row.note.trim(),
           app_code: row.app_code ?? undefined,
           kind: row.kind ?? undefined,
           name_human: row.name,
           uom: row.uom ?? null,
         });
-        if (!ok) {
-          Alert.alert('Ошибка', `Не удалось добавить: ${row.name}`);
-          return;
-        }
       }
 
       setCart({});
-      await loadItems();
+      await loadItems(rid);
       preloadDisplayNo(rid);
-      Alert.alert('Готово', `Добавлено позиций: ${cartCount}`);
+      Alert.alert('Готово', `Добавлено позиций: ${totalAdded}`);
     } catch (e: any) {
       console.error(
         '[Foreman] addCartToRequest:',

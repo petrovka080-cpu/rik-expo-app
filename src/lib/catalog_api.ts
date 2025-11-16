@@ -159,7 +159,73 @@ const pickRefName = (ref: any) =>
   norm(ref?.display_name) ||
   norm(ref?.alias_ru) ||
   norm(ref?.name) ||
+  norm(ref?.code) ||
   null;
+
+const pickFirstString = (...values: any[]): string | null => {
+  for (const value of values) {
+    const s = norm(value);
+    if (s) return s;
+  }
+  return null;
+};
+
+const isObjectLike = (val: any): val is Record<string, any> =>
+  typeof val === "object" && val !== null;
+
+const parseNumberValue = (...values: any[]): number | null => {
+  for (const value of values) {
+    if (typeof value === "number" && Number.isFinite(value)) return value;
+    if (value != null) {
+      const parsed = Number(value);
+      if (Number.isFinite(parsed)) return parsed;
+    }
+  }
+  return null;
+};
+
+const buildRefShape = (row: any, keys: string[], code?: string | null) => {
+  const shape: Record<string, any> = {};
+  shape.name_ru = pickFirstString(
+    ...keys.map((key) => row?.[`${key}_name_ru`]),
+    ...keys.map((key) => row?.[`${key}NameRu`])
+  );
+  shape.name_human_ru = pickFirstString(
+    ...keys.map((key) => row?.[`${key}_name_human_ru`]),
+    ...keys.map((key) => row?.[`${key}NameHumanRu`])
+  );
+  shape.display_name = pickFirstString(
+    ...keys.map((key) => row?.[`${key}_display_name`]),
+    ...keys.map((key) => row?.[`${key}DisplayName`]),
+    ...keys.map((key) => row?.[`${key}_label`]),
+    ...keys.map((key) => row?.[`${key}Label`])
+  );
+  shape.alias_ru = pickFirstString(
+    ...keys.map((key) => row?.[`${key}_alias_ru`]),
+    ...keys.map((key) => row?.[`${key}AliasRu`])
+  );
+  shape.name = pickFirstString(
+    ...keys.map((key) => row?.[`${key}_name`]),
+    ...keys.map((key) => row?.[`${key}Name`]),
+    ...keys.map((key) => row?.[key])
+  );
+  shape.code =
+    code ||
+    pickFirstString(
+      ...keys.map((key) => row?.[`${key}_code`]),
+      ...keys.map((key) => row?.[`${key}Code`]),
+      ...keys.map((key) => row?.[key])
+    );
+  return shape;
+};
+
+const readRefName = (row: any, keys: string[], code?: string | null): string | null => {
+  for (const key of keys) {
+    const val = row?.[key];
+    if (isObjectLike(val)) return pickRefName(val);
+  }
+  return pickRefName(buildRefShape(row, keys, code));
+};
 
 const mapRequestItemRow = (raw: any, requestId: string): ReqItemRow | null => {
   const rawId = raw?.id ?? raw?.request_item_id ?? null;
@@ -319,15 +385,6 @@ const storage = {
   },
 };
 
-function getUuid(): string {
-  // @ts-ignore
-  if (globalThis?.crypto?.randomUUID) return globalThis.crypto.randomUUID();
-  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
-    const r = (Math.random() * 16) | 0, v = c === "x" ? r : (r & 0x3) | 0x8;
-    return v.toString(16);
-  });
-}
-
 export function getLocalDraftId(): string | null { return storage.get(); }
 export function setLocalDraftId(id: string) { storage.set(id); }
 export function clearLocalDraftId() { storage.clear(); }
@@ -337,16 +394,19 @@ export async function getOrCreateDraftRequestId(): Promise<string> {
   const cached = getLocalDraftId();
   if (cached) return cached;
 
-  const created = await rpcRequestCreateDraft();
-  if (created?.id) {
-    const id = String(created.id);
-    setLocalDraftId(id);
-    return id;
+  try {
+    const created = await rpcRequestCreateDraft();
+    if (created?.id) {
+      const id = String(created.id);
+      setLocalDraftId(id);
+      return id;
+    }
+  } catch (e) {
+    console.warn("[catalog_api.getOrCreateDraftRequestId]", (e as any)?.message ?? e);
+    throw e;
   }
 
-  const fallback = getUuid();
-  setLocalDraftId(fallback);
-  return fallback;
+  throw new Error("Не удалось создать черновик заявки");
 }
 
 /** Заголовок заявки (для шапки/номера), пробуем вью/таблицы по очереди */
@@ -434,6 +494,74 @@ export async function fetchRequestDisplayNo(requestId: string): Promise<string |
   return null;
 }
 
+const mapDetailsFromRow = (row: any): RequestDetails | null => {
+  if (!row) return null;
+  const id = pickFirstString(row?.id, row?.request_id);
+  if (!id) return null;
+
+  const objectCode = pickFirstString(
+    row?.object_type_code,
+    row?.objectTypeCode,
+    row?.object_code,
+    row?.objectCode,
+    row?.objecttype_code,
+    row?.objecttypeCode,
+    row?.object
+  );
+  const levelCode = pickFirstString(row?.level_code, row?.levelCode, row?.level);
+  const systemCode = pickFirstString(row?.system_code, row?.systemCode, row?.system);
+  const zoneCode = pickFirstString(row?.zone_code, row?.zoneCode, row?.zone, row?.zone_area, row?.area);
+
+  const commentRaw = row?.comment ?? row?.request_comment ?? null;
+  const comment = typeof commentRaw === "string" ? commentRaw : norm(commentRaw);
+
+  return {
+    id,
+    status: pickFirstString(row?.status, row?.request_status),
+    display_no: pickFirstString(
+      row?.display_no,
+      row?.display,
+      row?.label,
+      row?.number,
+      row?.request_no
+    ),
+    year: parseNumberValue(row?.year, row?.request_year, row?.requestYear),
+    seq: parseNumberValue(row?.seq, row?.request_seq, row?.requestSeq),
+    created_at: pickFirstString(row?.created_at, row?.created, row?.createdAt),
+    need_by: pickFirstString(row?.need_by, row?.need_by_date, row?.needBy),
+    comment: comment ?? null,
+    foreman_name: pickFirstString(row?.foreman_name, row?.foreman, row?.foremanName),
+    object_type_code: objectCode,
+    level_code: levelCode,
+    system_code: systemCode,
+    zone_code: zoneCode,
+    object_name_ru: readRefName(
+      row,
+      ["object", "object_type", "objecttype", "objectType", "object_ref"],
+      objectCode,
+    ),
+    level_name_ru: readRefName(row, ["level", "level_ref", "levelRef"], levelCode),
+    system_name_ru: readRefName(row, ["system", "system_type", "systemType", "system_ref"], systemCode),
+    zone_name_ru: readRefName(row, ["zone", "zone_area", "area", "zoneRef", "zone_ref"], zoneCode),
+  };
+};
+
+const mapSummaryFromRow = (row: any): ForemanRequestSummary | null => {
+  const details = mapDetailsFromRow(row);
+  if (!details) return null;
+  return {
+    id: details.id,
+    status: details.status ?? null,
+    created_at: details.created_at ?? null,
+    need_by: details.need_by ?? null,
+    display_no: details.display_no ?? null,
+    object_name_ru: details.object_name_ru ?? null,
+    level_name_ru: details.level_name_ru ?? null,
+    system_name_ru: details.system_name_ru ?? null,
+    zone_name_ru: details.zone_name_ru ?? null,
+  };
+};
+
 export async function fetchRequestDetails(requestId: string): Promise<RequestDetails | null> {
   const id = norm(requestId);
   if (!id) return null;
@@ -451,39 +579,50 @@ export async function fetchRequestDetails(requestId: string): Promise<RequestDet
       )
       .eq("id", id)
       .maybeSingle();
-    if (error) throw error;
-    if (!data) return null;
-
-    const num = (v: any) => {
-      if (typeof v === "number" && Number.isFinite(v)) return v;
-      const parsed = Number(v);
-      return Number.isFinite(parsed) ? parsed : null;
-    };
-
-    const details: RequestDetails = {
-      id,
-      status: data.status ?? null,
-      display_no: data.display_no ?? null,
-      year: num(data.year),
-      seq: num(data.seq),
-      created_at: data.created_at ?? null,
-      need_by: data.need_by ?? null,
-      comment: data.comment ?? null,
-      foreman_name: data.foreman_name ?? null,
-      object_type_code: data.object_type_code ?? null,
-      level_code: data.level_code ?? null,
-      system_code: data.system_code ?? null,
-      zone_code: data.zone_code ?? null,
-      object_name_ru: pickRefName((data as any).object),
-      level_name_ru: pickRefName((data as any).level),
-      system_name_ru: pickRefName((data as any).system),
-      zone_name_ru: pickRefName((data as any).zone),
-    };
-    return details;
+    if (!error && data) {
+      const mapped = mapDetailsFromRow(data);
+      if (mapped) return mapped;
+    }
+    if (error) {
+      const msg = String(error.message || "").toLowerCase();
+      if (!msg.includes("permission denied") && !msg.includes("does not exist")) {
+        console.warn("[catalog_api.fetchRequestDetails] requests:", error.message);
+      }
+    }
   } catch (e: any) {
-    console.warn("[catalog_api.fetchRequestDetails]", e?.message ?? e);
-    return null;
+    const msg = String(e?.message ?? "").toLowerCase();
+    if (!msg.includes("permission denied") && !msg.includes("does not exist")) {
+      console.warn("[catalog_api.fetchRequestDetails] requests:", e?.message ?? e);
+    }
   }
+
+  const views = ["v_requests_display", "v_request_pdf_header"] as const;
+  for (const view of views) {
+    try {
+      const { data, error } = await supabase
+        .from(view as any)
+        .select("*")
+        .eq("id", id)
+        .maybeSingle();
+      if (!error && data) {
+        const mapped = mapDetailsFromRow(data);
+        if (mapped) return mapped;
+      }
+      if (error) {
+        const msg = String(error.message || "").toLowerCase();
+        if (!msg.includes("permission denied") && !msg.includes("does not exist")) {
+          console.warn(`[catalog_api.fetchRequestDetails] ${view}:`, error.message);
+        }
+      }
+    } catch (e: any) {
+      const msg = String(e?.message ?? "").toLowerCase();
+      if (!msg.includes("permission denied") && !msg.includes("does not exist")) {
+        console.warn(`[catalog_api.fetchRequestDetails] ${view}:`, e?.message ?? e);
+      }
+    }
+  }
+
+  return null;
 }
 
 export type RequestMetaPatch = {
@@ -728,61 +867,74 @@ export async function listForemanRequests(
 
   const take = clamp(limit, 1, 100);
 
-  try {
-    const { data, error } = await supabase
-      .from("requests" as any)
-      .select(
-        `id,status,created_at,need_by,display_no,
-         object_type_code,level_code,system_code,zone_code,
-         object:ref_object_types(*),
-         level:ref_levels(*),
-         system:ref_systems(*),
-         zone:ref_zones(*)`,
-      )
-      .eq("foreman_name", name)
-      .neq("status", "draft")
-      .neq("status", "Черновик")
-      .order("created_at", { ascending: false })
-      .limit(take);
+  type SourceFetcher = () => Promise<{ data: any[] | null; error: any }>;
+  const sources: Array<{ label: string; run: SourceFetcher }> = [
+    {
+      label: "v_requests_display",
+      run: () =>
+        supabase
+          .from("v_requests_display" as any)
+          .select("*")
+          .eq("foreman_name", name)
+          .order("created_at", { ascending: false })
+          .limit(take),
+    },
+    {
+      label: "requests",
+      run: () =>
+        supabase
+          .from("requests" as any)
+          .select(
+            `id,status,created_at,need_by,display_no,
+             object_type_code,level_code,system_code,zone_code,
+             object:ref_object_types(*),
+             level:ref_levels(*),
+             system:ref_systems(*),
+             zone:ref_zones(*)`,
+          )
+          .eq("foreman_name", name)
+          .neq("status", "draft")
+          .neq("status", "Черновик")
+          .order("created_at", { ascending: false })
+          .limit(take),
+    },
+  ];
 
-    if (error) throw error;
+  for (const src of sources) {
+    try {
+      const { data, error } = await src.run();
+      if (error) throw error;
+      if (!Array.isArray(data) || !data.length) continue;
 
-    const rows = Array.isArray(data) ? data : [];
-    const mapped = rows
-      .map((row: any) => {
-        const id = String(row?.id ?? "").trim();
-        if (!id) return null;
-        const base: ForemanRequestSummary = {
-          id,
-          status: row?.status ?? null,
-          created_at: row?.created_at ?? null,
-          need_by: row?.need_by ?? null,
-          display_no: row?.display_no ?? null,
-          object_name_ru: pickRefName((row as any).object),
-          level_name_ru: pickRefName((row as any).level),
-          system_name_ru: pickRefName((row as any).system),
-          zone_name_ru: pickRefName((row as any).zone),
-        };
-        return base;
-      })
-      .filter((row): row is ForemanRequestSummary => !!row);
+      const mapped = data
+        .map((row) => mapSummaryFromRow(row))
+        .filter((row): row is ForemanRequestSummary => !!row)
+        .filter((row) => {
+          const key = String(row.status ?? "").toLowerCase();
+          return key !== "draft" && key !== "черновик";
+        });
 
-    if (!mapped.length) return [];
+      if (!mapped.length) continue;
 
-    const missing = mapped.filter((row) => !row.display_no).map((row) => row.id);
-    if (missing.length) {
-      const labels = await rpcBatchResolveRequestLabels(missing);
-      return mapped.map((row) => ({
-        ...row,
-        display_no: row.display_no ?? labels[row.id] ?? null,
-      }));
+      const missing = mapped.filter((row) => !row.display_no).map((row) => row.id);
+      if (missing.length) {
+        const labels = await rpcBatchResolveRequestLabels(missing);
+        return mapped.map((row) => ({
+          ...row,
+          display_no: row.display_no ?? labels[row.id] ?? null,
+        }));
+      }
+
+      return mapped;
+    } catch (e: any) {
+      const msg = String(e?.message ?? "").toLowerCase();
+      if (!msg.includes("permission denied") && !msg.includes("does not exist")) {
+        console.warn(`[catalog_api.listForemanRequests] ${src.label}:`, e?.message ?? e);
+      }
     }
-
-    return mapped;
-  } catch (e: any) {
-    console.warn("[catalog_api.listForemanRequests]", e?.message ?? e);
-    return [];
   }
+
+  return [];
 }
 
 export async function listSuppliers(search?: string): Promise<Supplier[]> {

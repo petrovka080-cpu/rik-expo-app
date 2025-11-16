@@ -461,20 +461,17 @@ function mapRequestRow(raw: any): RequestRecord | null {
 }
 
 export async function requestCreateDraft(meta?: RequestMeta): Promise<RequestRecord | null> {
-  try {
-    const args: Record<string, any> = {};
-    if (meta?.foreman_name != null)
-      args.p_foreman_name = String(meta.foreman_name).trim() || null;
-    if (meta?.need_by != null)
-      args.p_need_by = String(meta.need_by).trim() || null;
-    if (meta?.comment != null)
-      args.p_comment = String(meta.comment).trim() || null;
-    if (meta?.object_type_code != null)
-      args.p_object_type_code = meta.object_type_code || null;
-    if (meta?.level_code != null) args.p_level_code = meta.level_code || null;
-    if (meta?.system_code != null) args.p_system_code = meta.system_code || null;
-    if (meta?.zone_code != null) args.p_zone_code = meta.zone_code || null;
+  const args: Record<string, any> = {};
+  if (meta?.foreman_name != null)
+    args.p_foreman_name = String(meta.foreman_name).trim() || null;
+  if (meta?.need_by != null) args.p_need_by = String(meta.need_by).trim() || null;
+  if (meta?.comment != null) args.p_comment = String(meta.comment).trim() || null;
+  if (meta?.object_type_code != null) args.p_object_type_code = meta.object_type_code || null;
+  if (meta?.level_code != null) args.p_level_code = meta.level_code || null;
+  if (meta?.system_code != null) args.p_system_code = meta.system_code || null;
+  if (meta?.zone_code != null) args.p_zone_code = meta.zone_code || null;
 
+  try {
     const { data, error } = await client.rpc('request_create_draft', args as any);
     if (error) throw error;
     const row = mapRequestRow(data);
@@ -484,8 +481,10 @@ export async function requestCreateDraft(meta?: RequestMeta): Promise<RequestRec
     }
   } catch (e) {
     console.warn('[requestCreateDraft]', parseErr(e));
+    throw e;
   }
-  return null;
+
+  throw new Error('request_create_draft returned invalid payload');
 }
 
 export async function ensureRequestSmart(currentId?: number | string, meta?: RequestMeta): Promise<number | string> {
@@ -505,27 +504,52 @@ export async function addRequestItemFromRik(
   qty: number,
   opts?: { note?: string; app_code?: string; kind?: string; name_human?: string; uom?: string | null }
 ): Promise<boolean> {
+  if (!rik_code) throw new Error('rik_code required');
+  const q = Number(qty);
+  if (!Number.isFinite(q) || q <= 0) throw new Error('qty must be > 0');
+
+  const rid = toFilterId(requestId);
+  if (rid == null) throw new Error('request_id is empty');
+
+  const args: Record<string, any> = {
+    p_request_id: rid,
+    p_rik_code: rik_code,
+    p_qty: q,
+  };
+  if (typeof opts?.name_human !== 'undefined') args.p_name_human = opts.name_human;
+  if (typeof opts?.uom !== 'undefined') args.p_uom = opts.uom;
+  if (typeof opts?.note !== 'undefined') args.p_note = opts.note;
+  if (typeof opts?.app_code !== 'undefined') args.p_app_code = opts.app_code;
+  if (typeof opts?.kind !== 'undefined') args.p_kind = opts.kind;
+
   try {
-    if (!rik_code) throw new Error('rik_code required');
-    const q = Number(qty);
-    if (!Number.isFinite(q) || q <= 0) throw new Error('qty must be > 0');
-
-    const rid = toFilterId(requestId);
-    if (rid == null) throw new Error('request_id is empty');
-
-    const row: any = { request_id: rid as any, rik_code, qty: q };
-    if (opts?.name_human) row.name_human = opts.name_human;
-    if (typeof opts?.uom !== 'undefined') row.uom = opts.uom;
-    if (opts?.note) row.note = opts.note;
-    if (opts?.app_code) row.app_code = opts.app_code;
-    if (opts?.kind) row.kind = opts.kind;
-
-    const { error } = await client.from('request_items').insert([row]);
-    if (error) throw error;
+    const { error } = await client.rpc('request_add_item_from_rik', args as any);
+    if (error) {
+      console.warn('[addRequestItemFromRik]', parseErr(error));
+      throw error;
+    }
     return true;
-  } catch (e) {
-    console.warn('[addRequestItemFromRik]', parseErr(e));
-    return false;
+  } catch (e: any) {
+    const msg = parseErr(e).toLowerCase();
+    const missing = msg.includes('request_add_item_from_rik');
+    if (!missing) {
+      throw e;
+    }
+
+    try {
+      const row: any = { request_id: rid as any, rik_code, qty: q };
+      if (opts?.name_human) row.name_human = opts.name_human;
+      if (typeof opts?.uom !== 'undefined') row.uom = opts.uom;
+      if (opts?.note) row.note = opts.note;
+      if (opts?.app_code) row.app_code = opts.app_code;
+      if (opts?.kind) row.kind = opts.kind;
+      const { error } = await client.from('request_items').insert([row]);
+      if (error) throw error;
+      return true;
+    } catch (fallbackErr) {
+      console.warn('[addRequestItemFromRik/fallback]', parseErr(fallbackErr));
+      throw fallbackErr;
+    }
   }
 }
 
@@ -1199,7 +1223,7 @@ export async function buildProposalPdfHtml(proposalId: number | string): Promise
     </div>
   </div>
 
-  <div class="noprint" style="margin-top:14px"><button onclick="window.print()">Печать</button></div>
+  <div class="noprint" style="margin-top:14px">&nbsp;</div>
 </body></html>`;
   } catch (e: any) {
     const esc2 = (s: any) => String(s ?? '').replace(/[&<>"]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]!));
