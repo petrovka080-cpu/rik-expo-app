@@ -416,11 +416,10 @@ export async function getRequestHeader(requestId: string): Promise<RequestHeader
   if (!id) return null;
 
   const views = [
+    { src: "request_display", cols: "id,display_no,status,created_at" },
     { src: "vi_requests_display", cols: "id,display_no,status,created_at" },
     { src: "vi_requests", cols: "id,display_no,status,created_at" },
     { src: "requests", cols: "id,display_no,status,created_at" },
-    { src: "app_requests", cols: "id,display_no,status,created_at" },
-    { src: "rik_requests", cols: "id,display_no,status,created_at" },
   ] as const;
 
   for (const { src, cols } of views) {
@@ -469,11 +468,10 @@ export async function fetchRequestDisplayNo(requestId: string): Promise<string |
   }
 
   const views = [
+    { src: "request_display", col: "display_no" },
     { src: "vi_requests_display", col: "display_no" },
     { src: "v_requests_display", col: "display_no" },
     { src: "requests", col: "display_no" },
-    { src: "app_requests", col: "display_no" },
-    { src: "rik_requests", col: "display_no" },
   ] as const;
 
   for (const { src, col } of views) {
@@ -661,58 +659,17 @@ export async function updateRequestMeta(
 
   if (!Object.keys(payload).length) return true;
 
-  const rpcArgs = {
-    p_request_id: id,
-    p_need_by: payload.need_by ?? null,
-    p_comment: payload.comment ?? null,
-    p_object_type_code: payload.object_type_code ?? null,
-    p_level_code: payload.level_code ?? null,
-    p_system_code: payload.system_code ?? null,
-    p_zone_code: payload.zone_code ?? null,
-    p_foreman_name: payload.foreman_name ?? null,
-  };
-
-  const rpcVariants = [
-    "request_update_meta",
-    "app_request_update_meta",
-    "rk_request_update_meta",
-    "request_patch_meta",
-  ] as const;
-
-  for (const fn of rpcVariants) {
-    try {
-      const { error } = await supabase.rpc(fn as any, rpcArgs as any);
-      if (!error) return true;
-      const msg = String(error.message || "");
-      if (!msg.includes("does not exist")) {
-        console.warn(`[catalog_api.updateRequestMeta] rpc ${fn}:`, error.message);
-      }
-    } catch (e: any) {
-      const msg = String(e?.message ?? "");
-      if (!msg.includes("does not exist")) {
-        console.warn(`[catalog_api.updateRequestMeta] rpc ${fn}:`, e?.message ?? e);
-      }
+  try {
+    const { error } = await supabase.from("requests" as any).update(payload).eq("id", id);
+    if (error) {
+      console.warn("[catalog_api.updateRequestMeta] table requests:", error.message);
+      throw error;
     }
+    return true;
+  } catch (e: any) {
+    console.warn("[catalog_api.updateRequestMeta] table requests:", e?.message ?? e);
+    throw e;
   }
-
-  const tables = ["requests", "app_requests", "rik_requests"] as const;
-  for (const table of tables) {
-    try {
-      const { error } = await supabase.from(table as any).update(payload).eq("id", id);
-      if (!error) return true;
-      const msg = String(error.message || "").toLowerCase();
-      if (!msg.includes("permission denied")) {
-        console.warn(`[catalog_api.updateRequestMeta] table ${table}:`, error.message);
-      }
-    } catch (e: any) {
-      const msg = String(e?.message ?? "").toLowerCase();
-      if (!msg.includes("permission denied")) {
-        console.warn(`[catalog_api.updateRequestMeta] table ${table}:`, e?.message ?? e);
-      }
-    }
-  }
-
-  return false;
 }
 
 /** Позиции заявки: читаем из вьюшек/таблиц, что найдутся */
@@ -742,6 +699,11 @@ export async function listRequestItems(requestId: string): Promise<ReqItemRow[]>
 
   const sources = [
     {
+      src: "request_items_display",
+      cols:
+        "id,request_id,line_no,rik_code,code,name_human,name,uom,uom_code,qty,status,note,app_code,supplier_hint",
+    },
+    {
       src: "vi_request_items_display",
       cols:
         "id,request_id,line_no,rik_code,code,name_human,name,uom,uom_code,qty,status,note,app_code,supplier_hint",
@@ -758,16 +720,6 @@ export async function listRequestItems(requestId: string): Promise<ReqItemRow[]>
     },
     {
       src: "request_items",
-      cols:
-        "id,request_id,line_no,rik_code,name_human,uom,qty,status,note,app_code,supplier_hint",
-    },
-    {
-      src: "app_request_items",
-      cols:
-        "id,request_id,line_no,rik_code,name_human,uom,qty,status,note,app_code,supplier_hint",
-    },
-    {
-      src: "rik_request_items",
       cols:
         "id,request_id,line_no,rik_code,name_human,uom,qty,status,note,app_code,supplier_hint",
     },
