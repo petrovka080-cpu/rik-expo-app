@@ -1520,34 +1520,41 @@ export async function getOrCreateDraftRequestId(): Promise<string | number> {
 
 export async function exportRequestPdf(requestId: number | string) {
   const html = await buildRequestPdfHtml(requestId);
-  try {
-    // native (expo)
-    // @ts-ignore
-    const Print = await import('expo-print');
-    const { uri } = await (Print as any).printToFileAsync({ html });
+  if (Platform.OS !== 'web') {
     try {
+      // native (expo)
       // @ts-ignore
-      const Sharing = await import('expo-sharing');
-      if ((Sharing as any).isAvailableAsync && (await (Sharing as any).isAvailableAsync())) {
-        await (Sharing as any).shareAsync(uri);
-      }
-    } catch {}
-    return uri as string;
-  } catch (nativeErr) {
-    if (typeof window !== 'undefined') {
+      const Print = await import('expo-print');
+      const { uri } = await (Print as any).printToFileAsync({ html });
       try {
-        const blob = new Blob([html], {
-          type: 'text/html;charset=utf-8',
-        });
-        return URL.createObjectURL(blob);
-      } catch (blobErr) {
-        console.warn('[exportRequestPdf]', blobErr);
-      }
-    } else {
+        // @ts-ignore
+        const Sharing = await import('expo-sharing');
+        if (
+          (Sharing as any).isAvailableAsync &&
+          (await (Sharing as any).isAvailableAsync())
+        ) {
+          await (Sharing as any).shareAsync(uri);
+        }
+      } catch {}
+      return uri as string;
+    } catch (nativeErr) {
       console.warn('[exportRequestPdf]', nativeErr);
+    }
+  }
+
+  if (typeof window !== 'undefined') {
+    try {
+      const blob = new Blob([html], {
+        type: 'text/html;charset=utf-8',
+      });
+      return URL.createObjectURL(blob);
+    } catch (blobErr) {
+      console.warn('[exportRequestPdf]', blobErr);
     }
     return '';
   }
+
+  return '';
 }
 
 /* ============================== Бухгалтерия: RPC-обёртки (НОВЫЕ) ============================== */

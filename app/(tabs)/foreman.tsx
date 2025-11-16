@@ -38,6 +38,7 @@ import {
   exportRequestPdf, // PDF
   getOrCreateDraftRequestId, // безопасный ensure для черновика
   requestCreateDraft,
+  setLocalDraftId,
   listForemanRequests,
   requestItemUpdateQty,
   type CatalogItem,
@@ -363,6 +364,8 @@ const shortId = (rid: string | number | null | undefined) => {
   return /^\d+$/.test(s) ? s : s.slice(0, 8);
 };
 
+const DISPLAY_NUMBER_RE = /^REQ-\d{4,}\/\d{4}$/i;
+
 export default function ForemanScreen() {
   // ===== Шапка заявки =====
   const [requestId, setRequestId] = useState<string>(''); // создадим автоматически
@@ -371,6 +374,8 @@ export default function ForemanScreen() {
   const [comment, setComment] = useState<string>(''); // общий комментарий
 
   const [requestDetails, setRequestDetails] = useState<RequestDetails | null>(null);
+  const [lastDetailsLoadedId, setLastDetailsLoadedId] = useState<string | null>(null);
+  const [initialDraftEnsured, setInitialDraftEnsured] = useState(false);
 
   // ===== Новые справочные поля (Объект/Этаж/Система/Зона) =====
   const [objectType, setObjectType] = useState<string>(''); // required
@@ -560,13 +565,14 @@ export default function ForemanScreen() {
       const key = rid != null ? ridStr(rid) : requestId;
       if (!key) {
         setRequestDetails(null);
-        return;
+        setLastDetailsLoadedId(null);
+        return null;
       }
       try {
         const details = await fetchRequestDetails(key);
         if (!details) {
           setRequestDetails(null);
-          return;
+          return null;
         }
         setRequestDetails(details);
         const display = String(details.display_no ?? '').trim();
@@ -580,8 +586,12 @@ export default function ForemanScreen() {
         setLevel(details.level_code ?? '');
         setSystem(details.system_code ?? '');
         setZone(details.zone_code ?? '');
+        return details;
       } catch (e) {
         console.warn('[Foreman] loadDetails:', (e as any)?.message ?? e);
+        return null;
+      } finally {
+        setLastDetailsLoadedId(key);
       }
     },
     [requestId, ridStr, setDisplayNoByReq],
@@ -746,6 +756,7 @@ export default function ForemanScreen() {
       if (!created?.id) throw new Error('Не удалось создать черновик');
       const idStr = String(created.id);
       setRequestId(idStr);
+      setLocalDraftId(idStr);
       setItems([]);
       setCart({});
       const display = String(created.display_no ?? '').trim();
@@ -754,6 +765,7 @@ export default function ForemanScreen() {
       }
       await loadDetails(idStr);
       await loadItems(idStr);
+      setInitialDraftEnsured(true);
       const label = display || `#${shortId(idStr)}`;
       if (!opts?.silent) {
         Alert.alert('Новая заявка', `Создан черновик ${label}`);
@@ -801,6 +813,37 @@ export default function ForemanScreen() {
   useEffect(() => {
     loadItems();
   }, [loadItems]);
+
+  useEffect(() => {
+    if (initialDraftEnsured) return;
+    const rid = requestId ? ridStr(requestId) : '';
+    if (!rid) return;
+    if (lastDetailsLoadedId !== rid) return;
+    const display = String(requestDetails?.display_no ?? '').trim();
+    const hasValidDisplay = display && DISPLAY_NUMBER_RE.test(display);
+    if (requestDetails && hasValidDisplay) {
+      setInitialDraftEnsured(true);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      try {
+        await handleNewRequest({ silent: true });
+      } finally {
+        if (!cancelled) setInitialDraftEnsured(true);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    handleNewRequest,
+    initialDraftEnsured,
+    lastDetailsLoadedId,
+    requestDetails,
+    requestId,
+    ridStr,
+  ]);
 
   // создаём/получаем черновик при монтировании
   useEffect(() => {
@@ -881,6 +924,7 @@ export default function ForemanScreen() {
       if (created?.id) {
         const idStr = String(created.id);
         setRequestId(idStr);
+        setLocalDraftId(idStr);
         const display = String(created.display_no ?? '').trim();
         if (display) {
           setDisplayNoByReq((prev) => ({ ...prev, [idStr]: display }));
@@ -922,13 +966,14 @@ export default function ForemanScreen() {
           orderColumn: string,
           fallbackSelect: string,
         ) => {
-          let query = supabase.from(table as any).select(select).order(orderColumn);
-          let result = await query;
-          if (result.error && result.error.message?.includes('name_ru')) {
-            result = await supabase
-              .from(table as any)
-              .select(fallbackSelect)
-              .order(orderColumn);
+          const run = (cols: string) =>
+            supabase.from(table as any).select(cols).order(orderColumn);
+          let result = await run(select);
+          if (result.error) {
+            const msg = String(result.error.message ?? '').toLowerCase();
+            if (msg.includes('name_ru')) {
+              result = await run(fallbackSelect);
+            }
           }
           return result;
         };
