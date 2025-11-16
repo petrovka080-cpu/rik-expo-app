@@ -232,13 +232,15 @@ const mapRequestItemRow = (raw: any, requestId: string): ReqItemRow | null => {
   if (!rawId) return null;
   const qtyVal = Number(raw?.qty ?? raw?.quantity ?? raw?.total_qty ?? 0);
   const qty = Number.isFinite(qtyVal) ? qtyVal : 0;
-  const lineNoRaw = raw?.line_no;
-  let lineNo: number | null = null;
-  if (typeof lineNoRaw === "number") lineNo = lineNoRaw;
-  else if (lineNoRaw != null) {
-    const parsed = Number(lineNoRaw);
-    if (Number.isFinite(parsed)) lineNo = parsed;
-  }
+  const lineNo =
+    parseNumberValue(
+      raw?.line_no,
+      raw?.row_no,
+      raw?.position_order,
+      raw?.rowno,
+      raw?.rowNo,
+      raw?.positionOrder,
+    ) ?? null;
 
   const nameHuman =
     norm(raw?.name_human_ru) ||
@@ -680,9 +682,11 @@ export async function listRequestItems(requestId: string): Promise<ReqItemRow[]>
   try {
     const { data, error } = await supabase
       .from('request_items' as any)
-      .select('id,request_id,line_no,rik_code,name_human,uom,qty,status,note,app_code,supplier_hint')
+      .select(
+        'id,request_id,rik_code,name_human,uom,qty,status,note,app_code,supplier_hint,row_no,position_order',
+      )
       .eq('request_id', id)
-      .order('line_no', { ascending: true });
+      .order('row_no', { ascending: true });
 
     if (error) {
       console.warn('[catalog_api.listRequestItems] request_items:', error.message);
@@ -739,7 +743,7 @@ export async function requestItemUpdateQty(
       .update({ qty: numericQty })
       .eq('id', id)
       .select(
-        'id,request_id,line_no,rik_code,code,name_human,name,uom,uom_code,qty,status,note,app_code,supplier_hint',
+        'id,request_id,rik_code,code,name_human,name,uom,uom_code,qty,status,note,app_code,supplier_hint,row_no,position_order',
       )
       .maybeSingle();
     if (error) throw error;
