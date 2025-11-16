@@ -688,7 +688,12 @@ export async function requestSubmit(requestId: number | string): Promise<Request
     const { data, error } = await client.rpc('request_submit', { p_request_id: ridForRpc as any });
     if (error) throw error;
     const row = mapRequestRow(data);
-    if (row) return row;
+    if (row) {
+      if (_draftRequestIdAny != null && String(_draftRequestIdAny) === String(ridForRpc)) {
+        _draftRequestIdAny = null;
+      }
+      return row;
+    }
   } catch (e) {
     console.warn('[requestSubmit/rpc]', parseErr(e));
   }
@@ -700,7 +705,11 @@ export async function requestSubmit(requestId: number | string): Promise<Request
     .select('id, status, display_no, foreman_name, need_by, comment, object_type_code, level_code, system_code, zone_code, created_at, year, seq')
     .maybeSingle();
   if (upd.error) throw upd.error;
-  return upd.data ? mapRequestRow(upd.data) : null;
+  const fallback = upd.data ? mapRequestRow(upd.data) : null;
+  if (fallback && _draftRequestIdAny != null && String(_draftRequestIdAny) === String(ridForRpc)) {
+    _draftRequestIdAny = null;
+  }
+  return fallback;
 }
 
 // ============================== Buyer: inbox & proposals ==============================

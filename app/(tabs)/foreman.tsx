@@ -39,6 +39,7 @@ import {
   getOrCreateDraftRequestId, // безопасный ensure для черновика
   requestCreateDraft,
   listForemanRequests,
+  requestItemUpdateQty,
   type CatalogItem,
   type ReqItemRow,
   type ForemanRequestSummary,
@@ -416,8 +417,26 @@ export default function ForemanScreen() {
   const cartArray = useMemo(() => Object.values(cart), [cart]);
   const cartCount = cartArray.length;
 
+  const formatQtyInput = useCallback((value?: number | null) => {
+    if (value == null) return '';
+    const num = Number(value);
+    if (!Number.isFinite(num)) return '';
+    if (Number.isInteger(num)) return String(num);
+    return num.toString();
+  }, []);
+
+  const parseQtyValue = useCallback((value: string | number | null | undefined) => {
+    if (typeof value === 'number') return value;
+    const str = String(value ?? '').trim().replace(',', '.');
+    if (!str) return Number.NaN;
+    const num = Number(str);
+    return Number.isFinite(num) ? num : Number.NaN;
+  }, []);
+
   // ===== Уже добавленные строки заявки =====
   const [items, setItems] = useState<ReqItemRow[]>([]);
+  const [qtyDrafts, setQtyDrafts] = useState<Record<string, string>>({});
+  const [qtyBusyMap, setQtyBusyMap] = useState<Record<string, boolean>>({});
   const [refreshing, setRefreshing] = useState(false);
   const [busy, setBusy] = useState(false);
   const [historyRequests, setHistoryRequests] = useState<ForemanRequestSummary[]>([]);
@@ -461,6 +480,26 @@ export default function ForemanScreen() {
     const status = requestDetails?.status ?? 'draft';
     return status === 'draft';
   }, [requestDetails?.status]);
+
+  const isHeaderReady = useMemo(() => {
+    return Boolean(foreman.trim() && objectType && level);
+  }, [foreman, objectType, level]);
+
+  const ensureHeaderReady = useCallback(() => {
+    if (!foreman.trim()) {
+      Alert.alert('Заполни шапку', 'Укажи ФИО прораба.');
+      return false;
+    }
+    if (!objectType) {
+      Alert.alert('Заполни шапку', 'Выбери объект строительства.');
+      return false;
+    }
+    if (!level) {
+      Alert.alert('Заполни шапку', 'Выбери этаж/уровень.');
+      return false;
+    }
+    return true;
+  }, [foreman, objectType, level]);
 
   const resolveStatusInfo = useCallback((raw?: string | null) => {
     const base = String(raw ?? '').trim();
@@ -567,6 +606,26 @@ export default function ForemanScreen() {
     [requestId, ridStr],
   );
 
+  useEffect(() => {
+    setQtyDrafts((prev) => {
+      const next: Record<string, string> = {};
+      for (const row of items) {
+        const key = String(row.id);
+        const prevVal = prev[key];
+        next[key] = typeof prevVal !== 'undefined' ? prevVal : formatQtyInput(row.qty);
+      }
+      return next;
+    });
+    setQtyBusyMap((prev) => {
+      const next: Record<string, boolean> = {};
+      for (const row of items) {
+        const key = String(row.id);
+        if (prev[key]) next[key] = prev[key];
+      }
+      return next;
+    });
+  }, [items, formatQtyInput]);
+
   const handleObjectChange = useCallback(
     (code: string) => {
       setObjectType(code);
@@ -671,9 +730,9 @@ export default function ForemanScreen() {
     );
   }, []);
 
-  const handleNewRequest = useCallback(async () => {
+  const handleNewRequest = useCallback(async (opts?: { silent?: boolean; keepBusy?: boolean }) => {
     try {
-      setBusy(true);
+      if (!opts?.keepBusy) setBusy(true);
       const meta = {
         foreman_name: foreman.trim() || null,
         need_by: needBy.trim() || null,
@@ -696,11 +755,13 @@ export default function ForemanScreen() {
       await loadDetails(idStr);
       await loadItems(idStr);
       const label = display || `#${shortId(idStr)}`;
-      Alert.alert('Новая заявка', `Создан черновик ${label}`);
+      if (!opts?.silent) {
+        Alert.alert('Новая заявка', `Создан черновик ${label}`);
+      }
     } catch (e: any) {
       Alert.alert('Ошибка', e?.message ?? 'Не удалось создать новую заявку');
     } finally {
-      setBusy(false);
+      if (!opts?.keepBusy) setBusy(false);
     }
   }, [
     foreman,
@@ -855,23 +916,28 @@ export default function ForemanScreen() {
         // @ts-ignore
         const { supabase } = await import('../../src/lib/supabaseClient');
 
+        const fetchWithFallback = async (
+          table: string,
+          select: string,
+          orderColumn: string,
+          fallbackSelect: string,
+        ) => {
+          let query = supabase.from(table as any).select(select).order(orderColumn);
+          let result = await query;
+          if (result.error && result.error.message?.includes('name_ru')) {
+            result = await supabase
+              .from(table as any)
+              .select(fallbackSelect)
+              .order(orderColumn);
+          }
+          return result;
+        };
+
         const [obj, lvl, sys, zn] = await Promise.all([
-          supabase
-            .from('ref_object_types')
-            .select('code,name,name_ru')
-            .order('name'),
-          supabase
-            .from('ref_levels')
-            .select('code,name,name_ru,sort')
-            .order('sort', { ascending: true }),
-          supabase
-            .from('ref_systems')
-            .select('code,name,name_ru')
-            .order('name'),
-          supabase
-            .from('ref_zones')
-            .select('code,name,name_ru')
-            .order('name'),
+          fetchWithFallback('ref_object_types', 'code,name,name_ru', 'name', 'code,name'),
+          fetchWithFallback('ref_levels', 'code,name,name_ru,sort', 'sort', 'code,name,sort'),
+          fetchWithFallback('ref_systems', 'code,name,name_ru', 'name', 'code,name'),
+          fetchWithFallback('ref_zones', 'code,name,name_ru', 'name', 'code,name'),
         ]);
 
         if (!cancelled) {
@@ -1133,6 +1199,10 @@ export default function ForemanScreen() {
         return;
       }
 
+      if (!ensureHeaderReady()) {
+        return;
+      }
+
       if (!isDraftActive) {
         Alert.alert(
           'Просмотр заявки',
@@ -1227,6 +1297,7 @@ export default function ForemanScreen() {
       loadItems,
       preloadDisplayNo,
       isDraftActive,
+      ensureHeaderReady,
     ],
   );
 
@@ -1234,6 +1305,10 @@ export default function ForemanScreen() {
   const addCartToRequest = useCallback(async () => {
     if (!cartCount) {
       Alert.alert('Корзина пуста', 'Выбери позиции из поиска');
+      return;
+    }
+
+    if (!ensureHeaderReady()) {
       return;
     }
 
@@ -1326,7 +1401,66 @@ export default function ForemanScreen() {
     preloadDisplayNo,
     ensureAndGetId,
     isDraftActive,
+    ensureHeaderReady,
   ]);
+
+  const updateQtyDraftValue = useCallback((itemId: string, value: string) => {
+    setQtyDrafts((prev) => ({ ...prev, [itemId]: value }));
+  }, []);
+
+  const commitQtyChange = useCallback(
+    async (item: ReqItemRow, draftValue: string) => {
+      const currentRequest = String(requestDetails?.id ?? requestId ?? '').trim();
+      const itemRequest = String((item as any).request_id ?? '').trim();
+      if (!isDraftActive || !currentRequest || itemRequest !== currentRequest) {
+        return;
+      }
+
+      const key = String(item.id);
+      const parsed = parseQtyValue(draftValue);
+      if (!Number.isFinite(parsed) || parsed <= 0) {
+        Alert.alert('Количество', 'Значение должно быть больше нуля.');
+        setQtyDrafts((prev) => ({ ...prev, [key]: formatQtyInput(item.qty) }));
+        return;
+      }
+
+      const original = Number(item.qty ?? 0);
+      if (Math.abs(parsed - original) < 1e-9) {
+        setQtyDrafts((prev) => ({ ...prev, [key]: formatQtyInput(item.qty) }));
+        return;
+      }
+
+      setQtyBusyMap((prev) => ({ ...prev, [key]: true }));
+      try {
+        const updated = await requestItemUpdateQty(key, parsed, currentRequest);
+        if (updated) {
+          setItems((prev) =>
+            prev.map((row) =>
+              row.id === updated.id ? { ...row, qty: updated.qty } : row,
+            ),
+          );
+          setQtyDrafts((prev) => ({
+            ...prev,
+            [key]: formatQtyInput(updated.qty),
+          }));
+        }
+      } catch (e: any) {
+        Alert.alert('Ошибка', e?.message ?? 'Не удалось обновить количество.');
+        setQtyDrafts((prev) => ({ ...prev, [key]: formatQtyInput(item.qty) }));
+      } finally {
+        setQtyBusyMap((prev) => ({ ...prev, [key]: false }));
+      }
+    },
+    [
+      formatQtyInput,
+      isDraftActive,
+      parseQtyValue,
+      requestDetails?.id,
+      requestId,
+      requestItemUpdateQty,
+      setItems,
+    ],
+  );
 
   // ---------- Отправка директору ----------
   const submitToDirector = useCallback(async () => {
@@ -1338,25 +1472,7 @@ export default function ForemanScreen() {
         );
         return;
       }
-      if (!foreman.trim()) {
-        Alert.alert(
-          'ФИО прораба',
-          'Заполни ФИО прораба перед отправкой',
-        );
-        return;
-      }
-      if (!objectType) {
-        Alert.alert(
-          'Объект',
-          'Выбери «Объект строительства» (обязательно)',
-        );
-        return;
-      }
-      if (!level) {
-        Alert.alert(
-          'Этаж/уровень',
-          'Выбери «Этаж/уровень» (обязательно)',
-        );
+      if (!ensureHeaderReady()) {
         return;
       }
       if ((items?.length ?? 0) === 0) {
@@ -1389,25 +1505,33 @@ export default function ForemanScreen() {
           [rid]: String(submitted.display_no),
         }));
       }
-      setRequestDetails((prev) => ({
-        ...(prev ?? null),
-        id: rid,
-        status: submitted?.status ?? 'pending',
-        display_no: submitted?.display_no ?? prev?.display_no ?? null,
-        foreman_name: submitted?.foreman_name ?? foreman,
-        need_by: submitted?.need_by ?? needBy,
-        comment: submitted?.comment ?? comment,
-      }));
-      await loadDetails(rid);
+      setRequestDetails((prev) =>
+        prev
+          ? {
+              ...prev,
+              status: submitted?.status ?? 'pending',
+              display_no: submitted?.display_no ?? prev.display_no ?? null,
+              foreman_name: submitted?.foreman_name ?? prev.foreman_name ?? foreman,
+              need_by: submitted?.need_by ?? prev.need_by ?? needBy,
+              comment: submitted?.comment ?? prev.comment ?? comment,
+            }
+          : prev,
+      );
       await preloadDisplayNo(rid);
+      const submittedLabel = submitted?.display_no ?? labelForRequest(rid);
       Alert.alert(
         'Отправлено директору',
-        `Заявка ${labelForRequest(
-          rid,
-        )} отправлена на утверждение`,
+        `Заявка ${submittedLabel} отправлена на утверждение`,
       );
       triggerHistoryReload();
+
       setCart({});
+      setItems([]);
+      setQtyDrafts({});
+      setQtyBusyMap({});
+      setViewMode('raw');
+
+      await handleNewRequest({ silent: true, keepBusy: true });
     } catch (e: any) {
       console.error(
         '[Foreman] submitToDirector:',
@@ -1423,7 +1547,6 @@ export default function ForemanScreen() {
   }, [
     requestId,
     ridStr,
-    loadItems,
     foreman,
     needBy,
     objectType,
@@ -1437,11 +1560,16 @@ export default function ForemanScreen() {
     ensureAndGetId,
     triggerHistoryReload,
     isDraftActive,
+    handleNewRequest,
+    ensureHeaderReady,
   ]);
 
   // ---------- PDF ----------
   const onPdf = useCallback(async () => {
     try {
+      if (!ensureHeaderReady()) {
+        return;
+      }
       const rid = requestId ? ridStr(requestId) : await ensureAndGetId();
       await updateRequestMeta(rid, {
         object_type_code: objectType || null,
@@ -1481,6 +1609,7 @@ export default function ForemanScreen() {
     zone,
     comment,
     preloadDisplayNo,
+    ensureHeaderReady,
   ]);
 
   // ---------- Группировка для режима «Сгруппировано» ----------
@@ -1795,84 +1924,170 @@ export default function ForemanScreen() {
   );
 
   const ReqItemRowView = useCallback(
-    ({ it }: { it: ReqItemRow }) => (
-      <View
-        style={[
-          s.card,
-          {
-            backgroundColor: '#fff',
-            borderColor: COLORS.border,
-          },
-        ]}
-      >
+    ({ it }: { it: ReqItemRow }) => {
+      const key = String(it.id);
+      const draft = qtyDrafts[key] ?? formatQtyInput(it.qty);
+      const updating = !!qtyBusyMap[key];
+      const currentRequest = String(requestDetails?.id ?? requestId ?? '').trim();
+      const itemRequest = String((it as any).request_id ?? '').trim();
+      const canEdit = isDraftActive && currentRequest && itemRequest === currentRequest;
+
+      const handleBlur = () => {
+        if (!canEdit || updating) return;
+        commitQtyChange(it, draft);
+      };
+
+      const adjustQty = (delta: number) => {
+        if (!canEdit || updating) return;
+        const base = parseQtyValue(draft);
+        const fallback = parseQtyValue(it.qty);
+        const start = Number.isFinite(base) ? base : fallback;
+        const next = Number.isFinite(start) ? start + delta : delta;
+        if (next <= 0) {
+          Alert.alert('Количество', 'Значение должно быть больше нуля.');
+          return;
+        }
+        const formatted = formatQtyInput(next);
+        updateQtyDraftValue(key, formatted);
+        commitQtyChange(it, formatted);
+      };
+
+      return (
         <View
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            gap: 8,
-            flexWrap: 'wrap',
-          }}
-        >
-          <Text
-            style={[
-              s.cardTitle,
-              { color: COLORS.text },
-            ]}
-          >
-            {it.name_human}
-          </Text>
-          {it.uom ? (
-            <Chip
-              label={`Ед.: ${it.uom}`}
-              bg="#E0E7FF"
-              fg="#3730A3"
-            />
-          ) : null}
-          {it.app_code ? (
-            <Chip label={labelForApp(it.app_code)} />
-          ) : null}
-        </View>
-        <Text
           style={[
-            s.cardMeta,
-            { color: COLORS.sub, marginTop: 2 },
+            s.card,
+            {
+              backgroundColor: '#fff',
+              borderColor: COLORS.border,
+            },
           ]}
         >
-          Кол-во:{' '}
-          <Text
+          <View
             style={{
-              color: COLORS.text,
-              fontWeight: '700',
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 8,
+              flexWrap: 'wrap',
             }}
           >
-            {it.qty ?? '-'}
-          </Text>{' '}
-          {it.uom ?? ''} · Статус:{' '}
-          <Text
-            style={{
-              color: COLORS.text,
-              fontWeight: '700',
-            }}
-          >
-            {it.status ?? '—'}
-          </Text>
-        </Text>
-        {it.note ? (
+            <Text
+              style={[
+                s.cardTitle,
+                { color: COLORS.text },
+              ]}
+            >
+              {it.name_human}
+            </Text>
+            {it.uom ? (
+              <Chip
+                label={`Ед.: ${it.uom}`}
+                bg="#E0E7FF"
+                fg="#3730A3"
+              />
+            ) : null}
+            {it.app_code ? (
+              <Chip label={labelForApp(it.app_code)} />
+            ) : null}
+          </View>
+
+          <View style={[s.row, { marginTop: 6 }]}> 
+            <Text style={[s.rowLabel, { color: COLORS.sub }]}>Кол-во:</Text>
+            {canEdit ? (
+              <View style={s.qtyWrap}>
+                <Pressable
+                  onPress={() => adjustQty(-1)}
+                  disabled={updating}
+                  style={[
+                    s.qtyBtn,
+                    { borderColor: COLORS.border, opacity: updating ? 0.5 : 1 },
+                  ]}
+                >
+                  <Text style={s.qtyBtnTxt}>−</Text>
+                </Pressable>
+                <TextInput
+                  value={draft}
+                  onChangeText={(v) => updateQtyDraftValue(key, v)}
+                  onBlur={handleBlur}
+                  onSubmitEditing={handleBlur}
+                  keyboardType="decimal-pad"
+                  editable={!updating}
+                  style={[
+                    s.qtyInput,
+                    {
+                      borderColor: COLORS.border,
+                      backgroundColor: '#fff',
+                      opacity: updating ? 0.6 : 1,
+                    },
+                  ]}
+                />
+                <Pressable
+                  onPress={() => adjustQty(1)}
+                  disabled={updating}
+                  style={[
+                    s.qtyBtn,
+                    { borderColor: COLORS.border, opacity: updating ? 0.5 : 1 },
+                  ]}
+                >
+                  <Text style={s.qtyBtnTxt}>＋</Text>
+                </Pressable>
+              </View>
+            ) : (
+              <Text
+                style={{
+                  color: COLORS.text,
+                  fontWeight: '700',
+                }}
+              >
+                {it.qty ?? '-'} {it.uom ?? ''}
+              </Text>
+            )}
+          </View>
+
           <Text
             style={[
               s.cardMeta,
-              { color: COLORS.sub, marginTop: 2 },
+              { color: COLORS.sub, marginTop: 4 },
             ]}
           >
-            Примечание:{' '}
-            <Text style={{ color: COLORS.text }}>
-              {it.note}
+            Статус:{' '}
+            <Text
+              style={{
+                color: COLORS.text,
+                fontWeight: '700',
+              }}
+            >
+              {it.status ?? '—'}
             </Text>
           </Text>
-        ) : null}
-      </View>
-    ),
-    [labelForApp],
+
+          {it.note ? (
+            <Text
+              style={[
+                s.cardMeta,
+                { color: COLORS.sub, marginTop: 2 },
+              ]}
+            >
+              Примечание:{' '}
+              <Text style={{ color: COLORS.text }}>
+                {it.note}
+              </Text>
+            </Text>
+          ) : null}
+        </View>
+      );
+    },
+    [
+      qtyDrafts,
+      formatQtyInput,
+      qtyBusyMap,
+      requestDetails?.id,
+      requestId,
+      isDraftActive,
+      commitQtyChange,
+      parseQtyValue,
+      updateQtyDraftValue,
+      labelForApp,
+    ],
   );
 
   const GroupedRowView = useCallback(
@@ -2466,29 +2681,24 @@ export default function ForemanScreen() {
         {/* Панель действий внизу (только UI, логика та же) */}
         <View style={s.stickyBar}>
           <View style={s.stickyRow}>
-            <Pressable
-              onPress={handleNewRequest}
-              disabled={busy}
-              style={[s.btn, s.btnNeutral, busy ? s.btnDisabled : null]}
-            >
-              <Text
-                style={busy ? s.btnTxtDisabled : s.btnTxtNeutral}
-              >
-                Новая заявка
-              </Text>
-            </Pressable>
             {/* 1) Рассчитать (смета) */}
             <Pressable
               onPress={() => setWorkTypePickerVisible(true)}
-              disabled={busy}
+              disabled={busy || !isDraftActive || !isHeaderReady}
               style={[
                 s.btn,
                 s.btnNeutral,
-                busy ? s.btnDisabled : null,
+                busy || !isDraftActive || !isHeaderReady
+                  ? s.btnDisabled
+                  : null,
               ]}
             >
               <Text
-                style={busy ? s.btnTxtDisabled : s.btnTxtNeutral}
+                style={
+                  busy || !isDraftActive || !isHeaderReady
+                    ? s.btnTxtDisabled
+                    : s.btnTxtNeutral
+                }
               >
                 Рассчитать (смета)
               </Text>
@@ -2497,17 +2707,28 @@ export default function ForemanScreen() {
             {/* 2) Добавить */}
             <Pressable
               onPress={addCartToRequest}
-              disabled={busy || cartCount === 0 || !isDraftActive}
+              disabled={
+                busy ||
+                cartCount === 0 ||
+                !isDraftActive ||
+                !isHeaderReady
+              }
               style={[
                 s.btn,
-                busy || cartCount === 0 || !isDraftActive
+                busy ||
+                cartCount === 0 ||
+                !isDraftActive ||
+                !isHeaderReady
                   ? s.btnDisabled
                   : s.btnPrimary,
               ]}
             >
               <Text
                 style={
-                  busy || cartCount === 0 || !isDraftActive
+                  busy ||
+                  cartCount === 0 ||
+                  !isDraftActive ||
+                  !isHeaderReady
                     ? s.btnTxtDisabled
                     : s.btnTxtPrimary
                 }
@@ -2525,18 +2746,25 @@ export default function ForemanScreen() {
               disabled={
                 busy ||
                 (items?.length ?? 0) === 0 ||
-                !isDraftActive
+                !isDraftActive ||
+                !isHeaderReady
               }
               style={[
                 s.btn,
-                busy || (items?.length ?? 0) === 0 || !isDraftActive
+                busy ||
+                (items?.length ?? 0) === 0 ||
+                !isDraftActive ||
+                !isHeaderReady
                   ? s.btnDisabled
                   : s.btnSecondary,
               ]}
             >
               <Text
                 style={
-                  busy || (items?.length ?? 0) === 0 || !isDraftActive
+                  busy ||
+                  (items?.length ?? 0) === 0 ||
+                  !isDraftActive ||
+                  !isHeaderReady
                     ? s.btnTxtDisabled
                     : s.btnTxtPrimary
                 }
@@ -2548,17 +2776,17 @@ export default function ForemanScreen() {
             {/* 4) PDF */}
             <Pressable
               onPress={onPdf}
-              disabled={busy || !requestId}
+              disabled={busy || !requestId || !isHeaderReady}
               style={[
                 s.btn,
-                busy || !requestId
+                busy || !requestId || !isHeaderReady
                   ? s.btnDisabled
                   : s.btnNeutral,
               ]}
             >
               <Text
                 style={
-                  busy || !requestId
+                  busy || !requestId || !isHeaderReady
                     ? s.btnTxtDisabled
                     : s.btnTxtNeutral
                 }

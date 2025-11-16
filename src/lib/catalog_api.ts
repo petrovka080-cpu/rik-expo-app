@@ -444,10 +444,10 @@ export async function fetchRequestDetails(requestId: string): Promise<RequestDet
       .select(
         `id,status,display_no,year,seq,created_at,need_by,comment,foreman_name,
          object_type_code,level_code,system_code,zone_code,
-         object:ref_object_types(name,name_ru),
-         level:ref_levels(name,name_ru),
-         system:ref_systems(name,name_ru),
-         zone:ref_zones(name,name_ru)`
+         object:ref_object_types(*),
+         level:ref_levels(*),
+         system:ref_systems(*),
+         zone:ref_zones(*)`
       )
       .eq("id", id)
       .maybeSingle();
@@ -666,6 +666,59 @@ export async function listRequestItems(requestId: string): Promise<ReqItemRow[]>
   return [];
 }
 
+export async function requestItemUpdateQty(
+  requestItemId: string,
+  qty: number,
+  requestIdHint?: string,
+): Promise<ReqItemRow | null> {
+  const id = norm(requestItemId);
+  if (!id) throw new Error('Не найден идентификатор позиции');
+
+  const numericQty = Number(qty);
+  if (!Number.isFinite(numericQty) || numericQty <= 0) {
+    throw new Error('Количество должно быть больше нуля');
+  }
+
+  const rid = requestIdHint ? norm(requestIdHint) : '';
+  let lastErr: any = null;
+
+  try {
+    const { data, error } = await supabase.rpc('request_item_update_qty' as any, {
+      p_request_item_id: id,
+      p_qty: numericQty,
+    } as any);
+    if (!error && data) {
+      const mapped = mapRequestItemRow(data, rid || '');
+      if (mapped) return mapped;
+    } else if (error) {
+      lastErr = error;
+    }
+  } catch (e: any) {
+    lastErr = e;
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from('request_items' as any)
+      .update({ qty: numericQty })
+      .eq('id', id)
+      .select(
+        'id,request_id,line_no,rik_code,code,name_human,name,uom,uom_code,qty,status,note,app_code,supplier_hint',
+      )
+      .maybeSingle();
+    if (error) throw error;
+    if (data) {
+      const mapped = mapRequestItemRow(data, rid || String((data as any)?.request_id ?? ''));
+      if (mapped) return mapped;
+    }
+  } catch (e: any) {
+    lastErr = e;
+  }
+
+  if (lastErr) throw lastErr;
+  return null;
+}
+
 export async function listForemanRequests(
   foremanName: string,
   limit = 20,
@@ -681,10 +734,10 @@ export async function listForemanRequests(
       .select(
         `id,status,created_at,need_by,display_no,
          object_type_code,level_code,system_code,zone_code,
-         object:ref_object_types(name,name_ru),
-         level:ref_levels(name,name_ru),
-         system:ref_systems(name,name_ru),
-         zone:ref_zones(name,name_ru)`,
+         object:ref_object_types(*),
+         level:ref_levels(*),
+         system:ref_systems(*),
+         zone:ref_zones(*)`,
       )
       .eq("foreman_name", name)
       .neq("status", "draft")
