@@ -1274,7 +1274,7 @@ export default function ForemanScreen() {
           system_code: system || null,
           zone_code: zone || null,
           foreman_name: foreman.trim() || null,
-        });
+        }).catch(() => null);
 
         const note =
           buildScopeNote(
@@ -1401,7 +1401,7 @@ export default function ForemanScreen() {
         system_code: system || null,
         zone_code: zone || null,
         foreman_name: foreman.trim() || null,
-      });
+      }).catch(() => null);
 
       // добавление позиций
       for (const row of cartArray) {
@@ -1539,7 +1539,7 @@ export default function ForemanScreen() {
         comment: comment.trim() || null,
         need_by: needBy.trim() || null,
         foreman_name: foreman.trim() || null,
-      });
+      }).catch(() => null);
 
       const submitted = await requestSubmit(rid);
       if (submitted?.display_no) {
@@ -1622,7 +1622,7 @@ export default function ForemanScreen() {
         comment: comment.trim() || null,
         need_by: needBy.trim() || null,
         foreman_name: foreman.trim() || null,
-      });
+      }).catch(() => null);
       await preloadDisplayNo(rid);
       const url = await exportRequestPdf(rid);
       if (Platform.OS === 'web') {

@@ -472,18 +472,26 @@ function mapRequestRow(raw: any): RequestRecord | null {
 }
 
 export async function requestCreateDraft(meta?: RequestMeta): Promise<RequestRecord | null> {
-  const args: Record<string, any> = {};
-  if (meta?.foreman_name != null)
-    args.p_foreman_name = String(meta.foreman_name).trim() || null;
-  if (meta?.need_by != null) args.p_need_by = String(meta.need_by).trim() || null;
-  if (meta?.comment != null) args.p_comment = String(meta.comment).trim() || null;
-  if (meta?.object_type_code != null) args.p_object_type_code = meta.object_type_code || null;
-  if (meta?.level_code != null) args.p_level_code = meta.level_code || null;
-  if (meta?.system_code != null) args.p_system_code = meta.system_code || null;
-  if (meta?.zone_code != null) args.p_zone_code = meta.zone_code || null;
+  const payload: Record<string, any> = {
+    status: 'Черновик' as any,
+    foreman_name: meta?.foreman_name ?? null,
+    need_by: meta?.need_by ?? null,
+    comment: meta?.comment ?? null,
+    object_type_code: meta?.object_type_code ?? null,
+    level_code: meta?.level_code ?? null,
+    system_code: meta?.system_code ?? null,
+    zone_code: meta?.zone_code ?? null,
+  };
 
   try {
-    const { data, error } = await client.rpc('request_create_draft', args as any);
+    const { data, error } = await client
+      .from('requests')
+      .insert(payload)
+      .select(
+        'id,status,display_no,need_by,comment,foreman_name,object_type_code,level_code,system_code,zone_code,created_at',
+      )
+      .single();
+
     if (error) throw error;
     const row = mapRequestRow(data);
     if (row) {
@@ -495,7 +503,7 @@ export async function requestCreateDraft(meta?: RequestMeta): Promise<RequestRec
     throw e;
   }
 
-  throw new Error('request_create_draft returned invalid payload');
+  throw new Error('requests.insert returned invalid payload');
 }
 
 export async function ensureRequestSmart(currentId?: number | string, meta?: RequestMeta): Promise<number | string> {

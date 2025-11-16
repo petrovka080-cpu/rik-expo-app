@@ -660,15 +660,15 @@ export async function updateRequestMeta(
   if (!Object.keys(payload).length) return true;
 
   try {
-    const { error } = await supabase.from("requests" as any).update(payload).eq("id", id);
+    const { error } = await supabase.from('requests' as any).update(payload).eq('id', id);
     if (error) {
-      console.warn("[catalog_api.updateRequestMeta] table requests:", error.message);
-      throw error;
+      console.warn('[catalog_api.updateRequestMeta] table requests:', error.message);
+      return false;
     }
     return true;
   } catch (e: any) {
-    console.warn("[catalog_api.updateRequestMeta] table requests:", e?.message ?? e);
-    throw e;
+    console.warn('[catalog_api.updateRequestMeta] table requests:', e?.message ?? e);
+    return false;
   }
 }
 
@@ -678,84 +678,28 @@ export async function listRequestItems(requestId: string): Promise<ReqItemRow[]>
   if (!id) return [];
 
   try {
-    const { data, error } = await supabase.rpc("request_items_list" as any, {
-      p_request_id: id,
-    } as any);
-    if (!error && Array.isArray(data)) {
-      const mapped = (data as any[])
-        .map((row) => mapRequestItemRow(row, id))
-        .filter((row): row is ReqItemRow => !!row);
-      if (mapped.length) {
-        return mapped.sort(
-          (a, b) => (a.line_no ?? 0) - (b.line_no ?? 0) || a.name_human.localeCompare(b.name_human)
-        );
-      }
-    } else if (error) {
-      console.warn("[catalog_api.listRequestItems] rpc request_items_list:", error.message);
+    const { data, error } = await supabase
+      .from('request_items' as any)
+      .select('id,request_id,line_no,rik_code,name_human,uom,qty,status,note,app_code,supplier_hint')
+      .eq('request_id', id)
+      .order('line_no', { ascending: true });
+
+    if (error) {
+      console.warn('[catalog_api.listRequestItems] request_items:', error.message);
+      return [];
     }
+
+    if (!Array.isArray(data) || !data.length) return [];
+
+    const mapped = (data as any[])
+      .map((row) => mapRequestItemRow(row, id))
+      .filter((row): row is ReqItemRow => !!row);
+
+    return mapped.sort((a, b) => (a.line_no ?? 0) - (b.line_no ?? 0));
   } catch (e: any) {
-    console.warn("[catalog_api.listRequestItems] rpc request_items_list:", e?.message ?? e);
+    console.warn('[catalog_api.listRequestItems] request_items:', e?.message ?? e);
+    return [];
   }
-
-  const sources = [
-    {
-      src: "request_items_display",
-      cols:
-        "id,request_id,line_no,rik_code,code,name_human,name,uom,uom_code,qty,status,note,app_code,supplier_hint",
-    },
-    {
-      src: "vi_request_items_display",
-      cols:
-        "id,request_id,line_no,rik_code,code,name_human,name,uom,uom_code,qty,status,note,app_code,supplier_hint",
-    },
-    {
-      src: "vi_request_items",
-      cols:
-        "id,request_id,line_no,rik_code,code,name_human,name,uom,uom_code,qty,status,note,app_code,supplier_hint",
-    },
-    {
-      src: "request_items_view",
-      cols:
-        "id,request_id,line_no,rik_code,code,name_human,name,uom,uom_code,qty,status,note,app_code,supplier_hint",
-    },
-    {
-      src: "request_items",
-      cols:
-        "id,request_id,line_no,rik_code,name_human,uom,qty,status,note,app_code,supplier_hint",
-    },
-  ] as const;
-
-  for (const { src, cols } of sources) {
-    try {
-      const { data, error } = await supabase
-        .from(src as any)
-        .select(cols)
-        .eq("request_id", id)
-        .order("line_no", { ascending: true });
-      if (error) {
-        const msg = String(error.message || "").toLowerCase();
-        if (!msg.includes("permission denied") && !msg.includes("does not exist")) {
-          console.warn(`[catalog_api.listRequestItems] ${src}:`, error.message);
-        }
-        continue;
-      }
-      if (Array.isArray(data) && data.length) {
-        const mapped = (data as any[])
-          .map((row) => mapRequestItemRow(row, id))
-          .filter((row): row is ReqItemRow => !!row);
-        if (mapped.length) {
-          return mapped.sort((a, b) => (a.line_no ?? 0) - (b.line_no ?? 0));
-        }
-      }
-    } catch (e: any) {
-      const msg = String(e?.message ?? "").toLowerCase();
-      if (!msg.includes("permission denied") && !msg.includes("does not exist")) {
-        console.warn(`[catalog_api.listRequestItems] ${src}:`, e?.message ?? e);
-      }
-    }
-  }
-
-  return [];
 }
 
 export async function requestItemUpdateQty(
@@ -846,8 +790,7 @@ export async function listForemanRequests(
              zone:ref_zones(*)`,
           )
           .eq("foreman_name", name)
-          .neq("status", "draft")
-          .neq("status", "Черновик")
+          .neq('status', 'Черновик' as any)
           .order("created_at", { ascending: false })
           .limit(take),
     },
