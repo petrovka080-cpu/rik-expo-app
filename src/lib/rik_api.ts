@@ -1,6 +1,13 @@
 // src/lib/rik_api.ts — боевой минимальный API (стабильно, без спорных SELECT'ов)
 import { supabase } from './supabaseClient';
+import {
+  searchCatalogItems,
+  listCatalogGroups,
+  listUoms,
+  listIncomingItems,
+} from './catalog_api';
 import type { SupabaseClient } from '@supabase/supabase-js';
+export { searchCatalogItems, listCatalogGroups, listUoms, listIncomingItems };
 import { Platform } from 'react-native';
 
 // --- utils: normalize UUID (убираем # и валидируем) ---
@@ -1787,13 +1794,4 @@ export const RIK_API = {
   buildProposalPdfHtmlPretty, // >>> added
 };
 // ===== временные совместимые экспорты под нейтральные имена =====
-export type { CatalogItem } from "./catalog_api";
-export { searchCatalogItems } from "./catalog_api";
-// ===== совместимые экспорты под нейтральные имена (новое) =====
-export type { CatalogItem, CatalogGroup, UomRef } from "./catalog_api";
-export { searchCatalogItems, listCatalogGroups, listUoms } from "./catalog_api";
-
-// (по желанию, если сразу подключаешь склад из clean-view)
-export type { IncomingItem } from "./catalog_api";
-export { listIncomingItems } from "./catalog_api";
 
