@@ -1,12 +1,16 @@
 // src/lib/rik_api.ts — боевой минимальный API (стабильно, без спорных SELECT'ов)
 import { supabase } from './supabaseClient';
 import {
-  searchCatalogItems,
-  listCatalogGroups,
-  listUoms,
-  listIncomingItems,
+  searchCatalogItems as searchCatalogItemsInternal,
+  listCatalogGroups as listCatalogGroupsInternal,
+  listUoms as listUomsInternal,
+  listIncomingItems as listIncomingItemsInternal,
 } from './catalog_api';
 import type { SupabaseClient } from '@supabase/supabase-js';
+const searchCatalogItems = searchCatalogItemsInternal;
+const listCatalogGroups = listCatalogGroupsInternal;
+const listUoms = listUomsInternal;
+const listIncomingItems = listIncomingItemsInternal;
 export { searchCatalogItems, listCatalogGroups, listUoms, listIncomingItems };
 import { Platform } from 'react-native';
 
