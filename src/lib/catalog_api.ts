@@ -662,25 +662,34 @@ export async function updateRequestMeta(
   if (!Object.keys(payload).length) return true;
 
   try {
-    const { error } = await supabase.from('requests' as any).update(payload).eq('id', id);
+    const { error } = await supabase
+      .from('requests' as any)
+      .update(payload)
+      .eq('id', id);
+
     if (error) {
       console.warn('[catalog_api.updateRequestMeta] table requests:', error.message);
+      // ВАЖНО: не роняем поток, просто сообщаем, что не смогли обновить
       return false;
     }
+
     return true;
   } catch (e: any) {
     console.warn('[catalog_api.updateRequestMeta] table requests:', e?.message ?? e);
+    // Тоже не роняем — пусть остальной код продолжит работать
     return false;
   }
 }
 
-/** Позиции заявки: читаем из вьюшек/таблиц, что найдутся */
+
+/** Позиции заявки: простое чтение из таблицы request_items */
 export async function listRequestItems(requestId: string): Promise<ReqItemRow[]> {
   const id = norm(requestId);
   if (!id) return [];
 
   try {
     const { data, error } = await supabase
+<<<<<<< HEAD
       .from('request_items' as any)
       .select(
         'id,request_id,rik_code,name_human,uom,qty,status,note,app_code,supplier_hint,row_no,position_order',
@@ -690,6 +699,17 @@ export async function listRequestItems(requestId: string): Promise<ReqItemRow[]>
 
     if (error) {
       console.warn('[catalog_api.listRequestItems] request_items:', error.message);
+=======
+      .from("request_items" as any)
+      .select(
+        "id,request_id,line_no,rik_code,name_human,uom,qty,status,note,app_code,supplier_hint"
+      )
+      .eq("request_id", id)
+      .order("line_no", { ascending: true });
+
+    if (error) {
+      console.warn("[catalog_api.listRequestItems] request_items:", error.message);
+>>>>>>> 9f5d491 (Foreman + catalog_api: new requests schema fixes)
       return [];
     }
 
@@ -701,10 +721,15 @@ export async function listRequestItems(requestId: string): Promise<ReqItemRow[]>
 
     return mapped.sort((a, b) => (a.line_no ?? 0) - (b.line_no ?? 0));
   } catch (e: any) {
+<<<<<<< HEAD
     console.warn('[catalog_api.listRequestItems] request_items:', e?.message ?? e);
+=======
+    console.warn("[catalog_api.listRequestItems] request_items:", e?.message ?? e);
+>>>>>>> 9f5d491 (Foreman + catalog_api: new requests schema fixes)
     return [];
   }
 }
+
 
 export async function requestItemUpdateQty(
   requestItemId: string,

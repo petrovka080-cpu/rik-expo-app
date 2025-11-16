@@ -452,19 +452,7 @@ export default function ForemanScreen() {
     () => setHistoryReloadToken((x) => x + 1),
     [],
   );
-  const openRequestById = useCallback(
-    (targetId: string | number | null | undefined) => {
-      const id = targetId != null ? String(targetId).trim() : '';
-      if (!id) return;
-      setRequestId(id);
-      setViewMode('raw');
-      preloadDisplayNo(id);
-      loadDetails(id);
-      loadItems(id);
-    },
-    [loadDetails, loadItems, preloadDisplayNo],
-  );
-
+  
   // ===== Режим отображения =====
   const [viewMode, setViewMode] = useState<'raw' | 'grouped'>('raw');
 
@@ -614,6 +602,18 @@ export default function ForemanScreen() {
       }
     },
     [requestId, ridStr],
+  );
+  const openRequestById = useCallback(
+    (targetId: string | number | null | undefined) => {
+      const id = targetId != null ? String(targetId).trim() : '';
+      if (!id) return;
+      setRequestId(id);
+      setViewMode('raw');
+      preloadDisplayNo(id);
+      loadDetails(id);
+      loadItems(id);
+    },
+    [loadDetails, loadItems, preloadDisplayNo],
   );
 
   useEffect(() => {
@@ -3259,7 +3259,7 @@ const s = StyleSheet.create({
     justifyContent: 'space-between',
     columnGap: 8,
   },
-  btn: {
+    btn: {
     flex: 1,
     paddingVertical: 10,
     paddingHorizontal: 8,
@@ -3268,21 +3268,25 @@ const s = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  // Ярко-зелёная основная кнопка (Добавить)
   btnPrimary: {
-    backgroundColor: '#22C55E',
-    borderColor: '#22C55E',
+    backgroundColor: '#16A34A', // ярко-зелёный
+    borderColor: '#15803D',
   },
+  // Ярко-синяя кнопка (Отправить директору)
   btnSecondary: {
-    backgroundColor: '#0B7285',
-    borderColor: '#0B7285',
+    backgroundColor: '#2563EB', // синий
+    borderColor: '#1D4ED8',
   },
+  // Нейтральная (Рассчитать, PDF, История)
   btnNeutral: {
-    backgroundColor: '#E5E7EB',
+    backgroundColor: '#F3F4F6',
     borderColor: '#CBD5E1',
   },
+  // Отключённое состояние – бледно-серое
   btnDisabled: {
     backgroundColor: '#E5E7EB',
-    borderColor: '#CBD5E1',
+    borderColor: '#D1D5DB',
   },
   btnTxtPrimary: {
     color: '#FFFFFF',
@@ -3290,7 +3294,7 @@ const s = StyleSheet.create({
     fontSize: 14,
   },
   btnTxtNeutral: {
-    color: '#0F172A',
+    color: '#111827',
     fontWeight: '700',
     fontSize: 14,
   },
@@ -3299,6 +3303,7 @@ const s = StyleSheet.create({
     fontWeight: '600',
     fontSize: 14,
   },
+
 
   backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.25)' },
   modalSheet: Platform.select({
