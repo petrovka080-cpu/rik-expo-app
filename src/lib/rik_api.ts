@@ -522,46 +522,24 @@ export async function addRequestItemFromRik(
   const rid = toFilterId(requestId);
   if (rid == null) throw new Error('request_id is empty');
 
-  const args: Record<string, any> = {
-    p_request_id: rid,
-    p_rik_code: rik_code,
-    p_qty: q,
+  const row: Record<string, any> = {
+    request_id: rid as any,
+    rik_code,
+    qty: q,
   };
-  if (typeof opts?.name_human !== 'undefined') args.p_name_human = opts.name_human;
-  if (typeof opts?.uom !== 'undefined') args.p_uom = opts.uom;
-  if (typeof opts?.note !== 'undefined') args.p_note = opts.note;
-  if (typeof opts?.app_code !== 'undefined') args.p_app_code = opts.app_code;
-  if (typeof opts?.kind !== 'undefined') args.p_kind = opts.kind;
+  if (Object.prototype.hasOwnProperty.call(opts ?? {}, 'note')) row.note = opts?.note ?? null;
+  if (Object.prototype.hasOwnProperty.call(opts ?? {}, 'app_code')) row.app_code = opts?.app_code ?? null;
+  if (Object.prototype.hasOwnProperty.call(opts ?? {}, 'kind')) row.kind = opts?.kind ?? null;
+  if (Object.prototype.hasOwnProperty.call(opts ?? {}, 'name_human'))
+    row.name_human = opts?.name_human ?? null;
+  if (Object.prototype.hasOwnProperty.call(opts ?? {}, 'uom')) row.uom = opts?.uom ?? null;
 
-  try {
-    const { error } = await client.rpc('request_add_item_from_rik', args as any);
-    if (error) {
-      console.warn('[addRequestItemFromRik]', parseErr(error));
-      throw error;
-    }
-    return true;
-  } catch (e: any) {
-    const msg = parseErr(e).toLowerCase();
-    const missing = msg.includes('request_add_item_from_rik');
-    if (!missing) {
-      throw e;
-    }
-
-    try {
-      const row: any = { request_id: rid as any, rik_code, qty: q };
-      if (opts?.name_human) row.name_human = opts.name_human;
-      if (typeof opts?.uom !== 'undefined') row.uom = opts.uom;
-      if (opts?.note) row.note = opts.note;
-      if (opts?.app_code) row.app_code = opts.app_code;
-      if (opts?.kind) row.kind = opts.kind;
-      const { error } = await client.from('request_items').insert([row]);
-      if (error) throw error;
-      return true;
-    } catch (fallbackErr) {
-      console.warn('[addRequestItemFromRik/fallback]', parseErr(fallbackErr));
-      throw fallbackErr;
-    }
+  const { error } = await client.from('request_items').insert([row]);
+  if (error) {
+    console.warn('[addRequestItemFromRik]', parseErr(error));
+    throw error;
   }
+  return true;
 }
 
 // ============================== Approvals / Director ==============================
