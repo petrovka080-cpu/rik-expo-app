@@ -689,27 +689,17 @@ export async function listRequestItems(requestId: string): Promise<ReqItemRow[]>
 
   try {
     const { data, error } = await supabase
-<<<<<<< HEAD
       .from('request_items' as any)
       .select(
         'id,request_id,rik_code,name_human,uom,qty,status,note,app_code,supplier_hint,row_no,position_order',
       )
       .eq('request_id', id)
-      .order('row_no', { ascending: true });
+      .order('row_no', { ascending: true })
+      .order('position_order', { ascending: true })
+      .order('id', { ascending: true });
 
     if (error) {
       console.warn('[catalog_api.listRequestItems] request_items:', error.message);
-=======
-      .from("request_items" as any)
-      .select(
-        "id,request_id,line_no,rik_code,name_human,uom,qty,status,note,app_code,supplier_hint"
-      )
-      .eq("request_id", id)
-      .order("line_no", { ascending: true });
-
-    if (error) {
-      console.warn("[catalog_api.listRequestItems] request_items:", error.message);
->>>>>>> 9f5d491 (Foreman + catalog_api: new requests schema fixes)
       return [];
     }
 
@@ -721,11 +711,7 @@ export async function listRequestItems(requestId: string): Promise<ReqItemRow[]>
 
     return mapped.sort((a, b) => (a.line_no ?? 0) - (b.line_no ?? 0));
   } catch (e: any) {
-<<<<<<< HEAD
     console.warn('[catalog_api.listRequestItems] request_items:', e?.message ?? e);
-=======
-    console.warn("[catalog_api.listRequestItems] request_items:", e?.message ?? e);
->>>>>>> 9f5d491 (Foreman + catalog_api: new requests schema fixes)
     return [];
   }
 }
@@ -768,7 +754,7 @@ export async function requestItemUpdateQty(
       .update({ qty: numericQty })
       .eq('id', id)
       .select(
-        'id,request_id,rik_code,code,name_human,name,uom,uom_code,qty,status,note,app_code,supplier_hint,row_no,position_order',
+        'id,request_id,rik_code,name_human,uom,qty,status,note,app_code,supplier_hint,row_no,position_order',
       )
       .maybeSingle();
     if (error) throw error;

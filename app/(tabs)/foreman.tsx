@@ -470,13 +470,11 @@ export default function ForemanScreen() {
   // --- безопасный RID как строка (универсально для uuid/bigint) ---
   const ridStr = useCallback((val: string | number) => String(val).trim(), []);
   const isDraftActive = useMemo(() => {
-    const status = requestDetails?.status ?? 'draft';
-    return status === 'draft';
+    const status = String(requestDetails?.status ?? '').trim();
+    if (!status) return true;
+    const key = status.toLowerCase();
+    return key === 'draft' || key === 'черновик';
   }, [requestDetails?.status]);
-
-  const isHeaderReady = useMemo(() => {
-    return Boolean(foreman.trim() && objectType && level);
-  }, [foreman, objectType, level]);
 
   const ensureHeaderReady = useCallback(() => {
     if (!foreman.trim()) {
@@ -946,6 +944,7 @@ export default function ForemanScreen() {
       const rid2 = await getOrCreateDraftRequestId();
       const rid2Str = String(rid2);
       setRequestId(rid2Str);
+      setLocalDraftId(rid2Str);
       preloadDisplayNo(rid2Str);
       await loadDetails(rid2Str);
       return rid2Str;
@@ -1367,7 +1366,7 @@ export default function ForemanScreen() {
     }
 
     for (const row of cartArray) {
-      const q = Number((row.qty || '').replace(',', '.'));
+      const q = Number(String(row.qty ?? '').replace(',', '.'));
       if (!Number.isFinite(q) || q <= 0) {
         Alert.alert(
           'Ошибка количества',
@@ -1405,7 +1404,7 @@ export default function ForemanScreen() {
 
       // добавление позиций
       for (const row of cartArray) {
-        const q = Number(row.qty.replace(',', '.'));
+        const q = Number(String(row.qty ?? '').replace(',', '.'));
         await addRequestItemFromRik(rid, row.rik_code, q, {
           note: row.note.trim(),
           app_code: row.app_code ?? undefined,
@@ -1606,6 +1605,18 @@ export default function ForemanScreen() {
     handleNewRequest,
     ensureHeaderReady,
   ]);
+
+  const handleCalcPress = useCallback(() => {
+    if (busy) return;
+    if (!ensureHeaderReady()) {
+      return;
+    }
+    if (!isDraftActive) {
+      Alert.alert('Просмотр заявки', 'Редактирование доступно только в текущем черновике.');
+      return;
+    }
+    setWorkTypePickerVisible(true);
+  }, [busy, ensureHeaderReady, isDraftActive]);
 
   // ---------- PDF ----------
   const onPdf = useCallback(async () => {
@@ -2726,23 +2737,11 @@ export default function ForemanScreen() {
           <View style={s.stickyRow}>
             {/* 1) Рассчитать (смета) */}
             <Pressable
-              onPress={() => setWorkTypePickerVisible(true)}
-              disabled={busy || !isDraftActive || !isHeaderReady}
-              style={[
-                s.btn,
-                s.btnNeutral,
-                busy || !isDraftActive || !isHeaderReady
-                  ? s.btnDisabled
-                  : null,
-              ]}
+              onPress={handleCalcPress}
+              disabled={busy}
+              style={[s.btn, s.btnNeutral, busy ? s.btnDisabled : null]}
             >
-              <Text
-                style={
-                  busy || !isDraftActive || !isHeaderReady
-                    ? s.btnTxtDisabled
-                    : s.btnTxtNeutral
-                }
-              >
+              <Text style={busy ? s.btnTxtDisabled : s.btnTxtNeutral}>
                 Рассчитать (смета)
               </Text>
             </Pressable>
@@ -2750,68 +2749,21 @@ export default function ForemanScreen() {
             {/* 2) Добавить */}
             <Pressable
               onPress={addCartToRequest}
-              disabled={
-                busy ||
-                cartCount === 0 ||
-                !isDraftActive ||
-                !isHeaderReady
-              }
-              style={[
-                s.btn,
-                busy ||
-                cartCount === 0 ||
-                !isDraftActive ||
-                !isHeaderReady
-                  ? s.btnDisabled
-                  : s.btnPrimary,
-              ]}
+              disabled={busy}
+              style={[s.btn, s.btnPrimary, busy ? s.btnDisabled : null]}
             >
-              <Text
-                style={
-                  busy ||
-                  cartCount === 0 ||
-                  !isDraftActive ||
-                  !isHeaderReady
-                    ? s.btnTxtDisabled
-                    : s.btnTxtPrimary
-                }
-              >
-                Добавить{' '}
-                {cartCount
-                  ? `(${cartCount})`
-                  : ''}
+              <Text style={busy ? s.btnTxtDisabled : s.btnTxtPrimary}>
+                {`Добавить${cartCount ? ` (${cartCount})` : ''}`}
               </Text>
             </Pressable>
 
             {/* 3) Отправить директору */}
             <Pressable
               onPress={submitToDirector}
-              disabled={
-                busy ||
-                (items?.length ?? 0) === 0 ||
-                !isDraftActive ||
-                !isHeaderReady
-              }
-              style={[
-                s.btn,
-                busy ||
-                (items?.length ?? 0) === 0 ||
-                !isDraftActive ||
-                !isHeaderReady
-                  ? s.btnDisabled
-                  : s.btnSecondary,
-              ]}
+              disabled={busy}
+              style={[s.btn, s.btnSecondary, busy ? s.btnDisabled : null]}
             >
-              <Text
-                style={
-                  busy ||
-                  (items?.length ?? 0) === 0 ||
-                  !isDraftActive ||
-                  !isHeaderReady
-                    ? s.btnTxtDisabled
-                    : s.btnTxtPrimary
-                }
-              >
+              <Text style={busy ? s.btnTxtDisabled : s.btnTxtPrimary}>
                 Отправить директору
               </Text>
             </Pressable>
@@ -2819,32 +2771,17 @@ export default function ForemanScreen() {
             {/* 4) PDF */}
             <Pressable
               onPress={onPdf}
-              disabled={busy || !requestId || !isHeaderReady}
-              style={[
-                s.btn,
-                busy || !requestId || !isHeaderReady
-                  ? s.btnDisabled
-                  : s.btnNeutral,
-              ]}
+              disabled={busy}
+              style={[s.btn, s.btnNeutral, busy ? s.btnDisabled : null]}
             >
-              <Text
-                style={
-                  busy || !requestId || !isHeaderReady
-                    ? s.btnTxtDisabled
-                    : s.btnTxtNeutral
-                }
-              >
-                PDF
-              </Text>
+              <Text style={busy ? s.btnTxtDisabled : s.btnTxtNeutral}>PDF</Text>
             </Pressable>
             <Pressable
               onPress={handleOpenHistory}
               disabled={busy}
               style={[s.btn, s.btnNeutral, busy ? s.btnDisabled : null]}
             >
-              <Text
-                style={busy ? s.btnTxtDisabled : s.btnTxtNeutral}
-              >
+              <Text style={busy ? s.btnTxtDisabled : s.btnTxtNeutral}>
                 История
               </Text>
             </Pressable>
