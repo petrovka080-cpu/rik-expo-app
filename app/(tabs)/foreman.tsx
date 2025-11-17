@@ -446,12 +446,7 @@ export default function ForemanScreen() {
   const [busy, setBusy] = useState(false);
   const [historyRequests, setHistoryRequests] = useState<ForemanRequestSummary[]>([]);
   const [historyLoading, setHistoryLoading] = useState(false);
-  const [historyReloadToken, setHistoryReloadToken] = useState(0);
   const [historyVisible, setHistoryVisible] = useState(false);
-  const triggerHistoryReload = useCallback(
-    () => setHistoryReloadToken((x) => x + 1),
-    [],
-  );
   
   // ===== Режим отображения =====
   const [viewMode, setViewMode] = useState<'raw' | 'grouped'>('raw');
@@ -787,16 +782,36 @@ export default function ForemanScreen() {
   ]);
 
   const handleOpenHistory = useCallback(() => {
-    if (!foreman.trim()) {
+    const name = foreman.trim();
+
+    if (!name) {
       Alert.alert(
         'История заявок',
-        'Укажите ФИО прораба в верхней части формы, чтобы увидеть историю.',
+        'Укажи ФИО прораба в шапке, чтобы посмотреть его историю.',
       );
       return;
     }
-    triggerHistoryReload();
+
     setHistoryVisible(true);
-  }, [foreman, triggerHistoryReload]);
+    setHistoryLoading(true);
+
+    (async () => {
+      try {
+        const rows = await listForemanRequests(name, 50);
+        if (Array.isArray(rows)) {
+          setHistoryRequests(rows);
+        } else {
+          setHistoryRequests([]);
+        }
+      } catch (e) {
+        console.warn('[Foreman] listForemanRequests:', e);
+        Alert.alert('История', 'Не удалось загрузить историю заявок.');
+        setHistoryRequests([]);
+      } finally {
+        setHistoryLoading(false);
+      }
+    })();
+  }, [foreman, listForemanRequests]);
 
   const handleCloseHistory = useCallback(() => setHistoryVisible(false), []);
 
@@ -807,10 +822,6 @@ export default function ForemanScreen() {
     },
     [openRequestById],
   );
-
-  useEffect(() => {
-    loadItems();
-  }, [loadItems]);
 
   useEffect(() => {
     if (initialDraftEnsured) return;
@@ -880,33 +891,8 @@ export default function ForemanScreen() {
   }, [requestId, preloadDisplayNo, loadDetails]);
 
   useEffect(() => {
-    const name = foreman.trim();
-    if (!name) {
-      setHistoryRequests([]);
-      setHistoryLoading(false);
-      return;
-    }
-
-    let cancelled = false;
-    setHistoryLoading(true);
-    (async () => {
-      try {
-        const rows = await listForemanRequests(name, 20);
-        if (!cancelled) setHistoryRequests(rows);
-      } catch (e) {
-        if (!cancelled) {
-          console.warn('[Foreman] listForemanRequests:', e);
-          setHistoryRequests([]);
-        }
-      } finally {
-        if (!cancelled) setHistoryLoading(false);
-      }
-    })();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [foreman, historyReloadToken]);
+    loadItems();
+  }, [loadItems]);
 
   // нормальный ensure, если надо создать прямо сейчас (с сохранением шапки)
   async function ensureAndGetId() {
@@ -1453,8 +1439,7 @@ export default function ForemanScreen() {
   const commitQtyChange = useCallback(
     async (item: ReqItemRow, draftValue: string) => {
       const currentRequest = String(requestDetails?.id ?? requestId ?? '').trim();
-      const itemRequest = String((item as any).request_id ?? '').trim();
-      if (!isDraftActive || !currentRequest || itemRequest !== currentRequest) {
+      if (!isDraftActive || !currentRequest) {
         return;
       }
 
@@ -1530,6 +1515,20 @@ export default function ForemanScreen() {
         ? ridStr(requestId)
         : await ensureAndGetId();
 
+      for (const item of items) {
+        const key = String(item.id);
+        const draftVal = qtyDrafts[key];
+        const currentFormatted = formatQtyInput(item.qty);
+
+        if (
+          typeof draftVal === 'string' &&
+          draftVal.trim() !== '' &&
+          draftVal.trim() !== currentFormatted
+        ) {
+          await commitQtyChange(item, draftVal);
+        }
+      }
+
       await updateRequestMeta(rid, {
         object_type_code: objectType || null,
         level_code: level || null,
@@ -1565,7 +1564,6 @@ export default function ForemanScreen() {
         'Отправлено директору',
         `Заявка ${submittedLabel} отправлена на утверждение`,
       );
-      triggerHistoryReload();
 
       setCart({});
       setItems([]);
@@ -1600,10 +1598,12 @@ export default function ForemanScreen() {
     preloadDisplayNo,
     labelForRequest,
     ensureAndGetId,
-    triggerHistoryReload,
     isDraftActive,
     handleNewRequest,
     ensureHeaderReady,
+    qtyDrafts,
+    formatQtyInput,
+    commitQtyChange,
   ]);
 
   const handleCalcPress = useCallback(() => {
@@ -2003,7 +2003,6 @@ export default function ForemanScreen() {
         }
         const formatted = formatQtyInput(next);
         updateQtyDraftValue(key, formatted);
-        commitQtyChange(it, formatted);
       };
 
       return (
@@ -2062,7 +2061,6 @@ export default function ForemanScreen() {
                   value={draft}
                   onChangeText={(v) => updateQtyDraftValue(key, v)}
                   onBlur={handleBlur}
-                  onSubmitEditing={handleBlur}
                   keyboardType="decimal-pad"
                   editable={!updating}
                   style={[
