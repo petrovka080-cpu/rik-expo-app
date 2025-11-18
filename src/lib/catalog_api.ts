@@ -392,10 +392,18 @@ export function getLocalDraftId(): string | null { return storage.get(); }
 export function setLocalDraftId(id: string) { storage.set(id); }
 export function clearLocalDraftId() { storage.clear(); }
 
+const draftStatusKeys = new Set(['draft', 'черновик', '']);
+const isDraftStatusValue = (value?: string | null) =>
+  draftStatusKeys.has(String(value ?? '').trim().toLowerCase());
+
 /** Создаёт/возвращает черновик заявки */
 export async function getOrCreateDraftRequestId(): Promise<string> {
   const cached = getLocalDraftId();
-  if (cached) return cached;
+  if (cached) {
+    const valid = await isCachedDraftValid(cached);
+    if (valid) return cached;
+    clearLocalDraftId();
+  }
 
   try {
     const created = await rpcRequestCreateDraft();
@@ -410,6 +418,28 @@ export async function getOrCreateDraftRequestId(): Promise<string> {
   }
 
   throw new Error("Не удалось создать черновик заявки");
+}
+
+async function isCachedDraftValid(id: string): Promise<boolean> {
+  const rid = norm(id);
+  if (!rid) return false;
+
+  try {
+    const { data, error } = await supabase
+      .from('requests' as any)
+      .select('id,status')
+      .eq('id', rid)
+      .maybeSingle();
+    if (error) throw error;
+    if (!data?.id) return false;
+    return isDraftStatusValue(data.status);
+  } catch (e: any) {
+    const msg = String(e?.message ?? '').toLowerCase();
+    if (!msg.includes('permission denied')) {
+      console.warn('[catalog_api.getOrCreateDraftRequestId] draft check:', e?.message ?? e);
+    }
+    return false;
+  }
 }
 
 /** Заголовок заявки (для шапки/номера), пробуем вью/таблицы по очереди */
@@ -806,6 +836,7 @@ export async function listForemanRequests(
           )
           .eq("foreman_name", name)
           .neq('status', 'Черновик' as any)
+          .neq('status', 'draft' as any)
           .order("created_at", { ascending: false })
           .limit(take),
     },

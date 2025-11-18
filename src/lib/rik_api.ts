@@ -537,6 +537,7 @@ export async function addRequestItemFromRik(
     request_id: rid as any,
     rik_code,
     qty: q,
+    status: 'Черновик',
   };
   if (Object.prototype.hasOwnProperty.call(opts ?? {}, 'note')) row.note = opts?.note ?? null;
   if (Object.prototype.hasOwnProperty.call(opts ?? {}, 'app_code')) row.app_code = opts?.app_code ?? null;
@@ -732,6 +733,22 @@ export async function requestSubmit(requestId: number | string): Promise<Request
   const fallback = upd.data ? mapRequestRow(upd.data) : null;
   if (fallback && _draftRequestIdAny != null && String(_draftRequestIdAny) === String(ridForRpc)) {
     _draftRequestIdAny = null;
+  }
+  const requestFilter = toFilterId(requestId) as any;
+  const pendingPayload = { status: 'На утверждении' } as any;
+  try {
+    await client
+      .from('request_items')
+      .update(pendingPayload)
+      .eq('request_id', requestFilter)
+      .not('status', 'in', '("Утверждено","Отклонено","approved","rejected")');
+    await client
+      .from('request_items')
+      .update(pendingPayload)
+      .eq('request_id', requestFilter)
+      .is('status', null);
+  } catch (e) {
+    console.warn('[requestSubmit/request_items fallback]', parseErr(e));
   }
   return fallback;
 }
