@@ -365,6 +365,9 @@ const shortId = (rid: string | number | null | undefined) => {
 };
 
 const DISPLAY_NUMBER_RE = /^REQ-\d{4,}\/\d{4}$/i;
+const DRAFT_STATUS_KEYS = new Set(['draft', 'черновик', '']);
+const isDraftLikeStatus = (value?: string | null) =>
+  DRAFT_STATUS_KEYS.has(String(value ?? '').trim().toLowerCase());
 
 export default function ForemanScreen() {
   // ===== Шапка заявки =====
@@ -465,10 +468,7 @@ export default function ForemanScreen() {
   // --- безопасный RID как строка (универсально для uuid/bigint) ---
   const ridStr = useCallback((val: string | number) => String(val).trim(), []);
   const isDraftActive = useMemo(() => {
-    const status = String(requestDetails?.status ?? '').trim();
-    if (!status) return true;
-    const key = status.toLowerCase();
-    return key === 'draft' || key === 'черновик';
+    return isDraftLikeStatus(requestDetails?.status);
   }, [requestDetails?.status]);
 
   const ensureHeaderReady = useCallback(() => {
@@ -752,10 +752,26 @@ export default function ForemanScreen() {
       setLocalDraftId(idStr);
       setItems([]);
       setCart({});
+      setQtyDrafts({});
+      setQtyBusyMap({});
+      setViewMode('raw');
       const display = String(created.display_no ?? '').trim();
       if (display) {
         setDisplayNoByReq((prev) => ({ ...prev, [idStr]: display }));
       }
+      setRequestDetails({
+        id: idStr,
+        status: created.status ?? 'Черновик',
+        display_no: display || created.display_no || null,
+        created_at: created.created_at ?? new Date().toISOString(),
+        need_by: created.need_by ?? meta.need_by ?? undefined,
+        comment: created.comment ?? meta.comment ?? undefined,
+        foreman_name: created.foreman_name ?? meta.foreman_name ?? undefined,
+        object_type_code: created.object_type_code ?? meta.object_type_code ?? undefined,
+        level_code: created.level_code ?? meta.level_code ?? undefined,
+        system_code: created.system_code ?? meta.system_code ?? undefined,
+        zone_code: created.zone_code ?? meta.zone_code ?? undefined,
+      });
       await loadDetails(idStr);
       await loadItems(idStr);
       setInitialDraftEnsured(true);
@@ -1984,7 +2000,9 @@ export default function ForemanScreen() {
       const updating = !!qtyBusyMap[key];
       const currentRequest = String(requestDetails?.id ?? requestId ?? '').trim();
       const itemRequest = String((it as any).request_id ?? '').trim();
-      const canEdit = isDraftActive && currentRequest && itemRequest === currentRequest;
+      const rowEditable = isDraftLikeStatus(it.status);
+      const canEdit =
+        isDraftActive && currentRequest && itemRequest === currentRequest && rowEditable;
 
       const handleBlur = () => {
         if (!canEdit || updating) return;
@@ -2229,7 +2247,9 @@ export default function ForemanScreen() {
     return 'будет создана автоматически';
   }, [labelForRequest, requestDetails?.display_no, requestId]);
 
-  const statusInfo = resolveStatusInfo(requestDetails?.status);
+  const statusInfo = resolveStatusInfo(
+    requestDetails?.status ?? (isDraftActive ? 'draft' : undefined),
+  );
   const createdDisplay = useMemo(() => {
     if (!requestDetails?.created_at) return '—';
     try {

@@ -136,6 +136,14 @@ begin
     raise exception 'request % not found', p_request_id;
   end if;
 
+  update public.request_items ri
+     set status = 'На утверждении'
+   where ri.request_id = p_request_id
+     and (
+       ri.status is null or
+       lower(ri.status) in ('черновик', 'draft')
+     );
+
   return v_row;
 end;
 $$;
