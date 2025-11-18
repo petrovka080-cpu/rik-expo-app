@@ -1552,6 +1552,10 @@ export async function buildRequestPdfHtml(requestId: number | string): Promise<s
 // cache id черновика на сессию (uuid или int)
 let _draftRequestIdAny: string | number | null = null;
 
+export function clearCachedDraftRequestId() {
+  _draftRequestIdAny = null;
+}
+
 export async function getOrCreateDraftRequestId(): Promise<string | number> {
   if (_draftRequestIdAny != null) return _draftRequestIdAny;
   const created = await requestCreateDraft();

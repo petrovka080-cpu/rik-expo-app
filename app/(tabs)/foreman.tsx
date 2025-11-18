@@ -38,6 +38,8 @@ import {
   exportRequestPdf, // PDF
   getOrCreateDraftRequestId, // безопасный ensure для черновика
   requestCreateDraft,
+  clearLocalDraftId,
+  clearCachedDraftRequestId,
   setLocalDraftId,
   listForemanRequests,
   requestItemUpdateQty,
@@ -87,6 +89,8 @@ type CalcRow = {
   work_type_code?: string | null;
   hint?: string | null;
 };
+
+type RequestDraftMeta = Parameters<typeof requestCreateDraft>[0];
 
 const KIND_TABS: Array<{ key: string; label: string }> = [
   { key: 'all', label: 'Все' },
@@ -471,6 +475,39 @@ export default function ForemanScreen() {
     return isDraftLikeStatus(requestDetails?.status);
   }, [requestDetails?.status]);
 
+  const canEditRequestItem = useCallback(
+    (row?: ReqItemRow | null) => {
+      if (!row) return false;
+      const activeRequestId = String(requestDetails?.id ?? '').trim();
+      if (!activeRequestId) return false;
+      if (!isDraftLikeStatus(requestDetails?.status)) return false;
+      const itemRequest = String(row.request_id ?? '').trim();
+      if (!itemRequest || itemRequest !== activeRequestId) return false;
+      return isDraftLikeStatus(row.status);
+    },
+    [requestDetails?.id, requestDetails?.status],
+  );
+
+  const resetDraftState = useCallback(() => {
+    setRequestId('');
+    setRequestDetails(null);
+    setLastDetailsLoadedId(null);
+    setItems([]);
+    setCart({});
+    setQtyDrafts({});
+    setQtyBusyMap({});
+    setViewMode('raw');
+    setNeedBy('');
+    setComment('');
+    setObjectType('');
+    setLevel('');
+    setSystem('');
+    setZone('');
+    setInitialDraftEnsured(false);
+    setAppPickerFor(null);
+    setAppPickerQ('');
+  }, []);
+
   const ensureHeaderReady = useCallback(() => {
     if (!foreman.trim()) {
       Alert.alert('Заполни шапку', 'Укажи ФИО прораба.');
@@ -733,18 +770,28 @@ export default function ForemanScreen() {
     );
   }, []);
 
-  const handleNewRequest = useCallback(async (opts?: { silent?: boolean; keepBusy?: boolean }) => {
+  const handleNewRequest = useCallback(async (opts?: { silent?: boolean; keepBusy?: boolean; resetMeta?: boolean }) => {
     try {
       if (!opts?.keepBusy) setBusy(true);
-      const meta = {
-        foreman_name: foreman.trim() || null,
-        need_by: needBy.trim() || null,
-        comment: comment.trim() || null,
-        object_type_code: objectType || null,
-        level_code: level || null,
-        system_code: system || null,
-        zone_code: zone || null,
-      };
+      const meta: RequestDraftMeta = opts?.resetMeta
+        ? {
+            foreman_name: foreman.trim() || null,
+            need_by: null,
+            comment: null,
+            object_type_code: null,
+            level_code: null,
+            system_code: null,
+            zone_code: null,
+          }
+        : {
+            foreman_name: foreman.trim() || null,
+            need_by: needBy.trim() || null,
+            comment: comment.trim() || null,
+            object_type_code: objectType || null,
+            level_code: level || null,
+            system_code: system || null,
+            zone_code: zone || null,
+          };
       const created = await requestCreateDraft(meta);
       if (!created?.id) throw new Error('Не удалось создать черновик');
       const idStr = String(created.id);
@@ -1454,12 +1501,13 @@ export default function ForemanScreen() {
 
   const commitQtyChange = useCallback(
     async (item: ReqItemRow, draftValue: string) => {
-      const currentRequest = String(requestDetails?.id ?? requestId ?? '').trim();
-      if (!isDraftActive || !currentRequest) {
+      const key = String(item.id);
+      const currentRequest = String(requestDetails?.id ?? '').trim();
+      if (!isDraftActive || !currentRequest || !canEditRequestItem(item)) {
+        setQtyDrafts((prev) => ({ ...prev, [key]: formatQtyInput(item.qty) }));
         return;
       }
 
-      const key = String(item.id);
       const parsed = parseQtyValue(draftValue);
       if (!Number.isFinite(parsed) || parsed <= 0) {
         Alert.alert('Количество', 'Значение должно быть больше нуля.');
@@ -1495,11 +1543,11 @@ export default function ForemanScreen() {
       }
     },
     [
+      canEditRequestItem,
       formatQtyInput,
       isDraftActive,
       parseQtyValue,
       requestDetails?.id,
-      requestId,
       requestItemUpdateQty,
       setItems,
     ],
@@ -1532,6 +1580,7 @@ export default function ForemanScreen() {
         : await ensureAndGetId();
 
       for (const item of items) {
+        if (!canEditRequestItem(item)) continue;
         const key = String(item.id);
         const draftVal = qtyDrafts[key];
         const currentFormatted = formatQtyInput(item.qty);
@@ -1581,13 +1630,11 @@ export default function ForemanScreen() {
         `Заявка ${submittedLabel} отправлена на утверждение`,
       );
 
-      setCart({});
-      setItems([]);
-      setQtyDrafts({});
-      setQtyBusyMap({});
-      setViewMode('raw');
+      clearLocalDraftId();
+      clearCachedDraftRequestId();
+      resetDraftState();
 
-      await handleNewRequest({ silent: true, keepBusy: true });
+      await handleNewRequest({ silent: true, keepBusy: true, resetMeta: true });
     } catch (e: any) {
       console.error(
         '[Foreman] submitToDirector:',
@@ -1620,6 +1667,10 @@ export default function ForemanScreen() {
     qtyDrafts,
     formatQtyInput,
     commitQtyChange,
+    resetDraftState,
+    clearLocalDraftId,
+    clearCachedDraftRequestId,
+    canEditRequestItem,
   ]);
 
   const handleCalcPress = useCallback(() => {
@@ -1998,11 +2049,7 @@ export default function ForemanScreen() {
       const key = String(it.id);
       const draft = qtyDrafts[key] ?? formatQtyInput(it.qty);
       const updating = !!qtyBusyMap[key];
-      const currentRequest = String(requestDetails?.id ?? requestId ?? '').trim();
-      const itemRequest = String((it as any).request_id ?? '').trim();
-      const rowEditable = isDraftLikeStatus(it.status);
-      const canEdit =
-        isDraftActive && currentRequest && itemRequest === currentRequest && rowEditable;
+      const canEdit = canEditRequestItem(it);
 
       const handleBlur = () => {
         if (!canEdit || updating) return;
@@ -2147,12 +2194,10 @@ export default function ForemanScreen() {
       );
     },
     [
+      canEditRequestItem,
       qtyDrafts,
       formatQtyInput,
       qtyBusyMap,
-      requestDetails?.id,
-      requestId,
-      isDraftActive,
       commitQtyChange,
       parseQtyValue,
       updateQtyDraftValue,

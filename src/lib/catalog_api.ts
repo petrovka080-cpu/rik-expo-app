@@ -15,6 +15,7 @@ export {
   requestSubmit,
   exportRequestPdf,
   addRequestItemFromRik,
+  clearCachedDraftRequestId,
 } from "./rik_api";
 export {
   listBuyerInbox,
@@ -392,9 +393,12 @@ export function getLocalDraftId(): string | null { return storage.get(); }
 export function setLocalDraftId(id: string) { storage.set(id); }
 export function clearLocalDraftId() { storage.clear(); }
 
-const draftStatusKeys = new Set(['draft', 'черновик', '']);
-const isDraftStatusValue = (value?: string | null) =>
-  draftStatusKeys.has(String(value ?? '').trim().toLowerCase());
+const draftStatusKeys = new Set(['draft', 'черновик']);
+const isDraftStatusValue = (value?: string | null) => {
+  const normalized = String(value ?? '').trim().toLowerCase();
+  if (!normalized) return false;
+  return draftStatusKeys.has(normalized);
+};
 
 /** Создаёт/возвращает черновик заявки */
 export async function getOrCreateDraftRequestId(): Promise<string> {
