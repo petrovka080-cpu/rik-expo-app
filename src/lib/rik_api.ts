@@ -1807,9 +1807,7 @@ export const RIK_API = {
   resolveProposalPrettyTitle, // >>> added
   buildProposalPdfHtmlPretty, // >>> added
 };
-  buildProposalPdfHtmlPretty, // >>> added
-};
-
+  
 // ===== совместимые type-экспорты под нейтральные имена (используются только в TS) =====
 export type { CatalogGroup, UomRef, IncomingItem } from './catalog_api';
 

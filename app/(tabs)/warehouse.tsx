@@ -1,21 +1,36 @@
 // app/(tabs)/warehouse.tsx
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
-  View, Text, FlatList, Pressable, Alert, ActivityIndicator,
-  RefreshControl, Platform, TextInput, ScrollView, Modal
+  View,
+  Text,
+  FlatList,
+  Pressable,
+  Alert,
+  ActivityIndicator,
+  RefreshControl,
+  Platform,
+  TextInput,
+  ScrollView,
+  Modal,
 } from "react-native";
 import { supabase } from "../../src/lib/supabaseClient";
+import {
+  WorkMaterialsEditor,
+  WorkMaterialRow,
+} from "../../src/components/WorkMaterialsEditor";
+import * as Print from "expo-print";
+import * as Sharing from "expo-sharing";
 
 /** ========= типы ========= */
 type IncomingRow = {
-  id: string;                // wh_incoming.id или синтетический "p:<purchase_id>"
+  id: string; // wh_incoming.id или синтетический "p:<purchase_id>"
   purchase_id: string;
   status: "pending" | "confirmed" | string;
   qty?: number | null;
   note?: string | null;
   created_at?: string | null;
   confirmed_at?: string | null;
-  po_no?: string | null;     // из compat
+  po_no?: string | null; // из compat
   purchase_status?: string | null;
 };
 
@@ -61,6 +76,7 @@ type RikSearchRow = {
   unit_id: string | null;
   unit_label?: string | null;
   sector: string | null;
+  search_text?: string | null;
 };
 
 type InvSession = {
@@ -82,23 +98,63 @@ type ItemRow = {
   qty_received: number;
 };
 
+type WorkRow = {
+  progress_id: string;
+  purchase_item_id: string;
+  purchase_id: string | null;
+  proposal_id: string | null;
+  object_id: string | null;
+  object_name?: string | null;
+  work_code: string | null;
+  work_name: string | null;
+  uom_id: string | null;
+  qty_planned: number;
+  qty_done: number;
+  qty_left: number;
+  work_status: string;
+  started_at: string | null;
+  finished_at: string | null;
+};
+
+type WorkLogRow = {
+  id: string;
+  created_at: string;
+  qty: number;
+  work_uom: string | null;
+  stage_note: string | null;
+  note: string | null;
+};
+
 type Option = { id: string; label: string };
 
 type Tab =
   | "К приходу"
   | "Склад факт"
+  | "Работы"
   | "Расход"
   | "История"
   | "Инвентаризация"
   | "Отчёты";
 
-const TABS: Tab[] = ["К приходу", "Склад факт", "Расход", "История", "Инвентаризация", "Отчёты"];
+const TABS: Tab[] = [
+  "К приходу",
+  "Склад факт",
+  "Работы",
+  "Расход",
+  "История",
+  "Инвентаризация",
+  "Отчёты",
+];
 
 /** ========= утилиты ========= */
 const nz = (v: any, d = 0) => (Number.isFinite(Number(v)) ? Number(v) : d);
 const showErr = (e: any) =>
-  Alert.alert("Ошибка", String(e?.message || e?.error_description || e?.hint || e || "Неизвестная ошибка"));
-const pickErr = (e: any) => String(e?.message || e?.error_description || e?.hint || JSON.stringify(e));
+  Alert.alert(
+    "Ошибка",
+    String(e?.message || e?.error_description || e?.hint || e || "Неизвестная ошибка"),
+  );
+const pickErr = (e: any) =>
+  String(e?.message || e?.error_description || e?.hint || JSON.stringify(e));
 const norm = (s: string) =>
   (s || "")
     .toLowerCase()
@@ -124,23 +180,358 @@ const parseNum = (v: any, d = 0): number => {
   const n = Number(cleaned);
   return Number.isFinite(n) ? n : d;
 };
+
 // Проверка на UUID
 const isUuid = (s: string) =>
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(s));
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+    String(s),
+  );
+
+// определить тип по rik-коду: работа / материал / услуга
+const detectKindLabel = (code?: string | null): string | null => {
+  if (!code) return null;
+  const c = String(code).toUpperCase();
+
+  // работы
+  if (c.startsWith("WRK-") || c.startsWith("WORK-") || c.startsWith("WT-")) {
+    return "работа";
+  }
+
+  // услуги
+  if (c.startsWith("SRV-") || c.startsWith("SPEC-")) {
+    return "услуга";
+  }
+
+  // материалы
+  if (c.startsWith("MAT-")) {
+    return "материал";
+  }
+
+  return null;
+};
 
 // определить unit_id по code
 const resolveUnitIdByCode = async (code: string): Promise<string | null> => {
   try {
-    const m = await supabase.from("rik_materials" as any).select("unit_id").eq("mat_code", code).maybeSingle();
+    const m = await supabase
+      .from("rik_materials" as any)
+      .select("unit_id")
+      .eq("mat_code", code)
+      .maybeSingle();
     if (!m.error && m.data?.unit_id) return String(m.data.unit_id);
-    const w = await supabase.from("rik_works" as any).select("unit_id").eq("code", code).maybeSingle();
+
+    const w = await supabase
+      .from("rik_works" as any)
+      .select("unit_id")
+      .eq("code", code)
+      .maybeSingle();
     if (!w.error && w.data?.unit_id) return String(w.data.unit_id);
+
     return null;
-  } catch { return null; }
+  } catch {
+    return null;
+  }
 };
+
+/* ===== PDF по факту работы (акт) ===== */
+async function generateWorkPdf(
+  work: WorkRow | null,
+  materials: WorkMaterialRow[],
+  opts?: { actDate?: string | Date },
+) {
+  if (!work) return;
+
+  try {
+    const dt = opts?.actDate ? new Date(opts.actDate) : new Date();
+    const dateStr = dt.toLocaleDateString("ru-RU");
+    const timeStr = dt.toLocaleTimeString("ru-RU", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+
+    const objectName = work.object_name || "Объект не указан";
+    const workName = work.work_name || work.work_code || "Работа";
+    const actNo = work.progress_id.slice(0, 8);
+
+    const workUrl = `https://app.goxbuild.com/work/${work.progress_id}`;
+    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(
+      workUrl,
+    )}`;
+
+    const materialsRowsHtml = materials
+      .map(
+        (m, index) => `
+        <tr>
+          <td style="border:1px solid #000; padding:4px; text-align:center;">${
+            index + 1
+          }</td>
+          <td style="border:1px solid #000; padding:4px;">${m.name}</td>
+          <td style="border:1px solid #000; padding:4px; text-align:center;">${
+            m.uom
+          }</td>
+          <td style="border:1px solid #000; padding:4px; text-align:right;">${
+            m.qty_fact ?? 0
+          }</td>
+          <td style="border:1px solid #000; padding:4px;"></td>
+        </tr>
+      `,
+      )
+      .join("");
+
+    const html = `
+    <html>
+      <head>
+        <meta charset="utf-8" />
+        <style>
+          @page {
+            size: A4;
+            margin: 15mm;
+          }
+          body {
+            font-family: DejaVu Sans, sans-serif;
+            font-size: 11px;
+          }
+          .center { text-align: center; }
+          .right  { text-align: right; }
+          .bold   { font-weight: bold; }
+          table { border-collapse: collapse; width: 100%; }
+        </style>
+      </head>
+      <body>
+        <!-- ШАПКА АКТА -->
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
+          <div>
+            <div class="bold">Акт выполнения работ № ${actNo}</div>
+            <div>Дата: ${dateStr} ${timeStr}</div>
+          </div>
+          <div style="text-align:right; font-size:10px;">
+            <div>Приложение к договору подряда</div>
+            <div>Форма условно по КС-2 / ГОСТ</div>
+          </div>
+        </div>
+
+        <div style="margin-bottom:8px;">
+          <div><span class="bold">Объект:</span> ${objectName}</div>
+          <div><span class="bold">Работа:</span> ${workName}</div>
+        </div>
+
+        <!-- Сводка по объёму -->
+        <table style="margin-top:6px; margin-bottom:12px;">
+          <tr>
+            <td class="bold">Плановый объём:</td>
+            <td>${work.qty_planned} ${work.uom_id || ""}</td>
+          </tr>
+          <tr>
+            <td class="bold">Выполнено по акту:</td>
+            <td>${work.qty_done} ${work.uom_id || ""}</td>
+          </tr>
+          <tr>
+            <td class="bold">Остаток по плану:</td>
+            <td>${work.qty_left} ${work.uom_id || ""}</td>
+          </tr>
+        </table>
+
+        <!-- Таблица материалов -->
+        <div class="bold" style="margin-top:10px; margin-bottom:4px;">
+          Использованные материалы (по факту)
+        </div>
+        <table>
+          <tr>
+            <th style="border:1px solid #000; padding:4px; width:5%;">№</th>
+            <th style="border:1px solid #000; padding:4px;">Наименование</th>
+            <th style="border:1px solid #000; padding:4px; width:10%;">Ед.</th>
+            <th style="border:1px solid #000; padding:4px; width:15%;">Количество</th>
+            <th style="border:1px solid #000; padding:4px; width:20%;">Примечание</th>
+          </tr>
+          ${
+            materialsRowsHtml ||
+            `
+          <tr>
+            <td colspan="5" style="border:1px solid #000; padding:4px; text-align:center;">
+              Материалы по факту не указаны
+            </td>
+          </tr>`
+          }
+        </table>
+
+        <!-- Подписи -->
+        <div style="margin-top:24px;">
+          <table style="width:100%;">
+            <tr>
+              <td style="width:33%; padding:4px;">Прораб</td>
+              <td style="width:33%; padding:4px; border-bottom:1px solid #000;">&nbsp;</td>
+              <td style="width:34%; padding:4px;">(ФИО, подпись)</td>
+            </tr>
+            <tr>
+              <td style="padding:4px;">Мастер/Бригадир</td>
+              <td style="padding:4px; border-bottom:1px solid #000;">&nbsp;</td>
+              <td style="padding:4px;">(ФИО, подпись)</td>
+            </tr>
+            <tr>
+              <td style="padding:4px;">Представитель заказчика</td>
+              <td style="padding:4px; border-bottom:1px solid #000;">&nbsp;</td>
+              <td style="padding:4px;">(ФИО, подпись)</td>
+            </tr>
+          </table>
+        </div>
+
+        <!-- QR-код и служебная инфа -->
+        <div style="margin-top:16px; display:flex; justify-content:space-between; align-items:flex-end;">
+          <div style="font-size:9px; color:#555;">
+            Сформировано в системе GOX BUILD<br/>
+            ID работы: ${work.progress_id}
+          </div>
+          <div style="text-align:right;">
+            <div style="font-size:9px; margin-bottom:4px;">QR для проверки акта</div>
+            <img src="${qrUrl}" alt="QR" />
+          </div>
+        </div>
+      </body>
+    </html>
+    `;
+
+    // WEB: отдельное окно
+    if (Platform.OS === "web") {
+      const printWindow = window.open("", "_blank");
+      if (!printWindow) {
+        Alert.alert(
+          "Печать",
+          "Браузер заблокировал всплывающее окно. Разреши pop-up для этого сайта.",
+        );
+        return;
+      }
+      printWindow.document.open();
+      printWindow.document.write(html);
+      printWindow.document.close();
+      printWindow.focus();
+      printWindow.print();
+      return;
+    }
+
+    // MOBILE: печать + PDF + share + upload
+    await Print.printAsync({ html });
+
+    const { uri } = await Print.printToFileAsync({ html });
+
+    try {
+      await Sharing.shareAsync(uri);
+    } catch (e) {
+      console.warn("[generateWorkPdf] shareAsync error", e);
+    }
+
+    try {
+      const bucket = "work-pdfs";
+      const fileName = `work-${work.progress_id}-${Date.now()}.pdf`;
+
+      const resp = await fetch(uri);
+      const blob = await resp.blob();
+
+      const uploadRes = await supabase.storage.from(bucket).upload(fileName, blob, {
+        contentType: "application/pdf",
+        upsert: true,
+      });
+
+      if (uploadRes.error) {
+        console.warn("[generateWorkPdf] upload error:", uploadRes.error.message);
+      } else {
+        console.log("[generateWorkPdf] uploaded to storage:", uploadRes.data.path);
+      }
+    } catch (e) {
+      console.warn("[generateWorkPdf] storage error", e);
+    }
+  } catch (e: any) {
+    console.warn("[generateWorkPdf] general error", e);
+    Alert.alert("Ошибка PDF", String(e?.message || e));
+  }
+}
+
+/* ===== Свод по работе: все акты + материалы ===== */
+async function loadAggregatedWorkSummary(
+  progressId: string,
+  baseWork: WorkRow,
+): Promise<{ work: WorkRow; materials: WorkMaterialRow[] }> {
+  const logsQ = await supabase
+    .from("work_progress_log" as any)
+    .select("id, qty")
+    .eq("progress_id", progressId);
+
+  if (logsQ.error || !Array.isArray(logsQ.data) || logsQ.data.length === 0) {
+    return { work: baseWork, materials: [] };
+  }
+
+  const logIds = (logsQ.data as any[]).map((l) => String(l.id));
+  const totalQty = (logsQ.data as any[]).reduce(
+    (sum, l) => sum + Number(l.qty ?? 0),
+    0,
+  );
+
+  const matsQ = await supabase
+    .from("work_progress_log_materials" as any)
+    .select("log_id, mat_code, uom_mat, qty_fact")
+    .in("log_id", logIds);
+
+  let aggregated: WorkMaterialRow[] = [];
+
+  if (!matsQ.error && Array.isArray(matsQ.data) && matsQ.data.length > 0) {
+    const aggMap = new Map<string, { mat_code: string; uom: string; qty: number }>();
+
+    for (const m of matsQ.data as any[]) {
+      const code = String(m.mat_code);
+      const uom = m.uom_mat ? String(m.uom_mat) : "";
+      const qty = Number(m.qty_fact ?? 0) || 0;
+      if (!qty) continue;
+
+      const key = `${code}||${uom}`;
+      const prev = aggMap.get(key) || { mat_code: code, uom, qty: 0 };
+      prev.qty += qty;
+      aggMap.set(key, prev);
+    }
+
+    const aggArr = Array.from(aggMap.values());
+    const codes = aggArr.map((a) => a.mat_code);
+    const namesMap: Record<string, { name: string; uom: string | null }> = {};
+
+    if (codes.length) {
+      const ci = await supabase
+        .from("catalog_items" as any)
+        .select("rik_code, name_human_ru, name_human, uom_code")
+        .in("rik_code", codes);
+
+      if (!ci.error && Array.isArray(ci.data)) {
+        for (const n of ci.data as any[]) {
+          const code = String(n.rik_code);
+          const name = n.name_human_ru || n.name_human || code;
+          const uom = n.uom_code ?? null;
+          namesMap[code] = { name, uom };
+        }
+      }
+    }
+
+    aggregated = aggArr.map((a) => {
+      const meta = namesMap[a.mat_code];
+      return {
+        mat_code: a.mat_code,
+        name: meta?.name || a.mat_code,
+        uom: meta?.uom || a.uom || "",
+        available: 0,
+        qty_fact: a.qty,
+      } as WorkMaterialRow;
+    });
+  }
+
+  const work: WorkRow = {
+    ...baseWork,
+    qty_done: totalQty,
+    qty_left: Math.max(0, baseWork.qty_planned - totalQty),
+  };
+
+  return { work, materials: aggregated };
+}
 
 /** ========= экран ========= */
 export default function Warehouse() {
+  console.log("WAREHOUSE RENDER");
+
   const [tab, setTab] = useState<Tab>("К приходу");
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
@@ -154,21 +545,25 @@ export default function Warehouse() {
   const [countPartial, setCountPartial] = useState(0);
   const [confirmingId, setConfirmingId] = useState<string | null>(null);
 
-  // ─── НОВОЕ: карта алиасов p:<pid> -> <real_incoming_id> ───
+  // карта алиасов p:<pid> -> <real_incoming_id>
   const [headIdAlias, setHeadIdAlias] = useState<Record<string, string>>({});
 
-  // раскрытая шапка (всегда в канонический id: real либо p:<id> если ещё не материализована)
+  // раскрытая шапка
   const [expanded, setExpanded] = useState<string | null>(null);
   const [itemsByHead, setItemsByHead] = useState<Record<string, ItemRow[]>>({});
   const [qtyInputByItem, setQtyInputByItem] = useState<Record<string, string>>({});
   const [receivingHeadId, setReceivingHeadId] = useState<string | null>(null);
 
-  // helper: получить канонический id для рендера/операций
-  const canonId = useCallback((id: string) => headIdAlias[id] ?? id, [headIdAlias]);
+  // helper: канонический id
+  const canonId = useCallback(
+    (id: string) => headIdAlias[id] ?? id,
+    [headIdAlias],
+  );
 
   const fetchToReceive = useCallback(async () => {
     try {
-      const sel = "id, purchase_id, status, qty, note, created_at, confirmed_at, po_no, purchase_status";
+      const sel =
+        "id, purchase_id, status, qty, note, created_at, confirmed_at, po_no, purchase_status";
       const all = await supabase
         .from("wh_incoming_compat" as any)
         .select(sel)
@@ -176,13 +571,16 @@ export default function Warehouse() {
 
       let rows = (all.data || []) as IncomingRow[];
 
-      // фоллбек: добавим утверждённые закупки без записей wh_incoming
+      // фоллбек: добавим закупки без записей wh_incoming
       try {
-        const covered = new Set(rows.map(r => r.purchase_id).filter(Boolean) as string[]);
+        const covered = new Set(
+          rows.map((r) => r.purchase_id).filter(Boolean) as string[],
+        );
+
         const po = await supabase
           .from("purchases" as any)
           .select("id, po_no, status, created_at")
-          .in("status", ["Утверждено", "Approved"] as any)
+          .not("status", "eq", "Черновик" as any)
           .order("created_at", { ascending: false })
           .limit(200);
 
@@ -200,21 +598,23 @@ export default function Warehouse() {
               created_at: p.created_at ?? null,
               confirmed_at: null,
               po_no: p.po_no ?? null,
-              purchase_status: p.status ?? "Утверждено",
+              purchase_status: p.status ?? null,
             });
           }
           if (synth.length) rows = [...synth, ...rows];
+        } else if (po.error) {
+          console.warn("[warehouse] purchases fallback error:", po.error.message);
         }
       } catch (e) {
         console.warn("[warehouse] fallback purchases:", e);
       }
 
-      // === расчёт прогресса и раскладка по корзинам ===
-      type Agg = { exp: number; rec: number; };
+      // прогресс по шапкам
+      type Agg = { exp: number; rec: number };
       const progress: Record<string, Agg> = {};
 
-      // реальные шапки → суммы из wh_incoming_items
-      const realIds = rows.map(r => r.id).filter(id => isUuid(id));
+      // реальные id → wh_incoming_items
+      const realIds = rows.map((r) => r.id).filter((id) => isUuid(id));
       if (realIds.length) {
         const agg = await supabase
           .from("wh_incoming_items" as any)
@@ -233,10 +633,10 @@ export default function Warehouse() {
         }
       }
 
-      // синтетика p:<pid> → суммы из purchase_items (rec=0)
-      const synth = rows.filter(r => String(r.id).startsWith("p:"));
+      // синтетика p:<pid> → purchase_items
+      const synth = rows.filter((r) => String(r.id).startsWith("p:"));
       if (synth.length) {
-        const pids = synth.map(r => r.purchase_id).filter(Boolean) as string[];
+        const pids = synth.map((r) => r.purchase_id).filter(Boolean) as string[];
         if (pids.length) {
           const pi = await supabase
             .from("purchase_items" as any)
@@ -247,7 +647,9 @@ export default function Warehouse() {
             const sumByPid: Record<string, number> = {};
             for (const x of pi.data as any[]) {
               const s = String(x.qty ?? "").trim();
-              const n = Number(s.replace(/[^\d,\.\-]+/g, "").replace(",", "."));
+              const n = Number(
+                s.replace(/[^\d,\.\-]+/g, "").replace(",", "."),
+              );
               const q = Number.isFinite(n) ? n : 0;
               const pid = String(x.purchase_id ?? "");
               sumByPid[pid] = (sumByPid[pid] ?? 0) + q;
@@ -259,258 +661,1656 @@ export default function Warehouse() {
         }
       }
 
-      // классификация
-      let cPending = 0, cPartial = 0, cConfirmed = 0;
+      let cPending = 0;
+      let cPartial = 0;
       const filtered: IncomingRow[] = [];
+
       for (const r of rows) {
         const pr = progress[r.id] ?? { exp: nz(r.qty ?? 0), rec: 0 };
         const left = Math.max(0, pr.exp - pr.rec);
-        let bucket: "pending" | "partial" | "confirmed";
-        if (r.status === "confirmed") bucket = "confirmed";
-        else if (pr.rec > 0 && left > 0) bucket = "partial";
-        else bucket = "pending";
+        const hasReceived = pr.rec > 0;
 
-        if (bucket === "pending") cPending++;
-        else if (bucket === "partial") cPartial++;
-        else cConfirmed++;
+        // полностью закрытые — исключаем
+        if (hasReceived && left <= 0) continue;
 
-        if (recvFilter === "pending" && bucket === "pending") filtered.push(r);
-        if (recvFilter === "partial" && bucket === "partial") filtered.push(r);
-        if (recvFilter === "confirmed" && bucket === "confirmed") filtered.push(r);
+        if (!hasReceived) {
+          cPending++;
+          if (recvFilter === "pending") filtered.push(r);
+          continue;
+        }
+
+        cPartial++;
+        if (recvFilter === "partial") filtered.push(r);
       }
 
       setCountPending(cPending);
       setCountPartial(cPartial);
-      setCountConfirmed(cConfirmed);
+      setCountConfirmed(0);
       setToReceive(filtered);
     } catch (e) {
-      setToReceive([]); setCountPending(0); setCountPartial(0); setCountConfirmed(0);
+      setToReceive([]);
+      setCountPending(0);
+      setCountPartial(0);
+      setCountConfirmed(0);
       console.warn("[warehouse] fetchToReceive:", e);
     }
   }, [recvFilter]);
 
-  useEffect(() => { fetchToReceive().catch(() => {}); }, [fetchToReceive]);
-
-  const confirmIncoming = useCallback(async (whIncomingId: string) => {
-    try {
-      setConfirmingId(whIncomingId);
-      // ✓ фикс: здесь должна вызываться confirm, а не receive_item
-      const r = await supabase.rpc('wh_receive_confirm' as any, { p_wh_id: whIncomingId } as any);
-      if (r.error) {
-        console.warn("[wh_receive_confirm] rpc error:", r.error.message);
-        const q = await supabase.from("wh_incoming" as any).select("purchase_id").eq("id", whIncomingId).maybeSingle();
-        const pid = q?.data?.purchase_id;
-        if (pid) {
-          const upd = await supabase.from("purchases" as any).update({ status: "На складе" }).eq("id", pid);
-          if (upd.error) throw upd.error;
-        }
-      }
-      await fetchToReceive();
-      await fetchStock();
-      Alert.alert("Готово", "Поставка принята на склад.");
-    } catch (e) { showErr(e); }
-    finally { setConfirmingId(null); }
+  useEffect(() => {
+    fetchToReceive().catch(() => {});
   }, [fetchToReceive]);
 
-  // создать реальный wh_incoming для синтетической шапки p:<purchase_id>
-  const ensureRealIncoming = useCallback(async (headId: string) => {
-    try {
-      if (!headId.startsWith("p:")) return headId; // уже реальный
-      const purchaseId = headId.slice(2);
+  
+  /** ===== ОСТАТКИ ===== */
+  const [stock, setStock] = useState<StockRow[]>([]);
+  const [stockSupported, setStockSupported] = useState<null | boolean>(null);
 
-      // попробуем известные RPC
-      const tryRpcs = [
-        "wh_incoming_open_from_purchase",
-        "wh_incoming_seed_from_purchase",
-        "wh_incoming_create_from_purchase",
-      ];
-      for (const fn of tryRpcs) {
-        try {
-          const r = await supabase.rpc(fn as any, { p_purchase_id: purchaseId } as any);
-          if (!r.error && r.data) {
-            const real = String(r.data);
-            setHeadIdAlias(prev => ({ ...prev, [headId]: real }));
-            await fetchToReceive();
-            return real;
-          }
-        } catch {}
+  const stockMaterialsByCode = useMemo(() => {
+    const map = new Map<string, StockRow>();
+
+    for (const row of stock) {
+      const kind = detectKindLabel(row.code);
+      if (kind === "работа" || kind === "услуга") continue;
+
+      const key = row.code || row.material_id;
+      if (!key) continue;
+
+      const exist = map.get(key);
+      if (!exist) {
+        map.set(key, { ...row });
+      } else {
+        exist.qty_on_hand = nz(exist.qty_on_hand, 0) + nz(row.qty_on_hand, 0);
+        exist.qty_reserved =
+          nz(exist.qty_reserved, 0) + nz(row.qty_reserved, 0);
+        exist.qty_available =
+          nz(exist.qty_available, 0) + nz(row.qty_available, 0);
+      }
+    }
+
+    return Array.from(map.values());
+  }, [stock]);
+
+  const getAvailableByCode = useCallback(
+    (code: string): number => {
+      const row = stock.find((s) => s.code === code);
+      if (!row) return 0;
+      const onHand = nz(row.qty_on_hand, 0);
+      const reserved = nz(row.qty_reserved, 0);
+      const avail = nz(
+        row.qty_available ?? onHand - reserved,
+        0,
+      );
+      return avail;
+    },
+    [stock],
+  );
+
+  const fetchStock = useCallback(async () => {
+    try {
+      const fact = await supabase
+        .from("v_warehouse_fact" as any)
+        .select("*")
+        .limit(5000);
+
+      if (!fact.error && Array.isArray(fact.data)) {
+        const rows = (fact.data || []).map(
+          (x: any) =>
+            ({
+              material_id: String(x.code ?? x.material_id ?? ""),
+              code: x.code ?? null,
+              name: x.name ?? x.name ?? null,
+              uom_id: x.uom_id ?? null,
+              qty_on_hand: nz(x.qty_on_hand, 0),
+              qty_reserved: nz(x.qty_reserved, 0),
+              qty_available: nz(
+                x.qty_available ??
+                  nz(x.qty_on_hand, 0) - nz(x.qty_reserved, 0),
+                0,
+              ),
+              object_name: x.object_name ?? null,
+              warehouse_name: x.warehouse_name ?? null,
+              updated_at: x.updated_at ?? null,
+            } as StockRow),
+        );
+        setStock(rows);
+        setStockSupported(true);
+        return;
       }
 
-      // REST фоллбэк (если RLS позволяет)
-      // 1) создаём шапку
-      const ins = await supabase
-        .from("wh_incoming" as any)
-        .insert({ purchase_id: purchaseId, status: "pending" } as any)
-        .select("id")
-        .single();
-      if (ins.error) throw ins.error;
-      const realId = String(ins.data.id);
+      const rpcNames = [
+        { fn: "list_stock", args: {} },
+        { fn: "warehouse_list_stock", args: {} },
+        { fn: "list_warehouse_stock", args: {} },
+        { fn: "acc_list_stock", args: {} },
+      ] as const;
 
-      // 2) создаём позиции из purchase_items
-      const pi = await supabase
-        .from("purchase_items" as any)
-        .select("id, code, name, uom, qty")
-        .eq("purchase_id", purchaseId);
-      if (!pi.error && Array.isArray(pi.data) && pi.data.length > 0) {
-        const rows = (pi.data as any[]).map(x => {
-          const qty = (() => {
-            const s = String(x.qty ?? "").trim();
-            if (!s) return 0;
-            const n = Number(s.replace(/[^\d,\.\-]+/g, "").replace(",", "."));
-            return Number.isFinite(n) ? n : 0;
-          })();
-        return {
-            incoming_id: realId,
-            purchase_item_id: x.id,
-            code: x.code ?? null,
-            name: x.name ?? x.code ?? null,
-            uom: x.uom ?? null,
-            qty_expected: qty,
-            qty_received: 0,
-          };
-        }).filter(r => r.qty_expected > 0);
-
-        if (rows.length) {
-          const bulk = await supabase.from("wh_incoming_items" as any).insert(rows as any);
-          if (bulk.error) console.warn("[ensureRealIncoming] insert items warning:", bulk.error.message);
+      for (const r of rpcNames) {
+        const res = await supabase.rpc(r.fn as any, r.args as any);
+        if (!res.error && Array.isArray(res.data)) {
+          const rows = (res.data || []).map(
+            (x: any) =>
+              ({
+                material_id: String(x.material_id ?? x.id ?? x.code ?? ""),
+                code: x.code ?? x.mat_code ?? null,
+                name: x.name ?? x.name ?? null,
+                uom_id: x.uom_id ?? x.uom ?? null,
+                qty_on_hand: nz(x.qty_on_hand ?? x.on_hand, 0),
+                qty_reserved: nz(x.qty_reserved ?? x.reserved, 0),
+                qty_available: nz(
+                  x.qty_available ??
+                    x.available ??
+                    nz(x.qty_on_hand) - nz(x.qty_reserved),
+                  0,
+                ),
+                object_name: x.object_name ?? null,
+                warehouse_name: x.warehouse_name ?? null,
+                updated_at: x.updated_at ?? null,
+              } as StockRow),
+          );
+          setStock(rows);
+          setStockSupported(true);
+          return;
         }
       }
 
-      setHeadIdAlias(prev => ({ ...prev, [headId]: realId }));
-      await fetchToReceive();
-      return realId;
+      const v = await supabase
+        .from("v_warehouse_stock" as any)
+        .select("*")
+        .limit(2000);
+
+      if (!v.error && Array.isArray(v.data)) {
+        const rows = (v.data || []).map(
+          (x: any) =>
+            ({
+              material_id: String(x.code ?? ""),
+              code: x.code ?? null,
+              name: x.name ?? null,
+              uom_id: x.uom_id ?? null,
+              qty_on_hand: nz(x.qty_on_hand, 0),
+              qty_reserved: nz(x.qty_reserved, 0),
+              qty_available: nz(
+                x.qty_available ?? nz(x.qty_on_hand) - nz(x.qty_reserved),
+                0,
+              ),
+              object_name: null,
+              warehouse_name: null,
+              updated_at: x.updated_at ?? null,
+            } as StockRow),
+        );
+        setStock(rows);
+        setStockSupported(true);
+        return;
+      }
+
+      setStockSupported(false);
+      setStock([]);
+    } catch (e) {
+      console.warn("[fetchStock]", e);
+      setStockSupported(false);
+      setStock([]);
+    }
+  }, []);
+
+  /** ===== РАСХОД ===== */
+  const [uoms, setUoms] = useState<Record<string, string>>({});
+  const [search, setSearch] = useState("");
+  const [catalog, setCatalog] = useState<RikSearchRow[]>([]);
+  const [allCatalog, setAllCatalog] = useState<RikSearchRow[]>([]);
+  const [availability, setAvailability] = useState<Record<string, number>>({});
+  const [qtyToIssue, setQtyToIssue] = useState<string>("1");
+  const [objectList, setObjectList] = useState<Option[]>([]);
+  const [workTypeList, setWorkTypeList] = useState<Option[]>([]);
+  const [recipientList, setRecipientList] = useState<Option[]>([]);
+  const [pickModal, setPickModal] = useState<{
+    what: "object" | "work" | "recipient" | null;
+  }>({ what: null });
+  const [pickFilter, setPickFilter] = useState("");
+  const [objectOpt, setObjectOpt] = useState<Option | null>(null);
+  const [workTypeOpt, setWorkTypeOpt] = useState<Option | null>(null);
+  const [recipientOpt, setRecipientOpt] = useState<Option | null>(null);
+  const [issueBusy, setIssueBusy] = useState(false);
+  const [issueMsg, setIssueMsg] = useState<{
+    kind: "error" | "ok" | null;
+    text: string;
+  }>({ kind: null, text: "" });
+
+  const loadUoms = useCallback(async () => {
+    try {
+      const q = await supabase
+        .from("rik_uoms" as any)
+        .select(
+          "id:uom_code, symbol:uom_code, short_name:name_ru, name:name_ru, kind",
+        )
+        .limit(2000);
+
+      if (q.error || !Array.isArray(q.data)) return;
+
+      const map: Record<string, string> = {};
+      for (const r of q.data as any[]) {
+        const id = String(r.id ?? "");
+        const label = (r.symbol ?? r.short_name ?? r.name ?? "").toString();
+        if (id) map[id] = label;
+      }
+      setUoms(map);
+    } catch {}
+  }, []);
+
+  useEffect(() => {
+    loadUoms();
+  }, [loadUoms]);
+
+  const tryOptions = useCallback(async (table: string, columns: string[]) => {
+    const colList = columns.join(",");
+    const q = await supabase.from(table as any).select(colList).limit(1000);
+    if (q.error || !Array.isArray(q.data)) return [] as Option[];
+    const opts: Option[] = [];
+    for (const r of q.data as any[]) {
+      const id = String(r.id ?? r.uuid ?? "");
+      const label = String(
+        r.name ??
+          r.title ??
+          r.object_name ??
+          r.fio ??
+          r.full_name ??
+          r.email ??
+          r.username ??
+          r.login ??
+          "",
+      );
+      if (id && label) opts.push({ id, label });
+    }
+    return opts;
+  }, []);
+
+  const loadObjects = useCallback(async () => {
+    const opts = await tryOptions("objects", ["id", "name"]);
+    setObjectList(opts);
+  }, [tryOptions]);
+
+  const loadWorkTypes = useCallback(async () => {
+    const opts = await tryOptions("rik_works", ["id", "name"]);
+    setWorkTypeList(opts);
+  }, [tryOptions]);
+
+  const loadRecipients = useCallback(async () => {
+    const opts = await tryOptions("profiles", ["id", "full_name"]);
+    setRecipientList(opts);
+  }, [tryOptions]);
+
+  const normalizeToRikRow = useCallback(
+    (x: CatalogItem): RikSearchRow => {
+      const kind: "material" | "work" =
+        x.ref_table === "rik_works" ? "work" : "material";
+      return {
+        kind,
+        ref_table: x.ref_table as any,
+        ref_id: String(x.ref_id ?? ""),
+        code: String(x.code ?? ""),
+        name: String(x.name ?? x.code ?? ""),
+        unit_id: x.unit_id ? String(x.unit_id) : null,
+        unit_label: x.unit_id
+          ? uoms[String(x.unit_id)] ?? String(x.unit_id)
+          : null,
+        sector: x.sector ?? null,
+      };
+    },
+    [uoms],
+  );
+
+  const mapRikItemsRow = (x: any): RikSearchRow => {
+    const rc = String(x.code ?? x.code ?? "");
+    const nm = String(x.name ?? x.name ?? rc);
+    const kind: "material" | "work" =
+      String(x.kind ?? "").toLowerCase() === "work" ? "work" : "material";
+    return {
+      kind,
+      ref_table: kind === "work" ? "rik_works" : "rik_materials",
+      ref_id: String(x.ref_id ?? ""),
+      code: rc,
+      name: nm,
+      unit_id: null,
+      unit_label: x.uom_code ?? x.uom ?? null,
+      sector: x.sector ?? x.sector_code ?? null,
+    };
+  };
+
+  function refreshAvailability(rows: RikSearchRow[]) {
+    (async () => {
+      try {
+        let map: Record<string, number> = {};
+
+        const v = await supabase
+          .from("v_warehouse_stock" as any)
+          .select("rik_code, uom_id, qty_on_hand, qty_reserved")
+          .limit(10000);
+
+        if (!v.error && Array.isArray(v.data)) {
+          for (const x of v.data as any[]) {
+            const code = String(x.rik_code ?? "");
+            const avail = nz(x.qty_on_hand, 0) - nz(x.qty_reserved, 0);
+            if (code) map[code] = avail;
+          }
+        } else {
+          const t = await supabase
+            .from("stock_balances" as any)
+            .select("code, uom_id, qty_on_hand, qty_reserved")
+            .limit(10000);
+          if (!t.error && Array.isArray(t.data)) {
+            for (const x of t.data as any[]) {
+              const code = String(x.code ?? "");
+              const avail = nz(x.qty_on_hand, 0) - nz(x.qty_reserved, 0);
+              if (code) map[code] = avail;
+            }
+          }
+        }
+
+        const filtered: Record<string, number> = {};
+        for (const it of rows) {
+          filtered[it.code] = map[it.code] ?? 0;
+        }
+        setAvailability(filtered);
+      } catch (e) {
+        console.warn("[refreshAvailability]", e);
+      }
+    })();
+  }
+
+  const preloadCatalogAll = useCallback(async () => {
+    try {
+      const seen = new Set<string>();
+      const merged: RikSearchRow[] = [];
+
+      const pushUnique = (rows: RikSearchRow[]) => {
+        for (const r of rows) {
+          if (!r.code) continue;
+          if (seen.has(r.code)) continue;
+          seen.add(r.code);
+          merged.push(r);
+        }
+      };
+
+      try {
+        const cat = await supabase
+          .from("catalog_items" as any)
+          .select(
+            "id, rik_code, kind, name_human, name_human_ru, uom_code, sector_code, name_search",
+          )
+          .limit(10000);
+
+        if (!cat.error && Array.isArray(cat.data)) {
+          const rows = (cat.data as any[])
+            .map((x) => {
+              const code = String(x.rik_code ?? "").trim();
+              if (!code) return null;
+
+              const name = String(
+                x.name_human_ru ?? x.name_human ?? code,
+              );
+
+              const unitId = x.uom_code ? String(x.uom_code) : null;
+              const sector = x.sector_code ? String(x.sector_code) : null;
+
+              const kind: "material" | "work" =
+                String(x.kind ?? "").toLowerCase() === "work"
+                  ? "work"
+                  : "material";
+
+              const ci: CatalogItem = {
+                ref_table: kind === "work" ? "rik_works" : "rik_materials",
+                ref_id: String(x.id ?? code),
+                code,
+                name,
+                unit_id: unitId,
+                sector,
+                score: null,
+              };
+
+              const row = normalizeToRikRow(ci) as RikSearchRow;
+              const searchPieces = [name, code, x.name_search]
+                .filter(Boolean)
+                .map((s: any) => String(s));
+              row.search_text = searchPieces.join(" ");
+
+              return row;
+            })
+            .filter(Boolean) as RikSearchRow[];
+
+          pushUnique(rows);
+        } else if (cat.error) {
+          console.warn("[catalog_items] error:", cat.error.message, cat.error.code);
+        }
+      } catch (e) {
+        console.warn("[catalog_items] throw:", e);
+      }
+
+      const stockView = await supabase
+        .from("v_warehouse_fact" as any)
+        .select("code,name,uom_id")
+        .limit(5000);
+
+      if (!stockView.error && Array.isArray(stockView.data)) {
+        const rows = (stockView.data as any[]).map((x) => {
+          const code = String(x.code ?? "");
+          const name = String(x.name ?? x.code ?? "");
+          const unitId = x.uom_id ? String(x.uom_id) : null;
+
+          const kind: "material" | "work" =
+            code.startsWith("WRK-") || code.startsWith("WT-")
+              ? "work"
+              : "material";
+
+          return {
+            kind,
+            ref_table: kind === "work" ? "rik_works" : "rik_materials",
+            ref_id: code,
+            code,
+            name,
+            unit_id: unitId,
+            unit_label: unitId,
+            sector: null,
+          } as RikSearchRow;
+        });
+        pushUnique(rows);
+      }
+
+      setAllCatalog(merged);
+      setCatalog(merged);
+      refreshAvailability(merged);
+    } catch (e) {
+      console.warn("[catalog preload]", e);
+    }
+  }, [normalizeToRikRow]);
+
+  const runCatalogSearch = useCallback(
+    async (q: string) => {
+      const s = norm(q);
+
+      if (!s || s.length < 2) {
+        setCatalog([]);
+        setAvailability({});
+        return;
+      }
+
+      try {
+        const { data, error } = await supabase.rpc("catalog_search" as any, {
+          p_query: q,
+          p_kind: null,
+        } as any);
+
+        if (error) {
+          console.warn("[runCatalogSearch] catalog_search error:", error.message);
+          setCatalog([]);
+          setAvailability({});
+          return;
+        }
+        if (!Array.isArray(data)) {
+          setCatalog([]);
+          setAvailability({});
+          return;
+        }
+
+        const availMap: Record<string, number> = {};
+
+        const rows: RikSearchRow[] = (data as any[]).map((x) => {
+          const code = String(x.rik_code ?? "").trim();
+          if (!code) return null;
+
+          const name = String(
+            x.name_human_ru ?? x.name_human ?? code,
+          );
+
+          const unitId = x.uom_code ? String(x.uom_code) : null;
+
+          const kind: "material" | "work" =
+            String(x.kind ?? "").toLowerCase() === "work"
+              ? "work"
+              : "material";
+
+          const qtyAvail = Number(x.qty_available ?? 0);
+          if (Number.isFinite(qtyAvail)) {
+            availMap[code] = qtyAvail;
+          }
+
+          const ci: CatalogItem = {
+            ref_table: kind === "work" ? "rik_works" : "rik_materials",
+            ref_id: code,
+            code,
+            name,
+            unit_id: unitId,
+            sector: null,
+            score: null,
+          };
+
+          const row = normalizeToRikRow(ci) as RikSearchRow;
+          row.search_text = `${name} ${code}`;
+          return row;
+        }).filter(Boolean) as RikSearchRow[];
+
+        setCatalog(rows);
+        setAvailability(availMap);
+      } catch (e: any) {
+        console.warn("[runCatalogSearch] throw:", e?.message || e);
+        setCatalog([]);
+        setAvailability({});
+      }
+    },
+    [normalizeToRikRow],
+  );
+
+  useEffect(() => {
+    if (tab === "Расход") {
+      setSearch("");
+      loadObjects().catch(() => {});
+      loadWorkTypes().catch(() => {});
+      loadRecipients().catch(() => {});
+    }
+  }, [tab, loadObjects, loadWorkTypes, loadRecipients]);
+
+  const issueOne = useCallback(
+    async (it: RikSearchRow) => {
+      try {
+        const qty = nz(qtyToIssue, 0);
+        const canIssue = qty > 0 && !!recipientOpt?.id && !!objectOpt?.id;
+
+        if (!canIssue) {
+          setIssueMsg({
+            kind: "error",
+            text: "Выберите объект и получателя и введите количество > 0",
+          });
+          return;
+        }
+
+        setIssueBusy(true);
+        setIssueMsg({ kind: null, text: "" });
+
+        let unitId = it.unit_id;
+        if (!unitId) {
+          unitId = await resolveUnitIdByCode(it.code);
+          if (!unitId) {
+            setIssueMsg({
+              kind: "error",
+              text: "Не удалось определить ед. изм. (unit_id) — проверь справочник.",
+            });
+            return;
+          }
+        }
+
+        const r1 = await supabase.rpc("acc_issue_create" as any, {
+          p_object_id: objectOpt?.id ?? null,
+          p_work_type_id: workTypeOpt?.id ?? null,
+          p_comment: `Выдача ${it.name} (${it.code}) ${qty} ${
+            it.unit_label ?? ""
+          } — ${recipientOpt?.label ?? ""}`,
+        } as any);
+
+        if (r1.error || !r1.data) {
+          console.warn("[acc_issue_create] err:", r1.error?.message, r1.error);
+          setIssueMsg({
+            kind: "error",
+            text: `acc_issue_create: ${pickErr(r1.error)}`,
+          });
+          return;
+        }
+        const issue_id = r1.data;
+
+        const r2 = await supabase.rpc("acc_issue_add_item" as any, {
+          p_issue_id: issue_id,
+          p_rik_code: it.code,
+          p_uom_id: unitId,
+          p_qty: qty,
+        } as any);
+
+        if (r2.error) {
+          console.warn("[acc_issue_add_item] err:", r2.error?.message, r2.error);
+          setIssueMsg({
+            kind: "error",
+            text: `acc_issue_add_item: ${pickErr(r2.error)}`,
+          });
+          return;
+        }
+
+        await fetchStock();
+
+        setIssueMsg({
+          kind: "ok",
+          text: `✓ Выдано: ${qty} ${it.unit_label ?? unitId} — ${it.name}`,
+        });
+      } catch (e: any) {
+        console.warn("[issueOne] throw:", e?.message || e);
+        setIssueMsg({ kind: "error", text: String(e?.message ?? e) });
+      } finally {
+        setIssueBusy(false);
+      }
+    },
+    [qtyToIssue, recipientOpt, objectOpt, workTypeOpt, fetchStock],
+  );
+
+  /** ===== РАБОТЫ ===== */
+  const [works, setWorks] = useState<WorkRow[]>([]);
+  const [worksSupported, setWorksSupported] = useState<null | boolean>(null);
+  const [worksBusyId, setWorksBusyId] = useState<string | null>(null);
+  const [finishDialog, setFinishDialog] = useState<{
+    row: WorkRow;
+    message: string;
+  } | null>(null);
+
+  // модалка по работам
+  const [workModalVisible, setWorkModalVisible] = useState(false);
+  const [workModalRow, setWorkModalRow] = useState<WorkRow | null>(null);
+  const [workModalQty, setWorkModalQty] = useState("");
+  const [workModalStage, setWorkModalStage] = useState("");
+  const [workModalComment, setWorkModalComment] = useState("");
+  const [workModalMaterials, setWorkModalMaterials] = useState<WorkMaterialRow[]>(
+    [],
+  );
+  const [workModalSaving, setWorkModalSaving] = useState(false);
+  const [workModalLocation, setWorkModalLocation] = useState("");
+  const [workModalReadOnly, setWorkModalReadOnly] = useState(false);
+  const [workModalLoading, setWorkModalLoading] = useState(false);
+  const [workLog, setWorkLog] = useState<WorkLogRow[]>([]);
+
+  // история прогрессов по работе
+  const loadWorkLog = useCallback(async (progressId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from("work_progress_log" as any)
+        .select("id, created_at, qty, work_uom, stage_note, note")
+        .eq("progress_id", progressId)
+        .order("created_at", { ascending: true });
+
+      console.log("[loadWorkLog]", progressId, { error, data });
+
+      if (!error && Array.isArray(data)) {
+        setWorkLog(
+          data.map((r: any) => ({
+            id: String(r.id),
+            created_at: r.created_at,
+            qty: Number(r.qty ?? 0),
+            work_uom: r.work_uom ?? null,
+            stage_note: r.stage_note ?? null,
+            note: r.note ?? null,
+          })),
+        );
+      } else {
+        setWorkLog([]);
+      }
+    } catch (e) {
+      console.warn("[loadWorkLog] error", e);
+      setWorkLog([]);
+    }
+  }, []);
+
+  // список этапов
+  const [workStageOptions, setWorkStageOptions] = useState<
+    { code: string; name: string }[]
+  >([]);
+  const [workStagePickerVisible, setWorkStagePickerVisible] =
+    useState(false);
+
+  const [workSearchVisible, setWorkSearchVisible] = useState(false);
+  const [workSearchQuery, setWorkSearchQuery] = useState("");
+  const [workSearchResults, setWorkSearchResults] = useState<
+    WorkMaterialRow[]
+  >([]);
+  const workSearchActiveQuery = React.useRef<string>("");
+
+  const fetchWorks = useCallback(async () => {
+    try {
+      const q = await supabase
+        .from("v_works_fact" as any)
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(5000);
+
+      if (q.error || !Array.isArray(q.data)) {
+        console.warn("[fetchWorks] error:", q.error?.message);
+        setWorks([]);
+        setWorksSupported(false);
+        return;
+      }
+
+      const rows: WorkRow[] = (q.data as any[]).map((x) => ({
+        progress_id: String(x.progress_id),
+        purchase_item_id: String(x.purchase_item_id),
+        purchase_id: x.purchase_id ? String(x.purchase_id) : null,
+        proposal_id: x.proposal_id ? String(x.proposal_id) : null,
+        object_id: x.object_id ? String(x.object_id) : null,
+        object_name: x.object_name ?? null,
+        work_code: x.work_code ?? null,
+        work_name: x.work_name ?? null,
+        uom_id: x.uom_id ?? null,
+        qty_planned: Number(x.qty_planned ?? 0),
+        qty_done: Number(x.qty_done ?? 0),
+        qty_left: Number(x.qty_left ?? 0),
+        work_status: String(x.work_status ?? "К запуску"),
+        started_at: x.started_at ?? null,
+        finished_at: x.finished_at ?? null,
+      }));
+
+      const filtered = rows.filter((w) => {
+        if (!w.work_code) return false;
+        const c = w.work_code.toUpperCase();
+        return (
+          c.startsWith("WRK-") ||
+          c.startsWith("WORK-") ||
+          c.startsWith("WT-") ||
+          c.startsWith("SRV-") ||
+          c.startsWith("SPEC-")
+        );
+      });
+
+      // подгрузим имена объектов, если пустые
+      for (const w of filtered) {
+        if (!w.object_name && w.object_id) {
+          try {
+            const o = await supabase
+              .from("objects" as any)
+              .select("name")
+              .eq("id", w.object_id)
+              .maybeSingle();
+            if (!o.error && o.data?.name) {
+              w.object_name = String(o.data.name);
+            }
+          } catch {}
+        }
+      }
+
+      setWorks(filtered);
+      setWorksSupported(true);
+    } catch (e) {
+      console.warn("[fetchWorks] throw:", (e as any)?.message ?? e);
+      setWorks([]);
+      setWorksSupported(false);
+    }
+  }, []);
+
+  const handleWorkStart = useCallback(
+    async (row: WorkRow) => {
+      try {
+        setWorksBusyId(row.progress_id);
+        const r = await supabase.rpc("work_start" as any, {
+          p_progress_id: row.progress_id,
+        } as any);
+        if (r.error) throw r.error;
+        await fetchWorks();
+      } catch (e) {
+        showErr(e);
+      } finally {
+        setWorksBusyId(null);
+      }
+    },
+    [fetchWorks],
+  );
+
+  const handleWorkFinish = useCallback((row: WorkRow) => {
+    const total = nz(row.qty_planned, 0);
+    const done = nz(row.qty_done, 0);
+    const left = nz(row.qty_left, total - done);
+
+    if (done <= 0) {
+      Alert.alert(
+        "Работа не выполнена",
+        "Нельзя завершить работу с нулевым объёмом. Сначала внеси факт через «+ объём».",
+      );
+      return;
+    }
+
+    const message =
+      left > 0
+        ? `По этой работе ещё остался план (${left} ${
+            row.uom_id || ""
+          }).\n\nПосле нажатия «Окончено»:\n• будет сформирован итоговый акт по всем этапам\n• ввод объёма и материалов будет заблокирован\n\nПроверь, что все данные введены верно.`
+        : `Плановый объём выполнен на 100%.\n\nПосле нажатия «Окончено»:\n• будет сформирован итоговый акт по всем этапам\n• изменить объём и материалы уже нельзя\n\nЗакрыть работу окончательно?`;
+
+    setFinishDialog({ row, message });
+  }, []);
+
+  const confirmFinishWork = useCallback(async () => {
+    if (!finishDialog) return;
+    const row = finishDialog.row;
+
+    try {
+      setWorksBusyId(row.progress_id);
+
+      const r = await supabase.rpc("work_finish" as any, {
+        p_progress_id: row.progress_id,
+      } as any);
+      if (r.error) throw r.error;
+
+      await fetchWorks();
+
+      try {
+        const { work, materials } = await loadAggregatedWorkSummary(
+          row.progress_id,
+          row,
+        );
+        await generateWorkPdf(work, materials);
+      } catch (e) {
+        console.warn("[confirmFinishWork] PDF error", e);
+      }
+
+      setFinishDialog(null);
+      Alert.alert(
+        "Работа закрыта",
+        "Итоговый акт сформирован. Ввод новых данных по этой работе больше недоступен.",
+      );
     } catch (e) {
       showErr(e);
-      return headId;
+    } finally {
+      setWorksBusyId(null);
     }
-  }, [fetchToReceive, supabase]);
+  }, [finishDialog, fetchWorks]);
 
-  /// Функция восстановления позиций, если их нет
+  const submitWorkProgress = useCallback(
+    async (withStock: boolean) => {
+      if (!workModalRow) return;
+
+      if (workModalRow.qty_left <= 0) {
+        Alert.alert(
+          "Работа завершена",
+          "Плановый объём выполнен полностью. Для дополнительного объёма сначала увеличь план в смете.",
+        );
+        return;
+      }
+
+      const qtyNum = Number(String(workModalQty).replace(",", "."));
+      if (!Number.isFinite(qtyNum) || qtyNum <= 0) {
+        Alert.alert("Объём", "Введи выполненный объём > 0");
+        return;
+      }
+
+      const left = Number(workModalRow.qty_left ?? 0);
+      if (left <= 0) {
+        Alert.alert("План закрыт", "По этой работе уже нет остатка по плану.");
+        return;
+      }
+
+      if (qtyNum > left) {
+        Alert.alert(
+          "Объём больше остатка",
+          `Осталось по плану максимум ${left} ${workModalRow.uom_id || ""}.`,
+        );
+        return;
+      }
+
+      const materialsPayload = workModalMaterials
+        .map((m) => {
+          const raw = (m as any).qty_fact ?? (m as any).qty ?? 0;
+          const fact = Number(String(raw).replace(",", "."));
+          return {
+            mat_code: m.mat_code,
+            uom: m.uom,
+            qty_fact: Number.isFinite(fact) ? fact : 0,
+          };
+        })
+        .filter((m) => m.qty_fact > 0);
+
+      try {
+        setWorkModalSaving(true);
+
+        const payload: any = {
+          p_progress_id: workModalRow.progress_id,
+          p_qty: qtyNum,
+          p_work_uom: workModalRow.uom_id || "",
+          p_stage_note: workModalStage || null,
+          p_note: workModalComment || null,
+          p_materials: materialsPayload,
+          p_with_stock: withStock,
+          p_location: workModalLocation || null,
+        };
+
+        console.log("[submitWorkProgress] payload:", payload);
+
+        const { data, error } = await supabase.rpc(
+          "work_progress_apply_ui" as any,
+          payload,
+        );
+        console.log("[submitWorkProgress] result:", { data, error });
+
+        if (error) {
+          Alert.alert("Ошибка сохранения факта", pickErr(error));
+          return;
+        }
+
+        const updatedWork: WorkRow = {
+          ...workModalRow,
+          qty_done: workModalRow.qty_done + qtyNum,
+          qty_left: Math.max(0, workModalRow.qty_left - qtyNum),
+        };
+
+        await generateWorkPdf(updatedWork, workModalMaterials);
+
+        Alert.alert("Готово", "Факт по работе сохранён.");
+        setWorkModalVisible(false);
+        await fetchWorks();
+      } catch (e: any) {
+        console.warn("[submitWorkProgress] exception:", e);
+        showErr(e);
+      } finally {
+        setWorkModalSaving(false);
+      }
+    },
+    [
+      workModalRow,
+      workModalQty,
+      workModalStage,
+      workModalComment,
+      workModalMaterials,
+      workModalLocation,
+      fetchWorks,
+    ],
+  );
+
+  // ⚡️ НОВАЯ БЫСТРАЯ openWorkAddModal — модалка открывается сразу
+  const openWorkAddModal = useCallback(
+    (row: WorkRow, readOnly: boolean = false) => {
+      // базовые поля
+      setWorkModalRow(row);
+      setWorkModalQty("");
+      setWorkModalStage("");
+      setWorkModalComment("");
+      setWorkModalLocation("");
+      setWorkModalReadOnly(readOnly);
+
+      // очистка
+      setWorkLog([]);
+      setWorkModalMaterials([]);
+      setWorkStageOptions([]);
+      setWorkSearchVisible(false);
+      setWorkSearchQuery("");
+      setWorkSearchResults([]);
+
+      // сразу показать модалку
+      setWorkModalVisible(true);
+      setWorkModalLoading(true);
+
+      // дальше грузим фоном
+      (async () => {
+        try {
+          // история
+          await loadWorkLog(row.progress_id);
+
+          if (!readOnly) {
+            setWorkModalMaterials([]);
+
+            try {
+              const lastLogQ = await supabase
+                .from("work_progress_log" as any)
+                .select("id, qty, work_uom, stage_note, note")
+                .eq("progress_id", row.progress_id)
+                .order("created_at", { ascending: false })
+                .limit(1)
+                .maybeSingle();
+
+              let restoredMaterials: WorkMaterialRow[] = [];
+
+              if (!lastLogQ.error && lastLogQ.data?.id) {
+                const logId = String(lastLogQ.data.id);
+
+                const matsQ = await supabase
+                  .from("work_progress_log_materials" as any)
+                  .select("mat_code, uom_mat, qty_fact")
+                  .eq("log_id", logId);
+
+                if (
+                  !matsQ.error &&
+                  Array.isArray(matsQ.data) &&
+                  matsQ.data.length
+                ) {
+                  const codes = matsQ.data
+                    .map((m: any) => m.mat_code)
+                    .filter(Boolean);
+                  let namesMap: Record<
+                    string,
+                    { name: string; uom: string | null }
+                  > = {};
+
+                  if (codes.length) {
+                    const ci = await supabase
+                      .from("catalog_items" as any)
+                      .select("rik_code, name_human_ru, name_human, uom_code")
+                      .in("rik_code", codes);
+
+                    if (!ci.error && Array.isArray(ci.data)) {
+                      for (const n of ci.data as any[]) {
+                        const code = String(n.rik_code);
+                        const name =
+                          n.name_human_ru || n.name_human || code;
+                        const uom = n.uom_code ?? null;
+                        namesMap[code] = { name, uom };
+                      }
+                    }
+                  }
+
+                  restoredMaterials = matsQ.data.map((m: any) => {
+                    const code = String(m.mat_code);
+                    const meta = namesMap[code];
+                    return {
+                      mat_code: code,
+                      name: meta?.name || code,
+                      uom: meta?.uom || m.uom_mat || row.uom_id || "",
+                      available: 0,
+                      qty_fact: Number(m.qty_fact ?? 0),
+                    } as WorkMaterialRow;
+                  });
+                }
+              }
+
+              if (restoredMaterials.length) {
+                setWorkModalMaterials(restoredMaterials);
+              } else {
+                const workCode = row.work_code || row.purchase_item_id;
+
+                if (workCode) {
+                  let defaults: any[] = [];
+
+                  const q1 = await supabase
+                    .from("work_default_materials" as any)
+                    .select("*")
+                    .eq("work_code", workCode)
+                    .limit(100);
+
+                  if (!q1.error && Array.isArray(q1.data) && q1.data.length) {
+                    defaults = q1.data;
+                  } else {
+                    const seed = await supabase.rpc(
+                      "work_seed_defaults_auto" as any,
+                      { p_work_code: workCode } as any,
+                    );
+
+                    if (!seed.error) {
+                      const q2 = await supabase
+                        .from("work_default_materials" as any)
+                        .select("*")
+                        .eq("work_code", workCode)
+                        .limit(100);
+
+                      if (!q2.error && Array.isArray(q2.data)) {
+                        defaults = q2.data;
+                      }
+                    } else {
+                      console.warn(
+                        "[work_seed_defaults_auto] error:",
+                        seed.error.message,
+                      );
+                    }
+                  }
+
+                  if (defaults.length) {
+                    const codes = defaults
+                      .map((d: any) => d.mat_code)
+                      .filter((c: any) => !!c);
+
+                    const namesMap: Record<
+                      string,
+                      { name: string; uom: string | null }
+                    > = {};
+                    if (codes.length) {
+                      const ci = await supabase
+                        .from("catalog_items" as any)
+                        .select(
+                          "rik_code, name_human_ru, name_human, uom_code",
+                        )
+                        .in("rik_code", codes);
+
+                      if (!ci.error && Array.isArray(ci.data)) {
+                        for (const n of ci.data as any[]) {
+                          const code = String(n.rik_code);
+                          const name =
+                            n.name_human_ru || n.name_human || code;
+                          const uom = n.uom_code ?? null;
+                          namesMap[code] = { name, uom };
+                        }
+                      }
+                    }
+
+                    const mats: WorkMaterialRow[] = defaults.map((d: any) => {
+                      const code = String(d.mat_code);
+                      const meta = namesMap[code];
+
+                      return {
+                        mat_code: code,
+                        name: meta?.name || code,
+                        uom:
+                          meta?.uom ||
+                          String(d.uom || row.uom_id || ""),
+                        available: 0,
+                        qty_fact: 0,
+                      };
+                    });
+
+                    setWorkModalMaterials(mats);
+                  }
+                }
+              }
+            } catch (e) {
+              console.warn("[openWorkAddModal] materials error:", e);
+            }
+          }
+
+          // этапы
+          try {
+            const { data, error } = await supabase
+              .from("work_stages" as any)
+              .select("code, name")
+              .eq("is_active", true)
+              .order("sort_order", { ascending: true });
+            if (!error && Array.isArray(data)) {
+              setWorkStageOptions(
+                data.map((s: any) => ({
+                  code: String(s.code),
+                  name: String(s.name),
+                })),
+              );
+            } else {
+              setWorkStageOptions([]);
+            }
+          } catch (e) {
+            console.warn("[openWorkAddModal] work_stages error:", e);
+            setWorkStageOptions([]);
+          }
+        } finally {
+          setWorkModalLoading(false);
+        }
+      })();
+    },
+    [loadWorkLog],
+  );
+
+  // debounce helper
+  function debounce<F extends (...args: any[]) => any>(fn: F, delay: number) {
+    let timer: any;
+    return (...args: Parameters<F>) => {
+      if (timer) clearTimeout(timer);
+      timer = setTimeout(() => fn(...args), delay);
+    };
+  }
+
+  // RPC-поиск материалов
+  const runMaterialSearch = useCallback(async (q: string) => {
+    try {
+      const { data, error } = await supabase.rpc("catalog_search" as any, {
+        p_query: q,
+        p_kind: "material",
+      } as any);
+
+      if (workSearchActiveQuery.current !== q) return;
+
+      if (error) {
+        console.warn(
+          "[material_search/catalog_search] error:",
+          error.message,
+        );
+        return;
+      }
+      if (!Array.isArray(data)) return;
+
+      const mapped: WorkMaterialRow[] = (data as any[]).map((d) => {
+        const rawName =
+          (d.name_human_ru as string) ??
+          (d.name_human as string) ??
+          (d.rik_code as string) ??
+          "";
+        const cleanName = String(rawName).replace(/\s+/g, " ").trim();
+
+        return {
+          mat_code: d.rik_code,
+          name: cleanName,
+          uom: d.uom_code,
+          available: Number(d.qty_available ?? 0),
+          qty_fact: 0,
+        };
+      });
+
+      mapped.sort((a, b) => {
+        const aHas = a.available > 0 ? 0 : 1;
+        const bHas = b.available > 0 ? 0 : 1;
+        if (aHas !== bHas) return aHas - bHas;
+        if (b.available !== a.available) return b.available - a.available;
+        return a.name.localeCompare(b.name, "ru");
+      });
+
+      setWorkSearchResults(mapped);
+    } catch (e: any) {
+      if (workSearchActiveQuery.current !== q) return;
+      console.warn(
+        "[material_search/catalog_search] exception:",
+        e?.message || e,
+      );
+    }
+  }, []);
+
+  const debouncedMaterialSearch = React.useRef(
+    debounce((q: string) => {
+      runMaterialSearch(q);
+    }, 300),
+  ).current;
+
+  const handleWorkSearchChange = useCallback(
+    (text: string) => {
+      setWorkSearchQuery(text);
+
+      const q = text.trim();
+      workSearchActiveQuery.current = q;
+
+      if (q.length < 2) {
+        setWorkSearchResults([]);
+        return;
+      }
+
+      debouncedMaterialSearch(q);
+    },
+    [debouncedMaterialSearch],
+  );
+
+    // ===== Добавить материал из поиска в список факта =====
+  const addWorkMaterial = useCallback((item: WorkMaterialRow) => {
+    setWorkModalMaterials((prev) => {
+      // если такой код уже есть — не дублируем строку, просто обновляем
+      const idx = prev.findIndex((m) => m.mat_code === item.mat_code);
+      if (idx >= 0) {
+        const copy = [...prev];
+        copy[idx] = {
+          ...copy[idx],
+          name: item.name,
+          uom: item.uom,
+          available: item.available,
+        };
+        return copy;
+      }
+
+      // новый материал
+      return [...prev, item];
+    });
+
+    // закрываем модалку поиска и чистим запрос/результаты
+    setWorkSearchVisible(false);
+    setWorkSearchQuery("");
+    setWorkSearchResults([]);
+  }, []);
+
+  // удалить материал из списка "по факту"
+  const removeWorkMaterial = useCallback((index: number) => {
+    setWorkModalMaterials((prev) => prev.filter((_, i) => i !== index));
+  }, []);
+
+  const closeWorkModal = useCallback(() => {
+    setWorkSearchVisible(false);
+    setWorkSearchQuery("");
+    setWorkSearchResults([]);
+    setWorkModalVisible(false);
+  }, []);
+const confirmIncoming = useCallback(
+    async (whIncomingId: string) => {
+      try {
+        setConfirmingId(whIncomingId);
+
+        // 1) основная логика прихода
+        const r = await supabase.rpc("wh_receive_confirm" as any, {
+          p_wh_id: whIncomingId,
+        } as any);
+
+        // 2) узнаём purchase_id
+        let pid: string | null = null;
+        try {
+          const q = await supabase
+            .from("wh_incoming" as any)
+            .select("purchase_id")
+            .eq("id", whIncomingId)
+            .maybeSingle();
+          if (!q.error && q.data?.purchase_id) {
+            pid = String(q.data.purchase_id);
+          }
+        } catch (e) {
+          console.warn("[confirmIncoming] purchase_id lookup err:", e);
+        }
+
+        // 3) если RPC упал — руками статус закупки
+        if (r.error) {
+          console.warn("[wh_receive_confirm] rpc error:", r.error.message);
+          if (pid) {
+            const upd = await supabase
+              .from("purchases" as any)
+              .update({ status: "На складе" })
+              .eq("id", pid);
+            if (upd.error) throw upd.error;
+          }
+        }
+
+        // 4) если знаем purchase_id — сеем работы из закупки
+        if (pid) {
+          try {
+            const seed = await supabase.rpc("work_seed_from_purchase" as any, {
+              p_purchase_id: pid,
+            } as any);
+            if (seed.error) {
+              console.warn(
+                "[confirmIncoming][work_seed_from_purchase] error:",
+                seed.error.message,
+              );
+            }
+          } catch (e) {
+            console.warn(
+              "[confirmIncoming] work_seed_from_purchase throw:",
+              e,
+            );
+          }
+        }
+
+        // 5) обновить экраны
+        await fetchToReceive();
+        await fetchStock();
+        await fetchWorks();
+        Alert.alert("Готово", "Поставка принята на склад.");
+      } catch (e) {
+        showErr(e);
+      } finally {
+        setConfirmingId(null);
+      }
+    },
+    [fetchToReceive, fetchStock, fetchWorks],
+  );
+
+  // создать реальный wh_incoming для синтетической шапки p:<purchase_id>
+  const ensureRealIncoming = useCallback(
+    async (headId: string) => {
+      try {
+        if (!headId.startsWith("p:")) return headId; // уже реальный
+        const purchaseId = headId.slice(2);
+
+        const tryRpcs = [
+          "wh_incoming_open_from_purchase",
+          "wh_incoming_seed_from_purchase",
+          "wh_incoming_create_from_purchase",
+        ];
+        for (const fn of tryRpcs) {
+          try {
+            const r = await supabase.rpc(fn as any, {
+              p_purchase_id: purchaseId,
+            } as any);
+            if (!r.error && r.data) {
+              const real = String(r.data);
+              setHeadIdAlias((prev) => ({ ...prev, [headId]: real }));
+              await fetchToReceive();
+              return real;
+            }
+          } catch {}
+        }
+
+        // REST фоллбэк
+        const ins = await supabase
+          .from("wh_incoming" as any)
+          .insert({ purchase_id: purchaseId, status: "pending" } as any)
+          .select("id")
+          .single();
+        if (ins.error) throw ins.error;
+        const realId = String(ins.data.id);
+
+        const pi = await supabase
+          .from("purchase_items" as any)
+          .select(
+            "id, rik_code as code, name_human as name, uom, qty",
+          )
+          .eq("purchase_id", purchaseId);
+
+        if (!pi.error && Array.isArray(pi.data) && pi.data.length > 0) {
+          const rows = (pi.data as any[])
+            .map((x) => {
+              const s = String(x.qty ?? "").trim();
+              const n = Number(
+                s.replace(/[^\d,\.\-]+/g, "").replace(",", "."),
+              );
+              const qty = Number.isFinite(n) ? n : 0;
+
+              return {
+                incoming_id: realId,
+                purchase_item_id: x.id,
+                code: x.code ?? null,
+                name: x.name ?? x.code ?? null,
+                uom: x.uom ?? null,
+                qty_expected: qty,
+                qty_received: 0,
+              };
+            })
+            .filter((r) => r.qty_expected > 0);
+
+          if (rows.length) {
+            const bulk = await supabase
+              .from("wh_incoming_items" as any)
+              .insert(rows as any);
+            if (bulk.error) {
+              console.warn(
+                "[ensureRealIncoming] insert items warning:",
+                bulk.error.message,
+              );
+            }
+          }
+        }
+
+        setHeadIdAlias((prev) => ({ ...prev, [headId]: realId }));
+        await fetchToReceive();
+        return realId;
+      } catch (e) {
+        showErr(e);
+        return headId;
+      }
+    },
+    [fetchToReceive],
+  );
+
+  /// Восстановление позиций, если их нет
   const reseedIncomingItems = async (incomingId: string, purchaseId: string) => {
     console.log("[reseedIncomingItems] start", { incomingId, purchaseId });
 
     const pi = await supabase
       .from("purchase_items" as any)
       .select(`
-        id, request_item_id, qty, uom,
-        request_items:request_items ( code, name, uom )
+        id,
+        request_item_id,
+        qty,
+        uom,
+        request_items:request_items (
+          rik_code,
+          name_human,
+          note,
+          uom
+        )
       `)
-      .eq("purchase_id", purchaseId);
+      .eq("purchase_id", purchaseId)
+      .order("id", { ascending: true });
 
     if (pi.error) {
-      console.warn("[reseedIncomingItems] select error:", pi.error.message, pi.error.details, pi.error.hint, pi.error.code);
+      console.warn(
+        "[reseedIncomingItems] select error:",
+        pi.error.message,
+        pi.error.details,
+        pi.error.hint,
+        pi.error.code,
+      );
       return false;
     }
-    console.log("[reseedIncomingItems] select rows:", Array.isArray(pi.data) ? pi.data.length : 0);
+    console.log(
+      "[reseedIncomingItems] select rows:",
+      Array.isArray(pi.data) ? pi.data.length : 0,
+    );
 
-    const rows = (pi.data as any[]).map(x => {
-      const s = String(x.qty ?? "").trim();
-      const qtyNum = s ? Number(s.replace(/[^\d,\.\-]+/g, "").replace(",", ".")) : 0;
-      const ri = x.request_items ?? {};
-      const piId = String(x.id ?? "");
-      const row: any = {
-        incoming_id: incomingId,
-        // purchase_item_id: пишем только если UUID; иначе колонка пропускается
-        ...(isUuid(piId) ? { purchase_item_id: piId } : {}),
-        code: ri.code ?? null,
-        name: (ri.name ?? ri.code ?? null),
-        uom: (x.uom ?? ri.uom ?? null),
-        qty_expected: Number.isFinite(qtyNum) ? qtyNum : 0,
-        qty_received: 0,
-      };
-      return row;
-    }).filter(r => r.qty_expected > 0);
+    const rows = (pi.data as any[])
+      .map((x) => {
+        const s = String(x.qty ?? "").trim();
+        const qtyNum = s
+          ? Number(s.replace(/[^\d,\.\-]+/g, "").replace(",", "."))
+          : 0;
+
+        const ri = x.request_items ?? {};
+        const piId = String(x.id ?? "");
+
+        const row: any = {
+          incoming_id: incomingId,
+          ...(isUuid(piId) ? { purchase_item_id: piId } : {}),
+          uom: x.uom ?? ri.uom ?? null,
+          qty_expected: Number.isFinite(qtyNum) ? qtyNum : 0,
+          qty_received: 0,
+        };
+
+        return row;
+      })
+      .filter((r) => r.qty_expected > 0);
 
     console.log("[reseedIncomingItems] rows to insert:", rows.length);
-
     if (rows.length === 0) return false;
 
-    const ins = await supabase.from("wh_incoming_items" as any).insert(rows as any);
+    const ins = await supabase
+      .from("wh_incoming_items" as any)
+      .insert(rows as any);
+
     if (ins.error) {
-      console.warn("[reseedIncomingItems] insert error:", ins.error.message, ins.error.details, ins.error.hint, ins.error.code);
+      console.warn(
+        "[reseedIncomingItems] insert error:",
+        ins.error.message,
+        ins.error.details,
+        ins.error.hint,
+        ins.error.code,
+      );
       return false;
     }
+
     console.log("[reseedIncomingItems] insert ok");
     return true;
   };
 
-  // ===== нормализация строки -> число
+  // нормализация строки -> число
   const __toNum = (v: any): number => {
     if (v == null) return 0;
     const s = String(v).trim();
     if (!s) return 0;
-    const cleaned = s.replace(/[^\d,\.\-]+/g, "").replace(",", ".").replace(/\s+/g, "");
+    const cleaned = s
+      .replace(/[^\d,\.\-]+/g, "")
+      .replace(",", ".")
+      .replace(/\s+/g, "");
     const n = Number(cleaned);
     return Number.isFinite(n) ? n : 0;
   };
 
-  // ===== безопасные геттеры
+  // безопасные геттеры
   const __pick = (row: any, names: string[], def?: any) => {
-    for (const n of names) if (row && row[n] !== undefined && row[n] !== null) return row[n];
+    for (const n of names)
+      if (row && row[n] !== undefined && row[n] !== null) return row[n];
     return def;
   };
   const __pickDeep = (obj: any, paths: string[]): any => {
     for (const p of paths) {
       try {
-        const v = p.split(".").reduce((o, k) => (o && typeof o === "object" ? o[k] : undefined), obj);
+        const v = p
+          .split(".")
+          .reduce(
+            (o, k) => (o && typeof o === "object" ? (o as any)[k] : undefined),
+            obj,
+          );
         if (v !== undefined && v !== null) return v;
       } catch {}
     }
     return undefined;
   };
 
-  // ===== приведение любой БД-строки к ItemRow
+  // приведение любой строки к ItemRow
   const mapRow = (x: any, syntheticBase?: string): ItemRow => {
-    const code =
-      String(
-        __pick(x, ["code", "mat_code", "code"], __pickDeep(x, ["request_items.code"]) || "")
-        || ""
-      ) || null;
+    const rawCode =
+      __pick(x, ["code", "mat_code", "rik_code"], undefined) ??
+      __pickDeep(x, ["request_items.rik_code", "request_items.code"], undefined);
 
-    const name =
-      String(
-        __pick(x, ["name", "name", "title"], __pickDeep(x, ["request_items.name","request_items.name"]) || (code ?? ""))
-        || (code ?? "")
-      );
+    const code =
+      rawCode != null && String(rawCode).trim() !== ""
+        ? String(rawCode)
+        : null;
+
+    const name = String(
+      __pick(
+        x,
+        ["name", "name_human", "title"],
+        __pickDeep(x, ["request_items.name_human"]) || code || "",
+      ) || code || "",
+    );
 
     const uom =
-      __pick(x, ["uom", "uom_id", "unit", "unit_id", "uom_code"], null)
-      ?? __pickDeep(x, ["request_items.uom","request_items.unit","request_items.unit_id"])
-      ?? null;
+      __pick(x, ["uom", "uom_id", "unit", "unit_id", "uom_code"], null) ??
+      __pickDeep(x, [
+        "request_items.uom",
+        "request_items.unit",
+        "request_items.unit_id",
+      ]) ??
+      null;
 
-    // кандидаты «Ожидается»
     const expRaw =
       __pick(x, [
-        "qty_expected", "total_qty",
-        "qty_plan", "qty_approved", "qty_total", "quantity", "qty",
-        "approved_qty", "planned_qty", "qty_ordered", "qty_txt",
-        "qty_expected_txt", "approved_qty_txt", "count", "cnt", "pcs", "qty_units",
-        "quantity_value", "q", "qnty"
+        "qty_expected",
+        "total_qty",
+        "qty_plan",
+        "qty_approved",
+        "qty_total",
+        "quantity",
+        "qty",
+        "approved_qty",
+        "planned_qty",
+        "qty_ordered",
+        "qty_txt",
+        "qty_expected_txt",
+        "approved_qty_txt",
+        "count",
+        "cnt",
+        "pcs",
+        "qty_units",
+        "quantity_value",
+        "q",
+        "qnty",
       ]) ??
       __pickDeep(x, [
-        "meta.qty", "meta.quantity", "meta.qty_approved", "meta.qty_expected",
-        "details.qty", "details.quantity", "extra.qty", "extra.quantity",
-        "row.qty", "row.quantity",
-        "request_items.qty"
+        "meta.qty",
+        "meta.quantity",
+        "meta.qty_approved",
+        "meta.qty_expected",
+        "details.qty",
+        "details.quantity",
+        "extra.qty",
+        "extra.quantity",
+        "row.qty",
+        "row.quantity",
+        "request_items.qty",
       ]);
 
-    // кандидаты «Принято»
     const recRaw =
       __pick(x, [
-        "qty_received","received","qty_recv","fact_qty","received_qty",
-        "qty_fact","qty_accepted","accepted_qty","qty_in","qty_received_txt"
+        "qty_received",
+        "received",
+        "qty_recv",
+        "fact_qty",
+        "received_qty",
+        "qty_fact",
+        "qty_accepted",
+        "accepted_qty",
+        "qty_in",
+        "qty_received_txt",
       ]) ??
       __pickDeep(x, [
-        "meta.qty_received","meta.received","details.qty_received","details.received",
-        "row.qty_received","row.received"
+        "meta.qty_received",
+        "meta.received",
+        "details.qty_received",
+        "details.received",
+        "row.qty_received",
+        "row.received",
       ]);
 
     const qty_expected = __toNum(expRaw);
     const qty_received = __toNum(recRaw);
 
     return {
-      incoming_item_id: String(x?.incoming_item_id ?? x?.id ?? (syntheticBase ? `${syntheticBase}:${x?.id ?? ""}` : "")),
-      purchase_item_id: String(__pick(x, ["purchase_item_id", "pi_id", "id"], "")),
+      incoming_item_id: String(
+        x?.incoming_item_id ??
+          x?.id ??
+          (syntheticBase ? `${syntheticBase}:${x?.id ?? ""}` : ""),
+      ),
+      purchase_item_id: String(
+        __pick(x, ["purchase_item_id", "pi_id", "id"], ""),
+      ),
       code,
       name,
       uom,
@@ -519,28 +2319,35 @@ export default function Warehouse() {
     };
   };
 
-  /** ===== загрузка позиций под шапкой (каскад источников) ===== */
+  /** ===== загрузка позиций по шапке ===== */
   const loadItemsForHead = useCallback(
     async (incomingIdRaw: string, force = false): Promise<ItemRow[] | undefined> => {
       const incomingId = canonId(incomingIdRaw);
       if (!incomingId) return [];
 
-      if (!force && Object.prototype.hasOwnProperty.call(itemsByHead, incomingId)) {
+      if (
+        !force &&
+        Object.prototype.hasOwnProperty.call(itemsByHead, incomingId)
+      ) {
         console.log("[loadItemsForHead] cache hit", { incomingIdRaw, incomingId });
         return itemsByHead[incomingId];
       }
 
-      // найти purchase_id (+ поддержка "p:<purchase_id>")
       let purchaseId: string | null =
         toReceive.find((x) => canonId(x.id) === incomingId)?.purchase_id ?? null;
-      if (!purchaseId && typeof incomingIdRaw === "string" && incomingIdRaw.startsWith("p:")) {
+      if (!purchaseId && incomingIdRaw.startsWith("p:")) {
         purchaseId = incomingIdRaw.slice(2);
       }
 
-      const isSynthetic = String(incomingIdRaw).startsWith("p:");
-      console.log("[loadItemsForHead] start", { incomingIdRaw, incomingId, isSynthetic, purchaseId });
+      const isSynthetic = incomingIdRaw.startsWith("p:");
+      console.log("[loadItemsForHead] start", {
+        incomingIdRaw,
+        incomingId,
+        isSynthetic,
+        purchaseId,
+      });
 
-      // если purchaseId всё ещё нет — дёрнем саму шапку wh_incoming (делаем ПОСЛЕ объявления isSynthetic)
+      // если нет purchase_id — дёргаем wh_incoming
       if (!purchaseId && isUuid(incomingId) && !isSynthetic) {
         try {
           const qHead = await supabase
@@ -550,18 +2357,20 @@ export default function Warehouse() {
             .maybeSingle();
           if (!qHead.error && qHead.data?.purchase_id) {
             purchaseId = String(qHead.data.purchase_id);
-            console.log("[loadItemsForHead] purchase_id fallback from wh_incoming", { purchaseId });
+            console.log("[loadItemsForHead] purchase_id from wh_incoming", { purchaseId });
           }
         } catch (e) {
           console.warn("[loadItemsForHead] purchase_id fallback err:", e);
         }
       }
 
-      // 1) RPC по реальному incoming (только если id = UUID)
+      // 1) RPC list_wh_items
       if (!isSynthetic && isUuid(incomingId)) {
         console.log("[loadItemsForHead] trying RPC list_wh_items", incomingId);
         try {
-          const r = await supabase.rpc("list_wh_items" as any, { p_incoming_id: incomingId } as any);
+          const r = await supabase.rpc("list_wh_items" as any, {
+            p_incoming_id: incomingId,
+          } as any);
           if (!r.error && Array.isArray(r.data) && r.data.length > 0) {
             const rows = (r.data as any[]).map((x) => mapRow(x));
             setItemsByHead((prev) => ({ ...prev, [incomingId]: rows }));
@@ -570,7 +2379,10 @@ export default function Warehouse() {
           if (r.error) {
             console.warn(
               "[list_wh_items] rpc error:",
-              r.error.message, r.error.details, r.error.hint, (r as any).status
+              r.error.message,
+              r.error.details,
+              r.error.hint,
+              (r as any).status,
             );
           }
         } catch (e: any) {
@@ -580,7 +2392,7 @@ export default function Warehouse() {
         console.warn("[list_wh_items] skipped: incomingId is not UUID:", incomingId);
       }
 
-      // 2) wh_incoming_items (реальный incoming)
+      // 2) wh_incoming_items
       if (!isSynthetic) {
         console.log("[loadItemsForHead] trying wh_incoming_items", incomingId);
         const fb = await supabase
@@ -595,16 +2407,33 @@ export default function Warehouse() {
           return rows;
         }
 
-        // если реальная шапка, но позиций нет — тихо ресидим из purchase_items и перечитываем
         if (purchaseId) {
           console.log("[loadItemsForHead] reseed try", { incomingId, purchaseId });
           const seeded = await reseedIncomingItems(incomingId, purchaseId);
+
           if (seeded) {
+            try {
+              const r2 = await supabase.rpc("list_wh_items" as any, {
+                p_incoming_id: incomingId,
+              } as any);
+              if (!r2.error && Array.isArray(r2.data) && r2.data.length > 0) {
+                const rows = (r2.data as any[]).map((x) => mapRow(x));
+                setItemsByHead((prev) => ({ ...prev, [incomingId]: rows }));
+                return rows;
+              }
+            } catch (e) {
+              console.warn(
+                "[loadItemsForHead] list_wh_items after reseed failed:",
+                e,
+              );
+            }
+
             const fb2 = await supabase
               .from("wh_incoming_items" as any)
               .select("*")
               .eq("incoming_id", incomingId)
               .order("created_at", { ascending: true });
+
             if (!fb2.error && Array.isArray(fb2.data) && fb2.data.length > 0) {
               const rows = (fb2.data as any[]).map((x) => mapRow(x));
               setItemsByHead((prev) => ({ ...prev, [incomingId]: rows }));
@@ -614,29 +2443,40 @@ export default function Warehouse() {
         }
       }
 
-      // 3) purchase_items — ТОЛЬКО для синтетики ("p:<pid>")
+      // 3) purchase_items — только для синтетики
       if (isSynthetic && purchaseId) {
-        console.log("[loadItemsForHead] trying purchase_items (synthetic)", { incomingIdRaw, purchaseId });
+        console.log("[loadItemsForHead] trying purchase_items (synthetic)", {
+          incomingIdRaw,
+          purchaseId,
+        });
+
         const pi = await supabase
           .from("purchase_items" as any)
           .select(`
-            id, purchase_id, request_item_id,
-            qty, uom,
-            request_items:request_items ( code, name, uom, qty )
+            id,
+            request_item_id,
+            qty,
+            uom,
+            request_items:request_items (
+              rik_code,
+              name_human,
+              note,
+              uom
+            )
           `)
           .eq("purchase_id", purchaseId)
           .order("id", { ascending: true });
 
         if (!pi.error && Array.isArray(pi.data) && pi.data.length > 0) {
-          const rows = (pi.data as any[]).map((x) => mapRow(x, incomingIdRaw)); // incoming_item_id = "p:<pid>:<pi_id>"
+          const rows = (pi.data as any[]).map((x) => mapRow(x, incomingIdRaw));
           setItemsByHead((prev) => ({ ...prev, [incomingId]: rows }));
           return rows;
         }
-        // доп.кейс: snapshot
+
         const link = await supabase
           .from("purchases" as any)
           .select("proposal_id")
-          .eq("id", purchaseId!)
+          .eq("id", purchaseId)
           .maybeSingle();
         const propId = link?.data?.proposal_id;
         if (propId) {
@@ -653,15 +2493,19 @@ export default function Warehouse() {
         }
       }
 
-      // 4) пусто
-      console.log("[loadItemsForHead] empty", { incomingIdRaw, incomingId, isSynthetic, purchaseId });
+      console.log("[loadItemsForHead] empty", {
+        incomingIdRaw,
+        incomingId,
+        isSynthetic,
+        purchaseId,
+      });
       setItemsByHead((prev) => ({ ...prev, [incomingId]: [] }));
       return [];
     },
-    [itemsByHead, toReceive, canonId, reseedIncomingItems]
+    [itemsByHead, toReceive, canonId, reseedIncomingItems],
   );
 
-  // ===== раскрыть/скрыть карточку и загрузить позиции =====
+  // раскрыть/скрыть карточку
   const onToggleHead = useCallback(
     async (incomingIdRaw: string) => {
       const id = canonId(incomingIdRaw);
@@ -672,156 +2516,96 @@ export default function Warehouse() {
         await loadItemsForHead(next, true);
       }
     },
-    [expanded, loadItemsForHead, canonId]
+    [expanded, loadItemsForHead, canonId],
   );
 
-  // частичная приёмка одной строки (как было, только RPC v2)
-  const receivePart = useCallback(async (incomingItemId: string, qty: number) => {
-    try {
-      if (!incomingItemId) return Alert.alert("Нет позиции", "Неизвестный ID позиции прихода");
-      const q = Number(qty);
-      if (!Number.isFinite(q) || q <= 0) return Alert.alert("Количество", "Введите положительное количество.");
-      const r = await supabase.rpc('wh_receive_item_v2' as any, { p_incoming_item_id: incomingItemId, p_qty: q } as any);
-      if (r.error) return Alert.alert("Ошибка прихода", pickErr(r.error));
-
-      await fetchToReceive();
-      if (expanded) {
-        setItemsByHead(prev => { const c = { ...prev }; delete c[expanded]; return c; });
-        await loadItemsForHead(expanded, true);
-        setQtyInputByItem(prev => { const n = { ...prev }; delete n[incomingItemId]; return n; });
-      }
-      await fetchStock();
-    } catch (e) { showErr(e); }
-  }, [expanded, fetchToReceive, loadItemsForHead]);
-
-  // полная приёмка (как было)
-  const receiveAllHead = useCallback(async (incomingIdRaw: string, _purchaseId: string) => {
-    try {
-      const incomingId = canonId(incomingIdRaw);
-      if (!itemsByHead[incomingId]) await loadItemsForHead(incomingId, true);
-      const rows = itemsByHead[incomingId] || [];
-      if (rows.length === 0) {
-        return Alert.alert("Нет позиций", "Под этой поставкой нет строк для прихода. Раскрой «Показать позиции» и проверь состав.");
-      }
-      const totalLeft = rows.reduce((s, r) => s + Math.max(0, nz(r.qty_expected,0) - nz(r.qty_received,0)), 0);
-      if (totalLeft <= 0) return Alert.alert("Нечего приходоватЬ", "Все позиции уже приняты.");
-
-      const pr = await supabase.rpc('wh_receive_confirm' as any, { p_wh_id: incomingId } as any);
-      if (pr.error) return Alert.alert("Ошибка полного прихода", pickErr(pr.error));
-
-      await fetchToReceive();
-      setItemsByHead(prev => { const c = { ...prev }; delete c[incomingId]; return c; });
-      await fetchStock();
-      Alert.alert('Готово','Поставка оприходована полностью');
-    } catch (e) { showErr(e); }
-  }, [itemsByHead, fetchToReceive, loadItemsForHead, canonId]);
-
-  // ===== общая кнопка "Оприходовать выбранное" под списком позиций =====
-  const receiveSelectedForHead = useCallback(async (incomingIdInitial: string) => {
-    try {
-      if (!incomingIdInitial) return;
-
-      // 1) материализуем синтетику
-      let incomingId = incomingIdInitial;
-      if (incomingId.startsWith("p:")) {
-        const real = await ensureRealIncoming(incomingId);
-        if (real) incomingId = real;
-      }
-      const cid = canonId(incomingId);
-
-      // 2) гарантируем, что строки существуют в БД
-      if (!isUuid(cid)) {
-        return Alert.alert("Ошибка", "Неверный ID поставки");
-      }
-      await ensurePositionsForHead(cid);
-
-      // 3) берём СВЕЖИЙ список строк (чтобы ids были актуальные)
-      const freshRows = (await loadItemsForHead(cid, true)) ?? [];
-      if (freshRows.length === 0) {
-        return Alert.alert("Нет позиций", "Под этой шапкой нет строк для прихода.");
-      }
-
-      // 4) собираем только реальные UUID строки + введённые > 0
-      const toApply: Array<{ id: string; qty: number }> = [];
-      for (const r of freshRows) {
-        const exp = nz(r.qty_expected, 0);
-        const rec = nz(r.qty_received, 0);
-        const left = Math.max(0, exp - rec);
-        if (!left) continue;
-
-        const id = r.incoming_item_id;
-        if (!isUuid(id)) continue; // никакой синтетики
-        const qty = parseQty(qtyInputByItem[id], left);
-        if (qty > 0) toApply.push({ id, qty });
-      }
-
-      if (toApply.length === 0) {
-        return Alert.alert("Нечего оприходовать", "Введите количество > 0 для нужных строк.");
-      }
-
-      // 5) страховка от «не найдено»: проверяем существование id в БД
-      const ids = toApply.map(t => t.id);
-      const check = await supabase.from("wh_incoming_items" as any).select("id").in("id", ids).limit(10000);
-      const existing = new Set<string>((check.data || []).map((x: any) => String(x.id)));
-      const valid = toApply.filter(t => existing.has(t.id));
-      const missed = toApply.filter(t => !existing.has(t.id));
-      if (missed.length) {
-        console.warn("[receiveSelectedForHead] skipped stale ids:", missed.map(m => m.id));
-        if (valid.length === 0) {
-          return Alert.alert("Обнови список", "Позиции были пересозданы. Нажми «Показать позиции» ещё раз и повтори ввод количества.");
-        }
-      }
-
-      // 6) батч приёмка
-      setReceivingHeadId(incomingIdInitial);
-      let ok = 0, fail = 0;
-      for (const it of valid) {
-        const r = await supabase.rpc('wh_receive_item_v2' as any, {
-          p_incoming_item_id: it.id,
-          p_qty: it.qty
+  // частичная приёмка одной строки
+  const receivePart = useCallback(
+    async (incomingItemId: string, qty: number) => {
+      try {
+        if (!incomingItemId)
+          return Alert.alert("Нет позиции", "Неизвестный ID позиции прихода");
+        const q = Number(qty);
+        if (!Number.isFinite(q) || q <= 0)
+          return Alert.alert("Количество", "Введите положительное количество.");
+        const r = await supabase.rpc("wh_receive_item_v2" as any, {
+          p_incoming_item_id: incomingItemId,
+          p_qty: q,
         } as any);
-        if (r.error) {
-          fail++;
-          console.warn("[wh_receive_item] err:", it.id, r.error.message);
-        } else ok++;
+        if (r.error)
+          return Alert.alert("Ошибка прихода", pickErr(r.error));
+
+        await fetchToReceive();
+        if (expanded) {
+          setItemsByHead((prev) => {
+            const c = { ...prev };
+            delete c[expanded];
+            return c;
+          });
+          await loadItemsForHead(expanded, true);
+          setQtyInputByItem((prev) => {
+            const n = { ...prev };
+            delete n[incomingItemId];
+            return n;
+          });
+        }
+        await fetchStock();
+      } catch (e) {
+        showErr(e);
       }
+    },
+    [expanded, fetchToReceive, loadItemsForHead, fetchStock],
+  );
 
-      // 7) обновления и автоконфирм, если остаток 0
-      const rows2 = (await loadItemsForHead(cid, true)) ?? [];
-      const leftAfter = rows2.reduce((s, r) => s + Math.max(0, nz(r.qty_expected, 0) - nz(r.qty_received, 0)), 0);
+  // полная приёмка
+  const receiveAllHead = useCallback(
+    async (incomingIdRaw: string, _purchaseId: string) => {
+      try {
+        const incomingId = canonId(incomingIdRaw);
+        if (!itemsByHead[incomingId]) await loadItemsForHead(incomingId, true);
+        const rows = itemsByHead[incomingId] || [];
+        if (rows.length === 0) {
+          return Alert.alert(
+            "Нет позиций",
+            "Под этой поставкой нет строк для прихода. Раскрой «Показать позиции» и проверь состав.",
+          );
+        }
+        const totalLeft = rows.reduce(
+          (s, r) => s + Math.max(0, nz(r.qty_expected, 0) - nz(r.qty_received, 0)),
+          0,
+        );
+        if (totalLeft <= 0)
+          return Alert.alert("Нечего приходовать", "Все позиции уже приняты.");
 
-      if (leftAfter <= 0) {
-        try {
-          const pr = await supabase.rpc('wh_receive_confirm' as any, { p_wh_id: cid } as any);
-          if (pr.error) console.warn("[auto confirm] err:", pr.error.message);
-        } catch {}
+        const pr = await supabase.rpc("wh_receive_confirm" as any, {
+          p_wh_id: incomingId,
+        } as any);
+        if (pr.error)
+          return Alert.alert("Ошибка полного прихода", pickErr(pr.error));
+
+        await fetchToReceive();
+        setItemsByHead((prev) => {
+          const c = { ...prev };
+          delete c[incomingId];
+          return c;
+        });
+        await fetchStock();
+        Alert.alert("Готово", "Поставка оприходована полностью");
+      } catch (e) {
+        showErr(e);
       }
+    },
+    [itemsByHead, fetchToReceive, loadItemsForHead, canonId, fetchStock],
+  );
 
-      await fetchToReceive();
-      setItemsByHead(prev => { const c = { ...prev }; delete c[cid]; return c; });
-      setQtyInputByItem(prev => {
-        const next = { ...prev };
-        for (const it of valid) delete next[it.id];
-        return next;
-      });
-      await fetchStock();
-
-      Alert.alert("Готово", `Принято позиций: ${ok}${fail ? `, ошибок: ${fail}` : ""}`);
-    } catch (e) {
-      showErr(e);
-    } finally {
-      setReceivingHeadId(null);
-    }
-  }, [itemsByHead, qtyInputByItem, fetchToReceive, loadItemsForHead, ensureRealIncoming, canonId]);
-
-  // гарантируем, что у реальной шапки есть строки в wh_incoming_items
+  // гарантируем, что у реальной шапки есть строки
   const ensurePositionsForHead = async (incomingId: string) => {
-    // если есть RPC — отлично
     try {
-      // у тебя эта функция уже создана в БД
-      await supabase.rpc('ensure_incoming_items' as any, { p_incoming_id: incomingId } as any);
+      await supabase.rpc("ensure_incoming_items" as any, {
+        p_incoming_id: incomingId,
+      } as any);
     } catch {}
-    // на всякий случай: если RPC нет, fallback
+
     const fb = await supabase
       .from("wh_incoming_items" as any)
       .select("id")
@@ -829,113 +2613,221 @@ export default function Warehouse() {
       .limit(1);
     if (!fb.error && Array.isArray(fb.data) && fb.data.length > 0) return true;
 
-    // последний шанс — ресид из purchase_items
-    const pidRow = await supabase.from("wh_incoming" as any).select("purchase_id").eq("id", incomingId).maybeSingle();
-    const pId = pidRow?.data?.purchase_id ? String(pidRow.data.purchase_id) : null;
+    const pidRow = await supabase
+      .from("wh_incoming" as any)
+      .select("purchase_id")
+      .eq("id", incomingId)
+      .maybeSingle();
+    const pId = pidRow?.data?.purchase_id
+      ? String(pidRow.data.purchase_id)
+      : null;
     if (pId) await reseedIncomingItems(incomingId, pId);
     return true;
   };
 
-  /** ===== ОСТАТКИ ===== */
-  const [stock, setStock] = useState<StockRow[]>([]);
-  const [stockSupported, setStockSupported] = useState<null | boolean>(null);
+  // общая кнопка "Оприходовать выбранное"
+  const receiveSelectedForHead = useCallback(
+    async (incomingIdInitial: string) => {
+      try {
+        if (!incomingIdInitial) return;
 
-  const fetchStock = useCallback(async () => {
-    try {
-      // 0) ФАКТ сразу после приёмки
-      const fact = await supabase
-        .from("v_warehouse_fact" as any)
-        .select("*")
-        .limit(5000);
-
-      if (!fact.error && Array.isArray(fact.data)) {
-        const rows = (fact.data || []).map((x: any) => ({
-          material_id: String(x.code ?? x.material_id ?? ""),
-          code: x.code ?? null,
-          name: x.name ?? x.name ?? null,
-          uom_id: x.uom_id ?? null,
-          qty_on_hand: nz(x.qty_on_hand, 0),
-          qty_reserved: nz(x.qty_reserved, 0),
-          qty_available: nz(
-            x.qty_available ?? (nz(x.qty_on_hand, 0) - nz(x.qty_reserved, 0)),
-            0
-          ),
-          object_name: x.object_name ?? null,
-          warehouse_name: x.warehouse_name ?? null,
-          updated_at: x.updated_at ?? null,
-        })) as StockRow[];
-        setStock(rows);
-        setStockSupported(true);
-        return;
-      }
-
-      // 1) RPC-источники (как было)
-      const rpcNames = [
-        { fn: "list_stock", args: {} },
-        { fn: "warehouse_list_stock", args: {} },
-        { fn: "list_warehouse_stock", args: {} },
-        { fn: "acc_list_stock", args: {} },
-      ] as const;
-
-      for (const r of rpcNames) {
-        const res = await supabase.rpc(r.fn as any, r.args as any);
-        if (!res.error && Array.isArray(res.data)) {
-          const rows = (res.data || []).map((x: any) => ({
-            material_id: String(x.material_id ?? x.id ?? x.code ?? ""),
-            code: x.code ?? x.mat_code ?? null,
-            name: x.name ?? x.name ?? null,
-            uom_id: x.uom_id ?? x.uom ?? null,
-            qty_on_hand: nz(x.qty_on_hand ?? x.on_hand, 0),
-            qty_reserved: nz(x.qty_reserved ?? x.reserved, 0),
-            qty_available: nz(
-              x.qty_available ?? x.available ?? (nz(x.qty_on_hand) - nz(x.qty_reserved)),
-              0
-            ),
-            object_name: x.object_name ?? null,
-            warehouse_name: x.warehouse_name ?? null,
-            updated_at: x.updated_at ?? null,
-          })) as StockRow[];
-          setStock(rows);
-          setStockSupported(true);
-          return;
+        let incomingId = incomingIdInitial;
+        if (incomingId.startsWith("p:")) {
+          const real = await ensureRealIncoming(incomingId);
+          if (real) incomingId = real;
         }
+        const cid = canonId(incomingId);
+
+        if (!isUuid(cid)) {
+          return Alert.alert("Ошибка", "Неверный ID поставки");
+        }
+
+        await ensurePositionsForHead(cid);
+
+        const freshRows = (await loadItemsForHead(cid, true)) ?? [];
+        if (freshRows.length === 0) {
+          return Alert.alert(
+            "Нет позиций",
+            "Под этой шапкой нет строк для прихода.",
+          );
+        }
+
+        const toApply: Array<{ id: string; qty: number }> = [];
+        for (const r of freshRows) {
+          const exp = nz(r.qty_expected, 0);
+          const rec = nz(r.qty_received, 0);
+          const left = Math.max(0, exp - rec);
+          if (!left) continue;
+
+          const id = r.incoming_item_id;
+          if (!isUuid(id)) continue;
+          const qty = parseQty(qtyInputByItem[id], left);
+          if (qty > 0) toApply.push({ id, qty });
+        }
+
+        if (toApply.length === 0) {
+          return Alert.alert(
+            "Нечего оприходовать",
+            "Введите количество > 0 для нужных строк.",
+          );
+        }
+
+        const ids = toApply.map((t) => t.id);
+        const check = await supabase
+          .from("wh_incoming_items" as any)
+          .select("id")
+          .in("id", ids)
+          .limit(10000);
+        const existing = new Set<string>(
+          (check.data || []).map((x: any) => String(x.id)),
+        );
+        const valid = toApply.filter((t) => existing.has(t.id));
+        const missed = toApply.filter((t) => !existing.has(t.id));
+        if (missed.length) {
+          console.warn(
+            "[receiveSelectedForHead] skipped stale ids:",
+            missed.map((m) => m.id),
+          );
+          if (valid.length === 0) {
+            return Alert.alert(
+              "Обнови список",
+              "Позиции были пересозданы. Нажми «Показать позиции» ещё раз и повтори ввод количества.",
+            );
+          }
+        }
+
+        setReceivingHeadId(incomingIdInitial);
+        let ok = 0,
+          fail = 0;
+        for (const it of valid) {
+          const r = await supabase.rpc("wh_receive_item_v2" as any, {
+            p_incoming_item_id: it.id,
+            p_qty: it.qty,
+          } as any);
+          if (r.error) {
+            fail++;
+            console.warn(
+              "[wh_receive_item] err:",
+              it.id,
+              r.error.message,
+            );
+          } else ok++;
+        }
+
+        // сразу сеем работы из закупки
+        try {
+          const q = await supabase
+            .from("wh_incoming" as any)
+            .select("purchase_id")
+            .eq("id", cid)
+            .maybeSingle();
+
+          const pid =
+            !q.error && q.data?.purchase_id
+              ? String(q.data.purchase_id)
+              : null;
+
+          if (pid) {
+            const seed = await supabase.rpc(
+              "work_seed_from_purchase" as any,
+              { p_purchase_id: pid } as any,
+            );
+            if (seed.error) {
+              console.warn(
+                "[receiveSelectedForHead][work_seed_from_purchase] error:",
+                seed.error.message,
+              );
+            }
+          }
+        } catch (e) {
+          console.warn(
+            "[receiveSelectedForHead] purchase_id lookup / seed error:",
+            e,
+          );
+        }
+
+        const rows2 = (await loadItemsForHead(cid, true)) ?? [];
+        const leftAfter = rows2.reduce(
+          (s, r) =>
+            s +
+            Math.max(0, nz(r.qty_expected, 0) - nz(r.qty_received, 0)),
+          0,
+        );
+
+        if (leftAfter <= 0) {
+          try {
+            const pr = await supabase.rpc("wh_receive_confirm" as any, {
+              p_wh_id: cid,
+            } as any);
+            if (pr.error) {
+              console.warn("[auto confirm] err:", pr.error.message);
+            }
+
+            try {
+              const q = await supabase
+                .from("wh_incoming" as any)
+                .select("purchase_id")
+                .eq("id", cid)
+                .maybeSingle();
+
+              const pid =
+                !q.error && q.data?.purchase_id
+                  ? String(q.data.purchase_id)
+                  : null;
+
+              if (pid) {
+                const seed = await supabase.rpc(
+                  "work_seed_from_purchase" as any,
+                  { p_purchase_id: pid } as any,
+                );
+                if (seed.error) {
+                  console.warn(
+                    "[auto confirm][work_seed_from_purchase] error:",
+                    seed.error.message,
+                  );
+                }
+              }
+            } catch (e) {
+              console.warn(
+                "[auto confirm] lookup purchase_id / seed works err:",
+                e,
+              );
+            }
+          } catch {}
+        }
+
+        await fetchToReceive();
+        setItemsByHead((prev) => {
+          const c = { ...prev };
+          delete c[cid];
+          return c;
+        });
+        setQtyInputByItem((prev) => {
+          const next = { ...prev };
+          for (const it of valid) delete next[it.id];
+          return next;
+        });
+        await fetchStock();
+
+        Alert.alert(
+          "Готово",
+          `Принято позиций: ${ok}${fail ? `, ошибок: ${fail}` : ""}`,
+        );
+      } catch (e) {
+        showErr(e);
+      } finally {
+        setReceivingHeadId(null);
       }
-
-      // 2) Фоллбек на старую вью «остатков»
-      const v = await supabase
-        .from("v_warehouse_stock" as any)
-        .select("*")
-        .limit(2000);
-
-      if (!v.error && Array.isArray(v.data)) {
-        const rows = (v.data || []).map((x: any) => ({
-          material_id: String(x.code ?? ""),
-          code: x.code ?? null,
-          name: x.name ?? null,
-          uom_id: x.uom_id ?? null,
-          qty_on_hand: nz(x.qty_on_hand, 0),
-          qty_reserved: nz(x.qty_reserved, 0),
-          qty_available: nz(
-            x.qty_available ?? (nz(x.qty_on_hand) - nz(x.qty_reserved)),
-            0
-          ),
-          object_name: null,
-          warehouse_name: null,
-          updated_at: x.updated_at ?? null,
-        })) as StockRow[];
-        setStock(rows);
-        setStockSupported(true);
-        return;
-      }
-
-      setStockSupported(false);
-      setStock([]);
-    } catch (e) {
-      console.warn("[fetchStock]", e);
-      setStockSupported(false);
-      setStock([]);
-    }
-  }, []);
+    },
+    [
+      canonId,
+      fetchToReceive,
+      fetchStock,
+      loadItemsForHead,
+      qtyInputByItem,
+      ensureRealIncoming,
+    ],
+  );
 
   /** ===== ИСТОРИЯ ===== */
   const [history, setHistory] = useState<HistoryRow[]>([]);
@@ -943,15 +2835,34 @@ export default function Warehouse() {
 
   const fetchHistory = useCallback(async () => {
     try {
-      const rpcs = ["list_warehouse_history", "acc_list_history" ] as const;
+      const rpcs = ["list_warehouse_history", "acc_list_history"] as const;
       for (const fn of rpcs) {
         const rpc = await supabase.rpc(fn as any, {} as any);
-        if (!rpc.error && Array.isArray(rpc.data)) { setHistory(rpc.data as HistoryRow[]); setHistorySupported(true); return; }
+        if (!rpc.error && Array.isArray(rpc.data)) {
+          setHistory(rpc.data as HistoryRow[]);
+          setHistorySupported(true);
+          return;
+        }
       }
-      const vw = await supabase.from("v_warehouse_history" as any).select("*").order("event_dt", { ascending: false }).limit(400);
-      if (!vw.error && Array.isArray(vw.data)) { setHistory(vw.data as any); setHistorySupported(true); return; }
-      setHistorySupported(false); setHistory([]);
-    } catch { setHistorySupported(false); setHistory([]); }
+
+      const vw = await supabase
+        .from("v_warehouse_history" as any)
+        .select("*")
+        .order("event_dt", { ascending: false })
+        .limit(400);
+
+      if (!vw.error && Array.isArray(vw.data)) {
+        setHistory(vw.data as any);
+        setHistorySupported(true);
+        return;
+      }
+
+      setHistorySupported(false);
+      setHistory([]);
+    } catch {
+      setHistorySupported(false);
+      setHistory([]);
+    }
   }, []);
 
   /** ===== ИНВЕНТАРИЗАЦИЯ ===== */
@@ -961,28 +2872,48 @@ export default function Warehouse() {
   const fetchInv = useCallback(async () => {
     try {
       const rpc = await supabase.rpc("acc_inv_list" as any, {} as any);
-      if (!rpc.error && Array.isArray(rpc.data)) { setInv(rpc.data as InvSession[]); setInvSupported(true); return; }
-      setInvSupported(false); setInv([]);
-    } catch { setInvSupported(false); setInv([]); }
+      if (!rpc.error && Array.isArray(rpc.data)) {
+        setInv(rpc.data as InvSession[]);
+        setInvSupported(true);
+        return;
+      }
+      setInvSupported(false);
+      setInv([]);
+    } catch {
+      setInvSupported(false);
+      setInv([]);
+    }
   }, []);
 
   const createInv = useCallback(async () => {
     try {
-      const r = await supabase.rpc("acc_inv_open" as any, { p_object_id: null, p_comment: "Инвентаризация (склад)" } as any);
+      const r = await supabase.rpc("acc_inv_open" as any, {
+        p_object_id: null,
+        p_comment: "Инвентаризация (склад)",
+      } as any);
       if (r.error) throw r.error;
       await fetchInv();
       Alert.alert("Создано", "Сессия инвентаризации открыта.");
-    } catch (e) { showErr(e); }
+    } catch (e) {
+      showErr(e);
+    }
   }, [fetchInv]);
 
-  const finishInv = useCallback(async (id: string) => {
-    try {
-      const r = await supabase.rpc("acc_inv_finish" as any, { p_session_id: id } as any);
-      if (r.error) throw r.error;
-      await fetchInv();
-      Alert.alert("Готово", "Инвентаризация завершена.");
-    } catch (e) { showErr(e); }
-  }, [fetchInv]);
+  const finishInv = useCallback(
+    async (id: string) => {
+      try {
+        const r = await supabase.rpc("acc_inv_finish" as any, {
+          p_session_id: id,
+        } as any);
+        if (r.error) throw r.error;
+        await fetchInv();
+        Alert.alert("Готово", "Инвентаризация завершена.");
+      } catch (e) {
+        showErr(e);
+      }
+    },
+    [fetchInv],
+  );
 
   /** ===== ОТЧЁТЫ ===== */
   const [repStock, setRepStock] = useState<StockRow[]>([]);
@@ -994,323 +2925,99 @@ export default function Warehouse() {
   const fetchReports = useCallback(async () => {
     try {
       const s = await supabase.rpc("acc_report_stock" as any, {} as any);
-      const m = await supabase.rpc("acc_report_movement" as any, { p_from: periodFrom || null, p_to: periodTo || null } as any);
+      const m = await supabase.rpc("acc_report_movement" as any, {
+        p_from: periodFrom || null,
+        p_to: periodTo || null,
+      } as any);
+
       if (!s.error && Array.isArray(s.data) && !m.error && Array.isArray(m.data)) {
-        setRepStock(s.data as any); setRepMov(m.data as any); setReportsSupported(true); return;
+        setRepStock(s.data as any);
+        setRepMov(m.data as any);
+        setReportsSupported(true);
+        return;
       }
-      setReportsSupported(false); setRepStock([]); setRepMov([]);
+
+      setReportsSupported(false);
+      setRepStock([]);
+      setRepMov([]);
     } catch {
-      setReportsSupported(false); setRepStock([]); setRepMov([]);
+      setReportsSupported(false);
+      setRepStock([]);
+      setRepMov([]);
     }
   }, [periodFrom, periodTo]);
-
-  /** ===== РАСХОД ===== */
-  const [uoms, setUoms] = useState<Record<string, string>>({});
-  const [search, setSearch] = useState("");
-  const [catalog, setCatalog] = useState<RikSearchRow[]>([]);
-  const [allCatalog, setAllCatalog] = useState<RikSearchRow[]>([]);
-  const [availability, setAvailability] = useState<Record<string, number>>({});
-  const [qtyToIssue, setQtyToIssue] = useState<string>("1");
-  const [objectList, setObjectList] = useState<Option[]>([]);
-  const [workTypeList, setWorkTypeList] = useState<Option[]>([]);
-  const [recipientList, setRecipientList] = useState<Option[]>([]);
-  const [pickModal, setPickModal] = useState<{ what: "object"|"work"|"recipient" | null }>({ what: null });
-  const [pickFilter, setPickFilter] = useState("");
-  const [objectOpt, setObjectOpt] = useState<Option | null>(null);
-  const [workTypeOpt, setWorkTypeOpt] = useState<Option | null>(null);
-  const [recipientOpt, setRecipientOpt] = useState<Option | null>(null);
-  // статус для кнопки "Выдать" и баннер сообщений
-  const [issueBusy, setIssueBusy] = useState(false);
-  const [issueMsg, setIssueMsg] = useState<{ kind: "error" | "ok" | null; text: string }>({
-    kind: null,
-    text: "",
-  });
-
-  const loadUoms = useCallback(async () => {
-    try {
-      const q = await supabase
-        .from("rik_uoms" as any)
-        .select("id:uom_code, symbol:uom_code, short_name:name_ru, name:name_ru, kind")
-        .limit(2000);
-
-      if (q.error || !Array.isArray(q.data)) return;
-
-      const map: Record<string, string> = {};
-      for (const r of q.data as any[]) {
-        const id = String(r.id ?? "");
-        const label = (r.symbol ?? r.short_name ?? r.name ?? "").toString();
-        if (id) map[id] = label;
-      }
-      setUoms(map);
-    } catch {}
-  }, []);
-
-  useEffect(() => { loadUoms(); }, [loadUoms]);
-
-  const tryOptions = useCallback(async (table: string, columns: string[]) => {
-    const colList = columns.join(",");
-    const q = await supabase.from(table as any).select(colList).limit(1000);
-    if (q.error || !Array.isArray(q.data)) return [] as Option[];
-    const opts: Option[] = [];
-    for (const r of q.data as any[]) {
-      const id = String(r.id ?? r.uuid ?? "");
-      const label = String(r.name ?? r.title ?? r.object_name ?? r.fio ?? r.full_name ?? r.email ?? r.username ?? r.login ?? "");
-      if (id && label) opts.push({ id, label });
-    }
-    return opts;
-  }, []);
-
-  const loadObjects = useCallback(async () => {
-    const candidates: Array<[string,string[]]> = [["objects", ["id","name","object_name","title"]]];
-    for (const [t, cols] of candidates) {
-      const opts = await tryOptions(t, cols);
-      if (opts.length) { setObjectList(opts); return; }
-    }
-    setObjectList([]);
-  }, [tryOptions]);
-
-  const loadWorkTypes = useCallback(async () => {
-    const candidates: Array<[string,string[]]> = [["work_types", ["id","name","title"]], ["rik_works", ["id","name"]]];
-    for (const [t, cols] of candidates) {
-      const opts = await tryOptions(t, cols);
-      if (opts.length) { setWorkTypeList(opts); return; }
-    }
-    setWorkTypeList([]);
-  }, [tryOptions]);
-
-  const loadRecipients = useCallback(async () => {
-    const candidates: Array<[string,string[]]> = [["profiles", ["id","full_name","fio","email","name"]], ["employees", ["id","fio","full_name","name","email"]]];
-    for (const [t, cols] of candidates) {
-      const opts = await tryOptions(t, cols);
-      if (opts.length) { setRecipientList(opts); return; }
-    }
-    setRecipientList([]);
-  }, [tryOptions]);
-
-  const normalizeToRikRow = useCallback((x: CatalogItem): RikSearchRow => {
-    const kind: "material" | "work" = x.ref_table === "rik_works" ? "work" : "material";
-    return {
-      kind, ref_table: (x.ref_table as any), ref_id: String(x.ref_id ?? ""),
-      code: String(x.code ?? ""), name: String(x.name ?? x.code ?? ""),
-      unit_id: x.unit_id ? String(x.unit_id) : null,
-      unit_label: x.unit_id ? (uoms[String(x.unit_id)] ?? String(x.unit_id)) : null,
-      sector: x.sector ?? null,
-    };
-  }, [uoms]);
-
-  const mapRikItemsRow = (x: any): RikSearchRow => {
-    const rc = String(x.code ?? x.code ?? "");
-    const nm = String(x.name ?? x.name ?? rc);
-    const kind: "material" | "work" = String(x.kind ?? "").toLowerCase() === "work" ? "work" : "material";
-    return { kind, ref_table: kind === "work" ? "rik_works" : "rik_materials", ref_id: String(x.ref_id ?? ""), code: rc, name: nm, unit_id: null, unit_label: x.uom_code ?? x.uom ?? null, sector: x.sector ?? x.sector_code ?? null };
-  };
-
-  function refreshAvailability(rows: RikSearchRow[]) {
-    (async () => {
-      try {
-        let map: Record<string, number> = {};
-        const v = await supabase.from("v_warehouse_stock" as any).select("code, uom_id, qty_on_hand, qty_reserved").limit(10000);
-        if (!v.error && Array.isArray(v.data)) {
-          for (const x of v.data as any[]) {
-            const code = String(x.code ?? "");
-            const avail = nz(x.qty_on_hand, 0) - nz(x.qty_reserved, 0);
-            if (code) map[code] = avail;
-          }
-        } else {
-          const t = await supabase.from("stock_balances" as any).select("code, uom_id, qty_on_hand, qty_reserved").limit(10000);
-          if (!t.error && Array.isArray(t.data)) {
-            for (const x of t.data as any[]) {
-              const code = String(x.code ?? "");
-              const avail = nz(x.qty_on_hand, 0) - nz(x.qty_reserved, 0);
-              if (code) map[code] = avail;
-            }
-          }
-        }
-        const filtered: Record<string, number> = {};
-        for (const it of rows) { filtered[it.code] = map[it.code] ?? 0; }
-        setAvailability(filtered);
-      } catch {}
-    })();
-  }
-
-  const preloadCatalogAll = useCallback(async () => {
-    try {
-      const r = await supabase.rpc("catalog_search" as any, { p_query: "", p_scope: "all", p_sector: null, p_limit: 5000 } as any);
-      if (!r.error && Array.isArray(r.data) && r.data.length > 0) {
-        const rows = (r.data as any[]).map(normalizeToRikRow);
-        setAllCatalog(rows); setCatalog(rows); refreshAvailability(rows); return;
-      }
-      const v = await supabase.from("rik_items" as any).select("code,name").limit(2000);
-      if (!v.error && Array.isArray(v.data)) {
-        const rows = (v.data as any[]).map((x) => mapRikItemsRow({ code: x.code, name: x.name, uom: null, kind: "material", ref_id: null } as any));
-        setAllCatalog(rows); setCatalog(rows); refreshAvailability(rows);
-      }
-    } catch (e) { console.warn("[catalog preload]", e); }
-  }, [normalizeToRikRow]);
-
-  const runCatalogSearch = useCallback(async (q: string) => {
-    const s = norm(q);
-    if (s.length === 0) { setCatalog(allCatalog); return; }
-    const local = allCatalog.filter(
-      it => norm(it.name).includes(s) || norm(it.code).includes(s) || (it.unit_label ? norm(it.unit_label).includes(s) : false)
-    );
-    setCatalog(local);
-    if (s.length < 2) return;
-
-    const seen = new Set<string>(local.map(r => r.code));
-    const merged: RikSearchRow[] = [...local];
-    const pushUnique = (rows: RikSearchRow[]) => { for (const r of rows) { if (!r.code) continue; if (seen.has(r.code)) continue; seen.add(r.code); merged.push(r); } };
-
-    try {
-      const r1 = await supabase.rpc("catalog_search" as any, { p_query: q, p_scope: "all", p_sector: null, p_limit: 2000 } as any);
-      if (!r1.error && Array.isArray(r1.data)) pushUnique((r1.data as any[]).map(normalizeToRikRow));
-      const r2 = await supabase.rpc("rik_search" as any, { p_q: q, lim: 2000 } as any);
-      if (!r2.error && Array.isArray(r2.data)) {
-        const rows = (r2.data as any[]).map((x) =>
-          normalizeToRikRow({ ref_table: x.ref_table, ref_id: x.ref_id, code: x.code, name: x.name, unit_id: x.unit_id, sector: x.sector } as CatalogItem)
-        );
-        pushUnique(rows);
-      }
-      const r3 = await supabase.rpc("rik_quick_search" as any, { p_q: q, p_limit: 2000 } as any);
-      if (!r3.error && Array.isArray(r3.data)) pushUnique((r3.data as any[]).map(mapRikItemsRow));
-      try {
-        const r4 = await supabase.rpc("rik_quick_search_typed" as any, { p_q: q, p_limit: 2000 } as any);
-        if (!r4.error && Array.isArray(r4.data)) pushUnique((r4.data as any[]).map(mapRikItemsRow));
-      } catch {}
-      try {
-        const r5 = await supabase.rpc("rik_search_catalog" as any, { q, lim: 2000 } as any);
-        if (!r5.error && Array.isArray(r5.data)) {
-          const rows = (r5.data as any[]).map((x) =>
-            mapRikItemsRow({ code: x.code ?? x.code, name: x.name, uom_code: x.unit ?? x.uom, kind: x.ref_table === "rik_works" ? "work" : "material", sector: x.sector, ref_id: x.ref_id } as any)
-          );
-          pushUnique(rows);
-        }
-      } catch {}
-      if (merged.length === 0) {
-        const fl = await supabase.from("rik_items" as any).select("code,name").or(`name.ilike.%${q}%,code.ilike.%${q}%`).limit(100);
-        if (!fl.error && Array.isArray(fl.data)) pushUnique((fl.data as any[]).map((x) => mapRikItemsRow({ code: x.code, name: x.name, uom: null, kind: "material", ref_id: null } as any)));
-      }
-      setCatalog(merged);
-      if (merged.length > 0) refreshAvailability(merged);
-    } catch (e) { console.warn("[runCatalogSearch]", e); }
-  }, [allCatalog, normalizeToRikRow]);
-
-  useEffect(() => {
-    if (tab === "Расход") {
-      setSearch("");
-      preloadCatalogAll().catch(()=>{});
-      loadObjects().catch(() => {});
-      loadWorkTypes().catch(() => {});
-      loadRecipients().catch(() => {});
-    }
-  }, [tab, preloadCatalogAll, loadObjects, loadWorkTypes, loadRecipients]);
-
-  const issueOne = useCallback(async (it: RikSearchRow) => {
-    try {
-      const qty = nz(qtyToIssue, 0);
-      const canIssue =
-        qty > 0 &&
-        !!recipientOpt?.id &&
-        !!objectOpt?.id;
-
-      if (!canIssue) {
-        setIssueMsg({ kind: "error", text: "Выберите объект и получателя и введите количество > 0" });
-        return;
-      }
-
-      setIssueBusy(true);
-      setIssueMsg({ kind: null, text: "" });
-
-      let unitId = it.unit_id;
-      if (!unitId) {
-        unitId = await resolveUnitIdByCode(it.code);
-        if (!unitId) {
-          setIssueMsg({ kind: "error", text: "Не удалось определить ед. изм. (unit_id) — проверь справочник." });
-          return;
-        }
-      }
-
-      // 1) создать документ выдачи
-      const r1 = await supabase.rpc('acc_issue_create' as any, {
-        p_object_id: objectOpt?.id ?? null,
-        p_work_type_id: workTypeOpt?.id ?? null,
-        p_comment: `Выдача ${it.name} (${it.code}) ${qty} ${it.unit_label ?? ""} — ${recipientOpt?.label ?? ""}`
-      } as any);
-
-      if (r1.error || !r1.data) {
-        console.warn("[acc_issue_create] err:", r1.error?.message, r1.error);
-        setIssueMsg({ kind: "error", text: `acc_issue_create: ${pickErr(r1.error)}` });
-        return;
-      }
-      const issue_id = r1.data;
-
-      // 2) добавить позицию
-      const r2 = await supabase.rpc('acc_issue_add_item' as any, {
-        p_issue_id: issue_id,
-        p_rik_code: it.code,
-        p_uom_id: unitId,
-        p_qty: qty
-      } as any);
-
-      if (r2.error) {
-        console.warn("[acc_issue_add_item] err:", r2.error?.message, r2.error);
-        setIssueMsg({ kind: "error", text: `acc_issue_add_item: ${pickErr(r2.error)}` });
-        return;
-      }
-
-      // Обновим «Склад факт» после выдачи
-      await fetchStock();
-
-      setIssueMsg({ kind: "ok", text: `✓ Выдано: ${qty} ${it.unit_label ?? unitId} — ${it.name}` });
-    } catch (e: any) {
-      console.warn("[issueOne] throw:", e?.message || e);
-      setIssueMsg({ kind: "error", text: String(e?.message ?? e) });
-    } finally {
-      setIssueBusy(false);
-    }
-  }, [qtyToIssue, recipientOpt, objectOpt, workTypeOpt, fetchStock]);
 
   /** ===== init / refresh ===== */
   const loadAll = useCallback(async () => {
     setLoading(true);
-    try { await Promise.all([fetchToReceive(), fetchStock()]); }
-    catch (e) { showErr(e); }
-    finally { setLoading(false); }
-  }, [fetchToReceive]);
+    try {
+      await Promise.all([fetchToReceive(), fetchStock(), fetchWorks()]);
+    } catch (e) {
+      showErr(e);
+    } finally {
+      setLoading(false);
+    }
+  }, [fetchToReceive, fetchStock, fetchWorks]);
 
-  useEffect(() => { loadAll(); }, [loadAll]);
+  useEffect(() => {
+    loadAll();
+  }, [loadAll]);
 
   useEffect(() => {
     if (tab === "История") fetchHistory().catch(() => {});
     if (tab === "Инвентаризация") fetchInv().catch(() => {});
     if (tab === "Отчёты") fetchReports().catch(() => {});
-  }, [tab, fetchHistory, fetchInv, fetchReports]);
+    if (tab === "Работы") fetchWorks().catch(() => {});
+  }, [tab, fetchHistory, fetchInv, fetchReports, fetchWorks]);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     try {
       if (tab === "К приходу") await fetchToReceive();
-      else if (tab === "Остатки") await fetchStock();
+      else if (tab === "Склад факт") await fetchStock();
+      else if (tab === "Работы") await fetchWorks();
       else if (tab === "История") await fetchHistory();
       else if (tab === "Инвентаризация") await fetchInv();
       else if (tab === "Отчёты") await fetchReports();
-      else if (tab === "Расход") await preloadCatalogAll();
-    } catch (e) { showErr(e); }
-    finally { setRefreshing(false); }
-  }, [tab, fetchToReceive, fetchHistory, fetchInv, fetchReports, preloadCatalogAll]);
+      else if (tab === "Расход") {
+        const s = norm(search);
+        if (s.length >= 2) {
+          await runCatalogSearch(search);
+        } else {
+          setCatalog([]);
+          setAvailability({});
+        }
+      }
+    } catch (e) {
+      showErr(e);
+    } finally {
+      setRefreshing(false);
+    }
+  }, [
+    tab,
+    search,
+    fetchToReceive,
+    fetchStock,
+    fetchWorks,
+    fetchHistory,
+    fetchInv,
+    fetchReports,
+    runCatalogSearch,
+  ]);
 
-  /** ===== view-компоненты ===== */
-  // ЗАМЕНИ ВЕСЬ компонент StockRowView на это
+  // ==== карточка "Склад факт" ====
   const StockRowView = ({ r }: { r: StockRow }) => {
     // ед.изм: сначала из справочника uoms, иначе что пришло из БД
-    const uomLabel =
-      (r.uom_id && (uoms[r.uom_id] ?? r.uom_id)) || "—";
+    const uomLabel = (r.uom_id && (uoms[r.uom_id] ?? r.uom_id)) || "—";
 
     const onHand = nz(r.qty_on_hand, 0);
     const reserved = nz(r.qty_reserved, 0);
-    const available = nz(r.qty_available ?? (onHand - reserved), 0);
+    const available = nz(r.qty_available ?? onHand - reserved, 0);
 
-    // формат числа (1 234.5 → 1 234.5)
+    // тип позиции: работа / материал (по rik-коду)
+    const kindLabel = detectKindLabel(r.code);
+
+    // формат числа
     const fmtQty = (n: number) =>
       Number(n).toLocaleString("ru-RU", { maximumFractionDigits: 3 });
 
@@ -1341,7 +3048,6 @@ export default function Warehouse() {
           >
             {r.name || r.code || r.material_id}
           </Text>
-
           <View
             style={{
               paddingHorizontal: 10,
@@ -1356,15 +3062,67 @@ export default function Warehouse() {
           </View>
         </View>
 
-        {/* Вторая строка: код • ед.изм • Доступно */}
-        <Text style={{ marginTop: 4, color: "#475569" }}>
-          <Text style={{ fontFamily: "monospace" }}>
-            {(r.code ?? "—").toString()}
+        {/* Вторая строка: бейдж + ед.изм + доступность */}
+        <View
+          style={{
+            marginTop: 4,
+            flexDirection: "row",
+            alignItems: "center",
+            flexWrap: "wrap",
+            gap: 6,
+          }}
+        >
+          {kindLabel && (
+            <Text
+              style={{
+                fontSize: 12,
+                fontWeight: "700",
+                paddingHorizontal: 8,
+                paddingVertical: 2,
+                borderRadius: 999,
+                borderWidth: 1,
+                borderColor: "#0f766e",
+                color: "#0f766e",
+              }}
+            >
+              {kindLabel}
+            </Text>
+          )}
+          <Text style={{ color: "#475569" }}>
+            {uomLabel} • Доступно: {fmtQty(available)}
           </Text>
-          {"  •  "}
-          {uomLabel}
-          {"  •  "}
-          Доступно: {fmtQty(available)}
+        </View>
+      </View>
+    );
+  };
+
+  // ==== строка истории склада ====
+  const HistoryRowView = ({ h }: { h: HistoryRow }) => {
+    const dt = new Date(h.event_dt).toLocaleString("ru-RU");
+    const qty = h.qty ?? 0;
+
+    const typeLabel =
+      h.event_type === "RECEIPT"
+        ? "Приход"
+        : h.event_type === "ISSUE"
+        ? "Расход"
+        : h.event_type;
+
+    return (
+      <View
+        style={{
+          paddingVertical: 8,
+          paddingHorizontal: 12,
+          borderBottomWidth: 1,
+          borderColor: "#e5e7eb",
+          backgroundColor: "#fff",
+        }}
+      >
+        <Text style={{ fontWeight: "600", color: "#0f172a" }}>
+          {dt} • {typeLabel}
+        </Text>
+        <Text style={{ color: "#475569", marginTop: 2 }}>
+          {h.code || "—"} • {h.uom_id || "—"} • Кол-во: {qty}
         </Text>
       </View>
     );
@@ -1372,16 +3130,12 @@ export default function Warehouse() {
 
   /** ===== Рендер вкладки «Расход» ===== */
   const renderIssue = () => {
-    const openPicker = (what: "object" | "work" | "recipient") => setPickModal({ what });
-    const listForPicker =
-      pickModal.what === "object" ? objectList :
-      pickModal.what === "work" ? workTypeList : recipientList;
+    const openPicker = (what: "object" | "work" | "recipient") =>
+      setPickModal({ what });
 
     // Глобальное условие: можно ли сейчас жать «Выдать»
     const canIssueGlobal =
-      nz(qtyToIssue, 0) > 0 &&
-      !!recipientOpt?.id &&
-      !!objectOpt?.id;
+      nz(qtyToIssue, 0) > 0 && !!recipientOpt?.id && !!objectOpt?.id;
 
     return (
       <View style={{ flex: 1 }}>
@@ -1398,6 +3152,7 @@ export default function Warehouse() {
           }}
         >
           <Text style={{ fontWeight: "800" }}>Параметры выдачи</Text>
+
           <View style={{ flexDirection: "row", gap: 8, flexWrap: "wrap" }}>
             <Pressable
               onPress={() => openPicker("object")}
@@ -1411,9 +3166,13 @@ export default function Warehouse() {
               }}
             >
               <Text>
-                Объект: <Text style={{ fontWeight: "700" }}>{objectOpt?.label ?? "—"}</Text>
+                Объект:{" "}
+                <Text style={{ fontWeight: "700" }}>
+                  {objectOpt?.label ?? "—"}
+                </Text>
               </Text>
             </Pressable>
+
             <Pressable
               onPress={() => openPicker("work")}
               style={{
@@ -1426,9 +3185,13 @@ export default function Warehouse() {
               }}
             >
               <Text>
-                Работы: <Text style={{ fontWeight: "700" }}>{workTypeOpt?.label ?? "—"}</Text>
+                Работы:{" "}
+                <Text style={{ fontWeight: "700" }}>
+                  {workTypeOpt?.label ?? "—"}
+                </Text>
               </Text>
             </Pressable>
+
             <Pressable
               onPress={() => openPicker("recipient")}
               style={{
@@ -1441,7 +3204,10 @@ export default function Warehouse() {
               }}
             >
               <Text>
-                Получатель: <Text style={{ fontWeight: "700" }}>{recipientOpt?.label ?? "—"}</Text>
+                Получатель:{" "}
+                <Text style={{ fontWeight: "700" }}>
+                  {recipientOpt?.label ?? "—"}
+                </Text>
               </Text>
             </Pressable>
           </View>
@@ -1498,13 +3264,14 @@ export default function Warehouse() {
           <Text style={{ fontWeight: "800", marginBottom: 6 }}>
             Каталог: материалы / работы / услуги
           </Text>
+
           <TextInput
             value={search}
             onChangeText={(t) => {
               setSearch(t);
               runCatalogSearch(t).catch(() => {});
             }}
-            placeholder="Поиск по коду/названию (мин. 2 символа для точного поиска)"
+            placeholder="Поиск по коду/названию (мин. 2 символа)"
             style={{
               borderWidth: 1,
               borderColor: "#e2e8f0",
@@ -1539,7 +3306,15 @@ export default function Warehouse() {
                   [{item.kind === "work" ? "работа" : "материал"}] {item.code} •{" "}
                   {item.unit_label ?? item.unit_id ?? "—"} • Доступно: {avail}
                 </Text>
-                <View style={{ flexDirection: "row", gap: 8, marginTop: 8, flexWrap: "wrap" }}>
+
+                <View
+                  style={{
+                    flexDirection: "row",
+                    gap: 8,
+                    marginTop: 8,
+                    flexWrap: "wrap",
+                  }}
+                >
                   <Pressable
                     onPress={() => issueOne(item)}
                     disabled={!canIssue}
@@ -1558,18 +3333,28 @@ export default function Warehouse() {
               </View>
             );
           }}
-          ListEmptyComponent={<Text style={{ color: "#475569" }}>Ничего не найдено.</Text>}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+          ListEmptyComponent={
+            <Text style={{ color: "#475569" }}>Ничего не найдено.</Text>
+          }
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
         />
 
-        {/* Пикер */}
+        {/* Пикер объектов / работ / получателей */}
         <Modal
           visible={!!pickModal.what}
           animationType="slide"
           onRequestClose={() => setPickModal({ what: null })}
           transparent
         >
-          <View style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.3)", justifyContent: "flex-end" }}>
+          <View
+            style={{
+              flex: 1,
+              backgroundColor: "rgba(0,0,0,0.3)",
+              justifyContent: "flex-end",
+            }}
+          >
             <View
               style={{
                 backgroundColor: "#fff",
@@ -1586,6 +3371,7 @@ export default function Warehouse() {
                   ? "Выбор вида работ"
                   : "Выбор получателя"}
               </Text>
+
               <TextInput
                 value={pickFilter}
                 onChangeText={setPickFilter}
@@ -1599,6 +3385,7 @@ export default function Warehouse() {
                   marginBottom: 8,
                 }}
               />
+
               <FlatList
                 data={(() => {
                   const list =
@@ -1607,8 +3394,10 @@ export default function Warehouse() {
                       : pickModal.what === "work"
                       ? workTypeList
                       : recipientList;
+                  const f = pickFilter.trim().toLowerCase();
+                  if (!f) return list;
                   return list.filter((x) =>
-                    x.label.toLowerCase().includes(pickFilter.trim().toLowerCase())
+                    x.label.toLowerCase().includes(f),
                   );
                 })()}
                 keyExtractor={(x) => x.id}
@@ -1617,19 +3406,35 @@ export default function Warehouse() {
                     onPress={() => {
                       if (pickModal.what === "object") setObjectOpt(item);
                       else if (pickModal.what === "work") setWorkTypeOpt(item);
-                      else if (pickModal.what === "recipient") setRecipientOpt(item);
+                      else if (pickModal.what === "recipient")
+                        setRecipientOpt(item);
+
                       setPickModal({ what: null });
                       setPickFilter("");
                     }}
-                    style={{ paddingVertical: 10, borderBottomWidth: 1, borderColor: "#f1f5f9" }}
+                    style={{
+                      paddingVertical: 10,
+                      borderBottomWidth: 1,
+                      borderColor: "#f1f5f9",
+                    }}
                   >
                     <Text>{item.label}</Text>
                   </Pressable>
                 )}
-                ListEmptyComponent={<Text style={{ color: "#64748b" }}>Нет вариантов.</Text>}
+                ListEmptyComponent={
+                  <Text style={{ color: "#64748b" }}>Нет вариантов.</Text>
+                }
                 style={{ maxHeight: "60%" }}
               />
-              <View style={{ flexDirection: "row", justifyContent: "flex-end", gap: 8, marginTop: 8 }}>
+
+              <View
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "flex-end",
+                  gap: 8,
+                  marginTop: 8,
+                }}
+              >
                 <Pressable
                   onPress={() => {
                     setPickModal({ what: null });
@@ -1655,19 +3460,16 @@ export default function Warehouse() {
 
   /** ===== рендер вкладки ===== */
   const renderTab = () => {
-
     // ─────────── К ПРИХОДУ ───────────
     if (tab === "К приходу") {
       return (
         <View style={{ flex: 1 }}>
           <View style={{ flexDirection: "row", gap: 8, marginBottom: 8 }}>
-            {(["pending", "partial", "confirmed"] as const).map((f) => {
+            {(["pending", "partial"] as const).map((f) => {
               const active = recvFilter === f;
-              const cnt =
-                f === "pending" ? countPending :
-                f === "partial" ? countPartial :
-                countConfirmed;
-              const label = f === "pending" ? "Ожидает" : f === "partial" ? "Частично" : "Принято";
+              const cnt = f === "pending" ? countPending : countPartial;
+              const label = f === "pending" ? "Ожидает" : "Частично";
+
               return (
                 <Pressable
                   key={f}
@@ -1682,18 +3484,32 @@ export default function Warehouse() {
                     alignItems: "center",
                   }}
                 >
-                  <Text style={{ color: active ? "#fff" : "#0f172a", fontWeight: "700" }}>
+                  <Text
+                    style={{
+                      color: active ? "#fff" : "#0f172a",
+                      fontWeight: "700",
+                    }}
+                  >
                     {label}
                   </Text>
                   <View
                     style={{
-                      backgroundColor: active ? "rgba(255,255,255,0.25)" : "#ffffff",
+                      backgroundColor: active
+                        ? "rgba(255,255,255,0.25)"
+                        : "#ffffff",
                       paddingHorizontal: 8,
                       paddingVertical: 2,
                       borderRadius: 999,
                     }}
                   >
-                    <Text style={{ fontWeight: "800", color: active ? "#fff" : "#0f172a" }}>{cnt}</Text>
+                    <Text
+                      style={{
+                        fontWeight: "800",
+                        color: active ? "#fff" : "#0f172a",
+                      }}
+                    >
+                      {cnt}
+                    </Text>
                   </View>
                 </Pressable>
               );
@@ -1706,223 +3522,1354 @@ export default function Warehouse() {
             renderItem={({ item }) => {
               const rid = canonId(item.id);
               const isExpanded = expanded === rid;
-              const rows = itemsByHead[rid] as ItemRow[] | undefined;
+              const rows = (itemsByHead[rid] as ItemRow[] | undefined) || [];
+
+              const expSum = rows.reduce(
+                (s, r) => s + nz(r.qty_expected, 0),
+                0,
+              );
+              const recSum = rows.reduce(
+                (s, r) => s + nz(r.qty_received, 0),
+                0,
+              );
+              const totalLeft = Math.max(0, expSum - recSum);
 
               return (
-              <View
-                style={{
-                  marginBottom: 10,
-                  borderWidth: 1,
-                  borderColor: "#e2e8f0",
-                  backgroundColor: "#fff",
-                  borderRadius: 12,
-                  padding: 12,
-                  gap: 8,
-                }}
-              >
-                <View style={{ flexDirection: "row", alignItems: "center" }}>
-                  <Text style={{ fontSize: 16, fontWeight: "700" }}>
-                    {item.po_no || (Platform.OS === "web" ? item.purchase_id : item.purchase_id.slice(0, 8))}
+                <View
+                  style={{
+                    marginBottom: 10,
+                    borderWidth: 1,
+                    borderColor: "#e2e8f0",
+                    backgroundColor: "#fff",
+                    borderRadius: 12,
+                    padding: 12,
+                    gap: 8,
+                  }}
+                >
+                  {/* шапка карточки */}
+                  <View style={{ flexDirection: "row", alignItems: "center" }}>
+                    <Text style={{ fontSize: 16, fontWeight: "700" }}>
+                      {item.po_no ||
+                        (Platform.OS === "web"
+                          ? item.purchase_id
+                          : item.purchase_id.slice(0, 8))}
+                    </Text>
+                    <View
+                      style={{
+                        marginLeft: "auto",
+                        backgroundColor:
+                          item.status === "confirmed" ? "#dcfce7" : "#fee2e2",
+                        paddingHorizontal: 10,
+                        paddingVertical: 4,
+                        borderRadius: 999,
+                      }}
+                    >
+                      <Text
+                        style={{
+                          fontWeight: "700",
+                          color:
+                            item.status === "confirmed"
+                              ? "#166534"
+                              : "#991b1b",
+                        }}
+                      >
+                        {item.status === "confirmed" ? "Принято" : "Ожидает"}
+                      </Text>
+                    </View>
+                  </View>
+
+                  <Text style={{ color: "#334155" }}>
+                    Статус закупки: {item.purchase_status ?? "—"}
                   </Text>
+                  <Text style={{ color: "#64748b" }}>
+                    Создано:{" "}
+                    {item.created_at
+                      ? new Date(item.created_at).toLocaleString("ru-RU")
+                      : "—"}
+                    {item.status === "confirmed" && item.confirmed_at
+                      ? ` • Принято: ${new Date(
+                          item.confirmed_at,
+                        ).toLocaleString("ru-RU")}`
+                      : ""}
+                  </Text>
+
+                  {/* кнопка показать/скрыть позиции */}
                   <View
                     style={{
-                      marginLeft: "auto",
-                      backgroundColor: item.status === "confirmed" ? "#dcfce7" : "#fee2e2",
-                      paddingHorizontal: 10,
-                      paddingVertical: 4,
-                      borderRadius: 999,
+                      flexDirection: "row",
+                      gap: 10,
+                      marginTop: 4,
+                      flexWrap: "wrap",
+                    }}
+                  >
+                    <Pressable
+                      onPress={async () => {
+                        let idToOpen = item.id;
+                        if (String(item.id).startsWith("p:")) {
+                          const realId = await ensureRealIncoming(item.id);
+                          if (realId) {
+                            setHeadIdAlias((prev) => ({
+                              ...prev,
+                              [item.id]: realId,
+                            }));
+                            idToOpen = realId;
+                          }
+                        }
+                        await onToggleHead(idToOpen);
+                      }}
+                      style={{
+                        paddingHorizontal: 12,
+                        paddingVertical: 8,
+                        borderRadius: 8,
+                        borderWidth: 1,
+                        borderColor: "#e2e8f0",
+                        backgroundColor: "#fff",
+                      }}
+                    >
+                      <Text>
+                        {isExpanded ? "Скрыть позиции" : "Показать позиции"}
+                      </Text>
+                    </Pressable>
+                  </View>
+
+                  {/* раскрытая часть */}
+                  {isExpanded && (
+                    <View
+                      style={{
+                        marginTop: 8,
+                        borderTopWidth: 1,
+                        borderColor: "#f1f5f9",
+                      }}
+                    >
+                      <View style={{ padding: 8 }}>
+                        <Text
+                          style={{
+                            color: "#334155",
+                            fontWeight: "700",
+                          }}
+                        >
+                          {`Ожидается: ${expSum} • Принято: ${recSum} • Осталось принять: ${totalLeft}`}
+                        </Text>
+                      </View>
+
+                      {rows.length > 0 ? (
+                        <>
+                          {rows
+                            .filter((row) => {
+                              const exp = nz(row.qty_expected, 0);
+                              const rec = nz(row.qty_received, 0);
+                              const left = Math.max(0, exp - rec);
+                              return left > 0;
+                            })
+                            .map((row) => {
+                              const exp = nz(row.qty_expected, 0);
+                              const rec = nz(row.qty_received, 0);
+                              const left = Math.max(0, exp - rec);
+                              const inputKey = row.incoming_item_id;
+                              const val = qtyInputByItem[inputKey] ?? "";
+                              const isRealIncoming =
+                                typeof row.incoming_item_id === "string" &&
+                                !row.incoming_item_id.startsWith("p:");
+
+                              return (
+                                <View
+                                  key={row.incoming_item_id}
+                                  style={{
+                                    padding: 10,
+                                    borderBottomWidth: 1,
+                                    borderColor: "#f8fafc",
+                                  }}
+                                >
+                                  <Text style={{ fontWeight: "700" }}>
+                                    {row.name}
+                                  </Text>
+
+                                  {(() => {
+                                    const kindLabel = detectKindLabel(row.code);
+                                    return (
+                                      <View
+                                        style={{
+                                          flexDirection: "row",
+                                          alignItems: "center",
+                                          flexWrap: "wrap",
+                                          marginTop: 2,
+                                          gap: 6,
+                                        }}
+                                      >
+                                        {kindLabel && (
+                                          <Text
+                                            style={{
+                                              fontSize: 12,
+                                              fontWeight: "700",
+                                              paddingHorizontal: 8,
+                                              paddingVertical: 2,
+                                              borderRadius: 999,
+                                              borderWidth: 1,
+                                              borderColor: "#0f766e",
+                                              color: "#0f766e",
+                                            }}
+                                          >
+                                            {kindLabel}
+                                          </Text>
+                                        )}
+                                        <Text style={{ color: "#475569" }}>
+                                          {row.uom || "—"} • Ожидается: {exp} •
+                                          Принято: {rec} • Остаток: {left}
+                                        </Text>
+                                      </View>
+                                    );
+                                  })()}
+
+                                  {item.status !== "confirmed" &&
+                                    isRealIncoming &&
+                                    left > 0 && (
+                                      <View
+                                        style={{
+                                          flexDirection: "row",
+                                          gap: 8,
+                                          marginTop: 8,
+                                          alignItems: "center",
+                                          flexWrap: "wrap",
+                                        }}
+                                      >
+                                        <TextInput
+                                          value={val}
+                                          onChangeText={(t) => {
+                                            const cleaned = t
+                                              .replace(",", ".")
+                                              .replace(/\s+/g, "");
+                                            setQtyInputByItem((prev) => ({
+                                              ...prev,
+                                              [inputKey]:
+                                                cleaned === "" ||
+                                                /^0+(\.0+)?$/.test(cleaned)
+                                                  ? ""
+                                                  : cleaned,
+                                            }));
+                                          }}
+                                          onFocus={() => {
+                                            setQtyInputByItem((prev) => {
+                                              const cur =
+                                                prev[inputKey] ?? "";
+                                              if (cur !== "") return prev;
+                                              return {
+                                                ...prev,
+                                                [inputKey]: String(left),
+                                              };
+                                            });
+                                          }}
+                                          keyboardType="numeric"
+                                          placeholder={`Кол-во (ост: ${left})`}
+                                          style={{
+                                            width: 160,
+                                            borderWidth: 1,
+                                            borderColor: "#e2e8f0",
+                                            borderRadius: 10,
+                                            paddingHorizontal: 10,
+                                            paddingVertical: 8,
+                                            backgroundColor: "#fff",
+                                          }}
+                                        />
+                                      </View>
+                                    )}
+                                </View>
+                              );
+                            })}
+
+                          {item.status !== "confirmed" && (
+                            <View style={{ padding: 10, gap: 8 }}>
+                              <Pressable
+                                onPress={() => receiveSelectedForHead(rid)}
+                                disabled={receivingHeadId === item.id}
+                                style={{
+                                  alignSelf: "flex-start",
+                                  paddingHorizontal: 14,
+                                  paddingVertical: 10,
+                                  borderRadius: 10,
+                                  backgroundColor:
+                                    receivingHeadId === item.id
+                                      ? "#94a3b8"
+                                      : "#0ea5e9",
+                                }}
+                              >
+                                <Text
+                                  style={{
+                                    color: "#fff",
+                                    fontWeight: "800",
+                                  }}
+                                >
+                                  {receivingHeadId === item.id
+                                    ? "Оприходуем…"
+                                    : "Оприходовать выбранное"}
+                                </Text>
+                              </Pressable>
+                            </View>
+                          )}
+                        </>
+                      ) : (
+                        <Text style={{ padding: 8, color: "#64748b" }}>
+                          Позиции не загружены или пусто
+                        </Text>
+                      )}
+                    </View>
+                  )}
+                </View>
+              );
+            }}
+            ListEmptyComponent={
+              <Text style={{ color: "#475569" }}>
+                Нет записей в очереди склада.
+              </Text>
+            }
+            refreshControl={
+              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+            }
+          />
+        </View>
+      );
+    }
+
+    // ─────────── ОСТАТКИ ───────────
+    if (tab === "Склад факт") {
+      if (stockSupported === false) {
+        return (
+          <View style={{ padding: 12 }}>
+            <Text style={{ color: "#475569" }}>
+              Раздел «Склад факт» требует вью{" "}
+              <Text style={{ fontWeight: "700" }}>v_warehouse_fact</Text> или
+              RPC с фактическими остатками.
+            </Text>
+          </View>
+        );
+      }
+
+      return (
+        <FlatList
+          data={stockMaterialsByCode}
+          keyExtractor={(i, idx) => `${i.code || i.material_id}-${idx}`}
+          renderItem={({ item }) => <StockRowView r={item} />}
+          ListEmptyComponent={
+            <Text style={{ color: "#475569" }}>
+              Пока нет данных по складу.
+            </Text>
+          }
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
+        />
+      );
+    }
+
+    // ─────────── РАБОТЫ ───────────
+    if (tab === "Работы") {
+      if (worksSupported === false) {
+        return (
+          <View style={{ padding: 12 }}>
+            <Text style={{ color: "#475569" }}>
+              Раздел «Работы» требует view{" "}
+              <Text style={{ fontWeight: "700" }}>v_works_fact</Text> и таблицу{" "}
+              <Text style={{ fontWeight: "700" }}>work_progress</Text>.
+            </Text>
+          </View>
+        );
+      }
+
+      return (
+        <>
+          {/* СПИСОК РАБОТ */}
+          <FlatList
+            data={works}
+            keyExtractor={(w) => w.progress_id}
+            renderItem={({ item }) => {
+              const left = item.qty_left;
+              const total = item.qty_planned;
+              const done = item.qty_done;
+              const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+              const busy = worksBusyId === item.progress_id;
+              const isClosed = item.work_status === "Выполнено";
+
+              return (
+                <View
+                  style={{
+                    padding: 12,
+                    marginBottom: 10,
+                    borderRadius: 12,
+                    borderWidth: 1,
+                    borderColor: "#e2e8f0",
+                    backgroundColor: "#fff",
+                    gap: 6,
+                  }}
+                >
+                  <Text style={{ fontWeight: "800", fontSize: 15 }}>
+                    {item.work_name || item.work_code || item.progress_id}
+                  </Text>
+
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      flexWrap: "wrap",
+                      marginTop: 2,
+                      gap: 6,
                     }}
                   >
                     <Text
                       style={{
+                        fontSize: 12,
                         fontWeight: "700",
-                        color: item.status === "confirmed" ? "#166534" : "#991b1b",
+                        paddingHorizontal: 8,
+                        paddingVertical: 2,
+                        borderRadius: 999,
+                        borderWidth: 1,
+                        borderColor: "#0f766e",
+                        color: "#0f766e",
                       }}
                     >
-                      {item.status === "confirmed" ? "Принято" : "Ожидает"}
+                      работа
+                    </Text>
+                    <Text style={{ color: "#64748b" }}>
+                      {item.uom_id || "—"}
                     </Text>
                   </View>
-                </View>
 
-                <Text style={{ color: "#334155" }}>Статус закупки: {item.purchase_status ?? "—"}</Text>
-                <Text style={{ color: "#64748b" }}>
-                  Создано: {item.created_at ? new Date(item.created_at).toLocaleString("ru-RU") : "—"}
-                  {item.status === "confirmed" && item.confirmed_at
-                    ? ` • Принято: ${new Date(item.confirmed_at).toLocaleString("ru-RU")}`
-                    : ""}
+                  <Text style={{ color: "#334155" }}>
+                    Закуплено: {total} {item.uom_id || ""} • Выполнено: {done} •
+                    Остаток: {left}
+                  </Text>
+                  <Text style={{ color: "#64748b" }}>
+                    Статус: {item.work_status} • Прогресс: {pct}%
+                  </Text>
+
+                  {item.started_at && (
+                    <Text style={{ color: "#64748b" }}>
+                      Начато:{" "}
+                      {new Date(item.started_at).toLocaleString("ru-RU")}
+                    </Text>
+                  )}
+                  {item.finished_at && (
+                    <Text style={{ color: "#64748b" }}>
+                      Завершено:{" "}
+                      {new Date(item.finished_at).toLocaleString("ru-RU")}
+                    </Text>
+                  )}
+
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      flexWrap: "wrap",
+                      gap: 8,
+                      marginTop: 6,
+                    }}
+                  >
+                    {item.work_status === "К запуску" && !isClosed && (
+                      <Pressable
+                        onPress={() => handleWorkStart(item)}
+                        disabled={busy}
+                        style={{
+                          paddingHorizontal: 12,
+                          paddingVertical: 8,
+                          borderRadius: 8,
+                          backgroundColor: busy ? "#94a3b8" : "#0ea5e9",
+                        }}
+                      >
+                        <Text style={{ color: "#fff", fontWeight: "700" }}>
+                          {busy ? "..." : "Начать"}
+                        </Text>
+                      </Pressable>
+                    )}
+
+                    {!isClosed && (
+                      <Pressable
+                        onPress={() => openWorkAddModal(item)}
+                        disabled={busy}
+                        style={{
+                          paddingHorizontal: 12,
+                          paddingVertical: 8,
+                          borderRadius: 8,
+                          backgroundColor: busy ? "#94a3b8" : "#22c55e",
+                        }}
+                      >
+                        <Text style={{ color: "#fff", fontWeight: "700" }}>
+                          {busy ? "..." : "+ объём"}
+                        </Text>
+                      </Pressable>
+                    )}
+
+                    {!isClosed && (
+                      <Pressable
+                        onPress={() => {
+                          console.log(
+                            "[UI] Окончено нажато",
+                            item.progress_id,
+                          );
+                          handleWorkFinish(item);
+                        }}
+                        disabled={busy}
+                        style={{
+                          paddingHorizontal: 12,
+                          paddingVertical: 8,
+                          borderRadius: 8,
+                          backgroundColor: busy ? "#94a3b8" : "#16a34a",
+                        }}
+                      >
+                        <Text style={{ color: "#fff", fontWeight: "700" }}>
+                          {busy ? "..." : "Окончено"}
+                        </Text>
+                      </Pressable>
+                    )}
+
+                    {isClosed && (
+                      <Pressable
+                        onPress={() => openWorkAddModal(item, true)}
+                        style={{
+                          paddingHorizontal: 12,
+                          paddingVertical: 8,
+                          borderRadius: 8,
+                          backgroundColor: "#6b7280",
+                        }}
+                      >
+                        <Text style={{ color: "#fff", fontWeight: "700" }}>
+                          Просмотр акта
+                        </Text>
+                      </Pressable>
+                    )}
+                  </View>
+                </View>
+              );
+            }}
+            ListEmptyComponent={
+              <Text style={{ color: "#475569", padding: 12 }}>
+                Работ пока нет.
+              </Text>
+            }
+            refreshControl={
+              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+            }
+          />
+
+          {/* МОДАЛКА ФАКТА ВЫПОЛНЕНИЯ */}
+          <Modal
+            visible={workModalVisible}
+            animationType="slide"
+            onRequestClose={closeWorkModal}
+          >
+            <View style={{ flex: 1, backgroundColor: "#f8fafc" }}>
+              <View style={{ padding: 16, paddingBottom: 8 }}>
+                <Text
+                  style={{
+                    fontSize: 18,
+                    fontWeight: "800",
+                    marginBottom: 12,
+                  }}
+                >
+                  Факт выполнения работы
                 </Text>
 
-                {/* Кнопка показать/скрыть позиции — материализует синтетическую шапку при необходимости */}
-                <View style={{ flexDirection: "row", gap: 10, marginTop: 4, flexWrap: "wrap" }}>
-                  <Pressable
-                    onPress={async () => {
-                      let idToOpen = item.id;
-                      if (String(item.id).startsWith("p:")) {
-                        const realId = await ensureRealIncoming(item.id);
-                        if (realId) {
-                          setHeadIdAlias(prev => ({ ...prev, [item.id]: realId }));
-                          idToOpen = realId;
-                        }
-                      }
-                      await onToggleHead(idToOpen);
+                {workModalLoading && (
+                  <Text
+                    style={{
+                      fontSize: 12,
+                      color: "#94a3b8",
+                      marginBottom: 4,
                     }}
+                  >
+                    Загружаем историю и материалы…
+                  </Text>
+                )}
+
+                <Pressable
+                  onPress={async () => {
+                    if (!workModalRow) return;
+                    try {
+                      const { work, materials } =
+                        await loadAggregatedWorkSummary(
+                          workModalRow.progress_id,
+                          workModalRow,
+                        );
+                      await generateWorkPdf(work, materials);
+                    } catch (e) {
+                      console.warn("[PDF aggregated] error", e);
+                      showErr(e);
+                    }
+                  }}
+                  style={{
+                    alignSelf: "flex-start",
+                    backgroundColor: "#0ea5e9",
+                    paddingHorizontal: 12,
+                    paddingVertical: 6,
+                    borderRadius: 8,
+                    marginBottom: 4,
+                  }}
+                >
+                  <Text style={{ color: "#fff", fontWeight: "700" }}>
+                    Итоговый акт (PDF)
+                  </Text>
+                </Pressable>
+                <Text
+                  style={{
+                    fontSize: 12,
+                    color: "#64748b",
+                    marginBottom: 12,
+                  }}
+                >
+                  Свод всех этапов и материалов по работе
+                </Text>
+
+                {workModalRow && (
+                  <View
+                    style={{
+                      backgroundColor: "#fff",
+                      padding: 14,
+                      borderRadius: 12,
+                      borderWidth: 1,
+                      borderColor: "#e2e8f0",
+                    }}
+                  >
+                    <Text
+                      style={{
+                        fontWeight: "800",
+                        fontSize: 16,
+                        marginBottom: 6,
+                      }}
+                    >
+                      {workModalRow.work_name ||
+                        workModalRow.work_code ||
+                        "Работа"}
+                    </Text>
+
+                    <Text style={{ color: "#475569", marginBottom: 4 }}>
+                      <Text style={{ fontWeight: "600" }}>Объект: </Text>
+                      {workModalRow.object_name || "Не указан"}
+                    </Text>
+
+                    <View
+                      style={{
+                        flexDirection: "row",
+                        justifyContent: "space-between",
+                      }}
+                    >
+                      <View>
+                        <Text style={{ color: "#64748b", fontSize: 12 }}>
+                          План
+                        </Text>
+                        <Text style={{ fontWeight: "700" }}>
+                          {workModalRow.qty_planned} {workModalRow.uom_id}
+                        </Text>
+                      </View>
+                      <View>
+                        <Text style={{ color: "#64748b", fontSize: 12 }}>
+                          Выполнено
+                        </Text>
+                        <Text style={{ fontWeight: "700" }}>
+                          {workModalRow.qty_done} {workModalRow.uom_id}
+                        </Text>
+                      </View>
+                      <View>
+                        <Text style={{ color: "#64748b", fontSize: 12 }}>
+                          Остаток
+                        </Text>
+                        <Text
+                          style={{
+                            fontWeight: "700",
+                            color:
+                              workModalRow.qty_left <= 0
+                                ? "#dc2626"
+                                : "#0f172a",
+                          }}
+                        >
+                          {workModalRow.qty_left} {workModalRow.uom_id}
+                        </Text>
+                      </View>
+                    </View>
+
+                    <View
+                      style={{
+                        height: 8,
+                        borderRadius: 8,
+                        backgroundColor: "#e2e8f0",
+                        marginVertical: 8,
+                      }}
+                    >
+                      <View
+                        style={{
+                          width: `${Math.min(
+                            100,
+                            Math.round(
+                              (Number(workModalRow.qty_done || 0) /
+                                Math.max(
+                                  Number(workModalRow.qty_planned || 0),
+                                  1,
+                                )) *
+                                100,
+                            ),
+                          )}%`,
+                          height: "100%",
+                          backgroundColor: "#0ea5e9",
+                          borderRadius: 8,
+                        }}
+                      />
+                    </View>
+
+                    <Text style={{ fontSize: 12, color: "#64748b" }}>
+                      Прогресс:{" "}
+                      {Math.round(
+                        (Number(workModalRow.qty_done || 0) /
+                          Math.max(Number(workModalRow.qty_planned || 0), 1)) *
+                          100,
+                      )}
+                      %
+                    </Text>
+                  </View>
+                )}
+              </View>
+
+              <ScrollView
+                keyboardShouldPersistTaps="handled"
+                style={{ flex: 1 }}
+                contentContainerStyle={{
+                  paddingHorizontal: 16,
+                  paddingBottom: 24,
+                }}
+              >
+                {workModalRow && (
+                  <>
+                    {/* История актов */}
+                    <View
+                      style={{
+                        marginTop: 8,
+                        marginBottom: 8,
+                        padding: 12,
+                        borderRadius: 12,
+                        borderWidth: 1,
+                        borderColor: "#e2e8f0",
+                        backgroundColor: "#fff",
+                        gap: 6,
+                      }}
+                    >
+                      <Text
+                        style={{ fontWeight: "700", marginBottom: 4 }}
+                      >
+                        История актов по работе
+                      </Text>
+
+                      {workLog.length === 0 && (
+                        <Text style={{ color: "#94a3b8", fontSize: 12 }}>
+                          Пока нет зафиксированных актов по этой работе.
+                        </Text>
+                      )}
+
+                      {workLog.map((log) => {
+                        const dt = new Date(
+                          log.created_at,
+                        ).toLocaleString("ru-RU");
+                        return (
+                          <View
+                            key={log.id}
+                            style={{
+                              paddingVertical: 6,
+                              borderBottomWidth: 1,
+                              borderColor: "#f1f5f9",
+                            }}
+                          >
+                            <Text
+                              style={{
+                                fontWeight: "600",
+                                color: "#0f172a",
+                              }}
+                            >
+                              {dt} • {log.qty}{" "}
+                              {log.work_uom || workModalRow.uom_id || ""}
+                            </Text>
+
+                            {log.stage_note && (
+                              <Text
+                                style={{ color: "#64748b", fontSize: 12 }}
+                              >
+                                Этап: {log.stage_note}
+                              </Text>
+                            )}
+
+                            {log.note && (
+                              <Text
+                                style={{ color: "#94a3b8", fontSize: 12 }}
+                              >
+                                Комментарий: {log.note}
+                              </Text>
+                            )}
+
+                            <Pressable
+                              onPress={async () => {
+                                try {
+                                  const { data: mats } = await supabase
+                                    .from(
+                                      "work_progress_log_materials" as any,
+                                    )
+                                    .select("mat_code, uom_mat, qty_fact")
+                                    .eq("log_id", log.id);
+
+                                  const codes =
+                                    (mats || []).map(
+                                      (m: any) => m.mat_code,
+                                    ) || [];
+                                  let namesMap: Record<
+                                    string,
+                                    { name: string; uom: string | null }
+                                  > = {};
+
+                                  if (codes.length) {
+                                    const ci = await supabase
+                                      .from("catalog_items" as any)
+                                      .select(
+                                        "rik_code, name_human_ru, name_human, uom_code",
+                                      )
+                                      .in("rik_code", codes);
+
+                                    if (!ci.error && Array.isArray(ci.data)) {
+                                      for (const n of ci.data as any[]) {
+                                        namesMap[n.rik_code] = {
+                                          name:
+                                            n.name_human_ru ||
+                                            n.name_human ||
+                                            n.rik_code,
+                                          uom: n.uom_code,
+                                        };
+                                      }
+                                    }
+                                  }
+
+                                  const matsRows: WorkMaterialRow[] = (
+                                    (mats as any[]) || []
+                                  ).map((m: any) => {
+                                    const code = String(m.mat_code);
+                                    const meta = namesMap[code];
+                                    return {
+                                      mat_code: code,
+                                      name: meta?.name || code,
+                                      uom: meta?.uom || m.uom_mat || "",
+                                      available: 0,
+                                      qty_fact: Number(m.qty_fact ?? 0),
+                                    };
+                                  });
+
+                                  const actWork: WorkRow = {
+                                    ...workModalRow,
+                                    qty_done: log.qty,
+                                    qty_left: Math.max(
+                                      0,
+                                      (workModalRow.qty_planned || 0) -
+                                        log.qty,
+                                    ),
+                                  };
+
+                                  await generateWorkPdf(actWork, matsRows, {
+                                    actDate: log.created_at,
+                                  });
+                                } catch (e) {
+                                  showErr(e);
+                                }
+                              }}
+                              style={{
+                                alignSelf: "flex-start",
+                                marginTop: 4,
+                                paddingHorizontal: 10,
+                                paddingVertical: 4,
+                                borderRadius: 8,
+                                borderWidth: 1,
+                                borderColor: "#e2e8f0",
+                              }}
+                            >
+                              <Text style={{ fontSize: 12 }}>
+                                PDF этого акта
+                              </Text>
+                            </Pressable>
+                          </View>
+                        );
+                      })}
+                    </View>
+
+                    {/* Объём */}
+                    <Text style={{ fontWeight: "600", marginTop: 8 }}>
+                      Выполненный объём
+                    </Text>
+                    <TextInput
+                      editable={
+                        !workModalReadOnly &&
+                        (workModalRow?.qty_left || 0) > 0
+                      }
+                      value={workModalQty}
+                      onChangeText={setWorkModalQty}
+                      keyboardType="numeric"
+                      placeholder="Сколько сделали…"
+                      style={{
+                        borderWidth: 1,
+                        borderColor: "#e2e8f0",
+                        borderRadius: 10,
+                        paddingHorizontal: 10,
+                        paddingVertical: 8,
+                        backgroundColor: "#fff",
+                        marginTop: 4,
+                      }}
+                    />
+                    <Text style={{ color: "#64748b", marginTop: 4 }}>
+                      Ед. изм: {workModalRow.uom_id || "—"}
+                    </Text>
+
+                    {/* Участок */}
+                    <Text style={{ fontWeight: "600", marginTop: 12 }}>
+                      Участок / зона (этаж, секция)
+                    </Text>
+                    <TextInput
+                      editable={!workModalReadOnly}
+                      value={workModalLocation}
+                      onChangeText={setWorkModalLocation}
+                      placeholder="Например: Секция А, этаж 5, кв. 25"
+                      style={{
+                        borderWidth: 1,
+                        borderColor: "#e2e8f0",
+                        borderRadius: 10,
+                        paddingHorizontal: 10,
+                        paddingVertical: 8,
+                        backgroundColor: "#fff",
+                        marginTop: 4,
+                      }}
+                    />
+
+                    {/* Этап */}
+                    <Text style={{ fontWeight: "600", marginTop: 12 }}>
+                      Этап / что делали
+                    </Text>
+                    <Pressable
+                      onPress={() => {
+                        if (!workModalReadOnly)
+                          setWorkStagePickerVisible(true);
+                      }}
+                      style={{
+                        borderWidth: 1,
+                        borderColor: "#e2e8f0",
+                        borderRadius: 10,
+                        paddingHorizontal: 10,
+                        paddingVertical: 10,
+                        backgroundColor: "#fff",
+                        marginTop: 4,
+                        opacity: workModalReadOnly ? 0.6 : 1,
+                      }}
+                    >
+                      <Text
+                        style={{
+                          color: workModalStage ? "#0f172a" : "#9ca3af",
+                        }}
+                      >
+                        {workModalStage ||
+                          "Выбери этап (например: Вязка арматуры)"}
+                      </Text>
+                    </Pressable>
+
+                    {/* Комментарий */}
+                    <Text style={{ fontWeight: "600", marginTop: 12 }}>
+                      Комментарий
+                    </Text>
+                    <TextInput
+                      editable={!workModalReadOnly}
+                      value={workModalComment}
+                      onChangeText={setWorkModalComment}
+                      placeholder="Замечания…"
+                      multiline
+                      style={{
+                        borderWidth: 1,
+                        borderColor: "#e2e8f0",
+                        borderRadius: 10,
+                        paddingHorizontal: 10,
+                        paddingVertical: 8,
+                        backgroundColor: "#fff",
+                        marginTop: 4,
+                        minHeight: 60,
+                        textAlignVertical: "top",
+                      }}
+                    />
+
+                    {/* Материалы */}
+                    <WorkMaterialsEditor
+  rows={workModalMaterials}
+  onChange={(nextRows) => setWorkModalMaterials(nextRows)}
+  onAdd={() => setWorkSearchVisible(true)}   // ← теперь кнопка вызывает каталог!
+  onRemove={(idx) =>
+    setWorkModalMaterials((prev) => prev.filter((_, i) => i !== idx))
+  }
+  readOnly={workModalReadOnly}
+/>
+
+                  </>
+                )}
+
+                {/* Поиск материалов в модалке */}
+                {workModalRow && workSearchVisible && !workModalReadOnly && (
+                  <View
+                    style={{
+                      marginTop: 10,
+                      padding: 10,
+                      borderRadius: 10,
+                      borderWidth: 1,
+                      borderColor: "#e2e8f0",
+                      backgroundColor: "#fff",
+                      gap: 8,
+                    }}
+                  >
+                    <Text style={{ fontWeight: "600" }}>
+                      Поиск материала по каталогу
+                    </Text>
+                    <TextInput
+                      value={workSearchQuery}
+                      onChangeText={handleWorkSearchChange}
+                      placeholder="Поиск по названию/коду…"
+                      style={{
+                        borderWidth: 1,
+                        borderColor: "#e2e8f0",
+                        borderRadius: 10,
+                        paddingHorizontal: 10,
+                        paddingVertical: 8,
+                      }}
+                    />
+                    <FlatList
+                      data={workSearchResults}
+                      keyExtractor={(m) => m.mat_code}
+                      style={{ maxHeight: 260 }}
+                      renderItem={({ item }) => {
+                        const hasStock = (item.available || 0) > 0;
+                        return (
+                          <Pressable
+                            onPress={() => addWorkMaterial(item)}
+                            style={{
+                              paddingVertical: 8,
+                              borderBottomWidth: 1,
+                              borderColor: "#f1f5f9",
+                              flexDirection: "row",
+                              alignItems: "center",
+                              justifyContent: "space-between",
+                              gap: 8,
+                            }}
+                          >
+                            <View
+                              style={{
+                                flexDirection: "row",
+                                alignItems: "center",
+                                flex: 1,
+                                gap: 8,
+                              }}
+                            >
+                              <Text style={{ fontSize: 18 }}>📦</Text>
+                              <View style={{ flex: 1 }}>
+                                <Text
+                                  style={{
+                                    fontWeight: "600",
+                                    color: "#0f172a",
+                                  }}
+                                  numberOfLines={2}
+                                >
+                                  {item.name}
+                                </Text>
+                                <Text
+                                  style={{
+                                    color: "#64748b",
+                                    marginTop: 2,
+                                  }}
+                                >
+                                  {item.uom || "—"}
+                                </Text>
+                              </View>
+                            </View>
+                            <View
+                              style={{
+                                paddingHorizontal: 10,
+                                paddingVertical: 4,
+                                borderRadius: 999,
+                                backgroundColor: hasStock
+                                  ? "#dcfce7"
+                                  : "#f3f4f6",
+                              }}
+                            >
+                              <Text
+                                style={{
+                                  fontSize: 12,
+                                  fontWeight: "700",
+                                  color: hasStock ? "#166534" : "#6b7280",
+                                }}
+                              >
+                                {hasStock
+                                  ? `доступно ${item.available}`
+                                  : "нет в наличии"}
+                              </Text>
+                            </View>
+                          </Pressable>
+                        );
+                      }}
+                      ListEmptyComponent={
+                        <Text style={{ color: "#94a3b8" }}>
+                          Введите минимум 2 символа для поиска.
+                        </Text>
+                      }
+                    />
+
+                    <Pressable
+                      onPress={() => {
+                        setWorkSearchVisible(false);
+                        setWorkSearchQuery("");
+                        setWorkSearchResults([]);
+                      }}
+                      style={{
+                        alignSelf: "flex-end",
+                        marginTop: 4,
+                        paddingHorizontal: 10,
+                        paddingVertical: 6,
+                        borderRadius: 8,
+                        borderWidth: 1,
+                        borderColor: "#e2e8f0",
+                      }}
+                    >
+                      <Text>Закрыть поиск</Text>
+                    </Pressable>
+                  </View>
+                )}
+
+                <View style={{ height: 24 }} />
+              </ScrollView>
+
+              {!workModalReadOnly && (
+                <View
+                  style={{
+                    borderTopWidth: 1,
+                    borderColor: "#e5e7eb",
+                    paddingTop: 8,
+                    paddingBottom: 12,
+                    paddingHorizontal: 16,
+                    flexDirection: "row",
+                    gap: 8,
+                  }}
+                >
+                  <Pressable
+                    onPress={() => submitWorkProgress(true)}
+                    disabled={workModalSaving}
+                    style={{
+                      flex: 1,
+                      borderRadius: 10,
+                      paddingVertical: 10,
+                      backgroundColor:
+                        (workModalRow?.qty_left || 0) <= 0
+                          ? "#cbd5e1"
+                          : workModalSaving
+                          ? "#94a3b8"
+                          : "#16a34a",
+                      alignItems: "center",
+                    }}
+                  >
+                    <Text style={{ color: "#fff", fontWeight: "700" }}>
+                      {workModalSaving
+                        ? "Сохраняю…"
+                        : "Сохранить + списать"}
+                    </Text>
+                  </Pressable>
+                  <Pressable
+                    onPress={() => submitWorkProgress(false)}
+                    disabled={workModalSaving}
+                    style={{
+                      flex: 1,
+                      borderRadius: 10,
+                      paddingVertical: 10,
+                      backgroundColor:
+                        (workModalRow?.qty_left || 0) <= 0
+                          ? "#cbd5e1"
+                          : workModalSaving
+                          ? "#94a3b8"
+                          : "#0ea5e9",
+                      alignItems: "center",
+                    }}
+                  >
+                    <Text style={{ color: "#fff", fontWeight: "700" }}>
+                      {workModalSaving
+                        ? "Сохраняю…"
+                        : "Сохранить без склада"}
+                    </Text>
+                  </Pressable>
+                </View>
+              )}
+
+              <Pressable
+                onPress={closeWorkModal}
+                style={{ paddingVertical: 10, alignItems: "center" }}
+              >
+                <Text style={{ color: "#64748b", fontWeight: "600" }}>
+                  Закрыть
+                </Text>
+              </Pressable>
+            </View>
+          </Modal>
+
+          {/* МОДАЛКА ВЫБОРА ЭТАПА */}
+          <Modal
+            visible={workStagePickerVisible}
+            transparent
+            animationType="slide"
+            onRequestClose={() => setWorkStagePickerVisible(false)}
+          >
+            <View
+              style={{
+                flex: 1,
+                backgroundColor: "rgba(0,0,0,0.3)",
+                justifyContent: "flex-end",
+              }}
+            >
+              <View
+                style={{
+                  backgroundColor: "#fff",
+                  padding: 16,
+                  borderTopLeftRadius: 12,
+                  borderTopRightRadius: 12,
+                  maxHeight: "60%",
+                }}
+              >
+                <Text
+                  style={{
+                    fontWeight: "800",
+                    fontSize: 16,
+                    marginBottom: 8,
+                  }}
+                >
+                  Выбор этапа работы
+                </Text>
+
+                <FlatList
+                  data={workStageOptions}
+                  keyExtractor={(s, index) => `${s.code}-${index}`}
+                  style={{ maxHeight: "80%" }}
+                  renderItem={({ item }) => (
+                    <Pressable
+                      onPress={() => {
+                        setWorkModalStage(item.name);
+                        setWorkStagePickerVisible(false);
+                      }}
+                      style={{
+                        paddingVertical: 10,
+                        borderBottomWidth: 1,
+                        borderColor: "#f1f5f9",
+                      }}
+                    >
+                      <Text style={{ fontWeight: "600" }}>{item.name}</Text>
+                      <Text style={{ color: "#9ca3af", fontSize: 12 }}>
+                        {item.code}
+                      </Text>
+                    </Pressable>
+                  )}
+                  ListEmptyComponent={
+                    <Text style={{ color: "#64748b" }}>
+                      Этапы ещё не настроены. Добавь строки в таблицу
+                      work_stages.
+                    </Text>
+                  }
+                />
+
+                <View
+                  style={{
+                    flexDirection: "row",
+                    justifyContent: "flex-end",
+                    marginTop: 8,
+                  }}
+                >
+                  <Pressable
+                    onPress={() => setWorkStagePickerVisible(false)}
                     style={{
                       paddingHorizontal: 12,
                       paddingVertical: 8,
                       borderRadius: 8,
                       borderWidth: 1,
                       borderColor: "#e2e8f0",
-                      backgroundColor: "#fff",
                     }}
                   >
-                    <Text>{isExpanded ? "Скрыть позиции" : "Показать позиции"}</Text>
+                    <Text>Закрыть</Text>
                   </Pressable>
                 </View>
-
-                {isExpanded && (
-                  <View style={{ marginTop: 8, borderTopWidth: 1, borderColor: "#f1f5f9" }}>
-                    <View style={{ padding: 8 }}>
-                      <Text style={{ color: "#334155", fontWeight: "700" }}>
-                        {(() => {
-                          const arr = rows;
-                          if (!Array.isArray(arr) || arr.length === 0) return "Позиции не загружены или пусто";
-                          const expSum = arr.reduce((s, r) => s + nz(r.qty_expected, 0), 0);
-                          const recSum = arr.reduce((s, r) => s + nz(r.qty_received, 0), 0);
-                          const totalLeft = Math.max(0, expSum - recSum);
-                          return `Ожидается: ${expSum} • Принято: ${recSum} • Осталось принять: ${totalLeft}`;
-                        })()}
-                      </Text>
-                    </View>
-
-                    {Array.isArray(rows) && rows.length > 0 ? (
-                      <>
-                        {rows.map((row) => {
-                          const exp = nz(row.qty_expected, 0);
-                          const rec = nz(row.qty_received, 0);
-                          const left = Math.max(0, exp - rec);
-                          const inputKey = row.incoming_item_id;
-                          const val = qtyInputByItem[inputKey] ?? "";
-                          const isRealIncoming =
-                            typeof row.incoming_item_id === "string" &&
-                            !row.incoming_item_id.startsWith("p:");
-
-                          return (
-                            <View
-                              key={row.incoming_item_id}
-                              style={{ padding: 10, borderBottomWidth: 1, borderColor: "#f8fafc" }}
-                            >
-                              <Text style={{ fontWeight: "700" }}>{row.name}</Text>
-                              <Text style={{ color: "#475569" }}>
-                                {(row.code ? `${row.code} • ` : "")}
-                                {row.uom || "—"} • Ожидается: {exp} • Принято: {rec} • Остаток: {left}
-                              </Text>
-
-                              {/* Поле ввода количества — только для неподтверждённых шапок; для confirmed показываем лишь факты */}
-                              {item.status !== "confirmed" && isRealIncoming && left > 0 && (
-                                <View
-                                  style={{
-                                    flexDirection: "row",
-                                    gap: 8,
-                                    marginTop: 8,
-                                    alignItems: "center",
-                                    flexWrap: "wrap",
-                                  }}
-                                >
-                                  <TextInput
-                                    value={val}
-                                    onChangeText={(t) => {
-                                      const cleaned = t.replace(",", ".").replace(/\s+/g, "");
-                                      setQtyInputByItem((prev) => ({
-                                        ...prev,
-                                        [inputKey]:
-                                          cleaned === "" || /^0+(\.0+)?$/.test(cleaned) ? "" : cleaned,
-                                      }));
-                                    }}
-                                    onFocus={() => {
-                                      setQtyInputByItem((prev) => {
-                                        const cur = prev[inputKey] ?? "";
-                                        if (cur !== "") return prev;
-                                        return { ...prev, [inputKey]: String(left) };
-                                      });
-                                    }}
-                                    keyboardType="numeric"
-                                    placeholder={`Кол-во (ост: ${left})`}
-                                    style={{
-                                      width: 160,
-                                      borderWidth: 1,
-                                      borderColor: "#e2e8f0",
-                                      borderRadius: 10,
-                                      paddingHorizontal: 10,
-                                      paddingVertical: 8,
-                                      backgroundColor: "#fff",
-                                    }}
-                                  />
-                                </View>
-                              )}
-                            </View>
-                          );
-                        })}
-
-                        {/* Общая кнопка "Оприходовать выбранное" — только если шапка не подтверждена */}
-                        {item.status !== "confirmed" && (
-                          <View style={{ padding: 10, gap: 8 }}>
-                            <Pressable
-                              onPress={() => receiveSelectedForHead(rid)}
-                              disabled={receivingHeadId === item.id}
-                              style={{
-                                alignSelf: "flex-start",
-                                paddingHorizontal: 14,
-                                paddingVertical: 10,
-                                borderRadius: 10,
-                                backgroundColor: receivingHeadId === item.id ? "#94a3b8" : "#0ea5e9",
-                              }}
-                            >
-                              <Text style={{ color: "#fff", fontWeight: "800" }}>
-                                {receivingHeadId === item.id ? "Оприходуем…" : "Оприходовать выбранное"}
-                              </Text>
-                            </Pressable>
-                          </View>
-                        )}
-                      </>
-                    ) : (
-                      <Text style={{ padding: 8, color: "#64748b" }}>
-                        Позиции не загружены или пусто
-                      </Text>
-                    )}
-                  </View>
-                )}
               </View>
-            );}}
-            ListEmptyComponent={<Text style={{ color: "#475569" }}>Нет записей в очереди склада.</Text>}
-            refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-          />
-        </View>
-      );
-    } // конец "К приходу"
+            </View>
+          </Modal>
 
-    // ─────────── ОСТАТКИ ───────────
-    // 1) заглушка (если источник не поддержан)
-    if (stockSupported === false && tab === "Склад факт") {
-      return (
-        <View style={{ padding: 12 }}>
-          <Text style={{ color: "#475569" }}>
-            Раздел «Склад факт» требует вью <Text style={{ fontWeight: "700" }}>v_warehouse_fact</Text>
-            {" "}или RPC, возвращающий фактические остатки.
-          </Text>
-        </View>
-      );
-    }
+          {/* МОДАЛКА ПОДТВЕРЖДЕНИЯ ЗАВЕРШЕНИЯ РАБОТЫ */}
+          <Modal
+            visible={!!finishDialog}
+            transparent
+            animationType="fade"
+            onRequestClose={() => setFinishDialog(null)}
+          >
+            <View
+              style={{
+                flex: 1,
+                backgroundColor: "rgba(0,0,0,0.4)",
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <View
+                style={{
+                  backgroundColor: "#fff",
+                  padding: 16,
+                  borderRadius: 12,
+                  width: "90%",
+                  maxWidth: 420,
+                }}
+              >
+                <Text
+                  style={{
+                    fontWeight: "800",
+                    fontSize: 16,
+                    marginBottom: 8,
+                  }}
+                >
+                  Подтвердить завершение работы
+                </Text>
+                <Text
+                  style={{
+                    color: "#475569",
+                    marginBottom: 16,
+                    whiteSpace: "pre-wrap" as any,
+                  }}
+                >
+                  {finishDialog?.message}
+                </Text>
 
-    // 2) нормальный рендер списка
-    if (tab === "Склад факт") {
-      return (
-        <FlatList
-          data={stock}
-          keyExtractor={(i, idx) => `${i.material_id}-${idx}`}
-          renderItem={({ item }) => <StockRowView r={item} />}
-          ListEmptyComponent={<Text style={{ color: "#475569" }}>Пока нет данных по складу.</Text>}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-        />
+                <View
+                  style={{
+                    flexDirection: "row",
+                    justifyContent: "flex-end",
+                    gap: 8,
+                  }}
+                >
+                  <Pressable
+                    onPress={() => setFinishDialog(null)}
+                    style={{
+                      paddingHorizontal: 12,
+                      paddingVertical: 8,
+                      borderRadius: 8,
+                      borderWidth: 1,
+                      borderColor: "#e2e8f0",
+                    }}
+                  >
+                    <Text>Отмена</Text>
+                  </Pressable>
+                  <Pressable
+                    onPress={confirmFinishWork}
+                    style={{
+                      paddingHorizontal: 12,
+                      paddingVertical: 8,
+                      borderRadius: 8,
+                      backgroundColor: "#16a34a",
+                    }}
+                  >
+                    <Text style={{ color: "#fff", fontWeight: "700" }}>
+                      Да, всё верно
+                    </Text>
+                  </Pressable>
+                </View>
+              </View>
+            </View>
+          </Modal>
+        </>
       );
     }
 
@@ -1935,18 +4882,31 @@ export default function Warehouse() {
         return (
           <View style={{ padding: 12 }}>
             <Text style={{ color: "#475569" }}>
-              Раздел «История» пока недоступен: добавь RPC <Text style={{ fontWeight: "700" }}>list_warehouse_history / acc_list_history</Text> или view <Text style={{ fontWeight: "700" }}>v_warehouse_history</Text>.
+              Раздел «История» пока недоступен: добавь RPC{" "}
+              <Text style={{ fontWeight: "700" }}>
+                list_warehouse_history / acc_list_history
+              </Text>{" "}
+              или view{" "}
+              <Text style={{ fontWeight: "700" }}>
+                v_warehouse_history
+              </Text>
+              .
             </Text>
           </View>
         );
       }
+
       return (
         <FlatList
           data={history}
           keyExtractor={(_, idx) => `h-${idx}`}
           renderItem={({ item }) => <HistoryRowView h={item} />}
-          ListEmptyComponent={<Text style={{ color: "#475569" }}>История пуста.</Text>}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+          ListEmptyComponent={
+            <Text style={{ color: "#475569" }}>История пуста.</Text>
+          }
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
         />
       );
     }
@@ -1957,39 +4917,90 @@ export default function Warehouse() {
         return (
           <View style={{ padding: 12 }}>
             <Text style={{ color: "#475569" }}>
-              Раздел «Инвентаризация» требует RPC <Text style={{ fontWeight: "700" }}>acc_inv_list / acc_inv_open / acc_inv_finish</Text>.
+              Раздел «Инвентаризация» требует RPC{" "}
+              <Text style={{ fontWeight: "700" }}>
+                acc_inv_list / acc_inv_open / acc_inv_finish
+              </Text>
+              .
             </Text>
           </View>
         );
       }
+
       return (
         <View style={{ flex: 1 }}>
           <View style={{ padding: 12, flexDirection: "row", gap: 10 }}>
-            <Pressable onPress={createInv} style={{ paddingHorizontal: 12, paddingVertical: 8, backgroundColor: "#0ea5e9", borderRadius: 10 }}>
-              <Text style={{ color: "#fff", fontWeight: "700" }}>Создать инвентаризацию</Text>
+            <Pressable
+              onPress={createInv}
+              style={{
+                paddingHorizontal: 12,
+                paddingVertical: 8,
+                backgroundColor: "#0ea5e9",
+                borderRadius: 10,
+              }}
+            >
+              <Text style={{ color: "#fff", fontWeight: "700" }}>
+                Создать инвентаризацию
+              </Text>
             </Pressable>
           </View>
+
           <FlatList
             data={inv}
             keyExtractor={(x) => x.id}
             renderItem={({ item }) => (
-              <View style={{ padding: 12, borderBottomWidth: 1, borderColor: "#e5e7eb", backgroundColor: "#fff" }}>
-                <Text style={{ fontWeight: "700" }}>{item.id.slice(0, 8)} • {item.status}</Text>
+              <View
+                style={{
+                  padding: 12,
+                  borderBottomWidth: 1,
+                  borderColor: "#e5e7eb",
+                  backgroundColor: "#fff",
+                }}
+              >
+                <Text style={{ fontWeight: "700" }}>
+                  {item.id.slice(0, 8)} • {item.status}
+                </Text>
                 <Text style={{ color: "#64748b" }}>
                   {new Date(item.started_at).toLocaleString("ru-RU")}
-                  {item.finished_at ? ` → ${new Date(item.finished_at).toLocaleString("ru-RU")}` : ""}
+                  {item.finished_at
+                    ? ` → ${new Date(
+                        item.finished_at,
+                      ).toLocaleString("ru-RU")}`
+                    : ""}
                 </Text>
                 {item.status !== "Завершена" && (
-                  <View style={{ flexDirection: "row", gap: 8, marginTop: 8 }}>
-                    <Pressable onPress={() => finishInv(item.id)} style={{ paddingHorizontal: 12, paddingVertical: 8, backgroundColor: "#16a34a", borderRadius: 10 }}>
-                      <Text style={{ color: "#fff", fontWeight: "700" }}>Завершить</Text>
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      gap: 8,
+                      marginTop: 8,
+                    }}
+                  >
+                    <Pressable
+                      onPress={() => finishInv(item.id)}
+                      style={{
+                        paddingHorizontal: 12,
+                        paddingVertical: 8,
+                        backgroundColor: "#16a34a",
+                        borderRadius: 10,
+                      }}
+                    >
+                      <Text style={{ color: "#fff", fontWeight: "700" }}>
+                        Завершить
+                      </Text>
                     </Pressable>
                   </View>
                 )}
               </View>
             )}
-            ListEmptyComponent={<Text style={{ color: "#475569", padding: 12 }}>Сессий нет.</Text>}
-            refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+            ListEmptyComponent={
+              <Text style={{ color: "#475569", padding: 12 }}>
+                Сессий нет.
+              </Text>
+            }
+            refreshControl={
+              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+            }
           />
         </View>
       );
@@ -1998,36 +5009,107 @@ export default function Warehouse() {
     // ─────────── ОТЧЁТЫ ───────────
     return (
       <ScrollView style={{ flex: 1 }}>
-        <View style={{ padding: 12, gap: 8, backgroundColor: "#fff", borderWidth: 1, borderColor: "#e2e8f0", borderRadius: 12, marginBottom: 10 }}>
+        <View
+          style={{
+            padding: 12,
+            gap: 8,
+            backgroundColor: "#fff",
+            borderWidth: 1,
+            borderColor: "#e2e8f0",
+            borderRadius: 12,
+            marginBottom: 10,
+          }}
+        >
           <Text style={{ fontWeight: "800" }}>Период</Text>
-          <TextInput value={periodFrom} onChangeText={setPeriodFrom} placeholder="От (YYYY-MM-DD)" style={{ borderWidth: 1, borderColor: "#e2e8f0", borderRadius: 10, paddingHorizontal: 10, paddingVertical: 8 }} />
-          <TextInput value={periodTo} onChangeText={setPeriodTo} placeholder="До (YYYY-MM-DD)" style={{ borderWidth: 1, borderColor: "#e2e8f0", borderRadius: 10, paddingHorizontal: 10, paddingVertical: 8 }} />
-          <Pressable onPress={fetchReports} style={{ paddingHorizontal: 12, paddingVertical: 8, backgroundColor: "#0ea5e9", borderRadius: 10, alignSelf: "flex-start" }}>
-            <Text style={{ color: "#fff", fontWeight: "700" }}>Обновить отчёты</Text>
+          <TextInput
+            value={periodFrom}
+            onChangeText={setPeriodFrom}
+            placeholder="От (YYYY-MM-DD)"
+            style={{
+              borderWidth: 1,
+              borderColor: "#e2e8f0",
+              borderRadius: 10,
+              paddingHorizontal: 10,
+              paddingVertical: 8,
+            }}
+          />
+          <TextInput
+            value={periodTo}
+            onChangeText={setPeriodTo}
+            placeholder="До (YYYY-MM-DD)"
+            style={{
+              borderWidth: 1,
+              borderColor: "#e2e8f0",
+              borderRadius: 10,
+              paddingHorizontal: 10,
+              paddingVertical: 8,
+            }}
+          />
+          <Pressable
+            onPress={fetchReports}
+            style={{
+              paddingHorizontal: 12,
+              paddingVertical: 8,
+              backgroundColor: "#0ea5e9",
+              borderRadius: 10,
+              alignSelf: "flex-start",
+            }}
+          >
+            <Text style={{ color: "#fff", fontWeight: "700" }}>
+              Обновить отчёты
+            </Text>
           </Pressable>
         </View>
 
-        <View style={{ padding: 12, backgroundColor: "#fff", borderWidth: 1, borderColor: "#e2e8f0", borderRadius: 12, marginBottom: 10 }}>
-          <Text style={{ fontWeight: "800", marginBottom: 8 }}>Остатки (сводка)</Text>
+        <View
+          style={{
+            padding: 12,
+            backgroundColor: "#fff",
+            borderWidth: 1,
+            borderColor: "#e2e8f0",
+            borderRadius: 12,
+            marginBottom: 10,
+          }}
+        >
+          <Text style={{ fontWeight: "800", marginBottom: 8 }}>
+            Остатки (сводка)
+          </Text>
           {repStock.length === 0 ? (
             <Text style={{ color: "#64748b" }}>Нет данных.</Text>
           ) : (
             repStock.map((x, i) => (
               <Text key={i} style={{ color: "#334155" }}>
-                {(x.code ?? (x as any).material_id) || "—"} • {x.uom_id || "—"} • Доступно: {nz(x.qty_available ?? (nz(x.qty_on_hand, 0) - nz(x.qty_reserved, 0)), 0)}
+                {(x.code ?? (x as any).material_id) || "—"} •{" "}
+                {x.uom_id || "—"} • Доступно:{" "}
+                {nz(
+                  x.qty_available ??
+                    nz(x.qty_on_hand, 0) - nz(x.qty_reserved, 0),
+                  0,
+                )}
               </Text>
             ))
           )}
         </View>
 
-        <View style={{ padding: 12, backgroundColor: "#fff", borderWidth: 1, borderColor: "#e2e8f0", borderRadius: 12 }}>
-          <Text style={{ fontWeight: "800", marginBottom: 8 }}>Движение за период</Text>
+        <View
+          style={{
+            padding: 12,
+            backgroundColor: "#fff",
+            borderWidth: 1,
+            borderColor: "#e2e8f0",
+            borderRadius: 12,
+          }}
+        >
+          <Text style={{ fontWeight: "800", marginBottom: 8 }}>
+            Движение за период
+          </Text>
           {repMov.length === 0 ? (
             <Text style={{ color: "#64748b" }}>Нет данных.</Text>
           ) : (
             repMov.map((h, i) => (
               <Text key={i} style={{ color: "#334155" }}>
-                {new Date(h.event_dt).toLocaleString("ru-RU")} • {h.event_type} • {(h.code || "—")} • {h.qty ?? "—"}
+                {new Date(h.event_dt).toLocaleString("ru-RU")} •{" "}
+                {h.event_type} • {h.code || "—"} • {h.qty ?? "—"}
               </Text>
             ))
           )}
@@ -2040,13 +5122,31 @@ export default function Warehouse() {
     <View style={{ flex: 1, backgroundColor: "#f8fafc" }}>
       {/* Header */}
       <View style={{ padding: 16, paddingBottom: 8 }}>
-        <Text style={{ fontSize: 18, fontWeight: "800", marginBottom: 10 }}>Склад</Text>
+        <Text style={{ fontSize: 18, fontWeight: "800", marginBottom: 10 }}>
+          Склад
+        </Text>
         <View style={{ flexDirection: "row", gap: 8, flexWrap: "wrap" }}>
           {TABS.map((t) => {
             const active = t === tab;
             return (
-              <Pressable key={t} onPress={() => setTab(t)} style={{ paddingHorizontal: 14, paddingVertical: 8, borderRadius: 999, backgroundColor: active ? "#0ea5e9" : "#e2e8f0" }}>
-                <Text style={{ color: active ? "#fff" : "#0f172a", fontWeight: "700" }}>{t}</Text>
+              <Pressable
+                key={t}
+                onPress={() => setTab(t)}
+                style={{
+                  paddingHorizontal: 14,
+                  paddingVertical: 8,
+                  borderRadius: 999,
+                  backgroundColor: active ? "#0ea5e9" : "#e2e8f0",
+                }}
+              >
+                <Text
+                  style={{
+                    color: active ? "#fff" : "#0f172a",
+                    fontWeight: "700",
+                  }}
+                >
+                  {t}
+                </Text>
               </Pressable>
             );
           })}
@@ -2059,7 +5159,13 @@ export default function Warehouse() {
       {/* Body */}
       <View style={{ flex: 1, padding: 12 }}>
         {loading ? (
-          <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+          <View
+            style={{
+              flex: 1,
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
             <ActivityIndicator size="large" />
             <Text style={{ marginTop: 8, color: "#475569" }}>Загрузка…</Text>
           </View>
@@ -2070,8 +5176,6 @@ export default function Warehouse() {
     </View>
   );
 }
-
-/** Примечание: компонент HistoryRowView предполагается в твоём проекте как и раньше. Логику не менял. */
 
 
 
