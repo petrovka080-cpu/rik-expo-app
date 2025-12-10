@@ -2974,10 +2974,15 @@ function LabeledInput(props: LabeledInputProps) {
           props.big && { height: 80, textAlignVertical: "top" },
           focused && {
             borderColor: UI.accent,
-            shadowColor: UI.accent,
-            shadowOpacity: 0.4,
-            shadowRadius: 8,
-            shadowOffset: { width: 0, height: 0 },
+            ...Platform.select({
+              web: { boxShadow: `0px 0px 12px rgba(79, 70, 229, 0.35)` },
+              default: {
+                shadowColor: UI.accent,
+                shadowOpacity: 0.4,
+                shadowRadius: 8,
+                shadowOffset: { width: 0, height: 0 },
+              },
+            }),
           },
         ]}
         multiline={props.multiline}

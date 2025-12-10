@@ -25,12 +25,6 @@ export const SUPABASE_HOST = (() => {
   try { return SUPABASE_URL ? new URL(SUPABASE_URL).host : ''; } catch { return ''; }
 })();
 
-if (process.env.NODE_ENV !== 'production') {
-  console.log('[SUPABASE_URL]', SUPABASE_URL || '(empty)');
-  console.log('[SUPABASE_HOST]', SUPABASE_HOST || '(empty)');
-  console.log('[SUPABASE_ANON_KEY..12]', SUPABASE_ANON_KEY ? SUPABASE_ANON_KEY.slice(0, 12) + '...' : '(empty)');
-}
-
 // если env битые — не создаём клиент (чтобы не спамить сетевыми ошибками)
 function assertEnv() {
   const ok = SUPABASE_URL && /^https?:\/\//i.test(SUPABASE_URL) && SUPABASE_ANON_KEY;

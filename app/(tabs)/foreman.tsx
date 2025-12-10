@@ -3141,11 +3141,16 @@ const s = StyleSheet.create({
     padding: 20,
     paddingBottom: 32,
     maxHeight: '80%',
-    shadowColor: '#000',
-    shadowOpacity: 0.12,
-    shadowOffset: { width: 0, height: -4 },
-    shadowRadius: 16,
-    elevation: 8,
+    ...Platform.select({
+      web: { boxShadow: '0px -4px 24px rgba(0, 0, 0, 0.16)' },
+      default: {
+        shadowColor: '#000',
+        shadowOpacity: 0.12,
+        shadowOffset: { width: 0, height: -4 },
+        shadowRadius: 16,
+        elevation: 8,
+      },
+    }),
   },
   historyModalHeader: {
     flexDirection: 'row',
