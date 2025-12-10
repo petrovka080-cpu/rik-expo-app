@@ -2,9 +2,10 @@
 
 import "./_webStyleGuard"; // подключаем web-стаб сразу
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Platform, LogBox } from "react-native";
-import { Slot } from "expo-router";
+import { Slot, router, useSegments } from "expo-router";
+import { supabase } from "../src/lib/supabaseClient";
 
 // Тихо глушим шумные web-предупреждения (только в браузере)
 if (Platform.OS === "web") {
@@ -29,6 +30,53 @@ if (Platform.OS === "web") {
 }
 
 export default function RootLayout() {
+  const segments = useSegments();
+  const [sessionLoaded, setSessionLoaded] = useState(false);
+  const [hasSession, setHasSession] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    if (!supabase) return;
+    let active = true;
+
+    const syncSession = async () => {
+      try {
+        const { data } = await supabase.auth.getSession();
+        if (!active) return;
+        setHasSession(Boolean(data?.session));
+      } catch (e) {
+        if (process.env.NODE_ENV !== "production") {
+          console.warn("[RootLayout] session load failed", (e as any)?.message ?? e);
+        }
+        if (active) setHasSession(false);
+      } finally {
+        if (active) setSessionLoaded(true);
+      }
+    };
+
+    const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
+      setHasSession(Boolean(session));
+      if (!session) router.replace("/auth/login");
+    });
+
+    syncSession();
+    return () => {
+      active = false;
+      listener?.subscription?.unsubscribe();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!supabase) return;
+    if (!sessionLoaded) return;
+    const inAuthStack = segments?.[0] === "auth";
+
+    if (!hasSession && !inAuthStack) {
+      router.replace("/auth/login");
+    } else if (hasSession && inAuthStack) {
+      router.replace("/");
+    }
+  }, [hasSession, sessionLoaded, segments]);
+
   return <Slot />;
 }
 

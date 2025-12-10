@@ -1,12 +1,15 @@
 import "../global.css";
 import "../_webStyleGuard";
 import { Tabs } from "expo-router";
+import LogoutButton from "../../src/components/LogoutButton";
 
 export default function TabsLayout() {
   return (
     <Tabs
       screenOptions={{
-        headerShown: false,
+        headerShown: true,
+        headerTitle: "",
+        headerRight: () => <LogoutButton />,
         tabBarStyle: { display: "none" },
       }}
     >

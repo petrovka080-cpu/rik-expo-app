@@ -1,9 +1,11 @@
 // src/lib/supabaseClient.ts
 import 'react-native-url-polyfill/auto';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { router } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const isWeb = typeof window !== 'undefined';
+export const SUPABASE_PROJECT_REF = 'nxrnjywzxxfdpqmzjorh';
 
 // —–– ENV —––
 const rawUrl = String(process.env.EXPO_PUBLIC_SUPABASE_URL ?? '').trim().replace(/^['"]|['"]$/g, '');
@@ -32,6 +34,11 @@ if (process.env.NODE_ENV !== 'production') {
 // если env битые — не создаём клиент (чтобы не спамить сетевыми ошибками)
 function assertEnv() {
   const ok = SUPABASE_URL && /^https?:\/\//i.test(SUPABASE_URL) && SUPABASE_ANON_KEY;
+  const looksLikeTargetProject = SUPABASE_HOST?.startsWith(`${SUPABASE_PROJECT_REF}.`);
+
+  if (ok && !looksLikeTargetProject) {
+    console.warn(`[supabaseClient] SUPABASE_URL host ("${SUPABASE_HOST}") не совпадает с ref ${SUPABASE_PROJECT_REF}. Исправь .env.local и перезапусти bundler.`);
+  }
   if (!ok) {
     const msg = '[supabaseClient] Missing/invalid EXPO_PUBLIC_SUPABASE_URL/_ANON_KEY. Проверь .env.local и перезапусти `expo start -c`.';
     if (process.env.NODE_ENV !== 'production') console.warn(msg);
@@ -55,29 +62,20 @@ export const supabase: SupabaseClient = assertEnv()
   : (undefined as unknown as SupabaseClient);
 
 // —–– HELPERS —––
-export async function ensureSignedIn(): Promise<void> {
-  if (!supabase) return; // .env не готов
+export async function ensureSignedIn(): Promise<boolean> {
+  if (!supabase) return false; // .env не готов
+
   try {
     const sess = await supabase.auth.getSession();
-    if (sess?.data?.session?.user) return;
-  } catch { /* ignore */ }
-
-  const email = String(process.env.EXPO_PUBLIC_SUPABASE_EMAIL ?? '').trim();
-  const password = String(process.env.EXPO_PUBLIC_SUPABASE_PASSWORD ?? '').trim();
-  if (!email || !password) {
+    if (sess?.data?.session?.user) return true;
+  } catch (e) {
     if (process.env.NODE_ENV !== 'production') {
-      console.warn('[ensureSignedIn] нет сессии и не заданы EXPO_PUBLIC_SUPABASE_EMAIL/_PASSWORD — пропускаю автологин.');
+      console.warn('[ensureSignedIn] session check failed:', (e as any)?.message ?? e);
     }
-    return;
   }
-  try {
-    if (process.env.NODE_ENV !== 'production') console.log(`[ensureSignedIn] signInWithPassword for ${email}`);
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) throw error;
-    if (!data?.session?.user) throw new Error('signIn returned no session/user');
-  } catch (e: any) {
-    console.warn('[ensureSignedIn] signInWithPassword failed:', e?.message ?? String(e));
-  }
+
+  router.replace('/auth/login');
+  return false;
 }
 
 export async function currentUserId(): Promise<string | null> {
