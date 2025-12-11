@@ -399,66 +399,52 @@ export default function BuyerScreen() {
 
   /* ==================== Загрузка ==================== */
   const fetchInbox = useCallback(async () => { 
-    setLoadingInbox(true);
+  setLoadingInbox(true);
+  try {
+    // 1) Берём инбокс только через API-слой:
+    //    listBuyerInbox уже:
+    //    - дергает RPC list_buyer_inbox
+    //    - ЖЁСТКО режет статусы по ['Утверждено','К закупке']
+    //    - имеет fallback по request_items
+    let inbox: BuyerInboxRow[] = [];
     try {
-      let inbox: BuyerInboxRow[] = [];
-
-      // 1) пробуем RPC
-      try {
-        const { data, error } = await supabase.rpc('list_buyer_inbox');
-        if (!error && Array.isArray(data)) inbox = data as BuyerInboxRow[];
-      } catch (e) {
-        console.warn('[buyer] rpc inbox ex:', (e as any)?.message ?? e);
-      }
-
-      // 2) fallback: request_items
-      if (!inbox.length) {
-        const ri = await supabase
-          .from('request_items')
-          .select('request_id,id,name_human,qty,uom,app_code,status,request_id_old')
-          .in('status', ['К закупке', 'Утверждено'])
-          .order('request_id', { ascending: true });
-
-        if (!ri.error && Array.isArray(ri.data)) {
-          inbox = (ri.data as any[]).map(r => ({
-            request_id: r.request_id,
-            request_item_id: String(r.id),
-            name_human: r.name_human,
-            qty: r.qty,
-            uom: r.uom,
-            app_code: r.app_code,
-            status: r.status,
-            request_id_old: r.request_id_old ?? null,
-          })) as any;
-        }
-      }
-
-      // 3) убираем позиции, которые уже в proposals
-      let taken = new Set<string>();
-      try {
-        const piRes = await supabase.from('proposal_items').select('request_item_id');
-        if (!piRes.error && Array.isArray(piRes.data)) {
-          taken = new Set<string>((piRes.data as any[]).map((r:any) => String(r.request_item_id)));
-        }
-      } catch {}
-
-      const filtered = (inbox || []).filter(
-        (r: any) => r?.request_item_id && r?.request_id != null && !taken.has(String(r.request_item_id))
-      );
-
-      setRows(filtered as BuyerInboxRow[]);
-
-      // 4) предзагрузка красивых номеров заявок
-      const ids = Array.from(new Set(filtered.map(r => String(r.request_id))));
-      preloadDisplayNos(ids);
+      inbox = await listBuyerInbox();
     } catch (e) {
-      console.error('[buyer] fetchInbox:', (e as any)?.message ?? e);
-      Alert.alert('Ошибка', 'Не удалось загрузить инбокс снабженца');
-      setRows([]);
-    } finally {
-      setLoadingInbox(false);
+      console.warn('[buyer] listBuyerInbox ex:', (e as any)?.message ?? e);
+      inbox = [];
     }
-  }, [preloadDisplayNos]);
+
+    // 2) Убираем позиции, которые уже попали в proposals
+    let taken = new Set<string>();
+    try {
+      const piRes = await supabase.from('proposal_items').select('request_item_id');
+      if (!piRes.error && Array.isArray(piRes.data)) {
+        taken = new Set<string>(
+          (piRes.data as any[]).map((r: any) => String(r.request_item_id))
+        );
+      }
+    } catch {}
+
+    const filtered = (inbox || []).filter(
+      (r: any) =>
+        r?.request_item_id &&
+        r?.request_id != null &&
+        !taken.has(String(r.request_item_id))
+    );
+
+    setRows(filtered as BuyerInboxRow[]);
+
+    // 3) предзагрузка красивых номеров заявок
+    const ids = Array.from(new Set(filtered.map(r => String(r.request_id))));
+    preloadDisplayNos(ids);
+  } catch (e) {
+    console.error('[buyer] fetchInbox:', (e as any)?.message ?? e);
+    Alert.alert('Ошибка', 'Не удалось загрузить инбокс снабженца');
+    setRows([]);
+  } finally {
+    setLoadingInbox(false);
+  }
+}, [preloadDisplayNos]);
 
   const fetchBuckets = useCallback(async () => {
     setLoadingBuckets(true);

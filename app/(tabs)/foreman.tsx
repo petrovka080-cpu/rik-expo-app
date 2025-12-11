@@ -24,8 +24,9 @@ import {
 } from 'react-native';
 import { LogBox } from 'react-native';
 
-import CalcModal from './foreman/CalcModal';
-import WorkTypePicker from './foreman/WorkTypePicker';
+import CalcModal from "../../src/components/foreman/CalcModal";
+import WorkTypePicker from "../../src/components/foreman/WorkTypePicker";
+import { useCalcFields } from "../../src/components/foreman/useCalcFields";
 
 import {
   rikQuickSearch,
@@ -428,7 +429,6 @@ export default function ForemanScreen() {
   const [cart, setCart] = useState<Record<string, PickedRow>>({});
   const cartArray = useMemo(() => Object.values(cart), [cart]);
   const cartCount = cartArray.length;
-
   const formatQtyInput = useCallback((value?: number | null) => {
     if (value == null) return '';
     const num = Number(value);
@@ -454,7 +454,8 @@ export default function ForemanScreen() {
   const [historyRequests, setHistoryRequests] = useState<ForemanRequestSummary[]>([]);
   const [historyLoading, setHistoryLoading] = useState(false);
   const [historyVisible, setHistoryVisible] = useState(false);
-  
+    const [pendingCount, setPendingCount] = useState<number>(0);
+
   // ===== Режим отображения =====
   const [viewMode, setViewMode] = useState<'raw' | 'grouped'>('raw');
 
@@ -859,20 +860,30 @@ export default function ForemanScreen() {
     setHistoryLoading(true);
 
     (async () => {
-      try {
+            try {
         const rows = await listForemanRequests(name, 50);
         if (Array.isArray(rows)) {
           setHistoryRequests(rows);
+
+          // считаем заявки "На утверждении"
+          const pending = rows.filter(r => {
+            const raw = String(r.status ?? '').trim().toLowerCase();
+            return raw === 'на утверждении' || raw === 'pending';
+          }).length;
+          setPendingCount(pending);
         } else {
           setHistoryRequests([]);
+          setPendingCount(0);
         }
       } catch (e) {
         console.warn('[Foreman] listForemanRequests:', e);
         Alert.alert('История', 'Не удалось загрузить историю заявок.');
         setHistoryRequests([]);
+        setPendingCount(0);
       } finally {
         setHistoryLoading(false);
       }
+
     })();
   }, [foreman, listForemanRequests]);
 
@@ -884,6 +895,32 @@ export default function ForemanScreen() {
       setHistoryVisible(false);
     },
     [openRequestById],
+  );
+  const openHistoryPdf = useCallback(
+    async (reqId: string) => {
+      try {
+        const rid = String(reqId).trim();
+        if (!rid) return;
+
+        const url = await exportRequestPdf(rid);
+
+        if (Platform.OS === 'web') {
+          if (url) {
+            const win = window.open(url, '_blank', 'noopener,noreferrer');
+            if (!win) {
+              Alert.alert('PDF', 'Не удалось открыть PDF. Разрешите всплывающие окна.');
+            }
+          } else {
+            Alert.alert('PDF', 'Не удалось сформировать PDF-документ');
+          }
+        } else if (!url) {
+          Alert.alert('PDF', 'Не удалось сформировать PDF-документ');
+        }
+      } catch (e: any) {
+        Alert.alert('Ошибка', e?.message ?? 'PDF не сформирован');
+      }
+    },
+    [],
   );
 
   useEffect(() => {
@@ -1211,26 +1248,22 @@ export default function ForemanScreen() {
           ? appFilterCode
           : (Array.isArray(apps) && apps[0] ? apps[0] : null);
 
-        const autoNote = buildScopeNote(
-          objectName,
-          levelName,
-          systemName,
-          zoneName,
-        );
+        // Больше НЕ сохраняем авто-примечание в note – оставляем пустым,
+// а область применения показываем только как placeholder в UI.
+return {
+  ...prev,
+  [code]: {
+    rik_code: code,
+    name: displayName,
+    uom,
+    kind,
+    qty: '',
+    app_code: appDefault,
+    note: '', // ← пусто, пользователь сам напишет, если нужно
+    appsFromItem: Array.isArray(apps) ? apps : undefined,
+  },
+};
 
-        return {
-          ...prev,
-          [code]: {
-            rik_code: code,
-            name: displayName,
-            uom,
-            kind,
-            qty: '',
-            app_code: appDefault,
-            note: autoNote,
-            appsFromItem: Array.isArray(apps) ? apps : undefined,
-          },
-        };
       });
     },
     [
@@ -2839,15 +2872,38 @@ export default function ForemanScreen() {
             >
               <Text style={busy ? s.btnTxtDisabled : s.btnTxtNeutral}>PDF</Text>
             </Pressable>
-            <Pressable
+                        <Pressable
               onPress={handleOpenHistory}
               disabled={busy}
-              style={[s.btn, s.btnNeutral, busy ? s.btnDisabled : null]}
+              style={[s.btn, s.btnNeutral, busy ? s.btnDisabled : null, { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', columnGap: 6 }]}
             >
               <Text style={busy ? s.btnTxtDisabled : s.btnTxtNeutral}>
                 История
               </Text>
+              {pendingCount > 0 && !busy ? (
+                <View
+                  style={{
+                    minWidth: 20,
+                    paddingHorizontal: 6,
+                    paddingVertical: 2,
+                    borderRadius: 999,
+                    backgroundColor: '#FACC15',
+                  }}
+                >
+                  <Text
+                    style={{
+                      fontSize: 11,
+                      fontWeight: '700',
+                      textAlign: 'center',
+                      color: '#1F2937',
+                    }}
+                  >
+                    {pendingCount}
+                  </Text>
+                </View>
+              ) : null}
             </Pressable>
+
           </View>
         </View>
       </View>
@@ -2875,9 +2931,9 @@ export default function ForemanScreen() {
                 <ActivityIndicator />
               ) : historyRequests.length === 0 ? (
                 <Text style={s.historyModalEmpty}>Заявок пока нет.</Text>
-              ) : (
+                            ) : (
                 <ScrollView style={s.historyModalList}>
-                  {historyRequests.map((req) => {
+                                    {historyRequests.map((req) => {
                     const info = resolveStatusInfo(req.status);
                     const created = req.created_at
                       ? new Date(req.created_at).toLocaleDateString('ru-RU')
@@ -2885,44 +2941,79 @@ export default function ForemanScreen() {
                     const needByText = req.need_by
                       ? `Нужно к: ${formatDateForUi(req.need_by)}`
                       : '';
+
+                    const hasRejected =
+                      req.has_rejected === true ||
+                      req.has_rejected === 1 ||
+                      req.has_rejected === 't';
+
                     return (
-                      <Pressable
-                        key={req.id}
-                        onPress={() => handleHistorySelect(req.id)}
-                        style={s.historyModalRow}
-                      >
-                        <View style={{ flex: 1 }}>
-                          <Text style={s.historyModalPrimary}>
-                            {req.display_no ?? shortId(req.id)}
-                          </Text>
-                          <Text style={s.historyModalMeta}>
-                            {req.object_name_ru || '—'}
-                          </Text>
-                          <Text style={s.historyModalMetaSecondary}>
-                            {created}
-                            {needByText ? ` · ${needByText}` : ''}
-                          </Text>
-                        </View>
-                        <View
-                          style={[
-                            s.historyStatusBadge,
-                            { backgroundColor: info.bg },
-                          ]}
-                        >
-                          <Text
-                            style={{
-                              color: info.fg,
-                              fontWeight: '600',
-                            }}
-                          >
-                            {info.label}
-                          </Text>
-                        </View>
-                      </Pressable>
+                      <View key={req.id} style={s.historyModalRow}>
+                        {/* Левая часть: клик по тексту открывает заявку */}
+                              <Pressable
+        style={{ flex: 1 }}
+        onPress={() => handleHistorySelect(req.id)}
+      >
+        <Text style={s.historyModalPrimary}>
+          {req.display_no ?? shortId(req.id)}
+        </Text>
+        <Text style={s.historyModalMeta}>
+          {req.object_name_ru || '—'}
+        </Text>
+        <Text style={s.historyModalMetaSecondary}>
+          {created}
+          {needByText ? ` · ${needByText}` : ''}
+        </Text>
+
+        {hasRejected && (
+          <Text
+            style={{
+              color: '#B91C1C',
+              fontSize: 12,
+              marginTop: 2,
+              fontWeight: '600',
+            }}
+          >
+            Есть отклонённые позиции
+          </Text>
+        )}
+      </Pressable>
+
+
+                             {/* Правая часть: статус (с пометкой) + PDF */}
+     <View style={{ alignItems: 'flex-end', gap: 6 }}>
+  <View
+    style={[
+      s.historyStatusBadge,
+      { backgroundColor: hasRejected ? '#FEE2E2' : info.bg },
+    ]}
+  >
+    <Text
+      style={{
+        color: hasRejected ? '#B91C1C' : info.fg,
+        fontWeight: '700',
+      }}
+    >
+      {info.label}
+      {hasRejected ? ' · ОТКЛОНЁННЫЕ ЕСТЬ' : ''}
+    </Text>
+  </View>
+
+  <Pressable
+    onPress={() => openHistoryPdf(req.id)}
+    style={s.historyPdfBtn}
+  >
+    <Text style={s.historyPdfBtnText}>PDF</Text>
+  </Pressable>
+</View>
+
+                      </View>
                     );
                   })}
+
                 </ScrollView>
               )}
+
             </View>
           </View>
         </View>
@@ -3187,6 +3278,19 @@ const s = StyleSheet.create({
     paddingVertical: 6,
     paddingHorizontal: 12,
   },
+  historyPdfBtn: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: '#CBD5E1',
+    backgroundColor: '#F9FAFB',
+  },
+  historyPdfBtnText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#1D4ED8',
+  },
 
   card: {
     borderWidth: 1,
@@ -3293,11 +3397,12 @@ const s = StyleSheet.create({
     backgroundColor: '#E5E7EB',
     borderColor: '#D1D5DB',
   },
-  btnTxtPrimary: {
-    color: '#FFFFFF',
+    btnTxtPrimary: {
+    color: COLORS.text, // '#0F172A'
     fontWeight: '700',
     fontSize: 14,
   },
+
   btnTxtNeutral: {
     color: '#111827',
     fontWeight: '700',

@@ -13,10 +13,11 @@ export {
   ensureRequestSmart,
   requestCreateDraft,
   requestSubmit,
-  exportRequestPdf,
+  // exportRequestPdf,            // ← ВАЖНО: Больше не ре-экспортируем
   addRequestItemFromRik,
   clearCachedDraftRequestId,
 } from "./rik_api";
+
 export {
   listBuyerInbox,
   proposalCreate,
@@ -107,6 +108,7 @@ export type ForemanRequestSummary = {
   level_name_ru?: string | null;
   system_name_ru?: string | null;
   zone_name_ru?: string | null;
+  has_rejected?: boolean | null; // ← есть ли отклонённые позиции в заявке
 };
 
 export type RequestDetails = {
@@ -584,6 +586,13 @@ const mapDetailsFromRow = (row: any): RequestDetails | null => {
 const mapSummaryFromRow = (row: any): ForemanRequestSummary | null => {
   const details = mapDetailsFromRow(row);
   if (!details) return null;
+
+  const rawHas =
+    row?.has_rejected ??
+    row?.hasRejected ??
+    row?.has_rej ??
+    null;
+
   return {
     id: details.id,
     status: details.status ?? null,
@@ -594,6 +603,12 @@ const mapSummaryFromRow = (row: any): ForemanRequestSummary | null => {
     level_name_ru: details.level_name_ru ?? null,
     system_name_ru: details.system_name_ru ?? null,
     zone_name_ru: details.zone_name_ru ?? null,
+    has_rejected:
+      typeof rawHas === 'boolean'
+        ? rawHas
+        : rawHas == null
+        ? null
+        : Boolean(rawHas),
   };
 };
 
@@ -748,6 +763,325 @@ export async function listRequestItems(requestId: string): Promise<ReqItemRow[]>
     console.warn('[catalog_api.listRequestItems] request_items:', e?.message ?? e);
     return [];
   }
+}
+// ========== PDF: простой HTML для заявки (без квадратиков) ==========
+export function buildRequestPdfHtml(
+  details: RequestDetails,
+  items: ReqItemRow[]
+): string {
+  const safe = (v: any) =>
+    (v === null || v === undefined ? "" : String(v)).trim();
+
+  const reqNo = safe(details.display_no || details.id);
+  const createdAt = safe(details.created_at);
+  const createdAtRu = createdAt
+    ? new Date(createdAt).toLocaleString("ru-RU")
+    : "";
+
+  const needBy = safe(details.need_by);
+  const needByRu = needBy
+    ? new Date(needBy).toLocaleDateString("ru-RU")
+    : "";
+
+  const objectName = safe(details.object_name_ru);
+  const levelName = safe(details.level_name_ru);
+  const systemName = safe(details.system_name_ru);
+  const zoneName = safe(details.zone_name_ru);
+  const foreman = safe(details.foreman_name);
+  const status = safe(details.status || "Черновик");
+  const comment = safe(details.comment);
+
+  // Авто-текст примечания, который мы НЕ хотим дублировать в таблице
+  const autoNoteParts: string[] = [];
+  if (objectName) autoNoteParts.push(`Объект: ${objectName}`);
+  if (levelName) autoNoteParts.push(`Этаж/уровень: ${levelName}`);
+  if (systemName) autoNoteParts.push(`Система: ${systemName}`);
+  if (zoneName) autoNoteParts.push(`Зона: ${zoneName}`);
+  const autoNote = autoNoteParts.join("; ");
+  const autoNoteNorm = autoNote
+    ? autoNote.replace(/\s+/g, " ").trim()
+    : "";
+
+  const rowsHtml = (items || [])
+    .map((row, idx) => {
+      const name = safe(row.name_human || row.rik_code);
+      const uom = safe(row.uom);
+      const qty = safe(row.qty);
+      const app = safe(row.app_code);
+      const statusItem = safe(row.status);
+
+      let note = safe(row.note);
+      const normNote = note.replace(/\s+/g, " ").trim();
+
+      // Если примечание = авто-шапка (Объект/Этаж/Система/Зона) → не показываем
+      if (autoNoteNorm && normNote === autoNoteNorm) {
+        note = "";
+      }
+
+      return `
+        <tr>
+          <td>${idx + 1}</td>
+          <td>${name}</td>
+          <td>${uom}</td>
+          <td>${qty}</td>
+          <td>${app}</td>
+          <td>${statusItem || "—"}</td>
+          <td>${note}</td>
+        </tr>
+      `;
+    })
+    .join("");
+
+  return `
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <title>Заявка ${reqNo}</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+                   "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+    }
+
+    body {
+      margin: 24px;
+      font-size: 12px;
+      color: #0f172a;
+      background: #ffffff;
+    }
+
+    .title {
+      font-size: 22px;
+      font-weight: 700;
+      text-align: left;
+      margin-bottom: 4px;
+    }
+
+    .subtitle {
+      font-size: 11px;
+      color: #6b7280;
+      margin-bottom: 16px;
+    }
+
+    .header-block {
+      margin-bottom: 18px;
+      line-height: 1.5;
+    }
+
+    .header-row {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 4px;
+    }
+
+    .header-col {
+      flex: 1;
+    }
+
+    .label {
+      font-size: 11px;
+      color: #6b7280;
+    }
+
+    .value {
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .divider {
+      height: 1px;
+      background: #e5e7eb;
+      margin: 16px 0;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 4px;
+    }
+
+    thead tr {
+      background: #f3f4f6;
+    }
+
+    th, td {
+      border: 1px solid #e5e7eb;
+      padding: 6px 8px;
+      vertical-align: top;
+    }
+
+    th {
+      font-weight: 600;
+      font-size: 11px;
+      text-align: left;
+    }
+
+    td {
+      font-size: 11px;
+    }
+
+    .mt-8  { margin-top: 8px; }
+
+    .comment-box {
+      margin-top: 8px;
+      padding: 8px 10px;
+      border-radius: 6px;
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+      white-space: pre-wrap;
+    }
+
+    .footer {
+      margin-top: 40px;
+      display: flex;
+      justify-content: space-between;
+      gap: 32px;
+      font-size: 12px;
+    }
+
+    .sign-col {
+      flex: 1;
+    }
+
+    .sign-label {
+      margin-bottom: 32px;
+    }
+
+    .sign-line {
+      border-bottom: 1px solid #0f172a;
+      height: 1px;
+      margin-top: 4px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Заголовок -->
+  <div class="title">Заявка ${reqNo}</div>
+  <div class="subtitle">
+    Сформировано: ${createdAtRu || "—"}
+  </div>
+
+  <!-- Шапка БЕЗ квадратиков: просто текстовые строки -->
+  <div class="header-block">
+    <div class="header-row">
+      <div class="header-col">
+        <div class="label">Объект</div>
+        <div class="value">${objectName || "—"}</div>
+      </div>
+      <div class="header-col">
+        <div class="label">Этаж / уровень</div>
+        <div class="value">${levelName || "—"}</div>
+      </div>
+    </div>
+
+    <div class="header-row">
+      <div class="header-col">
+        <div class="label">Зона / участок</div>
+        <div class="value">${zoneName || "—"}</div>
+      </div>
+      <div class="header-col">
+        <div class="label">Система / вид работ</div>
+        <div class="value">${systemName || "—"}</div>
+      </div>
+    </div>
+
+    <div class="header-row">
+      <div class="header-col">
+        <div class="label">ФИО прораба</div>
+        <div class="value">${foreman || "—"}</div>
+      </div>
+      <div class="header-col">
+        <div class="label">Нужно к</div>
+        <div class="value">${needByRu || "—"}</div>
+      </div>
+    </div>
+
+    <div class="header-row">
+      <div class="header-col">
+        <div class="label">Статус заявки</div>
+        <div class="value">${status || "—"}</div>
+      </div>
+      <div class="header-col">
+        <div class="label">ID заявки</div>
+        <div class="value">${safe(details.id)}</div>
+      </div>
+    </div>
+
+    ${
+      comment
+        ? `
+    <div class="mt-8">
+      <div class="label">Комментарий к заявке</div>
+      <div class="comment-box">${comment}</div>
+    </div>`
+        : ""
+    }
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- Таблица позиций -->
+  <div class="label">Позиции заявки</div>
+  <table>
+    <thead>
+      <tr>
+        <th style="width: 32px;">№</th>
+        <th>Позиция</th>
+        <th style="width: 70px;">Ед. изм.</th>
+        <th style="width: 70px;">Кол-во</th>
+        <th style="width: 90px;">Применение</th>
+        <th style="width: 90px;">Статус позиции</th>
+        <th>Примечание</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${rowsHtml || `<tr><td colspan="7">Позиции отсутствуют</td></tr>`}
+    </tbody>
+  </table>
+
+  <!-- Подписи -->
+  <div class="footer">
+    <div class="sign-col">
+      <div class="sign-label">Прораб</div>
+      <div class="sign-line"></div>
+      <div class="label">${foreman || "&nbsp;"}</div>
+    </div>
+    <div class="sign-col">
+      <div class="sign-label">Директор</div>
+      <div class="sign-line"></div>
+      <div class="label">&nbsp;</div>
+    </div>
+  </div>
+
+</body>
+</html>
+  `;
+}
+// Делает blob:URL для веба, чтобы foreman.tsx мог открыть window.open(url)
+export async function exportRequestPdf(requestId: string): Promise<string | null> {
+  const id = norm(requestId);
+  if (!id) throw new Error("Не указан идентификатор заявки");
+
+  const details = await fetchRequestDetails(id);
+  if (!details) {
+    throw new Error("Заявка не найдена");
+  }
+
+  const items = await listRequestItems(id);
+  const html = buildRequestPdfHtml(details, items);
+
+  // web: blob: URL (как у тебя на скрине)
+  if (typeof window !== "undefined" && typeof Blob !== "undefined" && typeof URL !== "undefined") {
+    const blob = new Blob([html], { type: "text/html;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    return url;
+  }
+
+  // на native пока просто вернём html (там у тебя и так Alert если url нет)
+  return html;
 }
 
 
@@ -958,6 +1292,7 @@ export type CreateProposalsResult = {
   }>;
 };
 
+
 export async function createProposalsBySupplier(
   buckets: ProposalBucketInput[],
   opts: CreateProposalsOptions = {}
@@ -1085,22 +1420,6 @@ export async function createProposalsBySupplier(
   return { proposals };
 }
 
-export async function listDirectorProposalsPending() {
-  try {
-    const r = await supabase.rpc('list_proposals_pending');
-    if (!(r as any).error && (r as any).data) return (r as any).data as any[];
-  } catch {}
-  for (const src of ['v_proposals','proposals']) {
-    try {
-      const q = await supabase.from(src)
-        .select('id, submitted_at, status, sent_to_accountant_at')
-        .eq('status','На утверждении')
-        .order('submitted_at',{ascending:false});
-      if (!q.error && q.data) return (q.data as any[]);
-    } catch {}
-  }
-  return [];
-}
 
 export async function rikQuickSearch(q: string, limit = 60, apps?: string[]) {
   const rows = await searchCatalogItems(q, limit, apps);

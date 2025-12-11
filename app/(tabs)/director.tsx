@@ -2,13 +2,14 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   View, Text, FlatList, Pressable, Alert, ActivityIndicator,
-  RefreshControl, Platform, StyleSheet
+  RefreshControl, Platform, StyleSheet, TextInput
 } from 'react-native';
+import * as XLSX from 'xlsx';
 import {
   listDirectorProposalsPending, proposalItems,
   listDirectorInbox as fetchDirectorInbox, type DirectorInboxRow,
   RIK_API,
-  buildRequestPdfHtml, exportRequestPdf,
+  exportRequestPdf,
   resolveProposalPrettyTitle, // красивый заголовок
   directorReturnToBuyer,
 } from '../../src/lib/catalog_api';
@@ -74,6 +75,9 @@ export default function DirectorScreen() {
   const [loadingRows, setLoadingRows] = useState(false);
   const [actingId, setActingId] = useState<string | null>(null);
   const [actingAll, setActingAll] = useState<number | string | null>(null);
+  // Поиск и фильтр по заявкам
+  const [search, setSearch] = useState<string>('');
+  const [onlyCurrentReq, setOnlyCurrentReq] = useState<boolean>(false);
 
   // анти-мигание
   const didInit = useRef(false);
@@ -258,37 +262,110 @@ export default function DirectorScreen() {
       .subscribe();
     return () => { try { supabase.removeChannel(ch); } catch {} };
   }, []);
+    // Экспорт заявки в настоящий XLSX (без предупреждения Excel)
+const exportRequestExcel = useCallback((g: Group) => {
+  const rows = g.items;
+  if (!rows.length) {
+    Alert.alert('Экспорт', 'Нет позиций для выгрузки.');
+    return;
+  }
+
+  const safe = (v: any) =>
+    v === null || v === undefined ? '' : String(v).replace(/[\r\n]+/g, ' ').trim();
+
+  const title = labelForRequest(g.request_id);
+  const sheetName =
+    title.replace(/[^\wА-Яа-я0-9]/g, '_').slice(0, 31) || 'Заявка';
+
+  // Данные для Excel: первая строка — заголовки
+  const data: any[][] = [];
+  data.push(['№', 'Наименование', 'Кол-во', 'Ед. изм.', 'Применение', 'Примечание']);
+
+  rows.forEach((it, idx) => {
+    data.push([
+      idx + 1,
+      safe(it.name_human),
+      safe(it.qty),
+      safe(it.uom),
+      safe(it.app_code),
+      safe(it.note),
+    ]);
+  });
+
+  try {
+    // 1) создаём книгу и лист
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.aoa_to_sheet(data);
+
+    // чуть-чуть красоты: ширина колонок
+    ws['!cols'] = [
+      { wch: 4 },   // №
+      { wch: 40 },  // Наименование
+      { wch: 10 },  // Кол-во
+      { wch: 10 },  // Ед. изм.
+      { wch: 18 },  // Применение
+      { wch: 60 },  // Примечание
+    ];
+
+    XLSX.utils.book_append_sheet(wb, ws, sheetName);
+
+    // 2) превращаем в бинарный массив
+    const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+
+    if (Platform.OS === 'web') {
+      const blob = new Blob([wbout], {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `request-${title}.xlsx`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } else {
+      Alert.alert(
+        'Экспорт',
+        'XLSX экспорт сейчас реализован только для Web-версии.',
+      );
+    }
+  } catch (e: any) {
+    console.error('[exportRequestExcel]', e?.message ?? e);
+    Alert.alert('Ошибка', e?.message ?? 'Не удалось сформировать Excel-файл');
+  }
+}, [labelForRequest]);
 
   /* ---------- PDF заявки (прораб) с безопасным window.open ---------- */
-  const openRequestPdf = useCallback(async (g: Group | { request_id: string | number; items: any[] }) => {
-    try {
-      const rid = g?.request_id;
-      if (!rid) throw new Error('request_id пустой');
+    const openRequestPdf = useCallback(
+    async (g: Group | { request_id: string | number; items: any[] }) => {
+      try {
+        const rid = g?.request_id;
+        if (!rid) throw new Error('request_id пустой');
 
-      if (Platform.OS === 'web') {
-        const w = window.open('about:blank', '_blank'); // открыть сразу — не блокируется
-        try {
-          const html = await buildRequestPdfHtml(rid as any);
-          if (w) {
-            try { w.document.open(); w.document.write(html); w.document.close(); w.focus(); }
-            catch {
-              const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
-              const url = URL.createObjectURL(blob);
-              w.location.href = url;
+        const idStr = String(rid);
+
+        const url = await exportRequestPdf(idStr);
+
+        if (Platform.OS === 'web') {
+          if (url) {
+            const win = window.open(url, '_blank', 'noopener,noreferrer');
+            if (!win) {
+              Alert.alert('PDF', 'Не удалось открыть PDF. Разрешите всплывающие окна.');
             }
+          } else {
+            Alert.alert('PDF', 'Не удалось сформировать PDF-документ');
           }
-        } catch (e) {
-          try { if (w) w.close(); } catch {}
-          throw e;
+        } else if (!url) {
+          Alert.alert('PDF', 'Не удалось сформировать PDF-документ');
         }
-      } else {
-        await exportRequestPdf(rid as any);
+      } catch (e: any) {
+        console.error('[openRequestPdf]:', e?.message ?? e);
+        Alert.alert('Ошибка', e?.message ?? 'Не удалось сформировать PDF');
       }
-    } catch (e) {
-      console.error('[openRequestPdf]:', (e as any)?.message ?? e);
-      Alert.alert('Ошибка', (e as any)?.message ?? 'Не удалось сформировать PDF');
-    }
-  }, []);
+    },
+    [],
+  );
 
   // Найти связанную закупку по proposal_id (для дальнейшего purchase_approve)
   const findPurchaseIdByProposal = useCallback(async (proposalId: string): Promise<string | null> => {
@@ -310,15 +387,35 @@ export default function DirectorScreen() {
   }, []);
 
   /* ---------- groups ---------- */
-  const groups: Group[] = useMemo(() => {
+    const groups: Group[] = useMemo(() => {
     const map = new Map<number | string, PendingRow[]>();
     for (const r of rows) {
       const k = String(r.request_id ?? '');
       if (!map.has(k)) map.set(k, []);
       map.get(k)!.push(r);
     }
-    return Array.from(map.entries()).map(([request_id, items]) => ({ request_id, items }));
-  }, [rows]);
+    let list = Array.from(map.entries()).map(([request_id, items]) => ({ request_id, items }));
+
+    const q = search.trim().toLowerCase();
+    if (q) {
+      list = list.filter(g => {
+        const label = labelForRequest(g.request_id).toLowerCase();
+        const hasInItems = g.items.some(it =>
+          (it.name_human || '').toLowerCase().includes(q) ||
+          (it.note || '').toLowerCase().includes(q)
+        );
+        return label.includes(q) || hasInItems;
+      });
+    }
+
+    if (onlyCurrentReq && list.length > 0) {
+      // просто оставляем самую первую заявку (частый кейс: работать по одной)
+      return [list[0]];
+    }
+
+    return list;
+  }, [rows, search, onlyCurrentReq, labelForRequest]);
+
 
   // (оставляем уникализацию «шапок» для совместимости, но НЕ используем в рендере)
   const directorReqsUnique = useMemo(() => {
@@ -637,16 +734,25 @@ export default function DirectorScreen() {
         <Text style={s.title}>Контроль заявок</Text>
         <View style={s.tabs}>
           {(['foreman','buyer'] as Tab[]).map((t) => {
-            const active = tab === t;
-            return (
-              <Pressable key={t} onPress={() => setTab(t)}
-                style={[s.tab, { backgroundColor: active ? UI.tabActiveBg : UI.tabInactiveBg }]}> 
-                <Text style={{ color: active ? UI.tabActiveText : UI.tabInactiveText, fontWeight: '700' }}>
-                  {t === 'foreman' ? 'Заявки прорабов' : 'Предложения снабженцев'}
-                </Text>
-              </Pressable>
-            );
-          })}
+  const active = tab === t;
+  return (
+    <Pressable
+      key={t}
+      onPress={() => setTab(t)}
+      style={[s.tab, active && s.tabActive]}
+    >
+      <Text
+        style={{
+          color: '#0F172A', // всегда чёрный текст
+          fontWeight: '700',
+        }}
+      >
+        {t === 'foreman' ? 'Заявки прорабов' : 'Предложения снабженцев'}
+      </Text>
+    </Pressable>
+  );
+})}
+
           <Pressable
             onPress={async () => {
               await ensureSignedIn();
@@ -662,12 +768,40 @@ export default function DirectorScreen() {
       {tab === 'foreman' ? (
         <>
           {/* ===== ЕДИНЫЙ БЛОК ПРОРАБА (БЕЗ нижнего блока) ===== */}
-          <View style={s.sectionHeader}>
+                    <View style={s.sectionHeader}>
             <Text style={s.sectionTitle}>Ожидают утверждения (прорабы)</Text>
             <Text style={s.sectionMeta}>
               {loadingRows ? '…' : `${rows.length} поз.`}
             </Text>
           </View>
+
+          {/* Поиск + фильтр */}
+          <View style={s.filterBar}>
+            <View style={{ flex: 1 }}>
+              <Text style={s.filterLabel}>Поиск по заявкам и позициям</Text>
+              <View style={s.searchBox}>
+                <Text style={s.searchIcon}>🔍</Text>
+                <TextInput
+                  value={search}
+                  onChangeText={setSearch}
+                  placeholder="REQ-0234/2025, бетон, отделка…"
+                  style={s.searchInput}
+                />
+              </View>
+            </View>
+            <Pressable
+              onPress={() => setOnlyCurrentReq(v => !v)}
+              style={[
+                s.filterToggle,
+                onlyCurrentReq && s.filterToggleActive,
+              ]}
+            >
+              <Text style={s.filterToggleText}>
+                {onlyCurrentReq ? 'Только текущая заявка' : 'Все заявки'}
+              </Text>
+            </Pressable>
+          </View>
+
 
           <FlatList
             data={groups}
@@ -678,81 +812,129 @@ export default function DirectorScreen() {
                 <View style={s.groupHeader}>
                   <Text style={s.groupTitle}>Заявка {labelForRequest(item.request_id)}</Text>
                   <Text style={s.groupMeta}>{item.items.length} позиций</Text>
-                  <View style={{ flexDirection: 'row', gap: 8, marginLeft: 'auto' }}>
-                    {/* PDF заявки (прораб) — безопасный onPress */}
-                    <Pressable onPress={() => openRequestPdf(item)} style={[s.pillBtn, { backgroundColor: UI.btnNeutral }]}>
-                      <Text style={s.pillBtnText}>PDF</Text>
-                    </Pressable>
+      <View style={{ flexDirection: 'row', gap: 8, marginLeft: 'auto' }}>
+  {/* PDF заявки (прораб) */}
+  <Pressable
+    onPress={() => openRequestPdf(item)}
+    style={[s.pillBtn, { backgroundColor: UI.btnNeutral }]}
+  >
+    <Text style={s.pillBtnText}>PDF</Text>
+  </Pressable>
 
-                    <Pressable
-                      onPress={async () => {
-                        setActingAll(item.request_id);
-                        try {
-                          const reqId = toFilterId(item.request_id);
-                          if (reqId == null) throw new Error('request_id пустой');
-                          const { error } = await supabase.rpc('director_decide_request', {
-                            p_request_id: String(reqId),
-                            p_decision: 'approve',
-                          });
-                          if (error) throw error;
-                          Alert.alert('Отправлено', `Заявка ${labelForRequest(item.request_id)} отправлена снабженцу`);
-                          await fetchRows(); await fetchDirectorReqs(); await fetchProps();
-                        } catch (e) {
-                          Alert.alert('Ошибка', (e as any)?.message ?? 'Не удалось отправить снабженцу');
-                        } finally { setActingAll(null); }
-                      }}
-                      disabled={actingAll === item.request_id}
-                      style={[s.pillBtn, { backgroundColor: UI.btnApprove, opacity: actingAll === item.request_id ? 0.6 : 1 }]}
-                    >
-                      <Text style={s.pillBtnText}>Отправить снабженцу</Text>
-                    </Pressable>
+  {/* Excel */}
+  <Pressable
+    onPress={() => exportRequestExcel(item)}
+    style={[s.pillBtn, { backgroundColor: UI.btnNeutral }]}
+  >
+    <Text style={s.pillBtnText}>Excel</Text>
+  </Pressable>
 
-                    <Pressable
-                      onPress={async () => {
-                        setActingAll(item.request_id);
-                        try {
-                          const reqId = toFilterId(item.request_id);
-                          if (reqId == null) throw new Error('request_id пустой');
-                          const { error } = await supabase.rpc('approve_request_all', { p_request_id: String(reqId) });
-                          if (error) {
-                            console.warn('[approve_request_all] rpc error:', error.message, '> fallback UPDATE');
-                            const upd = await supabase.from('request_items').update({ status: 'Утверждено' }).eq('request_id', reqId as any);
-                            if (upd.error) throw upd.error;
-                          }
-                          setRows(prev => prev.filter(r => r.request_id !== item.request_id));
-                        } catch (e) {
-                          Alert.alert('Ошибка', (e as any)?.message ?? 'Не удалось утвердить все позиции');
-                        } finally { setActingAll(null); }
-                      }}
-                      disabled={actingAll === item.request_id}
-                      style={[s.pillBtn, { backgroundColor: UI.btnApprove, opacity: actingAll === item.request_id ? 0.6 : 1 }]}
-                    >
-                      <Text style={s.pillBtnText}>Утвердить все</Text>
-                    </Pressable>
+    {/* УТВЕРДИТЬ ВСЕ (директор → к снабженцу), НЕ трогаем уже Отклонено */}
+<Pressable
+  onPress={async () => {
+    setActingAll(item.request_id);
+    try {
+      const reqId = toFilterId(item.request_id);
+      if (reqId == null) throw new Error('request_id пустой');
+      const reqIdStr = String(reqId);
 
-                    <Pressable
-                      onPress={async () => {
-                        setActingAll(item.request_id);
-                        try {
-                          const reqId = toFilterId(item.request_id);
-                          if (reqId == null) throw new Error('request_id пустой');
-                          const { error } = await supabase.rpc('reject_request_all', { p_request_id: String(reqId), p_reason: null });
-                          if (error) {
-                            console.warn('[reject_request_all] rpc error:', error.message, '> fallback UPDATE');
-                            const upd = await supabase.from('request_items').update({ status: 'Отклонено' }).eq('request_id', reqId as any);
-                            if (upd.error) throw upd.error;
-                          }
-                          setRows(prev => prev.filter(r => r.request_id !== item.request_id));
-                        } catch (e) {
-                          Alert.alert('Ошибка', (e as any)?.message ?? 'Не удалось отклонить все позиции');
-                        } finally { setActingAll(null); }
-                      }}
-                      disabled={actingAll === item.request_id}
-                      style={[s.pillBtn, { backgroundColor: UI.btnReject, opacity: actingAll === item.request_id ? 0.6 : 1 }]}
-                    >
-                      <Text style={s.pillBtnText}>Отклонить все</Text>
-                    </Pressable>
-                  </View>
+      // 1) Меняем статус только тем строкам, которые НЕ "Отклонено"
+      const updItems = await supabase
+        .from('request_items')
+        .update({ status: 'К закупке' })
+        .eq('request_id', reqIdStr)
+        .neq('status', 'Отклонено');   // ← ВАЖНО: не трогаем уже отклонённые
+
+      if (updItems.error) throw updItems.error;
+
+      // 2) Заявке в целом ставим "К закупке"
+      const updReq = await supabase
+        .from('requests')
+        .update({ status: 'К закупке' })
+        .eq('id', reqIdStr);
+
+      if (updReq.error) throw updReq.error;
+
+      // 3) Убираем заявку из очереди директора
+      setRows(prev => prev.filter(r => r.request_id !== item.request_id));
+
+      // 4) Обновляем служебные списки
+      await fetchDirectorReqs();
+      await fetchProps();
+
+      Alert.alert(
+        'Утверждено',
+        `Заявка ${labelForRequest(item.request_id)} утверждена и отправлена снабженцу`,
+      );
+    } catch (e: any) {
+      Alert.alert(
+        'Ошибка',
+        e?.message ?? 'Не удалось утвердить и отправить заявку',
+      );
+    } finally {
+      setActingAll(null);
+    }
+  }}
+  disabled={actingAll === item.request_id}
+  style={[
+    s.pillBtn,
+    {
+      backgroundColor: UI.btnApprove,
+      opacity: actingAll === item.request_id ? 0.6 : 1,
+    },
+  ]}
+>
+  <Text style={s.pillBtnText}>Утвердить все</Text>
+</Pressable>
+
+
+  {/* Отклонить всё — как было */}
+  <Pressable
+    onPress={async () => {
+      setActingAll(item.request_id);
+      try {
+        const reqId = toFilterId(item.request_id);
+        if (reqId == null) throw new Error('request_id пустой');
+        const { error } = await supabase.rpc('reject_request_all', {
+          p_request_id: String(reqId),
+          p_reason: null,
+        });
+        if (error) {
+          console.warn(
+            '[reject_request_all] rpc error:',
+            error.message,
+            '> fallback UPDATE',
+          );
+          const upd = await supabase
+            .from('request_items')
+            .update({ status: 'Отклонено' })
+            .eq('request_id', reqId as any);
+          if (upd.error) throw upd.error;
+        }
+        setRows(prev => prev.filter(r => r.request_id !== item.request_id));
+      } catch (e: any) {
+        Alert.alert(
+          'Ошибка',
+          e?.message ?? 'Не удалось отклонить все позиции',
+        );
+      } finally {
+        setActingAll(null);
+      }
+    }}
+    disabled={actingAll === item.request_id}
+    style={[
+      s.pillBtn,
+      {
+        backgroundColor: UI.btnReject,
+        opacity: actingAll === item.request_id ? 0.6 : 1,
+      },
+    ]}
+  >
+    <Text style={s.pillBtnText}>Отклонить все</Text>
+  </Pressable>
+</View>
+
+
                 </View>
 
                 <View style={s.tableWrapper}>
@@ -762,88 +944,77 @@ export default function DirectorScreen() {
                       x.request_item_id ? `ri:${x.request_item_id}` : `req:${String(item.request_id)}:row:${idx}`}
                     removeClippedSubviews={false}
                     ListHeaderComponent={() => (
-                      <View style={s.tableHeader}>
-                        <View style={[s.tableRow, s.tableHeaderRow]}>
-                          <Text style={[s.tableHeaderCell, s.cellName]}>Наименование</Text>
-                          <Text style={[s.tableHeaderCell, s.cellQty]}>Количество</Text>
-                          <Text style={[s.tableHeaderCell, s.cellCodes]}>Коды</Text>
-                          <Text style={[s.tableHeaderCell, s.cellActions]}>Действия</Text>
-                        </View>
-                      </View>
-                    )}
+  <View style={s.tableHeader}>
+    <View style={[s.tableRow, s.tableHeaderRow]}>
+      <Text style={[s.tableHeaderCell, s.cellName]}>Наименование</Text>
+      <Text style={[s.tableHeaderCell, s.cellQty]}>Количество</Text>
+      <Text style={[s.tableHeaderCell, s.cellActions]}>Действия</Text>
+    </View>
+  </View>
+)}
                     ItemSeparatorComponent={() => <View style={s.rowDivider} />}
                     renderItem={({ item: it }) => (
                       <View style={s.tableRow}>
-                        <View style={[s.tableCell, s.cellName]}>
-                          <Text style={s.cardTitle}>{it.name_human}</Text>
-                          <Text style={s.cardMeta}>
-                            {`Заявка ${labelForRequest(it.request_id ?? item.request_id)}`}
-                          </Text>
-                          {it.note ? <Text style={s.cardMeta}>{it.note}</Text> : null}
-                        </View>
-                        <View style={[s.tableCell, s.cellQty]}>
-                          <Text style={s.cellValue}>{`${it.qty} ${it.uom || ''}`.trim()}</Text>
-                        </View>
-                        <View style={[s.tableCell, s.cellCodes]}>
-                          {it.rik_code ? (
-                            <Text style={s.cardMeta}>РИК: {it.rik_code}</Text>
-                          ) : null}
-                          {it.app_code ? (
-                            <Text style={s.cardMeta}>APP: {it.app_code}</Text>
-                          ) : null}
-                        </View>
-                        <View style={[s.tableCell, s.cellActions]}>
-                          <Pressable
-                            onPress={async () => {
-                              if (!it.request_item_id) return;
-                              setActingId(it.request_item_id);
-                              try {
-                                const { error } = await supabase.rpc('approve_request_item', { p_request_item_id: it.request_item_id });
-                                if (error) {
-                                  console.warn('[approve_request_item] rpc error:', error.message, '> fallback UPDATE');
-                                  const upd = await supabase.from('request_items').update({ status: 'Утверждено' }).eq('id', it.request_item_id);
-                                  if (upd.error) throw upd.error;
-                                }
-                                setRows(prev => it.request_item_id ? prev.filter(r => r.request_item_id !== it.request_item_id) : prev);
-                              } catch (e) {
-                                Alert.alert('Ошибка', (e as any)?.message ?? 'Не удалось утвердить позицию');
-                              } finally { setActingId(null); }
-                            }}
-                            disabled={!it.request_item_id || actingId === it.request_item_id}
-                            style={[
-                              s.actionBtn,
-                              { backgroundColor: UI.btnApprove, opacity: (!it.request_item_id || actingId === it.request_item_id) ? 0.6 : 1 },
-                            ]}
-                          >
-                            <Text style={s.actionBtnText}>Утвердить</Text>
-                          </Pressable>
+  <View style={[s.tableCell, s.cellName]}>
+    <Text style={s.cardTitle}>{it.name_human}</Text>
+    <Text style={s.cardMeta}>
+      {`Заявка ${labelForRequest(it.request_id ?? item.request_id)}`}
+    </Text>
+    {it.note ? <Text style={s.cardMeta}>{it.note}</Text> : null}
+  </View>
 
-                          <Pressable
-                            onPress={async () => {
-                              if (!it.request_item_id) return;
-                              setActingId(it.request_item_id);
-                              try {
-                                const { error } = await supabase.rpc('reject_request_item', { p_request_item_id: it.request_item_id, p_reason: null });
-                                if (error) {
-                                  console.warn('[reject_request_item] rpc error:', error.message, '> fallback UPDATE');
-                                  const upd = await supabase.from('request_items').update({ status: 'Отклонено' }).eq('id', it.request_item_id);
-                                  if (upd.error) throw upd.error;
-                                }
-                                setRows(prev => it.request_item_id ? prev.filter(r => r.request_item_id !== it.request_item_id) : prev);
-                              } catch (e) {
-                                Alert.alert('Ошибка', (e as any)?.message ?? 'Не удалось отклонить позицию');
-                              } finally { setActingId(null); }
-                            }}
-                            disabled={!it.request_item_id || actingId === it.request_item_id}
-                            style={[
-                              s.actionBtn,
-                              { backgroundColor: UI.btnReject, opacity: (!it.request_item_id || actingId === it.request_item_id) ? 0.6 : 1 },
-                            ]}
-                          >
-                            <Text style={s.actionBtnText}>Отклонить</Text>
-                          </Pressable>
-                        </View>
-                      </View>
+  <View style={[s.tableCell, s.cellQty]}>
+    <Text style={s.cellValue}>{`${it.qty} ${it.uom || ''}`.trim()}</Text>
+  </View>
+
+    <View style={[s.tableCell, s.cellActions]}>
+   <Pressable
+  onPress={async () => {
+    if (!it.request_item_id) return;
+    setActingId(it.request_item_id);
+
+    try {
+      // вызываем ровно ту функцию, что в базе:
+      // reject_request_item(request_item_id uuid, reason text)
+      const { error } = await supabase.rpc('reject_request_item', {
+  request_item_id: it.request_item_id,
+  reason: null,
+});
+
+
+      if (error) {
+        throw error;
+      }
+
+      // убираем позицию из очереди директора
+      setRows(prev =>
+        it.request_item_id
+          ? prev.filter(r => r.request_item_id !== it.request_item_id)
+          : prev,
+      );
+    } catch (e: any) {
+      Alert.alert('Ошибка', e?.message ?? 'Не удалось отклонить позицию');
+    } finally {
+      setActingId(null);
+    }
+  }}
+  disabled={!it.request_item_id || actingId === it.request_item_id}
+  style={[
+    s.actionBtn,
+    {
+      backgroundColor: UI.btnReject,
+      opacity:
+        !it.request_item_id || actingId === it.request_item_id ? 0.6 : 1,
+    },
+  ]}
+>
+  <Text style={s.actionBtnText}>Отклонить</Text>
+</Pressable>
+
+
+  </View>
+
+</View>
                     )}
                   />
                 </View>
@@ -903,8 +1074,18 @@ const s = StyleSheet.create({
   },
   title: { fontSize: 24, fontWeight: '800', color: UI.text, marginBottom: 8 },
   tabs: { flexDirection: 'row', gap: 8, alignItems: 'center' },
-  tab: { paddingVertical: 8, paddingHorizontal: 12, borderRadius: 999 },
-  refreshBtn: { marginLeft: 'auto', paddingVertical: 8, paddingHorizontal: 12, borderRadius: 10, backgroundColor: '#111827' },
+  tab: {
+  paddingVertical: 8,
+  paddingHorizontal: 14,
+  borderRadius: 999,
+  borderWidth: 1,
+  borderColor: '#E2E8F0', // серая рамка
+  backgroundColor: '#FFFFFF',
+},
+tabActive: {
+  borderColor: '#0F172A',   // ЧЁРНЫЙ ОБОДОК
+},
+
 
   sectionHeader: {
     paddingHorizontal: 16,
@@ -961,8 +1142,7 @@ const s = StyleSheet.create({
   tableCell: { flexDirection: 'column', gap: 4, justifyContent: 'center' },
   cellName: { flex: 3, minWidth: 120 },
   cellQty: { flex: 1, minWidth: 90 },
-  cellCodes: { flex: 1.2, minWidth: 110 },
-  cellActions: { flex: 1.4, minWidth: 140 },
+    cellActions: { flex: 1.4, minWidth: 140 },
   cellValue: { fontWeight: '700', color: UI.text },
   rowDivider: { height: 1, backgroundColor: UI.border, marginHorizontal: 12 },
 
@@ -977,10 +1157,62 @@ const s = StyleSheet.create({
   cardTitle: { fontWeight: '700', color: UI.text, fontSize: 16 },
   cardMeta: { color: UI.sub, marginTop: 0, fontSize: 13 },
   actionBtn: { paddingVertical: 10, paddingHorizontal: 12, borderRadius: 10, marginBottom: 6 },
-  actionBtnText: { color: '#fff', fontWeight: '700' },
+   actionBtnText: { color: UI.text, fontWeight: '700' },
 
   pillBtn: { paddingVertical: 6, paddingHorizontal: 12, borderRadius: 999 },
-  pillBtnText: { color: '#fff', fontWeight: '700' },
+  pillBtnText: { color: UI.text, fontWeight: '700' },
+  // ===== Поиск и фильтр =====
+  filterBar: {
+    paddingHorizontal: 16,
+    paddingBottom: 8,
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    gap: 12,
+  },
+  filterLabel: {
+    fontSize: 12,
+    color: UI.sub,
+    marginBottom: 4,
+  },
+  searchBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: UI.border,
+    borderRadius: 999,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    backgroundColor: '#FFFFFF',
+  },
+  searchIcon: {
+    fontSize: 14,
+    marginRight: 6,
+    color: UI.sub,
+  },
+  searchInput: {
+    flex: 1,
+    paddingVertical: 0,
+    paddingHorizontal: 0,
+    fontSize: 14,
+    color: UI.text,
+  },
+  filterToggle: {
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: UI.border,
+    backgroundColor: '#FFFFFF',
+  },
+  filterToggleActive: {
+    backgroundColor: '#E5E7EB',
+  },
+  filterToggleText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: UI.text,
+  },
+
 });
 
 

@@ -744,20 +744,35 @@ export async function requestSubmit(requestId: number | string): Promise<Request
 
 // ============================== Buyer: inbox & proposals ==============================
 export async function listBuyerInbox(): Promise<BuyerInboxRow[]> {
+  const ALLOWED = new Set(['Утверждено', 'К закупке']);
+
   try {
     const { data, error } = await client.rpc('list_buyer_inbox');
-    if (!error) return (data ?? []) as BuyerInboxRow[];
-  } catch {}
+    if (!error && Array.isArray(data)) {
+      // 🔒 ЖЁСТКИЙ фильтр по статусу, даже если RPC в базе отдаёт всё подряд
+      return (data as BuyerInboxRow[]).filter(
+        (row) => ALLOWED.has(String(row.status || '').trim())
+      );
+    }
+  } catch (e) {
+    console.warn('[listBuyerInbox] rpc list_buyer_inbox:', parseErr(e));
+  }
+
+  // Fallback — как у тебя и был, уже с фильтром
   const fb = await client
     .from('request_items')
-    .select('request_id,id as request_item_id,name_human,qty,uom,app_code,status')
-    .in('status', ['Утверждено', 'К закупке'])
+    .select(
+      'request_id,id as request_item_id,name_human,qty,uom,app_code,status'
+    )
+    .in('status', Array.from(ALLOWED))
     .order('request_id', { ascending: true })
     .limit(1000);
+
   if (fb.error) {
     console.warn('[listBuyerInbox/fallback]', parseErr(fb.error));
     return [];
   }
+
   return (fb.data ?? []) as any;
 }
 
