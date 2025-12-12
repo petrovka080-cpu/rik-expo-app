@@ -2988,15 +2988,10 @@ return {
       { backgroundColor: hasRejected ? '#FEE2E2' : info.bg },
     ]}
   >
-    <Text
-      style={{
-        color: hasRejected ? '#B91C1C' : info.fg,
-        fontWeight: '700',
-      }}
-    >
-      {info.label}
-      {hasRejected ? ' · ОТКЛОНЁННЫЕ ЕСТЬ' : ''}
-    </Text>
+    <Text style={{ color: info.fg, fontWeight: '700' }}>
+  {info.label}
+</Text>
+
   </View>
 
   <Pressable

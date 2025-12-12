@@ -1,3 +1,5 @@
+
+
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Modal,
@@ -98,7 +100,10 @@ export default function CalcModal({ visible, onClose, workType, onAddToRequest }
     return map;
   }, [fields]);
 
-  const hasMultiplierField = useMemo(() => fields.some((f) => f.key === 'multiplier'), [fields]);
+const hasMultiplierField = useMemo(
+  () => fields.some((f) => f.key === 'multiplier' || f.key === 'loss'),
+  [fields],
+);
 
   useEffect(() => {
     if (!visible) {
@@ -272,6 +277,10 @@ export default function CalcModal({ visible, onClose, workType, onAddToRequest }
 
   const calc = async () => {
     if (!workType?.code) return;
+if (!fields.length) {
+  Alert.alert('Нет полей', 'Для этого вида работ не настроены поля ввода.');
+  return;
+}
 
     const parseResult = runParse(
       fields.map((f) => f.key),
@@ -300,26 +309,46 @@ export default function CalcModal({ visible, onClose, workType, onAddToRequest }
         ? (directMultiplier as number)
         : Math.max(0, 1 + (lossValue ?? 0) / 100);
 
-      const safe = (value: unknown, fallback: number) =>
-        typeof value === 'number' && Number.isFinite(value) ? (value as number) : fallback;
+      // ===== ИДЕАЛЬНЫЙ ВАРИАНТ: rpc_calc_work_kit (универсальный) =====
+// функция в БД читает p_payload->>'ключ', поэтому payload должен быть ПЛОСКИЙ
 
-      const rpcArgs: CalcRpcArgs = {
-        p_work_type_code: workType.code,
-        p_area_m2: safe(parsedMeasures.area_m2, 0),
-        p_perimeter_m: safe(parsedMeasures.perimeter_m, 0),
-        p_length_m: safe(parsedMeasures.length_m, 0),
-        p_points: safe(parsedMeasures.points, 0),
-        p_volume_m3: safe(parsedMeasures.volume_m3, 0),
-        p_count: safe(parsedMeasures.count, 1),
-        p_multiplier: safe(effectiveMultiplier, 1),
-      };
+const payload: Record<string, any> = {};
 
-      const { data, error } = await supabase.rpc('rpc_calc_kit_basic', rpcArgs);
-      if (error) {
-        console.error('[CalcModal][rpc_calc_kit_basic]', { rpcArgs, error });
-        throw error;
-      }
-      setRows(Array.isArray(data) ? (data as Row[]) : []);
+// 1) кладём все измерения, которые есть в UI-полях
+for (const f of fields) {
+  const v = (parsedMeasures as any)[f.key];
+  if (typeof v === 'number' && Number.isFinite(v)) {
+    payload[f.key] = v;
+  }
+}
+
+// 2) multiplier/loss
+// В БД multiplier имеет приоритет. Если multiplier не введён — используем loss.
+if (typeof (parsedMeasures as any).multiplier === 'number' && Number.isFinite((parsedMeasures as any).multiplier)) {
+  payload.multiplier = (parsedMeasures as any).multiplier;
+} else {
+  // если поле loss есть в профиле и заполнено — используем его
+  const lossFromField = (parsedMeasures as any).loss;
+  if (typeof lossFromField === 'number' && Number.isFinite(lossFromField)) {
+    payload.loss = lossFromField;
+  } else {
+    // иначе берём из нижнего поля lossPct (которое ты вводишь)
+    payload.loss = Number.isFinite(lossValue) ? lossValue : 0;
+  }
+}
+
+const { data, error } = await supabase.rpc('rpc_calc_work_kit', {
+  p_work_type_code: workType.code,
+  p_payload: payload,
+});
+
+if (error) {
+  console.error('[CalcModal][rpc_calc_work_kit]', { payload, error });
+  throw error;
+}
+
+setRows(Array.isArray(data) ? (data as Row[]) : []);
+
     } catch (e: any) {
       console.error('[CalcModal]', e);
       Alert.alert(

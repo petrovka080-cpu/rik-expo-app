@@ -33,6 +33,7 @@ export {
   batchResolveRequestLabels,
   resolveProposalPrettyTitle,
   buildProposalPdfHtmlPretty,
+  listDirectorProposalsPending,   // ← ДОБАВЬ ЭТУ СТРОКУ
 } from "./rik_api";
 export type { BuyerInboxRow } from "./rik_api";
 
@@ -460,12 +461,17 @@ export async function getRequestHeader(requestId: string): Promise<RequestHeader
     { src: "requests", cols: "id,display_no,status,created_at" },
   ] as const;
 
-  for (const { src, cols } of views) {
-    try {
-      const { data, error } = await supabase.from(src).select(cols).eq("id", id).maybeSingle();
-      if (!error && data) return data as RequestHeader;
-    } catch {}
-  }
+  for (const view of views) {
+  try {
+    const { data, error } = await supabase
+      .from(view.src as any)
+      .select(view.cols)
+      .eq("id", id)
+      .maybeSingle();
+    if (!error && data) return data as RequestHeader;
+  } catch {}
+}
+
   return { id };
 }
 
@@ -1140,83 +1146,104 @@ export async function requestItemUpdateQty(
 
 export async function listForemanRequests(
   foremanName: string,
-  limit = 20,
+  limit = 50,
 ): Promise<ForemanRequestSummary[]> {
   const name = norm(foremanName);
   if (!name) return [];
 
-  const take = clamp(limit, 1, 100);
+  const take = clamp(limit, 1, 200);
 
-  type SourceFetcher = () => Promise<{ data: any[] | null; error: any }>;
-  const sources: Array<{ label: string; run: SourceFetcher }> = [
-    {
-      label: "v_requests_display",
-      run: () =>
-        supabase
-          .from("v_requests_display" as any)
-          .select("*")
-          .eq("foreman_name", name)
-          .order("created_at", { ascending: false })
-          .limit(take),
-    },
-    {
-      label: "requests",
-      run: () =>
-        supabase
-          .from("requests" as any)
-          .select(
-            `id,status,created_at,need_by,display_no,
-             object_type_code,level_code,system_code,zone_code,
-             object:ref_object_types(*),
-             level:ref_levels(*),
-             system:ref_systems(*),
-             zone:ref_zones(*)`,
-          )
-          .eq("foreman_name", name)
-          .neq('status', 'Черновик' as any)
-          .neq('status', 'draft' as any)
-          .order("created_at", { ascending: false })
-          .limit(take),
-    },
-  ];
+  const { data, error } = await supabase
+    .from("requests" as any)
+    .select(
+      `id,status,created_at,need_by,display_no,
+       object_type_code,level_code,system_code,zone_code,
+       object:ref_object_types(*),
+       level:ref_levels(*),
+       system:ref_systems(*),
+       zone:ref_zones(*)`,
+    )
+    .ilike("foreman_name", name)
+    .not("display_no", "is", null)
+    .order("created_at", { ascending: false })
+    .limit(take);
 
-  for (const src of sources) {
-    try {
-      const { data, error } = await src.run();
-      if (error) throw error;
-      if (!Array.isArray(data) || !data.length) continue;
-
-      const mapped = data
-        .map((row) => mapSummaryFromRow(row))
-        .filter((row): row is ForemanRequestSummary => !!row)
-        .filter((row) => {
-          const key = String(row.status ?? "").toLowerCase();
-          return key !== "draft" && key !== "черновик";
-        });
-
-      if (!mapped.length) continue;
-
-      const missing = mapped.filter((row) => !row.display_no).map((row) => row.id);
-      if (missing.length) {
-        const labels = await rpcBatchResolveRequestLabels(missing);
-        return mapped.map((row) => ({
-          ...row,
-          display_no: row.display_no ?? labels[row.id] ?? null,
-        }));
-      }
-
-      return mapped;
-    } catch (e: any) {
-      const msg = String(e?.message ?? "").toLowerCase();
-      if (!msg.includes("permission denied") && !msg.includes("does not exist")) {
-        console.warn(`[catalog_api.listForemanRequests] ${src.label}:`, e?.message ?? e);
-      }
-    }
+  if (error || !Array.isArray(data)) {
+    if (error) console.warn("[listForemanRequests]", error.message);
+    return [];
   }
 
-  return [];
-}
+  // 1) маппим как раньше
+  const mapped = (data as any[])
+    .map((row) => mapSummaryFromRow(row))
+    .filter((row): row is ForemanRequestSummary => !!row);
 
+  const ids = mapped.map((r) => r.id).filter(Boolean);
+  if (!ids.length) return mapped;
+
+  // 2) тянем статусы позиций одной пачкой (нужно и для has_rejected, и для итогового статуса)
+  const { data: itemRows, error: itemErr } = await supabase
+    .from("request_items" as any)
+    .select("request_id,status")
+    .in("request_id", ids as any);
+
+  if (itemErr || !Array.isArray(itemRows)) {
+    return mapped; // не ломаем историю
+  }
+
+  const normSt = (s: any) => String(s ?? "").trim().toLowerCase();
+  const isApproved = (s: string) =>
+    s === "утверждено" || s === "утверждена" || s === "approved" || s === "к закупке";
+  const isRejected = (s: string) =>
+    s === "отклонено" || s === "отклонена" || s === "rejected";
+  const isPending = (s: string) =>
+    s === "на утверждении" || s === "pending";
+
+  const agg = new Map<string, { total: number; ok: number; bad: number; pend: number }>();
+  for (const row of itemRows as any[]) {
+    const rid = String(row.request_id);
+    const st = normSt(row.status);
+    const cur = agg.get(rid) ?? { total: 0, ok: 0, bad: 0, pend: 0 };
+    cur.total += 1;
+    if (isApproved(st)) cur.ok += 1;
+    else if (isRejected(st)) cur.bad += 1;
+    else if (isPending(st)) cur.pend += 1;
+    agg.set(rid, cur);
+  }
+
+  // 3) итоговая сборка для UI истории
+  return mapped.map((req) => {
+    const a = agg.get(String(req.id));
+    if (!a || a.total === 0) return req;
+
+    const hasRejected = a.bad > 0;
+
+    // все отклонены
+    if (a.bad === a.total) {
+      return { ...req, status: "Отклонена", has_rejected: true };
+    }
+
+    // все утверждены
+    if (a.ok === a.total) {
+      return { ...req, status: "К закупке", has_rejected: false };
+    }
+
+    // частично: есть и ok, и отклонено
+    if (a.ok > 0 && a.bad > 0) {
+      return { ...req, status: "Частично утверждена", has_rejected: true };
+    }
+
+    // есть pending
+    if (a.pend > 0) {
+      if (hasRejected) return { ...req, status: "Частично утверждена", has_rejected: true };
+      return { ...req, status: "На утверждении", has_rejected: false };
+    }
+
+    // fallback
+    if (hasRejected) return { ...req, status: "Частично утверждена", has_rejected: true };
+    return { ...req, has_rejected: false };
+  });
+}
 export async function listSuppliers(search?: string): Promise<Supplier[]> {
   const q = norm(search);
 
