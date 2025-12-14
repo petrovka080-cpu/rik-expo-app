@@ -459,20 +459,21 @@ export default function BuyerScreen() {
 
       // === УТВЕРЖДЕНО (ещё НЕ отправлено в бух.) ===
       const apQ = await supabase
-        .from('proposals')
-        .select('id, status, submitted_at, sent_to_accountant_at')
-        .eq('status', 'Утверждено')
-        .is('sent_to_accountant_at', null)
-        .order('submitted_at', { ascending: false });
+  .from('v_proposals_summary')
+  .select('proposal_id, status, submitted_at, sent_to_accountant_at, total_sum')
+  .eq('status', 'Утверждено')
+  .is('sent_to_accountant_at', null)
+  .order('submitted_at', { ascending: false });
 
-      const approvedClean = (!apQ.error && Array.isArray(apQ.data))
-        ? (apQ.data as any[]).map(x => ({
-            id: String(x.id),
-            status: String(x.status),
-            submitted_at: x.submitted_at ?? null,
-          }))
-        : [];
-      setApproved(approvedClean);
+const approvedClean = (!apQ.error && Array.isArray(apQ.data))
+  ? (apQ.data as any[]).map(x => ({
+      id: String(x.proposal_id),
+      status: String(x.status),
+      submitted_at: x.submitted_at ?? null,
+      total_sum: Number(x.total_sum ?? 0),
+    }))
+  : [];
+setApproved(approvedClean);
 
       // === НА ДОРАБОТКЕ у снабженца ===
       const reDir = await supabase
@@ -515,6 +516,8 @@ export default function BuyerScreen() {
         });
 
       setRejected(rejectedRows);
+try { warmProposalMeta(rejectedRows.map((x:any) => String(x.id))); } catch {}
+
     } catch (e) {
       console.warn('[buyer] fetchBuckets error:', (e as any)?.message ?? e);
     } finally {
@@ -858,7 +861,12 @@ export default function BuyerScreen() {
       await snapshotProposalItems(propId, ids);
       await proposalSubmit(propId);
 
-      try { await supabase.from('request_items').update({ status: 'У директора' }).in('id', ids); } catch {}
+      try {
+  await supabase.from('request_items')
+    .update({ status: 'У директора', director_reject_note: null, director_reject_at: null })
+    .in('id', ids);
+} catch {}
+
       removeFromInboxLocally(ids);
 
       clearPick();
@@ -917,6 +925,12 @@ export default function BuyerScreen() {
       }
 
       const affectedIds = created.flatMap((p) => p.request_item_ids);
+try {
+  await supabase.from('request_items')
+    .update({ director_reject_note: null, director_reject_at: null })
+    .in('id', affectedIds);
+} catch {}
+
       removeFromInboxLocally(affectedIds);
       clearPick();
 
@@ -1655,7 +1669,6 @@ export default function BuyerScreen() {
               Сумма по позиции: <Text style={{ color: COLORS.text, fontWeight: '700' }}>{sum ? sum.toLocaleString() : '0'}</Text> сом
             </Text>
           </View>
-
           <View style={{ flexDirection: 'row', gap: 8, marginTop: 10 }}>
             <Pressable onPress={() => openEdit(it)} style={[s.smallBtn, { borderColor: COLORS.primary }]}>
               <Text style={[s.smallBtnText, { color: COLORS.primary }]}>Править</Text>
@@ -1682,6 +1695,16 @@ export default function BuyerScreen() {
             Итого по заявке: {gsum.toLocaleString()} сом
           </Text>
         </View>
+{/* ✅ Пометка отклонения директора — один раз на заявку */}
+{g.items.some(it => (it as any).director_reject_note) && (
+  <View style={{ paddingHorizontal: 12, paddingBottom: 8 }}>
+    <View style={{ backgroundColor: '#FEE2E2', borderRadius: 10, padding: 8 }}>
+      <Text style={{ color: '#991B1B', fontWeight: '800', fontSize: 13 }}>
+        Отклонено директором
+      </Text>
+    </View>
+  </View>
+)}
 
         <FlatList
           data={g.items}
@@ -1718,11 +1741,13 @@ export default function BuyerScreen() {
     const pidStr = String(head.id);
     const sc = statusColors(head.status);
 
-    const { title: pretty, total, busy } = useProposalPretty(pidStr);
+   // ❌ убрали тяжёлый useProposalPretty — он вызывал мигание (много сетевых запросов на каждую карточку)
+const pretty = '';
+const total = null;
+const busy = false;
 
-    const headerText = pretty
-      ? `Предложение: ${pretty}`
-      : `Предложение #${pidStr.slice(0, 8)}`;
+const headerText = `Предложение #${pidStr.slice(0, 8)}`;
+
 
     const SumBadge = (props: { value?: number | null }) => {
       if (props.value == null || !Number.isFinite(props.value)) return null;
@@ -1741,7 +1766,7 @@ export default function BuyerScreen() {
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
           <Text style={[s.cardTitle, { color: COLORS.text }]}>{headerText}</Text>
           <Chip label={head.status} bg={sc.bg} fg={sc.fg} />
-          <SumBadge value={total} />
+          <SumBadge value={Number(head.total_sum ?? 0)} />
           <Text style={[s.cardMeta, { color: COLORS.sub }]}>
             {head.submitted_at ? new Date(head.submitted_at).toLocaleString() : '—'}
           </Text>

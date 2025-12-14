@@ -25,6 +25,7 @@ export {
   proposalSubmit,
   exportProposalPdf,
   buildProposalPdfHtml,
+  exportPaymentOrderPdf,
   proposalItems,
   proposalSnapshotItems,
   proposalSetItemsMeta,
