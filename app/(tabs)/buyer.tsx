@@ -31,6 +31,7 @@ import {
 } from '../../src/lib/catalog_api';
 import { RIK_API } from '../../src/lib/catalog_api';
 import { supabase } from '../../src/lib/supabaseClient';
+import { useFocusEffect } from "expo-router";
 import { listSuppliers, type Supplier } from '../../src/lib/catalog_api';
 
 function SafeView({ children, ...rest }: any) {
@@ -276,6 +277,7 @@ export default function BuyerScreen() {
   const [tab, setTab] = useState<Tab>('inbox');
   const [buyerFio, setBuyerFio] = useState<string>('');
 
+
   // INBOX
   const [rows, setRows] = useState<BuyerInboxRow[]>([]);
   const [loadingInbox, setLoadingInbox] = useState(false);
@@ -336,7 +338,8 @@ export default function BuyerScreen() {
   // документ предложения в модалке
   const [propDocAttached, setPropDocAttached] = useState<{ name: string; url?: string } | null>(null);
   const [propDocBusy, setPropDocBusy] = useState(false);
-
+const focusedRef = useRef(false);
+const lastKickRef = useRef(0);
   // мгновенная загрузка invoice (web/native)
   const invoiceInputRef = useRef<HTMLInputElement | null>(null);
   const [invoiceUploadedName, setInvoiceUploadedName] = useState<string>('');
@@ -398,7 +401,13 @@ export default function BuyerScreen() {
   }, [buyerFio]);
 
   /* ==================== Загрузка ==================== */
-  const fetchInbox = useCallback(async () => { 
+  const fetchInbox = useCallback(async () => {
+  if (!focusedRef.current) return;
+
+  const now = Date.now();
+  if (now - lastKickRef.current < 900) return;
+  lastKickRef.current = now;
+
   setLoadingInbox(true);
   try {
     // 1) Берём инбокс только через API-слой:
@@ -447,7 +456,13 @@ export default function BuyerScreen() {
 }, [preloadDisplayNos]);
 
   const fetchBuckets = useCallback(async () => {
-    setLoadingBuckets(true);
+  if (!focusedRef.current) return;
+
+  const now = Date.now();
+  if (now - lastKickRef.current < 900) return;
+  lastKickRef.current = now;
+
+  setLoadingBuckets(true);
     try {
       // === У ДИРЕКТОРА ===
       const p = await supabase
@@ -516,7 +531,7 @@ setApproved(approvedClean);
         });
 
       setRejected(rejectedRows);
-try { warmProposalMeta(rejectedRows.map((x:any) => String(x.id))); } catch {}
+
 
     } catch (e) {
       console.warn('[buyer] fetchBuckets error:', (e as any)?.message ?? e);
@@ -525,23 +540,33 @@ try { warmProposalMeta(rejectedRows.map((x:any) => String(x.id))); } catch {}
     }
   }, []);
 
-  useEffect(() => {
-    const ch = supabase.channel('notif-buyer-rt');
+ useFocusEffect(
+  useCallback(() => {
+    focusedRef.current = true;
 
-    ch.on(
-      'postgres_changes',
-      { event: 'INSERT', schema: 'public', table: 'notifications', filter: 'role=eq.buyer' },
-      (payload: any) => {
-        const n = payload?.new || {};
-        Alert.alert(n.title || 'Уведомление', n.body || '');
-        fetchBuckets();
-      }
-    );
+    fetchInbox();
+    fetchBuckets();
 
-    return () => { try { supabase.removeChannel(ch); } catch {} };
-  }, [fetchBuckets]);
+    const ch = supabase
+      .channel('notif-buyer-rt')
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'notifications', filter: 'role=eq.buyer' },
+        (payload: any) => {
+          if (!focusedRef.current) return;
+          const n = payload?.new || {};
+          Alert.alert(n.title || 'Уведомление', n.body || '');
+          fetchBuckets();
+        }
+      )
+      .subscribe();
 
-  useEffect(() => { fetchInbox(); fetchBuckets(); }, [fetchInbox, fetchBuckets]);
+    return () => {
+      focusedRef.current = false;
+      try { supabase.removeChannel(ch); } catch {}
+    };
+  }, [fetchInbox, fetchBuckets])
+);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);

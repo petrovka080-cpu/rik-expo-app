@@ -1,9 +1,10 @@
-// app/(tabs)/_layout.tsx
+// app/_layout.tsx
 
-import "./_webStyleGuard"; // подключаем web-стаб сразу
+// ❌ ВАЖНО: webStyleGuard ОТКЛЮЧЁН — он ломал скролл и оставлял хвосты
+// import "../src/dev/_webStyleGuard";
 
 import React, { useEffect, useState } from "react";
-import { Platform, LogBox } from "react-native";
+import { Platform, LogBox, View } from "react-native";
 import { Slot, router, useSegments } from "expo-router";
 import { supabase } from "../src/lib/supabaseClient";
 
@@ -34,6 +35,23 @@ export default function RootLayout() {
   const [sessionLoaded, setSessionLoaded] = useState(false);
   const [hasSession, setHasSession] = useState<boolean | null>(null);
 
+  // ✅ WEB: гарантируем нормальный контейнер и скролл браузера
+  useEffect(() => {
+    if (Platform.OS !== "web") return;
+
+    try {
+      document.documentElement.style.height = "100%";
+      document.body.style.height = "100%";
+      document.body.style.overflow = "auto";
+
+      const root = document.getElementById("root");
+      if (root) {
+        (root as any).style.height = "100%";
+        (root as any).style.overflow = "auto";
+      }
+    } catch {}
+  }, []);
+
   useEffect(() => {
     if (!supabase) return;
     let active = true;
@@ -53,7 +71,7 @@ export default function RootLayout() {
       }
     };
 
-    const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
       setHasSession(Boolean(session));
       if (!session) router.replace("/auth/login");
     });
@@ -66,7 +84,6 @@ export default function RootLayout() {
   }, []);
 
   useEffect(() => {
-    if (!supabase) return;
     if (!sessionLoaded) return;
     const inAuthStack = segments?.[0] === "auth";
 
@@ -77,6 +94,10 @@ export default function RootLayout() {
     }
   }, [hasSession, sessionLoaded, segments]);
 
-  return <Slot />;
+  // ✅ КРИТИЧНО: Slot ОБЁРНУТ в View с flex:1
+  return (
+    <View style={{ flex: 1 }}>
+      <Slot />
+    </View>
+  );
 }
-

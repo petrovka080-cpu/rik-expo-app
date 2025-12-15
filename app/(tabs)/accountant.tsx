@@ -4,6 +4,8 @@ import {
   RefreshControl, Modal, TextInput, Platform, ScrollView, Alert
 } from 'react-native';
 import { supabase } from '../../src/lib/supabaseClient';
+import { useFocusEffect } from 'expo-router';
+
 import {
   listAccountantInbox,
   type AccountantInboxRow,
@@ -15,7 +17,6 @@ import {
   notifList,
   notifMarkRead,
 } from '../../src/lib/catalog_api';
-
 import { uploadProposalAttachment, openAttachment } from '../../src/lib/files';
 // звук + вибро (если доступны)
 import * as Haptics from 'expo-haptics';
@@ -125,6 +126,9 @@ export default function AccountantScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [isAccountant, setIsAccountant] = useState(false);
   const [roleLoading, setRoleLoading] = useState(true);
+const focusedRef = useRef(false);
+const lastKickRef = useRef(0);
+
 // ====== История платежей ======
 const [historyRows, setHistoryRows] = useState<HistoryRow[]>([]);
 const [historyLoading, setHistoryLoading] = useState(false);
@@ -163,6 +167,12 @@ const [payKind, setPayKind] = useState<'bank' | 'cash'>('bank');
   // запомним: RPC доступен/нет, чтобы не спамить 404
   const triedRpcOkRef = useRef<boolean>(true);
 const loadHistory = useCallback(async () => {
+  if (!focusedRef.current) return;
+
+  const now = Date.now();
+  if (now - lastKickRef.current < 900) return;
+  lastKickRef.current = now;
+
   setHistoryLoading(true);
   try {
     const { data, error } = await supabase.rpc('list_accountant_payments_history', {
@@ -188,9 +198,15 @@ const onRefreshHistory = useCallback(async () => {
 
   // ====== загрузка ======
   const load = useCallback(async () => {
-  if (freezeWhileOpen) return; // не дёргаем сеть, пока модалка открыта
+  if (!focusedRef.current) return;
+  if (freezeWhileOpen) return;
+
+  const now = Date.now();
+  if (now - lastKickRef.current < 900) return;
+  lastKickRef.current = now;
 
   setLoading(true);
+
 
   try {
     let data: AccountantInboxRow[] = [];
@@ -341,18 +357,37 @@ if (ids.length) {
     setLoading(false);
   }
 }, [tab, freezeWhileOpen]);
+useFocusEffect(
+  useCallback(() => {
+    focusedRef.current = true;
 
-  useEffect(() => {
-  if (tab === 'История') loadHistory();
-  else load();
-}, [tab, load, loadHistory]);
+    // первичная загрузка при входе на экран
+    if (tab === 'История') loadHistory();
+    else load();
 
-  const onRefresh = useCallback(async () => { setRefreshing(true); try { await load(); } finally { setRefreshing(false); } }, [load]);
+    // уведомления подтянем один раз при входе
+    loadNotifs();
+
+    return () => {
+      // уходим со страницы — больше ничего не грузим
+      focusedRef.current = false;
+    };
+  }, [tab, load, loadHistory, loadNotifs])
+);
+
+   const onRefresh = useCallback(async () => { setRefreshing(true); try { await load(); } finally { setRefreshing(false); } }, [load]);
 
   // ====== 🔔 уведомления: список/звук/подписка ======
   const [bellOpen, setBellOpen] = useState(false);
   const [notifs, setNotifs] = useState<any[]>([]);
   const unread = notifs.length;
+async function loadNotifs() {
+  if (!focusedRef.current) return;
+  try {
+    const list = await notifList('accountant', 20);
+    setNotifs(list);
+  } catch {}
+}
 
   // инициализация/освобождение звука (кроссплатформенно: web/native)
   useEffect(() => {
@@ -372,20 +407,20 @@ if (ids.length) {
     try { await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success); } catch {}
   }, []);
 
-  const loadNotifs = useCallback(async () => {
-    try { const list = await notifList('accountant', 20); setNotifs(list); } catch {}
-  }, []);
+  
   const markAllRead = useCallback(async () => {
     try { await notifMarkRead('accountant'); setNotifs([]); } catch {}
     setBellOpen(false);
   }, []);
 
-  useEffect(() => { loadNotifs(); }, [loadNotifs]);
+
 
   // realtime-подписка
-  useEffect(() => {
+  useFocusEffect(
+  useCallback(() => {
     const ch = supabase.channel('notif-accountant-rt')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications' }, (payload: any) => {
+        if (!focusedRef.current) return;
         const n = payload?.new || {};
         if (n?.role !== 'accountant') return;
         setNotifs(prev => [n, ...prev].slice(0, 20));
@@ -393,8 +428,13 @@ if (ids.length) {
         if (!freezeWhileOpen) load();
       })
       .subscribe();
-    return () => { try { supabase.removeChannel(ch); } catch {} };
-  }, [playDing, load, freezeWhileOpen]);
+
+    return () => {
+      try { supabase.removeChannel(ch); } catch {}
+    };
+  }, [playDing, load, freezeWhileOpen])
+);
+
 
   const openCard = useCallback((row: AccountantInboxRow) => {
     setCurrent(row);
@@ -604,373 +644,395 @@ if (ids.length) {
     </View>
   );
 
-  return (
-    <SafeView style={{ flex: 1, backgroundColor: COLORS.bg }}>
-      {header}
+return (
+  <View style={{ flex: 1, backgroundColor: COLORS.bg }}>
+    <FlatList
+      style={{ flex: 1 }}
+      data={(tab === 'История' ? (historyRows as any) : (rows as any)) as any[]}
+      keyExtractor={(item: any) =>
+        tab === 'История'
+          ? String(item.payment_id)
+          : String(item.proposal_id)
+      }
+      ListHeaderComponent={() => {
+        if (tab !== 'История') return <View>{header}</View>;
 
-      {tab === 'История' ? (
-  historyLoading ? (
-    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-      <ActivityIndicator />
-    </View>
-  ) : (
-    <View style={{ flex: 1 }}>
-      {/* фильтры */}
-      <View style={{ paddingHorizontal: 12, paddingBottom: 8 }}>
-        <View style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
-          <Pressable
-            onPress={() => {
-              const d = new Date();
-              const s = d.toISOString().slice(0, 10);
-              setDateFrom(s); setDateTo(s);
-            }}
-            style={{ paddingVertical: 6, paddingHorizontal: 10, borderRadius: 999, backgroundColor: '#fff', borderWidth: 1, borderColor: COLORS.border }}
-          >
-            <Text style={{ fontWeight: '700', color: COLORS.text }}>Сегодня</Text>
-          </Pressable>
+        const total = (historyRows || []).reduce((s, r) => s + Number((r as any)?.amount ?? 0), 0);
+        const cur = (historyRows?.[0] as any)?.invoice_currency ?? 'KGS';
 
-          <Pressable
-            onPress={() => {
-              const to = new Date();
-              const from = new Date(); from.setDate(to.getDate() - 6);
-              setDateFrom(from.toISOString().slice(0, 10));
-              setDateTo(to.toISOString().slice(0, 10));
-            }}
-            style={{ paddingVertical: 6, paddingHorizontal: 10, borderRadius: 999, backgroundColor: '#fff', borderWidth: 1, borderColor: COLORS.border }}
-          >
-            <Text style={{ fontWeight: '700', color: COLORS.text }}>Неделя</Text>
-          </Pressable>
+        return (
+          <View>
+            {header}
 
-          <Pressable
-            onPress={() => {
-              const to = new Date();
-              const from = new Date(); from.setDate(to.getDate() - 29);
-              setDateFrom(from.toISOString().slice(0, 10));
-              setDateTo(to.toISOString().slice(0, 10));
-            }}
-            style={{ paddingVertical: 6, paddingHorizontal: 10, borderRadius: 999, backgroundColor: '#fff', borderWidth: 1, borderColor: COLORS.border }}
-          >
-            <Text style={{ fontWeight: '700', color: COLORS.text }}>Месяц</Text>
-          </Pressable>
-
-          <Pressable
-            onPress={() => setCalOpen(true)}
-            style={{ paddingVertical: 6, paddingHorizontal: 10, borderRadius: 999, backgroundColor: '#fff', borderWidth: 1, borderColor: COLORS.border }}
-          >
-            <Text style={{ fontWeight: '700', color: COLORS.text }}>📅 С/По</Text>
-          </Pressable>
-        </View>
-
-        <View style={{ height: 8 }} />
-
-        <TextInput
-          placeholder="Поиск: поставщик / № счёта"
-          value={histSearch}
-          onChangeText={setHistSearch}
-          style={{ borderWidth: 1, borderColor: COLORS.border, backgroundColor: '#fff', borderRadius: 12, padding: 10 }}
-        />
-      </View>
-
-      <FlatList
-        data={historyRows}
-        keyExtractor={(r) => String(r.payment_id)}
-        refreshControl={<RefreshControl refreshing={historyRefreshing} onRefresh={onRefreshHistory} />}
-        ListHeaderComponent={() => {
-          const total = historyRows.reduce((s, r) => s + Number(r.amount ?? 0), 0);
-          const cur = historyRows[0]?.invoice_currency ?? 'KGS';
-          return (
+            {/* фильтры */}
             <View style={{ paddingHorizontal: 12, paddingBottom: 8 }}>
-              <Text style={{ color: COLORS.sub }}>
-                Найдено: <Text style={{ fontWeight: '800', color: COLORS.text }}>{historyRows.length}</Text>
-                {'  '}• Сумма: <Text style={{ fontWeight: '800', color: COLORS.text }}>{total.toFixed(2)} {cur}</Text>
-              </Text>
-            </View>
-          );
-        }}
-        renderItem={({ item }) => (
-          <Pressable
-            onPress={() => {
-  setCurrentPaymentId(Number(item.payment_id)); // ✅ ВОТ ЭТО
-  openCard({
-    proposal_id: item.proposal_id,
-    supplier: item.supplier,
-    invoice_number: item.invoice_number,
-    invoice_date: item.invoice_date,
-    invoice_amount: item.invoice_amount,
-    invoice_currency: item.invoice_currency,
-    payment_status: 'Оплачено',
-    total_paid: item.amount,
-    payments_count: 1,
-    has_invoice: !!item.has_invoice,
-    sent_to_accountant_at: null,
-  } as any);
-}}
+              <View style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+                <Pressable
+                  onPress={() => {
+                    const d = new Date();
+                    const s = d.toISOString().slice(0, 10);
+                    setDateFrom(s); setDateTo(s);
+                  }}
+                  style={{ paddingVertical: 6, paddingHorizontal: 10, borderRadius: 999, backgroundColor: '#fff', borderWidth: 1, borderColor: COLORS.border }}
+                >
+                  <Text style={{ fontWeight: '700', color: COLORS.text }}>Сегодня</Text>
+                </Pressable>
 
-            style={{ backgroundColor: '#fff', marginHorizontal: 12, marginVertical: 6, borderRadius: 14, borderWidth: 1, borderColor: COLORS.border, padding: 12 }}
-          >
-            <Text style={{ fontWeight: '800', color: COLORS.text }}>{item.supplier || '—'}</Text>
-            <Text style={{ color: COLORS.sub, marginTop: 2 }}>
-              {new Date(item.paid_at).toLocaleString()} • <Text style={{ fontWeight: '800', color: COLORS.text }}>{Number(item.amount).toFixed(2)} {item.invoice_currency || 'KGS'}</Text>
-              {!!item.method ? ` • ${item.method}` : ''}
-            </Text>
-            <Text style={{ color: COLORS.sub, marginTop: 2 }}>
-              Счёт: <Text style={{ color: COLORS.text, fontWeight: '700' }}>{item.invoice_number || 'без №'}</Text>
-              {!!item.note ? ` • ${item.note}` : ''}
-            </Text>
-          </Pressable>
-        )}
-      />
+                <Pressable
+                  onPress={() => {
+                    const to = new Date();
+                    const from = new Date(); from.setDate(to.getDate() - 6);
+                    setDateFrom(from.toISOString().slice(0, 10));
+                    setDateTo(to.toISOString().slice(0, 10));
+                  }}
+                  style={{ paddingVertical: 6, paddingHorizontal: 10, borderRadius: 999, backgroundColor: '#fff', borderWidth: 1, borderColor: COLORS.border }}
+                >
+                  <Text style={{ fontWeight: '700', color: COLORS.text }}>Неделя</Text>
+                </Pressable>
 
-      {/* модалка С/По */}
-      <Modal visible={calOpen} transparent animationType="fade" onRequestClose={() => setCalOpen(false)}>
-        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'center', padding: 16 }}>
-          <View style={{ backgroundColor: '#fff', borderRadius: 12, padding: 12, borderWidth: 1, borderColor: COLORS.border }}>
-            <Text style={{ fontWeight: '900', fontSize: 16, color: COLORS.text }}>Период</Text>
-            <View style={{ height: 10 }} />
-            <TextInput
-              placeholder="Дата С (YYYY-MM-DD)"
-              value={dateFrom}
-              onChangeText={setDateFrom}
-              style={{ borderWidth: 1, borderColor: COLORS.border, borderRadius: 10, padding: 10, marginBottom: 8 }}
-            />
-            <TextInput
-              placeholder="Дата По (YYYY-MM-DD)"
-              value={dateTo}
-              onChangeText={setDateTo}
-              style={{ borderWidth: 1, borderColor: COLORS.border, borderRadius: 10, padding: 10, marginBottom: 8 }}
-            />
-            <View style={{ flexDirection: 'row', gap: 8 }}>
-              <Pressable
-                onPress={() => { setDateFrom(''); setDateTo(''); }}
-                style={{ padding: 10, borderRadius: 10, borderWidth: 1, borderColor: COLORS.border }}
-              >
-                <Text style={{ fontWeight: '800', color: COLORS.text }}>Сброс</Text>
-              </Pressable>
-              <Pressable
-                onPress={() => setCalOpen(false)}
-                style={{ padding: 10, borderRadius: 10, backgroundColor: COLORS.primary }}
-              >
-                <Text style={{ fontWeight: '800', color: '#fff' }}>Готово</Text>
-              </Pressable>
+                <Pressable
+                  onPress={() => {
+                    const to = new Date();
+                    const from = new Date(); from.setDate(to.getDate() - 29);
+                    setDateFrom(from.toISOString().slice(0, 10));
+                    setDateTo(to.toISOString().slice(0, 10));
+                  }}
+                  style={{ paddingVertical: 6, paddingHorizontal: 10, borderRadius: 999, backgroundColor: '#fff', borderWidth: 1, borderColor: COLORS.border }}
+                >
+                  <Text style={{ fontWeight: '700', color: COLORS.text }}>Месяц</Text>
+                </Pressable>
+
+                <Pressable
+                  onPress={() => setCalOpen(true)}
+                  style={{ paddingVertical: 6, paddingHorizontal: 10, borderRadius: 999, backgroundColor: '#fff', borderWidth: 1, borderColor: COLORS.border }}
+                >
+                  <Text style={{ fontWeight: '700', color: COLORS.text }}>📅 С/По</Text>
+                </Pressable>
+              </View>
+
+              <View style={{ height: 8 }} />
+
+              <TextInput
+                placeholder="Поиск: поставщик / № счёта"
+                value={histSearch}
+                onChangeText={setHistSearch}
+                style={{ borderWidth: 1, borderColor: COLORS.border, backgroundColor: '#fff', borderRadius: 12, padding: 10 }}
+              />
+
+              <View style={{ height: 8 }} />
+
+              <View style={{ paddingBottom: 4 }}>
+                <Text style={{ color: COLORS.sub }}>
+                  Найдено:{' '}
+                  <Text style={{ fontWeight: '800', color: COLORS.text }}>
+                    {historyRows.length}
+                  </Text>
+                  {'  '}• Сумма:{' '}
+                  <Text style={{ fontWeight: '800', color: COLORS.text }}>
+                    {total.toFixed(2)} {cur}
+                  </Text>
+                </Text>
+              </View>
             </View>
           </View>
-        </View>
-      </Modal>
-    </View>
-  )
-) : (
-  loading ? (
-    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-      <ActivityIndicator />
-    </View>
-  ) : rows.length === 0 ? (
-    <EmptyState />
-  ) : (
-    <FlatList
-      data={rows}
-      keyExtractor={(r) => String(r.proposal_id)}
-      renderItem={renderItem}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+        );
+      }}
+      renderItem={({ item }: any) => {
+        if (tab === 'История') {
+          return (
+            <Pressable
+              onPress={() => {
+                setCurrentPaymentId(Number(item.payment_id));
+                openCard({
+                  proposal_id: item.proposal_id,
+                  supplier: item.supplier,
+                  invoice_number: item.invoice_number,
+                  invoice_date: item.invoice_date,
+                  invoice_amount: item.invoice_amount,
+                  invoice_currency: item.invoice_currency,
+                  payment_status: 'Оплачено',
+                  total_paid: item.amount,
+                  payments_count: 1,
+                  has_invoice: !!item.has_invoice,
+                  sent_to_accountant_at: null,
+                } as any);
+              }}
+              style={{ backgroundColor: '#fff', marginHorizontal: 12, marginVertical: 6, borderRadius: 14, borderWidth: 1, borderColor: COLORS.border, padding: 12 }}
+            >
+              <Text style={{ fontWeight: '800', color: COLORS.text }}>{item.supplier || '—'}</Text>
+              <Text style={{ color: COLORS.sub, marginTop: 2 }}>
+                {new Date(item.paid_at).toLocaleString()} •{' '}
+                <Text style={{ fontWeight: '800', color: COLORS.text }}>
+                  {Number(item.amount).toFixed(2)} {item.invoice_currency || 'KGS'}
+                </Text>
+                {!!item.method ? ` • ${item.method}` : ''}
+              </Text>
+              <Text style={{ color: COLORS.sub, marginTop: 2 }}>
+                Счёт:{' '}
+                <Text style={{ color: COLORS.text, fontWeight: '700' }}>
+                  {item.invoice_number || 'без №'}
+                </Text>
+                {!!item.note ? ` • ${item.note}` : ''}
+              </Text>
+            </Pressable>
+          );
+        }
+
+        // обычные строки (твоя функция renderItem)
+        return renderItem({ item } as any) as any;
+      }}
+      refreshControl={
+        <RefreshControl
+          refreshing={tab === 'История' ? historyRefreshing : refreshing}
+          onRefresh={tab === 'История' ? onRefreshHistory : onRefresh}
+        />
+      }
+      ListEmptyComponent={
+        tab === 'История'
+          ? (historyLoading ? (
+              <View style={{ padding: 24, alignItems: 'center' }}>
+                <ActivityIndicator />
+              </View>
+            ) : (
+              <View style={{ padding: 24, alignItems: 'center' }}>
+                <Text style={{ color: COLORS.sub }}>История пуста</Text>
+              </View>
+            ))
+          : (loading ? (
+              <View style={{ padding: 24, alignItems: 'center' }}>
+                <ActivityIndicator />
+              </View>
+            ) : (
+              <EmptyState />
+            ))
+      }
+      contentContainerStyle={{ paddingBottom: 140 }}
       removeClippedSubviews={Platform.OS === 'web' ? false : true}
     />
-  )
-)}
 
-      <Modal visible={cardOpen} animationType="slide" onRequestClose={closeCard}>
-        <View style={{ flex: 1, padding: 12, backgroundColor: COLORS.bg }}>
-          <ScrollView keyboardShouldPersistTaps="always" contentContainerStyle={{ paddingBottom: 48 }}>
-            <Text style={{ fontSize: 18, fontWeight: '700', marginBottom: 8, color: COLORS.text }}>Карточка предложения</Text>
-            <Text style={{ color: COLORS.sub, marginBottom: 6 }}>
-              ID: <Text style={{ color: COLORS.text, fontFamily: 'monospace' }}>{current?.proposal_id || '—'}</Text>
-            </Text>
-
-            <Text style={{ color: COLORS.sub }}>Поставщик: <Text style={{ color: COLORS.text }}>{current?.supplier || '—'}</Text></Text>
-            <Text style={{ color: COLORS.sub }}>Счёт: <Text style={{ color: COLORS.text }}>{current?.invoice_number || '—'}</Text> от <Text style={{ color: COLORS.text }}>{current?.invoice_date || '—'}</Text></Text>
-            <Text style={{ color: COLORS.sub }}>Сумма: <Text style={{ color: COLORS.text }}>{(Number(current?.invoice_amount ?? 0)) + ' ' + (current?.invoice_currency || 'KGS')}</Text></Text>
-            <Text style={{ color: COLORS.sub }}>Статус: <Text style={{ color: COLORS.text }}>{currentDisplayStatus}</Text></Text>
-
-            <View style={{ height: 12 }} />
-
-           
-             {/* ===== Документы ===== */}
-<Text style={{ fontWeight: '600', marginBottom: 6, color: COLORS.text }}>
-  Документы
-</Text>
-
-<SafeView style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap' }}>
-
-  {/* Счёт */}
-  <View>
-    <WButton
-      onPress={() => openAttachment(String(current?.proposal_id), 'invoice')}
-      disabled={!canOpenInvoice}
-      style={{ padding: 10, backgroundColor: '#EEE', borderRadius: 10 }}
-    >
-      <Text>Открыть счёт</Text>
-    </WButton>
-  </View>
-
-  {/* Платёжные документы */}
-  <View>
-    <WButton
-      onPress={() => openAttachment(String(current?.proposal_id), 'payment', { all: true })}
-      disabled={!canOpenPayments}
-      style={{ padding: 10, backgroundColor: '#EEE', borderRadius: 10 }}
-    >
-      <Text>Платёжные документы</Text>
-    </WButton>
-  </View>
-
-  {/* PDF предложения */}
-  <View>
-    <WButton
-      onPress={() => exportProposalPdf(String(current?.proposal_id))}
-      style={{ padding: 10, backgroundColor: '#EEE', borderRadius: 10 }}
-    >
-      <Text>PDF предложения</Text>
-    </WButton>
-  </View>
-
-  {/* ПЛАТЁЖКА */}
-  <View>
-    <WButton
-      onPress={() => {
-        if (!currentPaymentId) {
-          safeAlert('Платёжка', 'Открой платеж из вкладки «История»');
-          return;
-        }
-        exportPaymentOrderPdf(currentPaymentId);
-      }}
-      style={{ padding: 10, backgroundColor: '#EEE', borderRadius: 10 }}
-    >
-      <Text>Платёжка</Text>
-    </WButton>
-  </View>
-
-</SafeView>
-            <View style={{ height: 16 }} />
-
-         <Text style={{ fontWeight: '600', marginBottom: 6, color: COLORS.text }}>Добавить оплату</Text>
-<View style={{ position: 'relative', zIndex: 5 }}>
-  <TextInput
-    placeholder="Сумма (KGS)"
-    keyboardType="decimal-pad"
-    value={amount}
-    onChangeText={setAmount}
-    style={{ borderWidth: 1, borderColor: COLORS.border, backgroundColor: '#fff', borderRadius: 10, padding: 10, marginBottom: 8 }}
-  />
-
-  <Text style={{ fontWeight: '600', marginBottom: 6, color: COLORS.text }}>Способ оплаты</Text>
-
-  <View style={{ flexDirection: 'row', gap: 8, marginBottom: 12 }}>
-    <Pressable
-      onPress={() => setPayKind('bank')}
-      style={{
-        paddingVertical: 8,
-        paddingHorizontal: 14,
-        borderRadius: 999,
-        backgroundColor: payKind === 'bank' ? COLORS.primary : '#fff',
-        borderWidth: 1,
-        borderColor: COLORS.border,
-      }}
-    >
-      <Text style={{ color: payKind === 'bank' ? '#fff' : COLORS.text, fontWeight: '700' }}>Банк</Text>
-    </Pressable>
-
-    <Pressable
-      onPress={() => setPayKind('cash')}
-      style={{
-        paddingVertical: 8,
-        paddingHorizontal: 14,
-        borderRadius: 999,
-        backgroundColor: payKind === 'cash' ? COLORS.primary : '#fff',
-        borderWidth: 1,
-        borderColor: COLORS.border,
-      }}
-    >
-      <Text style={{ color: payKind === 'cash' ? '#fff' : COLORS.text, fontWeight: '700' }}>Нал</Text>
-    </Pressable>
-  </View>
-
-  <TextInput
-    placeholder="Комментарий"
-    value={note}
-    onChangeText={setNote}
-    style={{ borderWidth: 1, borderColor: COLORS.border, backgroundColor: '#fff', borderRadius: 10, padding: 10, marginBottom: 8 }}
-  />
-
-  <WButton
-    onPress={addPayment}
-    disabled={!canAct}
-    style={{ padding: 12, borderRadius: 10, backgroundColor: canAct ? '#10B981' : '#94a3b8' }}
-  >
-    <Text style={{ color: '#000', textAlign: 'center', fontWeight: '700' }}>
-      Сохранить оплату
-    </Text>
-  </WButton>
-</View>
-       
-            <View style={{ height: 12 }} />
-
-            {currentDisplayStatus !== 'Оплачено' && (
-              <Pressable
-                onPress={onReturnToBuyer}
-                disabled={!canAct}
-                style={{ padding: 12, borderRadius: 10, backgroundColor: canAct ? COLORS.red : '#d1d5db' }}
-              >
-                <Text style={{ color: canAct ? '#fff' : '#6b7280', textAlign: 'center', fontWeight: '700' }}>
-                  Вернуть на доработку снабженцу
-                </Text>
-              </Pressable>
-            )}
-
-            <View style={{ height: 12 }} />
-            <WButton
-              onPress={closeCard}
-              style={{ padding: 12, backgroundColor: '#fff', borderRadius: 10, borderWidth: 1, borderColor: COLORS.border }}
+    {/* модалка С/По */}
+    <Modal visible={calOpen} transparent animationType="fade" onRequestClose={() => setCalOpen(false)}>
+      <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'center', padding: 16 }}>
+        <View style={{ backgroundColor: '#fff', borderRadius: 12, padding: 12, borderWidth: 1, borderColor: COLORS.border }}>
+          <Text style={{ fontWeight: '900', fontSize: 16, color: COLORS.text }}>Период</Text>
+          <View style={{ height: 10 }} />
+          <TextInput
+            placeholder="Дата С (YYYY-MM-DD)"
+            value={dateFrom}
+            onChangeText={setDateFrom}
+            style={{ borderWidth: 1, borderColor: COLORS.border, borderRadius: 10, padding: 10, marginBottom: 8 }}
+          />
+          <TextInput
+            placeholder="Дата По (YYYY-MM-DD)"
+            value={dateTo}
+            onChangeText={setDateTo}
+            style={{ borderWidth: 1, borderColor: COLORS.border, borderRadius: 10, padding: 10, marginBottom: 8 }}
+          />
+          <View style={{ flexDirection: 'row', gap: 8 }}>
+            <Pressable
+              onPress={() => { setDateFrom(''); setDateTo(''); }}
+              style={{ padding: 10, borderRadius: 10, borderWidth: 1, borderColor: COLORS.border }}
             >
-              <Text style={{ textAlign: 'center', color: COLORS.text, fontWeight: '600' }}>Закрыть</Text>
-            </WButton>
-          </ScrollView>
-        </View>
-      </Modal>
-
-      {/* 🔔 Модалка списка уведомлений */}
-      <Modal visible={bellOpen} animationType="fade" onRequestClose={() => setBellOpen(false)} transparent>
-        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'center', padding: 16 }}>
-          <View style={{ backgroundColor: '#fff', borderRadius: 12, padding: 12, maxHeight: '70%', borderWidth: 1, borderColor: COLORS.border }}>
-            <Text style={{ fontWeight: '800', fontSize: 16, marginBottom: 8, color: COLORS.text }}>Уведомления</Text>
-            <ScrollView contentContainerStyle={{ gap: 8 }}>
-              {notifs.length === 0 ? (
-                <Text style={{ color: COLORS.sub }}>Нет непрочитанных</Text>
-              ) : notifs.map((n: any) => (
-                <View key={n.id} style={{ borderWidth: 1, borderColor: COLORS.border, borderRadius: 10, padding: 10, backgroundColor: '#fff' }}>
-                  <Text style={{ fontWeight: '700', color: COLORS.text }}>{n.title}</Text>
-                  {!!n.body && <Text style={{ color: COLORS.sub, marginTop: 2 }}>{n.body}</Text>}
-                  <Text style={{ color: COLORS.sub, marginTop: 4, fontSize: 11 }}>
-                    {new Date(n.created_at).toLocaleString()}
-                  </Text>
-                </View>
-              ))}
-            </ScrollView>
-
-            <SafeView style={{ flexDirection: 'row', gap: 8, marginTop: 10 }}>
-              <Pressable
-                onPress={markAllRead}
-                style={{ paddingVertical: 10, paddingHorizontal: 12, borderRadius: 10, backgroundColor: '#111827' }}>
-                <Text style={{ color: '#fff', fontWeight: '700' }}>Отметить прочитанными</Text>
-              </Pressable>
-              <Pressable
-                onPress={() => setBellOpen(false)}
-                style={{ paddingVertical: 10, paddingHorizontal: 12, borderRadius: 10, borderWidth: 1, borderColor: COLORS.border, backgroundColor: '#fff' }}>
-                <Text style={{ color: COLORS.text, fontWeight: '700' }}>Закрыть</Text>
-              </Pressable>
-            </SafeView>
+              <Text style={{ fontWeight: '800', color: COLORS.text }}>Сброс</Text>
+            </Pressable>
+            <Pressable
+              onPress={() => setCalOpen(false)}
+              style={{ padding: 10, borderRadius: 10, backgroundColor: COLORS.primary }}
+            >
+              <Text style={{ fontWeight: '800', color: '#fff' }}>Готово</Text>
+            </Pressable>
           </View>
         </View>
-      </Modal>
-    </SafeView>
-  );
+      </View>
+    </Modal>
+
+    {/* твои модалки оставляем как были */}
+    <Modal visible={cardOpen} animationType="slide" onRequestClose={closeCard}>
+      <View style={{ flex: 1, padding: 12, backgroundColor: COLORS.bg }}>
+        <ScrollView keyboardShouldPersistTaps="always" contentContainerStyle={{ paddingBottom: 48 }}>
+          <Text style={{ fontSize: 18, fontWeight: '700', marginBottom: 8, color: COLORS.text }}>Карточка предложения</Text>
+          <Text style={{ color: COLORS.sub, marginBottom: 6 }}>
+            ID: <Text style={{ color: COLORS.text, fontFamily: 'monospace' }}>{current?.proposal_id || '—'}</Text>
+          </Text>
+
+          <Text style={{ color: COLORS.sub }}>Поставщик: <Text style={{ color: COLORS.text }}>{current?.supplier || '—'}</Text></Text>
+          <Text style={{ color: COLORS.sub }}>Счёт: <Text style={{ color: COLORS.text }}>{current?.invoice_number || '—'}</Text> от <Text style={{ color: COLORS.text }}>{current?.invoice_date || '—'}</Text></Text>
+          <Text style={{ color: COLORS.sub }}>Сумма: <Text style={{ color: COLORS.text }}>{(Number(current?.invoice_amount ?? 0)) + ' ' + (current?.invoice_currency || 'KGS')}</Text></Text>
+          <Text style={{ color: COLORS.sub }}>Статус: <Text style={{ color: COLORS.text }}>{currentDisplayStatus}</Text></Text>
+
+          <View style={{ height: 12 }} />
+
+          <Text style={{ fontWeight: '600', marginBottom: 6, color: COLORS.text }}>Документы</Text>
+
+          <SafeView style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap' }}>
+            <View>
+              <WButton
+                onPress={() => openAttachment(String(current?.proposal_id), 'invoice')}
+                disabled={!canOpenInvoice}
+                style={{ padding: 10, backgroundColor: '#EEE', borderRadius: 10 }}
+              >
+                <Text>Открыть счёт</Text>
+              </WButton>
+            </View>
+
+            <View>
+              <WButton
+                onPress={() => openAttachment(String(current?.proposal_id), 'payment', { all: true })}
+                disabled={!canOpenPayments}
+                style={{ padding: 10, backgroundColor: '#EEE', borderRadius: 10 }}
+              >
+                <Text>Платёжные документы</Text>
+              </WButton>
+            </View>
+
+            <View>
+              <WButton
+                onPress={() => exportProposalPdf(String(current?.proposal_id))}
+                style={{ padding: 10, backgroundColor: '#EEE', borderRadius: 10 }}
+              >
+                <Text>PDF предложения</Text>
+              </WButton>
+            </View>
+
+            <View>
+              <WButton
+                onPress={() => {
+                  if (!currentPaymentId) {
+                    safeAlert('Платёжка', 'Открой платеж из вкладки «История»');
+                    return;
+                  }
+                  exportPaymentOrderPdf(currentPaymentId);
+                }}
+                style={{ padding: 10, backgroundColor: '#EEE', borderRadius: 10 }}
+              >
+                <Text>Платёжка</Text>
+              </WButton>
+            </View>
+          </SafeView>
+
+          <View style={{ height: 16 }} />
+
+          <Text style={{ fontWeight: '600', marginBottom: 6, color: COLORS.text }}>Добавить оплату</Text>
+          <View style={{ position: 'relative', zIndex: 5 }}>
+            <TextInput
+              placeholder="Сумма (KGS)"
+              keyboardType="decimal-pad"
+              value={amount}
+              onChangeText={setAmount}
+              style={{ borderWidth: 1, borderColor: COLORS.border, backgroundColor: '#fff', borderRadius: 10, padding: 10, marginBottom: 8 }}
+            />
+
+            <Text style={{ fontWeight: '600', marginBottom: 6, color: COLORS.text }}>Способ оплаты</Text>
+
+            <View style={{ flexDirection: 'row', gap: 8, marginBottom: 12 }}>
+              <Pressable
+                onPress={() => setPayKind('bank')}
+                style={{
+                  paddingVertical: 8,
+                  paddingHorizontal: 14,
+                  borderRadius: 999,
+                  backgroundColor: payKind === 'bank' ? COLORS.primary : '#fff',
+                  borderWidth: 1,
+                  borderColor: COLORS.border,
+                }}
+              >
+                <Text style={{ color: payKind === 'bank' ? '#fff' : COLORS.text, fontWeight: '700' }}>Банк</Text>
+              </Pressable>
+
+              <Pressable
+                onPress={() => setPayKind('cash')}
+                style={{
+                  paddingVertical: 8,
+                  paddingHorizontal: 14,
+                  borderRadius: 999,
+                  backgroundColor: payKind === 'cash' ? COLORS.primary : '#fff',
+                  borderWidth: 1,
+                  borderColor: COLORS.border,
+                }}
+              >
+                <Text style={{ color: payKind === 'cash' ? '#fff' : COLORS.text, fontWeight: '700' }}>Нал</Text>
+              </Pressable>
+            </View>
+
+            <TextInput
+              placeholder="Комментарий"
+              value={note}
+              onChangeText={setNote}
+              style={{ borderWidth: 1, borderColor: COLORS.border, backgroundColor: '#fff', borderRadius: 10, padding: 10, marginBottom: 8 }}
+            />
+
+            <WButton
+              onPress={addPayment}
+              disabled={!canAct}
+              style={{ padding: 12, borderRadius: 10, backgroundColor: canAct ? '#10B981' : '#94a3b8' }}
+            >
+              <Text style={{ color: '#000', textAlign: 'center', fontWeight: '700' }}>
+                Сохранить оплату
+              </Text>
+            </WButton>
+          </View>
+
+          <View style={{ height: 12 }} />
+
+          {currentDisplayStatus !== 'Оплачено' && (
+            <Pressable
+              onPress={onReturnToBuyer}
+              disabled={!canAct}
+              style={{ padding: 12, borderRadius: 10, backgroundColor: canAct ? COLORS.red : '#d1d5db' }}
+            >
+              <Text style={{ color: canAct ? '#fff' : '#6b7280', textAlign: 'center', fontWeight: '700' }}>
+                Вернуть на доработку снабженцу
+              </Text>
+            </Pressable>
+          )}
+
+          <View style={{ height: 12 }} />
+          <WButton
+            onPress={closeCard}
+            style={{ padding: 12, backgroundColor: '#fff', borderRadius: 10, borderWidth: 1, borderColor: COLORS.border }}
+          >
+            <Text style={{ textAlign: 'center', color: COLORS.text, fontWeight: '600' }}>Закрыть</Text>
+          </WButton>
+        </ScrollView>
+      </View>
+    </Modal>
+
+    <Modal visible={bellOpen} animationType="fade" onRequestClose={() => setBellOpen(false)} transparent>
+      <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'center', padding: 16 }}>
+        <View style={{ backgroundColor: '#fff', borderRadius: 12, padding: 12, maxHeight: '70%', borderWidth: 1, borderColor: COLORS.border }}>
+          <Text style={{ fontWeight: '800', fontSize: 16, marginBottom: 8, color: COLORS.text }}>Уведомления</Text>
+          <ScrollView contentContainerStyle={{ gap: 8 }}>
+            {notifs.length === 0 ? (
+              <Text style={{ color: COLORS.sub }}>Нет непрочитанных</Text>
+            ) : notifs.map((n: any) => (
+              <View key={n.id} style={{ borderWidth: 1, borderColor: COLORS.border, borderRadius: 10, padding: 10, backgroundColor: '#fff' }}>
+                <Text style={{ fontWeight: '700', color: COLORS.text }}>{n.title}</Text>
+                {!!n.body && <Text style={{ color: COLORS.sub, marginTop: 2 }}>{n.body}</Text>}
+                <Text style={{ color: COLORS.sub, marginTop: 4, fontSize: 11 }}>
+                  {new Date(n.created_at).toLocaleString()}
+                </Text>
+              </View>
+            ))}
+          </ScrollView>
+
+          <SafeView style={{ flexDirection: 'row', gap: 8, marginTop: 10 }}>
+            <Pressable
+              onPress={markAllRead}
+              style={{ paddingVertical: 10, paddingHorizontal: 12, borderRadius: 10, backgroundColor: '#111827' }}>
+              <Text style={{ color: '#fff', fontWeight: '700' }}>Отметить прочитанными</Text>
+            </Pressable>
+            <Pressable
+              onPress={() => setBellOpen(false)}
+              style={{ paddingVertical: 10, paddingHorizontal: 12, borderRadius: 10, borderWidth: 1, borderColor: COLORS.border, backgroundColor: '#fff' }}>
+              <Text style={{ color: COLORS.text, fontWeight: '700' }}>Закрыть</Text>
+            </Pressable>
+          </SafeView>
+        </View>
+      </View>
+    </Modal>
+  </View>
+);
+
 }
 
 /** пикер файла (web/native) */
