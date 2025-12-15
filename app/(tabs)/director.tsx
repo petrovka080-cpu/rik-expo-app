@@ -33,6 +33,7 @@ type Group = { request_id: number | string; items: PendingRow[] };
 type ProposalHead = { id: string; submitted_at?: string | null; pretty?: string | null };
 type ProposalItem = {
   id: number;
+  request_item_id: string | null;   // ✅ ДОБАВИЛИ
   rik_code: string | null;
   name_human: string;
   uom: string | null;
@@ -484,26 +485,121 @@ const exportRequestExcel = useCallback((g: Group) => {
               ) : (
                 <View>
                   {items.map((it) => (
-                    <View key={`pi:${key}:${it.id}`} style={{ paddingVertical: 4 }}>
-                      <Text style={{ fontWeight: '600', color: UI.text }}>{it.name_human}</Text>
-                      <Text style={s.cardMeta}>
-                        {(it.rik_code ? `${it.rik_code} · ` : '')}
-                        {it.total_qty} {it.uom || ''}{it.app_code ? ` · ${it.app_code}` : ''}
-                      </Text>
-                    </View>
-                  ))}
+  <View key={`pi:${key}:${it.id}`} style={{ paddingVertical: 8, borderBottomWidth: 1, borderColor: UI.border }}>
+    <Text style={{ fontWeight: '600', color: UI.text }}>{it.name_human}</Text>
+    <Text style={s.cardMeta}>
+      {(it.rik_code ? `${it.rik_code} · ` : '')}
+      {it.total_qty} {it.uom || ''}{it.app_code ? ` · ${it.app_code}` : ''}
+    </Text>
+
+    {/* ✅ ОТКЛОНИТЬ ОДНУ ПОЗИЦИЮ (вернётся снабженцу с пометкой) */}
+    <View style={{ flexDirection: 'row', gap: 8, marginTop: 8 }}>
+      <Pressable
+        onPress={async () => {
+          try {
+            if (!it.request_item_id) {
+              Alert.alert('Ошибка', 'request_item_id пустой (не можем отклонить)');
+              return;
+            }
+            setDecidingId(pidStr);
+
+            const payload = [
+              {
+                request_item_id: it.request_item_id,
+                decision: 'rejected',
+                comment: 'Отклонено директором',
+              },
+            ];
+
+            const { error } = await supabase.rpc('director_decide_proposal_items', {
+              p_proposal_id: pidStr,
+              p_decisions: payload,
+              p_finalize: false,
+            });
+            if (error) throw error;
+
+            // локально убираем строку из списка (чтобы UI сразу обновился)
+            setItemsByProp(prev => ({
+              ...prev,
+              [pidStr]: (prev[pidStr] || []).filter(x => String(x.request_item_id) !== String(it.request_item_id)),
+            }));
+          } catch (e: any) {
+            Alert.alert('Ошибка', e?.message ?? 'Не удалось отклонить позицию');
+          } finally {
+            setDecidingId(null);
+          }
+        }}
+        disabled={decidingId === pidStr}
+        style={[s.pillBtn, { backgroundColor: UI.btnReject, opacity: decidingId === pidStr ? 0.6 : 1 }]}
+      >
+        <Text style={s.pillBtnText}>Отклонить позицию</Text>
+      </Pressable>
+    </View>
+  </View>
+))}
+
                 </View>
               )}
             </View>
 
             <View style={{ flexDirection: 'row', gap: 8, marginTop: 10 }}>
-              <Pressable
-                onPress={async () => { await decide(pidStr, 'approved'); }}
-                disabled={decidingId === p.id}
-                style={[s.pillBtn, { backgroundColor: UI.btnApprove, opacity: decidingId === p.id ? 0.6 : 1 }]}
-              >
-                <Text style={s.pillBtnText}>Утвердить</Text>
-              </Pressable>
+             <Pressable
+  onPress={async () => {
+    try {
+      setDecidingId(pidStr);
+
+      // ✅ финализация: если строк не осталось -> Отклонено, иначе -> Утверждено
+      const { data, error } = await supabase.rpc('director_decide_proposal_items', {
+        p_proposal_id: pidStr,
+        p_decisions: [],
+        p_finalize: true,
+      });
+      if (error) throw error;
+
+      const status = (data as any)?.status;
+
+      // ✅ если утвердили — проталкиваем на склад (как у тебя было)
+      if (status === 'Утверждено') {
+        try {
+          const r1 = await supabase.rpc('purchase_upsert_from_proposal', { p_proposal_id: String(pidStr) });
+          let purchaseId: string | null = null;
+
+          if ((r1 as any)?.data) {
+            purchaseId = String((r1 as any).data);
+          } else {
+            const q = await supabase
+              .from('v_purchases')
+              .select('id')
+              .eq('proposal_id', pidStr)
+              .limit(1)
+              .maybeSingle();
+            if (!q.error && q.data?.id) purchaseId = String(q.data.id);
+          }
+
+          if (purchaseId) {
+            await supabase.rpc('purchase_approve', { p_purchase_id: purchaseId });
+          }
+        } catch (e) {
+          console.warn('[purchase push] failed:', (e as any)?.message ?? e);
+        }
+      }
+
+      // обновить список предложений "на утверждении"
+      await fetchProps();
+
+      Alert.alert('Готово', status ? `Статус: ${status}` : 'Решение применено');
+    } catch (e: any) {
+      Alert.alert('Ошибка', e?.message ?? 'Не удалось завершить решение');
+    } finally {
+      setDecidingId(null);
+    }
+  }}
+  disabled={decidingId === pidStr}
+  style={[s.pillBtn, { backgroundColor: UI.btnApprove, opacity: decidingId === pidStr ? 0.6 : 1 }]}
+>
+  <Text style={s.pillBtnText}>Утвердить</Text>
+</Pressable>
+
 
               {/* единственная красная кнопка — «Вернуть» */}
               <Pressable
@@ -567,7 +663,7 @@ const exportRequestExcel = useCallback((g: Group) => {
 
         const qSnap = await supabase
           .from('proposal_snapshot_items')
-          .select('id, rik_code, name_human, uom, app_code, total_qty')
+          .select('id, request_item_id, rik_code, name_human, uom, app_code, total_qty')
           .eq('proposal_id', key)
           .order('id', { ascending: true });
 
@@ -579,7 +675,7 @@ const exportRequestExcel = useCallback((g: Group) => {
         if (!rows) {
           const qItems = await supabase
             .from('proposal_items_view')
-            .select('id, rik_code, name_human, uom, app_code, total_qty')
+            .select('id, request_item_id, rik_code, name_human, uom, app_code, total_qty')
             .eq('proposal_id', key)
             .order('id', { ascending: true });
 
@@ -592,7 +688,7 @@ const exportRequestExcel = useCallback((g: Group) => {
         if (!rows) {
           const qPlain = await supabase
             .from('proposal_items')
-            .select('id, rik_code, name_human, uom, app_code, qty')
+            .select('id, request_item_id, rik_code, name_human, uom, app_code, qty')
             .eq('proposal_id', key)
             .order('id', { ascending: true });
 
@@ -602,13 +698,15 @@ const exportRequestExcel = useCallback((g: Group) => {
         }
 
         const norm = (rows ?? []).map((r: any, i: number) => ({
-          id: Number(r.id ?? i),
-          rik_code: r.rik_code ?? null,
-          name_human: r.name_human ?? '',
-          uom: r.uom ?? null,
-          app_code: r.app_code ?? null,
-          total_qty: Number(r.total_qty ?? r.qty ?? 0),
-        }));
+  id: Number(r.id ?? i),
+  request_item_id: r.request_item_id != null ? String(r.request_item_id) : null, // ✅
+  rik_code: r.rik_code ?? null,
+  name_human: r.name_human ?? '',
+  uom: r.uom ?? null,
+  app_code: r.app_code ?? null,
+  total_qty: Number(r.total_qty ?? r.qty ?? 0),
+}));
+
 
         setItemsByProp(prev => ({ ...prev, [key]: norm }));
       } catch (e) {

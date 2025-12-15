@@ -22,5 +22,6 @@ React.createElement = function (type: any, props: any, ...children: any[]) {
   }
   return orig(type, props, ...children);
 };
-
-export {};
+export default function DebugStyleTrapRoute() {
+  return null;
+}

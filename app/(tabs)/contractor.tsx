@@ -22,6 +22,7 @@ import {
   ScrollView,
   Platform,
 } from "react-native";
+import { useFocusEffect } from 'expo-router';
 import { supabase } from "../../src/lib/supabaseClient";
 import {
   WorkMaterialsEditor,
@@ -422,6 +423,8 @@ export default function ContractorScreen() {
   const [actingId, setActingId] = useState<string | null>(null);
 
   const [tab, setTab] = useState<"available" | "mine">("available");
+const focusedRef = useRef(false);
+const lastKickRef = useRef(0);
 
   const slider = useRef(new Animated.Value(0)).current;
   const [trackWidth, setTrackWidth] = useState(0);
@@ -464,7 +467,8 @@ export default function ContractorScreen() {
 
   // ---- LOAD USER PROFILE ----
   const loadProfile = useCallback(async () => {
-    setLoadingProfile(true);
+    if (!focusedRef.current) return;
+setLoadingProfile(true);
     const { data: auth } = await supabase.auth.getUser();
 
     if (!auth.user) {
@@ -494,6 +498,9 @@ export default function ContractorScreen() {
 
   // ---- LOAD CONTRACTOR (из таблицы contractors по user_id) ----
   const loadContractor = useCallback(async () => {
+if (!focusedRef.current) return;
+
+  setLoadingWorks(true);
     const { data: auth } = await supabase.auth.getUser();
     const user = auth.user;
     if (!user) {
@@ -524,8 +531,10 @@ export default function ContractorScreen() {
   }, []);
 
   // ---- LOAD WORKS ----
-  const loadWorks = useCallback(async () => {
-    setLoadingWorks(true);
+ const loadWorks = useCallback(async () => {
+  if (!focusedRef.current) return;
+
+  setLoadingWorks(true);
 
     const { data, error } = await supabase
       .from("v_works_fact")
@@ -1149,18 +1158,26 @@ export default function ContractorScreen() {
     [rows, contractor]
   );
 
-  // INITIAL LOAD
-  useEffect(() => {
-    (async () => {
-      await loadProfile();
-      await loadContractor();
-      await loadWorks();
-    })();
-  }, [loadProfile, loadContractor, loadWorks]);
+  useFocusEffect(
+  useCallback(() => {
+    focusedRef.current = true;
 
-  // -----------------------------------
-  // UI
-  // -----------------------------------
+    const now = Date.now();
+    if (now - lastKickRef.current > 900) {
+      lastKickRef.current = now;
+      (async () => {
+        await loadProfile();
+        await loadContractor();
+        await loadWorks();
+      })();
+    }
+
+    return () => {
+      focusedRef.current = false;
+    };
+  }, [loadProfile, loadContractor, loadWorks])
+);
+
 
   if (loadingProfile) {
     return (

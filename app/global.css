@@ -1,4 +1,18 @@
-html, body, #root { height: 100%; }
-body { margin: 0; }
-#root > div { min-height: 100vh; position: relative; overflow: visible !important; }
-* { box-sizing: border-box; }
+html, body, #root {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  overflow: auto;
+}
+
+#root {
+  overflow: auto;
+}
+
+#root > div {
+  min-height: 100%;
+}

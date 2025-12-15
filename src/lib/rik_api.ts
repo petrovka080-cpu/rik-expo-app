@@ -1277,6 +1277,119 @@ export async function exportProposalPdf(proposalId: number | string) {
     return '';
   }
 }
+export async function buildPaymentOrderHtml(paymentId: number): Promise<string> {
+  const pid = Number(paymentId);
+  if (!Number.isFinite(pid) || pid <= 0) throw new Error('payment_id invalid');
+
+  const { data, error } = await supabase.rpc('get_payment_order_data', { p_payment_id: pid } as any);
+  if (error) throw error;
+  if (!data) throw new Error('Нет данных для платёжки');
+
+  const payload = data as any;
+  const c = payload.company ?? {};
+  const p = payload.payment ?? {};
+  const pr = payload.proposal ?? {};
+
+  const esc = (s: any) =>
+    String(s ?? '')
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
+  const fmtMoney = (v: any) => {
+    const n = Number(String(v ?? '').replace(',', '.'));
+    return Number.isFinite(n)
+      ? n.toLocaleString('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+      : '';
+  };
+
+  const paidAt = p.paid_at ? new Date(p.paid_at).toLocaleString('ru-RU') : '—';
+  const amount = fmtMoney(p.amount);
+  const cur = String(p.currency ?? pr.invoice_currency ?? 'KGS');
+
+  return `<!doctype html><html lang="ru"><head><meta charset="utf-8"/>
+<title>Платёжное поручение ${esc(p.payment_id)}</title>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<style>
+  body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial; padding:16px; color:#111}
+  h1{font-size:18px;margin:0 0 10px 0}
+  .box{border:1px solid #e5e7eb;border-radius:12px;padding:12px;margin:10px 0;background:#fff}
+  .row{display:flex;gap:12px;flex-wrap:wrap}
+  .cell{flex:1 1 260px}
+  .lbl{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:#64748b}
+  .val{margin-top:4px;font-size:14px;font-weight:700;color:#0f172a}
+  table{width:100%;border-collapse:collapse;margin-top:10px}
+  td{border:1px solid #e5e7eb;padding:8px 10px;vertical-align:top;font-size:13px}
+  .muted{color:#64748b}
+</style></head><body>
+
+<h1>Платёжное поручение</h1>
+
+<div class="box">
+  <div class="row">
+    <div class="cell"><div class="lbl">Платёж ID</div><div class="val">${esc(p.payment_id)}</div></div>
+    <div class="cell"><div class="lbl">Дата/время оплаты</div><div class="val">${esc(paidAt)}</div></div>
+    <div class="cell"><div class="lbl">Сумма</div><div class="val">${esc(amount)} ${esc(cur)}</div></div>
+  </div>
+  <div class="row" style="margin-top:8px">
+    <div class="cell">
+      <div class="lbl">Основание</div>
+      <div class="val">Счёт: ${esc(pr.invoice_number ?? '—')} от ${esc(pr.invoice_date ?? '—')}</div>
+      <div class="muted">Proposal: ${esc(pr.proposal_id ?? '')}</div>
+    </div>
+  </div>
+</div>
+
+<div class="box">
+  <div class="lbl">Плательщик (наша компания)</div>
+  <table>
+    <tr><td>Название</td><td>${esc(c.company_name ?? '—')}</td></tr>
+    <tr><td>ИНН / КПП</td><td>${esc(c.inn ?? '—')} / ${esc(c.kpp ?? '—')}</td></tr>
+    <tr><td>Адрес</td><td>${esc(c.address ?? '—')}</td></tr>
+    <tr><td>Банк</td><td>${esc(c.bank_name ?? '—')}</td></tr>
+    <tr><td>БИК</td><td>${esc(c.bik ?? '—')}</td></tr>
+    <tr><td>Р/с</td><td>${esc(c.account ?? '—')}</td></tr>
+    <tr><td>К/с</td><td>${esc(c.corr_account ?? '—')}</td></tr>
+    <tr><td>Тел/Email</td><td>${esc(c.phone ?? '—')} / ${esc(c.email ?? '—')}</td></tr>
+  </table>
+</div>
+
+<div class="box">
+  <div class="lbl">Получатель (поставщик)</div>
+  <table>
+    <tr><td>Поставщик</td><td>${esc(pr.supplier ?? '—')}</td></tr>
+    <tr><td>Назначение</td><td>${esc(p.note ?? '')}</td></tr>
+    <tr><td>Способ</td><td>${esc(p.method ?? '')}</td></tr>
+  </table>
+</div>
+
+</body></html>`;
+}
+
+export async function exportPaymentOrderPdf(paymentId: number) {
+  const html = await buildPaymentOrderHtml(paymentId);
+
+  // native (expo)
+  if (Platform.OS !== 'web') {
+    // @ts-ignore
+    const Print = await import('expo-print');
+    const { uri } = await (Print as any).printToFileAsync({ html });
+    try {
+      // @ts-ignore
+      const Sharing = await import('expo-sharing');
+      if ((Sharing as any).isAvailableAsync && (await (Sharing as any).isAvailableAsync())) {
+        await (Sharing as any).shareAsync(uri);
+      }
+    } catch {}
+    return uri as string;
+  }
+
+  // web
+  if (typeof window !== 'undefined') {
+    const w = window.open('', '_blank');
+    if (w) { w.document.write(html); w.document.close(); w.focus(); }
+  }
+  return '';
+}
 
 // ============================== PDF: Requests ==============================
 // экспортируемый резолвер красивого номера (используем и за пределами PDF)
@@ -1681,9 +1794,9 @@ export async function accountantReturnToBuyer(
 
 
 
-/** Инбокс бухгалтера (по статусу или все) */
 export async function listAccountantInbox(status?: string) {
   const s = (status || '').trim();
+
   const norm =
     !s ? null :
     /^на доработке/i.test(s) ? 'На доработке' :
@@ -1691,19 +1804,13 @@ export async function listAccountantInbox(status?: string) {
     /^оплачено/i.test(s)     ? 'Оплачено' :
                                'К оплате';
 
-  // ГЛАВНОЕ: всегда POST с телом { p_tab: ... } — даже когда null
   const r = await supabase.rpc('list_accountant_inbox', { p_tab: norm });
-  if (!r.error && Array.isArray(r.data)) return r.data as any[];
-
-  // надёжный fallback, если где-то REST ещё кешится
-  if (norm == null) {
-    const r2 = await supabase.rpc('list_accountant_inbox_compat', {} as any);
-    if (!r2.error && Array.isArray(r2.data)) return r2.data as any[];
+  if (r.error) {
+    console.warn('[listAccountantInbox]', r.error.message);
+    return [];
   }
-  console.warn('[listAccountantInbox]', r.error?.message);
-  return [];
+  return (r.data ?? []) as any[];
 }
-
 // >>> added: уведомления для колокольчика бухгалтера/др. ролей
 export async function notifList(role: 'accountant'|'buyer'|'director', limit = 20) {
   try {

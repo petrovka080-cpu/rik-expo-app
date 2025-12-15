@@ -28,4 +28,4 @@ if (typeof document !== "undefined") {
   // eslint-disable-next-line no-console
   console.log("[webStyleGuard] ACTIVE (flatten-all)");
 }
-export {};
+
