@@ -239,7 +239,8 @@ if (rpcFailed || !triedRpcOkRef.current) {
         .from('proposals')
         .select('id, status, payment_status, invoice_number, invoice_date, invoice_amount, invoice_currency, supplier, sent_to_accountant_at')
         .not('sent_to_accountant_at', 'is', null)
-        .or('payment_status.eq.К оплате,payment_status.eq.Оплачено,payment_status.ilike.Частично%,payment_status.ilike.На доработке%')
+        .or('payment_status.is.null,payment_status.eq.К оплате,payment_status.eq.Оплачено,payment_status.ilike.Частично%,payment_status.ilike.На доработке%')
+
         .order('sent_to_accountant_at', { ascending: false, nullsFirst: false });
 
       let tmp: AccountantInboxRow[] = [];

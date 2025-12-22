@@ -1918,6 +1918,81 @@ export const RIK_API = {
   resolveProposalPrettyTitle, // >>> added
   buildProposalPdfHtmlPretty, // >>> added
 };
-  
-// ===== совместимые type-экспорты под нейтральные имена (используются только в TS) =====
+ export function webOpenPdfHtml(html: string, title = "PDF"): void {
+  if (typeof window === "undefined") return;
+
+  const w = window.open("", "_blank");
+  if (!w) {
+    alert("Разреши pop-ups для localhost:8081");
+    return;
+  }
+
+  w.document.open();
+  w.document.write(html);
+  w.document.close();
+  w.focus();
+}
+// ============================== WEB PDF WINDOW (warehouse/work acts) ==============================
+
+export function webOpenPdfWindow(loadingText = "Формируем документ…"): Window | null {
+  if (typeof window === "undefined") return null;
+
+  const w = window.open("", "_blank");
+  if (!w) {
+    alert("Разреши pop-ups для localhost:8081");
+    return null;
+  }
+
+  w.document.open();
+  w.document.write(`<!doctype html><html><head>
+    <meta charset="utf-8" />
+    <title>GOX BUILD</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <style>
+      body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;margin:0;padding:16px;color:#111}
+      .box{max-width:860px;margin:0 auto;border:1px solid #e5e7eb;border-radius:12px;padding:14px;background:#fff}
+      .muted{color:#64748b}
+    </style>
+  </head><body>
+    <div class="box">
+      <div><b>${escapeHtml(loadingText)}</b></div>
+      <div class="muted" style="margin-top:6px">Если окно пустое — проверь блокировку pop-up.</div>
+    </div>
+  </body></html>`);
+  w.document.close();
+  w.focus();
+  return w;
+}
+
+export function webWritePdfWindow(w: Window | null | undefined, html: string) {
+  if (!w || w.closed) return;
+  w.document.open();
+  w.document.write(html);
+  w.document.close();
+  try { w.focus(); } catch {}
+}
+
+export function webDownloadHtml(html: string, filenameNoExt = "document") {
+  if (typeof window === "undefined") return;
+  const blob = new Blob([html], { type: "text/html;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `${filenameNoExt}.html`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+// маленький helper чтобы не ломать HTML в loadingText
+function escapeHtml(s: string) {
+  return String(s ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
 

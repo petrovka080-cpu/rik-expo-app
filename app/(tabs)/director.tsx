@@ -548,48 +548,34 @@ const exportRequestExcel = useCallback((g: Group) => {
     try {
       setDecidingId(pidStr);
 
-      // ✅ финализация: если строк не осталось -> Отклонено, иначе -> Утверждено
-      const { data, error } = await supabase.rpc('director_decide_proposal_items', {
+      // ✅ 1) Директор утверждает ПРЕДЛОЖЕНИЕ (proposal)
+      const { error } = await supabase.rpc('director_approve_min_auto', {
         p_proposal_id: pidStr,
-        p_decisions: [],
-        p_finalize: true,
+        p_comment: null,
       });
       if (error) throw error;
 
-      const status = (data as any)?.status;
+      // ✅ 2) Склад: создать закупку + приход (к приходу)
+      const rInc = await supabase.rpc('ensure_purchase_and_incoming_from_proposal', {
+        p_proposal_id: pidStr,
+      });
+      if ((rInc as any)?.error) throw (rInc as any).error;
 
-      // ✅ если утвердили — проталкиваем на склад (как у тебя было)
-      if (status === 'Утверждено') {
-        try {
-          const r1 = await supabase.rpc('purchase_upsert_from_proposal', { p_proposal_id: String(pidStr) });
-          let purchaseId: string | null = null;
+      // ✅ 3) Бухгалтер: сразу "к оплате" (если хочешь автоматом)
+      const { error: accErr } = await supabase.rpc('proposal_send_to_accountant_min', {
+  p_proposal_id: pidStr,
+  p_invoice_number: null,
+  p_invoice_date: null,
+  p_invoice_amount: null,
+  p_invoice_currency: 'KGS',
+});
+if (accErr) throw accErr;
 
-          if ((r1 as any)?.data) {
-            purchaseId = String((r1 as any).data);
-          } else {
-            const q = await supabase
-              .from('v_purchases')
-              .select('id')
-              .eq('proposal_id', pidStr)
-              .limit(1)
-              .maybeSingle();
-            if (!q.error && q.data?.id) purchaseId = String(q.data.id);
-          }
 
-          if (purchaseId) {
-            await supabase.rpc('purchase_approve', { p_purchase_id: purchaseId });
-          }
-        } catch (e) {
-          console.warn('[purchase push] failed:', (e as any)?.message ?? e);
-        }
-      }
-
-      // обновить список предложений "на утверждении"
       await fetchProps();
-
-      Alert.alert('Готово', status ? `Статус: ${status}` : 'Решение применено');
+      Alert.alert('Готово', 'Утверждено → бухгалтер → склад');
     } catch (e: any) {
-      Alert.alert('Ошибка', e?.message ?? 'Не удалось завершить решение');
+      Alert.alert('Ошибка', e?.message ?? 'Не удалось утвердить');
     } finally {
       setDecidingId(null);
     }
@@ -599,7 +585,6 @@ const exportRequestExcel = useCallback((g: Group) => {
 >
   <Text style={s.pillBtnText}>Утвердить</Text>
 </Pressable>
-
 
               {/* единственная красная кнопка — «Вернуть» */}
               <Pressable
@@ -734,11 +719,8 @@ const exportRequestExcel = useCallback((g: Group) => {
       if (decision === 'approved') {
         // 1) штатное утверждение
         const { data: ok, error } = await supabase.rpc('approve_one', { p_proposal_id: String(pid) });
-        if (error) {
-          console.warn('[approve_one] rpc error > fallback UPDATE:', error.message);
-          const upd = await supabase.from('proposals').update({ status: 'Утверждено' }).eq('id', pid);
-          if (upd.error) throw upd.error;
-        } else if (!ok) {
+        if (error) throw error;
+ else if (!ok) {
           Alert.alert('Внимание', 'Нечего утверждать или неправильный статус/id');
         }
 
@@ -770,26 +752,21 @@ const exportRequestExcel = useCallback((g: Group) => {
           console.warn('[purchase migrate] fail:', (e as any)?.message ?? e);
         }
       } else {
-        // rejected
-        const { data: ok, error } = await supabase.rpc('reject_one', { p_proposal_id: String(pid) });
-        if (error) {
-          console.warn('[reject_one] rpc error > fallback UPDATE:', error.message);
-          const upd = await supabase.from('proposals').update({ status: 'Отклонено' }).eq('id', pid);
-          if (upd.error) throw upd.error;
-        }
-      }
-
-      await fetchProps();
-      Alert.alert(
-        decision === 'approved' ? 'Утверждено' : 'Отклонено',
-        `Предложение #${pid.slice(0,8)} ${decision === 'approved' ? 'утверждено' : 'отклонено'}`
-      );
-    } catch (e) {
-      Alert.alert('Ошибка', (e as any)?.message ?? 'Не удалось применить решение');
-    } finally {
-      setDecidingId(null);
+      const { error } = await supabase.rpc('reject_one', { p_proposal_id: String(pid) });
+      if (error) throw error;
     }
-  }, [fetchProps]);
+
+    await fetchProps();
+    Alert.alert(
+      decision === 'approved' ? 'Утверждено' : 'Отклонено',
+      `Предложение #${String(pid).slice(0, 8)} ${decision === 'approved' ? 'утверждено' : 'отклонено'}`
+    );
+  } catch (e: any) {
+    Alert.alert('Ошибка', e?.message ?? 'Не удалось применить решение');
+  } finally {
+    setDecidingId(null);
+  }
+}, [fetchProps]);
 
   async function onDirectorReturn(proposalId: string | number, note?: string) {
     try {
@@ -994,21 +971,11 @@ const exportRequestExcel = useCallback((g: Group) => {
         const reqId = toFilterId(item.request_id);
         if (reqId == null) throw new Error('request_id пустой');
         const { error } = await supabase.rpc('reject_request_all', {
-          p_request_id: String(reqId),
-          p_reason: null,
-        });
-        if (error) {
-          console.warn(
-            '[reject_request_all] rpc error:',
-            error.message,
-            '> fallback UPDATE',
-          );
-          const upd = await supabase
-            .from('request_items')
-            .update({ status: 'Отклонено' })
-            .eq('request_id', reqId as any);
-          if (upd.error) throw upd.error;
-        }
+  p_request_id: String(reqId),
+  p_reason: null,
+});
+if (error) throw error;
+
         setRows(prev => prev.filter(r => r.request_id !== item.request_id));
       } catch (e: any) {
         Alert.alert(

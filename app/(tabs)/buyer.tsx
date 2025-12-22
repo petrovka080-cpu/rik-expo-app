@@ -276,6 +276,23 @@ const SummaryBar = React.memo(forwardRef<SummaryHandle, {
 export default function BuyerScreen() {
   const [tab, setTab] = useState<Tab>('inbox');
   const [buyerFio, setBuyerFio] = useState<string>('');
+const [rfqOpen, setRfqOpen] = useState(false);
+const [rfqLastTenderId, setRfqLastTenderId] = useState<string | null>(null);
+const [rfqDeadlineIso, setRfqDeadlineIso] = useState<string>(() => {
+  const d = new Date(Date.now() + 24 * 3600 * 1000);
+  return d.toISOString();
+});
+
+const fmtLocal = (iso: string) => {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "—";
+  return d.toLocaleString();
+};
+
+const setDeadlineHours = (hours: number) => {
+  const d = new Date(Date.now() + hours * 3600 * 1000);
+  setRfqDeadlineIso(d.toISOString());
+};
 
 
   // INBOX
@@ -339,7 +356,9 @@ export default function BuyerScreen() {
   const [propDocAttached, setPropDocAttached] = useState<{ name: string; url?: string } | null>(null);
   const [propDocBusy, setPropDocBusy] = useState(false);
 const focusedRef = useRef(false);
-const lastKickRef = useRef(0);
+const lastInboxKickRef = useRef(0);
+const lastBucketsKickRef = useRef(0);
+
   // мгновенная загрузка invoice (web/native)
   const invoiceInputRef = useRef<HTMLInputElement | null>(null);
   const [invoiceUploadedName, setInvoiceUploadedName] = useState<string>('');
@@ -404,9 +423,9 @@ const lastKickRef = useRef(0);
   const fetchInbox = useCallback(async () => {
   if (!focusedRef.current) return;
 
-  const now = Date.now();
-  if (now - lastKickRef.current < 900) return;
-  lastKickRef.current = now;
+ const now = Date.now();
+if (now - lastInboxKickRef.current < 900) return;
+lastInboxKickRef.current = now;
 
   setLoadingInbox(true);
   try {
@@ -423,25 +442,49 @@ const lastKickRef = useRef(0);
       inbox = [];
     }
 
-    // 2) Убираем позиции, которые уже попали в proposals
-    let taken = new Set<string>();
-    try {
-      const piRes = await supabase.from('proposal_items').select('request_item_id');
-      if (!piRes.error && Array.isArray(piRes.data)) {
-        taken = new Set<string>(
-          (piRes.data as any[]).map((r: any) => String(r.request_item_id))
-        );
-      }
-    } catch {}
+    // 2) Убираем позиции, которые уже попали в proposals,
+//    НО только если предложение ещё "живое" (не отклонено/не завершено).
+// 2) Убираем позиции, которые уже попали в proposals,
+// но только если они в "живых" предложениях.
+let taken = new Set<string>();
+try {
+  // 1) активные предложения
+  const p = await supabase
+    .from('proposals')
+    .select('id')
+    .in('status', ['На утверждении', 'Утверждено', 'На доработке']);
 
-    const filtered = (inbox || []).filter(
-      (r: any) =>
-        r?.request_item_id &&
-        r?.request_id != null &&
-        !taken.has(String(r.request_item_id))
-    );
+  const pids = (!p.error && Array.isArray(p.data))
+    ? (p.data as any[]).map(x => String(x.id)).filter(Boolean)
+    : [];
 
-    setRows(filtered as BuyerInboxRow[]);
+  // 2) request_item_id только из активных proposals
+  if (pids.length) {
+    const pi = await supabase
+      .from('proposal_items')
+      .select('request_item_id')
+      .in('proposal_id', pids);
+
+    if (!pi.error && Array.isArray(pi.data)) {
+      taken = new Set(
+        (pi.data as any[])
+          .map(r => String(r?.request_item_id ?? ''))
+          .filter(Boolean)
+      );
+    }
+  }
+} catch (e) {
+  console.warn('[buyer] taken filter failed:', (e as any)?.message ?? e);
+}
+
+const filtered = (inbox || []).filter((r: any) => {
+  const id = String(r?.request_item_id ?? '');
+  return id && !taken.has(id);
+});
+
+setRows(filtered as BuyerInboxRow[]);
+
+
 
     // 3) предзагрузка красивых номеров заявок
     const ids = Array.from(new Set(filtered.map(r => String(r.request_id))));
@@ -458,9 +501,9 @@ const lastKickRef = useRef(0);
   const fetchBuckets = useCallback(async () => {
   if (!focusedRef.current) return;
 
-  const now = Date.now();
-  if (now - lastKickRef.current < 900) return;
-  lastKickRef.current = now;
+const now = Date.now();
+if (now - lastBucketsKickRef.current < 900) return;
+lastBucketsKickRef.current = now;
 
   setLoadingBuckets(true);
     try {
@@ -1849,19 +1892,36 @@ const headerText = `Предложение #${pidStr.slice(0, 8)}`;
       />
 
       {/* Тулбар действий (инбокс) */}
-      {tab === 'inbox' && (
-        <View style={s.toolbar}>
-          <Pressable disabled={creating} onPress={createProposalSingle} style={[s.actionBtn, creating && s.actionBtnDisabled]}>
-            <Text style={s.actionBtnText}>Сгруппировать заявки</Text>
-          </Pressable>
-          <Pressable disabled={creating} onPress={handleCreateProposalsBySupplier} style={[s.actionBtn, creating && s.actionBtnDisabled]}>
-            <Text style={s.actionBtnText}>Сформировать по поставщикам</Text>
-          </Pressable>
-          <Pressable onPress={clearPick} style={[s.actionBtnGhost]}>
-            <Text style={s.actionBtnGhostText}>Сбросить выбор</Text>
-          </Pressable>
-        </View>
-      )}
+{tab === 'inbox' && (
+  <View style={s.toolbar}>
+    <Pressable disabled={creating} onPress={createProposalSingle} style={[s.actionBtn, creating && s.actionBtnDisabled]}>
+      <Text style={s.actionBtnText}>Сгруппировать заявки</Text>
+    </Pressable>
+
+    <Pressable disabled={creating} onPress={handleCreateProposalsBySupplier} style={[s.actionBtn, creating && s.actionBtnDisabled]}>
+      <Text style={s.actionBtnText}>Сформировать по поставщикам</Text>
+    </Pressable>
+
+    {/* ✅ НОВАЯ КНОПКА: создать торги */}
+    <Pressable
+      disabled={creating || pickedIds.length === 0}
+      onPress={() => setRfqOpen(true)}
+      style={[
+        s.actionBtn,
+        creating && s.actionBtnDisabled,
+        pickedIds.length === 0 && { opacity: 0.4 },
+        { backgroundColor: COLORS.blue, borderColor: COLORS.blue },
+      ]}
+    >
+      <Text style={s.actionBtnText}>Создать торги (RFQ)</Text>
+    </Pressable>
+
+    <Pressable onPress={clearPick} style={[s.actionBtnGhost]}>
+      <Text style={s.actionBtnGhostText}>Сбросить выбор</Text>
+    </Pressable>
+  </View>
+)}
+
 
       {/* Контент вкладок */}
       <FlatList
@@ -2243,6 +2303,128 @@ const headerText = `Предложение #${pidStr.slice(0, 8)}`;
           </View>
         </View>
            </Modal>
+{/* ======= Модалка «Создать торги (RFQ)» ======= */}
+<Modal
+  visible={rfqOpen}
+  transparent
+  animationType="fade"
+  onRequestClose={() => setRfqOpen(false)}
+>
+  <View style={s.modalBackdrop}>
+    <View style={s.modalCard}>
+      <Text style={s.modalTitle}>Создать торги (RFQ)</Text>
+
+      <Text style={s.modalHelp}>
+        Дедлайн приёма предложений
+      </Text>
+
+      <Text style={{ fontWeight: '700', marginBottom: 6 }}>
+        {fmtLocal(rfqDeadlineIso)}
+      </Text>
+
+      <View style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap' }}>
+        <Pressable onPress={() => setDeadlineHours(6)}  style={s.smallBtn}><Text>6 ч</Text></Pressable>
+        <Pressable onPress={() => setDeadlineHours(12)} style={s.smallBtn}><Text>12 ч</Text></Pressable>
+        <Pressable onPress={() => setDeadlineHours(24)} style={s.smallBtn}><Text>24 ч</Text></Pressable>
+        <Pressable onPress={() => setDeadlineHours(48)} style={s.smallBtn}><Text>48 ч</Text></Pressable>
+        <Pressable onPress={() => setDeadlineHours(72)} style={s.smallBtn}><Text>72 ч</Text></Pressable>
+      </View>
+
+      <View style={{ flexDirection: 'row', gap: 8, marginTop: 16 }}>
+        <Pressable
+          onPress={() => setRfqOpen(false)}
+          style={[s.smallBtn, { borderColor: COLORS.border }]}
+        >
+          <Text>Отмена</Text>
+        </Pressable>
+
+        <Pressable
+          onPress={async () => {
+  try {
+    if (pickedIds.length === 0) {
+      Alert.alert('Пусто', 'Выбери позиции для торгов');
+      return;
+    }
+
+    const d = new Date(rfqDeadlineIso);
+    if (Number.isNaN(d.getTime())) {
+      Alert.alert('Дедлайн', 'Неверная дата');
+      return;
+    }
+    if (d.getTime() < Date.now() + 5 * 60 * 1000) {
+      Alert.alert('Дедлайн', 'Поставь минимум +5 минут от текущего времени');
+      return;
+    }
+
+    // ✅ создаём tender (пока без адреса/координат, безопасно)
+    const { data: tenderId, error } = await supabase.rpc(
+  'tender_create_from_request_items',
+  {
+    p_request_item_ids: pickedIds,
+    p_mode: 'rfq',
+    p_deadline_at: d.toISOString(),
+    p_city: null,
+    p_lat: null,
+    p_lng: null,
+    p_radius_km: 10,
+    p_visibility: 'open',
+  }
+);
+
+if (error) throw error;
+
+// ✅ ПУБЛИКАЦИЯ ТОРГОВ
+const { error: pubErr } = await supabase.rpc('tender_publish', {
+  p_tender_id: tenderId,
+});
+
+if (pubErr) throw pubErr;
+
+setRfqLastTenderId(tenderId);
+setRfqOpen(false);
+
+Alert.alert(
+  'Торги опубликованы',
+  `RFQ #${String(tenderId).slice(0, 8)} опубликован и виден поставщикам`
+);
+  } catch (e: any) {
+    Alert.alert('Ошибка', e?.message ?? String(e));
+  }
+}}
+
+          style={[s.smallBtn, { backgroundColor: COLORS.blue, borderColor: COLORS.blue }]}
+        >
+          <Text style={{ color: '#fff', fontWeight: '700' }}>
+            Создать торги
+          </Text>
+        </Pressable>
+      </View>
+{rfqLastTenderId && (
+  <Pressable
+    onPress={async () => {
+      try {
+        const { error } = await supabase.rpc('tender_publish', {
+          p_tender_id: rfqLastTenderId,
+        });
+        if (error) throw error;
+
+        Alert.alert('Опубликовано', 'Спрос появился на карте supplierMap');
+        setRfqOpen(false);
+      } catch (e: any) {
+        Alert.alert('Ошибка публикации', e?.message ?? String(e));
+      }
+    }}
+    style={[s.smallBtn, { marginTop: 10, backgroundColor: COLORS.green, borderColor: COLORS.green }]}
+  >
+    <Text style={{ color: '#fff', fontWeight: '700' }}>
+      Опубликовать на карте
+    </Text>
+  </Pressable>
+)}
+
+    </View>
+  </View>
+</Modal>
 
       {/* Липкая/фиксированная панель действий (дублирует верхний тулбар, логика та же) */}
       <View style={s.stickyBar} pointerEvents="auto">

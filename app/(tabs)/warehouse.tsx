@@ -13,13 +13,19 @@ import {
   ScrollView,
   Modal,
 } from "react-native";
+
 import { supabase } from "../../src/lib/supabaseClient";
+
+
 import {
   WorkMaterialsEditor,
   WorkMaterialRow,
 } from "../../src/components/WorkMaterialsEditor";
 import * as Print from "expo-print";
 import * as Sharing from "expo-sharing";
+import { webOpenPdfWindow, webWritePdfWindow, webDownloadHtml } from "../../src/lib/rik_api";
+
+
 
 /** ========= типы ========= */
 type IncomingRow = {
@@ -180,6 +186,20 @@ const parseNum = (v: any, d = 0): number => {
   const n = Number(cleaned);
   return Number.isFinite(n) ? n : d;
 };
+// нормализация UOM из БД: null/"" -> null
+const pickUom = (v: any): string | null => {
+  const s = v == null ? "" : String(v).trim();
+  return s !== "" ? s : null;
+};
+// ===== timeout wrapper (чтобы UI не зависал навсегда) =====
+function withTimeout<T>(p: Promise<T>, ms: number, label: string): Promise<T> {
+  let t: any;
+  const timeout = new Promise<T>((_, reject) => {
+    t = setTimeout(() => reject(new Error(`Timeout ${ms}ms: ${label}`)), ms);
+  });
+  return Promise.race([p, timeout]).finally(() => clearTimeout(t));
+}
+
 
 // Проверка на UUID
 const isUuid = (s: string) =>
@@ -237,7 +257,7 @@ const resolveUnitIdByCode = async (code: string): Promise<string | null> => {
 async function generateWorkPdf(
   work: WorkRow | null,
   materials: WorkMaterialRow[],
-  opts?: { actDate?: string | Date },
+  opts?: { actDate?: string | Date; webWindow?: Window | null },
 ) {
   if (!work) return;
 
@@ -253,10 +273,19 @@ async function generateWorkPdf(
     const workName = work.work_name || work.work_code || "Работа";
     const actNo = work.progress_id.slice(0, 8);
 
-    const workUrl = `https://app.goxbuild.com/work/${work.progress_id}`;
-    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(
-      workUrl,
-    )}`;
+   const workUrl = `https://app.goxbuild.com/work/${work.progress_id}`;
+const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(
+  workUrl,
+)}`;
+
+const isWeb = Platform.OS === "web";
+const qrBlock = isWeb
+  ? `<div style="font-size:9px;color:#555">
+       QR отключён на WEB (чтобы быстрее). Ссылка:
+       <a href="${workUrl}" target="_blank">${workUrl}</a>
+     </div>`
+  : `<img src="${qrUrl}" alt="QR" />`;
+
 
     const materialsRowsHtml = materials
       .map(
@@ -383,30 +412,26 @@ async function generateWorkPdf(
           </div>
           <div style="text-align:right;">
             <div style="font-size:9px; margin-bottom:4px;">QR для проверки акта</div>
-            <img src="${qrUrl}" alt="QR" />
+            ${qrBlock}
+
           </div>
         </div>
       </body>
     </html>
     `;
 
-    // WEB: отдельное окно
-    if (Platform.OS === "web") {
-      const printWindow = window.open("", "_blank");
-      if (!printWindow) {
-        Alert.alert(
-          "Печать",
-          "Браузер заблокировал всплывающее окно. Разреши pop-up для этого сайта.",
-        );
-        return;
-      }
-      printWindow.document.open();
-      printWindow.document.write(html);
-      printWindow.document.close();
-      printWindow.focus();
-      printWindow.print();
-      return;
-    }
+if (Platform.OS === "web") {
+  // ✅ если окно открылось — пишем туда
+  if (opts?.webWindow && !opts.webWindow.closed) {
+    webWritePdfWindow(opts.webWindow, html);
+    return;
+  }
+
+  webDownloadHtml(html, `act_${work.progress_id.slice(0, 8)}`);
+
+  return;
+}
+
 
     // MOBILE: печать + PDF + share + upload
     await Print.printAsync({ html });
@@ -449,26 +474,58 @@ async function generateWorkPdf(
 async function loadAggregatedWorkSummary(
   progressId: string,
   baseWork: WorkRow,
+  logs?: Array<{ id: string; qty: number }>
 ): Promise<{ work: WorkRow; materials: WorkMaterialRow[] }> {
-  const logsQ = await supabase
-    .from("work_progress_log" as any)
-    .select("id, qty")
-    .eq("progress_id", progressId);
 
-  if (logsQ.error || !Array.isArray(logsQ.data) || logsQ.data.length === 0) {
-    return { work: baseWork, materials: [] };
+  // ✅ если логи уже есть (workLog) — НЕ трогаем work_progress_log второй раз
+  let logRows = logs ?? [];
+
+  if (!logRows.length) {
+    const logsQ = await withTimeout(
+      supabase
+        .from("work_progress_log" as any)
+        .select("id, qty")
+        .eq("progress_id", progressId),
+      15000, // ✅ увеличили (на всякий)
+      "work_progress_log select",
+    );
+
+    if (logsQ.error || !Array.isArray(logsQ.data) || logsQ.data.length === 0) {
+      return { work: baseWork, materials: [] };
+    }
+
+    logRows = (logsQ.data as any[]).map((l) => ({
+      id: String(l.id),
+      qty: Number(l.qty ?? 0),
+    }));
   }
 
-  const logIds = (logsQ.data as any[]).map((l) => String(l.id));
-  const totalQty = (logsQ.data as any[]).reduce(
-    (sum, l) => sum + Number(l.qty ?? 0),
-    0,
+  const logIds = logRows.map((l) => l.id);
+  const totalQty = logRows.reduce((sum, l) => sum + Number(l.qty ?? 0), 0);
+
+ // ✅ Вместо N запросов по одному log_id — 1..N батчей через IN()
+let allMats: any[] = [];
+
+const BATCH = 200; // можно 100..500
+for (let i = 0; i < logIds.length; i += BATCH) {
+  const chunk = logIds.slice(i, i + BATCH);
+
+  const q = await withTimeout(
+    supabase
+      .from("work_progress_log_materials" as any)
+      .select("log_id, mat_code, uom_mat, qty_fact")
+      .in("log_id", chunk),
+    15000, // ✅ увеличили, потому что это уже “тяжёлый” запрос
+    `work_progress_log_materials select batch ${i}-${i + chunk.length}`,
   );
 
-  const matsQ = await supabase
-    .from("work_progress_log_materials" as any)
-    .select("log_id, mat_code, uom_mat, qty_fact")
-    .in("log_id", logIds);
+  if (q.error) throw q.error;
+  if (Array.isArray(q.data)) allMats.push(...q.data);
+}
+
+const matsQ = { data: allMats, error: null as any };
+
+
 
   let aggregated: WorkMaterialRow[] = [];
 
@@ -476,7 +533,8 @@ async function loadAggregatedWorkSummary(
     const aggMap = new Map<string, { mat_code: string; uom: string; qty: number }>();
 
     for (const m of matsQ.data as any[]) {
-      const code = String(m.mat_code);
+      const code = m.mat_code ? String(m.mat_code) : "";
+      if (!code) continue;
       const uom = m.uom_mat ? String(m.uom_mat) : "";
       const qty = Number(m.qty_fact ?? 0) || 0;
       if (!qty) continue;
@@ -489,13 +547,17 @@ async function loadAggregatedWorkSummary(
 
     const aggArr = Array.from(aggMap.values());
     const codes = aggArr.map((a) => a.mat_code);
-    const namesMap: Record<string, { name: string; uom: string | null }> = {};
 
+    const namesMap: Record<string, { name: string; uom: string | null }> = {};
     if (codes.length) {
-      const ci = await supabase
-        .from("catalog_items" as any)
-        .select("rik_code, name_human_ru, name_human, uom_code")
-        .in("rik_code", codes);
+      const ci = await withTimeout(
+        supabase
+          .from("catalog_items" as any)
+          .select("rik_code, name_human_ru, name_human, uom_code")
+          .in("rik_code", codes),
+        15000,
+        "catalog_items select",
+      );
 
       if (!ci.error && Array.isArray(ci.data)) {
         for (const n of ci.data as any[]) {
@@ -527,14 +589,12 @@ async function loadAggregatedWorkSummary(
 
   return { work, materials: aggregated };
 }
-
 /** ========= экран ========= */
 export default function Warehouse() {
-  console.log("WAREHOUSE RENDER");
-
-  const [tab, setTab] = useState<Tab>("К приходу");
+    const [tab, setTab] = useState<Tab>("К приходу");
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+const pdfWindowRef = React.useRef<Window | null>(null);
 
   /** ===== К ПРИХОДУ ===== */
   const [toReceive, setToReceive] = useState<IncomingRow[]>([]);
@@ -553,6 +613,9 @@ export default function Warehouse() {
   const [itemsByHead, setItemsByHead] = useState<Record<string, ItemRow[]>>({});
   const [qtyInputByItem, setQtyInputByItem] = useState<Record<string, string>>({});
   const [receivingHeadId, setReceivingHeadId] = useState<string | null>(null);
+  // ===== PDF lock (WEB) =====
+  const [pdfBusy, setPdfBusy] = useState(false);
+  const [pdfBusyLogId, setPdfBusyLogId] = useState<string | null>(null);
 
   // helper: канонический id
   const canonId = useCallback(
@@ -753,13 +816,23 @@ export default function Warehouse() {
         .limit(5000);
 
       if (!fact.error && Array.isArray(fact.data)) {
+
         const rows = (fact.data || []).map(
           (x: any) =>
             ({
               material_id: String(x.code ?? x.material_id ?? ""),
               code: x.code ?? null,
-              name: x.name ?? x.name ?? null,
-              uom_id: x.uom_id ?? null,
+              name: x.name ?? x.name_human ?? x.name_human_ru ?? null,
+
+              uom_id:
+  pickUom(x.uom_id) ??
+  pickUom(x.uom) ??
+  pickUom(x.uom_code) ??
+  pickUom(x.unit) ??
+  pickUom(x.unit_id) ??
+  null,
+
+
               qty_on_hand: nz(x.qty_on_hand, 0),
               qty_reserved: nz(x.qty_reserved, 0),
               qty_available: nz(
@@ -792,8 +865,16 @@ export default function Warehouse() {
               ({
                 material_id: String(x.material_id ?? x.id ?? x.code ?? ""),
                 code: x.code ?? x.mat_code ?? null,
-                name: x.name ?? x.name ?? null,
-                uom_id: x.uom_id ?? x.uom ?? null,
+                uom_id:
+  pickUom(x.uom_id) ??
+  pickUom(x.uom) ??
+  pickUom(x.uom_code) ??
+  pickUom(x.unit) ??
+  pickUom(x.unit_id) ??
+  null,
+
+name: (x.name ?? x.name_human ?? x.name_human_ru ?? null),
+
                 qty_on_hand: nz(x.qty_on_hand ?? x.on_hand, 0),
                 qty_reserved: nz(x.qty_reserved ?? x.reserved, 0),
                 qty_available: nz(
@@ -825,7 +906,13 @@ export default function Warehouse() {
               material_id: String(x.code ?? ""),
               code: x.code ?? null,
               name: x.name ?? null,
-              uom_id: x.uom_id ?? null,
+              uom_id:
+  pickUom(x.uom_id) ??
+  pickUom(x.uom) ??
+  pickUom(x.uom_code) ??
+  pickUom(x.unit) ??
+  pickUom(x.unit_id),
+
               qty_on_hand: nz(x.qty_on_hand, 0),
               qty_reserved: nz(x.qty_reserved, 0),
               qty_available: nz(
@@ -875,30 +962,54 @@ export default function Warehouse() {
   }>({ kind: null, text: "" });
 
   const loadUoms = useCallback(async () => {
-    try {
-      const q = await supabase
+  try {
+    // 1) сначала самый безопасный набор
+    let q = await supabase
+      .from("rik_uoms" as any)
+      .select("uom_code, name_ru")
+      .limit(2000);
+
+    // 2) если name_ru тоже нет — пробуем name
+    if (q.error) {
+      q = await supabase
         .from("rik_uoms" as any)
-        .select(
-          "id:uom_code, symbol:uom_code, short_name:name_ru, name:name_ru, kind",
-        )
+        .select("uom_code, name")
         .limit(2000);
+    }
 
-      if (q.error || !Array.isArray(q.data)) return;
+    // 3) если есть какая-то “короткая” колонка — пробуем (на случай другой схемы)
+    if (q.error) {
+      q = await supabase
+        .from("rik_uoms" as any)
+        .select("uom_code, title")
+        .limit(2000);
+    }
 
-      const map: Record<string, string> = {};
-      for (const r of q.data as any[]) {
-        const id = String(r.id ?? "");
-        const label = (r.symbol ?? r.short_name ?? r.name ?? "").toString();
-        if (id) map[id] = label;
-      }
-      setUoms(map);
-    } catch {}
-  }, []);
+    if (q.error || !Array.isArray(q.data)) {
+      console.warn("[loadUoms] error:", q.error?.message);
+      return;
+    }
 
-  useEffect(() => {
+    const map: Record<string, string> = {};
+    for (const r of q.data as any[]) {
+      const code = String(r.uom_code ?? "").trim();
+      if (!code) continue;
+
+      const label = String(r.name_ru ?? r.name ?? r.title ?? code).trim();
+      map[code] = label || code;
+    }
+    setUoms(map);
+  } catch (e) {
+    console.warn("[loadUoms] throw:", e);
+  }
+}, []);
+
+useEffect(() => {
+  // UOM нужен для: "Склад факт" (подписи остатков) и "Расход"
+  if (tab === "Склад факт" || tab === "Расход") {
     loadUoms();
-  }, [loadUoms]);
-
+  }
+}, [tab, loadUoms]);
   const tryOptions = useCallback(async (table: string, columns: string[]) => {
     const colList = columns.join(",");
     const q = await supabase.from(table as any).select(colList).limit(1000);
@@ -1378,7 +1489,13 @@ export default function Warehouse() {
         object_name: x.object_name ?? null,
         work_code: x.work_code ?? null,
         work_name: x.work_name ?? null,
-        uom_id: x.uom_id ?? null,
+        uom_id:
+  pickUom(x.uom_id) ??
+  pickUom(x.uom) ??
+  pickUom(x.uom_code) ??
+  pickUom(x.unit) ??
+  pickUom(x.unit_id),
+
         qty_planned: Number(x.qty_planned ?? 0),
         qty_done: Number(x.qty_done ?? 0),
         qty_left: Number(x.qty_left ?? 0),
@@ -1647,10 +1764,14 @@ export default function Warehouse() {
               if (!lastLogQ.error && lastLogQ.data?.id) {
                 const logId = String(lastLogQ.data.id);
 
-                const matsQ = await supabase
-                  .from("work_progress_log_materials" as any)
-                  .select("mat_code, uom_mat, qty_fact")
-                  .eq("log_id", logId);
+                const matsQ = await withTimeout(
+  supabase
+    .from("work_progress_log_materials" as any)
+    .select("mat_code, uom_mat, qty_fact")
+    .eq("log_id", logId),
+  15000,
+  `work_progress_log_materials restore for last log ${logId}`,
+);
 
                 if (
                   !matsQ.error &&
@@ -2063,14 +2184,12 @@ const confirmIncoming = useCallback(
               const qty = Number.isFinite(n) ? n : 0;
 
               return {
-                incoming_id: realId,
-                purchase_item_id: x.id,
-                code: x.code ?? null,
-                name: x.name ?? x.code ?? null,
-                uom: x.uom ?? null,
-                qty_expected: qty,
-                qty_received: 0,
-              };
+  incoming_id: realId,
+  purchase_item_id: x.id,
+  qty_expected: qty,
+  qty_received: 0,
+};
+
             })
             .filter((r) => r.qty_expected > 0);
 
@@ -2098,13 +2217,142 @@ const confirmIncoming = useCallback(
     [fetchToReceive],
   );
 
-  /// Восстановление позиций, если их нет
-  const reseedIncomingItems = async (incomingId: string, purchaseId: string) => {
-    console.log("[reseedIncomingItems] start", { incomingId, purchaseId });
+  const reseedIncomingItems = async (
+  incomingId: string,
+  purchaseId: string,
+): Promise<boolean> => {
+  console.log("[reseedIncomingItems] start", { incomingId, purchaseId });
 
-    const pi = await supabase
+  const toNum = (v: any): number => {
+    if (v == null) return 0;
+    const s = String(v).trim();
+    if (!s) return 0;
+    const cleaned = s
+      .replace(/[^\d,\.\-]+/g, "")
+      .replace(",", ".")
+      .replace(/\s+/g, "");
+    const n = Number(cleaned);
+    return Number.isFinite(n) ? n : 0;
+  };
+
+  // 1) читаем purchase_items
+  let pi = await supabase
+    .from("purchase_items" as any)
+    .select(
+      `
+      id,
+      request_item_id,
+      qty,
+      uom,
+      request_items:request_items (
+        rik_code,
+        name_human,
+        note,
+        uom
+      )
+    `,
+    )
+    .eq("purchase_id", purchaseId)
+    .order("id", { ascending: true });
+
+  if (pi.error) {
+    console.warn("[reseedIncomingItems] select purchase_items error:", pi.error.message);
+    return false;
+  }
+
+  console.log("[reseedIncomingItems] purchase_items rows:", Array.isArray(pi.data) ? pi.data.length : 0);
+
+  // 2) если пусто — создаём purchase_items из proposal_snapshot_items
+  if (Array.isArray(pi.data) && pi.data.length === 0) {
+    console.warn("[reseedIncomingItems] purchase_items empty → seed from proposal_snapshot_items");
+
+    const link = await supabase
+      .from("purchases" as any)
+      .select("proposal_id")
+      .eq("id", purchaseId)
+      .maybeSingle();
+
+    const propId =
+      !link.error && link.data?.proposal_id ? String(link.data.proposal_id) : null;
+
+    if (!propId) {
+      console.warn("[reseedIncomingItems] purchases.proposal_id not found", link.error?.message);
+      return false;
+    }
+
+    const snap = await supabase
+      .from("proposal_snapshot_items" as any)
+      .select("request_item_id, uom, total_qty")
+
+      .eq("proposal_id", propId);
+// ✅ подтянем name_human из request_items (иначе purchase_items insert упадёт)
+const reqIds = (snap.data as any[])
+  .map((x: any) => x.request_item_id)
+  .filter(Boolean)
+  .map((v: any) => String(v));
+
+const riMap: Record<string, { name_human: string; rik_code: string | null; uom: string | null }> = {};
+
+if (reqIds.length) {
+  const ri = await supabase
+    .from("request_items" as any)
+    .select("id, name_human, rik_code, uom")
+    .in("id", reqIds);
+
+  if (!ri.error && Array.isArray(ri.data)) {
+    for (const r of ri.data as any[]) {
+      const id = String(r.id);
+      riMap[id] = {
+        name_human: String(r.name_human ?? ""),
+        rik_code: r.rik_code ? String(r.rik_code) : null,
+        uom: r.uom ? String(r.uom) : null,
+      };
+    }
+  }
+}
+
+    if (snap.error || !Array.isArray(snap.data) || snap.data.length === 0) {
+      console.warn("[reseedIncomingItems] snapshot empty", snap.error?.message);
+      return false;
+    }
+const piToInsert = (snap.data as any[])
+  .map((x: any) => {
+    const qty = toNum(x.total_qty ?? 0);
+
+    const rid = x.request_item_id ? String(x.request_item_id) : null;
+    if (!rid || qty <= 0) return null;
+
+    const meta = riMap[rid];
+
+    const name_human = (meta?.name_human || "").trim();
+    if (!name_human) return null; // чтобы точно не вставить null/пусто
+
+    return {
+  purchase_id: purchaseId,
+  request_item_id: rid,
+  qty,
+  uom: x.uom ?? meta?.uom ?? null,
+  name_human, // ✅ обязательно, иначе NOT NULL снова
+};
+
+  })
+  .filter(Boolean) as any[];
+    if (piToInsert.length === 0) {
+      console.warn("[reseedIncomingItems] nothing to seed into purchase_items");
+      return false;
+    }
+
+    const insPI = await supabase.from("purchase_items" as any).insert(piToInsert as any);
+    if (insPI.error) {
+      console.warn("[reseedIncomingItems] purchase_items insert error:", insPI.error.message);
+      return false;
+    }
+
+    // перечитываем purchase_items
+    pi = await supabase
       .from("purchase_items" as any)
-      .select(`
+      .select(
+        `
         id,
         request_item_id,
         qty,
@@ -2115,68 +2363,59 @@ const confirmIncoming = useCallback(
           note,
           uom
         )
-      `)
+      `,
+      )
       .eq("purchase_id", purchaseId)
       .order("id", { ascending: true });
 
     if (pi.error) {
-      console.warn(
-        "[reseedIncomingItems] select error:",
-        pi.error.message,
-        pi.error.details,
-        pi.error.hint,
-        pi.error.code,
-      );
-      return false;
-    }
-    console.log(
-      "[reseedIncomingItems] select rows:",
-      Array.isArray(pi.data) ? pi.data.length : 0,
-    );
-
-    const rows = (pi.data as any[])
-      .map((x) => {
-        const s = String(x.qty ?? "").trim();
-        const qtyNum = s
-          ? Number(s.replace(/[^\d,\.\-]+/g, "").replace(",", "."))
-          : 0;
-
-        const ri = x.request_items ?? {};
-        const piId = String(x.id ?? "");
-
-        const row: any = {
-          incoming_id: incomingId,
-          ...(isUuid(piId) ? { purchase_item_id: piId } : {}),
-          uom: x.uom ?? ri.uom ?? null,
-          qty_expected: Number.isFinite(qtyNum) ? qtyNum : 0,
-          qty_received: 0,
-        };
-
-        return row;
-      })
-      .filter((r) => r.qty_expected > 0);
-
-    console.log("[reseedIncomingItems] rows to insert:", rows.length);
-    if (rows.length === 0) return false;
-
-    const ins = await supabase
-      .from("wh_incoming_items" as any)
-      .insert(rows as any);
-
-    if (ins.error) {
-      console.warn(
-        "[reseedIncomingItems] insert error:",
-        ins.error.message,
-        ins.error.details,
-        ins.error.hint,
-        ins.error.code,
-      );
+      console.warn("[reseedIncomingItems] reselect purchase_items error:", pi.error.message);
       return false;
     }
 
-    console.log("[reseedIncomingItems] insert ok");
-    return true;
-  };
+    console.log("[reseedIncomingItems] purchase_items seeded rows:", Array.isArray(pi.data) ? pi.data.length : 0);
+  }
+
+  // 3) строим wh_incoming_items
+  const rows = ((pi.data as any[]) || [])
+  .map((x) => {
+    const piId = String(x.id ?? "");
+    const qty_expected = toNum(x.qty ?? 0);
+    if (qty_expected <= 0) return null;
+
+    // request_items relation может быть объектом или массивом
+    const ri =
+      Array.isArray((x as any)?.request_items)
+        ? (x as any).request_items[0]
+        : (x as any)?.request_items;
+
+    return {
+      incoming_id: incomingId,
+      purchase_item_id: isUuid(piId) ? piId : null,
+      qty_expected,
+      qty_received: 0,
+
+      // ✅ чтобы в list_wh_items и UI всегда были данные
+      rik_code: ri?.rik_code ?? null,
+      name_human: ri?.name_human ?? null,
+      uom: (x as any)?.uom ?? ri?.uom ?? null,
+    };
+  })
+  .filter(Boolean) as any[];
+
+
+  console.log("[reseedIncomingItems] rows to insert:", rows.length);
+  if (rows.length === 0) return false;
+
+  const ins = await supabase.from("wh_incoming_items" as any).insert(rows as any);
+  if (ins.error) {
+    console.warn("[reseedIncomingItems] wh_incoming_items insert error:", ins.error.message);
+    return false;
+  }
+
+  console.log("[reseedIncomingItems] insert ok");
+  return true;
+};
 
   // нормализация строки -> число
   const __toNum = (v: any): number => {
@@ -2211,114 +2450,123 @@ const confirmIncoming = useCallback(
     }
     return undefined;
   };
+const mapRow = (x: any, syntheticBase?: string): ItemRow => {
+  // ✅ Supabase relation может прийти как массив — берём первый элемент
+  const piRel: any = Array.isArray((x as any)?.purchase_items)
+    ? (x as any).purchase_items[0]
+    : (x as any)?.purchase_items;
 
-  // приведение любой строки к ItemRow
-  const mapRow = (x: any, syntheticBase?: string): ItemRow => {
-    const rawCode =
-      __pick(x, ["code", "mat_code", "rik_code"], undefined) ??
-      __pickDeep(x, ["request_items.rik_code", "request_items.code"], undefined);
+  const riRel: any = Array.isArray(piRel?.request_items)
+    ? piRel.request_items[0]
+    : piRel?.request_items;
 
-    const code =
-      rawCode != null && String(rawCode).trim() !== ""
-        ? String(rawCode)
-        : null;
+  // ✅ код/рик из разных источников (RPC / view / таблицы)
+  const rawCode =
+    __pick(x, ["code", "mat_code", "rik_code"], undefined) ??
+    __pick(x, ["app_code", "rik"], undefined) ??
+    __pickDeep(x, [
+      "request_items.rik_code",
+      "purchase_items.request_items.rik_code",
+    ]);
 
-    const name = String(
-      __pick(
-        x,
-        ["name", "name_human", "title"],
-        __pickDeep(x, ["request_items.name_human"]) || code || "",
-      ) || code || "",
-    );
+  const code =
+    rawCode != null && String(rawCode).trim() !== ""
+      ? String(rawCode)
+      : null;
 
-    const uom =
-      __pick(x, ["uom", "uom_id", "unit", "unit_id", "uom_code"], null) ??
-      __pickDeep(x, [
-        "request_items.uom",
-        "request_items.unit",
-        "request_items.unit_id",
-      ]) ??
-      null;
+  // ✅ имя из разных источников (RPC / view / relation)
+  const name = String(
+    __pick(x, ["name", "name_human", "title"], undefined) ??
+      __pick(x, ["name_human_ru", "item_name"], undefined) ??
+      riRel?.name_human ??
+      __pickDeep(x, ["request_items.name_human"]) ??
+      rawCode ??
+      "",
+  );
 
-    const expRaw =
-      __pick(x, [
-        "qty_expected",
-        "total_qty",
-        "qty_plan",
-        "qty_approved",
-        "qty_total",
-        "quantity",
-        "qty",
-        "approved_qty",
-        "planned_qty",
-        "qty_ordered",
-        "qty_txt",
-        "qty_expected_txt",
-        "approved_qty_txt",
-        "count",
-        "cnt",
-        "pcs",
-        "qty_units",
-        "quantity_value",
-        "q",
-        "qnty",
-      ]) ??
-      __pickDeep(x, [
-        "meta.qty",
-        "meta.quantity",
-        "meta.qty_approved",
-        "meta.qty_expected",
-        "details.qty",
-        "details.quantity",
-        "extra.qty",
-        "extra.quantity",
-        "row.qty",
-        "row.quantity",
-        "request_items.qty",
-      ]);
+  // ✅ ед. изм
+  const uom =
+    __pick(x, ["uom", "uom_id", "unit", "unit_id", "uom_code"], null) ??
+    piRel?.uom ??
+    riRel?.uom ??
+    null;
 
-    const recRaw =
-      __pick(x, [
-        "qty_received",
-        "received",
-        "qty_recv",
-        "fact_qty",
-        "received_qty",
-        "qty_fact",
-        "qty_accepted",
-        "accepted_qty",
-        "qty_in",
-        "qty_received_txt",
-      ]) ??
-      __pickDeep(x, [
-        "meta.qty_received",
-        "meta.received",
-        "details.qty_received",
-        "details.received",
-        "row.qty_received",
-        "row.received",
-      ]);
+  const expRaw =
+    __pick(x, [
+      "qty_expected",
+      "total_qty",
+      "qty_plan",
+      "qty_approved",
+      "qty_total",
+      "quantity",
+      "qty",
+      "approved_qty",
+      "planned_qty",
+      "qty_ordered",
+      "qty_txt",
+      "qty_expected_txt",
+      "approved_qty_txt",
+      "count",
+      "cnt",
+      "pcs",
+      "qty_units",
+      "quantity_value",
+      "q",
+      "qnty",
+    ]) ??
+    __pickDeep(x, [
+      "meta.qty",
+      "meta.quantity",
+      "meta.qty_approved",
+      "meta.qty_expected",
+      "details.qty",
+      "details.quantity",
+      "extra.qty",
+      "extra.quantity",
+      "row.qty",
+      "row.quantity",
+      "request_items.qty",
+    ]);
 
-    const qty_expected = __toNum(expRaw);
-    const qty_received = __toNum(recRaw);
+  const recRaw =
+    __pick(x, [
+      "qty_received",
+      "received",
+      "qty_recv",
+      "fact_qty",
+      "received_qty",
+      "qty_fact",
+      "qty_accepted",
+      "accepted_qty",
+      "qty_in",
+      "qty_received_txt",
+    ]) ??
+    __pickDeep(x, [
+      "meta.qty_received",
+      "meta.received",
+      "details.qty_received",
+      "details.received",
+      "row.qty_received",
+      "row.received",
+    ]);
 
-    return {
-      incoming_item_id: String(
-        x?.incoming_item_id ??
-          x?.id ??
-          (syntheticBase ? `${syntheticBase}:${x?.id ?? ""}` : ""),
-      ),
-      purchase_item_id: String(
-        __pick(x, ["purchase_item_id", "pi_id", "id"], ""),
-      ),
-      code,
-      name,
-      uom,
-      qty_expected,
-      qty_received,
-    };
+  const qty_expected = __toNum(expRaw);
+  const qty_received = __toNum(recRaw);
+
+  return {
+    incoming_item_id: String(
+      x?.incoming_item_id ??
+        x?.id ??
+        (syntheticBase ? `${syntheticBase}:${x?.id ?? ""}` : ""),
+    ),
+    purchase_item_id: String(__pick(x, ["purchase_item_id", "pi_id", "id"], "")),
+    code,
+    name,
+    uom,
+    qty_expected,
+    qty_received,
   };
-
+};
   /** ===== загрузка позиций по шапке ===== */
   const loadItemsForHead = useCallback(
     async (incomingIdRaw: string, force = false): Promise<ItemRow[] | undefined> => {
@@ -2346,6 +2594,14 @@ const confirmIncoming = useCallback(
         isSynthetic,
         purchaseId,
       });
+console.log("[loadItemsForHead] debug", {
+  incomingIdRaw,
+  incomingId,
+  isUuidIncoming: isUuid(incomingId),
+  isSynthetic,
+  purchaseId,
+  toReceiveHit: toReceive.find((x) => canonId(x.id) === incomingId)?.id,
+});
 
       // если нет purchase_id — дёргаем wh_incoming
       if (!purchaseId && isUuid(incomingId) && !isSynthetic) {
@@ -2371,6 +2627,12 @@ const confirmIncoming = useCallback(
           const r = await supabase.rpc("list_wh_items" as any, {
             p_incoming_id: incomingId,
           } as any);
+console.log("[list_wh_items] result", {
+  error: r.error?.message,
+  count: Array.isArray(r.data) ? r.data.length : -1,
+  sample: Array.isArray(r.data) && r.data.length ? r.data[0] : null,
+});
+
           if (!r.error && Array.isArray(r.data) && r.data.length > 0) {
             const rows = (r.data as any[]).map((x) => mapRow(x));
             setItemsByHead((prev) => ({ ...prev, [incomingId]: rows }));
@@ -2392,56 +2654,100 @@ const confirmIncoming = useCallback(
         console.warn("[list_wh_items] skipped: incomingId is not UUID:", incomingId);
       }
 
-      // 2) wh_incoming_items
-      if (!isSynthetic) {
-        console.log("[loadItemsForHead] trying wh_incoming_items", incomingId);
-        const fb = await supabase
-          .from("wh_incoming_items" as any)
-          .select("*")
-          .eq("incoming_id", incomingId)
-          .order("created_at", { ascending: true });
+      // 2) wh_incoming_items (ПРИНУДИТЕЛЬНО если incomingId UUID)
+if (isUuid(incomingId)) {
+  // если purchaseId не нашли — дёрнем прямо из wh_incoming
+  if (!purchaseId) {
+    const head = await supabase
+      .from("wh_incoming" as any)
+      .select("purchase_id")
+      .eq("id", incomingId)
+      .maybeSingle();
+    if (!head.error && head.data?.purchase_id) {
+      purchaseId = String(head.data.purchase_id);
+      console.log("[loadItemsForHead] purchaseId loaded from wh_incoming", purchaseId);
+    }
+  }
 
-        if (!fb.error && Array.isArray(fb.data) && fb.data.length > 0) {
-          const rows = (fb.data as any[]).map((x) => mapRow(x));
-          setItemsByHead((prev) => ({ ...prev, [incomingId]: rows }));
-          return rows;
-        }
+  console.log("[loadItemsForHead] trying wh_incoming_items", incomingId);
 
-        if (purchaseId) {
-          console.log("[loadItemsForHead] reseed try", { incomingId, purchaseId });
-          const seeded = await reseedIncomingItems(incomingId, purchaseId);
+  const fb = await supabase
+    .from("wh_incoming_items" as any)
+    .select(`
+      id,
+      incoming_id,
+      purchase_item_id,
+      qty_expected,
+      qty_received,
+      purchase_items:purchase_items (
+  id,
+  request_item_id,
+  qty,
+  uom,
+  request_items:request_items (
+    rik_code,
+    name_human,
+    uom
+  )
+)
 
-          if (seeded) {
-            try {
-              const r2 = await supabase.rpc("list_wh_items" as any, {
-                p_incoming_id: incomingId,
-              } as any);
-              if (!r2.error && Array.isArray(r2.data) && r2.data.length > 0) {
-                const rows = (r2.data as any[]).map((x) => mapRow(x));
-                setItemsByHead((prev) => ({ ...prev, [incomingId]: rows }));
-                return rows;
-              }
-            } catch (e) {
-              console.warn(
-                "[loadItemsForHead] list_wh_items after reseed failed:",
-                e,
-              );
-            }
+    `)
+    .eq("incoming_id", incomingId)
+    .order("created_at", { ascending: true });
 
-            const fb2 = await supabase
-              .from("wh_incoming_items" as any)
-              .select("*")
-              .eq("incoming_id", incomingId)
-              .order("created_at", { ascending: true });
+  console.log("[loadItemsForHead] wh_incoming_items result", {
+    error: fb.error?.message,
+    count: Array.isArray(fb.data) ? fb.data.length : 0,
+  });
 
-            if (!fb2.error && Array.isArray(fb2.data) && fb2.data.length > 0) {
-              const rows = (fb2.data as any[]).map((x) => mapRow(x));
-              setItemsByHead((prev) => ({ ...prev, [incomingId]: rows }));
-              return rows;
-            }
-          }
-        }
-      }
+  if (!fb.error && Array.isArray(fb.data) && fb.data.length > 0) {
+    const rows = (fb.data as any[]).map((x) => mapRow(x));
+    setItemsByHead((prev) => ({ ...prev, [incomingId]: rows }));
+    return rows;
+  }
+
+  // reseed если пусто
+  if (purchaseId) {
+    console.log("[loadItemsForHead] reseed try", { incomingId, purchaseId });
+    const seeded = await reseedIncomingItems(incomingId, purchaseId);
+    console.log("[loadItemsForHead] reseed result", seeded);
+
+    const fb2 = await supabase
+      .from("wh_incoming_items" as any)
+      .select(`
+        id,
+        incoming_id,
+        purchase_item_id,
+        qty_expected,
+        qty_received,
+        purchase_items:purchase_items (
+  id,
+  request_item_id,
+  qty,
+  uom,
+  request_items:request_items (
+    rik_code,
+    name_human,
+    uom
+  )
+)
+
+      `)
+      .eq("incoming_id", incomingId)
+      .order("created_at", { ascending: true });
+
+    console.log("[loadItemsForHead] wh_incoming_items after reseed", {
+      error: fb2.error?.message,
+      count: Array.isArray(fb2.data) ? fb2.data.length : 0,
+    });
+
+    if (!fb2.error && Array.isArray(fb2.data) && fb2.data.length > 0) {
+      const rows = (fb2.data as any[]).map((x) => mapRow(x));
+      setItemsByHead((prev) => ({ ...prev, [incomingId]: rows }));
+      return rows;
+    }
+  }
+}
 
       // 3) purchase_items — только для синтетики
       if (isSynthetic && purchaseId) {
@@ -2505,19 +2811,19 @@ const confirmIncoming = useCallback(
     [itemsByHead, toReceive, canonId, reseedIncomingItems],
   );
 
-  // раскрыть/скрыть карточку
   const onToggleHead = useCallback(
-    async (incomingIdRaw: string) => {
-      const id = canonId(incomingIdRaw);
-      const next = expanded === id ? null : id;
-      setExpanded(next);
-      if (next) {
-        setItemsByHead((prev) => ({ ...prev, [next]: prev[next] ?? [] }));
-        await loadItemsForHead(next, true);
-      }
-    },
-    [expanded, loadItemsForHead, canonId],
-  );
+  async (incomingIdRaw: string) => {
+    const id = canonId(incomingIdRaw);
+    const next = expanded === id ? null : id;
+    setExpanded(next);
+    if (next) {
+      setItemsByHead((prev) => ({ ...prev, [next]: prev[next] ?? [] }));
+      await loadItemsForHead(id, true); // ← ВОТ ЭТА СТРОКА
+    }
+  },
+  [expanded, loadItemsForHead, canonId],
+);
+
 
   // частичная приёмка одной строки
   const receivePart = useCallback(
@@ -2529,9 +2835,10 @@ const confirmIncoming = useCallback(
         if (!Number.isFinite(q) || q <= 0)
           return Alert.alert("Количество", "Введите положительное количество.");
         const r = await supabase.rpc("wh_receive_item_v2" as any, {
-          p_incoming_item_id: incomingItemId,
-          p_qty: q,
-        } as any);
+  p_incoming_item_id: incomingItemId,
+  p_qty: q,
+  p_note: null,
+} as any);
         if (r.error)
           return Alert.alert("Ошибка прихода", pickErr(r.error));
 
@@ -2599,31 +2906,51 @@ const confirmIncoming = useCallback(
   );
 
   // гарантируем, что у реальной шапки есть строки
-  const ensurePositionsForHead = async (incomingId: string) => {
+ const ensurePositionsForHead = async (incomingId: string) => {
+  // 0) если уже есть строки — выходим
+  const pre = await supabase
+    .from("wh_incoming_items" as any)
+    .select("id")
+    .eq("incoming_id", incomingId)
+    .limit(1);
+
+  if (!pre.error && Array.isArray(pre.data) && pre.data.length > 0) return true;
+
+  // 1) пробуем серверные ensure/seed функции (какая есть — та и сработает)
+  const tryFns = [
+    "wh_incoming_ensure_items",
+    "ensure_incoming_items",
+    "wh_incoming_seed_from_purchase",
+  ];
+
+  for (const fn of tryFns) {
     try {
-      await supabase.rpc("ensure_incoming_items" as any, {
-        p_incoming_id: incomingId,
-      } as any);
+      const r = await supabase.rpc(fn as any, { p_incoming_id: incomingId } as any);
+      if (!r.error) break;
     } catch {}
+  }
 
-    const fb = await supabase
-      .from("wh_incoming_items" as any)
-      .select("id")
-      .eq("incoming_id", incomingId)
-      .limit(1);
-    if (!fb.error && Array.isArray(fb.data) && fb.data.length > 0) return true;
+  // 2) проверяем снова
+  const fb = await supabase
+    .from("wh_incoming_items" as any)
+    .select("id")
+    .eq("incoming_id", incomingId)
+    .limit(1);
 
-    const pidRow = await supabase
-      .from("wh_incoming" as any)
-      .select("purchase_id")
-      .eq("id", incomingId)
-      .maybeSingle();
-    const pId = pidRow?.data?.purchase_id
-      ? String(pidRow.data.purchase_id)
-      : null;
-    if (pId) await reseedIncomingItems(incomingId, pId);
-    return true;
-  };
+  if (!fb.error && Array.isArray(fb.data) && fb.data.length > 0) return true;
+
+  // 3) последний шанс: reseed из purchase_id
+  const head = await supabase
+    .from("wh_incoming" as any)
+    .select("purchase_id")
+    .eq("id", incomingId)
+    .maybeSingle();
+
+  const pId = !head.error && head.data?.purchase_id ? String(head.data.purchase_id) : null;
+  if (pId) await reseedIncomingItems(incomingId, pId);
+
+  return true;
+};
 
   // общая кнопка "Оприходовать выбранное"
   const receiveSelectedForHead = useCallback(
@@ -2701,9 +3028,11 @@ const confirmIncoming = useCallback(
           fail = 0;
         for (const it of valid) {
           const r = await supabase.rpc("wh_receive_item_v2" as any, {
-            p_incoming_item_id: it.id,
-            p_qty: it.qty,
-          } as any);
+  p_incoming_item_id: it.id,
+  p_qty: it.qty,
+  p_note: null,
+} as any);
+
           if (r.error) {
             fail++;
             console.warn(
@@ -2796,23 +3125,40 @@ const confirmIncoming = useCallback(
           } catch {}
         }
 
-        await fetchToReceive();
-        setItemsByHead((prev) => {
-          const c = { ...prev };
-          delete c[cid];
-          return c;
-        });
-        setQtyInputByItem((prev) => {
-          const next = { ...prev };
-          for (const it of valid) delete next[it.id];
-          return next;
-        });
-        await fetchStock();
+        // ✅ мгновенно показываем “Оприходуем…” и не блокируем UI web
+setReceivingHeadId(cid);
 
-        Alert.alert(
-          "Готово",
-          `Принято позиций: ${ok}${fail ? `, ошибок: ${fail}` : ""}`,
-        );
+// ✅ сразу обновим позиции в раскрытой карточке (быстро)
+setItemsByHead((prev) => {
+  const c = { ...prev };
+  delete c[cid];
+  return c;
+});
+
+// ⚡️ тяжёлые обновления — в следующий тик (иначе web “залипает”)
+setTimeout(() => {
+  (async () => {
+    try {
+      await loadItemsForHead(cid, true); // быстро
+      await fetchToReceive();            // средне
+      await fetchStock();                // тяжело
+    } finally {
+      setReceivingHeadId(null);
+    }
+  })();
+}, 0);
+
+// чистим input-ы сразу
+setQtyInputByItem((prev) => {
+  const next = { ...prev };
+  for (const it of valid) delete next[it.id];
+  return next;
+});
+
+Alert.alert("Готово", `Принято позиций: ${ok}${fail ? `, ошибок: ${fail}` : ""}`);
+return;
+
+
       } catch (e) {
         showErr(e);
       } finally {
@@ -2951,7 +3297,10 @@ const confirmIncoming = useCallback(
   const loadAll = useCallback(async () => {
     setLoading(true);
     try {
-      await Promise.all([fetchToReceive(), fetchStock(), fetchWorks()]);
+      await fetchToReceive();
+await fetchStock();
+await fetchWorks();
+
     } catch (e) {
       showErr(e);
     } finally {
@@ -3008,7 +3357,12 @@ const confirmIncoming = useCallback(
   // ==== карточка "Склад факт" ====
   const StockRowView = ({ r }: { r: StockRow }) => {
     // ед.изм: сначала из справочника uoms, иначе что пришло из БД
-    const uomLabel = (r.uom_id && (uoms[r.uom_id] ?? r.uom_id)) || "—";
+    const rawUom = r.uom_id ? String(r.uom_id).trim() : "";
+const uomLabel =
+  rawUom
+    ? (uoms[rawUom] ?? uoms[rawUom.toLowerCase()] ?? uoms[rawUom.toUpperCase()] ?? rawUom)
+    : "—";
+
 
     const onHand = nz(r.qty_on_hand, 0);
     const reserved = nz(r.qty_reserved, 0);
@@ -3681,8 +4035,9 @@ const confirmIncoming = useCallback(
                                   }}
                                 >
                                   <Text style={{ fontWeight: "700" }}>
-                                    {row.name}
-                                  </Text>
+  {row.name || "—"} {row.code ? `(${row.code})` : ""}
+</Text>
+
 
                                   {(() => {
                                     const kindLabel = detectKindLabel(row.code);
@@ -3779,15 +4134,15 @@ const confirmIncoming = useCallback(
                           {item.status !== "confirmed" && (
                             <View style={{ padding: 10, gap: 8 }}>
                               <Pressable
-                                onPress={() => receiveSelectedForHead(rid)}
-                                disabled={receivingHeadId === item.id}
-                                style={{
+                               onPress={() => receiveSelectedForHead(rid)}
+disabled={receivingHeadId === rid}
+style={{
                                   alignSelf: "flex-start",
                                   paddingHorizontal: 14,
                                   paddingVertical: 10,
                                   borderRadius: 10,
                                   backgroundColor:
-                                    receivingHeadId === item.id
+                                    receivingHeadId === rid
                                       ? "#94a3b8"
                                       : "#0ea5e9",
                                 }}
@@ -3798,7 +4153,7 @@ const confirmIncoming = useCallback(
                                     fontWeight: "800",
                                   }}
                                 >
-                                  {receivingHeadId === item.id
+                                  {receivingHeadId === rid 
                                     ? "Оприходуем…"
                                     : "Оприходовать выбранное"}
                                 </Text>
@@ -4076,35 +4431,78 @@ const confirmIncoming = useCallback(
                     Загружаем историю и материалы…
                   </Text>
                 )}
+<Pressable
+ onPress={() => {
+  if (!workModalRow) return;
 
-                <Pressable
-                  onPress={async () => {
-                    if (!workModalRow) return;
-                    try {
-                      const { work, materials } =
-                        await loadAggregatedWorkSummary(
-                          workModalRow.progress_id,
-                          workModalRow,
-                        );
-                      await generateWorkPdf(work, materials);
-                    } catch (e) {
-                      console.warn("[PDF aggregated] error", e);
-                      showErr(e);
-                    }
-                  }}
-                  style={{
-                    alignSelf: "flex-start",
-                    backgroundColor: "#0ea5e9",
-                    paddingHorizontal: 12,
-                    paddingVertical: 6,
-                    borderRadius: 8,
-                    marginBottom: 4,
-                  }}
-                >
-                  <Text style={{ color: "#fff", fontWeight: "700" }}>
-                    Итоговый акт (PDF)
-                  </Text>
-                </Pressable>
+  const isWeb = Platform.OS === "web";
+
+  // ✅ ЛОК ТОЛЬКО НА МОБИЛЕ
+  if (!isWeb) {
+    if (pdfBusy) return;
+    setPdfBusy(true);
+  }
+
+  let pdfWin: Window | null = null;
+
+if (Platform.OS === "web") {
+  pdfWin = webOpenPdfWindow("Формируем итоговый акт…"); // всегда новое окно
+}
+
+
+  (async () => {
+    try {
+      const logsLite = workLog.map((l) => ({ id: l.id, qty: l.qty }));
+
+      if (isWeb) {
+        const { data } = await supabase.auth.getSession();
+        if (!data?.session) throw new Error("Supabase session not ready (web)");
+      }
+
+      const agg = await withTimeout(
+        loadAggregatedWorkSummary(workModalRow.progress_id, workModalRow, logsLite),
+        20000,
+        "loadAggregatedWorkSummary TOTAL",
+      );
+
+      await withTimeout(
+        generateWorkPdf(agg.work, agg.materials, { webWindow: pdfWin }),
+        15000,
+        "generateWorkPdf TOTAL",
+      );
+    } catch (e) {
+      if (isWeb) {
+        webWritePdfWindow(
+          pdfWin,
+          `<html><body style="font-family:sans-serif;padding:16px">
+             <h3>Ошибка формирования PDF</h3>
+             <pre style="white-space:pre-wrap">${String((e as any)?.message || e)}</pre>
+           </body></html>`,
+        );
+        return;
+      }
+      showErr(e);
+    } finally {
+      if (!isWeb) setPdfBusy(false);
+    }
+  })();
+}}
+style={{
+  alignSelf: "flex-start",
+  backgroundColor: "#0ea5e9",
+  paddingHorizontal: 12,
+  paddingVertical: 6,
+  borderRadius: 8,
+  marginBottom: 4,
+  opacity: Platform.OS !== "web" && pdfBusy ? 0.6 : 1,
+}}
+disabled={Platform.OS !== "web" ? pdfBusy : false}
+
+>
+  <Text style={{ color: "#fff", fontWeight: "700" }}>
+    {pdfBusy ? "Формируем…" : "Итоговый акт (PDF)"}
+  </Text>
+</Pressable>
                 <Text
                   style={{
                     fontSize: 12,
@@ -4222,7 +4620,6 @@ const confirmIncoming = useCallback(
                   </View>
                 )}
               </View>
-
               <ScrollView
                 keyboardShouldPersistTaps="handled"
                 style={{ flex: 1 }}
@@ -4288,100 +4685,99 @@ const confirmIncoming = useCallback(
                                 Этап: {log.stage_note}
                               </Text>
                             )}
+{log.note && (
+  <Text style={{ color: "#94a3b8", fontSize: 12 }}>
+    Комментарий: {log.note}
+  </Text>
+)}
+<Pressable
+  onPress={() => {
+  if (!workModalRow) return;
 
-                            {log.note && (
-                              <Text
-                                style={{ color: "#94a3b8", fontSize: 12 }}
-                              >
-                                Комментарий: {log.note}
-                              </Text>
-                            )}
+  const isWeb = Platform.OS === "web";
 
-                            <Pressable
-                              onPress={async () => {
-                                try {
-                                  const { data: mats } = await supabase
-                                    .from(
-                                      "work_progress_log_materials" as any,
-                                    )
-                                    .select("mat_code, uom_mat, qty_fact")
-                                    .eq("log_id", log.id);
+  // ✅ ЛОК ТОЛЬКО НА МОБИЛЕ
+  if (!isWeb) {
+    if (pdfBusyLogId) return;
+    setPdfBusyLogId(log.id);
+  }
 
-                                  const codes =
-                                    (mats || []).map(
-                                      (m: any) => m.mat_code,
-                                    ) || [];
-                                  let namesMap: Record<
-                                    string,
-                                    { name: string; uom: string | null }
-                                  > = {};
+let pdfWin: Window | null = null;
 
-                                  if (codes.length) {
-                                    const ci = await supabase
-                                      .from("catalog_items" as any)
-                                      .select(
-                                        "rik_code, name_human_ru, name_human, uom_code",
-                                      )
-                                      .in("rik_code", codes);
+if (isWeb) {
+  pdfWin = webOpenPdfWindow("Формируем PDF этого акта…"); // всегда новое окно
+}
+  (async () => {
+    try {
+      const matsQ = await withTimeout(
+        supabase
+          .from("work_progress_log_materials" as any)
+          .select("mat_code, uom_mat, qty_fact")
+          .eq("log_id", log.id),
+        15000,
+        `work_progress_log_materials select for log ${log.id}`,
+      );
 
-                                    if (!ci.error && Array.isArray(ci.data)) {
-                                      for (const n of ci.data as any[]) {
-                                        namesMap[n.rik_code] = {
-                                          name:
-                                            n.name_human_ru ||
-                                            n.name_human ||
-                                            n.rik_code,
-                                          uom: n.uom_code,
-                                        };
-                                      }
-                                    }
-                                  }
+      if (matsQ.error) throw matsQ.error;
 
-                                  const matsRows: WorkMaterialRow[] = (
-                                    (mats as any[]) || []
-                                  ).map((m: any) => {
-                                    const code = String(m.mat_code);
-                                    const meta = namesMap[code];
-                                    return {
-                                      mat_code: code,
-                                      name: meta?.name || code,
-                                      uom: meta?.uom || m.uom_mat || "",
-                                      available: 0,
-                                      qty_fact: Number(m.qty_fact ?? 0),
-                                    };
-                                  });
+      const mats = Array.isArray(matsQ.data) ? matsQ.data : [];
+      const matsRows: WorkMaterialRow[] = mats.map((m: any) => ({
+        mat_code: String(m.mat_code),
+        name: String(m.mat_code),
+        uom: m.uom_mat ? String(m.uom_mat) : "",
+        available: 0,
+        qty_fact: Number(m.qty_fact ?? 0),
+      }));
 
-                                  const actWork: WorkRow = {
-                                    ...workModalRow,
-                                    qty_done: log.qty,
-                                    qty_left: Math.max(
-                                      0,
-                                      (workModalRow.qty_planned || 0) -
-                                        log.qty,
-                                    ),
-                                  };
+      const actWork: WorkRow = {
+        ...workModalRow,
+        qty_done: Number(log.qty ?? 0),
+        qty_left: Math.max(
+          0,
+          Number(workModalRow.qty_planned || 0) - Number(log.qty ?? 0),
+        ),
+      };
 
-                                  await generateWorkPdf(actWork, matsRows, {
-                                    actDate: log.created_at,
-                                  });
-                                } catch (e) {
-                                  showErr(e);
-                                }
-                              }}
-                              style={{
-                                alignSelf: "flex-start",
-                                marginTop: 4,
-                                paddingHorizontal: 10,
-                                paddingVertical: 4,
-                                borderRadius: 8,
-                                borderWidth: 1,
-                                borderColor: "#e2e8f0",
-                              }}
-                            >
-                              <Text style={{ fontSize: 12 }}>
-                                PDF этого акта
-                              </Text>
-                            </Pressable>
+      await withTimeout(
+        generateWorkPdf(actWork, matsRows, {
+          actDate: log.created_at,
+          webWindow: pdfWin,
+        }),
+        15000,
+        "generateWorkPdf LOG",
+      );
+    } catch (e) {
+      if (isWeb) {
+        webWritePdfWindow(
+          pdfWin,
+          `<html><body style="font-family:sans-serif;padding:16px">
+             <h3>Ошибка формирования PDF</h3>
+             <pre style="white-space:pre-wrap">${String((e as any)?.message || e)}</pre>
+           </body></html>`,
+        );
+        return;
+      }
+      showErr(e);
+    } finally {
+      if (!isWeb) setPdfBusyLogId(null);
+    }
+  })();
+}}
+
+  style={{
+    alignSelf: "flex-start",
+    marginTop: 4,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#e2e8f0",
+    opacity: Platform.OS !== "web" && pdfBusyLogId ? 0.6 : 1,
+}}
+disabled={Platform.OS !== "web" ? !!pdfBusyLogId : false}
+>
+  <Text style={{ fontSize: 12 }}>PDF этого акта</Text>
+</Pressable>
                           </View>
                         );
                       })}

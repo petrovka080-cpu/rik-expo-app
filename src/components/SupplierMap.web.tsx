@@ -1,7 +1,8 @@
 // src/components/SupplierMap.web.tsx
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import L from "leaflet";
-import "leaflet/dist/leaflet.css";
+// import "leaflet/dist/leaflet.css"; // ❌ ломает Expo Web (url(images/...))
+
 import "leaflet.markercluster";
 import { supabase } from "../lib/supabaseClient";
 
@@ -24,6 +25,7 @@ type MarketListing = {
   lng: number | null;
   kind: string | null;
   items_json: ListingItemJson[] | null;
+side?: "offer" | "demand" | null;
 };
 
 const defaultCenter: [number, number] = [42.8746, 74.5698]; // Бишкек
@@ -57,6 +59,11 @@ export default function SupplierMapWeb() {
   const [kindFilter, setKindFilter] = useState("all");
   const [selectedId, setSelectedId] = useState<string | null>(null);
 const [query, setQuery] = useState("");
+const [block, setBlock] = useState<"all" | "offer" | "demand">("all");
+const [offerDemand, setOfferDemand] = useState<MarketListing | null>(null);
+const [offerPrice, setOfferPrice] = useState("");
+const [offerDays, setOfferDays] = useState("");
+const [offerComment, setOfferComment] = useState("");
 
   const mapDivRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<any>(null);
@@ -78,7 +85,7 @@ const [query, setQuery] = useState("");
     const load = async () => {
       const { data, error } = await supabase
         .from("market_listings")
-        .select("id,title,price,city,lat,lng,kind,items_json")
+.select("id,title,price,city,lat,lng,kind,items_json,side")
         .eq("status", "active")
         .limit(200);
 
@@ -100,6 +107,11 @@ const [query, setQuery] = useState("");
   const q = query.trim().toLowerCase();
 
         return listings.filter((l) => {
+// === фильтр Предложения / Спрос ===
+if (block !== "all") {
+  if ((l.side || "offer") !== block) return false;
+}
+
       if (min != null && l.price != null && l.price < min) return false;
       if (max != null && l.price != null && l.price > max) return false;
       if (city && l.city && !l.city.toLowerCase().includes(city)) return false;
@@ -217,7 +229,8 @@ const [query, setQuery] = useState("");
 
   // ===== helper: ценник для одного объявления =====
   const createPriceIcon = (item: MarketListing, isSelected: boolean) => {
-    // === выбираем "эффективную" цену ===
+    const isDemand = item.side === "demand";
+
     let effectivePrice: number | null = item.price;
 
     const items = Array.isArray(item.items_json)
@@ -245,10 +258,12 @@ const [query, setQuery] = useState("");
       }
     }
 
-    const priceText =
-      effectivePrice != null
-        ? `${effectivePrice.toLocaleString("ru-RU")} KGS`
-        : "Цена по запросу";
+   const priceText = isDemand
+  ? "НУЖНО"
+  : effectivePrice != null
+    ? `${effectivePrice.toLocaleString("ru-RU")} KGS`
+    : "Цена по запросу";
+
 
     // === цвет по типу объявления ===
     let iconKind: "material" | "service" | "rent" | null = null;
@@ -278,7 +293,8 @@ const [query, setQuery] = useState("");
       }
     }
 
-    const baseBg = getKindColor(iconKind);
+    const baseBg = isDemand ? "#EF4444" : getKindColor(iconKind);
+
     const baseBorder = "#1F2937";
 
     // подсветка выбранного маркера
@@ -519,11 +535,34 @@ const [query, setQuery] = useState("");
       }}
     >
       {/* Хедер + фильтры */}
-      <div style={{ padding: "12px 16px", borderBottom: "1px солид #1F2937" as any }}>
+      <div style={{ padding: "12px 16px", borderBottom: "1px solid #1F2937" as any }}>
         <h2 style={{ margin: 0, fontSize: 22 }}>Карта объявлений</h2>
         <p style={{ margin: "4px 0 8px", fontSize: 13, color: "#9CA3AF" }}>
           Кликайте по ценникам на карте или по карточкам в списке.
         </p>
+<div style={{ display: "flex", gap: 6, marginTop: 6 }}>
+  {[
+    ["all", "Все"],
+    ["offer", "Предложения"],
+    ["demand", "Спрос"],
+  ].map(([k, t]) => (
+    <button
+      key={k}
+      onClick={() => setBlock(k as any)}
+      style={{
+        padding: "4px 10px",
+        borderRadius: 999,
+        border: "1px solid #1F2937",
+        background: block === k ? "#22C55E" : "#020617",
+        color: block === k ? "#000" : "#E5E7EB",
+        fontWeight: 700,
+        fontSize: 12,
+      }}
+    >
+      {t}
+    </button>
+  ))}
+</div>
 
                 <div
           style={{
@@ -830,6 +869,24 @@ const [query, setQuery] = useState("");
                               {" · "}Цена: {pos.price} KGS
                             </>
                           )}
+{item.side === "demand" && (
+  <button
+    style={{
+      marginTop: 8,
+      padding: "6px 10px",
+      borderRadius: 6,
+      border: "1px solid #1F2937",
+      background: "#0EA5E9",
+      color: "#020617",
+      fontWeight: 700,
+      cursor: "pointer",
+    }}
+    onClick={() => setOfferDemand(item)}
+  >
+    Отправить предложение
+  </button>
+)}
+
                         </div>
                       ))}
                       {visibleItems.length > 3 && (
@@ -851,6 +908,71 @@ const [query, setQuery] = useState("");
           </div>
         </div>
       </div>
-    </div>
-  );
+         {/* ===== MODAL: Оставить оффер ===== */}
+    {offerDemand && (
+      <div
+        style={{
+          position: "fixed",
+          inset: 0,
+          background: "rgba(0,0,0,0.6)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          zIndex: 1000,
+        }}
+      >
+        <div style={{ background: "#020617", padding: 16, width: 320 }}>
+          <h3 style={{ color: "#fff" }}>Коммерческое предложение</h3>
+
+          <input
+            placeholder="Цена"
+            value={offerPrice}
+            onChange={(e) => setOfferPrice(e.target.value)}
+            style={{ width: "100%", marginBottom: 8 }}
+          />
+
+          <input
+            placeholder="Срок поставки"
+            value={offerDays}
+            onChange={(e) => setOfferDays(e.target.value)}
+            style={{ width: "100%", marginBottom: 8 }}
+          />
+
+          <textarea
+            placeholder="Комментарий / условие"
+            value={offerComment}
+            onChange={(e) => setOfferComment(e.target.value)}
+            style={{ width: "100%", marginBottom: 8 }}
+          />
+
+          <button
+            onClick={async () => {
+              const user = (await supabase.auth.getUser()).data.user;
+              if (!user) return;
+
+              await supabase.from("demand_offers").insert({
+                demand_id: offerDemand.id,
+                supplier_id: user.id,
+                price: Number(offerPrice),
+                delivery_days: Number(offerDays) || null,
+                comment: offerComment || null,
+              });
+
+              setOfferDemand(null);
+              setOfferPrice("");
+              setOfferDays("");
+              setOfferComment("");
+            }}
+          >
+            Отправить
+          </button>
+
+          <button onClick={() => setOfferDemand(null)}>Отмена</button>
+        </div>
+      </div>
+    )}
+  </div>
+);
 }
+
+   
