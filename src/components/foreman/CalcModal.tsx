@@ -1,5 +1,3 @@
-
-
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Modal,
@@ -43,21 +41,28 @@ type Row = {
   item_name_ru: string | null;
 };
 
-type CalcRpcArgs = {
-  p_work_type_code: string;
-  p_area_m2: number;
-  p_perimeter_m: number;
-  p_length_m: number;
-  p_points: number;
-  p_volume_m3: number;
-  p_count: number;
-  p_multiplier: number;
-};
-
 const formatNumber = (value: number) => {
   if (!Number.isFinite(value)) return '';
   const fixed = value.toFixed(6);
   return fixed.replace(/\.0+$/, '').replace(/(\.\d*?)0+$/, '$1');
+};
+const formatQtyByUom = (value: number, uom?: string | null) => {
+  if (!Number.isFinite(value)) return '';
+
+  const u = (uom ?? '').toLowerCase();
+
+  // целочисленные единицы
+  if (
+    u === 'шт' ||
+    u === 'компл' ||
+    u === 'комплект' ||
+    u === 'pcs'
+  ) {
+    return String(Math.round(value));
+  }
+
+  // по умолчанию — до 3 знаков, без хвостов
+  return formatNumber(value);
 };
 
 const sanitizeExpression = (raw: string) =>
@@ -84,6 +89,26 @@ const evaluateExpression = (rawInput: string): number => {
 
 const LOSS_ERROR_TEXT = 'Некорректное значение';
 
+const Hint = ({ text }: { text?: string | null }) => {
+  if (!text) return null;
+  return (
+    <Text
+      style={{
+        marginLeft: 8,
+        paddingHorizontal: 8,
+        paddingVertical: 2,
+        borderRadius: 999,
+        backgroundColor: '#f3f4f6',
+        color: '#374151',
+        fontWeight: '700',
+      }}
+      onPress={() => Alert.alert('Подсказка', String(text))}
+    >
+      ?
+    </Text>
+  );
+};
+
 export default function CalcModal({ visible, onClose, workType, onAddToRequest }: Props) {
   const { loading: fLoading, fields, error: fieldsError } = useCalcFields(workType?.code);
   const [inputs, setInputs] = useState<Inputs>({});
@@ -100,10 +125,10 @@ export default function CalcModal({ visible, onClose, workType, onAddToRequest }
     return map;
   }, [fields]);
 
-const hasMultiplierField = useMemo(
-  () => fields.some((f) => f.key === 'multiplier' || f.key === 'loss'),
-  [fields],
-);
+  const hasMultiplierField = useMemo(
+    () => fields.some((f) => f.key === 'multiplier' || f.key === 'loss'),
+    [fields],
+  );
 
   useEffect(() => {
     if (!visible) {
@@ -156,8 +181,8 @@ const hasMultiplierField = useMemo(
     setErrors((prev) => {
       const next: FieldErrors = { ...prev };
       Object.keys(next).forEach((key) => {
-        if (!fieldMap.has(key)) {
-          delete next[key];
+        if (!fieldMap.has(key as any)) {
+          delete (next as any)[key];
         }
       });
       return next;
@@ -275,12 +300,47 @@ const hasMultiplierField = useMemo(
     }
   };
 
+  // ✅ управление строками результата: + / - / удалить
+  const incRow = (rowKey: string, delta: number) => {
+    setRows((prev) => {
+      if (!prev) return prev;
+      return prev.map((r) => {
+        const rk = `${r.section}:${r.rik_code}`;
+        if (rk !== rowKey) return r;
+        const nextQty = Math.max(0, Number(r.qty ?? 0) + delta);
+        return { ...r, qty: nextQty };
+      });
+    });
+  };
+const setRowQty = (rowKey: string, raw: string) => {
+  const normalized = raw.replace(',', '.').trim();
+  const value = Number(normalized);
+
+  if (!Number.isFinite(value)) return;
+
+  setRows((prev) => {
+    if (!prev) return prev;
+    return prev.map((r) => {
+      const rk = `${r.section}:${r.rik_code}`;
+      if (rk !== rowKey) return r;
+      return { ...r, qty: value };
+    });
+  });
+};
+
+  const removeRow = (rowKey: string) => {
+    setRows((prev) => {
+      if (!prev) return prev;
+      return prev.filter((r) => `${r.section}:${r.rik_code}` !== rowKey);
+    });
+  };
+
   const calc = async () => {
     if (!workType?.code) return;
-if (!fields.length) {
-  Alert.alert('Нет полей', 'Для этого вида работ не настроены поля ввода.');
-  return;
-}
+    if (!fields.length) {
+      Alert.alert('Нет полей', 'Для этого вида работ не настроены поля ввода.');
+      return;
+    }
 
     const parseResult = runParse(
       fields.map((f) => f.key),
@@ -288,13 +348,8 @@ if (!fields.length) {
     );
 
     setLossTouched(true);
-    if (lossInvalid) {
-      return;
-    }
-
-    if (!parseResult.valid) {
-      return;
-    }
+    if (lossInvalid) return;
+    if (!parseResult.valid) return;
 
     if (lossPct.trim() && !lossInvalid) {
       setLossPct(formatNumber(lossValue));
@@ -303,58 +358,48 @@ if (!fields.length) {
     try {
       setCalculating(true);
       setRows(null);
+
       const parsedMeasures = parseResult.measures;
-      const directMultiplier = parsedMeasures.multiplier;
-      const effectiveMultiplier = Number.isFinite(directMultiplier)
-        ? (directMultiplier as number)
-        : Math.max(0, 1 + (lossValue ?? 0) / 100);
 
-      // ===== ИДЕАЛЬНЫЙ ВАРИАНТ: rpc_calc_work_kit (универсальный) =====
-// функция в БД читает p_payload->>'ключ', поэтому payload должен быть ПЛОСКИЙ
+      // payload плоский: ключ -> число
+      const payload: Record<string, any> = {};
 
-const payload: Record<string, any> = {};
+      for (const f of fields) {
+        const v = (parsedMeasures as any)[f.key];
+        if (typeof v === 'number' && Number.isFinite(v)) {
+          payload[f.key] = v;
+        }
+      }
 
-// 1) кладём все измерения, которые есть в UI-полях
-for (const f of fields) {
-  const v = (parsedMeasures as any)[f.key];
-  if (typeof v === 'number' && Number.isFinite(v)) {
-    payload[f.key] = v;
-  }
-}
+      // multiplier имеет приоритет, иначе loss
+      if (
+        typeof (parsedMeasures as any).multiplier === 'number' &&
+        Number.isFinite((parsedMeasures as any).multiplier)
+      ) {
+        payload.multiplier = (parsedMeasures as any).multiplier;
+      } else {
+        const lossFromField = (parsedMeasures as any).loss;
+        if (typeof lossFromField === 'number' && Number.isFinite(lossFromField)) {
+          payload.loss = lossFromField;
+        } else {
+          payload.loss = Number.isFinite(lossValue) ? lossValue : 0;
+        }
+      }
 
-// 2) multiplier/loss
-// В БД multiplier имеет приоритет. Если multiplier не введён — используем loss.
-if (typeof (parsedMeasures as any).multiplier === 'number' && Number.isFinite((parsedMeasures as any).multiplier)) {
-  payload.multiplier = (parsedMeasures as any).multiplier;
-} else {
-  // если поле loss есть в профиле и заполнено — используем его
-  const lossFromField = (parsedMeasures as any).loss;
-  if (typeof lossFromField === 'number' && Number.isFinite(lossFromField)) {
-    payload.loss = lossFromField;
-  } else {
-    // иначе берём из нижнего поля lossPct (которое ты вводишь)
-    payload.loss = Number.isFinite(lossValue) ? lossValue : 0;
-  }
-}
+      const { data, error } = await supabase.rpc('rpc_calc_work_kit', {
+        p_work_type_code: workType.code,
+        p_inputs: payload, // ✅ важно
+      });
 
-const { data, error } = await supabase.rpc('rpc_calc_work_kit', {
-  p_work_type_code: workType.code,
-  p_payload: payload,
-});
+      if (error) {
+        console.error('[CalcModal][rpc_calc_work_kit]', { payload, error });
+        throw error;
+      }
 
-if (error) {
-  console.error('[CalcModal][rpc_calc_work_kit]', { payload, error });
-  throw error;
-}
-
-setRows(Array.isArray(data) ? (data as Row[]) : []);
-
+      setRows(Array.isArray(data) ? (data as Row[]) : []);
     } catch (e: any) {
       console.error('[CalcModal]', e);
-      Alert.alert(
-        'Ошибка',
-        'Не удалось выполнить расчёт. Проверьте параметры и попробуйте ещё раз.',
-      );
+      Alert.alert('Ошибка', 'Не удалось выполнить расчёт. Проверьте параметры и попробуйте ещё раз.');
       setRows(null);
     } finally {
       setCalculating(false);
@@ -364,13 +409,18 @@ setRows(Array.isArray(data) ? (data as Row[]) : []);
   const renderField = (field: Field) => {
     const value = inputs[field.key] ?? '';
     const errorText = errors[field.key];
+
     return (
       <View key={field.key} style={{ marginBottom: 12 }}>
-        <Text style={{ fontWeight: '600', marginBottom: 4 }}>
-          {field.label}
-          {field.uom ? `, ${field.uom}` : ''}
-          {field.required ? ' *' : ''}
-        </Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
+          <Text style={{ fontWeight: '600' }}>
+            {field.label}
+            {field.uom ? `, ${field.uom}` : ''}
+            {field.required ? ' *' : ''}
+          </Text>
+          <Hint text={field.hint ?? ''} />
+        </View>
+
         <TextInput
           keyboardType="numeric"
           placeholder={field.hint ?? ''}
@@ -385,6 +435,7 @@ setRows(Array.isArray(data) ? (data as Row[]) : []);
             paddingVertical: Platform.OS === 'web' ? 8 : 10,
           }}
         />
+
         {errorText ? (
           <Text style={{ color: '#ef4444', marginTop: 4 }}>{errorText}</Text>
         ) : field.hint ? (
@@ -459,9 +510,13 @@ setRows(Array.isArray(data) ? (data as Row[]) : []);
           </ScrollView>
 
           <View style={{ flexDirection: 'row', gap: 8, marginTop: 12 }}>
-            <Pressable onPress={onClose} style={{ paddingHorizontal: 14, paddingVertical: 10, borderRadius: 10, backgroundColor: '#f3f4f6' }}>
+            <Pressable
+              onPress={onClose}
+              style={{ paddingHorizontal: 14, paddingVertical: 10, borderRadius: 10, backgroundColor: '#f3f4f6' }}
+            >
               <Text style={{ fontWeight: '600' }}>Отмена</Text>
             </Pressable>
+
             <Pressable
               onPress={calc}
               disabled={calculating || fLoading || !workType?.code}
@@ -480,30 +535,106 @@ setRows(Array.isArray(data) ? (data as Row[]) : []);
           {rows && (
             <View style={{ marginTop: 14, borderTopWidth: 1, borderTopColor: '#e5e7eb', paddingTop: 12 }}>
               <Text style={{ fontSize: 16, fontWeight: '700', marginBottom: 8 }}>Результат</Text>
+
               {rows.length > 0 ? (
                 <>
                   <ScrollView style={{ maxHeight: 260 }}>
-                    {rows.map((r) => (
-                      <View key={r.rik_code} style={{ paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: '#f3f4f6' }}>
-                        <Text style={{ fontWeight: '600' }}>
-                          {r.item_name_ru ?? r.rik_code}
-                          {r.section ? (
-                            <Text style={{ color: '#6b7280' }}>{` (${r.section})`}</Text>
-                          ) : null}
-                        </Text>
-                        <Text style={{ color: '#111827' }}>
-                          qty: {Number(r.qty).toFixed(3)} {r.uom_code}
-                          {r.packs && r.pack_size
-                            ? `  |  упаковка: ${r.packs}  ${Number(r.pack_size).toFixed(3)} ${r.pack_uom ?? ''}`
-                            : ''}
-                          {Number.isFinite(r.suggested_qty as any)
-                            ? `    к выдаче: ${Number(r.suggested_qty ?? 0).toFixed(3)} ${r.uom_code}`
-                            : ''}
-                        </Text>
-                        {r.hint ? <Text style={{ color: '#6b7280' }}>{r.hint}</Text> : null}
-                      </View>
-                    ))}
-                  </ScrollView>
+  {rows.map((r) => {
+    const rowKey = `${r.section}:${r.rik_code}`;
+    return (
+      <View
+        key={rowKey}
+        style={{
+          paddingVertical: 8,
+          borderBottomWidth: 1,
+          borderBottomColor: '#f3f4f6',
+        }}
+      >
+        <Text style={{ fontWeight: '600' }}>
+          {r.item_name_ru ?? r.rik_code}
+          {r.section ? (
+            <Text style={{ color: '#6b7280' }}>{` (${r.section})`}</Text>
+          ) : null}
+        </Text>
+
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 6 }}>
+          {/* Кол-во (ввод) */}
+          <View style={{ flex: 1 }}>
+            <Text style={{ color: '#6b7280', fontSize: 12 }}>Кол-во</Text>
+
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+              <TextInput
+                value={String(r.qty ?? 0).replace('.', ',')}
+                onChangeText={(t) => setRowQty(rowKey, t)}
+                keyboardType="numeric"
+                style={{
+                  fontSize: 18,
+                  fontWeight: '800',
+                  color: '#111827',
+                  paddingVertical: 2,
+                  paddingHorizontal: 6,
+                  borderBottomWidth: 1,
+                  borderBottomColor: '#e5e7eb',
+                  minWidth: 70,
+                  textAlign: 'center',
+                }}
+              />
+              <Text style={{ fontSize: 14, fontWeight: '700', color: '#374151' }}>
+                {r.uom_code}
+              </Text>
+            </View>
+
+            {Number.isFinite(r.suggested_qty as any) ? (
+              <Text style={{ color: '#374151', marginTop: 2 }}>
+                К выдаче:{' '}
+                <Text style={{ fontWeight: '800' }}>
+                  {formatQtyByUom(Number(r.suggested_qty ?? 0), r.uom_code)}
+                </Text>{' '}
+                {r.uom_code}
+              </Text>
+            ) : null}
+
+            {r.packs && r.pack_size ? (
+              <Text style={{ color: '#6b7280', marginTop: 2 }}>
+                Упаковка:{' '}
+                <Text style={{ fontWeight: '800' }}>
+                  {formatQtyByUom(Number(r.packs), 'шт')}
+                </Text>{' '}
+                × {formatQtyByUom(Number(r.pack_size), r.pack_uom)} {r.pack_uom ?? ''}
+              </Text>
+            ) : null}
+          </View>
+
+          {/* Кнопки */}
+          <Pressable
+            onPress={() => incRow(rowKey, -1)}
+            style={{ paddingHorizontal: 10, paddingVertical: 6, borderRadius: 10, backgroundColor: '#f3f4f6' }}
+          >
+            <Text style={{ fontWeight: '900' }}>–</Text>
+          </Pressable>
+
+          <Pressable
+            onPress={() => incRow(rowKey, +1)}
+            style={{ paddingHorizontal: 10, paddingVertical: 6, borderRadius: 10, backgroundColor: '#f3f4f6' }}
+          >
+            <Text style={{ fontWeight: '900' }}>+</Text>
+          </Pressable>
+
+          <Pressable
+            onPress={() => removeRow(rowKey)}
+            style={{ paddingHorizontal: 12, paddingVertical: 6, borderRadius: 10, backgroundColor: '#f3f4f6' }}
+          >
+            <Text style={{ fontWeight: '700', color: '#374151' }}>Удалить позицию</Text>
+          </Pressable>
+        </View>
+
+        {r.hint ? (
+          <Text style={{ color: '#6b7280', marginTop: 4 }}>{r.hint}</Text>
+        ) : null}
+      </View>
+    );
+  })}
+</ScrollView>
 
                   <View style={{ flexDirection: 'row', gap: 8, marginTop: 10, justifyContent: 'flex-end' }}>
                     <Pressable
@@ -515,9 +646,7 @@ setRows(Array.isArray(data) ? (data as Row[]) : []);
                   </View>
                 </>
               ) : (
-                <Text style={{ color: '#6b7280' }}>
-                  Для указанных параметров нормы не найдены.
-                </Text>
+                <Text style={{ color: '#6b7280' }}>Для указанных параметров нормы не найдены.</Text>
               )}
             </View>
           )}
