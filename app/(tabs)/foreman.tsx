@@ -44,6 +44,7 @@ import {
   setLocalDraftId,
   listForemanRequests,
   requestItemUpdateQty,
+  requestItemCancel,
   type CatalogItem,
   type ReqItemRow,
   type ForemanRequestSummary,
@@ -369,7 +370,8 @@ const shortId = (rid: string | number | null | undefined) => {
   return /^\d+$/.test(s) ? s : s.slice(0, 8);
 };
 
-const DISPLAY_NUMBER_RE = /^REQ-\d{4,}\/\d{4}$/i;
+const DISPLAY_NUMBER_RE = /^(REQ-\d{4}\/\d{4}|[A-ZА-Я]-\d{4,})$/i;
+
 const DRAFT_STATUS_KEYS = new Set(['draft', 'черновик', '']);
 const isDraftLikeStatus = (value?: string | null) =>
   DRAFT_STATUS_KEYS.has(String(value ?? '').trim().toLowerCase());
@@ -404,6 +406,7 @@ export default function ForemanScreen() {
   const canSearch = query.trim().length >= 2;
   const timerRef = useRef<Timer | null>(null);
   const reqIdRef = useRef(0);
+
 
   // ===== Глобальный фильтр по области применения (РИК) =====
   const [appOptions, setAppOptions] = useState<AppOption[]>([]);
@@ -449,6 +452,7 @@ export default function ForemanScreen() {
   const [items, setItems] = useState<ReqItemRow[]>([]);
   const [qtyDrafts, setQtyDrafts] = useState<Record<string, string>>({});
   const [qtyBusyMap, setQtyBusyMap] = useState<Record<string, boolean>>({});
+  const cancelLockRef = useRef<Record<string, boolean>>({});
   const [refreshing, setRefreshing] = useState(false);
   const [busy, setBusy] = useState(false);
   const [historyRequests, setHistoryRequests] = useState<ForemanRequestSummary[]>([]);
@@ -546,8 +550,16 @@ export default function ForemanScreen() {
 
   // ====== КЭШ и подгрузка display_no для текущей заявки ======
   const [displayNoByReq, setDisplayNoByReq] = useState<Record<string, string>>(
-    {},
-  );
+  {},
+);
+
+// ✅ NEW: ref-кеш, чтобы один requestId дергался только 1 раз
+const displayNoCacheRef = useRef<Record<string, string>>({});
+const displayNoStateRef = useRef<Record<string, string>>({});
+useEffect(() => {
+  displayNoStateRef.current = displayNoByReq;
+}, [displayNoByReq]);
+
   const labelForRequest = useCallback(
     (rid?: string | number | null) => {
       const key = String(rid ?? '').trim();
@@ -563,21 +575,35 @@ export default function ForemanScreen() {
     [displayNoByReq, requestDetails?.display_no, requestId],
   );
 
-  const preloadDisplayNo = useCallback(
-    async (rid?: string | number | null) => {
-      const key = String(rid ?? '').trim();
-      if (!key || displayNoByReq[key] != null) return;
-      try {
-        const display = await fetchRequestDisplayNo(key);
-        if (display) {
-          setDisplayNoByReq((prev) => ({ ...prev, [key]: display }));
-        }
-      } catch (e) {
-        console.warn('[Foreman] preloadDisplayNo:', (e as any)?.message ?? e);
-      }
-    },
-    [displayNoByReq],
-  );
+ const preloadDisplayNo = useCallback(async (rid?: string | number | null) => {
+  const key = String(rid ?? '').trim();
+  if (!key) return;
+
+  // ✅ 1) если уже есть в state — не дергаем
+  if (displayNoStateRef.current[key] != null) return;
+
+  // ✅ 2) если уже есть в ref-кеше — кладём в state и выходим
+  const cached = displayNoCacheRef.current[key];
+  if (cached !== undefined) {
+    setDisplayNoByReq((prev) => ({ ...prev, [key]: cached }));
+    return;
+  }
+
+  try {
+    const display = await fetchRequestDisplayNo(key);
+
+    if (display) {
+      displayNoCacheRef.current[key] = display;
+      setDisplayNoByReq((prev) => ({ ...prev, [key]: display }));
+    } else {
+      displayNoCacheRef.current[key] = '';
+      setDisplayNoByReq((prev) => ({ ...prev, [key]: '' }));
+    }
+  } catch (e) {
+    console.warn('[Foreman] preloadDisplayNo:', (e as any)?.message ?? e);
+  }
+}, []);
+
 
   const loadDetails = useCallback(
     async (rid?: string | number | null) => {
@@ -635,17 +661,16 @@ export default function ForemanScreen() {
     [requestId, ridStr],
   );
   const openRequestById = useCallback(
-    (targetId: string | number | null | undefined) => {
-      const id = targetId != null ? String(targetId).trim() : '';
-      if (!id) return;
-      setRequestId(id);
-      setViewMode('raw');
-      preloadDisplayNo(id);
-      loadDetails(id);
-      loadItems(id);
-    },
-    [loadDetails, loadItems, preloadDisplayNo],
-  );
+  (targetId: string | number | null | undefined) => {
+    const id = targetId != null ? String(targetId).trim() : '';
+    if (!id) return;
+    setRequestId(id);
+    setViewMode('raw');
+    loadItems(id);
+  },
+  [loadItems],
+);
+
 
   useEffect(() => {
     setQtyDrafts((prev) => {
@@ -820,7 +845,7 @@ export default function ForemanScreen() {
         system_code: created.system_code ?? meta.system_code ?? undefined,
         zone_code: created.zone_code ?? meta.zone_code ?? undefined,
       });
-      await loadDetails(idStr);
+      
       await loadItems(idStr);
       setInitialDraftEnsured(true);
       const label = display || `#${shortId(idStr)}`;
@@ -955,40 +980,74 @@ export default function ForemanScreen() {
   ]);
 
   // создаём/получаем черновик при монтировании
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const id = await getOrCreateDraftRequestId();
-        if (!cancelled) {
-          const str = String(id);
-          setRequestId(str);
-          preloadDisplayNo(str);
-          await loadDetails(str);
+ useEffect(() => {
+  let cancelled = false;
+
+  (async () => {
+    try {
+      console.log('[Foreman] ensure draft: start');
+
+      const idAny = await getOrCreateDraftRequestId(); // должно дернуть БД
+      const rid = String(idAny).trim();
+
+      console.log('[Foreman] ensure draft: got id', rid);
+
+      if (!rid) throw new Error('draft id is empty');
+
+      if (cancelled) return;
+
+      // 1) ставим requestId
+      setRequestId(rid);
+
+      // 2) сразу пробуем подгрузить номер/детали
+      //    (чтобы не зависеть от других эффектов)
+      const d = await fetchRequestDetails(rid);
+      console.log('[Foreman] draft details', d);
+
+      if (!cancelled && d) {
+        setRequestDetails(d);
+        const dn = String(d.display_no ?? '').trim();
+        if (dn) {
+          setDisplayNoByReq((prev) => ({ ...prev, [rid]: dn }));
         }
-      } catch (e) {
-        console.warn(
-          '[Foreman] draft ensure failed:',
-          (e as any)?.message || e,
-        );
-        if (!cancelled) {
-          Alert.alert(
-            'Ошибка',
-            (e as any)?.message ?? 'Не удалось получить черновик заявки',
-          );
+      } else {
+        // если details не вернулись — хотя бы дернем номер
+        const dn2 = await fetchRequestDisplayNo(rid);
+        console.log('[Foreman] draft display_no', dn2);
+        if (!cancelled && dn2) {
+          setDisplayNoByReq((prev) => ({ ...prev, [rid]: String(dn2) }));
         }
       }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [loadDetails, preloadDisplayNo]);
 
-  // подгружаем display_no при появлении requestId
-  useEffect(() => {
-    if (requestId) preloadDisplayNo(requestId);
-    if (requestId) loadDetails(requestId);
-  }, [requestId, preloadDisplayNo, loadDetails]);
+    } catch (e: any) {
+      console.error('[Foreman] ensure draft failed:', e?.message ?? e);
+
+      if (!cancelled) {
+        // WEB: alert чтобы ты точно увидел
+        if (Platform.OS === 'web') window.alert(e?.message ?? 'Не удалось создать черновик');
+        else Alert.alert('Ошибка', e?.message ?? 'Не удалось создать черновик');
+      }
+    }
+  })();
+
+  return () => { cancelled = true; };
+}, []);
+
+
+  const lastPreloadRef = useRef<string | null>(null);
+
+useEffect(() => {
+  if (!requestId) return;
+
+  const rid = String(requestId).trim();
+  if (lastPreloadRef.current !== rid) {
+    lastPreloadRef.current = rid;
+    preloadDisplayNo(rid);
+  }
+
+  loadDetails(rid);
+}, [requestId, preloadDisplayNo, loadDetails]);
+
 
   useEffect(() => {
     loadItems();
@@ -1028,12 +1087,11 @@ export default function ForemanScreen() {
 
     try {
       const rid2 = await getOrCreateDraftRequestId();
-      const rid2Str = String(rid2);
-      setRequestId(rid2Str);
-      setLocalDraftId(rid2Str);
-      preloadDisplayNo(rid2Str);
-      await loadDetails(rid2Str);
-      return rid2Str;
+const rid2Str = String(rid2);
+setRequestId(rid2Str);
+setLocalDraftId(rid2Str);
+return rid2Str;
+
     } catch (e: any) {
       Alert.alert(
         'Ошибка',
@@ -1392,7 +1450,6 @@ return {
         }
 
         await loadItems(rid);
-        preloadDisplayNo(rid);
         setCalcVisible(false);
         setSelectedWorkType(null);
         Alert.alert('Готово', `Добавлено позиций: ${added}`);
@@ -1422,7 +1479,6 @@ return {
       systemName,
       zoneName,
       loadItems,
-      preloadDisplayNo,
       isDraftActive,
       ensureHeaderReady,
     ],
@@ -1498,7 +1554,7 @@ return {
 
       setCart({});
       await loadItems(rid);
-      preloadDisplayNo(rid);
+      
       Alert.alert('Готово', `Добавлено позиций: ${totalAdded}`);
     } catch (e: any) {
       console.error(
@@ -1522,7 +1578,7 @@ return {
     zone,
     ridStr,
     loadItems,
-    preloadDisplayNo,
+    
     ensureAndGetId,
     isDraftActive,
     ensureHeaderReady,
@@ -1656,7 +1712,7 @@ return {
             }
           : prev,
       );
-      await preloadDisplayNo(rid);
+     
       const submittedLabel = submitted?.display_no ?? labelForRequest(rid);
       Alert.alert(
         'Отправлено директору',
@@ -1691,7 +1747,7 @@ return {
     zone,
     comment,
     items,
-    preloadDisplayNo,
+   
     labelForRequest,
     ensureAndGetId,
     isDraftActive,
@@ -1734,7 +1790,7 @@ return {
         need_by: needBy.trim() || null,
         foreman_name: foreman.trim() || null,
       }).catch(() => null);
-      await preloadDisplayNo(rid);
+      
       const url = await exportRequestPdf(rid);
       if (Platform.OS === 'web') {
         if (url) {
@@ -1762,7 +1818,7 @@ return {
     system,
     zone,
     comment,
-    preloadDisplayNo,
+    
     ensureHeaderReady,
   ]);
 
@@ -2080,28 +2136,8 @@ return {
   const ReqItemRowView = useCallback(
     ({ it }: { it: ReqItemRow }) => {
       const key = String(it.id);
-      const draft = qtyDrafts[key] ?? formatQtyInput(it.qty);
       const updating = !!qtyBusyMap[key];
       const canEdit = canEditRequestItem(it);
-
-      const handleBlur = () => {
-        if (!canEdit || updating) return;
-        commitQtyChange(it, draft);
-      };
-
-      const adjustQty = (delta: number) => {
-        if (!canEdit || updating) return;
-        const base = parseQtyValue(draft);
-        const fallback = parseQtyValue(it.qty);
-        const start = Number.isFinite(base) ? base : fallback;
-        const next = Number.isFinite(start) ? start + delta : delta;
-        if (next <= 0) {
-          Alert.alert('Количество', 'Значение должно быть больше нуля.');
-          return;
-        }
-        const formatted = formatQtyInput(next);
-        updateQtyDraftValue(key, formatted);
-      };
 
       return (
         <View
@@ -2141,57 +2177,93 @@ return {
             ) : null}
           </View>
 
-          <View style={[s.row, { marginTop: 6 }]}> 
-            <Text style={[s.rowLabel, { color: COLORS.sub }]}>Кол-во:</Text>
-            {canEdit ? (
-              <View style={s.qtyWrap}>
-                <Pressable
-                  onPress={() => adjustQty(-1)}
-                  disabled={updating}
-                  style={[
-                    s.qtyBtn,
-                    { borderColor: COLORS.border, opacity: updating ? 0.5 : 1 },
-                  ]}
-                >
-                  <Text style={s.qtyBtnTxt}>−</Text>
-                </Pressable>
-                <TextInput
-                  value={draft}
-                  onChangeText={(v) => updateQtyDraftValue(key, v)}
-                  onBlur={handleBlur}
-                  keyboardType="decimal-pad"
-                  editable={!updating}
-                  style={[
-                    s.qtyInput,
-                    {
-                      borderColor: COLORS.border,
-                      backgroundColor: '#fff',
-                      opacity: updating ? 0.6 : 1,
-                    },
-                  ]}
-                />
-                <Pressable
-                  onPress={() => adjustQty(1)}
-                  disabled={updating}
-                  style={[
-                    s.qtyBtn,
-                    { borderColor: COLORS.border, opacity: updating ? 0.5 : 1 },
-                  ]}
-                >
-                  <Text style={s.qtyBtnTxt}>＋</Text>
-                </Pressable>
-              </View>
-            ) : (
-              <Text
-                style={{
-                  color: COLORS.text,
-                  fontWeight: '700',
-                }}
-              >
-                {it.qty ?? '-'} {it.uom ?? ''}
-              </Text>
-            )}
-          </View>
+         <View style={[s.row, { marginTop: 6 }]}>
+  <Text style={[s.rowLabel, { color: COLORS.sub }]}>Кол-во:</Text>
+
+  <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
+    {/* показываем количество без редактирования */}
+    <Text style={{ color: COLORS.text, fontWeight: '800' }}>
+      {it.qty ?? '-'} {it.uom ?? ''}
+    </Text>
+
+    {/* кнопка отмены только если это черновик и можно редактировать */}
+    {canEdit ? (
+      <Pressable
+        disabled={busy || updating}
+       onPress={async () => {
+  // ✅ МГНОВЕННЫЙ ЛОК: если onPress пришёл второй раз — игнор
+  if (cancelLockRef.current[key]) return;
+  cancelLockRef.current[key] = true;
+
+  try {
+    // ✅ WEB: confirm
+    if (Platform.OS === 'web') {
+      const ok = window.confirm(`Отменить позицию?\n\n${it.name_human || 'Позиция'}`);
+      if (!ok) return;
+
+      // можно сразу показать busy, чтобы и UI заблокировать
+      setQtyBusyMap((prev) => ({ ...prev, [key]: true }));
+
+      await requestItemCancel(String(it.id));
+
+      setItems((prev) => prev.filter((x) => String(x.id) !== String(it.id)));
+
+      setQtyDrafts((prev) => {
+        const n = { ...prev };
+        delete n[key];
+        return n;
+      });
+
+      window.alert('Позиция удалена');
+      return;
+    }
+
+    // ✅ NATIVE: Alert.alert
+    Alert.alert('Отменить позицию?', it.name_human || 'Позиция', [
+      { text: 'Нет', style: 'cancel', onPress: () => {} },
+      {
+        text: 'Отменить',
+        style: 'destructive',
+        onPress: async () => {
+          setQtyBusyMap((prev) => ({ ...prev, [key]: true }));
+          try {
+            await requestItemCancel(String(it.id));
+
+            setItems((prev) => prev.filter((x) => String(x.id) !== String(it.id)));
+
+            setQtyDrafts((prev) => {
+              const n = { ...prev };
+              delete n[key];
+              return n;
+            });
+          } catch (e: any) {
+            Alert.alert('Ошибка', e?.message ?? 'Не удалось отменить позицию');
+          } finally {
+            setQtyBusyMap((prev) => ({ ...prev, [key]: false }));
+          }
+        },
+      },
+    ]);
+  } finally {
+    // ✅ Снимаем лок (если пользователь нажал "Нет" — тоже снимется)
+    cancelLockRef.current[key] = false;
+  }
+}}
+
+        style={{
+          paddingHorizontal: 12,
+          paddingVertical: 8,
+          borderRadius: 10,
+          borderWidth: 1,
+          borderColor: '#FCA5A5',
+          backgroundColor: '#FEE2E2',
+        }}
+      >
+        <Text style={{ color: '#991B1B', fontWeight: '900' }}>Отменить позицию</Text>
+      </Pressable>
+    ) : null}
+  </View>
+</View>
 
           <Text
             style={[
@@ -2226,16 +2298,14 @@ return {
         </View>
       );
     },
-    [
+        [
       canEditRequestItem,
-      qtyDrafts,
-      formatQtyInput,
       qtyBusyMap,
-      commitQtyChange,
-      parseQtyValue,
-      updateQtyDraftValue,
+      busy,
       labelForApp,
+      requestItemCancel,
     ],
+
   );
 
   const GroupedRowView = useCallback(
@@ -2344,9 +2414,10 @@ return {
     >
       <View style={[s.container, { backgroundColor: COLORS.bg }]}>
         <ScrollView
-          contentContainerStyle={s.pagePad}
-          keyboardShouldPersistTaps="handled"
-        >
+  contentContainerStyle={s.pagePad}
+  keyboardShouldPersistTaps="always"
+>
+
           <Text style={[s.header, { color: COLORS.text }]}>
             Прораб — заявка и поиск по РИК
           </Text>
@@ -2749,81 +2820,83 @@ return {
           </View>
 
           {viewMode === 'raw' ? (
-            <FlatList
-              data={items}
-              keyExtractor={(it, idx) =>
-                it?.id
-                  ? `ri:${it.id}`
-                  : `ri:${it.request_id}-${idx}`
-              }
-              renderItem={({ item }) => (
-                <ReqItemRowView it={item} />
-              )}
-              ListEmptyComponent={
-                <Text
-                  style={{
-                    textAlign: 'center',
-                    marginTop: 16,
-                    color: COLORS.sub,
-                  }}
-                >
-                  Пока пусто
-                </Text>
-              }
-              refreshControl={
-                <RefreshControl
-                  refreshing={refreshing}
-                  onRefresh={async () => {
-                    setRefreshing(true);
-                    await loadItems();
-                    setRefreshing(false);
-                  }}
-                />
-              }
-              keyboardShouldPersistTaps="handled"
-              removeClippedSubviews
-              nestedScrollEnabled
-              windowSize={9}
-              maxToRenderPerBatch={12}
-              updateCellsBatchingPeriod={50}
-            />
-          ) : (
-            <FlatList
-              data={grouped}
-              keyExtractor={(g, idx) =>
-                `grp:${g.key}:${idx}`
-              }
-              renderItem={({ item }) => (
-                <GroupedRowView g={item} />
-              )}
-              ListEmptyComponent={
-                <Text
-                  style={{
-                    textAlign: 'center',
-                    marginTop: 16,
-                    color: COLORS.sub,
-                  }}
-                >
-                  Пока пусто
-                </Text>
-              }
-              refreshControl={
-                <RefreshControl
-                  refreshing={refreshing}
-                  onRefresh={async () => {
-                    setRefreshing(true);
-                    await loadItems();
-                    setRefreshing(false);
-                  }}
-                />
-              }
-              keyboardShouldPersistTaps="handled"
-              removeClippedSubviews
-              nestedScrollEnabled
-              windowSize={9}
-              maxToRenderPerBatch={12}
-              updateCellsBatchingPeriod={50}
-            />
+  <FlatList
+    data={items}
+    keyExtractor={(it, idx) =>
+      it?.id
+        ? `ri:${it.id}`
+        : `ri:${it.request_id}-${idx}`
+    }
+    renderItem={({ item }) => (
+      <ReqItemRowView it={item} />
+    )}
+    ListEmptyComponent={
+      <Text
+        style={{
+          textAlign: 'center',
+          marginTop: 16,
+          color: COLORS.sub,
+        }}
+      >
+        Пока пусто
+      </Text>
+    }
+    refreshControl={
+      <RefreshControl
+        refreshing={refreshing}
+        onRefresh={async () => {
+          setRefreshing(true);
+          await loadItems();
+          setRefreshing(false);
+        }}
+      />
+    }
+    keyboardShouldPersistTaps="always"  // ✅ было handled
+    scrollEnabled={false}              // ✅ ДОБАВИЛИ
+    nestedScrollEnabled={false}        // ✅ БЫЛО true/включено — стало false
+    removeClippedSubviews
+    windowSize={9}
+    maxToRenderPerBatch={12}
+    updateCellsBatchingPeriod={50}
+  />
+) : (
+           <FlatList
+  data={grouped}
+  keyExtractor={(g, idx) =>
+    `grp:${g.key}:${idx}`
+  }
+  renderItem={({ item }) => (
+    <GroupedRowView g={item} />
+  )}
+  ListEmptyComponent={
+    <Text
+      style={{
+        textAlign: 'center',
+        marginTop: 16,
+        color: COLORS.sub,
+      }}
+    >
+      Пока пусто
+    </Text>
+  }
+  refreshControl={
+    <RefreshControl
+      refreshing={refreshing}
+      onRefresh={async () => {
+        setRefreshing(true);
+        await loadItems();
+        setRefreshing(false);
+      }}
+    />
+  }
+  keyboardShouldPersistTaps="always"  // ✅ было handled
+  scrollEnabled={false}              // ✅ ДОБАВИЛИ
+  nestedScrollEnabled={false}        // ✅ БЫЛО true/включено — стало false
+  removeClippedSubviews
+  windowSize={9}
+  maxToRenderPerBatch={12}
+  updateCellsBatchingPeriod={50}
+/>
           )}
 
         </ScrollView>
