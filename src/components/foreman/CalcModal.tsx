@@ -116,6 +116,7 @@ export default function CalcModal({ visible, onClose, workType, onAddToRequest }
   const [errors, setErrors] = useState<FieldErrors>({});
   const [lossPct, setLossPct] = useState<string>('5');
   const [lossTouched, setLossTouched] = useState(false);
+  const [filmTouched, setFilmTouched] = useState(false); // ✅ ДОБАВИЛИ
   const [rows, setRows] = useState<Row[] | null>(null);
   const [calculating, setCalculating] = useState(false);
 
@@ -129,17 +130,34 @@ export default function CalcModal({ visible, onClose, workType, onAddToRequest }
     () => fields.some((f) => f.key === 'multiplier' || f.key === 'loss'),
     [fields],
   );
+const applyAutoRules = useCallback(
+  (nextMeasures: Measures, nextInputs: Inputs) => {
+    // ind_concrete: если film_m2 не трогали руками и film пустой -> film = area_m2
+    if (workType?.code === 'ind_concrete' && !filmTouched) {
+      const a = (nextMeasures as any).area_m2;
+      const f = (nextMeasures as any).film_m2;
+
+      if (typeof a === 'number' && Number.isFinite(a) && !(typeof f === 'number' && Number.isFinite(f))) {
+        (nextMeasures as any).film_m2 = a;
+        nextInputs.film_m2 = formatNumber(a);
+      }
+    }
+  },
+  [workType?.code, filmTouched],
+);
+
 
   useEffect(() => {
     if (!visible) {
-      setRows(null);
-      setMeasures({});
-      setInputs({});
-      setErrors({});
-      setLossPct('5');
-      setLossTouched(false);
-      return;
-    }
+  setRows(null);
+  setMeasures({});
+  setInputs({});
+  setErrors({});
+  setLossPct('5');
+  setLossTouched(false);
+  setFilmTouched(false); // ✅ ДОБАВИЛИ
+  return;
+}
   }, [visible]);
 
   useEffect(() => {
@@ -150,44 +168,45 @@ export default function CalcModal({ visible, onClose, workType, onAddToRequest }
     setErrors({});
     setLossPct('5');
     setLossTouched(false);
+    setFilmTouched(false); // ✅ ДОБАВИЛИ
+
   }, [workType?.code, visible]);
 
   useEffect(() => {
-    if (!visible) return;
-    setInputs((prev) => {
-      const next: Inputs = {};
-      fields.forEach((field) => {
-        if (prev[field.key] !== undefined) {
-          next[field.key] = prev[field.key];
-        } else if (field.defaultValue != null) {
-          next[field.key] = formatNumber(field.defaultValue);
-        } else {
-          next[field.key] = '';
-        }
-      });
-      return next;
+  if (!visible) return;
+
+  const nextInputs: Inputs = {};
+  const nextMeasures: Measures = {};
+
+  fields.forEach((field) => {
+    const k = field.key;
+
+    // inputs
+    if ((inputs as any)[k] !== undefined) nextInputs[k] = (inputs as any)[k];
+    else if (field.defaultValue != null) nextInputs[k] = formatNumber(field.defaultValue);
+    else nextInputs[k] = '';
+
+    // measures
+    if ((measures as any)[k] != null) nextMeasures[k] = (measures as any)[k];
+    else if (field.defaultValue != null) nextMeasures[k] = field.defaultValue;
+  });
+
+  // ✅ авто-правила применяем один раз
+  applyAutoRules(nextMeasures, nextInputs);
+
+  // чистим errors от мусора
+  setErrors((prev) => {
+    const next: FieldErrors = { ...prev };
+    Object.keys(next).forEach((key) => {
+      if (!fieldMap.has(key as any)) delete (next as any)[key];
     });
-    setMeasures((prev) => {
-      const next: Measures = {};
-      fields.forEach((field) => {
-        if (prev[field.key] != null) {
-          next[field.key] = prev[field.key];
-        } else if (field.defaultValue != null) {
-          next[field.key] = field.defaultValue;
-        }
-      });
-      return next;
-    });
-    setErrors((prev) => {
-      const next: FieldErrors = { ...prev };
-      Object.keys(next).forEach((key) => {
-        if (!fieldMap.has(key as any)) {
-          delete (next as any)[key];
-        }
-      });
-      return next;
-    });
-  }, [fields, fieldMap, visible]);
+    return next;
+  });
+
+  setInputs(nextInputs);
+  setMeasures(nextMeasures);
+}, [visible, fields, fieldMap, applyAutoRules]);
+
 
   const { lossValue, lossInvalid } = useMemo(() => {
     const trimmed = lossPct.trim();
@@ -210,71 +229,74 @@ export default function CalcModal({ visible, onClose, workType, onAddToRequest }
     return Math.max(0, 1 + (lossValue ?? 0) / 100);
   }, [hasMultiplierField, lossInvalid, lossValue, measures.multiplier]);
 
-  const runParse = useCallback(
-    (keys: BasisKey[], showErrors = false) => {
-      const nextInputs: Inputs = { ...inputs };
-      const nextMeasures: Measures = { ...measures };
-      const nextErrors: FieldErrors = { ...errors };
-      let allValid = true;
+const runParse = useCallback(
+  (keys: BasisKey[], showErrors = false) => {
+    const nextInputs: Inputs = { ...inputs };
+    const nextMeasures: Measures = { ...measures };
+    const nextErrors: FieldErrors = { ...errors };
+    let allValid = true;
 
-      keys.forEach((key) => {
-        const field = fieldMap.get(key);
-        if (!field) return;
+    keys.forEach((key) => {
+      const field = fieldMap.get(key);
+      if (!field) return;
 
-        const rawOriginal = inputs[key] ?? '';
-        const raw = rawOriginal.trim();
-        let errorMessage: string | undefined;
+      const rawOriginal = inputs[key] ?? '';
+      const raw = rawOriginal.trim();
+      let errorMessage: string | undefined;
 
-        if (!raw) {
-          delete nextMeasures[key];
-          nextInputs[key] = '';
-          if (field.required) {
-            allValid = false;
-            errorMessage = 'Заполните поле';
-          }
-        } else {
-          try {
-            const numeric = evaluateExpression(rawOriginal);
-            nextMeasures[key] = numeric;
-            nextInputs[key] = formatNumber(numeric);
-          } catch (err) {
-            delete nextMeasures[key];
-            allValid = false;
-            errorMessage = 'Некорректное значение';
-          }
+      if (!raw) {
+        delete nextMeasures[key];
+        nextInputs[key] = '';
+        if (field.required) {
+          allValid = false;
+          errorMessage = 'Заполните поле';
         }
-
-        if (showErrors) {
-          if (errorMessage) {
-            nextErrors[key] = errorMessage;
-          } else {
-            delete nextErrors[key];
-          }
-        } else if (!errorMessage) {
-          delete nextErrors[key];
-        }
-      });
-
-      setInputs(nextInputs);
-      setMeasures(nextMeasures);
-      if (showErrors) {
-        setErrors(nextErrors);
       } else {
-        setErrors((prev) => {
-          const updated: FieldErrors = { ...prev };
-          keys.forEach((key) => {
-            if (!nextErrors[key]) delete updated[key];
-          });
-          return updated;
-        });
+        try {
+          const numeric = evaluateExpression(rawOriginal);
+          nextMeasures[key] = numeric;
+          nextInputs[key] = formatNumber(numeric);
+        } catch (err) {
+          delete nextMeasures[key];
+          allValid = false;
+          errorMessage = 'Некорректное значение';
+        }
       }
 
-      return { valid: allValid, measures: nextMeasures };
-    },
-    [inputs, measures, errors, fieldMap],
-  );
+      if (showErrors) {
+        if (errorMessage) nextErrors[key] = errorMessage;
+        else delete nextErrors[key];
+      } else if (!errorMessage) {
+        delete nextErrors[key];
+      }
+    });
+
+    // ✅ авто-правила применяем здесь
+    applyAutoRules(nextMeasures, nextInputs);
+
+    setInputs(nextInputs);
+    setMeasures(nextMeasures);
+
+    if (showErrors) setErrors(nextErrors);
+    else {
+      setErrors((prev) => {
+        const updated: FieldErrors = { ...prev };
+        keys.forEach((key) => {
+          if (!nextErrors[key]) delete updated[key];
+        });
+        return updated;
+      });
+    }
+
+    return { valid: allValid, measures: nextMeasures };
+  },
+  [inputs, measures, errors, fieldMap, applyAutoRules],
+);
 
   const handleInputChange = useCallback((key: BasisKey, value: string) => {
+  if (workType?.code === 'ind_concrete' && key === 'film_m2') {
+    setFilmTouched(true); // ✅ ДОБАВИЛИ
+  }
     setInputs((prev) => ({ ...prev, [key]: value }));
     setErrors((prev) => {
       if (!prev[key]) return prev;
@@ -285,8 +307,9 @@ export default function CalcModal({ visible, onClose, workType, onAddToRequest }
   }, []);
 
   const handleBlur = useCallback((key: BasisKey) => {
-    runParse([key], true);
-  }, [runParse]);
+  runParse([key], true);
+}, [runParse]);
+
 
   const handleLossChange = (value: string) => {
     setLossPct(value);
