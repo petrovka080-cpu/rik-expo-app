@@ -5,3 +5,8 @@ build/
 coverage/
 *.log
 .DS_Store
+
+# Android build artifacts
+android/app/build/
+android/build/
+android/.gradle/
