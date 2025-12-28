@@ -13,6 +13,7 @@ export type Field = {
   required?: boolean;
   defaultValue?: number | null;
   order?: number | null;
+  usedInNorms?: boolean;
 };
 
 type CalcValues = Record<BasisKey, number | null>;
@@ -46,50 +47,36 @@ export function useCalcFields(workTypeCode?: string | null) {
       try {
         const { data, error } = await supabase
           .from("v_reno_calc_fields_ui")
-          .select(
-            `
-            basis_key,
-            label_ru,
-            uom_code,
-            is_required,
-            hint_ru,
-            default_value,
-            sort_order
-          `,
-          )
+          .select(`
+  basis_key,
+  label_ru,
+  uom_code,
+  is_required,
+  hint_ru,
+  default_value,
+  sort_order,
+  used_in_norms
+`)
           .eq("work_type_code", code)
           .order("sort_order", { ascending: true });
 
         if (error) throw error;
 
         const list: Field[] = (data ?? []).map((r: any) => ({
-          key: r.basis_key,
-          label: r.label_ru || r.basis_key,
-          uom: r.uom_code,
-          hint: r.hint_ru,
-          required: !!r.is_required,
-          defaultValue:
-            typeof r.default_value === "number"
-              ? r.default_value
-              : null,
-          order: r.sort_order,
-        }));
+  key: r.basis_key,
+  label: r.label_ru || r.basis_key,
+  uom: r.uom_code,
+  hint: r.hint_ru,
+  required: !!r.is_required,
+  usedInNorms: !!r.used_in_norms,   // ✅ ВОТ СЮДА
+  defaultValue: typeof r.default_value === "number" ? r.default_value : null,
+  order: r.sort_order,
+}));
+
 
         if (!cancelled) {
           setFields(list);
-          setValues((prev) => {
-            const next = { ...prev };
-            for (const f of list) {
-              if (
-                next[f.key] === undefined &&
-                f.defaultValue != null
-              ) {
-                next[f.key] = f.defaultValue;
-              }
-            }
-            return next;
-          });
-        }
+                  }
       } catch (e: any) {
         if (!cancelled) {
           setFields([]);

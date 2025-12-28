@@ -114,7 +114,7 @@ export default function CalcModal({ visible, onClose, workType, onAddToRequest }
   const [inputs, setInputs] = useState<Inputs>({});
   const [measures, setMeasures] = useState<Measures>({});
   const [errors, setErrors] = useState<FieldErrors>({});
-  const [lossPct, setLossPct] = useState<string>('5');
+  const [lossPct, setLossPct] = useState<string>('');
   const [lossTouched, setLossTouched] = useState(false);
   const [filmTouched, setFilmTouched] = useState(false); // ✅ ДОБАВИЛИ
   const [rows, setRows] = useState<Row[] | null>(null);
@@ -130,6 +130,11 @@ export default function CalcModal({ visible, onClose, workType, onAddToRequest }
     () => fields.some((f) => f.key === 'multiplier' || f.key === 'loss'),
     [fields],
   );
+const hasWastePctField = useMemo(
+  () => fields.some((f) => f.key === 'waste_pct' || f.key === 'loss'),
+  [fields],
+);
+
 const applyAutoRules = useCallback(
   (nextMeasures: Measures, nextInputs: Inputs) => {
     // ind_concrete: если film_m2 не трогали руками и film пустой -> film = area_m2
@@ -153,7 +158,7 @@ const applyAutoRules = useCallback(
   setMeasures({});
   setInputs({});
   setErrors({});
-  setLossPct('5');
+  setLossPct('');
   setLossTouched(false);
   setFilmTouched(false); // ✅ ДОБАВИЛИ
   return;
@@ -166,7 +171,7 @@ const applyAutoRules = useCallback(
     setMeasures({});
     setInputs({});
     setErrors({});
-    setLossPct('5');
+    setLossPct('');
     setLossTouched(false);
     setFilmTouched(false); // ✅ ДОБАВИЛИ
 
@@ -181,14 +186,14 @@ const applyAutoRules = useCallback(
   fields.forEach((field) => {
     const k = field.key;
 
-    // inputs
-    if ((inputs as any)[k] !== undefined) nextInputs[k] = (inputs as any)[k];
-    else if (field.defaultValue != null) nextInputs[k] = formatNumber(field.defaultValue);
-    else nextInputs[k] = '';
+    // inputs — только то, что ввёл пользователь. Никаких default.
+if ((inputs as any)[k] !== undefined) nextInputs[k] = (inputs as any)[k];
+else nextInputs[k] = '';
 
-    // measures
-    if ((measures as any)[k] != null) nextMeasures[k] = (measures as any)[k];
-    else if (field.defaultValue != null) nextMeasures[k] = field.defaultValue;
+// measures — только распарсенные числа, default не задаём
+if ((measures as any)[k] != null) nextMeasures[k] = (measures as any)[k];
+else delete (nextMeasures as any)[k];
+
   });
 
   // ✅ авто-правила применяем один раз
@@ -222,12 +227,46 @@ const applyAutoRules = useCallback(
   const lossError = lossTouched && lossInvalid ? LOSS_ERROR_TEXT : null;
 
   const multiplier = useMemo(() => {
-    if (hasMultiplierField && Number.isFinite(measures.multiplier ?? NaN)) {
-      return measures.multiplier as number;
-    }
-    if (lossInvalid) return 1;
-    return Math.max(0, 1 + (lossValue ?? 0) / 100);
-  }, [hasMultiplierField, lossInvalid, lossValue, measures.multiplier]);
+  if (hasMultiplierField && Number.isFinite(measures.multiplier ?? NaN)) {
+    return measures.multiplier as number;
+  }
+  if (lossInvalid) return 1;
+  return Math.max(0, 1 + (lossValue ?? 0) / 100);
+}, [hasMultiplierField, lossInvalid, lossValue, measures.multiplier]);
+
+const canCalculate = useMemo(() => {
+  if (!workType?.code) return false;
+  if (fLoading || calculating) return false;
+  if (!fields.length) return false;
+
+  const requiredKeys = fields
+  .filter(f => f.usedInNorms || f.required)   // ✅ нормы + реально обязательные
+  .map(f => f.key);
+
+for (const k of requiredKeys) {
+  const raw = (inputs as any)[k];
+  if (typeof raw !== 'string' || raw.trim() === '') return false;
+}
+
+
+
+  if (!hasMultiplierField && !hasWastePctField) {
+  if (!lossPct.trim()) return false;   // обязателен
+  if (lossInvalid) return false;       // и валиден
+}
+
+return true;
+
+}, [
+  workType?.code,
+  fLoading,
+  calculating,
+  fields,
+  inputs,
+  hasMultiplierField,
+  hasWastePctField,
+  lossInvalid,
+]);
 
 const runParse = useCallback(
   (keys: BasisKey[], showErrors = false) => {
@@ -244,13 +283,12 @@ const runParse = useCallback(
       const raw = rawOriginal.trim();
       let errorMessage: string | undefined;
 
+      // ✅ ИДЕАЛЬНО: любое пустое поле = ошибка (без if(field.required))
       if (!raw) {
         delete nextMeasures[key];
         nextInputs[key] = '';
-        if (field.required) {
-          allValid = false;
-          errorMessage = 'Заполните поле';
-        }
+        allValid = false;
+        errorMessage = 'Заполните поле';
       } else {
         try {
           const numeric = evaluateExpression(rawOriginal);
@@ -266,8 +304,9 @@ const runParse = useCallback(
       if (showErrors) {
         if (errorMessage) nextErrors[key] = errorMessage;
         else delete nextErrors[key];
-      } else if (!errorMessage) {
-        delete nextErrors[key];
+      } else {
+        // если ошибки нет — подчистим старую
+        if (!errorMessage) delete nextErrors[key];
       }
     });
 
@@ -277,12 +316,13 @@ const runParse = useCallback(
     setInputs(nextInputs);
     setMeasures(nextMeasures);
 
-    if (showErrors) setErrors(nextErrors);
-    else {
+    if (showErrors) {
+      setErrors(nextErrors);
+    } else {
       setErrors((prev) => {
         const updated: FieldErrors = { ...prev };
-        keys.forEach((key) => {
-          if (!nextErrors[key]) delete updated[key];
+        keys.forEach((k) => {
+          if (!nextErrors[k]) delete updated[k];
         });
         return updated;
       });
@@ -364,6 +404,13 @@ const setRowQty = (rowKey: string, raw: string) => {
       Alert.alert('Нет полей', 'Для этого вида работ не настроены поля ввода.');
       return;
     }
+// ЖЁСТКО: пока не заполнены ВСЕ поля — не считаем, а подсвечиваем ошибки
+if (!canCalculate) {
+  runParse(requiredKeys, true);
+
+  setLossTouched(true);
+  return;
+}
 
     const parseResult = runParse(
       fields.map((f) => f.key),
@@ -396,18 +443,22 @@ const setRowQty = (rowKey: string, raw: string) => {
 
       // multiplier имеет приоритет, иначе loss
       if (
-        typeof (parsedMeasures as any).multiplier === 'number' &&
-        Number.isFinite((parsedMeasures as any).multiplier)
-      ) {
-        payload.multiplier = (parsedMeasures as any).multiplier;
-      } else {
-        const lossFromField = (parsedMeasures as any).loss;
-        if (typeof lossFromField === 'number' && Number.isFinite(lossFromField)) {
-          payload.loss = lossFromField;
-        } else {
-          payload.loss = Number.isFinite(lossValue) ? lossValue : 0;
-        }
-      }
+  typeof (parsedMeasures as any).multiplier === 'number' &&
+  Number.isFinite((parsedMeasures as any).multiplier)
+) {
+  payload.multiplier = (parsedMeasures as any).multiplier;
+} else {
+  const lossFromField =
+    (parsedMeasures as any).loss ??
+    (parsedMeasures as any).waste_pct;
+
+  if (typeof lossFromField === 'number' && Number.isFinite(lossFromField)) {
+    payload.loss = lossFromField;
+  } else {
+    payload.loss = Number.isFinite(lossValue) ? lossValue : 0;
+  }
+}
+
 
       const { data, error } = await supabase.rpc('rpc_calc_work_kit', {
         p_work_type_code: workType.code,
@@ -502,32 +553,32 @@ const setRowQty = (rowKey: string, raw: string) => {
               <>
                 {fields.map((field) => renderField(field))}
 
-                {!hasMultiplierField && (
-                  <View style={{ marginTop: 4 }}>
-                    <Text style={{ fontWeight: '600', marginBottom: 4 }}>Запас/потери, %</Text>
-                    <TextInput
-                      keyboardType="numeric"
-                      placeholder="Обычно 5–10%"
-                      value={lossPct}
-                      onChangeText={handleLossChange}
-                      onBlur={handleLossBlur}
-                      style={{
-                        borderWidth: 1,
-                        borderColor: lossError ? '#ef4444' : '#e5e7eb',
-                        borderRadius: 10,
-                        paddingHorizontal: 12,
-                        paddingVertical: Platform.OS === 'web' ? 8 : 10,
-                      }}
-                    />
-                    {lossError ? (
-                      <Text style={{ color: '#ef4444', marginTop: 4 }}>{lossError}</Text>
-                    ) : (
-                      <Text style={{ color: '#6b7280', marginTop: 4 }}>
-                        Итоговый множитель: {multiplier.toFixed(2)}
-                      </Text>
-                    )}
-                  </View>
-                )}
+                {!hasMultiplierField && !hasWastePctField && (
+  <View style={{ marginTop: 4 }}>
+    <Text style={{ fontWeight: '600', marginBottom: 4 }}>Запас/потери, %</Text>
+    <TextInput
+      keyboardType="numeric"
+      placeholder="Обычно 5–10%"
+      value={lossPct}
+      onChangeText={handleLossChange}
+      onBlur={handleLossBlur}
+      style={{
+        borderWidth: 1,
+        borderColor: lossError ? '#ef4444' : '#e5e7eb',
+        borderRadius: 10,
+        paddingHorizontal: 12,
+        paddingVertical: Platform.OS === 'web' ? 8 : 10,
+      }}
+    />
+    {lossError ? (
+      <Text style={{ color: '#ef4444', marginTop: 4 }}>{lossError}</Text>
+    ) : (
+      <Text style={{ color: '#6b7280', marginTop: 4 }}>
+        Итоговый множитель: {multiplier.toFixed(2)}
+      </Text>
+    )}
+  </View>
+)}
               </>
             )}
           </ScrollView>
@@ -539,18 +590,17 @@ const setRowQty = (rowKey: string, raw: string) => {
             >
               <Text style={{ fontWeight: '600' }}>Отмена</Text>
             </Pressable>
-
-            <Pressable
-              onPress={calc}
-              disabled={calculating || fLoading || !workType?.code}
-              style={{
-                paddingHorizontal: 16,
-                paddingVertical: 10,
-                borderRadius: 10,
-                backgroundColor: calculating ? '#86efac' : '#22c55e',
-                opacity: calculating || fLoading ? 0.6 : 1,
-              }}
-            >
+<Pressable
+  onPress={calc}
+  disabled={!canCalculate}
+  style={{
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 10,
+    backgroundColor: '#22c55e',
+    opacity: canCalculate ? 1 : 0.45,
+  }}
+>
               <Text style={{ fontWeight: '700', color: '#fff' }}>{calculating ? 'Считаю' : 'Рассчитать'}</Text>
             </Pressable>
           </View>
