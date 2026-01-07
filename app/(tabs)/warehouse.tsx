@@ -759,11 +759,7 @@ const pdfWindowRef = React.useRef<Window | null>(null);
     }
   }, [recvFilter]);
 
-  useEffect(() => {
-    fetchToReceive().catch(() => {});
-  }, [fetchToReceive]);
-
-  
+ 
   /** ===== ОСТАТКИ ===== */
   const [stock, setStock] = useState<StockRow[]>([]);
   const [stockSupported, setStockSupported] = useState<null | boolean>(null);
@@ -1429,8 +1425,6 @@ useEffect(() => {
         .eq("progress_id", progressId)
         .order("created_at", { ascending: true });
 
-      console.log("[loadWorkLog]", progressId, { error, data });
-
       if (!error && Array.isArray(data)) {
         setWorkLog(
           data.map((r: any) => ({
@@ -1675,15 +1669,11 @@ useEffect(() => {
           p_with_stock: withStock,
           p_location: workModalLocation || null,
         };
-
-        console.log("[submitWorkProgress] payload:", payload);
-
         const { data, error } = await supabase.rpc(
           "work_progress_apply_ui" as any,
           payload,
         );
-        console.log("[submitWorkProgress] result:", { data, error });
-
+       
         if (error) {
           Alert.alert("Ошибка сохранения факта", pickErr(error));
           return;
@@ -2119,9 +2109,7 @@ const confirmIncoming = useCallback(
         }
 
         // 5) обновить экраны
-        await fetchToReceive();
-        await fetchStock();
-        await fetchWorks();
+        await Promise.all([fetchToReceive(), fetchStock(), fetchWorks()]);
         Alert.alert("Готово", "Поставка принята на склад.");
       } catch (e) {
         showErr(e);
@@ -2221,7 +2209,7 @@ const confirmIncoming = useCallback(
   incomingId: string,
   purchaseId: string,
 ): Promise<boolean> => {
-  console.log("[reseedIncomingItems] start", { incomingId, purchaseId });
+  
 
   const toNum = (v: any): number => {
     if (v == null) return 0;
@@ -2237,30 +2225,30 @@ const confirmIncoming = useCallback(
 
   // 1) читаем purchase_items
   let pi = await supabase
-    .from("purchase_items" as any)
-    .select(
-      `
-      id,
-      request_item_id,
-      qty,
-      uom,
-      request_items:request_items (
-        rik_code,
-        name_human,
-        note,
-        uom
-      )
-    `,
+  .from("purchase_items" as any)
+  .select(
+    `
+    id,
+    request_item_id,
+    qty,
+    uom,
+    name_human,
+    request_items:request_items (
+      rik_code,
+      name_human,
+      uom
     )
-    .eq("purchase_id", purchaseId)
-    .order("id", { ascending: true });
+  `,
+  )
+  .eq("purchase_id", purchaseId)
+  .order("id", { ascending: true });
+
 
   if (pi.error) {
     console.warn("[reseedIncomingItems] select purchase_items error:", pi.error.message);
     return false;
   }
 
-  console.log("[reseedIncomingItems] purchase_items rows:", Array.isArray(pi.data) ? pi.data.length : 0);
 
   // 2) если пусто — создаём purchase_items из proposal_snapshot_items
   if (Array.isArray(pi.data) && pi.data.length === 0) {
@@ -2377,7 +2365,7 @@ const piToInsert = (snap.data as any[])
   }
 
   // 3) строим wh_incoming_items
-  const rows = ((pi.data as any[]) || [])
+  let rows = ((pi.data as any[]) || [])
   .map((x) => {
     const piId = String(x.id ?? "");
     const qty_expected = toNum(x.qty ?? 0);
@@ -2389,32 +2377,73 @@ const piToInsert = (snap.data as any[])
         ? (x as any).request_items[0]
         : (x as any)?.request_items;
 
+    const piIdShort = isUuid(piId) ? piId.slice(0, 8) : piId.slice(0, 8);
+
+    // базовый код из request_items (если есть)
+    const baseCode =
+      ri?.rik_code && String(ri.rik_code).trim()
+        ? String(ri.rik_code).trim()
+        : null;
+
+    // ✅ ключ склада: уникальный на уровне purchase_item
+    // если baseCode есть — добавляем суффикс #xxxx, чтобы не конфликтовать при дроблении закупки
+    // если baseCode нет — используем PI-xxxx
+    const finalCode = baseCode ? `${baseCode}#${piIdShort}` : `PI-${piIdShort}`;
+
+    // имя/единица: приоритет purchase_items (быстрее и надёжнее), затем request_items, затем код
+    const finalName =
+      (x as any)?.name_human && String((x as any).name_human).trim()
+        ? String((x as any).name_human).trim()
+        : ri?.name_human && String(ri.name_human).trim()
+        ? String(ri.name_human).trim()
+        : finalCode;
+
+    const finalUom =
+      (x as any)?.uom && String((x as any).uom).trim()
+        ? String((x as any).uom).trim()
+        : ri?.uom && String(ri.uom).trim()
+        ? String(ri.uom).trim()
+        : null;
+
     return {
       incoming_id: incomingId,
       purchase_item_id: isUuid(piId) ? piId : null,
       qty_expected,
       qty_received: 0,
 
-      // ✅ чтобы в list_wh_items и UI всегда были данные
-      rik_code: ri?.rik_code ?? null,
-      name_human: ri?.name_human ?? null,
-      uom: (x as any)?.uom ?? ri?.uom ?? null,
+      rik_code: finalCode,      // ✅ теперь всегда уникально
+      name_human: finalName,
+      uom: finalUom,
     };
   })
   .filter(Boolean) as any[];
 
-
-  console.log("[reseedIncomingItems] rows to insert:", rows.length);
-  if (rows.length === 0) return false;
-
-  const ins = await supabase.from("wh_incoming_items" as any).insert(rows as any);
-  if (ins.error) {
-    console.warn("[reseedIncomingItems] wh_incoming_items insert error:", ins.error.message);
-    return false;
+// ✅ защита от дублей на всякий случай (если вдруг прилетели одинаковые purchase_item_id)
+{
+  const map = new Map<string, any>();
+  for (const r of rows) {
+    const k = r.purchase_item_id ? `pi:${r.purchase_item_id}` : `code:${String(r.rik_code ?? "")}`;
+    if (!map.has(k)) map.set(k, r);
+    else {
+      const prev = map.get(k);
+      prev.qty_expected = Number(prev.qty_expected ?? 0) + Number(r.qty_expected ?? 0);
+      map.set(k, prev);
+    }
   }
+  rows = Array.from(map.values());
+}
 
-  console.log("[reseedIncomingItems] insert ok");
-  return true;
+
+  // ✅ идемпотентно: если reseed повторится — не упадёт
+const ins = await supabase
+  .from("wh_incoming_items" as any)
+  .upsert(rows as any, { onConflict: "incoming_id,purchase_item_id" });
+
+if (ins.error) {
+  console.warn("[reseedIncomingItems] wh_incoming_items upsert error:", ins.error.message);
+  return false;
+}
+return true;
 };
 
   // нормализация строки -> число
@@ -2588,21 +2617,7 @@ const mapRow = (x: any, syntheticBase?: string): ItemRow => {
       }
 
       const isSynthetic = incomingIdRaw.startsWith("p:");
-      console.log("[loadItemsForHead] start", {
-        incomingIdRaw,
-        incomingId,
-        isSynthetic,
-        purchaseId,
-      });
-console.log("[loadItemsForHead] debug", {
-  incomingIdRaw,
-  incomingId,
-  isUuidIncoming: isUuid(incomingId),
-  isSynthetic,
-  purchaseId,
-  toReceiveHit: toReceive.find((x) => canonId(x.id) === incomingId)?.id,
-});
-
+      
       // если нет purchase_id — дёргаем wh_incoming
       if (!purchaseId && isUuid(incomingId) && !isSynthetic) {
         try {
@@ -2622,16 +2637,11 @@ console.log("[loadItemsForHead] debug", {
 
       // 1) RPC list_wh_items
       if (!isSynthetic && isUuid(incomingId)) {
-        console.log("[loadItemsForHead] trying RPC list_wh_items", incomingId);
+        
         try {
           const r = await supabase.rpc("list_wh_items" as any, {
             p_incoming_id: incomingId,
           } as any);
-console.log("[list_wh_items] result", {
-  error: r.error?.message,
-  count: Array.isArray(r.data) ? r.data.length : -1,
-  sample: Array.isArray(r.data) && r.data.length ? r.data[0] : null,
-});
 
           if (!r.error && Array.isArray(r.data) && r.data.length > 0) {
             const rows = (r.data as any[]).map((x) => mapRow(x));
@@ -2669,9 +2679,7 @@ if (isUuid(incomingId)) {
     }
   }
 
-  console.log("[loadItemsForHead] trying wh_incoming_items", incomingId);
-
-  const fb = await supabase
+    const fb = await supabase
     .from("wh_incoming_items" as any)
     .select(`
       id,
@@ -2690,15 +2698,9 @@ if (isUuid(incomingId)) {
     uom
   )
 )
-
     `)
     .eq("incoming_id", incomingId)
     .order("created_at", { ascending: true });
-
-  console.log("[loadItemsForHead] wh_incoming_items result", {
-    error: fb.error?.message,
-    count: Array.isArray(fb.data) ? fb.data.length : 0,
-  });
 
   if (!fb.error && Array.isArray(fb.data) && fb.data.length > 0) {
     const rows = (fb.data as any[]).map((x) => mapRow(x));
@@ -2708,11 +2710,7 @@ if (isUuid(incomingId)) {
 
   // reseed если пусто
   if (purchaseId) {
-    console.log("[loadItemsForHead] reseed try", { incomingId, purchaseId });
-    const seeded = await reseedIncomingItems(incomingId, purchaseId);
-    console.log("[loadItemsForHead] reseed result", seeded);
-
-    const fb2 = await supabase
+       const fb2 = await supabase
       .from("wh_incoming_items" as any)
       .select(`
         id,
@@ -2731,15 +2729,9 @@ if (isUuid(incomingId)) {
     uom
   )
 )
-
       `)
       .eq("incoming_id", incomingId)
       .order("created_at", { ascending: true });
-
-    console.log("[loadItemsForHead] wh_incoming_items after reseed", {
-      error: fb2.error?.message,
-      count: Array.isArray(fb2.data) ? fb2.data.length : 0,
-    });
 
     if (!fb2.error && Array.isArray(fb2.data) && fb2.data.length > 0) {
       const rows = (fb2.data as any[]).map((x) => mapRow(x));
@@ -2751,12 +2743,7 @@ if (isUuid(incomingId)) {
 
       // 3) purchase_items — только для синтетики
       if (isSynthetic && purchaseId) {
-        console.log("[loadItemsForHead] trying purchase_items (synthetic)", {
-          incomingIdRaw,
-          purchaseId,
-        });
-
-        const pi = await supabase
+                const pi = await supabase
           .from("purchase_items" as any)
           .select(`
             id,
@@ -2798,13 +2785,6 @@ if (isUuid(incomingId)) {
           }
         }
       }
-
-      console.log("[loadItemsForHead] empty", {
-        incomingIdRaw,
-        incomingId,
-        isSynthetic,
-        purchaseId,
-      });
       setItemsByHead((prev) => ({ ...prev, [incomingId]: [] }));
       return [];
     },
@@ -3309,8 +3289,10 @@ await fetchWorks();
   }, [fetchToReceive, fetchStock, fetchWorks]);
 
   useEffect(() => {
-    loadAll();
-  }, [loadAll]);
+  loadAll();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, []);
+
 
   useEffect(() => {
     if (tab === "История") fetchHistory().catch(() => {});

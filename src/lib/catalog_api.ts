@@ -8,6 +8,7 @@ import {
   batchResolveRequestLabels as rpcBatchResolveRequestLabels,
   requestCreateDraft as rpcRequestCreateDraft,
 } from "./rik_api";
+import { Platform } from "react-native";
 
 export {
   ensureRequestSmart,
@@ -1068,30 +1069,37 @@ export function buildRequestPdfHtml(
   `;
 }
 // Делает blob:URL для веба, чтобы foreman.tsx мог открыть window.open(url)
-export async function exportRequestPdf(requestId: string): Promise<string | null> {
+export async function exportRequestPdf(
+  requestId: string,
+  mode: 'preview' | 'share' = 'share', // параметр оставляем (чтобы вызовы не ломались)
+): Promise<string | null> {
   const id = norm(requestId);
   if (!id) throw new Error("Не указан идентификатор заявки");
 
   const details = await fetchRequestDetails(id);
-  if (!details) {
-    throw new Error("Заявка не найдена");
-  }
+  if (!details) throw new Error("Заявка не найдена");
 
   const items = await listRequestItems(id);
   const html = buildRequestPdfHtml(details, items);
 
-  // web: blob: URL (как у тебя на скрине)
-  if (typeof window !== "undefined" && typeof Blob !== "undefined" && typeof URL !== "undefined") {
+  // WEB
+  if (Platform.OS === "web") {
     const blob = new Blob([html], { type: "text/html;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    return url;
+    // @ts-ignore
+    return URL.createObjectURL(blob);
   }
 
-  // на native пока просто вернём html (там у тебя и так Alert если url нет)
-  return html;
+  // iOS/Android: только создаём файл
+  try {
+    // @ts-ignore
+    const Print = await import("expo-print");
+    const { uri } = await (Print as any).printToFileAsync({ html });
+    return uri as string; // file://...
+  } catch (e: any) {
+    console.warn("[exportRequestPdf/native]", e?.message ?? e);
+    return null;
+  }
 }
-
-
 export async function requestItemUpdateQty(
   requestItemId: string,
   qty: number,
@@ -1458,4 +1466,27 @@ export async function rikQuickSearch(q: string, limit = 60, apps?: string[]) {
     kind: r.kind ?? null,
     apps: null as null | string[],
   }));
+}
+// ===============================
+// CANCEL REQUEST ITEM
+// ===============================
+export async function requestItemCancel(requestItemId: string) {
+  if (!requestItemId) {
+    throw new Error('requestItemId is required');
+  }
+
+  const { error } = await supabase
+    .from('request_items')
+    .update({
+      status: 'cancelled',
+      cancelled_at: new Date().toISOString(),
+    })
+    .eq('id', requestItemId);
+
+  if (error) {
+    console.error('[requestItemCancel]', error);
+    throw error;
+  }
+
+  return true;
 }

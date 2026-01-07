@@ -351,6 +351,15 @@ const setDeadlineHours = (hours: number) => {
     phone?: string | null;
     email?: string | null;
   } | null>(null);
+const listRef = useRef<FlatList<any> | null>(null);
+
+const [expandedReqId, setExpandedReqId] = useState<string | null>(null);
+const [expandedReqIndex, setExpandedReqIndex] = useState<number | null>(null);
+
+const toggleReq = useCallback((rid: string, index: number) => {
+  setExpandedReqId(prev => (prev === rid ? null : rid));
+  setExpandedReqIndex(prev => (prev === index ? null : index));
+}, []);
 
   // документ предложения в модалке
   const [propDocAttached, setPropDocAttached] = useState<{ name: string; url?: string } | null>(null);
@@ -893,62 +902,7 @@ setApproved(approvedClean);
     setRows(prev => prev.filter(r => !ids.includes(String(r.request_item_id))));
   }, []);
 
-  const createProposalSingle = useCallback(async () => {
-    const ids = pickedIds;
-    if (ids.length === 0) { Alert.alert('Пусто', 'Выбери позиции из инбокса'); return; }
-    if (!validatePicked()) return;
-
-    try {
-      setCreating(true);
-
-      const propId = await proposalCreate();
-      const fioNow = summaryRef.current?.flush() || buyerFio;
-      await setProposalBuyerFio(propId, fioNow);
-
-      let added = 0;
-      try { added = await proposalAddItems(propId, ids); } catch {}
-      if (!added) {
-        // 🔧 ВАЖНО: безопасная вставка чанками по 50
-        for (const pack of chunk(ids, 50)) {
-          const bulk = pack.map(id => ({ proposal_id: String(propId), request_item_id: id }));
-          const ins = await supabase.from('proposal_items').insert(bulk).select('request_item_id');
-          if (ins.error) { Alert.alert('Ошибка', 'Не удалось добавить строки'); return; }
-        }
-      }
-
-      await proposalSnapshotItems(
-        propId,
-        ids.map(id => ({
-          request_item_id: id,
-          price: meta[id]?.price ?? null,
-          supplier: meta[id]?.supplier ?? null,
-          note: meta[id]?.note ?? null,
-        }))
-      );
-
-      await snapshotProposalItems(propId, ids);
-      await proposalSubmit(propId);
-
-      try {
-  await supabase.from('request_items')
-    .update({ status: 'У директора', director_reject_note: null, director_reject_at: null })
-    .in('id', ids);
-} catch {}
-
-      removeFromInboxLocally(ids);
-
-      clearPick();
-      Alert.alert('Отправлено', `Предложение #${String(propId).slice(0,8)} отправлено директору`);
-      await fetchInbox();
-      await fetchBuckets();
-      setTab('pending');
-    } catch (e) {
-      console.error('[buyer] createProposalsBySupplier:', (e as any)?.message ?? e);
-      Alert.alert('Ошибка', (e as any)?.message ?? 'Не удалось сформировать предложения');
-    } finally {
-      setCreating(false);
-    }
-  }, [buyerFio, pickedIds, validatePicked, meta, proposalSnapshotItems, clearPick, fetchInbox, fetchBuckets, removeFromInboxLocally]);
+  
 
   const handleCreateProposalsBySupplier = useCallback(async () => {
     const ids = pickedIds;
@@ -1752,58 +1706,106 @@ try {
     );
   });
 
-  const GroupBlock = React.memo(({ g }: { g: Group }) => {
-    const gsum = requestSum(g);
-    return (
-      <View style={s.group}>
-        <View style={s.groupHeader}>
-          <Text style={[s.groupTitle, { color: COLORS.text }]}>{prettyLabel(g.request_id, g.request_id_old ?? null)}</Text>
-          <Chip label={`${g.items.length} поз.`} bg="#E0E7FF" fg="#3730A3" />
-          <Text style={[s.groupMeta, { marginLeft: 'auto', fontWeight: '700', color: COLORS.text }]}>
-            Итого по заявке: {gsum.toLocaleString()} сом
-          </Text>
-        </View>
-{/* ✅ Пометка отклонения директора — один раз на заявку */}
-{g.items.some(it => (it as any).director_reject_note) && (
-  <View style={{ paddingHorizontal: 12, paddingBottom: 8 }}>
-    <View style={{ backgroundColor: '#FEE2E2', borderRadius: 10, padding: 8 }}>
-      <Text style={{ color: '#991B1B', fontWeight: '800', fontSize: 13 }}>
-        Отклонено директором
-      </Text>
-    </View>
+  const GroupBlock = React.memo(({ g, index }: { g: Group; index: number }) => {
+  const gsum = requestSum(g);
+  const isOpen = expandedReqId === g.request_id;
+
+  // ✅ когда раскрыли — скроллим к заголовку заявки
+  useEffect(() => {
+    if (!isOpen) return;
+    if (expandedReqIndex == null) return;
+
+    requestAnimationFrame(() => {
+      try {
+        listRef.current?.scrollToIndex?.({
+          index: expandedReqIndex,
+          animated: true,
+          viewPosition: 0,
+        });
+      } catch {}
+    });
+  }, [isOpen, expandedReqIndex]);
+
+  return (
+    <View style={s.group}>
+      {/* HEADER (нажатие раскрывает) */}
+      <Pressable
+  onPress={() => toggleReq(g.request_id, index)}
+  style={s.groupHeader}
+>
+  <View style={{ flex: 1, minWidth: 0 }}>
+    <Text style={s.groupTitle} numberOfLines={1}>
+      {prettyLabel(g.request_id, g.request_id_old ?? null)}
+    </Text>
+
+    <Text style={s.groupMeta} numberOfLines={1}>
+      {g.items.length} позиций
+      {gsum ? ` · итого ${gsum.toLocaleString()} сом` : ''}
+    </Text>
   </View>
-)}
 
-        <FlatList
-          data={g.items}
-          keyExtractor={(x, idx) => x?.request_item_id ? `ri:${x.request_item_id}` : `f:${g.request_id}:${idx}`}
-          renderItem={({ item }) => <ItemRow it={item} />}
-          keyboardShouldPersistTaps="handled"
-          removeClippedSubviews={Platform.OS === 'web' ? false : true}
-          windowSize={7}
-          maxToRenderPerBatch={10}
-          updateCellsBatchingPeriod={50}
-          initialNumToRender={6}
-        />
+  <Pressable
+    onPress={() => toggleReq(g.request_id, index)}
+    style={s.openBtn}
+  >
+    <Text style={s.openBtnText}>
+      {isOpen ? 'Свернуть' : 'Открыть'}
+    </Text>
+  </Pressable>
+</Pressable>
 
-        {isWeb && (
-          <View style={{ marginTop: 8 }}>
-            <Text style={{ fontWeight: '600', marginBottom: 4, color: COLORS.text }}>Вложения (по группе поставщика):</Text>
-            <ScrollView horizontal contentContainerStyle={{ gap: 8 }}>
-              {supplierGroups.map((key) => (
-                <AttachmentUploaderWeb
-                  key={key}
-                  label={key}
-                  onPick={(att) => setAttachments(prev => ({ ...prev, [key]: att }))}
-                  current={attachments[key]}
-                />
-              ))}
-            </ScrollView>
-          </View>
-        )}
-      </View>
-    );
-  });
+
+      {/* BODY */}
+      {isOpen ? (
+        <>
+          {/* пометка отклонения */}
+          {g.items.some(it => (it as any).director_reject_note) && (
+            <View style={{ paddingHorizontal: 12, paddingBottom: 8 }}>
+              <View style={{ backgroundColor: '#FEE2E2', borderRadius: 10, padding: 8 }}>
+                <Text style={{ color: '#991B1B', fontWeight: '800', fontSize: 13 }}>
+                  Отклонено директором
+                </Text>
+              </View>
+            </View>
+          )}
+
+          {/* ✅ ВНУТРЕННИЙ маленький скролл только для позиций */}
+          <View style={s.itemsPanel}>
+  <View style={s.itemsBox}>
+    <FlatList
+      data={g.items}
+      keyExtractor={(x, idx2) => x?.request_item_id ? `ri:${x.request_item_id}` : `f:${g.request_id}:${idx2}`}
+      renderItem={({ item }) => <ItemRow it={item} />}
+      keyboardShouldPersistTaps="handled"
+      nestedScrollEnabled
+      removeClippedSubviews={Platform.OS === 'web' ? false : true}
+    />
+  </View>
+</View>
+
+          {isWeb && (
+            <View style={{ marginTop: 8, paddingHorizontal: 12, paddingBottom: 12 }}>
+              <Text style={{ fontWeight: '600', marginBottom: 4, color: COLORS.text }}>
+                Вложения (по группе поставщика):
+              </Text>
+              <ScrollView horizontal contentContainerStyle={{ gap: 8 }}>
+                {supplierGroups.map((key) => (
+                  <AttachmentUploaderWeb
+                    key={key}
+                    label={key}
+                    onPick={(att) => setAttachments(prev => ({ ...prev, [key]: att }))}
+                    current={attachments[key]}
+                  />
+                ))}
+              </ScrollView>
+            </View>
+          )}
+        </>
+      ) : null}
+    </View>
+  );
+});
+
 
   const ProposalCard = React.memo(({ head }: { head: any }) => {
     const pidStr = String(head.id);
@@ -1841,9 +1843,10 @@ const headerText = `Предложение #${pidStr.slice(0, 8)}`;
 
           <Pressable
             onPress={async () => { await openPdfNewWindow(pidStr); }}
-            style={[s.smallBtn, { marginLeft: 'auto', borderColor: '#6b7280' }]}
+            style={[s.openBtn, { marginLeft: 'auto', minWidth: 86 }]}
+
           >
-            <Text style={s.smallBtnText}>{busy ? '...' : 'PDF'}</Text>
+            <Text style={s.openBtnText}>{busy ? '...' : 'PDF'}</Text>
           </Pressable>
 
           {head.status === 'Утверждено' && (
@@ -1873,16 +1876,25 @@ const headerText = `Предложение #${pidStr.slice(0, 8)}`;
   const approvedCount = approved.length;
   const rejectedCount = rejected.length;
 
-  return (
-    <View style={[s.screen, { backgroundColor: COLORS.bg }]}>
+ return (
+  <View style={[s.screen, { backgroundColor: COLORS.bg }]}>
 
+    {/* ✅ Общий скролл: шапка + кнопки + контейнер списка */}
+    <ScrollView
+      contentContainerStyle={s.pagePad}
+      keyboardShouldPersistTaps="handled"
+    >
       {/* Шапка */}
       <SummaryBar
         ref={summaryRef as any}
         initialFio={buyerFio}
         onCommitFio={setBuyerFio}
         tab={tab}
-        setTab={setTab}
+        setTab={(t) => {
+          setTab(t);
+          setExpandedReqId(null);
+          setExpandedReqIndex(null);
+        }}
         pendingCount={pending.length}
         approvedCount={approved.length}
         rejectedCount={rejected.length}
@@ -1892,67 +1904,77 @@ const headerText = `Предложение #${pidStr.slice(0, 8)}`;
       />
 
       {/* Тулбар действий (инбокс) */}
-{tab === 'inbox' && (
-  <View style={s.toolbar}>
-    <Pressable disabled={creating} onPress={createProposalSingle} style={[s.actionBtn, creating && s.actionBtnDisabled]}>
-      <Text style={s.actionBtnText}>Сгруппировать заявки</Text>
-    </Pressable>
+      {tab === 'inbox' && (
+        <View style={s.toolbar}>
+          <Pressable
+            disabled={creating}
+            onPress={handleCreateProposalsBySupplier}
+            style={[s.actionBtn, creating && s.actionBtnDisabled]}
+          >
+            <Text style={s.actionBtnText}>Сформировать заявку</Text>
+          </Pressable>
 
-    <Pressable disabled={creating} onPress={handleCreateProposalsBySupplier} style={[s.actionBtn, creating && s.actionBtnDisabled]}>
-      <Text style={s.actionBtnText}>Сформировать по поставщикам</Text>
-    </Pressable>
+          <Pressable
+            disabled={creating || pickedIds.length === 0}
+            onPress={() => setRfqOpen(true)}
+            style={[
+              s.actionBtn,
+              creating && s.actionBtnDisabled,
+              pickedIds.length === 0 && { opacity: 0.4 },
+              { backgroundColor: COLORS.blue, borderColor: COLORS.blue },
+            ]}
+          >
+            <Text style={s.actionBtnText}>Создать торги (RFQ)</Text>
+          </Pressable>
 
-    {/* ✅ НОВАЯ КНОПКА: создать торги */}
-    <Pressable
-      disabled={creating || pickedIds.length === 0}
-      onPress={() => setRfqOpen(true)}
-      style={[
-        s.actionBtn,
-        creating && s.actionBtnDisabled,
-        pickedIds.length === 0 && { opacity: 0.4 },
-        { backgroundColor: COLORS.blue, borderColor: COLORS.blue },
-      ]}
-    >
-      <Text style={s.actionBtnText}>Создать торги (RFQ)</Text>
-    </Pressable>
+          <Pressable onPress={clearPick} style={s.actionBtnGhost}>
+            <Text style={s.actionBtnGhostText}>Сбросить выбор</Text>
+          </Pressable>
+        </View>
+      )}
 
-    <Pressable onPress={clearPick} style={[s.actionBtnGhost]}>
-      <Text style={s.actionBtnGhostText}>Сбросить выбор</Text>
-    </Pressable>
-  </View>
-)}
-
-
-      {/* Контент вкладок */}
-      <FlatList
-        data={
-          tab === 'inbox' ? groups :
-          tab === 'pending' ? pending :
-          tab === 'approved' ? approved :
-          rejected
-        }
-        keyExtractor={(item) =>
-          tab === 'inbox'
-            ? `g:${(item as Group).request_id}`
-            : `p:${String((item as any).id)}`
-        }
-        renderItem={({ item }) => (
-          tab === 'inbox'
-            ? <GroupBlock g={item as Group} />
-            : <ProposalCard head={item} />
-        )}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
-        contentContainerStyle={{ padding: 12, gap: 12, paddingBottom: 220 }}
-        ListEmptyComponent={
-          loadingInbox || loadingBuckets
-            ? <SafeView style={{ padding: 24, alignItems: 'center' }}><ActivityIndicator /></SafeView>
-            : <SafeView style={{ padding: 24 }}><Text style={{ color: COLORS.sub }}>Пока пусто</Text></SafeView>
-        }
-
-        removeClippedSubviews={Platform.OS === 'web' ? false : true}
-      />
+      {/* ✅ Маленький скролл: только список (как у прораба: вложенный лист) */}
+      <View style={s.listBox}>
+        <FlatList
+          ref={listRef as any}
+          data={
+            tab === 'inbox' ? groups :
+            tab === 'pending' ? pending :
+            tab === 'approved' ? approved :
+            rejected
+          }
+          keyExtractor={(item) =>
+            tab === 'inbox'
+              ? `g:${(item as Group).request_id}`
+              : `p:${String((item as any).id)}`
+          }
+          renderItem={({ item, index }) => (
+            tab === 'inbox'
+              ? <GroupBlock g={item as Group} index={index} />
+              : <ProposalCard head={item} />
+          )}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+          ListEmptyComponent={
+            loadingInbox || loadingBuckets
+              ? <SafeView style={{ padding: 24, alignItems: 'center' }}><ActivityIndicator /></SafeView>
+              : <SafeView style={{ padding: 24 }}><Text style={{ color: COLORS.sub }}>Пока пусто</Text></SafeView>
+          }
+          contentContainerStyle={{ padding: 12, gap: 12, paddingBottom: 24 }}
+          nestedScrollEnabled
+          keyboardShouldPersistTaps="handled"
+          onScrollToIndexFailed={(info) => {
+            setTimeout(() => {
+              try {
+                listRef.current?.scrollToOffset?.({
+                  offset: info.averageItemLength * info.index,
+                  animated: true,
+                });
+              } catch {}
+            }, 50);
+          }}
+        />
+      </View>
+    </ScrollView>
 
       {/* ======= Модалка правки строки ======= */}
       <Modal visible={!!editFor} transparent animationType="fade" onRequestClose={() => setEditFor(null)}>
@@ -1978,7 +2000,6 @@ const headerText = `Предложение #${pidStr.slice(0, 8)}`;
               style={s.input}
             />
 
-            {/* подсказки поставщиков */}
             {supSugOpen && (
               <View style={s.suggestBox}>
                 <ScrollView
@@ -2011,7 +2032,6 @@ const headerText = `Предложение #${pidStr.slice(0, 8)}`;
               </View>
             )}
 
-            {/* автозаполняемые реквизиты (read-only) */}
             {tmpSupplier.trim() !== '' && (
               <View style={{ marginTop: 6 }}>
                 <Text style={{ fontSize: 12, color: COLORS.sub }}>ИНН</Text>
@@ -2028,34 +2048,6 @@ const headerText = `Предложение #${pidStr.slice(0, 8)}`;
               </View>
             )}
 
-            {/* карточка выбранного поставщика (просмотр) */}
-            {(() => {
-              const m = suppliers.find(
-                s => s.name.trim().toLowerCase() === tmpSupplier.trim().toLowerCase()
-              );
-              if (!m) return null;
-              return (
-                <View
-                  style={{
-                    marginTop: 6,
-                    borderWidth: 1,
-                    borderColor: COLORS.border,
-                    borderRadius: 8,
-                    padding: 8,
-                    backgroundColor: '#fff',
-                  }}
-                >
-                  <Text style={{ fontWeight: '700', color: COLORS.text }}>{m.name}</Text>
-                  <Text style={{ color: COLORS.sub, marginTop: 2 }}>
-                    {m.inn ? `ИНН: ${m.inn}  ·  ` : ''}
-                    {m.bank_account ? `Счёт: ${m.bank_account}  ·  ` : ''}
-                    {m.phone ? `Тел.: ${m.phone}  ·  ` : ''}
-                    {m.email ? `Email: ${m.email}` : ''}
-                  </Text>
-                </View>
-              );
-            })()}
-
             <Text style={{ fontSize: 12, color: COLORS.sub, marginTop: 6 }}>Примечание</Text>
             <TextInput placeholder="Примечание" value={tmpNote} onChangeText={setTmpNote} style={s.input} />
 
@@ -2070,7 +2062,6 @@ const headerText = `Предложение #${pidStr.slice(0, 8)}`;
           </View>
         </View>
       </Modal>
-
       {/* ======= Модалка «В бухгалтерию» ======= */}
       <Modal visible={acctOpen} transparent animationType="fade" onRequestClose={() => setAcctOpen(false)}>
         <View style={s.modalBackdrop}>
@@ -2425,20 +2416,6 @@ Alert.alert(
     </View>
   </View>
 </Modal>
-
-      {/* Липкая/фиксированная панель действий (дублирует верхний тулбар, логика та же) */}
-      <View style={s.stickyBar} pointerEvents="auto">
-        <Pressable disabled={creating} onPress={createProposalSingle} style={[s.actionBtn, creating && s.actionBtnDisabled, { flex: 1 }]}>
-          <Text style={s.actionBtnText}>Сгруппировать заявки</Text>
-        </Pressable>
-        <Pressable disabled={creating} onPress={handleCreateProposalsBySupplier} style={[s.actionBtn, creating && s.actionBtnDisabled, { flex: 1, backgroundColor: '#0b7285', borderColor: '#0b7285' }]}>
-          <Text style={s.actionBtnText}>По поставщикам</Text>
-        </Pressable>
-        <Pressable onPress={clearPick} style={[s.actionBtnGhost, { flex: 1 }]}>
-          <Text style={s.actionBtnGhostText}>Сбросить выбор</Text>
-        </Pressable>
-      </View>
-
     </View>
   );
 }
@@ -2458,10 +2435,7 @@ const s = StyleSheet.create({
     flexWrap: 'wrap',
   },
   summaryTitle: { fontSize: 24, fontWeight: '900', color: COLORS.text },
- cardTitle:   { fontWeight: '800', fontSize: 16, color: COLORS.text },
- cardMeta:    { fontSize: 13, color: COLORS.sub },
- smallBtnText:{ fontWeight: '700', color: COLORS.text, fontSize: 13 },
-  summaryMeta: { fontSize: 12, color: COLORS.sub },
+   summaryMeta: { fontSize: 12, color: COLORS.sub },
 
   input: {
     borderWidth: 1,
@@ -2472,24 +2446,6 @@ const s = StyleSheet.create({
     backgroundColor: '#fff',
     minWidth: 220,
   },
-stickyBar: Platform.select({
-  web: {
-    position: 'fixed' as any,
-    left: 0, right: 0, bottom: 0,
-    zIndex: 2147483647,
-    backgroundColor: '#fff',
-    borderTopWidth: 1, borderColor: COLORS.border,
-    padding: 12, gap: 10,
-    display: 'flex', flexDirection: 'row',
-    pointerEvents: 'auto' as any,
-  },
-  default: {
-    position: 'absolute' as any, left: 0, right: 0, bottom: 0,
-    zIndex: 5, backgroundColor: '#fff',
-    borderTopWidth: 1, borderColor: COLORS.border,
-    padding: 12, gap: 10, flexDirection: 'row'
-  }
-}),
 
   toolbar: { padding: 12, gap: 8, flexDirection: 'row', flexWrap: 'wrap' },
   actionBtn: {
@@ -2513,19 +2469,23 @@ stickyBar: Platform.select({
   actionBtnGhostText: { color: COLORS.text, fontWeight: '700' },
 
   group: {
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    borderRadius: 12,
-    backgroundColor: '#fff',
-  },
+  borderWidth: 1,
+  borderColor: COLORS.border,
+  borderRadius: 14,
+  backgroundColor: '#fff',
+  marginBottom: 12,
+},
+
   groupHeader: {
-    padding: 12,
-    borderBottomWidth: 1,
-    borderColor: COLORS.border,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
+  flexDirection: 'row',
+  alignItems: 'flex-start',
+  gap: 8,
+  paddingVertical: 10,
+  paddingHorizontal: 12,
+  borderBottomWidth: 1,
+  borderColor: COLORS.border,
+},
+
   groupTitle: { fontSize: 16, fontWeight: '800' },
   groupMeta: { fontSize: 12, color: COLORS.sub },
 
@@ -2533,6 +2493,29 @@ stickyBar: Platform.select({
   cardPicked: { backgroundColor: '#F8FAFF' },
   cardTitle: { fontSize: 15, fontWeight: '800' },
   cardMeta: { fontSize: 12 },
+pagePad: { paddingBottom: 24 },
+
+listBox: {
+  borderTopWidth: 1,
+  borderTopColor: COLORS.border,
+  backgroundColor: '#fff',      // ✅ вот это ключ
+  minHeight: 520,
+},
+
+itemsBox: {
+  paddingHorizontal: 10,
+  paddingVertical: 10,
+  maxHeight: Platform.OS === 'web' ? undefined : 420,
+},
+itemsPanel: {
+  marginTop: 10,
+  marginHorizontal: 12,
+  marginBottom: 12,
+  borderRadius: 14,
+  borderWidth: 1,
+  borderColor: COLORS.border,
+  backgroundColor: '#F1F5F9', // чуть темнее белого — “внутри карточки”
+},
 
   smallBtn: {
     borderWidth: 1,
@@ -2558,6 +2541,25 @@ stickyBar: Platform.select({
     borderColor: COLORS.border,
     backgroundColor: '#fff',
   },
+openBtn: {
+  paddingVertical: 8,
+  paddingHorizontal: 14,
+  borderRadius: 999,
+  backgroundColor: '#FFFFFF',
+  borderWidth: 1,
+  borderColor: COLORS.border,
+  alignSelf: 'flex-start',
+
+  // ✅ “как iOS / топовые”
+  minWidth: 86,
+  alignItems: 'center',
+},
+
+openBtnText: {
+  color: COLORS.text,
+  fontWeight: '700',
+  fontSize: 13,
+},
 
   modalBackdrop: {
     flex: 1,

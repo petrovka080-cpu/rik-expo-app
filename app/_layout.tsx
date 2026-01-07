@@ -1,9 +1,5 @@
 // app/_layout.tsx
-
-// ❌ ВАЖНО: webStyleGuard ОТКЛЮЧЁН — он ломал скролл и оставлял хвосты
-// import "../src/dev/_webStyleGuard";
-
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import { Platform, LogBox, View } from "react-native";
 import { Slot, router, useSegments } from "expo-router";
 import { supabase } from "../src/lib/supabaseClient";
@@ -12,11 +8,10 @@ import { ensureMyProfile, getMyRole } from "../src/lib/rik_api";
 // Тихо глушим шумные web-предупреждения (только в браузере)
 if (Platform.OS === "web") {
   LogBox.ignoreLogs([
-    'props.pointerEvents is deprecated. Use style.pointerEvents',
+    "props.pointerEvents is deprecated. Use style.pointerEvents",
     '"shadow*" style props are deprecated. Use "boxShadow".',
   ]);
 
-  // fallback, если LogBox не перехватил
   const originalWarn = console.warn;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   console.warn = (...args: any[]) => {
@@ -33,25 +28,31 @@ if (Platform.OS === "web") {
 
 export default function RootLayout() {
   const segments = useSegments();
+
   const [sessionLoaded, setSessionLoaded] = useState(false);
   const [hasSession, setHasSession] = useState<boolean | null>(null);
-const [roleLoaded, setRoleLoaded] = useState(false);
-const [role, setRole] = useState<string | null>(null);
-const roleLoadingRef = React.useRef(false);
 
-  // ✅ WEB: гарантируем нормальный контейнер и скролл браузера
+  const [roleLoaded, setRoleLoaded] = useState(false);
+  const [role, setRole] = useState<string | null>(null);
+
+  // ✅ единый lock от дублей
+  const roleLoadingRef = useRef(false);
+
+  // ✅ чтобы init не стартовал дважды в dev/fast-refresh
+  const initStartedRef = useRef(false);
+
+  // ✅ WEB: нормальный контейнер и скролл браузера
   useEffect(() => {
     if (Platform.OS !== "web") return;
-
     try {
-const id = "leaflet-css-cdn";
-if (!document.getElementById(id)) {
-  const link = document.createElement("link");
-  link.id = id;
-  link.rel = "stylesheet";
-  link.href = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
-  document.head.appendChild(link);
-}
+      const id = "leaflet-css-cdn";
+      if (!document.getElementById(id)) {
+        const link = document.createElement("link");
+        link.id = id;
+        link.rel = "stylesheet";
+        link.href = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
+        document.head.appendChild(link);
+      }
 
       document.documentElement.style.height = "100%";
       document.body.style.height = "100%";
@@ -65,119 +66,118 @@ if (!document.getElementById(id)) {
     } catch {}
   }, []);
 
- useEffect(() => {
-  if (!supabase) return;
-  let active = true;
+  // ✅ роль/профиль грузим В ФОНЕ, без блокировки входа
+  const loadRoleForCurrentSession = useCallback(async () => {
+    if (!supabase) return;
 
-const loadRoleForSession = async () => {
-  // ⛔️ защита от повторного запуска (ГЛАВНОЕ)
-  if (roleLoadingRef.current) {
-    console.log("⏭ role load skipped (already loading)");
-    return;
-  }
+    if (roleLoadingRef.current) return;
+    roleLoadingRef.current = true;
 
-  roleLoadingRef.current = true;
-
-  try {
-    console.log("A: got session");
-
-     console.log("A: got session (before ensureMyProfile)");
-
-await Promise.race([
-  ensureMyProfile(),
-  new Promise((_, rej) => setTimeout(() => rej(new Error("ensureMyProfile TIMEOUT (RLS/block)")), 8000)),
-]);
-
-console.log("B: ensured profile");
-
-const r = await Promise.race([
-  getMyRole(),
-  new Promise((_, rej) => setTimeout(() => rej(new Error("getMyRole TIMEOUT")), 8000)),
-]);
-
-console.log("✅ ROLE =", r);
-
-console.log("✅ ROLE =", r);
-
-      if (active) setRole(r);
-    } catch (e: any) {
-      console.warn("[RootLayout] role load failed", e?.message ?? e);
-      if (active) setRole(null);
-    } finally {
-      if (active) setRoleLoaded(true);
-    }
-  };
-
-  const syncSession = async () => {
     try {
-      const { data } = await supabase.auth.getSession();
-      if (!active) return;
+      setRoleLoaded(false);
 
-      const has = Boolean(data?.session);
-      setHasSession(has);
+      // ensure profile (таймаут)
+      await Promise.race([
+        ensureMyProfile(),
+        new Promise((_, rej) =>
+          setTimeout(
+            () => rej(new Error("ensureMyProfile TIMEOUT (RLS/block)")),
+            8000,
+          ),
+        ),
+      ]);
 
-      if (has) {
-        await loadRoleForSession();
-      } else {
-        setRole(null);
-        setRoleLoaded(true);
-      }
+      // get role (таймаут)
+      const r = await Promise.race([
+        getMyRole(),
+        new Promise((_, rej) =>
+          setTimeout(() => rej(new Error("getMyRole TIMEOUT")), 8000),
+        ),
+      ]);
+
+      setRole(r ?? null);
     } catch (e: any) {
-      console.warn("[RootLayout] session load failed", e?.message ?? e);
-      if (active) {
+      console.warn("[RootLayout] role load failed:", e?.message ?? e);
+      setRole(null);
+    } finally {
+      roleLoadingRef.current = false;
+      setRoleLoaded(true);
+    }
+  }, []);
+
+  // ✅ INIT: читаем session 1 раз, роль — НЕ await (чтобы не “висло”)
+  useEffect(() => {
+    if (!supabase) return;
+    if (initStartedRef.current) return;
+    initStartedRef.current = true;
+
+    let active = true;
+
+    (async () => {
+      try {
+        const { data } = await supabase.auth.getSession();
+        if (!active) return;
+
+        const has = Boolean(data?.session);
+        setHasSession(has);
+
+        // ✅ ВАЖНО: считаем, что сессию мы уже “загрузили”
+        setSessionLoaded(true);
+
+        // роль — фоном
+        if (has) {
+          loadRoleForCurrentSession();
+        } else {
+          setRole(null);
+          setRoleLoaded(true);
+        }
+      } catch (e: any) {
+        console.warn("[RootLayout] session load failed:", e?.message ?? e);
+        if (!active) return;
         setHasSession(false);
         setRole(null);
         setRoleLoaded(true);
+        setSessionLoaded(true);
       }
-    } finally {
-  roleLoadingRef.current = false;
-  if (active) setRoleLoaded(true);
-}
+    })();
 
-  };
+    const { data: listener } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      const has = Boolean(session);
+      setHasSession(has);
 
-  const { data: listener } = supabase.auth.onAuthStateChange(async (_event, session) => {
-    const has = Boolean(session);
-    setHasSession(has);
+      // ✅ сессию считаем готовой сразу
+      setSessionLoaded(true);
 
-    // сбрасываем флаг, чтобы редирект не сработал раньше времени
-    setRoleLoaded(false);
+      if (!has) {
+        setRole(null);
+        setRoleLoaded(true);
+        router.replace("/auth/login");
+        return;
+      }
 
-    if (!has) {
-      setRole(null);
-      setRoleLoaded(true);
-      router.replace("/auth/login");
-      return;
-    }
+      // роль — фоном (lock защищает от дублей)
+      loadRoleForCurrentSession();
+    });
 
-    await loadRoleForSession();
-  });
+    return () => {
+      active = false;
+      listener?.subscription?.unsubscribe();
+    };
+  }, [loadRoleForCurrentSession]);
 
-  syncSession();
-  return () => {
-    active = false;
-    listener?.subscription?.unsubscribe();
-  };
-}, []);
-
+  // ✅ РЕДИРЕКТ завязан ТОЛЬКО на sessionLoaded/hasSession
   useEffect(() => {
-  if (!sessionLoaded) return;
+    if (!sessionLoaded) return;
 
-
-  const inAuthStack = segments?.[0] === "auth";
-
-  if (!hasSession && !inAuthStack) router.replace("/auth/login");
-  else if (hasSession && inAuthStack) router.replace("/");
-}, [hasSession, sessionLoaded, roleLoaded, segments]);
-
+    const inAuthStack = segments?.[0] === "auth";
+    if (!hasSession && !inAuthStack) router.replace("/auth/login");
+    else if (hasSession && inAuthStack) router.replace("/");
+  }, [hasSession, sessionLoaded, segments]);
 
   return (
-  <>
-    
     <View style={{ flex: 1 }}>
       <Slot />
     </View>
-  </>
-);
-
+  );
 }
+

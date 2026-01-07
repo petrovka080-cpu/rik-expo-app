@@ -175,14 +175,22 @@ async function rpcCompat<T = any>(
 }
 
 // helper: безопасный request_id для фильтров (не допускаем eq.=)
+// helper: безопасный id для фильтров (UUID-only, запрещаем timestamp)
 const toFilterId = (v: number | string) => {
-  if (typeof v === 'number') return v;
-  const raw = String(v ?? '').trim();
+  const raw = String(v ?? '').trim().replace(/^#/, '');
   if (!raw) return null;
-  const normalized = raw.replace(/^#/, '');
-  const uuidRe = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-  if (uuidRe.test(normalized)) return normalized;
-  return /^\d+$/.test(normalized) ? Number(normalized) : normalized;
+
+  const uuidRe =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+  // ✅ UUID пропускаем
+  if (uuidRe.test(raw)) return raw;
+
+  // ❌ чистые цифры — запрещаем (это и есть твои 1766... Date.now())
+  if (/^\d+$/.test(raw)) return null;
+
+  // ❌ всё остальное как id тоже не принимаем
+  return null;
 };
 
 // ============================== Suppliers API (НОВОЕ) ==============================
@@ -1132,28 +1140,50 @@ export async function buildProposalPdfHtml(proposalId: number | string): Promise
 
     const includeSupplier = pi.some(r => (r?.supplier ?? '').toString().trim() !== '');
 
-    const body = (pi.length ? pi : [{ id: 0 }]).map((r: any, i: number) => {
-      if (!pi.length) {
-        return `<tr><td colspan="${includeSupplier ? 8 : 7}" class="muted">Нет строк</td></tr>`;
-      }
-      const qty = num(r.qty), price = num(r.price), amount = qty * price;
-      const name = r.name_human ?? '';
-      const code = r.rik_code ? `${r.rik_code} · ` : '';
-      const uom  = r.uom ?? '';
-      const app  = r.app_code ? appNames[r.app_code] ?? r.app_code : '';
-      const supplier = (r.supplier ?? '').toString();
-      const note = r.note ? `<div style="opacity:.7;font-size:11px">Прим.: ${esc(r.note)}</div>` : '';
-      return `<tr>
-        <td style="text-align:center">${i + 1}</td>
-        <td>${esc(code + name)}${note}</td>
-        <td style="text-align:right">${qty || ''}</td>
-        <td style="text-align:center">${esc(uom)}</td>
-        <td>${esc(app)}</td>
-        ${includeSupplier ? `<td>${esc(supplier)}</td>` : ``}
-        <td style="text-align:right">${price ? fmt(price) : ''}</td>
-        <td style="text-align:right">${amount ? fmt(amount) : ''}</td>
-      </tr>`;
-    }).join('');
+   const body = (pi.length ? pi : [{ id: 0 }]).map((r: any, i: number) => {
+  if (!pi.length) {
+    // ✅ колонок НЕ добавляли → colspan только 7/8
+    return `<tr><td colspan="${includeSupplier ? 8 : 7}" class="muted">Нет строк</td></tr>`;
+  }
+
+  const qty = num(r.qty), price = num(r.price), amount = qty * price;
+
+  const name = r.name_human ?? '';
+const kind = rikKindLabel(r.rik_code);
+
+// тип по коду (можешь расширять)
+const kindFromRik = (code: any) => {
+  const c = String(code ?? '').toUpperCase();
+  if (c.startsWith('MAT-')) return 'Материал';
+  if (c.startsWith('WRK-')) return 'Работа';
+  if (c.startsWith('SRV-') || c.startsWith('SVC-')) return 'Услуга';
+  return '';
+};
+
+  const uom  = r.uom ?? '';
+
+  // ✅ Применение + Примечание в одной колонке
+  const app = r.app_code ? (appNames[r.app_code] ?? r.app_code) : '';
+  const noteText = String(r.note ?? '').trim().replace(/^Прим\.\:\s*/i, '');
+  const appAndNote = [app, noteText].filter(Boolean).join(' · ');
+
+  const supplier = (r.supplier ?? '').toString();
+
+  return `<tr>
+    <td style="text-align:center">${i + 1}</td>
+    <td>
+  ${esc(name)}
+  ${kind ? `<div style="opacity:.7;font-size:11px;margin-top:2px">Тип: ${esc(kind)}</div>` : ``}
+</td>
+
+    <td style="text-align:right">${qty || ''}</td>
+    <td style="text-align:center">${esc(uom)}</td>
+    <td>${esc(appAndNote)}</td>
+    ${includeSupplier ? `<td>${esc(supplier)}</td>` : ``}
+    <td style="text-align:right">${price ? fmt(price) : ''}</td>
+    <td style="text-align:right">${amount ? fmt(amount) : ''}</td>
+  </tr>`;
+}).join('');
 
     const suppliersHtml = supplierCards.length ? `
       <h2>Поставщики</h2>
@@ -1253,29 +1283,33 @@ export async function buildProposalPdfHtml(proposalId: number | string): Promise
   }
 }
 
-export async function exportProposalPdf(proposalId: number | string) {
+export async function exportProposalPdf(
+  proposalId: number | string,
+  mode: 'preview' | 'share' = 'share'
+) {
   const html = await buildProposalPdfHtml(proposalId);
-  try {
-    // native (expo)
-    // @ts-ignore
+
+  // native
+  if (Platform.OS !== 'web') {
     const Print = await import('expo-print');
     const { uri } = await (Print as any).printToFileAsync({ html });
-    try {
-      // @ts-ignore
-      const Sharing = await import('expo-sharing');
-      if ((Sharing as any).isAvailableAsync && (await (Sharing as any).isAvailableAsync())) {
-        await (Sharing as any).shareAsync(uri);
-      }
-    } catch {}
-    return uri as string;
-  } catch {
-    // web fallback
-    if (typeof window !== 'undefined') {
-      const w = window.open('', '_blank');
-      if (w) { w.document.write(html); w.document.close(); w.focus(); }
+
+    if (mode === 'share') {
+      try {
+        const Sharing = await import('expo-sharing');
+        if ((Sharing as any).isAvailableAsync && (await (Sharing as any).isAvailableAsync())) {
+          await (Sharing as any).shareAsync(uri);
+        }
+      } catch {}
     }
-    return '';
+
+    return uri as string;
   }
+
+  // web
+  const w = window.open('', '_blank');
+  if (w) { w.document.write(html); w.document.close(); w.focus(); }
+  return '';
 }
 export async function buildPaymentOrderHtml(paymentId: number): Promise<string> {
   const pid = Number(paymentId);
@@ -1864,6 +1898,19 @@ export async function resolveProposalPrettyTitle(proposalId: string | number): P
 // >>> added: "pretty" алиас, пока просто прокидывает текущий HTML
 export async function buildProposalPdfHtmlPretty(proposalId: number | string) {
   return buildProposalPdfHtml(proposalId);
+}
+function rikKindLabel(rikCode?: string | null): string {
+  const p = String(rikCode ?? '').trim().toUpperCase().split('-')[0];
+
+  switch (p) {
+    case 'MAT':  return 'Материал';
+    case 'WRK':
+    case 'WORK': return 'Работа';
+    case 'SRV':  return 'Услуга';
+    case 'KIT':  return 'Комплект';
+    case 'SPEC': return 'Спец.';
+    default:     return '';
+  }
 }
 
 // ============================== Aggregated export ==============================

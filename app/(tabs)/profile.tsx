@@ -1,5 +1,4 @@
 // app/(tabs)/profile.tsx
-console.log("🔥 USING NEW PROFILE FILE");
 import React, { useEffect, useState } from "react";
 import {
   View,
@@ -21,6 +20,7 @@ import * as Location from "expo-location";
 
 import { useRouter } from "expo-router";
 import { supabase } from "../../src/lib/supabaseClient";
+console.log("🔥 USING NEW PROFILE FILE");
 
 if (
   Platform.OS === "android" &&
@@ -1948,7 +1948,8 @@ export default function ProfileScreen() {
               </ScrollView>
             )}
 
-            <View className="modalButtonsRow" style={styles.modalButtonsRow}>
+            <View style={styles.modalButtonsRow}>
+
               <Pressable
                 style={[styles.modalBtn, styles.modalBtnSecondary]}
                 onPress={() => {

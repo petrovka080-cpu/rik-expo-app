@@ -17,17 +17,22 @@ import {
   RefreshControl,
   ActivityIndicator,
   Platform,
+  Keyboard,
   KeyboardAvoidingView,
   ScrollView,
   StyleSheet,
   Modal,
 } from 'react-native';
 import { LogBox } from 'react-native';
-
+import { Linking } from 'react-native';
 import CalcModal from "../../src/components/foreman/CalcModal";
 import WorkTypePicker from "../../src/components/foreman/WorkTypePicker";
 import { useCalcFields } from "../../src/components/foreman/useCalcFields";
+import * as Print from 'expo-print';
+import * as Sharing from 'expo-sharing';
+import * as FileSystem from 'expo-file-system/legacy';
 
+import { supabase } from '../../src/lib/supabaseClient';
 import {
   rikQuickSearch,
   addRequestItemFromRik,
@@ -252,7 +257,8 @@ function Dropdown({
       <Text style={[s.small, { color: COLORS.sub }]}>{label}</Text>
       <Pressable
         onPress={() => setOpen(true)}
-        style={[s.input, { paddingVertical: 10, width }]}
+        style={[s.input, { paddingVertical: 10, width: Platform.OS === 'web' ? width : '100%' }]}
+
       >
         <Text
           style={{
@@ -380,7 +386,6 @@ export default function ForemanScreen() {
   // ===== Шапка заявки =====
   const [requestId, setRequestId] = useState<string>(''); // создадим автоматически
   const [foreman, setForeman] = useState<string>(''); // ФИО прораба (обяз.)
-  const [needBy, setNeedBy] = useState<string>(''); // YYYY-MM-DD
   const [comment, setComment] = useState<string>(''); // общий комментарий
 
   const [requestDetails, setRequestDetails] = useState<RequestDetails | null>(null);
@@ -406,20 +411,12 @@ export default function ForemanScreen() {
   const canSearch = query.trim().length >= 2;
   const timerRef = useRef<Timer | null>(null);
   const reqIdRef = useRef(0);
+const searchRef = useRef<TextInput>(null);
+// ===== Справочник применений (для корзины/модалки) =====
+const [appOptions, setAppOptions] = useState<AppOption[]>([]);
 
 
-  // ===== Глобальный фильтр по области применения (РИК) =====
-  const [appOptions, setAppOptions] = useState<AppOption[]>([]);
-  const [appFilter, setAppFilter] = useState<string>('');
-  const appFilterCode = useMemo(() => {
-    const t = appFilter.trim();
-    if (!t) return '';
-    const found = appOptions.find(
-      (o) => o.code === t || o.label.toLowerCase() === t.toLowerCase(),
-    );
-    return found ? found.code : t;
-  }, [appFilter, appOptions]);
-
+  
   const labelForApp = useCallback(
     (code?: string | null) => {
       if (!code) return '';
@@ -461,7 +458,8 @@ export default function ForemanScreen() {
     const [pendingCount, setPendingCount] = useState<number>(0);
 
   // ===== Режим отображения =====
-  const [viewMode, setViewMode] = useState<'raw' | 'grouped'>('raw');
+ const [viewMode, setViewMode] = useState<'raw' | 'grouped'>('raw');
+
 
   // ===== Калькулятор =====
   const [calcVisible, setCalcVisible] = useState(false);
@@ -501,8 +499,6 @@ export default function ForemanScreen() {
     setCart({});
     setQtyDrafts({});
     setQtyBusyMap({});
-    setViewMode('raw');
-    setNeedBy('');
     setComment('');
     setObjectType('');
     setLevel('');
@@ -625,7 +621,6 @@ useEffect(() => {
           setDisplayNoByReq((prev) => ({ ...prev, [key]: display }));
         }
         setForeman(details.foreman_name ?? '');
-        setNeedBy(details.need_by ?? '');
         setComment(details.comment ?? '');
         setObjectType(details.object_type_code ?? '');
         setLevel(details.level_code ?? '');
@@ -665,7 +660,6 @@ useEffect(() => {
     const id = targetId != null ? String(targetId).trim() : '';
     if (!id) return;
     setRequestId(id);
-    setViewMode('raw');
     loadItems(id);
   },
   [loadItems],
@@ -772,18 +766,6 @@ useEffect(() => {
     );
   }, []);
 
-  const handleNeedByChange = useCallback((value: string) => {
-    setNeedBy(value);
-    setRequestDetails((prev) =>
-      prev
-        ? {
-            ...prev,
-            need_by: value,
-          }
-        : prev,
-    );
-  }, []);
-
   const handleCommentChange = useCallback((value: string) => {
     setComment(value);
     setRequestDetails((prev) =>
@@ -802,7 +784,6 @@ useEffect(() => {
       const meta: RequestDraftMeta = opts?.resetMeta
         ? {
             foreman_name: foreman.trim() || null,
-            need_by: null,
             comment: null,
             object_type_code: null,
             level_code: null,
@@ -811,7 +792,6 @@ useEffect(() => {
           }
         : {
             foreman_name: foreman.trim() || null,
-            need_by: needBy.trim() || null,
             comment: comment.trim() || null,
             object_type_code: objectType || null,
             level_code: level || null,
@@ -837,7 +817,6 @@ useEffect(() => {
         status: created.status ?? 'Черновик',
         display_no: display || created.display_no || null,
         created_at: created.created_at ?? new Date().toISOString(),
-        need_by: created.need_by ?? meta.need_by ?? undefined,
         comment: created.comment ?? meta.comment ?? undefined,
         foreman_name: created.foreman_name ?? meta.foreman_name ?? undefined,
         object_type_code: created.object_type_code ?? meta.object_type_code ?? undefined,
@@ -859,7 +838,6 @@ useEffect(() => {
     }
   }, [
     foreman,
-    needBy,
     comment,
     objectType,
     level,
@@ -927,20 +905,24 @@ useEffect(() => {
         const rid = String(reqId).trim();
         if (!rid) return;
 
-        const url = await exportRequestPdf(rid);
+        const url = await exportRequestPdf(rid, 'preview');
 
-        if (Platform.OS === 'web') {
-          if (url) {
-            const win = window.open(url, '_blank', 'noopener,noreferrer');
-            if (!win) {
-              Alert.alert('PDF', 'Не удалось открыть PDF. Разрешите всплывающие окна.');
-            }
-          } else {
-            Alert.alert('PDF', 'Не удалось сформировать PDF-документ');
-          }
-        } else if (!url) {
-          Alert.alert('PDF', 'Не удалось сформировать PDF-документ');
-        }
+if (!url) {
+  Alert.alert('PDF', 'Не удалось сформировать PDF-документ');
+  return;
+}
+
+if (Platform.OS === 'web') {
+  const win = window.open(url, '_blank', 'noopener,noreferrer');
+  if (!win) {
+    Alert.alert('PDF', 'Не удалось открыть PDF. Разрешите всплывающие окна.');
+  }
+  return;
+}
+
+// ✅ iOS/Android: скачиваем и открываем как file://
+await openPdfPreviewOrFallbackShare(url);
+
       } catch (e: any) {
         Alert.alert('Ошибка', e?.message ?? 'PDF не сформирован');
       }
@@ -1060,7 +1042,6 @@ useEffect(() => {
 
     const meta = {
       foreman_name: foreman.trim() || null,
-      need_by: needBy.trim() || null,
       comment: comment.trim() || null,
       object_type_code: objectType || null,
       level_code: level || null,
@@ -1170,50 +1151,44 @@ return rid2Str;
     };
   }, []);
 
-  // ---------- Варианты применений (РИК) ----------
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        // @ts-ignore
-        const { supabase } = await import('../../src/lib/supabaseClient');
+// ---------- Варианты применений (РИК) — для модалки/лейбла ----------
+useEffect(() => {
+  let cancelled = false;
+  (async () => {
+    try {
+      // @ts-ignore
+      const { supabase } = await import('../../src/lib/supabaseClient');
 
-        const a = await supabase
-          .from('rik_apps' as any)
-          .select('app_code, name_human')
-          .order('app_code', { ascending: true });
+      const a = await supabase
+        .from('rik_apps' as any)
+        .select('app_code, name_human')
+        .order('app_code', { ascending: true });
 
-        if (!cancelled && !a.error && Array.isArray(a.data) && a.data.length) {
-          setAppOptions(
-            a.data.map((r: any) => ({
-              code: r.app_code,
-              label:
-                (r.name_human && String(r.name_human).trim()) || r.app_code,
-            })),
-          );
-          return;
-        }
+      if (!cancelled && !a.error && Array.isArray(a.data) && a.data.length) {
+        setAppOptions(
+          a.data.map((r: any) => ({
+            code: r.app_code,
+            label: (r.name_human && String(r.name_human).trim()) || r.app_code,
+          })),
+        );
+        return;
+      }
 
-        const b = await supabase
-          .from('rik_item_apps' as any)
-          .select('app_code')
-          .not('app_code', 'is', null)
-          .order('app_code', { ascending: true });
+      const b = await supabase
+        .from('rik_item_apps' as any)
+        .select('app_code')
+        .not('app_code', 'is', null)
+        .order('app_code', { ascending: true });
 
-        if (!cancelled && !b.error && Array.isArray(b.data)) {
-          const uniq = Array.from(
-            new Set(b.data.map((r: any) => r.app_code)),
-          ).filter(Boolean);
-          setAppOptions(
-            uniq.map((code: string) => ({ code, label: code })),
-          );
-        }
-      } catch {}
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+      if (!cancelled && !b.error && Array.isArray(b.data)) {
+        const uniq = Array.from(new Set(b.data.map((r: any) => r.app_code))).filter(Boolean);
+        setAppOptions(uniq.map((code: string) => ({ code, label: code })));
+      }
+    } catch {}
+  })();
+  return () => { cancelled = true; };
+}, []);
+
 
   // ---------- Поиск с дебаунсом ----------
   useEffect(() => {
@@ -1227,12 +1202,8 @@ return rid2Str;
       const current = ++reqIdRef.current;
       try {
         setLoadingSuggests(true);
-        const isKnown =
-          !!appFilterCode &&
-          appOptions.some((o) => o.code === appFilterCode);
-        const appsParam = isKnown ? [appFilterCode] : undefined;
+        const rows = await rikQuickSearch(query, 60);
 
-        const rows = await rikQuickSearch(query, 60, appsParam);
         let list = Array.isArray(rows) ? rows : [];
         if (activeKind !== 'all') {
           list = list.filter(
@@ -1253,7 +1224,7 @@ return rid2Str;
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
     };
-  }, [query, activeKind, canSearch, appFilterCode, appOptions]);
+  }, [query, activeKind, canSearch]);
 
   // ---------- ЧЕЛОВЕЧЕСКИЕ НАЗВАНИЯ ТЕКУЩЕГО ВЫБОРА ----------
   const objectName = useMemo(() => {
@@ -1299,12 +1270,8 @@ return rid2Str;
         const uom = (it as any).uom_code ?? null;
         const apps = (it as any).apps ?? null;
 
-        const isKnown =
-          !!appFilterCode &&
-          appOptions.some((o) => o.code === appFilterCode);
-        const appDefault = isKnown
-          ? appFilterCode
-          : (Array.isArray(apps) && apps[0] ? apps[0] : null);
+       const appDefault = (Array.isArray(apps) && apps[0] ? apps[0] : null);
+
 
         // Больше НЕ сохраняем авто-примечание в note – оставляем пустым,
 // а область применения показываем только как placeholder в UI.
@@ -1325,8 +1292,6 @@ return {
       });
     },
     [
-      appFilterCode,
-      appOptions,
       objectName,
       levelName,
       systemName,
@@ -1406,8 +1371,7 @@ return {
         const rid = requestId ? ridStr(requestId) : await ensureAndGetId();
 
         await updateRequestMeta(rid, {
-          need_by: needBy.trim() || null,
-          comment: comment.trim() || null,
+            comment: comment.trim() || null,
           object_type_code: objectType || null,
           level_code: level || null,
           system_code: system || null,
@@ -1467,7 +1431,6 @@ return {
       requestId,
       ridStr,
       ensureAndGetId,
-      needBy,
       comment,
       objectType,
       level,
@@ -1503,25 +1466,28 @@ return {
       return;
     }
 
-    for (const row of cartArray) {
-      const q = Number(String(row.qty ?? '').replace(',', '.'));
-      if (!Number.isFinite(q) || q <= 0) {
-        Alert.alert(
-          'Ошибка количества',
-          `Неверное количество у "${row.name}": ${
-            row.qty || '(пусто)'
-          }`,
-        );
-        return;
-      }
-      if (!row.note || row.note.trim().length < 2) {
-        Alert.alert(
-          'Примечание обязательно',
-          `Добавь примечание для "${row.name}"`,
-        );
-        return;
-      }
-    }
+    const headerNote =
+  buildScopeNote(objectName, levelName, systemName, zoneName) || '';
+
+for (const row of cartArray) {
+  const q = Number(String(row.qty ?? '').replace(',', '.'));
+  if (!Number.isFinite(q) || q <= 0) {
+    Alert.alert(
+      'Ошибка количества',
+      `Неверное количество у "${row.name}": ${row.qty || '(пусто)'}`
+    );
+    return;
+  }
+
+  // ✅ БОЛЬШЕ НЕ ТРЕБУЕМ ПРИМЕЧАНИЕ.
+  // Если пусто — возьмём из шапки.
+  const noteToUse = (row.note ?? '').trim() || headerNote.trim();
+  if (!noteToUse) {
+    // на всякий случай — но это почти не случится, если шапка заполнена
+    Alert.alert('Заполни шапку', 'Выбери объект и этаж/уровень.');
+    return;
+  }
+}
 
     let rid: string;
     const totalAdded = cartCount;
@@ -1531,7 +1497,6 @@ return {
 
       // сохранить актуальные поля шапки
       await updateRequestMeta(rid, {
-        need_by: needBy.trim() || null,
         comment: comment.trim() || null,
         object_type_code: objectType || null,
         level_code: level || null,
@@ -1541,16 +1506,23 @@ return {
       }).catch(() => null);
 
       // добавление позиций
-      for (const row of cartArray) {
-        const q = Number(String(row.qty ?? '').replace(',', '.'));
-        await addRequestItemFromRik(rid, row.rik_code, q, {
-          note: row.note.trim(),
-          app_code: row.app_code ?? undefined,
-          kind: row.kind ?? undefined,
-          name_human: row.name,
-          uom: row.uom ?? null,
-        });
-      }
+      const headerNote =
+  buildScopeNote(objectName, levelName, systemName, zoneName) || '';
+
+for (const row of cartArray) {
+  const q = Number(String(row.qty ?? '').replace(',', '.'));
+
+  const noteToUse = (row.note ?? '').trim() || headerNote.trim() || '—';
+
+  await addRequestItemFromRik(rid, row.rik_code, q, {
+    note: noteToUse,
+    app_code: row.app_code ?? undefined,
+    kind: row.kind ?? undefined,
+    name_human: row.name,
+    uom: row.uom ?? null,
+  });
+}
+
 
       setCart({});
       await loadItems(rid);
@@ -1570,7 +1542,6 @@ return {
     cartCount,
     requestId,
     foreman,
-    needBy,
     comment,
     objectType,
     level,
@@ -1689,7 +1660,6 @@ return {
         system_code: system || null,
         zone_code: zone || null,
         comment: comment.trim() || null,
-        need_by: needBy.trim() || null,
         foreman_name: foreman.trim() || null,
       }).catch(() => null);
 
@@ -1707,7 +1677,6 @@ return {
               status: submitted?.status ?? 'pending',
               display_no: submitted?.display_no ?? prev.display_no ?? null,
               foreman_name: submitted?.foreman_name ?? prev.foreman_name ?? foreman,
-              need_by: submitted?.need_by ?? prev.need_by ?? needBy,
               comment: submitted?.comment ?? prev.comment ?? comment,
             }
           : prev,
@@ -1740,7 +1709,6 @@ return {
     requestId,
     ridStr,
     foreman,
-    needBy,
     objectType,
     level,
     system,
@@ -1775,53 +1743,160 @@ return {
   }, [busy, ensureHeaderReady, isDraftActive]);
 
   // ---------- PDF ----------
-  const onPdf = useCallback(async () => {
-    try {
-      if (!ensureHeaderReady()) {
-        return;
-      }
-      const rid = requestId ? ridStr(requestId) : await ensureAndGetId();
-      await updateRequestMeta(rid, {
-        object_type_code: objectType || null,
-        level_code: level || null,
-        system_code: system || null,
-        zone_code: zone || null,
-        comment: comment.trim() || null,
-        need_by: needBy.trim() || null,
-        foreman_name: foreman.trim() || null,
-      }).catch(() => null);
-      
-      const url = await exportRequestPdf(rid);
-      if (Platform.OS === 'web') {
-        if (url) {
-          const win = window.open(url, '_blank', 'noopener,noreferrer');
-          if (!win) {
-            Alert.alert('PDF', 'Не удалось открыть PDF. Разрешите всплывающие окна.');
-          }
-        } else {
-          Alert.alert('PDF', 'Не удалось сформировать PDF-документ');
-        }
-      } else if (!url) {
-        Alert.alert('PDF', 'Не удалось сформировать PDF-документ');
-      }
-    } catch (e: any) {
-      Alert.alert('Ошибка', e?.message ?? 'PDF не сформирован');
-    }
-  }, [
-    requestId,
-    ridStr,
-    ensureAndGetId,
-    foreman,
-    needBy,
-    objectType,
-    level,
-    system,
-    zone,
-    comment,
-    
-    ensureHeaderReady,
-  ]);
+const onPdfShare = useCallback(async () => {
+  try {
+    if (!ensureHeaderReady()) return;
 
+    const rid = requestId ? ridStr(requestId) : await ensureAndGetId();
+
+    await updateRequestMeta(rid, {
+      object_type_code: objectType || null,
+      level_code: level || null,
+      system_code: system || null,
+      zone_code: zone || null,
+      comment: comment.trim() || null,
+      foreman_name: foreman.trim() || null,
+    }).catch(() => null);
+
+    const uri = await exportRequestPdf(rid, 'share');
+
+    if (!uri) {
+      Alert.alert('PDF', 'Не удалось сформировать PDF-документ');
+      return;
+    }
+
+    if (Platform.OS === 'web') {
+      const win = window.open(uri, '_blank', 'noopener,noreferrer');
+      if (!win) Alert.alert('PDF', 'Не удалось открыть PDF. Разрешите всплывающие окна.');
+      return;
+    }
+
+    const ok = await Sharing.isAvailableAsync();
+    if (!ok) {
+      Alert.alert('PDF', 'Отправка недоступна на этом устройстве.');
+      return;
+    }
+    await Sharing.shareAsync(uri);
+  } catch (e: any) {
+    Alert.alert('Ошибка', e?.message ?? 'PDF не сформирован');
+  }
+}, [
+  requestId,
+  ridStr,
+  ensureAndGetId,
+  foreman,
+  objectType,
+  level,
+  system,
+  zone,
+  comment,
+  ensureHeaderReady,
+]);
+
+  const onPdf = useCallback(async () => {
+  try {
+    if (!ensureHeaderReady()) return;
+
+    const rid = requestId ? ridStr(requestId) : await ensureAndGetId();
+
+    await updateRequestMeta(rid, {
+      object_type_code: objectType || null,
+      level_code: level || null,
+      system_code: system || null,
+      zone_code: zone || null,
+      comment: comment.trim() || null,
+      foreman_name: foreman.trim() || null,
+    }).catch(() => null);
+
+    const uri = await exportRequestPdf(rid, 'preview');
+
+    if (!uri) {
+      Alert.alert('PDF', 'Не удалось сформировать PDF-документ');
+      return;
+    }
+
+    if (Platform.OS === 'web') {
+      const win = window.open(uri, '_blank', 'noopener,noreferrer');
+      if (!win) Alert.alert('PDF', 'Не удалось открыть PDF. Разрешите всплывающие окна.');
+      return;
+    }
+
+    // ✅ iOS/Android: просмотр (или fallback на ShareSheet)
+    await openPdfPreviewOrFallbackShare(uri);
+  } catch (e: any) {
+    Alert.alert('Ошибка', e?.message ?? 'PDF не сформирован');
+  }
+}, [
+  requestId,
+  ridStr,
+  ensureAndGetId,
+  foreman,
+  objectType,
+  level,
+  system,
+  zone,
+  comment,
+  ensureHeaderReady,
+]);
+
+async function openPdfPreviewOrFallbackShare(uri: string) {
+  // WEB
+  if (Platform.OS === 'web') {
+    const win = window.open(uri, '_blank', 'noopener,noreferrer');
+    if (!win) Alert.alert('PDF', 'Не удалось открыть PDF. Разрешите всплывающие окна.');
+    return;
+  }
+
+  try {
+    // ✅ берём JWT
+    const { data } = await supabase.auth.getSession();
+    const token = data?.session?.access_token;
+
+    const localPath = `${FileSystem.cacheDirectory}request_${Date.now()}.pdf`;
+
+    // ✅ скачиваем PDF в файл, передаём Authorization (если нужен)
+    await FileSystem.downloadAsync(uri, localPath, {
+      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+    });
+
+        // ✅ предпросмотр/печать (iOS показывает экран печати)
+await Print.printAsync({ uri: localPath });
+
+// ✅ iOS не любит автозапуск второго sheet сразу.
+// Поэтому просим подтверждение — и тогда share откроется 100%.
+Alert.alert(
+  'PDF',
+  'Поделиться файлом?',
+  [
+    { text: 'Нет', style: 'cancel' },
+    {
+      text: 'Поделиться',
+      onPress: async () => {
+        try {
+          const ok = await Sharing.isAvailableAsync();
+          if (ok) await Sharing.shareAsync(localPath);
+          else Alert.alert('PDF', 'Шаринг недоступен на этом устройстве.');
+        } catch (e: any) {
+          Alert.alert('PDF', e?.message ?? 'Не удалось открыть меню “Поделиться”.');
+        }
+      },
+    },
+  ],
+);
+  } catch (e: any) {
+  const msg = String(e?.message ?? e ?? '');
+
+  // ✅ если юзер нажал Cancel в print/preview — это НЕ ошибка
+  if (msg.toLowerCase().includes('printing did not complete')) {
+    console.log('[PDF] user cancelled print/preview');
+    return;
+  }
+
+  console.warn('[PDF] open failed:', msg);
+  Alert.alert('PDF', 'PDF сформирован, но iPhone не смог скачать/открыть.');
+}
+
+}
   // ---------- Группировка для режима «Сгруппировано» ----------
   const grouped = useMemo<GroupedRow[]>(() => {
     if (!items?.length) return [];
@@ -2114,6 +2189,7 @@ return {
                 ) ||
                 'этаж, сектор, точка применения…'
               }
+             placeholderTextColor="#94A3B8"  
               multiline
               style={s.note}
             />
@@ -2177,92 +2253,74 @@ return {
             ) : null}
           </View>
 
-         <View style={[s.row, { marginTop: 6 }]}>
-  <Text style={[s.rowLabel, { color: COLORS.sub }]}>Кол-во:</Text>
-
-  <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
-    {/* показываем количество без редактирования */}
-    <Text style={{ color: COLORS.text, fontWeight: '800' }}>
+         <View style={{ marginTop: 8, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
+  {/* слева: Кол-во + значение */}
+  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flexShrink: 1, minWidth: 0 }}>
+    <Text style={{ color: COLORS.sub, fontWeight: '700' }}>Кол-во:</Text>
+    <Text style={{ color: COLORS.text, fontWeight: '900' }}>
       {it.qty ?? '-'} {it.uom ?? ''}
     </Text>
+  </View>
 
-    {/* кнопка отмены только если это черновик и можно редактировать */}
+  {/* справа: короткая кнопка Отменить */}
     {canEdit ? (
-      <Pressable
-        disabled={busy || updating}
-       onPress={async () => {
-  // ✅ МГНОВЕННЫЙ ЛОК: если onPress пришёл второй раз — игнор
-  if (cancelLockRef.current[key]) return;
-  cancelLockRef.current[key] = true;
+    <Pressable
+      disabled={busy || updating}
+      onPress={async () => {
+        if (cancelLockRef.current[key]) return;
+        cancelLockRef.current[key] = true;
 
-  try {
-    // ✅ WEB: confirm
-    if (Platform.OS === 'web') {
-      const ok = window.confirm(`Отменить позицию?\n\n${it.name_human || 'Позиция'}`);
-      if (!ok) return;
+        try {
+          if (Platform.OS === 'web') {
+            const ok = window.confirm(`Отменить позицию?\n\n${it.name_human || 'Позиция'}`);
+            if (!ok) return;
 
-      // можно сразу показать busy, чтобы и UI заблокировать
-      setQtyBusyMap((prev) => ({ ...prev, [key]: true }));
-
-      await requestItemCancel(String(it.id));
-
-      setItems((prev) => prev.filter((x) => String(x.id) !== String(it.id)));
-
-      setQtyDrafts((prev) => {
-        const n = { ...prev };
-        delete n[key];
-        return n;
-      });
-
-      window.alert('Позиция удалена');
-      return;
-    }
-
-    // ✅ NATIVE: Alert.alert
-    Alert.alert('Отменить позицию?', it.name_human || 'Позиция', [
-      { text: 'Нет', style: 'cancel', onPress: () => {} },
-      {
-        text: 'Отменить',
-        style: 'destructive',
-        onPress: async () => {
-          setQtyBusyMap((prev) => ({ ...prev, [key]: true }));
-          try {
+            setQtyBusyMap((prev) => ({ ...prev, [key]: true }));
             await requestItemCancel(String(it.id));
 
             setItems((prev) => prev.filter((x) => String(x.id) !== String(it.id)));
-
             setQtyDrafts((prev) => {
               const n = { ...prev };
               delete n[key];
               return n;
             });
-          } catch (e: any) {
-            Alert.alert('Ошибка', e?.message ?? 'Не удалось отменить позицию');
-          } finally {
-            setQtyBusyMap((prev) => ({ ...prev, [key]: false }));
-          }
-        },
-      },
-    ]);
-  } finally {
-    // ✅ Снимаем лок (если пользователь нажал "Нет" — тоже снимется)
-    cancelLockRef.current[key] = false;
-  }
-}}
 
-        style={{
-          paddingHorizontal: 12,
-          paddingVertical: 8,
-          borderRadius: 10,
-          borderWidth: 1,
-          borderColor: '#FCA5A5',
-          backgroundColor: '#FEE2E2',
-        }}
-      >
-        <Text style={{ color: '#991B1B', fontWeight: '900' }}>Отменить позицию</Text>
-      </Pressable>
-    ) : null}
-  </View>
+            window.alert('Позиция удалена');
+            return;
+          }
+
+          Alert.alert('Отменить позицию?', it.name_human || 'Позиция', [
+            { text: 'Нет', style: 'cancel' },
+            {
+              text: 'Отменить',
+              style: 'destructive',
+              onPress: async () => {
+                setQtyBusyMap((prev) => ({ ...prev, [key]: true }));
+                try {
+                  await requestItemCancel(String(it.id));
+
+                  setItems((prev) => prev.filter((x) => String(x.id) !== String(it.id)));
+                  setQtyDrafts((prev) => {
+                    const n = { ...prev };
+                    delete n[key];
+                    return n;
+                  });
+                } finally {
+                  setQtyBusyMap((prev) => ({ ...prev, [key]: false }));
+                }
+              },
+            },
+          ]);
+        } finally {
+          cancelLockRef.current[key] = false;
+        }
+      }}
+      style={[s.rejectBtn, { opacity: busy || updating ? 0.6 : 1 }]}
+    >
+      <Text style={s.rejectIcon}>✕</Text>
+    </Pressable>
+  ) : null}
+
 </View>
 
           <Text
@@ -2412,73 +2470,44 @@ return {
       style={{ flex: 1 }}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
-      <View style={[s.container, { backgroundColor: COLORS.bg }]}>
-        <ScrollView
-  contentContainerStyle={s.pagePad}
-  keyboardShouldPersistTaps="always"
->
-
+     <View style={[s.container, { backgroundColor: COLORS.bg }]}>
+  <ScrollView
+    contentContainerStyle={s.pagePad}
+    keyboardShouldPersistTaps="handled"
+  >
           <Text style={[s.header, { color: COLORS.text }]}>
             Прораб — заявка и поиск по РИК
           </Text>
 
-          {/* Шапка заявки */}
-          <View style={s.headerRow}>
-            <View style={{ flex: 1 }}>
-              <Text
-                style={[
-                  s.small,
-                  { color: COLORS.sub },
-                ]}
-              >
-                Заявка
-              </Text>
-              <View style={s.requestSummaryBox}>
-                <View style={s.requestSummaryTop}>
-                  <Text style={s.requestNumber}>{currentDisplayLabel}</Text>
-                  <View
-                    style={[
-                      s.historyStatusBadge,
-                      { backgroundColor: statusInfo.bg },
-                    ]}
-                  >
-                    <Text
-                      style={{
-                        color: statusInfo.fg,
-                        fontWeight: '600',
-                      }}
-                    >
-                      {statusInfo.label}
-                    </Text>
-                  </View>
-                </View>
-                <Text style={s.requestMeta}>Создана: {createdDisplay}</Text>
-              </View>
-            </View>
-            <View
-              style={{
-                width:
-                  Platform.OS === 'web' ? 220 : 180,
-              }}
-            >
-              <Text
-                style={[
-                  s.small,
-                  { color: COLORS.sub },
-                ]}
-              >
-                Нужно к (YYYY-MM-DD):
-              </Text>
-          <TextInput
-            value={needBy}
-            onChangeText={handleNeedByChange}
-            placeholder="(по умолчанию — сегодня)"
-            style={s.input}
-          />
-            </View>
-          </View>
+        {/* Шапка заявки */}
+<View style={s.headerRowCol}>
+  {/* Левая карточка: номер + статус + создана */}
+  <View style={{ flex: 1 }}>
+    <Text style={[s.small, { color: COLORS.sub }]}>Заявка</Text>
 
-          <Text
+    <View style={s.requestSummaryBox}>
+      <View style={s.requestSummaryTop}>
+        <Text
+          style={[s.requestNumber, { flex: 1, flexShrink: 1 }]}
+          numberOfLines={1}
+          ellipsizeMode="tail"
+        >
+          {currentDisplayLabel}
+        </Text>
+
+        <View style={[s.historyStatusBadge, { backgroundColor: statusInfo.bg }]}>
+          <Text style={{ color: statusInfo.fg, fontWeight: '600' }}>
+            {statusInfo.label}
+          </Text>
+        </View>
+      </View>
+
+      <Text style={s.requestMeta}>Создана: {createdDisplay}</Text>
+    </View>
+  </View>
+  </View>
+
+               <Text
             style={[
               s.small,
               { color: COLORS.sub },
@@ -2580,96 +2609,40 @@ return {
             })}
           </View>
 
-          {/* Глобальный фильтр по области применения (РИК) */}
-          <View
-            style={{ marginTop: 8, marginBottom: 8 }}
-          >
-            <Text
-              style={[
-                s.small,
-                { color: COLORS.sub },
-              ]}
-            >
-              Область применения (фильтр):
-            </Text>
-            <TextInput
-              value={appFilter}
-              onChangeText={setAppFilter}
-              placeholder={
-                appOptions.length
-                  ? `Например: ${
-                      appOptions[0]?.label ||
-                      'Отделка'
-                    }`
-                  : 'введите название или код'
-              }
-              style={s.input}
-            />
-            {appOptions.length > 0 ? (
-              <View
-                style={[
-                  s.appsWrap,
-                  { marginTop: 8 },
-                ]}
-              >
-                {appOptions.slice(0, 12).map(
-                  (opt, idx) => {
-                    const active =
-                      appFilter === opt.code;
-                    return (
-                      <Pressable
-                        key={`app:${opt.code}:${idx}`}
-                        onPress={() =>
-                          setAppFilter(opt.code)
-                        }
-                        style={[
-                          s.chip,
-                          active
-                            ? s.chipActive
-                            : null,
-                        ]}
-                      >
-                        <Text
-                          style={{
-                            color: COLORS.text,
-                          }}
-                        >
-                          {opt.label}
-                        </Text>
-                      </Pressable>
-                    );
-                  },
-                )}
-                {appFilter ? (
-                  <Pressable
-                    onPress={() =>
-                      setAppFilter('')
-                    }
-                    style={[
-                      s.chip,
-                      { borderColor: COLORS.border },
-                    ]}
-                  >
-                    <Text
-                      style={{
-                        color: COLORS.text,
-                      }}
-                    >
-                      Сбросить
-                    </Text>
-                  </Pressable>
-                ) : null}
-              </View>
-            ) : null}
-          </View>
-
+         
           {/* Поиск */}
-          <TextInput
-            value={query}
-            onChangeText={setQuery}
-            placeholder="бетон М250, окно ПВХ, штукатурка, доставка…"
-            style={s.input}
-          />
+         <Pressable
+  onPress={() => searchRef.current?.focus()}
+  style={{}}
+>
+  <TextInput
+    ref={searchRef}
+    value={query}
+    onChangeText={setQuery}
+    placeholder="Поиск по каталогу …"
+    placeholderTextColor="#94A3B8"
+    returnKeyType="search"
+    // ✅ WEB: не даём родителям съесть клик
+    onMouseDown={(e: any) => {
+      if (Platform.OS === 'web') {
+        e?.stopPropagation?.();
+      }
+    }}
+    onFocus={() => {
+      // ✅ на всякий случай: в вебе иногда нужен явный focus
+      if (Platform.OS === 'web') {
+        setTimeout(() => searchRef.current?.focus(), 0);
+      }
+    }}
+    style={s.input}
+  />
+</Pressable>
+
+<Text style={{ color: COLORS.sub, fontSize: 12, marginTop: 6 }}>
+  Введите название или код (пример: бетон М250, штукатурка, доставка)
+</Text>
+
+
           {loadingSuggests ? (
             <ActivityIndicator style={{ marginTop: 6 }} />
           ) : null}
@@ -2697,185 +2670,52 @@ return {
 
           {/* Корзина */}
           <View style={{ marginBottom: 8 }}>
-            <View
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                gap: 8,
-              }}
-            >
-              <Text
-                style={[
-                  s.blockTitle,
-                  { color: COLORS.text },
-                ]}
-              >
-                Корзина
-              </Text>
-              <Chip
-                label={`${cartCount}`}
-                bg="#E0F2FE"
-                fg="#075985"
-              />
-            </View>
-            {cartCount === 0 ? (
-              <Text style={{ color: COLORS.sub }}>
-                Выбери позиции из поиска и настрой
-                количество/применение/примечание.
-              </Text>
-            ) : (
-              <FlatList
-                data={cartArray}
-                keyExtractor={(it, idx) =>
-                  stableKey(it, idx, 'cart')
-                }
-                renderItem={({ item }) => (
-                  <CartRow row={item} />
-                )}
-                keyboardShouldPersistTaps="handled"
-                removeClippedSubviews
-                nestedScrollEnabled
-                windowSize={7}
-                maxToRenderPerBatch={10}
-                updateCellsBatchingPeriod={50}
-              />
-            )}
-          </View>
-
-          {/* Уже добавленные позиции — режимы */}
-          <View
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              marginTop: 10,
-              marginBottom: 6,
-            }}
-          >
-            <View
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                gap: 8,
-              }}
-            >
-              <Text
-                style={[
-                  s.blockTitle,
-                  { color: COLORS.text },
-                ]}
-              >
-                Позиции заявки{' '}
-                {requestId
-                  ? labelForRequest(requestId)
-                  : ''}
-              </Text>
-            </View>
-            <View
-              style={{ flexDirection: 'row', gap: 8 }}
-            >
-              <Pressable
-                onPress={() => setViewMode('raw')}
-                style={[
-                  s.tab,
-                  viewMode === 'raw' &&
-                    s.tabActive,
-                ]}
-              >
-                <Text
-                  style={{
-                    color:
-                      viewMode === 'raw'
-                        ? '#fff'
-                        : COLORS.tabInactiveText,
-                    fontWeight: '600',
-                  }}
-                >
-                  Позиции
-                </Text>
-              </Pressable>
-              <Pressable
-                onPress={() =>
-                  setViewMode('grouped')
-                }
-                style={[
-                  s.tab,
-                  viewMode === 'grouped' &&
-                    s.tabActive,
-                ]}
-              >
-                <Text
-                  style={{
-                    color:
-                      viewMode === 'grouped'
-                        ? '#fff'
-                        : COLORS.tabInactiveText,
-                    fontWeight: '600',
-                  }}
-                >
-                  Сгруппировано
-                </Text>
-              </Pressable>
-            </View>
-          </View>
-
-          {viewMode === 'raw' ? (
-  <FlatList
-    data={items}
-    keyExtractor={(it, idx) =>
-      it?.id
-        ? `ri:${it.id}`
-        : `ri:${it.request_id}-${idx}`
-    }
-    renderItem={({ item }) => (
-      <ReqItemRowView it={item} />
-    )}
-    ListEmptyComponent={
-      <Text
-        style={{
-          textAlign: 'center',
-          marginTop: 16,
-          color: COLORS.sub,
-        }}
-      >
-        Пока пусто
-      </Text>
-    }
-    refreshControl={
-      <RefreshControl
-        refreshing={refreshing}
-        onRefresh={async () => {
-          setRefreshing(true);
-          await loadItems();
-          setRefreshing(false);
-        }}
-      />
-    }
-    keyboardShouldPersistTaps="always"  // ✅ было handled
-    scrollEnabled={false}              // ✅ ДОБАВИЛИ
-    nestedScrollEnabled={false}        // ✅ БЫЛО true/включено — стало false
-    removeClippedSubviews
-    windowSize={9}
-    maxToRenderPerBatch={12}
-    updateCellsBatchingPeriod={50}
-  />
-) : (
-           <FlatList
-  data={grouped}
-  keyExtractor={(g, idx) =>
-    `grp:${g.key}:${idx}`
-  }
-  renderItem={({ item }) => (
-    <GroupedRowView g={item} />
-  )}
-  ListEmptyComponent={
+  <View
+    style={{
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+    }}
+  >
     <Text
-      style={{
-        textAlign: 'center',
-        marginTop: 16,
-        color: COLORS.sub,
-      }}
+      style={[
+        s.blockTitle,
+        { color: COLORS.text },
+      ]}
     >
+      Корзина
+    </Text>
+    <Chip
+      label={`${cartCount}`}
+      bg="#E0F2FE"
+      fg="#075985"
+    />
+  </View>
+
+  {cartCount > 0 && (
+    <FlatList
+      data={cartArray}
+      keyExtractor={(it, idx) => stableKey(it, idx, 'cart')}
+      renderItem={({ item }) => <CartRow row={item} />}
+      keyboardShouldPersistTaps="handled"
+      removeClippedSubviews
+      nestedScrollEnabled
+      windowSize={7}
+      maxToRenderPerBatch={10}
+      updateCellsBatchingPeriod={50}
+    />
+  )}
+</View>
+
+
+         <FlatList
+  data={items}
+  keyExtractor={(it, idx) =>
+    it?.id ? `ri:${it.id}` : `ri:${it.request_id}-${idx}`
+  }
+  renderItem={({ item }) => <ReqItemRowView it={item} />}
+  ListEmptyComponent={
+    <Text style={{ textAlign: 'center', marginTop: 16, color: COLORS.sub }}>
       Пока пусто
     </Text>
   }
@@ -2889,306 +2729,257 @@ return {
       }}
     />
   }
-  keyboardShouldPersistTaps="always"  // ✅ было handled
-  scrollEnabled={false}              // ✅ ДОБАВИЛИ
-  nestedScrollEnabled={false}        // ✅ БЫЛО true/включено — стало false
+  keyboardShouldPersistTaps="always"
+  scrollEnabled={false}
+  nestedScrollEnabled={false}
   removeClippedSubviews
   windowSize={9}
   maxToRenderPerBatch={12}
   updateCellsBatchingPeriod={50}
 />
-          )}
-
-        </ScrollView>
+               </ScrollView>
 
         {/* Панель действий внизу (только UI, логика та же) */}
         <View style={s.stickyBar}>
-          <View style={s.stickyRow}>
-            {/* 1) Рассчитать (смета) */}
+          {/* Строка 1: добавление в заявку */}
+          <View style={s.stickyRow2}>
             <Pressable
               onPress={handleCalcPress}
               disabled={busy}
-              style={[s.btn, s.btnNeutral, busy ? s.btnDisabled : null]}
+              style={[s.btnHalf, s.btnPrimarySoft, busy ? s.btnDisabled : null]}
             >
-              <Text style={busy ? s.btnTxtDisabled : s.btnTxtNeutral}>
+              <Text style={busy ? s.btnTxtDisabled : s.btnTxtDark}>
                 Рассчитать (смета)
               </Text>
             </Pressable>
 
-            {/* 2) Добавить */}
             <Pressable
               onPress={addCartToRequest}
               disabled={busy}
-              style={[s.btn, s.btnPrimary, busy ? s.btnDisabled : null]}
+              style={[s.btnHalf, s.btnPrimary, busy ? s.btnDisabled : null]}
             >
-              <Text style={busy ? s.btnTxtDisabled : s.btnTxtPrimary}>
+              <Text style={busy ? s.btnTxtDisabled : s.btnTxtOn}>
                 {`Добавить${cartCount ? ` (${cartCount})` : ''}`}
               </Text>
             </Pressable>
+          </View>
 
-            {/* 3) Отправить директору */}
-            <Pressable
-              onPress={submitToDirector}
-              disabled={busy}
-              style={[s.btn, s.btnSecondary, busy ? s.btnDisabled : null]}
+          {/* Строка 2: отправка */}
+          <Pressable
+            onPress={submitToDirector}
+            disabled={busy || (items?.length ?? 0) === 0}
+            style={[
+              s.btnWide,
+              (items?.length ?? 0) === 0 ? s.btnDisabled : s.btnSecondary,
+              busy ? s.btnDisabled : null,
+            ]}
+          >
+            <Text
+              style={
+                busy || (items?.length ?? 0) === 0
+                  ? s.btnTxtDisabled
+                  : s.btnTxtOn
+              }
             >
-              <Text style={busy ? s.btnTxtDisabled : s.btnTxtPrimary}>
-                Отправить директору
-              </Text>
-            </Pressable>
+              Отправить директору
+            </Text>
+          </Pressable>
 
-            {/* 4) PDF */}
+          {/* Строка 3: вспомогательные */}
+          <View style={s.stickyRowMini}>
             <Pressable
               onPress={onPdf}
               disabled={busy}
-              style={[s.btn, s.btnNeutral, busy ? s.btnDisabled : null]}
+              style={[s.btnMini, s.btnNeutral, busy ? s.btnDisabled : null]}
             >
-              <Text style={busy ? s.btnTxtDisabled : s.btnTxtNeutral}>PDF</Text>
-            </Pressable>
-                        <Pressable
-              onPress={handleOpenHistory}
-              disabled={busy}
-              style={[s.btn, s.btnNeutral, busy ? s.btnDisabled : null, { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', columnGap: 6 }]}
-            >
-              <Text style={busy ? s.btnTxtDisabled : s.btnTxtNeutral}>
-                История
-              </Text>
-              {pendingCount > 0 && !busy ? (
-                <View
-                  style={{
-                    minWidth: 20,
-                    paddingHorizontal: 6,
-                    paddingVertical: 2,
-                    borderRadius: 999,
-                    backgroundColor: '#FACC15',
-                  }}
-                >
-                  <Text
-                    style={{
-                      fontSize: 11,
-                      fontWeight: '700',
-                      textAlign: 'center',
-                      color: '#1F2937',
-                    }}
-                  >
-                    {pendingCount}
-                  </Text>
-                </View>
-              ) : null}
+              <Text style={busy ? s.btnTxtDisabled : s.btnTxtDark}>PDF</Text>
             </Pressable>
 
-          </View>
-        </View>
-      </View>
-
-      <Modal
-        visible={historyVisible}
-        animationType="fade"
-        transparent
-        onRequestClose={handleCloseHistory}
-      >
-        <View style={s.historyModalOverlay}>
-          <Pressable
-            style={s.historyModalBackdrop}
-            onPress={handleCloseHistory}
-          />
-          <View style={s.historyModal}>
-            <View style={s.historyModalHeader}>
-              <Text style={s.historyModalTitle}>История заявок</Text>
-              <Pressable onPress={handleCloseHistory}>
-                <Text style={s.historyModalClose}>Закрыть</Text>
-              </Pressable>
-            </View>
-            <View style={s.historyModalBody}>
-              {historyLoading ? (
-                <ActivityIndicator />
-              ) : historyRequests.length === 0 ? (
-                <Text style={s.historyModalEmpty}>Заявок пока нет.</Text>
-                            ) : (
-                <ScrollView style={s.historyModalList}>
-                                    {historyRequests.map((req) => {
-                    const info = resolveStatusInfo(req.status);
-                    const created = req.created_at
-                      ? new Date(req.created_at).toLocaleDateString('ru-RU')
-                      : '—';
-                    const needByText = req.need_by
-                      ? `Нужно к: ${formatDateForUi(req.need_by)}`
-                      : '';
-
-                    const hasRejected =
-                      req.has_rejected === true ||
-                      req.has_rejected === 1 ||
-                      req.has_rejected === 't';
-
-                    return (
-                      <View key={req.id} style={s.historyModalRow}>
-                        {/* Левая часть: клик по тексту открывает заявку */}
-                              <Pressable
-        style={{ flex: 1 }}
-        onPress={() => handleHistorySelect(req.id)}
-      >
-        <Text style={s.historyModalPrimary}>
-          {req.display_no ?? shortId(req.id)}
-        </Text>
-        <Text style={s.historyModalMeta}>
-          {req.object_name_ru || '—'}
-        </Text>
-        <Text style={s.historyModalMetaSecondary}>
-          {created}
-          {needByText ? ` · ${needByText}` : ''}
-        </Text>
-
-        {hasRejected && (
-          <Text
-            style={{
-              color: '#B91C1C',
-              fontSize: 12,
-              marginTop: 2,
-              fontWeight: '600',
-            }}
-          >
-            Есть отклонённые позиции
-          </Text>
-        )}
-      </Pressable>
-
-
-                             {/* Правая часть: статус (с пометкой) + PDF */}
-     <View style={{ alignItems: 'flex-end', gap: 6 }}>
-  <View
+           <Pressable
+  onPress={onPdfShare}
+  disabled={busy}
+  style={[s.btnMini, s.btnNeutral, busy ? s.btnDisabled : null]}
+>
+  <Text
     style={[
-      s.historyStatusBadge,
-      { backgroundColor: hasRejected ? '#FEE2E2' : info.bg },
+      busy ? s.btnTxtDisabled : s.btnTxtDark,
+      { fontSize: 12 } // 👈 чуть мельче
     ]}
   >
-    <Text style={{ color: info.fg, fontWeight: '700' }}>
-  {info.label}
-</Text>
+    Отправка PDF
+  </Text>
+</Pressable>
 
-  </View>
-
-  <Pressable
-    onPress={() => openHistoryPdf(req.id)}
-    style={s.historyPdfBtn}
-  >
-    <Text style={s.historyPdfBtnText}>PDF</Text>
-  </Pressable>
-</View>
-
-                      </View>
-                    );
-                  })}
-
-                </ScrollView>
-              )}
-
-            </View>
-          </View>
-        </View>
-      </Modal>
-
-      <WorkTypePicker
-        visible={workTypePickerVisible}
-        onClose={() => setWorkTypePickerVisible(false)}
-        onSelect={(wt) => {
-          setSelectedWorkType(wt);
-          setWorkTypePickerVisible(false);
-          setCalcVisible(true);
-        }}
-      />
-
-      <CalcModal
-        visible={calcVisible}
-        onClose={() => {
-          setCalcVisible(false);
-          setSelectedWorkType(null);
-        }}
-        workType={selectedWorkType}
-        onAddToRequest={handleCalcAddToRequest}
-      />
-
-      {/* ===== МОДАЛ ВЫБОРА ОБЛАСТИ ПРИМЕНЕНИЯ ===== */}
-      <Modal
-        visible={!!appPickerFor}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setAppPickerFor(null)}
-      >
-        <Pressable
-          style={{ flex: 1 }}
-          onPress={() => setAppPickerFor(null)}
-        >
-          <View style={s.backdrop} />
-        </Pressable>
-        <View style={s.modalSheet}>
-          <Text
-            style={{
-              fontWeight: '700',
-              fontSize: 16,
-              marginBottom: 8,
-              color: COLORS.text,
-            }}
-          >
-            Выбрать область применения
-          </Text>
-          <TextInput
-            value={appPickerQ}
-            onChangeText={setAppPickerQ}
-            placeholder="Поиск по названию/коду…"
-            style={s.input}
-          />
-          <FlatList
-            data={filteredAppOptions}
-            keyExtractor={(o, idx) =>
-              `appopt:${o.code}:${idx}`
-            }
-            renderItem={({ item }) => (
-              <Pressable
-                onPress={() => {
-                  if (appPickerFor)
-                    setAppFor(appPickerFor, item.code);
-                  setAppPickerFor(null);
-                }}
-                style={[
-                  s.suggest,
-                  { borderBottomColor: '#f0f0f0' },
-                ]}
-              >
-                <Text
-                  style={{
-                    fontWeight: '600',
-                    color: COLORS.text,
-                  }}
-                >
-                  {item.label}
-                </Text>
-              </Pressable>
-            )}
-            style={{ maxHeight: 320, marginTop: 6 }}
-          />
-          <View
-            style={{
-              flexDirection: 'row',
-              justifyContent: 'flex-end',
-              marginTop: 8,
-              gap: 8,
-            }}
-          >
             <Pressable
-              onPress={() => setAppPickerFor(null)}
-              style={[
-                s.chip,
-                {
-                  backgroundColor: '#eee',
-                  borderColor: COLORS.border,
-                },
-              ]}
+              onPress={handleOpenHistory}
+              disabled={busy}
+              style={[s.btnMini, s.btnNeutral, busy ? s.btnDisabled : null]}
             >
-              <Text>Закрыть</Text>
+              <Text style={busy ? s.btnTxtDisabled : s.btnTxtDark}>История</Text>
             </Pressable>
           </View>
         </View>
-      </Modal>
+
+        <Modal
+          visible={historyVisible}
+          animationType="fade"
+          transparent
+          onRequestClose={handleCloseHistory}
+        >
+          <View style={s.historyModalOverlay}>
+            <Pressable style={s.historyModalBackdrop} onPress={handleCloseHistory} />
+            <View style={s.historyModal}>
+              <View style={s.historyModalHeader}>
+                <Text style={s.historyModalTitle}>История заявок</Text>
+                <Pressable onPress={handleCloseHistory}>
+                  <Text style={s.historyModalClose}>Закрыть</Text>
+                </Pressable>
+              </View>
+
+              <View style={s.historyModalBody}>
+                {historyLoading ? (
+                  <ActivityIndicator />
+                ) : historyRequests.length === 0 ? (
+                  <Text style={s.historyModalEmpty}>Заявок пока нет</Text>
+                ) : (
+                  <ScrollView style={s.historyModalList}>
+                    {historyRequests.map((req) => {
+                      const info = resolveStatusInfo(req.status);
+                      const created = req.created_at
+                        ? new Date(req.created_at).toLocaleDateString('ru-RU')
+                        : '—';
+                        const hasRejected =
+                        req.has_rejected === true ||
+                        req.has_rejected === 1 ||
+                        req.has_rejected === 't';
+
+                      return (
+                        <View key={req.id} style={s.historyModalRow}>
+                          <Pressable style={{ flex: 1 }} onPress={() => handleHistorySelect(req.id)}>
+                            <Text style={s.historyModalPrimary}>
+                              {req.display_no ?? shortId(req.id)}
+                            </Text>
+                            <Text style={s.historyModalMeta}>{req.object_name_ru || '—'}</Text>
+                            <Text style={s.historyModalMetaSecondary}>
+                              {created}
+                              </Text>
+
+                            {hasRejected ? (
+                              <Text
+                                style={{
+                                  color: '#B91C1C',
+                                  fontSize: 12,
+                                  marginTop: 2,
+                                  fontWeight: '600',
+                                }}
+                              >
+                                Есть отклонённые позиции
+                              </Text>
+                            ) : null}
+                          </Pressable>
+
+                          <View style={{ alignItems: 'flex-end', gap: 6 }}>
+                            <View
+                              style={[
+                                s.historyStatusBadge,
+                                { backgroundColor: hasRejected ? '#FEE2E2' : info.bg },
+                              ]}
+                            >
+                              <Text style={{ color: info.fg, fontWeight: '700' }}>
+                                {info.label}
+                              </Text>
+                            </View>
+
+                            <Pressable onPress={() => openHistoryPdf(req.id)} style={s.historyPdfBtn}>
+                              <Text style={s.historyPdfBtnText}>PDF</Text>
+                            </Pressable>
+                          </View>
+                        </View>
+                      );
+                    })}
+                  </ScrollView>
+                )}
+              </View>
+            </View>
+          </View>
+        </Modal>
+
+        <WorkTypePicker
+          visible={workTypePickerVisible}
+          onClose={() => setWorkTypePickerVisible(false)}
+          onSelect={(wt) => {
+            setSelectedWorkType(wt);
+            setWorkTypePickerVisible(false);
+            setCalcVisible(true);
+          }}
+        />
+
+        <CalcModal
+          visible={calcVisible}
+          onClose={() => {
+            setCalcVisible(false);
+            setSelectedWorkType(null);
+          }}
+          onBack={() => {
+            setCalcVisible(false);
+            setSelectedWorkType(null);
+            setWorkTypePickerVisible(true);
+          }}
+          workType={selectedWorkType}
+          onAddToRequest={handleCalcAddToRequest}
+        />
+
+        {/* ===== МОДАЛ ВЫБОРА ОБЛАСТИ ПРИМЕНЕНИЯ ===== */}
+        <Modal
+          visible={!!appPickerFor}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setAppPickerFor(null)}
+        >
+          <Pressable style={{ flex: 1 }} onPress={() => setAppPickerFor(null)}>
+            <View style={s.backdrop} />
+          </Pressable>
+
+          <View style={s.modalSheet}>
+            <Text style={{ fontWeight: '700', fontSize: 16, marginBottom: 8, color: COLORS.text }}>
+              Выбрать область применения
+            </Text>
+
+            <TextInput
+              value={appPickerQ}
+              onChangeText={setAppPickerQ}
+              placeholder="Поиск по названию/коду…"
+              style={s.input}
+            />
+
+            <FlatList
+              data={filteredAppOptions}
+              keyExtractor={(o, idx) => `appopt:${o.code}:${idx}`}
+              renderItem={({ item }) => (
+                <Pressable
+                  onPress={() => {
+                    if (appPickerFor) setAppFor(appPickerFor, item.code);
+                    setAppPickerFor(null);
+                  }}
+                  style={[s.suggest, { borderBottomColor: '#f0f0f0' }]}
+                >
+                  <Text style={{ fontWeight: '600', color: COLORS.text }}>{item.label}</Text>
+                </Pressable>
+              )}
+              style={{ maxHeight: 320, marginTop: 6 }}
+            />
+
+            <View style={{ flexDirection: 'row', justifyContent: 'flex-end', marginTop: 8, gap: 8 }}>
+              <Pressable
+                onPress={() => setAppPickerFor(null)}
+                style={[s.chip, { backgroundColor: '#eee', borderColor: COLORS.border }]}
+              >
+                <Text>Закрыть</Text>
+              </Pressable>
+            </View>
+          </View>
+        </Modal>
+      </View>
     </KeyboardAvoidingView>
   );
 }
@@ -3227,8 +3018,11 @@ const s = StyleSheet.create({
     flexDirection: 'row',
     gap: 8,
     marginBottom: 8,
-    alignItems: 'center',
+    alignItems: 'flex-start',
   },
+headerRowCol: {
+  marginBottom: 8,
+},
 
   tabs: {
     flexDirection: 'row',
@@ -3369,6 +3163,21 @@ const s = StyleSheet.create({
   },
   cardTitle: { fontWeight: '700', fontSize: 15 },
   cardMeta: { marginTop: 4 },
+  // ✅ как у директора: красная квадратная кнопка "X"
+  rejectBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#DC2626',
+  },
+  rejectIcon: {
+    color: '#fff',
+    fontSize: 22,
+    fontWeight: '900',
+    lineHeight: 22,
+  },
 
   row: {
     flexDirection: 'row',
@@ -3430,6 +3239,77 @@ const s = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 10,
   },
+stickyRow2: {
+  flexDirection: 'row',
+  gap: 10,
+  marginBottom: 10,
+},
+
+stickyRowMini: {
+  flexDirection: 'row',
+  gap: 10,
+  marginTop: 10,
+},
+
+btnHalf: {
+  flex: 1,
+  paddingVertical: 12,
+  borderRadius: 14,
+  borderWidth: 1,
+  alignItems: 'center',
+  justifyContent: 'center',
+},
+
+btnWide: {
+  width: '100%',
+  paddingVertical: 14,
+  borderRadius: 14,
+  borderWidth: 1,
+  alignItems: 'center',
+  justifyContent: 'center',
+},
+
+btnMini: {
+  flex: 1,
+  paddingVertical: 10,
+  borderRadius: 12,
+  borderWidth: 1,
+  alignItems: 'center',
+  justifyContent: 'center',
+},
+
+btnPrimarySoft: {
+  backgroundColor: '#DCFCE7',
+  borderColor: '#86EFAC',
+},
+
+btnPrimary: {
+  backgroundColor: '#16A34A',
+  borderColor: '#15803D',
+},
+
+btnSecondary: {
+  backgroundColor: '#2563EB',
+  borderColor: '#1D4ED8',
+},
+
+btnNeutral: {
+  backgroundColor: '#F3F4F6',
+  borderColor: '#CBD5E1',
+},
+
+btnTxtOn: {
+  color: '#FFFFFF',
+  fontWeight: '800',
+  fontSize: 14,
+},
+
+btnTxtDark: {
+  color: '#111827',
+  fontWeight: '800',
+  fontSize: 14,
+},
+
   stickyRow: {
     flexDirection: 'row',
     alignItems: 'center',
