@@ -6,7 +6,8 @@ import React, {
 } from 'react';
 import {
   View, Text, FlatList, Pressable, Alert, ActivityIndicator,
-  RefreshControl, StyleSheet, Platform, Modal, TextInput, ScrollView
+  RefreshControl, StyleSheet, Platform, Modal, TextInput, ScrollView,
+  Animated, StatusBar
 } from 'react-native';
 import {
   listBuyerInbox,
@@ -42,6 +43,11 @@ function SafeView({ children, ...rest }: any) {
 }
 
 const isWeb = Platform.OS === 'web';
+const SAFE_TOP = Platform.OS === 'android' ? (StatusBar.currentHeight ?? 0) : 0;
+const TITLE_ROW = 44;
+const MINI_ROW = 44;
+const FALLBACK_TABS_ROW = 48;
+const FALLBACK_SUB_ROW = 64;
 
 // нормализуем название поставщика: убираем кавычки/лишние пробелы/регистр
 const normName = (s?: string | null) =>
@@ -200,11 +206,14 @@ const SummaryBar = React.memo(forwardRef<SummaryHandle, {
   pendingCount: number; approvedCount: number; rejectedCount: number;
   pickedCount: number; pickedSum: number;
   onRefresh: () => void;
+  fioHeight: Animated.AnimatedInterpolation<number> | Animated.Value;
+  fioOpacity: Animated.AnimatedInterpolation<number> | Animated.Value;
 }>((props, ref) => {
   const {
     initialFio, onCommitFio, tab, setTab,
     pendingCount, approvedCount, rejectedCount,
-    pickedCount, pickedSum, onRefresh
+    pickedCount, pickedSum, onRefresh,
+    fioHeight, fioOpacity
   } = props;
 
   const [draft, setDraft] = useState<string>(initialFio || '');
@@ -237,30 +246,34 @@ const SummaryBar = React.memo(forwardRef<SummaryHandle, {
 
   return (
     <View style={s.summaryWrap}>
-      <Text style={s.summaryTitle}>Снабженец</Text>
-
-      <View style={{ minWidth: 260 }}>
-        <Text style={s.summaryMeta}>ФИО снабженца</Text>
-        <TextInput
-          value={draft}
-          onChangeText={(t) => {
-            setDraft(t);
-            if (deb.current) clearTimeout(deb.current);
-            deb.current = setTimeout(() => commit(t), 180);
-          }}
-          placeholder="введите ФИО"
-          style={[s.input, { paddingVertical: 6, backgroundColor: '#fff', borderColor: COLORS.border }]}
-        />
+      <View style={s.summaryTopRow}>
+        <Text style={s.summaryTitle}>Снабженец</Text>
       </View>
 
-      <View style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+      <Animated.View style={[s.summaryFioRow, { height: fioHeight, opacity: fioOpacity }]}>
+        <View style={{ minWidth: 260 }}>
+          <Text style={s.summaryMeta}>ФИО снабженца</Text>
+          <TextInput
+            value={draft}
+            onChangeText={(t) => {
+              setDraft(t);
+              if (deb.current) clearTimeout(deb.current);
+              deb.current = setTimeout(() => commit(t), 180);
+            }}
+            placeholder="введите ФИО"
+            style={[s.input, { paddingVertical: 6, backgroundColor: '#fff', borderColor: COLORS.border }]}
+          />
+        </View>
+      </Animated.View>
+
+      <View style={s.summaryTabsRow}>
         <TabBtn id="inbox" title="Инбокс" />
         <TabBtn id="pending" title={`У директора (${pendingCount})`} />
         <TabBtn id="approved" title={`Утверждено (${approvedCount})`} />
         <TabBtn id="rejected" title={`На доработке (${rejectedCount})`} />
       </View>
 
-      <View style={{ marginLeft: 'auto', flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+      <View style={s.summaryMiniRow}>
         <Text style={[s.summaryMeta, { fontWeight: '700', color: COLORS.text }]}>
           Выбрано: {pickedCount} · Сумма: {pickedSum.toLocaleString()} сом
         </Text>
@@ -333,6 +346,40 @@ const setDeadlineHours = (hours: number) => {
   const [suppliersLoaded, setSuppliersLoaded] = useState(false);
 
   const summaryRef = useRef<{ flush: () => string } | null>(null);
+  const scrollYRaw = useRef(new Animated.Value(0)).current;
+
+  const fullTabs = FALLBACK_TABS_ROW;
+  const fullSub = FALLBACK_SUB_ROW;
+  const headerBase = SAFE_TOP + TITLE_ROW + fullTabs + MINI_ROW;
+  const HEADER_SCROLL = Math.max(0, fullSub);
+  const HEADER_MAX = headerBase + fullSub;
+
+  const clampedY = useMemo(
+    () => Animated.diffClamp(scrollYRaw, 0, HEADER_SCROLL),
+    [scrollYRaw, HEADER_SCROLL]
+  );
+  const fioHeight = useMemo(
+    () =>
+      clampedY.interpolate({
+        inputRange: [0, HEADER_SCROLL],
+        outputRange: [fullSub, 0],
+        extrapolate: 'clamp',
+      }),
+    [clampedY, fullSub, HEADER_SCROLL]
+  );
+  const fioOpacity = useMemo(
+    () =>
+      clampedY.interpolate({
+        inputRange: [0, HEADER_SCROLL],
+        outputRange: [1, 0],
+        extrapolate: 'clamp',
+      }),
+    [clampedY, HEADER_SCROLL]
+  );
+  const headerHeight = useMemo(
+    () => Animated.add(fioHeight, new Animated.Value(headerBase)),
+    [fioHeight, headerBase]
+  );
 
   // модалка «В бухгалтерию»
   const [acctOpen, setAcctOpen] = useState(false);
@@ -1878,13 +1925,90 @@ const headerText = `Предложение #${pidStr.slice(0, 8)}`;
 
  return (
   <View style={[s.screen, { backgroundColor: COLORS.bg }]}>
+    <Animated.FlatList
+      ref={listRef as any}
+      style={s.listBox}
+      data={
+        tab === 'inbox' ? groups :
+        tab === 'pending' ? pending :
+        tab === 'approved' ? approved :
+        rejected
+      }
+      keyExtractor={(item) =>
+        tab === 'inbox'
+          ? `g:${(item as Group).request_id}`
+          : `p:${String((item as any).id)}`
+      }
+      renderItem={({ item, index }) => (
+        <View style={{ marginBottom: 12 }}>
+          {tab === 'inbox'
+            ? <GroupBlock g={item as Group} index={index} />
+            : <ProposalCard head={item} />}
+        </View>
+      )}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+      ListHeaderComponent={
+        tab === 'inbox' ? (
+          <View style={s.toolbar}>
+            <Pressable
+              disabled={creating}
+              onPress={handleCreateProposalsBySupplier}
+              style={[s.actionBtn, creating && s.actionBtnDisabled]}
+            >
+              <Text style={s.actionBtnText}>Сформировать заявку</Text>
+            </Pressable>
 
-    {/* ✅ Общий скролл: шапка + кнопки + контейнер списка */}
-    <ScrollView
-      contentContainerStyle={s.pagePad}
+            <Pressable
+              disabled={creating || pickedIds.length === 0}
+              onPress={() => setRfqOpen(true)}
+              style={[
+                s.actionBtn,
+                creating && s.actionBtnDisabled,
+                pickedIds.length === 0 && { opacity: 0.4 },
+                { backgroundColor: COLORS.blue, borderColor: COLORS.blue },
+              ]}
+            >
+              <Text style={s.actionBtnText}>Создать торги (RFQ)</Text>
+            </Pressable>
+
+            <Pressable onPress={clearPick} style={s.actionBtnGhost}>
+              <Text style={s.actionBtnGhostText}>Сбросить выбор</Text>
+            </Pressable>
+          </View>
+        ) : null
+      }
+      ListEmptyComponent={
+        loadingInbox || loadingBuckets
+          ? <SafeView style={{ padding: 24, alignItems: 'center' }}><ActivityIndicator /></SafeView>
+          : <SafeView style={{ padding: 24 }}><Text style={{ color: COLORS.sub }}>Пока пусто</Text></SafeView>
+      }
+      contentContainerStyle={{
+        paddingTop: HEADER_MAX,
+        paddingHorizontal: 12,
+        paddingBottom: 24,
+      }}
       keyboardShouldPersistTaps="handled"
-    >
-      {/* Шапка */}
+      nestedScrollEnabled
+      onScrollToIndexFailed={(info) => {
+        setTimeout(() => {
+          try {
+            listRef.current?.scrollToOffset?.({
+              offset: info.averageItemLength * info.index,
+              animated: true,
+            });
+          } catch {}
+        }, 50);
+      }}
+      onScroll={Animated.event(
+        [{ nativeEvent: { contentOffset: { y: scrollYRaw } } }],
+        { useNativeDriver: false }
+      )}
+      scrollEventThrottle={16}
+      bounces={Platform.OS === 'android' ? false : true}
+      overScrollMode={Platform.OS === 'android' ? 'never' : 'auto'}
+    />
+
+    <Animated.View pointerEvents="box-none" style={[s.header, { height: headerHeight, paddingTop: SAFE_TOP }]}>
       <SummaryBar
         ref={summaryRef as any}
         initialFio={buyerFio}
@@ -1901,80 +2025,10 @@ const headerText = `Предложение #${pidStr.slice(0, 8)}`;
         pickedCount={pickedIds.length}
         pickedSum={pickedTotal}
         onRefresh={onRefresh}
+        fioHeight={fioHeight}
+        fioOpacity={fioOpacity}
       />
-
-      {/* Тулбар действий (инбокс) */}
-      {tab === 'inbox' && (
-        <View style={s.toolbar}>
-          <Pressable
-            disabled={creating}
-            onPress={handleCreateProposalsBySupplier}
-            style={[s.actionBtn, creating && s.actionBtnDisabled]}
-          >
-            <Text style={s.actionBtnText}>Сформировать заявку</Text>
-          </Pressable>
-
-          <Pressable
-            disabled={creating || pickedIds.length === 0}
-            onPress={() => setRfqOpen(true)}
-            style={[
-              s.actionBtn,
-              creating && s.actionBtnDisabled,
-              pickedIds.length === 0 && { opacity: 0.4 },
-              { backgroundColor: COLORS.blue, borderColor: COLORS.blue },
-            ]}
-          >
-            <Text style={s.actionBtnText}>Создать торги (RFQ)</Text>
-          </Pressable>
-
-          <Pressable onPress={clearPick} style={s.actionBtnGhost}>
-            <Text style={s.actionBtnGhostText}>Сбросить выбор</Text>
-          </Pressable>
-        </View>
-      )}
-
-      {/* ✅ Маленький скролл: только список (как у прораба: вложенный лист) */}
-      <View style={s.listBox}>
-        <FlatList
-          ref={listRef as any}
-          data={
-            tab === 'inbox' ? groups :
-            tab === 'pending' ? pending :
-            tab === 'approved' ? approved :
-            rejected
-          }
-          keyExtractor={(item) =>
-            tab === 'inbox'
-              ? `g:${(item as Group).request_id}`
-              : `p:${String((item as any).id)}`
-          }
-          renderItem={({ item, index }) => (
-            tab === 'inbox'
-              ? <GroupBlock g={item as Group} index={index} />
-              : <ProposalCard head={item} />
-          )}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-          ListEmptyComponent={
-            loadingInbox || loadingBuckets
-              ? <SafeView style={{ padding: 24, alignItems: 'center' }}><ActivityIndicator /></SafeView>
-              : <SafeView style={{ padding: 24 }}><Text style={{ color: COLORS.sub }}>Пока пусто</Text></SafeView>
-          }
-          contentContainerStyle={{ padding: 12, gap: 12, paddingBottom: 24 }}
-          nestedScrollEnabled
-          keyboardShouldPersistTaps="handled"
-          onScrollToIndexFailed={(info) => {
-            setTimeout(() => {
-              try {
-                listRef.current?.scrollToOffset?.({
-                  offset: info.averageItemLength * info.index,
-                  animated: true,
-                });
-              } catch {}
-            }, 50);
-          }}
-        />
-      </View>
-    </ScrollView>
+    </Animated.View>
 
       {/* ======= Модалка правки строки ======= */}
       <Modal visible={!!editFor} transparent animationType="fade" onRequestClose={() => setEditFor(null)}>
@@ -2424,18 +2478,46 @@ Alert.alert(
 /* ==================== Стили ==================== */
 const s = StyleSheet.create({
   screen: { flex: 1 },
-  summaryWrap: {
-    padding: 12,
-    gap: 12,
+  header: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: '#fff',
     borderBottomWidth: 1,
     borderColor: COLORS.border,
+    zIndex: 10,
+  },
+  summaryWrap: {
+    paddingHorizontal: 12,
+    gap: 0,
     backgroundColor: '#fff',
-    flexDirection: 'row',
-    alignItems: 'center',
-    flexWrap: 'wrap',
+    flexDirection: 'column',
   },
   summaryTitle: { fontSize: 24, fontWeight: '900', color: COLORS.text },
    summaryMeta: { fontSize: 12, color: COLORS.sub },
+  summaryTopRow: {
+    minHeight: TITLE_ROW,
+    justifyContent: 'center',
+  },
+  summaryFioRow: {
+    justifyContent: 'center',
+    overflow: 'hidden',
+  },
+  summaryTabsRow: {
+    minHeight: FALLBACK_TABS_ROW,
+    flexDirection: 'row',
+    gap: 8,
+    flexWrap: 'wrap',
+    alignItems: 'center',
+  },
+  summaryMiniRow: {
+    minHeight: MINI_ROW,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    flexWrap: 'wrap',
+  },
 
   input: {
     borderWidth: 1,
@@ -2469,12 +2551,11 @@ const s = StyleSheet.create({
   actionBtnGhostText: { color: COLORS.text, fontWeight: '700' },
 
   group: {
-  borderWidth: 1,
-  borderColor: COLORS.border,
-  borderRadius: 14,
-  backgroundColor: '#fff',
-  marginBottom: 12,
-},
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    borderRadius: 14,
+    backgroundColor: '#fff',
+  },
 
   groupHeader: {
   flexDirection: 'row',
@@ -2493,8 +2574,6 @@ const s = StyleSheet.create({
   cardPicked: { backgroundColor: '#F8FAFF' },
   cardTitle: { fontSize: 15, fontWeight: '800' },
   cardMeta: { fontSize: 12 },
-pagePad: { paddingBottom: 24 },
-
 listBox: {
   borderTopWidth: 1,
   borderTopColor: COLORS.border,
@@ -2579,4 +2658,3 @@ openBtnText: {
   modalTitle: { fontSize: 18, fontWeight: '800', color: COLORS.text },
   modalHelp: { fontSize: 12, color: COLORS.sub },
 });
-
