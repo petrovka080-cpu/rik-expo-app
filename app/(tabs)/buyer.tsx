@@ -6,9 +6,12 @@ import React, {
 } from 'react';
 import {
   View, Text, FlatList, Pressable, Alert, ActivityIndicator,
-  RefreshControl, StyleSheet, Platform, Modal, TextInput, ScrollView,
-  Animated, StatusBar
+  RefreshControl, StyleSheet, Platform, Modal, TextInput, ScrollView, Animated,
+  StatusBar, Keyboard
 } from 'react-native';
+
+import { Ionicons } from '@expo/vector-icons';
+
 import {
   listBuyerInbox,
   proposalCreate,
@@ -43,11 +46,7 @@ function SafeView({ children, ...rest }: any) {
 }
 
 const isWeb = Platform.OS === 'web';
-const SAFE_TOP = Platform.OS === 'android' ? (StatusBar.currentHeight ?? 0) : 0;
-const TITLE_ROW = 44;
-const MINI_ROW = 44;
-const FALLBACK_TABS_ROW = 48;
-const FALLBACK_SUB_ROW = 64;
+const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
 
 // нормализуем название поставщика: убираем кавычки/лишние пробелы/регистр
 const normName = (s?: string | null) =>
@@ -96,6 +95,18 @@ const Chip = ({ label, bg, fg }: { label: string; bg: string; fg: string }) => (
     <Text style={{ color: fg, fontWeight: '600', fontSize: 12 }}>{label}</Text>
   </View>
 );
+
+/* ===== счетчик табов (ТОПОВЫЙ ВАРИАНТ) ===== */
+const TabCount = ({ n, active }: { n: number; active: boolean }) => {
+  if (!n) return null;
+  return (
+    <View style={[s.tabBadge, active && s.tabBadgeActive]}>
+      <Text style={[s.tabBadgeText, active && s.tabBadgeTextActive]}>
+        {n}
+      </Text>
+    </View>
+  );
+};
 
 /* ==== helper: красивые подписи + сумма по предложению ==== */
 function useProposalPretty(proposalId: string | number) {
@@ -206,14 +217,11 @@ const SummaryBar = React.memo(forwardRef<SummaryHandle, {
   pendingCount: number; approvedCount: number; rejectedCount: number;
   pickedCount: number; pickedSum: number;
   onRefresh: () => void;
-  fioHeight: Animated.AnimatedInterpolation<number> | Animated.Value;
-  fioOpacity: Animated.AnimatedInterpolation<number> | Animated.Value;
 }>((props, ref) => {
   const {
     initialFio, onCommitFio, tab, setTab,
     pendingCount, approvedCount, rejectedCount,
-    pickedCount, pickedSum, onRefresh,
-    fioHeight, fioOpacity
+    pickedCount, pickedSum, onRefresh
   } = props;
 
   const [draft, setDraft] = useState<string>(initialFio || '');
@@ -246,44 +254,310 @@ const SummaryBar = React.memo(forwardRef<SummaryHandle, {
 
   return (
     <View style={s.summaryWrap}>
-      <View style={s.summaryTopRow}>
-        <Text style={s.summaryTitle}>Снабженец</Text>
+      <Text style={s.summaryTitle}>Снабженец</Text>
+
+      <View style={{ minWidth: 260 }}>
+        <Text style={s.summaryMeta}>ФИО снабженца</Text>
+        <TextInput
+          value={draft}
+          onChangeText={(t) => {
+            setDraft(t);
+            if (deb.current) clearTimeout(deb.current);
+            deb.current = setTimeout(() => commit(t), 180);
+          }}
+          placeholder="введите ФИО"
+          style={[s.input, { paddingVertical: 6, backgroundColor: '#fff', borderColor: COLORS.border }]}
+        />
       </View>
 
-      <Animated.View style={[s.summaryFioRow, { height: fioHeight, opacity: fioOpacity }]}>
-        <View style={{ minWidth: 260 }}>
-          <Text style={s.summaryMeta}>ФИО снабженца</Text>
-          <TextInput
-            value={draft}
-            onChangeText={(t) => {
-              setDraft(t);
-              if (deb.current) clearTimeout(deb.current);
-              deb.current = setTimeout(() => commit(t), 180);
-            }}
-            placeholder="введите ФИО"
-            style={[s.input, { paddingVertical: 6, backgroundColor: '#fff', borderColor: COLORS.border }]}
-          />
-        </View>
-      </Animated.View>
-
-      <View style={s.summaryTabsRow}>
+      <View style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
         <TabBtn id="inbox" title="Инбокс" />
         <TabBtn id="pending" title={`У директора (${pendingCount})`} />
         <TabBtn id="approved" title={`Утверждено (${approvedCount})`} />
         <TabBtn id="rejected" title={`На доработке (${rejectedCount})`} />
       </View>
 
-      <View style={s.summaryMiniRow}>
+      <View style={{ marginLeft: 'auto', flexDirection: 'row', alignItems: 'center', gap: 8 }}>
         <Text style={[s.summaryMeta, { fontWeight: '700', color: COLORS.text }]}>
           Выбрано: {pickedCount} · Сумма: {pickedSum.toLocaleString()} сом
         </Text>
-        <Pressable onPress={onRefresh} style={[s.smallBtn, { borderColor: COLORS.primary }]}>
-          <Text style={[s.smallBtnText, { color: COLORS.primary }]}>Обновить</Text>
-        </Pressable>
-      </View>
+        </View>
     </View>
   );
 }));
+const BuyerItemRow = React.memo(function BuyerItemRow(props: {
+  it: BuyerInboxRow;
+  selected: boolean;
+  m: LineMeta;
+  sum: number;
+  prettyText: string;
+  onTogglePick: () => void;
+  onSetPrice: (v: string) => void;
+  onSetSupplier: (v: string) => void;
+  onSetNote: (v: string) => void;
+
+  supplierSuggestions: string[];
+  onPickSupplier: (name: string) => void;
+}) {
+
+  const { it, selected, m, sum, prettyText, onTogglePick, onSetPrice, onSetSupplier, onSetNote, supplierSuggestions, onPickSupplier } = props;
+
+  return (
+    <View style={[s.card, { backgroundColor: '#fff' }, selected && s.cardPicked]}>
+      <View style={{ gap: 6 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 8 }}>
+          <View style={{ flex: 1, minWidth: 0 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+              <Text style={[s.cardTitle, { color: COLORS.text }]}>{it.name_human}</Text>
+              {it.app_code ? (
+                <View style={{ backgroundColor: COLORS.chipGrayBg, borderRadius: 999, paddingVertical: 3, paddingHorizontal: 8 }}>
+                  <Text style={{ color: COLORS.chipGrayText, fontWeight: '600', fontSize: 12 }}>{it.app_code}</Text>
+                </View>
+              ) : null}
+            </View>
+
+            <Text style={[s.cardMeta, { color: COLORS.sub }]}>{prettyText}</Text>
+          </View>
+
+          <Pressable
+            onPress={onTogglePick}
+            style={[
+              s.smallBtn,
+              {
+                borderColor: selected ? '#2563eb' : COLORS.border,
+                backgroundColor: selected ? '#2563eb' : '#fff',
+                minWidth: 86,
+                alignItems: 'center',
+              },
+            ]}
+          >
+            <Text style={[s.smallBtnText, { color: selected ? '#fff' : COLORS.text }]}>
+              {selected ? 'Снять' : 'Выбрать'}
+            </Text>
+          </Pressable>
+        </View>
+
+        <View style={{ gap: 2 }}>
+          <Text style={{ color: COLORS.sub }}>
+            Цена: <Text style={{ color: COLORS.text, fontWeight: '700' }}>{m.price || '—'}</Text>{' '}
+            • Поставщик: <Text style={{ color: COLORS.text, fontWeight: '700' }}>{m.supplier || '—'}</Text>{' '}
+            • Прим.: <Text style={{ color: COLORS.text, fontWeight: '700' }}>{m.note || '—'}</Text>
+          </Text>
+          <Text style={{ color: COLORS.sub }}>
+            Сумма по позиции: <Text style={{ color: COLORS.text, fontWeight: '700' }}>{sum ? sum.toLocaleString() : '0'}</Text> сом
+          </Text>
+        </View>
+
+        <View style={{ flexDirection: 'row', marginTop: 6 }}>
+          <View style={{ marginLeft: 'auto' }}>
+            {selected
+              ? <Chip label="Выбрано" bg="#E0F2FE" fg="#075985" />
+              : <Chip label="Заполни и выбери" bg="#F1F5F9" fg="#334155" />}
+          </View>
+        </View>
+      </View>
+
+      {selected && (
+        <View style={{ marginTop: 10, gap: 8 }}>
+          <View style={{ flexDirection: 'row', gap: 8 }}>
+            <View style={{ flex: 1 }}>
+              <Text style={s.fieldLabel}>Цена</Text>
+              <TextInput
+                value={String(m.price ?? '')}
+                onChangeText={onSetPrice}
+                keyboardType="decimal-pad"
+                placeholder="Цена"
+                style={s.fieldInput}
+              />
+            </View>
+
+            <View style={{ flex: 1 }}>
+              <Text style={s.fieldLabel}>Поставщик</Text>
+              <TextInput
+                value={String(m.supplier ?? '')}
+                onChangeText={onSetSupplier}
+                placeholder="Поставщик"
+                style={s.fieldInput}
+              />
+{supplierSuggestions.length > 0 && (
+  <View style={s.suggestBoxInline}>
+    {supplierSuggestions.map((name) => (
+      <Pressable
+        key={name}
+        onPress={() => onPickSupplier(name)}
+        style={s.suggestItem}
+      >
+        <Text style={{ color: COLORS.text, fontWeight: '700' }}>{name}</Text>
+      </Pressable>
+    ))}
+  </View>
+)}
+
+            </View>
+          </View>
+
+          <View>
+            <Text style={s.fieldLabel}>Примечание</Text>
+            <TextInput
+              value={String(m.note ?? '')}
+              onChangeText={onSetNote}
+              placeholder="Примечание"
+              multiline
+              style={[s.fieldInput, { minHeight: 44 }]}
+            />
+          </View>
+        </View>
+      )}
+    </View>
+  );
+});
+const BuyerGroupBlock = React.memo(function BuyerGroupBlock(props: {
+  g: Group;
+  index: number;
+  isOpen: boolean;
+  gsum: number;
+  headerTitle: string;
+  headerMeta: string;
+  onToggle: () => void;
+
+  // items
+  renderItemRow: (it: BuyerInboxRow, idx2: number) => React.ReactNode;
+
+  // attachments
+  isWeb: boolean;
+  supplierGroups: string[];
+  attachments: AttachmentMap;
+  onPickAttachment: (key: string, att: Attachment) => void;
+}) {
+  const {
+    g, isOpen, gsum, headerTitle, headerMeta, onToggle,
+    renderItemRow,
+    isWeb, supplierGroups, attachments, onPickAttachment,
+  } = props;
+
+  return (
+    <View style={s.group}>
+      <Pressable onPress={onToggle} style={s.groupHeader}>
+        <View style={{ flex: 1, minWidth: 0 }}>
+          <Text style={s.groupTitle} numberOfLines={1}>{headerTitle}</Text>
+          <Text style={s.groupMeta} numberOfLines={1}>{headerMeta}</Text>
+        </View>
+
+        <Pressable onPress={onToggle} style={s.openBtn}>
+          <Text style={s.openBtnText}>{isOpen ? 'Свернуть' : 'Открыть'}</Text>
+        </Pressable>
+      </Pressable>
+
+      {isOpen ? (
+        <View style={s.openBody}>
+          {g.items.some(it => (it as any).director_reject_note) && (
+            <View style={{ paddingHorizontal: 12, paddingBottom: 8 }}>
+              <View style={{ backgroundColor: '#FEE2E2', borderRadius: 10, padding: 8 }}>
+                <Text style={{ color: '#991B1B', fontWeight: '800', fontSize: 13 }}>
+                  Отклонено директором
+                </Text>
+              </View>
+            </View>
+          )}
+
+          <View style={s.itemsPanel}>
+            <View style={s.itemsBox}>
+              <View style={s.innerStickyHeader}>
+                <Text style={s.innerStickyTitle} numberOfLines={1}>{headerTitle}</Text>
+                <Text style={s.innerStickyMeta} numberOfLines={1}>{headerMeta}</Text>
+              </View>
+
+              {g.items.map((item, idx2) => (
+                <React.Fragment
+                  key={item?.request_item_id ? `ri:${item.request_item_id}` : `f:${g.request_id}:${idx2}`}
+                >
+                  {renderItemRow(item, idx2)}
+                </React.Fragment>
+              ))}
+
+              <View style={{ height: 12 }} />
+            </View>
+          </View>
+
+          {isWeb && (
+            <View style={{ marginTop: 8, paddingHorizontal: 12, paddingBottom: 12 }}>
+              <Text style={{ fontWeight: '600', marginBottom: 4, color: COLORS.text }}>
+                Вложения (по группе поставщика):
+              </Text>
+              <ScrollView horizontal contentContainerStyle={{ gap: 8 }}>
+                {supplierGroups.map((key) => (
+                  <AttachmentUploaderWeb
+                    key={key}
+                    label={key}
+                    onPick={(att) => onPickAttachment(key, att)}
+                    current={attachments[key]}
+                  />
+                ))}
+              </ScrollView>
+            </View>
+          )}
+        </View>
+      ) : null}
+    </View>
+  );
+});
+const BuyerProposalCard = React.memo(function BuyerProposalCard(props: {
+  head: any;
+  onOpenPdf: (pidStr: string) => void;
+  onOpenAccounting: (pidStr: string) => void;
+  onOpenRework: (pidStr: string) => void;
+}) {
+  const { head, onOpenPdf, onOpenAccounting, onOpenRework } = props;
+
+  const pidStr = String(head.id);
+  const sc = statusColors(head.status);
+  const headerText = `Предложение #${pidStr.slice(0, 8)}`;
+
+  return (
+    <View style={[s.card, { borderStyle: 'solid', backgroundColor: '#fff' }]}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+        <Text style={[s.cardTitle, { color: COLORS.text }]}>{headerText}</Text>
+        <Chip label={head.status} bg={sc.bg} fg={sc.fg} />
+
+        <View style={{ backgroundColor: '#DBEAFE', borderRadius: 999, paddingVertical: 4, paddingHorizontal: 10 }}>
+          <Text style={{ color: '#1E3A8A', fontWeight: '700', fontSize: 12 }}>
+            Сумма: {Number(head.total_sum ?? 0).toLocaleString()} сом
+          </Text>
+        </View>
+
+        <Text style={[s.cardMeta, { color: COLORS.sub }]}>
+          {head.submitted_at ? new Date(head.submitted_at).toLocaleString() : '—'}
+        </Text>
+
+        <Pressable
+          onPress={() => onOpenPdf(pidStr)}
+          style={[s.openBtn, { marginLeft: 'auto', minWidth: 86 }]}
+        >
+          <Text style={s.openBtnText}>PDF</Text>
+        </Pressable>
+
+        {head.status === 'Утверждено' && (
+          <Pressable
+            onPress={() => onOpenAccounting(pidStr)}
+            style={[s.smallBtn, { marginLeft: 8, backgroundColor: '#2563eb', borderColor: '#2563eb' }]}
+          >
+            <Text style={[s.smallBtnText, { color: '#fff' }]}>В бухгалтерию</Text>
+          </Pressable>
+        )}
+
+        {String(head.status).startsWith('На доработке') && (
+          <Pressable
+            onPress={() => onOpenRework(pidStr)}
+            style={[s.smallBtn, { marginLeft: 8, backgroundColor: '#f97316', borderColor: '#f97316' }]}
+          >
+            <Text style={[s.smallBtnText, { color: '#fff' }]}>Доработать</Text>
+          </Pressable>
+        )}
+      </View>
+    </View>
+  );
+});
+
 
 /* ============================== Экран снабженца ============================== */
 export default function BuyerScreen() {
@@ -296,9 +570,131 @@ const [rfqDeadlineIso, setRfqDeadlineIso] = useState<string>(() => {
   return d.toISOString();
 });
 
+const SAFE_TOP =
+  Platform.OS === 'ios' ? 0 :
+  Platform.OS === 'android' ? (StatusBar.currentHeight ?? 0) :
+  0;
+// ✅ измеряем реальные высоты шапки
+const [subH, setSubH] = useState(0);
+const [tabsH, setTabsH] = useState(0);
+
+const FALLBACK_TABS_ROW = 54;
+const FALLBACK_SUB_ROW  = 92;
+
+const MINI_ROW  = 28;
+const TITLE_ROW = 34;
+
+const fullTabs = (tabsH > 0) ? tabsH : FALLBACK_TABS_ROW;
+const fullSub  = (subH  > 0) ? subH  : FALLBACK_SUB_ROW;
+
+const isAndroid = Platform.OS === 'android';
+
+// ✅ базовая часть шапки (всегда видна): title + tabs + mini
+const headerBase = SAFE_TOP + TITLE_ROW + fullTabs + MINI_ROW;
+
+// ✅ диапазон схлопывания = только высота ФИО
+const HEADER_SCROLL = Math.max(0, fullSub);
+
+// ✅ текущая высота шапки
+const HEADER_MAX = headerBase + fullSub;
+
+const scrollYRaw = useRef(
+  new Animated.Value(isAndroid ? 0 : -HEADER_MAX)
+).current;
+
+
+// ✅ HEADER_MAX как Animated.Value, чтобы обновлять при изменении высот
+const headerMaxAnim = useRef(new Animated.Value(HEADER_MAX)).current;
+
+const prevHeaderMaxRef = useRef(HEADER_MAX);
+
+useEffect(() => {
+  const prev = prevHeaderMaxRef.current;
+  const next = HEADER_MAX;
+  prevHeaderMaxRef.current = next;
+
+  headerMaxAnim.setValue(next);
+
+  if (!isAndroid) {
+    // текущий raw (на web работает)
+    const curRaw =
+      (scrollYRaw as any).__getValue?.() ??
+      (scrollYRaw as any)._value ??
+      0;
+
+    // сохраняем визуальную позицию: raw -= (next - prev)
+    const delta = next - prev;
+    scrollYRaw.setValue(curRaw - delta);
+  }
+}, [HEADER_MAX, isAndroid, headerMaxAnim, scrollYRaw]);
+
+
+// ✅ нормализованный скролл:
+// - Android: обычный y (там будет спейсер)
+// - iOS/web: y + HEADER_MAX (потому что y стартует отрицательным)
+const scrollY = useMemo(() => {
+  return isAndroid
+    ? scrollYRaw
+    : Animated.add(scrollYRaw, headerMaxAnim);
+}, [isAndroid, scrollYRaw, headerMaxAnim]);
+
+// ✅ clamp как у директора
+const clampedY = useMemo(() => (
+  Animated.diffClamp(scrollY, 0, HEADER_SCROLL)
+), [scrollY, HEADER_SCROLL]);
+
+// ✅ ФИО: было fullSub → стало 0
+const fioHeight = useMemo(() => (
+  clampedY.interpolate({
+    inputRange: [0, HEADER_SCROLL || 1],
+    outputRange: [fullSub, 0],
+    extrapolate: 'clamp',
+  })
+), [clampedY, HEADER_SCROLL, fullSub]);
+
+const fioOpacity = useMemo(() => (
+  clampedY.interpolate({
+    inputRange: [0, HEADER_SCROLL || 1],
+    outputRange: [1, 0],
+    extrapolate: 'clamp',
+  })
+), [clampedY, HEADER_SCROLL]);
+
+// ✅ общая высота шапки
+const headerHeight = useMemo(
+  () => Animated.add(new Animated.Value(headerBase), fioHeight),
+  [headerBase, fioHeight]
+);
+
+// ✅ заголовок уменьшается
+const titleSize = useMemo(() => (
+  clampedY.interpolate({
+    inputRange: [0, HEADER_SCROLL || 1],
+    outputRange: [22, 16],
+    extrapolate: 'clamp',
+  })
+), [clampedY, HEADER_SCROLL]);
+
+// ✅ мини-строка появляется когда ФИО схлопнулось
+const miniOpacity = useMemo(() => (
+  clampedY.interpolate({
+    inputRange: [0, (HEADER_SCROLL || 1) * 0.8, HEADER_SCROLL || 1],
+    outputRange: [0, 0, 1],
+    extrapolate: 'clamp',
+  })
+), [clampedY, HEADER_SCROLL]);
+
+const miniTranslateY = useMemo(() => (
+  clampedY.interpolate({
+    inputRange: [0, HEADER_SCROLL || 1],
+    outputRange: [6, 0],
+    extrapolate: 'clamp',
+  })
+), [clampedY, HEADER_SCROLL]);
+
 const fmtLocal = (iso: string) => {
   const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return "—";
+  if (Number.isNaN(d.getTime())) return '—';
   return d.toLocaleString();
 };
 
@@ -306,7 +702,6 @@ const setDeadlineHours = (hours: number) => {
   const d = new Date(Date.now() + hours * 3600 * 1000);
   setRfqDeadlineIso(d.toISOString());
 };
-
 
   // INBOX
   const [rows, setRows] = useState<BuyerInboxRow[]>([]);
@@ -318,68 +713,17 @@ const setDeadlineHours = (hours: number) => {
   const [meta, setMeta] = useState<Record<string, LineMeta>>({});
   const [attachments, setAttachments] = useState<AttachmentMap>({});
   const [creating, setCreating] = useState(false);
-
   // вкладки статусов
   const [pending, setPending]   = useState<any[]>([]);
   const [approved, setApproved] = useState<any[]>([]);
   const [rejected, setRejected] = useState<any[]>([]);
   const [loadingBuckets, setLoadingBuckets] = useState(false);
-
-  // редактирование строки
-  const [editFor, setEditFor] = useState<BuyerInboxRow | null>(null);
-  const [tmpPrice, setTmpPrice] = useState('');
-  const [tmpSupplier, setTmpSupplier] = useState('');
-  const [tmpNote, setTmpNote] = useState('');
-
-  // автопоиск поставщиков
-  const [supSugOpen, setSupSugOpen] = useState(false);
-  const [supSug, setSupSug] = useState<Supplier[]>([]);
-
-  // автополя реквизитов поставщика
-  const [tmpInn, setTmpInn] = useState('');
-  const [tmpAccount, setTmpAccount] = useState('');
-  const [tmpPhone, setTmpPhone] = useState('');
-  const [tmpEmail, setTmpEmail] = useState('');
-
+  
   // справочник поставщиков
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [suppliersLoaded, setSuppliersLoaded] = useState(false);
 
   const summaryRef = useRef<{ flush: () => string } | null>(null);
-  const scrollYRaw = useRef(new Animated.Value(0)).current;
-
-  const fullTabs = FALLBACK_TABS_ROW;
-  const fullSub = FALLBACK_SUB_ROW;
-  const headerBase = SAFE_TOP + TITLE_ROW + fullTabs + MINI_ROW;
-  const HEADER_SCROLL = Math.max(0, fullSub);
-  const HEADER_MAX = headerBase + fullSub;
-
-  const clampedY = useMemo(
-    () => Animated.diffClamp(scrollYRaw, 0, HEADER_SCROLL),
-    [scrollYRaw, HEADER_SCROLL]
-  );
-  const fioHeight = useMemo(
-    () =>
-      clampedY.interpolate({
-        inputRange: [0, HEADER_SCROLL],
-        outputRange: [fullSub, 0],
-        extrapolate: 'clamp',
-      }),
-    [clampedY, fullSub, HEADER_SCROLL]
-  );
-  const fioOpacity = useMemo(
-    () =>
-      clampedY.interpolate({
-        inputRange: [0, HEADER_SCROLL],
-        outputRange: [1, 0],
-        extrapolate: 'clamp',
-      }),
-    [clampedY, HEADER_SCROLL]
-  );
-  const headerHeight = useMemo(
-    () => Animated.add(fioHeight, new Animated.Value(headerBase)),
-    [fioHeight, headerBase]
-  );
 
   // модалка «В бухгалтерию»
   const [acctOpen, setAcctOpen] = useState(false);
@@ -399,6 +743,7 @@ const setDeadlineHours = (hours: number) => {
     email?: string | null;
   } | null>(null);
 const listRef = useRef<FlatList<any> | null>(null);
+const tabsScrollRef = useRef<ScrollView | null>(null);
 
 const [expandedReqId, setExpandedReqId] = useState<string | null>(null);
 const [expandedReqIndex, setExpandedReqIndex] = useState<number | null>(null);
@@ -474,7 +819,15 @@ const lastBucketsKickRef = useRef(0);
       } catch {}
     })();
   }, [buyerFio]);
-
+// ✅ автодоскролл табов (чтобы "Правки" было видно на телефоне)
+useEffect(() => {
+  if (Platform.OS === 'web') return;
+  requestAnimationFrame(() => {
+    try {
+      tabsScrollRef.current?.scrollToEnd?.({ animated: true });
+    } catch {}
+  });
+}, [tab]);
   /* ==================== Загрузка ==================== */
   const fetchInbox = useCallback(async () => {
   if (!focusedRef.current) return;
@@ -668,11 +1021,12 @@ setApproved(approvedClean);
 );
 
   const onRefresh = useCallback(async () => {
-    setRefreshing(true);
-    await fetchInbox();
-    await fetchBuckets();
-    setRefreshing(false);
-  }, [fetchInbox, fetchBuckets]);
+    
+  setRefreshing(true);
+  await fetchInbox();
+  await fetchBuckets();
+  setRefreshing(false);
+}, [fetchInbox, fetchBuckets]);
 
   // — Загрузка справочника поставщиков один раз
   useEffect(() => {
@@ -688,42 +1042,17 @@ setApproved(approvedClean);
     })();
   }, [suppliersLoaded]);
 
-  // подсказки: показываем совпадения когда введено 2+ символов
-  useEffect(() => {
-    const q = normName(tmpSupplier);
-    if (q.length < 2) {
-      setSupSug([]); setSupSugOpen(false);
-      return;
-    }
-    (async () => {
-      if (!suppliersLoaded || suppliers.length === 0) {
-        try {
-          const list = await listSuppliers();
-          setSuppliers(list);
-          setSupSug(list.filter(s => normName(s.name).includes(q)).slice(0, 8));
-          setSupSugOpen(list.length > 0);
-          return;
-        } catch {}
-      }
-      const out = suppliers.filter(s => normName(s.name).includes(q)).slice(0, 8);
-      setSupSug(out);
-      setSupSugOpen(out.length > 0);
-    })();
-  }, [tmpSupplier, suppliers, suppliersLoaded]);
+  // ✅ подсказки поставщиков по введённому тексту
+const getSupplierSuggestions = useCallback((q: string) => {
+  const needle = normName(q);
+  if (!needle) return [];
+  return (suppliers || [])
+    .filter((s) => normName((s as any)?.name).includes(needle))
+    .slice(0, 8)
+    .map((s) => (s as any).name as string)
+    .filter(Boolean);
+}, [suppliers]);
 
-  // — Автозаполнение ИНН / счёта / телефона / email при изменении «Поставщик»
-  useEffect(() => {
-    const n = normName(tmpSupplier);
-    if (!n || !suppliers.length) {
-      setTmpInn(''); setTmpAccount(''); setTmpPhone(''); setTmpEmail('');
-      return;
-    }
-    const s = suppliers.find(x => normName(x.name) === n) || null;
-    setTmpInn(s?.inn || '');
-    setTmpAccount(s?.bank_account || '');
-    setTmpPhone(s?.phone || '');
-    setTmpEmail(s?.email || '');
-  }, [tmpSupplier, suppliers]);
 
   /* ==================== Группировка и итоги ==================== */
   const groups: Group[] = useMemo(() => {
@@ -769,7 +1098,7 @@ setApproved(approvedClean);
     return sum;
   }, [pickedIds, rows, meta]);
 
-  /* ==================== Выбор/редактирование ==================== */
+/* ==================== Выбор/редактирование ==================== */
   const togglePick = useCallback((ri: BuyerInboxRow) => {
     const key = ri.request_item_id ?? '';
     if (!key) return;
@@ -777,76 +1106,114 @@ setApproved(approvedClean);
   }, []);
 
   const clearPick = useCallback(() => setPicked({}), []);
+  // ===== helper: запись meta по строке =====
+const setLineMeta = useCallback((id: string, patch: Partial<LineMeta>) => {
+  if (!id) return;
+  setMeta(prev => ({
+    ...prev,
+    [id]: { ...(prev[id] || {}), ...patch },
+  }));
+}, []);
 
-  const openEdit = useCallback((ri: BuyerInboxRow) => {
-    const key = ri.request_item_id ?? '';
-    const m = (key && meta[key]) || {};
-    setTmpPrice(m.price ?? '');
-    setTmpSupplier(m.supplier ?? '');
-    setTmpNote(m.note ?? '');
-    setEditFor(ri);
-
-    // автоподстановка реквизитов по уже выбранному поставщику
-    try {
-      const sname = String(m.supplier ?? '').trim().toLowerCase();
-      if (!sname) {
-        setTmpInn(''); setTmpAccount(''); setTmpPhone(''); setTmpEmail('');
-      } else {
-        const s = suppliers.find(x => x.name?.trim().toLowerCase() === sname) || null;
-        setTmpInn(s?.inn || '');
-        setTmpAccount(s?.bank_account || '');
-        setTmpPhone(s?.phone || '');
-        setTmpEmail(s?.email || '');
-      }
-    } catch {}
-  }, [meta, suppliers]);
-
-  const saveEdit = useCallback(() => {
-    if (!editFor?.request_item_id) { setEditFor(null); return; }
-    const key = editFor.request_item_id;
-    const supplierName = tmpSupplier.trim();
-
-    // ищем поставщика по нормализованному имени
-    const match = suppliers.find(s => normName(s.name) === normName(supplierName));
-
-    let newNote = tmpNote.trim();
-    if (match) {
-      const parts: string[] = [];
-      if (match.inn)          parts.push(`ИНН: ${match.inn}`);
-      if (match.bank_account) parts.push(`Счёт: ${match.bank_account}`);
-      if (match.phone)        parts.push(`Тел.: ${match.phone}`);
-      if (match.email)        parts.push(`Email: ${match.email}`);
-      if (parts.length) {
-        const line = parts.join(' · ');
-        newNote = newNote ? `${newNote}\n${line}` : line;
-      }
+// ===== helper: применить к выбранным в заявке =====
+const applyToPickedInGroup = useCallback((g: Group, patch: Partial<LineMeta>) => {
+  setMeta(prev => {
+    const next = { ...prev };
+    for (const it of g.items) {
+      const id = String(it?.request_item_id || '');
+      if (!id) continue;
+      if (!picked[id]) continue;
+      next[id] = { ...(next[id] || {}), ...patch };
     }
+    return next;
+  });
+}, [picked]);
 
-    setMeta(prev => ({
-      ...prev,
-      [key]: {
-        price: tmpPrice.trim(),
-        supplier: supplierName,
-        note: newNote,
-      },
-    }));
+    const renderItemRow = useCallback((it: BuyerInboxRow, idx2: number) => {
+  const key = String(it.request_item_id ?? '');
+  const selected = !!picked[key];
+  const m = (key && meta[key]) || {};
+  const sum = lineTotal(it);
+  const ridOld = (it as any).request_id_old as number | null | undefined;
 
-    setEditFor(null);
-  }, [editFor, tmpPrice, tmpSupplier, tmpNote, suppliers]);
+  const prettyText = `${prettyLabel(String(it.request_id), ridOld)} · ${it.qty} ${it.uom || ''}`;
+const sugg = getSupplierSuggestions(String(m.supplier ?? ''));
 
-  // — Автоподстановка реквизитов при ручном вводе/смене «Поставщик»
-  useEffect(() => {
-    const name = tmpSupplier.trim().toLowerCase();
-    if (!name || !suppliers.length) {
-      setTmpInn(''); setTmpAccount(''); setTmpPhone(''); setTmpEmail('');
-      return;
+return (
+  <BuyerItemRow
+    it={it}
+    selected={selected}
+    m={m}
+    sum={sum}
+    prettyText={prettyText}
+    onTogglePick={() => togglePick(it)}
+    onSetPrice={(v) => setLineMeta(key, { price: v })}
+    onSetSupplier={(v) => setLineMeta(key, { supplier: v })}
+    onSetNote={(v) => setLineMeta(key, { note: v })}
+
+    supplierSuggestions={sugg}
+    onPickSupplier={(name) => {
+  // 1) ставим supplier
+  // 2) если нашли карточку поставщика — дописываем реквизиты в note (как раньше)
+  const match = (suppliers || []).find(s => normName(s.name) === normName(name)) || null;
+
+  let newNote = String(m.note ?? '').trim();
+
+  if (match) {
+    const parts: string[] = [];
+    if (match.inn)          parts.push(`ИНН: ${match.inn}`);
+    if (match.bank_account) parts.push(`Счёт: ${match.bank_account}`);
+    if (match.phone)        parts.push(`Тел.: ${match.phone}`);
+    if (match.email)        parts.push(`Email: ${match.email}`);
+
+    if (parts.length) {
+      const line = parts.join(' · ');
+      // чтобы не дублировать реквизиты по 10 раз:
+      const cleaned = newNote
+        .split('\n')
+        .filter(ln => !ln.includes('ИНН:') && !ln.includes('Счёт:') && !ln.includes('Тел.:') && !ln.includes('Email:'))
+        .join('\n')
+        .trim();
+
+      newNote = cleaned ? `${cleaned}\n${line}` : line;
     }
-    const s = suppliers.find(x => x.name?.trim().toLowerCase() === name) || null;
-    setTmpInn(s?.inn || '');
-    setTmpAccount(s?.bank_account || '');
-    setTmpPhone(s?.phone || '');
-    setTmpEmail(s?.email || '');
-  }, [tmpSupplier, suppliers]);
+  }
+
+  setLineMeta(key, { supplier: name, note: newNote });
+}}
+
+  />
+);
+}, [picked, meta, lineTotal, prettyLabel, togglePick, setLineMeta, getSupplierSuggestions]);
+
+
+const renderGroupBlock = useCallback((g: Group, index: number) => {
+  const gsum = requestSum(g);
+  const isOpen = expandedReqId === g.request_id;
+
+  const headerTitle = prettyLabel(g.request_id, g.request_id_old ?? null);
+  const headerMeta = `${g.items.length} позиций${gsum ? ` · итого ${gsum.toLocaleString()} сом` : ''}`;
+
+  return (
+    <BuyerGroupBlock
+      g={g}
+      index={index}
+      isOpen={isOpen}
+      gsum={gsum}
+      headerTitle={headerTitle}
+      headerMeta={headerMeta}
+      onToggle={() => toggleReq(g.request_id, index)}
+      renderItemRow={renderItemRow}
+      isWeb={isWeb}
+      supplierGroups={supplierGroups}
+      attachments={attachments}
+      onPickAttachment={(key, att) => setAttachments(prev => ({ ...prev, [key]: att }))}
+    />
+  );
+}, [expandedReqId, prettyLabel, requestSum, toggleReq, renderItemRow, supplierGroups, attachments, setAttachments]);
+
+  
+
 
   /* ==================== Снимок полей в proposal_items ==================== */
   const snapshotProposalItems = useCallback(async (proposalId: number | string, ids: string[]) => {
@@ -1701,421 +2068,289 @@ try {
     }
   }, [rwPid, rwInvNumber, rwInvDate, rwInvAmount, rwInvCurrency, rwInvFile, rwInvUploadedName, fetchBuckets]);
 
-  /* ==================== UI строки/группы/карточки ==================== */
-  const ItemRow = React.memo(({ it }: { it: BuyerInboxRow }) => {
-    const key = it.request_item_id ?? '';
-    const selected = !!picked[key];
-    const m = (key && meta[key]) || {};
-    const sum = lineTotal(it);
-    const ridOld = (it as any).request_id_old as number | null | undefined;
+  
+ /* ==================== RENDER ==================== */
+const pendingCount  = pending.length;
+const approvedCount = approved.length;
+const rejectedCount = rejected.length;
 
-    const tagChip = (label: string) => (
-      <View style={{ backgroundColor: COLORS.chipGrayBg, borderRadius: 999, paddingVertical: 3, paddingHorizontal: 8 }}>
-        <Text style={{ color: COLORS.chipGrayText, fontWeight: '600', fontSize: 12 }}>{label}</Text>
-      </View>
-    );
+// ✅ 1) единый JSX для web + native
+const ScreenBody = (
+  <View style={[s.screen, { backgroundColor: COLORS.bg }]}>
 
-    return (
-      <View style={[s.card, { backgroundColor: '#fff' }, selected && s.cardPicked]}>
-        <Pressable onPress={() => togglePick(it)}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-            <Text style={[s.cardTitle, { color: COLORS.text }]}>{it.name_human}</Text>
-            {it.app_code ? tagChip(it.app_code) : null}
-          </View>
+    {/* ✅ Collapsing Header (Buyer) */}
+<Animated.View
+  pointerEvents="box-none"
+  style={[
+    s.collapsingHeader,
+    {
+      height: headerHeight,
+      paddingTop: SAFE_TOP,
+    },
+  ]}
+>
+  {/* ✅ Title row (всегда виден, уменьшается) */}
+  <Animated.View style={{ paddingHorizontal: 12, paddingTop: 10 }}>
+    <Animated.Text
+      style={[s.collapsingTitle, { fontSize: titleSize }]}
+      numberOfLines={1}
+    >
+      Снабженец
+    </Animated.Text>
+  </Animated.View>
 
-          <Text style={[s.cardMeta, { color: COLORS.sub }]}>
-            {`${prettyLabel(String(it.request_id), ridOld)} · ${it.qty} ${it.uom || ''}`}
+  {/* ✅ Tabs row (всегда видимая) */}
+  <View
+    onLayout={(e) => {
+      const h = e?.nativeEvent?.layout?.height ?? 0;
+      if (h > 0) setTabsH(h);
+    }}
+    style={{ paddingHorizontal: 12, paddingBottom: 6, paddingTop: 6 }}
+  >
+    {Platform.OS === 'web' ? (
+      <View style={s.tabsWrapWeb}>
+        {/* === ТВОИ WEB-ТАБЫ 1:1 (как было) === */}
+        <Pressable
+          onPress={() => { setTab('inbox'); setExpandedReqId(null); setExpandedReqIndex(null); }}
+          style={[s.tabPill, tab === 'inbox' && s.tabPillActive]}
+        >
+          <Text style={[s.tabPillText, tab === 'inbox' && s.tabPillTextActive]}>Вход</Text>
+        </Pressable>
+
+        <Pressable
+          onPress={() => { setTab('pending'); setExpandedReqId(null); setExpandedReqIndex(null); }}
+          style={[s.tabPill, tab === 'pending' && s.tabPillActive]}
+        >
+          <Text style={[s.tabPillText, tab === 'pending' && s.tabPillTextActive]}>
+            Контроль ({pending.length})
           </Text>
+        </Pressable>
 
-          <View style={{ height: 6 }} />
-          <View style={{ gap: 2 }}>
-            <Text style={{ color: COLORS.sub }}>
-              Цена: <Text style={{ color: COLORS.text, fontWeight: '700' }}>{m.price || '—'}</Text>{' '}
-              • Поставщик: <Text style={{ color: COLORS.text, fontWeight: '700' }}>{m.supplier || '—'}</Text>{' '}
-              • Прим.: <Text style={{ color: COLORS.text, fontWeight: '700' }}>{m.note || '—'}</Text>
-            </Text>
-            <Text style={{ color: COLORS.sub }}>
-              Сумма по позиции: <Text style={{ color: COLORS.text, fontWeight: '700' }}>{sum ? sum.toLocaleString() : '0'}</Text> сом
-            </Text>
-          </View>
-          <View style={{ flexDirection: 'row', gap: 8, marginTop: 10 }}>
-            <Pressable onPress={() => openEdit(it)} style={[s.smallBtn, { borderColor: COLORS.primary }]}>
-              <Text style={[s.smallBtnText, { color: COLORS.primary }]}>Править</Text>
-            </Pressable>
-            <View style={{ marginLeft: 'auto' }}>
-              {selected
-                ? <Chip label="Выбрано" bg="#E0F2FE" fg="#075985" />
-                : <Chip label="Нажми, чтобы выбрать" bg="#F1F5F9" fg="#334155" />}
-            </View>
-          </View>
+        <Pressable
+          onPress={() => { setTab('approved'); setExpandedReqId(null); setExpandedReqIndex(null); }}
+          style={[s.tabPill, tab === 'approved' && s.tabPillActive]}
+        >
+          <Text style={[s.tabPillText, tab === 'approved' && s.tabPillTextActive]}>
+            Готово ({approved.length})
+          </Text>
+        </Pressable>
+
+        <Pressable
+          onPress={() => { setTab('rejected'); setExpandedReqId(null); setExpandedReqIndex(null); }}
+          style={[s.tabPill, tab === 'rejected' && s.tabPillActive]}
+        >
+          <Text style={[s.tabPillText, tab === 'rejected' && s.tabPillTextActive]}>
+            {`Правки (${rejected.length})`}
+          </Text>
         </Pressable>
       </View>
-    );
-  });
+    ) : (
+      <ScrollView
+        ref={tabsScrollRef as any}
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={s.tabsRow}
+        keyboardShouldPersistTaps="handled"
+      >
+        {/* === ТВОИ MOBILE-ТАБЫ 1:1 (как было) === */}
+        <Pressable
+          onPress={() => { setTab('inbox'); setExpandedReqId(null); setExpandedReqIndex(null); }}
+          style={[s.tabPill, tab === 'inbox' && s.tabPillActive]}
+        >
+          <Text style={[s.tabPillText, tab === 'inbox' && s.tabPillTextActive]}>Вход</Text>
+        </Pressable>
 
-  const GroupBlock = React.memo(({ g, index }: { g: Group; index: number }) => {
-  const gsum = requestSum(g);
-  const isOpen = expandedReqId === g.request_id;
+        <Pressable
+          onPress={() => { setTab('pending'); setExpandedReqId(null); setExpandedReqIndex(null); }}
+          style={[s.tabPill, tab === 'pending' && s.tabPillActive]}
+        >
+          <View style={s.tabLabelRow}>
+            <Text style={[s.tabPillText, tab === 'pending' && s.tabPillTextActive]}>Контроль</Text>
+            <TabCount n={pending.length} active={tab === 'pending'} />
+          </View>
+        </Pressable>
 
-  // ✅ когда раскрыли — скроллим к заголовку заявки
-  useEffect(() => {
-    if (!isOpen) return;
-    if (expandedReqIndex == null) return;
+        <Pressable
+          onPress={() => { setTab('approved'); setExpandedReqId(null); setExpandedReqIndex(null); }}
+          style={[s.tabPill, tab === 'approved' && s.tabPillActive]}
+        >
+          <View style={s.tabLabelRow}>
+            <Text style={[s.tabPillText, tab === 'approved' && s.tabPillTextActive]}>Готово</Text>
+            <TabCount n={approved.length} active={tab === 'approved'} />
+          </View>
+        </Pressable>
 
-    requestAnimationFrame(() => {
-      try {
-        listRef.current?.scrollToIndex?.({
-          index: expandedReqIndex,
-          animated: true,
-          viewPosition: 0,
-        });
-      } catch {}
-    });
-  }, [isOpen, expandedReqIndex]);
-
-  return (
-    <View style={s.group}>
-      {/* HEADER (нажатие раскрывает) */}
-      <Pressable
-  onPress={() => toggleReq(g.request_id, index)}
-  style={s.groupHeader}
->
-  <View style={{ flex: 1, minWidth: 0 }}>
-    <Text style={s.groupTitle} numberOfLines={1}>
-      {prettyLabel(g.request_id, g.request_id_old ?? null)}
-    </Text>
-
-    <Text style={s.groupMeta} numberOfLines={1}>
-      {g.items.length} позиций
-      {gsum ? ` · итого ${gsum.toLocaleString()} сом` : ''}
-    </Text>
+        <Pressable
+          onPress={() => { setTab('rejected'); setExpandedReqId(null); setExpandedReqIndex(null); }}
+          style={[s.tabPill, tab === 'rejected' && s.tabPillActive]}
+        >
+          <View style={s.tabLabelRow}>
+            <Text style={[s.tabPillText, tab === 'rejected' && s.tabPillTextActive]}>Правки</Text>
+            <TabCount n={rejected.length} active={tab === 'rejected'} />
+          </View>
+        </Pressable>
+      </ScrollView>
+    )}
   </View>
 
-  <Pressable
-    onPress={() => toggleReq(g.request_id, index)}
-    style={s.openBtn}
+    {/* ✅ Mini row */}
+  <Animated.View
+    style={{
+      height: MINI_ROW,
+      paddingHorizontal: 12,
+      justifyContent: 'center',
+      opacity: miniOpacity,
+      transform: [{ translateY: miniTranslateY }],
+    }}
   >
-    <Text style={s.openBtnText}>
-      {isOpen ? 'Свернуть' : 'Открыть'}
+    <Text style={{ color: COLORS.sub, fontWeight: '800', fontSize: 12 }}>
+      {tab === 'inbox'
+        ? `Выбрано: ${pickedIds.length} · Сумма: ${pickedTotal.toLocaleString()} сом`
+        : tab === 'pending'
+        ? `У директора: ${pendingCount}`
+        : tab === 'approved'
+        ? `Готово: ${approvedCount}`
+        : `Правки: ${rejectedCount}`}
     </Text>
-  </Pressable>
-</Pressable>
+  </Animated.View>
 
-
-      {/* BODY */}
-      {isOpen ? (
-        <>
-          {/* пометка отклонения */}
-          {g.items.some(it => (it as any).director_reject_note) && (
-            <View style={{ paddingHorizontal: 12, paddingBottom: 8 }}>
-              <View style={{ backgroundColor: '#FEE2E2', borderRadius: 10, padding: 8 }}>
-                <Text style={{ color: '#991B1B', fontWeight: '800', fontSize: 13 }}>
-                  Отклонено директором
-                </Text>
-              </View>
-            </View>
-          )}
-
-          {/* ✅ ВНУТРЕННИЙ маленький скролл только для позиций */}
-          <View style={s.itemsPanel}>
-  <View style={s.itemsBox}>
-    <FlatList
-      data={g.items}
-      keyExtractor={(x, idx2) => x?.request_item_id ? `ri:${x.request_item_id}` : `f:${g.request_id}:${idx2}`}
-      renderItem={({ item }) => <ItemRow it={item} />}
-      keyboardShouldPersistTaps="handled"
-      nestedScrollEnabled
-      removeClippedSubviews={Platform.OS === 'web' ? false : true}
+  {/* ✅ ФИО (Sub row) */}
+  <Animated.View
+    onLayout={(e) => {
+      const h = e?.nativeEvent?.layout?.height ?? 0;
+      if (h > 0) setSubH(h);
+    }}
+    style={{
+      height: fioHeight,
+      opacity: fioOpacity,
+      overflow: 'hidden',
+      paddingHorizontal: 12,
+      paddingBottom: 6,
+    }}
+  >
+    <Text style={s.fioLabel}>ФИО</Text>
+    <TextInput
+      value={buyerFio}
+      onChangeText={setBuyerFio}
+      placeholder="введите ФИО"
+      style={s.fioInput}
     />
+  </Animated.View>
+</Animated.View>
+
+
+    {/* ✅ СПИСОК */}
+<Animated.View style={{ flex: 1 }}>
+  <AnimatedFlatList
+  ref={listRef as any}
+
+  // ✅ iOS/web — inset работает
+  {...(!isAndroid ? {
+    contentInset: { top: HEADER_MAX },
+    contentOffset: { y: -HEADER_MAX, x: 0 },
+  } : {})}
+
+  // ✅ Android — inset НЕ используем, вместо него спейсер
+  ListHeaderComponent={isAndroid ? <View style={{ height: HEADER_MAX }} /> : null}
+
+  onScroll={Animated.event(
+    [{ nativeEvent: { contentOffset: { y: scrollYRaw } } }],
+    { useNativeDriver: false }
+  )}
+  scrollEventThrottle={16}
+
+    data={
+      tab === 'inbox' ? groups :
+      tab === 'pending' ? pending :
+      tab === 'approved' ? approved :
+      rejected
+    }
+    keyExtractor={(item) =>
+      tab === 'inbox'
+        ? `g:${(item as Group).request_id}`
+        : `p:${String((item as any).id)}`
+    }
+    renderItem={({ item, index }) => (
+  <View style={{ marginBottom: 12 }}>
+    {tab === 'inbox'
+      ? renderGroupBlock(item as Group, index)
+      : (
+        <BuyerProposalCard
+          head={item}
+          onOpenPdf={(pid) => openPdfNewWindow(pid)}
+          onOpenAccounting={(pid) => openAccountingModal(pid)}
+          onOpenRework={(pid) => openRework(pid)}
+        />
+      )
+    }
   </View>
-</View>
+)}
 
-          {isWeb && (
-            <View style={{ marginTop: 8, paddingHorizontal: 12, paddingBottom: 12 }}>
-              <Text style={{ fontWeight: '600', marginBottom: 4, color: COLORS.text }}>
-                Вложения (по группе поставщика):
-              </Text>
-              <ScrollView horizontal contentContainerStyle={{ gap: 8 }}>
-                {supplierGroups.map((key) => (
-                  <AttachmentUploaderWeb
-                    key={key}
-                    label={key}
-                    onPick={(att) => setAttachments(prev => ({ ...prev, [key]: att }))}
-                    current={attachments[key]}
-                  />
-                ))}
-              </ScrollView>
-            </View>
-          )}
-        </>
-      ) : null}
-    </View>
-  );
-});
+    
+    removeClippedSubviews={false}
+    refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+    ListEmptyComponent={
+      loadingInbox || loadingBuckets
+        ? <SafeView style={{ padding: 24, alignItems: 'center' }}><ActivityIndicator /></SafeView>
+        : <SafeView style={{ padding: 24 }}><Text style={{ color: COLORS.sub }}>Пока пусто</Text></SafeView>
+    }
+    contentContainerStyle={{
+  paddingHorizontal: 12,
+  paddingBottom: tab === 'inbox' ? 120 : 24,
+}}
 
+    keyboardShouldPersistTaps="handled"
+    keyboardDismissMode="on-drag"
+    onScrollBeginDrag={() => { Keyboard.dismiss(); }}
+    onScrollToIndexFailed={(info) => {
+      setTimeout(() => {
+        try {
+          listRef.current?.scrollToOffset?.({
+            offset: info.averageItemLength * info.index,
+            animated: true,
+          });
+        } catch {}
+      }, 50);
+    }}
+  />
+</Animated.View>
 
-  const ProposalCard = React.memo(({ head }: { head: any }) => {
-    const pidStr = String(head.id);
-    const sc = statusColors(head.status);
-
-   // ❌ убрали тяжёлый useProposalPretty — он вызывал мигание (много сетевых запросов на каждую карточку)
-const pretty = '';
-const total = null;
-const busy = false;
-
-const headerText = `Предложение #${pidStr.slice(0, 8)}`;
-
-
-    const SumBadge = (props: { value?: number | null }) => {
-      if (props.value == null || !Number.isFinite(props.value)) return null;
-      const v = Math.round(props.value!);
-      return (
-        <View style={{ backgroundColor: '#DBEAFE', borderRadius: 999, paddingVertical: 4, paddingHorizontal: 10 }}>
-          <Text style={{ color: '#1E3A8A', fontWeight: '700', fontSize: 12 }}>
-            Сумма: {v.toLocaleString()} сом
-          </Text>
-        </View>
-      );
-    };
-
-    return (
-      <View style={[s.card, { borderStyle: 'solid', backgroundColor: '#fff' }]}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-          <Text style={[s.cardTitle, { color: COLORS.text }]}>{headerText}</Text>
-          <Chip label={head.status} bg={sc.bg} fg={sc.fg} />
-          <SumBadge value={Number(head.total_sum ?? 0)} />
-          <Text style={[s.cardMeta, { color: COLORS.sub }]}>
-            {head.submitted_at ? new Date(head.submitted_at).toLocaleString() : '—'}
-          </Text>
-
+    {/* ✅ НИЖНЯЯ ПАНЕЛЬ (только inbox) */}
+    {tab === 'inbox' ? (
+      <View style={s.bottomBar}>
+        <View style={s.bottomRow}>
           <Pressable
-            onPress={async () => { await openPdfNewWindow(pidStr); }}
-            style={[s.openBtn, { marginLeft: 'auto', minWidth: 86 }]}
-
+            disabled={creating}
+            onPress={handleCreateProposalsBySupplier}
+            style={[s.sendFab, creating && { opacity: 0.5 }]}
+            hitSlop={12}
           >
-            <Text style={s.openBtnText}>{busy ? '...' : 'PDF'}</Text>
+            <Ionicons name="send" size={22} color="#fff" />
           </Pressable>
 
-          {head.status === 'Утверждено' && (
-            <Pressable
-              onPress={() => openAccountingModal(pidStr)}
-              style={[s.smallBtn, { marginLeft: 8, backgroundColor: '#2563eb', borderColor: '#2563eb' }]}
-            >
-              <Text style={[s.smallBtnText, { color: '#fff' }]}>В бухгалтерию</Text>
-            </Pressable>
-          )}
+          <Pressable
+            disabled={creating || pickedIds.length === 0}
+            onPress={() => setRfqOpen(true)}
+            style={[
+              s.tradeBtnBright,
+              (creating || pickedIds.length === 0) && { opacity: 0.45 },
+            ]}
+          >
+            <Ionicons name="pricetag-outline" size={18} color="#0F172A" />
+            <Text style={s.tradeBtnBrightText}>ТОРГИ</Text>
+          </Pressable>
 
-          {String(head.status).startsWith('На доработке') && (
-            <Pressable
-              onPress={() => openRework(pidStr)}
-              style={[s.smallBtn, { marginLeft: 8, backgroundColor: '#f97316', borderColor: '#f97316' }]}
-            >
-              <Text style={[s.smallBtnText, { color: '#fff' }]}>Доработать</Text>
-            </Pressable>
-          )}
+          <Pressable
+            onPress={clearPick}
+            disabled={pickedIds.length === 0}
+            style={[s.clearXDirector, pickedIds.length === 0 && { opacity: 0.4 }]}
+            hitSlop={10}
+          >
+            <Text style={s.clearXDirectorText}>✕</Text>
+          </Pressable>
         </View>
       </View>
-    );
-  });
-
-  /* ==================== RENDER ==================== */
-  const pendingCount  = pending.length;
-  const approvedCount = approved.length;
-  const rejectedCount = rejected.length;
-
- return (
-  <View style={[s.screen, { backgroundColor: COLORS.bg }]}>
-    <Animated.FlatList
-      ref={listRef as any}
-      style={s.listBox}
-      data={
-        tab === 'inbox' ? groups :
-        tab === 'pending' ? pending :
-        tab === 'approved' ? approved :
-        rejected
-      }
-      keyExtractor={(item) =>
-        tab === 'inbox'
-          ? `g:${(item as Group).request_id}`
-          : `p:${String((item as any).id)}`
-      }
-      renderItem={({ item, index }) => (
-        <View style={{ marginBottom: 12 }}>
-          {tab === 'inbox'
-            ? <GroupBlock g={item as Group} index={index} />
-            : <ProposalCard head={item} />}
-        </View>
-      )}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-      ListHeaderComponent={
-        tab === 'inbox' ? (
-          <View style={s.toolbar}>
-            <Pressable
-              disabled={creating}
-              onPress={handleCreateProposalsBySupplier}
-              style={[s.actionBtn, creating && s.actionBtnDisabled]}
-            >
-              <Text style={s.actionBtnText}>Сформировать заявку</Text>
-            </Pressable>
-
-            <Pressable
-              disabled={creating || pickedIds.length === 0}
-              onPress={() => setRfqOpen(true)}
-              style={[
-                s.actionBtn,
-                creating && s.actionBtnDisabled,
-                pickedIds.length === 0 && { opacity: 0.4 },
-                { backgroundColor: COLORS.blue, borderColor: COLORS.blue },
-              ]}
-            >
-              <Text style={s.actionBtnText}>Создать торги (RFQ)</Text>
-            </Pressable>
-
-            <Pressable onPress={clearPick} style={s.actionBtnGhost}>
-              <Text style={s.actionBtnGhostText}>Сбросить выбор</Text>
-            </Pressable>
-          </View>
-        ) : null
-      }
-      ListEmptyComponent={
-        loadingInbox || loadingBuckets
-          ? <SafeView style={{ padding: 24, alignItems: 'center' }}><ActivityIndicator /></SafeView>
-          : <SafeView style={{ padding: 24 }}><Text style={{ color: COLORS.sub }}>Пока пусто</Text></SafeView>
-      }
-      contentContainerStyle={{
-        paddingTop: HEADER_MAX,
-        paddingHorizontal: 12,
-        paddingBottom: 24,
-      }}
-      keyboardShouldPersistTaps="handled"
-      nestedScrollEnabled
-      onScrollToIndexFailed={(info) => {
-        setTimeout(() => {
-          try {
-            listRef.current?.scrollToOffset?.({
-              offset: info.averageItemLength * info.index,
-              animated: true,
-            });
-          } catch {}
-        }, 50);
-      }}
-      onScroll={Animated.event(
-        [{ nativeEvent: { contentOffset: { y: scrollYRaw } } }],
-        { useNativeDriver: false }
-      )}
-      scrollEventThrottle={16}
-      bounces={Platform.OS === 'android' ? false : true}
-      overScrollMode={Platform.OS === 'android' ? 'never' : 'auto'}
-    />
-
-    <Animated.View pointerEvents="box-none" style={[s.header, { height: headerHeight, paddingTop: SAFE_TOP }]}>
-      <SummaryBar
-        ref={summaryRef as any}
-        initialFio={buyerFio}
-        onCommitFio={setBuyerFio}
-        tab={tab}
-        setTab={(t) => {
-          setTab(t);
-          setExpandedReqId(null);
-          setExpandedReqIndex(null);
-        }}
-        pendingCount={pending.length}
-        approvedCount={approved.length}
-        rejectedCount={rejected.length}
-        pickedCount={pickedIds.length}
-        pickedSum={pickedTotal}
-        onRefresh={onRefresh}
-        fioHeight={fioHeight}
-        fioOpacity={fioOpacity}
-      />
-    </Animated.View>
-
-      {/* ======= Модалка правки строки ======= */}
-      <Modal visible={!!editFor} transparent animationType="fade" onRequestClose={() => setEditFor(null)}>
-        <View style={s.modalBackdrop}>
-          <View style={s.modalCard}>
-            <Text style={s.modalTitle}>Правка позиции</Text>
-            <Text style={s.modalHelp}>{editFor?.name_human}</Text>
-
-            <Text style={{ fontSize: 12, color: COLORS.sub, marginTop: 4 }}>Цена</Text>
-            <TextInput
-              placeholder="Цена"
-              value={tmpPrice}
-              onChangeText={setTmpPrice}
-              keyboardType="decimal-pad"
-              style={s.input}
-            />
-
-            <Text style={{ fontSize: 12, color: COLORS.sub, marginTop: 6 }}>Поставщик</Text>
-            <TextInput
-              placeholder="Поставщик"
-              value={tmpSupplier}
-              onChangeText={setTmpSupplier}
-              style={s.input}
-            />
-
-            {supSugOpen && (
-              <View style={s.suggestBox}>
-                <ScrollView
-                  keyboardShouldPersistTaps="always"
-                  contentContainerStyle={{ paddingVertical: 4 }}
-                  style={{ maxHeight: 180 }}
-                >
-                  {supSug.map((it, idx) => (
-                    <Pressable
-                      key={`${it.id}-${idx}`}
-                      onPress={() => {
-                        setTmpSupplier(it.name);
-                        setTmpInn(it.inn || '');
-                        setTmpAccount(it.bank_account || '');
-                        setTmpPhone(it.phone || '');
-                        setTmpEmail(it.email || '');
-                        setSupSugOpen(false);
-                      }}
-                      style={s.suggestItem}
-                    >
-                      <Text style={{ fontWeight: '700', color: COLORS.text }}>{it.name}</Text>
-                      <Text style={{ color: COLORS.sub, fontSize: 12 }}>
-                        {(it.inn ? `ИНН: ${it.inn} · ` : '')}
-                        {(it.bank_account ? `Счёт: ${it.bank_account} · ` : '')}
-                        {it.phone || it.email || it.specialization || ''}
-                      </Text>
-                    </Pressable>
-                  ))}
-                </ScrollView>
-              </View>
-            )}
-
-            {tmpSupplier.trim() !== '' && (
-              <View style={{ marginTop: 6 }}>
-                <Text style={{ fontSize: 12, color: COLORS.sub }}>ИНН</Text>
-                <TextInput placeholder="ИНН" value={tmpInn} editable={false} style={[s.input, { backgroundColor: '#F9FAFB' }]} />
-
-                <Text style={{ fontSize: 12, color: COLORS.sub, marginTop: 6 }}>Счёт</Text>
-                <TextInput placeholder="Расчётный счёт" value={tmpAccount} editable={false} style={[s.input, { backgroundColor: '#F9FAFB' }]} />
-
-                <Text style={{ fontSize: 12, color: COLORS.sub, marginTop: 6 }}>Телефон</Text>
-                <TextInput placeholder="Телефон" value={tmpPhone} editable={false} style={[s.input, { backgroundColor: '#F9FAFB' }]} />
-
-                <Text style={{ fontSize: 12, color: COLORS.sub, marginTop: 6 }}>Email</Text>
-                <TextInput placeholder="Email" value={tmpEmail} editable={false} style={[s.input, { backgroundColor: '#F9FAFB' }]} />
-              </View>
-            )}
-
-            <Text style={{ fontSize: 12, color: COLORS.sub, marginTop: 6 }}>Примечание</Text>
-            <TextInput placeholder="Примечание" value={tmpNote} onChangeText={setTmpNote} style={s.input} />
-
-            <View style={{ flexDirection: 'row', gap: 8, marginTop: 8 }}>
-              <Pressable onPress={saveEdit} style={[s.smallBtn, { backgroundColor: COLORS.blue, borderColor: COLORS.blue }]}>
-                <Text style={[s.smallBtnText, { color: '#fff' }]}>Сохранить</Text>
-              </Pressable>
-              <Pressable onPress={() => setEditFor(null)} style={[s.smallBtn, { borderColor: COLORS.border }]}>
-                <Text style={[s.smallBtnText, { color: COLORS.text }]}>Отмена</Text>
-              </Pressable>
-            </View>
-          </View>
-        </View>
-      </Modal>
+    ) : null}
       {/* ======= Модалка «В бухгалтерию» ======= */}
       <Modal visible={acctOpen} transparent animationType="fade" onRequestClose={() => setAcctOpen(false)}>
         <View style={s.modalBackdrop}>
@@ -2472,130 +2707,236 @@ Alert.alert(
 </Modal>
     </View>
   );
-}
+return ScreenBody;
 
+}
 
 /* ==================== Стили ==================== */
 const s = StyleSheet.create({
   screen: { flex: 1 },
-  header: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderColor: COLORS.border,
-    zIndex: 10,
-  },
-  summaryWrap: {
-    paddingHorizontal: 12,
-    gap: 0,
-    backgroundColor: '#fff',
-    flexDirection: 'column',
-  },
-  summaryTitle: { fontSize: 24, fontWeight: '900', color: COLORS.text },
-   summaryMeta: { fontSize: 12, color: COLORS.sub },
-  summaryTopRow: {
-    minHeight: TITLE_ROW,
-    justifyContent: 'center',
-  },
-  summaryFioRow: {
-    justifyContent: 'center',
-    overflow: 'hidden',
-  },
-  summaryTabsRow: {
-    minHeight: FALLBACK_TABS_ROW,
-    flexDirection: 'row',
-    gap: 8,
-    flexWrap: 'wrap',
-    alignItems: 'center',
-  },
-  summaryMiniRow: {
-    minHeight: MINI_ROW,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    flexWrap: 'wrap',
+
+  collapsingHeader: {
+  position: 'absolute',
+  top: 0,
+  left: 0,
+  right: 0,
+  zIndex: 50,
+
+  backgroundColor: '#fff',
+  borderBottomWidth: 1,
+  borderColor: COLORS.border,
+  paddingBottom: 10,
+
+  overflow: 'hidden', // ✅ ключ: теперь sub реально “схлопывается” без height
+
+  shadowColor: '#000',
+  shadowOffset: { width: 0, height: 6 },
+  shadowOpacity: 0.12,
+  shadowRadius: 14,
+  elevation: 8,
+},
+
+
+  collapsingTitle: {
+    fontWeight: '900',
+    color: COLORS.text,
   },
 
+  // ✅ tabs (mobile = horizontal)
+ tabsRow: {
+  flexDirection: 'row',
+  gap: 8,
+  alignItems: 'center',
+  paddingRight: 16, // ✅ больше запас справа, чтобы последняя вкладка была доступна
+  paddingVertical: 6,
+},
+
+  // ✅ tabs (web = wrap)
+  tabsWrapWeb: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    alignItems: 'center',
+    marginTop: 2,
+  },
+
+  tabPill: {
+  paddingVertical: 6,
+  paddingHorizontal: 8,
+  borderRadius: 999,
+  borderWidth: 1,
+  borderColor: COLORS.border,
+  backgroundColor: '#fff',
+  alignItems: 'center',
+  justifyContent: 'center',
+  flexShrink: 0,
+},
+
+tabPillText: {
+  color: COLORS.text,
+  fontWeight: '800',
+  fontSize: 11,
+  lineHeight: 13,
+  flexShrink: 0,
+},
+
+  tabPillActive: {
+    backgroundColor: COLORS.primary,
+    borderColor: COLORS.primary,
+  },
+  
+  tabPillTextActive: {
+    color: '#fff',
+  },
+
+  // ✅ meta under title
+  summaryMeta: {
+    fontSize: 12,
+    color: COLORS.sub,
+  },
+
+  // ✅ inputs
   input: {
     borderWidth: 1,
     borderColor: COLORS.border,
     borderRadius: 8,
     paddingHorizontal: 10,
-    paddingVertical: 6, // компактнее для подписей
+    paddingVertical: 6,
     backgroundColor: '#fff',
     minWidth: 220,
   },
 
-  toolbar: { padding: 12, gap: 8, flexDirection: 'row', flexWrap: 'wrap' },
-  actionBtn: {
+  // ===== bottom bar =====
+  bottomBar: {
+  position: 'absolute',
+  left: 0,
+  right: 0,
+  bottom: 0,
+  padding: 10,
+  backgroundColor: '#fff',
+  borderTopWidth: 1,
+  borderTopColor: COLORS.border,
+  shadowColor: '#000',
+  shadowOffset: { width: 0, height: -6 },
+  shadowOpacity: 0.08,
+  shadowRadius: 12,
+  elevation: 12,
+},
+
+ bottomRow: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  gap: 10,
+},
+
+
+  bottomBtnHalf: {
+    flex: 1,
     backgroundColor: COLORS.primary,
     borderColor: COLORS.primary,
     borderWidth: 1,
-    borderRadius: 10,
-    paddingHorizontal: 12,
+    borderRadius: 12,
     paddingVertical: 10,
-  },
-  actionBtnDisabled: { opacity: 0.5 },
-  actionBtnText: { color: '#fff', fontWeight: '700' },
-  actionBtnGhost: {
-    borderColor: COLORS.border,
-    borderWidth: 1,
-    borderRadius: 10,
     paddingHorizontal: 12,
-    paddingVertical: 10,
-    backgroundColor: '#fff',
+    alignItems: 'center',
   },
-  actionBtnGhostText: { color: COLORS.text, fontWeight: '700' },
 
+  bottomBtnText: {
+    color: '#fff',
+    fontWeight: '800',
+    fontSize: 15,
+  },
+
+  bottomLink: { alignSelf: 'center', paddingVertical: 6 },
+
+  bottomLinkText: {
+    color: COLORS.sub,
+    fontWeight: '800',
+    fontSize: 14,
+  },
+
+  // ===== group / cards =====
   group: {
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    borderRadius: 14,
-    backgroundColor: '#fff',
-  },
-
-  groupHeader: {
-  flexDirection: 'row',
-  alignItems: 'flex-start',
-  gap: 8,
-  paddingVertical: 10,
-  paddingHorizontal: 12,
-  borderBottomWidth: 1,
-  borderColor: COLORS.border,
-},
-
-  groupTitle: { fontSize: 16, fontWeight: '800' },
-  groupMeta: { fontSize: 12, color: COLORS.sub },
-
-  card: { padding: 12, borderTopWidth: 1, borderColor: COLORS.border },
-  cardPicked: { backgroundColor: '#F8FAFF' },
-  cardTitle: { fontSize: 15, fontWeight: '800' },
-  cardMeta: { fontSize: 12 },
-listBox: {
-  borderTopWidth: 1,
-  borderTopColor: COLORS.border,
-  backgroundColor: '#fff',      // ✅ вот это ключ
-  minHeight: 520,
-},
-
-itemsBox: {
-  paddingHorizontal: 10,
-  paddingVertical: 10,
-  maxHeight: Platform.OS === 'web' ? undefined : 420,
-},
-itemsPanel: {
-  marginTop: 10,
-  marginHorizontal: 12,
-  marginBottom: 12,
-  borderRadius: 14,
   borderWidth: 1,
   borderColor: COLORS.border,
-  backgroundColor: '#F1F5F9', // чуть темнее белого — “внутри карточки”
+  borderRadius: 14,
+  backgroundColor: '#fff',
+  marginBottom: 12,
+  overflow: 'hidden',            // ✅ чтобы внутренности не “вылезали”
 },
 
+
+  groupHeader: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderBottomWidth: 1,
+    borderColor: COLORS.border,
+  },
+
+  groupTitle: { fontSize: 16, fontWeight: '800', color: COLORS.text },
+
+  groupMeta: { fontSize: 12, color: COLORS.sub },
+
+  card: {
+    padding: 12,
+    borderTopWidth: 1,
+    borderColor: COLORS.border,
+    backgroundColor: '#fff',
+  },
+
+  cardPicked: { backgroundColor: '#F8FAFF' },
+
+  cardTitle: { fontSize: 15, fontWeight: '800', color: COLORS.text },
+
+  cardMeta: { fontSize: 12, color: COLORS.sub },
+
+  // ===== inner items panel =====
+  itemsPanel: {
+    marginTop: 10,
+    marginHorizontal: 12,
+    marginBottom: 12,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    backgroundColor: '#F1F5F9',
+  },
+itemsBox: {
+  // ✅ не режем высоту — пусть внешний экран скроллится
+},
+
+innerStickyHeader: {
+  backgroundColor: '#F8FAFC',
+  borderBottomWidth: 1,
+  borderBottomColor: COLORS.border,
+  paddingVertical: 8,
+  paddingHorizontal: 10,
+},
+
+innerStickyTitle: {
+  fontSize: 13,
+  fontWeight: '900',
+  color: COLORS.text,
+},
+
+innerStickyMeta: {
+  marginTop: 2,
+  fontSize: 11,
+  fontWeight: '700',
+  color: COLORS.sub,
+},
+
+openBody: {
+  backgroundColor: '#F8FAFC',     // серый фон как подложка
+  borderTopWidth: 1,
+  borderTopColor: COLORS.border,
+  paddingTop: 10,
+  paddingBottom: 12,             // главный фикс “слияния”
+},
+
+  // ===== small buttons =====
   smallBtn: {
     borderWidth: 1,
     borderColor: COLORS.border,
@@ -2604,7 +2945,30 @@ itemsPanel: {
     paddingHorizontal: 12,
     backgroundColor: '#fff',
   },
+
   smallBtnText: { fontWeight: '700', color: COLORS.text, fontSize: 12 },
+
+  openBtn: {
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: 999,
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    alignSelf: 'flex-start',
+    minWidth: 86,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  openBtnText: {
+    color: COLORS.text,
+    fontWeight: '700',
+    fontSize: 13,
+    lineHeight: 16,
+  },
+
+  // ===== suggestions =====
   suggestBox: {
     borderWidth: 1,
     borderColor: COLORS.border,
@@ -2613,6 +2977,7 @@ itemsPanel: {
     marginTop: 6,
     overflow: 'hidden',
   },
+
   suggestItem: {
     paddingVertical: 8,
     paddingHorizontal: 10,
@@ -2620,26 +2985,54 @@ itemsPanel: {
     borderColor: COLORS.border,
     backgroundColor: '#fff',
   },
-openBtn: {
-  paddingVertical: 8,
-  paddingHorizontal: 14,
-  borderRadius: 999,
-  backgroundColor: '#FFFFFF',
+
+tradeBtnBright: {
+  flex: 1,
+  height: 52,
+  borderRadius: 14,
+  backgroundColor: '#3B82F6', // 🔵 ярко-синий
   borderWidth: 1,
-  borderColor: COLORS.border,
-  alignSelf: 'flex-start',
-
-  // ✅ “как iOS / топовые”
-  minWidth: 86,
+  borderColor: '#2563EB',
   alignItems: 'center',
+  justifyContent: 'center',
+  flexDirection: 'row',
+  gap: 8,
 },
 
-openBtnText: {
-  color: COLORS.text,
-  fontWeight: '700',
-  fontSize: 13,
+tradeBtnBrightText: {
+  color: '#0F172A', // ⚫ чёрный текст
+  fontWeight: '900',
+  fontSize: 14,
 },
 
+clearXDirector: {
+  width: 52,
+  height: 52,
+  borderRadius: 12,          // ⬅️ как у директора
+  backgroundColor: '#DC2626', // 🔴 директорский красный
+  alignItems: 'center',
+  justifyContent: 'center',
+},
+
+clearXDirectorText: {
+  color: '#fff',
+  fontSize: 22,
+  fontWeight: '900',
+  lineHeight: 22,
+},
+
+// Самолёт
+sendFab: {
+  width: 52,
+  height: 52,
+  borderRadius: 26,
+  backgroundColor: COLORS.primary,
+  alignItems: 'center',
+  justifyContent: 'center',
+  borderWidth: 1,
+  borderColor: COLORS.primary,
+},  
+// ===== modal =====
   modalBackdrop: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.4)',
@@ -2647,6 +3040,7 @@ openBtnText: {
     justifyContent: 'center',
     padding: 16,
   },
+
   modalCard: {
     width: 480,
     maxWidth: '95%',
@@ -2655,6 +3049,90 @@ openBtnText: {
     padding: 16,
     gap: 8,
   },
+
   modalTitle: { fontSize: 18, fontWeight: '800', color: COLORS.text },
+
   modalHelp: { fontSize: 12, color: COLORS.sub },
+fioRow: { marginTop: 6 },
+
+fioLabel: {
+  fontSize: 12,
+  color: COLORS.sub,
+  fontWeight: '700',
+  marginBottom: 4,
+},
+
+fioInput: {
+  borderWidth: 1,
+  borderColor: COLORS.border,
+  borderRadius: 10,
+  paddingHorizontal: 10,
+  paddingVertical: 8,
+  backgroundColor: '#fff',
+},
+fieldLabel: {
+  fontSize: 12,
+  color: COLORS.sub,
+  fontWeight: '700',
+  marginBottom: 4,
+},
+fieldInput: {
+  borderWidth: 1,
+  borderColor: COLORS.border,
+  borderRadius: 10,
+  paddingHorizontal: 10,
+  paddingVertical: 8,
+  backgroundColor: '#fff',
+},
+
+suggestBoxInline: {
+  marginTop: 6,
+  borderWidth: 1,
+  borderColor: COLORS.border,
+  backgroundColor: '#fff',
+  borderRadius: 10,
+  overflow: 'hidden',
+},
+
+bulkBox: {
+  marginHorizontal: 12,
+  marginBottom: 10,
+  padding: 10,
+  borderWidth: 1,
+  borderColor: COLORS.border,
+  borderRadius: 14,
+  backgroundColor: '#fff',
+},
+bulkTitle: {
+  fontWeight: '900',
+  color: COLORS.text,
+  marginBottom: 8,
+},
+bulkRow: {
+  flexDirection: 'row',
+  gap: 8,
+  flexWrap: 'wrap',
+},
+
+tabLabelRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+
+tabBadge: {
+  minWidth: 18,
+  height: 18,
+  paddingHorizontal: 6,
+  borderRadius: 999,
+  backgroundColor: '#E5E7EB',
+  alignItems: 'center',
+  justifyContent: 'center',
+},
+
+tabBadgeText: {
+  fontSize: 11,
+  fontWeight: '900',
+  color: '#111827',
+},
+
+tabBadgeActive: { backgroundColor: '#fff' },
+tabBadgeTextActive: { color: COLORS.primary },
+
 });
