@@ -42,6 +42,31 @@ type Row = {
   hint: string | null;
   item_name_ru: string | null;
 };
+type WowScope = {
+  work_type_code: string;
+  scope_ru?: string | null;
+  tools_ru?: string | null;
+  safety_ru?: string | null;
+};
+
+type WowOption = {
+  opt_code: string;
+  title_ru: string;
+  desc_ru: string | null;
+  section: 'works' | 'materials' | 'services';
+  rik_code: string;
+  basis_key: string;
+  coeff: number;
+  is_default: boolean;
+  sort_order: number;
+  uom_code: string | null;
+  item_name: string | null;
+};
+
+const isDemoWorkType = (code?: string | null) => {
+  const c = String(code ?? '');
+  return c.startsWith('WT-DEM-') || c === 'WT-DEMO';
+};
 
 const formatNumber = (value: number) => {
   if (!Number.isFinite(value)) return '';
@@ -56,6 +81,11 @@ const formatQtyByUom = (value: number, uom?: string | null) => {
     return String(Math.round(value));
   }
   return formatNumber(value);
+};
+const qtyIssue = (value: number) => {
+  const n = Number(value);
+  if (!Number.isFinite(n) || n <= 0) return 0;
+  return Math.ceil(n);
 };
 
 const sanitizeExpression = (raw: string) =>
@@ -105,6 +135,7 @@ export default function CalcModal({ visible, onClose, onBack, workType, onAddToR
   const [lossPct, setLossPct] = useState<string>('');
   const [lossTouched, setLossTouched] = useState(false);
   const [filmTouched, setFilmTouched] = useState(false);
+  const [manualKeys, setManualKeys] = useState<Set<string>>(new Set());
   const [rows, setRows] = useState<Row[] | null>(null);
 
   const [calculating, setCalculating] = useState(false);
@@ -126,41 +157,97 @@ export default function CalcModal({ visible, onClose, onBack, workType, onAddToR
     [fields],
   );
 
-  const applyAutoRules = useCallback(
-    (nextMeasures: Measures, nextInputs: Inputs) => {
-      if (workType?.code === 'ind_concrete' && !filmTouched) {
-        const a = (nextMeasures as any).area_m2;
-        const f = (nextMeasures as any).film_m2;
-        if (
-          typeof a === 'number' &&
-          Number.isFinite(a) &&
-          !(typeof f === 'number' && Number.isFinite(f))
-        ) {
-          (nextMeasures as any).film_m2 = a;
-          nextInputs.film_m2 = formatNumber(a);
+   const applyAutoRules = useCallback(
+  (nextMeasures: Measures, nextInputs: Inputs) => {
+    // --- ind_concrete: film_m2 auto = area_m2 ---
+    if (workType?.code === 'ind_concrete' && !filmTouched) {
+      const a = (nextMeasures as any).area_m2;
+      const f = (nextMeasures as any).film_m2;
+      if (
+        typeof a === 'number' &&
+        Number.isFinite(a) &&
+        !(typeof f === 'number' && Number.isFinite(f))
+      ) {
+        (nextMeasures as any).film_m2 = a;
+        nextInputs.film_m2 = formatNumber(a);
+      }
+    }
+
+    // --- derived: area_m2 (facade) ---
+// приоритет: length_m * height_m, иначе perimeter_m * height_m
+// + вычитаем площадь проёмов (area_wall_m2) если задана
+if (!manualKeys.has('area_m2')) {
+  const len = (nextMeasures as any).length_m;
+  const p = (nextMeasures as any).perimeter_m;
+  const h = (nextMeasures as any).height_m;
+
+  // площадь проёмов (мы её переименовали через override)
+  const openingsA = (nextMeasures as any).area_wall_m2;
+
+  const hasLH =
+    typeof len === 'number' && Number.isFinite(len) &&
+    typeof h === 'number' && Number.isFinite(h);
+
+  const hasPH =
+    typeof p === 'number' && Number.isFinite(p) &&
+    typeof h === 'number' && Number.isFinite(h);
+
+  let a: number | null = null;
+  if (hasLH) a = len * h;
+  else if (hasPH) a = p * h;
+
+  if (a != null) {
+    if (typeof openingsA === 'number' && Number.isFinite(openingsA) && openingsA > 0) {
+      a = Math.max(0, a - openingsA);
+    }
+
+    const curA = (nextMeasures as any).area_m2;
+    if (!(typeof curA === 'number' && Number.isFinite(curA))) {
+      const out = Number(a.toFixed(3));
+      (nextMeasures as any).area_m2 = out;
+      nextInputs.area_m2 = formatNumber(out);
+    }
+  }
+}
+
+
+    // --- derived: volume_m3 ---
+    // автозаполняем только если user не правил volume_m3 руками
+    if (!manualKeys.has('volume_m3')) {
+      const area = (nextMeasures as any).area_m2;
+      const thickness = (nextMeasures as any).height_m; // height_m = "толщина"
+      const perim = (nextMeasures as any).perimeter_m;
+      const width = (nextMeasures as any).length_m;
+
+      const hasAreaThickness =
+        typeof area === 'number' && Number.isFinite(area) &&
+        typeof thickness === 'number' && Number.isFinite(thickness);
+
+      const hasStripDims =
+        typeof perim === 'number' && Number.isFinite(perim) &&
+        typeof width === 'number' && Number.isFinite(width) &&
+        typeof thickness === 'number' && Number.isFinite(thickness);
+
+      let derived: number | null = null;
+      if (hasStripDims) derived = perim * width * thickness;
+      else if (hasAreaThickness) derived = area * thickness;
+
+      if (derived != null) {
+        const v = Number(derived.toFixed(3));
+        const cur = (nextMeasures as any).volume_m3;
+
+        if (!(typeof cur === 'number' && Number.isFinite(cur))) {
+          (nextMeasures as any).volume_m3 = v;
+          nextInputs.volume_m3 = formatNumber(v);
         }
       }
-    },
-    [workType?.code, filmTouched],
-  );
-
-  useEffect(() => {
-    if (!visible) {
-      setRows(null);
-      setMeasures({});
-      setInputs({});
-      setErrors({});
-      setLossPct('');
-      setLossTouched(false);
-      setFilmTouched(false);
-      setCalculating(false);
-      setAddingToRequest(false);
-      return;
     }
-  }, [visible]);
+  },
+  [workType?.code, filmTouched, manualKeys],
+);
 
-  useEffect(() => {
-    if (!visible) return;
+useEffect(() => {
+  if (!visible) {
     setRows(null);
     setMeasures({});
     setInputs({});
@@ -168,7 +255,25 @@ export default function CalcModal({ visible, onClose, onBack, workType, onAddToR
     setLossPct('');
     setLossTouched(false);
     setFilmTouched(false);
-  }, [workType?.code, visible]);
+    setManualKeys(new Set());      // ✅ вот сюда
+    setCalculating(false);
+    setAddingToRequest(false);
+    return;
+  }
+}, [visible]);
+
+ useEffect(() => {
+  if (!visible) return;
+  setRows(null);
+  setMeasures({});
+  setInputs({});
+  setErrors({});
+  setLossPct('');
+  setLossTouched(false);
+  setFilmTouched(false);
+  setManualKeys(new Set());      // ✅ и сюда тоже
+}, [workType?.code, visible]);
+
 
   useEffect(() => {
     if (!visible) return;
@@ -314,19 +419,34 @@ export default function CalcModal({ visible, onClose, onBack, workType, onAddToR
     [inputs, measures, errors, fieldMap, applyAutoRules],
   );
 
-  const handleInputChange = useCallback(
-    (key: BasisKey, value: string) => {
-      if (workType?.code === 'ind_concrete' && key === 'film_m2') setFilmTouched(true);
-      setInputs((prev) => ({ ...prev, [key]: value }));
-      setErrors((prev) => {
-        if (!prev[key]) return prev;
-        const next = { ...prev };
-        delete next[key];
-        return next;
-      });
-    },
-    [workType?.code],
-  );
+    const handleInputChange = useCallback(
+  (key: BasisKey, value: string) => {
+    if (workType?.code === 'ind_concrete' && key === 'film_m2') setFilmTouched(true);
+
+    // manual tracking for derived fields
+    if (key === 'volume_m3' || key === 'area_m2' || key === 'perimeter_m') {
+  setManualKeys((prev) => {
+    const next = new Set(prev);
+    const trimmed = String(value ?? '').trim();
+
+    if (trimmed) next.add(String(key));
+    else next.delete(String(key));
+
+    return next;
+  });
+}
+
+
+    setInputs((prev) => ({ ...prev, [key]: value }));
+    setErrors((prev) => {
+      if (!prev[key]) return prev;
+      const next = { ...prev };
+      delete next[key];
+      return next;
+    });
+  },
+  [workType?.code],
+);
 
   const handleBlur = useCallback((key: BasisKey) => runParse([key], true), [runParse]);
 
@@ -482,72 +602,78 @@ export default function CalcModal({ visible, onClose, onBack, workType, onAddToR
   };
 
   return (
-    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
-      <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.35)', padding: 12, justifyContent: 'flex-end' }}>
-
+  <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
+    <View style={{ flex: 1, backgroundColor: '#F8FAFC' }}>
+      <View style={{ flex: 1, backgroundColor: '#fff' }}>
+        {/* HEADER */}
         <View
-  style={{
-    backgroundColor: '#fff',
-    borderRadius: 20,
-    padding: 16,
-
-    // ✅ почти весь экран
-    height: Platform.OS === 'web' ? '92%' : '94%',
-    width: '100%',
-    maxWidth: 860,
-    alignSelf: 'center',
-
-    position: 'relative',
-  }}
->
-
-          {/* HEADER */}
-          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-            {onBack ? (
-              <Pressable
-                onPress={() => {
-                  Keyboard.dismiss();
-                  onBack();
-                }}
-                style={{
-                  paddingHorizontal: 12,
-                  paddingVertical: 10,
-                  borderRadius: 12,
-                  backgroundColor: '#111827',
-                }}
-              >
-                <Text style={{ color: '#fff', fontWeight: '900' }}>← Назад</Text>
-              </Pressable>
-            ) : (
-              <View />
-            )}
-
+          style={{
+            paddingTop: 12,
+            paddingBottom: 10,
+            paddingHorizontal: 16,
+            borderBottomWidth: 1,
+            borderBottomColor: '#E2E8F0',
+            backgroundColor: '#fff',
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 10,
+          }}
+        >
+          {onBack ? (
             <Pressable
               onPress={() => {
                 Keyboard.dismiss();
-                onClose();
+                onBack();
               }}
               style={{
                 paddingHorizontal: 12,
                 paddingVertical: 10,
                 borderRadius: 12,
-                backgroundColor: '#f3f4f6',
+                backgroundColor: '#111827',
               }}
             >
-              <Text style={{ fontWeight: '800' }}>Закрыть</Text>
+              <Text style={{ color: '#fff', fontWeight: '900' }}>← Назад</Text>
             </Pressable>
+          ) : (
+            <View style={{ width: 88 }} />
+          )}
+
+          <View style={{ flex: 1, minWidth: 0, alignItems: 'center' }}>
+            <Text style={{ fontSize: 16, fontWeight: '900', color: '#0F172A' }} numberOfLines={1}>
+              Смета
+            </Text>
+            <Text style={{ color: '#6b7280', fontSize: 12 }} numberOfLines={1}>
+              {workType?.name ?? workType?.code ?? 'Вид работ'}
+            </Text>
           </View>
 
-          <Text style={{ fontSize: 22, fontWeight: '900', marginTop: 10 }}>
-            {workType?.name ?? workType?.code ?? 'Вид работ'}
-          </Text>
+          <Pressable
+            onPress={() => {
+              Keyboard.dismiss();
+              onClose();
+            }}
+            style={{
+              paddingHorizontal: 12,
+              paddingVertical: 10,
+              borderRadius: 12,
+              backgroundColor: '#f3f4f6',
+            }}
+          >
+            <Text style={{ fontWeight: '800' }}>Закрыть</Text>
+          </Pressable>
+        </View>
 
-          <Text style={{ color: '#6b7280', marginBottom: 12, marginTop: 6 }}>
+        <View style={{ flex: 1, padding: 16 }}>
+          <Text style={{ color: '#6b7280', marginBottom: 12 }}>
             Укажите только необходимые параметры — остальное рассчитается автоматически.
           </Text>
 
           {/* FIELDS */}
-          <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 12 }} keyboardShouldPersistTaps="handled">
+          <ScrollView
+            style={{ flex: 1 }}
+            contentContainerStyle={{ paddingBottom: 12 }}
+            keyboardShouldPersistTaps="handled"
+          >
             {fLoading ? (
               <View style={{ paddingVertical: 24, alignItems: 'center' }}>
                 <ActivityIndicator />
@@ -619,7 +745,8 @@ export default function CalcModal({ visible, onClose, onBack, workType, onAddToR
 
                                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                                   <TextInput
-                                    value={String(r.qty ?? 0).replace('.', ',')}
+                                    value={String(qtyIssue(Number(r.qty ?? 0))).replace('.', ',')}
+
                                     onChangeText={(t) => setRowQty(rowKey, t)}
                                     keyboardType="numeric"
                                     style={{
@@ -641,67 +768,38 @@ export default function CalcModal({ visible, onClose, onBack, workType, onAddToR
                                 </View>
 
                                 {Number.isFinite(r.suggested_qty as any) ? (
-                                  <Text style={{ color: '#374151', marginTop: 4 }}>
-                                    К выдаче:{' '}
-                                    <Text style={{ fontWeight: '900' }}>
-                                      {formatQtyByUom(Number(r.suggested_qty ?? 0), r.uom_code)}
-                                    </Text>{' '}
-                                    {r.uom_code}
-                                  </Text>
-                                ) : null}
+  <Text style={{ color: '#374151', marginTop: 4 }}>
+    К выдаче:{' '}
+    <Text style={{ fontWeight: '900' }}>
+      {qtyIssue(Number(r.suggested_qty ?? 0))}
+    </Text>{' '}
+    {r.uom_code}
+  </Text>
+) : null}
 
-                                {r.packs && r.pack_size ? (
-                                  <Text style={{ color: '#6b7280', marginTop: 4 }}>
-                                    Упаковка:{' '}
-                                    <Text style={{ fontWeight: '900' }}>
-                                      {formatQtyByUom(Number(r.packs), 'шт')}
-                                    </Text>{' '}
-                                    × {formatQtyByUom(Number(r.pack_size), r.pack_uom)} {r.pack_uom ?? ''}
-                                  </Text>
-                                ) : null}
                               </View>
 
                               <Pressable
                                 onPress={() => incRow(rowKey, -1)}
-                                style={{
-                                  paddingHorizontal: 12,
-                                  paddingVertical: 10,
-                                  borderRadius: 12,
-                                  backgroundColor: '#f3f4f6',
-                                }}
+                                style={{ paddingHorizontal: 12, paddingVertical: 10, borderRadius: 12, backgroundColor: '#f3f4f6' }}
                               >
                                 <Text style={{ fontWeight: '900' }}>–</Text>
                               </Pressable>
 
                               <Pressable
                                 onPress={() => incRow(rowKey, +1)}
-                                style={{
-                                  paddingHorizontal: 12,
-                                  paddingVertical: 10,
-                                  borderRadius: 12,
-                                  backgroundColor: '#f3f4f6',
-                                }}
+                                style={{ paddingHorizontal: 12, paddingVertical: 10, borderRadius: 12, backgroundColor: '#f3f4f6' }}
                               >
                                 <Text style={{ fontWeight: '900' }}>+</Text>
                               </Pressable>
 
                               <Pressable
-  onPress={() => removeRow(rowKey)}
-  style={{
-    width: 44,
-    height: 44,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#DC2626',
-  }}
->
-  <Text style={{ color: '#fff', fontSize: 22, fontWeight: '900', lineHeight: 22 }}>✕</Text>
-</Pressable>
-
+                                onPress={() => removeRow(rowKey)}
+                                style={{ width: 44, height: 44, borderRadius: 12, alignItems: 'center', justifyContent: 'center', backgroundColor: '#DC2626' }}
+                              >
+                                <Text style={{ color: '#fff', fontSize: 22, fontWeight: '900', lineHeight: 22 }}>✕</Text>
+                              </Pressable>
                             </View>
-
-                            {r.hint ? <Text style={{ color: '#6b7280', marginTop: 6 }}>{r.hint}</Text> : null}
                           </View>
                         );
                       })}
@@ -728,11 +826,7 @@ export default function CalcModal({ visible, onClose, onBack, workType, onAddToR
                           alignItems: 'center',
                         }}
                       >
-                        {addingToRequest ? (
-                          <ActivityIndicator color="#fff" />
-                        ) : (
-                          <Text style={{ fontWeight: '900', color: '#fff' }}>Добавить в заявку</Text>
-                        )}
+                        {addingToRequest ? <ActivityIndicator color="#fff" /> : <Text style={{ fontWeight: '900', color: '#fff' }}>Добавить в заявку</Text>}
                       </Pressable>
                     </View>
                   </>
@@ -750,13 +844,7 @@ export default function CalcModal({ visible, onClose, onBack, workType, onAddToR
                 Keyboard.dismiss();
                 onClose();
               }}
-              style={{
-                flex: 1,
-                paddingVertical: 12,
-                borderRadius: 14,
-                backgroundColor: '#f3f4f6',
-                alignItems: 'center',
-              }}
+              style={{ flex: 1, paddingVertical: 12, borderRadius: 14, backgroundColor: '#f3f4f6', alignItems: 'center' }}
             >
               <Text style={{ fontWeight: '900' }}>Отмена</Text>
             </Pressable>
@@ -764,14 +852,7 @@ export default function CalcModal({ visible, onClose, onBack, workType, onAddToR
             <Pressable
               onPress={calc}
               disabled={!canCalculate}
-              style={{
-                flex: 1,
-                paddingVertical: 12,
-                borderRadius: 14,
-                backgroundColor: '#22c55e',
-                opacity: canCalculate ? 1 : 0.45,
-                alignItems: 'center',
-              }}
+              style={{ flex: 1, paddingVertical: 12, borderRadius: 14, backgroundColor: '#22c55e', opacity: canCalculate ? 1 : 0.45, alignItems: 'center' }}
             >
               <Text style={{ fontWeight: '900', color: '#fff' }}>
                 {calculating ? 'Считаю' : 'Рассчитать'}
@@ -779,19 +860,18 @@ export default function CalcModal({ visible, onClose, onBack, workType, onAddToR
             </Pressable>
           </View>
 
-          {/* OVERLAY */}
           {calculating && (
             <View
               style={{
                 position: 'absolute',
-                left: 0,
-                right: 0,
-                top: 0,
-                bottom: 0,
+                left: 16,
+                right: 16,
+                top: 16,
+                bottom: 16,
                 backgroundColor: 'rgba(255,255,255,0.75)',
                 alignItems: 'center',
                 justifyContent: 'center',
-                borderRadius: 20,
+                borderRadius: 16,
               }}
             >
               <ActivityIndicator size="large" />
@@ -800,6 +880,8 @@ export default function CalcModal({ visible, onClose, onBack, workType, onAddToR
           )}
         </View>
       </View>
-    </Modal>
-  );
+    </View>
+  </Modal>
+);
+
 }

@@ -46,7 +46,9 @@ function SafeView({ children, ...rest }: any) {
 }
 
 const isWeb = Platform.OS === 'web';
+const isAndroid = Platform.OS === 'android';
 const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
+
 
 // нормализуем название поставщика: убираем кавычки/лишние пробелы/регистр
 const normName = (s?: string | null) =>
@@ -536,14 +538,15 @@ const BuyerProposalCard = React.memo(function BuyerProposalCard(props: {
           <Text style={s.openBtnText}>PDF</Text>
         </Pressable>
 
-        {head.status === 'Утверждено' && (
-          <Pressable
-            onPress={() => onOpenAccounting(pidStr)}
-            style={[s.smallBtn, { marginLeft: 8, backgroundColor: '#2563eb', borderColor: '#2563eb' }]}
-          >
-            <Text style={[s.smallBtnText, { color: '#fff' }]}>В бухгалтерию</Text>
-          </Pressable>
-        )}
+        {head.status === 'Утверждено' && !head.sent_to_accountant_at && (
+  <Pressable
+    onPress={() => onOpenAccounting(pidStr)}
+    style={[s.smallBtn, { marginLeft: 8, backgroundColor: '#2563eb', borderColor: '#2563eb' }]}
+  >
+    <Text style={[s.smallBtnText, { color: '#fff' }]}>В бухгалтерию</Text>
+  </Pressable>
+)}
+
 
         {String(head.status).startsWith('На доработке') && (
           <Pressable
@@ -574,6 +577,7 @@ const SAFE_TOP =
   Platform.OS === 'ios' ? 0 :
   Platform.OS === 'android' ? (StatusBar.currentHeight ?? 0) :
   0;
+
 // ✅ измеряем реальные высоты шапки
 const [subH, setSubH] = useState(0);
 const [tabsH, setTabsH] = useState(0);
@@ -585,73 +589,28 @@ const MINI_ROW  = 28;
 const TITLE_ROW = 34;
 
 const fullTabs = (tabsH > 0) ? tabsH : FALLBACK_TABS_ROW;
-const fullSub  = (subH  > 0) ? subH  : FALLBACK_SUB_ROW;
-
-const isAndroid = Platform.OS === 'android';
-
-// ✅ базовая часть шапки (всегда видна): title + tabs + mini
-const headerBase = SAFE_TOP + TITLE_ROW + fullTabs + MINI_ROW;
-
-// ✅ диапазон схлопывания = только высота ФИО
-const HEADER_SCROLL = Math.max(0, fullSub);
-
-// ✅ текущая высота шапки
-const HEADER_MAX = headerBase + fullSub;
-
-const scrollYRaw = useRef(
-  new Animated.Value(isAndroid ? 0 : -HEADER_MAX)
-).current;
+const fullSub = FALLBACK_SUB_ROW;
 
 
-// ✅ HEADER_MAX как Animated.Value, чтобы обновлять при изменении высот
-const headerMaxAnim = useRef(new Animated.Value(HEADER_MAX)).current;
+// ✅ базовая часть шапки (всегда видна): safe + title + tabs
+const headerBase = SAFE_TOP + TITLE_ROW + fullTabs;
 
-const prevHeaderMaxRef = useRef(HEADER_MAX);
+// ✅ максимум: base + fio + mini
+const HEADER_MAX = headerBase + fullSub + MINI_ROW;
 
-useEffect(() => {
-  const prev = prevHeaderMaxRef.current;
-  const next = HEADER_MAX;
-  prevHeaderMaxRef.current = next;
+// ✅ диапазон схлопывания (только ФИО блок)
+const HEADER_SCROLL = fullSub;
 
-  headerMaxAnim.setValue(next);
-
-  if (!isAndroid) {
-    // текущий raw (на web работает)
-    const curRaw =
-      (scrollYRaw as any).__getValue?.() ??
-      (scrollYRaw as any)._value ??
-      0;
-
-    // сохраняем визуальную позицию: raw -= (next - prev)
-    const delta = next - prev;
-    scrollYRaw.setValue(curRaw - delta);
-  }
-}, [HEADER_MAX, isAndroid, headerMaxAnim, scrollYRaw]);
-
-
-// ✅ нормализованный скролл:
-// - Android: обычный y (там будет спейсер)
-// - iOS/web: y + HEADER_MAX (потому что y стартует отрицательным)
-const scrollY = useMemo(() => {
-  return isAndroid
-    ? scrollYRaw
-    : Animated.add(scrollYRaw, headerMaxAnim);
-}, [isAndroid, scrollYRaw, headerMaxAnim]);
+// ✅ нормальный scrollY (без отрицательных значений)
+const scrollYRaw = useRef(new Animated.Value(0)).current;
 
 // ✅ clamp как у директора
-const clampedY = useMemo(() => (
-  Animated.diffClamp(scrollY, 0, HEADER_SCROLL)
-), [scrollY, HEADER_SCROLL]);
+const clampedY = useMemo(
+  () => Animated.diffClamp(scrollYRaw, 0, HEADER_SCROLL),
+  [scrollYRaw, HEADER_SCROLL]
+);
 
-// ✅ ФИО: было fullSub → стало 0
-const fioHeight = useMemo(() => (
-  clampedY.interpolate({
-    inputRange: [0, HEADER_SCROLL || 1],
-    outputRange: [fullSub, 0],
-    extrapolate: 'clamp',
-  })
-), [clampedY, HEADER_SCROLL, fullSub]);
-
+// ✅ ФИО: НЕ трогаем height, только уводим вверх + гасим
 const fioOpacity = useMemo(() => (
   clampedY.interpolate({
     inputRange: [0, HEADER_SCROLL || 1],
@@ -660,11 +619,6 @@ const fioOpacity = useMemo(() => (
   })
 ), [clampedY, HEADER_SCROLL]);
 
-// ✅ общая высота шапки
-const headerHeight = useMemo(
-  () => Animated.add(new Animated.Value(headerBase), fioHeight),
-  [headerBase, fioHeight]
-);
 
 // ✅ заголовок уменьшается
 const titleSize = useMemo(() => (
@@ -675,7 +629,7 @@ const titleSize = useMemo(() => (
   })
 ), [clampedY, HEADER_SCROLL]);
 
-// ✅ мини-строка появляется когда ФИО схлопнулось
+// ✅ мини-строка появляется когда ФИО “схлопнулось”
 const miniOpacity = useMemo(() => (
   clampedY.interpolate({
     inputRange: [0, (HEADER_SCROLL || 1) * 0.8, HEADER_SCROLL || 1],
@@ -691,6 +645,31 @@ const miniTranslateY = useMemo(() => (
     extrapolate: 'clamp',
   })
 ), [clampedY, HEADER_SCROLL]);
+// ✅ мини-строка не должна занимать место, пока скрыта
+const miniHeight = useMemo(() => (
+  clampedY.interpolate({
+    inputRange: [0, (HEADER_SCROLL || 1) * 0.8, HEADER_SCROLL || 1],
+    outputRange: [0, 0, MINI_ROW],
+    extrapolate: 'clamp',
+  })
+), [clampedY, HEADER_SCROLL]);
+
+// ✅ ИДЕАЛ: реальная высота ФИО-блока
+const fioHeight = useMemo(() => (
+  clampedY.interpolate({
+    inputRange: [0, HEADER_SCROLL || 1],
+    outputRange: [fullSub, 0],
+    extrapolate: 'clamp',
+  })
+), [clampedY, HEADER_SCROLL, fullSub]);
+
+// ✅ ИДЕАЛ: реальная высота header = base + fioHeight + miniHeight
+const headerHeightAnim = useMemo(() => (
+  Animated.add(
+    Animated.add(headerBase as any, fioHeight as any),
+    miniHeight as any
+  )
+), [headerBase, fioHeight, miniHeight]);
 
 const fmtLocal = (iso: string) => {
   const d = new Date(iso);
@@ -744,6 +723,9 @@ const setDeadlineHours = (hours: number) => {
   } | null>(null);
 const listRef = useRef<FlatList<any> | null>(null);
 const tabsScrollRef = useRef<ScrollView | null>(null);
+const scrollTabsToStart = useCallback((animated = true) => {
+  try { tabsScrollRef.current?.scrollTo?.({ x: 0, y: 0, animated }); } catch {}
+}, []);
 
 const [expandedReqId, setExpandedReqId] = useState<string | null>(null);
 const [expandedReqIndex, setExpandedReqIndex] = useState<number | null>(null);
@@ -751,6 +733,12 @@ const [expandedReqIndex, setExpandedReqIndex] = useState<number | null>(null);
 const toggleReq = useCallback((rid: string, index: number) => {
   setExpandedReqId(prev => (prev === rid ? null : rid));
   setExpandedReqIndex(prev => (prev === index ? null : index));
+
+  requestAnimationFrame(() => {
+    try {
+      listRef.current?.scrollToIndex?.({ index, animated: true, viewPosition: 0 });
+    } catch {}
+  });
 }, []);
 
   // документ предложения в модалке
@@ -819,15 +807,18 @@ const lastBucketsKickRef = useRef(0);
       } catch {}
     })();
   }, [buyerFio]);
-// ✅ автодоскролл табов (чтобы "Правки" было видно на телефоне)
+// ✅ один раз (не уезжает вправо при кликах)
+const didAutoScrollTabs = useRef(false);
+
 useEffect(() => {
   if (Platform.OS === 'web') return;
+  if (didAutoScrollTabs.current) return;
+  didAutoScrollTabs.current = true;
+
   requestAnimationFrame(() => {
-    try {
-      tabsScrollRef.current?.scrollToEnd?.({ animated: true });
-    } catch {}
+    scrollTabsToStart(false); // ✅ всегда в начало, без прыжка
   });
-}, [tab]);
+}, [scrollTabsToStart]);
   /* ==================== Загрузка ==================== */
   const fetchInbox = useCallback(async () => {
   if (!focusedRef.current) return;
@@ -924,12 +915,12 @@ lastBucketsKickRef.current = now;
         .order('submitted_at', { ascending: false });
       setPending(!p.error ? (p.data || []) : []);
 
-      // === УТВЕРЖДЕНО (ещё НЕ отправлено в бух.) ===
-      const apQ = await supabase
+     // === УТВЕРЖДЕНО (ПОКАЗЫВАЕМ ВСЕ: и у бухгалтера тоже) ===
+const apQ = await supabase
   .from('v_proposals_summary')
   .select('proposal_id, status, submitted_at, sent_to_accountant_at, total_sum')
   .eq('status', 'Утверждено')
-  .is('sent_to_accountant_at', null)
+  // ✅ ВАЖНО: НЕ режем по sent_to_accountant_at
   .order('submitted_at', { ascending: false });
 
 const approvedClean = (!apQ.error && Array.isArray(apQ.data))
@@ -938,6 +929,7 @@ const approvedClean = (!apQ.error && Array.isArray(apQ.data))
       status: String(x.status),
       submitted_at: x.submitted_at ?? null,
       total_sum: Number(x.total_sum ?? 0),
+      sent_to_accountant_at: x.sent_to_accountant_at ?? null, // ✅ для UI
     }))
   : [];
 setApproved(approvedClean);
@@ -999,24 +991,39 @@ setApproved(approvedClean);
     fetchInbox();
     fetchBuckets();
 
-    const ch = supabase
-      .channel('notif-buyer-rt')
-      .on(
-        'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'notifications', filter: 'role=eq.buyer' },
-        (payload: any) => {
-          if (!focusedRef.current) return;
-          const n = payload?.new || {};
-          Alert.alert(n.title || 'Уведомление', n.body || '');
-          fetchBuckets();
-        }
-      )
-      .subscribe();
+    const chNotif = supabase
+  .channel('notif-buyer-rt')
+  .on(
+    'postgres_changes',
+    { event: 'INSERT', schema: 'public', table: 'notifications', filter: 'role=eq.buyer' },
+    (payload: any) => {
+      if (!focusedRef.current) return;
+      const n = payload?.new || {};
+      Alert.alert(n.title || 'Уведомление', n.body || '');
+      fetchBuckets();
+    }
+  )
+  .subscribe();
 
-    return () => {
-      focusedRef.current = false;
-      try { supabase.removeChannel(ch); } catch {}
-    };
+// ✅ ИДЕАЛЬНО: слушаем proposals → любые изменения статусов сразу обновляют табы
+const chProps = supabase
+  .channel('buyer-proposals-rt')
+  .on(
+    'postgres_changes',
+    { event: '*', schema: 'public', table: 'proposals' },
+    () => {
+      if (!focusedRef.current) return;
+      fetchBuckets();
+    }
+  )
+  .subscribe();
+
+return () => {
+  focusedRef.current = false;
+  try { supabase.removeChannel(chNotif); } catch {}
+  try { supabase.removeChannel(chProps); } catch {}
+};
+
   }, [fetchInbox, fetchBuckets])
 );
 
@@ -2077,181 +2084,216 @@ const rejectedCount = rejected.length;
 // ✅ 1) единый JSX для web + native
 const ScreenBody = (
   <View style={[s.screen, { backgroundColor: COLORS.bg }]}>
-
-    {/* ✅ Collapsing Header (Buyer) */}
-<Animated.View
-  pointerEvents="box-none"
-  style={[
-    s.collapsingHeader,
-    {
-      height: headerHeight,
-      paddingTop: SAFE_TOP,
-    },
-  ]}
->
-  {/* ✅ Title row (всегда виден, уменьшается) */}
-  <Animated.View style={{ paddingHorizontal: 12, paddingTop: 10 }}>
-    <Animated.Text
-      style={[s.collapsingTitle, { fontSize: titleSize }]}
-      numberOfLines={1}
-    >
-      Снабженец
-    </Animated.Text>
-  </Animated.View>
-
-  {/* ✅ Tabs row (всегда видимая) */}
-  <View
-    onLayout={(e) => {
-      const h = e?.nativeEvent?.layout?.height ?? 0;
-      if (h > 0) setTabsH(h);
-    }}
-    style={{ paddingHorizontal: 12, paddingBottom: 6, paddingTop: 6 }}
-  >
-    {Platform.OS === 'web' ? (
-      <View style={s.tabsWrapWeb}>
-        {/* === ТВОИ WEB-ТАБЫ 1:1 (как было) === */}
-        <Pressable
-          onPress={() => { setTab('inbox'); setExpandedReqId(null); setExpandedReqIndex(null); }}
-          style={[s.tabPill, tab === 'inbox' && s.tabPillActive]}
-        >
-          <Text style={[s.tabPillText, tab === 'inbox' && s.tabPillTextActive]}>Вход</Text>
-        </Pressable>
-
-        <Pressable
-          onPress={() => { setTab('pending'); setExpandedReqId(null); setExpandedReqIndex(null); }}
-          style={[s.tabPill, tab === 'pending' && s.tabPillActive]}
-        >
-          <Text style={[s.tabPillText, tab === 'pending' && s.tabPillTextActive]}>
-            Контроль ({pending.length})
-          </Text>
-        </Pressable>
-
-        <Pressable
-          onPress={() => { setTab('approved'); setExpandedReqId(null); setExpandedReqIndex(null); }}
-          style={[s.tabPill, tab === 'approved' && s.tabPillActive]}
-        >
-          <Text style={[s.tabPillText, tab === 'approved' && s.tabPillTextActive]}>
-            Готово ({approved.length})
-          </Text>
-        </Pressable>
-
-        <Pressable
-          onPress={() => { setTab('rejected'); setExpandedReqId(null); setExpandedReqIndex(null); }}
-          style={[s.tabPill, tab === 'rejected' && s.tabPillActive]}
-        >
-          <Text style={[s.tabPillText, tab === 'rejected' && s.tabPillTextActive]}>
-            {`Правки (${rejected.length})`}
-          </Text>
-        </Pressable>
-      </View>
-    ) : (
-      <ScrollView
-        ref={tabsScrollRef as any}
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={s.tabsRow}
-        keyboardShouldPersistTaps="handled"
-      >
-        {/* === ТВОИ MOBILE-ТАБЫ 1:1 (как было) === */}
-        <Pressable
-          onPress={() => { setTab('inbox'); setExpandedReqId(null); setExpandedReqIndex(null); }}
-          style={[s.tabPill, tab === 'inbox' && s.tabPillActive]}
-        >
-          <Text style={[s.tabPillText, tab === 'inbox' && s.tabPillTextActive]}>Вход</Text>
-        </Pressable>
-
-        <Pressable
-          onPress={() => { setTab('pending'); setExpandedReqId(null); setExpandedReqIndex(null); }}
-          style={[s.tabPill, tab === 'pending' && s.tabPillActive]}
-        >
-          <View style={s.tabLabelRow}>
-            <Text style={[s.tabPillText, tab === 'pending' && s.tabPillTextActive]}>Контроль</Text>
-            <TabCount n={pending.length} active={tab === 'pending'} />
-          </View>
-        </Pressable>
-
-        <Pressable
-          onPress={() => { setTab('approved'); setExpandedReqId(null); setExpandedReqIndex(null); }}
-          style={[s.tabPill, tab === 'approved' && s.tabPillActive]}
-        >
-          <View style={s.tabLabelRow}>
-            <Text style={[s.tabPillText, tab === 'approved' && s.tabPillTextActive]}>Готово</Text>
-            <TabCount n={approved.length} active={tab === 'approved'} />
-          </View>
-        </Pressable>
-
-        <Pressable
-          onPress={() => { setTab('rejected'); setExpandedReqId(null); setExpandedReqIndex(null); }}
-          style={[s.tabPill, tab === 'rejected' && s.tabPillActive]}
-        >
-          <View style={s.tabLabelRow}>
-            <Text style={[s.tabPillText, tab === 'rejected' && s.tabPillTextActive]}>Правки</Text>
-            <TabCount n={rejected.length} active={tab === 'rejected'} />
-          </View>
-        </Pressable>
-      </ScrollView>
-    )}
-  </View>
-
-    {/* ✅ Mini row */}
-  <Animated.View
-    style={{
-      height: MINI_ROW,
-      paddingHorizontal: 12,
-      justifyContent: 'center',
-      opacity: miniOpacity,
-      transform: [{ translateY: miniTranslateY }],
-    }}
-  >
-    <Text style={{ color: COLORS.sub, fontWeight: '800', fontSize: 12 }}>
-      {tab === 'inbox'
-        ? `Выбрано: ${pickedIds.length} · Сумма: ${pickedTotal.toLocaleString()} сом`
-        : tab === 'pending'
-        ? `У директора: ${pendingCount}`
-        : tab === 'approved'
-        ? `Готово: ${approvedCount}`
-        : `Правки: ${rejectedCount}`}
-    </Text>
-  </Animated.View>
-
-  {/* ✅ ФИО (Sub row) */}
-  <Animated.View
-    onLayout={(e) => {
-      const h = e?.nativeEvent?.layout?.height ?? 0;
-      if (h > 0) setSubH(h);
-    }}
-    style={{
-      height: fioHeight,
-      opacity: fioOpacity,
-      overflow: 'hidden',
-      paddingHorizontal: 12,
-      paddingBottom: 6,
-    }}
-  >
-    <Text style={s.fioLabel}>ФИО</Text>
-    <TextInput
-      value={buyerFio}
-      onChangeText={setBuyerFio}
-      placeholder="введите ФИО"
-      style={s.fioInput}
-    />
-  </Animated.View>
-</Animated.View>
-
-
+    
     {/* ✅ СПИСОК */}
 <Animated.View style={{ flex: 1 }}>
   <AnimatedFlatList
   ref={listRef as any}
+  stickyHeaderIndices={[0]}
 
-  // ✅ iOS/web — inset работает
-  {...(!isAndroid ? {
-    contentInset: { top: HEADER_MAX },
-    contentOffset: { y: -HEADER_MAX, x: 0 },
-  } : {})}
+  initialNumToRender={8}
+  maxToRenderPerBatch={10}
+  windowSize={7}
+  updateCellsBatchingPeriod={16}
+  removeClippedSubviews={Platform.OS !== 'web'}
 
-  // ✅ Android — inset НЕ используем, вместо него спейсер
-  ListHeaderComponent={isAndroid ? <View style={{ height: HEADER_MAX }} /> : null}
+ListHeaderComponent={
+  <Animated.View
+  style={[
+    s.collapsingHeader,
+    { paddingTop: SAFE_TOP, height: headerHeightAnim, overflow: 'hidden' }
+  ]}
+>
+
+    {/* ✅ Title row */}
+    <Animated.View style={{ paddingHorizontal: 12, paddingTop: 10 }}>
+      <Animated.Text
+        style={[s.collapsingTitle, { fontSize: titleSize }]}
+        numberOfLines={1}
+      >
+        Снабженец
+      </Animated.Text>
+    </Animated.View>
+
+    {/* ✅ Tabs row */}
+    <View
+      onLayout={(e) => {
+        const h = e?.nativeEvent?.layout?.height ?? 0;
+        if (h > 0) setTabsH(h);
+      }}
+      style={{ paddingHorizontal: 12, paddingBottom: 6, paddingTop: 6 }}
+    >
+      {Platform.OS === 'web' ? (
+        <View style={s.tabsWrapWeb}>
+  <Pressable
+    onPress={() => {
+      setTab('inbox');
+      setExpandedReqId(null);
+      setExpandedReqIndex(null);
+    }}
+    style={[s.tabPill, tab === 'inbox' && s.tabPillActive]}
+  >
+    <Text style={[s.tabPillText, tab === 'inbox' && s.tabPillTextActive]}>Вход</Text>
+  </Pressable>
+
+  <Pressable
+    onPress={() => {
+      setTab('pending');
+      setExpandedReqId(null);
+      setExpandedReqIndex(null);
+    }}
+    style={[s.tabPill, tab === 'pending' && s.tabPillActive]}
+  >
+    <Text style={[s.tabPillText, tab === 'pending' && s.tabPillTextActive]}>
+      Контроль ({pending.length})
+    </Text>
+  </Pressable>
+
+  <Pressable
+    onPress={() => {
+      setTab('approved');
+      setExpandedReqId(null);
+      setExpandedReqIndex(null);
+    }}
+    style={[s.tabPill, tab === 'approved' && s.tabPillActive]}
+  >
+    <Text style={[s.tabPillText, tab === 'approved' && s.tabPillTextActive]}>
+      Готово ({approved.length})
+    </Text>
+  </Pressable>
+
+  <Pressable
+    onPress={() => {
+      setTab('rejected');
+      setExpandedReqId(null);
+      setExpandedReqIndex(null);
+    }}
+    style={[s.tabPill, tab === 'rejected' && s.tabPillActive]}
+  >
+    <Text style={[s.tabPillText, tab === 'rejected' && s.tabPillTextActive]}>
+      Правки ({rejected.length})
+    </Text>
+  </Pressable>
+</View>
+
+      ) : (
+       <ScrollView
+  ref={tabsScrollRef as any}
+  horizontal
+  showsHorizontalScrollIndicator={false}
+  contentContainerStyle={s.tabsRow}
+  keyboardShouldPersistTaps="handled"
+>
+  <Pressable
+    onPress={() => {
+      scrollTabsToStart(true);
+      setTab('inbox');
+      setExpandedReqId(null);
+      setExpandedReqIndex(null);
+    }}
+    style={[s.tabPill, tab === 'inbox' && s.tabPillActive]}
+  >
+    <Text style={[s.tabPillText, tab === 'inbox' && s.tabPillTextActive]}>Вход</Text>
+  </Pressable>
+
+  <Pressable
+    onPress={() => {
+      scrollTabsToStart(true);
+      setTab('pending');
+      setExpandedReqId(null);
+      setExpandedReqIndex(null);
+    }}
+    style={[s.tabPill, tab === 'pending' && s.tabPillActive]}
+  >
+    <View style={s.tabLabelRow}>
+      <Text style={[s.tabPillText, tab === 'pending' && s.tabPillTextActive]}>Контроль</Text>
+      <TabCount n={pending.length} active={tab === 'pending'} />
+    </View>
+  </Pressable>
+
+  <Pressable
+    onPress={() => {
+      scrollTabsToStart(true);
+      setTab('approved');
+      setExpandedReqId(null);
+      setExpandedReqIndex(null);
+    }}
+    style={[s.tabPill, tab === 'approved' && s.tabPillActive]}
+  >
+    <View style={s.tabLabelRow}>
+      <Text style={[s.tabPillText, tab === 'approved' && s.tabPillTextActive]}>Готово</Text>
+      <TabCount n={approved.length} active={tab === 'approved'} />
+    </View>
+  </Pressable>
+
+  <Pressable
+    onPress={() => {
+      scrollTabsToStart(true);
+      setTab('rejected');
+      setExpandedReqId(null);
+      setExpandedReqIndex(null);
+    }}
+    style={[s.tabPill, tab === 'rejected' && s.tabPillActive]}
+  >
+    <View style={s.tabLabelRow}>
+      <Text style={[s.tabPillText, tab === 'rejected' && s.tabPillTextActive]}>Правки</Text>
+      <TabCount n={rejected.length} active={tab === 'rejected'} />
+    </View>
+  </Pressable>
+</ScrollView>
+
+      )}
+    </View>
+
+    {/* ✅ Mini row */}
+    <Animated.View
+  style={{
+    height: miniHeight,
+    overflow: 'hidden',
+    paddingHorizontal: 12,
+    justifyContent: 'center',
+    opacity: miniOpacity,
+    transform: [{ translateY: miniTranslateY }],
+  }}
+>
+
+      <Text style={{ color: COLORS.sub, fontWeight: '800', fontSize: 12 }}>
+        {tab === 'inbox'
+          ? `Выбрано: ${pickedIds.length} · Сумма: ${pickedTotal.toLocaleString()} сом`
+          : tab === 'pending'
+          ? `У директора: ${pendingCount}`
+          : tab === 'approved'
+          ? `Готово: ${approvedCount}`
+          : `Правки: ${rejectedCount}`}
+      </Text>
+    </Animated.View>
+
+    {/* ✅ FIO row */}
+    <Animated.View
+      onLayout={(e) => {
+        const h = e?.nativeEvent?.layout?.height ?? 0;
+        if (h > 0) setSubH(h);
+      }}
+        style={{
+    paddingHorizontal: 12,
+    paddingBottom: 6,
+    opacity: fioOpacity,
+    height: fioHeight,
+    overflow: 'hidden',
+  }}
+>
+
+      <Text style={s.fioLabel}>ФИО</Text>
+      <TextInput
+        value={buyerFio}
+        onChangeText={setBuyerFio}
+        placeholder="введите ФИО"
+        style={s.fioInput}
+      />
+    </Animated.View>
+  </Animated.View>
+}
+
 
   onScroll={Animated.event(
     [{ nativeEvent: { contentOffset: { y: scrollYRaw } } }],
@@ -2715,27 +2757,18 @@ return ScreenBody;
 const s = StyleSheet.create({
   screen: { flex: 1 },
 
-  collapsingHeader: {
-  position: 'absolute',
-  top: 0,
-  left: 0,
-  right: 0,
-  zIndex: 50,
-
+ collapsingHeader: {
   backgroundColor: '#fff',
   borderBottomWidth: 1,
   borderColor: COLORS.border,
   paddingBottom: 10,
-
-  overflow: 'hidden', // ✅ ключ: теперь sub реально “схлопывается” без height
-
+  overflow: 'hidden',
   shadowColor: '#000',
   shadowOffset: { width: 0, height: 6 },
   shadowOpacity: 0.12,
   shadowRadius: 14,
   elevation: 8,
 },
-
 
   collapsingTitle: {
     fontWeight: '900',

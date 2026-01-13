@@ -4,6 +4,10 @@ import { useEffect, useState } from "react";
 import { supabase } from "../../../src/lib/supabaseClient";
 
 export type BasisKey = string;
+const isDemoWorkType = (code?: string | null) => {
+  const c = String(code ?? "").trim();
+  return c.startsWith("WT-DEM-") || c === "WT-DEMO";
+};
 
 export type Field = {
   key: BasisKey;
@@ -45,20 +49,25 @@ export function useCalcFields(workTypeCode?: string | null) {
       setError(null);
 
       try {
-        const { data, error } = await supabase
-          .from("v_reno_calc_fields_ui")
-          .select(`
-  basis_key,
-  label_ru,
-  uom_code,
-  is_required,
-  hint_ru,
-  default_value,
-  sort_order,
-  used_in_norms
-`)
-          .eq("work_type_code", code)
-          .order("sort_order", { ascending: true });
+        const viewName = isDemoWorkType(code)
+  ? "v_reno_calc_fields_ui_clean"   // ✅ DEMO: берём clean (у него больше полей по DEM)
+  : "v_reno_calc_fields_ui";        // ✅ остальные семьи: берём ui (полные поля)
+
+const { data, error } = await supabase
+  .from(viewName)
+  .select(`
+    basis_key,
+    label_ru,
+    uom_code,
+    is_required,
+    hint_ru,
+    default_value,
+    sort_order,
+    used_in_norms
+  `)
+  .eq("work_type_code", code)
+  .order("sort_order", { ascending: true });
+
 
         if (error) throw error;
 

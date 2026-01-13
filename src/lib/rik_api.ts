@@ -530,27 +530,31 @@ export async function addRequestItemFromRik(
   const rid = toFilterId(requestId);
   if (rid == null) throw new Error('request_id is empty');
 
-  const row: Record<string, any> = {
-    request_id: rid as any,
-    rik_code,
-    qty: q,
-    status: 'Черновик',
-  };
-  if (Object.prototype.hasOwnProperty.call(opts ?? {}, 'note')) row.note = opts?.note ?? null;
-  if (Object.prototype.hasOwnProperty.call(opts ?? {}, 'app_code')) row.app_code = opts?.app_code ?? null;
-  if (Object.prototype.hasOwnProperty.call(opts ?? {}, 'kind')) row.kind = opts?.kind ?? null;
-  if (Object.prototype.hasOwnProperty.call(opts ?? {}, 'name_human'))
-    row.name_human = opts?.name_human ?? null;
-  if (Object.prototype.hasOwnProperty.call(opts ?? {}, 'uom')) row.uom = opts?.uom ?? null;
+  // 1) add-or-inc
+  const { data: id, error } = await supabase.rpc('request_item_add_or_inc' as any, {
+    p_request_id: rid,
+    p_rik_code: rik_code,
+    p_qty_add: q,
+  } as any);
 
-  const { error } = await client.from('request_items').insert([row]);
-  if (error) {
-    console.warn('[addRequestItemFromRik]', parseErr(error));
-    throw error;
-  }
+  if (error) throw error;
+  const itemId = String(id ?? '').trim();
+  if (!itemId) throw new Error('request_item_add_or_inc returned empty id');
+
+  // 2) patch meta
+  const patch: Record<string, any> = { status: 'Черновик' };
+  if (Object.prototype.hasOwnProperty.call(opts ?? {}, 'note')) patch.note = opts?.note ?? null;
+  if (Object.prototype.hasOwnProperty.call(opts ?? {}, 'app_code')) patch.app_code = opts?.app_code ?? null;
+  if (Object.prototype.hasOwnProperty.call(opts ?? {}, 'kind')) patch.kind = opts?.kind ?? null;
+  if (Object.prototype.hasOwnProperty.call(opts ?? {}, 'name_human') && opts?.name_human) patch.name_human = opts.name_human;
+  if (Object.prototype.hasOwnProperty.call(opts ?? {}, 'uom')) patch.uom = opts?.uom ?? null;
+
+  try {
+    await supabase.from('request_items' as any).update(patch).eq('id', itemId);
+  } catch {}
+
   return true;
 }
-
 // ============================== Approvals / Director ==============================
 export async function listPending(): Promise<DirectorPendingRow[]> {
   const ridMap = new Map<string, number>();

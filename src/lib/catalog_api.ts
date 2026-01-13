@@ -14,7 +14,7 @@ export {
   ensureRequestSmart,
   requestCreateDraft,
   requestSubmit,
-  // exportRequestPdf,            // ← ВАЖНО: Больше не ре-экспортируем
+  directorReturnToBuyer,
   addRequestItemFromRik,
   clearCachedDraftRequestId,
 } from "./rik_api";
