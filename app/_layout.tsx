@@ -2,6 +2,7 @@
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import { Platform, LogBox, View } from "react-native";
 import { Slot, router, useSegments } from "expo-router";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 import { supabase } from "../src/lib/supabaseClient";
 import { ensureMyProfile, getMyRole } from "../src/lib/rik_api";
 
@@ -175,9 +176,12 @@ export default function RootLayout() {
   }, [hasSession, sessionLoaded, segments]);
 
   return (
+  <SafeAreaProvider>
     <View style={{ flex: 1 }}>
       <Slot />
     </View>
-  );
+  </SafeAreaProvider>
+);
+
 }
 

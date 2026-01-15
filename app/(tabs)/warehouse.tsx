@@ -29,28 +29,28 @@ import { webOpenPdfWindow, webWritePdfWindow, webDownloadHtml } from "../../src/
 
 /** ========= типы ========= */
 type IncomingRow = {
-  id: string; // wh_incoming.id или синтетический "p:<purchase_id>"
+  incoming_id: string;
   purchase_id: string;
-  status: "pending" | "confirmed" | string;
-  qty?: number | null;
-  note?: string | null;
-  created_at?: string | null;
-  confirmed_at?: string | null;
-  po_no?: string | null; // из compat
-  purchase_status?: string | null;
+  incoming_status: string;
+  po_no: string | null;
+  purchase_status: string | null;
+  purchase_created_at: string | null;
+  confirmed_at: string | null;
+  qty_expected_sum: number;
+  qty_received_sum: number;
+  qty_left_sum: number;
+  items_cnt: number;
 };
 
-type StockRow = {
-  material_id: string;
-  code?: string | null;
-  name?: string | null;
-  uom_id?: string | null;
-  qty_on_hand?: number;
-  qty_reserved?: number;
-  qty_available?: number;
-  object_name?: string | null;
-  warehouse_name?: string | null;
-  updated_at?: string | null;
+type ItemRow = {
+  incoming_item_id: string | null;      // у виртуалок null
+  purchase_item_id: string;             // всегда есть
+  code: string | null;
+  name: string;
+  uom: string | null;
+  qty_expected: number;
+  qty_received: number;
+  sort_key: number;
 };
 
 type HistoryRow = {
@@ -94,15 +94,6 @@ type InvSession = {
   comment: string | null;
 };
 
-type ItemRow = {
-  incoming_item_id: string;
-  purchase_item_id: string;
-  code?: string | null;
-  name: string;
-  uom?: string | null;
-  qty_expected: number;
-  qty_received: number;
-};
 
 type WorkRow = {
   progress_id: string;
@@ -603,6 +594,9 @@ const pdfWindowRef = React.useRef<Window | null>(null);
   const [countPending, setCountPending] = useState(0);
   const [countConfirmed, setCountConfirmed] = useState(0);
   const [countPartial, setCountPartial] = useState(0);
+const [toReceivePending, setToReceivePending] = useState<IncomingRow[]>([]);
+const [toReceivePartial, setToReceivePartial] = useState<IncomingRow[]>([]);
+
   const [confirmingId, setConfirmingId] = useState<string | null>(null);
 
   // карта алиасов p:<pid> -> <real_incoming_id>
@@ -623,143 +617,76 @@ const pdfWindowRef = React.useRef<Window | null>(null);
     [headIdAlias],
   );
 
-  const fetchToReceive = useCallback(async () => {
-    try {
-      const sel =
-        "id, purchase_id, status, qty, note, created_at, confirmed_at, po_no, purchase_status";
-      const all = await supabase
-        .from("wh_incoming_compat" as any)
-        .select(sel)
-        .order("created_at", { ascending: false });
+ const fetchToReceive = useCallback(async () => {
+  try {
+    const q = await supabase
+      .from("v_wh_incoming_heads_ui" as any)
+      .select("*")
+      .order("purchase_created_at", { ascending: false });
 
-      let rows = (all.data || []) as IncomingRow[];
-
-      // фоллбек: добавим закупки без записей wh_incoming
-      try {
-        const covered = new Set(
-          rows.map((r) => r.purchase_id).filter(Boolean) as string[],
-        );
-
-        const po = await supabase
-          .from("purchases" as any)
-          .select("id, po_no, status, created_at")
-          .not("status", "eq", "Черновик" as any)
-          .order("created_at", { ascending: false })
-          .limit(200);
-
-        if (!po.error && Array.isArray(po.data)) {
-          const synth: IncomingRow[] = [];
-          for (const p of po.data as any[]) {
-            const pid = String(p.id);
-            if (covered.has(pid)) continue;
-            synth.push({
-              id: `p:${pid}`,
-              purchase_id: pid,
-              status: "pending",
-              qty: null,
-              note: null,
-              created_at: p.created_at ?? null,
-              confirmed_at: null,
-              po_no: p.po_no ?? null,
-              purchase_status: p.status ?? null,
-            });
-          }
-          if (synth.length) rows = [...synth, ...rows];
-        } else if (po.error) {
-          console.warn("[warehouse] purchases fallback error:", po.error.message);
-        }
-      } catch (e) {
-        console.warn("[warehouse] fallback purchases:", e);
-      }
-
-      // прогресс по шапкам
-      type Agg = { exp: number; rec: number };
-      const progress: Record<string, Agg> = {};
-
-      // реальные id → wh_incoming_items
-      const realIds = rows.map((r) => r.id).filter((id) => isUuid(id));
-      if (realIds.length) {
-        const agg = await supabase
-          .from("wh_incoming_items" as any)
-          .select("incoming_id, qty_expected, qty_received")
-          .in("incoming_id", realIds)
-          .limit(20000);
-        if (!agg.error && Array.isArray(agg.data)) {
-          for (const x of agg.data as any[]) {
-            const id = String(x.incoming_id);
-            const exp = nz(x.qty_expected, 0);
-            const rec = nz(x.qty_received, 0);
-            if (!progress[id]) progress[id] = { exp: 0, rec: 0 };
-            progress[id].exp += exp;
-            progress[id].rec += rec;
-          }
-        }
-      }
-
-      // синтетика p:<pid> → purchase_items
-      const synth = rows.filter((r) => String(r.id).startsWith("p:"));
-      if (synth.length) {
-        const pids = synth.map((r) => r.purchase_id).filter(Boolean) as string[];
-        if (pids.length) {
-          const pi = await supabase
-            .from("purchase_items" as any)
-            .select("purchase_id, qty")
-            .in("purchase_id", pids)
-            .limit(20000);
-          if (!pi.error && Array.isArray(pi.data)) {
-            const sumByPid: Record<string, number> = {};
-            for (const x of pi.data as any[]) {
-              const s = String(x.qty ?? "").trim();
-              const n = Number(
-                s.replace(/[^\d,\.\-]+/g, "").replace(",", "."),
-              );
-              const q = Number.isFinite(n) ? n : 0;
-              const pid = String(x.purchase_id ?? "");
-              sumByPid[pid] = (sumByPid[pid] ?? 0) + q;
-            }
-            for (const r of synth) {
-              progress[r.id] = { exp: sumByPid[r.purchase_id] ?? 0, rec: 0 };
-            }
-          }
-        }
-      }
-
-      let cPending = 0;
-      let cPartial = 0;
-      const filtered: IncomingRow[] = [];
-
-      for (const r of rows) {
-        const pr = progress[r.id] ?? { exp: nz(r.qty ?? 0), rec: 0 };
-        const left = Math.max(0, pr.exp - pr.rec);
-        const hasReceived = pr.rec > 0;
-
-        // полностью закрытые — исключаем
-        if (hasReceived && left <= 0) continue;
-
-        if (!hasReceived) {
-          cPending++;
-          if (recvFilter === "pending") filtered.push(r);
-          continue;
-        }
-
-        cPartial++;
-        if (recvFilter === "partial") filtered.push(r);
-      }
-
-      setCountPending(cPending);
-      setCountPartial(cPartial);
-      setCountConfirmed(0);
-      setToReceive(filtered);
-    } catch (e) {
+    if (q.error || !Array.isArray(q.data)) {
+      console.warn("[warehouse] v_wh_incoming_heads_ui error:", q.error?.message);
       setToReceive([]);
+      setToReceivePending([]);
+      setToReceivePartial([]);
       setCountPending(0);
       setCountPartial(0);
       setCountConfirmed(0);
-      console.warn("[warehouse] fetchToReceive:", e);
+      return;
     }
-  }, [recvFilter]);
 
- 
+    const rows: IncomingRow[] = (q.data as any[]).map((x) => ({
+      incoming_id: String(x.incoming_id),
+      purchase_id: String(x.purchase_id),
+      incoming_status: String(x.incoming_status ?? "pending"),
+      po_no: x.po_no ?? null,
+      purchase_status: x.purchase_status ?? null,
+      purchase_created_at: x.purchase_created_at ?? null,
+      confirmed_at: x.confirmed_at ?? null,
+      qty_expected_sum: nz(x.qty_expected_sum, 0),
+      qty_received_sum: nz(x.qty_received_sum, 0),
+      qty_left_sum: nz(x.qty_left_sum, 0),
+      items_cnt: Number(x.items_cnt ?? 0),
+    }));
+
+    const pending: IncomingRow[] = [];
+    const partial: IncomingRow[] = [];
+
+    for (const r of rows) {
+      const exp = nz(r.qty_expected_sum, 0);
+      const rec = nz(r.qty_received_sum, 0);
+      const left = nz(r.qty_left_sum, Math.max(0, exp - rec));
+
+      // закрытые не показываем
+      if (left <= 0) continue;
+
+      if (rec > 0) partial.push(r);
+      else pending.push(r);
+    }
+
+    setToReceivePending(pending);
+    setToReceivePartial(partial);
+    setCountPending(pending.length);
+    setCountPartial(partial.length);
+    setCountConfirmed(0);
+
+    // ✅ ВАЖНО: toReceive зависит ТОЛЬКО от recvFilter
+    setToReceive(recvFilter === "partial" ? partial : pending);
+  } catch (e) {
+    console.warn("[warehouse] fetchToReceive throw:", e);
+    setToReceive([]);
+    setToReceivePending([]);
+    setToReceivePartial([]);
+    setCountPending(0);
+    setCountPartial(0);
+    setCountConfirmed(0);
+  }
+}, [recvFilter]);
+
+ // ✅ ВОТ СЮДА ВСТАВИТЬ:
+useEffect(() => {
+  setToReceive(recvFilter === "partial" ? toReceivePartial : toReceivePending);
+}, [recvFilter, toReceivePending, toReceivePartial]);
   /** ===== ОСТАТКИ ===== */
   const [stock, setStock] = useState<StockRow[]>([]);
   const [stockSupported, setStockSupported] = useState<null | boolean>(null);
@@ -768,10 +695,10 @@ const pdfWindowRef = React.useRef<Window | null>(null);
     const map = new Map<string, StockRow>();
 
     for (const row of stock) {
-      const kind = detectKindLabel(row.code);
-      if (kind === "работа" || kind === "услуга") continue;
+      
 
-      const key = row.code || row.material_id;
+      const key = row.material_id; // строго
+
       if (!key) continue;
 
       const exist = map.get(key);
@@ -814,33 +741,32 @@ const pdfWindowRef = React.useRef<Window | null>(null);
       if (!fact.error && Array.isArray(fact.data)) {
 
         const rows = (fact.data || []).map(
-          (x: any) =>
-            ({
-              material_id: String(x.code ?? x.material_id ?? ""),
-              code: x.code ?? null,
-              name: x.name ?? x.name_human ?? x.name_human_ru ?? null,
+  (x: any) =>
+    ({
+      material_id: String(x.material_id ?? ""),   // ✅ строго ID
+      code: x.code ?? null,
+      name: x.name ?? x.name_human ?? x.name_human_ru ?? null,
 
-              uom_id:
-  pickUom(x.uom_id) ??
-  pickUom(x.uom) ??
-  pickUom(x.uom_code) ??
-  pickUom(x.unit) ??
-  pickUom(x.unit_id) ??
-  null,
+      uom_id:
+        pickUom(x.uom_id) ??
+        pickUom(x.uom) ??
+        pickUom(x.uom_code) ??
+        pickUom(x.unit) ??
+        pickUom(x.unit_id) ??
+        null,
 
+      qty_on_hand: nz(x.qty_on_hand, 0),
+      qty_reserved: nz(x.qty_reserved, 0),
+      qty_available: nz(
+        x.qty_available ?? nz(x.qty_on_hand, 0) - nz(x.qty_reserved, 0),
+        0,
+      ),
+      object_name: x.object_name ?? null,
+      warehouse_name: x.warehouse_name ?? null,
+      updated_at: x.updated_at ?? null,
+    } as StockRow),
+);
 
-              qty_on_hand: nz(x.qty_on_hand, 0),
-              qty_reserved: nz(x.qty_reserved, 0),
-              qty_available: nz(
-                x.qty_available ??
-                  nz(x.qty_on_hand, 0) - nz(x.qty_reserved, 0),
-                0,
-              ),
-              object_name: x.object_name ?? null,
-              warehouse_name: x.warehouse_name ?? null,
-              updated_at: x.updated_at ?? null,
-            } as StockRow),
-        );
         setStock(rows);
         setStockSupported(true);
         return;
@@ -2598,211 +2524,59 @@ const mapRow = (x: any, syntheticBase?: string): ItemRow => {
 };
   /** ===== загрузка позиций по шапке ===== */
   const loadItemsForHead = useCallback(
-    async (incomingIdRaw: string, force = false): Promise<ItemRow[] | undefined> => {
-      const incomingId = canonId(incomingIdRaw);
-      if (!incomingId) return [];
+  async (incomingId: string, force = false): Promise<ItemRow[] | undefined> => {
+    if (!incomingId) return [];
 
-      if (
-        !force &&
-        Object.prototype.hasOwnProperty.call(itemsByHead, incomingId)
-      ) {
-        console.log("[loadItemsForHead] cache hit", { incomingIdRaw, incomingId });
-        return itemsByHead[incomingId];
-      }
-
-      let purchaseId: string | null =
-        toReceive.find((x) => canonId(x.id) === incomingId)?.purchase_id ?? null;
-      if (!purchaseId && incomingIdRaw.startsWith("p:")) {
-        purchaseId = incomingIdRaw.slice(2);
-      }
-
-      const isSynthetic = incomingIdRaw.startsWith("p:");
-      
-      // если нет purchase_id — дёргаем wh_incoming
-      if (!purchaseId && isUuid(incomingId) && !isSynthetic) {
-        try {
-          const qHead = await supabase
-            .from("wh_incoming" as any)
-            .select("purchase_id")
-            .eq("id", incomingId)
-            .maybeSingle();
-          if (!qHead.error && qHead.data?.purchase_id) {
-            purchaseId = String(qHead.data.purchase_id);
-            console.log("[loadItemsForHead] purchase_id from wh_incoming", { purchaseId });
-          }
-        } catch (e) {
-          console.warn("[loadItemsForHead] purchase_id fallback err:", e);
-        }
-      }
-
-      // 1) RPC list_wh_items
-      if (!isSynthetic && isUuid(incomingId)) {
-        
-        try {
-          const r = await supabase.rpc("list_wh_items" as any, {
-            p_incoming_id: incomingId,
-          } as any);
-
-          if (!r.error && Array.isArray(r.data) && r.data.length > 0) {
-            const rows = (r.data as any[]).map((x) => mapRow(x));
-            setItemsByHead((prev) => ({ ...prev, [incomingId]: rows }));
-            return rows;
-          }
-          if (r.error) {
-            console.warn(
-              "[list_wh_items] rpc error:",
-              r.error.message,
-              r.error.details,
-              r.error.hint,
-              (r as any).status,
-            );
-          }
-        } catch (e: any) {
-          console.warn("[list_wh_items] throw:", e?.message || e);
-        }
-      } else if (!isSynthetic) {
-        console.warn("[list_wh_items] skipped: incomingId is not UUID:", incomingId);
-      }
-
-      // 2) wh_incoming_items (ПРИНУДИТЕЛЬНО если incomingId UUID)
-if (isUuid(incomingId)) {
-  // если purchaseId не нашли — дёрнем прямо из wh_incoming
-  if (!purchaseId) {
-    const head = await supabase
-      .from("wh_incoming" as any)
-      .select("purchase_id")
-      .eq("id", incomingId)
-      .maybeSingle();
-    if (!head.error && head.data?.purchase_id) {
-      purchaseId = String(head.data.purchase_id);
-      console.log("[loadItemsForHead] purchaseId loaded from wh_incoming", purchaseId);
+    if (!force && Object.prototype.hasOwnProperty.call(itemsByHead, incomingId)) {
+      return itemsByHead[incomingId];
     }
-  }
 
-    const fb = await supabase
-    .from("wh_incoming_items" as any)
-    .select(`
-      id,
-      incoming_id,
-      purchase_item_id,
-      qty_expected,
-      qty_received,
-      purchase_items:purchase_items (
-  id,
-  request_item_id,
-  qty,
-  uom,
-  request_items:request_items (
-    rik_code,
-    name_human,
-    uom
-  )
-)
-    `)
-    .eq("incoming_id", incomingId)
-    .order("created_at", { ascending: true });
-
-  if (!fb.error && Array.isArray(fb.data) && fb.data.length > 0) {
-    const rows = (fb.data as any[]).map((x) => mapRow(x));
-    setItemsByHead((prev) => ({ ...prev, [incomingId]: rows }));
-    return rows;
-  }
-
-  // reseed если пусто
-  if (purchaseId) {
-       const fb2 = await supabase
-      .from("wh_incoming_items" as any)
-      .select(`
-        id,
-        incoming_id,
-        purchase_item_id,
-        qty_expected,
-        qty_received,
-        purchase_items:purchase_items (
-  id,
-  request_item_id,
-  qty,
-  uom,
-  request_items:request_items (
-    rik_code,
-    name_human,
-    uom
-  )
-)
-      `)
+    const q = await supabase
+      .from("v_wh_incoming_items_ui" as any)
+      .select("*")
       .eq("incoming_id", incomingId)
-      .order("created_at", { ascending: true });
+      .order("sort_key", { ascending: true });
 
-    if (!fb2.error && Array.isArray(fb2.data) && fb2.data.length > 0) {
-      const rows = (fb2.data as any[]).map((x) => mapRow(x));
-      setItemsByHead((prev) => ({ ...prev, [incomingId]: rows }));
-      return rows;
-    }
-  }
-}
-
-      // 3) purchase_items — только для синтетики
-      if (isSynthetic && purchaseId) {
-                const pi = await supabase
-          .from("purchase_items" as any)
-          .select(`
-            id,
-            request_item_id,
-            qty,
-            uom,
-            request_items:request_items (
-              rik_code,
-              name_human,
-              note,
-              uom
-            )
-          `)
-          .eq("purchase_id", purchaseId)
-          .order("id", { ascending: true });
-
-        if (!pi.error && Array.isArray(pi.data) && pi.data.length > 0) {
-          const rows = (pi.data as any[]).map((x) => mapRow(x, incomingIdRaw));
-          setItemsByHead((prev) => ({ ...prev, [incomingId]: rows }));
-          return rows;
-        }
-
-        const link = await supabase
-          .from("purchases" as any)
-          .select("proposal_id")
-          .eq("id", purchaseId)
-          .maybeSingle();
-        const propId = link?.data?.proposal_id;
-        if (propId) {
-          const r2 = await supabase
-            .from("proposal_snapshot_items" as any)
-            .select("*")
-            .eq("proposal_id", propId)
-            .order("id", { ascending: true });
-          if (!r2.error && Array.isArray(r2.data) && r2.data.length > 0) {
-            const rows = (r2.data as any[]).map((x) => mapRow(x, incomingIdRaw));
-            setItemsByHead((prev) => ({ ...prev, [incomingId]: rows }));
-            return rows;
-          }
-        }
-      }
+    if (q.error) {
+      console.warn("[loadItemsForHead] v_wh_incoming_items_ui error:", q.error.message);
       setItemsByHead((prev) => ({ ...prev, [incomingId]: [] }));
       return [];
-    },
-    [itemsByHead, toReceive, canonId, reseedIncomingItems],
-  );
+    }
 
-  const onToggleHead = useCallback(
-  async (incomingIdRaw: string) => {
-    const id = canonId(incomingIdRaw);
-    const next = expanded === id ? null : id;
+    const rows: ItemRow[] = ((q.data as any[]) || []).map((x) => ({
+      incoming_item_id: x.incoming_item_id ? String(x.incoming_item_id) : null,
+      purchase_item_id: String(x.purchase_item_id),
+      code: x.code ? String(x.code) : null,
+      name: String(x.name ?? x.code ?? ""),
+      uom: x.uom ? String(x.uom) : null,
+      qty_expected: nz(x.qty_expected, 0),
+      qty_received: nz(x.qty_received, 0),
+      sort_key: Number(x.sort_key ?? 1),
+    }));
+
+    setItemsByHead((prev) => ({ ...prev, [incomingId]: rows }));
+    return rows;
+  },
+  [itemsByHead],
+);
+
+
+ const onToggleHead = useCallback(
+  (incomingId: string) => {
+    if (!incomingId) return;
+
+    const next = expanded === incomingId ? null : incomingId;
     setExpanded(next);
+
     if (next) {
+      // не блокируем UI: без await
       setItemsByHead((prev) => ({ ...prev, [next]: prev[next] ?? [] }));
-      await loadItemsForHead(id, true); // ← ВОТ ЭТА СТРОКА
+      void loadItemsForHead(next, true);
     }
   },
-  [expanded, loadItemsForHead, canonId],
+  [expanded, loadItemsForHead],
 );
+
 
 
   // частичная приёмка одной строки
@@ -2932,228 +2706,86 @@ if (isUuid(incomingId)) {
   return true;
 };
 
-  // общая кнопка "Оприходовать выбранное"
   const receiveSelectedForHead = useCallback(
-    async (incomingIdInitial: string) => {
-      try {
-        if (!incomingIdInitial) return;
-
-        let incomingId = incomingIdInitial;
-        if (incomingId.startsWith("p:")) {
-          const real = await ensureRealIncoming(incomingId);
-          if (real) incomingId = real;
-        }
-        const cid = canonId(incomingId);
-
-        if (!isUuid(cid)) {
-          return Alert.alert("Ошибка", "Неверный ID поставки");
-        }
-
-        await ensurePositionsForHead(cid);
-
-        const freshRows = (await loadItemsForHead(cid, true)) ?? [];
-        if (freshRows.length === 0) {
-          return Alert.alert(
-            "Нет позиций",
-            "Под этой шапкой нет строк для прихода.",
-          );
-        }
-
-        const toApply: Array<{ id: string; qty: number }> = [];
-        for (const r of freshRows) {
-          const exp = nz(r.qty_expected, 0);
-          const rec = nz(r.qty_received, 0);
-          const left = Math.max(0, exp - rec);
-          if (!left) continue;
-
-          const id = r.incoming_item_id;
-          if (!isUuid(id)) continue;
-          const qty = parseQty(qtyInputByItem[id], left);
-          if (qty > 0) toApply.push({ id, qty });
-        }
-
-        if (toApply.length === 0) {
-          return Alert.alert(
-            "Нечего оприходовать",
-            "Введите количество > 0 для нужных строк.",
-          );
-        }
-
-        const ids = toApply.map((t) => t.id);
-        const check = await supabase
-          .from("wh_incoming_items" as any)
-          .select("id")
-          .in("id", ids)
-          .limit(10000);
-        const existing = new Set<string>(
-          (check.data || []).map((x: any) => String(x.id)),
-        );
-        const valid = toApply.filter((t) => existing.has(t.id));
-        const missed = toApply.filter((t) => !existing.has(t.id));
-        if (missed.length) {
-          console.warn(
-            "[receiveSelectedForHead] skipped stale ids:",
-            missed.map((m) => m.id),
-          );
-          if (valid.length === 0) {
-            return Alert.alert(
-              "Обнови список",
-              "Позиции были пересозданы. Нажми «Показать позиции» ещё раз и повтори ввод количества.",
-            );
-          }
-        }
-
-        setReceivingHeadId(incomingIdInitial);
-        let ok = 0,
-          fail = 0;
-        for (const it of valid) {
-          const r = await supabase.rpc("wh_receive_item_v2" as any, {
-  p_incoming_item_id: it.id,
-  p_qty: it.qty,
-  p_note: null,
-} as any);
-
-          if (r.error) {
-            fail++;
-            console.warn(
-              "[wh_receive_item] err:",
-              it.id,
-              r.error.message,
-            );
-          } else ok++;
-        }
-
-        // сразу сеем работы из закупки
-        try {
-          const q = await supabase
-            .from("wh_incoming" as any)
-            .select("purchase_id")
-            .eq("id", cid)
-            .maybeSingle();
-
-          const pid =
-            !q.error && q.data?.purchase_id
-              ? String(q.data.purchase_id)
-              : null;
-
-          if (pid) {
-            const seed = await supabase.rpc(
-              "work_seed_from_purchase" as any,
-              { p_purchase_id: pid } as any,
-            );
-            if (seed.error) {
-              console.warn(
-                "[receiveSelectedForHead][work_seed_from_purchase] error:",
-                seed.error.message,
-              );
-            }
-          }
-        } catch (e) {
-          console.warn(
-            "[receiveSelectedForHead] purchase_id lookup / seed error:",
-            e,
-          );
-        }
-
-        const rows2 = (await loadItemsForHead(cid, true)) ?? [];
-        const leftAfter = rows2.reduce(
-          (s, r) =>
-            s +
-            Math.max(0, nz(r.qty_expected, 0) - nz(r.qty_received, 0)),
-          0,
-        );
-
-        if (leftAfter <= 0) {
-          try {
-            const pr = await supabase.rpc("wh_receive_confirm" as any, {
-              p_wh_id: cid,
-            } as any);
-            if (pr.error) {
-              console.warn("[auto confirm] err:", pr.error.message);
-            }
-
-            try {
-              const q = await supabase
-                .from("wh_incoming" as any)
-                .select("purchase_id")
-                .eq("id", cid)
-                .maybeSingle();
-
-              const pid =
-                !q.error && q.data?.purchase_id
-                  ? String(q.data.purchase_id)
-                  : null;
-
-              if (pid) {
-                const seed = await supabase.rpc(
-                  "work_seed_from_purchase" as any,
-                  { p_purchase_id: pid } as any,
-                );
-                if (seed.error) {
-                  console.warn(
-                    "[auto confirm][work_seed_from_purchase] error:",
-                    seed.error.message,
-                  );
-                }
-              }
-            } catch (e) {
-              console.warn(
-                "[auto confirm] lookup purchase_id / seed works err:",
-                e,
-              );
-            }
-          } catch {}
-        }
-
-        // ✅ мгновенно показываем “Оприходуем…” и не блокируем UI web
-setReceivingHeadId(cid);
-
-// ✅ сразу обновим позиции в раскрытой карточке (быстро)
-setItemsByHead((prev) => {
-  const c = { ...prev };
-  delete c[cid];
-  return c;
-});
-
-// ⚡️ тяжёлые обновления — в следующий тик (иначе web “залипает”)
-setTimeout(() => {
-  (async () => {
+  async (incomingId: string) => {
     try {
-      await loadItemsForHead(cid, true); // быстро
-      await fetchToReceive();            // средне
-      await fetchStock();                // тяжело
+      if (!incomingId) return;
+
+      const freshRows = (await loadItemsForHead(incomingId, true)) ?? [];
+      if (freshRows.length === 0) {
+        return Alert.alert("Нет позиций", "Под этой поставкой нет строк для прихода.");
+      }
+
+      // собираем выбранное по введённым qty (ключ теперь purchase_item_id)
+      const toApply: Array<{ purchase_item_id: string; qty: number }> = [];
+
+      for (const r of freshRows) {
+        const exp = nz(r.qty_expected, 0);
+        const rec = nz(r.qty_received, 0);
+        const left = Math.max(0, exp - rec);
+        if (!left) continue;
+
+        // input ключ: если incoming_item_id есть — используем его, иначе purchase_item_id
+        const inputKey = (r.incoming_item_id ?? r.purchase_item_id) as string;
+        const qty = parseQty(qtyInputByItem[inputKey], left);
+        if (qty > 0) {
+          toApply.push({ purchase_item_id: r.purchase_item_id, qty });
+        }
+      }
+
+      if (toApply.length === 0) {
+        return Alert.alert("Нечего оприходовать", "Введите количество > 0 для нужных строк.");
+      }
+
+      setReceivingHeadId(incomingId);
+
+      const { data, error } = await supabase.rpc("wh_receive_apply_ui" as any, {
+        p_incoming_id: incomingId,
+        p_items: toApply,
+        p_note: null,
+      } as any);
+
+      if (error) {
+        console.warn("[wh_receive_apply_ui] error:", error.message);
+        return Alert.alert("Ошибка прихода", pickErr(error));
+      }
+
+      // обновляем UI
+      await Promise.all([fetchToReceive(), fetchStock()]);
+      setItemsByHead((prev) => {
+        const c = { ...prev };
+        delete c[incomingId];
+        return c;
+      });
+      await loadItemsForHead(incomingId, true);
+
+      // чистим инпуты
+      setQtyInputByItem((prev) => {
+        const next = { ...prev };
+        for (const r of freshRows) {
+          const k = (r.incoming_item_id ?? r.purchase_item_id) as string;
+          delete next[k];
+        }
+        return next;
+      });
+
+      const ok = Number((data as any)?.ok ?? 0);
+      const fail = Number((data as any)?.fail ?? 0);
+      const leftAfter = nz((data as any)?.left_after, 0);
+
+      Alert.alert(
+        "Готово",
+        `Принято позиций: ${ok}${fail ? `, ошибок: ${fail}` : ""}\nОсталось: ${leftAfter}`,
+      );
+    } catch (e) {
+      showErr(e);
     } finally {
       setReceivingHeadId(null);
     }
-  })();
-}, 0);
+  },
+  [loadItemsForHead, qtyInputByItem, fetchToReceive, fetchStock],
+);
 
-// чистим input-ы сразу
-setQtyInputByItem((prev) => {
-  const next = { ...prev };
-  for (const it of valid) delete next[it.id];
-  return next;
-});
-
-Alert.alert("Готово", `Принято позиций: ${ok}${fail ? `, ошибок: ${fail}` : ""}`);
-return;
-
-
-      } catch (e) {
-        showErr(e);
-      } finally {
-        setReceivingHeadId(null);
-      }
-    },
-    [
-      canonId,
-      fetchToReceive,
-      fetchStock,
-      loadItemsForHead,
-      qtyInputByItem,
-      ensureRealIncoming,
-    ],
-  );
 
   /** ===== ИСТОРИЯ ===== */
   const [history, setHistory] = useState<HistoryRow[]>([]);
@@ -3621,7 +3253,8 @@ const uomLabel =
         {/* Результаты каталога */}
         <FlatList
           data={catalog}
-          keyExtractor={(x, idx) => `${x.code}-${idx}`}
+          keyExtractor={(x, idx) => `cat:${x.ref_id || x.code || "x"}:${idx}`}
+
           renderItem={({ item }) => {
             const avail = availability[item.code] ?? 0;
             const canIssue = canIssueGlobal;
@@ -3809,7 +3442,12 @@ const uomLabel =
               return (
                 <Pressable
                   key={f}
-                  onPress={() => setRecvFilter(f)}
+                 onPress={() => {
+  setRecvFilter(f);
+  // мгновенно меняем список
+  setToReceive(f === "partial" ? toReceivePartial : toReceivePending);
+}}
+
                   style={{
                     paddingHorizontal: 12,
                     paddingVertical: 8,
@@ -3854,21 +3492,18 @@ const uomLabel =
 
           <FlatList
             data={toReceive}
-            keyExtractor={(i) => i.id}
+            keyExtractor={(i) => i.incoming_id}
+
             renderItem={({ item }) => {
-              const rid = canonId(item.id);
+              const rid = item.incoming_id;
+
               const isExpanded = expanded === rid;
               const rows = (itemsByHead[rid] as ItemRow[] | undefined) || [];
 
-              const expSum = rows.reduce(
-                (s, r) => s + nz(r.qty_expected, 0),
-                0,
-              );
-              const recSum = rows.reduce(
-                (s, r) => s + nz(r.qty_received, 0),
-                0,
-              );
-              const totalLeft = Math.max(0, expSum - recSum);
+              const expSum = nz(item.qty_expected_sum, 0);
+const recSum = nz(item.qty_received_sum, 0);
+const totalLeft = nz(item.qty_left_sum, 0);
+
 
               return (
                 <View
@@ -3894,7 +3529,7 @@ const uomLabel =
                       style={{
                         marginLeft: "auto",
                         backgroundColor:
-                          item.status === "confirmed" ? "#dcfce7" : "#fee2e2",
+  item.incoming_status === "confirmed" ? "#dcfce7" : "#fee2e2",
                         paddingHorizontal: 10,
                         paddingVertical: 4,
                         borderRadius: 999,
@@ -3904,12 +3539,10 @@ const uomLabel =
                         style={{
                           fontWeight: "700",
                           color:
-                            item.status === "confirmed"
-                              ? "#166534"
-                              : "#991b1b",
+  item.incoming_status === "confirmed" ? "#166534" : "#991b1b",
                         }}
                       >
-                        {item.status === "confirmed" ? "Принято" : "Ожидает"}
+                        {item.incoming_status === "confirmed" ? "Принято" : "Ожидает"}
                       </Text>
                     </View>
                   </View>
@@ -3918,16 +3551,14 @@ const uomLabel =
                     Статус закупки: {item.purchase_status ?? "—"}
                   </Text>
                   <Text style={{ color: "#64748b" }}>
-                    Создано:{" "}
-                    {item.created_at
-                      ? new Date(item.created_at).toLocaleString("ru-RU")
-                      : "—"}
-                    {item.status === "confirmed" && item.confirmed_at
-                      ? ` • Принято: ${new Date(
-                          item.confirmed_at,
-                        ).toLocaleString("ru-RU")}`
-                      : ""}
-                  </Text>
+  Создано:{" "}
+  {item.purchase_created_at
+    ? new Date(item.purchase_created_at).toLocaleString("ru-RU")
+    : "—"}
+  {item.incoming_status === "confirmed" && item.confirmed_at
+    ? ` • Принято: ${new Date(item.confirmed_at).toLocaleString("ru-RU")}`
+    : ""}
+</Text>
 
                   {/* кнопка показать/скрыть позиции */}
                   <View
@@ -3938,34 +3569,21 @@ const uomLabel =
                       flexWrap: "wrap",
                     }}
                   >
-                    <Pressable
-                      onPress={async () => {
-                        let idToOpen = item.id;
-                        if (String(item.id).startsWith("p:")) {
-                          const realId = await ensureRealIncoming(item.id);
-                          if (realId) {
-                            setHeadIdAlias((prev) => ({
-                              ...prev,
-                              [item.id]: realId,
-                            }));
-                            idToOpen = realId;
-                          }
-                        }
-                        await onToggleHead(idToOpen);
-                      }}
-                      style={{
-                        paddingHorizontal: 12,
-                        paddingVertical: 8,
-                        borderRadius: 8,
-                        borderWidth: 1,
-                        borderColor: "#e2e8f0",
-                        backgroundColor: "#fff",
-                      }}
-                    >
-                      <Text>
-                        {isExpanded ? "Скрыть позиции" : "Показать позиции"}
-                      </Text>
-                    </Pressable>
+                   <Pressable
+  onPress={() => onToggleHead(item.incoming_id)}
+  style={{
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#e2e8f0",
+    backgroundColor: "#fff",
+    cursor: "pointer" as any,          // ✅ web
+  }}
+>
+  <Text>{isExpanded ? "Скрыть позиции" : "Показать позиции"}</Text>
+</Pressable>
+
                   </View>
 
                   {/* раскрытая часть */}
@@ -4001,15 +3619,17 @@ const uomLabel =
                               const exp = nz(row.qty_expected, 0);
                               const rec = nz(row.qty_received, 0);
                               const left = Math.max(0, exp - rec);
-                              const inputKey = row.incoming_item_id;
-                              const val = qtyInputByItem[inputKey] ?? "";
+                              const inputKey = (row.incoming_item_id ?? row.purchase_item_id ?? `${row.code ?? "x"}:${row.sort_key}`) as string;
+
+const val = qtyInputByItem[inputKey] ?? "";
+
                               const isRealIncoming =
                                 typeof row.incoming_item_id === "string" &&
                                 !row.incoming_item_id.startsWith("p:");
 
                               return (
                                 <View
-                                  key={row.incoming_item_id}
+                                  key={row.incoming_item_id ?? row.purchase_item_id}
                                   style={{
                                     padding: 10,
                                     borderBottomWidth: 1,
@@ -4057,9 +3677,8 @@ const uomLabel =
                                     );
                                   })()}
 
-                                  {item.status !== "confirmed" &&
-                                    isRealIncoming &&
-                                    left > 0 && (
+                                  {item.incoming_status !== "confirmed" && left > 0 && (
+
                                       <View
                                         style={{
                                           flexDirection: "row",
@@ -4113,7 +3732,7 @@ const uomLabel =
                               );
                             })}
 
-                          {item.status !== "confirmed" && (
+                          {item.incoming_status !== "confirmed" && (
                             <View style={{ padding: 10, gap: 8 }}>
                               <Pressable
                                onPress={() => receiveSelectedForHead(rid)}
@@ -4183,7 +3802,8 @@ style={{
       return (
         <FlatList
           data={stockMaterialsByCode}
-          keyExtractor={(i, idx) => `${i.code || i.material_id}-${idx}`}
+          keyExtractor={(i) => i.material_id}
+
           renderItem={({ item }) => <StockRowView r={item} />}
           ListEmptyComponent={
             <Text style={{ color: "#475569" }}>
@@ -4643,7 +4263,8 @@ disabled={Platform.OS !== "web" ? pdfBusy : false}
                         ).toLocaleString("ru-RU");
                         return (
                           <View
-                            key={log.id}
+                            keyExtractor={(x) => x.id}
+
                             style={{
                               paddingVertical: 6,
                               borderBottomWidth: 1,
@@ -4909,7 +4530,8 @@ disabled={Platform.OS !== "web" ? !!pdfBusyLogId : false}
                     />
                     <FlatList
                       data={workSearchResults}
-                      keyExtractor={(m) => m.mat_code}
+                      keyExtractor={(m, idx) => `mat:${m.mat_code || "x"}:${idx}`}
+
                       style={{ maxHeight: 260 }}
                       renderItem={({ item }) => {
                         const hasStock = (item.available || 0) > 0;

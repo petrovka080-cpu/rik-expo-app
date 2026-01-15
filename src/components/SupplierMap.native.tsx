@@ -1,4 +1,3 @@
-// src/components/SupplierMap.native.tsx
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   View,
@@ -14,8 +13,15 @@ import {
   Platform,
   Alert,
 } from "react-native";
-import MapView, { Marker, Region } from "react-native-maps";
+import MapView, { Marker } from "react-native-maps";
 import { supabase } from "../lib/supabaseClient";
+
+type Region = {
+  latitude: number;
+  longitude: number;
+  latitudeDelta: number;
+  longitudeDelta: number;
+};
 
 type ListingItemJson = {
   rik_code?: string | null;
@@ -62,27 +68,29 @@ export default function SupplierMapNative() {
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
   const [cityFilter, setCityFilter] = useState("");
-  const [kindFilter, setKindFilter] = useState<"all" | "material" | "service" | "rent">(
-    "all"
-  );
-
+  const [kindFilter, setKindFilter] = useState<"all" | "material" | "service" | "rent">("all");
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [region, setRegion] = useState<Region>(defaultRegion);
-
-  // ✅ Все / Предложения / Спрос
   const [block, setBlock] = useState<"all" | "offer" | "demand">("all");
 
-  // ✅ КП (Коммерческое предложение)
   const [offerDemand, setOfferDemand] = useState<MarketListing | null>(null);
   const [offerPrice, setOfferPrice] = useState("");
   const [offerDays, setOfferDays] = useState("");
   const [offerComment, setOfferComment] = useState("");
   const [sendingOffer, setSendingOffer] = useState(false);
 
-  const mapRef = useRef<MapView | null>(null);
+  const mapRef = useRef<any>(null);
 
   const [sheetHeight, setSheetHeight] = useState(0.35);
+  const sheetHeightRef = useRef(0.35);
+  useEffect(() => {
+    sheetHeightRef.current = sheetHeight;
+  }, [sheetHeight]);
+
   const containerHeightRef = useRef(1);
+  const onContainerLayout = (e: LayoutChangeEvent) => {
+    containerHeightRef.current = e.nativeEvent.layout.height || 1;
+  };
 
   const panResponder = useRef(
     PanResponder.create({
@@ -90,7 +98,8 @@ export default function SupplierMapNative() {
       onMoveShouldSetPanResponder: () => true,
       onPanResponderMove: (_, gesture) => {
         const deltaY = gesture.dy;
-        const newHeightRaw = sheetHeight + deltaY / -containerHeightRef.current;
+        const newHeightRaw =
+          sheetHeightRef.current + deltaY / -containerHeightRef.current;
         const clamped = Math.max(0.2, Math.min(0.8, newHeightRaw));
         setSheetHeight(clamped);
       },
@@ -111,16 +120,7 @@ export default function SupplierMapNative() {
     }
   };
 
-  const kindLabel = (kind?: string | null) =>
-    kind === "material"
-      ? "Материал"
-      : kind === "service"
-      ? "Услуга"
-      : kind === "rent"
-      ? "Аренда"
-      : "";
-
-  // ===== 1. Загрузка объявлений =====
+  // ===== load =====
   useEffect(() => {
     const load = async () => {
       const { data, error } = await supabase
@@ -133,34 +133,27 @@ export default function SupplierMapNative() {
         console.warn("supplierMap NATIVE load error:", error.message);
         return;
       }
-
       setListings((data || []) as MarketListing[]);
     };
-
     load();
   }, []);
 
-  // ===== 2. Фильтрация =====
+  // ===== filter =====
   const filteredListings = useMemo(() => {
     const min = minPrice.trim() ? Number(minPrice.trim()) : null;
     const max = maxPrice.trim() ? Number(maxPrice.trim()) : null;
     const city = cityFilter.trim().toLowerCase();
 
     return listings.filter((l) => {
-      // ✅ фильтр Предложения / Спрос
       if (block !== "all") {
         if ((l.side || "offer") !== block) return false;
       }
-
-      // ✅ логика цены НЕ меняется (как у тебя было)
       if (min != null && l.price != null && l.price < min) return false;
       if (max != null && l.price != null && l.price > max) return false;
-
       if (city && l.city && !l.city.toLowerCase().includes(city)) return false;
 
       if (kindFilter !== "all") {
         if (l.kind === kindFilter) return true;
-
         if (Array.isArray(l.items_json) && l.items_json.length > 0) {
           const hasKind = l.items_json.some((it) => it.kind === kindFilter);
           if (!hasKind) return false;
@@ -168,10 +161,9 @@ export default function SupplierMapNative() {
           if (l.kind !== kindFilter) return false;
         }
       }
-
       return true;
     });
-  }, [listings, minPrice, maxPrice, cityFilter, kindFilter, block]); // ✅ важно: block
+  }, [listings, minPrice, maxPrice, cityFilter, kindFilter, block]);
 
   const handleSelectFromMap = (item: MarketListing) => {
     if (!item.lat || !item.lng) return;
@@ -184,16 +176,10 @@ export default function SupplierMapNative() {
       longitudeDelta: 0.05,
     };
     setRegion(newRegion);
-    mapRef.current?.animateToRegion(newRegion, 300);
+    mapRef.current?.animateToRegion?.(newRegion, 300);
   };
 
-  const handleSelectFromList = (item: MarketListing) => {
-    handleSelectFromMap(item);
-  };
-
-  const onContainerLayout = (e: LayoutChangeEvent) => {
-    containerHeightRef.current = e.nativeEvent.layout.height || 1;
-  };
+  const handleSelectFromList = (item: MarketListing) => handleSelectFromMap(item);
 
   const submitOffer = async () => {
     if (!offerDemand) return;
@@ -218,7 +204,7 @@ export default function SupplierMapNative() {
 
       const { error } = await supabase.from("demand_offers").insert({
         demand_id: offerDemand.id,
-        supplier_id: user.id, // ✅ у тебя так называется поле
+        supplier_id: user.id,
         price: priceNum,
         delivery_days: deliveryDays,
         comment: offerComment || null,
@@ -241,12 +227,9 @@ export default function SupplierMapNative() {
 
   return (
     <View style={styles.root} onLayout={onContainerLayout}>
-      {/* Хедер + фильтры */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Карта объявлений</Text>
-        <Text style={styles.headerSub}>Тапайте по маркерам на карте или по карточкам в списке.</Text>
 
-        {/* ✅ Все / Предложения / Спрос */}
         <View style={styles.blockRow}>
           {[
             { code: "all", label: "Все" },
@@ -258,10 +241,7 @@ export default function SupplierMapNative() {
               <Pressable
                 key={b.code}
                 onPress={() => setBlock(b.code as any)}
-                style={[
-                  styles.kindChip,
-                  active && { backgroundColor: UI.ok, borderColor: UI.ok },
-                ]}
+                style={[styles.kindChip, active && { backgroundColor: UI.ok, borderColor: UI.ok }]}
               >
                 <Text style={[styles.kindChipText, active && { color: "#0B1120" }]}>
                   {b.label}
@@ -329,12 +309,10 @@ export default function SupplierMapNative() {
         </View>
       </View>
 
-      {/* Карта + bottom sheet */}
       <View style={styles.mapContainer}>
-        {/* Карта */}
         <MapView
-          ref={mapRef}
-          style={[styles.map, { bottom: sheetHeight * containerHeightRef.current }]}
+  ref={mapRef}
+  style={StyleSheet.absoluteFill}
           initialRegion={defaultRegion}
           region={region}
           onRegionChangeComplete={setRegion}
@@ -376,10 +354,7 @@ export default function SupplierMapNative() {
               return (
                 <Marker
                   key={item.id}
-                  coordinate={{
-                    latitude: item.lat as number,
-                    longitude: item.lng as number,
-                  }}
+                  coordinate={{ latitude: item.lat as number, longitude: item.lng as number }}
                   onPress={() => handleSelectFromMap(item)}
                 >
                   <View style={[styles.markerBubble, { backgroundColor: bg, borderColor }]}>
@@ -396,105 +371,34 @@ export default function SupplierMapNative() {
             })}
         </MapView>
 
-        {/* Bottom sheet */}
         <View style={[styles.sheet, { height: sheetHeight * containerHeightRef.current }]}>
-          {/* ручка */}
           <View {...panResponder.panHandlers} style={styles.sheetHandleArea}>
             <View style={styles.sheetHandle} />
           </View>
 
           <ScrollView style={styles.sheetScroll} contentContainerStyle={styles.sheetScrollContent}>
-            {filteredListings.map((item) => {
-              const isSelected = selectedIds.includes(item.id);
+            {filteredListings.map((item) => (
+              <Pressable
+                key={item.id}
+                onPress={() => handleSelectFromList(item)}
+                style={styles.card}
+              >
+                <Text style={styles.cardTitle} numberOfLines={2}>
+                  {item.title}
+                </Text>
+                <Text style={styles.cardCity}>{item.city || "Город не указан"}</Text>
 
-              const items = Array.isArray(item.items_json)
-                ? (item.items_json as ListingItemJson[])
-                : [];
-
-              const activeKind =
-                kindFilter === "all"
-                  ? null
-                  : (kindFilter as "material" | "service" | "rent");
-
-              const visibleItems =
-                activeKind && items.length > 0
-                  ? items.filter((pos) => pos.kind === activeKind)
-                  : items;
-
-              let mainTitle = item.title;
-              if (activeKind && visibleItems[0]?.name) {
-                mainTitle = visibleItems[0].name as string;
-              }
-
-              let mainPrice: number | null = item.price;
-              if (activeKind && visibleItems[0]?.price != null && visibleItems[0].price !== 0) {
-                mainPrice = visibleItems[0].price as number;
-              }
-
-              return (
-                <Pressable
-                  key={item.id}
-                  onPress={() => handleSelectFromList(item)}
-                  style={[styles.card, isSelected && styles.cardSelected]}
-                >
-                  <Text
-                    style={[styles.cardTitle, isSelected && styles.cardTitleSelected]}
-                    numberOfLines={2}
-                  >
-                    {mainTitle}
-                  </Text>
-
-                  <Text style={styles.cardPrice}>
-                    {item.side === "demand"
-                      ? "Цена по запросу"
-                      : mainPrice != null
-                      ? `${mainPrice.toLocaleString("ru-RU")} KGS`
-                      : "Цена по запросу"}
-                  </Text>
-
-                  <Text style={styles.cardCity}>{item.city || "Город не указан"}</Text>
-
-                  {visibleItems.length > 0 && (
-                    <View style={styles.cardItems}>
-                      {visibleItems.slice(0, 3).map((pos, idx) => (
-                        <Text key={idx} style={styles.cardItemRow}>
-                          <Text style={styles.cardItemKind}>
-                            {kindLabel(pos.kind)} {pos.kind ? "· " : ""}
-                          </Text>
-                          {pos.name || "Позиция"}
-                          {pos.qty != null && pos.qty !== 0 && (
-                            <>
-                              {" · "}Кол-во: {pos.qty} {pos.uom ? pos.uom : ""}
-                            </>
-                          )}
-                          {pos.price != null && pos.price !== 0 && (
-                            <>
-                              {" · "}Цена: {pos.price} KGS
-                            </>
-                          )}
-                        </Text>
-                      ))}
-
-                      {visibleItems.length > 3 && (
-                        <Text style={styles.cardMore}>+ ещё {visibleItems.length - 3} позиций</Text>
-                      )}
-                    </View>
-                  )}
-
-                  {/* ✅ Кнопка КП только для спроса */}
-                  {item.side === "demand" && (
-                    <Pressable onPress={() => setOfferDemand(item)} style={styles.offerBtn}>
-                      <Text style={styles.offerBtnText}>Отправить предложение</Text>
-                    </Pressable>
-                  )}
-                </Pressable>
-              );
-            })}
+                {item.side === "demand" && (
+                  <Pressable onPress={() => setOfferDemand(item)} style={styles.offerBtn}>
+                    <Text style={styles.offerBtnText}>Отправить предложение</Text>
+                  </Pressable>
+                )}
+              </Pressable>
+            ))}
           </ScrollView>
         </View>
       </View>
 
-      {/* ✅ Модалка КП */}
       <Modal
         visible={!!offerDemand}
         transparent
@@ -567,14 +471,22 @@ const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: UI.bg },
 
   header: {
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: UI.border,
-    backgroundColor: UI.bg,
-  },
+  position: "absolute",
+  left: 0,
+  right: 0,
+  top: 0,
+  zIndex: 50,
+
+  paddingHorizontal: 16,
+  paddingTop: 12,
+  paddingBottom: 10,
+
+  backgroundColor: "rgba(2,6,23,0.92)",
+  borderBottomWidth: StyleSheet.hairlineWidth,
+  borderBottomColor: UI.border,
+},
+
   headerTitle: { fontSize: 20, fontWeight: "700", color: UI.text },
-  headerSub: { marginTop: 2, fontSize: 12, color: UI.sub },
 
   blockRow: { flexDirection: "row", flexWrap: "wrap", gap: 6, marginTop: 8 },
 
@@ -625,22 +537,8 @@ const styles = StyleSheet.create({
   sheetScrollContent: { paddingHorizontal: 16, paddingBottom: 12 },
 
   card: { paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: UI.border },
-  cardSelected: { backgroundColor: "#020617" },
   cardTitle: { fontSize: 14, fontWeight: "600", color: UI.text },
-  cardTitleSelected: { color: "#FFFFFF" },
-  cardPrice: { marginTop: 2, fontSize: 13, fontWeight: "700", color: UI.accent },
   cardCity: { marginTop: 2, fontSize: 12, color: UI.sub },
-
-  cardItems: {
-    marginTop: 6,
-    paddingTop: 4,
-    borderTopWidth: 1,
-    borderTopColor: UI.border,
-    borderStyle: "dashed",
-  },
-  cardItemRow: { fontSize: 12, color: UI.text, marginBottom: 2 },
-  cardItemKind: { color: UI.sub },
-  cardMore: { fontSize: 11, color: UI.sub, marginTop: 2 },
 
   markerBubble: {
     paddingHorizontal: 8,
@@ -703,4 +601,3 @@ const styles = StyleSheet.create({
   modalCancel: { marginTop: 10, alignItems: "center" },
   modalCancelText: { color: UI.sub, fontWeight: "700" },
 });
-

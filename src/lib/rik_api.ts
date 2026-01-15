@@ -1,7 +1,8 @@
 // src/lib/rik_api.ts — боевой минимальный API (стабильно, без спорных SELECT'ов)
 import { supabase } from './supabaseClient';
 import type { SupabaseClient } from '@supabase/supabase-js';
-import { Platform } from 'react-native';
+import { Linking, Platform } from 'react-native';
+
 
 // --- utils: normalize UUID (убираем # и валидируем) ---
 export function normalizeUuid(raw: string | null | undefined) {
@@ -14,6 +15,61 @@ export function normalizeUuid(raw: string | null | undefined) {
 declare global {
   // eslint-disable-next-line no-var
   var proposalDecide: ((...args: any[]) => Promise<void>) | undefined;
+}
+// ==============================
+// UNIVERSAL PDF OPENER (EXPO SAFE)
+// ==============================
+type OpenDocOpts = {
+  share?: boolean;
+};
+
+export async function openHtmlAsPdfUniversal(
+  html: string,
+  opts: OpenDocOpts = {}
+): Promise<string | null> {
+
+  // ================= WEB =================
+  if (Platform.OS === 'web') {
+    const w = window.open('', '_blank');
+    if (!w) {
+      alert('Разреши pop-ups для этого сайта');
+      return null;
+    }
+    w.document.open();
+    w.document.write(html);
+    w.document.close();
+    w.focus();
+    return null;
+  }
+
+  // ================= NATIVE =================
+  try {
+    const Print = await import('expo-print');
+    const Sharing = await import('expo-sharing');
+
+    // 1️⃣ Генерируем PDF
+    const { uri } = await (Print as any).printToFileAsync({ html });
+
+    // 2️⃣ iOS — Quick Look (через Share Sheet)
+    if (Platform.OS === 'ios') {
+      await (Sharing as any).shareAsync(uri, {
+        mimeType: 'application/pdf',
+        UTI: 'com.adobe.pdf',
+      });
+      return uri;
+    }
+
+    // 3️⃣ Android — ОТКРЫТИЕ ЧЕРЕЗ Linking (БЕЗ IntentLauncher)
+    if (Platform.OS === 'android') {
+      await Linking.openURL(uri);
+      return uri;
+    }
+
+    return uri;
+  } catch (e) {
+    console.warn('[openHtmlAsPdfUniversal]', e);
+    return null;
+  }
 }
 export const proposalDecide: (...args: any[]) => Promise<void> =
   (globalThis.proposalDecide ??= async (..._args: any[]) => {});
@@ -1289,32 +1345,76 @@ const kindFromRik = (code: any) => {
 
 export async function exportProposalPdf(
   proposalId: number | string,
-  mode: 'preview' | 'share' = 'share'
+  mode: 'preview' | 'share' = 'preview'
 ) {
   const html = await buildProposalPdfHtml(proposalId);
-
-  // native
-  if (Platform.OS !== 'web') {
-    const Print = await import('expo-print');
-    const { uri } = await (Print as any).printToFileAsync({ html });
-
-    if (mode === 'share') {
-      try {
-        const Sharing = await import('expo-sharing');
-        if ((Sharing as any).isAvailableAsync && (await (Sharing as any).isAvailableAsync())) {
-          await (Sharing as any).shareAsync(uri);
-        }
-      } catch {}
-    }
-
-    return uri as string;
-  }
-
-  // web
-  const w = window.open('', '_blank');
-  if (w) { w.document.write(html); w.document.close(); w.focus(); }
-  return '';
+  return openHtmlAsPdfUniversal(html, {
+    share: mode === 'share',
+  });
 }
+function moneyToWordsKGS(amount: number): string {
+  // KGS: сом / тыйын
+  const n = Number.isFinite(amount) ? amount : 0;
+  const som = Math.floor(n);
+  const tyiyn = Math.round((n - som) * 100);
+
+  const unitsM = ['', 'один', 'два', 'три', 'четыре', 'пять', 'шесть', 'семь', 'восемь', 'девять'];
+  const unitsF = ['', 'одна', 'две', 'три', 'четыре', 'пять', 'шесть', 'семь', 'восемь', 'девять'];
+  const teens = ['десять','одиннадцать','двенадцать','тринадцать','четырнадцать','пятнадцать','шестнадцать','семнадцать','восемнадцать','девятнадцать'];
+  const tens = ['', '', 'двадцать','тридцать','сорок','пятьдесят','шестьдесят','семьдесят','восемьдесят','девяносто'];
+  const hundreds = ['', 'сто','двести','триста','четыреста','пятьсот','шестьсот','семьсот','восемьсот','девятьсот'];
+
+  const morph = (num: number, f1: string, f2: string, f5: string) => {
+    const n10 = num % 10;
+    const n100 = num % 100;
+    if (n100 >= 11 && n100 <= 19) return f5;
+    if (n10 === 1) return f1;
+    if (n10 >= 2 && n10 <= 4) return f2;
+    return f5;
+  };
+
+  const triadToWords = (num: number, female: boolean) => {
+    const u = female ? unitsF : unitsM;
+    const h = Math.floor(num / 100);
+    const t = Math.floor((num % 100) / 10);
+    const d = num % 10;
+    const out: string[] = [];
+    if (h) out.push(hundreds[h]);
+    if (t === 1) out.push(teens[num % 100 - 10]);
+    else {
+      if (t) out.push(tens[t]);
+      if (d) out.push(u[d]);
+    }
+    return out.join(' ');
+  };
+
+  const parts: string[] = [];
+  const billions = Math.floor(som / 1_000_000_000);
+  const millions = Math.floor((som % 1_000_000_000) / 1_000_000);
+  const thousands = Math.floor((som % 1_000_000) / 1000);
+  const rest = som % 1000;
+
+  if (billions) {
+    parts.push(triadToWords(billions, false));
+    parts.push(morph(billions, 'миллиард', 'миллиарда', 'миллиардов'));
+  }
+  if (millions) {
+    parts.push(triadToWords(millions, false));
+    parts.push(morph(millions, 'миллион', 'миллиона', 'миллионов'));
+  }
+  if (thousands) {
+    parts.push(triadToWords(thousands, true));
+    parts.push(morph(thousands, 'тысяча', 'тысячи', 'тысяч'));
+  }
+  if (rest || parts.length === 0) parts.push(triadToWords(rest, false));
+
+  const somWord = morph(som, 'сом', 'сома', 'сомов');
+  const tyiynWord = morph(tyiyn, 'тыйын', 'тыйына', 'тыйынов');
+
+  const somText = parts.join(' ').replace(/\s+/g, ' ').trim();
+  return `${somText} ${somWord} ${String(tyiyn).padStart(2, '0')} ${tyiynWord}`.trim();
+}
+
 export async function buildPaymentOrderHtml(paymentId: number): Promise<string> {
   const pid = Number(paymentId);
   if (!Number.isFinite(pid) || pid <= 0) throw new Error('payment_id invalid');
@@ -1328,10 +1428,58 @@ export async function buildPaymentOrderHtml(paymentId: number): Promise<string> 
   const p = payload.payment ?? {};
   const pr = payload.proposal ?? {};
 
-  const esc = (s: any) =>
-    String(s ?? '')
-      .replace(/&/g, '&amp;').replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+const esc = (s: any) =>
+  String(s ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+// =====================
+// ✅ ВЛОЖЕНИЯ (если RPC отдаёт)
+// ожидаем: payload.attachments = [{ file_name, url, kind, created_at }]
+// либо: payload.payment_files / payload.files — берём что есть
+// =====================
+const attachmentsRaw =
+  (Array.isArray((payload as any)?.attachments) && (payload as any).attachments) ||
+  (Array.isArray((payload as any)?.payment_files) && (payload as any).payment_files) ||
+  (Array.isArray((payload as any)?.files) && (payload as any).files) ||
+  [];
+
+const attachments = (attachmentsRaw as any[])
+  .map((x) => ({
+    name: String(x.file_name ?? x.name ?? x.filename ?? 'file').trim(),
+    url: String(x.url ?? x.file_url ?? x.public_url ?? x.signed_url ?? '').trim(),
+    kind: String(x.kind ?? x.group_key ?? x.type ?? '').trim(),
+    created_at: x.created_at ?? null,
+  }))
+  .filter((x) => x.url); // показываем только если есть ссылка
+
+const attachmentsHtml = attachments.length
+  ? `
+    <div class="box">
+      <div class="lbl">Вложения</div>
+      <div class="attList">
+        ${attachments
+          .map((a) => {
+            const kind = a.kind ? `<span class="attKind">${esc(a.kind)}</span>` : '';
+            return `
+              <a class="attRow" href="${esc(a.url)}" target="_blank" rel="noopener noreferrer">
+                <div class="attName">${esc(a.name)}</div>
+                ${kind}
+              </a>
+            `;
+          })
+          .join('')}
+      </div>
+      <div class="muted" style="margin-top:6px">Открываются в браузере по ссылке.</div>
+    </div>
+  `
+  : `
+    <div class="box">
+      <div class="lbl">Вложения</div>
+      <div class="muted">Нет вложений</div>
+    </div>
+  `;
 
   const fmtMoney = (v: any) => {
     const n = Number(String(v ?? '').replace(',', '.'));
@@ -1340,39 +1488,276 @@ export async function buildPaymentOrderHtml(paymentId: number): Promise<string> 
       : '';
   };
 
-  const paidAt = p.paid_at ? new Date(p.paid_at).toLocaleString('ru-RU') : '—';
-  const amount = fmtMoney(p.amount);
+   const paidAt = p.paid_at ? new Date(p.paid_at).toLocaleString('ru-RU') : '—';
+  const amountNum = Number(String(p.amount ?? '').replace(',', '.'));
+  const amount = fmtMoney(amountNum);
   const cur = String(p.currency ?? pr.invoice_currency ?? 'KGS');
 
+  // ✅ новые поля
+  const fio = String(p.accountant_fio ?? '').trim();
+  const purpose = String(p.purpose ?? p.note ?? '').trim();
+
+  // ✅ строки из payload.items
+  const items = Array.isArray((payload as any)?.items) ? (payload as any).items : [];
+
+  // ===================================================================
+  // ✅ HELPERS (ВАЖНО: сначала функции, потом переменные — иначе redeclare)
+  // ===================================================================
+
+  const fmt2 = (v: any) => {
+    const n = Number(String(v ?? '').replace(',', '.'));
+    return Number.isFinite(n)
+      ? n.toLocaleString('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+      : '';
+  };
+
+  const fmtQty = (v: any) => {
+    const n = Number(String(v ?? '').replace(',', '.'));
+    return Number.isFinite(n)
+      ? n.toLocaleString('ru-RU', { maximumFractionDigits: 3 })
+      : '';
+  };
+
+  const sumItems = (arr: any[]) =>
+    (arr || []).reduce((s, it) => {
+      const qty = Number(it.qty ?? 0);
+      const price = Number(it.price ?? 0);
+      return s + (Number.isFinite(qty) ? qty : 0) * (Number.isFinite(price) ? price : 0);
+    }, 0);
+
+  // 🔹 группировка по “поставке/счёту”
+  // если в items нет invoice_number/invoice_date — используем шапку proposal
+  const billKeyOf = (it: any) => {
+    const invNo = String(it?.invoice_number ?? pr.invoice_number ?? '—').trim();
+    const invDt = String(it?.invoice_date ?? pr.invoice_date ?? '—').trim();
+    const supp  = String(it?.supplier ?? pr.supplier ?? '—').trim();
+    return `${invNo}||${invDt}||${supp}`;
+  };
+
+  const kindOf = (it: any) => {
+    const c = String(it?.rik_code ?? '').toUpperCase();
+    if (c.startsWith('MAT-')) return 'Материалы';
+    if (c.startsWith('WRK-')) return 'Работы';
+    if (c.startsWith('SRV-') || c.startsWith('SVC-')) return 'Услуги';
+    return 'Прочее';
+  };
+
+  const groupBy = <T,>(arr: T[], keyFn: (x: T) => string) => {
+    const m = new Map<string, T[]>();
+    for (const x of arr || []) {
+      const k = keyFn(x);
+      m.set(k, [...(m.get(k) ?? []), x]);
+    }
+    return Array.from(m.entries()); // [ [key, items[]], ...]
+  };
+
+  // ✅ Итог по расшифровке — берём из items (а не из payment.amount, чтобы всегда совпадало)
+  const grandTotal = sumItems(items);
+  const totalLines = items.length;
+
+  // ✅ Сумма прописью (KGS)
+  const amountWords = moneyToWordsKGS(grandTotal);
+
+  // ===========================================================
+  // ✅ Секция “расшифровка”: Сначала группируем по счёту/поставке,
+  // внутри — по категориям (Материалы/Работы/Услуги)
+  // ===========================================================
+  const bills = groupBy(items, billKeyOf);
+
+  const cardsHtml = bills.length
+    ? bills
+        .map(([billKey, billItems]) => {
+          const [invNo, invDt, supp] = billKey.split('||');
+          const billSum = sumItems(billItems as any[]);
+
+          // внутри счета — группы по типам
+          const typeGroups = groupBy(billItems as any[], (x: any) => kindOf(x));
+
+          const typeHtml = typeGroups
+            .map(([typeName, typeItems]) => {
+              const typeSum = sumItems(typeItems as any[]);
+
+              const cards = (typeItems as any[])
+                .map((it: any) => {
+                  const name = String(it.name_human ?? it.name ?? '').trim(); // ✅ без rik_code
+                  const uom = String(it.uom ?? '').trim();
+                  const qty = Number(it.qty ?? 0);
+                  const price = Number(it.price ?? 0);
+                  const sum = (Number.isFinite(qty) ? qty : 0) * (Number.isFinite(price) ? price : 0);
+
+                  return `
+                    <div class="card">
+                      <div class="cardTop">
+                        <div class="cardName">${esc(name || '—')}</div>
+                        <div class="cardSum">${esc(fmt2(sum))} ${esc(cur)}</div>
+                      </div>
+                      <div class="cardMeta">${esc(fmtQty(qty))} ${esc(uom)} × ${esc(fmt2(price))}</div>
+                    </div>
+                  `;
+                })
+                .join('');
+
+              return `
+                <div class="groupHead">
+                  <div class="groupTitle">${esc(String(typeName))}</div>
+                  <div class="groupTotal">${esc(fmt2(typeSum))} ${esc(cur)}</div>
+                </div>
+                ${cards}
+                <div class="subTotalRow">
+                  <div>Итого по ${esc(String(typeName).toLowerCase())}</div>
+                  <div class="subTotalVal">${esc(fmt2(typeSum))} ${esc(cur)}</div>
+                </div>
+              `;
+            })
+            .join('');
+
+          return `
+            <div class="billBox">
+              <div class="billHead">
+                <div class="billTitle">Счёт: ${esc(invNo || '—')} от ${esc(invDt || '—')}</div>
+                <div class="billSum">${esc(fmt2(billSum))} ${esc(cur)}</div>
+              </div>
+              <div class="billSub">Поставщик: ${esc(supp || '—')}</div>
+              ${typeHtml}
+              <div class="billTotalRow">
+                <div>ИТОГО ПО СЧЁТУ</div>
+                <div class="billTotalVal">${esc(fmt2(billSum))} ${esc(cur)}</div>
+              </div>
+            </div>
+          `;
+        })
+        .join('')
+    : `<div class="muted" style="margin-top:8px">Нет строк</div>`;
+
+  // ✅ подписи (внизу документа)
+  const signHtml = `
+    <div class="signs">
+      <div class="sign">
+        <div class="sign-label">Бухгалтер</div>
+        <div class="sign-line"></div>
+        <div class="sign-name">${esc(fio || '')}</div>
+      </div>
+      <div class="sign">
+        <div class="sign-label">Директор</div>
+        <div class="sign-line"></div>
+        <div class="sign-name">&nbsp;</div>
+      </div>
+    </div>
+  `;
+
+  // ✅ дальше идёт твой return HTML, но обновлённый:
   return `<!doctype html><html lang="ru"><head><meta charset="utf-8"/>
-<title>Платёжное поручение ${esc(p.payment_id)}</title>
+<title>Платёжный отчёт ${esc(p.payment_id)}</title>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <style>
+  /* ================== PAGE (печать) ================== */
+  @page { margin: 14mm 12mm 16mm 12mm; }
   body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial; padding:16px; color:#111}
   h1{font-size:18px;margin:0 0 10px 0}
+
+  /* ✅ “Стр. X из Y” (работает в браузерах с поддержкой Paged Media; если нет — просто не мешает) */
+  .pageFooter{
+    position: fixed;
+    left: 0; right: 0; bottom: 0;
+    padding: 6px 12mm;
+    font-size: 11px;
+    color: #64748b;
+    border-top: 1px solid #e5e7eb;
+    background: #fff;
+  }
+  .pageFooter .right{ float:right; }
+  .pageCounter:before { content: "Стр. " counter(page) " из " counter(pages); }
+
   .box{border:1px solid #e5e7eb;border-radius:12px;padding:12px;margin:10px 0;background:#fff}
   .row{display:flex;gap:12px;flex-wrap:wrap}
   .cell{flex:1 1 260px}
   .lbl{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:#64748b}
-  .val{margin-top:4px;font-size:14px;font-weight:700;color:#0f172a}
+  .val{margin-top:4px;font-size:14px;font-weight:800;color:#0f172a}
   table{width:100%;border-collapse:collapse;margin-top:10px}
   td{border:1px solid #e5e7eb;padding:8px 10px;vertical-align:top;font-size:13px}
   .muted{color:#64748b}
+
+  /* ====== bill grouping ====== */
+  .billBox{border:1px solid #e5e7eb;border-radius:14px;padding:12px;margin-top:10px;background:#fff}
+  .billHead{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+  .billTitle{font-weight:900;color:#0f172a}
+  .billSum{font-weight:900;color:#0f172a;white-space:nowrap}
+  .billSub{margin-top:4px;color:#64748b;font-size:12px}
+  .billTotalRow{display:flex;justify-content:space-between;align-items:center;margin-top:10px;padding:10px 12px;background:#f8fafc;border:1px solid #e5e7eb;border-radius:12px}
+  .billTotalVal{font-weight:900;white-space:nowrap}
+
+  /* ====== cards / groups ====== */
+  .groupHead{display:flex;justify-content:space-between;align-items:center;margin-top:12px;padding-top:10px;border-top:1px solid #e5e7eb}
+  .groupTitle{font-weight:900;color:#0f172a}
+  .groupTotal{font-weight:900;color:#0f172a;white-space:nowrap}
+
+  .card{border:1px solid #e5e7eb;border-radius:12px;padding:10px 12px;background:#fff;margin-top:8px;page-break-inside:avoid}
+  .cardTop{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+  .cardName{font-weight:800;color:#0f172a;flex:1}
+  .cardSum{font-weight:900;color:#0f172a;white-space:nowrap}
+  .cardMeta{margin-top:4px;color:#64748b;font-size:12px}
+
+  .subTotalRow{display:flex;justify-content:space-between;align-items:center;margin-top:8px;padding:8px 10px;background:#f8fafc;border:1px solid #e5e7eb;border-radius:10px}
+  .subTotalVal{font-weight:900;white-space:nowrap}
+
+  .grandRow{display:flex;justify-content:space-between;align-items:center;margin-top:12px;padding:10px 12px;background:#f1f5f9;border-radius:12px;border:2px solid #0f172a}
+  .grandVal{font-weight:900;white-space:nowrap}
+
+  /* ====== signatures ====== */
+  .signs{display:flex;gap:24px;margin-top:18px;flex-wrap:wrap}
+  .sign{flex:1 1 280px;border:1px dashed #cbd5e1;border-radius:14px;padding:14px 16px;background:#f8fafc;page-break-inside:avoid}
+  .sign-label{font-size:12px;font-weight:800;color:#334155}
+  .sign-line{margin-top:26px;border-bottom:1px solid #0f172a;height:1px;width:220px}
+  .sign-name{margin-top:8px;font-size:12px;color:#64748b}
+
+  /* ====== small summary ====== */
+  .summaryRow{display:flex;justify-content:space-between;align-items:center;margin-top:10px;padding:10px 12px;border:1px solid #e5e7eb;border-radius:12px;background:#f8fafc}
+
+  /* ===== attachments ===== */
+  .attList{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+  .attRow{
+    display:flex;justify-content:space-between;align-items:center;gap:12px;
+    padding:10px 12px;border:1px solid #e5e7eb;border-radius:12px;
+    text-decoration:none;color:#0f172a;background:#fff;
+  }
+  .attRow:hover{background:#f8fafc}
+  .attName{font-weight:800;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .attKind{
+    font-size:11px;font-weight:900;
+    padding:4px 8px;border-radius:999px;
+    background:#eef2ff;color:#3730a3;border:1px solid #c7d2fe;
+    white-space:nowrap;
+  }
 </style></head><body>
 
-<h1>Платёжное поручение</h1>
+<div class="pageFooter">
+  <span class="left">GOX BUILD • Платёжный отчёт</span>
+  <span class="right pageCounter"></span>
+</div>
 
+<h1>Платёжный отчёт</h1>
+<div class="muted" style="margin:-6px 0 10px 0">
+  Внутренний документ. Не является банковским платёжным поручением.
+</div>
 <div class="box">
   <div class="row">
     <div class="cell"><div class="lbl">Платёж ID</div><div class="val">${esc(p.payment_id)}</div></div>
     <div class="cell"><div class="lbl">Дата/время оплаты</div><div class="val">${esc(paidAt)}</div></div>
     <div class="cell"><div class="lbl">Сумма</div><div class="val">${esc(amount)} ${esc(cur)}</div></div>
   </div>
+
   <div class="row" style="margin-top:8px">
     <div class="cell">
       <div class="lbl">Основание</div>
       <div class="val">Счёт: ${esc(pr.invoice_number ?? '—')} от ${esc(pr.invoice_date ?? '—')}</div>
       <div class="muted">Proposal: ${esc(pr.proposal_id ?? '')}</div>
+    </div>
+  </div>
+
+  <div class="row" style="margin-top:8px">
+    <div class="cell">
+      <div class="lbl">Сумма прописью</div>
+      <div class="val" style="font-size:13px">${esc(amountWords)}</div>
     </div>
   </div>
 </div>
@@ -1395,38 +1780,37 @@ export async function buildPaymentOrderHtml(paymentId: number): Promise<string> 
   <div class="lbl">Получатель (поставщик)</div>
   <table>
     <tr><td>Поставщик</td><td>${esc(pr.supplier ?? '—')}</td></tr>
-    <tr><td>Назначение</td><td>${esc(p.note ?? '')}</td></tr>
+    <tr><td>Назначение</td><td>${esc(purpose || '—')}</td></tr>
+    <tr><td>Бухгалтер</td><td>${esc(fio || '—')}</td></tr>
     <tr><td>Способ</td><td>${esc(p.method ?? '')}</td></tr>
   </table>
 </div>
+${attachmentsHtml}
+<div class="box">
+  <div class="lbl">Расшифровка платежа</div>
+
+  <div class="summaryRow">
+    <div>Всего позиций: <b>${esc(String(totalLines))}</b></div>
+    <div><b>${esc(fmt2(grandTotal))} ${esc(cur)}</b></div>
+  </div>
+
+  ${cardsHtml}
+
+  <div class="grandRow">
+    <div>ОБЩИЙ ИТОГ</div>
+    <div class="grandVal">${esc(fmt2(grandTotal))} ${esc(cur)}</div>
+  </div>
+
+  ${signHtml}
+</div>
 
 </body></html>`;
+
 }
 
 export async function exportPaymentOrderPdf(paymentId: number) {
   const html = await buildPaymentOrderHtml(paymentId);
-
-  // native (expo)
-  if (Platform.OS !== 'web') {
-    // @ts-ignore
-    const Print = await import('expo-print');
-    const { uri } = await (Print as any).printToFileAsync({ html });
-    try {
-      // @ts-ignore
-      const Sharing = await import('expo-sharing');
-      if ((Sharing as any).isAvailableAsync && (await (Sharing as any).isAvailableAsync())) {
-        await (Sharing as any).shareAsync(uri);
-      }
-    } catch {}
-    return uri as string;
-  }
-
-  // web
-  if (typeof window !== 'undefined') {
-    const w = window.open('', '_blank');
-    if (w) { w.document.write(html); w.document.close(); w.focus(); }
-  }
-  return '';
+  return openHtmlAsPdfUniversal(html);
 }
 
 // ============================== PDF: Requests ==============================
@@ -1660,6 +2044,29 @@ export async function buildRequestPdfHtml(requestId: number | string): Promise<s
   .col-note{min-width:180px;}
   .empty{text-align:center;color:#94a3b8;font-style:italic;}
   .muted{color:#64748b;font-size:12px;}
+   .badge{
+  display:inline-block;
+  margin-left:8px;
+  padding:2px 8px;
+  font-size:11px;
+  font-weight:800;
+  border-radius:999px;
+  background:#eef2ff;
+  color:#3730a3;
+  border:1px solid #c7d2fe;
+}
+
+.summaryRow{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-top:10px;
+  padding:10px 12px;
+  border:1px solid #e5e7eb;
+  border-radius:12px;
+  background:#f8fafc;
+}
+
   .comment{margin-top:24px;}
   .comment .meta-value{font-size:13px;font-weight:500;}
   .signs{display:flex;gap:24px;margin-top:40px;flex-wrap:wrap;}
@@ -1720,41 +2127,7 @@ export async function getOrCreateDraftRequestId(): Promise<string | number> {
 
 export async function exportRequestPdf(requestId: number | string) {
   const html = await buildRequestPdfHtml(requestId);
-  if (Platform.OS !== 'web') {
-    try {
-      // native (expo)
-      // @ts-ignore
-      const Print = await import('expo-print');
-      const { uri } = await (Print as any).printToFileAsync({ html });
-      try {
-        // @ts-ignore
-        const Sharing = await import('expo-sharing');
-        if (
-          (Sharing as any).isAvailableAsync &&
-          (await (Sharing as any).isAvailableAsync())
-        ) {
-          await (Sharing as any).shareAsync(uri);
-        }
-      } catch {}
-      return uri as string;
-    } catch (nativeErr) {
-      console.warn('[exportRequestPdf]', nativeErr);
-    }
-  }
-
-  if (typeof window !== 'undefined') {
-    try {
-      const blob = new Blob([html], {
-        type: 'text/html;charset=utf-8',
-      });
-      return URL.createObjectURL(blob);
-    } catch (blobErr) {
-      console.warn('[exportRequestPdf]', blobErr);
-    }
-    return '';
-  }
-
-  return '';
+  return openHtmlAsPdfUniversal(html);
 }
 
 /* ============================== Бухгалтерия: RPC-обёртки (НОВЫЕ) ============================== */
@@ -1916,6 +2289,7 @@ function rikKindLabel(rikCode?: string | null): string {
     default:     return '';
   }
 }
+
 
 // ============================== Aggregated export ==============================
 export const RIK_API = {

@@ -1,101 +1,142 @@
 // src/lib/files.ts
+import { Platform, Linking, Alert } from 'react-native';
 import { supabase } from './supabaseClient';
+import * as FileSystem from 'expo-file-system';
 
 /** Переиспользуем аплоадер из rik_api.ts */
 export { uploadProposalAttachment } from './catalog_api';
 
+type AttRow = {
+  id: number | string;
+  bucket_id: string;
+  storage_path: string;
+  file_name: string;
+  group_key: string;
+  created_at: string;
+};
+
+function notFoundMsg(groupKey: string) {
+  return groupKey === 'invoice'
+    ? 'Счёт не прикреплён'
+    : groupKey === 'payment'
+    ? 'Платёжные документы не найдены'
+    : 'Вложения не найдены';
+}
+
+/** Нормализуем имя файла — безопасно для путей/сохранения */
+function safeFileName(name: string | undefined) {
+  const base = name || 'file.bin';
+  return base.replace(/[^\w.\-а-яА-ЯёЁ ]+/g, '_');
+}
+
+async function openLocalFilePreview(uri: string) {
+  // iOS: Quick Look откроет file://
+  if (Platform.OS === 'ios') {
+    await Linking.openURL(uri);
+    return;
+  }
+
+  // Android: нужно content://
+  if (Platform.OS === 'android') {
+    const contentUri = await FileSystem.getContentUriAsync(uri);
+    await Linking.openURL(contentUri);
+    return;
+  }
+
+  await Linking.openURL(uri);
+}
+
 /**
- * Открыть вложения по группе (invoice/payment/proposal_pdf) в новом окне (web).
+ * Открыть вложения по группе (invoice/payment/proposal_pdf) (web/native).
  * По умолчанию — самое свежее. opts.all === true — открыть все.
- * Теперь используем RPC list_attachments → никаких 400 от PostgREST.
+ *
+ * ✅ ИДЕАЛЬНО: только RPC list_attachments / table proposal_attachments
+ * ❌ НИКАКИХ storage.objects (в твоём проекте storage schema может отсутствовать)
  */
 export async function openAttachment(
   proposalId: string | number,
   groupKey: 'invoice' | 'payment' | 'proposal_pdf' | string,
   opts?: { all?: boolean }
 ) {
-  const pid = String(proposalId);
+  const pid = String(proposalId || '').trim();
+  if (!pid) throw new Error('proposalId is empty');
 
-  // 1) RPC (предпочтительно)
-  let rows: Array<{ id: number; bucket_id: string; storage_path: string; file_name: string; group_key: string; created_at: string; }> = [];
+  let rows: AttRow[] = [];
+
+  // 1) RPC list_attachments (если есть)
   try {
-    const { data, error } = await supabase.rpc('list_attachments', {
-      p_proposal_id: pid,
-      p_group_key: groupKey,
-    });
-    if (!error && Array.isArray(data)) rows = data as any[];
-  } catch {}
-
-  // 2) Fallback: из таблицы proposal_attachments
-  if (!rows.length) {
-    try {
-      const q = await supabase
-        .from('proposal_attachments')
-        .select('id,bucket_id,storage_path,file_name,group_key,created_at')
-        .eq('proposal_id', pid)
-        .eq('group_key', groupKey)
-        .order('created_at', { ascending: false })
-        .limit(opts?.all ? 1000 : 50);
-      if (!q.error && Array.isArray(q.data)) rows = q.data as any[];
-    } catch {}
-  }
-
-  // 3) Fallback2: из storage.objects по пути proposals/<pid>/<groupKey>/
-  if (!rows.length) {
-    try {
-      const prefix = `proposals/${pid}/${groupKey}/`;
-      const so = await supabase
-        // @ts-ignore: direct select to storage.objects allowed via PostgREST
-        .from('storage.objects')
-        .select('name, bucket_id, created_at')
-        .eq('bucket_id', 'proposal_files')
-        .ilike('name', `${prefix}%`)
-        .order('created_at', { ascending: false })
-        .limit(opts?.all ? 1000 : 50);
-      if (!so.error && Array.isArray(so.data) && so.data.length) {
-        rows = (so.data as any[]).map((r: any, i: number) => ({
-          id: i + 1,
-          bucket_id: r.bucket_id,
-          storage_path: r.name,
-          file_name: r.name.split('/').pop() || 'file',
-          group_key: groupKey,
-          created_at: r.created_at,
-        }));
-      }
-    } catch {}
-  }
-
-  if (!rows.length) {
-    throw new Error(
-      groupKey === 'invoice'
-        ? 'Счёт не прикреплён'
-        : groupKey === 'payment'
-        ? 'Платёжные документы не найдены'
-        : 'Вложения не найдены'
+    const { data, error } = await supabase.rpc(
+      'list_attachments',
+      {
+        p_proposal_id: pid,
+        p_group_key: groupKey,
+      } as any
     );
+    if (!error && Array.isArray(data)) rows = data as any[];
+  } catch {
+    // no-op
   }
+
+  // 2) Fallback: таблица proposal_attachments
+  if (!rows.length) {
+    const q = await supabase
+      .from('proposal_attachments')
+      .select('id,bucket_id,storage_path,file_name,group_key,created_at')
+      .eq('proposal_id', pid)
+      .eq('group_key', groupKey)
+      .order('created_at', { ascending: false })
+      .limit(opts?.all ? 1000 : 50);
+
+    if (!q.error && Array.isArray(q.data)) rows = q.data as any[];
+  }
+
+  if (!rows.length) throw new Error(notFoundMsg(String(groupKey)));
 
   // сортировка: свежее сверху; при равенстве — по id
   rows.sort((a, b) => {
     const atA = a?.created_at ? Date.parse(String(a.created_at)) : 0;
     const atB = b?.created_at ? Date.parse(String(b.created_at)) : 0;
     if (atA !== atB) return atB - atA;
-    return (b.id ?? 0) - (a.id ?? 0);
+    return Number(b.id ?? 0) - Number(a.id ?? 0);
   });
 
-  // открыть (web) все или последний
-  const openOne = async (bucket: string, path: string) => {
-    const { data: s, error: se } = await supabase.storage.from(bucket).createSignedUrl(path, 60 * 5);
-    if (se) throw se;
-    const url = (s as any)?.signedUrl;
+  // ✅ КЛЮЧ: НА iOS/Android открываем ЛОКАЛЬНЫЙ file:// (чтобы был предпросмотр),
+  // а не Share sheet и не Safari по signedUrl
+  const openSigned = async (bucket: string, path: string, fileName?: string) => {
+    const { data, error } = await supabase.storage
+      .from(bucket)
+      .createSignedUrl(path, 60 * 10);
+
+    if (error) throw error;
+
+    const url = data?.signedUrl;
     if (!url) throw new Error('Не удалось получить ссылку');
-    if (typeof window !== 'undefined') window.open(url, '_blank');
+
+    // WEB — как было
+    if (Platform.OS === 'web') {
+      window.open(url, '_blank');
+      return;
+    }
+
+    // скачиваем во временный файл
+    const clean = safeFileName(fileName || path.split('/').pop() || 'document.pdf');
+    const target = `${FileSystem.cacheDirectory}${Date.now()}_${clean}`;
+    const res = await FileSystem.downloadAsync(url, target);
+    const localUri = res?.uri;
+
+    if (!localUri) throw new Error('Не удалось сохранить файл');
+
+    // открыть предпросмотр
+    await openLocalFilePreview(localUri);
   };
 
+  // invoice всегда 1 файл (самый свежий)
   if (groupKey === 'invoice' || !opts?.all) {
-    await openOne(rows[0].bucket_id, rows[0].storage_path);
+    await openSigned(rows[0].bucket_id, rows[0].storage_path, rows[0].file_name);
   } else {
-    for (const r of rows) await openOne(r.bucket_id, r.storage_path);
+    for (const r of rows) {
+      await openSigned(r.bucket_id, r.storage_path, r.file_name);
+    }
   }
 
   return rows;
@@ -104,20 +145,10 @@ export async function openAttachment(
 /* =======================================================================================
  *                                П О С Т А В Щ И К И
  *  Bucket: supplier_files (public)
- *  Table:  supplier_files (meta)  — опционально (если есть — используем, если нет — не падаем)
- *  Экспортируемые функции:
- *   - uploadSupplierFile(supplierId, file, fileName, group)
- *   - openSupplierFile(supplierId, opts)  → открыть последний/все файлы (web)
- *   - listSupplierFilesMeta(supplierId)   → метаданные файлов из таблицы
+ *  Table:  supplier_files (meta) — опционально
  * ======================================================================================= */
 
 export type SupplierFileGroup = 'price' | 'photo' | 'file';
-
-/** Нормализуем имя файла — безопасно для путей в Storage */
-function safeFileName(name: string | undefined) {
-  const base = name || 'file.bin';
-  return base.replace(/[^\w.\-а-яА-ЯёЁ ]+/g, '_');
-}
 
 /**
  * Загрузка файла поставщика в bucket supplier_files.
@@ -136,15 +167,12 @@ export async function uploadSupplierFile(
   const path = `${id}/${Date.now()}_${cleanName}`;
   const bucket = supabase.storage.from('supplier_files');
 
-  // upload to storage
   const up = await bucket.upload(path, file, { upsert: false, cacheControl: '3600' });
   if (up.error) throw up.error;
 
-  // public URL
   const pub = bucket.getPublicUrl(path);
   const url = pub?.data?.publicUrl || '';
 
-  // try insert meta (soft-try: не валим поток, если таблицы нет)
   try {
     await supabase.from('supplier_files').insert({
       supplier_id: id,
@@ -160,8 +188,8 @@ export async function uploadSupplierFile(
 }
 
 /**
- * Вернуть массив метаданных файлов поставщика из таблицы supplier_files.
- * Если таблицы нет — вернём пустой массив (чтобы не ронять UI).
+ * Вернуть метаданные файлов поставщика из таблицы supplier_files.
+ * Если таблицы нет — вернём пустой массив.
  */
 export async function listSupplierFilesMeta(
   supplierId: string,
@@ -176,10 +204,13 @@ export async function listSupplierFilesMeta(
       .select('id,created_at,file_name,file_url,group_key')
       .eq('supplier_id', id)
       .order('created_at', { ascending: false });
+
     if (opts?.group) q = q.eq('group_key', opts.group);
     if (opts?.limit) q = q.limit(opts.limit);
+
     const r = await q;
     if (r.error) throw r.error;
+
     return (r.data as any[]) || [];
   } catch {
     return [];
@@ -187,10 +218,8 @@ export async function listSupplierFilesMeta(
 }
 
 /**
- * Открыть файл(ы) поставщика (web).
- * Приоритет:
- *  1) supplier_files (meta table)
- *  2) storage.objects (папка supplier_files/<supplierId>/)
+ * Открыть файл(ы) поставщика (web/native).
+ * ✅ Идеально: только meta-table supplier_files (без storage.objects)
  */
 export async function openSupplierFile(
   supplierId: string,
@@ -199,67 +228,41 @@ export async function openSupplierFile(
   const id = String(supplierId).trim();
   if (!id) throw new Error('supplierId is required');
 
-  // 1) из таблицы метаданных
-  let rows: Array<{ file_name: string; file_url: string; created_at?: string; path?: string }> = [];
-  const meta = await listSupplierFilesMeta(id, { group: opts?.group, limit: opts?.all ? 1000 : 50 });
-  if (meta.length) {
-    rows = meta.map(m => ({ file_name: m.file_name, file_url: m.file_url, created_at: m.created_at }));
-  }
+  const meta = await listSupplierFilesMeta(id, {
+    group: opts?.group,
+    limit: opts?.all ? 1000 : 50,
+  });
 
-  // 2) fallback: прямой просмотр storage.objects
-  if (!rows.length) {
-    try {
-      // @ts-ignore: direct select to storage.objects allowed via PostgREST
-      const so = await supabase
-        .from('storage.objects')
-        .select('name, updated_at, created_at')
-        .eq('bucket_id', 'supplier_files')
-        .ilike('name', `${id}/%`)
-        .order('created_at', { ascending: false })
-        .limit(opts?.all ? 1000 : 50);
+  if (!meta.length) throw new Error('Файлы поставщика не найдены');
 
-      if (!so.error && Array.isArray(so.data)) {
-        rows = (so.data as any[]).map((r: any) => ({
-          file_name: r.name.split('/').pop() || 'file',
-          file_url: '', // подпишем ниже
-          created_at: r.created_at,
-          path: r.name,
-        }));
-      }
-    } catch {}
-  }
+  // newest first
+  const rows = meta
+    .slice()
+    .sort((a: any, b: any) => Date.parse(String(b.created_at || 0)) - Date.parse(String(a.created_at || 0)));
 
-  if (!rows.length) throw new Error('Файлы поставщика не найдены');
+  const openUrl = async (url: string) => {
+    const u = String(url || '').trim();
+    if (!u) throw new Error('Пустая ссылка файла поставщика');
 
-  // sort newest first
-  rows.sort((a: any, b: any) => Date.parse(String(b.created_at || 0)) - Date.parse(String(a.created_at || 0)));
-
-  // открытие
-  const openUrl = (url: string) => {
-    if (typeof window !== 'undefined') window.open(url, '_blank');
-  };
-
-  const bucket = supabase.storage.from('supplier_files');
-
-  const openOne = async (row: any) => {
-    if (row.file_url) {
-      openUrl(row.file_url);
+    if (Platform.OS === 'web') {
+      window.open(u, '_blank');
       return;
     }
-    const path = row.path as string;
-    if (!path) return;
-    const signed = await bucket.createSignedUrl(path, 60 * 5);
-    if (signed.error) throw signed.error;
-    const url = signed.data?.signedUrl;
-    if (url) openUrl(url);
+
+    // для supplier publicUrl обычно открывается напрямую
+    try {
+      await Linking.openURL(u);
+    } catch (e: any) {
+      Alert.alert('Не удалось открыть файл', String(e?.message ?? e));
+    }
   };
 
-  if (!opts?.all) {
-    await openOne(rows[0]);
-  } else {
-    for (const r of rows) await openOne(r);
-  }
+  const openOne = async (row: any) => {
+    await openUrl(row.file_url);
+  };
+
+  if (!opts?.all) await openOne(rows[0]);
+  else for (const r of rows) await openOne(r);
 
   return rows;
 }
-
