@@ -1,10 +1,11 @@
 // app/_layout.tsx
 import React, { useEffect, useRef, useState, useCallback } from "react";
-import { Platform, LogBox, View } from "react-native";
+import { Platform, LogBox } from "react-native";
 import { Slot, router, useSegments } from "expo-router";
-import { SafeAreaProvider } from "react-native-safe-area-context";
+import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { supabase } from "../src/lib/supabaseClient";
 import { ensureMyProfile, getMyRole } from "../src/lib/rik_api";
+import { GlobalBusyProvider } from "../src/ui/GlobalBusy";
 
 // Тихо глушим шумные web-предупреждения (только в браузере)
 if (Platform.OS === "web") {
@@ -175,11 +176,29 @@ export default function RootLayout() {
     else if (hasSession && inAuthStack) router.replace("/");
   }, [hasSession, sessionLoaded, segments]);
 
-  return (
+  const APP_BG = "#0B0F14";
+
+const UI = {
+  text: "#F8FAFC",
+  cardBg: "#101826",
+  border: "#1F2A37",
+};
+
+return (
   <SafeAreaProvider>
-    <View style={{ flex: 1 }}>
-      <Slot />
-    </View>
+    <SafeAreaView
+      style={{
+        flex: 1,
+        backgroundColor: APP_BG, // ✅ главный фикс
+        paddingTop: 0,           // ✅ убрали “полоску” 2px
+      }}
+      edges={Platform.OS === "web" ? [] : ["top"]}
+    >
+      {/* ✅ ЕДИНЫЙ ГЛОБАЛЬНЫЙ SPINNER НА ВСЁ ПРИЛОЖЕНИЕ */}
+      <GlobalBusyProvider theme={UI}>
+        <Slot />
+      </GlobalBusyProvider>
+    </SafeAreaView>
   </SafeAreaProvider>
 );
 

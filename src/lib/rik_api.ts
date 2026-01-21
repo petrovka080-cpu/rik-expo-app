@@ -4,7 +4,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import { Linking, Platform } from 'react-native';
 
 
-// --- utils: normalize UUID (убираем # и валидируем) ---
+// --- utils: normalize UUID (убираем # и валидируем) ---а
 export function normalizeUuid(raw: string | null | undefined) {
   const s = String(raw ?? '').trim().replace(/^#/, '');
   const re = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -333,34 +333,47 @@ export async function rikQuickSearch(q: string, limit = 50, apps?: string[]) {
   const pQuery = (q ?? '').trim();
   const pLimit = Math.max(1, Math.min(200, limit || 50));
 
-  try {
-    const { data, error } = await client.rpc('rik_quick_search_typed', {
-      p_q: pQuery, p_limit: pLimit, p_apps: apps ?? null,
-    } as any);
-    if (!error && Array.isArray(data)) return (data ?? []) as CatalogItem[];
-  } catch {}
+  // ✅ 1) RU — главный (фразы/порядок слов)
+try {
+  const { data, error } = await client.rpc('rik_quick_ru', {
+    p_q: pQuery, p_limit: pLimit, p_apps: apps ?? null,
+  } as any);
 
-  try {
-    const { data, error } = await client.rpc('rik_quick_ru', {
-      p_q: pQuery, p_limit: pLimit, p_apps: apps ?? null,
-    } as any);
-    if (!error && Array.isArray(data)) return (data ?? []) as CatalogItem[];
-  } catch {}
+  if (!error && Array.isArray(data) && data.length > 0) {
+    return data as CatalogItem[];
+  }
+} catch {}
 
-  try {
-    const { data, error } = await client.rpc('rik_quick_search', {
-      p_q: pQuery, p_limit: pLimit, p_apps: apps ?? null,
-    } as any);
-    if (!error && Array.isArray(data)) return (data ?? []) as CatalogItem[];
-  } catch {}
+// ✅ 2) typed — вторым
+try {
+  const { data, error } = await client.rpc('rik_quick_search_typed', {
+    p_q: pQuery, p_limit: pLimit, p_apps: apps ?? null,
+  } as any);
+
+  if (!error && Array.isArray(data) && data.length > 0) {
+    return data as CatalogItem[];
+  }
+} catch {}
+
+// ✅ 3) legacy — третьим
+try {
+  const { data, error } = await client.rpc('rik_quick_search', {
+    p_q: pQuery, p_limit: pLimit, p_apps: apps ?? null,
+  } as any);
+
+  if (!error && Array.isArray(data) && data.length > 0) {
+    return data as CatalogItem[];
+  }
+} catch {}
 
   if (!pQuery) return [];
   let base: any[] = [];
   {
     const fb = await client
       .from('rik_items')
-      .select('rik_code,name_human,uom_code,sector_code,spec,kind')
-      .or(`rik_code.ilike.%${pQuery}%,name_human.ilike.%${pQuery}%`)
+.select('rik_code,name_human,uom_code,sector_code,spec,kind,name_human_ru')
+.or(`rik_code.ilike.%${pQuery}%,name_human.ilike.%${pQuery}%,name_human_ru.ilike.%${pQuery}%`)
+
       .order('rik_code', { ascending: true })
       .limit(pLimit * 2);
     if (!fb.error && Array.isArray(fb.data)) base = fb.data as any[];
@@ -1488,9 +1501,9 @@ const attachmentsHtml = attachments.length
       : '';
   };
 
-   const paidAt = p.paid_at ? new Date(p.paid_at).toLocaleString('ru-RU') : '—';
-  const amountNum = Number(String(p.amount ?? '').replace(',', '.'));
-  const amount = fmtMoney(amountNum);
+  const paidAt = p.paid_at ? new Date(p.paid_at).toLocaleString('ru-RU') : '—';
+
+  // ✅ валюта
   const cur = String(p.currency ?? pr.invoice_currency ?? 'KGS');
 
   // ✅ новые поля
@@ -1525,13 +1538,30 @@ const attachmentsHtml = attachments.length
       return s + (Number.isFinite(qty) ? qty : 0) * (Number.isFinite(price) ? price : 0);
     }, 0);
 
+  // ✅ суммы строго из RPC (никаких вычислений на фронте)
+const payAmount = Number(p.amount ?? 0);           // сумма ЭТОГО платежа
+const totalPaid = Number(p.total_paid ?? 0);       // оплачено всего по proposal (из RPC)
+const invoiceTotal = Number(pr.items_total ?? 0);  // итого по счёту (из RPC)
+const rest = Number(pr.rest ?? 0);                 // остаток (из RPC)
+
+// ✅ формат/прописью — только сумма платежа
+const amount = fmtMoney(payAmount);
+const amountWords = moneyToWordsKGS(payAmount);
+
+// ✅ номер/дата счёта с fallback
+const invNo = String(pr.invoice_number ?? p.invoice_number ?? '—');
+const invDt = String(pr.invoice_date ?? p.invoice_date ?? '—');
+
+// ✅ для расшифровки показываем сумму счёта
+const grandTotal = invoiceTotal;
+const totalLines = items.length;
+
   // 🔹 группировка по “поставке/счёту”
-  // если в items нет invoice_number/invoice_date — используем шапку proposal
   const billKeyOf = (it: any) => {
-    const invNo = String(it?.invoice_number ?? pr.invoice_number ?? '—').trim();
-    const invDt = String(it?.invoice_date ?? pr.invoice_date ?? '—').trim();
-    const supp  = String(it?.supplier ?? pr.supplier ?? '—').trim();
-    return `${invNo}||${invDt}||${supp}`;
+    const invNo2 = String(it?.invoice_number ?? invNo ?? '—').trim();
+    const invDt2 = String(it?.invoice_date ?? invDt ?? '—').trim();
+    const supp   = String(it?.supplier ?? pr.supplier ?? '—').trim();
+    return `${invNo2}||${invDt2}||${supp}`;
   };
 
   const kindOf = (it: any) => {
@@ -1548,21 +1578,11 @@ const attachmentsHtml = attachments.length
       const k = keyFn(x);
       m.set(k, [...(m.get(k) ?? []), x]);
     }
-    return Array.from(m.entries()); // [ [key, items[]], ...]
+    return Array.from(m.entries());
   };
 
-  // ✅ Итог по расшифровке — берём из items (а не из payment.amount, чтобы всегда совпадало)
-  const grandTotal = sumItems(items);
-  const totalLines = items.length;
-
-  // ✅ Сумма прописью (KGS)
-  const amountWords = moneyToWordsKGS(grandTotal);
-
-  // ===========================================================
-  // ✅ Секция “расшифровка”: Сначала группируем по счёту/поставке,
-  // внутри — по категориям (Материалы/Работы/Услуги)
-  // ===========================================================
   const bills = groupBy(items, billKeyOf);
+
 
   const cardsHtml = bills.length
     ? bills
@@ -1749,8 +1769,16 @@ const attachmentsHtml = attachments.length
   <div class="row" style="margin-top:8px">
     <div class="cell">
       <div class="lbl">Основание</div>
-      <div class="val">Счёт: ${esc(pr.invoice_number ?? '—')} от ${esc(pr.invoice_date ?? '—')}</div>
-      <div class="muted">Proposal: ${esc(pr.proposal_id ?? '')}</div>
+<div class="val">Счёт: ${esc(invNo)} от ${esc(invDt)}</div>
+
+<div class="muted" style="margin-top:6px">
+  Итого по счёту: <b>${esc(fmt2(invoiceTotal))} ${esc(cur)}</b> •
+  Оплачено всего: <b>${esc(fmt2(totalPaid))} ${esc(cur)}</b> •
+  Остаток: <b>${esc(fmt2(rest))} ${esc(cur)}</b>
+</div>
+
+<div class="muted" style="margin-top:6px">Proposal: ${esc(pr.proposal_id ?? '')}</div>
+
     </div>
   </div>
 
@@ -1789,10 +1817,27 @@ ${attachmentsHtml}
 <div class="box">
   <div class="lbl">Расшифровка платежа</div>
 
-  <div class="summaryRow">
-    <div>Всего позиций: <b>${esc(String(totalLines))}</b></div>
-    <div><b>${esc(fmt2(grandTotal))} ${esc(cur)}</b></div>
-  </div>
+ <div class="summaryRow">
+  <div>Всего позиций: <b>${esc(String(totalLines))}</b></div>
+  <div><b>${esc(fmt2(grandTotal))} ${esc(cur)}</b></div>
+</div>
+
+<div class="summaryRow">
+  <div>Оплачено этим платежом</div>
+  <div><b>${esc(fmt2(payAmount))} ${esc(cur)}</b></div>
+</div>
+
+<div class="summaryRow">
+  <div>Оплачено всего по счёту</div>
+  <div><b>${esc(fmt2(totalPaid))} ${esc(cur)}</b></div>
+</div>
+
+<div class="summaryRow">
+  <div>Остаток по счёту</div>
+  <div><b>${esc(fmt2(rest))} ${esc(cur)}</b></div>
+</div>
+
+
 
   ${cardsHtml}
 
@@ -1909,7 +1954,32 @@ export async function buildRequestPdfHtml(requestId: number | string): Promise<s
     const str = String(value ?? '').trim();
     return str;
   };
+const normalizeStatusRu = (raw?: string | null) => {
+  const s = String(raw ?? '').trim().toLowerCase();
 
+  // ✅ общий канон (и для заявки, и для позиции)
+  if (!s) return '—';
+
+  // draft
+  if (s === 'draft' || s === 'черновик') return 'Черновик';
+
+  // pending
+  if (s === 'pending' || s === 'на утверждении') return 'На утверждении';
+
+  // approved
+  if (s === 'approved' || s === 'утверждено' || s === 'утверждена') return 'Утверждена';
+
+  // rejected / cancelled
+  if (
+    s === 'rejected' ||
+    s === 'cancelled' ||      // 🔥 твой случай
+    s === 'отклонено' ||
+    s === 'отклонена'
+  ) return 'Отклонена';
+
+  // fallback: если вдруг пришло что-то новое — покажем как есть (но это уже твой сигнал)
+  return raw ?? '—';
+};
   const displayLabel = await resolveRequestLabel(rid);
 
   const head = await client
@@ -1959,18 +2029,8 @@ export async function buildRequestPdfHtml(requestId: number | string): Promise<s
   const needByFormatted = formatDate(H.need_by);
   const generatedAt = new Date().toLocaleString(locale);
 
-  const statusRaw = String(H.status ?? '').trim();
-  const statusKey = statusRaw.toLowerCase();
-  const statusLabel =
-    statusKey === 'draft' || statusKey === 'черновик'
-      ? 'Черновик'
-      : statusKey === 'pending' || statusKey === 'на утверждении'
-      ? 'На утверждении'
-      : statusKey === 'approved' || statusKey === 'утверждено' || statusKey === 'утверждена'
-      ? 'Утверждена'
-      : statusKey === 'rejected' || statusKey === 'отклонено' || statusKey === 'отклонена'
-      ? 'Отклонена'
-      : statusRaw;
+  const statusLabel = normalizeStatusRu(H.status);
+
 
   const metaPairs: Array<{ label: string; value: string }> = [
     { label: 'Объект', value: objectName || '—' },
@@ -1991,30 +2051,35 @@ export async function buildRequestPdfHtml(requestId: number | string): Promise<s
     .join('');
 
   const items = await client
-    .from('request_items')
-    .select('id, name_human, uom, qty, note, app_code')
-    .eq('request_id', idFilter)
-    .order('id', { ascending: true });
+  .from('request_items')
+  .select('id, name_human, uom, qty, note, app_code, status')
+  .eq('request_id', idFilter)
+  .order('id', { ascending: true });
 
-  const rows: any[] = Array.isArray(items.data) ? items.data : [];
-  const body = rows.length
-    ? rows
-        .map((r: any, i: number) => {
-          const notes: string[] = [];
-          if (r.note) notes.push(esc(r.note));
-          if (r.app_code)
-            notes.push(`<span class="muted">Применение: ${esc(r.app_code)}</span>`);
-          const noteHtml = notes.join('<br/>');
-          return `<tr>
-      <td class="col-num">${i + 1}</td>
-      <td class="col-name">${esc(r.name_human || '')}</td>
-      <td class="col-uom">${esc(r.uom || '')}</td>
-      <td class="col-qty">${fmtQty(r.qty)}</td>
-      <td class="col-note">${noteHtml || '—'}</td>
-    </tr>`;
-        })
-        .join('')
-    : `<tr><td colspan="5" class="empty">Нет позиций</td></tr>`;
+const rows: any[] = Array.isArray(items.data) ? items.data : [];
+
+const body = rows.length
+  ? rows
+      .map((r: any, i: number) => {
+        const notes: string[] = [];
+        if (r.note) notes.push(esc(r.note));
+        if (r.app_code) notes.push(`<span class="muted">Применение: ${esc(r.app_code)}</span>`);
+        const noteHtml = notes.join('<br/>');
+
+        // ✅ ВОТ ТУТ нормализуем (cancelled → Отклонена)
+        const itemStatus = normalizeStatusRu(r.status);
+
+        return `<tr>
+  <td class="col-num">${i + 1}</td>
+  <td class="col-name">${esc(r.name_human || '')}</td>
+  <td class="col-uom">${esc(r.uom || '')}</td>
+  <td class="col-qty">${fmtQty(r.qty)}</td>
+  <td class="col-status">${esc(itemStatus)}</td>
+  <td class="col-note">${noteHtml || '—'}</td>
+</tr>`;
+      })
+      .join('')
+  : `<tr><td colspan="6" class="empty">Нет позиций</td></tr>`;
 
   const commentBlock = H.comment
     ? `<div class="comment"><div class="meta-label">Комментарий</div><div class="meta-value">${esc(
@@ -2042,6 +2107,7 @@ export async function buildRequestPdfHtml(requestId: number | string): Promise<s
   .col-uom{text-align:center;width:70px;}
   .col-qty{text-align:right;width:120px;}
   .col-note{min-width:180px;}
+.col-status{text-align:center;width:140px;}
   .empty{text-align:center;color:#94a3b8;font-style:italic;}
   .muted{color:#64748b;font-size:12px;}
    .badge{
@@ -2086,12 +2152,13 @@ export async function buildRequestPdfHtml(requestId: number | string): Promise<s
     <table>
       <thead>
         <tr>
-          <th>№</th>
-          <th>Позиция</th>
-          <th>Ед. изм.</th>
-          <th>Количество</th>
-          <th>Примечание</th>
-        </tr>
+  <th>№</th>
+  <th>Позиция</th>
+  <th>Ед. изм.</th>
+  <th>Количество</th>
+  <th>Статус позиции</th>
+  <th>Примечание</th>
+</tr>
       </thead>
       <tbody>${body}</tbody>
     </table>

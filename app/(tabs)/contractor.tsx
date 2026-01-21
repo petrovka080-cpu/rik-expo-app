@@ -548,22 +548,35 @@ if (!focusedRef.current) return;
       return;
     }
 
-    setRows(
-      (data ?? []).map((x: any) => ({
-        progress_id: x.progress_id,
-        work_code: x.work_code ?? null,
-        work_name: x.work_name,
-        object_name: x.object_name,
-        uom_id: x.uom_id,
-        qty_planned: Number(x.qty_planned ?? 0),
-        qty_done: Number(x.qty_done ?? 0),
-        qty_left: Number(x.qty_left ?? 0),
-        work_status: x.work_status,
-        contractor_id: x.contractor_id,
-        started_at: x.started_at ?? null,
-        finished_at: x.finished_at ?? null,
-      }))
-    );
+    const mapped: WorkRow[] = (data ?? []).map((x: any) => ({
+  progress_id: x.progress_id,
+  work_code: x.work_code ?? null,
+  work_name: x.work_name,
+  object_name: x.object_name,
+  uom_id: x.uom_id,
+  qty_planned: Number(x.qty_planned ?? 0),
+  qty_done: Number(x.qty_done ?? 0),
+  qty_left: Number(x.qty_left ?? 0),
+  work_status: x.work_status,
+  contractor_id: x.contractor_id,
+  started_at: x.started_at ?? null,
+  finished_at: x.finished_at ?? null,
+}));
+
+// ✅ PROD: подрядчики видят только работы/услуги (не материалы)
+const filtered = mapped.filter((r) => {
+  const c = String(r.work_code ?? "").toUpperCase();
+  return (
+    c.startsWith("WRK-") ||
+    c.startsWith("WORK-") ||
+    c.startsWith("WT-") ||
+    c.startsWith("SRV-") ||
+    c.startsWith("SPEC-")
+  );
+});
+
+setRows(filtered);
+
 
     setLoadingWorks(false);
   }, []);

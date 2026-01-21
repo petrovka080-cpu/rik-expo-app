@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   View, Text, FlatList, Pressable, ActivityIndicator,
   RefreshControl, Modal, TextInput, Platform, ScrollView, Alert,
-  Animated
+  Animated, Keyboard
 } from 'react-native';
 
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -10,6 +10,8 @@ import { supabase } from '../../src/lib/supabaseClient';
 import { useFocusEffect } from 'expo-router';
 import { useBusyAction } from '../../src/lib/useBusyAction';
 import BusyButton from '../../src/components/BusyButton';
+import DismissKeyboardView from '../../src/components/DismissKeyboardView';
+import { useRevealSection } from '../../src/lib/useRevealSection';
 
 import {
   listAccountantInbox,
@@ -201,6 +203,7 @@ const focusedRef = useRef(false);
 const lastKickListRef = useRef(0);
 const lastKickHistRef = useRef(0);
 const cardScrollY = useRef(new Animated.Value(0)).current;
+const payFormReveal = useRevealSection(24);
 
 const inFlightRef = useRef(false);
 const loadSeqRef = useRef(0);
@@ -314,7 +317,14 @@ const loadHistory = useCallback(async (force?: boolean) => {
 });
 
     if (error) throw error;
-    setHistoryRows(Array.isArray(data) ? (data as any) : []);
+    const arr = Array.isArray(data) ? (data as any[]) : [];
+arr.sort((a, b) => {
+  const ta = Date.parse(String(a.paid_at ?? a.created_at ?? 0)) || 0;
+  const tb = Date.parse(String(b.paid_at ?? b.created_at ?? 0)) || 0;
+  return tb - ta;
+});
+setHistoryRows(arr as any);
+
   } catch (e: any) {
     console.error('[history load]', e?.message ?? e);
     setHistoryRows([]);
@@ -397,23 +407,31 @@ if (rpcFailed || !triedRpcOkRef.current) {
 
         // 1) агрегаты оплат
         const paidMap = new Map<string, { total_paid: number; payments_count: number }>();
-// ✅ оплаты из proposal_payments (у тебя туда пишет acc_add_payment_min)
+const lastPaidAtMap = new Map<string, number>(); // ✅ время последней оплаты (ms)
+
+// ✅ оплаты из proposal_payments
 if (ids.length) {
   const { data: pays, error: paysErr } = await supabase
     .from('proposal_payments')
-    .select('proposal_id, amount')
+    .select('proposal_id, amount, paid_at, created_at')
     .in('proposal_id', ids);
 
   if (!paysErr && Array.isArray(pays)) {
     for (const pay of pays as any[]) {
       const k = String(pay.proposal_id);
+
       const prev = paidMap.get(k) ?? { total_paid: 0, payments_count: 0 };
       prev.total_paid += Number(pay.amount ?? 0);
       prev.payments_count += 1;
       paidMap.set(k, prev);
+
+      const t = Date.parse(String(pay.paid_at ?? pay.created_at ?? '')) || 0;
+      const old = lastPaidAtMap.get(k) ?? 0;
+      if (t > old) lastPaidAtMap.set(k, t);
     }
   }
 }
+
 // ✅ сумма по позициям (если invoice_amount пустой)
 const itemsSumMap = new Map<string, number>();
 
@@ -462,24 +480,23 @@ if (ids.length) {
   else payStatus = 'Оплачено';
 
   return {
-    proposal_id: String(p.id),
-    supplier: p.supplier ?? null,
-    invoice_number: p.invoice_number ?? null,
-    invoice_date: p.invoice_date ?? null,
+  proposal_id: String(p.id),
+  supplier: p.supplier ?? null,
+  invoice_number: p.invoice_number ?? null,
+  invoice_date: p.invoice_date ?? null,
+  invoice_amount: (p.invoice_amount ?? (calcSum > 0 ? calcSum : null)),
+  invoice_currency: p.invoice_currency ?? 'KGS',
+  payment_status: payStatus,
+  total_paid: agg ? agg.total_paid : 0,
+  payments_count: agg ? agg.payments_count : 0,
+  has_invoice: haveInvoice.has(String(p.id)),
+  sent_to_accountant_at: p.sent_to_accountant_at ?? null,
 
-    // 👇 вот это ключ: если invoice_amount нет — берём calcSum
-    invoice_amount: (p.invoice_amount ?? (calcSum > 0 ? calcSum : null)),
-    invoice_currency: p.invoice_currency ?? 'KGS',
+  // ✅ ключ для сортировки по факту оплаты
+  last_paid_at: lastPaidAtMap.get(String(p.id)) ?? 0,
+} as any;
 
-    payment_status: payStatus,
-
-    total_paid: agg ? agg.total_paid : 0,
-    payments_count: agg ? agg.payments_count : 0,
-    has_invoice: haveInvoice.has(String(p.id)),
-    sent_to_accountant_at: p.sent_to_accountant_at ?? null,
-  };
 });
-
       }
 
       data = tmp;
@@ -500,8 +517,16 @@ if (ids.length) {
 }
     });
 
-    cacheByTabRef.current[tab] = filtered;
-setRows(prev => (rowsShallowEqual(prev, filtered) ? prev : filtered));
+    let sorted: any[] = filtered as any[];
+
+if (tab === 'Частично' || tab === 'Оплачено') {
+  // ✅ сначала те, что оплачены последними
+  sorted = [...sorted].sort((a: any, b: any) => (b.last_paid_at ?? 0) - (a.last_paid_at ?? 0));
+}
+
+cacheByTabRef.current[tab] = sorted as any;
+setRows(prev => (rowsShallowEqual(prev, sorted as any) ? prev : (sorted as any)));
+
 
   } catch (e: any) {
     console.error('[accountant load]', e?.message ?? e);
@@ -655,6 +680,7 @@ setPurpose((prev) =>
 }, []);
 
 const closeCard = useCallback(() => {
+  Keyboard.dismiss(); // ✅ на закрытии — тоже убрать клаву
   setCardOpen(false);
   setCurrent(null);
   setCurrentPaymentId(null);
@@ -1360,11 +1386,11 @@ contentContainerStyle={{
   {(() => {
     const topPad =
       Platform.OS === 'ios'
-        ? Math.max(insets.top || 0, 44) // ✅ если insets.top вдруг 0 — всё равно опустим
+        ? Math.max(insets.top || 0, 44)
         : (insets.top || 0);
 
     return (
-      <View
+      <DismissKeyboardView
         style={{
           flex: 1,
           backgroundColor: 'rgba(0,0,0,0.35)',
@@ -1387,7 +1413,7 @@ contentContainerStyle={{
           }}
         >
           <View style={{ flex: 1, backgroundColor: COLORS.bg }}>
-            {/* ✅ SAFE AREA СПЕЙСЕР (ГАРАНТИЯ) */}
+            {/* ✅ SAFE AREA СПЕЙСЕР */}
             <View style={{ height: topPad, backgroundColor: COLORS.bg }} />
 
             {/* ✅ ХЕДЕР */}
@@ -1406,11 +1432,7 @@ contentContainerStyle={{
               }}
             >
               <Text
-                style={{
-                  fontSize: 18,
-                  fontWeight: '900',
-                  color: COLORS.text,
-                }}
+                style={{ fontSize: 18, fontWeight: '900', color: COLORS.text }}
                 numberOfLines={1}
               >
                 Карточка предложения
@@ -1433,66 +1455,79 @@ contentContainerStyle={{
                 <Text style={{ fontSize: 18, fontWeight: '900', color: COLORS.text }}>✕</Text>
               </Pressable>
             </View>
-{/* ✅ липкий мини-блок (появляется при скролле вниз) */}
-<Animated.View
-  pointerEvents="box-none"
-  style={{
-    position: 'absolute',
-    top: topPad + 56, // под хедером (примерно)
-    left: 0,
-    right: 0,
-    paddingHorizontal: 12,
-    zIndex: 20,
-    opacity: cardScrollY.interpolate({
-      inputRange: [0, 80, 140],
-      outputRange: [0, 0, 1],
-      extrapolate: 'clamp',
-    }),
-    transform: [
-      {
-        translateY: cardScrollY.interpolate({
-          inputRange: [0, 80, 140],
-          outputRange: [-10, -10, 0],
-          extrapolate: 'clamp',
-        }),
-      },
-    ],
-  }}
->
-  <View
-    style={{
-      backgroundColor: '#fff',
-      borderWidth: 1,
-      borderColor: COLORS.border,
-      borderRadius: 12,
-      padding: 10,
-    }}
-  >
-    <Text style={{ color: COLORS.sub, fontWeight: '800', fontSize: 12 }}>
-      ФИО: <Text style={{ color: COLORS.text, fontWeight: '900' }}>{accountantFio.trim() || '—'}</Text>
-    </Text>
-    <Text style={{ color: COLORS.sub, fontWeight: '800', fontSize: 12, marginTop: 4 }} numberOfLines={1}>
-      Назначение: <Text style={{ color: COLORS.text, fontWeight: '900' }}>{purpose.trim() || '—'}</Text>
-    </Text>
-  </View>
-</Animated.View>
 
+            {/* ✅ липкий мини-блок */}
+            <Animated.View
+              pointerEvents="box-none"
+              style={{
+                position: 'absolute',
+                top: topPad + 56,
+                left: 0,
+                right: 0,
+                paddingHorizontal: 12,
+                zIndex: 20,
+                opacity: cardScrollY.interpolate({
+                  inputRange: [0, 80, 140],
+                  outputRange: [0, 0, 1],
+                  extrapolate: 'clamp',
+                }),
+                transform: [
+                  {
+                    translateY: cardScrollY.interpolate({
+                      inputRange: [0, 80, 140],
+                      outputRange: [-10, -10, 0],
+                      extrapolate: 'clamp',
+                    }),
+                  },
+                ],
+              }}
+            >
+              <View
+                style={{
+                  backgroundColor: '#fff',
+                  borderWidth: 1,
+                  borderColor: COLORS.border,
+                  borderRadius: 12,
+                  padding: 10,
+                }}
+              >
+                <Text style={{ color: COLORS.sub, fontWeight: '800', fontSize: 12 }}>
+                  ФИО:{' '}
+                  <Text style={{ color: COLORS.text, fontWeight: '900' }}>
+                    {accountantFio.trim() || '—'}
+                  </Text>
+                </Text>
+                <Text
+                  style={{ color: COLORS.sub, fontWeight: '800', fontSize: 12, marginTop: 4 }}
+                  numberOfLines={1}
+                >
+                  Назначение:{' '}
+                  <Text style={{ color: COLORS.text, fontWeight: '900' }}>
+                    {purpose.trim() || '—'}
+                  </Text>
+                </Text>
+              </View>
+            </Animated.View>
 
             {/* ✅ СКРОЛЛ ТЕЛА */}
             <Animated.ScrollView
-  keyboardShouldPersistTaps="always"
-  onScroll={Animated.event(
-    [{ nativeEvent: { contentOffset: { y: cardScrollY } } }],
-    { useNativeDriver: false }
-  )}
-  scrollEventThrottle={16}
-  contentContainerStyle={{
-  paddingHorizontal: 12,
-  paddingTop: 68,
-  paddingBottom: Math.max(insets.bottom || 0, 16) + 24,
-}}
+              // @ts-ignore
+              ref={payFormReveal.scrollRef}
+              keyboardShouldPersistTaps="handled"
+              keyboardDismissMode={Platform.OS === 'ios' ? 'interactive' : 'on-drag'}
+              onScrollBeginDrag={() => Keyboard.dismiss()}
+              onScroll={Animated.event(
+                [{ nativeEvent: { contentOffset: { y: cardScrollY } } }],
+                { useNativeDriver: false }
+              )}
+              scrollEventThrottle={16}
+              contentContainerStyle={{
+                paddingHorizontal: 12,
+                paddingTop: 68,
+                paddingBottom: Math.max(insets.bottom || 0, 16) + 24,
+              }}
+            >
 
->
           {/* ====== ТВОЙ КОНТЕНТ КАРТОЧКИ ====== */}
           <Text style={{ color: COLORS.sub, marginBottom: 6 }}>
             ID:{' '}
@@ -1736,7 +1771,10 @@ contentContainerStyle={{
                     actionKey="open_part_form"
                     busyKey={busyKey}
                     runAction={runAction}
-                    onPress={() => { setShowPayForm(true); }}
+                    onPress={() => {
+  setShowPayForm(true);
+  payFormReveal.reveal();
+}}
                   />
                   <ActionButton
                     label="Вернуть на доработку"
@@ -1767,7 +1805,11 @@ contentContainerStyle={{
                     actionKey="open_add_form"
                     busyKey={busyKey}
                     runAction={runAction}
-                    onPress={() => { setShowPayForm(true); }}
+                    onPress={() => {
+  setShowPayForm(true);
+  payFormReveal.reveal();
+}}
+
                   />
                   <ActionButton
                     label="Вернуть на доработку"
@@ -1792,9 +1834,7 @@ contentContainerStyle={{
   runAction={runAction}
   onPress={onOpenPaymentDocsOrUpload}
 />
-
-                  ) : null}
-
+                
                   <ActionButton
                     label="Закрыть"
                     variant={canOpenPayments ? 'secondary' : 'primary'}
@@ -1850,19 +1890,21 @@ contentContainerStyle={{
             return null;
           })()}
 
-          {/* ✅ ФОРМА ОПЛАТЫ */}
-          {(() => {
-            const isHist = tab === 'История';
-            const st = statusFromRaw(current?.payment_status ?? currentDisplayStatus, isHist);
-            const allowForm = (st.key === 'K_PAY' || st.key === 'PART');
-            if (!allowForm || !showPayForm) return null;
+         {/* ✅ ФОРМА ОПЛАТЫ */}
+{(() => {
+  const isHist = tab === 'История';
+  const st = statusFromRaw(current?.payment_status ?? currentDisplayStatus, isHist);
+  const allowForm = (st.key === 'K_PAY' || st.key === 'PART');
+  if (!allowForm || !showPayForm) return null;
 
-            return (
-              <>
-                <View style={{ height: 16 }} />
-                <Text style={{ fontWeight: '600', marginBottom: 6, color: COLORS.text }}>Форма оплаты</Text>
+  return (
+    <View onLayout={payFormReveal.onSectionLayout}>
+      <View style={{ height: 16 }} />
+      <Text style={{ fontWeight: '900', marginBottom: 6, color: COLORS.text }}>
+        Форма оплаты
+      </Text>
 
-                <View style={{ position: 'relative', zIndex: 5 }}>
+      <View style={{ position: 'relative', zIndex: 5 }}>
                   <TextInput
                     placeholder="Сумма (KGS)"
                     keyboardType="decimal-pad"
@@ -1958,19 +2000,17 @@ contentContainerStyle={{
                       Скрыть форму
                     </Text>
                   </WButton>
-                </View>
-              </>
-            );
-          })()}
-       </Animated.ScrollView>
+                   </View>
+  </View>
+);
+})()}
+          </Animated.ScrollView>
           </View>
         </View>
-      </View>
+      </DismissKeyboardView>
     );
   })()}
 </Modal>
-
-
 
     <Modal visible={bellOpen} animationType="fade" onRequestClose={() => setBellOpen(false)} transparent>
       <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'center', padding: 16 }}>

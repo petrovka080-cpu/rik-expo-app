@@ -4,14 +4,16 @@ import {
   View, Text, FlatList, Pressable, Alert, ActivityIndicator,
   RefreshControl, Platform, StyleSheet, TextInput, Animated
 } from 'react-native';
+import { StatusBar } from 'expo-status-bar';
 import * as XLSX from 'xlsx';
 import {
   listDirectorProposalsPending, proposalItems,
   listDirectorInbox as fetchDirectorInbox, type DirectorInboxRow,
   RIK_API,
   exportRequestPdf,
-  directorReturnToBuyer,
 } from '../../src/lib/catalog_api';
+import { useGlobalBusy } from '../../src/ui/GlobalBusy';
+import RNModal from "react-native-modal";
 import { supabase, ensureSignedIn } from '../../src/lib/supabaseClient';
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
@@ -58,24 +60,28 @@ const shortId = (rid: number | string | null | undefined) => {
   if (!s || s.toLowerCase() === 'nan') return '—';
   return /^\d+$/.test(s) ? s : s.slice(0, 8);
 };
-
 const UI = {
-  bg: '#F8FAFC',
-  text: '#0F172A',
-  sub: '#475569',
-  border: '#E2E8F0',
-  tabActiveBg: '#0F172A',
-  tabInactiveBg: '#E5E7EB',
-  tabActiveText: '#FFFFFF',
-  tabInactiveText: '#111827',
-  btnApprove: '#16A34A',
-  btnReject:  '#DC2626',
-  btnNeutral: '#6B7280',
-  cardBg: '#FFFFFF',
-};
+  bg: '#0B0F14',        // общий фон (почти чёрный)
+  cardBg: '#101826',    // карточки/хедер (чуть светлее)
+  text: '#F8FAFC',      // основной текст (белый)
+  sub: '#9CA3AF',       // вторичный текст (серый)
+  border: '#1F2A37',    // границы (тёмные)
 
+  tabActiveBg: '#101826',
+  tabInactiveBg: 'transparent',
+  tabActiveText: '#F8FAFC',
+  tabInactiveText: '#9CA3AF',
+
+  btnApprove: '#22C55E', // зелёный
+  btnReject:  '#EF4444', // красный
+  btnNeutral: 'rgba(255,255,255,0.08)',
+
+
+  accent: '#22C55E',     // акцент (для линий/рамок)
+};
 export default function DirectorScreen() {
-  const [tab, setTab] = useState<Tab>('foreman');
+  const busy = useGlobalBusy();
+const [tab, setTab] = useState<Tab>('foreman');
   // ===== Collapsing header (как у прораба) =====
   const HEADER_MAX = 210;
   const HEADER_MIN = 76;
@@ -113,15 +119,33 @@ export default function DirectorScreen() {
   const [loadingRows, setLoadingRows] = useState(false);
   const [actingId, setActingId] = useState<string | null>(null);
   const [actingAll, setActingAll] = useState<number | string | null>(null);
- 
-// ✅ accordion по заявкам прораба
-const [expandedReq, setExpandedReq] = useState<string | null>(null);
+ // ===== Bottom Sheet (единая модалка) =====
+type SheetKind = 'none' | 'request' | 'proposal';
 
-// ✅ toggle accordion (должен быть тут, а не внутри toggleExpand)
-const toggleReq = useCallback((rid: number | string) => {
-  const key = String(rid);
-  setExpandedReq(prev => (prev === key ? null : key));
+const [sheetKind, setSheetKind] = useState<SheetKind>('none');
+const [sheetRequest, setSheetRequest] = useState<Group | null>(null);
+const [sheetProposalId, setSheetProposalId] = useState<string | null>(null);
+
+const isSheetOpen = sheetKind !== 'none';
+
+const closeSheet = useCallback(() => {
+  setSheetKind('none');
+  setSheetRequest(null);
+  setSheetProposalId(null);
 }, []);
+
+const openRequestSheet = useCallback((g: Group) => {
+  setSheetRequest(g);
+  setSheetProposalId(null);
+  setSheetKind('request');
+}, []);
+
+const openProposalSheet = useCallback((pid: string) => {
+  setSheetProposalId(pid);
+  setSheetRequest(null);
+  setSheetKind('proposal');
+}, []);
+
   // анти-мигание
   const didInit = useRef(false);
   const fetchTicket = useRef(0);
@@ -135,17 +159,18 @@ const toggleReq = useCallback((rid: number | string) => {
   const [propsHeads, setPropsHeads] = useState<ProposalHead[]>([]);
 const [buyerPropsCount, setBuyerPropsCount] = useState<number>(0);
 const [buyerPositionsCount, setBuyerPositionsCount] = useState<number>(0);
-
+const [propItemsCount, setPropItemsCount] = useState<Record<string, number>>({});
   const [loadingProps, setLoadingProps] = useState(false);
   const [expanded, setExpanded] = useState<string | null>(null);
   const [itemsByProp, setItemsByProp] = useState<Record<string, ProposalItem[]>>({});
   const [loadedByProp, setLoadedByProp] = useState<Record<string, boolean>>({});
   const [decidingId, setDecidingId] = useState<string | null>(null);
   const [pdfHtmlByProp, setPdfHtmlByProp] = useState<Record<string, string>>({});
-const [pdfBusyKey, setPdfBusyKey] = useState<string | null>(null);
 
   // ===== КЭШ НОМЕРОВ ЗАЯВОК =====
   const [displayNoByReq, setDisplayNoByReq] = useState<Record<string, string>>({});
+const [submittedAtByReq, setSubmittedAtByReq] = useState<Record<string, string>>({});
+
   const labelForRequest = useCallback((rid: number | string | null | undefined, fallbackDocNo?: string | null) => {
     const key = String(rid ?? '');
     if (fallbackDocNo && fallbackDocNo.trim()) return fallbackDocNo.trim();
@@ -155,23 +180,45 @@ const [pdfBusyKey, setPdfBusyKey] = useState<string | null>(null);
   }, [displayNoByReq]);
 
   const preloadDisplayNos = useCallback(async (reqIds: Array<number | string>) => {
-    const needed = Array.from(new Set(reqIds.map(x => String(x ?? '').trim()).filter(Boolean).filter(id => displayNoByReq[id] == null)));
-    if (!needed.length) return;
-    try {
-      const { data, error } = await supabase.from('v_requests_display').select('id, display_no').in('id', needed);
-      if (error) throw error;
-      const map: Record<string, string> = {};
-      for (const r of (data ?? [])) {
-        if (!r) continue;
-        const id = String((r as any).id ?? '').trim();
-        const dn = String((r as any).display_no ?? '').trim();
-        if (id && dn) map[id] = dn;
-      }
-      if (Object.keys(map).length) setDisplayNoByReq(prev => ({ ...prev, ...map }));
-    } catch (e) {
-      console.warn('[director] preloadDisplayNos]:', (e as any)?.message ?? e);
+  const needed = Array.from(
+    new Set(
+      reqIds
+        .map(x => String(x ?? '').trim())
+        .filter(Boolean)
+        .filter(id => displayNoByReq[id] == null || submittedAtByReq[id] == null)
+    )
+  );
+  if (!needed.length) return;
+
+  try {
+    const { data, error } = await supabase
+      .from('requests')
+      .select('id, display_no, submitted_at')
+      .in('id', needed);
+
+    if (error) throw error;
+
+    const mapDn: Record<string, string> = {};
+    const mapSub: Record<string, string> = {};
+
+    for (const r of (data ?? []) as any[]) {
+      const id = String(r?.id ?? '').trim();
+      if (!id) continue;
+
+      const dn = String(r?.display_no ?? '').trim();
+      const sa = r?.submitted_at ?? null;
+
+      if (dn) mapDn[id] = dn;
+      if (sa) mapSub[id] = String(sa);
     }
-  }, [displayNoByReq]);
+
+    if (Object.keys(mapDn).length) setDisplayNoByReq(prev => ({ ...prev, ...mapDn }));
+    if (Object.keys(mapSub).length) setSubmittedAtByReq(prev => ({ ...prev, ...mapSub }));
+  } catch (e) {
+    console.warn('[director] preloadDisplayNos]:', (e as any)?.message ?? e);
+  }
+}, [displayNoByReq, submittedAtByReq]);
+
 
   /* ---------- loaders ---------- */
   const fetchRows = useCallback(async () => {
@@ -287,6 +334,28 @@ try {
 } catch {}
 
 setPropsHeads(filtered);
+try {
+  const propIds = filtered.map(h => h.id);
+  if (propIds.length) {
+    const qCnt = await supabase
+      .from('proposal_items')
+      .select('proposal_id')
+      .in('proposal_id', propIds);
+
+    const map: Record<string, number> = {};
+    for (const r of (qCnt.data || []) as any[]) {
+      const pid = String(r?.proposal_id ?? '');
+      if (!pid) continue;
+      map[pid] = (map[pid] || 0) + 1;
+    }
+    setPropItemsCount(map);
+  } else {
+    setPropItemsCount({});
+  }
+} catch {
+  setPropItemsCount({});
+}
+
 
 // KPI: кол-во предложений
 setBuyerPropsCount(filtered.length);
@@ -429,50 +498,48 @@ async function openPdfPreviewOrFallbackShare(uri: string) {
   }
 
   try {
-    // ✅ у тебя exportRequestPdf/exportProposalPdf уже возвращают file://
-    await Print.printAsync({ uri });
+    // ✅ Preview через ShareSheet — самый стабильный способ
+    const ok = await Sharing.isAvailableAsync();
+    if (!ok) {
+      await Print.printAsync({ uri });
+      return;
+    }
 
-    Alert.alert('PDF', 'Поделиться файлом?', [
-      { text: 'Нет', style: 'cancel' },
-      {
-        text: 'Поделиться',
-        onPress: async () => {
-          const ok = await Sharing.isAvailableAsync();
-          if (ok) await Sharing.shareAsync(uri);
-          else Alert.alert('PDF', 'Шаринг недоступен на этом устройстве.');
-        },
-      },
-    ]);
+    await new Promise((r) => setTimeout(r, 150));
+
+    await Sharing.shareAsync(uri, {
+      mimeType: 'application/pdf',
+      UTI: 'com.adobe.pdf',
+      dialogTitle: 'PDF',
+    });
   } catch (e: any) {
     const msg = String(e?.message ?? e ?? '').toLowerCase();
     if (msg.includes('printing did not complete')) return;
+    if (msg.includes('canceled') || msg.includes('cancel')) return;
     Alert.alert('PDF', e?.message ?? 'Не удалось открыть PDF');
   }
 }
   /* ---------- PDF заявки (прораб) с безопасным window.open ---------- */
    const openRequestPdf = useCallback(async (g: any) => {
   const rid = String(g?.request_id ?? '');
-  const key = `req:${rid}`;
+  const key = `pdf:req:${rid}`;
 
   try {
-    setPdfBusyKey(key);
+    await busy.run(async () => {
+      if (!rid) throw new Error('request_id пустой');
 
-    if (!rid) throw new Error('request_id пустой');
-    const uri = await exportRequestPdf(rid, 'preview');
+      const uri = await exportRequestPdf(rid, 'preview');
+      if (!uri) {
+        Alert.alert('PDF', 'Не удалось сформировать PDF-документ');
+        return;
+      }
 
-    if (!uri) {
-      Alert.alert('PDF', 'Не удалось сформировать PDF-документ');
-      return;
-    }
-
-    await openPdfPreviewOrFallbackShare(uri);
+      await openPdfPreviewOrFallbackShare(uri);
+    }, { key, message: 'Открываю PDF…', minMs: 300 });
   } catch (e: any) {
     Alert.alert('Ошибка', e?.message ?? 'PDF не сформирован');
-  } finally {
-    setPdfBusyKey((prev) => (prev === key ? null : prev));
   }
-}, []);
-
+}, [busy]);
 
     // Найти связанную закупку по proposal_id (для дальнейшего purchase_approve)
   const findPurchaseIdByProposal = useCallback(async (proposalId: string): Promise<string | null> => {
@@ -492,6 +559,36 @@ async function openPdfPreviewOrFallbackShare(uri: string) {
 
     return null;
   }, []);
+// ✅ PROD: seed works/services right after director approve (best-effort)
+const seedWorksAfterApprove = useCallback(async (proposalId: string) => {
+  // 1) сначала пробуем прямой seed из proposal (идеально)
+  try {
+    const r = await supabase.rpc("work_seed_from_proposal" as any, {
+      p_proposal_id: String(proposalId),
+    } as any);
+    if (!r.error) return;
+    console.warn("[director] work_seed_from_proposal error:", r.error?.message);
+  } catch (e) {
+    console.warn("[director] work_seed_from_proposal throw:", e);
+  }
+
+  // 2) fallback: seed из purchase (если нет/не готова функция above)
+  try {
+    const purchaseId = await findPurchaseIdByProposal(String(proposalId));
+    if (!purchaseId) return;
+
+    const r2 = await supabase.rpc("work_seed_from_purchase" as any, {
+      p_purchase_id: String(purchaseId),
+    } as any);
+
+    if (r2.error) {
+      console.warn("[director] work_seed_from_purchase error:", r2.error?.message);
+    }
+  } catch (e) {
+    console.warn("[director] work_seed_from_purchase throw:", e);
+  }
+}, [findPurchaseIdByProposal]);
+
 
   /* ---------- groups ---------- */
     const groups: Group[] = useMemo(() => {
@@ -521,313 +618,48 @@ async function openPdfPreviewOrFallbackShare(uri: string) {
     });
   }, [directorReqs]);
 
- /* ===== Вспомогательная карточка предложения (СНАБЖЕНЕЦ) ===== */
+/* ===== Карточка предложения (СНАБЖЕНЕЦ) — как у заявок ===== */
 const ProposalRow = React.memo(({ p }: { p: ProposalHead }) => {
   const pidStr = String(p.id);
-const pretty = String(p.pretty ?? '').trim(); // ✅ единственный источник, без морганий
-  const isOpen = expanded === p.id;
-  const key = pidStr;
-  const items = itemsByProp[key] || [];
-const totalSum = useMemo(() => {
-  return (items || []).reduce((acc, it) => {
-    const p = Number((it as any).price ?? 0);
-    const q = Number((it as any).total_qty ?? 0);
-    return acc + p * q;
-  }, 0);
-}, [items]);
-
-  const loaded = !!loadedByProp[key];
-
-const pdfKey = `prop:${pidStr}`;
-const busyPdf = pdfBusyKey === pdfKey;
-
+  const pretty = String(p.pretty ?? '').trim();
+  const itemsCount = propItemsCount[pidStr] ?? 0;
 
   return (
-    <View style={[s.card, { borderStyle: 'dashed' }]}>
-      {/* HEADER */}
-      <View style={s.propHeader}>
+    <View style={{ marginBottom: 12 }}>
+      <View style={s.groupHeader}>
+        {/* LEFT */}
         <View style={{ flex: 1, minWidth: 0 }}>
-          <Text style={s.groupTitle} numberOfLines={2}>
-  {pretty
-    ? (pretty.toLowerCase().startsWith('предложение') ? pretty : `Предложение ${pretty}`)
-    : `Предложение #${pidStr.slice(0, 8)}`}
-</Text>
+          <Text style={s.groupTitle} numberOfLines={1}>
+            {pretty
+              ? (pretty.toLowerCase().startsWith('предложение') ? pretty : `Предложение ${pretty}`)
+              : `Предложение #${pidStr.slice(0, 8)}`}
+          </Text>
 
-          <Text style={s.cardMeta}>
+          <Text style={s.cardMeta} numberOfLines={1}>
             Отправлено: {p.submitted_at ? new Date(p.submitted_at).toLocaleString() : '—'}
           </Text>
         </View>
 
-        <Pressable onPress={() => toggleExpand(pidStr)} style={s.openBtn}>
-          <Text style={s.openBtnText}>{isOpen ? 'Свернуть' : 'Открыть'}</Text>
-        </Pressable>
+        {/* RIGHT */}
+        <View style={s.rightStack}>
+          <View style={s.metaPill}>
+            <Text style={s.metaPillText}>{`Позиций ${itemsCount}`}</Text>
+          </View>
+
+          <Pressable
+            onPress={async () => {
+              await toggleExpand(pidStr);  // ✅ грузим состав как раньше
+              openProposalSheet(pidStr);   // ✅ открываем модалку
+            }}
+            style={s.openBtn}
+          >
+            <Text style={s.openBtnText}>Открыть</Text>
+          </Pressable>
+        </View>
       </View>
-
-{isOpen ? (
-  <>
-    <View style={{ marginTop: 8 }}>
-      {!loaded ? (
-        <Text style={{ opacity: 0.7, color: UI.sub }}>Загружаю состав…</Text>
-      ) : items.length === 0 ? (
-        <Text style={{ opacity: 0.6, color: UI.sub }}>Состав пуст</Text>
-      ) : (
-        <>
-          <View>
-            {items.map((it, idx) => (
-              <View key={`pi:${key}:${it.id}:${idx}`} style={s.mobCard}>
-                <View style={s.mobMain}>
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-                    <Text style={s.mobTitle} numberOfLines={3}>{it.name_human}</Text>
-
-                    {it.item_kind ? (
-                      <View style={s.kindPill}>
-                        <Text style={s.kindPillText}>
-                          {it.item_kind === 'material' ? 'Материал'
-                            : it.item_kind === 'work' ? 'Работа'
-                            : it.item_kind === 'service' ? 'Услуга'
-                            : it.item_kind}
-                        </Text>
-                      </View>
-                    ) : null}
-                  </View>
-
-                  <Text style={s.mobMeta}>
-                    {`${it.total_qty} ${it.uom || ''}`.trim()}
-                    {it.price != null ? ` · цена ${it.price}` : ''}
-                    {it.price != null ? ` · сумма ${Math.round(it.price * (it.total_qty || 0))}` : ''}
-                    {it.app_code ? ` · ${it.app_code}` : ''}
-                  </Text>
-                </View>
-
-                <Pressable
-                  onPress={async () => {
-                    try {
-                      if (!it.request_item_id) {
-                        Alert.alert('Ошибка', 'request_item_id пустой (не можем отклонить)');
-                        return;
-                      }
-                      setDecidingId(pidStr);
-
-                      const payload = [{
-                        request_item_id: it.request_item_id,
-                        decision: 'rejected',
-                        comment: 'Отклонено директором',
-                      }];
-
-                      const { error } = await supabase.rpc('director_decide_proposal_items', {
-                        p_proposal_id: pidStr,
-                        p_decisions: payload,
-                        p_finalize: false,
-                      });
-                      if (error) throw error;
-                      
-const beforeCount = (itemsByProp[pidStr] || items || []).length; // items у тебя уже есть выше
-const isLast = beforeCount <= 1;
-
-// 1) локально удаляем строку из UI
-setItemsByProp(prev => {
-  const before = prev[pidStr] || [];
-  const nextItems = before.filter(x => String(x.request_item_id) !== String(it.request_item_id));
-  return { ...prev, [pidStr]: nextItems };
-});
-
-// 2) если это была последняя — ВОЗВРАЩАЕМ ПРЕДЛОЖЕНИЕ (НЕ оставляем мусор)
-if (isLast) {
-  try {
-    await directorReturnToBuyer({
-      proposalId: pidStr,
-      comment: 'Все позиции отклонены директором',
-    });
-  } catch (e2: any) {
-    // если RPC не прошёл — всё равно хотя бы уберём карточку локально
-    console.warn('[director] auto-return on last item failed:', e2?.message ?? e2);
-  }
-
-  // 3) убираем карточку из списка и чистим кэши
- setExpanded(cur => (cur === pidStr ? null : cur));
-setItemsByProp(m => {
-  const copy = { ...m };
-  delete copy[pidStr];
-  return copy;
-});
-setLoadedByProp(m => {
-  const copy = { ...m };
-  delete copy[pidStr];
-  return copy;
-});
-setPdfHtmlByProp(m => {
-  const copy = { ...m };
-  delete copy[pidStr];
-  return copy;
-});
-
-await fetchProps(); // ✅ перечитать список (он уже отфильтрует пустые)
-
-}
-
-                    } catch (e: any) {
-                      Alert.alert('Ошибка', e?.message ?? 'Не удалось отклонить позицию');
-                    } finally {
-                      setDecidingId(null);
-                    }
-                  }}
-                  disabled={decidingId === pidStr}
-                  style={[s.mobRejectBtn, { opacity: decidingId === pidStr ? 0.6 : 1 }]}
-                >
-                  <Text style={s.mobRejectIcon}>✕</Text>
-                </Pressable>
-              </View>
-            ))}
-          </View>
-
-          {/* ✅ НИЖНЯЯ ПАНЕЛЬ ДЕЙСТВИЙ (как у прораба) */}
-          <View style={s.reqActionsBottom}>
-            <Pressable
-              disabled={busyPdf}
-              onPress={async () => {
-                try {
-                  setPdfBusyKey(pdfKey);
-
-                  if (Platform.OS === 'web') {
-                    const w = window.open('about:blank', '_blank');
-                    try {
-                      const { buildProposalPdfHtml } = await import('../../src/lib/rik_api');
-                      const htmlDoc = await buildProposalPdfHtml(pidStr as any);
-                      if (w) {
-                        try { w.document.open(); w.document.write(htmlDoc); w.document.close(); w.focus(); }
-                        catch {
-                          const blob = new Blob([htmlDoc], { type: 'text/html;charset=utf-8' });
-                          const url = URL.createObjectURL(blob);
-                          w.location.href = url;
-                        }
-                      }
-                    } catch (e) {
-                      try { if (w) w.close(); } catch {}
-                      Alert.alert('Ошибка', (e as any)?.message ?? 'PDF не сформирован');
-                    }
-                    return;
-                  }
-
-                  const { exportProposalPdf } = await import('../../src/lib/rik_api');
-                  const uri = await exportProposalPdf(pidStr as any, 'preview');
-                  if (uri) await openPdfPreviewOrFallbackShare(uri);
-                } catch (e: any) {
-                  Alert.alert('Ошибка', e?.message ?? 'PDF не сформирован');
-                } finally {
-                  setPdfBusyKey((prev) => (prev === pdfKey ? null : prev));
-                }
-              }}
-              style={[s.actionBtn, { backgroundColor: UI.btnNeutral, opacity: busyPdf ? 0.6 : 1 }]}
-            >
-              <Text style={s.actionText}>{busyPdf ? 'PDF…' : 'PDF'}</Text>
-            </Pressable>
-
-            <Pressable
-              onPress={async () => {
-                try {
-                  if (!loaded) { Alert.alert('Excel', 'Сначала открой предложение и дождись загрузки строк.'); return; }
-                  if (!items.length) { Alert.alert('Excel', 'Нет строк для выгрузки.'); return; }
-                  if (Platform.OS !== 'web') { Alert.alert('Excel', 'Excel экспорт сейчас реализован только для Web-версии.'); return; }
-
-                  const safe = (v: any) => v == null ? '' : String(v).replace(/[\r\n]+/g, ' ').trim();
-                  const title = (pretty || `PROPOSAL-${pidStr.slice(0, 8)}`).replace(/[^\wА-Яа-я0-9]/g, '_');
-                  const sheetName = title.slice(0, 31) || 'Предложение';
-
-                  const data: any[][] = [['№', 'Наименование', 'Кол-во', 'Ед. изм.', 'Применение']];
-                  items.forEach((it, idx) => data.push([idx + 1, safe(it.name_human), safe(it.total_qty), safe(it.uom), safe(it.app_code)]));
-
-                  const wb = XLSX.utils.book_new();
-                  const ws = XLSX.utils.aoa_to_sheet(data);
-                  XLSX.utils.book_append_sheet(wb, ws, sheetName);
-
-                  const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
-                  const blob = new Blob([wbout], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-                  const url = URL.createObjectURL(blob);
-                  const a = document.createElement('a');
-                  a.href = url;
-                  a.download = `${sheetName}.xlsx`;
-                  document.body.appendChild(a);
-                  a.click();
-                  document.body.removeChild(a);
-                  URL.revokeObjectURL(url);
-                } catch (e: any) {
-                  Alert.alert('Ошибка', e?.message ?? 'Не удалось сформировать Excel');
-                }
-              }}
-              style={[s.actionBtn, { backgroundColor: UI.btnNeutral }]}
-            >
-              <Text style={s.actionText}>Excel</Text>
-            </Pressable>
-
-            <Pressable
-  hitSlop={12}
-  style={[s.iconBtnDanger, { zIndex: 20 }]}
-  onPress={() => {
-    console.log('[director] buyer return clicked', pidStr);
-    onDirectorReturn(pidStr);
-  }}
->
-  <Ionicons name="close" size={20} color="#fff" />
-</Pressable>
-              
-           <Pressable
-  hitSlop={10}
-  disabled={decidingId === pidStr}
-  style={[s.iconBtnApprove, { backgroundColor: (decidingId === pidStr) ? '#9CA3AF' : UI.btnApprove }]}
-  onPress={async () => {
-    try {
-      setDecidingId(pidStr);
-
-      const { error } = await supabase.rpc('director_approve_min_auto', {
-        p_proposal_id: pidStr,
-        p_comment: null,
-      });
-      if (error) throw error;
-
-      const rInc = await supabase.rpc('ensure_purchase_and_incoming_from_proposal', {
-        p_proposal_id: pidStr,
-      });
-      if ((rInc as any)?.error) throw (rInc as any).error;
-
-      const { error: accErr } = await supabase.rpc('proposal_send_to_accountant_min', {
-        p_proposal_id: pidStr,
-        p_invoice_number: null,
-        p_invoice_date: null,
-        p_invoice_amount: null,
-        p_invoice_currency: 'KGS',
-      });
-      if (accErr) throw accErr;
-
-      
-      await fetchProps();
-      Alert.alert('Готово', 'Утверждено → бухгалтер → склад');
-    } catch (e: any) {
-      Alert.alert('Ошибка', e?.message ?? 'Не удалось утвердить');
-    } finally {
-      setDecidingId(null);
-    }
-  }}
->
-                <Ionicons name="send" size={20} color="#fff" />
-            </Pressable>
-          </View>
-
-          <View style={{ marginTop: 10, alignItems: 'flex-end' }}>
-            <Text style={{ fontWeight: '900', color: UI.text, fontSize: 16 }}>
-              ИТОГО: {Math.round(totalSum)}
-            </Text>
-          </View>
-        </>
-      )}
-    </View>
-  </>
-) : null}
-
     </View>
   );
 });
-
-
   /* ---------- toggleExpand: грузим состав и HTML (web) ---------- */
   const toggleExpand = useCallback(async (pid: string) => {
     const next = expanded === pid ? null : pid;
@@ -988,48 +820,75 @@ setItemsByProp(prev => ({ ...prev, [key]: norm }));
   }
 }, [fetchProps]);
 
-  async function onDirectorReturn(proposalId: string | number, note?: string) {
-  try {
-    const pid = String(proposalId);
+async function onDirectorReturn(proposalId: string | number, note?: string) {
+  const pidStr = String(proposalId);
 
-    // 0) если уже у бухгалтерии — не даём вернуть
+  try {
     const chk = await supabase
       .from('proposals')
       .select('sent_to_accountant_at')
-      .eq('id', pid)
+      .eq('id', pidStr)
       .maybeSingle();
 
     if (!chk.error && chk.data?.sent_to_accountant_at) {
-      Alert.alert(
-        'Нельзя вернуть',
-        'Документ уже у бухгалтерии. Вернуть может только бухгалтер (через «На доработке (снабженец)»).'
-      );
+      Alert.alert('Нельзя вернуть', 'Документ уже у бухгалтерии. Вернуть может только бухгалтер.');
       return;
     }
 
-    setDecidingId(pid);
+    setDecidingId(pidStr);
 
-    // ✅ ВАЖНО: зовём ОДНУ стабильную функцию (она внутри вызывает правильный RPC)
-    await directorReturnToBuyer({ proposalId: pid, comment: (note || '').trim() || undefined });
+    // ✅ Берём ВСЕ request_item_id из БД
+    const q = await supabase
+      .from('proposal_items')
+      .select('request_item_id')
+      .eq('proposal_id', pidStr);
 
-    // ✅ чтобы карточка не оставалась пустой “Состав пуст”
-    setExpanded((prev) => (prev === pid ? null : prev));
-    setItemsByProp(prev => ({ ...prev, [pid]: [] }));
-    setLoadedByProp(prev => ({ ...prev, [pid]: true }));
+    if (q.error) throw q.error;
+
+    const ids = Array.from(new Set(
+      (q.data || []).map((r: any) => String(r?.request_item_id || '').trim()).filter(Boolean)
+    ));
+
+    if (!ids.length) {
+      Alert.alert('Пусто', 'В предложении нет строк для возврата.');
+      return;
+    }
+
+    const comment = (note || '').trim() || 'Отклонено директором';
+
+    const payload = ids.map((rid) => ({
+      request_item_id: rid,
+      decision: 'rejected',
+      comment,
+    }));
+
+    const res = await supabase.rpc('director_decide_proposal_items', {
+      p_proposal_id: pidStr,
+      p_decisions: payload,   // ✅ массив
+      p_finalize: true,
+    });
+
+    if (res.error) throw res.error;
+
+    // чистим кеши и обновляем список
+    setExpanded(cur => (cur === pidStr ? null : cur));
+    setItemsByProp(m => { const c = { ...m }; delete c[pidStr]; return c; });
+    setLoadedByProp(m => { const c = { ...m }; delete c[pidStr]; return c; });
+    setPdfHtmlByProp(m => { const c = { ...m }; delete c[pidStr]; return c; });
 
     await fetchProps();
-    Alert.alert('Возвращено', `Предложение #${pid.slice(0, 8)} отправлено снабженцу на доработку`);
+    closeSheet();
   } catch (e: any) {
-    Alert.alert('Ошибка', e?.message ?? 'Не удалось вернуть на доработку');
+    Alert.alert('Ошибка', e?.message ?? 'Не удалось вернуть предложение');
   } finally {
     setDecidingId(null);
   }
 }
 
-
   /* ---------- render ---------- */
   return (
-    <View style={[s.container, { backgroundColor: UI.bg }]}>
+  <View style={[s.container, { backgroundColor: UI.bg }]}>
+    <StatusBar style="light" />
      {/* ✅ Collapsing Header */}
 <Animated.View
   style={[
@@ -1047,9 +906,13 @@ setItemsByProp(prev => ({ ...prev, [key]: norm }));
       const active = tab === t;
       return (
         <Pressable key={t} onPress={() => setTab(t)} style={[s.tab, active && s.tabActive]}>
-          <Text numberOfLines={1} style={{ color: '#0F172A', fontWeight: '700' }}>
-            {t === 'foreman' ? 'Прораб' : 'Снабженец'}
-          </Text>
+          <Text
+  numberOfLines={1}
+  style={{ color: active ? UI.text : UI.sub, fontWeight: '800' }}
+>
+  {t === 'foreman' ? 'Прораб' : 'Снабженец'}
+</Text>
+
         </Pressable>
       );
     })}
@@ -1100,264 +963,37 @@ setItemsByProp(prev => ({ ...prev, [key]: norm }));
 keyboardShouldPersistTaps="handled"
 
   renderItem={({ item }) => {
-    const ridKey = String(item.request_id);
-    const isOpen = expandedReq === ridKey;
-const headerNote = item.items.find(x => x.note)?.note || null;
-    return (
-  <View style={s.group}>
-    {/* HEADER */}
-    <View style={s.groupHeader}>
-      <View style={{ flex: 1, minWidth: 0 }}>
-        <Text style={s.groupTitle} numberOfLines={1}>
-          Заявка {labelForRequest(item.request_id)}
-        </Text>
-        <Text style={s.groupMeta}>{item.items.length} позиций</Text>
-      </View>
-
-      <Pressable onPress={() => toggleReq(item.request_id)} style={s.openBtn}>
-        <Text style={s.openBtnText}>{isOpen ? 'Свернуть' : 'Открыть'}</Text>
-      </Pressable>
-    </View>
-
-    {/* NOTE — только когда открыто */}
-    {isOpen && headerNote ? (
-      <View style={s.reqNoteBox}>
-        {headerNote
-          .split(';')
-          .map(x => x.trim())
-          .filter(Boolean)
-          .slice(0, 4)
-          .map((line, idx) => (
-            <Text key={idx} style={s.reqNoteLine} numberOfLines={1}>
-              {line}
-            </Text>
-          ))}
-      </View>
-    ) : null}
-        {/* ✅ ВЕСЬ СТАРЫЙ КОД ТЕПЕРЬ ТОЛЬКО КОГДА isOpen */}
-        {isOpen ? (
-          <>
-    
-{/* ✅ ЕДИНЫЙ ВИД (Procore): карточки и на WEB, и на Mobile */}
-<View style={s.mobList}>
-  {item.items.map((it, idx) => (
-    <View
-      key={it.request_item_id ? `mri:${it.request_item_id}` : `mri:${ridKey}:${idx}`}
-      style={s.mobCard}
-    >
-      <View style={s.mobMain}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-  <Text style={s.mobTitle} numberOfLines={3}>
-    {it.name_human}
-  </Text>
-
-  {it.item_kind ? (
-    <View style={s.kindPill}>
-      <Text style={s.kindPillText}>
-        {it.item_kind === 'material' ? 'Материал'
-          : it.item_kind === 'work' ? 'Работа'
-          : it.item_kind === 'service' ? 'Услуга'
-          : it.item_kind}
-      </Text>
-    </View>
-  ) : null}
-</View>
-
-        <Text style={s.mobMeta} numberOfLines={2}>
-          {`${it.qty} ${it.uom || ''}`.trim()}
-          {it.app_code ? ` · ${it.app_code}` : ''}
-        </Text>
-
-        {/* опционально: номер заявки мелко (как у тебя было в таблице) */}
-        <Text style={s.cardMeta} numberOfLines={1}>
-          {`Заявка ${labelForRequest(it.request_id ?? item.request_id)}`}
-        </Text>
-      </View>
-
-      <Pressable
-        onPress={async () => {
-          if (!it.request_item_id) return;
-          setActingId(it.request_item_id);
-          try {
-            const { error } = await supabase.rpc('reject_request_item', {
-              request_item_id: it.request_item_id,
-              reason: null,
-            });
-            if (error) throw error;
-
-            setRows(prev =>
-              it.request_item_id
-                ? prev.filter(r => r.request_item_id !== it.request_item_id)
-                : prev,
-            );
-          } catch (e: any) {
-            Alert.alert('Ошибка', e?.message ?? 'Не удалось отклонить позицию');
-          } finally {
-            setActingId(null);
-          }
-        }}
-        disabled={!it.request_item_id || actingId === it.request_item_id}
-        style={[
-          s.mobRejectBtn,
-          { opacity: !it.request_item_id || actingId === it.request_item_id ? 0.6 : 1 },
-        ]}
-      >
-        <Text style={s.mobRejectIcon}>✕</Text>
-      </Pressable>
-    </View>
-  ))}
-</View>
-{/* ✅ НИЖНЯЯ ПАНЕЛЬ ДЕЙСТВИЙ — ПОСЛЕ списка */}
-<View style={s.reqActionsBottom}>
-  {/* PDF */}
-  {(() => {
-    const busy = pdfBusyKey === `req:${String(item.request_id ?? '')}`;
-    return (
-      <Pressable
-        onPress={() => openRequestPdf(item)}
-        disabled={busy}
-        style={[s.actionBtn, { backgroundColor: UI.btnNeutral, opacity: busy ? 0.6 : 1 }]}
-      >
-        <Text style={s.actionText}>{busy ? 'PDF…' : 'PDF'}</Text>
-      </Pressable>
-    );
-  })()}
-
-  {/* Excel */}
-  <Pressable
-    onPress={() => exportRequestExcel(item)}
-    style={[s.actionBtn, { backgroundColor: UI.btnNeutral }]}
-  >
-    <Text style={s.actionText}>Excel</Text>
-  </Pressable>
-
-<Pressable
-  hitSlop={10}
-  disabled={actingAll === item.request_id}
-  style={[
-    s.iconBtnDanger,
-    { opacity: actingAll === item.request_id ? 0.6 : 1 },
-  ]}
-  onPress={() => {
-    // ✅ WEB: window.confirm (чтобы точно работало)
-    if (Platform.OS === 'web') {
-      const ok = window.confirm('Удалить заявку?\n\nОтклонить ВСЮ заявку вместе со всеми позициями?');
-      if (!ok) return;
-
-      (async () => {
-        setActingAll(item.request_id);
-        try {
-          const reqId = toFilterId(item.request_id);
-          if (reqId == null) throw new Error('request_id пустой');
-
-          const { error } = await supabase.rpc('reject_request_all', {
-            p_request_id: String(reqId),
-            p_reason: null,
-          });
-          if (error) throw error;
-
-          setRows(prev => prev.filter(r => r.request_id !== item.request_id));
-        } catch (e: any) {
-          Alert.alert('Ошибка', e?.message ?? 'Не удалось отклонить все позиции');
-        } finally {
-          setActingAll(null);
-        }
-      })();
-
-      return;
-    }
-
-    // ✅ MOBILE: Alert.alert (как было)
-    Alert.alert(
-      'Удалить заявку?',
-      'Вы уверены, что хотите отклонить ВСЮ заявку вместе со всеми позициями?',
-      [
-        { text: 'Отмена', style: 'cancel' },
-        {
-          text: 'Да, удалить',
-          style: 'destructive',
-          onPress: async () => {
-            setActingAll(item.request_id);
-            try {
-              const reqId = toFilterId(item.request_id);
-              if (reqId == null) throw new Error('request_id пустой');
-
-              const { error } = await supabase.rpc('reject_request_all', {
-                p_request_id: String(reqId),
-                p_reason: null,
-              });
-              if (error) throw error;
-
-              setRows(prev => prev.filter(r => r.request_id !== item.request_id));
-            } catch (e: any) {
-              Alert.alert('Ошибка', e?.message ?? 'Не удалось отклонить все позиции');
-            } finally {
-              setActingAll(null);
-            }
-          },
-        },
-      ],
-    );
-  }}
->
-  <Ionicons name="close" size={20} color="#fff" />
-</Pressable>
-
-  {/* ✈️ Утвердить все (самолётик как у прораба) */}
-{(() => {
-  const disabled = actingAll === item.request_id || (item.items?.length ?? 0) === 0;
+  const submittedAt = submittedAtByReq[String(item.request_id ?? '').trim()] ?? null;
 
   return (
-    <Pressable
-      disabled={disabled}
-      onPress={async () => {
-        setActingAll(item.request_id);
-        try {
-          const reqId = toFilterId(item.request_id);
-          if (reqId == null) throw new Error('request_id пустой');
-          const reqIdStr = String(reqId);
+    <View style={s.group}>
+      <View style={s.groupHeader}>
+        {/* LEFT */}
+        <View style={{ flex: 1, minWidth: 0 }}>
+          <Text style={s.groupTitle} numberOfLines={1}>
+            Заявка {labelForRequest(item.request_id)}
+          </Text>
 
-          const updItems = await supabase
-            .from('request_items')
-            .update({ status: 'К закупке' })
-            .eq('request_id', reqIdStr)
-            .neq('status', 'Отклонено');
-          if (updItems.error) throw updItems.error;
+          <Text style={s.cardMeta} numberOfLines={1}>
+            Отправлено: {submittedAt ? new Date(submittedAt).toLocaleString() : '—'}
+          </Text>
+        </View>
 
-          const updReq = await supabase
-            .from('requests')
-            .update({ status: 'К закупке' })
-            .eq('id', reqIdStr);
-          if (updReq.error) throw updReq.error;
+        {/* RIGHT */}
+        <View style={s.rightStack}>
+          <View style={s.metaPill}>
+            <Text style={s.metaPillText}>{`${item.items.length} позиций`}</Text>
+          </View>
 
-          setRows(prev => prev.filter(r => r.request_id !== item.request_id));
-          await fetchDirectorReqs();
-          await fetchProps();
-
-          Alert.alert('Утверждено', `Заявка ${labelForRequest(item.request_id)} утверждена и отправлена снабженцу`);
-        } catch (e: any) {
-          Alert.alert('Ошибка', e?.message ?? 'Не удалось утвердить и отправить заявку');
-        } finally {
-          setActingAll(null);
-        }
-      }}
-      style={[
-        s.iconBtnApprove,
-        { backgroundColor: disabled ? '#9CA3AF' : UI.btnApprove }, // серый → зелёный
-      ]}
-    >
-      <Ionicons name="send" size={20} color="#fff" />
-    </Pressable>
-  );
-})()}
-
-</View>
-
-          </>
-        ) : null}
+          <Pressable onPress={() => openRequestSheet(item)} style={s.openBtn}>
+            <Text style={s.openBtnText}>Открыть</Text>
+          </Pressable>
+        </View>
       </View>
-    );
-  }}
+    </View>
+  );
+}}
+
   ListEmptyComponent={
     !loadingRows ? (
       <Text style={{ opacity: 0.6, padding: 16, color: UI.sub }}>
@@ -1395,32 +1031,524 @@ scrollEventThrottle={16}
         </>
       ) : (
        
-                   <FlatList
-            data={propsHeads}
-            keyExtractor={(p, idx) => (p?.id ? `pp:${p.id}` : `pp:${idx}`)}
-            removeClippedSubviews={false}
-            renderItem={({ item: p }) => <ProposalRow p={p} />}
-            refreshControl={
-  <RefreshControl
-    refreshing={false}
-    onRefresh={async () => {
-      await ensureSignedIn();
-      await fetchProps();
-    }}
-    title=""
-    tintColor="transparent"
-  />
-}
-onScroll={Animated.event(
-  [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-  { useNativeDriver: false }
-)}
-scrollEventThrottle={16}
-contentContainerStyle={{ paddingTop: HEADER_MAX + 12, paddingHorizontal: 16, paddingBottom: 24 }}
-
-          />
-         
+                  <FlatList
+  data={propsHeads}
+  keyExtractor={(p, idx) => (p?.id ? `pp:${p.id}` : `pp:${idx}`)}
+  removeClippedSubviews={false}
+  renderItem={({ item: p }) => <ProposalRow p={p} />}
+  refreshControl={
+    <RefreshControl
+      refreshing={false}
+      onRefresh={async () => {
+        await ensureSignedIn();
+        await fetchProps();
+      }}
+      title=""
+      tintColor="transparent"
+    />
+  }
+  onScroll={Animated.event(
+    [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+    { useNativeDriver: false }
+  )}
+  scrollEventThrottle={16}
+  contentContainerStyle={{
+    paddingTop: HEADER_MAX + 12,
+    paddingHorizontal: 16,
+    paddingBottom: 24,
+  }}
+/>
        )}
+     {/* ===== ЕДИНАЯ BOTTOM-SHEET MODAL ===== */}
+     <RNModal
+  isVisible={isSheetOpen}
+  onBackdropPress={closeSheet}
+  onBackButtonPress={closeSheet}
+
+  // ✅ NO SWIPE: только кнопка "Свернуть"
+  backdropOpacity={0.55}
+  useNativeDriver
+  useNativeDriverForBackdrop
+  hideModalContentWhileAnimating
+  style={{ margin: 0, justifyContent: 'flex-end' }}
+>
+
+                 <View style={s.sheet}>
+    <View style={s.sheetHandle} />
+
+    {/* TOP BAR */}
+    <View style={s.sheetTopBar}>
+      <Text style={s.sheetTitle} numberOfLines={1}>
+        {sheetKind === 'request' && sheetRequest
+          ? `Заявка ${labelForRequest(sheetRequest.request_id)}`
+          : sheetKind === 'proposal' && sheetProposalId
+            ? (() => {
+                const p = propsHeads.find(x => String(x.id) === String(sheetProposalId));
+                const pretty = String(p?.pretty ?? '').trim();
+                return pretty ? `Предложение ${pretty}` : `Предложение #${String(sheetProposalId).slice(0, 8)}`;
+              })()
+            : '—'}
+      </Text>
+
+      <Pressable onPress={closeSheet} style={s.sheetCloseBtn}>
+        <Text style={s.sheetCloseText}>Свернуть</Text>
+      </Pressable>
+    </View>
+
+    {/* ===== REQUEST (прораб) ===== */}
+    {sheetKind === 'request' && sheetRequest ? (
+      <View style={{ flex: 1, minHeight: 0 }}>
+        {/* NOTE */}
+        {(() => {
+          const headerNote = sheetRequest.items.find(x => x.note)?.note || null;
+          if (!headerNote) return null;
+
+          const lines = headerNote
+            .split(';')
+            .map(x => x.trim())
+            .filter(Boolean)
+            .slice(0, 4);
+
+          if (!lines.length) return null;
+
+          return (
+            <View style={s.reqNoteBox}>
+              {lines.map((line, idx) => (
+                <Text key={idx} style={s.reqNoteLine} numberOfLines={1}>
+                  {line}
+                </Text>
+              ))}
+            </View>
+          );
+        })()}
+
+        <FlatList
+          data={sheetRequest.items}
+          keyExtractor={(it, idx) => (it.request_item_id ? `mri:${it.request_item_id}` : `mri:${idx}`)}
+          contentContainerStyle={{ paddingBottom: 12 }}
+          keyboardShouldPersistTaps="handled"
+          nestedScrollEnabled
+          scrollEnabled
+          showsVerticalScrollIndicator={false}
+          renderItem={({ item: it }) => (
+            <View style={s.mobCard}>
+              <View style={s.mobMain}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                  <Text style={s.mobTitle} numberOfLines={3}>{it.name_human}</Text>
+
+                  {it.item_kind ? (
+                    <View style={s.kindPill}>
+                      <Text style={s.kindPillText}>
+                        {it.item_kind === 'material' ? 'Материал'
+                          : it.item_kind === 'work' ? 'Работа'
+                          : it.item_kind === 'service' ? 'Услуга'
+                          : it.item_kind}
+                      </Text>
+                    </View>
+                  ) : null}
+                </View>
+
+                <Text style={s.mobMeta} numberOfLines={2}>
+                  {`${it.qty} ${it.uom || ''}`.trim()}
+                  {it.app_code ? ` · ${it.app_code}` : ''}
+                </Text>
+              </View>
+
+              <Pressable
+                disabled={!it.request_item_id || actingId === it.request_item_id}
+                style={[
+                  s.mobRejectBtn,
+                  { opacity: (!it.request_item_id || actingId === it.request_item_id) ? 0.6 : 1 },
+                ]}
+                onPress={async () => {
+                  if (!it.request_item_id) return;
+                  setActingId(it.request_item_id);
+                  try {
+                    const { error } = await supabase.rpc('reject_request_item', {
+                      request_item_id: it.request_item_id,
+                      reason: null,
+                    });
+                    if (error) throw error;
+
+                    setRows(prev => prev.filter(r => r.request_item_id !== it.request_item_id));
+                    setSheetRequest(prev => prev
+                      ? ({ ...prev, items: prev.items.filter(x => x.request_item_id !== it.request_item_id) })
+                      : prev
+                    );
+                  } catch (e: any) {
+                    Alert.alert('Ошибка', e?.message ?? 'Не удалось отклонить позицию');
+                  } finally {
+                    setActingId(null);
+                  }
+                }}
+              >
+                <Text style={s.mobRejectIcon}>✕</Text>
+              </Pressable>
+            </View>
+          )}
+        />
+
+        {/* НИЖНЯЯ ПАНЕЛЬ — как было */}
+        <View style={s.reqActionsBottom}>
+          <Pressable
+            onPress={() => openRequestPdf(sheetRequest)}
+            style={[s.actionBtn, { backgroundColor: UI.btnNeutral }]}
+          >
+            <Text style={s.actionText}>PDF</Text>
+          </Pressable>
+
+          <Pressable
+            onPress={() => exportRequestExcel(sheetRequest)}
+            style={[s.actionBtn, { backgroundColor: UI.btnNeutral }]}
+          >
+            <Text style={s.actionText}>Excel</Text>
+          </Pressable>
+
+          <Pressable
+            hitSlop={10}
+            disabled={actingAll === sheetRequest.request_id}
+            style={[s.iconBtnDanger, { opacity: actingAll === sheetRequest.request_id ? 0.6 : 1 }]}
+            onPress={() => {
+              const doIt = async () => {
+                setActingAll(sheetRequest.request_id);
+                try {
+                  const reqId = toFilterId(sheetRequest.request_id);
+                  if (reqId == null) throw new Error('request_id пустой');
+
+                  const { error } = await supabase.rpc('reject_request_all', {
+                    p_request_id: String(reqId),
+                    p_reason: null,
+                  });
+                  if (error) throw error;
+
+                  setRows(prev => prev.filter(r => r.request_id !== sheetRequest.request_id));
+                  closeSheet();
+                } catch (e: any) {
+                  Alert.alert('Ошибка', e?.message ?? 'Не удалось отклонить все позиции');
+                } finally {
+                  setActingAll(null);
+                }
+              };
+
+              if (Platform.OS === 'web') {
+                const ok = window.confirm('Удалить заявку?\n\nОтклонить ВСЮ заявку вместе со всеми позициями?');
+                if (!ok) return;
+                void doIt();
+                return;
+              }
+
+              Alert.alert(
+                'Удалить заявку?',
+                'Вы уверены, что хотите отклонить ВСЮ заявку вместе со всеми позициями?',
+                [
+                  { text: 'Отмена', style: 'cancel' },
+                  { text: 'Да, удалить', style: 'destructive', onPress: () => void doIt() },
+                ],
+              );
+            }}
+          >
+            <Ionicons name="close" size={20} color="#fff" />
+          </Pressable>
+
+          <Pressable
+            hitSlop={10}
+            disabled={actingAll === sheetRequest.request_id || (sheetRequest.items?.length ?? 0) === 0}
+            style={[
+              s.iconBtnApprove,
+              {
+                backgroundColor:
+                  (actingAll === sheetRequest.request_id || (sheetRequest.items?.length ?? 0) === 0)
+                    ? '#9CA3AF'
+                    : UI.btnApprove
+              },
+            ]}
+            onPress={async () => {
+              setActingAll(sheetRequest.request_id);
+              try {
+                const reqId = toFilterId(sheetRequest.request_id);
+                if (reqId == null) throw new Error('request_id пустой');
+                const reqIdStr = String(reqId);
+
+                const updItems = await supabase
+                  .from('request_items')
+                  .update({ status: 'К закупке' })
+                  .eq('request_id', reqIdStr)
+                  .neq('status', 'Отклонено');
+                if (updItems.error) throw updItems.error;
+
+                const updReq = await supabase
+                  .from('requests')
+                  .update({ status: 'К закупке' })
+                  .eq('id', reqIdStr);
+                if (updReq.error) throw updReq.error;
+
+                setRows(prev => prev.filter(r => r.request_id !== sheetRequest.request_id));
+                await fetchDirectorReqs();
+                await fetchProps();
+
+                closeSheet();
+                Alert.alert('Утверждено', `Заявка ${labelForRequest(sheetRequest.request_id)} утверждена и отправлена снабженцу`);
+              } catch (e: any) {
+                Alert.alert('Ошибка', e?.message ?? 'Не удалось утвердить и отправить заявку');
+              } finally {
+                setActingAll(null);
+              }
+            }}
+          >
+            <Ionicons name="send" size={20} color="#fff" />
+          </Pressable>
+        </View>
+      </View>
+    ) : null}
+
+   {/* ===== PROPOSAL (снабженец) ===== */}
+{sheetKind === 'proposal' && sheetProposalId ? (
+  <View style={{ flex: 1, minHeight: 0 }}>
+    {(() => {
+      const pidStr = String(sheetProposalId);
+      const key = pidStr;
+      const loaded = !!loadedByProp[key];
+      const items = itemsByProp[key] || [];
+
+      const pretty = String(propsHeads.find(x => String(x.id) === pidStr)?.pretty ?? '').trim();
+
+      const totalSum = (items || []).reduce((acc, it) => {
+        const pr = Number((it as any).price ?? 0);
+        const q = Number((it as any).total_qty ?? 0);
+        return acc + pr * q;
+      }, 0);
+
+      if (!loaded) return <Text style={{ opacity: 0.7, color: UI.sub }}>Загружаю состав…</Text>;
+      if (!items.length) return <Text style={{ opacity: 0.6, color: UI.sub }}>Состав пуст</Text>;
+
+      return (
+        <>
+          <FlatList
+            data={items}
+            keyExtractor={(it, idx) => `pi:${key}:${it.id}:${idx}`}
+            contentContainerStyle={{ paddingBottom: 12 }}
+            keyboardShouldPersistTaps="handled"
+            nestedScrollEnabled
+            scrollEnabled
+            showsVerticalScrollIndicator={false}
+            renderItem={({ item: it }) => (
+              <View style={s.mobCard}>
+                <View style={s.mobMain}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                    <Text style={s.mobTitle} numberOfLines={3}>{it.name_human}</Text>
+
+                    {it.item_kind ? (
+                      <View style={s.kindPill}>
+                        <Text style={s.kindPillText}>
+                          {it.item_kind === 'material' ? 'Материал'
+                            : it.item_kind === 'work' ? 'Работа'
+                            : it.item_kind === 'service' ? 'Услуга'
+                            : it.item_kind}
+                        </Text>
+                      </View>
+                    ) : null}
+                  </View>
+
+                  <Text style={s.mobMeta}>
+                    {`${it.total_qty} ${it.uom || ''}`.trim()}
+                    {it.price != null ? ` · цена ${it.price}` : ''}
+                    {it.price != null ? ` · сумма ${Math.round(Number(it.price) * Number(it.total_qty || 0))}` : ''}
+                    {it.app_code ? ` · ${it.app_code}` : ''}
+                  </Text>
+                </View>
+
+                <Pressable
+  disabled={decidingId === pidStr}
+  style={[s.mobRejectBtn, { opacity: decidingId === pidStr ? 0.6 : 1 }]}
+  onPress={async () => {
+    try {
+      setDecidingId(pidStr);
+
+      // ✅ Берём request_item_id железно из БД по proposal_items.id
+      const q = await supabase
+        .from('proposal_items')
+        .select('request_item_id')
+        .eq('proposal_id', pidStr)
+        .eq('id', it.id) // it.id = proposal_items.id
+        .maybeSingle();
+
+      if (q.error) throw q.error;
+
+      const rid = String(q.data?.request_item_id || '').trim();
+      if (!rid) {
+        Alert.alert('Ошибка', 'В строке предложения нет request_item_id (в базе).');
+        return;
+      }
+
+      const beforeCount = (itemsByProp[pidStr] || items || []).length;
+      const isLast = beforeCount <= 1;
+
+      const payload = [{
+        request_item_id: rid,
+        decision: 'rejected',
+        comment: 'Отклонено директором',
+      }];
+
+      // ✅ ВАЖНО: НИКАКОГО JSON.stringify
+      const res = await supabase.rpc('director_decide_proposal_items', {
+        p_proposal_id: pidStr,
+        p_decisions: payload,
+        p_finalize: isLast,
+      });
+
+      if (res.error) throw res.error;
+
+      // локально убираем строку
+      setItemsByProp(prev => {
+        const before = prev[pidStr] || [];
+        const nextItems = before.filter(x => Number(x.id) !== Number(it.id));
+        return { ...prev, [pidStr]: nextItems };
+      });
+
+      if (isLast) {
+        await fetchProps();
+        closeSheet();
+      }
+    } catch (e: any) {
+      Alert.alert('Ошибка', e?.message ?? 'Не удалось отклонить позицию');
+    } finally {
+      setDecidingId(null);
+    }
+  }}
+>
+  <Text style={s.mobRejectIcon}>✕</Text>
+</Pressable>
+
+              </View>
+            )}
+          />
+
+          {/* ✅ НИЖНЯЯ ПАНЕЛЬ СНАБЖЕНЦА — ВОССТАНОВЛЕНА 1:1 */}
+          <View style={s.reqActionsBottom}>
+            {/* PDF */}
+            <Pressable
+              style={[s.actionBtn, { backgroundColor: UI.btnNeutral }]}
+              onPress={async () => {
+                const keyPdf = `pdf:prop:${pidStr}`;
+                try {
+                  await busy.run(async () => {
+                    if (Platform.OS === 'web') {
+                      const w = window.open('about:blank', '_blank');
+                      const { buildProposalPdfHtml } = await import('../../src/lib/rik_api');
+                      const htmlDoc = await buildProposalPdfHtml(pidStr as any);
+                      if (w) { w.document.open(); w.document.write(htmlDoc); w.document.close(); w.focus(); }
+                      return;
+                    }
+
+                    const { exportProposalPdf } = await import('../../src/lib/rik_api');
+                    const uri = await exportProposalPdf(pidStr as any, 'preview');
+                    if (uri) await openPdfPreviewOrFallbackShare(uri);
+                  }, { key: keyPdf, message: 'Открываю PDF…', minMs: 300 });
+                } catch (e: any) {
+                  Alert.alert('Ошибка', e?.message ?? 'PDF не сформирован');
+                }
+              }}
+            >
+              <Text style={s.actionText}>PDF</Text>
+            </Pressable>
+
+            {/* Excel */}
+            <Pressable
+              style={[s.actionBtn, { backgroundColor: UI.btnNeutral }]}
+              onPress={async () => {
+                try {
+                  if (Platform.OS !== 'web') { Alert.alert('Excel', 'Excel экспорт сейчас реализован только для Web-версии.'); return; }
+                  if (!items.length) { Alert.alert('Excel', 'Нет строк для выгрузки.'); return; }
+
+                  const safe = (v: any) => v == null ? '' : String(v).replace(/[\r\n]+/g, ' ').trim();
+                  const title = (pretty || `PROPOSAL-${pidStr.slice(0, 8)}`).replace(/[^\wА-Яа-я0-9]/g, '_');
+                  const sheetName = title.slice(0, 31) || 'Предложение';
+
+                  const data: any[][] = [['№', 'Наименование', 'Кол-во', 'Ед. изм.', 'Применение']];
+                  items.forEach((it, idx) => data.push([idx + 1, safe(it.name_human), safe(it.total_qty), safe(it.uom), safe(it.app_code)]));
+
+                  const wb = XLSX.utils.book_new();
+                  const ws = XLSX.utils.aoa_to_sheet(data);
+                  XLSX.utils.book_append_sheet(wb, ws, sheetName);
+
+                  const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+                  const blob = new Blob([wbout], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.href = url;
+                  a.download = `${sheetName}.xlsx`;
+                  document.body.appendChild(a);
+                  a.click();
+                  document.body.removeChild(a);
+                  URL.revokeObjectURL(url);
+                } catch (e: any) {
+                  Alert.alert('Ошибка', e?.message ?? 'Не удалось сформировать Excel');
+                }
+              }}
+            >
+              <Text style={s.actionText}>Excel</Text>
+            </Pressable>
+
+            {/* вернуть */}
+            <Pressable hitSlop={12} style={s.iconBtnDanger} onPress={() => onDirectorReturn(pidStr)}>
+              <Ionicons name="close" size={20} color="#fff" />
+            </Pressable>
+
+            {/* утвердить */}
+            <Pressable
+              hitSlop={10}
+              disabled={decidingId === pidStr}
+              style={[s.iconBtnApprove, { backgroundColor: (decidingId === pidStr) ? '#9CA3AF' : UI.btnApprove }]}
+              onPress={async () => {
+                try {
+                  setDecidingId(pidStr);
+
+                  const { error } = await supabase.rpc('director_approve_min_auto', { p_proposal_id: pidStr, p_comment: null });
+                  if (error) throw error;
+
+                  await seedWorksAfterApprove(pidStr);
+
+                  const rInc = await supabase.rpc('ensure_purchase_and_incoming_from_proposal', { p_proposal_id: pidStr });
+                  if ((rInc as any)?.error) throw (rInc as any).error;
+
+                  const { error: accErr } = await supabase.rpc('proposal_send_to_accountant_min', {
+                    p_proposal_id: pidStr,
+                    p_invoice_number: null,
+                    p_invoice_date: null,
+                    p_invoice_amount: null,
+                    p_invoice_currency: 'KGS',
+                  });
+                  if (accErr) throw accErr;
+
+                  await fetchProps();
+                  closeSheet();
+                  Alert.alert('Готово', 'Утверждено → бухгалтер → склад');
+                } catch (e: any) {
+                  Alert.alert('Ошибка', e?.message ?? 'Не удалось утвердить');
+                } finally {
+                  setDecidingId(null);
+                }
+              }}
+            >
+              <Ionicons name="send" size={20} color="#fff" />
+            </Pressable>
+          </View>
+
+          <View style={{ marginTop: 10, alignItems: 'flex-end' }}>
+            <Text style={{ fontWeight: '900', color: UI.text, fontSize: 16 }}>
+              ИТОГО: {Math.round(totalSum)}
+            </Text>
+          </View>
+        </>
+      );
+    })()}
+  </View>
+) : null}
+
+  </View>
+
+      </RNModal>
+
     </View>
   );
 }
@@ -1449,24 +1577,25 @@ const s = StyleSheet.create({
   paddingHorizontal: 14,
   borderRadius: 999,
   borderWidth: 1,
-  borderColor: '#E2E8F0', // серая рамка
-  backgroundColor: '#FFFFFF',
+  borderColor: UI.border,
+  backgroundColor: UI.tabInactiveBg,
 },
 tabActive: {
-  borderColor: '#0F172A',   // ЧЁРНЫЙ ОБОДОК
+  backgroundColor: UI.tabActiveBg,
+  borderColor: UI.accent,
 },
 tabHalf: {
   flexBasis: '48%',     // ✅ две кнопки в ряд
   flexGrow: 1,
 },
-tabText: {
-  color: '#0F172A',
-  fontWeight: '700',
-  textAlign: 'center',  // ✅ центрируем текст
-  flexShrink: 1,        // ✅ не раздуваем
-},
 
-  sectionHeader: {
+tabText: {
+  color: UI.text,
+  fontWeight: '800',
+  textAlign: 'center',
+  flexShrink: 1,
+}, 
+ sectionHeader: {
   paddingHorizontal: 16,
   paddingTop: 12,
   paddingBottom: 6,
@@ -1502,32 +1631,46 @@ sectionHeaderTop: {
   textAlign: 'right',   // ✅ ровно справа
 },
 
+group: { marginBottom: 12, paddingHorizontal: 16, gap: 10 },
 
-  group: { marginBottom: 14, paddingHorizontal: 16 },
-  groupHeader: {
+groupHeader: {
   flexDirection: 'row',
-  alignItems: 'flex-start',
-  gap: 8,
-  paddingVertical: 6,
-  borderBottomWidth: 1,
-  borderColor: UI.border,
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  gap: 10,
+
+  padding: 14,
+  borderRadius: 18,
+
+  backgroundColor: UI.cardBg,
+  borderWidth: 1,
+  borderColor: 'rgba(255,255,255,0.18)',
+
+  shadowColor: '#000',
+  shadowOffset: { width: 0, height: 10 },
+  shadowOpacity: 0.22,
+  shadowRadius: 18,
+  elevation: 6,
+ minHeight: 72,
 },
+
 
   groupTitle: { fontSize: 18, fontWeight: '900', color: UI.text },
 
-  groupMeta: { color: UI.sub },
+  groupMeta: {
+  marginTop: 4,
+  alignSelf: 'flex-start',
+  paddingVertical: 3,
+  paddingHorizontal: 10,
+  borderRadius: 999,
+  backgroundColor: 'rgba(255,255,255,0.06)',
+  borderWidth: 1,
+  borderColor: 'rgba(255,255,255,0.12)',
+  color: '#E5E7EB',
+  fontWeight: '800',
+  fontSize: 12,
+},
 
-  
-   card: {
-    backgroundColor: UI.cardBg,
-    padding: 12,
-    borderWidth: 1,
-    borderColor: UI.border,
-    borderRadius: 14,
-    marginBottom: 12,
-  },
- 
-  
   pillBtn: { paddingVertical: 6, paddingHorizontal: 12, borderRadius: 999 },
   pillBtnText: { color: UI.text, fontWeight: '700' },   // для светлых кнопок
 pillBtnTextOn: { color: '#fff', fontWeight: '800' },  // для тёмных кнопок
@@ -1545,16 +1688,16 @@ pillBtnTextOn: { color: '#fff', fontWeight: '800' },  // для тёмных к�
     color: UI.sub,
     marginBottom: 4,
   },
-  searchBox: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: UI.border,
-    borderRadius: 999,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    backgroundColor: '#FFFFFF',
-  },
+ searchBox: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  borderWidth: 1,
+  borderColor: 'rgba(255,255,255,0.14)',
+  borderRadius: 999,
+  paddingHorizontal: 10,
+  paddingVertical: 6,
+  backgroundColor: 'rgba(255,255,255,0.06)',
+},
   searchIcon: {
     fontSize: 14,
     marginRight: 6,
@@ -1568,13 +1711,13 @@ pillBtnTextOn: { color: '#fff', fontWeight: '800' },  // для тёмных к�
     color: UI.text,
   },
   filterToggle: {
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 999,
-    borderWidth: 1,
-    borderColor: UI.border,
-    backgroundColor: '#FFFFFF',
-  },
+  paddingHorizontal: 10,
+  paddingVertical: 6,
+  borderRadius: 999,
+  borderWidth: 1,
+  borderColor: 'rgba(255,255,255,0.14)',
+  backgroundColor: 'rgba(255,255,255,0.06)',
+},
   filterToggleActive: {
     backgroundColor: '#E5E7EB',
   },
@@ -1608,29 +1751,30 @@ collapsingTitle: {
 
   // ===== КНОПКА ОТКРЫТЬ (ВСЕГДА ВЛЕЗАЕТ НА IPHONE) =====
   propHeader: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 10,
-  },
+  flexDirection: 'row',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  gap: 10,
+},
+
 
  openBtn: {
-  paddingVertical: 8,
-  paddingHorizontal: 14,
+  paddingVertical: 10,
+  paddingHorizontal: 16,
   borderRadius: 999,
-  backgroundColor: '#FFFFFF',
+  backgroundColor: 'rgba(255,255,255,0.06)',
   borderWidth: 1,
-  borderColor: UI.border,
-  alignSelf: 'flex-start',
-minWidth: 86,
-alignItems: 'center',
-
+  borderColor: 'rgba(255,255,255,0.22)',
+  minWidth: 96,
+  alignItems: 'center',
 },
-
 openBtnText: {
-  color: UI.text,
-  fontWeight: '700',
+  color: '#FFFFFF',
+  fontWeight: '900',
   fontSize: 13,
+  letterSpacing: 0.2,
 },
+
 
 actionsRow: {
   flexDirection: 'row',
@@ -1643,13 +1787,14 @@ reqNoteBox: {
   marginBottom: 12,
   padding: 12,
   borderRadius: 14,
-  backgroundColor: '#F1F5F9',
+  backgroundColor: '#0F172A',    // чуть темнее карточки
+  borderWidth: 1,
+  borderColor: UI.border,
   borderLeftWidth: 4,
-  borderLeftColor: '#0F172A',
+  borderLeftColor: UI.accent,    // зелёный акцент
 },
-
 reqNoteLine: {
-  color: '#334155',
+  color: UI.text,
   fontSize: 14,
   lineHeight: 20,
   marginBottom: 4,
@@ -1660,18 +1805,24 @@ mobList: {
   marginTop: 10,
   gap: 10,
 },
-
 mobCard: {
   flexDirection: 'row',
   alignItems: 'center',
   gap: 10,
-  padding: 12,
-  borderRadius: 14,
-  borderWidth: 1,
-  borderColor: UI.border,
-  backgroundColor: UI.cardBg,
-},
+  padding: 14,
+  borderRadius: 18,
 
+  backgroundColor: 'rgba(16,24,38,0.92)',
+  borderWidth: 1.25,
+  borderColor: 'rgba(255,255,255,0.16)',
+
+  shadowColor: '#000',
+  shadowOffset: { width: 0, height: 10 },
+  shadowOpacity: 0.22,
+  shadowRadius: 18,
+  elevation: 6,
+
+},
 mobMain: {
   flex: 1,
   minWidth: 0,
@@ -1711,9 +1862,8 @@ kindPill: {
   borderRadius: 999,
   borderWidth: 1,
   borderColor: UI.border,
-  backgroundColor: '#FFFFFF',
+  backgroundColor: 'transparent',
 },
-
 kindPillText: {
   fontSize: 12,
   fontWeight: '700',
@@ -1733,16 +1883,13 @@ kpiPill: {
   borderRadius: 999,
   borderWidth: 1,
   borderColor: UI.border,
-  backgroundColor: '#FFFFFF',
+  backgroundColor: UI.cardBg,
   flexDirection: 'row',
   alignItems: 'center',
   gap: 8,
-
-  // ✅ чтобы на телефоне не уезжало — две пилюли в ряд
   flexGrow: 1,
   flexBasis: '48%',
 },
-
 kpiLabel: {
   color: UI.sub,
   fontWeight: '700',
@@ -1754,24 +1901,58 @@ kpiValue: {
   fontWeight: '900',
   fontSize: 12,
 },
+cardMeta: {
+  marginTop: 6,
+  color: 'rgba(255,255,255,0.78)',  // ✅ ярче, чем #E5E7EB на твоём фоне
+  fontSize: 12,
+  fontWeight: '800',
+  letterSpacing: 0.2,
+},
+metaRow: {
+  marginTop: 6,
+  flexDirection: 'row',
+  alignItems: 'center',
+  gap: 10,
+  flexWrap: 'wrap',        // ✅ перенос, но без смещения вправо
+},
+metaPill: {
+  paddingVertical: 4,
+  paddingHorizontal: 12,
+  borderRadius: 999,
+  backgroundColor: 'rgba(255,255,255,0.06)',
+  borderWidth: 1,
+  borderColor: 'rgba(255,255,255,0.12)',
+  alignItems: 'center',
+  flexShrink: 0,          // ✅ не сжиматься в ноль
+},
+metaPillText: {
+  color: '#E5E7EB',
+  fontWeight: '900',
+  fontSize: 12,
+},
+
 reqActionsBottom: {
   marginTop: 12,
   flexDirection: 'row',
-  gap: 8,
-  zIndex: 50,
-  elevation: 50,
-},
+  gap: 10,
 
+  padding: 10,
+  borderRadius: 18,
+  backgroundColor: 'rgba(255,255,255,0.04)',
+  borderWidth: 1,
+  borderColor: 'rgba(255,255,255,0.10)',
+},
 actionBtn: {
   flex: 1,
-  paddingVertical: 10,
-  borderRadius: 14,
+  paddingVertical: 12,
+  borderRadius: 16,
   alignItems: 'center',
   justifyContent: 'center',
-  zIndex: 50,
+  backgroundColor: 'rgba(255,255,255,0.08)',
 },
 
-actionText: { color: UI.text, fontWeight: '800' },
+actionText: { color: '#fff', fontWeight: '900' },
+
 actionTextOn: { color: '#fff', fontWeight: '900' },
 
 iconBtnDanger: {
@@ -1789,6 +1970,75 @@ iconBtnApprove: {
   borderRadius: 14,
   alignItems: 'center',
   justifyContent: 'center',
+},
+sectionBox: {
+  marginTop: 10,
+  padding: 12,
+  borderRadius: 18,
+  backgroundColor: 'rgba(255,255,255,0.04)',
+  borderWidth: 1,
+  borderColor: 'rgba(255,255,255,0.10)',
+},
+sectionBoxTitle: {
+  color: UI.sub,
+  fontWeight: '900',
+  fontSize: 12,
+  letterSpacing: 0.4,
+  marginBottom: 10,
+},
+rightStack: {
+  alignItems: 'flex-end',
+  justifyContent: 'center',
+  gap: 8,
+},
+sheet: {
+  height: '88%',
+  backgroundColor: UI.cardBg,
+  borderTopLeftRadius: 22,
+  borderTopRightRadius: 22,
+  paddingTop: 10,
+  paddingHorizontal: 16,
+  paddingBottom: 16,
+  borderWidth: 1,
+  borderColor: 'rgba(255,255,255,0.10)',
+},
+sheetHandle: {
+  alignSelf: 'center',
+  width: 44,
+  height: 5,
+  borderRadius: 999,
+  backgroundColor: 'rgba(255,255,255,0.18)',
+  marginBottom: 10,
+},
+sheetTitle: {
+  flex: 1,
+  minWidth: 0,
+  color: UI.text,
+  fontWeight: '900',
+  fontSize: 18,
+},
+sheetTopBar: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  gap: 10,
+  marginBottom: 10,
+},
+
+sheetCloseBtn: {
+  paddingVertical: 10,
+  paddingHorizontal: 14,
+  borderRadius: 999,
+  backgroundColor: '#E5E7EB',          // нейтральная кнопка
+  borderWidth: 1,
+  borderColor: 'rgba(0,0,0,0.10)',
+  flexShrink: 0,
+},
+
+sheetCloseText: {
+  color: '#0B0F14',                   // чёрный текст
+  fontWeight: '900',
+  fontSize: 13,
 },
 
 });

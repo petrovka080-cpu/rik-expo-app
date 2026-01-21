@@ -1,24 +1,26 @@
 import "../global.css";
 import { Tabs } from "expo-router";
 import { Platform } from "react-native";
-import LogoutButton from "../../src/components/LogoutButton";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function TabsLayout() {
+  const insets = useSafeAreaInsets();
+  const isWeb = Platform.OS === "web";
+
+  const TAB_H = 56;
+  const bottom = isWeb ? 0 : (insets.bottom || 0);
+
   return (
     <Tabs
       screenOptions={{
-        headerShown: true,
+        headerShown: false,
         headerTitle: "",
-        headerRight: () => <LogoutButton />,
 
-        // ❗ НЕ display:none
-        tabBarStyle: { height: 56 },
-        tabBarItemStyle: { height: 56 },
+        // ✅ tabbar как в топовых: высота + safe-area снизу
+        tabBarStyle: { height: TAB_H + bottom, paddingBottom: bottom },
+        tabBarItemStyle: { height: TAB_H },
 
-        // ✅ на web НЕ отсоединяем экраны (ломает скролл/ивенты)
         detachInactiveScreens: Platform.OS !== "web",
-
-        // ✅ на web можно оставить true, чтобы убирались хвосты
         unmountOnBlur: Platform.OS === "web",
       }}
     >
@@ -28,6 +30,8 @@ export default function TabsLayout() {
       <Tabs.Screen name="accountant" options={{ title: "Бухгалтер" }} />
       <Tabs.Screen name="warehouse" options={{ title: "Склад" }} />
       <Tabs.Screen name="security" options={{ title: "Безопасность" }} />
+      <Tabs.Screen name="supplierMap" options={{ title: "Карта", headerShown: false }} />
     </Tabs>
   );
 }
+

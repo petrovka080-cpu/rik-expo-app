@@ -1805,55 +1805,57 @@ async function openPdfPreviewOrFallbackShare(uri: string) {
     return;
   }
 
+  // ✅ 1) лок на повторные тапы (чтобы не было гонок)
+  // (можешь вынести наверх компонента как useRef, но так тоже ок)
+  // @ts-ignore
+  if ((openPdfPreviewOrFallbackShare as any).__busy) return;
+  // @ts-ignore
+  (openPdfPreviewOrFallbackShare as any).__busy = true;
+
   try {
-    // ✅ берём JWT
+    // ✅ JWT (если PDF защищен)
     const { data } = await supabase.auth.getSession();
     const token = data?.session?.access_token;
 
-    const localPath = `${FileSystem.cacheDirectory}request_${Date.now()}.pdf`;
+    // ✅ если уже file:// — не качаем
+    let localUri = uri;
+    const isRemote = /^https?:\/\//i.test(uri);
 
-    // ✅ скачиваем PDF в файл, передаём Authorization (если нужен)
-    await FileSystem.downloadAsync(uri, localPath, {
-      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+    if (isRemote) {
+      const localPath = `${FileSystem.cacheDirectory}request_${Date.now()}.pdf`;
+      await FileSystem.downloadAsync(uri, localPath, {
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      });
+      localUri = localPath;
+    }
+
+    // ✅ микропаузa — реально помогает Expo/Router не “дергаться”
+    await new Promise((r) => setTimeout(r, 150));
+
+    // ✅ PREVIEW через Share Sheet (это и есть нормальный просмотр на iOS/Android)
+    const ok = await Sharing.isAvailableAsync();
+    if (!ok) {
+      // fallback: если вдруг шаринг недоступен — хотя бы печать
+      await Print.printAsync({ uri: localUri });
+      return;
+    }
+
+    await Sharing.shareAsync(localUri, {
+      mimeType: 'application/pdf',
+      UTI: 'com.adobe.pdf',
+      dialogTitle: 'PDF',
     });
-
-        // ✅ предпросмотр/печать (iOS показывает экран печати)
-await Print.printAsync({ uri: localPath });
-
-// ✅ iOS не любит автозапуск второго sheet сразу.
-// Поэтому просим подтверждение — и тогда share откроется 100%.
-Alert.alert(
-  'PDF',
-  'Поделиться файлом?',
-  [
-    { text: 'Нет', style: 'cancel' },
-    {
-      text: 'Поделиться',
-      onPress: async () => {
-        try {
-          const ok = await Sharing.isAvailableAsync();
-          if (ok) await Sharing.shareAsync(localPath);
-          else Alert.alert('PDF', 'Шаринг недоступен на этом устройстве.');
-        } catch (e: any) {
-          Alert.alert('PDF', e?.message ?? 'Не удалось открыть меню “Поделиться”.');
-        }
-      },
-    },
-  ],
-);
   } catch (e: any) {
-  const msg = String(e?.message ?? e ?? '');
+    const msg = String(e?.message ?? e ?? '');
+    // ✅ если юзер отменил — не ругаемся
+    if (msg.toLowerCase().includes('canceled') || msg.toLowerCase().includes('cancel')) return;
 
-  // ✅ если юзер нажал Cancel в print/preview — это НЕ ошибка
-  if (msg.toLowerCase().includes('printing did not complete')) {
-    console.log('[PDF] user cancelled print/preview');
-    return;
+    console.warn('[PDF] open failed:', msg);
+    Alert.alert('PDF', 'PDF сформирован, но не удалось открыть на устройстве.');
+  } finally {
+    // @ts-ignore
+    (openPdfPreviewOrFallbackShare as any).__busy = false;
   }
-
-  console.warn('[PDF] open failed:', msg);
-  Alert.alert('PDF', 'PDF сформирован, но iPhone не смог скачать/открыть.');
-}
-
 }
   // ---------- Группировка для режима «Сгруппировано» ----------
   const grouped = useMemo<GroupedRow[]>(() => {

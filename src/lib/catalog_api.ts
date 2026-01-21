@@ -772,6 +772,29 @@ export async function listRequestItems(requestId: string): Promise<ReqItemRow[]>
     return [];
   }
 }
+
+const normalizeStatusRu = (raw?: string | null) => {
+  const s = String(raw ?? "").trim().toLowerCase();
+  if (!s) return "—";
+
+  if (s === "draft" || s === "черновик") return "Черновик";
+  if (s === "pending" || s === "на утверждении") return "На утверждении";
+  if (s === "approved" || s === "утверждено" || s === "утверждена") return "Утверждена";
+
+  // 🔥 ВАЖНО: cancelled тоже = отклонено для человека
+  if (
+    s === "rejected" ||
+    s === "cancelled" ||
+    s === "отклонено" ||
+    s === "отклонена"
+  ) return "Отклонена";
+
+  // иногда может быть "к закупке"
+  if (s === "к закупке") return "К закупке";
+
+  return raw ?? "—";
+};
+
 // ========== PDF: простой HTML для заявки (без квадратиков) ==========
 export function buildRequestPdfHtml(
   details: RequestDetails,
@@ -796,7 +819,7 @@ export function buildRequestPdfHtml(
   const systemName = safe(details.system_name_ru);
   const zoneName = safe(details.zone_name_ru);
   const foreman = safe(details.foreman_name);
-  const status = safe(details.status || "Черновик");
+  const status = normalizeStatusRu(details.status || "Черновик");
   const comment = safe(details.comment);
 
   // Авто-текст примечания, который мы НЕ хотим дублировать в таблице
@@ -816,7 +839,7 @@ export function buildRequestPdfHtml(
       const uom = safe(row.uom);
       const qty = safe(row.qty);
       const app = safe(row.app_code);
-      const statusItem = safe(row.status);
+      const statusItem = normalizeStatusRu(row.status);
 
       let note = safe(row.note);
       const normNote = note.replace(/\s+/g, " ").trim();
@@ -1399,11 +1422,16 @@ export async function createProposalsBySupplier(
     }
 
     const metaRows = (bucket.meta ?? ids.map((request_item_id) => ({ request_item_id }))).map((row) => ({
-      request_item_id: row.request_item_id,
-      price: row.price ?? null,
-      supplier: row.supplier ?? (supplierDisplay ? supplierLabel : null),
-      note: row.note ?? null,
-    }));
+  request_item_id: String(row.request_item_id),
+  price: row.price ?? null,
+
+  // ✅ PROD GUARANTEE:
+  // внутри одного proposal_id поставщик ВСЕГДА один
+  supplier: supplierLabel,
+
+  note: row.note ?? null,
+}));
+
 
     if (metaRows.length) {
       try {
@@ -1457,14 +1485,32 @@ export async function createProposalsBySupplier(
 }
 
 
-export async function rikQuickSearch(q: string, limit = 60, apps?: string[]) {
-  const rows = await searchCatalogItems(q, limit, apps);
-  return rows.map(r => ({
-    rik_code: r.code,
-    name_human: r.name,
-    uom_code: r.uom ?? null,
+// ✅ PROD: единый умный поиск (любой ввод: черна / нерж / плит 60х60)
+export async function rikQuickSearch(q: string, limit = 60) {
+  const text = (q ?? '').trim();
+  if (text.length < 2) return [];
+
+  const { data, error } = await supabase.rpc('catalog_search_prod_v2', {
+    q: text,
+    p_limit: Math.min(limit, 100),
+    p_kind: 'material',
+    p_uom_code: null,
+  });
+
+  if (error) {
+    console.error('[rikQuickSearch][catalog_search_prod_v2]', error);
+    return [];
+  }
+
+  if (!Array.isArray(data)) return [];
+
+  return data.map((r: any) => ({
+    rik_code: r.rik_code,
+    name_human: r.name_human,
+    name_human_ru: r.name_human_ru ?? null,
+    uom_code: r.uom_code ?? null,
     kind: r.kind ?? null,
-    apps: null as null | string[],
+    apps: null,
   }));
 }
 // ===============================
