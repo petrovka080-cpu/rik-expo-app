@@ -1,9 +1,6 @@
 ﻿// app/(tabs)/buyer.tsx — снабженец (боевой, без смены логики) + режим «Доработать»
 import { formatRequestDisplay } from '../../src/lib/format';
-import React, {
-  useCallback, useEffect, useMemo, useRef, useState,
-  forwardRef, useImperativeHandle
-} from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   View, Text, FlatList, Pressable, Alert, ActivityIndicator,
   RefreshControl, StyleSheet, Platform, TextInput, ScrollView, Animated,
@@ -35,7 +32,6 @@ import {
   buildProposalPdfHtmlPretty,
   createProposalsBySupplier as apiCreateProposalsBySupplier,
 } from '../../src/lib/catalog_api';
-import { RIK_API } from '../../src/lib/catalog_api';
 import { supabase } from '../../src/lib/supabaseClient';
 import { useFocusEffect } from "expo-router";
 import { listSuppliers, type Supplier } from '../../src/lib/catalog_api';
@@ -66,23 +62,33 @@ type LineMeta = { price?: string; supplier?: string; note?: string };
 type Attachment = { name: string; url?: string; file?: any };
 type AttachmentMap = Record<string, Attachment | undefined>;
 const SUPP_NONE = '— без поставщика —';
+const D = {
+  bg: '#0B0F14',
+  cardBg: '#101826',
+  text: '#F8FAFC',
+  sub: '#9CA3AF',
+  border: '#1F2A37',
+};
+// ===== Buyer DARK UI (как Director) =====
+const UI = {
+  bg: D.bg,
+  cardBg: D.cardBg,
+  text: D.text,
+  sub: D.sub,
+  border: D.border,
 
-/* ====== Палитра (как у Accountant) ====== */
-const COLORS = {
-  bg: '#F8FAFC',
-  text: '#0F172A',
-  sub: '#475569',
-  border: '#E2E8F0',
-  primary: '#111827',
-  tabInactiveBg: '#E5E7EB',
-  tabInactiveText: '#111827',
-  chipGrayBg: '#E5E7EB',
-  chipGrayText: '#111827',
-  green: '#22C55E',
-  yellow: '#CA8A04',
-  red: '#EF4444',
-  blue: '#3B82F6',
-  amber: '#F59E0B',
+  tabActiveBg: D.cardBg,
+  tabInactiveBg: 'rgba(255,255,255,0.06)',
+  tabActiveText: D.text,
+  tabInactiveText: D.sub,
+
+  accent: '#22C55E',
+  btnNeutral: 'rgba(255,255,255,0.06)',
+  btnBorder: 'rgba(255,255,255,0.18)',
+
+  // кнопки
+  btnGreen: '#22C55E',
+  btnRed: '#EF4444',
 };
 
 /* =================== Статус-цвета =================== */
@@ -112,75 +118,6 @@ const TabCount = ({ n, active }: { n: number; active: boolean }) => {
   );
 };
 
-/* ==== helper: красивые подписи + сумма по предложению ==== */
-function useProposalPretty(proposalId: string | number) {
-  const pid = String(proposalId);
-  const [title, setTitle] = React.useState<string>('');
-  const [total, setTotal] = React.useState<number | null>(null);
-  const [busy, setBusy] = React.useState(false);
-
-  useEffect(() => {
-    let dead = false;
-    (async () => {
-      setBusy(true);
-      try {
-        const pi = await supabase
-          .from('proposal_items')
-          .select('request_item_id, qty, price')
-          .eq('proposal_id', pid);
-
-        if (pi.error) throw pi.error;
-
-        const sum = (pi.data || []).reduce((acc: number, r: any) => {
-          const qty = Number(r?.qty) || 0;
-          const price = Number(String(r?.price ?? '').replace(',', '.')) || 0;
-          return acc + qty * price;
-        }, 0);
-
-        const ids = Array.from(new Set((pi.data || [])
-          .map((r: any) => String(r?.request_item_id))
-          .filter(Boolean)));
-
-        let requestIds: string[] = [];
-        if (ids.length) {
-          const rq = await supabase
-            .from('request_items')
-            .select('id, request_id')
-            .in('id', ids);
-          if (!rq.error && Array.isArray(rq.data)) {
-            requestIds = Array.from(
-              new Set((rq.data as any[]).map((x) => String(x.request_id)))
-            );
-          }
-        }
-
-        let label = '';
-        if (requestIds.length) {
-          let map: Record<string, string> = {};
-          try { map = await batchResolveRequestLabels(requestIds); } catch {}
-          const labels = requestIds.map((id) =>
-            map?.[id] || (/^\d+$/.test(id) ? `#${id}` : `#${id.slice(0, 8)}`)
-          );
-          const uniq = Array.from(new Set(labels));
-          label =
-            uniq.length === 1 ? `${uniq[0]}` :
-            uniq.length === 2 ? `${uniq[0]} + ${uniq[1]}` :
-            `${uniq[0]} + ${uniq[1]} + … (${uniq.length} заявки)`;
-        }
-
-        if (!dead) { setTitle(label); setTotal(sum); }
-      } catch {
-        if (!dead) { setTitle(''); setTotal(null); }
-      } finally {
-        if (!dead) setBusy(false);
-      }
-    })();
-    return () => { dead = true; };
-  }, [pid]);
-
-  return { title, total, busy };
-}
-
 /* ======= Вложения (web) — переименовано, чтобы не было дубля ======= */
 function AttachmentUploaderWeb({
   label, onPick, current,
@@ -204,145 +141,101 @@ function AttachmentUploaderWeb({
   };
 
   return (
-    <Pressable onPress={handlePick} style={[s.smallBtn, { borderColor: COLORS.primary }]}>
-      <Text style={[s.smallBtnText, { color: COLORS.primary }]}>
+    <Pressable onPress={handlePick} style={[s.smallBtn, { borderColor: 'rgba(255,255,255,0.22)' }]}>
+      <Text style={[s.smallBtnText, { color: UI.text }]}>
         {current?.name ? `${label}: ${current.name}` : `Вложение: ${label}`}
       </Text>
     </Pressable>
   );
 }
 
-/* =================== Мемо-шапка =================== */
-type SummaryHandle = { flush: () => string };
-const SummaryBar = React.memo(forwardRef<SummaryHandle, {
-  initialFio: string;
-  onCommitFio: (fio: string) => void;
-  tab: Tab; setTab: (t: Tab) => void;
-  pendingCount: number; approvedCount: number; rejectedCount: number;
-  pickedCount: number; pickedSum: number;
-  onRefresh: () => void;
-}>((props, ref) => {
-  const {
-    initialFio, onCommitFio, tab, setTab,
-    pendingCount, approvedCount, rejectedCount,
-    pickedCount, pickedSum, onRefresh
-  } = props;
-
-  const [draft, setDraft] = useState<string>(initialFio || '');
-  const deb = useRef<any>(null);
-
-  useEffect(() => { if (!draft && initialFio) setDraft(initialFio); }, [initialFio]);
-
-  const commit = useCallback((v: string) => {
-    const t = v.trim();
-    onCommitFio(t);
-    return t;
-  }, [onCommitFio]);
-
-  useImperativeHandle(ref, () => ({ flush: () => commit(draft) }), [draft, commit]);
-
-  const TabBtn = ({ id, title }: { id: Tab; title: string }) => {
-    const active = tab === id;
-    return (
-      <Pressable
-        onPress={() => setTab(id)}
-        style={{
-          paddingVertical: 8, paddingHorizontal: 12, borderRadius: 999,
-          backgroundColor: active ? COLORS.primary : COLORS.tabInactiveBg
-        }}
-      >
-        <Text style={{ color: active ? '#fff' : COLORS.tabInactiveText, fontWeight: '600' }}>{title}</Text>
-      </Pressable>
-    );
-  };
-
-  return (
-    <View style={s.summaryWrap}>
-      <Text style={s.summaryTitle}>Снабженец</Text>
-
-      <View style={{ minWidth: 260 }}>
-        <Text style={s.summaryMeta}>ФИО снабженца</Text>
-        <TextInput
-          value={draft}
-          onChangeText={(t) => {
-            setDraft(t);
-            if (deb.current) clearTimeout(deb.current);
-            deb.current = setTimeout(() => commit(t), 180);
-          }}
-          placeholder="введите ФИО"
-          style={[s.input, { paddingVertical: 6, backgroundColor: '#fff', borderColor: COLORS.border }]}
-        />
-      </View>
-
-      <View style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
-        <TabBtn id="inbox" title="Инбокс" />
-        <TabBtn id="pending" title={`У директора (${pendingCount})`} />
-        <TabBtn id="approved" title={`Утверждено (${approvedCount})`} />
-        <TabBtn id="rejected" title={`На доработке (${rejectedCount})`} />
-      </View>
-
-      <View style={{ marginLeft: 'auto', flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-        <Text style={[s.summaryMeta, { fontWeight: '700', color: COLORS.text }]}>
-          Выбрано: {pickedCount} · Сумма: {pickedSum.toLocaleString()} сом
-        </Text>
-        </View>
-    </View>
-  );
-}));
 const BuyerItemRow = React.memo(function BuyerItemRow(props: {
   it: BuyerInboxRow;
   selected: boolean;
+  inSheet?: boolean; // ✅ для dark-sheet
   m: LineMeta;
   sum: number;
   prettyText: string;
-rejectedByDirector: boolean;
+  rejectedByDirector: boolean;
   onTogglePick: () => void;
   onSetPrice: (v: string) => void;
   onSetSupplier: (v: string) => void;
   onSetNote: (v: string) => void;
-
   supplierSuggestions: string[];
   onPickSupplier: (name: string) => void;
 }) {
-
   const {
-  it, selected, m, sum, prettyText, rejectedByDirector,
-  onTogglePick, onSetPrice, onSetSupplier, onSetNote,
-  supplierSuggestions, onPickSupplier
-} = props;
+    it, selected, m, sum, prettyText, rejectedByDirector,
+    onTogglePick, onSetPrice, onSetSupplier, onSetNote,
+    supplierSuggestions, onPickSupplier,
+  } = props;
+
+  // ✅ ВОТ СЮДА (внутри компонента)
+  const inSheet = !!props.inSheet;
+  const P = inSheet
+    ? {
+        cardBg: 'rgba(16,24,38,0.92)',
+        border: 'rgba(255,255,255,0.16)',
+        text: D.text,
+        sub: D.sub,
+        btnBg: 'rgba(255,255,255,0.06)',
+        btnBorder: 'rgba(255,255,255,0.18)',
+        inputBg: 'rgba(255,255,255,0.06)',
+        inputBorder: 'rgba(255,255,255,0.12)',
+        chipGrayBg: 'rgba(255,255,255,0.08)',
+        chipGrayText: D.text,
+      }
+    : {
+        cardBg: UI.cardBg,                 // ✅ важно: не #fff
+        border: 'rgba(255,255,255,0.18)',  // ✅ как у директора
+        text: UI.text,
+        sub: UI.sub,
+        btnBg: 'rgba(255,255,255,0.06)',
+        btnBorder: 'rgba(255,255,255,0.18)',
+        inputBg: 'rgba(255,255,255,0.06)',
+        inputBorder: 'rgba(255,255,255,0.12)',
+        chipGrayBg: 'rgba(255,255,255,0.08)',
+        chipGrayText: UI.text,
+      };
 
   return (
-    <View style={[s.card, { backgroundColor: '#fff' }, selected && s.cardPicked]}>
+  <View
+  style={[
+    inSheet ? s.buyerMobCard : s.card,
+    inSheet ? null : { backgroundColor: P.cardBg, borderColor: P.border },
+    selected && (inSheet ? s.buyerMobCardPicked : s.cardPicked),
+  ]}
+>
+
       <View style={{ gap: 6 }}>
         <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 8 }}>
           <View style={{ flex: 1, minWidth: 0 }}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-  <Text style={[s.cardTitle, { color: COLORS.text }]}>{it.name_human}</Text>
+              <Text style={[s.cardTitle, { color: P.text }]}>{it.name_human}</Text>
 
-  {it.app_code ? (
-    <View style={{ backgroundColor: COLORS.chipGrayBg, borderRadius: 999, paddingVertical: 3, paddingHorizontal: 8 }}>
-      <Text style={{ color: COLORS.chipGrayText, fontWeight: '600', fontSize: 12 }}>{it.app_code}</Text>
-    </View>
-  ) : null}
+              {it.app_code ? (
+                <View style={{ backgroundColor: P.chipGrayBg, borderRadius: 999, paddingVertical: 3, paddingHorizontal: 8 }}>
+                  <Text style={{ color: P.chipGrayText, fontWeight: '700', fontSize: 12 }}>{it.app_code}</Text>
+                </View>
+              ) : null}
 
-  {rejectedByDirector ? (
-    <View style={{
-      backgroundColor: '#FEE2E2',
-      borderRadius: 999,
-      paddingVertical: 3,
-      paddingHorizontal: 8,
-      borderWidth: 1,
-      borderColor: '#FCA5A5',
-    }}>
-      <Text style={{ color: '#991B1B', fontWeight: '900', fontSize: 12 }}>
-        ОТКЛОНЕНА
-      </Text>
-    </View>
-  ) : null}
-</View>
+              {rejectedByDirector ? (
+                <View style={{
+                  backgroundColor: inSheet ? 'rgba(239,68,68,0.18)' : '#FEE2E2',
+                  borderRadius: 999,
+                  paddingVertical: 3,
+                  paddingHorizontal: 8,
+                  borderWidth: 1,
+                  borderColor: inSheet ? 'rgba(239,68,68,0.45)' : '#FCA5A5',
+                }}>
+                  <Text style={{ color: inSheet ? '#FCA5A5' : '#991B1B', fontWeight: '900', fontSize: 12 }}>
+                    ОТКЛОНЕНА
+                  </Text>
+                </View>
+              ) : null}
+            </View>
 
-
-            <Text style={[s.cardMeta, { color: COLORS.sub }]}>{prettyText}</Text>
+            <Text style={[s.cardMeta, { color: P.sub }]}>{prettyText}</Text>
           </View>
 
           <Pressable
@@ -350,35 +243,36 @@ rejectedByDirector: boolean;
             style={[
               s.smallBtn,
               {
-                borderColor: selected ? '#2563eb' : COLORS.border,
-                backgroundColor: selected ? '#2563eb' : '#fff',
+                borderColor: selected ? '#2563eb' : P.btnBorder,
+                backgroundColor: selected ? '#2563eb' : P.btnBg,
                 minWidth: 86,
                 alignItems: 'center',
               },
             ]}
           >
-            <Text style={[s.smallBtnText, { color: selected ? '#fff' : COLORS.text }]}>
+            <Text style={[s.smallBtnText, { color: selected ? '#fff' : P.text }]}>
               {selected ? 'Снять' : 'Выбрать'}
             </Text>
           </Pressable>
         </View>
 
         <View style={{ gap: 2 }}>
-          <Text style={{ color: COLORS.sub }}>
-            Цена: <Text style={{ color: COLORS.text, fontWeight: '700' }}>{m.price || '—'}</Text>{' '}
-            • Поставщик: <Text style={{ color: COLORS.text, fontWeight: '700' }}>{m.supplier || '—'}</Text>{' '}
-            • Прим.: <Text style={{ color: COLORS.text, fontWeight: '700' }}>{m.note || '—'}</Text>
+          <Text style={{ color: P.sub }}>
+            Цена: <Text style={{ color: P.text, fontWeight: '800' }}>{m.price || '—'}</Text>{' '}
+            • Поставщик: <Text style={{ color: P.text, fontWeight: '800' }}>{m.supplier || '—'}</Text>{' '}
+            • Прим.: <Text style={{ color: P.text, fontWeight: '800' }}>{m.note || '—'}</Text>
           </Text>
-          <Text style={{ color: COLORS.sub }}>
-            Сумма по позиции: <Text style={{ color: COLORS.text, fontWeight: '700' }}>{sum ? sum.toLocaleString() : '0'}</Text> сом
+
+          <Text style={{ color: P.sub }}>
+            Сумма по позиции: <Text style={{ color: P.text, fontWeight: '800' }}>{sum ? sum.toLocaleString() : '0'}</Text> сом
           </Text>
         </View>
 
         <View style={{ flexDirection: 'row', marginTop: 6 }}>
           <View style={{ marginLeft: 'auto' }}>
             {selected
-              ? <Chip label="Выбрано" bg="#E0F2FE" fg="#075985" />
-              : <Chip label="Заполни и выбери" bg="#F1F5F9" fg="#334155" />}
+              ? <Chip label="Выбрано" bg={inSheet ? 'rgba(59,130,246,0.20)' : '#E0F2FE'} fg={inSheet ? '#BFDBFE' : '#075985'} />
+              : <Chip label="Заполни и выбери" bg={inSheet ? 'rgba(255,255,255,0.06)' : '#F1F5F9'} fg={inSheet ? '#E5E7EB' : '#334155'} />}
           </View>
         </View>
       </View>
@@ -387,48 +281,52 @@ rejectedByDirector: boolean;
         <View style={{ marginTop: 10, gap: 8 }}>
           <View style={{ flexDirection: 'row', gap: 8 }}>
             <View style={{ flex: 1 }}>
-              <Text style={s.fieldLabel}>Цена</Text>
+              <Text style={[s.fieldLabel, { color: P.sub }]}>Цена</Text>
               <TextInput
                 value={String(m.price ?? '')}
                 onChangeText={onSetPrice}
                 keyboardType="decimal-pad"
                 placeholder="Цена"
-                style={s.fieldInput}
+                placeholderTextColor={P.sub}
+                style={[s.fieldInput, { backgroundColor: P.inputBg, borderColor: P.inputBorder, color: P.text }]}
               />
             </View>
 
             <View style={{ flex: 1 }}>
-              <Text style={s.fieldLabel}>Поставщик</Text>
+              <Text style={[s.fieldLabel, { color: P.sub }]}>Поставщик</Text>
               <TextInput
                 value={String(m.supplier ?? '')}
                 onChangeText={onSetSupplier}
                 placeholder="Поставщик"
-                style={s.fieldInput}
+                placeholderTextColor={P.sub}
+                style={[s.fieldInput, { backgroundColor: P.inputBg, borderColor: P.inputBorder, color: P.text }]}
               />
-{supplierSuggestions.length > 0 && (
-  <View style={s.suggestBoxInline}>
-    {supplierSuggestions.map((name) => (
-      <Pressable
-        key={name}
-        onPress={() => onPickSupplier(name)}
-        style={s.suggestItem}
-      >
-        <Text style={{ color: COLORS.text, fontWeight: '700' }}>{name}</Text>
-      </Pressable>
-    ))}
-  </View>
-)}
-           </View>
+
+              {supplierSuggestions.length > 0 && (
+                <View style={[s.suggestBoxInline, { borderColor: P.inputBorder, backgroundColor: P.cardBg }]}>
+                  {supplierSuggestions.map((name) => (
+                    <Pressable
+                      key={name}
+                      onPress={() => onPickSupplier(name)}
+                      style={[s.suggestItem, { borderColor: P.inputBorder, backgroundColor: P.cardBg }]}
+                    >
+                      <Text style={{ color: P.text, fontWeight: '800' }}>{name}</Text>
+                    </Pressable>
+                  ))}
+                </View>
+              )}
+            </View>
           </View>
 
           <View>
-            <Text style={s.fieldLabel}>Примечание</Text>
+            <Text style={[s.fieldLabel, { color: P.sub }]}>Примечание</Text>
             <TextInput
               value={String(m.note ?? '')}
               onChangeText={onSetNote}
               placeholder="Примечание"
+              placeholderTextColor={P.sub}
               multiline
-              style={[s.fieldInput, { minHeight: 44 }]}
+              style={[s.fieldInput, { minHeight: 44, backgroundColor: P.inputBg, borderColor: P.inputBorder, color: P.text }]}
             />
           </View>
         </View>
@@ -503,7 +401,8 @@ const BuyerGroupBlock = React.memo(function BuyerGroupBlock(props: {
 
           {isWeb ? (
             <View style={{ marginTop: 8, paddingHorizontal: 12, paddingBottom: 12 }}>
-              <Text style={{ fontWeight: '600', marginBottom: 4, color: COLORS.text }}>
+              <Text style={{ fontWeight: '800', marginBottom: 4, color: UI.text }}>
+
                 Вложения (по группе поставщика):
               </Text>
               <ScrollView horizontal contentContainerStyle={{ gap: 8 }}>
@@ -537,20 +436,29 @@ const BuyerProposalCard = React.memo(function BuyerProposalCard(props: {
   const sc = statusColors(head.status);
   const headerText = props.title || `Предложение #${pidStr.slice(0, 8)}`;
 
-
-  return (
-    <View style={[s.card, { borderStyle: 'solid', backgroundColor: '#fff' }]}>
+return (
+   <View style={s.proposalCard}>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-        <Text style={[s.cardTitle, { color: COLORS.text }]}>{headerText}</Text>
+        <Text style={[s.cardTitle, { color: UI.text }]}>{headerText}</Text>
         <Chip label={head.status} bg={sc.bg} fg={sc.fg} />
 
-        <View style={{ backgroundColor: '#DBEAFE', borderRadius: 999, paddingVertical: 4, paddingHorizontal: 10 }}>
-          <Text style={{ color: '#1E3A8A', fontWeight: '700', fontSize: 12 }}>
-            Сумма: {Number(head.total_sum ?? 0).toLocaleString()} сом
-          </Text>
-        </View>
+       <View
+  style={{
+    backgroundColor: 'rgba(255,255,255,0.06)',
+    borderRadius: 999,
+    paddingVertical: 4,
+    paddingHorizontal: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.12)',
+  }}
+>
+  <Text style={{ color: UI.text, fontWeight: '900', fontSize: 12 }}>
+    Сумма: {Number(head.total_sum ?? 0).toLocaleString()} сом
+  </Text>
+</View>
 
-        <Text style={[s.cardMeta, { color: COLORS.sub }]}>
+
+        <Text style={[s.cardMeta, { color: 'rgba(255,255,255,0.78)' }]}>
           {head.submitted_at ? new Date(head.submitted_at).toLocaleString() : '—'}
         </Text>
 
@@ -589,8 +497,54 @@ const BuyerProposalCard = React.memo(function BuyerProposalCard(props: {
 export default function BuyerScreen() {
   const [tab, setTab] = useState<Tab>('inbox');
   const [buyerFio, setBuyerFio] = useState<string>('');
+// ===== ЕДИНЫЙ SHEET (как у директора) =====
+type SheetKind = 'none' | 'inbox' | 'accounting' | 'rework' | 'prop_details' | 'rfq';
+
+const [sheetKind, setSheetKind] = useState<SheetKind>('none');
+const isSheetOpen = sheetKind !== 'none';
+
+// payload
+const [sheetGroup, setSheetGroup] = useState<Group | null>(null);   // inbox
+const [sheetPid, setSheetPid] = useState<string | null>(null);      // proposal id для остальных
+
+const closeSheet = useCallback(() => {
+  setSheetKind('none');
+  setSheetGroup(null);
+  setSheetPid(null);
+}, []);
+
+const openInboxSheet = useCallback((g: Group) => {
+  setSheetGroup(g);
+  setSheetPid(null);
+  setSheetKind('inbox');
+}, []);
+
+const openAccountingSheet = useCallback((pid: string | number) => {
+  setSheetPid(String(pid));
+  setSheetGroup(null);
+  setSheetKind('accounting');
+}, []);
+
+const openReworkSheet = useCallback((pid: string | number) => {
+  setSheetPid(String(pid));
+  setSheetGroup(null);
+  setSheetKind('rework');
+}, []);
+
+const openPropDetailsSheet = useCallback((pid: string | number) => {
+  setSheetPid(String(pid));
+  setSheetGroup(null);
+  setSheetKind('prop_details');
+}, []);
+
+const openRfqSheet = useCallback(() => {
+  setSheetPid(null);
+  setSheetGroup(null);
+  setSheetKind('rfq');
+}, []);
+
+
 // ===== RFQ / Торги (PRODUCTION, 1 шаг, без дублей) =====
-const [rfqOpen, setRfqOpen] = useState(false);
 const [rfqBusy, setRfqBusy] = useState(false);
 
 // дедлайн торгов
@@ -675,7 +629,7 @@ const headerHeight = useMemo(() => clampedY.interpolate({
 
 const titleSize = useMemo(() => clampedY.interpolate({
   inputRange: [0, HEADER_SCROLL || 1],
-  outputRange: [22, 16],
+  outputRange: [24, 16],
   extrapolate: 'clamp',
 }), [clampedY, HEADER_SCROLL]);
 
@@ -720,28 +674,23 @@ const isDeadlineHoursActive = (hours: number) => {
 };
 
 useEffect(() => {
-  if (!rfqOpen) return;
+  if (sheetKind !== 'rfq') return;
 
   (async () => {
     try {
       const { data } = await supabase.auth.getUser();
       const md: any = data?.user?.user_metadata || {};
 
-      // ✅ авто-код страны (только если юзер сам не менял)
       if (!rfqCountryCodeTouched.current) {
         setRfqCountryCode(inferCountryCode(rfqCity, md.phone ?? md.whatsapp));
       }
-
-      // ✅ контакты из профиля
       if (!rfqEmail) setRfqEmail(String(md.email ?? "").trim());
-
-      // ✅ телефон в поле = только локальные цифры (без кода страны)
       if (!rfqPhone) setRfqPhone(stripToLocal(md.phone ?? ""));
     } catch {}
   })();
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
-}, [rfqOpen]);
+}, [sheetKind]);
 
   // INBOX
   const [rows, setRows] = useState<BuyerInboxRow[]>([]);
@@ -770,11 +719,8 @@ useEffect(() => { titleByPidRef.current = titleByPid; }, [titleByPid]);
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [suppliersLoaded, setSuppliersLoaded] = useState(false);
 
-  const summaryRef = useRef<{ flush: () => string } | null>(null);
-
   // модалка «В бухгалтерию»
-  const [acctOpen, setAcctOpen] = useState(false);
-  const [acctProposalId, setAcctProposalId] = useState<string | number | null>(null);
+    const [acctProposalId, setAcctProposalId] = useState<string | number | null>(null);
   const [invNumber, setInvNumber] = useState('');
   const [invDate, setInvDate] = useState('');
   const [invAmount, setInvAmount] = useState('');
@@ -782,11 +728,11 @@ useEffect(() => { titleByPidRef.current = titleByPid; }, [titleByPid]);
   const [invFile, setInvFile] = useState<any | null>(null);
   const [acctBusy, setAcctBusy] = useState(false);
 // ===== Proposal Details Modal (view only, бизнес-логика не меняем) =====
-const [propViewOpen, setPropViewOpen] = useState(false);
 const [propViewId, setPropViewId] = useState<string | null>(null);
 const [propViewHead, setPropViewHead] = useState<any | null>(null);
 const [propViewBusy, setPropViewBusy] = useState(false);
 const [propViewLines, setPropViewLines] = useState<any[]>([]);
+
 
   // карточка поставщика для модалки бухгалтера (read-only)
   const [acctSupp, setAcctSupp] = useState<{
@@ -1362,7 +1308,7 @@ const publishRfq = async () => {
     const tenderId = res.data;
 
     Alert.alert("Готово", `Торги опубликованы (${String(tenderId).slice(0, 8)})`);
-    setRfqOpen(false);
+closeSheet();
   } catch (e: any) {
     Alert.alert("Ошибка", e?.message ?? String(e));
   } finally {
@@ -1444,6 +1390,7 @@ return (
   <BuyerItemRow
     it={it}
     selected={selected}
+    inSheet={isSheetOpen && sheetKind === 'inbox'}
     m={m}
     sum={sum}
     prettyText={prettyText}
@@ -1491,7 +1438,7 @@ return (
 
 const renderGroupBlock = useCallback((g: Group, index: number) => {
   const gsum = requestSum(g);
-  const isOpen = expandedReqId === g.request_id;
+  const isOpen = false;
 
   const headerTitle = prettyLabel(g.request_id, g.request_id_old ?? null);
   const total = g.items.length;
@@ -1518,7 +1465,7 @@ const headerMeta =
   gsum={gsum}
   headerTitle={headerTitle}
   headerMeta={headerMeta}
-  onToggle={() => toggleReq(g.request_id, index)}
+ onToggle={() => openInboxSheet(g)}
   renderItemRow={renderItemRow}
   isWeb={isWeb}
   supplierGroups={supplierGroups}
@@ -1656,8 +1603,7 @@ const headerMeta =
 
     try {
       setCreating(true);
-      const fioNow = summaryRef.current?.flush() || buyerFio;
-
+     const fioNow = (buyerFio || '').trim();
       const payload = Array.from(bySupp.values()).map((bucket) => {
   const supplierForProposal = bucket.display === SUPP_NONE ? null : bucket.display;
 
@@ -1814,7 +1760,7 @@ try {
     };
 
     try {
-      const fioNow = summaryRef.current?.flush() || buyerFio;
+      const fioNow = (buyerFio || '').trim();
       await setProposalBuyerFio(pid, fioNow);
 
       if (!isWeb) { await exportProposalPdf(pid as any); return; }
@@ -1928,7 +1874,7 @@ try {
     setInvFile(null);
     setPropDocAttached(null);
     setAcctSupp(null);
-    setAcctOpen(true);
+    openAccountingSheet(proposalId);
     ensureProposalDocumentAttached(String(proposalId));
     prefillAccountingFromProposal(String(proposalId));
   }
@@ -2059,8 +2005,9 @@ try {
       setApproved(prev => prev.filter(p => String(p.id) !== pidStr));
       await fetchBuckets();
 
-      Alert.alert('Готово', 'Счёт отправлен бухгалтеру.');
-      setAcctOpen(false);
+     Alert.alert('Готово', 'Счёт отправлен бухгалтеру.');
+closeSheet();
+
     } catch (e: any) {
       const msg = e?.message ?? e?.error_description ?? e?.details ?? String(e);
       Alert.alert('Ошибка отправки', msg);
@@ -2129,7 +2076,7 @@ try {
     return 'director';
   }
 const openProposalView = useCallback(async (pidStr: string, head: any) => {
-  setPropViewOpen(true);
+  openPropDetailsSheet(pidStr);
   setPropViewId(pidStr);
   setPropViewHead(head || null);
   setPropViewLines([]);
@@ -2185,7 +2132,7 @@ const openProposalView = useCallback(async (pidStr: string, head: any) => {
   }
 }, []);
   const openRework = useCallback(async (pidStr: string) => {
-    setRwOpen(true);
+    openReworkSheet(pidStr);
     setRwBusy(true);
     setRwPid(pidStr);
     setRwReason('');
@@ -2470,89 +2417,63 @@ const header = useMemo(() => (
   <SafeView style={{ paddingHorizontal: 12, paddingTop: 10, paddingBottom: 6 }}>
     {/* TITLE */}
     <SafeView style={{ flexDirection: 'row', alignItems: 'center' }}>
-      <Animated.Text style={{ fontSize: titleSize as any, fontWeight: '900', color: COLORS.text }}>
-        Снабженец
-      </Animated.Text>
+      <Animated.Text style={{ fontSize: titleSize as any, fontWeight: '900', color: UI.text }}>
+  Снабженец
+</Animated.Text>
+
     </SafeView>
 
     <SafeView style={{ height: 10 }} />
 
-    {/* ✅ TABS — ВСЕГДА ВИДНЫ */}
-    {Platform.OS === 'web' ? (
-      <View style={s.tabsWrapWeb}>
-        <Pressable onPress={() => { setTab('inbox'); setExpandedReqId(null); setExpandedReqIndex(null); }}
-          style={[s.tabPill, tab === 'inbox' && s.tabPillActive]}>
-          <View style={s.tabLabelRow}>
-            <Text style={[s.tabPillText, tab === 'inbox' && s.tabPillTextActive]}>Вход</Text>
-            <TabCount n={inboxCount} active={tab === 'inbox'} />
-          </View>
-        </Pressable>
-
-        <Pressable onPress={() => { setTab('pending'); setExpandedReqId(null); setExpandedReqIndex(null); }}
-          style={[s.tabPill, tab === 'pending' && s.tabPillActive]}>
-          <View style={s.tabLabelRow}>
-            <Text style={[s.tabPillText, tab === 'pending' && s.tabPillTextActive]}>Контроль</Text>
-            <TabCount n={pending.length} active={tab === 'pending'} />
-          </View>
-        </Pressable>
-
-        <Pressable onPress={() => { setTab('approved'); setExpandedReqId(null); setExpandedReqIndex(null); }}
-          style={[s.tabPill, tab === 'approved' && s.tabPillActive]}>
-          <View style={s.tabLabelRow}>
-            <Text style={[s.tabPillText, tab === 'approved' && s.tabPillTextActive]}>Готово</Text>
-            <TabCount n={approved.length} active={tab === 'approved'} />
-          </View>
-        </Pressable>
-
-        <Pressable onPress={() => { setTab('rejected'); setExpandedReqId(null); setExpandedReqIndex(null); }}
-          style={[s.tabPill, tab === 'rejected' && s.tabPillActive]}>
-          <View style={s.tabLabelRow}>
-            <Text style={[s.tabPillText, tab === 'rejected' && s.tabPillTextActive]}>Правки</Text>
-            <TabCount n={rejected.length} active={tab === 'rejected'} />
-          </View>
-        </Pressable>
-      </View>
-    ) : (
-      <ScrollView
-        ref={tabsScrollRef as any}
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={s.tabsRow}
-        keyboardShouldPersistTaps="handled"
+       {/* ✅ TABS — ВСЕГДА ВИДНЫ */}
+    <ScrollView
+      ref={tabsScrollRef as any}
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      contentContainerStyle={s.tabsRow}
+      keyboardShouldPersistTaps="handled"
+    >
+      <Pressable
+        onPress={() => { scrollTabsToStart(true); setTab('inbox'); setExpandedReqId(null); setExpandedReqIndex(null); }}
+        style={[s.tabPill, tab === 'inbox' && s.tabPillActive]}
       >
-        <Pressable onPress={() => { scrollTabsToStart(true); setTab('inbox'); setExpandedReqId(null); setExpandedReqIndex(null); }}
-          style={[s.tabPill, tab === 'inbox' && s.tabPillActive]}>
-          <View style={s.tabLabelRow}>
-            <Text style={[s.tabPillText, tab === 'inbox' && s.tabPillTextActive]}>Вход</Text>
-            <TabCount n={inboxCount} active={tab === 'inbox'} />
-          </View>
-        </Pressable>
+        <View style={s.tabLabelRow}>
+          <Text style={[s.tabPillText, tab === 'inbox' && s.tabPillTextActive]}>Вход</Text>
+          <TabCount n={inboxCount} active={tab === 'inbox'} />
+        </View>
+      </Pressable>
 
-        <Pressable onPress={() => { scrollTabsToStart(true); setTab('pending'); setExpandedReqId(null); setExpandedReqIndex(null); }}
-          style={[s.tabPill, tab === 'pending' && s.tabPillActive]}>
-          <View style={s.tabLabelRow}>
-            <Text style={[s.tabPillText, tab === 'pending' && s.tabPillTextActive]}>Контроль</Text>
-            <TabCount n={pending.length} active={tab === 'pending'} />
-          </View>
-        </Pressable>
+      <Pressable
+        onPress={() => { scrollTabsToStart(true); setTab('pending'); setExpandedReqId(null); setExpandedReqIndex(null); }}
+        style={[s.tabPill, tab === 'pending' && s.tabPillActive]}
+      >
+        <View style={s.tabLabelRow}>
+          <Text style={[s.tabPillText, tab === 'pending' && s.tabPillTextActive]}>Контроль</Text>
+          <TabCount n={pending.length} active={tab === 'pending'} />
+        </View>
+      </Pressable>
 
-        <Pressable onPress={() => { scrollTabsToStart(true); setTab('approved'); setExpandedReqId(null); setExpandedReqIndex(null); }}
-          style={[s.tabPill, tab === 'approved' && s.tabPillActive]}>
-          <View style={s.tabLabelRow}>
-            <Text style={[s.tabPillText, tab === 'approved' && s.tabPillTextActive]}>Готово</Text>
-            <TabCount n={approved.length} active={tab === 'approved'} />
-          </View>
-        </Pressable>
+      <Pressable
+        onPress={() => { scrollTabsToStart(true); setTab('approved'); setExpandedReqId(null); setExpandedReqIndex(null); }}
+        style={[s.tabPill, tab === 'approved' && s.tabPillActive]}
+      >
+        <View style={s.tabLabelRow}>
+          <Text style={[s.tabPillText, tab === 'approved' && s.tabPillTextActive]}>Готово</Text>
+          <TabCount n={approved.length} active={tab === 'approved'} />
+        </View>
+      </Pressable>
 
-        <Pressable onPress={() => { scrollTabsToStart(true); setTab('rejected'); setExpandedReqId(null); setExpandedReqIndex(null); }}
-          style={[s.tabPill, tab === 'rejected' && s.tabPillActive]}>
-          <View style={s.tabLabelRow}>
-            <Text style={[s.tabPillText, tab === 'rejected' && s.tabPillTextActive]}>Правки</Text>
-            <TabCount n={rejected.length} active={tab === 'rejected'} />
-          </View>
-        </Pressable>
-      </ScrollView>
-    )}
+      <Pressable
+        onPress={() => { scrollTabsToStart(true); setTab('rejected'); setExpandedReqId(null); setExpandedReqIndex(null); }}
+        style={[s.tabPill, tab === 'rejected' && s.tabPillActive]}
+      >
+        <View style={s.tabLabelRow}>
+          <Text style={[s.tabPillText, tab === 'rejected' && s.tabPillTextActive]}>Правки</Text>
+          <TabCount n={rejected.length} active={tab === 'rejected'} />
+        </View>
+      </Pressable>
+    </ScrollView>
+
 
     {/* ✅ ФИО — ИСЧЕЗАЕТ (НО ТАБЫ ОСТАЮТСЯ) */}
     <Animated.View style={{ opacity: subOpacity, marginTop: 10 }}>
@@ -2561,14 +2482,19 @@ const header = useMemo(() => (
         value={buyerFio}
         onChangeText={setBuyerFio}
         placeholder="введите ФИО"
-        style={s.fioInput}
+        style={[
+  s.fioInput,
+  { backgroundColor: 'rgba(255,255,255,0.06)', borderColor: 'rgba(255,255,255,0.12)', color: UI.text }
+]}
+placeholderTextColor={UI.sub}
+
       />
     </Animated.View>
   </SafeView>
 ), [buyerFio, titleSize, subOpacity, tab, inboxCount, pending.length, approved.length, rejected.length, scrollTabsToStart]);
 
 const ScreenBody = (
-  <View style={[s.screen, { backgroundColor: COLORS.bg }]}>
+<View style={[s.screen, { backgroundColor: UI.bg }]}>
 
     {/* ✅ hidden measurer: меряем натуральную высоту шапки (как у бухгалтера) */}
     <View
@@ -2592,9 +2518,9 @@ const ScreenBody = (
         top: 0, left: 0, right: 0,
         zIndex: 50,
         height: headerHeight,
-        backgroundColor: COLORS.bg,
+        backgroundColor: UI.cardBg,
         borderBottomWidth: 1,
-        borderColor: COLORS.border,
+        borderColor: UI.border,
         paddingTop: Platform.OS === 'web' ? 10 : 12,
         paddingBottom: 10,
         shadowColor: '#000',
@@ -2643,7 +2569,8 @@ const ScreenBody = (
       ListEmptyComponent={
         loadingInbox || loadingBuckets
           ? (<SafeView style={{ padding: 24, alignItems: 'center' }}><ActivityIndicator /></SafeView>)
-          : (<SafeView style={{ padding: 24 }}><Text style={{ color: COLORS.sub }}>Пока пусто</Text></SafeView>)
+          : (<SafeView style={{ padding: 24 }}><Text style={{ color: UI.sub }}>Пока пусто</Text>
+</SafeView>)
       }
 
       // ✅ как у бухгалтера
@@ -2656,12 +2583,11 @@ const ScreenBody = (
       contentInsetAdjustmentBehavior="never"
       automaticallyAdjustContentInsets={false as any}
 
-      contentContainerStyle={{
-  paddingTop: measuredHeaderMax + 16,
-  paddingHorizontal: 12,
-  paddingBottom: tab === 'inbox' ? 120 : 24,
-}}
-
+            contentContainerStyle={{
+        paddingTop: measuredHeaderMax + 16,
+        paddingHorizontal: 12,
+        paddingBottom: 24,
+      }}
 
       keyboardShouldPersistTaps="handled"
       keyboardDismissMode="on-drag"
@@ -2681,608 +2607,709 @@ const ScreenBody = (
       }}
     />
 
-    {/* ✅ НИЖНЯЯ ПАНЕЛЬ (только inbox) */}
-    {tab === 'inbox' ? (
-      <View style={s.bottomBar}>
-        <View style={s.bottomRow}>
-          <Pressable
-            disabled={creating}
-            onPress={handleCreateProposalsBySupplier}
-            style={[s.sendFab, creating && { opacity: 0.5 }]}
-            hitSlop={12}
-          >
-            <Ionicons name="send" size={22} color="#fff" />
-          </Pressable>
-
-          <Pressable
-            disabled={creating || pickedIds.length === 0}
-            onPress={() => {
-    setRfqOpen(true);
-}}
-
-            style={[
-              s.tradeBtnBright,
-              (creating || pickedIds.length === 0) && { opacity: 0.45 },
-            ]}
-          >
-            <Ionicons name="pricetag-outline" size={18} color="#0F172A" />
-            <Text style={s.tradeBtnBrightText}>ТОРГИ</Text>
-          </Pressable>
-
-          <Pressable
-            onPress={clearPick}
-            disabled={pickedIds.length === 0}
-            style={[s.clearXDirector, pickedIds.length === 0 && { opacity: 0.4 }]}
-            hitSlop={10}
-          >
-            <Text style={s.clearXDirectorText}>✕</Text>
-          </Pressable>
-        </View>
-      </View>
-    ) : null}
-      {/* ======= Модалка «В бухгалтерию» ======= */}
-      
+    
+      {/* ================== ЕДИНЫЙ RNModal SHEET (как у директора) ================== */}
 <RNModal
-  isVisible={acctOpen}
-  onBackdropPress={() => setAcctOpen(false)}
-  onBackButtonPress={() => setAcctOpen(false)}
-  swipeDirection="down"
-  onSwipeComplete={() => setAcctOpen(false)}
+  isVisible={isSheetOpen}
+  onBackdropPress={closeSheet}
+  onBackButtonPress={closeSheet}
   style={{ margin: 0, justifyContent: "flex-end" }}
+  backdropOpacity={0.55}
   propagateSwipe
-  useNativeDriver
-  hideModalContentWhileAnimating
->
-  <SafeView style={s.modalSheet}>
-    <View style={[s.modalTopBar, { paddingTop: Platform.OS === "web" ? 12 : (insets.top || 12) }]}>
-      <Pressable onPress={() => setAcctOpen(false)} style={s.modalCloseBtn}>
-        <Text style={{ fontWeight: "900", color: COLORS.text }}>Назад</Text>
-      </Pressable>
-      <Text style={[s.modalTitle, { flex: 1 }]}>Отправить в бухгалтерию</Text>
-    </View>
-
-    <View style={s.modalBody}>
-      <ScrollView
-  style={s.modalScroll}
-  contentContainerStyle={{ paddingBottom: 24 }}
-  keyboardShouldPersistTaps="handled"
->
-        <Text style={s.modalTitle}>Отправить в бухгалтерию</Text>
-
-        <Text style={s.modalHelp}>
-          {acctProposalId ? `Документ: #${String(acctProposalId).slice(0, 8)}` : 'Документ не выбран'}
-        </Text>
-
-        <Text style={s.modalHelp}>
-          {propDocBusy ? 'Готовим файл предложения…' : (propDocAttached ? `Файл предложения: ${propDocAttached.name}` : 'Файл предложения будет прикреплён')}
-        </Text>
-
-        {/* карточка поставщика (read-only) */}
-        {acctSupp && (
-          <View style={{ marginTop: 6, borderWidth: 1, borderColor: COLORS.border, borderRadius: 8, padding: 8, backgroundColor: '#fff' }}>
-            <Text style={{ fontWeight: '800', color: COLORS.text }}>{acctSupp.name}</Text>
-            <Text style={{ color: COLORS.sub, marginTop: 2 }}>
-              {acctSupp.inn ? `ИНН: ${acctSupp.inn} · ` : ''}
-              {acctSupp.bank ? `Счёт: ${acctSupp.bank} · ` : ''}
-              {acctSupp.phone ? `Тел.: ${acctSupp.phone} · ` : ''}
-              {acctSupp.email ? `Email: ${acctSupp.email}` : ''}
-            </Text>
-          </View>
-        )}
-
-        <Text style={{ fontSize: 12, color: COLORS.sub, marginTop: 10 }}>Номер счёта</Text>
-        <TextInput placeholder="Номер счёта" value={invNumber} onChangeText={setInvNumber} style={s.input} />
-
-        <Text style={{ fontSize: 12, color: COLORS.sub, marginTop: 8 }}>Дата (YYYY-MM-DD)</Text>
-        <TextInput placeholder="Дата YYYY-MM-DD" value={invDate} onChangeText={setInvDate} style={s.input} />
-
-        <Text style={{ fontSize: 12, color: COLORS.sub, marginTop: 8 }}>Сумма</Text>
-        <TextInput placeholder="Сумма" value={invAmount} onChangeText={setInvAmount} keyboardType="decimal-pad" style={s.input} />
-
-        <Text style={{ fontSize: 12, color: COLORS.sub, marginTop: 8 }}>Валюта</Text>
-        <TextInput placeholder="Валюта (KGS)" value={invCurrency} onChangeText={setInvCurrency} style={s.input} />
-
-        {isWeb ? (
-          <Pressable onPress={openInvoicePickerWeb} style={[s.smallBtn, { borderColor: COLORS.primary, marginTop: 10 }]}>
-            <Text style={[s.smallBtnText, { color: COLORS.primary }]}>
-              {invoiceUploadedName ? `Счёт прикреплён: ${invoiceUploadedName}` : 'Прикрепить счёт (PDF/JPG/PNG)'}
-            </Text>
-          </Pressable>
-        ) : (
-          <Pressable
-            onPress={async () => {
-              const f = await pickInvoiceFile();
-              if (f) {
-                setInvFile(f);
-                Alert.alert('Файл', f.name ?? 'Выбрано');
-              }
-            }}
-            style={[s.smallBtn, { borderColor: COLORS.primary, marginTop: 10 }]}
-          >
-            <Text style={[s.smallBtnText, { color: COLORS.primary }]}>
-              {invFile?.name ? `Счёт прикреплён: ${invFile.name}` : 'Прикрепить счёт (PDF/JPG/PNG)'}
-            </Text>
-          </Pressable>
-        )}
-
-        <View style={{ flexDirection: 'row', gap: 8, marginTop: 12, flexWrap: 'wrap' }}>
-          <Pressable
-            disabled={acctBusy}
-            onPress={sendToAccounting}
-            style={[s.smallBtn, { backgroundColor: COLORS.blue, borderColor: COLORS.blue, opacity: acctBusy ? 0.6 : 1 }]}
-          >
-            <Text style={[s.smallBtnText, { color: '#fff' }]}>{acctBusy ? 'Отправляем…' : 'Отправить'}</Text>
-          </Pressable>
-
-          <Pressable
-            disabled={acctBusy}
-            onPress={() => setAcctOpen(false)}
-            style={[s.smallBtn, { borderColor: COLORS.border }]}
-          >
-            <Text style={[s.smallBtnText, { color: COLORS.text }]}>Отмена</Text>
-          </Pressable>
-        </View>
-      </ScrollView>
-    </View>
-  </SafeView>
-</RNModal>
-
-     
-     {/* ======= Модалка «Доработка» ======= */}
-<RNModal
-  isVisible={rwOpen}
-  onBackdropPress={() => setRwOpen(false)}
-  onBackButtonPress={() => setRwOpen(false)}
-  swipeDirection="down"
-  onSwipeComplete={() => setRwOpen(false)}
-  style={{ margin: 0, justifyContent: "flex-end" }}
-  propagateSwipe
-  useNativeDriver
-  hideModalContentWhileAnimating
->
-  <SafeView style={s.modalSheet}>
-    <View style={[s.modalTopBar, { paddingTop: Platform.OS === "web" ? 12 : (insets.top || 12) }]}>
-      <Pressable onPress={() => setRwOpen(false)} style={s.modalCloseBtn}>
-        <Text style={{ fontWeight: "900", color: COLORS.text }}>Назад</Text>
-      </Pressable>
-      <Text style={[s.modalTitle, { flex: 1 }]}>Доработка предложения</Text>
-    </View>
-
-    <View style={s.modalBody}>
-      <ScrollView
-  style={s.modalScroll}
-  contentContainerStyle={{ paddingBottom: 24 }}
-  keyboardShouldPersistTaps="handled"
->
-        <Text style={s.modalTitle}>Доработка предложения</Text>
-        <Text style={s.modalHelp}>
-          {rwPid ? `Документ: #${rwPid.slice(0, 8)}` : 'Документ не выбран'}
-        </Text>
-
-        {!!rwReason && (
-          <View style={{ padding: 10, borderWidth: 1, borderColor: COLORS.border, borderRadius: 8, backgroundColor: '#FFFBEB' }}>
-            <Text style={{ fontWeight: '700', color: '#92400E', marginBottom: 4 }}>Причина возврата</Text>
-            <Text style={{ color: '#78350F' }}>
-              {String(rwReason).trim() || '—'}
-            </Text>
-          </View>
-        )}
-
-        {/* ПОЗИЦИИ — БЕЗ ВЛОЖЕННОГО ScrollView */}
-        <View style={{ marginTop: 10 }}>
-          {rwItems.length === 0 ? (
-            <Text style={s.modalHelp}>{rwBusy ? 'Загрузка…' : 'Нет строк в предложении'}</Text>
-          ) : rwItems.map((it, idx) => (
-            <View key={`${it.request_item_id}-${idx}`} style={{ paddingVertical: 8, borderBottomWidth: 1, borderColor: COLORS.border }}>
-              <Text style={{ fontWeight: '700', color: COLORS.text }}>
-                {it.name_human || `Позиция ${it.request_item_id}`}
-              </Text>
-              <Text style={s.modalHelp}>
-                {`${it.qty ?? '—'} ${it.uom ?? ''}`}
-              </Text>
-
-              <TextInput
-                placeholder="Цена"
-                keyboardType="decimal-pad"
-                value={it.price ?? ''}
-                onChangeText={(v) =>
-                  setRwItems(prev => prev.map((x, i) => i === idx ? { ...x, price: v } : x))
-                }
-                style={[s.input, { marginTop: 6 }]}
-              />
-
-              <TextInput
-                placeholder="Поставщик"
-                value={it.supplier ?? ''}
-                onChangeText={(v) =>
-                  setRwItems(prev => prev.map((x, i) => i === idx ? { ...x, supplier: v } : x))
-                }
-                style={[s.input, { marginTop: 6 }]}
-              />
-
-              <TextInput
-                placeholder="Примечание"
-                value={it.note ?? ''}
-                onChangeText={(v) =>
-                  setRwItems(prev => prev.map((x, i) => i === idx ? { ...x, note: v } : x))
-                }
-                style={[s.input, { marginTop: 6 }]}
-              />
-            </View>
-          ))}
-        </View>
-
-        <View style={{ flexDirection: 'row', gap: 8, marginTop: 12 }}>
-          <Pressable
-            disabled={rwBusy}
-            onPress={rwSaveItems}
-            style={[s.smallBtn, { backgroundColor: '#10b981', borderColor: '#10b981' }]}
-          >
-            <Text style={[s.smallBtnText, { color: '#fff' }]}>Сохранить</Text>
-          </Pressable>
-
-          <Pressable
-            disabled={rwBusy}
-            onPress={() => setRwOpen(false)}
-            style={[s.smallBtn, { borderColor: COLORS.border }]}
-          >
-            <Text style={s.smallBtnText}>Закрыть</Text>
-          </Pressable>
-        </View>
-      </ScrollView>
-    </View>
-  </SafeView>
-</RNModal>
-
-
-<RNModal
-  isVisible={propViewOpen}
-  onBackdropPress={() => setPropViewOpen(false)}
-  onBackButtonPress={() => setPropViewOpen(false)}
-
-  // ❌ УБИРАЕМ свайп вниз — он ломает скролл списка на телефоне
-  // swipeDirection="down"
-  // onSwipeComplete={() => setPropViewOpen(false)}
-
-  style={{ margin: 0, justifyContent: "flex-end" }}
-  propagateSwipe
-
   useNativeDriver={Platform.OS !== "web"}
   useNativeDriverForBackdrop={Platform.OS !== "web"}
   hideModalContentWhileAnimating={Platform.OS !== "web"}
 >
-  <SafeView style={s.modalSheet}>
-    <View style={[s.modalTopBar, { paddingTop: Platform.OS === "web" ? 12 : (insets.top || 12) }]}>
-  <Text style={[s.modalTitle, { flex: 1 }]}>
-    Предложение #{String(propViewId || "").slice(0, 8)}
-  </Text>
+  <View style={s.dirSheet}>
+    <View style={s.dirSheetHandle} />
 
-  {/* ✅ красный крестик закрыть */}
-  <Pressable
-    onPress={() => setPropViewOpen(false)}
-    style={{
-      width: 40,
-      height: 40,
-      borderRadius: 12,
-      backgroundColor: "#DC2626",
-      alignItems: "center",
-      justifyContent: "center",
-    }}
-    hitSlop={10}
-  >
-    <Text style={{ color: "#fff", fontWeight: "900", fontSize: 18, lineHeight: 18 }}>
-      ✕
-    </Text>
-  </Pressable>
-</View>
+    {/* TOP BAR */}
+    <View style={s.dirSheetTopBar}>
+      <Text style={s.dirSheetTitle} numberOfLines={1}>
+        {sheetKind === 'inbox' && sheetGroup
+          ? prettyLabel(sheetGroup.request_id, sheetGroup.request_id_old ?? null)
+          : sheetKind === 'accounting' && acctProposalId != null
+            ? `В бухгалтерию • #${String(acctProposalId).slice(0, 8)}`
+            : sheetKind === 'rework' && rwPid
+              ? `Доработка • #${String(rwPid).slice(0, 8)}`
+              : sheetKind === 'prop_details' && propViewId
+                ? `Предложение • #${String(propViewId).slice(0, 8)}`
+                : sheetKind === 'rfq'
+                  ? 'Торги (RFQ)'
+                  : '—'}
+      </Text>
 
+      <Pressable onPress={closeSheet} style={s.dirSheetCloseBtn} hitSlop={10}>
+        <Text style={s.dirSheetCloseText}>Свернуть</Text>
+      </Pressable>
+    </View>
 
-    <View style={s.modalBody}>
-      {propViewBusy ? (
-        <ActivityIndicator />
-      ) : propViewLines.length === 0 ? (
-        <Text style={{ color: COLORS.sub }}>Позиции не найдены</Text>
-      ) : (
-       <FlatList
-  style={{ flex: 1 }}
-  data={propViewLines}
-  keyExtractor={(ln, idx) => `${String(ln?.request_item_id ?? "x")}:${idx}`}
-
+    {/* BODY */}
+    <View style={{ flex: 1, minHeight: 0 }}>
+      {/* ===================== INBOX ===================== */}
+      {sheetKind === 'inbox' && sheetGroup ? (
+        <View style={{ flex: 1, minHeight: 0 }}>
+          <FlatList
+  data={sheetGroup.items}
+  keyExtractor={(item, idx) =>
+    item?.request_item_id
+      ? `ri:${item.request_item_id}`
+      : `f:${sheetGroup.request_id}:${idx}`
+  }
   keyboardShouldPersistTaps="handled"
-  keyboardDismissMode="on-drag"
-  contentInsetAdjustmentBehavior="never"
+  nestedScrollEnabled
+  showsVerticalScrollIndicator={false}
+  contentContainerStyle={{ paddingBottom: 12 }}
+  renderItem={({ item, index }) => (
+  <View style={{ marginBottom: 10 }}>
+    {renderItemRow(item as any, index)}
+  </View>
+)}
+/>
 
-  renderItem={({ item: ln }) => (
-    <View style={{
-      backgroundColor: "#fff",
-      borderWidth: 1,
-      borderColor: COLORS.border,
-      borderRadius: 12,
-      padding: 12,
-      marginBottom: 10,
-    }}>
-      <Text style={{ fontWeight: "900", color: COLORS.text }}>
+          {/* ✅ ACTION BAR (как у директора) */}
+          <View style={s.sheetActionsBottom}>
+            {/* Самолёт: отправить директору */}
+            <Pressable
+              disabled={creating}
+              onPress={async () => {
+                await handleCreateProposalsBySupplier(); // ✅ логика та же
+                // closeSheet(); // если хочешь закрывать сразу — раскомментируй
+              }}
+              style={[s.iconBtnApprove, { opacity: creating ? 0.6 : 1 }]}
+              hitSlop={10}
+            >
+              <Ionicons name="send" size={20} color="#fff" />
+            </Pressable>
+
+            {/* Торги */}
+            <Pressable
+              disabled={creating || pickedIds.length === 0}
+              onPress={() => openRfqSheet()}
+              style={[
+                s.actionBtnWide,
+                (creating || pickedIds.length === 0) && { opacity: 0.45 },
+              ]}
+            >
+              <Ionicons name="pricetag-outline" size={18} color="#0B0F14" />
+              <Text style={s.actionBtnWideText}>ТОРГИ</Text>
+            </Pressable>
+
+            {/* Очистить выбор */}
+            <Pressable
+              onPress={clearPick}
+              disabled={pickedIds.length === 0}
+              style={[s.iconBtnDanger, pickedIds.length === 0 && { opacity: 0.4 }]}
+              hitSlop={10}
+            >
+              <Ionicons name="close" size={20} color="#fff" />
+            </Pressable>
+          </View>
+        </View>
+      ) : null}
+      {/* ===================== PROP DETAILS ===================== */}
+      {sheetKind === 'prop_details' ? (
+        propViewBusy ? (
+          <View style={{ padding: 18 }}><ActivityIndicator /></View>
+        ) : propViewLines.length === 0 ? (
+          <Text style={{ color: D.sub, padding: 16, fontWeight: "800" }}>Позиции не найдены</Text>
+        ) : (
+          <FlatList
+            data={propViewLines}
+            keyExtractor={(ln, idx) => `${String(ln?.request_item_id ?? "x")}:${idx}`}
+            keyboardShouldPersistTaps="handled"
+            keyboardDismissMode="on-drag"
+            nestedScrollEnabled
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ paddingBottom: 16 }}
+            renderItem={({ item: ln }) => (
+  <View style={s.dirMobCard}>
+    <View style={s.dirMobMain}>
+      <Text style={[s.dirMobTitle, { color: D.text }]} numberOfLines={3}>
         {ln?.name_human || ln?.rik_code || `Позиция ${String(ln?.request_item_id || "").slice(0, 6)}`}
       </Text>
-      <Text style={{ color: COLORS.sub, marginTop: 2 }}>
-        {Number(ln?.qty ?? 0)} {ln?.uom ?? ""} • Цена: {ln?.price ?? "—"} • Поставщик: {ln?.supplier ?? "—"}
+
+      <Text style={[s.dirMobMeta, { color: D.sub }]} numberOfLines={2}>
+        {`${Number(ln?.qty ?? 0)} ${ln?.uom ?? ""}`.trim()}
+        {` · Цена: ${ln?.price ?? "—"}`}
+        {` · Поставщик: ${ln?.supplier ?? "—"}`}
       </Text>
-      {ln?.note ? <Text style={{ color: COLORS.sub, marginTop: 2 }}>Прим.: {ln.note}</Text> : null}
+
+      {ln?.note ? (
+        <Text style={[s.dirMobNote, { color: D.text }]} numberOfLines={3}>
+          Прим.: {String(ln.note)}
+        </Text>
+      ) : null}
     </View>
-  )}
+  </View>
+)}
 
-  contentContainerStyle={{ padding: 12, paddingBottom: 24 }}
-  nestedScrollEnabled
-  scrollEnabled
-  showsVerticalScrollIndicator
-/>
+          />
+        )
+      ) : null}
 
-      )}
-    </View>
-  </SafeView>
-</RNModal>
-
-
-
-
-<RNModal
-  isVisible={rfqOpen}
-  onBackdropPress={() => setRfqOpen(false)}
-  onBackButtonPress={() => setRfqOpen(false)}
-  swipeDirection="down"
-  onSwipeComplete={() => setRfqOpen(false)}
-  style={{ margin: 0, justifyContent: "flex-end" }}
-  propagateSwipe
-  useNativeDriver={Platform.OS !== "web"}
-  useNativeDriverForBackdrop={Platform.OS !== "web"}
-  hideModalContentWhileAnimating
->
-  <SafeView style={s.modalSheet}>
-    <View style={[s.modalTopBar, { paddingTop: Platform.OS === "web" ? 12 : (insets.top || 12) }]}>
-      <Pressable onPress={() => setRfqOpen(false)} style={s.modalCloseBtn}>
-        <Text style={{ fontWeight: "900", color: COLORS.text }}>Назад</Text>
-      </Pressable>
-      <Text style={[s.modalTitle, { flex: 1 }]}>Торги (RFQ)</Text>
-    </View>
-
-    <View style={s.modalBody}>
-      {/* HEADER */}
-      <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-        <Text style={[s.modalTitle, { flex: 1 }]}>Торги (RFQ)</Text>
-        <Pressable onPress={() => setRfqOpen(false)} style={[s.smallBtn, { borderColor: COLORS.border }]}>
-          <Text style={[s.smallBtnText, { color: COLORS.text }]}>Закрыть</Text>
-        </Pressable>
-      </View>
-
-      {/* POSITIONS */}
-      <View style={{ padding: 10, borderWidth: 1, borderColor: COLORS.border, borderRadius: 12, backgroundColor: "#F8FAFC" }}>
-        <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-          <Text style={{ fontWeight: "900", color: COLORS.text, flex: 1 }}>Позиции: {pickedIds.length}</Text>
-          <Pressable onPress={() => setRfqShowItems(v => !v)} style={[s.smallBtn, { borderColor: COLORS.primary, backgroundColor: "#fff" }]}>
-            <Text style={[s.smallBtnText, { color: COLORS.primary }]}>{rfqShowItems ? "Скрыть" : "Показать"}</Text>
-          </Pressable>
-        </View>
-
-        {rfqShowItems ? (
-          <View style={{ marginTop: 8, gap: 6 }}>
-            {rfqPickedPreview.map((x) => (
-              <Text key={x.id} numberOfLines={1} style={{ color: COLORS.text, fontWeight: "700" }}>
-                • {x.title} — {x.qty} {x.uom}
-              </Text>
-            ))}
-            {pickedIds.length > rfqPickedPreview.length ? (
-              <Text style={{ color: COLORS.sub, marginTop: 4 }}>
-                + ещё {pickedIds.length - rfqPickedPreview.length}
-              </Text>
-            ) : null}
-          </View>
-        ) : null}
-      </View>    
-  <ScrollView
-  style={{ flex: 1 }}
-  contentContainerStyle={{ paddingBottom: 180 }} // ✅ было 14
-  keyboardShouldPersistTaps="handled"
->
-
-        {/* SECTION: СРОКИ */}
-        <Text style={[s.modalHelp, { marginTop: 2 }]}>Сроки</Text>
-        <Text style={{ fontWeight: "900", marginBottom: 6 }}>{fmtLocal(rfqDeadlineIso)}</Text>
-        <View style={{ flexDirection: "row", gap: 8, flexWrap: "wrap" }}>
-          <Pressable
-  onPress={() => setDeadlineHours(6)}
-  style={[s.smallBtn, isDeadlineHoursActive(6) && { backgroundColor: "#DBEAFE", borderColor: COLORS.blue }]}
->
-  <Text style={{ fontWeight: "900", color: isDeadlineHoursActive(6) ? "#1E3A8A" : COLORS.text }}>6 ч</Text>
-</Pressable>
-
-<Pressable
-  onPress={() => setDeadlineHours(12)}
-  style={[s.smallBtn, isDeadlineHoursActive(12) && { backgroundColor: "#DBEAFE", borderColor: COLORS.blue }]}
->
-  <Text style={{ fontWeight: "900", color: isDeadlineHoursActive(12) ? "#1E3A8A" : COLORS.text }}>12 ч</Text>
-</Pressable>
-
-<Pressable
-  onPress={() => setDeadlineHours(24)}
-  style={[s.smallBtn, isDeadlineHoursActive(24) && { backgroundColor: "#DBEAFE", borderColor: COLORS.blue }]}
->
-  <Text style={{ fontWeight: "900", color: isDeadlineHoursActive(24) ? "#1E3A8A" : COLORS.text }}>24 ч</Text>
-</Pressable>
-
-<Pressable
-  onPress={() => setDeadlineHours(48)}
-  style={[s.smallBtn, isDeadlineHoursActive(48) && { backgroundColor: "#DBEAFE", borderColor: COLORS.blue }]}
->
-  <Text style={{ fontWeight: "900", color: isDeadlineHoursActive(48) ? "#1E3A8A" : COLORS.text }}>48 ч</Text>
-</Pressable>
-
-<Pressable
-  onPress={() => setDeadlineHours(72)}
-  style={[s.smallBtn, isDeadlineHoursActive(72) && { backgroundColor: "#DBEAFE", borderColor: COLORS.blue }]}
->
-  <Text style={{ fontWeight: "900", color: isDeadlineHoursActive(72) ? "#1E3A8A" : COLORS.text }}>72 ч</Text>
-</Pressable>
-
-        </View>
-
-        <Text style={[s.modalHelp, { marginTop: 10 }]}>Срок поставки/исполнения (дней)</Text>
-        <TextInput value={rfqDeliveryDays} onChangeText={setRfqDeliveryDays} keyboardType="numeric" style={s.input} />
-
-        {/* SECTION: ДОСТАВКА */}
-        <Text style={[s.modalHelp, { marginTop: 14 }]}>Доставка</Text>
-
-        <View style={{ flexDirection: "row", gap: 8, flexWrap: "wrap" }}>
-          <Pressable onPress={() => setRfqDeliveryType("delivery")} style={[s.smallBtn, { borderColor: rfqDeliveryType === "delivery" ? COLORS.blue : COLORS.border, backgroundColor: rfqDeliveryType === "delivery" ? "#DBEAFE" : "#fff" }]}>
-            <Text style={{ fontWeight: "800" }}>Доставка</Text>
-          </Pressable>
-          <Pressable onPress={() => setRfqDeliveryType("pickup")} style={[s.smallBtn, { borderColor: rfqDeliveryType === "pickup" ? COLORS.blue : COLORS.border, backgroundColor: rfqDeliveryType === "pickup" ? "#DBEAFE" : "#fff" }]}>
-            <Text style={{ fontWeight: "800" }}>Самовывоз</Text>
-          </Pressable>
-          <Pressable onPress={() => setRfqDeliveryType("on_site")} style={[s.smallBtn, { borderColor: rfqDeliveryType === "on_site" ? COLORS.blue : COLORS.border, backgroundColor: rfqDeliveryType === "on_site" ? "#DBEAFE" : "#fff" }]}>
-            <Text style={{ fontWeight: "800" }}>На объект</Text>
-          </Pressable>
-        </View>
-
-        <Text style={[s.modalHelp, { marginTop: 10 }]}>Город</Text>
-        <TextInput
-  value={rfqCity}
-  onChangeText={(t) => {
-    setRfqCity(t);
-
-    // ✅ авто-код по городу — только пока пользователь не трогал вручную
-    if (!rfqCountryCodeTouched.current) {
-      setRfqCountryCode(inferCountryCode(t));
-    }
-  }}
-  placeholder="Бишкек"
-  style={s.input}
-/>
-
-
-        <Text style={s.modalHelp}>Адрес поставки</Text>
-        <TextInput value={rfqAddressText} onChangeText={setRfqAddressText} placeholder="ул..., дом..., объект..." style={s.input} />
-
-        <Text style={s.modalHelp}>Окно приёма (пример: 9:00–18:00)</Text>
-        <TextInput value={rfqDeliveryWindow} onChangeText={setRfqDeliveryWindow} style={s.input} />
-
-         {/* SECTION: КОНТАКТЫ */}
-       <Text style={[s.modalHelp, { marginTop: 14 }]}>Контакты</Text>
-
-<Text style={s.modalHelp}>Телефон</Text>
-<View style={{ flexDirection: "row", gap: 8 }}>
-  <Pressable
-    onPress={() => {
-      rfqCountryCodeTouched.current = true;
-      setRfqCountryCode((prev) => (prev === "+996" ? "+7" : "+996"));
-    }}
-    style={[s.input, { minWidth: 92, alignItems: "center", justifyContent: "center" }]}
-  >
-    <Text style={{ fontWeight: "900", color: COLORS.text }}>{rfqCountryCode}</Text>
-  </Pressable>
-
-  <TextInput
-    value={rfqPhone}
-    onChangeText={(t) => setRfqPhone(String(t).replace(/[^\d]/g, ""))}
-    placeholder="номер"
-    keyboardType="phone-pad"
-    style={[s.input, { flex: 1, minWidth: 0 }]}
-  />
-</View>
-
-<Text style={{ fontSize: 11, color: COLORS.sub }}>
-  Пример: {rfqCountryCode}xxx xxx xxx
-</Text>
-
-<Text style={s.modalHelp}>Email</Text>
-<TextInput
-  value={rfqEmail}
-  onChangeText={setRfqEmail}
-  placeholder="mail@example.com"
-  autoCapitalize="none"
-  keyboardType="email-address"
-  style={s.input}
-/>
-        <Pressable
-          onPress={() => setRfqRememberContacts(v => !v)}
-          style={[s.smallBtn, { borderColor: rfqRememberContacts ? COLORS.blue : COLORS.border, backgroundColor: rfqRememberContacts ? "#DBEAFE" : "#fff", marginTop: 6 }]}
+      {/* ===================== ACCOUNTING ===================== */}
+      {sheetKind === 'accounting' ? (
+        <ScrollView
+          style={{ flex: 1 }}
+          contentContainerStyle={{ paddingBottom: 24 }}
+          keyboardShouldPersistTaps="handled"
         >
-          <Text style={{ fontWeight: "900" }}>
-            {rfqRememberContacts ? "✓ Запомнить контакты" : "Запомнить контакты"}
+          <Text style={{ fontSize: 12, color: D.sub, fontWeight: '800' }}>
+            {acctProposalId ? `Документ: #${String(acctProposalId).slice(0, 8)}` : 'Документ не выбран'}
           </Text>
-        </Pressable>
 
-        {/* SECTION: ПАРАМЕТРЫ */}
-        <Text style={[s.modalHelp, { marginTop: 14 }]}>Параметры</Text>
-      
-        <Text style={s.modalHelp}>Видимость</Text>
-        <View style={{ flexDirection: "row", gap: 8, flexWrap: "wrap" }}>
-          <Pressable onPress={() => setRfqVisibility("open")} style={[s.smallBtn, { borderColor: rfqVisibility === "open" ? COLORS.blue : COLORS.border, backgroundColor: rfqVisibility === "open" ? "#DBEAFE" : "#fff" }]}>
-            <Text style={{ fontWeight: "800" }}>Всем</Text>
-          </Pressable>
-          <Pressable onPress={() => setRfqVisibility("company_only")} style={[s.smallBtn, { borderColor: rfqVisibility === "company_only" ? COLORS.blue : COLORS.border, backgroundColor: rfqVisibility === "company_only" ? "#DBEAFE" : "#fff" }]}>
-            <Text style={{ fontWeight: "800" }}>Только свои</Text>
-          </Pressable>
-        </View>
+          <Text style={{ fontSize: 12, color: D.sub, marginTop: 8, fontWeight: '800' }}>
+            {propDocBusy ? 'Готовим файл предложения…' : (propDocAttached ? `Файл предложения: ${propDocAttached.name}` : 'Файл предложения будет прикреплён')}
+          </Text>
 
-        <Text style={[s.modalHelp, { marginTop: 10 }]}>Условия оплаты</Text>
-        <View style={{ flexDirection: "row", gap: 8, flexWrap: "wrap" }}>
-          <Pressable onPress={() => setRfqPaymentTerms("cash")} style={[s.smallBtn, { borderColor: rfqPaymentTerms === "cash" ? COLORS.blue : COLORS.border, backgroundColor: rfqPaymentTerms === "cash" ? "#DBEAFE" : "#fff" }]}>
-            <Text style={{ fontWeight: "800" }}>Нал</Text>
-          </Pressable>
-          <Pressable onPress={() => setRfqPaymentTerms("bank")} style={[s.smallBtn, { borderColor: rfqPaymentTerms === "bank" ? COLORS.blue : COLORS.border, backgroundColor: rfqPaymentTerms === "bank" ? "#DBEAFE" : "#fff" }]}>
-            <Text style={{ fontWeight: "800" }}>Безнал</Text>
-          </Pressable>
-          <Pressable onPress={() => setRfqPaymentTerms("after")} style={[s.smallBtn, { borderColor: rfqPaymentTerms === "after" ? COLORS.blue : COLORS.border, backgroundColor: rfqPaymentTerms === "after" ? "#DBEAFE" : "#fff" }]}>
-            <Text style={{ fontWeight: "800" }}>По факту</Text>
-          </Pressable>
-          <Pressable onPress={() => setRfqPaymentTerms("deferred")} style={[s.smallBtn, { borderColor: rfqPaymentTerms === "deferred" ? COLORS.blue : COLORS.border, backgroundColor: rfqPaymentTerms === "deferred" ? "#DBEAFE" : "#fff" }]}>
-            <Text style={{ fontWeight: "800" }}>Отсрочка</Text>
-          </Pressable>
-        </View>
+          {acctSupp && (
+            <View style={{ marginTop: 10, borderWidth: 1, borderColor: 'rgba(255,255,255,0.12)', borderRadius: 14, padding: 12, backgroundColor: 'rgba(255,255,255,0.06)' }}>
+              <Text style={{ fontWeight: '900', color: D.text }}>{acctSupp.name}</Text>
+              <Text style={{ color: D.sub, marginTop: 6, fontWeight: '700' }}>
+                {acctSupp.inn ? `ИНН: ${acctSupp.inn} · ` : ''}
+                {acctSupp.bank ? `Счёт: ${acctSupp.bank} · ` : ''}
+                {acctSupp.phone ? `Тел.: ${acctSupp.phone} · ` : ''}
+                {acctSupp.email ? `Email: ${acctSupp.email}` : ''}
+              </Text>
+            </View>
+          )}
 
-        <Text style={[s.modalHelp, { marginTop: 10 }]}>Документы</Text>
-        <View style={{ flexDirection: "row", gap: 8, flexWrap: "wrap" }}>
-          <Pressable onPress={() => setRfqNeedInvoice(v => !v)} style={[s.smallBtn, { borderColor: rfqNeedInvoice ? COLORS.blue : COLORS.border, backgroundColor: rfqNeedInvoice ? "#DBEAFE" : "#fff" }]}>
-            <Text style={{ fontWeight: "800" }}>{rfqNeedInvoice ? "✓ Счёт" : "Счёт"}</Text>
-          </Pressable>
-          <Pressable onPress={() => setRfqNeedWaybill(v => !v)} style={[s.smallBtn, { borderColor: rfqNeedWaybill ? COLORS.blue : COLORS.border, backgroundColor: rfqNeedWaybill ? "#DBEAFE" : "#fff" }]}>
-            <Text style={{ fontWeight: "800" }}>{rfqNeedWaybill ? "✓ Накладная" : "Накладная"}</Text>
-          </Pressable>
-          <Pressable onPress={() => setRfqNeedCert(v => !v)} style={[s.smallBtn, { borderColor: rfqNeedCert ? COLORS.blue : COLORS.border, backgroundColor: rfqNeedCert ? "#DBEAFE" : "#fff" }]}>
-            <Text style={{ fontWeight: "800" }}>{rfqNeedCert ? "✓ Сертификат" : "Сертификат"}</Text>
-          </Pressable>
-        </View>
+          <Text style={{ fontSize: 12, color: D.sub, marginTop: 14, fontWeight: '800' }}>Номер счёта</Text>
+          <TextInput
+            value={invNumber}
+            onChangeText={setInvNumber}
+            style={[s.input, { backgroundColor: 'rgba(255,255,255,0.06)', color: D.text, borderColor: 'rgba(255,255,255,0.12)' }]}
+          />
 
-        <Text style={[s.modalHelp, { marginTop: 10 }]}>Комментарий</Text>
-        <TextInput value={rfqNote} onChangeText={setRfqNote} multiline style={[s.input, { minHeight: 90 }]} />
-      </ScrollView>
+          <Text style={{ fontSize: 12, color: D.sub, marginTop: 10, fontWeight: '800' }}>Дата (YYYY-MM-DD)</Text>
+          <TextInput
+            value={invDate}
+            onChangeText={setInvDate}
+            style={[s.input, { backgroundColor: 'rgba(255,255,255,0.06)', color: D.text, borderColor: 'rgba(255,255,255,0.12)' }]}
+          />
 
-      
-      <View style={s.modalFooter}>
-        <Pressable
-          onPress={() => setRfqOpen(false)}
-          style={[s.smallBtn, { flex: 1, alignItems: "center", borderColor: COLORS.border }]}
-          disabled={rfqBusy}
+          <Text style={{ fontSize: 12, color: D.sub, marginTop: 10, fontWeight: '800' }}>Сумма</Text>
+          <TextInput
+            value={invAmount}
+            onChangeText={setInvAmount}
+            keyboardType="decimal-pad"
+            style={[s.input, { backgroundColor: 'rgba(255,255,255,0.06)', color: D.text, borderColor: 'rgba(255,255,255,0.12)' }]}
+          />
+
+          <Text style={{ fontSize: 12, color: D.sub, marginTop: 10, fontWeight: '800' }}>Валюта</Text>
+          <TextInput
+            value={invCurrency}
+            onChangeText={setInvCurrency}
+            style={[s.input, { backgroundColor: 'rgba(255,255,255,0.06)', color: D.text, borderColor: 'rgba(255,255,255,0.12)' }]}
+          />
+
+          {isWeb ? (
+            <Pressable onPress={openInvoicePickerWeb} style={[s.smallBtn, { marginTop: 12, borderColor: 'rgba(255,255,255,0.18)', backgroundColor: 'rgba(255,255,255,0.06)' }]}>
+              <Text style={{ color: D.text, fontWeight: '900' }}>
+                {invoiceUploadedName ? `Счёт прикреплён: ${invoiceUploadedName}` : 'Прикрепить счёт (PDF/JPG/PNG)'}
+              </Text>
+            </Pressable>
+          ) : (
+            <Pressable
+              onPress={async () => {
+                const f = await pickInvoiceFile();
+                if (f) { setInvFile(f); Alert.alert('Файл', f.name ?? 'Выбрано'); }
+              }}
+              style={[s.smallBtn, { marginTop: 12, borderColor: 'rgba(255,255,255,0.18)', backgroundColor: 'rgba(255,255,255,0.06)' }]}
+            >
+              <Text style={{ color: D.text, fontWeight: '900' }}>
+                {invFile?.name ? `Счёт прикреплён: ${invFile.name}` : 'Прикрепить счёт (PDF/JPG/PNG)'}
+              </Text>
+            </Pressable>
+          )}
+
+          <View style={{ flexDirection: 'row', gap: 10, marginTop: 14 }}>
+            <Pressable
+              disabled={acctBusy}
+              onPress={sendToAccounting}
+              style={[s.smallBtn, { flex: 1, backgroundColor: '#22C55E', borderColor: '#22C55E', opacity: acctBusy ? 0.6 : 1 }]}
+            >
+              <Text style={{ color: '#0B0F14', fontWeight: '900' }}>
+                {acctBusy ? 'Отправляем…' : 'Отправить'}
+              </Text>
+            </Pressable>
+
+            <Pressable
+              onPress={closeSheet}
+              style={[s.smallBtn, { flex: 1, borderColor: 'rgba(255,255,255,0.18)', backgroundColor: 'rgba(255,255,255,0.06)' }]}
+            >
+              <Text style={{ color: D.text, fontWeight: '900' }}>Отмена</Text>
+            </Pressable>
+          </View>
+        </ScrollView>
+      ) : null}
+
+      {/* ===================== REWORK ===================== */}
+      {sheetKind === 'rework' ? (
+        <ScrollView
+          style={{ flex: 1 }}
+          contentContainerStyle={{ paddingBottom: 24 }}
+          keyboardShouldPersistTaps="handled"
         >
-          <Text style={{ fontWeight: "900", color: COLORS.text }}>Отмена</Text>
-        </Pressable>
+          <Text style={{ fontSize: 12, color: D.sub, fontWeight: '800' }}>
+            {rwPid ? `Документ: #${rwPid.slice(0, 8)}` : 'Документ не выбран'}
+          </Text>
+
+          {!!rwReason && (
+            <View style={{ marginTop: 10, padding: 12, borderWidth: 1, borderColor: 'rgba(255,255,255,0.12)', borderRadius: 14, backgroundColor: 'rgba(255,255,255,0.06)' }}>
+              <Text style={{ fontWeight: '900', color: '#F59E0B' }}>Причина возврата</Text>
+              <Text style={{ color: D.text, marginTop: 6, fontWeight: '700' }}>{String(rwReason).trim() || '—'}</Text>
+            </View>
+          )}
+
+          <View style={{ marginTop: 10 }}>
+            {rwItems.length === 0 ? (
+              <Text style={{ color: D.sub, fontWeight: '800' }}>
+                {rwBusy ? 'Загрузка…' : 'Нет строк в предложении'}
+              </Text>
+            ) : rwItems.map((it, idx) => (
+              <View key={`${it.request_item_id}-${idx}`} style={{ marginTop: 10, padding: 12, borderRadius: 18, backgroundColor: 'rgba(16,24,38,0.92)', borderWidth: 1.25, borderColor: 'rgba(255,255,255,0.16)' }}>
+                <Text style={{ fontWeight: '900', color: D.text }}>{it.name_human || `Позиция ${it.request_item_id}`}</Text>
+                <Text style={{ color: D.sub, fontWeight: '800', marginTop: 6 }}>{`${it.qty ?? '—'} ${it.uom ?? ''}`}</Text>
+
+                <TextInput
+                  placeholder="Цена"
+                  placeholderTextColor={D.sub}
+                  keyboardType="decimal-pad"
+                  value={it.price ?? ''}
+                  onChangeText={(v) => setRwItems(prev => prev.map((x, i) => i === idx ? { ...x, price: v } : x))}
+                  style={[s.input, { marginTop: 10, backgroundColor: 'rgba(255,255,255,0.06)', color: D.text, borderColor: 'rgba(255,255,255,0.12)' }]}
+                />
+
+                <TextInput
+                  placeholder="Поставщик"
+                  placeholderTextColor={D.sub}
+                  value={it.supplier ?? ''}
+                  onChangeText={(v) => setRwItems(prev => prev.map((x, i) => i === idx ? { ...x, supplier: v } : x))}
+                  style={[s.input, { marginTop: 10, backgroundColor: 'rgba(255,255,255,0.06)', color: D.text, borderColor: 'rgba(255,255,255,0.12)' }]}
+                />
+
+                <TextInput
+                  placeholder="Примечание"
+                  placeholderTextColor={D.sub}
+                  value={it.note ?? ''}
+                  onChangeText={(v) => setRwItems(prev => prev.map((x, i) => i === idx ? { ...x, note: v } : x))}
+                  style={[s.input, { marginTop: 10, backgroundColor: 'rgba(255,255,255,0.06)', color: D.text, borderColor: 'rgba(255,255,255,0.12)' }]}
+                />
+              </View>
+            ))}
+          </View>
+
+          <View style={{ flexDirection: 'row', gap: 10, marginTop: 14 }}>
+            <Pressable
+              disabled={rwBusy}
+              onPress={rwSaveItems}
+              style={[s.smallBtn, { flex: 1, backgroundColor: '#22C55E', borderColor: '#22C55E' }]}
+            >
+              <Text style={{ color: '#0B0F14', fontWeight: '900' }}>Сохранить</Text>
+            </Pressable>
+
+            <Pressable
+              onPress={closeSheet}
+              style={[s.smallBtn, { flex: 1, borderColor: 'rgba(255,255,255,0.18)', backgroundColor: 'rgba(255,255,255,0.06)' }]}
+            >
+              <Text style={{ color: D.text, fontWeight: '900' }}>Закрыть</Text>
+            </Pressable>
+          </View>
+        </ScrollView>
+      ) : null}
+
+      {/* ===================== RFQ ===================== */}
+{sheetKind === 'rfq' ? (
+  <View style={{ flex: 1, minHeight: 0 }}>
+    {/* HEADER */}
+    <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+      <Text style={[s.modalTitle, { flex: 1, color: D.text }]}>Торги (RFQ)</Text>
+
+      <Pressable
+        onPress={closeSheet}
+        style={[
+          s.smallBtn,
+          { borderColor: 'rgba(255,255,255,0.18)', backgroundColor: 'rgba(255,255,255,0.06)' },
+        ]}
+        disabled={rfqBusy}
+      >
+        <Text style={{ fontWeight: "900", color: D.text }}>Закрыть</Text>
+      </Pressable>
+    </View>
+
+    {/* POSITIONS */}
+    <View
+      style={{
+        marginTop: 10,
+        padding: 10,
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.12)',
+        borderRadius: 12,
+        backgroundColor: 'rgba(255,255,255,0.06)',
+      }}
+    >
+      <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+        <Text style={{ fontWeight: "900", color: D.text, flex: 1 }}>
+          Позиции: {pickedIds.length}
+        </Text>
 
         <Pressable
-          disabled={rfqBusy}
-          onPress={async () => {
-            await publishRfq();
-          }}
+          onPress={() => setRfqShowItems(v => !v)}
           style={[
             s.smallBtn,
-            { flex: 1, alignItems: "center", backgroundColor: COLORS.blue, borderColor: COLORS.blue, opacity: rfqBusy ? 0.6 : 1 },
+            { borderColor: 'rgba(255,255,255,0.18)', backgroundColor: 'rgba(255,255,255,0.06)' },
           ]}
         >
-          <Text style={{ color: "#fff", fontWeight: "900" }}>{rfqBusy ? "Публикуем…" : "Опубликовать"}</Text>
+          <Text style={{ fontWeight: "900", color: D.text }}>
+            {rfqShowItems ? "Скрыть" : "Показать"}
+          </Text>
         </Pressable>
       </View>
+
+      {rfqShowItems ? (
+        <View style={{ marginTop: 8, gap: 6 }}>
+          {rfqPickedPreview.map((x) => (
+            <Text key={x.id} numberOfLines={1} style={{ color: D.text, fontWeight: "700" }}>
+              • {x.title} — {x.qty} {x.uom}
+            </Text>
+          ))}
+          {pickedIds.length > rfqPickedPreview.length ? (
+            <Text style={{ color: D.sub, marginTop: 4, fontWeight: '800' }}>
+              + ещё {pickedIds.length - rfqPickedPreview.length}
+            </Text>
+          ) : null}
+        </View>
+      ) : null}
     </View>
-  </SafeView>
+
+    {/* SCROLL CONTENT */}
+    <ScrollView
+      style={{ flex: 1, marginTop: 10 }}
+      contentContainerStyle={{ paddingBottom: 24 }}
+      keyboardShouldPersistTaps="handled"
+    >
+      {/* SECTION: СРОКИ */}
+      <Text style={[s.modalHelp, { marginTop: 2, color: D.sub, fontWeight: '800' }]}>Сроки</Text>
+      <Text style={{ fontWeight: "900", marginBottom: 6, color: D.text }}>
+        {fmtLocal(rfqDeadlineIso)}
+      </Text>
+
+      <View style={{ flexDirection: "row", gap: 8, flexWrap: "wrap" }}>
+        <Pressable
+          onPress={() => setDeadlineHours(6)}
+          style={[
+            s.smallBtn,
+            { borderColor: 'rgba(255,255,255,0.18)', backgroundColor: 'rgba(255,255,255,0.06)' },
+            isDeadlineHoursActive(6) && { backgroundColor: "rgba(34,197,94,0.18)", borderColor: "rgba(34,197,94,0.55)" },
+          ]}
+        >
+          <Text style={{ fontWeight: "900", color: D.text }}>6 ч</Text>
+        </Pressable>
+
+        <Pressable
+          onPress={() => setDeadlineHours(12)}
+          style={[
+            s.smallBtn,
+            { borderColor: 'rgba(255,255,255,0.18)', backgroundColor: 'rgba(255,255,255,0.06)' },
+            isDeadlineHoursActive(12) && { backgroundColor: "rgba(34,197,94,0.18)", borderColor: "rgba(34,197,94,0.55)" },
+          ]}
+        >
+          <Text style={{ fontWeight: "900", color: D.text }}>12 ч</Text>
+        </Pressable>
+
+        <Pressable
+          onPress={() => setDeadlineHours(24)}
+          style={[
+            s.smallBtn,
+            { borderColor: 'rgba(255,255,255,0.18)', backgroundColor: 'rgba(255,255,255,0.06)' },
+            isDeadlineHoursActive(24) && { backgroundColor: "rgba(34,197,94,0.18)", borderColor: "rgba(34,197,94,0.55)" },
+          ]}
+        >
+          <Text style={{ fontWeight: "900", color: D.text }}>24 ч</Text>
+        </Pressable>
+
+        <Pressable
+          onPress={() => setDeadlineHours(48)}
+          style={[
+            s.smallBtn,
+            { borderColor: 'rgba(255,255,255,0.18)', backgroundColor: 'rgba(255,255,255,0.06)' },
+            isDeadlineHoursActive(48) && { backgroundColor: "rgba(34,197,94,0.18)", borderColor: "rgba(34,197,94,0.55)" },
+          ]}
+        >
+          <Text style={{ fontWeight: "900", color: D.text }}>48 ч</Text>
+        </Pressable>
+
+        <Pressable
+          onPress={() => setDeadlineHours(72)}
+          style={[
+            s.smallBtn,
+            { borderColor: 'rgba(255,255,255,0.18)', backgroundColor: 'rgba(255,255,255,0.06)' },
+            isDeadlineHoursActive(72) && { backgroundColor: "rgba(34,197,94,0.18)", borderColor: "rgba(34,197,94,0.55)" },
+          ]}
+        >
+          <Text style={{ fontWeight: "900", color: D.text }}>72 ч</Text>
+        </Pressable>
+      </View>
+
+      <Text style={[s.modalHelp, { marginTop: 10, color: D.sub, fontWeight: '800' }]}>
+        Срок поставки/исполнения (дней)
+      </Text>
+      <TextInput
+        value={rfqDeliveryDays}
+        onChangeText={setRfqDeliveryDays}
+        keyboardType="numeric"
+        style={[s.input, { backgroundColor: 'rgba(255,255,255,0.06)', color: D.text, borderColor: 'rgba(255,255,255,0.12)' }]}
+        placeholderTextColor={D.sub}
+      />
+
+      {/* SECTION: ДОСТАВКА */}
+      <Text style={[s.modalHelp, { marginTop: 14, color: D.sub, fontWeight: '800' }]}>Доставка</Text>
+      <View style={{ flexDirection: "row", gap: 8, flexWrap: "wrap" }}>
+        <Pressable
+          onPress={() => setRfqDeliveryType("delivery")}
+          style={[
+            s.smallBtn,
+            { borderColor: 'rgba(255,255,255,0.18)', backgroundColor: 'rgba(255,255,255,0.06)' },
+            rfqDeliveryType === "delivery" && { backgroundColor: "rgba(34,197,94,0.18)", borderColor: "rgba(34,197,94,0.55)" },
+          ]}
+        >
+          <Text style={{ fontWeight: "900", color: D.text }}>Доставка</Text>
+        </Pressable>
+
+        <Pressable
+          onPress={() => setRfqDeliveryType("pickup")}
+          style={[
+            s.smallBtn,
+            { borderColor: 'rgba(255,255,255,0.18)', backgroundColor: 'rgba(255,255,255,0.06)' },
+            rfqDeliveryType === "pickup" && { backgroundColor: "rgba(34,197,94,0.18)", borderColor: "rgba(34,197,94,0.55)" },
+          ]}
+        >
+          <Text style={{ fontWeight: "900", color: D.text }}>Самовывоз</Text>
+        </Pressable>
+
+        <Pressable
+          onPress={() => setRfqDeliveryType("on_site")}
+          style={[
+            s.smallBtn,
+            { borderColor: 'rgba(255,255,255,0.18)', backgroundColor: 'rgba(255,255,255,0.06)' },
+            rfqDeliveryType === "on_site" && { backgroundColor: "rgba(34,197,94,0.18)", borderColor: "rgba(34,197,94,0.55)" },
+          ]}
+        >
+          <Text style={{ fontWeight: "900", color: D.text }}>На объект</Text>
+        </Pressable>
+      </View>
+
+      <Text style={[s.modalHelp, { marginTop: 10, color: D.sub, fontWeight: '800' }]}>Город</Text>
+      <TextInput
+        value={rfqCity}
+        onChangeText={(t) => {
+          setRfqCity(t);
+          if (!rfqCountryCodeTouched.current) setRfqCountryCode(inferCountryCode(t));
+        }}
+        placeholder="Бишкек"
+        placeholderTextColor={D.sub}
+        style={[s.input, { backgroundColor: 'rgba(255,255,255,0.06)', color: D.text, borderColor: 'rgba(255,255,255,0.12)' }]}
+      />
+
+      <Text style={[s.modalHelp, { color: D.sub, fontWeight: '800' }]}>Адрес поставки</Text>
+      <TextInput
+        value={rfqAddressText}
+        onChangeText={setRfqAddressText}
+        placeholder="ул..., дом..., объект..."
+        placeholderTextColor={D.sub}
+        style={[s.input, { backgroundColor: 'rgba(255,255,255,0.06)', color: D.text, borderColor: 'rgba(255,255,255,0.12)' }]}
+      />
+
+      <Text style={[s.modalHelp, { color: D.sub, fontWeight: '800' }]}>Окно приёма (пример: 9:00–18:00)</Text>
+      <TextInput
+        value={rfqDeliveryWindow}
+        onChangeText={setRfqDeliveryWindow}
+        placeholderTextColor={D.sub}
+        style={[s.input, { backgroundColor: 'rgba(255,255,255,0.06)', color: D.text, borderColor: 'rgba(255,255,255,0.12)' }]}
+      />
+
+      {/* CONTACTS */}
+      <Text style={[s.modalHelp, { marginTop: 14, color: D.sub, fontWeight: '800' }]}>Контакты</Text>
+
+      <Text style={[s.modalHelp, { color: D.sub, fontWeight: '800' }]}>Телефон</Text>
+      <View style={{ flexDirection: "row", gap: 8 }}>
+        <Pressable
+          onPress={() => {
+            rfqCountryCodeTouched.current = true;
+            setRfqCountryCode((prev) => (prev === "+996" ? "+7" : "+996"));
+          }}
+          style={[
+            s.input,
+            { minWidth: 92, alignItems: "center", justifyContent: "center", backgroundColor: 'rgba(255,255,255,0.06)', borderColor: 'rgba(255,255,255,0.12)' },
+          ]}
+        >
+          <Text style={{ fontWeight: "900", color: D.text }}>{rfqCountryCode}</Text>
+        </Pressable>
+
+        <TextInput
+          value={rfqPhone}
+          onChangeText={(t) => setRfqPhone(String(t).replace(/[^\d]/g, ""))}
+          placeholder="номер"
+          placeholderTextColor={D.sub}
+          keyboardType="phone-pad"
+          style={[s.input, { flex: 1, minWidth: 0, backgroundColor: 'rgba(255,255,255,0.06)', color: D.text, borderColor: 'rgba(255,255,255,0.12)' }]}
+        />
+      </View>
+
+      <Text style={{ fontSize: 11, color: D.sub, fontWeight: '800', marginTop: 6 }}>
+        Пример: {rfqCountryCode}xxx xxx xxx
+      </Text>
+
+      <Text style={[s.modalHelp, { marginTop: 10, color: D.sub, fontWeight: '800' }]}>Email</Text>
+      <TextInput
+        value={rfqEmail}
+        onChangeText={setRfqEmail}
+        placeholder="mail@example.com"
+        placeholderTextColor={D.sub}
+        autoCapitalize="none"
+        keyboardType="email-address"
+        style={[s.input, { backgroundColor: 'rgba(255,255,255,0.06)', color: D.text, borderColor: 'rgba(255,255,255,0.12)' }]}
+      />
+
+      <Pressable
+        onPress={() => setRfqRememberContacts(v => !v)}
+        style={[
+          s.smallBtn,
+          { marginTop: 10, borderColor: 'rgba(255,255,255,0.18)', backgroundColor: 'rgba(255,255,255,0.06)' },
+        ]}
+      >
+        <Text style={{ fontWeight: "900", color: D.text }}>
+          {rfqRememberContacts ? "✓ Запомнить контакты" : "Запомнить контакты"}
+        </Text>
+      </Pressable>
+
+      {/* PARAMETERS */}
+      <Text style={[s.modalHelp, { marginTop: 14, color: D.sub, fontWeight: '800' }]}>Параметры</Text>
+
+      <Text style={[s.modalHelp, { color: D.sub, fontWeight: '800' }]}>Видимость</Text>
+      <View style={{ flexDirection: "row", gap: 8, flexWrap: "wrap" }}>
+        <Pressable
+          onPress={() => setRfqVisibility("open")}
+          style={[
+            s.smallBtn,
+            { borderColor: 'rgba(255,255,255,0.18)', backgroundColor: 'rgba(255,255,255,0.06)' },
+            rfqVisibility === "open" && { backgroundColor: "rgba(34,197,94,0.18)", borderColor: "rgba(34,197,94,0.55)" },
+          ]}
+        >
+          <Text style={{ fontWeight: "900", color: D.text }}>Всем</Text>
+        </Pressable>
+
+        <Pressable
+          onPress={() => setRfqVisibility("company_only")}
+          style={[
+            s.smallBtn,
+            { borderColor: 'rgba(255,255,255,0.18)', backgroundColor: 'rgba(255,255,255,0.06)' },
+            rfqVisibility === "company_only" && { backgroundColor: "rgba(34,197,94,0.18)", borderColor: "rgba(34,197,94,0.55)" },
+          ]}
+        >
+          <Text style={{ fontWeight: "900", color: D.text }}>Только свои</Text>
+        </Pressable>
+      </View>
+
+      <Text style={[s.modalHelp, { marginTop: 10, color: D.sub, fontWeight: '800' }]}>Условия оплаты</Text>
+      <View style={{ flexDirection: "row", gap: 8, flexWrap: "wrap" }}>
+        {(["cash", "bank", "after", "deferred"] as const).map((k) => (
+          <Pressable
+            key={k}
+            onPress={() => setRfqPaymentTerms(k)}
+            style={[
+              s.smallBtn,
+              { borderColor: 'rgba(255,255,255,0.18)', backgroundColor: 'rgba(255,255,255,0.06)' },
+              rfqPaymentTerms === k && { backgroundColor: "rgba(34,197,94,0.18)", borderColor: "rgba(34,197,94,0.55)" },
+            ]}
+          >
+            <Text style={{ fontWeight: "900", color: D.text }}>
+              {k === "cash" ? "Нал" : k === "bank" ? "Безнал" : k === "after" ? "По факту" : "Отсрочка"}
+            </Text>
+          </Pressable>
+        ))}
+      </View>
+
+      <Text style={[s.modalHelp, { marginTop: 10, color: D.sub, fontWeight: '800' }]}>Документы</Text>
+      <View style={{ flexDirection: "row", gap: 8, flexWrap: "wrap" }}>
+        <Pressable
+          onPress={() => setRfqNeedInvoice(v => !v)}
+          style={[
+            s.smallBtn,
+            { borderColor: 'rgba(255,255,255,0.18)', backgroundColor: 'rgba(255,255,255,0.06)' },
+            rfqNeedInvoice && { backgroundColor: "rgba(34,197,94,0.18)", borderColor: "rgba(34,197,94,0.55)" },
+          ]}
+        >
+          <Text style={{ fontWeight: "900", color: D.text }}>{rfqNeedInvoice ? "✓ Счёт" : "Счёт"}</Text>
+        </Pressable>
+
+        <Pressable
+          onPress={() => setRfqNeedWaybill(v => !v)}
+          style={[
+            s.smallBtn,
+            { borderColor: 'rgba(255,255,255,0.18)', backgroundColor: 'rgba(255,255,255,0.06)' },
+            rfqNeedWaybill && { backgroundColor: "rgba(34,197,94,0.18)", borderColor: "rgba(34,197,94,0.55)" },
+          ]}
+        >
+          <Text style={{ fontWeight: "900", color: D.text }}>{rfqNeedWaybill ? "✓ Накладная" : "Накладная"}</Text>
+        </Pressable>
+
+        <Pressable
+          onPress={() => setRfqNeedCert(v => !v)}
+          style={[
+            s.smallBtn,
+            { borderColor: 'rgba(255,255,255,0.18)', backgroundColor: 'rgba(255,255,255,0.06)' },
+            rfqNeedCert && { backgroundColor: "rgba(34,197,94,0.18)", borderColor: "rgba(34,197,94,0.55)" },
+          ]}
+        >
+          <Text style={{ fontWeight: "900", color: D.text }}>{rfqNeedCert ? "✓ Сертификат" : "Сертификат"}</Text>
+        </Pressable>
+      </View>
+
+      <Text style={[s.modalHelp, { marginTop: 10, color: D.sub, fontWeight: '800' }]}>Комментарий</Text>
+      <TextInput
+        value={rfqNote}
+        onChangeText={setRfqNote}
+        multiline
+        placeholderTextColor={D.sub}
+        style={[s.input, { minHeight: 90, backgroundColor: 'rgba(255,255,255,0.06)', color: D.text, borderColor: 'rgba(255,255,255,0.12)' }]}
+      />
+    </ScrollView>
+
+    {/* FOOTER */}
+    <View style={{ flexDirection: 'row', gap: 10, marginTop: 12 }}>
+      <Pressable
+        onPress={closeSheet}
+        style={[
+          s.smallBtn,
+          { flex: 1, alignItems: "center", borderColor: 'rgba(255,255,255,0.18)', backgroundColor: 'rgba(255,255,255,0.06)' },
+        ]}
+        disabled={rfqBusy}
+      >
+        <Text style={{ fontWeight: "900", color: D.text }}>Отмена</Text>
+      </Pressable>
+
+      <Pressable
+        disabled={rfqBusy}
+        onPress={async () => { await publishRfq(); }}
+        style={[
+          s.smallBtn,
+          { flex: 1, alignItems: "center", backgroundColor: '#22C55E', borderColor: '#22C55E', opacity: rfqBusy ? 0.6 : 1 },
+        ]}
+      >
+        <Text style={{ color: "#0B0F14", fontWeight: "900" }}>
+          {rfqBusy ? "Публикуем…" : "Опубликовать"}
+        </Text>
+      </Pressable>
+    </View>
+  </View>
+) : null}
+    </View>
+  </View>
 </RNModal>
+
   </View>
 );
 
@@ -3293,474 +3320,296 @@ return ScreenBody;
 const s = StyleSheet.create({
   screen: { flex: 1 },
 
- collapsingHeader: {
-  backgroundColor: 'transparent',   // ✅ важно
-  borderBottomWidth: 0,             // ✅ важно
-  paddingBottom: 0,
-  overflow: 'hidden',
-},
-headerCard: {
-  backgroundColor: "#fff",
-  borderBottomWidth: 1,
-  borderBottomColor: COLORS.border,
-  paddingBottom: 0,
-  shadowColor: "#000",
-  shadowOffset: { width: 0, height: 6 },
-  shadowOpacity: 0.12,
-  shadowRadius: 14,
-  elevation: 8,
-},
-
-  // ✅ tabs (mobile = horizontal)
- tabsRow: {
-  flexDirection: 'row',
-  gap: 8,
-  alignItems: 'center',
-  paddingRight: 16, // ✅ больше запас справа, чтобы последняя вкладка была доступна
-  paddingVertical: 6,
-},
-
-  // ✅ tabs (web = wrap)
-  tabsWrapWeb: {
+  // ===== tabs =====
+  tabsRow: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
     gap: 8,
     alignItems: 'center',
-    marginTop: 2,
+    paddingRight: 16,
+    paddingVertical: 6,
   },
+  tabLabelRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
 
   tabPill: {
-  paddingVertical: 6,
-  paddingHorizontal: 8,
-  borderRadius: 999,
-  borderWidth: 1,
-  borderColor: COLORS.border,
-  backgroundColor: '#fff',
-  alignItems: 'center',
-  justifyContent: 'center',
-  flexShrink: 0,
-},
-
-tabPillText: {
-  color: COLORS.text,
-  fontWeight: '800',
-  fontSize: 11,
-  lineHeight: 13,
-  flexShrink: 0,
-},
-
-  tabPillActive: {
-    backgroundColor: COLORS.primary,
-    borderColor: COLORS.primary,
-  },
-  
-  tabPillTextActive: {
-    color: '#fff',
-  },
-
-  // ✅ meta under title
-  summaryMeta: {
-    fontSize: 12,
-    color: COLORS.sub,
-  },
-
-  // ✅ inputs
-  input: {
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    borderRadius: 8,
-    paddingHorizontal: 10,
     paddingVertical: 6,
-    backgroundColor: '#fff',
-    minWidth: 220,
-  },
-
-  // ===== bottom bar =====
-  bottomBar: {
-  position: 'absolute',
-  left: 0,
-  right: 0,
-  bottom: 0,
-  padding: 10,
-  backgroundColor: '#fff',
-  borderTopWidth: 1,
-  borderTopColor: COLORS.border,
-  shadowColor: '#000',
-  shadowOffset: { width: 0, height: -6 },
-  shadowOpacity: 0.08,
-  shadowRadius: 12,
-  elevation: 12,
-},
-
- bottomRow: {
-  flexDirection: 'row',
-  alignItems: 'center',
-  gap: 10,
-},
-
-
-  bottomBtnHalf: {
-    flex: 1,
-    backgroundColor: COLORS.primary,
-    borderColor: COLORS.primary,
+    paddingHorizontal: 10,
+    borderRadius: 999,
     borderWidth: 1,
-    borderRadius: 12,
-    paddingVertical: 10,
-    paddingHorizontal: 12,
+    borderColor: 'rgba(255,255,255,0.14)',
+    backgroundColor: 'rgba(255,255,255,0.06)',
     alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
   },
-
-  bottomBtnText: {
-    color: '#fff',
-    fontWeight: '800',
-    fontSize: 15,
-  },
-
-  bottomLink: { alignSelf: 'center', paddingVertical: 6 },
-
-  bottomLinkText: {
-    color: COLORS.sub,
+  tabPillActive: { backgroundColor: UI.cardBg, borderColor: UI.accent },
+  tabPillText: {
+    color: UI.sub,
     fontWeight: '800',
     fontSize: 14,
+    lineHeight: 18,
   },
+  tabPillTextActive: { color: UI.text },
 
-  // ===== group / cards =====
+  tabBadge: {
+    minWidth: 22,
+    height: 22,
+    paddingHorizontal: 8,
+    borderRadius: 999,
+    backgroundColor: 'rgba(255,255,255,0.06)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.12)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  tabBadgeActive: {
+    backgroundColor: 'rgba(255,255,255,0.10)',
+    borderColor: 'rgba(255,255,255,0.18)',
+  },
+  tabBadgeText: { fontSize: 12, fontWeight: '900', color: '#E5E7EB' },
+  tabBadgeTextActive: { color: '#FFFFFF' },
+
+  // ===== group (inbox заявки) =====
   group: {
-  borderWidth: 1,
-  borderColor: COLORS.border,
-  borderRadius: 14,
-  backgroundColor: '#fff',
-  marginBottom: 12,
-  overflow: 'hidden',            // ✅ чтобы внутренности не “вылезали”
-},
-
-
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.18)',
+    borderRadius: 18,
+    backgroundColor: UI.cardBg,
+    marginBottom: 12,
+    overflow: 'hidden',
+  },
   groupHeader: {
     flexDirection: 'row',
     alignItems: 'flex-start',
     gap: 8,
-    paddingVertical: 10,
+    paddingVertical: 12,
     paddingHorizontal: 12,
     borderBottomWidth: 1,
-    borderColor: COLORS.border,
+    borderColor: 'rgba(255,255,255,0.10)',
   },
+  groupTitle: { fontSize: 16, fontWeight: '900', color: UI.text },
+  groupMeta: { fontSize: 12, fontWeight: '800', color: UI.sub },
 
-  groupTitle: { fontSize: 16, fontWeight: '800', color: COLORS.text },
-
-  groupMeta: { fontSize: 12, color: COLORS.sub },
-
+  // ===== row card inside sheet / list =====
   card: {
     padding: 12,
-    borderTopWidth: 1,
-    borderColor: COLORS.border,
-    backgroundColor: '#fff',
-  },
-
-  cardPicked: { backgroundColor: '#F8FAFF' },
-
-  cardTitle: { fontSize: 15, fontWeight: '800', color: COLORS.text },
-
-  cardMeta: { fontSize: 12, color: COLORS.sub },
-collapsingHeaderAbs: {
-  position: 'absolute',
-  top: 0,
-  left: 0,
-  right: 0,
-  zIndex: 50,
-  backgroundColor: 'transparent',
-  pointerEvents: 'box-none',
-},
-
-  // ===== inner items panel =====
-  itemsPanel: {
-    marginTop: 10,
-    marginHorizontal: 12,
-    marginBottom: 12,
-    borderRadius: 14,
     borderWidth: 1,
-    borderColor: COLORS.border,
-    backgroundColor: '#F1F5F9',
+    borderColor: 'rgba(255,255,255,0.18)',
+    borderRadius: 18,
+    backgroundColor: UI.cardBg,
   },
-itemsBox: {
-  // ✅ не режем высоту — пусть внешний экран скроллится
-},
+  cardPicked: { backgroundColor: 'rgba(255,255,255,0.03)' },
 
-innerStickyHeader: {
-  backgroundColor: '#F8FAFC',
-  borderBottomWidth: 1,
-  borderBottomColor: COLORS.border,
-  paddingVertical: 8,
-  paddingHorizontal: 10,
-},
+  cardTitle: { fontSize: 16, fontWeight: '800', color: UI.text },
+  cardMeta: { marginTop: 6, color: UI.sub, fontSize: 14, fontWeight: '700' },
 
-innerStickyTitle: {
-  fontSize: 13,
-  fontWeight: '900',
-  color: COLORS.text,
-},
-
-innerStickyMeta: {
-  marginTop: 2,
-  fontSize: 11,
-  fontWeight: '700',
-  color: COLORS.sub,
-},
-
-openBody: {
-  backgroundColor: '#F8FAFC',     // серый фон как подложка
-  borderTopWidth: 1,
-  borderTopColor: COLORS.border,
-  paddingTop: 10,
-  paddingBottom: 12,             // главный фикс “слияния”
-},
-
-  // ===== small buttons =====
+  // ===== buttons =====
   smallBtn: {
     borderWidth: 1,
-    borderColor: COLORS.border,
+    borderColor: 'rgba(255,255,255,0.22)',
     borderRadius: 999,
     paddingVertical: 6,
     paddingHorizontal: 12,
-    backgroundColor: '#fff',
+    backgroundColor: 'rgba(255,255,255,0.06)',
   },
-
-  smallBtnText: { fontWeight: '700', color: COLORS.text, fontSize: 12 },
+  smallBtnText: { fontWeight: '900', color: UI.text, fontSize: 12 },
 
   openBtn: {
-    paddingVertical: 8,
-    paddingHorizontal: 14,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
     borderRadius: 999,
-    backgroundColor: '#fff',
+    backgroundColor: 'rgba(255,255,255,0.06)',
     borderWidth: 1,
-    borderColor: COLORS.border,
-    alignSelf: 'flex-start',
-    minWidth: 86,
+    borderColor: 'rgba(255,255,255,0.22)',
+    minWidth: 96,
     alignItems: 'center',
     justifyContent: 'center',
   },
+  openBtnText: { color: '#FFFFFF', fontWeight: '900', fontSize: 13, letterSpacing: 0.2 },
 
-  openBtnText: {
-    color: COLORS.text,
-    fontWeight: '700',
-    fontSize: 13,
-    lineHeight: 16,
+  // ===== form =====
+  fioLabel: { fontSize: 12, color: D.sub, fontWeight: '700', marginBottom: 4 },
+  fioInput: {
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.12)',
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    backgroundColor: 'rgba(255,255,255,0.06)',
+    color: D.text,
   },
 
-  // ===== suggestions =====
-  suggestBox: {
+  fieldLabel: { fontSize: 12, color: D.sub, fontWeight: '700', marginBottom: 4 },
+  fieldInput: {
     borderWidth: 1,
-    borderColor: COLORS.border,
-    backgroundColor: '#fff',
-    borderRadius: 8,
+    borderColor: 'rgba(255,255,255,0.12)',
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    backgroundColor: 'rgba(255,255,255,0.06)',
+    color: D.text,
+  },
+
+  input: {
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.12)',
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    backgroundColor: 'rgba(255,255,255,0.06)',
+    color: D.text,
+    minWidth: 220,
+  },
+
+  // ===== inline suggestions =====
+  suggestBoxInline: {
     marginTop: 6,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.12)',
+    backgroundColor: 'rgba(16,24,38,0.92)',
+    borderRadius: 10,
     overflow: 'hidden',
   },
-
   suggestItem: {
     paddingVertical: 8,
     paddingHorizontal: 10,
     borderBottomWidth: 1,
-    borderColor: COLORS.border,
-    backgroundColor: '#fff',
+    borderColor: 'rgba(255,255,255,0.10)',
+    backgroundColor: 'rgba(16,24,38,0.92)',
   },
 
-tradeBtnBright: {
-  flex: 1,
-  height: 52,
-  borderRadius: 14,
-  backgroundColor: '#3B82F6', // 🔵 ярко-синий
-  borderWidth: 1,
-  borderColor: '#2563EB',
-  alignItems: 'center',
-  justifyContent: 'center',
-  flexDirection: 'row',
-  gap: 8,
-},
+  // ===== proposal card (pending/approved/rejected lists) =====
+  proposalCard: {
+    padding: 14,
+    borderRadius: 18,
+    backgroundColor: UI.cardBg,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.18)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.22,
+    shadowRadius: 18,
+    elevation: 6,
+  },
 
-tradeBtnBrightText: {
-  color: '#0F172A', // ⚫ чёрный текст
-  fontWeight: '900',
-  fontSize: 14,
-},
+  // ===== sheet (director-style) =====
+  dirSheet: {
+    height: '88%',
+    backgroundColor: D.cardBg,
+    borderTopLeftRadius: 22,
+    borderTopRightRadius: 22,
+    paddingTop: 10,
+    paddingHorizontal: 16,
+    paddingBottom: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.10)',
+  },
+  dirSheetHandle: {
+    alignSelf: 'center',
+    width: 44,
+    height: 5,
+    borderRadius: 999,
+    backgroundColor: 'rgba(255,255,255,0.18)',
+    marginBottom: 10,
+  },
+  dirSheetTopBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 10,
+    marginBottom: 10,
+  },
+  dirSheetTitle: {
+    flex: 1,
+    minWidth: 0,
+    color: D.text,
+    fontWeight: '900',
+    fontSize: 18,
+    lineHeight: 22,
+  },
+  dirSheetCloseBtn: {
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    borderRadius: 999,
+    backgroundColor: '#E5E7EB',
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.10)',
+    flexShrink: 0,
+  },
+  dirSheetCloseText: { color: '#0B0F14', fontWeight: '900', fontSize: 13 },
 
-clearXDirector: {
-  width: 52,
-  height: 52,
-  borderRadius: 12,          // ⬅️ как у директора
-  backgroundColor: '#DC2626', // 🔴 директорский красный
-  alignItems: 'center',
-  justifyContent: 'center',
-},
+  sheetActionsBottom: {
+    marginTop: 12,
+    flexDirection: 'row',
+    gap: 10,
+    padding: 10,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255,255,255,0.04)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.10)',
+  },
+  iconBtnDanger: {
+    width: 54,
+    height: 44,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: UI.btnRed,
+  },
+  iconBtnApprove: {
+    width: 54,
+    height: 44,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: UI.btnGreen,
+  },
+  actionBtnWide: {
+    flex: 1,
+    height: 44,
+    borderRadius: 14,
+    backgroundColor: '#3B82F6',
+    borderWidth: 1,
+    borderColor: '#2563EB',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+    gap: 8,
+  },
+  actionBtnWideText: { color: '#0B0F14', fontWeight: '900', fontSize: 14 },
 
-clearXDirectorText: {
-  color: '#fff',
-  fontSize: 22,
-  fontWeight: '900',
-  lineHeight: 22,
-},
+  buyerMobCard: {
+    padding: 14,
+    borderRadius: 18,
+    backgroundColor: 'rgba(16,24,38,0.92)',
+    borderWidth: 1.25,
+    borderColor: 'rgba(255,255,255,0.16)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.22,
+    shadowRadius: 18,
+    elevation: 6,
+  },
+  buyerMobCardPicked: {
+    borderColor: 'rgba(34,197,94,0.55)',
+    backgroundColor: 'rgba(16,24,38,0.98)',
+  },
 
-// Самолёт
-sendFab: {
-  width: 52,
-  height: 52,
-  borderRadius: 26,
-  backgroundColor: COLORS.primary,
-  alignItems: 'center',
-  justifyContent: 'center',
-  borderWidth: 1,
-  borderColor: COLORS.primary,
-},  
+  dirMobCard: {
+    padding: 14,
+    borderRadius: 18,
+    backgroundColor: 'rgba(16,24,38,0.92)',
+    borderWidth: 1.25,
+    borderColor: 'rgba(255,255,255,0.16)',
+  },
+  dirMobMain: { flex: 1, minWidth: 0 },
+  dirMobTitle: { fontSize: 16, fontWeight: '900', color: D.text },
+  dirMobMeta: { marginTop: 6, fontSize: 13, fontWeight: '800', color: D.sub },
+  dirMobNote: { marginTop: 6, fontSize: 13, fontWeight: '800', color: D.text, opacity: 0.95 },
 
-modalCard: {
-  flex: 1,
-  backgroundColor: "#fff",
-  padding: 16,
-  paddingTop: 14,
-  gap: 8,
-  position: "relative",
-},
-modalFooter: {
-  position: "absolute",
-  left: 16,
-  right: 16,
-  bottom: 16,
-  flexDirection: "row",
-  gap: 10,
-},
-
-  modalTitle: { fontSize: 18, fontWeight: '800', color: COLORS.text },
-
-  modalHelp: { fontSize: 12, color: COLORS.sub },
-
-
-fioRow: { marginTop: 6 },
-
-fioLabel: {
-  fontSize: 12,
-  color: COLORS.sub,
-  fontWeight: '700',
-  marginBottom: 4,
-},
-
-fioInput: {
-  borderWidth: 1,
-  borderColor: COLORS.border,
-  borderRadius: 10,
-  paddingHorizontal: 10,
-  paddingVertical: 8,
-  backgroundColor: '#fff',
-},
-fieldLabel: {
-  fontSize: 12,
-  color: COLORS.sub,
-  fontWeight: '700',
-  marginBottom: 4,
-},
-fieldInput: {
-  borderWidth: 1,
-  borderColor: COLORS.border,
-  borderRadius: 10,
-  paddingHorizontal: 10,
-  paddingVertical: 8,
-  backgroundColor: '#fff',
-},
-
-suggestBoxInline: {
-  marginTop: 6,
-  borderWidth: 1,
-  borderColor: COLORS.border,
-  backgroundColor: '#fff',
-  borderRadius: 10,
-  overflow: 'hidden',
-},
-
-bulkBox: {
-  marginHorizontal: 12,
-  marginBottom: 10,
-  padding: 10,
-  borderWidth: 1,
-  borderColor: COLORS.border,
-  borderRadius: 14,
-  backgroundColor: '#fff',
-},
-bulkTitle: {
-  fontWeight: '900',
-  color: COLORS.text,
-  marginBottom: 8,
-},
-bulkRow: {
-  flexDirection: 'row',
-  gap: 8,
-  flexWrap: 'wrap',
-},
-
-tabLabelRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-
-tabBadge: {
-  minWidth: 18,
-  height: 18,
-  paddingHorizontal: 6,
-  borderRadius: 999,
-  backgroundColor: '#E5E7EB',
-  alignItems: 'center',
-  justifyContent: 'center',
-},
-
-tabBadgeText: {
-  fontSize: 11,
-  fontWeight: '900',
-  color: '#111827',
-},
-
-tabBadgeActive: { backgroundColor: '#fff' },
-tabBadgeTextActive: { color: COLORS.primary },
-
-titleBig: { fontWeight: "900", fontSize: 22, color: COLORS.text },
-titleSmall: { fontWeight: "900", fontSize: 16, color: COLORS.text },
-
-modalFullWrap: {
-  flex: 1,
-  width: "100%",
-  height: "100%",
-  backgroundColor: COLORS.bg,
-},
-
-modalTopBar: {
-  width: "100%",
-  flexDirection: "row",
-  alignItems: "center",
-  gap: 10,
-  paddingHorizontal: 12,
-  paddingBottom: 10,
-  borderBottomWidth: 1,
-  borderColor: COLORS.border,
-  backgroundColor: COLORS.bg,
-},
-
-modalBody: {
-  flex: 1,
-  width: "100%",
-  paddingHorizontal: 12,
-  paddingTop: 12,
-  minHeight: 0,          // ✅ КРИТИЧНО для web-scroll
-},
-modalSheet: {
-  flex: 1,
-  width: "100%",
-  height: "100%",              // ✅ КЛЮЧ для iOS/Android
-  backgroundColor: COLORS.bg,
-
-  ...(Platform.OS === "web"
-    ? {
-        maxHeight: "100vh" as any,
-        overflow: "hidden" as any,
-      }
-    : null),
-},
-
-modalScroll: {
-  flex: 1,
-  minHeight: 0,
-},
-
+  // misc
+  openBody: { paddingTop: 10, paddingBottom: 12 },
+  itemsPanel: { marginTop: 10, marginHorizontal: 12, marginBottom: 12 },
+  itemsBox: {},
+  modalTitle: { fontSize: 18, fontWeight: '800', color: D.text },
+  modalHelp: { fontSize: 12, color: D.sub },
 });

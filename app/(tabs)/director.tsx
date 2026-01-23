@@ -15,9 +15,8 @@ import {
 import { useGlobalBusy } from '../../src/ui/GlobalBusy';
 import RNModal from "react-native-modal";
 import { supabase, ensureSignedIn } from '../../src/lib/supabaseClient';
-import * as Print from 'expo-print';
-import * as Sharing from 'expo-sharing';
-import * as FileSystem from 'expo-file-system';
+import { runPdf } from "../../src/lib/pdfRunner";
+
 import { Ionicons } from '@expo/vector-icons';
 
 type Tab = 'foreman' | 'buyer';
@@ -125,6 +124,9 @@ type SheetKind = 'none' | 'request' | 'proposal';
 const [sheetKind, setSheetKind] = useState<SheetKind>('none');
 const [sheetRequest, setSheetRequest] = useState<Group | null>(null);
 const [sheetProposalId, setSheetProposalId] = useState<string | null>(null);
+// ✅ lock, чтобы не грузить несколько proposals одновременно
+const loadingPropRef = useRef<Record<string, boolean>>({});
+const lastTapRef = useRef<number>(0);
 
 const isSheetOpen = sheetKind !== 'none';
 
@@ -165,6 +167,8 @@ const [propItemsCount, setPropItemsCount] = useState<Record<string, number>>({})
   const [itemsByProp, setItemsByProp] = useState<Record<string, ProposalItem[]>>({});
   const [loadedByProp, setLoadedByProp] = useState<Record<string, boolean>>({});
   const [decidingId, setDecidingId] = useState<string | null>(null);
+const screenLock = !!actingId || actingAll != null || decidingId != null;
+
   const [pdfHtmlByProp, setPdfHtmlByProp] = useState<Record<string, string>>({});
 
   // ===== КЭШ НОМЕРОВ ЗАЯВОК =====
@@ -178,6 +182,12 @@ const [submittedAtByReq, setSubmittedAtByReq] = useState<Record<string, string>>
     if (d && d.trim()) return d.trim();
     return `#${shortId(rid)}`;
   }, [displayNoByReq]);
+const fmtDateOnly = (iso?: string | null) => {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '—';
+  return d.toLocaleDateString('ru-RU'); // только дата, без времени
+};
 
   const preloadDisplayNos = useCallback(async (reqIds: Array<number | string>) => {
   const needed = Array.from(
@@ -490,56 +500,23 @@ const exportRequestExcel = useCallback((g: Group) => {
   }
 }, [labelForRequest]);
 
-async function openPdfPreviewOrFallbackShare(uri: string) {
-  if (Platform.OS === 'web') {
-    const win = window.open(uri, '_blank', 'noopener,noreferrer');
-    if (!win) Alert.alert('PDF', 'Разреши всплывающие окна.');
-    return;
-  }
-
-  try {
-    // ✅ Preview через ShareSheet — самый стабильный способ
-    const ok = await Sharing.isAvailableAsync();
-    if (!ok) {
-      await Print.printAsync({ uri });
-      return;
-    }
-
-    await new Promise((r) => setTimeout(r, 150));
-
-    await Sharing.shareAsync(uri, {
-      mimeType: 'application/pdf',
-      UTI: 'com.adobe.pdf',
-      dialogTitle: 'PDF',
-    });
-  } catch (e: any) {
-    const msg = String(e?.message ?? e ?? '').toLowerCase();
-    if (msg.includes('printing did not complete')) return;
-    if (msg.includes('canceled') || msg.includes('cancel')) return;
-    Alert.alert('PDF', e?.message ?? 'Не удалось открыть PDF');
-  }
-}
   /* ---------- PDF заявки (прораб) с безопасным window.open ---------- */
-   const openRequestPdf = useCallback(async (g: any) => {
-  const rid = String(g?.request_id ?? '');
-  const key = `pdf:req:${rid}`;
+  const openRequestPdf = useCallback(async (g: any) => {
+  const rid = String(g?.request_id ?? "").trim();
+  if (!rid) return;
 
-  try {
-    await busy.run(async () => {
-      if (!rid) throw new Error('request_id пустой');
+  await runPdf({
+    busy,
+    supabase,
+    key: `pdf:req:${rid}`,
+    label: "Открываю PDF…",
+    mode: "preview",
+    fileName: `Заявка_${rid}`,
+    minOverlayMs: 1400,
+    getRemoteUrl: () => exportRequestPdf(rid, "preview"),
+  });
+}, [busy, supabase]);
 
-      const uri = await exportRequestPdf(rid, 'preview');
-      if (!uri) {
-        Alert.alert('PDF', 'Не удалось сформировать PDF-документ');
-        return;
-      }
-
-      await openPdfPreviewOrFallbackShare(uri);
-    }, { key, message: 'Открываю PDF…', minMs: 300 });
-  } catch (e: any) {
-    Alert.alert('Ошибка', e?.message ?? 'PDF не сформирован');
-  }
-}, [busy]);
 
     // Найти связанную закупку по proposal_id (для дальнейшего purchase_approve)
   const findPurchaseIdByProposal = useCallback(async (proposalId: string): Promise<string | null> => {
@@ -619,10 +596,13 @@ const seedWorksAfterApprove = useCallback(async (proposalId: string) => {
   }, [directorReqs]);
 
 /* ===== Карточка предложения (СНАБЖЕНЕЦ) — как у заявок ===== */
-const ProposalRow = React.memo(({ p }: { p: ProposalHead }) => {
+const ProposalRow = React.memo(({ p, screenLock }: { p: ProposalHead; screenLock: boolean }) => {
   const pidStr = String(p.id);
   const pretty = String(p.pretty ?? '').trim();
   const itemsCount = propItemsCount[pidStr] ?? 0;
+
+  // ✅ объявляем ДО return (а не внутри JSX)
+  const title = pretty || `#${pidStr.slice(0, 8)}`;
 
   return (
     <View style={{ marginBottom: 12 }}>
@@ -630,13 +610,11 @@ const ProposalRow = React.memo(({ p }: { p: ProposalHead }) => {
         {/* LEFT */}
         <View style={{ flex: 1, minWidth: 0 }}>
           <Text style={s.groupTitle} numberOfLines={1}>
-            {pretty
-              ? (pretty.toLowerCase().startsWith('предложение') ? pretty : `Предложение ${pretty}`)
-              : `Предложение #${pidStr.slice(0, 8)}`}
+            {title}
           </Text>
 
           <Text style={s.cardMeta} numberOfLines={1}>
-            Отправлено: {p.submitted_at ? new Date(p.submitted_at).toLocaleString() : '—'}
+            {fmtDateOnly(p.submitted_at)}
           </Text>
         </View>
 
@@ -647,14 +625,17 @@ const ProposalRow = React.memo(({ p }: { p: ProposalHead }) => {
           </View>
 
           <Pressable
-            onPress={async () => {
-              await toggleExpand(pidStr);  // ✅ грузим состав как раньше
-              openProposalSheet(pidStr);   // ✅ открываем модалку
-            }}
-            style={s.openBtn}
-          >
-            <Text style={s.openBtnText}>Открыть</Text>
-          </Pressable>
+  disabled={screenLock}
+  onPress={() => {
+    if (screenLock) return;
+    openProposalSheet(pidStr);
+    void toggleExpand(pidStr);
+  }}
+  style={[s.openBtn, screenLock && { opacity: 0.6 }]}
+>
+  <Text style={s.openBtnText}>Открыть</Text>
+</Pressable>
+
         </View>
       </View>
     </View>
@@ -662,106 +643,127 @@ const ProposalRow = React.memo(({ p }: { p: ProposalHead }) => {
 });
   /* ---------- toggleExpand: грузим состав и HTML (web) ---------- */
   const toggleExpand = useCallback(async (pid: string) => {
-    const next = expanded === pid ? null : pid;
-    setExpanded(next);
+  const pidStr = String(pid);
 
-    const key = String(pid);
-    if (next === pid && !loadedByProp[key]) {
+  // ✅ анти-спам по времени (очень важно на телефоне)
+  const now = Date.now();
+  if (now - lastTapRef.current < 350) return;
+  lastTapRef.current = now;
+
+  // ✅ если сейчас уже идет загрузка какого-то предложения — не стартуем вторую
+  const anyLoading = Object.values(loadingPropRef.current).some(Boolean);
+  if (anyLoading) return;
+
+  // ✅ если это предложение уже загружено — просто открыть sheet, без загрузки
+  if (loadedByProp[pidStr]) {
+    setExpanded((cur) => (cur === pidStr ? null : pidStr));
+    return;
+  }
+
+  // ✅ если уже грузим именно это — игнор
+  if (loadingPropRef.current[pidStr]) return;
+  loadingPropRef.current[pidStr] = true;
+
+  // визуально открываем сразу
+  setExpanded(pidStr);
+
+  try {
+    await busy.run(async () => {
       try {
-        // 1) сначала пробуем snapshot
         let rows: any[] | null = null;
 
         const qSnap = await supabase
-          .from('proposal_snapshot_items')
-          .select('id, request_item_id, rik_code, name_human, uom, app_code, total_qty')
-          .eq('proposal_id', key)
-          .order('id', { ascending: true });
+          .from("proposal_snapshot_items")
+          .select("id, request_item_id, rik_code, name_human, uom, app_code, total_qty")
+          .eq("proposal_id", pidStr)
+          .order("id", { ascending: true });
 
-        if (!qSnap.error && Array.isArray(qSnap.data)) {
-          rows = qSnap.data;
-        }
+        if (!qSnap.error && Array.isArray(qSnap.data)) rows = qSnap.data;
 
-        // 2) если снапшота нет — обычные proposal_items (view)
         if (!rows) {
           const qItems = await supabase
-            .from('proposal_items_view')
-            .select('id, request_item_id, rik_code, name_human, uom, app_code, total_qty')
-            .eq('proposal_id', key)
-            .order('id', { ascending: true });
+            .from("proposal_items_view")
+            .select("id, request_item_id, rik_code, name_human, uom, app_code, total_qty")
+            .eq("proposal_id", pidStr)
+            .order("id", { ascending: true });
 
-        if (!qItems.error && Array.isArray(qItems.data)) {
-            rows = qItems.data;
-          }
+          if (!qItems.error && Array.isArray(qItems.data)) rows = qItems.data;
         }
 
-        // ✅ берём proposal_items, потому что тут есть price
-{
-  const qPlain = await supabase
-    .from('proposal_items')
-    .select('id, request_item_id, rik_code, name_human, uom, app_code, qty, price')
-    .eq('proposal_id', key)
-    .order('id', { ascending: true });
+        // price
+        const qPlain = await supabase
+          .from("proposal_items")
+          .select("id, request_item_id, rik_code, name_human, uom, app_code, qty, price")
+          .eq("proposal_id", pidStr)
+          .order("id", { ascending: true });
 
-  if (!qPlain.error && Array.isArray(qPlain.data)) {
-    rows = qPlain.data.map((r: any) => ({ ...r, total_qty: r.qty }));
-  }
-}
+        if (!qPlain.error && Array.isArray(qPlain.data)) {
+          rows = qPlain.data.map((r: any) => ({ ...r, total_qty: r.qty }));
+        }
+
         let norm = (rows ?? []).map((r: any, i: number) => ({
-  id: Number(r.id ?? i),
-  request_item_id: r.request_item_id != null ? String(r.request_item_id) : null,
-  rik_code: r.rik_code ?? null,
-  name_human: r.name_human ?? '',
-  uom: r.uom ?? null,
-  app_code: r.app_code ?? null,
-  total_qty: Number(r.total_qty ?? r.qty ?? 0),
-  price: r.price != null ? Number(r.price) : null,
-  item_kind: null as any,
-}));
+          id: Number(r.id ?? i),
+          request_item_id: r.request_item_id != null ? String(r.request_item_id) : null,
+          rik_code: r.rik_code ?? null,
+          name_human: r.name_human ?? "",
+          uom: r.uom ?? null,
+          app_code: r.app_code ?? null,
+          total_qty: Number(r.total_qty ?? r.qty ?? 0),
+          price: r.price != null ? Number(r.price) : null,
+          item_kind: null as any,
+        }));
 
-// ✅ подтягиваем item_kind из request_items
-try {
-  const ids = Array.from(new Set(
-    norm.map(x => String(x.request_item_id ?? '')).filter(Boolean)
-  ));
-  if (ids.length) {
-    const qKinds = await supabase
-      .from('request_items')
-      .select('id, item_kind')
-      .in('id', ids);
+        // item_kind из request_items
+        try {
+          const ids = Array.from(
+            new Set(norm.map((x) => String(x.request_item_id ?? "")).filter(Boolean))
+          );
+          if (ids.length) {
+            const qKinds = await supabase
+              .from("request_items")
+              .select("id, item_kind")
+              .in("id", ids);
 
-    if (!qKinds.error && Array.isArray(qKinds.data)) {
-      const mapKind: Record<string, string> = {};
-      for (const rr of qKinds.data as any[]) {
-        const id = String(rr.id ?? '');
-        const k = String(rr.item_kind ?? '').trim();
-        if (id && k) mapKind[id] = k;
-      }
-      norm = norm.map(x => ({
-        ...x,
-        item_kind: x.request_item_id ? (mapKind[String(x.request_item_id)] ?? null) : null,
-      }));
-    }
-  }
-} catch {}
+            if (!qKinds.error && Array.isArray(qKinds.data)) {
+              const mapKind: Record<string, string> = {};
+              for (const rr of qKinds.data as any[]) {
+                const id = String(rr.id ?? "");
+                const k = String(rr.item_kind ?? "").trim();
+                if (id && k) mapKind[id] = k;
+              }
+              norm = norm.map((x) => ({
+                ...x,
+                item_kind: x.request_item_id ? mapKind[String(x.request_item_id)] ?? null : null,
+              }));
+            }
+          }
+        } catch {}
 
-setItemsByProp(prev => ({ ...prev, [key]: norm }));
-
-      } catch (e) {
-        Alert.alert('Ошибка', (e as any)?.message ?? 'Не удалось загрузить строки предложения');
-        setItemsByProp(prev => ({ ...prev, [key]: [] }));
+        setItemsByProp((prev) => ({ ...prev, [pidStr]: norm }));
       } finally {
-        setLoadedByProp(prev => ({ ...prev, [key]: true }));
+        setLoadedByProp((prev) => ({ ...prev, [pidStr]: true }));
       }
-    }
+    }, { key: `dir:loadProp:${pidStr}`, label: "Загружаю состав…", minMs: 900 });
 
-    if (Platform.OS === 'web' && !pdfHtmlByProp[key]) {
-      try {
-        const { buildProposalPdfHtml } = await import('../../src/lib/rik_api');
-        const html = await buildProposalPdfHtml(key as any);
-        setPdfHtmlByProp(prev => ({ ...prev, [key]: html }));
-      } catch {}
+    // web html (опционально)
+    if (Platform.OS === "web") {
+      setTimeout(async () => {
+        try {
+          if (pdfHtmlByProp[pidStr]) return;
+          const { buildProposalPdfHtml } = await import("../../src/lib/rik_api");
+          const html = await buildProposalPdfHtml(pidStr as any);
+          setPdfHtmlByProp((prev) => ({ ...prev, [pidStr]: html }));
+        } catch {}
+      }, 0);
     }
-  }, [expanded, loadedByProp, pdfHtmlByProp]);
+  } catch (e: any) {
+    Alert.alert("Ошибка", e?.message ?? "Не удалось загрузить строки предложения");
+    setItemsByProp((prev) => ({ ...prev, [pidStr]: [] }));
+    setLoadedByProp((prev) => ({ ...prev, [pidStr]: true }));
+  } finally {
+    loadingPropRef.current[pidStr] = false;
+  }
+}, [busy, loadedByProp, pdfHtmlByProp, supabase]);
 
   /* ---------- решения директора по предложению ---------- */
   const decide = useCallback(async (pid: string, decision: 'approved' | 'rejected') => {
@@ -923,7 +925,7 @@ async function onDirectorReturn(proposalId: string | number, note?: string) {
   {tab === 'foreman' ? (
     <>
       <View style={s.sectionHeader}>
-        <Text style={s.sectionTitle}>Ожидают утверждения</Text>
+        <Text style={s.sectionTitle}>Заявки</Text>
         <View style={s.kpiRow}>
           <View style={s.kpiPill}>
             <Text style={s.kpiLabel}>Заявок</Text>
@@ -938,7 +940,7 @@ async function onDirectorReturn(proposalId: string | number, note?: string) {
   </>
 ) : (
     <View style={s.sectionHeader}>
-      <Text style={s.sectionTitle}>Предложения на утверждении</Text>
+      <Text style={s.sectionTitle}>Предложения</Text>
       <View style={s.kpiRow}>
         <View style={s.kpiPill}>
           <Text style={s.kpiLabel}>Предложений</Text>
@@ -971,12 +973,12 @@ keyboardShouldPersistTaps="handled"
         {/* LEFT */}
         <View style={{ flex: 1, minWidth: 0 }}>
           <Text style={s.groupTitle} numberOfLines={1}>
-            Заявка {labelForRequest(item.request_id)}
-          </Text>
+  {labelForRequest(item.request_id)}
+</Text>
 
-          <Text style={s.cardMeta} numberOfLines={1}>
-            Отправлено: {submittedAt ? new Date(submittedAt).toLocaleString() : '—'}
-          </Text>
+<Text style={s.cardMeta} numberOfLines={1}>
+  {fmtDateOnly(submittedAt)}
+</Text>
         </View>
 
         {/* RIGHT */}
@@ -1035,7 +1037,7 @@ scrollEventThrottle={16}
   data={propsHeads}
   keyExtractor={(p, idx) => (p?.id ? `pp:${p.id}` : `pp:${idx}`)}
   removeClippedSubviews={false}
-  renderItem={({ item: p }) => <ProposalRow p={p} />}
+  renderItem={({ item: p }) => <ProposalRow p={p} screenLock={screenLock} />}
   refreshControl={
     <RefreshControl
       refreshing={false}
@@ -1064,8 +1066,6 @@ scrollEventThrottle={16}
   isVisible={isSheetOpen}
   onBackdropPress={closeSheet}
   onBackButtonPress={closeSheet}
-
-  // ✅ NO SWIPE: только кнопка "Свернуть"
   backdropOpacity={0.55}
   useNativeDriver
   useNativeDriverForBackdrop
@@ -1190,114 +1190,160 @@ scrollEventThrottle={16}
 
         {/* НИЖНЯЯ ПАНЕЛЬ — как было */}
         <View style={s.reqActionsBottom}>
-          <Pressable
-            onPress={() => openRequestPdf(sheetRequest)}
-            style={[s.actionBtn, { backgroundColor: UI.btnNeutral }]}
-          >
-            <Text style={s.actionText}>PDF</Text>
-          </Pressable>
+  {(() => {
+    const rid = String(sheetRequest.request_id ?? '').trim();
+    const pdfKey = `pdf:req:${rid}`;
+    const pdfBusy = busy.isBusy(pdfKey);
 
-          <Pressable
-            onPress={() => exportRequestExcel(sheetRequest)}
-            style={[s.actionBtn, { backgroundColor: UI.btnNeutral }]}
-          >
-            <Text style={s.actionText}>Excel</Text>
-          </Pressable>
+    return (
+      <Pressable
+        disabled={!rid || pdfBusy || screenLock}
+        onPress={async () => {
+          if (!rid) return;
+          try {
+            await openRequestPdf(sheetRequest);
+          } catch (e: any) {
+            if (String(e?.message ?? '').toLowerCase().includes('busy')) return;
+            Alert.alert('Ошибка', e?.message ?? 'PDF не сформирован');
+          }
+        }}
+        style={[
+          s.actionBtn,
+          {
+            backgroundColor: UI.btnNeutral,
+            opacity: (!rid || pdfBusy || screenLock) ? 0.6 : 1,
+          },
+        ]}
+      >
+        <Text style={s.actionText}>{pdfBusy ? 'PDF…' : 'PDF'}</Text>
+      </Pressable>
+    );
+  })()}
 
-          <Pressable
-            hitSlop={10}
-            disabled={actingAll === sheetRequest.request_id}
-            style={[s.iconBtnDanger, { opacity: actingAll === sheetRequest.request_id ? 0.6 : 1 }]}
-            onPress={() => {
-              const doIt = async () => {
-                setActingAll(sheetRequest.request_id);
-                try {
-                  const reqId = toFilterId(sheetRequest.request_id);
-                  if (reqId == null) throw new Error('request_id пустой');
+  <Pressable
+    disabled={screenLock}
+    onPress={() => {
+      if (screenLock) return;
+      exportRequestExcel(sheetRequest);
+    }}
+    style={[
+      s.actionBtn,
+      { backgroundColor: UI.btnNeutral, opacity: screenLock ? 0.6 : 1 },
+    ]}
+  >
+    <Text style={s.actionText}>Excel</Text>
+  </Pressable>
 
-                  const { error } = await supabase.rpc('reject_request_all', {
-                    p_request_id: String(reqId),
-                    p_reason: null,
-                  });
-                  if (error) throw error;
+  <Pressable
+    hitSlop={10}
+    disabled={screenLock || actingAll === sheetRequest.request_id}
+    style={[
+      s.iconBtnDanger,
+      { opacity: (screenLock || actingAll === sheetRequest.request_id) ? 0.6 : 1 },
+    ]}
+    onPress={() => {
+      const doIt = async () => {
+        setActingAll(sheetRequest.request_id);
+        try {
+          const reqId = toFilterId(sheetRequest.request_id);
+          if (reqId == null) throw new Error('request_id пустой');
 
-                  setRows(prev => prev.filter(r => r.request_id !== sheetRequest.request_id));
-                  closeSheet();
-                } catch (e: any) {
-                  Alert.alert('Ошибка', e?.message ?? 'Не удалось отклонить все позиции');
-                } finally {
-                  setActingAll(null);
-                }
-              };
+          const { error } = await supabase.rpc('reject_request_all', {
+            p_request_id: String(reqId),
+            p_reason: null,
+          });
+          if (error) throw error;
 
-              if (Platform.OS === 'web') {
-                const ok = window.confirm('Удалить заявку?\n\nОтклонить ВСЮ заявку вместе со всеми позициями?');
-                if (!ok) return;
-                void doIt();
-                return;
-              }
+          setRows((prev) => prev.filter((r) => r.request_id !== sheetRequest.request_id));
+          closeSheet();
+        } catch (e: any) {
+          Alert.alert('Ошибка', e?.message ?? 'Не удалось отклонить все позиции');
+        } finally {
+          setActingAll(null);
+        }
+      };
 
-              Alert.alert(
-                'Удалить заявку?',
-                'Вы уверены, что хотите отклонить ВСЮ заявку вместе со всеми позициями?',
-                [
-                  { text: 'Отмена', style: 'cancel' },
-                  { text: 'Да, удалить', style: 'destructive', onPress: () => void doIt() },
-                ],
-              );
-            }}
-          >
-            <Ionicons name="close" size={20} color="#fff" />
-          </Pressable>
+      if (Platform.OS === 'web') {
+        // @ts-ignore
+        const ok = window.confirm('Удалить заявку?\n\nОтклонить ВСЮ заявку вместе со всеми позициями?');
+        if (!ok) return;
+        void doIt();
+        return;
+      }
 
-          <Pressable
-            hitSlop={10}
-            disabled={actingAll === sheetRequest.request_id || (sheetRequest.items?.length ?? 0) === 0}
-            style={[
-              s.iconBtnApprove,
-              {
-                backgroundColor:
-                  (actingAll === sheetRequest.request_id || (sheetRequest.items?.length ?? 0) === 0)
-                    ? '#9CA3AF'
-                    : UI.btnApprove
-              },
-            ]}
-            onPress={async () => {
-              setActingAll(sheetRequest.request_id);
-              try {
-                const reqId = toFilterId(sheetRequest.request_id);
-                if (reqId == null) throw new Error('request_id пустой');
-                const reqIdStr = String(reqId);
+      Alert.alert(
+        'Удалить заявку?',
+        'Вы уверены, что хотите отклонить ВСЮ заявку вместе со всеми позициями?',
+        [
+          { text: 'Отмена', style: 'cancel' },
+          { text: 'Да, удалить', style: 'destructive', onPress: () => void doIt() },
+        ],
+      );
+    }}
+  >
+    <Ionicons name="close" size={20} color="#fff" />
+  </Pressable>
 
-                const updItems = await supabase
-                  .from('request_items')
-                  .update({ status: 'К закупке' })
-                  .eq('request_id', reqIdStr)
-                  .neq('status', 'Отклонено');
-                if (updItems.error) throw updItems.error;
+  <Pressable
+    hitSlop={10}
+    disabled={
+      screenLock ||
+      actingAll === sheetRequest.request_id ||
+      (sheetRequest.items?.length ?? 0) === 0
+    }
+    style={[
+      s.iconBtnApprove,
+      {
+        backgroundColor:
+          (screenLock ||
+            actingAll === sheetRequest.request_id ||
+            (sheetRequest.items?.length ?? 0) === 0)
+            ? '#9CA3AF'
+            : UI.btnApprove,
+        opacity: screenLock ? 0.9 : 1,
+      },
+    ]}
+    onPress={async () => {
+      if (screenLock) return;
+      setActingAll(sheetRequest.request_id);
 
-                const updReq = await supabase
-                  .from('requests')
-                  .update({ status: 'К закупке' })
-                  .eq('id', reqIdStr);
-                if (updReq.error) throw updReq.error;
+      try {
+        const reqId = toFilterId(sheetRequest.request_id);
+        if (reqId == null) throw new Error('request_id пустой');
+        const reqIdStr = String(reqId);
 
-                setRows(prev => prev.filter(r => r.request_id !== sheetRequest.request_id));
-                await fetchDirectorReqs();
-                await fetchProps();
+        const updItems = await supabase
+          .from('request_items')
+          .update({ status: 'К закупке' })
+          .eq('request_id', reqIdStr)
+          .neq('status', 'Отклонено');
+        if (updItems.error) throw updItems.error;
 
-                closeSheet();
-                Alert.alert('Утверждено', `Заявка ${labelForRequest(sheetRequest.request_id)} утверждена и отправлена снабженцу`);
-              } catch (e: any) {
-                Alert.alert('Ошибка', e?.message ?? 'Не удалось утвердить и отправить заявку');
-              } finally {
-                setActingAll(null);
-              }
-            }}
-          >
-            <Ionicons name="send" size={20} color="#fff" />
-          </Pressable>
-        </View>
+        const updReq = await supabase
+          .from('requests')
+          .update({ status: 'К закупке' })
+          .eq('id', reqIdStr);
+        if (updReq.error) throw updReq.error;
+
+        setRows((prev) => prev.filter((r) => r.request_id !== sheetRequest.request_id));
+        await fetchDirectorReqs();
+        await fetchProps();
+
+        closeSheet();
+        Alert.alert(
+          'Утверждено',
+          `Заявка ${labelForRequest(sheetRequest.request_id)} утверждена и отправлена снабженцу`,
+        );
+      } catch (e: any) {
+        Alert.alert('Ошибка', e?.message ?? 'Не удалось утвердить и отправить заявку');
+      } finally {
+        setActingAll(null);
+      }
+    }}
+  >
+    <Ionicons name="send" size={20} color="#fff" />
+  </Pressable>
+</View>
       </View>
     ) : null}
 
@@ -1421,134 +1467,177 @@ scrollEventThrottle={16}
 
               </View>
             )}
-          />
+          ListFooterComponent={() => (
+    <View style={{ paddingTop: 10, paddingBottom: 6, alignItems: 'flex-end' }}>
+      <View
+        style={{
+          paddingVertical: 6,
+          paddingHorizontal: 12,
+          borderRadius: 999,
+          backgroundColor: 'rgba(255,255,255,0.06)',
+          borderWidth: 1,
+          borderColor: 'rgba(255,255,255,0.12)',
+        }}
+      >
+        <Text style={{ fontWeight: '900', color: UI.text, fontSize: 14 }}>
+          ИТОГО: {Math.round(totalSum)}
+        </Text>
+      </View>
+    </View>
+  )}
+/>
 
           {/* ✅ НИЖНЯЯ ПАНЕЛЬ СНАБЖЕНЦА — ВОССТАНОВЛЕНА 1:1 */}
           <View style={s.reqActionsBottom}>
-            {/* PDF */}
-            <Pressable
-              style={[s.actionBtn, { backgroundColor: UI.btnNeutral }]}
-              onPress={async () => {
-                const keyPdf = `pdf:prop:${pidStr}`;
-                try {
-                  await busy.run(async () => {
-                    if (Platform.OS === 'web') {
-                      const w = window.open('about:blank', '_blank');
-                      const { buildProposalPdfHtml } = await import('../../src/lib/rik_api');
-                      const htmlDoc = await buildProposalPdfHtml(pidStr as any);
-                      if (w) { w.document.open(); w.document.write(htmlDoc); w.document.close(); w.focus(); }
-                      return;
-                    }
+  {(() => {
+    const pdfKey = `pdf:prop:${pidStr}`;
+    const pdfBusy = busy.isBusy(pdfKey);
 
-                    const { exportProposalPdf } = await import('../../src/lib/rik_api');
-                    const uri = await exportProposalPdf(pidStr as any, 'preview');
-                    if (uri) await openPdfPreviewOrFallbackShare(uri);
-                  }, { key: keyPdf, message: 'Открываю PDF…', minMs: 300 });
-                } catch (e: any) {
-                  Alert.alert('Ошибка', e?.message ?? 'PDF не сформирован');
-                }
-              }}
-            >
-              <Text style={s.actionText}>PDF</Text>
-            </Pressable>
+    return (
+      <Pressable
+        disabled={pdfBusy || screenLock}
+        style={[
+          s.actionBtn,
+          { backgroundColor: UI.btnNeutral, opacity: (pdfBusy || screenLock) ? 0.6 : 1 },
+        ]}
+        onPress={async () => {
+          if (pdfBusy || screenLock) return;
+          try {
+            await runPdf({
+              busy,
+              supabase,
+              key: pdfKey,
+              label: 'Загрузка PDF…',
+              mode: 'preview',
+              fileName: `Предложение_${pidStr}`,
+              minOverlayMs: 1400,
+              getRemoteUrl: async () => {
+                const { exportProposalPdf } = await import('../../src/lib/rik_api');
+                return await exportProposalPdf(pidStr as any, 'preview');
+              },
+            });
+          } catch (e: any) {
+            if (String(e?.message ?? '').toLowerCase().includes('busy')) return;
+            Alert.alert('Ошибка', e?.message ?? 'PDF не сформирован');
+          }
+        }}
+      >
+        <Text style={s.actionText}>{pdfBusy ? 'PDF…' : 'PDF'}</Text>
+      </Pressable>
+    );
+  })()}
 
-            {/* Excel */}
-            <Pressable
-              style={[s.actionBtn, { backgroundColor: UI.btnNeutral }]}
-              onPress={async () => {
-                try {
-                  if (Platform.OS !== 'web') { Alert.alert('Excel', 'Excel экспорт сейчас реализован только для Web-версии.'); return; }
-                  if (!items.length) { Alert.alert('Excel', 'Нет строк для выгрузки.'); return; }
+  <Pressable
+    disabled={screenLock}
+    style={[s.actionBtn, { backgroundColor: UI.btnNeutral, opacity: screenLock ? 0.6 : 1 }]}
+    onPress={async () => {
+      if (screenLock) return;
 
-                  const safe = (v: any) => v == null ? '' : String(v).replace(/[\r\n]+/g, ' ').trim();
-                  const title = (pretty || `PROPOSAL-${pidStr.slice(0, 8)}`).replace(/[^\wА-Яа-я0-9]/g, '_');
-                  const sheetName = title.slice(0, 31) || 'Предложение';
+      try {
+        if (Platform.OS !== 'web') {
+          Alert.alert('Excel', 'Excel экспорт сейчас реализован только для Web-версии.');
+          return;
+        }
+        if (!items.length) {
+          Alert.alert('Excel', 'Нет строк для выгрузки.');
+          return;
+        }
 
-                  const data: any[][] = [['№', 'Наименование', 'Кол-во', 'Ед. изм.', 'Применение']];
-                  items.forEach((it, idx) => data.push([idx + 1, safe(it.name_human), safe(it.total_qty), safe(it.uom), safe(it.app_code)]));
+        const safe = (v: any) => (v == null ? '' : String(v).replace(/[\r\n]+/g, ' ').trim());
+        const title = (pretty || `PROPOSAL-${pidStr.slice(0, 8)}`).replace(/[^\wА-Яа-я0-9]/g, '_');
+        const sheetName = title.slice(0, 31) || 'Предложение';
 
-                  const wb = XLSX.utils.book_new();
-                  const ws = XLSX.utils.aoa_to_sheet(data);
-                  XLSX.utils.book_append_sheet(wb, ws, sheetName);
+        const data: any[][] = [['№', 'Наименование', 'Кол-во', 'Ед. изм.', 'Применение']];
+        items.forEach((it, idx) =>
+          data.push([idx + 1, safe(it.name_human), safe(it.total_qty), safe(it.uom), safe(it.app_code)]),
+        );
 
-                  const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
-                  const blob = new Blob([wbout], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-                  const url = URL.createObjectURL(blob);
-                  const a = document.createElement('a');
-                  a.href = url;
-                  a.download = `${sheetName}.xlsx`;
-                  document.body.appendChild(a);
-                  a.click();
-                  document.body.removeChild(a);
-                  URL.revokeObjectURL(url);
-                } catch (e: any) {
-                  Alert.alert('Ошибка', e?.message ?? 'Не удалось сформировать Excel');
-                }
-              }}
-            >
-              <Text style={s.actionText}>Excel</Text>
-            </Pressable>
+        const wb = XLSX.utils.book_new();
+        const ws = XLSX.utils.aoa_to_sheet(data);
+        XLSX.utils.book_append_sheet(wb, ws, sheetName);
 
-            {/* вернуть */}
-            <Pressable hitSlop={12} style={s.iconBtnDanger} onPress={() => onDirectorReturn(pidStr)}>
-              <Ionicons name="close" size={20} color="#fff" />
-            </Pressable>
+        const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+        const blob = new Blob([wbout], {
+          type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${sheetName}.xlsx`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      } catch (e: any) {
+        Alert.alert('Ошибка', e?.message ?? 'Не удалось сформировать Excel');
+      }
+    }}
+  >
+    <Text style={s.actionText}>Excel</Text>
+  </Pressable>
 
-            {/* утвердить */}
-            <Pressable
-              hitSlop={10}
-              disabled={decidingId === pidStr}
-              style={[s.iconBtnApprove, { backgroundColor: (decidingId === pidStr) ? '#9CA3AF' : UI.btnApprove }]}
-              onPress={async () => {
-                try {
-                  setDecidingId(pidStr);
+  <Pressable
+    hitSlop={12}
+    disabled={screenLock}
+    style={[s.iconBtnDanger, { opacity: screenLock ? 0.6 : 1 }]}
+    onPress={() => {
+      if (screenLock) return;
+      onDirectorReturn(pidStr);
+    }}
+  >
+    <Ionicons name="close" size={20} color="#fff" />
+  </Pressable>
 
-                  const { error } = await supabase.rpc('director_approve_min_auto', { p_proposal_id: pidStr, p_comment: null });
-                  if (error) throw error;
+  <Pressable
+    hitSlop={10}
+    disabled={screenLock || decidingId === pidStr}
+    style={[
+      s.iconBtnApprove,
+      { backgroundColor: (screenLock || decidingId === pidStr) ? '#9CA3AF' : UI.btnApprove, opacity: screenLock ? 0.9 : 1 },
+    ]}
+    onPress={async () => {
+      if (screenLock) return;
 
-                  await seedWorksAfterApprove(pidStr);
+      try {
+        setDecidingId(pidStr);
 
-                  const rInc = await supabase.rpc('ensure_purchase_and_incoming_from_proposal', { p_proposal_id: pidStr });
-                  if ((rInc as any)?.error) throw (rInc as any).error;
+        const { error } = await supabase.rpc('director_approve_min_auto', { p_proposal_id: pidStr, p_comment: null });
+        if (error) throw error;
 
-                  const { error: accErr } = await supabase.rpc('proposal_send_to_accountant_min', {
-                    p_proposal_id: pidStr,
-                    p_invoice_number: null,
-                    p_invoice_date: null,
-                    p_invoice_amount: null,
-                    p_invoice_currency: 'KGS',
-                  });
-                  if (accErr) throw accErr;
+        await seedWorksAfterApprove(pidStr);
 
-                  await fetchProps();
-                  closeSheet();
-                  Alert.alert('Готово', 'Утверждено → бухгалтер → склад');
-                } catch (e: any) {
-                  Alert.alert('Ошибка', e?.message ?? 'Не удалось утвердить');
-                } finally {
-                  setDecidingId(null);
-                }
-              }}
-            >
-              <Ionicons name="send" size={20} color="#fff" />
-            </Pressable>
-          </View>
+        const rInc = await supabase.rpc('ensure_purchase_and_incoming_from_proposal', { p_proposal_id: pidStr });
+        if ((rInc as any)?.error) throw (rInc as any).error;
 
-          <View style={{ marginTop: 10, alignItems: 'flex-end' }}>
-            <Text style={{ fontWeight: '900', color: UI.text, fontSize: 16 }}>
-              ИТОГО: {Math.round(totalSum)}
-            </Text>
-          </View>
-        </>
+        const { error: accErr } = await supabase.rpc('proposal_send_to_accountant_min', {
+          p_proposal_id: pidStr,
+          p_invoice_number: null,
+          p_invoice_date: null,
+          p_invoice_amount: null,
+          p_invoice_currency: 'KGS',
+        });
+        if (accErr) throw accErr;
+
+        await fetchProps();
+        closeSheet();
+        Alert.alert('Готово', 'Утверждено → бухгалтер → склад');
+      } catch (e: any) {
+        Alert.alert('Ошибка', e?.message ?? 'Не удалось утвердить');
+      } finally {
+        setDecidingId(null);
+      }
+    }}
+  >
+    <Ionicons name="send" size={20} color="#fff" />
+  </Pressable>
+</View>
+  </>
       );
     })()}
   </View>
 ) : null}
-
   </View>
-
       </RNModal>
-
     </View>
   );
 }

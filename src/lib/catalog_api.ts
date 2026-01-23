@@ -1384,16 +1384,17 @@ export async function createProposalsBySupplier(
       }
     }
 
-    if (supplierDisplay) {
+            if (supplierDisplay) {
       try {
         await supabase
           .from("proposals")
-          .update({ supplier_name: supplierLabel, supplier: supplierLabel })
+          .update({ supplier: supplierDisplay }) // ✅ именно реальное имя
           .eq("id", proposalId);
       } catch (e: any) {
         console.warn("[catalog_api.createProposalsBySupplier] set supplier:", e?.message ?? e);
       }
     }
+
 
     let added = 0;
     try {

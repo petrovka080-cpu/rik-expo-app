@@ -38,18 +38,41 @@ type Tab =
 const TABS: Tab[] = ['К оплате', 'Частично', 'Оплачено', 'На доработке', 'История'];
 
 
-const COLORS = {
-  bg: '#F8FAFC',
-  text: '#0F172A',
-  sub: '#475569',
-  border: '#E2E8F0',
-  primary: '#111827',
-  tabInactiveBg: '#E5E7EB',
-  tabInactiveText: '#111827',
-  green: '#22C55E',
-  yellow: '#CA8A04',
-  red: '#EF4444',
+const UI = {
+  bg: '#0B0F14',        // общий фон
+  cardBg: '#101826',    // карточки/хедер
+  text: '#F8FAFC',      // основной текст
+  sub: '#9CA3AF',       // вторичный
+  border: '#1F2A37',    // границы
+
+  tabActiveBg: '#101826',
+  tabInactiveBg: 'transparent',
+  tabActiveText: '#F8FAFC',
+  tabInactiveText: '#9CA3AF',
+
+  btnApprove: '#22C55E',
+  btnReject:  '#EF4444',
+  btnNeutral: 'rgba(255,255,255,0.08)',
+
+  accent: '#22C55E',
 };
+const docRow = {
+  flexDirection: 'row' as const,
+  flexWrap: 'wrap' as const,
+  alignItems: 'center' as const,
+  gap: 8,
+};
+
+const docItem = {
+  flexShrink: 0 as const,
+  minWidth: 148,
+};
+
+const docItemWide = {
+  flexShrink: 0 as const,
+  minWidth: 200,
+};
+
 
 // ---------- helper: безопасные алерты на web ----------
 const safeAlert = (title: string, msg?: string) => {
@@ -124,16 +147,17 @@ function ActionButton({
   };
 
   const box =
-    variant === 'primary'
-      ? { backgroundColor: COLORS.primary }
-      : variant === 'danger'
-        ? { backgroundColor: COLORS.red }
-        : { backgroundColor: '#fff', borderWidth: 1, borderColor: COLORS.border };
+  variant === 'primary'
+    ? { backgroundColor: UI.btnApprove }
+    : variant === 'danger'
+      ? { backgroundColor: UI.btnReject }
+      : { backgroundColor: UI.btnNeutral, borderWidth: 1, borderColor: 'rgba(255,255,255,0.14)' };
 
-  const text =
-    variant === 'primary' || variant === 'danger'
-      ? { color: '#fff', fontWeight: '900' as const }
-      : { color: COLORS.text, fontWeight: '900' as const };
+const text =
+  variant === 'primary' || variant === 'danger'
+    ? { color: '#fff', fontWeight: '900' as const }
+    : { color: UI.text, fontWeight: '900' as const };
+
 
   return (
     <WButton
@@ -212,13 +236,9 @@ const lastLoadedKeyRef = useRef<string | null>(null);
 const cacheByTabRef = useRef<Record<string, AccountantInboxRow[]>>({});
 const pendingTabRef = useRef<Tab | null>(null);
 
-// ===== Collapsing header (как у директора), но с реальной высотой =====
+const HEADER_MAX = 210;
 const HEADER_MIN = 76;
-
-// реальная высота шапки (меряем один раз)
-const [measuredHeaderMax, setMeasuredHeaderMax] = useState<number>(260); // было 210
-const HEADER_MAX = Math.max(measuredHeaderMax, 260);
-const HEADER_SCROLL = Math.max(0, HEADER_MAX - HEADER_MIN);
+const HEADER_SCROLL = HEADER_MAX - HEADER_MIN;
 
 const scrollY = useRef(new Animated.Value(0)).current;
 const clampedY = Animated.diffClamp(scrollY, 0, HEADER_SCROLL);
@@ -231,7 +251,7 @@ const headerHeight = clampedY.interpolate({
 
 const titleSize = clampedY.interpolate({
   inputRange: [0, HEADER_SCROLL || 1],
-  outputRange: [22, 16],
+  outputRange: [24, 16],
   extrapolate: 'clamp',
 });
 
@@ -912,30 +932,43 @@ const payRest = useCallback(async () => {
   const header = useMemo(() => (
   <SafeView style={{ paddingHorizontal: 12, paddingTop: 10, paddingBottom: 6 }}>
     {/* TOP ROW */}
-    <SafeView style={{ flexDirection: 'row', alignItems: 'center' }}>
-      <Animated.Text style={{ fontSize: titleSize as any, fontWeight: '900', color: COLORS.text }}>
-        Бухгалтер
-      </Animated.Text>
+   <SafeView style={{ flexDirection: 'row', alignItems: 'center' }}>
+  <Animated.Text style={{ fontSize: titleSize as any, fontWeight: '900', color: UI.text }}>
+    Бухгалтер
+  </Animated.Text>
 
-      {/* кнопки справа */}
-      <View style={{ marginLeft: 12, flexDirection: 'row', gap: 8, alignItems: 'center' }}>
-        <Pressable
-          onPress={() => safeAlert('Excel', 'Скоро добавим.')}
-          style={{ paddingVertical: 8, paddingHorizontal: 12, borderRadius: 999, backgroundColor: '#fff', borderWidth: 1, borderColor: COLORS.border }}
-        >
-          <Text style={{ fontWeight: '800', color: COLORS.text }}>Excel</Text>
-        </Pressable>
-      </View>
+  {/* Excel */}
+  <View style={{ marginLeft: 12, flexDirection: 'row', gap: 8, alignItems: 'center' }}>
+    <Pressable
+      onPress={() => safeAlert('Excel', 'Скоро добавим.')}
+      style={{
+        paddingVertical: 8,
+        paddingHorizontal: 12,
+        borderRadius: 999,
+        backgroundColor: UI.btnNeutral,
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.14)',
+      }}
+    >
+      <Text style={{ fontWeight: '900', color: UI.text }}>Excel</Text>
+    </Pressable>
+  </View>
 
-      {/* 🔔 */}
-      <Pressable
-        onPress={() => { setBellOpen(true); loadNotifs(); }}
-        style={{
-          marginLeft: 'auto',
-          paddingVertical: 6, paddingHorizontal: 10, borderRadius: 999,
-          backgroundColor: '#fff', borderWidth: 1, borderColor: COLORS.border, position: 'relative'
-        }}
-      >
+  {/* 🔔 */}
+  <Pressable
+    onPress={() => { setBellOpen(true); loadNotifs(); }}
+    style={{
+      marginLeft: 'auto',
+      paddingVertical: 6,
+      paddingHorizontal: 10,
+      borderRadius: 999,
+      backgroundColor: UI.btnNeutral,
+      borderWidth: 1,
+      borderColor: 'rgba(255,255,255,0.14)',
+      position: 'relative',
+    }}
+  >
+
         <Text style={{ fontSize: 16 }}>🔔</Text>
         {unread > 0 && (
           <View style={{
@@ -951,63 +984,58 @@ const payRest = useCallback(async () => {
     <SafeView style={{ height: 10 }} />
 
 
-    {/* TABS (всегда видны) */}
-    <ScrollView
-  horizontal
-  showsHorizontalScrollIndicator={false}
-  contentContainerStyle={{ gap: 8, paddingRight: 12 }}
->
-  {TABS.map((t) => {
-    const active = tab === t;
-    return (
-      <Pressable
-        key={t}
-        onPress={() => {
-          setTab(t);
+   {/* TABS (всегда видны) */}
+<View style={{ marginTop: 10 }}>
+  <ScrollView
+    horizontal
+    showsHorizontalScrollIndicator={false}
+    contentContainerStyle={{ gap: 8, paddingRight: 12 }}
+  >
+    {TABS.map((t) => {
+      const active = tab === t;
+      return (
+        <Pressable
+          key={t}
+          onPress={() => {
+            setTab(t);
 
-          const cached = cacheByTabRef.current[t];
-          if (cached) setRows(cached);
+            const cached = cacheByTabRef.current[t];
+            if (cached) setRows(cached);
 
-          setTimeout(() => {
-  if (t === 'История') {
-    loadHistory(true);
-    return;
-  }
+            setTimeout(() => {
+              if (t === 'История') { loadHistory(true); return; }
+              if (inFlightRef.current) { pendingTabRef.current = t; return; }
+              load(true);
+            }, 0);
+          }}
+          style={{
+            paddingVertical: 8,
+            paddingHorizontal: 12,
+            borderRadius: 999,
+            backgroundColor: active ? UI.tabActiveBg : UI.tabInactiveBg,
+            borderWidth: 1,
+            borderColor: active ? UI.accent : 'rgba(255,255,255,0.14)',
+          }}
+        >
+          <Text style={{ color: active ? UI.tabActiveText : UI.tabInactiveText, fontWeight: '800' }}>
+            {t}
+          </Text>
+        </Pressable>
+      );
+    })}
+  </ScrollView>
+</View>
 
-  // ✅ если сейчас идёт загрузка — запомним, что пользователь хотел этот таб
-  if (inFlightRef.current) {
-    pendingTabRef.current = t;
-    return;
-  }
-
-  load(true);
-}, 0);
-
-        }}
-        style={{
-          paddingVertical: 8,
-          paddingHorizontal: 12,
-          borderRadius: 999,
-          backgroundColor: active ? COLORS.primary : COLORS.tabInactiveBg,
-        }}
-      >
-        <Text style={{ color: active ? '#fff' : COLORS.tabInactiveText, fontWeight: '800' }}>
-          {t}
-        </Text>
-      </Pressable>
-    );
-  })}
-</ScrollView>
 
 
     {/* SUB (исчезает при скролле) */}
     <Animated.View style={{ opacity: subOpacity, marginTop: 10 }}>
       {tab === 'История' ? (
-        <Text style={{ color: COLORS.sub, fontWeight: '700' }}>
+        <Text style={{ color: UI.sub, fontWeight: '800' }}>
           Фильтры истории ниже в списке
         </Text>
       ) : (
-        <Text style={{ color: COLORS.sub, fontWeight: '700' }}>
+        <Text style={{ color: UI.sub, fontWeight: '800' }}>
           {rows.length} документов • обновляй свайпом вниз
         </Text>
       )}
@@ -1032,33 +1060,29 @@ const statusFromRaw = (raw?: string | null, isHistory?: boolean): { key: StatusK
 
 const statusColors = (key: StatusKey) => {
   switch (key) {
-    case 'PAID':   return { bg: '#DCFCE7', fg: '#166534' };
-    case 'PART':   return { bg: '#FEF3C7', fg: '#92400E' };
-    case 'REWORK': return { bg: '#FEE2E2', fg: '#991B1B' };
-    case 'HISTORY':return { bg: '#E0E7FF', fg: '#3730A3' };
-    default:       return { bg: '#DBEAFE', fg: '#1E3A8A' }; // K_PAY
+    case 'PAID':   return { bg: 'rgba(34,197,94,0.14)', fg: '#86EFAC' };
+    case 'PART':   return { bg: 'rgba(250,204,21,0.14)', fg: '#FDE68A' };
+    case 'REWORK': return { bg: 'rgba(239,68,68,0.14)', fg: '#FCA5A5' };
+    case 'HISTORY':return { bg: 'rgba(99,102,241,0.14)', fg: '#C7D2FE' };
+    default:       return { bg: 'rgba(59,130,246,0.14)', fg: '#BFDBFE' };
   }
 };
-
-
- const Chip = ({ label, bg, fg }: { label: string; bg: string; fg: string }) => (
-  <View
-    style={{
-      height: 26,                 // ✅ фикс высота
-      paddingHorizontal: 12,      // ✅ фикс паддинги
-      borderRadius: 999,
-      backgroundColor: bg,
-      alignItems: 'center',
-      justifyContent: 'center',
-    }}
-  >
+const Chip = ({ label, bg, fg }: { label: string; bg: string; fg: string }) => (
+  <View style={{
+    height: 26,
+    paddingHorizontal: 12,
+    borderRadius: 999,
+    backgroundColor: bg,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.14)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  }}>
     <Text style={{ color: fg, fontWeight: '900', fontSize: 12 }}>
-      {String(label).toUpperCase()} {/* ✅ uppercase везде */}
+      {String(label).toUpperCase()}
     </Text>
   </View>
 );
-
-
   const renderItem = useCallback(({ item }: { item: AccountantInboxRow }) => {
     try {
       const total = Number(item.total_paid ?? 0);
@@ -1070,8 +1094,23 @@ const isPaidFull = rest === 0 && st.key === 'PAID';
 
 
       return (
-        <Pressable onPress={() => openCard(item)}
-          style={{ backgroundColor: '#fff', marginHorizontal: 12, marginVertical: 6, borderRadius: 14, borderWidth: 1, borderColor: COLORS.border, padding: 12 }}>
+       <Pressable
+  onPress={() => openCard(item)}
+  style={{
+    backgroundColor: UI.cardBg,
+    marginHorizontal: 12,
+    marginVertical: 6,
+    borderRadius: 18,
+    borderWidth: 1.25,
+    borderColor: 'rgba(255,255,255,0.16)',
+    padding: 14,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.22,
+    shadowRadius: 18,
+    elevation: 6,
+  }}
+>
 
          {(() => {
   const st = statusFromRaw(item.payment_status, false);
@@ -1080,7 +1119,7 @@ const isPaidFull = rest === 0 && st.key === 'PAID';
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
       <View style={{ flex: 1 }}>
-        <Text style={{ fontWeight: '700', color: COLORS.text }} numberOfLines={1}>
+        <Text style={{ fontWeight: '900', color: UI.text }} numberOfLines={1}>
           {(item.supplier || '—') + ' • ' + (item.invoice_number || 'без №') + ' (' + (item.invoice_date || '—') + ')'}
         </Text>
       </View>
@@ -1091,16 +1130,20 @@ const isPaidFull = rest === 0 && st.key === 'PAID';
   );
 })()}
 
-
-
-
-
           <View style={{ height: 6 }} />
-          <Text style={{ color: COLORS.sub }}>
-            Счёт: <Text style={{ fontWeight: '700', color: COLORS.text }}>{(sum || 0) + ' ' + (item.invoice_currency || 'KGS')}</Text>{' '}
-            • Оплачено: <Text style={{ fontWeight: '700', color: COLORS.text }}>{total}</Text>{' '}
-            • <Text style={{ fontWeight: '700', color: isPaidFull ? COLORS.green : COLORS.yellow }}>{'Остаток: ' + rest}</Text>
-          </Text>
+          <Text style={{ color: UI.sub, fontWeight: '700' }}>
+  Счёт:{' '}
+  <Text style={{ fontWeight: '900', color: UI.text }}>
+    {(sum || 0) + ' ' + (item.invoice_currency || 'KGS')}
+  </Text>
+  {' '}• Оплачено:{' '}
+  <Text style={{ fontWeight: '900', color: UI.text }}>{total}</Text>
+  {' '}•{' '}
+  <Text style={{ fontWeight: '900', color: isPaidFull ? '#86EFAC' : '#FDE68A' }}>
+    {'Остаток: ' + rest}
+  </Text>
+</Text>
+
         </Pressable>
       );
     } catch (e) {
@@ -1115,29 +1158,20 @@ const isPaidFull = rest === 0 && st.key === 'PAID';
   const currentDisplayStatus = useMemo(() => (current?.payment_status ?? 'К оплате'), [current]);
 
   const EmptyState = () => (
-    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 }}>
-      <Text style={{ fontSize: 40, marginBottom: 8 }}>📝</Text>
-      <Text style={{ fontSize: 16, fontWeight: '700', color: COLORS.text, marginBottom: 4 }}>Здесь пока пусто</Text>
-      <Text style={{ color: COLORS.sub, textAlign: 'center' }}>Выберите другую вкладку или дождитесь предложений от снабженца.</Text>
-    </View>
-  );
+  <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+    <Text style={{ fontSize: 40, marginBottom: 8 }}>📝</Text>
+    <Text style={{ fontSize: 16, fontWeight: '900', color: UI.text, marginBottom: 4 }}>
+      Здесь пока пусто
+    </Text>
+    <Text style={{ color: UI.sub, textAlign: 'center', fontWeight: '700' }}>
+      Выберите другую вкладку или дождитесь предложений от снабженца.
+    </Text>
+  </View>
+);
 
 return (
-  <SafeView style={{ flex: 1, backgroundColor: COLORS.bg }}>
-{/* ✅ hidden measurer: меряем натуральную высоту шапки (без анимации) */}
-<View
-  pointerEvents="none"
-  style={{ position: 'absolute', top: 0, left: 0, right: 0, opacity: 0, zIndex: -1 }}
-  onLayout={(e) => {
-  const h = Math.round(e?.nativeEvent?.layout?.height ?? 0);
-  if (h > 0 && Math.abs(h - measuredHeaderMax) > 2) {
-    requestAnimationFrame(() => setMeasuredHeaderMax(h));
-  }
-}}
+  <SafeView style={{ flex: 1, backgroundColor: UI.bg }}>
 
->
-  {header}
-</View>
 
     {/* ✅ Collapsing Header */}
     <Animated.View
@@ -1146,9 +1180,9 @@ return (
         top: 0, left: 0, right: 0,
         zIndex: 50,
         height: headerHeight,
-        backgroundColor: COLORS.bg,
+        backgroundColor: UI.cardBg,
         borderBottomWidth: 1,
-        borderColor: COLORS.border,
+        borderColor: UI.border,
         paddingTop: Platform.OS === 'web' ? 10 : 12,
         paddingBottom: 10,
         shadowColor: '#000',
@@ -1174,15 +1208,23 @@ return (
       {/* ✅ фильтры истории — БЕЗ {header} */}
       <View style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
         <Pressable
-          onPress={() => {
-            const d = new Date();
-            const s = d.toISOString().slice(0, 10);
-            setDateFrom(s); setDateTo(s);
-          }}
-          style={{ paddingVertical: 6, paddingHorizontal: 10, borderRadius: 999, backgroundColor: '#fff', borderWidth: 1, borderColor: COLORS.border }}
-        >
-          <Text style={{ fontWeight: '700', color: COLORS.text }}>Сегодня</Text>
-        </Pressable>
+  onPress={() => {
+    const d = new Date();
+    const s = d.toISOString().slice(0, 10);
+    setDateFrom(s); setDateTo(s);
+  }}
+  style={{
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    borderRadius: 999,
+    backgroundColor: UI.btnNeutral,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.14)',
+  }}
+>
+  <Text style={{ fontWeight: '900', color: UI.text }}>Сегодня</Text>
+</Pressable>
+
 
         <Pressable
           onPress={() => {
@@ -1191,39 +1233,66 @@ return (
             setDateFrom(from.toISOString().slice(0, 10));
             setDateTo(to.toISOString().slice(0, 10));
           }}
-          style={{ paddingVertical: 6, paddingHorizontal: 10, borderRadius: 999, backgroundColor: '#fff', borderWidth: 1, borderColor: COLORS.border }}
+          style={{ paddingVertical: 6, paddingHorizontal: 10, borderRadius: 999, backgroundColor: UI.btnNeutral,
+borderWidth: 1,
+borderColor: 'rgba(255,255,255,0.14)',
+ }}
         >
-          <Text style={{ fontWeight: '700', color: COLORS.text }}>Неделя</Text>
+          <Text style={{ fontWeight: '900', color: UI.text }}>Неделя</Text>
         </Pressable>
 
         <Pressable
-          onPress={() => {
-            const to = new Date();
-            const from = new Date(); from.setDate(to.getDate() - 29);
-            setDateFrom(from.toISOString().slice(0, 10));
-            setDateTo(to.toISOString().slice(0, 10));
-          }}
-          style={{ paddingVertical: 6, paddingHorizontal: 10, borderRadius: 999, backgroundColor: '#fff', borderWidth: 1, borderColor: COLORS.border }}
-        >
-          <Text style={{ fontWeight: '700', color: COLORS.text }}>Месяц</Text>
-        </Pressable>
+  onPress={() => {
+    const to = new Date();
+    const from = new Date(); from.setDate(to.getDate() - 29);
+    setDateFrom(from.toISOString().slice(0, 10));
+    setDateTo(to.toISOString().slice(0, 10));
+  }}
+  style={{
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    borderRadius: 999,
+    backgroundColor: UI.btnNeutral,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.14)',
+  }}
+>
+  <Text style={{ fontWeight: '900', color: UI.text }}>Месяц</Text>
+</Pressable>
 
-        <Pressable
-          onPress={() => setCalOpen(true)}
-          style={{ paddingVertical: 6, paddingHorizontal: 10, borderRadius: 999, backgroundColor: '#fff', borderWidth: 1, borderColor: COLORS.border }}
-        >
-          <Text style={{ fontWeight: '700', color: COLORS.text }}>📅 С/По</Text>
-        </Pressable>
+<Pressable
+  onPress={() => setCalOpen(true)}
+  style={{
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    borderRadius: 999,
+    backgroundColor: UI.btnNeutral,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.14)',
+  }}
+>
+  <Text style={{ fontWeight: '900', color: UI.text }}>📅 С/По</Text>
+</Pressable>
       </View>
 
       <View style={{ height: 8 }} />
 
       <TextInput
-        placeholder="Поиск: поставщик / № счёта"
-        value={histSearch}
-        onChangeText={setHistSearch}
-        style={{ borderWidth: 1, borderColor: COLORS.border, backgroundColor: '#fff', borderRadius: 12, padding: 10 }}
-      />
+  placeholder="Поиск: поставщик / № счёта"
+  placeholderTextColor={UI.sub}
+  value={histSearch}
+  onChangeText={setHistSearch}
+  style={{
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.14)',
+    backgroundColor: 'rgba(255,255,255,0.06)',
+    borderRadius: 12,
+    padding: 10,
+    color: UI.text,
+    fontWeight: '700',
+  }}
+/>
+
 
       <View style={{ height: 8 }} />
 
@@ -1232,16 +1301,15 @@ return (
         const cur = (historyRows?.[0] as any)?.invoice_currency ?? 'KGS';
         return (
   <View style={{ paddingBottom: 4 }}>
-    <Text style={{ color: COLORS.sub }}>
-      Найдено:{' '}
-      <Text style={{ fontWeight: '800', color: COLORS.text }}>
-        {historyRows.length}
-      </Text>
-      {'  '}• Сумма:{' '}
-      <Text style={{ fontWeight: '800', color: COLORS.text }}>
-        {total.toFixed(2)} {cur}
-      </Text>
-    </Text>
+    <Text style={{ color: UI.sub, fontWeight: '700' }}>
+  Найдено:{' '}
+  <Text style={{ fontWeight: '900', color: UI.text }}>{historyRows.length}</Text>
+  {'  '}• Сумма:{' '}
+  <Text style={{ fontWeight: '900', color: UI.text }}>
+    {total.toFixed(2)} {cur}
+  </Text>
+</Text>
+
   </View>
 );
       })()}
@@ -1253,46 +1321,61 @@ return (
         if (tab === 'История') {
           return (
             <Pressable
-              onPress={() => {
-  setCurrentPaymentId(Number(item.payment_id));
+  onPress={() => {
+    setCurrentPaymentId(Number(item.payment_id));
 
-  setAccountantFio(String(item.accountant_fio ?? '').trim());
-  setPurpose(String(item.purpose ?? '').trim());
+    setAccountantFio(String(item.accountant_fio ?? '').trim());
+    setPurpose(String(item.purpose ?? '').trim());
 
-  openCard({
-    proposal_id: item.proposal_id,
-    supplier: item.supplier,
-    invoice_number: item.invoice_number,
-    invoice_date: item.invoice_date,
-    invoice_amount: item.invoice_amount,
-    invoice_currency: item.invoice_currency,
-    payment_status: 'Оплачено',
-    total_paid: item.amount,
-    payments_count: 1,
-    has_invoice: !!item.has_invoice,
-    sent_to_accountant_at: null,
-  } as any);
-}}
-
-              style={{ backgroundColor: '#fff', marginHorizontal: 12, marginVertical: 6, borderRadius: 14, borderWidth: 1, borderColor: COLORS.border, padding: 12 }}
-            >
-              <Text style={{ fontWeight: '800', color: COLORS.text }}>{item.supplier || '—'}</Text>
-             <Text style={{ color: COLORS.sub, marginTop: 2 }}>
-  Счёт:{' '}
-  <Text style={{ color: COLORS.text, fontWeight: '700' }}>
-    {item.invoice_number || 'без №'}
+    openCard({
+      proposal_id: item.proposal_id,
+      supplier: item.supplier,
+      invoice_number: item.invoice_number,
+      invoice_date: item.invoice_date,
+      invoice_amount: item.invoice_amount,
+      invoice_currency: item.invoice_currency,
+      payment_status: 'Оплачено',
+      total_paid: item.amount,
+      payments_count: 1,
+      has_invoice: !!item.has_invoice,
+      sent_to_accountant_at: null,
+    } as any);
+  }}
+  style={{
+    backgroundColor: UI.cardBg,
+    marginHorizontal: 12,
+    marginVertical: 6,
+    borderRadius: 18,
+    borderWidth: 1.25,
+    borderColor: 'rgba(255,255,255,0.16)',
+    padding: 14,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.22,
+    shadowRadius: 18,
+    elevation: 6,
+  }}
+>
+  <Text style={{ fontWeight: '900', color: UI.text }} numberOfLines={1}>
+    {item.supplier || '—'}
   </Text>
-  {` • ${String(item.purpose || item.note || '—').trim()}`}
-</Text>
 
-<Text style={{ color: COLORS.sub, marginTop: 2 }}>
-  Бухгалтер:{' '}
-  <Text style={{ color: COLORS.text, fontWeight: '700' }}>
-    {String(item.accountant_fio || '—').trim()}
+  <Text style={{ color: UI.sub, marginTop: 6, fontWeight: '700' }} numberOfLines={2}>
+    Счёт:{' '}
+    <Text style={{ color: UI.text, fontWeight: '900' }}>
+      {item.invoice_number || 'без №'}
+    </Text>
+    {` • ${String(item.purpose || item.note || '—').trim()}`}
   </Text>
-</Text>
 
-            </Pressable>
+  <Text style={{ color: UI.sub, marginTop: 6, fontWeight: '700' }} numberOfLines={1}>
+    Бухгалтер:{' '}
+    <Text style={{ color: UI.text, fontWeight: '900' }}>
+      {String(item.accountant_fio || '—').trim()}
+    </Text>
+  </Text>
+</Pressable>
+
           );
         }
 
@@ -1316,7 +1399,7 @@ return (
               </View>
             ) : (
               <View style={{ padding: 24, alignItems: 'center' }}>
-                <Text style={{ color: COLORS.sub }}>История пуста</Text>
+                <Text style={{ color: UI.sub, fontWeight: '700' }}>История пуста</Text>
               </View>
             ))
           : (loading ? (
@@ -1343,34 +1426,83 @@ contentContainerStyle={{
     {/* модалка С/По */}
     <Modal visible={calOpen} transparent animationType="fade" onRequestClose={() => setCalOpen(false)}>
       <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'center', padding: 16 }}>
-        <View style={{ backgroundColor: '#fff', borderRadius: 12, padding: 12, borderWidth: 1, borderColor: COLORS.border }}>
-          <Text style={{ fontWeight: '900', fontSize: 16, color: COLORS.text }}>Период</Text>
+        <View
+  style={{
+    backgroundColor: UI.cardBg,
+    borderRadius: 16,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.16)',
+  }}
+>
+  <Text style={{ fontWeight: '900', fontSize: 16, color: UI.text }}>Период</Text>
+
           <View style={{ height: 10 }} />
           <TextInput
-            placeholder="Дата С (YYYY-MM-DD)"
-            value={dateFrom}
-            onChangeText={setDateFrom}
-            style={{ borderWidth: 1, borderColor: COLORS.border, borderRadius: 10, padding: 10, marginBottom: 8 }}
-          />
-          <TextInput
-            placeholder="Дата По (YYYY-MM-DD)"
-            value={dateTo}
-            onChangeText={setDateTo}
-            style={{ borderWidth: 1, borderColor: COLORS.border, borderRadius: 10, padding: 10, marginBottom: 8 }}
-          />
+  placeholder="Дата С (YYYY-MM-DD)"
+  placeholderTextColor={UI.sub}
+  value={dateFrom}
+  onChangeText={setDateFrom}
+  style={{
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.14)',
+    borderRadius: 12,
+    padding: 10,
+    marginBottom: 8,
+    backgroundColor: 'rgba(255,255,255,0.06)',
+    color: UI.text,
+    fontWeight: '700',
+  }}
+/>
+
+         <TextInput
+  placeholder="Дата По (YYYY-MM-DD)"
+  placeholderTextColor={UI.sub}
+  value={dateTo}
+  onChangeText={setDateTo}
+  style={{
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.14)',
+    borderRadius: 12,
+    padding: 10,
+    marginBottom: 8,
+    backgroundColor: 'rgba(255,255,255,0.06)',
+    color: UI.text,
+    fontWeight: '700',
+  }}
+/>
+
           <View style={{ flexDirection: 'row', gap: 8 }}>
+           <Pressable
+  onPress={() => { setDateFrom(''); setDateTo(''); }}
+  style={{
+    padding: 10,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.14)',
+    backgroundColor: UI.btnNeutral,
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  }}
+>
+  <Text style={{ fontWeight: '900', color: UI.text }}>Сброс</Text>
+</Pressable>
+
             <Pressable
-              onPress={() => { setDateFrom(''); setDateTo(''); }}
-              style={{ padding: 10, borderRadius: 10, borderWidth: 1, borderColor: COLORS.border }}
-            >
-              <Text style={{ fontWeight: '800', color: COLORS.text }}>Сброс</Text>
-            </Pressable>
-            <Pressable
-              onPress={() => setCalOpen(false)}
-              style={{ padding: 10, borderRadius: 10, backgroundColor: COLORS.primary }}
-            >
-              <Text style={{ fontWeight: '800', color: '#fff' }}>Готово</Text>
-            </Pressable>
+  onPress={() => setCalOpen(false)}
+  style={{
+    padding: 10,
+    borderRadius: 12,
+    backgroundColor: UI.btnApprove,
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  }}
+>
+  <Text style={{ fontWeight: '900', color: '#fff' }}>Готово</Text>
+</Pressable>
+
           </View>
         </View>
       </View>
@@ -1393,7 +1525,7 @@ contentContainerStyle={{
       <DismissKeyboardView
         style={{
           flex: 1,
-          backgroundColor: 'rgba(0,0,0,0.35)',
+          backgroundColor: 'rgba(0,0,0,0.55)',
           zIndex: 9999,
           elevation: 9999,
         }}
@@ -1409,53 +1541,49 @@ contentContainerStyle={{
             left: 0,
             right: 0,
             bottom: 0,
-            backgroundColor: COLORS.bg,
+            backgroundColor: UI.bg,
           }}
         >
-          <View style={{ flex: 1, backgroundColor: COLORS.bg }}>
+          <View style={{ flex: 1, backgroundColor: UI.bg }}>
             {/* ✅ SAFE AREA СПЕЙСЕР */}
-            <View style={{ height: topPad, backgroundColor: COLORS.bg }} />
+            <View style={{ height: topPad, backgroundColor: UI.bg }} />
 
             {/* ✅ ХЕДЕР */}
-            <View
-              style={{
-                paddingHorizontal: 12,
-                paddingVertical: 10,
-                borderBottomWidth: 1,
-                borderColor: COLORS.border,
-                backgroundColor: COLORS.bg,
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                zIndex: 10,
-                elevation: 10,
-              }}
-            >
-              <Text
-                style={{ fontSize: 18, fontWeight: '900', color: COLORS.text }}
-                numberOfLines={1}
-              >
-                Карточка предложения
-              </Text>
+           <View
+  style={{
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderColor: UI.border,
+    backgroundColor: UI.cardBg,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    zIndex: 10,
+    elevation: 10,
+  }}
+>
+  <Text style={{ fontSize: 18, fontWeight: '900', color: UI.text }} numberOfLines={1}>
+    Карточка предложения
+  </Text>
 
-              <Pressable
-                onPress={closeCard}
-                hitSlop={30}
-                style={{
-                  width: 46,
-                  height: 46,
-                  borderRadius: 999,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  backgroundColor: '#fff',
-                  borderWidth: 1,
-                  borderColor: COLORS.border,
-                }}
-              >
-                <Text style={{ fontSize: 18, fontWeight: '900', color: COLORS.text }}>✕</Text>
-              </Pressable>
-            </View>
-
+  <Pressable
+    onPress={closeCard}
+    hitSlop={30}
+    style={{
+      width: 46,
+      height: 46,
+      borderRadius: 999,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: UI.btnNeutral,
+      borderWidth: 1,
+      borderColor: 'rgba(255,255,255,0.14)',
+    }}
+  >
+    <Text style={{ fontSize: 18, fontWeight: '900', color: UI.text }}>✕</Text>
+  </Pressable>
+</View>
             {/* ✅ липкий мини-блок */}
             <Animated.View
               pointerEvents="box-none"
@@ -1483,30 +1611,29 @@ contentContainerStyle={{
               }}
             >
               <View
-                style={{
-                  backgroundColor: '#fff',
-                  borderWidth: 1,
-                  borderColor: COLORS.border,
-                  borderRadius: 12,
-                  padding: 10,
-                }}
-              >
-                <Text style={{ color: COLORS.sub, fontWeight: '800', fontSize: 12 }}>
-                  ФИО:{' '}
-                  <Text style={{ color: COLORS.text, fontWeight: '900' }}>
-                    {accountantFio.trim() || '—'}
-                  </Text>
-                </Text>
-                <Text
-                  style={{ color: COLORS.sub, fontWeight: '800', fontSize: 12, marginTop: 4 }}
-                  numberOfLines={1}
-                >
-                  Назначение:{' '}
-                  <Text style={{ color: COLORS.text, fontWeight: '900' }}>
-                    {purpose.trim() || '—'}
-                  </Text>
-                </Text>
-              </View>
+  style={{
+    backgroundColor: UI.cardBg,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.16)',
+    borderRadius: 14,
+    padding: 10,
+  }}
+>
+  <Text style={{ color: UI.sub, fontWeight: '800', fontSize: 12 }}>
+    ФИО:{' '}
+    <Text style={{ color: UI.text, fontWeight: '900' }}>
+      {accountantFio.trim() || '—'}
+    </Text>
+  </Text>
+
+  <Text style={{ color: UI.sub, fontWeight: '800', fontSize: 12, marginTop: 6 }} numberOfLines={1}>
+    Назначение:{' '}
+    <Text style={{ color: UI.text, fontWeight: '900' }}>
+      {purpose.trim() || '—'}
+    </Text>
+  </Text>
+</View>
+
             </Animated.View>
 
             {/* ✅ СКРОЛЛ ТЕЛА */}
@@ -1529,28 +1656,29 @@ contentContainerStyle={{
             >
 
           {/* ====== ТВОЙ КОНТЕНТ КАРТОЧКИ ====== */}
-          <Text style={{ color: COLORS.sub, marginBottom: 6 }}>
-            ID:{' '}
-            <Text style={{ color: COLORS.text, fontFamily: 'monospace' }}>
-              {current?.proposal_id || '—'}
-            </Text>
-          </Text>
+         <Text style={{ color: UI.sub, marginBottom: 6, fontWeight: '700' }}>
+  ID:{' '}
+  <Text style={{ color: UI.text, fontFamily: 'monospace', fontWeight: '900' }}>
+    {current?.proposal_id || '—'}
+  </Text>
+</Text>
 
-          <Text style={{ color: COLORS.sub }}>
-            Поставщик: <Text style={{ color: COLORS.text }}>{current?.supplier || '—'}</Text>
-          </Text>
+<Text style={{ color: UI.sub, fontWeight: '700' }}>
+  Поставщик: <Text style={{ color: UI.text, fontWeight: '900' }}>{current?.supplier || '—'}</Text>
+</Text>
 
-          <Text style={{ color: COLORS.sub }}>
-            Счёт: <Text style={{ color: COLORS.text }}>{current?.invoice_number || '—'}</Text> от{' '}
-            <Text style={{ color: COLORS.text }}>{current?.invoice_date || '—'}</Text>
-          </Text>
+<Text style={{ color: UI.sub, fontWeight: '700' }}>
+  Счёт: <Text style={{ color: UI.text, fontWeight: '900' }}>{current?.invoice_number || '—'}</Text> от{' '}
+  <Text style={{ color: UI.text, fontWeight: '900' }}>{current?.invoice_date || '—'}</Text>
+</Text>
 
-          <Text style={{ color: COLORS.sub }}>
-            Сумма:{' '}
-            <Text style={{ color: COLORS.text }}>
-              {Number(current?.invoice_amount ?? 0) + ' ' + (current?.invoice_currency || 'KGS')}
-            </Text>
-          </Text>
+<Text style={{ color: UI.sub, fontWeight: '700' }}>
+  Сумма:{' '}
+  <Text style={{ color: UI.text, fontWeight: '900' }}>
+    {Number(current?.invoice_amount ?? 0) + ' ' + (current?.invoice_currency || 'KGS')}
+  </Text>
+</Text>
+
 
           {/* ✅ СТАТУС С ЧИПОМ */}
           {(() => {
@@ -1561,120 +1689,160 @@ contentContainerStyle={{
             return (
               <View style={{ marginTop: 6 }}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
-                  <Text style={{ color: COLORS.sub, fontWeight: '800' }}>
-                    СТАТУС: <Text style={{ color: COLORS.text, fontWeight: '900' }}>{st.label}</Text>
-                  </Text>
-                  <Chip label={st.label} bg={sc.bg} fg={sc.fg} />
+                  <Text style={{ color: UI.sub, fontWeight: '800' }}>
+  СТАТУС: <Text style={{ color: UI.text, fontWeight: '900' }}>{st.label}</Text>
+</Text>
+
+<Chip label={st.label} bg={sc.bg} fg={sc.fg} />
+
                 </View>
               </View>
             );
           })()}
 
-          {/* ✅ ЯКОРЬ */}
-          {(() => {
-            const sum = Number(current?.invoice_amount ?? 0);
-            const paid = Number(current?.total_paid ?? 0);
-            const rest = sum > 0 ? Math.max(0, sum - paid) : 0;
+          {/* ✅ ЯКОРЬ (тёмный, читабельный во всех статусах) */}
+{(() => {
+  const sum = Number(current?.invoice_amount ?? 0);
+  const paid = Number(current?.total_paid ?? 0);
+  const rest = sum > 0 ? Math.max(0, sum - paid) : 0;
 
-            const norm = statusFromRaw(current?.payment_status ?? currentDisplayStatus, tab === 'История');
-            const stText = String(current?.payment_status ?? currentDisplayStatus ?? '');
+  const norm = statusFromRaw(current?.payment_status ?? currentDisplayStatus, tab === 'История');
+  const stText = String(current?.payment_status ?? currentDisplayStatus ?? '');
 
-            const reason =
-              stText.toLowerCase().startsWith('на доработке')
-                ? (stText.includes(':') ? stText.split(':').slice(1).join(':').trim() : 'не указана')
-                : '—';
+  const reason =
+    stText.toLowerCase().startsWith('на доработке')
+      ? (stText.includes(':') ? stText.split(':').slice(1).join(':').trim() : 'не указана')
+      : '—';
 
-            if (norm.key === 'HISTORY') {
-              return (
-                <View style={{ marginTop: 8, padding: 12, borderRadius: 12, backgroundColor: '#fff', borderWidth: 1, borderColor: COLORS.border }}>
-                  <Text style={{ color: COLORS.sub }}>СУММА ПЛАТЕЖА</Text>
-                  <Text style={{ fontSize: 20, fontWeight: '900', color: COLORS.text }}>
-                    {paid.toFixed(2)} {current?.invoice_currency || 'KGS'}
-                  </Text>
-                </View>
-              );
-            }
+  const box = {
+    marginTop: 10,
+    padding: 12,
+    borderRadius: 14,
+    backgroundColor: UI.cardBg,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.16)',
+  };
 
-            if (norm.key === 'PAID') {
-              return (
-                <View style={{ marginTop: 8, padding: 12, borderRadius: 12, backgroundColor: '#fff', borderWidth: 1, borderColor: COLORS.border }}>
-                  <Text style={{ color: COLORS.sub }}>ОПЛАЧЕНО</Text>
-                  <Text style={{ fontSize: 20, fontWeight: '900', color: COLORS.text }}>
-                    {paid.toFixed(2)} {current?.invoice_currency || 'KGS'}
-                  </Text>
-                </View>
-              );
-            }
+  const title = {
+    color: 'rgba(255,255,255,0.78)',
+    fontWeight: '900' as const,
+    fontSize: 12,
+    letterSpacing: 0.4,
+  };
 
-            if (norm.key === 'REWORK') {
-              return (
-                <View style={{ marginTop: 8, padding: 12, borderRadius: 12, backgroundColor: '#fff', borderWidth: 1, borderColor: COLORS.border }}>
-                  <Text style={{ color: COLORS.sub }}>ПРИЧИНА</Text>
-                  <Text style={{ fontSize: 16, fontWeight: '900', color: COLORS.text }}>
-                    {reason || 'не указана'}
-                  </Text>
-                </View>
-              );
-            }
+  const big = {
+    fontSize: 22,
+    fontWeight: '900' as const,
+    color: UI.text,
+    marginTop: 6,
+  };
 
-            return (
-              <View style={{ marginTop: 8, padding: 12, borderRadius: 12, backgroundColor: '#fff', borderWidth: 1, borderColor: COLORS.border }}>
-                <Text style={{ color: COLORS.sub }}>ОСТАТОК</Text>
-                <Text style={{ fontSize: 20, fontWeight: '900', color: COLORS.text }}>
-                  {rest.toFixed(2)} {current?.invoice_currency || 'KGS'}
-                </Text>
-              </View>
-            );
-          })()}
+  const mid = {
+    fontSize: 16,
+    fontWeight: '900' as const,
+    color: UI.text,
+    marginTop: 6,
+  };
+
+  const cur = current?.invoice_currency || 'KGS';
+
+  if (norm.key === 'HISTORY') {
+    return (
+      <View style={box}>
+        <Text style={title}>СУММА ПЛАТЕЖА</Text>
+        <Text style={big}>{paid.toFixed(2)} {cur}</Text>
+      </View>
+    );
+  }
+
+  if (norm.key === 'PAID') {
+    return (
+      <View style={box}>
+        <Text style={title}>ОПЛАЧЕНО</Text>
+        <Text style={big}>{paid.toFixed(2)} {cur}</Text>
+      </View>
+    );
+  }
+
+  if (norm.key === 'REWORK') {
+    return (
+      <View style={box}>
+        <Text style={title}>ПРИЧИНА</Text>
+        <Text style={mid}>{reason || 'не указана'}</Text>
+      </View>
+    );
+  }
+
+  // K_PAY / PART
+  return (
+    <View style={box}>
+      <Text style={title}>ОСТАТОК</Text>
+      <Text style={big}>{rest.toFixed(2)} {cur}</Text>
+    </View>
+  );
+})()}
 
           <View style={{ height: 12 }} />
 <View style={{ height: 12 }} />
 
 {/* ✅ ФИО + Назначение (всегда видно) */}
-<Text style={{ fontWeight: '900', color: COLORS.text, marginBottom: 6 }}>
+<Text style={{ fontWeight: '900', color: UI.text, marginBottom: 6 }}>
   ФИО бухгалтера (обязательно)
 </Text>
 <TextInput
   value={accountantFio}
   onChangeText={setAccountantFio}
   placeholder="Иванов Иван Иванович"
+  placeholderTextColor={UI.sub}
   style={{
     borderWidth: 1,
-    borderColor: accountantFio.trim() ? COLORS.border : '#ef4444',
-    backgroundColor: '#fff',
+    borderColor: accountantFio.trim() ? 'rgba(255,255,255,0.14)' : '#EF4444',
+    backgroundColor: 'rgba(255,255,255,0.06)',
     borderRadius: 12,
     padding: 12,
+    color: UI.text,
+    fontWeight: '700',
   }}
 />
-
 <View style={{ height: 10 }} />
-
-<Text style={{ fontWeight: '900', color: COLORS.text, marginBottom: 6 }}>
+<Text style={{ fontWeight: '900', color: UI.text, marginBottom: 6 }}>
   Назначение платежа (обязательно)
 </Text>
 <TextInput
   value={purpose}
   onChangeText={setPurpose}
   placeholder="Оплата по счёту №..., за материалы/работы..."
+  placeholderTextColor={UI.sub}
   multiline
   style={{
     borderWidth: 1,
-    borderColor: purpose.trim() ? COLORS.border : '#ef4444',
-    backgroundColor: '#fff',
+    borderColor: purpose.trim() ? 'rgba(255,255,255,0.14)' : '#EF4444',
+    backgroundColor: 'rgba(255,255,255,0.06)',
     borderRadius: 12,
     padding: 12,
     minHeight: 70,
+    color: UI.text,
+    fontWeight: '700',
   }}
 />
 
 <View style={{ height: 14 }} />
 
           {/* ✅ ДОКУМЕНТЫ */}
-          <Text style={{ fontWeight: '600', marginBottom: 6, color: COLORS.text }}>Документы</Text>
+          <Text style={{ fontWeight: '900', marginBottom: 8, color: UI.text }}>Документы</Text>
 
-         <SafeView style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap' }}>
+<View
+  style={{
+    padding: 10,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255,255,255,0.04)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.10)',
+  }}
+>
+ <SafeView style={docRow}>
   {!!current?.proposal_id && (
-    <View>
+    <View style={docItem}>
       <BusyButton
         label="PDF предложения"
         actionKey="doc_proposal_pdf"
@@ -1685,7 +1853,7 @@ contentContainerStyle={{
     </View>
   )}
 
-  <View>
+  <View style={docItem}>
     <BusyButton
       label="Платёжный отчёт"
       actionKey="doc_payment_report"
@@ -1696,56 +1864,50 @@ contentContainerStyle={{
   </View>
 
   {!!current?.proposal_id && (
-    <View>
+    <View style={docItemWide}>
       <BusyButton<any>
-  label="Платёжные документы"
-  actionKey="doc_payment_files"
-  busyKey={busyKey}
-  run={runAction}
-  // ✅ prepare: сначала пытаемся открыть существующие; если нет — открываем picker
-  prepare={async () => {
-    const pid = String(current?.proposal_id ?? '').trim();
-    if (!pid) return null;
+        label="Платёжные документы"
+        actionKey="doc_payment_files"
+        busyKey={busyKey}
+        run={runAction}
+        prepare={async () => {
+          const pid = String(current?.proposal_id ?? '').trim();
+          if (!pid) return null;
 
-    // 1) если уже есть файлы — откроем и выходим (без лоадера)
-    try {
-      await openAttachment(pid, 'payment', { all: true });
-      return null;
-    } catch (e: any) {
-      const msg = String(e?.message ?? e);
-      const notFound =
-        msg.toLowerCase().includes('не найдены') ||
-        msg.toLowerCase().includes('не найден') ||
-        msg.toLowerCase().includes('not found');
+          try {
+            await openAttachment(pid, 'payment', { all: true });
+            return null;
+          } catch (e: any) {
+            const msg = String(e?.message ?? e);
+            const notFound =
+              msg.toLowerCase().includes('не найдены') ||
+              msg.toLowerCase().includes('не найден') ||
+              msg.toLowerCase().includes('not found');
 
-      if (!notFound) {
-        safeAlert('Платёжные документы', msg);
-        return null;
-      }
-    }
+            if (!notFound) {
+              safeAlert('Платёжные документы', msg);
+              return null;
+            }
+          }
 
-    // 2) файлов нет → открываем диалог выбора файла (БЕЗ busyKey)
-    const f = await pickAnyFile();
-    if (!f) return null; // ✅ нажал “Отмена” → всё остановилось
-    return f;            // ✅ вернули файл → дальше будет busyKey и upload
-  }}
-  // ✅ этот код выполняется ПОД busyKey (показывает “Загрузка…”)
-  onPressWithPayload={async (f) => {
-    const pid = String(current?.proposal_id ?? '').trim();
-    if (!pid) return;
+          const f = await pickAnyFile();
+          if (!f) return null;
+          return f;
+        }}
+        onPressWithPayload={async (f) => {
+          const pid = String(current?.proposal_id ?? '').trim();
+          if (!pid) return;
 
-    const filename = String((f as any)?.name ?? (f as any)?.fileName ?? 'payment.pdf');
-    await uploadProposalAttachment(pid, f, filename, 'payment');
-    await load(true);
-
-    // откроем самый свежий
-    await openAttachment(pid, 'payment', { all: false });
-  }}
-/>
-
+          const filename = String((f as any)?.name ?? (f as any)?.fileName ?? 'payment.pdf');
+          await uploadProposalAttachment(pid, f, filename, 'payment');
+          await load(true);
+          await openAttachment(pid, 'payment', { all: false });
+        }}
+      />
     </View>
   )}
 </SafeView>
+</View>
 
           <View style={{ height: 16 }} />
           {/* ✅ ДЕЙСТВИЯ */}
@@ -1900,27 +2062,30 @@ contentContainerStyle={{
   return (
     <View onLayout={payFormReveal.onSectionLayout}>
       <View style={{ height: 16 }} />
-      <Text style={{ fontWeight: '900', marginBottom: 6, color: COLORS.text }}>
+      <Text style={{ fontWeight: '900', marginBottom: 6, color: UI.text }}>
         Форма оплаты
       </Text>
 
       <View style={{ position: 'relative', zIndex: 5 }}>
                   <TextInput
-                    placeholder="Сумма (KGS)"
-                    keyboardType="decimal-pad"
-                    value={amount}
-                    onChangeText={setAmount}
-                    style={{
-                      borderWidth: 1,
-                      borderColor: COLORS.border,
-                      backgroundColor: '#fff',
-                      borderRadius: 10,
-                      padding: 10,
-                      marginBottom: 8,
-                    }}
-                  />
+  placeholder="Сумма (KGS)"
+  placeholderTextColor={UI.sub}
+  keyboardType="decimal-pad"
+  value={amount}
+  onChangeText={setAmount}
+  style={{
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.14)',
+    backgroundColor: 'rgba(255,255,255,0.06)',
+    borderRadius: 12,
+    padding: 10,
+    marginBottom: 8,
+    color: UI.text,
+    fontWeight: '700',
+  }}
+/>
 
-                  <Text style={{ fontWeight: '600', marginBottom: 6, color: COLORS.text }}>Способ оплаты</Text>
+                  <Text style={{ fontWeight: '900', marginBottom: 6, color: UI.text }}>Способ оплаты</Text>
 
                   <View style={{ flexDirection: 'row', gap: 8, marginBottom: 12 }}>
                     <Pressable
@@ -1929,45 +2094,47 @@ contentContainerStyle={{
                         paddingVertical: 8,
                         paddingHorizontal: 14,
                         borderRadius: 999,
-                        backgroundColor: payKind === 'bank' ? COLORS.primary : '#fff',
+                        backgroundColor: payKind === 'bank' ? UI.tabActiveBg : UI.btnNeutral,
                         borderWidth: 1,
-                        borderColor: COLORS.border,
+                        borderColor: payKind === 'bank' ? UI.accent : 'rgba(255,255,255,0.14)',
+
                       }}
                     >
-                      <Text style={{ color: payKind === 'bank' ? '#fff' : COLORS.text, fontWeight: '700' }}>
+                      <Text style={{ color: payKind === 'bank' ? UI.text : UI.text }}>
                         Банк
                       </Text>
                     </Pressable>
 
                     <Pressable
-                      onPress={() => setPayKind('cash')}
-                      style={{
-                        paddingVertical: 8,
-                        paddingHorizontal: 14,
-                        borderRadius: 999,
-                        backgroundColor: payKind === 'cash' ? COLORS.primary : '#fff',
-                        borderWidth: 1,
-                        borderColor: COLORS.border,
-                      }}
-                    >
-                      <Text style={{ color: payKind === 'cash' ? '#fff' : COLORS.text, fontWeight: '700' }}>
-                        Нал
-                      </Text>
-                    </Pressable>
-                  </View>
+  onPress={() => setPayKind('cash')}
+  style={{
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: 999,
+    backgroundColor: payKind === 'cash' ? UI.tabActiveBg : UI.btnNeutral,
+    borderWidth: 1,
+    borderColor: payKind === 'cash' ? UI.accent : 'rgba(255,255,255,0.14)',
+  }}
+>
+  <Text style={{ color: UI.text, fontWeight: '900' }}>Нал</Text>
+</Pressable>
 
-                 
+                  </View>
+                
 <TextInput
   placeholder="Комментарий"
+  placeholderTextColor={UI.sub}
   value={note}
   onChangeText={setNote}
   style={{
     borderWidth: 1,
-    borderColor: COLORS.border,
-    backgroundColor: '#fff',
-    borderRadius: 10,
+    borderColor: 'rgba(255,255,255,0.14)',
+    backgroundColor: 'rgba(255,255,255,0.06)',
+    borderRadius: 12,
     padding: 10,
     marginBottom: 8,
+    color: UI.text,
+    fontWeight: '700',
   }}
 />
                   <WButton
@@ -1976,30 +2143,31 @@ contentContainerStyle={{
                     style={{
                       padding: 12,
                       borderRadius: 10,
-                      backgroundColor: canAct ? '#10B981' : '#94a3b8',
+                      backgroundColor: canAct ? UI.btnApprove : '#475569',
                     }}
                   >
-                    <Text style={{ color: '#000', textAlign: 'center', fontWeight: '700' }}>
+                    <Text style={{ color: '#fff', textAlign: 'center', fontWeight: '900' }}>
                       Сохранить оплату
                     </Text>
                   </WButton>
 
                   <View style={{ height: 8 }} />
 
-                  <WButton
-                    onPress={() => setShowPayForm(false)}
-                    style={{
-                      padding: 12,
-                      backgroundColor: '#fff',
-                      borderRadius: 10,
-                      borderWidth: 1,
-                      borderColor: COLORS.border,
-                    }}
-                  >
-                    <Text style={{ textAlign: 'center', color: COLORS.text, fontWeight: '800' }}>
-                      Скрыть форму
-                    </Text>
-                  </WButton>
+                 <WButton
+  onPress={() => setShowPayForm(false)}
+  style={{
+    padding: 12,
+    backgroundColor: UI.btnNeutral,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.14)',
+  }}
+>
+  <Text style={{ textAlign: 'center', color: UI.text, fontWeight: '900' }}>
+    Скрыть форму
+  </Text>
+</WButton>
+
                    </View>
   </View>
 );
@@ -2014,16 +2182,38 @@ contentContainerStyle={{
 
     <Modal visible={bellOpen} animationType="fade" onRequestClose={() => setBellOpen(false)} transparent>
       <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'center', padding: 16 }}>
-        <View style={{ backgroundColor: '#fff', borderRadius: 12, padding: 12, maxHeight: '70%', borderWidth: 1, borderColor: COLORS.border }}>
-          <Text style={{ fontWeight: '800', fontSize: 16, marginBottom: 8, color: COLORS.text }}>Уведомления</Text>
+        <View
+  style={{
+    backgroundColor: UI.cardBg,
+    borderRadius: 16,
+    padding: 12,
+    maxHeight: '70%',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.16)',
+  }}
+>
+
+<Text style={{ fontWeight: '900', fontSize: 16, marginBottom: 10, color: UI.text }}>
+  Уведомления
+</Text>
           <ScrollView contentContainerStyle={{ gap: 8 }}>
             {notifs.length === 0 ? (
-              <Text style={{ color: COLORS.sub }}>Нет непрочитанных</Text>
+              <Text style={{ color: UI.sub, fontWeight: '700' }}>Нет непрочитанных</Text>
             ) : notifs.map((n: any) => (
-              <View key={n.id} style={{ borderWidth: 1, borderColor: COLORS.border, borderRadius: 10, padding: 10, backgroundColor: '#fff' }}>
-                <Text style={{ fontWeight: '700', color: COLORS.text }}>{n.title}</Text>
-                {!!n.body && <Text style={{ color: COLORS.sub, marginTop: 2 }}>{n.body}</Text>}
-                <Text style={{ color: COLORS.sub, marginTop: 4, fontSize: 11 }}>
+           <View
+  key={n.id}
+  style={{
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.12)',
+    borderRadius: 14,
+    padding: 10,
+    backgroundColor: 'rgba(255,255,255,0.04)',
+  }}
+>
+
+                <Text style={{ fontWeight: '700', color: UI.text }}>{n.title}</Text>
+                {!!n.body && <Text style={{ color: UI.sub, marginTop: 2 }}>{n.body}</Text>}
+                <Text style={{ color: UI.sub, marginTop: 4, fontSize: 11 }}>
                   {new Date(n.created_at).toLocaleString()}
                 </Text>
               </View>
@@ -2032,15 +2222,35 @@ contentContainerStyle={{
 
           <SafeView style={{ flexDirection: 'row', gap: 8, marginTop: 10 }}>
             <Pressable
-              onPress={markAllRead}
-              style={{ paddingVertical: 10, paddingHorizontal: 12, borderRadius: 10, backgroundColor: '#111827' }}>
-              <Text style={{ color: '#fff', fontWeight: '700' }}>Отметить прочитанными</Text>
-            </Pressable>
-            <Pressable
-              onPress={() => setBellOpen(false)}
-              style={{ paddingVertical: 10, paddingHorizontal: 12, borderRadius: 10, borderWidth: 1, borderColor: COLORS.border, backgroundColor: '#fff' }}>
-              <Text style={{ color: COLORS.text, fontWeight: '700' }}>Закрыть</Text>
-            </Pressable>
+  onPress={markAllRead}
+  style={{
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: 12,
+    backgroundColor: UI.btnApprove,
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  }}
+>
+  <Text style={{ color: '#fff', fontWeight: '900' }}>Отметить прочитанными</Text>
+</Pressable>
+<Pressable
+  onPress={() => setBellOpen(false)}
+  style={{
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.14)',
+    backgroundColor: UI.btnNeutral,
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  }}
+>
+  <Text style={{ color: UI.text, fontWeight: '900' }}>Закрыть</Text>
+</Pressable>
           </SafeView>
         </View>
       </View>
