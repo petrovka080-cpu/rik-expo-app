@@ -563,13 +563,24 @@ if (!focusedRef.current) return;
   finished_at: x.finished_at ?? null,
 }));
 
-// ✅ PROD: подрядчики видят только работы/услуги (не материалы)
 const filtered = mapped.filter((r) => {
   const c = String(r.work_code ?? "").toUpperCase();
+
+  // 🚫 служебное/коэффициенты — никуда
+  if (
+    c.startsWith("FACTOR-") ||
+    c.startsWith("KIT-") ||
+    c.startsWith("GENERIC-") ||
+    c.startsWith("AUX-") ||
+    c.startsWith("SUP-") ||
+    c.startsWith("TEST-") ||
+    c.startsWith("WRK-META-K-") // ✅ твои "коэфы" в работах
+  ) return false;
+
+  // ✅ подрядчики: только работы/услуги/спец
   return (
     c.startsWith("WRK-") ||
     c.startsWith("WORK-") ||
-    c.startsWith("WT-") ||
     c.startsWith("SRV-") ||
     c.startsWith("SPEC-")
   );

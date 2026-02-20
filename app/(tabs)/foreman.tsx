@@ -1,12 +1,6 @@
-﻿// app/(tabs)/foreman.tsx — экран прораба
+﻿// app/(tabs)/foreman.tsx
 
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -14,37 +8,34 @@ import {
   FlatList,
   Pressable,
   Alert,
-  RefreshControl,
   ActivityIndicator,
   Platform,
-  Keyboard,
   KeyboardAvoidingView,
   ScrollView,
   StyleSheet,
   Modal,
   Animated,
 } from 'react-native';
-import { LogBox } from 'react-native';
-import { Linking } from 'react-native';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import CalcModal from "../../src/components/foreman/CalcModal";
 import WorkTypePicker from "../../src/components/foreman/WorkTypePicker";
-import { useCalcFields } from "../../src/components/foreman/useCalcFields";
-import * as Print from 'expo-print';
-import * as Sharing from 'expo-sharing';
-import * as FileSystem from 'expo-file-system/legacy';
+import { runPdfTop } from "../../src/lib/pdfRunner";
 import CatalogModal from '../../src/components/foreman/CatalogModal';
 import { Ionicons } from '@expo/vector-icons';
-
+import { useGlobalBusy } from '../../src/ui/GlobalBusy';
 import { supabase } from '../../src/lib/supabaseClient';
+import RNModal from "react-native-modal";
+import SendPrimaryButton from "../../src/ui/SendPrimaryButton";
+import DeleteAllButton from "../../src/ui/DeleteAllButton";
 import {
   rikQuickSearch,
   listRequestItems,
   fetchRequestDisplayNo,
   fetchRequestDetails,
   updateRequestMeta,
-  requestSubmit, // RPC: отправить директору
-  exportRequestPdf, // PDF
-  getOrCreateDraftRequestId, // безопасный ensure для черновика
+  requestSubmit,
+  exportRequestPdf,
+  getOrCreateDraftRequestId,
   requestCreateDraft,
   clearLocalDraftId,
   clearCachedDraftRequestId,
@@ -52,16 +43,10 @@ import {
   listForemanRequests,
   requestItemUpdateQty,
   requestItemCancel,
-  type CatalogItem,
   type ReqItemRow,
   type ForemanRequestSummary,
   type RequestDetails,
 } from '../../src/lib/catalog_api';
-
-// --- если нужен вход — выполняется внутри getOrCreateDraftRequestId
-if (__DEV__) LogBox.ignoreAllLogs(true);
-
-
 
 type PickedRow = {
   rik_code: string;
@@ -73,17 +58,6 @@ type PickedRow = {
   note: string; // примечание (обязательно)
   appsFromItem?: string[]; // чипсы из rik_quick_search
 };
-
-type GroupedRow = {
-  key: string;
-  name_human: string;
-  rik_code?: string | null;
-  uom?: string | null;
-  app_code?: string | null;
-  total_qty: number;
-  items: Array<{ id: string; qty: number; status?: string | null }>;
-};
-
 type AppOption = { code: string; label: string };
 type RefOption = { code: string; name: string };
 
@@ -102,61 +76,51 @@ type CalcRow = {
 type RequestDraftMeta = Parameters<typeof requestCreateDraft>[0];
 
 
-/* ===== Палитра + чипы (в унисон с buyer/accountant) ===== */
-const COLORS = {
-  bg: '#F8FAFC',
-  text: '#0F172A',
-  sub: '#475569',
-  border: '#E2E8F0',
-  primary: '#111827',
-  tabInactiveBg: '#E5E7EB',
-  tabInactiveText: '#111827',
-  green: '#22C55E',
-  yellow: '#CA8A04',
-  red: '#EF4444',
-  blue: '#3B82F6',
-  amber: '#F59E0B',
-};
+const UI = {
+  bg: '#0B0F14',        // общий фон (почти чёрный)
+  cardBg: '#101826',    // карточки/хедер (чуть светлее)
+  text: '#F8FAFC',      // основной текст (белый)
+  sub: '#9CA3AF',       // вторичный текст (серый)
+  border: '#1F2A37',    // границы (тёмные)
 
+  btnApprove: '#22C55E', // зелёный
+  btnReject:  '#EF4444', // красный
+  btnNeutral: 'rgba(255,255,255,0.08)',
+  accent: '#22C55E',
+};
+const TYPO = {
+  titleLg: { fontSize: 24, fontWeight: '800' as const },
+  titleSm: { fontSize: 16, fontWeight: '900' as const },
+
+  sectionTitle: { fontSize: 20, fontWeight: '800' as const },
+  groupTitle: { fontSize: 18, fontWeight: '900' as const },
+
+  bodyStrong: { fontSize: 16, fontWeight: '800' as const },
+  body: { fontSize: 14, fontWeight: '700' as const },
+
+  meta: { fontSize: 12, fontWeight: '800' as const, letterSpacing: 0.2 },
+  kpiLabel: { fontSize: 12, fontWeight: '700' as const },
+  kpiValue: { fontSize: 12, fontWeight: '900' as const },
+
+  btn: { fontSize: 13, fontWeight: '900' as const, letterSpacing: 0.2 },
+};
 const REQUEST_STATUS_STYLES: Record<string, { label: string; bg: string; fg: string }> = {
   draft: { label: 'Черновик', bg: '#E2E8F0', fg: '#0F172A' },
   pending: { label: 'На утверждении', bg: '#FEF3C7', fg: '#92400E' },
   approved: { label: 'Утверждена', bg: '#DCFCE7', fg: '#166534' },
   rejected: { label: 'Отклонена', bg: '#FEE2E2', fg: '#991B1B' },
 };
-
-const Chip = ({
-  label,
-  bg = '#E5E7EB',
-  fg = '#111827',
-}: {
-  label: string;
-  bg?: string;
-  fg?: string;
-}) => (
-  <View
-    style={{
-      backgroundColor: bg,
-      borderRadius: 999,
-      paddingVertical: 4,
-      paddingHorizontal: 10,
-    }}
-  >
-    <Text style={{ color: fg, fontWeight: '600', fontSize: 12 }}>
-      {label}
-    </Text>
-  </View>
-);
 const AnimatedScrollView = Animated.createAnimatedComponent(ScrollView);
+// ===== DEV LOG (не влияет на прод) =====
+const DEV_LOG = typeof __DEV__ !== "undefined" ? __DEV__ : (process.env.NODE_ENV !== "production");
 
-// === helpers: уникализация и стабильные ключи ===
-function stableKey(it: any, idx: number, prefix = 'rk') {
-  if (it?.request_item_id != null) return `ri:${it.request_item_id}`;
-  if (it?.id != null) return `id:${it.id}`;
-  if (it?.rik_code) return `${prefix}:${it.rik_code}:${idx}`;
-  if (it?.code) return `${prefix}:${it.code}:${idx}`;
-  return `${prefix}:idx:${idx}`;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function dlog(...args: any[]) {
+  if (!DEV_LOG) return;
+  // eslint-disable-next-line no-console
+  console.log(...args);
 }
+
 
 // ——— Русское отображение названий (UI only; бизнес-логика не меняется)
 function ruName(it: any): string {
@@ -197,17 +161,6 @@ function ruName(it: any): string {
     .filter(Boolean);
   const human = parts.join(' ').replace(/\s+/g, ' ').trim();
   return human ? human[0].toUpperCase() + human.slice(1) : code;
-}
-
-function formatDateForUi(value?: string | null) {
-  if (!value) return '';
-  try {
-    const date = new Date(value);
-    if (!Number.isNaN(date.getTime())) {
-      return date.toLocaleDateString('ru-RU');
-    }
-  } catch {}
-  return String(value);
 }
 async function requestItemAddOrIncAndPatchMeta(
   rid: string,
@@ -377,21 +330,28 @@ function Dropdown({
 
   return (
     <View style={{ marginTop: 6, marginBottom: 8 }}>
-      <Text style={[s.small, { color: COLORS.sub }]}>{label}</Text>
-      <Pressable
-        onPress={() => setOpen(true)}
-        style={[s.input, { paddingVertical: 10, width: Platform.OS === 'web' ? width : '100%' }]}
+      <Text style={s.small}>{label}</Text>
 
-      >
-        <Text
-          style={{
-            color: COLORS.text,
-            opacity: picked ? 1 : 0.6,
-          }}
-        >
-          {picked ? picked.name : placeholder}
-        </Text>
-      </Pressable>
+      <Pressable
+  onPress={() => setOpen(true)}
+  style={[s.input, s.selectRow, { width: Platform.OS === 'web' ? width : '100%' }]}
+>
+  <Text
+    style={{
+      color: UI.text,
+      opacity: picked ? 1 : 0.55,
+      fontWeight: '800',
+      fontSize: 14,
+      flex: 1,
+    }}
+    numberOfLines={1}
+  >
+    {picked ? picked.name : placeholder}
+  </Text>
+
+  <Ionicons name="chevron-down" size={18} color="rgba(255,255,255,0.55)" />
+</Pressable>
+
 
       {open && (
         <Modal transparent animationType="fade" onRequestClose={() => setOpen(false)}>
@@ -400,15 +360,16 @@ function Dropdown({
           </Pressable>
           <View style={[s.modalSheet, { maxWidth: 420, left: 16, right: 16 }]}>
             <Text
-              style={{
-                fontWeight: '700',
-                fontSize: 16,
-                marginBottom: 8,
-                color: COLORS.text,
-              }}
-            >
-              {label}
-            </Text>
+  style={{
+    fontWeight: '800',
+    fontSize: 14,
+    marginBottom: 8,
+    color: UI.text,
+  }}
+>
+  {label}
+</Text>
+
             {searchable && (
               <TextInput
                 value={q}
@@ -428,11 +389,10 @@ function Dropdown({
                   }}
                   style={[s.suggest, { borderBottomColor: '#f0f0f0' }]}
                 >
-                  <Text
-                    style={{ fontWeight: '600', color: COLORS.text }}
-                  >
-                    {item.name}
-                  </Text>
+                  <Text style={{ fontWeight: '900', color: UI.text }}>
+  {item.name}
+</Text>
+
                 </Pressable>
               )}
               style={{ maxHeight: 360, marginTop: 6 }}
@@ -452,22 +412,25 @@ function Dropdown({
                     setOpen(false);
                   }}
                   style={[
-                    s.chip,
-                    { backgroundColor: '#eee', borderColor: COLORS.border },
-                  ]}
+  s.chip,
+  { backgroundColor: 'rgba(255,255,255,0.06)', borderColor: 'rgba(255,255,255,0.12)' },
+]}
+
                 >
-                  <Text>Сбросить</Text>
+                  <Text style={{ color: UI.text, fontWeight: '900' }}>Сбросить</Text>
+
                 </Pressable>
               ) : null}
               <Pressable
-                onPress={() => setOpen(false)}
-                style={[
-                  s.chip,
-                  { backgroundColor: '#eee', borderColor: COLORS.border },
-                ]}
-              >
-                <Text>Закрыть</Text>
-              </Pressable>
+  onPress={() => setOpen(false)}
+  style={[
+    s.chip,
+    { backgroundColor: 'rgba(255,255,255,0.06)', borderColor: 'rgba(255,255,255,0.12)' },
+  ]}
+>
+  <Text style={{ color: UI.text, fontWeight: '900' }}>Закрыть</Text>
+</Pressable>
+
             </View>
           </View>
         </Modal>
@@ -505,10 +468,55 @@ const DRAFT_STATUS_KEYS = new Set(['draft', 'черновик', '']);
 const isDraftLikeStatus = (value?: string | null) =>
   DRAFT_STATUS_KEYS.has(String(value ?? '').trim().toLowerCase());
 
+const FOREMAN_HISTORY_KEY = "foreman_name_history_v1";
+
+async function loadForemanHistory(): Promise<string[]> {
+  try {
+    if (Platform.OS === "web") {
+      const raw = window.localStorage.getItem(FOREMAN_HISTORY_KEY) || "[]";
+      const arr = JSON.parse(raw);
+      return Array.isArray(arr) ? arr.filter(Boolean).map(String) : [];
+    }
+
+    const raw = await AsyncStorage.getItem(FOREMAN_HISTORY_KEY);
+    const arr = raw ? JSON.parse(raw) : [];
+    return Array.isArray(arr) ? arr.filter(Boolean).map(String) : [];
+  } catch {
+    return [];
+  }
+}
+
+async function saveForemanToHistory(name: string) {
+  const v = String(name ?? "").trim();
+  if (!v) return;
+
+  const list = await loadForemanHistory();
+  const next = [v, ...list.filter((x) => String(x).trim() && x !== v)].slice(0, 12);
+
+  if (Platform.OS === "web") {
+    window.localStorage.setItem(FOREMAN_HISTORY_KEY, JSON.stringify(next));
+  } else {
+    await AsyncStorage.setItem(FOREMAN_HISTORY_KEY, JSON.stringify(next));
+  }
+}
 export default function ForemanScreen() {
+
+ const gbusy = useGlobalBusy();
   // ===== Шапка заявки =====
   const [requestId, setRequestId] = useState<string>(''); // создадим автоматически
   const [foreman, setForeman] = useState<string>(''); // ФИО прораба (обяз.)
+const [foremanHistory, setForemanHistory] = useState<string[]>([]);
+const [foremanFocus, setForemanFocus] = useState(false);
+const blurTimerRef = useRef<any>(null);
+
+const refreshForemanHistory = useCallback(async () => {
+  setForemanHistory(await loadForemanHistory());
+}, []);
+
+useEffect(() => {
+  refreshForemanHistory();
+}, [refreshForemanHistory]);
+
   const [comment, setComment] = useState<string>(''); // общий комментарий
 
   const [requestDetails, setRequestDetails] = useState<RequestDetails | null>(null);
@@ -525,13 +533,17 @@ export default function ForemanScreen() {
   const [lvlOptions, setLvlOptions] = useState<RefOption[]>([]);
   const [sysOptions, setSysOptions] = useState<RefOption[]>([]);
   const [zoneOptions, setZoneOptions] = useState<RefOption[]>([]);
+const [draftOpen, setDraftOpen] = useState(false);
 
   
 // ===== Справочник применений (для корзины/модалки) =====
 const [appOptions, setAppOptions] = useState<AppOption[]>([]);
 
-
-  
+const openDraftFromCatalog = useCallback(() => {
+  setCatalogVisible(false);
+  setDraftOpen(true);
+}, []);
+ 
   const labelForApp = useCallback(
     (code?: string | null) => {
       if (!code) return '';
@@ -561,18 +573,19 @@ const [appOptions, setAppOptions] = useState<AppOption[]>([]);
   const [qtyDrafts, setQtyDrafts] = useState<Record<string, string>>({});
   const [qtyBusyMap, setQtyBusyMap] = useState<Record<string, boolean>>({});
   const cancelLockRef = useRef<Record<string, boolean>>({});
-  const [refreshing, setRefreshing] = useState(false);
   const [busy, setBusy] = useState(false);
+
+// ✅ раздельные спиннеры как в Director
+const [draftDeleteBusy, setDraftDeleteBusy] = useState(false);
+const [draftSendBusy, setDraftSendBusy] = useState(false);
+
+// ✅ общий лок экрана/действий
+const screenLock = busy || draftDeleteBusy || draftSendBusy;
+
   const [historyRequests, setHistoryRequests] = useState<ForemanRequestSummary[]>([]);
   const [historyLoading, setHistoryLoading] = useState(false);
   const [historyVisible, setHistoryVisible] = useState(false);
-    const [pendingCount, setPendingCount] = useState<number>(0);
-const [submitOkFlash, setSubmitOkFlash] = useState(false);
-
-  // ===== Режим отображения =====
- const [viewMode, setViewMode] = useState<'raw' | 'grouped'>('raw');
-
-
+ 
   // ===== Калькулятор =====
   const [calcVisible, setCalcVisible] = useState(false);
 const [catalogVisible, setCatalogVisible] = useState(false);
@@ -882,19 +895,7 @@ useEffect(() => {
         : prev,
     );
   }, []);
-
-  const handleCommentChange = useCallback((value: string) => {
-    setComment(value);
-    setRequestDetails((prev) =>
-      prev
-        ? {
-            ...prev,
-            comment: value,
-          }
-        : prev,
-    );
-  }, []);
-
+  
   const handleNewRequest = useCallback(async (opts?: { silent?: boolean; keepBusy?: boolean; resetMeta?: boolean }) => {
     try {
       if (!opts?.keepBusy) setBusy(true);
@@ -923,7 +924,6 @@ useEffect(() => {
       setItems([]);
       setQtyDrafts({});
       setQtyBusyMap({});
-      setViewMode('raw');
       const display = String(created.display_no ?? '').trim();
       if (display) {
         setDisplayNoByReq((prev) => ({ ...prev, [idStr]: display }));
@@ -989,17 +989,14 @@ useEffect(() => {
             const raw = String(r.status ?? '').trim().toLowerCase();
             return raw === 'на утверждении' || raw === 'pending';
           }).length;
-          setPendingCount(pending);
-        } else {
+           } else {
           setHistoryRequests([]);
-          setPendingCount(0);
-        }
+           }
       } catch (e) {
         console.warn('[Foreman] listForemanRequests:', e);
         Alert.alert('История', 'Не удалось загрузить историю заявок.');
         setHistoryRequests([]);
-        setPendingCount(0);
-      } finally {
+        } finally {
         setHistoryLoading(false);
       }
 
@@ -1015,36 +1012,21 @@ useEffect(() => {
     },
     [openRequestById],
   );
-  const openHistoryPdf = useCallback(
-    async (reqId: string) => {
-      try {
-        const rid = String(reqId).trim();
-        if (!rid) return;
+ const openHistoryPdf = useCallback(async (reqId: string) => {
+  const rid = String(reqId).trim();
+  if (!rid) return;
 
-        const url = await exportRequestPdf(rid, 'preview');
+  await runPdfTop({
+    busy: gbusy,
+    supabase,
+    key: `pdf:history:${rid}`,
+    label: "Готовлю PDF…",
+    mode: "preview",
+    fileName: `Заявка_${rid}`,
+    getRemoteUrl: () => exportRequestPdf(rid, "preview"),
+  });
+}, [gbusy, supabase]);
 
-if (!url) {
-  Alert.alert('PDF', 'Не удалось сформировать PDF-документ');
-  return;
-}
-
-if (Platform.OS === 'web') {
-  const win = window.open(url, '_blank', 'noopener,noreferrer');
-  if (!win) {
-    Alert.alert('PDF', 'Не удалось открыть PDF. Разрешите всплывающие окна.');
-  }
-  return;
-}
-
-// ✅ iOS/Android: скачиваем и открываем как file://
-await openPdfPreviewOrFallbackShare(url);
-
-      } catch (e: any) {
-        Alert.alert('Ошибка', e?.message ?? 'PDF не сформирован');
-      }
-    },
-    [],
-  );
 
   useEffect(() => {
     if (initialDraftEnsured) return;
@@ -1083,12 +1065,12 @@ await openPdfPreviewOrFallbackShare(url);
 
   (async () => {
     try {
-      console.log('[Foreman] ensure draft: start');
+      dlog('[Foreman] ensure draft: start');
 
       const idAny = await getOrCreateDraftRequestId(); // должно дернуть БД
       const rid = String(idAny).trim();
 
-      console.log('[Foreman] ensure draft: got id', rid);
+      dlog('[Foreman] ensure draft: got id', rid);
 
       if (!rid) throw new Error('draft id is empty');
 
@@ -1100,7 +1082,7 @@ await openPdfPreviewOrFallbackShare(url);
       // 2) сразу пробуем подгрузить номер/детали
       //    (чтобы не зависеть от других эффектов)
       const d = await fetchRequestDetails(rid);
-      console.log('[Foreman] draft details', d);
+      dlog('[Foreman] draft details', d);
 
       if (!cancelled && d) {
         setRequestDetails(d);
@@ -1111,7 +1093,7 @@ await openPdfPreviewOrFallbackShare(url);
       } else {
         // если details не вернулись — хотя бы дернем номер
         const dn2 = await fetchRequestDisplayNo(rid);
-        console.log('[Foreman] draft display_no', dn2);
+        dlog('[Foreman] draft display_no', dn2);
         if (!cancelled && dn2) {
           setDisplayNoByReq((prev) => ({ ...prev, [rid]: String(dn2) }));
         }
@@ -1368,36 +1350,65 @@ useEffect(() => {
   const POOL = Platform.OS === 'web' ? 10 : 6;
 
   const results = await runPool(aggregated, POOL, async (row) => {
-    const displayName =
-      (row.item_name_ru ??
-        row.name_human ??
-        row.name_ru ??
-        row.name ??
-        ruName(row)) || '—';
+  const displayName =
+    (row.item_name_ru ??
+      row.name_human ??
+      row.name_ru ??
+      row.name ??
+      ruName(row)) || '—';
 
-    await requestItemAddOrIncAndPatchMeta(rid, row.rik_code, row.qty, {
-      note: noteToUse,
-      app_code: null,
-      kind: null,
-      name_human: displayName,
-      uom: row.uom_code ?? null,
-    });
-
-    return true;
+  await requestItemAddOrIncAndPatchMeta(rid, row.rik_code, row.qty, {
+    note: noteToUse,
+    app_code: null,
+    kind: null,
+    name_human: displayName,
+    uom: row.uom_code ?? null,
   });
 
-  const okCount = results.filter((r) => r?.ok).length;
-  const failCount = results.length - okCount;
+  return true;
+});
 
-  await loadItems(rid);
-  setCalcVisible(false);
-  setSelectedWorkType(null);
+const okCount = results.filter((r) => (r as any)?.ok).length;
+const failCount = results.length - okCount;
 
-  if (failCount > 0) {
-    Alert.alert('Готово (частично)', `Добавлено: ${okCount}\nОшибок: ${failCount}`);
-  } else {
-    Alert.alert('Готово', `Добавлено позиций: ${okCount}`);
-  }
+// ✅ собираем первые ошибки с названием позиции
+const failLines: string[] = [];
+for (let i = 0; i < results.length; i++) {
+  const r: any = results[i];
+  if (r?.ok) continue;
+
+  const src = aggregated[i];
+  const code = String(src?.rik_code ?? '—');
+  const name =
+    String(src?.item_name_ru ?? src?.name_human ?? src?.name_ru ?? src?.name ?? '').trim() || code;
+
+  const msgRaw =
+    (r?.error?.message ??
+      r?.error?.details ??
+      r?.error?.hint ??
+      r?.error?.code ??
+      String(r?.error ?? ''));
+
+  const msg = String(msgRaw || 'unknown error').replace(/\s+/g, ' ').trim();
+
+  failLines.push(`• ${name} (${code}) — ${msg}`);
+  if (failLines.length >= 4) break; // ✅ не спамим алерт
+}
+
+await loadItems(rid);
+setCalcVisible(false);
+setSelectedWorkType(null);
+
+if (failCount > 0) {
+  const tail = failCount > failLines.length ? `\n…ещё ${failCount - failLines.length} ошибок` : '';
+  Alert.alert(
+    'Готово (частично)',
+    `Добавлено: ${okCount}\nОшибок: ${failCount}\n\nПроблемные позиции:\n${failLines.join('\n')}${tail}`
+  );
+} else {
+  Alert.alert('Готово', `Добавлено позиций: ${okCount}`);
+}
+
 } catch (e: any) {
   console.error('[Foreman] handleCalcAddToRequest:', e?.message ?? e);
   Alert.alert('Ошибка', e?.message ?? 'Не удалось добавить рассчитанные позиции');
@@ -1509,10 +1520,7 @@ if (failCount > 0) {
   loadItems,
 ]);
   
-  const updateQtyDraftValue = useCallback((itemId: string, value: string) => {
-    setQtyDrafts((prev) => ({ ...prev, [itemId]: value }));
-  }, []);
-
+ 
   const commitQtyChange = useCallback(
     async (item: ReqItemRow, draftValue: string) => {
       const key = String(item.id);
@@ -1642,12 +1650,10 @@ if (failCount > 0) {
   `Заявка ${submittedLabel} отправлена на утверждение`,
 );
 
-setSubmitOkFlash(true);
-setTimeout(() => setSubmitOkFlash(false), 1200);
-
-
       clearLocalDraftId();
       clearCachedDraftRequestId();
+await saveForemanToHistory(foreman);
+await refreshForemanHistory();
       resetDraftState();
 
       await handleNewRequest({ silent: true, keepBusy: true, resetMeta: true });
@@ -1702,290 +1708,126 @@ setTimeout(() => setSubmitOkFlash(false), 1200);
 
   // ---------- PDF ----------
 const onPdfShare = useCallback(async () => {
-  try {
-    if (!ensureHeaderReady()) return;
+  if (!ensureHeaderReady()) return;
 
-    const rid = requestId ? ridStr(requestId) : await ensureAndGetId();
+  const rid = requestId ? ridStr(requestId) : await ensureAndGetId();
+  const ridKey = String(rid).trim();
+  const fileName = requestDetails?.display_no ? `Заявка_${requestDetails.display_no}` : `Заявка_${ridKey}`;
 
-    await updateRequestMeta(rid, {
-      object_type_code: objectType || null,
-      level_code: level || null,
-      system_code: system || null,
-      zone_code: zone || null,
-      comment: comment.trim() || null,
-      foreman_name: foreman.trim() || null,
-    }).catch(() => null);
+  await updateRequestMeta(ridKey, {
+    object_type_code: objectType || null,
+    level_code: level || null,
+    system_code: system || null,
+    zone_code: zone || null,
+    comment: comment.trim() || null,
+    foreman_name: foreman.trim() || null,
+  }).catch(() => null);
 
-    const uri = await exportRequestPdf(rid, 'share');
-
-    if (!uri) {
-      Alert.alert('PDF', 'Не удалось сформировать PDF-документ');
-      return;
-    }
-
-    if (Platform.OS === 'web') {
-      const win = window.open(uri, '_blank', 'noopener,noreferrer');
-      if (!win) Alert.alert('PDF', 'Не удалось открыть PDF. Разрешите всплывающие окна.');
-      return;
-    }
-
-    const ok = await Sharing.isAvailableAsync();
-    if (!ok) {
-      Alert.alert('PDF', 'Отправка недоступна на этом устройстве.');
-      return;
-    }
-    await Sharing.shareAsync(uri);
-  } catch (e: any) {
-    Alert.alert('Ошибка', e?.message ?? 'PDF не сформирован');
-  }
+  // ✅ runPdfTop сам скрывает overlay ДО share sheet
+  await runPdfTop({
+    busy: gbusy,
+    supabase,
+    key: `pdfshare:request:${ridKey}`,
+    label: "Подготавливаю файл…",
+    mode: "share",
+    fileName,
+    getRemoteUrl: () => exportRequestPdf(ridKey, "share"),
+  });
 }, [
+  gbusy,
+  ensureHeaderReady,
   requestId,
+  requestDetails?.display_no,
   ridStr,
   ensureAndGetId,
-  foreman,
   objectType,
   level,
   system,
   zone,
   comment,
-  ensureHeaderReady,
+  foreman,
 ]);
+const onPdf = useCallback(async () => {
+  if (!ensureHeaderReady()) return;
 
-  const onPdf = useCallback(async () => {
-  try {
-    if (!ensureHeaderReady()) return;
+  const rid = requestId ? ridStr(requestId) : await ensureAndGetId();
+  const ridKey = String(rid).trim(); // ✅ всегда определён
+  const fileName = requestDetails?.display_no ? `Заявка_${requestDetails.display_no}` : `Заявка_${ridKey}`;
 
-    const rid = requestId ? ridStr(requestId) : await ensureAndGetId();
+  await updateRequestMeta(ridKey, {
+    object_type_code: objectType || null,
+    level_code: level || null,
+    system_code: system || null,
+    zone_code: zone || null,
+    comment: comment.trim() || null,
+    foreman_name: foreman.trim() || null,
+  }).catch(() => null);
 
-    await updateRequestMeta(rid, {
-      object_type_code: objectType || null,
-      level_code: level || null,
-      system_code: system || null,
-      zone_code: zone || null,
-      comment: comment.trim() || null,
-      foreman_name: foreman.trim() || null,
-    }).catch(() => null);
-
-    const uri = await exportRequestPdf(rid, 'preview');
-
-    if (!uri) {
-      Alert.alert('PDF', 'Не удалось сформировать PDF-документ');
-      return;
-    }
-
-    if (Platform.OS === 'web') {
-      const win = window.open(uri, '_blank', 'noopener,noreferrer');
-      if (!win) Alert.alert('PDF', 'Не удалось открыть PDF. Разрешите всплывающие окна.');
-      return;
-    }
-
-    // ✅ iOS/Android: просмотр (или fallback на ShareSheet)
-    await openPdfPreviewOrFallbackShare(uri);
-  } catch (e: any) {
-    Alert.alert('Ошибка', e?.message ?? 'PDF не сформирован');
-  }
+  await runPdfTop({
+    busy: gbusy,
+    supabase,
+    key: `pdf:request:${ridKey}`,
+    label: "Готовлю PDF…",
+    mode: "preview",
+    fileName,
+    getRemoteUrl: () => exportRequestPdf(ridKey, "preview"),
+  });
 }, [
+  gbusy,
+  ensureHeaderReady,
   requestId,
+  requestDetails?.display_no,
   ridStr,
   ensureAndGetId,
-  foreman,
   objectType,
   level,
   system,
   zone,
   comment,
-  ensureHeaderReady,
+  foreman,
 ]);
-
-async function openPdfPreviewOrFallbackShare(uri: string) {
-  // WEB
-  if (Platform.OS === 'web') {
-    const win = window.open(uri, '_blank', 'noopener,noreferrer');
-    if (!win) Alert.alert('PDF', 'Не удалось открыть PDF. Разрешите всплывающие окна.');
-    return;
-  }
-
-  // ✅ 1) лок на повторные тапы (чтобы не было гонок)
-  // (можешь вынести наверх компонента как useRef, но так тоже ок)
-  // @ts-ignore
-  if ((openPdfPreviewOrFallbackShare as any).__busy) return;
-  // @ts-ignore
-  (openPdfPreviewOrFallbackShare as any).__busy = true;
-
-  try {
-    // ✅ JWT (если PDF защищен)
-    const { data } = await supabase.auth.getSession();
-    const token = data?.session?.access_token;
-
-    // ✅ если уже file:// — не качаем
-    let localUri = uri;
-    const isRemote = /^https?:\/\//i.test(uri);
-
-    if (isRemote) {
-      const localPath = `${FileSystem.cacheDirectory}request_${Date.now()}.pdf`;
-      await FileSystem.downloadAsync(uri, localPath, {
-        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-      });
-      localUri = localPath;
-    }
-
-    // ✅ микропаузa — реально помогает Expo/Router не “дергаться”
-    await new Promise((r) => setTimeout(r, 150));
-
-    // ✅ PREVIEW через Share Sheet (это и есть нормальный просмотр на iOS/Android)
-    const ok = await Sharing.isAvailableAsync();
-    if (!ok) {
-      // fallback: если вдруг шаринг недоступен — хотя бы печать
-      await Print.printAsync({ uri: localUri });
-      return;
-    }
-
-    await Sharing.shareAsync(localUri, {
-      mimeType: 'application/pdf',
-      UTI: 'com.adobe.pdf',
-      dialogTitle: 'PDF',
-    });
-  } catch (e: any) {
-    const msg = String(e?.message ?? e ?? '');
-    // ✅ если юзер отменил — не ругаемся
-    if (msg.toLowerCase().includes('canceled') || msg.toLowerCase().includes('cancel')) return;
-
-    console.warn('[PDF] open failed:', msg);
-    Alert.alert('PDF', 'PDF сформирован, но не удалось открыть на устройстве.');
-  } finally {
-    // @ts-ignore
-    (openPdfPreviewOrFallbackShare as any).__busy = false;
-  }
-}
-  // ---------- Группировка для режима «Сгруппировано» ----------
-  const grouped = useMemo<GroupedRow[]>(() => {
-    if (!items?.length) return [];
-    const map = new Map<string, GroupedRow>();
-    for (const it of items) {
-      const code = (it as any).rik_code ?? null;
-      const uom = it.uom ?? null;
-      const app = it.app_code ?? null;
-      const baseKey = code
-        ? `code:${code}`
-        : `name:${(it.name_human || '').toLowerCase()}`;
-      const key = `${baseKey}|uom:${uom || ''}|app:${app || ''}`;
-      const qtyNum = Number(it.qty) || 0;
-      const cur = map.get(key);
-      if (!cur) {
-        map.set(key, {
-          key,
-          name_human: it.name_human || ruName(it) || '—',
-          rik_code: code,
-          uom,
-          app_code: app,
-          total_qty: qtyNum,
-          items: [
-            { id: it.id, qty: qtyNum, status: it.status ?? null },
-          ],
-        });
-      } else {
-        cur.total_qty += qtyNum;
-        cur.items.push({
-          id: it.id,
-          qty: qtyNum,
-          status: it.status ?? null,
-        });
-      }
-    }
-    return Array.from(map.values()).sort((a, b) =>
-      (a.name_human || '').localeCompare(b.name_human || ''),
-    );
-  }, [items]);
-
- 
+  
   const ReqItemRowView = useCallback(
-    ({ it }: { it: ReqItemRow }) => {
-      const key = String(it.id);
-      const updating = !!qtyBusyMap[key];
-      const canEdit = canEditRequestItem(it);
+  ({ it }: { it: ReqItemRow }) => {
+    const key = String(it.id);
+    const updating = !!qtyBusyMap[key];
+    const canEdit = canEditRequestItem(it);
 
-      return (
-        <View
-          style={[
-            s.card,
-            {
-              backgroundColor: '#fff',
-              borderColor: COLORS.border,
-            },
-          ]}
-        >
-          <View
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: 8,
-              flexWrap: 'wrap',
-            }}
-          >
-            <Text
-              style={[
-                s.cardTitle,
-                { color: COLORS.text },
-              ]}
-            >
-              {it.name_human}
-            </Text>
-            {it.uom ? (
-              <Chip
-                label={`Ед.: ${it.uom}`}
-                bg="#E0E7FF"
-                fg="#3730A3"
-              />
-            ) : null}
-            {it.app_code ? (
-              <Chip label={labelForApp(it.app_code)} />
-            ) : null}
-          </View>
+    const metaLine = [
+      `${it.qty ?? '-'} ${it.uom ?? ''}`.trim(),
+      it.app_code ? labelForApp(it.app_code) : null,
+    ].filter(Boolean).join(' · ');
 
-         <View style={{ marginTop: 8, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
-  {/* слева: Кол-во + значение */}
-  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flexShrink: 1, minWidth: 0 }}>
-    <Text style={{ color: COLORS.sub, fontWeight: '700' }}>Кол-во:</Text>
-    <Text style={{ color: COLORS.text, fontWeight: '900' }}>
-      {it.qty ?? '-'} {it.uom ?? ''}
-    </Text>
-  </View>
+    return (
+      <View style={s.draftRowCard}>
+        <View style={s.draftRowMain}>
+          <Text style={s.draftRowTitle} numberOfLines={2} ellipsizeMode="tail">
+            {it.name_human}
+          </Text>
 
-  {/* справа: короткая кнопка Отменить */}
-    {canEdit ? (
-    <Pressable
-      disabled={busy || updating}
-      onPress={async () => {
-        if (cancelLockRef.current[key]) return;
-        cancelLockRef.current[key] = true;
+          <Text style={s.draftRowMeta} numberOfLines={2} ellipsizeMode="tail">
+            {metaLine || '—'}
+          </Text>
 
-        try {
-          if (Platform.OS === 'web') {
-            const ok = window.confirm(`Отменить позицию?\n\n${it.name_human || 'Позиция'}`);
-            if (!ok) return;
+          <Text style={s.draftRowStatus} numberOfLines={1}>
+            Статус: <Text style={s.draftRowStatusStrong}>{it.status ?? '—'}</Text>
+          </Text>
+        </View>
 
-            setQtyBusyMap((prev) => ({ ...prev, [key]: true }));
-            await requestItemCancel(String(it.id));
+        {canEdit ? (
+          <Pressable
+            disabled={busy || updating}
+            onPress={async () => {
+              if (cancelLockRef.current[key]) return;
+              cancelLockRef.current[key] = true;
 
-            setItems((prev) => prev.filter((x) => String(x.id) !== String(it.id)));
-            setQtyDrafts((prev) => {
-              const n = { ...prev };
-              delete n[key];
-              return n;
-            });
+              try {
+                if (Platform.OS === 'web') {
+                  // @ts-ignore
+                  const ok = window.confirm(`Отменить позицию?\n\n${it.name_human || 'Позиция'}`);
+                  if (!ok) return;
 
-            window.alert('Позиция удалена');
-            return;
-          }
-
-          Alert.alert('Отменить позицию?', it.name_human || 'Позиция', [
-            { text: 'Нет', style: 'cancel' },
-            {
-              text: 'Отменить',
-              style: 'destructive',
-              onPress: async () => {
-                setQtyBusyMap((prev) => ({ ...prev, [key]: true }));
-                try {
+                  setQtyBusyMap((prev) => ({ ...prev, [key]: true }));
                   await requestItemCancel(String(it.id));
 
                   setItems((prev) => prev.filter((x) => String(x.id) !== String(it.id)));
@@ -1994,137 +1836,49 @@ async function openPdfPreviewOrFallbackShare(uri: string) {
                     delete n[key];
                     return n;
                   });
-                } finally {
-                  setQtyBusyMap((prev) => ({ ...prev, [key]: false }));
+
+                  // @ts-ignore
+                  window.alert('Позиция удалена');
+                  return;
                 }
-              },
-            },
-          ]);
-        } finally {
-          cancelLockRef.current[key] = false;
-        }
-      }}
-      style={[s.rejectBtn, { opacity: busy || updating ? 0.6 : 1 }]}
-    >
-      <Text style={s.rejectIcon}>✕</Text>
-    </Pressable>
-  ) : null}
 
-</View>
+                Alert.alert('Отменить позицию?', it.name_human || 'Позиция', [
+                  { text: 'Нет', style: 'cancel' },
+                  {
+                    text: 'Отменить',
+                    style: 'destructive',
+                    onPress: async () => {
+                      setQtyBusyMap((prev) => ({ ...prev, [key]: true }));
+                      try {
+                        await requestItemCancel(String(it.id));
 
-          <Text
-            style={[
-              s.cardMeta,
-              { color: COLORS.sub, marginTop: 4 },
-            ]}
+                        setItems((prev) => prev.filter((x) => String(x.id) !== String(it.id)));
+                        setQtyDrafts((prev) => {
+                          const n = { ...prev };
+                          delete n[key];
+                          return n;
+                        });
+                      } finally {
+                        setQtyBusyMap((prev) => ({ ...prev, [key]: false }));
+                      }
+                    },
+                  },
+                ]);
+              } finally {
+                cancelLockRef.current[key] = false;
+              }
+            }}
+            style={[s.rejectBtn, { opacity: busy || updating ? 0.6 : 1 }]}
           >
-            Статус:{' '}
-            <Text
-              style={{
-                color: COLORS.text,
-                fontWeight: '700',
-              }}
-            >
-              {it.status ?? '—'}
-            </Text>
-          </Text>
-
-          {it.note ? (
-            <Text
-              style={[
-                s.cardMeta,
-                { color: COLORS.sub, marginTop: 2 },
-              ]}
-            >
-              Примечание:{' '}
-              <Text style={{ color: COLORS.text }}>
-                {it.note}
-              </Text>
-            </Text>
-          ) : null}
-        </View>
-      );
-    },
-        [
-      canEditRequestItem,
-      qtyBusyMap,
-      busy,
-      labelForApp,
-      requestItemCancel,
-    ],
-
-  );
-
-  const GroupedRowView = useCallback(
-    ({ g }: { g: GroupedRow }) => (
-      <View
-        style={[
-          s.card,
-          {
-            backgroundColor: '#fff',
-            borderColor: COLORS.border,
-          },
-        ]}
-      >
-        <View
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            gap: 8,
-            flexWrap: 'wrap',
-          }}
-        >
-          <Text
-            style={[
-              s.cardTitle,
-              { color: COLORS.text },
-            ]}
-          >
-            {g.name_human}
-          </Text>
-          {g.uom ? (
-            <Chip
-              label={`Ед.: ${g.uom}`}
-              bg="#E0E7FF"
-              fg="#3730A3"
-            />
-          ) : null}
-          {g.app_code ? (
-            <Chip label={labelForApp(g.app_code)} />
-          ) : null}
-        </View>
-        <Text
-          style={[
-            s.cardMeta,
-            {
-              color: COLORS.sub,
-              marginTop: 6,
-              fontWeight: '700',
-            },
-          ]}
-        >
-          Итого:{' '}
-          <Text style={{ color: COLORS.text }}>
-            {g.total_qty} {g.uom || ''}
-          </Text>
-        </Text>
-        <View style={{ marginTop: 6 }}>
-          {g.items.map((r, i) => (
-            <Text
-              key={g.key + ':' + r.id}
-              style={{ color: COLORS.sub }}
-            >
-              {i + 1}. #{r.id} — {r.qty}{' '}
-              {g.uom || ''}
-              {r.status ? ` · ${r.status}` : ''}
-            </Text>
-          ))}
-        </View>
+            <Text style={s.rejectIcon}>✕</Text>
+          </Pressable>
+        ) : null}
       </View>
-    ),
-    [labelForApp],
-  );
-
+    );
+  },
+  [canEditRequestItem, qtyBusyMap, busy, labelForApp, requestItemCancel],
+);
+ 
   // ---------- UI ----------
   
   const currentDisplayLabel = useMemo(() => {
@@ -2164,7 +1918,7 @@ const headerHeight = useMemo(() => (
 const titleSize = useMemo(() => (
   clampedY.interpolate({
     inputRange: [0, HEADER_SCROLL],
-    outputRange: [22, 16],
+    outputRange: [24, 16],
     extrapolate: 'clamp',
   })
 ), [clampedY]);
@@ -2192,8 +1946,8 @@ const headerShadow = useMemo(() => (
     style={{ flex: 1 }}
     behavior={Platform.OS === 'ios' ? 'padding' : undefined}
   >
-    <View style={[s.container, { backgroundColor: COLORS.bg }]}>
-
+    <View style={[s.container, { backgroundColor: UI.bg }]}>
+    <View pointerEvents="none" style={s.bgGlow} />
       {/* ✅ FIXED Collapsing Header */}
       <Animated.View
         style={[
@@ -2207,9 +1961,10 @@ const headerShadow = useMemo(() => (
       >
         {/* Title row */}
         <View style={{ paddingHorizontal: 16, paddingTop: 12 }}>
-          <Animated.Text style={[s.cTitle, { fontSize: titleSize }]} numberOfLines={1}>
-            Заявка
-          </Animated.Text>
+          <Animated.Text style={[s.cTitle, { fontSize: titleSize, color: UI.text }]} numberOfLines={1}>
+  Заявка
+</Animated.Text>
+
         </View>
 
         {/* Details row (fade out) */}
@@ -2224,11 +1979,21 @@ const headerShadow = useMemo(() => (
                 {currentDisplayLabel}
               </Text>
 
-              <View style={[s.historyStatusBadge, { backgroundColor: statusInfo.bg }]}>
-                <Text style={{ color: statusInfo.fg, fontWeight: '600' }}>
-                  {statusInfo.label}
-                </Text>
-              </View>
+              <View
+  style={[
+    s.historyStatusBadge,
+    {
+      backgroundColor: 'rgba(255,255,255,0.06)',
+      borderWidth: 1,
+      borderColor: 'rgba(255,255,255,0.12)',
+    },
+  ]}
+>
+  <Text style={{ color: UI.text, fontWeight: '900' }}>
+    {statusInfo.label}
+  </Text>
+</View>
+
             </View>
 
             <Text style={s.requestMeta}>Создана: {createdDisplay}</Text>
@@ -2251,17 +2016,46 @@ const headerShadow = useMemo(() => (
       >
         {/* ✅ дальше — твой старый контент БЕЗ старого заголовка и БЕЗ блока requestSummaryBox */}
 
-        <Text style={[s.small, { color: COLORS.sub }]}>
-          ФИО прораба (обязательно):
+        <Text style={s.small}>
+  ФИО прораба (обязательно):
+</Text>
+<TextInput
+  value={foreman}
+  onChangeText={handleForemanChange}
+  onFocus={() => {
+    if (blurTimerRef.current) clearTimeout(blurTimerRef.current);
+    setForemanFocus(true);
+  }}
+  onBlur={() => {
+    // ✅ даём успеть нажать по подсказке
+    blurTimerRef.current = setTimeout(() => setForemanFocus(false), 180);
+  }}
+  placeholder="Иванов И.И."
+  style={s.input}
+/>
+
+{foremanFocus && foremanHistory.length > 0 && (
+  <View style={s.foremanSuggestBox}>
+    {foremanHistory.map((name) => (
+      <Pressable
+        key={name}
+        // ✅ важно: НЕ даём blur закрыть список раньше клика
+        onPressIn={() => {
+          if (blurTimerRef.current) clearTimeout(blurTimerRef.current);
+        }}
+        onPress={() => {
+          handleForemanChange(name);
+          setForemanFocus(false);
+        }}
+        style={s.foremanSuggestRow}
+      >
+        <Text style={s.foremanSuggestText} numberOfLines={1}>
+          {name}
         </Text>
-
-        <TextInput
-          value={foreman}
-          onChangeText={handleForemanChange}
-          placeholder="Иванов И.И."
-          style={s.input}
-        />
-
+      </Pressable>
+    ))}
+  </View>
+)}
         {/* Объект/Этаж/Система/Зона */}
         <View style={{ marginTop: 10, gap: 6 }}>
           <Dropdown
@@ -2316,7 +2110,7 @@ const headerShadow = useMemo(() => (
       style={[s.pickTabBtn, s.pickTabCatalog, busy && { opacity: 0.5 }]}
 
     >
-      <Ionicons name="list" size={18} color="#0F172A" />
+      <Ionicons name="list" size={18} color={UI.text} />
       <Text style={s.pickTabText}>Каталог</Text>
     </Pressable>
 
@@ -2325,176 +2119,150 @@ const headerShadow = useMemo(() => (
       disabled={busy}
       style={[s.pickTabBtn, s.pickTabSoft, busy && { opacity: 0.5 }]}
     >
-      <Ionicons name="calculator-outline" size={18} color="#0F172A" />
+      <Ionicons name="calculator-outline" size={18} color={UI.text} />
       <Text style={s.pickTabText}>Смета</Text>
     </Pressable>
   </View>
 </View>
-{/* ===== Черновик ===== */}
-<View style={s.section}>
-  <View style={s.sectionRow}>
-    <Text style={s.sectionTitle}>ЧЕРНОВИК</Text>
-    <View style={s.badge}>
-      <Text style={s.badgeText}>{items?.length ?? 0}</Text>
-    </View>
+{/* ===== Черновик (карточка, без списка) ===== */}
+<Pressable
+  onPress={() => setDraftOpen(true)}
+  style={s.draftCard}
+  android_ripple={{ color: "rgba(255,255,255,0.06)" }}
+>
+  <View style={{ flex: 1, minWidth: 0 }}>
+    <Text style={s.draftTitle}>ЧЕРНОВИК</Text>
+
+    <Text style={s.draftNo} numberOfLines={1}>
+      {currentDisplayLabel}
+    </Text>
+
+    <Text style={s.draftHint} numberOfLines={2}>
+      {items?.length
+        ? "Открыть позиции и действия"
+        : "Пока пусто — добавь позиции из Каталога или Сметы."}
+    </Text>
   </View>
 
-  {(!items || items.length === 0) ? (
-    <Text style={s.sectionHint}>
-      Пока пусто — добавь позиции из <Text style={{ fontWeight: '900' }}>Каталога</Text> или <Text style={{ fontWeight: '900' }}>Сметы</Text>.
-    </Text>
-  ) : null}
+  <View style={{ alignItems: "flex-end", gap: 10 }}>
+    <View style={s.posPill}>
+  <Ionicons name="list" size={18} color={UI.text} />
+  <Text style={s.posPillText}>Позиции</Text>
+  <View style={s.posCountPill}>
+    <Text style={s.posCountText}>{items?.length ?? 0}</Text>
+  </View>
 </View>
 
-            {/* Items */}
-        <FlatList
-          data={items}
-          keyExtractor={(it, idx) => (it?.id ? `ri:${it.id}` : `ri:${it.request_id}-${idx}`)}
-          renderItem={({ item }) => <ReqItemRowView it={item} />}
-          ListEmptyComponent={
-            <Text style={{ textAlign: 'center', marginTop: 16, color: COLORS.sub }}>
-              Пока пусто
-            </Text>
-          }
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={async () => {
-                setRefreshing(true);
-                await loadItems();
-                setRefreshing(false);
-              }}
-            />
-          }
-          keyboardShouldPersistTaps="always"
-          scrollEnabled={false}
-          nestedScrollEnabled={false}
-          removeClippedSubviews
-          windowSize={9}
-          maxToRenderPerBatch={12}
-          updateCellsBatchingPeriod={50}
-        />
+    <Ionicons name="chevron-forward" size={18} color="rgba(255,255,255,0.55)" />
+  </View>
+</Pressable>
       </AnimatedScrollView>
 
       {/* ✅ Нижняя панель — как было */}
       <View style={s.stickyBar}>
-  
-  {/* ✅ Строка 2: mini-bar как мессенджер */}
   <View style={s.miniBar}>
-    <Pressable onPress={onPdf} disabled={busy} style={[s.miniBtn, busy && { opacity: 0.5 }]}>
-      <Ionicons name="document-text-outline" size={18} color="#0F172A" />
-      <Text style={s.miniText}>PDF</Text>
-    </Pressable>
-
-    <Pressable onPress={handleOpenHistory} disabled={busy} style={[s.miniBtn, busy && { opacity: 0.5 }]}>
-      <Ionicons name="time-outline" size={18} color="#0F172A" />
+    <Pressable
+      onPress={handleOpenHistory}
+      disabled={busy}
+      style={[s.miniBtn, busy && { opacity: 0.5 }]}
+    >
+      <Ionicons name="time-outline" size={18} color={UI.text} />
       <Text style={s.miniText}>История</Text>
     </Pressable>
 
-  <Pressable
-  onPress={submitToDirector}
-  disabled={busy || (items?.length ?? 0) === 0}
-  style={[
-    s.sendBtn,
-    submitOkFlash && s.sendBtnOk,
-    (busy || (items?.length ?? 0) === 0) && { opacity: 0.4 },
-  ]}
->
-  <Ionicons name={submitOkFlash ? "checkmark" : "send"} size={18} color="#fff" />
-</Pressable>
-
-
-  </View>
+     </View>
 </View>
 
-        <Modal
-          visible={historyVisible}
-          animationType="fade"
-          transparent
-          onRequestClose={handleCloseHistory}
-        >
-          <View style={s.historyModalOverlay}>
-            <Pressable style={s.historyModalBackdrop} onPress={handleCloseHistory} />
-            <View style={s.historyModal}>
-              <View style={s.historyModalHeader}>
-                <Text style={s.historyModalTitle}>История заявок</Text>
-                <Pressable onPress={handleCloseHistory}>
-                  <Text style={s.historyModalClose}>Закрыть</Text>
+
+       <RNModal
+  isVisible={historyVisible}
+  onBackdropPress={handleCloseHistory}
+  onBackButtonPress={handleCloseHistory}
+  backdropOpacity={0.55}
+  useNativeDriver={Platform.OS !== "web"}
+  useNativeDriverForBackdrop={Platform.OS !== "web"}
+  hideModalContentWhileAnimating
+  style={{ margin: 0, justifyContent: "flex-end" }}
+>
+
+  <View style={s.historyModal}>
+    <View style={s.historyModalHeader}>
+      <Text style={s.historyModalTitle}>История заявок</Text>
+      <Pressable onPress={handleCloseHistory}>
+        <Text style={s.historyModalClose}>Закрыть</Text>
+      </Pressable>
+    </View>
+
+    <View style={s.historyModalBody}>
+      {historyLoading ? (
+        <ActivityIndicator />
+      ) : historyRequests.length === 0 ? (
+        <Text style={s.historyModalEmpty}>Заявок пока нет</Text>
+      ) : (
+        <ScrollView style={s.historyModalList}>
+          {historyRequests.map((req) => {
+            const info = resolveStatusInfo(req.status);
+            const created = req.created_at
+              ? new Date(req.created_at).toLocaleDateString('ru-RU')
+              : '—';
+            const hasRejected =
+              req.has_rejected === true ||
+              req.has_rejected === 1 ||
+              req.has_rejected === 't';
+
+            return (
+              <View key={req.id} style={s.historyModalRow}>
+                <Pressable style={{ flex: 1 }} onPress={() => handleHistorySelect(req.id)}>
+                  <Text style={s.historyModalPrimary}>
+                    {req.display_no ?? shortId(req.id)}
+                  </Text>
+                  <Text style={s.historyModalMeta}>{req.object_name_ru || '—'}</Text>
+                  <Text style={s.historyModalMetaSecondary}>{created}</Text>
+
+                  {hasRejected ? (
+                    <Text style={{ color: '#B91C1C', fontSize: 12, marginTop: 2, fontWeight: '600' }}>
+                      Есть отклонённые позиции
+                    </Text>
+                  ) : null}
                 </Pressable>
+
+                <View style={{ alignItems: 'flex-end', gap: 6 }}>
+                  <View style={[s.historyStatusBadge, { backgroundColor: hasRejected ? '#FEE2E2' : info.bg }]}>
+                    <Text style={{ color: info.fg, fontWeight: '700' }}>{info.label}</Text>
+                  </View>
+
+                  {(() => {
+  const pdfKey = `pdf:history:${String(req.id).trim()}`;
+  const pdfBusy = gbusy.isBusy(pdfKey);
+
+  return (
+    <Pressable
+      disabled={pdfBusy}
+      onPress={() => openHistoryPdf(req.id)}
+      style={[s.historyPdfBtn, pdfBusy && { opacity: 0.6 }]}
+    >
+      <Text style={s.historyPdfBtnText}>{pdfBusy ? "PDF…" : "PDF"}</Text>
+    </Pressable>
+  );
+})()}
+
+                </View>
               </View>
+            );
+          })}
+        </ScrollView>
+      )}
+    </View>
+  </View>
+</RNModal>
 
-              <View style={s.historyModalBody}>
-                {historyLoading ? (
-                  <ActivityIndicator />
-                ) : historyRequests.length === 0 ? (
-                  <Text style={s.historyModalEmpty}>Заявок пока нет</Text>
-                ) : (
-                  <ScrollView style={s.historyModalList}>
-                    {historyRequests.map((req) => {
-                      const info = resolveStatusInfo(req.status);
-                      const created = req.created_at
-                        ? new Date(req.created_at).toLocaleDateString('ru-RU')
-                        : '—';
-                        const hasRejected =
-                        req.has_rejected === true ||
-                        req.has_rejected === 1 ||
-                        req.has_rejected === 't';
-
-                      return (
-                        <View key={req.id} style={s.historyModalRow}>
-                          <Pressable style={{ flex: 1 }} onPress={() => handleHistorySelect(req.id)}>
-                            <Text style={s.historyModalPrimary}>
-                              {req.display_no ?? shortId(req.id)}
-                            </Text>
-                            <Text style={s.historyModalMeta}>{req.object_name_ru || '—'}</Text>
-                            <Text style={s.historyModalMetaSecondary}>
-                              {created}
-                              </Text>
-
-                            {hasRejected ? (
-                              <Text
-                                style={{
-                                  color: '#B91C1C',
-                                  fontSize: 12,
-                                  marginTop: 2,
-                                  fontWeight: '600',
-                                }}
-                              >
-                                Есть отклонённые позиции
-                              </Text>
-                            ) : null}
-                          </Pressable>
-
-                          <View style={{ alignItems: 'flex-end', gap: 6 }}>
-                            <View
-                              style={[
-                                s.historyStatusBadge,
-                                { backgroundColor: hasRejected ? '#FEE2E2' : info.bg },
-                              ]}
-                            >
-                              <Text style={{ color: info.fg, fontWeight: '700' }}>
-                                {info.label}
-                              </Text>
-                            </View>
-
-                            <Pressable onPress={() => openHistoryPdf(req.id)} style={s.historyPdfBtn}>
-                              <Text style={s.historyPdfBtnText}>PDF</Text>
-                            </Pressable>
-                          </View>
-                        </View>
-                      );
-                    })}
-                  </ScrollView>
-                )}
-              </View>
-            </View>
-          </View>
-        </Modal>
 <CatalogModal
   visible={catalogVisible}
   onClose={() => setCatalogVisible(false)}
   rikQuickSearch={rikQuickSearch as any}
   onCommitToDraft={commitCatalogToDraft}
+  onOpenDraft={openDraftFromCatalog}
+  draftCount={items?.length ?? 0}
 />
         <WorkTypePicker
           visible={workTypePickerVisible}
@@ -2520,331 +2288,767 @@ const headerShadow = useMemo(() => (
           workType={selectedWorkType}
           onAddToRequest={handleCalcAddToRequest}
         />
+<RNModal
+  isVisible={draftOpen}
+  onBackdropPress={() => setDraftOpen(false)}
+  onBackButtonPress={() => setDraftOpen(false)}
+  backdropOpacity={0.55}
+  useNativeDriver={Platform.OS !== "web"}
+  useNativeDriverForBackdrop={Platform.OS !== "web"}
+  hideModalContentWhileAnimating
+  style={{ margin: 0, justifyContent: "flex-end" }}
+>  
+<View style={s.sheet}>
+    <View style={s.sheetHandle} />
 
+    <View style={s.sheetTopBar}>
+      <Text style={s.sheetTitle} numberOfLines={1}>
+        Черновик {currentDisplayLabel}
+      </Text>
+
+      <Pressable onPress={() => setDraftOpen(false)} style={s.sheetCloseBtn}>
+        <Text style={s.sheetCloseText}>Свернуть</Text>
+      </Pressable>
+    </View>
+
+    {/* ✅ META 1:1 как у директора */}
+    <View style={s.sheetMetaBox}>
+      {!!objectName && (
+        <Text style={s.sheetMetaLine} numberOfLines={1}>
+          Объект: <Text style={s.sheetMetaValue}>{objectName}</Text>
+        </Text>
+      )}
+      {!!levelName && (
+        <Text style={s.sheetMetaLine} numberOfLines={1}>
+          Этаж/уровень: <Text style={s.sheetMetaValue}>{levelName}</Text>
+        </Text>
+      )}
+      {!!systemName && (
+        <Text style={s.sheetMetaLine} numberOfLines={1}>
+          Система: <Text style={s.sheetMetaValue}>{systemName}</Text>
+        </Text>
+      )}
+      {!!zoneName && (
+        <Text style={s.sheetMetaLine} numberOfLines={1}>
+          Зона: <Text style={s.sheetMetaValue}>{zoneName}</Text>
+        </Text>
+      )}
+    </View>
+<View style={{ flex: 1, minHeight: 0 }}>
+  <FlatList
+    data={items}
+    keyExtractor={(it, idx) => (it?.id ? `ri:${String(it.id)}` : `ri:${idx}`)}
+    renderItem={({ item }) => <ReqItemRowView it={item} />}
+    contentContainerStyle={{ paddingBottom: 12 }}
+    keyboardShouldPersistTaps="handled"
+    nestedScrollEnabled
+    showsVerticalScrollIndicator={false}
+    ListEmptyComponent={
+      <Text style={{ color: UI.sub, fontWeight: "800", paddingVertical: 12 }}>
+        Позиции не найдены
+      </Text>
+    }
+  />
+</View>
+
+   {/* ===== ACTIONS (как у директора) ===== */}
+<View style={s.reqActionsBottom}>
+  {/* ✅ Delete — LEFT */}
+  <View style={s.actionBtnSquare}>
+    <DeleteAllButton
+      disabled={screenLock}
+      loading={draftDeleteBusy}
+      accessibilityLabel="Удалить черновик"
+      onPress={() => {
+        const doIt = async () => {
+          setDraftDeleteBusy(true);
+          try {
+            clearLocalDraftId();
+            clearCachedDraftRequestId();
+            resetDraftState();
+            await handleNewRequest({ silent: true, keepBusy: true, resetMeta: true });
+            setDraftOpen(false);
+          } catch (e: any) {
+            Alert.alert("Ошибка", e?.message ?? "Не удалось удалить черновик");
+          } finally {
+            setDraftDeleteBusy(false);
+          }
+        };
+
+        if (Platform.OS === "web") {
+          // @ts-ignore
+          const ok = window.confirm("Удалить черновик?\n\nВсе позиции будут удалены, будет создан новый черновик.");
+          if (!ok) return;
+          void doIt();
+          return;
+        }
+
+        Alert.alert(
+          "Удалить черновик?",
+          "Все позиции будут удалены, будет создан новый черновик.",
+          [
+            { text: "Отмена", style: "cancel" },
+            { text: "Да, удалить", style: "destructive", onPress: () => void doIt() },
+          ],
+        );
+      }}
+    />
+  </View>
+
+  <View style={s.sp8} />
+
+  {/* PDF — CENTER */}
+  {(() => {
+    const ridKey = String(requestId || "").trim();
+    const pdfKey = `pdf:req:${ridKey || "draft"}`;
+    const pdfBusy = gbusy.isBusy(pdfKey);
+
+    return (
+      <Pressable
+        disabled={screenLock || pdfBusy}
+        onPress={async () => {
+          if (screenLock || pdfBusy) return;
+          try {
+            await onPdf();
+          } catch (e: any) {
+            if (String(e?.message ?? "").toLowerCase().includes("busy")) return;
+            Alert.alert("Ошибка", e?.message ?? "PDF не сформирован");
+          }
+        }}
+        style={[
+          s.actionBtnWide,
+          { backgroundColor: UI.btnNeutral, opacity: (screenLock || pdfBusy) ? 0.6 : 1 },
+        ]}
+      >
+        <Text style={s.actionText}>{pdfBusy ? "PDF…" : "PDF"}</Text>
+      </Pressable>
+    );
+  })()}
+
+  <View style={s.sp8} />
+
+  {/* Excel — CENTER */}
+  <Pressable
+    disabled={screenLock}
+    onPress={() => {
+      if (screenLock) return;
+      Alert.alert("Excel", "Экспорт Excel будет добавлен позже (UI уже готов).");
+    }}
+    style={[
+      s.actionBtnWide,
+      { backgroundColor: UI.btnNeutral, opacity: screenLock ? 0.6 : 1 },
+    ]}
+  >
+    <Text style={s.actionText}>Excel</Text>
+  </Pressable>
+
+  <View style={s.sp8} />
+
+  {/* ✅ Send — RIGHT */}
+  <View style={s.actionBtnSquare}>
+    <SendPrimaryButton
+      variant="green"
+      disabled={screenLock || (items?.length ?? 0) === 0}
+      loading={draftSendBusy}
+      onPress={async () => {
+        if (screenLock || (items?.length ?? 0) === 0) return;
+
+        setDraftSendBusy(true);
+        try {
+          await submitToDirector();
+          setDraftOpen(false);
+        } catch (e: any) {
+          Alert.alert("Ошибка", e?.message ?? "Не удалось отправить директору");
+        } finally {
+          setDraftSendBusy(false);
+        }
+      }}
+    />
+  </View>
+</View>
+ </View>
+</RNModal>
               </View>
        </KeyboardAvoidingView>
   );
 }
-
-/* ======================= Styles (только UI, логика не тронута) ======================= */
+/* ======================= Styles (CLEAN, UI-only) ======================= */
 const s = StyleSheet.create({
   container: { flex: 1 },
   pagePad: { padding: 16, paddingBottom: 120 },
-  small: { fontSize: 12 },
+
+  small: {
+    color: UI.sub,
+    fontSize: TYPO.kpiLabel.fontSize,
+    fontWeight: TYPO.kpiLabel.fontWeight,
+    marginBottom: 6,
+  },
 
   input: {
     borderWidth: 1,
-    borderColor: '#E2E8F0',
-    borderRadius: 10,
-    padding: 10,
-    backgroundColor: '#fff',
-    color: '#0F172A',
+    borderColor: "rgba(255,255,255,0.12)",
+    borderRadius: 16,
+    paddingVertical: 14,
+    paddingHorizontal: 14,
+    backgroundColor: "rgba(255,255,255,0.06)",
+    color: UI.text,
+    fontWeight: "800",
+    fontSize: 14,
+    letterSpacing: 0,
   },
-      suggest: {
+
+  selectRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+
+  suggest: {
     padding: 10,
     borderBottomWidth: 1,
-    borderBottomColor: '#EEE',
-  },
-  
-  blockTitle: { fontSize: 16, fontWeight: '700', marginBottom: 6 },
-
-  requestSummaryBox: {
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-    borderRadius: 10,
-    padding: 12,
-    backgroundColor: '#fff',
-    marginTop: 4,
-    gap: 6,
-  },
-  requestSummaryTop: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 12,
-  },
-  requestNumber: { fontSize: 16, fontWeight: '700', color: '#0F172A' },
-  requestMeta: { color: '#64748B', fontSize: 12 },
-
-  historyModalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(15,23,42,0.35)',
-    justifyContent: 'flex-end',
-  },
-  historyModalBackdrop: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-  },
-  historyModal: {
-    backgroundColor: '#fff',
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    padding: 20,
-    paddingBottom: 32,
-    maxHeight: '80%',
-    ...Platform.select({
-      web: { boxShadow: '0px -4px 24px rgba(0, 0, 0, 0.16)' },
-      default: {
-        shadowColor: '#000',
-        shadowOpacity: 0.12,
-        shadowOffset: { width: 0, height: -4 },
-        shadowRadius: 16,
-        elevation: 8,
-      },
-    }),
-  },
-  historyModalHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 12,
-  },
-  historyModalTitle: { fontSize: 18, fontWeight: '700', color: '#0F172A' },
-  historyModalClose: { color: '#2563EB', fontWeight: '600' },
-  historyModalBody: { flexGrow: 1 },
-  historyModalEmpty: {
-    color: '#475569',
-    textAlign: 'center',
-    marginTop: 16,
-  },
-  historyModalList: { maxHeight: 360 },
-  historyModalRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E2E8F0',
-    gap: 12,
-  },
-  historyModalPrimary: { fontWeight: '700', fontSize: 15, color: '#0F172A' },
-  historyModalMeta: { color: '#475569', fontSize: 13, marginTop: 2 },
-  historyModalMetaSecondary: { color: '#94A3B8', fontSize: 12, marginTop: 2 },
-  historyStatusBadge: {
-    borderRadius: 999,
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-  },
-  historyPdfBtn: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 999,
-    borderWidth: 1,
-    borderColor: '#CBD5E1',
-    backgroundColor: '#F9FAFB',
-  },
-  historyPdfBtnText: { fontSize: 12, fontWeight: '600', color: '#1D4ED8' },
-
-  card: {
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-    borderRadius: 14,
-    padding: 12,
-    marginBottom: 10,
-  },
-  cardTitle: { fontWeight: '700', fontSize: 15 },
-  cardMeta: { marginTop: 4 },
-
-  rejectBtn: {
-    width: 44,
-    height: 44,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#DC2626',
-  },
-  rejectIcon: { color: '#fff', fontSize: 22, fontWeight: '900', lineHeight: 22 },
-
-  row: { flexDirection: 'row', gap: 8, alignItems: 'center', marginTop: 8 },
-  rowLabel: { width: 110 },
-
-  qtyWrap: { flexDirection: 'row', alignItems: 'center', gap: 6, flex: 1 },
-  qtyBtn: {
-    width: 34,
-    height: 34,
-    borderWidth: 1,
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#fff',
-  },
-  qtyBtnTxt: { fontSize: 18, fontWeight: '700', color: '#0F172A' },
-  qtyInput: {
-    flex: 1,
-    borderWidth: 1,
-    borderRadius: 8,
-    padding: 8,
-    textAlign: 'center',
-    backgroundColor: '#fff',
-    color: '#0F172A',
+    borderBottomColor: "rgba(255,255,255,0.10)",
   },
 
   chip: {
     paddingVertical: 6,
     paddingHorizontal: 10,
-    borderRadius: 16,
+    borderRadius: 999,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
-    backgroundColor: '#fff',
+    borderColor: "rgba(255,255,255,0.12)",
+    backgroundColor: "rgba(255,255,255,0.06)",
   },
 
-  stickyBar: {
-    borderTopWidth: 1,
-    borderColor: '#E2E8F0',
-    backgroundColor: '#FFFFFF',
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-  },
-  stickyRow2: { flexDirection: 'row', gap: 10, marginBottom: 10 },
+  // ===== dropdown overlay
+  backdrop: { flex: 1, backgroundColor: "rgba(0,0,0,0.55)" },
 
+  modalSheet: Platform.select({
+    web: {
+      position: "absolute" as any,
+      left: 16,
+      right: 16,
+      top: 90,
+      backgroundColor: UI.cardBg,
+      borderRadius: 18,
+      padding: 12,
+      borderWidth: 1,
+      borderColor: "rgba(255,255,255,0.10)",
+      boxShadow: "0 12px 24px rgba(0,0,0,0.35)",
+    },
+    default: {
+      position: "absolute" as any,
+      left: 16,
+      right: 16,
+      top: 90,
+      backgroundColor: UI.cardBg,
+      borderRadius: 18,
+      padding: 12,
+      borderWidth: 1,
+      borderColor: "rgba(255,255,255,0.10)",
+      elevation: 8,
+      shadowColor: "#000",
+      shadowOpacity: 0.22,
+      shadowRadius: 18,
+      shadowOffset: { width: 0, height: 10 },
+    },
+  }),
+
+  // ===== collapsing header (dark)
   cHeader: {
-    position: 'absolute',
+    position: "absolute",
     left: 0,
     right: 0,
     top: 0,
     zIndex: 50,
-    backgroundColor: '#fff',
+    backgroundColor: UI.cardBg,
     borderBottomWidth: 1,
-    borderColor: '#E2E8F0',
-    shadowColor: '#000',
+    borderColor: UI.border,
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 6 },
     shadowRadius: 14,
+    paddingBottom: 10,
   },
-  cTitle: { fontWeight: '900', color: '#0F172A' },
+  cTitle: { color: UI.text, fontWeight: TYPO.titleSm.fontWeight },
 
-  btnHalf: {
+  requestSummaryBox: {
+    borderWidth: 1.25,
+    borderColor: "rgba(255,255,255,0.10)",
+    borderRadius: 18,
+    padding: 14,
+    backgroundColor: "rgba(255,255,255,0.04)",
+    marginTop: 4,
+    gap: 6,
+
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.22,
+    shadowRadius: 18,
+    elevation: 6,
+  },
+
+  requestSummaryTop: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 12,
+  },
+
+  requestNumber: { fontSize: 16, fontWeight: "900", color: UI.text },
+
+  requestMeta: {
+    marginTop: 6,
+    color: "rgba(255,255,255,0.78)",
+    fontSize: 12,
+    fontWeight: "800",
+    letterSpacing: 0.2,
+  },
+
+  bgGlow: {
+    position: "absolute",
+    left: -80,
+    right: -80,
+    top: -120,
+    height: 260,
+    backgroundColor: "rgba(34,197,94,0.10)",
+    borderBottomLeftRadius: 260,
+    borderBottomRightRadius: 260,
+    opacity: 0.9,
+  },
+
+  // ===== section blocks
+  section: {
+    marginTop: 14,
+    marginBottom: 8,
+    padding: 12,
+    borderRadius: 18,
+    backgroundColor: "transparent",
+    borderWidth: 0,
+  },
+  sectionTitle: {
+    color: UI.sub,
+    fontWeight: "900",
+    fontSize: 12,
+    letterSpacing: 0.4,
+  },
+
+  pickTabsRow: {
+    flexDirection: "row",
+    gap: 10,
+    marginTop: 10,
+  },
+  pickTabBtn: {
     flex: 1,
-    paddingVertical: 12,
-    borderRadius: 14,
+    height: 46,
+    borderRadius: 18,
     borderWidth: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    borderColor: "rgba(255,255,255,0.16)",
+    backgroundColor: "rgba(255,255,255,0.06)",
+    alignItems: "center",
+    justifyContent: "center",
+    flexDirection: "row",
+    gap: 10,
   },
-  btnPrimarySoft: { backgroundColor: '#DCFCE7', borderColor: '#86EFAC' },
-  btnNeutral: { backgroundColor: '#F3F4F6', borderColor: '#CBD5E1' },
-  btnDisabled: { backgroundColor: '#E5E7EB', borderColor: '#D1D5DB' },
-  btnTxtDark: { color: '#111827', fontWeight: '800', fontSize: 14 },
-  btnTxtDisabled: { color: '#9CA3AF', fontWeight: '600', fontSize: 14 },
 
-  backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.25)' },
+  // ✅ ДОБАВЛЕНО: чтобы JSX не ссылался на отсутствующие ключи
+  pickTabCatalog: {},
+  pickTabSoft: {},
 
-  modalSheet: Platform.select({
-    web: {
-      position: 'absolute' as any,
-      left: 16,
-      right: 16,
-      top: 90,
-      backgroundColor: '#fff',
-      borderRadius: 12,
-      padding: 12,
-      borderWidth: 1,
-      borderColor: '#E2E8F0',
-      boxShadow: '0 12px 24px rgba(0,0,0,0.18)',
-    },
-    default: {
-      position: 'absolute' as any,
-      left: 16,
-      right: 16,
-      top: 90,
-      backgroundColor: '#fff',
-      borderRadius: 12,
-      padding: 12,
-      elevation: 6,
-      shadowColor: '#000',
-      shadowOpacity: 0.1,
-      shadowRadius: 8,
-      shadowOffset: { width: 0, height: 4 },
-    },
-  }),
+  pickTabText: { color: UI.text, fontWeight: "900", fontSize: 14 },
 
-  // ✅ mini keyboard bar
-  miniBar: { marginTop: 10, flexDirection: 'row', alignItems: 'center', gap: 10 },
+  // ===== bottom bar (dark)
+  stickyBar: {
+    borderTopWidth: 1,
+    borderColor: "rgba(255,255,255,0.10)",
+    backgroundColor: UI.cardBg,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+  },
+  miniBar: { marginTop: 10, flexDirection: "row", alignItems: "center", gap: 10 },
   miniBtn: {
     flex: 1,
-    height: 44,
-    borderRadius: 14,
+    height: 42,
+    borderRadius: 16,
     borderWidth: 1,
-    borderColor: '#CBD5E1',
-    backgroundColor: '#F8FAFC',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    borderColor: "rgba(255,255,255,0.12)",
+    backgroundColor: "rgba(255,255,255,0.05)",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     gap: 8,
   },
-  miniText: { color: '#0F172A', fontWeight: '900', fontSize: 13 },
-  sendBtn: {
-    width: 54,
-    height: 44,
-    borderRadius: 14,
-    backgroundColor: '#16A34A',
-    alignItems: 'center',
-    justifyContent: 'center',
+  miniText: {
+    color: UI.text,
+    fontWeight: "900",
+    fontSize: 13,
+    letterSpacing: 0.2,
   },
-sendBtnOk: {
-  backgroundColor: '#0EA5E9', // синий “успех”, не зелёный
+
+  // ===== history modal (bottom sheet dark)
+  historyModal: {
+    backgroundColor: UI.cardBg,
+    borderTopLeftRadius: 22,
+    borderTopRightRadius: 22,
+    padding: 20,
+    paddingBottom: 32,
+    maxHeight: "80%",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.10)",
+    ...Platform.select({
+      web: { boxShadow: "0px -4px 24px rgba(0, 0, 0, 0.35)" },
+      default: {
+        shadowColor: "#000",
+        shadowOpacity: 0.22,
+        shadowOffset: { width: 0, height: -6 },
+        shadowRadius: 18,
+        elevation: 10,
+      },
+    }),
+  },
+  historyModalHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 12,
+  },
+  historyModalTitle: { fontSize: 18, fontWeight: "900", color: UI.text },
+  historyModalClose: { color: "#E5E7EB", fontWeight: "900" },
+  historyModalBody: { flexGrow: 1 },
+  historyModalEmpty: {
+    color: UI.sub,
+    textAlign: "center",
+    marginTop: 16,
+    fontWeight: "800",
+  },
+  historyModalList: { maxHeight: 360 },
+  historyModalRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: "rgba(255,255,255,0.10)",
+    gap: 12,
+  },
+  historyModalPrimary: { fontWeight: "900", fontSize: 15, color: UI.text },
+  historyModalMeta: { color: UI.sub, fontSize: 13, marginTop: 2, fontWeight: "800" },
+  historyModalMetaSecondary: {
+    color: "rgba(255,255,255,0.65)",
+    fontSize: 12,
+    marginTop: 2,
+    fontWeight: "800",
+  },
+
+  historyStatusBadge: {
+    borderRadius: 999,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+  },
+
+  historyPdfBtn: {
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.12)",
+    backgroundColor: "rgba(255,255,255,0.06)",
+  },
+  historyPdfBtnText: { fontSize: 12, fontWeight: "900", color: UI.text },
+
+  // ===== draft list row
+  draftRowCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+
+    borderWidth: 1.25,
+    borderColor: "rgba(255,255,255,0.16)",
+    borderRadius: 18,
+    padding: 14,
+    marginBottom: 10,
+    backgroundColor: "rgba(16,24,38,0.92)",
+
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.22,
+    shadowRadius: 18,
+    elevation: 6,
+  },
+
+  draftRowMain: {
+    flex: 1,
+    minWidth: 0,
+  },
+
+  draftRowTitle: {
+    fontWeight: "800",
+    fontSize: 16,
+    color: UI.text,
+    lineHeight: 20,
+  },
+
+  draftRowMeta: {
+    marginTop: 6,
+    fontSize: 14,
+    fontWeight: "700",
+    color: UI.sub,
+    lineHeight: 18,
+  },
+
+  draftRowStatus: {
+    marginTop: 6,
+    color: "rgba(255,255,255,0.78)",
+    fontSize: 12,
+    fontWeight: "800",
+    letterSpacing: 0.2,
+    lineHeight: 16,
+  },
+
+  draftRowStatusStrong: {
+    color: UI.text,
+    fontWeight: "900",
+  },
+
+  rejectBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: UI.btnReject,
+  },
+  rejectIcon: { color: "#fff", fontSize: 22, fontWeight: "900", lineHeight: 22 },
+
+  // ===== draft card (entry)
+  draftCard: {
+    marginTop: 10,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 14,
+
+    padding: 14,
+    borderRadius: 18,
+    borderWidth: 1.25,
+    borderColor: "rgba(255,255,255,0.16)",
+    backgroundColor: "rgba(16,24,38,0.92)",
+
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.22,
+    shadowRadius: 18,
+    elevation: 6,
+  },
+  draftTitle: {
+    color: "rgba(255,255,255,0.55)",
+    fontWeight: "900",
+    fontSize: 12,
+    letterSpacing: 0.6,
+  },
+  draftNo: {
+    marginTop: 6,
+    color: UI.text,
+    fontWeight: "900",
+    fontSize: 18,
+  },
+  draftHint: {
+    marginTop: 8,
+    color: "rgba(255,255,255,0.78)",
+    fontWeight: "800",
+    fontSize: 13,
+    lineHeight: 18,
+  },
+
+  posPill: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    borderRadius: 999,
+    backgroundColor: "rgba(255,255,255,0.08)",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.14)",
+  },
+  posPillText: {
+    color: UI.text,
+    fontWeight: "900",
+    fontSize: 14,
+    letterSpacing: 0.2,
+  },
+  posCountPill: {
+    minWidth: 28,
+    height: 24,
+    paddingHorizontal: 10,
+    borderRadius: 999,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "rgba(255,255,255,0.10)",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.16)",
+  },
+  posCountText: {
+    color: UI.text,
+    fontWeight: "900",
+    fontSize: 13,
+  },
+
+  // ===== draft sheet (bottom)
+  sheet: {
+    height: "88%",
+    backgroundColor: UI.cardBg,
+    borderTopLeftRadius: 22,
+    borderTopRightRadius: 22,
+    paddingTop: 10,
+    paddingHorizontal: 16,
+    paddingBottom: 16,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.10)",
+  },
+  sheetHandle: {
+    alignSelf: "center",
+    width: 44,
+    height: 5,
+    borderRadius: 999,
+    backgroundColor: "rgba(255,255,255,0.18)",
+    marginBottom: 10,
+  },
+  sheetTopBar: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 10,
+    marginBottom: 10,
+  },
+  sheetTitle: {
+    flex: 1,
+    minWidth: 0,
+    color: UI.text,
+    fontWeight: "900",
+    fontSize: 18,
+  },
+  sheetCloseBtn: {
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    borderRadius: 999,
+    backgroundColor: "rgba(255,255,255,0.10)",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.14)",
+    flexShrink: 0,
+  },
+  sheetCloseText: {
+    color: UI.text,
+    fontWeight: "900",
+    fontSize: 13,
+  },
+
+  sheetMetaBox: {
+    marginTop: 8,
+    marginBottom: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: 14,
+    backgroundColor: "#0F172A",
+    borderWidth: 1,
+    borderColor: UI.border,
+    borderLeftWidth: 4,
+    borderLeftColor: UI.accent,
+  },
+  sheetMetaLine: {
+    color: UI.text,
+    fontSize: 14,
+    lineHeight: 20,
+    fontWeight: "800",
+    marginBottom: 2,
+  },
+  sheetMetaValue: {
+    color: UI.text,
+    fontWeight: "900",
+  },
+
+  sheetActions: {
+    flexDirection: "row",
+    gap: 10,
+    paddingBottom: 8,
+  },
+  actionBtn: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 16,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "rgba(255,255,255,0.06)",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.12)",
+  },
+  actionText: {
+    color: UI.text,
+    fontWeight: "900",
+  },
+
+  sheetSendPrimary: {
+    marginTop: 10,
+    height: 52,
+    borderRadius: 18,
+    backgroundColor: UI.btnApprove,
+    alignItems: "center",
+    justifyContent: "center",
+    flexDirection: "row",
+    gap: 10,
+  },
+  sheetSendPrimaryText: {
+    color: "#0B0F14",
+    fontWeight: "900",
+    fontSize: 15,
+    letterSpacing: 0.2,
+  },
+foremanSuggestBox: {
+  marginTop: 6,
+  borderRadius: 14,
+  overflow: "hidden",
+  borderWidth: 1,
+  borderColor: "rgba(255,255,255,0.12)",
+  backgroundColor: UI.cardBg,
 },
 
-section: {
-  marginTop: 14,
-  marginBottom: 8,
-  padding: 12,
-  borderRadius: 14,
+foremanSuggestRow: {
+  paddingVertical: 10,
+  paddingHorizontal: 14,
+  borderBottomWidth: 1,
+  borderBottomColor: "rgba(255,255,255,0.08)",
+},
+
+foremanSuggestText: {
+  color: UI.text,
+  fontWeight: "800",
+  fontSize: 14,
+},
+reqActionsBottom: {
+  marginTop: 12,
+  flexDirection: "row",
+  alignItems: "center",
+  padding: 10,
+  borderRadius: 18,
+  backgroundColor: "rgba(255,255,255,0.04)",
   borderWidth: 1,
-  borderColor: '#E2E8F0',
-  backgroundColor: '#fff',
+  borderColor: "rgba(255,255,255,0.10)",
 },
-sectionTitle: {
-  fontSize: 12,
-  fontWeight: '900',
-  letterSpacing: 0.6,
-  color: '#0F172A',
-},
-sectionHint: {
-  marginTop: 8,
-  color: '#64748B',
-  fontSize: 13,
-  lineHeight: 18,
-  fontWeight: '700',
-},
-sectionRow: {
-  flexDirection: 'row',
-  alignItems: 'center',
-  justifyContent: 'space-between',
-},
-badge: {
-  minWidth: 28,
-  height: 22,
-  paddingHorizontal: 8,
-  borderRadius: 999,
-  alignItems: 'center',
-  justifyContent: 'center',
-  backgroundColor: '#E0F2FE',
-},
-badgeText: {
-  color: '#075985',
-  fontWeight: '900',
-  fontSize: 12,
-},
-pickTabsRow: {
-  flexDirection: 'row',
-  gap: 10,
-  marginTop: 10,
-},
-pickTabBtn: {
+
+actionBtnWide: {
   flex: 1,
-  height: 46,
-  borderRadius: 14,
-  borderWidth: 1,
-  alignItems: 'center',
-  justifyContent: 'center',
-  flexDirection: 'row',
-  gap: 10,
+  minWidth: 0,
+  paddingVertical: 12,
+  borderRadius: 16,
+  alignItems: "center",
+  justifyContent: "center",
+  backgroundColor: "rgba(255,255,255,0.08)",
 },
-pickTabNeutral: { backgroundColor: '#F3F4F6', borderColor: '#CBD5E1' },
-pickTabSoft: { backgroundColor: '#DCFCE7', borderColor: '#86EFAC' },
-pickTabText: { color: '#0F172A', fontWeight: '900', fontSize: 14 },
-pickTabCatalog: { backgroundColor: '#E0F2FE', borderColor: '#7DD3FC' }, // голубой
+
+sp8: { width: 8 },
+
+actionBtnSquare: {
+  width: 46,
+  height: 46,
+  borderRadius: 16,
+  alignItems: "center",
+  justifyContent: "center",
+  flexShrink: 0,
+},
 
 });

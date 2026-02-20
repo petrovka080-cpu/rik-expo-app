@@ -1,13 +1,16 @@
-// app/_layout.tsx
-import React, { useEffect, useRef, useState, useCallback } from "react";
+// app/_layout.tsx  (PROD, чистый)
+// ✅ без boot-test, без лишнего, стабильный init/redirect, web-фиксы сохранены
+
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Platform, LogBox } from "react-native";
 import { Slot, router, useSegments } from "expo-router";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
+
 import { supabase } from "../src/lib/supabaseClient";
 import { ensureMyProfile, getMyRole } from "../src/lib/rik_api";
 import { GlobalBusyProvider } from "../src/ui/GlobalBusy";
 
-// Тихо глушим шумные web-предупреждения (только в браузере)
+// --- WEB: тихо глушим шумные предупреждения (только в браузере) ---
 if (Platform.OS === "web") {
   LogBox.ignoreLogs([
     "props.pointerEvents is deprecated. Use style.pointerEvents",
@@ -34,16 +37,14 @@ export default function RootLayout() {
   const [sessionLoaded, setSessionLoaded] = useState(false);
   const [hasSession, setHasSession] = useState<boolean | null>(null);
 
+  // роль сейчас напрямую не используется в _layout, но оставляем фоновой прогрев
   const [roleLoaded, setRoleLoaded] = useState(false);
   const [role, setRole] = useState<string | null>(null);
 
-  // ✅ единый lock от дублей
   const roleLoadingRef = useRef(false);
-
-  // ✅ чтобы init не стартовал дважды в dev/fast-refresh
   const initStartedRef = useRef(false);
 
-  // ✅ WEB: нормальный контейнер и скролл браузера
+  // --- WEB: нормальный контейнер/скролл + leaflet css (если нужен) ---
   useEffect(() => {
     if (Platform.OS !== "web") return;
     try {
@@ -68,33 +69,25 @@ export default function RootLayout() {
     } catch {}
   }, []);
 
-  // ✅ роль/профиль грузим В ФОНЕ, без блокировки входа
+  // --- роль/профиль грузим в фоне, НЕ блокируя вход ---
   const loadRoleForCurrentSession = useCallback(async () => {
     if (!supabase) return;
-
     if (roleLoadingRef.current) return;
     roleLoadingRef.current = true;
 
     try {
       setRoleLoaded(false);
 
-      // ensure profile (таймаут)
       await Promise.race([
         ensureMyProfile(),
         new Promise((_, rej) =>
-          setTimeout(
-            () => rej(new Error("ensureMyProfile TIMEOUT (RLS/block)")),
-            8000,
-          ),
+          setTimeout(() => rej(new Error("ensureMyProfile TIMEOUT")), 8000),
         ),
       ]);
 
-      // get role (таймаут)
       const r = await Promise.race([
         getMyRole(),
-        new Promise((_, rej) =>
-          setTimeout(() => rej(new Error("getMyRole TIMEOUT")), 8000),
-        ),
+        new Promise((_, rej) => setTimeout(() => rej(new Error("getMyRole TIMEOUT")), 8000)),
       ]);
 
       setRole(r ?? null);
@@ -107,7 +100,7 @@ export default function RootLayout() {
     }
   }, []);
 
-  // ✅ INIT: читаем session 1 раз, роль — НЕ await (чтобы не “висло”)
+  // --- INIT: читаем session один раз, роль — фоном ---
   useEffect(() => {
     if (!supabase) return;
     if (initStartedRef.current) return;
@@ -122,14 +115,10 @@ export default function RootLayout() {
 
         const has = Boolean(data?.session);
         setHasSession(has);
-
-        // ✅ ВАЖНО: считаем, что сессию мы уже “загрузили”
         setSessionLoaded(true);
 
-        // роль — фоном
-        if (has) {
-          loadRoleForCurrentSession();
-        } else {
+        if (has) loadRoleForCurrentSession();
+        else {
           setRole(null);
           setRoleLoaded(true);
         }
@@ -143,11 +132,9 @@ export default function RootLayout() {
       }
     })();
 
-    const { data: listener } = supabase.auth.onAuthStateChange(async (_event, session) => {
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
       const has = Boolean(session);
       setHasSession(has);
-
-      // ✅ сессию считаем готовой сразу
       setSessionLoaded(true);
 
       if (!has) {
@@ -157,7 +144,6 @@ export default function RootLayout() {
         return;
       }
 
-      // роль — фоном (lock защищает от дублей)
       loadRoleForCurrentSession();
     });
 
@@ -167,40 +153,34 @@ export default function RootLayout() {
     };
   }, [loadRoleForCurrentSession]);
 
-  // ✅ РЕДИРЕКТ завязан ТОЛЬКО на sessionLoaded/hasSession
+  // --- redirect только по sessionLoaded/hasSession ---
   useEffect(() => {
     if (!sessionLoaded) return;
-
     const inAuthStack = segments?.[0] === "auth";
+
     if (!hasSession && !inAuthStack) router.replace("/auth/login");
     else if (hasSession && inAuthStack) router.replace("/");
   }, [hasSession, sessionLoaded, segments]);
 
   const APP_BG = "#0B0F14";
+  const UI = {
+    text: "#F8FAFC",
+    cardBg: "#101826",
+    border: "#1F2A37",
+  };
 
-const UI = {
-  text: "#F8FAFC",
-  cardBg: "#101826",
-  border: "#1F2A37",
-};
-
-return (
-  <SafeAreaProvider>
-    <SafeAreaView
-      style={{
-        flex: 1,
-        backgroundColor: APP_BG, // ✅ главный фикс
-        paddingTop: 0,           // ✅ убрали “полоску” 2px
-      }}
-      edges={Platform.OS === "web" ? [] : ["top"]}
-    >
-      {/* ✅ ЕДИНЫЙ ГЛОБАЛЬНЫЙ SPINNER НА ВСЁ ПРИЛОЖЕНИЕ */}
+  return (
+      <SafeAreaProvider>
       <GlobalBusyProvider theme={UI}>
-        <Slot />
+        <SafeAreaView
+          style={{ flex: 1, backgroundColor: APP_BG, paddingTop: 0 }}
+          edges={Platform.OS === "web" ? [] : ["top"]}
+        >
+          <Slot />
+        </SafeAreaView>
       </GlobalBusyProvider>
-    </SafeAreaView>
-  </SafeAreaProvider>
-);
+    </SafeAreaProvider>
+  );
 
 }
 
