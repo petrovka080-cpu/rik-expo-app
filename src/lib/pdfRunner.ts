@@ -1,57 +1,54 @@
-// src/lib/pdfRunner.ts
-import { Platform, Alert } from "react-native";
-import * as Sharing from "expo-sharing";
-import * as Print from "expo-print";
-import * as IntentLauncher from "expo-intent-launcher";
+// src/lib/pdfRunner.ts  ✅ PROD stable (web + iOS + android) + совместимо с GlobalBusy
 
-// ⚠️ Web иногда требует legacy. Native — обычный.
+import { Platform, Alert, InteractionManager } from "react-native";
+import * as Sharing from "expo-sharing";
+import * as IntentLauncher from "expo-intent-launcher";
+import { SUPABASE_ANON_KEY } from "./supabaseClient"; // ✅ добавили
+
+
 let FileSystem: any = null;
 try {
   // eslint-disable-next-line @typescript-eslint/no-var-requires
-  FileSystem =
-    Platform.OS === "web"
-      ? require("expo-file-system/legacy")
-      : require("expo-file-system");
+ FileSystem =
+  Platform.OS === "web"
+    ? null
+    : require("expo-file-system/legacy");
+
 } catch {
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   FileSystem = require("expo-file-system");
 }
 
 type BusyLike = {
-  show?: (key?: string, label?: string) => void;
-  hide?: (key?: string) => void;
-  run: <T>(
+  run?: <T>(
     fn: () => Promise<T>,
     opts?: { key?: string; label?: string; minMs?: number }
-  ) => Promise<T>;
-};
+  ) => Promise<T | null>;
+  isBusy?: (key?: string) => boolean;
 
-type RunPdfArgs = {
-  busy: BusyLike;
-  supabase: any;
-  key: string;
-  label: string;
-  mode: "preview" | "share";
-  fileName?: string;
-  getRemoteUrl: () => Promise<string> | string;
-
-  // ✅ продакшн-UX
-  minOverlayMs?: number; // default 650
-  preOpenMs?: number;    // default 650 (дать overlay проявиться ДО viewer)
-  postOpenMs?: number;   // default 650 (iOS: shareAsync может резолвиться сразу)
+  show?: (key?: string, label?: string) => void;
+  hide?: (key?: string) => void;
 };
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
-
-// ✅ дедуп/lock, чтобы не спамили PDF одним и тем же действием
-const locks = new Set<string>();
-
-// ✅ кеш для сессии приложения: remoteUrl -> localUri
 const urlToLocal = new Map<string, string>();
+const uiYield = async (ms = 0) => {
+  await new Promise<void>((r) => setTimeout(r, ms));
+  await new Promise<void>((r) => InteractionManager.runAfterInteractions(() => r()));
+};
+
+const withTimeout = async <T,>(p: Promise<T>, ms: number, msg: string): Promise<T> => {
+  let t: any;
+  const timeout = new Promise<T>((_, rej) => { t = setTimeout(() => rej(new Error(msg)), ms); });
+  try {
+    return await Promise.race([p, timeout]);
+  } finally {
+    try { clearTimeout(t); } catch {}
+  }
+};
 
 function normalizeRemoteUrl(raw: any) {
-  const url = String(raw || "").trim();
-  return url.replace(/^"+|"+$/g, "").trim();
+  return String(raw || "").trim().replace(/^"+|"+$/g, "").trim();
 }
 
 function safeName(name?: string) {
@@ -60,6 +57,16 @@ function safeName(name?: string) {
     .replace(/\s+/g, " ")
     .trim();
   return base.toLowerCase().endsWith(".pdf") ? base : `${base}.pdf`;
+}
+
+// ✅ NEW: маленький стабильный hash, чтобы кеш не перетирался
+function hash32(s: string) {
+  let h = 2166136261; // FNV-1a
+  for (let i = 0; i < s.length; i++) {
+    h ^= s.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return (h >>> 0).toString(16);
 }
 
 async function fileExists(uri: string) {
@@ -75,134 +82,187 @@ async function getAuthHeader(supabase: any) {
   try {
     const { data } = await supabase.auth.getSession();
     const token = data?.session?.access_token;
-    return token ? { Authorization: `Bearer ${token}` } : undefined;
+    // ✅ добавляем apikey тоже (бывает нужно для приватных endpoints)
+    const h: Record<string, string> = {};
+    if (SUPABASE_ANON_KEY) h.apikey = SUPABASE_ANON_KEY;
+    if (token) h.Authorization = `Bearer ${token}`;
+    return Object.keys(h).length ? h : undefined;
   } catch {
-    return undefined;
+    return SUPABASE_ANON_KEY ? { apikey: SUPABASE_ANON_KEY } : undefined;
   }
 }
 
-async function downloadToCache(supabase: any, remoteUrl: string, fileName?: string) {
-  // 1) быстрый кеш в памяти
-  const cached = urlToLocal.get(remoteUrl);
+export async function preparePdfLocalUri(args: {
+  supabase: any;
+  getRemoteUrl: () => Promise<string> | string;
+  fileName?: string;
+}): Promise<string> {
+  const { supabase, getRemoteUrl, fileName } = args;
+
+  const remote = await Promise.resolve(getRemoteUrl());
+  const url = normalizeRemoteUrl(remote);
+  if (!url) throw new Error("PDF URL пустой");
+
+  // WEB: отдаём URL как есть
+  if (Platform.OS === "web") return url;
+
+  // NATIVE: если это уже file:// или content://
+  if (!/^https?:\/\//i.test(url)) return url;
+
+  // кеш по URL
+  const cached = urlToLocal.get(url);
   if (cached && (await fileExists(cached))) return cached;
 
-  const name = safeName(fileName);
+  // ✅ NEW: добавили hash(url) в имя, чтобы разные PDF не перетирались
+  const baseName = safeName(fileName);
+  const stamp = hash32(url);
+  const name = baseName.replace(/\.pdf$/i, `_${stamp}.pdf`);
 
   const cacheDir = FileSystem.cacheDirectory || FileSystem.documentDirectory;
   const localPath = `${cacheDir}${name}`;
 
-  // 2) если файл уже существует
   if (await fileExists(localPath)) {
-    urlToLocal.set(remoteUrl, localPath);
+    urlToLocal.set(url, localPath);
     return localPath;
   }
 
-  // 3) скачиваем с Bearer токеном (если нужен)
   const headers = await getAuthHeader(supabase);
-
-  const dl = await FileSystem.downloadAsync(remoteUrl, localPath, { headers });
+  const dl = await FileSystem.downloadAsync(url, localPath, { headers });
   const uri = dl?.uri || localPath;
 
-  urlToLocal.set(remoteUrl, uri);
+  urlToLocal.set(url, uri);
   return uri;
 }
 
-async function openAndroid(localUri: string) {
-  const contentUri = await FileSystem.getContentUriAsync(localUri);
-  await IntentLauncher.startActivityAsync(IntentLauncher.ActivityAction.VIEW, {
-    data: contentUri,
-    flags: 1,
-    type: "application/pdf",
-  });
-}
-
-async function openIOS(localUri: string, mode: "preview" | "share") {
-  const canShare = await Sharing.isAvailableAsync();
-  if (!canShare) {
-    throw new Error("Sharing недоступен на этом устройстве");
+export async function openPdfPreview(localUri: string) {
+  if (Platform.OS === "web") {
+    const win = window.open(localUri, "_blank");
+    if (!win) Alert.alert("PDF", "Разреши всплывающие окна (pop-up).");
+    return;
   }
 
+  if (Platform.OS === "android") {
+    const contentUri = await FileSystem.getContentUriAsync(localUri);
+    await IntentLauncher.startActivityAsync(IntentLauncher.ActivityAction.VIEW, {
+      data: contentUri,
+      flags: 1,
+      type: "application/pdf",
+    });
+    return;
+  }
+
+  // iOS: самый стабильный путь в Expo — share sheet (preview)
+  const canShare = await Sharing.isAvailableAsync();
+  if (!canShare) throw new Error("Sharing недоступен на этом устройстве");
   await Sharing.shareAsync(localUri, {
     mimeType: "application/pdf",
     UTI: "com.adobe.pdf",
-    dialogTitle: mode === "share" ? "Поделиться PDF" : "PDF",
+    dialogTitle: "PDF",
   });
 }
-async function openNativePdf(localUri: string, mode: "preview" | "share") {
-  if (Platform.OS === "android") {
-    await openAndroid(localUri);
+
+export async function openPdfShare(localUri: string) {
+  if (Platform.OS === "web") {
+    const win = window.open(localUri, "_blank");
+    if (!win) Alert.alert("PDF", "Разреши всплывающие окна (pop-up).");
     return;
   }
-  await openIOS(localUri, mode);
+
+  const canShare = await Sharing.isAvailableAsync();
+  if (!canShare) throw new Error("Sharing недоступен на этом устройстве");
+  await Sharing.shareAsync(localUri, {
+    mimeType: "application/pdf",
+    UTI: "com.adobe.pdf",
+    dialogTitle: "Поделиться PDF",
+  });
 }
 
-export async function runPdf(args: RunPdfArgs) {
-  const {
-    busy,
-    supabase,
-    key,
-    label,
-    mode,
-    fileName,
-    getRemoteUrl,
-    minOverlayMs = 1200,
-  } = args;
+export async function runPdfTop(args: {
+  busy?: BusyLike;
+  supabase: any;
+  key: string;
+  label: string;
+  mode: "preview" | "share";
+  fileName?: string;
+  getRemoteUrl: () => Promise<string> | string;
+}) {
+  const { busy, supabase, key, label, mode, fileName, getRemoteUrl } = args;
 
-  if (locks.has(key)) return;
-  locks.add(key);
+  // WEB: открыть окно СИНХРОННО, чтобы не блокировало
+  if (Platform.OS === "web") {
+    let win: Window | null = null;
+    try {
+      win = window.open("", "_blank");
+    } catch {
+      win = null;
+    }
 
-  try {
-    // WEB: как раньше
-    if (Platform.OS === "web") {
+    if (!win) {
+      Alert.alert("PDF", "Разреши всплывающие окна (pop-up).");
+      return;
+    }
+
+    try {
+      win.document.open();
+      win.document.write(`<!doctype html><meta charset="utf-8"/>
+        <title>PDF</title>
+        <body style="font-family:system-ui;padding:16px">
+          <b>${label || "Формируем PDF…"}</b>
+          <div style="opacity:.7;margin-top:6px">Если долго — проверь соединение.</div>
+        </body>`);
+      win.document.close();
+    } catch {}
+
+    try {
       const remote = await Promise.resolve(getRemoteUrl());
       const url = normalizeRemoteUrl(remote);
       if (!url) throw new Error("PDF URL пустой");
 
-      const win = window.open(url, "_blank", "noopener,noreferrer");
-      if (!win) Alert.alert("PDF", "Разреши всплывающие окна.");
+      try {
+        win.location.replace(url);
+      } catch {
+        win.location.href = url;
+      }
+      win.focus();
+      return;
+    } catch (e: any) {
+      try {
+        win.close();
+      } catch {}
+      Alert.alert("PDF", e?.message ?? "Не удалось открыть PDF");
       return;
     }
+  }
 
-    // NATIVE: overlay только на скачивание
-    let localUri = "";
+    // NATIVE
+  const doNative = async () => {
+    // ✅ 1) отпускаем UI, чтобы спиннер/анимации успели отрисоваться
+    await uiYield(50);
 
-    await busy.run(
-      async () => {
-        const remote = await Promise.resolve(getRemoteUrl());
-        const url = normalizeRemoteUrl(remote);
-        if (!url) throw new Error("PDF URL пустой");
-
-        localUri = url;
-
-        if (/^https?:\/\//i.test(url)) {
-          localUri = await downloadToCache(supabase, url, fileName);
-        }
-      },
-      { key, label, minMs: Math.max(650, Number(minOverlayMs ?? 0)) }
+    // ✅ 2) даём таймаут на генерацию/скачивание (чтобы не висло вечно)
+    const localUri = await withTimeout(
+      preparePdfLocalUri({ supabase, getRemoteUrl, fileName }),
+      25000,
+      "PDF слишком долго готовится. Попробуй ещё раз."
     );
 
-    // ✅ ВАЖНО: перед системным viewer — точно убрать overlay
-    try { busy.hide?.(key); } catch {}
+    // ✅ 3) перед Share Sheet ещё раз отпустить UI (iOS особенно)
+    await uiYield(Platform.OS === "ios" ? 90 : 10);
 
-    // ✅ Открываем viewer БЕЗ overlay
-    try {
-      await openNativePdf(localUri, mode);
-    } catch (e: any) {
-      const msg = String(e?.message ?? e ?? "");
-      const low = msg.toLowerCase();
-      if (low.includes("canceled") || low.includes("cancel")) return;
+    if (mode === "share") return openPdfShare(localUri);
+    return openPdfPreview(localUri);
+  };
 
-      if (low.includes("activitynotfound") || low.includes("no activity")) {
-        Alert.alert("PDF", "На устройстве нет приложения для открытия PDF.");
-        return;
-      }
-      throw e;
-    }
-  } catch (e: any) {
-    const msg = e?.message ?? String(e);
-    Alert.alert("PDF", msg || "Не удалось открыть PDF");
-    throw e;
+  if (busy?.run) {
+    await busy.run(doNative, { key, label, minMs: 650 });
+    return;
+  }
+
+  try { busy?.show?.(key, label); } catch {}
+  try {
+    await doNative();
   } finally {
-    locks.delete(key);
+    try { busy?.hide?.(key); } catch {}
   }
 }
+

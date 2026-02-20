@@ -8,7 +8,9 @@ import {
   batchResolveRequestLabels as rpcBatchResolveRequestLabels,
   requestCreateDraft as rpcRequestCreateDraft,
 } from "./rik_api";
-import { Platform } from "react-native";
+
+import { exportRequestPdf as exportRequestPdfProd } from "./rik_api";
+
 
 export {
   ensureRequestSmart,
@@ -772,357 +774,17 @@ export async function listRequestItems(requestId: string): Promise<ReqItemRow[]>
     return [];
   }
 }
-
-const normalizeStatusRu = (raw?: string | null) => {
-  const s = String(raw ?? "").trim().toLowerCase();
-  if (!s) return "—";
-
-  if (s === "draft" || s === "черновик") return "Черновик";
-  if (s === "pending" || s === "на утверждении") return "На утверждении";
-  if (s === "approved" || s === "утверждено" || s === "утверждена") return "Утверждена";
-
-  // 🔥 ВАЖНО: cancelled тоже = отклонено для человека
-  if (
-    s === "rejected" ||
-    s === "cancelled" ||
-    s === "отклонено" ||
-    s === "отклонена"
-  ) return "Отклонена";
-
-  // иногда может быть "к закупке"
-  if (s === "к закупке") return "К закупке";
-
-  return raw ?? "—";
-};
-
-// ========== PDF: простой HTML для заявки (без квадратиков) ==========
-export function buildRequestPdfHtml(
-  details: RequestDetails,
-  items: ReqItemRow[]
-): string {
-  const safe = (v: any) =>
-    (v === null || v === undefined ? "" : String(v)).trim();
-
-  const reqNo = safe(details.display_no || details.id);
-  const createdAt = safe(details.created_at);
-  const createdAtRu = createdAt
-    ? new Date(createdAt).toLocaleString("ru-RU")
-    : "";
-
-  const needBy = safe(details.need_by);
-  const needByRu = needBy
-    ? new Date(needBy).toLocaleDateString("ru-RU")
-    : "";
-
-  const objectName = safe(details.object_name_ru);
-  const levelName = safe(details.level_name_ru);
-  const systemName = safe(details.system_name_ru);
-  const zoneName = safe(details.zone_name_ru);
-  const foreman = safe(details.foreman_name);
-  const status = normalizeStatusRu(details.status || "Черновик");
-  const comment = safe(details.comment);
-
-  // Авто-текст примечания, который мы НЕ хотим дублировать в таблице
-  const autoNoteParts: string[] = [];
-  if (objectName) autoNoteParts.push(`Объект: ${objectName}`);
-  if (levelName) autoNoteParts.push(`Этаж/уровень: ${levelName}`);
-  if (systemName) autoNoteParts.push(`Система: ${systemName}`);
-  if (zoneName) autoNoteParts.push(`Зона: ${zoneName}`);
-  const autoNote = autoNoteParts.join("; ");
-  const autoNoteNorm = autoNote
-    ? autoNote.replace(/\s+/g, " ").trim()
-    : "";
-
-  const rowsHtml = (items || [])
-    .map((row, idx) => {
-      const name = safe(row.name_human || row.rik_code);
-      const uom = safe(row.uom);
-      const qty = safe(row.qty);
-      const app = safe(row.app_code);
-      const statusItem = normalizeStatusRu(row.status);
-
-      let note = safe(row.note);
-      const normNote = note.replace(/\s+/g, " ").trim();
-
-      // Если примечание = авто-шапка (Объект/Этаж/Система/Зона) → не показываем
-      if (autoNoteNorm && normNote === autoNoteNorm) {
-        note = "";
-      }
-
-      return `
-        <tr>
-          <td>${idx + 1}</td>
-          <td>${name}</td>
-          <td>${uom}</td>
-          <td>${qty}</td>
-          <td>${app}</td>
-          <td>${statusItem || "—"}</td>
-          <td>${note}</td>
-        </tr>
-      `;
-    })
-    .join("");
-
-  return `
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-  <meta charset="utf-8" />
-  <title>Заявка ${reqNo}</title>
-  <style>
-    * {
-      box-sizing: border-box;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-                   "Helvetica Neue", Arial, "Noto Sans", sans-serif;
-    }
-
-    body {
-      margin: 24px;
-      font-size: 12px;
-      color: #0f172a;
-      background: #ffffff;
-    }
-
-    .title {
-      font-size: 22px;
-      font-weight: 700;
-      text-align: left;
-      margin-bottom: 4px;
-    }
-
-    .subtitle {
-      font-size: 11px;
-      color: #6b7280;
-      margin-bottom: 16px;
-    }
-
-    .header-block {
-      margin-bottom: 18px;
-      line-height: 1.5;
-    }
-
-    .header-row {
-      display: flex;
-      gap: 16px;
-      margin-bottom: 4px;
-    }
-
-    .header-col {
-      flex: 1;
-    }
-
-    .label {
-      font-size: 11px;
-      color: #6b7280;
-    }
-
-    .value {
-      font-size: 12px;
-      font-weight: 500;
-    }
-
-    .divider {
-      height: 1px;
-      background: #e5e7eb;
-      margin: 16px 0;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 4px;
-    }
-
-    thead tr {
-      background: #f3f4f6;
-    }
-
-    th, td {
-      border: 1px solid #e5e7eb;
-      padding: 6px 8px;
-      vertical-align: top;
-    }
-
-    th {
-      font-weight: 600;
-      font-size: 11px;
-      text-align: left;
-    }
-
-    td {
-      font-size: 11px;
-    }
-
-    .mt-8  { margin-top: 8px; }
-
-    .comment-box {
-      margin-top: 8px;
-      padding: 8px 10px;
-      border-radius: 6px;
-      background: #f9fafb;
-      border: 1px solid #e5e7eb;
-      white-space: pre-wrap;
-    }
-
-    .footer {
-      margin-top: 40px;
-      display: flex;
-      justify-content: space-between;
-      gap: 32px;
-      font-size: 12px;
-    }
-
-    .sign-col {
-      flex: 1;
-    }
-
-    .sign-label {
-      margin-bottom: 32px;
-    }
-
-    .sign-line {
-      border-bottom: 1px solid #0f172a;
-      height: 1px;
-      margin-top: 4px;
-    }
-  </style>
-</head>
-<body>
-
-  <!-- Заголовок -->
-  <div class="title">Заявка ${reqNo}</div>
-  <div class="subtitle">
-    Сформировано: ${createdAtRu || "—"}
-  </div>
-
-  <!-- Шапка БЕЗ квадратиков: просто текстовые строки -->
-  <div class="header-block">
-    <div class="header-row">
-      <div class="header-col">
-        <div class="label">Объект</div>
-        <div class="value">${objectName || "—"}</div>
-      </div>
-      <div class="header-col">
-        <div class="label">Этаж / уровень</div>
-        <div class="value">${levelName || "—"}</div>
-      </div>
-    </div>
-
-    <div class="header-row">
-      <div class="header-col">
-        <div class="label">Зона / участок</div>
-        <div class="value">${zoneName || "—"}</div>
-      </div>
-      <div class="header-col">
-        <div class="label">Система / вид работ</div>
-        <div class="value">${systemName || "—"}</div>
-      </div>
-    </div>
-
-    <div class="header-row">
-      <div class="header-col">
-        <div class="label">ФИО прораба</div>
-        <div class="value">${foreman || "—"}</div>
-      </div>
-      <div class="header-col">
-        <div class="label">Нужно к</div>
-        <div class="value">${needByRu || "—"}</div>
-      </div>
-    </div>
-
-    <div class="header-row">
-      <div class="header-col">
-        <div class="label">Статус заявки</div>
-        <div class="value">${status || "—"}</div>
-      </div>
-      <div class="header-col">
-        <div class="label">ID заявки</div>
-        <div class="value">${safe(details.id)}</div>
-      </div>
-    </div>
-
-    ${
-      comment
-        ? `
-    <div class="mt-8">
-      <div class="label">Комментарий к заявке</div>
-      <div class="comment-box">${comment}</div>
-    </div>`
-        : ""
-    }
-  </div>
-
-  <div class="divider"></div>
-
-  <!-- Таблица позиций -->
-  <div class="label">Позиции заявки</div>
-  <table>
-    <thead>
-      <tr>
-        <th style="width: 32px;">№</th>
-        <th>Позиция</th>
-        <th style="width: 70px;">Ед. изм.</th>
-        <th style="width: 70px;">Кол-во</th>
-        <th style="width: 90px;">Применение</th>
-        <th style="width: 90px;">Статус позиции</th>
-        <th>Примечание</th>
-      </tr>
-    </thead>
-    <tbody>
-      ${rowsHtml || `<tr><td colspan="7">Позиции отсутствуют</td></tr>`}
-    </tbody>
-  </table>
-
-  <!-- Подписи -->
-  <div class="footer">
-    <div class="sign-col">
-      <div class="sign-label">Прораб</div>
-      <div class="sign-line"></div>
-      <div class="label">${foreman || "&nbsp;"}</div>
-    </div>
-    <div class="sign-col">
-      <div class="sign-label">Директор</div>
-      <div class="sign-line"></div>
-      <div class="label">&nbsp;</div>
-    </div>
-  </div>
-
-</body>
-</html>
-  `;
-}
-// Делает blob:URL для веба, чтобы foreman.tsx мог открыть window.open(url)
+// ==============================
+// PDF REQUEST (PROD SHIM)
+// ==============================
 export async function exportRequestPdf(
   requestId: string,
-  mode: 'preview' | 'share' = 'share', // параметр оставляем (чтобы вызовы не ломались)
-): Promise<string | null> {
-  const id = norm(requestId);
-  if (!id) throw new Error("Не указан идентификатор заявки");
-
-  const details = await fetchRequestDetails(id);
-  if (!details) throw new Error("Заявка не найдена");
-
-  const items = await listRequestItems(id);
-  const html = buildRequestPdfHtml(details, items);
-
-  // WEB
-  if (Platform.OS === "web") {
-    const blob = new Blob([html], { type: "text/html;charset=utf-8" });
-    // @ts-ignore
-    return URL.createObjectURL(blob);
-  }
-
-  // iOS/Android: только создаём файл
-  try {
-    // @ts-ignore
-    const Print = await import("expo-print");
-    const { uri } = await (Print as any).printToFileAsync({ html });
-    return uri as string; // file://...
-  } catch (e: any) {
-    console.warn("[exportRequestPdf/native]", e?.message ?? e);
-    return null;
-  }
+  mode: "preview" | "share" = "preview",
+): Promise<string> {
+  // mode оставляем только для совместимости: preview/share делает pdfRunner/runPdfTop
+  return await exportRequestPdfProd(requestId);
 }
+
 export async function requestItemUpdateQty(
   requestItemId: string,
   qty: number,
@@ -1346,11 +1008,11 @@ export type CreateProposalsOptions = {
 export type CreateProposalsResult = {
   proposals: Array<{
     proposal_id: string;
+    proposal_no: string | null; // ✅ добавили
     supplier: string;
     request_item_ids: string[];
   }>;
 };
-
 
 export async function createProposalsBySupplier(
   buckets: ProposalBucketInput[],
@@ -1365,16 +1027,36 @@ export async function createProposalsBySupplier(
     if (!ids.length) continue;
 
     let proposalId: string;
-    try {
-      const created = await rpcProposalCreate();
-      proposalId = String(created);
-    } catch (e: any) {
-      console.warn("[catalog_api.createProposalsBySupplier] proposalCreate:", e?.message ?? e);
-      throw e;
-    }
+let proposalNo: string | null = null;
+
+try {
+  const created = await rpcProposalCreate();
+  proposalId = String(created);
+
+  // ✅ proposal_no уже поставил BEFORE INSERT trigger (trg_proposals_set_no)
+  const q = await supabase
+    .from("proposals")
+    .select("proposal_no,id_short,display_no")
+    .eq("id", proposalId)
+    .maybeSingle();
+
+  proposalNo =
+    (q.data as any)?.proposal_no ??
+    (q.data as any)?.display_no ??
+    ((q.data as any)?.id_short != null ? `PR-${String((q.data as any).id_short)}` : null);
+
+} catch (e: any) {
+  console.warn("[catalog_api.createProposalsBySupplier] proposalCreate:", e?.message ?? e);
+  throw e;
+}
+
 
     const supplierDisplay = bucket?.supplier ? norm(bucket.supplier) : "";
-    const supplierLabel = supplierDisplay || SUPPLIER_NONE_LABEL;
+const supplierLabel = supplierDisplay || SUPPLIER_NONE_LABEL;
+
+// ✅ В БД: только реальный поставщик или null
+const supplierDb: string | null = supplierDisplay ? supplierDisplay : null;
+
 
     if (opts.buyerFio) {
       try {
@@ -1422,17 +1104,15 @@ export async function createProposalsBySupplier(
       }
     }
 
-    const metaRows = (bucket.meta ?? ids.map((request_item_id) => ({ request_item_id }))).map((row) => ({
+   const metaRows = (bucket.meta ?? ids.map((request_item_id) => ({ request_item_id }))).map((row) => ({
   request_item_id: String(row.request_item_id),
   price: row.price ?? null,
 
-  // ✅ PROD GUARANTEE:
-  // внутри одного proposal_id поставщик ВСЕГДА один
-  supplier: supplierLabel,
+  // ✅ В БД supplier только реальный или NULL (никаких "— без поставщика —")
+  supplier: supplierDb,
 
   note: row.note ?? null,
 }));
-
 
     if (metaRows.length) {
       try {
@@ -1475,11 +1155,13 @@ export async function createProposalsBySupplier(
       }
     }
 
-    proposals.push({
-      proposal_id: proposalId,
-      supplier: supplierLabel,
-      request_item_ids: ids,
-    });
+  proposals.push({
+  proposal_id: proposalId,
+  proposal_no: proposalNo, // ✅ добавили
+  supplier: supplierLabel,
+  request_item_ids: ids,
+});
+
   }
 
   return { proposals };

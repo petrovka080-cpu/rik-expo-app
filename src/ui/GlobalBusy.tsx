@@ -10,13 +10,13 @@ import React, {
 } from "react";
 import {
   ActivityIndicator,
+  Modal,
   Platform,
   Pressable,
   StyleSheet,
   Text,
   View,
 } from "react-native";
-import RNModal from "react-native-modal";
 
 // Blur (expo-blur) опционально
 let BlurViewAny: any = null;
@@ -41,10 +41,8 @@ type BusyCtx = {
   show: (key?: string, label?: string) => void;
   hide: (key?: string) => void;
 
-  /** true если busy активен; если передан key — только для него */
   isBusy: (key?: string) => boolean;
 
-  /** безопасный run: при повторном клике НЕ кидает ошибку */
   run: <T>(fn: () => Promise<T>, opts?: BusyRunOpts) => Promise<T | null>;
 };
 
@@ -62,11 +60,8 @@ export function GlobalBusyProvider({
   const [label, setLabel] = useState<string>("Загрузка…");
   const [phase, setPhase] = useState<0 | 1>(0);
 
-  // сколько операций сейчас в работе (по key)
   const activeRef = useRef<Map<string, number>>(new Map());
-  // какой key последний “показан” (чтобы overlay был адекватный)
   const lastShownKeyRef = useRef<string | null>(null);
-
   const startedAtRef = useRef<Record<string, number>>({});
 
   const recomputeUiKey = useCallback(() => {
@@ -76,7 +71,6 @@ export function GlobalBusyProvider({
       setUiKey(null);
       return;
     }
-    // держим overlay на последнем показанном key, если он ещё активен
     const last = lastShownKeyRef.current;
     const next = last && activeRef.current.has(last) ? last : keys[keys.length - 1];
     lastShownKeyRef.current = next;
@@ -87,7 +81,9 @@ export function GlobalBusyProvider({
     const kk = String(k ?? "busy");
     const nextLabel = String(l ?? "Загрузка…");
 
-    // активируем ключ
+if (__DEV__) {
+  console.log("[GBUSY] show", { kk, nextLabel });
+}
     const prevCount = activeRef.current.get(kk) ?? 0;
     activeRef.current.set(kk, prevCount + 1);
 
@@ -99,18 +95,23 @@ export function GlobalBusyProvider({
     setUiKey(kk);
   }, []);
 
+
+
   const hide = useCallback(
     (k?: string) => {
-      const kk = String(k ?? "");
-      if (!kk) return;
+      // ✅ важно: hide() без ключа тоже должен работать
+      const kk = String(k ?? (uiKey ?? ""));
+      if (!kk) {
+        // если вообще нечего скрывать — просто пересчёт
+        recomputeUiKey();
+        return;
+      }
 
       const prevCount = activeRef.current.get(kk) ?? 0;
       if (prevCount <= 1) activeRef.current.delete(kk);
       else activeRef.current.set(kk, prevCount - 1);
 
-      // если прячем текущий — пересчёт
       if (uiKey === kk) recomputeUiKey();
-      // если не текущий — тоже проверим, вдруг уже никого нет
       else if (activeRef.current.size === 0) recomputeUiKey();
     },
     [recomputeUiKey, uiKey]
@@ -133,21 +134,18 @@ export function GlobalBusyProvider({
       const minMs = Math.max(650, Number(opts?.minMs ?? 650));
       const text = String(opts?.label ?? opts?.message ?? "Загрузка…");
 
-      // ✅ если этот key уже идёт — НЕ кидаем reject, просто игнорим
+      // ✅ если этот key уже идёт — игнор
       if (activeRef.current.has(k)) return null;
 
       show(k, text);
 
-      // дать RNModal появиться (iOS)
+      // дать модалке появиться
       await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
-      await sleep(80);
+      await sleep(60);
 
       try {
         const res = await fn();
         return res;
-      } catch (e) {
-        // пробрасываем реальную ошибку (не "busy")
-        throw e;
       } finally {
         const started = startedAtRef.current[k] || Date.now();
         const elapsed = Date.now() - started;
@@ -167,28 +165,25 @@ export function GlobalBusyProvider({
 
   const canBlur = Platform.OS !== "web" && !!BlurViewAny;
   const blurIntensity = phase === 0 ? 18 : 34;
-  const dimOpacity = phase === 0 ? 0.7 : 0.82;
+  const dimOpacity = phase === 0 ? 0.70 : 0.82;
 
   return (
     <BusyContext.Provider value={value}>
       {children}
 
-      <RNModal
-        isVisible={!!uiKey}
-        coverScreen
+      <Modal
+        visible={!!uiKey}
+        transparent
+        animationType="fade"
         statusBarTranslucent
-        backdropOpacity={0}
-        useNativeDriver
-        useNativeDriverForBackdrop
-        hideModalContentWhileAnimating
-        animationIn="fadeIn"
-        animationOut="fadeOut"
-        style={{ margin: 0 }}
+        presentationStyle="overFullScreen"
+        onRequestClose={() => {}}
       >
-        {/* ✅ блокируем ВСЕ тапы */}
         <View style={styles.full} pointerEvents="auto">
+          {/* ✅ блокируем все тапы */}
           <Pressable style={StyleSheet.absoluteFillObject} onPress={() => {}} />
 
+          {/* затемнение */}
           <View
             style={[
               StyleSheet.absoluteFillObject,
@@ -196,6 +191,7 @@ export function GlobalBusyProvider({
             ]}
           />
 
+          {/* blur поверх (опционально) */}
           {canBlur ? (
             <BlurViewAny
               intensity={blurIntensity}
@@ -220,7 +216,7 @@ export function GlobalBusyProvider({
             <Text style={styles.sub}>Пожалуйста, подождите</Text>
           </View>
         </View>
-      </RNModal>
+      </Modal>
     </BusyContext.Provider>
   );
 }
@@ -262,3 +258,4 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
 });
+

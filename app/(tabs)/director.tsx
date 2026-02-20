@@ -1,133 +1,693 @@
 // app/(tabs)/director.tsx — единый блок «Ожидает утверждения (прораб)», БЕЗ нижнего блока «шапок»
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { View, Text, FlatList, Pressable, Alert, ActivityIndicator,
+  RefreshControl, Platform, TextInput, Animated, Linking, InteractionManager } from 'react-native';
+
+import { openSignedUrlUniversal } from "../../src/lib/files";
+import { UI, s } from "../../src/screens/director/director.styles";
+import DirectorDashboard from "../../src/screens/director/DirectorDashboard";
 import {
-  View, Text, FlatList, Pressable, Alert, ActivityIndicator,
-  RefreshControl, Platform, StyleSheet, TextInput, Animated
-} from 'react-native';
-import { StatusBar } from 'expo-status-bar';
+  type FinanceRow,
+  type FinSupplierDebt,
+  type FinRep,
+  mapToFinanceRow,
+  computeFinanceRep,
+  money,
+  nnum,
+  addDaysIso,
+  mid,
+  parseMid,
+} from "../../src/screens/director/director.finance";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+
+import PeriodPickerSheet from "../../src/components/PeriodPickerSheet";
+
+import { toFilterId, shortId, fmtDateOnly } from "../../src/screens/director/director.helpers";
+
 import * as XLSX from 'xlsx';
 import {
-  listDirectorProposalsPending, proposalItems,
-  listDirectorInbox as fetchDirectorInbox, type DirectorInboxRow,
-  RIK_API,
+  listDirectorProposalsPending,
   exportRequestPdf,
-} from '../../src/lib/catalog_api';
+} from "../../src/lib/catalog_api";
+import {
+  type Tab,
+  type DirTopTab,
+  type PendingRow,
+  type Group,
+  type ProposalHead,
+  type ProposalItem,
+  type ProposalAttachmentRow,
+  type SheetKind,
+  type RequestMeta,
+  type RtToast,
+} from "../../src/screens/director/director.types";
+
+import { listAccountantInbox } from "../../src/lib/api/accountant";
+
 import { useGlobalBusy } from '../../src/ui/GlobalBusy';
 import RNModal from "react-native-modal";
 import { supabase, ensureSignedIn } from '../../src/lib/supabaseClient';
-import { runPdf } from "../../src/lib/pdfRunner";
-
+import { runPdfTop } from "../../src/lib/pdfRunner";
 import { Ionicons } from '@expo/vector-icons';
-
-type Tab = 'foreman' | 'buyer';
-
-type PendingRow = {
-  id: number;
-  request_id: number | string;
-  request_item_id: string | null;
-  name_human: string;
-  qty: number;
-  uom?: string | null;
-  rik_code?: string | null;
-  app_code?: string | null;
-  item_kind?: string | null; // material | work | service
-  note?: string | null;
-};
-type Group = { request_id: number | string; items: PendingRow[] };
-
-type ProposalHead = { id: string; submitted_at?: string | null; pretty?: string | null };
-type ProposalItem = {
-  id: number;
-  request_item_id: string | null;   // ✅ ДОБАВИЛИ
-  rik_code: string | null;
-  name_human: string;
-  uom: string | null;
-  app_code: string | null;
-  total_qty: number;
-  price?: number | null;
-  item_kind?: string | null;
-};
-
-const toFilterId = (v: number | string | null | undefined) => {
-  if (v === null || v === undefined) return null;
-  const s = String(v).trim();
-  if (!s) return null;
-  return /^\d+$/.test(s) ? Number(s) : s;
-};
-const shortId = (rid: number | string | null | undefined) => {
-  const s = String(rid ?? '');
-  if (!s || s.toLowerCase() === 'nan') return '—';
-  return /^\d+$/.test(s) ? s : s.slice(0, 8);
-};
-const UI = {
-  bg: '#0B0F14',        // общий фон (почти чёрный)
-  cardBg: '#101826',    // карточки/хедер (чуть светлее)
-  text: '#F8FAFC',      // основной текст (белый)
-  sub: '#9CA3AF',       // вторичный текст (серый)
-  border: '#1F2A37',    // границы (тёмные)
-
-  tabActiveBg: '#101826',
-  tabInactiveBg: 'transparent',
-  tabActiveText: '#F8FAFC',
-  tabInactiveText: '#9CA3AF',
-
-  btnApprove: '#22C55E', // зелёный
-  btnReject:  '#EF4444', // красный
-  btnNeutral: 'rgba(255,255,255,0.08)',
+import SendPrimaryButton from "../../src/ui/SendPrimaryButton";
+import DeleteAllButton from "../../src/ui/DeleteAllButton";
+import RejectItemButton from "../../src/ui/RejectItemButton";
+import DirectorFinanceCardModal from "../../src/screens/director/DirectorFinanceCardModal";
+import DirectorFinanceDebtModal from "../../src/screens/director/DirectorFinanceDebtModal";
+import DirectorFinanceSpendModal from "../../src/screens/director/DirectorFinanceSpendModal";
+import DirectorFinanceKindSuppliersModal from "../../src/screens/director/DirectorFinanceKindSuppliersModal";
+import DirectorFinanceSupplierModal from "../../src/screens/director/DirectorFinanceSupplierModal";
 
 
-  accent: '#22C55E',     // акцент (для линий/рамок)
-};
 export default function DirectorScreen() {
-  const busy = useGlobalBusy();
+    const busy = useGlobalBusy();
+const insets = useSafeAreaInsets();
 const [tab, setTab] = useState<Tab>('foreman');
-  // ===== Collapsing header (как у прораба) =====
-  const HEADER_MAX = 210;
-  const HEADER_MIN = 76;
-  const HEADER_SCROLL = HEADER_MAX - HEADER_MIN;
 
-  const scrollY = useRef(new Animated.Value(0)).current;
-  const clampedY = Animated.diffClamp(scrollY, 0, HEADER_SCROLL);
+const [dirTab, setDirTab] = useState<DirTopTab>("Заявки");
 
-  const headerHeight = clampedY.interpolate({
+type FinPage = "home" | "debt" | "spend" | "kind" | "supplier";
+
+const [finOpen, setFinOpen] = useState(false);
+const [finPage, setFinPage] = useState<FinPage>("home");
+
+// стек страниц для "назад"
+const finStackRef = useRef<FinPage[]>(["home"]);
+const pushFin = useCallback((p: FinPage) => {
+  finStackRef.current = [...finStackRef.current, p];
+  setFinPage(p);
+}, []);
+const popFin = useCallback(() => {
+  const s = finStackRef.current.slice(0, -1);
+  finStackRef.current = s.length ? s : ["home"];
+  setFinPage(finStackRef.current[finStackRef.current.length - 1] || "home");
+}, []);
+
+const [finSupplier, setFinSupplier] = useState<FinSupplierDebt | null>(null);
+
+const [finLoading, setFinLoading] = useState(false);
+const [finRows, setFinRows] = useState<FinanceRow[]>([]);
+const [finSpendRows, setFinSpendRows] = useState<any[]>([]);
+const [finRep, setFinRep] = useState<FinRep>(() => computeFinanceRep([], { dueDaysDefault: 7, criticalDays: 14 }));
+const [finPeriodOpen, setFinPeriodOpen] = useState(false);
+const [finFrom, setFinFrom] = useState<string | null>(null);
+const [finTo, setFinTo] = useState<string | null>(null);
+
+type RepTab = "materials" | "discipline";
+
+type RepRow = {
+  rik_code: string;
+  uom: string;
+  qty_total: number;
+  docs_cnt: number;
+  qty_without_request: number;
+  docs_without_request: number;
+};
+
+type RepWho = { who: string; items_cnt: number };
+
+type RepKpi = {
+  issues_total: number;
+  issues_without_object: number;
+  items_total: number;
+  items_without_request: number;
+};
+
+type RepPayload = {
+  meta?: { from?: string; to?: string; object_name?: string | null };
+  kpi?: RepKpi;
+  rows?: RepRow[];
+  discipline_who?: RepWho[];
+};
+
+const [repOpen, setRepOpen] = useState(false);
+const [repTab, setRepTab] = useState<RepTab>("materials");
+const [repPeriodOpen, setRepPeriodOpen] = useState(false);
+const [repObjOpen, setRepObjOpen] = useState(false);
+const [repFrom, setRepFrom] = useState<string | null>(null);
+const [repTo, setRepTo] = useState<string | null>(null);
+const [repObjectName, setRepObjectName] = useState<string | null>(null); // пока null = все
+
+const [repLoading, setRepLoading] = useState(false);
+const [repData, setRepData] = useState<RepPayload | null>(null);
+const [repOptLoading, setRepOptLoading] = useState(false);
+const [repOptObjects, setRepOptObjects] = useState<string[]>([]);
+
+const isoDate = (d: Date) => {
+    const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd}`;
+};
+
+const minusDays = (days: number) => {
+  const d = new Date();
+  d.setDate(d.getDate() - days);
+  return d;
+};
+
+useEffect(() => {
+  if (repFrom || repTo) return;
+  const to = isoDate(new Date());
+  const from = isoDate(minusDays(30));
+  setRepFrom(from);
+  setRepTo(to);
+}, [repFrom, repTo]);
+
+const repPeriodShort = useMemo(() => {
+  return repFrom || repTo
+    ? `${repFrom ? fmtDateOnly(repFrom) : "—"} → ${repTo ? fmtDateOnly(repTo) : "—"}`
+    : "Последние 30 дней";
+}, [repFrom, repTo]);
+const applyObjectFilter = useCallback(async (obj: string | null) => {
+  setRepObjectName(obj);
+
+  const from = repFrom ? String(repFrom).slice(0, 10) : isoDate(minusDays(30));
+  const to = repTo ? String(repTo).slice(0, 10) : isoDate(new Date());
+
+  setRepLoading(true);
+  try {
+    const { data, error } = await supabase.rpc("rpc_wh_report_issued_by_req_context_v2", {
+      p_from: from,
+      p_to: to,
+      p_object_name: obj, 
+      p_level_code: null,
+      p_system_code: null,
+      p_zone_code: null,
+    });
+    if (error) throw error;
+
+    const payload = (data ?? null) as any;
+    setRepData(payload && typeof payload === "object" ? payload : null);
+  } catch (e: any) {
+    console.warn("[director] applyObjectFilter:", e?.message ?? e);
+    setRepData(null);
+    Alert.alert("Отчёты", e?.message ?? "Не удалось пересчитать отчёт");
+  } finally {
+    setRepLoading(false);
+  }
+}, [repFrom, repTo, supabase]);
+
+const fetchReport = useCallback(async () => {
+  const from = repFrom ? String(repFrom).slice(0, 10) : isoDate(minusDays(30));
+  const to = repTo ? String(repTo).slice(0, 10) : isoDate(new Date());
+
+  setRepLoading(true);
+  try {
+    const { data, error } = await supabase.rpc("rpc_wh_report_issued_by_req_context_v2", {
+      p_from: from,
+      p_to: to,
+      p_object_name: repObjectName,   
+      p_level_code: null,
+      p_system_code: null,
+      p_zone_code: null,
+    });
+
+    if (error) throw error;
+
+    const payload = (data ?? null) as any;
+    setRepData(payload && typeof payload === "object" ? payload : null);
+  } catch (e: any) {
+    console.warn("[director] fetchReport:", e?.message ?? e);
+    setRepData(null);
+    Alert.alert("Отчёты", e?.message ?? "Не удалось получить отчёт");
+  } finally {
+    setRepLoading(false);
+  }
+}, [repFrom, repTo, repObjectName]);
+
+const fetchReportOptions = useCallback(async () => {
+  const from = repFrom ? String(repFrom).slice(0, 10) : isoDate(minusDays(30));
+  const to = repTo ? String(repTo).slice(0, 10) : isoDate(new Date());
+
+  setRepOptLoading(true);
+  try {
+    const { data, error } = await supabase.rpc("rpc_wh_report_req_context_options", {
+      p_from: from,
+      p_to: to,
+    });
+    if (error) throw error;
+
+    const objects = Array.isArray((data as any)?.objects) ? (data as any).objects : [];
+    setRepOptObjects(objects.map((x: any) => String(x ?? "").trim()).filter(Boolean));
+  } catch (e: any) {
+    console.warn("[director] fetchReportOptions:", e?.message ?? e);
+    setRepOptObjects([]);
+  } finally {
+    setRepOptLoading(false);
+  }
+}, [repFrom, repTo]);
+const applyReportPeriod = useCallback(async (nextFrom: string | null, nextTo: string | null) => {
+  setRepFrom(nextFrom);
+  setRepTo(nextTo);
+  setRepObjectName(null);
+  setRepPeriodOpen(false);
+
+ const from = (nextFrom ? String(nextFrom).slice(0, 10) : isoDate(minusDays(30)));
+  const to = (nextTo ? String(nextTo).slice(0, 10) : isoDate(new Date()));
+
+  setRepOptLoading(true);
+  setRepLoading(true);
+  try {
+    
+    const opt = await supabase.rpc("rpc_wh_report_req_context_options", { p_from: from, p_to: to });
+if (opt.error) throw opt.error;
+const objects = Array.isArray((opt.data as any)?.objects) ? (opt.data as any).objects : [];
+
+console.log("OPTIONS RAW:", opt.data);
+console.log("OBJECTS ARRAY:", objects);
+
+setRepOptObjects(objects.map((x: any) => String(x ?? "").trim()).filter(Boolean));
+
+    const rep = await supabase.rpc("rpc_wh_report_issued_by_req_context_v2", {
+      p_from: from,
+      p_to: to,
+      p_object_name: null,
+      p_level_code: null,
+      p_system_code: null,
+      p_zone_code: null,
+    });
+    if (rep.error) throw rep.error;
+    const payload = (rep.data ?? null) as any;
+    setRepData(payload && typeof payload === "object" ? payload : null);
+  } catch (e: any) {
+    console.warn("[director] applyReportPeriod:", e?.message ?? e);
+    setRepData(null);
+    setRepOptObjects([]);
+    Alert.alert("Отчёты", e?.message ?? "Не удалось пересчитать отчёт");
+  } finally {
+    setRepOptLoading(false);
+    setRepLoading(false);
+  }
+}, []);
+
+const openReports = useCallback(async () => {
+  setRepOpen(true);
+  setRepTab("materials");
+  try {
+    await fetchReportOptions();
+  } catch {}
+  try {
+    await fetchReport();
+  } catch {}
+}, [fetchReportOptions, fetchReport]);
+
+
+const closeReports = useCallback(() => {
+  setRepOpen(false);
+  setRepPeriodOpen(false);
+}, []);
+
+
+const FIN_DUE_DAYS_DEFAULT = 7;
+const FIN_CRITICAL_DAYS = 14;
+const [finKindName, setFinKindName] = useState<string>("");
+const [finKindList, setFinKindList] = useState<any[]>([]);
+const mountedRef = useRef(true);
+useEffect(() => {
+  return () => { mountedRef.current = false; };
+}, []);
+
+const openSupplier = useCallback((s: any) => {
+   const supplierName = (() => {
+  if (typeof s === "string") return s.trim() || "—";
+    const v =
+    s?.supplier?.supplier ??   
+    s?.supplier ??             
+    s?.name ??                
+    "";
+  return String(v).trim() || "—";
+})();
+
+const kindName = (() => {
+  if (typeof s === "string") return "";
+  const v = s?._kindName ?? s?.kindName ?? "";
+  return String(v).trim();
+})();
+
+  const inPeriod = (iso: any) => {
+    const d = String(iso ?? "").slice(0, 10);
+    if (!d) return true;
+    if (finFrom && d < String(finFrom).slice(0, 10)) return false;
+    if (finTo && d > String(finTo).slice(0, 10)) return false;
+    return true;
+  };
+
+  let allowedProposalIds: Set<string> | null = null;
+  const proposalNoById: Record<string, string> = {};
+
+  if (kindName) {
+    const spend = (Array.isArray(finSpendRows) ? finSpendRows : [])
+      .filter((r: any) => String(r?.supplier ?? "").trim() === supplierName)
+      .filter((r: any) => String(r?.kind_name ?? "").trim() === kindName)
+      .filter((r: any) => inPeriod(r?.director_approved_at ?? r?.approved_at ?? r?.approvedAtIso));
+
+    allowedProposalIds = new Set(
+      spend.map((r: any) => String(r?.proposal_id ?? "").trim()).filter(Boolean)
+    );
+
+    for (const r of spend) {
+      const pid = String(r?.proposal_id ?? "").trim();
+      const pno = String(r?.proposal_no ?? "").trim();
+      if (pid && pno) proposalNoById[pid] = pno;
+    }
+  }
+
+  const fin = (Array.isArray(finRows) ? finRows : [])
+    .filter((r: any) => String(r?.supplier ?? "").trim() === supplierName)
+    .filter((r: any) => inPeriod(r?.approvedAtIso ?? r?.approved_at ?? r?.director_approved_at))
+    .filter((r: any) => {
+      if (!allowedProposalIds) return true;
+      const pid = String(r?.proposalId ?? r?.proposal_id ?? "").trim();
+      return pid && allowedProposalIds.has(pid);
+    });
+
+  const t0 = mid(new Date());
+  const dueDays = FIN_DUE_DAYS_DEFAULT;
+
+const pickIso = (...vals: any[]) => {
+  for (const v of vals) {
+    const s = String(v ?? "").trim();
+    if (!s) continue;
+    return s.slice(0, 10);
+  }
+  return null;
+};
+
+const pickApprovedIso = (r: any) =>
+  pickIso(
+    r?.approvedAtIso,
+    r?.director_approved_at,
+    r?.approved_at,
+    r?.approvedAt,
+    r?.approved_at_iso
+  );
+
+const pickInvoiceIso = (r: any) =>
+  pickIso(r?.invoiceDate, r?.invoice_date, r?.invoiceIso, r?.invoice_at, r?.created_at, r?.raw?.created_at);
+
+
+const pickAmount = (r: any) =>
+  nnum(r?.amount ?? r?.invoice_amount ?? r?.invoiceAmount ?? r?.approved_amount ?? 0);
+
+const pickPaid = (r: any) =>
+  nnum(r?.paidAmount ?? r?.total_paid ?? r?.totalPaid ?? r?.paid_amount ?? 0);
+
+
+  const invoices = fin
+    .map((r: any, idx: number) => {
+      const amount = pickAmount(r);
+const paid = pickPaid(r);
+      const rest = Math.max(amount - paid, 0);
+
+      const pid = String(r?.proposalId ?? r?.proposal_id ?? "").trim();
+      const invNo = String(r?.invoiceNumber ?? r?.invoice_number ?? "").trim();
+
+      const approvedIso =
+  pickApprovedIso(r) ??
+  pickIso(r?.raw?.director_approved_at, r?.raw?.approved_at, r?.raw?.approvedAtIso);
+
+const invoiceIso =
+  pickInvoiceIso(r) ??
+  pickIso(r?.raw?.invoice_date, r?.raw?.invoice_at, r?.raw?.created_at);
+
+
+      const pno = pid ? String(proposalNoById[pid] ?? r?.proposal_no ?? "").trim() : "";
+      const title =
+        invNo ? `Счёт №${invNo}` :
+        pno ? `Предложение ${pno}` :
+        pid ? `Предложение #${pid.slice(0, 8)}` :
+        "Счёт";
+
+      const dueIso =
+        r?.dueDate ??
+        r?.due_date ??
+        (invoiceIso ? addDaysIso(String(invoiceIso).slice(0, 10), dueDays) : null) ??
+        (approvedIso ? addDaysIso(String(approvedIso).slice(0, 10), dueDays) : null);
+
+      const dueMid = parseMid(dueIso) ?? 0;
+      const isOverdue = rest > 0 && !!dueMid && dueMid < t0;
+
+      let isCritical = false;
+      if (isOverdue && dueMid) {
+        const days = Math.floor((t0 - dueMid) / (24 * 3600 * 1000));
+        isCritical = days >= FIN_CRITICAL_DAYS;
+      }
+
+      const key = [
+        pid || "",
+        invNo || "",
+        String(invoiceIso ?? ""),
+        String(approvedIso ?? ""),
+        String(idx),
+      ].join("|");
+
+      return {
+        id: key,
+        title,
+        amount,
+        paid,
+        rest,
+        isOverdue,
+        isCritical,
+        approvedIso: approvedIso ? String(approvedIso) : null,
+        invoiceIso: invoiceIso ? String(invoiceIso) : null,
+        dueIso: dueIso ? String(dueIso) : null,
+      };
+    })
+    .filter((x: any) => x.amount > 0 || x.rest > 0);
+
+  const debtAmount = invoices.reduce((s2: number, x: any) => s2 + Math.max(nnum(x.rest), 0), 0);
+  const debtCount = invoices.filter((x: any) => Math.max(nnum(x.rest), 0) > 0).length;
+  const overdueCount = invoices.filter((x: any) => x.isOverdue && Math.max(nnum(x.rest), 0) > 0).length;
+  const criticalCount = invoices.filter((x: any) => x.isCritical && Math.max(nnum(x.rest), 0) > 0).length;
+
+  const payload: any = {
+    supplier: supplierName,
+    _kindName: kindName || "",
+    amount: debtAmount,
+    count: debtCount,
+    overdueCount,
+    criticalCount,
+    invoices,
+  };
+
+setFinSupplier(payload);
+pushFin("supplier");
+
+
+}, [finRows, finSpendRows, finFrom, finTo]);
+
+const closeSupplier = useCallback(() => {
+  setFinSupplier(null);
+  popFin();
+}, [popFin]);
+
+
+
+const openFinKind = useCallback((kindName: string, list: any[]) => {
+  setFinKindName(String(kindName || ""));
+  setFinKindList(Array.isArray(list) ? list : []);
+  pushFin("kind");
+}, [pushFin]);
+
+const closeFinKind = useCallback(() => {
+  setFinKindName("");
+  setFinKindList([]);
+  popFin();
+}, [popFin]);
+
+const openFinPeriod = useCallback(() => setFinPeriodOpen(true), []);
+const closeFinPeriod = useCallback(() => setFinPeriodOpen(false), []);
+
+const openFinancePage = useCallback((page: FinPage) => {
+  finStackRef.current = ["home"];
+  setFinOpen(true);
+  setFinPage("home");
+
+  if (page !== "home") {
+    finStackRef.current = ["home", page];
+    setFinPage(page);
+  }
+}, []);
+
+const closeFinance = useCallback(() => {
+  setFinOpen(false);
+  setFinPage("home");
+  finStackRef.current = ["home"];
+  setFinSupplier(null);
+  setFinKindName("");
+  setFinKindList([]);
+}, []);
+
+const onFinancePdf = useCallback(async () => {
+  await runPdfTop({
+    busy,
+    supabase,
+    key: "pdf:director:finance",
+    label: "Готовлю управленческий отчёт…",
+    mode: Platform.OS === "web" ? "preview" : "share",
+    fileName: "Director_Management_Report",
+    getRemoteUrl: async () => {
+    
+      const { exportDirectorManagementReportPdf } = await import("../../src/lib/api/pdf_director");
+      return await exportDirectorManagementReportPdf({
+        periodFrom: finFrom,
+        periodTo: finTo,
+        financeRows: finRows,
+        spendRows: finSpendRows,
+        topN: 15,
+        dueDaysDefault: FIN_DUE_DAYS_DEFAULT,
+        criticalDays: FIN_CRITICAL_DAYS,
+      });
+    },
+  });
+}, [
+  busy,
+  supabase,
+  finFrom,
+  finTo,
+  finRows,
+  finSpendRows,
+  FIN_DUE_DAYS_DEFAULT,
+  FIN_CRITICAL_DAYS,
+]);
+
+
+const onSupplierPdf = useCallback(async () => {
+  const supName = String((finSupplier as any)?.supplier ?? "").trim();
+  if (!supName) {
+    Alert.alert("PDF", "Поставщик не выбран");
+    return;
+  }
+
+  await runPdfTop({
+    busy,
+    supabase,
+    key: `pdf:director:supplier:${supName}`,
+    label: "Готовлю сводку…",
+     mode: Platform.OS === "web" ? "preview" : "share",
+    fileName: `Supplier_${supName}`,
+    getRemoteUrl: async () => {
+      const kindName = String((finSupplier as any)?._kindName ?? "").trim();
+
+      const inPeriod = (iso: any) => {
+        const d = String(iso ?? "").slice(0, 10);
+        if (!d) return true;
+        if (finFrom && d < String(finFrom).slice(0, 10)) return false;
+        if (finTo && d > String(finTo).slice(0, 10)) return false;
+        return true;
+      };
+
+      let financeFiltered = (Array.isArray(finRows) ? finRows : [])
+        .filter((r: any) => String(r?.supplier ?? "").trim() === supName)
+        .filter((r: any) => inPeriod(r?.approvedAtIso ?? r?.approved_at ?? r?.director_approved_at));
+
+      let spendFiltered = (Array.isArray(finSpendRows) ? finSpendRows : [])
+        .filter((r: any) => String(r?.supplier ?? "").trim() === supName)
+        .filter((r: any) => inPeriod(r?.director_approved_at ?? r?.approved_at ?? r?.approvedAtIso));
+
+      if (kindName) {
+        spendFiltered = spendFiltered.filter((r: any) => String(r?.kind_name ?? "").trim() === kindName);
+      }
+
+      spendFiltered = (spendFiltered as any[]).filter((r) => String(r?.proposal_id ?? "").trim());
+
+      const { exportDirectorSupplierSummaryPdf } = await import("../../src/lib/api/pdf_director");
+      return await exportDirectorSupplierSummaryPdf({
+        supplier: supName,
+        periodFrom: finFrom,
+        periodTo: finTo,
+        financeRows: financeFiltered,
+        spendRows: spendFiltered,
+      });
+    },
+  });
+}, [busy, supabase, finSupplier, finFrom, finTo, finRows, finSpendRows]);
+
+
+const isMobile = Platform.OS !== "web";
+
+const HEADER_MIN = isMobile
+  ? (dirTab === "Заявки" ? 148 : 108)
+  : 76;
+
+const HEADER_MAX = isMobile
+  ? (dirTab === "Заявки" ? 198 : 150)
+  : (dirTab === "Заявки" ? 210 : 170);
+
+const HEADER_SCROLL = Math.max(1, HEADER_MAX - HEADER_MIN);
+
+const isRequestsTab = dirTab === "Заявки";
+
+// 1) scroll value
+const scrollY = useRef(new Animated.Value(0)).current;
+
+// 2) safe clamp range (never 0)
+const _HEADER_SCROLL = Math.max(1, Number(HEADER_SCROLL || 0));
+
+// 3) clampedY MUST be declared before any interpolate usage
+const clampedY = useMemo(() => {
+  return Animated.diffClamp(scrollY, 0, _HEADER_SCROLL);
+}, [scrollY, _HEADER_SCROLL]);
+
+// 4) interpolations
+const headerHeight = useMemo(() => {
+  return clampedY.interpolate({
     inputRange: [0, HEADER_SCROLL],
     outputRange: [HEADER_MAX, HEADER_MIN],
-    extrapolate: 'clamp',
+    extrapolate: "clamp",
   });
+}, [clampedY, HEADER_SCROLL, HEADER_MAX, HEADER_MIN]);
 
-  const titleSize = clampedY.interpolate({
+const titleSize = useMemo(() => {
+  return clampedY.interpolate({
     inputRange: [0, HEADER_SCROLL],
     outputRange: [24, 16],
-    extrapolate: 'clamp',
+    extrapolate: "clamp",
   });
+}, [clampedY, HEADER_SCROLL]);
 
-  const subOpacity = clampedY.interpolate({
+const subOpacity = useMemo(() => {
+  return clampedY.interpolate({
     inputRange: [0, HEADER_SCROLL],
     outputRange: [1, 0],
-    extrapolate: 'clamp',
+    extrapolate: "clamp",
   });
+}, [clampedY, HEADER_SCROLL]);
 
-  const headerShadow = clampedY.interpolate({
-    inputRange: [0, 10],
-    outputRange: [0, 0.12],
-    extrapolate: 'clamp',
-  });
+const headerShadow = useMemo(() => {
+  return isRequestsTab
+    ? clampedY.interpolate({
+        inputRange: [0, 10],
+        outputRange: [0, 0.12],
+        extrapolate: "clamp",
+      })
+    : 0.12;
+}, [isRequestsTab, clampedY]);
 
-  // ===== ПРОРАБ =====
   const [rows, setRows] = useState<PendingRow[]>([]);
-  const [loadingRows, setLoadingRows] = useState(false);
-  const [actingId, setActingId] = useState<string | null>(null);
-  const [actingAll, setActingAll] = useState<number | string | null>(null);
- // ===== Bottom Sheet (единая модалка) =====
-type SheetKind = 'none' | 'request' | 'proposal';
+const [loadingRows, setLoadingRows] = useState(false);
+const [actingId, setActingId] = useState<string | null>(null);
+
+
+const [reqDeleteId, setReqDeleteId] = useState<number | string | null>(null);
+const [reqSendId, setReqSendId] = useState<number | string | null>(null);
+
+
+const [propApproveId, setPropApproveId] = useState<string | null>(null);
+const [propReturnId, setPropReturnId] = useState<string | null>(null);
+
+const [propAttByProp, setPropAttByProp] = useState<Record<string, ProposalAttachmentRow[]>>({});
+  const [propAttBusyByProp, setPropAttBusyByProp] = useState<Record<string, boolean>>({});
 
 const [sheetKind, setSheetKind] = useState<SheetKind>('none');
 const [sheetRequest, setSheetRequest] = useState<Group | null>(null);
 const [sheetProposalId, setSheetProposalId] = useState<string | null>(null);
-// ✅ lock, чтобы не грузить несколько proposals одновременно
+
 const loadingPropRef = useRef<Record<string, boolean>>({});
 const lastTapRef = useRef<number>(0);
-
+const pdfTapLockRef = useRef<Record<string, boolean>>({});
 const isSheetOpen = sheetKind !== 'none';
 
 const closeSheet = useCallback(() => {
@@ -148,32 +708,158 @@ const openProposalSheet = useCallback((pid: string) => {
   setSheetKind('proposal');
 }, []);
 
-  // анти-мигание
+
   const didInit = useRef(false);
   const fetchTicket = useRef(0);
   const lastNonEmptyRows = useRef<PendingRow[]>([]);
+  
 
-  // ===== (оставил загрузку «шапок», но НЕ рендерю) =====
-  const [directorReqs, setDirectorReqs] = useState<Array<{ request_id: string; items_count: number; submitted_at: string | null; doc_no?: string | null }>>([]);
-  const [loadingDirReqs, setLoadingDirReqs] = useState(false);
-
-  // ===== СНАБЖЕНЕЦ =====
   const [propsHeads, setPropsHeads] = useState<ProposalHead[]>([]);
 const [buyerPropsCount, setBuyerPropsCount] = useState<number>(0);
 const [buyerPositionsCount, setBuyerPositionsCount] = useState<number>(0);
 const [propItemsCount, setPropItemsCount] = useState<Record<string, number>>({});
   const [loadingProps, setLoadingProps] = useState(false);
-  const [expanded, setExpanded] = useState<string | null>(null);
-  const [itemsByProp, setItemsByProp] = useState<Record<string, ProposalItem[]>>({});
-  const [loadedByProp, setLoadedByProp] = useState<Record<string, boolean>>({});
+
+const [itemsByProp, setItemsByProp] = useState<Record<string, ProposalItem[]>>({});
+const [loadedByProp, setLoadedByProp] = useState<Record<string, boolean>>({});
+
+
+const [loadingPropId, setLoadingPropId] = useState<string | null>(null);
+
   const [decidingId, setDecidingId] = useState<string | null>(null);
-const screenLock = !!actingId || actingAll != null || decidingId != null;
+
+
+const [actingPropItemId, setActingPropItemId] = useState<number | null>(null);
+
+const screenLock =
+  !!actingId ||
+  reqDeleteId != null ||
+  reqSendId != null ||
+  propApproveId != null ||
+  propReturnId != null ||
+  actingPropItemId != null;
 
   const [pdfHtmlByProp, setPdfHtmlByProp] = useState<Record<string, string>>({});
+const [rtToast, setRtToast] = useState<RtToast>({
+  visible: false,
+  title: '',
+  body: '',
+  count: 0,
+});
 
+const rtToastTimerRef = useRef<any>(null);
+
+const showRtToast = useCallback((title?: string, body?: string) => {
+  const t = String(title || 'Уведомление').trim();
+  const b = String(body || '').trim();
+
+  if (rtToastTimerRef.current) {
+    clearTimeout(rtToastTimerRef.current);
+    rtToastTimerRef.current = null;
+  }
+
+  setRtToast(prev => {
+    const same = prev.visible && prev.title === t && prev.body === b;
+    return {
+      visible: true,
+      title: t,
+      body: b,
+      count: same ? prev.count + 1 : 1,
+    };
+  });
+
+  rtToastTimerRef.current = setTimeout(() => {
+    setRtToast(prev => ({ ...prev, visible: false }));
+  }, 2600);
+}, []);
+
+const showSuccess = useCallback((msg: string) => {
+  showRtToast('Готово', msg);
+}, [showRtToast]);
   // ===== КЭШ НОМЕРОВ ЗАЯВОК =====
-  const [displayNoByReq, setDisplayNoByReq] = useState<Record<string, string>>({});
+const [displayNoByReq, setDisplayNoByReq] = useState<Record<string, string>>({});
 const [submittedAtByReq, setSubmittedAtByReq] = useState<Record<string, string>>({});
+
+
+const [reqMetaById, setReqMetaById] = useState<Record<string, RequestMeta>>({});
+const reqMetaByIdRef = useRef<Record<string, RequestMeta>>({});
+useEffect(() => { reqMetaByIdRef.current = reqMetaById; }, [reqMetaById]);
+// ✅ request_item_id -> note (чтобы в proposal-sheet было как у прораба)
+const [reqItemNoteById, setReqItemNoteById] = useState<Record<string, string>>({});
+const reqItemNoteByIdRef = useRef<Record<string, string>>({});
+useEffect(() => { reqItemNoteByIdRef.current = reqItemNoteById; }, [reqItemNoteById]);
+
+// proposal_id -> [request_id...]
+const [propReqIdsByProp, setPropReqIdsByProp] = useState<Record<string, string[]>>({});
+const propReqIdsByPropRef = useRef<Record<string, string[]>>({});
+useEffect(() => { propReqIdsByPropRef.current = propReqIdsByProp; }, [propReqIdsByProp]);
+
+const preloadRequestMeta = useCallback(async (reqIds: string[]) => {
+  const uniq = Array.from(new Set((reqIds || []).map(String).filter(Boolean)));
+  const existing = reqMetaByIdRef.current || {};
+  const need = uniq.filter(id => !existing[id]);
+  if (!need.length) return;
+
+  try {
+    const q = await supabase
+      .from("requests")
+      .select("id, object_name, object, level_code, system_code, zone_code, site_address_snapshot, note, comment")
+      .in("id", need);
+
+    if (q.error) throw q.error;
+
+    const next: Record<string, RequestMeta> = {};
+    (q.data || []).forEach((r: any) => {
+      const id = String(r?.id || "").trim();
+      if (!id) return;
+      next[id] = {
+        // note_preview больше НЕ используем (и не читаем из view)
+        object_name: r?.object_name ?? null,
+        object: r?.object ?? null,
+        level_code: r?.level_code ?? null,
+        system_code: r?.system_code ?? null,
+        zone_code: r?.zone_code ?? null,
+        site_address_snapshot: r?.site_address_snapshot ?? null,
+        note: r?.note ?? null,
+        comment: r?.comment ?? null,
+      };
+    });
+
+    if (Object.keys(next).length) {
+      setReqMetaById(prev => ({ ...prev, ...next }));
+    }
+  } catch (e: any) {
+    console.warn("[director] preloadRequestMeta:", e?.message ?? e);
+  }
+}, [supabase]);
+const preloadProposalRequestIds = useCallback(async (proposalId: string, requestItemIds: (string | null)[]) => {
+  const pid = String(proposalId || "").trim();
+  if (!pid) return;
+
+  // если уже есть — не дёргаем
+  if (propReqIdsByPropRef.current?.[pid]?.length) return;
+
+  const ids = Array.from(new Set((requestItemIds || []).map(x => String(x || "").trim()).filter(Boolean)));
+  if (!ids.length) return;
+
+  try {
+    // request_items: id -> request_id
+    const q = await supabase
+      .from("request_items")
+      .select("id, request_id")
+      .in("id", ids);
+
+    if (q.error) throw q.error;
+
+    const reqIds = Array.from(new Set((q.data || []).map((r: any) => String(r?.request_id || "").trim()).filter(Boolean)));
+    if (!reqIds.length) return;
+
+    setPropReqIdsByProp(prev => ({ ...prev, [pid]: reqIds }));
+    await preloadRequestMeta(reqIds);
+  } catch (e: any) {
+    console.warn("[director] preloadProposalRequestIds:", e?.message ?? e);
+  }
+}, [supabase, preloadRequestMeta]);
 
   const labelForRequest = useCallback((rid: number | string | null | undefined, fallbackDocNo?: string | null) => {
     const key = String(rid ?? '');
@@ -182,12 +868,112 @@ const [submittedAtByReq, setSubmittedAtByReq] = useState<Record<string, string>>
     if (d && d.trim()) return d.trim();
     return `#${shortId(rid)}`;
   }, [displayNoByReq]);
-const fmtDateOnly = (iso?: string | null) => {
-  if (!iso) return '—';
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return '—';
-  return d.toLocaleDateString('ru-RU'); // только дата, без времени
+
+const fetchFinSpendRows = useCallback(async () => {
+  try {
+    let q = supabase
+  .from("v_director_finance_spend_kinds_v3")
+  .select("proposal_id,proposal_no,supplier,kind_code,kind_name,approved_alloc,paid_alloc,paid_alloc_cap,overpay_alloc,director_approved_at");
+
+    if (finFrom) q = q.gte("director_approved_at", finFrom);
+    if (finTo) q = q.lte("director_approved_at", finTo);
+
+    const { data, error } = await q;
+    if (error) throw error;
+
+    setFinSpendRows(Array.isArray(data) ? data : []);
+  } catch (e: any) {
+    console.warn("[director] fetchFinSpendRows:", e?.message ?? e);
+   
+  }
+}, [supabase, finFrom, finTo]);
+
+
+const fetchFinance = useCallback(async () => {
+  setFinLoading(true);
+
+
+  let nextRows: FinanceRow[] | null = null;
+
+  try {
+    const list = await listAccountantInbox();
+
+    const mapped = (Array.isArray(list) ? list : [])
+      .map(mapToFinanceRow)
+      .filter(x => !!x && !!x.id)
+      .filter(x => Number.isFinite(Number(x.amount)));
+
+
+    const t0 = mid(new Date());
+    mapped.sort((a, b) => {
+      const aPaid = nnum(a.amount) > 0 && Math.max(nnum(a.amount) - nnum(a.paidAmount), 0) <= 0;
+      const bPaid = nnum(b.amount) > 0 && Math.max(nnum(b.amount) - nnum(b.paidAmount), 0) <= 0;
+
+      const aDueIso =
+  a.dueDate ??
+  (a.invoiceDate ? addDaysIso(a.invoiceDate, FIN_DUE_DAYS_DEFAULT) : null) ??
+  (a.approvedAtIso ? addDaysIso(a.approvedAtIso, FIN_DUE_DAYS_DEFAULT) : null);
+
+const bDueIso =
+  b.dueDate ??
+  (b.invoiceDate ? addDaysIso(b.invoiceDate, FIN_DUE_DAYS_DEFAULT) : null) ??
+  (b.approvedAtIso ? addDaysIso(b.approvedAtIso, FIN_DUE_DAYS_DEFAULT) : null);
+      const aDue = parseMid(aDueIso) ?? 0;
+      const bDue = parseMid(bDueIso) ?? 0;
+
+      const aRest = Math.max(nnum(a.amount) - nnum(a.paidAmount), 0);
+      const bRest = Math.max(nnum(b.amount) - nnum(b.paidAmount), 0);
+
+      const aOver = (!aPaid && aRest > 0 && aDue && aDue < t0) ? 1 : 0;
+      const bOver = (!bPaid && bRest > 0 && bDue && bDue < t0) ? 1 : 0;
+
+      if (aOver !== bOver) return bOver - aOver;
+
+      // дальше сорт по сроку
+      return (aDue || 0) - (bDue || 0);
+    });
+
+    nextRows = mapped;
+
+    const rep = computeFinanceRep(mapped, {
+  dueDaysDefault: FIN_DUE_DAYS_DEFAULT,
+  criticalDays: FIN_CRITICAL_DAYS,
+  periodFromIso: finFrom,
+  periodToIso: finTo,
+});
+    setFinRows(mapped);
+setFinRep(rep);
+await fetchFinSpendRows();
+
+  } catch (e: any) {
+    console.warn("[director] fetchFinance:", e?.message ?? e);
+    if (nextRows) {
+      setFinRows(nextRows);
+      setFinRep(computeFinanceRep(nextRows, { dueDaysDefault: FIN_DUE_DAYS_DEFAULT, criticalDays: FIN_CRITICAL_DAYS }));
+    }
+try { await fetchFinSpendRows(); } catch {}
+  } finally {
+    setFinLoading(false);
+  }
+}, [finFrom, finTo, fetchFinSpendRows]);
+
+
+const isPaidRow = (r: FinanceRow) => {
+  const amt = nnum(r.amount);
+  const paidAmt = nnum(r.paidAmount);
+  const rest = Math.max(amt - paidAmt, 0);
+
+  // если остаток = 0 -> точно оплачено
+  if (amt > 0 && rest <= 0) return true;
+
+  // статусом НЕ решаем (иначе "оплачено частично" выкинет частичные)
+  return false;
 };
+
+const getDueIso = (r: FinanceRow) =>
+  r.dueDate ??
+  (r.invoiceDate ? addDaysIso(r.invoiceDate, FIN_DUE_DAYS_DEFAULT) : null) ??
+  (r.approvedAtIso ? addDaysIso(r.approvedAtIso, FIN_DUE_DAYS_DEFAULT) : null);
 
   const preloadDisplayNos = useCallback(async (reqIds: Array<number | string>) => {
   const needed = Array.from(
@@ -230,7 +1016,6 @@ const fmtDateOnly = (iso?: string | null) => {
 }, [displayNoByReq, submittedAtByReq]);
 
 
-  /* ---------- loaders ---------- */
   const fetchRows = useCallback(async () => {
     const my = ++fetchTicket.current;
     setLoadingRows(true);
@@ -264,36 +1049,10 @@ const fmtDateOnly = (iso?: string | null) => {
     }
   }, [preloadDisplayNos]);
 
-  const fetchDirectorReqs = useCallback(async () => {
-    setLoadingDirReqs(true);
-    try {
-      const inbox = typeof fetchDirectorInbox === 'function'
-        ? await fetchDirectorInbox('На утверждении')
-        : await (RIK_API?.listDirectorInbox?.('На утверждении') ?? []);
-      const reqRows = (inbox || []).filter(r => r.kind === 'request') as DirectorInboxRow[];
-
-      const mapped = reqRows.map(r => ({
-        request_id: String(r.request_id ?? ''),
-        items_count: Number(r.items_count ?? 0),
-        submitted_at: (r.submitted_at ?? null) as (string | null),
-        doc_no: (r as any).doc_no ?? null,
-      }));
-      setDirectorReqs(mapped);
-
-      const idsToPreload = mapped.filter(r => !r.doc_no).map(r => r.request_id).filter(Boolean);
-      if (idsToPreload.length) await preloadDisplayNos(idsToPreload);
-    } catch (e) {
-      console.warn('[director] listDirectorInbox]:', (e as any)?.message ?? e);
-      setDirectorReqs([]);
-    } finally {
-      setLoadingDirReqs(false);
-    }
-  }, [preloadDisplayNos]);
-
   const fetchProps = useCallback(async () => {
     setLoadingProps(true);
     try {
-      // 1) как и раньше: список «На утверждении»
+
       const list = await listDirectorProposalsPending();
       const heads: ProposalHead[] = (list ?? [])
         .filter((x: any) => x && x.id != null && x.submitted_at != null)
@@ -302,8 +1061,6 @@ const fmtDateOnly = (iso?: string | null) => {
       if (!heads.length) { setPropsHeads([]); return; }
 
       const ids = heads.map(h => h.id);
-
-      // 2) подтягиваем красивые номера И границу «миграции» (не отправлено в бухгалтерию)
       const { data, error } = await supabase
         .from('proposals')
         .select('id, proposal_no, id_short, sent_to_accountant_at')
@@ -311,7 +1068,6 @@ const fmtDateOnly = (iso?: string | null) => {
 
       if (error || !Array.isArray(data)) { setPropsHeads(heads); return; }
 
-      // только те, что ЕЩЁ НЕ отправлены в бухгалтерию
       const okIds = new Set<string>(
         data.filter(r => !r?.sent_to_accountant_at).map(r => String(r.id))
       );
@@ -320,7 +1076,7 @@ const fmtDateOnly = (iso?: string | null) => {
 for (const r of data) {
   const id = String((r as any).id);
   const pn = String((r as any).proposal_no ?? '').trim();   // ✅ PR-0024/2026
-  const short = (r as any).id_short;                        // ✅ 178
+  const short = (r as any).id_short;                       
   const pretty = pn || (short != null ? `PR-${String(short)}` : '');
   if (id && pretty) prettyMap[id] = pretty;
 }
@@ -329,7 +1085,7 @@ for (const r of data) {
   .filter(h => okIds.has(h.id))
   .map(h => ({ ...h, pretty: prettyMap[h.id] ?? h.pretty ?? null }));
 
-// ✅ выкидываем предложения без строк (иначе “Состав пуст” будет мусором)
+
 try {
   const propIds = filtered.map(h => h.id);
   if (propIds.length) {
@@ -366,11 +1122,8 @@ try {
   setPropItemsCount({});
 }
 
-
-// KPI: кол-во предложений
 setBuyerPropsCount(filtered.length);
 
-// KPI: кол-во позиций по всем предложениям (быстро одним запросом)
 try {
   const propIds = filtered.map(h => h.id);
   if (propIds.length) {
@@ -395,7 +1148,7 @@ try {
     }
   }, []);
 
-  /* ---------- effects ---------- */
+
   useEffect(() => {
     if (didInit.current) return;
     didInit.current = true;
@@ -403,29 +1156,50 @@ try {
       try {
         await ensureSignedIn();
         await fetchRows();
-        await fetchDirectorReqs();
         await fetchProps();
       } catch (e) {
         console.warn('[Director] ensureSignedIn]:', (e as any)?.message || e);
       }
     })();
-  }, [fetchRows, fetchDirectorReqs, fetchProps]);
+  }, [fetchRows, fetchProps]);
+
+useEffect(() => {
+  return () => {
+    try {
+      if (rtToastTimerRef.current) clearTimeout(rtToastTimerRef.current);
+    } catch {}
+  };
+}, []);
+
+useEffect(() => {
+  if (dirTab !== "Финансы") return;
+  void fetchFinance();
+}, [dirTab, fetchFinance]);
+
 
   useEffect(() => {
-    const ch = supabase.channel('notif-director-rt')
-      .on('postgres_changes', {
-        event: 'INSERT',
-        schema: 'public',
-        table: 'notifications',
-        filter: "role=eq.director"
-      }, (payload: any) => {
-        const n = payload?.new || {};
-        Alert.alert(n.title || 'Уведомление', n.body || '');
-        try { fetchDirectorInbox && fetchDirectorInbox(); } catch {}
-      })
-      .subscribe();
-    return () => { try { supabase.removeChannel(ch); } catch {} };
-  }, []);
+  const ch = supabase.channel('notif-director-rt')
+    .on('postgres_changes', {
+      event: 'INSERT',
+      schema: 'public',
+      table: 'notifications',
+      filter: "role=eq.director"
+    }, (payload: any) => {
+      const n = payload?.new || {};
+      showRtToast(n.title, n.body);
+      void fetchRows();
+      void fetchProps();
+    })
+    .subscribe();
+
+  return () => {
+  try { ch.unsubscribe(); } catch {}
+  try { supabase.removeChannel(ch); } catch {}
+};
+
+}, [fetchRows, fetchProps, showRtToast]);
+
+
     // Экспорт заявки в настоящий XLSX (без предупреждения Excel)
 const exportRequestExcel = useCallback((g: Group) => {
   const rows = g.items;
@@ -500,74 +1274,22 @@ const exportRequestExcel = useCallback((g: Group) => {
   }
 }, [labelForRequest]);
 
-  /* ---------- PDF заявки (прораб) с безопасным window.open ---------- */
   const openRequestPdf = useCallback(async (g: any) => {
   const rid = String(g?.request_id ?? "").trim();
   if (!rid) return;
 
-  await runPdf({
+  await runPdfTop({
     busy,
     supabase,
     key: `pdf:req:${rid}`,
     label: "Открываю PDF…",
     mode: "preview",
     fileName: `Заявка_${rid}`,
-    minOverlayMs: 1400,
     getRemoteUrl: () => exportRequestPdf(rid, "preview"),
   });
 }, [busy, supabase]);
-
-
-    // Найти связанную закупку по proposal_id (для дальнейшего purchase_approve)
-  const findPurchaseIdByProposal = useCallback(async (proposalId: string): Promise<string | null> => {
-    // 1) прямая связка через view
-    const q = await supabase
-      .from('v_purchases')
-      .select('id, proposal_id')
-      .eq('proposal_id', proposalId)
-      .limit(1)
-      .maybeSingle();
-
-    if (!q.error && q.data?.id) return String(q.data.id);
-
-    // 2) fallback: просим сервер создать связь и вернуть id
-    const r = await supabase.rpc('purchase_upsert_from_proposal', { p_proposal_id: String(proposalId) });
-    if (!(r as any).error && (r as any).data) return String((r as any).data);
-
-    return null;
-  }, []);
-// ✅ PROD: seed works/services right after director approve (best-effort)
-const seedWorksAfterApprove = useCallback(async (proposalId: string) => {
-  // 1) сначала пробуем прямой seed из proposal (идеально)
-  try {
-    const r = await supabase.rpc("work_seed_from_proposal" as any, {
-      p_proposal_id: String(proposalId),
-    } as any);
-    if (!r.error) return;
-    console.warn("[director] work_seed_from_proposal error:", r.error?.message);
-  } catch (e) {
-    console.warn("[director] work_seed_from_proposal throw:", e);
-  }
-
-  // 2) fallback: seed из purchase (если нет/не готова функция above)
-  try {
-    const purchaseId = await findPurchaseIdByProposal(String(proposalId));
-    if (!purchaseId) return;
-
-    const r2 = await supabase.rpc("work_seed_from_purchase" as any, {
-      p_purchase_id: String(purchaseId),
-    } as any);
-
-    if (r2.error) {
-      console.warn("[director] work_seed_from_purchase error:", r2.error?.message);
-    }
-  } catch (e) {
-    console.warn("[director] work_seed_from_purchase throw:", e);
-  }
-}, [findPurchaseIdByProposal]);
-
-
-  /* ---------- groups ---------- */
+ 
+ 
     const groups: Group[] = useMemo(() => {
     const map = new Map<number | string, PendingRow[]>();
     for (const r of rows) {
@@ -585,16 +1307,7 @@ const seedWorksAfterApprove = useCallback(async (proposalId: string) => {
   const foremanRequestsCount = groups.length; // кол-во заявок
   const foremanPositionsCount = rows.length;  // кол-во позиций
 
-  // (оставляем уникализацию «шапок» для совместимости, но НЕ используем в рендере)
-  const directorReqsUnique = useMemo(() => {
-    const seen = new Set<string>();
-    return directorReqs.filter(r => {
-      if (!r.request_id || seen.has(r.request_id)) return false;
-      seen.add(r.request_id);
-      return true;
-    });
-  }, [directorReqs]);
-
+  
 /* ===== Карточка предложения (СНАБЖЕНЕЦ) — как у заявок ===== */
 const ProposalRow = React.memo(({ p, screenLock }: { p: ProposalHead; screenLock: boolean }) => {
   const pidStr = String(p.id);
@@ -620,29 +1333,99 @@ const ProposalRow = React.memo(({ p, screenLock }: { p: ProposalHead; screenLock
 
         {/* RIGHT */}
         <View style={s.rightStack}>
-          <View style={s.metaPill}>
-            <Text style={s.metaPillText}>{`Позиций ${itemsCount}`}</Text>
-          </View>
+  <View style={s.metaPill}>
+    <Text style={s.metaPillText}>{`Позиций ${itemsCount}`}</Text>
+  </View>
 
-          <Pressable
-  disabled={screenLock}
-  onPress={() => {
-    if (screenLock) return;
-    openProposalSheet(pidStr);
-    void toggleExpand(pidStr);
-  }}
-  style={[s.openBtn, screenLock && { opacity: 0.6 }]}
->
-  <Text style={s.openBtnText}>Открыть</Text>
-</Pressable>
+  <View style={s.rightStackSpacer} />
 
-        </View>
+  <Pressable
+    disabled={screenLock}
+    onPress={() => {
+  if (screenLock) return;
+  openProposalSheet(pidStr);
+
+  // ✅ ВАЖНО: грузим вложения ВСЕГДА, даже если loadedByProp уже true
+  void loadProposalAttachments(pidStr);
+
+  // состав (как было)
+  void toggleExpand(pidStr);
+}}
+
+    style={[s.openBtn, screenLock && { opacity: 0.6 }]}
+  >
+    <Text style={s.openBtnText}>{loadingPropId === pidStr ? '…' : 'Открыть'}</Text>
+  </Pressable>
+</View>
+
       </View>
     </View>
   );
 });
-  /* ---------- toggleExpand: грузим состав и HTML (web) ---------- */
-  const toggleExpand = useCallback(async (pid: string) => {
+const loadProposalAttachments = useCallback(async (pidStr: string) => {
+  const pid = String(pidStr || "").trim();
+  if (!pid) return;
+
+  // чтобы не дергать 10 раз
+  if (propAttBusyByProp[pid]) return;
+  setPropAttBusyByProp(prev => ({ ...prev, [pid]: true }));
+
+  try {
+    const q = await supabase
+      .from("proposal_attachments")
+      .select("id, file_name, url, group_key, created_at, bucket_id, storage_path")
+      .eq("proposal_id", pid)
+      .order("created_at", { ascending: false });
+
+    if (q.error) throw q.error;
+
+    const raw = (q.data || []) as any[];
+
+const rows: ProposalAttachmentRow[] = [];
+const seen = new Set<string>();
+
+for (const r of raw) {
+  const id = String(r?.id ?? "").trim();
+  if (!id) continue;
+
+  if (seen.has(id)) continue;
+  seen.add(id);
+
+  let url = (r.url ?? null) as string | null;
+
+  if (!url) {
+    const bucket = String(r.bucket_id ?? "").trim();
+    const path = String(r.storage_path ?? "").trim();
+    if (bucket && path) {
+      try {
+        const s = await supabase.storage.from(bucket).createSignedUrl(path, 60 * 60);
+        if (!s.error && s.data?.signedUrl) url = s.data.signedUrl;
+      } catch {}
+    }
+  }
+
+  rows.push({
+    id,
+    file_name: String(r.file_name ?? "file"),
+    url,
+    group_key: r.group_key ?? null,
+    created_at: r.created_at ?? null,
+    bucket_id: r.bucket_id ?? null,
+    storage_path: r.storage_path ?? null,
+  });
+}
+
+setPropAttByProp(prev => ({ ...prev, [pid]: rows }));
+
+  } catch (e: any) {
+    console.warn("[director] loadProposalAttachments:", e?.message ?? e);
+    setPropAttByProp(prev => ({ ...prev, [pid]: [] }));
+  } finally {
+    setPropAttBusyByProp(prev => ({ ...prev, [pid]: false }));
+  }
+}, [supabase, propAttBusyByProp]);
+ /* ---------- toggleExpand: грузим состав и HTML (web) ---------- */
+const toggleExpand = useCallback(async (pid: string) => {
   const pidStr = String(pid);
 
   // ✅ анти-спам по времени (очень важно на телефоне)
@@ -654,64 +1437,91 @@ const ProposalRow = React.memo(({ p, screenLock }: { p: ProposalHead; screenLock
   const anyLoading = Object.values(loadingPropRef.current).some(Boolean);
   if (anyLoading) return;
 
-  // ✅ если это предложение уже загружено — просто открыть sheet, без загрузки
-  if (loadedByProp[pidStr]) {
-    setExpanded((cur) => (cur === pidStr ? null : pidStr));
-    return;
-  }
+  // ✅ уже загружено — выходим
+  if (loadedByProp[pidStr]) return;
 
   // ✅ если уже грузим именно это — игнор
   if (loadingPropRef.current[pidStr]) return;
-  loadingPropRef.current[pidStr] = true;
 
-  // визуально открываем сразу
-  setExpanded(pidStr);
+  // ✅ UI: показываем "..." на кнопке
+  setLoadingPropId(pidStr);
+
+  loadingPropRef.current[pidStr] = true;
 
   try {
     await busy.run(async () => {
       try {
-        let rows: any[] | null = null;
+        let base: any[] | null = null;
+let plain: any[] | null = null;
 
-        const qSnap = await supabase
-          .from("proposal_snapshot_items")
-          .select("id, request_item_id, rik_code, name_human, uom, app_code, total_qty")
-          .eq("proposal_id", pidStr)
-          .order("id", { ascending: true });
+// 1) SNAPSHOT (самый “истинный”, если есть)
+const qSnap = await supabase
+  .from("proposal_snapshot_items")
+  .select("id, request_item_id, rik_code, name_human, uom, app_code, total_qty")
+  .eq("proposal_id", pidStr)
+  .order("id", { ascending: true });
 
-        if (!qSnap.error && Array.isArray(qSnap.data)) rows = qSnap.data;
+if (!qSnap.error && Array.isArray(qSnap.data) && qSnap.data.length > 0) {
+  base = qSnap.data;
+}
 
-        if (!rows) {
-          const qItems = await supabase
-            .from("proposal_items_view")
-            .select("id, request_item_id, rik_code, name_human, uom, app_code, total_qty")
-            .eq("proposal_id", pidStr)
-            .order("id", { ascending: true });
+// 2) VIEW (fallback, если snapshot пуст)
+if (!base) {
+  const qView = await supabase
+    .from("proposal_items_view")
+    .select("id, request_item_id, rik_code, name_human, uom, app_code, total_qty")
+    .eq("proposal_id", pidStr)
+    .order("id", { ascending: true });
 
-          if (!qItems.error && Array.isArray(qItems.data)) rows = qItems.data;
-        }
+  if (!qView.error && Array.isArray(qView.data) && qView.data.length > 0) {
+    base = qView.data;
+  }
+}
 
-        // price
-        const qPlain = await supabase
-          .from("proposal_items")
-          .select("id, request_item_id, rik_code, name_human, uom, app_code, qty, price")
-          .eq("proposal_id", pidStr)
-          .order("id", { ascending: true });
+// 3) PLAIN (fallback + источник цены)
+const qPlain = await supabase
+  .from("proposal_items")
+  .select("id, request_item_id, rik_code, name_human, uom, app_code, qty, price")
+  .eq("proposal_id", pidStr)
+  .order("id", { ascending: true });
 
-        if (!qPlain.error && Array.isArray(qPlain.data)) {
-          rows = qPlain.data.map((r: any) => ({ ...r, total_qty: r.qty }));
-        }
+if (!qPlain.error && Array.isArray(qPlain.data) && qPlain.data.length > 0) {
+  plain = qPlain.data;
+}
 
-        let norm = (rows ?? []).map((r: any, i: number) => ({
-          id: Number(r.id ?? i),
-          request_item_id: r.request_item_id != null ? String(r.request_item_id) : null,
-          rik_code: r.rik_code ?? null,
-          name_human: r.name_human ?? "",
-          uom: r.uom ?? null,
-          app_code: r.app_code ?? null,
-          total_qty: Number(r.total_qty ?? r.qty ?? 0),
-          price: r.price != null ? Number(r.price) : null,
-          item_kind: null as any,
-        }));
+// ---- формируем итог без перетирания ----
+const priceByReqItemId: Record<string, number> = {};
+if (plain) {
+  for (const r of plain as any[]) {
+    const rid = String(r?.request_item_id ?? "").trim();
+    const pr = r?.price;
+    if (rid && pr != null && !Number.isNaN(Number(pr))) {
+      priceByReqItemId[rid] = Number(pr);
+    }
+  }
+}
+
+const effective = base ?? (plain ? plain.map((r: any) => ({ ...r, total_qty: r.qty })) : []);
+
+let norm = (effective ?? []).map((r: any, i: number) => {
+  const reqItemId = r.request_item_id != null ? String(r.request_item_id) : null;
+  const price =
+    r.price != null
+      ? Number(r.price)
+      : (reqItemId ? (priceByReqItemId[reqItemId] ?? null) : null);
+
+  return {
+    id: Number(r.id ?? i),
+    request_item_id: reqItemId,
+    rik_code: r.rik_code ?? null,
+    name_human: r.name_human ?? "",
+    uom: r.uom ?? null,
+    app_code: r.app_code ?? null,
+    total_qty: Number(r.total_qty ?? r.qty ?? 0),
+    price: price,
+    item_kind: null as any,
+  };
+});
 
         // item_kind из request_items
         try {
@@ -720,30 +1530,56 @@ const ProposalRow = React.memo(({ p, screenLock }: { p: ProposalHead; screenLock
           );
           if (ids.length) {
             const qKinds = await supabase
-              .from("request_items")
-              .select("id, item_kind")
-              .in("id", ids);
+  .from("request_items")
+  .select("id, item_kind, note")
+  .in("id", ids);
+
 
             if (!qKinds.error && Array.isArray(qKinds.data)) {
-              const mapKind: Record<string, string> = {};
-              for (const rr of qKinds.data as any[]) {
-                const id = String(rr.id ?? "");
-                const k = String(rr.item_kind ?? "").trim();
-                if (id && k) mapKind[id] = k;
-              }
-              norm = norm.map((x) => ({
-                ...x,
-                item_kind: x.request_item_id ? mapKind[String(x.request_item_id)] ?? null : null,
-              }));
-            }
+  const mapKind: Record<string, string> = {};
+  const mapNote: Record<string, string> = {};
+
+  for (const rr of qKinds.data as any[]) {
+    const id = String(rr.id ?? "").trim();
+    const k = String(rr.item_kind ?? "").trim();
+    const n = String(rr.note ?? "").trim();
+
+    if (id && k) mapKind[id] = k;
+    if (id && n) mapNote[id] = n;
+  }
+
+  // item_kind — как было
+  norm = norm.map((x) => ({
+    ...x,
+    item_kind: x.request_item_id ? mapKind[String(x.request_item_id)] ?? null : null,
+  }));
+
+  // ✅ ДОБАВИЛИ: кэш note для proposal-sheet (чтобы был русский контекст)
+  if (Object.keys(mapNote).length) {
+    setReqItemNoteById(prev => ({ ...prev, ...mapNote }));
+  }
+}
+
           }
         } catch {}
 
         setItemsByProp((prev) => ({ ...prev, [pidStr]: norm }));
-      } finally {
-        setLoadedByProp((prev) => ({ ...prev, [pidStr]: true }));
-      }
-    }, { key: `dir:loadProp:${pidStr}`, label: "Загружаю состав…", minMs: 900 });
+
+// ✅ подтягиваем request_id(ы) и их контекст для инфо-блока в proposal-sheet
+try {
+  const reqItemIds = norm.map(x => x.request_item_id);
+  await preloadProposalRequestIds(pidStr, reqItemIds);
+} catch {}
+
+// ✅ ВОТ ИМЕННО СЮДА. НЕ ВЫШЕ. НЕ НИЖЕ.
+try {
+  await loadProposalAttachments(pidStr);
+} catch {}
+
+} finally {
+  setLoadedByProp((prev) => ({ ...prev, [pidStr]: true }));
+}
+}, { key: `dir:loadProp:${pidStr}`, label: "Загружаю состав…", minMs: 900 });
 
     // web html (опционально)
     if (Platform.OS === "web") {
@@ -762,65 +1598,11 @@ const ProposalRow = React.memo(({ p, screenLock }: { p: ProposalHead; screenLock
     setLoadedByProp((prev) => ({ ...prev, [pidStr]: true }));
   } finally {
     loadingPropRef.current[pidStr] = false;
+
+    // ✅ снимаем "..." только если это было текущее
+    setLoadingPropId((cur) => (cur === pidStr ? null : cur));
   }
-}, [busy, loadedByProp, pdfHtmlByProp, supabase]);
-
-  /* ---------- решения директора по предложению ---------- */
-  const decide = useCallback(async (pid: string, decision: 'approved' | 'rejected') => {
-    try {
-      setDecidingId(pid);
-
-      if (decision === 'approved') {
-        // 1) штатное утверждение
-        const { data: ok, error } = await supabase.rpc('approve_one', { p_proposal_id: String(pid) });
-        if (error) throw error;
- else if (!ok) {
-          Alert.alert('Внимание', 'Нечего утверждать или неправильный статус/id');
-        }
-
-        // 2) гарантируем наличие закупки и проталкиваем на склад
-        try {
-          const r1 = await supabase.rpc('purchase_upsert_from_proposal', { p_proposal_id: String(pid) });
-          if ((r1 as any).error) throw (r1 as any).error;
-
-          let purchaseId: string | null = null;
-          if ((r1 as any)?.data) {
-            purchaseId = String((r1 as any).data);
-          } else {
-            const q = await supabase
-              .from('v_purchases')
-              .select('id')
-              .eq('proposal_id', pid)
-              .limit(1)
-              .maybeSingle();
-            if (!q.error && q.data?.id) purchaseId = String(q.data.id);
-          }
-
-          if (purchaseId) {
-            const { error: apprErr } = await supabase.rpc('purchase_approve', { p_purchase_id: purchaseId });
-            if (apprErr) console.warn('[purchase_approve] rpc error:', apprErr.message);
-          } else {
-            console.warn('[purchase] not found for proposal', pid);
-          }
-        } catch (e) {
-          console.warn('[purchase migrate] fail:', (e as any)?.message ?? e);
-        }
-      } else {
-      const { error } = await supabase.rpc('reject_one', { p_proposal_id: String(pid) });
-      if (error) throw error;
-    }
-
-    await fetchProps();
-    Alert.alert(
-      decision === 'approved' ? 'Утверждено' : 'Отклонено',
-      `Предложение #${String(pid).slice(0, 8)} ${decision === 'approved' ? 'утверждено' : 'отклонено'}`
-    );
-  } catch (e: any) {
-    Alert.alert('Ошибка', e?.message ?? 'Не удалось применить решение');
-  } finally {
-    setDecidingId(null);
-  }
-}, [fetchProps]);
+}, [busy, loadedByProp, pdfHtmlByProp, supabase, preloadProposalRequestIds, loadProposalAttachments]);
 
 async function onDirectorReturn(proposalId: string | number, note?: string) {
   const pidStr = String(proposalId);
@@ -837,7 +1619,8 @@ async function onDirectorReturn(proposalId: string | number, note?: string) {
       return;
     }
 
-    setDecidingId(pidStr);
+    // ✅ ВАЖНО: это ЛОАДЕР ДЛЯ КРАСНОЙ КНОПКИ "Вернуть/Удалить"
+    setPropReturnId(pidStr);
 
     // ✅ Берём ВСЕ request_item_id из БД
     const q = await supabase
@@ -866,14 +1649,12 @@ async function onDirectorReturn(proposalId: string | number, note?: string) {
 
     const res = await supabase.rpc('director_decide_proposal_items', {
       p_proposal_id: pidStr,
-      p_decisions: payload,   // ✅ массив
+      p_decisions: payload,
       p_finalize: true,
     });
 
     if (res.error) throw res.error;
 
-    // чистим кеши и обновляем список
-    setExpanded(cur => (cur === pidStr ? null : cur));
     setItemsByProp(m => { const c = { ...m }; delete c[pidStr]; return c; });
     setLoadedByProp(m => { const c = { ...m }; delete c[pidStr]; return c; });
     setPdfHtmlByProp(m => { const c = { ...m }; delete c[pidStr]; return c; });
@@ -883,185 +1664,459 @@ async function onDirectorReturn(proposalId: string | number, note?: string) {
   } catch (e: any) {
     Alert.alert('Ошибка', e?.message ?? 'Не удалось вернуть предложение');
   } finally {
-    setDecidingId(null);
+    setPropReturnId(null);
   }
 }
 
-  /* ---------- render ---------- */
-  return (
+return (
   <View style={[s.container, { backgroundColor: UI.bg }]}>
-    <StatusBar style="light" />
-     {/* ✅ Collapsing Header */}
-<Animated.View
-  style={[
-    s.collapsingHeader,
-    { height: headerHeight, shadowOpacity: headerShadow, elevation: 6 },
-  ]}
->
-  <Animated.Text style={[s.collapsingTitle, { fontSize: titleSize }]} numberOfLines={1}>
-    Контроль заявок
-  </Animated.Text>
+    <DirectorDashboard
+  HEADER_MAX={HEADER_MAX}
+  HEADER_MIN={HEADER_MIN}
+  onScroll={Animated.event([{ nativeEvent: { contentOffset: { y: scrollY } } }], { useNativeDriver: false })}
+  headerHeight={headerHeight}
+  headerShadow={headerShadow}
+  titleSize={titleSize}
+  subOpacity={subOpacity}
 
-  {/* tabs (всегда видны) */}
-  <View style={s.tabs}>
-    {(['foreman', 'buyer'] as Tab[]).map((t) => {
-      const active = tab === t;
-      return (
-        <Pressable key={t} onPress={() => setTab(t)} style={[s.tab, active && s.tabActive]}>
-          <Text
-  numberOfLines={1}
-  style={{ color: active ? UI.text : UI.sub, fontWeight: '800' }}
->
-  {t === 'foreman' ? 'Прораб' : 'Снабженец'}
-</Text>
+  dirTab={dirTab}
+  setDirTab={setDirTab}
+  tab={tab}
+  setTab={setTab}
+  closeSheet={closeSheet}
 
-        </Pressable>
-      );
-    })}
-  </View>
+  groups={groups as any}
+  propsHeads={propsHeads as any}
+  loadingRows={loadingRows}
+  loadingProps={loadingProps}
 
-  {/* KPI + поиск (исчезают при скролле) */}
-<Animated.View style={{ opacity: subOpacity }}>
-  {tab === 'foreman' ? (
-    <>
-      <View style={s.sectionHeader}>
-        <Text style={s.sectionTitle}>Заявки</Text>
-        <View style={s.kpiRow}>
-          <View style={s.kpiPill}>
-            <Text style={s.kpiLabel}>Заявок</Text>
-            <Text style={s.kpiValue}>{loadingRows ? '…' : String(foremanRequestsCount)}</Text>
-          </View>
-          <View style={s.kpiPill}>
-            <Text style={s.kpiLabel}>Позиций</Text>
-            <Text style={s.kpiValue}>{loadingRows ? '…' : String(foremanPositionsCount)}</Text>
-          </View>
-        </View>
-     </View>
-  </>
-) : (
-    <View style={s.sectionHeader}>
-      <Text style={s.sectionTitle}>Предложения</Text>
-      <View style={s.kpiRow}>
-        <View style={s.kpiPill}>
-          <Text style={s.kpiLabel}>Предложений</Text>
-          <Text style={s.kpiValue}>{loadingProps ? '…' : String(buyerPropsCount)}</Text>
-        </View>
-        <View style={s.kpiPill}>
-          <Text style={s.kpiLabel}>Позиций</Text>
-          <Text style={s.kpiValue}>{loadingProps ? '…' : String(buyerPositionsCount)}</Text>
-        </View>
-      </View>
-    </View>
-  )}
-</Animated.View>
-</Animated.View>
-      {tab === 'foreman' ? (
-        <>
-                 
-<FlatList
-  data={groups}
-  keyExtractor={(g, idx) => (g?.request_id ? `req:${String(g.request_id)}` : `g:${idx}`)}
-  removeClippedSubviews={false}
-keyboardShouldPersistTaps="handled"
+  foremanRequestsCount={foremanRequestsCount}
+  foremanPositionsCount={foremanPositionsCount}
+  buyerPropsCount={buyerPropsCount}
+  buyerPositionsCount={buyerPositionsCount}
 
-  renderItem={({ item }) => {
-  const submittedAt = submittedAtByReq[String(item.request_id ?? '').trim()] ?? null;
+  labelForRequest={(rid: any) => labelForRequest(rid)}
+  fmtDateOnly={fmtDateOnly}
+  submittedAtByReq={submittedAtByReq}
+
+  openRequestSheet={openRequestSheet as any}
+  ProposalRow={ProposalRow as any}
+  screenLock={screenLock}
+
+  ensureSignedIn={ensureSignedIn}
+  fetchRows={fetchRows as any}
+  fetchProps={fetchProps as any}
+  rtToast={rtToast}
+
+  finLoading={finLoading}
+  finRows={finRows as any}
+  finRep={finRep as any}
+  finSpendRows={finSpendRows as any}
+  money={money}
+  FIN_DUE_DAYS_DEFAULT={FIN_DUE_DAYS_DEFAULT}
+  FIN_CRITICAL_DAYS={FIN_CRITICAL_DAYS}
+  fetchFinance={fetchFinance as any}
+  finFrom={finFrom}
+  finTo={finTo}
+
+  openFinancePage={(page: any) => openFinancePage(page)}
+  openReports={() => void openReports()}
+  reportsPeriodShort={repPeriodShort}
+/>
+
+{(() => {
+  const periodShort =
+    finFrom || finTo
+      ? `${finFrom ? fmtDateOnly(finFrom) : "—"} → ${finTo ? fmtDateOnly(finTo) : "—"}`
+      : "Весь период";
+
+  const title =
+    finPage === "debt" ? "Долги и риски"
+    : finPage === "spend" ? "Расходы (период)"
+    : finPage === "kind" ? (finKindName ? `${finKindName}: поставщики` : "Поставщики")
+    : finPage === "supplier" ? String((finSupplier as any)?.supplier ?? "Поставщик")
+    : "Финансы";
+
+  const supNameForKey = String((finSupplier as any)?.supplier ?? "").trim();
+  const topPdfKey =
+    finPage === "supplier" ? `pdf:director:supplier:${supNameForKey}` : "pdf:director:finance";
+  const supplierPdfBusy = !!supNameForKey && busy.isBusy(`pdf:director:supplier:${supNameForKey}`);
+
+ 
+  const onCloseTop = () => {
+    if (finPage !== "home") {
+      popFin();
+      return;
+    }
+    closeFinance();
+  };
 
   return (
-    <View style={s.group}>
-      <View style={s.groupHeader}>
-        {/* LEFT */}
-        <View style={{ flex: 1, minWidth: 0 }}>
-          <Text style={s.groupTitle} numberOfLines={1}>
-  {labelForRequest(item.request_id)}
-</Text>
+    <DirectorFinanceCardModal
+      visible={finOpen}
+      onClose={onCloseTop}
+      title={title}
+      periodShort={periodShort}
+      loading={finLoading || busy.isBusy(topPdfKey)}
+      onOpenPeriod={() => setFinPeriodOpen(true)}
+      onRefresh={() => void fetchFinance()}
+      onPdf={finPage === "supplier" ? onSupplierPdf : onFinancePdf}
+      overlay={
+        finPeriodOpen ? (
+          <PeriodPickerSheet
+            visible={finPeriodOpen}
+            onClose={() => setFinPeriodOpen(false)}
+            initialFrom={finFrom || ""}
+            initialTo={finTo || ""}
+            onApply={(from: string, to: string) => {
+              setFinFrom(from || null);
+              setFinTo(to || null);
+              setFinPeriodOpen(false);
+              void fetchFinance();
+            }}
+            onClear={() => {
+              setFinFrom(null);
+              setFinTo(null);
+              setFinPeriodOpen(false);
+              void fetchFinance();
+            }}
+            ui={{
+              cardBg: UI.cardBg,
+              text: UI.text,
+              sub: UI.sub,
+              border: "rgba(255,255,255,0.14)",
+              accentBlue: "#3B82F6",
+              approve: "#22C55E",
+            }}
+          />
+        ) : null
+      }
+    >
+      {finPage === "home" ? (
+        <View>
+          <Pressable onPress={() => pushFin("debt")} style={[s.mobCard, { marginBottom: 10 }]}>
+            <Text style={{ color: UI.text, fontWeight: "900" }}>Обязательства</Text>
+          </Pressable>
 
-<Text style={s.cardMeta} numberOfLines={1}>
-  {fmtDateOnly(submittedAt)}
-</Text>
-        </View>
-
-        {/* RIGHT */}
-        <View style={s.rightStack}>
-          <View style={s.metaPill}>
-            <Text style={s.metaPillText}>{`${item.items.length} позиций`}</Text>
-          </View>
-
-          <Pressable onPress={() => openRequestSheet(item)} style={s.openBtn}>
-            <Text style={s.openBtnText}>Открыть</Text>
+          <Pressable onPress={() => pushFin("spend")} style={[s.mobCard, { marginBottom: 10 }]}>
+            <Text style={{ color: UI.text, fontWeight: "900" }}>Расходы</Text>
           </Pressable>
         </View>
-      </View>
-    </View>
+      ) : finPage === "debt" ? (
+        <DirectorFinanceDebtModal
+          loading={finLoading}
+          rep={finRep?.report}
+          money={money}
+          FIN_CRITICAL_DAYS={FIN_CRITICAL_DAYS}
+          openSupplier={(srow: any) => openSupplier(srow)}
+        />
+      ) : finPage === "spend" ? (
+        <DirectorFinanceSpendModal
+          visible={true as any} 
+          loading={finLoading}
+          sum={finRep?.summary}
+          spendRows={finSpendRows}
+          money={money}
+          onOpenKind={(kindName, list) => openFinKind(kindName, list)}
+          onOpenSupplier={(supplierName: string) => openSupplier({ supplier: supplierName } as any)}
+        />
+      ) : finPage === "kind" ? (
+        <DirectorFinanceKindSuppliersModal
+          loading={finLoading}
+          kindName={finKindName}
+          list={finKindList}
+          money={money}
+          onOpenSupplier={(payload: any) => openSupplier(payload)}
+        />
+      ) : finPage === "supplier" ? (
+        <DirectorFinanceSupplierModal
+          loading={finLoading || supplierPdfBusy}
+          onPdf={onSupplierPdf}
+          supplier={finSupplier}
+          money={money}
+          fmtDateOnly={fmtDateOnly}
+        />
+      ) : null}
+    </DirectorFinanceCardModal>
   );
-}}
+})()}
+{(() => {
+  const kpi: RepKpi | null = (repData as any)?.kpi ?? null;
+  const rows: RepRow[] = Array.isArray((repData as any)?.rows) ? (repData as any).rows : [];
+  const who: RepWho[] = Array.isArray((repData as any)?.discipline_who) ? (repData as any).discipline_who : [];
 
-  ListEmptyComponent={
-    !loadingRows ? (
-      <Text style={{ opacity: 0.6, padding: 16, color: UI.sub }}>
-        Нет ожидающих позиций
-      </Text>
-    ) : null
-  }
-  refreshControl={
-  <RefreshControl
-    refreshing={false}
-    onRefresh={async () => {
-      await ensureSignedIn();
-      await fetchRows();
-      await fetchDirectorReqs();
-    }}
-    title=""
-    tintColor="transparent"
-  />
-}
+  const pct = (a: number, b: number) => {
+    const aa = Number(a || 0);
+    const bb = Number(b || 0);
+    if (!bb) return "0%";
+    return `${Math.round((aa / bb) * 100)}%`;
+  };
 
-onScroll={Animated.event(
-  [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-  { useNativeDriver: false }
-)}
-scrollEventThrottle={16}
+  const issuesTotal = Number(kpi?.issues_total ?? 0);
+  const issuesNoObj = Number(kpi?.issues_without_object ?? 0);
+  const itemsTotal = Number(kpi?.items_total ?? 0);
+  const itemsNoReq = Number(kpi?.items_without_request ?? 0);
 
-  keyboardShouldPersistTaps="handled"
-  windowSize={5}
-  maxToRenderPerBatch={6}
-  updateCellsBatchingPeriod={60}
-  contentContainerStyle={{ paddingTop: HEADER_MAX + 12, paddingBottom: 24 }}
-
-/>
-
-        </>
-      ) : (
-       
-                  <FlatList
-  data={propsHeads}
-  keyExtractor={(p, idx) => (p?.id ? `pp:${p.id}` : `pp:${idx}`)}
-  removeClippedSubviews={false}
-  renderItem={({ item: p }) => <ProposalRow p={p} screenLock={screenLock} />}
-  refreshControl={
-    <RefreshControl
-      refreshing={false}
+  return (
+    <DirectorFinanceCardModal
+      visible={repOpen}
+      onClose={closeReports}
+      title="Факт выдачи (склад)"
+      periodShort={repPeriodShort}
+      loading={repLoading}
+      onOpenPeriod={() => setRepPeriodOpen(true)}
       onRefresh={async () => {
-        await ensureSignedIn();
-        await fetchProps();
+  await fetchReportOptions();         
+  await applyObjectFilter(repObjectName); 
+}}
+      onPdf={() => Alert.alert("PDF", "Подключим после UI (данные уже готовы).")}
+     overlay={
+  repPeriodOpen ? (
+    <PeriodPickerSheet
+      visible={repPeriodOpen}
+      onClose={() => setRepPeriodOpen(false)}
+      initialFrom={repFrom || ""}
+      initialTo={repTo || ""}
+      onApply={(from: string, to: string) => void applyReportPeriod(from || null, to || null)}
+      onClear={() => {
+        const to = isoDate(new Date());
+        const from = isoDate(minusDays(30));
+        void applyReportPeriod(from, to);
       }}
-      title=""
-      tintColor="transparent"
+      ui={{
+        cardBg: UI.cardBg,
+        text: UI.text,
+        sub: UI.sub,
+        border: "rgba(255,255,255,0.14)",
+        accentBlue: "#3B82F6",
+        approve: "#22C55E",
+      }}
     />
-  }
-  onScroll={Animated.event(
-    [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-    { useNativeDriver: false }
-  )}
-  scrollEventThrottle={16}
-  contentContainerStyle={{
-    paddingTop: HEADER_MAX + 12,
-    paddingHorizontal: 16,
-    paddingBottom: 24,
-  }}
-/>
-       )}
-     {/* ===== ЕДИНАЯ BOTTOM-SHEET MODAL ===== */}
+  ) : repObjOpen ? (
+    <RNModal
+      isVisible={repObjOpen}
+      onBackdropPress={() => setRepObjOpen(false)}
+      onBackButtonPress={() => setRepObjOpen(false)}
+      backdropOpacity={0.55}
+      useNativeDriver
+      useNativeDriverForBackdrop
+      hideModalContentWhileAnimating
+      style={{ margin: 0, justifyContent: "flex-end" }}
+    >
+      <View style={s.sheet}>
+        <View style={s.sheetHandle} />
+
+        <View style={{ flexDirection: "row", justifyContent: "space-between", paddingHorizontal: 14, paddingBottom: 10 }}>
+          <Text style={{ color: UI.text, fontWeight: "900", fontSize: 16 }}>
+            {`Объекты (${repOptObjects?.length ?? 0})`}
+          </Text>
+
+          <Pressable onPress={() => setRepObjOpen(false)}>
+            <Text style={{ color: UI.sub, fontWeight: "900" }}>Закрыть</Text>
+          </Pressable>
+        </View>
+
+        <FlatList
+          data={repOptObjects || []}
+          keyExtractor={(x, i) => `${x}:${i}`}
+          keyboardShouldPersistTaps="handled"
+          style={{ maxHeight: 420 }}
+          renderItem={({ item }) => (
+            <Pressable
+              onPress={async () => {
+                setRepObjOpen(false);
+                await applyObjectFilter(item);
+              }}
+              style={[s.mobCard, { marginHorizontal: 12, marginBottom: 10 }]}
+            >
+              <Text style={{ color: UI.text, fontWeight: "900" }} numberOfLines={2}>
+                {item}
+              </Text>
+            </Pressable>
+          )}
+        />
+      </View>
+    </RNModal>
+  ) : null
+}
+>
+      <View style={{ marginBottom: 10 }}>
+        <Text style={{ color: UI.sub, fontWeight: "900", marginBottom: 6 }}>
+          Объект
+        </Text>
+
+        <View style={{ flexDirection: "row", flexWrap: "wrap" }}>
+ 
+  <Pressable
+    onPress={() => void applyObjectFilter(null)}
+    style={[s.tab, !repObjectName && s.tabActive, { marginRight: 8, marginBottom: 8 }]}
+  >
+    <Text style={{ color: !repObjectName ? UI.text : UI.sub, fontWeight: "900" }}>
+      Все
+    </Text>
+  </Pressable>
+
+  <Pressable
+    onPress={() => setRepObjOpen(true)}
+    style={[s.tab, repObjectName && s.tabActive, { marginRight: 8, marginBottom: 8 }]}
+  >
+    <Text style={{ color: repObjectName ? UI.text : UI.sub, fontWeight: "900" }}>
+      {`Объекты · ${(repOptObjects?.length ?? 0)}`}
+    </Text>
+  </Pressable>
+ 
+  {repObjectName ? (
+    <Pressable
+      onPress={() => setRepObjOpen(true)}
+      style={[s.tab, s.tabActive, { marginRight: 8, marginBottom: 8 }]}
+    >
+      <Text numberOfLines={1} style={{ color: UI.text, fontWeight: "900", maxWidth: 220 }}>
+        {repObjectName}
+      </Text>
+    </Pressable>
+  ) : null}
+
+  {repOptLoading ? (
+    <Text style={{ color: UI.sub, fontWeight: "800", marginLeft: 4, marginTop: 8 }}>…</Text>
+  ) : null}
+</View>
+
+      </View>
+
+      {/* KPI */}
+      <View style={{ marginBottom: 10 }}>
+        <View style={{ flexDirection: "row", gap: 8 }}>
+          <View style={[s.kpiPillHalf, { flex: 1 }]}>
+            <Text style={s.kpiLabel}>Документов</Text>
+            <Text style={s.kpiValue}>{repLoading ? "…" : String(issuesTotal)}</Text>
+          </View>
+
+          <View style={[s.kpiPillHalf, { flex: 1 }]}>
+            <Text style={s.kpiLabel}>Позиций</Text>
+            <Text style={s.kpiValue}>{repLoading ? "…" : String(itemsTotal)}</Text>
+          </View>
+        </View>
+
+        <View style={{ height: 8 }} />
+
+        <View style={{ flexDirection: "row", gap: 8 }}>
+          <View style={[s.kpiPillHalf, { flex: 1 }]}>
+            <Text style={s.kpiLabel}>Без объекта</Text>
+            <Text style={s.kpiValue}>
+              {repLoading ? "…" : `${issuesNoObj} · ${pct(issuesNoObj, issuesTotal)}`}
+            </Text>
+          </View>
+
+          <View style={[s.kpiPillHalf, { flex: 1 }]}>
+            <Text style={s.kpiLabel}>Без заявки</Text>
+            <Text style={s.kpiValue}>
+              {repLoading ? "…" : `${itemsNoReq} · ${pct(itemsNoReq, itemsTotal)}`}
+            </Text>
+          </View>
+        </View>
+      </View>
+
+      {/* Tabs */}
+      <View style={{ flexDirection: "row", marginBottom: 10 }}>
+        {(["materials", "discipline"] as RepTab[]).map((t) => {
+          const active = repTab === t;
+          return (
+            <Pressable
+              key={t}
+              onPress={() => setRepTab(t)}
+              style={[s.tab, active && s.tabActive, { marginRight: 8 }]}
+            >
+              <Text style={{ color: active ? UI.text : UI.sub, fontWeight: "900" }}>
+                {t === "materials" ? "Материалы" : "Дисциплина"}
+              </Text>
+            </Pressable>
+          );
+        })}
+      </View>
+
+      {/* Content */}
+      {repTab === "materials" ? (
+        <FlatList
+          data={rows}
+          keyExtractor={(x, idx) => `${x.rik_code}:${x.uom}:${idx}`}
+          removeClippedSubviews={false}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+          renderItem={({ item }) => {
+            const qAll = Number(item.qty_total || 0);
+            const qNoReq = Number(item.qty_without_request || 0);
+            const docs = Number(item.docs_cnt || 0);
+            const docsNoReq = Number(item.docs_without_request || 0);
+
+            return (
+              <View style={[s.mobCard, { marginBottom: 10 }]}>
+                <View style={s.mobMain}>
+                  <Text style={s.mobTitle} numberOfLines={2}>
+                    {item.rik_code}
+                  </Text>
+                  <Text style={s.mobMeta} numberOfLines={2}>
+                    {`Выдано: ${qAll} ${item.uom} · док ${docs}`}
+                    {qNoReq > 0 ? ` · без заявки: ${qNoReq} (${docsNoReq} док)` : ""}
+                  </Text>
+                </View>
+              </View>
+            );
+          }}
+          ListEmptyComponent={
+            !repLoading ? (
+              <Text style={{ opacity: 0.7, color: UI.sub, paddingVertical: 8 }}>
+                Нет выдач за выбранный период.
+              </Text>
+            ) : null
+          }
+        />
+      ) : (
+        <FlatList
+          data={who}
+          keyExtractor={(x, idx) => `${x.who}:${idx}`}
+          removeClippedSubviews={false}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+          renderItem={({ item }) => (
+            <View style={[s.mobCard, { marginBottom: 10 }]}>
+              <View style={s.mobMain}>
+                <Text style={s.mobTitle} numberOfLines={1}>{item.who}</Text>
+                <Text style={s.mobMeta} numberOfLines={1}>
+                  {`Позиций без заявки: ${String(item.items_cnt ?? 0)}`}
+                </Text>
+              </View>
+            </View>
+          )}
+          ListEmptyComponent={
+            !repLoading ? (
+              <Text style={{ opacity: 0.7, color: UI.sub, paddingVertical: 8 }}>
+                Нет данных по дисциплине за период.
+              </Text>
+            ) : null
+          }
+        />
+      )}
+
+      {/* Bottom actions (Excel placeholder) */}
+      <View style={{ marginTop: 10, flexDirection: "row", gap: 8 }}>
+        <Pressable
+          onPress={() => Alert.alert("Excel", "Подключим после UI (данные уже готовы).")}
+          style={[s.openBtn, { paddingVertical: 10, paddingHorizontal: 14, backgroundColor: UI.btnNeutral }]}
+        >
+          <Text style={[s.openBtnText, { fontSize: 12 }]}>Excel</Text>
+        </Pressable>
+
+        <Pressable
+  onPress={() => void applyObjectFilter(null)}
+          style={[s.openBtn, { paddingVertical: 10, paddingHorizontal: 14, backgroundColor: "rgba(255,255,255,0.06)" }]}
+        >
+          <Text style={[s.openBtnText, { fontSize: 12 }]}>Все объекты</Text>
+        </Pressable>
+      </View>
+    </DirectorFinanceCardModal>
+  );
+})()}
+
      <RNModal
   isVisible={isSheetOpen}
   onBackdropPress={closeSheet}
@@ -1133,20 +2188,23 @@ scrollEventThrottle={16}
           renderItem={({ item: it }) => (
             <View style={s.mobCard}>
               <View style={s.mobMain}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-                  <Text style={s.mobTitle} numberOfLines={3}>{it.name_human}</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap' }}>
+  <Text style={[s.mobTitle, { marginRight: 8 }]} numberOfLines={3}>
+    {it.name_human}
+  </Text>
 
-                  {it.item_kind ? (
-                    <View style={s.kindPill}>
-                      <Text style={s.kindPillText}>
-                        {it.item_kind === 'material' ? 'Материал'
-                          : it.item_kind === 'work' ? 'Работа'
-                          : it.item_kind === 'service' ? 'Услуга'
-                          : it.item_kind}
-                      </Text>
-                    </View>
-                  ) : null}
-                </View>
+  {it.item_kind ? (
+    <View style={[s.kindPill, { marginTop: 4 }]}>
+      <Text style={s.kindPillText}>
+        {it.item_kind === 'material' ? 'Материал'
+          : it.item_kind === 'work' ? 'Работа'
+          : it.item_kind === 'service' ? 'Услуга'
+          : it.item_kind}
+      </Text>
+    </View>
+  ) : null}
+</View>
+
 
                 <Text style={s.mobMeta} numberOfLines={2}>
                   {`${it.qty} ${it.uom || ''}`.trim()}
@@ -1154,44 +2212,89 @@ scrollEventThrottle={16}
                 </Text>
               </View>
 
-              <Pressable
-                disabled={!it.request_item_id || actingId === it.request_item_id}
-                style={[
-                  s.mobRejectBtn,
-                  { opacity: (!it.request_item_id || actingId === it.request_item_id) ? 0.6 : 1 },
-                ]}
-                onPress={async () => {
-                  if (!it.request_item_id) return;
-                  setActingId(it.request_item_id);
-                  try {
-                    const { error } = await supabase.rpc('reject_request_item', {
-                      request_item_id: it.request_item_id,
-                      reason: null,
-                    });
-                    if (error) throw error;
+              <RejectItemButton
+  disabled={!it.request_item_id || actingId === it.request_item_id}
+  loading={actingId === it.request_item_id}
+  onPress={async () => {
+    if (!it.request_item_id) return;
+    setActingId(it.request_item_id);
+    try {
+      const { error } = await supabase.rpc('reject_request_item', {
+        request_item_id: it.request_item_id,
+        reason: null,
+      });
+      if (error) throw error;
 
-                    setRows(prev => prev.filter(r => r.request_item_id !== it.request_item_id));
-                    setSheetRequest(prev => prev
-                      ? ({ ...prev, items: prev.items.filter(x => x.request_item_id !== it.request_item_id) })
-                      : prev
-                    );
-                  } catch (e: any) {
-                    Alert.alert('Ошибка', e?.message ?? 'Не удалось отклонить позицию');
-                  } finally {
-                    setActingId(null);
-                  }
-                }}
-              >
-                <Text style={s.mobRejectIcon}>✕</Text>
-              </Pressable>
+      setRows(prev => prev.filter(r => r.request_item_id !== it.request_item_id));
+      setSheetRequest(prev => prev
+        ? ({ ...prev, items: prev.items.filter(x => x.request_item_id !== it.request_item_id) })
+        : prev
+      );
+    } catch (e: any) {
+      Alert.alert('Ошибка', e?.message ?? 'Не удалось отклонить позицию');
+    } finally {
+      setActingId(null);
+    }
+  }}
+/>
             </View>
           )}
         />
+{/* ===== REQUEST ACTIONS (PROD) ===== */}
+<View style={s.reqActionsBottom}>
+  {/* ✅ Delete — LEFT */}
+  <View style={s.actionBtnSquare}>
+    <DeleteAllButton
+      disabled={screenLock || reqDeleteId === sheetRequest.request_id || reqSendId === sheetRequest.request_id}
+      loading={reqDeleteId === sheetRequest.request_id}
+      accessibilityLabel="Удалить заявку"
+      onPress={() => {
+        const doIt = async () => {
+          setReqDeleteId(sheetRequest.request_id);
+          try {
+            const reqId = toFilterId(sheetRequest.request_id);
+            if (reqId == null) throw new Error("request_id пустой");
 
-        {/* НИЖНЯЯ ПАНЕЛЬ — как было */}
-        <View style={s.reqActionsBottom}>
+            const { error } = await supabase.rpc("reject_request_all", {
+              p_request_id: String(reqId),
+              p_reason: null,
+            });
+            if (error) throw error;
+
+            setRows(prev => prev.filter(r => r.request_id !== sheetRequest.request_id));
+            closeSheet();
+          } catch (e: any) {
+            Alert.alert("Ошибка", e?.message ?? "Не удалось отклонить все позиции");
+          } finally {
+            setReqDeleteId(null);
+          }
+        };
+
+        if (Platform.OS === "web") {
+          // @ts-ignore
+          const ok = window.confirm("Удалить заявку?\n\nОтклонить ВСЮ заявку вместе со всеми позициями?");
+          if (!ok) return;
+          void doIt();
+          return;
+        }
+
+        Alert.alert(
+          "Удалить заявку?",
+          "Вы уверены, что хотите отклонить ВСЮ заявку вместе со всеми позициями?",
+          [
+            { text: "Отмена", style: "cancel" },
+            { text: "Да, удалить", style: "destructive", onPress: () => void doIt() },
+          ],
+        );
+      }}
+    />
+  </View>
+
+  <View style={s.sp8} />
+
+  {/* PDF — CENTER */}
   {(() => {
-    const rid = String(sheetRequest.request_id ?? '').trim();
+    const rid = String(sheetRequest.request_id ?? "").trim();
     const pdfKey = `pdf:req:${rid}`;
     const pdfBusy = busy.isBusy(pdfKey);
 
@@ -1199,27 +2302,27 @@ scrollEventThrottle={16}
       <Pressable
         disabled={!rid || pdfBusy || screenLock}
         onPress={async () => {
-          if (!rid) return;
+          if (!rid || pdfBusy || screenLock) return;
           try {
             await openRequestPdf(sheetRequest);
           } catch (e: any) {
-            if (String(e?.message ?? '').toLowerCase().includes('busy')) return;
-            Alert.alert('Ошибка', e?.message ?? 'PDF не сформирован');
+            if (String(e?.message ?? "").toLowerCase().includes("busy")) return;
+            Alert.alert("Ошибка", e?.message ?? "PDF не сформирован");
           }
         }}
         style={[
-          s.actionBtn,
-          {
-            backgroundColor: UI.btnNeutral,
-            opacity: (!rid || pdfBusy || screenLock) ? 0.6 : 1,
-          },
+          s.actionBtnWide,
+          { backgroundColor: UI.btnNeutral, opacity: (!rid || pdfBusy || screenLock) ? 0.6 : 1 },
         ]}
       >
-        <Text style={s.actionText}>{pdfBusy ? 'PDF…' : 'PDF'}</Text>
+        <Text style={s.actionText}>{pdfBusy ? "PDF…" : "PDF"}</Text>
       </Pressable>
     );
   })()}
 
+  <View style={s.sp8} />
+
+  {/* Excel — CENTER */}
   <Pressable
     disabled={screenLock}
     onPress={() => {
@@ -1227,122 +2330,67 @@ scrollEventThrottle={16}
       exportRequestExcel(sheetRequest);
     }}
     style={[
-      s.actionBtn,
+      s.actionBtnWide,
       { backgroundColor: UI.btnNeutral, opacity: screenLock ? 0.6 : 1 },
     ]}
   >
     <Text style={s.actionText}>Excel</Text>
   </Pressable>
 
-  <Pressable
-    hitSlop={10}
-    disabled={screenLock || actingAll === sheetRequest.request_id}
-    style={[
-      s.iconBtnDanger,
-      { opacity: (screenLock || actingAll === sheetRequest.request_id) ? 0.6 : 1 },
-    ]}
-    onPress={() => {
-      const doIt = async () => {
-        setActingAll(sheetRequest.request_id);
-        try {
-          const reqId = toFilterId(sheetRequest.request_id);
-          if (reqId == null) throw new Error('request_id пустой');
+  <View style={s.sp8} />
 
-          const { error } = await supabase.rpc('reject_request_all', {
-            p_request_id: String(reqId),
-            p_reason: null,
-          });
-          if (error) throw error;
-
-          setRows((prev) => prev.filter((r) => r.request_id !== sheetRequest.request_id));
-          closeSheet();
-        } catch (e: any) {
-          Alert.alert('Ошибка', e?.message ?? 'Не удалось отклонить все позиции');
-        } finally {
-          setActingAll(null);
-        }
-      };
-
-      if (Platform.OS === 'web') {
-        // @ts-ignore
-        const ok = window.confirm('Удалить заявку?\n\nОтклонить ВСЮ заявку вместе со всеми позициями?');
-        if (!ok) return;
-        void doIt();
-        return;
-      }
-
-      Alert.alert(
-        'Удалить заявку?',
-        'Вы уверены, что хотите отклонить ВСЮ заявку вместе со всеми позициями?',
-        [
-          { text: 'Отмена', style: 'cancel' },
-          { text: 'Да, удалить', style: 'destructive', onPress: () => void doIt() },
-        ],
-      );
-    }}
-  >
-    <Ionicons name="close" size={20} color="#fff" />
-  </Pressable>
-
-  <Pressable
-    hitSlop={10}
-    disabled={
+  {/* ✅ Approve/Send — RIGHT */}
+  {(() => {
+    const disabled =
       screenLock ||
-      actingAll === sheetRequest.request_id ||
-      (sheetRequest.items?.length ?? 0) === 0
-    }
-    style={[
-      s.iconBtnApprove,
-      {
-        backgroundColor:
-          (screenLock ||
-            actingAll === sheetRequest.request_id ||
-            (sheetRequest.items?.length ?? 0) === 0)
-            ? '#9CA3AF'
-            : UI.btnApprove,
-        opacity: screenLock ? 0.9 : 1,
-      },
-    ]}
-    onPress={async () => {
-      if (screenLock) return;
-      setActingAll(sheetRequest.request_id);
+      reqDeleteId === sheetRequest.request_id ||
+      reqSendId === sheetRequest.request_id ||
+      (sheetRequest.items?.length ?? 0) === 0;
 
-      try {
-        const reqId = toFilterId(sheetRequest.request_id);
-        if (reqId == null) throw new Error('request_id пустой');
-        const reqIdStr = String(reqId);
+    return (
+      <View style={s.actionBtnSquare}>
+        <SendPrimaryButton
+          variant="green"
+          disabled={disabled}
+          loading={reqSendId === sheetRequest.request_id}
+          onPress={async () => {
+            if (disabled) return;
 
-        const updItems = await supabase
-          .from('request_items')
-          .update({ status: 'К закупке' })
-          .eq('request_id', reqIdStr)
-          .neq('status', 'Отклонено');
-        if (updItems.error) throw updItems.error;
+            setReqSendId(sheetRequest.request_id);
+            try {
+              const reqId = toFilterId(sheetRequest.request_id);
+              if (reqId == null) throw new Error("request_id пустой");
 
-        const updReq = await supabase
-          .from('requests')
-          .update({ status: 'К закупке' })
-          .eq('id', reqIdStr);
-        if (updReq.error) throw updReq.error;
+              const reqIdStr = String(reqId);
 
-        setRows((prev) => prev.filter((r) => r.request_id !== sheetRequest.request_id));
-        await fetchDirectorReqs();
-        await fetchProps();
+              const updItems = await supabase
+                .from("request_items")
+                .update({ status: "К закупке" })
+                .eq("request_id", reqIdStr)
+                .neq("status", "Отклонено");
+              if (updItems.error) throw updItems.error;
 
-        closeSheet();
-        Alert.alert(
-          'Утверждено',
-          `Заявка ${labelForRequest(sheetRequest.request_id)} утверждена и отправлена снабженцу`,
-        );
-      } catch (e: any) {
-        Alert.alert('Ошибка', e?.message ?? 'Не удалось утвердить и отправить заявку');
-      } finally {
-        setActingAll(null);
-      }
-    }}
-  >
-    <Ionicons name="send" size={20} color="#fff" />
-  </Pressable>
+              const updReq = await supabase
+                .from("requests")
+                .update({ status: "К закупке" })
+                .eq("id", reqIdStr);
+              if (updReq.error) throw updReq.error;
+
+              setRows(prev => prev.filter(r => r.request_id !== sheetRequest.request_id));
+              await fetchProps();
+
+              closeSheet();
+              showSuccess(`Заявка ${labelForRequest(sheetRequest.request_id)} утверждена и отправлена снабженцу`);
+            } catch (e: any) {
+              Alert.alert("Ошибка", e?.message ?? "Не удалось утвердить и отправить заявку");
+            } finally {
+              setReqSendId(null);
+            }
+          }}
+        />
+      </View>
+    );
+  })()}
 </View>
       </View>
     ) : null}
@@ -1352,9 +2400,17 @@ scrollEventThrottle={16}
   <View style={{ flex: 1, minHeight: 0 }}>
     {(() => {
       const pidStr = String(sheetProposalId);
-      const key = pidStr;
-      const loaded = !!loadedByProp[key];
-      const items = itemsByProp[key] || [];
+const key = pidStr;
+const loaded = !!loadedByProp[key];
+const items = itemsByProp[key] || [];
+
+const isEmptyProposal = loaded && (items?.length ?? 0) === 0;
+const approveDisabled =
+  screenLock ||
+  propApproveId === pidStr ||
+  propReturnId === pidStr ||
+  !loaded ||
+  isEmptyProposal;
 
       const pretty = String(propsHeads.find(x => String(x.id) === pidStr)?.pretty ?? '').trim();
 
@@ -1364,11 +2420,175 @@ scrollEventThrottle={16}
         return acc + pr * q;
       }, 0);
 
+      
       if (!loaded) return <Text style={{ opacity: 0.7, color: UI.sub }}>Загружаю состав…</Text>;
-      if (!items.length) return <Text style={{ opacity: 0.6, color: UI.sub }}>Состав пуст</Text>;
+if (!items.length) {
+  return (
+    <Text style={{ opacity: 0.75, color: UI.sub }}>
+      Состав пуст — утвердить нельзя
+    </Text>
+  );
+}
+return (
+  <>
+   {/* ===== REQUEST CONTEXT (для предложения) ===== */}
+{(() => {
+  // ✅ 0) Самый лучший источник — request_items.note (как у прораба)
+  const firstReqItemId =
+    (itemsByProp[pidStr] || items || [])
+      .map(x => String(x?.request_item_id ?? "").trim())
+      .find(Boolean) || "";
 
+  const headerNote = firstReqItemId ? String(reqItemNoteByIdRef.current?.[firstReqItemId] ?? "").trim() : "";
+
+  if (headerNote) {
+    const lines = headerNote
+      .split(";")
+      .map(x => x.trim())
+      .filter(Boolean)
+      .slice(0, 4);
+
+    if (lines.length) {
       return (
-        <>
+        <View style={s.reqNoteBox}>
+          {lines.map((t, idx) => (
+            <Text key={idx} style={s.reqNoteLine} numberOfLines={1}>
+              {t}
+            </Text>
+          ))}
+        </View>
+      );
+    }
+  }
+
+  // ✅ 1) Второй вариант — requests.note/comment (если вдруг есть)
+  const reqIds = propReqIdsByPropRef.current?.[pidStr] || [];
+  if (!reqIds.length) return null;
+
+  const firstReqId = reqIds[0];
+  const meta = reqMetaByIdRef.current?.[firstReqId];
+
+  const human =
+    String(meta?.note ?? "").trim() ||
+    String(meta?.comment ?? "").trim();
+
+  if (human) {
+    const lines = human
+      .split(";")
+      .map(x => x.trim())
+      .filter(Boolean)
+      .slice(0, 4);
+
+    if (lines.length) {
+      return (
+        <View style={s.reqNoteBox}>
+          {lines.map((t, idx) => (
+            <Text key={idx} style={s.reqNoteLine} numberOfLines={1}>
+              {t}
+            </Text>
+          ))}
+        </View>
+      );
+    }
+  }
+
+  // ✅ 2) Fallback — коды (как было)
+  const obj =
+    String(meta?.object_name ?? "").trim() ||
+    String(meta?.object ?? "").trim() ||
+    (meta?.site_address_snapshot ? String(meta.site_address_snapshot).trim() : "");
+
+  const lines: string[] = [];
+  if (obj) lines.push(`Объект: ${obj}`);
+  if (meta?.level_code) lines.push(`Этаж/уровень: ${meta.level_code}`);
+  if (meta?.system_code) lines.push(`Система: ${meta.system_code}`);
+  if (meta?.zone_code) lines.push(`Зона: ${meta.zone_code}`);
+
+  if (!lines.length) return null;
+
+  return (
+    <View style={s.reqNoteBox}>
+      {lines.slice(0, 4).map((t, idx) => (
+        <Text key={idx} style={s.reqNoteLine} numberOfLines={1}>
+          {t}
+        </Text>
+      ))}
+    </View>
+  );
+})()}
+{(() => {
+  const pidStr = String(sheetProposalId);
+  const files = propAttByProp[pidStr] || [];
+  const busyAtt = !!propAttBusyByProp[pidStr];
+
+  return (
+    <View style={{ marginTop: 6, marginBottom: 12 }}>
+      <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+        <Text style={{ color: UI.text, fontWeight: "900" }}>
+          Вложения: {files.length}
+        </Text>
+
+        <Pressable
+          disabled={busyAtt}
+          onPress={() => void loadProposalAttachments(pidStr)}
+          style={{
+            paddingVertical: 6,
+            paddingHorizontal: 10,
+            borderRadius: 999,
+            borderWidth: 1,
+            borderColor: "rgba(255,255,255,0.18)",
+            backgroundColor: "rgba(255,255,255,0.06)",
+            opacity: busyAtt ? 0.6 : 1,
+          }}
+        >
+          <Text style={{ color: UI.text, fontWeight: "900", fontSize: 12 }}>
+            {busyAtt ? "…" : "Обновить"}
+          </Text>
+        </Pressable>
+      </View>
+
+      {busyAtt ? (
+        <Text style={{ color: UI.sub, fontWeight: "800", marginTop: 8 }}>
+          Загружаю вложения…
+        </Text>
+      ) : files.length === 0 ? (
+        <Text style={{ color: UI.sub, fontWeight: "800", marginTop: 8 }}>
+          Нет вложений (либо не прикреплены, либо RLS не пускает).
+        </Text>
+      ) : (
+        <View style={{ flexDirection: "row", flexWrap: "wrap", marginTop: 8 }}>
+          {files.map((f, idx) => (
+  <Pressable key={`${f.id}:${idx}`}
+  onPress={() => {
+    const url = String(f.url || "").trim();
+    if (!url) {
+      Alert.alert("Вложение", "URL пустой");
+      return;
+    }
+    void openSignedUrlUniversal(url, String(f.file_name ?? "file"));
+  }}
+  style={{
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.18)",
+    backgroundColor: "rgba(255,255,255,0.06)",
+    marginRight: 8,
+    marginBottom: 8,
+  }}
+>
+  <Text style={{ color: UI.text, fontWeight: "900" }} numberOfLines={1}>
+    {f.group_key ? `${f.group_key}: ` : ""}{f.file_name}
+  </Text>
+</Pressable>
+
+          ))}
+        </View>
+      )}
+    </View>
+  );
+})()}
           <FlatList
             data={items}
             keyExtractor={(it, idx) => `pi:${key}:${it.id}:${idx}`}
@@ -1380,21 +2600,22 @@ scrollEventThrottle={16}
             renderItem={({ item: it }) => (
               <View style={s.mobCard}>
                 <View style={s.mobMain}>
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-                    <Text style={s.mobTitle} numberOfLines={3}>{it.name_human}</Text>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap' }}>
+  <Text style={[s.mobTitle, { marginRight: 8 }]} numberOfLines={3}>
+    {it.name_human}
+  </Text>
 
-                    {it.item_kind ? (
-                      <View style={s.kindPill}>
-                        <Text style={s.kindPillText}>
-                          {it.item_kind === 'material' ? 'Материал'
-                            : it.item_kind === 'work' ? 'Работа'
-                            : it.item_kind === 'service' ? 'Услуга'
-                            : it.item_kind}
-                        </Text>
-                      </View>
-                    ) : null}
-                  </View>
-
+  {it.item_kind ? (
+    <View style={[s.kindPill, { marginTop: 4 }]}>
+      <Text style={s.kindPillText}>
+        {it.item_kind === 'material' ? 'Материал'
+          : it.item_kind === 'work' ? 'Работа'
+          : it.item_kind === 'service' ? 'Услуга'
+          : it.item_kind}
+      </Text>
+    </View>
+  ) : null}
+</View>
                   <Text style={s.mobMeta}>
                     {`${it.total_qty} ${it.uom || ''}`.trim()}
                     {it.price != null ? ` · цена ${it.price}` : ''}
@@ -1402,69 +2623,68 @@ scrollEventThrottle={16}
                     {it.app_code ? ` · ${it.app_code}` : ''}
                   </Text>
                 </View>
+<View style={{ marginLeft: 10 }}>
+  <RejectItemButton
+    disabled={decidingId === pidStr || actingPropItemId === Number(it.id)}
+    loading={actingPropItemId === Number(it.id)}
+    onPress={async () => {
+      try {
+        setDecidingId(pidStr);
+        setActingPropItemId(Number(it.id));
 
-                <Pressable
-  disabled={decidingId === pidStr}
-  style={[s.mobRejectBtn, { opacity: decidingId === pidStr ? 0.6 : 1 }]}
-  onPress={async () => {
-    try {
-      setDecidingId(pidStr);
+        // ✅ Берём request_item_id железно из БД по proposal_items.id
+        const q = await supabase
+          .from('proposal_items')
+          .select('request_item_id')
+          .eq('proposal_id', pidStr)
+          .eq('id', it.id) // it.id = proposal_items.id
+          .maybeSingle();
 
-      // ✅ Берём request_item_id железно из БД по proposal_items.id
-      const q = await supabase
-        .from('proposal_items')
-        .select('request_item_id')
-        .eq('proposal_id', pidStr)
-        .eq('id', it.id) // it.id = proposal_items.id
-        .maybeSingle();
+        if (q.error) throw q.error;
 
-      if (q.error) throw q.error;
+        const rid = String(q.data?.request_item_id || '').trim();
+        if (!rid) {
+          Alert.alert('Ошибка', 'В строке предложения нет request_item_id (в базе).');
+          return;
+        }
 
-      const rid = String(q.data?.request_item_id || '').trim();
-      if (!rid) {
-        Alert.alert('Ошибка', 'В строке предложения нет request_item_id (в базе).');
-        return;
+        const beforeCount = (itemsByProp[pidStr] || items || []).length;
+        const isLast = beforeCount <= 1;
+
+        const payload = [{
+          request_item_id: rid,
+          decision: 'rejected',
+          comment: 'Отклонено директором',
+        }];
+
+        const res = await supabase.rpc('director_decide_proposal_items', {
+          p_proposal_id: pidStr,
+          p_decisions: payload,
+          p_finalize: isLast,
+        });
+
+        if (res.error) throw res.error;
+
+        // локально убираем строку
+        setItemsByProp(prev => {
+          const before = prev[pidStr] || [];
+          const nextItems = before.filter(x => Number(x.id) !== Number(it.id));
+          return { ...prev, [pidStr]: nextItems };
+        });
+
+        if (isLast) {
+          await fetchProps();
+          closeSheet();
+        }
+      } catch (e: any) {
+        Alert.alert('Ошибка', e?.message ?? 'Не удалось отклонить позицию');
+      } finally {
+        setActingPropItemId(null);
+        setDecidingId(null);
       }
-
-      const beforeCount = (itemsByProp[pidStr] || items || []).length;
-      const isLast = beforeCount <= 1;
-
-      const payload = [{
-        request_item_id: rid,
-        decision: 'rejected',
-        comment: 'Отклонено директором',
-      }];
-
-      // ✅ ВАЖНО: НИКАКОГО JSON.stringify
-      const res = await supabase.rpc('director_decide_proposal_items', {
-        p_proposal_id: pidStr,
-        p_decisions: payload,
-        p_finalize: isLast,
-      });
-
-      if (res.error) throw res.error;
-
-      // локально убираем строку
-      setItemsByProp(prev => {
-        const before = prev[pidStr] || [];
-        const nextItems = before.filter(x => Number(x.id) !== Number(it.id));
-        return { ...prev, [pidStr]: nextItems };
-      });
-
-      if (isLast) {
-        await fetchProps();
-        closeSheet();
-      }
-    } catch (e: any) {
-      Alert.alert('Ошибка', e?.message ?? 'Не удалось отклонить позицию');
-    } finally {
-      setDecidingId(null);
-    }
-  }}
->
-  <Text style={s.mobRejectIcon}>✕</Text>
-</Pressable>
-
+    }}
+  />
+</View>
               </View>
             )}
           ListFooterComponent={() => (
@@ -1486,82 +2706,108 @@ scrollEventThrottle={16}
     </View>
   )}
 />
+{/* ===== PROPOSAL ACTIONS (PROD) ===== */}
+<View style={s.reqActionsBottom}>
+  {/* ✅ Return/Delete — LEFT */}
+  <View style={s.actionBtnSquare}>
+    <DeleteAllButton
+      disabled={screenLock || propReturnId === pidStr || propApproveId === pidStr}
+      loading={propReturnId === pidStr}
+      accessibilityLabel="Вернуть/Отклонить"
+      onPress={() => {
+        if (screenLock) return;
+        onDirectorReturn(pidStr);
+      }}
+    />
+  </View>
 
-          {/* ✅ НИЖНЯЯ ПАНЕЛЬ СНАБЖЕНЦА — ВОССТАНОВЛЕНА 1:1 */}
-          <View style={s.reqActionsBottom}>
+  <View style={s.sp8} />
+
+  {/* PDF — CENTER */}
   {(() => {
-    const pdfKey = `pdf:prop:${pidStr}`;
+    const pdfKey = `pdfshare:prop:${pidStr}`;
     const pdfBusy = busy.isBusy(pdfKey);
 
     return (
       <Pressable
         disabled={pdfBusy || screenLock}
         style={[
-          s.actionBtn,
+          s.actionBtnWide,
           { backgroundColor: UI.btnNeutral, opacity: (pdfBusy || screenLock) ? 0.6 : 1 },
         ]}
         onPress={async () => {
           if (pdfBusy || screenLock) return;
+          if (pdfTapLockRef.current[pdfKey]) return;
+          pdfTapLockRef.current[pdfKey] = true;
+
           try {
-            await runPdf({
+            await runPdfTop({
               busy,
               supabase,
               key: pdfKey,
-              label: 'Загрузка PDF…',
-              mode: 'preview',
+              label: "Готовлю файл…",
+              mode: "share",
               fileName: `Предложение_${pidStr}`,
-              minOverlayMs: 1400,
               getRemoteUrl: async () => {
-                const { exportProposalPdf } = await import('../../src/lib/rik_api');
-                return await exportProposalPdf(pidStr as any, 'preview');
+                const { exportProposalPdf } = await import("../../src/lib/rik_api");
+                return await exportProposalPdf(pidStr as any, "share");
               },
             });
           } catch (e: any) {
-            if (String(e?.message ?? '').toLowerCase().includes('busy')) return;
-            Alert.alert('Ошибка', e?.message ?? 'PDF не сформирован');
+            if (String(e?.message ?? "").toLowerCase().includes("busy")) return;
+            Alert.alert("Ошибка", e?.message ?? "Не удалось отправить PDF");
+          } finally {
+            setTimeout(() => { pdfTapLockRef.current[pdfKey] = false; }, 450);
           }
         }}
       >
-        <Text style={s.actionText}>{pdfBusy ? 'PDF…' : 'PDF'}</Text>
+        <Text style={s.actionText}>{pdfBusy ? "PDF…" : "PDF"}</Text>
       </Pressable>
     );
   })()}
 
+  <View style={s.sp8} />
+
+  {/* Excel — CENTER */}
   <Pressable
     disabled={screenLock}
-    style={[s.actionBtn, { backgroundColor: UI.btnNeutral, opacity: screenLock ? 0.6 : 1 }]}
+    style={[
+      s.actionBtnWide,
+      { backgroundColor: UI.btnNeutral, opacity: screenLock ? 0.6 : 1 },
+    ]}
     onPress={async () => {
       if (screenLock) return;
 
       try {
-        if (Platform.OS !== 'web') {
-          Alert.alert('Excel', 'Excel экспорт сейчас реализован только для Web-версии.');
+        if (Platform.OS !== "web") {
+          Alert.alert("Excel", "Excel экспорт сейчас реализован только для Web-версии.");
           return;
         }
         if (!items.length) {
-          Alert.alert('Excel', 'Нет строк для выгрузки.');
+          Alert.alert("Excel", "Нет строк для выгрузки.");
           return;
         }
 
-        const safe = (v: any) => (v == null ? '' : String(v).replace(/[\r\n]+/g, ' ').trim());
-        const title = (pretty || `PROPOSAL-${pidStr.slice(0, 8)}`).replace(/[^\wА-Яа-я0-9]/g, '_');
-        const sheetName = title.slice(0, 31) || 'Предложение';
+        const safe = (v: any) => (v == null ? "" : String(v).replace(/[\r\n]+/g, " ").trim());
+        const title = (pretty || `PROPOSAL-${pidStr.slice(0, 8)}`).replace(/[^\wА-Яа-я0-9]/g, "_");
+        const sheetName = title.slice(0, 31) || "Предложение";
 
-        const data: any[][] = [['№', 'Наименование', 'Кол-во', 'Ед. изм.', 'Применение']];
+        const data: any[][] = [["№", "Наименование", "Кол-во", "Ед. изм.", "Применение"]];
         items.forEach((it, idx) =>
-          data.push([idx + 1, safe(it.name_human), safe(it.total_qty), safe(it.uom), safe(it.app_code)]),
+          data.push([idx + 1, safe(it.name_human), safe(it.total_qty), safe(it.uom), safe(it.app_code)])
         );
 
         const wb = XLSX.utils.book_new();
         const ws = XLSX.utils.aoa_to_sheet(data);
         XLSX.utils.book_append_sheet(wb, ws, sheetName);
 
-        const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+        const wbout = XLSX.write(wb, { bookType: "xlsx", type: "array" });
         const blob = new Blob([wbout], {
-          type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+          type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         });
+
         const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
+        const a = document.createElement("a");
         a.href = url;
         a.download = `${sheetName}.xlsx`;
         document.body.appendChild(a);
@@ -1569,567 +2815,75 @@ scrollEventThrottle={16}
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
       } catch (e: any) {
-        Alert.alert('Ошибка', e?.message ?? 'Не удалось сформировать Excel');
+        Alert.alert("Ошибка", e?.message ?? "Не удалось сформировать Excel");
       }
     }}
   >
     <Text style={s.actionText}>Excel</Text>
   </Pressable>
 
-  <Pressable
-    hitSlop={12}
-    disabled={screenLock}
-    style={[s.iconBtnDanger, { opacity: screenLock ? 0.6 : 1 }]}
-    onPress={() => {
-      if (screenLock) return;
-      onDirectorReturn(pidStr);
-    }}
-  >
-    <Ionicons name="close" size={20} color="#fff" />
-  </Pressable>
+  <View style={s.sp8} />
 
-  <Pressable
-    hitSlop={10}
-    disabled={screenLock || decidingId === pidStr}
-    style={[
-      s.iconBtnApprove,
-      { backgroundColor: (screenLock || decidingId === pidStr) ? '#9CA3AF' : UI.btnApprove, opacity: screenLock ? 0.9 : 1 },
-    ]}
-    onPress={async () => {
-      if (screenLock) return;
+  {/* ✅ Approve — RIGHT */}
+  <View style={s.actionBtnSquare}>
+    <SendPrimaryButton
+      variant="green"
+      disabled={approveDisabled}
+      loading={propApproveId === pidStr}
+      onPress={async () => {
+        if (approveDisabled) return;
 
-      try {
-        setDecidingId(pidStr);
+        try {
+          setPropApproveId(pidStr);
 
-        const { error } = await supabase.rpc('director_approve_min_auto', { p_proposal_id: pidStr, p_comment: null });
-        if (error) throw error;
+          const { error } = await supabase.rpc("director_approve_min_auto", {
+            p_proposal_id: pidStr,
+            p_comment: null,
+          });
+          if (error) throw error;
 
-        await seedWorksAfterApprove(pidStr);
+          const rInc = await supabase.rpc("ensure_purchase_and_incoming_strict", {
+            p_proposal_id: pidStr,
+          });
+          if ((rInc as any)?.error) throw (rInc as any).error;
 
-        const rInc = await supabase.rpc('ensure_purchase_and_incoming_from_proposal', { p_proposal_id: pidStr });
-        if ((rInc as any)?.error) throw (rInc as any).error;
+          try {
+            const purchaseId = String((rInc as any)?.data?.purchase_id ?? "").trim();
+            if (purchaseId) {
+              const rW = await supabase.rpc("work_seed_from_purchase" as any, { p_purchase_id: purchaseId } as any);
+              if (rW.error) console.warn("[work_seed_from_purchase] error:", rW.error.message);
+            }
+          } catch {}
 
-        const { error: accErr } = await supabase.rpc('proposal_send_to_accountant_min', {
-          p_proposal_id: pidStr,
-          p_invoice_number: null,
-          p_invoice_date: null,
-          p_invoice_amount: null,
-          p_invoice_currency: 'KGS',
-        });
-        if (accErr) throw accErr;
+          const { error: accErr } = await supabase.rpc("proposal_send_to_accountant_min", {
+            p_proposal_id: pidStr,
+            p_invoice_number: null,
+            p_invoice_date: null,
+            p_invoice_amount: null,
+            p_invoice_currency: "KGS",
+          });
+          if (accErr) throw accErr;
 
-        await fetchProps();
-        closeSheet();
-        Alert.alert('Готово', 'Утверждено → бухгалтер → склад');
-      } catch (e: any) {
-        Alert.alert('Ошибка', e?.message ?? 'Не удалось утвердить');
-      } finally {
-        setDecidingId(null);
-      }
-    }}
-  >
-    <Ionicons name="send" size={20} color="#fff" />
-  </Pressable>
+          await fetchProps();
+          closeSheet();
+          showSuccess("Утверждено → бухгалтер → склад/подрядчики");
+        } catch (e: any) {
+          Alert.alert("Ошибка", e?.message ?? "Не удалось утвердить");
+        } finally {
+          setPropApproveId(null);
+        }
+      }}
+    />
+  </View>
 </View>
   </>
       );
     })()}
   </View>
 ) : null}
-  </View>
-      </RNModal>
-    </View>
-  );
+ </View>
+</RNModal> 
+    
+</View>
+);
 }
-
-const s = StyleSheet.create({
-  container: { flex: 1 },
-
-  header: {
-    paddingHorizontal: 16,
-    paddingTop: 12,
-    paddingBottom: 10,
-    borderBottomWidth: 1,
-    borderColor: UI.border,
-    backgroundColor: UI.cardBg,
-  },
-  title: { fontSize: 24, fontWeight: '800', color: UI.text, marginBottom: 8 },
-  tabs: {
-  flexDirection: 'row',
-  flexWrap: 'wrap',     // ✅ разрешаем перенос
-  gap: 8,
-  alignItems: 'center',
-},
-
-  tab: {
-  paddingVertical: 8,
-  paddingHorizontal: 14,
-  borderRadius: 999,
-  borderWidth: 1,
-  borderColor: UI.border,
-  backgroundColor: UI.tabInactiveBg,
-},
-tabActive: {
-  backgroundColor: UI.tabActiveBg,
-  borderColor: UI.accent,
-},
-tabHalf: {
-  flexBasis: '48%',     // ✅ две кнопки в ряд
-  flexGrow: 1,
-},
-
-tabText: {
-  color: UI.text,
-  fontWeight: '800',
-  textAlign: 'center',
-  flexShrink: 1,
-}, 
- sectionHeader: {
-  paddingHorizontal: 16,
-  paddingTop: 12,
-  paddingBottom: 6,
-
-  // ✅ на телефоне: колонка (текст сверху, KPI снизу)
-  // ✅ на web: строка (как раньше)
-  ...Platform.select({
-    web: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      gap: 8,
-    },
-    default: {
-      flexDirection: 'column',
-      alignItems: 'flex-start',
-      gap: 8,
-    },
-  }),
-},
-
-sectionHeaderTop: {
-  width: '100%',
-},
-
-
-  sectionTitle: { fontSize: 20, fontWeight: '800', color: UI.text },
-  sectionMeta: {
-  color: UI.sub,
-  fontWeight: '600',
-  flexShrink: 0,        // ✅ не сжиматься в ноль
-  maxWidth: 90,         // ✅ чтобы не вылезало
-  textAlign: 'right',   // ✅ ровно справа
-},
-
-group: { marginBottom: 12, paddingHorizontal: 16, gap: 10 },
-
-groupHeader: {
-  flexDirection: 'row',
-  alignItems: 'center',
-  justifyContent: 'space-between',
-  gap: 10,
-
-  padding: 14,
-  borderRadius: 18,
-
-  backgroundColor: UI.cardBg,
-  borderWidth: 1,
-  borderColor: 'rgba(255,255,255,0.18)',
-
-  shadowColor: '#000',
-  shadowOffset: { width: 0, height: 10 },
-  shadowOpacity: 0.22,
-  shadowRadius: 18,
-  elevation: 6,
- minHeight: 72,
-},
-
-
-  groupTitle: { fontSize: 18, fontWeight: '900', color: UI.text },
-
-  groupMeta: {
-  marginTop: 4,
-  alignSelf: 'flex-start',
-  paddingVertical: 3,
-  paddingHorizontal: 10,
-  borderRadius: 999,
-  backgroundColor: 'rgba(255,255,255,0.06)',
-  borderWidth: 1,
-  borderColor: 'rgba(255,255,255,0.12)',
-  color: '#E5E7EB',
-  fontWeight: '800',
-  fontSize: 12,
-},
-
-  pillBtn: { paddingVertical: 6, paddingHorizontal: 12, borderRadius: 999 },
-  pillBtnText: { color: UI.text, fontWeight: '700' },   // для светлых кнопок
-pillBtnTextOn: { color: '#fff', fontWeight: '800' },  // для тёмных кнопок
-
-  // ===== Поиск и фильтр =====
-  filterBar: {
-    paddingHorizontal: 16,
-    paddingBottom: 8,
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    gap: 12,
-  },
-  filterLabel: {
-    fontSize: 12,
-    color: UI.sub,
-    marginBottom: 4,
-  },
- searchBox: {
-  flexDirection: 'row',
-  alignItems: 'center',
-  borderWidth: 1,
-  borderColor: 'rgba(255,255,255,0.14)',
-  borderRadius: 999,
-  paddingHorizontal: 10,
-  paddingVertical: 6,
-  backgroundColor: 'rgba(255,255,255,0.06)',
-},
-  searchIcon: {
-    fontSize: 14,
-    marginRight: 6,
-    color: UI.sub,
-  },
-  searchInput: {
-    flex: 1,
-    paddingVertical: 0,
-    paddingHorizontal: 0,
-    fontSize: 14,
-    color: UI.text,
-  },
-  filterToggle: {
-  paddingHorizontal: 10,
-  paddingVertical: 6,
-  borderRadius: 999,
-  borderWidth: 1,
-  borderColor: 'rgba(255,255,255,0.14)',
-  backgroundColor: 'rgba(255,255,255,0.06)',
-},
-  filterToggleActive: {
-    backgroundColor: '#E5E7EB',
-  },
-  filterToggleText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: UI.text,
-  },
-
-collapsingHeader: {
-  position: 'absolute',
-  top: 0,
-  left: 0,
-  right: 0,
-  zIndex: 50,
-  backgroundColor: UI.cardBg,
-  borderBottomWidth: 1,
-  borderColor: UI.border,
-  paddingHorizontal: 16,
-  paddingTop: Platform.OS === 'web' ? 10 : 12,
-  paddingBottom: 10,
-  shadowColor: '#000',
-  shadowOffset: { width: 0, height: 6 },
-  shadowRadius: 14,
-},
-collapsingTitle: {
-  fontWeight: '900',
-  color: UI.text,
-  marginBottom: 8,
-},
-
-  // ===== КНОПКА ОТКРЫТЬ (ВСЕГДА ВЛЕЗАЕТ НА IPHONE) =====
-  propHeader: {
-  flexDirection: 'row',
-  alignItems: 'center',
-  justifyContent: 'space-between',
-  gap: 10,
-},
-
-
- openBtn: {
-  paddingVertical: 10,
-  paddingHorizontal: 16,
-  borderRadius: 999,
-  backgroundColor: 'rgba(255,255,255,0.06)',
-  borderWidth: 1,
-  borderColor: 'rgba(255,255,255,0.22)',
-  minWidth: 96,
-  alignItems: 'center',
-},
-openBtnText: {
-  color: '#FFFFFF',
-  fontWeight: '900',
-  fontSize: 13,
-  letterSpacing: 0.2,
-},
-
-
-actionsRow: {
-  flexDirection: 'row',
-  gap: 8,
-  marginTop: 10,
-  flexWrap: 'wrap',
-},
-reqNoteBox: {
-  marginTop: 8,
-  marginBottom: 12,
-  padding: 12,
-  borderRadius: 14,
-  backgroundColor: '#0F172A',    // чуть темнее карточки
-  borderWidth: 1,
-  borderColor: UI.border,
-  borderLeftWidth: 4,
-  borderLeftColor: UI.accent,    // зелёный акцент
-},
-reqNoteLine: {
-  color: UI.text,
-  fontSize: 14,
-  lineHeight: 20,
-  marginBottom: 4,
-},
-
-// ===== mobile cards =====
-mobList: {
-  marginTop: 10,
-  gap: 10,
-},
-mobCard: {
-  flexDirection: 'row',
-  alignItems: 'center',
-  gap: 10,
-  padding: 14,
-  borderRadius: 18,
-
-  backgroundColor: 'rgba(16,24,38,0.92)',
-  borderWidth: 1.25,
-  borderColor: 'rgba(255,255,255,0.16)',
-
-  shadowColor: '#000',
-  shadowOffset: { width: 0, height: 10 },
-  shadowOpacity: 0.22,
-  shadowRadius: 18,
-  elevation: 6,
-
-},
-mobMain: {
-  flex: 1,
-  minWidth: 0,
-},
-
-mobTitle: {
-  fontSize: 16,
-  fontWeight: '800',
-  color: UI.text,
-},
-
-mobMeta: {
-  marginTop: 6,
-  fontSize: 14,
-  fontWeight: '700',
-  color: UI.sub,
-},
-
-mobRejectBtn: {
-  width: 44,
-  height: 44,
-  borderRadius: 12,
-  alignItems: 'center',
-  justifyContent: 'center',
-  backgroundColor: UI.btnReject,
-},
-
-mobRejectIcon: {
-  color: '#fff',
-  fontSize: 22,
-  fontWeight: '900',
-  lineHeight: 22,
-},
-kindPill: {
-  paddingVertical: 4,
-  paddingHorizontal: 10,
-  borderRadius: 999,
-  borderWidth: 1,
-  borderColor: UI.border,
-  backgroundColor: 'transparent',
-},
-kindPillText: {
-  fontSize: 12,
-  fontWeight: '700',
-  color: UI.text,
-},
-
-kpiRow: {
-  width: '100%',
-  flexDirection: 'row',
-  flexWrap: 'wrap',
-  gap: 8,
-},
-
-kpiPill: {
-  paddingVertical: 8,
-  paddingHorizontal: 12,
-  borderRadius: 999,
-  borderWidth: 1,
-  borderColor: UI.border,
-  backgroundColor: UI.cardBg,
-  flexDirection: 'row',
-  alignItems: 'center',
-  gap: 8,
-  flexGrow: 1,
-  flexBasis: '48%',
-},
-kpiLabel: {
-  color: UI.sub,
-  fontWeight: '700',
-  fontSize: 12,
-},
-
-kpiValue: {
-  color: UI.text,
-  fontWeight: '900',
-  fontSize: 12,
-},
-cardMeta: {
-  marginTop: 6,
-  color: 'rgba(255,255,255,0.78)',  // ✅ ярче, чем #E5E7EB на твоём фоне
-  fontSize: 12,
-  fontWeight: '800',
-  letterSpacing: 0.2,
-},
-metaRow: {
-  marginTop: 6,
-  flexDirection: 'row',
-  alignItems: 'center',
-  gap: 10,
-  flexWrap: 'wrap',        // ✅ перенос, но без смещения вправо
-},
-metaPill: {
-  paddingVertical: 4,
-  paddingHorizontal: 12,
-  borderRadius: 999,
-  backgroundColor: 'rgba(255,255,255,0.06)',
-  borderWidth: 1,
-  borderColor: 'rgba(255,255,255,0.12)',
-  alignItems: 'center',
-  flexShrink: 0,          // ✅ не сжиматься в ноль
-},
-metaPillText: {
-  color: '#E5E7EB',
-  fontWeight: '900',
-  fontSize: 12,
-},
-
-reqActionsBottom: {
-  marginTop: 12,
-  flexDirection: 'row',
-  gap: 10,
-
-  padding: 10,
-  borderRadius: 18,
-  backgroundColor: 'rgba(255,255,255,0.04)',
-  borderWidth: 1,
-  borderColor: 'rgba(255,255,255,0.10)',
-},
-actionBtn: {
-  flex: 1,
-  paddingVertical: 12,
-  borderRadius: 16,
-  alignItems: 'center',
-  justifyContent: 'center',
-  backgroundColor: 'rgba(255,255,255,0.08)',
-},
-
-actionText: { color: '#fff', fontWeight: '900' },
-
-actionTextOn: { color: '#fff', fontWeight: '900' },
-
-iconBtnDanger: {
-  width: 54,
-  height: 44,
-  borderRadius: 14,
-  alignItems: 'center',
-  justifyContent: 'center',
-  backgroundColor: UI.btnReject,
-},
-
-iconBtnApprove: {
-  width: 54,
-  height: 44,
-  borderRadius: 14,
-  alignItems: 'center',
-  justifyContent: 'center',
-},
-sectionBox: {
-  marginTop: 10,
-  padding: 12,
-  borderRadius: 18,
-  backgroundColor: 'rgba(255,255,255,0.04)',
-  borderWidth: 1,
-  borderColor: 'rgba(255,255,255,0.10)',
-},
-sectionBoxTitle: {
-  color: UI.sub,
-  fontWeight: '900',
-  fontSize: 12,
-  letterSpacing: 0.4,
-  marginBottom: 10,
-},
-rightStack: {
-  alignItems: 'flex-end',
-  justifyContent: 'center',
-  gap: 8,
-},
-sheet: {
-  height: '88%',
-  backgroundColor: UI.cardBg,
-  borderTopLeftRadius: 22,
-  borderTopRightRadius: 22,
-  paddingTop: 10,
-  paddingHorizontal: 16,
-  paddingBottom: 16,
-  borderWidth: 1,
-  borderColor: 'rgba(255,255,255,0.10)',
-},
-sheetHandle: {
-  alignSelf: 'center',
-  width: 44,
-  height: 5,
-  borderRadius: 999,
-  backgroundColor: 'rgba(255,255,255,0.18)',
-  marginBottom: 10,
-},
-sheetTitle: {
-  flex: 1,
-  minWidth: 0,
-  color: UI.text,
-  fontWeight: '900',
-  fontSize: 18,
-},
-sheetTopBar: {
-  flexDirection: 'row',
-  alignItems: 'center',
-  justifyContent: 'space-between',
-  gap: 10,
-  marginBottom: 10,
-},
-
-sheetCloseBtn: {
-  paddingVertical: 10,
-  paddingHorizontal: 14,
-  borderRadius: 999,
-  backgroundColor: '#E5E7EB',          // нейтральная кнопка
-  borderWidth: 1,
-  borderColor: 'rgba(0,0,0,0.10)',
-  flexShrink: 0,
-},
-
-sheetCloseText: {
-  color: '#0B0F14',                   // чёрный текст
-  fontWeight: '900',
-  fontSize: 13,
-},
-
-});
-
-

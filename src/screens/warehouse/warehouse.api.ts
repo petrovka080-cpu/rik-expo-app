@@ -1,0 +1,444 @@
+// src/screens/warehouse/warehouse.api.ts
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { StockRow, ReqHeadRow, ReqItemUiRow } from "./warehouse.types";
+import { nz, parseNum } from "./warehouse.utils";
+
+const pickUom = (v: any): string | null => {
+  const s = v == null ? "" : String(v).trim();
+  return s !== "" ? s : null;
+};
+
+const looksLikeCode = (s: any) => {
+  const x = String(s ?? "").trim().toUpperCase();
+  return (
+    x.startsWith("MAT-") ||
+    x.startsWith("TOOL-") ||
+    x.startsWith("WT-") ||
+    x.startsWith("WORK-") ||
+    x.startsWith("SRV-") ||
+    x.startsWith("SERV-") ||
+    x.startsWith("KIT-")
+  );
+};
+
+const normDateArg = (s?: string | null): string | null => {
+  const t = String(s ?? "").trim();
+  return t ? t : null;
+};
+
+async function loadNameMapOverrides(
+  supabase: SupabaseClient,
+  codesUpper: string[],
+): Promise<Record<string, string>> {
+  const out: Record<string, string> = {};
+  if (!codesUpper.length) return out;
+
+  // catalog_name_overrides: pk(code)
+  const q = await supabase
+    .from("catalog_name_overrides" as any)
+    .select("code, name_ru")
+    .in("code", codesUpper.slice(0, 5000));
+
+  if (q.error || !Array.isArray(q.data)) return out;
+
+  for (const r of q.data as any[]) {
+    const c = String(r.code ?? "").trim().toUpperCase();
+    const nm = String(r.name_ru ?? "").trim();
+    if (c && nm && !out[c]) out[c] = nm;
+  }
+  return out;
+}
+
+async function loadNameMapRikRu(
+  supabase: SupabaseClient,
+  codesUpper: string[],
+): Promise<Record<string, string>> {
+  const out: Record<string, string> = {};
+  if (!codesUpper.length) return out;
+
+  const q = await supabase
+    .from("v_rik_names_ru" as any)
+    .select("code, name_ru")
+    .in("code", codesUpper.slice(0, 5000));
+
+  if (q.error || !Array.isArray(q.data)) return out;
+
+  for (const r of q.data as any[]) {
+    const c = String(r.code ?? "").trim().toUpperCase();
+    const nm = String(r.name_ru ?? "").trim();
+    if (c && nm && !out[c]) out[c] = nm;
+  }
+  return out;
+}
+
+async function loadNameMapLedgerUi(
+  supabase: SupabaseClient,
+  codesUpper: string[],
+): Promise<Record<string, string>> {
+  const out: Record<string, string> = {};
+  if (!codesUpper.length) return out;
+
+  const q = await supabase
+    .from("v_wh_balance_ledger_ui" as any)
+    .select("code, name")
+    .in("code", codesUpper.slice(0, 5000));
+
+  if (q.error || !Array.isArray(q.data)) return out;
+
+  for (const r of q.data as any[]) {
+    const c = String(r.code ?? "").trim().toUpperCase();
+    const nm = String(r.name ?? "").trim();
+    if (c && nm && !out[c]) out[c] = nm;
+  }
+  return out;
+}
+
+/**
+ * ✅ PROD stock
+ * - qty: v_wh_balance_ledger_truth_ui (истина)
+ * - name: overrides -> v_rik_names_ru -> v_wh_balance_ledger_ui
+ */
+export async function apiFetchStock(
+  supabase: SupabaseClient,
+): Promise<{ supported: boolean; rows: StockRow[] }> {
+  try {
+    const truth = await supabase
+      .from("v_wh_balance_ledger_truth_ui" as any)
+      .select("code, uom_id, qty_available, updated_at")
+      .order("code", { ascending: true })
+      .limit(20000);
+
+    if (!truth.error && Array.isArray(truth.data)) {
+      const truthRows = truth.data as any[];
+
+      const codesUpper = truthRows
+        .map((x) => String(x.code ?? "").trim().toUpperCase())
+        .filter(Boolean);
+
+      // ✅ приоритет: overrides -> v_rik_names_ru -> ledger_ui
+      const [overMap, rikMap, uiMap] = await Promise.all([
+        loadNameMapOverrides(supabase, codesUpper),
+        loadNameMapRikRu(supabase, codesUpper),
+        loadNameMapLedgerUi(supabase, codesUpper),
+      ]);
+
+      const rows: StockRow[] = truthRows.map((x) => {
+        const code = String(x.code ?? "").trim();
+        const codeKey = code.toUpperCase();
+        const uom = String(x.uom_id ?? "").trim();
+        const avail = nz(x.qty_available, 0);
+
+        const nOver = String(overMap[codeKey] ?? "").trim();
+        const nRik = String(rikMap[codeKey] ?? "").trim();
+        const nUi = String(uiMap[codeKey] ?? "").trim();
+
+        const picked =
+          (nOver && !looksLikeCode(nOver) ? nOver : nOver) ||
+          (nRik && !looksLikeCode(nRik) ? nRik : nRik) ||
+          (nUi && !looksLikeCode(nUi) ? nUi : "") ||
+          // если вдруг uiMap хранит кодом — не показываем как имя
+          "—";
+
+        return {
+          material_id: `${code}::${uom}`,
+          code: code || null,
+          name: picked || "—",
+          uom_id: pickUom(x.uom_id) ?? null,
+
+          qty_on_hand: avail,
+          qty_reserved: 0,
+          qty_available: avail,
+
+          updated_at: x.updated_at ?? null,
+        } as StockRow;
+      });
+
+      return { supported: true, rows };
+    }
+
+    // ---- fallbacks (как у тебя было) ----
+    const rpcNames = [
+      { fn: "list_stock", args: {} },
+      { fn: "warehouse_list_stock", args: {} },
+      { fn: "list_warehouse_stock", args: {} },
+      { fn: "acc_list_stock", args: {} },
+    ] as const;
+
+    for (const r of rpcNames) {
+      const res = await supabase.rpc(r.fn as any, r.args as any);
+      if (!res.error && Array.isArray(res.data)) {
+        const rows = (res.data || []).map(
+          (x: any) =>
+            ({
+              material_id: String(x.material_id ?? x.id ?? x.code ?? ""),
+              code: x.code ?? x.mat_code ?? null,
+              uom_id:
+                pickUom(x.uom_id) ??
+                pickUom(x.uom) ??
+                pickUom(x.uom_code) ??
+                pickUom(x.unit) ??
+                pickUom(x.unit_id) ??
+                null,
+              name: x.name ?? x.name_human ?? x.name_human_ru ?? null,
+              qty_on_hand: nz(x.qty_on_hand ?? x.on_hand, 0),
+              qty_reserved: nz(x.qty_reserved ?? x.reserved, 0),
+              qty_available: nz(
+                x.qty_available ?? x.available ?? nz(x.qty_on_hand) - nz(x.qty_reserved),
+                0,
+              ),
+              object_name: x.object_name ?? null,
+              warehouse_name: x.warehouse_name ?? null,
+              updated_at: x.updated_at ?? null,
+            } as StockRow),
+        );
+        return { supported: true, rows };
+      }
+    }
+
+    const v = await supabase.from("v_warehouse_stock" as any).select("*").limit(2000);
+    if (!v.error && Array.isArray(v.data)) {
+      const rows = (v.data || []).map(
+        (x: any) =>
+          ({
+            material_id: String(x.code ?? ""),
+            code: x.code ?? null,
+            name: x.name ?? null,
+            uom_id:
+              pickUom(x.uom_id) ??
+              pickUom(x.uom) ??
+              pickUom(x.uom_code) ??
+              pickUom(x.unit) ??
+              pickUom(x.unit_id) ??
+              null,
+            qty_on_hand: nz(x.qty_on_hand, 0),
+            qty_reserved: nz(x.qty_reserved, 0),
+            qty_available: nz(x.qty_available ?? nz(x.qty_on_hand) - nz(x.qty_reserved), 0),
+            object_name: null,
+            warehouse_name: null,
+            updated_at: x.updated_at ?? null,
+          } as StockRow),
+      );
+      return { supported: true, rows };
+    }
+
+    return { supported: false, rows: [] };
+  } catch {
+    return { supported: false, rows: [] };
+  }
+}
+
+export async function apiFetchReqHeads(supabase: SupabaseClient): Promise<ReqHeadRow[]> {
+  const q = await supabase
+    .from("v_wh_issue_req_heads_ui" as any)
+    .select("*")
+    // 1) главное — по времени (свежие сверху)
+    .order("submitted_at", { ascending: false, nullsFirst: false })
+    // 2) стабилизатор — по display_no (REQ-xxxx/2026), чтобы одинаковые submitted_at не прыгали
+    .order("display_no", { ascending: false })
+    // 3) ещё один стабилизатор — по request_id (uuid) на случай одинаковых display_no
+    .order("request_id", { ascending: false })
+    .limit(500);
+
+  if (q.error || !Array.isArray(q.data)) return [];
+
+  const rows: ReqHeadRow[] = (q.data as any[]).map((x) => ({
+    request_id: String(x.request_id),
+    display_no: x.display_no ?? null,
+    object_name: x.object_name ?? null,
+
+    level_code: x.level_code ?? null,
+    system_code: x.system_code ?? null,
+    zone_code: x.zone_code ?? null,
+
+    level_name: x.level_name ?? null,
+    system_name: x.system_name ?? null,
+    zone_name: x.zone_name ?? null,
+
+    submitted_at: x.submitted_at ?? null,
+
+    items_cnt: Number(x.items_cnt ?? 0),
+    ready_cnt: Number(x.ready_cnt ?? 0),
+    done_cnt: Number(x.done_cnt ?? 0),
+
+    qty_limit_sum: parseNum(x.qty_limit_sum, 0),
+    qty_issued_sum: parseNum(x.qty_issued_sum, 0),
+    qty_left_sum: parseNum(x.qty_left_sum, 0),
+
+    issue_status: String(x.issue_status ?? "READY"),
+  }));
+
+  rows.sort((a: any, b: any) => {
+    const ta = a?.submitted_at ? new Date(a.submitted_at).getTime() : 0;
+    const tb = b?.submitted_at ? new Date(b.submitted_at).getTime() : 0;
+    if (tb !== ta) return tb - ta;
+
+    const da = String(a?.display_no ?? "");
+    const db = String(b?.display_no ?? "");
+    if (db !== da) return db.localeCompare(da);
+
+    return String(b?.request_id ?? "").localeCompare(String(a?.request_id ?? ""));
+  });
+
+  return rows.filter((r) => String(r.issue_status ?? "").trim().toUpperCase() !== "DONE");
+}
+export async function apiFetchReqItems(
+  supabase: SupabaseClient,
+  requestId: string,
+): Promise<ReqItemUiRow[]> {
+  const rid = String(requestId || "").trim();
+  if (!rid) return [];
+
+  const q = await supabase
+    .from("v_wh_issue_req_items_ui" as any)
+    .select("*")
+    .eq("request_id", rid)
+    .order("name_human", { ascending: true });
+
+  if (q.error || !Array.isArray(q.data)) return [];
+
+  const raw = (q.data as any[]).map((x) => ({
+    request_id: String(x.request_id),
+    request_item_id: String(x.request_item_id),
+
+    display_no: x.display_no ?? null,
+    object_name: x.object_name ?? null,
+    level_code: x.level_code ?? null,
+    system_code: x.system_code ?? null,
+    zone_code: x.zone_code ?? null,
+
+    rik_code: String(x.rik_code ?? ""),
+    name_human: String(x.name_human ?? x.rik_code ?? ""),
+    uom: x.uom ?? null,
+
+    qty_limit: parseNum(x.qty_limit, 0),
+    qty_issued: parseNum(x.qty_issued, 0),
+    qty_left: parseNum(x.qty_left, 0),
+
+    qty_available: parseNum(x.qty_available, 0),
+    qty_can_issue_now: parseNum(x.qty_can_issue_now, 0),
+  })) as ReqItemUiRow[];
+
+  // ✅ дедуп по request_item_id (берём максимальные числа)
+  const byId: Record<string, ReqItemUiRow> = {};
+  for (const it of raw) {
+    const id = String((it as any).request_item_id ?? "").trim();
+    if (!id) continue;
+
+    const prev = byId[id];
+    if (!prev) {
+      byId[id] = it;
+      continue;
+    }
+
+    const merged: any = { ...prev };
+    const pickText = (a: any, b: any) => {
+      const sa = String(a ?? "").trim();
+      if (sa) return sa;
+      const sb = String(b ?? "").trim();
+      return sb || null;
+    };
+
+    merged.name_human = pickText((prev as any).name_human, (it as any).name_human);
+    merged.rik_code = pickText((prev as any).rik_code, (it as any).rik_code);
+    merged.uom = pickText((prev as any).uom, (it as any).uom);
+
+    merged.qty_limit = Math.max(parseNum((prev as any).qty_limit, 0), parseNum((it as any).qty_limit, 0));
+    merged.qty_issued = Math.max(parseNum((prev as any).qty_issued, 0), parseNum((it as any).qty_issued, 0));
+    merged.qty_left = Math.max(parseNum((prev as any).qty_left, 0), parseNum((it as any).qty_left, 0));
+    merged.qty_available = Math.max(parseNum((prev as any).qty_available, 0), parseNum((it as any).qty_available, 0));
+    merged.qty_can_issue_now = Math.max(
+      parseNum((prev as any).qty_can_issue_now, 0),
+      parseNum((it as any).qty_can_issue_now, 0),
+    );
+
+    byId[id] = merged as ReqItemUiRow;
+  }
+
+  return Object.values(byId).sort((a, b) =>
+    String((a as any).name_human ?? "").localeCompare(String((b as any).name_human ?? "")),
+  );
+}
+export async function apiFetchReports(
+  supabase: SupabaseClient,
+  periodFrom?: string,
+  periodTo?: string,
+): Promise<{ supported: boolean; repStock: any[]; repMov: any[]; repIssues: any[] }> {
+  try {
+    const s = await supabase.rpc("acc_report_stock" as any, {} as any);
+    const m = await supabase.rpc("acc_report_movement" as any, {
+      p_from: periodFrom || null,
+      p_to: periodTo || null,
+    } as any);
+    const iss = await supabase.rpc("acc_report_issues_v2" as any, {
+      p_from: periodFrom || null,
+      p_to: periodTo || null,
+    } as any);
+
+    return {
+      supported: true,
+      repStock: !s.error && Array.isArray(s.data) ? (s.data as any[]) : [],
+      repMov: !m.error && Array.isArray(m.data) ? (m.data as any[]) : [],
+      repIssues: !iss.error && Array.isArray(iss.data) ? (iss.data as any[]) : [],
+    };
+  } catch {
+    return { supported: false, repStock: [], repMov: [], repIssues: [] };
+  }
+}
+
+export async function apiEnsureIssueLines(
+  supabase: SupabaseClient,
+  issueId: number,
+): Promise<any[]> {
+  const r = await supabase.rpc("acc_report_issue_lines" as any, { p_issue_id: issueId } as any);
+  if (!r.error && Array.isArray(r.data)) return r.data as any[];
+  return [];
+}
+
+export type IssuedMaterialsFastRow = {
+  material_code: string;
+  material_name: string;
+  uom: string;
+  sum_in_req: any;
+  sum_free: any;
+  sum_over: any;
+  sum_total: any;
+  docs_cnt: any;
+  lines_cnt: any;
+};
+
+export type IssuedByObjectFastRow = {
+  object_id: string | null;
+  object_name: string;
+  work_name: string;
+  docs_cnt: any;
+  lines_cnt: any;
+  docs_with_over_cnt: any;
+};
+
+export async function apiFetchIssuedMaterialsReportFast(
+  supabase: SupabaseClient,
+  p: { from?: string | null; to?: string | null; objectId?: string | null },
+): Promise<IssuedMaterialsFastRow[]> {
+  const r = await supabase.rpc("wh_report_issued_materials_fast" as any, {
+    p_from: normDateArg(p.from),
+    p_to: normDateArg(p.to),
+    p_object_id: p.objectId ?? null,
+  } as any);
+
+  if (!r.error && Array.isArray(r.data)) return r.data as any[];
+  return [];
+}
+
+export async function apiFetchIssuedByObjectReportFast(
+  supabase: SupabaseClient,
+  p: { from?: string | null; to?: string | null; objectId?: string | null },
+): Promise<IssuedByObjectFastRow[]> {
+  const r = await supabase.rpc("wh_report_issued_by_object_fast" as any, {
+    p_from: normDateArg(p.from),
+    p_to: normDateArg(p.to),
+    p_object_id: p.objectId ?? null,
+  } as any);
+
+  if (!r.error && Array.isArray(r.data)) return r.data as any[];
+  return [];
+}
