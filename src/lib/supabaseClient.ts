@@ -167,6 +167,19 @@ const supabaseFetch: typeof fetch | undefined = isWeb
 // NATIVE fetch: логируем и чиним URL
 const nativeFetch: typeof fetch = wrapFetchWithLog("📱", fetch);
 
+function createMissingSupabaseClient(): SupabaseClient {
+  const err =
+    "[supabaseClient] Supabase client is unavailable: missing/invalid EXPO_PUBLIC_SUPABASE_URL or EXPO_PUBLIC_SUPABASE_ANON_KEY.";
+  return new Proxy(
+    {},
+    {
+      get() {
+        throw new Error(err);
+      },
+    },
+  ) as SupabaseClient;
+}
+
 // —–– CLIENT —––
 export const supabase: SupabaseClient = assertEnv()
   ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
@@ -182,7 +195,7 @@ export const supabase: SupabaseClient = assertEnv()
         fetch: (isWeb ? supabaseFetch : nativeFetch) as any,
       },
     })
-  : (undefined as unknown as SupabaseClient);
+  : createMissingSupabaseClient();
 
 // —–– HELPERS —––
 export async function ensureSignedIn(): Promise<boolean> {

@@ -5,6 +5,8 @@ build/
 coverage/
 *.log
 .DS_Store
+.env*
+!.env.example
 
 # Android build artifacts
 android/app/build/

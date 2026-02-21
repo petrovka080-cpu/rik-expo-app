@@ -161,6 +161,13 @@ const chunk = <T,>(arr: T[], size: number): T[][] => {
 };
 const SUPPLIER_NONE_LABEL = "— без поставщика —";
 
+const sanitizePostgrestOrTerm = (value: string): string =>
+  norm(value)
+    .replace(/[,%()]/g, " ")
+    .replace(/[.]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
 const pickRefName = (ref: any) =>
   norm(ref?.name_ru) ||
   norm(ref?.name_human_ru) ||
@@ -301,7 +308,7 @@ export async function searchCatalogItems(
   limit = 50,
   apps?: string[]
 ): Promise<CatalogItem[]> {
-  const pQuery = norm(q);
+  const pQuery = sanitizePostgrestOrTerm(q);
   const pLimit = clamp(limit || 50, 1, 200);
 
   // 1) твои RPC (если есть)
@@ -939,7 +946,7 @@ export async function listForemanRequests(
   });
 }
 export async function listSuppliers(search?: string): Promise<Supplier[]> {
-  const q = norm(search);
+  const q = sanitizePostgrestOrTerm(search || "");
 
   try {
     const { data, error } = await supabase.rpc("suppliers_list" as any, {
