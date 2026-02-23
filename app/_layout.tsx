@@ -5,6 +5,7 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Platform, LogBox } from "react-native";
 import { Slot, router, useSegments } from "expo-router";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
+import Toast from "react-native-toast-message";
 
 import { supabase } from "../src/lib/supabaseClient";
 import { ensureMyProfile, getMyRole } from "../src/lib/rik_api";
@@ -66,7 +67,9 @@ export default function RootLayout() {
         (root as any).style.height = "100%";
         (root as any).style.overflow = "auto";
       }
-    } catch {}
+    } catch (e) {
+      console.warn(e);
+    }
   }, []);
 
   // --- роль/профиль грузим в фоне, НЕ блокируя вход ---
@@ -90,7 +93,7 @@ export default function RootLayout() {
         new Promise((_, rej) => setTimeout(() => rej(new Error("getMyRole TIMEOUT")), 8000)),
       ]);
 
-      setRole(r ?? null);
+      setRole((r as string | null) ?? null);
     } catch (e: any) {
       console.warn("[RootLayout] role load failed:", e?.message ?? e);
       setRole(null);
@@ -151,7 +154,7 @@ export default function RootLayout() {
       active = false;
       listener?.subscription?.unsubscribe();
     };
-  }, [loadRoleForCurrentSession]);
+  }, []); // 🔥 PROD FIX: Убрали loadRoleForCurrentSession из зависимостей, чтобы onAuthStateChange не пересоздавался и не спамил запросами
 
   // --- redirect только по sessionLoaded/hasSession ---
   useEffect(() => {
@@ -170,7 +173,7 @@ export default function RootLayout() {
   };
 
   return (
-      <SafeAreaProvider>
+    <SafeAreaProvider>
       <GlobalBusyProvider theme={UI}>
         <SafeAreaView
           style={{ flex: 1, backgroundColor: APP_BG, paddingTop: 0 }}
@@ -179,8 +182,7 @@ export default function RootLayout() {
           <Slot />
         </SafeAreaView>
       </GlobalBusyProvider>
+      <Toast />
     </SafeAreaProvider>
   );
-
 }
-

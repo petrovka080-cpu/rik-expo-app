@@ -25,7 +25,9 @@ export function useWarehouseRecipient(args: {
       const recent = await loadJson<string[]>(RECIPIENT_RECENT_KEY, []);
       if (last && !recipientText) setRecipientText(last);
       setRecipientRecent(Array.isArray(recent) ? recent : []);
-    })().catch(() => {});
+    })().catch((e) => {
+      console.warn("[warehouse.recipient] bootstrap failed", e);
+    });
     
   }, [enabled]);
 

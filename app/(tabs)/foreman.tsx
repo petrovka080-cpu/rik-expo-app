@@ -1,4 +1,4 @@
-﻿// app/(tabs)/foreman.tsx
+// app/(tabs)/foreman.tsx
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
@@ -27,6 +27,7 @@ import { supabase } from '../../src/lib/supabaseClient';
 import RNModal from "react-native-modal";
 import SendPrimaryButton from "../../src/ui/SendPrimaryButton";
 import DeleteAllButton from "../../src/ui/DeleteAllButton";
+import CloseIconButton from "../../src/ui/CloseIconButton";
 import {
   rikQuickSearch,
   listRequestItems,
@@ -84,7 +85,7 @@ const UI = {
   border: '#1F2A37',    // границы (тёмные)
 
   btnApprove: '#22C55E', // зелёный
-  btnReject:  '#EF4444', // красный
+  btnReject: '#EF4444', // красный
   btnNeutral: 'rgba(255,255,255,0.08)',
   accent: '#22C55E',
 };
@@ -333,24 +334,24 @@ function Dropdown({
       <Text style={s.small}>{label}</Text>
 
       <Pressable
-  onPress={() => setOpen(true)}
-  style={[s.input, s.selectRow, { width: Platform.OS === 'web' ? width : '100%' }]}
->
-  <Text
-    style={{
-      color: UI.text,
-      opacity: picked ? 1 : 0.55,
-      fontWeight: '800',
-      fontSize: 14,
-      flex: 1,
-    }}
-    numberOfLines={1}
-  >
-    {picked ? picked.name : placeholder}
-  </Text>
+        onPress={() => setOpen(true)}
+        style={[s.input, s.selectRow, { width: Platform.OS === 'web' ? width : '100%' }]}
+      >
+        <Text
+          style={{
+            color: UI.text,
+            opacity: picked ? 1 : 0.55,
+            fontWeight: '800',
+            fontSize: 14,
+            flex: 1,
+          }}
+          numberOfLines={1}
+        >
+          {picked ? picked.name : placeholder}
+        </Text>
 
-  <Ionicons name="chevron-down" size={18} color="rgba(255,255,255,0.55)" />
-</Pressable>
+        <Ionicons name="chevron-down" size={18} color="rgba(255,255,255,0.55)" />
+      </Pressable>
 
 
       {open && (
@@ -360,15 +361,15 @@ function Dropdown({
           </Pressable>
           <View style={[s.modalSheet, { maxWidth: 420, left: 16, right: 16 }]}>
             <Text
-  style={{
-    fontWeight: '800',
-    fontSize: 14,
-    marginBottom: 8,
-    color: UI.text,
-  }}
->
-  {label}
-</Text>
+              style={{
+                fontWeight: '800',
+                fontSize: 14,
+                marginBottom: 8,
+                color: UI.text,
+              }}
+            >
+              {label}
+            </Text>
 
             {searchable && (
               <TextInput
@@ -390,8 +391,8 @@ function Dropdown({
                   style={[s.suggest, { borderBottomColor: '#f0f0f0' }]}
                 >
                   <Text style={{ fontWeight: '900', color: UI.text }}>
-  {item.name}
-</Text>
+                    {item.name}
+                  </Text>
 
                 </Pressable>
               )}
@@ -412,9 +413,9 @@ function Dropdown({
                     setOpen(false);
                   }}
                   style={[
-  s.chip,
-  { backgroundColor: 'rgba(255,255,255,0.06)', borderColor: 'rgba(255,255,255,0.12)' },
-]}
+                    s.chip,
+                    { backgroundColor: 'rgba(255,255,255,0.06)', borderColor: 'rgba(255,255,255,0.12)' },
+                  ]}
 
                 >
                   <Text style={{ color: UI.text, fontWeight: '900' }}>Сбросить</Text>
@@ -422,14 +423,14 @@ function Dropdown({
                 </Pressable>
               ) : null}
               <Pressable
-  onPress={() => setOpen(false)}
-  style={[
-    s.chip,
-    { backgroundColor: 'rgba(255,255,255,0.06)', borderColor: 'rgba(255,255,255,0.12)' },
-  ]}
->
-  <Text style={{ color: UI.text, fontWeight: '900' }}>Закрыть</Text>
-</Pressable>
+                onPress={() => setOpen(false)}
+                style={[
+                  s.chip,
+                  { backgroundColor: 'rgba(255,255,255,0.06)', borderColor: 'rgba(255,255,255,0.12)' },
+                ]}
+              >
+                <Text style={{ color: UI.text, fontWeight: '900' }}>Закрыть</Text>
+              </Pressable>
 
             </View>
           </View>
@@ -501,21 +502,21 @@ async function saveForemanToHistory(name: string) {
 }
 export default function ForemanScreen() {
 
- const gbusy = useGlobalBusy();
+  const gbusy = useGlobalBusy();
   // ===== Шапка заявки =====
   const [requestId, setRequestId] = useState<string>(''); // создадим автоматически
   const [foreman, setForeman] = useState<string>(''); // ФИО прораба (обяз.)
-const [foremanHistory, setForemanHistory] = useState<string[]>([]);
-const [foremanFocus, setForemanFocus] = useState(false);
-const blurTimerRef = useRef<any>(null);
+  const [foremanHistory, setForemanHistory] = useState<string[]>([]);
+  const [foremanFocus, setForemanFocus] = useState(false);
+  const blurTimerRef = useRef<any>(null);
 
-const refreshForemanHistory = useCallback(async () => {
-  setForemanHistory(await loadForemanHistory());
-}, []);
+  const refreshForemanHistory = useCallback(async () => {
+    setForemanHistory(await loadForemanHistory());
+  }, []);
 
-useEffect(() => {
-  refreshForemanHistory();
-}, [refreshForemanHistory]);
+  useEffect(() => {
+    refreshForemanHistory();
+  }, [refreshForemanHistory]);
 
   const [comment, setComment] = useState<string>(''); // общий комментарий
 
@@ -533,17 +534,17 @@ useEffect(() => {
   const [lvlOptions, setLvlOptions] = useState<RefOption[]>([]);
   const [sysOptions, setSysOptions] = useState<RefOption[]>([]);
   const [zoneOptions, setZoneOptions] = useState<RefOption[]>([]);
-const [draftOpen, setDraftOpen] = useState(false);
+  const [draftOpen, setDraftOpen] = useState(false);
 
-  
-// ===== Справочник применений (для корзины/модалки) =====
-const [appOptions, setAppOptions] = useState<AppOption[]>([]);
 
-const openDraftFromCatalog = useCallback(() => {
-  setCatalogVisible(false);
-  setDraftOpen(true);
-}, []);
- 
+  // ===== Справочник применений (для корзины/модалки) =====
+  const [appOptions, setAppOptions] = useState<AppOption[]>([]);
+
+  const openDraftFromCatalog = useCallback(() => {
+    setCatalogVisible(false);
+    setDraftOpen(true);
+  }, []);
+
   const labelForApp = useCallback(
     (code?: string | null) => {
       if (!code) return '';
@@ -552,7 +553,7 @@ const openDraftFromCatalog = useCallback(() => {
     [appOptions],
   );
 
-   const formatQtyInput = useCallback((value?: number | null) => {
+  const formatQtyInput = useCallback((value?: number | null) => {
     if (value == null) return '';
     const num = Number(value);
     if (!Number.isFinite(num)) return '';
@@ -575,26 +576,26 @@ const openDraftFromCatalog = useCallback(() => {
   const cancelLockRef = useRef<Record<string, boolean>>({});
   const [busy, setBusy] = useState(false);
 
-// ✅ раздельные спиннеры как в Director
-const [draftDeleteBusy, setDraftDeleteBusy] = useState(false);
-const [draftSendBusy, setDraftSendBusy] = useState(false);
+  // ✅ раздельные спиннеры как в Director
+  const [draftDeleteBusy, setDraftDeleteBusy] = useState(false);
+  const [draftSendBusy, setDraftSendBusy] = useState(false);
 
-// ✅ общий лок экрана/действий
-const screenLock = busy || draftDeleteBusy || draftSendBusy;
+  // ✅ общий лок экрана/действий
+  const screenLock = busy || draftDeleteBusy || draftSendBusy;
 
   const [historyRequests, setHistoryRequests] = useState<ForemanRequestSummary[]>([]);
   const [historyLoading, setHistoryLoading] = useState(false);
   const [historyVisible, setHistoryVisible] = useState(false);
- 
+
   // ===== Калькулятор =====
   const [calcVisible, setCalcVisible] = useState(false);
-const [catalogVisible, setCatalogVisible] = useState(false);
+  const [catalogVisible, setCatalogVisible] = useState(false);
   const [workTypePickerVisible, setWorkTypePickerVisible] = useState(false);
   const [selectedWorkType, setSelectedWorkType] = useState<
     { code: string; name: string } | null
   >(null);
 
-    // --- безопасный RID как строка (универсально для uuid/bigint) ---
+  // --- безопасный RID как строка (универсально для uuid/bigint) ---
   const ridStr = useCallback((val: string | number) => String(val).trim(), []);
   const isDraftActive = useMemo(() => {
     return isDraftLikeStatus(requestDetails?.status);
@@ -626,33 +627,33 @@ const [catalogVisible, setCatalogVisible] = useState(false);
     setSystem('');
     setZone('');
     setInitialDraftEnsured(false);
-    }, []);
+  }, []);
 
-const showHint = useCallback((title: string, message: string) => {
-  if (Platform.OS === 'web') {
-    // @ts-ignore
-    window.alert(`${title}\n\n${message}`);
-  } else {
-    Alert.alert(title, message);
-  }
-}, []);
+  const showHint = useCallback((title: string, message: string) => {
+    if (Platform.OS === 'web') {
+      // @ts-ignore
+      window.alert(`${title}\n\n${message}`);
+    } else {
+      Alert.alert(title, message);
+    }
+  }, []);
 
 
- const ensureHeaderReady = useCallback(() => {
-  if (!foreman.trim()) {
-    showHint('Заполни шапку', 'Укажи ФИО прораба.');
-    return false;
-  }
-  if (!objectType) {
-    showHint('Заполни шапку', 'Выбери объект строительства.');
-    return false;
-  }
-  if (!level) {
-    showHint('Заполни шапку', 'Выбери этаж/уровень.');
-    return false;
-  }
-  return true;
-}, [foreman, objectType, level, showHint]);
+  const ensureHeaderReady = useCallback(() => {
+    if (!foreman.trim()) {
+      showHint('Заполни шапку', 'Укажи ФИО прораба.');
+      return false;
+    }
+    if (!objectType) {
+      showHint('Заполни шапку', 'Выбери объект строительства.');
+      return false;
+    }
+    if (!level) {
+      showHint('Заполни шапку', 'Выбери этаж/уровень.');
+      return false;
+    }
+    return true;
+  }, [foreman, objectType, level, showHint]);
 
 
   const resolveStatusInfo = useCallback((raw?: string | null) => {
@@ -662,12 +663,12 @@ const showHint = useCallback((title: string, message: string) => {
       key === 'черновик'
         ? 'draft'
         : key === 'на утверждении'
-        ? 'pending'
-        : key === 'утверждена' || key === 'утверждено'
-        ? 'approved'
-        : key === 'отклонена' || key === 'отклонено'
-        ? 'rejected'
-        : key;
+          ? 'pending'
+          : key === 'утверждена' || key === 'утверждено'
+            ? 'approved'
+            : key === 'отклонена' || key === 'отклонено'
+              ? 'rejected'
+              : key;
     const info = REQUEST_STATUS_STYLES[normalized];
     if (info) return info;
     if (!base) return { label: '—', bg: '#E2E8F0', fg: '#0F172A' };
@@ -676,15 +677,15 @@ const showHint = useCallback((title: string, message: string) => {
 
   // ====== КЭШ и подгрузка display_no для текущей заявки ======
   const [displayNoByReq, setDisplayNoByReq] = useState<Record<string, string>>(
-  {},
-);
+    {},
+  );
 
-// ✅ NEW: ref-кеш, чтобы один requestId дергался только 1 раз
-const displayNoCacheRef = useRef<Record<string, string>>({});
-const displayNoStateRef = useRef<Record<string, string>>({});
-useEffect(() => {
-  displayNoStateRef.current = displayNoByReq;
-}, [displayNoByReq]);
+  // ✅ NEW: ref-кеш, чтобы один requestId дергался только 1 раз
+  const displayNoCacheRef = useRef<Record<string, string>>({});
+  const displayNoStateRef = useRef<Record<string, string>>({});
+  useEffect(() => {
+    displayNoStateRef.current = displayNoByReq;
+  }, [displayNoByReq]);
 
   const labelForRequest = useCallback(
     (rid?: string | number | null) => {
@@ -701,34 +702,34 @@ useEffect(() => {
     [displayNoByReq, requestDetails?.display_no, requestId],
   );
 
- const preloadDisplayNo = useCallback(async (rid?: string | number | null) => {
-  const key = String(rid ?? '').trim();
-  if (!key) return;
+  const preloadDisplayNo = useCallback(async (rid?: string | number | null) => {
+    const key = String(rid ?? '').trim();
+    if (!key) return;
 
-  // ✅ 1) если уже есть в state — не дергаем
-  if (displayNoStateRef.current[key] != null) return;
+    // ✅ 1) если уже есть в state — не дергаем
+    if (displayNoStateRef.current[key] != null) return;
 
-  // ✅ 2) если уже есть в ref-кеше — кладём в state и выходим
-  const cached = displayNoCacheRef.current[key];
-  if (cached !== undefined) {
-    setDisplayNoByReq((prev) => ({ ...prev, [key]: cached }));
-    return;
-  }
-
-  try {
-    const display = await fetchRequestDisplayNo(key);
-
-    if (display) {
-      displayNoCacheRef.current[key] = display;
-      setDisplayNoByReq((prev) => ({ ...prev, [key]: display }));
-    } else {
-      displayNoCacheRef.current[key] = '';
-      setDisplayNoByReq((prev) => ({ ...prev, [key]: '' }));
+    // ✅ 2) если уже есть в ref-кеше — кладём в state и выходим
+    const cached = displayNoCacheRef.current[key];
+    if (cached !== undefined) {
+      setDisplayNoByReq((prev) => ({ ...prev, [key]: cached }));
+      return;
     }
-  } catch (e) {
-    console.warn('[Foreman] preloadDisplayNo:', (e as any)?.message ?? e);
-  }
-}, []);
+
+    try {
+      const display = await fetchRequestDisplayNo(key);
+
+      if (display) {
+        displayNoCacheRef.current[key] = display;
+        setDisplayNoByReq((prev) => ({ ...prev, [key]: display }));
+      } else {
+        displayNoCacheRef.current[key] = '';
+        setDisplayNoByReq((prev) => ({ ...prev, [key]: '' }));
+      }
+    } catch (e) {
+      console.warn('[Foreman] preloadDisplayNo:', (e as any)?.message ?? e);
+    }
+  }, []);
 
 
   const loadDetails = useCallback(
@@ -786,14 +787,14 @@ useEffect(() => {
     [requestId, ridStr],
   );
   const openRequestById = useCallback(
-  (targetId: string | number | null | undefined) => {
-    const id = targetId != null ? String(targetId).trim() : '';
-    if (!id) return;
-    setRequestId(id);
-    loadItems(id);
-  },
-  [loadItems],
-);
+    (targetId: string | number | null | undefined) => {
+      const id = targetId != null ? String(targetId).trim() : '';
+      if (!id) return;
+      setRequestId(id);
+      loadItems(id);
+    },
+    [loadItems],
+  );
 
 
   useEffect(() => {
@@ -823,10 +824,10 @@ useEffect(() => {
       setRequestDetails((prev) =>
         prev
           ? {
-              ...prev,
-              object_type_code: code || null,
-              object_name_ru: opt?.name ?? prev.object_name_ru ?? null,
-            }
+            ...prev,
+            object_type_code: code || null,
+            object_name_ru: opt?.name ?? prev.object_name_ru ?? null,
+          }
           : prev,
       );
     },
@@ -840,10 +841,10 @@ useEffect(() => {
       setRequestDetails((prev) =>
         prev
           ? {
-              ...prev,
-              level_code: code || null,
-              level_name_ru: opt?.name ?? prev.level_name_ru ?? null,
-            }
+            ...prev,
+            level_code: code || null,
+            level_name_ru: opt?.name ?? prev.level_name_ru ?? null,
+          }
           : prev,
       );
     },
@@ -857,10 +858,10 @@ useEffect(() => {
       setRequestDetails((prev) =>
         prev
           ? {
-              ...prev,
-              system_code: code || null,
-              system_name_ru: opt?.name ?? prev.system_name_ru ?? null,
-            }
+            ...prev,
+            system_code: code || null,
+            system_name_ru: opt?.name ?? prev.system_name_ru ?? null,
+          }
           : prev,
       );
     },
@@ -874,10 +875,10 @@ useEffect(() => {
       setRequestDetails((prev) =>
         prev
           ? {
-              ...prev,
-              zone_code: code || null,
-              zone_name_ru: opt?.name ?? prev.zone_name_ru ?? null,
-            }
+            ...prev,
+            zone_code: code || null,
+            zone_name_ru: opt?.name ?? prev.zone_name_ru ?? null,
+          }
           : prev,
       );
     },
@@ -889,33 +890,33 @@ useEffect(() => {
     setRequestDetails((prev) =>
       prev
         ? {
-            ...prev,
-            foreman_name: value,
-          }
+          ...prev,
+          foreman_name: value,
+        }
         : prev,
     );
   }, []);
-  
+
   const handleNewRequest = useCallback(async (opts?: { silent?: boolean; keepBusy?: boolean; resetMeta?: boolean }) => {
     try {
       if (!opts?.keepBusy) setBusy(true);
       const meta: RequestDraftMeta = opts?.resetMeta
         ? {
-            foreman_name: foreman.trim() || null,
-            comment: null,
-            object_type_code: null,
-            level_code: null,
-            system_code: null,
-            zone_code: null,
-          }
+          foreman_name: foreman.trim() || null,
+          comment: null,
+          object_type_code: null,
+          level_code: null,
+          system_code: null,
+          zone_code: null,
+        }
         : {
-            foreman_name: foreman.trim() || null,
-            comment: comment.trim() || null,
-            object_type_code: objectType || null,
-            level_code: level || null,
-            system_code: system || null,
-            zone_code: zone || null,
-          };
+          foreman_name: foreman.trim() || null,
+          comment: comment.trim() || null,
+          object_type_code: objectType || null,
+          level_code: level || null,
+          system_code: system || null,
+          zone_code: zone || null,
+        };
       const created = await requestCreateDraft(meta);
       if (!created?.id) throw new Error('Не удалось создать черновик');
       const idStr = String(created.id);
@@ -940,7 +941,7 @@ useEffect(() => {
         system_code: created.system_code ?? meta.system_code ?? undefined,
         zone_code: created.zone_code ?? meta.zone_code ?? undefined,
       });
-      
+
       await loadItems(idStr);
       setInitialDraftEnsured(true);
       const label = display || `#${shortId(idStr)}`;
@@ -979,7 +980,7 @@ useEffect(() => {
     setHistoryLoading(true);
 
     (async () => {
-            try {
+      try {
         const rows = await listForemanRequests(name, 50);
         if (Array.isArray(rows)) {
           setHistoryRequests(rows);
@@ -989,14 +990,14 @@ useEffect(() => {
             const raw = String(r.status ?? '').trim().toLowerCase();
             return raw === 'на утверждении' || raw === 'pending';
           }).length;
-           } else {
+        } else {
           setHistoryRequests([]);
-           }
+        }
       } catch (e) {
         console.warn('[Foreman] listForemanRequests:', e);
         Alert.alert('История', 'Не удалось загрузить историю заявок.');
         setHistoryRequests([]);
-        } finally {
+      } finally {
         setHistoryLoading(false);
       }
 
@@ -1012,20 +1013,20 @@ useEffect(() => {
     },
     [openRequestById],
   );
- const openHistoryPdf = useCallback(async (reqId: string) => {
-  const rid = String(reqId).trim();
-  if (!rid) return;
+  const openHistoryPdf = useCallback(async (reqId: string) => {
+    const rid = String(reqId).trim();
+    if (!rid) return;
 
-  await runPdfTop({
-    busy: gbusy,
-    supabase,
-    key: `pdf:history:${rid}`,
-    label: "Готовлю PDF…",
-    mode: "preview",
-    fileName: `Заявка_${rid}`,
-    getRemoteUrl: () => exportRequestPdf(rid, "preview"),
-  });
-}, [gbusy, supabase]);
+    await runPdfTop({
+      busy: gbusy,
+      supabase,
+      key: `pdf:history:${rid}`,
+      label: "Готовлю PDF…",
+      mode: "preview",
+      fileName: `Заявка_${rid}`,
+      getRemoteUrl: () => exportRequestPdf(rid, "preview"),
+    });
+  }, [gbusy, supabase]);
 
 
   useEffect(() => {
@@ -1060,73 +1061,73 @@ useEffect(() => {
   ]);
 
   // создаём/получаем черновик при монтировании
- useEffect(() => {
-  let cancelled = false;
+  useEffect(() => {
+    let cancelled = false;
 
-  (async () => {
-    try {
-      dlog('[Foreman] ensure draft: start');
+    (async () => {
+      try {
+        dlog('[Foreman] ensure draft: start');
 
-      const idAny = await getOrCreateDraftRequestId(); // должно дернуть БД
-      const rid = String(idAny).trim();
+        const idAny = await getOrCreateDraftRequestId(); // должно дернуть БД
+        const rid = String(idAny).trim();
 
-      dlog('[Foreman] ensure draft: got id', rid);
+        dlog('[Foreman] ensure draft: got id', rid);
 
-      if (!rid) throw new Error('draft id is empty');
+        if (!rid) throw new Error('draft id is empty');
 
-      if (cancelled) return;
+        if (cancelled) return;
 
-      // 1) ставим requestId
-      setRequestId(rid);
+        // 1) ставим requestId
+        setRequestId(rid);
 
-      // 2) сразу пробуем подгрузить номер/детали
-      //    (чтобы не зависеть от других эффектов)
-      const d = await fetchRequestDetails(rid);
-      dlog('[Foreman] draft details', d);
+        // 2) сразу пробуем подгрузить номер/детали
+        //    (чтобы не зависеть от других эффектов)
+        const d = await fetchRequestDetails(rid);
+        dlog('[Foreman] draft details', d);
 
-      if (!cancelled && d) {
-        setRequestDetails(d);
-        const dn = String(d.display_no ?? '').trim();
-        if (dn) {
-          setDisplayNoByReq((prev) => ({ ...prev, [rid]: dn }));
+        if (!cancelled && d) {
+          setRequestDetails(d);
+          const dn = String(d.display_no ?? '').trim();
+          if (dn) {
+            setDisplayNoByReq((prev) => ({ ...prev, [rid]: dn }));
+          }
+        } else {
+          // если details не вернулись — хотя бы дернем номер
+          const dn2 = await fetchRequestDisplayNo(rid);
+          dlog('[Foreman] draft display_no', dn2);
+          if (!cancelled && dn2) {
+            setDisplayNoByReq((prev) => ({ ...prev, [rid]: String(dn2) }));
+          }
         }
-      } else {
-        // если details не вернулись — хотя бы дернем номер
-        const dn2 = await fetchRequestDisplayNo(rid);
-        dlog('[Foreman] draft display_no', dn2);
-        if (!cancelled && dn2) {
-          setDisplayNoByReq((prev) => ({ ...prev, [rid]: String(dn2) }));
+
+      } catch (e: any) {
+        console.error('[Foreman] ensure draft failed:', e?.message ?? e);
+
+        if (!cancelled) {
+          // WEB: alert чтобы ты точно увидел
+          if (Platform.OS === 'web') window.alert(e?.message ?? 'Не удалось создать черновик');
+          else Alert.alert('Ошибка', e?.message ?? 'Не удалось создать черновик');
         }
       }
+    })();
 
-    } catch (e: any) {
-      console.error('[Foreman] ensure draft failed:', e?.message ?? e);
-
-      if (!cancelled) {
-        // WEB: alert чтобы ты точно увидел
-        if (Platform.OS === 'web') window.alert(e?.message ?? 'Не удалось создать черновик');
-        else Alert.alert('Ошибка', e?.message ?? 'Не удалось создать черновик');
-      }
-    }
-  })();
-
-  return () => { cancelled = true; };
-}, []);
+    return () => { cancelled = true; };
+  }, []);
 
 
   const lastPreloadRef = useRef<string | null>(null);
 
-useEffect(() => {
-  if (!requestId) return;
+  useEffect(() => {
+    if (!requestId) return;
 
-  const rid = String(requestId).trim();
-  if (lastPreloadRef.current !== rid) {
-    lastPreloadRef.current = rid;
-    preloadDisplayNo(rid);
-  }
+    const rid = String(requestId).trim();
+    if (lastPreloadRef.current !== rid) {
+      lastPreloadRef.current = rid;
+      preloadDisplayNo(rid);
+    }
 
-  loadDetails(rid);
-}, [requestId, preloadDisplayNo, loadDetails]);
+    loadDetails(rid);
+  }, [requestId, preloadDisplayNo, loadDetails]);
 
 
   useEffect(() => {
@@ -1166,10 +1167,10 @@ useEffect(() => {
 
     try {
       const rid2 = await getOrCreateDraftRequestId();
-const rid2Str = String(rid2);
-setRequestId(rid2Str);
-setLocalDraftId(rid2Str);
-return rid2Str;
+      const rid2Str = String(rid2);
+      setRequestId(rid2Str);
+      setLocalDraftId(rid2Str);
+      return rid2Str;
 
     } catch (e: any) {
       Alert.alert(
@@ -1242,53 +1243,53 @@ return rid2Str;
                 .filter((r) => r.code && r.name),
             );
         }
-      } catch {}
+      } catch (e) { console.warn(e); }
     })();
     return () => {
       cancelled = true;
     };
   }, []);
 
-// ---------- Варианты применений (РИК) — для модалки/лейбла ----------
-useEffect(() => {
-  let cancelled = false;
-  (async () => {
-    try {
-      // @ts-ignore
-      const { supabase } = await import('../../src/lib/supabaseClient');
+  // ---------- Варианты применений (РИК) — для модалки/лейбла ----------
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        // @ts-ignore
+        const { supabase } = await import('../../src/lib/supabaseClient');
 
-      const a = await supabase
-        .from('rik_apps' as any)
-        .select('app_code, name_human')
-        .order('app_code', { ascending: true });
+        const a = await supabase
+          .from('rik_apps' as any)
+          .select('app_code, name_human')
+          .order('app_code', { ascending: true });
 
-      if (!cancelled && !a.error && Array.isArray(a.data) && a.data.length) {
-        setAppOptions(
-          a.data.map((r: any) => ({
-            code: r.app_code,
-            label: (r.name_human && String(r.name_human).trim()) || r.app_code,
-          })),
-        );
-        return;
-      }
+        if (!cancelled && !a.error && Array.isArray(a.data) && a.data.length) {
+          setAppOptions(
+            a.data.map((r: any) => ({
+              code: r.app_code,
+              label: (r.name_human && String(r.name_human).trim()) || r.app_code,
+            })),
+          );
+          return;
+        }
 
-      const b = await supabase
-        .from('rik_item_apps' as any)
-        .select('app_code')
-        .not('app_code', 'is', null)
-        .order('app_code', { ascending: true });
+        const b = await supabase
+          .from('rik_item_apps' as any)
+          .select('app_code')
+          .not('app_code', 'is', null)
+          .order('app_code', { ascending: true });
 
-      if (!cancelled && !b.error && Array.isArray(b.data)) {
-        const uniq = Array.from(new Set(b.data.map((r: any) => r.app_code))).filter(Boolean);
-        setAppOptions(uniq.map((code: string) => ({ code, label: code })));
-      }
-    } catch {}
-  })();
-  return () => { cancelled = true; };
-}, []);
+        if (!cancelled && !b.error && Array.isArray(b.data)) {
+          const uniq = Array.from(new Set(b.data.map((r: any) => r.app_code))).filter(Boolean);
+          setAppOptions(uniq.map((code: string) => ({ code, label: code })));
+        }
+      } catch (e) { console.warn(e); }
+    })();
+    return () => { cancelled = true; };
+  }, []);
 
 
-    // ---------- ЧЕЛОВЕЧЕСКИЕ НАЗВАНИЯ ТЕКУЩЕГО ВЫБОРА ----------
+  // ---------- ЧЕЛОВЕЧЕСКИЕ НАЗВАНИЯ ТЕКУЩЕГО ВЫБОРА ----------
   const objectName = useMemo(() => {
     const opt = objOptions.find((o) => o.code === objectType);
     if (opt?.name) return opt.name;
@@ -1330,91 +1331,91 @@ useEffect(() => {
       }
 
       try {
-  setBusy(true);
-  const rid = requestId ? ridStr(requestId) : await ensureAndGetId();
+        setBusy(true);
+        const rid = requestId ? ridStr(requestId) : await ensureAndGetId();
 
-  await updateRequestMeta(rid, {
-    comment: comment.trim() || null,
-    object_type_code: objectType || null,
-    level_code: level || null,
-    system_code: system || null,
-    zone_code: zone || null,
-    foreman_name: foreman.trim() || null,
-  }).catch(() => null);
+        await updateRequestMeta(rid, {
+          comment: comment.trim() || null,
+          object_type_code: objectType || null,
+          level_code: level || null,
+          system_code: system || null,
+          zone_code: zone || null,
+          foreman_name: foreman.trim() || null,
+        }).catch(e => console.warn('[Foreman] updateMeta err in handleCalcAddToRequest:', e));
 
-  const aggregated = aggCalcRows(rows);
+        const aggregated = aggCalcRows(rows);
 
-  const noteToUse =
-    buildScopeNote(objectName, levelName, systemName, zoneName) || '—';
+        const noteToUse =
+          buildScopeNote(objectName, levelName, systemName, zoneName) || '—';
 
-  const POOL = Platform.OS === 'web' ? 10 : 6;
+        const POOL = Platform.OS === 'web' ? 10 : 6;
 
-  const results = await runPool(aggregated, POOL, async (row) => {
-  const displayName =
-    (row.item_name_ru ??
-      row.name_human ??
-      row.name_ru ??
-      row.name ??
-      ruName(row)) || '—';
+        const results = await runPool(aggregated, POOL, async (row) => {
+          const displayName =
+            (row.item_name_ru ??
+              row.name_human ??
+              row.name_ru ??
+              row.name ??
+              ruName(row)) || '—';
 
-  await requestItemAddOrIncAndPatchMeta(rid, row.rik_code, row.qty, {
-    note: noteToUse,
-    app_code: null,
-    kind: null,
-    name_human: displayName,
-    uom: row.uom_code ?? null,
-  });
+          await requestItemAddOrIncAndPatchMeta(rid, row.rik_code, row.qty, {
+            note: noteToUse,
+            app_code: null,
+            kind: null,
+            name_human: displayName,
+            uom: row.uom_code ?? null,
+          });
 
-  return true;
-});
+          return true;
+        });
 
-const okCount = results.filter((r) => (r as any)?.ok).length;
-const failCount = results.length - okCount;
+        const okCount = results.filter((r) => (r as any)?.ok).length;
+        const failCount = results.length - okCount;
 
-// ✅ собираем первые ошибки с названием позиции
-const failLines: string[] = [];
-for (let i = 0; i < results.length; i++) {
-  const r: any = results[i];
-  if (r?.ok) continue;
+        // ✅ собираем первые ошибки с названием позиции
+        const failLines: string[] = [];
+        for (let i = 0; i < results.length; i++) {
+          const r: any = results[i];
+          if (r?.ok) continue;
 
-  const src = aggregated[i];
-  const code = String(src?.rik_code ?? '—');
-  const name =
-    String(src?.item_name_ru ?? src?.name_human ?? src?.name_ru ?? src?.name ?? '').trim() || code;
+          const src = aggregated[i];
+          const code = String(src?.rik_code ?? '—');
+          const name =
+            String(src?.item_name_ru ?? src?.name_human ?? src?.name_ru ?? src?.name ?? '').trim() || code;
 
-  const msgRaw =
-    (r?.error?.message ??
-      r?.error?.details ??
-      r?.error?.hint ??
-      r?.error?.code ??
-      String(r?.error ?? ''));
+          const msgRaw =
+            (r?.error?.message ??
+              r?.error?.details ??
+              r?.error?.hint ??
+              r?.error?.code ??
+              String(r?.error ?? ''));
 
-  const msg = String(msgRaw || 'unknown error').replace(/\s+/g, ' ').trim();
+          const msg = String(msgRaw || 'unknown error').replace(/\s+/g, ' ').trim();
 
-  failLines.push(`• ${name} (${code}) — ${msg}`);
-  if (failLines.length >= 4) break; // ✅ не спамим алерт
-}
+          failLines.push(`• ${name} (${code}) — ${msg}`);
+          if (failLines.length >= 4) break; // ✅ не спамим алерт
+        }
 
-await loadItems(rid);
-setCalcVisible(false);
-setSelectedWorkType(null);
+        await loadItems(rid);
+        setCalcVisible(false);
+        setSelectedWorkType(null);
 
-if (failCount > 0) {
-  const tail = failCount > failLines.length ? `\n…ещё ${failCount - failLines.length} ошибок` : '';
-  Alert.alert(
-    'Готово (частично)',
-    `Добавлено: ${okCount}\nОшибок: ${failCount}\n\nПроблемные позиции:\n${failLines.join('\n')}${tail}`
-  );
-} else {
-  Alert.alert('Готово', `Добавлено позиций: ${okCount}`);
-}
+        if (failCount > 0) {
+          const tail = failCount > failLines.length ? `\n…ещё ${failCount - failLines.length} ошибок` : '';
+          Alert.alert(
+            'Готово (частично)',
+            `Добавлено: ${okCount}\nОшибок: ${failCount}\n\nПроблемные позиции:\n${failLines.join('\n')}${tail}`
+          );
+        } else {
+          Alert.alert('Готово', `Добавлено позиций: ${okCount}`);
+        }
 
-} catch (e: any) {
-  console.error('[Foreman] handleCalcAddToRequest:', e?.message ?? e);
-  Alert.alert('Ошибка', e?.message ?? 'Не удалось добавить рассчитанные позиции');
-} finally {
-  setBusy(false);
-}
+      } catch (e: any) {
+        console.error('[Foreman] handleCalcAddToRequest:', e?.message ?? e);
+        Alert.alert('Ошибка', e?.message ?? 'Не удалось добавить рассчитанные позиции');
+      } finally {
+        setBusy(false);
+      }
 
     },
     [
@@ -1436,91 +1437,91 @@ if (failCount > 0) {
       ensureHeaderReady,
     ],
   );
-const commitCatalogToDraft = useCallback(async (rows: PickedRow[]) => {
-  if (!rows?.length) return;
+  const commitCatalogToDraft = useCallback(async (rows: PickedRow[]) => {
+    if (!rows?.length) return;
 
-  if (!ensureHeaderReady()) {
-    Alert.alert('Заполни шапку', 'ФИО + объект + этаж обязательны перед добавлением.');
-    return;
-  }
-
-  if (!isDraftActive) {
-    Alert.alert('Просмотр заявки', 'Редактирование доступно только в текущем черновике.');
-    return;
-  }
-
-  try {
-    setBusy(true);
-
-    const rid = requestId ? ridStr(requestId) : await ensureAndGetId();
-
-    await updateRequestMeta(rid, {
-      comment: comment.trim() || null,
-      object_type_code: objectType || null,
-      level_code: level || null,
-      system_code: system || null,
-      zone_code: zone || null,
-      foreman_name: foreman.trim() || null,
-    }).catch(() => null);
-
-    const noteToUse = buildScopeNote(objectName, levelName, systemName, zoneName) || '—';
-const aggregated = aggPickedRows(rows);
-const POOL = Platform.OS === 'web' ? 10 : 6;
-
-const results = await runPool(aggregated, POOL, async (x) => {
-  const r = x.base;
-
-  await requestItemAddOrIncAndPatchMeta(
-    rid,
-    r.rik_code,
-    x.qty,
-    {
-      note: noteToUse,
-      app_code: r.app_code ?? null,
-      kind: r.kind ?? null,
-      name_human: r.name,
-      uom: r.uom ?? null,
+    if (!ensureHeaderReady()) {
+      Alert.alert('Заполни шапку', 'ФИО + объект + этаж обязательны перед добавлением.');
+      return;
     }
-  );
 
-  return true;
-});
+    if (!isDraftActive) {
+      Alert.alert('Просмотр заявки', 'Редактирование доступно только в текущем черновике.');
+      return;
+    }
 
-const okCount = results.filter((r) => r?.ok).length;
-const failCount = results.length - okCount;
+    try {
+      setBusy(true);
 
-await loadItems(rid);
+      const rid = requestId ? ridStr(requestId) : await ensureAndGetId();
 
-if (failCount > 0) {
-  Alert.alert('Каталог (частично)', `Добавлено: ${okCount}\nОшибок: ${failCount}`);
-}
-    await loadItems(rid);
-  } catch (e: any) {
-    console.error('[Foreman] commitCatalogToDraft:', e?.message ?? e);
-    Alert.alert('Ошибка', e?.message ?? 'Не удалось добавить позиции');
-  } finally {
-    setBusy(false);
-  }
-}, [
-  requestId,
-  ridStr,
-  ensureAndGetId,
-  ensureHeaderReady,
-  isDraftActive,
-  comment,
-  objectType,
-  level,
-  system,
-  zone,
-  foreman,
-  objectName,
-  levelName,
-  systemName,
-  zoneName,
-  loadItems,
-]);
-  
- 
+      await updateRequestMeta(rid, {
+        comment: comment.trim() || null,
+        object_type_code: objectType || null,
+        level_code: level || null,
+        system_code: system || null,
+        zone_code: zone || null,
+        foreman_name: foreman.trim() || null,
+      }).catch(e => console.warn('[Foreman] updateMeta err in commitCatalogToDraft:', e));
+
+      const noteToUse = buildScopeNote(objectName, levelName, systemName, zoneName) || '—';
+      const aggregated = aggPickedRows(rows);
+      const POOL = Platform.OS === 'web' ? 10 : 6;
+
+      const results = await runPool(aggregated, POOL, async (x) => {
+        const r = x.base;
+
+        await requestItemAddOrIncAndPatchMeta(
+          rid,
+          r.rik_code,
+          x.qty,
+          {
+            note: noteToUse,
+            app_code: r.app_code ?? null,
+            kind: r.kind ?? null,
+            name_human: r.name,
+            uom: r.uom ?? null,
+          }
+        );
+
+        return true;
+      });
+
+      const okCount = results.filter((r) => r?.ok).length;
+      const failCount = results.length - okCount;
+
+      await loadItems(rid);
+
+      if (failCount > 0) {
+        Alert.alert('Каталог (частично)', `Добавлено: ${okCount}\nОшибок: ${failCount}`);
+      }
+      await loadItems(rid);
+    } catch (e: any) {
+      console.error('[Foreman] commitCatalogToDraft:', e?.message ?? e);
+      Alert.alert('Ошибка', e?.message ?? 'Не удалось добавить позиции');
+    } finally {
+      setBusy(false);
+    }
+  }, [
+    requestId,
+    ridStr,
+    ensureAndGetId,
+    ensureHeaderReady,
+    isDraftActive,
+    comment,
+    objectType,
+    level,
+    system,
+    zone,
+    foreman,
+    objectName,
+    levelName,
+    systemName,
+    zoneName,
+    loadItems,
+  ]);
+
+
   const commitQtyChange = useCallback(
     async (item: ReqItemRow, draftValue: string) => {
       const key = String(item.id);
@@ -1623,7 +1624,7 @@ if (failCount > 0) {
         zone_code: zone || null,
         comment: comment.trim() || null,
         foreman_name: foreman.trim() || null,
-      }).catch(() => null);
+      }).catch(e => console.warn('[Foreman] updateMeta err in submitToDirector:', e));
 
       const submitted = await requestSubmit(rid);
       if (submitted?.display_no) {
@@ -1635,25 +1636,25 @@ if (failCount > 0) {
       setRequestDetails((prev) =>
         prev
           ? {
-              ...prev,
-              status: submitted?.status ?? 'pending',
-              display_no: submitted?.display_no ?? prev.display_no ?? null,
-              foreman_name: submitted?.foreman_name ?? prev.foreman_name ?? foreman,
-              comment: submitted?.comment ?? prev.comment ?? comment,
-            }
+            ...prev,
+            status: submitted?.status ?? 'pending',
+            display_no: submitted?.display_no ?? prev.display_no ?? null,
+            foreman_name: submitted?.foreman_name ?? prev.foreman_name ?? foreman,
+            comment: submitted?.comment ?? prev.comment ?? comment,
+          }
           : prev,
       );
-     
+
       const submittedLabel = submitted?.display_no ?? labelForRequest(rid);
       showHint(
-  'Отправлено',
-  `Заявка ${submittedLabel} отправлена на утверждение`,
-);
+        'Отправлено',
+        `Заявка ${submittedLabel} отправлена на утверждение`,
+      );
 
       clearLocalDraftId();
       clearCachedDraftRequestId();
-await saveForemanToHistory(foreman);
-await refreshForemanHistory();
+      await saveForemanToHistory(foreman);
+      await refreshForemanHistory();
       resetDraftState();
 
       await handleNewRequest({ silent: true, keepBusy: true, resetMeta: true });
@@ -1679,7 +1680,7 @@ await refreshForemanHistory();
     zone,
     comment,
     items,
-   
+
     labelForRequest,
     ensureAndGetId,
     isDraftActive,
@@ -1707,180 +1708,186 @@ await refreshForemanHistory();
   }, [busy, ensureHeaderReady, isDraftActive]);
 
   // ---------- PDF ----------
-const onPdfShare = useCallback(async () => {
-  if (!ensureHeaderReady()) return;
+  const onPdfShare = useCallback(async () => {
+    if (!ensureHeaderReady()) return;
 
-  const rid = requestId ? ridStr(requestId) : await ensureAndGetId();
-  const ridKey = String(rid).trim();
-  const fileName = requestDetails?.display_no ? `Заявка_${requestDetails.display_no}` : `Заявка_${ridKey}`;
+    const rid = requestId ? ridStr(requestId) : await ensureAndGetId();
+    const ridKey = String(rid).trim();
+    const fileName = requestDetails?.display_no ? `Заявка_${requestDetails.display_no}` : `Заявка_${ridKey}`;
 
-  await updateRequestMeta(ridKey, {
-    object_type_code: objectType || null,
-    level_code: level || null,
-    system_code: system || null,
-    zone_code: zone || null,
-    comment: comment.trim() || null,
-    foreman_name: foreman.trim() || null,
-  }).catch(() => null);
+    await updateRequestMeta(ridKey, {
+      object_type_code: objectType || null,
+      level_code: level || null,
+      system_code: system || null,
+      zone_code: zone || null,
+      comment: comment.trim() || null,
+      foreman_name: foreman.trim() || null,
+    }).catch(e => console.warn('[Foreman] updateMeta err in onPdfShare:', e));
 
-  // ✅ runPdfTop сам скрывает overlay ДО share sheet
-  await runPdfTop({
-    busy: gbusy,
-    supabase,
-    key: `pdfshare:request:${ridKey}`,
-    label: "Подготавливаю файл…",
-    mode: "share",
-    fileName,
-    getRemoteUrl: () => exportRequestPdf(ridKey, "share"),
-  });
-}, [
-  gbusy,
-  ensureHeaderReady,
-  requestId,
-  requestDetails?.display_no,
-  ridStr,
-  ensureAndGetId,
-  objectType,
-  level,
-  system,
-  zone,
-  comment,
-  foreman,
-]);
-const onPdf = useCallback(async () => {
-  if (!ensureHeaderReady()) return;
+    // ✅ runPdfTop сам скрывает overlay ДО share sheet
+    await runPdfTop({
+      busy: gbusy,
+      supabase,
+      key: `pdfshare:request:${ridKey}`,
+      label: "Подготавливаю файл…",
+      mode: "share",
+      fileName,
+      getRemoteUrl: () => exportRequestPdf(ridKey, "share"),
+    });
+  }, [
+    gbusy,
+    ensureHeaderReady,
+    requestId,
+    requestDetails?.display_no,
+    ridStr,
+    ensureAndGetId,
+    objectType,
+    level,
+    system,
+    zone,
+    comment,
+    foreman,
+  ]);
+  const onPdf = useCallback(async () => {
+    if (!ensureHeaderReady()) return;
 
-  const rid = requestId ? ridStr(requestId) : await ensureAndGetId();
-  const ridKey = String(rid).trim(); // ✅ всегда определён
-  const fileName = requestDetails?.display_no ? `Заявка_${requestDetails.display_no}` : `Заявка_${ridKey}`;
+    const rid = requestId ? ridStr(requestId) : await ensureAndGetId();
+    const ridKey = String(rid).trim(); // ✅ всегда определён
+    const fileName = requestDetails?.display_no ? `Заявка_${requestDetails.display_no}` : `Заявка_${ridKey}`;
 
-  await updateRequestMeta(ridKey, {
-    object_type_code: objectType || null,
-    level_code: level || null,
-    system_code: system || null,
-    zone_code: zone || null,
-    comment: comment.trim() || null,
-    foreman_name: foreman.trim() || null,
-  }).catch(() => null);
+    await updateRequestMeta(ridKey, {
+      object_type_code: objectType || null,
+      level_code: level || null,
+      system_code: system || null,
+      zone_code: zone || null,
+      comment: comment.trim() || null,
+      foreman_name: foreman.trim() || null,
+    }).catch(e => console.warn('[Foreman] updateMeta err in onPdfExport:', e));
 
-  await runPdfTop({
-    busy: gbusy,
-    supabase,
-    key: `pdf:request:${ridKey}`,
-    label: "Готовлю PDF…",
-    mode: "preview",
-    fileName,
-    getRemoteUrl: () => exportRequestPdf(ridKey, "preview"),
-  });
-}, [
-  gbusy,
-  ensureHeaderReady,
-  requestId,
-  requestDetails?.display_no,
-  ridStr,
-  ensureAndGetId,
-  objectType,
-  level,
-  system,
-  zone,
-  comment,
-  foreman,
-]);
-  
+    await runPdfTop({
+      busy: gbusy,
+      supabase,
+      key: `pdf:request:${ridKey}`,
+      label: "Готовлю PDF…",
+      mode: "preview",
+      fileName,
+      getRemoteUrl: () => exportRequestPdf(ridKey, "preview"),
+    });
+  }, [
+    gbusy,
+    ensureHeaderReady,
+    requestId,
+    requestDetails?.display_no,
+    ridStr,
+    ensureAndGetId,
+    objectType,
+    level,
+    system,
+    zone,
+    comment,
+    foreman,
+  ]);
+
   const ReqItemRowView = useCallback(
-  ({ it }: { it: ReqItemRow }) => {
-    const key = String(it.id);
-    const updating = !!qtyBusyMap[key];
-    const canEdit = canEditRequestItem(it);
+    ({ it }: { it: ReqItemRow }) => {
+      const key = String(it.id);
+      const updating = !!qtyBusyMap[key];
+      const canEdit = canEditRequestItem(it);
 
-    const metaLine = [
-      `${it.qty ?? '-'} ${it.uom ?? ''}`.trim(),
-      it.app_code ? labelForApp(it.app_code) : null,
-    ].filter(Boolean).join(' · ');
+      const metaLine = [
+        `${it.qty ?? '-'} ${it.uom ?? ''}`.trim(),
+        it.app_code ? labelForApp(it.app_code) : null,
+      ].filter(Boolean).join(' · ');
 
-    return (
-      <View style={s.draftRowCard}>
-        <View style={s.draftRowMain}>
-          <Text style={s.draftRowTitle} numberOfLines={2} ellipsizeMode="tail">
-            {it.name_human}
-          </Text>
+      return (
+        <View style={s.draftRowCard}>
+          <View style={s.draftRowMain}>
+            <Text style={s.draftRowTitle} numberOfLines={2} ellipsizeMode="tail">
+              {it.name_human}
+            </Text>
 
-          <Text style={s.draftRowMeta} numberOfLines={2} ellipsizeMode="tail">
-            {metaLine || '—'}
-          </Text>
+            <Text style={s.draftRowMeta} numberOfLines={2} ellipsizeMode="tail">
+              {metaLine || '—'}
+            </Text>
 
-          <Text style={s.draftRowStatus} numberOfLines={1}>
-            Статус: <Text style={s.draftRowStatusStrong}>{it.status ?? '—'}</Text>
-          </Text>
-        </View>
+            <Text style={s.draftRowStatus} numberOfLines={1}>
+              Статус: <Text style={s.draftRowStatusStrong}>{it.status ?? '—'}</Text>
+            </Text>
+          </View>
 
-        {canEdit ? (
-          <Pressable
-            disabled={busy || updating}
-            onPress={async () => {
-              if (cancelLockRef.current[key]) return;
-              cancelLockRef.current[key] = true;
+          {canEdit ? (
+            <CloseIconButton
+              disabled={busy || updating}
+              onPress={async () => {
+                if (cancelLockRef.current[key]) return;
+                cancelLockRef.current[key] = true;
 
-              try {
-                if (Platform.OS === 'web') {
-                  // @ts-ignore
-                  const ok = window.confirm(`Отменить позицию?\n\n${it.name_human || 'Позиция'}`);
-                  if (!ok) return;
+                try {
+                  if (Platform.OS === 'web') {
+                    // @ts-ignore
+                    const ok = window.confirm(`Отменить позицию?\n\n${it.name_human || 'Позиция'}`);
+                    if (!ok) return;
 
-                  setQtyBusyMap((prev) => ({ ...prev, [key]: true }));
-                  await requestItemCancel(String(it.id));
+                    setQtyBusyMap((prev) => ({ ...prev, [key]: true }));
+                    await requestItemCancel(String(it.id));
 
-                  setItems((prev) => prev.filter((x) => String(x.id) !== String(it.id)));
-                  setQtyDrafts((prev) => {
-                    const n = { ...prev };
-                    delete n[key];
-                    return n;
-                  });
+                    setItems((prev) => prev.filter((x) => String(x.id) !== String(it.id)));
+                    setQtyDrafts((prev) => {
+                      const n = { ...prev };
+                      delete n[key];
+                      return n;
+                    });
 
-                  // @ts-ignore
-                  window.alert('Позиция удалена');
-                  return;
-                }
+                    // @ts-ignore
+                    window.alert('Позиция удалена');
+                    return;
+                  }
 
-                Alert.alert('Отменить позицию?', it.name_human || 'Позиция', [
-                  { text: 'Нет', style: 'cancel' },
-                  {
-                    text: 'Отменить',
-                    style: 'destructive',
-                    onPress: async () => {
-                      setQtyBusyMap((prev) => ({ ...prev, [key]: true }));
-                      try {
-                        await requestItemCancel(String(it.id));
+                  Alert.alert('Отменить позицию?', it.name_human || 'Позиция', [
+                    { text: 'Нет', style: 'cancel' },
+                    {
+                      text: 'Отменить',
+                      style: 'destructive',
+                      onPress: async () => {
+                        setQtyBusyMap((prev) => ({ ...prev, [key]: true }));
+                        try {
+                          await requestItemCancel(String(it.id));
 
-                        setItems((prev) => prev.filter((x) => String(x.id) !== String(it.id)));
-                        setQtyDrafts((prev) => {
-                          const n = { ...prev };
-                          delete n[key];
-                          return n;
-                        });
-                      } finally {
-                        setQtyBusyMap((prev) => ({ ...prev, [key]: false }));
-                      }
+                          setItems((prev) => prev.filter((x) => String(x.id) !== String(it.id)));
+                          setQtyDrafts((prev) => {
+                            const n = { ...prev };
+                            delete n[key];
+                            return n;
+                          });
+                        } finally {
+                          setQtyBusyMap((prev) => ({ ...prev, [key]: false }));
+                        }
+                      },
                     },
-                  },
-                ]);
-              } finally {
-                cancelLockRef.current[key] = false;
-              }
-            }}
-            style={[s.rejectBtn, { opacity: busy || updating ? 0.6 : 1 }]}
-          >
-            <Text style={s.rejectIcon}>✕</Text>
-          </Pressable>
-        ) : null}
-      </View>
-    );
-  },
-  [canEditRequestItem, qtyBusyMap, busy, labelForApp, requestItemCancel],
-);
- 
+                  ]);
+                } finally {
+                  cancelLockRef.current[key] = false;
+                }
+              }}
+              accessibilityLabel="������� �������"
+              size={44}
+              radius={12}
+              iconSize={22}
+              bg={UI.btnReject}
+              bgPressed="#b91c1c"
+              bgDisabled="#7f1d1d"
+              iconColor="#FFFFFF"
+              spinnerColor="#FFFFFF"
+            />
+          ) : null}
+        </View>
+      );
+    },
+    [canEditRequestItem, qtyBusyMap, busy, labelForApp, requestItemCancel],
+  );
+
   // ---------- UI ----------
-  
+
   const currentDisplayLabel = useMemo(() => {
     if (requestDetails?.display_no) return requestDetails.display_no;
     if (requestId) return labelForRequest(requestId);
@@ -1898,372 +1905,369 @@ const onPdf = useCallback(async () => {
       return requestDetails.created_at;
     }
   }, [requestDetails?.created_at]);
-// ===== Collapsing header (Animated) =====
-const HEADER_MAX = 126;   // развернутая высота шапки
-const HEADER_MIN = 64;    // свернутая высота
-const HEADER_SCROLL = HEADER_MAX - HEADER_MIN;
+  // ===== Collapsing header (Animated) =====
+  const HEADER_MAX = 126;   // развернутая высота шапки
+  const HEADER_MIN = 64;    // свернутая высота
+  const HEADER_SCROLL = HEADER_MAX - HEADER_MIN;
 
-const scrollY = useRef(new Animated.Value(0)).current;
-const clampedY = useMemo(() => Animated.diffClamp(scrollY, 0, HEADER_SCROLL), [scrollY]);
+  const scrollY = useRef(new Animated.Value(0)).current;
+  const clampedY = useMemo(() => Animated.diffClamp(scrollY, 0, HEADER_SCROLL), [scrollY]);
 
-const headerHeight = useMemo(() => (
-  clampedY.interpolate({
-    inputRange: [0, HEADER_SCROLL],
-    outputRange: [HEADER_MAX, HEADER_MIN],
-    extrapolate: 'clamp',
-  })
-), [clampedY]);
+  const headerHeight = useMemo(() => (
+    clampedY.interpolate({
+      inputRange: [0, HEADER_SCROLL],
+      outputRange: [HEADER_MAX, HEADER_MIN],
+      extrapolate: 'clamp',
+    })
+  ), [clampedY]);
 
-// Заголовок: плавно уменьшается
-const titleSize = useMemo(() => (
-  clampedY.interpolate({
-    inputRange: [0, HEADER_SCROLL],
-    outputRange: [24, 16],
-    extrapolate: 'clamp',
-  })
-), [clampedY]);
+  // Заголовок: плавно уменьшается
+  const titleSize = useMemo(() => (
+    clampedY.interpolate({
+      inputRange: [0, HEADER_SCROLL],
+      outputRange: [24, 16],
+      extrapolate: 'clamp',
+    })
+  ), [clampedY]);
 
-// Подстрока/детали: плавно исчезают
-const subOpacity = useMemo(() => (
-  clampedY.interpolate({
-    inputRange: [0, HEADER_SCROLL * 0.7],
-    outputRange: [1, 0],
-    extrapolate: 'clamp',
-  })
-), [clampedY]);
+  // Подстрока/детали: плавно исчезают
+  const subOpacity = useMemo(() => (
+    clampedY.interpolate({
+      inputRange: [0, HEADER_SCROLL * 0.7],
+      outputRange: [1, 0],
+      extrapolate: 'clamp',
+    })
+  ), [clampedY]);
 
-// Тень при скролле (как ты спросил)
-const headerShadow = useMemo(() => (
-  clampedY.interpolate({
-    inputRange: [0, 8],
-    outputRange: [0, 0.12],
-    extrapolate: 'clamp',
-  })
-), [clampedY]);
+  // Тень при скролле (как ты спросил)
+  const headerShadow = useMemo(() => (
+    clampedY.interpolate({
+      inputRange: [0, 8],
+      outputRange: [0, 0.12],
+      extrapolate: 'clamp',
+    })
+  ), [clampedY]);
 
- return (
-  <KeyboardAvoidingView
-    style={{ flex: 1 }}
-    behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-  >
-    <View style={[s.container, { backgroundColor: UI.bg }]}>
-    <View pointerEvents="none" style={s.bgGlow} />
-      {/* ✅ FIXED Collapsing Header */}
-      <Animated.View
-        style={[
-          s.cHeader,
-          {
-            height: headerHeight,
-            shadowOpacity: headerShadow as any,
-            elevation: 8,
-          },
-        ]}
-      >
-        {/* Title row */}
-        <View style={{ paddingHorizontal: 16, paddingTop: 12 }}>
-          <Animated.Text style={[s.cTitle, { fontSize: titleSize, color: UI.text }]} numberOfLines={1}>
-  Заявка
-</Animated.Text>
+  return (
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
+      <View style={[s.container, { backgroundColor: UI.bg }]}>
+        <View pointerEvents="none" style={s.bgGlow} />
+        {/* ✅ FIXED Collapsing Header */}
+        <Animated.View
+          style={[
+            s.cHeader,
+            {
+              height: headerHeight,
+              shadowOpacity: headerShadow as any,
+              elevation: 8,
+            },
+          ]}
+        >
+          {/* Title row */}
+          <View style={{ paddingHorizontal: 16, paddingTop: 12 }}>
+            <Animated.Text style={[s.cTitle, { fontSize: titleSize, color: UI.text }]} numberOfLines={1}>
+              Заявка
+            </Animated.Text>
 
-        </View>
+          </View>
 
-        {/* Details row (fade out) */}
-        <Animated.View style={{ opacity: subOpacity, paddingHorizontal: 16, paddingTop: 8 }}>
-          <View style={s.requestSummaryBox}>
-            <View style={s.requestSummaryTop}>
-              <Text
-                style={[s.requestNumber, { flex: 1, flexShrink: 1 }]}
-                numberOfLines={1}
-                ellipsizeMode="tail"
+          {/* Details row (fade out) */}
+          <Animated.View style={{ opacity: subOpacity, paddingHorizontal: 16, paddingTop: 8 }}>
+            <View style={s.requestSummaryBox}>
+              <View style={s.requestSummaryTop}>
+                <Text
+                  style={[s.requestNumber, { flex: 1, flexShrink: 1 }]}
+                  numberOfLines={1}
+                  ellipsizeMode="tail"
+                >
+                  {currentDisplayLabel}
+                </Text>
+
+                <View
+                  style={[
+                    s.historyStatusBadge,
+                    {
+                      backgroundColor: 'rgba(255,255,255,0.06)',
+                      borderWidth: 1,
+                      borderColor: 'rgba(255,255,255,0.12)',
+                    },
+                  ]}
+                >
+                  <Text style={{ color: UI.text, fontWeight: '900' }}>
+                    {statusInfo.label}
+                  </Text>
+                </View>
+
+              </View>
+
+              <Text style={s.requestMeta}>Создана: {createdDisplay}</Text>
+            </View>
+          </Animated.View>
+        </Animated.View>
+
+        {/* ✅ SCROLL */}
+        <AnimatedScrollView
+          contentContainerStyle={[
+            s.pagePad,
+            { paddingTop: HEADER_MAX + 12 }, // место под фикс-шапку
+          ]}
+          keyboardShouldPersistTaps="handled"
+          scrollEventThrottle={16}
+          onScroll={Animated.event(
+            [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+            { useNativeDriver: false }
+          )}
+        >
+          {/* ✅ дальше — твой старый контент БЕЗ старого заголовка и БЕЗ блока requestSummaryBox */}
+
+          <Text style={s.small}>
+            ФИО прораба (обязательно):
+          </Text>
+          <TextInput
+            value={foreman}
+            onChangeText={handleForemanChange}
+            onFocus={() => {
+              if (blurTimerRef.current) clearTimeout(blurTimerRef.current);
+              setForemanFocus(true);
+            }}
+            onBlur={() => {
+              // ✅ даём успеть нажать по подсказке
+              blurTimerRef.current = setTimeout(() => setForemanFocus(false), 180);
+            }}
+            placeholder="Иванов И.И."
+            style={s.input}
+          />
+
+          {foremanFocus && foremanHistory.length > 0 && (
+            <View style={s.foremanSuggestBox}>
+              {foremanHistory.map((name) => (
+                <Pressable
+                  key={name}
+                  // ✅ важно: НЕ даём blur закрыть список раньше клика
+                  onPressIn={() => {
+                    if (blurTimerRef.current) clearTimeout(blurTimerRef.current);
+                  }}
+                  onPress={() => {
+                    handleForemanChange(name);
+                    setForemanFocus(false);
+                  }}
+                  style={s.foremanSuggestRow}
+                >
+                  <Text style={s.foremanSuggestText} numberOfLines={1}>
+                    {name}
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
+          )}
+          {/* Объект/Этаж/Система/Зона */}
+          <View style={{ marginTop: 10, gap: 6 }}>
+            <Dropdown
+              label="Объект строительства (обязательно)"
+              options={objOptions}
+              value={objectType}
+              onChange={handleObjectChange}
+              placeholder="Выберите объект"
+              width={360}
+            />
+            <Dropdown
+              label="Этаж / уровень (обязательно)"
+              options={lvlOptions}
+              value={level}
+              onChange={handleLevelChange}
+              placeholder="Выберите этаж/уровень"
+              width={360}
+            />
+            <Dropdown
+              label="Система / вид работ (опционально)"
+              options={sysOptions}
+              value={system}
+              onChange={handleSystemChange}
+              placeholder="Выберите систему/вид работ"
+              width={360}
+            />
+            <Dropdown
+              label="Зона / участок (опционально)"
+              options={zoneOptions}
+              value={zone}
+              onChange={handleZoneChange}
+              placeholder="Выберите зону/участок"
+              width={360}
+            />
+          </View>
+          {/* ===== Выбор позиций ===== */}
+          <View style={s.section}>
+            <Text style={s.sectionTitle}>ВЫБОР ПОЗИЦИЙ ИЗ:</Text>
+
+            <View style={s.pickTabsRow}>
+              <Pressable
+                onPress={() => {
+                  if (!ensureHeaderReady()) return;
+                  if (!isDraftActive) {
+                    showHint('Просмотр заявки', 'Редактирование доступно только в текущем черновике.');
+                    return;
+                  }
+                  setCatalogVisible(true);
+                }}
+
+                disabled={busy}
+                style={[s.pickTabBtn, s.pickTabCatalog, busy && { opacity: 0.5 }]}
+
               >
+                <Ionicons name="list" size={18} color={UI.text} />
+                <Text style={s.pickTabText}>Каталог</Text>
+              </Pressable>
+
+              <Pressable
+                onPress={handleCalcPress}
+                disabled={busy}
+                style={[s.pickTabBtn, s.pickTabSoft, busy && { opacity: 0.5 }]}
+              >
+                <Ionicons name="calculator-outline" size={18} color={UI.text} />
+                <Text style={s.pickTabText}>Смета</Text>
+              </Pressable>
+            </View>
+          </View>
+          {/* ===== Черновик (карточка, без списка) ===== */}
+          <Pressable
+            onPress={() => setDraftOpen(true)}
+            style={s.draftCard}
+            android_ripple={{ color: "rgba(255,255,255,0.06)" }}
+          >
+            <View style={{ flex: 1, minWidth: 0 }}>
+              <Text style={s.draftTitle}>ЧЕРНОВИК</Text>
+
+              <Text style={s.draftNo} numberOfLines={1}>
                 {currentDisplayLabel}
               </Text>
 
-              <View
-  style={[
-    s.historyStatusBadge,
-    {
-      backgroundColor: 'rgba(255,255,255,0.06)',
-      borderWidth: 1,
-      borderColor: 'rgba(255,255,255,0.12)',
-    },
-  ]}
->
-  <Text style={{ color: UI.text, fontWeight: '900' }}>
-    {statusInfo.label}
-  </Text>
-</View>
-
+              <Text style={s.draftHint} numberOfLines={2}>
+                {items?.length
+                  ? "Открыть позиции и действия"
+                  : "Пока пусто — добавь позиции из Каталога или Сметы."}
+              </Text>
             </View>
 
-            <Text style={s.requestMeta}>Создана: {createdDisplay}</Text>
-          </View>
-        </Animated.View>
-      </Animated.View>
-
-      {/* ✅ SCROLL */}
-      <AnimatedScrollView
-        contentContainerStyle={[
-          s.pagePad,
-          { paddingTop: HEADER_MAX + 12 }, // место под фикс-шапку
-        ]}
-        keyboardShouldPersistTaps="handled"
-        scrollEventThrottle={16}
-        onScroll={Animated.event(
-          [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-          { useNativeDriver: false }
-        )}
-      >
-        {/* ✅ дальше — твой старый контент БЕЗ старого заголовка и БЕЗ блока requestSummaryBox */}
-
-        <Text style={s.small}>
-  ФИО прораба (обязательно):
-</Text>
-<TextInput
-  value={foreman}
-  onChangeText={handleForemanChange}
-  onFocus={() => {
-    if (blurTimerRef.current) clearTimeout(blurTimerRef.current);
-    setForemanFocus(true);
-  }}
-  onBlur={() => {
-    // ✅ даём успеть нажать по подсказке
-    blurTimerRef.current = setTimeout(() => setForemanFocus(false), 180);
-  }}
-  placeholder="Иванов И.И."
-  style={s.input}
-/>
-
-{foremanFocus && foremanHistory.length > 0 && (
-  <View style={s.foremanSuggestBox}>
-    {foremanHistory.map((name) => (
-      <Pressable
-        key={name}
-        // ✅ важно: НЕ даём blur закрыть список раньше клика
-        onPressIn={() => {
-          if (blurTimerRef.current) clearTimeout(blurTimerRef.current);
-        }}
-        onPress={() => {
-          handleForemanChange(name);
-          setForemanFocus(false);
-        }}
-        style={s.foremanSuggestRow}
-      >
-        <Text style={s.foremanSuggestText} numberOfLines={1}>
-          {name}
-        </Text>
-      </Pressable>
-    ))}
-  </View>
-)}
-        {/* Объект/Этаж/Система/Зона */}
-        <View style={{ marginTop: 10, gap: 6 }}>
-          <Dropdown
-            label="Объект строительства (обязательно)"
-            options={objOptions}
-            value={objectType}
-            onChange={handleObjectChange}
-            placeholder="Выберите объект"
-            width={360}
-          />
-          <Dropdown
-            label="Этаж / уровень (обязательно)"
-            options={lvlOptions}
-            value={level}
-            onChange={handleLevelChange}
-            placeholder="Выберите этаж/уровень"
-            width={360}
-          />
-          <Dropdown
-            label="Система / вид работ (опционально)"
-            options={sysOptions}
-            value={system}
-            onChange={handleSystemChange}
-            placeholder="Выберите систему/вид работ"
-            width={360}
-          />
-          <Dropdown
-            label="Зона / участок (опционально)"
-            options={zoneOptions}
-            value={zone}
-            onChange={handleZoneChange}
-            placeholder="Выберите зону/участок"
-            width={360}
-          />
-        </View>
-{/* ===== Выбор позиций ===== */}
-<View style={s.section}>
-  <Text style={s.sectionTitle}>ВЫБОР ПОЗИЦИЙ ИЗ:</Text>
-
-  <View style={s.pickTabsRow}>
-    <Pressable
-      onPress={() => {
-  if (!ensureHeaderReady()) return;
-  if (!isDraftActive) {
-    showHint('Просмотр заявки', 'Редактирование доступно только в текущем черновике.');
-    return;
-  }
-  setCatalogVisible(true);
-}}
-
-      disabled={busy}
-      style={[s.pickTabBtn, s.pickTabCatalog, busy && { opacity: 0.5 }]}
-
-    >
-      <Ionicons name="list" size={18} color={UI.text} />
-      <Text style={s.pickTabText}>Каталог</Text>
-    </Pressable>
-
-    <Pressable
-      onPress={handleCalcPress}
-      disabled={busy}
-      style={[s.pickTabBtn, s.pickTabSoft, busy && { opacity: 0.5 }]}
-    >
-      <Ionicons name="calculator-outline" size={18} color={UI.text} />
-      <Text style={s.pickTabText}>Смета</Text>
-    </Pressable>
-  </View>
-</View>
-{/* ===== Черновик (карточка, без списка) ===== */}
-<Pressable
-  onPress={() => setDraftOpen(true)}
-  style={s.draftCard}
-  android_ripple={{ color: "rgba(255,255,255,0.06)" }}
->
-  <View style={{ flex: 1, minWidth: 0 }}>
-    <Text style={s.draftTitle}>ЧЕРНОВИК</Text>
-
-    <Text style={s.draftNo} numberOfLines={1}>
-      {currentDisplayLabel}
-    </Text>
-
-    <Text style={s.draftHint} numberOfLines={2}>
-      {items?.length
-        ? "Открыть позиции и действия"
-        : "Пока пусто — добавь позиции из Каталога или Сметы."}
-    </Text>
-  </View>
-
-  <View style={{ alignItems: "flex-end", gap: 10 }}>
-    <View style={s.posPill}>
-  <Ionicons name="list" size={18} color={UI.text} />
-  <Text style={s.posPillText}>Позиции</Text>
-  <View style={s.posCountPill}>
-    <Text style={s.posCountText}>{items?.length ?? 0}</Text>
-  </View>
-</View>
-
-    <Ionicons name="chevron-forward" size={18} color="rgba(255,255,255,0.55)" />
-  </View>
-</Pressable>
-      </AnimatedScrollView>
-
-      {/* ✅ Нижняя панель — как было */}
-      <View style={s.stickyBar}>
-  <View style={s.miniBar}>
-    <Pressable
-      onPress={handleOpenHistory}
-      disabled={busy}
-      style={[s.miniBtn, busy && { opacity: 0.5 }]}
-    >
-      <Ionicons name="time-outline" size={18} color={UI.text} />
-      <Text style={s.miniText}>История</Text>
-    </Pressable>
-
-     </View>
-</View>
-
-
-       <RNModal
-  isVisible={historyVisible}
-  onBackdropPress={handleCloseHistory}
-  onBackButtonPress={handleCloseHistory}
-  backdropOpacity={0.55}
-  useNativeDriver={Platform.OS !== "web"}
-  useNativeDriverForBackdrop={Platform.OS !== "web"}
-  hideModalContentWhileAnimating
-  style={{ margin: 0, justifyContent: "flex-end" }}
->
-
-  <View style={s.historyModal}>
-    <View style={s.historyModalHeader}>
-      <Text style={s.historyModalTitle}>История заявок</Text>
-      <Pressable onPress={handleCloseHistory}>
-        <Text style={s.historyModalClose}>Закрыть</Text>
-      </Pressable>
-    </View>
-
-    <View style={s.historyModalBody}>
-      {historyLoading ? (
-        <ActivityIndicator />
-      ) : historyRequests.length === 0 ? (
-        <Text style={s.historyModalEmpty}>Заявок пока нет</Text>
-      ) : (
-        <ScrollView style={s.historyModalList}>
-          {historyRequests.map((req) => {
-            const info = resolveStatusInfo(req.status);
-            const created = req.created_at
-              ? new Date(req.created_at).toLocaleDateString('ru-RU')
-              : '—';
-            const hasRejected =
-              req.has_rejected === true ||
-              req.has_rejected === 1 ||
-              req.has_rejected === 't';
-
-            return (
-              <View key={req.id} style={s.historyModalRow}>
-                <Pressable style={{ flex: 1 }} onPress={() => handleHistorySelect(req.id)}>
-                  <Text style={s.historyModalPrimary}>
-                    {req.display_no ?? shortId(req.id)}
-                  </Text>
-                  <Text style={s.historyModalMeta}>{req.object_name_ru || '—'}</Text>
-                  <Text style={s.historyModalMetaSecondary}>{created}</Text>
-
-                  {hasRejected ? (
-                    <Text style={{ color: '#B91C1C', fontSize: 12, marginTop: 2, fontWeight: '600' }}>
-                      Есть отклонённые позиции
-                    </Text>
-                  ) : null}
-                </Pressable>
-
-                <View style={{ alignItems: 'flex-end', gap: 6 }}>
-                  <View style={[s.historyStatusBadge, { backgroundColor: hasRejected ? '#FEE2E2' : info.bg }]}>
-                    <Text style={{ color: info.fg, fontWeight: '700' }}>{info.label}</Text>
-                  </View>
-
-                  {(() => {
-  const pdfKey = `pdf:history:${String(req.id).trim()}`;
-  const pdfBusy = gbusy.isBusy(pdfKey);
-
-  return (
-    <Pressable
-      disabled={pdfBusy}
-      onPress={() => openHistoryPdf(req.id)}
-      style={[s.historyPdfBtn, pdfBusy && { opacity: 0.6 }]}
-    >
-      <Text style={s.historyPdfBtnText}>{pdfBusy ? "PDF…" : "PDF"}</Text>
-    </Pressable>
-  );
-})()}
-
+            <View style={{ alignItems: "flex-end", gap: 10 }}>
+              <View style={s.posPill}>
+                <Ionicons name="list" size={18} color={UI.text} />
+                <Text style={s.posPillText}>Позиции</Text>
+                <View style={s.posCountPill}>
+                  <Text style={s.posCountText}>{items?.length ?? 0}</Text>
                 </View>
               </View>
-            );
-          })}
-        </ScrollView>
-      )}
-    </View>
-  </View>
-</RNModal>
 
-<CatalogModal
-  visible={catalogVisible}
-  onClose={() => setCatalogVisible(false)}
-  rikQuickSearch={rikQuickSearch as any}
-  onCommitToDraft={commitCatalogToDraft}
-  onOpenDraft={openDraftFromCatalog}
-  draftCount={items?.length ?? 0}
-/>
+              <Ionicons name="chevron-forward" size={18} color="rgba(255,255,255,0.55)" />
+            </View>
+          </Pressable>
+        </AnimatedScrollView>
+
+        {/* ✅ Нижняя панель — как было */}
+        <View style={s.stickyBar}>
+          <View style={s.miniBar}>
+            <Pressable
+              onPress={handleOpenHistory}
+              disabled={busy}
+              style={[s.miniBtn, busy && { opacity: 0.5 }]}
+            >
+              <Ionicons name="time-outline" size={18} color={UI.text} />
+              <Text style={s.miniText}>История</Text>
+            </Pressable>
+
+          </View>
+        </View>
+
+
+        <RNModal
+          isVisible={historyVisible}
+          onBackdropPress={handleCloseHistory}
+          onBackButtonPress={handleCloseHistory}
+          backdropOpacity={0.55}
+          useNativeDriver={Platform.OS !== "web"}
+          useNativeDriverForBackdrop={Platform.OS !== "web"}
+          hideModalContentWhileAnimating
+          style={{ margin: 0, justifyContent: "flex-end" }}
+        >
+
+          <View style={s.historyModal}>
+            <View style={s.historyModalHeader}>
+              <Text style={s.historyModalTitle}>История заявок</Text>
+              <Pressable onPress={handleCloseHistory}>
+                <Text style={s.historyModalClose}>Закрыть</Text>
+              </Pressable>
+            </View>
+
+            <View style={s.historyModalBody}>
+              {historyLoading ? (
+                <ActivityIndicator />
+              ) : historyRequests.length === 0 ? (
+                <Text style={s.historyModalEmpty}>Заявок пока нет</Text>
+              ) : (
+                <ScrollView style={s.historyModalList}>
+                  {historyRequests.map((req) => {
+                    const info = resolveStatusInfo(req.status);
+                    const created = req.created_at
+                      ? new Date(req.created_at).toLocaleDateString('ru-RU')
+                      : '—';
+                    const hasRejected = !!req.has_rejected;
+
+                    return (
+                      <View key={req.id} style={s.historyModalRow}>
+                        <Pressable style={{ flex: 1 }} onPress={() => handleHistorySelect(req.id)}>
+                          <Text style={s.historyModalPrimary}>
+                            {req.display_no ?? shortId(req.id)}
+                          </Text>
+                          <Text style={s.historyModalMeta}>{req.object_name_ru || '—'}</Text>
+                          <Text style={s.historyModalMetaSecondary}>{created}</Text>
+
+                          {hasRejected ? (
+                            <Text style={{ color: '#B91C1C', fontSize: 12, marginTop: 2, fontWeight: '600' }}>
+                              Есть отклонённые позиции
+                            </Text>
+                          ) : null}
+                        </Pressable>
+
+                        <View style={{ alignItems: 'flex-end', gap: 6 }}>
+                          <View style={[s.historyStatusBadge, { backgroundColor: hasRejected ? '#FEE2E2' : info.bg }]}>
+                            <Text style={{ color: info.fg, fontWeight: '700' }}>{info.label}</Text>
+                          </View>
+
+                          {(() => {
+                            const pdfKey = `pdf:history:${String(req.id).trim()}`;
+                            const pdfBusy = gbusy.isBusy(pdfKey);
+
+                            return (
+                              <Pressable
+                                disabled={pdfBusy}
+                                onPress={() => openHistoryPdf(req.id)}
+                                style={[s.historyPdfBtn, pdfBusy && { opacity: 0.6 }]}
+                              >
+                                <Text style={s.historyPdfBtnText}>{pdfBusy ? "PDF…" : "PDF"}</Text>
+                              </Pressable>
+                            );
+                          })()}
+
+                        </View>
+                      </View>
+                    );
+                  })}
+                </ScrollView>
+              )}
+            </View>
+          </View>
+        </RNModal>
+
+        <CatalogModal
+          visible={catalogVisible}
+          onClose={() => setCatalogVisible(false)}
+          rikQuickSearch={rikQuickSearch as any}
+          onCommitToDraft={commitCatalogToDraft}
+          onOpenDraft={openDraftFromCatalog}
+          draftCount={items?.length ?? 0}
+        />
         <WorkTypePicker
           visible={workTypePickerVisible}
           onClose={() => setWorkTypePickerVisible(false)}
@@ -2288,188 +2292,193 @@ const headerShadow = useMemo(() => (
           workType={selectedWorkType}
           onAddToRequest={handleCalcAddToRequest}
         />
-<RNModal
-  isVisible={draftOpen}
-  onBackdropPress={() => setDraftOpen(false)}
-  onBackButtonPress={() => setDraftOpen(false)}
-  backdropOpacity={0.55}
-  useNativeDriver={Platform.OS !== "web"}
-  useNativeDriverForBackdrop={Platform.OS !== "web"}
-  hideModalContentWhileAnimating
-  style={{ margin: 0, justifyContent: "flex-end" }}
->  
-<View style={s.sheet}>
-    <View style={s.sheetHandle} />
+        <RNModal
+          isVisible={draftOpen}
+          onBackdropPress={() => setDraftOpen(false)}
+          onBackButtonPress={() => setDraftOpen(false)}
+          backdropOpacity={0.55}
+          useNativeDriver={Platform.OS !== "web"}
+          useNativeDriverForBackdrop={Platform.OS !== "web"}
+          hideModalContentWhileAnimating
+          style={{ margin: 0, justifyContent: "flex-end" }}
+        >
+          <View style={s.sheet}>
+            <View style={s.sheetHandle} />
 
-    <View style={s.sheetTopBar}>
-      <Text style={s.sheetTitle} numberOfLines={1}>
-        Черновик {currentDisplayLabel}
-      </Text>
+            <View style={s.sheetTopBar}>
+              <Text style={s.sheetTitle} numberOfLines={1}>
+                Черновик {currentDisplayLabel}
+              </Text>
 
-      <Pressable onPress={() => setDraftOpen(false)} style={s.sheetCloseBtn}>
-        <Text style={s.sheetCloseText}>Свернуть</Text>
-      </Pressable>
-    </View>
+              <CloseIconButton
+                onPress={() => setDraftOpen(false)}
+                accessibilityLabel="Свернуть"
+                size={46}
+                iconSize={22}
+                iconColor={UI.text}
+                spinnerColor={UI.text}
+              />
+            </View>
 
-    {/* ✅ META 1:1 как у директора */}
-    <View style={s.sheetMetaBox}>
-      {!!objectName && (
-        <Text style={s.sheetMetaLine} numberOfLines={1}>
-          Объект: <Text style={s.sheetMetaValue}>{objectName}</Text>
-        </Text>
-      )}
-      {!!levelName && (
-        <Text style={s.sheetMetaLine} numberOfLines={1}>
-          Этаж/уровень: <Text style={s.sheetMetaValue}>{levelName}</Text>
-        </Text>
-      )}
-      {!!systemName && (
-        <Text style={s.sheetMetaLine} numberOfLines={1}>
-          Система: <Text style={s.sheetMetaValue}>{systemName}</Text>
-        </Text>
-      )}
-      {!!zoneName && (
-        <Text style={s.sheetMetaLine} numberOfLines={1}>
-          Зона: <Text style={s.sheetMetaValue}>{zoneName}</Text>
-        </Text>
-      )}
-    </View>
-<View style={{ flex: 1, minHeight: 0 }}>
-  <FlatList
-    data={items}
-    keyExtractor={(it, idx) => (it?.id ? `ri:${String(it.id)}` : `ri:${idx}`)}
-    renderItem={({ item }) => <ReqItemRowView it={item} />}
-    contentContainerStyle={{ paddingBottom: 12 }}
-    keyboardShouldPersistTaps="handled"
-    nestedScrollEnabled
-    showsVerticalScrollIndicator={false}
-    ListEmptyComponent={
-      <Text style={{ color: UI.sub, fontWeight: "800", paddingVertical: 12 }}>
-        Позиции не найдены
-      </Text>
-    }
-  />
-</View>
+            {/* ✅ META 1:1 как у директора */}
+            <View style={s.sheetMetaBox}>
+              {!!objectName && (
+                <Text style={s.sheetMetaLine} numberOfLines={1}>
+                  Объект: <Text style={s.sheetMetaValue}>{objectName}</Text>
+                </Text>
+              )}
+              {!!levelName && (
+                <Text style={s.sheetMetaLine} numberOfLines={1}>
+                  Этаж/уровень: <Text style={s.sheetMetaValue}>{levelName}</Text>
+                </Text>
+              )}
+              {!!systemName && (
+                <Text style={s.sheetMetaLine} numberOfLines={1}>
+                  Система: <Text style={s.sheetMetaValue}>{systemName}</Text>
+                </Text>
+              )}
+              {!!zoneName && (
+                <Text style={s.sheetMetaLine} numberOfLines={1}>
+                  Зона: <Text style={s.sheetMetaValue}>{zoneName}</Text>
+                </Text>
+              )}
+            </View>
+            <View style={{ flex: 1, minHeight: 0 }}>
+              <FlatList
+                data={items}
+                keyExtractor={(it, idx) => (it?.id ? `ri:${String(it.id)}` : `ri:${idx}`)}
+                renderItem={({ item }) => <ReqItemRowView it={item} />}
+                contentContainerStyle={{ paddingBottom: 12 }}
+                keyboardShouldPersistTaps="handled"
+                nestedScrollEnabled
+                showsVerticalScrollIndicator={false}
+                ListEmptyComponent={
+                  <Text style={{ color: UI.sub, fontWeight: "800", paddingVertical: 12 }}>
+                    Позиции не найдены
+                  </Text>
+                }
+              />
+            </View>
 
-   {/* ===== ACTIONS (как у директора) ===== */}
-<View style={s.reqActionsBottom}>
-  {/* ✅ Delete — LEFT */}
-  <View style={s.actionBtnSquare}>
-    <DeleteAllButton
-      disabled={screenLock}
-      loading={draftDeleteBusy}
-      accessibilityLabel="Удалить черновик"
-      onPress={() => {
-        const doIt = async () => {
-          setDraftDeleteBusy(true);
-          try {
-            clearLocalDraftId();
-            clearCachedDraftRequestId();
-            resetDraftState();
-            await handleNewRequest({ silent: true, keepBusy: true, resetMeta: true });
-            setDraftOpen(false);
-          } catch (e: any) {
-            Alert.alert("Ошибка", e?.message ?? "Не удалось удалить черновик");
-          } finally {
-            setDraftDeleteBusy(false);
-          }
-        };
+            {/* ===== ACTIONS (как у директора) ===== */}
+            <View style={s.reqActionsBottom}>
+              {/* ✅ Delete — LEFT */}
+              <View style={s.actionBtnSquare}>
+                <DeleteAllButton
+                  disabled={screenLock}
+                  loading={draftDeleteBusy}
+                  accessibilityLabel="Удалить черновик"
+                  onPress={() => {
+                    const doIt = async () => {
+                      setDraftDeleteBusy(true);
+                      try {
+                        clearLocalDraftId();
+                        clearCachedDraftRequestId();
+                        resetDraftState();
+                        await handleNewRequest({ silent: true, keepBusy: true, resetMeta: true });
+                        setDraftOpen(false);
+                      } catch (e: any) {
+                        Alert.alert("Ошибка", e?.message ?? "Не удалось удалить черновик");
+                      } finally {
+                        setDraftDeleteBusy(false);
+                      }
+                    };
 
-        if (Platform.OS === "web") {
-          // @ts-ignore
-          const ok = window.confirm("Удалить черновик?\n\nВсе позиции будут удалены, будет создан новый черновик.");
-          if (!ok) return;
-          void doIt();
-          return;
-        }
+                    if (Platform.OS === "web") {
+                      // @ts-ignore
+                      const ok = window.confirm("Удалить черновик?\n\nВсе позиции будут удалены, будет создан новый черновик.");
+                      if (!ok) return;
+                      void doIt();
+                      return;
+                    }
 
-        Alert.alert(
-          "Удалить черновик?",
-          "Все позиции будут удалены, будет создан новый черновик.",
-          [
-            { text: "Отмена", style: "cancel" },
-            { text: "Да, удалить", style: "destructive", onPress: () => void doIt() },
-          ],
-        );
-      }}
-    />
-  </View>
-
-  <View style={s.sp8} />
-
-  {/* PDF — CENTER */}
-  {(() => {
-    const ridKey = String(requestId || "").trim();
-    const pdfKey = `pdf:req:${ridKey || "draft"}`;
-    const pdfBusy = gbusy.isBusy(pdfKey);
-
-    return (
-      <Pressable
-        disabled={screenLock || pdfBusy}
-        onPress={async () => {
-          if (screenLock || pdfBusy) return;
-          try {
-            await onPdf();
-          } catch (e: any) {
-            if (String(e?.message ?? "").toLowerCase().includes("busy")) return;
-            Alert.alert("Ошибка", e?.message ?? "PDF не сформирован");
-          }
-        }}
-        style={[
-          s.actionBtnWide,
-          { backgroundColor: UI.btnNeutral, opacity: (screenLock || pdfBusy) ? 0.6 : 1 },
-        ]}
-      >
-        <Text style={s.actionText}>{pdfBusy ? "PDF…" : "PDF"}</Text>
-      </Pressable>
-    );
-  })()}
-
-  <View style={s.sp8} />
-
-  {/* Excel — CENTER */}
-  <Pressable
-    disabled={screenLock}
-    onPress={() => {
-      if (screenLock) return;
-      Alert.alert("Excel", "Экспорт Excel будет добавлен позже (UI уже готов).");
-    }}
-    style={[
-      s.actionBtnWide,
-      { backgroundColor: UI.btnNeutral, opacity: screenLock ? 0.6 : 1 },
-    ]}
-  >
-    <Text style={s.actionText}>Excel</Text>
-  </Pressable>
-
-  <View style={s.sp8} />
-
-  {/* ✅ Send — RIGHT */}
-  <View style={s.actionBtnSquare}>
-    <SendPrimaryButton
-      variant="green"
-      disabled={screenLock || (items?.length ?? 0) === 0}
-      loading={draftSendBusy}
-      onPress={async () => {
-        if (screenLock || (items?.length ?? 0) === 0) return;
-
-        setDraftSendBusy(true);
-        try {
-          await submitToDirector();
-          setDraftOpen(false);
-        } catch (e: any) {
-          Alert.alert("Ошибка", e?.message ?? "Не удалось отправить директору");
-        } finally {
-          setDraftSendBusy(false);
-        }
-      }}
-    />
-  </View>
-</View>
- </View>
-</RNModal>
+                    Alert.alert(
+                      "Удалить черновик?",
+                      "Все позиции будут удалены, будет создан новый черновик.",
+                      [
+                        { text: "Отмена", style: "cancel" },
+                        { text: "Да, удалить", style: "destructive", onPress: () => void doIt() },
+                      ],
+                    );
+                  }}
+                />
               </View>
-       </KeyboardAvoidingView>
+
+              <View style={s.sp8} />
+
+              {/* PDF — CENTER */}
+              {(() => {
+                const ridKey = String(requestId || "").trim();
+                const pdfKey = `pdf:req:${ridKey || "draft"}`;
+                const pdfBusy = gbusy.isBusy(pdfKey);
+
+                return (
+                  <Pressable
+                    disabled={screenLock || pdfBusy}
+                    onPress={async () => {
+                      if (screenLock || pdfBusy) return;
+                      try {
+                        await onPdf();
+                      } catch (e: any) {
+                        if (String(e?.message ?? "").toLowerCase().includes("busy")) return;
+                        Alert.alert("Ошибка", e?.message ?? "PDF не сформирован");
+                      }
+                    }}
+                    style={[
+                      s.actionBtnWide,
+                      { backgroundColor: UI.btnNeutral, opacity: (screenLock || pdfBusy) ? 0.6 : 1 },
+                    ]}
+                  >
+                    <Text style={s.actionText}>{pdfBusy ? "PDF…" : "PDF"}</Text>
+                  </Pressable>
+                );
+              })()}
+
+              <View style={s.sp8} />
+
+              {/* Excel — CENTER */}
+              <Pressable
+                disabled={screenLock}
+                onPress={() => {
+                  if (screenLock) return;
+                  Alert.alert("Excel", "Экспорт Excel будет добавлен позже (UI уже готов).");
+                }}
+                style={[
+                  s.actionBtnWide,
+                  { backgroundColor: UI.btnNeutral, opacity: screenLock ? 0.6 : 1 },
+                ]}
+              >
+                <Text style={s.actionText}>Excel</Text>
+              </Pressable>
+
+              <View style={s.sp8} />
+
+              {/* ✅ Send — RIGHT */}
+              <View style={s.actionBtnSquare}>
+                <SendPrimaryButton
+                  variant="green"
+                  disabled={screenLock || (items?.length ?? 0) === 0}
+                  loading={draftSendBusy}
+                  onPress={async () => {
+                    if (screenLock || (items?.length ?? 0) === 0) return;
+
+                    setDraftSendBusy(true);
+                    try {
+                      await submitToDirector();
+                      setDraftOpen(false);
+                    } catch (e: any) {
+                      Alert.alert("Ошибка", e?.message ?? "Не удалось отправить директору");
+                    } finally {
+                      setDraftSendBusy(false);
+                    }
+                  }}
+                />
+              </View>
+            </View>
+          </View>
+        </RNModal>
+      </View>
+    </KeyboardAvoidingView>
   );
 }
 /* ======================= Styles (CLEAN, UI-only) ======================= */
@@ -2998,57 +3007,57 @@ const s = StyleSheet.create({
     fontSize: 15,
     letterSpacing: 0.2,
   },
-foremanSuggestBox: {
-  marginTop: 6,
-  borderRadius: 14,
-  overflow: "hidden",
-  borderWidth: 1,
-  borderColor: "rgba(255,255,255,0.12)",
-  backgroundColor: UI.cardBg,
-},
+  foremanSuggestBox: {
+    marginTop: 6,
+    borderRadius: 14,
+    overflow: "hidden",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.12)",
+    backgroundColor: UI.cardBg,
+  },
 
-foremanSuggestRow: {
-  paddingVertical: 10,
-  paddingHorizontal: 14,
-  borderBottomWidth: 1,
-  borderBottomColor: "rgba(255,255,255,0.08)",
-},
+  foremanSuggestRow: {
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: "rgba(255,255,255,0.08)",
+  },
 
-foremanSuggestText: {
-  color: UI.text,
-  fontWeight: "800",
-  fontSize: 14,
-},
-reqActionsBottom: {
-  marginTop: 12,
-  flexDirection: "row",
-  alignItems: "center",
-  padding: 10,
-  borderRadius: 18,
-  backgroundColor: "rgba(255,255,255,0.04)",
-  borderWidth: 1,
-  borderColor: "rgba(255,255,255,0.10)",
-},
+  foremanSuggestText: {
+    color: UI.text,
+    fontWeight: "800",
+    fontSize: 14,
+  },
+  reqActionsBottom: {
+    marginTop: 12,
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 10,
+    borderRadius: 18,
+    backgroundColor: "rgba(255,255,255,0.04)",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.10)",
+  },
 
-actionBtnWide: {
-  flex: 1,
-  minWidth: 0,
-  paddingVertical: 12,
-  borderRadius: 16,
-  alignItems: "center",
-  justifyContent: "center",
-  backgroundColor: "rgba(255,255,255,0.08)",
-},
+  actionBtnWide: {
+    flex: 1,
+    minWidth: 0,
+    paddingVertical: 12,
+    borderRadius: 16,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "rgba(255,255,255,0.08)",
+  },
 
-sp8: { width: 8 },
+  sp8: { width: 8 },
 
-actionBtnSquare: {
-  width: 46,
-  height: 46,
-  borderRadius: 16,
-  alignItems: "center",
-  justifyContent: "center",
-  flexShrink: 0,
-},
+  actionBtnSquare: {
+    width: 46,
+    height: 46,
+    borderRadius: 16,
+    alignItems: "center",
+    justifyContent: "center",
+    flexShrink: 0,
+  },
 
 });

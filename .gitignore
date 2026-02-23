@@ -12,3 +12,10 @@ coverage/
 android/app/build/
 android/build/
 android/.gradle/
+
+# local junk
+/tmp/
+ts_errors*.txt
+final_ts_errors.txt
+*_errors*.txt
+

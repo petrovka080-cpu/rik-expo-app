@@ -8,6 +8,7 @@
     "web": "expo start --web -c",
     "android": "expo run:android",
     "ios": "expo run:ios",
+    "preflight:prod": "node scripts/preflight-prod.js",
     "fix-encoding:one": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/fix-encoding-one.ps1",
     "fix-encoding:all": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/fix-encoding-all.ps1"
   },
@@ -47,6 +48,7 @@
     "react-native-safe-area-context": "~5.6.0",
     "react-native-screens": "~4.16.0",
     "react-native-svg": "15.12.1",
+    "react-native-toast-message": "^2.3.3",
     "react-native-url-polyfill": "^2.0.0",
     "react-native-web": "^0.21.0",
     "supercluster": "^8.0.1",
@@ -54,6 +56,7 @@
     "zustand": "^5.0.10"
   },
   "devDependencies": {
+    "@types/leaflet": "^1.9.21",
     "@types/react": "~19.1.10",
     "@types/react-dom": "~19.1.7",
     "@types/supercluster": "^7.1.3",
