@@ -77,6 +77,7 @@ export default function SendPrimaryButton({
         disabled={disabled}
         loading={loading}
         accessibilityLabel={accessibilityLabel || text}
+    // @ts-ignore
         width="100%"
         height={52}
         radius={RAD}

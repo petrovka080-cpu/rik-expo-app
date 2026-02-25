@@ -28,7 +28,7 @@ export default React.memo(function StockFactHeader(props: {
   onStockSearch: (t: string) => void;
 
   stockPick: Record<string, StockPickLine>;
-  onRemovePick: (code: string) => void;
+  onRemovePick: (pickKey: string) => void;
 
   issueBusy: boolean;
   onClear: () => void;
@@ -163,7 +163,7 @@ export default React.memo(function StockFactHeader(props: {
 
             {pickLines.slice(0, 6).map((ln) => (
               <View
-                key={ln.code}
+                key={ln.pick_key || `${ln.code}:${ln.uom_id || "-"}`}
                 style={{
                   padding: 10,
                   borderRadius: 14,
@@ -185,7 +185,7 @@ export default React.memo(function StockFactHeader(props: {
                   </Text>
                 </View>
 
-                <Pressable onPress={() => props.onRemovePick(ln.code)} style={s.openBtn}>
+                <Pressable onPress={() => props.onRemovePick(ln.pick_key || `${ln.code}:${ln.uom_id || "-"}`)} style={s.openBtn}>
                   <Text style={s.openBtnText}>Убрать</Text>
                 </Pressable>
               </View>

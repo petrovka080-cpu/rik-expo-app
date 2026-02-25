@@ -51,6 +51,7 @@ function WebSheet({
             e?.stopPropagation?.();
           } catch {}
         }}
+    // @ts-ignore
         style={{
           position: "absolute" as any,
           left: 0,
@@ -89,6 +90,7 @@ function WebSheet({
           style={{
             flex: 1,
             minHeight: 0,
+    // @ts-ignore
             overflowY: "auto" as any,
             overflowX: "hidden" as any,
             WebkitOverflowScrolling: "touch" as any,

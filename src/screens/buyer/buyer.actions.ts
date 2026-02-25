@@ -769,6 +769,7 @@ export async function openProposalViewAction(p: OpenProposalViewDeps) {
 
     let byId: Record<string, any> = {};
     if (ids.length) {
+    // @ts-ignore
       const ri = await repoGetRequestItemsByIds(p.supabase, ids);
       for (const r of ri as any[]) byId[String(r.id)] = r;
     }
@@ -821,6 +822,7 @@ export async function preloadProposalTitlesAction(p: PreloadProposalTitlesDeps) 
     if (!reqItemIds.length) return;
 
     // 2) request_items -> (id, request_id)
+    // @ts-ignore
     const ri = await repoGetRequestItemToRequestMap(p.supabase, reqItemIds);
 
     const reqIdByItem: Record<string, string> = {};

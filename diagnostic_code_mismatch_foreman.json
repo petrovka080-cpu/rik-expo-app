@@ -1,0 +1,1572 @@
+{
+  "generated_at": "2026-02-23T12:35:49.983Z",
+  "totals": {
+    "catalog_canon_codes": 217543,
+    "work_types_total": 173,
+    "work_types_rpc_zero_rows": 156,
+    "work_types_rpc_failures": 0,
+    "smeta_codes_from_rpc": 32,
+    "smeta_codes_missing_in_catalog": 32,
+    "catalog_same_name_multi_code_groups": 6
+  },
+  "rpc_failures_top200": [],
+  "rpc_zero_rows_top500": [
+    {
+      "wt": "com_fitout",
+      "name": "Коммерческая отделка",
+      "fields": 3,
+      "inputs_keys": 4
+    },
+    {
+      "wt": "com_mep_electrica",
+      "name": "Электрика офисная",
+      "fields": 5,
+      "inputs_keys": 6
+    },
+    {
+      "wt": "com_plumbing",
+      "name": "Сантехника (офис/ТЦ)",
+      "fields": 4,
+      "inputs_keys": 5
+    },
+    {
+      "wt": "electrica",
+      "name": "Электрика (универсальная)",
+      "fields": 0,
+      "inputs_keys": 1
+    },
+    {
+      "wt": "finish_paint",
+      "name": "Отделка / Покраска",
+      "fields": 1,
+      "inputs_keys": 2
+    },
+    {
+      "wt": "ind_concrete",
+      "name": "Бетонные работы",
+      "fields": 9,
+      "inputs_keys": 10
+    },
+    {
+      "wt": "ind_floor_epoxy",
+      "name": "Наливные/эпоксидные полы",
+      "fields": 1,
+      "inputs_keys": 2
+    },
+    {
+      "wt": "ind_piping",
+      "name": "Трубопроводы",
+      "fields": 2,
+      "inputs_keys": 3
+    },
+    {
+      "wt": "ind_steel",
+      "name": "Металлоконструкции",
+      "fields": 4,
+      "inputs_keys": 5
+    },
+    {
+      "wt": "res_electrica",
+      "name": "Электрика (жилые)",
+      "fields": 5,
+      "inputs_keys": 6
+    },
+    {
+      "wt": "res_finish_paint",
+      "name": "Покраска/отделка",
+      "fields": 1,
+      "inputs_keys": 2
+    },
+    {
+      "wt": "sanitary",
+      "name": "Сантехника (универсальная)",
+      "fields": 6,
+      "inputs_keys": 7
+    },
+    {
+      "wt": "WT-BATH",
+      "name": "Санузел / Ванная (комплект)",
+      "fields": 4,
+      "inputs_keys": 5
+    },
+    {
+      "wt": "WT-BLOCK",
+      "name": "Кладка блоков",
+      "fields": 6,
+      "inputs_keys": 7
+    },
+    {
+      "wt": "WT-CEIL-ARMSTRONG-600",
+      "name": "Потолок Армстронг 600×600",
+      "fields": 1,
+      "inputs_keys": 2
+    },
+    {
+      "wt": "WT-CEIL-CLIPIN",
+      "name": "Потолок Clip-in (скрытая подвеска)",
+      "fields": 2,
+      "inputs_keys": 3
+    },
+    {
+      "wt": "WT-CEIL-CLIPIN-300x1200",
+      "name": "Потолок Clip-in 300×1200",
+      "fields": 1,
+      "inputs_keys": 2
+    },
+    {
+      "wt": "WT-CEIL-CLIPIN-600",
+      "name": "Потолок Clip-in 600×600",
+      "fields": 1,
+      "inputs_keys": 2
+    },
+    {
+      "wt": "WT-CEIL-GKL-1L",
+      "name": "Потолок ГКЛ одноуровневый",
+      "fields": 1,
+      "inputs_keys": 2
+    },
+    {
+      "wt": "WT-CEIL-GKL-2L",
+      "name": "Потолок ГКЛ двухуровневый",
+      "fields": 1,
+      "inputs_keys": 2
+    },
+    {
+      "wt": "WT-CEIL-GKL-BOX",
+      "name": "Потолок ГКЛ короб/ниша",
+      "fields": 1,
+      "inputs_keys": 2
+    },
+    {
+      "wt": "WT-CEIL-GRID",
+      "name": "Потолок кассетный (армстронг)",
+      "fields": 2,
+      "inputs_keys": 3
+    },
+    {
+      "wt": "WT-CEIL-GRILIATO-050",
+      "name": "Потолок грильято (ячейка 50×50)",
+      "fields": 2,
+      "inputs_keys": 3
+    },
+    {
+      "wt": "WT-CEIL-GRILIATO-075",
+      "name": "Потолок грильято (ячейка 75×75)",
+      "fields": 2,
+      "inputs_keys": 3
+    },
+    {
+      "wt": "WT-CEIL-GRILIATO-100",
+      "name": "Потолок грильято (ячейка 100×100)",
+      "fields": 2,
+      "inputs_keys": 3
+    },
+    {
+      "wt": "WT-CEIL-GRILIATO-PYR-050",
+      "name": "Потолок грильято пирамидальный (яч. 50×50)",
+      "fields": 2,
+      "inputs_keys": 3
+    },
+    {
+      "wt": "WT-CEIL-GRILIATO-PYR-075",
+      "name": "Потолок грильято пирамидальный (яч. 75×75)",
+      "fields": 2,
+      "inputs_keys": 3
+    },
+    {
+      "wt": "WT-CEIL-GRILIATO-PYR-100",
+      "name": "Потолок грильято пирамидальный (яч. 100×100)",
+      "fields": 2,
+      "inputs_keys": 3
+    },
+    {
+      "wt": "WT-CEIL-RACK",
+      "name": "Потолок реечный",
+      "fields": 2,
+      "inputs_keys": 3
+    },
+    {
+      "wt": "WT-CEIL-RACK-LENS",
+      "name": "Потолок реечный линзованный",
+      "fields": 2,
+      "inputs_keys": 3
+    },
+    {
+      "wt": "WT-CEIL-STRETCH",
+      "name": "Потолок натяжной",
+      "fields": 3,
+      "inputs_keys": 4
+    },
+    {
+      "wt": "WT-CLEANING-FINISH",
+      "name": "Клининг после ремонта",
+      "fields": 0,
+      "inputs_keys": 1
+    },
+    {
+      "wt": "WT-CONC",
+      "name": "Бетонные работы",
+      "fields": 10,
+      "inputs_keys": 11
+    },
+    {
+      "wt": "WT-CONC-FLOOR",
+      "name": "Бетонирование пола",
+      "fields": 3,
+      "inputs_keys": 4
+    },
+    {
+      "wt": "WT-CONCRETE-BEAM",
+      "name": "Монолитная балка",
+      "fields": 3,
+      "inputs_keys": 4
+    },
+    {
+      "wt": "WT-CONCRETE-COLUMN",
+      "name": "Монолитная колонна",
+      "fields": 2,
+      "inputs_keys": 3
+    },
+    {
+      "wt": "WT-CONCRETE-FLOOR",
+      "name": "Бетонирование пола",
+      "fields": 3,
+      "inputs_keys": 4
+    },
+    {
+      "wt": "WT-CONCRETE-FOOTING",
+      "name": "Монолитная тумба/башмак",
+      "fields": 2,
+      "inputs_keys": 3
+    },
+    {
+      "wt": "WT-CONCRETE-MONO",
+      "name": "Бетонирование / монолит",
+      "fields": 2,
+      "inputs_keys": 3
+    },
+    {
+      "wt": "WT-CONCRETE-PILE",
+      "name": "Бетон: сваи/столбы (армирование)",
+      "fields": 2,
+      "inputs_keys": 3
+    },
+    {
+      "wt": "WT-CONCRETE-SLAB",
+      "name": "Монолитная плита",
+      "fields": 5,
+      "inputs_keys": 6
+    },
+    {
+      "wt": "WT-CONCRETE-SLAB-PRO",
+      "name": "Фундамент плита (бетон, PRO)",
+      "fields": 3,
+      "inputs_keys": 4
+    },
+    {
+      "wt": "WT-CONCRETE-STRIP",
+      "name": "Ленточный фундамент",
+      "fields": 5,
+      "inputs_keys": 6
+    },
+    {
+      "wt": "WT-CONCRETE-STRIP-PRO",
+      "name": "Фундамент ленточный (бетон, PRO)",
+      "fields": 4,
+      "inputs_keys": 5
+    },
+    {
+      "wt": "WT-DELIVERY",
+      "name": "Логистика: поставка/рейсы",
+      "fields": 1,
+      "inputs_keys": 2
+    },
+    {
+      "wt": "WT-DOOR",
+      "name": "Двери (монтаж)",
+      "fields": 1,
+      "inputs_keys": 2
+    },
+    {
+      "wt": "WT-DOOR-SET",
+      "name": "Установка двери (комплект)",
+      "fields": 1,
+      "inputs_keys": 2
+    },
+    {
+      "wt": "WT-EARTHWORK-PRO",
+      "name": "Земляные работы под фундамент (PRO)",
+      "fields": 1,
+      "inputs_keys": 2
+    },
+    {
+      "wt": "WT-ELEC",
+      "name": "Электромонтаж (общий)",
+      "fields": 1,
+      "inputs_keys": 2
+    },
+    {
+      "wt": "WT-ELEC-CABLE",
+      "name": "Электрика: кабельные линии/штробы",
+      "fields": 1,
+      "inputs_keys": 2
+    },
+    {
+      "wt": "WT-ELEC-LIGHT",
+      "name": "Электрика: светильники",
+      "fields": 2,
+      "inputs_keys": 3
+    },
+    {
+      "wt": "WT-ELEC-OUTLET",
+      "name": "Электрика: розетки",
+      "fields": 2,
+      "inputs_keys": 3
+    },
+    {
+      "wt": "WT-ELEC-SWITCH",
+      "name": "Электрика: выключатели",
+      "fields": 2,
+      "inputs_keys": 3
+    },
+    {
+      "wt": "WT-ELEC-TRAY",
+      "name": "Электрика: кабельные лотки",
+      "fields": 2,
+      "inputs_keys": 3
+    },
+    {
+      "wt": "WT-EXT-ASPHALT",
+      "name": "Асфальтирование площадки/проезда",
+      "fields": 1,
+      "inputs_keys": 2
+    },
+    {
+      "wt": "WT-EXT-ASPHALT-PRO",
+      "name": "Асфальтирование дороги (двухслойное, PRO)",
+      "fields": 3,
+      "inputs_keys": 4
+    },
+    {
+      "wt": "WT-EXT-CURB",
+      "name": "Бордюр дорожный",
+      "fields": 1,
+      "inputs_keys": 2
+    },
+    {
+      "wt": "WT-EXT-DRAIN-CHANNEL",
+      "name": "Водоотводные лотки вдоль дороги",
+      "fields": 1,
+      "inputs_keys": 2
+    },
+    {
+      "wt": "WT-EXT-OTMOSTKA",
+      "name": "Отмостка вокруг здания (бетон)",
+      "fields": 1,
+      "inputs_keys": 2
+    },
+    {
+      "wt": "WT-EXT-PAVING",
+      "name": "Тротуарная плитка (наружная)",
+      "fields": 1,
+      "inputs_keys": 2
+    },
+    {
+      "wt": "WT-FACADE-ACP",
+      "name": "Фасад навесной: алюкобонд/ACP",
+      "fields": 6,
+      "inputs_keys": 7
+    },
+    {
+      "wt": "WT-FACADE-CASSETTE-INSTALL",
+      "name": "Фасад: металлокассеты (вент)",
+      "fields": 6,
+      "inputs_keys": 7
+    },
+    {
+      "wt": "WT-FACADE-CLINKER-VF",
+      "name": "Фасад навесной: клинкерная плитка",
+      "fields": 6,
+      "inputs_keys": 7
+    },
+    {
+      "wt": "WT-FACADE-FC-H",
+      "name": "Фасад FC на заклёпке (общ.)",
+      "fields": 6,
+      "inputs_keys": 7
+    },
+    {
+      "wt": "WT-FACADE-FC-H-10",
+      "name": "Фиброцементный фасад (H-профиль) 10 мм",
+      "fields": 6,
+      "inputs_keys": 7
+    },
+    {
+      "wt": "WT-FACADE-FC-H-12",
+      "name": "Фиброцементный фасад (H-профиль) 12 мм",
+      "fields": 6,
+      "inputs_keys": 7
+    },
+    {
+      "wt": "WT-FACADE-FC-H-8",
+      "name": "Фиброцементный фасад (H-профиль) 8 мм",
+      "fields": 6,
+      "inputs_keys": 7
+    },
+    {
+      "wt": "WT-FACADE-FC-RIVET",
+      "name": "Фасад FC на заклёпке (серия)",
+      "fields": 6,
+      "inputs_keys": 7
+    },
+    {
+      "wt": "WT-FACADE-FC-RIVET-10",
+      "name": "Фасад FC на заклёпке ⌀4,8×10",
+      "fields": 6,
+      "inputs_keys": 7
+    },
+    {
+      "wt": "WT-FACADE-FC-RIVET-12",
+      "name": "Фасад FC на заклёпке ⌀4,8×12",
+      "fields": 6,
+      "inputs_keys": 7
+    },
+    {
+      "wt": "WT-FACADE-FC-RIVET-8",
+      "name": "Фасад FC на заклёпке ⌀4,8×8",
+      "fields": 6,
+      "inputs_keys": 7
+    },
+    {
+      "wt": "WT-FACADE-FCB",
+      "name": "Фасад навесной: фиброцементные плиты",
+      "fields": 6,
+      "inputs_keys": 7
+    },
+    {
+      "wt": "WT-FACADE-HPL",
+      "name": "Фасад навесной: HPL панели",
+      "fields": 6,
+      "inputs_keys": 7
+    },
+    {
+      "wt": "WT-FACADE-HPL-INSTALL",
+      "name": "Фасад: монтаж HPL-панелей",
+      "fields": 6,
+      "inputs_keys": 7
+    },
+    {
+      "wt": "WT-FACADE-HPL-LSTK",
+      "name": "Фасад HPL (LSTK-набор)",
+      "fields": 6,
+      "inputs_keys": 7
+    },
+    {
+      "wt": "WT-FACADE-PORC",
+      "name": "Фасад навесной: керамогранит",
+      "fields": 6,
+      "inputs_keys": 7
+    },
+    {
+      "wt": "WT-FACADE-PORCELAIN-VENT",
+      "name": "Фасад: керамогранит (вент)",
+      "fields": 6,
+      "inputs_keys": 7
+    },
+    {
+      "wt": "WT-FACADE-STONE",
+      "name": "Фасад навесной: камень",
+      "fields": 6,
+      "inputs_keys": 7
+    },
+    {
+      "wt": "WT-FACADE-WET",
+      "name": "Фасад “мокрый” (СФТК)",
+      "fields": 6,
+      "inputs_keys": 7
+    },
+    {
+      "wt": "WT-FACADE-WET-SYSTEM",
+      "name": "Фасад: «мокрый» (ETICS)",
+      "fields": 6,
+      "inputs_keys": 7
+    },
+    {
+      "wt": "WT-FLOOR-LAMINATE",
+      "name": "Ламинат/плинтус",
+      "fields": 3,
+      "inputs_keys": 4
+    },
+    {
+      "wt": "WT-FLR-HEAT-ELEC",
+      "name": "Тёплый пол электрический (кабель/маты)",
+      "fields": 1,
+      "inputs_keys": 2
+    },
+    {
+      "wt": "WT-FLR-HEAT-WATER",
+      "name": "Тёплый пол водяной",
+      "fields": 2,
+      "inputs_keys": 3
+    },
+    {
+      "wt": "WT-FLR-TOPPING",
+      "name": "Пол: топпинг/устройство",
+      "fields": 1,
+      "inputs_keys": 2
+    },
+    {
+      "wt": "WT-FND-MKD",
+      "name": "Фундамент многоэтажного дома (ленточный/монолитный)",
+      "fields": 1,
+      "inputs_keys": 2
+    },
+    {
+      "wt": "WT-GKL",
+      "name": "Монтаж ГКЛ/каркаса",
+      "fields": 1,
+      "inputs_keys": 2
+    },
+    {
+      "wt": "WT-GKL-CEIL-PRO",
+      "name": "ГКЛ потолок (PRO)",
+      "fields": 1,
+      "inputs_keys": 2
+    },
+    {
+      "wt": "WT-GKL-WALL",
+      "name": "ГКЛ стены/перегородки",
+      "fields": 2,
+      "inputs_keys": 3
+    },
+    {
+      "wt": "WT-GKL-WALL-PRO",
+      "name": "ГКЛ стены/перегородки (PRO)",
+      "fields": 2,
+      "inputs_keys": 3
+    },
+    {
+      "wt": "WT-HVAC",
+      "name": "Вентиляция/кондиционирование",
+      "fields": 2,
+      "inputs_keys": 3
+    },
+    {
+      "wt": "WT-HYDRO",
+      "name": "Гидроизоляция",
+      "fields": 2,
+      "inputs_keys": 3
+    },
+    {
+      "wt": "WT-HYDRO-FOUND-PRO",
+      "name": "Гидроизоляция фундамента (PRO)",
+      "fields": 1,
+      "inputs_keys": 2
+    },
+    {
+      "wt": "WT-INSUL-CEIL-INT",
+      "name": "Утепление / звукоизоляция потолков",
+      "fields": 1,
+      "inputs_keys": 2
+    },
+    {
+      "wt": "WT-INSUL-CEIL-PRO",
+      "name": "Утепление / звукоизоляция потолков (PRO)",
+      "fields": 1,
+      "inputs_keys": 2
+    },
+    {
+      "wt": "WT-INSUL-WALL-INT",
+      "name": "Утепление / звукоизоляция стен (изнутри)",
+      "fields": 0,
+      "inputs_keys": 1
+    },
+    {
+      "wt": "WT-INSUL-WALL-PRO",
+      "name": "Утепление / звукоизоляция стен (PRO)",
+      "fields": 1,
+      "inputs_keys": 2
+    },
+    {
+      "wt": "WT-LEVEL",
+      "name": "Наливной пол",
+      "fields": 2,
+      "inputs_keys": 3
+    },
+    {
+      "wt": "WT-MASONRY-BLOCK",
+      "name": "Кладка блоков (газоблок)",
+      "fields": 3,
+      "inputs_keys": 4
+    },
+    {
+      "wt": "WT-MASONRY-BRICK",
+      "name": "Кладка кирпича",
+      "fields": 5,
+      "inputs_keys": 6
+    },
+    {
+      "wt": "WT-MASONRY-BRICK-CLINKER",
+      "name": "Кладка облицовочная: кирпич клинкер",
+      "fields": 5,
+      "inputs_keys": 6
+    },
+    {
+      "wt": "WT-PAINT",
+      "name": "Покраска стен/потолков",
+      "fields": 1,
+      "inputs_keys": 2
+    },
+    {
+      "wt": "WT-PAINT-INT",
+      "name": "Покраска (интерьер)",
+      "fields": 1,
+      "inputs_keys": 2
+    },
+    {
+      "wt": "WT-PLASTER",
+      "name": "Штукатурка стен",
+      "fields": 2,
+      "inputs_keys": 3
+    },
+    {
+      "wt": "WT-PLASTER-FACADE",
+      "name": "Фасад: утепление и декоративная штукатурка",
+      "fields": 1,
+      "inputs_keys": 2
+    },
+    {
+      "wt": "WT-PLASTER-INT",
+      "name": "Штукатурка внутренних стен",
+      "fields": 2,
+      "inputs_keys": 3
+    },
+    {
+      "wt": "WT-PLASTER-WALL-PRO",
+      "name": "Штукатурка стен по маякам (PRO)",
+      "fields": 2,
+      "inputs_keys": 3
+    },
+    {
+      "wt": "WT-PLINTH",
+      "name": "Плинтуса (монтаж)",
+      "fields": 1,
+      "inputs_keys": 2
+    },
+    {
+      "wt": "WT-PLMB",
+      "name": "Сантехника/трубопроводы",
+      "fields": 3,
+      "inputs_keys": 4
+    },
+    {
+      "wt": "WT-PLMB-SHOWER",
+      "name": "Сантехника: душ/смеситель (точка)",
+      "fields": 1,
+      "inputs_keys": 2
+    },
+    {
+      "wt": "WT-PLMB-SINK",
+      "name": "Сантехника: раковина",
+      "fields": 1,
+      "inputs_keys": 2
+    },
+    {
+      "wt": "WT-PLMB-TOILET",
+      "name": "Сантехника: унитаз",
+      "fields": 1,
+      "inputs_keys": 2
+    },
+    {
+      "wt": "WT-PLMB-WM",
+      "name": "Сантехника: стиральная/посудомоечная машина",
+      "fields": 1,
+      "inputs_keys": 2
+    },
+    {
+      "wt": "WT-PUTTY",
+      "name": "Шпаклёвка (финиш)",
+      "fields": 2,
+      "inputs_keys": 3
+    },
+    {
+      "wt": "WT-RF-CARPET",
+      "name": "Фальшпол с ковровым покрытием",
+      "fields": 1,
+      "inputs_keys": 2
+    },
+    {
+      "wt": "WT-RF-HPL",
+      "name": "Фальшпол с HPL антистатиком (панели ESD)",
+      "fields": 1,
+      "inputs_keys": 2
+    },
+    {
+      "wt": "WT-RF-PORCELAIN",
+      "name": "Фальшпол под керамогранит (усиленный)",
+      "fields": 1,
+      "inputs_keys": 2
+    },
+    {
+      "wt": "WT-RF-PVC",
+      "name": "Фальшпол с ПВХ-ESD покрытием",
+      "fields": 1,
+      "inputs_keys": 2
+    },
+    {
+      "wt": "WT-ROAD-MARKING",
+      "name": "Дорожная разметка",
+      "fields": 1,
+      "inputs_keys": 2
+    },
+    {
+      "wt": "WT-ROAD-MEDIAN",
+      "name": "Разделительный барьер / отбойник",
+      "fields": 1,
+      "inputs_keys": 2
+    },
+    {
+      "wt": "WT-ROOF-FRAME",
+      "name": "Стропильная система / обрешётка (общ.)",
+      "fields": 1,
+      "inputs_keys": 2
+    },
+    {
+      "wt": "WT-ROOF-FRAME-MTL",
+      "name": "Обрешётка/каркас под металл",
+      "fields": 1,
+      "inputs_keys": 2
+    },
+    {
+      "wt": "WT-ROOF-FRAME-SHINGLE",
+      "name": "Обрешётка/каркас под ГЧ",
+      "fields": 2,
+      "inputs_keys": 3
+    },
+    {
+      "wt": "WT-ROOF-FRAME-SLATE",
+      "name": "Обрешётка/каркас под шифер",
+      "fields": 2,
+      "inputs_keys": 3
+    },
+    {
+      "wt": "WT-ROOF-METAL",
+      "name": "Кровля: металл (общ.)",
+      "fields": 2,
+      "inputs_keys": 3
+    },
+    {
+      "wt": "WT-ROOF-MTL",
+      "name": "Кровля: металлочерепица",
+      "fields": 1,
+      "inputs_keys": 2
+    },
+    {
+      "wt": "WT-ROOF-ROLLED",
+      "name": "Кровля: рулонные материалы",
+      "fields": 1,
+      "inputs_keys": 2
+    },
+    {
+      "wt": "WT-ROOF-SANDWICH",
+      "name": "Кровля: сэндвич-панели",
+      "fields": 1,
+      "inputs_keys": 2
+    },
+    {
+      "wt": "WT-ROOF-SHINGLE",
+      "name": "Кровля: гибкая черепица",
+      "fields": 1,
+      "inputs_keys": 2
+    },
+    {
+      "wt": "WT-ROOF-SLATE",
+      "name": "Кровля: шифер",
+      "fields": 1,
+      "inputs_keys": 2
+    },
+    {
+      "wt": "WT-SCREED",
+      "name": "Стяжка пола",
+      "fields": 2,
+      "inputs_keys": 3
+    },
+    {
+      "wt": "WT-STEEL-CANOPY-GABLE",
+      "name": "Навес двускатный (металл)",
+      "fields": 1,
+      "inputs_keys": 2
+    },
+    {
+      "wt": "WT-STEEL-CANOPY-HIP",
+      "name": "Навес вальмовый (металл)",
+      "fields": 1,
+      "inputs_keys": 2
+    },
+    {
+      "wt": "WT-STEEL-CANOPY-LEAN",
+      "name": "Навес односкатный (металл)",
+      "fields": 1,
+      "inputs_keys": 2
+    },
+    {
+      "wt": "WT-STEEL-CUT",
+      "name": "Резка металла",
+      "fields": 1,
+      "inputs_keys": 2
+    },
+    {
+      "wt": "WT-STEEL-DRILL",
+      "name": "Сверление отверстий",
+      "fields": 2,
+      "inputs_keys": 3
+    },
+    {
+      "wt": "WT-STEEL-FENCE-MESH",
+      "name": "Металлоконструкции: забор из сетки",
+      "fields": 1,
+      "inputs_keys": 2
+    },
+    {
+      "wt": "WT-STEEL-FENCE-PROF",
+      "name": "Металлоконструкции: забор из профлиста",
+      "fields": 1,
+      "inputs_keys": 2
+    },
+    {
+      "wt": "WT-STEEL-GATE-OVERHEAD",
+      "name": "Металлоконструкции: ворота подъемные (секционные)",
+      "fields": 3,
+      "inputs_keys": 4
+    },
+    {
+      "wt": "WT-STEEL-GATE-SLIDE",
+      "name": "Металлоконструкции: ворота откатные",
+      "fields": 3,
+      "inputs_keys": 4
+    },
+    {
+      "wt": "WT-STEEL-GATE-SWING",
+      "name": "Металлоконструкции: ворота распашные",
+      "fields": 3,
+      "inputs_keys": 4
+    },
+    {
+      "wt": "WT-STEEL-PAINT",
+      "name": "Окраска металлоконструкций",
+      "fields": 2,
+      "inputs_keys": 3
+    },
+    {
+      "wt": "WT-STEEL-PRIME",
+      "name": "Металлоконструкции: грунтование",
+      "fields": 2,
+      "inputs_keys": 3
+    },
+    {
+      "wt": "WT-STEEL-RAILING",
+      "name": "Металлоконструкции: перила/ограждения",
+      "fields": 1,
+      "inputs_keys": 2
+    },
+    {
+      "wt": "WT-STEEL-STAIR",
+      "name": "Металлоконструкции: лестница (металл)",
+      "fields": 3,
+      "inputs_keys": 4
+    },
+    {
+      "wt": "WT-STEEL-TRUSS-HEAVY",
+      "name": "Металлоконструкции: ферма (усиленная)",
+      "fields": 3,
+      "inputs_keys": 4
+    },
+    {
+      "wt": "WT-STEEL-TRUSS-LIGHT",
+      "name": "Металлоконструкции: ферма (облегчённая)",
+      "fields": 3,
+      "inputs_keys": 4
+    },
+    {
+      "wt": "WT-STEEL-WELD-MIG-A4",
+      "name": "Сварка MIG/MAG, катет a=4 мм",
+      "fields": 1,
+      "inputs_keys": 2
+    },
+    {
+      "wt": "WT-STEEL-WELD-MMA",
+      "name": "Сварка ручная дуговая (MMA)",
+      "fields": 1,
+      "inputs_keys": 2
+    },
+    {
+      "wt": "WT-SUBBASE-PRO",
+      "name": "Подготовка основания под фундамент (PRO)",
+      "fields": 1,
+      "inputs_keys": 2
+    },
+    {
+      "wt": "WT-TILE",
+      "name": "Плитка (пол/стены)",
+      "fields": 1,
+      "inputs_keys": 2
+    },
+    {
+      "wt": "WT-WALLPAPER",
+      "name": "Обои (поклейка)",
+      "fields": 1,
+      "inputs_keys": 2
+    },
+    {
+      "wt": "WT-WASTE",
+      "name": "Вывоз мусора/утилизация",
+      "fields": 1,
+      "inputs_keys": 2
+    },
+    {
+      "wt": "WT-WINDOW-AL",
+      "name": "Окна алюминиевые / витражи",
+      "fields": 2,
+      "inputs_keys": 3
+    },
+    {
+      "wt": "WT-WINDOW-PVC",
+      "name": "Окна ПВХ (монтаж/замена)",
+      "fields": 2,
+      "inputs_keys": 3
+    },
+    {
+      "wt": "WT-WINDOW-REVEAL",
+      "name": "Откосы и подоконники (внутренние)",
+      "fields": 2,
+      "inputs_keys": 3
+    },
+    {
+      "wt": "WT-WP",
+      "name": "Гидроизоляция",
+      "fields": 1,
+      "inputs_keys": 2
+    }
+  ],
+  "missing_in_catalog_top1000": [
+    {
+      "code": "MAT-COVER-TAPE",
+      "sample_name": "Скотч/малярная лента",
+      "uoms": [
+        "шт"
+      ],
+      "work_types_count": 17,
+      "work_types_sample": [
+        "WT-DEM-CEIL",
+        "WT-DEM-DOOR",
+        "WT-DEM-FLOOR",
+        "WT-DEM-GKL",
+        "WT-DEM-INSUL",
+        "WT-DEM-LIGHT",
+        "WT-DEM-OUTLET",
+        "WT-DEM-PLASTER",
+        "WT-DEM-PLUMB-FIX",
+        "WT-DEM-RADIATOR"
+      ],
+      "near_same_name_in_catalog": []
+    },
+    {
+      "code": "MAT-DISC-METAL",
+      "sample_name": "Диск для болгарки по металлу",
+      "uoms": [
+        "шт"
+      ],
+      "work_types_count": 17,
+      "work_types_sample": [
+        "WT-DEM-CEIL",
+        "WT-DEM-DOOR",
+        "WT-DEM-FLOOR",
+        "WT-DEM-GKL",
+        "WT-DEM-INSUL",
+        "WT-DEM-LIGHT",
+        "WT-DEM-OUTLET",
+        "WT-DEM-PLASTER",
+        "WT-DEM-PLUMB-FIX",
+        "WT-DEM-RADIATOR"
+      ],
+      "near_same_name_in_catalog": []
+    },
+    {
+      "code": "MAT-GLOVES",
+      "sample_name": "Перчатки",
+      "uoms": [
+        "пара"
+      ],
+      "work_types_count": 17,
+      "work_types_sample": [
+        "WT-DEM-CEIL",
+        "WT-DEM-DOOR",
+        "WT-DEM-FLOOR",
+        "WT-DEM-GKL",
+        "WT-DEM-INSUL",
+        "WT-DEM-LIGHT",
+        "WT-DEM-OUTLET",
+        "WT-DEM-PLASTER",
+        "WT-DEM-PLUMB-FIX",
+        "WT-DEM-RADIATOR"
+      ],
+      "near_same_name_in_catalog": []
+    },
+    {
+      "code": "MAT-GOGGLES",
+      "sample_name": "Очки защитные",
+      "uoms": [
+        "шт"
+      ],
+      "work_types_count": 17,
+      "work_types_sample": [
+        "WT-DEM-CEIL",
+        "WT-DEM-DOOR",
+        "WT-DEM-FLOOR",
+        "WT-DEM-GKL",
+        "WT-DEM-INSUL",
+        "WT-DEM-LIGHT",
+        "WT-DEM-OUTLET",
+        "WT-DEM-PLASTER",
+        "WT-DEM-PLUMB-FIX",
+        "WT-DEM-RADIATOR"
+      ],
+      "near_same_name_in_catalog": []
+    },
+    {
+      "code": "MAT-RESPIRATOR",
+      "sample_name": "Респиратор",
+      "uoms": [
+        "шт"
+      ],
+      "work_types_count": 17,
+      "work_types_sample": [
+        "WT-DEM-CEIL",
+        "WT-DEM-DOOR",
+        "WT-DEM-FLOOR",
+        "WT-DEM-GKL",
+        "WT-DEM-INSUL",
+        "WT-DEM-LIGHT",
+        "WT-DEM-OUTLET",
+        "WT-DEM-PLASTER",
+        "WT-DEM-PLUMB-FIX",
+        "WT-DEM-RADIATOR"
+      ],
+      "near_same_name_in_catalog": []
+    },
+    {
+      "code": "TOOL-CHISEL",
+      "sample_name": "Инструмент: пика/лопатка/стамеска",
+      "uoms": [
+        "компл"
+      ],
+      "work_types_count": 17,
+      "work_types_sample": [
+        "WT-DEM-CEIL",
+        "WT-DEM-DOOR",
+        "WT-DEM-FLOOR",
+        "WT-DEM-GKL",
+        "WT-DEM-INSUL",
+        "WT-DEM-LIGHT",
+        "WT-DEM-OUTLET",
+        "WT-DEM-PLASTER",
+        "WT-DEM-PLUMB-FIX",
+        "WT-DEM-RADIATOR"
+      ],
+      "near_same_name_in_catalog": []
+    },
+    {
+      "code": "TOOL-CROWBAR",
+      "sample_name": "Инструмент: лом/гвоздодёр",
+      "uoms": [
+        "шт"
+      ],
+      "work_types_count": 17,
+      "work_types_sample": [
+        "WT-DEM-CEIL",
+        "WT-DEM-DOOR",
+        "WT-DEM-FLOOR",
+        "WT-DEM-GKL",
+        "WT-DEM-INSUL",
+        "WT-DEM-LIGHT",
+        "WT-DEM-OUTLET",
+        "WT-DEM-PLASTER",
+        "WT-DEM-PLUMB-FIX",
+        "WT-DEM-RADIATOR"
+      ],
+      "near_same_name_in_catalog": []
+    },
+    {
+      "code": "TOOL-GRINDER",
+      "sample_name": "Инструмент: болгарка",
+      "uoms": [
+        "шт"
+      ],
+      "work_types_count": 17,
+      "work_types_sample": [
+        "WT-DEM-CEIL",
+        "WT-DEM-DOOR",
+        "WT-DEM-FLOOR",
+        "WT-DEM-GKL",
+        "WT-DEM-INSUL",
+        "WT-DEM-LIGHT",
+        "WT-DEM-OUTLET",
+        "WT-DEM-PLASTER",
+        "WT-DEM-PLUMB-FIX",
+        "WT-DEM-RADIATOR"
+      ],
+      "near_same_name_in_catalog": []
+    },
+    {
+      "code": "TOOL-HAMMER",
+      "sample_name": "Инструмент: молоток",
+      "uoms": [
+        "шт"
+      ],
+      "work_types_count": 17,
+      "work_types_sample": [
+        "WT-DEM-CEIL",
+        "WT-DEM-DOOR",
+        "WT-DEM-FLOOR",
+        "WT-DEM-GKL",
+        "WT-DEM-INSUL",
+        "WT-DEM-LIGHT",
+        "WT-DEM-OUTLET",
+        "WT-DEM-PLASTER",
+        "WT-DEM-PLUMB-FIX",
+        "WT-DEM-RADIATOR"
+      ],
+      "near_same_name_in_catalog": []
+    },
+    {
+      "code": "TOOL-KNIFE",
+      "sample_name": "Инструмент: строительный нож",
+      "uoms": [
+        "шт"
+      ],
+      "work_types_count": 3,
+      "work_types_sample": [
+        "WT-DEM-CEIL",
+        "WT-DEM-DOOR",
+        "WT-DEM-WINDOW"
+      ],
+      "near_same_name_in_catalog": []
+    },
+    {
+      "code": "TOOL-PERFORATOR",
+      "sample_name": "Инструмент: перфоратор",
+      "uoms": [
+        "шт"
+      ],
+      "work_types_count": 17,
+      "work_types_sample": [
+        "WT-DEM-CEIL",
+        "WT-DEM-DOOR",
+        "WT-DEM-FLOOR",
+        "WT-DEM-GKL",
+        "WT-DEM-INSUL",
+        "WT-DEM-LIGHT",
+        "WT-DEM-OUTLET",
+        "WT-DEM-PLASTER",
+        "WT-DEM-PLUMB-FIX",
+        "WT-DEM-RADIATOR"
+      ],
+      "near_same_name_in_catalog": []
+    },
+    {
+      "code": "TOOL-SCREWDRIVER",
+      "sample_name": "Инструмент: шуруповёрт",
+      "uoms": [
+        "шт"
+      ],
+      "work_types_count": 3,
+      "work_types_sample": [
+        "WT-DEM-CEIL",
+        "WT-DEM-GKL",
+        "WT-DEM-ROOF"
+      ],
+      "near_same_name_in_catalog": []
+    },
+    {
+      "code": "SRV-DELIVERY",
+      "sample_name": "Доставка",
+      "uoms": [
+        "рейс"
+      ],
+      "work_types_count": 17,
+      "work_types_sample": [
+        "WT-DEM-CEIL",
+        "WT-DEM-DOOR",
+        "WT-DEM-FLOOR",
+        "WT-DEM-GKL",
+        "WT-DEM-INSUL",
+        "WT-DEM-LIGHT",
+        "WT-DEM-OUTLET",
+        "WT-DEM-PLASTER",
+        "WT-DEM-PLUMB-FIX",
+        "WT-DEM-RADIATOR"
+      ],
+      "near_same_name_in_catalog": []
+    },
+    {
+      "code": "SRV-WASTE",
+      "sample_name": "Вывоз тары/мусора",
+      "uoms": [
+        "рейс"
+      ],
+      "work_types_count": 17,
+      "work_types_sample": [
+        "WT-DEM-CEIL",
+        "WT-DEM-DOOR",
+        "WT-DEM-FLOOR",
+        "WT-DEM-GKL",
+        "WT-DEM-INSUL",
+        "WT-DEM-LIGHT",
+        "WT-DEM-OUTLET",
+        "WT-DEM-PLASTER",
+        "WT-DEM-PLUMB-FIX",
+        "WT-DEM-RADIATOR"
+      ],
+      "near_same_name_in_catalog": []
+    },
+    {
+      "code": "WRK-DEMO-SAVE",
+      "sample_name": "Аккуратный демонтаж с сохранением",
+      "uoms": [
+        "шт"
+      ],
+      "work_types_count": 4,
+      "work_types_sample": [
+        "WT-DEM-DOOR",
+        "WT-DEM-RADIATOR",
+        "WT-DEM-WINDOW",
+        "WT-DEMO"
+      ],
+      "near_same_name_in_catalog": []
+    },
+    {
+      "code": "TOOL-SCRAPER",
+      "sample_name": "Инструмент: скребок",
+      "uoms": [
+        "шт"
+      ],
+      "work_types_count": 1,
+      "work_types_sample": [
+        "WT-DEM-FLOOR"
+      ],
+      "near_same_name_in_catalog": []
+    },
+    {
+      "code": "MAT-ELEC-CONSUM",
+      "sample_name": "Клеммы/изолента/термоусадка",
+      "uoms": [
+        "компл"
+      ],
+      "work_types_count": 2,
+      "work_types_sample": [
+        "WT-DEM-LIGHT",
+        "WT-DEM-OUTLET"
+      ],
+      "near_same_name_in_catalog": []
+    },
+    {
+      "code": "MAT-INSULATION-TAPE",
+      "sample_name": "Изолента",
+      "uoms": [
+        "шт"
+      ],
+      "work_types_count": 2,
+      "work_types_sample": [
+        "WT-DEM-LIGHT",
+        "WT-DEM-OUTLET"
+      ],
+      "near_same_name_in_catalog": []
+    },
+    {
+      "code": "MAT-TERMINALS",
+      "sample_name": "Клеммы/клеммники",
+      "uoms": [
+        "компл"
+      ],
+      "work_types_count": 2,
+      "work_types_sample": [
+        "WT-DEM-LIGHT",
+        "WT-DEM-OUTLET"
+      ],
+      "near_same_name_in_catalog": []
+    },
+    {
+      "code": "TOOL-VOLTAGE-TESTER",
+      "sample_name": "Инструмент: индикатор напряжения",
+      "uoms": [
+        "шт"
+      ],
+      "work_types_count": 2,
+      "work_types_sample": [
+        "WT-DEM-LIGHT",
+        "WT-DEM-OUTLET"
+      ],
+      "near_same_name_in_catalog": []
+    },
+    {
+      "code": "WRK-DEMO-BOX",
+      "sample_name": "Демонтаж подрозетников",
+      "uoms": [
+        "шт"
+      ],
+      "work_types_count": 1,
+      "work_types_sample": [
+        "WT-DEM-OUTLET"
+      ],
+      "near_same_name_in_catalog": []
+    },
+    {
+      "code": "MAT-FUM-TAPE",
+      "sample_name": "Фум-лента",
+      "uoms": [
+        "шт"
+      ],
+      "work_types_count": 2,
+      "work_types_sample": [
+        "WT-DEM-PLUMB-FIX",
+        "WT-DEM-RADIATOR"
+      ],
+      "near_same_name_in_catalog": []
+    },
+    {
+      "code": "MAT-PLUMB-PLUGS",
+      "sample_name": "Заглушки сантехнические",
+      "uoms": [
+        "компл"
+      ],
+      "work_types_count": 2,
+      "work_types_sample": [
+        "WT-DEM-PLUMB-FIX",
+        "WT-DEM-RADIATOR"
+      ],
+      "near_same_name_in_catalog": []
+    },
+    {
+      "code": "MAT-RAGS",
+      "sample_name": "Ветошь",
+      "uoms": [
+        "компл"
+      ],
+      "work_types_count": 2,
+      "work_types_sample": [
+        "WT-DEM-PLUMB-FIX",
+        "WT-DEM-RADIATOR"
+      ],
+      "near_same_name_in_catalog": []
+    },
+    {
+      "code": "TOOL-ADJUSTABLE-KEY",
+      "sample_name": "Инструмент: разводной ключ",
+      "uoms": [
+        "шт"
+      ],
+      "work_types_count": 2,
+      "work_types_sample": [
+        "WT-DEM-PLUMB-FIX",
+        "WT-DEM-RADIATOR"
+      ],
+      "near_same_name_in_catalog": []
+    },
+    {
+      "code": "TOOL-GAS-KEY",
+      "sample_name": "Инструмент: газовый ключ",
+      "uoms": [
+        "шт"
+      ],
+      "work_types_count": 2,
+      "work_types_sample": [
+        "WT-DEM-PLUMB-FIX",
+        "WT-DEM-RADIATOR"
+      ],
+      "near_same_name_in_catalog": []
+    },
+    {
+      "code": "WRK-DEMO-DRAIN",
+      "sample_name": "Перекрытие/слив воды (локально)",
+      "uoms": [
+        "точка"
+      ],
+      "work_types_count": 2,
+      "work_types_sample": [
+        "WT-DEM-PLUMB-FIX",
+        "WT-DEM-RADIATOR"
+      ],
+      "near_same_name_in_catalog": []
+    },
+    {
+      "code": "TOOL-JACKHAMMER",
+      "sample_name": "Инструмент: отбойный молоток",
+      "uoms": [
+        "шт"
+      ],
+      "work_types_count": 1,
+      "work_types_sample": [
+        "WT-DEM-SCREED"
+      ],
+      "near_same_name_in_catalog": []
+    },
+    {
+      "code": "TOOL-SHOVEL",
+      "sample_name": "Инструмент: лопата",
+      "uoms": [
+        "шт"
+      ],
+      "work_types_count": 1,
+      "work_types_sample": [
+        "WT-DEM-SCREED"
+      ],
+      "near_same_name_in_catalog": []
+    },
+    {
+      "code": "TOOL-SPATULA",
+      "sample_name": "Инструмент: шпатель",
+      "uoms": [
+        "шт"
+      ],
+      "work_types_count": 1,
+      "work_types_sample": [
+        "WT-DEM-WALL"
+      ],
+      "near_same_name_in_catalog": []
+    },
+    {
+      "code": "WRK-DEMO-EBB",
+      "sample_name": "Демонтаж отлива (наружный)",
+      "uoms": [
+        "шт"
+      ],
+      "work_types_count": 1,
+      "work_types_sample": [
+        "WT-DEM-WINDOW"
+      ],
+      "near_same_name_in_catalog": []
+    },
+    {
+      "code": "WRK-DEMO-SILL",
+      "sample_name": "Демонтаж подоконника",
+      "uoms": [
+        "шт"
+      ],
+      "work_types_count": 1,
+      "work_types_sample": [
+        "WT-DEM-WINDOW"
+      ],
+      "near_same_name_in_catalog": []
+    }
+  ],
+  "same_name_multi_code_top1000": [
+    {
+      "norm_name": "mat cable vvgng ls 3x1 5",
+      "codes_count": 2,
+      "variants": [
+        {
+          "code": "MAT-CABLE-VVGNG-LS-3X1_5",
+          "name": "MAT-CABLE-VVGNG-LS-3X1_5",
+          "uom": "",
+          "kind": ""
+        },
+        {
+          "code": "MAT-CABLE-VVGNG-LS-3X1.5",
+          "name": "MAT-CABLE-VVGNG-LS-3X1.5",
+          "uom": "",
+          "kind": ""
+        }
+      ]
+    },
+    {
+      "norm_name": "mat cable vvgng ls 3x2 5",
+      "codes_count": 2,
+      "variants": [
+        {
+          "code": "MAT-CABLE-VVGNG-LS-3X2_5",
+          "name": "MAT-CABLE-VVGNG-LS-3X2_5",
+          "uom": "",
+          "kind": ""
+        },
+        {
+          "code": "MAT-CABLE-VVGNG-LS-3X2.5",
+          "name": "MAT-CABLE-VVGNG-LS-3X2.5",
+          "uom": "",
+          "kind": ""
+        }
+      ]
+    },
+    {
+      "norm_name": "mat cable vvgng ls 5x2 5",
+      "codes_count": 2,
+      "variants": [
+        {
+          "code": "MAT-CABLE-VVGNG-LS-5X2_5",
+          "name": "MAT-CABLE-VVGNG-LS-5X2_5",
+          "uom": "",
+          "kind": ""
+        },
+        {
+          "code": "MAT-CABLE-VVGNG-LS-5X2.5",
+          "name": "MAT-CABLE-VVGNG-LS-5X2.5",
+          "uom": "",
+          "kind": ""
+        }
+      ]
+    },
+    {
+      "norm_name": "mat roof superdiff 160 1 5x50",
+      "codes_count": 2,
+      "variants": [
+        {
+          "code": "MAT-ROOF-SUPERDIFF-160-1.5X50",
+          "name": "MAT-ROOF-SUPERDIFF-160-1.5X50",
+          "uom": "",
+          "kind": ""
+        },
+        {
+          "code": "MAT-ROOF-SUPERDIFF-160-1,5X50",
+          "name": "MAT-ROOF-SUPERDIFF-160-1,5X50",
+          "uom": "",
+          "kind": ""
+        }
+      ]
+    },
+    {
+      "norm_name": "mat ceil t24 main 3 6m",
+      "codes_count": 2,
+      "variants": [
+        {
+          "code": "MAT-CEIL-T24-MAIN-3_6M",
+          "name": "MAT-CEIL-T24-MAIN-3_6M",
+          "uom": "",
+          "kind": ""
+        },
+        {
+          "code": "MAT-CEIL-T24-MAIN-3,6M",
+          "name": "MAT-CEIL-T24-MAIN-3,6M",
+          "uom": "",
+          "kind": ""
+        }
+      ]
+    },
+    {
+      "norm_name": "mat ceil t24 cross 1 2m",
+      "codes_count": 2,
+      "variants": [
+        {
+          "code": "MAT-CEIL-T24-CROSS-1_2M",
+          "name": "MAT-CEIL-T24-CROSS-1_2M",
+          "uom": "",
+          "kind": ""
+        },
+        {
+          "code": "MAT-CEIL-T24-CROSS-1,2M",
+          "name": "MAT-CEIL-T24-CROSS-1,2M",
+          "uom": "",
+          "kind": ""
+        }
+      ]
+    }
+  ]
+}

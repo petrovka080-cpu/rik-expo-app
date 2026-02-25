@@ -38,6 +38,7 @@ type Props = {
   onPdfDayRegister?: (day: string) => void | Promise<void>;
   onPdfDayMaterials?: (day: string) => void | Promise<void>;
 };
+
 export default function WarehouseReportsTab(props: Props) {
   const {
     headerTopPad,
@@ -50,8 +51,8 @@ export default function WarehouseReportsTab(props: Props) {
     onPdfMaterials,
     onPdfObjectWork,
     onPdfIssue,
-  onPdfDayRegister,
-  onPdfDayMaterials,
+    onPdfDayRegister,
+    onPdfDayMaterials,
   } = props;
 
   const insets = useSafeAreaInsets();
@@ -67,9 +68,6 @@ export default function WarehouseReportsTab(props: Props) {
     return h0?.issue_no ?? (Number.isFinite(issueId) ? `ISSUE-${issueId}` : "");
   }, [activeDay]);
 
-  // =========================================================
-  // ✅ ОТКРЫТ ДЕНЬ — “как экран”, отдельный ScrollView
-  // =========================================================
   if (activeDay) {
     return (
       <View style={{ flex: 1, backgroundColor: UI.bg, minHeight: 0 }}>
@@ -126,17 +124,17 @@ export default function WarehouseReportsTab(props: Props) {
             <TopRightActionBar
               titleLeft={activeDay.day}
               actions={[
-  {
-    key: "pdf_day_reg",
-    icon: "document-text-outline",
-    onPress: () => void onPdfDayRegister?.(activeDay.day),
-  },
-  {
-    key: "pdf_day_mat",
-    icon: "cube-outline",
-    onPress: () => void onPdfDayMaterials?.(activeDay.day),
-  },
-]}
+                {
+                  key: "pdf_day_reg",
+                  icon: "document-text-outline",
+                  onPress: () => void onPdfDayRegister?.(activeDay.day),
+                },
+                {
+                  key: "pdf_day_mat",
+                  icon: "cube-outline",
+                  onPress: () => void onPdfDayMaterials?.(activeDay.day),
+                },
+              ]}
               ui={{
                 text: UI.text,
                 sub: UI.sub,
@@ -184,9 +182,6 @@ export default function WarehouseReportsTab(props: Props) {
     );
   }
 
-  // =========================================================
-  // ✅ ОСНОВНОЙ ЭКРАН ОТЧЁТОВ — обычный ScrollView
-  // =========================================================
   return (
     <View style={{ flex: 1 }}>
       <ScrollView
@@ -199,7 +194,7 @@ export default function WarehouseReportsTab(props: Props) {
         keyboardShouldPersistTaps="handled"
       >
         <View style={[s.sectionBox, { paddingHorizontal: 16 }]}>
-          <Text style={s.sectionBoxTitle}>ПЕРИОД ОТЧЁТА</Text>
+          <Text style={s.sectionBoxTitle}>ПЕРИОД ОТЧЕТА</Text>
 
           <TopRightActionBar
             titleLeft={
@@ -238,29 +233,28 @@ export default function WarehouseReportsTab(props: Props) {
                   </View>
 
                   <View style={{ flexDirection: "row", gap: 14, alignItems: "center" }}>
+                    <Pressable
+                      hitSlop={10}
+                      onPress={(e) => {
+                        e.stopPropagation?.();
+                        void onPdfDayRegister?.(g.day);
+                      }}
+                    >
+                      <Ionicons name="document-text-outline" size={20} color={UI.text} />
+                    </Pressable>
 
-  <Pressable
-    hitSlop={10}
-    onPress={(e) => {
-      e.stopPropagation?.();
-      void onPdfDayRegister?.(g.day);
-    }}
-  >
-    <Ionicons name="document-text-outline" size={20} color={UI.text} />
-  </Pressable>
+                    <Pressable
+                      hitSlop={10}
+                      onPress={(e) => {
+                        e.stopPropagation?.();
+                        void onPdfDayMaterials?.(g.day);
+                      }}
+                    >
+                      <Ionicons name="cube-outline" size={20} color={UI.text} />
+                    </Pressable>
 
-  <Pressable
-    hitSlop={10}
-    onPress={(e) => {
-      e.stopPropagation?.();
-      void onPdfDayMaterials?.(g.day);
-    }}
-  >
-    <Ionicons name="cube-outline" size={20} color={UI.text} />
-  </Pressable>
-
-  <Ionicons name="chevron-forward" size={20} color={UI.text} />
-</View>
+                    <Ionicons name="chevron-forward" size={20} color={UI.text} />
+                  </View>
                 </View>
               </Pressable>
             );

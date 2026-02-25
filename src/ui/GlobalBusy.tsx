@@ -10,13 +10,13 @@ import React, {
 } from "react";
 import {
   ActivityIndicator,
-  Modal,
   Platform,
   Pressable,
   StyleSheet,
   Text,
   View,
 } from "react-native";
+import { Portal } from "react-native-portalize";
 
 // Blur (expo-blur) опционально
 let BlurViewAny: any = null;
@@ -81,9 +81,9 @@ export function GlobalBusyProvider({
     const kk = String(k ?? "busy");
     const nextLabel = String(l ?? "Загрузка…");
 
-if (__DEV__) {
-  console.log("[GBUSY] show", { kk, nextLabel });
-}
+    if (__DEV__) {
+      console.log("[GBUSY] show", { kk, nextLabel });
+    }
     const prevCount = activeRef.current.get(kk) ?? 0;
     activeRef.current.set(kk, prevCount + 1);
 
@@ -171,52 +171,47 @@ if (__DEV__) {
     <BusyContext.Provider value={value}>
       {children}
 
-      <Modal
-        visible={!!uiKey}
-        transparent
-        animationType="fade"
-        statusBarTranslucent
-        presentationStyle="overFullScreen"
-        onRequestClose={() => {}}
-      >
-        <View style={styles.full} pointerEvents="auto">
-          {/* ✅ блокируем все тапы */}
-          <Pressable style={StyleSheet.absoluteFillObject} onPress={() => {}} />
+      {!!uiKey && (
+        <Portal>
+          <View style={[styles.full, { zIndex: 99999, elevation: 99999 }]} pointerEvents="auto">
+            {/* ✅ блокируем все тапы */}
+            <Pressable style={StyleSheet.absoluteFillObject} onPress={() => { }} />
 
-          {/* затемнение */}
-          <View
-            style={[
-              StyleSheet.absoluteFillObject,
-              { backgroundColor: "#000", opacity: dimOpacity },
-            ]}
-          />
-
-          {/* blur поверх (опционально) */}
-          {canBlur ? (
-            <BlurViewAny
-              intensity={blurIntensity}
-              tint="dark"
-              style={StyleSheet.absoluteFillObject}
+            {/* затемнение */}
+            <View
+              style={[
+                StyleSheet.absoluteFillObject,
+                { backgroundColor: "#000", opacity: dimOpacity },
+              ]}
             />
-          ) : null}
 
-          <View
-            style={[
-              styles.card,
-              {
-                backgroundColor: theme.cardBg ?? "rgba(16,24,38,0.96)",
-                borderColor: theme.border ?? "rgba(255,255,255,0.12)",
-              },
-            ]}
-          >
-            <ActivityIndicator size="large" color={theme.text} />
-            <Text style={[styles.title, { color: theme.text }]} numberOfLines={2}>
-              {label || "Загрузка…"}
-            </Text>
-            <Text style={styles.sub}>Пожалуйста, подождите</Text>
+            {/* blur поверх (опционально) */}
+            {canBlur ? (
+              <BlurViewAny
+                intensity={blurIntensity}
+                tint="dark"
+                style={StyleSheet.absoluteFillObject}
+              />
+            ) : null}
+
+            <View
+              style={[
+                styles.card,
+                {
+                  backgroundColor: theme.cardBg ?? "rgba(16,24,38,0.96)",
+                  borderColor: theme.border ?? "rgba(255,255,255,0.12)",
+                },
+              ]}
+            >
+              <ActivityIndicator size="large" color={theme.text} />
+              <Text style={[styles.title, { color: theme.text }]} numberOfLines={2}>
+                {label || "Загрузка…"}
+              </Text>
+              <Text style={styles.sub}>Пожалуйста, подождите</Text>
+            </View>
           </View>
-        </View>
-      </Modal>
+        </Portal>
+      )}
     </BusyContext.Provider>
   );
 }
@@ -258,4 +253,3 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
 });
-

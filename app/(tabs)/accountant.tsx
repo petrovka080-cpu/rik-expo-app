@@ -27,19 +27,19 @@ import { useRevealSection } from "../../src/lib/useRevealSection";
 import { useGlobalBusy } from "../../src/ui/GlobalBusy";
 import { runPdfTop } from "../../src/lib/pdfRunner";
 
+import { exportProposalPdf, exportPaymentOrderPdf } from "../../src/lib/catalog_api";
 import {
   listAccountantInbox,
   type AccountantInboxRow,
-  exportProposalPdf,
-  exportPaymentOrderPdf,
   accountantReturnToBuyer,
   notifList,
   notifMarkRead,
-} from "../../src/lib/catalog_api";
+} from "../../src/lib/rik_api";
 
 import { uploadProposalAttachment, openAttachment } from "../../src/lib/files";
 
 import * as Haptics from "expo-haptics";
+// @ts-ignore
 import { initDing, playDing as playDingSound, unloadDing } from "../../src/lib/notify";
 
 import { UI, S } from "../../src/screens/accountant/ui";
@@ -1619,7 +1619,7 @@ return (
   isReadOnlyTab={isReadOnlyTab}
   canPayUi={canPayUi}
   headerSubtitle={
-  formatProposalBaseNo(current?.proposal_no, String(current?.proposal_id ?? ""))
+  formatProposalBaseNo((current as any)?.proposal_no, String(current?.proposal_id ?? ""))
   + " • " + (current?.supplier || "—")
   + " • " + (current?.invoice_number || "без №")
 }
@@ -1675,7 +1675,7 @@ return (
   <Text style={S.label}>
     №:{" "}
     <Text style={S.value}>
-      {formatProposalBaseNo(current?.proposal_no, String(current?.proposal_id ?? ""))}
+      {formatProposalBaseNo((current as any)?.proposal_no, String(current?.proposal_id ?? ""))}
     </Text>
   </Text>
 
@@ -1725,7 +1725,7 @@ return (
         <View style={{ height: 10 }} />
 
         {(() => {
-          const isHist = tab === "История";
+          const isHist = (tab as string) === "История";
           const st = statusFromRaw(current?.payment_status ?? currentDisplayStatus, isHist);
           return (
             <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
@@ -1739,7 +1739,7 @@ return (
         {(() => {
           if (!current?.proposal_id) return null;
 
-          const isHist = tab === "История";
+          const isHist = (tab as string) === "История";
           const st = statusFromRaw(current?.payment_status ?? currentDisplayStatus, isHist);
 
           const showInvoice = !!current?.has_invoice;

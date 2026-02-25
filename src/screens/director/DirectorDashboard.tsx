@@ -7,8 +7,7 @@ import {
   Pressable,
   RefreshControl,
   Platform,
-  Animated,
-  ScrollView,
+  Animated
 } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { UI, s } from "./director.styles";
@@ -98,7 +97,7 @@ export default function DirectorDashboard(p: Props) {
   const headerPadTop = Platform.OS === "web" ? 10 : 0;
   const contentTopPad = Math.max(p.HEADER_MAX + 12 + headerPadTop, p.HEADER_MIN + 12 + headerPadTop);
 
-  const topTabsRef = React.useRef<ScrollView | null>(null);
+  const topTabsRef = React.useRef<FlatList<DirTopTab> | null>(null);
   const topTabXRef = React.useRef<Record<string, { x: number; w: number }>>({});
 
   const onTopTabLayout = React.useCallback((key: string, e: any) => {
@@ -112,7 +111,7 @@ export default function DirectorDashboard(p: Props) {
     const rec = topTabXRef.current?.[p.dirTab];
     if (!sv || !rec) return;
     try {
-      sv.scrollTo({ x: Math.max(0, rec.x - 12), animated: true });
+      sv.scrollToOffset({ offset: Math.max(0, rec.x - 12), animated: true });
     } catch {}
   }, [p.dirTab]);
 
@@ -123,19 +122,15 @@ export default function DirectorDashboard(p: Props) {
       </Animated.Text>
 
       {/* TOP tabs */}
-      <ScrollView
+      <FlatList
         ref={topTabsRef}
+        data={(["Заявки", "Финансы", "Склад", "Отчёты"] as DirTopTab[])}
+        keyExtractor={(t) => t}
         horizontal
         showsHorizontalScrollIndicator={false}
         bounces={false}
-        contentContainerStyle={{
-          paddingTop: 2,
-          paddingBottom: 2,
-          alignItems: "center",
-          paddingRight: 12,
-        }}
-      >
-        {(["Заявки", "Финансы", "Склад", "Отчёты"] as DirTopTab[]).map((t) => {
+        keyboardShouldPersistTaps="handled"
+        renderItem={({ item: t }) => {
           const active = p.dirTab === t;
           return (
             <Pressable
@@ -152,8 +147,14 @@ export default function DirectorDashboard(p: Props) {
               </Text>
             </Pressable>
           );
-        })}
-      </ScrollView>
+        }}
+        contentContainerStyle={{
+          paddingTop: 2,
+          paddingBottom: 2,
+          alignItems: "center",
+          paddingRight: 12,
+        }}
+      />
 
       {/* SUB tabs */}
       {p.dirTab === "Заявки" ? (
@@ -466,4 +467,3 @@ export default function DirectorDashboard(p: Props) {
     </View>
   );
 }
-

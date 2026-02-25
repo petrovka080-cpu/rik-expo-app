@@ -1,0 +1,4037 @@
+﻿diff --git a/app/(tabs)/director.tsx b/app/(tabs)/director.tsx
+index 3a51214..13ee7af 100644
+--- a/app/(tabs)/director.tsx
++++ b/app/(tabs)/director.tsx
+@@ -1,131 +1,693 @@
+ // app/(tabs)/director.tsx тАФ ╨╡╨┤╨╕╨╜╤Л╨╣ ╨▒╨╗╨╛╨║ ┬л╨Ю╨╢╨╕╨┤╨░╨╡╤В ╤Г╤В╨▓╨╡╤А╨╢╨┤╨╡╨╜╨╕╤П (╨┐╤А╨╛╤А╨░╨▒)┬╗, ╨С╨Х╨Ч ╨╜╨╕╨╢╨╜╨╡╨│╨╛ ╨▒╨╗╨╛╨║╨░ ┬л╤И╨░╨┐╨╛╨║┬╗
+ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
++import { View, Text, FlatList, Pressable, Alert, ActivityIndicator,
++  RefreshControl, Platform, TextInput, Animated, Linking, InteractionManager } from 'react-native';
++
++import { openSignedUrlUniversal } from "../../src/lib/files";
++import { UI, s } from "../../src/screens/director/director.styles";
++import DirectorDashboard from "../../src/screens/director/DirectorDashboard";
+ import {
+-  View, Text, FlatList, Pressable, Alert, ActivityIndicator,
+-  RefreshControl, Platform, StyleSheet, TextInput, Animated
+-} from 'react-native';
+-import { StatusBar } from 'expo-status-bar';
++  type FinanceRow,
++  type FinSupplierDebt,
++  type FinRep,
++  mapToFinanceRow,
++  computeFinanceRep,
++  money,
++  nnum,
++  addDaysIso,
++  mid,
++  parseMid,
++} from "../../src/screens/director/director.finance";
++import { useSafeAreaInsets } from "react-native-safe-area-context";
++
++import PeriodPickerSheet from "../../src/components/PeriodPickerSheet";
++
++import { toFilterId, shortId, fmtDateOnly } from "../../src/screens/director/director.helpers";
++
+ import * as XLSX from 'xlsx';
+ import {
+-  listDirectorProposalsPending, proposalItems,
+-  listDirectorInbox as fetchDirectorInbox, type DirectorInboxRow,
+-  RIK_API,
++  listDirectorProposalsPending,
+   exportRequestPdf,
+-} from '../../src/lib/catalog_api';
++} from "../../src/lib/catalog_api";
++import {
++  type Tab,
++  type DirTopTab,
++  type PendingRow,
++  type Group,
++  type ProposalHead,
++  type ProposalItem,
++  type ProposalAttachmentRow,
++  type SheetKind,
++  type RequestMeta,
++  type RtToast,
++} from "../../src/screens/director/director.types";
++
++import { listAccountantInbox } from "../../src/lib/api/accountant";
++
+ import { useGlobalBusy } from '../../src/ui/GlobalBusy';
+ import RNModal from "react-native-modal";
+ import { supabase, ensureSignedIn } from '../../src/lib/supabaseClient';
+-import * as Print from 'expo-print';
+-import * as Sharing from 'expo-sharing';
+-import * as FileSystem from 'expo-file-system';
++import { runPdfTop } from "../../src/lib/pdfRunner";
+ import { Ionicons } from '@expo/vector-icons';
++import SendPrimaryButton from "../../src/ui/SendPrimaryButton";
++import DeleteAllButton from "../../src/ui/DeleteAllButton";
++import RejectItemButton from "../../src/ui/RejectItemButton";
++import DirectorFinanceCardModal from "../../src/screens/director/DirectorFinanceCardModal";
++import DirectorFinanceDebtModal from "../../src/screens/director/DirectorFinanceDebtModal";
++import DirectorFinanceSpendModal from "../../src/screens/director/DirectorFinanceSpendModal";
++import DirectorFinanceKindSuppliersModal from "../../src/screens/director/DirectorFinanceKindSuppliersModal";
++import DirectorFinanceSupplierModal from "../../src/screens/director/DirectorFinanceSupplierModal";
++
++
++export default function DirectorScreen() {
++    const busy = useGlobalBusy();
++const insets = useSafeAreaInsets();
++const [tab, setTab] = useState<Tab>('foreman');
++
++const [dirTab, setDirTab] = useState<DirTopTab>("╨Ч╨░╤П╨▓╨║╨╕");
++
++type FinPage = "home" | "debt" | "spend" | "kind" | "supplier";
++
++const [finOpen, setFinOpen] = useState(false);
++const [finPage, setFinPage] = useState<FinPage>("home");
++
++// ╤Б╤В╨╡╨║ ╤Б╤В╤А╨░╨╜╨╕╤Ж ╨┤╨╗╤П "╨╜╨░╨╖╨░╨┤"
++const finStackRef = useRef<FinPage[]>(["home"]);
++const pushFin = useCallback((p: FinPage) => {
++  finStackRef.current = [...finStackRef.current, p];
++  setFinPage(p);
++}, []);
++const popFin = useCallback(() => {
++  const s = finStackRef.current.slice(0, -1);
++  finStackRef.current = s.length ? s : ["home"];
++  setFinPage(finStackRef.current[finStackRef.current.length - 1] || "home");
++}, []);
++
++const [finSupplier, setFinSupplier] = useState<FinSupplierDebt | null>(null);
++
++const [finLoading, setFinLoading] = useState(false);
++const [finRows, setFinRows] = useState<FinanceRow[]>([]);
++const [finSpendRows, setFinSpendRows] = useState<any[]>([]);
++const [finRep, setFinRep] = useState<FinRep>(() => computeFinanceRep([], { dueDaysDefault: 7, criticalDays: 14 }));
++const [finPeriodOpen, setFinPeriodOpen] = useState(false);
++const [finFrom, setFinFrom] = useState<string | null>(null);
++const [finTo, setFinTo] = useState<string | null>(null);
++
++type RepTab = "materials" | "discipline";
++
++type RepRow = {
++  rik_code: string;
++  uom: string;
++  qty_total: number;
++  docs_cnt: number;
++  qty_without_request: number;
++  docs_without_request: number;
++};
+ 
+-type Tab = 'foreman' | 'buyer';
+-
+-type PendingRow = {
+-  id: number;
+-  request_id: number | string;
+-  request_item_id: string | null;
+-  name_human: string;
+-  qty: number;
+-  uom?: string | null;
+-  rik_code?: string | null;
+-  app_code?: string | null;
+-  item_kind?: string | null; // material | work | service
+-  note?: string | null;
++type RepWho = { who: string; items_cnt: number };
++
++type RepKpi = {
++  issues_total: number;
++  issues_without_object: number;
++  items_total: number;
++  items_without_request: number;
+ };
+-type Group = { request_id: number | string; items: PendingRow[] };
+-
+-type ProposalHead = { id: string; submitted_at?: string | null; pretty?: string | null };
+-type ProposalItem = {
+-  id: number;
+-  request_item_id: string | null;   // тЬЕ ╨Ф╨Ю╨С╨Р╨Т╨Ш╨Ы╨Ш
+-  rik_code: string | null;
+-  name_human: string;
+-  uom: string | null;
+-  app_code: string | null;
+-  total_qty: number;
+-  price?: number | null;
+-  item_kind?: string | null;
++
++type RepPayload = {
++  meta?: { from?: string; to?: string; object_name?: string | null };
++  kpi?: RepKpi;
++  rows?: RepRow[];
++  discipline_who?: RepWho[];
+ };
+ 
+-const toFilterId = (v: number | string | null | undefined) => {
+-  if (v === null || v === undefined) return null;
+-  const s = String(v).trim();
+-  if (!s) return null;
+-  return /^\d+$/.test(s) ? Number(s) : s;
++const [repOpen, setRepOpen] = useState(false);
++const [repTab, setRepTab] = useState<RepTab>("materials");
++const [repPeriodOpen, setRepPeriodOpen] = useState(false);
++const [repObjOpen, setRepObjOpen] = useState(false);
++const [repFrom, setRepFrom] = useState<string | null>(null);
++const [repTo, setRepTo] = useState<string | null>(null);
++const [repObjectName, setRepObjectName] = useState<string | null>(null); // ╨┐╨╛╨║╨░ null = ╨▓╤Б╨╡
++
++const [repLoading, setRepLoading] = useState(false);
++const [repData, setRepData] = useState<RepPayload | null>(null);
++const [repOptLoading, setRepOptLoading] = useState(false);
++const [repOptObjects, setRepOptObjects] = useState<string[]>([]);
++
++const isoDate = (d: Date) => {
++    const yyyy = d.getFullYear();
++  const mm = String(d.getMonth() + 1).padStart(2, "0");
++  const dd = String(d.getDate()).padStart(2, "0");
++  return `${yyyy}-${mm}-${dd}`;
+ };
+-const shortId = (rid: number | string | null | undefined) => {
+-  const s = String(rid ?? '');
+-  if (!s || s.toLowerCase() === 'nan') return 'тАФ';
+-  return /^\d+$/.test(s) ? s : s.slice(0, 8);
++
++const minusDays = (days: number) => {
++  const d = new Date();
++  d.setDate(d.getDate() - days);
++  return d;
+ };
+-const UI = {
+-  bg: '#0B0F14',        // ╨╛╨▒╤Й╨╕╨╣ ╤Д╨╛╨╜ (╨┐╨╛╤З╤В╨╕ ╤З╤С╤А╨╜╤Л╨╣)
+-  cardBg: '#101826',    // ╨║╨░╤А╤В╨╛╤З╨║╨╕/╤Е╨╡╨┤╨╡╤А (╤З╤Г╤В╤М ╤Б╨▓╨╡╤В╨╗╨╡╨╡)
+-  text: '#F8FAFC',      // ╨╛╤Б╨╜╨╛╨▓╨╜╨╛╨╣ ╤В╨╡╨║╤Б╤В (╨▒╨╡╨╗╤Л╨╣)
+-  sub: '#9CA3AF',       // ╨▓╤В╨╛╤А╨╕╤З╨╜╤Л╨╣ ╤В╨╡╨║╤Б╤В (╤Б╨╡╤А╤Л╨╣)
+-  border: '#1F2A37',    // ╨│╤А╨░╨╜╨╕╤Ж╤Л (╤В╤С╨╝╨╜╤Л╨╡)
+ 
+-  tabActiveBg: '#101826',
+-  tabInactiveBg: 'transparent',
+-  tabActiveText: '#F8FAFC',
+-  tabInactiveText: '#9CA3AF',
++useEffect(() => {
++  if (repFrom || repTo) return;
++  const to = isoDate(new Date());
++  const from = isoDate(minusDays(30));
++  setRepFrom(from);
++  setRepTo(to);
++}, [repFrom, repTo]);
++
++const repPeriodShort = useMemo(() => {
++  return repFrom || repTo
++    ? `${repFrom ? fmtDateOnly(repFrom) : "тАФ"} тЖТ ${repTo ? fmtDateOnly(repTo) : "тАФ"}`
++    : "╨Я╨╛╤Б╨╗╨╡╨┤╨╜╨╕╨╡ 30 ╨┤╨╜╨╡╨╣";
++}, [repFrom, repTo]);
++const applyObjectFilter = useCallback(async (obj: string | null) => {
++  setRepObjectName(obj);
++
++  const from = repFrom ? String(repFrom).slice(0, 10) : isoDate(minusDays(30));
++  const to = repTo ? String(repTo).slice(0, 10) : isoDate(new Date());
++
++  setRepLoading(true);
++  try {
++    const { data, error } = await supabase.rpc("rpc_wh_report_issued_by_req_context_v2", {
++      p_from: from,
++      p_to: to,
++      p_object_name: obj, 
++      p_level_code: null,
++      p_system_code: null,
++      p_zone_code: null,
++    });
++    if (error) throw error;
++
++    const payload = (data ?? null) as any;
++    setRepData(payload && typeof payload === "object" ? payload : null);
++  } catch (e: any) {
++    console.warn("[director] applyObjectFilter:", e?.message ?? e);
++    setRepData(null);
++    Alert.alert("╨Ю╤В╤З╤С╤В╤Л", e?.message ?? "╨Э╨╡ ╤Г╨┤╨░╨╗╨╛╤Б╤М ╨┐╨╡╤А╨╡╤Б╤З╨╕╤В╨░╤В╤М ╨╛╤В╤З╤С╤В");
++  } finally {
++    setRepLoading(false);
++  }
++}, [repFrom, repTo, supabase]);
++
++const fetchReport = useCallback(async () => {
++  const from = repFrom ? String(repFrom).slice(0, 10) : isoDate(minusDays(30));
++  const to = repTo ? String(repTo).slice(0, 10) : isoDate(new Date());
++
++  setRepLoading(true);
++  try {
++    const { data, error } = await supabase.rpc("rpc_wh_report_issued_by_req_context_v2", {
++      p_from: from,
++      p_to: to,
++      p_object_name: repObjectName,   
++      p_level_code: null,
++      p_system_code: null,
++      p_zone_code: null,
++    });
++
++    if (error) throw error;
++
++    const payload = (data ?? null) as any;
++    setRepData(payload && typeof payload === "object" ? payload : null);
++  } catch (e: any) {
++    console.warn("[director] fetchReport:", e?.message ?? e);
++    setRepData(null);
++    Alert.alert("╨Ю╤В╤З╤С╤В╤Л", e?.message ?? "╨Э╨╡ ╤Г╨┤╨░╨╗╨╛╤Б╤М ╨┐╨╛╨╗╤Г╤З╨╕╤В╤М ╨╛╤В╤З╤С╤В");
++  } finally {
++    setRepLoading(false);
++  }
++}, [repFrom, repTo, repObjectName]);
++
++const fetchReportOptions = useCallback(async () => {
++  const from = repFrom ? String(repFrom).slice(0, 10) : isoDate(minusDays(30));
++  const to = repTo ? String(repTo).slice(0, 10) : isoDate(new Date());
++
++  setRepOptLoading(true);
++  try {
++    const { data, error } = await supabase.rpc("rpc_wh_report_req_context_options", {
++      p_from: from,
++      p_to: to,
++    });
++    if (error) throw error;
++
++    const objects = Array.isArray((data as any)?.objects) ? (data as any).objects : [];
++    setRepOptObjects(objects.map((x: any) => String(x ?? "").trim()).filter(Boolean));
++  } catch (e: any) {
++    console.warn("[director] fetchReportOptions:", e?.message ?? e);
++    setRepOptObjects([]);
++  } finally {
++    setRepOptLoading(false);
++  }
++}, [repFrom, repTo]);
++const applyReportPeriod = useCallback(async (nextFrom: string | null, nextTo: string | null) => {
++  setRepFrom(nextFrom);
++  setRepTo(nextTo);
++  setRepObjectName(null);
++  setRepPeriodOpen(false);
++
++ const from = (nextFrom ? String(nextFrom).slice(0, 10) : isoDate(minusDays(30)));
++  const to = (nextTo ? String(nextTo).slice(0, 10) : isoDate(new Date()));
++
++  setRepOptLoading(true);
++  setRepLoading(true);
++  try {
++    
++    const opt = await supabase.rpc("rpc_wh_report_req_context_options", { p_from: from, p_to: to });
++if (opt.error) throw opt.error;
++const objects = Array.isArray((opt.data as any)?.objects) ? (opt.data as any).objects : [];
++
++console.log("OPTIONS RAW:", opt.data);
++console.log("OBJECTS ARRAY:", objects);
++
++setRepOptObjects(objects.map((x: any) => String(x ?? "").trim()).filter(Boolean));
++
++    const rep = await supabase.rpc("rpc_wh_report_issued_by_req_context_v2", {
++      p_from: from,
++      p_to: to,
++      p_object_name: null,
++      p_level_code: null,
++      p_system_code: null,
++      p_zone_code: null,
++    });
++    if (rep.error) throw rep.error;
++    const payload = (rep.data ?? null) as any;
++    setRepData(payload && typeof payload === "object" ? payload : null);
++  } catch (e: any) {
++    console.warn("[director] applyReportPeriod:", e?.message ?? e);
++    setRepData(null);
++    setRepOptObjects([]);
++    Alert.alert("╨Ю╤В╤З╤С╤В╤Л", e?.message ?? "╨Э╨╡ ╤Г╨┤╨░╨╗╨╛╤Б╤М ╨┐╨╡╤А╨╡╤Б╤З╨╕╤В╨░╤В╤М ╨╛╤В╤З╤С╤В");
++  } finally {
++    setRepOptLoading(false);
++    setRepLoading(false);
++  }
++}, []);
++
++const openReports = useCallback(async () => {
++  setRepOpen(true);
++  setRepTab("materials");
++  try {
++    await fetchReportOptions();
++  } catch {}
++  try {
++    await fetchReport();
++  } catch {}
++}, [fetchReportOptions, fetchReport]);
++
++
++const closeReports = useCallback(() => {
++  setRepOpen(false);
++  setRepPeriodOpen(false);
++}, []);
++
++
++const FIN_DUE_DAYS_DEFAULT = 7;
++const FIN_CRITICAL_DAYS = 14;
++const [finKindName, setFinKindName] = useState<string>("");
++const [finKindList, setFinKindList] = useState<any[]>([]);
++const mountedRef = useRef(true);
++useEffect(() => {
++  return () => { mountedRef.current = false; };
++}, []);
++
++const openSupplier = useCallback((s: any) => {
++   const supplierName = (() => {
++  if (typeof s === "string") return s.trim() || "тАФ";
++    const v =
++    s?.supplier?.supplier ??   
++    s?.supplier ??             
++    s?.name ??                
++    "";
++  return String(v).trim() || "тАФ";
++})();
++
++const kindName = (() => {
++  if (typeof s === "string") return "";
++  const v = s?._kindName ?? s?.kindName ?? "";
++  return String(v).trim();
++})();
++
++  const inPeriod = (iso: any) => {
++    const d = String(iso ?? "").slice(0, 10);
++    if (!d) return true;
++    if (finFrom && d < String(finFrom).slice(0, 10)) return false;
++    if (finTo && d > String(finTo).slice(0, 10)) return false;
++    return true;
++  };
++
++  let allowedProposalIds: Set<string> | null = null;
++  const proposalNoById: Record<string, string> = {};
++
++  if (kindName) {
++    const spend = (Array.isArray(finSpendRows) ? finSpendRows : [])
++      .filter((r: any) => String(r?.supplier ?? "").trim() === supplierName)
++      .filter((r: any) => String(r?.kind_name ?? "").trim() === kindName)
++      .filter((r: any) => inPeriod(r?.director_approved_at ?? r?.approved_at ?? r?.approvedAtIso));
++
++    allowedProposalIds = new Set(
++      spend.map((r: any) => String(r?.proposal_id ?? "").trim()).filter(Boolean)
++    );
++
++    for (const r of spend) {
++      const pid = String(r?.proposal_id ?? "").trim();
++      const pno = String(r?.proposal_no ?? "").trim();
++      if (pid && pno) proposalNoById[pid] = pno;
++    }
++  }
+ 
+-  btnApprove: '#22C55E', // ╨╖╨╡╨╗╤С╨╜╤Л╨╣
+-  btnReject:  '#EF4444', // ╨║╤А╨░╤Б╨╜╤Л╨╣
+-  btnNeutral: 'rgba(255,255,255,0.08)',
++  const fin = (Array.isArray(finRows) ? finRows : [])
++    .filter((r: any) => String(r?.supplier ?? "").trim() === supplierName)
++    .filter((r: any) => inPeriod(r?.approvedAtIso ?? r?.approved_at ?? r?.director_approved_at))
++    .filter((r: any) => {
++      if (!allowedProposalIds) return true;
++      const pid = String(r?.proposalId ?? r?.proposal_id ?? "").trim();
++      return pid && allowedProposalIds.has(pid);
++    });
+ 
++  const t0 = mid(new Date());
++  const dueDays = FIN_DUE_DAYS_DEFAULT;
+ 
+-  accent: '#22C55E',     // ╨░╨║╤Ж╨╡╨╜╤В (╨┤╨╗╤П ╨╗╨╕╨╜╨╕╨╣/╤А╨░╨╝╨╛╨║)
++const pickIso = (...vals: any[]) => {
++  for (const v of vals) {
++    const s = String(v ?? "").trim();
++    if (!s) continue;
++    return s.slice(0, 10);
++  }
++  return null;
+ };
+-export default function DirectorScreen() {
+-  const busy = useGlobalBusy();
+-const [tab, setTab] = useState<Tab>('foreman');
+-  // ===== Collapsing header (╨║╨░╨║ ╤Г ╨┐╤А╨╛╤А╨░╨▒╨░) =====
+-  const HEADER_MAX = 210;
+-  const HEADER_MIN = 76;
+-  const HEADER_SCROLL = HEADER_MAX - HEADER_MIN;
+ 
+-  const scrollY = useRef(new Animated.Value(0)).current;
+-  const clampedY = Animated.diffClamp(scrollY, 0, HEADER_SCROLL);
++const pickApprovedIso = (r: any) =>
++  pickIso(
++    r?.approvedAtIso,
++    r?.director_approved_at,
++    r?.approved_at,
++    r?.approvedAt,
++    r?.approved_at_iso
++  );
++
++const pickInvoiceIso = (r: any) =>
++  pickIso(r?.invoiceDate, r?.invoice_date, r?.invoiceIso, r?.invoice_at, r?.created_at, r?.raw?.created_at);
++
++
++const pickAmount = (r: any) =>
++  nnum(r?.amount ?? r?.invoice_amount ?? r?.invoiceAmount ?? r?.approved_amount ?? 0);
++
++const pickPaid = (r: any) =>
++  nnum(r?.paidAmount ?? r?.total_paid ?? r?.totalPaid ?? r?.paid_amount ?? 0);
++
++
++  const invoices = fin
++    .map((r: any, idx: number) => {
++      const amount = pickAmount(r);
++const paid = pickPaid(r);
++      const rest = Math.max(amount - paid, 0);
++
++      const pid = String(r?.proposalId ?? r?.proposal_id ?? "").trim();
++      const invNo = String(r?.invoiceNumber ?? r?.invoice_number ?? "").trim();
++
++      const approvedIso =
++  pickApprovedIso(r) ??
++  pickIso(r?.raw?.director_approved_at, r?.raw?.approved_at, r?.raw?.approvedAtIso);
++
++const invoiceIso =
++  pickInvoiceIso(r) ??
++  pickIso(r?.raw?.invoice_date, r?.raw?.invoice_at, r?.raw?.created_at);
++
++
++      const pno = pid ? String(proposalNoById[pid] ?? r?.proposal_no ?? "").trim() : "";
++      const title =
++        invNo ? `╨б╤З╤С╤В тДЦ${invNo}` :
++        pno ? `╨Я╤А╨╡╨┤╨╗╨╛╨╢╨╡╨╜╨╕╨╡ ${pno}` :
++        pid ? `╨Я╤А╨╡╨┤╨╗╨╛╨╢╨╡╨╜╨╕╨╡ #${pid.slice(0, 8)}` :
++        "╨б╤З╤С╤В";
++
++      const dueIso =
++        r?.dueDate ??
++        r?.due_date ??
++        (invoiceIso ? addDaysIso(String(invoiceIso).slice(0, 10), dueDays) : null) ??
++        (approvedIso ? addDaysIso(String(approvedIso).slice(0, 10), dueDays) : null);
++
++      const dueMid = parseMid(dueIso) ?? 0;
++      const isOverdue = rest > 0 && !!dueMid && dueMid < t0;
++
++      let isCritical = false;
++      if (isOverdue && dueMid) {
++        const days = Math.floor((t0 - dueMid) / (24 * 3600 * 1000));
++        isCritical = days >= FIN_CRITICAL_DAYS;
++      }
++
++      const key = [
++        pid || "",
++        invNo || "",
++        String(invoiceIso ?? ""),
++        String(approvedIso ?? ""),
++        String(idx),
++      ].join("|");
++
++      return {
++        id: key,
++        title,
++        amount,
++        paid,
++        rest,
++        isOverdue,
++        isCritical,
++        approvedIso: approvedIso ? String(approvedIso) : null,
++        invoiceIso: invoiceIso ? String(invoiceIso) : null,
++        dueIso: dueIso ? String(dueIso) : null,
++      };
++    })
++    .filter((x: any) => x.amount > 0 || x.rest > 0);
++
++  const debtAmount = invoices.reduce((s2: number, x: any) => s2 + Math.max(nnum(x.rest), 0), 0);
++  const debtCount = invoices.filter((x: any) => Math.max(nnum(x.rest), 0) > 0).length;
++  const overdueCount = invoices.filter((x: any) => x.isOverdue && Math.max(nnum(x.rest), 0) > 0).length;
++  const criticalCount = invoices.filter((x: any) => x.isCritical && Math.max(nnum(x.rest), 0) > 0).length;
++
++  const payload: any = {
++    supplier: supplierName,
++    _kindName: kindName || "",
++    amount: debtAmount,
++    count: debtCount,
++    overdueCount,
++    criticalCount,
++    invoices,
++  };
++
++setFinSupplier(payload);
++pushFin("supplier");
++
++
++}, [finRows, finSpendRows, finFrom, finTo]);
++
++const closeSupplier = useCallback(() => {
++  setFinSupplier(null);
++  popFin();
++}, [popFin]);
++
++
++
++const openFinKind = useCallback((kindName: string, list: any[]) => {
++  setFinKindName(String(kindName || ""));
++  setFinKindList(Array.isArray(list) ? list : []);
++  pushFin("kind");
++}, [pushFin]);
++
++const closeFinKind = useCallback(() => {
++  setFinKindName("");
++  setFinKindList([]);
++  popFin();
++}, [popFin]);
++
++const openFinPeriod = useCallback(() => setFinPeriodOpen(true), []);
++const closeFinPeriod = useCallback(() => setFinPeriodOpen(false), []);
++
++const openFinancePage = useCallback((page: FinPage) => {
++  finStackRef.current = ["home"];
++  setFinOpen(true);
++  setFinPage("home");
++
++  if (page !== "home") {
++    finStackRef.current = ["home", page];
++    setFinPage(page);
++  }
++}, []);
++
++const closeFinance = useCallback(() => {
++  setFinOpen(false);
++  setFinPage("home");
++  finStackRef.current = ["home"];
++  setFinSupplier(null);
++  setFinKindName("");
++  setFinKindList([]);
++}, []);
++
++const onFinancePdf = useCallback(async () => {
++  await runPdfTop({
++    busy,
++    supabase,
++    key: "pdf:director:finance",
++    label: "╨У╨╛╤В╨╛╨▓╨╗╤О ╤Г╨┐╤А╨░╨▓╨╗╨╡╨╜╤З╨╡╤Б╨║╨╕╨╣ ╨╛╤В╤З╤С╤ВтАж",
++    mode: Platform.OS === "web" ? "preview" : "share",
++    fileName: "Director_Management_Report",
++    getRemoteUrl: async () => {
++    
++      const { exportDirectorManagementReportPdf } = await import("../../src/lib/api/pdf_director");
++      return await exportDirectorManagementReportPdf({
++        periodFrom: finFrom,
++        periodTo: finTo,
++        financeRows: finRows,
++        spendRows: finSpendRows,
++        topN: 15,
++        dueDaysDefault: FIN_DUE_DAYS_DEFAULT,
++        criticalDays: FIN_CRITICAL_DAYS,
++      });
++    },
++  });
++}, [
++  busy,
++  supabase,
++  finFrom,
++  finTo,
++  finRows,
++  finSpendRows,
++  FIN_DUE_DAYS_DEFAULT,
++  FIN_CRITICAL_DAYS,
++]);
++
++
++const onSupplierPdf = useCallback(async () => {
++  const supName = String((finSupplier as any)?.supplier ?? "").trim();
++  if (!supName) {
++    Alert.alert("PDF", "╨Я╨╛╤Б╤В╨░╨▓╤Й╨╕╨║ ╨╜╨╡ ╨▓╤Л╨▒╤А╨░╨╜");
++    return;
++  }
++
++  await runPdfTop({
++    busy,
++    supabase,
++    key: `pdf:director:supplier:${supName}`,
++    label: "╨У╨╛╤В╨╛╨▓╨╗╤О ╤Б╨▓╨╛╨┤╨║╤ГтАж",
++     mode: Platform.OS === "web" ? "preview" : "share",
++    fileName: `Supplier_${supName}`,
++    getRemoteUrl: async () => {
++      const kindName = String((finSupplier as any)?._kindName ?? "").trim();
++
++      const inPeriod = (iso: any) => {
++        const d = String(iso ?? "").slice(0, 10);
++        if (!d) return true;
++        if (finFrom && d < String(finFrom).slice(0, 10)) return false;
++        if (finTo && d > String(finTo).slice(0, 10)) return false;
++        return true;
++      };
++
++      let financeFiltered = (Array.isArray(finRows) ? finRows : [])
++        .filter((r: any) => String(r?.supplier ?? "").trim() === supName)
++        .filter((r: any) => inPeriod(r?.approvedAtIso ?? r?.approved_at ?? r?.director_approved_at));
++
++      let spendFiltered = (Array.isArray(finSpendRows) ? finSpendRows : [])
++        .filter((r: any) => String(r?.supplier ?? "").trim() === supName)
++        .filter((r: any) => inPeriod(r?.director_approved_at ?? r?.approved_at ?? r?.approvedAtIso));
++
++      if (kindName) {
++        spendFiltered = spendFiltered.filter((r: any) => String(r?.kind_name ?? "").trim() === kindName);
++      }
++
++      spendFiltered = (spendFiltered as any[]).filter((r) => String(r?.proposal_id ?? "").trim());
++
++      const { exportDirectorSupplierSummaryPdf } = await import("../../src/lib/api/pdf_director");
++      return await exportDirectorSupplierSummaryPdf({
++        supplier: supName,
++        periodFrom: finFrom,
++        periodTo: finTo,
++        financeRows: financeFiltered,
++        spendRows: spendFiltered,
++      });
++    },
++  });
++}, [busy, supabase, finSupplier, finFrom, finTo, finRows, finSpendRows]);
++
++
++const isMobile = Platform.OS !== "web";
++
++const HEADER_MIN = isMobile
++  ? (dirTab === "╨Ч╨░╤П╨▓╨║╨╕" ? 148 : 108)
++  : 76;
++
++const HEADER_MAX = isMobile
++  ? (dirTab === "╨Ч╨░╤П╨▓╨║╨╕" ? 198 : 150)
++  : (dirTab === "╨Ч╨░╤П╨▓╨║╨╕" ? 210 : 170);
++
++const HEADER_SCROLL = Math.max(1, HEADER_MAX - HEADER_MIN);
++
++const isRequestsTab = dirTab === "╨Ч╨░╤П╨▓╨║╨╕";
++
++// 1) scroll value
++const scrollY = useRef(new Animated.Value(0)).current;
+ 
+-  const headerHeight = clampedY.interpolate({
++// 2) safe clamp range (never 0)
++const _HEADER_SCROLL = Math.max(1, Number(HEADER_SCROLL || 0));
++
++// 3) clampedY MUST be declared before any interpolate usage
++const clampedY = useMemo(() => {
++  return Animated.diffClamp(scrollY, 0, _HEADER_SCROLL);
++}, [scrollY, _HEADER_SCROLL]);
++
++// 4) interpolations
++const headerHeight = useMemo(() => {
++  return clampedY.interpolate({
+     inputRange: [0, HEADER_SCROLL],
+     outputRange: [HEADER_MAX, HEADER_MIN],
+-    extrapolate: 'clamp',
++    extrapolate: "clamp",
+   });
++}, [clampedY, HEADER_SCROLL, HEADER_MAX, HEADER_MIN]);
+ 
+-  const titleSize = clampedY.interpolate({
++const titleSize = useMemo(() => {
++  return clampedY.interpolate({
+     inputRange: [0, HEADER_SCROLL],
+     outputRange: [24, 16],
+-    extrapolate: 'clamp',
++    extrapolate: "clamp",
+   });
++}, [clampedY, HEADER_SCROLL]);
+ 
+-  const subOpacity = clampedY.interpolate({
++const subOpacity = useMemo(() => {
++  return clampedY.interpolate({
+     inputRange: [0, HEADER_SCROLL],
+     outputRange: [1, 0],
+-    extrapolate: 'clamp',
+-  });
+-
+-  const headerShadow = clampedY.interpolate({
+-    inputRange: [0, 10],
+-    outputRange: [0, 0.12],
+-    extrapolate: 'clamp',
++    extrapolate: "clamp",
+   });
++}, [clampedY, HEADER_SCROLL]);
++
++const headerShadow = useMemo(() => {
++  return isRequestsTab
++    ? clampedY.interpolate({
++        inputRange: [0, 10],
++        outputRange: [0, 0.12],
++        extrapolate: "clamp",
++      })
++    : 0.12;
++}, [isRequestsTab, clampedY]);
+ 
+-  // ===== ╨Я╨а╨Ю╨а╨Р╨С =====
+   const [rows, setRows] = useState<PendingRow[]>([]);
+-  const [loadingRows, setLoadingRows] = useState(false);
+-  const [actingId, setActingId] = useState<string | null>(null);
+-  const [actingAll, setActingAll] = useState<number | string | null>(null);
+- // ===== Bottom Sheet (╨╡╨┤╨╕╨╜╨░╤П ╨╝╨╛╨┤╨░╨╗╨║╨░) =====
+-type SheetKind = 'none' | 'request' | 'proposal';
++const [loadingRows, setLoadingRows] = useState(false);
++const [actingId, setActingId] = useState<string | null>(null);
++
++
++const [reqDeleteId, setReqDeleteId] = useState<number | string | null>(null);
++const [reqSendId, setReqSendId] = useState<number | string | null>(null);
++
++
++const [propApproveId, setPropApproveId] = useState<string | null>(null);
++const [propReturnId, setPropReturnId] = useState<string | null>(null);
++
++const [propAttByProp, setPropAttByProp] = useState<Record<string, ProposalAttachmentRow[]>>({});
++  const [propAttBusyByProp, setPropAttBusyByProp] = useState<Record<string, boolean>>({});
+ 
+ const [sheetKind, setSheetKind] = useState<SheetKind>('none');
+ const [sheetRequest, setSheetRequest] = useState<Group | null>(null);
+ const [sheetProposalId, setSheetProposalId] = useState<string | null>(null);
+ 
++const loadingPropRef = useRef<Record<string, boolean>>({});
++const lastTapRef = useRef<number>(0);
++const pdfTapLockRef = useRef<Record<string, boolean>>({});
+ const isSheetOpen = sheetKind !== 'none';
+ 
+ const closeSheet = useCallback(() => {
+@@ -146,31 +708,159 @@ const openProposalSheet = useCallback((pid: string) => {
+   setSheetKind('proposal');
+ }, []);
+ 
+-  // ╨░╨╜╤В╨╕-╨╝╨╕╨│╨░╨╜╨╕╨╡
++
+   const didInit = useRef(false);
+   const fetchTicket = useRef(0);
+   const lastNonEmptyRows = useRef<PendingRow[]>([]);
++  
+ 
+-  // ===== (╨╛╤Б╤В╨░╨▓╨╕╨╗ ╨╖╨░╨│╤А╤Г╨╖╨║╤Г ┬л╤И╨░╨┐╨╛╨║┬╗, ╨╜╨╛ ╨Э╨Х ╤А╨╡╨╜╨┤╨╡╤А╤О) =====
+-  const [directorReqs, setDirectorReqs] = useState<Array<{ request_id: string; items_count: number; submitted_at: string | null; doc_no?: string | null }>>([]);
+-  const [loadingDirReqs, setLoadingDirReqs] = useState(false);
+-
+-  // ===== ╨б╨Э╨Р╨С╨Ц╨Х╨Э╨Х╨ж =====
+   const [propsHeads, setPropsHeads] = useState<ProposalHead[]>([]);
+ const [buyerPropsCount, setBuyerPropsCount] = useState<number>(0);
+ const [buyerPositionsCount, setBuyerPositionsCount] = useState<number>(0);
+ const [propItemsCount, setPropItemsCount] = useState<Record<string, number>>({});
+   const [loadingProps, setLoadingProps] = useState(false);
+-  const [expanded, setExpanded] = useState<string | null>(null);
+-  const [itemsByProp, setItemsByProp] = useState<Record<string, ProposalItem[]>>({});
+-  const [loadedByProp, setLoadedByProp] = useState<Record<string, boolean>>({});
++
++const [itemsByProp, setItemsByProp] = useState<Record<string, ProposalItem[]>>({});
++const [loadedByProp, setLoadedByProp] = useState<Record<string, boolean>>({});
++
++
++const [loadingPropId, setLoadingPropId] = useState<string | null>(null);
++
+   const [decidingId, setDecidingId] = useState<string | null>(null);
++
++
++const [actingPropItemId, setActingPropItemId] = useState<number | null>(null);
++
++const screenLock =
++  !!actingId ||
++  reqDeleteId != null ||
++  reqSendId != null ||
++  propApproveId != null ||
++  propReturnId != null ||
++  actingPropItemId != null;
++
+   const [pdfHtmlByProp, setPdfHtmlByProp] = useState<Record<string, string>>({});
++const [rtToast, setRtToast] = useState<RtToast>({
++  visible: false,
++  title: '',
++  body: '',
++  count: 0,
++});
++
++const rtToastTimerRef = useRef<any>(null);
++
++const showRtToast = useCallback((title?: string, body?: string) => {
++  const t = String(title || '╨г╨▓╨╡╨┤╨╛╨╝╨╗╨╡╨╜╨╕╨╡').trim();
++  const b = String(body || '').trim();
++
++  if (rtToastTimerRef.current) {
++    clearTimeout(rtToastTimerRef.current);
++    rtToastTimerRef.current = null;
++  }
++
++  setRtToast(prev => {
++    const same = prev.visible && prev.title === t && prev.body === b;
++    return {
++      visible: true,
++      title: t,
++      body: b,
++      count: same ? prev.count + 1 : 1,
++    };
++  });
++
++  rtToastTimerRef.current = setTimeout(() => {
++    setRtToast(prev => ({ ...prev, visible: false }));
++  }, 2600);
++}, []);
+ 
++const showSuccess = useCallback((msg: string) => {
++  showRtToast('╨У╨╛╤В╨╛╨▓╨╛', msg);
++}, [showRtToast]);
+   // ===== ╨Ъ╨н╨и ╨Э╨Ю╨Ь╨Х╨а╨Ю╨Т ╨Ч╨Р╨п╨Т╨Ю╨Ъ =====
+-  const [displayNoByReq, setDisplayNoByReq] = useState<Record<string, string>>({});
++const [displayNoByReq, setDisplayNoByReq] = useState<Record<string, string>>({});
+ const [submittedAtByReq, setSubmittedAtByReq] = useState<Record<string, string>>({});
+ 
++
++const [reqMetaById, setReqMetaById] = useState<Record<string, RequestMeta>>({});
++const reqMetaByIdRef = useRef<Record<string, RequestMeta>>({});
++useEffect(() => { reqMetaByIdRef.current = reqMetaById; }, [reqMetaById]);
++// тЬЕ request_item_id -> note (╤З╤В╨╛╨▒╤Л ╨▓ proposal-sheet ╨▒╤Л╨╗╨╛ ╨║╨░╨║ ╤Г ╨┐╤А╨╛╤А╨░╨▒╨░)
++const [reqItemNoteById, setReqItemNoteById] = useState<Record<string, string>>({});
++const reqItemNoteByIdRef = useRef<Record<string, string>>({});
++useEffect(() => { reqItemNoteByIdRef.current = reqItemNoteById; }, [reqItemNoteById]);
++
++// proposal_id -> [request_id...]
++const [propReqIdsByProp, setPropReqIdsByProp] = useState<Record<string, string[]>>({});
++const propReqIdsByPropRef = useRef<Record<string, string[]>>({});
++useEffect(() => { propReqIdsByPropRef.current = propReqIdsByProp; }, [propReqIdsByProp]);
++
++const preloadRequestMeta = useCallback(async (reqIds: string[]) => {
++  const uniq = Array.from(new Set((reqIds || []).map(String).filter(Boolean)));
++  const existing = reqMetaByIdRef.current || {};
++  const need = uniq.filter(id => !existing[id]);
++  if (!need.length) return;
++
++  try {
++    const q = await supabase
++      .from("requests")
++      .select("id, object_name, object, level_code, system_code, zone_code, site_address_snapshot, note, comment")
++      .in("id", need);
++
++    if (q.error) throw q.error;
++
++    const next: Record<string, RequestMeta> = {};
++    (q.data || []).forEach((r: any) => {
++      const id = String(r?.id || "").trim();
++      if (!id) return;
++      next[id] = {
++        // note_preview ╨▒╨╛╨╗╤М╤И╨╡ ╨Э╨Х ╨╕╤Б╨┐╨╛╨╗╤М╨╖╤Г╨╡╨╝ (╨╕ ╨╜╨╡ ╤З╨╕╤В╨░╨╡╨╝ ╨╕╨╖ view)
++        object_name: r?.object_name ?? null,
++        object: r?.object ?? null,
++        level_code: r?.level_code ?? null,
++        system_code: r?.system_code ?? null,
++        zone_code: r?.zone_code ?? null,
++        site_address_snapshot: r?.site_address_snapshot ?? null,
++        note: r?.note ?? null,
++        comment: r?.comment ?? null,
++      };
++    });
++
++    if (Object.keys(next).length) {
++      setReqMetaById(prev => ({ ...prev, ...next }));
++    }
++  } catch (e: any) {
++    console.warn("[director] preloadRequestMeta:", e?.message ?? e);
++  }
++}, [supabase]);
++const preloadProposalRequestIds = useCallback(async (proposalId: string, requestItemIds: (string | null)[]) => {
++  const pid = String(proposalId || "").trim();
++  if (!pid) return;
++
++  // ╨╡╤Б╨╗╨╕ ╤Г╨╢╨╡ ╨╡╤Б╤В╤М тАФ ╨╜╨╡ ╨┤╤С╤А╨│╨░╨╡╨╝
++  if (propReqIdsByPropRef.current?.[pid]?.length) return;
++
++  const ids = Array.from(new Set((requestItemIds || []).map(x => String(x || "").trim()).filter(Boolean)));
++  if (!ids.length) return;
++
++  try {
++    // request_items: id -> request_id
++    const q = await supabase
++      .from("request_items")
++      .select("id, request_id")
++      .in("id", ids);
++
++    if (q.error) throw q.error;
++
++    const reqIds = Array.from(new Set((q.data || []).map((r: any) => String(r?.request_id || "").trim()).filter(Boolean)));
++    if (!reqIds.length) return;
++
++    setPropReqIdsByProp(prev => ({ ...prev, [pid]: reqIds }));
++    await preloadRequestMeta(reqIds);
++  } catch (e: any) {
++    console.warn("[director] preloadProposalRequestIds:", e?.message ?? e);
++  }
++}, [supabase, preloadRequestMeta]);
++
+   const labelForRequest = useCallback((rid: number | string | null | undefined, fallbackDocNo?: string | null) => {
+     const key = String(rid ?? '');
+     if (fallbackDocNo && fallbackDocNo.trim()) return fallbackDocNo.trim();
+@@ -179,6 +869,112 @@ const [submittedAtByReq, setSubmittedAtByReq] = useState<Record<string, string>>
+     return `#${shortId(rid)}`;
+   }, [displayNoByReq]);
+ 
++const fetchFinSpendRows = useCallback(async () => {
++  try {
++    let q = supabase
++  .from("v_director_finance_spend_kinds_v3")
++  .select("proposal_id,proposal_no,supplier,kind_code,kind_name,approved_alloc,paid_alloc,paid_alloc_cap,overpay_alloc,director_approved_at");
++
++    if (finFrom) q = q.gte("director_approved_at", finFrom);
++    if (finTo) q = q.lte("director_approved_at", finTo);
++
++    const { data, error } = await q;
++    if (error) throw error;
++
++    setFinSpendRows(Array.isArray(data) ? data : []);
++  } catch (e: any) {
++    console.warn("[director] fetchFinSpendRows:", e?.message ?? e);
++   
++  }
++}, [supabase, finFrom, finTo]);
++
++
++const fetchFinance = useCallback(async () => {
++  setFinLoading(true);
++
++
++  let nextRows: FinanceRow[] | null = null;
++
++  try {
++    const list = await listAccountantInbox();
++
++    const mapped = (Array.isArray(list) ? list : [])
++      .map(mapToFinanceRow)
++      .filter(x => !!x && !!x.id)
++      .filter(x => Number.isFinite(Number(x.amount)));
++
++
++    const t0 = mid(new Date());
++    mapped.sort((a, b) => {
++      const aPaid = nnum(a.amount) > 0 && Math.max(nnum(a.amount) - nnum(a.paidAmount), 0) <= 0;
++      const bPaid = nnum(b.amount) > 0 && Math.max(nnum(b.amount) - nnum(b.paidAmount), 0) <= 0;
++
++      const aDueIso =
++  a.dueDate ??
++  (a.invoiceDate ? addDaysIso(a.invoiceDate, FIN_DUE_DAYS_DEFAULT) : null) ??
++  (a.approvedAtIso ? addDaysIso(a.approvedAtIso, FIN_DUE_DAYS_DEFAULT) : null);
++
++const bDueIso =
++  b.dueDate ??
++  (b.invoiceDate ? addDaysIso(b.invoiceDate, FIN_DUE_DAYS_DEFAULT) : null) ??
++  (b.approvedAtIso ? addDaysIso(b.approvedAtIso, FIN_DUE_DAYS_DEFAULT) : null);
++      const aDue = parseMid(aDueIso) ?? 0;
++      const bDue = parseMid(bDueIso) ?? 0;
++
++      const aRest = Math.max(nnum(a.amount) - nnum(a.paidAmount), 0);
++      const bRest = Math.max(nnum(b.amount) - nnum(b.paidAmount), 0);
++
++      const aOver = (!aPaid && aRest > 0 && aDue && aDue < t0) ? 1 : 0;
++      const bOver = (!bPaid && bRest > 0 && bDue && bDue < t0) ? 1 : 0;
++
++      if (aOver !== bOver) return bOver - aOver;
++
++      // ╨┤╨░╨╗╤М╤И╨╡ ╤Б╨╛╤А╤В ╨┐╨╛ ╤Б╤А╨╛╨║╤Г
++      return (aDue || 0) - (bDue || 0);
++    });
++
++    nextRows = mapped;
++
++    const rep = computeFinanceRep(mapped, {
++  dueDaysDefault: FIN_DUE_DAYS_DEFAULT,
++  criticalDays: FIN_CRITICAL_DAYS,
++  periodFromIso: finFrom,
++  periodToIso: finTo,
++});
++    setFinRows(mapped);
++setFinRep(rep);
++await fetchFinSpendRows();
++
++  } catch (e: any) {
++    console.warn("[director] fetchFinance:", e?.message ?? e);
++    if (nextRows) {
++      setFinRows(nextRows);
++      setFinRep(computeFinanceRep(nextRows, { dueDaysDefault: FIN_DUE_DAYS_DEFAULT, criticalDays: FIN_CRITICAL_DAYS }));
++    }
++try { await fetchFinSpendRows(); } catch {}
++  } finally {
++    setFinLoading(false);
++  }
++}, [finFrom, finTo, fetchFinSpendRows]);
++
++
++const isPaidRow = (r: FinanceRow) => {
++  const amt = nnum(r.amount);
++  const paidAmt = nnum(r.paidAmount);
++  const rest = Math.max(amt - paidAmt, 0);
++
++  // ╨╡╤Б╨╗╨╕ ╨╛╤Б╤В╨░╤В╨╛╨║ = 0 -> ╤В╨╛╤З╨╜╨╛ ╨╛╨┐╨╗╨░╤З╨╡╨╜╨╛
++  if (amt > 0 && rest <= 0) return true;
++
++  // ╤Б╤В╨░╤В╤Г╤Б╨╛╨╝ ╨Э╨Х ╤А╨╡╤И╨░╨╡╨╝ (╨╕╨╜╨░╤З╨╡ "╨╛╨┐╨╗╨░╤З╨╡╨╜╨╛ ╤З╨░╤Б╤В╨╕╤З╨╜╨╛" ╨▓╤Л╨║╨╕╨╜╨╡╤В ╤З╨░╤Б╤В╨╕╤З╨╜╤Л╨╡)
++  return false;
++};
++
++const getDueIso = (r: FinanceRow) =>
++  r.dueDate ??
++  (r.invoiceDate ? addDaysIso(r.invoiceDate, FIN_DUE_DAYS_DEFAULT) : null) ??
++  (r.approvedAtIso ? addDaysIso(r.approvedAtIso, FIN_DUE_DAYS_DEFAULT) : null);
++
+   const preloadDisplayNos = useCallback(async (reqIds: Array<number | string>) => {
+   const needed = Array.from(
+     new Set(
+@@ -220,7 +1016,6 @@ const [submittedAtByReq, setSubmittedAtByReq] = useState<Record<string, string>>
+ }, [displayNoByReq, submittedAtByReq]);
+ 
+ 
+-  /* ---------- loaders ---------- */
+   const fetchRows = useCallback(async () => {
+     const my = ++fetchTicket.current;
+     setLoadingRows(true);
+@@ -254,36 +1049,10 @@ const [submittedAtByReq, setSubmittedAtByReq] = useState<Record<string, string>>
+     }
+   }, [preloadDisplayNos]);
+ 
+-  const fetchDirectorReqs = useCallback(async () => {
+-    setLoadingDirReqs(true);
+-    try {
+-      const inbox = typeof fetchDirectorInbox === 'function'
+-        ? await fetchDirectorInbox('╨Э╨░ ╤Г╤В╨▓╨╡╤А╨╢╨┤╨╡╨╜╨╕╨╕')
+-        : await (RIK_API?.listDirectorInbox?.('╨Э╨░ ╤Г╤В╨▓╨╡╤А╨╢╨┤╨╡╨╜╨╕╨╕') ?? []);
+-      const reqRows = (inbox || []).filter(r => r.kind === 'request') as DirectorInboxRow[];
+-
+-      const mapped = reqRows.map(r => ({
+-        request_id: String(r.request_id ?? ''),
+-        items_count: Number(r.items_count ?? 0),
+-        submitted_at: (r.submitted_at ?? null) as (string | null),
+-        doc_no: (r as any).doc_no ?? null,
+-      }));
+-      setDirectorReqs(mapped);
+-
+-      const idsToPreload = mapped.filter(r => !r.doc_no).map(r => r.request_id).filter(Boolean);
+-      if (idsToPreload.length) await preloadDisplayNos(idsToPreload);
+-    } catch (e) {
+-      console.warn('[director] listDirectorInbox]:', (e as any)?.message ?? e);
+-      setDirectorReqs([]);
+-    } finally {
+-      setLoadingDirReqs(false);
+-    }
+-  }, [preloadDisplayNos]);
+-
+   const fetchProps = useCallback(async () => {
+     setLoadingProps(true);
+     try {
+-      // 1) ╨║╨░╨║ ╨╕ ╤А╨░╨╜╤М╤И╨╡: ╤Б╨┐╨╕╤Б╨╛╨║ ┬л╨Э╨░ ╤Г╤В╨▓╨╡╤А╨╢╨┤╨╡╨╜╨╕╨╕┬╗
++
+       const list = await listDirectorProposalsPending();
+       const heads: ProposalHead[] = (list ?? [])
+         .filter((x: any) => x && x.id != null && x.submitted_at != null)
+@@ -292,8 +1061,6 @@ const [submittedAtByReq, setSubmittedAtByReq] = useState<Record<string, string>>
+       if (!heads.length) { setPropsHeads([]); return; }
+ 
+       const ids = heads.map(h => h.id);
+-
+-      // 2) ╨┐╨╛╨┤╤В╤П╨│╨╕╨▓╨░╨╡╨╝ ╨║╤А╨░╤Б╨╕╨▓╤Л╨╡ ╨╜╨╛╨╝╨╡╤А╨░ ╨Ш ╨│╤А╨░╨╜╨╕╤Ж╤Г ┬л╨╝╨╕╨│╤А╨░╤Ж╨╕╨╕┬╗ (╨╜╨╡ ╨╛╤В╨┐╤А╨░╨▓╨╗╨╡╨╜╨╛ ╨▓ ╨▒╤Г╤Е╨│╨░╨╗╤В╨╡╤А╨╕╤О)
+       const { data, error } = await supabase
+         .from('proposals')
+         .select('id, proposal_no, id_short, sent_to_accountant_at')
+@@ -301,7 +1068,6 @@ const [submittedAtByReq, setSubmittedAtByReq] = useState<Record<string, string>>
+ 
+       if (error || !Array.isArray(data)) { setPropsHeads(heads); return; }
+ 
+-      // ╤В╨╛╨╗╤М╨║╨╛ ╤В╨╡, ╤З╤В╨╛ ╨Х╨й╨Б ╨Э╨Х ╨╛╤В╨┐╤А╨░╨▓╨╗╨╡╨╜╤Л ╨▓ ╨▒╤Г╤Е╨│╨░╨╗╤В╨╡╤А╨╕╤О
+       const okIds = new Set<string>(
+         data.filter(r => !r?.sent_to_accountant_at).map(r => String(r.id))
+       );
+@@ -310,7 +1076,7 @@ const [submittedAtByReq, setSubmittedAtByReq] = useState<Record<string, string>>
+ for (const r of data) {
+   const id = String((r as any).id);
+   const pn = String((r as any).proposal_no ?? '').trim();   // тЬЕ PR-0024/2026
+-  const short = (r as any).id_short;                        // тЬЕ 178
++  const short = (r as any).id_short;                       
+   const pretty = pn || (short != null ? `PR-${String(short)}` : '');
+   if (id && pretty) prettyMap[id] = pretty;
+ }
+@@ -319,7 +1085,7 @@ for (const r of data) {
+   .filter(h => okIds.has(h.id))
+   .map(h => ({ ...h, pretty: prettyMap[h.id] ?? h.pretty ?? null }));
+ 
+-// тЬЕ ╨▓╤Л╨║╨╕╨┤╤Л╨▓╨░╨╡╨╝ ╨┐╤А╨╡╨┤╨╗╨╛╨╢╨╡╨╜╨╕╤П ╨▒╨╡╨╖ ╤Б╤В╤А╨╛╨║ (╨╕╨╜╨░╤З╨╡ тАЬ╨б╨╛╤Б╤В╨░╨▓ ╨┐╤Г╤Б╤ВтАЭ ╨▒╤Г╨┤╨╡╤В ╨╝╤Г╤Б╨╛╤А╨╛╨╝)
++
+ try {
+   const propIds = filtered.map(h => h.id);
+   if (propIds.length) {
+@@ -356,11 +1122,8 @@ try {
+   setPropItemsCount({});
+ }
+ 
+-
+-// KPI: ╨║╨╛╨╗-╨▓╨╛ ╨┐╤А╨╡╨┤╨╗╨╛╨╢╨╡╨╜╨╕╨╣
+ setBuyerPropsCount(filtered.length);
+ 
+-// KPI: ╨║╨╛╨╗-╨▓╨╛ ╨┐╨╛╨╖╨╕╤Ж╨╕╨╣ ╨┐╨╛ ╨▓╤Б╨╡╨╝ ╨┐╤А╨╡╨┤╨╗╨╛╨╢╨╡╨╜╨╕╤П╨╝ (╨▒╤Л╤Б╤В╤А╨╛ ╨╛╨┤╨╜╨╕╨╝ ╨╖╨░╨┐╤А╨╛╤Б╨╛╨╝)
+ try {
+   const propIds = filtered.map(h => h.id);
+   if (propIds.length) {
+@@ -385,7 +1148,7 @@ try {
+     }
+   }, []);
+ 
+-  /* ---------- effects ---------- */
++
+   useEffect(() => {
+     if (didInit.current) return;
+     didInit.current = true;
+@@ -393,29 +1156,50 @@ try {
+       try {
+         await ensureSignedIn();
+         await fetchRows();
+-        await fetchDirectorReqs();
+         await fetchProps();
+       } catch (e) {
+         console.warn('[Director] ensureSignedIn]:', (e as any)?.message || e);
+       }
+     })();
+-  }, [fetchRows, fetchDirectorReqs, fetchProps]);
++  }, [fetchRows, fetchProps]);
++
++useEffect(() => {
++  return () => {
++    try {
++      if (rtToastTimerRef.current) clearTimeout(rtToastTimerRef.current);
++    } catch {}
++  };
++}, []);
++
++useEffect(() => {
++  if (dirTab !== "╨д╨╕╨╜╨░╨╜╤Б╤Л") return;
++  void fetchFinance();
++}, [dirTab, fetchFinance]);
++
+ 
+   useEffect(() => {
+-    const ch = supabase.channel('notif-director-rt')
+-      .on('postgres_changes', {
+-        event: 'INSERT',
+-        schema: 'public',
+-        table: 'notifications',
+-        filter: "role=eq.director"
+-      }, (payload: any) => {
+-        const n = payload?.new || {};
+-        Alert.alert(n.title || '╨г╨▓╨╡╨┤╨╛╨╝╨╗╨╡╨╜╨╕╨╡', n.body || '');
+-        try { fetchDirectorInbox && fetchDirectorInbox(); } catch {}
+-      })
+-      .subscribe();
+-    return () => { try { supabase.removeChannel(ch); } catch {} };
+-  }, []);
++  const ch = supabase.channel('notif-director-rt')
++    .on('postgres_changes', {
++      event: 'INSERT',
++      schema: 'public',
++      table: 'notifications',
++      filter: "role=eq.director"
++    }, (payload: any) => {
++      const n = payload?.new || {};
++      showRtToast(n.title, n.body);
++      void fetchRows();
++      void fetchProps();
++    })
++    .subscribe();
++
++  return () => {
++  try { ch.unsubscribe(); } catch {}
++  try { supabase.removeChannel(ch); } catch {}
++};
++
++}, [fetchRows, fetchProps, showRtToast]);
++
++
+     // ╨н╨║╤Б╨┐╨╛╤А╤В ╨╖╨░╤П╨▓╨║╨╕ ╨▓ ╨╜╨░╤Б╤В╨╛╤П╤Й╨╕╨╣ XLSX (╨▒╨╡╨╖ ╨┐╤А╨╡╨┤╤Г╨┐╤А╨╡╨╢╨┤╨╡╨╜╨╕╤П Excel)
+ const exportRequestExcel = useCallback((g: Group) => {
+   const rows = g.items;
+@@ -490,335 +1274,335 @@ const exportRequestExcel = useCallback((g: Group) => {
+   }
+ }, [labelForRequest]);
+ 
+-async function openPdfPreviewOrFallbackShare(uri: string) {
+-  if (Platform.OS === 'web') {
+-    const win = window.open(uri, '_blank', 'noopener,noreferrer');
+-    if (!win) Alert.alert('PDF', '╨а╨░╨╖╤А╨╡╤И╨╕ ╨▓╤Б╨┐╨╗╤Л╨▓╨░╤О╤Й╨╕╨╡ ╨╛╨║╨╜╨░.');
+-    return;
+-  }
+-
+-  try {
+-    // тЬЕ Preview ╤З╨╡╤А╨╡╨╖ ShareSheet тАФ ╤Б╨░╨╝╤Л╨╣ ╤Б╤В╨░╨▒╨╕╨╗╤М╨╜╤Л╨╣ ╤Б╨┐╨╛╤Б╨╛╨▒
+-    const ok = await Sharing.isAvailableAsync();
+-    if (!ok) {
+-      await Print.printAsync({ uri });
+-      return;
++  const openRequestPdf = useCallback(async (g: any) => {
++  const rid = String(g?.request_id ?? "").trim();
++  if (!rid) return;
++
++  await runPdfTop({
++    busy,
++    supabase,
++    key: `pdf:req:${rid}`,
++    label: "╨Ю╤В╨║╤А╤Л╨▓╨░╤О PDFтАж",
++    mode: "preview",
++    fileName: `╨Ч╨░╤П╨▓╨║╨░_${rid}`,
++    getRemoteUrl: () => exportRequestPdf(rid, "preview"),
++  });
++}, [busy, supabase]);
++ 
++ 
++    const groups: Group[] = useMemo(() => {
++    const map = new Map<number | string, PendingRow[]>();
++    for (const r of rows) {
++      const k = String(r.request_id ?? '');
++      if (!map.has(k)) map.set(k, []);
++      map.get(k)!.push(r);
+     }
++    let list = Array.from(map.entries()).map(([request_id, items]) => ({ request_id, items }));
+ 
+-    await new Promise((r) => setTimeout(r, 150));
+-
+-    await Sharing.shareAsync(uri, {
+-      mimeType: 'application/pdf',
+-      UTI: 'com.adobe.pdf',
+-      dialogTitle: 'PDF',
+-    });
+-  } catch (e: any) {
+-    const msg = String(e?.message ?? e ?? '').toLowerCase();
+-    if (msg.includes('printing did not complete')) return;
+-    if (msg.includes('canceled') || msg.includes('cancel')) return;
+-    Alert.alert('PDF', e?.message ?? '╨Э╨╡ ╤Г╨┤╨░╨╗╨╛╤Б╤М ╨╛╤В╨║╤А╤Л╤В╤М PDF');
+-  }
+-}
+-  /* ---------- PDF ╨╖╨░╤П╨▓╨║╨╕ (╨┐╤А╨╛╤А╨░╨▒) ╤Б ╨▒╨╡╨╖╨╛╨┐╨░╤Б╨╜╤Л╨╝ window.open ---------- */
+-   const openRequestPdf = useCallback(async (g: any) => {
+-  const rid = String(g?.request_id ?? '');
+-  const key = `pdf:req:${rid}`;
++    
++    return list;
++  }, [rows, labelForRequest]);
+ 
+-  try {
+-    await busy.run(async () => {
+-      if (!rid) throw new Error('request_id ╨┐╤Г╤Б╤В╨╛╨╣');
+ 
+-      const uri = await exportRequestPdf(rid, 'preview');
+-      if (!uri) {
+-        Alert.alert('PDF', '╨Э╨╡ ╤Г╨┤╨░╨╗╨╛╤Б╤М ╤Б╤Д╨╛╤А╨╝╨╕╤А╨╛╨▓╨░╤В╤М PDF-╨┤╨╛╨║╤Г╨╝╨╡╨╜╤В');
+-        return;
+-      }
+-
+-      await openPdfPreviewOrFallbackShare(uri);
+-    }, { key, message: '╨Ю╤В╨║╤А╤Л╨▓╨░╤О PDFтАж', minMs: 300 });
+-  } catch (e: any) {
+-    Alert.alert('╨Ю╤И╨╕╨▒╨║╨░', e?.message ?? 'PDF ╨╜╨╡ ╤Б╤Д╨╛╤А╨╝╨╕╤А╨╛╨▓╨░╨╜');
+-  }
+-}, [busy]);
+-
+-    // ╨Э╨░╨╣╤В╨╕ ╤Б╨▓╤П╨╖╨░╨╜╨╜╤Г╤О ╨╖╨░╨║╤Г╨┐╨║╤Г ╨┐╨╛ proposal_id (╨┤╨╗╤П ╨┤╨░╨╗╤М╨╜╨╡╨╣╤И╨╡╨│╨╛ purchase_approve)
+-  const findPurchaseIdByProposal = useCallback(async (proposalId: string): Promise<string | null> => {
+-    // 1) ╨┐╤А╤П╨╝╨░╤П ╤Б╨▓╤П╨╖╨║╨░ ╤З╨╡╤А╨╡╨╖ view
+-    const q = await supabase
+-      .from('v_purchases')
+-      .select('id, proposal_id')
+-      .eq('proposal_id', proposalId)
+-      .limit(1)
+-      .maybeSingle();
+-
+-    if (!q.error && q.data?.id) return String(q.data.id);
+-
+-    // 2) fallback: ╨┐╤А╨╛╤Б╨╕╨╝ ╤Б╨╡╤А╨▓╨╡╤А ╤Б╨╛╨╖╨┤╨░╤В╤М ╤Б╨▓╤П╨╖╤М ╨╕ ╨▓╨╡╤А╨╜╤Г╤В╤М id
+-    const r = await supabase.rpc('purchase_upsert_from_proposal', { p_proposal_id: String(proposalId) });
+-    if (!(r as any).error && (r as any).data) return String((r as any).data);
+-
+-    return null;
+-  }, []);
+-// тЬЕ PROD: seed works/services right after director approve (best-effort)
+-const seedWorksAfterApprove = useCallback(async (proposalId: string) => {
+-  // 1) ╤Б╨╜╨░╤З╨░╨╗╨░ ╨┐╤А╨╛╨▒╤Г╨╡╨╝ ╨┐╤А╤П╨╝╨╛╨╣ seed ╨╕╨╖ proposal (╨╕╨┤╨╡╨░╨╗╤М╨╜╨╛)
+-  try {
+-    const r = await supabase.rpc("work_seed_from_proposal" as any, {
+-      p_proposal_id: String(proposalId),
+-    } as any);
+-    if (!r.error) return;
+-    console.warn("[director] work_seed_from_proposal error:", r.error?.message);
+-  } catch (e) {
+-    console.warn("[director] work_seed_from_proposal throw:", e);
+-  }
+-
+-  // 2) fallback: seed ╨╕╨╖ purchase (╨╡╤Б╨╗╨╕ ╨╜╨╡╤В/╨╜╨╡ ╨│╨╛╤В╨╛╨▓╨░ ╤Д╤Г╨╜╨║╤Ж╨╕╤П above)
+-  try {
+-    const purchaseId = await findPurchaseIdByProposal(String(proposalId));
+-    if (!purchaseId) return;
+-
+-    const r2 = await supabase.rpc("work_seed_from_purchase" as any, {
+-      p_purchase_id: String(purchaseId),
+-    } as any);
+-
+-    if (r2.error) {
+-      console.warn("[director] work_seed_from_purchase error:", r2.error?.message);
+-    }
+-  } catch (e) {
+-    console.warn("[director] work_seed_from_purchase throw:", e);
+-  }
+-}, [findPurchaseIdByProposal]);
+-
+-
+-  /* ---------- groups ---------- */
+-    const groups: Group[] = useMemo(() => {
+-    const map = new Map<number | string, PendingRow[]>();
+-    for (const r of rows) {
+-      const k = String(r.request_id ?? '');
+-      if (!map.has(k)) map.set(k, []);
+-      map.get(k)!.push(r);
+-    }
+-    let list = Array.from(map.entries()).map(([request_id, items]) => ({ request_id, items }));
+-
+-    
+-    return list;
+-  }, [rows, labelForRequest]);
+-
+-
+-  const foremanRequestsCount = groups.length; // ╨║╨╛╨╗-╨▓╨╛ ╨╖╨░╤П╨▓╨╛╨║
+-  const foremanPositionsCount = rows.length;  // ╨║╨╛╨╗-╨▓╨╛ ╨┐╨╛╨╖╨╕╤Ж╨╕╨╣
+-
+-  // (╨╛╤Б╤В╨░╨▓╨╗╤П╨╡╨╝ ╤Г╨╜╨╕╨║╨░╨╗╨╕╨╖╨░╤Ж╨╕╤О ┬л╤И╨░╨┐╨╛╨║┬╗ ╨┤╨╗╤П ╤Б╨╛╨▓╨╝╨╡╤Б╤В╨╕╨╝╨╛╤Б╤В╨╕, ╨╜╨╛ ╨Э╨Х ╨╕╤Б╨┐╨╛╨╗╤М╨╖╤Г╨╡╨╝ ╨▓ ╤А╨╡╨╜╨┤╨╡╤А╨╡)
+-  const directorReqsUnique = useMemo(() => {
+-    const seen = new Set<string>();
+-    return directorReqs.filter(r => {
+-      if (!r.request_id || seen.has(r.request_id)) return false;
+-      seen.add(r.request_id);
+-      return true;
+-    });
+-  }, [directorReqs]);
++  const foremanRequestsCount = groups.length; // ╨║╨╛╨╗-╨▓╨╛ ╨╖╨░╤П╨▓╨╛╨║
++  const foremanPositionsCount = rows.length;  // ╨║╨╛╨╗-╨▓╨╛ ╨┐╨╛╨╖╨╕╤Ж╨╕╨╣
+ 
++  
+ /* ===== ╨Ъ╨░╤А╤В╨╛╤З╨║╨░ ╨┐╤А╨╡╨┤╨╗╨╛╨╢╨╡╨╜╨╕╤П (╨б╨Э╨Р╨С╨Ц╨Х╨Э╨Х╨ж) тАФ ╨║╨░╨║ ╤Г ╨╖╨░╤П╨▓╨╛╨║ ===== */
+-const ProposalRow = React.memo(({ p }: { p: ProposalHead }) => {
++const ProposalRow = React.memo(({ p, screenLock }: { p: ProposalHead; screenLock: boolean }) => {
+   const pidStr = String(p.id);
+   const pretty = String(p.pretty ?? '').trim();
+   const itemsCount = propItemsCount[pidStr] ?? 0;
+ 
++  // тЬЕ ╨╛╨▒╤К╤П╨▓╨╗╤П╨╡╨╝ ╨Ф╨Ю return (╨░ ╨╜╨╡ ╨▓╨╜╤Г╤В╤А╨╕ JSX)
++  const title = pretty || `#${pidStr.slice(0, 8)}`;
++
+   return (
+     <View style={{ marginBottom: 12 }}>
+       <View style={s.groupHeader}>
+         {/* LEFT */}
+         <View style={{ flex: 1, minWidth: 0 }}>
+           <Text style={s.groupTitle} numberOfLines={1}>
+-            {pretty
+-              ? (pretty.toLowerCase().startsWith('╨┐╤А╨╡╨┤╨╗╨╛╨╢╨╡╨╜╨╕╨╡') ? pretty : `╨Я╤А╨╡╨┤╨╗╨╛╨╢╨╡╨╜╨╕╨╡ ${pretty}`)
+-              : `╨Я╤А╨╡╨┤╨╗╨╛╨╢╨╡╨╜╨╕╨╡ #${pidStr.slice(0, 8)}`}
++            {title}
+           </Text>
+ 
+           <Text style={s.cardMeta} numberOfLines={1}>
+-            ╨Ю╤В╨┐╤А╨░╨▓╨╗╨╡╨╜╨╛: {p.submitted_at ? new Date(p.submitted_at).toLocaleString() : 'тАФ'}
++            {fmtDateOnly(p.submitted_at)}
+           </Text>
+         </View>
+ 
+         {/* RIGHT */}
+         <View style={s.rightStack}>
+-          <View style={s.metaPill}>
+-            <Text style={s.metaPillText}>{`╨Я╨╛╨╖╨╕╤Ж╨╕╨╣ ${itemsCount}`}</Text>
+-          </View>
++  <View style={s.metaPill}>
++    <Text style={s.metaPillText}>{`╨Я╨╛╨╖╨╕╤Ж╨╕╨╣ ${itemsCount}`}</Text>
++  </View>
++
++  <View style={s.rightStackSpacer} />
++
++  <Pressable
++    disabled={screenLock}
++    onPress={() => {
++  if (screenLock) return;
++  openProposalSheet(pidStr);
++
++  // тЬЕ ╨Т╨Р╨Ц╨Э╨Ю: ╨│╤А╤Г╨╖╨╕╨╝ ╨▓╨╗╨╛╨╢╨╡╨╜╨╕╤П ╨Т╨б╨Х╨У╨Ф╨Р, ╨┤╨░╨╢╨╡ ╨╡╤Б╨╗╨╕ loadedByProp ╤Г╨╢╨╡ true
++  void loadProposalAttachments(pidStr);
++
++  // ╤Б╨╛╤Б╤В╨░╨▓ (╨║╨░╨║ ╨▒╤Л╨╗╨╛)
++  void toggleExpand(pidStr);
++}}
++
++    style={[s.openBtn, screenLock && { opacity: 0.6 }]}
++  >
++    <Text style={s.openBtnText}>{loadingPropId === pidStr ? 'тАж' : '╨Ю╤В╨║╤А╤Л╤В╤М'}</Text>
++  </Pressable>
++</View>
+ 
+-          <Pressable
+-            onPress={async () => {
+-              await toggleExpand(pidStr);  // тЬЕ ╨│╤А╤Г╨╖╨╕╨╝ ╤Б╨╛╤Б╤В╨░╨▓ ╨║╨░╨║ ╤А╨░╨╜╤М╤И╨╡
+-              openProposalSheet(pidStr);   // тЬЕ ╨╛╤В╨║╤А╤Л╨▓╨░╨╡╨╝ ╨╝╨╛╨┤╨░╨╗╨║╤Г
+-            }}
+-            style={s.openBtn}
+-          >
+-            <Text style={s.openBtnText}>╨Ю╤В╨║╤А╤Л╤В╤М</Text>
+-          </Pressable>
+-        </View>
+       </View>
+     </View>
+   );
+ });
+-  /* ---------- toggleExpand: ╨│╤А╤Г╨╖╨╕╨╝ ╤Б╨╛╤Б╤В╨░╨▓ ╨╕ HTML (web) ---------- */
+-  const toggleExpand = useCallback(async (pid: string) => {
+-    const next = expanded === pid ? null : pid;
+-    setExpanded(next);
++const loadProposalAttachments = useCallback(async (pidStr: string) => {
++  const pid = String(pidStr || "").trim();
++  if (!pid) return;
+ 
+-    const key = String(pid);
+-    if (next === pid && !loadedByProp[key]) {
+-      try {
+-        // 1) ╤Б╨╜╨░╤З╨░╨╗╨░ ╨┐╤А╨╛╨▒╤Г╨╡╨╝ snapshot
+-        let rows: any[] | null = null;
++  // ╤З╤В╨╛╨▒╤Л ╨╜╨╡ ╨┤╨╡╤А╨│╨░╤В╤М 10 ╤А╨░╨╖
++  if (propAttBusyByProp[pid]) return;
++  setPropAttBusyByProp(prev => ({ ...prev, [pid]: true }));
+ 
+-        const qSnap = await supabase
+-          .from('proposal_snapshot_items')
+-          .select('id, request_item_id, rik_code, name_human, uom, app_code, total_qty')
+-          .eq('proposal_id', key)
+-          .order('id', { ascending: true });
++  try {
++    const q = await supabase
++      .from("proposal_attachments")
++      .select("id, file_name, url, group_key, created_at, bucket_id, storage_path")
++      .eq("proposal_id", pid)
++      .order("created_at", { ascending: false });
+ 
+-        if (!qSnap.error && Array.isArray(qSnap.data)) {
+-          rows = qSnap.data;
+-        }
++    if (q.error) throw q.error;
+ 
+-        // 2) ╨╡╤Б╨╗╨╕ ╤Б╨╜╨░╨┐╤И╨╛╤В╨░ ╨╜╨╡╤В тАФ ╨╛╨▒╤Л╤З╨╜╤Л╨╡ proposal_items (view)
+-        if (!rows) {
+-          const qItems = await supabase
+-            .from('proposal_items_view')
+-            .select('id, request_item_id, rik_code, name_human, uom, app_code, total_qty')
+-            .eq('proposal_id', key)
+-            .order('id', { ascending: true });
++    const raw = (q.data || []) as any[];
+ 
+-        if (!qItems.error && Array.isArray(qItems.data)) {
+-            rows = qItems.data;
+-          }
+-        }
++const rows: ProposalAttachmentRow[] = [];
++const seen = new Set<string>();
++
++for (const r of raw) {
++  const id = String(r?.id ?? "").trim();
++  if (!id) continue;
+ 
+-        // тЬЕ ╨▒╨╡╤А╤С╨╝ proposal_items, ╨┐╨╛╤В╨╛╨╝╤Г ╤З╤В╨╛ ╤В╤Г╤В ╨╡╤Б╤В╤М price
+-{
+-  const qPlain = await supabase
+-    .from('proposal_items')
+-    .select('id, request_item_id, rik_code, name_human, uom, app_code, qty, price')
+-    .eq('proposal_id', key)
+-    .order('id', { ascending: true });
++  if (seen.has(id)) continue;
++  seen.add(id);
+ 
+-  if (!qPlain.error && Array.isArray(qPlain.data)) {
+-    rows = qPlain.data.map((r: any) => ({ ...r, total_qty: r.qty }));
++  let url = (r.url ?? null) as string | null;
++
++  if (!url) {
++    const bucket = String(r.bucket_id ?? "").trim();
++    const path = String(r.storage_path ?? "").trim();
++    if (bucket && path) {
++      try {
++        const s = await supabase.storage.from(bucket).createSignedUrl(path, 60 * 60);
++        if (!s.error && s.data?.signedUrl) url = s.data.signedUrl;
++      } catch {}
++    }
+   }
++
++  rows.push({
++    id,
++    file_name: String(r.file_name ?? "file"),
++    url,
++    group_key: r.group_key ?? null,
++    created_at: r.created_at ?? null,
++    bucket_id: r.bucket_id ?? null,
++    storage_path: r.storage_path ?? null,
++  });
+ }
+-        let norm = (rows ?? []).map((r: any, i: number) => ({
+-  id: Number(r.id ?? i),
+-  request_item_id: r.request_item_id != null ? String(r.request_item_id) : null,
+-  rik_code: r.rik_code ?? null,
+-  name_human: r.name_human ?? '',
+-  uom: r.uom ?? null,
+-  app_code: r.app_code ?? null,
+-  total_qty: Number(r.total_qty ?? r.qty ?? 0),
+-  price: r.price != null ? Number(r.price) : null,
+-  item_kind: null as any,
+-}));
+-
+-// тЬЕ ╨┐╨╛╨┤╤В╤П╨│╨╕╨▓╨░╨╡╨╝ item_kind ╨╕╨╖ request_items
+-try {
+-  const ids = Array.from(new Set(
+-    norm.map(x => String(x.request_item_id ?? '')).filter(Boolean)
+-  ));
+-  if (ids.length) {
+-    const qKinds = await supabase
+-      .from('request_items')
+-      .select('id, item_kind')
+-      .in('id', ids);
+-
+-    if (!qKinds.error && Array.isArray(qKinds.data)) {
+-      const mapKind: Record<string, string> = {};
+-      for (const rr of qKinds.data as any[]) {
+-        const id = String(rr.id ?? '');
+-        const k = String(rr.item_kind ?? '').trim();
+-        if (id && k) mapKind[id] = k;
+-      }
+-      norm = norm.map(x => ({
+-        ...x,
+-        item_kind: x.request_item_id ? (mapKind[String(x.request_item_id)] ?? null) : null,
+-      }));
+-    }
++
++setPropAttByProp(prev => ({ ...prev, [pid]: rows }));
++
++  } catch (e: any) {
++    console.warn("[director] loadProposalAttachments:", e?.message ?? e);
++    setPropAttByProp(prev => ({ ...prev, [pid]: [] }));
++  } finally {
++    setPropAttBusyByProp(prev => ({ ...prev, [pid]: false }));
+   }
+-} catch {}
++}, [supabase, propAttBusyByProp]);
++ /* ---------- toggleExpand: ╨│╤А╤Г╨╖╨╕╨╝ ╤Б╨╛╤Б╤В╨░╨▓ ╨╕ HTML (web) ---------- */
++const toggleExpand = useCallback(async (pid: string) => {
++  const pidStr = String(pid);
+ 
+-setItemsByProp(prev => ({ ...prev, [key]: norm }));
++  // тЬЕ ╨░╨╜╤В╨╕-╤Б╨┐╨░╨╝ ╨┐╨╛ ╨▓╤А╨╡╨╝╨╡╨╜╨╕ (╨╛╤З╨╡╨╜╤М ╨▓╨░╨╢╨╜╨╛ ╨╜╨░ ╤В╨╡╨╗╨╡╤Д╨╛╨╜╨╡)
++  const now = Date.now();
++  if (now - lastTapRef.current < 350) return;
++  lastTapRef.current = now;
+ 
+-      } catch (e) {
+-        Alert.alert('╨Ю╤И╨╕╨▒╨║╨░', (e as any)?.message ?? '╨Э╨╡ ╤Г╨┤╨░╨╗╨╛╤Б╤М ╨╖╨░╨│╤А╤Г╨╖╨╕╤В╤М ╤Б╤В╤А╨╛╨║╨╕ ╨┐╤А╨╡╨┤╨╗╨╛╨╢╨╡╨╜╨╕╤П');
+-        setItemsByProp(prev => ({ ...prev, [key]: [] }));
+-      } finally {
+-        setLoadedByProp(prev => ({ ...prev, [key]: true }));
+-      }
+-    }
++  // тЬЕ ╨╡╤Б╨╗╨╕ ╤Б╨╡╨╣╤З╨░╤Б ╤Г╨╢╨╡ ╨╕╨┤╨╡╤В ╨╖╨░╨│╤А╤Г╨╖╨║╨░ ╨║╨░╨║╨╛╨│╨╛-╤В╨╛ ╨┐╤А╨╡╨┤╨╗╨╛╨╢╨╡╨╜╨╕╤П тАФ ╨╜╨╡ ╤Б╤В╨░╤А╤В╤Г╨╡╨╝ ╨▓╤В╨╛╤А╤Г╤О
++  const anyLoading = Object.values(loadingPropRef.current).some(Boolean);
++  if (anyLoading) return;
+ 
+-    if (Platform.OS === 'web' && !pdfHtmlByProp[key]) {
++  // тЬЕ ╤Г╨╢╨╡ ╨╖╨░╨│╤А╤Г╨╢╨╡╨╜╨╛ тАФ ╨▓╤Л╤Е╨╛╨┤╨╕╨╝
++  if (loadedByProp[pidStr]) return;
++
++  // тЬЕ ╨╡╤Б╨╗╨╕ ╤Г╨╢╨╡ ╨│╤А╤Г╨╖╨╕╨╝ ╨╕╨╝╨╡╨╜╨╜╨╛ ╤Н╤В╨╛ тАФ ╨╕╨│╨╜╨╛╤А
++  if (loadingPropRef.current[pidStr]) return;
++
++  // тЬЕ UI: ╨┐╨╛╨║╨░╨╖╤Л╨▓╨░╨╡╨╝ "..." ╨╜╨░ ╨║╨╜╨╛╨┐╨║╨╡
++  setLoadingPropId(pidStr);
++
++  loadingPropRef.current[pidStr] = true;
++
++  try {
++    await busy.run(async () => {
+       try {
+-        const { buildProposalPdfHtml } = await import('../../src/lib/rik_api');
+-        const html = await buildProposalPdfHtml(key as any);
+-        setPdfHtmlByProp(prev => ({ ...prev, [key]: html }));
+-      } catch {}
++        let base: any[] | null = null;
++let plain: any[] | null = null;
++
++// 1) SNAPSHOT (╤Б╨░╨╝╤Л╨╣ тАЬ╨╕╤Б╤В╨╕╨╜╨╜╤Л╨╣тАЭ, ╨╡╤Б╨╗╨╕ ╨╡╤Б╤В╤М)
++const qSnap = await supabase
++  .from("proposal_snapshot_items")
++  .select("id, request_item_id, rik_code, name_human, uom, app_code, total_qty")
++  .eq("proposal_id", pidStr)
++  .order("id", { ascending: true });
++
++if (!qSnap.error && Array.isArray(qSnap.data) && qSnap.data.length > 0) {
++  base = qSnap.data;
++}
++
++// 2) VIEW (fallback, ╨╡╤Б╨╗╨╕ snapshot ╨┐╤Г╤Б╤В)
++if (!base) {
++  const qView = await supabase
++    .from("proposal_items_view")
++    .select("id, request_item_id, rik_code, name_human, uom, app_code, total_qty")
++    .eq("proposal_id", pidStr)
++    .order("id", { ascending: true });
++
++  if (!qView.error && Array.isArray(qView.data) && qView.data.length > 0) {
++    base = qView.data;
++  }
++}
++
++// 3) PLAIN (fallback + ╨╕╤Б╤В╨╛╤З╨╜╨╕╨║ ╤Ж╨╡╨╜╤Л)
++const qPlain = await supabase
++  .from("proposal_items")
++  .select("id, request_item_id, rik_code, name_human, uom, app_code, qty, price")
++  .eq("proposal_id", pidStr)
++  .order("id", { ascending: true });
++
++if (!qPlain.error && Array.isArray(qPlain.data) && qPlain.data.length > 0) {
++  plain = qPlain.data;
++}
++
++// ---- ╤Д╨╛╤А╨╝╨╕╤А╤Г╨╡╨╝ ╨╕╤В╨╛╨│ ╨▒╨╡╨╖ ╨┐╨╡╤А╨╡╤В╨╕╤А╨░╨╜╨╕╤П ----
++const priceByReqItemId: Record<string, number> = {};
++if (plain) {
++  for (const r of plain as any[]) {
++    const rid = String(r?.request_item_id ?? "").trim();
++    const pr = r?.price;
++    if (rid && pr != null && !Number.isNaN(Number(pr))) {
++      priceByReqItemId[rid] = Number(pr);
+     }
+-  }, [expanded, loadedByProp, pdfHtmlByProp]);
++  }
++}
+ 
+-  /* ---------- ╤А╨╡╤И╨╡╨╜╨╕╤П ╨┤╨╕╤А╨╡╨║╤В╨╛╤А╨░ ╨┐╨╛ ╨┐╤А╨╡╨┤╨╗╨╛╨╢╨╡╨╜╨╕╤О ---------- */
+-  const decide = useCallback(async (pid: string, decision: 'approved' | 'rejected') => {
+-    try {
+-      setDecidingId(pid);
+-
+-      if (decision === 'approved') {
+-        // 1) ╤И╤В╨░╤В╨╜╨╛╨╡ ╤Г╤В╨▓╨╡╤А╨╢╨┤╨╡╨╜╨╕╨╡
+-        const { data: ok, error } = await supabase.rpc('approve_one', { p_proposal_id: String(pid) });
+-        if (error) throw error;
+- else if (!ok) {
+-          Alert.alert('╨Т╨╜╨╕╨╝╨░╨╜╨╕╨╡', '╨Э╨╡╤З╨╡╨│╨╛ ╤Г╤В╨▓╨╡╤А╨╢╨┤╨░╤В╤М ╨╕╨╗╨╕ ╨╜╨╡╨┐╤А╨░╨▓╨╕╨╗╤М╨╜╤Л╨╣ ╤Б╤В╨░╤В╤Г╤Б/id');
+-        }
++const effective = base ?? (plain ? plain.map((r: any) => ({ ...r, total_qty: r.qty })) : []);
++
++let norm = (effective ?? []).map((r: any, i: number) => {
++  const reqItemId = r.request_item_id != null ? String(r.request_item_id) : null;
++  const price =
++    r.price != null
++      ? Number(r.price)
++      : (reqItemId ? (priceByReqItemId[reqItemId] ?? null) : null);
++
++  return {
++    id: Number(r.id ?? i),
++    request_item_id: reqItemId,
++    rik_code: r.rik_code ?? null,
++    name_human: r.name_human ?? "",
++    uom: r.uom ?? null,
++    app_code: r.app_code ?? null,
++    total_qty: Number(r.total_qty ?? r.qty ?? 0),
++    price: price,
++    item_kind: null as any,
++  };
++});
+ 
+-        // 2) ╨│╨░╤А╨░╨╜╤В╨╕╤А╤Г╨╡╨╝ ╨╜╨░╨╗╨╕╤З╨╕╨╡ ╨╖╨░╨║╤Г╨┐╨║╨╕ ╨╕ ╨┐╤А╨╛╤В╨░╨╗╨║╨╕╨▓╨░╨╡╨╝ ╨╜╨░ ╤Б╨║╨╗╨░╨┤
++        // item_kind ╨╕╨╖ request_items
+         try {
+-          const r1 = await supabase.rpc('purchase_upsert_from_proposal', { p_proposal_id: String(pid) });
+-          if ((r1 as any).error) throw (r1 as any).error;
+-
+-          let purchaseId: string | null = null;
+-          if ((r1 as any)?.data) {
+-            purchaseId = String((r1 as any).data);
+-          } else {
+-            const q = await supabase
+-              .from('v_purchases')
+-              .select('id')
+-              .eq('proposal_id', pid)
+-              .limit(1)
+-              .maybeSingle();
+-            if (!q.error && q.data?.id) purchaseId = String(q.data.id);
+-          }
++          const ids = Array.from(
++            new Set(norm.map((x) => String(x.request_item_id ?? "")).filter(Boolean))
++          );
++          if (ids.length) {
++            const qKinds = await supabase
++  .from("request_items")
++  .select("id, item_kind, note")
++  .in("id", ids);
++
++
++            if (!qKinds.error && Array.isArray(qKinds.data)) {
++  const mapKind: Record<string, string> = {};
++  const mapNote: Record<string, string> = {};
++
++  for (const rr of qKinds.data as any[]) {
++    const id = String(rr.id ?? "").trim();
++    const k = String(rr.item_kind ?? "").trim();
++    const n = String(rr.note ?? "").trim();
++
++    if (id && k) mapKind[id] = k;
++    if (id && n) mapNote[id] = n;
++  }
++
++  // item_kind тАФ ╨║╨░╨║ ╨▒╤Л╨╗╨╛
++  norm = norm.map((x) => ({
++    ...x,
++    item_kind: x.request_item_id ? mapKind[String(x.request_item_id)] ?? null : null,
++  }));
++
++  // тЬЕ ╨Ф╨Ю╨С╨Р╨Т╨Ш╨Ы╨Ш: ╨║╤Н╤И note ╨┤╨╗╤П proposal-sheet (╤З╤В╨╛╨▒╤Л ╨▒╤Л╨╗ ╤А╤Г╤Б╤Б╨║╨╕╨╣ ╨║╨╛╨╜╤В╨╡╨║╤Б╤В)
++  if (Object.keys(mapNote).length) {
++    setReqItemNoteById(prev => ({ ...prev, ...mapNote }));
++  }
++}
+ 
+-          if (purchaseId) {
+-            const { error: apprErr } = await supabase.rpc('purchase_approve', { p_purchase_id: purchaseId });
+-            if (apprErr) console.warn('[purchase_approve] rpc error:', apprErr.message);
+-          } else {
+-            console.warn('[purchase] not found for proposal', pid);
+           }
+-        } catch (e) {
+-          console.warn('[purchase migrate] fail:', (e as any)?.message ?? e);
+-        }
+-      } else {
+-      const { error } = await supabase.rpc('reject_one', { p_proposal_id: String(pid) });
+-      if (error) throw error;
+-    }
++        } catch {}
+ 
+-    await fetchProps();
+-    Alert.alert(
+-      decision === 'approved' ? '╨г╤В╨▓╨╡╤А╨╢╨┤╨╡╨╜╨╛' : '╨Ю╤В╨║╨╗╨╛╨╜╨╡╨╜╨╛',
+-      `╨Я╤А╨╡╨┤╨╗╨╛╨╢╨╡╨╜╨╕╨╡ #${String(pid).slice(0, 8)} ${decision === 'approved' ? '╤Г╤В╨▓╨╡╤А╨╢╨┤╨╡╨╜╨╛' : '╨╛╤В╨║╨╗╨╛╨╜╨╡╨╜╨╛'}`
+-    );
++        setItemsByProp((prev) => ({ ...prev, [pidStr]: norm }));
++
++// тЬЕ ╨┐╨╛╨┤╤В╤П╨│╨╕╨▓╨░╨╡╨╝ request_id(╤Л) ╨╕ ╨╕╤Е ╨║╨╛╨╜╤В╨╡╨║╤Б╤В ╨┤╨╗╤П ╨╕╨╜╤Д╨╛-╨▒╨╗╨╛╨║╨░ ╨▓ proposal-sheet
++try {
++  const reqItemIds = norm.map(x => x.request_item_id);
++  await preloadProposalRequestIds(pidStr, reqItemIds);
++} catch {}
++
++// тЬЕ ╨Т╨Ю╨в ╨Ш╨Ь╨Х╨Э╨Э╨Ю ╨б╨о╨Ф╨Р. ╨Э╨Х ╨Т╨л╨и╨Х. ╨Э╨Х ╨Э╨Ш╨Ц╨Х.
++try {
++  await loadProposalAttachments(pidStr);
++} catch {}
++
++} finally {
++  setLoadedByProp((prev) => ({ ...prev, [pidStr]: true }));
++}
++}, { key: `dir:loadProp:${pidStr}`, label: "╨Ч╨░╨│╤А╤Г╨╢╨░╤О ╤Б╨╛╤Б╤В╨░╨▓тАж", minMs: 900 });
++
++    // web html (╨╛╨┐╤Ж╨╕╨╛╨╜╨░╨╗╤М╨╜╨╛)
++    if (Platform.OS === "web") {
++      setTimeout(async () => {
++        try {
++          if (pdfHtmlByProp[pidStr]) return;
++          const { buildProposalPdfHtml } = await import("../../src/lib/rik_api");
++          const html = await buildProposalPdfHtml(pidStr as any);
++          setPdfHtmlByProp((prev) => ({ ...prev, [pidStr]: html }));
++        } catch {}
++      }, 0);
++    }
+   } catch (e: any) {
+-    Alert.alert('╨Ю╤И╨╕╨▒╨║╨░', e?.message ?? '╨Э╨╡ ╤Г╨┤╨░╨╗╨╛╤Б╤М ╨┐╤А╨╕╨╝╨╡╨╜╨╕╤В╤М ╤А╨╡╤И╨╡╨╜╨╕╨╡');
++    Alert.alert("╨Ю╤И╨╕╨▒╨║╨░", e?.message ?? "╨Э╨╡ ╤Г╨┤╨░╨╗╨╛╤Б╤М ╨╖╨░╨│╤А╤Г╨╖╨╕╤В╤М ╤Б╤В╤А╨╛╨║╨╕ ╨┐╤А╨╡╨┤╨╗╨╛╨╢╨╡╨╜╨╕╤П");
++    setItemsByProp((prev) => ({ ...prev, [pidStr]: [] }));
++    setLoadedByProp((prev) => ({ ...prev, [pidStr]: true }));
+   } finally {
+-    setDecidingId(null);
++    loadingPropRef.current[pidStr] = false;
++
++    // тЬЕ ╤Б╨╜╨╕╨╝╨░╨╡╨╝ "..." ╤В╨╛╨╗╤М╨║╨╛ ╨╡╤Б╨╗╨╕ ╤Н╤В╨╛ ╨▒╤Л╨╗╨╛ ╤В╨╡╨║╤Г╤Й╨╡╨╡
++    setLoadingPropId((cur) => (cur === pidStr ? null : cur));
+   }
+-}, [fetchProps]);
++}, [busy, loadedByProp, pdfHtmlByProp, supabase, preloadProposalRequestIds, loadProposalAttachments]);
+ 
+ async function onDirectorReturn(proposalId: string | number, note?: string) {
+   const pidStr = String(proposalId);
+@@ -835,7 +1619,8 @@ async function onDirectorReturn(proposalId: string | number, note?: string) {
+       return;
+     }
+ 
+-    setDecidingId(pidStr);
++    // тЬЕ ╨Т╨Р╨Ц╨Э╨Ю: ╤Н╤В╨╛ ╨Ы╨Ю╨Р╨Ф╨Х╨а ╨Ф╨Ы╨п ╨Ъ╨а╨Р╨б╨Э╨Ю╨Щ ╨Ъ╨Э╨Ю╨Я╨Ъ╨Ш "╨Т╨╡╤А╨╜╤Г╤В╤М/╨г╨┤╨░╨╗╨╕╤В╤М"
++    setPropReturnId(pidStr);
+ 
+     // тЬЕ ╨С╨╡╤А╤С╨╝ ╨Т╨б╨Х request_item_id ╨╕╨╖ ╨С╨Ф
+     const q = await supabase
+@@ -864,14 +1649,12 @@ async function onDirectorReturn(proposalId: string | number, note?: string) {
+ 
+     const res = await supabase.rpc('director_decide_proposal_items', {
+       p_proposal_id: pidStr,
+-      p_decisions: payload,   // тЬЕ ╨╝╨░╤Б╤Б╨╕╨▓
++      p_decisions: payload,
+       p_finalize: true,
+     });
+ 
+     if (res.error) throw res.error;
+ 
+-    // ╤З╨╕╤Б╤В╨╕╨╝ ╨║╨╡╤И╨╕ ╨╕ ╨╛╨▒╨╜╨╛╨▓╨╗╤П╨╡╨╝ ╤Б╨┐╨╕╤Б╨╛╨║
+-    setExpanded(cur => (cur === pidStr ? null : cur));
+     setItemsByProp(m => { const c = { ...m }; delete c[pidStr]; return c; });
+     setLoadedByProp(m => { const c = { ...m }; delete c[pidStr]; return c; });
+     setPdfHtmlByProp(m => { const c = { ...m }; delete c[pidStr]; return c; });
+@@ -881,191 +1664,463 @@ async function onDirectorReturn(proposalId: string | number, note?: string) {
+   } catch (e: any) {
+     Alert.alert('╨Ю╤И╨╕╨▒╨║╨░', e?.message ?? '╨Э╨╡ ╤Г╨┤╨░╨╗╨╛╤Б╤М ╨▓╨╡╤А╨╜╤Г╤В╤М ╨┐╤А╨╡╨┤╨╗╨╛╨╢╨╡╨╜╨╕╨╡');
+   } finally {
+-    setDecidingId(null);
++    setPropReturnId(null);
+   }
+ }
+ 
+-  /* ---------- render ---------- */
+-  return (
++return (
+   <View style={[s.container, { backgroundColor: UI.bg }]}>
+-    <StatusBar style="light" />
+-     {/* тЬЕ Collapsing Header */}
+-<Animated.View
+-  style={[
+-    s.collapsingHeader,
+-    { height: headerHeight, shadowOpacity: headerShadow, elevation: 6 },
+-  ]}
+->
+-  <Animated.Text style={[s.collapsingTitle, { fontSize: titleSize }]} numberOfLines={1}>
+-    ╨Ъ╨╛╨╜╤В╤А╨╛╨╗╤М ╨╖╨░╤П╨▓╨╛╨║
+-  </Animated.Text>
+-
+-  {/* tabs (╨▓╤Б╨╡╨│╨┤╨░ ╨▓╨╕╨┤╨╜╤Л) */}
+-  <View style={s.tabs}>
+-    {(['foreman', 'buyer'] as Tab[]).map((t) => {
+-      const active = tab === t;
+-      return (
+-        <Pressable key={t} onPress={() => setTab(t)} style={[s.tab, active && s.tabActive]}>
+-          <Text
+-  numberOfLines={1}
+-  style={{ color: active ? UI.text : UI.sub, fontWeight: '800' }}
+->
+-  {t === 'foreman' ? '╨Я╤А╨╛╤А╨░╨▒' : '╨б╨╜╨░╨▒╨╢╨╡╨╜╨╡╤Ж'}
+-</Text>
++    <DirectorDashboard
++  HEADER_MAX={HEADER_MAX}
++  HEADER_MIN={HEADER_MIN}
++  onScroll={Animated.event([{ nativeEvent: { contentOffset: { y: scrollY } } }], { useNativeDriver: false })}
++  headerHeight={headerHeight}
++  headerShadow={headerShadow}
++  titleSize={titleSize}
++  subOpacity={subOpacity}
++
++  dirTab={dirTab}
++  setDirTab={setDirTab}
++  tab={tab}
++  setTab={setTab}
++  closeSheet={closeSheet}
++
++  groups={groups as any}
++  propsHeads={propsHeads as any}
++  loadingRows={loadingRows}
++  loadingProps={loadingProps}
++
++  foremanRequestsCount={foremanRequestsCount}
++  foremanPositionsCount={foremanPositionsCount}
++  buyerPropsCount={buyerPropsCount}
++  buyerPositionsCount={buyerPositionsCount}
++
++  labelForRequest={(rid: any) => labelForRequest(rid)}
++  fmtDateOnly={fmtDateOnly}
++  submittedAtByReq={submittedAtByReq}
++
++  openRequestSheet={openRequestSheet as any}
++  ProposalRow={ProposalRow as any}
++  screenLock={screenLock}
++
++  ensureSignedIn={ensureSignedIn}
++  fetchRows={fetchRows as any}
++  fetchProps={fetchProps as any}
++  rtToast={rtToast}
++
++  finLoading={finLoading}
++  finRows={finRows as any}
++  finRep={finRep as any}
++  finSpendRows={finSpendRows as any}
++  money={money}
++  FIN_DUE_DAYS_DEFAULT={FIN_DUE_DAYS_DEFAULT}
++  FIN_CRITICAL_DAYS={FIN_CRITICAL_DAYS}
++  fetchFinance={fetchFinance as any}
++  finFrom={finFrom}
++  finTo={finTo}
++
++  openFinancePage={(page: any) => openFinancePage(page)}
++  openReports={() => void openReports()}
++  reportsPeriodShort={repPeriodShort}
++/>
+ 
+-        </Pressable>
+-      );
+-    })}
+-  </View>
++{(() => {
++  const periodShort =
++    finFrom || finTo
++      ? `${finFrom ? fmtDateOnly(finFrom) : "тАФ"} тЖТ ${finTo ? fmtDateOnly(finTo) : "тАФ"}`
++      : "╨Т╨╡╤Б╤М ╨┐╨╡╤А╨╕╨╛╨┤";
++
++  const title =
++    finPage === "debt" ? "╨Ф╨╛╨╗╨│╨╕ ╨╕ ╤А╨╕╤Б╨║╨╕"
++    : finPage === "spend" ? "╨а╨░╤Б╤Е╨╛╨┤╤Л (╨┐╨╡╤А╨╕╨╛╨┤)"
++    : finPage === "kind" ? (finKindName ? `${finKindName}: ╨┐╨╛╤Б╤В╨░╨▓╤Й╨╕╨║╨╕` : "╨Я╨╛╤Б╤В╨░╨▓╤Й╨╕╨║╨╕")
++    : finPage === "supplier" ? String((finSupplier as any)?.supplier ?? "╨Я╨╛╤Б╤В╨░╨▓╤Й╨╕╨║")
++    : "╨д╨╕╨╜╨░╨╜╤Б╤Л";
++
++  const supNameForKey = String((finSupplier as any)?.supplier ?? "").trim();
++  const topPdfKey =
++    finPage === "supplier" ? `pdf:director:supplier:${supNameForKey}` : "pdf:director:finance";
++  const supplierPdfBusy = !!supNameForKey && busy.isBusy(`pdf:director:supplier:${supNameForKey}`);
++
++ 
++  const onCloseTop = () => {
++    if (finPage !== "home") {
++      popFin();
++      return;
++    }
++    closeFinance();
++  };
+ 
+-  {/* KPI + ╨┐╨╛╨╕╤Б╨║ (╨╕╤Б╤З╨╡╨╖╨░╤О╤В ╨┐╤А╨╕ ╤Б╨║╤А╨╛╨╗╨╗╨╡) */}
+-<Animated.View style={{ opacity: subOpacity }}>
+-  {tab === 'foreman' ? (
+-    <>
+-      <View style={s.sectionHeader}>
+-        <Text style={s.sectionTitle}>╨Ю╨╢╨╕╨┤╨░╤О╤В ╤Г╤В╨▓╨╡╤А╨╢╨┤╨╡╨╜╨╕╤П</Text>
+-        <View style={s.kpiRow}>
+-          <View style={s.kpiPill}>
+-            <Text style={s.kpiLabel}>╨Ч╨░╤П╨▓╨╛╨║</Text>
+-            <Text style={s.kpiValue}>{loadingRows ? 'тАж' : String(foremanRequestsCount)}</Text>
+-          </View>
+-          <View style={s.kpiPill}>
+-            <Text style={s.kpiLabel}>╨Я╨╛╨╖╨╕╤Ж╨╕╨╣</Text>
+-            <Text style={s.kpiValue}>{loadingRows ? 'тАж' : String(foremanPositionsCount)}</Text>
+-          </View>
+-        </View>
+-     </View>
+-  </>
+-) : (
+-    <View style={s.sectionHeader}>
+-      <Text style={s.sectionTitle}>╨Я╤А╨╡╨┤╨╗╨╛╨╢╨╡╨╜╨╕╤П ╨╜╨░ ╤Г╤В╨▓╨╡╤А╨╢╨┤╨╡╨╜╨╕╨╕</Text>
+-      <View style={s.kpiRow}>
+-        <View style={s.kpiPill}>
+-          <Text style={s.kpiLabel}>╨Я╤А╨╡╨┤╨╗╨╛╨╢╨╡╨╜╨╕╨╣</Text>
+-          <Text style={s.kpiValue}>{loadingProps ? 'тАж' : String(buyerPropsCount)}</Text>
+-        </View>
+-        <View style={s.kpiPill}>
+-          <Text style={s.kpiLabel}>╨Я╨╛╨╖╨╕╤Ж╨╕╨╣</Text>
+-          <Text style={s.kpiValue}>{loadingProps ? 'тАж' : String(buyerPositionsCount)}</Text>
++  return (
++    <DirectorFinanceCardModal
++      visible={finOpen}
++      onClose={onCloseTop}
++      title={title}
++      periodShort={periodShort}
++      loading={finLoading || busy.isBusy(topPdfKey)}
++      onOpenPeriod={() => setFinPeriodOpen(true)}
++      onRefresh={() => void fetchFinance()}
++      onPdf={finPage === "supplier" ? onSupplierPdf : onFinancePdf}
++      overlay={
++        finPeriodOpen ? (
++          <PeriodPickerSheet
++            visible={finPeriodOpen}
++            onClose={() => setFinPeriodOpen(false)}
++            initialFrom={finFrom || ""}
++            initialTo={finTo || ""}
++            onApply={(from: string, to: string) => {
++              setFinFrom(from || null);
++              setFinTo(to || null);
++              setFinPeriodOpen(false);
++              void fetchFinance();
++            }}
++            onClear={() => {
++              setFinFrom(null);
++              setFinTo(null);
++              setFinPeriodOpen(false);
++              void fetchFinance();
++            }}
++            ui={{
++              cardBg: UI.cardBg,
++              text: UI.text,
++              sub: UI.sub,
++              border: "rgba(255,255,255,0.14)",
++              accentBlue: "#3B82F6",
++              approve: "#22C55E",
++            }}
++          />
++        ) : null
++      }
++    >
++      {finPage === "home" ? (
++        <View>
++          <Pressable onPress={() => pushFin("debt")} style={[s.mobCard, { marginBottom: 10 }]}>
++            <Text style={{ color: UI.text, fontWeight: "900" }}>╨Ю╨▒╤П╨╖╨░╤В╨╡╨╗╤М╤Б╤В╨▓╨░</Text>
++          </Pressable>
++
++          <Pressable onPress={() => pushFin("spend")} style={[s.mobCard, { marginBottom: 10 }]}>
++            <Text style={{ color: UI.text, fontWeight: "900" }}>╨а╨░╤Б╤Е╨╛╨┤╤Л</Text>
++          </Pressable>
+         </View>
+-      </View>
+-    </View>
+-  )}
+-</Animated.View>
+-</Animated.View>
+-      {tab === 'foreman' ? (
+-        <>
+-                 
+-<FlatList
+-  data={groups}
+-  keyExtractor={(g, idx) => (g?.request_id ? `req:${String(g.request_id)}` : `g:${idx}`)}
+-  removeClippedSubviews={false}
+-keyboardShouldPersistTaps="handled"
+-
+-  renderItem={({ item }) => {
+-  const submittedAt = submittedAtByReq[String(item.request_id ?? '').trim()] ?? null;
++      ) : finPage === "debt" ? (
++        <DirectorFinanceDebtModal
++          loading={finLoading}
++          rep={finRep?.report}
++          money={money}
++          FIN_CRITICAL_DAYS={FIN_CRITICAL_DAYS}
++          openSupplier={(srow: any) => openSupplier(srow)}
++        />
++      ) : finPage === "spend" ? (
++        <DirectorFinanceSpendModal
++          visible={true as any} 
++          loading={finLoading}
++          sum={finRep?.summary}
++          spendRows={finSpendRows}
++          money={money}
++          onOpenKind={(kindName, list) => openFinKind(kindName, list)}
++          onOpenSupplier={(supplierName: string) => openSupplier({ supplier: supplierName } as any)}
++        />
++      ) : finPage === "kind" ? (
++        <DirectorFinanceKindSuppliersModal
++          loading={finLoading}
++          kindName={finKindName}
++          list={finKindList}
++          money={money}
++          onOpenSupplier={(payload: any) => openSupplier(payload)}
++        />
++      ) : finPage === "supplier" ? (
++        <DirectorFinanceSupplierModal
++          loading={finLoading || supplierPdfBusy}
++          onPdf={onSupplierPdf}
++          supplier={finSupplier}
++          money={money}
++          fmtDateOnly={fmtDateOnly}
++        />
++      ) : null}
++    </DirectorFinanceCardModal>
++  );
++})()}
++{(() => {
++  const kpi: RepKpi | null = (repData as any)?.kpi ?? null;
++  const rows: RepRow[] = Array.isArray((repData as any)?.rows) ? (repData as any).rows : [];
++  const who: RepWho[] = Array.isArray((repData as any)?.discipline_who) ? (repData as any).discipline_who : [];
++
++  const pct = (a: number, b: number) => {
++    const aa = Number(a || 0);
++    const bb = Number(b || 0);
++    if (!bb) return "0%";
++    return `${Math.round((aa / bb) * 100)}%`;
++  };
++
++  const issuesTotal = Number(kpi?.issues_total ?? 0);
++  const issuesNoObj = Number(kpi?.issues_without_object ?? 0);
++  const itemsTotal = Number(kpi?.items_total ?? 0);
++  const itemsNoReq = Number(kpi?.items_without_request ?? 0);
+ 
+   return (
+-    <View style={s.group}>
+-      <View style={s.groupHeader}>
+-        {/* LEFT */}
+-        <View style={{ flex: 1, minWidth: 0 }}>
+-          <Text style={s.groupTitle} numberOfLines={1}>
+-            ╨Ч╨░╤П╨▓╨║╨░ {labelForRequest(item.request_id)}
++    <DirectorFinanceCardModal
++      visible={repOpen}
++      onClose={closeReports}
++      title="╨д╨░╨║╤В ╨▓╤Л╨┤╨░╤З╨╕ (╤Б╨║╨╗╨░╨┤)"
++      periodShort={repPeriodShort}
++      loading={repLoading}
++      onOpenPeriod={() => setRepPeriodOpen(true)}
++      onRefresh={async () => {
++  await fetchReportOptions();         
++  await applyObjectFilter(repObjectName); 
++}}
++      onPdf={() => Alert.alert("PDF", "╨Я╨╛╨┤╨║╨╗╤О╤З╨╕╨╝ ╨┐╨╛╤Б╨╗╨╡ UI (╨┤╨░╨╜╨╜╤Л╨╡ ╤Г╨╢╨╡ ╨│╨╛╤В╨╛╨▓╤Л).")}
++     overlay={
++  repPeriodOpen ? (
++    <PeriodPickerSheet
++      visible={repPeriodOpen}
++      onClose={() => setRepPeriodOpen(false)}
++      initialFrom={repFrom || ""}
++      initialTo={repTo || ""}
++      onApply={(from: string, to: string) => void applyReportPeriod(from || null, to || null)}
++      onClear={() => {
++        const to = isoDate(new Date());
++        const from = isoDate(minusDays(30));
++        void applyReportPeriod(from, to);
++      }}
++      ui={{
++        cardBg: UI.cardBg,
++        text: UI.text,
++        sub: UI.sub,
++        border: "rgba(255,255,255,0.14)",
++        accentBlue: "#3B82F6",
++        approve: "#22C55E",
++      }}
++    />
++  ) : repObjOpen ? (
++    <RNModal
++      isVisible={repObjOpen}
++      onBackdropPress={() => setRepObjOpen(false)}
++      onBackButtonPress={() => setRepObjOpen(false)}
++      backdropOpacity={0.55}
++      useNativeDriver
++      useNativeDriverForBackdrop
++      hideModalContentWhileAnimating
++      style={{ margin: 0, justifyContent: "flex-end" }}
++    >
++      <View style={s.sheet}>
++        <View style={s.sheetHandle} />
++
++        <View style={{ flexDirection: "row", justifyContent: "space-between", paddingHorizontal: 14, paddingBottom: 10 }}>
++          <Text style={{ color: UI.text, fontWeight: "900", fontSize: 16 }}>
++            {`╨Ю╨▒╤К╨╡╨║╤В╤Л (${repOptObjects?.length ?? 0})`}
+           </Text>
+ 
+-          <Text style={s.cardMeta} numberOfLines={1}>
+-            ╨Ю╤В╨┐╤А╨░╨▓╨╗╨╡╨╜╨╛: {submittedAt ? new Date(submittedAt).toLocaleString() : 'тАФ'}
+-          </Text>
++          <Pressable onPress={() => setRepObjOpen(false)}>
++            <Text style={{ color: UI.sub, fontWeight: "900" }}>╨Ч╨░╨║╤А╤Л╤В╤М</Text>
++          </Pressable>
+         </View>
+ 
+-        {/* RIGHT */}
+-        <View style={s.rightStack}>
+-          <View style={s.metaPill}>
+-            <Text style={s.metaPillText}>{`${item.items.length} ╨┐╨╛╨╖╨╕╤Ж╨╕╨╣`}</Text>
++        <FlatList
++          data={repOptObjects || []}
++          keyExtractor={(x, i) => `${x}:${i}`}
++          keyboardShouldPersistTaps="handled"
++          style={{ maxHeight: 420 }}
++          renderItem={({ item }) => (
++            <Pressable
++              onPress={async () => {
++                setRepObjOpen(false);
++                await applyObjectFilter(item);
++              }}
++              style={[s.mobCard, { marginHorizontal: 12, marginBottom: 10 }]}
++            >
++              <Text style={{ color: UI.text, fontWeight: "900" }} numberOfLines={2}>
++                {item}
++              </Text>
++            </Pressable>
++          )}
++        />
++      </View>
++    </RNModal>
++  ) : null
++}
++>
++      <View style={{ marginBottom: 10 }}>
++        <Text style={{ color: UI.sub, fontWeight: "900", marginBottom: 6 }}>
++          ╨Ю╨▒╤К╨╡╨║╤В
++        </Text>
++
++        <View style={{ flexDirection: "row", flexWrap: "wrap" }}>
++ 
++  <Pressable
++    onPress={() => void applyObjectFilter(null)}
++    style={[s.tab, !repObjectName && s.tabActive, { marginRight: 8, marginBottom: 8 }]}
++  >
++    <Text style={{ color: !repObjectName ? UI.text : UI.sub, fontWeight: "900" }}>
++      ╨Т╤Б╨╡
++    </Text>
++  </Pressable>
++
++  <Pressable
++    onPress={() => setRepObjOpen(true)}
++    style={[s.tab, repObjectName && s.tabActive, { marginRight: 8, marginBottom: 8 }]}
++  >
++    <Text style={{ color: repObjectName ? UI.text : UI.sub, fontWeight: "900" }}>
++      {`╨Ю╨▒╤К╨╡╨║╤В╤Л ┬╖ ${(repOptObjects?.length ?? 0)}`}
++    </Text>
++  </Pressable>
++ 
++  {repObjectName ? (
++    <Pressable
++      onPress={() => setRepObjOpen(true)}
++      style={[s.tab, s.tabActive, { marginRight: 8, marginBottom: 8 }]}
++    >
++      <Text numberOfLines={1} style={{ color: UI.text, fontWeight: "900", maxWidth: 220 }}>
++        {repObjectName}
++      </Text>
++    </Pressable>
++  ) : null}
++
++  {repOptLoading ? (
++    <Text style={{ color: UI.sub, fontWeight: "800", marginLeft: 4, marginTop: 8 }}>тАж</Text>
++  ) : null}
++</View>
++
++      </View>
++
++      {/* KPI */}
++      <View style={{ marginBottom: 10 }}>
++        <View style={{ flexDirection: "row", gap: 8 }}>
++          <View style={[s.kpiPillHalf, { flex: 1 }]}>
++            <Text style={s.kpiLabel}>╨Ф╨╛╨║╤Г╨╝╨╡╨╜╤В╨╛╨▓</Text>
++            <Text style={s.kpiValue}>{repLoading ? "тАж" : String(issuesTotal)}</Text>
+           </View>
+ 
+-          <Pressable onPress={() => openRequestSheet(item)} style={s.openBtn}>
+-            <Text style={s.openBtnText}>╨Ю╤В╨║╤А╤Л╤В╤М</Text>
+-          </Pressable>
++          <View style={[s.kpiPillHalf, { flex: 1 }]}>
++            <Text style={s.kpiLabel}>╨Я╨╛╨╖╨╕╤Ж╨╕╨╣</Text>
++            <Text style={s.kpiValue}>{repLoading ? "тАж" : String(itemsTotal)}</Text>
++          </View>
+         </View>
+-      </View>
+-    </View>
+-  );
+-}}
+ 
+-  ListEmptyComponent={
+-    !loadingRows ? (
+-      <Text style={{ opacity: 0.6, padding: 16, color: UI.sub }}>
+-        ╨Э╨╡╤В ╨╛╨╢╨╕╨┤╨░╤О╤Й╨╕╤Е ╨┐╨╛╨╖╨╕╤Ж╨╕╨╣
+-      </Text>
+-    ) : null
+-  }
+-  refreshControl={
+-  <RefreshControl
+-    refreshing={false}
+-    onRefresh={async () => {
+-      await ensureSignedIn();
+-      await fetchRows();
+-      await fetchDirectorReqs();
+-    }}
+-    title=""
+-    tintColor="transparent"
+-  />
+-}
++        <View style={{ height: 8 }} />
+ 
+-onScroll={Animated.event(
+-  [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+-  { useNativeDriver: false }
+-)}
+-scrollEventThrottle={16}
++        <View style={{ flexDirection: "row", gap: 8 }}>
++          <View style={[s.kpiPillHalf, { flex: 1 }]}>
++            <Text style={s.kpiLabel}>╨С╨╡╨╖ ╨╛╨▒╤К╨╡╨║╤В╨░</Text>
++            <Text style={s.kpiValue}>
++              {repLoading ? "тАж" : `${issuesNoObj} ┬╖ ${pct(issuesNoObj, issuesTotal)}`}
++            </Text>
++          </View>
+ 
+-  keyboardShouldPersistTaps="handled"
+-  windowSize={5}
+-  maxToRenderPerBatch={6}
+-  updateCellsBatchingPeriod={60}
+-  contentContainerStyle={{ paddingTop: HEADER_MAX + 12, paddingBottom: 24 }}
++          <View style={[s.kpiPillHalf, { flex: 1 }]}>
++            <Text style={s.kpiLabel}>╨С╨╡╨╖ ╨╖╨░╤П╨▓╨║╨╕</Text>
++            <Text style={s.kpiValue}>
++              {repLoading ? "тАж" : `${itemsNoReq} ┬╖ ${pct(itemsNoReq, itemsTotal)}`}
++            </Text>
++          </View>
++        </View>
++      </View>
+ 
+-/>
++      {/* Tabs */}
++      <View style={{ flexDirection: "row", marginBottom: 10 }}>
++        {(["materials", "discipline"] as RepTab[]).map((t) => {
++          const active = repTab === t;
++          return (
++            <Pressable
++              key={t}
++              onPress={() => setRepTab(t)}
++              style={[s.tab, active && s.tabActive, { marginRight: 8 }]}
++            >
++              <Text style={{ color: active ? UI.text : UI.sub, fontWeight: "900" }}>
++                {t === "materials" ? "╨Ь╨░╤В╨╡╤А╨╕╨░╨╗╤Л" : "╨Ф╨╕╤Б╤Ж╨╕╨┐╨╗╨╕╨╜╨░"}
++              </Text>
++            </Pressable>
++          );
++        })}
++      </View>
+ 
+-        </>
++      {/* Content */}
++      {repTab === "materials" ? (
++        <FlatList
++          data={rows}
++          keyExtractor={(x, idx) => `${x.rik_code}:${x.uom}:${idx}`}
++          removeClippedSubviews={false}
++          keyboardShouldPersistTaps="handled"
++          showsVerticalScrollIndicator={false}
++          renderItem={({ item }) => {
++            const qAll = Number(item.qty_total || 0);
++            const qNoReq = Number(item.qty_without_request || 0);
++            const docs = Number(item.docs_cnt || 0);
++            const docsNoReq = Number(item.docs_without_request || 0);
++
++            return (
++              <View style={[s.mobCard, { marginBottom: 10 }]}>
++                <View style={s.mobMain}>
++                  <Text style={s.mobTitle} numberOfLines={2}>
++                    {item.rik_code}
++                  </Text>
++                  <Text style={s.mobMeta} numberOfLines={2}>
++                    {`╨Т╤Л╨┤╨░╨╜╨╛: ${qAll} ${item.uom} ┬╖ ╨┤╨╛╨║ ${docs}`}
++                    {qNoReq > 0 ? ` ┬╖ ╨▒╨╡╨╖ ╨╖╨░╤П╨▓╨║╨╕: ${qNoReq} (${docsNoReq} ╨┤╨╛╨║)` : ""}
++                  </Text>
++                </View>
++              </View>
++            );
++          }}
++          ListEmptyComponent={
++            !repLoading ? (
++              <Text style={{ opacity: 0.7, color: UI.sub, paddingVertical: 8 }}>
++                ╨Э╨╡╤В ╨▓╤Л╨┤╨░╤З ╨╖╨░ ╨▓╤Л╨▒╤А╨░╨╜╨╜╤Л╨╣ ╨┐╨╡╤А╨╕╨╛╨┤.
++              </Text>
++            ) : null
++          }
++        />
+       ) : (
+-       
+-                  <FlatList
+-  data={propsHeads}
+-  keyExtractor={(p, idx) => (p?.id ? `pp:${p.id}` : `pp:${idx}`)}
+-  removeClippedSubviews={false}
+-  renderItem={({ item: p }) => <ProposalRow p={p} />}
+-  refreshControl={
+-    <RefreshControl
+-      refreshing={false}
+-      onRefresh={async () => {
+-        await ensureSignedIn();
+-        await fetchProps();
+-      }}
+-      title=""
+-      tintColor="transparent"
+-    />
+-  }
+-  onScroll={Animated.event(
+-    [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+-    { useNativeDriver: false }
+-  )}
+-  scrollEventThrottle={16}
+-  contentContainerStyle={{
+-    paddingTop: HEADER_MAX + 12,
+-    paddingHorizontal: 16,
+-    paddingBottom: 24,
+-  }}
+-/>
+-       )}
+-     {/* ===== ╨Х╨Ф╨Ш╨Э╨Р╨п BOTTOM-SHEET MODAL ===== */}
++        <FlatList
++          data={who}
++          keyExtractor={(x, idx) => `${x.who}:${idx}`}
++          removeClippedSubviews={false}
++          keyboardShouldPersistTaps="handled"
++          showsVerticalScrollIndicator={false}
++          renderItem={({ item }) => (
++            <View style={[s.mobCard, { marginBottom: 10 }]}>
++              <View style={s.mobMain}>
++                <Text style={s.mobTitle} numberOfLines={1}>{item.who}</Text>
++                <Text style={s.mobMeta} numberOfLines={1}>
++                  {`╨Я╨╛╨╖╨╕╤Ж╨╕╨╣ ╨▒╨╡╨╖ ╨╖╨░╤П╨▓╨║╨╕: ${String(item.items_cnt ?? 0)}`}
++                </Text>
++              </View>
++            </View>
++          )}
++          ListEmptyComponent={
++            !repLoading ? (
++              <Text style={{ opacity: 0.7, color: UI.sub, paddingVertical: 8 }}>
++                ╨Э╨╡╤В ╨┤╨░╨╜╨╜╤Л╤Е ╨┐╨╛ ╨┤╨╕╤Б╤Ж╨╕╨┐╨╗╨╕╨╜╨╡ ╨╖╨░ ╨┐╨╡╤А╨╕╨╛╨┤.
++              </Text>
++            ) : null
++          }
++        />
++      )}
++
++      {/* Bottom actions (Excel placeholder) */}
++      <View style={{ marginTop: 10, flexDirection: "row", gap: 8 }}>
++        <Pressable
++          onPress={() => Alert.alert("Excel", "╨Я╨╛╨┤╨║╨╗╤О╤З╨╕╨╝ ╨┐╨╛╤Б╨╗╨╡ UI (╨┤╨░╨╜╨╜╤Л╨╡ ╤Г╨╢╨╡ ╨│╨╛╤В╨╛╨▓╤Л).")}
++          style={[s.openBtn, { paddingVertical: 10, paddingHorizontal: 14, backgroundColor: UI.btnNeutral }]}
++        >
++          <Text style={[s.openBtnText, { fontSize: 12 }]}>Excel</Text>
++        </Pressable>
++
++        <Pressable
++  onPress={() => void applyObjectFilter(null)}
++          style={[s.openBtn, { paddingVertical: 10, paddingHorizontal: 14, backgroundColor: "rgba(255,255,255,0.06)" }]}
++        >
++          <Text style={[s.openBtnText, { fontSize: 12 }]}>╨Т╤Б╨╡ ╨╛╨▒╤К╨╡╨║╤В╤Л</Text>
++        </Pressable>
++      </View>
++    </DirectorFinanceCardModal>
++  );
++})()}
++
+      <RNModal
+   isVisible={isSheetOpen}
+   onBackdropPress={closeSheet}
+   onBackButtonPress={closeSheet}
+-
+-  // тЬЕ NO SWIPE: ╤В╨╛╨╗╤М╨║╨╛ ╨║╨╜╨╛╨┐╨║╨░ "╨б╨▓╨╡╤А╨╜╤Г╤В╤М"
+   backdropOpacity={0.55}
+   useNativeDriver
+   useNativeDriverForBackdrop
+@@ -1133,20 +2188,23 @@ scrollEventThrottle={16}
+           renderItem={({ item: it }) => (
+             <View style={s.mobCard}>
+               <View style={s.mobMain}>
+-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+-                  <Text style={s.mobTitle} numberOfLines={3}>{it.name_human}</Text>
+-
+-                  {it.item_kind ? (
+-                    <View style={s.kindPill}>
+-                      <Text style={s.kindPillText}>
+-                        {it.item_kind === 'material' ? '╨Ь╨░╤В╨╡╤А╨╕╨░╨╗'
+-                          : it.item_kind === 'work' ? '╨а╨░╨▒╨╛╤В╨░'
+-                          : it.item_kind === 'service' ? '╨г╤Б╨╗╤Г╨│╨░'
+-                          : it.item_kind}
+-                      </Text>
+-                    </View>
+-                  ) : null}
+-                </View>
++                <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap' }}>
++  <Text style={[s.mobTitle, { marginRight: 8 }]} numberOfLines={3}>
++    {it.name_human}
++  </Text>
++
++  {it.item_kind ? (
++    <View style={[s.kindPill, { marginTop: 4 }]}>
++      <Text style={s.kindPillText}>
++        {it.item_kind === 'material' ? '╨Ь╨░╤В╨╡╤А╨╕╨░╨╗'
++          : it.item_kind === 'work' ? '╨а╨░╨▒╨╛╤В╨░'
++          : it.item_kind === 'service' ? '╨г╤Б╨╗╤Г╨│╨░'
++          : it.item_kind}
++      </Text>
++    </View>
++  ) : null}
++</View>
++
+ 
+                 <Text style={s.mobMeta} numberOfLines={2}>
+                   {`${it.qty} ${it.uom || ''}`.trim()}
+@@ -1154,150 +2212,186 @@ scrollEventThrottle={16}
+                 </Text>
+               </View>
+ 
+-              <Pressable
+-                disabled={!it.request_item_id || actingId === it.request_item_id}
+-                style={[
+-                  s.mobRejectBtn,
+-                  { opacity: (!it.request_item_id || actingId === it.request_item_id) ? 0.6 : 1 },
+-                ]}
+-                onPress={async () => {
+-                  if (!it.request_item_id) return;
+-                  setActingId(it.request_item_id);
+-                  try {
+-                    const { error } = await supabase.rpc('reject_request_item', {
+-                      request_item_id: it.request_item_id,
+-                      reason: null,
+-                    });
+-                    if (error) throw error;
+-
+-                    setRows(prev => prev.filter(r => r.request_item_id !== it.request_item_id));
+-                    setSheetRequest(prev => prev
+-                      ? ({ ...prev, items: prev.items.filter(x => x.request_item_id !== it.request_item_id) })
+-                      : prev
+-                    );
+-                  } catch (e: any) {
+-                    Alert.alert('╨Ю╤И╨╕╨▒╨║╨░', e?.message ?? '╨Э╨╡ ╤Г╨┤╨░╨╗╨╛╤Б╤М ╨╛╤В╨║╨╗╨╛╨╜╨╕╤В╤М ╨┐╨╛╨╖╨╕╤Ж╨╕╤О');
+-                  } finally {
+-                    setActingId(null);
+-                  }
+-                }}
+-              >
+-                <Text style={s.mobRejectIcon}>тЬХ</Text>
+-              </Pressable>
++              <RejectItemButton
++  disabled={!it.request_item_id || actingId === it.request_item_id}
++  loading={actingId === it.request_item_id}
++  onPress={async () => {
++    if (!it.request_item_id) return;
++    setActingId(it.request_item_id);
++    try {
++      const { error } = await supabase.rpc('reject_request_item', {
++        request_item_id: it.request_item_id,
++        reason: null,
++      });
++      if (error) throw error;
++
++      setRows(prev => prev.filter(r => r.request_item_id !== it.request_item_id));
++      setSheetRequest(prev => prev
++        ? ({ ...prev, items: prev.items.filter(x => x.request_item_id !== it.request_item_id) })
++        : prev
++      );
++    } catch (e: any) {
++      Alert.alert('╨Ю╤И╨╕╨▒╨║╨░', e?.message ?? '╨Э╨╡ ╤Г╨┤╨░╨╗╨╛╤Б╤М ╨╛╤В╨║╨╗╨╛╨╜╨╕╤В╤М ╨┐╨╛╨╖╨╕╤Ж╨╕╤О');
++    } finally {
++      setActingId(null);
++    }
++  }}
++/>
+             </View>
+           )}
+         />
++{/* ===== REQUEST ACTIONS (PROD) ===== */}
++<View style={s.reqActionsBottom}>
++  {/* тЬЕ Delete тАФ LEFT */}
++  <View style={s.actionBtnSquare}>
++    <DeleteAllButton
++      disabled={screenLock || reqDeleteId === sheetRequest.request_id || reqSendId === sheetRequest.request_id}
++      loading={reqDeleteId === sheetRequest.request_id}
++      accessibilityLabel="╨г╨┤╨░╨╗╨╕╤В╤М ╨╖╨░╤П╨▓╨║╤Г"
++      onPress={() => {
++        const doIt = async () => {
++          setReqDeleteId(sheetRequest.request_id);
++          try {
++            const reqId = toFilterId(sheetRequest.request_id);
++            if (reqId == null) throw new Error("request_id ╨┐╤Г╤Б╤В╨╛╨╣");
++
++            const { error } = await supabase.rpc("reject_request_all", {
++              p_request_id: String(reqId),
++              p_reason: null,
++            });
++            if (error) throw error;
++
++            setRows(prev => prev.filter(r => r.request_id !== sheetRequest.request_id));
++            closeSheet();
++          } catch (e: any) {
++            Alert.alert("╨Ю╤И╨╕╨▒╨║╨░", e?.message ?? "╨Э╨╡ ╤Г╨┤╨░╨╗╨╛╤Б╤М ╨╛╤В╨║╨╗╨╛╨╜╨╕╤В╤М ╨▓╤Б╨╡ ╨┐╨╛╨╖╨╕╤Ж╨╕╨╕");
++          } finally {
++            setReqDeleteId(null);
++          }
++        };
++
++        if (Platform.OS === "web") {
++          // @ts-ignore
++          const ok = window.confirm("╨г╨┤╨░╨╗╨╕╤В╤М ╨╖╨░╤П╨▓╨║╤Г?\n\n╨Ю╤В╨║╨╗╨╛╨╜╨╕╤В╤М ╨Т╨б╨о ╨╖╨░╤П╨▓╨║╤Г ╨▓╨╝╨╡╤Б╤В╨╡ ╤Б╨╛ ╨▓╤Б╨╡╨╝╨╕ ╨┐╨╛╨╖╨╕╤Ж╨╕╤П╨╝╨╕?");
++          if (!ok) return;
++          void doIt();
++          return;
++        }
+ 
+-        {/* ╨Э╨Ш╨Ц╨Э╨п╨п ╨Я╨Р╨Э╨Х╨Ы╨м тАФ ╨║╨░╨║ ╨▒╤Л╨╗╨╛ */}
+-        <View style={s.reqActionsBottom}>
+-          <Pressable
+-            onPress={() => openRequestPdf(sheetRequest)}
+-            style={[s.actionBtn, { backgroundColor: UI.btnNeutral }]}
+-          >
+-            <Text style={s.actionText}>PDF</Text>
+-          </Pressable>
++        Alert.alert(
++          "╨г╨┤╨░╨╗╨╕╤В╤М ╨╖╨░╤П╨▓╨║╤Г?",
++          "╨Т╤Л ╤Г╨▓╨╡╤А╨╡╨╜╤Л, ╤З╤В╨╛ ╤Е╨╛╤В╨╕╤В╨╡ ╨╛╤В╨║╨╗╨╛╨╜╨╕╤В╤М ╨Т╨б╨о ╨╖╨░╤П╨▓╨║╤Г ╨▓╨╝╨╡╤Б╤В╨╡ ╤Б╨╛ ╨▓╤Б╨╡╨╝╨╕ ╨┐╨╛╨╖╨╕╤Ж╨╕╤П╨╝╨╕?",
++          [
++            { text: "╨Ю╤В╨╝╨╡╨╜╨░", style: "cancel" },
++            { text: "╨Ф╨░, ╤Г╨┤╨░╨╗╨╕╤В╤М", style: "destructive", onPress: () => void doIt() },
++          ],
++        );
++      }}
++    />
++  </View>
+ 
+-          <Pressable
+-            onPress={() => exportRequestExcel(sheetRequest)}
+-            style={[s.actionBtn, { backgroundColor: UI.btnNeutral }]}
+-          >
+-            <Text style={s.actionText}>Excel</Text>
+-          </Pressable>
++  <View style={s.sp8} />
++
++  {/* PDF тАФ CENTER */}
++  {(() => {
++    const rid = String(sheetRequest.request_id ?? "").trim();
++    const pdfKey = `pdf:req:${rid}`;
++    const pdfBusy = busy.isBusy(pdfKey);
++
++    return (
++      <Pressable
++        disabled={!rid || pdfBusy || screenLock}
++        onPress={async () => {
++          if (!rid || pdfBusy || screenLock) return;
++          try {
++            await openRequestPdf(sheetRequest);
++          } catch (e: any) {
++            if (String(e?.message ?? "").toLowerCase().includes("busy")) return;
++            Alert.alert("╨Ю╤И╨╕╨▒╨║╨░", e?.message ?? "PDF ╨╜╨╡ ╤Б╤Д╨╛╤А╨╝╨╕╤А╨╛╨▓╨░╨╜");
++          }
++        }}
++        style={[
++          s.actionBtnWide,
++          { backgroundColor: UI.btnNeutral, opacity: (!rid || pdfBusy || screenLock) ? 0.6 : 1 },
++        ]}
++      >
++        <Text style={s.actionText}>{pdfBusy ? "PDFтАж" : "PDF"}</Text>
++      </Pressable>
++    );
++  })()}
+ 
+-          <Pressable
+-            hitSlop={10}
+-            disabled={actingAll === sheetRequest.request_id}
+-            style={[s.iconBtnDanger, { opacity: actingAll === sheetRequest.request_id ? 0.6 : 1 }]}
+-            onPress={() => {
+-              const doIt = async () => {
+-                setActingAll(sheetRequest.request_id);
+-                try {
+-                  const reqId = toFilterId(sheetRequest.request_id);
+-                  if (reqId == null) throw new Error('request_id ╨┐╤Г╤Б╤В╨╛╨╣');
+-
+-                  const { error } = await supabase.rpc('reject_request_all', {
+-                    p_request_id: String(reqId),
+-                    p_reason: null,
+-                  });
+-                  if (error) throw error;
+-
+-                  setRows(prev => prev.filter(r => r.request_id !== sheetRequest.request_id));
+-                  closeSheet();
+-                } catch (e: any) {
+-                  Alert.alert('╨Ю╤И╨╕╨▒╨║╨░', e?.message ?? '╨Э╨╡ ╤Г╨┤╨░╨╗╨╛╤Б╤М ╨╛╤В╨║╨╗╨╛╨╜╨╕╤В╤М ╨▓╤Б╨╡ ╨┐╨╛╨╖╨╕╤Ж╨╕╨╕');
+-                } finally {
+-                  setActingAll(null);
+-                }
+-              };
+-
+-              if (Platform.OS === 'web') {
+-                const ok = window.confirm('╨г╨┤╨░╨╗╨╕╤В╤М ╨╖╨░╤П╨▓╨║╤Г?\n\n╨Ю╤В╨║╨╗╨╛╨╜╨╕╤В╤М ╨Т╨б╨о ╨╖╨░╤П╨▓╨║╤Г ╨▓╨╝╨╡╤Б╤В╨╡ ╤Б╨╛ ╨▓╤Б╨╡╨╝╨╕ ╨┐╨╛╨╖╨╕╤Ж╨╕╤П╨╝╨╕?');
+-                if (!ok) return;
+-                void doIt();
+-                return;
+-              }
+-
+-              Alert.alert(
+-                '╨г╨┤╨░╨╗╨╕╤В╤М ╨╖╨░╤П╨▓╨║╤Г?',
+-                '╨Т╤Л ╤Г╨▓╨╡╤А╨╡╨╜╤Л, ╤З╤В╨╛ ╤Е╨╛╤В╨╕╤В╨╡ ╨╛╤В╨║╨╗╨╛╨╜╨╕╤В╤М ╨Т╨б╨о ╨╖╨░╤П╨▓╨║╤Г ╨▓╨╝╨╡╤Б╤В╨╡ ╤Б╨╛ ╨▓╤Б╨╡╨╝╨╕ ╨┐╨╛╨╖╨╕╤Ж╨╕╤П╨╝╨╕?',
+-                [
+-                  { text: '╨Ю╤В╨╝╨╡╨╜╨░', style: 'cancel' },
+-                  { text: '╨Ф╨░, ╤Г╨┤╨░╨╗╨╕╤В╤М', style: 'destructive', onPress: () => void doIt() },
+-                ],
+-              );
+-            }}
+-          >
+-            <Ionicons name="close" size={20} color="#fff" />
+-          </Pressable>
++  <View style={s.sp8} />
+ 
+-          <Pressable
+-            hitSlop={10}
+-            disabled={actingAll === sheetRequest.request_id || (sheetRequest.items?.length ?? 0) === 0}
+-            style={[
+-              s.iconBtnApprove,
+-              {
+-                backgroundColor:
+-                  (actingAll === sheetRequest.request_id || (sheetRequest.items?.length ?? 0) === 0)
+-                    ? '#9CA3AF'
+-                    : UI.btnApprove
+-              },
+-            ]}
+-            onPress={async () => {
+-              setActingAll(sheetRequest.request_id);
+-              try {
+-                const reqId = toFilterId(sheetRequest.request_id);
+-                if (reqId == null) throw new Error('request_id ╨┐╤Г╤Б╤В╨╛╨╣');
+-                const reqIdStr = String(reqId);
+-
+-                const updItems = await supabase
+-                  .from('request_items')
+-                  .update({ status: '╨Ъ ╨╖╨░╨║╤Г╨┐╨║╨╡' })
+-                  .eq('request_id', reqIdStr)
+-                  .neq('status', '╨Ю╤В╨║╨╗╨╛╨╜╨╡╨╜╨╛');
+-                if (updItems.error) throw updItems.error;
+-
+-                const updReq = await supabase
+-                  .from('requests')
+-                  .update({ status: '╨Ъ ╨╖╨░╨║╤Г╨┐╨║╨╡' })
+-                  .eq('id', reqIdStr);
+-                if (updReq.error) throw updReq.error;
+-
+-                setRows(prev => prev.filter(r => r.request_id !== sheetRequest.request_id));
+-                await fetchDirectorReqs();
+-                await fetchProps();
+-
+-                closeSheet();
+-                Alert.alert('╨г╤В╨▓╨╡╤А╨╢╨┤╨╡╨╜╨╛', `╨Ч╨░╤П╨▓╨║╨░ ${labelForRequest(sheetRequest.request_id)} ╤Г╤В╨▓╨╡╤А╨╢╨┤╨╡╨╜╨░ ╨╕ ╨╛╤В╨┐╤А╨░╨▓╨╗╨╡╨╜╨░ ╤Б╨╜╨░╨▒╨╢╨╡╨╜╤Ж╤Г`);
+-              } catch (e: any) {
+-                Alert.alert('╨Ю╤И╨╕╨▒╨║╨░', e?.message ?? '╨Э╨╡ ╤Г╨┤╨░╨╗╨╛╤Б╤М ╤Г╤В╨▓╨╡╤А╨┤╨╕╤В╤М ╨╕ ╨╛╤В╨┐╤А╨░╨▓╨╕╤В╤М ╨╖╨░╤П╨▓╨║╤Г');
+-              } finally {
+-                setActingAll(null);
+-              }
+-            }}
+-          >
+-            <Ionicons name="send" size={20} color="#fff" />
+-          </Pressable>
+-        </View>
++  {/* Excel тАФ CENTER */}
++  <Pressable
++    disabled={screenLock}
++    onPress={() => {
++      if (screenLock) return;
++      exportRequestExcel(sheetRequest);
++    }}
++    style={[
++      s.actionBtnWide,
++      { backgroundColor: UI.btnNeutral, opacity: screenLock ? 0.6 : 1 },
++    ]}
++  >
++    <Text style={s.actionText}>Excel</Text>
++  </Pressable>
++
++  <View style={s.sp8} />
++
++  {/* тЬЕ Approve/Send тАФ RIGHT */}
++  {(() => {
++    const disabled =
++      screenLock ||
++      reqDeleteId === sheetRequest.request_id ||
++      reqSendId === sheetRequest.request_id ||
++      (sheetRequest.items?.length ?? 0) === 0;
++
++    return (
++      <View style={s.actionBtnSquare}>
++        <SendPrimaryButton
++          variant="green"
++          disabled={disabled}
++          loading={reqSendId === sheetRequest.request_id}
++          onPress={async () => {
++            if (disabled) return;
++
++            setReqSendId(sheetRequest.request_id);
++            try {
++              const reqId = toFilterId(sheetRequest.request_id);
++              if (reqId == null) throw new Error("request_id ╨┐╤Г╤Б╤В╨╛╨╣");
++
++              const reqIdStr = String(reqId);
++
++              const updItems = await supabase
++                .from("request_items")
++                .update({ status: "╨Ъ ╨╖╨░╨║╤Г╨┐╨║╨╡" })
++                .eq("request_id", reqIdStr)
++                .neq("status", "╨Ю╤В╨║╨╗╨╛╨╜╨╡╨╜╨╛");
++              if (updItems.error) throw updItems.error;
++
++              const updReq = await supabase
++                .from("requests")
++                .update({ status: "╨Ъ ╨╖╨░╨║╤Г╨┐╨║╨╡" })
++                .eq("id", reqIdStr);
++              if (updReq.error) throw updReq.error;
++
++              setRows(prev => prev.filter(r => r.request_id !== sheetRequest.request_id));
++              await fetchProps();
++
++              closeSheet();
++              showSuccess(`╨Ч╨░╤П╨▓╨║╨░ ${labelForRequest(sheetRequest.request_id)} ╤Г╤В╨▓╨╡╤А╨╢╨┤╨╡╨╜╨░ ╨╕ ╨╛╤В╨┐╤А╨░╨▓╨╗╨╡╨╜╨░ ╤Б╨╜╨░╨▒╨╢╨╡╨╜╤Ж╤Г`);
++            } catch (e: any) {
++              Alert.alert("╨Ю╤И╨╕╨▒╨║╨░", e?.message ?? "╨Э╨╡ ╤Г╨┤╨░╨╗╨╛╤Б╤М ╤Г╤В╨▓╨╡╤А╨┤╨╕╤В╤М ╨╕ ╨╛╤В╨┐╤А╨░╨▓╨╕╤В╤М ╨╖╨░╤П╨▓╨║╤Г");
++            } finally {
++              setReqSendId(null);
++            }
++          }}
++        />
++      </View>
++    );
++  })()}
++</View>
+       </View>
+     ) : null}
+ 
+@@ -1306,9 +2400,17 @@ scrollEventThrottle={16}
+   <View style={{ flex: 1, minHeight: 0 }}>
+     {(() => {
+       const pidStr = String(sheetProposalId);
+-      const key = pidStr;
+-      const loaded = !!loadedByProp[key];
+-      const items = itemsByProp[key] || [];
++const key = pidStr;
++const loaded = !!loadedByProp[key];
++const items = itemsByProp[key] || [];
++
++const isEmptyProposal = loaded && (items?.length ?? 0) === 0;
++const approveDisabled =
++  screenLock ||
++  propApproveId === pidStr ||
++  propReturnId === pidStr ||
++  !loaded ||
++  isEmptyProposal;
+ 
+       const pretty = String(propsHeads.find(x => String(x.id) === pidStr)?.pretty ?? '').trim();
+ 
+@@ -1318,11 +2420,175 @@ scrollEventThrottle={16}
+         return acc + pr * q;
+       }, 0);
+ 
++      
+       if (!loaded) return <Text style={{ opacity: 0.7, color: UI.sub }}>╨Ч╨░╨│╤А╤Г╨╢╨░╤О ╤Б╨╛╤Б╤В╨░╨▓тАж</Text>;
+-      if (!items.length) return <Text style={{ opacity: 0.6, color: UI.sub }}>╨б╨╛╤Б╤В╨░╨▓ ╨┐╤Г╤Б╤В</Text>;
++if (!items.length) {
++  return (
++    <Text style={{ opacity: 0.75, color: UI.sub }}>
++      ╨б╨╛╤Б╤В╨░╨▓ ╨┐╤Г╤Б╤В тАФ ╤Г╤В╨▓╨╡╤А╨┤╨╕╤В╤М ╨╜╨╡╨╗╤М╨╖╤П
++    </Text>
++  );
++}
++return (
++  <>
++   {/* ===== REQUEST CONTEXT (╨┤╨╗╤П ╨┐╤А╨╡╨┤╨╗╨╛╨╢╨╡╨╜╨╕╤П) ===== */}
++{(() => {
++  // тЬЕ 0) ╨б╨░╨╝╤Л╨╣ ╨╗╤Г╤З╤И╨╕╨╣ ╨╕╤Б╤В╨╛╤З╨╜╨╕╨║ тАФ request_items.note (╨║╨░╨║ ╤Г ╨┐╤А╨╛╤А╨░╨▒╨░)
++  const firstReqItemId =
++    (itemsByProp[pidStr] || items || [])
++      .map(x => String(x?.request_item_id ?? "").trim())
++      .find(Boolean) || "";
++
++  const headerNote = firstReqItemId ? String(reqItemNoteByIdRef.current?.[firstReqItemId] ?? "").trim() : "";
++
++  if (headerNote) {
++    const lines = headerNote
++      .split(";")
++      .map(x => x.trim())
++      .filter(Boolean)
++      .slice(0, 4);
++
++    if (lines.length) {
++      return (
++        <View style={s.reqNoteBox}>
++          {lines.map((t, idx) => (
++            <Text key={idx} style={s.reqNoteLine} numberOfLines={1}>
++              {t}
++            </Text>
++          ))}
++        </View>
++      );
++    }
++  }
++
++  // тЬЕ 1) ╨Т╤В╨╛╤А╨╛╨╣ ╨▓╨░╤А╨╕╨░╨╜╤В тАФ requests.note/comment (╨╡╤Б╨╗╨╕ ╨▓╨┤╤А╤Г╨│ ╨╡╤Б╤В╤М)
++  const reqIds = propReqIdsByPropRef.current?.[pidStr] || [];
++  if (!reqIds.length) return null;
+ 
++  const firstReqId = reqIds[0];
++  const meta = reqMetaByIdRef.current?.[firstReqId];
++
++  const human =
++    String(meta?.note ?? "").trim() ||
++    String(meta?.comment ?? "").trim();
++
++  if (human) {
++    const lines = human
++      .split(";")
++      .map(x => x.trim())
++      .filter(Boolean)
++      .slice(0, 4);
++
++    if (lines.length) {
+       return (
+-        <>
++        <View style={s.reqNoteBox}>
++          {lines.map((t, idx) => (
++            <Text key={idx} style={s.reqNoteLine} numberOfLines={1}>
++              {t}
++            </Text>
++          ))}
++        </View>
++      );
++    }
++  }
++
++  // тЬЕ 2) Fallback тАФ ╨║╨╛╨┤╤Л (╨║╨░╨║ ╨▒╤Л╨╗╨╛)
++  const obj =
++    String(meta?.object_name ?? "").trim() ||
++    String(meta?.object ?? "").trim() ||
++    (meta?.site_address_snapshot ? String(meta.site_address_snapshot).trim() : "");
++
++  const lines: string[] = [];
++  if (obj) lines.push(`╨Ю╨▒╤К╨╡╨║╤В: ${obj}`);
++  if (meta?.level_code) lines.push(`╨н╤В╨░╨╢/╤Г╤А╨╛╨▓╨╡╨╜╤М: ${meta.level_code}`);
++  if (meta?.system_code) lines.push(`╨б╨╕╤Б╤В╨╡╨╝╨░: ${meta.system_code}`);
++  if (meta?.zone_code) lines.push(`╨Ч╨╛╨╜╨░: ${meta.zone_code}`);
++
++  if (!lines.length) return null;
++
++  return (
++    <View style={s.reqNoteBox}>
++      {lines.slice(0, 4).map((t, idx) => (
++        <Text key={idx} style={s.reqNoteLine} numberOfLines={1}>
++          {t}
++        </Text>
++      ))}
++    </View>
++  );
++})()}
++{(() => {
++  const pidStr = String(sheetProposalId);
++  const files = propAttByProp[pidStr] || [];
++  const busyAtt = !!propAttBusyByProp[pidStr];
++
++  return (
++    <View style={{ marginTop: 6, marginBottom: 12 }}>
++      <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
++        <Text style={{ color: UI.text, fontWeight: "900" }}>
++          ╨Т╨╗╨╛╨╢╨╡╨╜╨╕╤П: {files.length}
++        </Text>
++
++        <Pressable
++          disabled={busyAtt}
++          onPress={() => void loadProposalAttachments(pidStr)}
++          style={{
++            paddingVertical: 6,
++            paddingHorizontal: 10,
++            borderRadius: 999,
++            borderWidth: 1,
++            borderColor: "rgba(255,255,255,0.18)",
++            backgroundColor: "rgba(255,255,255,0.06)",
++            opacity: busyAtt ? 0.6 : 1,
++          }}
++        >
++          <Text style={{ color: UI.text, fontWeight: "900", fontSize: 12 }}>
++            {busyAtt ? "тАж" : "╨Ю╨▒╨╜╨╛╨▓╨╕╤В╤М"}
++          </Text>
++        </Pressable>
++      </View>
++
++      {busyAtt ? (
++        <Text style={{ color: UI.sub, fontWeight: "800", marginTop: 8 }}>
++          ╨Ч╨░╨│╤А╤Г╨╢╨░╤О ╨▓╨╗╨╛╨╢╨╡╨╜╨╕╤ПтАж
++        </Text>
++      ) : files.length === 0 ? (
++        <Text style={{ color: UI.sub, fontWeight: "800", marginTop: 8 }}>
++          ╨Э╨╡╤В ╨▓╨╗╨╛╨╢╨╡╨╜╨╕╨╣ (╨╗╨╕╨▒╨╛ ╨╜╨╡ ╨┐╤А╨╕╨║╤А╨╡╨┐╨╗╨╡╨╜╤Л, ╨╗╨╕╨▒╨╛ RLS ╨╜╨╡ ╨┐╤Г╤Б╨║╨░╨╡╤В).
++        </Text>
++      ) : (
++        <View style={{ flexDirection: "row", flexWrap: "wrap", marginTop: 8 }}>
++          {files.map((f, idx) => (
++  <Pressable key={`${f.id}:${idx}`}
++  onPress={() => {
++    const url = String(f.url || "").trim();
++    if (!url) {
++      Alert.alert("╨Т╨╗╨╛╨╢╨╡╨╜╨╕╨╡", "URL ╨┐╤Г╤Б╤В╨╛╨╣");
++      return;
++    }
++    void openSignedUrlUniversal(url, String(f.file_name ?? "file"));
++  }}
++  style={{
++    paddingVertical: 8,
++    paddingHorizontal: 12,
++    borderRadius: 999,
++    borderWidth: 1,
++    borderColor: "rgba(255,255,255,0.18)",
++    backgroundColor: "rgba(255,255,255,0.06)",
++    marginRight: 8,
++    marginBottom: 8,
++  }}
++>
++  <Text style={{ color: UI.text, fontWeight: "900" }} numberOfLines={1}>
++    {f.group_key ? `${f.group_key}: ` : ""}{f.file_name}
++  </Text>
++</Pressable>
++
++          ))}
++        </View>
++      )}
++    </View>
++  );
++})()}
+           <FlatList
+             data={items}
+             keyExtractor={(it, idx) => `pi:${key}:${it.id}:${idx}`}
+@@ -1334,21 +2600,22 @@ scrollEventThrottle={16}
+             renderItem={({ item: it }) => (
+               <View style={s.mobCard}>
+                 <View style={s.mobMain}>
+-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+-                    <Text style={s.mobTitle} numberOfLines={3}>{it.name_human}</Text>
+-
+-                    {it.item_kind ? (
+-                      <View style={s.kindPill}>
+-                        <Text style={s.kindPillText}>
+-                          {it.item_kind === 'material' ? '╨Ь╨░╤В╨╡╤А╨╕╨░╨╗'
+-                            : it.item_kind === 'work' ? '╨а╨░╨▒╨╛╤В╨░'
+-                            : it.item_kind === 'service' ? '╨г╤Б╨╗╤Г╨│╨░'
+-                            : it.item_kind}
+-                        </Text>
+-                      </View>
+-                    ) : null}
+-                  </View>
+-
++                  <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap' }}>
++  <Text style={[s.mobTitle, { marginRight: 8 }]} numberOfLines={3}>
++    {it.name_human}
++  </Text>
++
++  {it.item_kind ? (
++    <View style={[s.kindPill, { marginTop: 4 }]}>
++      <Text style={s.kindPillText}>
++        {it.item_kind === 'material' ? '╨Ь╨░╤В╨╡╤А╨╕╨░╨╗'
++          : it.item_kind === 'work' ? '╨а╨░╨▒╨╛╤В╨░'
++          : it.item_kind === 'service' ? '╨г╤Б╨╗╤Г╨│╨░'
++          : it.item_kind}
++      </Text>
++    </View>
++  ) : null}
++</View>
+                   <Text style={s.mobMeta}>
+                     {`${it.total_qty} ${it.uom || ''}`.trim()}
+                     {it.price != null ? ` ┬╖ ╤Ж╨╡╨╜╨░ ${it.price}` : ''}
+@@ -1356,691 +2623,267 @@ scrollEventThrottle={16}
+                     {it.app_code ? ` ┬╖ ${it.app_code}` : ''}
+                   </Text>
+                 </View>
++<View style={{ marginLeft: 10 }}>
++  <RejectItemButton
++    disabled={decidingId === pidStr || actingPropItemId === Number(it.id)}
++    loading={actingPropItemId === Number(it.id)}
++    onPress={async () => {
++      try {
++        setDecidingId(pidStr);
++        setActingPropItemId(Number(it.id));
++
++        // тЬЕ ╨С╨╡╤А╤С╨╝ request_item_id ╨╢╨╡╨╗╨╡╨╖╨╜╨╛ ╨╕╨╖ ╨С╨Ф ╨┐╨╛ proposal_items.id
++        const q = await supabase
++          .from('proposal_items')
++          .select('request_item_id')
++          .eq('proposal_id', pidStr)
++          .eq('id', it.id) // it.id = proposal_items.id
++          .maybeSingle();
++
++        if (q.error) throw q.error;
++
++        const rid = String(q.data?.request_item_id || '').trim();
++        if (!rid) {
++          Alert.alert('╨Ю╤И╨╕╨▒╨║╨░', '╨Т ╤Б╤В╤А╨╛╨║╨╡ ╨┐╤А╨╡╨┤╨╗╨╛╨╢╨╡╨╜╨╕╤П ╨╜╨╡╤В request_item_id (╨▓ ╨▒╨░╨╖╨╡).');
++          return;
++        }
+ 
+-                <Pressable
+-  disabled={decidingId === pidStr}
+-  style={[s.mobRejectBtn, { opacity: decidingId === pidStr ? 0.6 : 1 }]}
+-  onPress={async () => {
+-    try {
+-      setDecidingId(pidStr);
+-
+-      // тЬЕ ╨С╨╡╤А╤С╨╝ request_item_id ╨╢╨╡╨╗╨╡╨╖╨╜╨╛ ╨╕╨╖ ╨С╨Ф ╨┐╨╛ proposal_items.id
+-      const q = await supabase
+-        .from('proposal_items')
+-        .select('request_item_id')
+-        .eq('proposal_id', pidStr)
+-        .eq('id', it.id) // it.id = proposal_items.id
+-        .maybeSingle();
+-
+-      if (q.error) throw q.error;
+-
+-      const rid = String(q.data?.request_item_id || '').trim();
+-      if (!rid) {
+-        Alert.alert('╨Ю╤И╨╕╨▒╨║╨░', '╨Т ╤Б╤В╤А╨╛╨║╨╡ ╨┐╤А╨╡╨┤╨╗╨╛╨╢╨╡╨╜╨╕╤П ╨╜╨╡╤В request_item_id (╨▓ ╨▒╨░╨╖╨╡).');
+-        return;
++        const beforeCount = (itemsByProp[pidStr] || items || []).length;
++        const isLast = beforeCount <= 1;
++
++        const payload = [{
++          request_item_id: rid,
++          decision: 'rejected',
++          comment: '╨Ю╤В╨║╨╗╨╛╨╜╨╡╨╜╨╛ ╨┤╨╕╤А╨╡╨║╤В╨╛╤А╨╛╨╝',
++        }];
++
++        const res = await supabase.rpc('director_decide_proposal_items', {
++          p_proposal_id: pidStr,
++          p_decisions: payload,
++          p_finalize: isLast,
++        });
++
++        if (res.error) throw res.error;
++
++        // ╨╗╨╛╨║╨░╨╗╤М╨╜╨╛ ╤Г╨▒╨╕╤А╨░╨╡╨╝ ╤Б╤В╤А╨╛╨║╤Г
++        setItemsByProp(prev => {
++          const before = prev[pidStr] || [];
++          const nextItems = before.filter(x => Number(x.id) !== Number(it.id));
++          return { ...prev, [pidStr]: nextItems };
++        });
++
++        if (isLast) {
++          await fetchProps();
++          closeSheet();
++        }
++      } catch (e: any) {
++        Alert.alert('╨Ю╤И╨╕╨▒╨║╨░', e?.message ?? '╨Э╨╡ ╤Г╨┤╨░╨╗╨╛╤Б╤М ╨╛╤В╨║╨╗╨╛╨╜╨╕╤В╤М ╨┐╨╛╨╖╨╕╤Ж╨╕╤О');
++      } finally {
++        setActingPropItemId(null);
++        setDecidingId(null);
+       }
++    }}
++  />
++</View>
++              </View>
++            )}
++          ListFooterComponent={() => (
++    <View style={{ paddingTop: 10, paddingBottom: 6, alignItems: 'flex-end' }}>
++      <View
++        style={{
++          paddingVertical: 6,
++          paddingHorizontal: 12,
++          borderRadius: 999,
++          backgroundColor: 'rgba(255,255,255,0.06)',
++          borderWidth: 1,
++          borderColor: 'rgba(255,255,255,0.12)',
++        }}
++      >
++        <Text style={{ fontWeight: '900', color: UI.text, fontSize: 14 }}>
++          ╨Ш╨в╨Ю╨У╨Ю: {Math.round(totalSum)}
++        </Text>
++      </View>
++    </View>
++  )}
++/>
++{/* ===== PROPOSAL ACTIONS (PROD) ===== */}
++<View style={s.reqActionsBottom}>
++  {/* тЬЕ Return/Delete тАФ LEFT */}
++  <View style={s.actionBtnSquare}>
++    <DeleteAllButton
++      disabled={screenLock || propReturnId === pidStr || propApproveId === pidStr}
++      loading={propReturnId === pidStr}
++      accessibilityLabel="╨Т╨╡╤А╨╜╤Г╤В╤М/╨Ю╤В╨║╨╗╨╛╨╜╨╕╤В╤М"
++      onPress={() => {
++        if (screenLock) return;
++        onDirectorReturn(pidStr);
++      }}
++    />
++  </View>
+ 
+-      const beforeCount = (itemsByProp[pidStr] || items || []).length;
+-      const isLast = beforeCount <= 1;
+-
+-      const payload = [{
+-        request_item_id: rid,
+-        decision: 'rejected',
+-        comment: '╨Ю╤В╨║╨╗╨╛╨╜╨╡╨╜╨╛ ╨┤╨╕╤А╨╡╨║╤В╨╛╤А╨╛╨╝',
+-      }];
++  <View style={s.sp8} />
++
++  {/* PDF тАФ CENTER */}
++  {(() => {
++    const pdfKey = `pdfshare:prop:${pidStr}`;
++    const pdfBusy = busy.isBusy(pdfKey);
++
++    return (
++      <Pressable
++        disabled={pdfBusy || screenLock}
++        style={[
++          s.actionBtnWide,
++          { backgroundColor: UI.btnNeutral, opacity: (pdfBusy || screenLock) ? 0.6 : 1 },
++        ]}
++        onPress={async () => {
++          if (pdfBusy || screenLock) return;
++          if (pdfTapLockRef.current[pdfKey]) return;
++          pdfTapLockRef.current[pdfKey] = true;
++
++          try {
++            await runPdfTop({
++              busy,
++              supabase,
++              key: pdfKey,
++              label: "╨У╨╛╤В╨╛╨▓╨╗╤О ╤Д╨░╨╣╨╗тАж",
++              mode: "share",
++              fileName: `╨Я╤А╨╡╨┤╨╗╨╛╨╢╨╡╨╜╨╕╨╡_${pidStr}`,
++              getRemoteUrl: async () => {
++                const { exportProposalPdf } = await import("../../src/lib/rik_api");
++                return await exportProposalPdf(pidStr as any, "share");
++              },
++            });
++          } catch (e: any) {
++            if (String(e?.message ?? "").toLowerCase().includes("busy")) return;
++            Alert.alert("╨Ю╤И╨╕╨▒╨║╨░", e?.message ?? "╨Э╨╡ ╤Г╨┤╨░╨╗╨╛╤Б╤М ╨╛╤В╨┐╤А╨░╨▓╨╕╤В╤М PDF");
++          } finally {
++            setTimeout(() => { pdfTapLockRef.current[pdfKey] = false; }, 450);
++          }
++        }}
++      >
++        <Text style={s.actionText}>{pdfBusy ? "PDFтАж" : "PDF"}</Text>
++      </Pressable>
++    );
++  })()}
+ 
+-      // тЬЕ ╨Т╨Р╨Ц╨Э╨Ю: ╨Э╨Ш╨Ъ╨Р╨Ъ╨Ю╨У╨Ю JSON.stringify
+-      const res = await supabase.rpc('director_decide_proposal_items', {
+-        p_proposal_id: pidStr,
+-        p_decisions: payload,
+-        p_finalize: isLast,
+-      });
++  <View style={s.sp8} />
+ 
+-      if (res.error) throw res.error;
++  {/* Excel тАФ CENTER */}
++  <Pressable
++    disabled={screenLock}
++    style={[
++      s.actionBtnWide,
++      { backgroundColor: UI.btnNeutral, opacity: screenLock ? 0.6 : 1 },
++    ]}
++    onPress={async () => {
++      if (screenLock) return;
+ 
+-      // ╨╗╨╛╨║╨░╨╗╤М╨╜╨╛ ╤Г╨▒╨╕╤А╨░╨╡╨╝ ╤Б╤В╤А╨╛╨║╤Г
+-      setItemsByProp(prev => {
+-        const before = prev[pidStr] || [];
+-        const nextItems = before.filter(x => Number(x.id) !== Number(it.id));
+-        return { ...prev, [pidStr]: nextItems };
+-      });
++      try {
++        if (Platform.OS !== "web") {
++          Alert.alert("Excel", "Excel ╤Н╨║╤Б╨┐╨╛╤А╤В ╤Б╨╡╨╣╤З╨░╤Б ╤А╨╡╨░╨╗╨╕╨╖╨╛╨▓╨░╨╜ ╤В╨╛╨╗╤М╨║╨╛ ╨┤╨╗╤П Web-╨▓╨╡╤А╤Б╨╕╨╕.");
++          return;
++        }
++        if (!items.length) {
++          Alert.alert("Excel", "╨Э╨╡╤В ╤Б╤В╤А╨╛╨║ ╨┤╨╗╤П ╨▓╤Л╨│╤А╤Г╨╖╨║╨╕.");
++          return;
++        }
+ 
+-      if (isLast) {
+-        await fetchProps();
+-        closeSheet();
++        const safe = (v: any) => (v == null ? "" : String(v).replace(/[\r\n]+/g, " ").trim());
++        const title = (pretty || `PROPOSAL-${pidStr.slice(0, 8)}`).replace(/[^\w╨Р-╨п╨░-╤П0-9]/g, "_");
++        const sheetName = title.slice(0, 31) || "╨Я╤А╨╡╨┤╨╗╨╛╨╢╨╡╨╜╨╕╨╡";
++
++        const data: any[][] = [["тДЦ", "╨Э╨░╨╕╨╝╨╡╨╜╨╛╨▓╨░╨╜╨╕╨╡", "╨Ъ╨╛╨╗-╨▓╨╛", "╨Х╨┤. ╨╕╨╖╨╝.", "╨Я╤А╨╕╨╝╨╡╨╜╨╡╨╜╨╕╨╡"]];
++        items.forEach((it, idx) =>
++          data.push([idx + 1, safe(it.name_human), safe(it.total_qty), safe(it.uom), safe(it.app_code)])
++        );
++
++        const wb = XLSX.utils.book_new();
++        const ws = XLSX.utils.aoa_to_sheet(data);
++        XLSX.utils.book_append_sheet(wb, ws, sheetName);
++
++        const wbout = XLSX.write(wb, { bookType: "xlsx", type: "array" });
++        const blob = new Blob([wbout], {
++          type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
++        });
++
++        const url = URL.createObjectURL(blob);
++        const a = document.createElement("a");
++        a.href = url;
++        a.download = `${sheetName}.xlsx`;
++        document.body.appendChild(a);
++        a.click();
++        document.body.removeChild(a);
++        URL.revokeObjectURL(url);
++      } catch (e: any) {
++        Alert.alert("╨Ю╤И╨╕╨▒╨║╨░", e?.message ?? "╨Э╨╡ ╤Г╨┤╨░╨╗╨╛╤Б╤М ╤Б╤Д╨╛╤А╨╝╨╕╤А╨╛╨▓╨░╤В╤М Excel");
+       }
+-    } catch (e: any) {
+-      Alert.alert('╨Ю╤И╨╕╨▒╨║╨░', e?.message ?? '╨Э╨╡ ╤Г╨┤╨░╨╗╨╛╤Б╤М ╨╛╤В╨║╨╗╨╛╨╜╨╕╤В╤М ╨┐╨╛╨╖╨╕╤Ж╨╕╤О');
+-    } finally {
+-      setDecidingId(null);
+-    }
+-  }}
+->
+-  <Text style={s.mobRejectIcon}>тЬХ</Text>
+-</Pressable>
+-
+-              </View>
+-            )}
+-          />
+-
+-          {/* тЬЕ ╨Э╨Ш╨Ц╨Э╨п╨п ╨Я╨Р╨Э╨Х╨Ы╨м ╨б╨Э╨Р╨С╨Ц╨Х╨Э╨ж╨Р тАФ ╨Т╨Ю╨б╨б╨в╨Р╨Э╨Ю╨Т╨Ы╨Х╨Э╨Р 1:1 */}
+-          <View style={s.reqActionsBottom}>
+-            {/* PDF */}
+-            <Pressable
+-              style={[s.actionBtn, { backgroundColor: UI.btnNeutral }]}
+-              onPress={async () => {
+-                const keyPdf = `pdf:prop:${pidStr}`;
+-                try {
+-                  await busy.run(async () => {
+-                    if (Platform.OS === 'web') {
+-                      const w = window.open('about:blank', '_blank');
+-                      const { buildProposalPdfHtml } = await import('../../src/lib/rik_api');
+-                      const htmlDoc = await buildProposalPdfHtml(pidStr as any);
+-                      if (w) { w.document.open(); w.document.write(htmlDoc); w.document.close(); w.focus(); }
+-                      return;
+-                    }
+-
+-                    const { exportProposalPdf } = await import('../../src/lib/rik_api');
+-                    const uri = await exportProposalPdf(pidStr as any, 'preview');
+-                    if (uri) await openPdfPreviewOrFallbackShare(uri);
+-                  }, { key: keyPdf, message: '╨Ю╤В╨║╤А╤Л╨▓╨░╤О PDFтАж', minMs: 300 });
+-                } catch (e: any) {
+-                  Alert.alert('╨Ю╤И╨╕╨▒╨║╨░', e?.message ?? 'PDF ╨╜╨╡ ╤Б╤Д╨╛╤А╨╝╨╕╤А╨╛╨▓╨░╨╜');
+-                }
+-              }}
+-            >
+-              <Text style={s.actionText}>PDF</Text>
+-            </Pressable>
++    }}
++  >
++    <Text style={s.actionText}>Excel</Text>
++  </Pressable>
+ 
+-            {/* Excel */}
+-            <Pressable
+-              style={[s.actionBtn, { backgroundColor: UI.btnNeutral }]}
+-              onPress={async () => {
+-                try {
+-                  if (Platform.OS !== 'web') { Alert.alert('Excel', 'Excel ╤Н╨║╤Б╨┐╨╛╤А╤В ╤Б╨╡╨╣╤З╨░╤Б ╤А╨╡╨░╨╗╨╕╨╖╨╛╨▓╨░╨╜ ╤В╨╛╨╗╤М╨║╨╛ ╨┤╨╗╤П Web-╨▓╨╡╤А╤Б╨╕╨╕.'); return; }
+-                  if (!items.length) { Alert.alert('Excel', '╨Э╨╡╤В ╤Б╤В╤А╨╛╨║ ╨┤╨╗╤П ╨▓╤Л╨│╤А╤Г╨╖╨║╨╕.'); return; }
+-
+-                  const safe = (v: any) => v == null ? '' : String(v).replace(/[\r\n]+/g, ' ').trim();
+-                  const title = (pretty || `PROPOSAL-${pidStr.slice(0, 8)}`).replace(/[^\w╨Р-╨п╨░-╤П0-9]/g, '_');
+-                  const sheetName = title.slice(0, 31) || '╨Я╤А╨╡╨┤╨╗╨╛╨╢╨╡╨╜╨╕╨╡';
+-
+-                  const data: any[][] = [['тДЦ', '╨Э╨░╨╕╨╝╨╡╨╜╨╛╨▓╨░╨╜╨╕╨╡', '╨Ъ╨╛╨╗-╨▓╨╛', '╨Х╨┤. ╨╕╨╖╨╝.', '╨Я╤А╨╕╨╝╨╡╨╜╨╡╨╜╨╕╨╡']];
+-                  items.forEach((it, idx) => data.push([idx + 1, safe(it.name_human), safe(it.total_qty), safe(it.uom), safe(it.app_code)]));
+-
+-                  const wb = XLSX.utils.book_new();
+-                  const ws = XLSX.utils.aoa_to_sheet(data);
+-                  XLSX.utils.book_append_sheet(wb, ws, sheetName);
+-
+-                  const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+-                  const blob = new Blob([wbout], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+-                  const url = URL.createObjectURL(blob);
+-                  const a = document.createElement('a');
+-                  a.href = url;
+-                  a.download = `${sheetName}.xlsx`;
+-                  document.body.appendChild(a);
+-                  a.click();
+-                  document.body.removeChild(a);
+-                  URL.revokeObjectURL(url);
+-                } catch (e: any) {
+-                  Alert.alert('╨Ю╤И╨╕╨▒╨║╨░', e?.message ?? '╨Э╨╡ ╤Г╨┤╨░╨╗╨╛╤Б╤М ╤Б╤Д╨╛╤А╨╝╨╕╤А╨╛╨▓╨░╤В╤М Excel');
+-                }
+-              }}
+-            >
+-              <Text style={s.actionText}>Excel</Text>
+-            </Pressable>
++  <View style={s.sp8} />
+ 
+-            {/* ╨▓╨╡╤А╨╜╤Г╤В╤М */}
+-            <Pressable hitSlop={12} style={s.iconBtnDanger} onPress={() => onDirectorReturn(pidStr)}>
+-              <Ionicons name="close" size={20} color="#fff" />
+-            </Pressable>
++  {/* тЬЕ Approve тАФ RIGHT */}
++  <View style={s.actionBtnSquare}>
++    <SendPrimaryButton
++      variant="green"
++      disabled={approveDisabled}
++      loading={propApproveId === pidStr}
++      onPress={async () => {
++        if (approveDisabled) return;
+ 
+-            {/* ╤Г╤В╨▓╨╡╤А╨┤╨╕╤В╤М */}
+-            <Pressable
+-              hitSlop={10}
+-              disabled={decidingId === pidStr}
+-              style={[s.iconBtnApprove, { backgroundColor: (decidingId === pidStr) ? '#9CA3AF' : UI.btnApprove }]}
+-              onPress={async () => {
+-                try {
+-                  setDecidingId(pidStr);
+-
+-                  const { error } = await supabase.rpc('director_approve_min_auto', { p_proposal_id: pidStr, p_comment: null });
+-                  if (error) throw error;
+-
+-                  await seedWorksAfterApprove(pidStr);
+-
+-                  const rInc = await supabase.rpc('ensure_purchase_and_incoming_from_proposal', { p_proposal_id: pidStr });
+-                  if ((rInc as any)?.error) throw (rInc as any).error;
+-
+-                  const { error: accErr } = await supabase.rpc('proposal_send_to_accountant_min', {
+-                    p_proposal_id: pidStr,
+-                    p_invoice_number: null,
+-                    p_invoice_date: null,
+-                    p_invoice_amount: null,
+-                    p_invoice_currency: 'KGS',
+-                  });
+-                  if (accErr) throw accErr;
+-
+-                  await fetchProps();
+-                  closeSheet();
+-                  Alert.alert('╨У╨╛╤В╨╛╨▓╨╛', '╨г╤В╨▓╨╡╤А╨╢╨┤╨╡╨╜╨╛ тЖТ ╨▒╤Г╤Е╨│╨░╨╗╤В╨╡╤А тЖТ ╤Б╨║╨╗╨░╨┤');
+-                } catch (e: any) {
+-                  Alert.alert('╨Ю╤И╨╕╨▒╨║╨░', e?.message ?? '╨Э╨╡ ╤Г╨┤╨░╨╗╨╛╤Б╤М ╤Г╤В╨▓╨╡╤А╨┤╨╕╤В╤М');
+-                } finally {
+-                  setDecidingId(null);
+-                }
+-              }}
+-            >
+-              <Ionicons name="send" size={20} color="#fff" />
+-            </Pressable>
+-          </View>
+-
+-          <View style={{ marginTop: 10, alignItems: 'flex-end' }}>
+-            <Text style={{ fontWeight: '900', color: UI.text, fontSize: 16 }}>
+-              ╨Ш╨в╨Ю╨У╨Ю: {Math.round(totalSum)}
+-            </Text>
+-          </View>
+-        </>
++        try {
++          setPropApproveId(pidStr);
++
++          const { error } = await supabase.rpc("director_approve_min_auto", {
++            p_proposal_id: pidStr,
++            p_comment: null,
++          });
++          if (error) throw error;
++
++          const rInc = await supabase.rpc("ensure_purchase_and_incoming_strict", {
++            p_proposal_id: pidStr,
++          });
++          if ((rInc as any)?.error) throw (rInc as any).error;
++
++          try {
++            const purchaseId = String((rInc as any)?.data?.purchase_id ?? "").trim();
++            if (purchaseId) {
++              const rW = await supabase.rpc("work_seed_from_purchase" as any, { p_purchase_id: purchaseId } as any);
++              if (rW.error) console.warn("[work_seed_from_purchase] error:", rW.error.message);
++            }
++          } catch {}
++
++          const { error: accErr } = await supabase.rpc("proposal_send_to_accountant_min", {
++            p_proposal_id: pidStr,
++            p_invoice_number: null,
++            p_invoice_date: null,
++            p_invoice_amount: null,
++            p_invoice_currency: "KGS",
++          });
++          if (accErr) throw accErr;
++
++          await fetchProps();
++          closeSheet();
++          showSuccess("╨г╤В╨▓╨╡╤А╨╢╨┤╨╡╨╜╨╛ тЖТ ╨▒╤Г╤Е╨│╨░╨╗╤В╨╡╤А тЖТ ╤Б╨║╨╗╨░╨┤/╨┐╨╛╨┤╤А╤П╨┤╤З╨╕╨║╨╕");
++        } catch (e: any) {
++          Alert.alert("╨Ю╤И╨╕╨▒╨║╨░", e?.message ?? "╨Э╨╡ ╤Г╨┤╨░╨╗╨╛╤Б╤М ╤Г╤В╨▓╨╡╤А╨┤╨╕╤В╤М");
++        } finally {
++          setPropApproveId(null);
++        }
++      }}
++    />
++  </View>
++</View>
++  </>
+       );
+     })()}
+   </View>
+ ) : null}
+-
+-  </View>
+-
+-      </RNModal>
+-
+-    </View>
+-  );
++ </View>
++</RNModal> 
++    
++</View>
++);
+ }
+-
+-const s = StyleSheet.create({
+-  container: { flex: 1 },
+-
+-  header: {
+-    paddingHorizontal: 16,
+-    paddingTop: 12,
+-    paddingBottom: 10,
+-    borderBottomWidth: 1,
+-    borderColor: UI.border,
+-    backgroundColor: UI.cardBg,
+-  },
+-  title: { fontSize: 24, fontWeight: '800', color: UI.text, marginBottom: 8 },
+-  tabs: {
+-  flexDirection: 'row',
+-  flexWrap: 'wrap',     // тЬЕ ╤А╨░╨╖╤А╨╡╤И╨░╨╡╨╝ ╨┐╨╡╤А╨╡╨╜╨╛╤Б
+-  gap: 8,
+-  alignItems: 'center',
+-},
+-
+-  tab: {
+-  paddingVertical: 8,
+-  paddingHorizontal: 14,
+-  borderRadius: 999,
+-  borderWidth: 1,
+-  borderColor: UI.border,
+-  backgroundColor: UI.tabInactiveBg,
+-},
+-tabActive: {
+-  backgroundColor: UI.tabActiveBg,
+-  borderColor: UI.accent,
+-},
+-tabHalf: {
+-  flexBasis: '48%',     // тЬЕ ╨┤╨▓╨╡ ╨║╨╜╨╛╨┐╨║╨╕ ╨▓ ╤А╤П╨┤
+-  flexGrow: 1,
+-},
+-
+-tabText: {
+-  color: UI.text,
+-  fontWeight: '800',
+-  textAlign: 'center',
+-  flexShrink: 1,
+-}, 
+- sectionHeader: {
+-  paddingHorizontal: 16,
+-  paddingTop: 12,
+-  paddingBottom: 6,
+-
+-  // тЬЕ ╨╜╨░ ╤В╨╡╨╗╨╡╤Д╨╛╨╜╨╡: ╨║╨╛╨╗╨╛╨╜╨║╨░ (╤В╨╡╨║╤Б╤В ╤Б╨▓╨╡╤А╤Е╤Г, KPI ╤Б╨╜╨╕╨╖╤Г)
+-  // тЬЕ ╨╜╨░ web: ╤Б╤В╤А╨╛╨║╨░ (╨║╨░╨║ ╤А╨░╨╜╤М╤И╨╡)
+-  ...Platform.select({
+-    web: {
+-      flexDirection: 'row',
+-      alignItems: 'center',
+-      justifyContent: 'space-between',
+-      gap: 8,
+-    },
+-    default: {
+-      flexDirection: 'column',
+-      alignItems: 'flex-start',
+-      gap: 8,
+-    },
+-  }),
+-},
+-
+-sectionHeaderTop: {
+-  width: '100%',
+-},
+-
+-
+-  sectionTitle: { fontSize: 20, fontWeight: '800', color: UI.text },
+-  sectionMeta: {
+-  color: UI.sub,
+-  fontWeight: '600',
+-  flexShrink: 0,        // тЬЕ ╨╜╨╡ ╤Б╨╢╨╕╨╝╨░╤В╤М╤Б╤П ╨▓ ╨╜╨╛╨╗╤М
+-  maxWidth: 90,         // тЬЕ ╤З╤В╨╛╨▒╤Л ╨╜╨╡ ╨▓╤Л╨╗╨╡╨╖╨░╨╗╨╛
+-  textAlign: 'right',   // тЬЕ ╤А╨╛╨▓╨╜╨╛ ╤Б╨┐╤А╨░╨▓╨░
+-},
+-
+-group: { marginBottom: 12, paddingHorizontal: 16, gap: 10 },
+-
+-groupHeader: {
+-  flexDirection: 'row',
+-  alignItems: 'center',
+-  justifyContent: 'space-between',
+-  gap: 10,
+-
+-  padding: 14,
+-  borderRadius: 18,
+-
+-  backgroundColor: UI.cardBg,
+-  borderWidth: 1,
+-  borderColor: 'rgba(255,255,255,0.18)',
+-
+-  shadowColor: '#000',
+-  shadowOffset: { width: 0, height: 10 },
+-  shadowOpacity: 0.22,
+-  shadowRadius: 18,
+-  elevation: 6,
+- minHeight: 72,
+-},
+-
+-
+-  groupTitle: { fontSize: 18, fontWeight: '900', color: UI.text },
+-
+-  groupMeta: {
+-  marginTop: 4,
+-  alignSelf: 'flex-start',
+-  paddingVertical: 3,
+-  paddingHorizontal: 10,
+-  borderRadius: 999,
+-  backgroundColor: 'rgba(255,255,255,0.06)',
+-  borderWidth: 1,
+-  borderColor: 'rgba(255,255,255,0.12)',
+-  color: '#E5E7EB',
+-  fontWeight: '800',
+-  fontSize: 12,
+-},
+-
+-  pillBtn: { paddingVertical: 6, paddingHorizontal: 12, borderRadius: 999 },
+-  pillBtnText: { color: UI.text, fontWeight: '700' },   // ╨┤╨╗╤П ╤Б╨▓╨╡╤В╨╗╤Л╤Е ╨║╨╜╨╛╨┐╨╛╨║
+-pillBtnTextOn: { color: '#fff', fontWeight: '800' },  // ╨┤╨╗╤П ╤В╤С╨╝╨╜╤Л╤Е ╨║╨╜╨╛╨┐╨╛╨║
+-
+-  // ===== ╨Я╨╛╨╕╤Б╨║ ╨╕ ╤Д╨╕╨╗╤М╤В╤А =====
+-  filterBar: {
+-    paddingHorizontal: 16,
+-    paddingBottom: 8,
+-    flexDirection: 'row',
+-    alignItems: 'flex-end',
+-    gap: 12,
+-  },
+-  filterLabel: {
+-    fontSize: 12,
+-    color: UI.sub,
+-    marginBottom: 4,
+-  },
+- searchBox: {
+-  flexDirection: 'row',
+-  alignItems: 'center',
+-  borderWidth: 1,
+-  borderColor: 'rgba(255,255,255,0.14)',
+-  borderRadius: 999,
+-  paddingHorizontal: 10,
+-  paddingVertical: 6,
+-  backgroundColor: 'rgba(255,255,255,0.06)',
+-},
+-  searchIcon: {
+-    fontSize: 14,
+-    marginRight: 6,
+-    color: UI.sub,
+-  },
+-  searchInput: {
+-    flex: 1,
+-    paddingVertical: 0,
+-    paddingHorizontal: 0,
+-    fontSize: 14,
+-    color: UI.text,
+-  },
+-  filterToggle: {
+-  paddingHorizontal: 10,
+-  paddingVertical: 6,
+-  borderRadius: 999,
+-  borderWidth: 1,
+-  borderColor: 'rgba(255,255,255,0.14)',
+-  backgroundColor: 'rgba(255,255,255,0.06)',
+-},
+-  filterToggleActive: {
+-    backgroundColor: '#E5E7EB',
+-  },
+-  filterToggleText: {
+-    fontSize: 12,
+-    fontWeight: '600',
+-    color: UI.text,
+-  },
+-
+-collapsingHeader: {
+-  position: 'absolute',
+-  top: 0,
+-  left: 0,
+-  right: 0,
+-  zIndex: 50,
+-  backgroundColor: UI.cardBg,
+-  borderBottomWidth: 1,
+-  borderColor: UI.border,
+-  paddingHorizontal: 16,
+-  paddingTop: Platform.OS === 'web' ? 10 : 12,
+-  paddingBottom: 10,
+-  shadowColor: '#000',
+-  shadowOffset: { width: 0, height: 6 },
+-  shadowRadius: 14,
+-},
+-collapsingTitle: {
+-  fontWeight: '900',
+-  color: UI.text,
+-  marginBottom: 8,
+-},
+-
+-  // ===== ╨Ъ╨Э╨Ю╨Я╨Ъ╨Р ╨Ю╨в╨Ъ╨а╨л╨в╨м (╨Т╨б╨Х╨У╨Ф╨Р ╨Т╨Ы╨Х╨Ч╨Р╨Х╨в ╨Э╨Р IPHONE) =====
+-  propHeader: {
+-  flexDirection: 'row',
+-  alignItems: 'center',
+-  justifyContent: 'space-between',
+-  gap: 10,
+-},
+-
+-
+- openBtn: {
+-  paddingVertical: 10,
+-  paddingHorizontal: 16,
+-  borderRadius: 999,
+-  backgroundColor: 'rgba(255,255,255,0.06)',
+-  borderWidth: 1,
+-  borderColor: 'rgba(255,255,255,0.22)',
+-  minWidth: 96,
+-  alignItems: 'center',
+-},
+-openBtnText: {
+-  color: '#FFFFFF',
+-  fontWeight: '900',
+-  fontSize: 13,
+-  letterSpacing: 0.2,
+-},
+-
+-
+-actionsRow: {
+-  flexDirection: 'row',
+-  gap: 8,
+-  marginTop: 10,
+-  flexWrap: 'wrap',
+-},
+-reqNoteBox: {
+-  marginTop: 8,
+-  marginBottom: 12,
+-  padding: 12,
+-  borderRadius: 14,
+-  backgroundColor: '#0F172A',    // ╤З╤Г╤В╤М ╤В╨╡╨╝╨╜╨╡╨╡ ╨║╨░╤А╤В╨╛╤З╨║╨╕
+-  borderWidth: 1,
+-  borderColor: UI.border,
+-  borderLeftWidth: 4,
+-  borderLeftColor: UI.accent,    // ╨╖╨╡╨╗╤С╨╜╤Л╨╣ ╨░╨║╤Ж╨╡╨╜╤В
+-},
+-reqNoteLine: {
+-  color: UI.text,
+-  fontSize: 14,
+-  lineHeight: 20,
+-  marginBottom: 4,
+-},
+-
+-// ===== mobile cards =====
+-mobList: {
+-  marginTop: 10,
+-  gap: 10,
+-},
+-mobCard: {
+-  flexDirection: 'row',
+-  alignItems: 'center',
+-  gap: 10,
+-  padding: 14,
+-  borderRadius: 18,
+-
+-  backgroundColor: 'rgba(16,24,38,0.92)',
+-  borderWidth: 1.25,
+-  borderColor: 'rgba(255,255,255,0.16)',
+-
+-  shadowColor: '#000',
+-  shadowOffset: { width: 0, height: 10 },
+-  shadowOpacity: 0.22,
+-  shadowRadius: 18,
+-  elevation: 6,
+-
+-},
+-mobMain: {
+-  flex: 1,
+-  minWidth: 0,
+-},
+-
+-mobTitle: {
+-  fontSize: 16,
+-  fontWeight: '800',
+-  color: UI.text,
+-},
+-
+-mobMeta: {
+-  marginTop: 6,
+-  fontSize: 14,
+-  fontWeight: '700',
+-  color: UI.sub,
+-},
+-
+-mobRejectBtn: {
+-  width: 44,
+-  height: 44,
+-  borderRadius: 12,
+-  alignItems: 'center',
+-  justifyContent: 'center',
+-  backgroundColor: UI.btnReject,
+-},
+-
+-mobRejectIcon: {
+-  color: '#fff',
+-  fontSize: 22,
+-  fontWeight: '900',
+-  lineHeight: 22,
+-},
+-kindPill: {
+-  paddingVertical: 4,
+-  paddingHorizontal: 10,
+-  borderRadius: 999,
+-  borderWidth: 1,
+-  borderColor: UI.border,
+-  backgroundColor: 'transparent',
+-},
+-kindPillText: {
+-  fontSize: 12,
+-  fontWeight: '700',
+-  color: UI.text,
+-},
+-
+-kpiRow: {
+-  width: '100%',
+-  flexDirection: 'row',
+-  flexWrap: 'wrap',
+-  gap: 8,
+-},
+-
+-kpiPill: {
+-  paddingVertical: 8,
+-  paddingHorizontal: 12,
+-  borderRadius: 999,
+-  borderWidth: 1,
+-  borderColor: UI.border,
+-  backgroundColor: UI.cardBg,
+-  flexDirection: 'row',
+-  alignItems: 'center',
+-  gap: 8,
+-  flexGrow: 1,
+-  flexBasis: '48%',
+-},
+-kpiLabel: {
+-  color: UI.sub,
+-  fontWeight: '700',
+-  fontSize: 12,
+-},
+-
+-kpiValue: {
+-  color: UI.text,
+-  fontWeight: '900',
+-  fontSize: 12,
+-},
+-cardMeta: {
+-  marginTop: 6,
+-  color: 'rgba(255,255,255,0.78)',  // тЬЕ ╤П╤А╤З╨╡, ╤З╨╡╨╝ #E5E7EB ╨╜╨░ ╤В╨▓╨╛╤С╨╝ ╤Д╨╛╨╜╨╡
+-  fontSize: 12,
+-  fontWeight: '800',
+-  letterSpacing: 0.2,
+-},
+-metaRow: {
+-  marginTop: 6,
+-  flexDirection: 'row',
+-  alignItems: 'center',
+-  gap: 10,
+-  flexWrap: 'wrap',        // тЬЕ ╨┐╨╡╤А╨╡╨╜╨╛╤Б, ╨╜╨╛ ╨▒╨╡╨╖ ╤Б╨╝╨╡╤Й╨╡╨╜╨╕╤П ╨▓╨┐╤А╨░╨▓╨╛
+-},
+-metaPill: {
+-  paddingVertical: 4,
+-  paddingHorizontal: 12,
+-  borderRadius: 999,
+-  backgroundColor: 'rgba(255,255,255,0.06)',
+-  borderWidth: 1,
+-  borderColor: 'rgba(255,255,255,0.12)',
+-  alignItems: 'center',
+-  flexShrink: 0,          // тЬЕ ╨╜╨╡ ╤Б╨╢╨╕╨╝╨░╤В╤М╤Б╤П ╨▓ ╨╜╨╛╨╗╤М
+-},
+-metaPillText: {
+-  color: '#E5E7EB',
+-  fontWeight: '900',
+-  fontSize: 12,
+-},
+-
+-reqActionsBottom: {
+-  marginTop: 12,
+-  flexDirection: 'row',
+-  gap: 10,
+-
+-  padding: 10,
+-  borderRadius: 18,
+-  backgroundColor: 'rgba(255,255,255,0.04)',
+-  borderWidth: 1,
+-  borderColor: 'rgba(255,255,255,0.10)',
+-},
+-actionBtn: {
+-  flex: 1,
+-  paddingVertical: 12,
+-  borderRadius: 16,
+-  alignItems: 'center',
+-  justifyContent: 'center',
+-  backgroundColor: 'rgba(255,255,255,0.08)',
+-},
+-
+-actionText: { color: '#fff', fontWeight: '900' },
+-
+-actionTextOn: { color: '#fff', fontWeight: '900' },
+-
+-iconBtnDanger: {
+-  width: 54,
+-  height: 44,
+-  borderRadius: 14,
+-  alignItems: 'center',
+-  justifyContent: 'center',
+-  backgroundColor: UI.btnReject,
+-},
+-
+-iconBtnApprove: {
+-  width: 54,
+-  height: 44,
+-  borderRadius: 14,
+-  alignItems: 'center',
+-  justifyContent: 'center',
+-},
+-sectionBox: {
+-  marginTop: 10,
+-  padding: 12,
+-  borderRadius: 18,
+-  backgroundColor: 'rgba(255,255,255,0.04)',
+-  borderWidth: 1,
+-  borderColor: 'rgba(255,255,255,0.10)',
+-},
+-sectionBoxTitle: {
+-  color: UI.sub,
+-  fontWeight: '900',
+-  fontSize: 12,
+-  letterSpacing: 0.4,
+-  marginBottom: 10,
+-},
+-rightStack: {
+-  alignItems: 'flex-end',
+-  justifyContent: 'center',
+-  gap: 8,
+-},
+-sheet: {
+-  height: '88%',
+-  backgroundColor: UI.cardBg,
+-  borderTopLeftRadius: 22,
+-  borderTopRightRadius: 22,
+-  paddingTop: 10,
+-  paddingHorizontal: 16,
+-  paddingBottom: 16,
+-  borderWidth: 1,
+-  borderColor: 'rgba(255,255,255,0.10)',
+-},
+-sheetHandle: {
+-  alignSelf: 'center',
+-  width: 44,
+-  height: 5,
+-  borderRadius: 999,
+-  backgroundColor: 'rgba(255,255,255,0.18)',
+-  marginBottom: 10,
+-},
+-sheetTitle: {
+-  flex: 1,
+-  minWidth: 0,
+-  color: UI.text,
+-  fontWeight: '900',
+-  fontSize: 18,
+-},
+-sheetTopBar: {
+-  flexDirection: 'row',
+-  alignItems: 'center',
+-  justifyContent: 'space-between',
+-  gap: 10,
+-  marginBottom: 10,
+-},
+-
+-sheetCloseBtn: {
+-  paddingVertical: 10,
+-  paddingHorizontal: 14,
+-  borderRadius: 999,
+-  backgroundColor: '#E5E7EB',          // ╨╜╨╡╨╣╤В╤А╨░╨╗╤М╨╜╨░╤П ╨║╨╜╨╛╨┐╨║╨░
+-  borderWidth: 1,
+-  borderColor: 'rgba(0,0,0,0.10)',
+-  flexShrink: 0,
+-},
+-
+-sheetCloseText: {
+-  color: '#0B0F14',                   // ╤З╤С╤А╨╜╤Л╨╣ ╤В╨╡╨║╤Б╤В
+-  fontWeight: '900',
+-  fontSize: 13,
+-},
+-
+-});
+-
+-

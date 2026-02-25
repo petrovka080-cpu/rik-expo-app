@@ -147,8 +147,8 @@ export async function fetchBuyerBucketsProd(params: {
       .from("proposals")
       .select("id, payment_status, submitted_at, created_at")
       .ilike("payment_status", "%На доработке%")
-      .order("submitted_at", { ascending: false, nullsLast: true })
-      .order("created_at", { ascending: false, nullsLast: true });
+      .order("submitted_at", { ascending: false, nullsFirst: false })
+      .order("created_at", { ascending: false, nullsFirst: false });
 
     const seen = new Set<string>();
     const rejectedRaw = (reAcc.data || [])

@@ -100,13 +100,15 @@ async function loadNameMapLedgerUi(
  */
 export async function apiFetchStock(
   supabase: SupabaseClient,
+  offset: number = 0,
+  limit: number = 400
 ): Promise<{ supported: boolean; rows: StockRow[] }> {
   try {
     const truth = await supabase
       .from("v_wh_balance_ledger_truth_ui" as any)
       .select("code, uom_id, qty_available, updated_at")
       .order("code", { ascending: true })
-      .limit(20000);
+      .range(offset, offset + limit - 1);
 
     if (!truth.error && Array.isArray(truth.data)) {
       const truthRows = truth.data as any[];
@@ -156,67 +158,29 @@ export async function apiFetchStock(
       return { supported: true, rows };
     }
 
-    // ---- fallbacks (как у тебя было) ----
-    const rpcNames = [
-      { fn: "list_stock", args: {} },
-      { fn: "warehouse_list_stock", args: {} },
-      { fn: "list_warehouse_stock", args: {} },
-      { fn: "acc_list_stock", args: {} },
-    ] as const;
 
-    for (const r of rpcNames) {
-      const res = await supabase.rpc(r.fn as any, r.args as any);
-      if (!res.error && Array.isArray(res.data)) {
-        const rows = (res.data || []).map(
-          (x: any) =>
-            ({
-              material_id: String(x.material_id ?? x.id ?? x.code ?? ""),
-              code: x.code ?? x.mat_code ?? null,
-              uom_id:
-                pickUom(x.uom_id) ??
-                pickUom(x.uom) ??
-                pickUom(x.uom_code) ??
-                pickUom(x.unit) ??
-                pickUom(x.unit_id) ??
-                null,
-              name: x.name ?? x.name_human ?? x.name_human_ru ?? null,
-              qty_on_hand: nz(x.qty_on_hand ?? x.on_hand, 0),
-              qty_reserved: nz(x.qty_reserved ?? x.reserved, 0),
-              qty_available: nz(
-                x.qty_available ?? x.available ?? nz(x.qty_on_hand) - nz(x.qty_reserved),
-                0,
-              ),
-              object_name: x.object_name ?? null,
-              warehouse_name: x.warehouse_name ?? null,
-              updated_at: x.updated_at ?? null,
-            } as StockRow),
-        );
-        return { supported: true, rows };
-      }
-    }
-
-    const v = await supabase.from("v_warehouse_stock" as any).select("*").limit(2000);
+    const v = await supabase.from("v_warehouse_stock" as any).select("*").range(offset, offset + limit - 1);
     if (!v.error && Array.isArray(v.data)) {
       const rows = (v.data || []).map(
         (x: any) =>
-          ({
-            material_id: String(x.code ?? ""),
-            code: x.code ?? null,
-            name: x.name ?? null,
-            uom_id:
-              pickUom(x.uom_id) ??
-              pickUom(x.uom) ??
-              pickUom(x.uom_code) ??
-              pickUom(x.unit) ??
-              pickUom(x.unit_id) ??
-              null,
-            qty_on_hand: nz(x.qty_on_hand, 0),
-            qty_reserved: nz(x.qty_reserved, 0),
-            qty_available: nz(x.qty_available ?? nz(x.qty_on_hand) - nz(x.qty_reserved), 0),
-            object_name: null,
-            warehouse_name: null,
-            updated_at: x.updated_at ?? null,
-          } as StockRow),
+        ({
+          material_id: String(x.code ?? ""),
+          code: x.code ?? null,
+          name: x.name ?? null,
+          uom_id:
+            pickUom(x.uom_id) ??
+            pickUom(x.uom) ??
+            pickUom(x.uom_code) ??
+            pickUom(x.unit) ??
+            pickUom(x.unit_id) ??
+            null,
+          qty_on_hand: nz(x.qty_on_hand, 0),
+          qty_reserved: nz(x.qty_reserved, 0),
+          qty_available: nz(x.qty_available ?? nz(x.qty_on_hand) - nz(x.qty_reserved), 0),
+          object_name: null,
+          warehouse_name: null,
+          updated_at: x.updated_at ?? null,
+        } as StockRow),
       );
       return { supported: true, rows };
     }
@@ -227,7 +191,11 @@ export async function apiFetchStock(
   }
 }
 
-export async function apiFetchReqHeads(supabase: SupabaseClient): Promise<ReqHeadRow[]> {
+export async function apiFetchReqHeads(
+  supabase: SupabaseClient,
+  page: number = 0,
+  pageSize: number = 50
+): Promise<ReqHeadRow[]> {
   const q = await supabase
     .from("v_wh_issue_req_heads_ui" as any)
     .select("*")
@@ -237,7 +205,7 @@ export async function apiFetchReqHeads(supabase: SupabaseClient): Promise<ReqHea
     .order("display_no", { ascending: false })
     // 3) ещё один стабилизатор — по request_id (uuid) на случай одинаковых display_no
     .order("request_id", { ascending: false })
-    .limit(500);
+    .range(page * pageSize, (page + 1) * pageSize - 1);
 
   if (q.error || !Array.isArray(q.data)) return [];
 
@@ -410,9 +378,14 @@ export type IssuedByObjectFastRow = {
   object_id: string | null;
   object_name: string;
   work_name: string;
+
   docs_cnt: any;
-  lines_cnt: any;
-  docs_with_over_cnt: any;
+  req_cnt: any;
+  active_days: any;
+  uniq_materials: any;
+
+  recipients_text: string | null;
+  top3_materials: string | null;
 };
 
 export async function apiFetchIssuedMaterialsReportFast(

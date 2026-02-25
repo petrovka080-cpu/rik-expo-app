@@ -355,7 +355,7 @@ export function useWarehouseReports(args: {
     },
     [supabase, repIssues, orgName, warehouseName],
   );
- 
+
   const buildMaterialsReportPdf = useCallback(
     async (opts?: { objectId?: string | null; objectName?: string | null; workName?: string | null }) => {
       const rr = normalizeReportRange(periodFrom, periodTo);
@@ -446,14 +446,14 @@ export function useWarehouseReports(args: {
         object_name: String(r.object_name ?? "Без объекта"),
         work_name: String(r.work_name ?? "Без вида работ"),
         docs_cnt: toNum(r.docs_cnt),
-        lines_cnt: toNum(r.lines_cnt),
-        docs_with_over_cnt: toNum(r.docs_with_over_cnt),
+        req_cnt: toNum(r.req_cnt),
+        active_days: toNum(r.active_days),
+        uniq_materials: toNum(r.uniq_materials),
+        recipients_text: r.recipients_text ?? null,
+        top3_materials: r.top3_materials ?? null,
       }));
 
       const docsTotal = Array.isArray(repIssues) ? repIssues.length : 0;
-      const docsWithOver = Array.isArray(repIssues)
-        ? repIssues.filter((x: any) => toNum(x?.qty_over) > 0).length
-        : 0;
 
       const html = buildWarehouseObjectWorkReportHtml({
         periodFrom: rr.pdfFrom,
@@ -463,7 +463,6 @@ export function useWarehouseReports(args: {
         objectName: opts?.objectName ?? null,
         rows: rows as any,
         docsTotal,
-        docsWithOver,
       });
 
       return await exportWarehouseHtmlPdf({
@@ -474,7 +473,7 @@ export function useWarehouseReports(args: {
     [supabase, repIssues, periodFrom, periodTo, orgName, warehouseName],
   );
 
-    return {
+  return {
     issuesByDay,
     ensureIssueLines,
     openIssueDetails,

@@ -379,11 +379,10 @@ function Dropdown({
                 style={s.input}
               />
             )}
-            <FlatList
-              data={filtered}
-              keyExtractor={(o, idx) => `ref:${o.code}:${idx}`}
-              renderItem={({ item }) => (
+            <ScrollView style={{ maxHeight: 360, marginTop: 6 }} keyboardShouldPersistTaps="handled">
+              {filtered.map((item, idx) => (
                 <Pressable
+                  key={`ref:${item.code}:${idx}`}
                   onPress={() => {
                     onChange(item.code);
                     setOpen(false);
@@ -393,11 +392,9 @@ function Dropdown({
                   <Text style={{ fontWeight: '900', color: UI.text }}>
                     {item.name}
                   </Text>
-
                 </Pressable>
-              )}
-              style={{ maxHeight: 360, marginTop: 6 }}
-            />
+              ))}
+            </ScrollView>
             <View
               style={{
                 flexDirection: 'row',
@@ -1869,15 +1866,8 @@ export default function ForemanScreen() {
                   cancelLockRef.current[key] = false;
                 }
               }}
-              accessibilityLabel="������� �������"
-              size={44}
-              radius={12}
-              iconSize={22}
-              bg={UI.btnReject}
-              bgPressed="#b91c1c"
-              bgDisabled="#7f1d1d"
-              iconColor="#FFFFFF"
-              spinnerColor="#FFFFFF"
+              accessibilityLabel="Удалить позицию"
+              size={24} color={UI.btnReject}
             />
           ) : null}
         </View>
@@ -2312,11 +2302,9 @@ export default function ForemanScreen() {
 
               <CloseIconButton
                 onPress={() => setDraftOpen(false)}
-                accessibilityLabel="Свернуть"
-                size={46}
-                iconSize={22}
-                iconColor={UI.text}
-                spinnerColor={UI.text}
+                accessibilityLabel="Удалить позицию"
+              size={24}
+                color={UI.text}
               />
             </View>
 

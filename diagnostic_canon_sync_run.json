@@ -1,0 +1,17 @@
+{
+  "startedAt": "2026-02-23T14:16:40.758Z",
+  "finishedAt": "2026-02-23T14:24:59.640Z",
+  "catalog_rows": 64715,
+  "canon_before": 274377,
+  "work_types_total": 173,
+  "rpc_ok": 173,
+  "rpc_err": 0,
+  "rpc_zero": 3,
+  "rpc_unique_codes": 1191,
+  "insert_from_catalog": 340,
+  "insert_from_rpc_only": 0,
+  "inserted_total": 340,
+  "canon_after": 274717,
+  "rpc_missing_after": 0,
+  "rpc_missing_after_sample": []
+}

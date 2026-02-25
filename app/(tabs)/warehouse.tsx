@@ -1,4 +1,4 @@
-﻿// app/(tabs)/warehouse.tsx
+// app/(tabs)/warehouse.tsx
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   View,
@@ -42,7 +42,8 @@ import {
 import { useGlobalBusy } from "../../src/ui/GlobalBusy";
 import { runPdfTop } from "../../src/lib/pdfRunner";
 import { seedEnsureIncomingItems } from "../../src/screens/warehouse/warehouse.seed";
-import TopRightActionBar from "../../src/ui/TopRightActionBar";`r`nimport { showToast } from "../../src/ui/toast";
+import TopRightActionBar from "../../src/ui/TopRightActionBar";
+import { showToast } from "../../src/ui/toast";
 
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import type {
@@ -76,8 +77,8 @@ const AnimatedScrollView = Animated.createAnimatedComponent(ScrollView);
 
 function SafeView({ children, ...rest }: any) {
   const kids = React.Children.toArray(children).map((c, i) => {
-    if (typeof c === "string") return c.trim() ? <Text key={`t${i}`}>{c}</Text> : null;
-    if (typeof c === "number") return <Text key={`n${i}`}>{String(c)}</Text>;
+    if (typeof c === "string") return c.trim() ? <Text key={`t${i} `}>{c}</Text> : null;
+    if (typeof c === "number") return <Text key={`n${i} `}>{String(c)}</Text>;
     if (c && typeof c === "object" && !React.isValidElement(c)) return null;
     return c;
   });
@@ -92,15 +93,21 @@ const pickUom = (v: any): string | null => {
 const detectKindLabel = (code?: string | null): string | null => {
   if (!code) return null;
   const c = String(code).toUpperCase();
-  if (c.startsWith("MAT-")) return "РјР°С‚РµСЂРёР°Р»";
-  if (c.startsWith("TOOL-")) return "РёРЅСЃС‚СЂСѓРјРµРЅС‚";
+  if (c.startsWith("MAT-")) return "материал";
+  if (c.startsWith("TOOL-")) return "инструмент";
   return null;
 };
 const ORG_NAME = "";
 export default function Warehouse() {
   const busy = useGlobalBusy();
-  const insets = useSafeAreaInsets();`r`n  const notifyInfo = useCallback((title: string, message?: string) => {`r`n    showToast.info(title, message);`r`n  }, []);`r`n  const notifyError = useCallback((title: string, message?: string) => {`r`n    showToast.error(title, message);`r`n  }, []);
-  const [tab, setTab] = useState<Tab>("Рљ РїСЂРёС…РѕРґСѓ");
+  const insets = useSafeAreaInsets();
+  const notifyInfo = useCallback((title: string, message?: string) => {
+    showToast.info(title, message);
+  }, []);
+  const notifyError = useCallback((title: string, message?: string) => {
+    showToast.error(title, message);
+  }, []);
+  const [tab, setTab] = useState<Tab>("К приходу");
   const incoming = useWarehouseIncoming();
 
   const [stockSearch, setStockSearch] = useState<string>("");
@@ -193,18 +200,26 @@ export default function Warehouse() {
   const [confirmingId, setConfirmingId] = useState<string | null>(null);
   const [reqHeads, setReqHeads] = useState<ReqHeadRow[]>([]);
   const [reqHeadsLoading, setReqHeadsLoading] = useState(false);
+
+  const [reqHeadsFetchingPage, setReqHeadsFetchingPage] = useState(false);
+  const reqRefs = useRef({ page: 0, hasMore: true, fetching: false });
+
   const [reqModal, setReqModal] = useState<ReqHeadRow | null>(null);
 
   const [reqItems, setReqItems] = useState<ReqItemUiRow[]>([]);
   const [reqItemsLoading, setReqItemsLoading] = useState(false);
   const [stock, setStock] = useState<StockRow[]>([]);
+  const [stockHasMore, setStockHasMore] = useState(true);
+  const stockFetchMutex = useRef(false);
+
   const stockMaterialsByCode = useMemo(() => stock, [stock]);
   const [stockSupported, setStockSupported] = useState<null | boolean>(null);
   const [stockCount, setStockCount] = useState(0);
+
   const stockFiltered = useMemo(() => {
     const baseAll = stockMaterialsByCode || [];
 
-    // вњ… PROD: РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ СЃРєСЂС‹РІР°РµРј РЅСѓР»Рё
+    // ✅ PROD: по умолчанию скрываем нули
     const base = baseAll.filter((r) => nz((r as any).qty_available, 0) > 0);
 
     const qRaw = String(stockSearchDeb ?? "").trim();
@@ -215,7 +230,7 @@ export default function Warehouse() {
       const code = String(r?.code ?? "");
       const name = String(r?.name ?? "");
       const uom = String(r?.uom_id ?? "");
-      const hay = `${code} ${name} ${uom}`;
+      const hay = `${code} ${name} ${uom} `;
 
       if (matchQuerySmart(hay, qRaw)) out.push(r);
       if (out.length >= 400) break;
@@ -259,7 +274,7 @@ export default function Warehouse() {
     periodTo,
 
     orgName: ORG_NAME,
-    warehouseName: "РЎРєР»Р°Рґ",
+    warehouseName: "Склад",
 
     issueLinesById,
     setIssueLinesById,
@@ -276,10 +291,10 @@ export default function Warehouse() {
       await runPdfTop({
         busy,
         supabase,
-        key: `pdf:warehouse:issue:${issueId}`,
-        label: "Р“РѕС‚РѕРІР»СЋ РЅР°РєР»Р°РґРЅСѓСЋвЂ¦",
+        key: `pdf: warehouse: issue:${issueId} `,
+        label: "Готовлю накладную…",
         mode: Platform.OS === "web" ? "preview" : "share",
-        fileName: `ISSUE-${issueId}`,
+        fileName: `ISSUE - ${issueId} `,
         getRemoteUrl: async () => await reportsUi.buildIssueHtml(issueId),
       });
     },
@@ -290,10 +305,10 @@ export default function Warehouse() {
     await runPdfTop({
       busy,
       supabase,
-      key: `pdf:warehouse:issues-register:${periodFrom || "all"}:${periodTo || "all"}`,
-      label: "Р“РѕС‚РѕРІР»СЋ СЂРµРµСЃС‚СЂвЂ¦",
+      key: `pdf: warehouse: issues - register:${periodFrom || "all"}:${periodTo || "all"} `,
+      label: "Готовлю реестр…",
       mode: Platform.OS === "web" ? "preview" : "share",
-      fileName: `Warehouse_Issues_${periodFrom || "all"}_${periodTo || "all"}`,
+      fileName: `Warehouse_Issues_${periodFrom || "all"}_${periodTo || "all"} `,
       getRemoteUrl: async () => await reportsUi.buildRegisterHtml(),
     });
   }, [busy, supabase, periodFrom, periodTo, reportsUi]);
@@ -301,18 +316,18 @@ export default function Warehouse() {
   const onPdfMaterials = useCallback(async () => {
     let w: any = null;
 
-    // вњ… web: РѕС‚РєСЂС‹С‚СЊ РѕРєРЅРѕ РЎР РђР—РЈ РїРѕ РєР»РёРєСѓ (РёРЅР°С‡Рµ Р±СЂР°СѓР·РµСЂ Р±Р»РѕРєРЅРµС‚)
+    // ✅ web: открыть окно СРАЗУ по клику (иначе браузер блокнет)
     if (Platform.OS === "web") {
       w = window.open("", "_blank");
       try {
         if (w?.document) {
-          w.document.title = "РћС‚С‡С‘С‚ РїРѕ РјР°С‚РµСЂРёР°Р»Р°Рј";
+          w.document.title = "Отчёт по материалам";
           w.document.body.style.margin = "0";
           w.document.body.innerHTML = `
-          <div style="font-family:system-ui,Segoe UI,Roboto,Arial;padding:18px">
-            <h3 style="margin:0 0 8px 0">РћС‚С‡С‘С‚ РїРѕ РјР°С‚РµСЂРёР°Р»Р°Рј</h3>
-            <div style="color:#64748b">Р¤РѕСЂРјРёСЂСѓСЋ PDFвЂ¦</div>
-          </div>`;
+  < div style = "font-family:system-ui,Segoe UI,Roboto,Arial;padding:18px" >
+            <h3 style="margin:0 0 8px 0">Отчёт по материалам</h3>
+            <div style="color:#64748b">Формирую PDF…</div>
+          </div > `;
         }
       } catch (e) { console.warn(e); }
     }
@@ -320,7 +335,7 @@ export default function Warehouse() {
     try {
       const url = await busy.run(
         async () => await reportsUi.buildMaterialsReportPdf(),
-        { label: "Р“РѕС‚РѕРІР»СЋ РѕС‚С‡С‘С‚ РїРѕ РјР°С‚РµСЂРёР°Р»Р°РјвЂ¦" } as any
+        { label: "Готовлю отчёт по материалам…" } as any
       );
       if (!url) throw new Error("Не удалось сформировать PDF");
       if (Platform.OS === "web") {
@@ -332,10 +347,10 @@ export default function Warehouse() {
       await runPdfTop({
         busy,
         supabase,
-        key: `pdf:warehouse:materials:${periodFrom || "all"}:${periodTo || "all"}`,
-        label: "РћС‚РєСЂС‹РІР°СЋ PDFвЂ¦",
+        key: `pdf: warehouse: materials:${periodFrom || "all"}:${periodTo || "all"} `,
+        label: "Открываю PDF…",
         mode: "share",
-        fileName: `WH_Materials_${periodFrom || "all"}_${periodTo || "all"}`,
+        fileName: `WH_Materials_${periodFrom || "all"}_${periodTo || "all"} `,
         getRemoteUrl: async () => url,
       });
     } catch (e) {
@@ -351,13 +366,13 @@ export default function Warehouse() {
       w = window.open("", "_blank");
       try {
         if (w?.document) {
-          w.document.title = "РћС‚С‡С‘С‚ РїРѕ РѕР±СЉРµРєС‚Р°Рј/СЂР°Р±РѕС‚Р°Рј";
+          w.document.title = "Отчёт по объектам/работам";
           w.document.body.style.margin = "0";
           w.document.body.innerHTML = `
-          <div style="font-family:system-ui,Segoe UI,Roboto,Arial;padding:18px">
-            <h3 style="margin:0 0 8px 0">РћС‚С‡С‘С‚ РїРѕ РѕР±СЉРµРєС‚Р°Рј/СЂР°Р±РѕС‚Р°Рј</h3>
-            <div style="color:#64748b">Р¤РѕСЂРјРёСЂСѓСЋ PDFвЂ¦</div>
-          </div>`;
+  < div style = "font-family:system-ui,Segoe UI,Roboto,Arial;padding:18px" >
+            <h3 style="margin:0 0 8px 0">Отчёт по объектам/работам</h3>
+            <div style="color:#64748b">Формирую PDF…</div>
+          </div > `;
         }
       } catch (e) { console.warn(e); }
     }
@@ -365,7 +380,7 @@ export default function Warehouse() {
     try {
       const url = await busy.run(
         async () => await reportsUi.buildObjectWorkReportPdf(),
-        { label: "Р“РѕС‚РѕРІР»СЋ РѕС‚С‡С‘С‚ РїРѕ РѕР±СЉРµРєС‚Р°РјвЂ¦" } as any
+        { label: "Готовлю отчёт по объектам…" } as any
       );
       if (!url) throw new Error("Не удалось сформировать PDF");
       if (Platform.OS === "web") {
@@ -377,10 +392,10 @@ export default function Warehouse() {
       await runPdfTop({
         busy,
         supabase,
-        key: `pdf:warehouse:objwork:${periodFrom || "all"}:${periodTo || "all"}`,
-        label: "РћС‚РєСЂС‹РІР°СЋ PDFвЂ¦",
+        key: `pdf: warehouse: objwork:${periodFrom || "all"}:${periodTo || "all"} `,
+        label: "Открываю PDF…",
         mode: "share",
-        fileName: `WH_ObjectWork_${periodFrom || "all"}_${periodTo || "all"}`,
+        fileName: `WH_ObjectWork_${periodFrom || "all"}_${periodTo || "all"} `,
         getRemoteUrl: async () => url,
       });
     } catch (e) {
@@ -393,10 +408,10 @@ export default function Warehouse() {
     await runPdfTop({
       busy,
       supabase,
-      key: `pdf:warehouse:day-register:${dayLabel}`,
-      label: "Р“РѕС‚РѕРІР»СЋ СЂРµРµСЃС‚СЂ Р·Р° РґРµРЅСЊвЂ¦",
+      key: `pdf: warehouse: day - register:${dayLabel} `,
+      label: "Готовлю реестр за день…",
       mode: Platform.OS === "web" ? "preview" : "share",
-      fileName: `WH_Register_${String(dayLabel).trim().replace(/\s+/g, "_")}`,
+      fileName: `WH_Register_${String(dayLabel).trim().replace(/\s+/g, "_")} `,
       getRemoteUrl: async () => await (reportsUi as any).buildDayRegisterPdf(dayLabel),
     });
   }, [busy, supabase, reportsUi]);
@@ -404,18 +419,18 @@ export default function Warehouse() {
   const onPdfDayMaterials = useCallback(async (dayLabel: string) => {
     let w: any = null;
 
-    // вњ… web: РѕС‚РєСЂС‹С‚СЊ РѕРєРЅРѕ СЃСЂР°Р·Сѓ, С‡С‚РѕР±С‹ РЅРµ Р±Р»РѕРєРЅСѓР»Рѕ
+    // ✅ web: открыть окно сразу, чтобы не блокнуло
     if (Platform.OS === "web") {
       w = window.open("", "_blank");
       try {
         if (w?.document) {
-          w.document.title = "РЎРІРѕРґ РјР°С‚РµСЂРёР°Р»РѕРІ Р·Р° РґРµРЅСЊ";
+          w.document.title = "Свод материалов за день";
           w.document.body.style.margin = "0";
           w.document.body.innerHTML = `
-          <div style="font-family:system-ui,Segoe UI,Roboto,Arial;padding:18px">
-            <h3 style="margin:0 0 8px 0">РЎРІРѕРґ РјР°С‚РµСЂРёР°Р»РѕРІ Р·Р° РґРµРЅСЊ</h3>
-            <div style="color:#64748b">Р¤РѕСЂРјРёСЂСѓСЋ PDFвЂ¦</div>
-          </div>`;
+  < div style = "font-family:system-ui,Segoe UI,Roboto,Arial;padding:18px" >
+            <h3 style="margin:0 0 8px 0">Свод материалов за день</h3>
+            <div style="color:#64748b">Формирую PDF…</div>
+          </div > `;
         }
       } catch (e) { console.warn(e); }
     }
@@ -423,7 +438,7 @@ export default function Warehouse() {
     try {
       const url = await busy.run(
         async () => await (reportsUi as any).buildDayMaterialsReportPdf(dayLabel),
-        { label: "Р“РѕС‚РѕРІР»СЋ СЃРІРѕРґ РјР°С‚РµСЂРёР°Р»РѕРІ Р·Р° РґРµРЅСЊвЂ¦" } as any
+        { label: "Готовлю свод материалов за день…" } as any
       );
 
       if (Platform.OS === "web") {
@@ -435,10 +450,10 @@ export default function Warehouse() {
       await runPdfTop({
         busy,
         supabase,
-        key: `pdf:warehouse:day-materials:${dayLabel}`,
-        label: "РћС‚РєСЂС‹РІР°СЋ PDFвЂ¦",
+        key: `pdf: warehouse: day - materials:${dayLabel} `,
+        label: "Открываю PDF…",
         mode: "share",
-        fileName: `WH_DayMaterials_${String(dayLabel).trim().replace(/\s+/g, "_")}`,
+        fileName: `WH_DayMaterials_${String(dayLabel).trim().replace(/\s+/g, "_")} `,
         getRemoteUrl: async () => url,
       });
     } catch (e) {
@@ -449,21 +464,55 @@ export default function Warehouse() {
   const [repPeriodOpen, setRepPeriodOpen] = useState(false);
 
   const fetchStock = useCallback(async () => {
-    const r = await apiFetchStock(supabase as any);
-    setStock(r.rows);
-    setStockCount(r.rows.length);
-    setStockSupported(r.supported);
-  }, []);
+    if (stockFetchMutex.current) return;
 
-  const fetchReqHeads = useCallback(async () => {
-    setReqHeadsLoading(true);
+    stockFetchMutex.current = true;
     try {
-      const rows = await apiFetchReqHeads(supabase as any);
-      setReqHeads(rows);
+      const r = await apiFetchStock(supabase as any, 0, 2000);
+
+      const newRows = r.rows || [];
+
+      setStock(newRows);
+      setStockCount(newRows.length);
+      setStockHasMore(false);
+      setStockSupported(r.supported);
+    } catch (e) {
+      console.warn("[fetchStock] error", e);
     } finally {
-      setReqHeadsLoading(false);
+      stockFetchMutex.current = false;
     }
   }, []);
+
+  const fetchReqHeads = useCallback(async (pageIndex: number = 0, forceRefresh: boolean = false) => {
+    if (reqRefs.current.fetching) return;
+    if (pageIndex > 0 && !reqRefs.current.hasMore && !forceRefresh) return;
+
+    reqRefs.current.fetching = true;
+    setReqHeadsFetchingPage(true);
+    if (pageIndex === 0) setReqHeadsLoading(true);
+
+    try {
+      const rows = await apiFetchReqHeads(supabase as any, pageIndex, 50);
+
+      const hasNext = rows.length === 50;
+      reqRefs.current.hasMore = hasNext;
+      reqRefs.current.page = pageIndex;
+
+      if (pageIndex === 0) {
+        setReqHeads(rows);
+      } else {
+        setReqHeads((prev) => {
+          const exist = new Set(prev.map(r => r.request_id));
+          const toAdd = rows.filter(r => !exist.has(r.request_id));
+          return [...prev, ...toAdd];
+        });
+      }
+    } finally {
+      reqRefs.current.fetching = false;
+      setReqHeadsFetchingPage(false);
+      if (pageIndex === 0) setReqHeadsLoading(false);
+    }
+  }, [supabase]);
 
   const fetchReqItems = useCallback(async (requestId: string) => {
     setReqItemsLoading(true);
@@ -513,11 +562,11 @@ export default function Warehouse() {
     const zn = String(zoneOpt?.label ?? "").trim();
 
     const parts: string[] = [];
-    if (lvl) parts.push(`Р­С‚Р°Р¶: ${lvl}`);
-    if (sys) parts.push(`РЎРёСЃС‚РµРјР°: ${sys}`);
-    if (zn) parts.push(`Р—РѕРЅР°: ${zn}`);
+    if (lvl) parts.push(`Этаж: ${lvl} `);
+    if (sys) parts.push(`Система: ${sys} `);
+    if (zn) parts.push(`Зона: ${zn} `);
 
-    return parts.join(" В· ");
+    return parts.join(" · ");
   }, [levelOpt?.label, systemOpt?.label, zoneOpt?.label]);
 
 
@@ -530,7 +579,7 @@ export default function Warehouse() {
   const [recipientList, setRecipientList] = useState<Option[]>([]);
   const [objectOpt, setObjectOpt] = useState<Option | null>(null);
   const rec = useWarehouseRecipient({
-    enabled: tab === "Р Р°СЃС…РѕРґ" || tab === "РЎРєР»Р°Рґ С„Р°РєС‚",
+    enabled: tab === "Расход" || tab === "Склад факт",
     recipientList,
   });
 
@@ -556,7 +605,7 @@ export default function Warehouse() {
     [pickModal.what, closePick],
   );
   useEffect(() => {
-    // РµСЃР»Рё СЃР±СЂРѕСЃРёР»Рё РѕР±СЉРµРєС‚ вЂ” СЃР±СЂР°СЃС‹РІР°РµРј Рё РЅРёР¶Рµ
+    // если сбросили объект — сбрасываем и ниже
     if (!objectOpt?.id) {
       if (levelOpt) setLevelOpt(null);
       if (systemOpt) setSystemOpt(null);
@@ -636,7 +685,41 @@ export default function Warehouse() {
       fetchStock,
       fetchReqItems,
       fetchReqHeads,
-      getUomByCode,
+      getAvailableByCode: (code: string) => {
+        const key = normMatCode(code);
+        if (!key) return 0;
+        let sum = 0;
+        for (const row of stock) {
+          const rowKey = normMatCode(
+            String((row as any).rik_code ?? (row as any).code ?? (row as any).material_code ?? ""),
+          );
+          if (rowKey !== key) continue;
+          sum += nz((row as any).qty_available, 0);
+        }
+        return sum;
+      },
+      getAvailableByCodeUom: (code: string, uomId: string | null) => {
+        const key = normMatCode(code);
+        const u = String(uomId ?? "").trim().toLowerCase();
+        if (!key) return 0;
+        let sum = 0;
+        for (const row of stock) {
+          const rowKey = normMatCode(
+            String((row as any).rik_code ?? (row as any).code ?? (row as any).material_code ?? ""),
+          );
+          if (rowKey !== key) continue;
+          const rowU = String((row as any).uom_id ?? "").trim().toLowerCase();
+          if (u && rowU !== u) continue;
+          sum += nz((row as any).qty_available, 0);
+        }
+        return sum;
+      },
+      getMaterialNameByCode: (code: string) => {
+        const key = normMatCode(code).toUpperCase();
+        if (!key) return null;
+        return matNameByCode[key] || null;
+      },
+
       setIssueBusy,
       setIssueMsg,
       clearStockPick: () => stockPickUi.clearStockPick(),
@@ -646,19 +729,24 @@ export default function Warehouse() {
 
   }, [
     supabase,
+    stock,
+    nz,
+    pickErr,
     rec.recipientText,
     objectOpt?.label,
     scopeLabel,
     fetchStock,
     fetchReqItems,
     fetchReqHeads,
-    getUomByCode,
+
     stockPickUi.clearStockPick,
+    reqPickUi.clearReqPick,
+    reqPickUi.clearQtyInput,
   ]);
   const submitReqPick = useCallback(async () => {
     const rid = String(reqModal?.request_id ?? "").trim();
     if (!rid) {
-      setIssueMsg({ kind: "error", text: "Р—Р°СЏРІРєР° РЅРµ РІС‹Р±СЂР°РЅР°" });
+      setIssueMsg({ kind: "error", text: "Заявка не выбрана" });
       return;
     }
 
@@ -669,7 +757,7 @@ export default function Warehouse() {
       reqItems,
     });
 
-    // рџ”Ґ PROD: СЃР±СЂРѕСЃ UI
+    // 🔥 PROD: сброс UI
     if (ok) {
       closeReq();
     }
@@ -736,7 +824,7 @@ export default function Warehouse() {
       const res = await q;
 
       if (res.error || !Array.isArray(res.data)) {
-        console.log(`[${table}] error:`, res.error?.message);
+        console.log(`[${table}]error: `, res.error?.message);
         return [] as Option[];
       }
 
@@ -755,7 +843,7 @@ export default function Warehouse() {
         if (id && label) out.push({ id, label });
       }
 
-      // СЃРѕСЂС‚РёСЂРѕРІРєР° СѓР¶Рµ РЅР° С„СЂРѕРЅС‚Рµ (С‡С‚РѕР±С‹ РЅРµ Р·Р°РІРёСЃРµС‚СЊ РѕС‚ РєРѕР»РѕРЅРѕРє Р‘Р”)
+      // сортировка уже на фронте (чтобы не зависеть от колонок БД)
       out.sort((a, b) => a.label.localeCompare(b.label, "ru"));
 
       return out;
@@ -777,7 +865,7 @@ export default function Warehouse() {
     const cleaned = (opts || []).filter((o) => {
       const t = String(o.label ?? "").toLowerCase();
       const c = String(o.id ?? "").toLowerCase();
-      if (t.includes("Р±РµР· РѕР±СЉРµРєС‚Р°")) return false;
+      if (t.includes("без объекта")) return false;
       if (c === "none" || c === "no_object" || c === "noobject") return false;
       return true;
     });
@@ -804,8 +892,11 @@ export default function Warehouse() {
   }, [tryRefOptions]);
 
 
+  const dictsLoadedRef = useRef(false);
+
   useEffect(() => {
-    if (tab === "Р Р°СЃС…РѕРґ" || tab === "РЎРєР»Р°Рґ С„Р°РєС‚") {
+    if ((tab === "Расход" || tab === "Склад факт") && !dictsLoadedRef.current) {
+      dictsLoadedRef.current = true;
       loadObjects().catch((e) => showErr(e));
       loadLevels().catch((e) => showErr(e));
       loadSystems().catch((e) => showErr(e));
@@ -840,14 +931,14 @@ export default function Warehouse() {
           if (pid) {
             const upd = await supabase
               .from("purchases" as any)
-              .update({ status: "РќР° СЃРєР»Р°РґРµ" })
+              .update({ status: "На складе" })
               .eq("id", pid);
             if (upd.error) throw upd.error;
           }
         }
 
         await Promise.all([incoming.fetchToReceive(), fetchStock()]);
-        Alert.alert("Р“РѕС‚РѕРІРѕ", "РџРѕСЃС‚Р°РІРєР° РїСЂРёРЅСЏС‚Р° РЅР° СЃРєР»Р°Рґ.");
+        notifyInfo("Готово", "Поставка принята на склад.");
       } catch (e) {
         showErr(e);
       } finally {
@@ -900,17 +991,17 @@ export default function Warehouse() {
     async (incomingItemId: string, qty: number) => {
       try {
         if (!incomingItemId)
-          return Alert.alert("РќРµС‚ РїРѕР·РёС†РёРё", "РќРµРёР·РІРµСЃС‚РЅС‹Р№ ID РїРѕР·РёС†РёРё РїСЂРёС…РѕРґР°");
+          return notifyError("Нет позиции", "Неизвестный ID позиции прихода");
         const q = Number(qty);
         if (!Number.isFinite(q) || q <= 0)
-          return Alert.alert("РљРѕР»РёС‡РµСЃС‚РІРѕ", "Р’РІРµРґРёС‚Рµ РїРѕР»РѕР¶РёС‚РµР»СЊРЅРѕРµ РєРѕР»РёС‡РµСЃС‚РІРѕ.");
+          return notifyError("Количество", "Введите положительное количество.");
         const r = await supabase.rpc("wh_receive_item_v2" as any, {
           p_incoming_item_id: incomingItemId,
           p_qty: q,
           p_note: null,
         } as any);
         if (r.error)
-          return Alert.alert("РћС€РёР±РєР° РїСЂРёС…РѕРґР°", pickErr(r.error));
+          return notifyError("Ошибка прихода", pickErr(r.error));
 
         await incoming.fetchToReceive();
         await fetchStock();
@@ -927,12 +1018,12 @@ export default function Warehouse() {
         const incomingId = String(incomingIdRaw ?? "").trim();
         if (!incomingId) return;
 
-        // Р±РµСЂС‘Рј СЃС‚СЂРѕРєРё С‡РµСЂРµР· incoming-С…СѓРє
+        // берём строки через incoming-хук
         const rows = await incoming.loadItemsForHead(incomingId, true);
         if (!rows.length) {
-          return Alert.alert(
-            "РќРµС‚ РїРѕР·РёС†РёР№",
-            "РџРѕРґ СЌС‚РѕР№ РїРѕСЃС‚Р°РІРєРѕР№ РЅРµС‚ СЃС‚СЂРѕРє РґР»СЏ РїСЂРёС…РѕРґР°. Р Р°СЃРєСЂРѕР№ В«РџРѕРєР°Р·Р°С‚СЊ РїРѕР·РёС†РёРёВ» Рё РїСЂРѕРІРµСЂСЊ СЃРѕСЃС‚Р°РІ.",
+          return notifyError(
+            "Нет позиций",
+            "Под этой поставкой нет строк для прихода. Раскрой «Показать позиции» и проверь состав.",
           );
         }
 
@@ -941,33 +1032,36 @@ export default function Warehouse() {
           0,
         );
         if (totalLeft <= 0) {
-          return Alert.alert("РќРµС‡РµРіРѕ РїСЂРёС…РѕРґРѕРІР°С‚СЊ", "Р’СЃРµ РїРѕР·РёС†РёРё СѓР¶Рµ РїСЂРёРЅСЏС‚С‹.");
+          return notifyInfo("Нечего приходовать", "Все позиции уже приняты.");
         }
 
         const pr = await supabase.rpc("wh_receive_confirm" as any, {
           p_wh_id: incomingId,
         } as any);
-        if (pr.error) return Alert.alert("РћС€РёР±РєР° РїРѕР»РЅРѕРіРѕ РїСЂРёС…РѕРґР°", pickErr(pr.error));
+        if (pr.error) return notifyError("Ошибка полного прихода", pickErr(pr.error));
 
         await Promise.all([incoming.fetchToReceive(), fetchStock()]);
-        Alert.alert("Р“РѕС‚РѕРІРѕ", "РџРѕСЃС‚Р°РІРєР° РѕРїСЂРёС…РѕРґРѕРІР°РЅР° РїРѕР»РЅРѕСЃС‚СЊСЋ");
+        notifyInfo("Готово", "Поставка оприходована полностью");
       } catch (e) {
         showErr(e);
       }
     },
-    [incoming, fetchStock, notifyError, notifyInfo],`r`n  );`r`n`r`n  const receiveSelectedForHead = useCallback(
+    [incoming, fetchStock, notifyError, notifyInfo],
+  );
+
+  const receiveSelectedForHead = useCallback(
     async (incomingIdRaw: string) => {
       try {
         const incomingId = String(incomingIdRaw ?? "").trim();
         if (!incomingId) return;
 
-        // Р±РµСЂС‘Рј СЃС‚СЂРѕРєРё РўРћР›Р¬РљРћ С‡РµСЂРµР· incoming-С…СѓРє
+        // берём строки ТОЛЬКО через incoming-хук
         const freshRows = await incoming.loadItemsForHead(incomingId, true);
 
         if (!freshRows.length) {
-          return Alert.alert(
-            "РќРµС‚ РјР°С‚РµСЂРёР°Р»РѕРІ",
-            "Р’ СЌС‚РѕР№ РїРѕСЃС‚Р°РІРєРµ РЅРµС‚ РјР°С‚РµСЂРёР°Р»РѕРІ РґР»СЏ СЃРєР»Р°РґР°. Р Р°Р±РѕС‚С‹/СѓСЃР»СѓРіРё СЃРјРѕС‚СЂРё РІ В«РџРѕРґСЂСЏРґС‡РёРєРёВ».",
+          return notifyError(
+            "Нет материалов",
+            "В этой поставке нет материалов для склада. Работы/услуги смотри в «Подрядчики».",
           );
         }
 
@@ -987,7 +1081,7 @@ export default function Warehouse() {
         }
 
         if (!toApply.length) {
-          return Alert.alert("РќРµС‡РµРіРѕ РѕРїСЂРёС…РѕРґРѕРІР°С‚СЊ", "Р’РІРµРґРёС‚Рµ РєРѕР»РёС‡РµСЃС‚РІРѕ > 0 РґР»СЏ РЅСѓР¶РЅС‹С… СЃС‚СЂРѕРє.");
+          return notifyInfo("Нечего оприходовать", "Введите количество > 0 для нужных строк.");
         }
 
         setReceivingHeadId(incomingId);
@@ -1000,17 +1094,17 @@ export default function Warehouse() {
 
         if (error) {
           console.warn("[wh_receive_apply_ui] error:", error.message);
-          return Alert.alert("РћС€РёР±РєР° РїСЂРёС…РѕРґР°", pickErr(error));
+          return notifyError("Ошибка прихода", pickErr(error));
         }
 
-        // РѕР±РЅРѕРІР»СЏРµРј РѕС‡РµСЂРµРґСЊ + СЃРєР»Р°Рґ + СЃС‚СЂРѕРєРё РІ РјРѕРґР°Р»РєРµ
+        // обновляем очередь + склад + строки в модалке
         await Promise.all([
           incoming.fetchToReceive(),
           fetchStock(),
           incoming.loadItemsForHead(incomingId, true),
         ]);
 
-        // С‡РёСЃС‚РёРј РІРІРѕРґС‹ РїРѕ СЃС‚СЂРѕРєР°Рј
+        // чистим вводы по строкам
         setQtyInputByItem((prev) => {
           const next = { ...(prev || {}) };
           for (const r of freshRows) {
@@ -1026,9 +1120,9 @@ export default function Warehouse() {
 
         if (leftAfter <= 0) setItemsModal(null);
 
-        Alert.alert(
-          "Р“РѕС‚РѕРІРѕ",
-          `РџСЂРёРЅСЏС‚Рѕ РїРѕР·РёС†РёР№: ${ok}${fail ? `, РѕС€РёР±РѕРє: ${fail}` : ""}\nРћСЃС‚Р°Р»РѕСЃСЊ: ${leftAfter}`,
+        notifyInfo(
+          "Готово",
+          `Принято позиций: ${ok}${fail ? `, ошибок: ${fail}` : ""} \nОсталось: ${leftAfter} `,
         );
       } catch (e) {
         showErr(e);
@@ -1060,20 +1154,20 @@ export default function Warehouse() {
 
   }, []);
 
-  // рџ”Ґ PROD FIX: Р”РѕР±Р°РІР»СЏРµРј useRef РґР»СЏ РѕС‚СЃР»РµР¶РёРІР°РЅРёСЏ Р·Р°РіСЂСѓР¶РµРЅРЅС‹С… РґР°РЅРЅС‹С… РїРѕ С‚Р°Р±Р°Рј,
-  // С‡С‚РѕР±С‹ РёР·Р±РµР¶Р°С‚СЊ Р±РµСЃРєРѕРЅРµС‡РЅС‹С… С†РёРєР»РѕРІ РёР·-Р·Р° РёР·РјРµРЅРµРЅРёСЏ СЃСЃС‹Р»РѕРє fetchReports/fetchReqHeads
+  // 🔥 PROD FIX: Добавляем useRef для отслеживания загруженных данных по табам,
+  // чтобы избежать бесконечных циклов из-за изменения ссылок fetchReports/fetchReqHeads
   const loadedTabsRef = useRef<Record<string, boolean>>({});
 
   useEffect(() => {
-    if (tab === "РћС‚С‡С‘С‚С‹" && !loadedTabsRef.current["РћС‚С‡С‘С‚С‹"]) {
-      loadedTabsRef.current["РћС‚С‡С‘С‚С‹"] = true;
+    if (tab === "Отчёты" && !loadedTabsRef.current["Отчёты"]) {
+      loadedTabsRef.current["Отчёты"] = true;
       fetchReports().catch((e) => showErr(e));
     }
   }, [tab, fetchReports]);
 
   useEffect(() => {
-    if (tab === "Р Р°СЃС…РѕРґ" && !loadedTabsRef.current["Р Р°СЃС…РѕРґ"]) {
-      loadedTabsRef.current["Р Р°СЃС…РѕРґ"] = true;
+    if (tab === "Расход" && !loadedTabsRef.current["Расход"]) {
+      loadedTabsRef.current["Расход"] = true;
       fetchReqHeads().catch((e) => showErr(e));
     }
   }, [tab, fetchReqHeads]);
@@ -1081,10 +1175,10 @@ export default function Warehouse() {
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     try {
-      if (tab === "Рљ РїСЂРёС…РѕРґСѓ") await incoming.fetchToReceive();
-      else if (tab === "РЎРєР»Р°Рґ С„Р°РєС‚") await fetchStock();
-      else if (tab === "РћС‚С‡С‘С‚С‹") await fetchReports();
-      else if (tab === "Р Р°СЃС…РѕРґ") {
+      if (tab === "К приходу") await incoming.fetchToReceive();
+      else if (tab === "Склад факт") await fetchStock();
+      else if (tab === "Отчёты") await fetchReports();
+      else if (tab === "Расход") {
         await fetchReqHeads();
       }
 
@@ -1129,16 +1223,16 @@ export default function Warehouse() {
           >
             <View style={s.mobMain}>
               <Text style={s.mobTitle} numberOfLines={2}>
-                {String(r.name ?? "").trim() || "вЂ”"}
+                {String(r.name ?? "").trim() || "—"}
               </Text>
 
               <Text style={s.mobMeta} numberOfLines={2}>
-                {`Р”РѕСЃС‚СѓРїРЅРѕ ${fmtQty(available)} ${uomLabel} В· Р РµР·РµСЂРІ ${fmtQty(reserved)}`}
+                {`Доступно ${fmtQty(available)} ${uomLabel} · Резерв ${fmtQty(reserved)} `}
               </Text>
 
               {isPicked ? (
                 <Text style={{ marginTop: 6, color: UI.text, fontWeight: "900" }}>
-                  {`Р’С‹Р±СЂР°РЅРѕ: ${fmtQty(Number(pickedQty))} ${uomLabel}`}
+                  {`Выбрано: ${fmtQty(Number(pickedQty))} ${uomLabel} `}
                 </Text>
               ) : null}
             </View>
@@ -1158,9 +1252,9 @@ export default function Warehouse() {
 
     const typeLabel =
       h.event_type === "RECEIPT"
-        ? "РџСЂРёС…РѕРґ"
+        ? "Приход"
         : h.event_type === "ISSUE"
-          ? "Р Р°СЃС…РѕРґ"
+          ? "Расход"
           : h.event_type;
 
     return (
@@ -1169,7 +1263,7 @@ export default function Warehouse() {
           <View style={s.mobMain}>
             <Text style={s.mobTitle} numberOfLines={1}>{typeLabel}</Text>
             <Text style={s.mobMeta} numberOfLines={2}>
-              {`${dt} В· ${h.code || "вЂ”"} В· ${uomLabelRu(h.uom_id) || "вЂ”"} В· ${qty}`}
+              {`${dt} · ${h.code || "—"} · ${uomLabelRu(h.uom_id) || "—"} · ${qty} `}
             </Text>
           </View>
         </View>
@@ -1186,18 +1280,31 @@ export default function Warehouse() {
           contentContainerStyle={{ paddingTop: HEADER_MAX + 12, paddingBottom: 24 }}
           onScroll={isWeb ? undefined : headerApi.onListScroll}
           scrollEventThrottle={isWeb ? undefined : 16}
+          onEndReached={() => {
+            if (reqRefs.current.hasMore && !reqRefs.current.fetching) {
+              fetchReqHeads(reqRefs.current.page + 1);
+            }
+          }}
+          onEndReachedThreshold={0.5}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+          ListFooterComponent={() => (
+            reqHeadsFetchingPage ? (
+              <View style={{ padding: 20, alignItems: "center" }}>
+                <ActivityIndicator color={UI.sub} />
+              </View>
+            ) : null
+          )}
           ListHeaderComponent={() => (
             <View style={{ paddingHorizontal: 16, paddingBottom: 10 }}>
               <View style={s.sectionBox}>
-                <Text style={s.sectionBoxTitle}>Р РђРЎРҐРћР” РџРћ Р—РђРЇР’РљРђРњ (REQ)</Text>
+                <Text style={s.sectionBoxTitle}>РАСХОД ПО ЗАЯВКАМ (REQ)</Text>
                 <Text style={{ color: UI.sub, fontWeight: "800" }}>
-                  Р’С‹РґР°С‡Р° РґРѕСЃС‚СѓРїРЅР° С‚РѕР»СЊРєРѕ РїРѕ СѓС‚РІРµСЂР¶РґС‘РЅРЅС‹Рј СЃС‚СЂРѕРєР°Рј Рё С‚РѕР»СЊРєРѕ РµСЃР»Рё РµСЃС‚СЊ РѕСЃС‚Р°С‚РѕРє РЅР° СЃРєР»Р°РґРµ.
+                  Выдача доступна только по утверждённым строкам и только если есть остаток на складе.
                 </Text>
 
                 <View style={{ marginTop: 10 }}>
                   <Text style={{ color: UI.sub, fontWeight: "800", marginBottom: 6 }}>
-                    РџРѕР»СѓС‡Р°С‚РµР»СЊ
+                    Получатель
                   </Text>
 
                   <TextInput
@@ -1206,7 +1313,7 @@ export default function Warehouse() {
                       rec.setRecipientText(t);
                       rec.setRecipientSuggestOpen(true);
                     }}
-                    placeholder="Р’РІРµРґРёС‚Рµ Р¤РРћ РїРѕР»СѓС‡Р°С‚РµР»СЏвЂ¦"
+                    placeholder="Введите ФИО получателя…"
                     placeholderTextColor={UI.sub}
                     style={s.input}
                     onFocus={() => rec.setRecipientSuggestOpen(true)}
@@ -1241,10 +1348,10 @@ export default function Warehouse() {
             const openPos = Math.max(0, Number(item.ready_cnt ?? 0));
             const issuedPos = Math.max(0, Number(item.done_cnt ?? 0));
             const badge =
-              status === "WAITING_STOCK" ? "РћР¶РёРґР°РµС‚ РїСЂРёС…РѕРґ"
-                : status === "PARTIAL" ? "Р§Р°СЃС‚РёС‡РЅРѕ"
-                  : status === "DONE" ? "Р—Р°РєСЂС‹С‚Р°"
-                    : "РњРѕР¶РЅРѕ РІС‹РґР°РІР°С‚СЊ";
+              status === "WAITING_STOCK" ? "Ожидает приход"
+                : status === "PARTIAL" ? "Частично"
+                  : status === "DONE" ? "Закрыта"
+                    : "Можно выдавать";
 
             return (
               <View style={{ marginBottom: 12, paddingHorizontal: 16 }}>
@@ -1254,12 +1361,12 @@ export default function Warehouse() {
                 >
                   <View style={{ flex: 1, minWidth: 0 }}>
                     <Text style={s.groupTitle} numberOfLines={1}>
-                      {item.display_no || `REQ-${item.request_id.slice(0, 8)}`}
+                      {item.display_no || `REQ - ${item.request_id.slice(0, 8)} `}
                     </Text>
                     <Text style={s.cardMeta} numberOfLines={2}>
-                      {(item.level_name || item.level_code) ? `Р­С‚Р°Р¶: ${item.level_name || item.level_code}` : ""}
-                      {(item.system_name || item.system_code) ? ` В· РЎРёСЃС‚РµРјР°: ${item.system_name || item.system_code}` : ""}
-                      {(item.zone_name || item.zone_code) ? ` В· Р—РѕРЅР°: ${item.zone_name || item.zone_code}` : ""}
+                      {(item.level_name || item.level_code) ? `Этаж: ${item.level_name || item.level_code} ` : ""}
+                      {(item.system_name || item.system_code) ? ` · Система: ${item.system_name || item.system_code} ` : ""}
+                      {(item.zone_name || item.zone_code) ? ` · Зона: ${item.zone_name || item.zone_code} ` : ""}
 
                     </Text>
                   </View>
@@ -1270,15 +1377,15 @@ export default function Warehouse() {
                     </View>
 
                     <View style={s.metaPill}>
-                      <Text style={s.metaPillText}>{`Рљ РІС‹РґР°С‡Рµ ${openPos}`}</Text>
+                      <Text style={s.metaPillText}>{`К выдаче ${openPos} `}</Text>
                     </View>
 
                     <View style={s.metaPill}>
-                      <Text style={s.metaPillText}>{`Р’С‹РґР°РЅРѕ ${issuedPos}`}</Text>
+                      <Text style={s.metaPillText}>{`Выдано ${issuedPos} `}</Text>
                     </View>
 
                     <View style={s.metaPill}>
-                      <Text style={s.metaPillText}>{`Р’СЃРµРіРѕ ${totalPos}`}</Text>
+                      <Text style={s.metaPillText}>{`Всего ${totalPos} `}</Text>
                     </View>
                   </View>
                 </Pressable>
@@ -1288,12 +1395,12 @@ export default function Warehouse() {
           ListEmptyComponent={
             reqHeadsLoading ? (
               <Text style={{ color: UI.sub, paddingHorizontal: 16, fontWeight: "800" }}>
-                Р—Р°РіСЂСѓР·РєР°вЂ¦
+                Загрузка…
               </Text>
             ) : (
               <Text style={{ color: UI.sub, paddingHorizontal: 16, fontWeight: "800" }}>
-                РќРµС‚ Р·Р°СЏРІРѕРє РґР»СЏ РІС‹РґР°С‡Рё.
-                {"\n"}РџРѕС‚СЏРЅРё РІРЅРёР·, С‡С‚РѕР±С‹ РѕР±РЅРѕРІРёС‚СЊ.
+                Нет заявок для выдачи.
+                {"\n"}Потяни вниз, чтобы обновить.
               </Text>
             )
           }
@@ -1303,7 +1410,7 @@ export default function Warehouse() {
     );
   };
   const renderTab = () => {
-    if (tab === "Рљ РїСЂРёС…РѕРґСѓ") {
+    if (tab === "К приходу") {
       return (
         <View style={{ flex: 1 }}>
           <AnimatedFlatList
@@ -1312,6 +1419,19 @@ export default function Warehouse() {
             contentContainerStyle={{ paddingTop: HEADER_MAX + 12, paddingBottom: 24 }}
             onScroll={isWeb ? undefined : headerApi.onListScroll}
             scrollEventThrottle={isWeb ? undefined : 16}
+            onEndReached={() => {
+              if (incoming.toReceiveHasMore && !incoming.toReceiveIsFetching) {
+                incoming.fetchToReceive(incoming.toReceivePage + 1);
+              }
+            }}
+            onEndReachedThreshold={0.5}
+            ListFooterComponent={
+              incoming.toReceiveIsFetching ? (
+                <View style={{ padding: 20, alignItems: "center" }}>
+                  <ActivityIndicator color={UI.sub} />
+                </View>
+              ) : null
+            }
             renderItem={({ item }: { item: any }) => {
               return (
                 <View style={{ marginBottom: 12, paddingHorizontal: 16 }}>
@@ -1328,8 +1448,8 @@ export default function Warehouse() {
                       <Text style={s.cardMeta} numberOfLines={1}>
                         {item.purchase_created_at
                           ? new Date(item.purchase_created_at).toLocaleDateString("ru-RU")
-                          : "вЂ”"}
-                        {item.purchase_status ? ` В· ${item.purchase_status}` : ""}
+                          : "—"}
+                        {item.purchase_status ? ` · ${item.purchase_status} ` : ""}
                       </Text>
                     </View>
 
@@ -1348,11 +1468,11 @@ export default function Warehouse() {
                       const leftSum = Math.max(0, expSum - recSum);
                       const isPartial = recSum > 0 && leftSum > 0;
 
-                      const statusLabel = isPartial ? "Р§Р°СЃС‚РёС‡РЅРѕ" : "РћР¶РёРґР°РµС‚";
+                      const statusLabel = isPartial ? "Частично" : "Ожидает";
 
                       return (
                         <View style={s.rightStack}>
-                          {/* СЃС‚Р°С‚СѓСЃ */}
+                          {/* статус */}
                           <View
                             style={[
                               s.metaPill,
@@ -1370,19 +1490,19 @@ export default function Warehouse() {
                             const left = Math.max(0, exp - rec);
                             return (
                               <View style={s.metaPill}>
-                                <Text style={s.metaPillText}>{`РџСЂРёРЅСЏС‚Рѕ ${Math.round(rec)} / РћСЃС‚Р°Р»РѕСЃСЊ ${Math.round(left)}`}</Text>
+                                <Text style={s.metaPillText}>{`Принято ${Math.round(rec)} / Осталось ${Math.round(left)}`}</Text>
                               </View>
                             );
                           })()}
 
 
-                          {/* РѕСЃС‚Р°С‚РѕРє РїРѕ РєРѕР»РёС‡РµСЃС‚РІСѓ */}
+                          {/* остаток по количеству */}
                           <View style={s.metaPill}>
-                            <Text style={s.metaPillText}>{`РћСЃС‚Р°С‚РѕРє ${Math.round(totalLeft)}`}</Text>
+                            <Text style={s.metaPillText}>{`Остаток ${Math.round(totalLeft)}`}</Text>
                           </View>
 
                           <Pressable onPress={() => void openItemsModal(item)} style={s.openBtn}>
-                            <Text style={s.openBtnText}>РћС‚РєСЂС‹С‚СЊ</Text>
+                            <Text style={s.openBtnText}>Открыть</Text>
                           </Pressable>
 
                         </View>
@@ -1395,7 +1515,7 @@ export default function Warehouse() {
             }}
             ListEmptyComponent={
               <Text style={{ color: UI.sub, paddingHorizontal: 16, fontWeight: "800" }}>
-                РќРµС‚ Р·Р°РїРёСЃРµР№ РІ РѕС‡РµСЂРµРґРё СЃРєР»Р°РґР°.
+                Нет записей в очереди склада.
               </Text>
             }
             refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
@@ -1404,14 +1524,14 @@ export default function Warehouse() {
       );
     }
 
-    if (tab === "РЎРєР»Р°Рґ С„Р°РєС‚") {
+    if (tab === "Склад факт") {
       if (stockSupported === false) {
         return (
           <View style={{ padding: 12 }}>
             <Text style={{ color: "#475569" }}>
-              Р Р°Р·РґРµР» В«РЎРєР»Р°Рґ С„Р°РєС‚В» С‚СЂРµР±СѓРµС‚ РІСЊСЋ{" "}
-              <Text style={{ fontWeight: "700" }}>v_warehouse_fact</Text> РёР»Рё
-              RPC СЃ С„Р°РєС‚РёС‡РµСЃРєРёРјРё РѕСЃС‚Р°С‚РєР°РјРё.
+              Раздел «Склад факт» требует вью{" "}
+              <Text style={{ fontWeight: "700" }}>v_warehouse_fact</Text> или
+              RPC с фактическими остатками.
             </Text>
           </View>
         );
@@ -1426,11 +1546,9 @@ export default function Warehouse() {
           scrollEventThrottle={isWeb ? undefined : 16}
           renderItem={({ item }: { item: any }) => {
             const codeRaw = String(item.code ?? "").trim();
-            const codeKey = normMatCode(codeRaw);
-            const pickedQty = codeKey ? nz(stockPickUi.stockPick?.[codeKey]?.qty, 0) : 0;
+            const pickedQty = stockPickUi.getPickedQty(codeRaw, item?.uom_id ? String(item.uom_id).trim() : null);
             return <StockRowView r={item} pickedQty={pickedQty} />;
           }}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
           ListHeaderComponent={
             <StockFactHeader
               objectOpt={objectOpt}
@@ -1458,19 +1576,17 @@ export default function Warehouse() {
               onSubmit={submitStockPick}
               issueMsg={issueMsg}
             />
-
           }
           ListEmptyComponent={
             <Text style={{ color: UI.sub, paddingHorizontal: 16, fontWeight: "800" }}>
-              РџРѕРєР° РЅРµС‚ РґР°РЅРЅС‹С… РїРѕ СЃРєР»Р°РґСѓ.
+              Пока нет данных по складу.
             </Text>
           }
         />
       );
-
     }
 
-    if (tab === "Р Р°СЃС…РѕРґ") return renderReqIssue();
+    if (tab === "Расход") return renderReqIssue();
     return (
       <WarehouseReportsTab
         headerTopPad={HEADER_MAX + 8}
@@ -1531,7 +1647,7 @@ export default function Warehouse() {
         {loading ? (
           <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
             <ActivityIndicator size="large" />
-            <Text style={{ marginTop: 8, color: UI.sub }}>Р—Р°РіСЂСѓР·РєР°вЂ¦</Text>
+            <Text style={{ marginTop: 8, color: UI.sub }}>Загрузка…</Text>
           </View>
         ) : (
           <View
@@ -1555,7 +1671,7 @@ export default function Warehouse() {
       <IncomingItemsSheet
         visible={!!itemsModal}
         onClose={() => setItemsModal(null)}
-        title="РџРѕР·РёС†РёРё РїСЂРёС…РѕРґР°"
+        title="Позиции прихода"
         prText={
           itemsModal
             ? formatProposalBaseNo(
@@ -1589,7 +1705,7 @@ export default function Warehouse() {
       <ReqIssueModal
         visible={!!reqModal}
         onClose={closeReq}
-        title={`Р’С‹РґР°С‡Р° РїРѕ Р·Р°СЏРІРєРµ ${reqModal?.display_no || "вЂ”"}`}
+        title={`Выдача по заявке ${reqModal?.display_no || "—"}`}
         head={reqModal}
         reqItems={reqItems}
         reqItemsLoading={reqItemsLoading}
@@ -1607,14 +1723,14 @@ export default function Warehouse() {
         visible={!!pickModal.what}
         title={
           pickModal.what === "object"
-            ? "Р’С‹Р±РѕСЂ РѕР±СЉРµРєС‚Р°"
+            ? "Выбор объекта"
             : pickModal.what === "level"
-              ? "Р’С‹Р±РѕСЂ СЌС‚Р°Р¶Р°/СѓСЂРѕРІРЅСЏ"
+              ? "Выбор этажа/уровня"
               : pickModal.what === "system"
-                ? "Р’С‹Р±РѕСЂ СЃРёСЃС‚РµРјС‹/РІРёРґР° СЂР°Р±РѕС‚"
+                ? "Выбор системы/вида работ"
                 : pickModal.what === "zone"
-                  ? "Р’С‹Р±РѕСЂ Р·РѕРЅС‹/СѓС‡Р°СЃС‚РєР°"
-                  : "Р’С‹Р±РѕСЂ РїРѕР»СѓС‡Р°С‚РµР»СЏ"
+                  ? "Выбор зоны/участка"
+                  : "Выбор получателя"
         }
 
         filter={pickFilter}
@@ -1679,7 +1795,3 @@ export default function Warehouse() {
     </View>
   );
 }
-
-
-
-

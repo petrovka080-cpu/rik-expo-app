@@ -17,6 +17,12 @@ export function useWarehouseIncoming() {
   const [toReceive, setToReceive] = useState<IncomingRow[]>([]);
   const [incomingCount, setIncomingCount] = useState(0);
 
+  // Pagination states
+  const [toReceivePage, setToReceivePage] = useState(0);
+  const [toReceiveHasMore, setToReceiveHasMore] = useState(true);
+  const [toReceiveIsFetching, setToReceiveIsFetching] = useState(false);
+  const PAGE_SIZE = 30;
+
   const [itemsByHead, setItemsByHead] = useState<Record<string, ItemRow[]>>({});
   const itemsByHeadRef = useRef<Record<string, ItemRow[]>>({});
   useEffect(() => {
@@ -61,11 +67,14 @@ export function useWarehouseIncoming() {
 
           for (const part of chunk(toFetch, 250)) {
             const r1 = await withTimeout(
+              // @ts-ignore
               supabase.from("purchases" as any).select("id, proposal_id").in("id", part),
               15000,
               "purchases->proposal_id",
             );
+            // @ts-ignore
             if (!r1?.error && Array.isArray(r1.data)) {
+              // @ts-ignore
               for (const row of r1.data as any[]) {
                 const pid = String(row?.id ?? "").trim();
                 const propId = String(row?.proposal_id ?? "").trim();
@@ -83,11 +92,14 @@ export function useWarehouseIncoming() {
           const propIdToNo = new Map<string, string>();
           for (const part of chunk(propIds, 250)) {
             const r2 = await withTimeout(
+              // @ts-ignore
               supabase.from("proposals" as any).select("id, proposal_no").in("id", part),
               15000,
               "proposals->proposal_no",
             );
+            // @ts-ignore
             if (!r2?.error && Array.isArray(r2.data)) {
+              // @ts-ignore
               for (const row of r2.data as any[]) {
                 const id = String(row?.id ?? "").trim();
                 const no = String(row?.proposal_no ?? "").trim();
@@ -125,21 +137,29 @@ export function useWarehouseIncoming() {
     if (wait.length) {
       try {
         await Promise.all(wait);
-      } catch {}
+      } catch { }
     }
   }, []);
 
-  const fetchToReceive = useCallback(async () => {
+  const fetchToReceive = useCallback(async (pageIndex: number = 0, forceRefresh: boolean = false) => {
+    if (toReceiveIsFetching) return;
+    if (pageIndex > 0 && !toReceiveHasMore && !forceRefresh) return;
+    setToReceiveIsFetching(true);
+
     try {
       const q = await supabase
         .from("v_wh_incoming_heads_ui" as any)
         .select("*")
-        .order("purchase_created_at", { ascending: false });
+        .order("purchase_created_at", { ascending: false })
+        .range(pageIndex * PAGE_SIZE, (pageIndex + 1) * PAGE_SIZE - 1);
 
       if (q.error || !Array.isArray(q.data)) {
         console.warn("[warehouse.incoming] v_wh_incoming_heads_ui error:", q.error?.message);
-        setToReceive([]);
-        setIncomingCount(0);
+        if (pageIndex === 0) {
+          setToReceive([]);
+          setIncomingCount(0);
+        }
+        setToReceiveIsFetching(false);
         return;
       }
 
@@ -183,14 +203,27 @@ export function useWarehouseIncoming() {
         return bd - ad;
       });
 
-      setToReceive(queue);
-      setIncomingCount(queue.length);
+      const hasNext = rows.length === PAGE_SIZE;
+      setToReceiveHasMore(hasNext);
+      setToReceivePage(pageIndex);
+
+      if (pageIndex === 0) {
+        setToReceive(queue);
+        setIncomingCount(queue.length); // Assuming we just want to know how many we see, or we query exact count
+      } else {
+        setToReceive((prev) => [...prev, ...queue]);
+        setIncomingCount((prev) => prev + queue.length);
+      }
     } catch (e) {
       console.warn("[warehouse.incoming] fetchToReceive throw:", e);
-      setToReceive([]);
-      setIncomingCount(0);
+      if (pageIndex === 0) {
+        setToReceive([]);
+        setIncomingCount(0);
+      }
+    } finally {
+      setToReceiveIsFetching(false);
     }
-  }, [preloadProposalNosByPurchases]);
+  }, [preloadProposalNosByPurchases, toReceiveHasMore, toReceiveIsFetching]);
 
   const loadItemsForHead = useCallback(async (incomingId: string, force = false) => {
     if (!incomingId) return [] as ItemRow[];
@@ -239,6 +272,11 @@ export function useWarehouseIncoming() {
     toReceive,
     incomingCount,
     proposalNoByPurchase,
+
+    // pagination for incoming
+    toReceivePage,
+    toReceiveHasMore,
+    toReceiveIsFetching,
 
     itemsByHead,
     loadItemsForHead,

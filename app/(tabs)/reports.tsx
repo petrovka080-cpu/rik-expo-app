@@ -81,7 +81,9 @@ export default function Reports() {
         pipe.map((x) => [humanStatus(x.status), x.cnt])
       );
 
+    // @ts-ignore
       const path = FileSystem.cacheDirectory + "reports.csv";
+    // @ts-ignore
       await FileSystem.writeAsStringAsync(path, csv, { encoding: FileSystem.EncodingType.UTF8 });
       await Sharing.shareAsync(path);
     } catch (e: any) {

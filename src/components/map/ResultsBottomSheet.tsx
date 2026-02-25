@@ -231,7 +231,7 @@ export default function ResultsBottomSheet({
         </View>
 
         <FlatList
-          ref={(r) => (listRef.current = r)}
+          ref={(r) => { listRef.current = r; }}
           data={rows}
           keyExtractor={(x) => x.id}
           horizontal

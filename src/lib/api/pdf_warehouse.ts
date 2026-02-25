@@ -481,9 +481,14 @@ export type IssuedByObjectWorkReportRow = {
   object_name?: string | null;
   work_name?: string | null;
 
-  docs_cnt?: any;
-  lines_cnt?: any;
-  docs_with_over_cnt?: any;
+  docs_cnt?: any;         
+  req_cnt?: any;           
+  active_days?: any;      
+
+  uniq_materials?: any;    
+
+  recipients_text?: string | null; 
+  top3_materials?: string | null;  
 };
 
 export function buildWarehouseMaterialsReportHtml(args: {
@@ -600,7 +605,6 @@ export function buildWarehouseMaterialsReportHtml(args: {
   </div>
 </body></html>`;
 }
-
 export function buildWarehouseObjectWorkReportHtml(args: {
   periodFrom?: string;
   periodTo?: string;
@@ -612,7 +616,6 @@ export function buildWarehouseObjectWorkReportHtml(args: {
   rows: IssuedByObjectWorkReportRow[];
 
   docsTotal: number;
-  docsWithOver: number;
 }): string {
   const from = String(args.periodFrom ?? "").trim();
   const to = String(args.periodTo ?? "").trim();
@@ -620,7 +623,6 @@ export function buildWarehouseObjectWorkReportHtml(args: {
 
   const org = String(args.orgName ?? "").trim();
   const wh = String(args.warehouseName ?? "").trim();
-
   const objFilter = String(args.objectName ?? "").trim();
 
   const rows = Array.isArray(args.rows) ? args.rows : [];
@@ -633,26 +635,38 @@ export function buildWarehouseObjectWorkReportHtml(args: {
             const obj = String(r.object_name ?? "").trim() || "Без объекта";
             const work = String(r.work_name ?? "").trim() || "Без вида работ";
 
-            const docs = nnum(r.docs_cnt);
-            const lines = nnum(r.lines_cnt);
-            const docsOver = nnum(r.docs_with_over_cnt);
+            const docs = Math.max(0, Math.round(nnum(r.docs_cnt)));
+            const reqCnt = Math.max(0, Math.round(nnum(r.req_cnt)));
+            const days = Math.max(0, Math.round(nnum(r.active_days)));
+            const uniq = Math.max(0, Math.round(nnum(r.uniq_materials)));
 
-            const pct = docs > 0 ? (docsOver / docs) * 100 : 0;
-            const pctTxt = `${pct.toLocaleString("ru-RU", { maximumFractionDigits: 1 })}%`;
+            const recText = String(r.recipients_text ?? "").trim() || "—";
+            const top3 = String(r.top3_materials ?? "").trim() || "—";
+
+            // переносы строк в HTML
+            const recHtml = esc(recText).replace(/\n/g, "<br/>");
+            const topHtml = esc(top3).replace(/\n/g, "<br/>");
 
             return `
 <tr>
   <td class="t-center">${idx + 1}</td>
   <td>${esc(obj)}</td>
   <td>${esc(work)}</td>
-  <td class="t-right">${esc(String(Math.round(docs)))}</td>
-  <td class="t-right">${esc(String(Math.round(lines)))}</td>
-  <td class="t-right ${docsOver > 0 ? "over bad" : ""}">${esc(String(Math.round(docsOver)))}</td>
-  <td class="t-right">${esc(pctTxt)}</td>
+
+  <td class="t-right">${esc(String(docs))}</td>
+
+  <td class="small">${recHtml}</td>
+
+  <td class="t-right">${esc(String(uniq))}</td>
+
+  <td class="small">${topHtml}</td>
+
+  <td class="t-right">${esc(String(reqCnt))}</td>
+  <td class="t-right">${esc(String(days))}</td>
 </tr>`;
           })
           .join("")
-      : `<tr><td class="t-center" colspan="7"><i>Нет данных за период</i></td></tr>`;
+      : `<tr><td class="t-center" colspan="9"><i>Нет данных за период</i></td></tr>`;
 
   return `<!doctype html><html lang="ru"><head><meta charset="utf-8"/>
 <title>Отчёт по объектам и видам работ</title>
@@ -675,12 +689,14 @@ export function buildWarehouseObjectWorkReportHtml(args: {
       <thead>
         <tr>
           <th style="width:34px">№</th>
-          <th>Объект</th>
+          <th style="width:160px">Объект</th>
           <th>Вид работ</th>
-          <th style="width:90px">Кол-во выдач</th>
-          <th style="width:90px">Кол-во строк</th>
-          <th style="width:110px">Перерасходных выдач</th>
-          <th style="width:80px">% перерасходных</th>
+          <th style="width:76px">Выдач</th>
+          <th style="width:220px">Получатели (по заявке/без)</th>
+          <th style="width:70px">Уник. мат</th>
+          <th style="width:170px">Топ-3 материала</th>
+          <th style="width:70px">Заявок</th>
+          <th style="width:80px">Активн. дней</th>
         </tr>
       </thead>
       <tbody>
@@ -691,7 +707,6 @@ export function buildWarehouseObjectWorkReportHtml(args: {
     <div class="totals">
       <div class="box"><span class="lbl">Итого позиций:</span> ${esc(String(positions))}</div>
       <div class="box"><span class="lbl">Итого выдач (документов):</span> ${esc(String(args.docsTotal || 0))}</div>
-      <div class="box"><span class="lbl">Перерасходных выдач:</span> ${esc(String(args.docsWithOver || 0))}</div>
     </div>
 
     <div class="signs">

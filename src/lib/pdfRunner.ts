@@ -9,10 +9,10 @@ import { SUPABASE_ANON_KEY } from "./supabaseClient"; // ✅ добавили
 let FileSystem: any = null;
 try {
   // eslint-disable-next-line @typescript-eslint/no-var-requires
- FileSystem =
-  Platform.OS === "web"
-    ? null
-    : require("expo-file-system/legacy");
+  FileSystem =
+    Platform.OS === "web"
+      ? null
+      : require("expo-file-system/legacy");
 
 } catch {
   // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -43,7 +43,7 @@ const withTimeout = async <T,>(p: Promise<T>, ms: number, msg: string): Promise<
   try {
     return await Promise.race([p, timeout]);
   } finally {
-    try { clearTimeout(t); } catch {}
+    try { clearTimeout(t); } catch { }
   }
 };
 
@@ -53,7 +53,7 @@ function normalizeRemoteUrl(raw: any) {
 
 function safeName(name?: string) {
   const base = String(name || `pdf_${Date.now()}`)
-    .replace(/[^\w\-(). ]+/g, "_")
+    .replace(/[^\wА-Яа-яЁё\-(). ]+/g, "_")
     .replace(/\s+/g, " ")
     .trim();
   return base.toLowerCase().endsWith(".pdf") ? base : `${base}.pdf`;
@@ -143,11 +143,14 @@ export async function openPdfPreview(localUri: string) {
 
   if (Platform.OS === "android") {
     const contentUri = await FileSystem.getContentUriAsync(localUri);
-    await IntentLauncher.startActivityAsync(IntentLauncher.ActivityAction.VIEW, {
-      data: contentUri,
-      flags: 1,
-      type: "application/pdf",
-    });
+    await IntentLauncher.startActivityAsync(
+      (IntentLauncher as any).ActivityAction.VIEW,
+      {
+        data: contentUri,
+        flags: 1,
+        type: "application/pdf",
+      }
+    );
     return;
   }
 
@@ -211,7 +214,7 @@ export async function runPdfTop(args: {
           <div style="opacity:.7;margin-top:6px">Если долго — проверь соединение.</div>
         </body>`);
       win.document.close();
-    } catch {}
+    } catch { }
 
     try {
       const remote = await Promise.resolve(getRemoteUrl());
@@ -228,41 +231,44 @@ export async function runPdfTop(args: {
     } catch (e: any) {
       try {
         win.close();
-      } catch {}
+      } catch { }
       Alert.alert("PDF", e?.message ?? "Не удалось открыть PDF");
       return;
     }
   }
 
-    // NATIVE
-  const doNative = async () => {
+  // NATIVE
+  const doPrepare = async () => {
     // ✅ 1) отпускаем UI, чтобы спиннер/анимации успели отрисоваться
     await uiYield(50);
 
     // ✅ 2) даём таймаут на генерацию/скачивание (чтобы не висло вечно)
-    const localUri = await withTimeout(
+    const uri = await withTimeout(
       preparePdfLocalUri({ supabase, getRemoteUrl, fileName }),
       25000,
       "PDF слишком долго готовится. Попробуй ещё раз."
     );
-
-    // ✅ 3) перед Share Sheet ещё раз отпустить UI (iOS особенно)
-    await uiYield(Platform.OS === "ios" ? 90 : 10);
-
-    if (mode === "share") return openPdfShare(localUri);
-    return openPdfPreview(localUri);
+    return uri;
   };
 
+  let localUri: string | null = null;
   if (busy?.run) {
-    await busy.run(doNative, { key, label, minMs: 650 });
-    return;
+    localUri = await busy.run(doPrepare, { key, label, minMs: 650 });
+  } else {
+    try { busy?.show?.(key, label); } catch { }
+    try {
+      localUri = await doPrepare();
+    } finally {
+      try { busy?.hide?.(key); } catch { }
+    }
   }
 
-  try { busy?.show?.(key, label); } catch {}
-  try {
-    await doNative();
-  } finally {
-    try { busy?.hide?.(key); } catch {}
-  }
+  if (!localUri) return;
+
+  // ✅ 3) перед Share Sheet ещё раз отпустить UI ПРИ ЗАКРЫТОМ СПИННЕРЕ
+  // Это критически важно на iOS 17+, чтобы избежать deadlock UI потока!
+  await uiYield(Platform.OS === "ios" ? 150 : 50);
+
+  if (mode === "share") return openPdfShare(localUri);
+  return openPdfPreview(localUri);
 }
-

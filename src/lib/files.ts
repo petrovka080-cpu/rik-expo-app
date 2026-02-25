@@ -23,14 +23,14 @@ function notFoundMsg(groupKey: string) {
   return groupKey === "invoice"
     ? "Счёт не прикреплён"
     : groupKey === "payment"
-    ? "Платёжные документы не найдены"
-    : "Вложения не найдены";
+      ? "Платёжные документы не найдены"
+      : "Вложения не найдены";
 }
 
 /** Нормализуем имя файла — безопасно для путей/сохранения */
 function safeFileName(name: string | undefined) {
   const base = name || "file.bin";
-  return base.replace(/[^\w.\-а-яА-ЯёЁ ]+/g, "_");
+  return base.replace(/[^\wА-Яа-яЁё\-(). ]+/g, "_");
 }
 
 async function openLocalFilePreview(uri: string) {
@@ -122,7 +122,7 @@ function webOpenUrlStrict(url: string) {
     a.click();
     document.body.removeChild(a);
     return;
-  } catch {}
+  } catch { }
 
   try {
     window.prompt("Ссылка (скопируй и открой в новой вкладке):", u);
@@ -189,7 +189,7 @@ export async function openAttachment(
       } as any
     );
     if (!error && Array.isArray(data)) rows = data as any[];
-  } catch {}
+  } catch { }
 
   // 2) Fallback: таблица proposal_attachments
   if (!rows.length) {
@@ -277,7 +277,7 @@ export async function uploadSupplierFile(
       file_url: url,
       group_key: group,
     });
-  } catch {}
+  } catch { }
 
   return { url, path };
 }
@@ -355,4 +355,3 @@ export async function openSupplierFile(
 
   return rows;
 }
-

@@ -3,13 +3,45 @@
     "name": "rik-expo-app",
     "slug": "rik-expo-app",
     "scheme": "rik",
+    "version": "1.0.0",
+    "newArchEnabled": false,
+    "updates": {
+      "enabled": true,
+      "url": "https://u.expo.dev/93959cca-1c92-4b59-b80a-f1a1f5dfdf5a"
+    },
+    "runtimeVersion": "1.0.0",
     "plugins": [
       "expo-router",
+      "expo-updates",
       "expo-audio",
       "expo-asset",
       "expo-web-browser",
       "@react-native-community/datetimepicker"
     ],
-    "web": {}
+    "web": {},
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "93959cca-1c92-4b59-b80a-f1a1f5dfdf5a"
+      }
+    },
+    "android": {
+      "package": "com.azisbek_dzhantaev.rikexpoapp",
+      "versionCode": 10,
+      "permissions": [
+        "android.permission.RECORD_AUDIO",
+        "android.permission.MODIFY_AUDIO_SETTINGS"
+      ]
+    },
+    "ios": {
+      "bundleIdentifier": "com.azisbekdzhantaev.rikexpoapp",
+      "buildNumber": "10",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSMicrophoneUsageDescription": "Доступ к микрофону нужен для записи аудио-сообщений.",
+        "NSLocationWhenInUseUsageDescription": "Доступ к геопозиции нужен для отображения вашего местоположения на карте.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "Доступ к геопозиции нужен для маршрутов."
+      }
+    }
   }
 }

@@ -1,0 +1,83 @@
+--- Line 382 ---
+                onChangeText={setQ}
+                placeholder="Поиск…"
+                style={s.input}
+              />
+            )}
+            <FlatList
+              data={filtered}
+              keyExtractor={(o, idx) => `ref:${o.code}:${idx}`}
+              renderItem={({ item }) => (
+                <Pressable
+                  onPress={() => {
+
+
+--- Line 2012 ---
+            </View>
+          </Animated.View>
+        </Animated.View>
+
+        {/* ✅ SCROLL */}
+        <AnimatedScrollView
+          contentContainerStyle={[
+            s.pagePad,
+            { paddingTop: HEADER_MAX + 12 }, // место под фикс-шапку
+          ]}
+          keyboardShouldPersistTaps="handled"
+
+
+--- Line 2166 ---
+              </View>
+
+              <Ionicons name="chevron-forward" size={18} color="rgba(255,255,255,0.55)" />
+            </View>
+          </Pressable>
+        </AnimatedScrollView>
+
+        {/* ✅ Нижняя панель — как было */}
+        <View style={s.stickyBar}>
+          <View style={s.miniBar}>
+            <Pressable
+
+
+--- Line 2209 ---
+              {historyLoading ? (
+                <ActivityIndicator />
+              ) : historyRequests.length === 0 ? (
+                <Text style={s.historyModalEmpty}>Заявок пока нет</Text>
+              ) : (
+                <ScrollView style={s.historyModalList}>
+                  {historyRequests.map((req) => {
+                    const info = resolveStatusInfo(req.status);
+                    const created = req.created_at
+                      ? new Date(req.created_at).toLocaleDateString('ru-RU')
+                      : '—';
+
+
+--- Line 2257 ---
+
+                        </View>
+                      </View>
+                    );
+                  })}
+                </ScrollView>
+              )}
+            </View>
+          </View>
+        </RNModal>
+
+
+
+--- Line 2347 ---
+                  Зона: <Text style={s.sheetMetaValue}>{zoneName}</Text>
+                </Text>
+              )}
+            </View>
+            <View style={{ flex: 1, minHeight: 0 }}>
+              <FlatList
+                data={items}
+                keyExtractor={(it, idx) => (it?.id ? `ri:${String(it.id)}` : `ri:${idx}`)}
+                renderItem={({ item }) => <ReqItemRowView it={item} />}
+                contentContainerStyle={{ paddingBottom: 12 }}
+                keyboardShouldPersistTaps="handled"
+

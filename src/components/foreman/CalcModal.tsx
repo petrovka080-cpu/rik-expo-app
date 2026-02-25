@@ -786,7 +786,7 @@ useEffect(() => {
               keyboardVerticalOffset={Platform.OS === "ios" ? insets.top + 56 : 0}
             >
               <ScrollView
-                ref={(r) => (scrollRef.current = r)}
+                ref={(r) => { scrollRef.current = r; }}
                 style={{ flex: 1 }}
                 stickyHeaderIndices={[0]}
                 contentContainerStyle={{

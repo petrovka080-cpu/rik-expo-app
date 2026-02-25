@@ -1,4 +1,4 @@
-// src/screens/director/DirectorFinanceCardModal.tsx
+﻿// src/screens/director/DirectorFinanceCardModal.tsx
 import React, { useEffect, useRef } from "react";
 import {
   Keyboard,
@@ -105,7 +105,6 @@ export default function DirectorFinanceCardModal({
           backgroundColor: "rgba(0,0,0,0.68)",
         }}
       >
-        {/* Backdrop */}
         <Pressable
           onPress={() => {
             if (!canBackdropCloseNow()) return;
@@ -120,7 +119,6 @@ export default function DirectorFinanceCardModal({
           }}
         />
 
-        {/* Fullscreen sheet */}
         <View
           style={{
             position: "absolute",
@@ -135,7 +133,6 @@ export default function DirectorFinanceCardModal({
           <View style={{ flex: 1, backgroundColor: UI.bg }}>
             <View style={{ height: topPad, backgroundColor: UI.bg }} />
 
-            {/* Header */}
             <View
               style={{
                 paddingHorizontal: 12,
@@ -145,7 +142,6 @@ export default function DirectorFinanceCardModal({
                 backgroundColor: UI.cardBg,
               }}
             >
-              {/* ✅ unified top-right action bar (NO logic changes: close/onPdf/disabled same) */}
               <TopRightActionBar
                 titleLeft={periodShort || "Весь период"}
                 actions={[
@@ -180,15 +176,13 @@ export default function DirectorFinanceCardModal({
                 ui={{
                   text: UI.text,
                   sub: UI.sub,
-                  border: "rgba(255,255,255,0.12)", // ✅ same as old IconBtn
-                  btnBg: "rgba(255,255,255,0.06)",  // ✅ same as old IconBtn
+                  border: "rgba(255,255,255,0.12)",
+                  btnBg: "rgba(255,255,255,0.06)",
                 }}
               />
 
               {loading ? (
-                <Text style={{ color: UI.sub, fontWeight: "800", fontSize: 12, marginTop: 6 }} numberOfLines={1}>
-                  обновление…
-                </Text>
+                <Text style={{ color: UI.sub, fontWeight: "800", fontSize: 12, marginTop: 6 }} numberOfLines={1}>Обновление...</Text>
               ) : null}
 
               <Text style={{ color: UI.text, fontWeight: "900", fontSize: 16, marginTop: 10 }} numberOfLines={1}>
@@ -196,24 +190,20 @@ export default function DirectorFinanceCardModal({
               </Text>
             </View>
 
-            {/* Body */}
-            <Animated.ScrollView
-              keyboardShouldPersistTaps="always"
-              keyboardDismissMode={Platform.OS === "ios" ? "interactive" : "on-drag"}
-              onScrollBeginDrag={() => Keyboard.dismiss()}
-              scrollEventThrottle={16}
-              contentContainerStyle={{
+            {/* No ScrollView wrapper here: child may contain FlatList/SectionList */}
+            <Animated.View
+              style={{
+                flex: 1,
                 paddingHorizontal: 12,
                 paddingTop: 12,
                 paddingBottom: Math.max(insets.bottom || 0, 16) + 16,
               }}
             >
               {children}
-            </Animated.ScrollView>
+            </Animated.View>
           </View>
         </View>
 
-        {/* ✅ overlay рисуем ТОЛЬКО когда он реально есть */}
         {overlay ? (
           <View
             pointerEvents="box-none"
@@ -235,5 +225,4 @@ export default function DirectorFinanceCardModal({
     </Modal>
   );
 }
-
 

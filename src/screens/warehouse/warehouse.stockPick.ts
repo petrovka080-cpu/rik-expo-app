@@ -1,8 +1,15 @@
-// src/screens/warehouse/warehouse.stockPick.ts
+﻿// src/screens/warehouse/warehouse.stockPick.ts
 import { useCallback, useMemo, useState } from "react";
 import type { StockRow, StockPickLine, Option } from "./warehouse.types";
+import { normMatCode, normUomId } from "./warehouse.utils";
 
 export type IssueMsg = { kind: "error" | "ok" | null; text: string };
+
+const buildPickKey = (code: string, uomId: string | null) => {
+  const c = normMatCode(code);
+  const u = normUomId(uomId ?? "");
+  return `${c}::${u || "-"}`;
+};
 
 export function useWarehouseStockPick(args: {
   nz: (v: any, d?: number) => number;
@@ -30,15 +37,15 @@ export function useWarehouseStockPick(args: {
       if (!code) return;
 
       const hasLedgerAvail = r.qty_available != null && Number.isFinite(Number(r.qty_available));
-const avail = hasLedgerAvail ? nz(r.qty_available, 0) : 0;
+      const avail = hasLedgerAvail ? nz(r.qty_available, 0) : 0;
 
-if (!hasLedgerAvail) {
-  setIssueMsg({
-    kind: "error",
-    text: "Остаток не из ledger. Обнови склад (данные не серверная истина).",
-  });
-  return;
-}
+      if (!hasLedgerAvail) {
+        setIssueMsg({
+          kind: "error",
+          text: "Остаток не из ledger. Обновите склад (данные не серверная истина).",
+        });
+        return;
+      }
       setStockIssueModal({
         code,
         name: String(r.name ?? code).trim() || code,
@@ -59,12 +66,12 @@ if (!hasLedgerAvail) {
     setStockPick({});
   }, []);
 
-  const removeStockPickLine = useCallback((code: string) => {
-    const c = String(code ?? "").trim();
-    if (!c) return;
+  const removeStockPickLine = useCallback((pickKey: string) => {
+    const k = String(pickKey ?? "").trim();
+    if (!k) return;
     setStockPick((prev) => {
       const next = { ...(prev || {}) };
-      delete next[c];
+      delete next[k];
       return next;
     });
   }, []);
@@ -82,9 +89,9 @@ if (!hasLedgerAvail) {
       return;
     }
     if (!workTypeOpt?.id) {
-    setIssueMsg({ kind: "error", text: "Выберите этаж/уровень" });
-  return;
-}
+      setIssueMsg({ kind: "error", text: "Выберите этаж/уровень" });
+      return;
+    }
 
     const raw = String(stockIssueQty ?? "").trim().replace(",", ".");
     const qty = Number(raw);
@@ -94,10 +101,6 @@ if (!hasLedgerAvail) {
     }
 
     const can = nz(stockIssueModal.qty_available, 0);
-    if (qty > can) {
-      setIssueMsg({ kind: "error", text: `Нельзя больше доступного: ${can}` });
-      return;
-    }
 
     const uomText = String(stockIssueModal.uom_id ?? "").trim();
     if (!uomText) {
@@ -106,26 +109,65 @@ if (!hasLedgerAvail) {
     }
 
     const code = stockIssueModal.code;
+    const pickKey = buildPickKey(code, uomText);
 
+    let blocked = false;
+    let nextTotal = 0;
     setStockPick((prev) => {
-      const exist = prev[code];
-      const nextQty = nz(exist?.qty, 0) + qty;
+      const exist = prev[pickKey];
+      nextTotal = nz(exist?.qty, 0) + qty;
+
+      // Critical guard: validate cumulative qty in cart, not only single add.
+      if (nextTotal > can) {
+        blocked = true;
+        return prev;
+      }
+
       return {
         ...prev,
-        [code]: {
+        [pickKey]: {
+          pick_key: pickKey,
           code,
           name: stockIssueModal.name,
           uom_id: uomText,
-          qty: nextQty,
+          qty: nextTotal,
         },
       };
     });
+
+    if (blocked) {
+      setIssueMsg({
+        kind: "error",
+        text: `Нельзя выдать больше, чем доступно: ${stockIssueModal.name} доступно ${can}, в корзине было ${Math.max(
+          0,
+          nextTotal - qty,
+        )}, пытаетесь добавить ${qty}`,
+      });
+      return;
+    }
 
     setIssueMsg({ kind: "ok", text: `Добавлено: ${stockIssueModal.name} × ${qty}` });
     closeStockIssue();
   }, [stockIssueModal, stockIssueQty, rec.recipientText, objectOpt?.id, workTypeOpt?.id, nz, setIssueMsg, closeStockIssue]);
 
   const pickedCount = useMemo(() => Object.keys(stockPick || {}).length, [stockPick]);
+
+  const pickedQtyByCodeUom = useMemo(() => {
+    const acc: Record<string, number> = {};
+    for (const ln of Object.values(stockPick || {})) {
+      const key = buildPickKey(String(ln.code ?? ""), ln.uom_id ?? null);
+      acc[key] = nz(acc[key], 0) + nz((ln as any).qty, 0);
+    }
+    return acc;
+  }, [stockPick, nz]);
+
+  const getPickedQty = useCallback(
+    (code: string, uomId: string | null) => {
+      const key = buildPickKey(code, uomId);
+      return nz(pickedQtyByCodeUom[key], 0);
+    },
+    [pickedQtyByCodeUom, nz],
+  );
 
   return {
     // state
@@ -142,6 +184,7 @@ if (!hasLedgerAvail) {
     addStockPickLine,
     removeStockPickLine,
     clearStockPick,
+    getPickedQty,
 
     // derived
     pickedCount,

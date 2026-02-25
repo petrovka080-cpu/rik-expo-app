@@ -86,23 +86,23 @@ const wrapFetchWithLog = (tag: string, baseFetch: typeof fetch): typeof fetch =>
       typeof input === "string"
         ? input
         : input?.url
-        ? String(input.url)
-        : String(input);
+          ? String(input.url)
+          : String(input);
 
-  const fixedUrl = fixNakedTimestamp(originalUrl);
+    const fixedUrl = fixNakedTimestamp(originalUrl);
 
-// ✅ сначала предупреждение, если что-то починили
-if (DEBUG_SUPABASE_REST && fixedUrl !== originalUrl) {
-  console.warn(`${tag} SUPABASE REST: fixed naked timestamp`, {
-    before: originalUrl,
-    after: fixedUrl,
-  });
-}
+    // ✅ сначала предупреждение, если что-то починили
+    if (DEBUG_SUPABASE_REST && fixedUrl !== originalUrl) {
+      console.warn(`${tag} SUPABASE REST: fixed naked timestamp`, {
+        before: originalUrl,
+        after: fixedUrl,
+      });
+    }
 
-// ✅ потом лог запроса (только /rest/v1/)
-if (DEBUG_SUPABASE_REST && String(fixedUrl).includes("/rest/v1/")) {
-  console.log(`${tag} SUPABASE REST:`, fixedUrl);
-}
+    // ✅ потом лог запроса (только /rest/v1/)
+    if (DEBUG_SUPABASE_REST && String(fixedUrl).includes("/rest/v1/")) {
+      console.log(`${tag} SUPABASE REST:`, fixedUrl);
+    }
 
 
     // если input был Request — пересоздаём Request с исправленным url
@@ -140,28 +140,28 @@ function assertEnv() {
 // WEB fetch: твоя логика headers + timeout, просто оборачиваем логом
 const supabaseFetch: typeof fetch | undefined = isWeb
   ? wrapFetchWithLog("🌐", (input: any, init: any = {}) => {
-      const headers = new Headers(init.headers || {});
+    const headers = new Headers(init.headers || {});
 
-      if (SUPABASE_ANON_KEY) {
-        if (!headers.has("apikey")) headers.set("apikey", SUPABASE_ANON_KEY);
-        if (!headers.has("Authorization"))
-          headers.set("Authorization", `Bearer ${SUPABASE_ANON_KEY}`);
-      }
+    if (SUPABASE_ANON_KEY) {
+      if (!headers.has("apikey")) headers.set("apikey", SUPABASE_ANON_KEY);
+      if (!headers.has("Authorization"))
+        headers.set("Authorization", `Bearer ${SUPABASE_ANON_KEY}`);
+    }
 
-      const controller = new AbortController();
-      const timeoutMs = 20000;
-      const t = setTimeout(() => controller.abort(), timeoutMs);
+    const controller = new AbortController();
+    const timeoutMs = 20000;
+    const t = setTimeout(() => controller.abort(), timeoutMs);
 
-      return window
-        .fetch(input, {
-          ...init,
-          headers,
-          keepalive: false,
-          cache: "no-store",
-          signal: controller.signal,
-        })
-        .finally(() => clearTimeout(t));
-    })
+    return window
+      .fetch(input, {
+        ...init,
+        headers,
+        keepalive: false,
+        cache: "no-store",
+        signal: controller.signal,
+      })
+      .finally(() => clearTimeout(t));
+  })
   : undefined;
 
 // NATIVE fetch: логируем и чиним URL
@@ -181,20 +181,21 @@ function createMissingSupabaseClient(): SupabaseClient {
 }
 
 // —–– CLIENT —––
-export const supabase: SupabaseClient = assertEnv()
+export const isSupabaseEnvValid = assertEnv();
+export const supabase: SupabaseClient = isSupabaseEnvValid
   ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-      auth: {
-        persistSession: true,
-        autoRefreshToken: true,
-        detectSessionInUrl: isWeb,
-        storage: isWeb ? window.localStorage : AsyncStorage,
-      },
-      realtime: { params: { eventsPerSecond: 5 } },
-      global: {
-        headers: { "x-client-info": "rik-expo-app" },
-        fetch: (isWeb ? supabaseFetch : nativeFetch) as any,
-      },
-    })
+    auth: {
+      persistSession: true,
+      autoRefreshToken: true,
+      detectSessionInUrl: isWeb,
+      storage: isWeb ? window.localStorage : AsyncStorage,
+    },
+    realtime: { params: { eventsPerSecond: 5 } },
+    global: {
+      headers: { "x-client-info": "rik-expo-app" },
+      fetch: (isWeb ? supabaseFetch : nativeFetch) as any,
+    },
+  })
   : createMissingSupabaseClient();
 
 // —–– HELPERS —––
@@ -223,4 +224,3 @@ export async function currentUserId(): Promise<string | null> {
     return null;
   }
 }
-

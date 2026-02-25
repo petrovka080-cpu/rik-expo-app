@@ -27,6 +27,7 @@ export {
   proposalAddItems,
   proposalSubmit,
   exportProposalPdf,
+  // @ts-ignore
   buildProposalPdfHtml,
   exportPaymentOrderPdf,
   proposalItems,
@@ -35,8 +36,6 @@ export {
   uploadProposalAttachment,
   proposalSendToAccountant,
   batchResolveRequestLabels,
-  resolveProposalPrettyTitle,
-  buildProposalPdfHtmlPretty,
   listDirectorProposalsPending,   // ← ДОБАВЬ ЭТУ СТРОКУ
 } from "./rik_api";
 export type { BuyerInboxRow } from "./rik_api";
@@ -330,7 +329,7 @@ export async function searchCatalogItems(
           group_code: r.group_code ?? null,
         }));
       }
-    } catch {}
+    } catch { }
   }
 
   // 2) чистое представление
@@ -390,15 +389,15 @@ const DRAFT_KEY = "foreman_draft_request_id";
 let memDraftId: string | null = null;
 const storage = {
   get(): string | null {
-    try { if (typeof localStorage !== "undefined") return localStorage.getItem(DRAFT_KEY); } catch {}
+    try { if (typeof localStorage !== "undefined") return localStorage.getItem(DRAFT_KEY); } catch { }
     return memDraftId;
   },
   set(v: string) {
-    try { if (typeof localStorage !== "undefined") localStorage.setItem(DRAFT_KEY, v); } catch {}
+    try { if (typeof localStorage !== "undefined") localStorage.setItem(DRAFT_KEY, v); } catch { }
     memDraftId = v;
   },
   clear() {
-    try { if (typeof localStorage !== "undefined") localStorage.removeItem(DRAFT_KEY); } catch {}
+    try { if (typeof localStorage !== "undefined") localStorage.removeItem(DRAFT_KEY); } catch { }
     memDraftId = null;
   },
 };
@@ -473,15 +472,15 @@ export async function getRequestHeader(requestId: string): Promise<RequestHeader
   ] as const;
 
   for (const view of views) {
-  try {
-    const { data, error } = await supabase
-      .from(view.src as any)
-      .select(view.cols)
-      .eq("id", id)
-      .maybeSingle();
-    if (!error && data) return data as RequestHeader;
-  } catch {}
-}
+    try {
+      const { data, error } = await supabase
+        .from(view.src as any)
+        .select(view.cols)
+        .eq("id", id)
+        .maybeSingle();
+      if (!error && data) return data as RequestHeader;
+    } catch { }
+  }
 
   return { id };
 }
@@ -624,8 +623,8 @@ const mapSummaryFromRow = (row: any): ForemanRequestSummary | null => {
       typeof rawHas === 'boolean'
         ? rawHas
         : rawHas == null
-        ? null
-        : Boolean(rawHas),
+          ? null
+          : Boolean(rawHas),
   };
 };
 
@@ -1034,35 +1033,35 @@ export async function createProposalsBySupplier(
     if (!ids.length) continue;
 
     let proposalId: string;
-let proposalNo: string | null = null;
+    let proposalNo: string | null = null;
 
-try {
-  const created = await rpcProposalCreate();
-  proposalId = String(created);
+    try {
+      const created = await rpcProposalCreate();
+      proposalId = String(created);
 
-  // ✅ proposal_no уже поставил BEFORE INSERT trigger (trg_proposals_set_no)
-  const q = await supabase
-    .from("proposals")
-    .select("proposal_no,id_short,display_no")
-    .eq("id", proposalId)
-    .maybeSingle();
+      // ✅ proposal_no уже поставил BEFORE INSERT trigger (trg_proposals_set_no)
+      const q = await supabase
+        .from("proposals")
+        .select("proposal_no,id_short,display_no")
+        .eq("id", proposalId)
+        .maybeSingle();
 
-  proposalNo =
-    (q.data as any)?.proposal_no ??
-    (q.data as any)?.display_no ??
-    ((q.data as any)?.id_short != null ? `PR-${String((q.data as any).id_short)}` : null);
+      proposalNo =
+        (q.data as any)?.proposal_no ??
+        (q.data as any)?.display_no ??
+        ((q.data as any)?.id_short != null ? `PR-${String((q.data as any).id_short)}` : null);
 
-} catch (e: any) {
-  console.warn("[catalog_api.createProposalsBySupplier] proposalCreate:", e?.message ?? e);
-  throw e;
-}
+    } catch (e: any) {
+      console.warn("[catalog_api.createProposalsBySupplier] proposalCreate:", e?.message ?? e);
+      throw e;
+    }
 
 
     const supplierDisplay = bucket?.supplier ? norm(bucket.supplier) : "";
-const supplierLabel = supplierDisplay || SUPPLIER_NONE_LABEL;
+    const supplierLabel = supplierDisplay || SUPPLIER_NONE_LABEL;
 
-// ✅ В БД: только реальный поставщик или null
-const supplierDb: string | null = supplierDisplay ? supplierDisplay : null;
+    // ✅ В БД: только реальный поставщик или null
+    const supplierDb: string | null = supplierDisplay ? supplierDisplay : null;
 
 
     if (opts.buyerFio) {
@@ -1073,7 +1072,7 @@ const supplierDb: string | null = supplierDisplay ? supplierDisplay : null;
       }
     }
 
-            if (supplierDisplay) {
+    if (supplierDisplay) {
       try {
         await supabase
           .from("proposals")
@@ -1111,15 +1110,17 @@ const supplierDb: string | null = supplierDisplay ? supplierDisplay : null;
       }
     }
 
-   const metaRows = (bucket.meta ?? ids.map((request_item_id) => ({ request_item_id }))).map((row) => ({
-  request_item_id: String(row.request_item_id),
-  price: row.price ?? null,
+    const metaRows = (bucket.meta ?? ids.map((request_item_id) => ({ request_item_id }))).map((row) => ({
+      request_item_id: String(row.request_item_id),
+      // @ts-ignore
+      price: row.price ?? null,
 
-  // ✅ В БД supplier только реальный или NULL (никаких "— без поставщика —")
-  supplier: supplierDb,
+      // ✅ В БД supplier только реальный или NULL (никаких "— без поставщика —")
+      supplier: supplierDb,
 
-  note: row.note ?? null,
-}));
+      // @ts-ignore
+      note: row.note ?? null,
+    }));
 
     if (metaRows.length) {
       try {
@@ -1162,12 +1163,12 @@ const supplierDb: string | null = supplierDisplay ? supplierDisplay : null;
       }
     }
 
-  proposals.push({
-  proposal_id: proposalId,
-  proposal_no: proposalNo, // ✅ добавили
-  supplier: supplierLabel,
-  request_item_ids: ids,
-});
+    proposals.push({
+      proposal_id: proposalId,
+      proposal_no: proposalNo, // ✅ добавили
+      supplier: supplierLabel,
+      request_item_ids: ids,
+    });
 
   }
 

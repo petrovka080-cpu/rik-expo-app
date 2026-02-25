@@ -114,6 +114,7 @@ export type Option = { id: string; label: string };
 export type Tab = "К приходу" | "Склад факт" | "Расход" | "Отчёты";
 
 export type StockPickLine = {
+  pick_key: string;
   code: string;
   name: string;
   uom_id: string | null; // текстовый uom

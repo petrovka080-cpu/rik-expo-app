@@ -9,19 +9,18 @@ import {
   listDirectorProposalsPending,
   proposalItems,
   proposalSnapshotItems,
-  proposalSetItemsMeta,
+  proposalSetItemsMeta
 } from "./api/proposals";
 import {
   buildRequestPdfHtml,
   exportRequestPdf,
   resolveRequestLabel,
-  batchResolveRequestLabels,
+  batchResolveRequestLabels
 } from "./api/pdf_request";
 
 import {
   buildProposalPdfHtml,
-  exportProposalPdf,
-  resolveProposalPrettyTitle,
+  exportProposalPdf
 } from "./api/pdf_proposal";
 
 import { buildPaymentOrderHtml, exportPaymentOrderPdf } from "./api/pdf_payment";
@@ -30,7 +29,7 @@ import {
   approve,
   reject,
   directorReturnToBuyer,
-  listDirectorInbox,
+  listDirectorInbox
 } from "./api/director";
 
 // ✅ локальные импорты, чтобы можно было использовать в RIK_API
@@ -42,16 +41,13 @@ import {
   proposalSendToAccountant,
   accountantAddPayment,
   accountantReturnToBuyer,
-  listAccountantInbox,
+  listAccountantInbox
 } from "./api/accountant";
 import { uploadProposalAttachment } from "./api/storage";
 import { listBuyerInbox, listBuyerProposalsByStatus } from "./api/buyer";
 
 import {
-  openHtmlAsPdfUniversal,
-  webOpenPdfWindow,
-  webWritePdfWindow,
-  webDownloadHtml,
+  openHtmlAsPdfUniversal
 } from "./api/pdf";
 import {
   listRequestItems,
@@ -61,24 +57,22 @@ import {
   clearCachedDraftRequestId,
   ensureRequest,
   addRequestItemFromRik,
-  requestSubmit,
+  requestSubmit
 } from "./api/requests";
 
 
-export { buildProposalPdfHtml, exportProposalPdf, resolveProposalPrettyTitle };
+export { buildProposalPdfHtml, exportProposalPdf
+};
 
 export {
   proposalSendToAccountant,
   accountantAddPayment,
   accountantReturnToBuyer,
-  listAccountantInbox,
+  listAccountantInbox
 };
 export { uploadProposalAttachment };
 export {
-  openHtmlAsPdfUniversal,
-  webOpenPdfWindow,
-  webWritePdfWindow,
-  webDownloadHtml,
+  openHtmlAsPdfUniversal
 };
 export {
   listRequestItems,
@@ -88,7 +82,7 @@ export {
   clearCachedDraftRequestId,
   ensureRequest,
   addRequestItemFromRik,
-  requestSubmit,
+  requestSubmit
 };
 export { listPending, approve, reject, directorReturnToBuyer, listDirectorInbox };
 export { listBuyerInbox, listBuyerProposalsByStatus };
@@ -99,13 +93,13 @@ export {
   listDirectorProposalsPending,
   proposalItems,
   proposalSnapshotItems,
-  proposalSetItemsMeta,
+  proposalSetItemsMeta
 };
 export {
   buildRequestPdfHtml,
   exportRequestPdf,
   resolveRequestLabel,
-  batchResolveRequestLabels,
+  batchResolveRequestLabels
 };
 
 export { buildPaymentOrderHtml, exportPaymentOrderPdf };
@@ -359,8 +353,6 @@ export const RIK_API = {
   listSupplierFiles,
 
   notifList,
-  notifMarkRead,
-  resolveProposalPrettyTitle,
- 
+  notifMarkRead
 };
  

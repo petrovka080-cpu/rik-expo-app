@@ -1,6 +1,6 @@
 import React from "react";
 import { Pressable, Text, View } from "react-native";
-import type { AccountantInboxRow } from "../../../lib/catalog_api";
+import type { AccountantInboxRow } from "../../../lib/rik_api";
 import { UI } from "../ui";
 import { statusFromRaw, statusColors } from "../helpers";
 import Chip from "./Chip";

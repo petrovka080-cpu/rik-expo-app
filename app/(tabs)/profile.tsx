@@ -683,7 +683,7 @@ export default function ProfileScreen() {
       try {
         const loc = await Location.getCurrentPositionAsync({
           accuracy: Location.Accuracy.High,
-          timeout: 10000,
+          
         });
 
         const { latitude, longitude } = loc.coords;
@@ -1125,7 +1125,7 @@ export default function ProfileScreen() {
                       ]}
                     >
                       {modeMarket && (
-                        <Text style={styles.modeCheckIcon}>✓</Text>
+                        <Text style={styles.modeCheck}>✓</Text>
                       )}
                     </View>
                     <Text style={styles.modeTitle}>
@@ -1153,7 +1153,7 @@ export default function ProfileScreen() {
                       ]}
                     >
                       {modeBuild && (
-                        <Text style={styles.modeCheckIcon}>✓</Text>
+                        <Text style={styles.modeCheck}>✓</Text>
                       )}
                     </View>
                     <Text style={styles.modeTitle}>

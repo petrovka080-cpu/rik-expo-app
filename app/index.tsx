@@ -2,7 +2,7 @@
 import { ActivityIndicator, View, Text, StyleSheet } from 'react-native';
 import { router } from 'expo-router';
 import { supabase } from '../src/lib/supabaseClient';
-import { getMyRole } from '../src/lib/rik_api';
+import { getMyRole } from '../src/lib/api/profile';
 import { pathForRole, FALLBACK_TAB } from '../src/lib/authRouting';
 
 export default function Index() {
@@ -64,4 +64,3 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
 });
-

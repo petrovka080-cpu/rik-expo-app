@@ -122,7 +122,7 @@ export default function MapRendererNative({
 
   return (
     <MapView
-      ref={(r) => (mapRef.current = r)}
+      ref={(r) => { mapRef.current = r; }}
       style={StyleSheet.absoluteFill}
       initialRegion={region}
       region={region}

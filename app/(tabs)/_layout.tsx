@@ -20,8 +20,6 @@ export default function TabsLayout() {
         tabBarStyle: { height: TAB_H + bottom, paddingBottom: bottom },
         tabBarItemStyle: { height: TAB_H },
 
-        detachInactiveScreens: Platform.OS !== "web",
-        unmountOnBlur: Platform.OS === "web",
       }}
     >
       <Tabs.Screen name="foreman" options={{ title: "Прораб" }} />
@@ -34,4 +32,3 @@ export default function TabsLayout() {
     </Tabs>
   );
 }
-

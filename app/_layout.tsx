@@ -6,9 +6,10 @@ import { Platform, LogBox } from "react-native";
 import { Slot, router, useSegments } from "expo-router";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
+import { Host } from "react-native-portalize";
 
-import { supabase } from "../src/lib/supabaseClient";
-import { ensureMyProfile, getMyRole } from "../src/lib/rik_api";
+import { supabase, isSupabaseEnvValid } from "../src/lib/supabaseClient";
+import { ensureMyProfile, getMyRole } from "../src/lib/api/profile";
 import { GlobalBusyProvider } from "../src/ui/GlobalBusy";
 
 // --- WEB: тихо глушим шумные предупреждения (только в браузере) ---
@@ -74,7 +75,7 @@ export default function RootLayout() {
 
   // --- роль/профиль грузим в фоне, НЕ блокируя вход ---
   const loadRoleForCurrentSession = useCallback(async () => {
-    if (!supabase) return;
+    if (!isSupabaseEnvValid) return;
     if (roleLoadingRef.current) return;
     roleLoadingRef.current = true;
 
@@ -105,7 +106,12 @@ export default function RootLayout() {
 
   // --- INIT: читаем session один раз, роль — фоном ---
   useEffect(() => {
-    if (!supabase) return;
+    if (!isSupabaseEnvValid) {
+      // Если env битые, сразу отправляем на fallback/login или просто останавливаем загрузку
+      setHasSession(false);
+      setSessionLoaded(true);
+      return;
+    }
     if (initStartedRef.current) return;
     initStartedRef.current = true;
 
@@ -174,15 +180,17 @@ export default function RootLayout() {
 
   return (
     <SafeAreaProvider>
-      <GlobalBusyProvider theme={UI}>
-        <SafeAreaView
-          style={{ flex: 1, backgroundColor: APP_BG, paddingTop: 0 }}
-          edges={Platform.OS === "web" ? [] : ["top"]}
-        >
-          <Slot />
-        </SafeAreaView>
-      </GlobalBusyProvider>
-      <Toast />
+      <Host>
+        <GlobalBusyProvider theme={UI}>
+          <SafeAreaView
+            style={{ flex: 1, backgroundColor: APP_BG, paddingTop: 0 }}
+            edges={Platform.OS === "web" ? [] : ["top"]}
+          >
+            <Slot />
+          </SafeAreaView>
+        </GlobalBusyProvider>
+        <Toast />
+      </Host>
     </SafeAreaProvider>
   );
 }

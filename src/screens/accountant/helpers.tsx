@@ -6,7 +6,7 @@ import * as Sharing from "expo-sharing";
 import * as FileSystem from "expo-file-system/legacy";
 
 import { supabase, SUPABASE_ANON_KEY } from "../../lib/supabaseClient";
-import type { AccountantInboxRow } from "../../lib/catalog_api";
+import type { AccountantInboxRow } from "../../lib/rik_api";
 import type { StatusKey } from "./types";
 
 export function toRpcDateOrNull(v: string) {
