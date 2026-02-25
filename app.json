@@ -27,7 +27,7 @@
     },
     "android": {
       "package": "com.azisbek_dzhantaev.rikexpoapp",
-      "versionCode": 11,
+      "versionCode": 13,
       "permissions": [
         "android.permission.RECORD_AUDIO",
         "android.permission.MODIFY_AUDIO_SETTINGS"
@@ -35,7 +35,7 @@
     },
     "ios": {
       "bundleIdentifier": "com.azisbekdzhantaev.rikexpoapp",
-      "buildNumber": "11",
+      "buildNumber": "13",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
         "NSMicrophoneUsageDescription": "Доступ к микрофону нужен для записи аудио-сообщений.",
