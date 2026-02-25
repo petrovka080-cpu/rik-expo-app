@@ -112,10 +112,10 @@ export default function ActivePaymentForm({
   const proposalId = String(current?.proposal_id ?? "").trim();
   const cur = current?.invoice_currency || "KGS";
 
-useEffect(() => {
-  setAllocRows([]);
-  if (modeRef.current === "partial") setAmount("");
-}, [proposalId]);
+  useEffect(() => {
+    setAllocRows([]);
+    if (modeRef.current === "partial") setAmount("");
+  }, [proposalId]);
 
   const inv = Number(current?.invoice_amount ?? 0);
   const paid = Number(current?.total_paid ?? 0);
@@ -159,69 +159,69 @@ useEffect(() => {
     })();
   }, [proposalId]);
 
-const [paidByLineMap, setPaidByLineMap] = useState<Map<string, number>>(new Map());
-const [paidKnownSum, setPaidKnownSum] = useState(0);
+  const [paidByLineMap, setPaidByLineMap] = useState<Map<string, number>>(new Map());
+  const [paidKnownSum, setPaidKnownSum] = useState(0);
 
-useEffect(() => {
-  const pid = proposalId;
-  if (!pid) {
-    setPaidByLineMap(new Map());
-    setPaidKnownSum(0);
-    return;
-  }
-
-  (async () => {
-    try {
-      // allocations -> payments (inner) -> proposal_id
-      const q = await supabase
-        .from("proposal_payment_allocations")
-        .select("proposal_item_id, amount, proposal_payments!inner(proposal_id)")
-        .eq("proposal_payments.proposal_id", pid);
-
-      if (q.error) throw q.error;
-
-      const m = new Map<string, number>();
-      let sum = 0;
-
-      for (const r of (q.data || []) as any[]) {
-        const k = String(r?.proposal_item_id ?? "").trim();
-        const a = round2(nnum(r?.amount));
-        if (!k || a <= 0) continue;
-
-        m.set(k, round2((m.get(k) ?? 0) + a));
-        sum = round2(sum + a);
-      }
-
-      setPaidByLineMap(m);
-      setPaidKnownSum(sum);
-    } catch {
+  useEffect(() => {
+    const pid = proposalId;
+    if (!pid) {
       setPaidByLineMap(new Map());
       setPaidKnownSum(0);
+      return;
     }
-  })();
-}, [proposalId]);
+
+    (async () => {
+      try {
+        // allocations -> payments (inner) -> proposal_id
+        const q = await supabase
+          .from("proposal_payment_allocations")
+          .select("proposal_item_id, amount, proposal_payments!inner(proposal_id)")
+          .eq("proposal_payments.proposal_id", pid);
+
+        if (q.error) throw q.error;
+
+        const m = new Map<string, number>();
+        let sum = 0;
+
+        for (const r of (q.data || []) as any[]) {
+          const k = String(r?.proposal_item_id ?? "").trim();
+          const a = round2(nnum(r?.amount));
+          if (!k || a <= 0) continue;
+
+          m.set(k, round2((m.get(k) ?? 0) + a));
+          sum = round2(sum + a);
+        }
+
+        setPaidByLineMap(m);
+        setPaidKnownSum(sum);
+      } catch {
+        setPaidByLineMap(new Map());
+        setPaidKnownSum(0);
+      }
+    })();
+  }, [proposalId]);
 
   const lineTotals = useMemo(() => {
     return (items || []).map((it) => round2(nnum(it.qty) * nnum(it.price)));
   }, [items]);
 
 
-const paidTotalProposal = useMemo(() => {
-  return round2(Math.max(0, nnum(current?.total_paid)));
-}, [current]);
+  const paidTotalProposal = useMemo(() => {
+    return round2(Math.max(0, nnum(current?.total_paid)));
+  }, [current]);
 
-const paidBeforeByLine = useMemo(() => {
-  return (items || []).map((it: any, i: number) => {
-    const id = String(it?.id ?? "").trim(); // proposal_items.id
-    const paidLine = round2(nnum(paidByLineMap.get(id) ?? 0));
-    return Math.min(paidLine, lineTotals[i] || 0);
-  });
-}, [items, paidByLineMap, lineTotals]);
+  const paidBeforeByLine = useMemo(() => {
+    return (items || []).map((it: any, i: number) => {
+      const id = String(it?.id ?? "").trim(); // proposal_items.id
+      const paidLine = round2(nnum(paidByLineMap.get(id) ?? 0));
+      return Math.min(paidLine, lineTotals[i] || 0);
+    });
+  }, [items, paidByLineMap, lineTotals]);
 
-const paidUnassigned = useMemo(() => {
-  
-  return round2(Math.max(0, paidTotalProposal - paidKnownSum));
-}, [paidTotalProposal, paidKnownSum]);
+  const paidUnassigned = useMemo(() => {
+
+    return round2(Math.max(0, paidTotalProposal - paidKnownSum));
+  }, [paidTotalProposal, paidKnownSum]);
 
   const remainByLine = useMemo(() => {
     return lineTotals.map((t, i) => round2(Math.max(0, t - nnum(paidBeforeByLine[i]))));
@@ -276,7 +276,7 @@ const paidUnassigned = useMemo(() => {
   useEffect(() => {
     try {
       onAllocStatus?.(allocOk, allocSum);
-    } catch {}
+    } catch { }
   }, [allocOk, allocSum, onAllocStatus]);
 
   // ===== helpers: set line allocation with clamp =====
@@ -320,21 +320,21 @@ const paidUnassigned = useMemo(() => {
     setAllocRows(out);
     setAmount(restProposal > 0 ? String(restProposal.toFixed(2)) : "");
   };
-useEffect(() => {
-  if (modeRef.current !== "full") return;
-  if (!allocRows?.length) return;
+  useEffect(() => {
+    if (modeRef.current !== "full") return;
+    if (!allocRows?.length) return;
 
-  const sum = round2(
-    (allocRows || []).reduce((s: number, r: any) => s + nnum(r.amount), 0)
-  );
+    const sum = round2(
+      (allocRows || []).reduce((s: number, r: any) => s + nnum(r.amount), 0)
+    );
 
-  if (Math.abs(sum - restProposal) > 0.01) {
-    try {
-      applyFullAlloc();
-    } catch {}
-  }
-}, [restProposal]);
-  
+    if (Math.abs(sum - restProposal) > 0.01) {
+      try {
+        applyFullAlloc();
+      } catch { }
+    }
+  }, [restProposal]);
+
   const segBtn = (active: boolean) => ({
     flex: 1,
     paddingVertical: 10,
@@ -373,14 +373,10 @@ useEffect(() => {
   return (
     <>
       <View style={S.section}>
-        <Text style={{ fontWeight: "900", color: UI.text, marginBottom: 6 }}>
-          ФИО бухгалтера (обязательно)
-        </Text>
-
         <TextInput
           value={accountantFio}
           onChangeText={setAccountantFio}
-          placeholder="Иванов Иван Иванович"
+          placeholder="ФИО бухгалтера *"
           placeholderTextColor={UI.sub}
           onFocus={(e) => scrollInputIntoView(e)}
           style={S.input(!!String(accountantFio || "").trim())}
@@ -400,35 +396,23 @@ useEffect(() => {
 
           return (
             <>
-              <Text style={{ fontWeight: "900", color: UI.text, marginBottom: 6 }}>
-                Оплата по счёту
-              </Text>
-
               {supp0 ? (
                 <Text style={{ color: UI.sub, fontWeight: "800", marginBottom: 8 }} numberOfLines={1}>
                   Поставщик: <Text style={{ color: UI.text, fontWeight: "900" }}>{supp0}</Text>
                 </Text>
               ) : null}
 
-              <Text style={{ color: UI.sub, fontWeight: "800", marginBottom: 6 }}>
-                Номер счёта (инвойса)
-              </Text>
-
               <TextInput
                 value={invNo0}
                 onChangeText={(t) => setInvoiceNo(String(t || "").trimStart())}
                 editable={!busyKey}
-                placeholder="Например: 125/01"
+                placeholder="Номер счёта (инвойса) *"
                 placeholderTextColor={UI.sub}
                 onFocus={(e) => scrollInputIntoView(e)}
                 style={[S.input(true), { opacity: busyKey ? 0.9 : 1 }]}
               />
 
               <View style={{ height: 10 }} />
-
-              <Text style={{ color: UI.sub, fontWeight: "800", marginBottom: 6 }}>
-                Дата счёта
-              </Text>
 
               <View style={{ flexDirection: "row", gap: 8, marginBottom: 8 }}>
                 <Pressable
@@ -556,8 +540,6 @@ useEffect(() => {
 
         {/* ===== ОПЛАТА ===== */}
         <View style={S.section}>
-          <Text style={{ fontWeight: "900", color: UI.text, marginBottom: 10 }}>Оплата</Text>
-
           {/* Способ оплаты */}
           <View style={{ flexDirection: "row", gap: 8 }}>
             <Pressable disabled={!!busyKey} onPress={() => setPayKind("bank")} style={segBtn(payKind === "bank")}>
@@ -593,20 +575,16 @@ useEffect(() => {
           {/* Режим: полностью / частично */}
           {proposalId ? (
             <>
-              <Text style={{ fontWeight: "900", color: UI.text, marginBottom: 8 }}>
-                Режим оплаты
-              </Text>
-
               <View style={{ flexDirection: "row", gap: 8 }}>
                 <Pressable
                   disabled={!!busyKey}
                   onPress={() => {
-  setMode("full");
-setAllocRows([]);
-    setTimeout(() => {
-    try { applyFullAlloc(); } catch {}
-  }, 0);
-}}
+                    setMode("full");
+                    setAllocRows([]);
+                    setTimeout(() => {
+                      try { applyFullAlloc(); } catch { }
+                    }, 0);
+                  }}
 
                   style={segBtn(mode === "full")}
                 >
@@ -631,26 +609,21 @@ setAllocRows([]);
           ) : null}
 
 
-{proposalId && mode === "full" ? (
-  <>
-    <View style={pillBox()}>
-      <Text style={pillBoxTxt()}>
-        Сумма к оплате:{" "}
-        <Text style={{ color: UI.text, fontWeight: "900" }}>
-          {restProposal.toFixed(2)} {cur}
-        </Text>
-      </Text>
-    </View>
+          {proposalId && mode === "full" ? (
+            <>
+              <View style={pillBox()}>
+                <Text style={pillBoxTxt()}>
+                  Сумма к оплате:{" "}
+                  <Text style={{ color: UI.text, fontWeight: "900" }}>
+                    {restProposal.toFixed(2)} {cur}
+                  </Text>
+                </Text>
+              </View>
 
-    <View style={{ height: 8 }} />
-
-    <Text style={{ color: UI.sub, fontWeight: "800" }}>
-      В этом режиме поля по позициям не нужны — всё закроется по остаткам.
-    </Text>
-
-    <View style={{ height: 12 }} />
-  </>
-) : null}
+              <View style={{ height: 8 }} />
+              <View style={{ height: 6 }} />
+            </>
+          ) : null}
 
           {proposalId && mode === "partial" ? (
             <>
@@ -663,37 +636,37 @@ setAllocRows([]);
                   backgroundColor: "rgba(255,255,255,0.03)",
                 }}
               >
-               <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
-  <View style={{ flex: 1 }}>
-    <Text style={{ fontWeight: "900", color: UI.text }}>Распределение по позициям</Text>
+                <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ fontWeight: "900", color: UI.text }}>Распределение по позициям</Text>
 
-    <Text style={{ color: UI.sub, fontWeight: "800", marginTop: 6 }}>
-      Сумма к оплате (авто):{" "}
-      <Text style={{ color: UI.text, fontWeight: "900" }}>
-        {fmt2(allocSum)} {cur}
-      </Text>
-    </Text>
+                    <Text style={{ color: UI.sub, fontWeight: "800", marginTop: 6 }}>
+                      Сумма к оплате (авто):{" "}
+                      <Text style={{ color: UI.text, fontWeight: "900" }}>
+                        {fmt2(allocSum)} {cur}
+                      </Text>
+                    </Text>
 
-    {paidUnassigned > 0.01 ? (
-      <Text style={{ color: UI.sub, fontWeight: "800", marginTop: 6 }}>
-        Не распределено ранее:{" "}
-        <Text style={{ color: UI.text, fontWeight: "900" }}>
-          {fmt2(paidUnassigned)} {cur}
-        </Text>
-      </Text>
-    ) : null}
-  </View>
+                    {paidUnassigned > 0.01 ? (
+                      <Text style={{ color: UI.sub, fontWeight: "800", marginTop: 6 }}>
+                        Не распределено ранее:{" "}
+                        <Text style={{ color: UI.text, fontWeight: "900" }}>
+                          {fmt2(paidUnassigned)} {cur}
+                        </Text>
+                      </Text>
+                    ) : null}
+                  </View>
 
-  <View style={{ flexDirection: "row", gap: 8 }}>
-    <Pressable
-      disabled={!!busyKey}
-      onPress={clearAlloc}
-      style={smallBtn("neutral", !!busyKey)}
-    >
-      <Text style={{ color: UI.text, fontWeight: "900" }}>Очистить</Text>
-    </Pressable>
-  </View>
-</View>
+                  <View style={{ flexDirection: "row", gap: 8 }}>
+                    <Pressable
+                      disabled={!!busyKey}
+                      onPress={clearAlloc}
+                      style={smallBtn("neutral", !!busyKey)}
+                    >
+                      <Text style={{ color: UI.text, fontWeight: "900" }}>Очистить</Text>
+                    </Pressable>
+                  </View>
+                </View>
 
                 <View style={{ height: 10 }} />
 
@@ -817,15 +790,11 @@ setAllocRows([]);
           ) : null}
 
           {/* ===== КОММЕНТАРИЙ ===== */}
-          <Text style={{ fontWeight: "900", color: UI.text, marginBottom: 6 }}>
-            Комментарий (необязательно)
-          </Text>
-
           <TextInput
             value={note}
             onChangeText={setNote}
             editable={!busyKey}
-            placeholder="Комментарий к платежу"
+            placeholder="Комментарий"
             placeholderTextColor={UI.sub}
             autoCorrect={false}
             autoCapitalize="none"
@@ -842,16 +811,11 @@ setAllocRows([]);
           {payKind === "bank" ? (
             <>
               <View style={{ height: 12 }} />
-              <Text style={{ fontWeight: "900", color: UI.text, marginBottom: 8 }}>
-                Реквизиты банка
-              </Text>
-
-              <Text style={{ color: UI.sub, fontWeight: "800", marginBottom: 6 }}>Банк</Text>
               <TextInput
                 value={bankName}
                 onChangeText={setBankName}
                 editable={!busyKey}
-                placeholder="Название банка"
+                placeholder="Банк"
                 placeholderTextColor={UI.sub}
                 autoCorrect={false}
                 autoCapitalize="none"
@@ -860,8 +824,6 @@ setAllocRows([]);
               />
 
               <View style={{ height: 8 }} />
-
-              <Text style={{ color: UI.sub, fontWeight: "800", marginBottom: 6 }}>БИК</Text>
               <TextInput
                 value={bik}
                 onChangeText={setBik}
@@ -875,13 +837,11 @@ setAllocRows([]);
               />
 
               <View style={{ height: 8 }} />
-
-              <Text style={{ color: UI.sub, fontWeight: "800", marginBottom: 6 }}>Р/С</Text>
               <TextInput
                 value={rs}
                 onChangeText={setRs}
                 editable={!busyKey}
-                placeholder="Расчётный счёт"
+                placeholder="Р/С"
                 placeholderTextColor={UI.sub}
                 autoCorrect={false}
                 autoCapitalize="none"
@@ -893,7 +853,6 @@ setAllocRows([]);
 
               <View style={{ flexDirection: "row", gap: 8 }}>
                 <View style={{ flex: 1 }}>
-                  <Text style={{ color: UI.sub, fontWeight: "800", marginBottom: 6 }}>ИНН</Text>
                   <TextInput
                     value={inn}
                     onChangeText={setInn}
@@ -909,12 +868,11 @@ setAllocRows([]);
                 </View>
 
                 <View style={{ flex: 1 }}>
-                  <Text style={{ color: UI.sub, fontWeight: "800", marginBottom: 6 }}>КПП</Text>
                   <TextInput
                     value={kpp}
                     onChangeText={setKpp}
                     editable={!busyKey}
-                    placeholder="КПП (если нужно)"
+                    placeholder="КПП"
                     placeholderTextColor={UI.sub}
                     autoCorrect={false}
                     autoCapitalize="none"
@@ -945,4 +903,3 @@ function pillBox() {
 function pillBoxTxt() {
   return { color: UI.sub, fontWeight: "800" } as any;
 }
-

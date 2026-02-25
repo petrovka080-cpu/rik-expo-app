@@ -629,8 +629,10 @@ useEffect(() => {
           <Text style={{ fontWeight: "600", color: "#0F172A" }}>
             {field.label}
             {field.uom ? `, ${field.uom}` : ""}
-            {field.required ? " *" : ""}
           </Text>
+          {field.required ? (
+            <Text style={{ marginLeft: 4, color: "#EF4444", fontWeight: "700" }}>*</Text>
+          ) : null}
           <Hint text={field.hint ?? ""} />
         </View>
 
@@ -1135,4 +1137,3 @@ useEffect(() => {
     </Modal>
   );
 }
-

@@ -371,12 +371,11 @@ export const BuyerItemRow = React.memo(function BuyerItemRow(props: {
         <View style={{ marginTop: 10, gap: 8 }}>
           <View style={{ flexDirection: "row", gap: 8 }}>
             <View style={{ flex: 1 }}>
-              <Text style={[s.fieldLabel, { color: P.sub }]}>Цена</Text>
               <TextInput
                 value={String(m.price ?? "")}
                 onChangeText={onSetPrice}
                 keyboardType="decimal-pad"
-                placeholder="Цена"
+                placeholder="Цена *"
                 placeholderTextColor={P.sub}
                 onFocus={onFocusField}
                 style={[s.fieldInput, { backgroundColor: P.inputBg, borderColor: P.inputBorder, color: P.text }]}
@@ -384,11 +383,10 @@ export const BuyerItemRow = React.memo(function BuyerItemRow(props: {
             </View>
 
             <View style={{ flex: 1 }}>
-              <Text style={[s.fieldLabel, { color: P.sub }]}>Поставщик</Text>
               <TextInput
                 value={String(m.supplier ?? "")}
                 onChangeText={onSetSupplier}
-                placeholder="Поставщик"
+                placeholder="Поставщик *"
                 placeholderTextColor={P.sub}
                 onFocus={onFocusField}
                 style={[s.fieldInput, { backgroundColor: P.inputBg, borderColor: P.inputBorder, color: P.text }]}
@@ -411,7 +409,6 @@ export const BuyerItemRow = React.memo(function BuyerItemRow(props: {
           </View>
 
           <View>
-            <Text style={[s.fieldLabel, { color: P.sub }]}>Примечание</Text>
             <TextInput
               value={noteUser}
               onChangeText={(v) => onSetNote(mergeNote(v, noteAuto))}
@@ -715,11 +712,10 @@ export const BuyerScreenHeader = React.memo(function BuyerScreenHeader(props: {
       </ScrollView>
 
       <Animated.View style={{ opacity: subOpacity, marginTop: 10 }}>
-        <Text style={s.fioLabel}>ФИО</Text>
         <TextInput
           value={buyerFio}
           onChangeText={setBuyerFio}
-          placeholder="введите ФИО"
+          placeholder="ФИО"
           style={[
             s.fioInput,
             { backgroundColor: "rgba(255,255,255,0.06)", borderColor: "rgba(255,255,255,0.12)", color: UI.text },

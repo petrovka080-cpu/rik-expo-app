@@ -66,12 +66,11 @@ export default function StockIssueSheet({
       </Text>
 
       <View style={{ marginTop: 12 }}>
-        <Text style={{ color: UI.sub, fontWeight: "800", marginBottom: 6 }}>Количество</Text>
         <TextInput
           value={qty}
           onChangeText={(t) => setQty(String(t ?? "").replace(",", ".").replace(/\s+/g, ""))}
           keyboardType={Platform.OS === "web" ? "default" : "numeric"}
-          placeholder="0"
+          placeholder="Количество"
           placeholderTextColor={UI.sub}
           style={s.input}
         />
@@ -86,10 +85,6 @@ export default function StockIssueSheet({
           <Text style={s.openBtnText}>{busy ? "..." : "Добавить"}</Text>
         </Pressable>
       </View>
-
-      <Text style={{ marginTop: 10, color: UI.sub, fontWeight: "800", fontSize: 12 }}>
-        “Добавить” добавляет позицию в список для мульти-выдачи. Потом нажми “Выдать выбранное” вверху.
-      </Text>
     </WarehouseSheet>
   );
 }

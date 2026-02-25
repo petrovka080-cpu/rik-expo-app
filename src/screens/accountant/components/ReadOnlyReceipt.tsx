@@ -96,8 +96,9 @@ export function ReadOnlyPaymentSummary({
       {noteText ? (
         <>
           <View style={{ height: 10 }} />
-          <Text style={{ color: UI.sub, fontWeight: "800" }}>Комментарий</Text>
-          <Text style={{ color: UI.text, fontWeight: "800", marginTop: 4 }}>{noteText}</Text>
+          <Text style={{ color: UI.text, fontWeight: "800" }}>
+            Комментарий: <Text style={{ color: UI.sub, fontWeight: "800" }}>{noteText}</Text>
+          </Text>
         </>
       ) : null}
 
@@ -132,26 +133,31 @@ export function ReadOnlyPaymentSummary({
             borderColor: "rgba(255,255,255,0.10)",
           }}
         >
-          <Text style={{ color: UI.sub, fontWeight: "800" }}>Банк</Text>
-          <Text style={{ color: UI.text, fontWeight: "900", marginTop: 4 }}>{bankName || "—"}</Text>
+          <Text style={{ color: UI.text, fontWeight: "900" }}>
+            Банк: <Text style={{ color: UI.sub, fontWeight: "800" }}>{bankName || "—"}</Text>
+          </Text>
 
           <View style={{ height: 10 }} />
-          <Text style={{ color: UI.sub, fontWeight: "800" }}>БИК</Text>
-          <Text style={{ color: UI.text, fontWeight: "900", marginTop: 4 }}>{bik || "—"}</Text>
+          <Text style={{ color: UI.text, fontWeight: "900" }}>
+            БИК: <Text style={{ color: UI.sub, fontWeight: "800" }}>{bik || "—"}</Text>
+          </Text>
 
           <View style={{ height: 10 }} />
-          <Text style={{ color: UI.sub, fontWeight: "800" }}>Р/С</Text>
-          <Text style={{ color: UI.text, fontWeight: "900", marginTop: 4 }}>{rs || "—"}</Text>
+          <Text style={{ color: UI.text, fontWeight: "900" }}>
+            Р/С: <Text style={{ color: UI.sub, fontWeight: "800" }}>{rs || "—"}</Text>
+          </Text>
 
           <View style={{ height: 10 }} />
           <View style={{ flexDirection: "row", gap: 10 }}>
             <View style={{ flex: 1 }}>
-              <Text style={{ color: UI.sub, fontWeight: "800" }}>ИНН</Text>
-              <Text style={{ color: UI.text, fontWeight: "900", marginTop: 4 }}>{inn || "—"}</Text>
+              <Text style={{ color: UI.text, fontWeight: "900" }}>
+                ИНН: <Text style={{ color: UI.sub, fontWeight: "800" }}>{inn || "—"}</Text>
+              </Text>
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={{ color: UI.sub, fontWeight: "800" }}>КПП</Text>
-              <Text style={{ color: UI.text, fontWeight: "900", marginTop: 4 }}>{kpp || "—"}</Text>
+              <Text style={{ color: UI.text, fontWeight: "900" }}>
+                КПП: <Text style={{ color: UI.sub, fontWeight: "800" }}>{kpp || "—"}</Text>
+              </Text>
             </View>
           </View>
         </View>
@@ -318,8 +324,9 @@ export function ReadOnlyPaymentReceipt({
         {noteText ? (
           <>
             <View style={{ height: 10 }} />
-            <Text style={{ color: UI.sub, fontWeight: "800" }}>Комментарий</Text>
-            <Text style={{ color: UI.text, fontWeight: "800", marginTop: 4 }}>{noteText}</Text>
+            <Text style={{ color: UI.text, fontWeight: "800" }}>
+              Комментарий: <Text style={{ color: UI.sub, fontWeight: "800" }}>{noteText}</Text>
+            </Text>
           </>
         ) : null}
       </View>
@@ -453,26 +460,31 @@ export function ReadOnlyPaymentReceipt({
               borderColor: "rgba(255,255,255,0.10)",
             }}
           >
-            <Text style={{ color: UI.sub, fontWeight: "800" }}>Банк</Text>
-            <Text style={{ color: UI.text, fontWeight: "900", marginTop: 4 }}>{bankName || "—"}</Text>
+            <Text style={{ color: UI.text, fontWeight: "900" }}>
+              Банк: <Text style={{ color: UI.sub, fontWeight: "800" }}>{bankName || "—"}</Text>
+            </Text>
 
             <View style={{ height: 10 }} />
-            <Text style={{ color: UI.sub, fontWeight: "800" }}>БИК</Text>
-            <Text style={{ color: UI.text, fontWeight: "900", marginTop: 4 }}>{bik || "—"}</Text>
+            <Text style={{ color: UI.text, fontWeight: "900" }}>
+              БИК: <Text style={{ color: UI.sub, fontWeight: "800" }}>{bik || "—"}</Text>
+            </Text>
 
             <View style={{ height: 10 }} />
-            <Text style={{ color: UI.sub, fontWeight: "800" }}>Р/С</Text>
-            <Text style={{ color: UI.text, fontWeight: "900", marginTop: 4 }}>{rs || "—"}</Text>
+            <Text style={{ color: UI.text, fontWeight: "900" }}>
+              Р/С: <Text style={{ color: UI.sub, fontWeight: "800" }}>{rs || "—"}</Text>
+            </Text>
 
             <View style={{ height: 10 }} />
             <View style={{ flexDirection: "row", gap: 10 }}>
               <View style={{ flex: 1 }}>
-                <Text style={{ color: UI.sub, fontWeight: "800" }}>ИНН</Text>
-                <Text style={{ color: UI.text, fontWeight: "900", marginTop: 4 }}>{inn || "—"}</Text>
+                <Text style={{ color: UI.text, fontWeight: "900" }}>
+                  ИНН: <Text style={{ color: UI.sub, fontWeight: "800" }}>{inn || "—"}</Text>
+                </Text>
               </View>
               <View style={{ flex: 1 }}>
-                <Text style={{ color: UI.sub, fontWeight: "800" }}>КПП</Text>
-                <Text style={{ color: UI.text, fontWeight: "900", marginTop: 4 }}>{kpp || "—"}</Text>
+                <Text style={{ color: UI.text, fontWeight: "900" }}>
+                  КПП: <Text style={{ color: UI.sub, fontWeight: "800" }}>{kpp || "—"}</Text>
+                </Text>
               </View>
             </View>
           </View>

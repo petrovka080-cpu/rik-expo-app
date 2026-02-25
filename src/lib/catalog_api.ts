@@ -36,9 +36,14 @@ export {
   uploadProposalAttachment,
   proposalSendToAccountant,
   batchResolveRequestLabels,
-  listDirectorProposalsPending,   // ← ДОБАВЬ ЭТУ СТРОКУ
+  listDirectorProposalsPending,
+  listAccountantInbox,
+  accountantReturnToBuyer,
+  accountantAddPayment,
+  notifList,
+  notifMarkRead,
 } from "./rik_api";
-export type { BuyerInboxRow } from "./rik_api";
+export type { BuyerInboxRow, AccountantInboxRow } from "./rik_api";
 
 /** ========= Типы ========= */
 export type CatalogItem = {

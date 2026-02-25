@@ -683,7 +683,7 @@ export default function ProfileScreen() {
       try {
         const loc = await Location.getCurrentPositionAsync({
           accuracy: Location.Accuracy.High,
-          
+
         });
 
         const { latitude, longitude } = loc.coords;
@@ -816,7 +816,7 @@ export default function ProfileScreen() {
       }
 
       // Аренда → пока ищем по всему каталогу (можно позже сделать свой справочник)
-     query = query.ilike("name_human_ru", `%${q}%`);
+      query = query.ilike("name_human_ru", `%${q}%`);
 
       const { data, error } = await query;
       if (error) throw error;
@@ -1667,10 +1667,10 @@ export default function ProfileScreen() {
                       item.kind === "material"
                         ? "Материал"
                         : item.kind === "service"
-                        ? "Услуга"
-                        : item.kind === "rent"
-                        ? "Аренда"
-                        : "";
+                          ? "Услуга"
+                          : item.kind === "rent"
+                            ? "Аренда"
+                            : "";
 
                     return (
                       <View
@@ -1732,7 +1732,7 @@ export default function ProfileScreen() {
                 keyboardType="phone-pad"
               />
               <LabeledInput
-                label="Email (необязательно)"
+                label="Email"
                 value={listingEmail}
                 onChangeText={setListingEmail}
                 placeholder="user@example.com"
@@ -2014,8 +2014,8 @@ export default function ProfileScreen() {
                       businessStep === 1
                         ? "33%"
                         : businessStep === 2
-                        ? "66%"
-                        : "100%",
+                          ? "66%"
+                          : "100%",
                   },
                 ]}
               />
@@ -2359,7 +2359,7 @@ export default function ProfileScreen() {
                         style={[
                           styles.roleChipText,
                           inviteRole === r.code &&
-                            styles.roleChipTextActive,
+                          styles.roleChipTextActive,
                         ]}
                       >
                         {r.label}
@@ -2389,7 +2389,7 @@ export default function ProfileScreen() {
                   />
 
                   <LabeledInput
-                    label="Email сотрудника (необязательно)"
+                    label="Email сотрудника"
                     value={inviteEmail}
                     onChangeText={setInviteEmail}
                     placeholder="worker@example.com"
@@ -2397,7 +2397,7 @@ export default function ProfileScreen() {
                   />
 
                   <LabeledInput
-                    label="Комментарий (необязательно)"
+                    label="Комментарий"
                     value={inviteComment}
                     onChangeText={setInviteComment}
                     placeholder="Например: ведёт объект в Оше"
@@ -2558,9 +2558,8 @@ export default function ProfileScreen() {
                         );
                         return;
                       }
-                      const msg = `Вас пригласили в компанию ${
-                        company?.name || "в GOX BUILD"
-                      }. Код приглашения: ${lastInviteCode}. Установите GOX BUILD и введите этот код.`;
+                      const msg = `Вас пригласили в компанию ${company?.name || "в GOX BUILD"
+                        }. Код приглашения: ${lastInviteCode}. Установите GOX BUILD и введите этот код.`;
                       const url = `whatsapp://send?phone=${encodeURIComponent(
                         lastInvitePhone
                       )}&text=${encodeURIComponent(msg)}`;
@@ -2599,9 +2598,8 @@ export default function ProfileScreen() {
                         );
                         return;
                       }
-                      const msg = `Вас пригласили в компанию ${
-                        company?.name || "в GOX BUILD"
-                      }. Код приглашения: ${lastInviteCode}. Установите GOX BUILD и введите этот код.`;
+                      const msg = `Вас пригласили в компанию ${company?.name || "в GOX BUILD"
+                        }. Код приглашения: ${lastInviteCode}. Установите GOX BUILD и введите этот код.`;
                       const url = `tg://msg?text=${encodeURIComponent(
                         msg
                       )}`;
@@ -2953,11 +2951,11 @@ type LabeledInputProps = {
   multiline?: boolean;
   big?: boolean;
   keyboardType?:
-    | "default"
-    | "email-address"
-    | "numeric"
-    | "phone-pad"
-    | "number-pad";
+  | "default"
+  | "email-address"
+  | "numeric"
+  | "phone-pad"
+  | "number-pad";
 };
 
 function LabeledInput(props: LabeledInputProps) {
@@ -3629,4 +3627,3 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
 });
-

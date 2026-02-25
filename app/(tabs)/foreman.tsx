@@ -308,6 +308,8 @@ function Dropdown({
   placeholder = 'Выбрать...',
   searchable = true,
   width = 280,
+  required = false,
+  showLabel = true,
 }: {
   label: string;
   options: { code: string; name: string }[];
@@ -316,6 +318,8 @@ function Dropdown({
   placeholder?: string;
   searchable?: boolean;
   width?: number;
+  required?: boolean;
+  showLabel?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState('');
@@ -331,24 +335,32 @@ function Dropdown({
 
   return (
     <View style={{ marginTop: 6, marginBottom: 8 }}>
-      <Text style={s.small}>{label}</Text>
+      {showLabel && (
+        <Text style={s.small}>
+          {label}
+          {required && <Text style={s.requiredAsterisk}> *</Text>}
+        </Text>
+      )}
 
       <Pressable
         onPress={() => setOpen(true)}
         style={[s.input, s.selectRow, { width: Platform.OS === 'web' ? width : '100%' }]}
       >
-        <Text
-          style={{
-            color: UI.text,
-            opacity: picked ? 1 : 0.55,
-            fontWeight: '800',
-            fontSize: 14,
-            flex: 1,
-          }}
-          numberOfLines={1}
-        >
-          {picked ? picked.name : placeholder}
-        </Text>
+        <View style={s.selectValueWrap}>
+          <Text
+            style={{
+              color: UI.text,
+              opacity: picked ? 1 : 0.55,
+              fontWeight: '800',
+              fontSize: 14,
+              flex: 1,
+            }}
+            numberOfLines={1}
+          >
+            {picked ? picked.name : placeholder}
+          </Text>
+          {required && <Text style={s.requiredAsterisk}>*</Text>}
+        </View>
 
         <Ionicons name="chevron-down" size={18} color="rgba(255,255,255,0.55)" />
       </Pressable>
@@ -2013,23 +2025,24 @@ export default function ForemanScreen() {
         >
           {/* ✅ дальше — твой старый контент БЕЗ старого заголовка и БЕЗ блока requestSummaryBox */}
 
-          <Text style={s.small}>
-            ФИО прораба (обязательно):
-          </Text>
-          <TextInput
-            value={foreman}
-            onChangeText={handleForemanChange}
-            onFocus={() => {
-              if (blurTimerRef.current) clearTimeout(blurTimerRef.current);
-              setForemanFocus(true);
-            }}
-            onBlur={() => {
-              // ✅ даём успеть нажать по подсказке
-              blurTimerRef.current = setTimeout(() => setForemanFocus(false), 180);
-            }}
-            placeholder="Иванов И.И."
-            style={s.input}
-          />
+          <View style={s.requiredInputWrap}>
+            <TextInput
+              value={foreman}
+              onChangeText={handleForemanChange}
+              onFocus={() => {
+                if (blurTimerRef.current) clearTimeout(blurTimerRef.current);
+                setForemanFocus(true);
+              }}
+              onBlur={() => {
+                // ✅ даём успеть нажать по подсказке
+                blurTimerRef.current = setTimeout(() => setForemanFocus(false), 180);
+              }}
+              placeholder="ФИО прораба"
+              placeholderTextColor={UI.sub}
+              style={[s.input, s.requiredInput]}
+            />
+            <Text style={s.requiredInputAsterisk}>*</Text>
+          </View>
 
           {foremanFocus && foremanHistory.length > 0 && (
             <View style={s.foremanSuggestBox}>
@@ -2056,42 +2069,46 @@ export default function ForemanScreen() {
           {/* Объект/Этаж/Система/Зона */}
           <View style={{ marginTop: 10, gap: 6 }}>
             <Dropdown
-              label="Объект строительства (обязательно)"
+              label="Объект строительства"
+              required={true}
+              showLabel={false}
               options={objOptions}
               value={objectType}
               onChange={handleObjectChange}
-              placeholder="Выберите объект"
+              placeholder="Объект строительства"
               width={360}
             />
             <Dropdown
-              label="Этаж / уровень (обязательно)"
+              label="Этаж / уровень"
+              required={true}
+              showLabel={false}
               options={lvlOptions}
               value={level}
               onChange={handleLevelChange}
-              placeholder="Выберите этаж/уровень"
+              placeholder="Этаж / уровень"
               width={360}
             />
             <Dropdown
-              label="Система / вид работ (опционально)"
+              label="Система / вид работ"
+              showLabel={false}
               options={sysOptions}
               value={system}
               onChange={handleSystemChange}
-              placeholder="Выберите систему/вид работ"
+              placeholder="Система / вид работ"
               width={360}
             />
             <Dropdown
-              label="Зона / участок (опционально)"
+              label="Зона / участок"
+              showLabel={false}
               options={zoneOptions}
               value={zone}
               onChange={handleZoneChange}
-              placeholder="Выберите зону/участок"
+              placeholder="Зона / участок"
               width={360}
             />
           </View>
           {/* ===== Выбор позиций ===== */}
           <View style={s.section}>
-            <Text style={s.sectionTitle}>ВЫБОР ПОЗИЦИЙ ИЗ:</Text>
-
             <View style={s.pickTabsRow}>
               <Pressable
                 onPress={() => {
@@ -2303,7 +2320,7 @@ export default function ForemanScreen() {
               <CloseIconButton
                 onPress={() => setDraftOpen(false)}
                 accessibilityLabel="Удалить позицию"
-              size={24}
+                size={24}
                 color={UI.text}
               />
             </View>
@@ -2480,6 +2497,7 @@ const s = StyleSheet.create({
     fontWeight: TYPO.kpiLabel.fontWeight,
     marginBottom: 6,
   },
+  requiredAsterisk: { color: UI.btnReject, fontWeight: "900" },
 
   input: {
     borderWidth: 1,
@@ -2498,6 +2516,23 @@ const s = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 10,
+  },
+  selectValueWrap: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    minWidth: 0,
+  },
+  requiredInputWrap: { position: "relative" },
+  requiredInput: { paddingRight: 34 },
+  requiredInputAsterisk: {
+    position: "absolute",
+    right: 14,
+    top: 14,
+    color: UI.btnReject,
+    fontWeight: "900",
+    fontSize: 16,
   },
 
   suggest: {

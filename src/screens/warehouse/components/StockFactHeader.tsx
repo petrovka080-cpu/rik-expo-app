@@ -50,16 +50,12 @@ export default React.memo(function StockFactHeader(props: {
   return (
     <View style={{ paddingHorizontal: 16, paddingBottom: 10 }}>
       <View style={s.sectionBox}>
-        <Text style={s.sectionBoxTitle}>СВОБОДНАЯ ВЫДАЧА (СКЛАД ФАКТ)</Text>
-
-        {/* ✅ контекст как у прораба */}
         <View style={{ marginTop: 8, gap: 8 }}>
-          {/* 1 ряд: объект + этаж */}
           <View style={{ flexDirection: "row", gap: 8, flexWrap: "wrap" }}>
             <Pressable onPress={props.onPickObject} style={s.openBtn}>
               <Text style={s.openBtnText} numberOfLines={1}>
                 {props.objectOpt?.label
-                  ? `Объект: ${props.objectOpt.label}`
+                  ? props.objectOpt.label
                   : "Объект строительства *"}
               </Text>
             </Pressable>
@@ -67,38 +63,32 @@ export default React.memo(function StockFactHeader(props: {
             <Pressable onPress={props.onPickLevel} style={s.openBtn}>
               <Text style={s.openBtnText} numberOfLines={1}>
                 {props.levelOpt?.label
-                  ? `Этаж/уровень: ${props.levelOpt.label}`
+                  ? props.levelOpt.label
                   : "Этаж / уровень *"}
               </Text>
             </Pressable>
           </View>
 
-          {/* 2 ряд: система + зона (опционально) */}
           <View style={{ flexDirection: "row", gap: 8, flexWrap: "wrap" }}>
             <Pressable onPress={props.onPickSystem} style={s.openBtn}>
               <Text style={s.openBtnText} numberOfLines={1}>
                 {props.systemOpt?.label
-                  ? `Система: ${props.systemOpt.label}`
-                  : "Система / вид работ (опц.)"}
+                  ? props.systemOpt.label
+                  : "Система / вид работ"}
               </Text>
             </Pressable>
 
             <Pressable onPress={props.onPickZone} style={s.openBtn}>
               <Text style={s.openBtnText} numberOfLines={1}>
                 {props.zoneOpt?.label
-                  ? `Зона: ${props.zoneOpt.label}`
-                  : "Зона / участок (опц.)"}
+                  ? props.zoneOpt.label
+                  : "Зона / участок"}
               </Text>
             </Pressable>
           </View>
         </View>
 
-        {/* ✅ получатель */}
         <View style={{ marginTop: 12 }}>
-          <Text style={{ color: UI.sub, fontWeight: "800", marginBottom: 6 }}>
-            Получатель *
-          </Text>
-
           <TextInput
             value={props.recipientText}
             onChangeText={(t) => {
@@ -106,7 +96,7 @@ export default React.memo(function StockFactHeader(props: {
               props.onRecipientChange(v);
               props.setRecipientSuggestOpen(true);
             }}
-            placeholder="Введите ФИО получателя…"
+            placeholder="Получатель *"
             placeholderTextColor={UI.sub}
             style={s.input}
             autoCorrect={false}
@@ -138,15 +128,11 @@ export default React.memo(function StockFactHeader(props: {
           ) : null}
         </View>
 
-        {/* поиск */}
         <View style={{ marginTop: 12 }}>
-          <Text style={{ color: UI.sub, fontWeight: "800", marginBottom: 6 }}>
-            Поиск по складу
-          </Text>
           <TextInput
             value={props.stockSearch}
             onChangeText={props.onStockSearch}
-            placeholder="Код или название…"
+            placeholder="Поиск по складу"
             placeholderTextColor={UI.sub}
             style={s.input}
             autoCorrect={false}
@@ -218,12 +204,6 @@ export default React.memo(function StockFactHeader(props: {
           </Pressable>
         </View>
 
-        {pickCount > 0 && !canSubmit ? (
-          <Text style={{ marginTop: 10, color: UI.sub, fontWeight: "800" }}>
-            Чтобы выдать: выбери объект, этаж/уровень и получателя.
-          </Text>
-        ) : null}
-
         {props.issueMsg.kind ? (
           <View
             style={{
@@ -239,10 +219,6 @@ export default React.memo(function StockFactHeader(props: {
           </View>
         ) : null}
       </View>
-
-      <Text style={{ color: UI.sub, fontWeight: "800", marginTop: 10 }}>
-        Нажми на материал → введи количество → «Добавить». Потом сверху «Выдать выбранное».
-      </Text>
     </View>
   );
 });
