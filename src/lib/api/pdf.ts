@@ -6,7 +6,6 @@ type OpenDocOpts = { share?: boolean };
 
 const uiYield = async (ms = 0) => {
   await new Promise<void>((r) => setTimeout(r, ms));
-  await new Promise<void>((r) => InteractionManager.runAfterInteractions(() => r()));
 };
 
 const withTimeout = async <T,>(p: Promise<T>, ms: number, msg: string): Promise<T> => {
@@ -17,7 +16,7 @@ const withTimeout = async <T,>(p: Promise<T>, ms: number, msg: string): Promise<
   try {
     return await Promise.race([p, timeout]);
   } finally {
-    try { clearTimeout(t); } catch {}
+    try { clearTimeout(t); } catch { }
   }
 };
 
@@ -49,4 +48,3 @@ export async function openHtmlAsPdfUniversal(
 
   return uri;
 }
-

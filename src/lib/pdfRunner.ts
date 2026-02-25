@@ -34,7 +34,6 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 const urlToLocal = new Map<string, string>();
 const uiYield = async (ms = 0) => {
   await new Promise<void>((r) => setTimeout(r, ms));
-  await new Promise<void>((r) => InteractionManager.runAfterInteractions(() => r()));
 };
 
 const withTimeout = async <T,>(p: Promise<T>, ms: number, msg: string): Promise<T> => {
