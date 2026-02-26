@@ -7,6 +7,8 @@ export type IssueMsg = { kind: "error" | "ok" | null; text: string };
 export function useWarehouseReqPick(args: {
   nz: (v: any, d?: number) => number;
   setIssueMsg: (m: IssueMsg) => void;
+  getAvailableByCode?: (code: string) => number;
+  getAvailableByCodeUom?: (code: string, uomId: string | null) => number;
 }) {
   const { nz, setIssueMsg } = args;
 

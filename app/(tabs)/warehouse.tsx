@@ -632,6 +632,35 @@ export default function Warehouse() {
   const reqPickUi = useWarehouseReqPick({
     nz,
     setIssueMsg,
+    getAvailableByCode: (code: string) => {
+      const key = normMatCode(code);
+      if (!key) return 0;
+      let sum = 0;
+      for (const row of stock) {
+        const rowKey = normMatCode(
+          String((row as any).rik_code ?? (row as any).code ?? (row as any).material_code ?? ""),
+        );
+        if (rowKey !== key) continue;
+        sum += nz((row as any).qty_available, 0);
+      }
+      return sum;
+    },
+    getAvailableByCodeUom: (code: string, uomId: string | null) => {
+      const key = normMatCode(code);
+      const u = String(uomId ?? "").trim().toLowerCase();
+      if (!key) return 0;
+      let sum = 0;
+      for (const row of stock) {
+        const rowKey = normMatCode(
+          String((row as any).rik_code ?? (row as any).code ?? (row as any).material_code ?? ""),
+        );
+        if (rowKey !== key) continue;
+        const rowU = String((row as any).uom_id ?? "").trim().toLowerCase();
+        if (u && rowU !== u) continue;
+        sum += nz((row as any).qty_available, 0);
+      }
+      return sum;
+    },
   });
 
   const stockPickUi = useWarehouseStockPick({

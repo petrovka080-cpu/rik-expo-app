@@ -4,6 +4,7 @@ import {
   ActivityIndicator,
   Animated,
   Platform,
+  DimensionValue,
   Pressable,
   StyleSheet,
   View,
@@ -15,8 +16,8 @@ type Props = {
   disabled?: boolean;
   loading?: boolean;
 
-  width?: number;   // default 52
-  height?: number;  // default 52
+  width?: DimensionValue;   // default 52
+  height?: DimensionValue;  // default 52
   radius?: number;  // default 16
 
   bg?: string;

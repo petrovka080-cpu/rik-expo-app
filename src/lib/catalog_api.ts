@@ -26,9 +26,8 @@ export {
   proposalCreate,
   proposalAddItems,
   proposalSubmit,
-  exportProposalPdf,
-  // @ts-ignore
   buildProposalPdfHtml,
+  exportProposalPdf,
   exportPaymentOrderPdf,
   proposalItems,
   proposalSnapshotItems,

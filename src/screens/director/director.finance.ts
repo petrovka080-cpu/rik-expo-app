@@ -56,7 +56,11 @@ export type FinRep = {
     partialPaid: number;
     toPay: number;
     overdueCount: number;
+    overdueAmount: number;
+    criticalCount: number;
+    criticalAmount: number;
     partialCount: number;
+    debtCount: number;
   };
   report: {
     suppliers: FinSupplierDebt[];
@@ -247,8 +251,12 @@ export const computeFinanceRep = (
   let sumPaid = 0;
   let sumToPay = 0;
   let sumOverdue = 0;
+  let sumOverdueAmount = 0;
+  let sumCritical = 0;
+  let sumCriticalAmount = 0;
   let sumPartial = 0;
   let sumPartialPaid = 0;
+  let debtCount = 0;
 
   const bySupplier = new Map<
     string,
@@ -273,6 +281,8 @@ export const computeFinanceRep = (
       sumPartialPaid += p;
     }
 
+    if (rest > 0) debtCount += 1;
+
     // due
     const dueIso =
       r?.dueDate ??
@@ -288,7 +298,14 @@ export const computeFinanceRep = (
       isCritical = days >= criticalDays;
     }
 
-    if (isOverdue) sumOverdue += 1;
+    if (isOverdue) {
+      sumOverdue += 1;
+      sumOverdueAmount += rest;
+      if (isCritical) {
+        sumCritical += 1;
+        sumCriticalAmount += rest;
+      }
+    }
 
     const s = String(r?.supplier ?? "—").trim() || "—";
     const cur = bySupplier.get(s) ?? {
@@ -329,9 +346,12 @@ export const computeFinanceRep = (
       partialPaid: sumPartialPaid,
       toPay: sumToPay,
       overdueCount: sumOverdue,
+      overdueAmount: sumOverdueAmount,
+      criticalCount: sumCritical,
+      criticalAmount: sumCriticalAmount,
       partialCount: sumPartial,
+      debtCount,
     },
     report: { suppliers },
   };
 };
-

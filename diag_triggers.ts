@@ -8,9 +8,10 @@ async function main() {
     console.log("Fetching triggers and functions...");
 
     // Check triggers on proposals
-    const { data: triggerData, error: tgErr } = await supabase.rpc('execute_sql_query', {
+    const queryRes = await supabase.rpc('execute_sql_query', {
         query_text: `SELECT trigger_name, event_manipulation, event_object_table, action_statement FROM information_schema.triggers WHERE event_object_table = 'proposals';`
-    }).catch(() => ({ data: null, error: 'No RPC' }));
+    });
+    const { data: triggerData, error: tgErr } = queryRes;
 
     if (triggerData) {
         console.log("Triggers via RPC:", triggerData);

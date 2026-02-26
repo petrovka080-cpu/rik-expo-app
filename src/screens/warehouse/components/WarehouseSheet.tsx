@@ -45,15 +45,14 @@ function WebSheet({
 
       {/* ✅ сам лист */}
       <View
-        // wheel не уходит в фон
+        // @ts-ignore
         onWheelCapture={(e: any) => {
           try {
             e?.stopPropagation?.();
-          } catch {}
+          } catch { }
         }}
-    // @ts-ignore
         style={{
-          position: "absolute" as any,
+          position: "fixed" as any,
           left: 0,
           right: 0,
           bottom: 0,
@@ -72,7 +71,7 @@ function WebSheet({
           flexDirection: "column" as any,
           minHeight: 0,
           overflow: "hidden" as any, // чтобы скролл был только внутри контента, и скругления норм
-        }}
+        } as any}
       >
         <View
           style={{
@@ -90,12 +89,11 @@ function WebSheet({
           style={{
             flex: 1,
             minHeight: 0,
-    // @ts-ignore
             overflowY: "auto" as any,
             overflowX: "hidden" as any,
             WebkitOverflowScrolling: "touch" as any,
             overscrollBehavior: "contain" as any,
-          }}
+          } as any}
         >
           {children}
         </View>

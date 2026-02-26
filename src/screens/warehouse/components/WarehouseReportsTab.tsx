@@ -73,19 +73,39 @@ export default function WarehouseReportsTab(props: Props) {
       <View style={{ flex: 1, backgroundColor: UI.bg, minHeight: 0 }}>
         <View
           style={{
-            paddingTop: insets.top + 12,
+            paddingTop: headerTopPad + 4,
             paddingHorizontal: 16,
-            paddingBottom: 12,
+            paddingBottom: 14,
             flexDirection: "row",
             alignItems: "center",
             gap: 12,
+            borderBottomWidth: 1,
+            borderBottomColor: "rgba(255,255,255,0.06)",
+            backgroundColor: UI.bg,
           }}
         >
+          <Pressable
+            onPress={() => setActiveDay(null)}
+            style={{
+              width: 42,
+              height: 42,
+              borderRadius: 14,
+              alignItems: "center",
+              justifyContent: "center",
+              backgroundColor: "rgba(255,255,255,0.08)",
+              borderWidth: 1,
+              borderColor: "rgba(255,255,255,0.12)",
+            }}
+            hitSlop={15}
+          >
+            <Ionicons name="chevron-back" size={24} color={UI.text} />
+          </Pressable>
+
           <Text
             numberOfLines={1}
             style={{
               flex: 1,
-              fontSize: 20,
+              fontSize: 18,
               fontWeight: "900",
               color: UI.text,
             }}
@@ -96,14 +116,16 @@ export default function WarehouseReportsTab(props: Props) {
           <Pressable
             onPress={() => setActiveDay(null)}
             style={{
-              width: 40,
-              height: 40,
-              borderRadius: 12,
+              width: 42,
+              height: 42,
+              borderRadius: 14,
               alignItems: "center",
               justifyContent: "center",
-              backgroundColor: "rgba(255,255,255,0.06)",
+              backgroundColor: "rgba(255,255,255,0.08)",
+              borderWidth: 1,
+              borderColor: "rgba(255,255,255,0.12)",
             }}
-            hitSlop={10}
+            hitSlop={15}
           >
             <Ionicons name="close" size={22} color={UI.text} />
           </Pressable>

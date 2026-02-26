@@ -159,14 +159,14 @@ export async function handleCreateProposalsBySupplierAction(p: CreateProposalsDe
     }
 
     p.setAttachments({});
-    const affectedIds = created.flatMap((x: any) => x.request_item_ids);
+    const affectedIds = created.flatMap((x: any) => x.request_item_ids) as string[];
 
     try {
       await p.supabase
         .from("request_items")
         .update({ director_reject_note: null, director_reject_at: null })
         .in("id", affectedIds);
-    } catch {}
+    } catch { }
 
     p.removeFromInboxLocally(affectedIds);
     p.clearPick();
@@ -299,13 +299,7 @@ type SendToAccountingDeps = {
   buildProposalPdfHtml: (pidStr: string) => Promise<string>;
 
   // основной адаптер
-  proposalSendToAccountant: (p: {
-    proposalId: string;
-    invoiceNumber: string;
-    invoiceDate: string;
-    invoiceAmount: number;
-    invoiceCurrency: string;
-  }) => Promise<void>;
+  proposalSendToAccountant: (p: any) => Promise<void>;
 
   // вложения
   uploadProposalAttachment: (pid: string, file: any, name: string, key: string) => Promise<void>;
@@ -543,14 +537,14 @@ export async function openReworkAction(p: OpenReworkDeps) {
           .eq("id", p.pid)
           .maybeSingle();
         if (!pr2.error && pr2.data) r = pr2.data;
-      } catch {}
+      } catch { }
     }
 
     // 2) источник
     const src: "director" | "accountant" =
       r?.redo_source === "accountant" ? "accountant"
-      : r?.redo_source === "director" ? "director"
-      : detectReworkSourceSafe(r || {});
+        : r?.redo_source === "director" ? "director"
+          : detectReworkSourceSafe(r || {});
     p.setRwSource(src);
 
     // 3) причина
@@ -769,7 +763,7 @@ export async function openProposalViewAction(p: OpenProposalViewDeps) {
 
     let byId: Record<string, any> = {};
     if (ids.length) {
-    // @ts-ignore
+      // @ts-ignore
       const ri = await repoGetRequestItemsByIds(p.supabase, ids);
       for (const r of ri as any[]) byId[String(r.id)] = r;
     }
@@ -860,8 +854,8 @@ export async function preloadProposalTitlesAction(p: PreloadProposalTitlesDeps) 
 
       next[pid] =
         labels.length === 1 ? `Заявка ${labels[0]}` :
-        labels.length === 2 ? `Заявки ${labels[0]} + ${labels[1]}` :
-        `Заявки ${labels[0]} + ${labels[1]} + … (${labels.length})`;
+          labels.length === 2 ? `Заявки ${labels[0]} + ${labels[1]}` :
+            `Заявки ${labels[0]} + ${labels[1]} + … (${labels.length})`;
     });
 
     p.setTitleByPid((prev) => ({ ...prev, ...next }));
@@ -920,7 +914,7 @@ export async function snapshotProposalItemsAction(opts: {
         .in("id", cleanIds);
 
       if (!ri.error && Array.isArray(ri.data)) riData = ri.data;
-    } catch {}
+    } catch { }
 
     // 2) fallback из текущего inbox rows (как было)
     if (!riData.length) {

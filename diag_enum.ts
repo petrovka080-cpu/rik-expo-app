@@ -6,7 +6,7 @@ const supabase = createClient(process.env.EXPO_PUBLIC_SUPABASE_URL!, process.env
 
 async function main() {
     // Check enum values
-    const query = await supabase.rpc('execute_sql_query', { query_text: "SELECT enum_range(null::request_status_enum);" }).catch(() => null);
+    const query = await supabase.rpc('execute_sql_query', { query_text: "SELECT enum_range(null::request_status_enum);" });
     console.log("Enum from execute_sql_query:", query?.data);
 
     // If no generic rpc, let's just create one or use a known table insert to trigger it safely

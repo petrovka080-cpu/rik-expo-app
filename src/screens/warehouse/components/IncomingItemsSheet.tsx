@@ -4,8 +4,6 @@ import { Ionicons } from "@expo/vector-icons";
 
 import WarehouseSheet from "./WarehouseSheet";
 import { UI, s } from "../warehouse.styles";
-    // @ts-ignore
-import type { any } from "../warehouse.types";
 
 import IconSquareButton from "../../../ui/IconSquareButton";
 
@@ -136,7 +134,7 @@ export default function IncomingItemsSheet({
         }}
         keyboardShouldPersistTaps={Platform.OS === "web" ? "handled" : "always"}
         keyboardDismissMode={Platform.OS === "ios" ? "interactive" : "on-drag"}
-    // @ts-ignore
+        // @ts-ignore
         renderItem={({ item }: { item: any }) => {
           const exp = Number(item.qty_expected ?? 0) || 0;
           const rec = Number(item.qty_received ?? 0) || 0;
@@ -185,4 +183,3 @@ export default function IncomingItemsSheet({
     </WarehouseSheet>
   );
 }
-

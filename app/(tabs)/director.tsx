@@ -1789,20 +1789,20 @@ export default function DirectorScreen() {
               ) : finPage === "debt" ? (
                 <DirectorFinanceDebtModal
                   loading={finLoading}
-                  rep={finRep.report as any}
+                  rep={finRep}
                   money={money}
                   FIN_CRITICAL_DAYS={FIN_CRITICAL_DAYS}
                   openSupplier={(srow: any) => openSupplier(srow)}
                 />
               ) : finPage === "spend" ? (
                 <DirectorFinanceSpendModal
-                  visible={true as any}
+                  visible={true}
                   loading={finLoading}
                   sum={finRep?.summary}
                   spendRows={finSpendRows}
                   money={money}
                   onOpenKind={(kindName, list) => openFinKind(kindName, list)}
-                  onOpenSupplier={(supplierName: string) => openSupplier({ supplier: supplierName } as any)}
+                  onOpenSupplier={(supplierName: string) => openSupplier({ supplier: supplierName })}
                 />
               ) : finPage === "kind" ? (
                 <DirectorFinanceKindSuppliersModal

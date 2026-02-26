@@ -66,9 +66,9 @@ export function useWarehouseIncoming() {
           const purchaseToProposal = new Map<string, string>();
 
           for (const part of chunk(toFetch, 250)) {
-            const r1 = await withTimeout(
+            const r1: any = await withTimeout(
               // @ts-ignore
-              supabase.from("purchases" as any).select("id, proposal_id").in("id", part),
+              supabase.from("purchases" as any).select("id, proposal_id").in("id", part) as Promise<any>,
               15000,
               "purchases->proposal_id",
             );
@@ -91,9 +91,9 @@ export function useWarehouseIncoming() {
 
           const propIdToNo = new Map<string, string>();
           for (const part of chunk(propIds, 250)) {
-            const r2 = await withTimeout(
+            const r2: any = await withTimeout(
               // @ts-ignore
-              supabase.from("proposals" as any).select("id, proposal_no").in("id", part),
+              supabase.from("proposals" as any).select("id, proposal_no").in("id", part) as Promise<any>,
               15000,
               "proposals->proposal_no",
             );

@@ -15,16 +15,21 @@ type Props = {
   onRefresh?: () => void;
   onPdf?: () => void;
 
-  rep: {
-    debtAmount: number;
-    debtCount: number;
-    overdueAmount: number;
-    overdueCount: number;
-    criticalAmount: number;
-    criticalCount: number;
-    suppliers: any[];
-    leader: any | null;
-  } | null | undefined;
+  rep?: {
+    summary: {
+      approved: number;
+      paid: number;
+      toPay: number;
+      overdueCount: number;
+      overdueAmount: number;
+      criticalCount: number;
+      criticalAmount: number;
+      debtCount: number;
+    };
+    report: {
+      suppliers: any[];
+    };
+  } | null;
 
   money: (v: number) => string;
   FIN_CRITICAL_DAYS: number;
@@ -48,14 +53,14 @@ export default function DirectorFinanceDebtModal(p: Props) {
     if (p.visible === false) setSuppliersOpen(false);
   }, [p.visible]);
 
-  const overdueCount = rep?.overdueCount ?? 0;
-  const overdueAmount = rep?.overdueAmount ?? 0;
+  const overdueCount = rep?.summary?.overdueCount ?? 0;
+  const overdueAmount = rep?.summary?.overdueAmount ?? 0;
 
-  const criticalCount = rep?.criticalCount ?? 0;
-  const criticalAmount = rep?.criticalAmount ?? 0;
+  const criticalCount = rep?.summary?.criticalCount ?? 0;
+  const criticalAmount = rep?.summary?.criticalAmount ?? 0;
 
-  const debtCount = rep?.debtCount ?? 0;
-  const debtAmount = rep?.debtAmount ?? 0;
+  const debtCount = rep?.summary?.debtCount ?? 0;
+  const debtAmount = rep?.summary?.toPay ?? 0;
 
   const overduePct = pct(overdueAmount, debtAmount);
   const criticalPct = pct(criticalAmount, debtAmount);
@@ -105,9 +110,9 @@ export default function DirectorFinanceDebtModal(p: Props) {
           <Text style={{ color: UI.text, fontWeight: "900", fontSize: 14 }} numberOfLines={1}>
             Поставщики (долг)
           </Text>
-          {rep?.leader ? (
+          {rep?.report?.suppliers?.[0] ? (
             <Text style={{ color: UI.sub, fontWeight: "800", fontSize: 12 }} numberOfLines={1}>
-              Лидер: {rep.leader.supplier} · {p.money(rep.leader.amount)} KGS
+              Лидер: {rep.report.suppliers[0].supplier} · {p.money(rep.report.suppliers[0].toPay)} KGS
             </Text>
           ) : null}
         </View>
@@ -119,10 +124,10 @@ export default function DirectorFinanceDebtModal(p: Props) {
 
       {suppliersOpen ? (
         <View style={{ marginTop: 10 }}>
-          {!rep?.suppliers?.length ? (
+          {!rep?.report?.suppliers?.length ? (
             <Text style={{ color: UI.sub, fontWeight: "800" }}>Нет данных</Text>
           ) : (
-            rep.suppliers.map((srow: any) => (
+            rep.report.suppliers.map((srow: any) => (
               <Pressable
                 key={String(srow.supplier)}
                 onPress={() => p.openSupplier(srow)}
@@ -145,7 +150,7 @@ export default function DirectorFinanceDebtModal(p: Props) {
                   </View>
 
                   <Text style={{ color: UI.sub, fontWeight: "900" }} numberOfLines={1}>
-                    {p.money(srow.amount)} KGS
+                    {p.money(srow.toPay)} KGS
                   </Text>
                 </View>
 
@@ -160,4 +165,3 @@ export default function DirectorFinanceDebtModal(p: Props) {
     </View>
   );
 }
-
