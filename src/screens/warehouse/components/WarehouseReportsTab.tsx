@@ -62,11 +62,7 @@ export default function WarehouseReportsTab(props: Props) {
     items: any[];
   } | null>(null);
 
-  const headerIssueNo = useMemo(() => {
-    const h0: any = activeDay?.items?.[0];
-    const issueId = Number(h0?.issue_id);
-    return h0?.issue_no ?? (Number.isFinite(issueId) ? `ISSUE-${issueId}` : "");
-  }, [activeDay]);
+
 
   if (activeDay) {
     return (
@@ -110,7 +106,7 @@ export default function WarehouseReportsTab(props: Props) {
               color: UI.text,
             }}
           >
-            {headerIssueNo || activeDay.day}
+            {activeDay.day}
           </Text>
 
           <Pressable
@@ -140,30 +136,11 @@ export default function WarehouseReportsTab(props: Props) {
           showsVerticalScrollIndicator
           keyboardShouldPersistTaps="handled"
         >
-          <View style={[s.sectionBox, { marginBottom: 12 }]}>
+          <View style={s.sectionBox}>
             <Text style={s.sectionBoxTitle}>ДЕНЬ</Text>
-
-            <TopRightActionBar
-              titleLeft={activeDay.day}
-              actions={[
-                {
-                  key: "pdf_day_reg",
-                  icon: "document-text-outline",
-                  onPress: () => void onPdfDayRegister?.(activeDay.day),
-                },
-                {
-                  key: "pdf_day_mat",
-                  icon: "cube-outline",
-                  onPress: () => void onPdfDayMaterials?.(activeDay.day),
-                },
-              ]}
-              ui={{
-                text: UI.text,
-                sub: UI.sub,
-                border: "rgba(255,255,255,0.14)",
-                btnBg: "rgba(255,255,255,0.06)",
-              }}
-            />
+            <Text style={{ color: UI.text, fontWeight: "900", fontSize: 16 }}>
+              {activeDay.day}
+            </Text>
           </View>
 
           {activeDay.items.map((h: any, idx: number) => {
@@ -200,7 +177,7 @@ export default function WarehouseReportsTab(props: Props) {
             );
           })}
         </ScrollView>
-      </View>
+      </View >
     );
   }
 
@@ -255,26 +232,6 @@ export default function WarehouseReportsTab(props: Props) {
                   </View>
 
                   <View style={{ flexDirection: "row", gap: 14, alignItems: "center" }}>
-                    <Pressable
-                      hitSlop={10}
-                      onPress={(e) => {
-                        e.stopPropagation?.();
-                        void onPdfDayRegister?.(g.day);
-                      }}
-                    >
-                      <Ionicons name="document-text-outline" size={20} color={UI.text} />
-                    </Pressable>
-
-                    <Pressable
-                      hitSlop={10}
-                      onPress={(e) => {
-                        e.stopPropagation?.();
-                        void onPdfDayMaterials?.(g.day);
-                      }}
-                    >
-                      <Ionicons name="cube-outline" size={20} color={UI.text} />
-                    </Pressable>
-
                     <Ionicons name="chevron-forward" size={20} color={UI.text} />
                   </View>
                 </View>
