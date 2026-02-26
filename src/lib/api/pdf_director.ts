@@ -1,6 +1,7 @@
 // src/lib/api/pdf_director.ts
 import { openHtmlAsPdfUniversal } from "./pdf";
 import { listAccountantInbox } from "./accountant";
+import { normalizeRuText } from "../text/encoding";
 
 const esc = (s: any) =>
   String(s ?? "")
@@ -25,7 +26,7 @@ export async function exportDirectorFinancePdf(): Promise<string> {
     <pre>${esc(JSON.stringify(rows ?? [], null, 2))}</pre>
   </body></html>`;
 
-  return openHtmlAsPdfUniversal(html);
+  return openHtmlAsPdfUniversal(normalizeRuText(html));
 }
 
 const nnum = (v: any) => {
@@ -521,7 +522,7 @@ export async function exportDirectorSupplierSummaryPdf(p: {
   <div class="page-footer"></div>
 </body></html>`;
 
-  return openHtmlAsPdfUniversal(html);
+  return openHtmlAsPdfUniversal(normalizeRuText(html));
 }
 
 // ============================================================================
@@ -1046,5 +1047,5 @@ export async function exportDirectorManagementReportPdf(p: {
   <div class="page-footer"></div>
 </body></html>`;
 
-  return openHtmlAsPdfUniversal(html);
+  return openHtmlAsPdfUniversal(normalizeRuText(html));
 }

@@ -1,5 +1,6 @@
 // app/(tabs)/warehouse.tsx
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useFocusEffect } from "expo-router";
 import {
   View,
   Text,
@@ -1360,6 +1361,31 @@ export default function Warehouse() {
 
   }, []);
 
+  const refreshActiveTab = useCallback(async () => {
+    if (tab === "К приходу") {
+      await incoming.fetchToReceive();
+      return;
+    }
+    if (tab === "Склад факт") {
+      await fetchStock();
+      return;
+    }
+    if (tab === "Расход") {
+      await fetchReqHeads(0, true);
+      return;
+    }
+    if (tab === "Отчёты") {
+      await fetchReports();
+    }
+  }, [tab, incoming, fetchStock, fetchReqHeads, fetchReports]);
+
+  useFocusEffect(
+    useCallback(() => {
+      void refreshActiveTab().catch((e) => showErr(e));
+      return undefined;
+    }, [refreshActiveTab]),
+  );
+
   useEffect(() => {
     if (tab === "Отчёты") {
       fetchReports().catch((e) => showErr(e));
@@ -1371,12 +1397,6 @@ export default function Warehouse() {
       fetchReqHeads(0, true).catch((e) => showErr(e));
     }
   }, [tab, fetchReqHeads]);
-
-  useEffect(() => {
-    if (tab !== "Отчёты" && reportsMode !== "choice") {
-      setReportsMode("choice");
-    }
-  }, [tab, reportsMode]);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -2051,5 +2071,4 @@ export default function Warehouse() {
     </View>
   );
 }
-
 

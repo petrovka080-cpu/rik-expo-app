@@ -1,5 +1,6 @@
 ﻿// app/(tabs)/director.tsx — единый блок «Ожидает утверждения (прораб)», БЕЗ нижнего блока «шапок»
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useFocusEffect } from "expo-router";
 import {
   View, Text, FlatList, ScrollView, Pressable, Alert, ActivityIndicator,
   RefreshControl, Platform, TextInput, Animated, Linking, InteractionManager
@@ -1168,6 +1169,21 @@ export default function DirectorScreen() {
       void fetchReport();
     }
   }, [dirTab, finFrom, finTo, repFrom, repTo]);
+
+  useFocusEffect(
+    useCallback(() => {
+      if (dirTab === "Заявки") {
+        void fetchRows();
+        void fetchProps();
+      } else if (dirTab === "Финансы") {
+        void fetchFinance();
+      } else if (dirTab === "Отчёты") {
+        void fetchReportOptions();
+        void fetchReport();
+      }
+      return undefined;
+    }, [dirTab, fetchRows, fetchProps, fetchFinance, fetchReportOptions, fetchReport]),
+  );
 
 
   useEffect(() => {

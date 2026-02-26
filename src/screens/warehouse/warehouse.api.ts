@@ -2,6 +2,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { StockRow, ReqHeadRow, ReqItemUiRow } from "./warehouse.types";
 import { nz, parseNum } from "./warehouse.utils";
+import { normalizeRuText } from "../../lib/text/encoding";
 
 const pickUom = (v: any): string | null => {
   const s = v == null ? "" : String(v).trim();
@@ -43,7 +44,7 @@ async function loadNameMapOverrides(
 
   for (const r of q.data as any[]) {
     const c = String(r.code ?? "").trim().toUpperCase();
-    const nm = String(r.name_ru ?? "").trim();
+    const nm = String(normalizeRuText(String(r.name_ru ?? ""))).trim();
     if (c && nm && !out[c]) out[c] = nm;
   }
   return out;
@@ -65,7 +66,7 @@ async function loadNameMapRikRu(
 
   for (const r of q.data as any[]) {
     const c = String(r.code ?? "").trim().toUpperCase();
-    const nm = String(r.name_ru ?? "").trim();
+    const nm = String(normalizeRuText(String(r.name_ru ?? ""))).trim();
     if (c && nm && !out[c]) out[c] = nm;
   }
   return out;
@@ -87,7 +88,7 @@ async function loadNameMapLedgerUi(
 
   for (const r of q.data as any[]) {
     const c = String(r.code ?? "").trim().toUpperCase();
-    const nm = String(r.name ?? "").trim();
+    const nm = String(normalizeRuText(String(r.name ?? ""))).trim();
     if (c && nm && !out[c]) out[c] = nm;
   }
   return out;
@@ -130,9 +131,9 @@ export async function apiFetchStock(
         const uom = String(x.uom_id ?? "").trim();
         const avail = nz(x.qty_available, 0);
 
-        const nOver = String(overMap[codeKey] ?? "").trim();
-        const nRik = String(rikMap[codeKey] ?? "").trim();
-        const nUi = String(uiMap[codeKey] ?? "").trim();
+        const nOver = String(normalizeRuText(String(overMap[codeKey] ?? ""))).trim();
+        const nRik = String(normalizeRuText(String(rikMap[codeKey] ?? ""))).trim();
+        const nUi = String(normalizeRuText(String(uiMap[codeKey] ?? ""))).trim();
 
         const picked =
           (nOver && !looksLikeCode(nOver) ? nOver : nOver) ||
@@ -143,7 +144,7 @@ export async function apiFetchStock(
         return {
           material_id: `${code}::${uom}`,
           code: code || null,
-          name: picked || "—",
+          name: normalizeRuText(picked || "—"),
           uom_id: pickUom(x.uom_id) ?? null,
 
           qty_on_hand: avail,
@@ -467,7 +468,7 @@ export async function apiFetchIncomingMaterialsReportFast(
     if (!groups[key]) {
       groups[key] = {
         material_code: code,
-        material_name: code,
+        material_name: normalizeRuText(code),
         uom: row.uom_id,
         sum_total: 0,
         docs_cnt: 0,
@@ -509,10 +510,10 @@ export async function apiFetchIncomingLines(
     return rows.map((ln: any) => {
       const code = String(ln?.code ?? "").trim();
       const key = code.toUpperCase();
-      const nOver = String(overMap[key] ?? "").trim();
-      const nRik = String(rikMap[key] ?? "").trim();
-      const nUi = String(uiMap[key] ?? "").trim();
-      const nameRu = nOver || nRik || nUi || code || "Позиция";
+      const nOver = String(normalizeRuText(String(overMap[key] ?? ""))).trim();
+      const nRik = String(normalizeRuText(String(rikMap[key] ?? ""))).trim();
+      const nUi = String(normalizeRuText(String(uiMap[key] ?? ""))).trim();
+      const nameRu = normalizeRuText(nOver || nRik || nUi || code || "Позиция");
 
       return {
         ...ln,

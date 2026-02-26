@@ -1,5 +1,6 @@
 // src/lib/api/pdf_warehouse.ts
 import { openHtmlAsPdfUniversal } from "./pdf";
+import { normalizeRuText } from "../text/encoding";
 
 export type WarehouseIssueHead = {
   issue_id: number | string;
@@ -40,7 +41,7 @@ export type WarehouseIssueLine = {
 };
 
 const esc = (s: any) =>
-  String(s ?? "")
+  String(normalizeRuText(String(s ?? "")))
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
@@ -454,7 +455,7 @@ export function buildWarehouseIssuesRegisterHtml(args: {
 }
 
 export async function exportWarehouseHtmlPdf(opts: { fileName: string; html: string }): Promise<string> {
-  return await openHtmlAsPdfUniversal(opts.html, {
+  return await openHtmlAsPdfUniversal(normalizeRuText(opts.html), {
     fileName: opts.fileName,
     title: opts.fileName,
   } as any);
@@ -975,4 +976,3 @@ export function buildWarehouseIncomingMaterialsReportHtml(args: {
   </div>
 </body></html>`;
 }
-

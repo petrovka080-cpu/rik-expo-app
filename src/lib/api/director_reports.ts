@@ -1,4 +1,5 @@
 ﻿import { supabase } from "../supabaseClient";
+import { normalizeRuText } from "../text/encoding";
 
 type DirectorReportOptions = {
   objects: string[];
@@ -74,12 +75,12 @@ const toNum = (v: any): number => {
 };
 
 const normObjectName = (v: any): string => {
-  const s = String(v ?? "").trim();
+  const s = String(normalizeRuText(String(v ?? ""))).trim();
   return s || WITHOUT_OBJECT;
 };
 
 const normWorkName = (v: any): string => {
-  const s = String(v ?? "").trim();
+  const s = String(normalizeRuText(String(v ?? ""))).trim();
   return s || WITHOUT_WORK;
 };
 
@@ -101,7 +102,7 @@ const chunk = <T,>(arr: T[], size = 500): T[][] => {
 
 const firstNonEmpty = (...vals: any[]): string => {
   for (const v of vals) {
-    const s = String(v ?? "").trim();
+    const s = String(normalizeRuText(String(v ?? ""))).trim();
     if (s) return s;
   }
   return "";
@@ -909,3 +910,5 @@ export async function fetchDirectorWarehouseReport(p: {
     objectName,
   });
 }
+
+
