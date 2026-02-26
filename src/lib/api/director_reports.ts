@@ -127,8 +127,8 @@ async function fetchIssueHeadsViaAccRpc(p: {
   to: string;
 }): Promise<AccIssueHead[]> {
   const { data, error } = await supabase.rpc("acc_report_issues_v2" as any, {
-    p_from: p.from,
-    p_to: p.to,
+    p_from: p.from || "1970-01-01",
+    p_to: p.to || "2099-12-31",
   } as any);
   if (error) throw error;
   return Array.isArray(data) ? (data as AccIssueHead[]) : [];
@@ -332,12 +332,12 @@ async function fetchAllFactRowsFromView(p: {
     let q = supabase
       .from("v_director_issued_fact_rows" as any)
       .select("issue_id,iss_date,object_name,work_name,rik_code,material_name_ru,uom,qty,is_without_request")
-      .gte("iss_date", toRangeStart(p.from))
-      .lte("iss_date", toRangeEnd(p.to))
-      .order("iss_date", { ascending: false })
-      .range(fromIdx, fromIdx + pageSize - 1);
-
+    if (p.from) q = q.gte("iss_date", toRangeStart(p.from));
+    if (p.to) q = q.lte("iss_date", toRangeEnd(p.to));
     if (p.objectName != null) q = q.eq("object_name", p.objectName);
+
+    q = q.order("iss_date", { ascending: false })
+      .range(fromIdx, fromIdx + pageSize - 1);
 
     const { data, error } = await q;
     if (error) throw error;
@@ -430,15 +430,18 @@ async function fetchAllFactRowsFromTables(p: {
   let fromIdx = 0;
 
   while (true) {
-    const { data, error } = await supabase
+    let q = supabase
       .from("warehouse_issues" as any)
       .select("id,iss_date,object_name,work_name,request_id,status")
-      .eq("status", "Подтверждено")
-      .gte("iss_date", toRangeStart(p.from))
-      .lte("iss_date", toRangeEnd(p.to))
-      .order("iss_date", { ascending: false })
+      .eq("status", "Подтверждено");
+
+    if (p.from) q = q.gte("iss_date", toRangeStart(p.from));
+    if (p.to) q = q.lte("iss_date", toRangeEnd(p.to));
+
+    q = q.order("iss_date", { ascending: false })
       .range(fromIdx, fromIdx + pageSize - 1);
 
+    const { data, error } = await q;
     if (error) throw error;
 
     const rows = Array.isArray(data) ? data : [];
@@ -702,17 +705,17 @@ export async function fetchDirectorWarehouseReportOptions(p: {
   let rows: DirectorFactRow[] = [];
   try {
     rows = await fetchAllFactRowsFromTables({ from: p.from, to: p.to, objectName: null });
-  } catch {}
+  } catch { }
   if (!rows.length) {
     try {
       rows = await fetchDirectorFactViaAccRpc({ from: p.from, to: p.to, objectName: null });
-    } catch {}
+    } catch { }
   }
 
   if (!rows.length) {
     try {
       rows = await fetchAllFactRowsFromView({ from: p.from, to: p.to, objectName: null });
-    } catch {}
+    } catch { }
   }
 
   if (!rows.length) {
@@ -850,18 +853,18 @@ export async function fetchDirectorWarehouseReport(p: {
 
   try {
     rows = await fetchAllFactRowsFromTables({ from: p.from, to: p.to, objectName });
-  } catch {}
+  } catch { }
 
   if (!rows.length) {
     try {
       rows = await fetchDirectorFactViaAccRpc({ from: p.from, to: p.to, objectName });
-    } catch {}
+    } catch { }
   }
 
   if (!rows.length) {
     try {
       rows = await fetchAllFactRowsFromView({ from: p.from, to: p.to, objectName });
-    } catch {}
+    } catch { }
   }
 
   if (rows.length) {

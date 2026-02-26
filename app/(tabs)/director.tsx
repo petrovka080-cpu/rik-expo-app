@@ -154,23 +154,16 @@ export default function DirectorScreen() {
     return d;
   };
 
-  useEffect(() => {
-    if (repFrom || repTo) return;
-    const to = isoDate(new Date());
-    const from = isoDate(minusDays(30));
-    setRepFrom(from);
-    setRepTo(to);
-  }, [repFrom, repTo]);
 
   const repPeriodShort = useMemo(() => {
     return repFrom || repTo
       ? `${repFrom ? fmtDateOnly(repFrom) : "—"} → ${repTo ? fmtDateOnly(repTo) : "—"}`
-      : "Последние 30 дней";
+      : "Весь период";
   }, [repFrom, repTo]);
 
   const fetchReport = useCallback(async (objectNameArg?: string | null) => {
-    const from = repFrom ? String(repFrom).slice(0, 10) : isoDate(minusDays(30));
-    const to = repTo ? String(repTo).slice(0, 10) : isoDate(new Date());
+    const from = repFrom ? String(repFrom).slice(0, 10) : "";
+    const to = repTo ? String(repTo).slice(0, 10) : "";
     const objectName = objectNameArg === undefined ? repObjectName : objectNameArg;
 
     setRepLoading(true);
@@ -209,8 +202,8 @@ export default function DirectorScreen() {
   }, [busy, fetchReport]);
 
   const fetchReportOptions = useCallback(async () => {
-    const from = repFrom ? String(repFrom).slice(0, 10) : isoDate(minusDays(30));
-    const to = repTo ? String(repTo).slice(0, 10) : isoDate(new Date());
+    const from = repFrom ? String(repFrom).slice(0, 10) : "";
+    const to = repTo ? String(repTo).slice(0, 10) : "";
 
     setRepOptLoading(true);
     try {
@@ -235,8 +228,8 @@ export default function DirectorScreen() {
     setRepObjectName(null);
     setRepPeriodOpen(false);
 
-    const from = nextFrom ? String(nextFrom).slice(0, 10) : isoDate(minusDays(30));
-    const to = nextTo ? String(nextTo).slice(0, 10) : isoDate(new Date());
+    const from = nextFrom ? String(nextFrom).slice(0, 10) : "";
+    const to = nextTo ? String(nextTo).slice(0, 10) : "";
 
     setRepOptLoading(true);
     setRepLoading(true);
@@ -1154,6 +1147,12 @@ export default function DirectorScreen() {
     if (dirTab !== "Финансы") return;
     void fetchFinance();
   }, [dirTab, fetchFinance]);
+
+  useEffect(() => {
+    if (dirTab !== "Отчёты") return;
+    void fetchReportOptions();
+    void fetchReport();
+  }, [dirTab, fetchReportOptions, fetchReport]);
 
 
   useEffect(() => {
