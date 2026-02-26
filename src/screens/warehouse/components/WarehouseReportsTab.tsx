@@ -104,44 +104,25 @@ export default function WarehouseReportsTab(props: Props) {
               fontSize: 18,
               fontWeight: "900",
               color: UI.text,
+              textAlign: "center",
             }}
           >
             {activeDay.day}
           </Text>
 
-          <Pressable
-            onPress={() => setActiveDay(null)}
-            style={{
-              width: 42,
-              height: 42,
-              borderRadius: 14,
-              alignItems: "center",
-              justifyContent: "center",
-              backgroundColor: "rgba(255,255,255,0.08)",
-              borderWidth: 1,
-              borderColor: "rgba(255,255,255,0.12)",
-            }}
-            hitSlop={15}
-          >
-            <Ionicons name="close" size={22} color={UI.text} />
-          </Pressable>
+          <View style={{ width: 42 }} />
         </View>
 
         <ScrollView
           style={{ flex: 1 }}
           contentContainerStyle={{
+            paddingTop: 16,
             paddingHorizontal: 16,
             paddingBottom: Math.max(24, insets.bottom + 16),
           }}
           showsVerticalScrollIndicator
           keyboardShouldPersistTaps="handled"
         >
-          <View style={s.sectionBox}>
-            <Text style={s.sectionBoxTitle}>ДЕНЬ</Text>
-            <Text style={{ color: UI.text, fontWeight: "900", fontSize: 16 }}>
-              {activeDay.day}
-            </Text>
-          </View>
 
           {activeDay.items.map((h: any, idx: number) => {
             const issueId = Number(h.issue_id);
