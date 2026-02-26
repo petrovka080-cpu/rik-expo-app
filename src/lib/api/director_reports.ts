@@ -107,6 +107,57 @@ const firstNonEmpty = (...vals: any[]): string => {
   return "";
 };
 
+type NameSourcesProbe = {
+  canon: boolean;
+  vrr: boolean;
+  ciMode: "rik_code" | "code" | null;
+};
+
+let nameSourcesProbeCache: NameSourcesProbe | null = null;
+
+async function probeNameSources(): Promise<NameSourcesProbe> {
+  if (nameSourcesProbeCache) return nameSourcesProbeCache;
+
+  let canon = false;
+  let vrr = false;
+  let ciMode: "rik_code" | "code" | null = null;
+
+  try {
+    const r = await supabase
+      .from("catalog_items_canon" as any)
+      .select("code,name_human_ru")
+      .limit(1);
+    canon = !r.error;
+  } catch { }
+
+  try {
+    const r = await supabase
+      .from("v_rik_names_ru" as any)
+      .select("code,name_ru")
+      .limit(1);
+    vrr = !r.error;
+  } catch { }
+
+  try {
+    const rByRikCode = await supabase
+      .from("catalog_items" as any)
+      .select("rik_code,name_human_ru,name_human,name")
+      .limit(1);
+    if (!rByRikCode.error) {
+      ciMode = "rik_code";
+    } else {
+      const rByCode = await supabase
+        .from("catalog_items" as any)
+        .select("code,name_human_ru,name_human,name")
+        .limit(1);
+      if (!rByCode.error) ciMode = "code";
+    }
+  } catch { }
+
+  nameSourcesProbeCache = { canon, vrr, ciMode };
+  return nameSourcesProbeCache;
+}
+
 function parseFreeIssueContext(note: string | null | undefined): {
   objectName: string;
   workName: string;
@@ -624,39 +675,68 @@ async function fetchAllFactRowsFromTables(p: {
 
   const nameRuByCode = new Map<string, string>();
   if (codes.length) {
+    const probe = await probeNameSources();
+    let canUseCanon = probe.canon;
+    let canUseVrr = probe.vrr;
+    let ciMode: "rik_code" | "code" | null = probe.ciMode;
+
     for (const part of chunk(codes, 100)) {
-      const [canonRes, ciRes, vrrRes] = await Promise.all([
-        supabase.from("catalog_items_canon" as any).select("code,name_human_ru").in("code", part as any),
-        supabase
+      if (canUseVrr) {
+        const vrrRes = await supabase
+          .from("v_rik_names_ru" as any)
+          .select("code,name_ru")
+          .in("code", part as any);
+        if (vrrRes.error) {
+          canUseVrr = false;
+          console.warn("[director_reports] disable v_rik_names_ru:", vrrRes.error.message);
+        } else {
+          for (const r of Array.isArray(vrrRes.data) ? vrrRes.data : []) {
+            const c = String(r?.code ?? "").trim().toUpperCase();
+            const n = String(r?.name_ru ?? "").trim();
+            if (c && n && !nameRuByCode.has(c)) nameRuByCode.set(c, n);
+          }
+        }
+      }
+
+      if (ciMode) {
+        const ciSelect =
+          ciMode === "rik_code"
+            ? "rik_code,name_human_ru,name_human,name"
+            : "code,name_human_ru,name_human,name";
+        const ciRes = await supabase
           .from("catalog_items" as any)
-          .select("rik_code,name_human_ru,name_human,name")
-          .in("rik_code", part as any),
-        supabase.from("v_rik_names_ru" as any).select("code,name_ru").in("code", part as any),
-      ]);
-
-      if (canonRes.error) throw canonRes.error;
-      if (ciRes.error) throw ciRes.error;
-      if (vrrRes.error) throw vrrRes.error;
-
-      for (const r of Array.isArray(vrrRes.data) ? vrrRes.data : []) {
-        const c = String(r?.code ?? "").trim().toUpperCase();
-        const n = String(r?.name_ru ?? "").trim();
-        if (c && n && !nameRuByCode.has(c)) nameRuByCode.set(c, n);
+          .select(ciSelect)
+          .in(ciMode, part as any);
+        if (ciRes.error) {
+          console.warn("[director_reports] disable catalog_items:", ciRes.error.message);
+          ciMode = null;
+        } else {
+          for (const r of Array.isArray(ciRes.data) ? ciRes.data : []) {
+            const c = String(r?.rik_code ?? r?.code ?? "").trim().toUpperCase();
+            const n =
+              String(r?.name_human_ru ?? "").trim() ||
+              String(r?.name_human ?? "").trim() ||
+              String(r?.name ?? "").trim();
+            if (c && n && !nameRuByCode.has(c)) nameRuByCode.set(c, n);
+          }
+        }
       }
 
-      for (const r of Array.isArray(ciRes.data) ? ciRes.data : []) {
-        const c = String(r?.rik_code ?? "").trim().toUpperCase();
-        const n =
-          String(r?.name_human_ru ?? "").trim() ||
-          String(r?.name_human ?? "").trim() ||
-          String(r?.name ?? "").trim();
-        if (c && n && !nameRuByCode.has(c)) nameRuByCode.set(c, n);
-      }
-
-      for (const r of Array.isArray(canonRes.data) ? canonRes.data : []) {
-        const c = String(r?.code ?? "").trim().toUpperCase();
-        const n = String(r?.name_human_ru ?? "").trim();
-        if (c && n) nameRuByCode.set(c, n);
+      if (canUseCanon) {
+        const canonRes = await supabase
+          .from("catalog_items_canon" as any)
+          .select("code,name_human_ru")
+          .in("code", part as any);
+        if (canonRes.error) {
+          canUseCanon = false;
+          console.warn("[director_reports] disable catalog_items_canon:", canonRes.error.message);
+        } else {
+          for (const r of Array.isArray(canonRes.data) ? canonRes.data : []) {
+            const c = String(r?.code ?? "").trim().toUpperCase();
+            const n = String(r?.name_human_ru ?? "").trim();
+            if (c && n) nameRuByCode.set(c, n);
+          }
+        }
       }
     }
   }
