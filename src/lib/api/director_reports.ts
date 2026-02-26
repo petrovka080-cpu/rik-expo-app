@@ -136,8 +136,9 @@ async function fetchIssueHeadsViaAccRpc(p: {
 
 async function fetchIssueLinesViaAccRpc(issueIds: string[]): Promise<AccIssueLine[]> {
   const out: AccIssueLine[] = [];
-  const ids = issueIds.filter(Boolean);
-  const groups = chunk(ids, 20);
+  const ids = issueIds.filter(id => String(id || "").trim() !== "");
+  if (!ids.length) return [];
+  const groups = chunk(ids, 100);
 
   for (const g of groups) {
     const settled = await Promise.all(
@@ -167,12 +168,12 @@ async function fetchDirectorFactViaAccRpc(p: {
     new Set(
       heads
         .map((h) => String(h.request_id ?? "").trim())
-        .filter(Boolean),
+        .filter(id => id !== ""),
     ),
   );
 
   const reqById = new Map<string, any>();
-  for (const ids of chunk(requestIds, 500)) {
+  for (const ids of chunk(requestIds, 100)) {
     const { data, error } = await supabase
       .from("requests" as any)
       .select("id,object_id,object_name,object_type_code,system_code")
@@ -188,11 +189,11 @@ async function fetchDirectorFactViaAccRpc(p: {
     new Set(
       Array.from(reqById.values())
         .map((r) => String(r?.object_id ?? "").trim())
-        .filter(Boolean),
+        .filter(id => id !== ""),
     ),
   );
   const objectNameById = new Map<string, string>();
-  for (const ids of chunk(objectIds, 500)) {
+  for (const ids of chunk(objectIds, 100)) {
     const { data, error } = await supabase
       .from("objects" as any)
       .select("id,name")
@@ -209,11 +210,11 @@ async function fetchDirectorFactViaAccRpc(p: {
     new Set(
       Array.from(reqById.values())
         .map((r) => String(r?.object_type_code ?? "").trim())
-        .filter(Boolean),
+        .filter(id => id !== ""),
     ),
   );
   const objectTypeNameByCode = new Map<string, string>();
-  for (const codes of chunk(objectTypeCodes, 500)) {
+  for (const codes of chunk(objectTypeCodes, 100)) {
     const { data, error } = await supabase
       .from("ref_object_types" as any)
       .select("code,name_human_ru,display_name,name")
@@ -230,11 +231,11 @@ async function fetchDirectorFactViaAccRpc(p: {
     new Set(
       Array.from(reqById.values())
         .map((r) => String(r?.system_code ?? "").trim())
-        .filter(Boolean),
+        .filter(id => id !== ""),
     ),
   );
   const systemNameByCode = new Map<string, string>();
-  for (const codes of chunk(systemCodes, 500)) {
+  for (const codes of chunk(systemCodes, 100)) {
     const { data, error } = await supabase
       .from("ref_systems" as any)
       .select("code,name_human_ru,display_name,alias_ru,name")
@@ -458,10 +459,11 @@ async function fetchAllFactRowsFromTables(p: {
 
   if (!issuesById.size) return [];
 
-  const issueIds = Array.from(issuesById.keys());
+  const issueIds = Array.from(issuesById.keys()).filter(id => id !== "");
+  if (!issueIds.length) return [];
 
   const issueItems: any[] = [];
-  for (const ids of chunk(issueIds, 300)) {
+  for (const ids of chunk(issueIds, 100)) {
     const { data, error } = await supabase
       .from("warehouse_issue_items" as any)
       .select("issue_id,rik_code,uom_id,qty,request_item_id")
@@ -604,44 +606,46 @@ async function fetchAllFactRowsFromTables(p: {
     new Set(
       issueItems
         .map((it) => String(it?.rik_code ?? "").trim().toUpperCase())
-        .filter(Boolean),
+        .filter(code => code !== ""),
     ),
   );
 
   const nameRuByCode = new Map<string, string>();
-  for (const part of chunk(codes, 500)) {
-    const [canonRes, ciRes, vrrRes] = await Promise.all([
-      supabase.from("catalog_items_canon" as any).select("code,name_human_ru").in("code", part as any),
-      supabase
-        .from("catalog_items" as any)
-        .select("rik_code,name_human_ru,name_human,name")
-        .in("rik_code", part as any),
-      supabase.from("v_rik_names_ru" as any).select("code,name_ru").in("code", part as any),
-    ]);
+  if (codes.length) {
+    for (const part of chunk(codes, 100)) {
+      const [canonRes, ciRes, vrrRes] = await Promise.all([
+        supabase.from("catalog_items_canon" as any).select("code,name_human_ru").in("code", part as any),
+        supabase
+          .from("catalog_items" as any)
+          .select("rik_code,name_human_ru,name_human,name")
+          .in("rik_code", part as any),
+        supabase.from("v_rik_names_ru" as any).select("code,name_ru").in("code", part as any),
+      ]);
 
-    if (canonRes.error) throw canonRes.error;
-    if (ciRes.error) throw ciRes.error;
-    if (vrrRes.error) throw vrrRes.error;
+      if (canonRes.error) throw canonRes.error;
+      if (ciRes.error) throw ciRes.error;
+      if (vrrRes.error) throw vrrRes.error;
 
-    for (const r of Array.isArray(vrrRes.data) ? vrrRes.data : []) {
-      const c = String(r?.code ?? "").trim().toUpperCase();
-      const n = String(r?.name_ru ?? "").trim();
-      if (c && n && !nameRuByCode.has(c)) nameRuByCode.set(c, n);
-    }
+      for (const r of Array.isArray(vrrRes.data) ? vrrRes.data : []) {
+        const c = String(r?.code ?? "").trim().toUpperCase();
+        const n = String(r?.name_ru ?? "").trim();
+        if (c && n && !nameRuByCode.has(c)) nameRuByCode.set(c, n);
+      }
 
-    for (const r of Array.isArray(ciRes.data) ? ciRes.data : []) {
-      const c = String(r?.rik_code ?? "").trim().toUpperCase();
-      const n =
-        String(r?.name_human_ru ?? "").trim() ||
-        String(r?.name_human ?? "").trim() ||
-        String(r?.name ?? "").trim();
-      if (c && n && !nameRuByCode.has(c)) nameRuByCode.set(c, n);
-    }
+      for (const r of Array.isArray(ciRes.data) ? ciRes.data : []) {
+        const c = String(r?.rik_code ?? "").trim().toUpperCase();
+        const n =
+          String(r?.name_human_ru ?? "").trim() ||
+          String(r?.name_human ?? "").trim() ||
+          String(r?.name ?? "").trim();
+        if (c && n && !nameRuByCode.has(c)) nameRuByCode.set(c, n);
+      }
 
-    for (const r of Array.isArray(canonRes.data) ? canonRes.data : []) {
-      const c = String(r?.code ?? "").trim().toUpperCase();
-      const n = String(r?.name_human_ru ?? "").trim();
-      if (c && n) nameRuByCode.set(c, n);
+      for (const r of Array.isArray(canonRes.data) ? canonRes.data : []) {
+        const c = String(r?.code ?? "").trim().toUpperCase();
+        const n = String(r?.name_human_ru ?? "").trim();
+        if (c && n) nameRuByCode.set(c, n);
+      }
     }
   }
 

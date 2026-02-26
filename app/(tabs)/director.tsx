@@ -752,11 +752,15 @@ export default function DirectorScreen() {
   // ===== КЭШ НОМЕРОВ ЗАЯВОК =====
   const [displayNoByReq, setDisplayNoByReq] = useState<Record<string, string>>({});
   const [submittedAtByReq, setSubmittedAtByReq] = useState<Record<string, string>>({});
-
+  const displayNoByReqRef = useRef<Record<string, string>>({});
+  const submittedAtByReqRef = useRef<Record<string, string>>({});
+  useEffect(() => { displayNoByReqRef.current = displayNoByReq; }, [displayNoByReq]);
+  useEffect(() => { submittedAtByReqRef.current = submittedAtByReq; }, [submittedAtByReq]);
 
   const [reqMetaById, setReqMetaById] = useState<Record<string, RequestMeta>>({});
   const reqMetaByIdRef = useRef<Record<string, RequestMeta>>({});
   useEffect(() => { reqMetaByIdRef.current = reqMetaById; }, [reqMetaById]);
+
   // ✅ request_item_id -> note (чтобы в proposal-sheet было как у прораба)
   const [reqItemNoteById, setReqItemNoteById] = useState<Record<string, string>>({});
   const reqItemNoteByIdRef = useRef<Record<string, string>>({});
@@ -954,7 +958,7 @@ export default function DirectorScreen() {
         reqIds
           .map(x => String(x ?? '').trim())
           .filter(Boolean)
-          .filter(id => displayNoByReq[id] == null || submittedAtByReq[id] == null)
+          .filter(id => displayNoByReqRef.current[id] == null || submittedAtByReqRef.current[id] == null)
       )
     );
     if (!needed.length) return;
@@ -986,7 +990,7 @@ export default function DirectorScreen() {
     } catch (e) {
       console.warn('[director] preloadDisplayNos]:', (e as any)?.message ?? e);
     }
-  }, [displayNoByReq, submittedAtByReq]);
+  }, []);
 
 
   const fetchRows = useCallback(async () => {
@@ -1127,13 +1131,13 @@ export default function DirectorScreen() {
     (async () => {
       try {
         await ensureSignedIn();
-        await fetchRows();
-        await fetchProps();
+        void fetchRows();
+        void fetchProps();
       } catch (e) {
         console.warn('[Director] ensureSignedIn]:', (e as any)?.message || e);
       }
     })();
-  }, [fetchRows, fetchProps]);
+  }, []);
 
   useEffect(() => {
     return () => {
@@ -1143,16 +1147,27 @@ export default function DirectorScreen() {
     };
   }, []);
 
-  useEffect(() => {
-    if (dirTab !== "Финансы") return;
-    void fetchFinance();
-  }, [dirTab, fetchFinance]);
+  // Автозагрузка при входе на вкладку
+  const lastInitedTabRef = useRef<string | null>(null);
+  const lastInitedPeriodRef = useRef<string>("");
 
   useEffect(() => {
-    if (dirTab !== "Отчёты") return;
-    void fetchReportOptions();
-    void fetchReport();
-  }, [dirTab, fetchReportOptions, fetchReport]);
+    const periodKey = `${finFrom}-${finTo}-${repFrom}-${repTo}`;
+    const tabKey = dirTab;
+
+    // Если мы уже загружали этот же таб с тем же периодом - не обновляем
+    if (lastInitedTabRef.current === tabKey && lastInitedPeriodRef.current === periodKey) return;
+
+    lastInitedTabRef.current = tabKey;
+    lastInitedPeriodRef.current = periodKey;
+
+    if (tabKey === "Финансы") {
+      void fetchFinance();
+    } else if (tabKey === "Отчёты") {
+      void fetchReportOptions();
+      void fetchReport();
+    }
+  }, [dirTab, finFrom, finTo, repFrom, repTo]);
 
 
   useEffect(() => {
