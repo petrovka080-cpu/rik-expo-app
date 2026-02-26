@@ -1,9 +1,9 @@
-// src/lib/pdfRunner.ts  вњ… PROD stable (web + iOS + android) + СЃРѕРІРјРµСЃС‚РёРјРѕ СЃ GlobalBusy
+// src/lib/pdfRunner.ts  ✅ PROD stable (web + iOS + android) + совместимо с GlobalBusy
 
 import { Platform, Alert, InteractionManager } from "react-native";
 import * as Sharing from "expo-sharing";
 import * as IntentLauncher from "expo-intent-launcher";
-import { SUPABASE_ANON_KEY } from "./supabaseClient"; // вњ… РґРѕР±Р°РІРёР»Рё
+import { SUPABASE_ANON_KEY } from "./supabaseClient"; // ✅ добавили
 
 
 let FileSystem: any = null;
@@ -52,13 +52,13 @@ function normalizeRemoteUrl(raw: any) {
 
 function safeName(name?: string) {
   const base = String(name || `pdf_${Date.now()}`)
-    .replace(/[^\w\-(). ]+/g, "_")
+    .replace(/[^\wА-Яа-яЁё\-(). ]+/g, "_")
     .replace(/\s+/g, " ")
     .trim();
   return base.toLowerCase().endsWith(".pdf") ? base : `${base}.pdf`;
 }
 
-// вњ… NEW: РјР°Р»РµРЅСЊРєРёР№ СЃС‚Р°Р±РёР»СЊРЅС‹Р№ hash, С‡С‚РѕР±С‹ РєРµС€ РЅРµ РїРµСЂРµС‚РёСЂР°Р»СЃСЏ
+// ✅ NEW: маленький стабильный hash, чтобы кеш не перетирался
 function hash32(s: string) {
   let h = 2166136261; // FNV-1a
   for (let i = 0; i < s.length; i++) {
@@ -81,7 +81,7 @@ async function getAuthHeader(supabase: any) {
   try {
     const { data } = await supabase.auth.getSession();
     const token = data?.session?.access_token;
-    // вњ… РґРѕР±Р°РІР»СЏРµРј apikey С‚РѕР¶Рµ (Р±С‹РІР°РµС‚ РЅСѓР¶РЅРѕ РґР»СЏ РїСЂРёРІР°С‚РЅС‹С… endpoints)
+    // ✅ добавляем apikey тоже (бывает нужно для приватных endpoints)
     const h: Record<string, string> = {};
     if (SUPABASE_ANON_KEY) h.apikey = SUPABASE_ANON_KEY;
     if (token) h.Authorization = `Bearer ${token}`;
@@ -100,15 +100,15 @@ export async function preparePdfLocalUri(args: {
 
   const remote = await Promise.resolve(getRemoteUrl());
   const url = normalizeRemoteUrl(remote);
-  if (!url) throw new Error("PDF URL РїСѓСЃС‚РѕР№");
+  if (!url) throw new Error("PDF URL пустой");
 
-  // WEB: РѕС‚РґР°С‘Рј URL РєР°Рє РµСЃС‚СЊ
+  // WEB: отдаём URL как есть
   if (Platform.OS === "web") return url;
 
-  // NATIVE: РµСЃР»Рё СЌС‚Рѕ СѓР¶Рµ file:// РёР»Рё content://
+  // NATIVE: если это уже file:// или content://
   if (!/^https?:\/\//i.test(url)) return url;
 
-  // РєРµС€ РїРѕ URL
+  // кеш по URL
   const cached = urlToLocal.get(url);
   if (cached && (await fileExists(cached))) return cached;
 
@@ -119,12 +119,12 @@ export async function preparePdfLocalUri(args: {
   const cacheDir = FileSystem.cacheDirectory || FileSystem.documentDirectory;
   const localOutput = `${cacheDir}${name}`;
 
-  // NATIVE: РµСЃР»Рё СЌС‚Рѕ СѓР¶Рµ file:// РёР»Рё content:// (РЅР°РїСЂРёРјРµСЂ, РѕС‚ expo-print)
+  // NATIVE: если это уже file:// или content:// (например, от expo-print)
   if (!/^https?:\/\//i.test(url)) {
-    // Р•СЃР»Рё РёРјСЏ СѓР¶Рµ "РєСЂР°СЃРёРІРѕРµ" РёР»Рё СЃРѕРІРїР°РґР°РµС‚ вЂ” РѕС‚РґР°С‘Рј РєР°Рє РµСЃС‚СЊ
+    // Если имя уже "красивое" или совпадает — отдаём как есть
     if (url === localOutput) return url;
 
-    // РРЅР°С‡Рµ РєРѕРїРёСЂСѓРµРј РІ С„Р°Р№Р» СЃ РїСЂР°РІРёР»СЊРЅС‹Рј РёРјРµРЅРµРј РґР»СЏ РєСЂР°СЃРёРІРѕРіРѕ Share Sheet
+    // Иначе копируем в файл с правильным именем для красивого Share Sheet
     try {
       if (!(await fileExists(localOutput))) {
         await FileSystem.copyAsync({ from: url, to: localOutput });
@@ -152,7 +152,7 @@ export async function preparePdfLocalUri(args: {
 export async function openPdfPreview(localUri: string) {
   if (Platform.OS === "web") {
     const win = window.open(localUri, "_blank");
-    if (!win) Alert.alert("PDF", "Р Р°Р·СЂРµС€Рё РІСЃРїР»С‹РІР°СЋС‰РёРµ РѕРєРЅР° (pop-up).");
+    if (!win) Alert.alert("PDF", "Разреши всплывающие окна (pop-up).");
     return;
   }
 
@@ -169,9 +169,9 @@ export async function openPdfPreview(localUri: string) {
     return;
   }
 
-  // iOS: СЃР°РјС‹Р№ СЃС‚Р°Р±РёР»СЊРЅС‹Р№ РїСѓС‚СЊ РІ Expo вЂ” share sheet (preview)
+  // iOS: самый стабильный путь в Expo — share sheet (preview)
   const canShare = await Sharing.isAvailableAsync();
-  if (!canShare) throw new Error("Sharing РЅРµРґРѕСЃС‚СѓРїРµРЅ РЅР° СЌС‚РѕРј СѓСЃС‚СЂРѕР№СЃС‚РІРµ");
+  if (!canShare) throw new Error("Sharing недоступен на этом устройстве");
   await Sharing.shareAsync(localUri, {
     mimeType: "application/pdf",
     UTI: "com.adobe.pdf",
@@ -182,16 +182,16 @@ export async function openPdfPreview(localUri: string) {
 export async function openPdfShare(localUri: string) {
   if (Platform.OS === "web") {
     const win = window.open(localUri, "_blank");
-    if (!win) Alert.alert("PDF", "Р Р°Р·СЂРµС€Рё РІСЃРїР»С‹РІР°СЋС‰РёРµ РѕРєРЅР° (pop-up).");
+    if (!win) Alert.alert("PDF", "Разреши всплывающие окна (pop-up).");
     return;
   }
 
   const canShare = await Sharing.isAvailableAsync();
-  if (!canShare) throw new Error("Sharing РЅРµРґРѕСЃС‚СѓРїРµРЅ РЅР° СЌС‚РѕРј СѓСЃС‚СЂРѕР№СЃС‚РІРµ");
+  if (!canShare) throw new Error("Sharing недоступен на этом устройстве");
   await Sharing.shareAsync(localUri, {
     mimeType: "application/pdf",
     UTI: "com.adobe.pdf",
-    dialogTitle: "РџРѕРґРµР»РёС‚СЊСЃСЏ PDF",
+    dialogTitle: "Поделиться PDF",
   });
 }
 
@@ -213,7 +213,7 @@ export async function runPdfTop(args: {
 
   const cleanup = () => { activeRuns.delete(key); };
 
-  // WEB: РѕС‚РєСЂС‹С‚СЊ РѕРєРЅРѕ РЎРРќРҐР РћРќРќРћ, С‡С‚РѕР±С‹ РЅРµ Р±Р»РѕРєРёСЂРѕРІР°Р»Рѕ
+  // WEB: открыть окно СИНХРОННО, чтобы не блокировало
   if (Platform.OS === "web") {
     let win: Window | null = null;
     try {
@@ -223,7 +223,7 @@ export async function runPdfTop(args: {
     }
 
     if (!win) {
-      Alert.alert("PDF", "Р Р°Р·СЂРµС€Рё РІСЃРїР»С‹РІР°СЋС‰РёРµ РѕРєРЅР° (pop-up).");
+      Alert.alert("PDF", "Разреши всплывающие окна (pop-up).");
       return;
     }
 
@@ -232,8 +232,8 @@ export async function runPdfTop(args: {
       win.document.write(`<!doctype html><meta charset="utf-8"/>
         <title>PDF</title>
         <body style="font-family:system-ui;padding:16px">
-          <b>${label || "Р¤РѕСЂРјРёСЂСѓРµРј PDFвЂ¦"}</b>
-          <div style="opacity:.7;margin-top:6px">Р•СЃР»Рё РґРѕР»РіРѕ вЂ” РїСЂРѕРІРµСЂСЊ СЃРѕРµРґРёРЅРµРЅРёРµ.</div>
+          <b>${label || "Формируем PDF…"}</b>
+          <div style="opacity:.7;margin-top:6px">Если долго — проверь соединение.</div>
         </body>`);
       win.document.close();
     } catch { }
@@ -245,7 +245,7 @@ export async function runPdfTop(args: {
         "Server did not respond in 15 seconds"
       );
       const url = normalizeRemoteUrl(remote);
-      if (!url) throw new Error("PDF URL РїСѓСЃС‚РѕР№");
+      if (!url) throw new Error("PDF URL пустой");
 
       try {
         win.location.replace(url);
@@ -259,7 +259,7 @@ export async function runPdfTop(args: {
       try {
         win.close();
       } catch { }
-      Alert.alert("PDF", e?.message ?? "РќРµ СѓРґР°Р»РѕСЃСЊ РѕС‚РєСЂС‹С‚СЊ PDF");
+      Alert.alert("PDF", e?.message ?? "Не удалось открыть PDF");
       cleanup();
       return;
     }
@@ -267,17 +267,18 @@ export async function runPdfTop(args: {
 
   // NATIVE
   const doPrepare = async () => {
-    // вњ… 1) РѕС‚РїСѓСЃРєР°РµРј UI, С‡С‚РѕР±С‹ СЃРїРёРЅРЅРµСЂ/Р°РЅРёРјР°С†РёРё СѓСЃРїРµР»Рё РѕС‚СЂРёСЃРѕРІР°С‚СЊСЃСЏ
+    // ✅ 1) отпускаем UI, чтобы спиннер/анимации успели отрисоваться
     await uiYield(50);
 
-    // вњ… 2) РґР°С‘Рј С‚Р°Р№РјР°СѓС‚ РЅР° РіРµРЅРµСЂР°С†РёСЋ/СЃРєР°С‡РёРІР°РЅРёРµ (С‡С‚РѕР±С‹ РЅРµ РІРёСЃР»Рѕ РІРµС‡РЅРѕ)
+    // ✅ 2) даём таймаут на генерацию/скачивание (чтобы не висло вечно)
     const uri = await withTimeout(
       preparePdfLocalUri({ supabase, getRemoteUrl, fileName }),
       25000,
-      "PDF СЃР»РёС€РєРѕРј РґРѕР»РіРѕ РіРѕС‚РѕРІРёС‚СЃСЏ. РџРѕРїСЂРѕР±СѓР№ РµС‰С‘ СЂР°Р·."
+      "PDF слишком долго готовится. Попробуй ещё раз."
     );
     return uri;
   };
+
   try {
     let localUri: string | null = null;
     if (busy?.run) {
@@ -296,6 +297,8 @@ export async function runPdfTop(args: {
       return;
     }
 
+    // ✅ 3) перед Share Sheet ещё раз отпустить UI ПРИ ЗАКРЫТОМ СПИННЕРЕ
+    // Это критически важно на iOS 17+, чтобы избежать deadlock UI потока!
     await uiYield(Platform.OS === "ios" ? 180 : 50);
 
     if (mode === "share") await openPdfShare(localUri);
@@ -303,7 +306,7 @@ export async function runPdfTop(args: {
   } catch (e: any) {
     Alert.alert("PDF", String(e?.message ?? "Не удалось открыть PDF"));
   } finally {
+    // Даем время на закрытие Modal/Portal перед тем как разрешить новый тап
     setTimeout(cleanup, 500);
   }
 }
-

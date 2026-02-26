@@ -60,19 +60,9 @@ const nnum = (v: any): number => {
 
 const fmtQty = (v: any) => nnum(v).toLocaleString("ru-RU", { maximumFractionDigits: 3 });
 
-const isMissingName = (v: any): boolean => {
-  const s = String(v ?? "").trim();
-  if (!s) return true;
-  if (/^[-\u2014\u2013\u2212]+$/.test(s)) return true;
-  const l = s.toLowerCase();
-  if (l === "null" || l === "undefined" || l === "n/a") return true;
-  if (l.includes("РІС’")) return true; // mojibake dash placeholder
-  return false;
-};
-
 const fmtDateTimeRu = (iso?: string | null) => {
   const s = String(iso ?? "").trim();
-  if (!s) return "вЂ”";
+  if (!s) return "—";
   const d = new Date(s);
   if (Number.isNaN(d.getTime())) return s;
   return d.toLocaleString("ru-RU");
@@ -82,35 +72,35 @@ const pickIssueNo = (h: WarehouseIssueHead) => {
   const x = String(h.issue_no ?? "").trim() || String(h.base_no ?? "").trim();
   if (x) return x;
   const id = String(h.issue_id ?? "").trim();
-  return id ? `ISSUE-${id}` : "ISSUE-вЂ”";
+  return id ? `ISSUE-${id}` : "ISSUE-—";
 };
 
 const pickKindLabel = (h: WarehouseIssueHead) => {
   const k = String(h.kind ?? "").toUpperCase().trim();
-  if (k === "REQ") return "Р’С‹РґР°С‡Р° РїРѕ Р·Р°СЏРІРєРµ";
-  if (k === "FREE") return "Р’С‹РґР°С‡Р° Р±РµР· Р·Р°СЏРІРєРё";
+  if (k === "REQ") return "Выдача по заявке";
+  if (k === "FREE") return "Выдача без заявки";
   const note = String(h.note ?? "").toLowerCase();
-  if (note.includes("СЃРІРѕР±РѕРґРЅ")) return "Р’С‹РґР°С‡Р° Р±РµР· Р·Р°СЏРІРєРё";
-  if (note.includes("Р·Р°СЏРІРє")) return "Р’С‹РґР°С‡Р° РїРѕ Р·Р°СЏРІРєРµ";
-  return "Р’С‹РґР°С‡Р° СЃРѕ СЃРєР»Р°РґР°";
+  if (note.includes("свободн")) return "Выдача без заявки";
+  if (note.includes("заявк")) return "Выдача по заявке";
+  return "Выдача со склада";
 };
 
 const pickBasis = (h: WarehouseIssueHead) => {
   const dn = String(h.display_no ?? "").trim();
-  if (dn) return `Р—Р°СЏРІРєР°: ${dn}`;
+  if (dn) return `Заявка: ${dn}`;
   const note = String(h.note ?? "").trim();
-  return note ? note : "вЂ”";
+  return note ? note : "—";
 };
 
 const kindByCodePrefix = (codeRaw: any): string => {
   const c = String(codeRaw ?? "").trim().toUpperCase();
-  if (!c) return "РџРѕР·РёС†РёСЏ";
-  if (c.startsWith("MAT-")) return "РњР°С‚РµСЂРёР°Р»";
-  if (c.startsWith("TOOL-")) return "РРЅСЃС‚СЂСѓРјРµРЅС‚";
-  if (c.startsWith("WT-") || c.startsWith("WORK-")) return "Р Р°Р±РѕС‚Р°";
-  if (c.startsWith("SRV-") || c.startsWith("SERV-")) return "РЈСЃР»СѓРіР°";
-  if (c.startsWith("KIT-")) return "РљРѕРјРїР»РµРєС‚";
-  return "РџРѕР·РёС†РёСЏ";
+  if (!c) return "Позиция";
+  if (c.startsWith("MAT-")) return "Материал";
+  if (c.startsWith("TOOL-")) return "Инструмент";
+  if (c.startsWith("WT-") || c.startsWith("WORK-")) return "Работа";
+  if (c.startsWith("SRV-") || c.startsWith("SERV-")) return "Услуга";
+  if (c.startsWith("KIT-")) return "Комплект";
+  return "Позиция";
 };
 
 const cssForm29 = () => `
@@ -194,29 +184,29 @@ const cssForm29 = () => `
     text-align:center;
     font-size:10px;
   }
-  .page-footer:after{ content:"РЎС‚СЂ. " counter(page); }
+  .page-footer:after{ content:"Стр. " counter(page); }
 `;
 
 const pickLineUom = (ln: any) => {
   const u = String(ln?.uom ?? ln?.uom_id ?? "").trim();
-  return u ? esc(uomRu(u)) : "вЂ”";
+  return u ? esc(uomRu(u)) : "—";
 };
 
 const uomRu = (u: any) => {
   const raw = String(u ?? "").trim();
-  if (!raw) return "вЂ”";
+  if (!raw) return "—";
 
   const s = raw
     .replace(/\s+/g, "")
-    .replace("ВІ", "2")
-    .replace("Ві", "3")
+    .replace("²", "2")
+    .replace("³", "3")
     .toLowerCase();
 
-  if (s === "m") return "Рј";
-  if (s === "m2") return "РјВІ";
-  if (s === "m3") return "РјВі";
+  if (s === "m") return "м";
+  if (s === "m2") return "м²";
+  if (s === "m3") return "м³";
 
-  if (raw === "Рј" || raw === "РјВІ" || raw === "РјВі") return raw;
+  if (raw === "м" || raw === "м²" || raw === "м³") return raw;
 
   return raw;
 };
@@ -235,7 +225,7 @@ const pickLineNameRu = (ln: any, nameByCode?: Record<string, string>) => {
   const fromMap = code && nameByCode ? String(nameByCode[code] ?? "").trim() : "";
   if (fromMap) return esc(fromMap);
 
-  return "вЂ”";
+  return "—";
 };
 
 export function buildWarehouseIssueFormHtml(args: {
@@ -258,14 +248,14 @@ export function buildWarehouseIssueFormHtml(args: {
   let workGuess = String(h.work_name ?? "").trim();
   if (!objectGuess || !workGuess) {
     const n = note;
-    const mObj = n.match(/РѕР±СЉРµРєС‚:\s*([^В·\n\r]+)/i);
-    const mWork = n.match(/РІРёРґ:\s*([^В·\n\r]+)/i);
+    const mObj = n.match(/объект:\s*([^·\n\r]+)/i);
+    const mWork = n.match(/вид:\s*([^·\n\r]+)/i);
     if (!objectGuess && mObj?.[1]) objectGuess = String(mObj[1]).trim();
     if (!workGuess && mWork?.[1]) workGuess = String(mWork[1]).trim();
   }
 
-  const who = String(h.who ?? "").trim() || "вЂ”";
-  const req = String(h.display_no ?? "").trim() || "вЂ”";
+  const who = String(h.who ?? "").trim() || "—";
+  const req = String(h.display_no ?? "").trim() || "—";
 
   const total = nnum(h.qty_total);
   const inReq = nnum(h.qty_in_req);
@@ -297,7 +287,7 @@ export function buildWarehouseIssueFormHtml(args: {
 </tr>`;
         })
         .join("")
-      : `<tr><td class="t-center" colspan="6"><i>РќРµС‚ СЃС‚СЂРѕРє</i></td></tr>`;
+      : `<tr><td class="t-center" colspan="6"><i>Нет строк</i></td></tr>`;
 
   const org = String(args.orgName ?? "").trim();
   const wh = String(args.warehouseName ?? "").trim();
@@ -308,35 +298,35 @@ export function buildWarehouseIssueFormHtml(args: {
 </head>
 <body>
   <div class="page">
-    <div class="h1">РќРђРљР›РђР”РќРђРЇ РќРђ РћРўРџРЈРЎРљ РњРђРўР•Р РРђР›РћР’ РЎРћ РЎРљР›РђР”Рђ</div>
+    <div class="h1">НАКЛАДНАЯ НА ОТПУСК МАТЕРИАЛОВ СО СКЛАДА</div>
     <div class="h2">${esc(kindLabel)}</div>
 
     <div class="meta">
-      <div class="row"><div class="ml">РћСЂРіР°РЅРёР·Р°С†РёСЏ:</div><div class="mv">${esc(org || "вЂ”")}</div></div>
-      <div class="row"><div class="ml">РЎРєР»Р°Рґ:</div><div class="mv">${esc(wh || "вЂ”")}</div></div>
+      <div class="row"><div class="ml">Организация:</div><div class="mv">${esc(org || "—")}</div></div>
+      <div class="row"><div class="ml">Склад:</div><div class="mv">${esc(wh || "—")}</div></div>
 
-      <div class="row"><div class="ml">РќРѕРјРµСЂ:</div><div class="mv">${esc(issueNo)}</div></div>
-      <div class="row"><div class="ml">Р”Р°С‚Р°:</div><div class="mv">${esc(dt)}</div></div>
+      <div class="row"><div class="ml">Номер:</div><div class="mv">${esc(issueNo)}</div></div>
+      <div class="row"><div class="ml">Дата:</div><div class="mv">${esc(dt)}</div></div>
 
-      <div class="row"><div class="ml">РћСЃРЅРѕРІР°РЅРёРµ:</div><div class="mv">${esc(basis)}</div></div>
-      <div class="row"><div class="ml">Р—Р°СЏРІРєР°:</div><div class="mv">${esc(req)}</div></div>
+      <div class="row"><div class="ml">Основание:</div><div class="mv">${esc(basis)}</div></div>
+      <div class="row"><div class="ml">Заявка:</div><div class="mv">${esc(req)}</div></div>
 
-      <div class="row"><div class="ml">РћР±СЉРµРєС‚:</div><div class="mv">${esc(objectGuess || "вЂ”")}</div></div>
-      <div class="row"><div class="ml">Р’РёРґ СЂР°Р±РѕС‚:</div><div class="mv">${esc(workGuess || "вЂ”")}</div></div>
+      <div class="row"><div class="ml">Объект:</div><div class="mv">${esc(objectGuess || "—")}</div></div>
+      <div class="row"><div class="ml">Вид работ:</div><div class="mv">${esc(workGuess || "—")}</div></div>
 
-      <div class="row"><div class="ml">РџРѕР»СѓС‡Р°С‚РµР»СЊ:</div><div class="mv">${esc(who)}</div></div>
-      <div class="row"><div class="ml">РџСЂРёРјРµС‡Р°РЅРёРµ:</div><div class="mv">${esc(note || "вЂ”")}</div></div>
+      <div class="row"><div class="ml">Получатель:</div><div class="mv">${esc(who)}</div></div>
+      <div class="row"><div class="ml">Примечание:</div><div class="mv">${esc(note || "—")}</div></div>
     </div>
 
     <table>
       <thead>
         <tr>
-          <th style="width:34px">в„–</th>
-          <th>РќР°РёРјРµРЅРѕРІР°РЅРёРµ</th>
-          <th style="width:52px">Р•Рґ.</th>
-          <th style="width:88px">РџРѕ Р·Р°СЏРІРєРµ</th>
-          <th style="width:88px">РЎРІРµСЂС…</th>
-          <th style="width:88px">РС‚РѕРіРѕ</th>
+          <th style="width:34px">№</th>
+          <th>Наименование</th>
+          <th style="width:52px">Ед.</th>
+          <th style="width:88px">По заявке</th>
+          <th style="width:88px">Сверх</th>
+          <th style="width:88px">Итого</th>
         </tr>
       </thead>
       <tbody>
@@ -345,15 +335,15 @@ export function buildWarehouseIssueFormHtml(args: {
     </table>
 
     <div class="totals">
-      <div class="box"><span class="lbl">РС‚РѕРіРѕ РѕС‚РїСѓС‰РµРЅРѕ:</span> ${esc(fmtQty(total))}</div>
-      <div class="box"><span class="lbl">РџРѕ Р·Р°СЏРІРєРµ:</span> ${esc(fmtQty(inReq))}</div>
-      <div class="box"><span class="lbl">РЎРІРµСЂС… Р·Р°СЏРІРєРё:</span> ${esc(fmtQty(over))}</div>
+      <div class="box"><span class="lbl">Итого отпущено:</span> ${esc(fmtQty(total))}</div>
+      <div class="box"><span class="lbl">По заявке:</span> ${esc(fmtQty(inReq))}</div>
+      <div class="box"><span class="lbl">Сверх заявки:</span> ${esc(fmtQty(over))}</div>
     </div>
 
     <div class="signs">
-      <div class="sign"><div class="who">РљР»Р°РґРѕРІС‰РёРє</div><div class="line"></div><div class="fio"></div></div>
-      <div class="sign"><div class="who">РџСЂРѕСЂР°Р± / РЅР°С‡. СѓС‡Р°СЃС‚РєР°</div><div class="line"></div><div class="fio"></div></div>
-      <div class="sign"><div class="who">РџРѕР»СѓС‡Р°С‚РµР»СЊ (РњРћР›)</div><div class="line"></div><div class="fio">${esc(who)}</div></div>
+      <div class="sign"><div class="who">Кладовщик</div><div class="line"></div><div class="fio"></div></div>
+      <div class="sign"><div class="who">Прораб / нач. участка</div><div class="line"></div><div class="fio"></div></div>
+      <div class="sign"><div class="who">Получатель (МОЛ)</div><div class="line"></div><div class="fio">${esc(who)}</div></div>
       <div></div>
     </div>
 
@@ -371,7 +361,7 @@ export function buildWarehouseIssuesRegisterHtml(args: {
 }): string {
   const from = String(args.periodFrom ?? "").trim();
   const to = String(args.periodTo ?? "").trim();
-  const period = from || to ? `${from || "вЂ”"} в†’ ${to || "вЂ”"}` : "Р’РµСЃСЊ РїРµСЂРёРѕРґ";
+  const period = from || to ? `${from || "—"} → ${to || "—"}` : "Весь период";
 
   const rows = Array.isArray(args.issues) ? args.issues : [];
 
@@ -388,9 +378,9 @@ export function buildWarehouseIssuesRegisterHtml(args: {
         .map((h, idx) => {
           const dt = fmtDateTimeRu(h.event_dt);
           const issueNo = pickIssueNo(h);
-          const kindLabel = String(h.kind ?? "").toUpperCase() === "REQ" ? "РџРѕ Р·Р°СЏРІРєРµ" : "Р‘РµР· Р·Р°СЏРІРєРё";
-          const who = String(h.who ?? "вЂ”");
-          const req = String(h.display_no ?? "вЂ”");
+          const kindLabel = String(h.kind ?? "").toUpperCase() === "REQ" ? "По заявке" : "Без заявки";
+          const who = String(h.who ?? "—");
+          const req = String(h.display_no ?? "—");
 
           const total = fmtQty(h.qty_total);
           const inReq = fmtQty(h.qty_in_req);
@@ -410,36 +400,36 @@ export function buildWarehouseIssuesRegisterHtml(args: {
 </tr>`;
         })
         .join("")
-      : `<tr><td class="t-center" colspan="9"><i>РќРµС‚ РІС‹РґР°С‡ Р·Р° РїРµСЂРёРѕРґ</i></td></tr>`;
+      : `<tr><td class="t-center" colspan="9"><i>Нет выдач за период</i></td></tr>`;
 
   return `<!doctype html><html lang="ru"><head><meta charset="utf-8"/>
-<title>Р РµРµСЃС‚СЂ РІС‹РґР°С‡ СЃРѕ СЃРєР»Р°РґР°</title>
+<title>Реестр выдач со склада</title>
 <style>${cssForm29()}</style>
 </head>
 <body>
   <div class="page">
-    <div class="h1">Р Р•Р•РЎРўР  Р’Р«Р”РђР§ РЎРћ РЎРљР›РђР”Рђ Р—Рђ РџР•Р РРћР”</div>
+    <div class="h1">РЕЕСТР ВЫДАЧ СО СКЛАДА ЗА ПЕРИОД</div>
     <div class="h2">${esc(period)}</div>
 
     <div class="meta">
-      <div class="row"><div class="ml">РћСЂРіР°РЅРёР·Р°С†РёСЏ:</div><div class="mv">${esc(org || "вЂ”")}</div></div>
-      <div class="row"><div class="ml">РЎРєР»Р°Рґ:</div><div class="mv">${esc(wh || "вЂ”")}</div></div>
-      <div class="row"><div class="ml">Р’СЃРµРіРѕ РІС‹РґР°С‡:</div><div class="mv">${esc(String(rows.length))}</div></div>
-      <div class="row"><div class="ml">РЎС„РѕСЂРјРёСЂРѕРІР°РЅРѕ:</div><div class="mv">${esc(new Date().toLocaleString("ru-RU"))}</div></div>
+      <div class="row"><div class="ml">Организация:</div><div class="mv">${esc(org || "—")}</div></div>
+      <div class="row"><div class="ml">Склад:</div><div class="mv">${esc(wh || "—")}</div></div>
+      <div class="row"><div class="ml">Всего выдач:</div><div class="mv">${esc(String(rows.length))}</div></div>
+      <div class="row"><div class="ml">Сформировано:</div><div class="mv">${esc(new Date().toLocaleString("ru-RU"))}</div></div>
     </div>
 
     <table>
       <thead>
         <tr>
-          <th style="width:34px">в„–</th>
-          <th style="width:120px">Р”Р°С‚Р°</th>
-          <th style="width:110px">РќРѕРјРµСЂ</th>
-          <th style="width:90px">РўРёРї</th>
-          <th>РџРѕР»СѓС‡Р°С‚РµР»СЊ</th>
-          <th style="width:120px">Р—Р°СЏРІРєР°</th>
-          <th style="width:80px">Р’СЃРµРіРѕ</th>
-          <th style="width:90px">РџРѕ Р·Р°СЏРІРєРµ</th>
-          <th style="width:90px">РЎРІРµСЂС… Р·Р°СЏРІРєРё</th>
+          <th style="width:34px">№</th>
+          <th style="width:120px">Дата</th>
+          <th style="width:110px">Номер</th>
+          <th style="width:90px">Тип</th>
+          <th>Получатель</th>
+          <th style="width:120px">Заявка</th>
+          <th style="width:80px">Всего</th>
+          <th style="width:90px">По заявке</th>
+          <th style="width:90px">Сверх заявки</th>
         </tr>
       </thead>
       <tbody>
@@ -448,14 +438,14 @@ export function buildWarehouseIssuesRegisterHtml(args: {
     </table>
 
     <div class="totals">
-      <div class="box"><span class="lbl">РС‚РѕРіРѕ РѕС‚РїСѓС‰РµРЅРѕ:</span> ${esc(fmtQty(sumTotal))}</div>
-      <div class="box"><span class="lbl">РС‚РѕРіРѕ РїРѕ Р·Р°СЏРІРєР°Рј:</span> ${esc(fmtQty(sumInReq))}</div>
-      <div class="box"><span class="lbl">РС‚РѕРіРѕ СЃРІРµСЂС… Р·Р°СЏРІРѕРє:</span> ${esc(fmtQty(sumOver))}</div>
+      <div class="box"><span class="lbl">Итого отпущено:</span> ${esc(fmtQty(sumTotal))}</div>
+      <div class="box"><span class="lbl">Итого по заявкам:</span> ${esc(fmtQty(sumInReq))}</div>
+      <div class="box"><span class="lbl">Итого сверх заявок:</span> ${esc(fmtQty(sumOver))}</div>
     </div>
 
     <div class="signs">
-      <div class="sign"><div class="who">РљР»Р°РґРѕРІС‰РёРє</div><div class="line"></div><div class="fio"></div></div>
-      <div class="sign"><div class="who">РџСЂРѕСЂР°Р± / РЅР°С‡. СѓС‡Р°СЃС‚РєР°</div><div class="line"></div><div class="fio"></div></div>
+      <div class="sign"><div class="who">Кладовщик</div><div class="line"></div><div class="fio"></div></div>
+      <div class="sign"><div class="who">Прораб / нач. участка</div><div class="line"></div><div class="fio"></div></div>
     </div>
 
     <div class="page-footer"></div>
@@ -470,11 +460,11 @@ export async function exportWarehouseHtmlPdf(opts: { fileName: string; html: str
   } as any);
 }
 
-// ====== NEW REPORTS (period) вЂ” Materials + Objects/Works ======
+// ====== NEW REPORTS (period) — Materials + Objects/Works ======
 
 export type IssuedMaterialsReportRow = {
   material_code?: string | null;
-  material_name?: string | null; // вњ… РїСЂРёС…РѕРґРёС‚ СЂСѓСЃСЃРєРёРј РёР· Р‘Р” (wh_report_issued_materials_fast)
+  material_name?: string | null; // ✅ приходит русским из БД (wh_report_issued_materials_fast)
   uom?: string | null;
 
   sum_in_req?: any;
@@ -513,14 +503,14 @@ export function buildWarehouseMaterialsReportHtml(args: {
 
   rows: IssuedMaterialsReportRow[];
 
-  // вњ… counters РёР· wh_report_issued_summary_fast
+  // ✅ counters из wh_report_issued_summary_fast
   docsTotal: number;
   docsByReq: number;
   docsWithoutReq: number;
 }): string {
   const from = String(args.periodFrom ?? "").trim();
   const to = String(args.periodTo ?? "").trim();
-  const period = from || to ? `${from || "вЂ”"} в†’ ${to || "вЂ”"}` : "Р’РµСЃСЊ РїРµСЂРёРѕРґ";
+  const period = from || to ? `${from || "—"} → ${to || "—"}` : "Весь период";
 
   const org = String(args.orgName ?? "").trim();
   const wh = String(args.warehouseName ?? "").trim();
@@ -541,8 +531,9 @@ export function buildWarehouseMaterialsReportHtml(args: {
         .map((r, idx) => {
           const rawName = String(r.material_name ?? "").trim();
           const code = String(r.material_code ?? "").trim();
-          const name = !isMissingName(rawName) ? rawName : (code || "РџРѕР·РёС†РёСЏ");
-          const uom = uomRu(String(r.uom ?? "").trim()) || "вЂ”";
+          const isDashLike = /^[-\u2014\u2013\u2212]+$/.test(rawName);
+          const name = rawName && !isDashLike ? rawName : (code || "-");
+          const uom = uomRu(String(r.uom ?? "").trim()) || "—";
 
           const inReq = fmtQty(r.sum_in_req);
           const free = fmtQty(r.sum_free);
@@ -560,38 +551,38 @@ export function buildWarehouseMaterialsReportHtml(args: {
         })
         .join("")
       : (docsTotal > 0
-        ? `<tr><td class="t-center" colspan="6"><i>Р”Р°РЅРЅС‹Рµ РЅРµ Р·Р°РіСЂСѓР¶РµРЅС‹ (РµСЃС‚СЊ РІС‹РґР°С‡Рё: ${esc(String(docsTotal))}). РћР±РЅРѕРІРё РѕС‚С‡С‘С‚ РёР»Рё СЃСѓР·СЊ РїРµСЂРёРѕРґ.</i></td></tr>`
-        : `<tr><td class="t-center" colspan="6"><i>РќРµС‚ РґР°РЅРЅС‹С… Р·Р° РїРµСЂРёРѕРґ</i></td></tr>`);
+        ? `<tr><td class="t-center" colspan="6"><i>Данные не загружены (есть выдачи: ${esc(String(docsTotal))}). Обнови отчёт или сузь период.</i></td></tr>`
+        : `<tr><td class="t-center" colspan="6"><i>Нет данных за период</i></td></tr>`);
 
   return `<!doctype html><html lang="ru"><head><meta charset="utf-8"/>
-<title>Р’РµРґРѕРјРѕСЃС‚СЊ РѕС‚РїСѓСЃРєР° РјР°С‚РµСЂРёР°Р»РѕРІ</title>
+<title>Ведомость отпуска материалов</title>
 <style>${cssForm29()}</style>
 </head>
 <body>
   <div class="page">
-    <div class="h1">Р’Р•Р”РћРњРћРЎРўР¬ РћРўРџРЈРЎРљРђ РњРђРўР•Р РРђР›РћР’ РЎРћ РЎРљР›РђР”Рђ</div>
-    <div class="h2">Р·Р° РїРµСЂРёРѕРґ ${esc(period)}</div>
+    <div class="h1">ВЕДОМОСТЬ ОТПУСКА МАТЕРИАЛОВ СО СКЛАДА</div>
+    <div class="h2">за период ${esc(period)}</div>
 
     <div class="meta">
-      <div class="row"><div class="ml">РћСЂРіР°РЅРёР·Р°С†РёСЏ:</div><div class="mv">${esc(org || "вЂ”")}</div></div>
-      <div class="row"><div class="ml">РЎРєР»Р°Рґ:</div><div class="mv">${esc(wh || "вЂ”")}</div></div>
+      <div class="row"><div class="ml">Организация:</div><div class="mv">${esc(org || "—")}</div></div>
+      <div class="row"><div class="ml">Склад:</div><div class="mv">${esc(wh || "—")}</div></div>
 
-      <div class="row"><div class="ml">РћР±СЉРµРєС‚:</div><div class="mv">${esc(obj || "вЂ”")}</div></div>
-      <div class="row"><div class="ml">Р’РёРґ СЂР°Р±РѕС‚ / СѓС‡Р°СЃС‚РѕРє:</div><div class="mv">${esc(work || "вЂ”")}</div></div>
+      <div class="row"><div class="ml">Объект:</div><div class="mv">${esc(obj || "—")}</div></div>
+      <div class="row"><div class="ml">Вид работ / участок:</div><div class="mv">${esc(work || "—")}</div></div>
 
-      <div class="row"><div class="ml">РџРѕР·РёС†РёР№:</div><div class="mv">${esc(String(positions))}</div></div>
-      <div class="row"><div class="ml">Р”Р°С‚Р° С„РѕСЂРјРёСЂРѕРІР°РЅРёСЏ:</div><div class="mv">${esc(new Date().toLocaleString("ru-RU"))}</div></div>
+      <div class="row"><div class="ml">Позиций:</div><div class="mv">${esc(String(positions))}</div></div>
+      <div class="row"><div class="ml">Дата формирования:</div><div class="mv">${esc(new Date().toLocaleString("ru-RU"))}</div></div>
     </div>
 
     <table>
       <thead>
         <tr>
-          <th style="width:34px">в„–</th>
-          <th>РќР°РёРјРµРЅРѕРІР°РЅРёРµ РјР°С‚РµСЂРёР°Р»Р°</th>
-          <th style="width:52px">Р•Рґ. РёР·Рј.</th>
-          <th style="width:110px">РћС‚РїСѓС‰РµРЅРѕ РїРѕ Р·Р°СЏРІРєР°Рј</th>
-          <th style="width:110px">РћС‚РїСѓС‰РµРЅРѕ Р±РµР· Р·Р°СЏРІРєРё</th>
-          <th style="width:90px">РћС‚РїСѓС‰РµРЅРѕ РІСЃРµРіРѕ</th>
+          <th style="width:34px">№</th>
+          <th>Наименование материала</th>
+          <th style="width:52px">Ед. изм.</th>
+          <th style="width:110px">Отпущено по заявкам</th>
+          <th style="width:110px">Отпущено без заявки</th>
+          <th style="width:90px">Отпущено всего</th>
         </tr>
       </thead>
       <tbody>
@@ -599,17 +590,17 @@ export function buildWarehouseMaterialsReportHtml(args: {
       </tbody>
     </table>
 
-    <!-- вњ… 3 РРўРћР“Рћ РџРћ Р”РћРљРЈРњР•РќРўРђРњ (РёР· С‚РѕРіРѕ Р¶Рµ РёСЃС‚РѕС‡РЅРёРєР°, С‡С‚Рѕ Рё СЃС‚СЂРѕРєРё) -->
+    <!-- ✅ 3 ИТОГО ПО ДОКУМЕНТАМ (из того же источника, что и строки) -->
     <div class="totals">
-      <div class="box"><span class="lbl">Р’С‹РґР°С‡ РІСЃРµРіРѕ (РґРѕРєСѓРјРµРЅС‚РѕРІ):</span> ${esc(String(docsTotal))}</div>
-      <div class="box"><span class="lbl">Р’С‹РґР°С‡ РїРѕ Р·Р°СЏРІРєР°Рј (РґРѕРєСѓРјРµРЅС‚РѕРІ):</span> ${esc(String(docsByReq))}</div>
-      <div class="box"><span class="lbl">Р’С‹РґР°С‡ Р±РµР· Р·Р°СЏРІРєРё (РґРѕРєСѓРјРµРЅС‚РѕРІ):</span> ${esc(String(docsWithoutReq))}</div>
+      <div class="box"><span class="lbl">Выдач всего (документов):</span> ${esc(String(docsTotal))}</div>
+      <div class="box"><span class="lbl">Выдач по заявкам (документов):</span> ${esc(String(docsByReq))}</div>
+      <div class="box"><span class="lbl">Выдач без заявки (документов):</span> ${esc(String(docsWithoutReq))}</div>
     </div>
 
     <div class="signs">
-      <div class="sign"><div class="who">РљР»Р°РґРѕРІС‰РёРє</div><div class="line"></div><div class="fio"></div></div>
-      <div class="sign"><div class="who">РџСЂРѕСЂР°Р± / РЅР°С‡. СѓС‡Р°СЃС‚РєР°</div><div class="line"></div><div class="fio"></div></div>
-      <div class="sign"><div class="who">РџРѕР»СѓС‡Р°С‚РµР»СЊ (РњРћР›)</div><div class="line"></div><div class="fio"></div></div>
+      <div class="sign"><div class="who">Кладовщик</div><div class="line"></div><div class="fio"></div></div>
+      <div class="sign"><div class="who">Прораб / нач. участка</div><div class="line"></div><div class="fio"></div></div>
+      <div class="sign"><div class="who">Получатель (МОЛ)</div><div class="line"></div><div class="fio"></div></div>
       <div></div>
     </div>
 
@@ -624,14 +615,14 @@ export function buildWarehouseObjectWorkReportHtml(args: {
   orgName?: string;
   warehouseName?: string;
 
-  objectName?: string | null; // РµСЃР»Рё РІС‹Р±СЂР°РЅ С„РёР»СЊС‚СЂ
+  objectName?: string | null; // если выбран фильтр
   rows: IssuedByObjectWorkReportRow[];
 
   docsTotal: number;
 }): string {
   const from = String(args.periodFrom ?? "").trim();
   const to = String(args.periodTo ?? "").trim();
-  const period = from || to ? `${from || "вЂ”"} в†’ ${to || "вЂ”"}` : "Р’РµСЃСЊ РїРµСЂРёРѕРґ";
+  const period = from || to ? `${from || "—"} → ${to || "—"}` : "Весь период";
 
   const org = String(args.orgName ?? "").trim();
   const wh = String(args.warehouseName ?? "").trim();
@@ -644,18 +635,18 @@ export function buildWarehouseObjectWorkReportHtml(args: {
     rows.length > 0
       ? rows
         .map((r, idx) => {
-          const obj = String(r.object_name ?? "").trim() || "Р‘РµР· РѕР±СЉРµРєС‚Р°";
-          const work = String(r.work_name ?? "").trim() || "Р‘РµР· РІРёРґР° СЂР°Р±РѕС‚";
+          const obj = String(r.object_name ?? "").trim() || "Без объекта";
+          const work = String(r.work_name ?? "").trim() || "Без вида работ";
 
           const docs = Math.max(0, Math.round(nnum(r.docs_cnt)));
           const reqCnt = Math.max(0, Math.round(nnum(r.req_cnt)));
           const days = Math.max(0, Math.round(nnum(r.active_days)));
           const uniq = Math.max(0, Math.round(nnum(r.uniq_materials)));
 
-          const recText = String(r.recipients_text ?? "").trim() || "вЂ”";
-          const top3 = String(r.top3_materials ?? "").trim() || "вЂ”";
+          const recText = String(r.recipients_text ?? "").trim() || "—";
+          const top3 = String(r.top3_materials ?? "").trim() || "—";
 
-          // РїРµСЂРµРЅРѕСЃС‹ СЃС‚СЂРѕРє РІ HTML
+          // переносы строк в HTML
           const recHtml = esc(recText).replace(/\n/g, "<br/>");
           const topHtml = esc(top3).replace(/\n/g, "<br/>");
 
@@ -678,37 +669,37 @@ export function buildWarehouseObjectWorkReportHtml(args: {
 </tr>`;
         })
         .join("")
-      : `<tr><td class="t-center" colspan="9"><i>РќРµС‚ РґР°РЅРЅС‹С… Р·Р° РїРµСЂРёРѕРґ</i></td></tr>`;
+      : `<tr><td class="t-center" colspan="9"><i>Нет данных за период</i></td></tr>`;
 
   return `<!doctype html><html lang="ru"><head><meta charset="utf-8"/>
-<title>РћС‚С‡С‘С‚ РїРѕ РѕР±СЉРµРєС‚Р°Рј Рё РІРёРґР°Рј СЂР°Р±РѕС‚</title>
+<title>Отчёт по объектам и видам работ</title>
 <style>${cssForm29()}</style>
 </head>
 <body>
   <div class="page">
-    <div class="h1">РћРўР§РЃРў РџРћ РћР‘РЄР•РљРўРђРњ / Р’РР”РђРњ Р РђР‘РћРў Р—Рђ РџР•Р РРћР”</div>
+    <div class="h1">ОТЧЁТ ПО ОБЪЕКТАМ / ВИДАМ РАБОТ ЗА ПЕРИОД</div>
     <div class="h2">${esc(period)}</div>
 
     <div class="meta">
-      <div class="row"><div class="ml">РћСЂРіР°РЅРёР·Р°С†РёСЏ:</div><div class="mv">${esc(org || "вЂ”")}</div></div>
-      <div class="row"><div class="ml">РЎРєР»Р°Рґ:</div><div class="mv">${esc(wh || "вЂ”")}</div></div>
+      <div class="row"><div class="ml">Организация:</div><div class="mv">${esc(org || "—")}</div></div>
+      <div class="row"><div class="ml">Склад:</div><div class="mv">${esc(wh || "—")}</div></div>
 
-      <div class="row"><div class="ml">Р¤РёР»СЊС‚СЂ (РѕР±СЉРµРєС‚):</div><div class="mv">${esc(objFilter || "вЂ”")}</div></div>
-      <div class="row"><div class="ml">РЎС„РѕСЂРјРёСЂРѕРІР°РЅРѕ:</div><div class="mv">${esc(new Date().toLocaleString("ru-RU"))}</div></div>
+      <div class="row"><div class="ml">Фильтр (объект):</div><div class="mv">${esc(objFilter || "—")}</div></div>
+      <div class="row"><div class="ml">Сформировано:</div><div class="mv">${esc(new Date().toLocaleString("ru-RU"))}</div></div>
     </div>
 
     <table>
       <thead>
         <tr>
-          <th style="width:34px">в„–</th>
-          <th style="width:160px">РћР±СЉРµРєС‚</th>
-          <th>Р’РёРґ СЂР°Р±РѕС‚</th>
-          <th style="width:76px">Р’С‹РґР°С‡</th>
-          <th style="width:220px">РџРѕР»СѓС‡Р°С‚РµР»Рё (РїРѕ Р·Р°СЏРІРєРµ/Р±РµР·)</th>
-          <th style="width:70px">РЈРЅРёРє. РјР°С‚</th>
-          <th style="width:170px">РўРѕРї-3 РјР°С‚РµСЂРёР°Р»Р°</th>
-          <th style="width:70px">Р—Р°СЏРІРѕРє</th>
-          <th style="width:80px">РђРєС‚РёРІРЅ. РґРЅРµР№</th>
+          <th style="width:34px">№</th>
+          <th style="width:160px">Объект</th>
+          <th>Вид работ</th>
+          <th style="width:76px">Выдач</th>
+          <th style="width:220px">Получатели (по заявке/без)</th>
+          <th style="width:70px">Уник. мат</th>
+          <th style="width:170px">Топ-3 материала</th>
+          <th style="width:70px">Заявок</th>
+          <th style="width:80px">Активн. дней</th>
         </tr>
       </thead>
       <tbody>
@@ -717,13 +708,13 @@ export function buildWarehouseObjectWorkReportHtml(args: {
     </table>
 
     <div class="totals">
-      <div class="box"><span class="lbl">РС‚РѕРіРѕ РїРѕР·РёС†РёР№:</span> ${esc(String(positions))}</div>
-      <div class="box"><span class="lbl">РС‚РѕРіРѕ РІС‹РґР°С‡ (РґРѕРєСѓРјРµРЅС‚РѕРІ):</span> ${esc(String(args.docsTotal || 0))}</div>
+      <div class="box"><span class="lbl">Итого позиций:</span> ${esc(String(positions))}</div>
+      <div class="box"><span class="lbl">Итого выдач (документов):</span> ${esc(String(args.docsTotal || 0))}</div>
     </div>
 
     <div class="signs">
-      <div class="sign"><div class="who">РљР»Р°РґРѕРІС‰РёРє</div><div class="line"></div><div class="fio"></div></div>
-      <div class="sign"><div class="who">РџСЂРѕСЂР°Р± / РЅР°С‡. СѓС‡Р°СЃС‚РєР°</div><div class="line"></div><div class="fio"></div></div>
+      <div class="sign"><div class="who">Кладовщик</div><div class="line"></div><div class="fio"></div></div>
+      <div class="sign"><div class="who">Прораб / нач. участка</div><div class="line"></div><div class="fio"></div></div>
     </div>
 
     <div class="page-footer"></div>
@@ -740,7 +731,7 @@ export function buildWarehouseIncomingRegisterHtml(args: {
 }): string {
   const from = String(args.periodFrom ?? "").trim();
   const to = String(args.periodTo ?? "").trim();
-  const period = from || to ? `${from || "вЂ”"} в†’ ${to || "вЂ”"}` : "Р’РµСЃСЊ РїРµСЂРёРѕРґ";
+  const period = from || to ? `${from || "—"} → ${to || "—"}` : "Весь период";
 
   const rows = Array.isArray(args.items) ? args.items : [];
   const sumTotal = rows.reduce((s, x) => s + nnum(x.qty_total), 0);
@@ -754,7 +745,7 @@ export function buildWarehouseIncomingRegisterHtml(args: {
         .map((h, idx) => {
           const dt = fmtDateTimeRu(h.event_dt);
           const docNo = h.display_no || `PR-${h.incoming_id?.slice(0, 8)}`;
-          const who = String(h.who ?? "вЂ”");
+          const who = String(h.who ?? "—");
 
           const total = fmtQty(h.qty_total);
 
@@ -768,32 +759,32 @@ export function buildWarehouseIncomingRegisterHtml(args: {
 </tr>`;
         })
         .join("")
-      : `<tr><td class="t-center" colspan="5"><i>РќРµС‚ РїСЂРёС…РѕРґРѕРІ Р·Р° РїРµСЂРёРѕРґ</i></td></tr>`;
+      : `<tr><td class="t-center" colspan="5"><i>Нет приходов за период</i></td></tr>`;
 
   return `<!doctype html><html lang="ru"><head><meta charset="utf-8"/>
-<title>Р РµРµСЃС‚СЂ РїСЂРёС…РѕРґР° РЅР° СЃРєР»Р°Рґ</title>
+<title>Реестр прихода на склад</title>
 <style>${cssForm29()}</style>
 </head>
 <body>
   <div class="page">
-    <div class="h1">Р Р•Р•РЎРўР  РџР РРҐРћР”Рђ РќРђ РЎРљР›РђР” Р—Рђ РџР•Р РРћР”</div>
+    <div class="h1">РЕЕСТР ПРИХОДА НА СКЛАД ЗА ПЕРИОД</div>
     <div class="h2">${esc(period)}</div>
 
     <div class="meta">
-      <div class="row"><div class="ml">РћСЂРіР°РЅРёР·Р°С†РёСЏ:</div><div class="mv">${esc(org || "вЂ”")}</div></div>
-      <div class="row"><div class="ml">РЎРєР»Р°Рґ:</div><div class="mv">${esc(wh || "вЂ”")}</div></div>
-      <div class="row"><div class="ml">Р’СЃРµРіРѕ РїСЂРёС…РѕРґРѕРІ:</div><div class="mv">${esc(String(rows.length))}</div></div>
-      <div class="row"><div class="ml">РЎС„РѕСЂРјРёСЂРѕРІР°РЅРѕ:</div><div class="mv">${esc(new Date().toLocaleString("ru-RU"))}</div></div>
+      <div class="row"><div class="ml">Организация:</div><div class="mv">${esc(org || "—")}</div></div>
+      <div class="row"><div class="ml">Склад:</div><div class="mv">${esc(wh || "—")}</div></div>
+      <div class="row"><div class="ml">Всего приходов:</div><div class="mv">${esc(String(rows.length))}</div></div>
+      <div class="row"><div class="ml">Сформировано:</div><div class="mv">${esc(new Date().toLocaleString("ru-RU"))}</div></div>
     </div>
 
     <table>
       <thead>
         <tr>
-          <th style="width:34px">в„–</th>
-          <th style="width:140px">Р”Р°С‚Р°</th>
-          <th style="width:140px">РќРѕРјРµСЂ (PR)</th>
-          <th>РљР»Р°РґРѕРІС‰РёРє</th>
-          <th style="width:110px">РџСЂРёРЅСЏС‚Рѕ</th>
+          <th style="width:34px">№</th>
+          <th style="width:140px">Дата</th>
+          <th style="width:140px">Номер (PR)</th>
+          <th>Кладовщик</th>
+          <th style="width:110px">Принято</th>
         </tr>
       </thead>
       <tbody>
@@ -802,12 +793,12 @@ export function buildWarehouseIncomingRegisterHtml(args: {
     </table>
 
     <div class="totals">
-      <div class="box"><span class="lbl">РС‚РѕРіРѕ РїСЂРёРЅСЏС‚Рѕ:</span> ${esc(fmtQty(sumTotal))}</div>
+      <div class="box"><span class="lbl">Итого принято:</span> ${esc(fmtQty(sumTotal))}</div>
     </div>
 
     <div class="signs">
-      <div class="sign"><div class="who">РљР»Р°РґРѕРІС‰РёРє</div><div class="line"></div><div class="fio"></div></div>
-      <div class="sign"><div class="who">Р—Р°РІ. СЃРєР»Р°РґРѕРј</div><div class="line"></div><div class="fio"></div></div>
+      <div class="sign"><div class="who">Кладовщик</div><div class="line"></div><div class="fio"></div></div>
+      <div class="sign"><div class="who">Зав. складом</div><div class="line"></div><div class="fio"></div></div>
     </div>
 
     <div class="page-footer"></div>
@@ -826,32 +817,32 @@ export function buildWarehouseIncomingFormHtml(args: {
 
   const docNo = inc.display_no || `PR-${String(inc.incoming_id).slice(0, 8)}`;
   const dt = fmtDateTimeRu(inc.event_dt);
-  const who = String(inc.who ?? inc.warehouseman_fio ?? "вЂ”");
-  const note = String(inc.note ?? "вЂ”");
+  const who = String(inc.who ?? inc.warehouseman_fio ?? "—");
+  const note = String(inc.note ?? "—");
 
   const total = lines.reduce((s, x) => s + nnum(x.qty_received ?? x.qty), 0);
 
   const rowsHtml = lines.length > 0 ? lines.map((ln, idx) => {
     const rawName = String(ln.name_ru ?? ln.name ?? ln.material_name ?? "").trim();
     const code = String(ln.code || "").trim();
-    const hasName = !isMissingName(rawName);
-    const name = hasName ? rawName : (code || "РџРѕР·РёС†РёСЏ");
+    const hasName = rawName !== "" && rawName !== "—" && rawName !== "-";
+    const name = hasName ? rawName : (code || "Позиция");
 
     const uom = uomRu(ln.uom_id || ln.uom);
     const qty = nnum(ln.qty_received ?? ln.qty);
-    const prItem = String(ln.purchase_item_id || "вЂ”");
+    const prItem = String(ln.purchase_item_id || "—");
 
     return `
 <tr>
   <td class="t-center">${idx + 1}</td>
   <td>
     ${esc(name)}
-    ${prItem !== "вЂ”" ? `<div class="small muted">ID: ${esc(prItem)}</div>` : ""}
+    ${prItem !== "—" ? `<div class="small muted">ID: ${esc(prItem)}</div>` : ""}
   </td>
   <td class="t-center">${esc(uom)}</td>
   <td class="t-right">${esc(fmtQty(qty))}</td>
 </tr>`;
-  }).join("") : `<tr><td colspan="4" class="t-center">РќРµС‚ РґР°РЅРЅС‹С… Рѕ РїРѕР·РёС†РёСЏС…</td></tr>`;
+  }).join("") : `<tr><td colspan="4" class="t-center">Нет данных о позициях</td></tr>`;
 
 
   const org = String(args.orgName ?? "").trim();
@@ -863,27 +854,27 @@ export function buildWarehouseIncomingFormHtml(args: {
 </head>
 <body>
   <div class="page">
-    <div class="h1">РџР РРҐРћР”РќР«Р™ РћР Р”Р•Р  (РЎРљР›РђР”)</div>
+    <div class="h1">ПРИХОДНЫЙ ОРДЕР (СКЛАД)</div>
     <div class="h2">${esc(docNo)}</div>
 
     <div class="meta">
-      <div class="row"><div class="ml">РћСЂРіР°РЅРёР·Р°С†РёСЏ:</div><div class="mv">${esc(org || "вЂ”")}</div></div>
-      <div class="row"><div class="ml">РЎРєР»Р°Рґ:</div><div class="mv">${esc(wh || "вЂ”")}</div></div>
+      <div class="row"><div class="ml">Организация:</div><div class="mv">${esc(org || "—")}</div></div>
+      <div class="row"><div class="ml">Склад:</div><div class="mv">${esc(wh || "—")}</div></div>
 
-      <div class="row"><div class="ml">РќРѕРјРµСЂ PR:</div><div class="mv">${esc(docNo)}</div></div>
-      <div class="row"><div class="ml">Р”Р°С‚Р° РїСЂРёС…РѕРґР°:</div><div class="mv">${esc(dt)}</div></div>
+      <div class="row"><div class="ml">Номер PR:</div><div class="mv">${esc(docNo)}</div></div>
+      <div class="row"><div class="ml">Дата прихода:</div><div class="mv">${esc(dt)}</div></div>
 
-      <div class="row"><div class="ml">РљР»Р°РґРѕРІС‰РёРє:</div><div class="mv">${esc(who)}</div></div>
-      <div class="row"><div class="ml">РџСЂРёРјРµС‡Р°РЅРёРµ:</div><div class="mv">${esc(note)}</div></div>
+      <div class="row"><div class="ml">Кладовщик:</div><div class="mv">${esc(who)}</div></div>
+      <div class="row"><div class="ml">Примечание:</div><div class="mv">${esc(note)}</div></div>
     </div>
 
     <table>
       <thead>
         <tr>
-          <th style="width:34px">в„–</th>
-          <th>РќР°РёРјРµРЅРѕРІР°РЅРёРµ</th>
-          <th style="width:52px">Р•Рґ.</th>
-          <th style="width:110px">РџСЂРёРЅСЏС‚Рѕ</th>
+          <th style="width:34px">№</th>
+          <th>Наименование</th>
+          <th style="width:52px">Ед.</th>
+          <th style="width:110px">Принято</th>
         </tr>
       </thead>
       <tbody>
@@ -892,12 +883,12 @@ export function buildWarehouseIncomingFormHtml(args: {
     </table>
 
     <div class="totals">
-      <div class="box"><span class="lbl">РС‚РѕРіРѕ РїСЂРёРЅСЏС‚Рѕ:</span> ${esc(fmtQty(total))}</div>
+      <div class="box"><span class="lbl">Итого принято:</span> ${esc(fmtQty(total))}</div>
     </div>
 
     <div class="signs">
-      <div class="sign"><div class="who">РљР»Р°РґРѕРІС‰РёРє</div><div class="line"></div><div class="fio">${esc(who)}</div></div>
-      <div class="sign"><div class="who">РЎРґР°Р» (РџРѕСЃС‚Р°РІС‰РёРє/Р’РѕРґРёС‚РµР»СЊ)</div><div class="line"></div><div class="fio"></div></div>
+      <div class="sign"><div class="who">Кладовщик</div><div class="line"></div><div class="fio">${esc(who)}</div></div>
+      <div class="sign"><div class="who">Сдал (Поставщик/Водитель)</div><div class="line"></div><div class="fio"></div></div>
     </div>
 
     <div class="page-footer"></div>
@@ -915,7 +906,7 @@ export function buildWarehouseIncomingMaterialsReportHtml(args: {
 }): string {
   const from = String(args.periodFrom ?? "").trim();
   const to = String(args.periodTo ?? "").trim();
-  const period = from || to ? `${from || "вЂ”"} в†’ ${to || "вЂ”"}` : "Р’РµСЃСЊ РїРµСЂРёРѕРґ";
+  const period = from || to ? `${from || "—"} → ${to || "—"}` : "Весь период";
 
   const org = String(args.orgName ?? "").trim();
   const wh = String(args.warehouseName ?? "").trim();
@@ -925,8 +916,9 @@ export function buildWarehouseIncomingMaterialsReportHtml(args: {
     ? rows.map((r, idx) => {
       const rawName = String(r.material_name ?? "").trim();
       const code = String(r.material_code ?? "").trim();
-      const name = !isMissingName(rawName) ? rawName : (code || "РџРѕР·РёС†РёСЏ");
-      const uom = uomRu(String(r.uom ?? "").trim()) || "вЂ”";
+      const isDashLike = /^[-\u2014\u2013\u2212]+$/.test(rawName);
+      const name = rawName && !isDashLike ? rawName : (code || "-");
+      const uom = uomRu(String(r.uom ?? "").trim()) || "—";
       const total = fmtQty(r.sum_total);
 
       return `
@@ -937,32 +929,32 @@ export function buildWarehouseIncomingMaterialsReportHtml(args: {
   <td class="t-right">${esc(total)}</td>
 </tr>`;
     }).join("")
-    : `<tr><td class="t-center" colspan="4"><i>РќРµС‚ РґР°РЅРЅС‹С… Р·Р° РїРµСЂРёРѕРґ</i></td></tr>`;
+    : `<tr><td class="t-center" colspan="4"><i>Нет данных за период</i></td></tr>`;
 
   return `<!doctype html><html lang="ru"><head><meta charset="utf-8"/>
-<title>Р’РµРґРѕРјРѕСЃС‚СЊ РїСЂРёС…РѕРґР° РјР°С‚РµСЂРёР°Р»РѕРІ</title>
+<title>Ведомость прихода материалов</title>
 <style>${cssForm29()}</style>
 </head>
 <body>
   <div class="page">
-    <div class="h1">Р’Р•Р”РћРњРћРЎРўР¬ РџР РРҐРћР”Рђ РњРђРўР•Р РРђР›РћР’ РќРђ РЎРљР›РђР”</div>
-    <div class="h2">Р·Р° РїРµСЂРёРѕРґ ${esc(period)}</div>
+    <div class="h1">ВЕДОМОСТЬ ПРИХОДА МАТЕРИАЛОВ НА СКЛАД</div>
+    <div class="h2">за период ${esc(period)}</div>
 
     <div class="meta">
-      <div class="row"><div class="ml">РћСЂРіР°РЅРёР·Р°С†РёСЏ:</div><div class="mv">${esc(org || "вЂ”")}</div></div>
-      <div class="row"><div class="ml">РЎРєР»Р°Рґ:</div><div class="mv">${esc(wh || "вЂ”")}</div></div>
+      <div class="row"><div class="ml">Организация:</div><div class="mv">${esc(org || "—")}</div></div>
+      <div class="row"><div class="ml">Склад:</div><div class="mv">${esc(wh || "—")}</div></div>
 
-      <div class="row"><div class="ml">РџРѕР·РёС†РёР№:</div><div class="mv">${esc(String(rows.length))}</div></div>
-      <div class="row"><div class="ml">Р”Р°С‚Р° С„РѕСЂРјРёСЂРѕРІР°РЅРёСЏ:</div><div class="mv">${esc(new Date().toLocaleString("ru-RU"))}</div></div>
+      <div class="row"><div class="ml">Позиций:</div><div class="mv">${esc(String(rows.length))}</div></div>
+      <div class="row"><div class="ml">Дата формирования:</div><div class="mv">${esc(new Date().toLocaleString("ru-RU"))}</div></div>
     </div>
 
     <table>
       <thead>
         <tr>
-          <th style="width:34px">в„–</th>
-          <th>РќР°РёРјРµРЅРѕРІР°РЅРёРµ РјР°С‚РµСЂРёР°Р»Р°</th>
-          <th style="width:52px">Р•Рґ. РёР·Рј.</th>
-          <th style="width:110px">РџСЂРёРЅСЏС‚Рѕ РІСЃРµРіРѕ</th>
+          <th style="width:34px">№</th>
+          <th>Наименование материала</th>
+          <th style="width:52px">Ед. изм.</th>
+          <th style="width:110px">Принято всего</th>
         </tr>
       </thead>
       <tbody>
@@ -971,12 +963,12 @@ export function buildWarehouseIncomingMaterialsReportHtml(args: {
     </table>
 
     <div class="totals">
-      <div class="box"><span class="lbl">РџСЂРёС…РѕРґРѕРІ РІСЃРµРіРѕ (РґРѕРєСѓРјРµРЅС‚РѕРІ):</span> ${esc(String(args.docsTotal))}</div>
+      <div class="box"><span class="lbl">Приходов всего (документов):</span> ${esc(String(args.docsTotal))}</div>
     </div>
 
     <div class="signs">
-      <div class="sign"><div class="who">РљР»Р°РґРѕРІС‰РёРє</div><div class="line"></div><div class="fio"></div></div>
-      <div class="sign"><div class="who">Р—Р°РІ. СЃРєР»Р°РґРѕРј</div><div class="line"></div><div class="fio"></div></div>
+      <div class="sign"><div class="who">Кладовщик</div><div class="line"></div><div class="fio"></div></div>
+      <div class="sign"><div class="who">Зав. складом</div><div class="line"></div><div class="fio"></div></div>
     </div>
 
     <div class="page-footer"></div>

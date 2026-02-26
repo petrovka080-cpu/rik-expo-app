@@ -138,13 +138,12 @@ export async function apiFetchStock(
           (nOver && !looksLikeCode(nOver) ? nOver : nOver) ||
           (nRik && !looksLikeCode(nRik) ? nRik : nRik) ||
           (nUi && !looksLikeCode(nUi) ? nUi : "") ||
-          // РµСЃР»Рё РІРґСЂСѓРі uiMap С…СЂР°РЅРёС‚ РєРѕРґРѕРј вЂ” РЅРµ РїРѕРєР°Р·С‹РІР°РµРј РєР°Рє РёРјСЏ
-          "вЂ”";
+          "—";
 
         return {
           material_id: `${code}::${uom}`,
           code: code || null,
-          name: picked || "вЂ”",
+          name: picked || "—",
           uom_id: pickUom(x.uom_id) ?? null,
 
           qty_on_hand: avail,
