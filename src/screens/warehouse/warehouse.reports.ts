@@ -28,7 +28,18 @@ const toNum = (v: any): number => {
   return Number.isFinite(n) ? n : 0;
 };
 
-// ✅ PROD: "Весь период" = реальные границы для RPC (чтобы не было null/null и плохих планов)
+const isMissingName = (v: any): boolean => {
+  const s = String(v ?? "").trim();
+  if (!s) return true;
+  if (/^[-\u2014\u2013\u2212]+$/.test(s)) return true;
+  const l = s.toLowerCase();
+  if (l === "null" || l === "undefined" || l === "n/a") return true;
+  // Common mojibake placeholders for em/en dashes in broken encodings.
+  if (l.includes("РІС’")) return true;
+  return false;
+};
+
+// вњ… PROD: "Р’РµСЃСЊ РїРµСЂРёРѕРґ" = СЂРµР°Р»СЊРЅС‹Рµ РіСЂР°РЅРёС†С‹ РґР»СЏ RPC (С‡С‚РѕР±С‹ РЅРµ Р±С‹Р»Рѕ null/null Рё РїР»РѕС…РёС… РїР»Р°РЅРѕРІ)
 const ALL_FROM_ISO = "1970-01-01T00:00:00.000Z";
 const ALL_TO_ISO = "2100-01-01T00:00:00.000Z";
 
@@ -36,21 +47,21 @@ function normalizeReportRange(periodFrom: string, periodTo: string) {
   const fromTxt = String(periodFrom ?? "").trim();
   const toTxt = String(periodTo ?? "").trim();
 
-  // ✅ Если обе даты пустые — это "Весь период"
+  // вњ… Р•СЃР»Рё РѕР±Рµ РґР°С‚С‹ РїСѓСЃС‚С‹Рµ вЂ” СЌС‚Рѕ "Р’РµСЃСЊ РїРµСЂРёРѕРґ"
   const isAll = !fromTxt && !toTxt;
 
-  // В PDF хотим печатать "Весь период" → передадим пустые строки
+  // Р’ PDF С…РѕС‚РёРј РїРµС‡Р°С‚Р°С‚СЊ "Р’РµСЃСЊ РїРµСЂРёРѕРґ" в†’ РїРµСЂРµРґР°РґРёРј РїСѓСЃС‚С‹Рµ СЃС‚СЂРѕРєРё
   const pdfFrom = isAll ? "" : fromTxt;
   const pdfTo = isAll ? "" : toTxt;
 
-  // В RPC хотим реальные границы → чтобы всегда был понятный диапазон и индекс работал
+  // Р’ RPC С…РѕС‚РёРј СЂРµР°Р»СЊРЅС‹Рµ РіСЂР°РЅРёС†С‹ в†’ С‡С‚РѕР±С‹ РІСЃРµРіРґР° Р±С‹Р» РїРѕРЅСЏС‚РЅС‹Р№ РґРёР°РїР°Р·РѕРЅ Рё РёРЅРґРµРєСЃ СЂР°Р±РѕС‚Р°Р»
   const rpcFrom = isAll ? ALL_FROM_ISO : fromTxt;
   const rpcTo = isAll ? ALL_TO_ISO : toTxt;
 
   return { isAll, pdfFrom, pdfTo, rpcFrom, rpcTo };
 }
 
-// ✅ summary из БД (один источник истины)
+// вњ… summary РёР· Р‘Р” (РѕРґРёРЅ РёСЃС‚РѕС‡РЅРёРє РёСЃС‚РёРЅС‹)
 async function fetchIssuedSummaryFast(
   supabase: SupabaseLike,
   args: { fromIso: string; toIso: string; objectId?: string | null },
@@ -72,26 +83,26 @@ async function fetchIssuedSummaryFast(
   };
 }
 const RU_MONTHS: Record<string, number> = {
-  "января": 0,
-  "февраля": 1,
-  "марта": 2,
-  "апреля": 3,
-  "мая": 4,
-  "июня": 5,
-  "июля": 6,
-  "августа": 7,
-  "сентября": 8,
-  "октября": 9,
-  "ноября": 10,
-  "декабря": 11,
+  "СЏРЅРІР°СЂСЏ": 0,
+  "С„РµРІСЂР°Р»СЏ": 1,
+  "РјР°СЂС‚Р°": 2,
+  "Р°РїСЂРµР»СЏ": 3,
+  "РјР°СЏ": 4,
+  "РёСЋРЅСЏ": 5,
+  "РёСЋР»СЏ": 6,
+  "Р°РІРіСѓСЃС‚Р°": 7,
+  "СЃРµРЅС‚СЏР±СЂСЏ": 8,
+  "РѕРєС‚СЏР±СЂСЏ": 9,
+  "РЅРѕСЏР±СЂСЏ": 10,
+  "РґРµРєР°Р±СЂСЏ": 11,
 };
 
 function parseRuDayLabel(dayLabel: string): Date | null {
-  // ожидаем "20 февраля 2026 г." (как у тебя в UI)
+  // РѕР¶РёРґР°РµРј "20 С„РµРІСЂР°Р»СЏ 2026 Рі." (РєР°Рє Сѓ С‚РµР±СЏ РІ UI)
   const s0 = String(dayLabel ?? "").trim().toLowerCase();
   if (!s0) return null;
 
-  const s = s0.replace(/\s+/g, " ").replace(" г.", "").replace(" г", "").trim();
+  const s = s0.replace(/\s+/g, " ").replace(" Рі.", "").replace(" Рі", "").trim();
   const parts = s.split(" ");
   if (parts.length < 3) return null;
 
@@ -109,14 +120,14 @@ function parseRuDayLabel(dayLabel: string): Date | null {
 
 function dayRangeIso(dayLabel: string) {
   const d = parseRuDayLabel(dayLabel);
-  if (!d) throw new Error(`Не могу распарсить дату дня: "${dayLabel}"`);
+  if (!d) throw new Error(`РќРµ РјРѕРіСѓ СЂР°СЃРїР°СЂСЃРёС‚СЊ РґР°С‚Сѓ РґРЅСЏ: "${dayLabel}"`);
 
   const from = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0, 0);
   const to = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 23, 59, 59, 999);
 
   return {
-    pdfFrom: dayLabel, // печатаем как есть
-    pdfTo: "",         // можно пусто, чтобы не было "→"
+    pdfFrom: dayLabel, // РїРµС‡Р°С‚Р°РµРј РєР°Рє РµСЃС‚СЊ
+    pdfTo: "",         // РјРѕР¶РЅРѕ РїСѓСЃС‚Рѕ, С‡С‚РѕР±С‹ РЅРµ Р±С‹Р»Рѕ "в†’"
     rpcFrom: from.toISOString(),
     rpcTo: to.toISOString(),
   };
@@ -182,7 +193,7 @@ export function useWarehouseReports(args: {
     const groups: Record<string, any[]> = {};
     for (const it of repIssues || []) {
       const dt = it?.event_dt ? new Date(it.event_dt) : null;
-      const key = dt ? fmtDayRu(dt) : "Без даты";
+      const key = dt ? fmtDayRu(dt) : "Р‘РµР· РґР°С‚С‹";
       (groups[key] ||= []).push(it);
     }
     return Object.entries(groups).map(([day, items]) => ({
@@ -195,7 +206,7 @@ export function useWarehouseReports(args: {
     const groups: Record<string, any[]> = {};
     for (const it of repIncoming || []) {
       const dt = it?.event_dt ? new Date(it.event_dt) : null;
-      const key = dt ? fmtDayRu(dt) : "Без даты";
+      const key = dt ? fmtDayRu(dt) : "Р‘РµР· РґР°С‚С‹";
       (groups[key] ||= []).push(it);
     }
     return Object.entries(groups).map(([day, items]) => ({
@@ -256,7 +267,7 @@ export function useWarehouseReports(args: {
 
   const buildIssueHtml = useCallback(async (issueId: number) => {
     const head = (repIssues || []).find((x: any) => Number(x.issue_id) === Number(issueId));
-    if (!head) throw new Error("Выдача не найдена");
+    if (!head) throw new Error("Р’С‹РґР°С‡Р° РЅРµ РЅР°Р№РґРµРЅР°");
     const linesAny = await ensureIssueLines(issueId);
     const html = buildWarehouseIssueFormHtml({
       head: head as WarehouseIssueHead,
@@ -286,7 +297,7 @@ export function useWarehouseReports(args: {
     const wanted = String(dayLabel ?? "").trim();
     const dayIssues = (repIssues || []).filter((it: any) => {
       const dt = it?.event_dt ? new Date(it.event_dt) : null;
-      const key = dt ? fmtDayRu(dt) : "Без даты";
+      const key = dt ? fmtDayRu(dt) : "Р‘РµР· РґР°С‚С‹";
       return key === wanted;
     });
     const html = buildWarehouseIssuesRegisterHtml({
@@ -362,8 +373,8 @@ export function useWarehouseReports(args: {
     });
     const rows = (rawRows || []).map((r: any) => ({
       object_id: r.object_id ?? null,
-      object_name: String(r.object_name ?? "Без объекта"),
-      work_name: String(r.work_name ?? "Без вида работ"),
+      object_name: String(r.object_name ?? "Р‘РµР· РѕР±СЉРµРєС‚Р°"),
+      work_name: String(r.work_name ?? "Р‘РµР· РІРёРґР° СЂР°Р±РѕС‚"),
       docs_cnt: toNum(r.docs_cnt),
       req_cnt: toNum(r.req_cnt),
       active_days: toNum(r.active_days),
@@ -412,11 +423,10 @@ export function useWarehouseReports(args: {
       const mapped = nameByCode?.[code]?.trim();
       const orig = String(r.material_name || "").trim();
 
-      const isDashLike = (v: string) => /^[-\u2014\u2013\u2212]+$/.test(v);
-      const hasMap = !!mapped && !isDashLike(mapped);
-      const hasOrig = !!orig && !isDashLike(orig);
+      const hasMap = !isMissingName(mapped);
+      const hasOrig = !isMissingName(orig);
 
-      const resName = hasMap ? mapped : (hasOrig ? orig : (code || "Позиция"));
+      const resName = hasMap ? mapped : (hasOrig ? orig : (code || "РџРѕР·РёС†РёСЏ"));
 
       return {
         ...r,
@@ -449,11 +459,10 @@ export function useWarehouseReports(args: {
       const orig = String(r.material_name || "").trim();
 
       // If mapped name is just a dash or empty, ignore it
-      const isDashLike = (v: string) => /^[-\u2014\u2013\u2212]+$/.test(v);
-      const hasMap = !!mapped && !isDashLike(mapped);
-      const hasOrig = !!orig && !isDashLike(orig);
+      const hasMap = !isMissingName(mapped);
+      const hasOrig = !isMissingName(orig);
 
-      const resName = hasMap ? mapped : (hasOrig ? orig : (code || "Позиция"));
+      const resName = hasMap ? mapped : (hasOrig ? orig : (code || "РџРѕР·РёС†РёСЏ"));
 
       return {
         ...r,
