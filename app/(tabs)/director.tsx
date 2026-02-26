@@ -1,9 +1,8 @@
 ﻿// app/(tabs)/director.tsx — единый блок «Ожидает утверждения (прораб)», БЕЗ нижнего блока «шапок»
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useFocusEffect } from "expo-router";
 import {
   View, Text, FlatList, ScrollView, Pressable, Alert, ActivityIndicator,
-  RefreshControl, Platform, TextInput, Animated, Linking, InteractionManager
+  RefreshControl, Platform, TextInput, Animated, Linking, InteractionManager, AppState
 } from 'react-native';
 
 import { openSignedUrlUniversal } from "../../src/lib/files";
@@ -1170,8 +1169,14 @@ export default function DirectorScreen() {
     }
   }, [dirTab, finFrom, finTo, repFrom, repTo]);
 
-  useFocusEffect(
-    useCallback(() => {
+  const appStateRef = useRef(AppState.currentState);
+  useEffect(() => {
+    const sub = AppState.addEventListener("change", (nextState) => {
+      const prev = appStateRef.current;
+      appStateRef.current = nextState;
+      const resumed = (prev === "background" || prev === "inactive") && nextState === "active";
+      if (!resumed) return;
+
       if (dirTab === "Заявки") {
         void fetchRows();
         void fetchProps();
@@ -1181,9 +1186,11 @@ export default function DirectorScreen() {
         void fetchReportOptions();
         void fetchReport();
       }
-      return undefined;
-    }, [dirTab, fetchRows, fetchProps, fetchFinance, fetchReportOptions, fetchReport]),
-  );
+    });
+    return () => {
+      try { sub.remove(); } catch { }
+    };
+  }, [dirTab, fetchRows, fetchProps, fetchFinance, fetchReportOptions, fetchReport]);
 
 
   useEffect(() => {
