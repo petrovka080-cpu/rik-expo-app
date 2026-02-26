@@ -9,6 +9,8 @@ import {
   View,
   Animated,
   InteractionManager,
+  StyleSheet,
+  ActivityIndicator,
 } from "react-native";
 import DismissKeyboardView from "../../components/DismissKeyboardView";
 import { UI } from "./director.styles";
@@ -67,7 +69,7 @@ export default function DirectorFinanceCardModal({
       try {
         // @ts-ignore
         task?.cancel?.();
-      } catch {}
+      } catch { }
     };
   }, [visible]);
 
@@ -199,6 +201,35 @@ export default function DirectorFinanceCardModal({
                 paddingBottom: Math.max(insets.bottom || 0, 16) + 16,
               }}
             >
+              {loading && (
+                <View
+                  style={{
+                    ...StyleSheet.absoluteFillObject,
+                    backgroundColor: "rgba(0,0,0,0.05)",
+                    zIndex: 10,
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <View style={{
+                    padding: 20,
+                    borderRadius: 20,
+                    backgroundColor: UI.cardBg,
+                    borderWidth: 1,
+                    borderColor: "rgba(255,255,255,0.1)",
+                    alignItems: "center",
+                    gap: 12,
+                    shadowColor: "#000",
+                    shadowOpacity: 0.2,
+                    shadowRadius: 10,
+                  }}>
+                    <ActivityIndicator size="large" color={UI.text} />
+                    <Text style={{ color: UI.text, fontWeight: "800", fontSize: 13 }}>
+                      Готовим файл...
+                    </Text>
+                  </View>
+                </View>
+              )}
               {children}
             </Animated.View>
           </View>
@@ -225,4 +256,3 @@ export default function DirectorFinanceCardModal({
     </Modal>
   );
 }
-

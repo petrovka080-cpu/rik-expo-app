@@ -1713,7 +1713,15 @@ export default function DirectorScreen() {
           finPage === "debt" ? "Долги и риски"
             : finPage === "spend" ? "Расходы (период)"
               : finPage === "kind" ? (finKindName ? `${finKindName}: поставщики` : "Поставщики")
-                : finPage === "supplier" ? String((finSupplier as any)?.supplier ?? "Поставщик")
+                : finPage === "supplier" ? (
+                  (() => {
+                    const s = String((finSupplier as any)?.supplier ?? "").trim();
+                    if (!s || s === "—") return "Поставщик";
+                    // Если имя короткое или цифровое, добавим контекст
+                    if (/^\d+$/.test(s) || s.length < 3) return `Поставщик: ${s}`;
+                    return s;
+                  })()
+                )
                   : "Финансы";
 
         const supNameForKey = String((finSupplier as any)?.supplier ?? "").trim();

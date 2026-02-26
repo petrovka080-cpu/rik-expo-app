@@ -112,22 +112,38 @@ export async function preparePdfLocalUri(args: {
   const cached = urlToLocal.get(url);
   if (cached && (await fileExists(cached))) return cached;
 
-  // ✅ NEW: добавили hash(url) в имя, чтобы разные PDF не перетирались
   const baseName = safeName(fileName);
   const stamp = hash32(url);
   const name = baseName.replace(/\.pdf$/i, `_${stamp}.pdf`);
 
   const cacheDir = FileSystem.cacheDirectory || FileSystem.documentDirectory;
-  const localPath = `${cacheDir}${name}`;
+  const localOutput = `${cacheDir}${name}`;
 
-  if (await fileExists(localPath)) {
-    urlToLocal.set(url, localPath);
-    return localPath;
+  // NATIVE: если это уже file:// или content:// (например, от expo-print)
+  if (!/^https?:\/\//i.test(url)) {
+    // Если имя уже "красивое" или совпадает — отдаём как есть
+    if (url === localOutput) return url;
+
+    // Иначе копируем в файл с правильным именем для красивого Share Sheet
+    try {
+      if (!(await fileExists(localOutput))) {
+        await FileSystem.copyAsync({ from: url, to: localOutput });
+      }
+      return localOutput;
+    } catch (e) {
+      console.warn("[pdfRunner] failed to copy local file:", e);
+      return url;
+    }
+  }
+
+  if (await fileExists(localOutput)) {
+    urlToLocal.set(url, localOutput);
+    return localOutput;
   }
 
   const headers = await getAuthHeader(supabase);
-  const dl = await FileSystem.downloadAsync(url, localPath, { headers });
-  const uri = dl?.uri || localPath;
+  const dl = await FileSystem.downloadAsync(url, localOutput, { headers });
+  const uri = dl?.uri || localOutput;
 
   urlToLocal.set(url, uri);
   return uri;
@@ -179,6 +195,8 @@ export async function openPdfShare(localUri: string) {
   });
 }
 
+const activeRuns = new Set<string>();
+
 export async function runPdfTop(args: {
   busy?: BusyLike;
   supabase: any;
@@ -189,6 +207,11 @@ export async function runPdfTop(args: {
   getRemoteUrl: () => Promise<string> | string;
 }) {
   const { busy, supabase, key, label, mode, fileName, getRemoteUrl } = args;
+
+  if (activeRuns.has(key)) return;
+  activeRuns.add(key);
+
+  const cleanup = () => { activeRuns.delete(key); };
 
   // WEB: открыть окно СИНХРОННО, чтобы не блокировало
   if (Platform.OS === "web") {
@@ -226,12 +249,14 @@ export async function runPdfTop(args: {
         win.location.href = url;
       }
       win.focus();
+      cleanup();
       return;
     } catch (e: any) {
       try {
         win.close();
       } catch { }
       Alert.alert("PDF", e?.message ?? "Не удалось открыть PDF");
+      cleanup();
       return;
     }
   }
@@ -262,12 +287,20 @@ export async function runPdfTop(args: {
     }
   }
 
-  if (!localUri) return;
+  if (!localUri) {
+    cleanup();
+    return;
+  }
 
   // ✅ 3) перед Share Sheet ещё раз отпустить UI ПРИ ЗАКРЫТОМ СПИННЕРЕ
   // Это критически важно на iOS 17+, чтобы избежать deadlock UI потока!
-  await uiYield(Platform.OS === "ios" ? 150 : 50);
+  await uiYield(Platform.OS === "ios" ? 180 : 50);
 
-  if (mode === "share") return openPdfShare(localUri);
-  return openPdfPreview(localUri);
+  try {
+    if (mode === "share") await openPdfShare(localUri);
+    else await openPdfPreview(localUri);
+  } finally {
+    // Даем время на закрытие Modal/Portal перед тем как разрешить новый тап
+    setTimeout(cleanup, 500);
+  }
 }
