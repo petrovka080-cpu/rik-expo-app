@@ -239,7 +239,11 @@ export async function runPdfTop(args: {
     } catch { }
 
     try {
-      const remote = await Promise.resolve(getRemoteUrl());
+      const remote = await withTimeout(
+        Promise.resolve(getRemoteUrl()),
+        15000,
+        "Server did not respond in 15 seconds"
+      );
       const url = normalizeRemoteUrl(remote);
       if (!url) throw new Error("PDF URL пустой");
 

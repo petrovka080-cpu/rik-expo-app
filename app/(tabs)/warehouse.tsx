@@ -13,6 +13,8 @@ import {
   Animated,
   Keyboard,
 } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
 
 import { supabase } from "../../src/lib/supabaseClient";
 import { formatProposalBaseNo, roleBadgeLabel } from "../../src/lib/format";
@@ -37,10 +39,18 @@ import {
   apiFetchReqHeads,
   apiFetchReqItems,
   apiFetchReports,
+  apiFetchIncomingReports,
+  apiFetchIncomingLines,
 } from "../../src/screens/warehouse/warehouse.api";
+
+
 
 import { useGlobalBusy } from "../../src/ui/GlobalBusy";
 import { runPdfTop } from "../../src/lib/pdfRunner";
+import {
+  buildWarehouseIncomingFormHtml,
+  exportWarehouseHtmlPdf,
+} from "../../src/lib/api/pdf_warehouse";
 import { seedEnsureIncomingItems } from "../../src/screens/warehouse/warehouse.seed";
 import TopRightActionBar from "../../src/ui/TopRightActionBar";
 import { showToast } from "../../src/ui/toast";
@@ -57,6 +67,7 @@ import { UI, s } from "../../src/screens/warehouse/warehouse.styles";
 import WarehouseSheet from "../../src/screens/warehouse/components/WarehouseSheet";
 import StockFactHeader from "../../src/screens/warehouse/components/StockFactHeader";
 import IssueDetailsSheet from "../../src/screens/warehouse/components/IssueDetailsSheet";
+import IncomingDetailsSheet from "../../src/screens/warehouse/components/IncomingDetailsSheet";
 import IncomingItemsSheet from "../../src/screens/warehouse/components/IncomingItemsSheet";
 import ReqIssueModal from "../../src/screens/warehouse/components/ReqIssueModal";
 import PickOptionSheet from "../../src/screens/warehouse/components/PickOptionSheet";
@@ -150,6 +161,17 @@ export default function Warehouse() {
   const itemsListRef = useRef<FlatList<any> | null>(null);
   const [kbH, setKbH] = useState(0);
 
+  const [warehousemanFio, setWarehousemanFio] = useState("");
+  useEffect(() => {
+    (async () => {
+      const saved = await AsyncStorage.getItem("wh_warehouseman_fio");
+      if (saved) setWarehousemanFio(saved);
+    })();
+  }, []);
+
+  const [reportsMode, setReportsMode] = useState<"choice" | "issue" | "incoming">("choice");
+
+
   const [itemsModal, setItemsModal] = useState<{
     incomingId: string;
     purchaseId: string;
@@ -199,6 +221,16 @@ export default function Warehouse() {
   const [refreshing, setRefreshing] = useState(false);
   const [confirmingId, setConfirmingId] = useState<string | null>(null);
   const [reqHeads, setReqHeads] = useState<ReqHeadRow[]>([]);
+  const sortedReqHeads = useMemo(() => {
+    return [...reqHeads].sort((a, b) => {
+      const readyA = Math.max(0, Number(a.ready_cnt ?? 0));
+      const readyB = Math.max(0, Number(b.ready_cnt ?? 0));
+      if (readyA > 0 && readyB === 0) return -1;
+      if (readyA === 0 && readyB > 0) return 1;
+      return 0;
+    });
+  }, [reqHeads]);
+
   const [reqHeadsLoading, setReqHeadsLoading] = useState(false);
 
   const [reqHeadsFetchingPage, setReqHeadsFetchingPage] = useState(false);
@@ -259,9 +291,15 @@ export default function Warehouse() {
   const [repStock, setRepStock] = useState<StockRow[]>([]);
   const [repMov, setRepMov] = useState<any[]>([]);
   const [repIssues, setRepIssues] = useState<any[]>([]);
+  const [repIncoming, setRepIncoming] = useState<any[]>([]);
+
   const [issueLinesById, setIssueLinesById] = useState<Record<string, any[]>>({});
   const [issueLinesLoadingId, setIssueLinesLoadingId] = useState<number | null>(null);
   const [issueDetailsId, setIssueDetailsId] = useState<number | null>(null);
+
+  const [incomingLinesById, setIncomingLinesById] = useState<Record<string, any[]>>({});
+  const [incomingLinesLoadingId, setIncomingLinesLoadingId] = useState<string | null>(null);
+  const [incomingDetailsId, setIncomingDetailsId] = useState<string | null>(null);
   const [reportsSupported, setReportsSupported] = useState<null | boolean>(null);
   const [periodFrom, setPeriodFrom] = useState<string>("");
   const [periodTo, setPeriodTo] = useState<string>("");
@@ -284,58 +322,171 @@ export default function Warehouse() {
     issueDetailsId,
     setIssueDetailsId,
 
+    incomingLinesById,
+    setIncomingLinesById,
+    incomingLinesLoadingId,
+    setIncomingLinesLoadingId,
+    incomingDetailsId,
+    setIncomingDetailsId,
+
     nameByCode: matNameByCode,
+    repIncoming,
   });
-  const onPdfIssue = useCallback(
-    async (issueId: number) => {
+
+  const onPdfDocument = useCallback(
+    async (docId: string | number) => {
+      const pid = String(docId ?? "").trim();
+      if (!pid) {
+        notifyError("PDF", "Некорректный номер прихода.");
+        return;
+      }
+
+      if (reportsMode === "incoming") {
+        await runPdfTop({
+          busy,
+          supabase,
+          key: `pdf: warehouse: incoming - form:${pid}`,
+          label: "Готовлю приходный ордер...",
+          mode: Platform.OS === "web" ? "preview" : "share",
+          fileName: `Incoming_${pid}`,
+          getRemoteUrl: async () => {
+            const t0 = Date.now();
+            console.info(`INCOMING_PDF_START pr_id=${pid}`);
+            let source: "main" | "fallback" = "main";
+            try {
+              const head = (repIncoming || []).find(
+                (x) =>
+                  String(x.incoming_id || "") === pid ||
+                  String(x.id || "") === pid
+              );
+
+              const who = String(
+                head?.who ?? head?.warehouseman_fio ?? warehousemanFio ?? ""
+              ).trim();
+              if (!who) {
+                const err = new Error("Заполните ФИО кладовщика");
+                (err as any).reason = "missing_fio";
+                throw err;
+              }
+
+              let lines = await apiFetchIncomingLines(supabase as any, pid);
+              if (!Array.isArray(lines) || lines.length === 0) {
+                source = "fallback";
+                const fallbackLines = await (reportsUi as any).ensureIncomingLines?.(pid);
+                if (Array.isArray(fallbackLines)) lines = fallbackLines;
+              }
+
+              if (!Array.isArray(lines) || lines.length === 0) {
+                const err = new Error("Нет оприходованных позиций");
+                (err as any).reason = "empty";
+                throw err;
+              }
+
+              const isDashLike = (v: string) => /^[-\u2014\u2013\u2212]+$/.test(v);
+              const linesForPdf = (lines || []).map((ln: any) => {
+                const code = String(ln?.code ?? "").trim().toUpperCase();
+                const mapped = String((matNameByCode as any)?.[code] ?? "").trim();
+                const raw = String(
+                  ln?.name_ru ?? ln?.material_name ?? ln?.name ?? ""
+                ).trim();
+                const goodMapped = mapped && !isDashLike(mapped);
+                const goodRaw = raw && !isDashLike(raw);
+                return {
+                  ...ln,
+                  material_name: goodMapped ? mapped : (goodRaw ? raw : code),
+                };
+              });
+
+              const incomingHead =
+                head ??
+                ({
+                  incoming_id: pid,
+                  event_dt: null,
+                  display_no: `PR-${pid.slice(0, 8)}`,
+                  warehouseman_fio: who,
+                  who,
+                } as any);
+
+              const html = buildWarehouseIncomingFormHtml({
+                incoming: incomingHead,
+                lines: linesForPdf,
+                orgName: ORG_NAME || "ООО «РИК»",
+                warehouseName: "Главный склад",
+              });
+
+              const url = await exportWarehouseHtmlPdf({
+                fileName: `Incoming_${pid}`,
+                html,
+              });
+
+              console.info(
+                `INCOMING_PDF_OK pr_id=${pid} ms=${Date.now() - t0} source=${source}`
+              );
+              return url;
+            } catch (e: any) {
+              const msg = String(e?.message ?? "").toLowerCase();
+              const reason =
+                String(e?.reason ?? "").trim() ||
+                (msg.includes("timeout") ? "timeout" : "build_error");
+              console.error(`INCOMING_PDF_FAIL pr_id=${pid} reason=${reason}`, e);
+              throw e;
+            }
+          },
+        });
+        return;
+      }
+
       await runPdfTop({
         busy,
         supabase,
-        key: `pdf: warehouse: issue:${issueId} `,
-        label: "Готовлю накладную…",
+        key: `pdf: warehouse: issue - form:${docId}`,
+        label: "Готовлю накладную...",
         mode: Platform.OS === "web" ? "preview" : "share",
-        fileName: `ISSUE - ${issueId} `,
-        getRemoteUrl: async () => await reportsUi.buildIssueHtml(issueId),
+        fileName: `Issue_${docId}`,
+        getRemoteUrl: async () => await reportsUi.buildIssueHtml(Number(docId)),
       });
     },
-    [busy, supabase, reportsUi],
+    [busy, supabase, reportsUi, reportsMode, repIncoming, warehousemanFio, notifyError, matNameByCode],
   );
 
   const onPdfRegister = useCallback(async () => {
+    const isIncoming = reportsMode === "incoming";
     await runPdfTop({
       busy,
       supabase,
-      key: `pdf: warehouse: issues - register:${periodFrom || "all"}:${periodTo || "all"} `,
+      key: `pdf: warehouse: ${isIncoming ? "incoming" : "issues"} - register:${periodFrom || "all"}:${periodTo || "all"} `,
       label: "Готовлю реестр…",
       mode: Platform.OS === "web" ? "preview" : "share",
-      fileName: `Warehouse_Issues_${periodFrom || "all"}_${periodTo || "all"} `,
-      getRemoteUrl: async () => await reportsUi.buildRegisterHtml(),
+      fileName: `WH_${isIncoming ? "Incoming" : "Issues"}_Register_${periodFrom || "all"}_${periodTo || "all"} `,
+      getRemoteUrl: async () => isIncoming ? await reportsUi.buildIncomingRegisterHtml() : await reportsUi.buildRegisterHtml(),
     });
-  }, [busy, supabase, periodFrom, periodTo, reportsUi]);
+  }, [busy, supabase, periodFrom, periodTo, reportsUi, reportsMode]);
 
   const onPdfMaterials = useCallback(async () => {
     let w: any = null;
+    const isIncoming = reportsMode === "incoming";
 
-    // ✅ web: открыть окно СРАЗУ по клику (иначе браузер блокнет)
     if (Platform.OS === "web") {
       w = window.open("", "_blank");
       try {
         if (w?.document) {
-          w.document.title = "Отчёт по материалам";
+          w.document.title = isIncoming ? "Свод прихода материалов" : "Свод отпуска материалов";
           w.document.body.style.margin = "0";
           w.document.body.innerHTML = `
-  < div style = "font-family:system-ui,Segoe UI,Roboto,Arial;padding:18px" >
-            <h3 style="margin:0 0 8px 0">Отчёт по материалам</h3>
-            <div style="color:#64748b">Формирую PDF…</div>
-          </div > `;
+            <div style="font-family:system-ui,Segoe UI,Roboto,Arial;padding:18px">
+              <h3 style="margin:0 0 8px 0">${isIncoming ? "Свод прихода материалов" : "Свод отпуска материалов"}</h3>
+              <div style="color:#64748b">Формирую PDF…</div>
+            </div>`;
         }
       } catch (e) { console.warn(e); }
     }
 
     try {
       const url = await busy.run(
-        async () => await reportsUi.buildMaterialsReportPdf(),
-        { label: "Готовлю отчёт по материалам…" } as any
+        async () => isIncoming
+          ? await (reportsUi as any).buildIncomingMaterialsReportPdf()
+          : await reportsUi.buildMaterialsReportPdf(),
+        { label: "Готовлю свод материалов…" } as any
       );
       if (!url) throw new Error("Не удалось сформировать PDF");
       if (Platform.OS === "web") {
@@ -347,17 +498,17 @@ export default function Warehouse() {
       await runPdfTop({
         busy,
         supabase,
-        key: `pdf: warehouse: materials:${periodFrom || "all"}:${periodTo || "all"} `,
+        key: `pdf: warehouse: materials:${isIncoming ? "incoming" : "issues"}:${periodFrom || "all"}:${periodTo || "all"} `,
         label: "Открываю PDF…",
         mode: "share",
-        fileName: `WH_Materials_${periodFrom || "all"}_${periodTo || "all"} `,
+        fileName: `WH_${isIncoming ? "Incoming" : "Issued"}_Materials_${periodFrom || "all"}_${periodTo || "all"} `,
         getRemoteUrl: async () => url,
       });
     } catch (e) {
-      try { if (w) w.close(); } catch (e) { console.warn(e); }
+      try { if (w) w.close(); } catch (e2) { console.warn(e2); }
       showErr(e);
     }
-  }, [busy, supabase, periodFrom, periodTo, reportsUi]);
+  }, [busy, supabase, periodFrom, periodTo, reportsUi, reportsMode]);
 
   const onPdfObjectWork = useCallback(async () => {
     let w: any = null;
@@ -369,10 +520,10 @@ export default function Warehouse() {
           w.document.title = "Отчёт по объектам/работам";
           w.document.body.style.margin = "0";
           w.document.body.innerHTML = `
-  < div style = "font-family:system-ui,Segoe UI,Roboto,Arial;padding:18px" >
-            <h3 style="margin:0 0 8px 0">Отчёт по объектам/работам</h3>
-            <div style="color:#64748b">Формирую PDF…</div>
-          </div > `;
+            <div style="font-family:system-ui,Segoe UI,Roboto,Arial;padding:18px">
+              <h3 style="margin:0 0 8px 0">Отчёт по объектам/работам</h3>
+              <div style="color:#64748b">Формирую PDF…</div>
+            </div>`;
         }
       } catch (e) { console.warn(e); }
     }
@@ -405,41 +556,48 @@ export default function Warehouse() {
   }, [busy, supabase, periodFrom, periodTo, reportsUi]);
 
   const onPdfDayRegister = useCallback(async (dayLabel: string) => {
+    const isIncoming = reportsMode === "incoming";
     await runPdfTop({
       busy,
       supabase,
-      key: `pdf: warehouse: day - register:${dayLabel} `,
+      key: `pdf: warehouse: day - register:${isIncoming ? "incoming" : "issues"}:${dayLabel} `,
       label: "Готовлю реестр за день…",
       mode: Platform.OS === "web" ? "preview" : "share",
-      fileName: `WH_Register_${String(dayLabel).trim().replace(/\s+/g, "_")} `,
-      getRemoteUrl: async () => await (reportsUi as any).buildDayRegisterPdf(dayLabel),
+      fileName: `WH_${isIncoming ? "Incoming" : "Register"}_${String(dayLabel).trim().replace(/\s+/g, "_")} `,
+      getRemoteUrl: async () => isIncoming
+        ? await (reportsUi as any).buildDayIncomingRegisterPdf(dayLabel)
+        : await (reportsUi as any).buildDayRegisterPdf(dayLabel),
     });
-  }, [busy, supabase, reportsUi]);
+  }, [busy, supabase, reportsUi, reportsMode]);
 
   const onPdfDayMaterials = useCallback(async (dayLabel: string) => {
     let w: any = null;
+    const isIncoming = reportsMode === "incoming";
 
-    // ✅ web: открыть окно сразу, чтобы не блокнуло
     if (Platform.OS === "web") {
       w = window.open("", "_blank");
       try {
         if (w?.document) {
-          w.document.title = "Свод материалов за день";
+          w.document.title = isIncoming ? "Свод прихода за день" : "Свод отпуска за день";
           w.document.body.style.margin = "0";
           w.document.body.innerHTML = `
-  < div style = "font-family:system-ui,Segoe UI,Roboto,Arial;padding:18px" >
-            <h3 style="margin:0 0 8px 0">Свод материалов за день</h3>
-            <div style="color:#64748b">Формирую PDF…</div>
-          </div > `;
+            <div style="font-family:system-ui,Segoe UI,Roboto,Arial;padding:18px">
+              <h3 style="margin:0 0 8px 0">${isIncoming ? "Свод прихода за день" : "Свод отпуска за день"}</h3>
+              <div style="color:#64748b">Формирую PDF…</div>
+            </div>`;
         }
       } catch (e) { console.warn(e); }
     }
 
     try {
       const url = await busy.run(
-        async () => await (reportsUi as any).buildDayMaterialsReportPdf(dayLabel),
+        async () => isIncoming
+          ? await (reportsUi as any).buildDayIncomingMaterialsReportPdf(dayLabel)
+          : await (reportsUi as any).buildDayMaterialsReportPdf(dayLabel),
         { label: "Готовлю свод материалов за день…" } as any
       );
+
+      if (!url) throw new Error("Не удалось сформировать PDF");
 
       if (Platform.OS === "web") {
         if (w) w.location.href = url;
@@ -450,17 +608,17 @@ export default function Warehouse() {
       await runPdfTop({
         busy,
         supabase,
-        key: `pdf: warehouse: day - materials:${dayLabel} `,
-        label: "Открываю PDF…",
+        key: `pdf: warehouse: day - materials:${isIncoming ? "incoming" : "issues"}:${dayLabel} `,
+        label: "Готовлю свод материалов за день…",
         mode: "share",
-        fileName: `WH_DayMaterials_${String(dayLabel).trim().replace(/\s+/g, "_")} `,
+        fileName: `WH_${isIncoming ? "Incoming" : "Issued"}_DayMaterials_${String(dayLabel).trim().replace(/\s+/g, "_")} `,
         getRemoteUrl: async () => url,
       });
     } catch (e) {
-      try { if (w) w.close(); } catch (e) { console.warn(e); }
+      try { if (w) w.close(); } catch (e2) { console.warn(e2); }
       showErr(e);
     }
-  }, [busy, supabase, reportsUi]);
+  }, [busy, supabase, reportsUi, reportsMode]);
   const [repPeriodOpen, setRepPeriodOpen] = useState(false);
 
   const fetchStock = useCallback(async () => {
@@ -525,12 +683,17 @@ export default function Warehouse() {
   }, []);
 
   const fetchReports = useCallback(async () => {
-    const r = await apiFetchReports(supabase as any, periodFrom, periodTo);
+    const [r, inc] = await Promise.all([
+      apiFetchReports(supabase as any, periodFrom, periodTo),
+      apiFetchIncomingReports(supabase as any, { from: periodFrom, to: periodTo }),
+    ]);
     setReportsSupported(r.supported);
     setRepStock(r.repStock as any);
     setRepMov(r.repMov as any);
     setRepIssues(r.repIssues as any);
+    setRepIncoming(inc);
   }, [periodFrom, periodTo]);
+
   const getUomByCode = useCallback((code: string): string | null => {
     const key = normMatCode(code);
     if (!key) return null;
@@ -566,7 +729,7 @@ export default function Warehouse() {
     if (sys) parts.push(`Система: ${sys} `);
     if (zn) parts.push(`Зона: ${zn} `);
 
-    return parts.join(" · ");
+    return parts.join(" В· ");
   }, [levelOpt?.label, systemOpt?.label, zoneOpt?.label]);
 
 
@@ -1115,11 +1278,18 @@ export default function Warehouse() {
 
         setReceivingHeadId(incomingId);
 
+        if (!warehousemanFio.trim()) {
+          setItemsModal(null);
+          return notifyError("ФИО обязательно", "Введите ФИО кладовщика во вкладке «К приходу»");
+        }
+
         const { data, error } = await supabase.rpc("wh_receive_apply_ui" as any, {
           p_incoming_id: incomingId,
           p_items: toApply,
+          p_warehouseman_fio: warehousemanFio.trim(),
           p_note: null,
         } as any);
+
 
         if (error) {
           console.warn("[wh_receive_apply_ui] error:", error.message);
@@ -1300,11 +1470,56 @@ export default function Warehouse() {
     );
   };
 
+  const ExpenditureHeader = useMemo(() => {
+    return (
+      <View style={{ paddingHorizontal: 16, paddingBottom: 10 }}>
+        <View style={s.sectionBox}>
+          <View style={{ marginTop: 2 }}>
+            <Text style={{ color: UI.sub, fontWeight: "800", marginBottom: 6 }}>
+              Получатель
+            </Text>
+
+            <TextInput
+              value={rec.recipientText}
+              onChangeText={(t) => {
+                rec.setRecipientText(t);
+                rec.setRecipientSuggestOpen(true);
+              }}
+              placeholder="Введите ФИО получателя…"
+              placeholderTextColor={UI.sub}
+              style={s.input}
+              onFocus={() => rec.setRecipientSuggestOpen(true)}
+              onBlur={() => {
+                setTimeout(() => rec.setRecipientSuggestOpen(false), 150);
+              }}
+            />
+
+            {rec.recipientSuggestOpen && rec.recipientSuggestions.length > 0 ? (
+              <View style={{ marginTop: 8, gap: 8 }}>
+                {rec.recipientSuggestions.map((name: string) => (
+                  <Pressable
+                    key={name}
+                    onPress={() => void rec.commitRecipient(name)}
+                    style={s.openBtn}
+                  >
+                    <Text style={s.openBtnText} numberOfLines={1}>
+                      {name}
+                    </Text>
+                  </Pressable>
+                ))}
+              </View>
+            ) : null}
+          </View>
+        </View>
+      </View>
+    );
+  }, [rec.recipientText, rec.recipientSuggestOpen, rec.recipientSuggestions, rec.setRecipientText, rec.setRecipientSuggestOpen, rec.commitRecipient]);
+
   const renderReqIssue = () => {
     return (
       <View style={{ flex: 1 }}>
         <AnimatedFlatList
-          data={reqHeads as any[]}
+          data={sortedReqHeads as any[]}
           keyExtractor={(x: any) => x.request_id}
           contentContainerStyle={{ paddingTop: HEADER_MAX + 12, paddingBottom: 24 }}
           onScroll={isWeb ? undefined : headerApi.onListScroll}
@@ -1323,99 +1538,69 @@ export default function Warehouse() {
               </View>
             ) : null
           )}
-          ListHeaderComponent={() => (
-            <View style={{ paddingHorizontal: 16, paddingBottom: 10 }}>
-              <View style={s.sectionBox}>
-                <Text style={s.sectionBoxTitle}>РАСХОД ПО ЗАЯВКАМ (REQ)</Text>
-                <Text style={{ color: UI.sub, fontWeight: "800" }}>
-                  Выдача доступна только по утверждённым строкам и только если есть остаток на складе.
-                </Text>
-
-                <View style={{ marginTop: 10 }}>
-                  <Text style={{ color: UI.sub, fontWeight: "800", marginBottom: 6 }}>
-                    Получатель
-                  </Text>
-
-                  <TextInput
-                    value={rec.recipientText}
-                    onChangeText={(t) => {
-                      rec.setRecipientText(t);
-                      rec.setRecipientSuggestOpen(true);
-                    }}
-                    placeholder="Введите ФИО получателя…"
-                    placeholderTextColor={UI.sub}
-                    style={s.input}
-                    onFocus={() => rec.setRecipientSuggestOpen(true)}
-                    onBlur={() => {
-                      setTimeout(() => rec.setRecipientSuggestOpen(false), 150);
-                    }}
-                  />
-
-                  {rec.recipientSuggestOpen && rec.recipientSuggestions.length > 0 ? (
-                    <View style={{ marginTop: 8, gap: 8 }}>
-                      {rec.recipientSuggestions.map((name) => (
-                        <Pressable
-                          key={name}
-                          onPress={() => void rec.commitRecipient(name)}
-                          style={s.openBtn}
-                        >
-                          <Text style={s.openBtnText} numberOfLines={1}>
-                            {name}
-                          </Text>
-                        </Pressable>
-                      ))}
-                    </View>
-                  ) : null}
-                </View>
-              </View>
-            </View>
-          )}
+          ListHeaderComponent={ExpenditureHeader}
 
           renderItem={({ item }: { item: any }) => {
-            const status = String(item.issue_status ?? "").trim().toUpperCase();
             const totalPos = Math.max(0, Number(item.items_cnt ?? 0));
             const openPos = Math.max(0, Number(item.ready_cnt ?? 0));
             const issuedPos = Math.max(0, Number(item.done_cnt ?? 0));
-            const badge =
-              status === "WAITING_STOCK" ? "Ожидает приход"
-                : status === "PARTIAL" ? "Частично"
-                  : status === "DONE" ? "Закрыта"
-                    : "Можно выдавать";
+
+            const hasToIssue = openPos > 0;
+            const isFullyIssued = issuedPos >= totalPos && totalPos > 0;
+
+            const locParts: string[] = [];
+            const obj = String(item.object_name || "").trim();
+            const lvl = String(item.level_name || item.level_code || "").trim();
+            const sys = String(item.system_name || item.system_code || "").trim();
+
+            if (obj) locParts.push(obj);
+            if (lvl) locParts.push(lvl);
+            if (sys) locParts.push(sys);
+
+            const dateStr = item.submitted_at ? new Date(item.submitted_at).toLocaleDateString("ru-RU", { day: "2-digit", month: "2-digit", year: "numeric" }) : "";
 
             return (
-              <View style={{ marginBottom: 12, paddingHorizontal: 16 }}>
+              <View style={{ marginBottom: 10, paddingHorizontal: 6 }}>
                 <Pressable
                   onPress={() => openReq(item)}
-                  style={({ pressed }) => [s.groupHeader, pressed && { opacity: 0.9 }]}
+                  style={({ pressed }) => [
+                    s.groupHeader,
+                    {
+                      borderLeftWidth: hasToIssue ? 5 : 0,
+                      borderLeftColor: "#22c55e",
+                      paddingHorizontal: 12,
+                    },
+                    pressed && { opacity: 0.9 }
+                  ]}
                 >
-                  <View style={{ flex: 1, minWidth: 0 }}>
-                    <Text style={s.groupTitle} numberOfLines={1}>
-                      {item.display_no || `REQ - ${item.request_id.slice(0, 8)} `}
-                    </Text>
-                    <Text style={s.cardMeta} numberOfLines={2}>
-                      {(item.level_name || item.level_code) ? `Этаж: ${item.level_name || item.level_code} ` : ""}
-                      {(item.system_name || item.system_code) ? ` · Система: ${item.system_name || item.system_code} ` : ""}
-                      {(item.zone_name || item.zone_code) ? ` · Зона: ${item.zone_name || item.zone_code} ` : ""}
-
-                    </Text>
-                  </View>
-
-                  <View style={s.rightStack}>
-                    <View style={s.metaPill}>
-                      <Text style={s.metaPillText}>{badge}</Text>
+                  <View style={{ flex: 1 }}>
+                    {/* 1 row: ID + DATE */}
+                    <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 5 }}>
+                      <Text style={[s.groupTitle, { fontSize: 16 }]} numberOfLines={1}>
+                        {item.display_no || `REQ-${item.request_id.slice(0, 8)}`}
+                      </Text>
+                      <Text style={{ color: UI.sub, fontSize: 12, fontWeight: "700" }}>{dateStr}</Text>
                     </View>
 
-                    <View style={s.metaPill}>
-                      <Text style={s.metaPillText}>{`К выдаче ${openPos} `}</Text>
+                    {/* 2 row: ACTION */}
+                    <View style={{ marginBottom: 5 }}>
+                      {isFullyIssued ? (
+                        <Text style={{ color: "#22c55e", fontWeight: "900", fontSize: 13 }}>Выдано полностью</Text>
+                      ) : (
+                        <Text style={{ color: UI.sub, fontSize: 13, fontWeight: "700" }}>
+                          К выдаче: <Text style={{ color: hasToIssue ? "#22c55e" : UI.text, fontWeight: "900" }}>{hasToIssue ? `${openPos} ${openPos === 1 ? 'позиция' : (openPos > 1 && openPos < 5) ? 'позиции' : 'позиций'}` : "0"}</Text>
+                          {" • "}
+                          Выдано: <Text style={{ color: issuedPos > 0 ? "#22c55e" : UI.text, fontWeight: "800" }}>{issuedPos}</Text>
+                        </Text>
+                      )}
                     </View>
 
-                    <View style={s.metaPill}>
-                      <Text style={s.metaPillText}>{`Выдано ${issuedPos} `}</Text>
-                    </View>
-
-                    <View style={s.metaPill}>
-                      <Text style={s.metaPillText}>{`Всего ${totalPos} `}</Text>
-                    </View>
+                    {/* 3 row: CONTEXT */}
+                    {locParts.length > 0 && (
+                      <Text style={{ color: UI.sub, fontSize: 12, fontWeight: "600", lineHeight: 16 }}>
+                        {locParts.join(" • ")}
+                      </Text>
+                    )}
                   </View>
                 </Pressable>
               </View>
@@ -1424,7 +1609,7 @@ export default function Warehouse() {
           ListEmptyComponent={
             reqHeadsLoading ? (
               <Text style={{ color: UI.sub, paddingHorizontal: 16, fontWeight: "800" }}>
-                Загрузка…
+                Загрузка...
               </Text>
             ) : (
               <Text style={{ color: UI.sub, paddingHorizontal: 16, fontWeight: "800" }}>
@@ -1448,7 +1633,27 @@ export default function Warehouse() {
             contentContainerStyle={{ paddingTop: HEADER_MAX + 12, paddingBottom: 24 }}
             onScroll={isWeb ? undefined : headerApi.onListScroll}
             scrollEventThrottle={isWeb ? undefined : 16}
+            ListHeaderComponent={
+              <View style={{ paddingHorizontal: 16, marginBottom: 12 }}>
+                <View style={s.sectionBox}>
+                  <Text style={{ color: UI.sub, fontWeight: "800", marginBottom: 6 }}>
+                    ФИО кладовщика (обязательно)
+                  </Text>
+                  <TextInput
+                    value={warehousemanFio}
+                    onChangeText={(t) => {
+                      setWarehousemanFio(t);
+                      void AsyncStorage.setItem("wh_warehouseman_fio", t);
+                    }}
+                    placeholder="Введите ФИО…"
+                    placeholderTextColor={UI.sub}
+                    style={s.input}
+                  />
+                </View>
+              </View>
+            }
             onEndReached={() => {
+
               if (incoming.toReceiveHasMore && !incoming.toReceiveIsFetching) {
                 incoming.fetchToReceive(incoming.toReceivePage + 1);
               }
@@ -1462,83 +1667,52 @@ export default function Warehouse() {
               ) : null
             }
             renderItem={({ item }: { item: any }) => {
+              const recSum = Math.round(nz(item.qty_received_sum, 0));
+              const leftSum = Math.round(nz(item.qty_expected_sum, 0) - nz(item.qty_received_sum, 0));
+
+              const prNo = formatProposalBaseNo(
+                incoming.proposalNoByPurchase[item.purchase_id] || item.po_no,
+                item.purchase_id
+              );
+
+              const dateStr = item.purchase_created_at
+                ? new Date(item.purchase_created_at).toLocaleDateString("ru-RU", {
+                  day: "2-digit",
+                  month: "2-digit",
+                  year: "numeric"
+                })
+                : "—";
+
               return (
-                <View style={{ marginBottom: 12, paddingHorizontal: 16 }}>
-                  <View style={s.groupHeader}>
-                    <View style={{ flex: 1, minWidth: 0 }}>
-                      {renderPrWithRoleBadge(
-                        formatProposalBaseNo(
-                          incoming.proposalNoByPurchase[item.purchase_id] || item.po_no,
-                          item.purchase_id
-                        ),
-                        roleBadgeLabel("S")
-                      )}
+                <View style={{ marginBottom: 10, paddingHorizontal: 6 }}>
+                  <Pressable
+                    onPress={() => void openItemsModal(item)}
+                    style={({ pressed }) => [
+                      s.groupHeader,
+                      { paddingHorizontal: 12 },
+                      pressed && { opacity: 0.8, backgroundColor: "rgba(255,255,255,0.08)" }
+                    ]}
+                  >
+                    <View style={{ flex: 1 }}>
+                      {/* 1 row: ID + DATE */}
+                      <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+                        <Text style={[s.groupTitle, { fontSize: 16 }]} numberOfLines={1}>
+                          {prNo}
+                        </Text>
+                        <Text style={{ color: UI.sub, fontSize: 12, fontWeight: "700" }}>{dateStr}</Text>
+                      </View>
 
-                      <Text style={s.cardMeta} numberOfLines={1}>
-                        {item.purchase_created_at
-                          ? new Date(item.purchase_created_at).toLocaleDateString("ru-RU")
-                          : "—"}
-                        {item.purchase_status ? ` · ${item.purchase_status} ` : ""}
-                      </Text>
+                      {/* 2 row: MAIN STATS */}
+                      <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+                        <Text style={{ color: "#22c55e", fontSize: 14, fontWeight: "900" }}>
+                          Принято {recSum}
+                        </Text>
+                        <Text style={{ color: "#ef4444", fontSize: 14, fontWeight: "900" }}>
+                          Осталось {leftSum}
+                        </Text>
+                      </View>
                     </View>
-
-                    {(() => {
-                      const totalLeft = nz(item.qty_left_sum, 0);
-
-                      const leftPos = Math.max(
-                        0,
-                        Number(item.pending_cnt ?? 0) + Number(item.partial_cnt ?? 0),
-                      );
-                      const totalPos = Math.max(0, Number(item.items_cnt ?? 0));
-                      const donePos = Math.max(0, totalPos - leftPos);
-
-                      const expSum = nz(item.qty_expected_sum, 0);
-                      const recSum = nz(item.qty_received_sum, 0);
-                      const leftSum = Math.max(0, expSum - recSum);
-                      const isPartial = recSum > 0 && leftSum > 0;
-
-                      const statusLabel = isPartial ? "Частично" : "Ожидает";
-
-                      return (
-                        <View style={s.rightStack}>
-                          {/* статус */}
-                          <View
-                            style={[
-                              s.metaPill,
-                              isPartial
-                                ? { borderColor: "rgba(59,130,246,0.55)", backgroundColor: "rgba(59,130,246,0.12)" }
-                                : { borderColor: "rgba(34,197,94,0.55)", backgroundColor: "rgba(34,197,94,0.12)" },
-                            ]}
-                          >
-                            <Text style={s.metaPillText}>{statusLabel}</Text>
-                          </View>
-
-                          {(() => {
-                            const exp = nz(item.qty_expected_sum, 0);
-                            const rec = nz(item.qty_received_sum, 0);
-                            const left = Math.max(0, exp - rec);
-                            return (
-                              <View style={s.metaPill}>
-                                <Text style={s.metaPillText}>{`Принято ${Math.round(rec)} / Осталось ${Math.round(left)}`}</Text>
-                              </View>
-                            );
-                          })()}
-
-
-                          {/* остаток по количеству */}
-                          <View style={s.metaPill}>
-                            <Text style={s.metaPillText}>{`Остаток ${Math.round(totalLeft)}`}</Text>
-                          </View>
-
-                          <Pressable onPress={() => void openItemsModal(item)} style={s.openBtn}>
-                            <Text style={s.openBtnText}>Открыть</Text>
-                          </Pressable>
-
-                        </View>
-                      );
-                    })()}
-
-                  </View>
+                  </Pressable>
                 </View>
               );
             }}
@@ -1619,23 +1793,59 @@ export default function Warehouse() {
     return (
       <WarehouseReportsTab
         headerTopPad={HEADER_MAX + 8}
+        mode={reportsMode}
+        onBack={() => setReportsMode("choice")}
+        onSelectMode={(m) => setReportsMode(m)}
         onScroll={Platform.OS === "web" ? undefined : headerApi.onListScroll}
         scrollEventThrottle={Platform.OS === "web" ? undefined : 16}
         periodFrom={periodFrom}
         periodTo={periodTo}
         repStock={repStock}
         repMov={repMov}
-        reportsUi={reportsUi}
+        reportsUi={{
+          ...reportsUi,
+          issuesByDay: reportsMode === "incoming" ? (reportsUi as any).incomingByDay : (reportsUi as any).vydachaByDay
+        }}
         onOpenPeriod={() => setRepPeriodOpen(true)}
         onRefresh={() => void fetchReports()}
-        onPdfRegister={() => void onPdfRegister()}
-        onPdfIssue={(id) => void onPdfIssue(id)}
+        onPdfRegister={() => {
+          if (reportsMode === "incoming") {
+            void runPdfTop({
+              busy,
+              supabase,
+              key: `pdf: warehouse: incoming - register:${periodFrom || "all"}:${periodTo || "all"}`,
+              label: "Готовлю реестр прихода…",
+              mode: Platform.OS === "web" ? "preview" : "share",
+              fileName: `Warehouse_Incoming_${periodFrom || "all"}_${periodTo || "all"}`,
+              getRemoteUrl: async () => await (reportsUi as any).buildIncomingRegisterHtml(),
+            });
+          } else {
+            void onPdfRegister();
+          }
+        }}
+        onPdfDocument={(id) => void onPdfDocument(id)}
         onPdfMaterials={() => void onPdfMaterials()}
         onPdfObjectWork={() => void onPdfObjectWork()}
-        onPdfDayRegister={(day) => void onPdfDayRegister(day)}
+        onPdfDayRegister={(day) => {
+          if (reportsMode === "incoming") {
+            void runPdfTop({
+              busy,
+              supabase,
+              key: `pdf: warehouse: incoming - day - register:${day}`,
+              label: "Готовлю реестр прихода за день…",
+              mode: Platform.OS === "web" ? "preview" : "share",
+              fileName: `WH_Incoming_Register_${String(day).trim().replace(/\s+/g, "_")}`,
+              getRemoteUrl: async () => await (reportsUi as any).buildDayIncomingRegisterPdf(day),
+            });
+          } else {
+            void onPdfDayRegister(day);
+          }
+        }}
         onPdfDayMaterials={(day) => void onPdfDayMaterials(day)}
       />
     );
+
+
 
   };
   return (
@@ -1676,7 +1886,7 @@ export default function Warehouse() {
         {loading ? (
           <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
             <ActivityIndicator size="large" />
-            <Text style={{ marginTop: 8, color: UI.sub }}>Загрузка…</Text>
+            <Text style={{ marginTop: 8, color: UI.sub }}>Загрузка...</Text>
           </View>
         ) : (
           <View
@@ -1729,6 +1939,14 @@ export default function Warehouse() {
         linesById={issueLinesById}
         matNameByCode={matNameByCode}
         onClose={reportsUi.closeIssueDetails}
+      />
+      <IncomingDetailsSheet
+        visible={incomingDetailsId != null}
+        incomingId={incomingDetailsId}
+        loadingId={incomingLinesLoadingId}
+        linesById={incomingLinesById}
+        matNameByCode={matNameByCode}
+        onClose={(reportsUi as any).closeIncomingDetails}
       />
 
       <ReqIssueModal
@@ -1824,3 +2042,6 @@ export default function Warehouse() {
     </View>
   );
 }
+
+
+

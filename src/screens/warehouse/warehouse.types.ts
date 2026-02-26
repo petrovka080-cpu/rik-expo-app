@@ -44,15 +44,15 @@ export type ReqHeadRow = {
   request_id: string;
   display_no: string | null;
 
-  // ✅ как у директора (объект может быть null, пока requests.object_id не пишется)
+  // вњ… РєР°Рє Сѓ РґРёСЂРµРєС‚РѕСЂР° (РѕР±СЉРµРєС‚ РјРѕР¶РµС‚ Р±С‹С‚СЊ null, РїРѕРєР° requests.object_id РЅРµ РїРёС€РµС‚СЃСЏ)
   object_name: string | null;
 
-  // ✅ коды
+  // вњ… РєРѕРґС‹
   level_code: string | null;
   system_code: string | null;
   zone_code: string | null;
 
-  // ✅ человеко-читабельные названия (из ref_levels/ref_systems/ref_zones)
+  // вњ… С‡РµР»РѕРІРµРєРѕ-С‡РёС‚Р°Р±РµР»СЊРЅС‹Рµ РЅР°Р·РІР°РЅРёСЏ (РёР· ref_levels/ref_systems/ref_zones)
   level_name?: string | null;
   system_name?: string | null;
   zone_name?: string | null;
@@ -76,15 +76,15 @@ export type ReqItemUiRow = {
 
   display_no: string | null;
 
-  // ✅ объект (может быть null)
+  // вњ… РѕР±СЉРµРєС‚ (РјРѕР¶РµС‚ Р±С‹С‚СЊ null)
   object_name: string | null;
 
-  // ✅ коды
+  // вњ… РєРѕРґС‹
   level_code: string | null;
   system_code: string | null;
   zone_code: string | null;
 
-  // ✅ человеко-читабельные названия (из ref_levels/ref_systems/ref_zones)
+  // вњ… С‡РµР»РѕРІРµРєРѕ-С‡РёС‚Р°Р±РµР»СЊРЅС‹Рµ РЅР°Р·РІР°РЅРёСЏ (РёР· ref_levels/ref_systems/ref_zones)
   level_name?: string | null;
   system_name?: string | null;
   zone_name?: string | null;
@@ -117,6 +117,6 @@ export type StockPickLine = {
   pick_key: string;
   code: string;
   name: string;
-  uom_id: string | null; // текстовый uom
+  uom_id: string | null; // С‚РµРєСЃС‚РѕРІС‹Р№ uom
   qty: number;
 };

@@ -138,21 +138,33 @@ async function fetchIssueLinesViaAccRpc(issueIds: string[]): Promise<AccIssueLin
   const out: AccIssueLine[] = [];
   const ids = issueIds.filter(id => String(id || "").trim() !== "");
   if (!ids.length) return [];
-  const groups = chunk(ids, 100);
+
+  // Уменьшаем размер пачки для параллельного исполнения, чтобы не вешать сеть на телефоне
+  const groups = chunk(ids, 20);
 
   for (const g of groups) {
     const settled = await Promise.all(
       g.map(async (id) => {
-        const { data, error } = await supabase.rpc("acc_report_issue_lines" as any, {
-          p_issue_id: Number(id),
-        } as any);
-        if (error) return [] as AccIssueLine[];
-        return Array.isArray(data) ? (data as AccIssueLine[]) : [];
-      }),
-    );
-    for (const arr of settled) out.push(...arr);
-  }
+        try {
+          const numId = Number(id);
+          if (isNaN(numId)) return [] as AccIssueLine[];
 
+          const { data, error } = await supabase.rpc("acc_report_issue_lines" as any, {
+            p_issue_id: numId,
+          } as any);
+          if (error) {
+            console.warn(`[fetchIssueLines] RPC Error for ${id}:`, error.message);
+            return [] as AccIssueLine[];
+          }
+          return Array.isArray(data) ? (data as AccIssueLine[]) : [];
+        } catch (e) {
+          console.warn(`[fetchIssueLines] catch for ${id}:`, e);
+          return [] as AccIssueLine[];
+        }
+      })
+    );
+    for (const arr of settled) if (arr) out.push(...arr);
+  }
   return out;
 }
 

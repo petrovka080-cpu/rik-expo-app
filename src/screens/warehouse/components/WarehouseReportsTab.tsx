@@ -9,6 +9,10 @@ import { UI, s } from "../warehouse.styles";
 type Props = {
   headerTopPad: number;
 
+  mode: "choice" | "issue" | "incoming";
+  onBack: () => void;
+  onSelectMode: (m: "issue" | "incoming") => void;
+
   onScroll?: any;
   scrollEventThrottle?: number;
 
@@ -18,13 +22,8 @@ type Props = {
   repStock?: any[];
   repMov?: any[];
 
-  reportsUi: {
-    issuesByDay: Array<{
-      day: string;
-      items: any[];
-    }>;
-    openIssueDetails: (issueId: number) => void;
-  };
+  reportsUi: any;
+
 
   onOpenPeriod: () => void;
   onRefresh: () => void;
@@ -33,15 +32,19 @@ type Props = {
   onPdfMaterials: () => void;
   onPdfObjectWork: () => void;
 
-  onPdfIssue: (issueId: number) => void;
+  onPdfDocument: (id: string | number) => void;
 
   onPdfDayRegister?: (day: string) => void | Promise<void>;
+
   onPdfDayMaterials?: (day: string) => void | Promise<void>;
 };
 
 export default function WarehouseReportsTab(props: Props) {
   const {
     headerTopPad,
+    mode,
+    onBack,
+    onSelectMode,
     periodFrom,
     periodTo,
     reportsUi,
@@ -50,7 +53,7 @@ export default function WarehouseReportsTab(props: Props) {
     onPdfRegister,
     onPdfMaterials,
     onPdfObjectWork,
-    onPdfIssue,
+    onPdfDocument,
     onPdfDayRegister,
     onPdfDayMaterials,
   } = props;
@@ -62,7 +65,54 @@ export default function WarehouseReportsTab(props: Props) {
     items: any[];
   } | null>(null);
 
+  if (mode === "choice") {
+    return (
+      <View style={{ flex: 1, paddingHorizontal: 16, paddingTop: headerTopPad + 20 }}>
+        <Text style={{ color: UI.text, fontSize: 24, fontWeight: "900", textAlign: "center", marginBottom: 40 }}>
+          ОТЧЁТЫ
+        </Text>
 
+        <View style={{ gap: 16 }}>
+          <Pressable
+            onPress={() => onSelectMode("issue")}
+            style={({ pressed }) => [
+              {
+                backgroundColor: "rgba(255,255,255,0.06)",
+                borderWidth: 1,
+                borderColor: "rgba(255,255,255,0.12)",
+                borderRadius: 16,
+                paddingVertical: 24,
+                alignItems: "center",
+              },
+              pressed && { opacity: 0.7, backgroundColor: "rgba(255,255,255,0.1)" },
+            ]}
+          >
+            <Text style={{ color: UI.text, fontSize: 20, fontWeight: "800" }}>[ Выдача ]</Text>
+          </Pressable>
+
+          <Pressable
+            onPress={() => onSelectMode("incoming")}
+            style={({ pressed }) => [
+              {
+                backgroundColor: "rgba(255,255,255,0.06)",
+                borderWidth: 1,
+                borderColor: "rgba(255,255,255,0.12)",
+                borderRadius: 16,
+                paddingVertical: 24,
+                alignItems: "center",
+              },
+              pressed && { opacity: 0.7, backgroundColor: "rgba(255,255,255,0.1)" },
+            ]}
+          >
+            <Text style={{ color: UI.text, fontSize: 20, fontWeight: "800" }}>[ Приход ]</Text>
+          </Pressable>
+        </View>
+      </View>
+    );
+  }
+
+  const isIncoming = mode === "incoming";
+  const sectionTitle = isIncoming ? "ПРИХОДЫ ЗА ПЕРИОД" : "ВЫДАЧИ ЗА ПЕРИОД";
 
   if (activeDay) {
     return (
@@ -101,16 +151,50 @@ export default function WarehouseReportsTab(props: Props) {
             numberOfLines={1}
             style={{
               flex: 1,
-              fontSize: 18,
+              fontSize: 16,
               fontWeight: "900",
               color: UI.text,
-              textAlign: "center",
             }}
           >
             {activeDay.day}
           </Text>
 
-          <View style={{ width: 42 }} />
+          <View style={{ flexDirection: "row", gap: 8 }}>
+            <Pressable
+              onPress={() => onPdfDayRegister?.(activeDay.day)}
+              style={{
+                width: 38,
+                height: 38,
+                borderRadius: 12,
+                alignItems: "center",
+                justifyContent: "center",
+                backgroundColor: "rgba(255,255,255,0.08)",
+                borderWidth: 1,
+                borderColor: "rgba(255,255,255,0.12)",
+              }}
+              hitSlop={10}
+            >
+              <Ionicons name="document-text-outline" size={18} color={UI.text} />
+            </Pressable>
+
+            <Pressable
+              onPress={() => onPdfDayMaterials?.(activeDay.day)}
+              style={{
+                width: 38,
+                height: 38,
+                borderRadius: 12,
+                alignItems: "center",
+                justifyContent: "center",
+                backgroundColor: "rgba(255,255,255,0.08)",
+                borderWidth: 1,
+                borderColor: "rgba(255,255,255,0.12)",
+              }}
+              hitSlop={10}
+            >
+              <Ionicons name="cube-outline" size={18} color={UI.text} />
+            </Pressable>
+
+          </View>
         </View>
 
         <ScrollView
@@ -123,42 +207,48 @@ export default function WarehouseReportsTab(props: Props) {
           showsVerticalScrollIndicator
           keyboardShouldPersistTaps="handled"
         >
-
           {activeDay.items.map((h: any, idx: number) => {
-            const issueId = Number(h.issue_id);
-            const issueNo = h.issue_no ?? (Number.isFinite(issueId) ? `ISSUE-${issueId}` : "ISSUE-—");
+            const docId = isIncoming ? (h.incoming_id || h.id) : h.issue_id;
+            const docNo = isIncoming
+              ? (h.display_no || `PR-${String(docId).slice(0, 8)}`)
+              : (h.issue_no || (Number.isFinite(docId) ? `ISSUE-${docId}` : "ISSUE-—"));
 
             return (
-              <Pressable
-                key={`${activeDay.day}_${issueId || idx}_${idx}`}
-                onPress={() => {
-                  if (!Number.isFinite(issueId)) return;
-                  void reportsUi.openIssueDetails(issueId);
-                }}
-                style={{ marginBottom: 12 }}
-              >
-                <View style={s.mobCard}>
-                  <View style={s.mobMain}>
-                    <Text style={s.mobTitle}>{issueNo}</Text>
-                    {!!h?.obj_name && <Text style={s.mobMeta}>{String(h.obj_name)}</Text>}
-                  </View>
+              <View key={`${activeDay.day}_${docId || idx}_${idx}`} style={{ marginBottom: 12 }}>
+                <Pressable
+                  onPress={() => {
+                    if (!docId) return;
+                    if (isIncoming) {
+                      void (reportsUi as any).openIncomingDetails(docId);
+                    } else {
+                      void reportsUi.openIssueDetails(docId);
+                    }
+                  }}
+                >
+                  <View style={s.mobCard}>
+                    <View style={s.mobMain}>
+                      <Text style={s.mobTitle}>{docNo}</Text>
+                      {!!h?.who && <Text style={s.mobMeta}>{String(h.who)}</Text>}
+                      {!!h?.obj_name && <Text style={s.mobMeta}>{String(h.obj_name)}</Text>}
+                    </View>
 
-                  <Pressable
-                    hitSlop={10}
-                    onPress={(e) => {
-                      e.stopPropagation?.();
-                      if (!Number.isFinite(issueId)) return;
-                      void onPdfIssue(issueId);
-                    }}
-                  >
-                    <Ionicons name="document-text-outline" size={20} color={UI.text} />
-                  </Pressable>
-                </View>
-              </Pressable>
+                    <Pressable
+                      hitSlop={10}
+                      onPress={(e) => {
+                        e.stopPropagation?.();
+                        if (!docId) return;
+                        void onPdfDocument(docId);
+                      }}
+                    >
+                      <Ionicons name="document-text-outline" size={20} color={UI.text} />
+                    </Pressable>
+                  </View>
+                </Pressable>
+              </View>
             );
           })}
         </ScrollView>
-      </View >
+      </View>
     );
   }
 
@@ -173,6 +263,28 @@ export default function WarehouseReportsTab(props: Props) {
         showsVerticalScrollIndicator
         keyboardShouldPersistTaps="handled"
       >
+        <View style={{ paddingHorizontal: 16, marginBottom: 16, flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+          <Pressable
+            onPress={onBack}
+            style={{
+              width: 38,
+              height: 38,
+              borderRadius: 12,
+              alignItems: "center",
+              justifyContent: "center",
+              backgroundColor: "rgba(255,255,255,0.08)",
+              borderWidth: 1,
+              borderColor: "rgba(255,255,255,0.12)",
+            }}
+            hitSlop={15}
+          >
+            <Ionicons name="close" size={22} color={UI.text} />
+          </Pressable>
+          <Text style={{ color: UI.text, fontSize: 18, fontWeight: '900' }}>
+            {isIncoming ? "ПРИХОД" : "ВЫДАЧА"}
+          </Text>
+        </View>
+
         <View style={[s.sectionBox, { paddingHorizontal: 16 }]}>
           <Text style={s.sectionBoxTitle}>ПЕРИОД ОТЧЕТА</Text>
 
@@ -183,12 +295,15 @@ export default function WarehouseReportsTab(props: Props) {
                 : "Весь период"
             }
             actions={[
-              { key: "period", icon: "calendar-outline", onPress: onOpenPeriod },
-              { key: "refresh", icon: "refresh-outline", onPress: () => void onRefresh() },
-              { key: "pdf", icon: "document-text-outline", onPress: () => void onPdfRegister() },
-              { key: "mat", icon: "cube-outline", onPress: () => void onPdfMaterials() },
-              { key: "obj", icon: "business-outline", onPress: () => void onPdfObjectWork() },
+              { key: "period", icon: "calendar-outline" as any, onPress: onOpenPeriod },
+              { key: "refresh", icon: "refresh-outline" as any, onPress: () => void onRefresh() },
+              { key: "pdf", icon: "document-text-outline" as any, onPress: () => void onPdfRegister() },
+              { key: "mat", icon: "cube-outline" as any, onPress: () => void onPdfMaterials() },
+              ...(!isIncoming ? [
+                { key: "obj", icon: "business-outline" as any, onPress: () => void onPdfObjectWork() },
+              ] : []),
             ]}
+
             ui={{
               text: UI.text,
               sub: UI.sub,
@@ -199,9 +314,9 @@ export default function WarehouseReportsTab(props: Props) {
         </View>
 
         <View style={[s.sectionBox, { paddingHorizontal: 16 }]}>
-          <Text style={s.sectionBoxTitle}>ВЫДАЧИ ЗА ПЕРИОД</Text>
+          <Text style={s.sectionBoxTitle}>{sectionTitle}</Text>
 
-          {reportsUi.issuesByDay.map((g) => {
+          {(isIncoming ? reportsUi.incomingByDay : reportsUi.vydachaByDay).map((g) => {
             const dayCount = g.items.length;
 
             return (

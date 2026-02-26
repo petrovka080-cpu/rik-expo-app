@@ -1,4 +1,4 @@
-// src/screens/warehouse/warehouse.api.ts
+﻿// src/screens/warehouse/warehouse.api.ts
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { StockRow, ReqHeadRow, ReqItemUiRow } from "./warehouse.types";
 import { nz, parseNum } from "./warehouse.utils";
@@ -94,8 +94,8 @@ async function loadNameMapLedgerUi(
 }
 
 /**
- * ✅ PROD stock
- * - qty: v_wh_balance_ledger_truth_ui (истина)
+ * вњ… PROD stock
+ * - qty: v_wh_balance_ledger_truth_ui (РёСЃС‚РёРЅР°)
  * - name: overrides -> v_rik_names_ru -> v_wh_balance_ledger_ui
  */
 export async function apiFetchStock(
@@ -117,7 +117,7 @@ export async function apiFetchStock(
         .map((x) => String(x.code ?? "").trim().toUpperCase())
         .filter(Boolean);
 
-      // ✅ приоритет: overrides -> v_rik_names_ru -> ledger_ui
+      // вњ… РїСЂРёРѕСЂРёС‚РµС‚: overrides -> v_rik_names_ru -> ledger_ui
       const [overMap, rikMap, uiMap] = await Promise.all([
         loadNameMapOverrides(supabase, codesUpper),
         loadNameMapRikRu(supabase, codesUpper),
@@ -138,13 +138,13 @@ export async function apiFetchStock(
           (nOver && !looksLikeCode(nOver) ? nOver : nOver) ||
           (nRik && !looksLikeCode(nRik) ? nRik : nRik) ||
           (nUi && !looksLikeCode(nUi) ? nUi : "") ||
-          // если вдруг uiMap хранит кодом — не показываем как имя
-          "—";
+          // РµСЃР»Рё РІРґСЂСѓРі uiMap С…СЂР°РЅРёС‚ РєРѕРґРѕРј вЂ” РЅРµ РїРѕРєР°Р·С‹РІР°РµРј РєР°Рє РёРјСЏ
+          "вЂ”";
 
         return {
           material_id: `${code}::${uom}`,
           code: code || null,
-          name: picked || "—",
+          name: picked || "вЂ”",
           uom_id: pickUom(x.uom_id) ?? null,
 
           qty_on_hand: avail,
@@ -199,11 +199,11 @@ export async function apiFetchReqHeads(
   const q = await supabase
     .from("v_wh_issue_req_heads_ui" as any)
     .select("*")
-    // 1) главное — по времени (свежие сверху)
+    // 1) РіР»Р°РІРЅРѕРµ вЂ” РїРѕ РІСЂРµРјРµРЅРё (СЃРІРµР¶РёРµ СЃРІРµСЂС…Сѓ)
     .order("submitted_at", { ascending: false, nullsFirst: false })
-    // 2) стабилизатор — по display_no (REQ-xxxx/2026), чтобы одинаковые submitted_at не прыгали
+    // 2) СЃС‚Р°Р±РёР»РёР·Р°С‚РѕСЂ вЂ” РїРѕ display_no (REQ-xxxx/2026), С‡С‚РѕР±С‹ РѕРґРёРЅР°РєРѕРІС‹Рµ submitted_at РЅРµ РїСЂС‹РіР°Р»Рё
     .order("display_no", { ascending: false })
-    // 3) ещё один стабилизатор — по request_id (uuid) на случай одинаковых display_no
+    // 3) РµС‰С‘ РѕРґРёРЅ СЃС‚Р°Р±РёР»РёР·Р°С‚РѕСЂ вЂ” РїРѕ request_id (uuid) РЅР° СЃР»СѓС‡Р°Р№ РѕРґРёРЅР°РєРѕРІС‹С… display_no
     .order("request_id", { ascending: false })
     .range(page * pageSize, (page + 1) * pageSize - 1);
 
@@ -286,7 +286,7 @@ export async function apiFetchReqItems(
     qty_can_issue_now: parseNum(x.qty_can_issue_now, 0),
   })) as ReqItemUiRow[];
 
-  // ✅ дедуп по request_item_id (берём максимальные числа)
+  // вњ… РґРµРґСѓРї РїРѕ request_item_id (Р±РµСЂС‘Рј РјР°РєСЃРёРјР°Р»СЊРЅС‹Рµ С‡РёСЃР»Р°)
   const byId: Record<string, ReqItemUiRow> = {};
   for (const it of raw) {
     const id = String((it as any).request_item_id ?? "").trim();
@@ -413,5 +413,119 @@ export async function apiFetchIssuedByObjectReportFast(
   } as any);
 
   if (!r.error && Array.isArray(r.data)) return r.data as any[];
+  return [];
+}
+
+export async function apiFetchIncomingReports(
+  supabase: SupabaseClient,
+  p: { from?: string | null; to?: string | null },
+): Promise<any[]> {
+  const r = await supabase.rpc("acc_report_incoming_v2" as any, {
+    p_from: normDateArg(p.from),
+    p_to: normDateArg(p.to),
+  } as any);
+
+  if (!r.error && Array.isArray(r.data)) return r.data as any[];
+  return [];
+}
+
+export type IncomingMaterialsFastRow = {
+  material_code: string;
+  material_name: string;
+  uom: string;
+  sum_total: number;
+  docs_cnt: number;
+  lines_cnt: number;
+};
+
+export async function apiFetchIncomingMaterialsReportFast(
+  supabase: SupabaseClient,
+  p: { from?: string | null; to?: string | null },
+): Promise<IncomingMaterialsFastRow[]> {
+  // No RPC for this on server yet, use ledger directly for stability
+  // and to avoid 404 errors in console
+  console.log("[apiFetchIncomingMaterialsReportFast] Fetching from ledger for", p);
+
+  const q: any = await supabase
+    .from("wh_ledger" as any)
+    .select("code, uom_id, qty, moved_at, warehouseman_fio")
+    .eq("direction", "in")
+    .gte("moved_at", normDateArg(p.from))
+    .lte("moved_at", normDateArg(p.to));
+
+
+  if (q.error || !q.data) {
+    if (q.error) console.warn("[apiFetchIncomingMaterialsReportFast] fallback err:", q.error.message);
+    return [];
+  }
+
+  const groups: Record<string, IncomingMaterialsFastRow> = {};
+  for (const row of q.data as any[]) {
+    const code = String(row.code || "").trim();
+    if (!code) continue;
+
+    const key = `${code}|${row.uom_id}`;
+    if (!groups[key]) {
+      groups[key] = {
+        material_code: code,
+        material_name: code,
+        uom: row.uom_id,
+        sum_total: 0,
+        docs_cnt: 0,
+        lines_cnt: 0,
+      };
+    }
+    const val = Number(row.qty || 0);
+    groups[key].sum_total += val;
+    groups[key].lines_cnt += 1;
+  }
+  return Object.values(groups);
+}
+
+export async function apiFetchIncomingLines(
+  supabase: SupabaseClient,
+  incomingId: string,
+): Promise<any[]> {
+  console.log("[apiFetchIncomingLines] Direct fetch for:", incomingId);
+
+  const q: any = await supabase
+    .from("wh_ledger" as any)
+    .select("code, uom_id, qty")
+    .eq("incoming_id", incomingId)
+    .eq("direction", "in");
+
+  if (!q.error && Array.isArray(q.data)) {
+    console.log("[apiFetchIncomingLines] Success:", q.data.length, "lines");
+    const rows = q.data as any[];
+    const codesUpper = Array.from(
+      new Set(rows.map((ln: any) => String(ln?.code ?? "").trim().toUpperCase()).filter(Boolean))
+    );
+
+    const [overMap, rikMap, uiMap] = await Promise.all([
+      loadNameMapOverrides(supabase, codesUpper),
+      loadNameMapRikRu(supabase, codesUpper),
+      loadNameMapLedgerUi(supabase, codesUpper),
+    ]);
+
+    return rows.map((ln: any) => {
+      const code = String(ln?.code ?? "").trim();
+      const key = code.toUpperCase();
+      const nOver = String(overMap[key] ?? "").trim();
+      const nRik = String(rikMap[key] ?? "").trim();
+      const nUi = String(uiMap[key] ?? "").trim();
+      const nameRu = nOver || nRik || nUi || code || "Позиция";
+
+      return {
+        ...ln,
+        name_ru: nameRu,
+        material_name: nameRu,
+        name: nameRu,
+        uom: ln.uom_id || "—",
+        qty_received: ln.qty,
+      };
+    });
+  }
+
+  if (q.error) console.error("[apiFetchIncomingLines] Error:", q.error.message);
   return [];
 }

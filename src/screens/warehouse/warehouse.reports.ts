@@ -124,8 +124,8 @@ function dayRangeIso(dayLabel: string) {
 export function useWarehouseReports(args: {
   busy: BusyLike;
   supabase: SupabaseLike;
-
   repIssues: any[];
+  repIncoming?: any[];
 
   periodFrom: string;
   periodTo: string;
@@ -141,11 +141,20 @@ export function useWarehouseReports(args: {
   issueDetailsId: number | null;
   setIssueDetailsId: (v: number | null) => void;
 
+  incomingLinesById: Record<string, any[]>;
+  setIncomingLinesById: (updater: any) => void;
+  incomingLinesLoadingId: string | null;
+  setIncomingLinesLoadingId: (v: string | null) => void;
+  incomingDetailsId: string | null;
+  setIncomingDetailsId: (v: string | null) => void;
+
   nameByCode?: Record<string, string>;
 }) {
   const {
+    busy,
     supabase,
     repIssues,
+    repIncoming,
     periodFrom,
     periodTo,
     orgName,
@@ -153,14 +162,23 @@ export function useWarehouseReports(args: {
     issueLinesById,
     setIssueLinesById,
     setIssueLinesLoadingId,
+    issueDetailsId,
     setIssueDetailsId,
+    incomingLinesById,
+    setIncomingLinesById,
+    incomingLinesLoadingId,
+    setIncomingLinesLoadingId,
+    incomingDetailsId,
+    setIncomingDetailsId,
     nameByCode,
   } = args;
+
+
 
   const fmtDayRu = (d: Date) =>
     d.toLocaleDateString("ru-RU", { day: "2-digit", month: "long", year: "numeric" });
 
-  const issuesByDay = useMemo(() => {
+  const vydachaByDay = useMemo(() => {
     const groups: Record<string, any[]> = {};
     for (const it of repIssues || []) {
       const dt = it?.event_dt ? new Date(it.event_dt) : null;
@@ -173,26 +191,30 @@ export function useWarehouseReports(args: {
     }));
   }, [repIssues]);
 
-  // ✅ ВАЖНО: возвращает массив lines (а не просто пишет в state)
+  const incomingByDay = useMemo(() => {
+    const groups: Record<string, any[]> = {};
+    for (const it of repIncoming || []) {
+      const dt = it?.event_dt ? new Date(it.event_dt) : null;
+      const key = dt ? fmtDayRu(dt) : "Без даты";
+      (groups[key] ||= []).push(it);
+    }
+    return Object.entries(groups).map(([day, items]) => ({
+      day,
+      items: items.sort((a, b) => new Date(b.event_dt).getTime() - new Date(a.event_dt).getTime()),
+    }));
+  }, [repIncoming]);
+
   const ensureIssueLines = useCallback(
     async (issueId: number): Promise<any[]> => {
       const key = String(issueId);
-
       const cached = issueLinesById?.[key];
       if (Array.isArray(cached) && cached.length > 0) return cached;
-
       setIssueLinesLoadingId(issueId);
       try {
         const r = await supabase.rpc("acc_report_issue_lines" as any, { p_issue_id: issueId } as any);
         if (r.error) throw r.error;
-
         const lines = Array.isArray(r.data) ? (r.data as any[]) : [];
-
-        setIssueLinesById((prev: any) => ({
-          ...(prev || {}),
-          [key]: lines,
-        }));
-
+        setIssueLinesById((prev: any) => ({ ...(prev || {}), [key]: lines }));
         return lines;
       } finally {
         setIssueLinesLoadingId(null);
@@ -201,35 +223,50 @@ export function useWarehouseReports(args: {
     [issueLinesById, setIssueLinesById, setIssueLinesLoadingId, supabase],
   );
 
-  const openIssueDetails = useCallback(
-    async (issueId: number) => {
-      setIssueDetailsId(issueId);
-      await ensureIssueLines(issueId);
+  const ensureIncomingLines = useCallback(
+    async (incomingId: string): Promise<any[]> => {
+      const cached = incomingLinesById?.[incomingId];
+      if (Array.isArray(cached) && cached.length > 0) return cached;
+      setIncomingLinesLoadingId(incomingId);
+      try {
+        const { apiFetchIncomingLines } = require("./warehouse.api");
+        const lines = await apiFetchIncomingLines(supabase, incomingId);
+        setIncomingLinesById((prev: any) => ({ ...(prev || {}), [incomingId]: lines }));
+        return lines;
+      } finally {
+        setIncomingLinesLoadingId(null);
+      }
     },
-    [ensureIssueLines, setIssueDetailsId],
+    [incomingLinesById, setIncomingLinesById, setIncomingLinesLoadingId, supabase],
   );
+
+  const openIncomingDetails = useCallback(async (incomingId: string) => {
+    setIncomingDetailsId(incomingId);
+    await ensureIncomingLines(incomingId);
+  }, [ensureIncomingLines, setIncomingDetailsId]);
+
+  const closeIncomingDetails = useCallback(() => setIncomingDetailsId(null), [setIncomingDetailsId]);
+
+  const openIssueDetails = useCallback(async (issueId: number) => {
+    setIssueDetailsId(issueId);
+    await ensureIssueLines(issueId);
+  }, [ensureIssueLines, setIssueDetailsId]);
 
   const closeIssueDetails = useCallback(() => setIssueDetailsId(null), [setIssueDetailsId]);
 
-  const buildIssueHtml = useCallback(
-    async (issueId: number) => {
-      const head = (repIssues || []).find((x: any) => Number(x.issue_id) === Number(issueId));
-      if (!head) throw new Error("Выдача не найдена");
-
-      const linesAny = await ensureIssueLines(issueId);
-
-      const html = buildWarehouseIssueFormHtml({
-        head: head as WarehouseIssueHead,
-        lines: (linesAny || []) as WarehouseIssueLine[],
-        orgName,
-        warehouseName,
-        nameByCode,
-      });
-
-      return await exportWarehouseHtmlPdf({ fileName: `ISSUE-${issueId}`, html });
-    },
-    [repIssues, ensureIssueLines, orgName, warehouseName, nameByCode],
-  );
+  const buildIssueHtml = useCallback(async (issueId: number) => {
+    const head = (repIssues || []).find((x: any) => Number(x.issue_id) === Number(issueId));
+    if (!head) throw new Error("Выдача не найдена");
+    const linesAny = await ensureIssueLines(issueId);
+    const html = buildWarehouseIssueFormHtml({
+      head: head as WarehouseIssueHead,
+      lines: (linesAny || []) as WarehouseIssueLine[],
+      orgName,
+      warehouseName,
+      nameByCode,
+    });
+    return await exportWarehouseHtmlPdf({ fileName: `ISSUE-${issueId}`, html });
+  }, [repIssues, ensureIssueLines, orgName, warehouseName, nameByCode]);
 
   const buildRegisterHtml = useCallback(async () => {
     const html = buildWarehouseIssuesRegisterHtml({
@@ -239,254 +276,223 @@ export function useWarehouseReports(args: {
       orgName,
       warehouseName,
     });
-
     return await exportWarehouseHtmlPdf({
       fileName: `Warehouse_Issues_${periodFrom || "all"}_${periodTo || "all"}`,
       html,
     });
   }, [periodFrom, periodTo, repIssues, orgName, warehouseName]);
 
-  const buildDayRegisterPdf = useCallback(
-    async (dayLabel: string) => {
-      const wanted = String(dayLabel ?? "").trim();
-      if (!wanted) throw new Error("День не задан");
+  const buildDayRegisterPdf = useCallback(async (dayLabel: string) => {
+    const wanted = String(dayLabel ?? "").trim();
+    const dayIssues = (repIssues || []).filter((it: any) => {
+      const dt = it?.event_dt ? new Date(it.event_dt) : null;
+      const key = dt ? fmtDayRu(dt) : "Без даты";
+      return key === wanted;
+    });
+    const html = buildWarehouseIssuesRegisterHtml({
+      periodFrom: wanted,
+      periodTo: wanted,
+      issues: dayIssues as WarehouseIssueHead[],
+      orgName,
+      warehouseName,
+    });
+    const safeDay = wanted.replace(/\s+/g, "_").replace(/[^\w\u0400-\u04FF\-]/g, "");
+    return await exportWarehouseHtmlPdf({ fileName: `WH_Register_${safeDay}`, html });
+  }, [repIssues, orgName, warehouseName]);
 
-      const dayIssues = (repIssues || []).filter((it: any) => {
-        const dt = it?.event_dt ? new Date(it.event_dt) : null;
-        const key = dt ? fmtDayRu(dt) : "Без даты";
-        return key === wanted;
-      });
+  const buildDayMaterialsReportPdf = useCallback(async (dayLabel: string) => {
+    const rr = dayRangeIso(dayLabel);
+    const rawRows = await apiFetchIssuedMaterialsReportFast(supabase as any, {
+      from: rr.rpcFrom, to: rr.rpcTo, objectId: null,
+    });
+    const rows = (rawRows || []).map((r: any) => ({
+      material_code: String(r.material_code ?? ""),
+      material_name: String(r.material_name ?? r.material_code ?? ""),
+      uom: String(r.uom ?? ""),
+      sum_in_req: toNum(r.sum_in_req),
+      sum_free: toNum(r.sum_free),
+      sum_over: toNum(r.sum_over),
+      sum_total: toNum(r.sum_total),
+      docs_cnt: toNum(r.docs_cnt),
+      lines_cnt: toNum(r.lines_cnt),
+    }));
+    let docsTotal = (repIssues || []).filter(it => {
+      const dt = it?.event_dt ? new Date(it.event_dt) : null;
+      return dt && fmtDayRu(dt) === dayLabel;
+    }).length;
 
-      const html = buildWarehouseIssuesRegisterHtml({
-        periodFrom: wanted,
-        periodTo: wanted,
-        issues: dayIssues as WarehouseIssueHead[],
-        orgName,
-        warehouseName,
-      });
+    const html = buildWarehouseMaterialsReportHtml({
+      periodFrom: rr.pdfFrom, periodTo: rr.pdfTo, orgName, warehouseName,
+      objectName: null, workName: null, rows: rows as any,
+      docsTotal, docsByReq: docsTotal, docsWithoutReq: 0
+    });
+    const safeDay = String(dayLabel).trim().replace(/\s+/g, "_").replace(/[^\w\u0400-\u04FF\-]/g, "");
+    return await exportWarehouseHtmlPdf({ fileName: `WH_DayMaterials_${safeDay}`, html });
+  }, [supabase, repIssues, orgName, warehouseName]);
 
-      const safeDay = wanted
-        .replace(/\s+/g, "_")
-        .replace(/[^\w\u0400-\u04FF\-]/g, "");
+  const buildMaterialsReportPdf = useCallback(async (opts?: { objectId?: string | null; objectName?: string | null; workName?: string | null }) => {
+    const rr = normalizeReportRange(periodFrom, periodTo);
+    const rawRows = await apiFetchIssuedMaterialsReportFast(supabase as any, {
+      from: rr.rpcFrom, to: rr.rpcTo, objectId: opts?.objectId ?? null,
+    });
+    const rows = (rawRows || []).map((r: any) => ({
+      material_code: String(r.material_code ?? ""),
+      material_name: String(r.material_name ?? r.material_code ?? ""),
+      uom: String(r.uom ?? ""),
+      sum_in_req: toNum(r.sum_in_req),
+      sum_free: toNum(r.sum_free),
+      sum_over: toNum(r.sum_over),
+      sum_total: toNum(r.sum_total),
+      docs_cnt: toNum(r.docs_cnt),
+      lines_cnt: toNum(r.lines_cnt),
+    }));
+    const docsTotal = (repIssues || []).length;
+    const html = buildWarehouseMaterialsReportHtml({
+      periodFrom: rr.pdfFrom, periodTo: rr.pdfTo, orgName, warehouseName,
+      objectName: opts?.objectName ?? null, workName: opts?.workName ?? null,
+      rows: rows as any, docsTotal, docsByReq: docsTotal, docsWithoutReq: 0
+    });
+    return await exportWarehouseHtmlPdf({ fileName: `WH_Materials_${rr.pdfFrom || "all"}_${rr.pdfTo || "all"}`, html });
+  }, [supabase, repIssues, periodFrom, periodTo, orgName, warehouseName]);
 
-      return await exportWarehouseHtmlPdf({
-        fileName: `WH_Register_${safeDay}`,
-        html,
-      });
-    },
-    [repIssues, orgName, warehouseName],
-  );
+  const buildObjectWorkReportPdf = useCallback(async (opts?: { objectId?: string | null; objectName?: string | null }) => {
+    const rr = normalizeReportRange(periodFrom, periodTo);
+    const rawRows = await apiFetchIssuedByObjectReportFast(supabase as any, {
+      from: rr.rpcFrom, to: rr.rpcTo, objectId: opts?.objectId ?? null,
+    });
+    const rows = (rawRows || []).map((r: any) => ({
+      object_id: r.object_id ?? null,
+      object_name: String(r.object_name ?? "Без объекта"),
+      work_name: String(r.work_name ?? "Без вида работ"),
+      docs_cnt: toNum(r.docs_cnt),
+      req_cnt: toNum(r.req_cnt),
+      active_days: toNum(r.active_days),
+      uniq_materials: toNum(r.uniq_materials),
+      recipients_text: r.recipients_text ?? null,
+      top3_materials: r.top3_materials ?? null,
+    }));
+    const html = buildWarehouseObjectWorkReportHtml({
+      periodFrom: rr.pdfFrom, periodTo: rr.pdfTo, orgName, warehouseName,
+      objectName: opts?.objectName ?? null, rows: rows as any, docsTotal: (repIssues || []).length,
+    });
+    return await exportWarehouseHtmlPdf({ fileName: `WH_ObjectWork_${rr.pdfFrom || "all"}_${rr.pdfTo || "all"}`, html });
+  }, [supabase, repIssues, periodFrom, periodTo, orgName, warehouseName]);
 
+  const buildIncomingRegisterHtml = useCallback(async () => {
+    const { buildWarehouseIncomingRegisterHtml } = require("../../lib/api/pdf_warehouse");
+    const html = buildWarehouseIncomingRegisterHtml({
+      periodFrom, periodTo, items: (repIncoming || []), orgName, warehouseName,
+    });
+    return await exportWarehouseHtmlPdf({ fileName: `WH_Incoming_Reg_${periodFrom || "all"}_${periodTo || "all"}`, html });
+  }, [periodFrom, periodTo, repIncoming, orgName, warehouseName]);
 
-  const buildDayMaterialsReportPdf = useCallback(
-    async (dayLabel: string) => {
-      const rr = dayRangeIso(dayLabel);
+  const buildDayIncomingRegisterPdf = useCallback(async (dayLabel: string) => {
+    const { buildWarehouseIncomingRegisterHtml } = require("../../lib/api/pdf_warehouse");
+    const wanted = String(dayLabel).trim();
+    const dayItems = (repIncoming || []).filter((it: any) => {
+      const dt = it?.event_dt ? new Date(it.event_dt) : null;
+      return dt && fmtDayRu(dt) === wanted;
+    });
+    const html = buildWarehouseIncomingRegisterHtml({
+      periodFrom: wanted, periodTo: wanted, items: dayItems, orgName, warehouseName,
+    });
+    const safeDay = wanted.replace(/\s+/g, "_").replace(/[^\w\u0400-\u04FF\-]/g, "");
+    return await exportWarehouseHtmlPdf({ fileName: `WH_Incoming_Day_${safeDay}`, html });
+  }, [repIncoming, orgName, warehouseName]);
 
-      const rawRows = await apiFetchIssuedMaterialsReportFast(supabase as any, {
-        from: rr.rpcFrom,
-        to: rr.rpcTo,
-        objectId: null,
-      });
+  const buildDayIncomingMaterialsReportPdf = useCallback(async (dayLabel: string) => {
+    const { buildWarehouseIncomingMaterialsReportHtml } = require("../../lib/api/pdf_warehouse");
+    const { apiFetchIncomingMaterialsReportFast } = require("./warehouse.api");
+    const rr = dayRangeIso(dayLabel);
+    const rawRows = await apiFetchIncomingMaterialsReportFast(supabase as any, {
+      from: rr.rpcFrom, to: rr.rpcTo,
+    });
+    const rows = (rawRows || []).map((r: any) => {
+      const code = String(r.material_code || "").trim();
+      const mapped = nameByCode?.[code]?.trim();
+      const orig = String(r.material_name || "").trim();
 
-      const rows = (rawRows || []).map((r: any) => ({
-        material_code: String(r.material_code ?? ""),
-        material_name: String(r.material_name ?? r.material_code ?? ""),
-        uom: String(r.uom ?? ""),
+      const isDashLike = (v: string) => /^[-\u2014\u2013\u2212]+$/.test(v);
+      const hasMap = !!mapped && !isDashLike(mapped);
+      const hasOrig = !!orig && !isDashLike(orig);
 
-        sum_in_req: toNum(r.sum_in_req),
-        sum_free: toNum(r.sum_free),
-        sum_over: toNum(r.sum_over),
-        sum_total: toNum(r.sum_total),
+      const resName = hasMap ? mapped : (hasOrig ? orig : (code || "Позиция"));
 
-        docs_cnt: toNum(r.docs_cnt),
-        lines_cnt: toNum(r.lines_cnt),
-      }));
+      return {
+        ...r,
+        material_name: resName,
+      };
+    });
+    const docsTotal = (repIncoming || []).filter(it => {
+      const dt = it?.event_dt ? new Date(it.event_dt) : null;
+      return dt && fmtDayRu(dt) === dayLabel;
+    }).length;
 
-      let docsTotal = 0;
-      let docsByReq = 0;
-      let docsWithoutReq = 0;
+    const html = buildWarehouseIncomingMaterialsReportHtml({
+      periodFrom: rr.pdfFrom, periodTo: rr.pdfTo, orgName, warehouseName,
+      rows, docsTotal,
+    });
+    const safeDay = String(dayLabel).trim().replace(/\s+/g, "_").replace(/[^\w\u0400-\u04FF\-]/g, "");
+    return await exportWarehouseHtmlPdf({ fileName: `WH_Incoming_DayMaterials_${safeDay}`, html });
+  }, [supabase, repIncoming, orgName, warehouseName, nameByCode]);
 
-      try {
-        const s = await fetchIssuedSummaryFast(supabase as any, {
-          fromIso: rr.rpcFrom,
-          toIso: rr.rpcTo,
-          objectId: null,
-        });
-        docsTotal = s.docsTotal;
-        docsByReq = s.docsByReq;
-        docsWithoutReq = s.docsWithoutReq;
-      } catch {
-        // fallback по дневным heads (чтобы не падало)
-        const wanted = String(dayLabel ?? "").trim();
-        const dayIssues = (repIssues || []).filter((it: any) => {
-          const dt = it?.event_dt ? new Date(it.event_dt) : null;
-          const key = dt ? fmtDayRu(dt) : "Без даты";
-          return key === wanted;
-        });
+  const buildIncomingMaterialsReportPdf = useCallback(async () => {
+    const { buildWarehouseIncomingMaterialsReportHtml } = require("../../lib/api/pdf_warehouse");
+    const { apiFetchIncomingMaterialsReportFast } = require("./warehouse.api");
+    const rr = normalizeReportRange(periodFrom, periodTo);
+    const rawRows = await apiFetchIncomingMaterialsReportFast(supabase as any, {
+      from: rr.rpcFrom, to: rr.rpcTo,
+    });
+    const rows = (rawRows || []).map((r: any) => {
+      const code = String(r.material_code || "").trim();
+      const mapped = nameByCode?.[code]?.trim();
+      const orig = String(r.material_name || "").trim();
 
-        docsTotal = dayIssues.length;
-        const docsWithOver = dayIssues.filter((x: any) => toNum(x?.qty_over) > 0).length;
-        docsWithoutReq = Math.max(0, Math.round(docsWithOver));
-        docsByReq = Math.max(0, docsTotal - docsWithoutReq);
-      }
+      // If mapped name is just a dash or empty, ignore it
+      const isDashLike = (v: string) => /^[-\u2014\u2013\u2212]+$/.test(v);
+      const hasMap = !!mapped && !isDashLike(mapped);
+      const hasOrig = !!orig && !isDashLike(orig);
 
-      const html = buildWarehouseMaterialsReportHtml({
-        periodFrom: rr.pdfFrom,
-        periodTo: rr.pdfTo,
-        orgName,
-        warehouseName,
-        objectName: null,
-        workName: null,
-        rows: rows as any,
-        docsTotal,
-        docsByReq,
-        docsWithoutReq,
-      });
+      const resName = hasMap ? mapped : (hasOrig ? orig : (code || "Позиция"));
 
-      const safeDay = String(dayLabel ?? "")
-        .trim()
-        .replace(/\s+/g, "_")
-        .replace(/[^\w\u0400-\u04FF\-]/g, "");
+      return {
+        ...r,
+        material_name: resName,
+      };
+    });
 
-      return await exportWarehouseHtmlPdf({
-        fileName: `WH_DayMaterials_${safeDay}`,
-        html,
-      });
-    },
-    [supabase, repIssues, orgName, warehouseName],
-  );
+    console.log(`[buildIncomingMaterialsReportPdf] Prepared ${rows.length} rows`);
+    const docsTotal = (repIncoming || []).length;
 
-  const buildMaterialsReportPdf = useCallback(
-    async (opts?: { objectId?: string | null; objectName?: string | null; workName?: string | null }) => {
-      const rr = normalizeReportRange(periodFrom, periodTo);
-
-      // 1) строки материалов (агрегация)
-      const rawRows = await apiFetchIssuedMaterialsReportFast(supabase as any, {
-        // важно: в RPC отправляем реальные границы
-        from: rr.rpcFrom,
-        to: rr.rpcTo,
-        objectId: opts?.objectId ?? null,
-      });
-
-      const rows = (rawRows || []).map((r: any) => ({
-        material_code: String(r.material_code ?? ""),
-        material_name: String(r.material_name ?? r.material_code ?? ""),
-        uom: String(r.uom ?? ""),
-
-        sum_in_req: toNum(r.sum_in_req),
-        sum_free: toNum(r.sum_free),
-        sum_over: toNum(r.sum_over),
-        sum_total: toNum(r.sum_total),
-
-        docs_cnt: toNum(r.docs_cnt),
-        lines_cnt: toNum(r.lines_cnt),
-      }));
-
-      // 2) summary из базы (docs total/by req/free)
-      let docsTotal = 0;
-      let docsByReq = 0;
-      let docsWithoutReq = 0;
-
-      try {
-        const s = await fetchIssuedSummaryFast(supabase as any, {
-          fromIso: rr.rpcFrom,
-          toIso: rr.rpcTo,
-          objectId: opts?.objectId ?? null,
-        });
-        docsTotal = s.docsTotal;
-        docsByReq = s.docsByReq;
-        docsWithoutReq = s.docsWithoutReq;
-      } catch (e) {
-        // ✅ fallback (если RPC ещё не создан): как было (repIssues), чтобы не упало
-        docsTotal = Array.isArray(repIssues) ? repIssues.length : 0;
-        const docsWithOver = Array.isArray(repIssues)
-          ? repIssues.filter((x: any) => toNum(x?.qty_over) > 0).length
-          : 0;
-        docsWithoutReq = Math.max(0, Math.round(docsWithOver));
-        docsByReq = Math.max(0, docsTotal - docsWithoutReq);
-      }
-
-      const html = buildWarehouseMaterialsReportHtml({
-        // в PDF хотим "Весь период" → пустые строки
-        periodFrom: rr.pdfFrom,
-        periodTo: rr.pdfTo,
-        orgName,
-        warehouseName,
-        objectName: opts?.objectName ?? null,
-        workName: opts?.workName ?? null,
-        rows: rows as any,
-
-        // ✅ новая сигнатура
-        docsTotal,
-        docsByReq,
-        docsWithoutReq,
-      });
-
-      return await exportWarehouseHtmlPdf({
-        fileName: `WH_Materials_${rr.pdfFrom || "all"}_${rr.pdfTo || "all"}`,
-        html,
-      });
-    },
-    [supabase, repIssues, periodFrom, periodTo, orgName, warehouseName],
-  );
-
-  // ✅ FAST: 1 RPC → PDF (оставил как было, чтобы не ломать)
-  const buildObjectWorkReportPdf = useCallback(
-    async (opts?: { objectId?: string | null; objectName?: string | null }) => {
-      const rr = normalizeReportRange(periodFrom, periodTo);
-
-      const rawRows = await apiFetchIssuedByObjectReportFast(supabase as any, {
-        from: rr.rpcFrom,
-        to: rr.rpcTo,
-        objectId: opts?.objectId ?? null,
-      });
-
-      const rows = (rawRows || []).map((r: any) => ({
-        object_id: r.object_id ?? null,
-        object_name: String(r.object_name ?? "Без объекта"),
-        work_name: String(r.work_name ?? "Без вида работ"),
-        docs_cnt: toNum(r.docs_cnt),
-        req_cnt: toNum(r.req_cnt),
-        active_days: toNum(r.active_days),
-        uniq_materials: toNum(r.uniq_materials),
-        recipients_text: r.recipients_text ?? null,
-        top3_materials: r.top3_materials ?? null,
-      }));
-
-      const docsTotal = Array.isArray(repIssues) ? repIssues.length : 0;
-
-      const html = buildWarehouseObjectWorkReportHtml({
-        periodFrom: rr.pdfFrom,
-        periodTo: rr.pdfTo,
-        orgName,
-        warehouseName,
-        objectName: opts?.objectName ?? null,
-        rows: rows as any,
-        docsTotal,
-      });
-
-      return await exportWarehouseHtmlPdf({
-        fileName: `WH_ObjectWork_${rr.pdfFrom || "all"}_${rr.pdfTo || "all"}`,
-        html,
-      });
-    },
-    [supabase, repIssues, periodFrom, periodTo, orgName, warehouseName],
-  );
+    const html = buildWarehouseIncomingMaterialsReportHtml({
+      periodFrom: rr.pdfFrom, periodTo: rr.pdfTo, orgName, warehouseName,
+      rows, docsTotal,
+    });
+    return await exportWarehouseHtmlPdf({ fileName: `WH_Incoming_Materials_${rr.pdfFrom || "all"}_${rr.pdfTo || "all"}`, html });
+  }, [supabase, repIncoming, periodFrom, periodTo, orgName, warehouseName, nameByCode]);
 
   return {
-    issuesByDay,
+
+    vydachaByDay,
+    incomingByDay,
     ensureIssueLines,
     openIssueDetails,
     closeIssueDetails,
-
+    openIncomingDetails,
+    closeIncomingDetails,
     buildIssueHtml,
     buildRegisterHtml,
-
     buildMaterialsReportPdf,
     buildObjectWorkReportPdf,
-
-
     buildDayRegisterPdf,
     buildDayMaterialsReportPdf,
+    buildIncomingRegisterHtml,
+    buildDayIncomingRegisterPdf,
+    buildIncomingMaterialsReportPdf,
+    buildDayIncomingMaterialsReportPdf,
+    apiFetchIncomingLines: (s: any, id: string) => {
+      const { apiFetchIncomingLines } = require("./warehouse.api");
+      return apiFetchIncomingLines(s, id);
+    },
   };
 }

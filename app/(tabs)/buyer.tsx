@@ -876,10 +876,8 @@ export default function BuyerScreen() {
     const gsum = requestSum(g);
     const isOpen = false;
 
-    const pr = (prNoByReq?.[String(g.request_id)] || "").trim();
     const reqLabel = prettyLabel(g.request_id, g.request_id_old ?? null);
-
-    const headerTitle = pr ? pr : reqLabel;
+    const headerTitle = reqLabel;
 
     const total = g.items.length;
 
@@ -898,9 +896,7 @@ export default function BuyerScreen() {
         : baseMeta;
 
     // ✅ если есть PR — показываем REQ внутри meta (вторая смысловая строка)
-    const headerMeta = pr
-      ? `REQ: ${reqLabel} · ${headerMetaBase}`
-      : headerMetaBase;
+    const headerMeta = headerMetaBase;
 
 
     return (
@@ -1571,12 +1567,7 @@ export default function BuyerScreen() {
         s={s}
         title={
           sheetKind === "inbox" && sheetGroup
-            ? (() => {
-              const rid = String(sheetGroup.request_id || "").trim();
-              const pr = (prNoByReq?.[rid] || "").trim();
-              const reqLabel = prettyLabel(sheetGroup.request_id, sheetGroup.request_id_old ?? null);
-              return pr ? pr : reqLabel;
-            })()
+            ? prettyLabel(sheetGroup.request_id, sheetGroup.request_id_old ?? null)
             : sheetKind === "accounting" && acctProposalId != null
               ? `В бухгалтерию • ${formatProposalBaseNo(null, String(acctProposalId))}`
               : sheetKind === "rework" && rwPid
