@@ -262,7 +262,8 @@ collapsingHeader: {
 
   // ===== SHEET CONTAINER =====
   sheet: {
-    height: "88%",
+    minHeight: "52%",
+    maxHeight: "88%",
     backgroundColor: UI.cardBg,
     borderTopLeftRadius: 22,
     borderTopRightRadius: 22,

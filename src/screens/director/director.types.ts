@@ -80,10 +80,63 @@ export type RepKpi = {
   items_free: number;
 };
 
+export type RepDisciplineMaterial = {
+  material_name: string;
+  rik_code: string;
+  uom: string;
+  qty_sum: number;
+  docs_count: number;
+  unit_price?: number;
+  amount_sum?: number;
+};
+
+export type RepDisciplineLevel = {
+  id: string;
+  level_name: string;
+  total_qty: number;
+  total_docs: number;
+  total_positions: number;
+  share_in_work_pct: number;
+  req_positions: number;
+  free_positions: number;
+  materials: RepDisciplineMaterial[];
+};
+
+export type RepDisciplineWork = {
+  id: string;
+  work_type_name: string;
+  total_qty: number;
+  total_docs: number;
+  total_positions: number;
+  share_total_pct: number;
+  req_positions: number;
+  free_positions: number;
+  levels: RepDisciplineLevel[];
+};
+
+export type RepDisciplineSummary = {
+  total_qty: number;
+  total_docs: number;
+  total_positions: number;
+  pct_without_work: number;
+  pct_without_level: number;
+  pct_without_request: number;
+  issue_cost_total: number;
+  purchase_cost_total: number;
+  issue_to_purchase_pct: number;
+  unpriced_issue_pct: number;
+};
+
+export type RepDisciplinePayload = {
+  summary: RepDisciplineSummary;
+  works: RepDisciplineWork[];
+};
+
 export type RepPayload = {
   meta?: { from?: string; to?: string; object_name?: string | null };
   kpi?: RepKpi;
   rows?: RepRow[];
   discipline_who?: RepWho[];
+  discipline?: RepDisciplinePayload;
   report_options?: { objects: string[]; objectIdByName: Record<string, string | null> };
 };

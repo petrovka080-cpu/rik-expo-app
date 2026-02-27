@@ -21,6 +21,56 @@ type DirectorReportWho = {
   items_cnt: number;
 };
 
+type DirectorDisciplineMaterial = {
+  material_name: string;
+  rik_code: string;
+  uom: string;
+  qty_sum: number;
+  docs_count: number;
+  unit_price?: number;
+  amount_sum?: number;
+};
+
+type DirectorDisciplineLevel = {
+  id: string;
+  level_name: string;
+  total_qty: number;
+  total_docs: number;
+  total_positions: number;
+  share_in_work_pct: number;
+  req_positions: number;
+  free_positions: number;
+  materials: DirectorDisciplineMaterial[];
+};
+
+type DirectorDisciplineWork = {
+  id: string;
+  work_type_name: string;
+  total_qty: number;
+  total_docs: number;
+  total_positions: number;
+  share_total_pct: number;
+  req_positions: number;
+  free_positions: number;
+  levels: DirectorDisciplineLevel[];
+};
+
+type DirectorDisciplinePayload = {
+  summary: {
+    total_qty: number;
+    total_docs: number;
+    total_positions: number;
+    pct_without_work: number;
+    pct_without_level: number;
+    pct_without_request: number;
+    issue_cost_total: number;
+    purchase_cost_total: number;
+    issue_to_purchase_pct: number;
+    unpriced_issue_pct: number;
+  };
+  works: DirectorDisciplineWork[];
+};
+
 type DirectorReportPayload = {
   meta?: { from?: string; to?: string; object_name?: string | null };
   kpi?: {
@@ -31,6 +81,7 @@ type DirectorReportPayload = {
   };
   rows?: DirectorReportRow[];
   discipline_who?: DirectorReportWho[];
+  discipline?: DirectorDisciplinePayload;
   report_options?: DirectorReportOptions;
 };
 
@@ -39,6 +90,8 @@ type DirectorFactRow = {
   iss_date: string;
   object_name: string | null;
   work_name: string | null;
+  level_name?: string | null;
+  request_item_id?: string | null;
   rik_code: string;
   material_name_ru: string | null;
   uom: string | null;
@@ -68,6 +121,7 @@ type AccIssueLine = {
 
 const WITHOUT_OBJECT = "Без объекта";
 const WITHOUT_WORK = "Без вида работ";
+const WITHOUT_LEVEL = "Без этажа";
 const DASH = "—";
 const REPORTS_TIMING = typeof __DEV__ !== "undefined" ? __DEV__ : false;
 
@@ -121,8 +175,19 @@ const canonicalObjectName = (v: any): string => {
 const normObjectName = (v: any): string => canonicalObjectName(v);
 
 const normWorkName = (v: any): string => {
-  const s = String(normalizeRuText(String(v ?? ""))).trim();
+  const s = String(normalizeRuText(String(v ?? "")))
+    .replace(/\s+/g, " ")
+    .replace(/\s*\/\s*/g, " / ")
+    .trim();
   return s || WITHOUT_WORK;
+};
+
+const normLevelName = (v: any): string => {
+  const s = String(normalizeRuText(String(v ?? "")))
+    .replace(/\s+/g, " ")
+    .replace(/\s*\/\s*/g, " / ")
+    .trim();
+  return s || WITHOUT_LEVEL;
 };
 
 const toRangeStart = (d: string): string => {
@@ -241,9 +306,182 @@ async function probeNameSources(): Promise<NameSourcesProbe> {
   return nameSourcesProbeCache;
 }
 
+const looksLikeMaterialCode = (v: any): boolean => {
+  const x = String(v ?? "").trim().toUpperCase();
+  if (!x) return false;
+  if (
+    x.startsWith("MAT-") ||
+    x.startsWith("TOOL-") ||
+    x.startsWith("WT-") ||
+    x.startsWith("WORK-") ||
+    x.startsWith("SRV-") ||
+    x.startsWith("SERV-") ||
+    x.startsWith("KIT-")
+  ) {
+    return true;
+  }
+  return /^[A-Z0-9._/-]{4,}$/.test(x);
+};
+
+const looksLikeLevelCode = (v: any): boolean => {
+  const s = String(v ?? "").trim().toUpperCase();
+  if (!s) return false;
+  if (s === WITHOUT_LEVEL.toUpperCase()) return false;
+  if (s.startsWith("LVL-")) return true;
+  return /^[A-Z0-9_-]{3,}$/.test(s) && !/\s/.test(s);
+};
+
+const normMaterialName = (v: any): string =>
+  String(normalizeRuText(String(v ?? ""))).trim();
+
+async function fetchBestMaterialNamesByCode(codesRaw: string[]): Promise<Map<string, string>> {
+  const codes = Array.from(
+    new Set(
+      (codesRaw || [])
+        .map((c) => String(c ?? "").trim().toUpperCase())
+        .filter(Boolean),
+    ),
+  );
+  const out = new Map<string, string>();
+  if (!codes.length) return out;
+
+  const put = (codeRaw: any, nameRaw: any, force = false) => {
+    const code = String(codeRaw ?? "").trim().toUpperCase();
+    const name = normMaterialName(nameRaw);
+    if (!code || !name) return;
+    if (!force && out.has(code)) return;
+    out.set(code, name);
+  };
+
+  for (const part of chunk(codes, 500)) {
+    try {
+      const q = await supabase
+        .from("v_wh_balance_ledger_ui" as any)
+        .select("code,name")
+        .in("code", part as any);
+      if (!q.error && Array.isArray(q.data)) {
+        for (const r of q.data as any[]) put((r as any)?.code, (r as any)?.name);
+      }
+    } catch { }
+  }
+
+  for (const part of chunk(codes, 500)) {
+    try {
+      const q = await supabase
+        .from("v_rik_names_ru" as any)
+        .select("code,name_ru")
+        .in("code", part as any);
+      if (!q.error && Array.isArray(q.data)) {
+        for (const r of q.data as any[]) put((r as any)?.code, (r as any)?.name_ru, true);
+      }
+    } catch { }
+  }
+
+  for (const part of chunk(codes, 500)) {
+    try {
+      const q = await supabase
+        .from("catalog_name_overrides" as any)
+        .select("code,name_ru")
+        .in("code", part as any);
+      if (!q.error && Array.isArray(q.data)) {
+        for (const r of q.data as any[]) put((r as any)?.code, (r as any)?.name_ru, true);
+      }
+    } catch { }
+  }
+
+  return out;
+}
+
+async function enrichFactRowsMaterialNames(rows: DirectorFactRow[]): Promise<DirectorFactRow[]> {
+  if (!Array.isArray(rows) || !rows.length) return rows;
+
+  const codesToResolve = Array.from(
+    new Set(
+      rows
+        .filter((r) => {
+          const code = String(r?.rik_code ?? "").trim().toUpperCase();
+          if (!code) return false;
+          const currentName = normMaterialName(r?.material_name_ru ?? "");
+          return !currentName || looksLikeMaterialCode(currentName);
+        })
+        .map((r) => String(r?.rik_code ?? "").trim().toUpperCase())
+        .filter(Boolean),
+    ),
+  );
+
+  if (!codesToResolve.length) return rows;
+  const byCode = await fetchBestMaterialNamesByCode(codesToResolve);
+  if (!byCode.size) return rows;
+
+  return rows.map((r) => {
+    const code = String(r?.rik_code ?? "").trim().toUpperCase();
+    if (!code) return r;
+    const bestName = byCode.get(code);
+    if (!bestName) return r;
+    const currentName = normMaterialName(r?.material_name_ru ?? "");
+    if (currentName && !looksLikeMaterialCode(currentName)) return r;
+    return { ...r, material_name_ru: bestName };
+  });
+}
+
+async function fetchLevelNamesByCode(codesRaw: string[]): Promise<Map<string, string>> {
+  const codes = Array.from(
+    new Set(
+      (codesRaw || [])
+        .map((c) => String(c ?? "").trim().toUpperCase())
+        .filter(Boolean),
+    ),
+  );
+  const out = new Map<string, string>();
+  if (!codes.length) return out;
+
+  for (const part of chunk(codes, 500)) {
+    try {
+      const q = await supabase
+        .from("ref_levels" as any)
+        .select("code,name_human_ru,display_name,name")
+        .in("code", part as any);
+      if (q.error || !Array.isArray(q.data)) continue;
+      for (const r of q.data as any[]) {
+        const code = String((r as any)?.code ?? "").trim().toUpperCase();
+        const nm = firstNonEmpty((r as any)?.name_human_ru, (r as any)?.display_name, (r as any)?.name);
+        if (code && nm) out.set(code, nm);
+      }
+    } catch { }
+  }
+
+  return out;
+}
+
+async function enrichFactRowsLevelNames(rows: DirectorFactRow[]): Promise<DirectorFactRow[]> {
+  if (!Array.isArray(rows) || !rows.length) return rows;
+
+  const levelCodes = Array.from(
+    new Set(
+      rows
+        .map((r) => String(r?.level_name ?? "").trim())
+        .filter((lv) => looksLikeLevelCode(lv))
+        .map((lv) => lv.toUpperCase()),
+    ),
+  );
+  if (!levelCodes.length) return rows;
+
+  const byCode = await fetchLevelNamesByCode(levelCodes);
+  if (!byCode.size) return rows;
+
+  return rows.map((r) => {
+    const raw = String(r?.level_name ?? "").trim();
+    if (!raw || !looksLikeLevelCode(raw)) return r;
+    const mapped = byCode.get(raw.toUpperCase());
+    if (!mapped) return r;
+    return { ...r, level_name: mapped };
+  });
+}
+
 function parseFreeIssueContext(note: string | null | undefined): {
   objectName: string;
   workName: string;
+  levelName: string;
 } {
   const clean = (v: string): string => {
     const s = String(v ?? "").trim();
@@ -259,10 +497,14 @@ function parseFreeIssueContext(note: string | null | undefined): {
   const sysRaw =
     (s.match(/Система:\s*([^\n\r]+)/i)?.[1] || "").trim() ||
     (s.match(/Контекст:\s*([^\n\r]+)/i)?.[1] || "").trim();
+  const levelRaw =
+    (s.match(/Этаж:\s*([^\n\r]+)/i)?.[1] || "").trim() ||
+    (s.match(/Уровень:\s*([^\n\r]+)/i)?.[1] || "").trim();
 
   const obj = canonicalObjectName(clean(objRaw));
   const sys = clean(sysRaw) || WITHOUT_WORK;
-  return { objectName: obj, workName: sys };
+  const level = clean(levelRaw) || WITHOUT_LEVEL;
+  return { objectName: obj, workName: sys, levelName: level };
 }
 
 async function fetchIssueHeadsViaAccRpc(p: {
@@ -331,7 +573,7 @@ async function fetchDirectorFactViaAccRpc(p: {
   for (const ids of chunk(requestIds, 100)) {
     const { data, error } = await supabase
       .from("requests" as any)
-      .select("id,object_id,object_name,object_type_code,system_code")
+      .select("id,object_id,object_name,object_type_code,system_code,level_code")
       .in("id", ids as any);
     if (error) continue;
     for (const r of Array.isArray(data) ? data : []) {
@@ -405,7 +647,14 @@ async function fetchDirectorFactViaAccRpc(p: {
 
   const headCtxByIssueId = new Map<
     string,
-    { issueId: string; issDate: string; objectName: string; workName: string; isWithoutRequest: boolean }
+    {
+      issueId: string;
+      issDate: string;
+      objectName: string;
+      workName: string;
+      levelName: string;
+      isWithoutRequest: boolean;
+    }
   >();
   for (const h of heads) {
     const issueId = String(h?.issue_id ?? "").trim();
@@ -414,6 +663,7 @@ async function fetchDirectorFactViaAccRpc(p: {
 
     let objectName = WITHOUT_OBJECT;
     let workName = WITHOUT_WORK;
+    let levelName = WITHOUT_LEVEL;
     let isWithoutRequest = true;
 
     if (reqId) {
@@ -427,11 +677,13 @@ async function fetchDirectorFactViaAccRpc(p: {
         systemNameByCode.get(String(r?.system_code ?? "").trim()),
         r?.system_code,
       ) || WITHOUT_WORK;
+      levelName = normLevelName(r?.level_code);
       isWithoutRequest = false;
     } else {
       const parsed = parseFreeIssueContext(h?.note ?? null);
       objectName = parsed.objectName || WITHOUT_OBJECT;
       workName = parsed.workName || WITHOUT_WORK;
+      levelName = parsed.levelName || WITHOUT_LEVEL;
       isWithoutRequest = true;
     }
 
@@ -442,6 +694,7 @@ async function fetchDirectorFactViaAccRpc(p: {
       issDate: String(h?.event_dt ?? ""),
       objectName,
       workName,
+      levelName,
       isWithoutRequest,
     });
   }
@@ -464,6 +717,7 @@ async function fetchDirectorFactViaAccRpc(p: {
       iss_date: ctx.issDate,
       object_name: ctx.objectName,
       work_name: ctx.workName,
+      level_name: ctx.levelName,
       rik_code: code,
       material_name_ru: firstNonEmpty(ln?.name_human, code),
       uom: String(ln?.uom ?? "").trim(),
@@ -590,7 +844,7 @@ async function fetchAllFactRowsFromTables(p: {
   while (true) {
     let q = supabase
       .from("warehouse_issues" as any)
-      .select("id,iss_date,object_name,work_name,request_id,status")
+      .select("id,iss_date,object_name,work_name,request_id,status,note,target_object_id")
       .eq("status", "Подтверждено");
 
     if (p.from) q = q.gte("iss_date", toRangeStart(p.from));
@@ -671,7 +925,7 @@ async function fetchAllFactRowsFromTables(p: {
   for (const ids of chunk(requestIds, 500)) {
     const { data, error } = await supabase
       .from("requests" as any)
-      .select("id,object_id,object_name,object_type_code,system_code")
+      .select("id,object_id,object_name,object_type_code,system_code,level_code")
       .in("id", ids as any);
     if (error) throw error;
 
@@ -825,6 +1079,8 @@ async function fetchAllFactRowsFromTables(p: {
       String(issue?.work_name ?? "").trim() ||
       reqSystemName ||
       WITHOUT_WORK;
+    const freeCtx = parseFreeIssueContext(issue?.note ?? null);
+    const levelName = req ? normLevelName(req?.level_code) : normLevelName(freeCtx.levelName);
 
     const code = String(it?.rik_code ?? "").trim().toUpperCase();
     if (!code) continue;
@@ -834,6 +1090,8 @@ async function fetchAllFactRowsFromTables(p: {
       iss_date: String(issue?.iss_date ?? ""),
       object_name: objectName,
       work_name: workName,
+      level_name: levelName,
+      request_item_id: reqItemId || null,
       rik_code: code,
       material_name_ru: nameRuByCode.get(code) || code,
       uom: String(it?.uom_id ?? "").trim(),
@@ -1011,6 +1269,443 @@ function buildPayloadFromFactRows(p: {
   };
 }
 
+function pct(part: number, total: number): number {
+  if (!total) return 0;
+  return Math.round((part / total) * 10000) / 100;
+}
+
+async function fetchIssuePriceMapByCode(): Promise<Map<string, number>> {
+  const weighted = new Map<string, { sum: number; w: number }>();
+
+  const push = (codeRaw: any, priceRaw: any, qtyRaw: any) => {
+    const code = String(codeRaw ?? "").trim().toUpperCase();
+    const price = toNum(priceRaw);
+    if (!code || !(price > 0)) return;
+    const qty = Math.max(1, toNum(qtyRaw));
+    const prev = weighted.get(code) ?? { sum: 0, w: 0 };
+    prev.sum += price * qty;
+    prev.w += qty;
+    weighted.set(code, prev);
+  };
+
+  try {
+    const q = await supabase
+      .from("purchase_items" as any)
+      .select("rik_code,code,price,qty")
+      .limit(50000);
+    if (!q.error && Array.isArray(q.data)) {
+      for (const r of q.data) push((r as any)?.rik_code ?? (r as any)?.code, (r as any)?.price, (r as any)?.qty);
+    }
+  } catch { }
+
+  if (!weighted.size) {
+    try {
+      const q2 = await supabase
+        .from("proposal_items" as any)
+        .select("rik_code,price,qty")
+        .limit(50000);
+      if (!q2.error && Array.isArray(q2.data)) {
+        for (const r of q2.data) push((r as any)?.rik_code, (r as any)?.price, (r as any)?.qty);
+      }
+    } catch { }
+  }
+
+  const out = new Map<string, number>();
+  for (const [code, a] of weighted.entries()) {
+    out.set(code, a.w > 0 ? a.sum / a.w : 0);
+  }
+  return out;
+}
+
+async function fetchPriceByRequestItemId(requestItemIds: string[]): Promise<Map<string, number>> {
+  const out = new Map<string, number>();
+  const ids = Array.from(new Set((requestItemIds || []).map((x) => String(x || "").trim()).filter(Boolean)));
+  if (!ids.length) return out;
+
+  for (const part of chunk(ids, 500)) {
+    try {
+      const q = await supabase
+        .from("proposal_items" as any)
+        .select("request_item_id,price,qty")
+        .in("request_item_id", part as any);
+      if (q.error || !Array.isArray(q.data)) continue;
+
+      const agg = new Map<string, { sum: number; w: number }>();
+      for (const r of q.data) {
+        const id = String((r as any)?.request_item_id ?? "").trim();
+        const price = toNum((r as any)?.price);
+        if (!id || !(price > 0)) continue;
+        const w = Math.max(1, toNum((r as any)?.qty));
+        const prev = agg.get(id) ?? { sum: 0, w: 0 };
+        prev.sum += price * w;
+        prev.w += w;
+        agg.set(id, prev);
+      }
+      for (const [id, v] of agg.entries()) {
+        if (v.w > 0) out.set(id, v.sum / v.w);
+      }
+    } catch { }
+  }
+
+  return out;
+}
+
+async function fetchPurchaseCostInPeriodScoped(args: {
+  from: string;
+  to: string;
+  objectName: string | null;
+  codePrice: Map<string, number>;
+}): Promise<number> {
+  const { from, to, objectName, codePrice } = args;
+
+  const incomingRows: Array<{ purchase_item_id: string; code: string; qty: number }> = [];
+  const pageSize = 2000;
+  let fromIdx = 0;
+  while (true) {
+    let q = supabase
+      .from("wh_ledger" as any)
+      .select("purchase_item_id,code,qty,moved_at,direction")
+      .eq("direction", "in")
+      .order("moved_at", { ascending: false })
+      .range(fromIdx, fromIdx + pageSize - 1);
+    if (from) q = q.gte("moved_at", toRangeStart(from));
+    if (to) q = q.lte("moved_at", toRangeEnd(to));
+
+    const { data, error } = await q;
+    if (error || !Array.isArray(data) || !data.length) break;
+    for (const r of data) {
+      const pid = String((r as any)?.purchase_item_id ?? "").trim();
+      if (!pid) continue;
+      incomingRows.push({
+        purchase_item_id: pid,
+        code: String((r as any)?.code ?? "").trim().toUpperCase(),
+        qty: toNum((r as any)?.qty),
+      });
+    }
+    if (data.length < pageSize) break;
+    fromIdx += pageSize;
+    if (fromIdx > 500000) break;
+  }
+
+  if (!incomingRows.length) return 0;
+
+  const purchaseItemIds = Array.from(new Set(incomingRows.map((x) => x.purchase_item_id)));
+  const piById = new Map<string, { request_item_id: string | null; code: string; price: number }>();
+  for (const part of chunk(purchaseItemIds, 500)) {
+    try {
+      const q = await supabase
+        .from("purchase_items" as any)
+        .select("id,request_item_id,rik_code,code,price")
+        .in("id", part as any);
+      if (q.error || !Array.isArray(q.data)) continue;
+      for (const r of q.data) {
+        const id = String((r as any)?.id ?? "").trim();
+        if (!id) continue;
+        const code = String((r as any)?.rik_code ?? (r as any)?.code ?? "").trim().toUpperCase();
+        const price = toNum((r as any)?.price);
+        const request_item_id = String((r as any)?.request_item_id ?? "").trim() || null;
+        piById.set(id, { request_item_id, code, price });
+      }
+    } catch { }
+  }
+
+  let requestByItem = new Map<string, string>();
+  if (objectName != null) {
+    const requestItemIds = Array.from(
+      new Set(
+        Array.from(piById.values())
+          .map((x) => String(x.request_item_id ?? "").trim())
+          .filter(Boolean),
+      ),
+    );
+    for (const part of chunk(requestItemIds, 500)) {
+      try {
+        const q = await supabase
+          .from("request_items" as any)
+          .select("id,request_id")
+          .in("id", part as any);
+        if (q.error || !Array.isArray(q.data)) continue;
+        for (const r of q.data) {
+          const id = String((r as any)?.id ?? "").trim();
+          const rid = String((r as any)?.request_id ?? "").trim();
+          if (id && rid) requestByItem.set(id, rid);
+        }
+      } catch { }
+    }
+
+    const requestIds = Array.from(new Set(Array.from(requestByItem.values())));
+    const objectNameByReq = new Map<string, string>();
+    for (const part of chunk(requestIds, 500)) {
+      try {
+        const q = await supabase
+          .from("requests" as any)
+          .select("id,object_name,object,object_type_code")
+          .in("id", part as any);
+        if (q.error || !Array.isArray(q.data)) continue;
+        for (const r of q.data) {
+          const id = String((r as any)?.id ?? "").trim();
+          const onm = canonicalObjectName(firstNonEmpty((r as any)?.object_name, (r as any)?.object, (r as any)?.object_type_code));
+          if (id) objectNameByReq.set(id, onm);
+        }
+      } catch { }
+    }
+
+    requestByItem = new Map(
+      Array.from(requestByItem.entries()).filter(([, rid]) => objectNameByReq.get(rid) === objectName),
+    );
+  }
+
+  let total = 0;
+  for (const r of incomingRows) {
+    const pi = piById.get(r.purchase_item_id);
+    if (!pi) continue;
+
+    if (objectName != null) {
+      const rid = String(pi.request_item_id ?? "").trim();
+      if (!rid || !requestByItem.has(rid)) continue;
+    }
+
+    const code = pi.code || r.code;
+    const price = pi.price > 0 ? pi.price : toNum(codePrice.get(code) ?? 0);
+    if (!(price > 0) || !(r.qty > 0)) continue;
+    total += r.qty * price;
+  }
+
+  return total;
+}
+
+function buildDisciplinePayloadFromFactRows(
+  rows: DirectorFactRow[],
+  cost?: {
+    issue_cost_total?: number;
+    purchase_cost_total?: number;
+    issue_to_purchase_pct?: number;
+    unpriced_issue_pct?: number;
+    price_by_code?: Map<string, number>;
+    price_by_request_item?: Map<string, number>;
+  },
+): DirectorDisciplinePayload {
+  const docsAll = new Set<string>();
+  let totalQty = 0;
+  let totalPositions = 0;
+  let qtyWithoutWork = 0;
+  let qtyWithoutLevel = 0;
+  let positionsWithoutReq = 0;
+
+  const byWork = new Map<
+    string,
+    {
+      work_type_name: string;
+      total_qty: number;
+      docs: Set<string>;
+      total_positions: number;
+      req_positions: number;
+      free_positions: number;
+      levels: Map<
+        string,
+        {
+          level_name: string;
+          total_qty: number;
+          docs: Set<string>;
+          total_positions: number;
+          req_positions: number;
+          free_positions: number;
+          materials: Map<
+            string,
+            {
+              material_name: string;
+              rik_code: string;
+              uom: string;
+              qty_sum: number;
+              amount_sum: number;
+              docs: Set<string>;
+            }
+          >;
+        }
+      >;
+    }
+  >();
+
+  for (const r of rows) {
+    const issueId = String(r?.issue_id ?? "").trim();
+    if (!issueId) continue;
+    const workName = normWorkName(r?.work_name);
+    const levelName = normLevelName(r?.level_name);
+    const code = String(r?.rik_code ?? "").trim().toUpperCase() || DASH;
+    const uom = String(r?.uom ?? "").trim();
+    const materialName = String(r?.material_name_ru ?? "").trim() || code;
+    const qty = toNum(r?.qty);
+    const reqItemId = String(r?.request_item_id ?? "").trim();
+    const price = reqItemId
+      ? toNum(cost?.price_by_request_item?.get(reqItemId) ?? cost?.price_by_code?.get(code) ?? 0)
+      : toNum(cost?.price_by_code?.get(code) ?? 0);
+    const amount = price > 0 ? qty * price : 0;
+    const isWithoutReq = !!r?.is_without_request;
+
+    docsAll.add(issueId);
+    totalQty += qty;
+    totalPositions += 1;
+    if (workName === WITHOUT_WORK) qtyWithoutWork += qty;
+    if (levelName === WITHOUT_LEVEL) qtyWithoutLevel += qty;
+    if (isWithoutReq) positionsWithoutReq += 1;
+
+    const workEntry =
+      byWork.get(workName) ??
+      {
+        work_type_name: workName,
+        total_qty: 0,
+        docs: new Set<string>(),
+        total_positions: 0,
+        req_positions: 0,
+        free_positions: 0,
+        levels: new Map(),
+      };
+    workEntry.total_qty += qty;
+    workEntry.docs.add(issueId);
+    workEntry.total_positions += 1;
+    if (isWithoutReq) workEntry.free_positions += 1;
+    else workEntry.req_positions += 1;
+
+    const levelEntry =
+      workEntry.levels.get(levelName) ??
+      {
+        level_name: levelName,
+        total_qty: 0,
+        docs: new Set<string>(),
+        total_positions: 0,
+        req_positions: 0,
+        free_positions: 0,
+        materials: new Map(),
+      };
+    levelEntry.total_qty += qty;
+    levelEntry.docs.add(issueId);
+    levelEntry.total_positions += 1;
+    if (isWithoutReq) levelEntry.free_positions += 1;
+    else levelEntry.req_positions += 1;
+
+    const mKey = `${code}::${uom}`;
+    const mEntry =
+      levelEntry.materials.get(mKey) ??
+      {
+        material_name: materialName,
+        rik_code: code,
+        uom,
+        qty_sum: 0,
+        amount_sum: 0,
+        docs: new Set<string>(),
+      };
+    mEntry.qty_sum += qty;
+    mEntry.amount_sum += amount;
+    mEntry.docs.add(issueId);
+    levelEntry.materials.set(mKey, mEntry);
+
+    workEntry.levels.set(levelName, levelEntry);
+    byWork.set(workName, workEntry);
+  }
+
+  const works: DirectorDisciplineWork[] = Array.from(byWork.values())
+    .map((w) => {
+      const levels: DirectorDisciplineLevel[] = Array.from(w.levels.values())
+        .map((lv) => {
+          const materials: DirectorDisciplineMaterial[] = Array.from(lv.materials.values())
+            .map((m) => ({
+              material_name: m.material_name,
+              rik_code: m.rik_code,
+              uom: m.uom,
+              qty_sum: m.qty_sum,
+              docs_count: m.docs.size,
+              unit_price: m.qty_sum > 0 ? m.amount_sum / m.qty_sum : 0,
+              amount_sum: m.amount_sum,
+            }))
+            .sort((a, b) => (b.amount_sum ?? 0) - (a.amount_sum ?? 0) || b.qty_sum - a.qty_sum);
+          return {
+            id: `${w.work_type_name}::${lv.level_name}`,
+            level_name: lv.level_name,
+            total_qty: lv.total_qty,
+            total_docs: lv.docs.size,
+            total_positions: lv.total_positions,
+            share_in_work_pct: pct(lv.total_qty, w.total_qty),
+            req_positions: lv.req_positions,
+            free_positions: lv.free_positions,
+            materials,
+          };
+        })
+        .sort((a, b) => b.total_qty - a.total_qty);
+      return {
+        id: w.work_type_name,
+        work_type_name: w.work_type_name,
+        total_qty: w.total_qty,
+        total_docs: w.docs.size,
+        total_positions: w.total_positions,
+        share_total_pct: pct(w.total_qty, totalQty),
+        req_positions: w.req_positions,
+        free_positions: w.free_positions,
+        levels,
+      };
+    })
+    .sort((a, b) => b.total_qty - a.total_qty);
+
+  return {
+    summary: {
+      total_qty: totalQty,
+      total_docs: docsAll.size,
+      total_positions: totalPositions,
+      pct_without_work: pct(qtyWithoutWork, totalQty),
+      pct_without_level: pct(qtyWithoutLevel, totalQty),
+      pct_without_request: pct(positionsWithoutReq, totalPositions),
+      issue_cost_total: Number(cost?.issue_cost_total ?? 0),
+      purchase_cost_total: Number(cost?.purchase_cost_total ?? 0),
+      issue_to_purchase_pct: Number(cost?.issue_to_purchase_pct ?? 0),
+      unpriced_issue_pct: Number(cost?.unpriced_issue_pct ?? 0),
+    },
+    works,
+  };
+}
+
+async function fetchFactRowsForDiscipline(p: {
+  from: string;
+  to: string;
+  objectName: string | null;
+  objectIdByName: Record<string, string | null>;
+}): Promise<DirectorFactRow[]> {
+  const objectName = p.objectName ?? null;
+  const selectedObjectId = objectName == null ? null : (p.objectIdByName[objectName] ?? null);
+  const preferAccPath = objectName != null && selectedObjectId == null;
+
+  let rows: DirectorFactRow[] = [];
+  if (preferAccPath) {
+    try {
+      rows = await fetchDirectorFactViaAccRpc({ from: p.from, to: p.to, objectName });
+    } catch { }
+    if (!rows.length) {
+      try {
+        rows = await fetchAllFactRowsFromView({ from: p.from, to: p.to, objectName });
+      } catch { }
+    }
+    if (!rows.length) {
+      try {
+        rows = await fetchAllFactRowsFromTables({ from: p.from, to: p.to, objectName });
+      } catch { }
+    }
+    return rows;
+  }
+
+  try {
+    rows = await fetchAllFactRowsFromTables({ from: p.from, to: p.to, objectName });
+  } catch { }
+  if (!rows.length) {
+    try {
+      rows = await fetchDirectorFactViaAccRpc({ from: p.from, to: p.to, objectName });
+    } catch { }
+  }
+  if (!rows.length) {
+    try {
+      rows = await fetchAllFactRowsFromView({ from: p.from, to: p.to, objectName });
+    } catch { }
+  }
+  return rows;
+}
+
 export async function fetchDirectorWarehouseReport(p: {
   from: string;
   to: string;
@@ -1078,12 +1773,20 @@ export async function fetchDirectorWarehouseReport(p: {
   }
 
   if (rows.length) {
-    return buildPayloadFromFactRows({
+    try {
+      rows = await enrichFactRowsMaterialNames(rows);
+    } catch { }
+    try {
+      rows = await enrichFactRowsLevelNames(rows);
+    } catch { }
+    const payload = buildPayloadFromFactRows({
       from: pFrom,
       to: pTo,
       objectName,
       rows,
     });
+    payload.discipline = buildDisciplinePayloadFromFactRows(rows);
+    return payload;
   }
 
   return fetchViaLegacyRpc({
@@ -1091,6 +1794,75 @@ export async function fetchDirectorWarehouseReport(p: {
     to: pTo,
     objectId: selectedObjectId,
     objectName,
+  });
+}
+
+export async function fetchDirectorWarehouseReportDiscipline(p: {
+  from: string;
+  to: string;
+  objectName: string | null;
+  objectIdByName: Record<string, string | null>;
+}): Promise<DirectorDisciplinePayload> {
+  const pFrom = rpcDate(p.from, "1970-01-01");
+  const pTo = rpcDate(p.to, "2099-12-31");
+  let rows = await fetchFactRowsForDiscipline({
+    from: pFrom,
+    to: pTo,
+    objectName: p.objectName ?? null,
+    objectIdByName: p.objectIdByName ?? {},
+  });
+  try {
+    rows = await enrichFactRowsMaterialNames(rows);
+  } catch { }
+  try {
+    rows = await enrichFactRowsLevelNames(rows);
+  } catch { }
+  const requestItemIds = Array.from(
+    new Set(
+      rows
+        .map((r) => String(r?.request_item_id ?? "").trim())
+        .filter(Boolean),
+    ),
+  );
+
+  const [priceByCode, priceByRequestItem] = await Promise.all([
+    fetchIssuePriceMapByCode(),
+    fetchPriceByRequestItemId(requestItemIds),
+  ]);
+
+  let issueCostTotal = 0;
+  let issuePositions = 0;
+  let unpricedIssuePositions = 0;
+  for (const r of rows) {
+    const code = String(r?.rik_code ?? "").trim().toUpperCase();
+    const qty = toNum(r?.qty);
+    if (!code || qty <= 0) continue;
+    issuePositions += 1;
+    const reqItemId = String(r?.request_item_id ?? "").trim();
+    const price = reqItemId
+      ? toNum(priceByRequestItem.get(reqItemId) ?? priceByCode.get(code) ?? 0)
+      : toNum(priceByCode.get(code) ?? 0);
+    if (price > 0) issueCostTotal += qty * price;
+    else unpricedIssuePositions += 1;
+  }
+
+  const purchaseCostTotal = await fetchPurchaseCostInPeriodScoped({
+    from: pFrom,
+    to: pTo,
+    objectName: p.objectName ?? null,
+    codePrice: priceByCode,
+  });
+
+  const issueToPurchasePct = pct(issueCostTotal, purchaseCostTotal);
+  const unpricedIssuePct = pct(unpricedIssuePositions, issuePositions);
+
+  return buildDisciplinePayloadFromFactRows(rows, {
+    issue_cost_total: issueCostTotal,
+    purchase_cost_total: purchaseCostTotal,
+    issue_to_purchase_pct: issueToPurchasePct,
+    unpriced_issue_pct: unpricedIssuePct,
+    price_by_code: priceByCode,
+    price_by_request_item: priceByRequestItem,
   });
 }
 

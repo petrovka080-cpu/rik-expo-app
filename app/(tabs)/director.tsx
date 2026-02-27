@@ -100,6 +100,7 @@ export default function DirectorScreen() {
     repObjectName,
     repLoading,
     repData,
+    repDiscipline,
     repOptLoading,
     repOptObjects,
     repPeriodShort,
@@ -652,6 +653,7 @@ export default function DirectorScreen() {
         visible={repOpen}
         onClose={closeReports}
         repData={repData}
+        repDiscipline={repDiscipline}
         repPeriodShort={repPeriodShort}
         repLoading={repLoading}
         repPeriodOpen={repPeriodOpen}

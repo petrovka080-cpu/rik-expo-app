@@ -1,4 +1,4 @@
-﻿import { useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { AppState } from "react-native";
 import { ensureSignedIn, supabase } from "../../lib/supabaseClient";
 
@@ -43,7 +43,7 @@ export function useDirectorLifecycle({
         void fetchRows();
         void fetchProps();
       } catch (e) {
-        console.warn("[Director] ensureSignedIn]:", (e as any)?.message || e);
+        console.warn("[Director] ensureSignedIn:", (e as any)?.message || e);
       }
     })();
   }, [fetchRows, fetchProps]);
@@ -57,9 +57,9 @@ export function useDirectorLifecycle({
     lastInitedTabRef.current = tabKey;
     lastInitedPeriodRef.current = periodKey;
 
-    if (tabKey === "Р¤РёРЅР°РЅСЃС‹") {
+    if (tabKey === "Финансы") {
       void fetchFinance();
-    } else if (tabKey === "РћС‚С‡С‘С‚С‹") {
+    } else if (tabKey === "Отчёты") {
       void fetchReport();
     }
   }, [dirTab, finFrom, finTo, repFrom, repTo, fetchFinance, fetchReportOptions, fetchReport]);
@@ -71,39 +71,49 @@ export function useDirectorLifecycle({
       const resumed = (prev === "background" || prev === "inactive") && nextState === "active";
       if (!resumed) return;
 
-      if (dirTab === "Р—Р°СЏРІРєРё") {
+      if (dirTab === "Заявки") {
         void fetchRows();
         void fetchProps();
-      } else if (dirTab === "Р¤РёРЅР°РЅСЃС‹") {
+      } else if (dirTab === "Финансы") {
         void fetchFinance();
-      } else if (dirTab === "РћС‚С‡С‘С‚С‹") {
-      void fetchReport();
+      } else if (dirTab === "Отчёты") {
+        void fetchReport();
       }
     });
     return () => {
-      try { sub.remove(); } catch { }
+      try {
+        sub.remove();
+      } catch {}
     };
   }, [dirTab, fetchRows, fetchProps, fetchFinance, fetchReportOptions, fetchReport]);
 
   useEffect(() => {
-    const ch = supabase.channel("notif-director-rt")
-      .on("postgres_changes", {
-        event: "INSERT",
-        schema: "public",
-        table: "notifications",
-        filter: "role=eq.director",
-      }, (payload: any) => {
-        const n = payload?.new || {};
-        showRtToast(n.title, n.body);
-        void fetchRows();
-        void fetchProps();
-      })
+    const ch = supabase
+      .channel("notif-director-rt")
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "notifications",
+          filter: "role=eq.director",
+        },
+        (payload: any) => {
+          const n = payload?.new || {};
+          showRtToast(n.title, n.body);
+          void fetchRows();
+          void fetchProps();
+        },
+      )
       .subscribe();
 
     return () => {
-      try { ch.unsubscribe(); } catch { }
-      try { supabase.removeChannel(ch); } catch { }
+      try {
+        ch.unsubscribe();
+      } catch {}
+      try {
+        supabase.removeChannel(ch);
+      } catch {}
     };
   }, [fetchRows, fetchProps, showRtToast]);
 }
-

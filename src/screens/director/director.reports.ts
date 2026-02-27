@@ -2,9 +2,10 @@ import { Alert } from "react-native";
 import { useCallback, useMemo, useRef, useState } from "react";
 import {
   fetchDirectorWarehouseReport,
+  fetchDirectorWarehouseReportDiscipline,
   fetchDirectorWarehouseReportOptions,
 } from "../../lib/api/director_reports";
-import type { RepPayload, RepTab } from "./director.types";
+import type { RepDisciplinePayload, RepPayload, RepTab } from "./director.types";
 
 type Deps = {
   fmtDateOnly: (iso?: string | null) => string;
@@ -38,14 +39,18 @@ export function useDirectorReports({ fmtDateOnly }: Deps) {
   const [repObjectName, setRepObjectName] = useState<string | null>(null);
   const [repLoading, setRepLoading] = useState(false);
   const [repData, setRepData] = useState<RepPayload | null>(null);
+  const [repDiscipline, setRepDiscipline] = useState<RepDisciplinePayload | null>(null);
   const [repOptLoading, setRepOptLoading] = useState(false);
   const [repOptObjects, setRepOptObjects] = useState<string[]>([]);
   const [repOptObjectIdByName, setRepOptObjectIdByName] = useState<Record<string, string | null>>({});
   const reportReqSeqRef = useRef(0);
   const optionsReqSeqRef = useRef(0);
+  const disciplineReqSeqRef = useRef(0);
   const inFlightReportRef = useRef<Map<string, Promise<void>>>(new Map());
+  const inFlightDisciplineRef = useRef<Map<string, Promise<void>>>(new Map());
   const inFlightOptionsRef = useRef<Map<string, Promise<void>>>(new Map());
   const reportCacheRef = useRef<Map<string, CacheEntry<RepPayload | null>>>(new Map());
+  const disciplineCacheRef = useRef<Map<string, CacheEntry<RepDisciplinePayload | null>>>(new Map());
   const optionsCacheRef = useRef<Map<string, CacheEntry<{ objects: string[]; objectIdByName: Record<string, string | null> }>>>(new Map());
 
   const getCached = useCallback(<T,>(cache: Map<string, CacheEntry<T>>, key: string): T | null => {
@@ -86,6 +91,7 @@ export function useDirectorReports({ fmtDateOnly }: Deps) {
       `${from}|${to}|${String(objectName ?? "")}|${mapSig(objectMap)}`,
     [mapSig],
   );
+  const disciplineKey = reportKey;
 
   const repPeriodShort = useMemo(() => {
     return repFrom || repTo
@@ -153,10 +159,55 @@ export function useDirectorReports({ fmtDateOnly }: Deps) {
     await task;
   }, [repFrom, repTo, repObjectName, repOptObjectIdByName, reportKey, getCached, setCached, optionsKey]);
 
+  const fetchDiscipline = useCallback(async (objectNameArg?: string | null) => {
+    const from = repFrom ? String(repFrom).slice(0, 10) : "";
+    const to = repTo ? String(repTo).slice(0, 10) : "";
+    const objectName = objectNameArg === undefined ? repObjectName : objectNameArg;
+    const key = disciplineKey(from, to, objectName ?? null, repOptObjectIdByName);
+    const cached = getCached(disciplineCacheRef.current, key);
+    if (cached !== null) {
+      setRepDiscipline(cached ?? null);
+      return;
+    }
+    const inFlight = inFlightDisciplineRef.current.get(key);
+    if (inFlight) {
+      await inFlight;
+      return;
+    }
+
+    const reqId = ++disciplineReqSeqRef.current;
+    const task = (async () => {
+      setRepLoading(true);
+      try {
+        const payload = await fetchDirectorWarehouseReportDiscipline({
+          from,
+          to,
+          objectName: objectName ?? null,
+          objectIdByName: repOptObjectIdByName,
+        });
+        if (reqId !== disciplineReqSeqRef.current) return;
+        const normalized = (payload ?? null) as RepDisciplinePayload | null;
+        setCached(disciplineCacheRef.current, key, normalized);
+        setRepDiscipline(normalized);
+      } catch (e: any) {
+        if (reqId !== disciplineReqSeqRef.current) return;
+        console.warn("[director] fetchDiscipline:", e?.message ?? e);
+        setRepDiscipline(null);
+        Alert.alert("Отчёты", e?.message ?? "Не удалось получить дисциплины");
+      } finally {
+        inFlightDisciplineRef.current.delete(key);
+        if (reqId === disciplineReqSeqRef.current) setRepLoading(false);
+      }
+    })();
+    inFlightDisciplineRef.current.set(key, task);
+    await task;
+  }, [repFrom, repTo, repObjectName, repOptObjectIdByName, disciplineKey, getCached, setCached]);
+
   const applyObjectFilter = useCallback(async (obj: string | null) => {
     setRepObjectName(obj);
-    await fetchReport(obj);
-  }, [fetchReport]);
+    if (repTab === "discipline") await fetchDiscipline(obj);
+    else await fetchReport(obj);
+  }, [fetchDiscipline, fetchReport, repTab]);
 
   const fetchReportOptions = useCallback(async () => {
     const from = repFrom ? String(repFrom).slice(0, 10) : "";
@@ -239,6 +290,15 @@ export function useDirectorReports({ fmtDateOnly }: Deps) {
         objectIdByName: opt.objectIdByName ?? {},
       });
       setRepData((payload ?? null) as any);
+      if (repTab === "discipline") {
+        const discipline = await fetchDirectorWarehouseReportDiscipline({
+          from,
+          to,
+          objectName: null,
+          objectIdByName: opt.objectIdByName ?? {},
+        });
+        setRepDiscipline((discipline ?? null) as any);
+      }
     } catch (e: any) {
       console.warn("[director] applyReportPeriod:", e?.message ?? e);
       setRepData(null);
@@ -249,7 +309,7 @@ export function useDirectorReports({ fmtDateOnly }: Deps) {
       setRepOptLoading(false);
       setRepLoading(false);
     }
-  }, [getCached, optionsKey, reportKey]);
+  }, [getCached, optionsKey, reportKey, repTab]);
 
   const clearReportPeriod = useCallback(() => {
     const to = isoDate(new Date());
@@ -283,6 +343,17 @@ export function useDirectorReports({ fmtDateOnly }: Deps) {
       const normalized = (payload ?? null) as any;
       setCached(reportCacheRef.current, reportKey(from, to, currentObject, optNorm.objectIdByName), normalized);
       setRepData(normalized);
+      if (repTab === "discipline") {
+        const discipline = await fetchDirectorWarehouseReportDiscipline({
+          from,
+          to,
+          objectName: currentObject,
+          objectIdByName: optNorm.objectIdByName,
+        });
+        const disNorm = (discipline ?? null) as RepDisciplinePayload | null;
+        setCached(disciplineCacheRef.current, disciplineKey(from, to, currentObject, optNorm.objectIdByName), disNorm);
+        setRepDiscipline(disNorm);
+      }
     } catch (e: any) {
       console.warn("[director] refreshReports:", e?.message ?? e);
       setRepData(null);
@@ -291,7 +362,12 @@ export function useDirectorReports({ fmtDateOnly }: Deps) {
       setRepOptLoading(false);
       setRepLoading(false);
     }
-  }, [repFrom, repTo, repObjectName, optionsKey, reportKey, setCached]);
+  }, [repFrom, repTo, repObjectName, optionsKey, reportKey, setCached, repTab, disciplineKey]);
+
+  const setReportTab = useCallback((t: RepTab) => {
+    setRepTab(t);
+    if (t === "discipline") void fetchDiscipline();
+  }, [fetchDiscipline]);
 
   const openReports = useCallback(() => {
     setRepOpen(true);
@@ -314,13 +390,15 @@ export function useDirectorReports({ fmtDateOnly }: Deps) {
     repObjectName,
     repLoading,
     repData,
+    repDiscipline,
     repOptLoading,
     repOptObjects,
     repPeriodShort,
-    setRepTab,
+    setRepTab: setReportTab,
     setRepPeriodOpen,
     setRepObjOpen,
     fetchReport,
+    fetchDiscipline,
     fetchReportOptions,
     applyObjectFilter,
     applyReportPeriod,
