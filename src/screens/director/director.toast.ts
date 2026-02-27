@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+﻿import { useCallback, useEffect, useRef, useState } from "react";
 import type { RtToast } from "./director.types";
 
 export function useDirectorRtToast() {
@@ -8,7 +8,7 @@ export function useDirectorRtToast() {
     body: "",
     count: 0,
   });
-  const rtToastTimerRef = useRef<any>(null);
+  const rtToastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const showRtToast = useCallback((title?: string, body?: string) => {
     const t = String(title || "Операция").trim();
@@ -35,7 +35,7 @@ export function useDirectorRtToast() {
   }, []);
 
   const showSuccess = useCallback((msg: string) => {
-    showRtToast("✓ Готово", msg);
+    showRtToast("Готово", msg);
   }, [showRtToast]);
 
   useEffect(() => {

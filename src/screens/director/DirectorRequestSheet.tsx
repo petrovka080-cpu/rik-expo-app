@@ -1,4 +1,4 @@
-import React from "react";
+﻿import React from "react";
 import { Alert, FlatList, Platform, Pressable, Text, View } from "react-native";
 import DeleteAllButton from "../../ui/DeleteAllButton";
 import RejectItemButton from "../../ui/RejectItemButton";
@@ -19,6 +19,12 @@ type Props = {
   onExportExcel: (g: Group) => void;
   onApproveAndSend: (g: Group) => Promise<void>;
 };
+
+type WebUiApi = {
+  confirm?: (message?: string) => boolean;
+};
+
+const webUi = globalThis as typeof globalThis & WebUiApi;
 
 export default function DirectorRequestSheet({
   sheetRequest,
@@ -85,9 +91,12 @@ export default function DirectorRequestSheet({
                 {it.item_kind ? (
                   <View style={[s.kindPill, { marginTop: 4 }]}>
                     <Text style={s.kindPillText}>
-                      {it.item_kind === "material" ? "Материал"
-                        : it.item_kind === "work" ? "Работа"
-                          : it.item_kind === "service" ? "Услуга"
+                      {it.item_kind === "material"
+                        ? "Материал"
+                        : it.item_kind === "work"
+                          ? "Работа"
+                          : it.item_kind === "service"
+                            ? "Услуга"
                             : it.item_kind}
                     </Text>
                   </View>
@@ -121,8 +130,7 @@ export default function DirectorRequestSheet({
               };
 
               if (Platform.OS === "web") {
-                // @ts-ignore
-                const ok = window.confirm("Удалить заявку?\n\nОтклонить ВСЮ заявку вместе со всеми позициями?");
+                const ok = webUi.confirm?.("Удалить заявку?\n\nОтклонить ВСЮ заявку вместе со всеми позициями?") ?? false;
                 if (!ok) return;
                 void doIt();
                 return;
@@ -148,17 +156,21 @@ export default function DirectorRequestSheet({
             if (!rid || pdfBusy || screenLock) return;
             try {
               await onOpenPdf(sheetRequest);
-            } catch (e: any) {
-              if (String(e?.message ?? "").toLowerCase().includes("busy")) return;
-              Alert.alert("Ошибка", e?.message ?? "PDF не сформирован");
+            } catch (e) {
+              const message =
+                e && typeof e === "object" && "message" in e
+                  ? String((e as { message?: unknown }).message ?? "")
+                  : String(e ?? "");
+              if (message.toLowerCase().includes("busy")) return;
+              Alert.alert("Ошибка", message || "PDF не сформирован");
             }
           }}
           style={[
             s.actionBtnWide,
-            { backgroundColor: UI.btnNeutral, opacity: (!rid || pdfBusy || screenLock) ? 0.6 : 1 },
+            { backgroundColor: UI.btnNeutral, opacity: !rid || pdfBusy || screenLock ? 0.6 : 1 },
           ]}
         >
-          <Text style={s.actionText}>{pdfBusy ? "PDF…" : "PDF"}</Text>
+          <Text style={s.actionText}>{pdfBusy ? "PDF..." : "PDF"}</Text>
         </Pressable>
 
         <View style={s.sp8} />

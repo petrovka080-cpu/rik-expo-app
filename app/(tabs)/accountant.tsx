@@ -61,6 +61,11 @@ import {
   withTimeout,
 } from "../../src/screens/accountant/helpers";
 import { formatProposalBaseNo, roleBadgeLabel } from "../../src/lib/format";
+import {
+  crossStorageGet,
+  crossStorageSet,
+  migrateCrossStorageKeysOnce,
+} from "../../src/lib/crossStorage";
 
 import { ReadOnlyPaymentReceipt } from "../../src/screens/accountant/components/ReadOnlyReceipt";
 import Header from "../../src/screens/accountant/components/Header";
@@ -289,55 +294,76 @@ export default function AccountantScreen() {
   }, []);
 
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem('acc_fio') || '';
-      if (saved.trim()) setAccountantFio(saved.trim());
-    } catch { }
+    let cancelled = false;
+    (async () => {
+      await migrateCrossStorageKeysOnce({
+        markerKey: "acc_storage_migrated_v1",
+        pairs: [
+          { from: "accountant_fio", to: "acc_fio" },
+          { from: "accountant_hist_search", to: "acc_hist_search" },
+          { from: "accountant_hist_date_from", to: "acc_hist_date_from" },
+          { from: "accountant_hist_date_to", to: "acc_hist_date_to" },
+        ],
+      });
+
+      const saved = (await crossStorageGet("acc_fio")) || "";
+      if (!cancelled && saved.trim()) setAccountantFio(saved.trim());
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   useEffect(() => {
-    try {
-      const q = String(localStorage.getItem("acc_hist_search") || "");
-      const df = String(localStorage.getItem("acc_hist_date_from") || "");
-      const dt = String(localStorage.getItem("acc_hist_date_to") || "");
+    let cancelled = false;
+    (async () => {
+      const q = String((await crossStorageGet("acc_hist_search")) || "");
+      const df = String((await crossStorageGet("acc_hist_date_from")) || "");
+      const dt = String((await crossStorageGet("acc_hist_date_to")) || "");
 
+      if (cancelled) return;
       if (q) setHistSearchUi(q);
       if (df) setDateFrom(df);
       if (dt) setDateTo(dt);
-    } catch { }
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   useEffect(() => {
-    try {
-      const b = localStorage.getItem("acc_bankName") || "";
-      const bik0 = localStorage.getItem("acc_bik") || "";
-      const rs0 = localStorage.getItem("acc_rs") || "";
-      const inn0 = localStorage.getItem("acc_inn") || "";
-      const kpp0 = localStorage.getItem("acc_kpp") || "";
+    let cancelled = false;
+    (async () => {
+      const b = (await crossStorageGet("acc_bankName")) || "";
+      const bik0 = (await crossStorageGet("acc_bik")) || "";
+      const rs0 = (await crossStorageGet("acc_rs")) || "";
+      const inn0 = (await crossStorageGet("acc_inn")) || "";
+      const kpp0 = (await crossStorageGet("acc_kpp")) || "";
 
+      if (cancelled) return;
       if (b) setBankName(b);
       if (bik0) setBik(bik0);
       if (rs0) setRs(rs0);
       if (inn0) setInn(inn0);
       if (kpp0) setKpp(kpp0);
-    } catch { }
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   useEffect(() => {
-    try {
-      const v = (accountantFio || '').trim();
-      if (v) localStorage.setItem('acc_fio', v);
-    } catch { }
+    const v = (accountantFio || '').trim();
+    if (!v) return;
+    void crossStorageSet("acc_fio", v);
   }, [accountantFio]);
 
   useEffect(() => {
-    try {
-      localStorage.setItem("acc_bankName", String(bankName || ""));
-      localStorage.setItem("acc_bik", String(bik || ""));
-      localStorage.setItem("acc_rs", String(rs || ""));
-      localStorage.setItem("acc_inn", String(inn || ""));
-      localStorage.setItem("acc_kpp", String(kpp || ""));
-    } catch { }
+    void crossStorageSet("acc_bankName", String(bankName || ""));
+    void crossStorageSet("acc_bik", String(bik || ""));
+    void crossStorageSet("acc_rs", String(rs || ""));
+    void crossStorageSet("acc_inn", String(inn || ""));
+    void crossStorageSet("acc_kpp", String(kpp || ""));
   }, [bankName, bik, rs, inn, kpp]);
 
   const triedRpcOkRef = useRef<boolean>(true);
@@ -669,10 +695,10 @@ export default function AccountantScreen() {
     useCallback(() => {
       const ch = supabase
         .channel("notif-accountant-rt")
-        .on(
-          "postgres_changes",
-          { event: "INSERT", schema: "public", table: "notifications" },
-          (payload: { new?: unknown }) => {
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "notifications", filter: "role=eq.accountant" },
+        (payload: { new?: unknown }) => {
             if (!focusedRef.current) return;
 
             const n = (payload?.new ?? {}) as NotificationRow;

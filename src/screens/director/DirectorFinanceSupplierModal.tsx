@@ -1,19 +1,37 @@
-import React from "react";
-import { View, Text, Pressable } from "react-native";
+﻿import React from "react";
+import { Pressable, Text, View } from "react-native";
 import { UI, s } from "./director.styles";
 
+type InvoiceRow = {
+  id: string | number;
+  title?: string | null;
+  amount?: number | null;
+  isCritical?: boolean;
+  isOverdue?: boolean;
+  approvedIso?: string | null;
+  invoiceIso?: string | null;
+  dueIso?: string | null;
+};
+
+type SupplierPayload = {
+  amount?: number;
+  count?: number;
+  overdueCount?: number;
+  criticalCount?: number;
+  invoices?: InvoiceRow[];
+};
+
+type ErrorLike = { message?: unknown };
+
 export default function DirectorFinanceSupplierModal(p: {
-  // ⚠️ оставляем, чтобы не ломать вызовы/пропсы, но внутри это уже не модалка
   visible?: boolean;
   onClose?: () => void;
-
   loading: boolean;
   periodShort?: string;
   onOpenPeriod?: () => void;
   onRefresh?: () => void;
-  onPdf: () => void;
-
-  supplier: any | null;
+  onPdf: () => void | Promise<void>;
+  supplier: SupplierPayload | null;
   money: (v: number) => string;
   fmtDateOnly: (iso?: string | null) => string;
 }) {
@@ -25,10 +43,10 @@ export default function DirectorFinanceSupplierModal(p: {
     <View>
       <View style={[s.reqNoteBox, { borderLeftColor: "#F59E0B" }]}>
         <Text style={[s.reqNoteLine, { fontWeight: "900" }]} numberOfLines={1}>
-          Долг: {p.money(sup.amount)} KGS · счетов {sup.count}
+          Долг: {p.money(Number(sup.amount ?? 0))} KGS · счетов {Number(sup.count ?? 0)}
         </Text>
         <Text style={[s.reqNoteLine, { fontWeight: "900" }]} numberOfLines={1}>
-          Требует оплаты: {sup.overdueCount} · критично (в периоде): {sup.criticalCount}
+          Требует оплаты: {Number(sup.overdueCount ?? 0)} · критично (в периоде): {Number(sup.criticalCount ?? 0)}
         </Text>
 
         <View style={{ marginTop: 10 }}>
@@ -37,12 +55,13 @@ export default function DirectorFinanceSupplierModal(p: {
             onPress={async () => {
               if (p.loading) return;
               try {
-                await (p.onPdf as any)();
+                await Promise.resolve(p.onPdf());
               } catch (e) {
-                console.log("PDF ERR", e);
-                try {
-                  alert("PDF ERR: " + String((e as any)?.message ?? e));
-                } catch {}
+                const message =
+                  e && typeof e === "object" && "message" in e
+                    ? String((e as ErrorLike).message ?? e)
+                    : String(e);
+                console.log("PDF ERR", message);
               }
             }}
             style={{
@@ -56,14 +75,12 @@ export default function DirectorFinanceSupplierModal(p: {
               opacity: p.loading ? 0.6 : 1,
             }}
           >
-            <Text style={{ color: UI.text, fontWeight: "900" }}>
-              {p.loading ? "…" : "Сводка (PDF)"}
-            </Text>
+            <Text style={{ color: UI.text, fontWeight: "900" }}>{p.loading ? "..." : "Сводка (PDF)"}</Text>
           </Pressable>
         </View>
       </View>
 
-      {(sup.invoices || []).map((it: any) => (
+      {(sup.invoices || []).map((it) => (
         <View
           key={String(it.id)}
           style={[
@@ -82,10 +99,10 @@ export default function DirectorFinanceSupplierModal(p: {
           </Text>
 
           <Text style={{ color: UI.sub, fontWeight: "800", marginTop: 4 }} numberOfLines={3}>
-            {p.money(it.amount)} KGS
-            {it.isCritical ? " · 🔥 критично" : it.isOverdue ? " · ⚠️ требует оплаты" : ""}
+            {p.money(Number(it.amount ?? 0))} KGS
+            {it.isCritical ? " · критично" : it.isOverdue ? " · требует оплаты" : ""}
             {it.approvedIso ? ` · утв. ${p.fmtDateOnly(it.approvedIso)}` : ""}
-            {it.invoiceIso ? ` · счёт ${p.fmtDateOnly(it.invoiceIso)}` : ""}
+            {it.invoiceIso ? ` · счет ${p.fmtDateOnly(it.invoiceIso)}` : ""}
             {it.dueIso ? ` · срок ${p.fmtDateOnly(it.dueIso)}` : ""}
           </Text>
         </View>
@@ -93,4 +110,3 @@ export default function DirectorFinanceSupplierModal(p: {
     </View>
   );
 }
-

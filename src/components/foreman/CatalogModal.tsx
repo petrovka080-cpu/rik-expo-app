@@ -1,9 +1,4 @@
-// src/components/foreman/CatalogModal.tsx
-// ✅ UI/UX ONLY. ЛОГИКУ НЕ МЕНЯЮ: тот же поиск, тот же debounce, тот же add, тот же toast, тот же onCommitToDraft.
-// ✅ Улучшения: нормальный хедер (как в топовых), "Закрыть" крестиком, кнопка добавления = наш Send-значок,
-// ✅ поле количества аккуратнее, карточки премиум, меньше “колхоза”, лучше кликабельность.
-
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+﻿import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -21,7 +16,6 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
-// ✅ ГЛОБАЛЬНЫЕ UI-КНОПКИ/ИКОНКИ (как в приложении)
 import IconSquareButton from '../../ui/IconSquareButton';
 import SendHomeIcon from '../../ui/icons/SendHomeIcon';
 
@@ -41,10 +35,6 @@ const COLORS = {
   text: '#0F172A',
   sub: '#475569',
   border: '#E2E8F0',
-  blue: '#2563EB',
-  green: '#16A34A',
-  greenBorder: '#15803D',
-  red: '#DC2626',
 };
 
 export type PickedRow = {
@@ -75,13 +65,12 @@ export default function CatalogModal(props: {
   const [qtyByCode, setQtyByCode] = useState<Record<string, string>>({});
   const [addBusyByCode, setAddBusyByCode] = useState<Record<string, boolean>>({});
 
-  const tRef = useRef<any>(null);
+  const tRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const inputRef = useRef<TextInput>(null);
 
-  // toast
   const toastY = useRef(new Animated.Value(-24)).current;
   const [toastText, setToastText] = useState<string>('');
-  const toastTimerRef = useRef<any>(null);
+  const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const showToast = (text: string) => {
     if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
@@ -97,11 +86,8 @@ export default function CatalogModal(props: {
   };
 
   const canSearch = query.trim().length >= 2;
+  const HEADER_PAD_TOP = Platform.OS === 'ios' ? 52 : (StatusBar.currentHeight ?? 0) + 12;
 
-  const HEADER_PAD_TOP =
-    Platform.OS === 'ios' ? 52 : (StatusBar.currentHeight ?? 0) + 12;
-
-  // open: reset & focus
   useEffect(() => {
     if (!visible) return;
 
@@ -114,7 +100,6 @@ export default function CatalogModal(props: {
     setTimeout(() => inputRef.current?.focus?.(), 250);
   }, [visible]);
 
-  // cleanup timers
   useEffect(() => {
     return () => {
       if (tRef.current) clearTimeout(tRef.current);
@@ -122,7 +107,6 @@ export default function CatalogModal(props: {
     };
   }, []);
 
-  // search with debounce
   useEffect(() => {
     if (!visible) return;
     if (tRef.current) clearTimeout(tRef.current);
@@ -152,16 +136,15 @@ export default function CatalogModal(props: {
   const uniq = useMemo(() => {
     const seen = new Set<string>();
     return rows.filter((r) => {
-      const k = String((r as any)?.rik_code ?? '').trim();
-      if (!k) return false;
-      if (seen.has(k)) return false;
+      const k = String(r?.rik_code ?? '').trim();
+      if (!k || seen.has(k)) return false;
       seen.add(k);
       return true;
     });
   }, [rows]);
 
   const titleOf = (it: CatalogItem) =>
-    (it.name_human_ru || it.name_ru || it.name_human || it.display_name || it.rik_code || '—').trim();
+    (it.name_human_ru || it.name_ru || it.name_human || it.display_name || it.rik_code || '-').trim();
 
   const resetSearchAndFocus = () => {
     setQuery('');
@@ -172,14 +155,10 @@ export default function CatalogModal(props: {
   return (
     <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-        {/* ✅ На мобилке: тап по фону закрывает клаву */}
         <View style={{ flex: 1 }}>
-          {Platform.OS !== 'web' ? (
-            <Pressable style={StyleSheet.absoluteFill} onPress={Keyboard.dismiss} />
-          ) : null}
+          {Platform.OS !== 'web' ? <Pressable style={StyleSheet.absoluteFill} onPress={Keyboard.dismiss} /> : null}
 
           <View style={[s.container, { backgroundColor: COLORS.bg }]}>
-            {/* header (премиум) */}
             <View style={[s.header, { paddingTop: HEADER_PAD_TOP }]}>
               <Text style={s.hTitle}>Каталог</Text>
 
@@ -206,7 +185,6 @@ export default function CatalogModal(props: {
               </IconSquareButton>
             </View>
 
-            {/* toast */}
             {toastText ? (
               <Animated.View pointerEvents="none" style={[s.toastWrap, { transform: [{ translateY: toastY }] }]}>
                 <View style={s.toast}>
@@ -218,7 +196,6 @@ export default function CatalogModal(props: {
               </Animated.View>
             ) : null}
 
-            {/* search */}
             <View style={{ paddingHorizontal: 16, paddingBottom: 10 }}>
               <View style={s.searchWrap}>
                 <Ionicons name="search" size={18} color="#64748B" />
@@ -226,7 +203,7 @@ export default function CatalogModal(props: {
                   ref={inputRef}
                   value={query}
                   onChangeText={setQuery}
-                  placeholder="Поиск по каталогу… (бетон М250, шпаклёвка, доставка)"
+                  placeholder="Поиск по каталогу... (бетон М250, шпаклевка, доставка)"
                   placeholderTextColor="#94A3B8"
                   style={s.search}
                   returnKeyType="search"
@@ -251,15 +228,14 @@ export default function CatalogModal(props: {
               {loading ? (
                 <View style={{ marginTop: 8, flexDirection: 'row', alignItems: 'center', gap: 10 }}>
                   <ActivityIndicator />
-                  <Text style={{ color: COLORS.sub, fontWeight: '800' }}>Ищем…</Text>
+                  <Text style={{ color: COLORS.sub, fontWeight: '800' }}>Ищем...</Text>
                 </View>
               ) : null}
             </View>
 
-            {/* list */}
             <FlatList
               data={uniq}
-              keyExtractor={(it, idx) => `rk:${String((it as any).rik_code ?? '')}:${idx}`}
+              keyExtractor={(it, idx) => `rk:${String(it.rik_code ?? '')}:${idx}`}
               keyboardShouldPersistTaps="handled"
               contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 24 }}
               ListEmptyComponent={
@@ -288,7 +264,6 @@ export default function CatalogModal(props: {
                           {kind ? ` · ${kind}` : ''}
                         </Text>
 
-                        {/* маленький бейдж с кодом (не колхоз) */}
                         {!!code ? (
                           <View style={s.codePill}>
                             <Text style={s.codePillText} numberOfLines={1}>
@@ -310,14 +285,12 @@ export default function CatalogModal(props: {
                         selectTextOnFocus
                       />
 
-                      {/* ✅ вместо плюсика — НАШ SEND-ЗНАК */}
                       <IconSquareButton
                         disabled={adding}
                         loading={adding}
                         onPress={async () => {
                           if (!code) return;
 
-                          // ✅ если пусто — ставим 1 (быстрое добавление)
                           const raw = String(qty ?? '').trim();
                           const q = raw ? Number(raw.replace(',', '.')) : 1;
                           if (!Number.isFinite(q) || q <= 0) return;
@@ -327,7 +300,6 @@ export default function CatalogModal(props: {
 
                           try {
                             setAddBusyByCode((p) => ({ ...p, [code]: true }));
-
                             if (Platform.OS !== 'web') Keyboard.dismiss();
 
                             await Promise.resolve(
@@ -346,7 +318,7 @@ export default function CatalogModal(props: {
                             );
 
                             const nextCount = Math.max(0, Number(draftCount || 0) + 1);
-                            showToast(`Добавлено: ${title} × ${q}  ·  В черновике: ${nextCount}`);
+                            showToast(`Добавлено: ${title} x ${q} · В черновике: ${nextCount}`);
 
                             setQtyByCode((p) => ({ ...p, [code]: '' }));
                             resetSearchAndFocus();
@@ -427,7 +399,6 @@ const s = StyleSheet.create({
   },
   toastText: { color: '#fff', fontWeight: '900', fontSize: 13, flex: 1 },
 
-  // search (иконка + clear)
   searchWrap: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -464,7 +435,6 @@ const s = StyleSheet.create({
     alignItems: 'center',
     gap: 12,
 
-    // чуть “дороже” вид
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.08,

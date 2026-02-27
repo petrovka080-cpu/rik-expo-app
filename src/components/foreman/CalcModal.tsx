@@ -1,11 +1,11 @@
-// src/components/foreman/CalcModal.tsx
-// ✅ PROD UI. БИЗНЕС-ЛОГИКА НЕ ТРОНУТА.
-// ✅ FIX: footer НЕ двигается вместе с клавиатурой (всегда внизу)
-// ✅ FIX: двигается только контент (ScrollView), инпуты прокручиваются выше footer
-// ✅ FIX: paddingBottom учитывает footer + safe-area + keyboard overlap
-// ✅ UX: "Бетон: ..." (workType) вынесен из header и сделан STICKY (липкий) внутри ScrollView
-// ✅ UX: Под ним мелкая подсказка "Заполните поля — расчёт автоматически."
-// ✅ FIX WEB: shadow* → boxShadow (через SHADOW_*), без warning на web
+﻿// src/components/foreman/CalcModal.tsx
+// PROD UI. Бизнес-логика не изменена.
+// FIX: footer не двигается вместе с клавиатурой (всегда внизу)
+// FIX: двигается только контент (ScrollView), инпуты прокручиваются выше footer
+// FIX: paddingBottom учитывает footer + safe-area + keyboard overlap
+// UX: workType вынесен из header и сделан sticky внутри ScrollView
+// UX: под ним короткая подсказка
+// FIX WEB: shadow* -> boxShadow (через SHADOW_*), без warning на web
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -21,6 +21,7 @@ import {
   Keyboard,
   KeyboardAvoidingView,
   Animated,
+  type KeyboardEvent,
 } from "react-native";
 import { supabase } from "../../../src/lib/supabaseClient";
 import { useCalcFields, BasisKey, Field } from "./useCalcFields";
@@ -35,12 +36,14 @@ type Props = {
   onClose: () => void;
   onBack?: () => void;
   workType?: { code: string; name: string } | null;
-  onAddToRequest?: (rows: any[]) => void;
+  onAddToRequest?: (rows: Row[]) => void;
 };
 
 type Measures = Partial<Record<BasisKey, number>>;
 type Inputs = Partial<Record<BasisKey, string>>;
 type FieldErrors = Partial<Record<BasisKey, string>>;
+type MeasureMap = Record<string, number | undefined>;
+type InputMap = Record<string, string | undefined>;
 
 type Row = {
   work_type_code: string;
@@ -72,7 +75,7 @@ const qtyIssue = (value: number) => {
 };
 
 const sanitizeExpression = (raw: string) =>
-  raw.replace(/,/g, ".").replace(/[×хХxX]/g, "*").replace(/:/g, "/").trim();
+  raw.replace(/,/g, ".").replace(/[xX*×хХ]/g, "*").replace(/:/g, "/").trim();
 
 const SAFE_EXPRESSION = /^[-+*/().0-9\s]+$/;
 
@@ -92,7 +95,7 @@ const LOSS_ERROR_TEXT = "Некорректное значение";
 // ===== SHADOW (PROD cross-platform) =====
 const SHADOW_CARD =
   Platform.OS === "web"
-    ? ({ boxShadow: "0px 10px 18px rgba(0,0,0,0.14)" } as any)
+    ? ({ boxShadow: "0px 10px 18px rgba(0,0,0,0.14)" } as const)
     : {
         shadowColor: "#000",
         shadowOffset: { width: 0, height: 10 },
@@ -103,7 +106,7 @@ const SHADOW_CARD =
 
 const SHADOW_STICKY =
   Platform.OS === "web"
-    ? ({ boxShadow: "0px 6px 12px rgba(0,0,0,0.06)" } as any)
+    ? ({ boxShadow: "0px 6px 12px rgba(0,0,0,0.06)" } as const)
     : {
         shadowColor: "#000",
         shadowOffset: { width: 0, height: 6 },
@@ -120,7 +123,7 @@ function useKeyboardHeight() {
     const showEvt = Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow";
     const hideEvt = Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide";
 
-    const subShow = Keyboard.addListener(showEvt, (e: any) => {
+    const subShow = Keyboard.addListener(showEvt, (e: KeyboardEvent) => {
       const kh = Number(e?.endCoordinates?.height ?? 0);
       setH(kh > 0 ? kh : 0);
     });
@@ -165,7 +168,7 @@ export default function CalcModal({ visible, onClose, onBack, workType, onAddToR
 // ===== TOAST HINT (2s) =====
 const toastY = useRef(new Animated.Value(-8)).current;
 const toastA = useRef(new Animated.Value(0)).current;
-const toastTimerRef = useRef<any>(null);
+const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
 const showToastHint = useCallback(() => {
   if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
@@ -209,7 +212,7 @@ useEffect(() => {
   const [calculating, setCalculating] = useState(false);
   const [addingToRequest, setAddingToRequest] = useState(false);
 
-  // ✅ поля сворачиваем ТОЛЬКО после расчёта (UI)
+  // вњ… РїРѕР»СЏ СЃРІРѕСЂР°С‡РёРІР°РµРј РўРћР›Р¬РљРћ РїРѕСЃР»Рµ СЂР°СЃС‡С‘С‚Р° (UI)
   const [fieldsCollapsed, setFieldsCollapsed] = useState(false);
   useEffect(() => setFieldsCollapsed(!!rows), [rows]);
 
@@ -233,24 +236,24 @@ useEffect(() => {
     (nextMeasures: Measures, nextInputs: Inputs) => {
       // --- ind_concrete: film_m2 auto = area_m2 ---
       if (workType?.code === "ind_concrete" && !filmTouched) {
-        const a = (nextMeasures as any).area_m2;
-        const f = (nextMeasures as any).film_m2;
+        const a = (nextMeasures as MeasureMap).area_m2;
+        const f = (nextMeasures as MeasureMap).film_m2;
         if (
           typeof a === "number" &&
           Number.isFinite(a) &&
           !(typeof f === "number" && Number.isFinite(f))
         ) {
-          (nextMeasures as any).film_m2 = a;
+          (nextMeasures as MeasureMap).film_m2 = a;
           nextInputs.film_m2 = formatNumber(a);
         }
       }
 
       // --- derived: area_m2 (facade) ---
       if (!manualKeys.has("area_m2")) {
-        const len = (nextMeasures as any).length_m;
-        const p = (nextMeasures as any).perimeter_m;
-        const h = (nextMeasures as any).height_m;
-        const openingsA = (nextMeasures as any).area_wall_m2;
+        const len = (nextMeasures as MeasureMap).length_m;
+        const p = (nextMeasures as MeasureMap).perimeter_m;
+        const h = (nextMeasures as MeasureMap).height_m;
+        const openingsA = (nextMeasures as MeasureMap).area_wall_m2;
 
         const hasLH =
           typeof len === "number" && Number.isFinite(len) && typeof h === "number" && Number.isFinite(h);
@@ -266,10 +269,10 @@ useEffect(() => {
           if (typeof openingsA === "number" && Number.isFinite(openingsA) && openingsA > 0) {
             a = Math.max(0, a - openingsA);
           }
-          const curA = (nextMeasures as any).area_m2;
+          const curA = (nextMeasures as MeasureMap).area_m2;
           if (!(typeof curA === "number" && Number.isFinite(curA))) {
             const out = Number(a.toFixed(3));
-            (nextMeasures as any).area_m2 = out;
+            (nextMeasures as MeasureMap).area_m2 = out;
             nextInputs.area_m2 = formatNumber(out);
           }
         }
@@ -277,10 +280,10 @@ useEffect(() => {
 
       // --- derived: volume_m3 ---
       if (!manualKeys.has("volume_m3")) {
-        const area = (nextMeasures as any).area_m2;
-        const thickness = (nextMeasures as any).height_m;
-        const perim = (nextMeasures as any).perimeter_m;
-        const width = (nextMeasures as any).length_m;
+        const area = (nextMeasures as MeasureMap).area_m2;
+        const thickness = (nextMeasures as MeasureMap).height_m;
+        const perim = (nextMeasures as MeasureMap).perimeter_m;
+        const width = (nextMeasures as MeasureMap).length_m;
 
         const hasAreaThickness =
           typeof area === "number" && Number.isFinite(area) && typeof thickness === "number" && Number.isFinite(thickness);
@@ -299,9 +302,9 @@ useEffect(() => {
 
         if (derived != null) {
           const v = Number(derived.toFixed(3));
-          const cur = (nextMeasures as any).volume_m3;
+          const cur = (nextMeasures as MeasureMap).volume_m3;
           if (!(typeof cur === "number" && Number.isFinite(cur))) {
-            (nextMeasures as any).volume_m3 = v;
+            (nextMeasures as MeasureMap).volume_m3 = v;
             nextInputs.volume_m3 = formatNumber(v);
           }
         }
@@ -346,11 +349,11 @@ useEffect(() => {
 
     fields.forEach((field) => {
       const k = field.key;
-      if ((inputs as any)[k] !== undefined) nextInputs[k] = (inputs as any)[k];
+      if ((inputs as InputMap)[k] !== undefined) nextInputs[k] = (inputs as InputMap)[k];
       else nextInputs[k] = "";
 
-      if ((measures as any)[k] != null) nextMeasures[k] = (measures as any)[k];
-      else delete (nextMeasures as any)[k];
+      if ((measures as MeasureMap)[k] != null) nextMeasures[k] = (measures as MeasureMap)[k];
+      else delete (nextMeasures as MeasureMap)[k];
     });
 
     applyAutoRules(nextMeasures, nextInputs);
@@ -358,7 +361,7 @@ useEffect(() => {
     setErrors((prev) => {
       const next: FieldErrors = { ...prev };
       Object.keys(next).forEach((key) => {
-        if (!fieldMap.has(key as any)) delete (next as any)[key];
+        if (!fieldMap.has(key as BasisKey)) delete (next as Record<string, string | undefined>)[key];
       });
       return next;
     });
@@ -398,7 +401,7 @@ useEffect(() => {
     if (!fields.length) return false;
 
     for (const k of requiredKeys) {
-      const raw = (inputs as any)[k];
+      const raw = (inputs as InputMap)[k];
       if (typeof raw !== "string" || raw.trim() === "") return false;
     }
 
@@ -581,20 +584,20 @@ useEffect(() => {
       setRows(null);
 
       const parsedMeasures = parseResult.measures;
-      const payload: Record<string, any> = {};
+      const payload: Record<string, number> = {};
 
       for (const f of fields) {
-        const v = (parsedMeasures as any)[f.key];
+        const v = (parsedMeasures as MeasureMap)[f.key];
         if (typeof v === "number" && Number.isFinite(v)) payload[f.key] = v;
       }
 
       if (
-        typeof (parsedMeasures as any).multiplier === "number" &&
-        Number.isFinite((parsedMeasures as any).multiplier)
+        typeof (parsedMeasures as MeasureMap).multiplier === "number" &&
+        Number.isFinite((parsedMeasures as MeasureMap).multiplier)
       ) {
-        payload.multiplier = (parsedMeasures as any).multiplier;
+        payload.multiplier = (parsedMeasures as MeasureMap).multiplier;
       } else {
-        const lossFromField = (parsedMeasures as any).loss ?? (parsedMeasures as any).waste_pct;
+        const lossFromField = (parsedMeasures as MeasureMap).loss ?? (parsedMeasures as MeasureMap).waste_pct;
         if (typeof lossFromField === "number" && Number.isFinite(lossFromField)) payload.loss = lossFromField;
         else payload.loss = Number.isFinite(lossValue) ? lossValue : 0;
       }
@@ -610,9 +613,9 @@ useEffect(() => {
       }
 
       setRows(Array.isArray(data) ? (data as Row[]) : []);
-    } catch (e: any) {
+    } catch (e: unknown) {
       console.error("[CalcModal]", e);
-      Alert.alert("Ошибка", "Не удалось выполнить расчёт. Проверьте параметры и попробуйте ещё раз.");
+      Alert.alert("Ошибка", "Не удалось выполнить расчет. Проверьте параметры и попробуйте еще раз.");
       setRows(null);
     } finally {
       setCalculating(false);
@@ -668,13 +671,13 @@ useEffect(() => {
 
   const canSend = !!rows && rows.length > 0 && !addingToRequest && !calculating;
 
-  // ✅ высота нижней панели (для paddingBottom контента)
+  // вњ… РІС‹СЃРѕС‚Р° РЅРёР¶РЅРµР№ РїР°РЅРµР»Рё (РґР»СЏ paddingBottom РєРѕРЅС‚РµРЅС‚Р°)
   const BOTTOM_BAR_H = 72;
 
-  // ✅ keyboard overlap снизу (без safe-area)
+  // вњ… keyboard overlap СЃРЅРёР·Сѓ (Р±РµР· safe-area)
   const kbEffective = Math.max(0, keyboardH - insets.bottom);
 
-  // ✅ нижний паддинг footer (safe area)
+  // вњ… РЅРёР¶РЅРёР№ РїР°РґРґРёРЅРі footer (safe area)
   const footerPadBottom = insets.bottom + 12;
 
   return (
@@ -716,12 +719,12 @@ useEffect(() => {
               <View style={{ width: 88 }} />
             )}
 
-            {/* ✅ Header чистый */}
+            {/* Header */}
             <View style={{ flex: 1, minWidth: 0, alignItems: "center" }}>
               <Text style={{ fontSize: 16, fontWeight: "900", color: "#0F172A" }} numberOfLines={1}>
                 Смета
               </Text>
-              {/* Если хочешь убрать "Смета" вообще: замени весь этот View на <View style={{ flex: 1 }} /> */}
+              {/* Р•СЃР»Рё С…РѕС‡РµС€СЊ СѓР±СЂР°С‚СЊ "Смета" РІРѕРѕР±С‰Рµ: Р·Р°РјРµРЅРё РІРµСЃСЊ СЌС‚РѕС‚ View РЅР° <View style={{ flex: 1 }} /> */}
             </View>
 
             <IconSquareButton
@@ -741,7 +744,7 @@ useEffect(() => {
               <Ionicons name="close" size={22} color="#111827" />
             </IconSquareButton>
           </View>
-{/* ✅ Toast hint (2s) */}
+{/* Toast hint (2s) */}
 <Animated.View
   pointerEvents="none"
   style={{
@@ -762,7 +765,7 @@ useEffect(() => {
       borderRadius: 999,
       backgroundColor: "rgba(17,24,39,0.92)",
       ...(Platform.OS === "web"
-        ? ({ boxShadow: "0px 10px 18px rgba(0,0,0,0.18)" } as any)
+        ? ({ boxShadow: "0px 10px 18px rgba(0,0,0,0.18)" } as const)
         : {
             shadowColor: "#000",
             shadowOffset: { width: 0, height: 10 },
@@ -773,15 +776,15 @@ useEffect(() => {
     }}
   >
     <Text style={{ color: "#fff", fontWeight: "800" }}>
-      Заполните поля — расчёт автоматически
+      Заполните поля - расчет автоматически
     </Text>
   </View>
 </Animated.View>
 
 
-          {/* BODY: контент (KAV) + footer (вне KAV, всегда внизу) */}
+          {/* BODY: РєРѕРЅС‚РµРЅС‚ (KAV) + footer (РІРЅРµ KAV, РІСЃРµРіРґР° РІРЅРёР·Сѓ) */}
           <View style={{ flex: 1 }}>
-            {/* ✅ KAV только для контента */}
+            {/* вњ… KAV С‚РѕР»СЊРєРѕ РґР»СЏ РєРѕРЅС‚РµРЅС‚Р° */}
             <KeyboardAvoidingView
               style={{ flex: 1 }}
               behavior={Platform.OS === "ios" ? "padding" : undefined}
@@ -798,7 +801,7 @@ useEffect(() => {
                 keyboardShouldPersistTaps="handled"
                 keyboardDismissMode={Platform.OS === "ios" ? "interactive" : "on-drag"}
               >
-                {/* ✅ STICKY HEADER (workType + hint) */}
+                {/* вњ… STICKY HEADER (workType + hint) */}
                 <View
                   style={{
                     backgroundColor: "#fff",
@@ -808,7 +811,7 @@ useEffect(() => {
                     borderBottomWidth: 1,
                     borderBottomColor: "#E5E7EB",
                     zIndex: 20,
-                    ...(SHADOW_STICKY as any),
+                    ...(SHADOW_STICKY as object),
                   }}
                 >
                   <View style={{ paddingHorizontal: 16 }}>
@@ -849,7 +852,7 @@ useEffect(() => {
                             </Text>
                             <TextInput
                               keyboardType="numeric"
-                              placeholder="Обычно 5–10%"
+                              placeholder="Обычно 5-10%"
                               placeholderTextColor="#94A3B8"
                               value={lossPct}
                               onChangeText={handleLossChange}
@@ -909,7 +912,7 @@ useEffect(() => {
                         }}
                       >
                         <Text style={{ fontWeight: "900", color: "#111827" }}>
-                          {fieldsCollapsed ? "Поля ▼" : "Поля ▲"}
+                          {fieldsCollapsed ? "Поля ▾" : "Поля ▴"}
                         </Text>
                       </Pressable>
                     </View>
@@ -960,7 +963,7 @@ useEffect(() => {
                                     </Text>
                                   </View>
 
-                                  {Number.isFinite(r.suggested_qty as any) ? (
+                                  {Number.isFinite(r.suggested_qty as number) ? (
                                     <Text style={{ color: "#374151", marginTop: 4 }}>
                                       К выдаче:{" "}
                                       <Text style={{ fontWeight: "900" }}>
@@ -981,7 +984,7 @@ useEffect(() => {
                                     backgroundColor: "#f3f4f6",
                                   }}
                                 >
-                                  <Text style={{ fontWeight: "900" }}>–</Text>
+                                  <Text style={{ fontWeight: "900" }}>-</Text>
                                 </Pressable>
 
                                 <Pressable
@@ -1010,7 +1013,7 @@ useEffect(() => {
                                   }}
                                 >
                                   <Text style={{ color: "#fff", fontSize: 22, fontWeight: "900", lineHeight: 22 }}>
-                                    ✕
+                                    ×
                                   </Text>
                                 </Pressable>
                               </View>
@@ -1026,7 +1029,7 @@ useEffect(() => {
               </ScrollView>
             </KeyboardAvoidingView>
 
-            {/* ✅ FOOTER ВНЕ KAV: никогда не уезжает в середину */}
+            {/* вњ… FOOTER Р’РќР• KAV: РЅРёРєРѕРіРґР° РЅРµ СѓРµР·Р¶Р°РµС‚ РІ СЃРµСЂРµРґРёРЅСѓ */}
             <View
               style={{
                 paddingHorizontal: 16,
@@ -1046,7 +1049,7 @@ useEffect(() => {
                   backgroundColor: "rgba(255,255,255,0.96)",
                   borderWidth: 1,
                   borderColor: "rgba(0,0,0,0.06)",
-                  ...(SHADOW_CARD as any),
+                  ...(SHADOW_CARD as object),
                 }}
               >
                 <IconSquareButton
@@ -1128,7 +1131,7 @@ useEffect(() => {
                 }}
               >
                 <ActivityIndicator size="large" />
-                <Text style={{ marginTop: 10, fontWeight: "900", color: "#111827" }}>Идёт расчёт…</Text>
+                <Text style={{ marginTop: 10, fontWeight: "900", color: "#111827" }}>Идет расчет...</Text>
               </View>
             )}
           </View>
@@ -1137,3 +1140,7 @@ useEffect(() => {
     </Modal>
   );
 }
+
+
+
+

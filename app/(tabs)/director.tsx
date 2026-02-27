@@ -21,6 +21,7 @@ import {
   parseMid,
 } from "../../src/screens/director/director.finance";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useIsFocused } from "@react-navigation/native";
 
 import PeriodPickerSheet from "../../src/components/PeriodPickerSheet";
 
@@ -61,6 +62,7 @@ import DirectorSheetModal from "../../src/screens/director/DirectorSheetModal";
 export default function DirectorScreen() {
   const busy = useGlobalBusy();
   const insets = useSafeAreaInsets();
+  const isScreenFocused = useIsFocused();
   const [tab, setTab] = useState<Tab>('foreman');
 
   const [dirTab, setDirTab] = useState<DirTopTab>("Заявки");
@@ -108,7 +110,6 @@ export default function DirectorScreen() {
     setRepPeriodOpen,
     setRepObjOpen,
     fetchReport,
-    fetchReportOptions,
     applyObjectFilter,
     applyReportPeriod,
     clearReportPeriod,
@@ -385,10 +386,10 @@ export default function DirectorScreen() {
     finTo,
     repFrom,
     repTo,
+    isScreenFocused,
     fetchRows,
     fetchProps,
     fetchFinance,
-    fetchReportOptions,
     fetchReport,
     showRtToast,
   });

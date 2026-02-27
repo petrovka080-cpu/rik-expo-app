@@ -1,6 +1,5 @@
-// src/screens/director/DirectorFinanceSpendModal.tsx
-import React from "react";
-import { View, Text, Pressable } from "react-native";
+﻿import React from "react";
+import { Pressable, Text, View } from "react-native";
 import { UI, s } from "./director.styles";
 import { nnum } from "./director.finance";
 
@@ -8,31 +7,31 @@ type SpendRow = {
   proposal_id?: string | null;
   proposal_no?: string | null;
   pretty?: string | null;
-
   supplier?: string | null;
   kind_code?: string | null;
   kind_name?: string | null;
+  approved_alloc?: unknown;
+  paid_alloc_cap?: unknown;
+  overpay_alloc?: unknown;
+};
 
-  approved_alloc?: any;
-  paid_alloc_cap?: any;
-  overpay_alloc?: any;
+type KindSupplierRow = {
+  supplier: string;
+  approved: number;
+  paid: number;
+  overpay: number;
+  count: number;
 };
 
 type Props = {
-  // ⚠️ оставляем в типе, чтобы не ломать вызовы, но внутри это уже не модалка
   visible?: boolean;
   onClose?: () => void;
-
-  // ✅ клик по переплате/строке → открыть модалку поставщика (делается в родителе)
   onOpenSupplier?: (supplierName: string) => void;
-
   periodShort?: string;
   loading: boolean;
-
   onOpenPeriod?: () => void;
   onRefresh?: () => void;
   onPdf?: () => void;
-
   sum:
     | {
         approved: number;
@@ -44,11 +43,9 @@ type Props = {
       }
     | null
     | undefined;
-
   spendRows: SpendRow[];
   money: (v: number) => string;
-
-  onOpenKind?: (kindName: string, list: any[]) => void;
+  onOpenKind?: (kindName: string, list: KindSupplierRow[]) => void;
 };
 
 export default function DirectorFinanceSpendModal(p: Props) {
@@ -65,7 +62,6 @@ export default function DirectorFinanceSpendModal(p: Props) {
     let paid = 0;
     let overpay = 0;
 
-    // "к оплате" по предложениям (чтобы не задваивалось)
     const byProposal = new Map<string, { approved: number; paid: number }>();
 
     for (const r of rows) {
@@ -123,15 +119,12 @@ export default function DirectorFinanceSpendModal(p: Props) {
   }, [rows]);
 
   const suppliersByKind = React.useMemo(() => {
-    const res: Record<
-      string,
-      { supplier: string; approved: number; paid: number; overpay: number; count: number }[]
-    > = {};
-    const maps: Record<string, Map<string, { approved: number; paid: number; overpay: number; count: number }>> = {};
+    const res: Record<string, KindSupplierRow[]> = {};
+    const maps: Record<string, Map<string, Omit<KindSupplierRow, "supplier">>> = {};
 
     for (const r of rows) {
       const kind = String(r?.kind_name ?? "Другое");
-      const supplier = String(r?.supplier ?? "—").trim() || "—";
+      const supplier = String(r?.supplier ?? "-").trim() || "-";
 
       const approved = nnum(r?.approved_alloc);
       const paid = nnum(r?.paid_alloc_cap);
@@ -147,13 +140,7 @@ export default function DirectorFinanceSpendModal(p: Props) {
     }
 
     for (const kind of Object.keys(maps)) {
-      const arr = Array.from(maps[kind].entries()).map(([supplier, v]) => ({
-        supplier,
-        approved: v.approved,
-        paid: v.paid,
-        overpay: v.overpay,
-        count: v.count,
-      }));
+      const arr = Array.from(maps[kind].entries()).map(([supplier, v]) => ({ supplier, ...v }));
       arr.sort((a, b) => b.approved - a.approved);
       res[kind] = arr;
     }
@@ -169,15 +156,14 @@ export default function DirectorFinanceSpendModal(p: Props) {
 
   const anyOverpay = overpayTotal > 0;
 
-  // ✅ PROD: переплаты открываем как "вид" (без вложенной modal)
   const openOverpayAsKind = React.useCallback(() => {
-    const map = new Map<string, { supplier: string; approved: number; paid: number; overpay: number; count: number }>();
+    const map = new Map<string, KindSupplierRow>();
 
     for (const r of rows) {
       const overpay = nnum(r?.overpay_alloc);
       if (overpay <= 0) continue;
 
-      const supplier = String(r?.supplier ?? "—").trim() || "—";
+      const supplier = String(r?.supplier ?? "-").trim() || "-";
       const cur = map.get(supplier) ?? { supplier, approved: 0, paid: 0, overpay: 0, count: 0 };
       cur.overpay += overpay;
       cur.count += 1;
@@ -191,27 +177,25 @@ export default function DirectorFinanceSpendModal(p: Props) {
   return (
     <View style={{ flexDirection: "column", alignItems: "stretch" }}>
       <Text style={{ color: UI.text, fontWeight: "900" }}>
-        Утверждено: <Text style={{ color: UI.sub }}>{p.loading ? "…" : p.money(spendHeader.approved)}</Text>
+        Утверждено: <Text style={{ color: UI.sub }}>{p.loading ? "..." : p.money(spendHeader.approved)}</Text>
       </Text>
 
       <Text style={{ color: UI.text, fontWeight: "900", marginTop: 8 }}>
-        Оплачено: <Text style={{ color: UI.sub }}>{p.loading ? "…" : p.money(spendHeader.paid)}</Text>
+        Оплачено: <Text style={{ color: UI.sub }}>{p.loading ? "..." : p.money(spendHeader.paid)}</Text>
       </Text>
 
       <Text style={{ color: UI.text, fontWeight: "900", marginTop: 8 }}>
-        К оплате: <Text style={{ color: UI.sub }}>{p.loading ? "…" : p.money(spendHeader.toPay)}</Text>
+        К оплате: <Text style={{ color: UI.sub }}>{p.loading ? "..." : p.money(spendHeader.toPay)}</Text>
       </Text>
 
       {spendHeader.overpay > 0 ? (
         <Pressable onPress={openOverpayAsKind} hitSlop={12}>
           <Text style={{ color: "#F59E0B", fontWeight: "900", marginTop: 8 }}>
-            ⚠️ Переплата/аванс:{" "}
-            <Text style={{ color: UI.sub }}>{p.loading ? "…" : p.money(spendHeader.overpay)}</Text>
+            Переплата/аванс: <Text style={{ color: UI.sub }}>{p.loading ? "..." : p.money(spendHeader.overpay)}</Text>
           </Text>
         </Pressable>
       ) : null}
 
-      {/* Заголовок видов */}
       <Pressable
         onPress={() => setKindsOpen((v) => !v)}
         hitSlop={10}
@@ -236,12 +220,9 @@ export default function DirectorFinanceSpendModal(p: Props) {
           </Text>
         </View>
 
-        <Text style={{ color: UI.sub, fontWeight: "900", fontSize: 16, marginLeft: 10 }}>
-          {kindsOpen ? "▴" : "▾"}
-        </Text>
+        <Text style={{ color: UI.sub, fontWeight: "900", fontSize: 16, marginLeft: 10 }}>{kindsOpen ? "▴" : "▾"}</Text>
       </Pressable>
 
-      {/* Виды */}
       {kindsOpen ? (
         <View style={{ marginTop: 10 }}>
           {!kindTotals.length ? (
@@ -267,10 +248,7 @@ export default function DirectorFinanceSpendModal(p: Props) {
                     },
                   ]}
                 >
-                  <Text
-                    style={{ color: UI.text, fontWeight: "900", textAlign: "left", alignSelf: "flex-start" }}
-                    numberOfLines={1}
-                  >
+                  <Text style={{ color: UI.text, fontWeight: "900", textAlign: "left", alignSelf: "flex-start" }} numberOfLines={1}>
                     {x.kind}
                   </Text>
 
@@ -289,27 +267,25 @@ export default function DirectorFinanceSpendModal(p: Props) {
         </View>
       ) : null}
 
-      {/* Переплаты — кнопка как “вид”, без второй модалки */}
       {anyOverpay ? (
-  <Pressable
-    onPress={openOverpayAsKind}
-    hitSlop={12}
-    style={[
-      s.mobCard,
-      {
-        marginTop: 10,
-        paddingVertical: 10,
-        paddingHorizontal: 12,
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "space-between",
-      },
-    ]}
-  >
-
+        <Pressable
+          onPress={openOverpayAsKind}
+          hitSlop={12}
+          style={[
+            s.mobCard,
+            {
+              marginTop: 10,
+              paddingVertical: 10,
+              paddingHorizontal: 12,
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "space-between",
+            },
+          ]}
+        >
           <View style={{ flex: 1, minWidth: 0 }}>
             <Text style={{ color: "#F59E0B", fontWeight: "900", fontSize: 14 }} numberOfLines={1}>
-              ⚠️ Переплаты / авансы
+              Переплаты / авансы
             </Text>
             <Text style={{ color: UI.sub, fontWeight: "800", fontSize: 12 }} numberOfLines={1}>
               Всего: {p.money(overpayTotal)}

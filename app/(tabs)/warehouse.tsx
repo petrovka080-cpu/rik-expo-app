@@ -82,8 +82,8 @@ import {
 const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
 
 const ORG_NAME = "";
+const REPORTS_CACHE_TTL_MS = 60 * 1000;
 export default function Warehouse() {
-  const REPORTS_CACHE_TTL_MS = 60 * 1000;
   const busy = useGlobalBusy();
   const insets = useSafeAreaInsets();
   const notifyInfo = useCallback((title: string, message?: string) => {

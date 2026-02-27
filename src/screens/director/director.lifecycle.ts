@@ -1,6 +1,7 @@
-import { useEffect, useRef } from "react";
+﻿import { useEffect, useRef } from "react";
 import { AppState } from "react-native";
 import { ensureSignedIn, supabase } from "../../lib/supabaseClient";
+import { logError } from "../../lib/logError";
 
 type Deps = {
   dirTab: string;
@@ -8,10 +9,10 @@ type Deps = {
   finTo: string | null;
   repFrom: string | null;
   repTo: string | null;
+  isScreenFocused: boolean;
   fetchRows: () => Promise<void>;
   fetchProps: () => Promise<void>;
   fetchFinance: () => Promise<void>;
-  fetchReportOptions: () => Promise<void>;
   fetchReport: () => Promise<void>;
   showRtToast: (title?: string, body?: string) => void;
 };
@@ -22,10 +23,10 @@ export function useDirectorLifecycle({
   finTo,
   repFrom,
   repTo,
+  isScreenFocused,
   fetchRows,
   fetchProps,
   fetchFinance,
-  fetchReportOptions,
   fetchReport,
   showRtToast,
 }: Deps) {
@@ -33,22 +34,26 @@ export function useDirectorLifecycle({
   const lastInitedTabRef = useRef<string | null>(null);
   const lastInitedPeriodRef = useRef<string>("");
   const appStateRef = useRef(AppState.currentState);
+  const rtChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
 
   useEffect(() => {
-    if (didInit.current) return;
+    if (didInit.current || !isScreenFocused) return;
     didInit.current = true;
+
     (async () => {
       try {
         await ensureSignedIn();
         void fetchRows();
         void fetchProps();
       } catch (e) {
-        console.warn("[Director] ensureSignedIn:", (e as any)?.message || e);
+        logError("director.lifecycle.ensureSignedIn", e);
       }
     })();
-  }, [fetchRows, fetchProps]);
+  }, [isScreenFocused, fetchRows, fetchProps]);
 
   useEffect(() => {
+    if (!isScreenFocused) return;
+
     const periodKey = `${finFrom}-${finTo}-${repFrom}-${repTo}`;
     const tabKey = dirTab;
 
@@ -62,9 +67,11 @@ export function useDirectorLifecycle({
     } else if (tabKey === "Отчёты") {
       void fetchReport();
     }
-  }, [dirTab, finFrom, finTo, repFrom, repTo, fetchFinance, fetchReportOptions, fetchReport]);
+  }, [isScreenFocused, dirTab, finFrom, finTo, repFrom, repTo, fetchFinance, fetchReport]);
 
   useEffect(() => {
+    if (!isScreenFocused) return;
+
     const sub = AppState.addEventListener("change", (nextState) => {
       const prev = appStateRef.current;
       appStateRef.current = nextState;
@@ -80,16 +87,30 @@ export function useDirectorLifecycle({
         void fetchReport();
       }
     });
+
     return () => {
       try {
         sub.remove();
-      } catch {}
+      } catch {
+        // no-op
+      }
     };
-  }, [dirTab, fetchRows, fetchProps, fetchFinance, fetchReportOptions, fetchReport]);
+  }, [isScreenFocused, dirTab, fetchRows, fetchProps, fetchFinance, fetchReport]);
 
   useEffect(() => {
+    try {
+      if (rtChannelRef.current) {
+        supabase.removeChannel(rtChannelRef.current);
+        rtChannelRef.current = null;
+      }
+    } catch {
+      // no-op
+    }
+
+    if (!isScreenFocused) return;
+
     const ch = supabase
-      .channel("notif-director-rt")
+      .channel(`notif-director-rt:${Date.now()}`)
       .on(
         "postgres_changes",
         {
@@ -98,22 +119,29 @@ export function useDirectorLifecycle({
           table: "notifications",
           filter: "role=eq.director",
         },
-        (payload: any) => {
-          const n = payload?.new || {};
+        (payload) => {
+          const next = payload.new;
+          const n = next && typeof next === "object" ? (next as { title?: string; body?: string }) : {};
           showRtToast(n.title, n.body);
           void fetchRows();
           void fetchProps();
         },
       )
       .subscribe();
+    rtChannelRef.current = ch;
 
     return () => {
       try {
         ch.unsubscribe();
-      } catch {}
+      } catch {
+        // no-op
+      }
       try {
         supabase.removeChannel(ch);
-      } catch {}
+      } catch {
+        // no-op
+      }
+      if (rtChannelRef.current === ch) rtChannelRef.current = null;
     };
-  }, [fetchRows, fetchProps, showRtToast]);
+  }, [isScreenFocused, fetchRows, fetchProps, showRtToast]);
 }

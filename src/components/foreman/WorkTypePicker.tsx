@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+﻿import React, { useEffect, useMemo, useState } from 'react';
 import {
   Modal,
   View,
@@ -26,7 +26,29 @@ type Row = {
   family_sort: number;
 };
 
+type FamilyRow = {
+  family_code: string;
+  family_short_name_ru: string;
+  family_sort: number;
+  count: number;
+};
+
 const sanitize = (v: unknown) => (v == null ? '' : String(v).trim());
+const asRecord = (v: unknown): Record<string, unknown> =>
+  v && typeof v === 'object' ? (v as Record<string, unknown>) : {};
+
+const toRow = (v: unknown): Row | null => {
+  const r = asRecord(v);
+  const code = sanitize(r.code);
+  if (!code) return null;
+  return {
+    code,
+    work_name_ru: sanitize(r.work_name_ru),
+    family_code: sanitize(r.family_code) || 'other',
+    family_short_name_ru: sanitize(r.family_short_name_ru) || 'Прочее',
+    family_sort: Number(r.family_sort ?? 999),
+  };
+};
 
 export default function WorkTypePicker({ visible, onClose, onSelect }: Props) {
   const [query, setQuery] = useState('');
@@ -34,8 +56,7 @@ export default function WorkTypePicker({ visible, onClose, onSelect }: Props) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // ✅ 2-уровневый UI:
-  // null = экран семейств, иначе экран конкретного семейства
+  // 2-level UI: null = family list, otherwise selected family details.
   const [selectedFamily, setSelectedFamily] = useState<string | null>(null);
 
   useEffect(() => {
@@ -57,25 +78,18 @@ export default function WorkTypePicker({ visible, onClose, onSelect }: Props) {
 
         if (fetchError) throw fetchError;
 
-        const list: Row[] = Array.isArray(data)
-          ? (data as any[]).map((r) => ({
-              code: sanitize(r.code),
-              work_name_ru: sanitize(r.work_name_ru),
-              family_code: sanitize(r.family_code) || 'other',
-              family_short_name_ru: sanitize(r.family_short_name_ru) || 'Прочее',
-              family_sort: Number(r.family_sort ?? 999),
-            }))
+        const list = Array.isArray(data)
+          ? data.map(toRow).filter((r): r is Row => !!r)
           : [];
 
-        // dedupe по code
+        // Dedupe by code.
         const deduped = new Map<string, Row>();
         list.forEach((r) => {
-          if (!r.code) return;
           if (!deduped.has(r.code)) deduped.set(r.code, r);
         });
 
         setRows(Array.from(deduped.values()));
-      } catch (e: any) {
+      } catch (e) {
         console.error('[WorkTypePicker]', e);
         setRows([]);
         setError('Не удалось получить список работ');
@@ -97,22 +111,20 @@ export default function WorkTypePicker({ visible, onClose, onSelect }: Props) {
   }, [rows, query]);
 
   const families = useMemo(() => {
-    const map = new Map<
-      string,
-      { family_code: string; family_short_name_ru: string; family_sort: number; count: number }
-    >();
+    const map = new Map<string, FamilyRow>();
 
     filtered.forEach((r) => {
       const key = r.family_code || 'other';
       const cur = map.get(key);
       if (cur) cur.count += 1;
-      else
+      else {
         map.set(key, {
           family_code: key,
           family_short_name_ru: r.family_short_name_ru,
           family_sort: r.family_sort,
           count: 1,
         });
+      }
     });
 
     return Array.from(map.values()).sort(
@@ -137,32 +149,29 @@ export default function WorkTypePicker({ visible, onClose, onSelect }: Props) {
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       <View
-  style={{
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.35)',
-    justifyContent: 'flex-end', // ✅ снизу как sheet
-    paddingTop: 10,
-    paddingHorizontal: 0,
-    paddingBottom: 0,
-  }}
->
-<View
-  style={{
-    backgroundColor: '#fff',
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    borderBottomLeftRadius: 0,
-    borderBottomRightRadius: 0,
-    padding: 16,
-
-    height: '96%',        // ✅ почти весь экран
-    width: '100%',
-    maxWidth: Platform.OS === 'web' ? 900 : undefined,
-alignSelf: Platform.OS === 'web' ? 'center' : undefined,
-
-  }}
->
-          {/* HEADER */}
+        style={{
+          flex: 1,
+          backgroundColor: 'rgba(0,0,0,0.35)',
+          justifyContent: 'flex-end',
+          paddingTop: 10,
+          paddingHorizontal: 0,
+          paddingBottom: 0,
+        }}
+      >
+        <View
+          style={{
+            backgroundColor: '#fff',
+            borderTopLeftRadius: 24,
+            borderTopRightRadius: 24,
+            borderBottomLeftRadius: 0,
+            borderBottomRightRadius: 0,
+            padding: 16,
+            height: '96%',
+            width: '100%',
+            maxWidth: Platform.OS === 'web' ? 900 : undefined,
+            alignSelf: Platform.OS === 'web' ? 'center' : undefined,
+          }}
+        >
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
             <View style={{ flex: 1, paddingRight: 10 }}>
               <Text style={{ fontSize: 26, fontWeight: '900' }}>
@@ -175,7 +184,6 @@ alignSelf: Platform.OS === 'web' ? 'center' : undefined,
               </Text>
             </View>
 
-            {/* справа: закрыть */}
             <Pressable
               onPress={() => {
                 Keyboard.dismiss();
@@ -192,7 +200,6 @@ alignSelf: Platform.OS === 'web' ? 'center' : undefined,
             </Pressable>
           </View>
 
-          {/* SEARCH */}
           <View style={{ marginTop: 12 }}>
             <TextInput
               placeholder="Поиск по названию или коду (WT-...)"
@@ -211,13 +218,12 @@ alignSelf: Platform.OS === 'web' ? 'center' : undefined,
             />
           </View>
 
-          {/* BODY */}
           <View style={{ flex: 1, marginTop: 14 }}>
             {loading ? (
               <View style={{ paddingVertical: 24, alignItems: 'center' }}>
                 <ActivityIndicator size="large" />
                 <Text style={{ marginTop: 10, color: '#6b7280', fontWeight: '700' }}>
-                  Загружаем виды работ…
+                  Загружаем виды работ...
                 </Text>
               </View>
             ) : (selectedFamily ? listInside.length === 0 : families.length === 0) ? (
@@ -228,7 +234,6 @@ alignSelf: Platform.OS === 'web' ? 'center' : undefined,
               </View>
             ) : selectedFamily ? (
               <>
-                {/* BACK */}
                 <View style={{ flexDirection: 'row', justifyContent: 'flex-start', marginBottom: 10 }}>
                   <Pressable
                     onPress={() => {
@@ -242,11 +247,10 @@ alignSelf: Platform.OS === 'web' ? 'center' : undefined,
                       backgroundColor: '#111827',
                     }}
                   >
-                    <Text style={{ color: '#fff', fontWeight: '900' }}>← Назад</Text>
+                    <Text style={{ color: '#fff', fontWeight: '900' }}>Назад</Text>
                   </Pressable>
                 </View>
 
-                {/* LIST OF WORK TYPES */}
                 <ScrollView
                   style={{ flex: 1 }}
                   contentContainerStyle={{ paddingBottom: 12 }}
@@ -278,36 +282,33 @@ alignSelf: Platform.OS === 'web' ? 'center' : undefined,
                 </ScrollView>
               </>
             ) : (
-              <>
-                {/* FAMILY CHIPS (только они на первом экране) */}
-                <ScrollView
-                  style={{ flex: 1 }}
-                  contentContainerStyle={{ flexDirection: 'row', flexWrap: 'wrap', paddingBottom: 12 }}
-                  keyboardShouldPersistTaps="handled"
-                >
-                  {families.map((f) => (
-                    <Pressable
-                      key={f.family_code}
-                      onPress={() => {
-                        Keyboard.dismiss();
-                        setSelectedFamily(f.family_code);
-                      }}
-                      style={{
-                        paddingHorizontal: 16,
-                        paddingVertical: 12,
-                        borderRadius: 999,
-                        marginRight: 10,
-                        marginBottom: 10,
-                        backgroundColor: '#f3f4f6',
-                      }}
-                    >
-                      <Text style={{ color: '#111827', fontWeight: '900', fontSize: 16 }}>
-                        {f.family_short_name_ru} {f.count}
-                      </Text>
-                    </Pressable>
-                  ))}
-                </ScrollView>
-              </>
+              <ScrollView
+                style={{ flex: 1 }}
+                contentContainerStyle={{ flexDirection: 'row', flexWrap: 'wrap', paddingBottom: 12 }}
+                keyboardShouldPersistTaps="handled"
+              >
+                {families.map((f) => (
+                  <Pressable
+                    key={f.family_code}
+                    onPress={() => {
+                      Keyboard.dismiss();
+                      setSelectedFamily(f.family_code);
+                    }}
+                    style={{
+                      paddingHorizontal: 16,
+                      paddingVertical: 12,
+                      borderRadius: 999,
+                      marginRight: 10,
+                      marginBottom: 10,
+                      backgroundColor: '#f3f4f6',
+                    }}
+                  >
+                    <Text style={{ color: '#111827', fontWeight: '900', fontSize: 16 }}>
+                      {f.family_short_name_ru} {f.count}
+                    </Text>
+                  </Pressable>
+                ))}
+              </ScrollView>
             )}
           </View>
         </View>
