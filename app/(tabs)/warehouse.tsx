@@ -83,6 +83,7 @@ const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
 
 const ORG_NAME = "";
 export default function Warehouse() {
+  const REPORTS_CACHE_TTL_MS = 60 * 1000;
   const busy = useGlobalBusy();
   const insets = useSafeAreaInsets();
   const notifyInfo = useCallback((title: string, message?: string) => {
@@ -261,6 +262,11 @@ export default function Warehouse() {
   const [repMov, setRepMov] = useState<any[]>([]);
   const [repIssues, setRepIssues] = useState<any[]>([]);
   const [repIncoming, setRepIncoming] = useState<any[]>([]);
+  const reportsReqSeqRef = useRef(0);
+  const reportsInFlightRef = useRef<Map<string, Promise<void>>>(new Map());
+  const reportsCacheRef = useRef<
+    Map<string, { ts: number; repStock: any[]; repMov: any[]; repIssues: any[]; repIncoming: any[] }>
+  >(new Map());
 
   const [issueLinesById, setIssueLinesById] = useState<Record<string, any[]>>({});
   const [issueLinesLoadingId, setIssueLinesLoadingId] = useState<number | null>(null);
@@ -382,14 +388,48 @@ export default function Warehouse() {
   const fetchReports = useCallback(async (opts?: { from?: string; to?: string }) => {
     const from = String(opts?.from ?? periodFrom ?? "").trim();
     const to = String(opts?.to ?? periodTo ?? "").trim();
-    const [r, inc] = await Promise.all([
-      apiFetchReports(supabase as any, from, to),
-      apiFetchIncomingReports(supabase as any, { from, to }),
-    ]);
-    setRepStock(r.repStock as any);
-    setRepMov(r.repMov as any);
-    setRepIssues(r.repIssues as any);
-    setRepIncoming(inc);
+    const key = `${from}|${to}`;
+    const hit = reportsCacheRef.current.get(key);
+    if (hit && Date.now() - hit.ts <= REPORTS_CACHE_TTL_MS) {
+      setRepStock(hit.repStock as any);
+      setRepMov(hit.repMov as any);
+      setRepIssues(hit.repIssues as any);
+      setRepIncoming(hit.repIncoming as any);
+      return;
+    }
+
+    const inFlight = reportsInFlightRef.current.get(key);
+    if (inFlight) {
+      await inFlight;
+      return;
+    }
+
+    const reqId = ++reportsReqSeqRef.current;
+    const task = (async () => {
+      const [r, inc] = await Promise.all([
+        apiFetchReports(supabase as any, from, to),
+        apiFetchIncomingReports(supabase as any, { from, to }),
+      ]);
+      if (reqId !== reportsReqSeqRef.current) return;
+
+      const next = {
+        ts: Date.now(),
+        repStock: (r.repStock as any[]) || [],
+        repMov: (r.repMov as any[]) || [],
+        repIssues: (r.repIssues as any[]) || [],
+        repIncoming: (inc as any[]) || [],
+      };
+      reportsCacheRef.current.set(key, next);
+      setRepStock(next.repStock as any);
+      setRepMov(next.repMov as any);
+      setRepIssues(next.repIssues as any);
+      setRepIncoming(next.repIncoming as any);
+    })().finally(() => {
+      reportsInFlightRef.current.delete(key);
+    });
+
+    reportsInFlightRef.current.set(key, task);
+    await task;
   }, [periodFrom, periodTo]);
   // ── Scope & Picker (extracted) ──
   const scope = useWarehouseScope();
