@@ -24,6 +24,8 @@ export default function DirectorFinanceCardModal({
   title,
   periodShort,
   loading,
+  loadingMessage = "Готовим файл...",
+  showBlockingLoader = true,
 
   onOpenPeriod,
   onRefresh,
@@ -38,6 +40,8 @@ export default function DirectorFinanceCardModal({
   title: string;
   periodShort: string;
   loading?: boolean;
+  loadingMessage?: string;
+  showBlockingLoader?: boolean;
 
   onOpenPeriod: () => void;
   onRefresh: () => void;
@@ -201,7 +205,7 @@ export default function DirectorFinanceCardModal({
                 paddingBottom: Math.max(insets.bottom || 0, 16) + 16,
               }}
             >
-              {loading && (
+              {loading && showBlockingLoader && (
                 <View
                   style={{
                     ...StyleSheet.absoluteFillObject,
@@ -225,7 +229,7 @@ export default function DirectorFinanceCardModal({
                   }}>
                     <ActivityIndicator size="large" color={UI.text} />
                     <Text style={{ color: UI.text, fontWeight: "800", fontSize: 13 }}>
-                      Готовим файл...
+                      {loadingMessage}
                     </Text>
                   </View>
                 </View>

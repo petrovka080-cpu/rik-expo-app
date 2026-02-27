@@ -2,6 +2,7 @@
 import React from "react";
 import { View, Text, Pressable } from "react-native";
 import { UI, s } from "./director.styles";
+import { nnum } from "./director.finance";
 
 type SpendRow = {
   proposal_id?: string | null;
@@ -48,11 +49,6 @@ type Props = {
   money: (v: number) => string;
 
   onOpenKind?: (kindName: string, list: any[]) => void;
-};
-
-const nnum = (v: any): number => {
-  const n = Number(v ?? 0);
-  return Number.isFinite(n) ? n : 0;
 };
 
 export default function DirectorFinanceSpendModal(p: Props) {
@@ -326,4 +322,3 @@ export default function DirectorFinanceSpendModal(p: Props) {
     </View>
   );
 }
-

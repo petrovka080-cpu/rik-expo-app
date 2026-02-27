@@ -25,3 +25,25 @@ export const fmtDateOnly = (iso?: string | null) => {
     return "—";
   }
 };
+
+export const pickIso10 = (...vals: any[]) => {
+  for (const v of vals) {
+    const s = String(v ?? "").trim();
+    if (!s) continue;
+    return s.slice(0, 10);
+  }
+  return null;
+};
+
+export const makeIsoInPeriod = (fromIso?: string | null, toIso?: string | null) => {
+  const from = String(fromIso ?? "").slice(0, 10);
+  const to = String(toIso ?? "").slice(0, 10);
+
+  return (iso: any) => {
+    const d = String(iso ?? "").slice(0, 10);
+    if (!d) return true;
+    if (from && d < from) return false;
+    if (to && d > to) return false;
+    return true;
+  };
+};

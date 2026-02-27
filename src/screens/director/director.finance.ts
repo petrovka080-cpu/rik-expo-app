@@ -125,6 +125,24 @@ const pickIso10 = (...vals: any[]) => {
   return null;
 };
 
+export const pickApprovedIso = (r: any) =>
+  pickIso10(
+    r?.approvedAtIso,
+    r?.director_approved_at,
+    r?.approved_at,
+    r?.approvedAt,
+    r?.approved_at_iso
+  );
+
+export const pickInvoiceIso = (r: any) =>
+  pickIso10(r?.invoiceDate, r?.invoice_date, r?.invoiceIso, r?.invoice_at, r?.created_at, r?.raw?.created_at);
+
+export const pickFinanceAmount = (r: any) =>
+  nnum(r?.amount ?? r?.invoice_amount ?? r?.invoiceAmount ?? r?.approved_amount ?? 0);
+
+export const pickFinancePaid = (r: any) =>
+  nnum(r?.paidAmount ?? r?.total_paid ?? r?.totalPaid ?? r?.paid_amount ?? 0);
+
 export const mapToFinanceRow = (r: any): FinanceRow => {
   // ============================== MAYAK: NORMALIZE RPC/SQL WRAPPERS ==============================
   const src =

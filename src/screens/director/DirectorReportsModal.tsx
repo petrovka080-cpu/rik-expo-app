@@ -1,0 +1,301 @@
+import React from "react";
+import { Alert, Pressable, ScrollView, Text, View } from "react-native";
+import RNModal from "react-native-modal";
+import PeriodPickerSheet from "../../components/PeriodPickerSheet";
+import DirectorFinanceCardModal from "./DirectorFinanceCardModal";
+import { UI, s } from "./director.styles";
+import { type RepKpi, type RepPayload, type RepRow, type RepTab, type RepWho } from "./director.types";
+
+type Props = {
+  visible: boolean;
+  onClose: () => void;
+  repData: RepPayload | null;
+  repPeriodShort: string;
+  repLoading: boolean;
+  repPeriodOpen: boolean;
+  onOpenPeriod: () => void;
+  onClosePeriod: () => void;
+  repFrom: string | null;
+  repTo: string | null;
+  onApplyPeriod: (from: string, to: string) => void;
+  onClearPeriod: () => void;
+  repObjOpen: boolean;
+  onCloseRepObj: () => void;
+  repOptObjects: string[];
+  applyObjectFilter: (name: string | null) => Promise<void>;
+  repObjectName: string | null;
+  onOpenRepObj: () => void;
+  repOptLoading: boolean;
+  repTab: RepTab;
+  setRepTab: (t: RepTab) => void;
+  onRefresh: () => Promise<void>;
+};
+
+export default function DirectorReportsModal({
+  visible,
+  onClose,
+  repData,
+  repPeriodShort,
+  repLoading,
+  repPeriodOpen,
+  onOpenPeriod,
+  onClosePeriod,
+  repFrom,
+  repTo,
+  onApplyPeriod,
+  onClearPeriod,
+  repObjOpen,
+  onCloseRepObj,
+  repOptObjects,
+  applyObjectFilter,
+  repObjectName,
+  onOpenRepObj,
+  repOptLoading,
+  repTab,
+  setRepTab,
+  onRefresh,
+}: Props) {
+  const kpi: RepKpi | null = (repData as any)?.kpi ?? null;
+  const rows: RepRow[] = Array.isArray((repData as any)?.rows) ? (repData as any).rows : [];
+  const who: RepWho[] = Array.isArray((repData as any)?.discipline_who) ? (repData as any).discipline_who : [];
+
+  const pct = (a: number, b: number) => {
+    const aa = Number(a || 0);
+    const bb = Number(b || 0);
+    if (!bb) return "0%";
+    return `${Math.round((aa / bb) * 100)}%`;
+  };
+
+  const issuesTotal = Number(kpi?.issues_total ?? 0);
+  const issuesNoObj = Number(kpi?.issues_no_obj ?? 0);
+  const itemsTotal = Number(kpi?.items_total ?? 0);
+  const itemsNoReq = Number(kpi?.items_free ?? 0);
+
+  return (
+    <DirectorFinanceCardModal
+      visible={visible}
+      onClose={onClose}
+      title="Весь период (даты)"
+      periodShort={repPeriodShort}
+      loading={repLoading}
+      onOpenPeriod={onOpenPeriod}
+      onRefresh={onRefresh}
+      onPdf={() => Alert.alert("PDF", "Позже добавим единый PDF.")}
+      overlay={
+        repPeriodOpen ? (
+          <PeriodPickerSheet
+            visible={repPeriodOpen}
+            onClose={onClosePeriod}
+            initialFrom={repFrom || ""}
+            initialTo={repTo || ""}
+            onApply={onApplyPeriod}
+            onClear={onClearPeriod}
+            ui={{
+              cardBg: UI.cardBg,
+              text: UI.text,
+              sub: UI.sub,
+              border: "rgba(255,255,255,0.14)",
+              accentBlue: "#3B82F6",
+              approve: "#22C55E",
+            }}
+          />
+        ) : repObjOpen ? (
+          <RNModal
+            isVisible={repObjOpen}
+            onBackdropPress={onCloseRepObj}
+            onBackButtonPress={onCloseRepObj}
+            backdropOpacity={0.55}
+            useNativeDriver
+            useNativeDriverForBackdrop
+            hideModalContentWhileAnimating
+            style={{ margin: 0, justifyContent: "flex-end" }}
+          >
+            <View style={s.sheet}>
+              <View style={s.sheetHandle} />
+
+              <View style={{ flexDirection: "row", justifyContent: "space-between", paddingHorizontal: 14, paddingBottom: 10 }}>
+                <Text style={{ color: UI.text, fontWeight: "900", fontSize: 16 }}>
+                  {`Объекты (${repOptObjects?.length ?? 0})`}
+                </Text>
+
+                <Pressable onPress={onCloseRepObj}>
+                  <Text style={{ color: UI.sub, fontWeight: "900" }}>Объекты</Text>
+                </Pressable>
+              </View>
+
+              <ScrollView style={{ maxHeight: 420 }} keyboardShouldPersistTaps="handled">
+                {(repOptObjects || []).map((item, i) => (
+                  <Pressable
+                    key={`${item}:${i}`}
+                    onPress={async () => {
+                      onCloseRepObj();
+                      await applyObjectFilter(item);
+                    }}
+                    style={[s.mobCard, { marginHorizontal: 12, marginBottom: 10 }]}
+                  >
+                    <Text style={{ color: UI.text, fontWeight: "900" }} numberOfLines={2}>
+                      {item}
+                    </Text>
+                  </Pressable>
+                ))}
+              </ScrollView>
+            </View>
+          </RNModal>
+        ) : null
+      }
+    >
+      <View style={{ marginBottom: 10 }}>
+        <Text style={{ color: UI.sub, fontWeight: "900", marginBottom: 6 }}>
+          Склад
+        </Text>
+
+        <View style={{ flexDirection: "row", flexWrap: "wrap" }}>
+          <Pressable
+            onPress={() => void applyObjectFilter(null)}
+            style={[s.tab, !repObjectName && s.tabActive, { marginRight: 8, marginBottom: 8 }]}
+          >
+            <Text style={{ color: !repObjectName ? UI.text : UI.sub, fontWeight: "900" }}>
+              Все
+            </Text>
+          </Pressable>
+
+          <Pressable
+            onPress={onOpenRepObj}
+            style={[s.tab, repObjectName && s.tabActive, { marginRight: 8, marginBottom: 8 }]}
+          >
+            <Text style={{ color: repObjectName ? UI.text : UI.sub, fontWeight: "900" }}>
+              {`Объекты · ${(repOptObjects?.length ?? 0)}`}
+            </Text>
+          </Pressable>
+
+          {repObjectName ? (
+            <Pressable
+              onPress={onOpenRepObj}
+              style={[s.tab, s.tabActive, { marginRight: 8, marginBottom: 8 }]}
+            >
+              <Text numberOfLines={1} style={{ color: UI.text, fontWeight: "900", maxWidth: 220 }}>
+                {repObjectName}
+              </Text>
+            </Pressable>
+          ) : null}
+
+          {repOptLoading ? (
+            <Text style={{ color: UI.sub, fontWeight: "800", marginLeft: 4, marginTop: 8 }}>•</Text>
+          ) : null}
+        </View>
+      </View>
+
+      <View style={{ marginBottom: 10 }}>
+        <View style={{ flexDirection: "row", gap: 8 }}>
+          <View style={[s.kpiPillHalf, { flex: 1 }]}>
+            <Text style={s.kpiLabel}>Документов</Text>
+            <Text style={s.kpiValue}>{repLoading ? "…" : String(issuesTotal)}</Text>
+          </View>
+
+          <View style={[s.kpiPillHalf, { flex: 1 }]}>
+            <Text style={s.kpiLabel}>Позиций</Text>
+            <Text style={s.kpiValue}>{repLoading ? "…" : String(itemsTotal)}</Text>
+          </View>
+        </View>
+
+        <View style={{ height: 8 }} />
+
+        <View style={{ flexDirection: "row", gap: 8 }}>
+          <View style={[s.kpiPillHalf, { flex: 1 }]}>
+            <Text style={s.kpiLabel}>Без объекта</Text>
+            <Text style={s.kpiValue}>
+              {repLoading ? "…" : `${issuesNoObj} · ${pct(issuesNoObj, issuesTotal)}`}
+            </Text>
+          </View>
+
+          <View style={[s.kpiPillHalf, { flex: 1 }]}>
+            <Text style={s.kpiLabel}>Без заявки</Text>
+            <Text style={s.kpiValue}>
+              {repLoading ? "…" : `${itemsNoReq} · ${pct(itemsNoReq, itemsTotal)}`}
+            </Text>
+          </View>
+        </View>
+      </View>
+
+      <View style={{ flexDirection: "row", marginBottom: 10 }}>
+        {(["materials", "discipline"] as RepTab[]).map((t) => {
+          const active = repTab === t;
+          return (
+            <Pressable
+              key={t}
+              onPress={() => setRepTab(t)}
+              style={[s.tab, active && s.tabActive, { marginRight: 8 }]}
+            >
+              <Text style={{ color: active ? UI.text : UI.sub, fontWeight: "900" }}>
+                {t === "materials" ? "Материалы" : "Дисциплина"}
+              </Text>
+            </Pressable>
+          );
+        })}
+      </View>
+
+      {repTab === "materials" ? (
+        <ScrollView keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+          {rows.map((item, idx) => {
+            const qAll = Number(item.qty_total || 0);
+            const qNoReq = Number(item.qty_free || 0);
+            const docs = Number(item.docs_cnt || 0);
+            const docsNoReq = Number(item.docs_free || 0);
+            return (
+              <View key={`${item.rik_code}:${item.uom}:${idx}`} style={[s.mobCard, { marginBottom: 10 }]}>
+                <View style={s.mobMain}>
+                  <Text style={s.mobTitle} numberOfLines={2}>
+                    {item.name_human_ru || item.rik_code}
+                  </Text>
+                  <Text style={s.mobMeta} numberOfLines={2}>
+                    {`Выдано: ${qAll} ${item.uom} · док ${docs}`}
+                    {qNoReq > 0 ? ` · без заявки: ${qNoReq} (${docsNoReq} док)` : ""}
+                  </Text>
+                </View>
+              </View>
+            );
+          })}
+          {!repLoading && rows.length === 0 ? (
+            <Text style={{ opacity: 0.7, color: UI.sub, paddingVertical: 8 }}>
+              Нет выдач за выбранный период.
+            </Text>
+          ) : null}
+        </ScrollView>
+      ) : (
+        <ScrollView keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+          {who.map((item, idx) => (
+            <View key={`${item.who}:${idx}`} style={[s.mobCard, { marginBottom: 10 }]}>
+              <View style={s.mobMain}>
+                <Text style={s.mobTitle} numberOfLines={1}>{item.who}</Text>
+                <Text style={s.mobMeta} numberOfLines={1}>
+                  {`Выдачи без заявки: ${String(item.items_cnt ?? 0)}`}
+                </Text>
+              </View>
+            </View>
+          ))}
+          {!repLoading && who.length === 0 ? (
+            <Text style={{ opacity: 0.7, color: UI.sub, paddingVertical: 8 }}>
+              Нет данных по дисциплинам за период.
+            </Text>
+          ) : null}
+        </ScrollView>
+      )}
+
+      <View style={{ marginTop: 10, flexDirection: "row", gap: 8 }}>
+        <Pressable
+          onPress={() => Alert.alert("Excel", "Позже добавим выгрузку Excel.")}
+          style={[s.openBtn, { paddingVertical: 10, paddingHorizontal: 14, backgroundColor: UI.btnNeutral }]}
+        >
+          <Text style={[s.openBtnText, { fontSize: 12 }]}>Excel</Text>
+        </Pressable>
+
+        <Pressable
+          onPress={() => void applyObjectFilter(null)}
+          style={[s.openBtn, { paddingVertical: 10, paddingHorizontal: 14, backgroundColor: "rgba(255,255,255,0.06)" }]}
+        >
+          <Text style={[s.openBtnText, { fontSize: 12 }]}>Все объекты</Text>
+        </Pressable>
+      </View>
+    </DirectorFinanceCardModal>
+  );
+}

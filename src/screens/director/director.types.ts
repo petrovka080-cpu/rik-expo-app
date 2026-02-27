@@ -56,3 +56,34 @@ export type RequestMeta = {
 };
 
 export type RtToast = { visible: boolean; title: string; body: string; count: number };
+
+export type FinPage = "home" | "debt" | "spend" | "kind" | "supplier";
+
+export type RepTab = "materials" | "discipline";
+
+export type RepRow = {
+  rik_code: string;
+  name_human_ru?: string;
+  uom: string;
+  qty_total: number;
+  docs_cnt: number;
+  qty_free: number;
+  docs_free: number;
+};
+
+export type RepWho = { who: string; items_cnt: number };
+
+export type RepKpi = {
+  issues_total: number;
+  issues_no_obj: number;
+  items_total: number;
+  items_free: number;
+};
+
+export type RepPayload = {
+  meta?: { from?: string; to?: string; object_name?: string | null };
+  kpi?: RepKpi;
+  rows?: RepRow[];
+  discipline_who?: RepWho[];
+  report_options?: { objects: string[]; objectIdByName: Record<string, string | null> };
+};

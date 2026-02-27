@@ -31,6 +31,7 @@ type DirectorReportPayload = {
   };
   rows?: DirectorReportRow[];
   discipline_who?: DirectorReportWho[];
+  report_options?: DirectorReportOptions;
 };
 
 type DirectorFactRow = {
@@ -68,16 +69,56 @@ type AccIssueLine = {
 const WITHOUT_OBJECT = "Без объекта";
 const WITHOUT_WORK = "Без вида работ";
 const DASH = "—";
+const REPORTS_TIMING = typeof __DEV__ !== "undefined" ? __DEV__ : false;
 
 const toNum = (v: any): number => {
   const n = Number(v ?? 0);
   return Number.isFinite(n) ? n : 0;
 };
 
-const normObjectName = (v: any): string => {
-  const s = String(normalizeRuText(String(v ?? ""))).trim();
+const nowMs = () => {
+  try {
+    // RN/web/Node compatibility
+    // @ts-ignore
+    return typeof performance !== "undefined" && performance.now ? performance.now() : Date.now();
+  } catch {
+    return Date.now();
+  }
+};
+
+const logTiming = (label: string, startedAt: number) => {
+  if (!REPORTS_TIMING) return;
+  const ms = Math.round(nowMs() - startedAt);
+  console.info(`[director_reports] ${label}: ${ms}ms`);
+};
+
+const buildReportOptionsFromByObjRows = (rows: any[]): DirectorReportOptions => {
+  const objectIdByName: Record<string, string | null> = {};
+  for (const r of rows || []) {
+    const name = normObjectName(r?.object_name);
+    const id = r?.object_id == null ? null : String(r.object_id);
+    if (!(name in objectIdByName)) objectIdByName[name] = id;
+    if (objectIdByName[name] == null && id) objectIdByName[name] = id;
+  }
+  const objects = Object.keys(objectIdByName).sort((a, b) => a.localeCompare(b, "ru"));
+  return { objects, objectIdByName };
+};
+
+const canonicalObjectName = (v: any): string => {
+  let s = String(normalizeRuText(String(v ?? ""))).trim();
+  if (!s) return WITHOUT_OBJECT;
+
+  // Canonical object bucket: drop diagnostic tails from free-issue notes.
+  // Example: "Адм здание · Контекст: ... · Система: ... · Зона: ..."
+  // -> "Адм здание"
+  s = s
+    .replace(/\s*(?:·|•|\|)\s*(?:Контекст|Система|Зона|Вид|Этаж|Оси)\s*:.*$/i, "")
+    .trim();
+
   return s || WITHOUT_OBJECT;
 };
+
+const normObjectName = (v: any): string => canonicalObjectName(v);
 
 const normWorkName = (v: any): string => {
   const s = String(normalizeRuText(String(v ?? ""))).trim();
@@ -94,6 +135,11 @@ const toRangeEnd = (d: string): string => {
   return x ? `${x}T23:59:59.999Z` : x;
 };
 
+const rpcDate = (d: string | null | undefined, fallback: string): string => {
+  const x = String(d ?? "").trim();
+  return x || fallback;
+};
+
 const chunk = <T,>(arr: T[], size = 500): T[][] => {
   const out: T[][] = [];
   for (let i = 0; i < arr.length; i += size) out.push(arr.slice(i, i + size));
@@ -107,6 +153,70 @@ const firstNonEmpty = (...vals: any[]): string => {
   }
   return "";
 };
+
+async function enrichObjectIdsForOptions(
+  p: { from: string; to: string },
+  base: DirectorReportOptions,
+): Promise<DirectorReportOptions> {
+  const unresolved = Object.entries(base.objectIdByName)
+    .filter(([, id]) => id == null)
+    .map(([name]) => name);
+  if (!unresolved.length) return base;
+
+  const byName: Record<string, string | null> = { ...base.objectIdByName };
+  const fromTs = toRangeStart(rpcDate(p.from, "1970-01-01"));
+  const toTs = toRangeEnd(rpcDate(p.to, "2099-12-31"));
+
+  const { data: issues, error: issuesErr } = await supabase
+    .from("warehouse_issues" as any)
+    .select("object_name,target_object_id,request_id,iss_date,status")
+    .eq("status", "Подтверждено")
+    .gte("iss_date", fromTs)
+    .lte("iss_date", toTs)
+    .limit(10000);
+  if (issuesErr || !Array.isArray(issues)) return base;
+
+  const requestIds = Array.from(
+    new Set(
+      issues
+        .map((r: any) => String(r?.request_id ?? "").trim())
+        .filter(Boolean),
+    ),
+  );
+
+  const reqObjectById = new Map<string, string>();
+  for (const ids of chunk(requestIds, 500)) {
+    const { data } = await supabase
+      .from("requests" as any)
+      .select("id,object_id")
+      .in("id", ids as any);
+    for (const r of Array.isArray(data) ? data : []) {
+      const id = String(r?.id ?? "").trim();
+      const objId = String(r?.object_id ?? "").trim();
+      if (id && objId) reqObjectById.set(id, objId);
+    }
+  }
+
+  for (const iss of issues) {
+    const name = normObjectName((iss as any)?.object_name);
+    if (!(name in byName) || byName[name] != null) continue;
+
+    const targetObjId = String((iss as any)?.target_object_id ?? "").trim();
+    if (targetObjId) {
+      byName[name] = targetObjId;
+      continue;
+    }
+
+    const reqId = String((iss as any)?.request_id ?? "").trim();
+    const reqObjId = reqId ? reqObjectById.get(reqId) : null;
+    if (reqObjId) byName[name] = reqObjId;
+  }
+
+  return {
+    objects: base.objects,
+    objectIdByName: byName,
+  };
+}
 
 type NameSourcesProbe = {
   vrr: boolean;
@@ -135,14 +245,23 @@ function parseFreeIssueContext(note: string | null | undefined): {
   objectName: string;
   workName: string;
 } {
+  const clean = (v: string): string => {
+    const s = String(v ?? "").trim();
+    if (!s) return "";
+    // Cut diagnostic tails from free issue note to keep canonical object/work labels.
+    return s
+      .replace(/\s*(?:·|•|\|)\s*(?:Контекст|Система|Зона|Вид|Этаж|Оси)\s*:.*/i, "")
+      .trim();
+  };
+
   const s = String(note ?? "");
-  const obj =
-    (s.match(/Объект:\s*([^·\n\r]+)/i)?.[1] || "").trim() ||
-    WITHOUT_OBJECT;
-  const sys =
-    (s.match(/Система:\s*([^·\n\r]+)/i)?.[1] || "").trim() ||
-    (s.match(/Контекст:\s*([^·\n\r]+)/i)?.[1] || "").trim() ||
-    WITHOUT_WORK;
+  const objRaw = (s.match(/Объект:\s*([^\n\r]+)/i)?.[1] || "").trim();
+  const sysRaw =
+    (s.match(/Система:\s*([^\n\r]+)/i)?.[1] || "").trim() ||
+    (s.match(/Контекст:\s*([^\n\r]+)/i)?.[1] || "").trim();
+
+  const obj = canonicalObjectName(clean(objRaw));
+  const sys = clean(sysRaw) || WITHOUT_WORK;
   return { objectName: obj, workName: sys };
 }
 
@@ -441,6 +560,7 @@ async function fetchViaLegacyRpc(p: {
   const discipline_who: DirectorReportWho[] = Array.from(disciplineAgg.entries())
     .map(([who, items_cnt]) => ({ who, items_cnt }))
     .sort((a, b) => b.items_cnt - a.items_cnt);
+  const reportOptions = buildReportOptionsFromByObjRows(objRows);
 
   return {
     meta: { from: p.from, to: p.to, object_name: p.objectName },
@@ -454,6 +574,7 @@ async function fetchViaLegacyRpc(p: {
     },
     rows,
     discipline_who,
+    report_options: reportOptions,
   };
 }
 
@@ -728,39 +849,47 @@ export async function fetchDirectorWarehouseReportOptions(p: {
   from: string;
   to: string;
 }): Promise<DirectorReportOptions> {
+  const pFrom = rpcDate(p.from, "1970-01-01");
+  const pTo = rpcDate(p.to, "2099-12-31");
+
+  // Production-first path: use optimized RPC immediately, keep old heavy paths as fallback.
+  {
+    const t0 = nowMs();
+    try {
+      const { data, error } = await supabase.rpc("wh_report_issued_by_object_fast" as any, {
+        p_from: pFrom,
+        p_to: pTo,
+        p_object_id: null,
+      } as any);
+      if (!error) {
+        const rpcRows = Array.isArray(data) ? data : [];
+        const base = buildReportOptionsFromByObjRows(rpcRows);
+        const enriched = await enrichObjectIdsForOptions({ from: pFrom, to: pTo }, base);
+        logTiming("options.fast_rpc", t0);
+        return enriched;
+      }
+    } catch { }
+    logTiming("options.fast_rpc_failed_fallback", t0);
+  }
+
   let rows: DirectorFactRow[] = [];
   try {
-    rows = await fetchAllFactRowsFromTables({ from: p.from, to: p.to, objectName: null });
+    rows = await fetchAllFactRowsFromTables({ from: pFrom, to: pTo, objectName: null });
   } catch { }
   if (!rows.length) {
     try {
-      rows = await fetchDirectorFactViaAccRpc({ from: p.from, to: p.to, objectName: null });
+      rows = await fetchDirectorFactViaAccRpc({ from: pFrom, to: pTo, objectName: null });
     } catch { }
   }
 
   if (!rows.length) {
     try {
-      rows = await fetchAllFactRowsFromView({ from: p.from, to: p.to, objectName: null });
+      rows = await fetchAllFactRowsFromView({ from: pFrom, to: pTo, objectName: null });
     } catch { }
   }
 
   if (!rows.length) {
-    const { data, error } = await supabase.rpc("wh_report_issued_by_object_fast" as any, {
-      p_from: p.from,
-      p_to: p.to,
-      p_object_id: null,
-    } as any);
-    if (error) throw error;
-    const rpcRows = Array.isArray(data) ? data : [];
-    const objectIdByName: Record<string, string | null> = {};
-    for (const r of rpcRows) {
-      const name = normObjectName(r?.object_name);
-      const id = r?.object_id == null ? null : String(r.object_id);
-      if (!(name in objectIdByName)) objectIdByName[name] = id;
-      if (objectIdByName[name] == null && id) objectIdByName[name] = id;
-    }
-    const objects = Object.keys(objectIdByName).sort((a, b) => a.localeCompare(b, "ru"));
-    return { objects, objectIdByName };
+    return { objects: [], objectIdByName: {} };
   }
 
   const objectIdByName: Record<string, string | null> = {};
@@ -865,6 +994,20 @@ function buildPayloadFromFactRows(p: {
     },
     rows: materialRows,
     discipline_who,
+    report_options: {
+      objects: Array.from(
+        new Set(
+          p.rows.map((r) => normObjectName(r?.object_name)).filter(Boolean),
+        ),
+      ).sort((a, b) => a.localeCompare(b, "ru")),
+      objectIdByName: Object.fromEntries(
+        Array.from(
+          new Set(
+            p.rows.map((r) => normObjectName(r?.object_name)).filter(Boolean),
+          ),
+        ).map((name) => [name, null]),
+      ),
+    },
   };
 }
 
@@ -875,37 +1018,77 @@ export async function fetchDirectorWarehouseReport(p: {
   objectIdByName: Record<string, string | null>;
 }): Promise<DirectorReportPayload> {
   const objectName = p.objectName ?? null;
-  let rows: DirectorFactRow[] = [];
+  const pFrom = rpcDate(p.from, "1970-01-01");
+  const pTo = rpcDate(p.to, "2099-12-31");
+  const selectedObjectId = objectName == null ? null : (p.objectIdByName[objectName] ?? null);
 
-  try {
-    rows = await fetchAllFactRowsFromTables({ from: p.from, to: p.to, objectName });
-  } catch { }
-
-  if (!rows.length) {
+  // Production-first path: try optimized RPC first.
+  // For object filter we need a real object_id; if absent, preserve old behavior and use detailed paths.
+  if (objectName == null || selectedObjectId != null) {
+    const t0 = nowMs();
     try {
-      rows = await fetchDirectorFactViaAccRpc({ from: p.from, to: p.to, objectName });
-    } catch { }
+      const fast = await fetchViaLegacyRpc({
+        from: pFrom,
+        to: pTo,
+        objectId: selectedObjectId,
+        objectName,
+      });
+      logTiming("report.fast_rpc", t0);
+      return fast;
+    } catch {
+      logTiming("report.fast_rpc_failed_fallback", t0);
+    }
   }
 
-  if (!rows.length) {
+  let rows: DirectorFactRow[] = [];
+  const preferAccPath = objectName != null && selectedObjectId == null;
+
+  if (preferAccPath) {
     try {
-      rows = await fetchAllFactRowsFromView({ from: p.from, to: p.to, objectName });
+      rows = await fetchDirectorFactViaAccRpc({ from: pFrom, to: pTo, objectName });
     } catch { }
+
+    if (!rows.length) {
+      try {
+        rows = await fetchAllFactRowsFromView({ from: pFrom, to: pTo, objectName });
+      } catch { }
+    }
+
+    if (!rows.length) {
+      try {
+        rows = await fetchAllFactRowsFromTables({ from: pFrom, to: pTo, objectName });
+      } catch { }
+    }
+  } else {
+    try {
+      rows = await fetchAllFactRowsFromTables({ from: pFrom, to: pTo, objectName });
+    } catch { }
+
+    if (!rows.length) {
+      try {
+        rows = await fetchDirectorFactViaAccRpc({ from: pFrom, to: pTo, objectName });
+      } catch { }
+    }
+
+    if (!rows.length) {
+      try {
+        rows = await fetchAllFactRowsFromView({ from: pFrom, to: pTo, objectName });
+      } catch { }
+    }
   }
 
   if (rows.length) {
     return buildPayloadFromFactRows({
-      from: p.from,
-      to: p.to,
+      from: pFrom,
+      to: pTo,
       objectName,
       rows,
     });
   }
 
-  const selectedObjectId = objectName == null ? null : (p.objectIdByName[objectName] ?? null);
   return fetchViaLegacyRpc({
-    from: p.from,
-    to: p.to,
+    from: pFrom,
+    to: pTo,
     objectId: selectedObjectId,
     objectName,
   });
