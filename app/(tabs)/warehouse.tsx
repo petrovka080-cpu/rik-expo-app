@@ -10,7 +10,6 @@ import {
   RefreshControl,
   Platform,
   TextInput,
-  ScrollView,
   Animated,
   Keyboard,
 } from "react-native";
@@ -23,8 +22,6 @@ import PeriodPickerSheet from "../../src/components/PeriodPickerSheet";
 
 import { useWarehouseIncoming } from "../../src/screens/warehouse/warehouse.incoming";
 import {
-  resolveUnitIdByCode,
-  resolveUomTextByCode,
   uomLabelRu,
 } from "../../src/screens/warehouse/warehouse.uom";
 
@@ -41,31 +38,30 @@ import {
   apiFetchReqItems,
   apiFetchReports,
   apiFetchIncomingReports,
-  apiFetchIncomingLines,
 } from "../../src/screens/warehouse/warehouse.api";
 
 
 
 import { useGlobalBusy } from "../../src/ui/GlobalBusy";
-import { runPdfTop } from "../../src/lib/pdfRunner";
-import {
-  buildWarehouseIncomingFormHtml,
-  exportWarehouseHtmlPdf,
-} from "../../src/lib/api/pdf_warehouse";
 import { seedEnsureIncomingItems } from "../../src/screens/warehouse/warehouse.seed";
-import TopRightActionBar from "../../src/ui/TopRightActionBar";
 import { showToast } from "../../src/ui/toast";
+import { useStockAvailability } from "../../src/screens/warehouse/warehouse.availability";
+import { useWarehousePdf } from "../../src/screens/warehouse/warehouse.pdfs";
+import { useWarehouseDicts } from "../../src/screens/warehouse/warehouse.dicts";
+import { useWarehouseScope } from "../../src/screens/warehouse/warehouse.scope";
+import StockRowView from "../../src/screens/warehouse/components/StockRowView";
+import HistoryRowView from "../../src/screens/warehouse/components/HistoryRowView";
+import ExpenditureHeader from "../../src/screens/warehouse/components/ExpenditureHeader";
 
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import type {
-  StockRow, ReqHeadRow, ReqItemUiRow,
-  ReqPickLine, Option, Tab, StockPickLine
+  IncomingRow, StockRow, ReqHeadRow, ReqItemUiRow,
+  Option, Tab,
 } from "../../src/screens/warehouse/warehouse.types";
 import { makeWarehouseIssueActions } from "../../src/screens/warehouse/warehouse.issue";
 
 import { UI, s } from "../../src/screens/warehouse/warehouse.styles";
 
-import WarehouseSheet from "../../src/screens/warehouse/components/WarehouseSheet";
 import StockFactHeader from "../../src/screens/warehouse/components/StockFactHeader";
 import IssueDetailsSheet from "../../src/screens/warehouse/components/IssueDetailsSheet";
 import IncomingDetailsSheet from "../../src/screens/warehouse/components/IncomingDetailsSheet";
@@ -80,45 +76,10 @@ import {
   norm,
   parseQtySelected,
   matchQuerySmart,
-  normMatCode,
 } from "../../src/screens/warehouse/warehouse.utils";
 
 
 const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
-const AnimatedScrollView = Animated.createAnimatedComponent(ScrollView);
-
-function SafeView({ children, ...rest }: any) {
-  const kids = React.Children.toArray(children).map((c, i) => {
-    if (typeof c === "string") return c.trim() ? <Text key={`t${i} `}>{c}</Text> : null;
-    if (typeof c === "number") return <Text key={`n${i} `}>{String(c)}</Text>;
-    if (c && typeof c === "object" && !React.isValidElement(c)) return null;
-    return c;
-  });
-  return <View {...rest}>{kids}</View>;
-}
-
-const pickUom = (v: any): string | null => {
-  const s = v == null ? "" : String(v).trim();
-  return s !== "" ? s : null;
-};
-
-const detectKindLabel = (code?: string | null): string | null => {
-  if (!code) return null;
-  const c = String(code).toUpperCase();
-  if (c.startsWith("MAT-")) return "материал";
-  if (c.startsWith("TOOL-")) return "инструмент";
-  return null;
-};
-
-const isMissingName = (v: any): boolean => {
-  const s = String(v ?? "").trim();
-  if (!s) return true;
-  if (/^[-\u2014\u2013\u2212]+$/.test(s)) return true;
-  const l = s.toLowerCase();
-  if (l === "null" || l === "undefined" || l === "n/a") return true;
-  if (l.includes("вђ")) return true;
-  return false;
-};
 
 const ORG_NAME = "";
 export default function Warehouse() {
@@ -169,8 +130,6 @@ export default function Warehouse() {
       </View>
     );
   }, []);
-
-  const itemsListRef = useRef<FlatList<any> | null>(null);
   const [kbH, setKbH] = useState(0);
 
   const [warehousemanFio, setWarehousemanFio] = useState("");
@@ -231,7 +190,6 @@ export default function Warehouse() {
   }, []);
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
-  const [confirmingId, setConfirmingId] = useState<string | null>(null);
   const [reqHeads, setReqHeads] = useState<ReqHeadRow[]>([]);
   const sortedReqHeads = useMemo(() => {
     return [...reqHeads].sort((a, b) => {
@@ -253,7 +211,6 @@ export default function Warehouse() {
   const [reqItems, setReqItems] = useState<ReqItemUiRow[]>([]);
   const [reqItemsLoading, setReqItemsLoading] = useState(false);
   const [stock, setStock] = useState<StockRow[]>([]);
-  const [stockHasMore, setStockHasMore] = useState(true);
   const stockFetchMutex = useRef(false);
 
   const stockMaterialsByCode = useMemo(() => stock, [stock]);
@@ -312,7 +269,6 @@ export default function Warehouse() {
   const [incomingLinesById, setIncomingLinesById] = useState<Record<string, any[]>>({});
   const [incomingLinesLoadingId, setIncomingLinesLoadingId] = useState<string | null>(null);
   const [incomingDetailsId, setIncomingDetailsId] = useState<string | null>(null);
-  const [reportsSupported, setReportsSupported] = useState<null | boolean>(null);
   const [periodFrom, setPeriodFrom] = useState<string>("");
   const [periodTo, setPeriodTo] = useState<string>("");
   const reportsUi = useWarehouseReports({
@@ -345,286 +301,22 @@ export default function Warehouse() {
     repIncoming,
   });
 
-  const onPdfDocument = useCallback(
-    async (docId: string | number) => {
-      const pid = String(docId ?? "").trim();
-      if (!pid) {
-        notifyError("PDF", "Некорректный номер прихода.");
-        return;
-      }
+  // ── PDF generation (extracted into useWarehousePdf) ──
+  const pdfActions = useWarehousePdf({
+    busy,
+    supabase,
+    reportsUi,
+    reportsMode,
+    repIncoming,
+    periodFrom,
+    periodTo,
+    warehousemanFio,
+    matNameByCode,
+    notifyError,
+    orgName: ORG_NAME,
+  });
+  const { onPdfDocument, onPdfRegister, onPdfMaterials, onPdfObjectWork, onPdfDayRegister, onPdfDayMaterials } = pdfActions;
 
-      if (reportsMode === "incoming") {
-        await runPdfTop({
-          busy,
-          supabase,
-          key: `pdf: warehouse: incoming - form:${pid}`,
-          label: "Готовлю приходный ордер...",
-          mode: Platform.OS === "web" ? "preview" : "share",
-          fileName: `Incoming_${pid}`,
-          getRemoteUrl: async () => {
-            const t0 = Date.now();
-            console.info(`INCOMING_PDF_START pr_id=${pid}`);
-            let source: "main" | "fallback" = "main";
-            try {
-              const head = (repIncoming || []).find(
-                (x) =>
-                  String(x.incoming_id || "") === pid ||
-                  String(x.id || "") === pid
-              );
-
-              const who = String(
-                head?.who ?? head?.warehouseman_fio ?? warehousemanFio ?? ""
-              ).trim() || "—";
-
-              let lines = await apiFetchIncomingLines(supabase as any, pid);
-              if (!Array.isArray(lines) || lines.length === 0) {
-                source = "fallback";
-                const fallbackLines = await (reportsUi as any).ensureIncomingLines?.(pid);
-                if (Array.isArray(fallbackLines)) lines = fallbackLines;
-              }
-
-              if (!Array.isArray(lines) || lines.length === 0) {
-                const err = new Error("Нет оприходованных позиций");
-                (err as any).reason = "empty";
-                throw err;
-              }
-
-              const linesForPdf = (lines || []).map((ln: any) => {
-                const code = String(ln?.code ?? "").trim().toUpperCase();
-                const mapped = String((matNameByCode as any)?.[code] ?? "").trim();
-                const raw = String(
-                  ln?.name_ru ?? ln?.material_name ?? ln?.name ?? ""
-                ).trim();
-                const goodMapped = !isMissingName(mapped);
-                const goodRaw = !isMissingName(raw);
-                return {
-                  ...ln,
-                  material_name: goodMapped ? mapped : (goodRaw ? raw : code),
-                };
-              });
-
-              const incomingHead =
-                head ??
-                ({
-                  incoming_id: pid,
-                  event_dt: null,
-                  display_no: `PR-${pid.slice(0, 8)}`,
-                  warehouseman_fio: who,
-                  who,
-                } as any);
-
-              const html = buildWarehouseIncomingFormHtml({
-                incoming: incomingHead,
-                lines: linesForPdf,
-                orgName: ORG_NAME || "ООО «РИК»",
-                warehouseName: "Главный склад",
-              });
-
-              const url = await exportWarehouseHtmlPdf({
-                fileName: `Incoming_${pid}`,
-                html,
-              });
-
-              console.info(
-                `INCOMING_PDF_OK pr_id=${pid} ms=${Date.now() - t0} source=${source}`
-              );
-              return url;
-            } catch (e: any) {
-              const msg = String(e?.message ?? "").toLowerCase();
-              const reason =
-                String(e?.reason ?? "").trim() ||
-                (msg.includes("timeout") ? "timeout" : "build_error");
-              console.error(`INCOMING_PDF_FAIL pr_id=${pid} reason=${reason}`, e);
-              throw e;
-            }
-          },
-        });
-        return;
-      }
-
-      await runPdfTop({
-        busy,
-        supabase,
-        key: `pdf: warehouse: issue - form:${docId}`,
-        label: "Готовлю накладную...",
-        mode: Platform.OS === "web" ? "preview" : "share",
-        fileName: `Issue_${docId}`,
-        getRemoteUrl: async () => await reportsUi.buildIssueHtml(Number(docId)),
-      });
-    },
-    [busy, supabase, reportsUi, reportsMode, repIncoming, warehousemanFio, notifyError, matNameByCode],
-  );
-
-  const onPdfRegister = useCallback(async () => {
-    const isIncoming = reportsMode === "incoming";
-    await runPdfTop({
-      busy,
-      supabase,
-      key: `pdf: warehouse: ${isIncoming ? "incoming" : "issues"} - register:${periodFrom || "all"}:${periodTo || "all"} `,
-      label: "Готовлю реестр…",
-      mode: Platform.OS === "web" ? "preview" : "share",
-      fileName: `WH_${isIncoming ? "Incoming" : "Issues"}_Register_${periodFrom || "all"}_${periodTo || "all"} `,
-      getRemoteUrl: async () => isIncoming ? await reportsUi.buildIncomingRegisterHtml() : await reportsUi.buildRegisterHtml(),
-    });
-  }, [busy, supabase, periodFrom, periodTo, reportsUi, reportsMode]);
-
-  const onPdfMaterials = useCallback(async () => {
-    let w: any = null;
-    const isIncoming = reportsMode === "incoming";
-
-    if (Platform.OS === "web") {
-      w = window.open("", "_blank");
-      try {
-        if (w?.document) {
-          w.document.title = isIncoming ? "Свод прихода материалов" : "Свод отпуска материалов";
-          w.document.body.style.margin = "0";
-          w.document.body.innerHTML = `
-            <div style="font-family:system-ui,Segoe UI,Roboto,Arial;padding:18px">
-              <h3 style="margin:0 0 8px 0">${isIncoming ? "Свод прихода материалов" : "Свод отпуска материалов"}</h3>
-              <div style="color:#64748b">Формирую PDF…</div>
-            </div>`;
-        }
-      } catch (e) { console.warn(e); }
-    }
-
-    try {
-      const url = await busy.run(
-        async () => isIncoming
-          ? await (reportsUi as any).buildIncomingMaterialsReportPdf()
-          : await reportsUi.buildMaterialsReportPdf(),
-        { label: "Готовлю свод материалов…" } as any
-      );
-      if (!url) throw new Error("Не удалось сформировать PDF");
-      if (Platform.OS === "web") {
-        if (w) w.location.href = url;
-        else window.open(url, "_blank");
-        return;
-      }
-
-      await runPdfTop({
-        busy,
-        supabase,
-        key: `pdf: warehouse: materials:${isIncoming ? "incoming" : "issues"}:${periodFrom || "all"}:${periodTo || "all"} `,
-        label: "Открываю PDF…",
-        mode: "share",
-        fileName: `WH_${isIncoming ? "Incoming" : "Issued"}_Materials_${periodFrom || "all"}_${periodTo || "all"} `,
-        getRemoteUrl: async () => url,
-      });
-    } catch (e) {
-      try { if (w) w.close(); } catch (e2) { console.warn(e2); }
-      showErr(e);
-    }
-  }, [busy, supabase, periodFrom, periodTo, reportsUi, reportsMode]);
-
-  const onPdfObjectWork = useCallback(async () => {
-    let w: any = null;
-
-    if (Platform.OS === "web") {
-      w = window.open("", "_blank");
-      try {
-        if (w?.document) {
-          w.document.title = "Отчёт по объектам/работам";
-          w.document.body.style.margin = "0";
-          w.document.body.innerHTML = `
-            <div style="font-family:system-ui,Segoe UI,Roboto,Arial;padding:18px">
-              <h3 style="margin:0 0 8px 0">Отчёт по объектам/работам</h3>
-              <div style="color:#64748b">Формирую PDF…</div>
-            </div>`;
-        }
-      } catch (e) { console.warn(e); }
-    }
-
-    try {
-      const url = await busy.run(
-        async () => await reportsUi.buildObjectWorkReportPdf(),
-        { label: "Готовлю отчёт по объектам…" } as any
-      );
-      if (!url) throw new Error("Не удалось сформировать PDF");
-      if (Platform.OS === "web") {
-        if (w) w.location.href = url;
-        else window.open(url, "_blank");
-        return;
-      }
-
-      await runPdfTop({
-        busy,
-        supabase,
-        key: `pdf: warehouse: objwork:${periodFrom || "all"}:${periodTo || "all"} `,
-        label: "Открываю PDF…",
-        mode: "share",
-        fileName: `WH_ObjectWork_${periodFrom || "all"}_${periodTo || "all"} `,
-        getRemoteUrl: async () => url,
-      });
-    } catch (e) {
-      try { if (w) w.close(); } catch (e) { console.warn(e); }
-      showErr(e);
-    }
-  }, [busy, supabase, periodFrom, periodTo, reportsUi]);
-
-  const onPdfDayRegister = useCallback(async (dayLabel: string) => {
-    const isIncoming = reportsMode === "incoming";
-    await runPdfTop({
-      busy,
-      supabase,
-      key: `pdf: warehouse: day - register:${isIncoming ? "incoming" : "issues"}:${dayLabel} `,
-      label: "Готовлю реестр за день…",
-      mode: Platform.OS === "web" ? "preview" : "share",
-      fileName: `WH_${isIncoming ? "Incoming" : "Register"}_${String(dayLabel).trim().replace(/\s+/g, "_")} `,
-      getRemoteUrl: async () => isIncoming
-        ? await (reportsUi as any).buildDayIncomingRegisterPdf(dayLabel)
-        : await (reportsUi as any).buildDayRegisterPdf(dayLabel),
-    });
-  }, [busy, supabase, reportsUi, reportsMode]);
-
-  const onPdfDayMaterials = useCallback(async (dayLabel: string) => {
-    let w: any = null;
-    const isIncoming = reportsMode === "incoming";
-
-    if (Platform.OS === "web") {
-      w = window.open("", "_blank");
-      try {
-        if (w?.document) {
-          w.document.title = isIncoming ? "Свод прихода за день" : "Свод отпуска за день";
-          w.document.body.style.margin = "0";
-          w.document.body.innerHTML = `
-            <div style="font-family:system-ui,Segoe UI,Roboto,Arial;padding:18px">
-              <h3 style="margin:0 0 8px 0">${isIncoming ? "Свод прихода за день" : "Свод отпуска за день"}</h3>
-              <div style="color:#64748b">Формирую PDF…</div>
-            </div>`;
-        }
-      } catch (e) { console.warn(e); }
-    }
-
-    try {
-      const url = await busy.run(
-        async () => isIncoming
-          ? await (reportsUi as any).buildDayIncomingMaterialsReportPdf(dayLabel)
-          : await (reportsUi as any).buildDayMaterialsReportPdf(dayLabel),
-        { label: "Готовлю свод материалов за день…" } as any
-      );
-
-      if (!url) throw new Error("Не удалось сформировать PDF");
-
-      if (Platform.OS === "web") {
-        if (w) w.location.href = url;
-        else window.open(url, "_blank");
-        return;
-      }
-
-      await runPdfTop({
-        busy,
-        supabase,
-        key: `pdf: warehouse: day - materials:${isIncoming ? "incoming" : "issues"}:${dayLabel} `,
-        label: "Готовлю свод материалов за день…",
-        mode: "share",
-        fileName: `WH_${isIncoming ? "Incoming" : "Issued"}_DayMaterials_${String(dayLabel).trim().replace(/\s+/g, "_")} `,
-        getRemoteUrl: async () => url,
-      });
-    } catch (e) {
-      try { if (w) w.close(); } catch (e2) { console.warn(e2); }
-      showErr(e);
-    }
-  }, [busy, supabase, reportsUi, reportsMode]);
   const [repPeriodOpen, setRepPeriodOpen] = useState(false);
 
   const fetchStock = useCallback(async () => {
@@ -638,7 +330,6 @@ export default function Warehouse() {
 
       setStock(newRows);
       setStockCount(newRows.length);
-      setStockHasMore(false);
       setStockSupported(r.supported);
     } catch (e) {
       console.warn("[fetchStock] error", e);
@@ -695,103 +386,23 @@ export default function Warehouse() {
       apiFetchReports(supabase as any, from, to),
       apiFetchIncomingReports(supabase as any, { from, to }),
     ]);
-    setReportsSupported(r.supported);
     setRepStock(r.repStock as any);
     setRepMov(r.repMov as any);
     setRepIssues(r.repIssues as any);
     setRepIncoming(inc);
   }, [periodFrom, periodTo]);
+  // ── Scope & Picker (extracted) ──
+  const scope = useWarehouseScope();
+  const { objectOpt, levelOpt, systemOpt, zoneOpt, scopeLabel, scopeOpt, pickModal, pickFilter, setPickFilter, closePick, applyPick, setPickModal } = scope;
 
-  const getUomByCode = useCallback((code: string): string | null => {
-    const key = normMatCode(code);
-    if (!key) return null;
+  // ── Dictionaries (extracted) ──
+  const dicts = useWarehouseDicts(supabase, tab);
+  const { objectList, levelList, systemList, zoneList, recipientList } = dicts;
 
-    let bestUom: string | null = null;
-    let bestAvail = -1;
-    for (const s of stock) {
-      const sKey = normMatCode(String((s as any).rik_code ?? (s as any).code ?? ""));
-      if (sKey !== key) continue;
-      const avail = nz((s as any).qty_available, 0);
-      if (avail > bestAvail) {
-        bestAvail = avail;
-        const u = String((s as any).uom_id ?? "").trim();
-        bestUom = u || null;
-      }
-    }
-    return bestUom;
-  }, [stock]);
-  const [levelList, setLevelList] = useState<Option[]>([]);
-  const [systemList, setSystemList] = useState<Option[]>([]);
-  const [zoneList, setZoneList] = useState<Option[]>([]);
-
-  const [levelOpt, setLevelOpt] = useState<Option | null>(null);
-  const [systemOpt, setSystemOpt] = useState<Option | null>(null);
-  const [zoneOpt, setZoneOpt] = useState<Option | null>(null);
-  const scopeLabel = useMemo(() => {
-    const lvl = String(levelOpt?.label ?? "").trim();
-    const sys = String(systemOpt?.label ?? "").trim();
-    const zn = String(zoneOpt?.label ?? "").trim();
-
-    const parts: string[] = [];
-    if (lvl) parts.push(`Этаж: ${lvl} `);
-    if (sys) parts.push(`Система: ${sys} `);
-    if (zn) parts.push(`Зона: ${zn} `);
-
-    return parts.join(" В· ");
-  }, [levelOpt?.label, systemOpt?.label, zoneOpt?.label]);
-
-
-  const scopeOpt = useMemo<Option | null>(() => {
-    if (!levelOpt?.id) return null;
-    return { id: String(levelOpt.id), label: scopeLabel || String(levelOpt.label ?? "") };
-  }, [levelOpt, scopeLabel]);
-
-  const [objectList, setObjectList] = useState<Option[]>([]);
-  const [recipientList, setRecipientList] = useState<Option[]>([]);
-  const [objectOpt, setObjectOpt] = useState<Option | null>(null);
   const rec = useWarehouseRecipient({
     enabled: tab === "Расход" || tab === "Склад факт",
     recipientList,
   });
-
-  const [pickModal, setPickModal] = useState<{
-    what: "object" | "level" | "system" | "zone" | "recipient" | null;
-  }>({ what: null });
-
-  const [pickFilter, setPickFilter] = useState("");
-
-  const closePick = useCallback(() => {
-    setPickModal({ what: null });
-    setPickFilter("");
-  }, []);
-
-  const applyPick = useCallback(
-    (opt: Option) => {
-      if (pickModal.what === "object") setObjectOpt(opt);
-      if (pickModal.what === "level") setLevelOpt(opt);
-      if (pickModal.what === "system") setSystemOpt(opt);
-      if (pickModal.what === "zone") setZoneOpt(opt);
-      closePick();
-    },
-    [pickModal.what, closePick],
-  );
-  useEffect(() => {
-    // если сбросили объект — сбрасываем и ниже
-    if (!objectOpt?.id) {
-      if (levelOpt) setLevelOpt(null);
-      if (systemOpt) setSystemOpt(null);
-      if (zoneOpt) setZoneOpt(null);
-      return;
-    }
-  }, [objectOpt?.id]);
-
-  useEffect(() => {
-    if (!levelOpt?.id) {
-      if (systemOpt) setSystemOpt(null);
-      if (zoneOpt) setZoneOpt(null);
-      return;
-    }
-  }, [levelOpt?.id]);
 
   const [issueBusy, setIssueBusy] = useState(false);
   const [issueMsg, setIssueMsg] = useState<{
@@ -799,39 +410,14 @@ export default function Warehouse() {
     text: string;
   }>({ kind: null, text: "" });
 
+  // ── Shared availability lookup (eliminates 3× duplication) ──
+  const availability = useStockAvailability(stock, matNameByCode);
 
   const reqPickUi = useWarehouseReqPick({
     nz,
     setIssueMsg,
-    getAvailableByCode: (code: string) => {
-      const key = normMatCode(code);
-      if (!key) return 0;
-      let sum = 0;
-      for (const row of stock) {
-        const rowKey = normMatCode(
-          String((row as any).rik_code ?? (row as any).code ?? (row as any).material_code ?? ""),
-        );
-        if (rowKey !== key) continue;
-        sum += nz((row as any).qty_available, 0);
-      }
-      return sum;
-    },
-    getAvailableByCodeUom: (code: string, uomId: string | null) => {
-      const key = normMatCode(code);
-      const u = String(uomId ?? "").trim().toLowerCase();
-      if (!key) return 0;
-      let sum = 0;
-      for (const row of stock) {
-        const rowKey = normMatCode(
-          String((row as any).rik_code ?? (row as any).code ?? (row as any).material_code ?? ""),
-        );
-        if (rowKey !== key) continue;
-        const rowU = String((row as any).uom_id ?? "").trim().toLowerCase();
-        if (u && rowU !== u) continue;
-        sum += nz((row as any).qty_available, 0);
-      }
-      return sum;
-    },
+    getAvailableByCode: availability.getAvailableByCode,
+    getAvailableByCodeUom: availability.getAvailableByCodeUom,
   });
 
   const stockPickUi = useWarehouseStockPick({
@@ -885,40 +471,9 @@ export default function Warehouse() {
       fetchStock,
       fetchReqItems,
       fetchReqHeads,
-      getAvailableByCode: (code: string) => {
-        const key = normMatCode(code);
-        if (!key) return 0;
-        let sum = 0;
-        for (const row of stock) {
-          const rowKey = normMatCode(
-            String((row as any).rik_code ?? (row as any).code ?? (row as any).material_code ?? ""),
-          );
-          if (rowKey !== key) continue;
-          sum += nz((row as any).qty_available, 0);
-        }
-        return sum;
-      },
-      getAvailableByCodeUom: (code: string, uomId: string | null) => {
-        const key = normMatCode(code);
-        const u = String(uomId ?? "").trim().toLowerCase();
-        if (!key) return 0;
-        let sum = 0;
-        for (const row of stock) {
-          const rowKey = normMatCode(
-            String((row as any).rik_code ?? (row as any).code ?? (row as any).material_code ?? ""),
-          );
-          if (rowKey !== key) continue;
-          const rowU = String((row as any).uom_id ?? "").trim().toLowerCase();
-          if (u && rowU !== u) continue;
-          sum += nz((row as any).qty_available, 0);
-        }
-        return sum;
-      },
-      getMaterialNameByCode: (code: string) => {
-        const key = normMatCode(code).toUpperCase();
-        if (!key) return null;
-        return matNameByCode[key] || null;
-      },
+      getAvailableByCode: availability.getAvailableByCode,
+      getAvailableByCodeUom: availability.getAvailableByCodeUom,
+      getMaterialNameByCode: availability.getMaterialNameByCode,
 
       setIssueBusy,
       setIssueMsg,
@@ -987,196 +542,8 @@ export default function Warehouse() {
 
   );
 
-  const tryOptions = useCallback(async (table: string, columns: string[]) => {
-    const colList = columns.join(",");
-    const q = await supabase.from(table as any).select(colList).limit(1000);
-    if (q.error || !Array.isArray(q.data)) return [] as Option[];
-    const opts: Option[] = [];
-    for (const r of q.data as any[]) {
-      const id = String(r.id ?? r.uuid ?? "");
-      const label = String(
-        r.name ??
-        r.title ??
-        r.object_name ??
-        r.fio ??
-        r.full_name ??
-        r.email ??
-        r.username ??
-        r.login ??
-        "",
-      );
-      if (id && label) opts.push({ id, label });
-    }
-    return opts;
-  }, []);
 
-  const tryRefOptions = useCallback(
-    async (table: string, opts?: { order?: string }) => {
-      let q = supabase
-        .from(table as any)
-        .select("code,display_name,name_human_ru,name_ru,name")
-        .limit(2000);
-
-      if (opts?.order) {
-        q = q.order(opts.order, { ascending: true }) as any;
-      }
-
-      const res = await q;
-
-      if (res.error || !Array.isArray(res.data)) {
-        console.log(`[${table}]error: `, res.error?.message);
-        return [] as Option[];
-      }
-
-      const out: Option[] = [];
-      for (const r of res.data as any[]) {
-        const id = String(r.code ?? "").trim();
-        const label = String(
-          r.display_name ??
-          r.name_human_ru ??
-          r.name_ru ??
-          r.name ??
-          r.code ??
-          ""
-        ).trim();
-
-        if (id && label) out.push({ id, label });
-      }
-
-      // сортировка уже на фронте (чтобы не зависеть от колонок БД)
-      out.sort((a, b) => a.label.localeCompare(b.label, "ru"));
-
-      return out;
-    },
-    [],
-  );
-
-  const loadObjects = useCallback(async () => {
-    const q = await supabase.from("ref_object_types" as any).select("code").limit(1);
-    console.log(
-      "[ref_object_types] err=",
-      q.error?.message,
-      "rows=",
-      Array.isArray(q.data) ? q.data.length : "no-data",
-    );
-
-    const opts = await tryRefOptions("ref_object_types", { order: "name" as any });
-
-    const cleaned = (opts || []).filter((o) => {
-      const t = String(o.label ?? "").toLowerCase();
-      const c = String(o.id ?? "").toLowerCase();
-      if (t.includes("без объекта")) return false;
-      if (c === "none" || c === "no_object" || c === "noobject") return false;
-      return true;
-    });
-
-    setObjectList(cleaned);
-  }, [tryRefOptions]);
-
-
-
-  const loadRecipients = useCallback(async () => {
-    const opts = await tryOptions("profiles", ["id", "full_name"]);
-    setRecipientList(opts);
-  }, [tryOptions]);
-  const loadLevels = useCallback(async () => {
-    setLevelList(await tryRefOptions("ref_levels"));
-  }, [tryRefOptions]);
-
-  const loadSystems = useCallback(async () => {
-    setSystemList(await tryRefOptions("ref_systems"));
-  }, [tryRefOptions]);
-
-  const loadZones = useCallback(async () => {
-    setZoneList(await tryRefOptions("ref_zones"));
-  }, [tryRefOptions]);
-
-
-  const dictsLoadedRef = useRef(false);
-
-  useEffect(() => {
-    if ((tab === "Расход" || tab === "Склад факт") && !dictsLoadedRef.current) {
-      dictsLoadedRef.current = true;
-      loadObjects().catch((e) => showErr(e));
-      loadLevels().catch((e) => showErr(e));
-      loadSystems().catch((e) => showErr(e));
-      loadZones().catch((e) => showErr(e));
-      loadRecipients().catch((e) => showErr(e));
-    }
-  }, [tab, loadObjects, loadLevels, loadSystems, loadZones, loadRecipients]);
-
-  const confirmIncoming = useCallback(
-    async (whIncomingId: string) => {
-      try {
-        setConfirmingId(whIncomingId);
-
-        const r = await supabase.rpc("wh_receive_confirm" as any, {
-          p_wh_id: whIncomingId,
-        } as any);
-
-        let pid: string | null = null;
-        try {
-          const q = await supabase
-            .from("wh_incoming" as any)
-            .select("purchase_id")
-            .eq("id", whIncomingId)
-            .maybeSingle();
-          if (!q.error && q.data?.purchase_id) pid = String(q.data.purchase_id);
-        } catch (e) {
-          console.warn("[confirmIncoming] purchase_id lookup err:", e);
-        }
-
-        if (r.error) {
-          console.warn("[wh_receive_confirm] rpc error:", r.error.message);
-          if (pid) {
-            const upd = await supabase
-              .from("purchases" as any)
-              .update({ status: "На складе" })
-              .eq("id", pid);
-            if (upd.error) throw upd.error;
-          }
-        }
-
-        await Promise.all([incoming.fetchToReceive(), fetchStock()]);
-        notifyInfo("Готово", "Поставка принята на склад.");
-      } catch (e) {
-        showErr(e);
-      } finally {
-        setConfirmingId(null);
-      }
-    },
-    [incoming, fetchStock, notifyInfo],
-  );
-  const __toNum = (v: any): number => {
-    if (v == null) return 0;
-    const s = String(v).trim();
-    if (!s) return 0;
-    const cleaned = s
-      .replace(/[^\d,\.\-]+/g, "")
-      .replace(",", ".")
-      .replace(/\s+/g, "");
-    const n = Number(cleaned);
-    return Number.isFinite(n) ? n : 0;
-  };
-  const __pick = (row: any, names: string[], def?: any) => {
-    for (const n of names)
-      if (row && row[n] !== undefined && row[n] !== null) return row[n];
-    return def;
-  };
-  const __pickDeep = (obj: any, paths: string[]): any => {
-    for (const p of paths) {
-      try {
-        const v = p
-          .split(".")
-          .reduce(
-            (o, k) => (o && typeof o === "object" ? (o as any)[k] : undefined),
-            obj,
-          );
-        if (v !== undefined && v !== null) return v;
-      } catch (e) { console.warn(e); }
-    }
-    return undefined;
-  };
+  // Dict loading is now handled by useWarehouseDicts hook
   useEffect(() => {
     if (!itemsModal) return;
 
@@ -1186,68 +553,6 @@ export default function Warehouse() {
     })();
 
   }, [itemsModal?.incomingId]);
-
-  const receivePart = useCallback(
-    async (incomingItemId: string, qty: number) => {
-      try {
-        if (!incomingItemId)
-          return notifyError("Нет позиции", "Неизвестный ID позиции прихода");
-        const q = Number(qty);
-        if (!Number.isFinite(q) || q <= 0)
-          return notifyError("Количество", "Введите положительное количество.");
-        const r = await supabase.rpc("wh_receive_item_v2" as any, {
-          p_incoming_item_id: incomingItemId,
-          p_qty: q,
-          p_note: null,
-        } as any);
-        if (r.error)
-          return notifyError("Ошибка прихода", pickErr(r.error));
-
-        await incoming.fetchToReceive();
-        await fetchStock();
-      } catch (e) {
-        showErr(e);
-      }
-    },
-    [incoming, fetchStock, notifyInfo],
-  );
-
-  const receiveAllHead = useCallback(
-    async (incomingIdRaw: string) => {
-      try {
-        const incomingId = String(incomingIdRaw ?? "").trim();
-        if (!incomingId) return;
-
-        // берём строки через incoming-хук
-        const rows = await incoming.loadItemsForHead(incomingId, true);
-        if (!rows.length) {
-          return notifyError(
-            "Нет позиций",
-            "Под этой поставкой нет строк для прихода. Раскрой «Показать позиции» и проверь состав.",
-          );
-        }
-
-        const totalLeft = rows.reduce(
-          (s, r) => s + Math.max(0, nz(r.qty_expected, 0) - nz(r.qty_received, 0)),
-          0,
-        );
-        if (totalLeft <= 0) {
-          return notifyInfo("Нечего приходовать", "Все позиции уже приняты.");
-        }
-
-        const pr = await supabase.rpc("wh_receive_confirm" as any, {
-          p_wh_id: incomingId,
-        } as any);
-        if (pr.error) return notifyError("Ошибка полного прихода", pickErr(pr.error));
-
-        await Promise.all([incoming.fetchToReceive(), fetchStock()]);
-        notifyInfo("Готово", "Поставка оприходована полностью");
-      } catch (e) {
-        showErr(e);
-      }
-    },
-    [incoming, fetchStock, notifyError, notifyInfo],
-  );
 
   const receiveSelectedForHead = useCallback(
     async (incomingIdRaw: string) => {
@@ -1340,10 +645,6 @@ export default function Warehouse() {
     [incoming, fetchStock, notifyError, notifyInfo, qtyInputByItem],
   );
 
-  const openRepPeriod = useCallback(() => setRepPeriodOpen(true), []);
-  const closeRepPeriod = useCallback(() => setRepPeriodOpen(false), []);
-
-
   const loadAll = useCallback(async () => {
     setLoading(true);
     try {
@@ -1421,151 +722,214 @@ export default function Warehouse() {
     fetchReqHeads,
   ]);
 
-  const StockRowView = React.memo(function StockRowView({
-    r,
-    pickedQty,
-  }: {
-    r: StockRow;
-    pickedQty?: number;
-  }) {
-    const uomLabel = uomLabelRu(r.uom_id);
+  // StockRowView, HistoryRowView — now imported from components/
+  // ExpenditureHeader — now imported from components/
+  const openStockIssue = stockPickUi.openStockIssue;
 
-    const onHand = nz(r.qty_on_hand, 0);
-    const reserved = nz(r.qty_reserved, 0);
-    const available = nz(r.qty_available, 0);
+  const expenditureHeaderProps = useMemo(() => ({
+    recipientText: rec.recipientText,
+    onRecipientChange: (t: string) => {
+      rec.setRecipientText(t);
+      rec.setRecipientSuggestOpen(true);
+    },
+    onRecipientFocus: () => rec.setRecipientSuggestOpen(true),
+    onRecipientBlur: () => {
+      setTimeout(() => rec.setRecipientSuggestOpen(false), 150);
+    },
+    recipientSuggestOpen: rec.recipientSuggestOpen,
+    recipientSuggestions: rec.recipientSuggestions,
+    onCommitRecipient: (name: string) => void rec.commitRecipient(name),
+  }), [rec.recipientText, rec.recipientSuggestOpen, rec.recipientSuggestions, rec.setRecipientText, rec.setRecipientSuggestOpen, rec.commitRecipient]);
 
-    const fmtQty = (n: number) => Number(n).toLocaleString("ru-RU", { maximumFractionDigits: 3 });
+  const pickOptions = useMemo(() => {
+    const base =
+      pickModal.what === "object"
+        ? objectList
+        : pickModal.what === "level"
+          ? levelList
+          : pickModal.what === "system"
+            ? systemList
+            : pickModal.what === "zone"
+              ? zoneList
+              : recipientList;
 
-    const isPicked = Number(pickedQty ?? 0) > 0;
+    const q = pickFilter.trim().toLowerCase();
+    if (!q) return base;
 
-    return (
-      <View style={{ marginBottom: 12, paddingHorizontal: 16 }}>
-        <Pressable onPress={() => stockPickUi.openStockIssue(r)}>
-          <View
-            style={[
-              s.mobCard,
-              isPicked && { borderColor: UI.accent, borderWidth: 2 },
-            ]}
-          >
-            <View style={s.mobMain}>
-              <Text style={s.mobTitle} numberOfLines={2}>
-                {String(r.name ?? "").trim() || "—"}
-              </Text>
+    return (base || []).filter((x) => String(x.label || "").toLowerCase().includes(q));
+  }, [pickModal.what, pickFilter, objectList, levelList, systemList, zoneList, recipientList]);
 
-              <Text style={s.mobMeta} numberOfLines={2}>
-                {`Доступно ${fmtQty(available)} ${uomLabel} · Резерв ${fmtQty(reserved)} `}
-              </Text>
+  const applyReportPeriod = useCallback((from: string, to: string) => {
+    const nextFrom = from || "";
+    const nextTo = to || "";
+    setPeriodFrom(nextFrom);
+    setPeriodTo(nextTo);
+    setRepPeriodOpen(false);
+    void fetchReports({ from: nextFrom, to: nextTo });
+  }, [fetchReports]);
 
-              {isPicked ? (
-                <Text style={{ marginTop: 6, color: UI.text, fontWeight: "900" }}>
-                  {`Выбрано: ${fmtQty(Number(pickedQty))} ${uomLabel} `}
-                </Text>
-              ) : null}
-            </View>
+  const clearReportPeriod = useCallback(() => {
+    setPeriodFrom("");
+    setPeriodTo("");
+    setRepPeriodOpen(false);
+    void fetchReports({ from: "", to: "" });
+  }, [fetchReports]);
 
-            <View style={s.metaPill}>
-              <Text style={s.metaPillText}>{fmtQty(onHand)}</Text>
-            </View>
-          </View>
-        </Pressable>
-      </View>
-    );
-  });
+  const onPickOption = useCallback((opt: Option) => {
+    if (pickModal.what === "recipient") {
+      void rec.commitRecipient(opt.label);
+      closePick();
+      return;
+    }
+    applyPick(opt);
+  }, [pickModal.what, rec.commitRecipient, closePick, applyPick]);
 
-  const HistoryRowView = ({ h }: { h: any }) => {
-    const dt = new Date(h.event_dt).toLocaleString("ru-RU");
-    const qty = h.qty ?? 0;
+  const closeReportPeriod = useCallback(() => {
+    setRepPeriodOpen(false);
+  }, []);
 
-    const typeLabel =
-      h.event_type === "RECEIPT"
-        ? "Приход"
-        : h.event_type === "ISSUE"
-          ? "Расход"
-          : h.event_type;
+  const repPeriodUi = useMemo(() => ({
+    cardBg: UI.cardBg,
+    text: UI.text,
+    sub: UI.sub,
+    border: "rgba(255,255,255,0.14)",
+    accentBlue: "#3B82F6",
+    approve: UI.accent,
+  }), []);
 
-    return (
-      <View style={{ marginBottom: 12, paddingHorizontal: 16 }}>
-        <View style={s.mobCard}>
-          <View style={s.mobMain}>
-            <Text style={s.mobTitle} numberOfLines={1}>{typeLabel}</Text>
-            <Text style={s.mobMeta} numberOfLines={2}>
-              {`${dt} · ${h.code || "—"} · ${uomLabelRu(h.uom_id) || "—"} · ${qty} `}
-            </Text>
-          </View>
-        </View>
-      </View>
-    );
-  };
+  const listContentStyle = useMemo(
+    () => ({ paddingTop: HEADER_MAX + 12, paddingBottom: 24 }),
+    [HEADER_MAX],
+  );
 
-  const ExpenditureHeader = useMemo(() => {
-    return (
-      <View style={{ paddingHorizontal: 16, paddingBottom: 10 }}>
-        <View style={s.sectionBox}>
-          <View style={{ marginTop: 2 }}>
-            <Text style={{ color: UI.sub, fontWeight: "800", marginBottom: 6 }}>
-              Получатель
-            </Text>
+  const listRefreshControl = useMemo(
+    () => <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />,
+    [refreshing, onRefresh],
+  );
+  const listOnScroll = useMemo(() => (isWeb ? undefined : headerApi.onListScroll), [isWeb, headerApi.onListScroll]);
+  const listScrollEventThrottle = useMemo(() => (isWeb ? undefined : 16), [isWeb]);
 
-            <TextInput
-              value={rec.recipientText}
-              onChangeText={(t) => {
-                rec.setRecipientText(t);
-                rec.setRecipientSuggestOpen(true);
-              }}
-              placeholder="Введите ФИО получателя…"
-              placeholderTextColor={UI.sub}
-              style={s.input}
-              onFocus={() => rec.setRecipientSuggestOpen(true)}
-              onBlur={() => {
-                setTimeout(() => rec.setRecipientSuggestOpen(false), 150);
-              }}
-            />
+  const fmtRuDate = useCallback((iso?: string | null) => {
+    if (!iso) return "";
+    return new Date(iso).toLocaleDateString("ru-RU", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    });
+  }, []);
 
-            {rec.recipientSuggestOpen && rec.recipientSuggestions.length > 0 ? (
-              <View style={{ marginTop: 8, gap: 8 }}>
-                {rec.recipientSuggestions.map((name: string) => (
-                  <Pressable
-                    key={name}
-                    onPress={() => void rec.commitRecipient(name)}
-                    style={s.openBtn}
-                  >
-                    <Text style={s.openBtnText} numberOfLines={1}>
-                      {name}
-                    </Text>
-                  </Pressable>
-                ))}
-              </View>
-            ) : null}
-          </View>
-        </View>
-      </View>
-    );
-  }, [rec.recipientText, rec.recipientSuggestOpen, rec.recipientSuggestions, rec.setRecipientText, rec.setRecipientSuggestOpen, rec.commitRecipient]);
+  const onWarehousemanFioChange = useCallback((t: string) => {
+    setWarehousemanFio(t);
+    void AsyncStorage.setItem("wh_warehouseman_fio", t);
+  }, []);
 
+  const onReqEndReached = useCallback(() => {
+    if (reqRefs.current.hasMore && !reqRefs.current.fetching) {
+      fetchReqHeads(reqRefs.current.page + 1);
+    }
+  }, [fetchReqHeads]);
+
+  const onIncomingEndReached = useCallback(() => {
+    if (incoming.toReceiveHasMore && !incoming.toReceiveIsFetching) {
+      incoming.fetchToReceive(incoming.toReceivePage + 1);
+    }
+  }, [incoming]);
+
+  const getIncomingHeadStats = useCallback((item: any) => {
+    const recSum = Math.round(nz(item.qty_received_sum, 0));
+    const leftSum = Math.round(nz(item.qty_expected_sum, 0) - nz(item.qty_received_sum, 0));
+    return { recSum, leftSum };
+  }, []);
+
+  const onIncomingItemsSubmit = useCallback((id: string) => {
+    if (!id) return;
+    void receiveSelectedForHead(id);
+  }, [receiveSelectedForHead]);
+
+  const closeItemsModal = useCallback(() => {
+    setItemsModal(null);
+  }, []);
+
+  const onPickRecipient = useCallback((name: string) => {
+    void rec.commitRecipient(name);
+  }, [rec.commitRecipient]);
+
+  const closeIncomingDetails = useCallback(() => {
+    (reportsUi as any).closeIncomingDetails();
+  }, [reportsUi]);
+  const pickTitle = useMemo(() => {
+    return pickModal.what === "object"
+      ? "Выбор объекта"
+      : pickModal.what === "level"
+        ? "Выбор этажа/уровня"
+        : pickModal.what === "system"
+          ? "Выбор системы/вида работ"
+          : pickModal.what === "zone"
+            ? "Выбор зоны/участка"
+            : "Выбор получателя";
+  }, [pickModal.what]);
+
+  const onReportsBack = useCallback(() => {
+    setReportsMode("choice");
+  }, []);
+
+  const onReportsSelectMode = useCallback((m: "choice" | "issue" | "incoming") => {
+    setReportsMode(m);
+  }, []);
+
+  const onOpenRepPeriod = useCallback(() => {
+    setRepPeriodOpen(true);
+  }, []);
+
+  const onReportsRefresh = useCallback(() => {
+    void fetchReports();
+  }, [fetchReports]);
+
+  const onPdfRegisterPress = useCallback(() => {
+    void onPdfRegister();
+  }, [onPdfRegister]);
+
+  const onPdfDocumentPress = useCallback((id: string | number) => {
+    void onPdfDocument(id);
+  }, [onPdfDocument]);
+
+  const onPdfMaterialsPress = useCallback(() => {
+    void onPdfMaterials();
+  }, [onPdfMaterials]);
+
+  const onPdfObjectWorkPress = useCallback(() => {
+    void onPdfObjectWork();
+  }, [onPdfObjectWork]);
+
+  const onPdfDayRegisterPress = useCallback((day: string) => {
+    void onPdfDayRegister(day);
+  }, [onPdfDayRegister]);
+
+  const onPdfDayMaterialsPress = useCallback((day: string) => {
+    void onPdfDayMaterials(day);
+  }, [onPdfDayMaterials]);
+
+  const reportsTabUi = useMemo(() => ({
+    ...reportsUi,
+    issuesByDay: reportsMode === "incoming" ? (reportsUi as any).incomingByDay : (reportsUi as any).vydachaByDay,
+  }), [reportsUi, reportsMode]);
+
+  const reportsOnScroll = useMemo(() => (Platform.OS === "web" ? undefined : headerApi.onListScroll), [headerApi.onListScroll]);
+  const reportsScrollEventThrottle = useMemo(() => (Platform.OS === "web" ? undefined : 16), []);
   const renderReqIssue = () => {
     return (
       <View style={{ flex: 1 }}>
         <AnimatedFlatList
-          data={sortedReqHeads as any[]}
-          keyExtractor={(x: any) => x.request_id}
-          contentContainerStyle={{ paddingTop: HEADER_MAX + 12, paddingBottom: 24 }}
-          onScroll={isWeb ? undefined : headerApi.onListScroll}
-          scrollEventThrottle={isWeb ? undefined : 16}
-          onEndReached={() => {
-            if (reqRefs.current.hasMore && !reqRefs.current.fetching) {
-              fetchReqHeads(reqRefs.current.page + 1);
-            }
-          }}
+          data={sortedReqHeads}
+          keyExtractor={(x: ReqHeadRow) => x.request_id}
+          contentContainerStyle={listContentStyle}
+          onScroll={listOnScroll}
+          scrollEventThrottle={listScrollEventThrottle}
+          onEndReached={onReqEndReached}
           onEndReachedThreshold={0.5}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-          ListFooterComponent={() => (
-            reqHeadsFetchingPage ? (
-              <View style={{ padding: 20, alignItems: "center" }}>
-                <ActivityIndicator color={UI.sub} />
-              </View>
-            ) : null
-          )}
-          ListHeaderComponent={ExpenditureHeader}
+          refreshControl={listRefreshControl}
+          ListFooterComponent={null}
+          ListHeaderComponent={<ExpenditureHeader {...expenditureHeaderProps} />}
 
           renderItem={({ item }: { item: any }) => {
             const totalPos = Math.max(0, Number(item.items_cnt ?? 0));
@@ -1584,7 +948,7 @@ export default function Warehouse() {
             if (lvl) locParts.push(lvl);
             if (sys) locParts.push(sys);
 
-            const dateStr = item.submitted_at ? new Date(item.submitted_at).toLocaleDateString("ru-RU", { day: "2-digit", month: "2-digit", year: "numeric" }) : "";
+            const dateStr = fmtRuDate(item.submitted_at);
 
             return (
               <View style={{ marginBottom: 10, paddingHorizontal: 6 }}>
@@ -1655,11 +1019,11 @@ export default function Warehouse() {
       return (
         <View style={{ flex: 1 }}>
           <AnimatedFlatList
-            data={incoming.toReceive as any[]}
-            keyExtractor={(i: any) => i.incoming_id}
-            contentContainerStyle={{ paddingTop: HEADER_MAX + 12, paddingBottom: 24 }}
-            onScroll={isWeb ? undefined : headerApi.onListScroll}
-            scrollEventThrottle={isWeb ? undefined : 16}
+            data={incoming.toReceive}
+            keyExtractor={(i: IncomingRow) => i.incoming_id}
+            contentContainerStyle={listContentStyle}
+            onScroll={listOnScroll}
+            scrollEventThrottle={listScrollEventThrottle}
             ListHeaderComponent={
               <View style={{ paddingHorizontal: 16, marginBottom: 12 }}>
                 <View style={s.sectionBox}>
@@ -1668,10 +1032,7 @@ export default function Warehouse() {
                   </Text>
                   <TextInput
                     value={warehousemanFio}
-                    onChangeText={(t) => {
-                      setWarehousemanFio(t);
-                      void AsyncStorage.setItem("wh_warehouseman_fio", t);
-                    }}
+                    onChangeText={onWarehousemanFioChange}
                     placeholder="Введите ФИО…"
                     placeholderTextColor={UI.sub}
                     style={s.input}
@@ -1679,36 +1040,18 @@ export default function Warehouse() {
                 </View>
               </View>
             }
-            onEndReached={() => {
-
-              if (incoming.toReceiveHasMore && !incoming.toReceiveIsFetching) {
-                incoming.fetchToReceive(incoming.toReceivePage + 1);
-              }
-            }}
+            onEndReached={onIncomingEndReached}
             onEndReachedThreshold={0.5}
-            ListFooterComponent={
-              incoming.toReceiveIsFetching ? (
-                <View style={{ padding: 20, alignItems: "center" }}>
-                  <ActivityIndicator color={UI.sub} />
-                </View>
-              ) : null
-            }
+            ListFooterComponent={null}
             renderItem={({ item }: { item: any }) => {
-              const recSum = Math.round(nz(item.qty_received_sum, 0));
-              const leftSum = Math.round(nz(item.qty_expected_sum, 0) - nz(item.qty_received_sum, 0));
+              const { recSum, leftSum } = getIncomingHeadStats(item);
 
               const prNo = formatProposalBaseNo(
                 incoming.proposalNoByPurchase[item.purchase_id] || item.po_no,
                 item.purchase_id
               );
 
-              const dateStr = item.purchase_created_at
-                ? new Date(item.purchase_created_at).toLocaleDateString("ru-RU", {
-                  day: "2-digit",
-                  month: "2-digit",
-                  year: "numeric"
-                })
-                : "—";
+              const dateStr = fmtRuDate(item.purchase_created_at) || "—";
 
               return (
                 <View style={{ marginBottom: 10, paddingHorizontal: 6 }}>
@@ -1748,7 +1091,7 @@ export default function Warehouse() {
                 Нет записей в очереди склада.
               </Text>
             }
-            refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+            refreshControl={listRefreshControl}
           />
         </View>
       );
@@ -1769,15 +1112,15 @@ export default function Warehouse() {
 
       return (
         <AnimatedFlatList
-          data={stockFiltered as any[]}
-          keyExtractor={(i: any) => i.material_id}
-          contentContainerStyle={{ paddingTop: HEADER_MAX + 12, paddingBottom: 24 }}
-          onScroll={isWeb ? undefined : headerApi.onListScroll}
-          scrollEventThrottle={isWeb ? undefined : 16}
+          data={stockFiltered}
+          keyExtractor={(i: StockRow) => i.material_id}
+          contentContainerStyle={listContentStyle}
+          onScroll={listOnScroll}
+          scrollEventThrottle={listScrollEventThrottle}
           renderItem={({ item }: { item: any }) => {
             const codeRaw = String(item.code ?? "").trim();
             const pickedQty = stockPickUi.getPickedQty(codeRaw, item?.uom_id ? String(item.uom_id).trim() : null);
-            return <StockRowView r={item} pickedQty={pickedQty} />;
+            return <StockRowView r={item} pickedQty={pickedQty} onPress={openStockIssue} />;
           }}
           ListHeaderComponent={
             <StockFactHeader
@@ -1795,7 +1138,7 @@ export default function Warehouse() {
               recipientSuggestOpen={rec.recipientSuggestOpen}
               setRecipientSuggestOpen={rec.setRecipientSuggestOpen}
               recipientSuggestions={rec.recipientSuggestions}
-              onPickRecipient={(name) => void rec.commitRecipient(name)}
+              onPickRecipient={onPickRecipient}
 
               stockSearch={stockSearch}
               onStockSearch={setStockSearch}
@@ -1821,54 +1164,23 @@ export default function Warehouse() {
       <WarehouseReportsTab
         headerTopPad={HEADER_MAX + 8}
         mode={reportsMode}
-        onBack={() => setReportsMode("choice")}
-        onSelectMode={(m) => setReportsMode(m)}
-        onScroll={Platform.OS === "web" ? undefined : headerApi.onListScroll}
-        scrollEventThrottle={Platform.OS === "web" ? undefined : 16}
+        onBack={onReportsBack}
+        onSelectMode={onReportsSelectMode}
+        onScroll={reportsOnScroll}
+        scrollEventThrottle={reportsScrollEventThrottle}
         periodFrom={periodFrom}
         periodTo={periodTo}
         repStock={repStock}
         repMov={repMov}
-        reportsUi={{
-          ...reportsUi,
-          issuesByDay: reportsMode === "incoming" ? (reportsUi as any).incomingByDay : (reportsUi as any).vydachaByDay
-        }}
-        onOpenPeriod={() => setRepPeriodOpen(true)}
-        onRefresh={() => void fetchReports()}
-        onPdfRegister={() => {
-          if (reportsMode === "incoming") {
-            void runPdfTop({
-              busy,
-              supabase,
-              key: `pdf: warehouse: incoming - register:${periodFrom || "all"}:${periodTo || "all"}`,
-              label: "Готовлю реестр прихода…",
-              mode: Platform.OS === "web" ? "preview" : "share",
-              fileName: `Warehouse_Incoming_${periodFrom || "all"}_${periodTo || "all"}`,
-              getRemoteUrl: async () => await (reportsUi as any).buildIncomingRegisterHtml(),
-            });
-          } else {
-            void onPdfRegister();
-          }
-        }}
-        onPdfDocument={(id) => void onPdfDocument(id)}
-        onPdfMaterials={() => void onPdfMaterials()}
-        onPdfObjectWork={() => void onPdfObjectWork()}
-        onPdfDayRegister={(day) => {
-          if (reportsMode === "incoming") {
-            void runPdfTop({
-              busy,
-              supabase,
-              key: `pdf: warehouse: incoming - day - register:${day}`,
-              label: "Готовлю реестр прихода за день…",
-              mode: Platform.OS === "web" ? "preview" : "share",
-              fileName: `WH_Incoming_Register_${String(day).trim().replace(/\s+/g, "_")}`,
-              getRemoteUrl: async () => await (reportsUi as any).buildDayIncomingRegisterPdf(day),
-            });
-          } else {
-            void onPdfDayRegister(day);
-          }
-        }}
-        onPdfDayMaterials={(day) => void onPdfDayMaterials(day)}
+        reportsUi={reportsTabUi}
+        onOpenPeriod={onOpenRepPeriod}
+        onRefresh={onReportsRefresh}
+        onPdfRegister={onPdfRegisterPress}
+        onPdfDocument={onPdfDocumentPress}
+        onPdfMaterials={onPdfMaterialsPress}
+        onPdfObjectWork={onPdfObjectWorkPress}
+        onPdfDayRegister={onPdfDayRegisterPress}
+        onPdfDayMaterials={onPdfDayMaterialsPress}
       />
     );
 
@@ -1888,7 +1200,6 @@ export default function Warehouse() {
               top: 0,
               zIndex: 50,
               overflow: "hidden",
-              willChange: "transform",
             } as any)
             : null,
           {
@@ -1936,7 +1247,7 @@ export default function Warehouse() {
       />
       <IncomingItemsSheet
         visible={!!itemsModal}
-        onClose={() => setItemsModal(null)}
+        onClose={closeItemsModal}
         title="Позиции прихода"
         prText={
           itemsModal
@@ -1954,10 +1265,7 @@ export default function Warehouse() {
         qtyInputByItem={qtyInputByItem}
         setQtyInputByItem={setQtyInputByItem}
         receivingHeadId={receivingHeadId}
-        onSubmit={(id) => {
-          if (!id) return;
-          void receiveSelectedForHead(id);
-        }}
+        onSubmit={onIncomingItemsSubmit}
       />
       <IssueDetailsSheet
         visible={issueDetailsId != null}
@@ -1973,7 +1281,7 @@ export default function Warehouse() {
         loadingId={incomingLinesLoadingId}
         linesById={incomingLinesById}
         matNameByCode={matNameByCode}
-        onClose={(reportsUi as any).closeIncomingDetails}
+        onClose={closeIncomingDetails}
       />
 
       <ReqIssueModal
@@ -1995,80 +1303,29 @@ export default function Warehouse() {
       />
       <PickOptionSheet
         visible={!!pickModal.what}
-        title={
-          pickModal.what === "object"
-            ? "Выбор объекта"
-            : pickModal.what === "level"
-              ? "Выбор этажа/уровня"
-              : pickModal.what === "system"
-                ? "Выбор системы/вида работ"
-                : pickModal.what === "zone"
-                  ? "Выбор зоны/участка"
-                  : "Выбор получателя"
-        }
-
+        title={pickTitle}
         filter={pickFilter}
         onFilterChange={setPickFilter}
-        items={(() => {
-          const base =
-            pickModal.what === "object"
-              ? objectList
-              : pickModal.what === "level"
-                ? levelList
-                : pickModal.what === "system"
-                  ? systemList
-                  : pickModal.what === "zone"
-                    ? zoneList
-                    : recipientList;
-
-          const q = pickFilter.trim().toLowerCase();
-          if (!q) return base;
-
-          return (base || []).filter((x) => String(x.label || "").toLowerCase().includes(q));
-        })()}
-        onPick={(opt) => {
-          if (pickModal.what === "recipient") {
-            void rec.commitRecipient(opt.label);
-            closePick();
-            return;
-          }
-
-          applyPick(opt);
-        }}
+        items={pickOptions}
+        onPick={onPickOption}
         onClose={closePick}
       />
 
       {repPeriodOpen ? (
         <PeriodPickerSheet
           visible={repPeriodOpen}
-          onClose={() => setRepPeriodOpen(false)}
+          onClose={closeReportPeriod}
           initialFrom={periodFrom || ""}
           initialTo={periodTo || ""}
-          onApply={(from: string, to: string) => {
-            const nextFrom = from || "";
-            const nextTo = to || "";
-            setPeriodFrom(nextFrom);
-            setPeriodTo(nextTo);
-            setRepPeriodOpen(false);
-            void fetchReports({ from: nextFrom, to: nextTo });
-          }}
-          onClear={() => {
-            setPeriodFrom("");
-            setPeriodTo("");
-            setRepPeriodOpen(false);
-            void fetchReports({ from: "", to: "" });
-          }}
-          ui={{
-            cardBg: UI.cardBg,
-            text: UI.text,
-            sub: UI.sub,
-            border: "rgba(255,255,255,0.14)",
-            accentBlue: "#3B82F6",
-            approve: UI.accent,
-          }}
+          onApply={applyReportPeriod}
+          onClear={clearReportPeriod}
+          ui={repPeriodUi}
         />
       ) : null}
     </View>
   );
 }
+
+
+
 
