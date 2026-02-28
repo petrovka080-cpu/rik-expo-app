@@ -1,22 +1,32 @@
-import React from "react";
+﻿import React from "react";
 import { Pressable, Text, View } from "react-native";
 import type { AccountantInboxRow } from "../../../lib/rik_api";
 import { UI } from "../ui";
 import { statusFromRaw, statusColors } from "../helpers";
 import Chip from "./Chip";
 
+type ListRowItem = AccountantInboxRow & {
+  total_paid?: number | null;
+  invoice_amount?: number | null;
+  payment_status?: string | null;
+  supplier?: string | null;
+  invoice_number?: string | null;
+  invoice_date?: string | null;
+  invoice_currency?: string | null;
+};
+
 function ListRowInner({
   item,
   onPress,
 }: {
-  item: AccountantInboxRow;
+  item: ListRowItem;
   onPress: () => void;
 }) {
-  const total = Number((item as any).total_paid ?? 0);
-  const sum = Number((item as any).invoice_amount ?? 0);
+  const total = Number(item.total_paid ?? 0);
+  const sum = Number(item.invoice_amount ?? 0);
   const rest = sum > 0 ? Math.max(0, sum - total) : 0;
 
-  const st = statusFromRaw((item as any).payment_status, false);
+  const st = statusFromRaw(item.payment_status, false);
   const sc = statusColors(st.key);
   const isPaidFull = rest === 0 && st.key === "PAID";
 
@@ -41,8 +51,7 @@ function ListRowInner({
       <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
         <View style={{ flex: 1 }}>
           <Text style={{ fontWeight: "900", color: UI.text }} numberOfLines={1}>
-            {(item as any).supplier || "—"} • {(item as any).invoice_number || "без №"} (
-            {(item as any).invoice_date || "—"})
+            {item.supplier || "—"} • {item.invoice_number || "без №"} ({item.invoice_date || "—"})
           </Text>
         </View>
 
@@ -54,7 +63,7 @@ function ListRowInner({
       <Text style={{ color: UI.sub, fontWeight: "700" }}>
         Счёт:{" "}
         <Text style={{ fontWeight: "900", color: UI.text }}>
-          {(sum || 0) + " " + ((item as any).invoice_currency || "KGS")}
+          {(sum || 0) + " " + (item.invoice_currency || "KGS")}
         </Text>
         {" • Оплачено: "}
         <Text style={{ fontWeight: "900", color: UI.text }}>{total}</Text>

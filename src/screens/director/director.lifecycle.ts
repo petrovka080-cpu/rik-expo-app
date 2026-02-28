@@ -67,6 +67,7 @@ export function useDirectorLifecycle({
     } else if (tabKey === "Отчёты") {
       void fetchReport();
     }
+    // "Подряды" — DirectorSubcontractTab загружает данные самостоятельно
   }, [isScreenFocused, dirTab, finFrom, finTo, repFrom, repTo, fetchFinance, fetchReport]);
 
   useEffect(() => {

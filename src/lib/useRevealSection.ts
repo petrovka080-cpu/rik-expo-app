@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useRef } from "react";
-import { Platform, ScrollView } from "react-native";
+import { Platform, type LayoutChangeEvent } from "react-native";
 
 type ScrollToLike = {
   scrollTo?: (opts: { y: number; animated?: boolean }) => void;
@@ -13,7 +13,7 @@ export function useRevealSection(offset = 24) {
     sectionYRef.current = Math.max(0, Math.floor(y || 0));
   }, []);
 
-  const onSectionLayout = useCallback((e: any) => {
+  const onSectionLayout = useCallback((e: LayoutChangeEvent) => {
     const y = e?.nativeEvent?.layout?.y ?? 0;
     registerSection(y);
   }, [registerSection]);

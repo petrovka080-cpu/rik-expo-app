@@ -18,4 +18,6 @@ android/.gradle/
 ts_errors*.txt
 final_ts_errors.txt
 *_errors*.txt
+eas-cli-*.tgz
+package/
 

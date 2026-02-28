@@ -1,6 +1,6 @@
 // src/screens/director/director.types.ts
 export type Tab = "foreman" | "buyer";
-export type DirTopTab = "Заявки" | "Финансы" | "Склад" | "Отчёты";
+export type DirTopTab = "Заявки" | "Подряды" | "Финансы" | "Склад" | "Отчёты";
 
 export type PendingRow = {
   id: number;

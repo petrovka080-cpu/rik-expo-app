@@ -1,4 +1,4 @@
-// src/screens/accountant/types.ts
+﻿// src/screens/accountant/types.ts
 export type Tab = "К оплате" | "Частично" | "Оплачено" | "На доработке" | "История";
 
 export const TABS: Tab[] = ["К оплате", "Частично", "Оплачено", "На доработке", "История"];

@@ -6,6 +6,7 @@ import {
   Text,
   Alert,
   Platform,
+  Pressable,
   KeyboardAvoidingView,
   Animated,
 } from 'react-native';
@@ -17,6 +18,7 @@ import ForemanReqItemRow from "../../src/screens/foreman/ForemanReqItemRow";
 import ForemanHistoryModal from "../../src/screens/foreman/ForemanHistoryModal";
 import ForemanDraftModal from "../../src/screens/foreman/ForemanDraftModal";
 import ForemanEditorSection from "../../src/screens/foreman/ForemanEditorSection";
+import ForemanSubcontractTab from "../../src/screens/foreman/ForemanSubcontractTab";
 import { useForemanDicts } from "../../src/screens/foreman/useForemanDicts";
 import { s } from "../../src/screens/foreman/foreman.styles";
 import { REQUEST_STATUS_STYLES, TYPO, UI } from "../../src/screens/foreman/foreman.ui";
@@ -186,6 +188,9 @@ export default function ForemanScreen() {
   const [qtyBusyMap, setQtyBusyMap] = useState<Record<string, boolean>>({});
   const cancelLockRef = useRef<Record<string, boolean>>({});
   const [busy, setBusy] = useState(false);
+
+  // Таб прораба: Материалы | Подряды
+  const [foremanMainTab, setForemanMainTab] = useState<'materials' | 'subcontracts'>('materials');
 
   // Separate spinners
   const [draftDeleteBusy, setDraftDeleteBusy] = useState(false);
@@ -587,7 +592,7 @@ export default function ForemanScreen() {
   }, [gbusy, supabase]);
 
 
-  
+
 
   // Восстанавливаем только уже существующий локальный черновик.
   // Новый черновик создается лениво при первом действии пользователя.
@@ -833,8 +838,8 @@ export default function ForemanScreen() {
 
           await syncRequestHeaderMeta(rid, "handleCalcAddToRequest");
 
-        const aggregated = aggCalcRows(rows);
-        const prepared = buildPreparedCalcRows(aggregated);
+          const aggregated = aggCalcRows(rows);
+          const prepared = buildPreparedCalcRows(aggregated);
           const { okCount, failCount, failLines } = await appendRowsToDraft(rid, prepared);
           await loadItems(rid);
           setCalcVisible(false);
@@ -1188,23 +1193,11 @@ export default function ForemanScreen() {
     return 'будет создана автоматически';
   }, [labelForRequest, requestDetails?.display_no, requestId]);
 
-  const statusInfo = resolveStatusInfo(
-    requestDetails?.status ?? (isDraftActive ? 'draft' : undefined),
-  );
-  const createdDisplay = useMemo(() => {
-    if (!requestDetails?.created_at) return '—';
-    try {
-      return new Date(requestDetails.created_at).toLocaleString('ru-RU');
-    } catch {
-      return requestDetails.created_at;
-    }
-  }, [requestDetails?.created_at]);
-  const HEADER_MAX = 126;
+  const HEADER_MAX = 98;
   const HEADER_MIN = 64;
   const {
     headerHeight,
     titleSize,
-    subOpacity,
     headerShadow,
     onScroll,
     contentTopPad,
@@ -1265,148 +1258,153 @@ export default function ForemanScreen() {
           {/* Title row */}
           <View style={{ paddingHorizontal: 16, paddingTop: 12 }}>
             <Animated.Text style={[s.cTitle, { fontSize: titleSize, color: UI.text }]} numberOfLines={1}>
-              Заявка
+              {foremanMainTab === 'materials' ? 'Заявка' : 'Подряды'}
             </Animated.Text>
-
+            {/* Табы: Материалы / Подряды */}
+            <View style={{ flexDirection: 'row', gap: 8, marginTop: 6 }}>
+              {(['materials', 'subcontracts'] as const).map((tab) => {
+                const isActive = foremanMainTab === tab;
+                return (
+                  <Pressable
+                    key={tab}
+                    onPress={() => setForemanMainTab(tab)}
+                    style={{
+                      paddingHorizontal: 16,
+                      paddingVertical: 6,
+                      borderRadius: 10,
+                      backgroundColor: isActive ? '#0EA5E9' : 'rgba(255,255,255,0.08)',
+                    }}
+                  >
+                    <Text style={{ color: isActive ? '#fff' : UI.sub, fontWeight: '800', fontSize: 13 }}>
+                      {tab === 'materials' ? 'Материалы' : 'Подряды'}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </View>
           </View>
 
-          {/* Details row (fade out) */}
-          <Animated.View style={{ opacity: subOpacity, paddingHorizontal: 16, paddingTop: 8 }}>
-            <View style={s.requestSummaryBox}>
-              <View style={s.requestSummaryTop}>
-                <Text
-                  style={[s.requestNumber, { flex: 1, flexShrink: 1 }]}
-                  numberOfLines={1}
-                  ellipsizeMode="tail"
-                >
-                  {currentDisplayLabel}
-                </Text>
-
-                <View
-                  style={[
-                    s.historyStatusBadge,
-                    {
-                      backgroundColor: 'rgba(255,255,255,0.06)',
-                      borderWidth: 1,
-                      borderColor: 'rgba(255,255,255,0.12)',
-                    },
-                  ]}
-                >
-                  <Text style={{ color: UI.text, fontWeight: '900' }}>
-                    {statusInfo.label}
-                  </Text>
-                </View>
-
-              </View>
-
-              <Text style={s.requestMeta}>Создана: {createdDisplay}</Text>
-            </View>
-          </Animated.View>
         </Animated.View>
 
-        <ForemanEditorSection
-          contentTopPad={contentTopPad}
-          onScroll={onScroll}
-          foreman={foreman}
-          onForemanChange={handleForemanChange}
-          foremanFocus={foremanFocus}
-          setForemanFocus={setForemanFocus}
-          blurTimerRef={blurTimerRef}
-          foremanHistory={foremanHistory}
-          objectType={objectType}
-          level={level}
-          system={system}
-          zone={zone}
-          objOptions={objOptions}
-          lvlOptions={lvlOptions}
-          sysOptions={sysOptions}
-          zoneOptions={zoneOptions}
-          onObjectChange={handleObjectChange}
-          onLevelChange={handleLevelChange}
-          onSystemChange={handleSystemChange}
-          onZoneChange={handleZoneChange}
-          ensureHeaderReady={ensureHeaderReady}
-          isDraftActive={isDraftActive}
-          showHint={showHint}
-          setCatalogVisible={setCatalogVisible}
-          busy={busy}
-          onCalcPress={handleCalcPress}
-          setDraftOpen={setDraftOpen}
-          currentDisplayLabel={currentDisplayLabel}
-          itemsCount={items?.length ?? 0}
-          onOpenHistory={handleOpenHistory}
-          ui={UI}
-          styles={s}
-        />
+        {/* Таб Подряды */}
+        {foremanMainTab === 'subcontracts' ? (
+          <ForemanSubcontractTab
+            contentTopPad={contentTopPad}
+            onScroll={onScroll}
+            dicts={{
+              objOptions,
+              lvlOptions,
+              sysOptions,
+            }}
+          />
+        ) : null}
 
+        {/* Таб Материалы — весь существующий черновик без изменений */}
+        {foremanMainTab === 'materials' ? (
+          <>
+            <ForemanEditorSection
+              contentTopPad={contentTopPad}
+              onScroll={onScroll}
+              foreman={foreman}
+              onForemanChange={handleForemanChange}
+              foremanFocus={foremanFocus}
+              setForemanFocus={setForemanFocus}
+              blurTimerRef={blurTimerRef}
+              foremanHistory={foremanHistory}
+              objectType={objectType}
+              level={level}
+              system={system}
+              zone={zone}
+              objOptions={objOptions}
+              lvlOptions={lvlOptions}
+              sysOptions={sysOptions}
+              zoneOptions={zoneOptions}
+              onObjectChange={handleObjectChange}
+              onLevelChange={handleLevelChange}
+              onSystemChange={handleSystemChange}
+              onZoneChange={handleZoneChange}
+              ensureHeaderReady={ensureHeaderReady}
+              isDraftActive={isDraftActive}
+              showHint={showHint}
+              setCatalogVisible={setCatalogVisible}
+              busy={busy}
+              onCalcPress={handleCalcPress}
+              setDraftOpen={setDraftOpen}
+              currentDisplayLabel={currentDisplayLabel}
+              itemsCount={items?.length ?? 0}
+              onOpenHistory={handleOpenHistory}
+              ui={UI}
+              styles={s}
+            />
 
-        <ForemanHistoryModal
-          visible={historyVisible}
-          onClose={handleCloseHistory}
-          loading={historyLoading}
-          requests={historyRequests}
-          resolveStatusInfo={resolveStatusInfo}
-          onSelect={handleHistorySelect}
-          onOpenPdf={openHistoryPdf}
-          isPdfBusy={(key) => gbusy.isBusy(key)}
-          shortId={shortId}
-          styles={s}
-        />
+            <ForemanHistoryModal
+              visible={historyVisible}
+              onClose={handleCloseHistory}
+              loading={historyLoading}
+              requests={historyRequests}
+              resolveStatusInfo={resolveStatusInfo}
+              onSelect={handleHistorySelect}
+              onOpenPdf={openHistoryPdf}
+              isPdfBusy={(key) => gbusy.isBusy(key)}
+              shortId={shortId}
+              styles={s}
+            />
 
-        <CatalogModal
-          visible={catalogVisible}
-          onClose={() => setCatalogVisible(false)}
-          rikQuickSearch={rikQuickSearch}
-          onCommitToDraft={commitCatalogToDraft}
-          onOpenDraft={openDraftFromCatalog}
-          draftCount={items?.length ?? 0}
-        />
-        <WorkTypePicker
-          visible={workTypePickerVisible}
-          onClose={() => setWorkTypePickerVisible(false)}
-          onSelect={(wt) => {
-            setSelectedWorkType(wt);
-            setWorkTypePickerVisible(false);
-            setCalcVisible(true);
-          }}
-        />
+            <CatalogModal
+              visible={catalogVisible}
+              onClose={() => setCatalogVisible(false)}
+              rikQuickSearch={rikQuickSearch}
+              onCommitToDraft={commitCatalogToDraft}
+              onOpenDraft={openDraftFromCatalog}
+              draftCount={items?.length ?? 0}
+            />
+            <WorkTypePicker
+              visible={workTypePickerVisible}
+              onClose={() => setWorkTypePickerVisible(false)}
+              onSelect={(wt) => {
+                setSelectedWorkType(wt);
+                setWorkTypePickerVisible(false);
+                setCalcVisible(true);
+              }}
+            />
 
-        <CalcModal
-          visible={calcVisible}
-          onClose={() => {
-            setCalcVisible(false);
-            setSelectedWorkType(null);
-          }}
-          onBack={() => {
-            setCalcVisible(false);
-            setSelectedWorkType(null);
-            setWorkTypePickerVisible(true);
-          }}
-          workType={selectedWorkType}
-          onAddToRequest={handleCalcAddToRequest}
-        />
-        <ForemanDraftModal
-          visible={draftOpen}
-          onClose={() => setDraftOpen(false)}
-          currentDisplayLabel={currentDisplayLabel}
-          objectName={objectName}
-          levelName={levelName}
-          systemName={systemName}
-          zoneName={zoneName}
-          items={items}
-          renderReqItem={renderReqItem}
-          screenLock={screenLock}
-          draftDeleteBusy={draftDeleteBusy}
-          draftSendBusy={draftSendBusy}
-          onDeleteDraft={handleDeleteDraftFromSheet}
-          onPdf={onPdf}
-          pdfBusy={draftPdfBusy}
-          onSend={handleSendDraftFromSheet}
-          ui={UI}
-          styles={s}
-        />
+            <CalcModal
+              visible={calcVisible}
+              onClose={() => {
+                setCalcVisible(false);
+                setSelectedWorkType(null);
+              }}
+              onBack={() => {
+                setCalcVisible(false);
+                setSelectedWorkType(null);
+                setWorkTypePickerVisible(true);
+              }}
+              workType={selectedWorkType}
+              onAddToRequest={handleCalcAddToRequest}
+            />
+            <ForemanDraftModal
+              visible={draftOpen}
+              onClose={() => setDraftOpen(false)}
+              currentDisplayLabel={currentDisplayLabel}
+              objectName={objectName}
+              levelName={levelName}
+              systemName={systemName}
+              zoneName={zoneName}
+              items={items}
+              renderReqItem={renderReqItem}
+              screenLock={screenLock}
+              draftDeleteBusy={draftDeleteBusy}
+              draftSendBusy={draftSendBusy}
+              onDeleteDraft={handleDeleteDraftFromSheet}
+              onPdf={onPdf}
+              pdfBusy={draftPdfBusy}
+              onSend={handleSendDraftFromSheet}
+              ui={UI}
+              styles={s}
+            />
+          </>
+        ) : null}
       </View>
     </KeyboardAvoidingView>
   );
 }
-

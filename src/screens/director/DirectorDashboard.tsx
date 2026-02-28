@@ -13,7 +13,8 @@ import { StatusBar } from "expo-status-bar";
 import { UI, s } from "./director.styles";
 
 type Tab = "foreman" | "buyer";
-type DirTopTab = "Заявки" | "Финансы" | "Склад" | "Отчёты";
+type DirTopTab = "Заявки" | "Подряды" | "Финансы" | "Склад" | "Отчёты";
+import DirectorSubcontractTab from "./DirectorSubcontractTab";
 
 type Group = { request_id: number | string; items: any[] };
 type ProposalHead = { id: string; submitted_at?: string | null; pretty?: string | null };
@@ -63,7 +64,7 @@ type Props = {
   fetchRows: () => Promise<any>;
   fetchProps: () => Promise<any>;
   rtToast: { visible: boolean; title: string; body: string; count: number };
-  
+
   finLoading: boolean;
   finRows: FinanceRow[];
   finRep: any;
@@ -75,9 +76,9 @@ type Props = {
   fetchFinance: () => Promise<any>;
   finFrom?: string | null;
   finTo?: string | null;
-  
+
   openFinancePage: (page: FinPage) => void;
-  
+
   openReports?: () => void;
   reportsPeriodShort?: string;
 
@@ -112,7 +113,7 @@ export default function DirectorDashboard(p: Props) {
     if (!sv || !rec) return;
     try {
       sv.scrollToOffset({ offset: Math.max(0, rec.x - 12), animated: true });
-    } catch {}
+    } catch { }
   }, [p.dirTab]);
 
   const HeaderContent = (
@@ -124,7 +125,7 @@ export default function DirectorDashboard(p: Props) {
       {/* TOP tabs */}
       <FlatList
         ref={topTabsRef}
-        data={(["Заявки", "Финансы", "Склад", "Отчёты"] as DirTopTab[])}
+        data={(["Заявки", "Подряды", "Финансы", "Склад", "Отчёты"] as DirTopTab[])}
         keyExtractor={(t) => t}
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -381,26 +382,26 @@ export default function DirectorDashboard(p: Props) {
             if (item.key === "debt") {
               return (
                 <Pressable
-  onPress={() => p.openFinancePage("debt")}
-  style={[s.groupHeader, { marginHorizontal: 16, marginBottom: 12 }]}
->
-  <Text style={{ color: UI.text, fontWeight: "900", fontSize: 14 }} numberOfLines={1}>
-    Обязательства
-  </Text>
-</Pressable>
+                  onPress={() => p.openFinancePage("debt")}
+                  style={[s.groupHeader, { marginHorizontal: 16, marginBottom: 12 }]}
+                >
+                  <Text style={{ color: UI.text, fontWeight: "900", fontSize: 14 }} numberOfLines={1}>
+                    Обязательства
+                  </Text>
+                </Pressable>
 
               );
             }
 
             return (
               <Pressable
-  onPress={() => p.openFinancePage("spend")}
-  style={[s.groupHeader, { marginHorizontal: 16, marginBottom: 12 }]}
->
-  <Text style={{ color: UI.text, fontWeight: "900", fontSize: 14 }} numberOfLines={1}>
-    Расходы
-  </Text>
-</Pressable>
+                onPress={() => p.openFinancePage("spend")}
+                style={[s.groupHeader, { marginHorizontal: 16, marginBottom: 12 }]}
+              >
+                <Text style={{ color: UI.text, fontWeight: "900", fontSize: 14 }} numberOfLines={1}>
+                  Расходы
+                </Text>
+              </Pressable>
 
             );
           }}
@@ -431,38 +432,43 @@ export default function DirectorDashboard(p: Props) {
           onScroll={p.onScroll}
           scrollEventThrottle={16}
         />
-     ) : p.dirTab === "Склад" ? (
-  <View style={{ paddingTop: contentTopPad + 4, paddingHorizontal: 16 }}>
-    <Text style={{ color: UI.sub, fontWeight: "800" }}>Склад: позже сделаем сводку.</Text>
-  </View>
-) : (
-  <View style={{ paddingTop: contentTopPad + 4, paddingHorizontal: 16 }}>
-    {/* ✅ Отчёты: карточка отчёта */}
-    <Pressable
-      onPress={() => (p as any).openReports?.()}
-      style={[s.mobCard, { marginBottom: 12 }]}
-    >
-      <View style={s.mobMain}>
-        <Text style={s.mobTitle} numberOfLines={1}>
-          Факт выдачи (склад)
-        </Text>
-        <Text style={s.mobMeta} numberOfLines={2}>
-          {(p as any).reportsPeriodShort ? `Период: ${(p as any).reportsPeriodShort}` : "Период: 30 дней"}
-        </Text>
-      </View>
-
-      <View style={{ marginLeft: 10 }}>
-        <View style={[s.openBtn, { minWidth: 0, paddingVertical: 8, paddingHorizontal: 12 }]}>
-          <Text style={[s.openBtnText, { fontSize: 12 }]}>Открыть</Text>
+      ) : p.dirTab === "Подряды" ? (
+        <DirectorSubcontractTab
+          contentTopPad={contentTopPad}
+          onScroll={p.onScroll}
+        />
+      ) : p.dirTab === "Склад" ? (
+        <View style={{ paddingTop: contentTopPad + 4, paddingHorizontal: 16 }}>
+          <Text style={{ color: UI.sub, fontWeight: "800" }}>Склад: позже сделаем сводку.</Text>
         </View>
-      </View>
-    </Pressable>
+      ) : (
+        <View style={{ paddingTop: contentTopPad + 4, paddingHorizontal: 16 }}>
+          {/* ✅ Отчёты: карточка отчёта */}
+          <Pressable
+            onPress={() => (p as any).openReports?.()}
+            style={[s.mobCard, { marginBottom: 12 }]}
+          >
+            <View style={s.mobMain}>
+              <Text style={s.mobTitle} numberOfLines={1}>
+                Факт выдачи (склад)
+              </Text>
+              <Text style={s.mobMeta} numberOfLines={2}>
+                {(p as any).reportsPeriodShort ? `Период: ${(p as any).reportsPeriodShort}` : "Период: 30 дней"}
+              </Text>
+            </View>
 
-    <Text style={{ color: UI.sub, fontWeight: "800", opacity: 0.85 }}>
-      Отчёт показывает факт выдачи со склада и дисциплину (без заявки/без объекта).
-    </Text>
-  </View>
-)}
+            <View style={{ marginLeft: 10 }}>
+              <View style={[s.openBtn, { minWidth: 0, paddingVertical: 8, paddingHorizontal: 12 }]}>
+                <Text style={[s.openBtnText, { fontSize: 12 }]}>Открыть</Text>
+              </View>
+            </View>
+          </Pressable>
+
+          <Text style={{ color: UI.sub, fontWeight: "800", opacity: 0.85 }}>
+            Отчёт показывает факт выдачи со склада и дисциплину (без заявки/без объекта).
+          </Text>
+        </View>
+      )}
 
     </View>
   );

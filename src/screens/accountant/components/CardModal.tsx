@@ -1,9 +1,18 @@
 import React from "react";
-import { Keyboard, Modal, Platform, View, Animated, Text } from "react-native";
+import { Keyboard, Modal, Platform, View, Animated, Text, ScrollView } from "react-native";
 import DismissKeyboardView from "../../../components/DismissKeyboardView";
 import BottomBar from "./BottomBar";
 import TopRightActionBar from "../../../ui/TopRightActionBar";
 import { Ionicons } from "@expo/vector-icons";
+
+type UiShape = {
+  bg: string;
+  cardBg: string;
+  border: string;
+  text: string;
+  sub: string;
+  btnNeutral?: string;
+};
 
 export default function CardModal({
   visible,
@@ -43,7 +52,7 @@ export default function CardModal({
   kbOpen: boolean;
   kbdH: number;
 
-  ui: any;
+  ui: UiShape;
 
   busyKey: string | null;
   isReadOnlyTab: boolean;
@@ -57,10 +66,10 @@ export default function CardModal({
   onPay: () => Promise<void>;
   runAction: (key: string, fn: () => Promise<void>) => Promise<void>;
 
-  scrollRef: any;
-  onScroll: any;
+  scrollRef: React.Ref<ScrollView>;
+  onScroll: (event: unknown) => void;
   scrollEventThrottle: number;
-  contentContainerStyle: any;
+  contentContainerStyle: object;
 
   children: React.ReactNode;
 }) {

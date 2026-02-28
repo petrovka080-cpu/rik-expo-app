@@ -1,4 +1,4 @@
-// src/screens/accountant/helpers.ts
+﻿// src/screens/accountant/helpers.ts
 import React from "react";
 import { Alert, Platform, Text, View } from "react-native";
 import * as WebBrowser from "expo-web-browser";
@@ -36,7 +36,7 @@ export const safeAlert = (title: string, msg?: string) => {
   }
 };
 
-// ---------- SafeView: фильтрует сырой текст внутри View (фикс RNW) ----------
+// ---------- SafeView: С„РёР»СЊС‚СЂСѓРµС‚ СЃС‹СЂРѕР№ С‚РµРєСЃС‚ РІРЅСѓС‚СЂРё View (С„РёРєСЃ RNW) ----------
 export function SafeView({ children, ...rest }: any) {
   const kids = React.Children.toArray(children).map((c, i) => {
     if (typeof c === "string") return c.trim() ? <Text key={`t${i}`}>{c}</Text> : null;
@@ -50,7 +50,7 @@ export function SafeView({ children, ...rest }: any) {
 export function safeFileNameLite(name: string) {
   return String(name || `file_${Date.now()}`)
     .replace(/[\\/:*?"<>|]+/g, "_")
-    .replace(/[—–]/g, "-")
+    .replace(/[вЂ”вЂ“]/g, "-")
     .replace(/\s+/g, " ")
     .trim();
 }
@@ -94,7 +94,7 @@ export function guessMime(name: string) {
 
 export async function openSignedUrlAcc(url: string, fileName?: string) {
   const u = String(url || "").trim();
-  if (!u) throw new Error("Пустой URL");
+  if (!u) throw new Error("РџСѓСЃС‚РѕР№ URL");
 
   if (Platform.OS === "web") {
     // @ts-ignore
@@ -173,3 +173,4 @@ export async function withTimeout<T>(p: Promise<T>, ms = 20000, label = "timeout
     } catch {}
   }
 }
+

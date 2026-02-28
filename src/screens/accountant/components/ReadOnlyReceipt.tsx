@@ -2,6 +2,14 @@
 import React from "react";
 import { Platform, Pressable, Text, View } from "react-native";
 import { S, UI } from "../ui";
+import type { AttachmentRow, Tab } from "../types";
+import type { AccountantInboxRow } from "../../../lib/rik_api";
+
+type ReceiptCurrent = AccountantInboxRow & {
+  proposal_id?: string;
+  has_invoice?: boolean | null;
+  total_paid?: number | null;
+};
 
 export function ReadOnlyPaymentSummary({
   current,
@@ -14,8 +22,8 @@ export function ReadOnlyPaymentSummary({
   inn,
   kpp,
 }: {
-  current: any;
-  tab: any;
+  current: ReceiptCurrent | null;
+  tab: Tab;
   currentPaymentId: number | null;
   note: string;
   bankName: string;
@@ -186,8 +194,8 @@ export function ReadOnlyPaymentReceipt({
   invoiceNoDraft,
   invoiceDateDraft,
 }: {
-  current: any;
-  tab: any;
+  current: ReceiptCurrent | null;
+  tab: Tab;
   currentPaymentId: number | null;
   accountantFio: string;
   note: string;
@@ -196,10 +204,10 @@ export function ReadOnlyPaymentReceipt({
   rs: string;
   inn: string;
   kpp: string;
-  attRows: any[];
+  attRows: AttachmentRow[];
   busyKey: string | null;
   onRefreshAtt: () => Promise<void>;
-  onOpenFile: (f: any) => void;
+  onOpenFile: (f: AttachmentRow) => void;
   onOpenInvoice: () => Promise<void>;
   onOpenReport: () => Promise<void>;
   invoiceNoDraft: string;
@@ -360,7 +368,7 @@ export function ReadOnlyPaymentReceipt({
           <Text style={{ color: UI.sub, fontWeight: "800" }}>Нет вложений</Text>
         ) : (
           <View style={{ gap: 8 }}>
-            {files.map((f: any) => (
+            {files.map((f: AttachmentRow) => (
               <Pressable
                 key={String(f.id)}
                 disabled={!!busyKey}
