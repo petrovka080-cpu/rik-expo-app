@@ -28,6 +28,28 @@ const normDateArg = (s?: string | null): string | null => {
   return t ? t : null;
 };
 
+const parseDisplayNo = (raw: unknown): { year: number; seq: number } => {
+  const s = String(raw ?? "").trim();
+  const m = s.match(/(\d+)\s*\/\s*(\d{4})/);
+  if (!m) return { year: 0, seq: 0 };
+  return { seq: Number(m[1] ?? 0) || 0, year: Number(m[2] ?? 0) || 0 };
+};
+
+const reqHeadSort = (a: ReqHeadRow, b: ReqHeadRow): number => {
+  const pa = parseDisplayNo(a.display_no);
+  const pb = parseDisplayNo(b.display_no);
+  if (pb.year !== pa.year) return pb.year - pa.year;
+  if (pb.seq !== pa.seq) return pb.seq - pa.seq;
+
+  const ta = a?.submitted_at ? new Date(a.submitted_at).getTime() : 0;
+  const tb = b?.submitted_at ? new Date(b.submitted_at).getTime() : 0;
+  if (tb !== ta) return tb - ta;
+
+  const ra = String(a?.request_id ?? "");
+  const rb = String(b?.request_id ?? "");
+  return rb.localeCompare(ra);
+};
+
 async function loadNameMapOverrides(
   supabase: SupabaseClient,
   codesUpper: string[],
@@ -253,17 +275,7 @@ export async function apiFetchReqHeads(
     issue_status: String(x.issue_status ?? "READY"),
   }));
 
-  rows.sort((a: any, b: any) => {
-    const ta = a?.submitted_at ? new Date(a.submitted_at).getTime() : 0;
-    const tb = b?.submitted_at ? new Date(b.submitted_at).getTime() : 0;
-    if (tb !== ta) return tb - ta;
-
-    const da = String(a?.display_no ?? "");
-    const db = String(b?.display_no ?? "");
-    if (db !== da) return db.localeCompare(da);
-
-    return String(b?.request_id ?? "").localeCompare(String(a?.request_id ?? ""));
-  });
+  rows.sort(reqHeadSort);
 
   const viewRows = rows.filter((r) => String(r.issue_status ?? "").trim().toUpperCase() !== "DONE");
 
@@ -355,14 +367,7 @@ export async function apiFetchReqHeads(
             });
 
           return [...viewRows, ...fallbackRows]
-            .sort((a, b) => {
-              const da = String(a.display_no ?? "");
-              const db = String(b.display_no ?? "");
-              if (db !== da) return db.localeCompare(da);
-              const ta = a.submitted_at ? new Date(a.submitted_at).getTime() : 0;
-              const tb = b.submitted_at ? new Date(b.submitted_at).getTime() : 0;
-              return tb - ta;
-            })
+            .sort(reqHeadSort)
             .slice(0, pageSize);
         }
       }

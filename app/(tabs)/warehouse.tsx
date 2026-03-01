@@ -520,16 +520,44 @@ export default function Warehouse() {
         // (used for contractor/phone/volume metadata if present).
         const metaQ = await supabase
           .from("requests")
-          .select("note, comment")
+          .select("*")
           .eq("id", rid)
           .maybeSingle();
         if (!metaQ.error && metaQ.data) {
-          const meta = metaQ.data as { note?: string | null; comment?: string | null };
-          setReqModal((prev) =>
-            prev && String(prev.request_id) === rid
-              ? { ...prev, note: meta.note ?? prev.note ?? null, comment: meta.comment ?? prev.comment ?? null }
-              : prev,
-          );
+          const meta = metaQ.data as Record<string, any>;
+          setReqModal((prev) => {
+            if (!prev || String(prev.request_id) !== rid) return prev;
+            const contractor =
+              String(
+                meta?.contractor_name ??
+                meta?.contractor_org ??
+                meta?.subcontractor_name ??
+                "",
+              ).trim() || null;
+            const phone =
+              String(
+                meta?.contractor_phone ??
+                meta?.phone ??
+                meta?.phone_number ??
+                "",
+              ).trim() || null;
+            const volume =
+              String(
+                meta?.planned_volume ??
+                meta?.volume ??
+                meta?.qty_plan ??
+                "",
+              ).trim() || null;
+
+            return {
+              ...prev,
+              note: (meta?.note as string | null) ?? prev.note ?? null,
+              comment: (meta?.comment as string | null) ?? prev.comment ?? null,
+              contractor_name: contractor || prev.contractor_name || null,
+              contractor_phone: phone || prev.contractor_phone || null,
+              planned_volume: volume || prev.planned_volume || null,
+            };
+          });
         }
 
         const rows = await apiFetchReqItems(supabase as any, rid);
