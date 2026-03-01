@@ -78,6 +78,43 @@ import {
   matchQuerySmart,
 } from "../../src/screens/warehouse/warehouse.utils";
 
+function parseReqHeaderContext(rawParts: Array<string | null | undefined>) {
+  const out: { contractor: string; phone: string; volume: string } = {
+    contractor: "",
+    phone: "",
+    volume: "",
+  };
+  const put = (key: keyof typeof out, value: string) => {
+    const v = String(value || "").trim();
+    if (!v || out[key]) return;
+    out[key] = v;
+  };
+  for (const raw of rawParts) {
+    const lines = String(raw || "")
+      .split(/[\r\n;]+/)
+      .map((x) => x.trim())
+      .filter(Boolean);
+    for (const ln of lines) {
+      const m = ln.match(/^([^:]+)\s*:\s*(.+)$/);
+      if (!m) continue;
+      const k = String(m[1] || "").trim().toLowerCase();
+      const v = String(m[2] || "").trim();
+      if (!v) continue;
+      if (
+        !out.contractor &&
+        (k.includes("подряд") || k.includes("contractor") || k.includes("наименование организации") || k.includes("организац"))
+      ) {
+        put("contractor", v);
+      } else if (!out.phone && (k.includes("тел") || k.includes("phone"))) {
+        put("phone", v);
+      } else if (!out.volume && (k.includes("объ") || k.includes("volume"))) {
+        put("volume", v);
+      }
+    }
+  }
+  return out;
+}
+
 
 const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
 
@@ -479,8 +516,40 @@ export default function Warehouse() {
 
       setReqItemsLoading(true);
       try {
+        // Enrich header with source request note/comment fields
+        // (used for contractor/phone/volume metadata if present).
+        const metaQ = await supabase
+          .from("requests")
+          .select("note, comment")
+          .eq("id", rid)
+          .maybeSingle();
+        if (!metaQ.error && metaQ.data) {
+          const meta = metaQ.data as { note?: string | null; comment?: string | null };
+          setReqModal((prev) =>
+            prev && String(prev.request_id) === rid
+              ? { ...prev, note: meta.note ?? prev.note ?? null, comment: meta.comment ?? prev.comment ?? null }
+              : prev,
+          );
+        }
+
         const rows = await apiFetchReqItems(supabase as any, rid);
         setReqItems(Array.isArray(rows) ? rows : []);
+
+        const fromItemNotes = parseReqHeaderContext(
+          Array.isArray(rows) ? rows.map((r: any) => String(r?.note ?? "")) : [],
+        );
+        if (fromItemNotes.contractor || fromItemNotes.phone || fromItemNotes.volume) {
+          setReqModal((prev) =>
+            prev && String(prev.request_id) === rid
+              ? {
+                  ...prev,
+                  contractor_name: prev.contractor_name || fromItemNotes.contractor || null,
+                  contractor_phone: prev.contractor_phone || fromItemNotes.phone || null,
+                  planned_volume: prev.planned_volume || fromItemNotes.volume || null,
+                }
+              : prev,
+          );
+        }
       } catch (e) {
         setReqItems([]);
         showErr(e);
@@ -737,6 +806,36 @@ export default function Warehouse() {
     if (tab === "Расход") {
       fetchReqHeads(0, true).catch((e) => showErr(e));
     }
+  }, [tab, fetchReqHeads]);
+  useEffect(() => {
+    const ch = supabase
+      .channel(`warehouse-expense-rt:${Date.now()}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "requests" },
+        () => {
+          if (tab !== "Расход") return;
+          void fetchReqHeads(0, true);
+        },
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "request_items" },
+        () => {
+          if (tab !== "Расход") return;
+          void fetchReqHeads(0, true);
+        },
+      )
+      .subscribe();
+
+    return () => {
+      try {
+        ch.unsubscribe();
+      } catch { }
+      try {
+        supabase.removeChannel(ch);
+      } catch { }
+    };
   }, [tab, fetchReqHeads]);
 
   const onRefresh = useCallback(async () => {
@@ -1365,6 +1464,7 @@ export default function Warehouse() {
     </View>
   );
 }
+
 
 
 

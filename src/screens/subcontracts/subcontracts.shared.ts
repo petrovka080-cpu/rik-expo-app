@@ -14,6 +14,7 @@ export type Subcontract = {
   status: SubcontractStatus;
   foreman_name: string | null;
   contractor_org: string | null;
+  contractor_inn: string | null;
   contractor_rep: string | null;
   contractor_phone: string | null;
   contract_number: string | null;
@@ -34,6 +35,29 @@ export type Subcontract = {
   submitted_at?: string | null;
   approved_at?: string | null;
   rejected_at?: string | null;
+};
+
+export type SubcontractItemSource = "catalog" | "smeta";
+
+export type SubcontractItem = {
+  id: string;
+  created_at: string;
+  subcontract_id: string;
+  created_by: string | null;
+  source: SubcontractItemSource;
+  rik_code: string | null;
+  name: string;
+  qty: number;
+  uom: string | null;
+  status: "draft" | "canceled";
+};
+
+export type NewSubcontractItem = {
+  source: SubcontractItemSource;
+  rik_code?: string | null;
+  name: string;
+  qty: number;
+  uom?: string | null;
 };
 
 export const STATUS_CONFIG: Record<SubcontractStatus, { label: string; bg: string; fg: string }> = {
@@ -98,6 +122,16 @@ export async function listDirectorSubcontracts(): Promise<Subcontract[]> {
   return (data ?? []) as Subcontract[];
 }
 
+export async function listAccountantSubcontracts(): Promise<Subcontract[]> {
+  const { data, error } = await supabase
+    .from("subcontracts")
+    .select("*")
+    .eq("status", "approved")
+    .order("approved_at", { ascending: false });
+  if (error) throw error;
+  return (data ?? []) as Subcontract[];
+}
+
 export async function createSubcontractDraft(userId: string, foremanName: string): Promise<string> {
   const row = await createSubcontractDraftWithPatch(userId, foremanName, {});
   return row.id;
@@ -109,8 +143,8 @@ export async function createSubcontractDraftWithPatch(
   patch: Partial<Subcontract>,
 ): Promise<Pick<Subcontract, "id" | "display_no">> {
   // Помощник: если пустая строка или чушь - шлем null, чтобы Postgres (date) не ругался
-  const asDate = (val: any) => {
-    if (!val || typeof val !== 'string' || val.trim() === '') return null;
+  const asDate = (val: unknown) => {
+    if (!val || typeof val !== "string" || val.trim() === "") return null;
     return val.trim();
   };
 
@@ -118,6 +152,7 @@ export async function createSubcontractDraftWithPatch(
     p_created_by: userId,
     p_foreman_name: foremanName || null,
     p_contractor_org: patch.contractor_org ?? null,
+    p_contractor_inn: patch.contractor_inn ?? null,
     p_contractor_rep: patch.contractor_rep ?? null,
     p_contractor_phone: patch.contractor_phone ?? null,
     p_contract_number: patch.contract_number ?? null,
@@ -137,11 +172,7 @@ export async function createSubcontractDraftWithPatch(
   };
 
   const { data, error } = await supabase.rpc("subcontract_create_draft", payload);
-  if (error) {
-    console.warn("subcontract_create_draft RPC error:", error);
-    throw error;
-  }
-
+  if (error) throw error;
   if (!data || typeof data !== "object") {
     throw new Error("subcontract_create_draft returned invalid payload");
   }
@@ -185,5 +216,63 @@ export async function rejectSubcontract(id: string, comment: string): Promise<vo
     })
     .eq("id", id)
     .eq("status", "pending");
+  if (error) throw error;
+}
+
+export async function listSubcontractItems(subcontractId: string): Promise<SubcontractItem[]> {
+  const sid = String(subcontractId || "").trim();
+  if (!sid) return [];
+  const { data, error } = await supabase
+    .from("subcontract_items")
+    .select("*")
+    .eq("subcontract_id", sid)
+    .eq("status", "draft")
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  return (data ?? []) as SubcontractItem[];
+}
+
+export async function appendSubcontractItems(
+  subcontractId: string,
+  createdBy: string | null,
+  items: NewSubcontractItem[],
+): Promise<SubcontractItem[]> {
+  const sid = String(subcontractId || "").trim();
+  if (!sid || !items.length) return [];
+  const payload = items.map((it) => ({
+    subcontract_id: sid,
+    created_by: createdBy || null,
+    source: it.source,
+    rik_code: it.rik_code ?? null,
+    name: String(it.name || "").trim() || "Позиция",
+    qty: Number(it.qty) > 0 ? Number(it.qty) : 1,
+    uom: it.uom ?? null,
+    status: "draft",
+  }));
+  const { data, error } = await supabase
+    .from("subcontract_items")
+    .insert(payload)
+    .select("*");
+  if (error) throw error;
+  return (data ?? []) as SubcontractItem[];
+}
+
+export async function removeSubcontractItem(itemId: string): Promise<void> {
+  const iid = String(itemId || "").trim();
+  if (!iid) return;
+  const { error } = await supabase
+    .from("subcontract_items")
+    .delete()
+    .eq("id", iid);
+  if (error) throw error;
+}
+
+export async function clearSubcontractItems(subcontractId: string): Promise<void> {
+  const sid = String(subcontractId || "").trim();
+  if (!sid) return;
+  const { error } = await supabase
+    .from("subcontract_items")
+    .delete()
+    .eq("subcontract_id", sid);
   if (error) throw error;
 }

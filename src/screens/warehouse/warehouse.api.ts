@@ -3,6 +3,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { StockRow, ReqHeadRow, ReqItemUiRow } from "./warehouse.types";
 import { nz, parseNum } from "./warehouse.utils";
 import { normalizeRuText } from "../../lib/text/encoding";
+import { isRequestApprovedForProcurement } from "../../lib/requestStatus";
 
 const pickUom = (v: any): string | null => {
   const s = v == null ? "" : String(v).trim();
@@ -199,11 +200,11 @@ export async function apiFetchReqHeads(
   const q = await supabase
     .from("v_wh_issue_req_heads_ui" as any)
     .select("*")
-    // 1) РіР»Р°РІРЅРѕРµ вЂ” РїРѕ РІСЂРµРјРµРЅРё (СЃРІРµР¶РёРµ СЃРІРµСЂС…Сѓ)
-    .order("submitted_at", { ascending: false, nullsFirst: false })
-    // 2) СЃС‚Р°Р±РёР»РёР·Р°С‚РѕСЂ вЂ” РїРѕ display_no (REQ-xxxx/2026), С‡С‚РѕР±С‹ РѕРґРёРЅР°РєРѕРІС‹Рµ submitted_at РЅРµ РїСЂС‹РіР°Р»Рё
+    // 1) РЎРЅР°С‡Р°Р»Р° РїРѕ display_no, С‡С‚РѕР±С‹ РЅРѕРІС‹Рµ REQ РЅРµ С‚РµСЂСЏР»РёСЃСЊ РїСЂРё submitted_at=null
     .order("display_no", { ascending: false })
-    // 3) РµС‰С‘ РѕРґРёРЅ СЃС‚Р°Р±РёР»РёР·Р°С‚РѕСЂ вЂ” РїРѕ request_id (uuid) РЅР° СЃР»СѓС‡Р°Р№ РѕРґРёРЅР°РєРѕРІС‹С… display_no
+    // 2) РЎРІРµР¶РµСЃС‚СЊ РїРѕ РІСЂРµРјРµРЅРё (РµСЃР»Рё РѕРЅРѕ РµСЃС‚СЊ)
+    .order("submitted_at", { ascending: false, nullsFirst: false })
+    // 3) РЎС‚Р°Р±РёР»РёР·Р°С‚РѕСЂ
     .order("request_id", { ascending: false })
     .range(page * pageSize, (page + 1) * pageSize - 1);
 
@@ -221,6 +222,23 @@ export async function apiFetchReqHeads(
     level_name: x.level_name ?? null,
     system_name: x.system_name ?? null,
     zone_name: x.zone_name ?? null,
+    contractor_name:
+      x.contractor_name ??
+      x.contractor_org ??
+      x.subcontractor_name ??
+      null,
+    contractor_phone:
+      x.contractor_phone ??
+      x.phone ??
+      x.phone_number ??
+      null,
+    planned_volume:
+      x.planned_volume ??
+      x.volume ??
+      x.qty_plan ??
+      null,
+    note: x.note ?? null,
+    comment: x.comment ?? null,
 
     submitted_at: x.submitted_at ?? null,
 
@@ -247,7 +265,113 @@ export async function apiFetchReqHeads(
     return String(b?.request_id ?? "").localeCompare(String(a?.request_id ?? ""));
   });
 
-  return rows.filter((r) => String(r.issue_status ?? "").trim().toUpperCase() !== "DONE");
+  const viewRows = rows.filter((r) => String(r.issue_status ?? "").trim().toUpperCase() !== "DONE");
+
+  // Fallback: if request is approved for procurement but not present in warehouse view yet,
+  // include it from base tables so it appears in "Расход" immediately.
+  try {
+    const reqQ = await supabase
+      .from("requests" as any)
+      .select("id, display_no, status, submitted_at, created_at, object_name, level_name, system_name, zone_name, object_type_code, level_code, system_code, zone_code")
+      .order("display_no", { ascending: false })
+      .limit(Math.max(pageSize * 3, 150));
+
+    if (!reqQ.error && Array.isArray(reqQ.data) && reqQ.data.length) {
+      const approvedReqs = (reqQ.data as any[])
+        .filter((r) => isRequestApprovedForProcurement(r?.status))
+        .map((r) => ({
+          request_id: String(r.id ?? "").trim(),
+          display_no: r.display_no ?? null,
+          object_name: r.object_name ?? r.object_type_code ?? null,
+          level_name: r.level_name ?? r.level_code ?? null,
+          system_name: r.system_name ?? r.system_code ?? null,
+          zone_name: r.zone_name ?? r.zone_code ?? null,
+          level_code: r.level_code ?? null,
+          system_code: r.system_code ?? null,
+          zone_code: r.zone_code ?? null,
+          submitted_at: r.submitted_at ?? r.created_at ?? null,
+        }))
+        .filter((r) => !!r.request_id);
+
+      if (approvedReqs.length) {
+        const viewIds = new Set(viewRows.map((r) => String(r.request_id)));
+        const missingReqIds = approvedReqs
+          .map((r) => r.request_id)
+          .filter((id) => !viewIds.has(id));
+
+        if (missingReqIds.length) {
+          const itQ = await supabase
+            .from("request_items" as any)
+            .select("id, request_id, status, qty")
+            .in("request_id", missingReqIds);
+
+          const stat: Record<
+            string,
+            { items: number; qty: number; done: number; rejected: number }
+          > = {};
+          for (const id of missingReqIds) stat[id] = { items: 0, qty: 0, done: 0, rejected: 0 };
+
+          if (!itQ.error && Array.isArray(itQ.data)) {
+            for (const it of itQ.data as any[]) {
+              const rid = String(it?.request_id ?? "").trim();
+              if (!rid || !stat[rid]) continue;
+              const status = String(it?.status ?? "").trim().toLowerCase();
+              stat[rid].items += 1;
+              stat[rid].qty += parseNum(it?.qty, 0);
+              if (status.includes("выдан") || status === "done") stat[rid].done += 1;
+              if (status.includes("отклон")) stat[rid].rejected += 1;
+            }
+          }
+
+          const fallbackRows: ReqHeadRow[] = approvedReqs
+            .filter((r) => !viewIds.has(r.request_id))
+            .map((r) => {
+              const s = stat[r.request_id] ?? { items: 0, qty: 0, done: 0, rejected: 0 };
+              const readyCnt = Math.max(0, s.items - s.done - s.rejected);
+              return {
+                request_id: r.request_id,
+                display_no: r.display_no,
+                object_name: r.object_name,
+                level_code: r.level_code,
+                system_code: r.system_code,
+                zone_code: r.zone_code,
+                level_name: r.level_name,
+                system_name: r.system_name,
+                zone_name: r.zone_name,
+                contractor_name: null,
+                contractor_phone: null,
+                planned_volume: null,
+                note: null,
+                comment: null,
+                submitted_at: r.submitted_at,
+                items_cnt: s.items,
+                ready_cnt: readyCnt,
+                done_cnt: s.done,
+                qty_limit_sum: s.qty,
+                qty_issued_sum: 0,
+                qty_left_sum: s.qty,
+                issue_status: readyCnt > 0 ? "READY" : "WAITING_STOCK",
+              };
+            });
+
+          return [...viewRows, ...fallbackRows]
+            .sort((a, b) => {
+              const da = String(a.display_no ?? "");
+              const db = String(b.display_no ?? "");
+              if (db !== da) return db.localeCompare(da);
+              const ta = a.submitted_at ? new Date(a.submitted_at).getTime() : 0;
+              const tb = b.submitted_at ? new Date(b.submitted_at).getTime() : 0;
+              return tb - ta;
+            })
+            .slice(0, pageSize);
+        }
+      }
+    }
+  } catch {
+    // keep view rows when fallback fails
+  }
+
+  return viewRows;
 }
 export async function apiFetchReqItems(
   supabase: SupabaseClient,
@@ -262,7 +386,9 @@ export async function apiFetchReqItems(
     .eq("request_id", rid)
     .order("name_human", { ascending: true });
 
-  if (q.error || !Array.isArray(q.data)) return [];
+  if (q.error || !Array.isArray(q.data)) {
+    return [];
+  }
 
   const raw = (q.data as any[]).map((x) => ({
     request_id: String(x.request_id),
@@ -322,9 +448,50 @@ export async function apiFetchReqItems(
     byId[id] = merged as ReqItemUiRow;
   }
 
-  return Object.values(byId).sort((a, b) =>
+  const viewItems = Object.values(byId).sort((a, b) =>
     String((a as any).name_human ?? "").localeCompare(String((b as any).name_human ?? "")),
   );
+
+  if (viewItems.length > 0) return viewItems;
+
+  // Fallback for requests not yet materialized in warehouse view.
+  try {
+    const f = await supabase
+      .from("request_items" as any)
+      .select("id, request_id, rik_code, name_human, uom, qty, status")
+      .eq("request_id", rid)
+      .order("name_human", { ascending: true });
+    if (!f.error && Array.isArray(f.data) && f.data.length) {
+      const direct = (f.data as any[])
+        .filter((x) => !String(x?.status ?? "").toLowerCase().includes("отклон"))
+        .map((x) => {
+          const qty = parseNum(x?.qty, 0);
+          const available = qty; // unknown here; keep non-blocking until stock check in UI
+          return {
+            request_id: String(x.request_id ?? rid),
+            request_item_id: String(x.id ?? ""),
+            display_no: null,
+            object_name: null,
+            level_code: null,
+            system_code: null,
+            zone_code: null,
+            rik_code: String(x.rik_code ?? ""),
+            name_human: String(x.name_human ?? x.rik_code ?? ""),
+            uom: x.uom ?? null,
+            qty_limit: qty,
+            qty_issued: 0,
+            qty_left: qty,
+            qty_available: available,
+            qty_can_issue_now: Math.max(0, Math.min(qty, available)),
+          } as ReqItemUiRow;
+        });
+      return direct;
+    }
+  } catch {
+    // ignore
+  }
+
+  return viewItems;
 }
 export async function apiFetchReports(
   supabase: SupabaseClient,

@@ -8,6 +8,11 @@ type Deps = {
   supabase: any;
 };
 
+const errText = (error: unknown): string => {
+  if (error instanceof Error && error.message.trim()) return error.message.trim();
+  return String(error ?? "");
+};
+
 export function useDirectorData({ supabase }: Deps) {
   const fetchTicket = useRef(0);
   const lastNonEmptyRows = useRef<PendingRow[]>([]);
@@ -55,26 +60,37 @@ export function useDirectorData({ supabase }: Deps) {
       if (q.error) throw q.error;
 
       const next: Record<string, RequestMeta> = {};
-      (q.data || []).forEach((r: any) => {
-        const id = String(r?.id || "").trim();
+      const rowsTyped = (q.data || []) as Array<{
+        id?: string | number | null;
+        object_name?: string | null;
+        object?: string | null;
+        level_code?: string | null;
+        system_code?: string | null;
+        zone_code?: string | null;
+        site_address_snapshot?: string | null;
+        note?: string | null;
+        comment?: string | null;
+      }>;
+      rowsTyped.forEach((r) => {
+        const id = String(r.id || "").trim();
         if (!id) return;
         next[id] = {
-          object_name: r?.object_name ?? null,
-          object: r?.object ?? null,
-          level_code: r?.level_code ?? null,
-          system_code: r?.system_code ?? null,
-          zone_code: r?.zone_code ?? null,
-          site_address_snapshot: r?.site_address_snapshot ?? null,
-          note: r?.note ?? null,
-          comment: r?.comment ?? null,
+          object_name: r.object_name ?? null,
+          object: r.object ?? null,
+          level_code: r.level_code ?? null,
+          system_code: r.system_code ?? null,
+          zone_code: r.zone_code ?? null,
+          site_address_snapshot: r.site_address_snapshot ?? null,
+          note: r.note ?? null,
+          comment: r.comment ?? null,
         };
       });
 
       if (Object.keys(next).length) {
         setReqMetaById((prev) => ({ ...prev, ...next }));
       }
-    } catch (e: any) {
-      console.warn("[director] preloadRequestMeta:", e?.message ?? e);
+    } catch (e) {
+      console.warn("[director] preloadRequestMeta:", errText(e));
     }
   }, [supabase]);
 
@@ -94,15 +110,16 @@ export function useDirectorData({ supabase }: Deps) {
 
       if (q.error) throw q.error;
 
+      const rowsTyped = (q.data || []) as Array<{ request_id?: string | number | null }>;
       const reqIds = Array.from(
-        new Set((q.data || []).map((r: any) => String(r?.request_id || "").trim()).filter(Boolean)),
+        new Set(rowsTyped.map((r) => String(r.request_id || "").trim()).filter(Boolean)),
       ) as string[];
       if (!reqIds.length) return;
 
       setPropReqIdsByProp((prev) => ({ ...prev, [pid]: reqIds }));
       await preloadRequestMeta(reqIds);
-    } catch (e: any) {
-      console.warn("[director] preloadProposalRequestIds:", e?.message ?? e);
+    } catch (e) {
+      console.warn("[director] preloadProposalRequestIds:", errText(e));
     }
   }, [supabase, preloadRequestMeta]);
 
@@ -135,12 +152,13 @@ export function useDirectorData({ supabase }: Deps) {
       const mapDn: Record<string, string> = {};
       const mapSub: Record<string, string> = {};
 
-      for (const r of (data ?? []) as any[]) {
-        const id = String(r?.id ?? "").trim();
+      const rowsTyped = (data ?? []) as Array<{ id?: string | number | null; display_no?: string | null; submitted_at?: string | null }>;
+      for (const r of rowsTyped) {
+        const id = String(r.id ?? "").trim();
         if (!id) continue;
 
-        const dn = String(r?.display_no ?? "").trim();
-        const sa = r?.submitted_at ?? null;
+        const dn = String(r.display_no ?? "").trim();
+        const sa = r.submitted_at ?? null;
 
         if (dn) mapDn[id] = dn;
         if (sa) mapSub[id] = String(sa);
@@ -149,7 +167,7 @@ export function useDirectorData({ supabase }: Deps) {
       if (Object.keys(mapDn).length) setDisplayNoByReq((prev) => ({ ...prev, ...mapDn }));
       if (Object.keys(mapSub).length) setSubmittedAtByReq((prev) => ({ ...prev, ...mapSub }));
     } catch (e) {
-      console.warn("[director] preloadDisplayNos]:", (e as any)?.message ?? e);
+      console.warn("[director] preloadDisplayNos]:", errText(e));
     }
   }, [supabase]);
 
@@ -160,17 +178,18 @@ export function useDirectorData({ supabase }: Deps) {
       const { data, error } = await supabase.rpc("list_director_items_stable");
       if (error) throw error;
 
-      const normalized: PendingRow[] = (data ?? []).map((r: any, idx: number) => ({
+      const rowsTyped = (data ?? []) as Array<Record<string, unknown>>;
+      const normalized: PendingRow[] = rowsTyped.map((r, idx: number) => ({
         id: idx,
-        request_id: r.request_id,
+        request_id: String(r.request_id ?? ""),
         request_item_id: r.request_item_id != null ? String(r.request_item_id) : null,
-        name_human: r.name_human ?? "",
+        name_human: String(r.name_human ?? ""),
         qty: Number(r.qty ?? 0),
-        uom: r.uom ?? null,
-        rik_code: r.rik_code ?? null,
-        app_code: r.app_code ?? null,
-        item_kind: r.item_kind ?? null,
-        note: r.note ?? null,
+        uom: r.uom != null ? String(r.uom) : null,
+        rik_code: r.rik_code != null ? String(r.rik_code) : null,
+        app_code: r.app_code != null ? String(r.app_code) : null,
+        item_kind: r.item_kind != null ? String(r.item_kind) : null,
+        note: r.note != null ? String(r.note) : null,
       }));
 
       lastNonEmptyRows.current = normalized;
@@ -179,7 +198,7 @@ export function useDirectorData({ supabase }: Deps) {
       const ids = Array.from(new Set(normalized.map((r) => String(r.request_id ?? "").trim()).filter(Boolean)));
       if (ids.length) await preloadDisplayNos(ids);
     } catch (e) {
-      console.error("[director] list_director_items_stable]:", (e as any)?.message ?? e);
+      console.error("[director] list_director_items_stable]:", errText(e));
     } finally {
       if (my === fetchTicket.current) setLoadingRows(false);
     }
@@ -189,9 +208,10 @@ export function useDirectorData({ supabase }: Deps) {
     setLoadingProps(true);
     try {
       const list = await listDirectorProposalsPending();
-      const heads: ProposalHead[] = (list ?? [])
-        .filter((x: any) => x && x.id != null && x.submitted_at != null)
-        .map((x: any) => ({ id: String(x.id), submitted_at: x.submitted_at, pretty: null }));
+      const listTyped = (list ?? []) as Array<{ id?: string | number | null; submitted_at?: string | null }>;
+      const heads: ProposalHead[] = listTyped
+        .filter((x) => x && x.id != null && x.submitted_at != null)
+        .map((x) => ({ id: String(x.id), submitted_at: String(x.submitted_at), pretty: null }));
 
       if (!heads.length) {
         setPropsHeads([]);
@@ -214,10 +234,11 @@ export function useDirectorData({ supabase }: Deps) {
       );
 
       const prettyMap: Record<string, string> = {};
-      for (const r of data) {
-        const id = String((r as any).id);
-        const pn = String((r as any).proposal_no ?? "").trim();
-        const short = (r as any).id_short;
+      const dataTyped = data as Array<{ id?: string | number | null; proposal_no?: string | null; id_short?: string | number | null }>;
+      for (const r of dataTyped) {
+        const id = String(r.id);
+        const pn = String(r.proposal_no ?? "").trim();
+        const short = r.id_short;
         const pretty = pn || (short != null ? `PR-${String(short)}` : "");
         if (id && pretty) prettyMap[id] = pretty;
       }
@@ -234,11 +255,11 @@ export function useDirectorData({ supabase }: Deps) {
             .select("proposal_id")
             .in("proposal_id", propIds);
 
-          const nonEmpty = new Set((q.data || []).map((r: any) => String(r.proposal_id)));
+          const qRows = (q.data || []) as Array<{ proposal_id?: string | number | null }>;
+          const nonEmpty = new Set(qRows.map((r) => String(r.proposal_id)));
           filtered = filtered.filter((h) => nonEmpty.has(String(h.id)));
         }
       } catch { }
-
       setPropsHeads(filtered);
       try {
         const propIds = filtered.map((h) => h.id);
@@ -249,8 +270,9 @@ export function useDirectorData({ supabase }: Deps) {
             .in("proposal_id", propIds);
 
           const map: Record<string, number> = {};
-          for (const r of (qCnt.data || []) as any[]) {
-            const pid = String(r?.proposal_id ?? "");
+          const cntRows = (qCnt.data || []) as Array<{ proposal_id?: string | number | null }>;
+          for (const r of cntRows) {
+            const pid = String(r.proposal_id ?? "");
             if (!pid) continue;
             map[pid] = (map[pid] || 0) + 1;
           }
@@ -280,7 +302,7 @@ export function useDirectorData({ supabase }: Deps) {
         setBuyerPositionsCount(0);
       }
     } catch (e) {
-      console.error("[director] proposals list]:", (e as any)?.message ?? e);
+      console.error("[director] proposals list]:", errText(e));
       setPropsHeads([]);
     } finally {
       setLoadingProps(false);

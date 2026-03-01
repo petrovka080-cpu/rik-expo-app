@@ -413,6 +413,7 @@ export default function DirectorScreen() {
     setActingId,
     setReqDeleteId,
     setReqSendId,
+    fetchRows,
     fetchProps,
     closeSheet,
     showSuccess,

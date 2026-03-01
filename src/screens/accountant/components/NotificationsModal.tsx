@@ -1,8 +1,9 @@
-import React from "react";
+﻿import React from "react";
 import { Modal, Pressable, ScrollView, Text, View } from "react-native";
 import { UI } from "../ui";
 import { SafeView } from "../helpers";
 import type { NotificationRow } from "../types";
+import { normalizeRuText } from "../../../lib/text/encoding";
 
 export default function NotificationsModal({
   visible,
@@ -47,9 +48,15 @@ export default function NotificationsModal({
                     backgroundColor: "rgba(255,255,255,0.04)",
                   }}
                 >
-                  <Text style={{ fontWeight: "700", color: UI.text }}>{n.title ?? "—"}</Text>
+                  <Text style={{ fontWeight: "700", color: UI.text }}>
+                    {normalizeRuText(String(n.title ?? "—"))}
+                  </Text>
 
-                  {!!n.body && <Text style={{ color: UI.sub, marginTop: 2 }}>{n.body}</Text>}
+                  {!!n.body && (
+                    <Text style={{ color: UI.sub, marginTop: 2 }}>
+                      {normalizeRuText(String(n.body))}
+                    </Text>
+                  )}
 
                   <Text style={{ color: UI.sub, marginTop: 4, fontSize: 11 }}>
                     {n.created_at ? new Date(String(n.created_at)).toLocaleString() : "—"}

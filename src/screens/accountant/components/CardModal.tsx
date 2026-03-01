@@ -1,4 +1,4 @@
-import React from "react";
+﻿import React from "react";
 import { Keyboard, Modal, Platform, View, Animated, Text, ScrollView } from "react-native";
 import DismissKeyboardView from "../../../components/DismissKeyboardView";
 import BottomBar from "./BottomBar";
@@ -198,3 +198,4 @@ export default function CardModal({
     </Modal>
   );
 }
+

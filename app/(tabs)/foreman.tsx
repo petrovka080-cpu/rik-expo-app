@@ -189,8 +189,8 @@ export default function ForemanScreen() {
   const cancelLockRef = useRef<Record<string, boolean>>({});
   const [busy, setBusy] = useState(false);
 
-  // Таб прораба: Материалы | Подряды
-  const [foremanMainTab, setForemanMainTab] = useState<'materials' | 'subcontracts'>('materials');
+  // Экран прораба: launcher -> materials/subcontracts
+  const [foremanMainTab, setForemanMainTab] = useState<'materials' | 'subcontracts' | null>(null);
 
   // Separate spinners
   const [draftDeleteBusy, setDraftDeleteBusy] = useState(false);
@@ -1193,7 +1193,7 @@ export default function ForemanScreen() {
     return 'будет создана автоматически';
   }, [labelForRequest, requestDetails?.display_no, requestId]);
 
-  const HEADER_MAX = 98;
+  const HEADER_MAX = 84;
   const HEADER_MIN = 64;
   const {
     headerHeight,
@@ -1258,33 +1258,80 @@ export default function ForemanScreen() {
           {/* Title row */}
           <View style={{ paddingHorizontal: 16, paddingTop: 12 }}>
             <Animated.Text style={[s.cTitle, { fontSize: titleSize, color: UI.text }]} numberOfLines={1}>
-              {foremanMainTab === 'materials' ? 'Заявка' : 'Подряды'}
+              {foremanMainTab === 'materials' ? 'Материалы' : foremanMainTab === 'subcontracts' ? 'Подряды' : 'Заявка'}
             </Animated.Text>
-            {/* Табы: Материалы / Подряды */}
-            <View style={{ flexDirection: 'row', gap: 8, marginTop: 6 }}>
-              {(['materials', 'subcontracts'] as const).map((tab) => {
-                const isActive = foremanMainTab === tab;
-                return (
-                  <Pressable
-                    key={tab}
-                    onPress={() => setForemanMainTab(tab)}
-                    style={{
-                      paddingHorizontal: 16,
-                      paddingVertical: 6,
-                      borderRadius: 10,
-                      backgroundColor: isActive ? '#0EA5E9' : 'rgba(255,255,255,0.08)',
-                    }}
-                  >
-                    <Text style={{ color: isActive ? '#fff' : UI.sub, fontWeight: '800', fontSize: 13 }}>
-                      {tab === 'materials' ? 'Материалы' : 'Подряды'}
-                    </Text>
-                  </Pressable>
-                );
-              })}
-            </View>
+            {foremanMainTab ? (
+              <View style={{ marginTop: 10, flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                <Pressable
+                  onPress={() => setForemanMainTab(null)}
+                  style={{
+                    width: 38,
+                    height: 38,
+                    borderRadius: 12,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    backgroundColor: 'rgba(255,255,255,0.08)',
+                    borderWidth: 1,
+                    borderColor: 'rgba(255,255,255,0.14)',
+                  }}
+                >
+                  <Text style={{ color: UI.text, fontWeight: '900', fontSize: 24, lineHeight: 24 }}>×</Text>
+                </Pressable>
+                <Text style={{ color: UI.text, fontWeight: '900', fontSize: 34, lineHeight: 38 }}>
+                  {foremanMainTab === 'materials' ? 'МАТЕРИАЛЫ' : 'ПОДРЯДЫ'}
+                </Text>
+              </View>
+            ) : null}
           </View>
 
         </Animated.View>
+
+        {!foremanMainTab ? (
+          <View
+            style={{
+              flex: 1,
+              paddingTop: contentTopPad + 56,
+              paddingHorizontal: 16,
+              alignItems: 'center',
+              justifyContent: 'flex-start',
+              gap: 14,
+            }}
+          >
+            <Pressable
+              onPress={() => setForemanMainTab('materials')}
+              style={{
+                width: '100%',
+                maxWidth: 370,
+                height: 78,
+                borderRadius: 18,
+                borderWidth: 1,
+                borderColor: 'rgba(255,255,255,0.14)',
+                backgroundColor: '#121A2A',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <Text style={{ color: UI.text, fontWeight: '900', fontSize: 38, lineHeight: 42 }}>[ Материалы ]</Text>
+            </Pressable>
+
+            <Pressable
+              onPress={() => setForemanMainTab('subcontracts')}
+              style={{
+                width: '100%',
+                maxWidth: 370,
+                height: 78,
+                borderRadius: 18,
+                borderWidth: 1,
+                borderColor: 'rgba(255,255,255,0.14)',
+                backgroundColor: '#121A2A',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <Text style={{ color: UI.text, fontWeight: '900', fontSize: 38, lineHeight: 42 }}>[ Подряды ]</Text>
+            </Pressable>
+          </View>
+        ) : null}
 
         {/* Таб Подряды */}
         {foremanMainTab === 'subcontracts' ? (

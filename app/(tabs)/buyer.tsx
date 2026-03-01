@@ -114,12 +114,18 @@ import { listSuppliers, type Supplier } from '../../src/lib/catalog_api';
 
 
 const isWeb = Platform.OS === 'web';
-type Tab = "inbox" | "pending" | "approved" | "rejected";
+type Tab = "inbox" | "pending" | "approved" | "rejected" | "subcontracts";
+import BuyerSubcontractTab from "../../src/screens/buyer/BuyerSubcontractTab";
 
 type Group = {
   request_id: string;
   request_id_old?: number | null;
   items: BuyerInboxRow[];
+};
+
+const errText = (error: unknown): string => {
+  if (error instanceof Error && error.message.trim()) return error.message.trim();
+  return String(error ?? "");
 };
 
 
@@ -354,6 +360,7 @@ export default function BuyerScreen() {
   const [pending, setPending] = useState<any[]>([]);
   const [approved, setApproved] = useState<any[]>([]);
   const [rejected, setRejected] = useState<any[]>([]);
+  const [subcontractCount, setSubcontractCount] = useState(0);
 
   const [titleByPid, setTitleByPid] = useState<Record<string, string>>({});
   const titleByPidRef = useLatest(titleByPid);
@@ -402,14 +409,15 @@ export default function BuyerScreen() {
 
           for (const part of chunk(toFetch, 250)) {
             const q = await supabase
-              .from("proposals" as any)
+              .from("proposals")
               .select("id, proposal_no")
               .in("id", part);
 
             if (!q.error && Array.isArray(q.data)) {
-              for (const r of q.data as any[]) {
-                const id = String(r?.id ?? "").trim();
-                const no = String(r?.proposal_no ?? "").trim();
+              const rowsTyped = q.data as Array<{ id?: string | number | null; proposal_no?: string | null }>;
+              for (const r of rowsTyped) {
+                const id = String(r.id ?? "").trim();
+                const no = String(r.proposal_no ?? "").trim();
                 if (id && no) patch[id] = no;
                 if (id) prNoTsRef.current[id] = Date.now(); // TTL ставим всегда
               }
@@ -422,7 +430,7 @@ export default function BuyerScreen() {
             setProposalNoByPid((prev) => ({ ...(prev || {}), ...patch }));
           }
         } catch (e) {
-          console.warn("[buyer] preloadProposalNosByIds failed:", (e as any)?.message ?? e);
+          console.warn("[buyer] preloadProposalNosByIds failed:", errText(e));
         }
       })();
 
@@ -534,18 +542,21 @@ export default function BuyerScreen() {
     if (!need.length) return;
 
     try {
-      const { data, error } = await supabase.rpc("resolve_req_pr_map" as any, {
+      const { data, error } = await supabase.rpc("resolve_req_pr_map", {
         p_request_ids: need,
-      } as any);
+      });
 
       if (error) throw error;
 
-      console.log("[buyer] resolve_req_pr_map dataLen:", Array.isArray(data) ? data.length : -1, "sample:", (data as any[])?.slice?.(0, 3));
+      const rowsTyped = Array.isArray(data)
+        ? (data as Array<{ request_id?: string | number | null; proposal_no?: string | null }>)
+        : [];
+      console.log("[buyer] resolve_req_pr_map dataLen:", rowsTyped.length, "sample:", rowsTyped.slice(0, 3));
 
       const patch: Record<string, string> = {};
-      for (const r of (data as any[]) || []) {
-        const rid = String(r?.request_id ?? "").trim();
-        const pr = String(r?.proposal_no ?? "").trim();
+      for (const r of rowsTyped) {
+        const rid = String(r.request_id ?? "").trim();
+        const pr = String(r.proposal_no ?? "").trim();
         if (rid && pr) patch[rid] = pr;
       }
 
@@ -553,7 +564,7 @@ export default function BuyerScreen() {
         setPrNoByReq(prev => ({ ...(prev || {}), ...patch }));
       }
     } catch (e) {
-      console.warn("[buyer] preloadPrNosByRequests failed:", (e as any)?.message ?? e);
+      console.warn("[buyer] preloadPrNosByRequests failed:", errText(e));
     }
   }, [prNoByReqRef]);
   // =================== END MAYAK: PRELOAD PR NOS BY REQUESTS (RPC BATCH) ===================
@@ -631,12 +642,26 @@ export default function BuyerScreen() {
       log: console.warn,
     });
   }, [preloadProposalTitles]);
+
+  const fetchSubcontractsCount = useCallback(async () => {
+    try {
+      const { data: userData } = await supabase.auth.getUser();
+      const uid = userData?.user?.id;
+      if (!uid) return;
+      const { count, error } = await supabase
+        .from("subcontracts")
+        .select("*", { count: "exact", head: true })
+        .eq("created_by", uid);
+      if (!error && count != null) setSubcontractCount(count);
+    } catch { }
+  }, []);
   useFocusEffect(
     useCallback(() => {
       focusedRef.current = true;
 
       fetchInbox();
       fetchBuckets();
+      fetchSubcontractsCount();
 
       const detach = attachBuyerSubscriptions({
         supabase,
@@ -659,7 +684,9 @@ export default function BuyerScreen() {
 
     setRefreshing(true);
     await fetchInbox();
+    await fetchInbox();
     await fetchBuckets();
+    await fetchSubcontractsCount();
     setRefreshing(false);
   }, [fetchInbox, fetchBuckets]);
 
@@ -682,9 +709,9 @@ export default function BuyerScreen() {
     const needle = normName(q);
     if (!needle) return [];
     return (suppliers || [])
-      .filter((s) => normName((s as any)?.name).includes(needle))
+      .filter((s) => normName(s.name).includes(needle))
       .slice(0, 8)
-      .map((s) => (s as any).name as string)
+      .map((s) => s.name)
       .filter(Boolean);
   }, [suppliers]);
 
@@ -736,7 +763,7 @@ export default function BuyerScreen() {
     [pickedIds, meta]
   );
   const lineTotal = (it: BuyerInboxRow) => {
-    const key = String((it as any)?.request_item_id ?? "");
+    const key = String(it.request_item_id ?? "");
     return lineTotalHelper(it, meta?.[key]?.price);
   };
 
@@ -815,8 +842,8 @@ export default function BuyerScreen() {
     const sum = lineTotal(it);
 
     const prettyText = `${it.qty} ${it.uom || ""}`.trim();
-    const rejectedByDirector =
-      !!(it as any).director_reject_at || !!(it as any).director_reject_note;
+    const rejectInfo = it as Partial<{ director_reject_at: unknown; director_reject_note: unknown }>;
+    const rejectedByDirector = !!rejectInfo.director_reject_at || !!rejectInfo.director_reject_note;
 
     const sugg = getSupplierSuggestions(String(m.supplier ?? ""));
 
@@ -845,10 +872,10 @@ export default function BuyerScreen() {
           let auto = "";
           if (match) {
             const partsAuto: string[] = [];
-            if ((match as any).inn) partsAuto.push(`ИНН: ${(match as any).inn}`);
-            if ((match as any).bank_account) partsAuto.push(`Счёт: ${(match as any).bank_account}`);
-            if ((match as any).phone) partsAuto.push(`Тел.: ${(match as any).phone}`);
-            if ((match as any).email) partsAuto.push(`Email: ${(match as any).email}`);
+            if (match.inn) partsAuto.push(`ИНН: ${match.inn}`);
+            if (match.bank_account) partsAuto.push(`Счёт: ${match.bank_account}`);
+            if (match.phone) partsAuto.push(`Тел.: ${match.phone}`);
+            if (match.email) partsAuto.push(`Email: ${match.email}`);
             auto = partsAuto.join(" • ");
           }
 
@@ -881,9 +908,10 @@ export default function BuyerScreen() {
 
     const total = g.items.length;
 
-    const rejectedCount = g.items.filter(
-      (it) => (it as any).director_reject_at || (it as any).director_reject_note
-    ).length;
+    const rejectedCount = g.items.filter((it) => {
+      const rejectInfo = it as Partial<{ director_reject_at: unknown; director_reject_note: unknown }>;
+      return !!rejectInfo.director_reject_at || !!rejectInfo.director_reject_note;
+    }).length;
 
     const allRejected = total > 0 && rejectedCount === total;
 
@@ -1037,7 +1065,7 @@ export default function BuyerScreen() {
         label: "Открываю PDF…",
         mode: "preview",
         fileName: `Предложение_${id.slice(0, 8)}`,
-        getRemoteUrl: () => exportProposalPdf(id as any, "preview"),
+        getRemoteUrl: () => exportProposalPdf(id, "preview"),
       });
     },
     [busy, supabase]
@@ -1056,10 +1084,10 @@ export default function BuyerScreen() {
       const blob = new Blob([html], { type: "text/html;charset=utf-8" });
       const name = `proposal_${pidStr.slice(0, 8)}.html`;
 
-      await uploadProposalAttachment(pidStr, blob as any, name, "proposal_pdf");
+      await uploadProposalAttachment(pidStr, blob, name, "proposal_pdf");
       setPropDocAttached({ name });
     } catch (e) {
-      console.warn("[buyer] ensureProposalDocumentAttached:", (e as any)?.message ?? e);
+      console.warn("[buyer] ensureProposalDocumentAttached:", errText(e));
     } finally {
       setPropDocBusy(false);
     }
@@ -1076,7 +1104,7 @@ export default function BuyerScreen() {
       }
       if (total > 0) setInvAmount(String(total));
 
-      const names = Array.from(new Set(rows.map((r: any) => String(r?.supplier || "").trim()).filter(Boolean)));
+      const names = Array.from(new Set(rows.map((r) => String(r?.supplier || "").trim()).filter(Boolean)));
       const name = names[0] || "";
 
       if (!name) {
@@ -1088,7 +1116,7 @@ export default function BuyerScreen() {
       setAcctSupp({
         name: card?.name || name,
         inn: card?.inn || null,
-        bank: (card as any)?.bank_account || null,
+        bank: card?.bank_account || null,
         phone: card?.phone || null,
         email: card?.email || null,
       });
@@ -1107,17 +1135,19 @@ export default function BuyerScreen() {
       const rows = await repoListProposalAttachments(supabase, pid);
       console.log("[ATTACH SAMPLE]", rows?.[0]);
       setPropAttByPid((prev) => ({ ...prev, [pid]: rows }));
-    } catch (e: any) {
-      setPropAttErrByPid((prev) => ({ ...prev, [pid]: e?.message ?? String(e) }));
+    } catch (e) {
+      setPropAttErrByPid((prev) => ({ ...prev, [pid]: errText(e) }));
     } finally {
       setPropAttBusy(false);
     }
   }, []);
-  const pickUrl = (x: any) =>
-    String(x?.signed_url || x?.public_url || x?.url || x?.file_url || x?.file_public_url || "").trim();
+  const pickUrl = (x: unknown) => {
+    const row = (x as Record<string, unknown> | null) ?? null;
+    return String(row?.signed_url || row?.public_url || row?.url || row?.file_url || row?.file_public_url || "").trim();
+  };
 
   const openPropAttachment = useCallback(
-    async (att: any) => {
+    async (att: Record<string, unknown>) => {
       try {
         let url = pickUrl(att);
 
@@ -1129,11 +1159,11 @@ export default function BuyerScreen() {
             .eq("id", String(att.id))
             .maybeSingle();
 
-          const row = q?.data || null;
+          const row = (q?.data || null) as { bucket_id?: string | null; storage_path?: string | null } | null;
           url = pickUrl(row);
 
-          const bucket = String((row as any)?.bucket_id || "").trim();
-          const path = String((row as any)?.storage_path || "").trim();
+          const bucket = String(row?.bucket_id || "").trim();
+          const path = String(row?.storage_path || "").trim();
 
           if (!url && bucket && path) {
             const s = await supabase.storage.from(bucket).createSignedUrl(path, 60 * 30);
@@ -1146,8 +1176,8 @@ export default function BuyerScreen() {
           return;
         }
         await openSignedUrlUniversal(url, String(att?.file_name ?? att?.name ?? "file"));
-      } catch (e: any) {
-        Alert.alert("Вложение", e?.message ?? "Не удалось открыть файл");
+      } catch (e) {
+        Alert.alert("Вложение", errText(e) || "Не удалось открыть файл");
       }
     },
     [supabase]
@@ -1207,7 +1237,7 @@ export default function BuyerScreen() {
 
 
       if (!sent || shouldReset || (chk.data?.invoice_amount == null && typeof invoiceAmountNum === 'number')) {
-        const upd: any = {};
+        const upd: { sent_to_accountant_at?: string; payment_status?: string; invoice_amount?: number } = {};
         if (!sent) upd.sent_to_accountant_at = new Date().toISOString();
         if (shouldReset) upd.payment_status = 'К оплате';
         if (chk.data?.invoice_amount == null && typeof invoiceAmountNum === 'number') {
@@ -1215,7 +1245,7 @@ export default function BuyerScreen() {
         }
         if (Object.keys(upd).length) {
           await supabase.from('proposals').update(upd).eq('id', pidStr);
-          await proposalSubmit(pidStr as any);   // чтобы статус согласования не «переехал» назад
+          await proposalSubmit(pidStr);   // чтобы статус согласования не «переехал» назад
         }
       }
     } catch (e) {
@@ -1237,7 +1267,7 @@ export default function BuyerScreen() {
 
       buildProposalPdfHtml,
       proposalSendToAccountant: async (payload) => {
-        await proposalSendToAccountant(payload as any);
+        await proposalSendToAccountant(payload);
       },
       uploadProposalAttachment,
       ensureAccountingFlags,
@@ -1388,7 +1418,7 @@ export default function BuyerScreen() {
       items: rwItems,
       supabase,
       proposalSubmit: async (pid) => {
-        await proposalSubmit(pid as any);
+        await proposalSubmit(pid);
       },
       fetchBuckets,
       setRejected,
@@ -1416,7 +1446,7 @@ export default function BuyerScreen() {
       buildProposalPdfHtml,
       uploadProposalAttachment,
       proposalSendToAccountant: async (payload) => {
-        await proposalSendToAccountant(payload as any);
+        await proposalSendToAccountant(payload);
       },
       ensureAccountingFlags,
 
@@ -1489,6 +1519,7 @@ export default function BuyerScreen() {
       pendingCount={pending.length}
       approvedCount={approved.length}
       rejectedCount={rejected.length}
+      subcontractCount={subcontractCount}
       tabsScrollRef={tabsScrollRef}
       scrollTabsToStart={scrollTabsToStart}
     />
@@ -1501,6 +1532,7 @@ export default function BuyerScreen() {
     pending.length,
     approved.length,
     rejected.length,
+    subcontractCount,
     scrollTabsToStart,
   ]);
 
@@ -1537,27 +1569,35 @@ export default function BuyerScreen() {
           shadowColor: '#000',
           shadowOffset: { width: 0, height: 6 },
           shadowRadius: 14,
-          shadowOpacity: headerShadow as any,
+          shadowOpacity: headerShadow,
           elevation: 6,
         }}
       >
         {header}
       </Animated.View>
 
-      <BuyerMainList
-        s={s}
-        tab={tab}
-        data={listData}
-        listRef={listRef}
-        measuredHeaderMax={measuredHeaderMax}
-        refreshing={refreshing}
-        onRefresh={onRefresh}
-        loadingInbox={loadingInbox}
-        loadingBuckets={loadingBuckets}
-        scrollY={scrollY}
-        renderGroupBlock={(g, index) => renderGroupBlock(g as any, index)}
-        renderProposalCard={renderProposalCard}
-      />
+      {tab === "subcontracts" ? (
+        <BuyerSubcontractTab
+          contentTopPad={measuredHeaderMax}
+          onScroll={Animated.event([{ nativeEvent: { contentOffset: { y: scrollY } } }], { useNativeDriver: false })}
+          buyerFio={buyerFio}
+        />
+      ) : (
+        <BuyerMainList
+          s={s}
+          tab={tab}
+          data={listData}
+          listRef={listRef}
+          measuredHeaderMax={measuredHeaderMax}
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          loadingInbox={loadingInbox}
+          loadingBuckets={loadingBuckets}
+          scrollY={scrollY}
+          renderGroupBlock={renderGroupBlock}
+          renderProposalCard={renderProposalCard}
+        />
+      )}
 
 
 

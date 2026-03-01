@@ -1,15 +1,17 @@
-// src/screens/accountant/components/ReadOnlyReceipt.tsx
 import React from "react";
 import { Platform, Pressable, Text, View } from "react-native";
 import { S, UI } from "../ui";
 import type { AttachmentRow, Tab } from "../types";
 import type { AccountantInboxRow } from "../../../lib/rik_api";
+import { normalizeRuText } from "../../../lib/text/encoding";
 
 type ReceiptCurrent = AccountantInboxRow & {
   proposal_id?: string;
   has_invoice?: boolean | null;
   total_paid?: number | null;
 };
+
+const ru = (v: unknown, fallback = "") => normalizeRuText(String(v ?? fallback));
 
 export function ReadOnlyPaymentSummary({
   current,
@@ -40,8 +42,11 @@ export function ReadOnlyPaymentSummary({
   const cur = String(current?.invoice_currency || "KGS");
 
   const statusRaw = String(current?.payment_status ?? "").trim();
-  const statusText = statusRaw ? statusRaw : "Просмотр";
-  const noteText = String(note ?? "").trim();
+  const statusText = ru(statusRaw, "Просмотр");
+  const noteText = ru(String(note ?? "").trim());
+  const isHistoryTab =
+    String(tab).toLowerCase().includes("истор") ||
+    String(tab).toLowerCase().includes("history");
 
   const hasAnyBank = !!(bankName || bik || rs || inn || kpp);
 
@@ -90,7 +95,7 @@ export function ReadOnlyPaymentSummary({
 
       <View style={{ height: 10 }} />
 
-      {tab === "История" && currentPaymentId ? (
+      {isHistoryTab && currentPaymentId ? (
         <View style={{ marginBottom: 10 }}>
           <Text style={{ color: UI.sub, fontWeight: "800" }}>
             Платёж ID: <Text style={{ color: UI.text, fontWeight: "900" }}>{String(currentPaymentId)}</Text>
@@ -213,10 +218,10 @@ export function ReadOnlyPaymentReceipt({
   invoiceNoDraft: string;
   invoiceDateDraft: string;
 }) {
-  const invNo = String(current?.invoice_number ?? invoiceNoDraft ?? "").trim() || "—";
-  const invDt = String(current?.invoice_date ?? invoiceDateDraft ?? "").trim() || "—";
+  const invNo = ru(String(current?.invoice_number ?? invoiceNoDraft ?? "").trim(), "—");
+  const invDt = ru(String(current?.invoice_date ?? invoiceDateDraft ?? "").trim(), "—");
 
-  const supp = String(current?.supplier ?? "—").trim() || "—";
+  const supp = ru(String(current?.supplier ?? "—").trim(), "—");
   const pid = String(current?.proposal_id ?? "—").trim() || "—";
 
   const inv = Number(current?.invoice_amount ?? 0);
@@ -224,14 +229,17 @@ export function ReadOnlyPaymentReceipt({
   const rest = inv > 0 ? Math.max(0, inv - paid) : 0;
   const cur = String(current?.invoice_currency || "KGS");
 
-  const statusText = String(current?.payment_status ?? "").trim() || "Просмотр";
-  const fio = String(accountantFio || "").trim() || "—";
-  const noteText = String(note || "").trim();
+  const statusText = ru(String(current?.payment_status ?? "").trim(), "Просмотр");
+  const fio = ru(String(accountantFio || "").trim(), "—");
+  const noteText = ru(String(note || "").trim());
+  const isHistoryTab =
+    String(tab).toLowerCase().includes("истор") ||
+    String(tab).toLowerCase().includes("history");
 
   const files = Array.isArray(attRows) ? attRows : [];
   const showInvoiceBtn = !!current?.has_invoice;
   const showReportBtn =
-    tab === "История" ||
+    isHistoryTab ||
     String(statusText).toLowerCase().startsWith("оплач") ||
     String(statusText).toLowerCase().startsWith("частич");
 
@@ -321,7 +329,7 @@ export function ReadOnlyPaymentReceipt({
         <Text style={{ color: UI.sub, fontWeight: "800" }}>Бухгалтер</Text>
         <Text style={{ color: UI.text, fontWeight: "900", marginTop: 4 }}>{fio}</Text>
 
-        {tab === "История" && currentPaymentId ? (
+        {isHistoryTab && currentPaymentId ? (
           <View style={{ marginTop: 8 }}>
             <Text style={{ color: UI.sub, fontWeight: "800" }}>
               Платёж ID: <Text style={{ color: UI.text, fontWeight: "900" }}>{String(currentPaymentId)}</Text>

@@ -1,5 +1,5 @@
 ﻿import React, { useMemo, useState } from "react";
-import { Modal, Platform, Pressable, ScrollView, Text, TextInput, View } from "react-native";
+import { Modal, Platform, Pressable, ScrollView, Text, TextInput, View, type DimensionValue } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import type { RefOption } from "./foreman.types";
 
@@ -10,7 +10,7 @@ type Props = {
   onChange: (code: string) => void;
   placeholder?: string;
   searchable?: boolean;
-  width?: number;
+  width?: DimensionValue;
   required?: boolean;
   showLabel?: boolean;
   ui: { text: string };
@@ -24,7 +24,7 @@ export default function ForemanDropdown({
   onChange,
   placeholder = "Выбрать...",
   searchable = true,
-  width = 280,
+  width = "100%",
   required = false,
   showLabel = true,
   styles: s,
@@ -93,7 +93,7 @@ export default function ForemanDropdown({
               <TextInput value={q} onChangeText={setQ} placeholder="Поиск..." style={s.input} />
             ) : null}
 
-            <ScrollView style={{ maxHeight: 360, marginTop: 6 }} keyboardShouldPersistTaps="handled">
+            <ScrollView style={{ maxHeight: 360, marginTop: 10 }} keyboardShouldPersistTaps="handled">
               {filtered.map((item, idx) => (
                 <Pressable
                   key={`ref:${item.code}:${idx}`}
@@ -101,30 +101,33 @@ export default function ForemanDropdown({
                     onChange(item.code);
                     setOpen(false);
                   }}
-                  style={[s.suggest, { borderBottomColor: "#f0f0f0" }]}
+                  style={[s.suggest, { borderBottomColor: "rgba(255,255,255,0.08)", paddingVertical: 14 }]}
                 >
-                  <Text style={{ fontWeight: "900", color: ui.text }}>{item.name}</Text>
+                  <Text style={{ fontWeight: "700", color: ui.text, fontSize: 15 }}>{item.name}</Text>
                 </Pressable>
               ))}
+              {filtered.length === 0 && (
+                <Text style={{ color: "rgba(255,255,255,0.45)", textAlign: "center", marginTop: 20 }}>Ничего не найдено</Text>
+              )}
             </ScrollView>
 
-            <View style={{ flexDirection: "row", justifyContent: "flex-end", marginTop: 8, gap: 8 }}>
+            <View style={{ flexDirection: "row", justifyContent: "flex-end", marginTop: 12, gap: 10 }}>
               {value ? (
                 <Pressable
                   onPress={() => {
                     onChange("");
                     setOpen(false);
                   }}
-                  style={[s.chip, { backgroundColor: "rgba(255,255,255,0.06)", borderColor: "rgba(255,255,255,0.12)" }]}
+                  style={[s.miniBtn, { flex: 0, paddingHorizontal: 16 }]}
                 >
-                  <Text style={{ color: ui.text, fontWeight: "900" }}>Сбросить</Text>
+                  <Text style={[s.miniText, { color: "#EF4444" }]}>Сбросить</Text>
                 </Pressable>
               ) : null}
               <Pressable
                 onPress={() => setOpen(false)}
-                style={[s.chip, { backgroundColor: "rgba(255,255,255,0.06)", borderColor: "rgba(255,255,255,0.12)" }]}
+                style={[s.miniBtn, { flex: 0, paddingHorizontal: 16, backgroundColor: "rgba(255,255,255,0.15)" }]}
               >
-                <Text style={{ color: ui.text, fontWeight: "900" }}>Закрыть</Text>
+                <Text style={s.miniText}>Закрыть</Text>
               </Pressable>
             </View>
           </View>

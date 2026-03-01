@@ -12,6 +12,8 @@ import {
   Modal,
   ScrollView,
   Platform,
+  type NativeScrollEvent,
+  type NativeSyntheticEvent,
 } from 'react-native';
 import {
   PRICE_TYPE_LABEL,
@@ -33,6 +35,9 @@ const FILTER_TABS: { key: StatusFilter; label: string }[] = [
   { key: 'rejected', label: 'Отклонено' },
   { key: 'closed', label: 'Закрыто' },
 ];
+
+const errText = (e: unknown, fallback: string) =>
+  e instanceof Error && e.message.trim() ? e.message.trim() : fallback;
 
 type DetailProps = {
   item: Subcontract;
@@ -70,6 +75,7 @@ function SubcontractDetail({ item, onClose, onApprove, onReject, deciding }: Det
         <ScrollView style={ds.modalScroll} keyboardShouldPersistTaps="handled">
           <Text style={ds.section}>Подрядчик</Text>
           <Row label="Организация" value={item.contractor_org} />
+          <Row label="ИНН" value={item.contractor_inn} />
           <Row label="Представитель" value={item.contractor_rep} />
           <Row label="Телефон" value={item.contractor_phone} />
           <Row label="N договора" value={item.contract_number} />
@@ -202,7 +208,7 @@ function SubCard({ item, onPress }: CardProps) {
 
 type Props = {
   contentTopPad: number;
-  onScroll: any;
+  onScroll: (event: NativeSyntheticEvent<NativeScrollEvent>) => void;
 };
 
 export default function DirectorSubcontractTab({ contentTopPad, onScroll }: Props) {
@@ -218,8 +224,8 @@ export default function DirectorSubcontractTab({ contentTopPad, onScroll }: Prop
     try {
       const list = await listDirectorSubcontracts();
       setItems(list);
-    } catch (e: any) {
-      console.warn('[DirectorSubcontractTab] load error:', e?.message);
+    } catch (e: unknown) {
+      console.warn('[DirectorSubcontractTab] load error:', errText(e, 'load failed'));
     } finally {
       setLoading(false);
     }
@@ -249,8 +255,8 @@ export default function DirectorSubcontractTab({ contentTopPad, onScroll }: Prop
       Alert.alert('Утверждено', 'Подряд переведён в статус "В работе".');
       setSelected(null);
       await load();
-    } catch (e: any) {
-      Alert.alert('Ошибка', e?.message ?? 'Не удалось утвердить');
+    } catch (e: unknown) {
+      Alert.alert('Ошибка', errText(e, 'Не удалось утвердить'));
     } finally {
       setDeciding(false);
     }
@@ -265,8 +271,8 @@ export default function DirectorSubcontractTab({ contentTopPad, onScroll }: Prop
         Alert.alert('Отклонено', 'Прораб увидит причину отклонения.');
         setSelected(null);
         await load();
-      } catch (e: any) {
-        Alert.alert('Ошибка', e?.message ?? 'Не удалось отклонить');
+      } catch (e: unknown) {
+        Alert.alert('Ошибка', errText(e, 'Не удалось отклонить'));
       } finally {
         setDeciding(false);
       }

@@ -4,6 +4,7 @@ import type { AccountantInboxRow } from "../../../lib/rik_api";
 import { UI } from "../ui";
 import { statusFromRaw, statusColors } from "../helpers";
 import Chip from "./Chip";
+import { normalizeRuText } from "../../../lib/text/encoding";
 
 type ListRowItem = AccountantInboxRow & {
   total_paid?: number | null;
@@ -29,6 +30,9 @@ function ListRowInner({
   const st = statusFromRaw(item.payment_status, false);
   const sc = statusColors(st.key);
   const isPaidFull = rest === 0 && st.key === "PAID";
+  const supplier = normalizeRuText(String(item.supplier || "—"));
+  const invoiceNo = normalizeRuText(String(item.invoice_number || "без №"));
+  const invoiceDate = normalizeRuText(String(item.invoice_date || "—"));
 
   return (
     <Pressable
@@ -51,7 +55,7 @@ function ListRowInner({
       <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
         <View style={{ flex: 1 }}>
           <Text style={{ fontWeight: "900", color: UI.text }} numberOfLines={1}>
-            {item.supplier || "—"} • {item.invoice_number || "без №"} ({item.invoice_date || "—"})
+            {supplier} • {invoiceNo} ({invoiceDate})
           </Text>
         </View>
 

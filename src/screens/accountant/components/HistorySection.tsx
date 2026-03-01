@@ -2,6 +2,7 @@
 import { Pressable, Text, TextInput, View } from "react-native";
 import TopRightActionBar from "../../../ui/TopRightActionBar";
 import type { HistoryRow } from "../types";
+import { normalizeRuText } from "../../../lib/text/encoding";
 
 type UiShape = {
   text: string;
@@ -83,6 +84,11 @@ type HistoryRowCardProps = {
 };
 
 export const HistoryRowCard = memo(function HistoryRowCard({ item, onOpen, ui }: HistoryRowCardProps) {
+  const supplier = normalizeRuText(String(item.supplier || "—"));
+  const invoiceNo = normalizeRuText(String(item.invoice_number || "без №"));
+  const purpose = normalizeRuText(String(item.purpose || item.note || "—").trim());
+  const fio = normalizeRuText(String(item.accountant_fio || "—").trim());
+
   return (
     <Pressable
       onPress={() => void onOpen(item)}
@@ -102,16 +108,16 @@ export const HistoryRowCard = memo(function HistoryRowCard({ item, onOpen, ui }:
       }}
     >
       <Text style={{ fontWeight: "900", color: ui.text }} numberOfLines={1}>
-        {item.supplier || "—"}
+        {supplier}
       </Text>
 
       <Text style={{ color: ui.sub, marginTop: 6, fontWeight: "700" }} numberOfLines={2}>
-        Счёт: <Text style={{ color: ui.text, fontWeight: "900" }}>{item.invoice_number || "без №"}</Text>
-        {` • ${String(item.purpose || item.note || "—").trim()}`}
+        Счёт: <Text style={{ color: ui.text, fontWeight: "900" }}>{invoiceNo}</Text>
+        {` • ${purpose}`}
       </Text>
 
       <Text style={{ color: ui.sub, marginTop: 6, fontWeight: "700" }} numberOfLines={1}>
-        Бухгалтер: <Text style={{ color: ui.text, fontWeight: "900" }}>{String(item.accountant_fio || "—").trim()}</Text>
+        Бухгалтер: <Text style={{ color: ui.text, fontWeight: "900" }}>{fio}</Text>
       </Text>
     </Pressable>
   );

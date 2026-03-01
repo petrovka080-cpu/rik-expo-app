@@ -5,8 +5,60 @@ import { supabase } from "../../../lib/supabaseClient";
 
 type AllocRow = { proposal_item_id: string; amount: number };
 type Mode = "full" | "partial";
+type CurrentInvoice = {
+  proposal_id?: string | null;
+  invoice_currency?: string | null;
+  invoice_amount?: number | string | null;
+  total_paid?: number | string | null;
+  invoice_number?: string | null;
+  invoice_date?: string | null;
+  supplier?: string | null;
+};
+type Props = {
+  busyKey: string | null;
+  isPayActiveTab: boolean;
+  payAccent: object | null;
+  kbTypeNum: "default" | "numeric" | "number-pad" | "decimal-pad" | "phone-pad";
+  current: CurrentInvoice | null;
+  supplierName: string;
+  invoiceNo: string;
+  invoiceDate: string;
+  INV_PREFIX: string;
+  invMM: string;
+  invDD: string;
+  setSupplierName: React.Dispatch<React.SetStateAction<string>>;
+  setInvoiceNo: React.Dispatch<React.SetStateAction<string>>;
+  setInvoiceDate: React.Dispatch<React.SetStateAction<string>>;
+  setInvMM: React.Dispatch<React.SetStateAction<string>>;
+  setInvDD: React.Dispatch<React.SetStateAction<string>>;
+  clamp2: (value: string, max: number) => string;
+  mmRef: React.RefObject<TextInput | null>;
+  ddRef: React.RefObject<TextInput | null>;
+  scrollInputIntoView: (event: unknown, offset?: number) => void;
+  accountantFio: string;
+  setAccountantFio: React.Dispatch<React.SetStateAction<string>>;
+  payKind: "bank" | "cash";
+  setPayKind: React.Dispatch<React.SetStateAction<"bank" | "cash">>;
+  amount: string;
+  setAmount: React.Dispatch<React.SetStateAction<string>>;
+  note: string;
+  setNote: React.Dispatch<React.SetStateAction<string>>;
+  bankName: string;
+  setBankName: React.Dispatch<React.SetStateAction<string>>;
+  bik: string;
+  setBik: React.Dispatch<React.SetStateAction<string>>;
+  rs: string;
+  setRs: React.Dispatch<React.SetStateAction<string>>;
+  inn: string;
+  setInn: React.Dispatch<React.SetStateAction<string>>;
+  kpp: string;
+  setKpp: React.Dispatch<React.SetStateAction<string>>;
+  allocRows: AllocRow[];
+  setAllocRows: React.Dispatch<React.SetStateAction<AllocRow[]>>;
+  onAllocStatus?: (ok: boolean, sum: number) => void;
+};
 
-const nnum = (v: any) => {
+const nnum = (v: unknown) => {
   const n = Number(String(v ?? "").replace(",", "."));
   return Number.isFinite(n) ? n : 0;
 };
@@ -31,11 +83,11 @@ function allocProportional(totalAmount: number, weights: number[]) {
   return out;
 }
 
-function fmt2(v: any) {
+function fmt2(v: unknown) {
   const n = nnum(v);
   return n.toLocaleString("ru-RU", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
-function fmtQty(v: any) {
+function fmtQty(v: unknown) {
   const n = nnum(v);
   return n.toLocaleString("ru-RU", { maximumFractionDigits: 3 });
 }
@@ -108,7 +160,7 @@ export default function ActivePaymentForm({
   allocRows,
   setAllocRows,
   onAllocStatus,
-}: any) {
+}: Props) {
   const proposalId = String(current?.proposal_id ?? "").trim();
   const cur = current?.invoice_currency || "KGS";
 
@@ -150,7 +202,7 @@ export default function ActivePaymentForm({
           .order("id", { ascending: true });
 
         if (q.error) throw q.error;
-        setItems(Array.isArray(q.data) ? (q.data as any) : []);
+        setItems(Array.isArray(q.data) ? (q.data as Item[]) : []);
       } catch {
         setItems([]);
       } finally {
@@ -183,9 +235,9 @@ export default function ActivePaymentForm({
         const m = new Map<string, number>();
         let sum = 0;
 
-        for (const r of (q.data || []) as any[]) {
-          const k = String(r?.proposal_item_id ?? "").trim();
-          const a = round2(nnum(r?.amount));
+        for (const r of (q.data || []) as Array<{ proposal_item_id?: string | null; amount?: number | string | null }>) {
+          const k = String(r.proposal_item_id ?? "").trim();
+          const a = round2(nnum(r.amount));
           if (!k || a <= 0) continue;
 
           m.set(k, round2((m.get(k) ?? 0) + a));
@@ -211,8 +263,8 @@ export default function ActivePaymentForm({
   }, [current]);
 
   const paidBeforeByLine = useMemo(() => {
-    return (items || []).map((it: any, i: number) => {
-      const id = String(it?.id ?? "").trim(); // proposal_items.id
+    return (items || []).map((it: Item, i: number) => {
+      const id = String(it.id ?? "").trim(); // proposal_items.id
       const paidLine = round2(nnum(paidByLineMap.get(id) ?? 0));
       return Math.min(paidLine, lineTotals[i] || 0);
     });
@@ -325,7 +377,7 @@ export default function ActivePaymentForm({
     if (!allocRows?.length) return;
 
     const sum = round2(
-      (allocRows || []).reduce((s: number, r: any) => s + nnum(r.amount), 0)
+      (allocRows || []).reduce((s: number, r: AllocRow) => s + nnum(r.amount), 0)
     );
 
     if (Math.abs(sum - restProposal) > 0.01) {
@@ -492,7 +544,7 @@ export default function ActivePaymentForm({
                     setInvMM(d);
                     if (d.length === 2) setTimeout(() => ddRef?.current?.focus?.(), 0);
                   }}
-                  onBlur={() => setInvMM((x: any) => clamp2(x, 12))}
+                  onBlur={() => setInvMM((x: string) => clamp2(x, 12))}
                   style={{
                     width: 42,
                     marginLeft: 10,
@@ -521,7 +573,7 @@ export default function ActivePaymentForm({
                     const d = String(t || "").replace(/\D+/g, "").slice(0, 2);
                     setInvDD(d);
                   }}
-                  onBlur={() => setInvDD((x: any) => clamp2(x, 31))}
+                  onBlur={() => setInvDD((x: string) => clamp2(x, 31))}
                   style={{
                     width: 42,
                     color: UI.text,
@@ -820,7 +872,7 @@ export default function ActivePaymentForm({
                 autoCorrect={false}
                 autoCapitalize="none"
                 onFocus={(e) => scrollInputIntoView(e)}
-                style={[S.input(true), payAccent as any, { opacity: busyKey ? 0.9 : 1 }]}
+                style={[S.input(true), payAccent as object, { opacity: busyKey ? 0.9 : 1 }]}
               />
 
               <View style={{ height: 8 }} />
@@ -833,7 +885,7 @@ export default function ActivePaymentForm({
                 autoCorrect={false}
                 autoCapitalize="none"
                 onFocus={(e) => scrollInputIntoView(e)}
-                style={[S.input(true), payAccent as any, { opacity: busyKey ? 0.9 : 1 }]}
+                style={[S.input(true), payAccent as object, { opacity: busyKey ? 0.9 : 1 }]}
               />
 
               <View style={{ height: 8 }} />
@@ -846,7 +898,7 @@ export default function ActivePaymentForm({
                 autoCorrect={false}
                 autoCapitalize="none"
                 onFocus={(e) => scrollInputIntoView(e)}
-                style={[S.input(true), payAccent as any, { opacity: busyKey ? 0.9 : 1 }]}
+                style={[S.input(true), payAccent as object, { opacity: busyKey ? 0.9 : 1 }]}
               />
 
               <View style={{ height: 8 }} />
@@ -863,7 +915,7 @@ export default function ActivePaymentForm({
                     autoCorrect={false}
                     autoCapitalize="none"
                     onFocus={(e) => scrollInputIntoView(e)}
-                    style={[S.input(true), payAccent as any, { opacity: busyKey ? 0.9 : 1 }]}
+                    style={[S.input(true), payAccent as object, { opacity: busyKey ? 0.9 : 1 }]}
                   />
                 </View>
 
@@ -877,7 +929,7 @@ export default function ActivePaymentForm({
                     autoCorrect={false}
                     autoCapitalize="none"
                     onFocus={(e) => scrollInputIntoView(e)}
-                    style={[S.input(true), payAccent as any, { opacity: busyKey ? 0.9 : 1 }]}
+                    style={[S.input(true), payAccent as object, { opacity: busyKey ? 0.9 : 1 }]}
                   />
                 </View>
               </View>
@@ -901,5 +953,5 @@ function pillBox() {
   };
 }
 function pillBoxTxt() {
-  return { color: UI.sub, fontWeight: "800" } as any;
+  return { color: UI.sub, fontWeight: "800" } as const;
 }

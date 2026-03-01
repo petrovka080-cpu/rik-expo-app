@@ -1,7 +1,7 @@
 ﻿// src/screens/accountant/types.ts
-export type Tab = "К оплате" | "Частично" | "Оплачено" | "На доработке" | "История";
+export type Tab = "К оплате" | "Частично" | "Оплачено" | "На доработке" | "История" | "Подряды";
 
-export const TABS: Tab[] = ["К оплате", "Частично", "Оплачено", "На доработке", "История"];
+export const TABS: Tab[] = ["К оплате", "Частично", "Оплачено", "На доработке", "История", "Подряды"];
 
 export type StatusKey = "K_PAY" | "PART" | "PAID" | "REWORK" | "HISTORY";
 

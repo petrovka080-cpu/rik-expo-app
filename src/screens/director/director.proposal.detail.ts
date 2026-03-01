@@ -16,6 +16,11 @@ type Deps = {
   closeSheet: () => void;
 };
 
+const errText = (error: unknown): string => {
+  if (error instanceof Error && error.message.trim()) return error.message.trim();
+  return String(error ?? "");
+};
+
 export function useDirectorProposalDetail({
   supabase,
   propAttBusyByProp,
@@ -44,17 +49,17 @@ export function useDirectorProposalDetail({
 
       if (q.error) throw q.error;
 
-      const raw = (q.data || []) as any[];
+      const raw = (q.data || []) as Array<Record<string, unknown>>;
       const rows: ProposalAttachmentRow[] = [];
       const seen = new Set<string>();
 
       for (const r of raw) {
-        const id = String(r?.id ?? "").trim();
+        const id = String(r.id ?? "").trim();
         if (!id) continue;
         if (seen.has(id)) continue;
         seen.add(id);
 
-        let url = (r.url ?? null) as string | null;
+        let url = (r.url as string | null | undefined) ?? null;
 
         if (!url) {
           const bucket = String(r.bucket_id ?? "").trim();
@@ -69,18 +74,18 @@ export function useDirectorProposalDetail({
 
         rows.push({
           id,
-          file_name: String(r?.file_name ?? "").trim() || "file",
+          file_name: String(r.file_name ?? "").trim() || "file",
           url,
-          group_key: r?.group_key ?? null,
-          created_at: r?.created_at ?? null,
-          bucket_id: r?.bucket_id ?? null,
-          storage_path: r?.storage_path ?? null,
+          group_key: (r.group_key as string | null | undefined) ?? null,
+          created_at: (r.created_at as string | null | undefined) ?? null,
+          bucket_id: (r.bucket_id as string | null | undefined) ?? null,
+          storage_path: (r.storage_path as string | null | undefined) ?? null,
         });
       }
 
       setPropAttByProp((prev) => ({ ...prev, [pid]: rows }));
-    } catch (e: any) {
-      console.warn("[director] loadProposalAttachments:", e?.message ?? e);
+    } catch (e: unknown) {
+      console.warn("[director] loadProposalAttachments:", errText(e));
       setPropAttByProp((prev) => ({ ...prev, [pid]: [] }));
     } finally {
       setPropAttBusyByProp((prev) => ({ ...prev, [pid]: false }));
@@ -111,9 +116,13 @@ export function useDirectorProposalDetail({
 
       if (q.error) throw q.error;
 
-      const ids = Array.from(new Set(
-        (q.data || []).map((r: any) => String(r?.request_item_id || "").trim()).filter(Boolean),
-      ));
+      const ids = Array.from(
+        new Set(
+          ((q.data || []) as Array<{ request_item_id?: string | null }>)
+            .map((r) => String(r.request_item_id || "").trim())
+            .filter(Boolean),
+        ),
+      );
 
       if (!ids.length) {
         Alert.alert("Пусто", "В предложении нет строк для возврата.");
@@ -140,8 +149,8 @@ export function useDirectorProposalDetail({
 
       await fetchProps();
       closeSheet();
-    } catch (e: any) {
-      Alert.alert("Ошибка", e?.message ?? "Не удалось вернуть предложение");
+    } catch (e: unknown) {
+      Alert.alert("Ошибка", errText(e) || "Не удалось вернуть предложение");
     } finally {
       setPropReturnId(null);
     }
@@ -160,3 +169,4 @@ export function useDirectorProposalDetail({
     onDirectorReturn,
   };
 }
+

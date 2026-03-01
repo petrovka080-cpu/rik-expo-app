@@ -176,7 +176,7 @@ export function AttachmentUploaderAny({
           input.accept = accept;
           input.onchange = () => {
             const file = (input.files && input.files[0]) || null;
-            try { input.remove(); } catch {}
+            try { input.remove(); } catch { }
             resolve(file);
           };
           input.click();
@@ -626,8 +626,8 @@ export const BuyerProposalCard = React.memo(function BuyerProposalCard(props: {
 /* ===================== SCREEN HEADER (UI only) ===================== */
 export const BuyerScreenHeader = React.memo(function BuyerScreenHeader(props: {
   s: any;
-  tab: "inbox" | "pending" | "approved" | "rejected";
-  setTab: (t: any) => void;
+  tab: "inbox" | "pending" | "approved" | "rejected" | "subcontracts";
+  setTab: (t: "inbox" | "pending" | "approved" | "rejected" | "subcontracts") => void;
 
   buyerFio: string;
   setBuyerFio: (v: string) => void;
@@ -639,6 +639,7 @@ export const BuyerScreenHeader = React.memo(function BuyerScreenHeader(props: {
   pendingCount: number;
   approvedCount: number;
   rejectedCount: number;
+  subcontractCount?: number;
 
   tabsScrollRef?: any;
   scrollTabsToStart: (animated?: boolean) => void;
@@ -649,8 +650,8 @@ export const BuyerScreenHeader = React.memo(function BuyerScreenHeader(props: {
     s, tab, setTab,
     buyerFio, setBuyerFio,
     titleSize, subOpacity,
-    inboxCount, pendingCount, approvedCount, rejectedCount,
-    tabsScrollRef, scrollTabsToStart, 
+    inboxCount, pendingCount, approvedCount, rejectedCount, subcontractCount,
+    tabsScrollRef, scrollTabsToStart,
   } = props;
 
   return (
@@ -709,6 +710,16 @@ export const BuyerScreenHeader = React.memo(function BuyerScreenHeader(props: {
             <TabCount n={rejectedCount} active={tab === "rejected"} s={s} />
           </View>
         </Pressable>
+
+        <Pressable
+          onPress={() => { scrollTabsToStart(true); setTab("subcontracts"); }}
+          style={[s.tabPill, tab === "subcontracts" && s.tabPillActive]}
+        >
+          <View style={s.tabLabelRow}>
+            <Text style={[s.tabPillText, tab === "subcontracts" && s.tabPillTextActive]}>Подряды</Text>
+            <TabCount n={subcontractCount || 0} active={tab === "subcontracts"} s={s} />
+          </View>
+        </Pressable>
       </ScrollView>
 
       <Animated.View style={{ opacity: subOpacity, marginTop: 10 }}>
@@ -730,7 +741,7 @@ export const BuyerScreenHeader = React.memo(function BuyerScreenHeader(props: {
 /* ===================== LIST (UI only) ===================== */
 export const BuyerMainList = React.memo(function BuyerMainList(props: {
   s: any;
-  tab: "inbox" | "pending" | "approved" | "rejected";
+  tab: "inbox" | "pending" | "approved" | "rejected" | "subcontracts";
   data: any[];
 
   listRef?: any;
@@ -797,7 +808,7 @@ export const BuyerMainList = React.memo(function BuyerMainList(props: {
               offset: info.averageItemLength * info.index,
               animated: true,
             });
-          } catch {}
+          } catch { }
         }, 50);
       }}
     />

@@ -56,6 +56,11 @@ export type ReqHeadRow = {
   level_name?: string | null;
   system_name?: string | null;
   zone_name?: string | null;
+  contractor_name?: string | null;
+  contractor_phone?: string | null;
+  planned_volume?: string | null;
+  note?: string | null;
+  comment?: string | null;
 
   submitted_at: string | null;
 

@@ -50,14 +50,18 @@ export default function DirectorRequestSheet({
   return (
     <View style={{ flex: 1, minHeight: 0 }}>
       {(() => {
-        const headerNote = sheetRequest.items.find((x) => x.note)?.note || null;
+        const headerNote =
+          (sheetRequest.items || [])
+            .map((x) => String(x.note || "").trim())
+            .filter(Boolean)
+            .sort((a, b) => b.split(";").length - a.split(";").length)[0] || null;
         if (!headerNote) return null;
 
         const lines = headerNote
           .split(";")
           .map((x) => x.trim())
           .filter(Boolean)
-          .slice(0, 4);
+          .slice(0, 8);
 
         if (!lines.length) return null;
 

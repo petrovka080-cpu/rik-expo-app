@@ -31,6 +31,23 @@ type Deps = {
   fmtDateOnly: (iso?: string | null) => string;
 };
 
+type ProposalRowRaw = {
+  id?: number | string | null;
+  request_item_id?: string | null;
+  rik_code?: string | null;
+  name_human?: string | null;
+  uom?: string | null;
+  app_code?: string | null;
+  total_qty?: number | string | null;
+  qty?: number | string | null;
+  price?: number | string | null;
+};
+
+const errText = (error: unknown): string => {
+  if (error instanceof Error && error.message.trim()) return error.message.trim();
+  return String(error ?? "");
+};
+
 export function useDirectorProposalRow({
   busy,
   supabase,
@@ -68,8 +85,8 @@ export function useDirectorProposalRow({
     try {
       await busy.run(async () => {
         try {
-          let base: any[] | null = null;
-          let plain: any[] | null = null;
+          let base: ProposalRowRaw[] | null = null;
+          let plain: ProposalRowRaw[] | null = null;
 
           const qSnap = await supabase
             .from("proposal_snapshot_items")
@@ -102,18 +119,18 @@ export function useDirectorProposalRow({
 
           const priceByReqItemId: Record<string, number> = {};
           if (plain) {
-            for (const r of plain as any[]) {
-              const rid = String(r?.request_item_id ?? "").trim();
-              const pr = r?.price;
+            for (const r of plain) {
+              const rid = String(r.request_item_id ?? "").trim();
+              const pr = r.price;
               if (rid && pr != null && !Number.isNaN(Number(pr))) {
                 priceByReqItemId[rid] = Number(pr);
               }
             }
           }
 
-          const effective = base ?? (plain ? plain.map((r: any) => ({ ...r, total_qty: r.qty })) : []);
+          const effective = base ?? (plain ? plain.map((r) => ({ ...r, total_qty: r.qty })) : []);
 
-          let norm = (effective ?? []).map((r: any, i: number) => {
+          let norm = (effective ?? []).map((r, i: number) => {
             const reqItemId = r.request_item_id != null ? String(r.request_item_id) : null;
             const price =
               r.price != null
@@ -129,7 +146,7 @@ export function useDirectorProposalRow({
               app_code: r.app_code ?? null,
               total_qty: Number(r.total_qty ?? r.qty ?? 0),
               price: price,
-              item_kind: null as any,
+              item_kind: null,
             };
           });
 
@@ -147,7 +164,7 @@ export function useDirectorProposalRow({
                 const mapKind: Record<string, string> = {};
                 const mapNote: Record<string, string> = {};
 
-                for (const rr of qKinds.data as any[]) {
+                for (const rr of qKinds.data as Array<{ id?: string | null; item_kind?: string | null; note?: string | null }>) {
                   const id = String(rr.id ?? "").trim();
                   const k = String(rr.item_kind ?? "").trim();
                   const n = String(rr.note ?? "").trim();
@@ -188,13 +205,13 @@ export function useDirectorProposalRow({
           try {
             if (pdfHtmlByProp[pidStr]) return;
             const { buildProposalPdfHtml } = await import("../../lib/rik_api");
-            const html = await buildProposalPdfHtml(pidStr as any);
+            const html = await buildProposalPdfHtml(pidStr);
             setPdfHtmlByProp((prev) => ({ ...prev, [pidStr]: html }));
           } catch { }
         }, 0);
       }
-    } catch (e: any) {
-      Alert.alert("Ошибка", e?.message ?? "Не удалось загрузить строки предложения");
+    } catch (e: unknown) {
+      Alert.alert("Ошибка", errText(e) || "Не удалось загрузить строки предложения");
       setItemsByProp((prev) => ({ ...prev, [pidStr]: [] }));
       setLoadedByProp((prev) => ({ ...prev, [pidStr]: true }));
     } finally {
@@ -243,3 +260,4 @@ export function useDirectorProposalRow({
     ProposalRow,
   };
 }
+

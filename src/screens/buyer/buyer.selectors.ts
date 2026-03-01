@@ -4,7 +4,7 @@ import type { LineMeta, DraftAttachmentMap } from "./buyer.components";
 import { SUPP_NONE, normName } from "./buyerUtils";
 import { buildRfqPickedPreview } from "./buyer.helpers";
 
-export type BuyerTab = "inbox" | "pending" | "approved" | "rejected";
+export type BuyerTab = "inbox" | "pending" | "approved" | "rejected" | "subcontracts";
 export type BuyerSheetKind = "none" | "inbox" | "accounting" | "rework" | "prop_details" | "rfq";
 
 export type BuyerGroup = {

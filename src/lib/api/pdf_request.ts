@@ -1,4 +1,4 @@
-// src/lib/api/pdf_request.ts
+﻿// src/lib/api/pdf_request.ts
 import { supabase } from "../supabaseClient";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { openHtmlAsPdfUniversal } from "./pdf";
@@ -48,7 +48,7 @@ export async function batchResolveRequestLabels(
 function stripContextFromNote(raw: any) {
   const s = String(raw ?? "").trim();
   if (!s) return "";
-  // убираем типичный контекст, который дублирует шапку
+  // Убираем типичный контекст, который дублирует шапку
   // (если он случайно попал в note)
   const lines = s.split(/\r?\n/).map((x) => x.trim()).filter(Boolean);
 
@@ -69,10 +69,54 @@ function stripContextFromNote(raw: any) {
     .replace(/этаж\s*\/?\s*уровень\s*:\s*[^;\n]+;?\s*/gi, "")
     .replace(/система\s*:\s*[^;\n]+;?\s*/gi, "")
     .replace(/зона\s*\/?\s*участок\s*:\s*[^;\n]+;?\s*/gi, "")
+    .replace(/подрядчик\s*:\s*[^;\n]+;?\s*/gi, "")
+    .replace(/телефон\s*:\s*[^;\n]+;?\s*/gi, "")
+    .replace(/объ[её]м\s*:\s*[^;\n]+;?\s*/gi, "")
     .replace(/\s{2,}/g, " ")
     .trim();
 
   return killed;
+}
+
+function parseContextFromNotes(notes: Array<any>) {
+  const ctx = {
+    object: "",
+    level: "",
+    system: "",
+    zone: "",
+    contractor: "",
+    phone: "",
+    volume: "",
+  };
+
+  const put = (k: keyof typeof ctx, v: string) => {
+    const value = String(v || "").trim();
+    if (!value || ctx[k]) return;
+    ctx[k] = value;
+  };
+
+  for (const rawNote of notes || []) {
+    const raw = String(rawNote ?? "").trim();
+    if (!raw) continue;
+    const parts = raw.split(/[\n;]+/).map((x) => x.trim()).filter(Boolean);
+    for (const part of parts) {
+      const m = part.match(/^([^:]+)\s*:\s*(.+)$/);
+      if (!m) continue;
+      const key = String(m[1] || "").trim().toLowerCase();
+      const val = String(m[2] || "").trim();
+      if (!val) continue;
+
+      if (key.includes("объект")) put("object", val);
+      else if (key.includes("этаж") || key.includes("уров")) put("level", val);
+      else if (key.includes("система")) put("system", val);
+      else if (key.includes("зона") || key.includes("участ")) put("zone", val);
+      else if (key.includes("подряд")) put("contractor", val);
+      else if (key.includes("телефон")) put("phone", val);
+      else if (key.includes("объём") || key.includes("объем")) put("volume", val);
+    }
+  }
+
+  return ctx;
 }
 
 export async function buildRequestPdfHtml(requestId: number | string): Promise<string> {
@@ -134,8 +178,7 @@ export async function buildRequestPdfHtml(requestId: number | string): Promise<s
     if (s === "draft" || s === "черновик") return "Черновик";
     if (s === "pending" || s === "на утверждении") return "На утверждении";
     if (s === "approved" || s === "утверждено" || s === "утверждена") return "Утверждена";
-    if (s === "rejected" || s === "cancelled" || s === "отклонено" || s === "отклонена")
-      return "Отклонена";
+    if (s === "rejected" || s === "cancelled" || s === "отклонено" || s === "отклонена") return "Отклонена";
     return raw ?? "—";
   };
 
@@ -191,6 +234,13 @@ export async function buildRequestPdfHtml(requestId: number | string): Promise<s
   const createdAt = formatDateTime(H.created_at);
   const needByFormatted = formatDate(H.need_by);
   const generatedAt = new Date().toLocaleString(locale);
+  const itemsForCtx = await client
+    .from("request_items")
+    .select("note")
+    .eq("request_id", idFilter);
+  const noteCtx = parseContextFromNotes(
+    Array.isArray(itemsForCtx.data) ? (itemsForCtx.data as any[]).map((r) => (r as any)?.note) : []
+  );
 
 
   const metaPairs: Array<{ label: string; value: string }> = [
@@ -204,6 +254,14 @@ export async function buildRequestPdfHtml(requestId: number | string): Promise<s
     { label: "Дата создания", value: createdAt || "—" },
     { label: "Статус", value: normalizeStatusRu(H.status) || "—" },
   ];
+
+  if (metaPairs[0]) metaPairs[0].value = objectName || noteCtx.object || "—";
+  if (metaPairs[1]) metaPairs[1].value = systemName || noteCtx.system || "—";
+  if (metaPairs[5]) metaPairs[5].value = levelName || noteCtx.level || "—";
+  if (metaPairs[6]) metaPairs[6].value = zoneName || noteCtx.zone || "—";
+  if (noteCtx.contractor) metaPairs.push({ label: "Подрядчик", value: noteCtx.contractor });
+  if (noteCtx.phone) metaPairs.push({ label: "Телефон", value: noteCtx.phone });
+  if (noteCtx.volume) metaPairs.push({ label: "Объём", value: noteCtx.volume });
 
   const metaGridItems = metaPairs
     .map(
@@ -352,7 +410,7 @@ export async function buildRequestPdfHtml(requestId: number | string): Promise<s
     <table class="items">
       <thead>
         <tr>
-          <th>№</th>
+          <th>в„–</th>
           <th>Позиция</th>
           <th>Ед.</th>
           <th>Количество</th>

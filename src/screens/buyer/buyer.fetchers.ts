@@ -44,7 +44,8 @@ export async function fetchBuyerInboxProd(params: {
       inbox = [];
     }
 
-    setRows(inbox);
+    // Approval gate is already applied in data layer (listBuyerInbox).
+    setRows(inbox || []);
 
     const reqIds = Array.from(
       new Set((inbox || []).map((r: any) => String(r?.request_id)).filter(Boolean))
@@ -57,7 +58,7 @@ export async function fetchBuyerInboxProd(params: {
     }
   } catch (e: any) {
     log?.("[buyer] fetchInbox:", e?.message ?? e);
-    alert("Ошибка", "Не удалось загрузить инбокс снабженца");
+    alert("Ошибка", "Не удалось загрузить входящие заявки снабженца");
     setRows([]);
   } finally {
     setLoadingInbox(false);
@@ -100,7 +101,7 @@ export async function fetchBuyerBucketsProd(params: {
 
   setLoadingBuckets(true);
   try {
-    // ===== PENDING (контроль) — только НЕпустые =====
+    // PENDING
     const pQ = await supabase
       .from("v_proposals_summary")
       .select("proposal_id,status,submitted_at,sent_to_accountant_at,total_sum,items_cnt")
@@ -121,7 +122,7 @@ export async function fetchBuyerBucketsProd(params: {
         : [];
     setPending(pendingClean);
 
-    // ===== APPROVED (готово) — только НЕпустые =====
+    // APPROVED
     const apQ = await supabase
       .from("v_proposals_summary")
       .select("proposal_id,status,submitted_at,sent_to_accountant_at,total_sum,items_cnt")
@@ -142,7 +143,7 @@ export async function fetchBuyerBucketsProd(params: {
         : [];
     setApproved(approvedClean);
 
-    // ===== REJECTED (правки) — ТОЛЬКО ОТ БУХГАЛТЕРА =====
+    // REJECTED from accountant flow only
     const reAcc = await supabase
       .from("proposals")
       .select("id, payment_status, submitted_at, created_at")
@@ -166,7 +167,6 @@ export async function fetchBuyerBucketsProd(params: {
         return { id: String(x.id), status: ps, submitted_at };
       });
 
-    // ✅ фильтр от пустых proposals (items_cnt > 0) через proposal_items
     let rejectedClean = rejectedRaw;
     try {
       const ids = rejectedRaw.map((r) => r.id);
@@ -188,7 +188,6 @@ export async function fetchBuyerBucketsProd(params: {
 
     setRejected(rejectedClean);
 
-    // ✅ батч-заголовки (если есть)
     try {
       await preloadProposalTitles?.([
         ...pendingClean.map((x) => x.id),

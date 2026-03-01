@@ -1,4 +1,4 @@
-import React from "react";
+﻿import React from "react";
 import { Animated, Pressable, ScrollView, Text, View } from "react-native";
 import type { Tab } from "../types";
 import { TABS } from "../types";
@@ -21,8 +21,8 @@ export default function Header({
   tab: Tab;
   setTab: (t: Tab) => void;
   unread: number;
-  titleSize: any;
-  subOpacity: any;
+  titleSize: number | Animated.AnimatedInterpolation<number>;
+  subOpacity: number | Animated.AnimatedInterpolation<number>;
   rowsCount: number;
   onExcel: () => void;
   onBell: () => void;
@@ -30,9 +30,8 @@ export default function Header({
 }) {
   return (
     <SafeView style={{ paddingHorizontal: 12, paddingTop: 10, paddingBottom: 6 }}>
-      {/* TOP ROW */}
       <SafeView style={{ flexDirection: "row", alignItems: "center" }}>
-        <Animated.Text style={{ fontSize: titleSize as any, fontWeight: "900", color: UI.text }}>
+        <Animated.Text style={{ fontSize: titleSize, fontWeight: "900", color: UI.text }}>
           Бухгалтер
         </Animated.Text>
 
@@ -63,7 +62,6 @@ export default function Header({
         </View>
       </SafeView>
 
-      {/* unread badge — поверх, чтобы логику не трогать */}
       {unread > 0 ? (
         <View
           pointerEvents="none"
@@ -83,7 +81,6 @@ export default function Header({
 
       <SafeView style={{ height: 10 }} />
 
-      {/* TABS */}
       <View style={{ marginTop: 10 }}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingRight: 12 }}>
           <View style={{ flexDirection: "row" }}>
@@ -128,4 +125,3 @@ export default function Header({
     </SafeView>
   );
 }
-

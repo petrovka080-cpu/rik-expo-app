@@ -1,4 +1,4 @@
-// src/screens/warehouse/components/ReqIssueModal.tsx
+﻿// src/screens/warehouse/components/ReqIssueModal.tsx
 import React, { useMemo } from "react";
 import { View, Text, Pressable, TextInput, FlatList, Platform } from "react-native";
 import RNModal from "react-native-modal";
@@ -110,6 +110,25 @@ function dedupeReqItems(rows: ReqItemUiRow[], nzFn: (v: any, d?: number) => numb
   return Object.values(byId);
 }
 
+function parseHeaderMeta(raw: string): { contractor: string; phone: string; volume: string } {
+  const out = { contractor: "", phone: "", volume: "" };
+  const lines = String(raw || "")
+    .split(/\r?\n/)
+    .map((x) => x.trim())
+    .filter(Boolean);
+  for (const line of lines) {
+    const m = line.match(/^([^:]+)\s*:\s*(.+)$/);
+    if (!m) continue;
+    const key = String(m[1] || "").trim().toLowerCase();
+    const val = String(m[2] || "").trim();
+    if (!val) continue;
+    if (!out.contractor && (key.includes("подряд") || key.includes("contractor"))) out.contractor = val;
+    if (!out.phone && (key.includes("тел") || key.includes("phone"))) out.phone = val;
+    if (!out.volume && (key.includes("объ") || key.includes("volume"))) out.volume = val;
+  }
+  return out;
+}
+
 export default function ReqIssueModal(props: Props) {
   const {
     visible,
@@ -139,8 +158,33 @@ export default function ReqIssueModal(props: Props) {
   const headLevel = String((head as any)?.level_name ?? (head as any)?.level_code ?? "").trim();
   const headSystem = String((head as any)?.system_name ?? (head as any)?.system_code ?? "").trim();
   const headZone = String((head as any)?.zone_name ?? (head as any)?.zone_code ?? "").trim();
+  const headContractorRaw = String(
+    (head as any)?.contractor_name ??
+      (head as any)?.contractor_org ??
+      (head as any)?.subcontractor_name ??
+      "",
+  ).trim();
+  const headPhoneRaw = String(
+    (head as any)?.contractor_phone ??
+      (head as any)?.phone ??
+      (head as any)?.phone_number ??
+      "",
+  ).trim();
+  const headVolumeRaw = String(
+    (head as any)?.planned_volume ??
+      (head as any)?.volume ??
+      (head as any)?.qty_plan ??
+      "",
+  ).trim();
+  const fromNote = useMemo(() => {
+    const packed = `${String((head as any)?.note ?? "")}\n${String((head as any)?.comment ?? "")}`;
+    return parseHeaderMeta(packed);
+  }, [head]);
+  const headContractor = headContractorRaw || fromNote.contractor;
+  const headPhone = headPhoneRaw || fromNote.phone;
+  const headVolume = headVolumeRaw || fromNote.volume;
 
-  const hasHead = !!(headObj || headLevel || headSystem || headZone);
+  const hasHead = !!(headObj || headLevel || headSystem || headZone || headContractor || headPhone || headVolume);
 
   // ✅ 1) фильтр по qty_left > 0
   // ✅ 2) дедуп по request_item_id (иначе троит + warning по key)
@@ -228,6 +272,21 @@ export default function ReqIssueModal(props: Props) {
             {!!headZone ? (
               <Text style={{ color: UI.text, fontSize: 14, lineHeight: 20, marginBottom: 0 }}>
                 {`Зона: ${headZone}`}
+              </Text>
+            ) : null}
+            {!!headContractor ? (
+              <Text style={{ color: UI.text, fontSize: 14, lineHeight: 20, marginBottom: 4 }}>
+                {`Подрядчик: ${headContractor}`}
+              </Text>
+            ) : null}
+            {!!headPhone ? (
+              <Text style={{ color: UI.text, fontSize: 14, lineHeight: 20, marginBottom: 4 }}>
+                {`Телефон: ${headPhone}`}
+              </Text>
+            ) : null}
+            {!!headVolume ? (
+              <Text style={{ color: UI.text, fontSize: 14, lineHeight: 20, marginBottom: 0 }}>
+                {`Объём: ${headVolume}`}
               </Text>
             ) : null}
           </View>

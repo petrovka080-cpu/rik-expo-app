@@ -1,5 +1,6 @@
 // src/lib/catalog_api.ts
 import { supabase } from "./supabaseClient";
+import { isRequestApprovedForProcurement } from "./requestStatus";
 import {
   proposalCreate as rpcProposalCreate,
   proposalAddItems as rpcProposalAddItems,
@@ -44,7 +45,7 @@ export {
 } from "./rik_api";
 export type { BuyerInboxRow, AccountantInboxRow } from "./rik_api";
 
-/** ========= Типы ========= */
+/** ========= РўРёРїС‹ ========= */
 export type CatalogItem = {
   code: string;
   name: string;
@@ -116,7 +117,7 @@ export type ForemanRequestSummary = {
   level_name_ru?: string | null;
   system_name_ru?: string | null;
   zone_name_ru?: string | null;
-  has_rejected?: boolean | null; // ← есть ли отклонённые позиции в заявке
+  has_rejected?: boolean | null; // в†ђ РµСЃС‚СЊ Р»Рё РѕС‚РєР»РѕРЅС‘РЅРЅС‹Рµ РїРѕР·РёС†РёРё РІ Р·Р°СЏРІРєРµ
 };
 
 export type RequestDetails = {
@@ -162,7 +163,7 @@ const chunk = <T,>(arr: T[], size: number): T[][] => {
   for (let i = 0; i < arr.length; i += size) out.push(arr.slice(i, i + size));
   return out;
 };
-const SUPPLIER_NONE_LABEL = "— без поставщика —";
+const SUPPLIER_NONE_LABEL = "\u2014 \u0431\u0435\u0437 \u043f\u043e\u0441\u0442\u0430\u0432\u0449\u0438\u043a\u0430 \u2014";
 
 const sanitizePostgrestOrTerm = (value: string): string =>
   norm(value)
@@ -273,7 +274,7 @@ const mapRequestItemRow = (raw: any, requestId: string): ReqItemRow | null => {
   return {
     id: String(rawId),
     request_id: String(raw?.request_id ?? requestId),
-    name_human: nameHuman || '—',
+    name_human: nameHuman || '\u2014',
     qty,
     uom: raw?.uom ?? raw?.uom_code ?? null,
     status: raw?.status ?? null,
@@ -304,8 +305,8 @@ const mapSupplierRow = (raw: any): Supplier | null => {
   };
 };
 
-/** ========= Каталог: быстрый поиск ========= */
-// NOTE: оставляем функцию обычным модульным экспортом без каких-либо глобальных шин
+/** ========= РљР°С‚Р°Р»РѕРі: Р±С‹СЃС‚СЂС‹Р№ РїРѕРёСЃРє ========= */
+// NOTE: РѕСЃС‚Р°РІР»СЏРµРј С„СѓРЅРєС†РёСЋ РѕР±С‹С‡РЅС‹Рј РјРѕРґСѓР»СЊРЅС‹Рј СЌРєСЃРїРѕСЂС‚РѕРј Р±РµР· РєР°РєРёС…-Р»РёР±Рѕ РіР»РѕР±Р°Р»СЊРЅС‹С… С€РёРЅ
 export async function searchCatalogItems(
   q: string,
   limit = 50,
@@ -314,7 +315,7 @@ export async function searchCatalogItems(
   const pQuery = sanitizePostgrestOrTerm(q);
   const pLimit = clamp(limit || 50, 1, 200);
 
-  // 1) твои RPC (если есть)
+  // 1) С‚РІРѕРё RPC (РµСЃР»Рё РµСЃС‚СЊ)
   for (const fn of ["rik_quick_search_typed", "rik_quick_ru", "rik_quick_search"]) {
     try {
       const { data, error } = await supabase.rpc(fn as any, {
@@ -336,7 +337,7 @@ export async function searchCatalogItems(
     } catch { }
   }
 
-  // 2) чистое представление
+  // 2) С‡РёСЃС‚РѕРµ РїСЂРµРґСЃС‚Р°РІР»РµРЅРёРµ
   const { data, error } = await supabase
     .from("catalog_items_clean")
     .select("code,name,uom,sector_code,spec,kind,group_code")
@@ -348,7 +349,7 @@ export async function searchCatalogItems(
   return data as CatalogItem[];
 }
 
-/** ========= Группы ========= */
+/** ========= Р“СЂСѓРїРїС‹ ========= */
 export async function listCatalogGroups(): Promise<CatalogGroup[]> {
   const { data, error } = await supabase
     .from("catalog_groups_clean")
@@ -358,7 +359,7 @@ export async function listCatalogGroups(): Promise<CatalogGroup[]> {
   return data as CatalogGroup[];
 }
 
-/** ========= Единицы измерения ========= */
+/** ========= Р•РґРёРЅРёС†С‹ РёР·РјРµСЂРµРЅРёСЏ ========= */
 export async function listUoms(): Promise<UomRef[]> {
   const { data, error } = await supabase
     .from("ref_uoms_clean")
@@ -368,7 +369,7 @@ export async function listUoms(): Promise<UomRef[]> {
   return data as UomRef[];
 }
 
-/** ========= Склад: позиции к приходу ========= */
+/** ========= РЎРєР»Р°Рґ: РїРѕР·РёС†РёРё Рє РїСЂРёС…РѕРґСѓ ========= */
 export async function listIncomingItems(incomingId: string): Promise<IncomingItem[]> {
   const id = norm(incomingId);
   if (!id) return [];
@@ -389,7 +390,7 @@ export async function listIncomingItems(incomingId: string): Promise<IncomingIte
 
 const DRAFT_KEY = "foreman_draft_request_id";
 
-// localStorage с мем-фолбэком
+// localStorage СЃ РјРµРј-С„РѕР»Р±СЌРєРѕРј
 let memDraftId: string | null = null;
 const storage = {
   get(): string | null {
@@ -410,14 +411,14 @@ export function getLocalDraftId(): string | null { return storage.get(); }
 export function setLocalDraftId(id: string) { storage.set(id); }
 export function clearLocalDraftId() { storage.clear(); }
 
-const draftStatusKeys = new Set(['draft', 'черновик']);
+const draftStatusKeys = new Set(['draft', '\u0447\u0435\u0440\u043d\u043e\u0432\u0438\u043a']);
 const isDraftStatusValue = (value?: string | null) => {
   const normalized = String(value ?? '').trim().toLowerCase();
   if (!normalized) return false;
   return draftStatusKeys.has(normalized);
 };
 
-/** Создаёт/возвращает черновик заявки */
+/** РЎРѕР·РґР°С‘С‚/РІРѕР·РІСЂР°С‰Р°РµС‚ С‡РµСЂРЅРѕРІРёРє Р·Р°СЏРІРєРё */
 export async function getOrCreateDraftRequestId(): Promise<string> {
   const cached = getLocalDraftId();
   if (cached) {
@@ -438,7 +439,7 @@ export async function getOrCreateDraftRequestId(): Promise<string> {
     throw e;
   }
 
-  throw new Error("Не удалось создать черновик заявки");
+  throw new Error("РќРµ СѓРґР°Р»РѕСЃСЊ СЃРѕР·РґР°С‚СЊ С‡РµСЂРЅРѕРІРёРє Р·Р°СЏРІРєРё");
 }
 
 async function isCachedDraftValid(id: string): Promise<boolean> {
@@ -463,7 +464,7 @@ async function isCachedDraftValid(id: string): Promise<boolean> {
   }
 }
 
-/** Заголовок заявки (для шапки/номера), пробуем вью/таблицы по очереди */
+/** Р—Р°РіРѕР»РѕРІРѕРє Р·Р°СЏРІРєРё (РґР»СЏ С€Р°РїРєРё/РЅРѕРјРµСЂР°), РїСЂРѕР±СѓРµРј РІСЊСЋ/С‚Р°Р±Р»РёС†С‹ РїРѕ РѕС‡РµСЂРµРґРё */
 export async function getRequestHeader(requestId: string): Promise<RequestHeader | null> {
   const id = norm(requestId);
   if (!id) return null;
@@ -738,20 +739,20 @@ export async function updateRequestMeta(
 
     if (error) {
       console.warn('[catalog_api.updateRequestMeta] table requests:', error.message);
-      // ВАЖНО: не роняем поток, просто сообщаем, что не смогли обновить
+      // Р’РђР–РќРћ: РЅРµ СЂРѕРЅСЏРµРј РїРѕС‚РѕРє, РїСЂРѕСЃС‚Рѕ СЃРѕРѕР±С‰Р°РµРј, С‡С‚Рѕ РЅРµ СЃРјРѕРіР»Рё РѕР±РЅРѕРІРёС‚СЊ
       return false;
     }
 
     return true;
   } catch (e: any) {
     console.warn('[catalog_api.updateRequestMeta] table requests:', e?.message ?? e);
-    // Тоже не роняем — пусть остальной код продолжит работать
+    // РўРѕР¶Рµ РЅРµ СЂРѕРЅСЏРµРј вЂ” РїСѓСЃС‚СЊ РѕСЃС‚Р°Р»СЊРЅРѕР№ РєРѕРґ РїСЂРѕРґРѕР»Р¶РёС‚ СЂР°Р±РѕС‚Р°С‚СЊ
     return false;
   }
 }
 
 
-/** Позиции заявки: простое чтение из таблицы request_items */
+/** РџРѕР·РёС†РёРё Р·Р°СЏРІРєРё: РїСЂРѕСЃС‚РѕРµ С‡С‚РµРЅРёРµ РёР· С‚Р°Р±Р»РёС†С‹ request_items */
 export async function listRequestItems(requestId: string): Promise<ReqItemRow[]> {
   const id = norm(requestId);
   if (!id) return [];
@@ -791,7 +792,7 @@ export async function exportRequestPdf(
   requestId: string,
   mode: "preview" | "share" = "preview",
 ): Promise<string> {
-  // mode оставляем только для совместимости: preview/share делает pdfRunner/runPdfTop
+  // mode РѕСЃС‚Р°РІР»СЏРµРј С‚РѕР»СЊРєРѕ РґР»СЏ СЃРѕРІРјРµСЃС‚РёРјРѕСЃС‚Рё: preview/share РґРµР»Р°РµС‚ pdfRunner/runPdfTop
   return await exportRequestPdfProd(requestId);
 }
 
@@ -801,11 +802,11 @@ export async function requestItemUpdateQty(
   requestIdHint?: string,
 ): Promise<ReqItemRow | null> {
   const id = norm(requestItemId);
-  if (!id) throw new Error('Не найден идентификатор позиции');
+  if (!id) throw new Error('РќРµ РЅР°Р№РґРµРЅ РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂ РїРѕР·РёС†РёРё');
 
   const numericQty = Number(qty);
   if (!Number.isFinite(numericQty) || numericQty <= 0) {
-    throw new Error('Количество должно быть больше нуля');
+    throw new Error('РљРѕР»РёС‡РµСЃС‚РІРѕ РґРѕР»Р¶РЅРѕ Р±С‹С‚СЊ Р±РѕР»СЊС€Рµ РЅСѓР»СЏ');
   }
 
   const rid = requestIdHint ? norm(requestIdHint) : '';
@@ -877,7 +878,7 @@ export async function listForemanRequests(
     return [];
   }
 
-  // 1) маппим как раньше
+  // 1) РјР°РїРїРёРј РєР°Рє СЂР°РЅСЊС€Рµ
   const mapped = (data as any[])
     .map((row) => mapSummaryFromRow(row))
     .filter((row): row is ForemanRequestSummary => !!row);
@@ -885,23 +886,29 @@ export async function listForemanRequests(
   const ids = mapped.map((r) => r.id).filter(Boolean);
   if (!ids.length) return mapped;
 
-  // 2) тянем статусы позиций одной пачкой (нужно и для has_rejected, и для итогового статуса)
+  // 2) С‚СЏРЅРµРј СЃС‚Р°С‚СѓСЃС‹ РїРѕР·РёС†РёР№ РѕРґРЅРѕР№ РїР°С‡РєРѕР№ (РЅСѓР¶РЅРѕ Рё РґР»СЏ has_rejected, Рё РґР»СЏ РёС‚РѕРіРѕРІРѕРіРѕ СЃС‚Р°С‚СѓСЃР°)
   const { data: itemRows, error: itemErr } = await supabase
     .from("request_items" as any)
     .select("request_id,status")
     .in("request_id", ids as any);
 
   if (itemErr || !Array.isArray(itemRows)) {
-    return mapped; // не ломаем историю
+    return mapped; // РЅРµ Р»РѕРјР°РµРј РёСЃС‚РѕСЂРёСЋ
   }
 
   const normSt = (s: any) => String(s ?? "").trim().toLowerCase();
-  const isApproved = (s: string) =>
-    s === "утверждено" || s === "утверждена" || s === "approved" || s === "к закупке";
-  const isRejected = (s: string) =>
-    s === "отклонено" || s === "отклонена" || s === "rejected";
-  const isPending = (s: string) =>
-    s === "на утверждении" || s === "pending";
+  const isApproved = (st: string) =>
+    st === "\u0443\u0442\u0432\u0435\u0440\u0436\u0434\u0435\u043d\u043e" ||
+    st === "\u0443\u0442\u0432\u0435\u0440\u0436\u0434\u0435\u043d\u0430" ||
+    st === "approved" ||
+    st === "\u043a \u0437\u0430\u043a\u0443\u043f\u043a\u0435";
+  const isRejected = (st: string) =>
+    st === "\u043e\u0442\u043a\u043b\u043e\u043d\u0435\u043d\u043e" ||
+    st === "\u043e\u0442\u043a\u043b\u043e\u043d\u0435\u043d\u0430" ||
+    st === "rejected";
+  const isPending = (st: string) =>
+    st === "\u043d\u0430 \u0443\u0442\u0432\u0435\u0440\u0436\u0434\u0435\u043d\u0438\u0438" ||
+    st === "pending";
 
   const agg = new Map<string, { total: number; ok: number; bad: number; pend: number }>();
   for (const row of itemRows as any[]) {
@@ -915,36 +922,30 @@ export async function listForemanRequests(
     agg.set(rid, cur);
   }
 
-  // 3) итоговая сборка для UI истории
   return mapped.map((req) => {
     const a = agg.get(String(req.id));
     if (!a || a.total === 0) return req;
 
     const hasRejected = a.bad > 0;
 
-    // все отклонены
     if (a.bad === a.total) {
-      return { ...req, status: "Отклонена", has_rejected: true };
+      return { ...req, status: "\u041e\u0442\u043a\u043b\u043e\u043d\u0435\u043d\u0430", has_rejected: true };
     }
 
-    // все утверждены
     if (a.ok === a.total) {
-      return { ...req, status: "К закупке", has_rejected: false };
+      return { ...req, status: "\u041a \u0437\u0430\u043a\u0443\u043f\u043a\u0435", has_rejected: false };
     }
 
-    // частично: есть и ok, и отклонено
     if (a.ok > 0 && a.bad > 0) {
-      return { ...req, status: "Частично утверждена", has_rejected: true };
+      return { ...req, status: "\u0427\u0430\u0441\u0442\u0438\u0447\u043d\u043e \u0443\u0442\u0432\u0435\u0440\u0436\u0434\u0435\u043d\u0430", has_rejected: true };
     }
 
-    // есть pending
     if (a.pend > 0) {
-      if (hasRejected) return { ...req, status: "Частично утверждена", has_rejected: true };
-      return { ...req, status: "На утверждении", has_rejected: false };
+      if (hasRejected) return { ...req, status: "\u0427\u0430\u0441\u0442\u0438\u0447\u043d\u043e \u0443\u0442\u0432\u0435\u0440\u0436\u0434\u0435\u043d\u0430", has_rejected: true };
+      return { ...req, status: "\u041d\u0430 \u0443\u0442\u0432\u0435\u0440\u0436\u0434\u0435\u043d\u0438\u0438", has_rejected: false };
     }
 
-    // fallback
-    if (hasRejected) return { ...req, status: "Частично утверждена", has_rejected: true };
+    if (hasRejected) return { ...req, status: "\u0427\u0430\u0441\u0442\u0438\u0447\u043d\u043e \u0443\u0442\u0432\u0435\u0440\u0436\u0434\u0435\u043d\u0430", has_rejected: true };
     return { ...req, has_rejected: false };
   });
 }
@@ -1018,11 +1019,13 @@ export type CreateProposalsOptions = {
 export type CreateProposalsResult = {
   proposals: Array<{
     proposal_id: string;
-    proposal_no: string | null; // ✅ добавили
+    proposal_no: string | null; // вњ… РґРѕР±Р°РІРёР»Рё
     supplier: string;
     request_item_ids: string[];
   }>;
 };
+
+const isApprovedForProcurement = (raw: unknown) => isRequestApprovedForProcurement(raw);
 
 export async function createProposalsBySupplier(
   buckets: ProposalBucketInput[],
@@ -1032,8 +1035,53 @@ export async function createProposalsBySupplier(
   const shouldSubmit = opts.submit !== false;
   const statusAfter = opts.requestItemStatus ?? null;
 
+  // Hard gate: proposal creation is allowed only for request items
+  // whose parent requests are director-approved for procurement.
+  const allItemIds = Array.from(
+    new Set(
+      (buckets || [])
+        .flatMap((b) => b?.request_item_ids ?? [])
+        .map((id) => String(id || "").trim())
+        .filter(Boolean),
+    ),
+  );
+  const approvedItemIds = new Set<string>();
+  if (allItemIds.length) {
+    try {
+      const qItems = await supabase
+        .from("request_items")
+        .select("id, request_id")
+        .in("id", allItemIds);
+      if (!qItems.error) {
+        const reqIds = Array.from(
+          new Set((qItems.data || []).map((r: any) => String(r?.request_id || "").trim()).filter(Boolean)),
+        );
+        const qReq = reqIds.length
+          ? await supabase.from("requests").select("id, status").in("id", reqIds)
+          : { data: [], error: null } as any;
+
+        const reqStatusById = new Map<string, string>();
+        (qReq.data || []).forEach((r: any) => {
+          reqStatusById.set(String(r?.id || "").trim(), String(r?.status || ""));
+        });
+        (qItems.data || []).forEach((row: any) => {
+          const itemId = String(row?.id || "").trim();
+          const reqId = String(row?.request_id || "").trim();
+          if (!itemId || !reqId) return;
+          if (isApprovedForProcurement(reqStatusById.get(reqId) || "")) {
+            approvedItemIds.add(itemId);
+          }
+        });
+      }
+    } catch (e: any) {
+      console.warn("[catalog_api.createProposalsBySupplier] request approval gate:", e?.message ?? e);
+    }
+  }
+
   for (const bucket of buckets) {
-    const ids = (bucket?.request_item_ids ?? []).map((id) => String(id)).filter(Boolean);
+    const ids = (bucket?.request_item_ids ?? [])
+      .map((id) => String(id || "").trim())
+      .filter((id) => !!id && approvedItemIds.has(id));
     if (!ids.length) continue;
 
     let proposalId: string;
@@ -1043,7 +1091,7 @@ export async function createProposalsBySupplier(
       const created = await rpcProposalCreate();
       proposalId = String(created);
 
-      // ✅ proposal_no уже поставил BEFORE INSERT trigger (trg_proposals_set_no)
+      // вњ… proposal_no СѓР¶Рµ РїРѕСЃС‚Р°РІРёР» BEFORE INSERT trigger (trg_proposals_set_no)
       const q = await supabase
         .from("proposals")
         .select("proposal_no,id_short,display_no")
@@ -1064,7 +1112,7 @@ export async function createProposalsBySupplier(
     const supplierDisplay = bucket?.supplier ? norm(bucket.supplier) : "";
     const supplierLabel = supplierDisplay || SUPPLIER_NONE_LABEL;
 
-    // ✅ В БД: только реальный поставщик или null
+    // вњ… Р’ Р‘Р”: С‚РѕР»СЊРєРѕ СЂРµР°Р»СЊРЅС‹Р№ РїРѕСЃС‚Р°РІС‰РёРє РёР»Рё null
     const supplierDb: string | null = supplierDisplay ? supplierDisplay : null;
 
 
@@ -1080,7 +1128,7 @@ export async function createProposalsBySupplier(
       try {
         await supabase
           .from("proposals")
-          .update({ supplier: supplierDisplay }) // ✅ именно реальное имя
+          .update({ supplier: supplierDisplay }) // вњ… РёРјРµРЅРЅРѕ СЂРµР°Р»СЊРЅРѕРµ РёРјСЏ
           .eq("id", proposalId);
       } catch (e: any) {
         console.warn("[catalog_api.createProposalsBySupplier] set supplier:", e?.message ?? e);
@@ -1114,12 +1162,15 @@ export async function createProposalsBySupplier(
       }
     }
 
-    const metaRows = (bucket.meta ?? ids.map((request_item_id) => ({ request_item_id }))).map((row) => ({
-      request_item_id: String(row.request_item_id),
+    const idsSet = new Set(ids);
+    const metaRows = (bucket.meta ?? ids.map((request_item_id) => ({ request_item_id })))
+      .filter((row) => idsSet.has(String(row?.request_item_id || "").trim()))
+      .map((row) => ({
+      request_item_id: String(row.request_item_id || "").trim(),
       // @ts-ignore
       price: row.price ?? null,
 
-      // ✅ В БД supplier только реальный или NULL (никаких "— без поставщика —")
+      // вњ… Р’ Р‘Р” supplier С‚РѕР»СЊРєРѕ СЂРµР°Р»СЊРЅС‹Р№ РёР»Рё NULL (РЅРёРєР°РєРёС… "вЂ” Р±РµР· РїРѕСЃС‚Р°РІС‰РёРєР° вЂ”")
       supplier: supplierDb,
 
       // @ts-ignore
@@ -1169,7 +1220,7 @@ export async function createProposalsBySupplier(
 
     proposals.push({
       proposal_id: proposalId,
-      proposal_no: proposalNo, // ✅ добавили
+      proposal_no: proposalNo, // вњ… РґРѕР±Р°РІРёР»Рё
       supplier: supplierLabel,
       request_item_ids: ids,
     });
@@ -1180,7 +1231,7 @@ export async function createProposalsBySupplier(
 }
 
 
-// ✅ PROD: единый умный поиск (любой ввод: черна / нерж / плит 60х60)
+// вњ… PROD: РµРґРёРЅС‹Р№ СѓРјРЅС‹Р№ РїРѕРёСЃРє (Р»СЋР±РѕР№ РІРІРѕРґ: С‡РµСЂРЅР° / РЅРµСЂР¶ / РїР»РёС‚ 60С…60)
 export async function rikQuickSearch(q: string, limit = 60) {
   const text = (q ?? '').trim();
   if (text.length < 2) return [];
@@ -1231,3 +1282,4 @@ export async function requestItemCancel(requestItemId: string) {
 
   return true;
 }
+

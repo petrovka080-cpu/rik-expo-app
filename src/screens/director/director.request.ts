@@ -1,4 +1,4 @@
-import type React from "react";
+﻿import type React from "react";
 import { useCallback } from "react";
 import { Alert, Platform } from "react-native";
 import * as XLSX from "xlsx";
@@ -21,10 +21,13 @@ type Deps = {
   setActingId: React.Dispatch<React.SetStateAction<string | null>>;
   setReqDeleteId: React.Dispatch<React.SetStateAction<number | string | null>>;
   setReqSendId: React.Dispatch<React.SetStateAction<number | string | null>>;
+  fetchRows: () => Promise<void>;
   fetchProps: () => Promise<void>;
   closeSheet: () => void;
   showSuccess: (msg: string) => void;
 };
+
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export function useDirectorRequestActions({
   busy,
@@ -38,6 +41,7 @@ export function useDirectorRequestActions({
   setActingId,
   setReqDeleteId,
   setReqSendId,
+  fetchRows,
   fetchProps,
   closeSheet,
   showSuccess,
@@ -201,8 +205,16 @@ export function useDirectorRequestActions({
         .eq("id", reqIdStr);
       if (updReq.error) throw updReq.error;
 
-      setRows((prev) => prev.filter((r) => r.request_id !== g.request_id));
+      const reqIdCmp = String(g.request_id ?? "");
+      setRows((prev) => prev.filter((r) => String(r.request_id ?? "") !== reqIdCmp));
       await fetchProps();
+      void (async () => {
+        for (let i = 0; i < 3; i += 1) {
+          await sleep(450);
+          await fetchRows();
+          setRows((prev) => prev.filter((r) => String(r.request_id ?? "") !== reqIdCmp));
+        }
+      })();
 
       closeSheet();
       showSuccess(`Заявка ${labelForRequest(g.request_id)} утверждена и отправлена снабженцу`);
@@ -211,7 +223,7 @@ export function useDirectorRequestActions({
     } finally {
       setReqSendId(null);
     }
-  }, [screenLock, reqDeleteId, reqSendId, supabase, setReqSendId, setRows, fetchProps, closeSheet, showSuccess, labelForRequest]);
+  }, [screenLock, reqDeleteId, reqSendId, supabase, setReqSendId, setRows, fetchRows, fetchProps, closeSheet, showSuccess, labelForRequest]);
 
   return {
     exportRequestExcel,

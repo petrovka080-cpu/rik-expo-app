@@ -596,6 +596,24 @@ export const s = StyleSheet.create({
     justifyContent: "center",
     flexShrink: 0,
   },
-
+  detailsCard: {
+    backgroundColor: "rgba(255,255,255,0.04)",
+    borderRadius: 18,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.12)",
+    marginBottom: 16,
+  },
+  detailsRow: {
+    color: UI.text,
+    fontSize: 14,
+    fontWeight: "800",
+    marginBottom: 4,
+  },
+  detailsLabel: {
+    color: UI.sub,
+    fontWeight: "900",
+    textTransform: "uppercase",
+    fontSize: 10,
+  },
 });
-

@@ -82,9 +82,10 @@ export default function DirectorReportsModal({
   setRepTab,
   onRefresh,
 }: Props) {
-  const kpi: RepKpi | null = (repData as any)?.kpi ?? null;
-  const rows: RepRow[] = Array.isArray((repData as any)?.rows) ? (repData as any).rows : [];
-  const discipline = (repDiscipline ?? (repData as any)?.discipline ?? null) as RepDisciplinePayload | null;
+  const data = repData as Partial<RepPayload> | null;
+  const kpi: RepKpi | null = data?.kpi ?? null;
+  const rows: RepRow[] = Array.isArray(data?.rows) ? data.rows : [];
+  const discipline: RepDisciplinePayload | null = repDiscipline ?? data?.discipline ?? null;
 
   const [workModal, setWorkModal] = React.useState<RepDisciplineWork | null>(null);
   const [levelModal, setLevelModal] = React.useState<{ work: RepDisciplineWork; level: RepDisciplineLevel } | null>(null);

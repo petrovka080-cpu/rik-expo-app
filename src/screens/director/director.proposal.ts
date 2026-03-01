@@ -1,4 +1,4 @@
-import type React from "react";
+﻿import type React from "react";
 import { useCallback } from "react";
 import { Alert, Platform } from "react-native";
 import * as XLSX from "xlsx";
@@ -20,6 +20,11 @@ type Deps = {
   fetchRows: () => Promise<void>;
   closeSheet: () => void;
   showSuccess: (msg: string) => void;
+};
+
+const errText = (error: unknown): string => {
+  if (error instanceof Error && error.message.trim()) return error.message.trim();
+  return String(error ?? "");
 };
 
 export function useDirectorProposalActions({
@@ -56,13 +61,13 @@ export function useDirectorProposalActions({
 
       const rid = String(q.data?.request_item_id || "").trim();
       if (!rid) {
-        Alert.alert("Ошибка", "В строке предложения нет request_item_id (в базе).");
+        Alert.alert("РћС€РёР±РєР°", "Р’ СЃС‚СЂРѕРєРµ РїСЂРµРґР»РѕР¶РµРЅРёСЏ РЅРµС‚ request_item_id (РІ Р±Р°Р·Рµ).");
         return;
       }
 
       const beforeCount = (itemsByProp[pidStr] || items || []).length;
       const isLast = beforeCount <= 1;
-      const payload = [{ request_item_id: rid, decision: "rejected", comment: "Отклонено директором" }];
+      const payload = [{ request_item_id: rid, decision: "rejected", comment: "РћС‚РєР»РѕРЅРµРЅРѕ РґРёСЂРµРєС‚РѕСЂРѕРј" }];
 
       const res = await supabase.rpc("director_decide_proposal_items", {
         p_proposal_id: pidStr,
@@ -82,8 +87,8 @@ export function useDirectorProposalActions({
         void fetchRows();
         closeSheet();
       }
-    } catch (e: any) {
-      Alert.alert("Ошибка", e?.message ?? "Не удалось отклонить позицию");
+    } catch (e: unknown) {
+      Alert.alert("РћС€РёР±РєР°", errText(e) || "РќРµ СѓРґР°Р»РѕСЃСЊ РѕС‚РєР»РѕРЅРёС‚СЊ РїРѕР·РёС†РёСЋ");
     } finally {
       setActingPropItemId(null);
       setDecidingId(null);
@@ -102,17 +107,17 @@ export function useDirectorProposalActions({
         busy,
         supabase,
         key: pdfKey,
-        label: "Готовлю файл…",
+        label: "Р“РѕС‚РѕРІР»СЋ С„Р°Р№Р»вЂ¦",
         mode: "share",
-        fileName: `Предложение_${pidStr}`,
+        fileName: `РџСЂРµРґР»РѕР¶РµРЅРёРµ_${pidStr}`,
         getRemoteUrl: async () => {
           const { exportProposalPdf } = await import("../../lib/rik_api");
-          return await exportProposalPdf(pidStr as any, "share");
+          return await exportProposalPdf(pidStr, "share");
         },
       });
-    } catch (e: any) {
-      if (String(e?.message ?? "").toLowerCase().includes("busy")) return;
-      Alert.alert("Ошибка", e?.message ?? "Не удалось отправить PDF");
+    } catch (e: unknown) {
+      if (String(errText(e) || "").toLowerCase().includes("busy")) return;
+      Alert.alert("РћС€РёР±РєР°", errText(e) || "РќРµ СѓРґР°Р»РѕСЃСЊ РѕС‚РїСЂР°РІРёС‚СЊ PDF");
     } finally {
       setTimeout(() => { pdfTapLockRef.current[pdfKey] = false; }, 450);
     }
@@ -123,19 +128,19 @@ export function useDirectorProposalActions({
 
     try {
       if (Platform.OS !== "web") {
-        Alert.alert("Excel", "Excel экспорт сейчас реализован только для Web-версии.");
+        Alert.alert("Excel", "Excel СЌРєСЃРїРѕСЂС‚ СЃРµР№С‡Р°СЃ СЂРµР°Р»РёР·РѕРІР°РЅ С‚РѕР»СЊРєРѕ РґР»СЏ Web-РІРµСЂСЃРёРё.");
         return;
       }
       if (!items.length) {
-        Alert.alert("Excel", "Нет строк для выгрузки.");
+        Alert.alert("Excel", "РќРµС‚ СЃС‚СЂРѕРє РґР»СЏ РІС‹РіСЂСѓР·РєРё.");
         return;
       }
 
-      const safe = (v: any) => (v == null ? "" : String(v).replace(/[\r\n]+/g, " ").trim());
+      const safe = (v: unknown) => (v == null ? "" : String(v).replace(/[\r\n]+/g, " ").trim());
       const title = (pretty || `PROPOSAL-${pidStr.slice(0, 8)}`).replace(/[^\w\u0400-\u04FF0-9]/g, "_");
-      const sheetName = title.slice(0, 31) || "Предложение";
+      const sheetName = title.slice(0, 31) || "РџСЂРµРґР»РѕР¶РµРЅРёРµ";
 
-      const data: any[][] = [["№", "Наименование", "Кол-во", "Ед. изм.", "Применение"]];
+      const data: Array<Array<string | number>> = [["в„–", "РќР°РёРјРµРЅРѕРІР°РЅРёРµ", "РљРѕР»-РІРѕ", "Р•Рґ. РёР·Рј.", "РџСЂРёРјРµРЅРµРЅРёРµ"]];
       items.forEach((it, idx) =>
         data.push([idx + 1, safe(it.name_human), safe(it.total_qty), safe(it.uom), safe(it.app_code)])
       );
@@ -157,8 +162,8 @@ export function useDirectorProposalActions({
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-    } catch (e: any) {
-      Alert.alert("Ошибка", e?.message ?? "Не удалось сформировать Excel");
+    } catch (e: unknown) {
+      Alert.alert("РћС€РёР±РєР°", errText(e) || "РќРµ СѓРґР°Р»РѕСЃСЊ СЃС„РѕСЂРјРёСЂРѕРІР°С‚СЊ Excel");
     }
   }, []);
 
@@ -177,12 +182,12 @@ export function useDirectorProposalActions({
       const rInc = await supabase.rpc("ensure_purchase_and_incoming_strict", {
         p_proposal_id: pidStr,
       });
-      if ((rInc as any)?.error) throw (rInc as any).error;
+      if (rInc?.error) throw rInc.error;
 
       try {
-        const purchaseId = String((rInc as any)?.data?.purchase_id ?? "").trim();
+        const purchaseId = String(((rInc?.data as { purchase_id?: string | number | null } | null)?.purchase_id ?? "")).trim();
         if (purchaseId) {
-          const rW = await supabase.rpc("work_seed_from_purchase" as any, { p_purchase_id: purchaseId } as any);
+          const rW = await supabase.rpc("work_seed_from_purchase", { p_purchase_id: purchaseId });
           if (rW.error) console.warn("[work_seed_from_purchase] error:", rW.error.message);
         }
       } catch { }
@@ -199,9 +204,9 @@ export function useDirectorProposalActions({
       await fetchProps();
       void fetchRows();
       closeSheet();
-      showSuccess("Утверждено → бухгалтер → склад/подрядчики");
-    } catch (e: any) {
-      Alert.alert("Ошибка", e?.message ?? "Не удалось утвердить");
+      showSuccess("РЈС‚РІРµСЂР¶РґРµРЅРѕ в†’ Р±СѓС…РіР°Р»С‚РµСЂ в†’ СЃРєР»Р°Рґ/РїРѕРґСЂСЏРґС‡РёРєРё");
+    } catch (e: unknown) {
+      Alert.alert("РћС€РёР±РєР°", errText(e) || "РќРµ СѓРґР°Р»РѕСЃСЊ СѓС‚РІРµСЂРґРёС‚СЊ");
     } finally {
       setPropApproveId(null);
     }
@@ -215,3 +220,4 @@ export function useDirectorProposalActions({
     approveProposal,
   };
 }
+
