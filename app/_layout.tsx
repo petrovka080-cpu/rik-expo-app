@@ -45,6 +45,7 @@ export default function RootLayout() {
 
   const roleLoadingRef = useRef(false);
   const initStartedRef = useRef(false);
+  const lastRoleLoadAtRef = useRef(0);
 
   // --- WEB: нормальный контейнер/скролл + leaflet css (если нужен) ---
   useEffect(() => {
@@ -74,9 +75,11 @@ export default function RootLayout() {
   }, []);
 
   // --- роль/профиль грузим в фоне, НЕ блокируя вход ---
-  const loadRoleForCurrentSession = useCallback(async () => {
+  const loadRoleForCurrentSession = useCallback(async (force = false) => {
     if (!isSupabaseEnvValid) return;
     if (roleLoadingRef.current) return;
+    const now = Date.now();
+    if (!force && now - lastRoleLoadAtRef.current < 5 * 60 * 1000) return;
     roleLoadingRef.current = true;
 
     try {
@@ -95,6 +98,7 @@ export default function RootLayout() {
       ]);
 
       setRole((r as string | null) ?? null);
+      lastRoleLoadAtRef.current = Date.now();
     } catch (e: any) {
       console.warn("[RootLayout] role load failed:", e?.message ?? e);
       setRole(null);
@@ -126,7 +130,7 @@ export default function RootLayout() {
         setHasSession(has);
         setSessionLoaded(true);
 
-        if (has) loadRoleForCurrentSession();
+        if (has) loadRoleForCurrentSession(true);
         else {
           setRole(null);
           setRoleLoaded(true);
@@ -141,7 +145,7 @@ export default function RootLayout() {
       }
     })();
 
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
       const has = Boolean(session);
       setHasSession(has);
       setSessionLoaded(true);
@@ -153,7 +157,9 @@ export default function RootLayout() {
         return;
       }
 
-      loadRoleForCurrentSession();
+      if (event === "SIGNED_IN" || event === "USER_UPDATED" || event === "INITIAL_SESSION") {
+        loadRoleForCurrentSession(true);
+      }
     });
 
     return () => {

@@ -171,15 +171,87 @@ export async function createSubcontractDraftWithPatch(
     p_foreman_comment: patch.foreman_comment ?? null,
   };
 
-  const { data, error } = await supabase.rpc("subcontract_create_draft", payload);
-  if (error) throw error;
-  if (!data || typeof data !== "object") {
-    throw new Error("subcontract_create_draft returned invalid payload");
+  const parseRpcRow = (data: unknown): Pick<Subcontract, "id" | "display_no"> | null => {
+    if (!data || typeof data !== "object") return null;
+    const id = String((data as { id?: unknown }).id ?? "").trim();
+    if (!id) return null;
+    return {
+      id,
+      display_no: ((data as { display_no?: unknown }).display_no as string | null | undefined) ?? null,
+    };
+  };
+
+  const payloadLegacy = { ...payload } as Record<string, unknown>;
+  delete payloadLegacy.p_contractor_inn;
+
+  // 1) New RPC signature (with p_contractor_inn).
+  {
+    const { data, error } = await supabase.rpc("subcontract_create_draft", payload as any);
+    if (!error) {
+      const row = parseRpcRow(data);
+      if (row) return row;
+      throw new Error("subcontract_create_draft returned invalid payload");
+    }
   }
 
+  // 2) Legacy RPC signature (without p_contractor_inn).
+  {
+    const { data, error } = await supabase.rpc("subcontract_create_draft", payloadLegacy as any);
+    if (!error) {
+      const row = parseRpcRow(data);
+      if (row) return row;
+      throw new Error("subcontract_create_draft returned invalid payload");
+    }
+  }
+
+  // 3) Hard fallback: direct insert (for envs where RPC is absent).
+  const insertPayloadBase: Record<string, unknown> = {
+    created_by: userId,
+    status: "draft",
+    foreman_name: foremanName || null,
+    contractor_org: patch.contractor_org ?? null,
+    contractor_inn: patch.contractor_inn ?? null,
+    contractor_rep: patch.contractor_rep ?? null,
+    contractor_phone: patch.contractor_phone ?? null,
+    contract_number: patch.contract_number ?? null,
+    contract_date: asDate(patch.contract_date),
+    object_name: patch.object_name ?? null,
+    work_zone: patch.work_zone ?? null,
+    work_type: patch.work_type ?? null,
+    qty_planned: patch.qty_planned ?? null,
+    uom: patch.uom ?? null,
+    date_start: asDate(patch.date_start),
+    date_end: asDate(patch.date_end),
+    work_mode: patch.work_mode ?? null,
+    price_per_unit: patch.price_per_unit ?? null,
+    total_price: patch.total_price ?? null,
+    price_type: patch.price_type ?? null,
+    foreman_comment: patch.foreman_comment ?? null,
+  };
+
+  let ins = await supabase
+    .from("subcontracts")
+    .insert(insertPayloadBase as any)
+    .select("id, display_no")
+    .single();
+
+  // Old schema fallback: table without contractor_inn column.
+  if (ins.error && String(ins.error.message || "").toLowerCase().includes("contractor_inn")) {
+    const retryPayload = { ...insertPayloadBase };
+    delete retryPayload.contractor_inn;
+    ins = await supabase
+      .from("subcontracts")
+      .insert(retryPayload as any)
+      .select("id, display_no")
+      .single();
+  }
+
+  if (ins.error) throw ins.error;
+  const id = String((ins.data as { id?: unknown })?.id ?? "").trim();
+  if (!id) throw new Error("subcontract draft create failed: no id");
   return {
-    id: String((data as { id: unknown }).id),
-    display_no: ((data as { display_no?: unknown }).display_no as string | null | undefined) ?? null,
+    id,
+    display_no: ((ins.data as { display_no?: unknown })?.display_no as string | null | undefined) ?? null,
   };
 }
 

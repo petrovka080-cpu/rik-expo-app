@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+﻿import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -250,6 +250,7 @@ export default function BuyerSubcontractTab({ contentTopPad, onScroll, buyerFio 
 
   const renderCard = ({ item }: { item: Subcontract }) => {
     const cfg = STATUS_CONFIG[item.status] || STATUS_CONFIG.draft;
+    const title = item.work_type || "Подряд";
     return (
       <Pressable
         style={styles.card}
@@ -285,12 +286,14 @@ export default function BuyerSubcontractTab({ contentTopPad, onScroll, buyerFio 
         }}
       >
         <View style={styles.cardHeader}>
-          <Text style={styles.cardTitle}>{item.work_type || "Без названия"}</Text>
+          <Text style={styles.cardTitle}>{title}</Text>
           <View style={[styles.badge, { backgroundColor: cfg.bg }]}>
             <Text style={[styles.badgeText, { color: cfg.fg }]}>{cfg.label}</Text>
           </View>
         </View>
-        <Text style={styles.cardSubtitle}>{item.object_name || "—"} · {item.contractor_org || "—"}</Text>
+        <Text style={styles.cardSubtitle}>
+          {item.object_name || "-"} / {item.contractor_org || "-"}
+        </Text>
         <View style={styles.cardFooter}>
           <Text style={styles.cardPrice}>{fmtAmount(item.total_price)} сом</Text>
           <Text style={styles.cardDate}>{fmtDate(item.created_at)}</Text>
@@ -761,4 +764,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
 });
+
+
 

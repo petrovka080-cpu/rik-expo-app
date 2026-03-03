@@ -145,19 +145,24 @@ export function useDirectorData({ supabase }: Deps) {
     try {
       const { data, error } = await supabase
         .from("requests")
-        .select("id, display_no, submitted_at")
+        .select("id, request_no, display_no, submitted_at")
         .in("id", needed);
       if (error) throw error;
 
       const mapDn: Record<string, string> = {};
       const mapSub: Record<string, string> = {};
 
-      const rowsTyped = (data ?? []) as Array<{ id?: string | number | null; display_no?: string | null; submitted_at?: string | null }>;
+      const rowsTyped = (data ?? []) as Array<{
+        id?: string | number | null;
+        request_no?: string | null;
+        display_no?: string | null;
+        submitted_at?: string | null;
+      }>;
       for (const r of rowsTyped) {
         const id = String(r.id ?? "").trim();
         if (!id) continue;
 
-        const dn = String(r.display_no ?? "").trim();
+        const dn = String(r.request_no ?? r.display_no ?? "").trim();
         const sa = r.submitted_at ?? null;
 
         if (dn) mapDn[id] = dn;

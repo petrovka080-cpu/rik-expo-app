@@ -7,6 +7,8 @@
     "newArchEnabled": false,
     "updates": {
       "enabled": true,
+      "checkAutomatically": "ON_LOAD",
+      "fallbackToCacheTimeout": 0,
       "url": "https://u.expo.dev/93959cca-1c92-4b59-b80a-f1a1f5dfdf5a"
     },
     "runtimeVersion": "1.0.0",

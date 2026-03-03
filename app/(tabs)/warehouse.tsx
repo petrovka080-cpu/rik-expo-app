@@ -120,6 +120,7 @@ const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
 
 const ORG_NAME = "";
 const REPORTS_CACHE_TTL_MS = 60 * 1000;
+const REQ_PAGE_SIZE = 80;
 export default function Warehouse() {
   const busy = useGlobalBusy();
   const insets = useSafeAreaInsets();
@@ -390,9 +391,12 @@ export default function Warehouse() {
     if (pageIndex === 0) setReqHeadsLoading(true);
 
     try {
-      const rows = await apiFetchReqHeads(supabase as any, pageIndex, 50);
+      const rows = await apiFetchReqHeads(supabase as any, pageIndex, REQ_PAGE_SIZE);
 
-      const hasNext = rows.length === 50;
+      // IMPORTANT:
+      // apiFetchReqHeads applies status/view filtering, so page can be shorter than REQ_PAGE_SIZE
+      // even when more rows exist in later ranges. Stop only when backend returns zero rows.
+      const hasNext = rows.length > 0;
       reqRefs.current.hasMore = hasNext;
       reqRefs.current.page = pageIndex;
 
@@ -508,6 +512,18 @@ export default function Warehouse() {
     async (h: ReqHeadRow) => {
       const rid = String(h?.request_id ?? "").trim();
       if (!rid) return;
+      const normalizePhone = (raw: any): string => {
+        const src = String(raw ?? "").trim();
+        if (!src) return "";
+        if (/^\d{4}-\d{2}-\d{2}$/.test(src)) return "";
+        if (/^\d{4}[./]\d{2}[./]\d{2}$/.test(src)) return "";
+        const m = src.match(/(\+?\d[\d\s()\-]{7,}\d)/);
+        if (!m) return "";
+        const candidate = String(m[1] || "").trim();
+        const digits = candidate.replace(/[^\d]/g, "");
+        if (digits.length < 9) return "";
+        return candidate.replace(/\s+/g, "");
+      };
 
       setReqModal(h);
       reqPickUi.setReqQtyInputByItem({});
@@ -532,18 +548,22 @@ export default function Warehouse() {
                 meta?.contractor_name ??
                 meta?.contractor_org ??
                 meta?.subcontractor_name ??
+                meta?.subcontractor_org ??
                 "",
               ).trim() || null;
-            const phone =
-              String(
-                meta?.contractor_phone ??
-                meta?.phone ??
-                meta?.phone_number ??
-                "",
-              ).trim() || null;
+            const phone = normalizePhone(
+              meta?.contractor_phone ??
+              meta?.subcontractor_phone ??
+              meta?.phone_number ??
+              meta?.phone ??
+              meta?.tel ??
+              "",
+            ) || null;
             const volume =
               String(
                 meta?.planned_volume ??
+                meta?.qty_planned ??
+                meta?.planned_qty ??
                 meta?.volume ??
                 meta?.qty_plan ??
                 "",
@@ -1492,8 +1512,4 @@ export default function Warehouse() {
     </View>
   );
 }
-
-
-
-
 

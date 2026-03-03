@@ -3,7 +3,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { StockRow, ReqHeadRow, ReqItemUiRow } from "./warehouse.types";
 import { nz, parseNum } from "./warehouse.utils";
 import { normalizeRuText } from "../../lib/text/encoding";
-import { isRequestApprovedForProcurement } from "../../lib/requestStatus";
+import { isRequestDirectorApproved } from "../../lib/requestStatus";
 
 const pickUom = (v: any): string | null => {
   const s = v == null ? "" : String(v).trim();
@@ -36,19 +36,183 @@ const parseDisplayNo = (raw: unknown): { year: number; seq: number } => {
 };
 
 const reqHeadSort = (a: ReqHeadRow, b: ReqHeadRow): number => {
+  const ta = a?.submitted_at ? new Date(a.submitted_at).getTime() : 0;
+  const tb = b?.submitted_at ? new Date(b.submitted_at).getTime() : 0;
+  if (tb !== ta) return tb - ta;
+
   const pa = parseDisplayNo(a.display_no);
   const pb = parseDisplayNo(b.display_no);
   if (pb.year !== pa.year) return pb.year - pa.year;
   if (pb.seq !== pa.seq) return pb.seq - pa.seq;
 
-  const ta = a?.submitted_at ? new Date(a.submitted_at).getTime() : 0;
-  const tb = b?.submitted_at ? new Date(b.submitted_at).getTime() : 0;
-  if (tb !== ta) return tb - ta;
-
   const ra = String(a?.request_id ?? "");
   const rb = String(b?.request_id ?? "");
   return rb.localeCompare(ra);
 };
+
+function parseReqHeaderContext(rawParts: Array<string | null | undefined>) {
+  const out: { contractor: string; phone: string; volume: string } = {
+    contractor: "",
+    phone: "",
+    volume: "",
+  };
+  const cleanPhone = (v: string) => {
+    const src = String(v || "").trim();
+    if (!src) return "";
+    if (/^\d{4}-\d{2}-\d{2}$/.test(src)) return "";
+    if (/^\d{4}[./]\d{2}[./]\d{2}$/.test(src)) return "";
+    const m = src.match(/(\+?\d[\d\s()\-]{7,}\d)/);
+    if (!m) return "";
+    const candidate = String(m[1] || "").trim();
+    const digits = candidate.replace(/[^\d]/g, "");
+    if (digits.length < 9) return "";
+    return candidate.replace(/\s+/g, "");
+  };
+  const put = (key: keyof typeof out, value: string) => {
+    const v = String(value || "").trim();
+    if (!v || out[key]) return;
+    out[key] = v;
+  };
+  const contractorKeyRe =
+    /(?:\u043f\u043e\u0434\u0440\u044f\u0434|\u043e\u0440\u0433\u0430\u043d\u0438\u0437\u0430\u0446|contractor|organization|supplier)/i;
+  const phoneKeyRe = /(?:\u0442\u0435\u043b|phone|tel)/i;
+  const volumeKeyRe = /(?:\u043e\u0431(?:\u044a|\u044c)?(?:\u0435|\u0451)?\u043c|volume)/i;
+  for (const raw of rawParts) {
+    const lines = String(raw || "")
+      .split(/[\r\n;]+/)
+      .map((x) => x.trim())
+      .filter(Boolean);
+    for (const ln of lines) {
+      const m = ln.match(/^([^:]+)\s*:\s*(.+)$/);
+      if (!m) continue;
+      const k = String(m[1] || "").trim().toLowerCase();
+      const v = String(m[2] || "").trim();
+      if (!v) continue;
+      if (!out.contractor && contractorKeyRe.test(k)) {
+        put("contractor", v);
+      } else if (!out.phone && phoneKeyRe.test(k)) {
+        const ph = cleanPhone(v);
+        if (ph) put("phone", ph);
+      } else if (!out.volume && volumeKeyRe.test(k)) {
+        put("volume", v);
+      }
+    }
+  }
+  return out;
+}
+
+async function enrichReqHeadsMeta(
+  supabase: SupabaseClient,
+  rows: ReqHeadRow[],
+): Promise<ReqHeadRow[]> {
+  const idsNeedMeta = rows
+    .filter(
+      (r) =>
+        !String(r.contractor_name ?? "").trim() ||
+        !String(r.contractor_phone ?? "").trim() ||
+        !String(r.planned_volume ?? "").trim(),
+    )
+    .map((r) => String(r.request_id ?? "").trim())
+    .filter(Boolean);
+
+  if (!idsNeedMeta.length) return rows;
+
+  const reqQ = await supabase.from("requests" as any).select("*").in("id", idsNeedMeta);
+  const reqById: Record<string, any> = {};
+  if (!reqQ.error && Array.isArray(reqQ.data)) {
+    for (const r of reqQ.data as any[]) {
+      const id = String(r?.id ?? "").trim();
+      if (id) reqById[id] = r;
+    }
+  }
+
+  const itemQ = await supabase
+    .from("request_items" as any)
+    .select("request_id, note")
+    .in("request_id", idsNeedMeta);
+  const itemNotesByReq: Record<string, string[]> = {};
+  if (!itemQ.error && Array.isArray(itemQ.data)) {
+    for (const it of itemQ.data as any[]) {
+      const rid = String(it?.request_id ?? "").trim();
+      if (!rid) continue;
+      const note = String(it?.note ?? "").trim();
+      if (!note) continue;
+      if (!itemNotesByReq[rid]) itemNotesByReq[rid] = [];
+      itemNotesByReq[rid].push(note);
+    }
+  }
+
+  const pickVal = (obj: any, keys: string[]) => {
+    for (const k of keys) {
+      const v = String(obj?.[k] ?? "").trim();
+      if (v) return v;
+    }
+    return "";
+  };
+  const normalizePhone = (v: string) => {
+    const src = String(v || "").trim();
+    if (!src) return "";
+    if (/^\d{4}-\d{2}-\d{2}$/.test(src)) return "";
+    if (/^\d{4}[./]\d{2}[./]\d{2}$/.test(src)) return "";
+    const m = src.match(/(\+?\d[\d\s()\-]{7,}\d)/);
+    if (!m) return "";
+    const candidate = String(m[1] || "").trim();
+    const digits = candidate.replace(/[^\d]/g, "");
+    if (digits.length < 9) return "";
+    return candidate.replace(/\s+/g, "");
+  };
+
+  return rows.map((row) => {
+    const rid = String(row.request_id ?? "").trim();
+    const req = reqById[rid];
+    if (!req) return row;
+
+    const fromReqText = parseReqHeaderContext([
+      String(req?.note ?? ""),
+      String(req?.comment ?? ""),
+    ]);
+    const fromItemText = parseReqHeaderContext(itemNotesByReq[rid] ?? []);
+
+    const contractor =
+      pickVal(req, [
+        "contractor_name",
+        "contractor_org",
+        "subcontractor_name",
+        "subcontractor_org",
+        "contractor",
+        "supplier_name",
+      ]) ||
+      fromReqText.contractor ||
+      fromItemText.contractor;
+    const phone =
+      pickVal(req, [
+        "contractor_phone",
+        "subcontractor_phone",
+        "phone",
+        "phone_number",
+        "phone_no",
+        "tel",
+      ]) ||
+      fromReqText.phone ||
+      fromItemText.phone;
+    const volume =
+      pickVal(req, ["planned_volume", "qty_planned", "planned_qty", "volume", "qty_plan"]) ||
+      fromReqText.volume ||
+      fromItemText.volume;
+
+    const rowPhone = normalizePhone(String(row.contractor_phone ?? ""));
+    const derivedPhone = normalizePhone(phone);
+
+    return {
+      ...row,
+      contractor_name: row.contractor_name ?? contractor ?? null,
+      contractor_phone: rowPhone || derivedPhone || null,
+      planned_volume: row.planned_volume ?? volume ?? null,
+      note: row.note ?? (req?.note ?? null),
+      comment: row.comment ?? (req?.comment ?? null),
+    };
+  });
+}
 
 async function loadNameMapOverrides(
   supabase: SupabaseClient,
@@ -219,14 +383,25 @@ export async function apiFetchReqHeads(
   page: number = 0,
   pageSize: number = 50
 ): Promise<ReqHeadRow[]> {
+  const normalizePhone = (v: string) => {
+    const src = String(v || "").trim();
+    if (!src) return "";
+    if (/^\d{4}-\d{2}-\d{2}$/.test(src)) return "";
+    if (/^\d{4}[./]\d{2}[./]\d{2}$/.test(src)) return "";
+    const m = src.match(/(\+?\d[\d\s()\-]{7,}\d)/);
+    if (!m) return "";
+    const candidate = String(m[1] || "").trim();
+    const digits = candidate.replace(/[^\d]/g, "");
+    if (digits.length < 9) return "";
+    return candidate.replace(/\s+/g, "");
+  };
   const q = await supabase
     .from("v_wh_issue_req_heads_ui" as any)
     .select("*")
-    // 1) РЎРЅР°С‡Р°Р»Р° РїРѕ display_no, С‡С‚РѕР±С‹ РЅРѕРІС‹Рµ REQ РЅРµ С‚РµСЂСЏР»РёСЃСЊ РїСЂРё submitted_at=null
-    .order("display_no", { ascending: false })
-    // 2) РЎРІРµР¶РµСЃС‚СЊ РїРѕ РІСЂРµРјРµРЅРё (РµСЃР»Рё РѕРЅРѕ РµСЃС‚СЊ)
+    // 1) recency by submitted timestamp (cheap and stable for view)
     .order("submitted_at", { ascending: false, nullsFirst: false })
-    // 3) РЎС‚Р°Р±РёР»РёР·Р°С‚РѕСЂ
+    // 2) stable tiebreakers
+    .order("display_no", { ascending: false })
     .order("request_id", { ascending: false })
     .range(page * pageSize, (page + 1) * pageSize - 1);
 
@@ -277,20 +452,61 @@ export async function apiFetchReqHeads(
 
   rows.sort(reqHeadSort);
 
-  const viewRows = rows.filter((r) => String(r.issue_status ?? "").trim().toUpperCase() !== "DONE");
+  let viewRows = rows.filter((r) => {
+    const notDone = String(r.issue_status ?? "").trim().toUpperCase() !== "DONE";
+    const hasLeft = parseNum(r.qty_left_sum, 0) > 0;
+    return notDone && hasLeft;
+  });
+  const viewReqIds = Array.from(
+    new Set(viewRows.map((r) => String(r.request_id || "").trim()).filter(Boolean)),
+  );
 
-  // Fallback: if request is approved for procurement but not present in warehouse view yet,
-  // include it from base tables so it appears in "Расход" immediately.
-  try {
+  // Hard gate: warehouse issue queue must contain only director-approved requests.
+  // This prevents accidental exposure of "На утверждении" requests if a view returns them.
+  if (viewReqIds.length) {
+    try {
+      const rsQ = await supabase
+        .from("requests" as any)
+        .select("id, status")
+        .in("id", viewReqIds);
+      if (!rsQ.error && Array.isArray(rsQ.data)) {
+        const byId = new Map<string, string>();
+        for (const row of rsQ.data as any[]) {
+          const id = String(row?.id ?? "").trim();
+          if (!id) continue;
+          byId.set(id, String(row?.status ?? ""));
+        }
+        viewRows = viewRows.filter((r) => {
+          const st = byId.get(String(r.request_id || "").trim()) || "";
+          return isRequestDirectorApproved(st);
+        });
+      } else {
+        viewRows = [];
+      }
+    } catch {
+      viewRows = [];
+    }
+  }
+
+  // Fallback only on first page:
+  // include approved requests not yet materialized in warehouse view.
+  // On next pages we rely on pure view pagination to avoid duplicate slices.
+  if (page === 0) {
+    try {
     const reqQ = await supabase
       .from("requests" as any)
-      .select("id, display_no, status, submitted_at, created_at, object_name, level_name, system_name, zone_name, object_type_code, level_code, system_code, zone_code")
+      .select(
+        "id, display_no, status, submitted_at, created_at, object_name, level_name, system_name, zone_name, object_type_code, level_code, system_code, zone_code, contractor_name, contractor_org, subcontractor_name, subcontractor_org, contractor_phone, subcontractor_phone, phone, phone_number, planned_volume, volume, qty_plan, note, comment",
+      )
+      .order("submitted_at", { ascending: false, nullsFirst: false })
       .order("display_no", { ascending: false })
-      .limit(Math.max(pageSize * 3, 150));
+      // Wide fallback window: approved requests can be outside the first page of heads view.
+      // Keep this broad to avoid "missing REQ in Расход" when numbering/history is dense.
+      .limit(Math.max(pageSize * 6, 600));
 
     if (!reqQ.error && Array.isArray(reqQ.data) && reqQ.data.length) {
       const approvedReqs = (reqQ.data as any[])
-        .filter((r) => isRequestApprovedForProcurement(r?.status))
+        .filter((r) => isRequestDirectorApproved(r?.status))
         .map((r) => ({
           request_id: String(r.id ?? "").trim(),
           display_no: r.display_no ?? null,
@@ -338,6 +554,36 @@ export async function apiFetchReqHeads(
           const fallbackRows: ReqHeadRow[] = approvedReqs
             .filter((r) => !viewIds.has(r.request_id))
             .map((r) => {
+              const reqRaw = (reqQ.data as any[]).find((x) => String(x?.id ?? "").trim() === r.request_id) ?? null;
+              const fromReqText = parseReqHeaderContext([
+                String(reqRaw?.note ?? ""),
+                String(reqRaw?.comment ?? ""),
+              ]);
+              const contractor =
+                String(
+                  reqRaw?.contractor_name ??
+                    reqRaw?.contractor_org ??
+                    reqRaw?.subcontractor_name ??
+                    reqRaw?.subcontractor_org ??
+                    "",
+                ).trim() || fromReqText.contractor || null;
+              const phone =
+                normalizePhone(
+                  String(
+                    reqRaw?.contractor_phone ??
+                      reqRaw?.subcontractor_phone ??
+                      reqRaw?.phone ??
+                      reqRaw?.phone_number ??
+                      "",
+                  ).trim(),
+                ) || normalizePhone(fromReqText.phone) || null;
+              const plannedVolume =
+                String(
+                  reqRaw?.planned_volume ??
+                    reqRaw?.volume ??
+                    reqRaw?.qty_plan ??
+                    "",
+                ).trim() || fromReqText.volume || null;
               const s = stat[r.request_id] ?? { items: 0, qty: 0, done: 0, rejected: 0 };
               const readyCnt = Math.max(0, s.items - s.done - s.rejected);
               return {
@@ -350,11 +596,11 @@ export async function apiFetchReqHeads(
                 level_name: r.level_name,
                 system_name: r.system_name,
                 zone_name: r.zone_name,
-                contractor_name: null,
-                contractor_phone: null,
-                planned_volume: null,
-                note: null,
-                comment: null,
+                contractor_name: contractor,
+                contractor_phone: phone,
+                planned_volume: plannedVolume,
+                note: reqRaw?.note ?? null,
+                comment: reqRaw?.comment ?? null,
                 submitted_at: r.submitted_at,
                 items_cnt: s.items,
                 ready_cnt: readyCnt,
@@ -364,19 +610,30 @@ export async function apiFetchReqHeads(
                 qty_left_sum: s.qty,
                 issue_status: readyCnt > 0 ? "READY" : "WAITING_STOCK",
               };
-            });
+            })
+            .filter((r) => parseNum(r.qty_left_sum, 0) > 0);
 
-          return [...viewRows, ...fallbackRows]
+          const merged = [...viewRows, ...fallbackRows]
             .sort(reqHeadSort)
             .slice(0, pageSize);
+          try {
+            return await enrichReqHeadsMeta(supabase, merged);
+          } catch {
+            return merged;
+          }
         }
       }
     }
-  } catch {
-    // keep view rows when fallback fails
+    } catch {
+      // keep view rows when fallback fails
+    }
   }
 
-  return viewRows;
+  try {
+    return await enrichReqHeadsMeta(supabase, viewRows);
+  } catch {
+    return viewRows;
+  }
 }
 export async function apiFetchReqItems(
   supabase: SupabaseClient,
@@ -395,7 +652,7 @@ export async function apiFetchReqItems(
     return [];
   }
 
-  const raw = (q.data as any[]).map((x) => ({
+  let raw = (q.data as any[]).map((x) => ({
     request_id: String(x.request_id),
     request_item_id: String(x.request_item_id),
 
@@ -415,7 +672,44 @@ export async function apiFetchReqItems(
 
     qty_available: parseNum(x.qty_available, 0),
     qty_can_issue_now: parseNum(x.qty_can_issue_now, 0),
+    note: x.note ?? null,
+    comment: x.comment ?? null,
   })) as ReqItemUiRow[];
+
+  // Enrich notes from base request_items table (view may not expose note/comment).
+  try {
+    const ids = raw
+      .map((x) => String((x as any).request_item_id ?? "").trim())
+      .filter(Boolean);
+    if (ids.length) {
+      const nQ = await supabase
+        .from("request_items" as any)
+        .select("id, note")
+        .in("id", ids);
+      if (!nQ.error && Array.isArray(nQ.data) && nQ.data.length) {
+        const byId: Record<string, { note: string | null }> = {};
+        for (const r of nQ.data as any[]) {
+          const id = String(r?.id ?? "").trim();
+          if (!id) continue;
+          byId[id] = {
+            note: r?.note ?? null,
+          };
+        }
+        raw = raw.map((it) => {
+          const id = String((it as any).request_item_id ?? "").trim();
+          const p = byId[id];
+          if (!p) return it;
+          return {
+            ...it,
+            note: (it as any).note ?? p.note ?? null,
+            comment: (it as any).comment ?? null,
+          } as ReqItemUiRow;
+        });
+      }
+    }
+  } catch {
+    // keep base rows if enrichment fails
+  }
 
   // вњ… РґРµРґСѓРї РїРѕ request_item_id (Р±РµСЂС‘Рј РјР°РєСЃРёРјР°Р»СЊРЅС‹Рµ С‡РёСЃР»Р°)
   const byId: Record<string, ReqItemUiRow> = {};
@@ -440,6 +734,8 @@ export async function apiFetchReqItems(
     merged.name_human = pickText((prev as any).name_human, (it as any).name_human);
     merged.rik_code = pickText((prev as any).rik_code, (it as any).rik_code);
     merged.uom = pickText((prev as any).uom, (it as any).uom);
+    merged.note = pickText((prev as any).note, (it as any).note);
+    merged.comment = pickText((prev as any).comment, (it as any).comment);
 
     merged.qty_limit = Math.max(parseNum((prev as any).qty_limit, 0), parseNum((it as any).qty_limit, 0));
     merged.qty_issued = Math.max(parseNum((prev as any).qty_issued, 0), parseNum((it as any).qty_issued, 0));
@@ -463,7 +759,7 @@ export async function apiFetchReqItems(
   try {
     const f = await supabase
       .from("request_items" as any)
-      .select("id, request_id, rik_code, name_human, uom, qty, status")
+      .select("id, request_id, rik_code, name_human, uom, qty, status, note")
       .eq("request_id", rid)
       .order("name_human", { ascending: true });
     if (!f.error && Array.isArray(f.data) && f.data.length) {
@@ -488,6 +784,8 @@ export async function apiFetchReqItems(
             qty_left: qty,
             qty_available: available,
             qty_can_issue_now: Math.max(0, Math.min(qty, available)),
+            note: x.note ?? null,
+            comment: null,
           } as ReqItemUiRow;
         });
       return direct;
@@ -701,3 +999,5 @@ export async function apiFetchIncomingLines(
   if (q.error) console.error("[apiFetchIncomingLines] Error:", q.error.message);
   return [];
 }
+
+

@@ -1257,11 +1257,14 @@ export default function ForemanScreen() {
         >
           {/* Title row */}
           <View style={{ paddingHorizontal: 16, paddingTop: 12 }}>
-            <Animated.Text style={[s.cTitle, { fontSize: titleSize, color: UI.text }]} numberOfLines={1}>
-              {foremanMainTab === 'materials' ? 'Материалы' : foremanMainTab === 'subcontracts' ? 'Подряды' : 'Заявка'}
-            </Animated.Text>
-            {foremanMainTab ? (
-              <View style={{ marginTop: 10, flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
+              <Animated.Text
+                style={[s.cTitle, { fontSize: titleSize, color: UI.text, flex: 1 }]}
+                numberOfLines={1}
+              >
+                {foremanMainTab === 'materials' ? 'Материалы' : foremanMainTab === 'subcontracts' ? 'Подряды' : 'Заявка'}
+              </Animated.Text>
+              {foremanMainTab ? (
                 <Pressable
                   onPress={() => setForemanMainTab(null)}
                   style={{
@@ -1277,11 +1280,8 @@ export default function ForemanScreen() {
                 >
                   <Text style={{ color: UI.text, fontWeight: '900', fontSize: 24, lineHeight: 24 }}>×</Text>
                 </Pressable>
-                <Text style={{ color: UI.text, fontWeight: '900', fontSize: 34, lineHeight: 38 }}>
-                  {foremanMainTab === 'materials' ? 'МАТЕРИАЛЫ' : 'ПОДРЯДЫ'}
-                </Text>
-              </View>
-            ) : null}
+              ) : null}
+            </View>
           </View>
 
         </Animated.View>

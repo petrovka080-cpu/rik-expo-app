@@ -81,6 +81,13 @@ type FormState = {
   foremanComment: string;
 };
 
+type LinkedRequestRow = {
+  id: string;
+  created_at: string | null;
+  display_no: string | null;
+  request_no: string | null;
+};
+
 type CalcPickedRow = {
   rik_code?: string | null;
   item_name_ru?: string | null;
@@ -201,10 +208,10 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
 
   const [draftOpen, setDraftOpen] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
-  const [approvedPickerOpen, setApprovedPickerOpen] = useState(false);
   const [catalogVisible, setCatalogVisible] = useState(false);
   const [workTypePickerVisible, setWorkTypePickerVisible] = useState(false);
   const [calcVisible, setCalcVisible] = useState(false);
+  const [subcontractModalOpen, setSubcontractModalOpen] = useState(false);
   const [selectedWorkType, setSelectedWorkType] = useState<{ code: string; name: string } | null>(null);
   const [draftItems, setDraftItems] = useState<ReqItemRow[]>([]);
   const [dateTarget, setDateTarget] = useState<DateTarget>(null);
@@ -241,9 +248,9 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
     [dicts.sysOptions, templateContract?.work_type],
   );
   const scopeNote = useMemo(() => {
-    const obj = String(templateObjectName || objectName || "").trim();
-    const lvl = String(templateLevelName || levelName || "").trim();
-    const sys = String(templateSystemName || systemName || "").trim();
+    const obj = String(objectName || templateObjectName || "").trim();
+    const lvl = String(levelName || templateLevelName || "").trim();
+    const sys = String(systemName || templateSystemName || "").trim();
     const zone = String(form.zoneText || "").trim();
     const contractor = String(templateContract?.contractor_org || form.contractorOrg || "").trim();
     const phone = String(templateContract?.contractor_phone || form.contractorPhone || "").trim();
@@ -279,21 +286,37 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
   const requestMetaFromTemplate = useMemo<RequestMetaPatch>(() => {
     if (!templateContract) return {};
     const contractor = String(templateContract.contractor_org || "").trim();
+    const phone = String(templateContract.contractor_phone || "").trim();
     const workMode = String(templateContract.work_mode || "").trim();
     const qty = fmtAmount(templateContract.qty_planned);
     const uom = String(templateContract.uom || "").trim();
     const details = [
       templateContract.display_no ? `Подряд ${templateContract.display_no}` : "",
       contractor,
-      workMode,
+      systemName || templateSystemName || workMode,
+      levelName || templateLevelName || "",
+      String(form.zoneText || "").trim() || "",
       qty !== "—" ? `${qty} ${uom}`.trim() : "",
     ].filter(Boolean);
     return {
-      object_type_code: templateObjectCode || form.objectCode || null,
-      level_code: templateLevelCode || form.levelCode || null,
-      system_code: templateSystemCode || form.systemCode || null,
+      contractor_job_id: String(templateContract.id || "").trim() || null,
+      subcontract_id: String(templateContract.id || "").trim() || null,
+      object_type_code: form.objectCode || templateObjectCode || null,
+      level_code: form.levelCode || templateLevelCode || null,
+      system_code: form.systemCode || templateSystemCode || null,
       zone_code: null,
       foreman_name: foremanName || "Прораб",
+      contractor_org: contractor || null,
+      subcontractor_org: contractor || null,
+      contractor_phone: phone || null,
+      subcontractor_phone: phone || null,
+      planned_volume: templateContract.qty_planned ?? null,
+      qty_plan: templateContract.qty_planned ?? null,
+      volume: templateContract.qty_planned ?? null,
+      object_name: objectName || templateObjectName || null,
+      level_name: levelName || templateLevelName || null,
+      system_name: systemName || templateSystemName || null,
+      zone_name: String(form.zoneText || "").trim() || null,
       comment: details.length ? details.join(" · ") : null,
     };
   }, [
@@ -304,8 +327,32 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
     form.objectCode,
     form.levelCode,
     form.systemCode,
+    form.zoneText,
     foremanName,
+    objectName,
+    levelName,
+    systemName,
+    templateObjectName,
+    templateLevelName,
+    templateSystemName,
   ]);
+
+  const getTemplateSubcontractId = useCallback(() => {
+    return String(templateContract?.id || "").trim();
+  }, [templateContract]);
+
+  const ensureTemplateContractStrict = useCallback((): string | null => {
+    const subcontractId = getTemplateSubcontractId();
+    if (!subcontractId) {
+      Alert.alert("Подряд не выбран", "Сначала выберите утвержденный подряд.");
+      return null;
+    }
+    if (templateContract?.status !== "approved") {
+      Alert.alert("Подряд не утвержден", "Для заявки можно использовать только утвержденный подряд.");
+      return null;
+    }
+    return subcontractId;
+  }, [getTemplateSubcontractId, templateContract?.status]);
 
   const patch = useMemo(() => ({
     foreman_name: foremanName || null,
@@ -350,7 +397,7 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
       const rows = await listForemanSubcontracts(uid);
       setHistory(rows);
     } catch (e) {
-      Alert.alert("Ошибка", getErrorMessage(e, "Не удалось загрузить историю подрядов"));
+      Alert.alert("Ошибка", getErrorMessage(e, "Не удалось загрузить историю подрядов."));
     } finally {
       setHistoryLoading(false);
     }
@@ -408,7 +455,79 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
     void loadDraftItems(requestId);
   }, [requestId, loadDraftItems]);
 
+  useEffect(() => {
+    if (!requestId) return;
+    const rid = String(requestId || "").trim();
+    if (!rid) return;
+    const subcontractId = String(templateContract?.id || "").trim();
+    let cancelled = false;
+    const timer = setTimeout(() => {
+      void (async () => {
+        const patch: RequestMetaPatch = {
+          subcontract_id: subcontractId || null,
+          contractor_job_id: subcontractId || null,
+          object_type_code: form.objectCode || templateObjectCode || null,
+          level_code: form.levelCode || templateLevelCode || null,
+          system_code: form.systemCode || templateSystemCode || null,
+          object_name: objectName || templateObjectName || null,
+          level_name: levelName || templateLevelName || null,
+          system_name: systemName || templateSystemName || null,
+          zone_name: String(form.zoneText || "").trim() || null,
+          comment: scopeNote || null,
+        };
+        const ok = await updateRequestMeta(rid, patch);
+        if (!ok || cancelled) return;
+      })();
+    }, 300);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [
+    requestId,
+    templateContract?.id,
+    form.objectCode,
+    form.levelCode,
+    form.systemCode,
+    form.zoneText,
+    objectName,
+    levelName,
+    systemName,
+    templateObjectCode,
+    templateLevelCode,
+    templateSystemCode,
+    templateObjectName,
+    templateLevelName,
+    templateSystemName,
+    scopeNote,
+  ]);
+
+  useEffect(() => {
+    if (!requestId) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const rq = await supabase
+          .from("requests" as any)
+          .select("request_no, display_no")
+          .eq("id", requestId)
+          .maybeSingle();
+        if (cancelled || rq.error || !rq.data) return;
+        const label = String((rq.data as any).request_no || (rq.data as any).display_no || "").trim();
+        if (label) setDisplayNo(label);
+      } catch {
+        // old schema without request_no; keep existing display
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [requestId]);
+
   const ensureDraftOnly = useCallback(async (): Promise<string | null> => {
+    const subcontractId = ensureTemplateContractStrict();
+    if (!subcontractId) return null;
+
     const scopeChanged = activeDraftScopeKeyRef.current !== draftScopeKey;
 
     if (requestId && !scopeChanged) {
@@ -417,7 +536,7 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
     }
 
     if (!userId) {
-      Alert.alert("Ошибка", "Пользователь не авторизован");
+      Alert.alert("Ошибка", "Профиль пользователя не найден.");
       return null;
     }
 
@@ -425,26 +544,45 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
     try {
       // Clear Rik draft cache to ensure autonomy from Materials tab
       clearCachedDraftRequestId();
-      const res = await requestCreateDraft();
-      if (!res?.id) throw new Error("ID не получен");
+      const res = await requestCreateDraft(requestMetaFromTemplate);
+      if (!res?.id) throw new Error("Не удалось создать черновик заявки.");
       const rid = String(res.id);
 
       const meta: RequestMetaPatch = requestMetaFromTemplate;
-      await updateRequestMeta(rid, meta);
+      const metaOk = await updateRequestMeta(rid, meta);
+      if (!metaOk) {
+        throw new Error("Не удалось сохранить привязку заявки к подряду (subcontract_id).");
+      }
 
       const objectNameForRequest = String(
         templateObjectName || objectName || templateContract?.object_name || "",
       ).trim();
+      const directPatch: Record<string, any> = {
+        subcontract_id: subcontractId,
+        contractor_job_id: subcontractId,
+      };
       if (objectNameForRequest) {
-        await supabase.from("requests").update({ object_name: objectNameForRequest }).eq("id", rid);
+        directPatch.object_name = objectNameForRequest;
+      }
+      const directRes = await supabase
+        .from("requests")
+        .update(directPatch as any)
+        .eq("id", rid);
+      if (directRes.error) {
+        const msg = String(directRes.error.message || "");
+        if (msg.toLowerCase().includes("does not exist")) {
+          throw new Error("В таблице requests отсутствуют поля subcontract_id/contractor_job_id. Нужна миграция БД.");
+        }
+        throw directRes.error;
       }
 
+      const displayLabel = String((res as any)?.request_no || res?.display_no || "DRAFT").trim() || "DRAFT";
       setRequestId(rid);
-      setDisplayNo(res.display_no || "DRAFT");
+      setDisplayNo(displayLabel || res.display_no || "DRAFT");
       activeDraftScopeKeyRef.current = draftScopeKey;
       return rid;
     } catch (e) {
-      Alert.alert("Ошибка", getErrorMessage(e, "Не удалось создать черновик"));
+      Alert.alert("Ошибка", getErrorMessage(e, "Не удалось создать черновик заявки."));
       return null;
     } finally {
       setSaving(false);
@@ -459,6 +597,7 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
     requestMetaFromTemplate,
     templateObjectName,
     objectName,
+    ensureTemplateContractStrict,
   ]);
 
   const appendCatalogRows = useCallback(async (rows: CatalogPickedRow[]) => {
@@ -482,7 +621,7 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
       }
       await loadDraftItems(rid);
     } catch (e) {
-      Alert.alert("Ошибка", getErrorMessage(e, "Не удалось добавить позиции"));
+      Alert.alert("Ошибка", getErrorMessage(e, "Не удалось добавить позиции из каталога."));
     } finally {
       setSaving(false);
     }
@@ -501,7 +640,7 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
           r.rik_code || "",
           Math.max(1, Number(r.qty) || 1),
           {
-            name_human: r.item_name_ru || r.name_human || "Позиция",
+            name_human: r.item_name_ru || r.name_human || "Без названия",
             uom: r.uom_code || null,
             note: scopeNote || null,
           },
@@ -509,7 +648,7 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
       }
       await loadDraftItems(rid);
     } catch (e) {
-      Alert.alert("Ошибка", getErrorMessage(e, "Не удалось добавить позиции"));
+      Alert.alert("Ошибка", getErrorMessage(e, "Не удалось добавить позиции из сметы."));
     } finally {
       setSaving(false);
     }
@@ -522,46 +661,69 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
       if (error) throw error;
       await loadDraftItems(requestId);
     } catch (e) {
-      Alert.alert("Ошибка", getErrorMessage(e, "Не удалось удалить позицию"));
+      Alert.alert("Ошибка", getErrorMessage(e, "Не удалось удалить позицию."));
     } finally {
       setSaving(false);
     }
   }, [loadDraftItems, requestId]);
 
   const sendToDirector = useCallback(async () => {
+    const subcontractId = ensureTemplateContractStrict();
+    if (!subcontractId) return;
+
     if (!requestId) {
-      Alert.alert("Нет черновика", "Сначала добавите позиции");
+      Alert.alert("Ошибка", "Сначала сформируйте заявку.");
       return;
     }
     setSending(true);
     try {
+      const linked = await supabase
+        .from("requests")
+        .select("id, subcontract_id, contractor_job_id")
+        .eq("id", requestId)
+        .maybeSingle();
+      if (linked.error) {
+        const msg = String(linked.error.message || "");
+        if (msg.toLowerCase().includes("does not exist")) {
+          throw new Error("В таблице requests отсутствуют поля subcontract_id/contractor_job_id. Нужна миграция БД.");
+        }
+        throw linked.error;
+      }
+      const reqLink = String(
+        (linked.data as any)?.subcontract_id || (linked.data as any)?.contractor_job_id || ""
+      ).trim();
+      if (!reqLink || reqLink !== subcontractId) {
+        throw new Error("Текущая заявка привязана к другому подряду.");
+      }
+
       await requestSubmit(requestId);
-      Alert.alert("Отправлено", "Заявка на материалы отправлена");
+      Alert.alert("Успешно", "Заявка отправлена директору.");
       await loadHistory(userId);
       setRequestId("");
       setDisplayNo("");
       setDraftItems([]);
       setTemplateContract(null);
+      setSubcontractModalOpen(false);
       activeDraftScopeKeyRef.current = "";
       setDraftOpen(false);
     } catch (e) {
-      Alert.alert("Ошибка", getErrorMessage(e, "Не удалось отправить заявку"));
+      Alert.alert("Ошибка", getErrorMessage(e, "Не удалось отправить заявку директору."));
     } finally {
       setSending(false);
     }
-  }, [requestId, loadHistory, userId]);
+  }, [requestId, loadHistory, userId, ensureTemplateContractStrict]);
 
   const onPdf = useCallback(async () => {
     const rid = String(requestId || "").trim();
     if (!rid) {
-      Alert.alert("PDF", "Сначала добавьте позиции в черновик");
+      Alert.alert("PDF", "Сначала создайте черновик заявки.");
       return;
     }
-    const fileName = displayNo ? `Заявка_${displayNo}` : `Заявка_${rid}`;
+    const fileName = displayNo ? `Черновик_${displayNo}` : `Черновик_${rid}`;
     await runPdfTop({
       supabase,
       key: `pdf:subcontracts-request:${rid}`,
-      label: "Готовлю PDF...",
+      label: "Формируем PDF...",
       mode: "preview",
       fileName,
       getRemoteUrl: () => exportRequestPdf(rid, "preview"),
@@ -573,7 +735,7 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
       try {
         await supabase.from("request_items").delete().eq("request_id", requestId);
       } catch (e) {
-        Alert.alert("Ошибка", getErrorMessage(e, "Не удалось очистить позиции черновика"));
+        Alert.alert("Ошибка", getErrorMessage(e, "Не удалось очистить черновик."));
         return;
       }
     }
@@ -582,6 +744,7 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
     setForm(EMPTY_FORM);
     setDraftItems([]);
     setTemplateContract(null);
+    setSubcontractModalOpen(false);
     activeDraftScopeKeyRef.current = "";
     setDraftOpen(false);
   }, [requestId]);
@@ -590,19 +753,34 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
     // History row is a subcontract template, not a material request draft.
     // Reset request draft and switch current template to selected subcontract.
     setTemplateContract(it);
+    setForm((prev) => ({
+      ...prev,
+      objectCode: resolveCodeFromDict(dicts.objOptions || [], it.object_name) || prev.objectCode,
+      levelCode: resolveCodeFromDict(dicts.lvlOptions || [], it.work_zone) || prev.levelCode,
+      systemCode: resolveCodeFromDict(dicts.sysOptions || [], it.work_type) || prev.systemCode,
+      zoneText: prev.zoneText || "",
+    }));
     setRequestId("");
     setDisplayNo("");
     setDraftItems([]);
     activeDraftScopeKeyRef.current = "";
+    setSubcontractModalOpen(true);
     setHistoryOpen(false);
-  }, []);
+  }, [dicts.lvlOptions, dicts.objOptions, dicts.sysOptions]);
 
   const acceptApprovedFromDirector = useCallback((it: Subcontract) => {
     setTemplateContract(it);
+    setForm((prev) => ({
+      ...prev,
+      objectCode: resolveCodeFromDict(dicts.objOptions || [], it.object_name) || prev.objectCode,
+      levelCode: resolveCodeFromDict(dicts.lvlOptions || [], it.work_zone) || prev.levelCode,
+      systemCode: resolveCodeFromDict(dicts.sysOptions || [], it.work_type) || prev.systemCode,
+      zoneText: prev.zoneText || "",
+    }));
     setRequestId(""); // Force new draft on first item
     setDisplayNo("");
-    setApprovedPickerOpen(false);
-  }, []);
+    setSubcontractModalOpen(true);
+  }, [dicts.lvlOptions, dicts.objOptions, dicts.sysOptions]);
 
   return (
     <View style={{ flex: 1 }}>
@@ -613,47 +791,157 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
         keyboardShouldPersistTaps="handled"
         keyboardDismissMode={Platform.OS === "ios" ? "interactive" : "on-drag"}
       >
-        <Pressable
-          onPress={async () => {
-            await loadHistory(userId);
-            setApprovedPickerOpen(true);
-          }}
+        <View
           style={{
             borderRadius: 14,
             borderWidth: 1,
-            borderColor: "rgba(255,255,255,0.14)",
-            backgroundColor: "rgba(17,26,42,0.85)",
-            paddingVertical: 12,
-            paddingHorizontal: 14,
+            borderColor: "rgba(255,255,255,0.12)",
+            backgroundColor: "rgba(17,26,42,0.55)",
+            paddingHorizontal: 8,
+            paddingVertical: 8,
             marginBottom: 20,
           }}
         >
-          <Text style={{ color: UI.sub, fontWeight: "800", fontSize: 12 }}>ПОДРЯДЫ ОТ ДИРЕКТОРА</Text>
-          <Text style={{ color: UI.text, fontWeight: "900", fontSize: 16, marginTop: 4 }}>
-            {templateContract
-              ? `Принят: ${templateContract.display_no || "SUB"}`
-              : "Выбрать утвержденный подряд"}
-          </Text>
-          <Text style={{ color: UI.sub, marginTop: 4 }}>
-            {approvedContracts.length > 0
-              ? `Доступно утверждённых: ${approvedContracts.length}`
-              : "Нет утвержденных подрядов"}
-          </Text>
-        </Pressable>
-
-        {templateContract ? (
-          <>
-            <View style={s.section}>
-              <Text style={s.sectionTitle}>ДЕТАЛИ ПОДРЯДА</Text>
+          {historyLoading ? (
+            <View style={{ paddingVertical: 14 }}>
+              <ActivityIndicator color={UI.text} />
             </View>
+          ) : approvedContracts.length === 0 ? (
+            <Text style={{ color: UI.sub, fontWeight: "700", paddingVertical: 8 }}>
+              Нет утвержденных подрядов
+            </Text>
+          ) : (
+            approvedContracts.map((item) => (
+              (() => {
+                                const objectLabel =
+                  resolveCodeOrName(dicts.objOptions || [], item.object_name) ||
+                  String(item.object_name || "").trim() ||
+                  "—";
+                const workLabel =
+                  resolveCodeOrName(dicts.sysOptions || [], item.work_type) ||
+                  String(item.work_type || "").trim() ||
+                  "—";
+                return (
+              <Pressable
+                key={item.id}
+                onPress={() => acceptApprovedFromDirector(item)}
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: 10,
+                  paddingVertical: 12,
+                  paddingHorizontal: 10,
+                  borderRadius: 12,
+                  backgroundColor:
+                    String(templateContract?.id || "") === String(item.id || "")
+                      ? "rgba(34,197,94,0.14)"
+                      : "rgba(255,255,255,0.04)",
+                  borderWidth: 1,
+                  borderColor:
+                    String(templateContract?.id || "") === String(item.id || "")
+                      ? "rgba(34,197,94,0.28)"
+                      : "rgba(255,255,255,0.12)",
+                  marginBottom: 14,
+                  shadowColor: "#000",
+                  shadowOpacity: 0.16,
+                  shadowRadius: 10,
+                  shadowOffset: { width: 0, height: 4 },
+                  elevation: 3,
+                }}
+              >
+                <View style={{ flex: 1, minWidth: 0 }}>
+                  
+                  <Text style={{ color: UI.sub, fontWeight: "700" }} numberOfLines={1}>
+                    {item.contractor_org || "—"} · {objectLabel}
+                  </Text>
+                  <Text style={{ color: "rgba(255,255,255,0.65)", fontWeight: "700" }} numberOfLines={1}>
+                    {workLabel} · {fmtAmount(item.qty_planned)} {item.uom || ""}
+                  </Text>
+                </View>
+                <Ionicons
+                  name={String(templateContract?.id || "") === String(item.id || "") ? "checkmark-circle" : "chevron-forward"}
+                  size={18}
+                  color={String(templateContract?.id || "") === String(item.id || "") ? "#22C55E" : UI.sub}
+                />
+              </Pressable>
+                );
+              })()
+            ))
+          )}
+        </View>
+
+        <View style={{ marginTop: 40, alignItems: 'center' }}>
+          <Ionicons name="hand-left-outline" size={48} color={UI.sub} />
+          <Text style={{ color: UI.sub, fontSize: 16, textAlign: 'center', marginTop: 12 }}>
+            Нажми на карточку подряда выше.
+          </Text>
+        </View>
+      </ScrollView>
+
+      <RNModal
+        isVisible={subcontractModalOpen && !!templateContract}
+        onBackdropPress={() => setSubcontractModalOpen(false)}
+        onBackButtonPress={() => setSubcontractModalOpen(false)}
+        backdropOpacity={0.45}
+        useNativeDriver={Platform.OS !== "web"}
+        useNativeDriverForBackdrop={Platform.OS !== "web"}
+        hideModalContentWhileAnimating
+        style={{ margin: 0 }}
+      >
+        <View style={{ flex: 1, backgroundColor: UI.cardBg }}>
+          <View style={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: 10, borderBottomWidth: 1, borderBottomColor: "rgba(255,255,255,0.10)" }}>
+            <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+              <Text style={{ color: UI.text, fontSize: 20, fontWeight: "900" }}>Детали подряда</Text>
+              <Pressable onPress={() => setSubcontractModalOpen(false)}>
+                <Text style={{ color: UI.sub, fontWeight: "900" }}>Закрыть</Text>
+              </Pressable>
+            </View>
+          </View>
+
+          <ScrollView
+            contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 120, paddingTop: 10 }}
+            keyboardShouldPersistTaps="handled"
+            keyboardDismissMode={Platform.OS === "ios" ? "interactive" : "on-drag"}
+          >
             <View style={s.detailsCard}>
-              <Text style={s.detailsRow}><Text style={s.detailsLabel}>ПОДРЯДЧИК:</Text> {templateContract.contractor_org || "—"}</Text>
-              <Text style={s.detailsRow}><Text style={s.detailsLabel}>ТЕЛЕФОН:</Text> {templateContract.contractor_phone || "—"}</Text>
+              <Text style={s.detailsRow}><Text style={s.detailsLabel}>ПОДРЯДЧИК:</Text> {templateContract?.contractor_org || "—"}</Text>
+              <Text style={s.detailsRow}><Text style={s.detailsLabel}>ТЕЛЕФОН:</Text> {templateContract?.contractor_phone || "—"}</Text>
               <View style={{ height: 8 }} />
               <Text style={s.detailsRow}><Text style={s.detailsLabel}>ОБЪЕКТ:</Text> {templateObjectName || "—"}</Text>
               <Text style={s.detailsRow}><Text style={s.detailsLabel}>ЭТАЖ/УРОВЕНЬ:</Text> {templateLevelName || "—"}</Text>
               <Text style={s.detailsRow}><Text style={s.detailsLabel}>ВИД РАБОТ:</Text> {templateSystemName || "—"}</Text>
-              <Text style={s.detailsRow}><Text style={s.detailsLabel}>ОБЪЕМ:</Text> {fmtAmount(templateContract.qty_planned)} {templateContract.uom || ""}</Text>
+              <Text style={s.detailsRow}><Text style={s.detailsLabel}>ОБЪЕМ:</Text> {fmtAmount(templateContract?.qty_planned)} {templateContract?.uom || ""}</Text>
+              <View style={{ height: 10 }} />
+              <Text style={s.detailsRow}>
+                <Text style={s.detailsLabel}>ПАРАМЕТРЫ ЗАЯВКИ (REQ):</Text> этаж, вид работ, зона
+              </Text>
+              <View style={{ marginTop: 8, gap: 8 }}>
+                <ForemanDropdown
+                  label="Этаж / уровень"
+                  value={form.levelCode}
+                  options={dicts.lvlOptions}
+                  placeholder={templateLevelName || "Выбери этаж/уровень"}
+                  onChange={(value) => setField("levelCode", value)}
+                  ui={UI}
+                  styles={s}
+                />
+                <ForemanDropdown
+                  label="Вид работ / система"
+                  value={form.systemCode}
+                  options={dicts.sysOptions}
+                  placeholder={templateSystemName || "Выбери вид работ"}
+                  onChange={(value) => setField("systemCode", value)}
+                  ui={UI}
+                  styles={s}
+                />
+                <TextInput
+                  value={form.zoneText}
+                  onChangeText={(v) => setField("zoneText", v)}
+                  placeholder="Зона / участок (например: секция A)"
+                  placeholderTextColor="rgba(255,255,255,0.45)"
+                  style={s.input}
+                />
+              </View>
             </View>
 
             <View style={s.pickTabsRow}>
@@ -682,23 +970,15 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
                 <Text style={s.draftNo}>{displayNo || "будет создана автоматически"}</Text>
                 <Text style={s.draftHint}>{draftItems.length > 0 ? "Открыть позиции и отправить" : "Добавьте материалы из каталога или сметы"}</Text>
               </View>
-
               <View style={s.posPill}>
                 <Ionicons name="cube" size={18} color={UI.text} />
                 <Text style={s.posPillText}>Позиции</Text>
                 <View style={s.posCountPill}><Text style={s.posCountText}>{draftItems.length}</Text></View>
               </View>
             </Pressable>
-          </>
-        ) : (
-          <View style={{ marginTop: 40, alignItems: 'center' }}>
-            <Ionicons name="alert-circle-outline" size={48} color={UI.sub} />
-            <Text style={{ color: UI.sub, fontSize: 16, textAlign: 'center', marginTop: 12 }}>
-              Выбери утвержденный подряд выше,{"\n"}чтобы сделать заявку на материалы
-            </Text>
-          </View>
-        )}
-      </ScrollView>
+          </ScrollView>
+        </View>
+      </RNModal>
 
       <View style={s.stickyBar}>
         <Pressable style={s.miniBtn} onPress={() => setHistoryOpen(true)}>
@@ -727,13 +1007,13 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
 
           <View style={s.sheetMetaBox}>
             <Text style={s.sheetMetaLine}>
-              Объект: <Text style={s.sheetMetaValue}>{templateObjectName || objectName || "—"}</Text>
+              Объект: <Text style={s.sheetMetaValue}>{objectName || templateObjectName || "—"}</Text>
             </Text>
             <Text style={s.sheetMetaLine}>
-              Этаж/уровень: <Text style={s.sheetMetaValue}>{templateLevelName || levelName || "—"}</Text>
+              Этаж/уровень: <Text style={s.sheetMetaValue}>{levelName || templateLevelName || "—"}</Text>
             </Text>
             <Text style={s.sheetMetaLine}>
-              Система: <Text style={s.sheetMetaValue}>{templateSystemName || systemName || "—"}</Text>
+              Система: <Text style={s.sheetMetaValue}>{systemName || templateSystemName || "—"}</Text>
             </Text>
             <Text style={s.sheetMetaLine}>
               Зона: <Text style={s.sheetMetaValue}>{zoneName || "—"}</Text>
@@ -918,7 +1198,9 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
                 return (
                   <Pressable style={s.historyModalRow} onPress={() => openFromHistory(item)}>
                     <View style={{ flex: 1, minWidth: 0 }}>
-                      <Text style={s.historyModalPrimary}>{item.display_no || "SUB"}</Text>
+                      <Text style={s.historyModalPrimary}>
+                        Подряд
+                      </Text>
                       <Text style={s.historyModalMeta} numberOfLines={1}>{item.object_name || "—"} · {item.work_type || "—"}</Text>
                       <Text style={s.historyModalMetaSecondary} numberOfLines={1}>{fmtAmount(item.qty_planned)} {item.uom || ""}</Text>
                     </View>
@@ -933,55 +1215,10 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
         </View>
       </RNModal>
 
-      <RNModal
-        isVisible={approvedPickerOpen}
-        onBackdropPress={() => setApprovedPickerOpen(false)}
-        onBackButtonPress={() => setApprovedPickerOpen(false)}
-        backdropOpacity={0.55}
-        useNativeDriver={Platform.OS !== "web"}
-        useNativeDriverForBackdrop={Platform.OS !== "web"}
-        hideModalContentWhileAnimating
-        style={{ margin: 0, justifyContent: "flex-end" }}
-      >
-        <View style={s.historyModal}>
-          <View style={s.historyModalHeader}>
-            <Text style={s.historyModalTitle}>Утвержденные подряды</Text>
-            <Pressable onPress={() => setApprovedPickerOpen(false)}>
-              <Text style={s.historyModalClose}>Закрыть</Text>
-            </Pressable>
-          </View>
-
-          {historyLoading ? (
-            <View style={{ paddingVertical: 24 }}>
-              <ActivityIndicator color={UI.text} />
-            </View>
-          ) : approvedContracts.length === 0 ? (
-            <Text style={s.historyModalEmpty}>Нет подрядов со статусом "В работе".</Text>
-          ) : (
-            <FlatList
-              data={approvedContracts}
-              keyExtractor={(it) => it.id}
-              contentContainerStyle={{ paddingBottom: 8 }}
-              renderItem={({ item }) => (
-                <Pressable style={s.historyModalRow} onPress={() => acceptApprovedFromDirector(item)}>
-                  <View style={{ flex: 1, minWidth: 0 }}>
-                    <Text style={s.historyModalPrimary}>{item.display_no || "SUB"}</Text>
-                    <Text style={s.historyModalMeta} numberOfLines={1}>
-                      {item.contractor_org || "—"} · {item.object_name || "—"}
-                    </Text>
-                    <Text style={s.historyModalMetaSecondary} numberOfLines={1}>
-                      {item.work_type || "—"} · {fmtAmount(item.qty_planned)} {item.uom || ""}
-                    </Text>
-                  </View>
-                  <View style={[s.historyStatusBadge, { backgroundColor: "#DCFCE7" }]}>
-                    <Text style={{ color: "#166534", fontWeight: "900", fontSize: 12 }}>Принять</Text>
-                  </View>
-                </Pressable>
-              )}
-            />
-          )}
-        </View>
-      </RNModal>
     </View>
   );
 }
+
+
+
+

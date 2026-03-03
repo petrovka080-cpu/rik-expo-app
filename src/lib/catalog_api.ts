@@ -704,6 +704,19 @@ export type RequestMetaPatch = {
   system_code?: string | null;
   zone_code?: string | null;
   foreman_name?: string | null;
+  contractor_job_id?: string | null;
+  subcontract_id?: string | null;
+  contractor_org?: string | null;
+  subcontractor_org?: string | null;
+  contractor_phone?: string | null;
+  subcontractor_phone?: string | null;
+  planned_volume?: number | null;
+  qty_plan?: number | null;
+  volume?: number | null;
+  object_name?: string | null;
+  level_name?: string | null;
+  system_name?: string | null;
+  zone_name?: string | null;
 };
 
 export async function updateRequestMeta(
@@ -728,14 +741,65 @@ export async function updateRequestMeta(
     payload.zone_code = patch.zone_code || null;
   if (Object.prototype.hasOwnProperty.call(patch, "foreman_name"))
     payload.foreman_name = norm(patch.foreman_name) || null;
+  if (Object.prototype.hasOwnProperty.call(patch, "contractor_job_id"))
+    payload.contractor_job_id = norm(patch.contractor_job_id) || null;
+  if (Object.prototype.hasOwnProperty.call(patch, "subcontract_id"))
+    payload.subcontract_id = norm(patch.subcontract_id) || null;
+  if (Object.prototype.hasOwnProperty.call(patch, "contractor_org"))
+    payload.contractor_org = norm(patch.contractor_org) || null;
+  if (Object.prototype.hasOwnProperty.call(patch, "subcontractor_org"))
+    payload.subcontractor_org = norm(patch.subcontractor_org) || null;
+  if (Object.prototype.hasOwnProperty.call(patch, "contractor_phone"))
+    payload.contractor_phone = norm(patch.contractor_phone) || null;
+  if (Object.prototype.hasOwnProperty.call(patch, "subcontractor_phone"))
+    payload.subcontractor_phone = norm(patch.subcontractor_phone) || null;
+  if (Object.prototype.hasOwnProperty.call(patch, "planned_volume"))
+    payload.planned_volume = parseNumberValue(patch.planned_volume);
+  if (Object.prototype.hasOwnProperty.call(patch, "qty_plan"))
+    payload.qty_plan = parseNumberValue(patch.qty_plan);
+  if (Object.prototype.hasOwnProperty.call(patch, "volume"))
+    payload.volume = parseNumberValue(patch.volume);
+  if (Object.prototype.hasOwnProperty.call(patch, "object_name"))
+    payload.object_name = norm(patch.object_name) || null;
+  if (Object.prototype.hasOwnProperty.call(patch, "level_name"))
+    payload.level_name = norm(patch.level_name) || null;
+  if (Object.prototype.hasOwnProperty.call(patch, "system_name"))
+    payload.system_name = norm(patch.system_name) || null;
+  if (Object.prototype.hasOwnProperty.call(patch, "zone_name"))
+    payload.zone_name = norm(patch.zone_name) || null;
 
   if (!Object.keys(payload).length) return true;
 
+  const basePayloadKeys = new Set([
+    "need_by",
+    "comment",
+    "object_type_code",
+    "level_code",
+    "system_code",
+    "zone_code",
+    "foreman_name",
+  ]);
+  const hasExtendedPayload = Object.keys(payload).some((k) => !basePayloadKeys.has(k));
+
   try {
-    const { error } = await supabase
+    let { error } = await supabase
       .from('requests' as any)
       .update(payload)
       .eq('id', id);
+
+    if (error && hasExtendedPayload) {
+      const fallbackPayload: Record<string, any> = {};
+      for (const key of Object.keys(payload)) {
+        if (basePayloadKeys.has(key)) fallbackPayload[key] = payload[key];
+      }
+      if (Object.keys(fallbackPayload).length) {
+        const fallbackRes = await supabase
+          .from('requests' as any)
+          .update(fallbackPayload)
+          .eq('id', id);
+        error = fallbackRes.error ?? null;
+      }
+    }
 
     if (error) {
       console.warn('[catalog_api.updateRequestMeta] table requests:', error.message);
@@ -1282,4 +1346,3 @@ export async function requestItemCancel(requestItemId: string) {
 
   return true;
 }
-

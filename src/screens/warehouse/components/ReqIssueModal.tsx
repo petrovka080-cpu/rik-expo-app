@@ -112,6 +112,22 @@ function dedupeReqItems(rows: ReqItemUiRow[], nzFn: (v: any, d?: number) => numb
 
 function parseHeaderMeta(raw: string): { contractor: string; phone: string; volume: string } {
   const out = { contractor: "", phone: "", volume: "" };
+  const normalizePhone = (v: string) => {
+    const src = String(v || "").trim();
+    if (!src) return "";
+    if (/^\d{4}-\d{2}-\d{2}$/.test(src)) return "";
+    if (/^\d{4}[./]\d{2}[./]\d{2}$/.test(src)) return "";
+    const m = src.match(/(\+?\d[\d\s()\-]{7,}\d)/);
+    if (!m) return "";
+    const candidate = String(m[1] || "").trim();
+    const digits = candidate.replace(/[^\d]/g, "");
+    if (digits.length < 9) return "";
+    return candidate.replace(/\s+/g, "");
+  };
+  const contractorKeyRe =
+    /(?:\u043f\u043e\u0434\u0440\u044f\u0434|\u043e\u0440\u0433\u0430\u043d\u0438\u0437\u0430\u0446|contractor|organization|supplier)/i;
+  const phoneKeyRe = /(?:\u0442\u0435\u043b|phone|tel)/i;
+  const volumeKeyRe = /(?:\u043e\u0431(?:\u044a|\u044c)?(?:\u0435|\u0451)?\u043c|volume)/i;
   const lines = String(raw || "")
     .split(/\r?\n/)
     .map((x) => x.trim())
@@ -122,9 +138,12 @@ function parseHeaderMeta(raw: string): { contractor: string; phone: string; volu
     const key = String(m[1] || "").trim().toLowerCase();
     const val = String(m[2] || "").trim();
     if (!val) continue;
-    if (!out.contractor && (key.includes("подряд") || key.includes("contractor"))) out.contractor = val;
-    if (!out.phone && (key.includes("тел") || key.includes("phone"))) out.phone = val;
-    if (!out.volume && (key.includes("объ") || key.includes("volume"))) out.volume = val;
+    if (!out.contractor && contractorKeyRe.test(key)) out.contractor = val;
+    if (!out.phone && phoneKeyRe.test(key)) {
+      const p = normalizePhone(val);
+      if (p) out.phone = p;
+    }
+    if (!out.volume && volumeKeyRe.test(key)) out.volume = val;
   }
   return out;
 }
@@ -170,6 +189,18 @@ export default function ReqIssueModal(props: Props) {
       (head as any)?.phone_number ??
       "",
   ).trim();
+  const normalizedHeadPhone = useMemo(() => {
+    const src = String(headPhoneRaw || "").trim();
+    if (!src) return "";
+    if (/^\d{4}-\d{2}-\d{2}$/.test(src)) return "";
+    if (/^\d{4}[./]\d{2}[./]\d{2}$/.test(src)) return "";
+    const m = src.match(/(\+?\d[\d\s()\-]{7,}\d)/);
+    if (!m) return "";
+    const candidate = String(m[1] || "").trim();
+    const digits = candidate.replace(/[^\d]/g, "");
+    if (digits.length < 9) return "";
+    return candidate.replace(/\s+/g, "");
+  }, [headPhoneRaw]);
   const headVolumeRaw = String(
     (head as any)?.planned_volume ??
       (head as any)?.volume ??
@@ -181,7 +212,7 @@ export default function ReqIssueModal(props: Props) {
     return parseHeaderMeta(packed);
   }, [head]);
   const headContractor = headContractorRaw || fromNote.contractor;
-  const headPhone = headPhoneRaw || fromNote.phone;
+  const headPhone = normalizedHeadPhone || fromNote.phone;
   const headVolume = headVolumeRaw || fromNote.volume;
 
   const hasHead = !!(headObj || headLevel || headSystem || headZone || headContractor || headPhone || headVolume);
@@ -447,3 +478,4 @@ export default function ReqIssueModal(props: Props) {
     </RNModal>
   );
 }
+
