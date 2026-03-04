@@ -23,15 +23,16 @@ import {
   Platform,
 } from "react-native";
 import { useFocusEffect } from 'expo-router';
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { supabase } from "../../src/lib/supabaseClient";
 import {
   WorkMaterialsEditor,
   WorkMaterialRow,
 } from "../../src/components/WorkMaterialsEditor";
-import * as Print from "expo-print";
 import * as Sharing from "expo-sharing";
 import { Ionicons } from "@expo/vector-icons";
 import { useForemanDicts } from "../../src/screens/foreman/useForemanDicts";
+import { openHtmlAsPdfUniversal } from "../../src/lib/api/pdf";
 
 const UI = {
   bg: "#F8FAFC",
@@ -111,6 +112,7 @@ type IssuedItemRow = {
   unit: string | null;
   qty: number;
   qty_left?: number | null;
+  qty_used?: number | null; // Added
   price: number | null;
   sum: number | null;
   qty_fact: number;
@@ -148,6 +150,7 @@ type ActBuilderItem = {
   name: string;
   uom: string;
   issuedQty: number;
+  alreadyUsed: number; // Added
   qtyMax: number;
   qty: number;
   price: number | null;
@@ -158,7 +161,52 @@ type ActBuilderItem = {
 type ActBuilderWorkItem = {
   id: string;
   name: string;
+  qty: number;  // TZ 3.2: Default 1
+  unit: string; // TZ 3.1
+  price: number | null;
+  comment: string; // TZ 3.1
   include: boolean;
+};
+
+const WORK_UNIT_OPTIONS_DEFAULT = ["шт", "м", "м2", "м3", "комплект"];
+const SERVICE_UNIT_OPTIONS = ["рейс", "выезд", "смена", "час"];
+const RENT_UNIT_OPTIONS = ["час", "сутки", "смена"];
+const resolveUnitOptionsForWork = (workName: string): string[] => {
+  const src = String(workName || "").toLowerCase();
+  if (
+    src.includes("доставка") ||
+    src.includes("услуг") ||
+    src.includes("выезд") ||
+    src.includes("монтаж")
+  ) {
+    return [...WORK_UNIT_OPTIONS_DEFAULT, ...SERVICE_UNIT_OPTIONS];
+  }
+  if (src.includes("арен")) {
+    return [...WORK_UNIT_OPTIONS_DEFAULT, ...RENT_UNIT_OPTIONS];
+  }
+  return WORK_UNIT_OPTIONS_DEFAULT;
+};
+
+const ACT_META_PREFIX = "ACT_META::";
+const buildActMetaNote = (selectedWorks: string[]) => {
+  const meta = { selectedWorks: selectedWorks.filter(Boolean) };
+  return `Акт сформирован из модалки конструктора\n${ACT_META_PREFIX}${JSON.stringify(meta)}`;
+};
+const parseActMeta = (note: string | null | undefined): { selectedWorks: string[]; visibleNote: string } => {
+  const raw = String(note || "");
+  const idx = raw.indexOf(ACT_META_PREFIX);
+  if (idx < 0) return { selectedWorks: [], visibleNote: raw };
+  const visibleNote = raw.slice(0, idx).trim();
+  const jsonPart = raw.slice(idx + ACT_META_PREFIX.length).trim();
+  try {
+    const parsed = JSON.parse(jsonPart) as any;
+    const selectedWorks = Array.isArray(parsed?.selectedWorks)
+      ? parsed.selectedWorks.map((x: any) => String(x || "")).filter(Boolean)
+      : [];
+    return { selectedWorks, visibleNote };
+  } catch {
+    return { selectedWorks: [], visibleNote };
+  }
 };
 
 const pickFirstNonEmpty = (...vals: any[]): string | null => {
@@ -202,7 +250,20 @@ const pickErr = (e: any) =>
 async function generateWorkPdf(
   work: WorkRow | null,
   materials: WorkMaterialRow[],
-  opts?: { actDate?: string | Date; selectedWorks?: string[] }
+  opts?: {
+    actDate?: string | Date;
+    selectedWorks?: { name: string; unit: string; price: number; qty?: number; comment?: string }[];
+    contractorName?: string | null;
+    contractorInn?: string | null;
+    contractorPhone?: string | null;
+    customerName?: string | null;
+    customerInn?: string | null;
+    contractNumber?: string | null;
+    contractDate?: string | null;
+    zoneText?: string | null;
+    mainWorkName?: string | null;
+    actNumber?: string | null;
+  }
 ) {
   if (!work) return;
 
@@ -214,199 +275,292 @@ async function generateWorkPdf(
       minute: "2-digit",
     });
 
-    const objectName = work.object_name || "РћР±СЉРµРєС‚ РЅРµ СѓРєР°Р·Р°РЅ";
-    const workName = work.work_name || work.work_code || "Р Р°Р±РѕС‚Р°";
-    const selectedWorks = (opts?.selectedWorks || []).filter(Boolean);
-    const actNo = work.progress_id.slice(0, 8);
+    const objectName = work.object_name || "Объект не указан";
+    const mainWorkName = String(opts?.mainWorkName || work.work_name || work.work_code || "—");
+    const selectedWorks = opts?.selectedWorks || [];
+    const actNo = String(opts?.actNumber || work.progress_id.slice(0, 8));
+    const contractorName = String(opts?.contractorName || work.contractor_org || "—");
+    const contractorInn = String(opts?.contractorInn || "—");
+    const contractorPhone = String(opts?.contractorPhone || "—");
+    const customerName = String(opts?.customerName || objectName || "—");
+    const customerInn = String(opts?.customerInn || "—");
+    const contractNumber = String(opts?.contractNumber || "—");
+    const contractDate = String(opts?.contractDate || "—");
+    const zoneText = String(opts?.zoneText || "—");
 
     const workUrl = `https://app.goxbuild.com/work/${work.progress_id}`;
     const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(
       workUrl
     )}`;
 
-    const materialsRowsHtml = materials
-      .map(
-        (m: any, index) => `
-        <tr>
-          <td style="border:1px solid #000; padding:4px; text-align:center;">${
-            index + 1
-          }</td>
-          <td style="border:1px solid #000; padding:4px;">${m.name}</td>
-          <td style="border:1px solid #000; padding:4px; text-align:center;">${
-            m.uom
-          }</td>
-          <td style="border:1px solid #000; padding:4px; text-align:right;">${
-            m.qty_fact ?? 0
-          }</td>
-          <td style="border:1px solid #000; padding:4px; text-align:right;">${
-            m.price == null || Number.isNaN(Number(m.price)) ? "—" : Number(m.price).toLocaleString("ru-RU")
-          }</td>
-          <td style="border:1px solid #000; padding:4px; text-align:right;">${
-            m.price == null || Number.isNaN(Number(m.price))
-              ? "—"
-              : (Number(m.qty_fact ?? 0) * Number(m.price)).toLocaleString("ru-RU")
-          }</td>
-          <td style="border:1px solid #000; padding:4px;"></td>
-        </tr>
-      `
-      )
-      .join("");
+    console.log("[generateWorkPdf] RECEIVED MATERIALS:", materials.length);
+
+    const fmtNum = (v: number) => Number.isFinite(v) ? v.toLocaleString("ru-RU") : "0";
+    const fmtMoney = (v: number) => Number.isFinite(v) ? `${v.toLocaleString("ru-RU")} руб.` : "0 руб.";
+
+    let totalMaterialsSum = 0;
+    let totalWorksSum = 0;
+
+    const worksRowsHtml = selectedWorks.length
+      ? selectedWorks
+        .map((w: any, i) => {
+          const q = Number(w.qty || 0);
+          const p = Number(w.price || 0);
+          const sum = q * p;
+          if (sum > 0) totalWorksSum += sum;
+          return `
+            <tr>
+              <td class="cell-center">${i + 1}</td>
+              <td class="cell-center">Работа</td>
+              <td>${w.name || "—"}</td>
+              <td class="cell-center">${w.unit || "—"}</td>
+              <td class="cell-right">${fmtNum(q)}</td>
+              <td class="cell-right">${p > 0 ? fmtNum(p) : "—"}</td>
+              <td class="cell-right">${sum > 0 ? fmtNum(sum) : "—"}</td>
+              <td>${w.comment || ""}</td>
+            </tr>
+          `;
+        })
+        .join("")
+      : `<tr><td colspan="8" class="cell-empty">Работы не выбраны</td></tr>`;
+
+    const matsRowsHtml = materials.length
+      ? materials
+        .map((m: any, i) => {
+          const q = Number(m.act_used_qty ?? m.qty_fact ?? 0);
+          const p = m.price == null || Number.isNaN(Number(m.price)) ? 0 : Number(m.price);
+          const sum = q * p;
+          if (sum > 0) totalMaterialsSum += sum;
+          return `
+            <tr>
+              <td class="cell-center">${selectedWorks.length + i + 1}</td>
+              <td class="cell-center">Материал</td>
+              <td>${m.name || "—"}</td>
+              <td class="cell-center">${m.uom || m.unit || "—"}</td>
+              <td class="cell-right">${fmtNum(q)}</td>
+              <td class="cell-right">${p > 0 ? fmtNum(p) : "—"}</td>
+              <td class="cell-right">${sum > 0 ? fmtNum(sum) : "—"}</td>
+              <td></td>
+            </tr>
+          `;
+        })
+        .join("")
+      : `<tr><td colspan="8" class="cell-empty">Материалы не выбраны</td></tr>`;
+
+    const totalSum = totalWorksSum + totalMaterialsSum;
 
     const html = `
     <html>
       <head>
         <meta charset="utf-8" />
         <style>
-          @page {
-            size: A4;
-            margin: 15mm;
-          }
+          @page { size: A4; margin: 12mm 12mm 14mm 12mm; }
           body {
-            font-family: DejaVu Sans, sans-serif;
-            font-size: 11px;
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 10.8pt;
+            line-height: 1.35;
+            color: #111827;
           }
-          .center { text-align: center; }
-          .right  { text-align: right; }
-          .bold   { font-weight: bold; }
-          table { border-collapse: collapse; width: 100%; }
+          .doc-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 6px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid #d1d5db;
+          }
+          .doc-title { font-size: 14pt; font-weight: 700; }
+          .doc-meta { font-size: 9pt; color: #6b7280; text-align: right; }
+          .act-line { font-size: 10.5pt; margin-bottom: 6px; color: #374151; }
+          .divider { border-top: 1px solid #d1d5db; margin: 6px 0 8px 0; }
+
+          .head-grid {
+            display: table;
+            width: 100%;
+            table-layout: fixed;
+            margin-bottom: 6px;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            padding: 8px;
+            box-sizing: border-box;
+          }
+          .head-col { display: table-cell; width: 50%; vertical-align: top; padding-right: 8px; }
+          .head-col:last-child { padding-right: 0; padding-left: 8px; }
+          .head-block { margin-bottom: 8px; }
+          .head-block-title { font-size: 10.5pt; font-weight: 700; margin-bottom: 4px; color: #111827; }
+          .kv { margin-bottom: 2px; }
+          .kv-label { color: #6b7280; font-weight: 400; }
+          .kv-value { color: #111827; font-weight: 600; }
+
+          .section-title {
+            font-size: 12pt;
+            font-weight: 700;
+            margin: 8px 0 6px 0;
+            color: #111827;
+            padding-bottom: 3px;
+            border-bottom: 1px solid #e5e7eb;
+          }
+
+          table { border-collapse: collapse; width: 100%; margin-bottom: 8px; table-layout: fixed; }
+          thead th {
+            background: #f3f4f6;
+            color: #111827;
+            font-size: 10pt;
+            font-weight: 700;
+            border: 1px solid #d1d5db;
+            padding: 6px 5px;
+          }
+          tbody td {
+            border: 1px solid #d1d5db;
+            padding: 6px 5px;
+            font-size: 10pt;
+            vertical-align: top;
+          }
+          .cell-center { text-align: center; }
+          .cell-right { text-align: right; }
+          .cell-empty { text-align: center; color: #6b7280; padding: 10px 0; }
+
+          .group-total td {
+            background: #f9fafb;
+            font-weight: 700;
+            color: #111827;
+          }
+          .grand-total td {
+            background: #eef6ff;
+            font-weight: 700;
+            color: #0f172a;
+          }
+
+          .signatures { margin-top: 12px; display: flex; gap: 12px; }
+          .sign-col { flex: 1; }
+          .sign-line {
+            border-top: 1px solid #111827;
+            margin-top: 20px;
+            padding-top: 3px;
+            font-size: 9.5pt;
+            color: #374151;
+            white-space: nowrap;
+          }
+
+          .footer {
+            margin-top: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            border-top: 1px solid #e5e7eb;
+            padding-top: 6px;
+          }
+          .footer-left { font-size: 8.5pt; color: #6b7280; }
+          .footer-right { text-align: right; font-size: 8.5pt; color: #6b7280; }
         </style>
       </head>
       <body>
-        <!-- РЁРђРџРљРђ РђРљРўРђ -->
-        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
-          <div>
-            <div class="bold">РђРєС‚ РІС‹РїРѕР»РЅРµРЅРёСЏ СЂР°Р±РѕС‚ в„– ${actNo}</div>
-            <div>Р”Р°С‚Р°: ${dateStr} ${timeStr}</div>
-          </div>
-          <div style="text-align:right; font-size:10px;">
-            <div>РџСЂРёР»РѕР¶РµРЅРёРµ Рє РґРѕРіРѕРІРѕСЂСѓ РїРѕРґСЂСЏРґР°</div>
-            <div>Р¤РѕСЂРјР° СѓСЃР»РѕРІРЅРѕ РїРѕ РљРЎ-2 / Р“РћРЎРў</div>
+        <div class="doc-header">
+          <div class="doc-title">Акт выполненных работ</div>
+          <div class="doc-meta">
+            <div>Форма КС-2 / Электронный документ</div>
+            <div>Система: GOX BUILD</div>
           </div>
         </div>
+        <div class="act-line">№ акта: <b>${actNo}</b> &nbsp;&nbsp; Дата: <b>${dateStr} ${timeStr}</b></div>
 
-        <div style="margin-bottom:8px;">
-          <div><span class="bold">РћР±СЉРµРєС‚:</span> ${objectName}</div>
-          <div><span class="bold">Р Р°Р±РѕС‚Р°:</span> ${workName}</div>
+        <div class="head-grid">
+          <div class="head-col">
+            <div class="head-block">
+              <div class="head-block-title">Исполнитель (подрядчик)</div>
+              <div class="kv"><span class="kv-label">Наименование: </span><span class="kv-value">${contractorName}</span></div>
+              <div class="kv"><span class="kv-label">ИНН: </span><span class="kv-value">${contractorInn}</span></div>
+              <div class="kv"><span class="kv-label">Телефон: </span><span class="kv-value">${contractorPhone}</span></div>
+            </div>
+            <div class="head-block">
+              <div class="head-block-title">Заказчик</div>
+              <div class="kv"><span class="kv-label">Наименование: </span><span class="kv-value">${customerName}</span></div>
+              <div class="kv"><span class="kv-label">ИНН: </span><span class="kv-value">${customerInn}</span></div>
+            </div>
+          </div>
+          <div class="head-col">
+            <div class="head-block">
+              <div class="head-block-title">Основание</div>
+              <div class="kv"><span class="kv-label">Договор №: </span><span class="kv-value">${contractNumber}</span></div>
+              <div class="kv"><span class="kv-label">Дата договора: </span><span class="kv-value">${contractDate}</span></div>
+            </div>
+            <div class="head-block">
+              <div class="head-block-title">Объект</div>
+              <div class="kv"><span class="kv-label">Объект: </span><span class="kv-value">${objectName}</span></div>
+              <div class="kv"><span class="kv-label">Зона / Этаж: </span><span class="kv-value">${zoneText}</span></div>
+              <div class="kv"><span class="kv-label">Основная работа: </span><span class="kv-value">${mainWorkName}</span></div>
+            </div>
+          </div>
         </div>
 
-        <div class="bold" style="margin-top:10px; margin-bottom:4px;">
-          Работы по подряду (выбрано)
-        </div>
-        <div style="margin-bottom:10px;">
-          ${
-            selectedWorks.length
-              ? selectedWorks.map((w) => `<div>• ${w}</div>`).join("")
-              : `<div style="color:#666;">Работы не выбраны</div>`
-          }
-        </div>
+        <div class="divider"></div>
 
-        <!-- РЎРІРѕРґРєР° РїРѕ РѕР±СЉС‘РјСѓ -->
-        <table style="margin-top:6px; margin-bottom:12px;">
-          <tr>
-            <td class="bold">РџР»Р°РЅРѕРІС‹Р№ РѕР±СЉС‘Рј:</td>
-            <td>${work.qty_planned} ${work.uom_id || ""}</td>
-          </tr>
-          <tr>
-            <td class="bold">Р’С‹РїРѕР»РЅРµРЅРѕ РїРѕ Р°РєС‚Сѓ:</td>
-            <td>${work.qty_done} ${work.uom_id || ""}</td>
-          </tr>
-          <tr>
-            <td class="bold">РћСЃС‚Р°С‚РѕРє РїРѕ РїР»Р°РЅСѓ:</td>
-            <td>${work.qty_left} ${work.uom_id || ""}</td>
-          </tr>
-        </table>
-
-        <!-- РўР°Р±Р»РёС†Р° РјР°С‚РµСЂРёР°Р»РѕРІ -->
-        <div class="bold" style="margin-top:10px; margin-bottom:4px;">
-          РСЃРїРѕР»СЊР·РѕРІР°РЅРЅС‹Рµ РјР°С‚РµСЂРёР°Р»С‹ (РїРѕ С„Р°РєС‚Сѓ)
-        </div>
+        <div class="section-title">Состав акта</div>
         <table>
-          <tr>
-            <th style="border:1px solid #000; padding:4px; width:5%;">в„–</th>
-            <th style="border:1px solid #000; padding:4px;">РќР°РёРјРµРЅРѕРІР°РЅРёРµ</th>
-            <th style="border:1px solid #000; padding:4px; width:10%;">Р•Рґ.</th>
-            <th style="border:1px solid #000; padding:4px; width:15%;">РљРѕР»РёС‡РµСЃС‚РІРѕ</th>
-            <th style="border:1px solid #000; padding:4px; width:12%;">Цена</th>
-            <th style="border:1px solid #000; padding:4px; width:12%;">Сумма</th>
-            <th style="border:1px solid #000; padding:4px; width:20%;">РџСЂРёРјРµС‡Р°РЅРёРµ</th>
-          </tr>
-          ${
-            materialsRowsHtml ||
-            `
-          <tr>
-            <td colspan="7" style="border:1px solid #000; padding:4px; text-align:center;">
-              РњР°С‚РµСЂРёР°Р»С‹ РїРѕ С„Р°РєС‚Сѓ РЅРµ СѓРєР°Р·Р°РЅС‹
-            </td>
-          </tr>`
-          }
+          <colgroup>
+            <col style="width:4%">
+            <col style="width:10%">
+            <col style="width:47%">
+            <col style="width:7%">
+            <col style="width:8%">
+            <col style="width:8%">
+            <col style="width:8%">
+            <col style="width:8%">
+          </colgroup>
+          <thead>
+            <tr>
+              <th>№</th>
+              <th>Тип</th>
+              <th style="text-align:left">Наименование</th>
+              <th>Ед.</th>
+              <th class="cell-right">Кол-во</th>
+              <th class="cell-right">Цена</th>
+              <th class="cell-right">Сумма</th>
+              <th style="text-align:left">Прим.</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${worksRowsHtml}
+            <tr class="group-total">
+              <td colspan="6" class="cell-right">Итого по работам</td>
+              <td class="cell-right">${fmtMoney(totalWorksSum)}</td>
+              <td></td>
+            </tr>
+            ${matsRowsHtml}
+            <tr class="group-total">
+              <td colspan="6" class="cell-right">Итого по материалам</td>
+              <td class="cell-right">${fmtMoney(totalMaterialsSum)}</td>
+              <td></td>
+            </tr>
+            <tr class="grand-total">
+              <td colspan="6" class="cell-right">Общий итог</td>
+              <td class="cell-right">${fmtMoney(totalSum)}</td>
+              <td></td>
+            </tr>
+          </tbody>
         </table>
 
-        <!-- РџРѕРґРїРёСЃРё -->
-        <div style="margin-top:24px;">
-          <table style="width:100%;">
-            <tr>
-              <td style="width:33%; padding:4px;">РџСЂРѕСЂР°Р±</td>
-              <td style="width:33%; padding:4px; border-bottom:1px solid #000;">&nbsp;</td>
-              <td style="width:34%; padding:4px;">(Р¤РРћ, РїРѕРґРїРёСЃСЊ)</td>
-            </tr>
-            <tr>
-              <td style="padding:4px;">РњР°СЃС‚РµСЂ/Р‘СЂРёРіР°РґРёСЂ</td>
-              <td style="padding:4px; border-bottom:1px solid #000;">&nbsp;</td>
-              <td style="padding:4px;">(Р¤РРћ, РїРѕРґРїРёСЃСЊ)</td>
-            </tr>
-            <tr>
-              <td style="padding:4px;">РџСЂРµРґСЃС‚Р°РІРёС‚РµР»СЊ Р·Р°РєР°Р·С‡РёРєР°</td>
-              <td style="padding:4px; border-bottom:1px solid #000;">&nbsp;</td>
-              <td style="padding:4px;">(Р¤РРћ, РїРѕРґРїРёСЃСЊ)</td>
-            </tr>
-          </table>
+        <div class="signatures">
+          <div class="sign-col"><div class="sign-line">Прораб (ФИО, подпись)</div></div>
+          <div class="sign-col"><div class="sign-line">Бригадир (ФИО, подпись)</div></div>
+          <div class="sign-col"><div class="sign-line">Представитель заказчика (ФИО, подпись)</div></div>
         </div>
 
-        <!-- QR-РєРѕРґ Рё СЃР»СѓР¶РµР±РЅР°СЏ РёРЅС„Р° -->
-        <div style="margin-top:16px; display:flex; justify-content:space-between; align-items:flex-end;">
-          <div style="font-size:9px; color:#555;">
-            РЎС„РѕСЂРјРёСЂРѕРІР°РЅРѕ РІ СЃРёСЃС‚РµРјРµ GOX BUILD<br/>
-            ID СЂР°Р±РѕС‚С‹: ${work.progress_id}
+        <div class="footer">
+          <div class="footer-left">
+            Система мониторинга: GOX BUILD<br/>
+            Уникальный ID акта: ${work.progress_id}
           </div>
-          <div style="text-align:right;">
-            <div style="font-size:9px; margin-bottom:4px;">QR РґР»СЏ РїСЂРѕРІРµСЂРєРё Р°РєС‚Р°</div>
-            <img src="${qrUrl}" alt="QR" />
+          <div class="footer-right">
+            <div style="margin-bottom: 4px;">Проверка акта</div>
+            <img src="${qrUrl}" style="width: 72px; height: 72px;" alt="QR" />
           </div>
         </div>
       </body>
     </html>
     `;
 
-    const fileName = `work-${work.progress_id}-${Date.now()}.pdf`;
-    const uploadToStorage = async (uri: string) => {
-      try {
-        const bucket = "work-pdfs";
-        const resp = await fetch(uri);
-        const blob = await resp.blob();
-        const uploadRes = await supabase.storage
-          .from(bucket)
-          .upload(fileName, blob, {
-            contentType: "application/pdf",
-            upsert: true,
-          });
-        if (uploadRes.error) {
-          console.warn("[generateWorkPdf] upload error:", uploadRes.error.message);
-        } else {
-          console.log("[generateWorkPdf] uploaded to storage:", uploadRes.data.path);
-        }
-      } catch (e) {
-        console.warn("[generateWorkPdf] storage error", e);
-      }
-    };
-
-    // Try to create a real PDF file first (web + native).
-    let pdfUri = "";
-    try {
-      const fileRes = await Print.printToFileAsync({ html });
-      pdfUri = String(fileRes?.uri || "").trim();
-    } catch (e) {
-      console.warn("[generateWorkPdf] printToFileAsync failed:", e);
-    }
+    const pdfUri = await openHtmlAsPdfUniversal(html);
 
     if (!pdfUri) {
       Alert.alert("PDF", "Не удалось сформировать PDF-файл. Повтори попытку.");
@@ -414,31 +568,58 @@ async function generateWorkPdf(
     }
 
     if (Platform.OS === "web") {
-      try {
-        const link = document.createElement("a");
-        link.href = pdfUri;
-        link.download = fileName;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-      } catch (e) {
-        console.warn("[generateWorkPdf] web download failed:", e);
+      const w = window.open(pdfUri, "_blank", "noopener,noreferrer");
+      if (!w) {
+        Alert.alert("PDF", "Браузер заблокировал новое окно. Разреши pop-up для этого сайта.");
       }
-      await uploadToStorage(pdfUri);
       return;
     }
 
-    // Native flow: only share/open generated file, never print page/screen.
     try {
       await Sharing.shareAsync(pdfUri);
     } catch (e) {
       console.warn("[generateWorkPdf] shareAsync error", e);
     }
-    await uploadToStorage(pdfUri);
   } catch (e: any) {
     console.warn("[generateWorkPdf] general error", e);
     Alert.alert("РћС€РёР±РєР° PDF", String(e?.message || e));
   }
+}
+
+type ActPdfMode = "normal" | "summary";
+
+async function generateActPdf(args: {
+  mode: ActPdfMode;
+  work: WorkRow | null;
+  materials: WorkMaterialRow[];
+  actDate?: string | Date;
+  selectedWorks?: { name: string; unit: string; price: number; qty?: number; comment?: string }[];
+  contractorName?: string | null;
+  contractorInn?: string | null;
+  contractorPhone?: string | null;
+  customerName?: string | null;
+  customerInn?: string | null;
+  contractNumber?: string | null;
+  contractDate?: string | null;
+  zoneText?: string | null;
+  mainWorkName?: string | null;
+  actNumber?: string | null;
+}) {
+  // Single PDF pipeline for contractor: file generation only (no print preview/UI print).
+  return generateWorkPdf(args.work, args.materials, {
+    actDate: args.actDate,
+    selectedWorks: args.selectedWorks,
+    contractorName: args.contractorName,
+    contractorInn: args.contractorInn,
+    contractorPhone: args.contractorPhone,
+    customerName: args.customerName,
+    customerInn: args.customerInn,
+    contractNumber: args.contractNumber,
+    contractDate: args.contractDate,
+    zoneText: args.zoneText,
+    mainWorkName: args.mainWorkName,
+    actNumber: args.actNumber,
+  });
 }
 
 // ===== РЎРІРѕРґ РїРѕ СЂР°Р±РѕС‚Рµ: РІСЃРµ Р°РєС‚С‹ + РјР°С‚РµСЂРёР°Р»С‹ (РєР°Рє РЅР° СЃРєР»Р°РґРµ) =====
@@ -535,6 +716,8 @@ function debounce<F extends (...args: any[]) => any>(fn: F, delay: number) {
 
 // ---- MAIN SCREEN ----
 export default function ContractorScreen() {
+  const insets = useSafeAreaInsets();
+  const subcontractModalTopPad = Platform.OS === "web" ? 16 : (insets.top + 10);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [contractor, setContractor] = useState<Contractor | null>(null);
   const [loadingProfile, setLoadingProfile] = useState(true);
@@ -550,8 +733,8 @@ export default function ContractorScreen() {
   const [actingId, setActingId] = useState<string | null>(null);
 
   const [tab, setTab] = useState<"available" | "mine">("available");
-const focusedRef = useRef(false);
-const lastKickRef = useRef(0);
+  const focusedRef = useRef(false);
+  const lastKickRef = useRef(0);
   const openingWorkRef = useRef(false);
   const profileRef = useRef<UserProfile | null>(null);
   const contractorRef = useRef<Contractor | null>(null);
@@ -634,6 +817,18 @@ const lastKickRef = useRef(0);
   const [actBuilderItems, setActBuilderItems] = useState<ActBuilderItem[]>([]);
   const [actBuilderWorks, setActBuilderWorks] = useState<ActBuilderWorkItem[]>([]);
   const [actBuilderSaving, setActBuilderSaving] = useState(false);
+  const [actBuilderHint, setActBuilderHint] = useState("");
+  const [workModalHint, setWorkModalHint] = useState("");
+  const [actBuilderExpandedWork, setActBuilderExpandedWork] = useState<string | null>(null);
+  const [actBuilderExpandedMat, setActBuilderExpandedMat] = useState<string | null>(null);
+  const actBuilderItemsRef = useRef<ActBuilderItem[]>([]);
+  const actBuilderWorksRef = useRef<ActBuilderWorkItem[]>([]);
+  useEffect(() => {
+    actBuilderItemsRef.current = actBuilderItems;
+  }, [actBuilderItems]);
+  useEffect(() => {
+    actBuilderWorksRef.current = actBuilderWorks;
+  }, [actBuilderWorks]);
   const [issuedItems, setIssuedItems] = useState<IssuedItemRow[]>([]);
   const [loadingIssued, setLoadingIssued] = useState(false);
   const [issuedHint, setIssuedHint] = useState<string>("");
@@ -652,7 +847,7 @@ const lastKickRef = useRef(0);
   // ---- LOAD USER PROFILE ----
   const loadProfile = useCallback(async () => {
     if (!focusedRef.current) return;
-setLoadingProfile(true);
+    setLoadingProfile(true);
     const { data: auth } = await supabase.auth.getUser();
 
     if (!auth.user) {
@@ -682,9 +877,9 @@ setLoadingProfile(true);
 
   // ---- LOAD CONTRACTOR (РёР· С‚Р°Р±Р»РёС†С‹ contractors РїРѕ user_id) ----
   const loadContractor = useCallback(async () => {
-if (!focusedRef.current) return;
+    if (!focusedRef.current) return;
 
-  setLoadingWorks(true);
+    setLoadingWorks(true);
     const { data: auth } = await supabase.auth.getUser();
     const user = auth.user;
     if (!user) {
@@ -715,10 +910,10 @@ if (!focusedRef.current) return;
   }, []);
 
   // ---- LOAD WORKS ----
- const loadWorks = useCallback(async () => {
-  if (!focusedRef.current) return;
+  const loadWorks = useCallback(async () => {
+    if (!focusedRef.current) return;
 
-  setLoadingWorks(true);
+    setLoadingWorks(true);
 
     const { data, error } = await supabase
       .from("v_works_fact")
@@ -827,10 +1022,16 @@ if (!focusedRef.current) return;
     );
     const reqById = new Map<string, any>();
     if (reqIds.length) {
-      const rq = await supabase
+      let rq = await supabase
         .from("requests" as any)
         .select("id, status, subcontract_id, object_type_code, level_code, system_code")
         .in("id", reqIds);
+      if (rq.error) {
+        rq = await supabase
+          .from("requests" as any)
+          .select("id, status, object_type_code, level_code, system_code")
+          .in("id", reqIds);
+      }
       if (!rq.error && Array.isArray(rq.data)) {
         for (const r of rq.data as any[]) {
           const id = String(r.id || "").trim();
@@ -950,63 +1151,63 @@ if (!focusedRef.current) return;
     );
     const myContractorId = String(contractorRef.current?.id || "").trim();
 
-const filtered = mappedWithObject.filter((r) => {
-  const c = String(r.work_code ?? "").toUpperCase();
-  const rowContractorId = String(r.contractor_id || "").trim();
-  const jid = String(r.contractor_job_id || "").trim();
-  const ownedByMe = !!myContractorId && rowContractorId === myContractorId;
-  const inMySubcontract = jid && allowedJobIds.has(jid);
-  const isOther = !jid;
-  const myOrg = String(contractorRef.current?.company_name || profileRef.current?.company || "").trim().toLowerCase();
-  const normPhone = (v: string) => v.replace(/\D+/g, "");
-  const myPhone = normPhone(String(contractorRef.current?.phone || profileRef.current?.phone || "").trim());
-  const rowOrg = String(r.contractor_org || "").trim().toLowerCase();
-  const rowPhone = normPhone(String(r.contractor_phone || "").trim());
-  const matchedByOrgPhone = (!!myOrg && !!rowOrg && myOrg === rowOrg) || (!!myPhone && !!rowPhone && myPhone === rowPhone);
-  const reqStatus = String(r.request_status || "").toLowerCase();
-  const approvedForOther =
-    !reqStatus ||
-    reqStatus.includes("ready") ||
-    reqStatus.includes("approved") ||
-    reqStatus.includes("waiting_stock") ||
-    reqStatus.includes("stock") ||
-    reqStatus.includes("в работе") ||
-    reqStatus.includes("готов");
+    const filtered = mappedWithObject.filter((r) => {
+      const c = String(r.work_code ?? "").toUpperCase();
+      const rowContractorId = String(r.contractor_id || "").trim();
+      const jid = String(r.contractor_job_id || "").trim();
+      const ownedByMe = !!myContractorId && rowContractorId === myContractorId;
+      const inMySubcontract = jid && allowedJobIds.has(jid);
+      const isOther = !jid;
+      const myOrg = String(contractorRef.current?.company_name || profileRef.current?.company || "").trim().toLowerCase();
+      const normPhone = (v: string) => v.replace(/\D+/g, "");
+      const myPhone = normPhone(String(contractorRef.current?.phone || profileRef.current?.phone || "").trim());
+      const rowOrg = String(r.contractor_org || "").trim().toLowerCase();
+      const rowPhone = normPhone(String(r.contractor_phone || "").trim());
+      const matchedByOrgPhone = (!!myOrg && !!rowOrg && myOrg === rowOrg) || (!!myPhone && !!rowPhone && myPhone === rowPhone);
+      const reqStatus = String(r.request_status || "").toLowerCase();
+      const approvedForOther =
+        !reqStatus ||
+        reqStatus.includes("ready") ||
+        reqStatus.includes("approved") ||
+        reqStatus.includes("waiting_stock") ||
+        reqStatus.includes("stock") ||
+        reqStatus.includes("в работе") ||
+        reqStatus.includes("готов");
 
-  // Оставляем только мои строки или строки моих подрядов
-  if (
-    !ownedByMe &&
-    allowedJobIds.size > 0 &&
-    !inMySubcontract &&
-    !(isOther && matchedByOrgPhone && approvedForOther) &&
-    !DEV_SHOW_ALL_SUBCONTRACTS
-  )
-    return false;
-  if (!ownedByMe && allowedJobIds.size === 0 && !DEV_SHOW_ALL_SUBCONTRACTS && !(isOther && matchedByOrgPhone && approvedForOther)) return false;
+      // Оставляем только мои строки или строки моих подрядов
+      if (
+        !ownedByMe &&
+        allowedJobIds.size > 0 &&
+        !inMySubcontract &&
+        !(isOther && matchedByOrgPhone && approvedForOther) &&
+        !DEV_SHOW_ALL_SUBCONTRACTS
+      )
+        return false;
+      if (!ownedByMe && allowedJobIds.size === 0 && !DEV_SHOW_ALL_SUBCONTRACTS && !(isOther && matchedByOrgPhone && approvedForOther)) return false;
 
-  // рџљ« СЃР»СѓР¶РµР±РЅРѕРµ/РєРѕСЌС„С„РёС†РёРµРЅС‚С‹ вЂ” РЅРёРєСѓРґР°
-  if (
-    c.startsWith("FACTOR-") ||
-    c.startsWith("KIT-") ||
-    c.startsWith("GENERIC-") ||
-    c.startsWith("AUX-") ||
-    c.startsWith("SUP-") ||
-    c.startsWith("TEST-") ||
-    c.startsWith("WRK-META-K-") // вњ… С‚РІРѕРё "РєРѕСЌС„С‹" РІ СЂР°Р±РѕС‚Р°С…
-  ) return false;
+      // рџљ« СЃР»СѓР¶РµР±РЅРѕРµ/РєРѕСЌС„С„РёС†РёРµРЅС‚С‹ вЂ” РЅРёРєСѓРґР°
+      if (
+        c.startsWith("FACTOR-") ||
+        c.startsWith("KIT-") ||
+        c.startsWith("GENERIC-") ||
+        c.startsWith("AUX-") ||
+        c.startsWith("SUP-") ||
+        c.startsWith("TEST-") ||
+        c.startsWith("WRK-META-K-") // вњ… С‚РІРѕРё "РєРѕСЌС„С‹" РІ СЂР°Р±РѕС‚Р°С…
+      ) return false;
 
-  // вњ… РїРѕРґСЂСЏРґС‡РёРєРё: С‚РѕР»СЊРєРѕ СЂР°Р±РѕС‚С‹/СѓСЃР»СѓРіРё/СЃРїРµС†
-  return !(
-    c.startsWith("MAT-") ||
-    c.startsWith("KIT-") ||
-    c.startsWith("FACTOR-") ||
-    c.startsWith("GENERIC-") ||
-    c.startsWith("AUX-") ||
-    c.startsWith("SUP-") ||
-    c.startsWith("TEST-") ||
-    c.startsWith("WRK-META-K-")
-  );
-});
+      // вњ… РїРѕРґСЂСЏРґС‡РёРєРё: С‚РѕР»СЊРєРѕ СЂР°Р±РѕС‚С‹/СѓСЃР»СѓРіРё/СЃРїРµС†
+      return !(
+        c.startsWith("MAT-") ||
+        c.startsWith("KIT-") ||
+        c.startsWith("FACTOR-") ||
+        c.startsWith("GENERIC-") ||
+        c.startsWith("AUX-") ||
+        c.startsWith("SUP-") ||
+        c.startsWith("TEST-") ||
+        c.startsWith("WRK-META-K-")
+      );
+    });
 
     const existingJobIds = new Set(
       filtered.map((r) => String(r.contractor_job_id || "").trim()).filter(Boolean)
@@ -1039,7 +1240,7 @@ const filtered = mappedWithObject.filter((r) => {
         };
       });
 
-setRows([...syntheticRows, ...filtered]);
+    setRows([...syntheticRows, ...filtered]);
 
 
     setLoadingWorks(false);
@@ -1159,11 +1360,25 @@ setRows([...syntheticRows, ...filtered]);
 
     const reqId = await resolveRequestId(row);
     if (reqId) {
-      const req = await supabase
+      let req = await supabase
         .from("requests" as any)
         .select("subcontract_id, contractor_job_id")
         .eq("id", reqId)
         .maybeSingle();
+      if (req.error) {
+        req = await supabase
+          .from("requests" as any)
+          .select("subcontract_id")
+          .eq("id", reqId)
+          .maybeSingle();
+      }
+      if (req.error) {
+        req = await supabase
+          .from("requests" as any)
+          .select("contractor_job_id")
+          .eq("id", reqId)
+          .maybeSingle();
+      }
       if (!req.error && req.data) {
         const rid = String((req.data as any).subcontract_id || (req.data as any).contractor_job_id || "").trim();
         if (rid) return rid;
@@ -1284,10 +1499,16 @@ setRows([...syntheticRows, ...filtered]);
 
       let reqRows: any[] = [];
       if (jobId) {
-        const reqQ = await supabase
+        let reqQ = await supabase
           .from("requests" as any)
           .select("id, status")
           .eq("subcontract_id", jobId);
+        if (reqQ.error) {
+          reqQ = await supabase
+            .from("requests" as any)
+            .select("id, status")
+            .eq("contractor_job_id", jobId);
+        }
         reqRows = (reqQ.data as any[] | null) || [];
       } else if (reqIdForRow) {
         reqRows = [{ id: reqIdForRow, status: null }];
@@ -1392,19 +1613,76 @@ setRows([...syntheticRows, ...filtered]);
         return;
       }
 
+      const consumedByCode = new Map<string, number>();
+      // PROD-TZ: считать списания материалов на уровне всего подряда (subcontract),
+      // а не только текущей работы.
+      let progressIdsForSubcontract = Array.from(
+        new Set(
+          rows
+            .filter((r) => String(r.contractor_job_id || "").trim() === String(jobId || "").trim())
+            .map((r) => String(r.progress_id || "").trim())
+            .filter((pid) => !!pid && !pid.startsWith("subcontract:"))
+        )
+      );
+      if (!progressIdsForSubcontract.length && row.progress_id) {
+        progressIdsForSubcontract = [String(row.progress_id)];
+      }
+
+      let logIds: string[] = [];
+      if (progressIdsForSubcontract.length === 1) {
+        const logsQ = await supabase
+          .from("work_progress_log" as any)
+          .select("id")
+          .eq("progress_id", progressIdsForSubcontract[0]);
+        logIds = Array.isArray(logsQ.data)
+          ? (logsQ.data as any[]).map((x) => String(x.id || "")).filter(Boolean)
+          : [];
+      } else if (progressIdsForSubcontract.length > 1) {
+        const logsQ = await supabase
+          .from("work_progress_log" as any)
+          .select("id")
+          .in("progress_id", progressIdsForSubcontract);
+        logIds = Array.isArray(logsQ.data)
+          ? (logsQ.data as any[]).map((x) => String(x.id || "")).filter(Boolean)
+          : [];
+      }
+      if (logIds.length) {
+        const matsQ = await supabase
+          .from("work_progress_log_materials" as any)
+          .select("mat_code, qty_fact")
+          .in("log_id", logIds);
+        if (!matsQ.error && Array.isArray(matsQ.data)) {
+          for (const m of matsQ.data as any[]) {
+            const code = String(m.mat_code || "").trim();
+            if (!code) continue;
+            const q = Number(m.qty_fact || 0);
+            if (!Number.isFinite(q) || q <= 0) continue;
+            consumedByCode.set(code, Number(consumedByCode.get(code) || 0) + q);
+          }
+        }
+      }
+
       const mapped = (itemsQ.data as any[])
-        .map((r: any, idx: number) => ({
-        issue_item_id: String(r.request_item_id || `${r.request_id || ""}-${idx}`),
-        mat_code: String(r.rik_code || r.request_item_id || `${r.request_id || ""}-${idx}`),
-        request_id: String(r.request_id || ""),
-        title: String(r.name_human || r.rik_code || "Материал"),
-        unit: r.uom ?? null,
-        qty: Number(r.qty_issued ?? 0),
-        qty_left: Number(r.qty_left ?? 0),
-        price: null,
-        sum: null,
-        qty_fact: Number(r.qty_issued ?? 0),
-        }))
+        .map((r: any, idx: number) => {
+          const code = String(r.rik_code || r.request_item_id || `${r.request_id || ""}-${idx}`);
+          const leftBase = Number(r.qty_left ?? 0);
+          const issuedQty = Number(r.qty_issued ?? 0);
+          const consumed = Number(consumedByCode.get(code) || 0);
+          const leftAdjusted = Math.max(0, issuedQty - consumed);
+          return {
+            issue_item_id: String(r.request_item_id || `${r.request_id || ""}-${idx}`),
+            mat_code: code,
+            request_id: String(r.request_id || ""),
+            title: String(r.name_human || r.rik_code || "Материал"),
+            unit: r.uom ?? null,
+            qty: issuedQty,
+            qty_used: consumed,
+            qty_left: leftAdjusted,
+            price: r.price ? Number(r.price) : null,
+            sum: null,
+            qty_fact: issuedQty, // Fallback
+          };
+        })
         .sort((a: IssuedItemRow, b: IssuedItemRow) => Number(b.qty || 0) - Number(a.qty || 0));
       const issuedByItems = new Map<string, number>();
       for (const rowItem of mapped) {
@@ -1424,7 +1702,7 @@ setRows([...syntheticRows, ...filtered]);
     } finally {
       setLoadingIssued(false);
     }
-  }, [resolveContractorJobId, resolveRequestId]);
+  }, [resolveContractorJobId, resolveRequestId, rows]);
 
   // РѕС‚РєСЂС‹С‚СЊ РјРѕРґР°Р»РєСѓ (РєР°Рє openWorkAddModal РІ warehouse.tsx)
   const openWorkAddModal = useCallback(
@@ -1441,6 +1719,8 @@ setRows([...syntheticRows, ...filtered]);
       setWorkSearchVisible(false);
       setWorkSearchQuery("");
       setWorkSearchResults([]);
+      setWorkModalHint("");
+      setActBuilderHint("");
 
       setWorkModalVisible(true);
       setWorkModalLoading(true);
@@ -1775,16 +2055,18 @@ setRows([...syntheticRows, ...filtered]);
   const openActBuilder = useCallback(() => {
     const seeded = issuedItems.map((it) => {
       const issued = Number(it.qty || 0);
-      const left = Number(it.qty_left || 0);
-      const maxQty = Math.max(0, issued > 0 ? issued : left);
-      const defaultQty = issued > 0 ? issued : maxQty;
+      const used = Number(it.qty_used || 0);
+      const left = Math.max(0, issued - used);
+      // TZ: Default 'In Act' = available_now
+      const defaultQty = left;
       return {
         id: String(it.issue_item_id),
         mat_code: String(it.mat_code || it.issue_item_id || it.title),
         name: String(it.title || "Материал"),
         uom: String(it.unit || ""),
         issuedQty: issued,
-        qtyMax: maxQty,
+        alreadyUsed: used,
+        qtyMax: left,
         qty: defaultQty,
         price: it.price == null ? null : Number(it.price),
         include: false,
@@ -1795,20 +2077,29 @@ setRows([...syntheticRows, ...filtered]);
     const byCode = new Set(seeded.map((s) => s.mat_code));
     const fallback = workModalMaterials
       .filter((m: any) => !byCode.has(String(m.mat_code || "")))
-      .map((m: any, idx: number) => ({
-        id: `fallback-${idx}-${String(m.mat_code || m.name || "mat")}`,
-        mat_code: String(m.mat_code || m.name || `MAT-${idx}`),
-        name: String(m.name || m.mat_code || "Материал"),
-        uom: String(m.uom || ""),
-        issuedQty: Number(m.qty_fact || 0),
-        qtyMax: Number(m.qty_fact || 0),
-        qty: Number(m.qty_fact || 0),
-        price: null,
-        include: false,
-        source: "issued" as const,
-      }));
+      .map((m: any, idx: number) => {
+        const issued = Number(m.qty_fact || 0);
+        // Fallback items don't have tracked previous usage in this modal usually, 
+        // but we treat qty_fact as total issued here.
+        return {
+          id: `fallback-${idx}-${String(m.mat_code || m.name || "mat")}`,
+          mat_code: String(m.mat_code || m.name || `MAT-${idx}`),
+          name: String(m.name || m.mat_code || "Материал"),
+          uom: String(m.uom || ""),
+          issuedQty: issued,
+          alreadyUsed: 0,
+          qtyMax: issued,
+          qty: issued,
+          price: null,
+          include: false,
+          source: "issued" as const,
+        } as ActBuilderItem;
+      });
 
-    setActBuilderItems([...seeded, ...fallback]);
+    const nextItems = [...seeded, ...fallback];
+    actBuilderItemsRef.current = nextItems;
+    setActBuilderItems(nextItems);
+    setActBuilderExpandedMat(null);
     const worksPool = Array.from(
       new Set(
         rows
@@ -1817,18 +2108,24 @@ setRows([...syntheticRows, ...filtered]);
           .filter(Boolean)
       )
     );
-    setActBuilderWorks(
-      worksPool.map((name, idx) => ({
-        id: `w-${idx}-${name}`,
-        name,
-        include: false,
-      }))
-    );
+    const nextWorks = worksPool.map((name, idx) => ({
+      id: `w-${idx}-${name}`,
+      name,
+      qty: 1, // TZ 3.2
+      unit: "",
+      price: null,
+      comment: "",
+      include: false,
+    })) as ActBuilderWorkItem[];
+    actBuilderWorksRef.current = nextWorks;
+    setActBuilderWorks(nextWorks);
+    setActBuilderExpandedWork(null);
+    setActBuilderHint("");
     setActBuilderVisible(true);
   }, [issuedItems, workModalMaterials, rows, workModalRow, toHumanWork]);
 
   const actBuilderSelectedMatCount = useMemo(
-    () => actBuilderItems.filter((x) => x.include && Number(x.qty || 0) > 0).length,
+    () => actBuilderItems.filter((x) => x.include).length,
     [actBuilderItems]
   );
   const actBuilderSelectedWorkCount = useMemo(
@@ -1839,28 +2136,260 @@ setRows([...syntheticRows, ...filtered]);
     () => actBuilderSelectedMatCount + actBuilderSelectedWorkCount > 0,
     [actBuilderSelectedMatCount, actBuilderSelectedWorkCount]
   );
+  const actBuilderWorkSum = useMemo(
+    () =>
+      actBuilderWorks
+        .filter((x) => x.include)
+        .reduce((acc, x) => {
+          const qty = Number(x.qty || 0);
+          const price = Number(x.price || 0);
+          if (!Number.isFinite(qty) || !Number.isFinite(price)) return acc;
+          return acc + qty * price;
+        }, 0),
+    [actBuilderWorks]
+  );
+  const actBuilderMatSum = useMemo(
+    () =>
+      actBuilderItems
+        .filter((x) => x.include)
+        .reduce((acc, x) => {
+          const qty = Number(x.qty || 0);
+          const price = Number(x.price || 0);
+          if (!Number.isFinite(qty) || !Number.isFinite(price)) return acc;
+          return acc + qty * price;
+        }, 0),
+    [actBuilderItems]
+  );
 
   const submitActBuilder = useCallback(async () => {
     if (!workModalRow) return;
-    const selectedWorks = actBuilderWorks.filter((x) => x.include).map((x) => x.name);
-    const selected = actBuilderItems.filter((x) => x.include && Number(x.qty || 0) > 0);
-    if (!selectedWorks.length && !selected.length) {
-      Alert.alert("Акт", "Выберите хотя бы одну работу или один материал, чтобы сформировать акт.");
-      return;
-    }
-    if (selectedWorks.length > 0 && selected.length === 0) {
-      Alert.alert("Информация", "Акт будет сформирован без материалов — только по работам.");
-    }
-    if (selected.length > 0 && selectedWorks.length === 0) {
-      Alert.alert("Информация", "Акт будет сформирован без работ — только по материалам.");
-    }
-    const objectName = pickFirstNonEmpty(workModalRow?.object_name, jobHeader?.object_name) || "";
-    if (!String(objectName || "").trim()) {
-      Alert.alert("Нет объекта", "Сохранение акта заблокировано: у работы не привязан объект.");
-      return;
-    }
     try {
+      setActBuilderHint("");
       setActBuilderSaving(true);
+
+      // 1. COLLECT PAYLOAD DIRECTLY FROM STATE (as per PROD-TZ)
+      const selectedWorkRows = actBuilderWorks.filter((x) => x.include);
+      const selectedWorks = selectedWorkRows.map((x) => ({
+        name: x.name,
+        qty: Number(x.qty || 0),
+        unit: String(x.unit || "").trim(),
+        price: x.price == null ? 0 : Number(x.price),
+        comment: x.comment || "",
+      }));
+
+      const itemsCheckedInUI = actBuilderItems.filter((x) => x.include);
+
+      const invalidMat = itemsCheckedInUI.find(
+        (m) =>
+          !Number.isFinite(Number(m.qty)) ||
+          Number(m.qty) < 0 ||
+          Number(m.qty) > Number(m.qtyMax)
+      );
+      if (invalidMat) {
+        Alert.alert("Проверьте материалы", `Неверное количество у позиции: "${invalidMat.name}"`);
+        return;
+      }
+      const selectedMaterials = itemsCheckedInUI.map((m) => ({
+        material_id: m.id,
+        mat_code: m.mat_code,
+        name: m.name,
+        unit: m.uom || "",
+        issued_qty: Number(m.issuedQty || 0),
+        act_used_qty: Number(m.qty || 0),
+        qty_fact: Number(m.qty || 0), // compatibility
+        price: m.price,
+        sum: Number(m.qty || 0) * Number(m.price || 0),
+      }));
+
+      // 2. HARD VALIDATION
+      if (selectedWorks.length === 0 && selectedMaterials.length === 0) {
+        setActBuilderHint("Выберите хотя бы одну работу или один материал, чтобы сформировать акт.");
+        Alert.alert("Акт", "Выберите хотя бы одну работу или один материал.");
+        return;
+      }
+
+      // PROD-TZ: серверная (через БД) пере-валидация доступного остатка на уровне всего подряда.
+      // Запрещаем списание > доступно_сейчас, даже если UI устарел.
+      if (selectedMaterials.length > 0) {
+        const jobId = await resolveContractorJobId(workModalRow);
+        const reqIdForRow = await resolveRequestId(workModalRow);
+        let reqRows: any[] = [];
+        if (jobId) {
+          let reqQ = await supabase
+            .from("requests" as any)
+            .select("id")
+            .eq("subcontract_id", jobId);
+          if (reqQ.error) {
+            reqQ = await supabase
+              .from("requests" as any)
+              .select("id")
+              .eq("contractor_job_id", jobId);
+          }
+          reqRows = (reqQ.data as any[] | null) || [];
+        } else if (reqIdForRow) {
+          reqRows = [{ id: reqIdForRow }];
+        }
+        const requestIds = reqRows.map((r: any) => String(r.id || "").trim()).filter(Boolean);
+        const issuedByCode = new Map<string, number>();
+        if (requestIds.length) {
+          const itemsQ = await supabase
+            .from("v_wh_issue_req_items_ui" as any)
+            .select("request_id, request_item_id, rik_code, qty_issued")
+            .in("request_id", requestIds);
+          if (!itemsQ.error && Array.isArray(itemsQ.data)) {
+            for (const it of itemsQ.data as any[]) {
+              const code = String(it.rik_code || it.request_item_id || "").trim();
+              if (!code) continue;
+              issuedByCode.set(code, Number(issuedByCode.get(code) || 0) + Number(it.qty_issued || 0));
+            }
+          }
+        }
+
+        let progressIdsForSubcontract = Array.from(
+          new Set(
+            rows
+              .filter((r) => String(r.contractor_job_id || "").trim() === String(jobId || "").trim())
+              .map((r) => String(r.progress_id || "").trim())
+              .filter((pid) => !!pid && !pid.startsWith("subcontract:"))
+          )
+        );
+        if (!progressIdsForSubcontract.length && workModalRow.progress_id) {
+          progressIdsForSubcontract = [String(workModalRow.progress_id)];
+        }
+
+        let logIds: string[] = [];
+        if (progressIdsForSubcontract.length === 1) {
+          const logsQ = await supabase
+            .from("work_progress_log" as any)
+            .select("id")
+            .eq("progress_id", progressIdsForSubcontract[0]);
+          logIds = Array.isArray(logsQ.data)
+            ? (logsQ.data as any[]).map((x) => String(x.id || "")).filter(Boolean)
+            : [];
+        } else if (progressIdsForSubcontract.length > 1) {
+          const logsQ = await supabase
+            .from("work_progress_log" as any)
+            .select("id")
+            .in("progress_id", progressIdsForSubcontract);
+          logIds = Array.isArray(logsQ.data)
+            ? (logsQ.data as any[]).map((x) => String(x.id || "")).filter(Boolean)
+            : [];
+        }
+
+        const consumedByCode = new Map<string, number>();
+        if (logIds.length) {
+          const matsQ = await supabase
+            .from("work_progress_log_materials" as any)
+            .select("mat_code, qty_fact")
+            .in("log_id", logIds);
+          if (!matsQ.error && Array.isArray(matsQ.data)) {
+            for (const m of matsQ.data as any[]) {
+              const code = String(m.mat_code || "").trim();
+              if (!code) continue;
+              consumedByCode.set(code, Number(consumedByCode.get(code) || 0) + Number(m.qty_fact || 0));
+            }
+          }
+        }
+
+        const exceeded = selectedMaterials.find((m) => {
+          const code = String(m.mat_code || "").trim();
+          const issued = Number(issuedByCode.get(code) || 0);
+          const consumed = Number(consumedByCode.get(code) || 0);
+          const availableNow = Math.max(0, issued - consumed);
+          return Number(m.act_used_qty || 0) > availableNow;
+        });
+        if (exceeded) {
+          const code = String(exceeded.mat_code || "").trim();
+          const issued = Number(issuedByCode.get(code) || 0);
+          const consumed = Number(consumedByCode.get(code) || 0);
+          const availableNow = Math.max(0, issued - consumed);
+          setActBuilderHint(`Недостаточно остатка по позиции "${exceeded.name}". Доступно сейчас: ${availableNow}.`);
+          Alert.alert(
+            "Недостаточно остатка",
+            `Позиция "${exceeded.name}": доступно сейчас ${availableNow}, в акте указано ${Number(exceeded.act_used_qty || 0)}.`
+          );
+          return;
+        }
+      }
+
+      // Soft warnings for missing optional values (do not block generation).
+      const warnings: string[] = [];
+      selectedWorks.forEach((w) => {
+        if (!Number.isFinite(Number(w.qty)) || Number(w.qty) <= 0) {
+          warnings.push(`Работа "${w.name}" будет добавлена без количества.`);
+        }
+        if (!String(w.unit || "").trim()) {
+          warnings.push(`Работа "${w.name}" будет добавлена без единицы измерения.`);
+        }
+        if (!Number.isFinite(Number(w.price)) || Number(w.price) <= 0) {
+          warnings.push(`Работа "${w.name}" будет добавлена без цены.`);
+        }
+      });
+      selectedMaterials.forEach((m) => {
+        if (!Number.isFinite(Number(m.act_used_qty)) || Number(m.act_used_qty) <= 0) {
+          warnings.push(`Материал "${m.name}" будет добавлен без количества.`);
+        }
+        if (!Number.isFinite(Number(m.price)) || Number(m.price) <= 0) {
+          warnings.push(`Материал "${m.name}" будет добавлен без цены.`);
+        }
+      });
+      if (warnings.length > 0) {
+        const uniq = Array.from(new Set(warnings));
+        const preview = uniq.slice(0, 6).join("\n• ");
+        const tail = uniq.length > 6 ? `\n• ...и ещё ${uniq.length - 6}` : "";
+        const shortHint = `Акт будет сформирован с незаполненными полями (${uniq.length}). Проверьте цену/кол-во/ед.изм.`;
+        setActBuilderHint(shortHint);
+        Alert.alert(
+          "Внимание",
+          `Акт будет сформирован с незаполненными полями:\n• ${preview}${tail}`
+        );
+      }
+
+      // Validation for data loss (UI shows selected > 0 but payload is empty)
+      if (actBuilderSelectedMatCount > 0 && selectedMaterials.length === 0) {
+        console.error("CRITICAL: UI shows selected materials but payload is empty!", {
+          actBuilderSelectedMatCount,
+          actBuilderItemsCount: actBuilderItems.length
+        });
+        setActBuilderHint("Ошибка сборки: выбранные материалы не передались в PDF. Повторите выбор.");
+        Alert.alert("Ошибка сборки", "Критическая ошибка: выбранные материалы не переданы в PDF (selectedMaterials пуст).");
+        return;
+      }
+
+      const resolvedObj = pickFirstNonEmpty(workModalRow?.object_name, jobHeader?.object_name) || "";
+      if (!String(resolvedObj || "").trim()) {
+        setActBuilderHint("Сохранение невозможно: у работы не привязан объект.");
+        Alert.alert("Нет объекта", "Сохранение акта заблокировано: у работы не привязан объект.");
+        return;
+      }
+
+      // Log payload for debugging (as requested)
+      console.log("[submitActBuilder] FINAL PAYLOAD:", {
+        object: resolvedObj,
+        works: selectedWorks,
+        materialsCount: selectedMaterials.length,
+        materials: selectedMaterials
+      });
+
+      // 4. GENERATE PDF IMMEDIATELY (Decoupled from DB as per PROD-TZ)
+      await generateActPdf({
+        mode: "normal",
+        work: { ...workModalRow, object_name: resolvedObj },
+        materials: selectedMaterials as any,
+        selectedWorks: selectedWorks as any,
+        contractorName: jobHeader?.contractor_org,
+        contractorInn: jobHeader?.contractor_inn,
+        contractorPhone: jobHeader?.contractor_phone,
+        customerName: resolvedObj,
+        customerInn: null,
+        contractNumber: jobHeader?.contract_number,
+        contractDate: jobHeader?.contract_date,
+        zoneText: `${jobHeader?.zone || "—"} / ${jobHeader?.level_name || "—"}`,
+        mainWorkName: jobHeader?.work_type || workModalRow.work_name || workModalRow.work_code,
+        actNumber: workModalRow.progress_id?.slice?.(0, 8),
+      });
+
+      // 5. ATTEMPT SAVE TO DB (Non-blocking for PDF)
       const { data: logRow, error: logErr } = await supabase
         .from("work_progress_log" as any)
         .insert({
@@ -1868,63 +2397,66 @@ setRows([...syntheticRows, ...filtered]);
           qty: 1,
           work_uom: workModalRow.uom_id || null,
           stage_note: null,
-          note: "Акт сформирован из модалки конструктора",
+          note: buildActMetaNote(selectedWorks.map(w => w.name)),
         } as any)
         .select("id")
         .single();
-      if (logErr) {
-        Alert.alert("Ошибка сохранения акта", pickErr(logErr));
-        return;
-      }
-      const logId = String((logRow as any)?.id || "").trim();
-      if (!logId) {
-        Alert.alert("Ошибка сохранения акта", "Не удалось получить ID акта.");
-        return;
-      }
 
-      const matsPayload = selected.map((m) => ({
-        log_id: logId,
-        mat_code: m.mat_code,
-        uom_mat: m.uom || null,
-        qty_fact: Number(m.qty || 0),
-      }));
-      if (matsPayload.length) {
-        const { error: matsErr } = await supabase
-          .from("work_progress_log_materials" as any)
-          .insert(matsPayload as any);
-        if (matsErr) {
-          Alert.alert("Ошибка сохранения материалов", pickErr(matsErr));
-          return;
+      if (logErr) {
+        console.warn("[submitActBuilder] log save failed:", logErr);
+        setWorkModalHint("Акт сформирован. Посмотреть можно в Истории актов. Лог в БД не сохранён.");
+        Alert.alert("Внимание", "Не удалось сохранить лог в базу (403/ошибка). PDF сформирован. Сообщите прорабу.");
+        // We continue to close modal so user isn't stuck
+      } else {
+        const logId = String((logRow as any)?.id || "").trim();
+        if (selectedMaterials.length > 0) {
+          const matsPayload = selectedMaterials.map((m) => ({
+            log_id: logId,
+            mat_code: m.mat_code,
+            uom_mat: m.unit || null,
+            qty_fact: m.act_used_qty,
+          }));
+          const { error: matsErr } = await supabase
+            .from("work_progress_log_materials" as any)
+            .insert(matsPayload as any);
+          if (matsErr) {
+            console.warn("[submitActBuilder] materials save failed:", matsErr);
+            Alert.alert("Ошибка записи", "Не удалось сохранить список материалов в БД. PDF сформирован.");
+          }
         }
       }
 
-      const pdfMaterials = selected.map((m) => ({
-        mat_code: m.mat_code,
-        name: m.name,
-        uom: m.uom,
-        available: 0,
-        qty_fact: Number(m.qty || 0),
-        price: m.price,
-      })) as any;
-      await generateWorkPdf(workModalRow, pdfMaterials, { selectedWorks });
-
       setActBuilderVisible(false);
-      Alert.alert("Готово", "Акт сформирован и PDF создан.");
+      setWorkModalHint("Акт сформирован. Можете посмотреть его в Истории актов.");
+      Alert.alert("Готово", "Акт сформирован. Можете посмотреть его в Истории актов.");
       await loadWorks();
     } catch (e) {
+      setActBuilderHint(`Ошибка формирования акта: ${pickErr(e)}`);
       showErr(e);
     } finally {
       setActBuilderSaving(false);
     }
-  }, [workModalRow, jobHeader, actBuilderItems, actBuilderWorks, loadWorks]);
+  }, [
+    workModalRow,
+    jobHeader,
+    loadWorks,
+    actBuilderItems,
+    actBuilderWorks,
+    actBuilderSelectedMatCount,
+    resolveContractorJobId,
+    resolveRequestId,
+    rows
+  ]);
 
   const submitWorkProgress = useCallback(
     async () => {
       if (!workModalRow) return;
+
+      const resolvedObjectName = pickFirstNonEmpty(workModalRow?.object_name, jobHeader?.object_name) || "";
       if (!String(resolvedObjectName || "").trim()) {
         Alert.alert(
           "Нет объекта",
-          "Сохранение акта заблокировано: у работы не привязан объект."
+          "Сохранение заблокировано: у работы не привязан объект."
         );
         return;
       }
@@ -1962,14 +2494,10 @@ setRows([...syntheticRows, ...filtered]);
           .select("id")
           .single();
         if (logErr) {
-          Alert.alert("Ошибка сохранения акта", pickErr(logErr));
+          Alert.alert("Ошибка сохранения", pickErr(logErr));
           return;
         }
         const logId = String((logRow as any)?.id || "").trim();
-        if (!logId) {
-          Alert.alert("Ошибка сохранения акта", "Не удалось получить ID акта.");
-          return;
-        }
         if (materialsPayload.length) {
           const matsPayload = materialsPayload.map((m) => ({
             log_id: logId,
@@ -1985,13 +2513,6 @@ setRows([...syntheticRows, ...filtered]);
             return;
           }
         }
-
-        const updatedWork: WorkRow = {
-          ...workModalRow,
-          object_name: resolvedObjectName || workModalRow.object_name,
-          qty_done: workModalRow.qty_done + qtyNum,
-          qty_left: Math.max(0, (workModalRow.qty_planned || 0) - (workModalRow.qty_done + qtyNum)),
-        };
 
         Alert.alert("Готово", "Факт по работе сохранен.");
         setWorkModalVisible(false);
@@ -2152,14 +2673,15 @@ setRows([...syntheticRows, ...filtered]);
 
       // Fallback only for UI visibility: if contractor_job_id wasn't propagated,
       // infer rows by approved subcontract object/work pair.
-      if (!selectedSubcontractRaw) return direct;
+      const baseObject = selectedSubcontractRaw?.object_name ?? selectedJobCard?.objectName ?? "";
+      const baseWork = selectedSubcontractRaw?.work_type ?? selectedJobCard?.workType ?? "";
       const norm = (v: any) =>
         String(v || "")
           .trim()
           .toLowerCase()
           .replace(/\s+/g, " ");
-      const targetObject = norm(selectedSubcontractRaw.object_name);
-      const targetWork = norm(selectedSubcontractRaw.work_type);
+      const targetObject = norm(baseObject);
+      const targetWork = norm(baseWork);
       if (!targetObject && !targetWork) return direct;
 
       const inferred = rows.filter((r) => {
@@ -2172,29 +2694,29 @@ setRows([...syntheticRows, ...filtered]);
       });
       return inferred;
     },
-    [groupedWorksByJob, selectedSubcontractId, selectedSubcontractRaw, rows]
+    [groupedWorksByJob, selectedSubcontractId, selectedSubcontractRaw, selectedJobCard, rows]
   );
   const resolvedObjectName = pickFirstNonEmpty(workModalRow?.object_name, jobHeader?.object_name) || "";
 
   useFocusEffect(
-  useCallback(() => {
-    focusedRef.current = true;
+    useCallback(() => {
+      focusedRef.current = true;
 
-    const now = Date.now();
-    if (now - lastKickRef.current > 900) {
-      lastKickRef.current = now;
-      (async () => {
-        await loadProfile();
-        await loadContractor();
-        await loadWorks();
-      })();
-    }
+      const now = Date.now();
+      if (now - lastKickRef.current > 900) {
+        lastKickRef.current = now;
+        (async () => {
+          await loadProfile();
+          await loadContractor();
+          await loadWorks();
+        })();
+      }
 
-    return () => {
-      focusedRef.current = false;
-    };
-  }, [loadProfile, loadContractor, loadWorks])
-);
+      return () => {
+        focusedRef.current = false;
+      };
+    }, [loadProfile, loadContractor, loadWorks])
+  );
 
 
   if (loadingProfile) {
@@ -2352,18 +2874,21 @@ setRows([...syntheticRows, ...filtered]);
       >
         <View style={[styles.container, styles.homeContainer]}>
           <View pointerEvents="none" style={styles.homeGlow} />
-          <View style={styles.homeHeader}>
-            <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
-              <View style={{ flex: 1, minWidth: 0 }}>
-                <Text style={[styles.headerTitle, styles.homeHeaderTitle]} numberOfLines={1}>
-                  {selectedJobCard?.contractor || "Подряд"}
-                </Text>
-                <Text style={{ color: "#94A3B8", marginTop: 2 }} numberOfLines={1}>
-                  {(selectedJobCard?.workType || "Работа")} · {(selectedJobCard?.objectName || "—")}
-                </Text>
-              </View>
+          <View style={[styles.homeHeader, { paddingTop: subcontractModalTopPad }]}>
+            <View style={styles.subcontractHeaderCard}>
+              <Text
+                style={[styles.headerTitle, styles.homeHeaderTitle, styles.subcontractHeaderTitle]}
+                numberOfLines={1}
+                ellipsizeMode="tail"
+              >
+                {selectedJobCard?.contractor || "Подряд"}
+              </Text>
+              <Text style={styles.subcontractHeaderSubtitle} numberOfLines={2} ellipsizeMode="tail">
+                {(selectedJobCard?.workType || "Работа")} · {(selectedJobCard?.objectName || "—")}
+              </Text>
               <Pressable
-                style={styles.modeHeaderClose}
+                style={[styles.modeHeaderClose, styles.subcontractHeaderClose]}
+                hitSlop={10}
                 onPress={() => {
                   setSelectedSubcontractId(null);
                 }}
@@ -2374,18 +2899,6 @@ setRows([...syntheticRows, ...filtered]);
           </View>
 
           <ScrollView style={{ flex: 1, marginTop: 12 }}>
-            <View style={[styles.card, styles.cardDark, styles.cardSeparated]}>
-              <Text style={[styles.cardCompany, styles.cardCompanyDark]}>
-                {selectedJobCard?.contractor || "Подрядчик"}
-              </Text>
-              <Text style={[styles.cardWork, styles.cardWorkDark]}>
-                {selectedJobCard?.workType || "Работа"}
-              </Text>
-              <Text style={[styles.cardObject, styles.cardObjectDark]}>
-                Объект: {selectedJobCard?.objectName || "—"}
-              </Text>
-            </View>
-
             <View style={{ marginTop: 8, marginBottom: 8 }}>
               {selectedJobWorks.length === 0 ? (
                 <View style={[styles.card, styles.cardDark, styles.cardSeparated]}>
@@ -2436,89 +2949,27 @@ setRows([...syntheticRows, ...filtered]);
         onRequestClose={closeWorkModal}
       >
         <View style={{ flex: 1, backgroundColor: "#f8fafc" }}>
-          <View style={{ padding: 16, paddingBottom: 8 }}>
-            <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+          <View style={{ padding: 16, paddingBottom: 8, borderBottomWidth: 1, borderColor: "#e2e8f0", backgroundColor: "#f8fafc" }}>
+            <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
               <Text style={{ fontSize: 18, fontWeight: "800" }}>
                 Факт выполнения работы
               </Text>
               <Pressable
-                onPress={() => setContractModalVisible(true)}
+                onPress={closeWorkModal}
                 style={{
-                  paddingHorizontal: 10,
-                  paddingVertical: 6,
-                  borderRadius: 10,
+                  width: 34,
+                  height: 34,
+                  borderRadius: 17,
                   borderWidth: 1,
                   borderColor: "#cbd5e1",
                   backgroundColor: "#fff",
+                  alignItems: "center",
+                  justifyContent: "center",
                 }}
               >
-                <Text style={{ color: "#334155", fontWeight: "700" }}>Договор</Text>
+                <Text style={{ color: "#334155", fontWeight: "800", fontSize: 18, lineHeight: 20 }}>×</Text>
               </Pressable>
             </View>
-
-            {workModalLoading && (
-              <Text
-                style={{
-                  fontSize: 12,
-                  color: "#94a3b8",
-                  marginBottom: 4,
-                }}
-              >
-                Загружаем историю и материалы...
-              </Text>
-            )}
-
-            <View
-              style={{
-                backgroundColor: "#fff",
-                paddingHorizontal: 10,
-                paddingVertical: 8,
-                borderRadius: 12,
-                borderWidth: 1,
-                borderColor: "#e2e8f0",
-                marginBottom: 8,
-              }}
-            >
-              <Text style={{ fontSize: 11, color: "#334155" }}>
-                {jobHeader?.contractor_org || "—"} · ИНН {jobHeader?.contractor_inn || "—"} · {jobHeader?.contractor_phone || "—"}
-              </Text>
-              <Text style={{ fontSize: 11, color: "#334155" }}>
-                Договор {jobHeader?.contract_number || "—"} {jobHeader?.contract_date || ""} · {jobHeader?.contractor_rep || "—"}
-              </Text>
-              <Text style={{ fontSize: 11, color: "#334155" }}>
-                Объект: {resolvedObjectName || "—"} · Зона/этаж: {jobHeader?.zone || "—"} / {jobHeader?.level_name || "—"} · Цена/ед: {jobHeader?.unit_price ?? "—"}
-              </Text>
-            </View>
-
-            {workModalRow && (
-              <View
-                style={{
-                  backgroundColor: "#fff",
-                  padding: 10,
-                  borderRadius: 12,
-                  borderWidth: 1,
-                  borderColor: "#e2e8f0",
-                }}
-              >
-                <Text
-                  style={{
-                    fontWeight: "800",
-                    fontSize: 15,
-                    marginBottom: 4,
-                  }}
-                >
-                  {workModalRow.work_name ||
-                    workModalRow.work_code ||
-                    "Работа"}
-                </Text>
-
-                <Text style={{ color: resolvedObjectName ? "#475569" : "#dc2626", marginBottom: 4 }}>
-                  <Text style={{ fontWeight: "600" }}>Объект: </Text>
-                  {resolvedObjectName || "⚠ ОБЪЕКТ НЕ ПРИВЯЗАН! (сообщите прорабу)"}
-                </Text>
-
-              </View>
-            )}
           </View>
 
           <ScrollView
@@ -2531,6 +2982,72 @@ setRows([...syntheticRows, ...filtered]);
           >
             {workModalRow && (
               <>
+                {workModalLoading && (
+                  <Text
+                    style={{
+                      fontSize: 12,
+                      color: "#94a3b8",
+                      marginBottom: 8,
+                      marginTop: 6,
+                    }}
+                  >
+                    Загружаем историю и материалы...
+                  </Text>
+                )}
+
+                <View
+                  style={{
+                    backgroundColor: "#fff",
+                    paddingHorizontal: 10,
+                    paddingVertical: 8,
+                    borderRadius: 12,
+                    borderWidth: 1,
+                    borderColor: "#e2e8f0",
+                    marginTop: 8,
+                    marginBottom: 8,
+                  }}
+                >
+                  <Text style={{ fontSize: 11, color: "#334155" }}>
+                    {jobHeader?.contractor_org || "—"} · ИНН {jobHeader?.contractor_inn || "—"} · {jobHeader?.contractor_phone || "—"}
+                  </Text>
+                  <Text style={{ fontSize: 11, color: "#334155" }}>
+                    Договор {jobHeader?.contract_number || "—"} {jobHeader?.contract_date || ""} · {jobHeader?.contractor_rep || "—"}
+                  </Text>
+                  <Text style={{ fontSize: 11, color: "#334155" }}>
+                    Объект: {resolvedObjectName || "—"} · Зона/этаж: {jobHeader?.zone || "—"} / {jobHeader?.level_name || "—"} · Цена/ед: {jobHeader?.unit_price ?? "—"}
+                  </Text>
+                  <Pressable onPress={() => setContractModalVisible(true)} style={{ marginTop: 6, alignSelf: "flex-start" }}>
+                    <Text style={{ color: "#0284c7", fontSize: 12, fontWeight: "700" }}>Подробнее</Text>
+                  </Pressable>
+                </View>
+
+                <View
+                  style={{
+                    backgroundColor: "#fff",
+                    padding: 10,
+                    borderRadius: 12,
+                    borderWidth: 1,
+                    borderColor: "#e2e8f0",
+                  }}
+                >
+                  <Text
+                    style={{
+                      fontWeight: "800",
+                      fontSize: 15,
+                      marginBottom: 4,
+                    }}
+                  >
+                    {workModalRow.work_name ||
+                      workModalRow.work_code ||
+                      "Работа"}
+                  </Text>
+
+                  <Text style={{ color: resolvedObjectName ? "#475569" : "#dc2626", marginBottom: 4 }}>
+                    <Text style={{ fontWeight: "600" }}>Объект: </Text>
+                    {resolvedObjectName || "⚠ ОБЪЕКТ НЕ ПРИВЯЗАН! (сообщите прорабу)"}
+                  </Text>
+                </View>
+
                 <View style={{ marginTop: 8, marginBottom: 8, gap: 8 }}>
                   <Pressable
                     onPress={openActBuilder}
@@ -2555,7 +3072,21 @@ setRows([...syntheticRows, ...filtered]);
                           workModalRow.progress_id,
                           workModalRow
                         );
-                        await generateWorkPdf(work, materials as any);
+                        await generateActPdf({
+                          mode: "summary",
+                          work,
+                          materials: materials as any,
+                          contractorName: jobHeader?.contractor_org,
+                          contractorInn: jobHeader?.contractor_inn,
+                          contractorPhone: jobHeader?.contractor_phone,
+                          customerName: resolvedObjectName || work.object_name || "—",
+                          customerInn: null,
+                          contractNumber: jobHeader?.contract_number,
+                          contractDate: jobHeader?.contract_date,
+                          zoneText: `${jobHeader?.zone || "—"} / ${jobHeader?.level_name || "—"}`,
+                          mainWorkName: jobHeader?.work_type || work.work_name || work.work_code,
+                          actNumber: work.progress_id?.slice?.(0, 8),
+                        });
                       } catch (e) {
                         console.warn("[PDF aggregated] error", e);
                         showErr(e);
@@ -2571,6 +3102,11 @@ setRows([...syntheticRows, ...filtered]);
                   >
                     <Text style={{ color: "#fff", fontWeight: "700" }}>Итоговый PDF</Text>
                   </Pressable>
+                  {!!workModalHint && (
+                    <Text style={{ color: "#0369a1", fontSize: 12, fontWeight: "600" }}>
+                      {workModalHint}
+                    </Text>
+                  )}
                 </View>
 
                 <Pressable
@@ -2592,153 +3128,174 @@ setRows([...syntheticRows, ...filtered]);
                   <Ionicons name={historyOpen ? "chevron-down" : "chevron-forward"} size={18} color="#64748B" />
                 </Pressable>
                 {historyOpen && (
-                <View
-                  style={{
-                    marginBottom: 8,
-                    padding: 12,
-                    borderRadius: 12,
-                    borderWidth: 1,
-                    borderColor: "#e2e8f0",
-                    backgroundColor: "#fff",
-                    gap: 6,
-                  }}
-                >
-                  {workLog.length === 0 && (
-                    <Text style={{ color: "#94a3b8", fontSize: 12 }}>
-                      Пока нет зафиксированных актов по этой работе.
-                    </Text>
-                  )}
+                  <View
+                    style={{
+                      marginBottom: 8,
+                      padding: 12,
+                      borderRadius: 12,
+                      borderWidth: 1,
+                      borderColor: "#e2e8f0",
+                      backgroundColor: "#fff",
+                      gap: 6,
+                    }}
+                  >
+                    {workLog.length === 0 && (
+                      <Text style={{ color: "#94a3b8", fontSize: 12 }}>
+                        Пока нет зафиксированных актов по этой работе.
+                      </Text>
+                    )}
 
-                  {workLog.map((log) => {
-                    const dt = new Date(
-                      log.created_at
-                    ).toLocaleString("ru-RU");
-                    return (
-                      <View
-                        key={log.id}
-                        style={{
-                          paddingVertical: 6,
-                          borderBottomWidth: 1,
-                          borderColor: "#f1f5f9",
-                        }}
-                      >
-                        <Text
+                    {workLog.map((log) => {
+                      const dt = new Date(
+                        log.created_at
+                      ).toLocaleString("ru-RU");
+                      return (
+                        <View
+                          key={log.id}
                           style={{
-                            fontWeight: "600",
-                            color: "#0f172a",
+                            paddingVertical: 6,
+                            borderBottomWidth: 1,
+                            borderColor: "#f1f5f9",
                           }}
                         >
-                          {dt} вЂў {log.qty}{" "}
-                          {log.work_uom || workModalRow.uom_id || ""}
-                        </Text>
-
-                        {log.stage_note && (
                           <Text
-                            style={{ color: "#64748b", fontSize: 12 }}
+                            style={{
+                              fontWeight: "600",
+                              color: "#0f172a",
+                            }}
                           >
-                            Этап: {log.stage_note}
+                            {dt} вЂў {log.qty}{" "}
+                            {log.work_uom || workModalRow.uom_id || ""}
                           </Text>
-                        )}
 
-                        {log.note && (
-                          <Text
-                            style={{ color: "#94a3b8", fontSize: 12 }}
-                          >
-                            Комментарий: {log.note}
-                          </Text>
-                        )}
+                          {log.stage_note && (
+                            <Text
+                              style={{ color: "#64748b", fontSize: 12 }}
+                            >
+                              Этап: {log.stage_note}
+                            </Text>
+                          )}
 
-                        {/* PDF РїРѕ РєРѕРЅРєСЂРµС‚РЅРѕРјСѓ Р°РєС‚Сѓ */}
-                        <Pressable
-                          onPress={async () => {
-                            try {
-                              const { data: mats } = await supabase
-                                .from(
-                                  "work_progress_log_materials" as any
-                                )
-                                .select("mat_code, uom_mat, qty_fact")
-                                .eq("log_id", log.id);
+                          {log.note && (
+                            <Text
+                              style={{ color: "#94a3b8", fontSize: 12 }}
+                            >
+                              Комментарий: {parseActMeta(log.note).visibleNote}
+                            </Text>
+                          )}
 
-                              const codes =
-                                (mats || []).map(
-                                  (m: any) => m.mat_code
-                                ) || [];
-                              let namesMap: Record<
-                                string,
-                                { name: string; uom: string | null }
-                              > = {};
-
-                              if (codes.length) {
-                                const ci = await supabase
-                                  .from("catalog_items" as any)
-                                  .select(
-                                    "rik_code, name_human_ru, name_human, uom_code"
+                          {/* PDF РїРѕ РєРѕРЅРєСЂРµС‚РЅРѕРјСѓ Р°РєС‚Сѓ */}
+                          <Pressable
+                            onPress={async () => {
+                              try {
+                                const { data: mats } = await supabase
+                                  .from(
+                                    "work_progress_log_materials" as any
                                   )
-                                  .in("rik_code", codes);
+                                  .select("mat_code, uom_mat, qty_fact")
+                                  .eq("log_id", log.id);
 
-                                if (!ci.error && Array.isArray(ci.data)) {
-                                  for (const n of ci.data as any[]) {
-                                    namesMap[n.rik_code] = {
-                                      name:
-                                        n.name_human_ru ||
-                                        n.name_human ||
-                                        n.rik_code,
-                                      uom: n.uom_code,
-                                    };
+                                const codes =
+                                  (mats || []).map(
+                                    (m: any) => m.mat_code
+                                  ) || [];
+                                let namesMap: Record<
+                                  string,
+                                  { name: string; uom: string | null }
+                                > = {};
+
+                                if (codes.length) {
+                                  const ci = await supabase
+                                    .from("catalog_items" as any)
+                                    .select(
+                                      "rik_code, name_human_ru, name_human, uom_code"
+                                    )
+                                    .in("rik_code", codes);
+
+                                  if (!ci.error && Array.isArray(ci.data)) {
+                                    for (const n of ci.data as any[]) {
+                                      namesMap[n.rik_code] = {
+                                        name:
+                                          n.name_human_ru ||
+                                          n.name_human ||
+                                          n.rik_code,
+                                        uom: n.uom_code,
+                                      };
+                                    }
                                   }
                                 }
-                              }
 
-                              const matsRows: WorkMaterialRow[] = (
-                                (mats as any[]) || []
-                              ).map((m: any) => {
-                                const code = String(m.mat_code);
-                                const meta = namesMap[code];
-                                return {
-                                  mat_code: code,
-                                  name: meta?.name || code,
-                                  uom: meta?.uom || m.uom_mat || "",
-                                  available: 0,
-                                  qty_fact: Number(m.qty_fact ?? 0),
-                                } as any as WorkMaterialRow;
-                              });
+                                const matsRows: WorkMaterialRow[] = (
+                                  (mats as any[]) || []
+                                ).map((m: any) => {
+                                  const code = String(m.mat_code);
+                                  const meta = namesMap[code];
+                                  const q = Number(m.qty_fact ?? 0);
+                                  return {
+                                    mat_code: code,
+                                    name: meta?.name || code,
+                                    uom: meta?.uom || m.uom_mat || "",
+                                    available: 0,
+                                    issued_qty: q, // In history, we use what was recorded
+                                    act_used_qty: q,
+                                    qty_fact: q,
+                                  } as any as WorkMaterialRow;
+                                });
 
-                              const actWork: WorkRow = {
-                                ...workModalRow,
-                                qty_done: log.qty,
-                                qty_left: Math.max(
-                                  0,
-                                  (workModalRow.qty_planned || 0) - log.qty
-                                ),
-                              };
+                                const actWork: WorkRow = {
+                                  ...workModalRow,
+                                  qty_done: log.qty,
+                                  qty_left: Math.max(
+                                    0,
+                                    (workModalRow.qty_planned || 0) - log.qty
+                                  ),
+                                };
+                                const meta = parseActMeta(log.note);
+                                const selectedWorksForPdf = meta.selectedWorks.map((name) => ({
+                                  name,
+                                  unit: workModalRow?.uom_id || "",
+                                  price: Number(jobHeader?.unit_price || 0),
+                                  qty: 1,
+                                  comment: "",
+                                }));
 
-                              await generateWorkPdf(
-                                actWork,
-                                matsRows as any,
-                                {
+                                await generateActPdf({
+                                  mode: "normal",
+                                  work: actWork,
+                                  materials: matsRows as any,
                                   actDate: log.created_at,
-                                }
-                              );
-                            } catch (e) {
-                              showErr(e);
-                            }
-                          }}
-                          style={{
-                            alignSelf: "flex-start",
-                            marginTop: 4,
-                            paddingHorizontal: 10,
-                            paddingVertical: 4,
-                            borderRadius: 8,
-                            borderWidth: 1,
-                            borderColor: "#e2e8f0",
-                          }}
-                        >
-                          <Text style={{ fontSize: 12 }}>PDF этого акта</Text>
-                        </Pressable>
-                      </View>
-                    );
-                  })}
-                </View>
+                                  selectedWorks: selectedWorksForPdf,
+                                  contractorName: jobHeader?.contractor_org,
+                                  contractorInn: jobHeader?.contractor_inn,
+                                  contractorPhone: jobHeader?.contractor_phone,
+                                  customerName: resolvedObjectName || actWork.object_name || "—",
+                                  customerInn: null,
+                                  contractNumber: jobHeader?.contract_number,
+                                  contractDate: jobHeader?.contract_date,
+                                  zoneText: `${jobHeader?.zone || "—"} / ${jobHeader?.level_name || "—"}`,
+                                  mainWorkName: jobHeader?.work_type || actWork.work_name || actWork.work_code,
+                                  actNumber: log.id?.slice?.(0, 8),
+                                });
+                              } catch (e) {
+                                showErr(e);
+                              }
+                            }}
+                            style={{
+                              alignSelf: "flex-start",
+                              marginTop: 4,
+                              paddingHorizontal: 10,
+                              paddingVertical: 4,
+                              borderRadius: 8,
+                              borderWidth: 1,
+                              borderColor: "#e2e8f0",
+                            }}
+                          >
+                            <Text style={{ fontSize: 12 }}>PDF этого акта</Text>
+                          </Pressable>
+                        </View>
+                      );
+                    })}
+                  </View>
                 )}
 
                 <Pressable
@@ -2842,15 +3399,6 @@ setRows([...syntheticRows, ...filtered]);
               </>
             )}
           </ScrollView>
-
-          <Pressable
-            onPress={closeWorkModal}
-            style={{ paddingVertical: 10, alignItems: "center" }}
-          >
-            <Text style={{ color: "#64748b", fontWeight: "600" }}>
-              Закрыть
-            </Text>
-          </Pressable>
         </View>
       </Modal>
 
@@ -2860,210 +3408,353 @@ setRows([...syntheticRows, ...filtered]);
         onRequestClose={() => setActBuilderVisible(false)}
       >
         <View style={{ flex: 1, backgroundColor: "#f8fafc" }}>
-          <View style={{ padding: 16, paddingBottom: 8 }}>
+          {/* HEADER (TZ 1.1) */}
+          <View style={{ padding: 16, paddingBottom: 10, borderBottomWidth: 1, borderColor: "#e2e8f0", backgroundColor: "#fff" }}>
             <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
-              <Text style={{ fontSize: 18, fontWeight: "800" }}>Формирование акта</Text>
+              <Text style={{ fontSize: 18, fontWeight: "800", color: "#0f172a" }}>Формирование акта</Text>
               <Pressable
                 onPress={() => setActBuilderVisible(false)}
-                style={{
-                  paddingHorizontal: 10,
-                  paddingVertical: 6,
-                  borderRadius: 10,
-                  borderWidth: 1,
-                  borderColor: "#cbd5e1",
-                  backgroundColor: "#fff",
-                }}
+                style={{ width: 34, height: 34, borderRadius: 17, backgroundColor: "#f1f5f9", alignItems: "center", justifyContent: "center" }}
               >
-                <Text style={{ color: "#334155", fontWeight: "700" }}>Закрыть</Text>
+                <Text style={{ color: "#64748b", fontWeight: "800", fontSize: 20 }}>×</Text>
               </Pressable>
             </View>
-
-            <View
-              style={{
-                marginTop: 10,
-                backgroundColor: "#fff",
-                borderWidth: 1,
-                borderColor: "#e2e8f0",
-                borderRadius: 12,
-                padding: 10,
-                gap: 2,
-              }}
-            >
-              <Text style={{ fontSize: 12, color: "#334155" }}>
-                {jobHeader?.contractor_org || "—"} · ИНН {jobHeader?.contractor_inn || "—"} · {jobHeader?.contractor_phone || "—"}
-              </Text>
-              <Text style={{ fontSize: 12, color: "#334155" }}>
-                Договор {jobHeader?.contract_number || "—"} от {jobHeader?.contract_date || "—"}
-              </Text>
-              <Text style={{ fontSize: 12, color: "#334155" }}>
-                Объект: {resolvedObjectName || "—"} · Зона/этаж: {jobHeader?.zone || "—"} / {jobHeader?.level_name || "—"}
-              </Text>
-              <Text style={{ fontSize: 12, color: "#334155" }}>
-                Цена/ед: {jobHeader?.unit_price == null ? "—" : Number(jobHeader.unit_price).toLocaleString("ru-RU")} · Дата акта: {new Date().toLocaleDateString("ru-RU")}
-              </Text>
-              <Text style={{ marginTop: 6, fontSize: 12, color: "#64748b", fontWeight: "700" }}>
-                Работы по подряду
-              </Text>
-              {actBuilderWorks.length === 0 ? (
-                <Text style={{ fontSize: 12, color: "#94a3b8" }}>Нет работ для выбора</Text>
-              ) : (
-                actBuilderWorks.map((w, idx) => (
-                  <View
-                    key={w.id}
-                    style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 8, marginTop: 4 }}
-                  >
-                    <Text style={{ flex: 1, fontSize: 12, color: "#334155" }}>{w.name}</Text>
-                    <Pressable
-                      onPress={() =>
-                        setActBuilderWorks((prev) =>
-                          prev.map((p, i) => (i === idx ? { ...p, include: !p.include } : p))
-                        )
-                      }
-                      style={{
-                        paddingHorizontal: 10,
-                        paddingVertical: 4,
-                        borderRadius: 8,
-                        backgroundColor: w.include ? "#16a34a" : "#e2e8f0",
-                      }}
-                    >
-                      <Text style={{ color: w.include ? "#fff" : "#334155", fontWeight: "700" }}>
-                        {w.include ? "✓" : "○"}
-                      </Text>
-                    </Pressable>
-                  </View>
-                ))
-              )}
-            </View>
+            <Text style={{ fontSize: 11, color: "#94a3b8", marginTop: 2 }} numberOfLines={1}>
+              {jobHeader?.contract_number || "Б/Н"} · {resolvedObjectName || "—"} · {new Date().toLocaleDateString("ru-RU")}
+            </Text>
           </View>
 
-          <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 20 }}>
-            <Text style={{ color: "#334155", fontSize: 12, marginBottom: 4 }}>
-              Работы выбрано: {actBuilderSelectedWorkCount}
-            </Text>
-            <Text style={{ color: "#334155", fontSize: 12, marginBottom: 8 }}>
-              Материалов выбрано: {actBuilderSelectedMatCount}
-            </Text>
-            <Text style={{ fontWeight: "700", color: "#334155", marginBottom: 8 }}>Материалы со склада</Text>
-            {actBuilderItems.length === 0 ? (
-              <View style={{ backgroundColor: "#fff", borderWidth: 1, borderColor: "#e2e8f0", borderRadius: 12, padding: 12 }}>
-                <Text style={{ color: "#94a3b8" }}>Нет позиций для акта.</Text>
-              </View>
-            ) : (
-              actBuilderItems.map((it, idx) => {
-                const sum = it.price == null ? null : Number(it.qty || 0) * Number(it.price || 0);
-                return (
-                  <View
-                    key={it.id}
-                    style={{
-                      backgroundColor: "#fff",
-                      borderWidth: 1,
-                      borderColor: "#e2e8f0",
-                      borderRadius: 12,
-                      padding: 10,
-                      marginBottom: 8,
-                    }}
-                  >
-                    <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
-                      <Text style={{ flex: 1, fontWeight: "700", color: "#0f172a" }}>{it.name}</Text>
-                      <Pressable
-                        onPress={() =>
-                          setActBuilderItems((prev) =>
-                            prev.map((p, i) => (i === idx ? { ...p, include: !p.include } : p))
-                          )
-                        }
+          <ScrollView style={{ flex: 1 }} keyboardShouldPersistTaps="handled">
+            <View style={{ padding: 16, gap: 16 }}>
+              <View
+                style={{
+                  marginTop: 10,
+                  backgroundColor: "#fff",
+                  borderWidth: 1,
+                  borderColor: "#e2e8f0",
+                  borderRadius: 12,
+                  padding: 10,
+                  gap: 2,
+                }}
+              >
+                <Text style={{ fontSize: 12, color: "#334155" }}>
+                  {jobHeader?.contractor_org || "—"} · ИНН {jobHeader?.contractor_inn || "—"} · {jobHeader?.contractor_phone || "—"}
+                </Text>
+                <Text style={{ fontSize: 12, color: "#334155" }}>
+                  Договор {jobHeader?.contract_number || "—"} от {jobHeader?.contract_date || "—"}
+                </Text>
+                <Text style={{ fontSize: 12, color: "#334155" }}>
+                  Объект: {resolvedObjectName || "—"} · Зона/этаж: {jobHeader?.zone || "—"} / {jobHeader?.level_name || "—"}
+                </Text>
+                <Text style={{ fontSize: 12, color: "#334155" }}>
+                  Цена/ед: {jobHeader?.unit_price == null ? "—" : Number(jobHeader.unit_price).toLocaleString("ru-RU")} · Дата акта: {new Date().toLocaleDateString("ru-RU")}
+                </Text>
+                <View
+                  style={{
+                    marginTop: 8,
+                    borderWidth: 1,
+                    borderColor: "#e2e8f0",
+                    borderRadius: 10,
+                    padding: 8,
+                    backgroundColor: "#f8fafc",
+                    gap: 2,
+                  }}
+                >
+                  <Text style={{ color: "#334155", fontSize: 12 }}>Работы в акте: {actBuilderSelectedWorkCount}</Text>
+                  <Text style={{ color: "#334155", fontSize: 12 }}>Материалы в акте: {actBuilderSelectedMatCount}</Text>
+                  <Text style={{ color: "#0f172a", fontSize: 12, fontWeight: "700" }}>
+                    Итого по материалам: {actBuilderMatSum > 0 ? actBuilderMatSum.toLocaleString("ru-RU") : "0"}
+                  </Text>
+                </View>
+                <Text style={{ marginTop: 6, fontSize: 12, color: "#64748b", fontWeight: "700" }}>
+                  Работы по подряду
+                </Text>
+                {actBuilderWorks.length === 0 ? (
+                  <Text style={{ fontSize: 12, color: "#94a3b8" }}>Нет работ для выбора</Text>
+                ) : (
+                  actBuilderWorks.map((w, idx) => {
+                    const sum = Number(w.qty || 0) * Number(w.price || 0);
+                    const expanded = actBuilderExpandedWork === w.id;
+                    return (
+                      <View
+                        key={w.id}
                         style={{
-                          paddingHorizontal: 10,
-                          paddingVertical: 4,
-                          borderRadius: 8,
-                          backgroundColor: it.include ? "#16a34a" : "#e2e8f0",
-                        }}
-                      >
-                        <Text style={{ color: it.include ? "#fff" : "#334155", fontWeight: "700" }}>
-                          {it.include ? "✓" : "○"}
-                        </Text>
-                      </Pressable>
-                    </View>
-                    <Text style={{ marginTop: 2, color: "#64748b", fontSize: 12 }}>
-                      {it.uom || "—"} · Выдано: {Number(it.issuedQty || 0).toLocaleString("ru-RU")}
-                    </Text>
-                    <View style={{ marginTop: 8, flexDirection: "row", alignItems: "center", gap: 8 }}>
-                      <Pressable
-                        onPress={() =>
-                          setActBuilderItems((prev) =>
-                            prev.map((p, i) => (i === idx ? { ...p, qty: Math.max(0, Number(p.qty || 0) - 1) } : p))
-                          )
-                        }
-                        style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: "#e2e8f0", alignItems: "center", justifyContent: "center" }}
-                      >
-                        <Text style={{ fontSize: 18, fontWeight: "700", color: "#0f172a" }}>−</Text>
-                      </Pressable>
-                      <Text style={{ minWidth: 72, textAlign: "center", fontWeight: "700", color: "#0f172a" }}>
-                        {Number(it.qty || 0).toLocaleString("ru-RU")}
-                      </Text>
-                      <Pressable
-                        onPress={() =>
-                          setActBuilderItems((prev) =>
-                            prev.map((p, i) =>
-                              i === idx ? { ...p, qty: Math.min(Number(p.qtyMax || 0), Number(p.qty || 0) + 1) } : p
-                            )
-                          )
-                        }
-                        style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: "#e2e8f0", alignItems: "center", justifyContent: "center" }}
-                      >
-                        <Text style={{ fontSize: 18, fontWeight: "700", color: "#0f172a" }}>+</Text>
-                      </Pressable>
-                      <View style={{ flex: 1 }} />
-                      <TextInput
-                        value={it.price == null ? "" : String(it.price)}
-                        onChangeText={(txt) => {
-                          const num = Number(String(txt).replace(",", "."));
-                          setActBuilderItems((prev) =>
-                            prev.map((p, i) => (i === idx ? { ...p, price: Number.isFinite(num) ? num : null } : p))
-                          );
-                        }}
-                        keyboardType="numeric"
-                        placeholder="Цена"
-                        style={{
-                          width: 86,
                           borderWidth: 1,
-                          borderColor: "#e2e8f0",
-                          borderRadius: 8,
-                          paddingHorizontal: 8,
-                          paddingVertical: 6,
-                          backgroundColor: "#fff",
+                          borderColor: w.include ? "#22c55e" : "#e2e8f0",
+                          borderRadius: 12,
+                          backgroundColor: w.include ? "#f0fdf4" : "#fff",
+                          padding: 10,
+                          marginBottom: 8,
+                          gap: 6,
                         }}
-                      />
+                      >
+                        <View style={{ flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", gap: 8 }}>
+                          <Pressable
+                            onPress={() => setActBuilderExpandedWork((prev) => (prev === w.id ? null : w.id))}
+                            style={{ flex: 1, gap: 3 }}
+                          >
+                            <Text style={{ fontSize: 13, color: "#0f172a", fontWeight: "700" }} numberOfLines={2}>
+                              {w.name}
+                            </Text>
+                            <Text style={{ fontSize: 11, color: "#64748b" }} numberOfLines={1}>
+                              {resolvedObjectName || "Объект не указан"}
+                            </Text>
+                            <Text style={{ fontSize: 12, color: "#334155" }}>
+                              Кол-во {Number(w.qty || 0).toLocaleString("ru-RU")} · Ед: {w.unit || "—"} · Цена {w.price == null ? "—" : Number(w.price).toLocaleString("ru-RU")} · Сумма {sum > 0 ? sum.toLocaleString("ru-RU") : "—"}
+                            </Text>
+                          </Pressable>
+                          <Pressable
+                            onPress={() => {
+                              const willInclude = !w.include;
+                              setActBuilderWorks((prev) => {
+                                const next = prev.map((p, i) => (i === idx ? { ...p, include: willInclude } : p));
+                                actBuilderWorksRef.current = next;
+                                return next;
+                              });
+                              setActBuilderExpandedWork(null);
+                            }}
+                            style={{
+                              width: 28,
+                              height: 28,
+                              borderRadius: 14,
+                              backgroundColor: w.include ? "#16a34a" : "#e2e8f0",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              marginTop: 2,
+                            }}
+                          >
+                            <Text style={{ color: w.include ? "#fff" : "#334155", fontWeight: "800", fontSize: 12 }}>✓</Text>
+                          </Pressable>
+                        </View>
+
+                        {(expanded || w.include) && (
+                          <View style={{ gap: 8, paddingTop: 4 }}>
+                            <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+                              <Text style={{ color: "#64748b", fontSize: 11 }}>Кол-во</Text>
+                              <TextInput
+                                value={String(w.qty ?? 1)}
+                                keyboardType="numeric"
+                                onChangeText={(txt) => {
+                                  const num = Number(String(txt).replace(",", "."));
+                                  setActBuilderWorks((prev) => {
+                                    const next = prev.map((p, i) => i === idx ? { ...p, qty: Number.isFinite(num) ? num : p.qty } : p);
+                                    actBuilderWorksRef.current = next;
+                                    return next;
+                                  });
+                                }}
+                                style={{ flex: 1, height: 32, borderWidth: 1, borderColor: "#e2e8f0", borderRadius: 8, paddingHorizontal: 8, fontSize: 12, color: "#334155", backgroundColor: "#fff" }}
+                              />
+                              <Text style={{ color: "#64748b", fontSize: 11 }}>Ед</Text>
+                              <TextInput
+                                value={w.unit || ""}
+                                onChangeText={(txt) => {
+                                  setActBuilderWorks((prev) => {
+                                    const next = prev.map((p, i) => i === idx ? { ...p, unit: txt } : p);
+                                    actBuilderWorksRef.current = next;
+                                    return next;
+                                  });
+                                }}
+                                style={{ width: 76, height: 32, borderWidth: 1, borderColor: "#e2e8f0", borderRadius: 8, paddingHorizontal: 8, fontSize: 12, color: "#334155", backgroundColor: "#fff" }}
+                              />
+                            </View>
+                            <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+                              <Text style={{ color: "#64748b", fontSize: 11 }}>Цена</Text>
+                              <TextInput
+                                value={w.price == null ? "" : String(w.price)}
+                                keyboardType="numeric"
+                                onChangeText={(txt) => {
+                                  const num = Number(txt.replace(",", "."));
+                                  setActBuilderWorks((prev) => {
+                                    const next = prev.map((p, i) => i === idx ? { ...p, price: Number.isFinite(num) ? num : null } : p);
+                                    actBuilderWorksRef.current = next;
+                                    return next;
+                                  });
+                                }}
+                                style={{ flex: 1, height: 32, borderWidth: 1, borderColor: "#e2e8f0", borderRadius: 8, paddingHorizontal: 8, fontSize: 12, color: "#334155", backgroundColor: "#fff" }}
+                              />
+                              <Text style={{ color: "#0f172a", fontSize: 12, fontWeight: "700", minWidth: 88, textAlign: "right" }}>
+                                {sum > 0 ? sum.toLocaleString("ru-RU") : "—"}
+                              </Text>
+                            </View>
+                          </View>
+                        )}
+                      </View>
+                    );
+                  })
+                )}
+              </View>
+
+              <Text style={{ color: "#334155", fontSize: 12, marginBottom: 4 }}>
+                Работы выбрано: {actBuilderSelectedWorkCount}
+              </Text>
+              <Text style={{ color: "#334155", fontSize: 12, marginBottom: 8 }}>
+                Материалов выбрано: {actBuilderSelectedMatCount}
+              </Text>
+              <Text style={{ fontWeight: "700", color: "#334155", marginBottom: 8 }}>Материалы со склада</Text>
+              {actBuilderItems.length === 0 ? (
+                <View style={{ backgroundColor: "#fff", borderWidth: 1, borderColor: "#e2e8f0", borderRadius: 12, padding: 12 }}>
+                  <Text style={{ color: "#94a3b8" }}>Нет позиций для акта.</Text>
+                </View>
+              ) : (
+                actBuilderItems.map((it, idx) => {
+                  const sum = it.price == null ? null : Number(it.qty || 0) * Number(it.price || 0);
+                  const remaining = Math.max(0, Number(it.qtyMax || 0) - Number(it.qty || 0));
+                  const expanded = actBuilderExpandedMat === it.id;
+                  return (
+                    <View
+                      key={it.id}
+                      style={{
+                        backgroundColor: it.include ? "#f0fdf4" : "#fff",
+                        borderWidth: 1,
+                        borderColor: it.include ? "#22c55e" : "#e2e8f0",
+                        borderRadius: 12,
+                        padding: 10,
+                        marginBottom: 8,
+                        gap: 6,
+                      }}
+                    >
+                      <View style={{ flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", gap: 8 }}>
+                        <Pressable
+                          onPress={() => setActBuilderExpandedMat((prev) => (prev === it.id ? null : it.id))}
+                          style={{ flex: 1, gap: 3 }}
+                        >
+                          <Text style={{ fontWeight: "700", color: "#0f172a", fontSize: 13 }} numberOfLines={2}>
+                            {it.name}
+                          </Text>
+                          <Text style={{ fontSize: 11, color: "#64748b" }}>
+                            Выдано: {Number(it.issuedQty || 0).toLocaleString("ru-RU")} {it.uom || ""}  |  Списано: {Number(it.alreadyUsed || 0).toLocaleString("ru-RU")} {it.uom || ""}  |  Доступно: {Number(it.qtyMax || 0).toLocaleString("ru-RU")} {it.uom || ""}
+                          </Text>
+                          <Text style={{ fontSize: 12, color: "#334155" }}>
+                            Кол-во {Number(it.qty || 0).toLocaleString("ru-RU")} · Ед: {it.uom || "—"} · Цена {it.price == null ? "—" : Number(it.price).toLocaleString("ru-RU")} · Сумма {sum == null || sum === 0 ? "—" : Number(sum).toLocaleString("ru-RU")}
+                          </Text>
+                        </Pressable>
+                        <Pressable
+                          onPress={() => {
+                            const willInclude = !it.include;
+                            setActBuilderItems((prev) => {
+                              const next = prev.map((p, i) => (i === idx ? { ...p, include: willInclude } : p));
+                              actBuilderItemsRef.current = next;
+                              return next;
+                            });
+                            setActBuilderExpandedMat(null);
+                          }}
+                          style={{
+                            width: 28,
+                            height: 28,
+                            borderRadius: 14,
+                            backgroundColor: it.include ? "#16a34a" : "#e2e8f0",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            marginTop: 2,
+                          }}
+                        >
+                          <Text style={{ color: it.include ? "#fff" : "#334155", fontWeight: "800", fontSize: 12 }}>✓</Text>
+                        </Pressable>
+                      </View>
+
+                      {(expanded || it.include) && (
+                        <View style={{ marginTop: 4, gap: 6 }}>
+                          <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+                            <Text style={{ color: "#64748b", fontSize: 11 }}>Кол-во</Text>
+                            <Pressable
+                              onPress={() =>
+                                setActBuilderItems((prev) => {
+                                  const next = prev.map((p, i) => (i === idx ? { ...p, qty: Math.max(0, Number(p.qty || 0) - 1) } : p));
+                                  actBuilderItemsRef.current = next;
+                                  return next;
+                                })
+                              }
+                              style={{ width: 30, height: 30, borderRadius: 15, backgroundColor: "#f1f5f9", alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "#e2e8f0" }}
+                            >
+                              <Text style={{ fontSize: 16, fontWeight: "700", color: "#0f172a" }}>−</Text>
+                            </Pressable>
+                            <Text style={{ minWidth: 50, textAlign: "center", fontWeight: "800", color: "#0f172a", fontSize: 13 }}>
+                              {Number(it.qty || 0).toLocaleString("ru-RU")}
+                            </Text>
+                            <Pressable
+                              onPress={() =>
+                                setActBuilderItems((prev) => {
+                                  const next = prev.map((p, i) => {
+                                    if (i !== idx) return p;
+                                    const newVal = Number(p.qty || 0) + 1;
+                                    if (newVal > p.qtyMax) {
+                                      Alert.alert("Лимит", `Нельзя указать больше, чем доступно (${p.qtyMax}).`);
+                                      return p;
+                                    }
+                                    return { ...p, qty: newVal };
+                                  });
+                                  actBuilderItemsRef.current = next;
+                                  return next;
+                                })
+                              }
+                              style={{ width: 30, height: 30, borderRadius: 15, backgroundColor: "#f1f5f9", alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "#e2e8f0" }}
+                            >
+                              <Text style={{ fontSize: 16, fontWeight: "700", color: "#0f172a" }}>+</Text>
+                            </Pressable>
+                            <Text style={{ color: "#64748b", fontSize: 11, marginLeft: 4 }}>Цена</Text>
+                            <TextInput
+                              value={it.price == null ? "" : String(it.price)}
+                              onChangeText={(txt) => {
+                                const num = Number(String(txt).replace(",", "."));
+                                setActBuilderItems((prev) => {
+                                  const next = prev.map((p, i) => (i === idx ? { ...p, price: Number.isFinite(num) ? num : null } : p));
+                                  actBuilderItemsRef.current = next;
+                                  return next;
+                                });
+                              }}
+                              keyboardType="numeric"
+                              placeholder="—"
+                              style={{ width: 84, height: 32, borderWidth: 1, borderColor: "#e2e8f0", borderRadius: 8, paddingHorizontal: 8, fontSize: 12, backgroundColor: "#fff" }}
+                            />
+                            <Text style={{ color: "#0f172a", fontSize: 12, fontWeight: "700", minWidth: 72, textAlign: "right" }}>
+                              {sum == null || sum === 0 ? "—" : Number(sum).toLocaleString("ru-RU")}
+                            </Text>
+                          </View>
+                          <Text style={{ color: "#64748b", fontSize: 11 }}>Остаток после акта: {remaining.toLocaleString("ru-RU")} {it.uom || ""}</Text>
+                        </View>
+                      )}
                     </View>
-                    <Text style={{ marginTop: 6, color: "#64748b", fontSize: 12 }}>
-                      Сумма: {sum == null ? "—" : Number(sum).toLocaleString("ru-RU")}
-                    </Text>
-                  </View>
-                );
-              })
-            )}
+                  );
+                })
+              )}
+              <View style={{ backgroundColor: "#fff", borderWidth: 1, borderColor: "#e2e8f0", borderRadius: 12, padding: 10, marginTop: 4, gap: 4 }}>
+                <Text style={{ color: "#334155", fontWeight: "700", fontSize: 12 }}>Итоги</Text>
+                <Text style={{ color: "#334155", fontSize: 12 }}>Работы: {actBuilderWorkSum > 0 ? actBuilderWorkSum.toLocaleString("ru-RU") : "без сумм"}</Text>
+                <Text style={{ color: "#334155", fontSize: 12 }}>Материалы: {actBuilderMatSum > 0 ? actBuilderMatSum.toLocaleString("ru-RU") : "без сумм"}</Text>
+                <Text style={{ color: "#0f172a", fontWeight: "800", fontSize: 13 }}>
+                  Итого: {(actBuilderWorkSum + actBuilderMatSum) > 0 ? (actBuilderWorkSum + actBuilderMatSum).toLocaleString("ru-RU") : "—"}
+                </Text>
+              </View>
+            </View>
           </ScrollView>
 
-          <View style={{ borderTopWidth: 1, borderColor: "#e5e7eb", padding: 12 }}>
+          <View style={{ padding: 16, backgroundColor: "#fff", borderTopWidth: 1, borderTopColor: "#e2e8f0" }}>
             <Pressable
               onPress={submitActBuilder}
               disabled={actBuilderSaving}
               style={{
-                width: "100%",
-                borderRadius: 10,
-                paddingVertical: 12,
-                backgroundColor: actBuilderSaving ? "#94a3b8" : "#16a34a",
+                height: 54,
+                borderRadius: 12,
+                backgroundColor: "#0f172a",
                 alignItems: "center",
+                justifyContent: "center",
+                flexDirection: "row",
+                gap: 10
               }}
             >
-              <Text style={{ color: "#fff", fontWeight: "700" }}>
-                {actBuilderSaving ? "Формирую..." : "Сформировать акт (PDF)"}
-              </Text>
+              {actBuilderSaving ? <ActivityIndicator color="#fff" /> : (
+                <Text style={{ color: "#fff", fontSize: 16, fontWeight: "800" }}>Сформировать акт (PDF)</Text>
+              )}
             </Pressable>
-            {!actBuilderHasSelected && (
-              <Text style={{ marginTop: 6, color: "#94a3b8", fontSize: 12, textAlign: "center" }}>
-                Выберите хотя бы одну позицию
+            {!!actBuilderHint ? (
+              <Text style={{ textAlign: "center", color: "#0369a1", fontSize: 11, marginTop: 8 }}>
+                {actBuilderHint}
               </Text>
-            )}
+            ) : !actBuilderHasSelected ? (
+              <Text style={{ textAlign: "center", color: "#94a3b8", fontSize: 11, marginTop: 8 }}>
+                Выберите работы или материалы для продолжения
+              </Text>
+            ) : null}
           </View>
         </View>
       </Modal>
@@ -3390,6 +4081,30 @@ const styles = StyleSheet.create({
     fontWeight: "900",
     lineHeight: 34,
   },
+  subcontractHeaderCard: {
+    position: "relative",
+    minHeight: 72,
+    justifyContent: "center",
+    paddingRight: 52,
+  },
+  subcontractHeaderTitle: {
+    fontSize: 30,
+    lineHeight: 34,
+    paddingRight: 12,
+  },
+  subcontractHeaderSubtitle: {
+    color: "#94A3B8",
+    marginTop: 4,
+    fontSize: 18,
+    lineHeight: 22,
+    paddingRight: 12,
+  },
+  subcontractHeaderClose: {
+    position: "absolute",
+    top: 10,
+    right: 0,
+    backgroundColor: "rgba(255,255,255,0.12)",
+  },
 
   segmentWrapper: { marginTop: 14 },
   segmentTrack: {
@@ -3526,4 +4241,3 @@ const styles = StyleSheet.create({
   },
   takeText: { color: "#fff", fontWeight: "700" },
 });
-
