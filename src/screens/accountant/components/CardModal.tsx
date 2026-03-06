@@ -1,5 +1,15 @@
 ﻿import React from "react";
-import { Keyboard, Modal, Platform, View, Animated, Text, ScrollView } from "react-native";
+import {
+  Keyboard,
+  Modal,
+  Platform,
+  View,
+  Animated,
+  Text,
+  ScrollView,
+  type NativeScrollEvent,
+  type NativeSyntheticEvent,
+} from "react-native";
 import DismissKeyboardView from "../../../components/DismissKeyboardView";
 import BottomBar from "./BottomBar";
 import TopRightActionBar from "../../../ui/TopRightActionBar";
@@ -67,7 +77,7 @@ export default function CardModal({
   runAction: (key: string, fn: () => Promise<void>) => Promise<void>;
 
   scrollRef: React.Ref<ScrollView>;
-  onScroll: (event: unknown) => void;
+  onScroll: (event: NativeSyntheticEvent<NativeScrollEvent>) => void;
   scrollEventThrottle: number;
   contentContainerStyle: object;
 

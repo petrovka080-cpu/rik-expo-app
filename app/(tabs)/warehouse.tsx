@@ -1,4 +1,4 @@
-// app/(tabs)/warehouse.tsx
+﻿// app/(tabs)/warehouse.tsx
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useFocusEffect } from "expo-router";
 import {
@@ -12,6 +12,8 @@ import {
   TextInput,
   Animated,
   Keyboard,
+  type KeyboardEvent,
+  type ViewStyle,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
@@ -69,6 +71,8 @@ import IncomingItemsSheet from "../../src/screens/warehouse/components/IncomingI
 import ReqIssueModal from "../../src/screens/warehouse/components/ReqIssueModal";
 import PickOptionSheet from "../../src/screens/warehouse/components/PickOptionSheet";
 import StockIssueSheet from "../../src/screens/warehouse/components/StockIssueSheet";
+import WarehouseFioModal from "../../src/screens/warehouse/components/WarehouseFioModal";
+import WarehouseRecipientModal from "../../src/screens/warehouse/components/WarehouseRecipientModal";
 import {
   nz,
   pickErr,
@@ -77,6 +81,20 @@ import {
   parseQtySelected,
   matchQuerySmart,
 } from "../../src/screens/warehouse/warehouse.utils";
+type WarehouseStockLike = StockRow & {
+  rik_code?: string | null;
+  material_code?: string | null;
+  name_human?: string | null;
+  item_name_ru?: string | null;
+};
+type ReqItemUiRowWithNote = ReqItemUiRow & { note?: string | null };
+type WarehouseReportRow = Record<string, unknown>;
+type RpcReceiveApplyResult = { ok?: number | string | null; fail?: number | string | null; left_after?: number | string | null };
+type ReportsUiLike = {
+  closeIncomingDetails: () => void;
+  incomingByDay?: unknown[];
+  vydachaByDay?: unknown[];
+} & Record<string, unknown>;
 
 function parseReqHeaderContext(rawParts: Array<string | null | undefined>) {
   const out: { contractor: string; phone: string; volume: string } = {
@@ -131,6 +149,7 @@ export default function Warehouse() {
     showToast.error(title, message);
   }, []);
   const [tab, setTab] = useState<Tab>("К приходу");
+
   const incoming = useWarehouseIncoming();
 
   const [stockSearch, setStockSearch] = useState<string>("");
@@ -141,9 +160,23 @@ export default function Warehouse() {
     return () => clearTimeout(t);
   }, [stockSearch]);
 
+  const getTodaySixAM = useCallback(() => {
+    const d = new Date();
+    d.setHours(6, 0, 0, 0);
+    return d;
+  }, []);
+
+  const CONFIRM_TS_KEY = "wh_warehouseman_confirm_ts";
+  const WAREHOUSEMAN_HISTORY_KEY = "wh_warehouseman_history_v1";
+
   const isWeb = Platform.OS === "web";
-  const headerApi = useWarehouseHeaderApi({ isWeb, hasSubRow: false });
-  const HEADER_MAX = 92;
+  const [warehousemanFio, setWarehousemanFio] = useState("");
+  const [warehousemanHistory, setWarehousemanHistory] = useState<string[]>([]);
+  const [isFioConfirmVisible, setIsFioConfirmVisible] = useState(false);
+  const [isFioLoading, setIsFioLoading] = useState(false);
+
+  const headerApi = useWarehouseHeaderApi({ isWeb, hasSubRow: !!warehousemanFio });
+  const HEADER_MAX = !!warehousemanFio ? 130 : 92;
 
   const renderPrWithRoleBadge = useCallback((pr: string, roleLabel: string) => {
     return (
@@ -173,7 +206,7 @@ export default function Warehouse() {
 
   useEffect(() => {
     if (Platform.OS === "web") return;
-    const onShow = (e: any) => {
+    const onShow = (e: KeyboardEvent) => {
       const h = Number(e?.endCoordinates?.height ?? 0);
       setKbH(h > 0 ? h : 0);
     };
@@ -192,13 +225,28 @@ export default function Warehouse() {
     };
   }, []);
 
-  const [warehousemanFio, setWarehousemanFio] = useState("");
+  const [isRecipientModalVisible, setIsRecipientModalVisible] = useState(false);
+
   useEffect(() => {
     let active = true;
     (async () => {
       try {
         const saved = await AsyncStorage.getItem("wh_warehouseman_fio");
-        if (active && saved) setWarehousemanFio(saved);
+        const lastConfirmStr = await AsyncStorage.getItem(CONFIRM_TS_KEY);
+        const histRaw = await AsyncStorage.getItem(WAREHOUSEMAN_HISTORY_KEY);
+        const historyArr = histRaw ? JSON.parse(histRaw) : [];
+
+        if (active) {
+          if (saved) setWarehousemanFio(saved);
+          if (Array.isArray(historyArr)) setWarehousemanHistory(historyArr);
+
+          const sixAM = getTodaySixAM();
+          const lastConfirm = lastConfirmStr ? new Date(lastConfirmStr) : null;
+
+          if (!lastConfirm || lastConfirm < sixAM) {
+            setIsFioConfirmVisible(true);
+          }
+        }
       } catch (e) {
         console.warn("[warehousemanFio] load failed", e);
       }
@@ -206,7 +254,43 @@ export default function Warehouse() {
     return () => {
       active = false;
     };
-  }, []);
+  }, [getTodaySixAM]);
+
+  useFocusEffect(
+    useCallback(() => {
+      const checkFio = async () => {
+        const lastConfirmStr = await AsyncStorage.getItem(CONFIRM_TS_KEY);
+        const sixAM = getTodaySixAM();
+        const lastConfirm = lastConfirmStr ? new Date(lastConfirmStr) : null;
+        if (!lastConfirm || lastConfirm < sixAM) {
+          setIsFioConfirmVisible(true);
+        }
+      };
+      checkFio();
+    }, [getTodaySixAM])
+  );
+
+  const handleFioConfirm = useCallback(async (fio: string) => {
+    setIsFioLoading(true);
+    try {
+      setWarehousemanFio(fio);
+      const now = new Date().toISOString();
+
+      const nextHist = [fio, ...warehousemanHistory.filter(x => x !== fio)].slice(0, 12);
+      setWarehousemanHistory(nextHist);
+
+      await Promise.all([
+        AsyncStorage.setItem("wh_warehouseman_fio", fio),
+        AsyncStorage.setItem(CONFIRM_TS_KEY, now),
+        AsyncStorage.setItem(WAREHOUSEMAN_HISTORY_KEY, JSON.stringify(nextHist))
+      ]);
+      setIsFioConfirmVisible(false);
+    } catch (e) {
+      showErr(e);
+    } finally {
+      setIsFioLoading(false);
+    }
+  }, [warehousemanHistory]);
 
   const [reportsMode, setReportsMode] = useState<"choice" | "issue" | "incoming">("choice");
 
@@ -219,7 +303,7 @@ export default function Warehouse() {
 
   const [qtyInputByItem, setQtyInputByItem] = useState<Record<string, string>>({});
   const [receivingHeadId, setReceivingHeadId] = useState<string | null>(null);
-  const openItemsModal = useCallback((head: any) => {
+  const openItemsModal = useCallback((head: Partial<IncomingRow> | null | undefined) => {
     const incomingId = String(head?.incoming_id ?? "").trim();
     if (!incomingId) return;
 
@@ -264,7 +348,7 @@ export default function Warehouse() {
     const baseAll = stockMaterialsByCode || [];
 
     // ✅ PROD: по умолчанию скрываем нули
-    const base = baseAll.filter((r) => nz((r as any).qty_available, 0) > 0);
+    const base = baseAll.filter((r) => nz(r.qty_available, 0) > 0);
 
     const qRaw = String(stockSearchDeb ?? "").trim();
     if (!qRaw) return base;
@@ -284,15 +368,15 @@ export default function Warehouse() {
 
   const matNameByCode = useMemo(() => {
     const m: Record<string, string> = {};
-    for (const r of (stock || [])) {
+    for (const r of (stock || []) as WarehouseStockLike[]) {
       const code = String(
-        (r as any).rik_code ?? (r as any).code ?? (r as any).material_code ?? ""
+        r.rik_code ?? r.code ?? r.material_code ?? ""
       )
         .trim()
         .toUpperCase();
 
       const name = String(
-        (r as any).name_human ?? (r as any).name ?? (r as any).item_name_ru ?? ""
+        r.name_human ?? r.name ?? r.item_name_ru ?? ""
       ).trim();
 
       if (code && name && !m[code]) m[code] = name;
@@ -301,20 +385,20 @@ export default function Warehouse() {
   }, [stock]);
 
   const [repStock, setRepStock] = useState<StockRow[]>([]);
-  const [repMov, setRepMov] = useState<any[]>([]);
-  const [repIssues, setRepIssues] = useState<any[]>([]);
-  const [repIncoming, setRepIncoming] = useState<any[]>([]);
+  const [repMov, setRepMov] = useState<WarehouseReportRow[]>([]);
+  const [repIssues, setRepIssues] = useState<WarehouseReportRow[]>([]);
+  const [repIncoming, setRepIncoming] = useState<WarehouseReportRow[]>([]);
   const reportsReqSeqRef = useRef(0);
   const reportsInFlightRef = useRef<Map<string, Promise<void>>>(new Map());
   const reportsCacheRef = useRef<
-    Map<string, { ts: number; repStock: any[]; repMov: any[]; repIssues: any[]; repIncoming: any[] }>
+    Map<string, { ts: number; repStock: StockRow[]; repMov: WarehouseReportRow[]; repIssues: WarehouseReportRow[]; repIncoming: WarehouseReportRow[] }>
   >(new Map());
 
-  const [issueLinesById, setIssueLinesById] = useState<Record<string, any[]>>({});
+  const [issueLinesById, setIssueLinesById] = useState<Record<string, WarehouseReportRow[]>>({});
   const [issueLinesLoadingId, setIssueLinesLoadingId] = useState<number | null>(null);
   const [issueDetailsId, setIssueDetailsId] = useState<number | null>(null);
 
-  const [incomingLinesById, setIncomingLinesById] = useState<Record<string, any[]>>({});
+  const [incomingLinesById, setIncomingLinesById] = useState<Record<string, WarehouseReportRow[]>>({});
   const [incomingLinesLoadingId, setIncomingLinesLoadingId] = useState<string | null>(null);
   const [incomingDetailsId, setIncomingDetailsId] = useState<string | null>(null);
   const [periodFrom, setPeriodFrom] = useState<string>("");
@@ -375,7 +459,7 @@ export default function Warehouse() {
 
     stockFetchMutex.current = true;
     try {
-      const r = await apiFetchStock(supabase as any, 0, 2000);
+      const r = await apiFetchStock(supabase, 0, 2000);
 
       const newRows = r.rows || [];
 
@@ -398,7 +482,7 @@ export default function Warehouse() {
     if (pageIndex === 0) setReqHeadsLoading(true);
 
     try {
-      const rows = await apiFetchReqHeads(supabase as any, pageIndex, REQ_PAGE_SIZE);
+      const rows = await apiFetchReqHeads(supabase, pageIndex, REQ_PAGE_SIZE);
 
       // IMPORTANT:
       // apiFetchReqHeads applies status/view filtering, so page can be shorter than REQ_PAGE_SIZE
@@ -426,7 +510,7 @@ export default function Warehouse() {
   const fetchReqItems = useCallback(async (requestId: string) => {
     setReqItemsLoading(true);
     try {
-      const rows = await apiFetchReqItems(supabase as any, requestId);
+      const rows = await apiFetchReqItems(supabase, requestId);
       setReqItems(rows);
     } finally {
       setReqItemsLoading(false);
@@ -439,10 +523,10 @@ export default function Warehouse() {
     const key = `${from}|${to}`;
     const hit = reportsCacheRef.current.get(key);
     if (hit && Date.now() - hit.ts <= REPORTS_CACHE_TTL_MS) {
-      setRepStock(hit.repStock as any);
-      setRepMov(hit.repMov as any);
-      setRepIssues(hit.repIssues as any);
-      setRepIncoming(hit.repIncoming as any);
+      setRepStock(hit.repStock);
+      setRepMov(hit.repMov);
+      setRepIssues(hit.repIssues);
+      setRepIncoming(hit.repIncoming);
       return;
     }
 
@@ -455,23 +539,23 @@ export default function Warehouse() {
     const reqId = ++reportsReqSeqRef.current;
     const task = (async () => {
       const [r, inc] = await Promise.all([
-        apiFetchReports(supabase as any, from, to),
-        apiFetchIncomingReports(supabase as any, { from, to }),
+        apiFetchReports(supabase, from, to),
+        apiFetchIncomingReports(supabase, { from, to }),
       ]);
       if (reqId !== reportsReqSeqRef.current) return;
 
       const next = {
         ts: Date.now(),
-        repStock: (r.repStock as any[]) || [],
-        repMov: (r.repMov as any[]) || [],
-        repIssues: (r.repIssues as any[]) || [],
-        repIncoming: (inc as any[]) || [],
+        repStock: r.repStock || [],
+        repMov: r.repMov || [],
+        repIssues: r.repIssues || [],
+        repIncoming: (inc as WarehouseReportRow[]) || [],
       };
       reportsCacheRef.current.set(key, next);
-      setRepStock(next.repStock as any);
-      setRepMov(next.repMov as any);
-      setRepIssues(next.repIssues as any);
-      setRepIncoming(next.repIncoming as any);
+      setRepStock(next.repStock);
+      setRepMov(next.repMov);
+      setRepIssues(next.repIssues);
+      setRepIncoming(next.repIncoming);
     })().finally(() => {
       reportsInFlightRef.current.delete(key);
     });
@@ -508,6 +592,13 @@ export default function Warehouse() {
     recipientList,
   });
 
+  const onTabChange = useCallback((nextTab: Tab) => {
+    setTab(nextTab);
+    if (nextTab === "Расход" || nextTab === "Склад факт") {
+      setIsRecipientModalVisible(true);
+    }
+  }, []);
+
   const [issueBusy, setIssueBusy] = useState(false);
   const [issueMsg, setIssueMsg] = useState<{
     kind: "error" | "ok" | null;
@@ -536,7 +627,7 @@ export default function Warehouse() {
       const rid = String(h?.request_id ?? "").trim();
       if (!rid) return;
       const seq = ++reqOpenSeqRef.current;
-      const normalizePhone = (raw: any): string => {
+      const normalizePhone = (raw: unknown): string => {
         const src = String(raw ?? "").trim();
         if (!src) return "";
         if (/^\d{4}-\d{2}-\d{2}$/.test(src)) return "";
@@ -564,7 +655,7 @@ export default function Warehouse() {
           .eq("id", rid)
           .maybeSingle();
         if (!metaQ.error && metaQ.data) {
-          const meta = metaQ.data as Record<string, any>;
+          const meta = metaQ.data as Record<string, unknown>;
           setReqModal((prev) => {
             if (!prev || String(prev.request_id) !== rid) return prev;
             const contractor =
@@ -604,12 +695,12 @@ export default function Warehouse() {
           });
         }
 
-        const rows = await apiFetchReqItems(supabase as any, rid);
+        const rows = await apiFetchReqItems(supabase, rid);
         if (seq !== reqOpenSeqRef.current) return;
         setReqItems(Array.isArray(rows) ? rows : []);
 
         const fromItemNotes = parseReqHeaderContext(
-          Array.isArray(rows) ? rows.map((r: any) => String(r?.note ?? "")) : [],
+          Array.isArray(rows) ? rows.map((r: ReqItemUiRowWithNote) => String(r?.note ?? "")) : [],
         );
         if (fromItemNotes.contractor || fromItemNotes.phone || fromItemNotes.volume) {
           setReqModal((prev) =>
@@ -655,6 +746,7 @@ export default function Warehouse() {
       getRecipient: () => rec.recipientText.trim(),
       getObjectLabel: () => String(objectOpt?.label ?? ""),
       getWorkLabel: () => scopeLabel,
+      getWarehousemanFio: () => warehousemanFio,
       fetchStock,
       fetchReqItems,
       fetchReqHeads,
@@ -677,6 +769,7 @@ export default function Warehouse() {
     rec.recipientText,
     objectOpt?.label,
     scopeLabel,
+    warehousemanFio,
     fetchStock,
     fetchReqItems,
     fetchReqHeads,
@@ -689,6 +782,11 @@ export default function Warehouse() {
     const rid = String(reqModal?.request_id ?? "").trim();
     if (!rid) {
       setIssueMsg({ kind: "error", text: "Заявка не выбрана" });
+      return;
+    }
+
+    if (!rec.recipientText.trim()) {
+      setIsRecipientModalVisible(true);
       return;
     }
 
@@ -710,14 +808,30 @@ export default function Warehouse() {
     reqPickUi.reqPick,
     reqItems,
     closeReq,
+    rec.recipientText,
   ]);
   const submitStockPick = useCallback(async () => {
+    if (!rec.recipientText.trim()) {
+      setIsRecipientModalVisible(true);
+      return;
+    }
     await issueActions.submitStockPick({ stockPick: stockPickUi.stockPick });
-  }, [issueActions, stockPickUi.stockPick]);
+  }, [issueActions, stockPickUi.stockPick, rec.recipientText]);
 
   const issueByRequestItem = useCallback(
     async (row: ReqItemUiRow) => {
       const requestItemId = String(row.request_item_id || "").trim();
+      const requestId = String(row.request_id || "").trim();
+      if (!requestItemId || !requestId) {
+        setIssueMsg({ kind: "error", text: "Пустые ID заявки/строки" });
+        return;
+      }
+
+      if (!rec.recipientText.trim()) {
+        setIsRecipientModalVisible(true);
+        return;
+      }
+
       const raw = String(reqPickUi.reqQtyInputByItem[requestItemId] ?? "").trim().replace(",", ".");
       const qty = Number(raw);
       const ok = await issueActions.issueByRequestItem({ row, qty });
@@ -725,7 +839,7 @@ export default function Warehouse() {
         closeReq();
       }
     },
-    [issueActions, reqPickUi.reqQtyInputByItem, closeReq]
+    [issueActions, reqPickUi.reqQtyInputByItem, closeReq, rec.recipientText]
 
   );
 
@@ -779,16 +893,16 @@ export default function Warehouse() {
         setReceivingHeadId(incomingId);
 
         if (!warehousemanFio.trim()) {
-          setItemsModal(null);
-          return notifyError("ФИО обязательно", "Введите ФИО кладовщика во вкладке «К приходу»");
+          setIsFioConfirmVisible(true);
+          return;
         }
 
-        const { data, error } = await supabase.rpc("wh_receive_apply_ui" as any, {
+        const { data, error } = await supabase.rpc("wh_receive_apply_ui", {
           p_incoming_id: incomingId,
           p_items: toApply,
           p_warehouseman_fio: warehousemanFio.trim(),
           p_note: null,
-        } as any);
+        });
 
 
         if (error) {
@@ -813,9 +927,10 @@ export default function Warehouse() {
           return next;
         });
 
-        const ok = Number((data as any)?.ok ?? 0);
-        const fail = Number((data as any)?.fail ?? 0);
-        const leftAfter = nz((data as any)?.left_after, 0);
+        const d = (data as RpcReceiveApplyResult | null) ?? null;
+        const ok = Number(d?.ok ?? 0);
+        const fail = Number(d?.fail ?? 0);
+        const leftAfter = nz(d?.left_after, 0);
 
         if (leftAfter <= 0) setItemsModal(null);
 
@@ -952,18 +1067,8 @@ export default function Warehouse() {
 
   const expenditureHeaderProps = useMemo(() => ({
     recipientText: rec.recipientText,
-    onRecipientChange: (t: string) => {
-      rec.setRecipientText(t);
-      rec.setRecipientSuggestOpen(true);
-    },
-    onRecipientFocus: () => rec.setRecipientSuggestOpen(true),
-    onRecipientBlur: () => {
-      setTimeout(() => rec.setRecipientSuggestOpen(false), 150);
-    },
-    recipientSuggestOpen: rec.recipientSuggestOpen,
-    recipientSuggestions: rec.recipientSuggestions,
-    onCommitRecipient: (name: string) => void rec.commitRecipient(name),
-  }), [rec.recipientText, rec.recipientSuggestOpen, rec.recipientSuggestions, rec.setRecipientText, rec.setRecipientSuggestOpen, rec.commitRecipient]);
+    onOpenRecipientModal: () => setIsRecipientModalVisible(true),
+  }), [rec.recipientText]);
 
   const pickOptions = useMemo(() => {
     const base =
@@ -1044,12 +1149,7 @@ export default function Warehouse() {
     });
   }, []);
 
-  const onWarehousemanFioChange = useCallback((t: string) => {
-    setWarehousemanFio(t);
-    void AsyncStorage.setItem("wh_warehouseman_fio", t).catch((e) => {
-      console.warn("[warehousemanFio] save failed", e);
-    });
-  }, []);
+  // onWarehousemanFioChange removed, handled by handleFioConfirm
 
   const onReqEndReached = useCallback(() => {
     if (reqRefs.current.hasMore && !reqRefs.current.fetching) {
@@ -1063,7 +1163,7 @@ export default function Warehouse() {
     }
   }, [incoming.toReceiveHasMore, incoming.toReceiveIsFetching, incoming.toReceivePage]);
 
-  const getIncomingHeadStats = useCallback((item: any) => {
+  const getIncomingHeadStats = useCallback((item: IncomingRow) => {
     const recSum = Math.round(nz(item.qty_received_sum, 0));
     const leftSum = Math.round(nz(item.qty_expected_sum, 0) - nz(item.qty_received_sum, 0));
     return { recSum, leftSum };
@@ -1083,7 +1183,7 @@ export default function Warehouse() {
   }, [rec.commitRecipient]);
 
   const closeIncomingDetails = useCallback(() => {
-    (reportsUi as any).closeIncomingDetails();
+    (reportsUi as ReportsUiLike).closeIncomingDetails();
   }, [reportsUi]);
   const pickTitle = useMemo(() => {
     return pickModal.what === "object"
@@ -1138,35 +1238,39 @@ export default function Warehouse() {
   }, [onPdfDayMaterials]);
 
   const reportsTabUi = useMemo(() => ({
-    ...reportsUi,
-    issuesByDay: reportsMode === "incoming" ? (reportsUi as any).incomingByDay : (reportsUi as any).vydachaByDay,
+    ...(reportsUi as ReportsUiLike),
+    issuesByDay:
+      reportsMode === "incoming"
+        ? (reportsUi as ReportsUiLike).incomingByDay
+        : (reportsUi as ReportsUiLike).vydachaByDay,
   }), [reportsUi, reportsMode]);
 
   const reportsOnScroll = useMemo(() => (Platform.OS === "web" ? undefined : headerApi.onListScroll), [headerApi.onListScroll]);
   const reportsScrollEventThrottle = useMemo(() => (Platform.OS === "web" ? undefined : 16), []);
-  const renderReqHeadItem = useCallback(({ item }: { item: any }) => {
-    const totalPos = Math.max(0, Number(item.items_cnt ?? 0));
-    const openPos = Math.max(0, Number(item.ready_cnt ?? 0));
-    const issuedPos = Math.max(0, Number(item.done_cnt ?? 0));
+  const renderReqHeadItem = useCallback(({ item }: { item: unknown }) => {
+    const row = item as ReqHeadRow;
+    const totalPos = Math.max(0, Number(row.items_cnt ?? 0));
+    const openPos = Math.max(0, Number(row.ready_cnt ?? 0));
+    const issuedPos = Math.max(0, Number(row.done_cnt ?? 0));
 
     const hasToIssue = openPos > 0;
     const isFullyIssued = issuedPos >= totalPos && totalPos > 0;
 
     const locParts: string[] = [];
-    const obj = String(item.object_name || "").trim();
-    const lvl = String(item.level_name || item.level_code || "").trim();
-    const sys = String(item.system_name || item.system_code || "").trim();
+    const obj = String(row.object_name || "").trim();
+    const lvl = String(row.level_name || row.level_code || "").trim();
+    const sys = String(row.system_name || row.system_code || "").trim();
 
     if (obj) locParts.push(obj);
     if (lvl) locParts.push(lvl);
     if (sys) locParts.push(sys);
 
-    const dateStr = fmtRuDate(item.submitted_at);
+    const dateStr = fmtRuDate(row.submitted_at);
 
     return (
       <View style={s.listItemContainer}>
         <Pressable
-          onPress={() => openReq(item)}
+          onPress={() => openReq(row)}
           style={({ pressed }) => [
             s.groupHeader,
             s.reqItemPressable,
@@ -1181,7 +1285,7 @@ export default function Warehouse() {
             {/* 1 row: ID + DATE */}
             <View style={s.listItemRow1}>
               <Text style={[s.groupTitle, { fontSize: 16 }]} numberOfLines={1}>
-                {item.display_no || `REQ-${item.request_id.slice(0, 8)}`}
+                {row.display_no || `REQ-${row.request_id.slice(0, 8)}`}
               </Text>
               <Text style={s.reqItemDate}>{dateStr}</Text>
             </View>
@@ -1211,20 +1315,21 @@ export default function Warehouse() {
     );
   }, [openReq]);
 
-  const renderIncomingItem = useCallback(({ item }: { item: any }) => {
-    const { recSum, leftSum } = getIncomingHeadStats(item);
+  const renderIncomingItem = useCallback(({ item }: { item: unknown }) => {
+    const row = item as IncomingRow;
+    const { recSum, leftSum } = getIncomingHeadStats(row);
 
     const prNo = formatProposalBaseNo(
-      incoming.proposalNoByPurchase[item.purchase_id] || item.po_no,
-      item.purchase_id
+      incoming.proposalNoByPurchase[row.purchase_id] || row.po_no,
+      row.purchase_id
     );
 
-    const dateStr = fmtRuDate(item.purchase_created_at) || "—";
+    const dateStr = fmtRuDate(row.purchase_created_at) || "—";
 
     return (
       <View style={s.listItemContainer}>
         <Pressable
-          onPress={() => void openItemsModal(item)}
+          onPress={() => void openItemsModal(row)}
           style={({ pressed }) => [
             s.groupHeader,
             s.incomingItemPressable,
@@ -1255,10 +1360,11 @@ export default function Warehouse() {
     );
   }, [openItemsModal, incoming.proposalNoByPurchase]);
 
-  const renderStockItem = useCallback(({ item }: { item: any }) => {
-    const codeRaw = String(item.code ?? "").trim();
-    const pickedQty = stockPickUi.getPickedQty(codeRaw, item?.uom_id ? String(item.uom_id).trim() : null);
-    return <StockRowView r={item} pickedQty={pickedQty} onPress={openStockIssue} />;
+  const renderStockItem = useCallback(({ item }: { item: unknown }) => {
+    const row = item as StockRow;
+    const codeRaw = String(row.code ?? "").trim();
+    const pickedQty = stockPickUi.getPickedQty(codeRaw, row?.uom_id ? String(row.uom_id).trim() : null);
+    return <StockRowView r={row} pickedQty={pickedQty} onPress={openStockIssue} />;
   }, [stockPickUi.getPickedQty, openStockIssue]);
 
   const renderReqIssue = () => {
@@ -1300,27 +1406,12 @@ export default function Warehouse() {
           <AnimatedFlatList
             data={incoming.toReceive}
             keyExtractor={(i: IncomingRow) =>
-              String(i.incoming_id || `${i.purchase_id || ""}:${i.po_no || ""}:${(i as any).purchase_created_at || ""}`)
+              String(i.incoming_id || `${i.purchase_id || ""}:${i.po_no || ""}:${i.purchase_created_at || ""}`)
             }
             contentContainerStyle={listContentStyle}
             onScroll={listOnScroll}
             scrollEventThrottle={listScrollEventThrottle}
-            ListHeaderComponent={
-              <View style={{ paddingHorizontal: 16, marginBottom: 12 }}>
-                <View style={s.sectionBox}>
-                  <Text style={{ color: UI.sub, fontWeight: "800", marginBottom: 6 }}>
-                    ФИО кладовщика (обязательно)
-                  </Text>
-                  <TextInput
-                    value={warehousemanFio}
-                    onChangeText={onWarehousemanFioChange}
-                    placeholder="Введите ФИО…"
-                    placeholderTextColor={UI.sub}
-                    style={s.input}
-                  />
-                </View>
-              </View>
-            }
+            ListHeaderComponent={null}
             onEndReached={onIncomingEndReached}
             onEndReachedThreshold={0.5}
             ListFooterComponent={null}
@@ -1367,13 +1458,8 @@ export default function Warehouse() {
               onPickLevel={() => setPickModal({ what: "level" })}
               onPickSystem={() => setPickModal({ what: "system" })}
               onPickZone={() => setPickModal({ what: "zone" })}
-
+              onOpenRecipientModal={() => setIsRecipientModalVisible(true)}
               recipientText={rec.recipientText}
-              onRecipientChange={rec.setRecipientText}
-              recipientSuggestOpen={rec.recipientSuggestOpen}
-              setRecipientSuggestOpen={rec.setRecipientSuggestOpen}
-              recipientSuggestions={rec.recipientSuggestions}
-              onPickRecipient={onPickRecipient}
 
               stockSearch={stockSearch}
               onStockSearch={setStockSearch}
@@ -1431,16 +1517,16 @@ export default function Warehouse() {
           s.collapsingHeader,
           isWeb
             ? ({
-              position: "sticky",
-              top: 0,
-              zIndex: 50,
-              overflow: "hidden",
-            } as any)
+                position: "sticky",
+                top: 0,
+                zIndex: 50,
+                overflow: "hidden",
+              } as unknown as ViewStyle)
             : null,
           {
-            height: headerApi.headerHeight as any,
-            transform: isWeb ? ([{ translateY: headerApi.headerTranslateY as any }] as any) : undefined,
-            shadowOpacity: headerApi.headerShadowSafe as any,
+            height: headerApi.headerHeight,
+            transform: isWeb ? [{ translateY: headerApi.headerTranslateY }] : undefined,
+            shadowOpacity: headerApi.headerShadowSafe,
             elevation: 6,
           }
 
@@ -1448,10 +1534,12 @@ export default function Warehouse() {
       >
         <WarehouseHeader
           tab={tab}
-          onTab={setTab}
+          onTab={onTabChange}
           incomingCount={incoming.incomingCount}
           stockCount={stockCount}
           titleSize={headerApi.titleSize}
+          warehousemanFio={warehousemanFio}
+          onOpenFioModal={() => setIsFioConfirmVisible(true)}
         />
 
       </Animated.View>
@@ -1557,8 +1645,24 @@ export default function Warehouse() {
           ui={repPeriodUi}
         />
       ) : null}
+
+      <WarehouseFioModal
+        visible={isFioConfirmVisible}
+        initialFio={warehousemanFio}
+        onConfirm={handleFioConfirm}
+        loading={isFioLoading}
+        history={warehousemanHistory}
+      />
+      <WarehouseRecipientModal
+        visible={isRecipientModalVisible}
+        onClose={() => setIsRecipientModalVisible(false)}
+        onConfirm={(name) => {
+          void rec.commitRecipient(name);
+          setIsRecipientModalVisible(false);
+        }}
+        suggestions={rec.recipientSuggestions}
+        initialValue={rec.recipientText}
+      />
     </View>
   );
 }
-
-

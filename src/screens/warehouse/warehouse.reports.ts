@@ -1,5 +1,6 @@
 // src/screens/warehouse/warehouse.reports.ts
 import { useCallback, useMemo } from "react";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import type { WarehouseIssueHead, WarehouseIssueLine } from "../../lib/api/pdf_warehouse";
 import {
   buildWarehouseIssueFormHtml,
@@ -13,10 +14,11 @@ import {
   apiFetchIssuedByObjectReportFast,
 } from "./warehouse.api";
 
-type BusyLike = any; // useGlobalBusy
-type SupabaseLike = any;
+type ReportRow = Record<string, unknown>;
+type BusyLike = unknown; // useGlobalBusy
+type SupabaseLike = SupabaseClient;
 
-const toNum = (v: any): number => {
+const toNum = (v: unknown): number => {
   if (v == null) return 0;
   if (typeof v === "number") return Number.isFinite(v) ? v : 0;
   const s0 = String(v).trim();
@@ -28,7 +30,7 @@ const toNum = (v: any): number => {
   return Number.isFinite(n) ? n : 0;
 };
 
-const isMissingName = (v: any): boolean => {
+const isMissingName = (v: unknown): boolean => {
   const s = String(v ?? "").trim();
   if (!s) return true;
   if (/^[-\u2014\u2013\u2212]+$/.test(s)) return true;
@@ -65,11 +67,11 @@ async function fetchIssuedSummaryFast(
   supabase: SupabaseLike,
   args: { fromIso: string; toIso: string; objectId?: string | null },
 ): Promise<{ docsTotal: number; docsByReq: number; docsWithoutReq: number }> {
-  const r = await supabase.rpc("wh_report_issued_summary_fast" as any, {
+  const r = await supabase.rpc("wh_report_issued_summary_fast", {
     p_from: args.fromIso,
     p_to: args.toIso,
     p_object_id: args.objectId ?? null,
-  } as any);
+  });
 
   if (r.error) throw r.error;
 
@@ -134,8 +136,8 @@ function dayRangeIso(dayLabel: string) {
 export function useWarehouseReports(args: {
   busy: BusyLike;
   supabase: SupabaseLike;
-  repIssues: any[];
-  repIncoming?: any[];
+  repIssues: ReportRow[];
+  repIncoming?: ReportRow[];
 
   periodFrom: string;
   periodTo: string;
@@ -143,16 +145,16 @@ export function useWarehouseReports(args: {
   orgName: string;
   warehouseName: string;
 
-  issueLinesById: Record<string, any[]>;
-  setIssueLinesById: (updater: any) => void;
+  issueLinesById: Record<string, ReportRow[]>;
+  setIssueLinesById: (updater: (prev: Record<string, ReportRow[]>) => Record<string, ReportRow[]>) => void;
   issueLinesLoadingId: number | null;
   setIssueLinesLoadingId: (v: number | null) => void;
 
   issueDetailsId: number | null;
   setIssueDetailsId: (v: number | null) => void;
 
-  incomingLinesById: Record<string, any[]>;
-  setIncomingLinesById: (updater: any) => void;
+  incomingLinesById: Record<string, ReportRow[]>;
+  setIncomingLinesById: (updater: (prev: Record<string, ReportRow[]>) => Record<string, ReportRow[]>) => void;
   incomingLinesLoadingId: string | null;
   setIncomingLinesLoadingId: (v: string | null) => void;
   incomingDetailsId: string | null;
@@ -189,42 +191,42 @@ export function useWarehouseReports(args: {
     d.toLocaleDateString("ru-RU", { day: "2-digit", month: "long", year: "numeric" });
 
   const vydachaByDay = useMemo(() => {
-    const groups: Record<string, any[]> = {};
+    const groups: Record<string, ReportRow[]> = {};
     for (const it of repIssues || []) {
-      const dt = it?.event_dt ? new Date(it.event_dt) : null;
+      const dt = it?.event_dt ? new Date(String(it.event_dt ?? "")) : null;
       const key = dt ? fmtDayRu(dt) : "Без даты";
       (groups[key] ||= []).push(it);
     }
     return Object.entries(groups).map(([day, items]) => ({
       day,
-      items: items.sort((a, b) => new Date(b.event_dt).getTime() - new Date(a.event_dt).getTime()),
+      items: items.sort((a, b) => new Date(String(b.event_dt ?? "")).getTime() - new Date(String(a.event_dt ?? "")).getTime()),
     }));
   }, [repIssues]);
 
   const incomingByDay = useMemo(() => {
-    const groups: Record<string, any[]> = {};
+    const groups: Record<string, ReportRow[]> = {};
     for (const it of repIncoming || []) {
-      const dt = it?.event_dt ? new Date(it.event_dt) : null;
+      const dt = it?.event_dt ? new Date(String(it.event_dt ?? "")) : null;
       const key = dt ? fmtDayRu(dt) : "Без даты";
       (groups[key] ||= []).push(it);
     }
     return Object.entries(groups).map(([day, items]) => ({
       day,
-      items: items.sort((a, b) => new Date(b.event_dt).getTime() - new Date(a.event_dt).getTime()),
+      items: items.sort((a, b) => new Date(String(b.event_dt ?? "")).getTime() - new Date(String(a.event_dt ?? "")).getTime()),
     }));
   }, [repIncoming]);
 
   const ensureIssueLines = useCallback(
-    async (issueId: number): Promise<any[]> => {
+    async (issueId: number): Promise<ReportRow[]> => {
       const key = String(issueId);
       const cached = issueLinesById?.[key];
       if (Array.isArray(cached) && cached.length > 0) return cached;
       setIssueLinesLoadingId(issueId);
       try {
-        const r = await supabase.rpc("acc_report_issue_lines" as any, { p_issue_id: issueId } as any);
+        const r = await supabase.rpc("acc_report_issue_lines", { p_issue_id: issueId });
         if (r.error) throw r.error;
-        const lines = Array.isArray(r.data) ? (r.data as any[]) : [];
-        setIssueLinesById((prev: any) => ({ ...(prev || {}), [key]: lines }));
+        const lines: ReportRow[] = Array.isArray(r.data) ? (r.data as ReportRow[]) : [];
+        setIssueLinesById((prev) => ({ ...(prev || {}), [key]: lines }));
         return lines;
       } finally {
         setIssueLinesLoadingId(null);
@@ -234,14 +236,14 @@ export function useWarehouseReports(args: {
   );
 
   const ensureIncomingLines = useCallback(
-    async (incomingId: string): Promise<any[]> => {
+    async (incomingId: string): Promise<ReportRow[]> => {
       const cached = incomingLinesById?.[incomingId];
       if (Array.isArray(cached) && cached.length > 0) return cached;
       setIncomingLinesLoadingId(incomingId);
       try {
         const { apiFetchIncomingLines } = require("./warehouse.api");
-        const lines = await apiFetchIncomingLines(supabase, incomingId);
-        setIncomingLinesById((prev: any) => ({ ...(prev || {}), [incomingId]: lines }));
+        const lines: ReportRow[] = await apiFetchIncomingLines(supabase, incomingId);
+        setIncomingLinesById((prev) => ({ ...(prev || {}), [incomingId]: lines }));
         return lines;
       } finally {
         setIncomingLinesLoadingId(null);
@@ -265,7 +267,7 @@ export function useWarehouseReports(args: {
   const closeIssueDetails = useCallback(() => setIssueDetailsId(null), [setIssueDetailsId]);
 
   const buildIssueHtml = useCallback(async (issueId: number) => {
-    const head = (repIssues || []).find((x: any) => Number(x.issue_id) === Number(issueId));
+    const head = (repIssues || []).find((x) => Number(x.issue_id) === Number(issueId));
     if (!head) throw new Error("Выдача не найдена");
     const linesAny = await ensureIssueLines(issueId);
     const html = buildWarehouseIssueFormHtml({
@@ -294,8 +296,8 @@ export function useWarehouseReports(args: {
 
   const buildDayRegisterPdf = useCallback(async (dayLabel: string) => {
     const wanted = String(dayLabel ?? "").trim();
-    const dayIssues = (repIssues || []).filter((it: any) => {
-      const dt = it?.event_dt ? new Date(it.event_dt) : null;
+    const dayIssues = (repIssues || []).filter((it) => {
+      const dt = it?.event_dt ? new Date(String(it.event_dt ?? "")) : null;
       const key = dt ? fmtDayRu(dt) : "Без даты";
       return key === wanted;
     });
@@ -312,10 +314,10 @@ export function useWarehouseReports(args: {
 
   const buildDayMaterialsReportPdf = useCallback(async (dayLabel: string) => {
     const rr = dayRangeIso(dayLabel);
-    const rawRows = await apiFetchIssuedMaterialsReportFast(supabase as any, {
+    const rawRows = await apiFetchIssuedMaterialsReportFast(supabase, {
       from: rr.rpcFrom, to: rr.rpcTo, objectId: null,
     });
-    const rows = (rawRows || []).map((r: any) => ({
+    const rows = (rawRows || []).map((r) => ({
       material_code: String(r.material_code ?? ""),
       material_name: String(r.material_name ?? r.material_code ?? ""),
       uom: String(r.uom ?? ""),
@@ -327,13 +329,13 @@ export function useWarehouseReports(args: {
       lines_cnt: toNum(r.lines_cnt),
     }));
     let docsTotal = (repIssues || []).filter(it => {
-      const dt = it?.event_dt ? new Date(it.event_dt) : null;
+      const dt = it?.event_dt ? new Date(String(it.event_dt ?? "")) : null;
       return dt && fmtDayRu(dt) === dayLabel;
     }).length;
 
     const html = buildWarehouseMaterialsReportHtml({
       periodFrom: rr.pdfFrom, periodTo: rr.pdfTo, orgName, warehouseName,
-      objectName: null, workName: null, rows: rows as any,
+      objectName: null, workName: null, rows,
       docsTotal, docsByReq: docsTotal, docsWithoutReq: 0
     });
     const safeDay = String(dayLabel).trim().replace(/\s+/g, "_").replace(/[^\w\u0400-\u04FF\-]/g, "");
@@ -342,10 +344,10 @@ export function useWarehouseReports(args: {
 
   const buildMaterialsReportPdf = useCallback(async (opts?: { objectId?: string | null; objectName?: string | null; workName?: string | null }) => {
     const rr = normalizeReportRange(periodFrom, periodTo);
-    const rawRows = await apiFetchIssuedMaterialsReportFast(supabase as any, {
+    const rawRows = await apiFetchIssuedMaterialsReportFast(supabase, {
       from: rr.rpcFrom, to: rr.rpcTo, objectId: opts?.objectId ?? null,
     });
-    const rows = (rawRows || []).map((r: any) => ({
+    const rows = (rawRows || []).map((r) => ({
       material_code: String(r.material_code ?? ""),
       material_name: String(r.material_name ?? r.material_code ?? ""),
       uom: String(r.uom ?? ""),
@@ -360,17 +362,17 @@ export function useWarehouseReports(args: {
     const html = buildWarehouseMaterialsReportHtml({
       periodFrom: rr.pdfFrom, periodTo: rr.pdfTo, orgName, warehouseName,
       objectName: opts?.objectName ?? null, workName: opts?.workName ?? null,
-      rows: rows as any, docsTotal, docsByReq: docsTotal, docsWithoutReq: 0
+      rows, docsTotal, docsByReq: docsTotal, docsWithoutReq: 0
     });
     return await exportWarehouseHtmlPdf({ fileName: `WH_Materials_${rr.pdfFrom || "all"}_${rr.pdfTo || "all"}`, html });
   }, [supabase, repIssues, periodFrom, periodTo, orgName, warehouseName]);
 
   const buildObjectWorkReportPdf = useCallback(async (opts?: { objectId?: string | null; objectName?: string | null }) => {
     const rr = normalizeReportRange(periodFrom, periodTo);
-    const rawRows = await apiFetchIssuedByObjectReportFast(supabase as any, {
+    const rawRows = await apiFetchIssuedByObjectReportFast(supabase, {
       from: rr.rpcFrom, to: rr.rpcTo, objectId: opts?.objectId ?? null,
     });
-    const rows = (rawRows || []).map((r: any) => ({
+    const rows = (rawRows || []).map((r) => ({
       object_id: r.object_id ?? null,
       object_name: String(r.object_name ?? "Без объекта"),
       work_name: String(r.work_name ?? "Без вида работ"),
@@ -383,7 +385,7 @@ export function useWarehouseReports(args: {
     }));
     const html = buildWarehouseObjectWorkReportHtml({
       periodFrom: rr.pdfFrom, periodTo: rr.pdfTo, orgName, warehouseName,
-      objectName: opts?.objectName ?? null, rows: rows as any, docsTotal: (repIssues || []).length,
+      objectName: opts?.objectName ?? null, rows, docsTotal: (repIssues || []).length,
     });
     return await exportWarehouseHtmlPdf({ fileName: `WH_ObjectWork_${rr.pdfFrom || "all"}_${rr.pdfTo || "all"}`, html });
   }, [supabase, repIssues, periodFrom, periodTo, orgName, warehouseName]);
@@ -399,8 +401,8 @@ export function useWarehouseReports(args: {
   const buildDayIncomingRegisterPdf = useCallback(async (dayLabel: string) => {
     const { buildWarehouseIncomingRegisterHtml } = require("../../lib/api/pdf_warehouse");
     const wanted = String(dayLabel).trim();
-    const dayItems = (repIncoming || []).filter((it: any) => {
-      const dt = it?.event_dt ? new Date(it.event_dt) : null;
+    const dayItems = (repIncoming || []).filter((it) => {
+      const dt = it?.event_dt ? new Date(String(it.event_dt ?? "")) : null;
       return dt && fmtDayRu(dt) === wanted;
     });
     const html = buildWarehouseIncomingRegisterHtml({
@@ -414,10 +416,10 @@ export function useWarehouseReports(args: {
     const { buildWarehouseIncomingMaterialsReportHtml } = require("../../lib/api/pdf_warehouse");
     const { apiFetchIncomingMaterialsReportFast } = require("./warehouse.api");
     const rr = dayRangeIso(dayLabel);
-    const rawRows = await apiFetchIncomingMaterialsReportFast(supabase as any, {
+    const rawRows = await apiFetchIncomingMaterialsReportFast(supabase, {
       from: rr.rpcFrom, to: rr.rpcTo,
     });
-    const rows = (rawRows || []).map((r: any) => {
+    const rows = (rawRows || []).map((r) => {
       const code = String(r.material_code || "").trim();
       const mapped = nameByCode?.[code]?.trim();
       const orig = String(r.material_name || "").trim();
@@ -433,7 +435,7 @@ export function useWarehouseReports(args: {
       };
     });
     const docsTotal = (repIncoming || []).filter(it => {
-      const dt = it?.event_dt ? new Date(it.event_dt) : null;
+      const dt = it?.event_dt ? new Date(String(it.event_dt ?? "")) : null;
       return dt && fmtDayRu(dt) === dayLabel;
     }).length;
 
@@ -449,10 +451,10 @@ export function useWarehouseReports(args: {
     const { buildWarehouseIncomingMaterialsReportHtml } = require("../../lib/api/pdf_warehouse");
     const { apiFetchIncomingMaterialsReportFast } = require("./warehouse.api");
     const rr = normalizeReportRange(periodFrom, periodTo);
-    const rawRows = await apiFetchIncomingMaterialsReportFast(supabase as any, {
+    const rawRows = await apiFetchIncomingMaterialsReportFast(supabase, {
       from: rr.rpcFrom, to: rr.rpcTo,
     });
-    const rows = (rawRows || []).map((r: any) => {
+    const rows = (rawRows || []).map((r) => {
       const code = String(r.material_code || "").trim();
       const mapped = nameByCode?.[code]?.trim();
       const orig = String(r.material_name || "").trim();
@@ -497,9 +499,10 @@ export function useWarehouseReports(args: {
     buildDayIncomingRegisterPdf,
     buildIncomingMaterialsReportPdf,
     buildDayIncomingMaterialsReportPdf,
-    apiFetchIncomingLines: (s: any, id: string) => {
+    apiFetchIncomingLines: (s: SupabaseClient, id: string) => {
       const { apiFetchIncomingLines } = require("./warehouse.api");
       return apiFetchIncomingLines(s, id);
     },
   };
 }
+

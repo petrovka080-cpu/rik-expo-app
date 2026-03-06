@@ -24,6 +24,7 @@ type ScrollResponderLike = {
 
 const asScrollResponder = (v: unknown): ScrollResponderLike | null =>
   v && typeof v === "object" ? (v as ScrollResponderLike) : null;
+const KEYBOARD_SCROLL_DELAY_MS = 60;
 
 export function useAccountantKeyboard(cardScrollRef: { current: unknown }) {
   const [kbdH, setKbdH] = useState(0);
@@ -45,6 +46,7 @@ export function useAccountantKeyboard(cardScrollRef: { current: unknown }) {
           ? 190
           : 160;
 
+      // RN keyboard/layout settles asynchronously; short delay prevents missed scroll on focus.
       setTimeout(() => {
         try {
           const responderHolder = asScrollResponder(cardScrollRef.current);
@@ -59,7 +61,7 @@ export function useAccountantKeyboard(cardScrollRef: { current: unknown }) {
         } catch {
           // no-op
         }
-      }, 60);
+      }, KEYBOARD_SCROLL_DELAY_MS);
     },
     [cardScrollRef],
   );

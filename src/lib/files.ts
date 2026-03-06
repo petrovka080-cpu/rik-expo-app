@@ -1,10 +1,10 @@
-// src/lib/files.ts
+﻿// src/lib/files.ts
 import { Platform, Linking, Alert } from "react-native";
 import { supabase } from "./supabaseClient";
 import * as FileSystem from "expo-file-system/legacy";
 
 
-/** Переиспользуем аплоадер из rik_api.ts */
+/** РџРµСЂРµРёСЃРїРѕР»СЊР·СѓРµРј Р°РїР»РѕР°РґРµСЂ РёР· rik_api.ts */
 export { uploadProposalAttachment } from "./catalog_api";
 
 type AttRow = {
@@ -15,33 +15,48 @@ type AttRow = {
   group_key: string;
   created_at: string;
 
-  // ✅ Для UI/WEB: чтобы можно было открыть самому, если pop-up заблокирован
+  // вњ… Р”Р»СЏ UI/WEB: С‡С‚РѕР±С‹ РјРѕР¶РЅРѕ Р±С‹Р»Рѕ РѕС‚РєСЂС‹С‚СЊ СЃР°РјРѕРјСѓ, РµСЃР»Рё pop-up Р·Р°Р±Р»РѕРєРёСЂРѕРІР°РЅ
   signed_url?: string | null;
 };
 
+type IntentLauncherModule = {
+  startActivityAsync: (action: string, params: { data: string; flags?: number; type?: string }) => Promise<void>;
+  ActivityAction: { VIEW: string };
+};
+
+type SupplierFileMetaRow = {
+  id?: string;
+  created_at?: string;
+  file_name: string;
+  file_url: string;
+  group_key?: string;
+};
+
+const errorText = (e: unknown) => (e instanceof Error ? e.message : String(e));
+
 function notFoundMsg(groupKey: string) {
   return groupKey === "invoice"
-    ? "Счёт не прикреплён"
+    ? "РЎС‡С‘С‚ РЅРµ РїСЂРёРєСЂРµРїР»С‘РЅ"
     : groupKey === "payment"
-      ? "Платёжные документы не найдены"
-      : "Вложения не найдены";
+      ? "РџР»Р°С‚С‘Р¶РЅС‹Рµ РґРѕРєСѓРјРµРЅС‚С‹ РЅРµ РЅР°Р№РґРµРЅС‹"
+      : "Р’Р»РѕР¶РµРЅРёСЏ РЅРµ РЅР°Р№РґРµРЅС‹";
 }
 
-/** Нормализуем имя файла — безопасно для путей/сохранения */
+/** РќРѕСЂРјР°Р»РёР·СѓРµРј РёРјСЏ С„Р°Р№Р»Р° вЂ” Р±РµР·РѕРїР°СЃРЅРѕ РґР»СЏ РїСѓС‚РµР№/СЃРѕС…СЂР°РЅРµРЅРёСЏ */
 function safeFileName(name: string | undefined) {
   const base = name || "file.bin";
-  return base.replace(/[^\wА-Яа-яЁё\-(). ]+/g, "_");
+  return base.replace(/[^\p{L}\p{N}_\-(). ]+/gu, "_");
 }
 
 async function openLocalFilePreview(uri: string) {
-  // 1) Android: открываем через Intent (самый стабильный путь)
+  // 1) Android: РѕС‚РєСЂС‹РІР°РµРј С‡РµСЂРµР· Intent (СЃР°РјС‹Р№ СЃС‚Р°Р±РёР»СЊРЅС‹Р№ РїСѓС‚СЊ)
   if (Platform.OS === "android") {
     try {
-      const IntentLauncher = await import("expo-intent-launcher");
+      const IntentLauncher = (await import("expo-intent-launcher")) as unknown as IntentLauncherModule;
       const contentUri = await FileSystem.getContentUriAsync(uri);
 
-      await (IntentLauncher as any).startActivityAsync(
-        (IntentLauncher as any).ActivityAction.VIEW,
+      await IntentLauncher.startActivityAsync(
+        IntentLauncher.ActivityAction.VIEW,
         {
           data: contentUri,
           flags: 1, // FLAG_GRANT_READ_URI_PERMISSION
@@ -50,34 +65,34 @@ async function openLocalFilePreview(uri: string) {
       );
       return;
     } catch {
-      // fallback ниже
+      // fallback РЅРёР¶Рµ
     }
   }
 
-  // 2) iOS и fallback: Sharing
+  // 2) iOS Рё fallback: Sharing
   try {
     const Sharing = await import("expo-sharing");
-    const isAvail = await (Sharing as any).isAvailableAsync?.();
+    const isAvail = await Sharing.isAvailableAsync();
     if (isAvail) {
-      await (Sharing as any).shareAsync(uri);
+      await Sharing.shareAsync(uri);
       return;
     }
   } catch {
-    // fallback ниже
+    // fallback РЅРёР¶Рµ
   }
 
-  // 3) последний шанс: Linking
+  // 3) РїРѕСЃР»РµРґРЅРёР№ С€Р°РЅСЃ: Linking
   try {
     await Linking.openURL(uri);
-  } catch (e: any) {
-    throw new Error(`Не удалось открыть файл: ${String(e?.message ?? e)}`);
+  } catch (e: unknown) {
+    throw new Error(`open file failed: ${errorText(e)}`);
   }
 }
 
-// ===== WEB: открываем как blob-url (обходит Chrome PDF viewer / signed-url глюки) =====
+// ===== WEB: РѕС‚РєСЂС‹РІР°РµРј РєР°Рє blob-url (РѕР±С…РѕРґРёС‚ Chrome PDF viewer / signed-url РіР»СЋРєРё) =====
 async function webOpenAsBlobWindow(url: string, fileName?: string) {
   const u = String(url || "").trim();
-  if (!u) throw new Error("Пустая ссылка");
+  if (!u) throw new Error("РџСѓСЃС‚Р°СЏ СЃСЃС‹Р»РєР°");
 
   const res = await fetch(u);
   if (!res.ok) {
@@ -86,10 +101,7 @@ async function webOpenAsBlobWindow(url: string, fileName?: string) {
   }
 
   const blob = await res.blob();
-  const ct =
-    (blob as any)?.type ||
-    res.headers.get("content-type") ||
-    "application/octet-stream";
+  const ct = blob.type || res.headers.get("content-type") || "application/octet-stream";
 
   const blobUrl = URL.createObjectURL(new Blob([blob], { type: ct }));
 
@@ -108,7 +120,7 @@ async function webOpenAsBlobWindow(url: string, fileName?: string) {
 
 function webOpenUrlStrict(url: string) {
   const u = String(url || "").trim();
-  if (!u) throw new Error("Пустая ссылка");
+  if (!u) throw new Error("РџСѓСЃС‚Р°СЏ СЃСЃС‹Р»РєР°");
 
   const w = window.open(u, "_blank", "noopener,noreferrer");
   if (w) return;
@@ -125,9 +137,9 @@ function webOpenUrlStrict(url: string) {
   } catch { }
 
   try {
-    window.prompt("Ссылка (скопируй и открой в новой вкладке):", u);
+    window.prompt("РЎСЃС‹Р»РєР° (СЃРєРѕРїРёСЂСѓР№ Рё РѕС‚РєСЂРѕР№ РІ РЅРѕРІРѕР№ РІРєР»Р°РґРєРµ):", u);
   } catch {
-    alert("Pop-up заблокирован. Скопируй ссылку из адресной строки (DevTools/Network).");
+    alert("Pop-up Р·Р°Р±Р»РѕРєРёСЂРѕРІР°РЅ. РЎРєРѕРїРёСЂСѓР№ СЃСЃС‹Р»РєСѓ РёР· Р°РґСЂРµСЃРЅРѕР№ СЃС‚СЂРѕРєРё (DevTools/Network).");
   }
 }
 
@@ -142,13 +154,13 @@ function guardOpenOnce(key: string, ms = 1200) {
 
 export async function openSignedUrlUniversal(url: string, fileName?: string) {
   const u = String(url || "").trim();
-  if (!u) throw new Error("Пустая ссылка");
+  if (!u) throw new Error("РџСѓСЃС‚Р°СЏ СЃСЃС‹Р»РєР°");
 
   const base = u.split("?")[0];
   const name = String(fileName || "").trim();
   if (!guardOpenOnce(`${Platform.OS}|${base}|${name}`)) return;
 
-  // WEB: blob-open → fallback прямой open
+  // WEB: blob-open в†’ fallback РїСЂСЏРјРѕР№ open
   if (Platform.OS === "web") {
     try {
       await webOpenAsBlobWindow(u, fileName);
@@ -158,13 +170,13 @@ export async function openSignedUrlUniversal(url: string, fileName?: string) {
     return;
   }
 
-  // NATIVE: скачиваем в cache и открываем локально
+  // NATIVE: СЃРєР°С‡РёРІР°РµРј РІ cache Рё РѕС‚РєСЂС‹РІР°РµРј Р»РѕРєР°Р»СЊРЅРѕ
   const clean = safeFileName(fileName || "document.bin");
   const target = `${FileSystem.cacheDirectory}${Date.now()}_${clean}`;
 
   const res = await FileSystem.downloadAsync(u, target);
   const localUri = res?.uri;
-  if (!localUri) throw new Error("Не удалось сохранить файл");
+  if (!localUri) throw new Error("РќРµ СѓРґР°Р»РѕСЃСЊ СЃРѕС…СЂР°РЅРёС‚СЊ С„Р°Р№Р»");
 
   await openLocalFilePreview(localUri);
 }
@@ -179,19 +191,19 @@ export async function openAttachment(
 
   let rows: AttRow[] = [];
 
-  // 1) RPC list_attachments (если есть)
+  // 1) RPC list_attachments (РµСЃР»Рё РµСЃС‚СЊ)
   try {
     const { data, error } = await supabase.rpc(
       "list_attachments",
       {
         p_proposal_id: pid,
         p_group_key: groupKey,
-      } as any
+      }
     );
-    if (!error && Array.isArray(data)) rows = data as any[];
+    if (!error && Array.isArray(data)) rows = data as AttRow[];
   } catch { }
 
-  // 2) Fallback: таблица proposal_attachments
+  // 2) Fallback: С‚Р°Р±Р»РёС†Р° proposal_attachments
   if (!rows.length) {
     const q = await supabase
       .from("proposal_attachments")
@@ -201,7 +213,7 @@ export async function openAttachment(
       .order("created_at", { ascending: false })
       .limit(opts?.all ? 1000 : 50);
 
-    if (!q.error && Array.isArray(q.data)) rows = q.data as any[];
+    if (!q.error && Array.isArray(q.data)) rows = q.data as AttRow[];
   }
 
   if (!rows.length) throw new Error(notFoundMsg(String(groupKey)));
@@ -217,14 +229,14 @@ export async function openAttachment(
     const { data, error } = await supabase.storage.from(bucket).createSignedUrl(path, 60 * 10);
     if (error) throw error;
     const url = data?.signedUrl;
-    if (!url) throw new Error("Не удалось получить ссылку");
+    if (!url) throw new Error("РќРµ СѓРґР°Р»РѕСЃСЊ РїРѕР»СѓС‡РёС‚СЊ СЃСЃС‹Р»РєСѓ");
     return url;
   };
 
   const openOne = async (row: AttRow) => {
     const bucket = String(row.bucket_id || "").trim();
     const path = String(row.storage_path || "").trim();
-    if (!bucket || !path) throw new Error("bucket_id/storage_path пустые");
+    if (!bucket || !path) throw new Error("bucket_id/storage_path РїСѓСЃС‚С‹Рµ");
 
     const signedUrl = await makeSignedUrl(bucket, path);
     row.signed_url = signedUrl;
@@ -244,9 +256,9 @@ export async function openAttachment(
 }
 
 /* =======================================================================================
- *                                П О С Т А В Щ И К И
+ *                                Рџ Рћ РЎ Рў Рђ Р’ Р© Р Рљ Р
  *  Bucket: supplier_files (public)
- *  Table:  supplier_files (meta) — опционально
+ *  Table:  supplier_files (meta) вЂ” РѕРїС†РёРѕРЅР°Р»СЊРЅРѕ
  * ======================================================================================= */
 
 export type SupplierFileGroup = "price" | "photo" | "file";
@@ -285,7 +297,7 @@ export async function uploadSupplierFile(
 export async function listSupplierFilesMeta(
   supplierId: string,
   opts?: { group?: SupplierFileGroup; limit?: number }
-): Promise<Array<{ id?: string; created_at?: string; file_name: string; file_url: string; group_key?: string }>> {
+): Promise<SupplierFileMetaRow[]> {
   const id = String(supplierId).trim();
   if (!id) return [];
 
@@ -302,7 +314,7 @@ export async function listSupplierFilesMeta(
     const r = await q;
     if (r.error) throw r.error;
 
-    return (r.data as any[]) || [];
+    return Array.isArray(r.data) ? (r.data as SupplierFileMetaRow[]) : [];
   } catch {
     return [];
   }
@@ -320,15 +332,15 @@ export async function openSupplierFile(
     limit: opts?.all ? 1000 : 50,
   });
 
-  if (!meta.length) throw new Error("Файлы поставщика не найдены");
+  if (!meta.length) throw new Error("Р¤Р°Р№Р»С‹ РїРѕСЃС‚Р°РІС‰РёРєР° РЅРµ РЅР°Р№РґРµРЅС‹");
 
   const rows = meta
     .slice()
-    .sort((a: any, b: any) => Date.parse(String(b.created_at || 0)) - Date.parse(String(a.created_at || 0)));
+    .sort((a, b) => Date.parse(String(b.created_at || 0)) - Date.parse(String(a.created_at || 0)));
 
   const openUrl = async (url: string) => {
     const u = String(url || "").trim();
-    if (!u) throw new Error("Пустая ссылка файла поставщика");
+    if (!u) throw new Error("РџСѓСЃС‚Р°СЏ СЃСЃС‹Р»РєР° С„Р°Р№Р»Р° РїРѕСЃС‚Р°РІС‰РёРєР°");
 
     if (Platform.OS === "web") {
       try {
@@ -341,12 +353,12 @@ export async function openSupplierFile(
 
     try {
       await Linking.openURL(u);
-    } catch (e: any) {
-      Alert.alert("Не удалось открыть файл", String(e?.message ?? e));
+    } catch (e: unknown) {
+      Alert.alert("РќРµ СѓРґР°Р»РѕСЃСЊ РѕС‚РєСЂС‹С‚СЊ С„Р°Р№Р»", errorText(e));
     }
   };
 
-  const openOne = async (row: any) => {
+  const openOne = async (row: SupplierFileMetaRow) => {
     await openUrl(row.file_url);
   };
 
@@ -355,3 +367,4 @@ export async function openSupplierFile(
 
   return rows;
 }
+

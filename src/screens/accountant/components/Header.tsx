@@ -17,6 +17,8 @@ export default function Header({
   onExcel,
   onBell,
   onTabPress,
+  accountantFio,
+  onOpenFioModal,
 }: {
   tab: Tab;
   setTab: (t: Tab) => void;
@@ -27,13 +29,24 @@ export default function Header({
   onExcel: () => void;
   onBell: () => void;
   onTabPress: (t: Tab) => void;
+  accountantFio?: string;
+  onOpenFioModal?: () => void;
 }) {
   return (
     <SafeView style={{ paddingHorizontal: 12, paddingTop: 10, paddingBottom: 6 }}>
       <SafeView style={{ flexDirection: "row", alignItems: "center" }}>
-        <Animated.Text style={{ fontSize: titleSize, fontWeight: "900", color: UI.text }}>
-          Бухгалтер
-        </Animated.Text>
+        <View>
+          <Animated.Text style={{ fontSize: titleSize, fontWeight: "900", color: UI.text }}>
+            Бухгалтер
+          </Animated.Text>
+          {!!accountantFio && (
+            <Pressable onPress={onOpenFioModal}>
+              <Text style={{ fontSize: 13, color: UI.accent, fontWeight: "800", marginTop: 2 }}>
+                👤 {accountantFio}
+              </Text>
+            </Pressable>
+          )}
+        </View>
 
         <View style={{ marginLeft: "auto" }}>
           <TopRightActionBar

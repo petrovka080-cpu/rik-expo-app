@@ -1,4 +1,6 @@
-﻿// src/screens/accountant/types.ts
+﻿import type { AccountantInboxRow } from "../../lib/rik_api";
+
+// src/screens/accountant/types.ts
 export type Tab = "К оплате" | "Частично" | "Оплачено" | "На доработке" | "История" | "Подряды";
 
 export const TABS: Tab[] = ["К оплате", "Частично", "Оплачено", "На доработке", "История", "Подряды"];
@@ -39,4 +41,10 @@ export type NotificationRow = {
   title?: string | null;
   body?: string | null;
   created_at?: string | null;
+};
+
+export type AccountantInboxUiRow = AccountantInboxRow & {
+  proposal_no?: string | null;
+  id_short?: string | null;
+  last_paid_at?: number | null;
 };

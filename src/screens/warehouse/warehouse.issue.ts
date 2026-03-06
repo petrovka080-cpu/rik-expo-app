@@ -1,19 +1,21 @@
 // src/screens/warehouse/warehouse.issue.ts
 import type { ReqItemUiRow, ReqPickLine, StockPickLine } from "./warehouse.types";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { normMatCode, normUomId } from "./warehouse.utils";
 
 export type IssueMsg = { kind: "error" | "ok" | null; text: string };
 
 export function makeWarehouseIssueActions(args: {
-  supabase: any;
+  supabase: SupabaseClient;
 
-  nz: (v: any, d?: number) => number;
-  pickErr: (e: any) => string;
+  nz: (v: unknown, d?: number) => number;
+  pickErr: (e: unknown) => string;
 
   // данные/контекст
   getRecipient: () => string; // rec.recipientText.trim()
   getObjectLabel?: () => string;
   getWorkLabel?: () => string;
+  getWarehousemanFio: () => string;
 
   // обновления экрана после выдачи
   fetchStock: () => Promise<void>;
@@ -41,6 +43,7 @@ export function makeWarehouseIssueActions(args: {
     getRecipient,
     getObjectLabel,
     getWorkLabel,
+    getWarehousemanFio,
 
     fetchStock,
     fetchReqItems,
@@ -58,7 +61,7 @@ export function makeWarehouseIssueActions(args: {
     clearReqQtyInput,
   } = args;
 
-  const toNull = (v: any) => {
+  const toNull = (v: unknown) => {
     const s = String(v ?? "").trim();
     return s ? s : null;
   };
@@ -96,17 +99,21 @@ export function makeWarehouseIssueActions(args: {
     setIssueMsg({ kind: null, text: "" });
 
     try {
-      const note = ["Выдача по заявке", input.requestDisplayNo ? `Заявка: ${input.requestDisplayNo}` : null]
+      const note = [
+        "Выдача по заявке",
+        input.requestDisplayNo ? `Заявка: ${input.requestDisplayNo}` : null,
+        getWarehousemanFio() ? `Кладовщик: ${getWarehousemanFio()}` : null
+      ]
         .filter(Boolean)
         .join(" · ");
-     
-      const r1 = await supabase.rpc("issue_via_ui" as any, {
+
+      const r1 = await supabase.rpc("issue_via_ui" , {
         p_who: who,
         p_note: note,
         p_request_id: rid,
         p_object_name: getObjName(),
         p_work_name: getWorkName(),
-      } as any);
+      } );
       if (r1.error || !r1.data) throw r1.error;
       const issueId = Number(r1.data);
       const byId: Record<string, ReqItemUiRow> = {};
@@ -114,8 +121,8 @@ export function makeWarehouseIssueActions(args: {
 
       for (const ln of lines) {
         const src = byId[String(ln.request_item_id)];
-        const canByReq = nz((src as any)?.qty_left, 0);
-        const canByStock = nz((src as any)?.qty_available, 0);
+        const canByReq = nz((src )?.qty_left, 0);
+        const canByStock = nz((src )?.qty_available, 0);
 
         const want = nz(ln.qty, 0);
         if (want <= 0) continue;
@@ -124,36 +131,36 @@ export function makeWarehouseIssueActions(args: {
           throw new Error(`На складе меньше, чем выбрано: ${ln.name_human} (доступно ${canByStock})`);
         }
 
-        const uomCode = String(ln.uom ?? (src as any)?.uom ?? "").trim();
+        const uomCode = String(ln.uom ?? (src )?.uom ?? "").trim();
         if (!uomCode) throw new Error(`Пустой uom у ${ln.rik_code}`);
 
         const qtyInReq = Math.min(want, canByReq);
         const qtyOver = Math.max(0, want - qtyInReq);
 
         if (qtyInReq > 0) {
-          const rA = await supabase.rpc("issue_add_item_via_ui" as any, {
+          const rA = await supabase.rpc("issue_add_item_via_ui" , {
             p_issue_id: issueId,
             p_rik_code: ln.rik_code,
             p_uom_id: uomCode,
             p_qty: qtyInReq,
             p_request_item_id: ln.request_item_id,
-          } as any);
+          } );
           if (rA.error) throw rA.error;
         }
 
         if (qtyOver > 0) {
-          const rB = await supabase.rpc("issue_add_item_via_ui" as any, {
+          const rB = await supabase.rpc("issue_add_item_via_ui" , {
             p_issue_id: issueId,
             p_rik_code: ln.rik_code,
             p_uom_id: uomCode,
             p_qty: qtyOver,
             p_request_item_id: null,
-          } as any);
+          } );
           if (rB.error) throw rB.error;
         }
       }
 
-      const r3 = await supabase.rpc("acc_issue_commit_ledger" as any, { p_issue_id: issueId } as any);
+      const r3 = await supabase.rpc("acc_issue_commit_ledger" , { p_issue_id: issueId } );
       if (r3.error) throw r3.error;
 
       clearReqPick();
@@ -171,7 +178,7 @@ export function makeWarehouseIssueActions(args: {
       setIssueMsg({ kind: "ok", text: `✓ Выдано по заявке: позиций ${lines.length}` });
       return true;
 
-    } catch (e: any) {
+    } catch (e: unknown) {
       setIssueMsg({ kind: "error", text: pickErr(e) });
       return false;
     } finally {
@@ -179,103 +186,103 @@ export function makeWarehouseIssueActions(args: {
     }
   }
 
- async function submitStockPick(input: { stockPick: Record<string, StockPickLine> }): Promise<boolean> {
-  const who = String(getRecipient() ?? "").trim();
-  if (!who) {
-    setIssueMsg({ kind: "error", text: "Укажите получателя" });
-    return false;
-  }
-
-  const lines = Object.values(input.stockPick || {}).filter(
-    (x) => x && x.code && nz(x.qty, 0) > 0
-  );
-
-  if (!lines.length) {
-    setIssueMsg({ kind: "error", text: "Ничего не выбрано" });
-    return false;
-  }
-
-  setIssueBusy(true);
-  setIssueMsg({ kind: null, text: "" });
-
-  try {
-    // Validate cumulative quantity by code+uom before sending batch to RPC.
-    const groupedQty: Record<string, number> = {};
-    const groupedName: Record<string, string> = {};
-    for (const ln of lines) {
-      const code = normMatCode(String(ln.code ?? ""));
-      const uom = normUomId((ln as any).uom_id ?? null);
-      const k = buildCodeUomKey(code, uom);
-      groupedQty[k] = nz(groupedQty[k], 0) + nz(ln.qty, 0);
-      groupedName[k] =
-        String((ln as any).name ?? "").trim() ||
-        String(getMaterialNameByCode?.(code) ?? "").trim() ||
-        code;
+  async function submitStockPick(input: { stockPick: Record<string, StockPickLine> }): Promise<boolean> {
+    const who = String(getRecipient() ?? "").trim();
+    if (!who) {
+      setIssueMsg({ kind: "error", text: "Укажите получателя" });
+      return false;
     }
 
-    for (const k of Object.keys(groupedQty)) {
-      const [code, uomRaw] = k.split("::");
-      const uom = uomRaw && uomRaw !== "-" ? uomRaw : null;
-      const want = nz(groupedQty[k], 0);
-      const can =
-        typeof getAvailableByCodeUom === "function"
-          ? nz(getAvailableByCodeUom(code, uom), 0)
-          : nz(getAvailableByCode(code), 0);
-      if (want > can) {
-        setIssueMsg({
-          kind: "error",
-          text: `Недостаточно на складе: ${groupedName[k]} (доступно ${can}, выбрано ${want})`,
-        });
-        return false;
+    const lines = Object.values(input.stockPick || {}).filter(
+      (x) => x && x.code && nz(x.qty, 0) > 0
+    );
+
+    if (!lines.length) {
+      setIssueMsg({ kind: "error", text: "Ничего не выбрано" });
+      return false;
+    }
+
+    setIssueBusy(true);
+    setIssueMsg({ kind: null, text: "" });
+
+    try {
+      // Validate cumulative quantity by code+uom before sending batch to RPC.
+      const groupedQty: Record<string, number> = {};
+      const groupedName: Record<string, string> = {};
+      for (const ln of lines) {
+        const code = normMatCode(String(ln.code ?? ""));
+        const uom = normUomId((ln ).uom_id ?? null);
+        const k = buildCodeUomKey(code, uom);
+        groupedQty[k] = nz(groupedQty[k], 0) + nz(ln.qty, 0);
+        groupedName[k] =
+          String((ln ).name ?? "").trim() ||
+          String(getMaterialNameByCode?.(code) ?? "").trim() ||
+          code;
       }
-    }
 
-    const payloadLines = lines.map((l) => ({
-      rik_code: normMatCode(l.code),
-      uom_id: normUomId((l as any).uom_id ?? null),
-      qty: nz(l.qty, 0),
-    }));
-
-    const r = await supabase.rpc("wh_issue_free_atomic_v4" as any, {
-      p_who: who,
-      p_object_name: getObjName(),
-      p_work_name: getWorkName(),
-      p_note: null,
-      p_lines: payloadLines,
-    } as any);
-
-    if (r.error) {
-      const rawMsg = String((r.error as any)?.message ?? "");
-      // Normalize common DB message to user-facing text.
-      if (rawMsg.includes("Нельзя выдать больше, чем доступно")) {
-        const matCode = String(rawMsg.match(/(MAT-[A-Z0-9\-\._]+)/i)?.[1] ?? "").trim();
-        const matName =
-          (matCode ? String(getMaterialNameByCode?.(matCode) ?? "").trim() : "") ||
-          lines.find((x) => normMatCode(String(x.code ?? "")) === normMatCode(matCode))?.name ||
-          matCode;
-        const qtyAvail = String(rawMsg.match(/доступно\s+([0-9.,]+)/i)?.[1] ?? "").trim();
-        const qtyNeed = String(rawMsg.match(/пытаетесь\s+([0-9.,]+)/i)?.[1] ?? "").trim();
-        const details =
-          qtyAvail || qtyNeed
-            ? ` (доступно ${qtyAvail || "0"}${qtyNeed ? `, запрошено ${qtyNeed}` : ""})`
-            : "";
-        throw new Error(`Недостаточно на складе: ${matName}${details}`);
+      for (const k of Object.keys(groupedQty)) {
+        const [code, uomRaw] = k.split("::");
+        const uom = uomRaw && uomRaw !== "-" ? uomRaw : null;
+        const want = nz(groupedQty[k], 0);
+        const can =
+          typeof getAvailableByCodeUom === "function"
+            ? nz(getAvailableByCodeUom(code, uom), 0)
+            : nz(getAvailableByCode(code), 0);
+        if (want > can) {
+          setIssueMsg({
+            kind: "error",
+            text: `Недостаточно на складе: ${groupedName[k]} (доступно ${can}, выбрано ${want})`,
+          });
+          return false;
+        }
       }
-      throw r.error;
+
+      const payloadLines = lines.map((l) => ({
+        rik_code: normMatCode(l.code),
+        uom_id: normUomId((l ).uom_id ?? null),
+        qty: nz(l.qty, 0),
+      }));
+
+      const r = await supabase.rpc("wh_issue_free_atomic_v4" , {
+        p_who: who,
+        p_object_name: getObjName(),
+        p_work_name: getWorkName(),
+        p_note: getWarehousemanFio() ? `Кладовщик: ${getWarehousemanFio()}` : null,
+        p_lines: payloadLines,
+      } );
+
+      if (r.error) {
+        const rawMsg = String((r.error )?.message ?? "");
+        // Normalize common DB message to user-facing text.
+        if (rawMsg.includes("Нельзя выдать больше, чем доступно")) {
+          const matCode = String(rawMsg.match(/(MAT-[A-Z0-9\-\._]+)/i)?.[1] ?? "").trim();
+          const matName =
+            (matCode ? String(getMaterialNameByCode?.(matCode) ?? "").trim() : "") ||
+            lines.find((x) => normMatCode(String(x.code ?? "")) === normMatCode(matCode))?.name ||
+            matCode;
+          const qtyAvail = String(rawMsg.match(/доступно\s+([0-9.,]+)/i)?.[1] ?? "").trim();
+          const qtyNeed = String(rawMsg.match(/пытаетесь\s+([0-9.,]+)/i)?.[1] ?? "").trim();
+          const details =
+            qtyAvail || qtyNeed
+              ? ` (доступно ${qtyAvail || "0"}${qtyNeed ? `, запрошено ${qtyNeed}` : ""})`
+              : "";
+          throw new Error(`Недостаточно на складе: ${matName}${details}`);
+        }
+        throw r.error;
+      }
+
+      await fetchStock();
+      clearStockPick();
+
+      setIssueMsg({ kind: "ok", text: `✓ Выдано позиций: ${lines.length}` });
+      return true;
+    } catch (e: unknown) {
+      setIssueMsg({ kind: "error", text: pickErr(e) });
+      return false;
+    } finally {
+      setIssueBusy(false);
     }
-
-    await fetchStock();
-    clearStockPick();
-
-    setIssueMsg({ kind: "ok", text: `✓ Выдано позиций: ${lines.length}` });
-    return true;
-  } catch (e: any) {
-    setIssueMsg({ kind: "error", text: pickErr(e) });
-    return false;
-  } finally {
-    setIssueBusy(false);
   }
-}
 
   async function issueByRequestItem(input: { row: ReqItemUiRow; qty: number }): Promise<boolean> {
     const who = String(getRecipient() ?? "").trim();
@@ -285,8 +292,8 @@ export function makeWarehouseIssueActions(args: {
     }
 
     const row = input.row;
-    const requestItemId = String((row as any)?.request_item_id ?? "").trim();
-    const requestId = String((row as any)?.request_id ?? "").trim();
+    const requestItemId = String((row )?.request_item_id ?? "").trim();
+    const requestId = String((row )?.request_id ?? "").trim();
     if (!requestItemId || !requestId) {
       setIssueMsg({ kind: "error", text: "Пустые ID заявки/строки" });
       return false;
@@ -298,7 +305,7 @@ export function makeWarehouseIssueActions(args: {
       return false;
     }
 
-    const canNow = nz((row as any)?.qty_can_issue_now, 0);
+    const canNow = nz((row )?.qty_can_issue_now, 0);
     if (qty > canNow) {
       setIssueMsg({ kind: "error", text: `Нельзя больше, чем можно выдать сейчас: ${canNow}` });
       return false;
@@ -310,53 +317,54 @@ export function makeWarehouseIssueActions(args: {
     try {
       const note = [
         "Выдача по заявке",
-        (row as any)?.display_no ? `Заявка: ${(row as any).display_no}` : null,
-        (row as any)?.object_name ? `Объект: ${(row as any).object_name}` : null,
-        (row as any)?.level_code ? `Этаж: ${(row as any).level_code}` : null,
-        (row as any)?.system_code ? `Система: ${(row as any).system_code}` : null,
-        (row as any)?.zone_code ? `Зона: ${(row as any).zone_code}` : null,
+        (row )?.display_no ? `Заявка: ${(row ).display_no}` : null,
+        (row )?.object_name ? `Объект: ${(row ).object_name}` : null,
+        (row )?.level_code ? `Этаж: ${(row ).level_code}` : null,
+        (row )?.system_code ? `Система: ${(row ).system_code}` : null,
+        (row )?.zone_code ? `Зона: ${(row ).zone_code}` : null,
+        getWarehousemanFio() ? `Кладовщик: ${getWarehousemanFio()}` : null,
       ]
         .filter(Boolean)
         .join(" · ");
 
-      const r1 = await supabase.rpc("issue_via_ui" as any, {
+      const r1 = await supabase.rpc("issue_via_ui" , {
         p_who: who,
         p_note: note,
         p_request_id: requestId,
         p_object_name: getObjName(),
         p_work_name: getWorkName(),
-      } as any);
+      } );
       if (r1.error || !r1.data) throw r1.error;
       const issueId = Number(r1.data);
 
-      const uomCode = String((row as any)?.uom ?? "").trim();
-      if (!uomCode) throw new Error(`Пустой uom у ${(row as any)?.rik_code}`);
+      const uomCode = String((row )?.uom ?? "").trim();
+      if (!uomCode) throw new Error(`Пустой uom у ${(row )?.rik_code}`);
 
-      const r2 = await supabase.rpc("issue_add_item_via_ui" as any, {
+      const r2 = await supabase.rpc("issue_add_item_via_ui" , {
         p_issue_id: issueId,
-        p_rik_code: (row as any).rik_code,
+        p_rik_code: (row ).rik_code,
         p_uom_id: uomCode,
         p_qty: qty,
         p_request_item_id: requestItemId,
-      } as any);
+      } );
       if (r2.error) throw r2.error;
 
-      const r3 = await supabase.rpc("acc_issue_commit_ledger" as any, { p_issue_id: issueId } as any);
+      const r3 = await supabase.rpc("acc_issue_commit_ledger" , { p_issue_id: issueId } );
       if (r3.error) throw r3.error;
 
       await fetchStock();
       await fetchReqItems(requestId);
       await fetchReqHeads();
 
-      const uomLabel = String((row as any)?.uom ?? "—");
+      const uomLabel = String((row )?.uom ?? "—");
       setIssueMsg({
         kind: "ok",
-        text: `✓ Выдано по заявке: ${qty} ${uomLabel} — ${(row as any)?.name_human ?? ""}`,
+        text: `✓ Выдано по заявке: ${qty} ${uomLabel} — ${(row )?.name_human ?? ""}`,
       });
 
       clearReqQtyInput?.(requestItemId);
       return true;
-    } catch (e: any) {
+    } catch (e: unknown) {
       setIssueMsg({ kind: "error", text: pickErr(e) });
       return false;
     } finally {
@@ -366,3 +374,4 @@ export function makeWarehouseIssueActions(args: {
 
   return { submitReqPick, submitStockPick, issueByRequestItem };
 }
+

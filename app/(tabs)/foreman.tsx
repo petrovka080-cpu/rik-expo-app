@@ -19,6 +19,7 @@ import ForemanHistoryModal from "../../src/screens/foreman/ForemanHistoryModal";
 import ForemanDraftModal from "../../src/screens/foreman/ForemanDraftModal";
 import ForemanEditorSection from "../../src/screens/foreman/ForemanEditorSection";
 import ForemanSubcontractTab from "../../src/screens/foreman/ForemanSubcontractTab";
+import WarehouseFioModal from "../../src/screens/warehouse/components/WarehouseFioModal";
 import { useForemanDicts } from "../../src/screens/foreman/useForemanDicts";
 import { s } from "../../src/screens/foreman/foreman.styles";
 import { REQUEST_STATUS_STYLES, TYPO, UI } from "../../src/screens/foreman/foreman.ui";
@@ -58,6 +59,8 @@ import {
   saveForemanToHistory,
   shortId,
 } from "../../src/screens/foreman/foreman.helpers";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useFocusEffect } from "expo-router";
 
 type DraftAppendRow = {
   rik_code: string;
@@ -114,9 +117,23 @@ const FOREMAN_TEXT = {
   submitNeedDraftHint: "Чтобы отправить, вернись к текущему черновику.",
 } as const;
 
+type RefOption = { code: string; label: string };
+
 type WebUiApi = {
-  alert?: (message?: string) => void;
-  confirm?: (message?: string) => boolean;
+  onZoneChange: (v: string) => void;
+  onOpenFioModal: () => void;
+  objectType: string;
+  level: string;
+  system: string;
+  zone: string;
+  objOptions: RefOption[];
+  lvlOptions: RefOption[];
+  sysOptions: RefOption[];
+  zoneOptions: RefOption[];
+  onObjectChange: (v: string) => void;
+  onLevelChange: (v: string) => void;
+  onSystemChange: (v: string) => void;
+  ensureHeaderReady: () => boolean;
 };
 
 const webUi = globalThis as typeof globalThis & WebUiApi;
@@ -128,9 +145,9 @@ export default function ForemanScreen() {
   // Request header
   const [requestId, setRequestId] = useState<string>('');
   const [foreman, setForeman] = useState<string>('');
+  const [isFioConfirmVisible, setIsFioConfirmVisible] = useState(false);
+  const [isFioLoading, setIsFioLoading] = useState(false);
   const [foremanHistory, setForemanHistory] = useState<string[]>([]);
-  const [foremanFocus, setForemanFocus] = useState(false);
-  const blurTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const refreshForemanHistory = useCallback(async () => {
     setForemanHistory(await loadForemanHistory());
@@ -625,6 +642,74 @@ export default function ForemanScreen() {
 
     return () => { cancelled = true; };
   }, [clearDraftCache]);
+
+  const getTodaySixAM = useCallback(() => {
+    const d = new Date();
+    d.setHours(6, 0, 0, 0);
+    return d;
+  }, []);
+
+  const CONFIRM_TS_KEY = "foreman_confirm_ts";
+
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      try {
+        const saved = await AsyncStorage.getItem("foreman_fio");
+        const lastConfirmStr = await AsyncStorage.getItem(CONFIRM_TS_KEY);
+        const hist = await loadForemanHistory();
+
+        if (active) {
+          if (saved) setForeman(saved);
+          if (hist) setForemanHistory(hist);
+
+          const sixAM = getTodaySixAM();
+          const lastConfirm = lastConfirmStr ? new Date(lastConfirmStr) : null;
+
+          if (!lastConfirm || lastConfirm < sixAM) {
+            setIsFioConfirmVisible(true);
+          }
+        }
+      } catch (e) {
+        console.warn("[foremanFio] load failed", e);
+      }
+    })();
+    return () => { active = false; };
+  }, [getTodaySixAM]);
+
+  useFocusEffect(
+    useCallback(() => {
+      const checkFio = async () => {
+        const lastConfirmStr = await AsyncStorage.getItem(CONFIRM_TS_KEY);
+        const sixAM = getTodaySixAM();
+        const lastConfirm = lastConfirmStr ? new Date(lastConfirmStr) : null;
+        if (!lastConfirm || lastConfirm < sixAM) {
+          setIsFioConfirmVisible(true);
+        }
+      };
+      checkFio();
+    }, [getTodaySixAM])
+  );
+
+  const handleFioConfirm = useCallback(async (fio: string) => {
+    setIsFioLoading(true);
+    try {
+      setForeman(fio);
+      const now = new Date().toISOString();
+      await Promise.all([
+        AsyncStorage.setItem("foreman_fio", fio),
+        AsyncStorage.setItem(CONFIRM_TS_KEY, now),
+        saveForemanToHistory(fio)
+      ]);
+      const nextHist = await loadForemanHistory();
+      setForemanHistory(nextHist);
+      setIsFioConfirmVisible(false);
+    } catch (e) {
+      console.warn(e);
+    } finally {
+      setIsFioLoading(false);
+    }
+  }, []);
 
 
   const lastPreloadRef = useRef<string | null>(null);
@@ -1258,12 +1343,21 @@ export default function ForemanScreen() {
           {/* Title row */}
           <View style={{ paddingHorizontal: 16, paddingTop: 12 }}>
             <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
-              <Animated.Text
-                style={[s.cTitle, { fontSize: titleSize, color: UI.text, flex: 1 }]}
-                numberOfLines={1}
-              >
-                {foremanMainTab === 'materials' ? 'Материалы' : foremanMainTab === 'subcontracts' ? 'Подряды' : 'Заявка'}
-              </Animated.Text>
+              <View style={{ flex: 1 }}>
+                <Animated.Text
+                  style={[s.cTitle, { fontSize: titleSize, color: UI.text }]}
+                  numberOfLines={1}
+                >
+                  {foremanMainTab === 'materials' ? 'Материалы' : foremanMainTab === 'subcontracts' ? 'Подряды' : 'Заявка'}
+                </Animated.Text>
+                {!!foreman && (
+                  <Pressable onPress={() => setIsFioConfirmVisible(true)}>
+                    <Text style={{ fontSize: 13, color: UI.accent, fontWeight: "800", marginTop: 2 }}>
+                      👤 {foreman}
+                    </Text>
+                  </Pressable>
+                )}
+              </View>
               {foremanMainTab ? (
                 <Pressable
                   onPress={() => setForemanMainTab(null)}
@@ -1353,11 +1447,7 @@ export default function ForemanScreen() {
               contentTopPad={contentTopPad}
               onScroll={onScroll}
               foreman={foreman}
-              onForemanChange={handleForemanChange}
-              foremanFocus={foremanFocus}
-              setForemanFocus={setForemanFocus}
-              blurTimerRef={blurTimerRef}
-              foremanHistory={foremanHistory}
+              onOpenFioModal={() => setIsFioConfirmVisible(true)}
               objectType={objectType}
               level={level}
               system={system}
@@ -1448,6 +1538,14 @@ export default function ForemanScreen() {
               onSend={handleSendDraftFromSheet}
               ui={UI}
               styles={s}
+            />
+
+            <WarehouseFioModal
+              visible={isFioConfirmVisible}
+              initialFio={foreman}
+              onConfirm={handleFioConfirm}
+              loading={isFioLoading}
+              history={foremanHistory}
             />
           </>
         ) : null}

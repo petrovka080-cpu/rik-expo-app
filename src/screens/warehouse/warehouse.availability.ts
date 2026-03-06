@@ -4,6 +4,14 @@ import { useMemo, useCallback } from "react";
 import type { StockRow } from "./warehouse.types";
 import { nz, normMatCode } from "./warehouse.utils";
 
+type StockLike = StockRow & {
+    rik_code?: unknown;
+    material_code?: unknown;
+    qty_available?: unknown;
+    uom_id?: unknown;
+    code?: unknown;
+};
+
 export type AvailabilityApi = {
     getAvailableByCode: (code: string) => number;
     getAvailableByCodeUom: (code: string, uomId: string | null) => number;
@@ -11,7 +19,7 @@ export type AvailabilityApi = {
 };
 
 export function useStockAvailability(
-    stock: StockRow[],
+    stock: StockLike[],
     matNameByCode: Record<string, string>,
 ): AvailabilityApi {
     const getAvailableByCode = useCallback(
@@ -21,10 +29,10 @@ export function useStockAvailability(
             let sum = 0;
             for (const row of stock) {
                 const rowKey = normMatCode(
-                    String((row as any).rik_code ?? (row as any).code ?? (row as any).material_code ?? ""),
+                    String(row.rik_code ?? row.code ?? row.material_code ?? ""),
                 );
                 if (rowKey !== key) continue;
-                sum += nz((row as any).qty_available, 0);
+                sum += nz(row.qty_available, 0);
             }
             return sum;
         },
@@ -39,12 +47,12 @@ export function useStockAvailability(
             let sum = 0;
             for (const row of stock) {
                 const rowKey = normMatCode(
-                    String((row as any).rik_code ?? (row as any).code ?? (row as any).material_code ?? ""),
+                    String(row.rik_code ?? row.code ?? row.material_code ?? ""),
                 );
                 if (rowKey !== key) continue;
-                const rowU = String((row as any).uom_id ?? "").trim().toLowerCase();
+                const rowU = String(row.uom_id ?? "").trim().toLowerCase();
                 if (u && rowU !== u) continue;
-                sum += nz((row as any).qty_available, 0);
+                sum += nz(row.qty_available, 0);
             }
             return sum;
         },

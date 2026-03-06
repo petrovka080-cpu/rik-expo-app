@@ -8,11 +8,8 @@ type Props = {
   contentTopPad: number;
   onScroll: (event: NativeSyntheticEvent<NativeScrollEvent>) => void;
   foreman: string;
-  onForemanChange: (v: string) => void;
-  foremanFocus: boolean;
-  setForemanFocus: (v: boolean) => void;
-  blurTimerRef: React.MutableRefObject<ReturnType<typeof setTimeout> | null>;
-  foremanHistory: string[];
+  onZoneChange: (v: string) => void;
+  onOpenFioModal: () => void;
   objectType: string;
   level: string;
   system: string;
@@ -24,7 +21,6 @@ type Props = {
   onObjectChange: (v: string) => void;
   onLevelChange: (v: string) => void;
   onSystemChange: (v: string) => void;
-  onZoneChange: (v: string) => void;
   ensureHeaderReady: () => boolean;
   isDraftActive: boolean;
   showHint: (title: string, text: string) => void;
@@ -48,45 +44,6 @@ export default function ForemanEditorSection(p: Props) {
         scrollEventThrottle={16}
         onScroll={p.onScroll}
       >
-        <View style={p.styles.requiredInputWrap}>
-          <TextInput
-            value={p.foreman}
-            onChangeText={p.onForemanChange}
-            onFocus={() => {
-              if (p.blurTimerRef.current) clearTimeout(p.blurTimerRef.current);
-              p.setForemanFocus(true);
-            }}
-            onBlur={() => {
-              p.blurTimerRef.current = setTimeout(() => p.setForemanFocus(false), 180);
-            }}
-            placeholder="ФИО прораба"
-            placeholderTextColor={p.ui.sub}
-            style={[p.styles.input, p.styles.requiredInput]}
-          />
-          <Text style={p.styles.requiredInputAsterisk}>*</Text>
-        </View>
-
-        {p.foremanFocus && p.foremanHistory.length > 0 ? (
-          <View style={p.styles.foremanSuggestBox}>
-            {p.foremanHistory.map((name) => (
-              <Pressable
-                key={name}
-                onPressIn={() => {
-                  if (p.blurTimerRef.current) clearTimeout(p.blurTimerRef.current);
-                }}
-                onPress={() => {
-                  p.onForemanChange(name);
-                  p.setForemanFocus(false);
-                }}
-                style={p.styles.foremanSuggestRow}
-              >
-                <Text style={p.styles.foremanSuggestText} numberOfLines={1}>
-                  {name}
-                </Text>
-              </Pressable>
-            ))}
-          </View>
-        ) : null}
 
         <View style={{ marginTop: 10, gap: 6 }}>
           <ForemanDropdown
@@ -207,4 +164,3 @@ export default function ForemanEditorSection(p: Props) {
     </>
   );
 }
-

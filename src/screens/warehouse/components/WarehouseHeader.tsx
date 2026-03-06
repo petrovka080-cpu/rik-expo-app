@@ -5,18 +5,20 @@ import type { Tab } from "../warehouse.types";
 
 const TABS: Tab[] = ["К приходу", "Склад факт", "Расход", "Отчёты"];
 
+type AnimNum = number | Animated.Value | Animated.AnimatedInterpolation<number>;
+
 export type WarehouseHeaderApi = {
-  headerHeight: any;
-  headerTranslateY: any;
-  titleSize: any;
-  headerShadowSafe: any;
-  onListScroll?: any;
+  headerHeight: AnimNum;
+  headerTranslateY: AnimNum;
+  titleSize: AnimNum;
+  headerShadowSafe: AnimNum;
+  onListScroll?: ReturnType<typeof Animated.event>;
 };
 
 export function useWarehouseHeaderApi(args: {
   isWeb: boolean;
   hasSubRow?: boolean;
-}) : WarehouseHeaderApi {
+}): WarehouseHeaderApi {
   const { isWeb, hasSubRow = false } = args;
 
   const HEADER_MAX = hasSubRow ? 130 : 92;
@@ -30,17 +32,17 @@ export function useWarehouseHeaderApi(args: {
   const headerHeight = isWeb
     ? HEADER_MAX
     : clampedY.interpolate({
-        inputRange: [0, HEADER_SCROLL],
-        outputRange: [HEADER_MAX, HEADER_MIN],
-        extrapolate: "clamp",
-      });
+      inputRange: [0, HEADER_SCROLL],
+      outputRange: [HEADER_MAX, HEADER_MIN],
+      extrapolate: "clamp",
+    });
 
   const headerTranslateY = isWeb
     ? clampedY.interpolate({
-        inputRange: [0, HEADER_SCROLL],
-        outputRange: [0, -HEADER_SCROLL],
-        extrapolate: "clamp",
-      })
+      inputRange: [0, HEADER_SCROLL],
+      outputRange: [0, -HEADER_SCROLL],
+      extrapolate: "clamp",
+    })
     : 0;
 
   const titleSize = clampedY.interpolate({
@@ -58,7 +60,7 @@ export function useWarehouseHeaderApi(args: {
   const headerShadowSafe = isWeb ? 0 : headerShadow;
 
   const onListScroll = useMemo(() => {
-    if (isWeb) return undefined as any;
+    if (isWeb) return undefined;
     return Animated.event([{ nativeEvent: { contentOffset: { y: scrollY } } }], {
       useNativeDriver: false,
     });
@@ -72,9 +74,11 @@ export default function WarehouseHeader(props: {
   onTab: (t: Tab) => void;
   incomingCount: number;
   stockCount: number;
-  titleSize: any;
+  titleSize: AnimNum;
+  warehousemanFio?: string;
+  onOpenFioModal?: () => void;
 }) {
-  const { tab, onTab, incomingCount, stockCount, titleSize } = props;
+  const { tab, onTab, incomingCount, stockCount, titleSize, warehousemanFio, onOpenFioModal } = props;
 
   const tabLabel = useMemo(
     () => (t: Tab) => {
@@ -87,15 +91,25 @@ export default function WarehouseHeader(props: {
 
   const headerTitle =
     tab === "К приходу" ? "К приходу" :
-    tab === "Склад факт" ? "Склад факт" :
-    tab === "Расход" ? "Расход" :
-    "Отчёты";
+      tab === "Склад факт" ? "Склад факт" :
+        tab === "Расход" ? "Расход" :
+          "Отчёты";
 
   return (
     <View>
-      <Animated.Text style={[s.collapsingTitle, { fontSize: titleSize }]} numberOfLines={1}>
-        {headerTitle}
-      </Animated.Text>
+      <View style={{ paddingHorizontal: 16 }}>
+        <Animated.Text style={[s.collapsingTitle, { fontSize: titleSize, marginBottom: 0 }]} numberOfLines={1}>
+          {headerTitle}
+        </Animated.Text>
+        {!!warehousemanFio && (
+          <Pressable onPress={onOpenFioModal} style={{ marginTop: 2, marginBottom: 10 }}>
+            <Text style={{ fontSize: 13, color: UI.accent, fontWeight: "800" }}>
+              👤 {warehousemanFio}
+            </Text>
+          </Pressable>
+        )}
+        {!warehousemanFio && <View style={{ height: 10 }} />}
+      </View>
 
       <ScrollView
         horizontal

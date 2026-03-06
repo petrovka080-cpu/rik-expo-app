@@ -5,56 +5,36 @@ import { UI, s } from "../warehouse.styles";
 
 type Props = {
     recipientText: string;
-    onRecipientChange: (text: string) => void;
-    onRecipientFocus: () => void;
-    onRecipientBlur: () => void;
-    recipientSuggestOpen: boolean;
-    recipientSuggestions: string[];
-    onCommitRecipient: (name: string) => void;
+    onOpenRecipientModal: () => void;
 };
 
 function ExpenditureHeader({
     recipientText,
-    onRecipientChange,
-    onRecipientFocus,
-    onRecipientBlur,
-    recipientSuggestOpen,
-    recipientSuggestions,
-    onCommitRecipient,
+    onOpenRecipientModal,
 }: Props) {
     return (
         <View style={{ paddingHorizontal: 16, paddingBottom: 10 }}>
             <View style={s.sectionBox}>
                 <View style={{ marginTop: 2 }}>
                     <Text style={{ color: UI.sub, fontWeight: "800", marginBottom: 6 }}>
-                        Получатель
+                        Эту партию получает
                     </Text>
 
-                    <TextInput
-                        value={recipientText}
-                        onChangeText={onRecipientChange}
-                        placeholder="Введите ФИО получателя…"
-                        placeholderTextColor={UI.sub}
-                        style={s.input}
-                        onFocus={onRecipientFocus}
-                        onBlur={onRecipientBlur}
-                    />
-
-                    {recipientSuggestOpen && recipientSuggestions.length > 0 ? (
-                        <View style={{ marginTop: 8, gap: 8 }}>
-                            {recipientSuggestions.map((name: string) => (
-                                <Pressable
-                                    key={name}
-                                    onPress={() => onCommitRecipient(name)}
-                                    style={s.openBtn}
-                                >
-                                    <Text style={s.openBtnText} numberOfLines={1}>
-                                        {name}
-                                    </Text>
-                                </Pressable>
-                            ))}
-                        </View>
-                    ) : null}
+                    <Pressable
+                        onPress={onOpenRecipientModal}
+                        style={[
+                            s.input,
+                            { justifyContent: "center", minHeight: 48 },
+                            !recipientText.trim() && { borderColor: UI.accent }
+                        ]}
+                    >
+                        <Text style={{
+                            color: recipientText ? UI.text : UI.sub,
+                            fontWeight: "800"
+                        }}>
+                            {recipientText ? `👤 ${recipientText}` : "Выбрать получателя *"}
+                        </Text>
+                    </Pressable>
                 </View>
             </View>
         </View>

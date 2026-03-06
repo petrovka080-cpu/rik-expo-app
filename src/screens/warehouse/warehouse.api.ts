@@ -5,12 +5,14 @@ import { nz, parseNum } from "./warehouse.utils";
 import { normalizeRuText } from "../../lib/text/encoding";
 import { isRequestDirectorApproved } from "../../lib/requestStatus";
 
-const pickUom = (v: any): string | null => {
+type UnknownRow = Record<string, unknown>;
+
+const pickUom = (v: unknown): string | null => {
   const s = v == null ? "" : String(v).trim();
   return s !== "" ? s : null;
 };
 
-const looksLikeCode = (s: any) => {
+const looksLikeCode = (s: unknown) => {
   const x = String(s ?? "").trim().toUpperCase();
   return (
     x.startsWith("MAT-") ||
@@ -26,6 +28,11 @@ const looksLikeCode = (s: any) => {
 const normDateArg = (s?: string | null): string | null => {
   const t = String(s ?? "").trim();
   return t ? t : null;
+};
+
+const toTextOrNull = (v: unknown): string | null => {
+  const s = String(v ?? "").trim();
+  return s || null;
 };
 
 const parseDisplayNo = (raw: unknown): { year: number; seq: number } => {
@@ -117,22 +124,22 @@ async function enrichReqHeadsMeta(
 
   if (!idsNeedMeta.length) return rows;
 
-  const reqQ = await supabase.from("requests" as any).select("*").in("id", idsNeedMeta);
-  const reqById: Record<string, any> = {};
+  const reqQ = await supabase.from("requests").select("*").in("id", idsNeedMeta);
+  const reqById: Record<string, UnknownRow> = {};
   if (!reqQ.error && Array.isArray(reqQ.data)) {
-    for (const r of reqQ.data as any[]) {
+    for (const r of reqQ.data as UnknownRow[]) {
       const id = String(r?.id ?? "").trim();
       if (id) reqById[id] = r;
     }
   }
 
   const itemQ = await supabase
-    .from("request_items" as any)
+    .from("request_items")
     .select("request_id, note")
     .in("request_id", idsNeedMeta);
   const itemNotesByReq: Record<string, string[]> = {};
   if (!itemQ.error && Array.isArray(itemQ.data)) {
-    for (const it of itemQ.data as any[]) {
+    for (const it of itemQ.data as UnknownRow[]) {
       const rid = String(it?.request_id ?? "").trim();
       if (!rid) continue;
       const note = String(it?.note ?? "").trim();
@@ -142,7 +149,7 @@ async function enrichReqHeadsMeta(
     }
   }
 
-  const pickVal = (obj: any, keys: string[]) => {
+  const pickVal = (obj: UnknownRow | undefined, keys: string[]) => {
     for (const k of keys) {
       const v = String(obj?.[k] ?? "").trim();
       if (v) return v;
@@ -208,8 +215,8 @@ async function enrichReqHeadsMeta(
       contractor_name: row.contractor_name ?? contractor ?? null,
       contractor_phone: rowPhone || derivedPhone || null,
       planned_volume: row.planned_volume ?? volume ?? null,
-      note: row.note ?? (req?.note ?? null),
-      comment: row.comment ?? (req?.comment ?? null),
+      note: row.note ?? toTextOrNull(req?.note),
+      comment: row.comment ?? toTextOrNull(req?.comment),
     };
   });
 }
@@ -223,13 +230,13 @@ async function loadNameMapOverrides(
 
   // catalog_name_overrides: pk(code)
   const q = await supabase
-    .from("catalog_name_overrides" as any)
+    .from("catalog_name_overrides")
     .select("code, name_ru")
     .in("code", codesUpper.slice(0, 5000));
 
   if (q.error || !Array.isArray(q.data)) return out;
 
-  for (const r of q.data as any[]) {
+  for (const r of q.data as UnknownRow[]) {
     const c = String(r.code ?? "").trim().toUpperCase();
     const nm = String(normalizeRuText(String(r.name_ru ?? ""))).trim();
     if (c && nm && !out[c]) out[c] = nm;
@@ -245,13 +252,13 @@ async function loadNameMapRikRu(
   if (!codesUpper.length) return out;
 
   const q = await supabase
-    .from("v_rik_names_ru" as any)
+    .from("v_rik_names_ru")
     .select("code, name_ru")
     .in("code", codesUpper.slice(0, 5000));
 
   if (q.error || !Array.isArray(q.data)) return out;
 
-  for (const r of q.data as any[]) {
+  for (const r of q.data as UnknownRow[]) {
     const c = String(r.code ?? "").trim().toUpperCase();
     const nm = String(normalizeRuText(String(r.name_ru ?? ""))).trim();
     if (c && nm && !out[c]) out[c] = nm;
@@ -267,13 +274,13 @@ async function loadNameMapLedgerUi(
   if (!codesUpper.length) return out;
 
   const q = await supabase
-    .from("v_wh_balance_ledger_ui" as any)
+    .from("v_wh_balance_ledger_ui")
     .select("code, name")
     .in("code", codesUpper.slice(0, 5000));
 
   if (q.error || !Array.isArray(q.data)) return out;
 
-  for (const r of q.data as any[]) {
+  for (const r of q.data as UnknownRow[]) {
     const c = String(r.code ?? "").trim().toUpperCase();
     const nm = String(normalizeRuText(String(r.name ?? ""))).trim();
     if (c && nm && !out[c]) out[c] = nm;
@@ -293,13 +300,13 @@ export async function apiFetchStock(
 ): Promise<{ supported: boolean; rows: StockRow[] }> {
   try {
     const truth = await supabase
-      .from("v_wh_balance_ledger_truth_ui" as any)
+      .from("v_wh_balance_ledger_truth_ui")
       .select("code, uom_id, qty_available, updated_at")
       .order("code", { ascending: true })
       .range(offset, offset + limit - 1);
 
     if (!truth.error && Array.isArray(truth.data)) {
-      const truthRows = truth.data as any[];
+      const truthRows = truth.data as UnknownRow[];
 
       const codesUpper = truthRows
         .map((x) => String(x.code ?? "").trim().toUpperCase())
@@ -346,10 +353,10 @@ export async function apiFetchStock(
     }
 
 
-    const v = await supabase.from("v_warehouse_stock" as any).select("*").range(offset, offset + limit - 1);
+    const v = await supabase.from("v_warehouse_stock").select("*").range(offset, offset + limit - 1);
     if (!v.error && Array.isArray(v.data)) {
       const rows = (v.data || []).map(
-        (x: any) =>
+        (x: UnknownRow) =>
         ({
           material_id: String(x.code ?? ""),
           code: x.code ?? null,
@@ -396,7 +403,7 @@ export async function apiFetchReqHeads(
     return candidate.replace(/\s+/g, "");
   };
   const q = await supabase
-    .from("v_wh_issue_req_heads_ui" as any)
+    .from("v_wh_issue_req_heads_ui")
     .select("*")
     // 1) recency by submitted timestamp (cheap and stable for view)
     .order("submitted_at", { ascending: false, nullsFirst: false })
@@ -407,37 +414,25 @@ export async function apiFetchReqHeads(
 
   if (q.error || !Array.isArray(q.data)) return [];
 
-  const rows: ReqHeadRow[] = (q.data as any[]).map((x) => ({
+  const rows: ReqHeadRow[] = (q.data as UnknownRow[]).map((x) => ({
     request_id: String(x.request_id),
-    display_no: x.display_no ?? null,
-    object_name: x.object_name ?? null,
+    display_no: toTextOrNull(x.display_no),
+    object_name: toTextOrNull(x.object_name),
 
-    level_code: x.level_code ?? null,
-    system_code: x.system_code ?? null,
-    zone_code: x.zone_code ?? null,
+    level_code: toTextOrNull(x.level_code),
+    system_code: toTextOrNull(x.system_code),
+    zone_code: toTextOrNull(x.zone_code),
 
-    level_name: x.level_name ?? null,
-    system_name: x.system_name ?? null,
-    zone_name: x.zone_name ?? null,
-    contractor_name:
-      x.contractor_name ??
-      x.contractor_org ??
-      x.subcontractor_name ??
-      null,
-    contractor_phone:
-      x.contractor_phone ??
-      x.phone ??
-      x.phone_number ??
-      null,
-    planned_volume:
-      x.planned_volume ??
-      x.volume ??
-      x.qty_plan ??
-      null,
-    note: x.note ?? null,
-    comment: x.comment ?? null,
+    level_name: toTextOrNull(x.level_name),
+    system_name: toTextOrNull(x.system_name),
+    zone_name: toTextOrNull(x.zone_name),
+    contractor_name: toTextOrNull(x.contractor_name ?? x.contractor_org ?? x.subcontractor_name),
+    contractor_phone: toTextOrNull(x.contractor_phone ?? x.phone ?? x.phone_number),
+    planned_volume: toTextOrNull(x.planned_volume ?? x.volume ?? x.qty_plan),
+    note: toTextOrNull(x.note),
+    comment: toTextOrNull(x.comment),
 
-    submitted_at: x.submitted_at ?? null,
+    submitted_at: toTextOrNull(x.submitted_at),
 
     items_cnt: Number(x.items_cnt ?? 0),
     ready_cnt: Number(x.ready_cnt ?? 0),
@@ -466,12 +461,12 @@ export async function apiFetchReqHeads(
   if (viewReqIds.length) {
     try {
       const rsQ = await supabase
-        .from("requests" as any)
+        .from("requests")
         .select("id, status")
         .in("id", viewReqIds);
       if (!rsQ.error && Array.isArray(rsQ.data)) {
         const byId = new Map<string, string>();
-        for (const row of rsQ.data as any[]) {
+        for (const row of rsQ.data as UnknownRow[]) {
           const id = String(row?.id ?? "").trim();
           if (!id) continue;
           byId.set(id, String(row?.status ?? ""));
@@ -494,7 +489,7 @@ export async function apiFetchReqHeads(
   if (page === 0) {
     try {
     const reqQ = await supabase
-      .from("requests" as any)
+      .from("requests")
       .select(
         "id, display_no, status, submitted_at, created_at, object_name, level_name, system_name, zone_name, object_type_code, level_code, system_code, zone_code, contractor_name, contractor_org, subcontractor_name, subcontractor_org, contractor_phone, subcontractor_phone, phone, phone_number, planned_volume, volume, qty_plan, note, comment",
       )
@@ -505,19 +500,19 @@ export async function apiFetchReqHeads(
       .limit(Math.max(pageSize * 6, 600));
 
     if (!reqQ.error && Array.isArray(reqQ.data) && reqQ.data.length) {
-      const approvedReqs = (reqQ.data as any[])
+      const approvedReqs = (reqQ.data as UnknownRow[])
         .filter((r) => isRequestDirectorApproved(r?.status))
         .map((r) => ({
           request_id: String(r.id ?? "").trim(),
-          display_no: r.display_no ?? null,
-          object_name: r.object_name ?? r.object_type_code ?? null,
-          level_name: r.level_name ?? r.level_code ?? null,
-          system_name: r.system_name ?? r.system_code ?? null,
-          zone_name: r.zone_name ?? r.zone_code ?? null,
-          level_code: r.level_code ?? null,
-          system_code: r.system_code ?? null,
-          zone_code: r.zone_code ?? null,
-          submitted_at: r.submitted_at ?? r.created_at ?? null,
+          display_no: toTextOrNull(r.display_no),
+          object_name: toTextOrNull(r.object_name ?? r.object_type_code),
+          level_name: toTextOrNull(r.level_name ?? r.level_code),
+          system_name: toTextOrNull(r.system_name ?? r.system_code),
+          zone_name: toTextOrNull(r.zone_name ?? r.zone_code),
+          level_code: toTextOrNull(r.level_code),
+          system_code: toTextOrNull(r.system_code),
+          zone_code: toTextOrNull(r.zone_code),
+          submitted_at: toTextOrNull(r.submitted_at ?? r.created_at),
         }))
         .filter((r) => !!r.request_id);
 
@@ -529,7 +524,7 @@ export async function apiFetchReqHeads(
 
         if (missingReqIds.length) {
           const itQ = await supabase
-            .from("request_items" as any)
+            .from("request_items")
             .select("id, request_id, status, qty")
             .in("request_id", missingReqIds);
 
@@ -540,7 +535,7 @@ export async function apiFetchReqHeads(
           for (const id of missingReqIds) stat[id] = { items: 0, qty: 0, done: 0, rejected: 0 };
 
           if (!itQ.error && Array.isArray(itQ.data)) {
-            for (const it of itQ.data as any[]) {
+            for (const it of itQ.data as UnknownRow[]) {
               const rid = String(it?.request_id ?? "").trim();
               if (!rid || !stat[rid]) continue;
               const status = String(it?.status ?? "").trim().toLowerCase();
@@ -554,7 +549,7 @@ export async function apiFetchReqHeads(
           const fallbackRows: ReqHeadRow[] = approvedReqs
             .filter((r) => !viewIds.has(r.request_id))
             .map((r) => {
-              const reqRaw = (reqQ.data as any[]).find((x) => String(x?.id ?? "").trim() === r.request_id) ?? null;
+              const reqRaw = (reqQ.data as UnknownRow[]).find((x) => String(x?.id ?? "").trim() === r.request_id) ?? null;
               const fromReqText = parseReqHeaderContext([
                 String(reqRaw?.note ?? ""),
                 String(reqRaw?.comment ?? ""),
@@ -599,8 +594,8 @@ export async function apiFetchReqHeads(
                 contractor_name: contractor,
                 contractor_phone: phone,
                 planned_volume: plannedVolume,
-                note: reqRaw?.note ?? null,
-                comment: reqRaw?.comment ?? null,
+                note: reqRaw?.note == null ? null : String(reqRaw.note),
+                comment: reqRaw?.comment == null ? null : String(reqRaw.comment),
                 submitted_at: r.submitted_at,
                 items_cnt: s.items,
                 ready_cnt: readyCnt,
@@ -639,11 +634,12 @@ export async function apiFetchReqItems(
   supabase: SupabaseClient,
   requestId: string,
 ): Promise<ReqItemUiRow[]> {
+  type ReqItemUiRowWithMeta = ReqItemUiRow & { note?: string | null; comment?: string | null };
   const rid = String(requestId || "").trim();
   if (!rid) return [];
 
   const q = await supabase
-    .from("v_wh_issue_req_items_ui" as any)
+    .from("v_wh_issue_req_items_ui")
     .select("*")
     .eq("request_id", rid)
     .order("name_human", { ascending: true });
@@ -652,19 +648,19 @@ export async function apiFetchReqItems(
     return [];
   }
 
-  let raw = (q.data as any[]).map((x) => ({
+  let raw: ReqItemUiRowWithMeta[] = (q.data as UnknownRow[]).map((x) => ({
     request_id: String(x.request_id),
     request_item_id: String(x.request_item_id),
 
-    display_no: x.display_no ?? null,
-    object_name: x.object_name ?? null,
-    level_code: x.level_code ?? null,
-    system_code: x.system_code ?? null,
-    zone_code: x.zone_code ?? null,
+    display_no: toTextOrNull(x.display_no),
+    object_name: toTextOrNull(x.object_name),
+    level_code: toTextOrNull(x.level_code),
+    system_code: toTextOrNull(x.system_code),
+    zone_code: toTextOrNull(x.zone_code),
 
     rik_code: String(x.rik_code ?? ""),
     name_human: String(x.name_human ?? x.rik_code ?? ""),
-    uom: x.uom ?? null,
+    uom: toTextOrNull(x.uom),
 
     qty_limit: parseNum(x.qty_limit, 0),
     qty_issued: parseNum(x.qty_issued, 0),
@@ -672,38 +668,38 @@ export async function apiFetchReqItems(
 
     qty_available: parseNum(x.qty_available, 0),
     qty_can_issue_now: parseNum(x.qty_can_issue_now, 0),
-    note: x.note ?? null,
-    comment: x.comment ?? null,
-  })) as ReqItemUiRow[];
+    note: toTextOrNull(x.note),
+    comment: toTextOrNull(x.comment),
+  }));
 
   // Enrich notes from base request_items table (view may not expose note/comment).
   try {
     const ids = raw
-      .map((x) => String((x as any).request_item_id ?? "").trim())
+      .map((x) => String(x.request_item_id ?? "").trim())
       .filter(Boolean);
     if (ids.length) {
       const nQ = await supabase
-        .from("request_items" as any)
+        .from("request_items")
         .select("id, note")
         .in("id", ids);
       if (!nQ.error && Array.isArray(nQ.data) && nQ.data.length) {
         const byId: Record<string, { note: string | null }> = {};
-        for (const r of nQ.data as any[]) {
+        for (const r of nQ.data as UnknownRow[]) {
           const id = String(r?.id ?? "").trim();
           if (!id) continue;
           byId[id] = {
-            note: r?.note ?? null,
+            note: r?.note == null ? null : String(r.note),
           };
         }
         raw = raw.map((it) => {
-          const id = String((it as any).request_item_id ?? "").trim();
+          const id = String(it.request_item_id ?? "").trim();
           const p = byId[id];
           if (!p) return it;
           return {
             ...it,
-            note: (it as any).note ?? p.note ?? null,
-            comment: (it as any).comment ?? null,
-          } as ReqItemUiRow;
+            note: it.note ?? p.note ?? null,
+            comment: it.comment ?? null,
+          };
         });
       }
     }
@@ -712,9 +708,9 @@ export async function apiFetchReqItems(
   }
 
   // вњ… РґРµРґСѓРї РїРѕ request_item_id (Р±РµСЂС‘Рј РјР°РєСЃРёРјР°Р»СЊРЅС‹Рµ С‡РёСЃР»Р°)
-  const byId: Record<string, ReqItemUiRow> = {};
+  const byId: Record<string, ReqItemUiRowWithMeta> = {};
   for (const it of raw) {
-    const id = String((it as any).request_item_id ?? "").trim();
+    const id = String(it.request_item_id ?? "").trim();
     if (!id) continue;
 
     const prev = byId[id];
@@ -723,34 +719,34 @@ export async function apiFetchReqItems(
       continue;
     }
 
-    const merged: any = { ...prev };
-    const pickText = (a: any, b: any) => {
+    const merged: ReqItemUiRowWithMeta = { ...prev };
+    const pickText = (a: unknown, b: unknown): string | null => {
       const sa = String(a ?? "").trim();
       if (sa) return sa;
       const sb = String(b ?? "").trim();
       return sb || null;
     };
 
-    merged.name_human = pickText((prev as any).name_human, (it as any).name_human);
-    merged.rik_code = pickText((prev as any).rik_code, (it as any).rik_code);
-    merged.uom = pickText((prev as any).uom, (it as any).uom);
-    merged.note = pickText((prev as any).note, (it as any).note);
-    merged.comment = pickText((prev as any).comment, (it as any).comment);
+    merged.name_human = pickText(prev.name_human, it.name_human) ?? "";
+    merged.rik_code = pickText(prev.rik_code, it.rik_code) ?? "";
+    merged.uom = pickText(prev.uom, it.uom);
+    merged.note = pickText(prev.note, it.note);
+    merged.comment = pickText(prev.comment, it.comment);
 
-    merged.qty_limit = Math.max(parseNum((prev as any).qty_limit, 0), parseNum((it as any).qty_limit, 0));
-    merged.qty_issued = Math.max(parseNum((prev as any).qty_issued, 0), parseNum((it as any).qty_issued, 0));
-    merged.qty_left = Math.max(parseNum((prev as any).qty_left, 0), parseNum((it as any).qty_left, 0));
-    merged.qty_available = Math.max(parseNum((prev as any).qty_available, 0), parseNum((it as any).qty_available, 0));
+    merged.qty_limit = Math.max(parseNum(prev.qty_limit, 0), parseNum(it.qty_limit, 0));
+    merged.qty_issued = Math.max(parseNum(prev.qty_issued, 0), parseNum(it.qty_issued, 0));
+    merged.qty_left = Math.max(parseNum(prev.qty_left, 0), parseNum(it.qty_left, 0));
+    merged.qty_available = Math.max(parseNum(prev.qty_available, 0), parseNum(it.qty_available, 0));
     merged.qty_can_issue_now = Math.max(
-      parseNum((prev as any).qty_can_issue_now, 0),
-      parseNum((it as any).qty_can_issue_now, 0),
+      parseNum(prev.qty_can_issue_now, 0),
+      parseNum(it.qty_can_issue_now, 0),
     );
 
-    byId[id] = merged as ReqItemUiRow;
+    byId[id] = merged;
   }
 
   const viewItems = Object.values(byId).sort((a, b) =>
-    String((a as any).name_human ?? "").localeCompare(String((b as any).name_human ?? "")),
+    String(a.name_human ?? "").localeCompare(String(b.name_human ?? "")),
   );
 
   if (viewItems.length > 0) return viewItems;
@@ -758,12 +754,12 @@ export async function apiFetchReqItems(
   // Fallback for requests not yet materialized in warehouse view.
   try {
     const f = await supabase
-      .from("request_items" as any)
+      .from("request_items")
       .select("id, request_id, rik_code, name_human, uom, qty, status, note")
       .eq("request_id", rid)
       .order("name_human", { ascending: true });
     if (!f.error && Array.isArray(f.data) && f.data.length) {
-      const direct = (f.data as any[])
+      const direct = (f.data as UnknownRow[])
         .filter((x) => !String(x?.status ?? "").toLowerCase().includes("отклон"))
         .map((x) => {
           const qty = parseNum(x?.qty, 0);
@@ -800,23 +796,23 @@ export async function apiFetchReports(
   supabase: SupabaseClient,
   periodFrom?: string,
   periodTo?: string,
-): Promise<{ supported: boolean; repStock: any[]; repMov: any[]; repIssues: any[] }> {
+): Promise<{ supported: boolean; repStock: StockRow[]; repMov: UnknownRow[]; repIssues: UnknownRow[] }> {
   try {
-    const s = await supabase.rpc("acc_report_stock" as any, {} as any);
-    const m = await supabase.rpc("acc_report_movement" as any, {
+    const s = await supabase.rpc("acc_report_stock", {});
+    const m = await supabase.rpc("acc_report_movement", {
       p_from: periodFrom || null,
       p_to: periodTo || null,
-    } as any);
-    const iss = await supabase.rpc("acc_report_issues_v2" as any, {
+    });
+    const iss = await supabase.rpc("acc_report_issues_v2", {
       p_from: periodFrom || null,
       p_to: periodTo || null,
-    } as any);
+    });
 
     return {
       supported: true,
-      repStock: !s.error && Array.isArray(s.data) ? (s.data as any[]) : [],
-      repMov: !m.error && Array.isArray(m.data) ? (m.data as any[]) : [],
-      repIssues: !iss.error && Array.isArray(iss.data) ? (iss.data as any[]) : [],
+      repStock: !s.error && Array.isArray(s.data) ? (s.data as StockRow[]) : [],
+      repMov: !m.error && Array.isArray(m.data) ? (m.data as UnknownRow[]) : [],
+      repIssues: !iss.error && Array.isArray(iss.data) ? (iss.data as UnknownRow[]) : [],
     };
   } catch {
     return { supported: false, repStock: [], repMov: [], repIssues: [] };
@@ -826,9 +822,9 @@ export async function apiFetchReports(
 export async function apiEnsureIssueLines(
   supabase: SupabaseClient,
   issueId: number,
-): Promise<any[]> {
-  const r = await supabase.rpc("acc_report_issue_lines" as any, { p_issue_id: issueId } as any);
-  if (!r.error && Array.isArray(r.data)) return r.data as any[];
+): Promise<UnknownRow[]> {
+  const r = await supabase.rpc("acc_report_issue_lines", { p_issue_id: issueId });
+  if (!r.error && Array.isArray(r.data)) return r.data as UnknownRow[];
   return [];
 }
 
@@ -836,12 +832,12 @@ export type IssuedMaterialsFastRow = {
   material_code: string;
   material_name: string;
   uom: string;
-  sum_in_req: any;
-  sum_free: any;
-  sum_over: any;
-  sum_total: any;
-  docs_cnt: any;
-  lines_cnt: any;
+  sum_in_req: unknown;
+  sum_free: unknown;
+  sum_over: unknown;
+  sum_total: unknown;
+  docs_cnt: unknown;
+  lines_cnt: unknown;
 };
 
 export type IssuedByObjectFastRow = {
@@ -849,10 +845,10 @@ export type IssuedByObjectFastRow = {
   object_name: string;
   work_name: string;
 
-  docs_cnt: any;
-  req_cnt: any;
-  active_days: any;
-  uniq_materials: any;
+  docs_cnt: unknown;
+  req_cnt: unknown;
+  active_days: unknown;
+  uniq_materials: unknown;
 
   recipients_text: string | null;
   top3_materials: string | null;
@@ -862,13 +858,13 @@ export async function apiFetchIssuedMaterialsReportFast(
   supabase: SupabaseClient,
   p: { from?: string | null; to?: string | null; objectId?: string | null },
 ): Promise<IssuedMaterialsFastRow[]> {
-  const r = await supabase.rpc("wh_report_issued_materials_fast" as any, {
+  const r = await supabase.rpc("wh_report_issued_materials_fast", {
     p_from: normDateArg(p.from),
     p_to: normDateArg(p.to),
     p_object_id: p.objectId ?? null,
-  } as any);
+  });
 
-  if (!r.error && Array.isArray(r.data)) return r.data as any[];
+  if (!r.error && Array.isArray(r.data)) return r.data as IssuedMaterialsFastRow[];
   return [];
 }
 
@@ -876,26 +872,26 @@ export async function apiFetchIssuedByObjectReportFast(
   supabase: SupabaseClient,
   p: { from?: string | null; to?: string | null; objectId?: string | null },
 ): Promise<IssuedByObjectFastRow[]> {
-  const r = await supabase.rpc("wh_report_issued_by_object_fast" as any, {
+  const r = await supabase.rpc("wh_report_issued_by_object_fast", {
     p_from: normDateArg(p.from),
     p_to: normDateArg(p.to),
     p_object_id: p.objectId ?? null,
-  } as any);
+  });
 
-  if (!r.error && Array.isArray(r.data)) return r.data as any[];
+  if (!r.error && Array.isArray(r.data)) return r.data as IssuedByObjectFastRow[];
   return [];
 }
 
 export async function apiFetchIncomingReports(
   supabase: SupabaseClient,
   p: { from?: string | null; to?: string | null },
-): Promise<any[]> {
-  const r = await supabase.rpc("acc_report_incoming_v2" as any, {
+): Promise<UnknownRow[]> {
+  const r = await supabase.rpc("acc_report_incoming_v2", {
     p_from: normDateArg(p.from),
     p_to: normDateArg(p.to),
-  } as any);
+  });
 
-  if (!r.error && Array.isArray(r.data)) return r.data as any[];
+  if (!r.error && Array.isArray(r.data)) return r.data as UnknownRow[];
   return [];
 }
 
@@ -916,8 +912,8 @@ export async function apiFetchIncomingMaterialsReportFast(
   // and to avoid 404 errors in console
   console.log("[apiFetchIncomingMaterialsReportFast] Fetching from ledger for", p);
 
-  const q: any = await supabase
-    .from("wh_ledger" as any)
+  const q = await supabase
+    .from("wh_ledger")
     .select("code, uom_id, qty, moved_at, warehouseman_fio")
     .eq("direction", "in")
     .gte("moved_at", normDateArg(p.from))
@@ -930,7 +926,7 @@ export async function apiFetchIncomingMaterialsReportFast(
   }
 
   const groups: Record<string, IncomingMaterialsFastRow> = {};
-  for (const row of q.data as any[]) {
+  for (const row of q.data as UnknownRow[]) {
     const code = String(row.code || "").trim();
     if (!code) continue;
 
@@ -939,7 +935,7 @@ export async function apiFetchIncomingMaterialsReportFast(
       groups[key] = {
         material_code: code,
         material_name: normalizeRuText(code),
-        uom: row.uom_id,
+        uom: String(row.uom_id ?? ""),
         sum_total: 0,
         docs_cnt: 0,
         lines_cnt: 0,
@@ -955,20 +951,20 @@ export async function apiFetchIncomingMaterialsReportFast(
 export async function apiFetchIncomingLines(
   supabase: SupabaseClient,
   incomingId: string,
-): Promise<any[]> {
+): Promise<UnknownRow[]> {
   console.log("[apiFetchIncomingLines] Direct fetch for:", incomingId);
 
-  const q: any = await supabase
-    .from("wh_ledger" as any)
+  const q = await supabase
+    .from("wh_ledger")
     .select("code, uom_id, qty")
     .eq("incoming_id", incomingId)
     .eq("direction", "in");
 
   if (!q.error && Array.isArray(q.data)) {
     console.log("[apiFetchIncomingLines] Success:", q.data.length, "lines");
-    const rows = q.data as any[];
+    const rows = q.data as UnknownRow[];
     const codesUpper = Array.from(
-      new Set(rows.map((ln: any) => String(ln?.code ?? "").trim().toUpperCase()).filter(Boolean))
+      new Set(rows.map((ln) => String(ln?.code ?? "").trim().toUpperCase()).filter(Boolean))
     );
 
     const [overMap, rikMap, uiMap] = await Promise.all([
@@ -977,7 +973,7 @@ export async function apiFetchIncomingLines(
       loadNameMapLedgerUi(supabase, codesUpper),
     ]);
 
-    return rows.map((ln: any) => {
+    return rows.map((ln) => {
       const code = String(ln?.code ?? "").trim();
       const key = code.toUpperCase();
       const nOver = String(normalizeRuText(String(overMap[key] ?? ""))).trim();
@@ -999,5 +995,3 @@ export async function apiFetchIncomingLines(
   if (q.error) console.error("[apiFetchIncomingLines] Error:", q.error.message);
   return [];
 }
-
-

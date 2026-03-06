@@ -63,6 +63,7 @@ const nnum = (v: unknown) => {
   return Number.isFinite(n) ? n : 0;
 };
 const round2 = (v: number) => Math.round((Number(v) + Number.EPSILON) * 100) / 100;
+const NEXT_TICK_MS = 0;
 
 function allocProportional(totalAmount: number, weights: number[]) {
   const total = Math.max(0, nnum(totalAmount));
@@ -542,7 +543,7 @@ export default function ActivePaymentForm({
                   onChangeText={(t) => {
                     const d = String(t || "").replace(/\D+/g, "").slice(0, 2);
                     setInvMM(d);
-                    if (d.length === 2) setTimeout(() => ddRef?.current?.focus?.(), 0);
+                    if (d.length === 2) setTimeout(() => ddRef?.current?.focus?.(), NEXT_TICK_MS);
                   }}
                   onBlur={() => setInvMM((x: string) => clamp2(x, 12))}
                   style={{
@@ -635,7 +636,7 @@ export default function ActivePaymentForm({
                     setAllocRows([]);
                     setTimeout(() => {
                       try { applyFullAlloc(); } catch { }
-                    }, 0);
+                    }, NEXT_TICK_MS);
                   }}
 
                   style={segBtn(mode === "full")}

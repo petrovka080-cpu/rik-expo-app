@@ -3,10 +3,17 @@
 // from the main Warehouse component. Zero logic changes.
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Option, Tab } from "./warehouse.types";
 import { showErr } from "./warehouse.utils";
 
-export function useWarehouseDicts(supabase: any, tab: Tab) {
+type DictRow = Record<string, unknown>;
+const asRows = (data: unknown): DictRow[] => {
+    if (!Array.isArray(data)) return [];
+    return data.filter((x): x is DictRow => typeof x === "object" && x !== null);
+};
+
+export function useWarehouseDicts(supabase: SupabaseClient, tab: Tab) {
     const [objectList, setObjectList] = useState<Option[]>([]);
     const [levelList, setLevelList] = useState<Option[]>([]);
     const [systemList, setSystemList] = useState<Option[]>([]);
@@ -15,10 +22,10 @@ export function useWarehouseDicts(supabase: any, tab: Tab) {
 
     const tryOptions = useCallback(async (table: string, columns: string[]) => {
         const colList = columns.join(",");
-        const q = await supabase.from(table as any).select(colList).limit(1000);
+        const q = await supabase.from(table).select(colList).limit(1000);
         if (q.error || !Array.isArray(q.data)) return [] as Option[];
         const opts: Option[] = [];
-        for (const r of q.data as any[]) {
+        for (const r of asRows(q.data)) {
             const id = String(r.id ?? r.uuid ?? "");
             const label = String(
                 r.name ??
@@ -39,12 +46,12 @@ export function useWarehouseDicts(supabase: any, tab: Tab) {
     const tryRefOptions = useCallback(
         async (table: string, opts?: { order?: string }) => {
             let q = supabase
-                .from(table as any)
+                .from(table)
                 .select("code,display_name,name_human_ru,name_ru,name")
                 .limit(2000);
 
             if (opts?.order) {
-                q = q.order(opts.order, { ascending: true }) as any;
+                q = q.order(opts.order, { ascending: true });
             }
 
             const res = await q;
@@ -55,7 +62,7 @@ export function useWarehouseDicts(supabase: any, tab: Tab) {
             }
 
             const out: Option[] = [];
-            for (const r of res.data as any[]) {
+            for (const r of asRows(res.data)) {
                 const id = String(r.code ?? "").trim();
                 const label = String(
                     r.display_name ??
@@ -76,7 +83,7 @@ export function useWarehouseDicts(supabase: any, tab: Tab) {
     );
 
     const loadObjects = useCallback(async () => {
-        const q = await supabase.from("ref_object_types" as any).select("code").limit(1);
+        const q = await supabase.from("ref_object_types").select("code").limit(1);
         console.log(
             "[ref_object_types] err=",
             q.error?.message,
@@ -84,7 +91,7 @@ export function useWarehouseDicts(supabase: any, tab: Tab) {
             Array.isArray(q.data) ? q.data.length : "no-data",
         );
 
-        const opts = await tryRefOptions("ref_object_types", { order: "name" as any });
+        const opts = await tryRefOptions("ref_object_types", { order: "name" });
 
         const cleaned = (opts || []).filter((o) => {
             const t = String(o.label ?? "").toLowerCase();

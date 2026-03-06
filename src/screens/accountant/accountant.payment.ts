@@ -1,4 +1,5 @@
-import { supabase } from "../../lib/supabaseClient";
+﻿import { supabase } from "../../lib/supabaseClient";
+import { normalizePaymentStatusKind, paymentStatusLabel } from "./accountant.status";
 
 export const EPS = 0.01;
 
@@ -8,10 +9,13 @@ export type PaidAgg = {
   last_paid_at: number;
 };
 
+export type PaymentStatusKey = "K_PAY" | "PART" | "PAID" | "REWORK";
+
 type PaymentRow = {
   amount?: number | string | null;
   paid_at?: string | null;
   created_at?: string | null;
+  id?: number | string | null;
 };
 
 type InvoicePatch = {
@@ -82,20 +86,51 @@ export async function fetchPaidAggByProposal(proposalId: string): Promise<PaidAg
   return { total_paid: total, payments_count: cnt, last_paid_at: last };
 }
 
+export async function fetchLastPaymentIdByProposal(proposalId: string): Promise<number | null> {
+  const pid = String(proposalId || "").trim();
+  if (!pid) return null;
+
+  const { data, error } = await supabase
+    .from("proposal_payments")
+    .select("id, paid_at, created_at")
+    .eq("proposal_id", pid)
+    .order("paid_at", { ascending: false, nullsFirst: false })
+    .order("created_at", { ascending: false, nullsFirst: false })
+    .limit(1);
+
+  if (error) return null;
+
+  const row = (Array.isArray(data) ? data[0] : null) as PaymentRow | null;
+  const id = Number(row?.id ?? 0);
+  return Number.isFinite(id) && id > 0 ? id : null;
+}
+
+export function computePayStatusKey(
+  rawStatus: unknown,
+  invoiceSum: number,
+  paidSum: number,
+  eps: number = EPS,
+): PaymentStatusKey {
+  const statusKind = normalizePaymentStatusKind(rawStatus);
+  if (statusKind === "REWORK") return "REWORK";
+
+  const inv = Number(invoiceSum ?? 0);
+  const paid = Number(paidSum ?? 0);
+
+  if (paid <= eps) return "K_PAY";
+  if (inv > 0 && inv - paid > eps) return "PART";
+  return "PAID";
+}
+
 export function computePayStatus(
   rawStatus: unknown,
   invoiceSum: number,
   paidSum: number,
   eps: number = EPS,
 ): string {
-  const raw = String(rawStatus ?? "").trim().toLowerCase();
-  if (raw.startsWith("на доработке") || raw.startsWith("возврат")) return "На доработке";
-
-  const inv = Number(invoiceSum ?? 0);
-  const paid = Number(paidSum ?? 0);
-
-  if (paid <= eps) return "К оплате";
-  if (inv > 0 && inv - paid > eps) return "Частично оплачено";
+  const key = computePayStatusKey(rawStatus, invoiceSum, paidSum, eps);
+  if (key === "REWORK") return paymentStatusLabel("REWORK");
+  if (key === "K_PAY") return "К оплате";
+  if (key === "PART") return "Частично оплачено";
   return "Оплачено";
 }
-

@@ -1,8 +1,18 @@
 ﻿import React from "react";
-import { ActivityIndicator, FlatList, Platform, RefreshControl, Text, View } from "react-native";
+import {
+  ActivityIndicator,
+  FlatList,
+  Platform,
+  RefreshControl,
+  Text,
+  View,
+  type NativeScrollEvent,
+  type NativeSyntheticEvent,
+} from "react-native";
 import type { HistoryRow } from "../types";
 
-type ListItem = { __kind: "history"; data: HistoryRow } | { __kind: "inbox"; data: unknown };
+type InboxRowBase = { proposal_id?: string | number };
+type ListItem<TInbox extends InboxRowBase> = { __kind: "history"; data: HistoryRow } | { __kind: "inbox"; data: TInbox };
 
 export function AccountantEmptyState({ title, hint, titleColor, hintColor }: { title: string; hint: string; titleColor: string; hintColor: string }) {
   return (
@@ -14,7 +24,7 @@ export function AccountantEmptyState({ title, hint, titleColor, hintColor }: { t
   );
 }
 
-export function AccountantListBlock({
+export function AccountantListBlock<TInbox extends InboxRowBase>({
   isHistory,
   historyRows,
   rows,
@@ -34,7 +44,7 @@ export function AccountantListBlock({
 }: {
   isHistory: boolean;
   historyRows: HistoryRow[];
-  rows: unknown[];
+  rows: TInbox[];
   historyHeader: React.ReactElement;
   historyLoading: boolean;
   loading: boolean;
@@ -42,25 +52,25 @@ export function AccountantListBlock({
   refreshing: boolean;
   onRefreshHistory: () => void;
   onRefresh: () => void;
-  onScroll: (e: unknown) => void;
+  onScroll: (e: NativeSyntheticEvent<NativeScrollEvent>) => void;
   contentTopPad: number;
   onRenderHistory: (row: HistoryRow) => React.ReactElement | null;
-  onRenderInbox: (row: unknown) => React.ReactElement | null;
+  onRenderInbox: (row: TInbox) => React.ReactElement | null;
   uiTextColor: string;
   uiSubColor: string;
 }) {
-  const data: ListItem[] = isHistory
+  const data: ListItem<TInbox>[] = isHistory
     ? historyRows.map((r) => ({ __kind: "history" as const, data: r }))
     : rows.map((r) => ({ __kind: "inbox" as const, data: r }));
 
   return (
-    <FlatList<ListItem>
+    <FlatList<ListItem<TInbox>>
       style={{ flex: 1 }}
       data={data}
       keyExtractor={(item) =>
         item.__kind === "history"
           ? String(item.data.payment_id)
-          : String((item.data as { proposal_id?: string | number })?.proposal_id ?? "")
+          : String(item.data.proposal_id ?? "")
       }
       ListHeaderComponent={isHistory ? historyHeader : null}
       renderItem={({ item }) => {

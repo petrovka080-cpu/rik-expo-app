@@ -1,6 +1,5 @@
 import { useCallback } from "react";
-import { supabase } from "../../lib/supabaseClient";
-import { accountantReturnToBuyer } from "../../lib/catalog_api";
+import { runAccountantReturnToBuyerChain } from "./accountant.return.service";
 
 type RowBase = { proposal_id?: string | number };
 
@@ -27,28 +26,12 @@ export function useAccountantReturnAction<T extends RowBase>(p: Params<T>) {
     const comment = (p.note || "").trim() || null;
 
     try {
-      await accountantReturnToBuyer({ proposalId: pid, comment });
-    } catch {
-      try {
-        const { error } = await supabase.rpc("acc_return_min_auto", {
-          p_proposal_id: pid,
-          p_comment: comment,
-        });
-        if (error) throw error;
-      } catch {
-        try {
-          const { error } = await supabase.rpc("proposal_return_to_buyer_min", {
-            p_proposal_id: pid,
-            p_comment: comment,
-          });
-          if (error) throw error;
-        } catch (e: unknown) {
-          const msg = p.errText(e);
-          p.safeAlert("Ошибка возврата", msg);
-          console.error("[return_to_buyer chain failed]", msg);
-          return;
-        }
-      }
+      await runAccountantReturnToBuyerChain({ proposalId: pid, comment });
+    } catch (e: unknown) {
+      const msg = p.errText(e);
+      p.safeAlert("Ошибка возврата", msg);
+      console.error("[return_to_buyer chain failed]", msg);
+      return;
     }
 
     p.safeAlert("Готово", "Отправлено на доработку снабженцу.");
@@ -57,4 +40,3 @@ export function useAccountantReturnAction<T extends RowBase>(p: Params<T>) {
     await p.load();
   }, [p]);
 }
-

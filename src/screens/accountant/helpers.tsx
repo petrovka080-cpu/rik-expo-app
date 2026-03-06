@@ -1,6 +1,8 @@
 ﻿// src/screens/accountant/helpers.ts
 import React from "react";
 import { Alert, Platform, Text, View } from "react-native";
+import type { PropsWithChildren } from "react";
+import type { ViewProps } from "react-native";
 import * as WebBrowser from "expo-web-browser";
 import * as Sharing from "expo-sharing";
 import * as FileSystem from "expo-file-system/legacy";
@@ -8,6 +10,7 @@ import * as FileSystem from "expo-file-system/legacy";
 import { supabase, SUPABASE_ANON_KEY } from "../../lib/supabaseClient";
 import type { AccountantInboxRow } from "../../lib/rik_api";
 import type { StatusKey } from "./types";
+import { normalizePaymentStatusKind } from "./accountant.status";
 
 export function toRpcDateOrNull(v: string) {
   const s = String(v || "").trim();
@@ -23,21 +26,21 @@ export function toRpcDateOrNull(v: string) {
 }
 
 // ============================== MAYAK: PROD LOG (ACC) ==============================
-export const DLOG = (...args: any[]) => {
+export const DLOG = (...args: unknown[]) => {
   if (__DEV__) console.log(...args);
 };
 
 export const safeAlert = (title: string, msg?: string) => {
   if (Platform.OS === "web") {
-    // @ts-ignore
-    window.alert([title, msg].filter(Boolean).join("\n"));
+    const w = globalThis as typeof globalThis & { alert?: (v: string) => void };
+    w.alert?.([title, msg].filter(Boolean).join("\n"));
   } else {
     Alert.alert(title, msg ?? "");
   }
 };
 
 // ---------- SafeView: С„РёР»СЊС‚СЂСѓРµС‚ СЃС‹СЂРѕР№ С‚РµРєСЃС‚ РІРЅСѓС‚СЂРё View (С„РёРєСЃ RNW) ----------
-export function SafeView({ children, ...rest }: any) {
+export function SafeView({ children, ...rest }: PropsWithChildren<ViewProps>) {
   const kids = React.Children.toArray(children).map((c, i) => {
     if (typeof c === "string") return c.trim() ? <Text key={`t${i}`}>{c}</Text> : null;
     if (typeof c === "number") return <Text key={`n${i}`}>{String(c)}</Text>;
@@ -97,8 +100,10 @@ export async function openSignedUrlAcc(url: string, fileName?: string) {
   if (!u) throw new Error("РџСѓСЃС‚РѕР№ URL");
 
   if (Platform.OS === "web") {
-    // @ts-ignore
-    window.open(u, "_blank", "noopener,noreferrer");
+    const w = globalThis as typeof globalThis & {
+      open?: (url?: string, target?: string, features?: string) => unknown;
+    };
+    w.open?.(u, "_blank", "noopener,noreferrer");
     return;
   }
 
@@ -138,11 +143,16 @@ export function rowsShallowEqual(a: AccountantInboxRow[], b: AccountantInboxRow[
 export const statusFromRaw = (raw?: string | null, isHistory?: boolean): { key: StatusKey; label: string } => {
   if (isHistory) return { key: "HISTORY", label: "ИСТОРИЯ" };
 
-  const v = String(raw ?? "").trim().toLowerCase();
-  if (v.startsWith("на доработке") || v.startsWith("возврат")) return { key: "REWORK", label: "НА ДОРАБОТКЕ" };
-  if (v.startsWith("оплачено")) return { key: "PAID", label: "ОПЛАЧЕНО" };
-  if (v.startsWith("частично")) return { key: "PART", label: "ЧАСТИЧНО" };
-  return { key: "K_PAY", label: "К ОПЛАТЕ" };
+  switch (normalizePaymentStatusKind(raw)) {
+    case "REWORK":
+      return { key: "REWORK", label: "НА ДОРАБОТКЕ" };
+    case "PAID":
+      return { key: "PAID", label: "ОПЛАЧЕНО" };
+    case "PART":
+      return { key: "PART", label: "ЧАСТИЧНО" };
+    default:
+      return { key: "K_PAY", label: "К ОПЛАТЕ" };
+  }
 };
 
 export const statusColors = (key: StatusKey) => {
@@ -161,7 +171,7 @@ export const statusColors = (key: StatusKey) => {
 };
 
 export async function withTimeout<T>(p: Promise<T>, ms = 20000, label = "timeout") {
-  let t: any;
+  let t: ReturnType<typeof setTimeout> | null = null;
   const killer = new Promise<never>((_, rej) => {
     t = setTimeout(() => rej(new Error(`${label}: ${ms}ms`)), ms);
   });
@@ -169,8 +179,16 @@ export async function withTimeout<T>(p: Promise<T>, ms = 20000, label = "timeout
     return await Promise.race([p, killer]);
   } finally {
     try {
-      clearTimeout(t);
+      if (t != null) clearTimeout(t);
     } catch {}
   }
+}
+
+export function runNextTick(task: () => void) {
+  if (typeof queueMicrotask === "function") {
+    queueMicrotask(task);
+    return;
+  }
+  setTimeout(task, 0);
 }
 

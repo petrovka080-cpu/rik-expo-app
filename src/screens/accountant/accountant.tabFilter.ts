@@ -1,17 +1,18 @@
 ﻿import { TABS, type Tab } from "./types";
+import { normalizePaymentStatusKind } from "./accountant.status";
 
 export function filterRowsByTab<T extends { payment_status?: string | null }>(rows: T[], tab: Tab): T[] {
   return (rows || []).filter((r) => {
-    const ps = String(r.payment_status ?? "").trim().toLowerCase();
+    const kind = normalizePaymentStatusKind(r.payment_status);
     switch (tab) {
       case TABS[0]:
-        return ps.startsWith("к оплате") || ps === "k_pay" || ps === "to_pay";
+        return kind === "K_PAY";
       case TABS[1]:
-        return ps.startsWith("частично") || ps === "part" || ps.startsWith("partial");
+        return kind === "PART";
       case TABS[2]:
-        return ps.startsWith("оплачено") || ps === "paid";
+        return kind === "PAID";
       case TABS[3]:
-        return ps.startsWith("на доработке") || ps.startsWith("возврат") || ps === "rework" || ps === "returned";
+        return kind === "REWORK";
       default:
         return true;
     }

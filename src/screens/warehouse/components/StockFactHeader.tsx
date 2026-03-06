@@ -15,14 +15,9 @@ export default React.memo(function StockFactHeader(props: {
   onPickLevel: () => void;
   onPickSystem: () => void;
   onPickZone: () => void;
+  onOpenRecipientModal: () => void;
 
   recipientText: string;
-  onRecipientChange: (t: string) => void;
-
-  recipientSuggestOpen: boolean;
-  setRecipientSuggestOpen: (v: boolean) => void;
-  recipientSuggestions: string[];
-  onPickRecipient: (name: string) => void;
 
   stockSearch: string;
   onStockSearch: (t: string) => void;
@@ -89,43 +84,24 @@ export default React.memo(function StockFactHeader(props: {
         </View>
 
         <View style={{ marginTop: 12 }}>
-          <TextInput
-            value={props.recipientText}
-            onChangeText={(t) => {
-              const v = String(t ?? "");
-              props.onRecipientChange(v);
-              props.setRecipientSuggestOpen(true);
-            }}
-            placeholder="Получатель *"
-            placeholderTextColor={UI.sub}
-            style={s.input}
-            autoCorrect={false}
-            autoCapitalize="words"
-            onFocus={() => props.setRecipientSuggestOpen(true)}
-            onBlur={() => {
-              // оставляем поведение как было, чтобы успеть нажать по подсказке
-              setTimeout(() => props.setRecipientSuggestOpen(false), 120);
-            }}
-          />
-
-          {props.recipientSuggestOpen && props.recipientSuggestions.length > 0 ? (
-            <View style={{ marginTop: 8, gap: 8 }}>
-              {props.recipientSuggestions.map((name) => (
-                <Pressable
-                  key={name}
-                  onPress={() => {
-                    props.onPickRecipient(name);
-                    props.setRecipientSuggestOpen(false);
-                  }}
-                  style={s.openBtn}
-                >
-                  <Text style={s.openBtnText} numberOfLines={1}>
-                    {name}
-                  </Text>
-                </Pressable>
-              ))}
-            </View>
-          ) : null}
+          <Text style={{ color: UI.sub, fontWeight: "800", marginBottom: 6 }}>
+            Эту партию получает
+          </Text>
+          <Pressable
+            onPress={props.onOpenRecipientModal}
+            style={[
+              s.input,
+              { justifyContent: "center", minHeight: 48 },
+              !props.recipientText.trim() && { borderColor: UI.accent }
+            ]}
+          >
+            <Text style={{
+              color: props.recipientText ? UI.text : UI.sub,
+              fontWeight: "800"
+            }}>
+              {props.recipientText ? `👤 ${props.recipientText}` : "Выбрать получателя *"}
+            </Text>
+          </Pressable>
         </View>
 
         <View style={{ marginTop: 12 }}>
