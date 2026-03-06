@@ -523,6 +523,7 @@ export default function ContractorScreen() {
           myPhone,
           normPhone,
           devShowAllSubcontracts: DEV_SHOW_ALL_SUBCONTRACTS,
+          normalizeText: normText,
         }) as SubcontractLite[];
         setSubcontractCards(subcontractsByOrg);
       }
@@ -539,6 +540,15 @@ export default function ContractorScreen() {
       );
       const myContractorId = String(contractorRef.current?.id || "").trim();
 
+      if (__DEV__) {
+        console.log("[contractor.loadWorks] debug-filter", {
+          myOrg,
+          myPhone,
+          subcontractsFound: subcontractsByOrg.length,
+          totalApproved: Array.isArray(sqApproved.data) ? sqApproved.data.length : 0
+        });
+      }
+
       const filtered = filterVisibleRows({
         rows: mappedWithObject as any,
         allowedJobIds,
@@ -549,6 +559,7 @@ export default function ContractorScreen() {
         isExcludedWorkCode,
         isApprovedForOtherStatus,
         normPhone,
+        normalizeText: normText,
       }) as WorkRow[];
 
       const existingJobIds = new Set(
@@ -1400,7 +1411,7 @@ export default function ContractorScreen() {
       normalizeText: normText,
       debugCompanySource: true,
       debugPlatform: Platform.OS,
-      allowGlobalFallback: false,
+      allowGlobalFallback: true,
     });
   }, [subcontractCards, groupedWorksByJob, contractor, profile, toHumanObject, toHumanWork, rowsReady, subcontractsReady]);
   const { cards: unifiedSubcontractCards, rowByCardId: otherRowByCardId } = useMemo(() => {
@@ -1414,7 +1425,7 @@ export default function ContractorScreen() {
       normalizeText: normText,
       debugCompanySource: true,
       debugPlatform: Platform.OS,
-      allowGlobalFallback: false,
+      allowGlobalFallback: true,
     });
   }, [jobCards, otherRows, contractor, profile, toHumanObject, toHumanWork]);
   const resolvedObjectName = pickFirstNonEmpty(workModalRow?.object_name, jobHeader?.object_name) || "";

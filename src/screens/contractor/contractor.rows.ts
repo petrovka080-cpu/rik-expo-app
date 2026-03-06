@@ -100,6 +100,7 @@ export function filterVisibleRows<T extends WorkRowLike>(params: {
   isExcludedWorkCode: (code: string) => boolean;
   isApprovedForOtherStatus: (status: string | null | undefined) => boolean;
   normPhone: (value: string) => string;
+  normalizeText?: (value: any) => string;
 }): T[] {
   const {
     rows,
@@ -111,7 +112,10 @@ export function filterVisibleRows<T extends WorkRowLike>(params: {
     isExcludedWorkCode,
     isApprovedForOtherStatus,
     normPhone,
+    normalizeText,
   } = params;
+
+  const vMyOrg = normalizeText ? normalizeText(myOrg).trim().toLowerCase() : myOrg.trim().toLowerCase();
 
   return rows.filter((r) => {
     const c = String(r.work_code ?? "").toUpperCase();
@@ -120,9 +124,12 @@ export function filterVisibleRows<T extends WorkRowLike>(params: {
     const ownedByMe = !!myContractorId && rowContractorId === myContractorId;
     const inMySubcontract = jid && allowedJobIds.has(jid);
     const isOther = !jid;
-    const rowOrg = String(r.contractor_org || "").trim().toLowerCase();
+
+    const rawRowOrg = String(r.contractor_org || "").trim();
+    const rowOrg = normalizeText ? normalizeText(rawRowOrg).trim().toLowerCase() : rawRowOrg.toLowerCase();
+
     const rowPhone = normPhone(String(r.contractor_phone || "").trim());
-    const matchedByOrgPhone = (!!myOrg && !!rowOrg && myOrg === rowOrg) || (!!myPhone && !!rowPhone && myPhone === rowPhone);
+    const matchedByOrgPhone = (!!vMyOrg && !!rowOrg && vMyOrg === rowOrg) || (!!myPhone && !!rowPhone && myPhone === rowPhone);
     const reqStatus = String(r.request_status || "").toLowerCase();
     const approvedForOther = isApprovedForOtherStatus(reqStatus);
 
@@ -181,12 +188,18 @@ export function selectScopedApprovedSubcontracts(params: {
   myPhone: string;
   normPhone: (value: string) => string;
   devShowAllSubcontracts: boolean;
+  normalizeText?: (value: any) => string;
 }): SubcontractLiteLike[] {
-  const { allApproved, myOrg, myPhone, normPhone, devShowAllSubcontracts } = params;
+  const { allApproved, myOrg, myPhone, normPhone, devShowAllSubcontracts, normalizeText } = params;
+
+  const vMyOrg = normalizeText ? normalizeText(myOrg).trim().toLowerCase() : myOrg.trim().toLowerCase();
+
   const scoped = allApproved.filter((s) => {
-    const org = String(s.contractor_org || "").trim().toLowerCase();
+    const rawOrg = String(s.contractor_org || "").trim();
+    const org = normalizeText ? normalizeText(rawOrg).trim().toLowerCase() : rawOrg.toLowerCase();
+
     const phone = normPhone(String((s as any).contractor_phone || "").trim());
-    const byOrg = !!myOrg && !!org && org === myOrg;
+    const byOrg = !!vMyOrg && !!org && org === vMyOrg;
     const byPhone = !!myPhone && !!phone && phone === myPhone;
     return byOrg || byPhone;
   });
