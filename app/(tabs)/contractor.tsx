@@ -115,9 +115,6 @@ import ContractorWorkModal from "../../src/screens/contractor/components/Contrac
 import { styles } from "../../src/screens/contractor/contractor.styles";
 import Text from "../../src/screens/contractor/components/NormalizedText";
 
-// DEV toggle: when true, show approved subcontracts even without strict org/phone match.
-const DEV_SHOW_ALL_SUBCONTRACTS = __DEV__;
-
 // ---- TYPES ----
 type WorkRow = {
   progress_id: string;
@@ -146,6 +143,7 @@ type UserProfile = {
   id: string;
   full_name: string | null;
   phone: string | null;
+  inn: string | null;
   company: string | null;
   is_contractor: boolean;
 };
@@ -412,6 +410,7 @@ export default function ContractorScreen() {
         id: auth.user.id,
         full_name: normText(data.full_name) || null,
         phone: normText(data.phone) || null,
+        inn: String(data.inn || "").replace(/\D+/g, "") || null,
         company: normText(data.company) || null,
         is_contractor: data.is_contractor === true,
       };
@@ -507,23 +506,12 @@ export default function ContractorScreen() {
         return;
       }
       if (reqSeq !== loadWorksSeqRef.current) return;
-      const myOrg = String(
-        contractorRef.current?.company_name || profileRef.current?.company || ""
-      )
-        .trim()
-        .toLowerCase();
-      const myPhone = normPhone(
-        String(contractorRef.current?.phone || profileRef.current?.phone || "").trim()
-      );
+      const isStaff = profileRef.current?.is_contractor === false;
+
       if (Array.isArray(sqApproved.data)) {
         const allApproved = sqApproved.data as SubcontractLite[];
         subcontractsByOrg = selectScopedApprovedSubcontracts({
           allApproved,
-          myOrg,
-          myPhone,
-          normPhone,
-          devShowAllSubcontracts: DEV_SHOW_ALL_SUBCONTRACTS,
-          normalizeText: normText,
         }) as SubcontractLite[];
         setSubcontractCards(subcontractsByOrg);
       }
@@ -542,8 +530,7 @@ export default function ContractorScreen() {
 
       if (__DEV__) {
         console.log("[contractor.loadWorks] debug-filter", {
-          myOrg,
-          myPhone,
+          isStaff,
           subcontractsFound: subcontractsByOrg.length,
           totalApproved: Array.isArray(sqApproved.data) ? sqApproved.data.length : 0
         });
@@ -553,13 +540,9 @@ export default function ContractorScreen() {
         rows: mappedWithObject as any,
         allowedJobIds,
         myContractorId,
-        myOrg,
-        myPhone,
-        devShowAllSubcontracts: DEV_SHOW_ALL_SUBCONTRACTS,
+        isStaff,
         isExcludedWorkCode,
         isApprovedForOtherStatus,
-        normPhone,
-        normalizeText: normText,
       }) as WorkRow[];
 
       const existingJobIds = new Set(
@@ -1404,28 +1387,22 @@ export default function ContractorScreen() {
     return buildJobCards({
       subcontractCards,
       groupedWorksByJob,
-      contractorCompany: contractor?.company_name,
-      profileCompany: profile?.company,
       toHumanObject,
       toHumanWork,
       normalizeText: normText,
       debugCompanySource: true,
       debugPlatform: Platform.OS,
-      allowGlobalFallback: true,
     });
   }, [subcontractCards, groupedWorksByJob, contractor, profile, toHumanObject, toHumanWork, rowsReady, subcontractsReady]);
   const { cards: unifiedSubcontractCards, rowByCardId: otherRowByCardId } = useMemo(() => {
     return buildUnifiedCardsFromJobsAndOthers({
       jobCards: jobCards as any,
       otherRows: otherRows as any,
-      contractorCompany: contractor?.company_name,
-      profileCompany: profile?.company,
       toHumanObject,
       toHumanWork,
       normalizeText: normText,
       debugCompanySource: true,
       debugPlatform: Platform.OS,
-      allowGlobalFallback: true,
     });
   }, [jobCards, otherRows, contractor, profile, toHumanObject, toHumanWork]);
   const resolvedObjectName = pickFirstNonEmpty(workModalRow?.object_name, jobHeader?.object_name) || "";

@@ -94,28 +94,18 @@ export function filterVisibleRows<T extends WorkRowLike>(params: {
   rows: T[];
   allowedJobIds: Set<string>;
   myContractorId: string;
-  myOrg: string;
-  myPhone: string;
-  devShowAllSubcontracts: boolean;
+  isStaff?: boolean;
   isExcludedWorkCode: (code: string) => boolean;
   isApprovedForOtherStatus: (status: string | null | undefined) => boolean;
-  normPhone: (value: string) => string;
-  normalizeText?: (value: any) => string;
 }): T[] {
   const {
     rows,
     allowedJobIds,
     myContractorId,
-    myOrg,
-    myPhone,
-    devShowAllSubcontracts,
+    isStaff,
     isExcludedWorkCode,
     isApprovedForOtherStatus,
-    normPhone,
-    normalizeText,
   } = params;
-
-  const vMyOrg = normalizeText ? normalizeText(myOrg).trim().toLowerCase() : myOrg.trim().toLowerCase();
 
   return rows.filter((r) => {
     const c = String(r.work_code ?? "").toUpperCase();
@@ -124,25 +114,19 @@ export function filterVisibleRows<T extends WorkRowLike>(params: {
     const ownedByMe = !!myContractorId && rowContractorId === myContractorId;
     const inMySubcontract = jid && allowedJobIds.has(jid);
     const isOther = !jid;
-
-    const rawRowOrg = String(r.contractor_org || "").trim();
-    const rowOrg = normalizeText ? normalizeText(rawRowOrg).trim().toLowerCase() : rawRowOrg.toLowerCase();
-
-    const rowPhone = normPhone(String(r.contractor_phone || "").trim());
-    const matchedByOrgPhone = (!!vMyOrg && !!rowOrg && vMyOrg === rowOrg) || (!!myPhone && !!rowPhone && myPhone === rowPhone);
     const reqStatus = String(r.request_status || "").toLowerCase();
     const approvedForOther = isApprovedForOtherStatus(reqStatus);
 
     if (
+      !isStaff &&
       !ownedByMe &&
       allowedJobIds.size > 0 &&
       !inMySubcontract &&
-      !(isOther && matchedByOrgPhone && approvedForOther) &&
-      !devShowAllSubcontracts
+      !(isOther && approvedForOther)
     ) {
       return false;
     }
-    if (!ownedByMe && allowedJobIds.size === 0 && !devShowAllSubcontracts && !(isOther && matchedByOrgPhone && approvedForOther)) {
+    if (!isStaff && !ownedByMe && allowedJobIds.size === 0 && !(isOther && approvedForOther)) {
       return false;
     }
     if (isExcludedWorkCode(c)) return false;
@@ -184,24 +168,8 @@ export function buildSyntheticSubcontractRows(subcontractsByOrg: SubcontractLite
 
 export function selectScopedApprovedSubcontracts(params: {
   allApproved: SubcontractLiteLike[];
-  myOrg: string;
-  myPhone: string;
-  normPhone: (value: string) => string;
-  devShowAllSubcontracts: boolean;
-  normalizeText?: (value: any) => string;
 }): SubcontractLiteLike[] {
-  const { allApproved, myOrg, myPhone, normPhone, devShowAllSubcontracts, normalizeText } = params;
-
-  const vMyOrg = normalizeText ? normalizeText(myOrg).trim().toLowerCase() : myOrg.trim().toLowerCase();
-
-  const scoped = allApproved.filter((s) => {
-    const rawOrg = String(s.contractor_org || "").trim();
-    const org = normalizeText ? normalizeText(rawOrg).trim().toLowerCase() : rawOrg.toLowerCase();
-
-    const phone = normPhone(String((s as any).contractor_phone || "").trim());
-    const byOrg = !!vMyOrg && !!org && org === vMyOrg;
-    const byPhone = !!myPhone && !!phone && phone === myPhone;
-    return byOrg || byPhone;
-  });
-  return scoped.length > 0 ? scoped : devShowAllSubcontracts ? allApproved : [];
+  const { allApproved } = params;
+  // Contractor cards must be built from approved subcontracts first.
+  return allApproved;
 }

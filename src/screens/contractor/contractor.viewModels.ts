@@ -1,4 +1,4 @@
-type WorkRowLike = {
+﻿type WorkRowLike = {
   progress_id?: string;
   contractor_job_id?: string | null;
   object_name?: string | null;
@@ -38,10 +38,7 @@ export type ContractorJobCardView = {
 type ResolveCompanyParams = {
   subcontractOrg?: string | null;
   rowOrg?: string | null;
-  contractorCompany?: string | null;
-  profileCompany?: string | null;
   normalizeText?: (value: any) => string;
-  allowGlobalFallback?: boolean;
 };
 
 const sortCards = (cards: ContractorJobCardView[]): ContractorJobCardView[] =>
@@ -61,39 +58,16 @@ const pickText = (value: any, normalizeText?: (value: any) => string): string =>
 
 function resolveCompanyName(params: ResolveCompanyParams): {
   company: string;
-  source:
-  | "subcontract.contractor_org"
-  | "row.contractor_org"
-  | "contractor.company_name"
-  | "profile.company"
-  | "fallback";
+  source: "subcontract.contractor_org" | "row.contractor_org" | "fallback";
   raw: string;
 } {
-  const {
-    subcontractOrg,
-    rowOrg,
-    contractorCompany,
-    profileCompany,
-    normalizeText,
-    allowGlobalFallback,
-  } = params;
+  const { subcontractOrg, rowOrg, normalizeText } = params;
 
-  // Priority 1: Subcontract org
   const vSub = pickText(subcontractOrg, normalizeText);
   if (vSub) return { company: vSub, source: "subcontract.contractor_org", raw: String(subcontractOrg || "") };
 
-  // Priority 2: Row org (from the record data)
   const vRow = pickText(rowOrg, normalizeText);
   if (vRow) return { company: vRow, source: "row.contractor_org", raw: String(rowOrg || "") };
-
-  // If we are allowed to use global fallback (usually for non-subcontract works, but here restricted by allowGlobalFallback)
-  if (allowGlobalFallback) {
-    const vContractor = pickText(contractorCompany, normalizeText);
-    if (vContractor) return { company: vContractor, source: "contractor.company_name", raw: String(contractorCompany || "") };
-
-    const vProfile = pickText(profileCompany, normalizeText);
-    if (vProfile) return { company: vProfile, source: "profile.company", raw: String(profileCompany || "") };
-  }
 
   return { company: "Подрядчик не указан", source: "fallback", raw: "" };
 }
@@ -112,26 +86,20 @@ export function groupWorksByJob<T extends WorkRowLike>(rows: T[]): Map<string, T
 export function buildJobCards(params: {
   subcontractCards: SubcontractLiteLike[];
   groupedWorksByJob: Map<string, WorkRowLike[]>;
-  contractorCompany?: string | null;
-  profileCompany?: string | null;
   toHumanObject: (value: string | null | undefined) => string;
   toHumanWork: (value: string | null | undefined) => string;
   normalizeText?: (value: any) => string;
   debugCompanySource?: boolean;
   debugPlatform?: string;
-  allowGlobalFallback?: boolean;
 }): ContractorJobCardView[] {
   const {
     subcontractCards,
     groupedWorksByJob,
-    contractorCompany,
-    profileCompany,
     toHumanObject,
     toHumanWork,
     normalizeText,
     debugCompanySource,
     debugPlatform,
-    allowGlobalFallback,
   } = params;
 
   const cards: ContractorJobCardView[] = [];
@@ -146,22 +114,19 @@ export function buildJobCards(params: {
     const hasActiveRows = rowsForJob.some((r) => Number(r.qty_left ?? 0) > 0);
     const isActive = rowsForJob.length === 0 ? true : hasActiveRows;
 
-    // Use subcontract data as primary, but also provide first row data as fallback if subcontract misses org
     const companyResolved = resolveCompanyName({
       subcontractOrg: s.contractor_org,
       rowOrg: rowsForJob[0]?.contractor_org,
-      contractorCompany,
-      profileCompany,
       normalizeText,
-      allowGlobalFallback,
     });
 
     if (__DEV__ && debugCompanySource) {
       console.log(`[contractor.cards] card:${id} platform:${debugPlatform || "unknown"}`, {
         hasSubcontract: true,
+        subcontractId: id,
         source: companyResolved.source,
-        raw: companyResolved.raw,
-        final: companyResolved.company,
+        rawContractorOrg: companyResolved.raw,
+        finalContractorTitle: companyResolved.company,
       });
     }
 
@@ -185,18 +150,16 @@ export function buildJobCards(params: {
     const companyResolved = resolveCompanyName({
       subcontractOrg: first?.contractor_org || null,
       rowOrg: first?.contractor_org || null,
-      contractorCompany,
-      profileCompany,
       normalizeText,
-      allowGlobalFallback,
     });
 
     if (__DEV__ && debugCompanySource) {
       console.log(`[contractor.cards] card:${jid} platform:${debugPlatform || "unknown"}`, {
         hasSubcontract: false,
+        subcontractId: null,
         source: companyResolved.source,
-        raw: companyResolved.raw,
-        final: companyResolved.company,
+        rawContractorOrg: companyResolved.raw,
+        finalContractorTitle: companyResolved.company,
       });
     }
 
@@ -219,26 +182,20 @@ export function buildJobCards(params: {
 export function buildUnifiedCardsFromJobsAndOthers(params: {
   jobCards: ContractorJobCardView[];
   otherRows: WorkRowLike[];
-  contractorCompany?: string | null;
-  profileCompany?: string | null;
   toHumanObject: (value: string | null | undefined) => string;
   toHumanWork: (value: string | null | undefined) => string;
   normalizeText?: (value: any) => string;
   debugCompanySource?: boolean;
   debugPlatform?: string;
-  allowGlobalFallback?: boolean;
 }): { cards: ContractorJobCardView[]; rowByCardId: Map<string, WorkRowLike> } {
   const {
     jobCards,
     otherRows,
-    contractorCompany,
-    profileCompany,
     toHumanObject,
     toHumanWork,
     normalizeText,
     debugCompanySource,
     debugPlatform,
-    allowGlobalFallback,
   } = params;
 
   const rowByCardId = new Map<string, WorkRowLike>();
@@ -249,18 +206,16 @@ export function buildUnifiedCardsFromJobsAndOthers(params: {
     const companyResolved = resolveCompanyName({
       subcontractOrg: row.contractor_org || null,
       rowOrg: row.contractor_org || null,
-      contractorCompany,
-      profileCompany,
       normalizeText,
-      allowGlobalFallback,
     });
 
     if (__DEV__ && debugCompanySource) {
       console.log(`[contractor.cards] card:${id} platform:${debugPlatform || "unknown"}`, {
         hasSubcontract: false,
+        subcontractId: null,
         source: companyResolved.source,
-        raw: companyResolved.raw,
-        final: companyResolved.company,
+        rawContractorOrg: companyResolved.raw,
+        finalContractorTitle: companyResolved.company,
       });
     }
 

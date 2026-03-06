@@ -104,6 +104,18 @@ const toNum = (v: string): number | null => {
   return Number.isFinite(n) ? n : null;
 };
 
+const normalizePhone996 = (value: string): string => {
+  const digits = String(value || "").replace(/\D+/g, "");
+  if (!digits) return "";
+  if (digits.startsWith("996") && digits.length >= 12) return digits.slice(0, 12);
+  if (digits.startsWith("0") && digits.length >= 10) return `996${digits.slice(-9)}`;
+  if (digits.length === 9) return `996${digits}`;
+  if (digits.length > 9) return `996${digits.slice(-9)}`;
+  return digits;
+};
+
+const normalizeInn = (value: string): string => String(value || "").replace(/\D+/g, "");
+
 const errText = (e: unknown, fallback: string) => {
   if (e instanceof Error && e.message.trim()) return e.message.trim();
   return fallback;
@@ -161,12 +173,14 @@ export default function BuyerSubcontractTab({ contentTopPad, onScroll, buyerFio 
   }, [load]);
 
   const patch = useMemo(() => {
+    const phoneNormalized = normalizePhone996(form.contractorPhone);
+    const innNormalized = normalizeInn(form.contractorInn);
     return {
       foreman_name: form.foremanName.trim() || buyerFio || "Снабженец",
       contractor_org: form.contractorOrg.trim() || null,
-      contractor_inn: form.contractorInn.trim() || null,
+      contractor_inn: innNormalized || null,
       contractor_rep: form.contractorRep.trim() || null,
-      contractor_phone: form.contractorPhone.trim() || null,
+      contractor_phone: phoneNormalized || null,
       contract_number: form.contractNumber.trim() || null,
       contract_date: form.contractDate || null,
       object_name: form.objectName || null,
@@ -184,6 +198,48 @@ export default function BuyerSubcontractTab({ contentTopPad, onScroll, buyerFio 
     };
   }, [buyerFio, form]);
 
+  const resolveContractorIdByPhone = useCallback(async (phoneNormalized: string): Promise<string | null> => {
+    const pn = normalizePhone996(phoneNormalized);
+    if (!pn) return null;
+
+    const direct = await supabase
+      .from("contractors")
+      .select("id, phone")
+      .eq("phone", pn)
+      .limit(1);
+    if (!direct.error && Array.isArray(direct.data) && direct.data.length > 0) {
+      return String((direct.data[0] as any).id || "").trim() || null;
+    }
+
+    const tail = pn.slice(-9);
+    if (!tail) return null;
+    const fallback = await supabase
+      .from("contractors")
+      .select("id, phone")
+      .ilike("phone", `%${tail}`)
+      .limit(20);
+    if (fallback.error || !Array.isArray(fallback.data)) return null;
+    const matched = fallback.data.find((row: any) => normalizePhone996(String(row?.phone || "")) === pn);
+    return matched ? String((matched as any).id || "").trim() || null : null;
+  }, []);
+
+  const attachContractorIdIfPossible = useCallback(async (subcontractId: string, contractorId: string | null) => {
+    const sid = String(subcontractId || "").trim();
+    const cid = String(contractorId || "").trim();
+    if (!sid || !cid) return;
+    try {
+      const upd = await supabase
+        .from("subcontracts")
+        .update({ contractor_id: cid } as any)
+        .eq("id", sid);
+      if (upd.error && __DEV__) {
+        console.warn("[BuyerSubcontractTab] contractor_id attach skipped:", upd.error.message);
+      }
+    } catch (e) {
+      if (__DEV__) console.warn("[BuyerSubcontractTab] contractor_id attach exception:", e);
+    }
+  }, []);
+
   const closeForm = useCallback(() => {
     setShowForm(false);
     setSubId("");
@@ -197,6 +253,7 @@ export default function BuyerSubcontractTab({ contentTopPad, onScroll, buyerFio 
       const { data } = await supabase.auth.getUser();
       const uid = data?.user?.id;
       if (!uid) throw new Error("Пользователь не авторизован");
+      const contractorId = await resolveContractorIdByPhone(String(patch.contractor_phone || ""));
 
       if (!subId) {
         const row = await createSubcontractDraftWithPatch(
@@ -204,9 +261,11 @@ export default function BuyerSubcontractTab({ contentTopPad, onScroll, buyerFio 
           form.foremanName.trim() || buyerFio || "Снабженец",
           patch,
         );
+        await attachContractorIdIfPossible(row.id, contractorId);
         setSubId(row.id);
       } else {
         await updateSubcontract(subId, patch);
+        await attachContractorIdIfPossible(subId, contractorId);
       }
 
       Alert.alert("Черновик сохранён");
@@ -216,7 +275,7 @@ export default function BuyerSubcontractTab({ contentTopPad, onScroll, buyerFio 
     } finally {
       setSaving(false);
     }
-  }, [subId, form.foremanName, buyerFio, patch, load]);
+  }, [subId, form.foremanName, buyerFio, patch, load, resolveContractorIdByPhone, attachContractorIdIfPossible]);
 
   const handleSubmit = useCallback(async () => {
     setSending(true);
@@ -224,6 +283,7 @@ export default function BuyerSubcontractTab({ contentTopPad, onScroll, buyerFio 
       const { data } = await supabase.auth.getUser();
       const uid = data?.user?.id;
       if (!uid) throw new Error("Пользователь не авторизован");
+      const contractorId = await resolveContractorIdByPhone(String(patch.contractor_phone || ""));
 
       let activeId = subId;
       if (!activeId) {
@@ -233,8 +293,10 @@ export default function BuyerSubcontractTab({ contentTopPad, onScroll, buyerFio 
           patch,
         );
         activeId = row.id;
+        await attachContractorIdIfPossible(activeId, contractorId);
       } else {
         await updateSubcontract(activeId, patch);
+        await attachContractorIdIfPossible(activeId, contractorId);
       }
 
       await submitSubcontract(activeId);
@@ -246,7 +308,7 @@ export default function BuyerSubcontractTab({ contentTopPad, onScroll, buyerFio 
     } finally {
       setSending(false);
     }
-  }, [subId, form.foremanName, buyerFio, patch, closeForm, load]);
+  }, [subId, form.foremanName, buyerFio, patch, closeForm, load, resolveContractorIdByPhone, attachContractorIdIfPossible]);
 
   const renderCard = ({ item }: { item: Subcontract }) => {
     const cfg = STATUS_CONFIG[item.status] || STATUS_CONFIG.draft;

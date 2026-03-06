@@ -21,7 +21,15 @@ export const inferUnitByWorkName = (workName: string): string | null => {
   return null;
 };
 
-export const normPhone = (v: string): string => v.replace(/\D+/g, "");
+export const normPhone = (v: string): string => {
+  const digits = String(v || "").replace(/\D+/g, "");
+  if (!digits) return "";
+  if (digits.startsWith("996") && digits.length >= 12) return digits.slice(0, 12);
+  if (digits.startsWith("0") && digits.length >= 10) return `996${digits.slice(-9)}`;
+  if (digits.length === 9) return `996${digits}`;
+  if (digits.length > 9) return `996${digits.slice(-9)}`;
+  return digits;
+};
 
 export const isExcludedWorkCode = (code: string): boolean =>
   EXCLUDED_WORK_CODE_PREFIXES.some((prefix) => code.startsWith(prefix));
