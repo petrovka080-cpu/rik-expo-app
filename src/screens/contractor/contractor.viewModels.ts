@@ -37,9 +37,11 @@ export type ContractorJobCardView = {
 
 type ResolveCompanyParams = {
   subcontractOrg?: string | null;
+  rowOrg?: string | null;
   contractorCompany?: string | null;
   profileCompany?: string | null;
   normalizeText?: (value: any) => string;
+  allowGlobalFallback?: boolean;
 };
 
 const sortCards = (cards: ContractorJobCardView[]): ContractorJobCardView[] =>
@@ -59,12 +61,31 @@ const pickText = (value: any, normalizeText?: (value: any) => string): string =>
 
 function resolveCompanyName(params: ResolveCompanyParams): {
   company: string;
-  source: "subcontract.contractor_org" | "contractor.company_name" | "profile.company" | "fallback";
+  source:
+    | "subcontract.contractor_org"
+    | "row.contractor_org"
+    | "contractor.company_name"
+    | "profile.company"
+    | "fallback";
   raw: string;
 } {
-  const { subcontractOrg, contractorCompany, profileCompany, normalizeText } = params;
+  const {
+    subcontractOrg,
+    rowOrg,
+    contractorCompany,
+    profileCompany,
+    normalizeText,
+    allowGlobalFallback,
+  } = params;
   const vSub = pickText(subcontractOrg, normalizeText);
   if (vSub) return { company: vSub, source: "subcontract.contractor_org", raw: String(subcontractOrg || "") };
+
+  const vRow = pickText(rowOrg, normalizeText);
+  if (vRow) return { company: vRow, source: "row.contractor_org", raw: String(rowOrg || "") };
+
+  if (!allowGlobalFallback) {
+    return { company: "Подрядчик не указан", source: "fallback", raw: "" };
+  }
 
   const vContractor = pickText(contractorCompany, normalizeText);
   if (vContractor) return { company: vContractor, source: "contractor.company_name", raw: String(contractorCompany || "") };
@@ -95,6 +116,8 @@ export function buildJobCards(params: {
   toHumanWork: (value: string | null | undefined) => string;
   normalizeText?: (value: any) => string;
   debugCompanySource?: boolean;
+  debugPlatform?: string;
+  allowGlobalFallback?: boolean;
 }): ContractorJobCardView[] {
   const {
     subcontractCards,
@@ -105,6 +128,8 @@ export function buildJobCards(params: {
     toHumanWork,
     normalizeText,
     debugCompanySource,
+    debugPlatform,
+    allowGlobalFallback,
   } = params;
 
   const cards: ContractorJobCardView[] = [];
@@ -124,6 +149,7 @@ export function buildJobCards(params: {
       contractorCompany,
       profileCompany,
       normalizeText,
+      allowGlobalFallback,
     });
 
     if (__DEV__ && debugCompanySource && !logged) {
@@ -133,6 +159,7 @@ export function buildJobCards(params: {
         source: companyResolved.source,
         raw: companyResolved.raw,
         final: companyResolved.company,
+        platform: debugPlatform || "unknown",
       });
     }
 
@@ -155,9 +182,11 @@ export function buildJobCards(params: {
     const createdAt = String((first as any)?.created_at || "");
     const companyResolved = resolveCompanyName({
       subcontractOrg: first?.contractor_org || null,
+      rowOrg: first?.contractor_org || null,
       contractorCompany,
       profileCompany,
       normalizeText,
+      allowGlobalFallback,
     });
 
     if (__DEV__ && debugCompanySource && !logged) {
@@ -167,6 +196,7 @@ export function buildJobCards(params: {
         source: companyResolved.source,
         raw: companyResolved.raw,
         final: companyResolved.company,
+        platform: debugPlatform || "unknown",
       });
     }
 
@@ -195,6 +225,8 @@ export function buildUnifiedCardsFromJobsAndOthers(params: {
   toHumanWork: (value: string | null | undefined) => string;
   normalizeText?: (value: any) => string;
   debugCompanySource?: boolean;
+  debugPlatform?: string;
+  allowGlobalFallback?: boolean;
 }): { cards: ContractorJobCardView[]; rowByCardId: Map<string, WorkRowLike> } {
   const {
     jobCards,
@@ -205,6 +237,8 @@ export function buildUnifiedCardsFromJobsAndOthers(params: {
     toHumanWork,
     normalizeText,
     debugCompanySource,
+    debugPlatform,
+    allowGlobalFallback,
   } = params;
 
   const rowByCardId = new Map<string, WorkRowLike>();
@@ -214,9 +248,11 @@ export function buildUnifiedCardsFromJobsAndOthers(params: {
     rowByCardId.set(id, row);
     const companyResolved = resolveCompanyName({
       subcontractOrg: row.contractor_org || null,
+      rowOrg: row.contractor_org || null,
       contractorCompany,
       profileCompany,
       normalizeText,
+      allowGlobalFallback,
     });
 
     if (__DEV__ && debugCompanySource && !logged) {
@@ -226,6 +262,7 @@ export function buildUnifiedCardsFromJobsAndOthers(params: {
         source: companyResolved.source,
         raw: companyResolved.raw,
         final: companyResolved.company,
+        platform: debugPlatform || "unknown",
       });
     }
 

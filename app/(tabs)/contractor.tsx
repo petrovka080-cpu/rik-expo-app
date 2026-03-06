@@ -1399,6 +1399,8 @@ export default function ContractorScreen() {
       toHumanWork,
       normalizeText: normText,
       debugCompanySource: true,
+      debugPlatform: Platform.OS,
+      allowGlobalFallback: false,
     });
   }, [subcontractCards, groupedWorksByJob, contractor, profile, toHumanObject, toHumanWork, rowsReady, subcontractsReady]);
   const { cards: unifiedSubcontractCards, rowByCardId: otherRowByCardId } = useMemo(() => {
@@ -1411,6 +1413,8 @@ export default function ContractorScreen() {
       toHumanWork,
       normalizeText: normText,
       debugCompanySource: true,
+      debugPlatform: Platform.OS,
+      allowGlobalFallback: false,
     });
   }, [jobCards, otherRows, contractor, profile, toHumanObject, toHumanWork]);
   const resolvedObjectName = pickFirstNonEmpty(workModalRow?.object_name, jobHeader?.object_name) || "";
