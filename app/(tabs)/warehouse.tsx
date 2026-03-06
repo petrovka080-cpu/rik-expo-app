@@ -367,6 +367,8 @@ export default function Warehouse() {
 
   const [repPeriodOpen, setRepPeriodOpen] = useState(false);
   const didInitLoadRef = useRef(false);
+  const focusRefreshInFlightRef = useRef<Promise<void> | null>(null);
+  const lastFocusRefreshAtRef = useRef(0);
 
   const fetchStock = useCallback(async () => {
     if (stockFetchMutex.current) return;
@@ -845,7 +847,9 @@ export default function Warehouse() {
   useEffect(() => {
     if (didInitLoadRef.current) return;
     didInitLoadRef.current = true;
-    void loadAll();
+    void loadAll().finally(() => {
+      lastFocusRefreshAtRef.current = Date.now();
+    });
   }, [loadAll]);
 
   const refreshActiveTab = useCallback(async () => {
@@ -868,7 +872,17 @@ export default function Warehouse() {
 
   useFocusEffect(
     useCallback(() => {
-      void refreshActiveTab().catch((e) => showErr(e));
+      const now = Date.now();
+      if (now - lastFocusRefreshAtRef.current < 1200) return undefined;
+      if (focusRefreshInFlightRef.current) return undefined;
+
+      const task = refreshActiveTab().catch((e) => showErr(e)).finally(() => {
+        if (focusRefreshInFlightRef.current === task) {
+          focusRefreshInFlightRef.current = null;
+        }
+      });
+      focusRefreshInFlightRef.current = task;
+      lastFocusRefreshAtRef.current = now;
       return undefined;
     }, [refreshActiveTab]),
   );

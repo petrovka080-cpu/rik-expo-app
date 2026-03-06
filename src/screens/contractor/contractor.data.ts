@@ -1,4 +1,4 @@
-import type { WorkMaterialRow } from "../../components/WorkMaterialsEditor";
+﻿import type { WorkMaterialRow } from "../../components/WorkMaterialsEditor";
 import type { WorkLogRow } from "./types";
 
 export type RequestScopeRow = { id: string; status: string | null };
@@ -8,31 +8,80 @@ type RowWithProgress = {
   contractor_job_id?: string | null;
 };
 
+type RequestRow = {
+  id?: string | null;
+  status?: string | null;
+};
+
+type LogIdRow = {
+  id?: string | null;
+};
+
+type MaterialFactRow = {
+  mat_code?: string | null;
+  qty_fact?: number | null;
+};
+
+type IssuedItemUiRow = {
+  request_id?: string | null;
+  request_item_id?: string | null;
+  rik_code?: string | null;
+  qty_issued?: number | null;
+};
+
+type LogSummaryRow = {
+  id?: string | null;
+  qty?: number | null;
+};
+
+type LogMaterialSummaryRow = {
+  log_id?: string | null;
+  mat_code?: string | null;
+  uom_mat?: string | null;
+  qty_fact?: number | null;
+};
+
+type CatalogItemRow = {
+  rik_code?: string | null;
+  name_human_ru?: string | null;
+  name_human?: string | null;
+  uom_code?: string | null;
+};
+
+type WorkLogDbRow = {
+  id?: string | null;
+  created_at?: string | null;
+  qty?: number | null;
+  work_uom?: string | null;
+  stage_note?: string | null;
+  note?: string | null;
+};
+
 export async function fetchRequestScopeRows(
   supabaseClient: any,
   jobId: string,
   reqIdForRow: string
 ): Promise<RequestScopeRow[]> {
-  let reqRows: any[] = [];
+  let reqRows: RequestRow[] = [];
   const safeJobId = String(jobId || "").trim();
   const safeReqId = String(reqIdForRow || "").trim();
   if (safeJobId && looksLikeUuid(safeJobId)) {
     let reqQ = await supabaseClient
-      .from("requests" as any)
+      .from("requests")
       .select("id, status")
       .eq("subcontract_id", safeJobId);
     if (reqQ.error) {
       reqQ = await supabaseClient
-        .from("requests" as any)
+        .from("requests")
         .select("id, status")
         .eq("contractor_job_id", safeJobId);
     }
-    reqRows = (reqQ.data as any[] | null) || [];
+    reqRows = (reqQ.data as RequestRow[] | null) || [];
   } else if (safeReqId && looksLikeUuid(safeReqId)) {
     reqRows = [{ id: safeReqId, status: null }];
   }
   return reqRows
-    .map((r: any) => ({
+    .map((r) => ({
       id: String(r?.id || "").trim(),
       status: String(r?.status || "").trim() || null,
     }))
@@ -69,17 +118,17 @@ export async function loadLogIdsByProgressIds(
   let logsQ;
   if (safeProgressIds.length === 1) {
     logsQ = await supabaseClient
-      .from("work_progress_log" as any)
+      .from("work_progress_log")
       .select("id")
       .eq("progress_id", safeProgressIds[0]);
   } else {
     logsQ = await supabaseClient
-      .from("work_progress_log" as any)
+      .from("work_progress_log")
       .select("id")
       .in("progress_id", safeProgressIds);
   }
   return Array.isArray(logsQ.data)
-    ? (logsQ.data as any[]).map((x) => String(x.id || "")).filter(Boolean)
+    ? (logsQ.data as LogIdRow[]).map((x) => String(x.id || "")).filter(Boolean)
     : [];
 }
 
@@ -94,12 +143,12 @@ export async function loadConsumedByCode(
   if (!logIds.length) return consumedByCode;
 
   const matsQ = await supabaseClient
-    .from("work_progress_log_materials" as any)
+    .from("work_progress_log_materials")
     .select("mat_code, qty_fact")
     .in("log_id", logIds);
   if (matsQ.error || !Array.isArray(matsQ.data)) return consumedByCode;
 
-  for (const m of matsQ.data as any[]) {
+  for (const m of matsQ.data as MaterialFactRow[]) {
     const code = String(m.mat_code || "").trim();
     if (!code) continue;
     const q = Number(m.qty_fact || 0);
@@ -121,12 +170,12 @@ export async function loadIssuedByCode(
   if (!safeRequestIds.length) return issuedByCode;
 
   const itemsQ = await supabaseClient
-    .from("v_wh_issue_req_items_ui" as any)
+    .from("v_wh_issue_req_items_ui")
     .select("request_id, request_item_id, rik_code, qty_issued")
     .in("request_id", safeRequestIds);
   if (itemsQ.error || !Array.isArray(itemsQ.data)) return issuedByCode;
 
-  for (const it of itemsQ.data as any[]) {
+  for (const it of itemsQ.data as IssuedItemUiRow[]) {
     const code = String(it.rik_code || it.request_item_id || "").trim();
     if (!code) continue;
     issuedByCode.set(code, Number(issuedByCode.get(code) || 0) + Number(it.qty_issued || 0));
@@ -140,7 +189,7 @@ export async function loadAggregatedWorkSummary<T extends { qty_planned: number;
   baseWork: T
 ): Promise<{ work: T; materials: WorkMaterialRow[] }> {
   const logsQ = await supabaseClient
-    .from("work_progress_log" as any)
+    .from("work_progress_log")
     .select("id, qty")
     .eq("progress_id", progressId);
 
@@ -148,14 +197,12 @@ export async function loadAggregatedWorkSummary<T extends { qty_planned: number;
     return { work: baseWork, materials: [] };
   }
 
-  const logIds = (logsQ.data as any[]).map((l) => String(l.id));
-  const totalQty = (logsQ.data as any[]).reduce(
-    (sum, l) => sum + Number(l.qty ?? 0),
-    0
-  );
+  const logRows = logsQ.data as LogSummaryRow[];
+  const logIds = logRows.map((l) => String(l.id || ""));
+  const totalQty = logRows.reduce((sum, l) => sum + Number(l.qty ?? 0), 0);
 
   const matsQ = await supabaseClient
-    .from("work_progress_log_materials" as any)
+    .from("work_progress_log_materials")
     .select("log_id, mat_code, uom_mat, qty_fact")
     .in("log_id", logIds);
 
@@ -164,8 +211,8 @@ export async function loadAggregatedWorkSummary<T extends { qty_planned: number;
   if (!matsQ.error && Array.isArray(matsQ.data) && matsQ.data.length > 0) {
     const aggMap = new Map<string, { mat_code: string; uom: string; qty: number }>();
 
-    for (const m of matsQ.data as any[]) {
-      const code = String(m.mat_code);
+    for (const m of matsQ.data as LogMaterialSummaryRow[]) {
+      const code = String(m.mat_code || "");
       const uom = m.uom_mat ? String(m.uom_mat) : "";
       const qty = Number(m.qty_fact ?? 0) || 0;
       if (!qty) continue;
@@ -182,13 +229,13 @@ export async function loadAggregatedWorkSummary<T extends { qty_planned: number;
 
     if (codes.length) {
       const ci = await supabaseClient
-        .from("catalog_items" as any)
+        .from("catalog_items")
         .select("rik_code, name_human_ru, name_human, uom_code")
         .in("rik_code", codes);
 
       if (!ci.error && Array.isArray(ci.data)) {
-        for (const n of ci.data as any[]) {
-          const code = String(n.rik_code);
+        for (const n of ci.data as CatalogItemRow[]) {
+          const code = String(n.rik_code || "");
           const name = n.name_human_ru || n.name_human || code;
           const uom = n.uom_code ?? null;
           namesMap[code] = { name, uom };
@@ -199,12 +246,14 @@ export async function loadAggregatedWorkSummary<T extends { qty_planned: number;
     aggregated = aggArr.map((a) => {
       const meta = namesMap[a.mat_code];
       return {
+        material_id: null,
+        qty: Number(a.qty || 0),
         mat_code: a.mat_code,
         name: meta?.name || a.mat_code,
         uom: meta?.uom || a.uom || "",
         available: 0,
-        qty_fact: a.qty,
-      } as any as WorkMaterialRow;
+        qty_fact: Number(a.qty || 0),
+      } satisfies WorkMaterialRow;
     });
   }
 
@@ -223,18 +272,18 @@ const looksLikeUuid = (v: string): boolean =>
 export async function loadWorkLogRows(
   supabaseClient: any,
   progressId: string,
-  normText: (value: any) => string
+  normText: (value: unknown) => string
 ): Promise<WorkLogRow[]> {
   if (!looksLikeUuid(progressId)) return [];
 
   let q = await supabaseClient
-    .from("work_progress_log" as any)
+    .from("work_progress_log")
     .select("id, created_at, qty, work_uom, stage_note, note")
     .eq("progress_id", progressId)
     .order("created_at", { ascending: true });
   if (q.error) {
     q = await supabaseClient
-      .from("work_progress_log" as any)
+      .from("work_progress_log")
       .select("id, created_at, qty, work_uom, stage_note, note")
       .eq("id", progressId)
       .order("created_at", { ascending: true });
@@ -242,9 +291,9 @@ export async function loadWorkLogRows(
   const { data, error } = q;
   if (error || !Array.isArray(data)) return [];
 
-  return data.map((r: any) => ({
-    id: String(r.id),
-    created_at: r.created_at,
+  return (data as WorkLogDbRow[]).map((r) => ({
+    id: String(r.id || ""),
+    created_at: String(r.created_at || ""),
     qty: Number(r.qty ?? 0),
     work_uom: normText(r.work_uom) || null,
     stage_note: normText(r.stage_note) || null,

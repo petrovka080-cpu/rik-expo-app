@@ -48,9 +48,9 @@ export const parseActMeta = (
   const visibleNote = raw.slice(0, idx).trim();
   const jsonPart = raw.slice(idx + ACT_META_PREFIX.length).trim();
   try {
-    const parsed = JSON.parse(jsonPart) as any;
+    const parsed = JSON.parse(jsonPart) as { selectedWorks?: unknown } | null;
     const selectedWorks = Array.isArray(parsed?.selectedWorks)
-      ? parsed.selectedWorks.map((x: any) => String(x || "")).filter(Boolean)
+      ? parsed.selectedWorks.map((x) => String(x || "")).filter(Boolean)
       : [];
     return { selectedWorks, visibleNote };
   } catch {

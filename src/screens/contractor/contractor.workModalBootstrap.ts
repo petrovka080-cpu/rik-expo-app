@@ -1,4 +1,5 @@
 import type { WorkMaterialRow } from "../../components/WorkMaterialsEditor";
+import type { ContractorWorkRow } from "./contractor.loadWorksService";
 import {
   loadContractorJobHeaderData,
   loadInitialWorkMaterialsForModal,
@@ -7,16 +8,7 @@ import {
 } from "./contractor.workModalService";
 import type { IssuedItemRow, LinkedReqCard, WorkLogRow } from "./types";
 
-type WorkRowLike = {
-  progress_id: string;
-  work_name?: string | null;
-  work_code?: string | null;
-  object_name?: string | null;
-  uom_id?: string | null;
-  qty_planned?: number | null;
-  request_id?: string | null;
-  contractor_job_id?: string | null;
-};
+type WorkRowLike = ContractorWorkRow;
 
 type ContractorJobHeader = {
   contractor_org: string | null;
@@ -58,8 +50,6 @@ type Params = {
   row: WorkRowLike;
   readOnly: boolean;
   allRows: WorkRowLike[];
-  fallbackOrg?: string | null;
-  fallbackPhone?: string | null;
   resolveContractorJobId: (row: WorkRowLike) => Promise<string>;
   resolveRequestId: (row: WorkRowLike) => Promise<string>;
   loadWorkLogData: (progressId: string) => Promise<WorkLogRow[]>;
@@ -68,14 +58,14 @@ type Params = {
   normText: (value: any) => string;
 };
 
+type HeaderLoadResult = { header: ContractorJobHeader | null; objectNameOverride: string | null };
+
 export async function bootstrapWorkModalData(params: Params): Promise<WorkModalBootstrapResult> {
   const {
     supabaseClient,
     row,
     readOnly,
     allRows,
-    fallbackOrg,
-    fallbackPhone,
     resolveContractorJobId,
     resolveRequestId,
     loadWorkLogData,
@@ -89,10 +79,8 @@ export async function bootstrapWorkModalData(params: Params): Promise<WorkModalB
       loadContractorJobHeaderData({
         supabaseClient,
         row,
-        resolveContractorJobId: resolveContractorJobId as any,
-        resolveRequestId: resolveRequestId as any,
-        fallbackOrg,
-        fallbackPhone,
+        resolveContractorJobId,
+        resolveRequestId,
         normText,
       }).catch(() => ({ header: null, objectNameOverride: null })),
       loadWorkLogData(String(row.progress_id || "")),
@@ -107,8 +95,8 @@ export async function bootstrapWorkModalData(params: Params): Promise<WorkModalB
         supabaseClient,
         row,
         allRows,
-        resolveContractorJobId: resolveContractorJobId as any,
-        resolveRequestId: resolveRequestId as any,
+        resolveContractorJobId,
+        resolveRequestId,
         isRejectedOrCancelledRequestStatus,
         toLocalDateKey,
         normText,
@@ -126,11 +114,17 @@ export async function bootstrapWorkModalData(params: Params): Promise<WorkModalB
       ),
     ]);
 
-    const [headerResult, workLog, workStageOptions, initialMaterials, issuedData] = bundle;
+    const [headerResult, workLog, workStageOptions, initialMaterials, issuedData] = bundle as [
+      HeaderLoadResult,
+      WorkLogRow[],
+      Array<{ code: string; name: string }>,
+      WorkMaterialRow[],
+      { issuedItems: IssuedItemRow[]; linkedReqCards: LinkedReqCard[]; issuedHint: string },
+    ];
     return {
       loadState: "ready",
-      jobHeader: (headerResult as any)?.header || null,
-      objectNameOverride: String((headerResult as any)?.objectNameOverride || "").trim() || null,
+      jobHeader: headerResult?.header || null,
+      objectNameOverride: String(headerResult?.objectNameOverride || "").trim() || null,
       workLog,
       workStageOptions,
       initialMaterials,
@@ -148,4 +142,3 @@ export async function bootstrapWorkModalData(params: Params): Promise<WorkModalB
     };
   }
 }
-

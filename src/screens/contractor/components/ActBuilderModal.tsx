@@ -11,6 +11,14 @@ import ActBuilderFooter from "./ActBuilderFooter";
 
 type JobHeader = {
   contract_number?: string | null;
+  contractor_org?: string | null;
+  contractor_inn?: string | null;
+  contractor_phone?: string | null;
+  contract_date?: string | null;
+  contractor_rep?: string | null;
+  zone?: string | null;
+  level_name?: string | null;
+  unit_price?: number | null;
 };
 
 type Props = {
@@ -83,7 +91,7 @@ export default function ActBuilderModal(props: Props) {
         <ScrollView style={{ flex: 1 }} keyboardShouldPersistTaps="handled">
           <View style={{ padding: 16, gap: 16 }}>
             <ActBuilderHeaderInfo
-              jobHeader={props.jobHeader as any}
+              jobHeader={props.jobHeader}
               resolvedObjectName={props.resolvedObjectName}
               selectedWorkCount={props.selectedWorkCount}
               selectedMatCount={props.selectedMatCount}

@@ -11,6 +11,25 @@ export type WorkProgressMaterialPayload = {
   qty_fact: number;
 };
 
+type WorkProgressLogInsert = {
+  progress_id: string;
+  qty: number;
+  work_uom: string | null;
+  stage_note: string | null;
+  note: string | null;
+};
+
+type WorkProgressLogRow = {
+  id?: string | null;
+};
+
+type WorkProgressLogMaterialInsert = {
+  log_id: string;
+  mat_code: string | null;
+  uom_mat: string | null;
+  qty_fact: number;
+};
+
 export type PersistWorkProgressResult =
   | { ok: true; logId: string }
   | { ok: false; stage: "log" | "materials"; error: any };
@@ -65,14 +84,14 @@ export async function persistWorkProgressSubmission(params: {
   }
 
   const { data: logRow, error: logErr } = await supabaseClient
-    .from("work_progress_log" as any)
+    .from("work_progress_log")
     .insert({
       progress_id: safeProgressId,
       qty,
       work_uom: workUom || null,
       stage_note: stageNote || null,
       note,
-    } as any)
+    } satisfies WorkProgressLogInsert)
     .select("id")
     .single();
 
@@ -80,12 +99,12 @@ export async function persistWorkProgressSubmission(params: {
     return { ok: false, stage: "log", error: logErr };
   }
 
-  const logId = String((logRow as any)?.id || "").trim();
+  const logId = String((logRow as WorkProgressLogRow | null)?.id || "").trim();
   if (!logId || materialsPayload.length === 0) {
     return { ok: true, logId };
   }
 
-  const matsPayload = materialsPayload.map((m) => ({
+  const matsPayload: WorkProgressLogMaterialInsert[] = materialsPayload.map((m) => ({
     log_id: logId,
     mat_code: m.mat_code,
     uom_mat: m.uom || null,
@@ -93,8 +112,8 @@ export async function persistWorkProgressSubmission(params: {
   }));
 
   const { error: matsErr } = await supabaseClient
-    .from("work_progress_log_materials" as any)
-    .insert(matsPayload as any);
+    .from("work_progress_log_materials")
+    .insert(matsPayload);
 
   if (matsErr) {
     return { ok: false, stage: "materials", error: matsErr };

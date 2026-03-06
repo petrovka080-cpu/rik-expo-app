@@ -91,7 +91,7 @@ export default function EstimateMaterialsModal(props: Props) {
                 data={props.workSearchResults}
                 keyExtractor={(m: WorkMaterialRow) => String(m.mat_code)}
                 style={{ maxHeight: 220 }}
-                renderItem={props.renderWorkSearchItem as any}
+                renderItem={props.renderWorkSearchItem}
                 ListEmptyComponent={<Text style={{ color: "#94a3b8" }}>Введите минимум 2 символа для поиска.</Text>}
               />
               <Pressable

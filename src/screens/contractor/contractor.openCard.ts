@@ -1,15 +1,7 @@
-type WorkRowLike = {
-  progress_id: string;
-  work_name?: string | null;
-  work_code?: string | null;
-  object_name?: string | null;
-};
-
-type SubcontractLiteLike = {
-  id: string;
-  object_name?: string | null;
-  work_type?: string | null;
-};
+import type {
+  ContractorSubcontractCard,
+  ContractorWorkRow,
+} from "./contractor.loadWorksService";
 
 const normalizeCmp = (v: unknown): string =>
   String(v || "")
@@ -19,13 +11,13 @@ const normalizeCmp = (v: unknown): string =>
 
 export function resolveWorkRowFromUnifiedCard(params: {
   id: string;
-  otherRowByCardId: Map<string, WorkRowLike>;
-  groupedWorksByJob: Map<string, WorkRowLike[]>;
-  subcontractCards: SubcontractLiteLike[];
-  rows: WorkRowLike[];
+  otherRowByCardId: Map<string, ContractorWorkRow>;
+  groupedWorksByJob: Map<string, ContractorWorkRow[]>;
+  subcontractCards: ContractorSubcontractCard[];
+  rows: ContractorWorkRow[];
   looksLikeUuid: (v: string) => boolean;
-  pickWorkProgressRow: (row: any) => string;
-}): WorkRowLike | null {
+  pickWorkProgressRow: (row: { progress_id?: string | null }) => string;
+}): ContractorWorkRow | null {
   const {
     id,
     otherRowByCardId,

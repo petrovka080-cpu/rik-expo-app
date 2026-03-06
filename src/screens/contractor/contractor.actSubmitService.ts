@@ -5,6 +5,25 @@ type WorkRowLike = {
   uom_id?: string | null;
 };
 
+type WorkProgressLogInsert = {
+  progress_id: string;
+  qty: number;
+  work_uom: string | null;
+  stage_note: string | null;
+  note: string;
+};
+
+type WorkProgressLogRow = {
+  id?: string | null;
+};
+
+type WorkProgressLogMaterialInsert = {
+  log_id: string;
+  mat_code: string;
+  uom_mat: string | null;
+  qty_fact: number;
+};
+
 const looksLikeUuid = (v: string): boolean =>
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(v);
 
@@ -34,14 +53,14 @@ export async function persistActBuilderSubmission(params: {
   }
 
   const { data: logRow, error: logErr } = await supabaseClient
-    .from("work_progress_log" as any)
+    .from("work_progress_log")
     .insert({
       progress_id: progressId,
       qty: 1,
       work_uom: workModalRow.uom_id || null,
       stage_note: null,
       note: buildActMetaNote(selectedWorks.map((w) => w.name)),
-    } as any)
+    } satisfies WorkProgressLogInsert)
     .select("id")
     .single();
 
@@ -54,7 +73,7 @@ export async function persistActBuilderSubmission(params: {
     };
   }
 
-  const logId = String((logRow as any)?.id || "").trim();
+  const logId = String((logRow as WorkProgressLogRow | null)?.id || "").trim();
   if (!logId || selectedMaterials.length === 0) {
     return {
       logSaved: true,
@@ -64,15 +83,15 @@ export async function persistActBuilderSubmission(params: {
     };
   }
 
-  const matsPayload = selectedMaterials.map((m) => ({
+  const matsPayload: WorkProgressLogMaterialInsert[] = selectedMaterials.map((m) => ({
     log_id: logId,
     mat_code: m.mat_code,
     uom_mat: m.unit || null,
     qty_fact: m.act_used_qty,
   }));
   const { error: matsErr } = await supabaseClient
-    .from("work_progress_log_materials" as any)
-    .insert(matsPayload as any);
+    .from("work_progress_log_materials")
+    .insert(matsPayload);
 
   return {
     logSaved: true,

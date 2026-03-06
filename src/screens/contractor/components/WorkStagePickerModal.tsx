@@ -54,7 +54,7 @@ export default function WorkStagePickerModal(props: Props) {
             data={props.workStageOptions}
             keyExtractor={(s, index) => `${s.code}-${index}`}
             style={{ maxHeight: "80%" }}
-            renderItem={props.renderWorkStageItem as any}
+            renderItem={props.renderWorkStageItem}
             ListEmptyComponent={
               <Text style={{ color: "#64748b" }}>
                 Этапы еще не настроены. Добавьте строки в таблицу work_stages.

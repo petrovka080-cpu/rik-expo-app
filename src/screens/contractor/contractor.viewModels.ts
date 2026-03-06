@@ -1,27 +1,10 @@
-п»їtype WorkRowLike = {
-  progress_id?: string;
-  contractor_job_id?: string | null;
-  object_name?: string | null;
-  work_name?: string | null;
-  work_code?: string | null;
-  contractor_org?: string | null;
-  contractor_inn?: string | null;
-  qty_planned?: number | null;
-  qty_left?: number | null;
-  uom_id?: string | null;
-  created_at?: string | null;
-};
+import type {
+  ContractorSubcontractCard,
+  ContractorWorkRow,
+} from "./contractor.loadWorksService";
 
-type SubcontractLiteLike = {
-  id: string;
-  object_name?: string | null;
-  work_type?: string | null;
-  qty_planned?: number | null;
-  uom?: string | null;
-  contractor_org?: string | null;
-  contractor_inn?: string | null;
-  created_at?: string | null;
-};
+type WorkRowLike = ContractorWorkRow;
+type SubcontractLiteLike = ContractorSubcontractCard;
 
 export type ContractorJobCardView = {
   id: string;
@@ -38,7 +21,7 @@ export type ContractorJobCardView = {
 type ResolveCompanyParams = {
   subcontractOrg?: string | null;
   rowOrg?: string | null;
-  normalizeText?: (value: any) => string;
+  normalizeText?: (value: unknown) => string;
 };
 
 const sortCards = (cards: ContractorJobCardView[]): ContractorJobCardView[] =>
@@ -50,7 +33,7 @@ const sortCards = (cards: ContractorJobCardView[]): ContractorJobCardView[] =>
     return b.id.localeCompare(a.id);
   });
 
-const pickText = (value: any, normalizeText?: (value: any) => string): string => {
+const pickText = (value: unknown, normalizeText?: (value: unknown) => string): string => {
   const raw = String(value || "").trim();
   if (!raw) return "";
   return normalizeText ? String(normalizeText(raw) || "").trim() : raw;
@@ -69,7 +52,7 @@ function resolveCompanyName(params: ResolveCompanyParams): {
   const vRow = pickText(rowOrg, normalizeText);
   if (vRow) return { company: vRow, source: "row.contractor_org", raw: String(rowOrg || "") };
 
-  return { company: "РџРѕРґСЂСЏРґС‡РёРє РЅРµ СѓРєР°Р·Р°РЅ", source: "fallback", raw: "" };
+  return { company: "Подрядчик не указан", source: "fallback", raw: "" };
 }
 
 export function groupWorksByJob<T extends WorkRowLike>(rows: T[]): Map<string, T[]> {
@@ -88,7 +71,7 @@ export function buildJobCards(params: {
   groupedWorksByJob: Map<string, WorkRowLike[]>;
   toHumanObject: (value: string | null | undefined) => string;
   toHumanWork: (value: string | null | undefined) => string;
-  normalizeText?: (value: any) => string;
+  normalizeText?: (value: unknown) => string;
   debugCompanySource?: boolean;
   debugPlatform?: string;
 }): ContractorJobCardView[] {
@@ -146,7 +129,7 @@ export function buildJobCards(params: {
   for (const [jid, rowsForJob] of groupedWorksByJob.entries()) {
     if (used.has(jid)) continue;
     const first = rowsForJob[0];
-    const createdAt = String((first as any)?.created_at || "");
+    const createdAt = String(first?.created_at || "");
     const companyResolved = resolveCompanyName({
       subcontractOrg: first?.contractor_org || null,
       rowOrg: first?.contractor_org || null,
@@ -184,7 +167,7 @@ export function buildUnifiedCardsFromJobsAndOthers(params: {
   otherRows: WorkRowLike[];
   toHumanObject: (value: string | null | undefined) => string;
   toHumanWork: (value: string | null | undefined) => string;
-  normalizeText?: (value: any) => string;
+  normalizeText?: (value: unknown) => string;
   debugCompanySource?: boolean;
   debugPlatform?: string;
 }): { cards: ContractorJobCardView[]; rowByCardId: Map<string, WorkRowLike> } {
@@ -227,7 +210,7 @@ export function buildUnifiedCardsFromJobsAndOthers(params: {
       workType: toHumanWork(row.work_name || row.work_code),
       qtyPlanned: Number(row.qty_planned ?? 0) || 0,
       uom: pickText(row.uom_id, normalizeText),
-      createdAt: String((row as any).created_at || ""),
+      createdAt: String(row.created_at || ""),
       isActive: Number(row.qty_left ?? 0) > 0,
     } satisfies ContractorJobCardView;
   });

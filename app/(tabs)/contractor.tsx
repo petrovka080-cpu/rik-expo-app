@@ -23,53 +23,42 @@ import {
   WorkMaterialRow,
 } from "../../src/components/WorkMaterialsEditor";
 import { useForemanDicts } from "../../src/screens/foreman/useForemanDicts";
-import { generateActPdf } from "../../src/screens/contractor/contractorPdf";
 import { normalizeRuText } from "../../src/lib/text/encoding";
-import {
-  fetchRequestScopeRows,
-  getProgressIdsForSubcontract,
-  loadConsumedByCode,
-  loadIssuedByCode,
-  loadWorkLogRows,
-} from "../../src/screens/contractor/contractor.data";
 import {
   buildActBuilderMaterialItems,
   buildActBuilderWorkItems,
   resolveActBuilderRowsScope,
 } from "../../src/screens/contractor/contractor.actBuilder";
+import { ensureActBuilderWorkMaterials } from "../../src/screens/contractor/contractor.actBuilderOpenService";
 import {
-  buildSelectedActBuilderPayload,
-  collectActBuilderWarnings,
-} from "../../src/screens/contractor/contractor.submitHelpers";
-import { persistActBuilderSubmission } from "../../src/screens/contractor/contractor.actSubmitService";
+  submitActBuilderFlow,
+} from "../../src/screens/contractor/contractor.actBuilderSubmitFlow";
 import {
-  buildWorkProgressMaterialsPayload,
-  buildWorkProgressNote,
-  persistWorkProgressSubmission,
-} from "../../src/screens/contractor/contractor.progressService";
-import {
-  loadIssuedTodayData,
-} from "../../src/screens/contractor/contractor.workModalService";
+  submitWorkProgressFlow,
+} from "../../src/screens/contractor/contractor.workProgressSubmitFlow";
 import {
   generateHistoryPdfForLog,
   generateSummaryPdfForWork,
 } from "../../src/screens/contractor/contractor.pdfService";
 import {
-  resolveContractorJobIdForRow,
-  resolveRequestIdForRow,
-} from "../../src/screens/contractor/contractor.resolvers";
+  createWorkModalDataController,
+  type WorkModalControllerRow,
+} from "../../src/screens/contractor/contractor.workModalController";
 import { mapCatalogSearchToWorkMaterials } from "../../src/screens/contractor/contractor.search";
 import {
-  attachSubcontractAndObject,
-  buildSubcontractLookups,
-  buildSyntheticSubcontractRows,
-  filterVisibleRows,
-  selectScopedApprovedSubcontracts,
-} from "../../src/screens/contractor/contractor.rows";
-import {
-  enrichWorksRows,
-  mapWorksFactRows,
+  type ContractorSubcontractCard,
+  type ContractorWorkRow,
+  loadContractorWorksBundle,
 } from "../../src/screens/contractor/contractor.loadWorksService";
+import { useContractorModalFlow } from "../../src/screens/contractor/contractor.modalFlow";
+import { useIssuedPolling } from "../../src/screens/contractor/contractor.issuedPolling";
+import {
+  activateCurrentUserAsContractor,
+  loadCurrentContractorProfile,
+  loadCurrentContractorUserProfile,
+  type ContractorProfileCard,
+  type ContractorUserProfile,
+} from "../../src/screens/contractor/contractor.profileService";
 import {
   buildUnifiedCardsFromJobsAndOthers,
   buildJobCards,
@@ -87,7 +76,6 @@ import {
 import { bootstrapWorkModalData } from "../../src/screens/contractor/contractor.workModalBootstrap";
 import {
   buildActMetaNote,
-  debounce,
   inferUnitByWorkName,
   isActiveWork,
   isExcludedWorkCode,
@@ -101,6 +89,7 @@ import {
   textOrDash,
   toLocalDateKey,
 } from "../../src/screens/contractor/contractor.utils";
+import { useContractorWorkSearchController } from "../../src/screens/contractor/contractor.workSearchController";
 import type {
   IssuedItemRow,
   LinkedReqCard,
@@ -116,55 +105,11 @@ import { styles } from "../../src/screens/contractor/contractor.styles";
 import Text from "../../src/screens/contractor/components/NormalizedText";
 
 // ---- TYPES ----
-type WorkRow = {
-  progress_id: string;
-  purchase_item_id?: string | null;
-  work_code: string | null;
-  work_name: string | null;
-  object_name: string | null;
-  contractor_org?: string | null;
-  contractor_inn?: string | null;
-  contractor_phone?: string | null;
-  request_id?: string | null;
-  request_status?: string | null;
-  contractor_job_id?: string | null;
-  uom_id: string | null;
-  qty_planned: number;
-  qty_done: number;
-  qty_left: number;
-  unit_price?: number | null;
-  work_status: string;
-  contractor_id: string | null;
-  started_at?: string | null;
-  finished_at?: string | null;
-};
+type WorkRow = ContractorWorkRow;
 
-type UserProfile = {
-  id: string;
-  full_name: string | null;
-  phone: string | null;
-  inn: string | null;
-  company: string | null;
-  is_contractor: boolean;
-};
-
-type Contractor = {
-  id: string;
-  company_name: string | null;
-  full_name: string | null;
-  phone: string | null;
-};
-type SubcontractLite = {
-  id: string;
-  status?: string | null;
-  object_name?: string | null;
-  work_type?: string | null;
-  qty_planned?: number | null;
-  uom?: string | null;
-  contractor_org?: string | null;
-  contractor_inn?: string | null;
-  created_at?: string | null;
-};
+type UserProfile = ContractorUserProfile;
+type Contractor = ContractorProfileCard;
+type SubcontractLite = ContractorSubcontractCard;
 type WorkOverlayModal = "none" | "contract" | "estimate" | "stage";
 type ScreenLoadState = "init" | "loading" | "ready" | "error";
 
@@ -372,87 +317,58 @@ export default function ContractorScreen() {
     { code: string; name: string }[]
   >([]);
   const [workSearchVisible, setWorkSearchVisible] = useState(false);
-  const [workSearchQuery, setWorkSearchQuery] = useState("");
-  const [workSearchResults, setWorkSearchResults] = useState<WorkMaterialRow[]>(
-    []
-  );
+  const {
+    query: workSearchQuery,
+    results: workSearchResults,
+    onChange: handleWorkSearchChange,
+    clear: clearSearchState,
+  } = useContractorWorkSearchController({
+    supabaseClient: supabase,
+    mapCatalogSearchToWorkMaterials,
+    delayMs: 300,
+  });
+  const clearWorkSearchState = useCallback(() => {
+    setWorkSearchVisible(false);
+    clearSearchState();
+  }, [clearSearchState]);
   const workModalRowRef = useRef<WorkRow | null>(null);
-  const workSearchActiveQuery = useRef<string>("");
-  const modalTransitionActionRef = useRef<null | (() => void)>(null);
-  const modalTransitionPendingDismissRef = useRef(0);
   const loadWorksSeqRef = useRef(0);
   const screenReloadInFlightRef = useRef<Promise<void> | null>(null);
   const workModalBootSeqRef = useRef(0);
   const issuedLoadSeqRef = useRef(0);
   const activeWorkModalProgressRef = useRef<string>("");
-  const issuedPollInFlightRef = useRef(false);
 
   // ---- LOAD USER PROFILE ----
   const loadProfile = useCallback(async () => {
     if (!focusedRef.current) return;
     setLoadingProfile(true);
-    const { data: auth } = await supabase.auth.getUser();
-
-    if (!auth.user) {
-      setProfile(null);
+    try {
+      const nextProfile = await loadCurrentContractorUserProfile({
+        supabaseClient: supabase,
+        normText,
+      });
+      if (nextProfile) {
+        profileRef.current = nextProfile;
+        setProfile(nextProfile);
+      } else {
+        profileRef.current = null;
+        setProfile(null);
+      }
+    } finally {
       setLoadingProfile(false);
-      return;
     }
-
-    const { data } = await supabase
-      .from("user_profiles")
-      .select("*")
-      .eq("user_id", auth.user.id)
-      .maybeSingle();
-
-    if (data) {
-      const nextProfile = {
-        id: auth.user.id,
-        full_name: normText(data.full_name) || null,
-        phone: normText(data.phone) || null,
-        inn: String(data.inn || "").replace(/\D+/g, "") || null,
-        company: normText(data.company) || null,
-        is_contractor: data.is_contractor === true,
-      };
-      profileRef.current = nextProfile;
-      setProfile(nextProfile);
-    } else {
-      profileRef.current = null;
-      setProfile(null);
-    }
-
-    setLoadingProfile(false);
   }, []);
 
   // ---- Load contractor from current user profile ----
   const loadContractor = useCallback(async () => {
     if (!focusedRef.current) return;
 
-    const { data: auth } = await supabase.auth.getUser();
-    const user = auth.user;
-    if (!user) {
-      contractorRef.current = null;
-      setContractor(null);
-      return;
-    }
+    const nextContractor = await loadCurrentContractorProfile({
+      supabaseClient: supabase,
+      normText,
+    });
 
-    const { data, error } = await supabase
-      .from("contractors")
-      .select("*")
-      .eq("user_id", user.id)
-      .maybeSingle();
-
-    if (error && error.code !== "PGRST116") {
-      console.error("[contractor] loadContractor error:", error.message);
-    }
-
-    if (data) {
-      const nextContractor = {
-        id: data.id,
-        company_name: normText(data.company_name) || null,
-        full_name: normText(data.full_name) || null,
-        phone: normText(data.phone) || null,
-      };
+    if (nextContractor) {
       contractorRef.current = nextContractor;
       setContractor(nextContractor);
     } else {
@@ -470,91 +386,29 @@ export default function ContractorScreen() {
     setRowsReady(false);
     setSubcontractsReady(false);
     try {
-      const sqApprovedPromise = supabase
-        .from("subcontracts" as any)
-        .select("id, status, work_type, object_name, qty_planned, uom, contractor_org, contractor_inn, contractor_phone, created_at")
-        .eq("status", "approved")
-        .order("created_at", { ascending: false })
-        .limit(500);
-
-      const { data, error } = await supabase
-        .from("v_works_fact")
-        .select("*")
-        .order("created_at", { ascending: false });
-
-      if (error) {
-        if (reqSeq !== loadWorksSeqRef.current) return;
-        console.error("loadWorks error:", error);
-        return;
-      }
-      if (reqSeq !== loadWorksSeqRef.current) return;
-      const mappedBase = mapWorksFactRows(data as any[], normText) as WorkRow[];
-      const enrichResult = await enrichWorksRows({
+      const isStaff = profileRef.current?.is_contractor === false;
+      const myContractorId = String(contractorRef.current?.id || "").trim();
+      const bundle = await loadContractorWorksBundle({
         supabaseClient: supabase,
-        mappedBase: mappedBase as any,
+        normText,
         looksLikeUuid,
         pickWorkProgressRow,
-      });
-      const mappedByReq = enrichResult.rows as WorkRow[];
-      const objByJob = enrichResult.objByJob;
-      let subcontractsByOrg: SubcontractLite[] = [];
-
-      const sqApproved = await sqApprovedPromise;
-      if (sqApproved.error) {
-        if (reqSeq !== loadWorksSeqRef.current) return;
-        console.error("loadWorks subcontracts error:", sqApproved.error);
-        return;
-      }
-      if (reqSeq !== loadWorksSeqRef.current) return;
-      const isStaff = profileRef.current?.is_contractor === false;
-
-      if (Array.isArray(sqApproved.data)) {
-        const allApproved = sqApproved.data as SubcontractLite[];
-        subcontractsByOrg = selectScopedApprovedSubcontracts({
-          allApproved,
-        }) as SubcontractLite[];
-        setSubcontractCards(subcontractsByOrg);
-      }
-
-      const lookupMaps = buildSubcontractLookups(subcontractsByOrg as any);
-      const mappedWithObject = attachSubcontractAndObject({
-        rows: mappedByReq as any,
-        objByJob,
-        lookups: lookupMaps,
-      }) as WorkRow[];
-
-      const allowedJobIds = new Set(
-        subcontractsByOrg.map((s) => String(s.id || "").trim()).filter(Boolean)
-      );
-      const myContractorId = String(contractorRef.current?.id || "").trim();
-
-      if (__DEV__) {
-        console.log("[contractor.loadWorks] debug-filter", {
-          isStaff,
-          subcontractsFound: subcontractsByOrg.length,
-          totalApproved: Array.isArray(sqApproved.data) ? sqApproved.data.length : 0
-        });
-      }
-
-      const filtered = filterVisibleRows({
-        rows: mappedWithObject as any,
-        allowedJobIds,
         myContractorId,
         isStaff,
         isExcludedWorkCode,
         isApprovedForOtherStatus,
-      }) as WorkRow[];
-
-      const existingJobIds = new Set(
-        filtered.map((r) => String(r.contractor_job_id || "").trim()).filter(Boolean)
-      );
-      const syntheticRows = buildSyntheticSubcontractRows(
-        subcontractsByOrg as any,
-        existingJobIds
-      ) as WorkRow[];
-
+      });
       if (reqSeq !== loadWorksSeqRef.current) return;
-      setRows([...syntheticRows, ...filtered]);
+      setSubcontractCards(bundle.subcontractCards);
+
+      if (__DEV__) {
+        console.log("[contractor.loadWorks] debug-filter", {
+          isStaff: bundle.debug.isStaff,
+          subcontractsFound: bundle.debug.subcontractsFound,
+          totalApproved: bundle.debug.totalApproved,
+        });
+      }
+      setRows(bundle.rows);
       setRowsReady(true);
       setSubcontractsReady(true);
     } catch (e) {
@@ -589,18 +443,7 @@ export default function ContractorScreen() {
 
     try {
       setActivating(true);
-
-      const { data: auth } = await supabase.auth.getUser();
-      const user = auth.user;
-      if (!user) return;
-
-      const { error } = await supabase
-        .from("user_profiles")
-        .update({ is_contractor: true })
-        .eq("user_id", user.id);
-
-      if (error) throw error;
-
+      await activateCurrentUserAsContractor({ supabaseClient: supabase });
       Alert.alert("Успешно", "Профиль подрядчика активирован.");
       await reloadContractorScreenData();
     } catch (e: any) {
@@ -611,51 +454,38 @@ export default function ContractorScreen() {
   };
 
 
-  const loadWorkLogData = useCallback(async (progressId: string): Promise<WorkLogRow[]> => {
-    try {
-      return await loadWorkLogRows(supabase, progressId, normText);
-    } catch (e) {
-      console.warn("[loadWorkLog] error", e);
-      return [];
-    }
-  }, []);
+  const workModalDataController = useMemo(
+    () =>
+      createWorkModalDataController({
+        supabaseClient: supabase,
+        rows: rows as WorkModalControllerRow[],
+        normText,
+        isRejectedOrCancelledRequestStatus,
+        toLocalDateKey,
+      }),
+    [rows]
+  );
+
+  const loadWorkLogData = useCallback(
+    async (progressId: string): Promise<WorkLogRow[]> =>
+      workModalDataController.loadWorkLogData(progressId),
+    [workModalDataController]
+  );
 
   const resolveRequestId = useCallback(
-    async (row: WorkRow): Promise<string> => resolveRequestIdForRow(supabase, row),
-    []
+    async (row: WorkRow): Promise<string> => workModalDataController.resolveRequestId(row),
+    [workModalDataController]
   );
 
   const resolveContractorJobId = useCallback(
-    async (row: WorkRow): Promise<string> =>
-      resolveContractorJobIdForRow(supabase, row, resolveRequestId as any),
-    [resolveRequestId]
+    async (row: WorkRow): Promise<string> => workModalDataController.resolveContractorJobId(row),
+    [workModalDataController]
   );
 
-  const loadIssuedTodayDataForRow = useCallback(async (row: WorkRow) => {
-    try {
-      return await loadIssuedTodayData({
-        supabaseClient: supabase,
-        row,
-        allRows: rows as any,
-        resolveContractorJobId: resolveContractorJobId as any,
-        resolveRequestId: resolveRequestId as any,
-        isRejectedOrCancelledRequestStatus,
-        toLocalDateKey,
-        normText,
-      });
-    } catch (e) {
-      console.warn("[loadIssuedToday] error:", e);
-      return {
-        issuedItems: [] as IssuedItemRow[],
-        linkedReqCards: [] as LinkedReqCard[],
-        issuedHint: "",
-      };
-    }
-  }, [
-    resolveContractorJobId,
-    resolveRequestId,
-    rows,
-  ]);
+  const loadIssuedTodayDataForRow = useCallback(
+    async (row: WorkRow) => workModalDataController.loadIssuedTodayDataForRow(row),
+    [workModalDataController]
+  );
 
   const refreshIssuedTodayForCurrentRow = useCallback(
     async (row: WorkRow) => {
@@ -666,8 +496,8 @@ export default function ContractorScreen() {
         issueSeq === issuedLoadSeqRef.current &&
         activeWorkModalProgressRef.current === String(row.progress_id || "").trim();
       if (!isCurrent) return;
-      setIssuedItems(data.issuedItems as IssuedItemRow[]);
-      setLinkedReqCards(data.linkedReqCards as LinkedReqCard[]);
+      setIssuedItems(data.issuedItems);
+      setLinkedReqCards(data.linkedReqCards);
       setIssuedHint(data.issuedHint || "");
       setLoadingIssued(false);
     },
@@ -684,8 +514,7 @@ export default function ContractorScreen() {
       setWorkModalLocation("");
       setWorkModalReadOnly(readOnly);
       setWorkSearchVisible(false);
-      setWorkSearchQuery("");
-      setWorkSearchResults([]);
+      clearSearchState();
       setWorkModalHint("");
       setActBuilderHint("");
       setActBuilderLoadState("init");
@@ -709,11 +538,9 @@ export default function ContractorScreen() {
             supabaseClient: supabase,
             row,
             readOnly,
-            allRows: rows as any,
-            fallbackOrg: contractor?.company_name || profile?.company || null,
-            fallbackPhone: contractor?.phone || profile?.phone || null,
-            resolveContractorJobId: resolveContractorJobId as any,
-            resolveRequestId: resolveRequestId as any,
+            allRows: rows,
+            resolveContractorJobId,
+            resolveRequestId,
             loadWorkLogData,
             isRejectedOrCancelledRequestStatus,
             toLocalDateKey,
@@ -725,7 +552,7 @@ export default function ContractorScreen() {
             activeWorkModalProgressRef.current === String(row.progress_id || "").trim();
           if (!isCurrent) return;
 
-          setJobHeader(bundle.jobHeader as any);
+          setJobHeader(bundle.jobHeader);
           if (String(bundle.objectNameOverride || "").trim()) {
             setWorkModalRow((prev) =>
               prev ? { ...prev, object_name: String(bundle.objectNameOverride) } : prev
@@ -752,8 +579,7 @@ export default function ContractorScreen() {
     },
     [
       rows,
-      contractor,
-      profile,
+      clearSearchState,
       resolveContractorJobId,
       resolveRequestId,
       loadWorkLogData,
@@ -764,98 +590,28 @@ export default function ContractorScreen() {
     if (!workModalVisible || !issuedOpen) return "";
     return String(workModalRow?.progress_id || "").trim();
   }, [workModalVisible, issuedOpen, workModalRow?.progress_id]);
-  useEffect(() => {
-    if (!looksLikeUuid(issuedPollingProgressId)) return;
-    let cancelled = false;
-    const tick = async () => {
-      if (cancelled) return;
-      if (issuedPollInFlightRef.current) return;
-      const currentRow = workModalRowRef.current;
-      if (!currentRow) return;
-      if (String(currentRow.progress_id || "").trim() !== issuedPollingProgressId) return;
-      issuedPollInFlightRef.current = true;
-      try {
-        await refreshIssuedTodayForCurrentRow(currentRow);
-      } finally {
-        issuedPollInFlightRef.current = false;
-      }
-    };
-    const timer = setInterval(() => {
-      void tick();
-    }, 25000);
-    return () => {
-      cancelled = true;
-      clearInterval(timer);
-      issuedPollInFlightRef.current = false;
-    };
-  }, [issuedPollingProgressId, refreshIssuedTodayForCurrentRow]);
-
-  const runMaterialSearch = useCallback(async (q: string) => {
-    try {
-      const { data, error } = await supabase.rpc("catalog_search" as any, {
-        p_query: q,
-        p_kind: "material",
-      } as any);
-
-      if (workSearchActiveQuery.current !== q) return;
-
-      if (error) {
-        console.warn("[material_search/catalog_search] error:", error.message);
-        return;
-      }
-      if (!Array.isArray(data)) return;
-
-      setWorkSearchResults(mapCatalogSearchToWorkMaterials(data as any[]));
-    } catch (e: any) {
-      if (workSearchActiveQuery.current !== q) return;
-      console.warn(
-        "[material_search/catalog_search] exception:",
-        e?.message || e
-      );
-    }
-  }, []);
-
-  const debouncedMaterialSearch = useRef(
-    debounce((q: string) => {
-      runMaterialSearch(q);
-    }, 300)
-  ).current;
-
-  const handleWorkSearchChange = useCallback(
-    (text: string) => {
-      setWorkSearchQuery(text);
-
-      const q = text.trim();
-      workSearchActiveQuery.current = q;
-
-      if (q.length < 2) {
-        setWorkSearchResults([]);
-        return;
-      }
-
-      debouncedMaterialSearch(q);
+  useIssuedPolling({
+    progressId: issuedPollingProgressId,
+    looksLikeUuid,
+    getCurrentRow: () => workModalRowRef.current,
+    getRowProgressId: (row) => String(row?.progress_id || "").trim(),
+    onTick: async (row) => {
+      await refreshIssuedTodayForCurrentRow(row);
     },
-    [debouncedMaterialSearch]
-  );
-
-  const clearWorkSearchState = useCallback(() => {
-    setWorkSearchVisible(false);
-    setWorkSearchQuery("");
-    setWorkSearchResults([]);
-  }, []);
-
+    intervalMs: 25000,
+  });
   const addWorkMaterial = useCallback((item: WorkMaterialRow) => {
     setWorkModalMaterials((prev) => {
       const idx = prev.findIndex(
-        (m: any) => m.mat_code === (item as any).mat_code
+        (m) => m.mat_code === item.mat_code
       );
       if (idx >= 0) {
         const copy = [...prev];
         copy[idx] = {
           ...copy[idx],
-          name: (item as any).name,
-          uom: (item as any).uom,
-          available: (item as any).available,
+          name: item.name,
+          uom: item.uom,
+          available: item.available,
         };
         return copy;
       }
@@ -889,40 +645,12 @@ export default function ContractorScreen() {
   const closeContractDetailsModal = closeWorkOverlayModal;
   const closeEstimateMaterialsModal = closeWorkOverlayModal;
   const closeWorkStagePickerModal = closeWorkOverlayModal;
-  const runQueuedModalTransition = useCallback(() => {
-    const run = modalTransitionActionRef.current;
-    if (!run) return;
-    modalTransitionActionRef.current = null;
-    run();
-  }, []);
-  const onAnyModalDismissed = useCallback(() => {
-    if (modalTransitionPendingDismissRef.current <= 0) return;
-    modalTransitionPendingDismissRef.current -= 1;
-    if (modalTransitionPendingDismissRef.current === 0) {
-      runQueuedModalTransition();
-    }
-  }, [runQueuedModalTransition]);
-  const queueAfterClosingModals = useCallback(
-    (run: () => void, opts?: { closeWork?: boolean; closeActBuilder?: boolean }) => {
-      modalTransitionActionRef.current = run;
-      let pendingDismisses = 0;
-      const shouldCloseWork = !!opts?.closeWork && workModalVisible;
-      const shouldCloseAct = !!opts?.closeActBuilder && actBuilderVisible;
-      if (shouldCloseWork) pendingDismisses += 1;
-      if (shouldCloseAct) pendingDismisses += 1;
-      modalTransitionPendingDismissRef.current = pendingDismisses;
-      if (shouldCloseWork) closeWorkModal();
-      if (shouldCloseAct) setActBuilderVisible(false);
-      if (!pendingDismisses) runQueuedModalTransition();
-    },
-    [closeWorkModal, workModalVisible, actBuilderVisible, runQueuedModalTransition]
-  );
-  useEffect(() => {
-    if (modalTransitionPendingDismissRef.current <= 0) return;
-    if (workModalVisible || actBuilderVisible) return;
-    modalTransitionPendingDismissRef.current = 0;
-    runQueuedModalTransition();
-  }, [workModalVisible, actBuilderVisible, runQueuedModalTransition]);
+  const { onAnyModalDismissed, queueAfterClosingModals } = useContractorModalFlow({
+    workModalVisible,
+    actBuilderVisible,
+    closeWorkModal,
+    closeActBuilder: () => setActBuilderVisible(false),
+  });
 
   const openActBuilder = useCallback(async () => {
     if (!workModalRow) {
@@ -938,72 +666,30 @@ export default function ContractorScreen() {
       return;
     }
     setActBuilderLoadState("loading");
-    let ensuredWorkMaterials = workModalMaterials;
-    if ((!ensuredWorkMaterials || ensuredWorkMaterials.length === 0) && String(workModalRow?.work_code || "").trim()) {
-      try {
-        const jobId = await resolveContractorJobId(workModalRow as WorkRow);
-        const reqIdForRow = await resolveRequestId(workModalRow as WorkRow);
-        if (!looksLikeUuid(String(jobId || "")) && !looksLikeUuid(String(reqIdForRow || ""))) {
-          setActBuilderLoadState("error");
-          setActBuilderHint("Данные подряда не загружены");
-          Alert.alert("Ошибка", "Данные подряда не готовы для загрузки материалов.");
-          return;
-        }
-        const reqRows = await fetchRequestScopeRows(supabase, jobId, reqIdForRow);
-        const hasAllowedRequests = reqRows.some((r) => !isRejectedOrCancelledRequestStatus(r.status));
-        if (!hasAllowedRequests) {
-          ensuredWorkMaterials = [];
-          setWorkModalMaterials([]);
-        } else {
-          const workCode = String(workModalRow?.work_code || "").trim();
-          const q1 = await supabase
-            .from("work_default_materials" as any)
-            .select("mat_code, uom")
-            .eq("work_code", workCode)
-            .limit(100);
-          const defaults = !q1.error && Array.isArray(q1.data) ? (q1.data as any[]) : [];
-          if (defaults.length) {
-            const codes = defaults.map((d: any) => String(d.mat_code || "").trim()).filter(Boolean);
-            const namesMap: Record<string, { name: string; uom: string | null }> = {};
-            if (codes.length) {
-              const ci = await supabase
-                .from("catalog_items" as any)
-                .select("rik_code, name_human_ru, name_human, uom_code")
-                .in("rik_code", codes);
-              if (!ci.error && Array.isArray(ci.data)) {
-                for (const n of ci.data as any[]) {
-                  const code = String(n.rik_code || "").trim();
-                  if (!code) continue;
-                  namesMap[code] = {
-                    name: String(n.name_human_ru || n.name_human || code),
-                    uom: n.uom_code == null ? null : String(n.uom_code),
-                  };
-                }
-              }
-            }
-            ensuredWorkMaterials = defaults.map((d: any) => {
-              const code = String(d.mat_code || "").trim();
-              const meta = namesMap[code];
-              return {
-                mat_code: code,
-                name: meta?.name || code || "Материал",
-                uom: meta?.uom || String(d.uom || ""),
-                available: 0,
-                qty_fact: 0,
-              } as WorkMaterialRow;
-            });
-            setWorkModalMaterials(ensuredWorkMaterials);
-          }
-        }
-      } catch (e) {
-        console.warn("[openActBuilder] default materials fallback failed:", e);
-      }
+    const ensured = await ensureActBuilderWorkMaterials({
+      supabaseClient: supabase,
+      row: workModalRow,
+      currentMaterials: workModalMaterials,
+      looksLikeUuid,
+      resolveContractorJobId,
+      resolveRequestId,
+      isRejectedOrCancelledRequestStatus,
+    });
+    if (ensured.fatalError) {
+      setActBuilderLoadState("error");
+      setActBuilderHint("Данные подряда не загружены");
+      Alert.alert("Ошибка", ensured.fatalError);
+      return;
+    }
+    const ensuredWorkMaterials = ensured.materials || [];
+    if (ensuredWorkMaterials !== workModalMaterials) {
+      setWorkModalMaterials(ensuredWorkMaterials);
     }
     const nextItems = buildActBuilderMaterialItems(issuedItems, ensuredWorkMaterials);
-    const rowsForJob = resolveActBuilderRowsScope(rows, workModalRow as any);
+    const rowsForJob = resolveActBuilderRowsScope(rows, workModalRow);
     const nextWorks = buildActBuilderWorkItems(
-      rowsForJob as any,
-      (value) => toHumanWork(value as any),
+      rowsForJob,
+      (value) => toHumanWork(value),
       inferUnitByWorkName,
       jobHeader
     );
@@ -1092,154 +778,34 @@ export default function ContractorScreen() {
 
   const submitActBuilder = useCallback(async () => {
     if (!workModalRow) return;
-    if (actBuilderLoadState !== "ready") {
-      setActBuilderHint("Данные подряда не загружены");
-      Alert.alert("Ошибка", "Данные подряда не загружены");
-      return;
-    }
     try {
       setActBuilderHint("");
       setActBuilderSaving(true);
-
-      // 1. COLLECT PAYLOAD DIRECTLY FROM STATE (as per PROD-TZ)
-      const { selectedWorks, selectedMaterials, invalidMaterial: invalidMat } =
-        buildSelectedActBuilderPayload(actBuilderWorks, actBuilderItems);
-      if (invalidMat) {
-        Alert.alert("Некорректный материал", `Проверьте заполнение цены и количества: "${invalidMat.name}"`);
-        return;
-      }
-
-      // 2. HARD VALIDATION
-      if (selectedWorks.length === 0 && selectedMaterials.length === 0) {
-        setActBuilderHint("Выберите хотя бы одну работу или один материал для продолжения.");
-        Alert.alert("Пустой акт", "Выберите хотя бы одну работу или один материал.");
-        return;
-      }
-
-      if (selectedMaterials.length > 0) {
-        const jobId = await resolveContractorJobId(workModalRow);
-        const reqIdForRow = await resolveRequestId(workModalRow);
-        if (!looksLikeUuid(String(jobId || "")) && !looksLikeUuid(String(reqIdForRow || ""))) {
-          setActBuilderHint("Данные подряда не загружены");
-          Alert.alert("Ошибка", "Данные подряда не готовы для проверки материалов.");
-          return;
-        }
-        const reqRows = await fetchRequestScopeRows(supabase, jobId, reqIdForRow);
-        const requestIds = reqRows
-          .filter((r) => !isRejectedOrCancelledRequestStatus(r.status))
-          .map((r) => r.id)
-          .filter(Boolean);
-        if (!requestIds.length) {
-          setActBuilderHint("Данные подряда не загружены");
-          Alert.alert("Ошибка", "Не найдены заявки подряда для проверки материалов.");
-          return;
-        }
-        const issuedByCode = await loadIssuedByCode(supabase, requestIds);
-        const progressIdsForSubcontract = getProgressIdsForSubcontract(rows, jobId, workModalRow);
-        const consumedByCode = await loadConsumedByCode(supabase, progressIdsForSubcontract, { positiveOnly: false });
-
-        const exceeded = selectedMaterials.find((m) => {
-          const code = String(m.mat_code || "").trim();
-          const issued = Number(issuedByCode.get(code) || 0);
-          const consumed = Number(consumedByCode.get(code) || 0);
-          const availableNow = Math.max(0, issued - consumed);
-          return Number(m.act_used_qty || 0) > availableNow;
-        });
-        if (exceeded) {
-          const code = String(exceeded.mat_code || "").trim();
-          const issued = Number(issuedByCode.get(code) || 0);
-          const consumed = Number(consumedByCode.get(code) || 0);
-          const availableNow = Math.max(0, issued - consumed);
-          setActBuilderHint(`Превышено доступное количество по материалу "${exceeded.name}". Доступно: ${availableNow}.`);
-          Alert.alert(
-            "Недостаточно материалов",
-            `Материал "${exceeded.name}": доступно ${availableNow}, а в акте указано ${Number(exceeded.act_used_qty || 0)}.`
-          );
-          return;
-        }
-      }
-
-      // Soft warnings for missing optional values (do not block generation).
-      const warnings = collectActBuilderWarnings(selectedWorks, selectedMaterials);
-      if (warnings.length > 0) {
-        const uniq = Array.from(new Set(warnings));
-        const preview = uniq.slice(0, 6).join("\n• ");
-        const tail = uniq.length > 6 ? `\n• ...и еще ${uniq.length - 6}` : "";
-        const shortHint = `Есть незаполненные поля (${uniq.length}). Проверьте предупреждения перед отправкой.`;
-        setActBuilderHint(shortHint);
-        Alert.alert(
-          "Предупреждения",
-          `Есть незаполненные поля:\n• ${preview}${tail}`
-        );
-      }
-
-      // Validation for data loss (UI shows selected > 0 but payload is empty)
-      if (actBuilderSelectedMatCount > 0 && selectedMaterials.length === 0) {
-        console.error("CRITICAL: UI shows selected materials but payload is empty!", {
-          actBuilderSelectedMatCount,
-          actBuilderItemsCount: actBuilderItems.length
-        });
-        setActBuilderHint("Ошибка в данных: в UI есть выбранные материалы, но payload пуст.");
-        Alert.alert("Критическая ошибка", "Потеряны выбранные материалы в payload. Повторите действие.");
-        return;
-      }
-
-      const resolvedObj = pickFirstNonEmpty(workModalRow?.object_name, jobHeader?.object_name) || "";
-      if (!String(resolvedObj || "").trim()) {
-        setActBuilderHint("Недостаточно данных: не найден объект работ.");
-        Alert.alert("Нет объекта", "Не удалось определить объект для формирования акта.");
-        return;
-      }
-
-      // Log payload for debugging (as requested)
-      // console.log("[submitActBuilder] FINAL PAYLOAD:", {
-      //   object: resolvedObj,
-      //   works: selectedWorks,
-      //   materialsCount: selectedMaterials.length,
-      //   materials: selectedMaterials
-      // });
-
-      // 4. GENERATE PDF IMMEDIATELY (Decoupled from DB as per PROD-TZ)
-      await generateActPdf({
-        mode: "normal",
-        work: { ...workModalRow, object_name: resolvedObj },
-        materials: selectedMaterials as any,
-        selectedWorks: selectedWorks as any,
-        contractorName: jobHeader?.contractor_org,
-        contractorInn: jobHeader?.contractor_inn,
-        contractorPhone: jobHeader?.contractor_phone,
-        customerName: resolvedObj,
-        customerInn: null,
-        contractNumber: jobHeader?.contract_number,
-        contractDate: jobHeader?.contract_date,
-        zoneText: `${jobHeader?.zone || "—"} / ${jobHeader?.level_name || "—"}`,
-        mainWorkName: jobHeader?.work_type || workModalRow.work_name || workModalRow.work_code,
-        actNumber: workModalRow.progress_id?.slice?.(0, 8),
-      });
-
-      // 5. ATTEMPT SAVE TO DB (Non-blocking for PDF)
-      const persistResult = await persistActBuilderSubmission({
+      const result = await submitActBuilderFlow({
         supabaseClient: supabase,
+        actBuilderLoadState,
+        actBuilderWorks,
+        actBuilderItems,
+        actBuilderSelectedMatCount,
         workModalRow,
-        selectedWorks,
-        selectedMaterials,
+        jobHeader,
+        rows,
+        resolveContractorJobId,
+        resolveRequestId,
+        isRejectedOrCancelledRequestStatus,
+        looksLikeUuid,
+        pickFirstNonEmpty,
         buildActMetaNote,
+        pickErr,
+        notify: (title, message) => Alert.alert(title, message),
       });
 
-      if (!persistResult.logSaved) {
-        console.warn("[submitActBuilder] log save failed:", persistResult.logError);
-        setWorkModalHint("PDF сформирован, но запись в журнал не сохранилась.");
-        Alert.alert("Частичный успех", "Журнал не сохранен (ошибка БД), но PDF уже сформирован.");
-        // We continue to close modal so user isn't stuck
-      } else if (!persistResult.materialsSaved) {
-        console.warn("[submitActBuilder] materials save failed:", persistResult.materialsError);
-        Alert.alert("Ошибка материалов", "Материалы не сохранились в БД. PDF уже сформирован.");
-      }
-
-      setActBuilderVisible(false);
-      setWorkModalHint("Акт успешно сформирован. Проверьте результат в истории и в PDF.");
-      Alert.alert("Готово", "Акт успешно сформирован. Проверьте результат в истории.");
-      await loadWorks();
+      if (result.actBuilderHint) setActBuilderHint(result.actBuilderHint);
+      if (result.workModalHint) setWorkModalHint(result.workModalHint);
+      if (result.alert) Alert.alert(result.alert.title, result.alert.message);
+      if (!result.ok) return;
+      if (result.closeActBuilder) setActBuilderVisible(false);
+      if (result.reloadWorks) await loadWorks();
     } catch (e) {
       setActBuilderHint(`Ошибка формирования акта: ${pickErr(e)}`);
       showErr(e);
@@ -1262,46 +828,24 @@ export default function ContractorScreen() {
   const submitWorkProgress = useCallback(
     async () => {
       if (!workModalRow) return;
-
-      const resolvedObjectName = pickFirstNonEmpty(workModalRow?.object_name, jobHeader?.object_name) || "";
-      if (!String(resolvedObjectName || "").trim()) {
-        Alert.alert(
-          "Нет объекта",
-          "Не удалось определить объект для сохранения выполненных работ."
-        );
-        return;
-      }
-
-      const qtyNum = 1;
-      const materialsPayload = buildWorkProgressMaterialsPayload(workModalMaterials as any[]);
-
       try {
         setWorkModalSaving(true);
-        const note = buildWorkProgressNote(workModalLocation, workModalComment);
-        const submitResult = await persistWorkProgressSubmission({
+        const result = await submitWorkProgressFlow({
           supabaseClient: supabase,
-          progressId: workModalRow.progress_id,
-          workUom: workModalRow.uom_id || null,
-          stageNote: workModalStage || null,
-          note,
-          qty: qtyNum,
-          materialsPayload,
+          workModalRow,
+          jobHeader,
+          workModalMaterials,
+          workModalLocation,
+          workModalComment,
+          workModalStage,
+          pickFirstNonEmpty,
+          pickErr,
         });
-        if (submitResult.ok === false) {
-          const submitError = submitResult;
-          if (submitError.stage === "log") {
-            Alert.alert("Ошибка журнала", pickErr(submitError.error));
-            return;
-          }
-          if (submitError.stage === "materials") {
-            Alert.alert("Ошибка материалов", pickErr(submitError.error));
-            return;
-          }
-        }
 
-        Alert.alert("Готово", "Факт по работе сохранен.");
-        setWorkModalVisible(false);
-        await loadWorks();
+        if (result.alert) Alert.alert(result.alert.title, result.alert.message);
+        if (!result.ok) return;
+        if (result.closeWorkModal) setWorkModalVisible(false);
+        if (result.reloadWorks) await loadWorks();
       } catch (e: any) {
         console.warn("[submitWorkProgress] exception:", e);
         showErr(e);
@@ -1396,8 +940,8 @@ export default function ContractorScreen() {
   }, [subcontractCards, groupedWorksByJob, contractor, profile, toHumanObject, toHumanWork, rowsReady, subcontractsReady]);
   const { cards: unifiedSubcontractCards, rowByCardId: otherRowByCardId } = useMemo(() => {
     return buildUnifiedCardsFromJobsAndOthers({
-      jobCards: jobCards as any,
-      otherRows: otherRows as any,
+      jobCards,
+      otherRows,
       toHumanObject,
       toHumanWork,
       normalizeText: normText,
@@ -1442,15 +986,15 @@ export default function ContractorScreen() {
     (id: string) => {
       const targetRow = resolveWorkRowFromUnifiedCard({
         id,
-        otherRowByCardId: otherRowByCardId as any,
-        groupedWorksByJob: groupedWorksByJob as any,
-        subcontractCards: subcontractCards as any,
-        rows: rows as any,
+        otherRowByCardId,
+        groupedWorksByJob,
+        subcontractCards,
+        rows,
         looksLikeUuid,
         pickWorkProgressRow,
       });
       if (targetRow) {
-        void openWorkInOneClick(targetRow as WorkRow);
+        void openWorkInOneClick(targetRow);
         return;
       }
       Alert.alert(
@@ -1461,7 +1005,7 @@ export default function ContractorScreen() {
     [otherRowByCardId, groupedWorksByJob, subcontractCards, rows, openWorkInOneClick]
   );
 
-  const renderWorkSearchItem = useCallback(({ item }: any) => {
+  const renderWorkSearchItem = useCallback(({ item }: { item: WorkMaterialRow }) => {
     const hasStock = (item.available || 0) > 0;
     return (
       <Pressable
@@ -1481,7 +1025,7 @@ export default function ContractorScreen() {
     );
   }, [addWorkMaterial]);
 
-  const renderWorkStageItem = useCallback(({ item }: any) => (
+  const renderWorkStageItem = useCallback(({ item }: { item: { code: string; name: string } }) => (
     <Pressable
       onPress={() => {
         setWorkModalStage(item.name);
@@ -1586,11 +1130,11 @@ export default function ContractorScreen() {
         onClose={closeWorkModal}
         onDismiss={onAnyModalDismissed}
         modalHeaderTopPad={modalHeaderTopPad}
-        workModalRow={workModalRow as any}
+        workModalRow={workModalRow}
         workModalLoading={workModalLoading}
         resolvedObjectName={resolvedObjectName}
         resolvedObjectInfo={textOrDash(resolvedObjectName)}
-        jobHeader={jobHeader as any}
+        jobHeader={jobHeader}
         workModalSaving={workModalSaving}
         loadingIssued={loadingIssued}
         workModalHint={workModalHint}
@@ -1671,7 +1215,7 @@ export default function ContractorScreen() {
         workSearchQuery={workSearchQuery}
         handleWorkSearchChange={handleWorkSearchChange}
         workSearchResults={workSearchResults}
-        renderWorkSearchItem={renderWorkSearchItem as any}
+        renderWorkSearchItem={renderWorkSearchItem}
         onOpenSearch={() => setWorkSearchVisible(true)}
         closeSearch={clearWorkSearchState}
       />
@@ -1681,7 +1225,7 @@ export default function ContractorScreen() {
         onClose={closeWorkStagePickerModal}
         sheetHeaderTopPad={sheetHeaderTopPad}
         workStageOptions={workStageOptions}
-        renderWorkStageItem={renderWorkStageItem as any}
+        renderWorkStageItem={renderWorkStageItem}
       />
     </View>
   );
