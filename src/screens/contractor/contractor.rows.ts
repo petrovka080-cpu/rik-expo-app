@@ -169,6 +169,8 @@ export function buildSyntheticSubcontractRows(subcontractsByOrg: SubcontractLite
         contractor_id: null,
         started_at: null,
         finished_at: null,
+        contractor_org: String(s.contractor_org || "").trim() || null,
+        contractor_inn: String(s.contractor_inn || "").trim() || null,
       };
     });
 }

@@ -489,80 +489,80 @@ export default function ContractorScreen() {
         return;
       }
       if (reqSeq !== loadWorksSeqRef.current) return;
-      setRowsReady(true);
       const mappedBase = mapWorksFactRows(data as any[], normText) as WorkRow[];
-    const enrichResult = await enrichWorksRows({
-      supabaseClient: supabase,
-      mappedBase: mappedBase as any,
-      looksLikeUuid,
-      pickWorkProgressRow,
-    });
-    const mappedByReq = enrichResult.rows as WorkRow[];
-    const objByJob = enrichResult.objByJob;
-    let subcontractsByOrg: SubcontractLite[] = [];
+      const enrichResult = await enrichWorksRows({
+        supabaseClient: supabase,
+        mappedBase: mappedBase as any,
+        looksLikeUuid,
+        pickWorkProgressRow,
+      });
+      const mappedByReq = enrichResult.rows as WorkRow[];
+      const objByJob = enrichResult.objByJob;
+      let subcontractsByOrg: SubcontractLite[] = [];
 
-    const sqApproved = await sqApprovedPromise;
-    if (sqApproved.error) {
+      const sqApproved = await sqApprovedPromise;
+      if (sqApproved.error) {
+        if (reqSeq !== loadWorksSeqRef.current) return;
+        console.error("loadWorks subcontracts error:", sqApproved.error);
+        return;
+      }
       if (reqSeq !== loadWorksSeqRef.current) return;
-      console.error("loadWorks subcontracts error:", sqApproved.error);
-      return;
-    }
-    if (reqSeq !== loadWorksSeqRef.current) return;
-    setSubcontractsReady(true);
-    const myOrg = String(
-      contractorRef.current?.company_name || profileRef.current?.company || ""
-    )
-      .trim()
-      .toLowerCase();
-    const myPhone = normPhone(
-      String(contractorRef.current?.phone || profileRef.current?.phone || "").trim()
-    );
-    if (Array.isArray(sqApproved.data)) {
-      const allApproved = sqApproved.data as SubcontractLite[];
-      subcontractsByOrg = selectScopedApprovedSubcontracts({
-        allApproved,
+      const myOrg = String(
+        contractorRef.current?.company_name || profileRef.current?.company || ""
+      )
+        .trim()
+        .toLowerCase();
+      const myPhone = normPhone(
+        String(contractorRef.current?.phone || profileRef.current?.phone || "").trim()
+      );
+      if (Array.isArray(sqApproved.data)) {
+        const allApproved = sqApproved.data as SubcontractLite[];
+        subcontractsByOrg = selectScopedApprovedSubcontracts({
+          allApproved,
+          myOrg,
+          myPhone,
+          normPhone,
+          devShowAllSubcontracts: DEV_SHOW_ALL_SUBCONTRACTS,
+        }) as SubcontractLite[];
+        setSubcontractCards(subcontractsByOrg);
+      }
+
+      const lookupMaps = buildSubcontractLookups(subcontractsByOrg as any);
+      const mappedWithObject = attachSubcontractAndObject({
+        rows: mappedByReq as any,
+        objByJob,
+        lookups: lookupMaps,
+      }) as WorkRow[];
+
+      const allowedJobIds = new Set(
+        subcontractsByOrg.map((s) => String(s.id || "").trim()).filter(Boolean)
+      );
+      const myContractorId = String(contractorRef.current?.id || "").trim();
+
+      const filtered = filterVisibleRows({
+        rows: mappedWithObject as any,
+        allowedJobIds,
+        myContractorId,
         myOrg,
         myPhone,
-        normPhone,
         devShowAllSubcontracts: DEV_SHOW_ALL_SUBCONTRACTS,
-      }) as SubcontractLite[];
-      setSubcontractCards(subcontractsByOrg);
-    }
+        isExcludedWorkCode,
+        isApprovedForOtherStatus,
+        normPhone,
+      }) as WorkRow[];
 
-    const lookupMaps = buildSubcontractLookups(subcontractsByOrg as any);
-    const mappedWithObject = attachSubcontractAndObject({
-      rows: mappedByReq as any,
-      objByJob,
-      lookups: lookupMaps,
-    }) as WorkRow[];
+      const existingJobIds = new Set(
+        filtered.map((r) => String(r.contractor_job_id || "").trim()).filter(Boolean)
+      );
+      const syntheticRows = buildSyntheticSubcontractRows(
+        subcontractsByOrg as any,
+        existingJobIds
+      ) as WorkRow[];
 
-    const allowedJobIds = new Set(
-      subcontractsByOrg.map((s) => String(s.id || "").trim()).filter(Boolean)
-    );
-    const myContractorId = String(contractorRef.current?.id || "").trim();
-
-    const filtered = filterVisibleRows({
-      rows: mappedWithObject as any,
-      allowedJobIds,
-      myContractorId,
-      myOrg,
-      myPhone,
-      devShowAllSubcontracts: DEV_SHOW_ALL_SUBCONTRACTS,
-      isExcludedWorkCode,
-      isApprovedForOtherStatus,
-      normPhone,
-    }) as WorkRow[];
-
-    const existingJobIds = new Set(
-      filtered.map((r) => String(r.contractor_job_id || "").trim()).filter(Boolean)
-    );
-    const syntheticRows = buildSyntheticSubcontractRows(
-      subcontractsByOrg as any,
-      existingJobIds
-    ) as WorkRow[];
-
-    if (reqSeq !== loadWorksSeqRef.current) return;
-    setRows([...syntheticRows, ...filtered]);
+      if (reqSeq !== loadWorksSeqRef.current) return;
+      setRows([...syntheticRows, ...filtered]);
+      setRowsReady(true);
+      setSubcontractsReady(true);
     } catch (e) {
       if (reqSeq !== loadWorksSeqRef.current) return;
       console.error("loadWorks exception:", e);
@@ -961,45 +961,45 @@ export default function ContractorScreen() {
           ensuredWorkMaterials = [];
           setWorkModalMaterials([]);
         } else {
-        const workCode = String(workModalRow?.work_code || "").trim();
-        const q1 = await supabase
-          .from("work_default_materials" as any)
-          .select("mat_code, uom")
-          .eq("work_code", workCode)
-          .limit(100);
-        const defaults = !q1.error && Array.isArray(q1.data) ? (q1.data as any[]) : [];
-        if (defaults.length) {
-          const codes = defaults.map((d: any) => String(d.mat_code || "").trim()).filter(Boolean);
-          const namesMap: Record<string, { name: string; uom: string | null }> = {};
-          if (codes.length) {
-            const ci = await supabase
-              .from("catalog_items" as any)
-              .select("rik_code, name_human_ru, name_human, uom_code")
-              .in("rik_code", codes);
-            if (!ci.error && Array.isArray(ci.data)) {
-              for (const n of ci.data as any[]) {
-                const code = String(n.rik_code || "").trim();
-                if (!code) continue;
-                namesMap[code] = {
-                  name: String(n.name_human_ru || n.name_human || code),
-                  uom: n.uom_code == null ? null : String(n.uom_code),
-                };
+          const workCode = String(workModalRow?.work_code || "").trim();
+          const q1 = await supabase
+            .from("work_default_materials" as any)
+            .select("mat_code, uom")
+            .eq("work_code", workCode)
+            .limit(100);
+          const defaults = !q1.error && Array.isArray(q1.data) ? (q1.data as any[]) : [];
+          if (defaults.length) {
+            const codes = defaults.map((d: any) => String(d.mat_code || "").trim()).filter(Boolean);
+            const namesMap: Record<string, { name: string; uom: string | null }> = {};
+            if (codes.length) {
+              const ci = await supabase
+                .from("catalog_items" as any)
+                .select("rik_code, name_human_ru, name_human, uom_code")
+                .in("rik_code", codes);
+              if (!ci.error && Array.isArray(ci.data)) {
+                for (const n of ci.data as any[]) {
+                  const code = String(n.rik_code || "").trim();
+                  if (!code) continue;
+                  namesMap[code] = {
+                    name: String(n.name_human_ru || n.name_human || code),
+                    uom: n.uom_code == null ? null : String(n.uom_code),
+                  };
+                }
               }
             }
+            ensuredWorkMaterials = defaults.map((d: any) => {
+              const code = String(d.mat_code || "").trim();
+              const meta = namesMap[code];
+              return {
+                mat_code: code,
+                name: meta?.name || code || "Материал",
+                uom: meta?.uom || String(d.uom || ""),
+                available: 0,
+                qty_fact: 0,
+              } as WorkMaterialRow;
+            });
+            setWorkModalMaterials(ensuredWorkMaterials);
           }
-          ensuredWorkMaterials = defaults.map((d: any) => {
-            const code = String(d.mat_code || "").trim();
-            const meta = namesMap[code];
-            return {
-              mat_code: code,
-              name: meta?.name || code || "Материал",
-              uom: meta?.uom || String(d.uom || ""),
-              available: 0,
-              qty_fact: 0,
-            } as WorkMaterialRow;
-          });
-          setWorkModalMaterials(ensuredWorkMaterials);
-        }
         }
       } catch (e) {
         console.warn("[openActBuilder] default materials fallback failed:", e);
@@ -1698,6 +1698,3 @@ export default function ContractorScreen() {
     </View>
   );
 }
-
-
-
