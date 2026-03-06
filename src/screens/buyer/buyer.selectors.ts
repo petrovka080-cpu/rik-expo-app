@@ -1,16 +1,13 @@
 // src/screens/buyer/buyer.selectors.ts
 import type { BuyerInboxRow } from "../../lib/catalog_api";
-import type { LineMeta, DraftAttachmentMap } from "./buyer.components";
+import type { LineMeta, DraftAttachmentMap, BuyerTab, BuyerSheetKind, BuyerGroup } from "./buyer.types";
 import { SUPP_NONE, normName } from "./buyerUtils";
 import { buildRfqPickedPreview } from "./buyer.helpers";
 
-export type BuyerTab = "inbox" | "pending" | "approved" | "rejected" | "subcontracts";
-export type BuyerSheetKind = "none" | "inbox" | "accounting" | "rework" | "prop_details" | "rfq";
-
-export type BuyerGroup = {
-  request_id: string;
+export type { BuyerTab, BuyerSheetKind, BuyerGroup } from "./buyer.types";
+type BuyerInboxRowWithKeys = BuyerInboxRow & {
+  request_id?: string | number | null;
   request_id_old?: number | null;
-  items: BuyerInboxRow[];
 };
 
 export type SheetHdrRow = { __kind: "attachments" };
@@ -22,8 +19,9 @@ export function selectPickedIds(picked: Record<string, boolean>) {
 export function selectGroups(rows: BuyerInboxRow[]): BuyerGroup[] {
   const map = new Map<string, BuyerGroup>();
   for (const r of rows || []) {
-    const rid = String((r as any).request_id);
-    const ridOld = (r as any).request_id_old ?? null;
+    const row = r as BuyerInboxRowWithKeys;
+    const rid = String(row.request_id ?? "");
+    const ridOld = row.request_id_old ?? null;
 
     if (!map.has(rid)) {
       map.set(rid, { request_id: rid, request_id_old: ridOld, items: [] });
@@ -93,9 +91,9 @@ export function selectSheetData(sheetKind: BuyerSheetKind, sheetGroup: BuyerGrou
 export function selectListData(
   tab: BuyerTab,
   groups: BuyerGroup[],
-  pending: any[],
-  approved: any[],
-  rejected: any[]
+  pending: unknown[],
+  approved: unknown[],
+  rejected: unknown[]
 ) {
   return tab === "inbox"
     ? groups

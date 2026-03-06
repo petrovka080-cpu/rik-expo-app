@@ -1,5 +1,11 @@
 // src/screens/buyer/buyer.helpers.ts
 import type { BuyerInboxRow } from "../../lib/catalog_api";
+type BuyerInboxRowLite = BuyerInboxRow & {
+  qty?: number | null;
+  request_item_id?: string | number | null;
+  name_human?: string | null;
+  uom?: string | null;
+};
 
 // ===== Date/format helpers =====
 export function fmtLocal(iso: string) {
@@ -20,7 +26,7 @@ export function isDeadlineHoursActive(hours: number, rfqDeadlineIso: string) {
 }
 
 // ===== Phone helpers =====
-export function stripToLocal(phoneAny: any) {
+export function stripToLocal(phoneAny: unknown) {
   const digits = String(phoneAny ?? "").replace(/[^\d]/g, "");
 
   // KG: +996XXXXXXXXX -> "996XXXXXXXXX" -> убираем "996"
@@ -52,13 +58,13 @@ export function priceNum(v?: string) {
 }
 
 export function lineTotal(it: BuyerInboxRow, priceStr?: string) {
-  const qty = Number((it as any)?.qty ?? 0) || 0;
+  const qty = Number((it as BuyerInboxRowLite)?.qty ?? 0) || 0;
   return qty * priceNum(priceStr);
 }
 
 export function requestSum(items: BuyerInboxRow[], metaById: Record<string, { price?: string }>) {
   return (items || []).reduce((acc, it) => {
-    const key = String((it as any)?.request_item_id ?? "");
+    const key = String((it as BuyerInboxRowLite)?.request_item_id ?? "");
     const p = metaById?.[key]?.price;
     return acc + lineTotal(it, p);
   }, 0);
@@ -70,16 +76,17 @@ export function buildRfqPickedPreview(rows: BuyerInboxRow[], pickedIds: string[]
   const out: { id: string; title: string; qty: number; uom: string }[] = [];
 
   for (const r of rows || []) {
-    const rid = String((r as any)?.request_item_id ?? "");
+    const rid = String((r as BuyerInboxRowLite)?.request_item_id ?? "");
     if (!rid || !set.has(rid)) continue;
 
     out.push({
       id: rid,
-      title: String((r as any)?.name_human ?? "Позиция"),
-      qty: Number((r as any)?.qty ?? 0) || 0,
-      uom: String((r as any)?.uom ?? ""),
+      title: String((r as BuyerInboxRowLite)?.name_human ?? "Позиция"),
+      qty: Number((r as BuyerInboxRowLite)?.qty ?? 0) || 0,
+      uom: String((r as BuyerInboxRowLite)?.uom ?? ""),
     });
   }
 
   return out.slice(0, 30);
 }
+

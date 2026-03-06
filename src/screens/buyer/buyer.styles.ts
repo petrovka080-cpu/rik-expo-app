@@ -1,0 +1,372 @@
+import { StyleSheet } from 'react-native';
+
+import { D, UI } from './buyerUi';
+
+export const buyerStyles = StyleSheet.create({
+  screen: { flex: 1 },
+
+
+  tabsRow: {
+    flexDirection: 'row',
+    gap: 8,
+    alignItems: 'center',
+    paddingRight: 16,
+    paddingVertical: 6,
+  },
+  tabLabelRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+
+  tabPill: {
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.14)',
+    backgroundColor: 'rgba(255,255,255,0.06)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
+  },
+  tabPillActive: { backgroundColor: UI.cardBg, borderColor: UI.accent },
+  tabPillText: {
+    color: UI.sub,
+    fontWeight: '800',
+    fontSize: 14,
+    lineHeight: 18,
+  },
+  tabPillTextActive: { color: UI.text },
+
+  tabBadge: {
+    minWidth: 22,
+    height: 22,
+    paddingHorizontal: 8,
+    borderRadius: 999,
+    backgroundColor: 'rgba(255,255,255,0.06)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.12)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  tabBadgeActive: {
+    backgroundColor: 'rgba(255,255,255,0.10)',
+    borderColor: 'rgba(255,255,255,0.18)',
+  },
+  tabBadgeText: { fontSize: 12, fontWeight: '900', color: '#E5E7EB' },
+  tabBadgeTextActive: { color: '#FFFFFF' },
+
+
+  group: {
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.18)',
+    borderRadius: 18,
+    backgroundColor: UI.cardBg,
+    marginBottom: 12,
+    overflow: 'hidden',
+  },
+  groupHeader: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+    borderBottomWidth: 1,
+    borderColor: 'rgba(255,255,255,0.10)',
+  },
+  groupTitle: { fontSize: 16, fontWeight: '900', color: UI.text },
+  groupMeta: { fontSize: 12, fontWeight: '800', color: UI.sub },
+
+
+  card: {
+    padding: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.18)',
+    borderRadius: 18,
+    backgroundColor: UI.cardBg,
+  },
+  cardPicked: { backgroundColor: 'rgba(255,255,255,0.03)' },
+
+  cardTitle: { fontSize: 16, fontWeight: '800', color: UI.text },
+  cardMeta: { marginTop: 6, color: UI.sub, fontSize: 14, fontWeight: '700' },
+
+
+  smallBtn: {
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.22)',
+    borderRadius: 999,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    backgroundColor: 'rgba(255,255,255,0.06)',
+  },
+  smallBtnText: { fontWeight: '900', color: UI.text, fontSize: 12 },
+
+  openBtn: {
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 999,
+    backgroundColor: 'rgba(255,255,255,0.06)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.22)',
+    minWidth: 96,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  openBtnText: { color: '#FFFFFF', fontWeight: '900', fontSize: 13, letterSpacing: 0.2 },
+
+
+  fioLabel: { fontSize: 12, color: D.sub, fontWeight: '700', marginBottom: 4 },
+  fioInput: {
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.12)',
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    backgroundColor: 'rgba(255,255,255,0.06)',
+    color: D.text,
+  },
+
+  fieldLabel: { fontSize: 12, color: D.sub, fontWeight: '700', marginBottom: 4 },
+  fieldInput: {
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.12)',
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    backgroundColor: 'rgba(255,255,255,0.06)',
+    color: D.text,
+  },
+
+  input: {
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.12)',
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    backgroundColor: 'rgba(255,255,255,0.06)',
+    color: D.text,
+    minWidth: 220,
+  },
+
+
+  suggestBoxInline: {
+    marginTop: 6,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.12)',
+    backgroundColor: 'rgba(16,24,38,0.92)',
+    borderRadius: 10,
+    overflow: 'hidden',
+  },
+  suggestItem: {
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+    borderBottomWidth: 1,
+    borderColor: 'rgba(255,255,255,0.10)',
+    backgroundColor: 'rgba(16,24,38,0.92)',
+  },
+
+
+  proposalCard: {
+    padding: 14,
+    borderRadius: 18,
+    backgroundColor: UI.cardBg,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.18)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.22,
+    shadowRadius: 18,
+    elevation: 6,
+  },
+
+
+  dirSheet: {
+    height: '88%',
+    width: "100%",
+    alignSelf: "stretch",
+    backgroundColor: D.cardBg,
+    borderTopLeftRadius: 22,
+    borderTopRightRadius: 22,
+    paddingTop: 10,
+    paddingHorizontal: 16,
+    paddingBottom: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.10)',
+  },
+
+  dirSheetHandle: {
+    alignSelf: 'center',
+    width: 44,
+    height: 5,
+    borderRadius: 999,
+    backgroundColor: 'rgba(255,255,255,0.18)',
+    marginBottom: 10,
+  },
+  dirSheetTopBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 10,
+    marginBottom: 10,
+  },
+  dirSheetTitle: {
+    flex: 1,
+    minWidth: 0,
+    color: D.text,
+    fontWeight: '900',
+    fontSize: 18,
+    lineHeight: 22,
+  },
+  dirSheetCloseBtn: {
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    borderRadius: 999,
+    backgroundColor: '#E5E7EB',
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.10)',
+    flexShrink: 0,
+  },
+  dirSheetCloseText: { color: '#0B0F14', fontWeight: '900', fontSize: 13 },
+  reqActionsBottom: {
+    marginTop: 12,
+    width: "100%",
+    alignSelf: "stretch",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "flex-start",
+
+    padding: 10,
+    borderRadius: 18,
+    backgroundColor: "rgba(255,255,255,0.04)",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.10)",
+    flexShrink: 0,
+  },
+  buyerMobCard: {
+    padding: 14,
+    borderRadius: 18,
+    backgroundColor: 'rgba(16,24,38,0.92)',
+    borderWidth: 1.25,
+    borderColor: 'rgba(255,255,255,0.16)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.22,
+    shadowRadius: 18,
+    elevation: 6,
+  },
+  buyerMobCardPicked: {
+    borderColor: 'rgba(34,197,94,0.55)',
+    backgroundColor: 'rgba(16,24,38,0.98)',
+  },
+
+  dirMobCard: {
+    padding: 14,
+    borderRadius: 18,
+    backgroundColor: 'rgba(16,24,38,0.92)',
+    borderWidth: 1.25,
+    borderColor: 'rgba(255,255,255,0.16)',
+  },
+  dirMobMain: { flex: 1, minWidth: 0 },
+  dirMobTitle: { fontSize: 16, fontWeight: '900', color: D.text },
+  dirMobMeta: { marginTop: 6, fontSize: 13, fontWeight: '800', color: D.sub },
+  dirMobNote: { marginTop: 6, fontSize: 13, fontWeight: '800', color: D.text, opacity: 0.95 },
+
+  // misc
+  openBody: { paddingTop: 10, paddingBottom: 12 },
+  itemsPanel: { marginTop: 10, marginHorizontal: 12, marginBottom: 12 },
+  itemsBox: {},
+  modalTitle: { fontSize: 18, fontWeight: '800', color: D.text },
+  modalHelp: { fontSize: 12, color: D.sub },
+  reqNoteBox: {
+    marginTop: 8,
+    marginBottom: 12,
+    padding: 12,
+    borderRadius: 14,
+    backgroundColor: "#0F172A",
+    borderWidth: 1,
+    borderColor: UI.border,
+    borderLeftWidth: 4,
+    borderLeftColor: UI.accent,
+  },
+  reqNoteLine: {
+    color: UI.text,
+    fontSize: 14,
+    lineHeight: 20,
+    marginBottom: 4,
+    fontWeight: "800",
+  },
+  warnPill: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    paddingVertical: 3,
+    paddingHorizontal: 10,
+    borderRadius: 999,
+    backgroundColor: "rgba(239,68,68,0.14)",
+    borderWidth: 1,
+    borderColor: "rgba(239,68,68,0.45)",
+  },
+  warnDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 999,
+    backgroundColor: "#EF4444",
+  },
+  warnPillText: {
+    color: "#FCA5A5",
+    fontWeight: "900",
+    fontSize: 12,
+  },
+
+  sendHint: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 12,
+    marginBottom: 8,
+    backgroundColor: "rgba(239,68,68,0.10)",
+    borderWidth: 1,
+    borderColor: "rgba(239,68,68,0.35)",
+  },
+  sendHintText: {
+    color: "#FCA5A5",
+    fontWeight: "900",
+    fontSize: 12,
+    flex: 1,
+    minWidth: 0,
+  },
+  sendBtnWarnWrap: {
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: "rgba(239,68,68,0.45)",
+    padding: 2,
+    backgroundColor: "rgba(239,68,68,0.06)",
+  },
+  sheetBody: {
+    flex: 1,
+    minHeight: 0,
+    width: "100%",
+    alignSelf: "stretch",
+    alignItems: "stretch",
+  },
+
+  sheetSection: {
+    flex: 1,
+    minHeight: 0,
+    width: "100%",
+    alignSelf: "stretch",
+  },
+  sumPill: {
+    backgroundColor: "rgba(255,255,255,0.06)",
+    borderRadius: 999,
+    paddingVertical: 4,
+    paddingHorizontal: 10,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.12)",
+  },
+  sumPillText: {
+    color: UI.text,
+    fontWeight: "900",
+    fontSize: 12,
+  },
+
+});

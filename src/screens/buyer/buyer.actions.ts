@@ -1,5 +1,10 @@
 // src/screens/buyer/buyer.actions.ts
 import { SUPP_NONE, normName } from "./buyerUtils";
+import type {
+  ProposalBucketInput,
+  CreateProposalsOptions as CatalogCreateProposalsOptions,
+  CreateProposalsResult as CatalogCreateProposalsResult,
+} from "../../lib/catalog_api";
 import { repoGetProposalItemsForView, repoGetRequestItemsByIds } from "./buyer.repo";
 import { repoGetProposalItemLinks, repoGetRequestItemToRequestMap } from "./buyer.repo";
 import {
@@ -7,20 +12,107 @@ import {
   repoUpdateProposalItems,
   type RepoProposalItemUpdate,
 } from "./buyer.repo";
+import type { SupabaseClient } from "@supabase/supabase-js";
 
 type AlertFn = (title: string, message: string) => void;
+type FileLike = File | Blob | { name?: string | null; uri?: string | null; mimeType?: string | null; size?: number | null };
+type LogFn = (...args: unknown[]) => void;
+type CreateProposalMetaRow = {
+  request_item_id: string;
+  price: number | string | null;
+  supplier: string | null;
+  note: string | null;
+};
+type CreateProposalPayloadRow = {
+  supplier: string | null;
+  request_item_ids: string[];
+  meta: CreateProposalMetaRow[];
+};
+type ProposalSendToAccountantPayload = {
+  proposalId: string;
+  invoiceNumber: string;
+  invoiceDate: string;
+  invoiceAmount: number;
+  invoiceCurrency: string;
+};
+type MaybeId = { id?: string | number | null };
+type CreatedProposalRow = {
+  id?: string | null;
+  proposal_id?: string | null;
+  request_item_ids?: string[] | null;
+};
+type ProposalRowLite = { id?: string | null; supplier?: string | null };
+type ProposalItemLinkRow = { proposal_id?: string | null; request_item_id?: string | null };
+type RequestItemToRequestRow = { id?: string | null; request_id?: string | null };
+type RequestItemViewRow = {
+  id?: string | null;
+  request_item_id?: string | null;
+  name_human?: string | null;
+  uom?: string | null;
+  qty?: number | null;
+  rik_code?: string | null;
+  app_code?: string | null;
+};
+type ReworkProposalItemRow = {
+  request_item_id?: string | null;
+  price?: number | string | null;
+  supplier?: string | null;
+  note?: string | null;
+};
+type BuyerInboxLikeRow = {
+  request_item_id?: string | null;
+  name_human?: string | null;
+  uom?: string | null;
+  qty?: number | null;
+  app_code?: string | null;
+  rik_code?: string | null;
+};
+type ReworkProposalRow = {
+  status?: string | null;
+  sent_to_accountant_at?: string | null;
+  payment_status?: string | null;
+  invoice_number?: string | null;
+  redo_source?: string | null;
+  redo_comment?: string | null;
+  return_comment?: string | null;
+  accountant_comment?: string | null;
+  return_reason?: string | null;
+  accountant_note?: string | null;
+};
+type RequestItemNameRow = {
+  id?: string | null;
+  name_human?: string | null;
+  uom?: string | null;
+  qty?: number | null;
+};
+type SnapshotMetaRow = { price?: string; note?: string };
+type CreateProposalsApi = (
+  payload: ProposalBucketInput[],
+  opts?: CatalogCreateProposalsOptions
+) => Promise<CatalogCreateProposalsResult>;
+
+const errMessage = (e: unknown, fallback = "Unknown error"): string => {
+  if (e instanceof Error && e.message.trim()) return e.message.trim();
+  return String(e ?? fallback);
+};
+const toPriceString = (v: number | string | null | undefined): string | null => {
+  if (v == null) return null;
+  const s = String(v).trim();
+  return s.length ? s : null;
+};
+
 type OpenProposalViewDeps = {
   pidStr: string;
-  head: any;
-  supabase: any;
+  head: Record<string, unknown> | null;
+  supabase: SupabaseClient;
 
   openPropDetailsSheet: (pid: string) => void;
   setPropViewId: (v: string | null) => void;
-  setPropViewHead: (v: any) => void;
-  setPropViewLines: (v: any[]) => void;
+  setPropViewHead: (v: Record<string, unknown> | null) => void;
+  setPropViewLines: (v: RequestItemViewRow[]) => void;
   setPropViewBusy: (v: boolean) => void;
 
-  log?: (...args: any[]) => void;
+  log?: LogFn;
 };
 type ConfirmSendWithoutAttachments = () => Promise<boolean>;
 
@@ -31,8 +123,8 @@ type CreateProposalsDeps = {
 
   // data (через refs — как у тебя)
   pickedIds: string[];
-  metaNow: Record<string, any>;
-  attachmentsNow: Record<string, any>;
+  metaNow: Record<string, { supplier?: string; price?: number | string | null; note?: string | null }>;
+  attachmentsNow: Record<string, { file?: FileLike; name?: string }>;
   buyerFio: string;
 
   // ui flags
@@ -44,17 +136,17 @@ type CreateProposalsDeps = {
   confirmSendWithoutAttachments: ConfirmSendWithoutAttachments;
 
   // api
-  apiCreateProposalsBySupplier: (payload: any[], opts?: any) => Promise<any>;
-  supabase: any;
-  uploadProposalAttachment: (pid: string, file: any, fileName: string, groupKey: string) => Promise<void>;
+  apiCreateProposalsBySupplier: CreateProposalsApi;
+  supabase: SupabaseClient;
+  uploadProposalAttachment: (pid: string, file: FileLike, fileName: string, groupKey: string) => Promise<void>;
 
   // side-effects in screen
-  setAttachments: (v: any) => void;
+  setAttachments: (v: Record<string, never>) => void;
   removeFromInboxLocally: (ids: string[]) => void;
   clearPick: () => void;
   fetchInbox: () => Promise<void>;
   fetchBuckets: () => Promise<void>;
-  setTab: (t: any) => void;
+  setTab: (t: "pending") => void;
   closeSheet: () => void;
 
   // ui helpers
@@ -97,14 +189,14 @@ export async function handleCreateProposalsBySupplierAction(p: CreateProposalsDe
       bySupp.get(key)!.ids.push(id);
     }
 
-    const payload = Array.from(bySupp.values()).map((bucket) => {
+    const payload: ProposalBucketInput[] = Array.from(bySupp.values()).map((bucket) => {
       const supplierForProposal = bucket.display === SUPP_NONE ? null : bucket.display;
       return {
         supplier: supplierForProposal,
         request_item_ids: bucket.ids,
         meta: bucket.ids.map((id) => ({
           request_item_id: id,
-          price: p.metaNow?.[id]?.price ?? null,
+          price: toPriceString(p.metaNow?.[id]?.price),
           supplier: supplierForProposal,
           note: p.metaNow?.[id]?.note ?? null,
         })),
@@ -116,7 +208,7 @@ export async function handleCreateProposalsBySupplierAction(p: CreateProposalsDe
       requestItemStatus: "У директора",
     });
 
-    const created = result?.proposals ?? [];
+    const created: CreatedProposalRow[] = Array.isArray(result?.proposals) ? result.proposals : [];
     if (!created.length) {
       p.alert("Внимание", "Не удалось сформировать предложения");
       return;
@@ -126,8 +218,8 @@ export async function handleCreateProposalsBySupplierAction(p: CreateProposalsDe
     try {
       const proposalIds = Array.from(
         new Set(
-          (created as any[])
-            .map((x: any) => String(x?.proposal_id ?? x?.id ?? "").trim())
+          created
+            .map((x) => String(x?.proposal_id ?? x?.id ?? "").trim())
             .filter(Boolean)
         )
       );
@@ -140,7 +232,8 @@ export async function handleCreateProposalsBySupplierAction(p: CreateProposalsDe
 
         if (qProps.error) throw qProps.error;
 
-        for (const r of (qProps.data || []) as any[]) {
+        const proposalRows: ProposalRowLite[] = Array.isArray(qProps.data) ? qProps.data : [];
+        for (const r of proposalRows) {
           const pid = String(r?.id ?? "").trim();
           if (!pid) continue;
 
@@ -154,12 +247,14 @@ export async function handleCreateProposalsBySupplierAction(p: CreateProposalsDe
           await p.uploadProposalAttachment(pid, att.file, fileName, "supplier_quote");
         }
       }
-    } catch (e: any) {
-      p.alert("Вложения", e?.message ?? "Предложения созданы, но вложения не прикрепились.");
+    } catch (e: unknown) {
+      p.alert("Вложения", errMessage(e) ?? "Предложения созданы, но вложения не прикрепились.");
     }
 
     p.setAttachments({});
-    const affectedIds = created.flatMap((x: any) => x.request_item_ids) as string[];
+    const affectedIds = created.flatMap((x) =>
+      Array.isArray(x?.request_item_ids) ? x.request_item_ids : []
+    );
 
     try {
       await p.supabase
@@ -176,8 +271,8 @@ export async function handleCreateProposalsBySupplierAction(p: CreateProposalsDe
     await p.fetchBuckets();
     p.setTab("pending");
     p.closeSheet();
-  } catch (e: any) {
-    p.alert("Ошибка", e?.message ?? "Не удалось отправить директору");
+  } catch (e: unknown) {
+    p.alert("Ошибка", errMessage(e) ?? "Не удалось отправить директору");
   } finally {
     p.sendingRef.current = false;
   }
@@ -198,7 +293,7 @@ type PublishRfqDeps = {
   rfqVisibility: "open" | "company_only";
   rfqNote: string;
 
-  supabase: any;
+  supabase: SupabaseClient;
 
   setBusy: (v: boolean) => void;
   closeSheet: () => void;
@@ -278,20 +373,20 @@ export async function publishRfqAction(p: PublishRfqDeps) {
 
     p.alert("Готово", `Торги опубликованы (${String(tenderId).slice(0, 8)})`);
     p.closeSheet();
-  } catch (e: any) {
-    p.alert("Ошибка", e?.message ?? String(e));
+  } catch (e: unknown) {
+    p.alert("Ошибка", errMessage(e));
   } finally {
     p.setBusy(false);
   }
 }
-type SendToAccountingDeps = {
+type SendToAccountingDeps<TApproved extends MaybeId = MaybeId> = {
   acctProposalId: string;
 
   invNumber: string;
   invDate: string;
   invAmount: string;
   invCurrency: string;
-  invFile?: any | null;
+  invFile?: FileLike | null;
 
   invoiceUploadedName?: string; // важно для условия "!invoiceUploadedName && invFile"
 
@@ -299,28 +394,28 @@ type SendToAccountingDeps = {
   buildProposalPdfHtml: (pidStr: string) => Promise<string>;
 
   // основной адаптер
-  proposalSendToAccountant: (p: any) => Promise<void>;
+  proposalSendToAccountant: (p: ProposalSendToAccountantPayload) => Promise<void>;
 
   // вложения
-  uploadProposalAttachment: (pid: string, file: any, name: string, key: string) => Promise<void>;
+  uploadProposalAttachment: (pid: string, file: FileLike, name: string, key: string) => Promise<void>;
 
   // гарант-флаги (твоя функция из buyer.tsx)
   ensureAccountingFlags: (pidStr: string, invoiceAmountNum?: number) => Promise<void>;
 
   // supabase (для fallback RPC + chk)
-  supabase: any;
+  supabase: SupabaseClient;
 
   // UI
   fetchBuckets: () => Promise<void>;
   closeSheet: () => void;
-  setApproved: (fn: (prev: any[]) => any[]) => void;
+  setApproved: (fn: (prev: TApproved[]) => TApproved[]) => void;
 
   setBusy: (v: boolean) => void;
   alert: (t: string, m: string) => void;
-  log?: (...args: any[]) => void;
+  log?: (...args: unknown[]) => void;
 };
 
-export async function sendToAccountingAction(p: SendToAccountingDeps) {
+export async function sendToAccountingAction<TApproved extends MaybeId = MaybeId>(p: SendToAccountingDeps<TApproved>) {
   if (!p.acctProposalId) return;
 
   // 1) валидация полей (1:1)
@@ -340,7 +435,7 @@ export async function sendToAccountingAction(p: SendToAccountingDeps) {
       await p.uploadProposalAttachment(
         pidStr,
         p.invFile,
-        (p.invFile.name ?? "invoice.pdf"),
+        ((p.invFile as { name?: string | null })?.name ?? "invoice.pdf"),
         "invoice"
       );
     }
@@ -351,12 +446,12 @@ export async function sendToAccountingAction(p: SendToAccountingDeps) {
       const blob = new Blob([html], { type: "text/html;charset=utf-8" });
       await p.uploadProposalAttachment(
         pidStr,
-        blob as any,
+        blob,
         `proposal_${pidStr.slice(0, 8)}.html`,
         "proposal_pdf"
       );
-    } catch (e: any) {
-      p.log?.("[buyer] attach proposal doc failed:", e?.message ?? e);
+    } catch (e: unknown) {
+      p.log?.("[buyer] attach proposal doc failed:", errMessage(e));
     }
 
     // 4) отправка в бухгалтерию (адаптер -> fallback RPC) (1:1)
@@ -391,13 +486,13 @@ export async function sendToAccountingAction(p: SendToAccountingDeps) {
     if (chk.error) throw chk.error;
 
     // 6) локально убрать из approved (1:1) и обновить бакеты
-    p.setApproved((prev) => prev.filter((x) => String((x as any)?.id) !== pidStr));
+    p.setApproved((prev) => prev.filter((x) => String(x?.id ?? "") !== pidStr));
     await p.fetchBuckets();
 
     p.alert("Готово", "Счёт отправлен бухгалтеру.");
     p.closeSheet();
-  } catch (e: any) {
-    const msg = e?.message ?? e?.error_description ?? e?.details ?? String(e);
+  } catch (e: unknown) {
+    const msg = errMessage(e);
     p.alert("Ошибка отправки", msg);
   } finally {
     p.setBusy(false);
@@ -416,7 +511,7 @@ export type RwItem = {
   note?: string;
 };
 
-function detectReworkSourceSafe(r: any): "director" | "accountant" {
+function detectReworkSourceSafe(r: ReworkProposalRow | null | undefined): "director" | "accountant" {
   const st = String(r?.status || "").toLowerCase();
   if (st.includes("бух")) return "accountant";
   if (st.includes("дир")) return "director";
@@ -431,9 +526,9 @@ function detectReworkSourceSafe(r: any): "director" | "accountant" {
   return "director";
 }
 
-async function rwPersistItems(supabase: any, pid: string, items: RwItem[]) {
+async function rwPersistItems(supabase: SupabaseClient, pid: string, items: RwItem[]) {
   for (const it of items || []) {
-    const upd: any = {};
+    const upd: { price?: number; supplier?: string | null; note?: string | null } = {};
     const pv = Number(String(it.price ?? "").replace(",", "."));
     if (Number.isFinite(pv) && pv > 0) upd.price = pv;
     if (it.supplier != null) upd.supplier = it.supplier?.trim() || null;
@@ -452,10 +547,10 @@ async function rwPersistItems(supabase: any, pid: string, items: RwItem[]) {
 }
 
 async function rwEnsureProposalPdf(
-  supabase: any,
+  supabase: SupabaseClient,
   pid: string,
   buildProposalPdfHtml: (pidStr: string) => Promise<string>,
-  uploadProposalAttachment: (pid: string, file: any, name: string, key: string) => Promise<void>
+  uploadProposalAttachment: (pid: string, file: FileLike, name: string, key: string) => Promise<void>
 ) {
   try {
     const q = await supabase
@@ -471,7 +566,7 @@ async function rwEnsureProposalPdf(
     const blob = new Blob([html], { type: "text/html;charset=utf-8" });
     await uploadProposalAttachment(
       pid,
-      blob as any,
+      blob,
       `proposal_${pid.slice(0, 8)}.html`,
       "proposal_pdf"
     );
@@ -483,7 +578,7 @@ async function rwEnsureProposalPdf(
 type OpenReworkDeps = {
   pid: string;
 
-  supabase: any;
+  supabase: SupabaseClient;
 
   openReworkSheet: (pid: string) => void;
 
@@ -496,7 +591,7 @@ type OpenReworkDeps = {
   setRwInvDate: (v: string) => void;
   setRwInvAmount: (v: string) => void;
   setRwInvCurrency: (v: string) => void;
-  setRwInvFile: (v: any) => void;
+  setRwInvFile: (v: FileLike | null) => void;
   setRwInvUploadedName: (v: string) => void;
   setRwSource: (v: "director" | "accountant") => void;
 
@@ -518,7 +613,7 @@ export async function openReworkAction(p: OpenReworkDeps) {
 
   try {
     // 1) читаем поля безопасно (1:1): сначала расширенно, потом fallback
-    let r: any = null;
+    let r: ReworkProposalRow | null = null;
 
     try {
       const pr1 = await p.supabase
@@ -568,11 +663,11 @@ export async function openReworkAction(p: OpenReworkDeps) {
       .select("request_item_id, price, supplier, note")
       .eq("proposal_id", p.pid);
 
-    const items = Array.isArray(pi.data) ? (pi.data as any[]) : [];
+    const items: ReworkProposalItemRow[] = Array.isArray(pi.data) ? pi.data : [];
 
     // имена/единицы/количество из request_items
     const ids = Array.from(new Set(items.map((x) => String(x.request_item_id)).filter(Boolean)));
-    const names = new Map<string, any>();
+    const names = new Map<string, RequestItemNameRow>();
 
     if (ids.length) {
       const ri = await p.supabase
@@ -599,8 +694,8 @@ export async function openReworkAction(p: OpenReworkDeps) {
         } as RwItem;
       })
     );
-  } catch (e: any) {
-    p.alert("Ошибка", e?.message ?? "Не удалось открыть доработку");
+  } catch (e: unknown) {
+    p.alert("Ошибка", errMessage(e) ?? "Не удалось открыть доработку");
   } finally {
     p.setRwBusy(false);
   }
@@ -609,7 +704,7 @@ export async function openReworkAction(p: OpenReworkDeps) {
 type RwSaveItemsDeps = {
   pid: string;
   items: RwItem[];
-  supabase: any;
+  supabase: SupabaseClient;
   setBusy: (v: boolean) => void;
   alert: AlertFn;
 };
@@ -619,26 +714,26 @@ export async function rwSaveItemsAction(p: RwSaveItemsDeps) {
   try {
     await rwPersistItems(p.supabase, p.pid, p.items);
     p.alert("Сохранено", "Изменения по позициям сохранены");
-  } catch (e: any) {
-    p.alert("Ошибка сохранения", e?.message ?? String(e));
+  } catch (e: unknown) {
+    p.alert("Ошибка сохранения", errMessage(e));
   } finally {
     p.setBusy(false);
   }
 }
 
-type RwSendToDirectorDeps = {
+type RwSendToDirectorDeps<TRejected extends MaybeId = MaybeId> = {
   pid: string;
   items: RwItem[];
-  supabase: any;
-  proposalSubmit: (pid: any) => Promise<void>;
+  supabase: SupabaseClient;
+  proposalSubmit: (pid: string) => Promise<void>;
   fetchBuckets: () => Promise<void>;
-  setRejected: (fn: (prev: any[]) => any[]) => void;
+  setRejected: (fn: (prev: TRejected[]) => TRejected[]) => void;
   closeSheet: () => void;
   setBusy: (v: boolean) => void;
   alert: AlertFn;
 };
 
-export async function rwSendToDirectorAction(p: RwSendToDirectorDeps) {
+export async function rwSendToDirectorAction<TRejected extends MaybeId = MaybeId>(p: RwSendToDirectorDeps<TRejected>) {
   p.setBusy(true);
   try {
     await rwPersistItems(p.supabase, p.pid, p.items);
@@ -648,7 +743,7 @@ export async function rwSendToDirectorAction(p: RwSendToDirectorDeps) {
       .update({ payment_status: null, sent_to_accountant_at: null })
       .eq("id", p.pid);
 
-    await p.proposalSubmit(p.pid as any);
+    await p.proposalSubmit(p.pid);
 
     await p.supabase
       .from("proposals")
@@ -656,18 +751,18 @@ export async function rwSendToDirectorAction(p: RwSendToDirectorDeps) {
       .eq("id", p.pid);
 
     await p.fetchBuckets();
-    p.setRejected((prev) => prev.filter((x) => String((x as any)?.id) !== p.pid));
+    p.setRejected((prev) => prev.filter((x) => String(x?.id ?? "") !== p.pid));
 
     p.alert("Готово", "Отправлено директору.");
     p.closeSheet();
-  } catch (e: any) {
-    p.alert("Ошибка отправки", e?.message ?? String(e));
+  } catch (e: unknown) {
+    p.alert("Ошибка отправки", errMessage(e));
   } finally {
     p.setBusy(false);
   }
 }
 
-type RwSendToAccountingDeps = {
+type RwSendToAccountingDeps<TRejected extends MaybeId = MaybeId> = {
   pid: string;
   items: RwItem[];
 
@@ -675,26 +770,26 @@ type RwSendToAccountingDeps = {
   invDate: string;
   invAmount: string;
   invCurrency: string;
-  invFile?: any | null;
+  invFile?: FileLike | null;
 
-  supabase: any;
+  supabase: SupabaseClient;
 
   buildProposalPdfHtml: (pidStr: string) => Promise<string>;
-  uploadProposalAttachment: (pid: string, file: any, name: string, key: string) => Promise<void>;
+  uploadProposalAttachment: (pid: string, file: FileLike, name: string, key: string) => Promise<void>;
 
-  proposalSendToAccountant: (p: any) => Promise<void>;
+  proposalSendToAccountant: (p: ProposalSendToAccountantPayload) => Promise<void>;
 
   ensureAccountingFlags: (pidStr: string, invoiceAmountNum?: number) => Promise<void>;
 
   fetchBuckets: () => Promise<void>;
-  setRejected: (fn: (prev: any[]) => any[]) => void;
+  setRejected: (fn: (prev: TRejected[]) => TRejected[]) => void;
   closeSheet: () => void;
 
   setBusy: (v: boolean) => void;
   alert: AlertFn;
 };
 
-export async function rwSendToAccountingAction(p: RwSendToAccountingDeps) {
+export async function rwSendToAccountingAction<TRejected extends MaybeId = MaybeId>(p: RwSendToAccountingDeps<TRejected>) {
   const amt = Number(String(p.invAmount).replace(",", "."));
   const dateStr = String(p.invDate || "").trim();
   const dateOk = /^\d{4}-\d{2}-\d{2}$/.test(dateStr);
@@ -711,7 +806,7 @@ export async function rwSendToAccountingAction(p: RwSendToAccountingDeps) {
       await p.uploadProposalAttachment(
         p.pid,
         p.invFile,
-        (p.invFile.name ?? "invoice.pdf"),
+        ((p.invFile as { name?: string | null })?.name ?? "invoice.pdf"),
         "invoice"
       );
     }
@@ -740,12 +835,12 @@ export async function rwSendToAccountingAction(p: RwSendToAccountingDeps) {
     await p.ensureAccountingFlags(p.pid, amt);
 
     await p.fetchBuckets();
-    p.setRejected((prev) => prev.filter((x) => String((x as any)?.id) !== p.pid));
+    p.setRejected((prev) => prev.filter((x) => String(x?.id ?? "") !== p.pid));
 
     p.alert("Готово", "Отправлено бухгалтеру.");
     p.closeSheet();
-  } catch (e: any) {
-    p.alert("Ошибка отправки", e?.message ?? String(e));
+  } catch (e: unknown) {
+    p.alert("Ошибка отправки", errMessage(e));
   } finally {
     p.setBusy(false);
   }
@@ -758,17 +853,16 @@ export async function openProposalViewAction(p: OpenProposalViewDeps) {
   p.setPropViewBusy(true);
 
   try {
-    const baseLines = await repoGetProposalItemsForView(p.supabase, p.pidStr);
-    const ids = Array.from(new Set(baseLines.map((x: any) => String(x?.request_item_id || "")).filter(Boolean)));
+    const baseLines: RequestItemViewRow[] = await repoGetProposalItemsForView(p.supabase, p.pidStr);
+    const ids = Array.from(new Set(baseLines.map((x) => String(x?.request_item_id || "")).filter(Boolean)));
 
-    let byId: Record<string, any> = {};
+    let byId: Record<string, RequestItemViewRow> = {};
     if (ids.length) {
-      // @ts-ignore
-      const ri = await repoGetRequestItemsByIds(p.supabase, ids);
-      for (const r of ri as any[]) byId[String(r.id)] = r;
+      const ri: RequestItemViewRow[] = await repoGetRequestItemsByIds(p.supabase, ids);
+      for (const r of ri) byId[String(r.id)] = r;
     }
 
-    const merged = baseLines.map((ln: any) => {
+    const merged = baseLines.map((ln) => {
       const r = byId[String(ln.request_item_id)] || {};
       return {
         ...ln,
@@ -781,8 +875,8 @@ export async function openProposalViewAction(p: OpenProposalViewDeps) {
     });
 
     p.setPropViewLines(merged);
-  } catch (e: any) {
-    p.log?.("[openProposalViewAction] error:", e?.message ?? e);
+  } catch (e: unknown) {
+    p.log?.("[openProposalViewAction] error:", errMessage(e));
     p.setPropViewLines([]);
   } finally {
     p.setPropViewBusy(false);
@@ -791,7 +885,7 @@ export async function openProposalViewAction(p: OpenProposalViewDeps) {
 type PreloadProposalTitlesDeps = {
   proposalIds: string[];
 
-  supabase: any;
+  supabase: SupabaseClient;
   batchResolveRequestLabels: (reqIds: string[]) => Promise<Record<string, string>>;
 
   // cache + setter
@@ -810,17 +904,17 @@ export async function preloadProposalTitlesAction(p: PreloadProposalTitlesDeps) 
     // 1) proposal_items -> (proposal_id, request_item_id)
     const pi = await repoGetProposalItemLinks(p.supabase, need);
 
+    const links: ProposalItemLinkRow[] = Array.isArray(pi) ? pi : [];
     const reqItemIds = Array.from(
-      new Set((pi || []).map((r: any) => String(r?.request_item_id || "")).filter(Boolean))
+      new Set(links.map((r) => String(r?.request_item_id || "")).filter(Boolean))
     );
     if (!reqItemIds.length) return;
 
     // 2) request_items -> (id, request_id)
-    // @ts-ignore
-    const ri = await repoGetRequestItemToRequestMap(p.supabase, reqItemIds);
+    const ri: RequestItemToRequestRow[] = await repoGetRequestItemToRequestMap(p.supabase, reqItemIds);
 
     const reqIdByItem: Record<string, string> = {};
-    (ri || []).forEach((x: any) => {
+    (ri || []).forEach((x) => {
       const k = String(x?.id || "");
       const v = String(x?.request_id || "");
       if (k && v) reqIdByItem[k] = v;
@@ -828,7 +922,7 @@ export async function preloadProposalTitlesAction(p: PreloadProposalTitlesDeps) 
 
     // 3) build reqIdsByProp
     const reqIdsByProp: Record<string, string[]> = {};
-    (pi || []).forEach((r: any) => {
+    links.forEach((r) => {
       const pid = String(r?.proposal_id || "");
       const rid = reqIdByItem[String(r?.request_item_id || "")];
       if (!pid || !rid) return;
@@ -868,10 +962,10 @@ export async function preloadProposalTitlesAction(p: PreloadProposalTitlesDeps) 
 // =====================================
 
 export async function setProposalBuyerFioAction(opts: {
-  supabase: any;
+  supabase: SupabaseClient;
   propId: string | number;
   typedFio?: string;
-  log?: (...a: any[]) => void;
+  log?: (...a: unknown[]) => void;
 }) {
   const { supabase, propId, typedFio, log } = opts;
   try {
@@ -886,18 +980,18 @@ export async function setProposalBuyerFioAction(opts: {
     }
 
     await repoSetProposalBuyerFio(supabase, propId, fio);
-  } catch (e: any) {
-    (log ?? console.warn)?.("[buyer_fio]", e?.message ?? e);
+  } catch (e: unknown) {
+    (log ?? console.warn)?.("[buyer_fio]", errMessage(e));
   }
 }
 
 export async function snapshotProposalItemsAction(opts: {
-  supabase: any;
+  supabase: SupabaseClient;
   proposalId: string | number;
   ids: string[];
-  rows: any[]; // BuyerInboxRow[]
-  meta: Record<string, { price?: string; note?: string }>;
-  log?: (...a: any[]) => void;
+  rows: BuyerInboxLikeRow[]; // BuyerInboxRow[]
+  meta: Record<string, SnapshotMetaRow>;
+  log?: (...a: unknown[]) => void;
 }) {
   const { supabase, proposalId, ids, rows, meta, log } = opts;
 
@@ -906,7 +1000,7 @@ export async function snapshotProposalItemsAction(opts: {
     if (!cleanIds.length) return;
 
     // 1) пытаемся взять из request_items (как было)
-    let riData: any[] = [];
+    let riData: RequestItemViewRow[] = [];
     try {
       const ri = await supabase
         .from("request_items")
@@ -918,9 +1012,9 @@ export async function snapshotProposalItemsAction(opts: {
 
     // 2) fallback из текущего inbox rows (как было)
     if (!riData.length) {
-      const byId = new Map((rows || []).map((r: any) => [String(r.request_item_id), r]));
+      const byId = new Map((rows || []).map((r) => [String(r.request_item_id), r]));
       riData = cleanIds.map((id) => {
-        const r: any = byId.get(String(id)) || {};
+        const r: BuyerInboxLikeRow = byId.get(String(id)) || {};
         return {
           id,
           name_human: r?.name_human ?? null,
@@ -938,7 +1032,7 @@ export async function snapshotProposalItemsAction(opts: {
       const rid = String(r?.id || "").trim();
       if (!rid) continue;
 
-      const m: any = meta?.[rid] || {};
+      const m: SnapshotMetaRow = meta?.[rid] || {};
       const upd: RepoProposalItemUpdate = {
         request_item_id: rid,
         name_human: r?.name_human ?? null,
@@ -960,7 +1054,9 @@ export async function snapshotProposalItemsAction(opts: {
     }
 
     await repoUpdateProposalItems(supabase, proposalId, payload);
-  } catch (e: any) {
-    (log ?? console.warn)?.("[snapshotProposalItems]", e?.message ?? e);
+  } catch (e: unknown) {
+    (log ?? console.warn)?.("[snapshotProposalItems]", errMessage(e));
   }
 }
+
+

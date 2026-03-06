@@ -1,11 +1,19 @@
 // src/screens/buyer/buyer.pdf.ts
 
+type ProposalPdfItemRow = {
+  total_qty?: number | null;
+  qty?: number | null;
+  uom?: string | null;
+  name_human?: string | null;
+  rik_code?: string | null;
+  price?: number | string | null;
+};
 type PdfDeps = {
   isWeb: boolean;
   // внешний генератор HTML (серверный)
   buildProposalPdfHtml: (pidStr: string) => Promise<string>;
   // fallback: тянем строки
-  proposalItems: (pidStr: string) => Promise<any[]>;
+  proposalItems: (pidStr: string) => Promise<ProposalPdfItemRow[]>;
   // fallback: красивый заголовок
   resolveProposalPrettyTitle: (pidStr: string) => Promise<string>;
   // web: supabase read метаданных
@@ -23,16 +31,21 @@ function writeSafe(w: Window | null, html: string) {
   try { w.document.open(); w.document.write(html); w.document.close(); w.focus(); } catch {}
 }
 
-function escHtml(s: any) {
-  return String(s ?? "").replace(/[&<>"']/g, (m) => (
-    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" } as any)[m]
-  ));
+function escHtml(s: unknown) {
+  const map: Record<string, string> = {
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;",
+  };
+  return String(s ?? "").replace(/[&<>"']/g, (m) => map[m] ?? m);
 }
 
 /** ===== Fallback HTML builder (когда серверный HTML пуст/ошибка) ===== */
 export async function buildFallbackProposalHtmlClient(pidStr: string, deps: PdfDeps): Promise<string> {
   // тянем строки предложения
-  let rows: any[] = [];
+  let rows: ProposalPdfItemRow[] = [];
   try {
     const r = await deps.proposalItems(pidStr);
     rows = Array.isArray(r) ? r : [];
@@ -43,11 +56,11 @@ export async function buildFallbackProposalHtmlClient(pidStr: string, deps: PdfD
   try { pretty = (await deps.resolveProposalPrettyTitle(pidStr)) || ""; } catch {}
 
   // метаданные
-  let meta: any = {};
+  let meta: { status?: string | null; buyer_fio?: string | null; submitted_at?: string | null } = {};
   try { meta = (await deps.getProposalMeta(pidStr)) || {}; } catch {}
 
   let total = 0;
-  const trs = rows.map((r: any, i: number) => {
+  const trs = rows.map((r, i: number) => {
     const qty = Number(r?.total_qty ?? r?.qty ?? 0) || 0;
     const uom = r?.uom ?? "";
     const name = r?.name_human ?? "";
@@ -141,8 +154,8 @@ export async function openBuyerProposalPdf(pid: string | number, deps: PdfDeps) 
     }
 
     writeSafe(w, html);
-  } catch (e: any) {
-    const msg = e?.message ?? String(e);
+  } catch (e: unknown) {
+    const msg = e instanceof Error && e.message ? e.message : String(e);
     if (deps.isWeb) {
       const w = window.open("", "_blank");
       if (w) {
@@ -160,3 +173,4 @@ export async function openBuyerProposalPdf(pid: string | number, deps: PdfDeps) 
     deps.alert("Ошибка", msg);
   }
 }
+

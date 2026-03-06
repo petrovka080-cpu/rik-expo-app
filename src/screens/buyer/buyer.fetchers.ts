@@ -2,6 +2,15 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { BuyerInboxRow } from "../../lib/catalog_api";
 
+export type BuyerProposalBucketRow = {
+  id: string;
+  status: string;
+  submitted_at: string | null;
+  total_sum?: number;
+  sent_to_accountant_at?: string | null;
+  items_cnt?: number;
+};
+
 export async function fetchBuyerInboxProd(params: {
   focusedRef: { current: boolean };
   lastKickRef: { current: number };
@@ -14,7 +23,7 @@ export async function fetchBuyerInboxProd(params: {
   setRows: (rows: BuyerInboxRow[]) => void;
 
   alert: (title: string, msg?: string) => void;
-  log?: (msg: any, ...rest: any[]) => void;
+  log?: (msg: unknown, ...rest: unknown[]) => void;
 }) {
   const {
     focusedRef,
@@ -39,25 +48,23 @@ export async function fetchBuyerInboxProd(params: {
     let inbox: BuyerInboxRow[] = [];
     try {
       inbox = await listBuyerInbox();
-    } catch (e: any) {
-      log?.("[buyer] listBuyerInbox ex:", e?.message ?? e);
+    } catch (e: unknown) {
+      log?.("[buyer] listBuyerInbox ex:", e instanceof Error ? e.message : String(e));
       inbox = [];
     }
 
     // Approval gate is already applied in data layer (listBuyerInbox).
     setRows(inbox || []);
 
-    const reqIds = Array.from(
-      new Set((inbox || []).map((r: any) => String(r?.request_id)).filter(Boolean))
-    );
+    const reqIds = Array.from(new Set((inbox || []).map((r) => String(r?.request_id)).filter(Boolean)));
 
     try {
       await preloadDisplayNos(reqIds);
     } catch {
       // no-op
     }
-  } catch (e: any) {
-    log?.("[buyer] fetchInbox:", e?.message ?? e);
+  } catch (e: unknown) {
+    log?.("[buyer] fetchInbox:", e instanceof Error ? e.message : String(e));
     alert("Ошибка", "Не удалось загрузить входящие заявки снабженца");
     setRows([]);
   } finally {
@@ -74,11 +81,11 @@ export async function fetchBuyerBucketsProd(params: {
   preloadProposalTitles?: (proposalIds: string[]) => void | Promise<void>;
 
   setLoadingBuckets: (v: boolean) => void;
-  setPending: (rows: any[]) => void;
-  setApproved: (rows: any[]) => void;
-  setRejected: (rows: any[]) => void;
+  setPending: (rows: BuyerProposalBucketRow[]) => void;
+  setApproved: (rows: BuyerProposalBucketRow[]) => void;
+  setRejected: (rows: BuyerProposalBucketRow[]) => void;
 
-  log?: (msg: any, ...rest: any[]) => void;
+  log?: (msg: unknown, ...rest: unknown[]) => void;
 }) {
   const {
     focusedRef,
@@ -109,14 +116,14 @@ export async function fetchBuyerBucketsProd(params: {
       .gt("items_cnt", 0)
       .order("submitted_at", { ascending: false });
 
-    const pendingClean =
+    const pendingClean: BuyerProposalBucketRow[] =
       !pQ.error && Array.isArray(pQ.data)
-        ? (pQ.data as any[]).map((x) => ({
+        ? (pQ.data as Array<Record<string, unknown>>).map((x) => ({
             id: String(x.proposal_id),
             status: String(x.status),
-            submitted_at: x.submitted_at ?? null,
+            submitted_at: (x.submitted_at as string | null) ?? null,
             total_sum: Number(x.total_sum ?? 0),
-            sent_to_accountant_at: x.sent_to_accountant_at ?? null,
+            sent_to_accountant_at: (x.sent_to_accountant_at as string | null) ?? null,
             items_cnt: Number(x.items_cnt ?? 0),
           }))
         : [];
@@ -130,14 +137,14 @@ export async function fetchBuyerBucketsProd(params: {
       .gt("items_cnt", 0)
       .order("submitted_at", { ascending: false });
 
-    const approvedClean =
+    const approvedClean: BuyerProposalBucketRow[] =
       !apQ.error && Array.isArray(apQ.data)
-        ? (apQ.data as any[]).map((x) => ({
+        ? (apQ.data as Array<Record<string, unknown>>).map((x) => ({
             id: String(x.proposal_id),
             status: String(x.status),
-            submitted_at: x.submitted_at ?? null,
+            submitted_at: (x.submitted_at as string | null) ?? null,
             total_sum: Number(x.total_sum ?? 0),
-            sent_to_accountant_at: x.sent_to_accountant_at ?? null,
+            sent_to_accountant_at: (x.sent_to_accountant_at as string | null) ?? null,
             items_cnt: Number(x.items_cnt ?? 0),
           }))
         : [];
@@ -152,8 +159,8 @@ export async function fetchBuyerBucketsProd(params: {
       .order("created_at", { ascending: false, nullsFirst: false });
 
     const seen = new Set<string>();
-    const rejectedRaw = (reAcc.data || [])
-      .filter((x: any) => {
+    const rejectedRaw: BuyerProposalBucketRow[] = (reAcc.data || [])
+      .filter((x: Record<string, unknown>) => {
         const id = String(x?.id ?? "").trim();
         if (!id || seen.has(id)) return false;
         seen.add(id);
@@ -161,10 +168,10 @@ export async function fetchBuyerBucketsProd(params: {
         const ps = String(x?.payment_status ?? "").toLowerCase();
         return ps.startsWith("на доработке");
       })
-      .map((x: any) => {
+      .map((x: Record<string, unknown>) => {
         const ps = String(x.payment_status ?? "На доработке");
         const submitted_at = x.submitted_at ?? x.created_at ?? null;
-        return { id: String(x.id), status: ps, submitted_at };
+        return { id: String(x.id), status: ps, submitted_at: (submitted_at as string | null) };
       });
 
     let rejectedClean = rejectedRaw;
@@ -174,7 +181,7 @@ export async function fetchBuyerBucketsProd(params: {
         const pi = await supabase.from("proposal_items").select("proposal_id").in("proposal_id", ids);
         if (!pi.error) {
           const cnt: Record<string, number> = {};
-          (pi.data || []).forEach((row: any) => {
+          (pi.data || []).forEach((row: Record<string, unknown>) => {
             const pid = String(row?.proposal_id || "");
             if (!pid) return;
             cnt[pid] = (cnt[pid] || 0) + 1;
@@ -197,8 +204,8 @@ export async function fetchBuyerBucketsProd(params: {
     } catch {
       // no-op
     }
-  } catch (e: any) {
-    log?.("[buyer] fetchBuckets error:", e?.message ?? e);
+  } catch (e: unknown) {
+    log?.("[buyer] fetchBuckets error:", e instanceof Error ? e.message : String(e));
   } finally {
     setLoadingBuckets(false);
   }

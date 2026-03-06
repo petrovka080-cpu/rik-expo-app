@@ -64,6 +64,7 @@ type FormState = {
   priceType: SubcontractPriceType | "";
   foremanComment: string;
 };
+type ContractorRow = { id?: string | null; phone?: string | null };
 
 const EMPTY_FORM: FormState = {
   contractorOrg: "",
@@ -208,7 +209,8 @@ export default function BuyerSubcontractTab({ contentTopPad, onScroll, buyerFio 
       .eq("phone", pn)
       .limit(1);
     if (!direct.error && Array.isArray(direct.data) && direct.data.length > 0) {
-      return String((direct.data[0] as any).id || "").trim() || null;
+      const first = (direct.data[0] ?? null) as ContractorRow | null;
+      return String(first?.id ?? "").trim() || null;
     }
 
     const tail = pn.slice(-9);
@@ -219,8 +221,9 @@ export default function BuyerSubcontractTab({ contentTopPad, onScroll, buyerFio 
       .ilike("phone", `%${tail}`)
       .limit(20);
     if (fallback.error || !Array.isArray(fallback.data)) return null;
-    const matched = fallback.data.find((row: any) => normalizePhone996(String(row?.phone || "")) === pn);
-    return matched ? String((matched as any).id || "").trim() || null : null;
+    const rows = fallback.data as ContractorRow[];
+    const matched = rows.find((row) => normalizePhone996(String(row?.phone || "")) === pn);
+    return matched ? String(matched.id ?? "").trim() || null : null;
   }, []);
 
   const attachContractorIdIfPossible = useCallback(async (subcontractId: string, contractorId: string | null) => {
@@ -230,7 +233,7 @@ export default function BuyerSubcontractTab({ contentTopPad, onScroll, buyerFio 
     try {
       const upd = await supabase
         .from("subcontracts")
-        .update({ contractor_id: cid } as any)
+        .update({ contractor_id: cid })
         .eq("id", sid);
       if (upd.error && __DEV__) {
         console.warn("[BuyerSubcontractTab] contractor_id attach skipped:", upd.error.message);

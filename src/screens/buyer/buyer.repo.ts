@@ -1,4 +1,6 @@
 // src/screens/buyer/buyer.repo.ts
+import type { SupabaseClient } from "@supabase/supabase-js";
+
 export type PropAttachmentRow = {
   id: string;
   file_name: string;
@@ -6,8 +8,26 @@ export type PropAttachmentRow = {
   group_key?: string | null;
   created_at?: string | null;
 };
+type ProposalAccountingItemRow = {
+  supplier?: string | null;
+  qty?: number | null;
+  price?: number | null;
+};
+type RawAttachmentRow = {
+  id?: string | number | null;
+  file_name?: string | null;
+  url?: string | null;
+  group_key?: string | null;
+  created_at?: string | null;
+  bucket_id?: string | null;
+  storage_path?: string | null;
+};
+export type RepoAttachmentRow = PropAttachmentRow & {
+  bucket_id?: string | null;
+  storage_path?: string | null;
+};
 
-export async function repoGetLatestProposalPdfAttachment(supabase: any, pidStr: string) {
+export async function repoGetLatestProposalPdfAttachment(supabase: SupabaseClient, pidStr: string) {
   const q = await supabase
     .from("proposal_attachments")
     .select("id, file_name")
@@ -21,17 +41,17 @@ export async function repoGetLatestProposalPdfAttachment(supabase: any, pidStr: 
   return row ? { id: String(row.id), file_name: String(row.file_name ?? "") } : null;
 }
 
-export async function repoGetProposalItemsForAccounting(supabase: any, pidStr: string) {
+export async function repoGetProposalItemsForAccounting(supabase: SupabaseClient, pidStr: string) {
   const pi = await supabase
     .from("proposal_items")
     .select("supplier, qty, price")
     .eq("proposal_id", pidStr);
 
   if (pi.error) throw pi.error;
-  return Array.isArray(pi.data) ? (pi.data as any[]) : [];
+  return Array.isArray(pi.data) ? (pi.data as ProposalAccountingItemRow[]) : [];
 }
 
-export async function repoGetSupplierCardByName(supabase: any, supplierName: string) {
+export async function repoGetSupplierCardByName(supabase: SupabaseClient, supplierName: string) {
   const name = String(supplierName || "").trim();
   if (!name) return null;
 
@@ -55,7 +75,7 @@ export async function repoGetSupplierCardByName(supabase: any, supplierName: str
 }
 
 // ✅ PROD: attachments list with signed url fallback (как в director.tsx)
-export async function repoListProposalAttachments(supabase: any, proposalId: string) {
+export async function repoListProposalAttachments(supabase: SupabaseClient, proposalId: string) {
   const pid = String(proposalId || "").trim();
   if (!pid) return [];
 
@@ -68,9 +88,9 @@ export async function repoListProposalAttachments(supabase: any, proposalId: str
 
   if (q.error) throw q.error;
 
-  const raw = (q.data || []) as any[];
+  const raw: RawAttachmentRow[] = Array.isArray(q.data) ? q.data : [];
 
-  const out: any[] = [];
+  const out: RepoAttachmentRow[] = [];
   for (const r of raw) {
     let url = String(r?.url || "").trim();
 
@@ -100,7 +120,7 @@ export async function repoListProposalAttachments(supabase: any, proposalId: str
 
   return out;
 }
-export async function repoGetProposalItemsForView(supabase: any, pidStr: string) {
+export async function repoGetProposalItemsForView(supabase: SupabaseClient, pidStr: string) {
   const q = await supabase
     .from("proposal_items")
     .select("request_item_id, qty, price, supplier, note")
@@ -111,7 +131,7 @@ export async function repoGetProposalItemsForView(supabase: any, pidStr: string)
   return Array.isArray(q.data) ? q.data : [];
 }
 
-export async function repoGetRequestItemsByIds(supabase: any, ids: string[]) {
+export async function repoGetRequestItemsByIds(supabase: SupabaseClient, ids: string[]) {
   const clean = Array.from(new Set((ids || []).map(String).filter(Boolean)));
   if (!clean.length) return [];
 
@@ -123,7 +143,7 @@ export async function repoGetRequestItemsByIds(supabase: any, ids: string[]) {
   if (ri.error) throw ri.error;
   return Array.isArray(ri.data) ? ri.data : [];
 }
-export async function repoGetProposalItemLinks(supabase: any, proposalIds: string[]) {
+export async function repoGetProposalItemLinks(supabase: SupabaseClient, proposalIds: string[]) {
   const ids = Array.from(new Set((proposalIds || []).map(String).filter(Boolean)));
   if (!ids.length) return [];
 
@@ -136,7 +156,7 @@ export async function repoGetProposalItemLinks(supabase: any, proposalIds: strin
   return Array.isArray(q.data) ? q.data : [];
 }
 
-export async function repoGetRequestItemToRequestMap(supabase: any, requestItemIds: string[]) {
+export async function repoGetRequestItemToRequestMap(supabase: SupabaseClient, requestItemIds: string[]) {
   const ids = Array.from(new Set((requestItemIds || []).map(String).filter(Boolean)));
   if (!ids.length) return [];
 
@@ -152,7 +172,7 @@ export async function repoGetRequestItemToRequestMap(supabase: any, requestItemI
 // buyer.repo.ts — write ops (PROD)
 // ================================
 export async function repoSetProposalBuyerFio(
-  supabase: any,
+  supabase: SupabaseClient,
   propId: string | number,
   fio: string
 ) {
@@ -177,7 +197,7 @@ export type RepoProposalItemUpdate = {
 };
 
 export async function repoUpdateProposalItems(
-  supabase: any,
+  supabase: SupabaseClient,
   proposalId: string | number,
   rows: RepoProposalItemUpdate[]
 ) {
@@ -190,7 +210,15 @@ export async function repoUpdateProposalItems(
     const rid = String(r?.request_item_id || "").trim();
     if (!rid) continue;
 
-    const upd: any = {
+    const upd: {
+      name_human: string | null;
+      uom: string | null;
+      qty: number | null;
+      app_code: string | null;
+      rik_code: string | null;
+      price?: number;
+      note?: string | null;
+    } = {
       name_human: r.name_human ?? null,
       uom: r.uom ?? null,
       qty: r.qty ?? null,

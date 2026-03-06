@@ -1,0 +1,173 @@
+import { useCallback } from "react";
+
+import type { Supplier, BuyerInboxRow } from "../../../lib/catalog_api";
+import type { BuyerGroup, BuyerSheetKind, DraftAttachmentMap, LineMeta } from "../buyer.types";
+import type { StylesBag } from "../components/component.types";
+import { BuyerGroupBlock, BuyerItemRow } from "../buyer.components";
+import { mergeNote, normName, splitNote } from "../buyerUtils";
+
+export function useBuyerInboxRenderers(params: {
+  s: StylesBag;
+  picked: Record<string, boolean>;
+  meta: Record<string, Partial<LineMeta>>;
+  lineTotal: (row: BuyerInboxRow) => number;
+  togglePick: (row: BuyerInboxRow) => void;
+  setLineMeta: (key: string, patch: Partial<LineMeta>) => void;
+  getSupplierSuggestions: (q: string) => string[];
+  suppliers: Supplier[];
+  isSheetOpen: boolean;
+  sheetKind: BuyerSheetKind;
+  setShowAttachBlock: (v: boolean) => void;
+  requestSum: (group: BuyerGroup) => number;
+  prettyLabel: (requestId: string | number | null | undefined, requestIdOld?: number | null) => string;
+  openInboxSheet: (group: BuyerGroup) => void;
+  supplierGroups: string[];
+  attachments: DraftAttachmentMap;
+  setAttachments: React.Dispatch<React.SetStateAction<DraftAttachmentMap>>;
+  isWeb: boolean;
+}) {
+  const {
+    s,
+    picked,
+    meta,
+    lineTotal,
+    togglePick,
+    setLineMeta,
+    getSupplierSuggestions,
+    suppliers,
+    isSheetOpen,
+    sheetKind,
+    setShowAttachBlock,
+    requestSum,
+    prettyLabel,
+    openInboxSheet,
+    supplierGroups,
+    attachments,
+    setAttachments,
+    isWeb,
+  } = params;
+
+  const renderItemRow = useCallback(
+    (it: BuyerInboxRow, _idx: number) => {
+      const key = String(it.request_item_id ?? "");
+      const selected = !!picked[key];
+      const m = (key && meta[key]) || {};
+      const sum = lineTotal(it);
+
+      const prettyText = `${it.qty} ${it.uom || ""}`.trim();
+      const rejectInfo = it as Partial<{ director_reject_at: unknown; director_reject_note: unknown }>;
+      const rejectedByDirector = !!rejectInfo.director_reject_at || !!rejectInfo.director_reject_note;
+
+      const sugg = getSupplierSuggestions(String(m.supplier ?? ""));
+
+      return (
+        <BuyerItemRow
+          s={s}
+          it={it}
+          selected={selected}
+          inSheet={isSheetOpen && sheetKind === "inbox"}
+          m={m}
+          sum={sum}
+          prettyText={prettyText}
+          rejectedByDirector={rejectedByDirector}
+          onTogglePick={() => togglePick(it)}
+          onSetPrice={(v) => setLineMeta(key, { price: v })}
+          onSetSupplier={(v) => setLineMeta(key, { supplier: v })}
+          onSetNote={(v) => setLineMeta(key, { note: v })}
+          supplierSuggestions={sugg}
+          onPickSupplier={(name) => {
+            const match = suppliers.find((sp) => normName(sp.name) === normName(name)) || null;
+
+            const parts = splitNote(m.note);
+            const user = parts.user;
+
+            let auto = "";
+            if (match) {
+              const partsAuto: string[] = [];
+              if (match.inn) partsAuto.push(`ИНН: ${match.inn}`);
+              if (match.bank_account) partsAuto.push(`Счёт: ${match.bank_account}`);
+              if (match.phone) partsAuto.push(`Тел.: ${match.phone}`);
+              if (match.email) partsAuto.push(`Email: ${match.email}`);
+              auto = partsAuto.join(" • ");
+            }
+
+            setLineMeta(key, { supplier: name, note: mergeNote(user, auto) });
+          }}
+          onFocusField={() => {
+            setShowAttachBlock(false);
+          }}
+        />
+      );
+    },
+    [
+      picked,
+      meta,
+      lineTotal,
+      togglePick,
+      setLineMeta,
+      getSupplierSuggestions,
+      suppliers,
+      isSheetOpen,
+      sheetKind,
+      s,
+      setShowAttachBlock,
+    ]
+  );
+
+  const renderGroupBlock = useCallback(
+    (group: BuyerGroup, index: number) => {
+      const gsum = requestSum(group);
+      const isOpen = false;
+
+      const reqLabel = prettyLabel(group.request_id, group.request_id_old ?? null);
+      const headerTitle = reqLabel;
+
+      const total = group.items.length;
+      const rejectedCount = group.items.filter((it) => {
+        const rejectInfo = it as Partial<{ director_reject_at: unknown; director_reject_note: unknown }>;
+        return !!rejectInfo.director_reject_at || !!rejectInfo.director_reject_note;
+      }).length;
+      const allRejected = total > 0 && rejectedCount === total;
+
+      const baseMeta = `${total} позиций${gsum ? ` · итого ${gsum.toLocaleString()} сом` : ""}`;
+      const headerMeta = allRejected
+        ? "❌ ОТКЛОНЕНА"
+        : rejectedCount > 0
+          ? `${baseMeta} · ❌ отклонено ${rejectedCount}/${total}`
+          : baseMeta;
+
+      return (
+        <BuyerGroupBlock
+          s={s}
+          g={group}
+          index={index}
+          isOpen={isOpen}
+          gsum={gsum}
+          headerTitle={headerTitle}
+          headerMeta={headerMeta}
+          onToggle={() => openInboxSheet(group)}
+          renderItemRow={renderItemRow}
+          isWeb={isWeb}
+          supplierGroups={supplierGroups}
+          attachments={attachments}
+          onPickAttachment={(key, att) =>
+            setAttachments((prev) => ({ ...prev, [key]: att }))
+          }
+        />
+      );
+    },
+    [
+      requestSum,
+      prettyLabel,
+      openInboxSheet,
+      renderItemRow,
+      isWeb,
+      supplierGroups,
+      attachments,
+      setAttachments,
+      s,
+    ]
+  );
+
+  return { renderItemRow, renderGroupBlock };
+}

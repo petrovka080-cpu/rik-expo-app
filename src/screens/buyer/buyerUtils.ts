@@ -5,7 +5,7 @@
 export const SUPP_NONE = "— без поставщика —";
 
 // ===== нормализация названия (для группировки поставщиков) =====
-export const normName = (s: any) =>
+export const normName = (s: unknown) =>
   String(s ?? "")
     .trim()
     .toLowerCase()

@@ -10,7 +10,13 @@ type Params = {
   onProposalsChanged: () => void;
 
   // optional logger
-  log?: (...args: any[]) => void;
+  log?: (...args: unknown[]) => void;
+};
+type BuyerNotifInsertPayload = {
+  new?: {
+    title?: unknown;
+    body?: unknown;
+  };
 };
 
 /**
@@ -28,7 +34,7 @@ export function attachBuyerSubscriptions(p: Params) {
     .on(
       "postgres_changes",
       { event: "INSERT", schema: "public", table: "notifications", filter: "role=eq.buyer" },
-      (payload: any) => {
+      (payload: BuyerNotifInsertPayload) => {
         if (!focusedRef.current) return;
         const n = payload?.new || {};
         try {

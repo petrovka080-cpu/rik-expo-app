@@ -3,9 +3,16 @@ import { Platform } from "react-native";
 
 type AlertFn = (t: string, m: string) => void;
 
-export type PickedFile = any; // web File | native doc asset | custom
+type NativePickedFile = {
+  name?: string | null;
+  uri?: string | null;
+  mimeType?: string | null;
+  size?: number | null;
+};
 
-type UploadFn = (proposalId: string, file: any, fileName: string, groupKey: string) => Promise<void>;
+export type PickedFile = File | NativePickedFile;
+
+type UploadFn = (proposalId: string, file: PickedFile, fileName: string, groupKey: string) => Promise<void>;
 
 type LoadAttachmentsFn = (proposalId: string) => Promise<void>;
 
@@ -30,14 +37,14 @@ export async function attachFileToProposalAction(p: {
   const f = await p.pickFileAny();
   if (!f) return;
 
-  const fileName = String((f as any)?.name ?? `file_${Date.now()}`).trim() || `file_${Date.now()}`;
+  const fileName = String((f as { name?: string | null })?.name ?? `file_${Date.now()}`).trim() || `file_${Date.now()}`;
 
   p.setBusy(true);
   try {
     await p.uploadProposalAttachment(pid, f, fileName, p.groupKey);
     await p.loadProposalAttachments(pid);
-  } catch (e: any) {
-    p.alert("Ошибка", e?.message ?? "Не удалось прикрепить файл");
+  } catch (e: unknown) {
+    p.alert("Ошибка", (e as { message?: string } | null)?.message ?? "Не удалось прикрепить файл");
   } finally {
     p.setBusy(false);
   }
@@ -73,8 +80,8 @@ export async function openInvoicePickerWebAction(p: {
       await p.uploadProposalAttachment(pid, f, f.name, "invoice");
       p.setInvoiceUploadedName(f.name);
       p.alert("Готово", `Счёт прикреплён: ${f.name}`);
-    } catch (err: any) {
-      p.alert("Ошибка загрузки", err?.message ?? String(err));
+    } catch (err: unknown) {
+      p.alert("Ошибка загрузки", (err as { message?: string } | null)?.message ?? String(err));
     } finally {
       try { input.remove(); } catch {}
     }
@@ -87,10 +94,10 @@ export async function openInvoicePickerWebAction(p: {
  * 3) Универсальный pickInvoiceFile (web/native) — возвращает файл, но НЕ грузит.
  * 1:1 как было: web input, native expo-document-picker.
  */
-export async function pickInvoiceFileAction(): Promise<any | null> {
+export async function pickInvoiceFileAction(): Promise<PickedFile | null> {
   try {
     if (Platform.OS === "web") {
-      return await new Promise<any | null>((resolve) => {
+      return await new Promise<PickedFile | null>((resolve) => {
         const input = document.createElement("input");
         input.type = "file";
         input.accept = ".pdf,.jpg,.jpeg,.png";
@@ -101,17 +108,16 @@ export async function pickInvoiceFileAction(): Promise<any | null> {
         input.click();
       });
     } else {
-      // @ts-ignore
       const DocPicker = await import("expo-document-picker");
-      const res = await (DocPicker as any).getDocumentAsync({
+      const res = await DocPicker.getDocumentAsync({
         copyToCacheDirectory: true,
         multiple: false,
       });
       if (res?.canceled) return null;
-      const f = res?.assets?.[0] ?? res;
-      return f || null;
+      return res?.assets?.[0] ?? null;
     }
-  } catch (e: any) {
+  } catch {
     return null;
   }
 }
+
