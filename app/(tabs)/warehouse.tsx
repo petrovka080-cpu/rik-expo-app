@@ -15,7 +15,6 @@ import {
   type KeyboardEvent,
   type ViewStyle,
 } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 
 
 import { supabase } from "../../src/lib/supabaseClient";
@@ -59,6 +58,11 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import type {
   IncomingRow, StockRow, ReqHeadRow, ReqItemUiRow,
   Option, Tab,
+  WarehouseStockLike,
+  ReqItemUiRowWithNote,
+  WarehouseReportRow,
+  RpcReceiveApplyResult,
+  ReportsUiLike,
 } from "../../src/screens/warehouse/warehouse.types";
 import { makeWarehouseIssueActions } from "../../src/screens/warehouse/warehouse.issue";
 
@@ -77,61 +81,12 @@ import {
   nz,
   pickErr,
   showErr,
-  norm,
   parseQtySelected,
   matchQuerySmart,
+  parseReqHeaderContext,
 } from "../../src/screens/warehouse/warehouse.utils";
-type WarehouseStockLike = StockRow & {
-  rik_code?: string | null;
-  material_code?: string | null;
-  name_human?: string | null;
-  item_name_ru?: string | null;
-};
-type ReqItemUiRowWithNote = ReqItemUiRow & { note?: string | null };
-type WarehouseReportRow = Record<string, unknown>;
-type RpcReceiveApplyResult = { ok?: number | string | null; fail?: number | string | null; left_after?: number | string | null };
-type ReportsUiLike = {
-  closeIncomingDetails: () => void;
-  incomingByDay?: unknown[];
-  vydachaByDay?: unknown[];
-} & Record<string, unknown>;
-
-function parseReqHeaderContext(rawParts: Array<string | null | undefined>) {
-  const out: { contractor: string; phone: string; volume: string } = {
-    contractor: "",
-    phone: "",
-    volume: "",
-  };
-  const put = (key: keyof typeof out, value: string) => {
-    const v = String(value || "").trim();
-    if (!v || out[key]) return;
-    out[key] = v;
-  };
-  for (const raw of rawParts) {
-    const lines = String(raw || "")
-      .split(/[\r\n;]+/)
-      .map((x) => x.trim())
-      .filter(Boolean);
-    for (const ln of lines) {
-      const m = ln.match(/^([^:]+)\s*:\s*(.+)$/);
-      if (!m) continue;
-      const k = String(m[1] || "").trim().toLowerCase();
-      const v = String(m[2] || "").trim();
-      if (!v) continue;
-      if (
-        !out.contractor &&
-        (k.includes("подряд") || k.includes("contractor") || k.includes("наименование организации") || k.includes("организац"))
-      ) {
-        put("contractor", v);
-      } else if (!out.phone && (k.includes("тел") || k.includes("phone"))) {
-        put("phone", v);
-      } else if (!out.volume && (k.includes("объ") || k.includes("volume"))) {
-        put("volume", v);
-      }
-    }
-  }
-  return out;
-}
+import { useDebouncedValue } from "../../src/screens/warehouse/hooks/useDebouncedValue";
+import { useWarehousemanFio } from "../../src/screens/warehouse/hooks/useWarehousemanFio";
 
 
 const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
@@ -153,12 +108,7 @@ export default function Warehouse() {
   const incoming = useWarehouseIncoming();
 
   const [stockSearch, setStockSearch] = useState<string>("");
-
-  const [stockSearchDeb, setStockSearchDeb] = useState("");
-  useEffect(() => {
-    const t = setTimeout(() => setStockSearchDeb(stockSearch), 180);
-    return () => clearTimeout(t);
-  }, [stockSearch]);
+  const stockSearchDeb = useDebouncedValue(stockSearch, 180);
 
   const getTodaySixAM = useCallback(() => {
     const d = new Date();
@@ -166,14 +116,15 @@ export default function Warehouse() {
     return d;
   }, []);
 
-  const CONFIRM_TS_KEY = "wh_warehouseman_confirm_ts";
-  const WAREHOUSEMAN_HISTORY_KEY = "wh_warehouseman_history_v1";
-
   const isWeb = Platform.OS === "web";
-  const [warehousemanFio, setWarehousemanFio] = useState("");
-  const [warehousemanHistory, setWarehousemanHistory] = useState<string[]>([]);
-  const [isFioConfirmVisible, setIsFioConfirmVisible] = useState(false);
-  const [isFioLoading, setIsFioLoading] = useState(false);
+  const {
+    warehousemanFio,
+    warehousemanHistory,
+    isFioConfirmVisible,
+    isFioLoading,
+    setIsFioConfirmVisible,
+    handleFioConfirm,
+  } = useWarehousemanFio({ getTodaySixAM, onError: showErr });
 
   const headerApi = useWarehouseHeaderApi({ isWeb, hasSubRow: !!warehousemanFio });
   const HEADER_MAX = !!warehousemanFio ? 130 : 92;
@@ -226,71 +177,6 @@ export default function Warehouse() {
   }, []);
 
   const [isRecipientModalVisible, setIsRecipientModalVisible] = useState(false);
-
-  useEffect(() => {
-    let active = true;
-    (async () => {
-      try {
-        const saved = await AsyncStorage.getItem("wh_warehouseman_fio");
-        const lastConfirmStr = await AsyncStorage.getItem(CONFIRM_TS_KEY);
-        const histRaw = await AsyncStorage.getItem(WAREHOUSEMAN_HISTORY_KEY);
-        const historyArr = histRaw ? JSON.parse(histRaw) : [];
-
-        if (active) {
-          if (saved) setWarehousemanFio(saved);
-          if (Array.isArray(historyArr)) setWarehousemanHistory(historyArr);
-
-          const sixAM = getTodaySixAM();
-          const lastConfirm = lastConfirmStr ? new Date(lastConfirmStr) : null;
-
-          if (!lastConfirm || lastConfirm < sixAM) {
-            setIsFioConfirmVisible(true);
-          }
-        }
-      } catch (e) {
-        console.warn("[warehousemanFio] load failed", e);
-      }
-    })();
-    return () => {
-      active = false;
-    };
-  }, [getTodaySixAM]);
-
-  useFocusEffect(
-    useCallback(() => {
-      const checkFio = async () => {
-        const lastConfirmStr = await AsyncStorage.getItem(CONFIRM_TS_KEY);
-        const sixAM = getTodaySixAM();
-        const lastConfirm = lastConfirmStr ? new Date(lastConfirmStr) : null;
-        if (!lastConfirm || lastConfirm < sixAM) {
-          setIsFioConfirmVisible(true);
-        }
-      };
-      checkFio();
-    }, [getTodaySixAM])
-  );
-
-  const handleFioConfirm = useCallback(async (fio: string) => {
-    setIsFioLoading(true);
-    try {
-      setWarehousemanFio(fio);
-      const now = new Date().toISOString();
-
-      const nextHist = [fio, ...warehousemanHistory.filter(x => x !== fio)].slice(0, 12);
-      setWarehousemanHistory(nextHist);
-
-      await Promise.all([
-        AsyncStorage.setItem("wh_warehouseman_fio", fio),
-        AsyncStorage.setItem(CONFIRM_TS_KEY, now),
-        AsyncStorage.setItem(WAREHOUSEMAN_HISTORY_KEY, JSON.stringify(nextHist))
-      ]);
-      setIsFioConfirmVisible(false);
-    } catch (e) {
-      showErr(e);
-    } finally {
-      setIsFioLoading(false);
-    }
-  }, [warehousemanHistory]);
 
   const [reportsMode, setReportsMode] = useState<"choice" | "issue" | "incoming">("choice");
 

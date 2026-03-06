@@ -125,3 +125,32 @@ export type StockPickLine = {
   uom_id: string | null; // С‚РµРєСЃС‚РѕРІС‹Р№ uom
   qty: number;
 };
+
+export type WarehouseStockLike = StockRow & {
+  rik_code?: string | null;
+  material_code?: string | null;
+  name_human?: string | null;
+  item_name_ru?: string | null;
+};
+
+export type ReqItemUiRowWithNote = ReqItemUiRow & { note?: string | null };
+
+export type WarehouseReportRow = Record<string, unknown>;
+
+export type RpcReceiveApplyResult = {
+  ok?: number | string | null;
+  fail?: number | string | null;
+  left_after?: number | string | null;
+};
+
+export type ReportsUiLike = {
+  closeIncomingDetails: () => void;
+  incomingByDay?: unknown[];
+  vydachaByDay?: unknown[];
+} & Record<string, unknown>;
+
+export type ReqHeaderContext = {
+  contractor: string;
+  phone: string;
+  volume: string;
+};

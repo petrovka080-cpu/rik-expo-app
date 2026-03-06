@@ -1,21 +1,24 @@
 // src/screens/warehouse/warehouse.utils.ts
 import { Alert, Platform } from "react-native";
+import type { ReqHeaderContext } from "./warehouse.types";
 
-export const nz = (v: any, d = 0) => (Number.isFinite(Number(v)) ? Number(v) : d);
+export const nz = (v: unknown, d = 0) => (Number.isFinite(Number(v)) ? Number(v) : d);
 
-export const pickErr = (e: any) =>
-  String(e?.message || e?.error_description || e?.hint || JSON.stringify(e) || "Ошибка");
+export const pickErr = (e: unknown) => {
+  const err = e as { message?: string; error_description?: string; hint?: string } | null;
+  return String(err?.message || err?.error_description || err?.hint || JSON.stringify(e) || "������");
+};
 
-export const showErr = (e: any) => Alert.alert("Ошибка", pickErr(e));
+export const showErr = (e: unknown) => Alert.alert("������", pickErr(e));
 
 export const norm = (s: string) =>
   (s || "")
     .toLowerCase()
-    .replace(/ё/g, "е")
+    .replace(/�/g, "�")
     .replace(/\s+/g, " ")
     .trim();
 
-export const parseNum = (v: any, d = 0): number => {
+export const parseNum = (v: unknown, d = 0): number => {
   if (v == null) return d;
   const s = String(v).trim();
   if (s === "") return d;
@@ -41,11 +44,13 @@ export const parseQtySelected = (s: string | undefined | null, left: number) => 
 };
 
 export function withTimeout<T>(p: Promise<T>, ms: number, label: string): Promise<T> {
-  let t: any;
+  let t: ReturnType<typeof setTimeout> | undefined;
   const timeout = new Promise<T>((_, reject) => {
     t = setTimeout(() => reject(new Error(`Timeout ${ms}ms: ${label}`)), ms);
   });
-  return Promise.race([p, timeout]).finally(() => clearTimeout(t));
+  return Promise.race([p, timeout]).finally(() => {
+    if (t) clearTimeout(t);
+  });
 }
 
 export const isUuid = (s: string) =>
@@ -56,17 +61,16 @@ export const isUuid = (s: string) =>
 export const webUnstickPress = () => {
   if (Platform.OS !== "web") return;
   try {
-    const el: any = (document as any)?.activeElement;
+    const el = document.activeElement as HTMLElement | null;
     el?.blur?.();
   } catch {}
 };
 
 export const safeAlert = (title: string, msg?: string) => {
-  if (Platform.OS === "web") (window as any).alert([title, msg].filter(Boolean).join("\n"));
+  if (Platform.OS === "web") window.alert([title, msg].filter(Boolean).join("\n"));
   else Alert.alert(title, msg ?? "");
 };
 
-// ---------- storage (web localStorage / native AsyncStorage) ----------
 export async function loadString(key: string): Promise<string | null> {
   try {
     if (Platform.OS === "web") return window.localStorage.getItem(key);
@@ -98,75 +102,60 @@ export async function loadJson<T>(key: string, fallback: T): Promise<T> {
   }
 }
 
-export async function saveJson(key: string, value: any): Promise<void> {
+export async function saveJson(key: string, value: unknown): Promise<void> {
   try {
     await saveString(key, JSON.stringify(value));
   } catch {}
 }
 
-/**
- * ✅ Канонизация material code для склада/выдачи:
- * - кириллическая П -> латинская P
- * - дефисы нормализуем
- * - лишние пробелы режем
- */
-export const normMatCode = (raw: any) => {
+export const normMatCode = (raw: unknown) => {
   const s = String(raw ?? "").trim();
   return s
-    .replace(/[Пп]/g, "P")
-    .replace(/[—–−]/g, "-")
+    .replace(/[��]/g, "P")
+    .replace(/[��?]/g, "-")
     .replace(/\s+/g, " ")
     .replace(/\s*-\s*/g, "-")
     .replace(/-+/g, "-")
     .trim();
 };
 
-/**
- * ✅ RU -> LAT для поиска.
- * Этого достаточно, чтобы "бетон" находил "BETON".
- */
 export const ruToLat = (s: string) =>
   (s || "")
     .toLowerCase()
-    .replace(/ё/g, "е")
-    .replace(/ж/g, "zh")
-    .replace(/ч/g, "ch")
-    .replace(/ш/g, "sh")
-    .replace(/щ/g, "sch")
-    .replace(/ю/g, "yu")
-    .replace(/я/g, "ya")
-    .replace(/а/g, "a")
-    .replace(/б/g, "b")
-    .replace(/в/g, "v")
-    .replace(/г/g, "g")
-    .replace(/д/g, "d")
-    .replace(/е/g, "e")
-    .replace(/з/g, "z")
-    .replace(/и/g, "i")
-    .replace(/й/g, "y")
-    .replace(/к/g, "k")
-    .replace(/л/g, "l")
-    .replace(/м/g, "m")
-    .replace(/н/g, "n")
-    .replace(/о/g, "o")
-    .replace(/п/g, "p")
-    .replace(/р/g, "r")
-    .replace(/с/g, "s")
-    .replace(/т/g, "t")
-    .replace(/у/g, "u")
-    .replace(/ф/g, "f")
-    .replace(/х/g, "h")
-    .replace(/ц/g, "ts")
-    .replace(/ъ/g, "")
-    .replace(/ы/g, "y")
-    .replace(/ь/g, "")
-    .replace(/э/g, "e");
+    .replace(/�/g, "�")
+    .replace(/�/g, "zh")
+    .replace(/�/g, "ch")
+    .replace(/�/g, "sh")
+    .replace(/�/g, "sch")
+    .replace(/�/g, "yu")
+    .replace(/�/g, "ya")
+    .replace(/�/g, "a")
+    .replace(/�/g, "b")
+    .replace(/�/g, "v")
+    .replace(/�/g, "g")
+    .replace(/�/g, "d")
+    .replace(/�/g, "e")
+    .replace(/�/g, "z")
+    .replace(/�/g, "i")
+    .replace(/�/g, "y")
+    .replace(/�/g, "k")
+    .replace(/�/g, "l")
+    .replace(/�/g, "m")
+    .replace(/�/g, "n")
+    .replace(/�/g, "o")
+    .replace(/�/g, "p")
+    .replace(/�/g, "r")
+    .replace(/�/g, "s")
+    .replace(/�/g, "t")
+    .replace(/�/g, "u")
+    .replace(/�/g, "f")
+    .replace(/�/g, "h")
+    .replace(/�/g, "ts")
+    .replace(/�/g, "")
+    .replace(/�/g, "y")
+    .replace(/�/g, "")
+    .replace(/�/g, "e");
 
-/**
- * ✅ Умный поиск:
- * - ищем обычным norm()
- * - если не нашли — ищем по ru->lat версии
- */
 export const matchQuerySmart = (hay: string, q: string) => {
   const qq = norm(q);
   if (!qq) return true;
@@ -178,10 +167,51 @@ export const matchQuerySmart = (hay: string, q: string) => {
   const q2 = norm(ruToLat(q));
   return h2.includes(q2);
 };
-export const normUomId = (raw: any) => {
+
+export const normUomId = (raw: unknown) => {
   const s = String(raw ?? "").trim();
-  if (s === "м") return "m";
-  if (s === "м²" || s === "м2") return "m2";
-  if (s === "м³" || s === "м3") return "m3";
+  if (s === "�") return "m";
+  if (s === "�?" || s === "�2") return "m2";
+  if (s === "�?" || s === "�3") return "m3";
   return s;
 };
+
+export function parseReqHeaderContext(rawParts: Array<string | null | undefined>): ReqHeaderContext {
+  const out: ReqHeaderContext = {
+    contractor: "",
+    phone: "",
+    volume: "",
+  };
+  const put = (key: keyof ReqHeaderContext, value: string) => {
+    const next = value.trim();
+    if (!next || out[key]) return;
+    out[key] = next;
+  };
+
+  for (const raw of rawParts) {
+    const lines = String(raw || "")
+      .split(/[\r\n;]+/)
+      .map((x) => x.trim())
+      .filter(Boolean);
+    for (const line of lines) {
+      const match = line.match(/^([^:]+)\s*:\s*(.+)$/);
+      if (!match) continue;
+      const key = String(match[1] || "").trim().toLowerCase();
+      const value = String(match[2] || "").trim();
+      if (!value) continue;
+
+      if (
+        !out.contractor &&
+        (key.includes("������") || key.includes("contractor") || key.includes("������������ �����������") || key.includes("���������"))
+      ) {
+        put("contractor", value);
+      } else if (!out.phone && (key.includes("���") || key.includes("phone"))) {
+        put("phone", value);
+      } else if (!out.volume && (key.includes("���") || key.includes("volume"))) {
+        put("volume", value);
+      }
+    }
+  }
+
+  return out;
+}
