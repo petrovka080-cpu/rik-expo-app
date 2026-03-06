@@ -11,6 +11,7 @@ import {
   View,
 } from "react-native";
 import RNModal from "react-native-modal";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { supabase } from "../../lib/supabaseClient";
 import PeriodPickerSheet from "../../components/PeriodPickerSheet";
@@ -195,6 +196,8 @@ const getErrorMessage = (error: unknown, fallback: string) => {
 };
 
 export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }: Props) {
+  const insets = useSafeAreaInsets();
+  const modalHeaderTopPad = Platform.OS === "web" ? 16 : (insets.top + 10);
   const [userId, setUserId] = useState("");
   const [foremanName, setForemanName] = useState("");
 
@@ -889,7 +892,7 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
         style={{ margin: 0 }}
       >
         <View style={{ flex: 1, backgroundColor: UI.cardBg }}>
-          <View style={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: 10, borderBottomWidth: 1, borderBottomColor: "rgba(255,255,255,0.10)" }}>
+          <View style={{ paddingHorizontal: 16, paddingTop: modalHeaderTopPad, paddingBottom: 10, borderBottomWidth: 1, borderBottomColor: "rgba(255,255,255,0.10)" }}>
             <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
               <Text style={{ color: UI.text, fontSize: 20, fontWeight: "900" }}>Детали подряда</Text>
               <Pressable onPress={() => setSubcontractModalOpen(false)}>

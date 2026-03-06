@@ -11,10 +11,10 @@ import {
   KeyboardAvoidingView,
   StyleSheet,
   Keyboard,
-  StatusBar,
   Animated,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import IconSquareButton from '../../ui/IconSquareButton';
 import SendHomeIcon from '../../ui/icons/SendHomeIcon';
@@ -56,6 +56,7 @@ export default function CatalogModal(props: {
   onOpenDraft: () => void;
   draftCount: number;
 }) {
+  const insets = useSafeAreaInsets();
   const { visible, onClose, rikQuickSearch, onCommitToDraft, onOpenDraft, draftCount } = props;
 
   const [query, setQuery] = useState('');
@@ -86,7 +87,7 @@ export default function CatalogModal(props: {
   };
 
   const canSearch = query.trim().length >= 2;
-  const HEADER_PAD_TOP = Platform.OS === 'ios' ? 52 : (StatusBar.currentHeight ?? 0) + 12;
+  const HEADER_PAD_TOP = Platform.OS === 'web' ? 16 : insets.top + 12;
 
   useEffect(() => {
     if (!visible) return;
@@ -186,7 +187,10 @@ export default function CatalogModal(props: {
             </View>
 
             {toastText ? (
-              <Animated.View pointerEvents="none" style={[s.toastWrap, { transform: [{ translateY: toastY }] }]}>
+              <Animated.View
+                pointerEvents="none"
+                style={[s.toastWrap, { top: HEADER_PAD_TOP + 40, transform: [{ translateY: toastY }] }]}
+              >
                 <View style={s.toast}>
                   <Ionicons name="checkmark-circle" size={18} color="#fff" />
                   <Text style={s.toastText} numberOfLines={2}>

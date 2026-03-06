@@ -157,4 +157,21 @@ export const s = StyleSheet.create({
     color: UI.text,
     fontWeight: "800",
   },
+
+  listItemContainer: { marginBottom: 10, paddingHorizontal: 6 },
+  reqItemPressable: { paddingHorizontal: 12 },
+  listItemFlex: { flex: 1 },
+  listItemRow1: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 5 },
+  reqItemDate: { color: UI.sub, fontSize: 12, fontWeight: "700" },
+  reqItemRow2: { marginBottom: 5 },
+  reqItemStatusFullyIssued: { color: "#22c55e", fontWeight: "900", fontSize: 13 },
+  reqItemStatusNotFullyIssued: { color: UI.sub, fontSize: 13, fontWeight: "700" },
+  reqItemRow3: { color: UI.sub, fontSize: 12, fontWeight: "600", lineHeight: 16 },
+
+  incomingItemPressable: { paddingHorizontal: 12 },
+  incomingItemRow1: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 6 },
+  incomingItemDate: { color: UI.sub, fontSize: 12, fontWeight: "700" },
+  incomingItemRow2: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
+  incomingItemRecText: { color: "#22c55e", fontSize: 14, fontWeight: "900" },
+  incomingItemLeftText: { color: "#ef4444", fontSize: 14, fontWeight: "900" },
 });

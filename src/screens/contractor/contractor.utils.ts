@@ -106,4 +106,3 @@ export function debounce<F extends (...args: any[]) => any>(fn: F, delay: number
     timer = setTimeout(() => fn(...args), delay);
   };
 }
-

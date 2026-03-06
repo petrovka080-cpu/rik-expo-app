@@ -23,9 +23,9 @@ type WorkRowLike = {
 
 export function mapWorksFactRows(rows: any[], normText: (v: any) => string): WorkRowLike[] {
   return (rows ?? []).map((x: any) => ({
-    progress_id: x.progress_id,
+    progress_id: String(x.progress_id || "").trim(),
     purchase_item_id: x.purchase_item_id ?? null,
-    work_code: normText(x.work_code) || null,
+    work_code: String(x.work_code || "").trim() || null,
     work_name: normText(x.work_name) || null,
     object_name: normText(x.object_name) || null,
     contractor_org: normText(x.contractor_org ?? x.subcontractor_org) || null,

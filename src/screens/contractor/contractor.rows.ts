@@ -1,4 +1,4 @@
-type WorkRowLike = {
+﻿type WorkRowLike = {
   progress_id: string;
   work_code?: string | null;
   work_name?: string | null;

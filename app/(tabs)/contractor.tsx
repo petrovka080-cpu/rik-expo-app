@@ -3,6 +3,7 @@ import React, {
   useCallback,
   useEffect,
   useMemo,
+  useReducer,
   useRef,
   useState,
 } from "react";
@@ -47,10 +48,7 @@ import {
   persistWorkProgressSubmission,
 } from "../../src/screens/contractor/contractor.progressService";
 import {
-  loadContractorJobHeaderData,
-  loadInitialWorkMaterialsForModal,
   loadIssuedTodayData,
-  loadWorkStageOptions,
 } from "../../src/screens/contractor/contractor.workModalService";
 import {
   generateHistoryPdfForLog,
@@ -83,6 +81,11 @@ import {
   isRejectedOrCancelledRequestStatus,
 } from "../../src/screens/contractor/contractor.status";
 import {
+  actBuilderReducer,
+  initialActBuilderState,
+} from "../../src/screens/contractor/contractor.actBuilderReducer";
+import { bootstrapWorkModalData } from "../../src/screens/contractor/contractor.workModalBootstrap";
+import {
   buildActMetaNote,
   debounce,
   inferUnitByWorkName,
@@ -99,8 +102,6 @@ import {
   toLocalDateKey,
 } from "../../src/screens/contractor/contractor.utils";
 import type {
-  ActBuilderItem,
-  ActBuilderWorkItem,
   IssuedItemRow,
   LinkedReqCard,
   WorkLogRow,
@@ -210,6 +211,8 @@ export default function ContractorScreen() {
   const [manualClaimedJobIds, setManualClaimedJobIds] = useState<string[]>([]);
   const [subcontractCards, setSubcontractCards] = useState<SubcontractLite[]>([]);
   const [loadingWorks, setLoadingWorks] = useState(false);
+  const [rowsReady, setRowsReady] = useState(false);
+  const [subcontractsReady, setSubcontractsReady] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [actingId, setActingId] = useState<string | null>(null);
 
@@ -278,116 +281,90 @@ export default function ContractorScreen() {
   const [historyOpen, setHistoryOpen] = useState(false);
   const [issuedOpen, setIssuedOpen] = useState(false);
   const [actBuilderVisible, setActBuilderVisible] = useState(false);
-  const [actBuilderItems, setActBuilderItems] = useState<ActBuilderItem[]>([]);
-  const [actBuilderWorks, setActBuilderWorks] = useState<ActBuilderWorkItem[]>([]);
+  const [actBuilderState, dispatchActBuilder] = useReducer(
+    actBuilderReducer,
+    initialActBuilderState
+  );
   const [actBuilderSaving, setActBuilderSaving] = useState(false);
   const [actBuilderHint, setActBuilderHint] = useState("");
   const [actBuilderLoadState, setActBuilderLoadState] = useState<ScreenLoadState>("init");
   const [workModalHint, setWorkModalHint] = useState("");
-  const [actBuilderExpandedWork, setActBuilderExpandedWork] = useState<string | null>(null);
-  const [actBuilderExpandedMat, setActBuilderExpandedMat] = useState<string | null>(null);
-  const actBuilderItemsRef = useRef<ActBuilderItem[]>([]);
-  const actBuilderWorksRef = useRef<ActBuilderWorkItem[]>([]);
-  useEffect(() => {
-    actBuilderItemsRef.current = actBuilderItems;
-  }, [actBuilderItems]);
-  useEffect(() => {
-    actBuilderWorksRef.current = actBuilderWorks;
-  }, [actBuilderWorks]);
   useEffect(() => {
     workModalRowRef.current = workModalRow;
   }, [workModalRow]);
-  const updateActBuilderWorkAt = useCallback(
-    (idx: number, updater: (item: ActBuilderWorkItem) => ActBuilderWorkItem) => {
-      setActBuilderWorks((prev) => {
-        const next = prev.map((item, i) => (i === idx ? updater(item) : item));
-        actBuilderWorksRef.current = next;
-        return next;
-      });
-    },
-    []
-  );
-  const updateActBuilderItemAt = useCallback(
-    (idx: number, updater: (item: ActBuilderItem) => ActBuilderItem) => {
-      setActBuilderItems((prev) => {
-        const next = prev.map((item, i) => (i === idx ? updater(item) : item));
-        actBuilderItemsRef.current = next;
-        return next;
-      });
-    },
-    []
-  );
+  const actBuilderItems = actBuilderState.items;
+  const actBuilderWorks = actBuilderState.works;
+  const actBuilderExpandedWork = actBuilderState.expandedWorkId;
+  const actBuilderExpandedMat = actBuilderState.expandedMatId;
   const handleActWorkToggleInclude = useCallback(
     (idx: number) => {
-      updateActBuilderWorkAt(idx, (item) => ({ ...item, include: !item.include }));
-      setActBuilderExpandedWork(null);
+      dispatchActBuilder({ type: "TOGGLE_WORK_INCLUDE", payload: { index: idx } });
     },
-    [updateActBuilderWorkAt]
+    []
   );
   const handleActWorkQtyChange = useCallback(
     (idx: number, txt: string) => {
       const num = Number(String(txt).replace(",", "."));
-      updateActBuilderWorkAt(idx, (item) => ({
-        ...item,
-        qty: Number.isFinite(num) ? num : item.qty,
-      }));
+      if (!Number.isFinite(num)) return;
+      dispatchActBuilder({ type: "SET_WORK_QTY", payload: { index: idx, qty: num } });
     },
-    [updateActBuilderWorkAt]
+    []
   );
   const handleActWorkUnitChange = useCallback(
     (idx: number, txt: string) => {
-      updateActBuilderWorkAt(idx, (item) => ({ ...item, unit: txt }));
+      dispatchActBuilder({ type: "SET_WORK_UNIT", payload: { index: idx, unit: txt } });
     },
-    [updateActBuilderWorkAt]
+    []
   );
   const handleActWorkPriceChange = useCallback(
     (idx: number, txt: string) => {
       const num = Number(txt.replace(",", "."));
-      updateActBuilderWorkAt(idx, (item) => ({
-        ...item,
-        price: Number.isFinite(num) ? num : null,
-      }));
+      dispatchActBuilder({
+        type: "SET_WORK_PRICE",
+        payload: { index: idx, price: Number.isFinite(num) ? num : null },
+      });
     },
-    [updateActBuilderWorkAt]
+    []
   );
   const handleActMatToggleInclude = useCallback(
     (idx: number) => {
-      updateActBuilderItemAt(idx, (item) => ({ ...item, include: !item.include }));
-      setActBuilderExpandedMat(null);
+      dispatchActBuilder({ type: "TOGGLE_MAT_INCLUDE", payload: { index: idx } });
     },
-    [updateActBuilderItemAt]
+    []
   );
   const handleActMatDecrement = useCallback(
     (idx: number) => {
-      updateActBuilderItemAt(idx, (item) => ({
-        ...item,
-        qty: Math.max(0, Number(item.qty || 0) - 1),
-      }));
+      const current = actBuilderState.items[idx];
+      if (!current) return;
+      dispatchActBuilder({
+        type: "SET_MAT_QTY",
+        payload: { index: idx, qty: Math.max(0, Number(current.qty || 0) - 1) },
+      });
     },
-    [updateActBuilderItemAt]
+    [actBuilderState.items]
   );
   const handleActMatIncrement = useCallback(
     (idx: number) => {
-      updateActBuilderItemAt(idx, (item) => {
-        const newVal = Number(item.qty || 0) + 1;
-        if (newVal > item.qtyMax) {
-          Alert.alert("Лимит", `Нельзя указать больше доступного количества (${item.qtyMax}).`);
-          return item;
-        }
-        return { ...item, qty: newVal };
-      });
+      const current = actBuilderState.items[idx];
+      if (!current) return;
+      const newVal = Number(current.qty || 0) + 1;
+      if (newVal > current.qtyMax) {
+        Alert.alert("Лимит", `Нельзя указать больше доступного количества (${current.qtyMax}).`);
+        return;
+      }
+      dispatchActBuilder({ type: "SET_MAT_QTY", payload: { index: idx, qty: newVal } });
     },
-    [updateActBuilderItemAt]
+    [actBuilderState.items]
   );
   const handleActMatPriceChange = useCallback(
     (idx: number, txt: string) => {
       const num = Number(String(txt).replace(",", "."));
-      updateActBuilderItemAt(idx, (item) => ({
-        ...item,
-        price: Number.isFinite(num) ? num : null,
-      }));
+      dispatchActBuilder({
+        type: "SET_MAT_PRICE",
+        payload: { index: idx, price: Number.isFinite(num) ? num : null },
+      });
     },
-    [updateActBuilderItemAt]
+    []
   );
   const [issuedItems, setIssuedItems] = useState<IssuedItemRow[]>([]);
   const [loadingIssued, setLoadingIssued] = useState(false);
@@ -491,6 +468,8 @@ export default function ContractorScreen() {
 
     const reqSeq = ++loadWorksSeqRef.current;
     setLoadingWorks(true);
+    setRowsReady(false);
+    setSubcontractsReady(false);
     try {
       const sqApprovedPromise = supabase
         .from("subcontracts" as any)
@@ -507,9 +486,10 @@ export default function ContractorScreen() {
       if (error) {
         if (reqSeq !== loadWorksSeqRef.current) return;
         console.error("loadWorks error:", error);
-        setRows([]);
         return;
       }
+      if (reqSeq !== loadWorksSeqRef.current) return;
+      setRowsReady(true);
       const mappedBase = mapWorksFactRows(data as any[], normText) as WorkRow[];
     const enrichResult = await enrichWorksRows({
       supabaseClient: supabase,
@@ -522,6 +502,13 @@ export default function ContractorScreen() {
     let subcontractsByOrg: SubcontractLite[] = [];
 
     const sqApproved = await sqApprovedPromise;
+    if (sqApproved.error) {
+      if (reqSeq !== loadWorksSeqRef.current) return;
+      console.error("loadWorks subcontracts error:", sqApproved.error);
+      return;
+    }
+    if (reqSeq !== loadWorksSeqRef.current) return;
+    setSubcontractsReady(true);
     const myOrg = String(
       contractorRef.current?.company_name || profileRef.current?.company || ""
     )
@@ -530,7 +517,7 @@ export default function ContractorScreen() {
     const myPhone = normPhone(
       String(contractorRef.current?.phone || profileRef.current?.phone || "").trim()
     );
-    if (!sqApproved.error && Array.isArray(sqApproved.data)) {
+    if (Array.isArray(sqApproved.data)) {
       const allApproved = sqApproved.data as SubcontractLite[];
       subcontractsByOrg = selectScopedApprovedSubcontracts({
         allApproved,
@@ -579,7 +566,6 @@ export default function ContractorScreen() {
     } catch (e) {
       if (reqSeq !== loadWorksSeqRef.current) return;
       console.error("loadWorks exception:", e);
-      setRows([]);
     } finally {
       if (reqSeq !== loadWorksSeqRef.current) return;
       setLoadingWorks(false);
@@ -651,27 +637,6 @@ export default function ContractorScreen() {
     [resolveRequestId]
   );
 
-  const loadContractorJobHeaderDataForRow = useCallback(async (row: WorkRow) => {
-    try {
-      const { header, objectNameOverride } = await loadContractorJobHeaderData({
-        supabaseClient: supabase,
-        row,
-        resolveContractorJobId: resolveContractorJobId as any,
-        resolveRequestId: resolveRequestId as any,
-        fallbackOrg: contractor?.company_name || profile?.company || null,
-        fallbackPhone: contractor?.phone || profile?.phone || null,
-        normText,
-      });
-      return {
-        header: (header as any) || null,
-        objectNameOverride: String(objectNameOverride || "").trim() || null,
-      };
-    } catch (e) {
-      console.warn("[loadContractorJobHeader] error:", e);
-      return { header: null, objectNameOverride: null };
-    }
-  }, [resolveContractorJobId, contractor, profile, resolveRequestId]);
-
   const loadIssuedTodayDataForRow = useCallback(async (row: WorkRow) => {
     try {
       return await loadIssuedTodayData({
@@ -724,68 +689,63 @@ export default function ContractorScreen() {
       setWorkModalComment("");
       setWorkModalLocation("");
       setWorkModalReadOnly(readOnly);
-
-      setWorkLog([]);
-      setWorkModalMaterials([]);
-      setWorkStageOptions([]);
       setWorkSearchVisible(false);
       setWorkSearchQuery("");
       setWorkSearchResults([]);
       setWorkModalHint("");
       setActBuilderHint("");
       setActBuilderLoadState("init");
-
       setWorkModalVisible(true);
       setWorkModalLoading(true);
       setLoadingIssued(true);
-      setJobHeader(null);
-      setIssuedItems([]);
-      setLinkedReqCards([]);
-      setIssuedHint("");
       setHistoryOpen(false);
       setIssuedOpen(false);
       setWorkOverlayModal("none");
+      setJobHeader(null);
+      setWorkLog([]);
+      setWorkStageOptions([]);
+      setWorkModalMaterials([]);
+      setIssuedItems([]);
+      setLinkedReqCards([]);
+      setIssuedHint("");
 
       (async () => {
         try {
-          const bundle = await Promise.all([
-            loadContractorJobHeaderDataForRow(row),
-            loadWorkLogData(row.progress_id),
-            loadWorkStageOptions({ supabaseClient: supabase }).catch((e) => {
-              console.warn("[openWorkAddModal] work_stages error:", e);
-              return [];
-            }),
-            readOnly
-              ? Promise.resolve([] as WorkMaterialRow[])
-              : loadInitialWorkMaterialsForModal({
-                  supabaseClient: supabase,
-                  row,
-                }).catch((e) => {
-                  console.warn("[openWorkAddModal] materials error:", e);
-                  return [] as WorkMaterialRow[];
-                }),
-            loadIssuedTodayDataForRow(row),
-          ]);
+          const bundle = await bootstrapWorkModalData({
+            supabaseClient: supabase,
+            row,
+            readOnly,
+            allRows: rows as any,
+            fallbackOrg: contractor?.company_name || profile?.company || null,
+            fallbackPhone: contractor?.phone || profile?.phone || null,
+            resolveContractorJobId: resolveContractorJobId as any,
+            resolveRequestId: resolveRequestId as any,
+            loadWorkLogData,
+            isRejectedOrCancelledRequestStatus,
+            toLocalDateKey,
+            normText,
+          });
 
           const isCurrent =
             openSeq === workModalBootSeqRef.current &&
             activeWorkModalProgressRef.current === String(row.progress_id || "").trim();
           if (!isCurrent) return;
 
-          const [headerResult, logRows, stageOptions, initialMaterials, issuedData] = bundle;
-
-          setJobHeader((headerResult as any)?.header || null);
-          if (String((headerResult as any)?.objectNameOverride || "").trim()) {
+          setJobHeader(bundle.jobHeader as any);
+          if (String(bundle.objectNameOverride || "").trim()) {
             setWorkModalRow((prev) =>
-              prev ? { ...prev, object_name: String((headerResult as any).objectNameOverride) } : prev
+              prev ? { ...prev, object_name: String(bundle.objectNameOverride) } : prev
             );
           }
-          setWorkLog(logRows as WorkLogRow[]);
-          setWorkStageOptions(stageOptions as { code: string; name: string }[]);
-          if (!readOnly) setWorkModalMaterials(initialMaterials as WorkMaterialRow[]);
-          setIssuedItems((issuedData as any).issuedItems || []);
-          setLinkedReqCards((issuedData as any).linkedReqCards || []);
-          setIssuedHint(String((issuedData as any).issuedHint || ""));
+          setWorkLog(bundle.workLog);
+          setWorkStageOptions(bundle.workStageOptions);
+          if (!readOnly) setWorkModalMaterials(bundle.initialMaterials as WorkMaterialRow[]);
+          setIssuedItems(bundle.issuedData.issuedItems || []);
+          setLinkedReqCards(bundle.issuedData.linkedReqCards || []);
+          setIssuedHint(String(bundle.issuedData.issuedHint || ""));
+          if (bundle.loadState !== "ready") {
+            setWorkModalHint("Данные подряда не загружены полностью.");
+          }
         } finally {
           const isCurrent =
             openSeq === workModalBootSeqRef.current &&
@@ -796,7 +756,14 @@ export default function ContractorScreen() {
         }
       })();
     },
-    [loadContractorJobHeaderDataForRow, loadIssuedTodayDataForRow, loadWorkLogData]
+    [
+      rows,
+      contractor,
+      profile,
+      resolveContractorJobId,
+      resolveRequestId,
+      loadWorkLogData,
+    ]
   );
 
   const issuedPollingProgressId = useMemo(() => {
@@ -1039,9 +1006,6 @@ export default function ContractorScreen() {
       }
     }
     const nextItems = buildActBuilderMaterialItems(issuedItems, ensuredWorkMaterials);
-    actBuilderItemsRef.current = nextItems;
-    setActBuilderItems(nextItems);
-    setActBuilderExpandedMat(null);
     const rowsForJob = resolveActBuilderRowsScope(rows, workModalRow as any);
     const nextWorks = buildActBuilderWorkItems(
       rowsForJob as any,
@@ -1049,9 +1013,10 @@ export default function ContractorScreen() {
       inferUnitByWorkName,
       jobHeader
     );
-    actBuilderWorksRef.current = nextWorks;
-    setActBuilderWorks(nextWorks);
-    setActBuilderExpandedWork(null);
+    dispatchActBuilder({
+      type: "SET_ALL",
+      payload: { items: nextItems, works: nextWorks },
+    });
     const resolvedObjectName = pickFirstNonEmpty(workModalRow?.object_name, jobHeader?.object_name) || "";
     const hasHeader = !!jobHeader;
     const hasObject = !!String(resolvedObjectName || "").trim();
@@ -1424,6 +1389,7 @@ export default function ContractorScreen() {
     [unifiedRows]
   );
   const jobCards = useMemo(() => {
+    if (!rowsReady || !subcontractsReady) return [];
     return buildJobCards({
       subcontractCards,
       groupedWorksByJob,
@@ -1431,19 +1397,20 @@ export default function ContractorScreen() {
       profileCompany: profile?.company,
       toHumanObject,
       toHumanWork,
+      normalizeText: normText,
+      debugCompanySource: true,
     });
-  }, [subcontractCards, groupedWorksByJob, contractor, profile, toHumanObject, toHumanWork]);
+  }, [subcontractCards, groupedWorksByJob, contractor, profile, toHumanObject, toHumanWork, rowsReady, subcontractsReady]);
   const { cards: unifiedSubcontractCards, rowByCardId: otherRowByCardId } = useMemo(() => {
-    const fallbackCompany =
-      String(contractor?.company_name || "").trim() ||
-      String(profile?.company || "").trim() ||
-      "Подрядчик не указан";
     return buildUnifiedCardsFromJobsAndOthers({
       jobCards: jobCards as any,
       otherRows: otherRows as any,
-      fallbackCompany,
+      contractorCompany: contractor?.company_name,
+      profileCompany: profile?.company,
       toHumanObject,
       toHumanWork,
+      normalizeText: normText,
+      debugCompanySource: true,
     });
   }, [jobCards, otherRows, contractor, profile, toHumanObject, toHumanWork]);
   const resolvedObjectName = pickFirstNonEmpty(workModalRow?.object_name, jobHeader?.object_name) || "";
@@ -1616,7 +1583,7 @@ export default function ContractorScreen() {
       <ContractorSubcontractsList
         data={unifiedSubcontractCards}
         refreshing={refreshing}
-        loadingWorks={loadingWorks}
+        loadingWorks={loadingWorks || !rowsReady || !subcontractsReady}
         onRefresh={handleRefresh}
         onOpen={handleOpenUnifiedCard}
         styles={styles}
@@ -1672,8 +1639,12 @@ export default function ContractorScreen() {
         items={actBuilderItems}
         expandedWorkId={actBuilderExpandedWork}
         expandedMatId={actBuilderExpandedMat}
-        onToggleExpandedWork={(id) => setActBuilderExpandedWork((prev) => (prev === id ? null : id))}
-        onToggleExpandedMat={(id) => setActBuilderExpandedMat((prev) => (prev === id ? null : id))}
+        onToggleExpandedWork={(id) =>
+          dispatchActBuilder({ type: "TOGGLE_EXPANDED_WORK", payload: { id } })
+        }
+        onToggleExpandedMat={(id) =>
+          dispatchActBuilder({ type: "TOGGLE_EXPANDED_MAT", payload: { id } })
+        }
         onToggleIncludeWork={handleActWorkToggleInclude}
         onQtyChangeWork={handleActWorkQtyChange}
         onUnitChangeWork={handleActWorkUnitChange}

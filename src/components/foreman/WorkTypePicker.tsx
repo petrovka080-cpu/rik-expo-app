@@ -10,6 +10,7 @@ import {
   ScrollView,
   Keyboard,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { supabase } from '../../../src/lib/supabaseClient';
 
 type Props = {
@@ -51,6 +52,7 @@ const toRow = (v: unknown): Row | null => {
 };
 
 export default function WorkTypePicker({ visible, onClose, onSelect }: Props) {
+  const insets = useSafeAreaInsets();
   const [query, setQuery] = useState('');
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(false);
@@ -145,6 +147,8 @@ export default function WorkTypePicker({ visible, onClose, onSelect }: Props) {
     const arr = filtered.filter((r) => r.family_code === selectedFamily);
     return arr.sort((a, b) => a.work_name_ru.localeCompare(b.work_name_ru, 'ru'));
   }, [filtered, selectedFamily]);
+  const sheetTopPad = Platform.OS === 'web' ? 10 : Math.max(10, insets.top + 6);
+  const sheetBottomPad = Platform.OS === 'web' ? 0 : Math.max(12, insets.bottom);
 
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
@@ -153,7 +157,7 @@ export default function WorkTypePicker({ visible, onClose, onSelect }: Props) {
           flex: 1,
           backgroundColor: 'rgba(0,0,0,0.35)',
           justifyContent: 'flex-end',
-          paddingTop: 10,
+          paddingTop: sheetTopPad,
           paddingHorizontal: 0,
           paddingBottom: 0,
         }}
@@ -166,6 +170,8 @@ export default function WorkTypePicker({ visible, onClose, onSelect }: Props) {
             borderBottomLeftRadius: 0,
             borderBottomRightRadius: 0,
             padding: 16,
+            paddingTop: 16 + Math.min(insets.top, 12),
+            paddingBottom: 16 + sheetBottomPad,
             height: '96%',
             width: '100%',
             maxWidth: Platform.OS === 'web' ? 900 : undefined,

@@ -171,33 +171,8 @@ export default function Warehouse() {
   }, []);
   const [kbH, setKbH] = useState(0);
 
-  const [warehousemanFio, setWarehousemanFio] = useState("");
-  useEffect(() => {
-    (async () => {
-      const saved = await AsyncStorage.getItem("wh_warehouseman_fio");
-      if (saved) setWarehousemanFio(saved);
-    })();
-  }, []);
-
-  const [reportsMode, setReportsMode] = useState<"choice" | "issue" | "incoming">("choice");
-
-
-  const [itemsModal, setItemsModal] = useState<{
-    incomingId: string;
-    purchaseId: string;
-    poNo: string | null;
-    status: string; // incoming_status
-  } | null>(null);
-
-  const [qtyInputByItem, setQtyInputByItem] = useState<Record<string, string>>({});
-  const [receivingHeadId, setReceivingHeadId] = useState<string | null>(null);
-
   useEffect(() => {
     if (Platform.OS === "web") return;
-    if (!itemsModal) {
-      setKbH(0);
-      return;
-    }
     const onShow = (e: any) => {
       const h = Number(e?.endCoordinates?.height ?? 0);
       setKbH(h > 0 ? h : 0);
@@ -215,7 +190,35 @@ export default function Warehouse() {
       subShow.remove();
       subHide.remove();
     };
-  }, [itemsModal]);
+  }, []);
+
+  const [warehousemanFio, setWarehousemanFio] = useState("");
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      try {
+        const saved = await AsyncStorage.getItem("wh_warehouseman_fio");
+        if (active && saved) setWarehousemanFio(saved);
+      } catch (e) {
+        console.warn("[warehousemanFio] load failed", e);
+      }
+    })();
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const [reportsMode, setReportsMode] = useState<"choice" | "issue" | "incoming">("choice");
+
+  const [itemsModal, setItemsModal] = useState<{
+    incomingId: string;
+    purchaseId: string;
+    poNo: string | null;
+    status: string; // incoming_status
+  } | null>(null);
+
+  const [qtyInputByItem, setQtyInputByItem] = useState<Record<string, string>>({});
+  const [receivingHeadId, setReceivingHeadId] = useState<string | null>(null);
   const openItemsModal = useCallback((head: any) => {
     const incomingId = String(head?.incoming_id ?? "").trim();
     if (!incomingId) return;
@@ -249,6 +252,7 @@ export default function Warehouse() {
 
   const [reqItems, setReqItems] = useState<ReqItemUiRow[]>([]);
   const [reqItemsLoading, setReqItemsLoading] = useState(false);
+  const reqOpenSeqRef = useRef(0);
   const [stock, setStock] = useState<StockRow[]>([]);
   const stockFetchMutex = useRef(false);
 
@@ -362,6 +366,7 @@ export default function Warehouse() {
   const { onPdfDocument, onPdfRegister, onPdfMaterials, onPdfObjectWork, onPdfDayRegister, onPdfDayMaterials } = pdfActions;
 
   const [repPeriodOpen, setRepPeriodOpen] = useState(false);
+  const didInitLoadRef = useRef(false);
 
   const fetchStock = useCallback(async () => {
     if (stockFetchMutex.current) return;
@@ -472,6 +477,22 @@ export default function Warehouse() {
     reportsInFlightRef.current.set(key, task);
     await task;
   }, [periodFrom, periodTo]);
+  const fetchToReceiveRef = useRef(incoming.fetchToReceive);
+  const fetchStockRef = useRef(fetchStock);
+  const fetchReqHeadsRef = useRef(fetchReqHeads);
+  const fetchReportsRef = useRef(fetchReports);
+  useEffect(() => {
+    fetchToReceiveRef.current = incoming.fetchToReceive;
+  }, [incoming.fetchToReceive]);
+  useEffect(() => {
+    fetchStockRef.current = fetchStock;
+  }, [fetchStock]);
+  useEffect(() => {
+    fetchReqHeadsRef.current = fetchReqHeads;
+  }, [fetchReqHeads]);
+  useEffect(() => {
+    fetchReportsRef.current = fetchReports;
+  }, [fetchReports]);
   // ── Scope & Picker (extracted) ──
   const scope = useWarehouseScope();
   const { objectOpt, levelOpt, systemOpt, zoneOpt, scopeLabel, scopeOpt, pickModal, pickFilter, setPickFilter, closePick, applyPick, setPickModal } = scope;
@@ -512,6 +533,7 @@ export default function Warehouse() {
     async (h: ReqHeadRow) => {
       const rid = String(h?.request_id ?? "").trim();
       if (!rid) return;
+      const seq = ++reqOpenSeqRef.current;
       const normalizePhone = (raw: any): string => {
         const src = String(raw ?? "").trim();
         if (!src) return "";
@@ -581,6 +603,7 @@ export default function Warehouse() {
         }
 
         const rows = await apiFetchReqItems(supabase as any, rid);
+        if (seq !== reqOpenSeqRef.current) return;
         setReqItems(Array.isArray(rows) ? rows : []);
 
         const fromItemNotes = parseReqHeaderContext(
@@ -590,25 +613,30 @@ export default function Warehouse() {
           setReqModal((prev) =>
             prev && String(prev.request_id) === rid
               ? {
-                  ...prev,
-                  contractor_name: prev.contractor_name || fromItemNotes.contractor || null,
-                  contractor_phone: prev.contractor_phone || fromItemNotes.phone || null,
-                  planned_volume: prev.planned_volume || fromItemNotes.volume || null,
-                }
+                ...prev,
+                contractor_name: prev.contractor_name || fromItemNotes.contractor || null,
+                contractor_phone: prev.contractor_phone || fromItemNotes.phone || null,
+                planned_volume: prev.planned_volume || fromItemNotes.volume || null,
+              }
               : prev,
           );
         }
       } catch (e) {
-        setReqItems([]);
+        if (seq === reqOpenSeqRef.current) {
+          setReqItems([]);
+        }
         showErr(e);
       } finally {
-        setReqItemsLoading(false);
+        if (seq === reqOpenSeqRef.current) {
+          setReqItemsLoading(false);
+        }
       }
     },
     [reqPickUi, supabase],
   );
 
   const closeReq = useCallback(() => {
+    reqOpenSeqRef.current += 1;
     setReqModal(null);
     setReqItems([]);
     setReqItemsLoading(false);
@@ -805,37 +833,38 @@ export default function Warehouse() {
   const loadAll = useCallback(async () => {
     setLoading(true);
     try {
-      await incoming.fetchToReceive();
-      await fetchStock();
+      await fetchToReceiveRef.current();
+      await fetchStockRef.current();
     } catch (e) {
       showErr(e);
     } finally {
       setLoading(false);
     }
-  }, [incoming, fetchStock]);
+  }, []);
 
   useEffect(() => {
-    loadAll();
-
-  }, []);
+    if (didInitLoadRef.current) return;
+    didInitLoadRef.current = true;
+    void loadAll();
+  }, [loadAll]);
 
   const refreshActiveTab = useCallback(async () => {
     if (tab === "К приходу") {
-      await incoming.fetchToReceive();
+      await fetchToReceiveRef.current();
       return;
     }
     if (tab === "Склад факт") {
-      await fetchStock();
+      await fetchStockRef.current();
       return;
     }
     if (tab === "Расход") {
-      await fetchReqHeads(0, true);
+      await fetchReqHeadsRef.current(0, true);
       return;
     }
     if (tab === "Отчёты") {
-      await fetchReports();
+      await fetchReportsRef.current();
     }
-  }, [tab, incoming, fetchStock, fetchReqHeads, fetchReports]);
+  }, [tab]);
 
   useFocusEffect(
     useCallback(() => {
@@ -852,18 +881,18 @@ export default function Warehouse() {
 
   useEffect(() => {
     if (tab === "Расход") {
-      fetchReqHeads(0, true).catch((e) => showErr(e));
+      fetchReqHeadsRef.current(0, true).catch((e) => showErr(e));
     }
-  }, [tab, fetchReqHeads]);
+  }, [tab]);
   useEffect(() => {
     const ch = supabase
-      .channel(`warehouse-expense-rt:${Date.now()}`)
+      .channel("warehouse-expense-rt")
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "requests" },
         () => {
           if (tab !== "Расход") return;
-          void fetchReqHeads(0, true);
+          void fetchReqHeadsRef.current(0, true);
         },
       )
       .on(
@@ -871,7 +900,7 @@ export default function Warehouse() {
         { event: "*", schema: "public", table: "request_items" },
         () => {
           if (tab !== "Расход") return;
-          void fetchReqHeads(0, true);
+          void fetchReqHeadsRef.current(0, true);
         },
       )
       .subscribe();
@@ -884,16 +913,16 @@ export default function Warehouse() {
         supabase.removeChannel(ch);
       } catch { }
     };
-  }, [tab, fetchReqHeads]);
+  }, [tab]);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     try {
-      if (tab === "К приходу") await incoming.fetchToReceive();
-      else if (tab === "Склад факт") await fetchStock();
-      else if (tab === "Отчёты") await fetchReports();
+      if (tab === "К приходу") await fetchToReceiveRef.current();
+      else if (tab === "Склад факт") await fetchStockRef.current();
+      else if (tab === "Отчёты") await fetchReportsRef.current();
       else if (tab === "Расход") {
-        await fetchReqHeads();
+        await fetchReqHeadsRef.current();
       }
 
     } catch (e) {
@@ -901,13 +930,7 @@ export default function Warehouse() {
     } finally {
       setRefreshing(false);
     }
-  }, [
-    tab,
-    incoming,
-    fetchStock,
-    fetchReports,
-    fetchReqHeads,
-  ]);
+  }, [tab]);
 
   // StockRowView, HistoryRowView — now imported from components/
   // ExpenditureHeader — now imported from components/
@@ -998,7 +1021,9 @@ export default function Warehouse() {
 
   const fmtRuDate = useCallback((iso?: string | null) => {
     if (!iso) return "";
-    return new Date(iso).toLocaleDateString("ru-RU", {
+    const date = new Date(iso);
+    if (Number.isNaN(date.getTime())) return "";
+    return date.toLocaleDateString("ru-RU", {
       day: "2-digit",
       month: "2-digit",
       year: "numeric",
@@ -1007,7 +1032,9 @@ export default function Warehouse() {
 
   const onWarehousemanFioChange = useCallback((t: string) => {
     setWarehousemanFio(t);
-    void AsyncStorage.setItem("wh_warehouseman_fio", t);
+    void AsyncStorage.setItem("wh_warehouseman_fio", t).catch((e) => {
+      console.warn("[warehousemanFio] save failed", e);
+    });
   }, []);
 
   const onReqEndReached = useCallback(() => {
@@ -1018,9 +1045,9 @@ export default function Warehouse() {
 
   const onIncomingEndReached = useCallback(() => {
     if (incoming.toReceiveHasMore && !incoming.toReceiveIsFetching) {
-      incoming.fetchToReceive(incoming.toReceivePage + 1);
+      void fetchToReceiveRef.current(incoming.toReceivePage + 1);
     }
-  }, [incoming]);
+  }, [incoming.toReceiveHasMore, incoming.toReceiveIsFetching, incoming.toReceivePage]);
 
   const getIncomingHeadStats = useCallback((item: any) => {
     const recSum = Math.round(nz(item.qty_received_sum, 0));
@@ -1103,6 +1130,123 @@ export default function Warehouse() {
 
   const reportsOnScroll = useMemo(() => (Platform.OS === "web" ? undefined : headerApi.onListScroll), [headerApi.onListScroll]);
   const reportsScrollEventThrottle = useMemo(() => (Platform.OS === "web" ? undefined : 16), []);
+  const renderReqHeadItem = useCallback(({ item }: { item: any }) => {
+    const totalPos = Math.max(0, Number(item.items_cnt ?? 0));
+    const openPos = Math.max(0, Number(item.ready_cnt ?? 0));
+    const issuedPos = Math.max(0, Number(item.done_cnt ?? 0));
+
+    const hasToIssue = openPos > 0;
+    const isFullyIssued = issuedPos >= totalPos && totalPos > 0;
+
+    const locParts: string[] = [];
+    const obj = String(item.object_name || "").trim();
+    const lvl = String(item.level_name || item.level_code || "").trim();
+    const sys = String(item.system_name || item.system_code || "").trim();
+
+    if (obj) locParts.push(obj);
+    if (lvl) locParts.push(lvl);
+    if (sys) locParts.push(sys);
+
+    const dateStr = fmtRuDate(item.submitted_at);
+
+    return (
+      <View style={s.listItemContainer}>
+        <Pressable
+          onPress={() => openReq(item)}
+          style={({ pressed }) => [
+            s.groupHeader,
+            s.reqItemPressable,
+            {
+              borderLeftWidth: hasToIssue ? 5 : 0,
+              borderLeftColor: "#22c55e",
+            },
+            pressed && { opacity: 0.9 }
+          ]}
+        >
+          <View style={s.listItemFlex}>
+            {/* 1 row: ID + DATE */}
+            <View style={s.listItemRow1}>
+              <Text style={[s.groupTitle, { fontSize: 16 }]} numberOfLines={1}>
+                {item.display_no || `REQ-${item.request_id.slice(0, 8)}`}
+              </Text>
+              <Text style={s.reqItemDate}>{dateStr}</Text>
+            </View>
+
+            {/* 2 row: ACTION */}
+            <View style={s.reqItemRow2}>
+              {isFullyIssued ? (
+                <Text style={s.reqItemStatusFullyIssued}>Выдано полностью</Text>
+              ) : (
+                <Text style={s.reqItemStatusNotFullyIssued}>
+                  К выдаче: <Text style={{ color: hasToIssue ? "#22c55e" : UI.text, fontWeight: "900" }}>{hasToIssue ? `${openPos} ${openPos === 1 ? 'позиция' : (openPos > 1 && openPos < 5) ? 'позиции' : 'позиций'}` : "0"}</Text>
+                  {" • "}
+                  Выдано: <Text style={{ color: issuedPos > 0 ? "#22c55e" : UI.text, fontWeight: "800" }}>{issuedPos}</Text>
+                </Text>
+              )}
+            </View>
+
+            {/* 3 row: CONTEXT */}
+            {locParts.length > 0 && (
+              <Text style={s.reqItemRow3}>
+                {locParts.join(" • ")}
+              </Text>
+            )}
+          </View>
+        </Pressable>
+      </View>
+    );
+  }, [openReq]);
+
+  const renderIncomingItem = useCallback(({ item }: { item: any }) => {
+    const { recSum, leftSum } = getIncomingHeadStats(item);
+
+    const prNo = formatProposalBaseNo(
+      incoming.proposalNoByPurchase[item.purchase_id] || item.po_no,
+      item.purchase_id
+    );
+
+    const dateStr = fmtRuDate(item.purchase_created_at) || "—";
+
+    return (
+      <View style={s.listItemContainer}>
+        <Pressable
+          onPress={() => void openItemsModal(item)}
+          style={({ pressed }) => [
+            s.groupHeader,
+            s.incomingItemPressable,
+            pressed && { opacity: 0.8, backgroundColor: "rgba(255,255,255,0.08)" }
+          ]}
+        >
+          <View style={s.listItemFlex}>
+            {/* 1 row: ID + DATE */}
+            <View style={s.incomingItemRow1}>
+              <Text style={[s.groupTitle, { fontSize: 16 }]} numberOfLines={1}>
+                {prNo}
+              </Text>
+              <Text style={s.incomingItemDate}>{dateStr}</Text>
+            </View>
+
+            {/* 2 row: MAIN STATS */}
+            <View style={s.incomingItemRow2}>
+              <Text style={s.incomingItemRecText}>
+                Принято {recSum}
+              </Text>
+              <Text style={s.incomingItemLeftText}>
+                Осталось {leftSum}
+              </Text>
+            </View>
+          </View>
+        </Pressable>
+      </View>
+    );
+  }, [openItemsModal, incoming.proposalNoByPurchase]);
+
+  const renderStockItem = useCallback(({ item }: { item: any }) => {
+    const codeRaw = String(item.code ?? "").trim();
+    const pickedQty = stockPickUi.getPickedQty(codeRaw, item?.uom_id ? String(item.uom_id).trim() : null);
+    return <StockRowView r={item} pickedQty={pickedQty} onPress={openStockIssue} />;
+  }, [stockPickUi.getPickedQty, openStockIssue]);
+
   const renderReqIssue = () => {
     return (
       <View style={{ flex: 1 }}>
@@ -1117,73 +1261,7 @@ export default function Warehouse() {
           refreshControl={listRefreshControl}
           ListFooterComponent={null}
           ListHeaderComponent={<ExpenditureHeader {...expenditureHeaderProps} />}
-
-          renderItem={({ item }: { item: any }) => {
-            const totalPos = Math.max(0, Number(item.items_cnt ?? 0));
-            const openPos = Math.max(0, Number(item.ready_cnt ?? 0));
-            const issuedPos = Math.max(0, Number(item.done_cnt ?? 0));
-
-            const hasToIssue = openPos > 0;
-            const isFullyIssued = issuedPos >= totalPos && totalPos > 0;
-
-            const locParts: string[] = [];
-            const obj = String(item.object_name || "").trim();
-            const lvl = String(item.level_name || item.level_code || "").trim();
-            const sys = String(item.system_name || item.system_code || "").trim();
-
-            if (obj) locParts.push(obj);
-            if (lvl) locParts.push(lvl);
-            if (sys) locParts.push(sys);
-
-            const dateStr = fmtRuDate(item.submitted_at);
-
-            return (
-              <View style={{ marginBottom: 10, paddingHorizontal: 6 }}>
-                <Pressable
-                  onPress={() => openReq(item)}
-                  style={({ pressed }) => [
-                    s.groupHeader,
-                    {
-                      borderLeftWidth: hasToIssue ? 5 : 0,
-                      borderLeftColor: "#22c55e",
-                      paddingHorizontal: 12,
-                    },
-                    pressed && { opacity: 0.9 }
-                  ]}
-                >
-                  <View style={{ flex: 1 }}>
-                    {/* 1 row: ID + DATE */}
-                    <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 5 }}>
-                      <Text style={[s.groupTitle, { fontSize: 16 }]} numberOfLines={1}>
-                        {item.display_no || `REQ-${item.request_id.slice(0, 8)}`}
-                      </Text>
-                      <Text style={{ color: UI.sub, fontSize: 12, fontWeight: "700" }}>{dateStr}</Text>
-                    </View>
-
-                    {/* 2 row: ACTION */}
-                    <View style={{ marginBottom: 5 }}>
-                      {isFullyIssued ? (
-                        <Text style={{ color: "#22c55e", fontWeight: "900", fontSize: 13 }}>Выдано полностью</Text>
-                      ) : (
-                        <Text style={{ color: UI.sub, fontSize: 13, fontWeight: "700" }}>
-                          К выдаче: <Text style={{ color: hasToIssue ? "#22c55e" : UI.text, fontWeight: "900" }}>{hasToIssue ? `${openPos} ${openPos === 1 ? 'позиция' : (openPos > 1 && openPos < 5) ? 'позиции' : 'позиций'}` : "0"}</Text>
-                          {" • "}
-                          Выдано: <Text style={{ color: issuedPos > 0 ? "#22c55e" : UI.text, fontWeight: "800" }}>{issuedPos}</Text>
-                        </Text>
-                      )}
-                    </View>
-
-                    {/* 3 row: CONTEXT */}
-                    {locParts.length > 0 && (
-                      <Text style={{ color: UI.sub, fontSize: 12, fontWeight: "600", lineHeight: 16 }}>
-                        {locParts.join(" • ")}
-                      </Text>
-                    )}
-                  </View>
-                </Pressable>
-              </View>
-            );
-          }}
+          renderItem={renderReqHeadItem}
           ListEmptyComponent={
             reqHeadsLoading ? (
               <Text style={{ color: UI.sub, paddingHorizontal: 16, fontWeight: "800" }}>
@@ -1207,7 +1285,9 @@ export default function Warehouse() {
         <View style={{ flex: 1 }}>
           <AnimatedFlatList
             data={incoming.toReceive}
-            keyExtractor={(i: IncomingRow) => i.incoming_id}
+            keyExtractor={(i: IncomingRow) =>
+              String(i.incoming_id || `${i.purchase_id || ""}:${i.po_no || ""}:${(i as any).purchase_created_at || ""}`)
+            }
             contentContainerStyle={listContentStyle}
             onScroll={listOnScroll}
             scrollEventThrottle={listScrollEventThrottle}
@@ -1230,49 +1310,7 @@ export default function Warehouse() {
             onEndReached={onIncomingEndReached}
             onEndReachedThreshold={0.5}
             ListFooterComponent={null}
-            renderItem={({ item }: { item: any }) => {
-              const { recSum, leftSum } = getIncomingHeadStats(item);
-
-              const prNo = formatProposalBaseNo(
-                incoming.proposalNoByPurchase[item.purchase_id] || item.po_no,
-                item.purchase_id
-              );
-
-              const dateStr = fmtRuDate(item.purchase_created_at) || "—";
-
-              return (
-                <View style={{ marginBottom: 10, paddingHorizontal: 6 }}>
-                  <Pressable
-                    onPress={() => void openItemsModal(item)}
-                    style={({ pressed }) => [
-                      s.groupHeader,
-                      { paddingHorizontal: 12 },
-                      pressed && { opacity: 0.8, backgroundColor: "rgba(255,255,255,0.08)" }
-                    ]}
-                  >
-                    <View style={{ flex: 1 }}>
-                      {/* 1 row: ID + DATE */}
-                      <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-                        <Text style={[s.groupTitle, { fontSize: 16 }]} numberOfLines={1}>
-                          {prNo}
-                        </Text>
-                        <Text style={{ color: UI.sub, fontSize: 12, fontWeight: "700" }}>{dateStr}</Text>
-                      </View>
-
-                      {/* 2 row: MAIN STATS */}
-                      <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-                        <Text style={{ color: "#22c55e", fontSize: 14, fontWeight: "900" }}>
-                          Принято {recSum}
-                        </Text>
-                        <Text style={{ color: "#ef4444", fontSize: 14, fontWeight: "900" }}>
-                          Осталось {leftSum}
-                        </Text>
-                      </View>
-                    </View>
-                  </Pressable>
-                </View>
-              );
-            }}
+            renderItem={renderIncomingItem}
             ListEmptyComponent={
               <Text style={{ color: UI.sub, paddingHorizontal: 16, fontWeight: "800" }}>
                 Нет записей в очереди склада.
@@ -1300,15 +1338,11 @@ export default function Warehouse() {
       return (
         <AnimatedFlatList
           data={stockFiltered}
-          keyExtractor={(i: StockRow) => i.material_id}
+          keyExtractor={(i: StockRow) => String(i.material_id || `${i.code || ""}:${i.uom_id || ""}`)}
           contentContainerStyle={listContentStyle}
           onScroll={listOnScroll}
           scrollEventThrottle={listScrollEventThrottle}
-          renderItem={({ item }: { item: any }) => {
-            const codeRaw = String(item.code ?? "").trim();
-            const pickedQty = stockPickUi.getPickedQty(codeRaw, item?.uom_id ? String(item.uom_id).trim() : null);
-            return <StockRowView r={item} pickedQty={pickedQty} onPress={openStockIssue} />;
-          }}
+          renderItem={renderStockItem}
           ListHeaderComponent={
             <StockFactHeader
               objectOpt={objectOpt}
@@ -1512,4 +1546,5 @@ export default function Warehouse() {
     </View>
   );
 }
+
 

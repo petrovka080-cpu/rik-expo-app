@@ -1,5 +1,6 @@
-﻿import React from "react";
+import React from "react";
 import { FlatList, Pressable, RefreshControl, Text, View } from "react-native";
+import { normalizeRuText } from "../../../lib/text/encoding";
 
 type JobCard = {
   id: string;
@@ -29,18 +30,22 @@ export default function ContractorSubcontractsList(props: Props) {
       refreshControl={<RefreshControl refreshing={refreshing || loadingWorks} onRefresh={onRefresh} />}
       ListEmptyComponent={
         <View style={[styles.card, styles.cardDark, styles.cardSeparated]}>
-          <Text style={styles.cardMetaDark}>Нет данных.</Text>
+          <Text style={styles.cardMetaDark}>{loadingWorks ? "Загрузка..." : "Нет данных."}</Text>
         </View>
       }
       renderItem={({ item }) => (
         <View style={[styles.card, styles.cardDark, styles.cardSeparated]}>
           <Pressable onPress={() => onOpen(String(item.id))}>
-            <Text style={[styles.cardCompany, styles.cardCompanyDark]}>{item.contractor || "Подрядчик"}</Text>
+            <Text style={[styles.cardCompany, styles.cardCompanyDark]}>
+              {normalizeRuText(item.contractor || "Подрядчик")}
+            </Text>
             {String(item.contractorInn || "").trim() ? (
-              <Text style={[styles.cardMetaDark, { marginTop: 2 }]}>ИНН: {item.contractorInn}</Text>
+              <Text style={[styles.cardMetaDark, { marginTop: 2 }]}>ИНН: {normalizeRuText(item.contractorInn)}</Text>
             ) : null}
-            <Text style={[styles.cardWork, styles.cardWorkDark]}>{item.workType || "Работа"}</Text>
-            <Text style={[styles.cardObject, styles.cardObjectDark]}>Объект: {item.objectName || "—"}</Text>
+            <Text style={[styles.cardWork, styles.cardWorkDark]}>{normalizeRuText(item.workType || "Работа")}</Text>
+            <Text style={[styles.cardObject, styles.cardObjectDark]}>
+              Объект: {normalizeRuText(item.objectName || "—")}
+            </Text>
           </Pressable>
         </View>
       )}
