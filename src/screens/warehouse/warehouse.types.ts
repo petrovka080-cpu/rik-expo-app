@@ -116,7 +116,8 @@ export type ReqPickLine = {
 
 export type Option = { id: string; label: string };
 
-export type Tab = "К приходу" | "Склад факт" | "Расход" | "Отчёты";
+export const WAREHOUSE_TABS = ["К приходу", "Склад факт", "Расход", "Отчёты"] as const;
+export type Tab = (typeof WAREHOUSE_TABS)[number];
 
 export type StockPickLine = {
   pick_key: string;
