@@ -26,6 +26,10 @@ export default function TabsLayout() {
       <Tabs.Screen name="warehouse" options={{ title: "\u0421\u043A\u043B\u0430\u0434" }} />
       <Tabs.Screen name="security" options={{ title: "\u0411\u0435\u0437\u043E\u043F\u0430\u0441\u043D\u043E\u0441\u0442\u044C" }} />
       <Tabs.Screen name="supplierMap" options={{ title: "\u041A\u0430\u0440\u0442\u0430", headerShown: false }} />
+      <Tabs.Screen name="profile" options={{ title: "profile" }} />
+      <Tabs.Screen name="reports" options={{ title: "reports" }} />
+      <Tabs.Screen name="contractor" options={{ title: "contractor" }} />
+      <Tabs.Screen name="request/[id]" options={{ title: "request/[id]" }} />
     </Tabs>
   );
 }

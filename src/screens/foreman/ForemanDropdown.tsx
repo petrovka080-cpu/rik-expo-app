@@ -34,6 +34,14 @@ export default function ForemanDropdown({
   const [q, setQ] = useState("");
   const picked = options.find((o) => o.code === value);
 
+  console.log('[FOREMAN_DROPDOWN_FACT]', {
+    fieldLabel: label,
+    value,
+    picked: picked ? { code: picked.code, name: picked.name } : null,
+    placeholder,
+    options: options.map(o => ({ code: o.code, name: o.name })),
+  });
+
   const filtered = useMemo(() => {
     const qq = q.trim().toLowerCase();
     if (!qq) return options;

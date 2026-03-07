@@ -1,8 +1,9 @@
-﻿import { Alert, Platform } from "react-native";
+import { Alert, Platform } from "react-native";
 import * as Sharing from "expo-sharing";
 
 import type { WorkMaterialRow } from "../../components/WorkMaterialsEditor";
 import { openHtmlAsPdfUniversal } from "../../lib/api/pdf";
+import { normalizeRuText } from "../../lib/text/encoding";
 
 export type ContractorPdfWork = {
   progress_id: string;
@@ -43,7 +44,7 @@ type GenerateWorkPdfOptions = {
 async function generateWorkPdf(
   work: ContractorPdfWork | null,
   materials: WorkMaterialRow[],
-  opts?: GenerateWorkPdfOptions
+  opts?: GenerateWorkPdfOptions,
 ) {
   if (!work) return;
 
@@ -51,26 +52,24 @@ async function generateWorkPdf(
     const dt = opts?.actDate ? new Date(opts.actDate) : new Date();
     const dateStr = dt.toLocaleDateString("ru-RU");
 
-    const objectName = work.object_name || "РћР±СЉРµРєС‚ РЅРµ СѓРєР°Р·Р°РЅ";
-    const mainWorkName = String(opts?.mainWorkName || work.work_name || work.work_code || "вЂ”");
+    const objectName = work.object_name || "Объект не указан";
+    const mainWorkName = String(opts?.mainWorkName || work.work_name || work.work_code || "—");
     const selectedWorks = opts?.selectedWorks || [];
     const actNo = String(opts?.actNumber || work.progress_id.slice(0, 8));
-    const contractorName = String(opts?.contractorName || work.contractor_org || "вЂ”");
-    const contractorInn = String(opts?.contractorInn || "вЂ”");
-    const contractorPhone = String(opts?.contractorPhone || "вЂ”");
-    const customerName = String(opts?.customerName || objectName || "вЂ”");
-    const customerInn = String(opts?.customerInn || "вЂ”");
-    const contractNumber = String(opts?.contractNumber || "вЂ”");
-    const contractDate = String(opts?.contractDate || "вЂ”");
-    const zoneText = String(opts?.zoneText || "вЂ”");
+    const contractorName = String(opts?.contractorName || work.contractor_org || "—");
+    const contractorInn = String(opts?.contractorInn || "—");
+    const contractorPhone = String(opts?.contractorPhone || "—");
+    const customerName = String(opts?.customerName || objectName || "—");
+    const customerInn = String(opts?.customerInn || "—");
+    const contractNumber = String(opts?.contractNumber || "—");
+    const contractDate = String(opts?.contractDate || "—");
+    const zoneText = String(opts?.zoneText || "—");
 
     const workUrl = `https://app.goxbuild.com/work/${work.progress_id}`;
-    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(
-      workUrl
-    )}`;
+    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(workUrl)}`;
 
-    const fmtNum = (v: number) => Number.isFinite(v) ? v.toLocaleString("ru-RU") : "0";
-    const fmtMoney = (v: number) => Number.isFinite(v) ? `${v.toLocaleString("ru-RU")} СЂСѓР±.` : "0 СЂСѓР±.";
+    const fmtNum = (v: number) => (Number.isFinite(v) ? v.toLocaleString("ru-RU") : "0");
+    const fmtMoney = (v: number) => (Number.isFinite(v) ? `${v.toLocaleString("ru-RU")} руб.` : "0 руб.");
 
     let totalMaterialsSum = 0;
     let totalWorksSum = 0;
@@ -84,11 +83,11 @@ async function generateWorkPdf(
         return `
           <tr>
             <td class="cell-center">${i + 1}</td>
-            <td>${w.name || "вЂ”"}</td>
-            <td class="cell-center">${w.unit || "вЂ”"}</td>
+            <td>${w.name || "—"}</td>
+            <td class="cell-center">${w.unit || "—"}</td>
             <td class="cell-right">${fmtNum(q)}</td>
-            <td class="cell-right">${p > 0 ? fmtNum(p) : "вЂ”"}</td>
-            <td class="cell-right">${sum > 0 ? fmtNum(sum) : "вЂ”"}</td>
+            <td class="cell-right">${p > 0 ? fmtNum(p) : "—"}</td>
+            <td class="cell-right">${sum > 0 ? fmtNum(sum) : "—"}</td>
             <td>${w.comment || ""}</td>
           </tr>
         `;
@@ -104,11 +103,11 @@ async function generateWorkPdf(
         return `
           <tr>
             <td class="cell-center">${selectedWorks.length + i + 1}</td>
-            <td>${m.name || "вЂ”"}</td>
-            <td class="cell-center">${m.uom || m.unit || "вЂ”"}</td>
+            <td>${m.name || "—"}</td>
+            <td class="cell-center">${m.uom || m.unit || "—"}</td>
             <td class="cell-right">${fmtNum(q)}</td>
-            <td class="cell-right">${p > 0 ? fmtNum(p) : "вЂ”"}</td>
-            <td class="cell-right">${sum > 0 ? fmtNum(sum) : "вЂ”"}</td>
+            <td class="cell-right">${p > 0 ? fmtNum(p) : "—"}</td>
+            <td class="cell-right">${sum > 0 ? fmtNum(sum) : "—"}</td>
             <td></td>
           </tr>
         `;
@@ -209,43 +208,43 @@ async function generateWorkPdf(
       </head>
       <body>
         <div class="doc-header">
-          <div class="doc-title">РђРєС‚ РІС‹РїРѕР»РЅРµРЅРЅС‹С… СЂР°Р±РѕС‚</div>
-          <div class="doc-meta"><div>Р¤РѕСЂРјР° РљРЎ-2</div></div>
+          <div class="doc-title">Акт выполненных работ</div>
+          <div class="doc-meta"><div>Форма КС-2</div></div>
         </div>
-        <div class="act-line">в„– Р°РєС‚Р°: <b>${actNo}</b> &nbsp;&nbsp; РѕС‚ <b>${dateStr}</b></div>
+        <div class="act-line">№ акта: <b>${actNo}</b> &nbsp;&nbsp; от <b>${dateStr}</b></div>
 
         <div class="head-grid">
           <div class="head-col">
             <div class="head-block">
-              <div class="head-block-title">РСЃРїРѕР»РЅРёС‚РµР»СЊ (РїРѕРґСЂСЏРґС‡РёРє)</div>
-              <div class="kv"><span class="kv-label">РќР°РёРјРµРЅРѕРІР°РЅРёРµ: </span><span class="kv-value">${contractorName}</span></div>
-              <div class="kv"><span class="kv-label">РРќРќ: </span><span class="kv-value">${contractorInn}</span></div>
-              <div class="kv"><span class="kv-label">РўРµР»РµС„РѕРЅ: </span><span class="kv-value">${contractorPhone}</span></div>
+              <div class="head-block-title">Исполнитель (подрядчик)</div>
+              <div class="kv"><span class="kv-label">Наименование: </span><span class="kv-value">${contractorName}</span></div>
+              <div class="kv"><span class="kv-label">ИНН: </span><span class="kv-value">${contractorInn}</span></div>
+              <div class="kv"><span class="kv-label">Телефон: </span><span class="kv-value">${contractorPhone}</span></div>
             </div>
             <div class="head-block">
-              <div class="head-block-title">Р—Р°РєР°Р·С‡РёРє</div>
-              <div class="kv"><span class="kv-label">РќР°РёРјРµРЅРѕРІР°РЅРёРµ: </span><span class="kv-value">${customerName}</span></div>
-              <div class="kv"><span class="kv-label">РРќРќ: </span><span class="kv-value">${customerInn}</span></div>
+              <div class="head-block-title">Заказчик</div>
+              <div class="kv"><span class="kv-label">Наименование: </span><span class="kv-value">${customerName}</span></div>
+              <div class="kv"><span class="kv-label">ИНН: </span><span class="kv-value">${customerInn}</span></div>
             </div>
           </div>
           <div class="head-col">
             <div class="head-block">
-              <div class="head-block-title">РћСЃРЅРѕРІР°РЅРёРµ</div>
-              <div class="kv"><span class="kv-label">Р”РѕРіРѕРІРѕСЂ в„–: </span><span class="kv-value">${contractNumber}</span></div>
-              <div class="kv"><span class="kv-label">Р”Р°С‚Р° РґРѕРіРѕРІРѕСЂР°: </span><span class="kv-value">${contractDate}</span></div>
+              <div class="head-block-title">Основание</div>
+              <div class="kv"><span class="kv-label">Договор №: </span><span class="kv-value">${contractNumber}</span></div>
+              <div class="kv"><span class="kv-label">Дата договора: </span><span class="kv-value">${contractDate}</span></div>
             </div>
             <div class="head-block">
-              <div class="head-block-title">РћР±СЉРµРєС‚</div>
-              <div class="kv"><span class="kv-label">РћР±СЉРµРєС‚: </span><span class="kv-value">${objectName}</span></div>
-              <div class="kv"><span class="kv-label">Р—РѕРЅР° / Р­С‚Р°Р¶: </span><span class="kv-value">${zoneText}</span></div>
-              <div class="kv"><span class="kv-label">РћСЃРЅРѕРІРЅР°СЏ СЂР°Р±РѕС‚Р°: </span><span class="kv-value">${mainWorkName}</span></div>
+              <div class="head-block-title">Объект</div>
+              <div class="kv"><span class="kv-label">Объект: </span><span class="kv-value">${objectName}</span></div>
+              <div class="kv"><span class="kv-label">Зона / Этаж: </span><span class="kv-value">${zoneText}</span></div>
+              <div class="kv"><span class="kv-label">Основная работа: </span><span class="kv-value">${mainWorkName}</span></div>
             </div>
           </div>
         </div>
 
         <div class="divider"></div>
 
-        <div class="section-title">РџРѕРґСЂСЏРґС‡РёРє РІС‹РїРѕР»РЅРёР», Р° Р—Р°РєР°Р·С‡РёРє РїСЂРёРЅСЏР» СЃР»РµРґСѓСЋС‰РёРµ СЂР°Р±РѕС‚С‹:</div>
+        <div class="section-title">Подрядчик выполнил, а Заказчик принял следующие работы:</div>
         <table>
           <colgroup>
             <col style="width:4%">
@@ -258,30 +257,30 @@ async function generateWorkPdf(
           </colgroup>
           <thead>
             <tr>
-              <th>в„–</th>
-              <th style="text-align:left">РќР°РёРјРµРЅРѕРІР°РЅРёРµ</th>
-              <th>Р•Рґ.</th>
-              <th class="cell-right">РљРѕР»-РІРѕ</th>
-              <th class="cell-right">Р¦РµРЅР°</th>
-              <th class="cell-right">РЎСѓРјРјР°</th>
-              <th style="text-align:left">РџСЂРёРј.</th>
+              <th>№</th>
+              <th style="text-align:left">Наименование</th>
+              <th>Ед.</th>
+              <th class="cell-right">Кол-во</th>
+              <th class="cell-right">Цена</th>
+              <th class="cell-right">Сумма</th>
+              <th style="text-align:left">Прим.</th>
             </tr>
           </thead>
           <tbody>
             ${worksRowsHtml}
             <tr class="group-total">
-              <td colspan="5" class="cell-right">РС‚РѕРіРѕ РїРѕ СЂР°Р±РѕС‚Р°Рј</td>
+              <td colspan="5" class="cell-right">Итого по работам</td>
               <td class="cell-right">${fmtMoney(totalWorksSum)}</td>
               <td></td>
             </tr>
             ${matsRowsHtml}
             <tr class="group-total">
-              <td colspan="5" class="cell-right">РС‚РѕРіРѕ РїРѕ РјР°С‚РµСЂРёР°Р»Р°Рј</td>
+              <td colspan="5" class="cell-right">Итого по материалам</td>
               <td class="cell-right">${fmtMoney(totalMaterialsSum)}</td>
               <td></td>
             </tr>
             <tr class="grand-total">
-              <td colspan="5" class="cell-right">РћР±С‰РёР№ РёС‚РѕРі</td>
+              <td colspan="5" class="cell-right">Общий итог</td>
               <td class="cell-right">${fmtMoney(totalSum)}</td>
               <td></td>
             </tr>
@@ -289,22 +288,22 @@ async function generateWorkPdf(
         </table>
 
         <div style="font-size:10pt; color:#374151; margin:8px 0 2px 0;">
-          Р Р°Р±РѕС‚С‹ РІС‹РїРѕР»РЅРµРЅС‹ РІ РїРѕР»РЅРѕРј РѕР±СЉРµРјРµ Рё РІ СЃРѕРѕС‚РІРµС‚СЃС‚РІРёРё СЃ СѓСЃР»РѕРІРёСЏРјРё РґРѕРіРѕРІРѕСЂР°.
+          Работы выполнены в полном объеме и в соответствии с условиями договора.
         </div>
         <div style="font-size:10pt; color:#374151; margin-bottom:8px;">
-          Р—Р°РєР°Р·С‡РёРє РїСЂРµС‚РµРЅР·РёР№ РїРѕ РѕР±СЉРµРјСѓ, РєР°С‡РµСЃС‚РІСѓ Рё СЃСЂРѕРєР°Рј РІС‹РїРѕР»РЅРµРЅРёСЏ СЂР°Р±РѕС‚ РЅРµ РёРјРµРµС‚.
+          Заказчик претензий по объему, качеству и срокам выполнения работ не имеет.
         </div>
 
         <div class="signatures">
-          <div class="sign-col"><div class="sign-line">РџРѕРґСЂСЏРґС‡РёРє / РџСЂРѕСЂР°Р± (Р¤РРћ, РїРѕРґРїРёСЃСЊ)</div></div>
-          <div class="sign-col"><div class="sign-line">РСЃРїРѕР»РЅРёС‚РµР»СЊ СЂР°Р±РѕС‚ / Р‘СЂРёРіР°РґРёСЂ (Р¤РРћ, РїРѕРґРїРёСЃСЊ)</div></div>
-          <div class="sign-col"><div class="sign-line">Р—Р°РєР°Р·С‡РёРє / РџСЂРµРґСЃС‚Р°РІРёС‚РµР»СЊ (Р¤РРћ, РїРѕРґРїРёСЃСЊ)</div></div>
+          <div class="sign-col"><div class="sign-line">Подрядчик / Прораб (ФИО, подпись)</div></div>
+          <div class="sign-col"><div class="sign-line">Исполнитель работ / Бригадир (ФИО, подпись)</div></div>
+          <div class="sign-col"><div class="sign-line">Заказчик / Представитель (ФИО, подпись)</div></div>
         </div>
 
         <div class="footer">
           <div class="footer-left"></div>
           <div class="footer-right">
-            <div style="margin-bottom: 4px;">РџСЂРѕРІРµСЂРєР° РґРѕРєСѓРјРµРЅС‚Р°</div>
+            <div style="margin-bottom: 4px;">Проверка документа</div>
             <img src="${qrUrl}" style="width: 72px; height: 72px;" alt="QR" />
           </div>
         </div>
@@ -312,16 +311,16 @@ async function generateWorkPdf(
     </html>
     `;
 
-    const pdfUri = await openHtmlAsPdfUniversal(html);
+    const pdfUri = await openHtmlAsPdfUniversal(normalizeRuText(html));
     if (!pdfUri) {
-      Alert.alert("PDF", "РќРµ СѓРґР°Р»РѕСЃСЊ СЃС„РѕСЂРјРёСЂРѕРІР°С‚СЊ PDF-С„Р°Р№Р». РџРѕРІС‚РѕСЂРё РїРѕРїС‹С‚РєСѓ.");
+      Alert.alert("PDF", "Не удалось сформировать PDF-файл. Повторите попытку.");
       return;
     }
 
     if (Platform.OS === "web") {
       const w = window.open(pdfUri, "_blank", "noopener,noreferrer");
       if (!w) {
-        Alert.alert("PDF", "Р‘СЂР°СѓР·РµСЂ Р·Р°Р±Р»РѕРєРёСЂРѕРІР°Р» РЅРѕРІРѕРµ РѕРєРЅРѕ. Р Р°Р·СЂРµС€Рё pop-up РґР»СЏ СЌС‚РѕРіРѕ СЃР°Р№С‚Р°.");
+        Alert.alert("PDF", "Браузер заблокировал новое окно. Разрешите pop-up для этого сайта.");
       }
       return;
     }
@@ -334,7 +333,7 @@ async function generateWorkPdf(
   } catch (e: unknown) {
     console.warn("[generateWorkPdf] general error", e);
     const message = e instanceof Error ? e.message : String(e);
-    Alert.alert("РћС€РёР±РєР° PDF", message);
+    Alert.alert("Ошибка PDF", message);
   }
 }
 
@@ -374,4 +373,3 @@ export async function generateActPdf(args: GenerateActPdfArgs) {
     actNumber: args.actNumber,
   });
 }
-

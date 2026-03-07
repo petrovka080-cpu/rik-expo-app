@@ -201,12 +201,15 @@ export function buildScopeNote(
   sysName?: string,
   zoneName?: string,
 ) {
+  const isNotReq = (s: string) => !s || s.includes("— Не требуется —") || s === "—";
+
   const parts = [
-    objName ? `Объект: ${objName}` : "",
-    lvlName ? `Этаж/уровень: ${lvlName}` : "",
-    sysName ? `Система: ${sysName}` : "",
-    zoneName ? `Зона: ${zoneName}` : "",
+    objName && !isNotReq(objName) ? `Объект: ${objName}` : "",
+    lvlName && !isNotReq(lvlName) ? `Локация: ${lvlName}` : "",
+    sysName && !isNotReq(sysName) ? `Раздел: ${sysName}` : "",
+    zoneName && !isNotReq(zoneName) ? `Детальное место: ${zoneName}` : "",
   ].filter(Boolean);
+
   return parts.join("; ");
 }
 

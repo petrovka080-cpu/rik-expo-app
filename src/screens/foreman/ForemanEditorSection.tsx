@@ -1,7 +1,9 @@
 ﻿import React from "react";
-import { Animated, Pressable, Text, TextInput, View, type NativeScrollEvent, type NativeSyntheticEvent } from "react-native";
+import { Animated, Pressable, Text, View, type NativeScrollEvent, type NativeSyntheticEvent } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import ForemanDropdown from "./ForemanDropdown";
+import type { FormContextUiModel } from "./foreman.locator.adapter";
+import type { ContextResolutionResult } from "./foreman.context";
 import type { RefOption } from "./foreman.types";
 
 type Props = {
@@ -11,13 +13,13 @@ type Props = {
   onZoneChange: (v: string) => void;
   onOpenFioModal: () => void;
   objectType: string;
-  level: string;
+  level: string; // Already sanitized in parent
   system: string;
-  zone: string;
+  zone: string; // Already sanitized in parent
+  contextResult?: ContextResolutionResult;
+  formUi: FormContextUiModel;
   objOptions: RefOption[];
-  lvlOptions: RefOption[];
   sysOptions: RefOption[];
-  zoneOptions: RefOption[];
   onObjectChange: (v: string) => void;
   onLevelChange: (v: string) => void;
   onSystemChange: (v: string) => void;
@@ -36,6 +38,36 @@ type Props = {
 };
 
 export default function ForemanEditorSection(p: Props) {
+  const isLowConfidence = p.contextResult?.confidence !== 'high';
+
+  console.log('[FOREMAN_EDITOR_4_FIELDS]', {
+    objectType: p.objectType,
+
+    field1_object: {
+      label: 'Объект / Блок',
+      value: p.objectType,
+      options: p.objOptions.map(o => ({ code: o.code, name: o.name })),
+    },
+
+    field2_locator: {
+      label: p.formUi.locator.label,
+      value: p.level,
+      options: p.formUi.locator.options.map(o => ({ code: o.code, name: o.name })),
+    },
+
+    field3_system: {
+      label: 'Раздел / Вид работ',
+      value: p.system,
+      options: p.sysOptions.map(o => ({ code: o.code, name: o.name })),
+    },
+
+    field4_zone: {
+      label: p.formUi.zone.label,
+      value: p.zone,
+      options: p.formUi.zone.options.map(o => ({ code: o.code, name: o.name })),
+    },
+  });
+
   return (
     <>
       <Animated.ScrollView
@@ -44,50 +76,62 @@ export default function ForemanEditorSection(p: Props) {
         scrollEventThrottle={16}
         onScroll={p.onScroll}
       >
-
         <View style={{ marginTop: 10, gap: 6 }}>
           <ForemanDropdown
-            label="Объект строительства"
+            label="Объект / Блок"
             required={true}
-            showLabel={false}
+            showLabel={true}
             options={p.objOptions}
             value={p.objectType}
             onChange={p.onObjectChange}
-            placeholder="Объект строительства"
+            placeholder="Выбрать объект..."
             width={360}
             ui={p.ui}
             styles={p.styles}
           />
+
+          {isLowConfidence && p.objectType ? (
+            <Text style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", marginLeft: 4, fontStyle: 'italic' }}>
+              ℹ️ Контекст: {p.contextResult?.config.objectClass}. Проверьте {p.formUi.locator.label?.toLowerCase()}.
+            </Text>
+          ) : null}
+
+          {!p.formUi.locator.isHidden && (
+            <ForemanDropdown
+              key={`loc:${p.objectType}:${p.formUi.locator.label}`}
+              label={p.formUi.locator.label}
+              required={true}
+              showLabel={true}
+              options={p.formUi.locator.options}
+              value={p.level}
+              onChange={p.onLevelChange}
+              placeholder={p.formUi.locator.placeholder}
+              width={360}
+              ui={p.ui}
+              styles={p.styles}
+            />
+          )}
+
           <ForemanDropdown
-            label="Этаж / уровень"
-            required={true}
-            showLabel={false}
-            options={p.lvlOptions}
-            value={p.level}
-            onChange={p.onLevelChange}
-            placeholder="Этаж / уровень"
-            width={360}
-            ui={p.ui}
-            styles={p.styles}
-          />
-          <ForemanDropdown
-            label="Система / вид работ"
-            showLabel={false}
+            label="Раздел / Вид работ"
+            showLabel={true}
             options={p.sysOptions}
             value={p.system}
             onChange={p.onSystemChange}
-            placeholder="Система / вид работ"
+            placeholder="Выбрать раздел..."
             width={360}
             ui={p.ui}
             styles={p.styles}
           />
+
           <ForemanDropdown
-            label="Зона / участок"
-            showLabel={false}
-            options={p.zoneOptions}
+            key={`zone:${p.objectType}:${p.formUi.zone.label}`}
+            label={p.formUi.zone.label}
+            showLabel={true}
+            options={p.formUi.zone.options}
             value={p.zone}
             onChange={p.onZoneChange}
-            placeholder="Зона / участок"
+            placeholder={p.formUi.zone.placeholder}
             width={360}
             ui={p.ui}
             styles={p.styles}
@@ -139,7 +183,6 @@ export default function ForemanEditorSection(p: Props) {
                 : "Пока пусто - добавь позиции из Каталога или Сметы."}
             </Text>
           </View>
-
           <View style={{ alignItems: "flex-end", gap: 10 }}>
             <View style={p.styles.posPill}>
               <Ionicons name="list" size={18} color={p.ui.text} />

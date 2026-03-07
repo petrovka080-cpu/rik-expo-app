@@ -22,6 +22,9 @@ import ForemanEditorSection from "../../src/screens/foreman/ForemanEditorSection
 import ForemanSubcontractTab from "../../src/screens/foreman/ForemanSubcontractTab";
 import WarehouseFioModal from "../../src/screens/warehouse/components/WarehouseFioModal";
 import { useForemanDicts } from "../../src/screens/foreman/useForemanDicts";
+import { resolveForemanContext } from "../../src/screens/foreman/foreman.context.resolver";
+import { adaptFormContext } from "../../src/screens/foreman/foreman.locator.adapter";
+import { ContextResolutionResult } from "../../src/screens/foreman/foreman.context";
 import { s } from "../../src/screens/foreman/foreman.styles";
 import { FOREMAN_TEXT, REQUEST_STATUS_STYLES, UI } from "../../src/screens/foreman/foreman.ui";
 import { useCollapsingHeader } from "../../src/screens/shared/useCollapsingHeader";
@@ -186,10 +189,11 @@ export default function ForemanScreen() {
 
   const ensureHeaderReady = useCallback(() => {
     if (!foreman.trim()) { showHint(FOREMAN_TEXT.fillHeaderTitle, FOREMAN_TEXT.fillForeman); return false; }
-    if (!objectType) { showHint(FOREMAN_TEXT.fillHeaderTitle, FOREMAN_TEXT.fillObject); return false; }
-    if (!level) { showHint(FOREMAN_TEXT.fillHeaderTitle, FOREMAN_TEXT.fillLevel); return false; }
+    if (!objectType) { showHint(FOREMAN_TEXT.fillHeaderTitle, "Пожалуйста, выберите Объект / Блок"); return false; }
+    // Now level can be empty if "Not required" is chosen (which is our empty code)
+    // We only block if it's absolutely necessary, but usually Object is the key.
     return true;
-  }, [foreman, objectType, level, showHint]);
+  }, [foreman, objectType, showHint]);
 
   const ensureEditableContext = useCallback((opts?: { draftMessage?: string; draftFirst?: boolean }) => {
     const checkDraft = () => {
@@ -282,10 +286,88 @@ export default function ForemanScreen() {
     return true;
   }, [ensureEditableContext, items.length]);
 
-  const objectName = useMemo(() => objOptions.find(o => o.code === objectType)?.name || requestDetails?.object_name_ru || '', [objOptions, objectType, requestDetails]);
-  const levelName = useMemo(() => lvlOptions.find(o => o.code === level)?.name || requestDetails?.level_name_ru || '', [lvlOptions, level, requestDetails]);
-  const systemName = useMemo(() => sysOptions.find(o => o.code === system)?.name || requestDetails?.system_name_ru || '', [sysOptions, system, requestDetails]);
-  const zoneName = useMemo(() => zoneOptions.find(o => o.code === zone)?.name || requestDetails?.zone_name_ru || '', [zoneOptions, zone, requestDetails]);
+  const [selectedObjectName, setSelectedObjectName] = useState('');
+  const displayObjectName = selectedObjectName || objOptions.find(o => o.code === objectType)?.name || requestDetails?.object_name_ru || '';
+  const objectName = displayObjectName; // Alias for backward compatibility
+
+  // --- Construction Context Engine (CCE) v2.0 Integration ---
+  const contextResult = useMemo(() => {
+    return resolveForemanContext(objectType || '', displayObjectName);
+  }, [objectType, displayObjectName]);
+
+  const { config: ctxConfig } = contextResult;
+
+  const formUi = useMemo(() => {
+    return adaptFormContext(contextResult, lvlOptions, zoneOptions);
+  }, [contextResult, lvlOptions, zoneOptions]);
+
+  // Synchronous UI State Sanitization
+  const safeLevel = useMemo(() => formUi.locator.isValidValue(level) ? level : '', [formUi.locator, level]);
+  const safeZone = useMemo(() => formUi.zone.isValidValue(zone) ? zone : '', [formUi.zone, zone]);
+
+
+  const filteredSysOptions = useMemo(() => {
+    // ... (no changes in sorting logic)
+    if (!objectType) return sysOptions;
+    const items = sysOptions.map(o => !o.code ? { ...o, name: "— Весь раздел —" } : o);
+
+    return [...items].sort((a, b) => {
+      if (!a.code || !b.code) return 0;
+      const keyWords = ["БЛАГО", "ЗЕМЛ", "СЕТИ", "НВК", "НТС", "ГП", "ДОРОГ", "АСФАЛЬТ"];
+      const bldWords = ["ОТДЕЛК", "МЕБЕЛЬ", "ЭЛЕКТР", "ОВ", "ВК", "ИТ", "СКС", "КЛАДКА"];
+      const isExtA = keyWords.some(k => (a.name || "").toUpperCase().includes(k));
+      const isIntA = bldWords.some(k => (a.name || "").toUpperCase().includes(k));
+      if (ctxConfig.objectClass === 'external_site' || ctxConfig.objectClass === 'external_networks' || ctxConfig.objectClass === 'linear_object') {
+        if (isExtA) return -1;
+      } else if (ctxConfig.objectClass === 'multilevel_building') {
+        if (isIntA) return -1;
+      }
+      return 0;
+    });
+  }, [sysOptions, objectType, ctxConfig]);
+
+  // --- SCOPE NOTE: Unified display string using SAFE values ---
+  const levelName = useMemo(() => formUi.locator.options.find(o => o.code === safeLevel)?.name || '', [formUi.locator.options, safeLevel]);
+  const systemName = useMemo(() => sysOptions.find(o => o.code === system)?.name || '', [sysOptions, system]);
+  const zoneName = useMemo(() => formUi.zone.options.find(o => o.code === safeZone)?.name || '', [formUi.zone.options, safeZone]);
+
+  useEffect(() => {
+    console.log('[FOREMAN_MAIN_4_FIELDS]', {
+      objectName: displayObjectName,
+      objectType,
+      objectClass: contextResult?.config?.objectClass,
+
+      field1_object: {
+        label: 'Объект / Блок',
+        value: objectType,
+        selectedName: objOptions.find(o => o.code === objectType)?.name || '',
+        options: objOptions.map(o => ({ code: o.code, name: o.name })),
+      },
+
+      field2_locator: {
+        label: formUi?.locator?.label,
+        rawValue: level,
+        safeValue: formUi?.locator?.isValidValue(level) ? level : '',
+        selectedName: formUi?.locator?.options?.find(o => o.code === level)?.name || '',
+        options: formUi?.locator?.options?.map(o => ({ code: o.code, name: o.name })),
+      },
+
+      field3_system: {
+        label: 'Раздел / Вид работ',
+        rawValue: system,
+        selectedName: filteredSysOptions.find(o => o.code === system)?.name || '',
+        options: filteredSysOptions.map(o => ({ code: o.code, name: o.name })),
+      },
+
+      field4_zone: {
+        label: formUi?.zone?.label,
+        rawValue: zone,
+        safeValue: formUi?.zone?.isValidValue(zone) ? zone : '',
+        selectedName: formUi?.zone?.options?.find(o => o.code === zone)?.name || '',
+        options: formUi?.zone?.options?.map(o => ({ code: o.code, name: o.name })),
+      },
+    });
+  }, [displayObjectName, objectType, contextResult, formUi, level, system, zone, filteredSysOptions, objOptions, safeLevel, safeZone]);
   const scopeNote = useMemo(() => buildScopeNote(objectName, levelName, systemName, zoneName) || '—', [objectName, levelName, systemName, zoneName]);
 
   const actions = useForemanActions({
@@ -308,14 +390,49 @@ export default function ForemanScreen() {
   const handleObjectChange = useCallback((code: string) => {
     setObjectType(code);
     const opt = objOptions.find(o => o.code === code);
-    setRequestDetails(prev => prev ? { ...prev, object_type_code: code || null, object_name_ru: opt?.name ?? prev.object_name_ru ?? null } : prev);
-  }, [objOptions, setObjectType]);
+    setSelectedObjectName(opt?.name || ''); // Immediate sync for CCE
+
+    // Logic for ground-level objects (Yard, Blago, etc.)
+    const isGround = ["DVOR", "BLAGO", "GZP", "TERRITORY", "ROAD"].includes(String(code).toUpperCase());
+    if (isGround) {
+      setLevel(""); // Auto-set to "Not required"
+      setSystem("");
+      setZone("");
+    }
+
+    const ctx = resolveForemanContext(code, opt?.name || "");
+
+    setRequestDetails(prev => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        object_type_code: code || null,
+        object_name_ru: opt?.name ?? prev.object_name_ru ?? null,
+        // TOTAL RESET: Kill all old building-logic fields immediately
+        level_code: null,
+        level_name_ru: null,
+        system_code: null,
+        system_name_ru: null,
+        zone_code: null,
+        zone_name_ru: null
+      };
+    });
+
+    // Clear display state immediately
+    setLevel("");
+    setSystem("");
+    setZone("");
+  }, [objOptions, lvlOptions, setObjectType, setLevel, setSystem, setZone]);
 
   const handleLevelChange = useCallback((code: string) => {
     setLevel(code);
-    const opt = lvlOptions.find(o => o.code === code);
-    setRequestDetails(prev => prev ? { ...prev, level_code: code || null, level_name_ru: opt?.name ?? prev.level_name_ru ?? null } : prev);
-  }, [lvlOptions, setLevel]);
+    const opt = formUi.locator.options.find(o => o.code === code);
+    setRequestDetails(prev => prev ? {
+      ...prev,
+      level_code: code || null,
+      level_name_ru: opt?.name ?? null // USE CCE-ADAPTED NAME ONLY
+    } : prev);
+  }, [formUi.locator.options, setLevel]);
 
   const handleSystemChange = useCallback((code: string) => {
     setSystem(code);
@@ -325,9 +442,21 @@ export default function ForemanScreen() {
 
   const handleZoneChange = useCallback((code: string) => {
     setZone(code);
-    const opt = zoneOptions.find(o => o.code === code);
-    setRequestDetails(prev => prev ? { ...prev, zone_code: code || null, zone_name_ru: opt?.name ?? prev.zone_name_ru ?? null } : prev);
-  }, [zoneOptions, setZone]);
+    const opt = formUi.zone.options.find(o => o.code === code);
+    setRequestDetails(prev => prev ? {
+      ...prev,
+      zone_code: code || null,
+      zone_name_ru: opt?.name ?? null // USE CCE-ADAPTED NAME ONLY
+    } : prev);
+  }, [formUi.zone.options, setZone]);
+
+  // ATOMIC CONTEXT RESET: Level and Zone must follow formUi semantic rules
+  useEffect(() => {
+    if (objectType) {
+      if (level && !formUi.locator.isValidValue(level)) handleLevelChange("");
+      if (zone && !formUi.zone.isValidValue(zone)) handleZoneChange("");
+    }
+  }, [objectType, level, zone, formUi, handleLevelChange, handleZoneChange]);
 
   const handleHistorySelect = useCallback((reqId: string) => { openRequestById(reqId); closeHistory(); }, [openRequestById, closeHistory]);
 
@@ -604,13 +733,13 @@ export default function ForemanScreen() {
               foreman={foreman}
               onOpenFioModal={() => setIsFioConfirmVisible(true)}
               objectType={objectType}
-              level={level}
+              level={safeLevel}
               system={system}
-              zone={zone}
+              zone={safeZone}
+              contextResult={contextResult}
+              formUi={formUi}
               objOptions={objOptions}
-              lvlOptions={lvlOptions}
-              sysOptions={sysOptions}
-              zoneOptions={zoneOptions}
+              sysOptions={filteredSysOptions}
               onObjectChange={handleObjectChange}
               onLevelChange={handleLevelChange}
               onSystemChange={handleSystemChange}
