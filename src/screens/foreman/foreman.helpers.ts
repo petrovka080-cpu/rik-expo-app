@@ -239,3 +239,57 @@ export async function saveForemanToHistory(name: string) {
     await AsyncStorage.setItem(FOREMAN_HISTORY_KEY, JSON.stringify(next));
   }
 }
+
+export type ErrorLike = {
+  message?: unknown;
+  details?: unknown;
+  hint?: unknown;
+  code?: unknown;
+};
+
+export function toErrorText(error: unknown, fallback = "unknown error") {
+  if (error && typeof error === "object") {
+    const e = error as ErrorLike;
+    const raw = e.message ?? e.details ?? e.hint ?? e.code;
+    if (raw != null && String(raw).trim()) return String(raw).trim();
+  }
+  if (typeof error === "string" && error.trim()) return error.trim();
+  return fallback;
+}
+
+export const ridStr = (val: string | number | null | undefined) => String(val ?? "").trim();
+
+export function formatQtyInput(value?: number | null) {
+  if (value == null) return "";
+  const num = Number(value);
+  if (!Number.isFinite(num)) return "";
+  if (Number.isInteger(num)) return String(num);
+  return num.toString();
+}
+
+export function parseQtyValue(value: string | number | null | undefined) {
+  if (typeof value === "number") return value;
+  const str = String(value ?? "").trim().replace(",", ".");
+  if (!str) return Number.NaN;
+  const num = Number(str);
+  return Number.isFinite(num) ? num : Number.NaN;
+}
+
+export function resolveStatusInfo(raw: string | null | undefined, styles: Record<string, { label: string; bg: string; fg: string }>) {
+  const base = String(raw ?? "").trim();
+  const key = base.toLowerCase();
+  const normalized =
+    key === "черновик" || key === "draft"
+      ? "draft"
+      : key === "на утверждении"
+        ? "pending"
+        : key === "утверждена" || key === "утверждено" || key === "approved"
+          ? "approved"
+          : key === "отклонена" || key === "отклонено" || key === "rejected"
+            ? "rejected"
+            : key;
+  const info = styles[normalized];
+  if (info) return info;
+  if (!base) return { label: "—", bg: "#E2E8F0", fg: "#0F172A" };
+  return { label: base, bg: "#E2E8F0", fg: "#0F172A" };
+}

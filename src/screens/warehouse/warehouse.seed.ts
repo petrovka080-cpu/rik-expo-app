@@ -1,9 +1,41 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { isUuid } from "./warehouse.utils";
 
-type Supa = SupabaseClient | any;
+type Supa = SupabaseClient;
 
-const toNum = (v: any): number => {
+type RequestItemMini = {
+  id?: string | null;
+  name_human?: string | null;
+  rik_code?: string | null;
+  uom?: string | null;
+};
+
+type PurchaseItemSeedRow = {
+  id?: string | null;
+  request_item_id?: string | null;
+  qty?: number | string | null;
+  uom?: string | null;
+  name_human?: string | null;
+  rik_code?: string | null;
+  request_items?: RequestItemMini | RequestItemMini[] | null;
+};
+
+type ProposalSnapshotRow = {
+  request_item_id?: string | null;
+  uom?: string | null;
+  total_qty?: number | string | null;
+};
+
+type IncomingSeedRow = {
+  incoming_id: string;
+  purchase_item_id: string;
+  qty_expected: number;
+  qty_received: number;
+  rik_code: string | null;
+  name_human: string | null;
+  uom: string | null;
+};
+
+const toNum = (v: unknown): number => {
   if (v == null) return 0;
   const s = String(v).trim();
   if (!s) return 0;
@@ -15,7 +47,7 @@ const toNum = (v: any): number => {
 async function getPurchaseIdByIncoming(supabase: Supa, incomingId: string): Promise<string | null> {
   try {
     const head = await supabase
-      .from("wh_incoming" as any)
+      .from("wh_incoming")
       .select("purchase_id")
       .eq("id", incomingId)
       .maybeSingle();
@@ -32,9 +64,9 @@ async function reseedIncomingItems(
   incomingId: string,
   purchaseId: string,
 ): Promise<boolean> {
-  // 1) читаем purchase_items (если пусто — пытаемся seed из proposal_snapshot_items)
+  // 1) С‡РёС‚Р°РµРј purchase_items (РµСЃР»Рё РїСѓСЃС‚Рѕ вЂ” РїС‹С‚Р°РµРјСЃСЏ seed РёР· proposal_snapshot_items)
   let pi = await supabase
-    .from("purchase_items" as any)
+    .from("purchase_items")
     .select(
       `
       id,
@@ -59,10 +91,10 @@ async function reseedIncomingItems(
   }
 
   if (Array.isArray(pi.data) && pi.data.length === 0) {
-    console.warn("[seed] purchase_items empty → seed from proposal_snapshot_items");
+    console.warn("[seed] purchase_items empty в†’ seed from proposal_snapshot_items");
 
     const link = await supabase
-      .from("purchases" as any)
+      .from("purchases")
       .select("proposal_id")
       .eq("id", purchaseId)
       .maybeSingle();
@@ -74,7 +106,7 @@ async function reseedIncomingItems(
     }
 
     const snap = await supabase
-      .from("proposal_snapshot_items" as any)
+      .from("proposal_snapshot_items")
       .select("request_item_id, uom, total_qty")
       .eq("proposal_id", propId);
 
@@ -83,21 +115,22 @@ async function reseedIncomingItems(
       return false;
     }
 
-    const reqIds = (snap.data as any[])
-      .map((x: any) => x.request_item_id)
+    const snapshotRows = (snap.data as ProposalSnapshotRow[]) || [];
+    const reqIds = snapshotRows
+      .map((x) => x.request_item_id)
       .filter(Boolean)
-      .map((v: any) => String(v));
+      .map((v) => String(v));
 
     const riMap: Record<string, { name_human: string; rik_code: string | null; uom: string | null }> = {};
 
     if (reqIds.length) {
       const ri = await supabase
-        .from("request_items" as any)
+        .from("request_items")
         .select("id, name_human, rik_code, uom")
         .in("id", reqIds);
 
       if (!ri.error && Array.isArray(ri.data)) {
-        for (const r of ri.data as any[]) {
+        for (const r of ri.data as RequestItemMini[]) {
           const id = String(r.id);
           riMap[id] = {
             name_human: String(r.name_human ?? ""),
@@ -108,8 +141,8 @@ async function reseedIncomingItems(
       }
     }
 
-    const piToInsert = (snap.data as any[])
-      .map((x: any) => {
+    const piToInsert = snapshotRows
+      .map((x) => {
         const qty = toNum(x.total_qty ?? 0);
         const rid = x.request_item_id ? String(x.request_item_id) : null;
         if (!rid || qty <= 0) return null;
@@ -126,22 +159,22 @@ async function reseedIncomingItems(
           name_human,
         };
       })
-      .filter(Boolean) as any[];
+      .filter((x): x is NonNullable<typeof x> => Boolean(x));
 
     if (piToInsert.length === 0) {
       console.warn("[seed] nothing to seed into purchase_items");
       return false;
     }
 
-    const insPI = await supabase.from("purchase_items" as any).insert(piToInsert as any);
+    const insPI = await supabase.from("purchase_items").insert(piToInsert);
     if (insPI.error) {
       console.warn("[seed] purchase_items insert error:", insPI.error.message);
       return false;
     }
 
-    // перечитываем purchase_items
+    // РїРµСЂРµС‡РёС‚С‹РІР°РµРј purchase_items
     pi = await supabase
-      .from("purchase_items" as any)
+      .from("purchase_items")
       .select(
         `
         id,
@@ -166,20 +199,20 @@ async function reseedIncomingItems(
     }
   }
 
-  // 2) строим wh_incoming_items rows
-  let rows = ((pi.data as any[]) || [])
+  // 2) СЃС‚СЂРѕРёРј wh_incoming_items rows
+  let rows = (((pi.data as PurchaseItemSeedRow[]) || []))
     .map((x) => {
       const piId = String(x.id ?? "");
       const qty_expected = toNum(x.qty ?? 0);
       if (qty_expected <= 0) return null;
 
-      const ri = Array.isArray((x as any)?.request_items)
-        ? (x as any).request_items[0]
-        : (x as any)?.request_items;
+      const ri = Array.isArray(x.request_items)
+        ? x.request_items[0]
+        : x.request_items;
 
       const codeFromPI =
-        (x as any)?.rik_code && String((x as any).rik_code).trim()
-          ? String((x as any).rik_code).trim()
+        x.rik_code && String(x.rik_code).trim()
+          ? String(x.rik_code).trim()
           : null;
 
       const codeFromRI =
@@ -196,15 +229,15 @@ async function reseedIncomingItems(
       const finalCode = baseCode;
 
       const finalName =
-        (x as any)?.name_human && String((x as any).name_human).trim()
-          ? String((x as any).name_human).trim()
+        x.name_human && String(x.name_human).trim()
+          ? String(x.name_human).trim()
           : ri?.name_human && String(ri.name_human).trim()
           ? String(ri.name_human).trim()
           : finalCode;
 
       const finalUom =
-        (x as any)?.uom && String((x as any).uom).trim()
-          ? String((x as any).uom).trim()
+        x.uom && String(x.uom).trim()
+          ? String(x.uom).trim()
           : ri?.uom && String(ri.uom).trim()
           ? String(ri.uom).trim()
           : null;
@@ -218,13 +251,13 @@ async function reseedIncomingItems(
         rik_code: finalCode,
         name_human: finalName,
         uom: finalUom,
-      };
+      } as IncomingSeedRow;
     })
-    .filter(Boolean) as any[];
+    .filter((x): x is IncomingSeedRow => Boolean(x));
 
   // merge duplicates
   {
-    const map = new Map<string, any>();
+    const map = new Map<string, IncomingSeedRow>();
     for (const r of rows) {
       const k = r.purchase_item_id ? `pi:${r.purchase_item_id}` : `code:${String(r.rik_code ?? "")}`;
       if (!map.has(k)) map.set(k, r);
@@ -237,7 +270,7 @@ async function reseedIncomingItems(
     rows = Array.from(map.values());
   }
 
-  const ins = await supabase.from("wh_incoming_items" as any).upsert(rows as any, {
+  const ins = await supabase.from("wh_incoming_items").upsert(rows, {
     onConflict: "incoming_id,purchase_item_id",
     ignoreDuplicates: false,
   });
@@ -251,10 +284,10 @@ async function reseedIncomingItems(
 }
 
 /**
- * PROD: гарантирует наличие строк wh_incoming_items для incoming head.
- * - если строки есть → ok
- * - иначе пробует RPC-ensure
- * - иначе делает fallback reseed из purchase_items / snapshot
+ * PROD: РіР°СЂР°РЅС‚РёСЂСѓРµС‚ РЅР°Р»РёС‡РёРµ СЃС‚СЂРѕРє wh_incoming_items РґР»СЏ incoming head.
+ * - РµСЃР»Рё СЃС‚СЂРѕРєРё РµСЃС‚СЊ в†’ ok
+ * - РёРЅР°С‡Рµ РїСЂРѕР±СѓРµС‚ RPC-ensure
+ * - РёРЅР°С‡Рµ РґРµР»Р°РµС‚ fallback reseed РёР· purchase_items / snapshot
  */
 export async function seedEnsureIncomingItems(params: {
   supabase: Supa;
@@ -266,7 +299,7 @@ export async function seedEnsureIncomingItems(params: {
 
   // 1) already exists?
   const pre = await supabase
-    .from("wh_incoming_items" as any)
+    .from("wh_incoming_items")
     .select("id")
     .eq("incoming_id", incomingId)
     .limit(1);
@@ -282,14 +315,14 @@ export async function seedEnsureIncomingItems(params: {
 
   for (const fn of tryFns) {
     try {
-      const r = await supabase.rpc(fn as any, { p_incoming_id: incomingId } as any);
+      const r = await supabase.rpc(fn, { p_incoming_id: incomingId });
       if (!r.error) break;
     } catch {}
   }
 
   // 3) recheck
   const fb = await supabase
-    .from("wh_incoming_items" as any)
+    .from("wh_incoming_items")
     .select("id")
     .eq("incoming_id", incomingId)
     .limit(1);

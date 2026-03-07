@@ -3,18 +3,27 @@ import { supabase } from "../../lib/supabaseClient";
 
 import { isUuid } from "./warehouse.utils";
 
+type UnitRow = {
+  unit_id?: string | null;
+};
+
+type UomRow = {
+  uom_code?: string | null;
+};
+
 export async function resolveUnitIdByCode(code: string): Promise<string | null> {
   const c = String(code ?? "").trim();
   if (!c) return null;
 
   try {
     const m = await supabase
-      .from("rik_materials" as any)
+      .from("rik_materials")
       .select("unit_id")
       .eq("mat_code", c)
       .maybeSingle();
 
-    if (!m.error && m.data?.unit_id) return String(m.data.unit_id);
+    const row = (m.data ?? null) as UnitRow | null;
+    if (!m.error && row?.unit_id) return String(row.unit_id);
     return null;
   } catch {
     return null;
@@ -35,36 +44,37 @@ export async function resolveUomTextByCode(
   let unit: string = "";
   try {
     const m = await supabase
-      .from("rik_materials" as any)
+      .from("rik_materials")
       .select("unit_id")
       .eq("mat_code", c)
       .maybeSingle();
 
-    unit = String(m.data?.unit_id ?? "").trim();
+    const row = (m.data ?? null) as UnitRow | null;
+    unit = String(row?.unit_id ?? "").trim();
     if (!unit) return null;
   } catch {
     return null;
   }
 
-  
   if (!isUuid(unit)) return unit;
 
-  
   try {
     const u = await supabase
-      .from("rik_uoms" as any)
+      .from("rik_uoms")
       .select("uom_code")
       .eq("id", unit)
       .maybeSingle();
 
-    const codeText = String((u.data as any)?.uom_code ?? "").trim();
+    const row = (u.data ?? null) as UomRow | null;
+    const codeText = String(row?.uom_code ?? "").trim();
     return codeText || null;
   } catch {
     return null;
   }
 }
+
 // ✅ UI/PDF label (RU) при каноне в базе
-export const uomLabelRu = (uomAny: any) => {
+export const uomLabelRu = (uomAny: unknown) => {
   const raw = String(uomAny ?? "").trim();
   if (!raw) return "—";
 
@@ -87,7 +97,7 @@ export const uomLabelRu = (uomAny: any) => {
 };
 
 // ✅ если когда-нибудь надо вводить RU и сохранять в канон
-export const uomCanon = (uomAny: any) => {
+export const uomCanon = (uomAny: unknown) => {
   const raw = String(uomAny ?? "").trim();
   if (!raw) return "";
 

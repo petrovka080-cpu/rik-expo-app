@@ -1,4 +1,4 @@
-﻿// src/screens/warehouse/warehouse.stockPick.ts
+// src/screens/warehouse/warehouse.stockPick.ts
 import { useCallback, useMemo, useState } from "react";
 import type { StockRow, StockPickLine, Option } from "./warehouse.types";
 import { normMatCode, normUomId } from "./warehouse.utils";
@@ -12,7 +12,7 @@ const buildPickKey = (code: string, uomId: string | null) => {
 };
 
 export function useWarehouseStockPick(args: {
-  nz: (v: any, d?: number) => number;
+  nz: (v: unknown, d?: number) => number;
 
   rec: { recipientText: string };
   objectOpt: Option | null;
@@ -156,7 +156,7 @@ export function useWarehouseStockPick(args: {
     const acc: Record<string, number> = {};
     for (const ln of Object.values(stockPick || {})) {
       const key = buildPickKey(String(ln.code ?? ""), ln.uom_id ?? null);
-      acc[key] = nz(acc[key], 0) + nz((ln as any).qty, 0);
+      acc[key] = nz(acc[key], 0) + nz(ln.qty, 0);
     }
     return acc;
   }, [stockPick, nz]);

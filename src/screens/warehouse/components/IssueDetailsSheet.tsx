@@ -10,9 +10,20 @@ type Props = {
   visible: boolean;
   issueId: number | null;
   loadingId: number | null;
-  linesById: Record<string, any[]>;
+  linesById: Record<string, IssueDetailsLine[]>;
   matNameByCode: Record<string, string>;
   onClose: () => void;
+};
+
+type IssueDetailsLine = {
+  rik_code?: string | null;
+  name_human?: string | null;
+  item_name_ru?: string | null;
+  uom?: string | null;
+  uom_id?: string | null;
+  qty_total?: number | string | null;
+  qty_in_req?: number | string | null;
+  qty_over?: number | string | null;
 };
 
 export default function IssueDetailsSheet({
@@ -33,7 +44,7 @@ export default function IssueDetailsSheet({
   const ListBody = (
     <View style={{ paddingBottom: 28 }}>
       {lines.length ? (
-        lines.map((ln: any, idx: number) => {
+        lines.map((ln, idx: number) => {
           const code = String(ln.rik_code ?? "").trim();
           const name =
             String(ln.name_human ?? "").trim() ||

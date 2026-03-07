@@ -1,11 +1,17 @@
 // src/screens/warehouse/components/HistoryRowView.tsx
 import React from "react";
 import { View, Text } from "react-native";
-import { UI, s } from "../warehouse.styles";
+import { s } from "../warehouse.styles";
 import { uomLabelRu } from "../warehouse.uom";
 
 type Props = {
-    h: any;
+    h: {
+        event_dt?: string | null;
+        qty?: number | string | null;
+        event_type?: string | null;
+        code?: string | null;
+        uom_id?: string | null;
+    };
 };
 
 function HistoryRowView({ h }: Props) {

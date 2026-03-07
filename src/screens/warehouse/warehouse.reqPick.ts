@@ -5,7 +5,7 @@ import type { ReqItemUiRow, ReqPickLine } from "./warehouse.types";
 export type IssueMsg = { kind: "error" | "ok" | null; text: string };
 
 export function useWarehouseReqPick(args: {
-  nz: (v: any, d?: number) => number;
+  nz: (v: unknown, d?: number) => number;
   setIssueMsg: (m: IssueMsg) => void;
   getAvailableByCode?: (code: string) => number;
   getAvailableByCodeUom?: (code: string, uomId: string | null) => number;
@@ -40,8 +40,9 @@ export function useWarehouseReqPick(args: {
       const id = String(item.request_item_id || "").trim();
       if (!id) return;
 
-      const canByReq = nz((item as any).qty_can_issue_now, 0); // сколько можно "по заявке"
-      const canByStock = nz((item as any).qty_available, 0);   // сколько доступно на складе
+      // Сколько можно выдать по заявке и по факту на складе.
+      const canByReq = nz(item.qty_can_issue_now, 0);
+      const canByStock = nz(item.qty_available, 0);
 
       if (canByStock <= 0) {
         setIssueMsg({ kind: "error", text: "Нельзя добавить: на складе 0" });
@@ -61,16 +62,16 @@ export function useWarehouseReqPick(args: {
         return;
       }
 
-      // сообщения (перерасход / норм)
+      // Сообщение о превышении заявки.
       if (qty > canByReq && canByReq > 0) {
         setIssueMsg({
           kind: "ok",
-          text: `Будет перерасход: по заявке ${canByReq}, сверх ${qty - canByReq}. Всё зафиксируем в отчёте.`,
+          text: `Будет перерасход: по заявке ${canByReq}, сверх ${qty - canByReq}. Вы зафиксируете в отчёте.`,
         });
       } else if (canByReq === 0) {
         setIssueMsg({
           kind: "ok",
-          text: `Будет перерасход: по заявке 0, всё ${qty} пойдёт как сверх заявки.`,
+          text: `Будет перерасход: по заявке 0, выдать ${qty} позиций как сверх заявки.`,
         });
       } else {
         setIssueMsg({ kind: "ok", text: `Добавлено: ${String(item.name_human ?? "")} × ${qty}` });
@@ -80,14 +81,14 @@ export function useWarehouseReqPick(args: {
         ...(prev || {}),
         [id]: {
           request_item_id: id,
-          rik_code: (item as any).rik_code,
-          name_human: (item as any).name_human,
-          uom: (item as any).uom ?? null,
+          rik_code: item.rik_code,
+          name_human: item.name_human,
+          uom: item.uom ?? null,
           qty,
         },
       }));
 
-      // чистим ввод
+      // Чистим инпут после добавления.
       setReqQtyInputByItem((p) => ({ ...(p || {}), [id]: "" }));
     },
     [nz, reqQtyInputByItem, setIssueMsg],
@@ -111,7 +112,7 @@ export function useWarehouseReqPick(args: {
     reqPick,
     reqQtyInputByItem,
 
-    setReqQtyInputByItem, // если нужно прокинуть сеттер как есть
+    setReqQtyInputByItem,
     setQtyInput,
     getQtyInput,
     clearQtyInput,
@@ -123,3 +124,4 @@ export function useWarehouseReqPick(args: {
     lines,
   };
 }
+

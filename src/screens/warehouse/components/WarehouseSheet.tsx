@@ -1,6 +1,6 @@
 // src/screens/warehouse/components/WarehouseSheet.tsx
 import React from "react";
-import { View, Pressable, Platform } from "react-native";
+import { View, Pressable, Platform, type ViewStyle } from "react-native";
 import RNModal from "react-native-modal";
 import { UI } from "../warehouse.styles";
 
@@ -18,60 +18,65 @@ function WebSheet({
   if (!visible) return null;
 
   const sheetHeight = `${Math.round(heightPct * 100)}%`;
+  const handleWheelCapture = (e: { stopPropagation?: () => void }) => {
+    try {
+      e?.stopPropagation?.();
+    } catch {
+      // no-op
+    }
+  };
 
   return (
     <View
-      style={{
-        position: "fixed" as any,
-        left: 0,
-        right: 0,
-        top: 0,
-        bottom: 0,
-        zIndex: 9999,
-      }}
-      pointerEvents="auto"
-    >
-      <Pressable
-        onPress={onClose}
-        style={{
-          position: "absolute" as any,
+      style={
+        {
+          position: "fixed",
           left: 0,
           right: 0,
           top: 0,
           bottom: 0,
-          backgroundColor: "rgba(0,0,0,0.55)",
-        }}
+          zIndex: 9999,
+        } as unknown as ViewStyle
+      }
+      pointerEvents="auto"
+    >
+      <Pressable
+        onPress={onClose}
+        style={
+          {
+            position: "absolute",
+            left: 0,
+            right: 0,
+            top: 0,
+            bottom: 0,
+            backgroundColor: "rgba(0,0,0,0.55)",
+          } as unknown as ViewStyle
+        }
       />
 
-      {/* ✅ сам лист */}
       <View
-        // @ts-ignore
-        onWheelCapture={(e: any) => {
-          try {
-            e?.stopPropagation?.();
-          } catch { }
-        }}
-        style={{
-          position: "fixed" as any,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          height: sheetHeight,
-          backgroundColor: UI.cardBg,
-          borderTopLeftRadius: 22,
-          borderTopRightRadius: 22,
-          paddingTop: 10,
-          paddingHorizontal: 16,
-          paddingBottom: 16,
-          borderWidth: 1,
-          borderColor: "rgba(255,255,255,0.10)",
-
-          // ✅ важно для скролла внутри
-          display: "flex" as any,
-          flexDirection: "column" as any,
-          minHeight: 0,
-          overflow: "hidden" as any, // чтобы скролл был только внутри контента, и скругления норм
-        } as any}
+        {...({ onWheelCapture: handleWheelCapture } as Record<string, unknown>)}
+        style={
+          {
+            position: "fixed",
+            left: 0,
+            right: 0,
+            bottom: 0,
+            height: sheetHeight,
+            backgroundColor: UI.cardBg,
+            borderTopLeftRadius: 22,
+            borderTopRightRadius: 22,
+            paddingTop: 10,
+            paddingHorizontal: 16,
+            paddingBottom: 16,
+            borderWidth: 1,
+            borderColor: "rgba(255,255,255,0.10)",
+            display: "flex",
+            flexDirection: "column",
+            minHeight: 0,
+            overflow: "hidden",
+          } as unknown as ViewStyle
+        }
       >
         <View
           style={{
@@ -84,16 +89,17 @@ function WebSheet({
           }}
         />
 
-        {/* ✅ ЭТОТ БЛОК СТАНОВИТСЯ СКРОЛЛ-КОНТЕЙНЕРОМ НА WEB */}
         <View
-          style={{
-            flex: 1,
-            minHeight: 0,
-            overflowY: "auto" as any,
-            overflowX: "hidden" as any,
-            WebkitOverflowScrolling: "touch" as any,
-            overscrollBehavior: "contain" as any,
-          } as any}
+          style={
+            {
+              flex: 1,
+              minHeight: 0,
+              overflowY: "auto",
+              overflowX: "hidden",
+              WebkitOverflowScrolling: "touch",
+              overscrollBehavior: "contain",
+            } as ViewStyle
+          }
         >
           {children}
         </View>
@@ -160,7 +166,6 @@ export default function WarehouseSheet({
           }}
         />
 
-        {/* на native дети сами могут содержать ScrollView */}
         <View style={{ flex: 1, minHeight: 0 }}>{children}</View>
       </View>
     </RNModal>

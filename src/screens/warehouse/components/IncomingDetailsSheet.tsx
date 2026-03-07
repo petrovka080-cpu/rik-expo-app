@@ -10,9 +10,21 @@ type Props = {
     visible: boolean;
     incomingId: string | null;
     loadingId: string | null;
-    linesById: Record<string, any[]>;
+    linesById: Record<string, IncomingDetailsLine[]>;
     matNameByCode: Record<string, string>;
     onClose: () => void;
+};
+
+type IncomingDetailsLine = {
+    rik_code?: string | null;
+    name_ru?: string | null;
+    name?: string | null;
+    item_name_ru?: string | null;
+    material_name?: string | null;
+    uom?: string | null;
+    uom_id?: string | null;
+    qty_received?: number | string | null;
+    qty?: number | string | null;
 };
 
 export default function IncomingDetailsSheet({
@@ -33,7 +45,7 @@ export default function IncomingDetailsSheet({
     const ListBody = (
         <View style={{ paddingBottom: 28 }}>
             {lines.length ? (
-                lines.map((ln: any, idx: number) => {
+                lines.map((ln, idx: number) => {
                     const code = String(ln.rik_code || "").trim();
                     const name =
                         String(ln.name_ru || "").trim() ||

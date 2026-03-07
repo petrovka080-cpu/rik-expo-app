@@ -4,7 +4,31 @@ import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import TopRightActionBar from "../../../ui/TopRightActionBar";
+import type { TopRightAction } from "../../../ui/TopRightActionBar";
 import { UI, s } from "../warehouse.styles";
+import type { WarehouseReportRow } from "../warehouse.types";
+
+type ReportDocRow = WarehouseReportRow & {
+  incoming_id?: string | number | null;
+  id?: string | number | null;
+  issue_id?: string | number | null;
+  display_no?: string | null;
+  issue_no?: string | null;
+  who?: string | null;
+  obj_name?: string | null;
+};
+
+type ReportDayGroup = {
+  day: string;
+  items: ReportDocRow[];
+};
+
+type ReportsUi = {
+  incomingByDay: ReportDayGroup[];
+  vydachaByDay: ReportDayGroup[];
+  openIncomingDetails: (incomingId: string | number) => void | Promise<void>;
+  openIssueDetails: (issueId: string | number) => void | Promise<void>;
+};
 
 type Props = {
   headerTopPad: number;
@@ -13,17 +37,16 @@ type Props = {
   onBack: () => void;
   onSelectMode: (m: "issue" | "incoming") => void;
 
-  onScroll?: any;
+  onScroll?: ((...args: unknown[]) => void) | undefined;
   scrollEventThrottle?: number;
 
   periodFrom: string;
   periodTo: string;
 
-  repStock?: any[];
-  repMov?: any[];
+  repStock?: WarehouseReportRow[];
+  repMov?: WarehouseReportRow[];
 
-  reportsUi: any;
-
+  reportsUi: ReportsUi;
 
   onOpenPeriod: () => void;
   onRefresh: () => void;
@@ -35,7 +58,6 @@ type Props = {
   onPdfDocument: (id: string | number) => void;
 
   onPdfDayRegister?: (day: string) => void | Promise<void>;
-
   onPdfDayMaterials?: (day: string) => void | Promise<void>;
 };
 
@@ -60,10 +82,23 @@ export default function WarehouseReportsTab(props: Props) {
 
   const insets = useSafeAreaInsets();
 
-  const [activeDay, setActiveDay] = useState<{
-    day: string;
-    items: any[];
-  } | null>(null);
+  const [activeDay, setActiveDay] = useState<ReportDayGroup | null>(null);
+
+  const isIncoming = mode === "incoming";
+  const reportActions: TopRightAction[] = useMemo(() => {
+    const actions: TopRightAction[] = [
+      { key: "period", icon: "calendar-outline", onPress: onOpenPeriod },
+      { key: "refresh", icon: "refresh-outline", onPress: () => void onRefresh() },
+      { key: "pdf", icon: "document-text-outline", onPress: () => void onPdfRegister() },
+      { key: "mat", icon: "cube-outline", onPress: () => void onPdfMaterials() },
+    ];
+    if (!isIncoming) {
+      actions.push({ key: "obj", icon: "business-outline", onPress: () => void onPdfObjectWork() });
+    }
+    return actions;
+  }, [isIncoming, onOpenPeriod, onRefresh, onPdfRegister, onPdfMaterials, onPdfObjectWork]);
+
+  const sectionTitle = isIncoming ? "ПРИХОДЫ ЗА ПЕРИОД" : "ВЫДАЧИ ЗА ПЕРИОД";
 
   if (mode === "choice") {
     return (
@@ -110,9 +145,6 @@ export default function WarehouseReportsTab(props: Props) {
       </View>
     );
   }
-
-  const isIncoming = mode === "incoming";
-  const sectionTitle = isIncoming ? "ПРИХОДЫ ЗА ПЕРИОД" : "ВЫДАЧИ ЗА ПЕРИОД";
 
   if (activeDay) {
     return (
@@ -193,7 +225,6 @@ export default function WarehouseReportsTab(props: Props) {
             >
               <Ionicons name="cube-outline" size={18} color={UI.text} />
             </Pressable>
-
           </View>
         </View>
 
@@ -207,7 +238,7 @@ export default function WarehouseReportsTab(props: Props) {
           showsVerticalScrollIndicator
           keyboardShouldPersistTaps="handled"
         >
-          {activeDay.items.map((h: any, idx: number) => {
+          {activeDay.items.map((h, idx: number) => {
             const docId = isIncoming ? (h.incoming_id || h.id) : h.issue_id;
             const docNo = isIncoming
               ? (h.display_no || `PR-${String(docId).slice(0, 8)}`)
@@ -219,7 +250,7 @@ export default function WarehouseReportsTab(props: Props) {
                   onPress={() => {
                     if (!docId) return;
                     if (isIncoming) {
-                      void (reportsUi as any).openIncomingDetails(docId);
+                      void reportsUi.openIncomingDetails(docId);
                     } else {
                       void reportsUi.openIssueDetails(docId);
                     }
@@ -263,7 +294,7 @@ export default function WarehouseReportsTab(props: Props) {
         showsVerticalScrollIndicator
         keyboardShouldPersistTaps="handled"
       >
-        <View style={{ paddingHorizontal: 16, marginBottom: 16, flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+        <View style={{ paddingHorizontal: 16, marginBottom: 16, flexDirection: "row", alignItems: "center", gap: 12 }}>
           <Pressable
             onPress={onBack}
             style={{
@@ -280,13 +311,13 @@ export default function WarehouseReportsTab(props: Props) {
           >
             <Ionicons name="close" size={22} color={UI.text} />
           </Pressable>
-          <Text style={{ color: UI.text, fontSize: 18, fontWeight: '900' }}>
-            {isIncoming ? "ПРИХОД" : "ВЫДАЧА"}
+          <Text style={{ color: UI.text, fontSize: 18, fontWeight: "900" }}>
+            {isIncoming ? "ПРИХОД" : "ВЫДАЧИ"}
           </Text>
         </View>
 
         <View style={[s.sectionBox, { paddingHorizontal: 16 }]}>
-          <Text style={s.sectionBoxTitle}>ПЕРИОД ОТЧЕТА</Text>
+          <Text style={s.sectionBoxTitle}>ПЕРИОД ОТЧЁТА</Text>
 
           <TopRightActionBar
             titleLeft={
@@ -294,16 +325,7 @@ export default function WarehouseReportsTab(props: Props) {
                 ? `${periodFrom || "—"} → ${periodTo || "—"}`
                 : "Весь период"
             }
-            actions={[
-              { key: "period", icon: "calendar-outline" as any, onPress: onOpenPeriod },
-              { key: "refresh", icon: "refresh-outline" as any, onPress: () => void onRefresh() },
-              { key: "pdf", icon: "document-text-outline" as any, onPress: () => void onPdfRegister() },
-              { key: "mat", icon: "cube-outline" as any, onPress: () => void onPdfMaterials() },
-              ...(!isIncoming ? [
-                { key: "obj", icon: "business-outline" as any, onPress: () => void onPdfObjectWork() },
-              ] : []),
-            ]}
-
+            actions={reportActions}
             ui={{
               text: UI.text,
               sub: UI.sub,

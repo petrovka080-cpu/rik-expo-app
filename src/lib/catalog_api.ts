@@ -312,41 +312,61 @@ export async function searchCatalogItems(
   limit = 50,
   apps?: string[]
 ): Promise<CatalogItem[]> {
-  const pQuery = sanitizePostgrestOrTerm(q);
+  const normQ = norm(q);
+  if (!normQ) return [];
+  const pQuery = sanitizePostgrestOrTerm(normQ);
   const pLimit = clamp(limit || 50, 1, 200);
 
-  // 1) С‚РІРѕРё RPC (РµСЃР»Рё РµСЃС‚СЊ)
-  for (const fn of ["rik_quick_search_typed", "rik_quick_ru", "rik_quick_search"]) {
+  // 1) Try RPCs first
+  const rpcs = ["rik_quick_ru", "rik_quick_search_typed", "rik_quick_search"];
+  for (const fn of rpcs) {
     try {
       const { data, error } = await supabase.rpc(fn as any, {
         p_q: pQuery,
         p_limit: pLimit,
         p_apps: apps ?? null,
       } as any);
-      if (!error && Array.isArray(data)) {
+      if (!error && Array.isArray(data) && data.length > 0) {
         return (data as any[]).slice(0, pLimit).map((r) => ({
-          code: r.rik_code,
-          name: r.name_human ?? r.rik_code,
-          uom: r.uom ?? r.uom_code ?? null,
-          sector_code: r.sector_code ?? null,
-          spec: r.spec ?? null,
-          kind: r.kind ?? null,
-          group_code: r.group_code ?? null,
+          code: r.rik_code || r.code,
+          name: r.name_human || r.name || r.rik_code,
+          uom: r.uom || r.uom_code || null,
+          sector_code: r.sector_code || null,
+          spec: r.spec || null,
+          kind: r.kind || null,
+          group_code: r.group_code || null,
         }));
       }
     } catch { }
   }
 
-  // 2) С‡РёСЃС‚РѕРµ РїСЂРµРґСЃС‚Р°РІР»РµРЅРёРµ
-  const { data, error } = await supabase
-    .from("catalog_items_clean")
-    .select("code,name,uom,sector_code,spec,kind,group_code")
-    .or(`code.ilike.%${pQuery}%,name.ilike.%${pQuery}%`)
-    .order("code", { ascending: true })
+  // 2) Fallback: Split tokens and search name in rik_items
+  const tokens = pQuery.split(/\s+/).filter(t => t.length >= 2);
+  let queryBuilder = supabase
+    .from("rik_items")
+    .select("rik_code,name_human,uom_code,sector_code,spec,kind,group_code")
     .limit(pLimit);
 
+  if (tokens.length > 0) {
+    tokens.forEach(t => {
+      queryBuilder = queryBuilder.or(`name_human.ilike.%${t}%,rik_code.ilike.%${t}%`);
+    });
+  } else {
+    queryBuilder = queryBuilder.or(`name_human.ilike.%${pQuery}%,rik_code.ilike.%${pQuery}%`);
+  }
+
+  const { data, error } = await queryBuilder.order("rik_code", { ascending: true });
   if (error || !Array.isArray(data)) return [];
-  return data as CatalogItem[];
+
+  return (data as any[]).map((r) => ({
+    code: r.rik_code,
+    name: r.name_human || r.rik_code,
+    uom: r.uom_code || null,
+    sector_code: r.sector_code || null,
+    spec: r.spec || null,
+    kind: r.kind || null,
+    group_code: r.group_code || null,
+  }));
 }
 
 /** ========= Р“СЂСѓРїРїС‹ ========= */
@@ -1230,16 +1250,16 @@ export async function createProposalsBySupplier(
     const metaRows = (bucket.meta ?? ids.map((request_item_id) => ({ request_item_id })))
       .filter((row) => idsSet.has(String(row?.request_item_id || "").trim()))
       .map((row) => ({
-      request_item_id: String(row.request_item_id || "").trim(),
-      // @ts-ignore
-      price: row.price ?? null,
+        request_item_id: String(row.request_item_id || "").trim(),
+        // @ts-ignore
+        price: row.price ?? null,
 
-      // вњ… Р’ Р‘Р” supplier С‚РѕР»СЊРєРѕ СЂРµР°Р»СЊРЅС‹Р№ РёР»Рё NULL (РЅРёРєР°РєРёС… "вЂ” Р±РµР· РїРѕСЃС‚Р°РІС‰РёРєР° вЂ”")
-      supplier: supplierDb,
+        // вњ… Р’ Р‘Р” supplier С‚РѕР»СЊРєРѕ СЂРµР°Р»СЊРЅС‹Р№ РёР»Рё NULL (РЅРёРєР°РєРёС… "вЂ” Р±РµР· РїРѕСЃС‚Р°РІС‰РёРєР° вЂ”")
+        supplier: supplierDb,
 
-      // @ts-ignore
-      note: row.note ?? null,
-    }));
+        // @ts-ignore
+        note: row.note ?? null,
+      }));
 
     if (metaRows.length) {
       try {
@@ -1300,25 +1320,53 @@ export async function rikQuickSearch(q: string, limit = 60) {
   const text = (q ?? '').trim();
   if (text.length < 2) return [];
 
-  const { data, error } = await supabase.rpc('catalog_search_prod_v2', {
-    q: text,
-    p_limit: Math.min(limit, 100),
-    p_kind: 'material',
-    p_uom_code: null,
-  });
+  const pQuery = sanitizePostgrestOrTerm(text);
+  const rpcs = ['rik_quick_ru', 'rik_quick_search_typed', 'rik_quick_search'];
 
-  if (error) {
-    console.error('[rikQuickSearch][catalog_search_prod_v2]', error);
-    return [];
+  for (const fn of rpcs) {
+    try {
+      const { data, error } = await supabase.rpc(fn as any, {
+        p_q: pQuery,
+        p_limit: Math.min(limit, 100),
+        p_apps: null,
+      } as any);
+
+      if (!error && Array.isArray(data) && data.length > 0) {
+        return data.map((r: any) => ({
+          rik_code: r.rik_code || r.code,
+          name_human: r.name_human || r.name || r.name_ru || r.item_name || r.rik_code,
+          name_human_ru: r.name_human_ru ?? r.name_human ?? r.name_ru ?? null,
+          uom_code: r.uom_code ?? r.uom ?? null,
+          kind: r.kind ?? null,
+          apps: null,
+        }));
+      }
+    } catch (e) { }
   }
 
-  if (!Array.isArray(data)) return [];
+  // Fallback: Smart ILIKE on rik_items
+  const tokens = pQuery.split(/\s+/).filter(t => t.length >= 2);
+  let builder = supabase
+    .from('rik_items')
+    .select('rik_code,name_human,uom_code,kind,name_human_ru')
+    .limit(limit);
+
+  if (tokens.length > 0) {
+    tokens.forEach(t => {
+      builder = builder.or(`name_human.ilike.%${t}%,rik_code.ilike.%${t}%`);
+    });
+  } else {
+    builder = builder.or(`name_human.ilike.%${pQuery}%,rik_code.ilike.%${pQuery}%`);
+  }
+
+  const { data, error } = await builder.order('rik_code', { ascending: true });
+  if (error || !Array.isArray(data)) return [];
 
   return data.map((r: any) => ({
     rik_code: r.rik_code,
-    name_human: r.name_human,
-    name_human_ru: r.name_human_ru ?? null,
-    uom_code: r.uom_code ?? null,
+    name_human: r.name_human || r.rik_code,
+    name_human_ru: r.name_human_ru ?? r.name_human ?? null,
+    uom_code: r.uom_code || null,
     kind: r.kind ?? null,
     apps: null,
   }));

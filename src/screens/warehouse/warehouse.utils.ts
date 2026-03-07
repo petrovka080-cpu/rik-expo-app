@@ -6,15 +6,15 @@ export const nz = (v: unknown, d = 0) => (Number.isFinite(Number(v)) ? Number(v)
 
 export const pickErr = (e: unknown) => {
   const err = e as { message?: string; error_description?: string; hint?: string } | null;
-  return String(err?.message || err?.error_description || err?.hint || JSON.stringify(e) || "Ошибка");
+  return String(err?.message || err?.error_description || err?.hint || JSON.stringify(e) || "РћС€РёР±РєР°");
 };
 
-export const showErr = (e: unknown) => Alert.alert("Ошибка", pickErr(e));
+export const showErr = (e: unknown) => Alert.alert("РћС€РёР±РєР°", pickErr(e));
 
 export const norm = (s: string) =>
   (s || "")
     .toLowerCase()
-    .replace(/ё/g, "е")
+    .replace(/С‘/g, "Рµ")
     .replace(/\s+/g, " ")
     .trim();
 
@@ -43,7 +43,7 @@ export const parseQtySelected = (s: string | undefined | null, left: number) => 
   return Math.min(n, Math.max(0, left));
 };
 
-export function withTimeout<T>(p: Promise<T>, ms: number, label: string): Promise<T> {
+export function withTimeout<T>(p: PromiseLike<T>, ms: number, label: string): Promise<T> {
   let t: ReturnType<typeof setTimeout> | undefined;
   const timeout = new Promise<T>((_, reject) => {
     t = setTimeout(() => reject(new Error(`Timeout ${ms}ms: ${label}`)), ms);
@@ -111,8 +111,8 @@ export async function saveJson(key: string, value: unknown): Promise<void> {
 export const normMatCode = (raw: unknown) => {
   const s = String(raw ?? "").trim();
   return s
-    .replace(/[Пп]/g, "P")
-    .replace(/[—–?]/g, "-")
+    .replace(/[РџРї]/g, "P")
+    .replace(/[вЂ”вЂ“?]/g, "-")
     .replace(/\s+/g, " ")
     .replace(/\s*-\s*/g, "-")
     .replace(/-+/g, "-")
@@ -122,39 +122,39 @@ export const normMatCode = (raw: unknown) => {
 export const ruToLat = (s: string) =>
   (s || "")
     .toLowerCase()
-    .replace(/ё/g, "е")
-    .replace(/ж/g, "zh")
-    .replace(/ч/g, "ch")
-    .replace(/ш/g, "sh")
-    .replace(/щ/g, "sch")
-    .replace(/ю/g, "yu")
-    .replace(/я/g, "ya")
-    .replace(/а/g, "a")
-    .replace(/б/g, "b")
-    .replace(/в/g, "v")
-    .replace(/г/g, "g")
-    .replace(/д/g, "d")
-    .replace(/е/g, "e")
-    .replace(/з/g, "z")
-    .replace(/и/g, "i")
-    .replace(/й/g, "y")
-    .replace(/к/g, "k")
-    .replace(/л/g, "l")
-    .replace(/м/g, "m")
-    .replace(/н/g, "n")
-    .replace(/о/g, "o")
-    .replace(/п/g, "p")
-    .replace(/р/g, "r")
-    .replace(/с/g, "s")
-    .replace(/т/g, "t")
-    .replace(/у/g, "u")
-    .replace(/ф/g, "f")
-    .replace(/х/g, "h")
-    .replace(/ц/g, "ts")
-    .replace(/ъ/g, "")
-    .replace(/ы/g, "y")
-    .replace(/ь/g, "")
-    .replace(/э/g, "e");
+    .replace(/С‘/g, "Рµ")
+    .replace(/Р¶/g, "zh")
+    .replace(/С‡/g, "ch")
+    .replace(/С€/g, "sh")
+    .replace(/С‰/g, "sch")
+    .replace(/СЋ/g, "yu")
+    .replace(/СЏ/g, "ya")
+    .replace(/Р°/g, "a")
+    .replace(/Р±/g, "b")
+    .replace(/РІ/g, "v")
+    .replace(/Рі/g, "g")
+    .replace(/Рґ/g, "d")
+    .replace(/Рµ/g, "e")
+    .replace(/Р·/g, "z")
+    .replace(/Рё/g, "i")
+    .replace(/Р№/g, "y")
+    .replace(/Рє/g, "k")
+    .replace(/Р»/g, "l")
+    .replace(/Рј/g, "m")
+    .replace(/РЅ/g, "n")
+    .replace(/Рѕ/g, "o")
+    .replace(/Рї/g, "p")
+    .replace(/СЂ/g, "r")
+    .replace(/СЃ/g, "s")
+    .replace(/С‚/g, "t")
+    .replace(/Сѓ/g, "u")
+    .replace(/С„/g, "f")
+    .replace(/С…/g, "h")
+    .replace(/С†/g, "ts")
+    .replace(/СЉ/g, "")
+    .replace(/С‹/g, "y")
+    .replace(/СЊ/g, "")
+    .replace(/СЌ/g, "e");
 
 export const matchQuerySmart = (hay: string, q: string) => {
   const qq = norm(q);
@@ -170,13 +170,13 @@ export const matchQuerySmart = (hay: string, q: string) => {
 
 export const normUomId = (raw: unknown) => {
   const s = String(raw ?? "").trim();
-  if (s === "м") return "m";
-  if (s === "м?" || s === "м2") return "m2";
-  if (s === "м?" || s === "м3") return "m3";
+  if (s === "Рј") return "m";
+  if (s === "Рј?" || s === "Рј2") return "m2";
+  if (s === "Рј?" || s === "Рј3") return "m3";
   return s;
 };
 
-export function parseReqHeaderContext(rawParts: Array<string | null | undefined>): ReqHeaderContext {
+export function parseReqHeaderContext(rawParts: (string | null | undefined)[]): ReqHeaderContext {
   const out: ReqHeaderContext = {
     contractor: "",
     phone: "",
@@ -202,12 +202,12 @@ export function parseReqHeaderContext(rawParts: Array<string | null | undefined>
 
       if (
         !out.contractor &&
-        (key.includes("подряд") || key.includes("contractor") || key.includes("наименование организации") || key.includes("организац"))
+        (key.includes("РїРѕРґСЂСЏРґ") || key.includes("contractor") || key.includes("РЅР°РёРјРµРЅРѕРІР°РЅРёРµ РѕСЂРіР°РЅРёР·Р°С†РёРё") || key.includes("РѕСЂРіР°РЅРёР·Р°С†"))
       ) {
         put("contractor", value);
-      } else if (!out.phone && (key.includes("тел") || key.includes("phone"))) {
+      } else if (!out.phone && (key.includes("С‚РµР»") || key.includes("phone"))) {
         put("phone", value);
-      } else if (!out.volume && (key.includes("объ") || key.includes("volume"))) {
+      } else if (!out.volume && (key.includes("РѕР±СЉ") || key.includes("volume"))) {
         put("volume", value);
       }
     }

@@ -1,4 +1,4 @@
-// FILE: app/(tabs)/reports.tsx
+﻿// FILE: app/(tabs)/reports.tsx
 import React, { useCallback, useEffect, useState } from "react";
 import {
   View, Text, ScrollView, TextInput, Pressable,
@@ -6,10 +6,10 @@ import {
 } from "react-native";
 import * as Print from "expo-print";
 import * as Sharing from "expo-sharing";
-import * as FileSystem from "expo-file-system";
+import * as FileSystem from "expo-file-system/legacy";
 import { supabase } from "../../src/lib/supabaseClient";
 import { LineChart, PieChart } from "react-native-chart-kit";
-// alias (на всякий случай, чтобы не конфликтовать с именем Sharing)
+// alias (РЅР° РІСЃСЏРєРёР№ СЃР»СѓС‡Р°Р№, С‡С‚РѕР±С‹ РЅРµ РєРѕРЅС„Р»РёРєС‚РѕРІР°С‚СЊ СЃ РёРјРµРЅРµРј Sharing)
 import * as ExpoSharing from "expo-sharing";
 
 const w = Dimensions.get("window").width;
@@ -43,51 +43,49 @@ export default function Reports() {
       setAging(a || []);
       setPipe(p || []);
     } catch (e: any) {
-      Alert.alert("Ошибка", e.message || "Не удалось сформировать отчёты");
+      Alert.alert("РћС€РёР±РєР°", e.message || "РќРµ СѓРґР°Р»РѕСЃСЊ СЃС„РѕСЂРјРёСЂРѕРІР°С‚СЊ РѕС‚С‡С‘С‚С‹");
     } finally {
       setLoading(false);
     }
   }, [start, end]);
 
-  useEffect(() => { run(); }, []); // вызов один раз — как было
+  useEffect(() => { run(); }, []); // РІС‹Р·РѕРІ РѕРґРёРЅ СЂР°Р· вЂ” РєР°Рє Р±С‹Р»Рѕ
 
-  // ===== Экспорт CSV =====
+  // ===== Р­РєСЃРїРѕСЂС‚ CSV =====
   const exportCSV = async () => {
     try {
-      let csv = `Отчёт;${start};${end}\n\n`;
+      let csv = `РћС‚С‡С‘С‚;${start};${end}\n\n`;
       const add = (title: string, cols: string[], rows: any[][]) => {
         csv += title + "\n" + cols.join(";") + "\n";
         for (const r of rows) csv += r.map((x) => String(x)).join(";") + "\n";
         csv += "\n";
       };
       add(
-        "Обороты склада",
-        ["Код", "Приход", "Расход", "Баланс"],
+        "РћР±РѕСЂРѕС‚С‹ СЃРєР»Р°РґР°",
+        ["РљРѕРґ", "РџСЂРёС…РѕРґ", "Р Р°СЃС…РѕРґ", "Р‘Р°Р»Р°РЅСЃ"],
         turnover.map((x) => [x.rik_code, fmt(x.incoming), fmt(x.outgoing), fmt(x.balance)])
       );
       add(
-        "Затраты по объектам",
-        ["Объект", "Статья", "Кол-во", "Сумма"],
-        costs.map((x) => [x.object_id || "—", humanArticle(x.article), fmt(x.fact_qty), fmt(x.fact_amount)])
+        "Р—Р°С‚СЂР°С‚С‹ РїРѕ РѕР±СЉРµРєС‚Р°Рј",
+        ["РћР±СЉРµРєС‚", "РЎС‚Р°С‚СЊСЏ", "РљРѕР»-РІРѕ", "РЎСѓРјРјР°"],
+        costs.map((x) => [x.object_id || "вЂ”", humanArticle(x.article), fmt(x.fact_qty), fmt(x.fact_amount)])
       );
       add(
-        "Долги по контрагентам",
-        ["Контрагент", "Выставлено", "Оплачено", "Баланс"],
+        "Р”РѕР»РіРё РїРѕ РєРѕРЅС‚СЂР°РіРµРЅС‚Р°Рј",
+        ["РљРѕРЅС‚СЂР°РіРµРЅС‚", "Р’С‹СЃС‚Р°РІР»РµРЅРѕ", "РћРїР»Р°С‡РµРЅРѕ", "Р‘Р°Р»Р°РЅСЃ"],
         aging.map((x) => [x.counterparty_id, fmt(x.total_billed), fmt(x.total_paid), fmt(x.balance)])
       );
       add(
-        "Воронка закупок",
-        ["Статус", "Кол-во"],
+        "Р’РѕСЂРѕРЅРєР° Р·Р°РєСѓРїРѕРє",
+        ["РЎС‚Р°С‚СѓСЃ", "РљРѕР»-РІРѕ"],
         pipe.map((x) => [humanStatus(x.status), x.cnt])
       );
 
-    // @ts-ignore
-      const path = FileSystem.cacheDirectory + "reports.csv";
-    // @ts-ignore
-      await FileSystem.writeAsStringAsync(path, csv, { encoding: FileSystem.EncodingType.UTF8 });
+          const path = FileSystem.cacheDirectory + "reports.csv";
+          await FileSystem.writeAsStringAsync(path, csv, { encoding: FileSystem.EncodingType.UTF8 });
       await Sharing.shareAsync(path);
     } catch (e: any) {
-      Alert.alert("Ошибка экспорта", e.message);
+      Alert.alert("РћС€РёР±РєР° СЌРєСЃРїРѕСЂС‚Р°", e.message);
     }
   };
 
@@ -103,7 +101,7 @@ export default function Reports() {
     }
   }
 
-  // ===== Экспорт PDF =====
+  // ===== Р­РєСЃРїРѕСЂС‚ PDF =====
   const exportPDF = async () => {
     try {
       const html = `
@@ -118,32 +116,32 @@ export default function Reports() {
         th { background: #f2f5f9; }
       </style>
       </head><body>
-      <h2>Отчёт ${start} — ${end}</h2>
+      <h2>РћС‚С‡С‘С‚ ${start} вЂ” ${end}</h2>
       ${htmlTable(
-        "Обороты склада",
-        ["Код", "Приход", "Расход", "Баланс"],
+        "РћР±РѕСЂРѕС‚С‹ СЃРєР»Р°РґР°",
+        ["РљРѕРґ", "РџСЂРёС…РѕРґ", "Р Р°СЃС…РѕРґ", "Р‘Р°Р»Р°РЅСЃ"],
         turnover.map((x) => [x.rik_code, fmt(x.incoming), fmt(x.outgoing), fmt(x.balance)])
       )}
       ${htmlTable(
-        "Затраты по объектам",
-        ["Объект", "Статья", "Кол-во", "Сумма"],
-        costs.map((x) => [x.object_id || "—", humanArticle(x.article), fmt(x.fact_qty), fmt(x.fact_amount)])
+        "Р—Р°С‚СЂР°С‚С‹ РїРѕ РѕР±СЉРµРєС‚Р°Рј",
+        ["РћР±СЉРµРєС‚", "РЎС‚Р°С‚СЊСЏ", "РљРѕР»-РІРѕ", "РЎСѓРјРјР°"],
+        costs.map((x) => [x.object_id || "вЂ”", humanArticle(x.article), fmt(x.fact_qty), fmt(x.fact_amount)])
       )}
       ${htmlTable(
-        "Долги по контрагентам",
-        ["Контрагент", "Выставлено", "Оплачено", "Баланс"],
+        "Р”РѕР»РіРё РїРѕ РєРѕРЅС‚СЂР°РіРµРЅС‚Р°Рј",
+        ["РљРѕРЅС‚СЂР°РіРµРЅС‚", "Р’С‹СЃС‚Р°РІР»РµРЅРѕ", "РћРїР»Р°С‡РµРЅРѕ", "Р‘Р°Р»Р°РЅСЃ"],
         aging.map((x) => [x.counterparty_id, fmt(x.total_billed), fmt(x.total_paid), fmt(x.balance)])
       )}
       ${htmlTable(
-        "Воронка закупок",
-        ["Статус", "Кол-во"],
+        "Р’РѕСЂРѕРЅРєР° Р·Р°РєСѓРїРѕРє",
+        ["РЎС‚Р°С‚СѓСЃ", "РљРѕР»-РІРѕ"],
         pipe.map((x) => [humanStatus(x.status), x.cnt])
       )}
       </body></html>`;
       const { uri } = await Print.printToFileAsync({ html });
       await Sharing.shareAsync(uri);
     } catch (e: any) {
-      Alert.alert("Ошибка PDF", e.message);
+      Alert.alert("РћС€РёР±РєР° PDF", e.message);
     }
   };
 
@@ -156,61 +154,61 @@ export default function Reports() {
 
   return (
     <ScrollView style={{ flex: 1, backgroundColor: "#f8fafc" }} contentContainerStyle={{ padding: 12, gap: 16 }}>
-      <Text style={{ fontSize: 22, fontWeight: "700", color: "#0f172a" }}>Отчёты</Text>
+      <Text style={{ fontSize: 22, fontWeight: "700", color: "#0f172a" }}>РћС‚С‡С‘С‚С‹</Text>
 
-      {/* Фильтры и экспорт */}
+      {/* Р¤РёР»СЊС‚СЂС‹ Рё СЌРєСЃРїРѕСЂС‚ */}
       <View style={card}>
-        <Text style={{ fontWeight: "600", fontSize: 16 }}>Период</Text>
+        <Text style={{ fontWeight: "600", fontSize: 16 }}>РџРµСЂРёРѕРґ</Text>
         <View style={{ flexDirection: "row", gap: 8 }}>
           <TextInput style={inp} value={start} onChangeText={setStart} placeholder="YYYY-MM-DD" />
           <TextInput style={inp} value={end} onChangeText={setEnd} placeholder="YYYY-MM-DD" />
           <Pressable style={btnBlue} onPress={run}>
-            <Text style={{ color: "#fff", fontWeight: "700" }}>Сформировать</Text>
+            <Text style={{ color: "#fff", fontWeight: "700" }}>РЎС„РѕСЂРјРёСЂРѕРІР°С‚СЊ</Text>
           </Pressable>
         </View>
         <View style={{ flexDirection: "row", gap: 8 }}>
-          <Pressable style={btnGray} onPress={exportCSV}><Text>📊 Экспорт CSV</Text></Pressable>
-          <Pressable style={btnGray} onPress={exportPDF}><Text>📄 Экспорт PDF</Text></Pressable>
+          <Pressable style={btnGray} onPress={exportCSV}><Text>рџ“Љ Р­РєСЃРїРѕСЂС‚ CSV</Text></Pressable>
+          <Pressable style={btnGray} onPress={exportPDF}><Text>рџ“„ Р­РєСЃРїРѕСЂС‚ PDF</Text></Pressable>
         </View>
       </View>
 
       {loading && <ActivityIndicator size="large" />}
 
-      {/* 1. Обороты склада */}
-      <ReportCard title="Обороты склада">
+      {/* 1. РћР±РѕСЂРѕС‚С‹ СЃРєР»Р°РґР° */}
+      <ReportCard title="РћР±РѕСЂРѕС‚С‹ СЃРєР»Р°РґР°">
         <ChartTurnover data={turnover} />
         <Table
-          columns={["Код", "Приход", "Расход", "Баланс"]}
+          columns={["РљРѕРґ", "РџСЂРёС…РѕРґ", "Р Р°СЃС…РѕРґ", "Р‘Р°Р»Р°РЅСЃ"]}
           rows={turnover.map((x) => [x.rik_code, fmt(x.incoming), fmt(x.outgoing), fmt(x.balance)])}
         />
       </ReportCard>
 
-      {/* 2. Затраты по объектам */}
-      <ReportCard title="Затраты по объектам">
+      {/* 2. Р—Р°С‚СЂР°С‚С‹ РїРѕ РѕР±СЉРµРєС‚Р°Рј */}
+      <ReportCard title="Р—Р°С‚СЂР°С‚С‹ РїРѕ РѕР±СЉРµРєС‚Р°Рј">
         <Table
-          columns={["Объект", "Статья", "Кол-во", "Сумма"]}
-          rows={costs.map((x) => [x.object_id || "—", humanArticle(x.article), fmt(x.fact_qty), fmt(x.fact_amount)])}
+          columns={["РћР±СЉРµРєС‚", "РЎС‚Р°С‚СЊСЏ", "РљРѕР»-РІРѕ", "РЎСѓРјРјР°"]}
+          rows={costs.map((x) => [x.object_id || "вЂ”", humanArticle(x.article), fmt(x.fact_qty), fmt(x.fact_amount)])}
         />
       </ReportCard>
 
-      {/* 3. Долги по контрагентам */}
-      <ReportCard title="Долги по контрагентам">
+      {/* 3. Р”РѕР»РіРё РїРѕ РєРѕРЅС‚СЂР°РіРµРЅС‚Р°Рј */}
+      <ReportCard title="Р”РѕР»РіРё РїРѕ РєРѕРЅС‚СЂР°РіРµРЅС‚Р°Рј">
         <Table
-          columns={["Контрагент", "Выставлено", "Оплачено", "Баланс"]}
+          columns={["РљРѕРЅС‚СЂР°РіРµРЅС‚", "Р’С‹СЃС‚Р°РІР»РµРЅРѕ", "РћРїР»Р°С‡РµРЅРѕ", "Р‘Р°Р»Р°РЅСЃ"]}
           rows={aging.map((x) => [x.counterparty_id, fmt(x.total_billed), fmt(x.total_paid), fmt(x.balance)])}
         />
       </ReportCard>
 
-      {/* 4. Воронка закупок */}
-      <ReportCard title="Воронка закупок">
+      {/* 4. Р’РѕСЂРѕРЅРєР° Р·Р°РєСѓРїРѕРє */}
+      <ReportCard title="Р’РѕСЂРѕРЅРєР° Р·Р°РєСѓРїРѕРє">
         <ChartPie data={pipe} />
-        <Table columns={["Статус", "Кол-во"]} rows={pipe.map((x) => [humanStatus(x.status), x.cnt])} />
+        <Table columns={["РЎС‚Р°С‚СѓСЃ", "РљРѕР»-РІРѕ"]} rows={pipe.map((x) => [humanStatus(x.status), x.cnt])} />
       </ReportCard>
     </ScrollView>
   );
 }
 
-/** ===== Стили и мелкие компоненты ===== */
+/** ===== РЎС‚РёР»Рё Рё РјРµР»РєРёРµ РєРѕРјРїРѕРЅРµРЅС‚С‹ ===== */
 const card = { backgroundColor: "#fff", padding: 12, borderRadius: 10, borderWidth: 1, borderColor: "#e2e8f0", gap: 10 };
 const inp = { borderWidth: 1, borderColor: "#e2e8f0", borderRadius: 8, paddingHorizontal: 10, paddingVertical: 8, flex: 1, backgroundColor: "#fff" };
 const btnBlue = { backgroundColor: "#0ea5e9", borderRadius: 8, paddingHorizontal: 14, paddingVertical: 10 };
@@ -226,7 +224,7 @@ function ReportCard({ title, children }: { title: string; children: any }) {
 }
 
 function Table({ columns, rows }: { columns: string[]; rows: (string | number)[][] }) {
-  if (!rows.length) return <Text style={{ color: "#64748b" }}>Нет данных</Text>;
+  if (!rows.length) return <Text style={{ color: "#64748b" }}>РќРµС‚ РґР°РЅРЅС‹С…</Text>;
   return (
     <View style={{ borderWidth: 1, borderColor: "#e2e8f0", borderRadius: 8 }}>
       <View style={{ flexDirection: "row", backgroundColor: "#f1f5f9", padding: 8 }}>
@@ -243,25 +241,25 @@ function Table({ columns, rows }: { columns: string[]; rows: (string | number)[]
 
 function humanArticle(a: string) {
   switch (a) {
-    case "materials": return "Материалы";
-    case "works":     return "Работы";
-    case "transport": return "Транспорт";
-    default:          return a || "—";
+    case "materials": return "РњР°С‚РµСЂРёР°Р»С‹";
+    case "works":     return "Р Р°Р±РѕС‚С‹";
+    case "transport": return "РўСЂР°РЅСЃРїРѕСЂС‚";
+    default:          return a || "вЂ”";
   }
 }
 function humanStatus(s: string) {
   const m: Record<string,string> = {
-    draft: "Черновик",
-    pending: "К приходу",
-    partial: "Частично",
-    confirmed: "Принято",
-    approved: "Утверждено",
-    "На утверждении": "На утверждении",
+    draft: "Р§РµСЂРЅРѕРІРёРє",
+    pending: "Рљ РїСЂРёС…РѕРґСѓ",
+    partial: "Р§Р°СЃС‚РёС‡РЅРѕ",
+    confirmed: "РџСЂРёРЅСЏС‚Рѕ",
+    approved: "РЈС‚РІРµСЂР¶РґРµРЅРѕ",
+    "РќР° СѓС‚РІРµСЂР¶РґРµРЅРёРё": "РќР° СѓС‚РІРµСЂР¶РґРµРЅРёРё",
   };
-  return m[s] || s || "—";
+  return m[s] || s || "вЂ”";
 }
 
-/** ===== Графики ===== */
+/** ===== Р“СЂР°С„РёРєРё ===== */
 function ChartTurnover({ data }: { data: any[] }) {
   if (!data.length) return null;
   return (
@@ -304,3 +302,4 @@ function ChartPie({ data }: { data: any[] }) {
     />
   );
 }
+

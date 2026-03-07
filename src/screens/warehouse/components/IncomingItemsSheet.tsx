@@ -4,6 +4,7 @@ import { Ionicons } from "@expo/vector-icons";
 
 import WarehouseSheet from "./WarehouseSheet";
 import { UI, s } from "../warehouse.styles";
+import type { ItemRow } from "../warehouse.types";
 
 import IconSquareButton from "../../../ui/IconSquareButton";
 
@@ -19,7 +20,7 @@ type Props = {
   roleLabel: string;
 
   incomingId: string;
-  rows: any[];
+  rows: ItemRow[];
 
   kbH: number;
 
@@ -48,7 +49,6 @@ export default function IncomingItemsSheet({
 
   return (
     <WarehouseSheet visible={visible} onClose={onClose} heightPct={0.88}>
-      {/* HEADER */}
       <View
         style={{
           paddingBottom: 10,
@@ -58,7 +58,6 @@ export default function IncomingItemsSheet({
         }}
       >
         <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-          {/* ✅ иконка вместо "Свернуть" */}
           <IconSquareButton
             onPress={onClose}
             accessibilityLabel="Свернуть"
@@ -98,7 +97,6 @@ export default function IncomingItemsSheet({
             </View>
           </View>
 
-          {/* ✅ Кнопка "Оприходовать": иконка + текст в одном стиле */}
           <Pressable
             onPress={() => onSubmit(incomingId)}
             disabled={submitDisabled}
@@ -123,10 +121,9 @@ export default function IncomingItemsSheet({
         </Text>
       </View>
 
-      {/* LIST */}
       <AnimatedFlatList
         data={rows || []}
-        keyExtractor={(r: any, idx: number) => String(r?.incoming_item_id ?? r?.purchase_item_id ?? idx)}
+        keyExtractor={(r: ItemRow, idx: number) => String(r?.incoming_item_id ?? r?.purchase_item_id ?? idx)}
         style={{ flex: 1 }}
         contentContainerStyle={{
           paddingTop: 12,
@@ -134,13 +131,13 @@ export default function IncomingItemsSheet({
         }}
         keyboardShouldPersistTaps={Platform.OS === "web" ? "handled" : "always"}
         keyboardDismissMode={Platform.OS === "ios" ? "interactive" : "on-drag"}
-        // @ts-ignore
-        renderItem={({ item }: { item: any }) => {
-          const exp = Number(item.qty_expected ?? 0) || 0;
-          const rec = Number(item.qty_received ?? 0) || 0;
+        renderItem={({ item }) => {
+          const row = item as ItemRow;
+          const exp = Number(row.qty_expected ?? 0) || 0;
+          const rec = Number(row.qty_received ?? 0) || 0;
           const left = Math.max(0, exp - rec);
 
-          const inputKey = String(item.incoming_item_id ?? item.purchase_item_id ?? "");
+          const inputKey = String(row.incoming_item_id ?? row.purchase_item_id ?? "");
           const val = qtyInputByItem?.[inputKey] ?? "";
 
           return (
@@ -148,11 +145,11 @@ export default function IncomingItemsSheet({
               <View style={s.mobCard}>
                 <View style={s.mobMain}>
                   <Text style={s.mobTitle} numberOfLines={3}>
-                    {String(item.name ?? "—")}
+                    {String(row.name ?? "—")}
                   </Text>
 
                   <Text style={s.mobMeta} numberOfLines={2}>
-                    {`${String(item.uom ?? "—")} · Ожид: ${exp} · Принято: ${rec} · Ост: ${left}`}
+                    {`${String(row.uom ?? "—")} · Ожид: ${exp} · Принято: ${rec} · Ост: ${left}`}
                   </Text>
 
                   <TextInput
@@ -183,3 +180,4 @@ export default function IncomingItemsSheet({
     </WarehouseSheet>
   );
 }
+

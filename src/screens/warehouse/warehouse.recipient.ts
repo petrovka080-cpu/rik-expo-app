@@ -23,12 +23,14 @@ export function useWarehouseRecipient(args: {
     (async () => {
       const last = (await loadString(RECIPIENT_KEY)) ?? "";
       const recent = await loadJson<string[]>(RECIPIENT_RECENT_KEY, []);
-      if (last && !recipientText) setRecipientText(last);
+      if (last) {
+        setRecipientText((prev) => (String(prev ?? "").trim() ? prev : last));
+      }
       setRecipientRecent(Array.isArray(recent) ? recent : []);
     })().catch((e) => {
       console.warn("[warehouse.recipient] bootstrap failed", e);
     });
-    
+
   }, [enabled]);
 
   const recipientSuggestions = useMemo(() => {

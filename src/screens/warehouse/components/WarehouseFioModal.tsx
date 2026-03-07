@@ -10,7 +10,6 @@ import {
     KeyboardAvoidingView,
     ActivityIndicator,
 } from "react-native";
-import { UI } from "../warehouse.styles";
 import { BlurView } from "expo-blur";
 
 interface Props {

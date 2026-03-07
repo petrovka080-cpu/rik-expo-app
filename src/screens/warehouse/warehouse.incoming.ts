@@ -1,16 +1,43 @@
 // src/screens/warehouse/warehouse.incoming.ts
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Alert } from "react-native";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase } from "../../lib/supabaseClient";
 import type { IncomingRow, ItemRow } from "./warehouse.types";
-import { nz, pickErr, showErr, withTimeout } from "./warehouse.utils";
+import { nz, pickErr, withTimeout } from "./warehouse.utils";
 
-// маленькие утилиты (локально в модуле)
+// РјР°Р»РµРЅСЊРєРёРµ СѓС‚РёР»РёС‚С‹ (Р»РѕРєР°Р»СЊРЅРѕ РІ РјРѕРґСѓР»Рµ)
 const uniq = (arr: string[]) => Array.from(new Set(arr.filter(Boolean)));
 const chunk = <T,>(arr: T[], size: number) => {
   const out: T[][] = [];
   for (let i = 0; i < arr.length; i += size) out.push(arr.slice(i, i + size));
   return out;
+};
+const PR_TTL_MS = 10 * 60 * 1000;
+
+type IncomingHeadRowDb = {
+  incoming_id?: string | null;
+  purchase_id?: string | null;
+  incoming_status?: string | null;
+  po_no?: string | null;
+  purchase_status?: string | null;
+  purchase_created_at?: string | null;
+  confirmed_at?: string | null;
+  qty_expected_sum?: number | null;
+  qty_received_sum?: number | null;
+  qty_left_sum?: number | null;
+  items_cnt?: number | null;
+  pending_cnt?: number | null;
+  partial_cnt?: number | null;
+};
+
+type IncomingItemRowDb = {
+  incoming_item_id?: string | null;
+  purchase_item_id?: string | null;
+  code?: string | null;
+  name?: string | null;
+  uom?: string | null;
+  qty_expected?: number | null;
+  qty_received?: number | null;
+  sort_key?: number | null;
 };
 
 export function useWarehouseIncoming() {
@@ -37,7 +64,6 @@ export function useWarehouseIncoming() {
 
   const prCacheMetaRef = useRef<Record<string, number>>({}); // purchase_id -> ts
   const prInflightRef = useRef<Record<string, Promise<void>>>({});
-  const PR_TTL_MS = 10 * 60 * 1000;
 
   const preloadProposalNosByPurchases = useCallback(async (purchaseIdsRaw: string[]) => {
     const now = Date.now();
@@ -66,16 +92,16 @@ export function useWarehouseIncoming() {
           const purchaseToProposal = new Map<string, string>();
 
           for (const part of chunk(toFetch, 250)) {
-            const r1: any = await withTimeout(
-              // @ts-ignore
-              supabase.from("purchases" as any).select("id, proposal_id").in("id", part) as Promise<any>,
+            const r1 = await withTimeout(
+              supabase
+                .from("purchases")
+                .select("id, proposal_id")
+                .in("id", part),
               15000,
               "purchases->proposal_id",
             );
-            // @ts-ignore
             if (!r1?.error && Array.isArray(r1.data)) {
-              // @ts-ignore
-              for (const row of r1.data as any[]) {
+              for (const row of r1.data) {
                 const pid = String(row?.id ?? "").trim();
                 const propId = String(row?.proposal_id ?? "").trim();
                 if (pid && propId) purchaseToProposal.set(pid, propId);
@@ -91,16 +117,16 @@ export function useWarehouseIncoming() {
 
           const propIdToNo = new Map<string, string>();
           for (const part of chunk(propIds, 250)) {
-            const r2: any = await withTimeout(
-              // @ts-ignore
-              supabase.from("proposals" as any).select("id, proposal_no").in("id", part) as Promise<any>,
+            const r2 = await withTimeout(
+              supabase
+                .from("proposals")
+                .select("id, proposal_no")
+                .in("id", part),
               15000,
               "proposals->proposal_no",
             );
-            // @ts-ignore
             if (!r2?.error && Array.isArray(r2.data)) {
-              // @ts-ignore
-              for (const row of r2.data as any[]) {
+              for (const row of r2.data) {
                 const id = String(row?.id ?? "").trim();
                 const no = String(row?.proposal_no ?? "").trim();
                 if (id && no) propIdToNo.set(id, no);
@@ -120,7 +146,7 @@ export function useWarehouseIncoming() {
             setProposalNoByPurchase((prev) => ({ ...(prev || {}), ...patch }));
           }
         } catch (e) {
-          console.warn("[warehouse.incoming] preloadProposalNos failed:", (e as any)?.message ?? e);
+          console.warn("[warehouse.incoming] preloadProposalNos failed:", pickErr(e));
         }
       })();
 
@@ -148,7 +174,7 @@ export function useWarehouseIncoming() {
 
     try {
       const q = await supabase
-        .from("v_wh_incoming_heads_ui" as any)
+        .from("v_wh_incoming_heads_ui")
         .select("*")
         .order("purchase_created_at", { ascending: false })
         .range(pageIndex * PAGE_SIZE, (pageIndex + 1) * PAGE_SIZE - 1);
@@ -163,7 +189,8 @@ export function useWarehouseIncoming() {
         return;
       }
 
-      const rows: IncomingRow[] = (q.data as any[]).map((x) => ({
+      const rowsRaw = (q.data as IncomingHeadRowDb[]) || [];
+      const rows: IncomingRow[] = rowsRaw.map((x) => ({
         incoming_id: String(x.incoming_id),
         purchase_id: String(x.purchase_id),
         incoming_status: String(x.incoming_status ?? "pending"),
@@ -234,7 +261,7 @@ export function useWarehouseIncoming() {
     }
 
     const q = await supabase
-      .from("v_wh_incoming_items_ui" as any)
+      .from("v_wh_incoming_items_ui")
       .select("*")
       .eq("incoming_id", incomingId)
       .order("sort_key", { ascending: true });
@@ -245,7 +272,8 @@ export function useWarehouseIncoming() {
       return [] as ItemRow[];
     }
 
-    const rowsAll: ItemRow[] = ((q.data as any[]) || []).map((x) => ({
+    const rowsRaw = (q.data as IncomingItemRowDb[]) || [];
+    const rowsAll: ItemRow[] = rowsRaw.map((x) => ({
       incoming_item_id: x.incoming_item_id ? String(x.incoming_item_id) : null,
       purchase_item_id: String(x.purchase_item_id),
       code: x.code ? String(x.code) : null,
@@ -267,7 +295,7 @@ export function useWarehouseIncoming() {
     return rows;
   }, []);
 
-  // наружу отдаём всё, что нужно экрану
+  // РЅР°СЂСѓР¶Сѓ РѕС‚РґР°С‘Рј РІСЃС‘, С‡С‚Рѕ РЅСѓР¶РЅРѕ СЌРєСЂР°РЅСѓ
   return {
     toReceive,
     incomingCount,

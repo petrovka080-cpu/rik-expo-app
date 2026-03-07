@@ -1,4 +1,4 @@
-﻿// src/screens/warehouse/warehouse.api.ts
+// src/screens/warehouse/warehouse.api.ts
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { StockRow, ReqHeadRow, ReqItemUiRow } from "./warehouse.types";
 import { nz, parseNum } from "./warehouse.utils";
@@ -57,7 +57,7 @@ const reqHeadSort = (a: ReqHeadRow, b: ReqHeadRow): number => {
   return rb.localeCompare(ra);
 };
 
-function parseReqHeaderContext(rawParts: Array<string | null | undefined>) {
+function parseReqHeaderContext(rawParts: (string | null | undefined)[]) {
   const out: { contractor: string; phone: string; volume: string } = {
     contractor: "",
     phone: "",

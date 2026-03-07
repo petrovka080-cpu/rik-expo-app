@@ -1,4 +1,4 @@
-﻿// src/screens/warehouse/components/ReqIssueModal.tsx
+// src/screens/warehouse/components/ReqIssueModal.tsx
 import React, { useMemo } from "react";
 import { View, Text, Pressable, TextInput, FlatList, Platform } from "react-native";
 import RNModal from "react-native-modal";
@@ -37,6 +37,20 @@ type Props = {
   issueMsg: { kind: "error" | "ok" | null; text: string };
 };
 
+type HeadLoose = (ReqHeadRow | ReqItemUiRow) & {
+  contractor_name?: string | null;
+  contractor_org?: string | null;
+  subcontractor_name?: string | null;
+  contractor_phone?: string | null;
+  phone?: string | null;
+  phone_number?: string | null;
+  planned_volume?: string | number | null;
+  note?: string | null;
+  comment?: string | null;
+  volume?: string | number | null;
+  qty_plan?: string | number | null;
+};
+
 function CloseSquare({
   onPress,
   disabled,
@@ -69,11 +83,18 @@ function CloseSquare({
   );
 }
 
+const pickText = (a: unknown, b: unknown): string | null => {
+  const sa = String(a ?? "").trim();
+  if (sa) return sa;
+  const sb = String(b ?? "").trim();
+  return sb || null;
+};
+
 // ✅ дедуп по request_item_id: берём “самую сильную” строку
-function dedupeReqItems(rows: ReqItemUiRow[], nzFn: (v: any, d?: number) => number): ReqItemUiRow[] {
+function dedupeReqItems(rows: ReqItemUiRow[], nzFn: (v: unknown, d?: number) => number): ReqItemUiRow[] {
   const byId: Record<string, ReqItemUiRow> = {};
   for (const it of rows || []) {
-    const id = String((it as any)?.request_item_id ?? "").trim();
+    const id = String(it?.request_item_id ?? "").trim();
     if (!id) continue;
 
     const prev = byId[id];
@@ -82,30 +103,18 @@ function dedupeReqItems(rows: ReqItemUiRow[], nzFn: (v: any, d?: number) => numb
       continue;
     }
 
-    // merge: выбираем максимум по числам, текст — первый непустой
-    const merged: any = { ...prev };
-
-    const pickText = (a: any, b: any) => {
-      const sa = String(a ?? "").trim();
-      if (sa) return sa;
-      const sb = String(b ?? "").trim();
-      return sb || null;
+    const merged: ReqItemUiRow = {
+      ...prev,
+      name_human: pickText(prev.name_human, it.name_human) ?? prev.name_human,
+      rik_code: pickText(prev.rik_code, it.rik_code) ?? prev.rik_code,
+      uom: pickText(prev.uom, it.uom),
+      qty_limit: Math.max(nzFn(prev.qty_limit, 0), nzFn(it.qty_limit, 0)),
+      qty_issued: Math.max(nzFn(prev.qty_issued, 0), nzFn(it.qty_issued, 0)),
+      qty_left: Math.max(nzFn(prev.qty_left, 0), nzFn(it.qty_left, 0)),
+      qty_available: Math.max(nzFn(prev.qty_available, 0), nzFn(it.qty_available, 0)),
+      qty_can_issue_now: Math.max(nzFn(prev.qty_can_issue_now, 0), nzFn(it.qty_can_issue_now, 0)),
     };
-
-    merged.name_human = pickText((prev as any).name_human, (it as any).name_human);
-    merged.rik_code = pickText((prev as any).rik_code, (it as any).rik_code);
-    merged.uom = pickText((prev as any).uom, (it as any).uom);
-
-    merged.qty_limit = Math.max(nzFn((prev as any).qty_limit, 0), nzFn((it as any).qty_limit, 0));
-    merged.qty_issued = Math.max(nzFn((prev as any).qty_issued, 0), nzFn((it as any).qty_issued, 0));
-    merged.qty_left = Math.max(nzFn((prev as any).qty_left, 0), nzFn((it as any).qty_left, 0));
-    merged.qty_available = Math.max(nzFn((prev as any).qty_available, 0), nzFn((it as any).qty_available, 0));
-    merged.qty_can_issue_now = Math.max(
-      nzFn((prev as any).qty_can_issue_now, 0),
-      nzFn((it as any).qty_can_issue_now, 0),
-    );
-
-    byId[id] = merged as ReqItemUiRow;
+    byId[id] = merged;
   }
   return Object.values(byId);
 }
@@ -173,20 +182,21 @@ export default function ReqIssueModal(props: Props) {
     issueMsg,
   } = props;
 
-  const headObj = String((head as any)?.object_name ?? "").trim();
-  const headLevel = String((head as any)?.level_name ?? (head as any)?.level_code ?? "").trim();
-  const headSystem = String((head as any)?.system_name ?? (head as any)?.system_code ?? "").trim();
-  const headZone = String((head as any)?.zone_name ?? (head as any)?.zone_code ?? "").trim();
+  const headData = (head ?? null) as HeadLoose | null;
+  const headObj = String(headData?.object_name ?? "").trim();
+  const headLevel = String(headData?.level_name ?? headData?.level_code ?? "").trim();
+  const headSystem = String(headData?.system_name ?? headData?.system_code ?? "").trim();
+  const headZone = String(headData?.zone_name ?? headData?.zone_code ?? "").trim();
   const headContractorRaw = String(
-    (head as any)?.contractor_name ??
-      (head as any)?.contractor_org ??
-      (head as any)?.subcontractor_name ??
+    headData?.contractor_name ??
+      headData?.contractor_org ??
+      headData?.subcontractor_name ??
       "",
   ).trim();
   const headPhoneRaw = String(
-    (head as any)?.contractor_phone ??
-      (head as any)?.phone ??
-      (head as any)?.phone_number ??
+    headData?.contractor_phone ??
+      headData?.phone ??
+      headData?.phone_number ??
       "",
   ).trim();
   const normalizedHeadPhone = useMemo(() => {
@@ -202,15 +212,15 @@ export default function ReqIssueModal(props: Props) {
     return candidate.replace(/\s+/g, "");
   }, [headPhoneRaw]);
   const headVolumeRaw = String(
-    (head as any)?.planned_volume ??
-      (head as any)?.volume ??
-      (head as any)?.qty_plan ??
+    headData?.planned_volume ??
+      headData?.volume ??
+      headData?.qty_plan ??
       "",
   ).trim();
   const fromNote = useMemo(() => {
-    const packed = `${String((head as any)?.note ?? "")}\n${String((head as any)?.comment ?? "")}`;
+    const packed = `${String(headData?.note ?? "")}\n${String(headData?.comment ?? "")}`;
     return parseHeaderMeta(packed);
-  }, [head]);
+  }, [headData]);
   const headContractor = headContractorRaw || fromNote.contractor;
   const headPhone = normalizedHeadPhone || fromNote.phone;
   const headVolume = headVolumeRaw || fromNote.volume;
@@ -220,7 +230,7 @@ export default function ReqIssueModal(props: Props) {
   // ✅ 1) фильтр по qty_left > 0
   // ✅ 2) дедуп по request_item_id (иначе троит + warning по key)
   const rows = useMemo(() => {
-    const base = (reqItems || []).filter((it) => nz((it as any).qty_left, 0) > 0);
+    const base = (reqItems || []).filter((it) => nz(it.qty_left, 0) > 0);
     const uniq = dedupeReqItems(base, nz);
     return uniq;
   }, [reqItems]);
@@ -329,17 +339,17 @@ export default function ReqIssueModal(props: Props) {
           <FlatList
             data={rows}
             // ✅ ключ “на всякий” тоже делаем устойчивый
-            keyExtractor={(x, idx) => `${x.request_item_id}:${String((x as any).rik_code ?? "")}:${String((x as any).uom ?? "")}:${idx}`}
+            keyExtractor={(x, idx) => `${x.request_item_id}:${String(x.rik_code ?? "")}:${String(x.uom ?? "")}:${idx}`}
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}
             renderItem={({ item }) => {
-              const canByStock = nz((item as any).qty_available, 0);
-              const left = nz((item as any).qty_left, 0);
-              const canByReqNow = nz((item as any).qty_can_issue_now, 0);
+              const canByStock = nz(item.qty_available, 0);
+              const left = nz(item.qty_left, 0);
+              const canByReqNow = nz(item.qty_can_issue_now, 0);
 
               const maxUi = Math.max(0, Math.min(canByStock, left));
 
-              const uom = uomLabelRu((item as any).uom ?? (item as any).uom_id);
+              const uom = uomLabelRu(item.uom);
               const val = reqQtyInputByItem[item.request_item_id] ?? "";
 
               const disableByStock = issueBusy || maxUi <= 0;
@@ -350,11 +360,11 @@ export default function ReqIssueModal(props: Props) {
                   <View style={s.mobCard}>
                     <View style={s.mobMain}>
                       <Text style={s.mobTitle} numberOfLines={2}>
-                        {String((item as any).name_human || "Позиция")}
+                        {String(item.name_human || "Позиция")}
                       </Text>
 
                       <Text style={s.mobMeta} numberOfLines={3}>
-                        {`${uom} · лимит ${(item as any).qty_limit} · выдано ${(item as any).qty_issued} · осталось ${left} · склад ${canByStock} · по заявке можно ${(item as any).qty_can_issue_now}`}
+                        {`${uom} · лимит ${item.qty_limit} · выдано ${item.qty_issued} · осталось ${left} · склад ${canByStock} · по заявке можно ${item.qty_can_issue_now}`}
                       </Text>
 
                       <View style={{ marginTop: 10, flexDirection: "row", gap: 8, alignItems: "center" }}>
@@ -421,10 +431,10 @@ export default function ReqIssueModal(props: Props) {
                   >
                     <View style={{ flex: 1, minWidth: 0 }}>
                       <Text style={{ color: UI.text, fontWeight: "900" }} numberOfLines={1}>
-                        {String((ln as any).name_human || "Позиция")}
+                        {String(ln.name_human || "Позиция")}
                       </Text>
                       <Text style={{ color: UI.sub, fontWeight: "800" }} numberOfLines={1}>
-                        {`${uomLabelRu((ln as any).uom ?? (ln as any).uom_id)} · ${String((ln as any).qty ?? "0")}`}
+                        {`${uomLabelRu(ln.uom)} · ${String(ln.qty ?? "0")}`}
                       </Text>
                     </View>
 

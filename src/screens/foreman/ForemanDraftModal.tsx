@@ -10,7 +10,7 @@ type WebUiApi = {
   confirm?: (message?: string) => boolean;
 };
 
-const webUi = globalThis as typeof globalThis & WebUiApi;
+const webUi = (globalThis as any) as WebUiApi;
 
 type Props = {
   visible: boolean;

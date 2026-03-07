@@ -18,7 +18,7 @@ import {
 } from "react-native";
 import { Portal } from "react-native-portalize";
 
-// Blur (expo-blur) опционально
+// Blur (expo-blur)
 let BlurViewAny: any = null;
 try {
   // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -34,16 +34,13 @@ type BusyRunOpts = {
   message?: string;
 };
 
-type BusyCtx = {
+export type BusyCtx = {
   key: string | null;
   label: string;
-
   show: (key?: string, label?: string) => void;
   hide: (key?: string) => void;
-
   isBusy: (key?: string) => boolean;
-
-  run: <T>(fn: () => Promise<T>, opts?: BusyRunOpts) => Promise<T | null>;
+  run: (fn: () => Promise<any>, opts?: BusyRunOpts) => Promise<any>;
 };
 
 const BusyContext = createContext<BusyCtx | null>(null);
@@ -80,37 +77,25 @@ export function GlobalBusyProvider({
   const show = useCallback((k?: string, l?: string) => {
     const kk = String(k ?? "busy");
     const nextLabel = String(l ?? "Загрузка…");
-
-    if (__DEV__) {
-      console.log("[GBUSY] show", { kk, nextLabel });
-    }
     const prevCount = activeRef.current.get(kk) ?? 0;
     activeRef.current.set(kk, prevCount + 1);
-
     startedAtRef.current[kk] = Date.now();
     setPhase(0);
     setLabel(nextLabel);
-
     lastShownKeyRef.current = kk;
     setUiKey(kk);
   }, []);
 
-
-
   const hide = useCallback(
     (k?: string) => {
-      // ✅ важно: hide() без ключа тоже должен работать
       const kk = String(k ?? (uiKey ?? ""));
       if (!kk) {
-        // если вообще нечего скрывать — просто пересчёт
         recomputeUiKey();
         return;
       }
-
       const prevCount = activeRef.current.get(kk) ?? 0;
       if (prevCount <= 1) activeRef.current.delete(kk);
       else activeRef.current.set(kk, prevCount - 1);
-
       if (uiKey === kk) recomputeUiKey();
       else if (activeRef.current.size === 0) recomputeUiKey();
     },
@@ -129,20 +114,14 @@ export function GlobalBusyProvider({
   }, [uiKey]);
 
   const run = useCallback(
-    async <T,>(fn: () => Promise<T>, opts?: BusyRunOpts): Promise<T | null> => {
+    async (fn: () => Promise<any>, opts?: BusyRunOpts): Promise<any> => {
       const k = String(opts?.key ?? "busy");
       const minMs = Math.max(650, Number(opts?.minMs ?? 650));
       const text = String(opts?.label ?? opts?.message ?? "Загрузка…");
-
-      // ✅ если этот key уже идёт — игнор
       if (activeRef.current.has(k)) return null;
-
       show(k, text);
-
-      // дать модалке появиться
       await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
       await sleep(60);
-
       try {
         const res = await fn();
         return res;
@@ -151,7 +130,6 @@ export function GlobalBusyProvider({
         const elapsed = Date.now() - started;
         const wait = Math.max(0, minMs - elapsed);
         if (wait) await sleep(wait);
-
         hide(k);
       }
     },
@@ -170,39 +148,15 @@ export function GlobalBusyProvider({
   return (
     <BusyContext.Provider value={value}>
       {children}
-
       {!!uiKey && (
         <Portal>
           <View style={[styles.full, { zIndex: 99999, elevation: 99999 }]} pointerEvents="auto">
-            {/* ✅ блокируем все тапы */}
             <Pressable style={StyleSheet.absoluteFillObject} onPress={() => { }} />
-
-            {/* затемнение */}
-            <View
-              style={[
-                StyleSheet.absoluteFillObject,
-                { backgroundColor: "#000", opacity: dimOpacity },
-              ]}
-            />
-
-            {/* blur поверх (опционально) */}
+            <View style={[StyleSheet.absoluteFillObject, { backgroundColor: "#000", opacity: dimOpacity }]} />
             {canBlur ? (
-              <BlurViewAny
-                intensity={blurIntensity}
-                tint="dark"
-                style={StyleSheet.absoluteFillObject}
-              />
+              <BlurViewAny intensity={blurIntensity} tint="dark" style={StyleSheet.absoluteFillObject} />
             ) : null}
-
-            <View
-              style={[
-                styles.card,
-                {
-                  backgroundColor: theme.cardBg ?? "rgba(16,24,38,0.96)",
-                  borderColor: theme.border ?? "rgba(255,255,255,0.12)",
-                },
-              ]}
-            >
+            <View style={[styles.card, { backgroundColor: theme.cardBg ?? "rgba(16,24,38,0.96)", borderColor: theme.border ?? "rgba(255,255,255,0.12)" }]}>
               <ActivityIndicator size="large" color={theme.text} />
               <Text style={[styles.title, { color: theme.text }]} numberOfLines={2}>
                 {label || "Загрузка…"}
@@ -223,13 +177,7 @@ export function useGlobalBusy() {
 }
 
 const styles = StyleSheet.create({
-  full: {
-    flex: 1,
-    width: "100%",
-    height: "100%",
-    alignItems: "center",
-    justifyContent: "center",
-  },
+  full: { flex: 1, width: "100%", height: "100%", alignItems: "center", justifyContent: "center" },
   card: {
     width: "84%",
     maxWidth: 360,
@@ -246,10 +194,5 @@ const styles = StyleSheet.create({
     elevation: 12,
   },
   title: { fontWeight: "900", fontSize: 14, textAlign: "center" },
-  sub: {
-    color: "rgba(255,255,255,0.70)",
-    fontWeight: "800",
-    fontSize: 12,
-    textAlign: "center",
-  },
+  sub: { color: "rgba(255,255,255,0.70)", fontWeight: "800", fontSize: 12, textAlign: "center" },
 });

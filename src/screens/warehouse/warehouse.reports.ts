@@ -5,6 +5,8 @@ import type { WarehouseIssueHead, WarehouseIssueLine } from "../../lib/api/pdf_w
 import {
   buildWarehouseIssueFormHtml,
   buildWarehouseIssuesRegisterHtml,
+  buildWarehouseIncomingRegisterHtml,
+  buildWarehouseIncomingMaterialsReportHtml,
   exportWarehouseHtmlPdf,
   buildWarehouseMaterialsReportHtml,
   buildWarehouseObjectWorkReportHtml,
@@ -12,6 +14,8 @@ import {
 import {
   apiFetchIssuedMaterialsReportFast,
   apiFetchIssuedByObjectReportFast,
+  apiFetchIncomingLines,
+  apiFetchIncomingMaterialsReportFast,
 } from "./warehouse.api";
 
 type ReportRow = Record<string, unknown>;
@@ -63,26 +67,6 @@ function normalizeReportRange(periodFrom: string, periodTo: string) {
 }
 
 // ✅ summary из БД (один источник истины)
-async function fetchIssuedSummaryFast(
-  supabase: SupabaseLike,
-  args: { fromIso: string; toIso: string; objectId?: string | null },
-): Promise<{ docsTotal: number; docsByReq: number; docsWithoutReq: number }> {
-  const r = await supabase.rpc("wh_report_issued_summary_fast", {
-    p_from: args.fromIso,
-    p_to: args.toIso,
-    p_object_id: args.objectId ?? null,
-  });
-
-  if (r.error) throw r.error;
-
-  const row = Array.isArray(r.data) ? r.data[0] : r.data;
-
-  return {
-    docsTotal: Math.max(0, Math.round(toNum(row?.docs_total))),
-    docsByReq: Math.max(0, Math.round(toNum(row?.docs_in_req))),
-    docsWithoutReq: Math.max(0, Math.round(toNum(row?.docs_free))),
-  };
-}
 const RU_MONTHS: Record<string, number> = {
   "января": 0,
   "февраля": 1,
@@ -163,7 +147,6 @@ export function useWarehouseReports(args: {
   nameByCode?: Record<string, string>;
 }) {
   const {
-    busy,
     supabase,
     repIssues,
     repIncoming,
@@ -174,13 +157,10 @@ export function useWarehouseReports(args: {
     issueLinesById,
     setIssueLinesById,
     setIssueLinesLoadingId,
-    issueDetailsId,
     setIssueDetailsId,
     incomingLinesById,
     setIncomingLinesById,
-    incomingLinesLoadingId,
     setIncomingLinesLoadingId,
-    incomingDetailsId,
     setIncomingDetailsId,
     nameByCode,
   } = args;
@@ -241,7 +221,6 @@ export function useWarehouseReports(args: {
       if (Array.isArray(cached) && cached.length > 0) return cached;
       setIncomingLinesLoadingId(incomingId);
       try {
-        const { apiFetchIncomingLines } = require("./warehouse.api");
         const lines: ReportRow[] = await apiFetchIncomingLines(supabase, incomingId);
         setIncomingLinesById((prev) => ({ ...(prev || {}), [incomingId]: lines }));
         return lines;
@@ -391,7 +370,6 @@ export function useWarehouseReports(args: {
   }, [supabase, repIssues, periodFrom, periodTo, orgName, warehouseName]);
 
   const buildIncomingRegisterHtml = useCallback(async () => {
-    const { buildWarehouseIncomingRegisterHtml } = require("../../lib/api/pdf_warehouse");
     const html = buildWarehouseIncomingRegisterHtml({
       periodFrom, periodTo, items: (repIncoming || []), orgName, warehouseName,
     });
@@ -399,7 +377,6 @@ export function useWarehouseReports(args: {
   }, [periodFrom, periodTo, repIncoming, orgName, warehouseName]);
 
   const buildDayIncomingRegisterPdf = useCallback(async (dayLabel: string) => {
-    const { buildWarehouseIncomingRegisterHtml } = require("../../lib/api/pdf_warehouse");
     const wanted = String(dayLabel).trim();
     const dayItems = (repIncoming || []).filter((it) => {
       const dt = it?.event_dt ? new Date(String(it.event_dt ?? "")) : null;
@@ -413,8 +390,6 @@ export function useWarehouseReports(args: {
   }, [repIncoming, orgName, warehouseName]);
 
   const buildDayIncomingMaterialsReportPdf = useCallback(async (dayLabel: string) => {
-    const { buildWarehouseIncomingMaterialsReportHtml } = require("../../lib/api/pdf_warehouse");
-    const { apiFetchIncomingMaterialsReportFast } = require("./warehouse.api");
     const rr = dayRangeIso(dayLabel);
     const rawRows = await apiFetchIncomingMaterialsReportFast(supabase, {
       from: rr.rpcFrom, to: rr.rpcTo,
@@ -448,8 +423,6 @@ export function useWarehouseReports(args: {
   }, [supabase, repIncoming, orgName, warehouseName, nameByCode]);
 
   const buildIncomingMaterialsReportPdf = useCallback(async () => {
-    const { buildWarehouseIncomingMaterialsReportHtml } = require("../../lib/api/pdf_warehouse");
-    const { apiFetchIncomingMaterialsReportFast } = require("./warehouse.api");
     const rr = normalizeReportRange(periodFrom, periodTo);
     const rawRows = await apiFetchIncomingMaterialsReportFast(supabase, {
       from: rr.rpcFrom, to: rr.rpcTo,
@@ -499,10 +472,6 @@ export function useWarehouseReports(args: {
     buildDayIncomingRegisterPdf,
     buildIncomingMaterialsReportPdf,
     buildDayIncomingMaterialsReportPdf,
-    apiFetchIncomingLines: (s: SupabaseClient, id: string) => {
-      const { apiFetchIncomingLines } = require("./warehouse.api");
-      return apiFetchIncomingLines(s, id);
-    },
+    apiFetchIncomingLines: (s: SupabaseClient, id: string) => apiFetchIncomingLines(s, id),
   };
 }
-

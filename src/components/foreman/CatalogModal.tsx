@@ -15,7 +15,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-
+import { UI, TYPO } from '../../screens/foreman/foreman.ui';
 import IconSquareButton from '../../ui/IconSquareButton';
 import SendHomeIcon from '../../ui/icons/SendHomeIcon';
 
@@ -30,13 +30,6 @@ type CatalogItem = {
   apps?: string[] | null;
 };
 
-const COLORS = {
-  bg: '#F8FAFC',
-  text: '#0F172A',
-  sub: '#475569',
-  border: '#E2E8F0',
-};
-
 export type PickedRow = {
   rik_code: string;
   name: string;
@@ -46,6 +39,39 @@ export type PickedRow = {
   app_code?: string | null;
   note: string;
   appsFromItem?: string[];
+};
+
+/**
+ * Component to render text with highlighted parts matching the search query
+ */
+const HighlightedText = ({ text, highlight, style, highlightStyle }: {
+  text: string;
+  highlight: string;
+  style: any;
+  highlightStyle: any;
+}) => {
+  if (!highlight.trim() || !text) return <Text style={style}>{text}</Text>;
+
+  const tokens = highlight.trim().split(/\s+/).filter(t => t.length >= 2);
+  if (tokens.length === 0) return <Text style={style}>{text}</Text>;
+
+  // Create a regex that matches any of the tokens
+  const escapedTokens = tokens.map(t => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+  const regex = new RegExp(`(${escapedTokens.join('|')})`, 'gi');
+  const parts = text.split(regex);
+
+  return (
+    <Text style={style}>
+      {parts.map((part, i) => {
+        const isMatch = tokens.some(t => part.toLowerCase() === t.toLowerCase());
+        return (
+          <Text key={i} style={isMatch ? highlightStyle : undefined}>
+            {part}
+          </Text>
+        );
+      })}
+    </Text>
+  );
 };
 
 export default function CatalogModal(props: {
@@ -75,38 +101,25 @@ export default function CatalogModal(props: {
 
   const showToast = (text: string) => {
     if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
-
     setToastText(text);
-    Animated.timing(toastY, { toValue: 0, duration: 180, useNativeDriver: true }).start();
-
+    Animated.timing(toastY, { toValue: 0, duration: 200, useNativeDriver: true }).start();
     toastTimerRef.current = setTimeout(() => {
-      Animated.timing(toastY, { toValue: -24, duration: 180, useNativeDriver: true }).start(() => {
-        setToastText('');
-      });
-    }, 1300);
+      Animated.timing(toastY, { toValue: -24, duration: 200, useNativeDriver: true }).start(() => { setToastText(''); });
+    }, 2000);
   };
 
   const canSearch = query.trim().length >= 2;
-  const HEADER_PAD_TOP = Platform.OS === 'web' ? 16 : insets.top + 12;
+  const HEADER_PAD_TOP = Platform.OS === 'web' ? 16 : insets.top + 8;
 
   useEffect(() => {
     if (!visible) return;
-
     setQuery('');
     setRows([]);
     setQtyByCode({});
     setAddBusyByCode({});
     setToastText('');
-
-    setTimeout(() => inputRef.current?.focus?.(), 250);
+    setTimeout(() => inputRef.current?.focus?.(), 400);
   }, [visible]);
-
-  useEffect(() => {
-    return () => {
-      if (tRef.current) clearTimeout(tRef.current);
-      if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
-    };
-  }, []);
 
   useEffect(() => {
     if (!visible) return;
@@ -120,29 +133,54 @@ export default function CatalogModal(props: {
     tRef.current = setTimeout(async () => {
       try {
         setLoading(true);
-        const list = await rikQuickSearch(query, 60);
+        const list = await rikQuickSearch(query, 80);
         setRows(Array.isArray(list) ? list : []);
       } catch {
         setRows([]);
       } finally {
         setLoading(false);
       }
-    }, 220);
+    }, 250);
 
-    return () => {
-      if (tRef.current) clearTimeout(tRef.current);
-    };
+    return () => { if (tRef.current) clearTimeout(tRef.current); };
   }, [query, canSearch, visible, rikQuickSearch]);
 
-  const uniq = useMemo(() => {
+  // Smart Sorting & Filtering on client side
+  const sortedRows = useMemo(() => {
+    if (!rows.length) return [];
     const seen = new Set<string>();
-    return rows.filter((r) => {
-      const k = String(r?.rik_code ?? '').trim();
-      if (!k || seen.has(k)) return false;
-      seen.add(k);
+    const q = query.trim().toLowerCase();
+    const tokens = q.split(/\s+/).filter(t => t.length >= 2);
+
+    const filtered = rows.filter((r) => {
+      const code = String(r?.rik_code ?? '').trim();
+      if (!code || seen.has(code)) return false;
+      seen.add(code);
       return true;
     });
-  }, [rows]);
+
+    if (!tokens.length) return filtered;
+
+    return filtered.sort((a, b) => {
+      const nameA = (a.name_human_ru || a.name_ru || a.name_human || '').toLowerCase();
+      const nameB = (b.name_human_ru || b.name_ru || b.name_human || '').toLowerCase();
+
+      // Priority 1: Exact match
+      if (nameA === q && nameB !== q) return -1;
+      if (nameB === q && nameA !== q) return 1;
+
+      // Priority 2: Starts with query
+      if (nameA.startsWith(q) && !nameB.startsWith(q)) return -1;
+      if (nameB.startsWith(q) && !nameA.startsWith(q)) return 1;
+
+      // Priority 3: Count matched tokens
+      const matchesA = tokens.filter(t => nameA.includes(t)).length;
+      const matchesB = tokens.filter(t => nameB.includes(t)).length;
+      if (matchesA !== matchesB) return matchesB - matchesA;
+
+      return 0;
+    });
+  }, [rows, query]);
 
   const titleOf = (it: CatalogItem) =>
     (it.name_human_ru || it.name_ru || it.name_human || it.display_name || it.rik_code || '-').trim();
@@ -153,201 +191,189 @@ export default function CatalogModal(props: {
     setTimeout(() => inputRef.current?.focus?.(), 50);
   };
 
-  return (
-    <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
-      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-        <View style={{ flex: 1 }}>
-          {Platform.OS !== 'web' ? <Pressable style={StyleSheet.absoluteFill} onPress={Keyboard.dismiss} /> : null}
+  const handleCommit = async (item: CatalogItem) => {
+    const code = String(item.rik_code || '').trim();
+    if (!code || addBusyByCode[code]) return;
 
-          <View style={[s.container, { backgroundColor: COLORS.bg }]}>
-            <View style={[s.header, { paddingTop: HEADER_PAD_TOP }]}>
+    const rawQty = String(qtyByCode[code] || '').trim();
+    const qValue = rawQty ? Number(rawQty.replace(',', '.')) : 0;
+    if (!Number.isFinite(qValue) || qValue < 0) {
+      alert('Укажите корректное количество');
+      return;
+    }
+    if (qValue === 0) {
+      alert('Количество должно быть больше 0');
+      return;
+    }
+
+    const title = titleOf(item);
+    const apps = Array.isArray(item.apps) ? item.apps.filter(Boolean) : [];
+    const appDefault = apps[0] || null;
+
+    try {
+      setAddBusyByCode(p => ({ ...p, [code]: true }));
+      if (Platform.OS !== 'web') Keyboard.dismiss();
+
+      await onCommitToDraft([{
+        rik_code: code,
+        name: title,
+        uom: item.uom_code ?? null,
+        kind: item.kind ?? null,
+        qty: String(qValue),
+        app_code: appDefault,
+        note: '',
+        appsFromItem: apps.length ? apps : undefined,
+      }]);
+
+      showToast(`Добавлено: ${title}`);
+      setQtyByCode(p => ({ ...p, [code]: '' }));
+    } catch (e) {
+      console.warn('Commit error:', e);
+    } finally {
+      setAddBusyByCode(p => ({ ...p, [code]: false }));
+    }
+  };
+
+  return (
+    <Modal visible={visible} animationType="slide" transparent={false} statusBarTranslucent>
+      <KeyboardAvoidingView style={{ flex: 1, backgroundColor: UI.bg }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+        <View style={{ flex: 1 }}>
+          <View style={[s.header, { paddingTop: HEADER_PAD_TOP }]}>
+            <View style={s.headerRow}>
               <Text style={s.hTitle}>Каталог</Text>
 
-              <Pressable onPress={onOpenDraft} hitSlop={16} style={s.hDraftPill}>
-                <Ionicons name="document-text-outline" size={16} color="#166534" />
-                <Text style={s.hDraftText}>Черновик {`(${draftCount ?? 0})`}</Text>
+              <Pressable onPress={onOpenDraft} style={s.hDraftPill}>
+                <Ionicons name="cart" size={18} color={UI.accent} />
+                <View style={s.badge}>
+                  <Text style={s.badgeText}>{draftCount ?? 0}</Text>
+                </View>
               </Pressable>
 
-              <IconSquareButton
-                onPress={() => {
-                  if (Platform.OS !== 'web') Keyboard.dismiss();
-                  onClose();
-                }}
-                width={44}
-                height={44}
-                radius={14}
-                bg="#F3F4F6"
-                bgPressed="#E5E7EB"
-                bgDisabled="#F3F4F6"
-                spinnerColor="#111827"
-                accessibilityLabel="Закрыть"
+              <Pressable
+                onPress={() => { Keyboard.dismiss(); onClose(); }}
+                style={s.closeBtn}
               >
-                <Ionicons name="close" size={22} color="#111827" />
-              </IconSquareButton>
+                <Ionicons name="close" size={26} color={UI.text} />
+              </Pressable>
             </View>
 
-            {toastText ? (
-              <Animated.View
-                pointerEvents="none"
-                style={[s.toastWrap, { top: HEADER_PAD_TOP + 40, transform: [{ translateY: toastY }] }]}
-              >
-                <View style={s.toast}>
-                  <Ionicons name="checkmark-circle" size={18} color="#fff" />
-                  <Text style={s.toastText} numberOfLines={2}>
-                    {toastText}
-                  </Text>
-                </View>
-              </Animated.View>
-            ) : null}
+            <View style={s.searchWrap}>
+              <Ionicons name="search" size={20} color={UI.sub} style={{ marginLeft: 12 }} />
+              <TextInput
+                ref={inputRef}
+                value={query}
+                onChangeText={setQuery}
+                placeholder="Что ищем? (бетон, арматура...)"
+                placeholderTextColor={UI.sub}
+                style={s.searchInput}
+                returnKeyType="search"
+                autoCapitalize="none"
+                autoCorrect={false}
+              />
+              {!!query && (
+                <Pressable onPress={() => { setQuery(''); setRows([]); }} style={s.clearSearch}>
+                  <Ionicons name="close-circle" size={20} color={UI.sub} />
+                </Pressable>
+              )}
+            </View>
 
-            <View style={{ paddingHorizontal: 16, paddingBottom: 10 }}>
-              <View style={s.searchWrap}>
-                <Ionicons name="search" size={18} color="#64748B" />
-                <TextInput
-                  ref={inputRef}
-                  value={query}
-                  onChangeText={setQuery}
-                  placeholder="Поиск по каталогу... (бетон М250, шпаклевка, доставка)"
-                  placeholderTextColor="#94A3B8"
-                  style={s.search}
-                  returnKeyType="search"
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                />
-                {query.trim() ? (
-                  <Pressable
-                    onPress={() => {
-                      setQuery('');
-                      setRows([]);
-                      setTimeout(() => inputRef.current?.focus?.(), 40);
-                    }}
-                    hitSlop={10}
-                    style={s.clearBtn}
-                  >
-                    <Ionicons name="close-circle" size={18} color="#64748B" />
-                  </Pressable>
-                ) : null}
+            {loading && (
+              <View style={s.loaderBar}>
+                <ActivityIndicator size="small" color={UI.accent} />
+                <Text style={s.loaderText}>Поиск в базе РИК...</Text>
               </View>
+            )}
+          </View>
 
-              {loading ? (
-                <View style={{ marginTop: 8, flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-                  <ActivityIndicator />
-                  <Text style={{ color: COLORS.sub, fontWeight: '800' }}>Ищем...</Text>
-                </View>
-              ) : null}
-            </View>
+          {toastText ? (
+            <Animated.View pointerEvents="none" style={[s.toastContainer, { transform: [{ translateY: toastY }] }]}>
+              <View style={s.toast}>
+                <Ionicons name="checkmark-circle" size={18} color="#fff" />
+                <Text style={s.toastText}>{toastText}</Text>
+              </View>
+            </Animated.View>
+          ) : null}
 
-            <FlatList
-              data={uniq}
-              keyExtractor={(it, idx) => `rk:${String(it.rik_code ?? '')}:${idx}`}
-              keyboardShouldPersistTaps="handled"
-              contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 24 }}
-              ListEmptyComponent={
-                <Text style={{ color: COLORS.sub, textAlign: 'center', marginTop: 18, fontWeight: '800' }}>
-                  {canSearch ? 'Ничего не найдено' : 'Введите минимум 2 символа'}
+          <FlatList
+            data={sortedRows}
+            keyExtractor={(it) => `rk:${it.rik_code}`}
+            contentContainerStyle={[s.listContent, { paddingBottom: insets.bottom + 20 }]}
+            keyboardShouldPersistTaps="handled"
+            ListEmptyComponent={
+              <View style={s.empty}>
+                <Ionicons
+                  name={canSearch ? "search-outline" : "construct-outline"}
+                  size={64}
+                  color={UI.border}
+                />
+                <Text style={s.emptyText}>
+                  {canSearch
+                    ? loading ? "" : "Ничего не найдено\nПопробуйте изменить запрос"
+                    : "Введите название материала\nминимум 2 символа"}
                 </Text>
-              }
-              renderItem={({ item }) => {
-                const title = titleOf(item);
-                const uom = item.uom_code ? `Ед.: ${item.uom_code}` : '';
-                const kind = item.kind ? String(item.kind) : '';
-                const code = String(item.rik_code || '').trim();
-                const qty = qtyByCode[code] ?? '';
-                const adding = !!addBusyByCode[code];
+              </View>
+            }
+            renderItem={({ item }) => {
+              const title = titleOf(item);
+              const code = String(item.rik_code || '').trim();
+              const qty = qtyByCode[code] ?? '';
+              const adding = !!addBusyByCode[code];
 
-                return (
-                  <View style={s.row}>
-                    <View style={{ flex: 1, minWidth: 0 }}>
-                      <Text style={s.rowTitle} numberOfLines={2}>
-                        {title}
-                      </Text>
+              return (
+                <Animated.View style={s.card}>
+                  <View style={s.cardHeader}>
+                    <HighlightedText
+                      text={title}
+                      highlight={query}
+                      style={s.cardTitle}
+                      highlightStyle={s.highlight}
+                    />
+                    <Text style={s.cardCode}>{code}</Text>
+                  </View>
 
-                      <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', marginTop: 6 }}>
-                        <Text style={s.rowMeta} numberOfLines={1}>
-                          {uom || ' '}
-                          {kind ? ` · ${kind}` : ''}
-                        </Text>
-
-                        {!!code ? (
-                          <View style={s.codePill}>
-                            <Text style={s.codePillText} numberOfLines={1}>
-                              {code}
-                            </Text>
-                          </View>
-                        ) : null}
+                  <View style={s.cardFooter}>
+                    <View style={s.metaRow}>
+                      <View style={s.tag}>
+                        <Text style={s.tagText}>{item.uom_code || 'ед'}</Text>
                       </View>
+                      {!!item.kind && (
+                        <View style={[s.tag, { backgroundColor: 'rgba(255,255,255,0.05)' }]}>
+                          <Text style={[s.tagText, { color: UI.sub }]}>{item.kind}</Text>
+                        </View>
+                      )}
                     </View>
 
-                    <View style={s.rightControls}>
+                    <View style={s.actionRow}>
                       <TextInput
                         value={qty}
-                        onChangeText={(v) => setQtyByCode((p) => ({ ...p, [code]: v }))}
+                        onChangeText={(v) => setQtyByCode(p => ({ ...p, [code]: v }))}
                         keyboardType="decimal-pad"
-                        placeholder="Кол-во"
-                        placeholderTextColor="#94A3B8"
+                        placeholder="0"
+                        placeholderTextColor={UI.sub}
                         style={s.qtyInput}
                         selectTextOnFocus
                       />
-
                       <IconSquareButton
                         disabled={adding}
                         loading={adding}
-                        onPress={async () => {
-                          if (!code) return;
-
-                          const raw = String(qty ?? '').trim();
-                          const q = raw ? Number(raw.replace(',', '.')) : 1;
-                          if (!Number.isFinite(q) || q <= 0) return;
-
-                          const apps = Array.isArray(item.apps) ? item.apps.filter(Boolean) : [];
-                          const appDefault = apps[0] || null;
-
-                          try {
-                            setAddBusyByCode((p) => ({ ...p, [code]: true }));
-                            if (Platform.OS !== 'web') Keyboard.dismiss();
-
-                            await Promise.resolve(
-                              onCommitToDraft([
-                                {
-                                  rik_code: code,
-                                  name: title,
-                                  uom: item.uom_code ?? null,
-                                  kind: item.kind ?? null,
-                                  qty: String(q),
-                                  app_code: appDefault,
-                                  note: '',
-                                  appsFromItem: apps.length ? apps : undefined,
-                                },
-                              ]),
-                            );
-
-                            const nextCount = Math.max(0, Number(draftCount || 0) + 1);
-                            showToast(`Добавлено: ${title} x ${q} · В черновике: ${nextCount}`);
-
-                            setQtyByCode((p) => ({ ...p, [code]: '' }));
-                            resetSearchAndFocus();
-                          } finally {
-                            setAddBusyByCode((p) => ({ ...p, [code]: false }));
-                          }
-                        }}
+                        onPress={() => handleCommit(item)}
                         width={46}
                         height={46}
-                        radius={16}
-                        bg="#1B7F55"
-                        bgPressed="#166846"
-                        bgDisabled="#143327"
-                        spinnerColor="#FFFFFF"
+                        radius={14}
+                        bg={UI.accent}
+                        bgPressed="#16a34a"
+                        bgDisabled={UI.border}
+                        spinnerColor="#fff"
                         luxGreen
-                        accessibilityLabel="Добавить"
                       >
-                        <SendHomeIcon size={22} color="#FFFFFF" />
+                        <SendHomeIcon size={20} color="#fff" />
                       </IconSquareButton>
                     </View>
                   </View>
-                );
-              }}
-            />
-          </View>
+                </Animated.View>
+              );
+            }}
+          />
         </View>
       </KeyboardAvoidingView>
     </Modal>
@@ -355,131 +381,194 @@ export default function CatalogModal(props: {
 }
 
 const s = StyleSheet.create({
-  container: { flex: 1 },
-
   header: {
-    paddingBottom: 10,
+    backgroundColor: UI.bg,
     paddingHorizontal: 16,
+    paddingBottom: 12,
     borderBottomWidth: 1,
-    borderColor: COLORS.border,
-    backgroundColor: '#fff',
+    borderColor: UI.border,
+    zIndex: 10,
+  },
+  headerRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    justifyContent: 'space-between',
+    marginBottom: 16,
   },
-  hTitle: { fontSize: 20, fontWeight: '900', color: COLORS.text },
-
+  hTitle: {
+    ...TYPO.titleLg,
+    color: UI.text,
+  },
   hDraftPill: {
-    marginLeft: 'auto',
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 999,
-    backgroundColor: 'rgba(34,197,94,0.12)',
+    backgroundColor: 'rgba(34,197,94,0.1)',
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    borderRadius: 12,
     borderWidth: 1,
-    borderColor: 'rgba(34,197,94,0.25)',
+    borderColor: 'rgba(34,197,94,0.2)',
+    marginLeft: 'auto',
+    marginRight: 12,
   },
-  hDraftText: { color: '#166534', fontWeight: '900', fontSize: 14 },
-
-  toastWrap: {
+  badge: {
+    backgroundColor: UI.accent,
+    minWidth: 18,
+    height: 18,
+    borderRadius: 9,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: 6,
+    paddingHorizontal: 4,
+  },
+  badgeText: {
+    color: '#fff',
+    fontSize: 10,
+    fontWeight: '900',
+  },
+  closeBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: UI.btnNeutral,
+  },
+  searchWrap: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#161B22',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: UI.border,
+    height: 50,
+  },
+  searchInput: {
+    flex: 1,
+    paddingHorizontal: 10,
+    color: UI.text,
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  clearSearch: {
+    padding: 10,
+  },
+  loaderBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 10,
+    gap: 8,
+  },
+  loaderText: {
+    color: UI.sub,
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  toastContainer: {
     position: 'absolute',
+    top: 140,
     left: 16,
     right: 16,
-    top: Platform.OS === 'ios' ? 92 : 86,
-    zIndex: 20,
+    zIndex: 100,
+    alignItems: 'center',
   },
   toast: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    backgroundColor: UI.accent,
     paddingVertical: 10,
-    paddingHorizontal: 12,
-    borderRadius: 14,
-    backgroundColor: 'rgba(22,163,74,0.95)',
-    borderWidth: 1,
-    borderColor: 'rgba(21,128,61,0.95)',
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    gap: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
   },
-  toastText: { color: '#fff', fontWeight: '900', fontSize: 13, flex: 1 },
-
-  searchWrap: {
+  toastText: {
+    color: '#fff',
+    fontWeight: '800',
+    fontSize: 14,
+  },
+  listContent: {
+    padding: 16,
+  },
+  card: {
+    backgroundColor: UI.cardBg,
+    borderRadius: 20,
+    padding: 16,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: UI.border,
+  },
+  cardHeader: {
+    marginBottom: 12,
+  },
+  cardTitle: {
+    ...TYPO.bodyStrong,
+    color: UI.text,
+    fontSize: 16,
+    lineHeight: 22,
+  },
+  highlight: {
+    color: UI.accent,
+    backgroundColor: 'rgba(34,197,94,0.15)',
+  },
+  cardCode: {
+    color: UI.sub,
+    fontSize: 11,
+    fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
+    marginTop: 4,
+  },
+  cardFooter: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    borderRadius: 16,
-    paddingHorizontal: 12,
-    backgroundColor: '#fff',
+    justifyContent: 'space-between',
   },
-  search: {
-    flex: 1,
-    paddingVertical: 10,
-    color: COLORS.text,
-    fontSize: 16,
+  metaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  tag: {
+    backgroundColor: 'rgba(255,255,255,0.08)',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+  },
+  tagText: {
+    color: UI.text,
+    fontSize: 11,
     fontWeight: '800',
   },
-  clearBtn: {
-    width: 34,
-    height: 34,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-
-  row: {
-    marginTop: 10,
-    padding: 12,
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    backgroundColor: '#fff',
+  actionRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
-
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.08,
-    shadowRadius: 16,
-    elevation: 2,
+    gap: 8,
   },
-  rowTitle: { fontSize: 15, fontWeight: '900', color: COLORS.text },
-  rowMeta: { color: COLORS.sub, fontWeight: '800' },
-
-  codePill: {
-    marginLeft: 8,
-    paddingVertical: 4,
-    paddingHorizontal: 10,
-    borderRadius: 999,
-    backgroundColor: 'rgba(15,23,42,0.06)',
-    borderWidth: 1,
-    borderColor: 'rgba(15,23,42,0.10)',
-    maxWidth: 190,
-  },
-  codePillText: {
-    color: '#0F172A',
-    fontWeight: '900',
-    fontSize: 11,
-    letterSpacing: 0.2,
-  },
-
-  rightControls: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-  },
-
   qtyInput: {
-    width: 88,
+    width: 70,
     height: 46,
-    borderRadius: 14,
+    backgroundColor: UI.bg,
+    borderRadius: 12,
     borderWidth: 1,
-    borderColor: COLORS.border,
-    backgroundColor: '#fff',
+    borderColor: UI.border,
+    color: UI.text,
     textAlign: 'center',
     fontWeight: '900',
-    color: COLORS.text,
+    fontSize: 15,
+  },
+  empty: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 60,
+  },
+  emptyText: {
+    color: UI.sub,
+    textAlign: 'center',
+    marginTop: 16,
+    lineHeight: 20,
+    ...TYPO.bodyStrong,
   },
 });
