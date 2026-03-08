@@ -16,6 +16,8 @@ const errText = (error: unknown): string => {
 export function useDirectorData({ supabase }: Deps) {
   const fetchTicket = useRef(0);
   const lastNonEmptyRows = useRef<PendingRow[]>([]);
+  const lastFetchedRowsAt = useRef<number>(0);
+  const lastFetchedPropsAt = useRef<number>(0);
 
   const [rows, setRows] = useState<PendingRow[]>([]);
   const [loadingRows, setLoadingRows] = useState(false);
@@ -176,7 +178,11 @@ export function useDirectorData({ supabase }: Deps) {
     }
   }, [supabase]);
 
-  const fetchRows = useCallback(async () => {
+  const fetchRows = useCallback(async (force = false) => {
+    const now = Date.now();
+    // Skip if recently fetched and not forced
+    if (!force && rows.length > 0 && now - lastFetchedRowsAt.current < 20000) return;
+
     const my = ++fetchTicket.current;
     setLoadingRows(true);
     try {
@@ -198,6 +204,7 @@ export function useDirectorData({ supabase }: Deps) {
       }));
 
       lastNonEmptyRows.current = normalized;
+      lastFetchedRowsAt.current = Date.now();
       if (my === fetchTicket.current) setRows(normalized);
 
       const ids = Array.from(new Set(normalized.map((r) => String(r.request_id ?? "").trim()).filter(Boolean)));
@@ -209,106 +216,94 @@ export function useDirectorData({ supabase }: Deps) {
     }
   }, [supabase, preloadDisplayNos]);
 
-  const fetchProps = useCallback(async () => {
+  const fetchProps = useCallback(async (force = false) => {
+    const now = Date.now();
+    // Skip if recently fetched and not forced (cache for 30s)
+    if (!force && propsHeads.length > 0 && now - lastFetchedPropsAt.current < 30000) return;
+
     setLoadingProps(true);
     try {
+      // 1. Fetch pending proposals with basic info
       const list = await listDirectorProposalsPending();
-      const listTyped = (list ?? []) as Array<{ id?: string | number | null; submitted_at?: string | null }>;
-      const heads: ProposalHead[] = listTyped
+      const heads: ProposalHead[] = (list ?? [])
         .filter((x) => x && x.id != null && x.submitted_at != null)
         .map((x) => ({ id: String(x.id), submitted_at: String(x.submitted_at), pretty: null }));
 
       if (!heads.length) {
         setPropsHeads([]);
-        return;
-      }
-
-      const ids = heads.map((h) => h.id);
-      const { data, error } = await supabase
-        .from("proposals")
-        .select("id, proposal_no, id_short, sent_to_accountant_at")
-        .in("id", ids);
-
-      if (error || !Array.isArray(data)) {
-        setPropsHeads(heads);
-        return;
-      }
-
-      const okIds = new Set<string>(
-        data.filter((r) => !r?.sent_to_accountant_at).map((r) => String(r.id)),
-      );
-
-      const prettyMap: Record<string, string> = {};
-      const dataTyped = data as Array<{ id?: string | number | null; proposal_no?: string | null; id_short?: string | number | null }>;
-      for (const r of dataTyped) {
-        const id = String(r.id);
-        const pn = String(r.proposal_no ?? "").trim();
-        const short = r.id_short;
-        const pretty = pn || (short != null ? `PR-${String(short)}` : "");
-        if (id && pretty) prettyMap[id] = pretty;
-      }
-
-      let filtered = heads
-        .filter((h) => okIds.has(h.id))
-        .map((h) => ({ ...h, pretty: prettyMap[h.id] ?? h.pretty ?? null }));
-
-      try {
-        const propIds = filtered.map((h) => h.id);
-        if (propIds.length) {
-          const q = await supabase
-            .from("proposal_items")
-            .select("proposal_id")
-            .in("proposal_id", propIds);
-
-          const qRows = (q.data || []) as Array<{ proposal_id?: string | number | null }>;
-          const nonEmpty = new Set(qRows.map((r) => String(r.proposal_id)));
-          filtered = filtered.filter((h) => nonEmpty.has(String(h.id)));
-        }
-      } catch { }
-      setPropsHeads(filtered);
-      try {
-        const propIds = filtered.map((h) => h.id);
-        if (propIds.length) {
-          const qCnt = await supabase
-            .from("proposal_items")
-            .select("proposal_id")
-            .in("proposal_id", propIds);
-
-          const map: Record<string, number> = {};
-          const cntRows = (qCnt.data || []) as Array<{ proposal_id?: string | number | null }>;
-          for (const r of cntRows) {
-            const pid = String(r.proposal_id ?? "");
-            if (!pid) continue;
-            map[pid] = (map[pid] || 0) + 1;
-          }
-          setPropItemsCount(map);
-        } else {
-          setPropItemsCount({});
-        }
-      } catch {
-        setPropItemsCount({});
-      }
-
-      setBuyerPropsCount(filtered.length);
-
-      try {
-        const propIds = filtered.map((h) => h.id);
-        if (propIds.length) {
-          const q = await supabase
-            .from("proposal_items_view")
-            .select("proposal_id")
-            .in("proposal_id", propIds);
-
-          setBuyerPositionsCount(!q.error && Array.isArray(q.data) ? q.data.length : 0);
-        } else {
-          setBuyerPositionsCount(0);
-        }
-      } catch {
+        setBuyerPropsCount(0);
         setBuyerPositionsCount(0);
+        setPropItemsCount({});
+        return;
       }
+
+      const propIds = heads.map((h) => h.id);
+
+      // 2. Parallel secondary data fetching: 
+      // a) Meta for titles (proposal_no, id_short)
+      // b) Counts per proposal (efficient grouping)
+      // c) Total positions count for KPI (head: true)
+      const [metaRes, countsRes, totalKpiRes] = await Promise.all([
+        supabase
+          .from("proposals")
+          .select("id, proposal_no, id_short, sent_to_accountant_at")
+          .in("id", propIds),
+
+        // Count items per proposal directly in DB
+        supabase
+          .from("proposal_items")
+          .select("proposal_id")
+          .in("proposal_id", propIds),
+        // Note: Ideally we'd use an RPC for grouped count, but for now we filter and count locally
+        // to maintain compatibility with the existing code structure while minimizing the logic change.
+        // However, we can at least parallelize it.
+
+        // Total positions count for KPI - HEAD only (returns count, not rows)
+        supabase
+          .from("proposal_items_view")
+          .select("id", { count: "exact", head: true })
+          .in("proposal_id", propIds),
+      ]);
+
+      // Process Meta
+      const prettyMap: Record<string, string> = {};
+      const okIds = new Set<string>();
+
+      if (!metaRes.error && Array.isArray(metaRes.data)) {
+        metaRes.data.forEach((r) => {
+          if (!r.sent_to_accountant_at) okIds.add(String(r.id));
+          const pn = String(r.proposal_no ?? "").trim();
+          const short = r.id_short;
+          const pretty = pn || (short != null ? `PR-${String(short)}` : "");
+          if (pretty) prettyMap[String(r.id)] = pretty;
+        });
+      }
+
+      // Process Counts per proposal (Request 3 & 4 combined into one in-memory map from countsRes)
+      const perPropCountMap: Record<string, number> = {};
+      const nonEmptyPids = new Set<string>();
+      if (!countsRes.error && Array.isArray(countsRes.data)) {
+        countsRes.data.forEach((r: any) => {
+          const pid = String(r.proposal_id ?? "");
+          if (!pid) return;
+          perPropCountMap[pid] = (perPropCountMap[pid] || 0) + 1;
+          nonEmptyPids.add(pid);
+        });
+      }
+
+      // Final heads: filter sent and empty
+      const filtered = heads
+        .filter((h) => okIds.has(h.id) && nonEmptyPids.has(h.id))
+        .map((h) => ({ ...h, pretty: prettyMap[h.id] ?? null }));
+
+      setPropsHeads(filtered);
+      setPropItemsCount(perPropCountMap);
+      setBuyerPropsCount(filtered.length);
+      setBuyerPositionsCount(totalKpiRes.count ?? 0);
+      lastFetchedPropsAt.current = Date.now();
+
     } catch (e) {
       console.error("[director] proposals list]:", errText(e));
-      setPropsHeads([]);
     } finally {
       setLoadingProps(false);
     }

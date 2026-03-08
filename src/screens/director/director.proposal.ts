@@ -16,8 +16,8 @@ type Deps = {
   setDecidingId: React.Dispatch<React.SetStateAction<string | null>>;
   setActingPropItemId: React.Dispatch<React.SetStateAction<number | null>>;
   setPropApproveId: React.Dispatch<React.SetStateAction<string | null>>;
-  fetchProps: () => Promise<void>;
-  fetchRows: () => Promise<void>;
+  fetchProps: (force?: boolean) => Promise<void>;
+  fetchRows: (force?: boolean) => Promise<void>;
   closeSheet: () => void;
   showSuccess: (msg: string) => void;
 };
@@ -83,8 +83,8 @@ export function useDirectorProposalActions({
       });
 
       if (isLast) {
-        await fetchProps();
-        void fetchRows();
+        await fetchProps(true);
+        void fetchRows(true);
         closeSheet();
       }
     } catch (e: unknown) {
@@ -201,8 +201,8 @@ export function useDirectorProposalActions({
       });
       if (accErr) throw accErr;
 
-      await fetchProps();
-      void fetchRows();
+      await fetchProps(true);
+      void fetchRows(true);
       closeSheet();
       showSuccess("РЈС‚РІРµСЂР¶РґРµРЅРѕ в†’ Р±СѓС…РіР°Р»С‚РµСЂ в†’ СЃРєР»Р°Рґ/РїРѕРґСЂСЏРґС‡РёРєРё");
     } catch (e: unknown) {
@@ -220,4 +220,3 @@ export function useDirectorProposalActions({
     approveProposal,
   };
 }
-

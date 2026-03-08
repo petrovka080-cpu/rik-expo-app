@@ -5,7 +5,8 @@ import ForemanDropdown from "./ForemanDropdown";
 import type { FormContextUiModel } from "./foreman.locator.adapter";
 import type { ContextResolutionResult } from "./foreman.context";
 import type { RefOption } from "./foreman.types";
-import { debugForemanLog } from "./foreman.debug";
+import { debugForemanLogLazy } from "./foreman.debug";
+import { FOREMAN_DROPDOWN_FIELD_KEYS } from "./foreman.dropdown.constants";
 
 type Props = {
   contentTopPad: number;
@@ -42,7 +43,7 @@ type Props = {
 export default function ForemanEditorSection(p: Props) {
   const isLowConfidence = p.contextResult?.confidence !== 'high';
 
-  debugForemanLog('[FOREMAN_EDITOR_4_FIELDS]', {
+  debugForemanLogLazy('[FOREMAN_EDITOR_4_FIELDS]', () => ({
     objectType: p.objectType,
 
     field1_object: {
@@ -68,7 +69,7 @@ export default function ForemanEditorSection(p: Props) {
       value: p.zone,
       options: p.formUi.zone.options.map(o => ({ code: o.code, name: o.name })),
     },
-  });
+  }));
 
   return (
     <>
@@ -83,6 +84,7 @@ export default function ForemanEditorSection(p: Props) {
             label="Объект / Блок"
             required={true}
             showLabel={true}
+            fieldKey={FOREMAN_DROPDOWN_FIELD_KEYS.object}
             options={p.objOptions}
             value={p.objectType}
             valueLabelOverride={p.objectDisplayName}
@@ -105,6 +107,7 @@ export default function ForemanEditorSection(p: Props) {
               label={p.formUi.locator.label}
               required={true}
               showLabel={true}
+              fieldKey={FOREMAN_DROPDOWN_FIELD_KEYS.locator}
               options={p.formUi.locator.options}
               value={p.level}
               onChange={p.onLevelChange}
@@ -118,6 +121,7 @@ export default function ForemanEditorSection(p: Props) {
           <ForemanDropdown
             label="Раздел / Вид работ"
             showLabel={true}
+            fieldKey={FOREMAN_DROPDOWN_FIELD_KEYS.system}
             options={p.sysOptions}
             value={p.system}
             onChange={p.onSystemChange}
@@ -131,6 +135,7 @@ export default function ForemanEditorSection(p: Props) {
             key={`zone:${p.objectType}:${p.formUi.zone.label}`}
             label={p.formUi.zone.label}
             showLabel={true}
+            fieldKey={FOREMAN_DROPDOWN_FIELD_KEYS.zone}
             options={p.formUi.zone.options}
             value={p.zone}
             onChange={p.onZoneChange}

@@ -272,7 +272,7 @@ export default function BuyerScreen() {
   const [propViewId, setPropViewId] = useState<string | null>(null);
   const [propViewBusy, setPropViewBusy] = useState(false);
   const [propViewLines, setPropViewLines] = useState<ProposalViewLine[]>([]);
-  const setPropViewHead = useCallback((_v: ProposalHeadLite | null) => { }, []);
+  const [propViewHead, setPropViewHead] = useState<ProposalHeadLite | null>(null);
 
   const [acctSupp, setAcctSupp] = useState<{
     name: string;
@@ -601,7 +601,7 @@ export default function BuyerScreen() {
     subcontractCount,
     scrollTabsToStart,
   ]);
-  
+
   const ScreenBody = (
     <View style={[s.screen, { backgroundColor: UI.bg }]}>
       <BuyerStickyHeader
@@ -610,7 +610,7 @@ export default function BuyerScreen() {
         headerHeight={headerHeight}
         headerShadow={headerShadow}
       />
-  
+
       {tab === "subcontracts" ? (
         <BuyerSubcontractTab
           contentTopPad={measuredHeaderMax}
@@ -633,7 +633,7 @@ export default function BuyerScreen() {
           renderProposalCard={renderProposalCard}
         />
       )}
-  
+
       <WarehouseFioModal
         visible={isFioConfirmVisible}
         initialFio={buyerFio}
@@ -641,15 +641,15 @@ export default function BuyerScreen() {
         loading={isFioLoading}
         history={buyerHistory}
       />
-  
-  
-  
+
+
+
       <BuyerSheetShell
         isOpen={isSheetOpen}
         onClose={closeSheet}
         s={s}
         title={sheetTitle}
-  
+
       >
         <KeyboardAvoidingView
           style={{ flex: 1, minHeight: 0 }}
@@ -721,19 +721,20 @@ export default function BuyerScreen() {
                 }
               />
             ) : null}
-  
+
             {sheetKind === "prop_details" ? (
               <BuyerPropDetailsSheetBody
                 s={s}
+                head={propViewHead}
                 propViewBusy={propViewBusy}
                 propViewLines={propViewLines}
                 isReqContextNote={isReqContextNote}
                 extractReqContextLines={extractReqContextLines}
-  
+
                 propAttBusy={propAttBusy}
                 propAttErr={propViewId ? (propAttErrByPid[propViewId] || "") : ""}
                 attachments={propViewId ? (propAttByPid[propViewId] || []) : []}
-  
+
                 onReloadAttachments={() => {
                   if (propViewId) loadProposalAttachments(propViewId);
                 }}
@@ -741,9 +742,12 @@ export default function BuyerScreen() {
                   if (propViewId) attachFileToProposal(propViewId, "extra");
                 }}
                 onOpenAttachment={openPropAttachment}
+                onOpenPdf={openProposalPdf}
+                onOpenAccounting={openAccountingModal}
+                onOpenRework={openRework}
               />
             ) : null}
-  
+
             {sheetKind === "accounting" ? (
               <BuyerAccountingSheetBody
                 s={s}
@@ -770,7 +774,7 @@ export default function BuyerScreen() {
                 closeSheet={closeSheet}
               />
             ) : null}
-  
+
             {sheetKind === "rework" ? (
               <BuyerReworkSheetBody
                 s={s}
@@ -797,7 +801,7 @@ export default function BuyerScreen() {
                 closeSheet={closeSheet}
               />
             ) : null}
-  
+
             {sheetKind === "rfq" ? (
               <BuyerRfqSheetBody
                 s={s}
@@ -848,7 +852,7 @@ export default function BuyerScreen() {
             ) : null}
           </View>
         </KeyboardAvoidingView>
-  
+
       </BuyerSheetShell>
       <ToastOverlay toast={toast} />
     </View>
@@ -857,5 +861,3 @@ export default function BuyerScreen() {
 }
 
 const s = buyerStyles;
-
-

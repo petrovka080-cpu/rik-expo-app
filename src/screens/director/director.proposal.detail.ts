@@ -12,7 +12,7 @@ type Deps = {
   setItemsByProp: React.Dispatch<React.SetStateAction<Record<string, ProposalItem[]>>>;
   setLoadedByProp: React.Dispatch<React.SetStateAction<Record<string, boolean>>>;
   setPdfHtmlByProp: React.Dispatch<React.SetStateAction<Record<string, string>>>;
-  fetchProps: () => Promise<void>;
+  fetchProps: (force?: boolean) => Promise<void>;
   closeSheet: () => void;
 };
 
@@ -147,7 +147,7 @@ export function useDirectorProposalDetail({
       setLoadedByProp((m) => { const c = { ...m }; delete c[pidStr]; return c; });
       setPdfHtmlByProp((m) => { const c = { ...m }; delete c[pidStr]; return c; });
 
-      await fetchProps();
+      await fetchProps(true);
       closeSheet();
     } catch (e: unknown) {
       Alert.alert("Ошибка", errText(e) || "Не удалось вернуть предложение");
@@ -169,4 +169,3 @@ export function useDirectorProposalDetail({
     onDirectorReturn,
   };
 }
-

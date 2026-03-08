@@ -21,8 +21,8 @@ type Deps = {
   setActingId: React.Dispatch<React.SetStateAction<string | null>>;
   setReqDeleteId: React.Dispatch<React.SetStateAction<number | string | null>>;
   setReqSendId: React.Dispatch<React.SetStateAction<number | string | null>>;
-  fetchRows: () => Promise<void>;
-  fetchProps: () => Promise<void>;
+  fetchRows: (force?: boolean) => Promise<void>;
+  fetchProps: (force?: boolean) => Promise<void>;
   closeSheet: () => void;
   showSuccess: (msg: string) => void;
 };
@@ -207,11 +207,11 @@ export function useDirectorRequestActions({
 
       const reqIdCmp = String(g.request_id ?? "");
       setRows((prev) => prev.filter((r) => String(r.request_id ?? "") !== reqIdCmp));
-      await fetchProps();
+      await fetchProps(true);
       void (async () => {
         for (let i = 0; i < 3; i += 1) {
           await sleep(450);
-          await fetchRows();
+          await fetchRows(true);
           setRows((prev) => prev.filter((r) => String(r.request_id ?? "") !== reqIdCmp));
         }
       })();

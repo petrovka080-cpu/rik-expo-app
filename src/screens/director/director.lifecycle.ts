@@ -10,8 +10,8 @@ type Deps = {
   repFrom: string | null;
   repTo: string | null;
   isScreenFocused: boolean;
-  fetchRows: () => Promise<void>;
-  fetchProps: () => Promise<void>;
+  fetchRows: (force?: boolean) => Promise<void>;
+  fetchProps: (force?: boolean) => Promise<void>;
   fetchFinance: () => Promise<void>;
   fetchReport: () => Promise<void>;
   showRtToast: (title?: string, body?: string) => void;
@@ -124,8 +124,8 @@ export function useDirectorLifecycle({
           const next = payload.new;
           const n = next && typeof next === "object" ? (next as { title?: string; body?: string }) : {};
           showRtToast(n.title, n.body);
-          void fetchRows();
-          void fetchProps();
+          void fetchRows(true);
+          void fetchProps(true);
         },
       )
       .subscribe();

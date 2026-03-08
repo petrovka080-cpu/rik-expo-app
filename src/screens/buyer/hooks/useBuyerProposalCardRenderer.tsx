@@ -18,11 +18,7 @@ export function useBuyerProposalCardRenderer(params: {
     s,
     titleByPid,
     propAttByPid,
-    openProposalPdf,
-    openAccountingModal,
-    openRework,
     openProposalDetailsLines,
-    openProposalDetailsAttachments,
   } = params;
 
   const renderProposalCard = useCallback(
@@ -36,11 +32,7 @@ export function useBuyerProposalCardRenderer(params: {
           head={item}
           title={titleByPid[String(item?.id ?? "")] || ""}
           attCount={typeof cnt === "number" ? cnt : null}
-          onOpenPdf={(pid2) => openProposalPdf(pid2)}
-          onOpenAccounting={(pid2) => openAccountingModal(pid2)}
-          onOpenRework={(pid2) => openRework(pid2)}
           onOpenDetails={(pid2) => openProposalDetailsLines(pid2, item)}
-          onOpenAttachments={(pid2) => openProposalDetailsAttachments(pid2, item)}
         />
       );
     },
@@ -48,14 +40,9 @@ export function useBuyerProposalCardRenderer(params: {
       s,
       titleByPid,
       propAttByPid,
-      openProposalPdf,
-      openAccountingModal,
-      openRework,
       openProposalDetailsLines,
-      openProposalDetailsAttachments,
     ]
   );
 
   return { renderProposalCard };
 }
-

@@ -6,3 +6,7 @@ export function debugForemanLog(tag: string, payload: unknown) {
   console.log(tag, payload);
 }
 
+export function debugForemanLogLazy(tag: string, payloadFactory: () => unknown) {
+  if (!FOREMAN_CONTEXT_DEBUG) return;
+  console.log(tag, payloadFactory());
+}

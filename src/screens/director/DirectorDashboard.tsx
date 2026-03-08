@@ -61,8 +61,8 @@ type Props = {
   screenLock: boolean;
 
   ensureSignedIn: () => Promise<any>;
-  fetchRows: () => Promise<any>;
-  fetchProps: () => Promise<any>;
+  fetchRows: (force?: boolean) => Promise<any>;
+  fetchProps: (force?: boolean) => Promise<any>;
   rtToast: { visible: boolean; title: string; body: string; count: number };
 
   finLoading: boolean;
@@ -189,12 +189,12 @@ export default function DirectorDashboard(p: Props) {
               <View style={s.kpiRow}>
                 <View style={s.kpiPillHalf}>
                   <Text style={s.kpiLabel}>Заявок</Text>
-                  <Text style={s.kpiValue}>{p.loadingRows ? "…" : String(p.foremanRequestsCount)}</Text>
+                  <Text style={s.kpiValue}>{(p.loadingRows && !p.foremanRequestsCount) ? "…" : String(p.foremanRequestsCount)}</Text>
                 </View>
 
                 <View style={s.kpiPillHalf}>
                   <Text style={s.kpiLabel}>Позиций</Text>
-                  <Text style={s.kpiValue}>{p.loadingRows ? "…" : String(p.foremanPositionsCount)}</Text>
+                  <Text style={s.kpiValue}>{(p.loadingRows && !p.foremanPositionsCount) ? "…" : String(p.foremanPositionsCount)}</Text>
                 </View>
               </View>
             </View>
@@ -205,12 +205,12 @@ export default function DirectorDashboard(p: Props) {
               <View style={s.kpiRow}>
                 <View style={s.kpiPillHalf}>
                   <Text style={s.kpiLabel}>Предложений</Text>
-                  <Text style={s.kpiValue}>{p.loadingProps ? "…" : String(p.buyerPropsCount)}</Text>
+                  <Text style={s.kpiValue}>{(p.loadingProps && !p.buyerPropsCount) ? "…" : String(p.buyerPropsCount)}</Text>
                 </View>
 
                 <View style={s.kpiPillHalf}>
                   <Text style={s.kpiLabel}>Позиций</Text>
-                  <Text style={s.kpiValue}>{p.loadingProps ? "…" : String(p.buyerPositionsCount)}</Text>
+                  <Text style={s.kpiValue}>{(p.loadingProps && !p.buyerPositionsCount) ? "…" : String(p.buyerPositionsCount)}</Text>
                 </View>
               </View>
             </View>
@@ -336,7 +336,7 @@ export default function DirectorDashboard(p: Props) {
                   onRefresh={async () => {
                     if (p.loadingRows) return;
                     await p.ensureSignedIn();
-                    await p.fetchRows();
+                    await p.fetchRows(true);
                   }}
                   title=""
                   tintColor={UI.accent}
@@ -358,7 +358,7 @@ export default function DirectorDashboard(p: Props) {
                   onRefresh={async () => {
                     if (p.loadingProps) return;
                     await p.ensureSignedIn();
-                    await p.fetchProps();
+                    await p.fetchProps(true);
                   }}
                   title=""
                   tintColor={UI.accent}

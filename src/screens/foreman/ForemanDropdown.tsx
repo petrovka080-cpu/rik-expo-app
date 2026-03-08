@@ -1,8 +1,20 @@
-﻿import React, { useMemo, useState } from "react";
-import { Modal, Platform, Pressable, ScrollView, Text, TextInput, View, type DimensionValue } from "react-native";
+﻿import React, { useCallback } from "react";
+import {
+  FlatList,
+  Modal,
+  Platform,
+  Pressable,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+  type DimensionValue,
+} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import type { RefOption } from "./foreman.types";
-import { debugForemanLog } from "./foreman.debug";
+import { debugForemanLogLazy } from "./foreman.debug";
+import { useForemanDropdownModel } from "./hooks/useForemanDropdownModel";
+import { FOREMAN_DROPDOWN_DEFAULT_FIELD } from "./foreman.dropdown.constants";
 
 type Props = {
   label: string;
@@ -12,6 +24,7 @@ type Props = {
   placeholder?: string;
   searchable?: boolean;
   width?: DimensionValue;
+  fieldKey?: string;
   required?: boolean;
   showLabel?: boolean;
   valueLabelOverride?: string;
@@ -27,32 +40,55 @@ export default function ForemanDropdown({
   placeholder = "Выбрать...",
   searchable = true,
   width = "100%",
+  fieldKey,
   required = false,
   showLabel = true,
   valueLabelOverride,
   styles: s,
   ui,
 }: Props) {
-  const [open, setOpen] = useState(false);
-  const [q, setQ] = useState("");
-  const picked = options.find((o) => o.code === value);
+  const key = String(fieldKey || label || FOREMAN_DROPDOWN_DEFAULT_FIELD).trim();
 
-  debugForemanLog('[FOREMAN_DROPDOWN_FACT]', {
+  const {
+    open,
+    query,
+    setQuery,
+    picked,
+    filtered,
+    openModal,
+    closeModal,
+    clearSearch,
+    pickCode,
+    resetSelection,
+    keyExtractor,
+    getItemLayout,
+  } = useForemanDropdownModel({
+    fieldKey: key,
+    options,
+    value,
+    onChange,
+  });
+
+  debugForemanLogLazy("[FOREMAN_DROPDOWN_FACT]", () => ({
     fieldLabel: label,
     value,
     picked: picked ? { code: picked.code, name: picked.name } : null,
     placeholder,
-    options: options.map(o => ({ code: o.code, name: o.name })),
-  });
+    options: options.map((o) => ({ code: o.code, name: o.name })),
+  }));
 
-  const filtered = useMemo(() => {
-    const qq = q.trim().toLowerCase();
-    if (!qq) return options;
-    return options.filter((o) => (o.name + " " + o.code).toLowerCase().includes(qq));
-  }, [q, options]);
+  const renderItem = useCallback(
+    ({ item }: { item: RefOption }) => (
+      <Pressable onPress={() => pickCode(item.code)} style={[s.suggest, localStyles.itemRow]}>
+        <Text style={[localStyles.itemName, { color: ui.text }]}>{item.name}</Text>
+        <Text style={localStyles.itemCode}>{item.code}</Text>
+      </Pressable>
+    ),
+    [pickCode, s.suggest, ui.text],
+  );
 
   return (
-    <View style={{ marginTop: 6, marginBottom: 8 }}>
+    <View style={localStyles.root}>
       {showLabel ? (
         <Text style={s.small}>
           {label}
@@ -60,22 +96,10 @@ export default function ForemanDropdown({
         </Text>
       ) : null}
 
-      <Pressable
-        onPress={() => setOpen(true)}
-        style={[s.input, s.selectRow, { width: Platform.OS === "web" ? width : "100%" }]}
-      >
+      <Pressable onPress={openModal} style={[s.input, s.selectRow, { width: Platform.OS === "web" ? width : "100%" }]}>
         <View style={s.selectValueWrap}>
-          <Text
-            style={{
-              color: ui.text,
-              opacity: picked ? 1 : 0.55,
-              fontWeight: "800",
-              fontSize: 14,
-              flex: 1,
-            }}
-            numberOfLines={1}
-          >
-            {picked ? picked.name : (valueLabelOverride || placeholder)}
+          <Text style={[localStyles.valueText, { color: ui.text, opacity: picked ? 1 : 0.55 }]} numberOfLines={1}>
+            {picked ? picked.name : valueLabelOverride || placeholder}
           </Text>
           {required ? <Text style={s.requiredAsterisk}>*</Text> : null}
         </View>
@@ -84,58 +108,52 @@ export default function ForemanDropdown({
       </Pressable>
 
       {open ? (
-        <Modal transparent animationType="fade" onRequestClose={() => setOpen(false)}>
-          <Pressable style={{ flex: 1 }} onPress={() => setOpen(false)}>
+        <Modal transparent animationType="fade" onRequestClose={closeModal}>
+          <Pressable style={{ flex: 1 }} onPress={closeModal}>
             <View style={s.backdrop} />
           </Pressable>
           <View style={[s.modalSheet, { maxWidth: 420, left: 16, right: 16 }]}>
-            <Text
-              style={{
-                fontWeight: "800",
-                fontSize: 14,
-                marginBottom: 8,
-                color: ui.text,
-              }}
-            >
-              {label}
-            </Text>
+            <Text style={[localStyles.sheetTitle, { color: ui.text }]}>{label}</Text>
 
             {searchable ? (
-              <TextInput value={q} onChangeText={setQ} placeholder="Поиск..." style={s.input} />
+              <View style={localStyles.searchWrap}>
+                <TextInput
+                  value={query}
+                  onChangeText={setQuery}
+                  placeholder="Поиск по названию или коду..."
+                  autoFocus
+                  style={s.input}
+                />
+                {query ? (
+                  <Pressable onPress={clearSearch} style={[s.miniBtn, localStyles.clearBtn]}>
+                    <Text style={s.miniText}>Очистить поиск</Text>
+                  </Pressable>
+                ) : null}
+              </View>
             ) : null}
 
-            <ScrollView style={{ maxHeight: 360, marginTop: 10 }} keyboardShouldPersistTaps="handled">
-              {filtered.map((item, idx) => (
-                <Pressable
-                  key={`ref:${item.code}:${idx}`}
-                  onPress={() => {
-                    onChange(item.code);
-                    setOpen(false);
-                  }}
-                  style={[s.suggest, { borderBottomColor: "rgba(255,255,255,0.08)", paddingVertical: 14 }]}
-                >
-                  <Text style={{ fontWeight: "700", color: ui.text, fontSize: 15 }}>{item.name}</Text>
-                </Pressable>
-              ))}
-              {filtered.length === 0 && (
-                <Text style={{ color: "rgba(255,255,255,0.45)", textAlign: "center", marginTop: 20 }}>Ничего не найдено</Text>
-              )}
-            </ScrollView>
+            <FlatList
+              style={localStyles.list}
+              keyboardShouldPersistTaps="handled"
+              data={filtered}
+              keyExtractor={keyExtractor}
+              getItemLayout={getItemLayout}
+              initialNumToRender={16}
+              maxToRenderPerBatch={24}
+              windowSize={7}
+              removeClippedSubviews={Platform.OS !== "web"}
+              renderItem={renderItem}
+              ListEmptyComponent={<Text style={localStyles.emptyText}>Ничего не найдено</Text>}
+            />
 
-            <View style={{ flexDirection: "row", justifyContent: "flex-end", marginTop: 12, gap: 10 }}>
+            <View style={localStyles.actionsRow}>
               {value ? (
-                <Pressable
-                  onPress={() => {
-                    onChange("");
-                    setOpen(false);
-                  }}
-                  style={[s.miniBtn, { flex: 0, paddingHorizontal: 16 }]}
-                >
+                <Pressable onPress={resetSelection} style={[s.miniBtn, { flex: 0, paddingHorizontal: 16 }]}>
                   <Text style={[s.miniText, { color: "#EF4444" }]}>Сбросить</Text>
                 </Pressable>
               ) : null}
               <Pressable
-                onPress={() => setOpen(false)}
+                onPress={closeModal}
                 style={[s.miniBtn, { flex: 0, paddingHorizontal: 16, backgroundColor: "rgba(255,255,255,0.15)" }]}
               >
                 <Text style={s.miniText}>Закрыть</Text>
@@ -148,4 +166,16 @@ export default function ForemanDropdown({
   );
 }
 
-
+const localStyles = StyleSheet.create({
+  root: { marginTop: 6, marginBottom: 8 },
+  valueText: { fontWeight: "800", fontSize: 14, flex: 1 },
+  sheetTitle: { fontWeight: "800", fontSize: 14, marginBottom: 8 },
+  searchWrap: { gap: 8 },
+  clearBtn: { alignSelf: "flex-start", flex: 0, paddingHorizontal: 12 },
+  list: { maxHeight: 360, marginTop: 10 },
+  itemRow: { borderBottomColor: "rgba(255,255,255,0.08)", paddingVertical: 14 },
+  itemName: { fontWeight: "700", fontSize: 15 },
+  itemCode: { color: "rgba(255,255,255,0.5)", fontSize: 12, marginTop: 2 },
+  emptyText: { color: "rgba(255,255,255,0.45)", textAlign: "center", marginTop: 20 },
+  actionsRow: { flexDirection: "row", justifyContent: "flex-end", marginTop: 12, gap: 10 },
+});

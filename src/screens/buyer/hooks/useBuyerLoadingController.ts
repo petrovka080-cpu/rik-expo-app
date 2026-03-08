@@ -108,17 +108,18 @@ export function useBuyerLoadingController(params: {
     useCallback(() => {
       focusedRef.current = true;
 
-      fetchInbox();
-      fetchBuckets();
-      fetchSubcontractsCount();
+      void Promise.all([
+        fetchInbox(),
+        fetchBuckets(),
+        fetchSubcontractsCount()
+      ]);
 
       const detach = attachBuyerSubscriptions({
         supabase,
         focusedRef,
         onNotif: (t, m) => alert(t, m),
         onProposalsChanged: () => {
-          fetchBuckets();
-          fetchInbox();
+          void Promise.all([fetchBuckets(), fetchInbox()]);
         },
         log,
       });
@@ -131,17 +132,18 @@ export function useBuyerLoadingController(params: {
           // no-op
         }
       };
-    }, [fetchInbox, fetchBuckets])
+    }, [fetchInbox, fetchBuckets, fetchSubcontractsCount, supabase, alert, log])
   );
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    await fetchInbox();
-    await fetchInbox();
-    await fetchBuckets();
-    await fetchSubcontractsCount();
+    await Promise.all([
+      fetchInbox(),
+      fetchBuckets(),
+      fetchSubcontractsCount()
+    ]);
     setRefreshing(false);
-  }, [fetchInbox, fetchBuckets]);
+  }, [fetchInbox, fetchBuckets, fetchSubcontractsCount, setRefreshing]);
 
   return {
     fetchInbox,
@@ -150,4 +152,3 @@ export function useBuyerLoadingController(params: {
     onRefresh,
   };
 }
-

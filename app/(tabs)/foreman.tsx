@@ -24,7 +24,7 @@ import WarehouseFioModal from "../../src/screens/warehouse/components/WarehouseF
 import { useForemanDicts } from "../../src/screens/foreman/useForemanDicts";
 import { resolveForemanContext } from "../../src/screens/foreman/foreman.context.resolver";
 import { adaptFormContext } from "../../src/screens/foreman/foreman.locator.adapter";
-import { debugForemanLog } from "../../src/screens/foreman/foreman.debug";
+import { debugForemanLogLazy } from "../../src/screens/foreman/foreman.debug";
 import { getObjectDisplayName } from "../../src/screens/foreman/foreman.options";
 import { s } from "../../src/screens/foreman/foreman.styles";
 import { FOREMAN_TEXT, REQUEST_STATUS_STYLES, UI } from "../../src/screens/foreman/foreman.ui";
@@ -338,7 +338,7 @@ export default function ForemanScreen() {
   const zoneName = useMemo(() => formUi.zone.options.find(o => o.code === safeZone)?.name || '', [formUi.zone.options, safeZone]);
 
   useEffect(() => {
-    debugForemanLog("[FOREMAN_MAIN_4_FIELDS]", {
+    debugForemanLogLazy("[FOREMAN_MAIN_4_FIELDS]", () => ({
       objectName: displayObjectName,
       objectType,
       objectClass: contextResult?.config?.objectClass,
@@ -373,7 +373,7 @@ export default function ForemanScreen() {
         selectedName: formUi?.zone?.options?.find(o => o.code === zone)?.name || '',
         options: formUi?.zone?.options?.map(o => ({ code: o.code, name: o.name })),
       },
-    });
+    }));
   }, [displayObjectName, objectType, contextResult, formUi, level, system, zone, filteredSysOptions, objOptions, objAllOptions, safeLevel, safeSystem, safeZone]);
   const scopeNote = useMemo(() => buildScopeNote(objectName, levelName, systemName, zoneName) || '—', [objectName, levelName, systemName, zoneName]);
 
