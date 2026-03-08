@@ -208,3 +208,37 @@ Rule: This file is planning-only documentation. No logic changes.
 ## Operational note
 - Group B remains isolated in stash and must not be reintroduced as a single batch.
 - Any work from this backlog must be implemented as small, scoped tasks with separate acceptance.
+
+## Review outcomes
+- File: `src/lib/api/buyer.ts`
+  Verdict: `REJECT`
+  Why: UUID-only filtering plus `return list` fallback changes inbox dataset behavior.
+  Phase note: `Rejected in current safe style phase`
+- File: `src/screens/buyer/hooks/useBuyerRequestLabels.ts`
+  Verdict: `MOVE TO SEPARATE TASK`
+  Why: UUID gate can silently skip preload for legacy/non-UUID request IDs.
+  Phase note: `Separate compatibility task`
+- File: `app/(tabs)/foreman.tsx`
+  Verdict: `REJECT`
+  Why: Large functional rewiring (PDF/share and flow), not visual-only.
+  Phase note: `Rejected in current safe style phase`
+- File: `src/ui/AppRoleCard.tsx`
+  Verdict: `MOVE TO SEPARATE TASK`
+  Why: Opinionated interactive primitive (press scale, shell, chevron, disabled behavior).
+  Phase note: `Separate shared UI contract task`
+- File: `src/screens/director/DirectorProposalRow.tsx`
+  Verdict: `MOVE TO SEPARATE TASK`
+  Why: Migrating to `AppRoleCard` removes explicit loading/CTA affordance and changes disabled contract.
+  Phase note: `Separate director interaction task`
+- File: `src/screens/director/DirectorDashboard.tsx`
+  Verdict: `MOVE TO SEPARATE TASK`
+  Why: Introduces card press animation and chevron-driven affordance drift (interaction change).
+  Phase note: `Separate director interaction task`
+- File: `src/screens/buyer/components/BuyerSearchBar.tsx`
+  Verdict: `MOVE TO SEPARATE TASK`
+  Why: Potentially safe wrapper, but requires wiring in `buyer.tsx` to be complete.
+  Phase note: `Optional standalone micro-task only`
+- File: `app/(tabs)/buyer.tsx`
+  Verdict: `REJECT`
+  Why: Large buyer screen rewiring with high flow/contract drift risk.
+  Phase note: `Rejected in current safe style phase`
