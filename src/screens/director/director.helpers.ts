@@ -47,3 +47,7 @@ export const makeIsoInPeriod = (fromIso?: string | null, toIso?: string | null) 
     return true;
   };
 };
+
+export const runNextTick = (fn: () => void) => {
+  setTimeout(fn, 0);
+};

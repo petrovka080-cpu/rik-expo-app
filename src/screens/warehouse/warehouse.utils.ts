@@ -9,7 +9,11 @@ export const pickErr = (e: unknown) => {
   return String(err?.message || err?.error_description || err?.hint || JSON.stringify(e) || "Ошибка");
 };
 
-export const showErr = (e: unknown) => Alert.alert("Ошибка", pickErr(e));
+export const showErr = (e: unknown) => {
+  console.error("[warehouse error]", pickErr(e));
+  Alert.alert("Ошибка", pickErr(e));
+};
+
 
 export const norm = (s: string) =>
   (s || "")
@@ -63,7 +67,7 @@ export const webUnstickPress = () => {
   try {
     const el = document.activeElement as HTMLElement | null;
     el?.blur?.();
-  } catch {}
+  } catch { }
 };
 
 export const safeAlert = (title: string, msg?: string) => {
@@ -89,7 +93,7 @@ export async function saveString(key: string, value: string): Promise<void> {
     }
     const mod = await import("@react-native-async-storage/async-storage");
     await mod.default.setItem(key, value);
-  } catch {}
+  } catch { }
 }
 
 export async function loadJson<T>(key: string, fallback: T): Promise<T> {
@@ -105,7 +109,7 @@ export async function loadJson<T>(key: string, fallback: T): Promise<T> {
 export async function saveJson(key: string, value: unknown): Promise<void> {
   try {
     await saveString(key, JSON.stringify(value));
-  } catch {}
+  } catch { }
 }
 
 export const normMatCode = (raw: unknown) => {

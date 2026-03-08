@@ -88,6 +88,8 @@ declare global {
 
 export default function ForemanScreen() {
   const gbusy = useGlobalBusy();
+  // Safe global access for web-specific UI bridge
+  const safeWebUi = typeof webUi !== 'undefined' ? webUi : undefined;
 
   const {
     foreman, setForeman,
@@ -190,9 +192,9 @@ export default function ForemanScreen() {
   }, []);
 
   const showHint = useCallback((title: string, message: string) => {
-    if (Platform.OS === 'web') webUi.alert?.(`${title}\n\n${message}`);
+    if (Platform.OS === 'web' && safeWebUi) safeWebUi.alert?.(`${title}\n\n${message}`);
     else Alert.alert(title, message);
-  }, []);
+  }, [safeWebUi]);
 
   const ensureHeaderReady = useCallback(() => {
     if (!foreman.trim()) { showHint(FOREMAN_TEXT.fillHeaderTitle, FOREMAN_TEXT.fillForeman); return false; }
@@ -379,7 +381,7 @@ export default function ForemanScreen() {
     requestId, ensureRequestId, loadItems, syncRequestHeaderMeta, scopeNote,
     isDraftActive, canEditRequestItem, setItems, setQtyDrafts, setRowBusy, items, qtyDrafts,
     ensureEditableContext, ensureCanSubmitToDirector, applySubmittedRequestState, finalizeAfterSubmit,
-    showHint, setBusy, alertError, webUi
+    showHint, setBusy, alertError, webUi: safeWebUi
   });
 
   const {

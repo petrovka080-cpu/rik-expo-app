@@ -355,5 +355,7 @@ export function useDirectorFinancePanel({
     onCloseFinanceTop,
     applyFinPeriod,
     clearFinPeriod,
+    fetchFinance,
+    setFinPeriodOpen,
   };
 }

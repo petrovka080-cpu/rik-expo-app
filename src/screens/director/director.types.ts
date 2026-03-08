@@ -140,3 +140,16 @@ export type RepPayload = {
   discipline?: RepDisciplinePayload;
   report_options?: { objects: string[]; objectIdByName: Record<string, string | null> };
 };
+
+export type FinSupplierDebt = {
+  supplier: string;
+  _kindName?: string;
+  amount: number;
+  count: number;
+  overdueCount: number;
+  criticalCount: number;
+  invoices: any[];
+  approved: number;
+  paid: number;
+  toPay: number;
+};
