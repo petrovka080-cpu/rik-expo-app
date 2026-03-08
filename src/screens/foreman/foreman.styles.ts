@@ -283,20 +283,30 @@ export const s = StyleSheet.create({
   },
 
   historyStatusBadge: {
-    borderRadius: 999,
-    paddingVertical: 6,
-    paddingHorizontal: 12,
+    paddingVertical: 4,
+    paddingHorizontal: 10,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    minWidth: 80,
+  },
+  historyStatusBadgeText: {
+    fontSize: 11,
+    fontWeight: "800",
+    textTransform: 'uppercase',
   },
 
   historyPdfBtn: {
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 999,
+    width: 44,
+    height: 32,
+    borderRadius: 8,
     borderWidth: 1,
     borderColor: "rgba(255,255,255,0.12)",
     backgroundColor: "rgba(255,255,255,0.06)",
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  historyPdfBtnText: { fontSize: 12, fontWeight: "900", color: UI.text },
+  historyPdfBtnText: { fontSize: 11, fontWeight: "900", color: UI.text },
 
   // ===== draft list row
   draftRowCard: {

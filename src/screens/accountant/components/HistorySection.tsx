@@ -86,39 +86,60 @@ type HistoryRowCardProps = {
 export const HistoryRowCard = memo(function HistoryRowCard({ item, onOpen, ui }: HistoryRowCardProps) {
   const supplier = normalizeRuText(String(item.supplier || "—"));
   const invoiceNo = normalizeRuText(String(item.invoice_number || "без №"));
-  const purpose = normalizeRuText(String(item.purpose || item.note || "—").trim());
-  const fio = normalizeRuText(String(item.accountant_fio || "—").trim());
+  // Purpose might be long, slice carefully
+  const purpose = normalizeRuText(String(item.purpose || item.note || "").trim());
+  const fio = normalizeRuText(String(item.accountant_fio || "").trim());
+  const date = item.paid_at ? new Date(item.paid_at).toLocaleDateString() : "";
 
   return (
     <Pressable
       onPress={() => void onOpen(item)}
-      style={{
+      style={({ pressed }) => ({
         backgroundColor: ui.cardBg,
         marginHorizontal: 12,
-        marginVertical: 6,
+        marginVertical: 4,
         borderRadius: 18,
         borderWidth: 1.25,
-        borderColor: "rgba(255,255,255,0.16)",
+        borderColor: "rgba(255,255,255,0.14)",
         padding: 14,
+        transform: [{ scale: pressed ? 0.98 : 1 }],
+        opacity: pressed ? 0.9 : 1,
         shadowColor: "#000",
-        shadowOffset: { width: 0, height: 10 },
-        shadowOpacity: 0.22,
-        shadowRadius: 18,
-        elevation: 6,
-      }}
+        shadowOffset: { width: 0, height: 6 },
+        shadowOpacity: 0.15,
+        shadowRadius: 12,
+        elevation: 4,
+      })}
     >
-      <Text style={{ fontWeight: "900", color: ui.text }} numberOfLines={1}>
-        {supplier}
-      </Text>
+      <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 12 }}>
+        <View style={{ flex: 1, minWidth: 0 }}>
+          <Text style={{ fontSize: 13, fontWeight: "900", color: ui.text, marginBottom: 4 }} numberOfLines={1}>
+            {supplier}
+          </Text>
+          <Text style={{ fontSize: 12, color: ui.sub, fontWeight: "700" }} numberOfLines={1}>
+            {date} · Счёт {invoiceNo}
+          </Text>
+          {!!purpose && (
+            <Text style={{ fontSize: 11, color: ui.sub, marginTop: 4, fontStyle: 'italic' }} numberOfLines={1}>
+              {purpose}
+            </Text>
+          )}
+          {!!fio && (
+            <Text style={{ fontSize: 10, color: "rgba(255,255,255,0.35)", marginTop: 6, fontWeight: "800", textTransform: 'uppercase' }}>
+              👤 {fio}
+            </Text>
+          )}
+        </View>
 
-      <Text style={{ color: ui.sub, marginTop: 6, fontWeight: "700" }} numberOfLines={2}>
-        Счёт: <Text style={{ color: ui.text, fontWeight: "900" }}>{invoiceNo}</Text>
-        {` • ${purpose}`}
-      </Text>
-
-      <Text style={{ color: ui.sub, marginTop: 6, fontWeight: "700" }} numberOfLines={1}>
-        Бухгалтер: <Text style={{ color: ui.text, fontWeight: "900" }}>{fio}</Text>
-      </Text>
+        <View style={{ alignItems: 'flex-end' }}>
+          <Text style={{ fontSize: 16, fontWeight: "900", color: "#86EFAC" }}>
+            {Number(item.amount || 0).toLocaleString()}
+          </Text>
+          <Text style={{ fontSize: 10, color: ui.sub, fontWeight: "900", marginTop: 2 }}>
+            {item.invoice_currency || "KGS"}
+          </Text>
+        </View>
+      </View>
     </Pressable>
   );
 });

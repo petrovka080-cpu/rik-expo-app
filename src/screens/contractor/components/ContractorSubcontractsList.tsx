@@ -24,30 +24,47 @@ export default function ContractorSubcontractsList(props: Props) {
   return (
     <FlatList
       style={{ flex: 1, marginTop: 12 }}
-      contentContainerStyle={{ paddingTop: 8, paddingBottom: 8 }}
+      contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 32 }}
       data={data}
       keyExtractor={(item) => String(item.id)}
-      refreshControl={<RefreshControl refreshing={refreshing || loadingWorks} onRefresh={onRefresh} />}
+      refreshControl={<RefreshControl refreshing={refreshing || loadingWorks} onRefresh={onRefresh} tintColor="#fff" />}
       ListEmptyComponent={
-        <View style={[styles.card, styles.cardDark, styles.cardSeparated]}>
-          <Text style={styles.cardMetaDark}>{loadingWorks ? "Загрузка..." : "Нет данных."}</Text>
+        <View style={[styles.card, styles.cardDark, { borderRadius: 18, padding: 20 }]}>
+          <Text style={[styles.cardMetaDark, { textAlign: 'center' }]}>
+            {loadingWorks ? "Загрузка..." : "Нет назначенных подрядов."}
+          </Text>
         </View>
       }
       renderItem={({ item }) => (
-        <View style={[styles.card, styles.cardDark, styles.cardSeparated]}>
-          <Pressable onPress={() => onOpen(String(item.id))}>
-            <Text style={[styles.cardCompany, styles.cardCompanyDark]}>
+        <Pressable
+          onPress={() => onOpen(String(item.id))}
+          style={({ pressed }) => [
+            styles.card,
+            styles.cardDark,
+            styles.cardSeparated,
+            { borderRadius: 18, overflow: 'hidden', padding: 14 },
+            { transform: [{ scale: pressed ? 0.98 : 1 }], opacity: pressed ? 0.9 : 1 }
+          ]}
+        >
+          <View style={{ flex: 1, minWidth: 0 }}>
+            <Text style={[styles.cardCompany, styles.cardCompanyDark, { fontSize: 18, marginBottom: 4 }]} numberOfLines={1}>
               {normalizeRuText(item.contractor || "Подрядчик")}
             </Text>
-            {String(item.contractorInn || "").trim() ? (
-              <Text style={[styles.cardMetaDark, { marginTop: 2 }]}>ИНН: {normalizeRuText(item.contractorInn)}</Text>
-            ) : null}
-            <Text style={[styles.cardWork, styles.cardWorkDark]}>{normalizeRuText(item.workType || "Работа")}</Text>
-            <Text style={[styles.cardObject, styles.cardObjectDark]}>
-              Объект: {normalizeRuText(item.objectName || "—")}
+
+            <Text style={[styles.cardWork, styles.cardWorkDark, { fontWeight: '700', fontSize: 14 }]} numberOfLines={1}>
+              {normalizeRuText(item.workType || "Вид работ")}
             </Text>
-          </Pressable>
-        </View>
+
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 8, gap: 6 }}>
+              <View style={{ backgroundColor: 'rgba(59,130,246,0.15)', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6 }}>
+                <Text style={{ color: '#60A5FA', fontSize: 11, fontWeight: '900' }}>ОБЪЕКТ</Text>
+              </View>
+              <Text style={[styles.cardObject, styles.cardObjectDark, { marginTop: 0, flex: 1 }]} numberOfLines={1}>
+                {normalizeRuText(item.objectName || "—")}
+              </Text>
+            </View>
+          </View>
+        </Pressable>
       )}
     />
   );

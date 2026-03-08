@@ -37,45 +37,47 @@ function ListRowInner({
   return (
     <Pressable
       onPress={onPress}
-      style={{
+      style={({ pressed }) => ({
         backgroundColor: UI.cardBg,
         marginHorizontal: 12,
-        marginVertical: 6,
+        marginVertical: 4,
         borderRadius: 18,
         borderWidth: 1.25,
-        borderColor: "rgba(255,255,255,0.16)",
+        borderColor: "rgba(255,255,255,0.14)",
         padding: 14,
+        transform: [{ scale: pressed ? 0.98 : 1 }],
+        opacity: pressed ? 0.9 : 1,
         shadowColor: "#000",
-        shadowOffset: { width: 0, height: 10 },
-        shadowOpacity: 0.22,
-        shadowRadius: 18,
-        elevation: 6,
-      }}
+        shadowOffset: { width: 0, height: 6 },
+        shadowOpacity: 0.15,
+        shadowRadius: 12,
+        elevation: 4,
+      })}
     >
-      <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-        <View style={{ flex: 1 }}>
-          <Text style={{ fontWeight: "900", color: UI.text }} numberOfLines={1}>
-            {supplier} • {invoiceNo} ({invoiceDate})
+      <View style={{ flexDirection: "row", alignItems: "flex-start", gap: 12 }}>
+        <View style={{ flex: 1, minWidth: 0 }}>
+          <Text style={{ fontSize: 13, fontWeight: "900", color: UI.text, marginBottom: 4 }} numberOfLines={1}>
+            {supplier}
           </Text>
+
+          <Text style={{ fontSize: 12, color: UI.sub, fontWeight: "700" }} numberOfLines={1}>
+            Счёт {invoiceNo} · {invoiceDate}
+          </Text>
+
+          {rest > 0 && (
+            <Text style={{ fontSize: 11, fontWeight: "800", color: "#FDE68A", marginTop: 6 }}>
+              Остаток: {rest} {item.invoice_currency || "KGS"}
+            </Text>
+          )}
         </View>
 
-        <Chip label={st.label} bg={sc.bg} fg={sc.fg} />
+        <View style={{ alignItems: 'flex-end', gap: 6 }}>
+          <Text style={{ fontSize: 16, fontWeight: "900", color: UI.text }}>
+            {sum.toLocaleString()}
+          </Text>
+          <Chip label={st.label} bg={sc.bg} fg={sc.fg} />
+        </View>
       </View>
-
-      <View style={{ height: 6 }} />
-
-      <Text style={{ color: UI.sub, fontWeight: "700" }}>
-        Счёт:{" "}
-        <Text style={{ fontWeight: "900", color: UI.text }}>
-          {(sum || 0) + " " + (item.invoice_currency || "KGS")}
-        </Text>
-        {" • Оплачено: "}
-        <Text style={{ fontWeight: "900", color: UI.text }}>{total}</Text>
-        {" • "}
-        <Text style={{ fontWeight: "900", color: isPaidFull ? "#86EFAC" : "#FDE68A" }}>
-          {"Остаток: " + rest}
-        </Text>
-      </Text>
     </Pressable>
   );
 }

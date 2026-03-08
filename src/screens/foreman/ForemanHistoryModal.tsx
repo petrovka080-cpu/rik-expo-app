@@ -1,5 +1,6 @@
 ﻿import React from "react";
 import { ActivityIndicator, Platform, Pressable, ScrollView, Text, View } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import RNModal from "react-native-modal";
 import type { ForemanRequestSummary } from "../../lib/catalog_api";
 
@@ -54,20 +55,26 @@ export default function ForemanHistoryModal(p: Props) {
 
                 return (
                   <View key={req.id} style={p.styles.historyModalRow}>
-                    <Pressable style={{ flex: 1 }} onPress={() => p.onSelect(req.id)}>
-                      <Text style={p.styles.historyModalPrimary}>{req.display_no ?? p.shortId(req.id)}</Text>
-                      <Text style={p.styles.historyModalMeta}>{req.object_name_ru || "-"}</Text>
+                    <Pressable style={{ flex: 1, minWidth: 0, paddingRight: 8 }} onPress={() => p.onSelect(req.id)}>
+                      <Text style={p.styles.historyModalPrimary} numberOfLines={1}>
+                        {req.display_no ?? p.shortId(req.id)}
+                      </Text>
+                      <Text style={p.styles.historyModalMeta} numberOfLines={1}>
+                        {req.object_name_ru || "-"}
+                      </Text>
                       <Text style={p.styles.historyModalMetaSecondary}>{created}</Text>
                       {hasRejected ? (
-                        <Text style={{ color: "#B91C1C", fontSize: 12, marginTop: 2, fontWeight: "600" }}>
-                          Есть отклоненные позиции
+                        <Text style={{ color: "#F87171", fontSize: 11, marginTop: 4, fontWeight: "800" }}>
+                          ⚠️ Отклоненные позиции
                         </Text>
                       ) : null}
                     </Pressable>
 
-                    <View style={{ alignItems: "flex-end", gap: 6 }}>
-                      <View style={[p.styles.historyStatusBadge, { backgroundColor: hasRejected ? "#FEE2E2" : info.bg }]}>
-                        <Text style={{ color: info.fg, fontWeight: "700" }}>{info.label}</Text>
+                    <View style={{ alignItems: "center", flexDirection: 'row', gap: 10 }}>
+                      <View style={[p.styles.historyStatusBadge, { backgroundColor: hasRejected ? "rgba(239,68,68,0.15)" : info.bg }]}>
+                        <Text style={[p.styles.historyStatusBadgeText, { color: hasRejected ? "#F87171" : info.fg }]}>
+                          {hasRejected ? 'Отказ' : info.label}
+                        </Text>
                       </View>
 
                       <Pressable
@@ -75,8 +82,10 @@ export default function ForemanHistoryModal(p: Props) {
                         onPress={() => p.onOpenPdf(req.id)}
                         style={[p.styles.historyPdfBtn, pdfBusy && { opacity: 0.6 }]}
                       >
-                        <Text style={p.styles.historyPdfBtnText}>{pdfBusy ? "PDF..." : "PDF"}</Text>
+                        <Text style={p.styles.historyPdfBtnText}>{pdfBusy ? "..." : "PDF"}</Text>
                       </Pressable>
+
+                      <Ionicons name="chevron-forward" size={14} color="rgba(255,255,255,0.15)" />
                     </View>
                   </View>
                 );
