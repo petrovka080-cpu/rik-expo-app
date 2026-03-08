@@ -201,7 +201,12 @@ export function buildScopeNote(
   sysName?: string,
   zoneName?: string,
 ) {
-  const isNotReq = (s: string) => !s || s.includes("— Не требуется —") || s === "—";
+  const isNotReq = (s: string) => {
+    const v = String(s || "").trim();
+    if (!v) return true;
+    if (v === "—") return true;
+    return v.startsWith("—") && v.endsWith("—");
+  };
 
   const parts = [
     objName && !isNotReq(objName) ? `Объект: ${objName}` : "",

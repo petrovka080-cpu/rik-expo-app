@@ -5,6 +5,7 @@ import ForemanDropdown from "./ForemanDropdown";
 import type { FormContextUiModel } from "./foreman.locator.adapter";
 import type { ContextResolutionResult } from "./foreman.context";
 import type { RefOption } from "./foreman.types";
+import { debugForemanLog } from "./foreman.debug";
 
 type Props = {
   contentTopPad: number;
@@ -40,7 +41,7 @@ type Props = {
 export default function ForemanEditorSection(p: Props) {
   const isLowConfidence = p.contextResult?.confidence !== 'high';
 
-  console.log('[FOREMAN_EDITOR_4_FIELDS]', {
+  debugForemanLog('[FOREMAN_EDITOR_4_FIELDS]', {
     objectType: p.objectType,
 
     field1_object: {
@@ -92,7 +93,7 @@ export default function ForemanEditorSection(p: Props) {
 
           {isLowConfidence && p.objectType ? (
             <Text style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", marginLeft: 4, fontStyle: 'italic' }}>
-              ℹ️ Контекст: {p.contextResult?.config.objectClass}. Проверьте {p.formUi.locator.label?.toLowerCase()}.
+              Контекст: {p.contextResult?.config.objectClass}. Проверьте {p.formUi.locator.label?.toLowerCase()}.
             </Text>
           ) : null}
 
@@ -207,3 +208,5 @@ export default function ForemanEditorSection(p: Props) {
     </>
   );
 }
+
+

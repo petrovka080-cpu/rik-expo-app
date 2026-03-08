@@ -75,19 +75,19 @@ export function useForemanDicts() {
         if (cancelled) return;
 
         const mapName = (r: DictRow) => String(r.name_ru ?? r.name ?? r.code ?? "").trim();
-        const toRefOptions = (rows: unknown[]) => {
+        const toRefOptions = (rows: unknown[], includeEmpty: boolean) => {
           const fetched = rows
             .map(toDictRow)
             .filter((r): r is DictRow => !!r)
             .map((r) => ({ code: r.code, name: mapName(r) }))
             .filter((r) => String(r.code).trim() && String(r.name).trim());
-          return [{ code: "", name: "— Не требуется —" }, ...fetched];
+          return includeEmpty ? [{ code: "", name: "— Не выбрано —" }, ...fetched] : fetched;
         };
 
-        if (!obj.error && Array.isArray(obj.data)) setObjOptions(toRefOptions(obj.data));
-        if (!lvl.error && Array.isArray(lvl.data)) setLvlOptions(toRefOptions(lvl.data));
-        if (!sys.error && Array.isArray(sys.data)) setSysOptions(toRefOptions(sys.data));
-        if (!zn.error && Array.isArray(zn.data)) setZoneOptions(toRefOptions(zn.data));
+        if (!obj.error && Array.isArray(obj.data)) setObjOptions(toRefOptions(obj.data, false));
+        if (!lvl.error && Array.isArray(lvl.data)) setLvlOptions(toRefOptions(lvl.data, true));
+        if (!sys.error && Array.isArray(sys.data)) setSysOptions(toRefOptions(sys.data, true));
+        if (!zn.error && Array.isArray(zn.data)) setZoneOptions(toRefOptions(zn.data, true));
       } catch (e) {
         console.warn(e);
       }

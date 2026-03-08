@@ -1,7 +1,8 @@
-п»їimport React, { useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import { Modal, Platform, Pressable, ScrollView, Text, TextInput, View, type DimensionValue } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import type { RefOption } from "./foreman.types";
+import { debugForemanLog } from "./foreman.debug";
 
 type Props = {
   label: string;
@@ -22,7 +23,7 @@ export default function ForemanDropdown({
   options,
   value,
   onChange,
-  placeholder = "Р’С‹Р±СЂР°С‚СЊ...",
+  placeholder = "Выбрать...",
   searchable = true,
   width = "100%",
   required = false,
@@ -34,7 +35,7 @@ export default function ForemanDropdown({
   const [q, setQ] = useState("");
   const picked = options.find((o) => o.code === value);
 
-  console.log('[FOREMAN_DROPDOWN_FACT]', {
+  debugForemanLog('[FOREMAN_DROPDOWN_FACT]', {
     fieldLabel: label,
     value,
     picked: picked ? { code: picked.code, name: picked.name } : null,
@@ -98,7 +99,7 @@ export default function ForemanDropdown({
             </Text>
 
             {searchable ? (
-              <TextInput value={q} onChangeText={setQ} placeholder="РџРѕРёСЃРє..." style={s.input} />
+              <TextInput value={q} onChangeText={setQ} placeholder="Поиск..." style={s.input} />
             ) : null}
 
             <ScrollView style={{ maxHeight: 360, marginTop: 10 }} keyboardShouldPersistTaps="handled">
@@ -115,7 +116,7 @@ export default function ForemanDropdown({
                 </Pressable>
               ))}
               {filtered.length === 0 && (
-                <Text style={{ color: "rgba(255,255,255,0.45)", textAlign: "center", marginTop: 20 }}>РќРёС‡РµРіРѕ РЅРµ РЅР°Р№РґРµРЅРѕ</Text>
+                <Text style={{ color: "rgba(255,255,255,0.45)", textAlign: "center", marginTop: 20 }}>Ничего не найдено</Text>
               )}
             </ScrollView>
 
@@ -128,14 +129,14 @@ export default function ForemanDropdown({
                   }}
                   style={[s.miniBtn, { flex: 0, paddingHorizontal: 16 }]}
                 >
-                  <Text style={[s.miniText, { color: "#EF4444" }]}>РЎР±СЂРѕСЃРёС‚СЊ</Text>
+                  <Text style={[s.miniText, { color: "#EF4444" }]}>Сбросить</Text>
                 </Pressable>
               ) : null}
               <Pressable
                 onPress={() => setOpen(false)}
                 style={[s.miniBtn, { flex: 0, paddingHorizontal: 16, backgroundColor: "rgba(255,255,255,0.15)" }]}
               >
-                <Text style={s.miniText}>Р—Р°РєСЂС‹С‚СЊ</Text>
+                <Text style={s.miniText}>Закрыть</Text>
               </Pressable>
             </View>
           </View>
@@ -144,3 +145,4 @@ export default function ForemanDropdown({
     </View>
   );
 }
+

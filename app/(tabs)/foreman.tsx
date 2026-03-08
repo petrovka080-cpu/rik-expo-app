@@ -24,7 +24,7 @@ import WarehouseFioModal from "../../src/screens/warehouse/components/WarehouseF
 import { useForemanDicts } from "../../src/screens/foreman/useForemanDicts";
 import { resolveForemanContext } from "../../src/screens/foreman/foreman.context.resolver";
 import { adaptFormContext } from "../../src/screens/foreman/foreman.locator.adapter";
-import { ContextResolutionResult } from "../../src/screens/foreman/foreman.context";
+import { debugForemanLog } from "../../src/screens/foreman/foreman.debug";
 import { s } from "../../src/screens/foreman/foreman.styles";
 import { FOREMAN_TEXT, REQUEST_STATUS_STYLES, UI } from "../../src/screens/foreman/foreman.ui";
 import { useCollapsingHeader } from "../../src/screens/shared/useCollapsingHeader";
@@ -307,32 +307,29 @@ export default function ForemanScreen() {
 
 
   const filteredSysOptions = useMemo(() => {
-    // ... (no changes in sorting logic)
     if (!objectType) return sysOptions;
     const items = sysOptions.map(o => !o.code ? { ...o, name: "— Весь раздел —" } : o);
+    const priority = ctxConfig.systemPriorityTags.map((t) => t.toUpperCase());
 
     return [...items].sort((a, b) => {
       if (!a.code || !b.code) return 0;
-      const keyWords = ["БЛАГО", "ЗЕМЛ", "СЕТИ", "НВК", "НТС", "ГП", "ДОРОГ", "АСФАЛЬТ"];
-      const bldWords = ["ОТДЕЛК", "МЕБЕЛЬ", "ЭЛЕКТР", "ОВ", "ВК", "ИТ", "СКС", "КЛАДКА"];
-      const isExtA = keyWords.some(k => (a.name || "").toUpperCase().includes(k));
-      const isIntA = bldWords.some(k => (a.name || "").toUpperCase().includes(k));
-      if (ctxConfig.objectClass === 'external_site' || ctxConfig.objectClass === 'external_networks' || ctxConfig.objectClass === 'linear_object') {
-        if (isExtA) return -1;
-      } else if (ctxConfig.objectClass === 'multilevel_building') {
-        if (isIntA) return -1;
-      }
+      const aName = (a.name || "").toUpperCase();
+      const bName = (b.name || "").toUpperCase();
+      const score = (name: string) => priority.reduce((acc, tag) => acc + (name.includes(tag) ? 1 : 0), 0);
+      const diff = score(bName) - score(aName);
+      if (diff !== 0) return diff;
       return 0;
     });
   }, [sysOptions, objectType, ctxConfig]);
+  const safeSystem = useMemo(() => filteredSysOptions.some((o) => o.code === system) ? system : "", [filteredSysOptions, system]);
 
   // --- SCOPE NOTE: Unified display string using SAFE values ---
   const levelName = useMemo(() => formUi.locator.options.find(o => o.code === safeLevel)?.name || '', [formUi.locator.options, safeLevel]);
-  const systemName = useMemo(() => sysOptions.find(o => o.code === system)?.name || '', [sysOptions, system]);
+  const systemName = useMemo(() => filteredSysOptions.find(o => o.code === safeSystem)?.name || '', [filteredSysOptions, safeSystem]);
   const zoneName = useMemo(() => formUi.zone.options.find(o => o.code === safeZone)?.name || '', [formUi.zone.options, safeZone]);
 
   useEffect(() => {
-    console.log('[FOREMAN_MAIN_4_FIELDS]', {
+    debugForemanLog("[FOREMAN_MAIN_4_FIELDS]", {
       objectName: displayObjectName,
       objectType,
       objectClass: contextResult?.config?.objectClass,
@@ -355,7 +352,8 @@ export default function ForemanScreen() {
       field3_system: {
         label: 'Раздел / Вид работ',
         rawValue: system,
-        selectedName: filteredSysOptions.find(o => o.code === system)?.name || '',
+        safeValue: safeSystem,
+        selectedName: filteredSysOptions.find(o => o.code === safeSystem)?.name || '',
         options: filteredSysOptions.map(o => ({ code: o.code, name: o.name })),
       },
 
@@ -367,7 +365,7 @@ export default function ForemanScreen() {
         options: formUi?.zone?.options?.map(o => ({ code: o.code, name: o.name })),
       },
     });
-  }, [displayObjectName, objectType, contextResult, formUi, level, system, zone, filteredSysOptions, objOptions, safeLevel, safeZone]);
+  }, [displayObjectName, objectType, contextResult, formUi, level, system, zone, filteredSysOptions, objOptions, safeLevel, safeSystem, safeZone]);
   const scopeNote = useMemo(() => buildScopeNote(objectName, levelName, systemName, zoneName) || '—', [objectName, levelName, systemName, zoneName]);
 
   const actions = useForemanActions({
@@ -391,16 +389,6 @@ export default function ForemanScreen() {
     setObjectType(code);
     const opt = objOptions.find(o => o.code === code);
     setSelectedObjectName(opt?.name || ''); // Immediate sync for CCE
-
-    // Logic for ground-level objects (Yard, Blago, etc.)
-    const isGround = ["DVOR", "BLAGO", "GZP", "TERRITORY", "ROAD"].includes(String(code).toUpperCase());
-    if (isGround) {
-      setLevel(""); // Auto-set to "Not required"
-      setSystem("");
-      setZone("");
-    }
-
-    const ctx = resolveForemanContext(code, opt?.name || "");
 
     setRequestDetails(prev => {
       if (!prev) return prev;
@@ -454,9 +442,10 @@ export default function ForemanScreen() {
   useEffect(() => {
     if (objectType) {
       if (level && !formUi.locator.isValidValue(level)) handleLevelChange("");
+      if (system && !filteredSysOptions.some((o) => o.code === system)) handleSystemChange("");
       if (zone && !formUi.zone.isValidValue(zone)) handleZoneChange("");
     }
-  }, [objectType, level, zone, formUi, handleLevelChange, handleZoneChange]);
+  }, [objectType, level, system, zone, formUi, filteredSysOptions, handleLevelChange, handleSystemChange, handleZoneChange]);
 
   const handleHistorySelect = useCallback((reqId: string) => { openRequestById(reqId); closeHistory(); }, [openRequestById, closeHistory]);
 
@@ -734,7 +723,7 @@ export default function ForemanScreen() {
               onOpenFioModal={() => setIsFioConfirmVisible(true)}
               objectType={objectType}
               level={safeLevel}
-              system={system}
+              system={safeSystem}
               zone={safeZone}
               contextResult={contextResult}
               formUi={formUi}

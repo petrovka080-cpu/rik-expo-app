@@ -255,10 +255,10 @@ export async function buildRequestPdfHtml(requestId: number | string): Promise<s
     { label: "Статус", value: normalizeStatusRu(H.status) || "—" },
   ];
 
-  if (metaPairs[0]) metaPairs[0].value = objectName || noteCtx.object || "—";
-  if (metaPairs[1]) metaPairs[1].value = systemName || noteCtx.system || "—";
-  if (metaPairs[5]) metaPairs[5].value = levelName || noteCtx.level || "—";
-  if (metaPairs[6]) metaPairs[6].value = zoneName || noteCtx.zone || "—";
+  if (metaPairs[0]) metaPairs[0].value = objectName || "—";
+  if (metaPairs[1]) metaPairs[1].value = systemName || "—";
+  if (metaPairs[5]) metaPairs[5].value = levelName || "—";
+  if (metaPairs[6]) metaPairs[6].value = zoneName || "—";
   if (noteCtx.contractor) metaPairs.push({ label: "Подрядчик", value: noteCtx.contractor });
   if (noteCtx.phone) metaPairs.push({ label: "Телефон", value: noteCtx.phone });
   if (noteCtx.volume) metaPairs.push({ label: "Объём", value: noteCtx.volume });
