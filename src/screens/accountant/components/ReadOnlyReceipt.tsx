@@ -4,6 +4,7 @@ import { S, UI } from "../ui";
 import type { AttachmentRow, Tab } from "../types";
 import type { AccountantInboxRow } from "../../../lib/rik_api";
 import { normalizeRuText } from "../../../lib/text/encoding";
+import { StatusBadge } from "../../../ui/StatusBadge";
 
 type ReceiptCurrent = AccountantInboxRow & {
   proposal_id?: string;
@@ -104,7 +105,7 @@ export function ReadOnlyPaymentSummary({
       ) : null}
 
       <Text style={{ color: UI.sub, fontWeight: "800" }}>Статус</Text>
-      <Text style={{ color: UI.text, fontWeight: "900", marginTop: 4 }}>{statusText}</Text>
+      <StatusBadge label={statusText} tone="neutral" style={{ marginTop: 4 }} />
 
       {noteText ? (
         <>
