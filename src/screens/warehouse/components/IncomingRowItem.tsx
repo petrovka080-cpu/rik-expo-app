@@ -1,6 +1,7 @@
 import React from "react";
 import { Pressable, Text, View } from "react-native";
 import { formatProposalBaseNo } from "../../../lib/format";
+import { StatusBadge } from "../../../ui/StatusBadge";
 import type { IncomingRow } from "../warehouse.types";
 import { s } from "../warehouse.styles";
 
@@ -47,7 +48,7 @@ export default function IncomingRowItem({
           </View>
 
           <View style={s.incomingItemRow2}>
-            <Text style={s.incomingItemRecText}>Принято {recSum}</Text>
+            <StatusBadge label={`Принято ${recSum}`} tone="neutral" compact />
             <Text style={s.incomingItemLeftText}>Осталось {leftSum}</Text>
           </View>
         </View>
