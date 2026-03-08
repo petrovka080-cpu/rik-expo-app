@@ -28,18 +28,18 @@ export function selectGroups(rows: BuyerInboxRow[]): BuyerGroup[] {
     }
     map.get(rid)!.items.push(r);
   }
-  return Array.from(map.values());
+  // Sort groups by request_id descending (newest first)
+  return Array.from(map.values()).sort((a, b) => {
+    const aid = String(a.request_id);
+    const bid = String(b.request_id);
+    return bid.localeCompare(aid, undefined, { numeric: true });
+  });
 }
 
 export function selectRfqPickedPreview(rows: BuyerInboxRow[], pickedIds: string[]) {
   return buildRfqPickedPreview(rows || [], pickedIds || []);
 }
 
-/**
- * supplierGroups: уникальные отображаемые названия поставщиков из meta по pickedIds
- * - ключ нормализованный (чтоб не дублировалось)
- * - display оригинальный (что ввёл снабженец)
- */
 export function selectSupplierGroups(pickedIds: string[], meta: Record<string, LineMeta>) {
   const map = new Map<string, string>(); // key: normalized, val: display
 
@@ -91,15 +91,47 @@ export function selectSheetData(sheetKind: BuyerSheetKind, sheetGroup: BuyerGrou
 export function selectListData(
   tab: BuyerTab,
   groups: BuyerGroup[],
-  pending: unknown[],
-  approved: unknown[],
-  rejected: unknown[]
+  pending: any[],
+  approved: any[],
+  rejected: any[],
+  search?: string,
+  titleByPid?: Record<string, string>
 ) {
-  return tab === "inbox"
-    ? groups
-    : tab === "pending"
-      ? pending
-      : tab === "approved"
-        ? approved
-        : rejected;
+  let base =
+    tab === "inbox"
+      ? groups
+      : tab === "pending"
+        ? pending
+        : tab === "approved"
+          ? approved
+          : rejected;
+
+  if (!search) return base;
+
+  const q = search.toLowerCase().trim();
+  return (base as any[]).filter((item: any) => {
+    // Search in ID/Title
+    const id = String(item.id || item.request_id || "").toLowerCase();
+    const title = titleByPid ? String(titleByPid[item.id] || "").toLowerCase() : "";
+    if (id.includes(q) || title.includes(q)) return true;
+
+    // Search in items (for groups/inbox)
+    if (item.items && Array.isArray(item.items)) {
+      return item.items.some((it: any) => {
+        const name = String(it.name_human || "").toLowerCase();
+        const obj = String(it.object_name || "").toLowerCase();
+        const sys = String(it.system_name || it.system || "").toLowerCase();
+        const mat = String(it.material || "").toLowerCase();
+        const code = String(it.rik_code || "").toLowerCase();
+        return name.includes(q) || obj.includes(q) || sys.includes(q) || mat.includes(q) || code.includes(q);
+      });
+    }
+
+    // Search in bucket row props (for proposals)
+    const supplier = String(item.supplier || "").toLowerCase();
+    const objName = String(item.object_name || "").toLowerCase();
+    if (supplier.includes(q) || objName.includes(q)) return true;
+
+    return false;
+  });
 }

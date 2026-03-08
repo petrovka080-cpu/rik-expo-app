@@ -49,7 +49,7 @@ export function BuyerPropDetailsSheetBody({
 }) {
   if (propViewBusy) {
     return (
-      <View style={{ padding: 18, alignItems: "center" }}>
+      <View style={{ padding: 40, alignItems: "center" }}>
         <ActivityIndicator color={UI.accent} />
       </View>
     );
@@ -63,16 +63,16 @@ export function BuyerPropDetailsSheetBody({
       <View style={{
         flexDirection: "row",
         paddingHorizontal: 16,
-        paddingVertical: 12,
-        gap: 8,
+        paddingVertical: 14,
+        gap: 10,
         borderBottomWidth: 1,
-        borderBottomColor: "rgba(255,255,255,0.08)",
+        borderBottomColor: "rgba(255,255,255,0.06)",
         backgroundColor: "rgba(255,255,255,0.02)"
       }}>
         {onOpenPdf && pidStr && (
           <Pressable
             onPress={() => onOpenPdf(pidStr)}
-            style={[s.smallBtn, { flex: 1, backgroundColor: "rgba(255,255,255,0.12)", borderColor: "rgba(255,255,255,0.2)" }]}
+            style={[s.smallBtn, { flex: 1, height: 44, backgroundColor: "rgba(255,255,255,0.08)", borderColor: "rgba(255,255,255,0.15)" }]}
           >
             <Text style={{ color: D.text, fontWeight: "900", fontSize: 13 }}>📄 PDF</Text>
           </Pressable>
@@ -81,16 +81,16 @@ export function BuyerPropDetailsSheetBody({
         {head?.status === "Утверждено" && !head.sent_to_accountant_at && onOpenAccounting && pidStr && (
           <Pressable
             onPress={() => onOpenAccounting(pidStr)}
-            style={[s.smallBtn, { flex: 1.5, backgroundColor: "#2563eb", borderColor: "#2563eb" }]}
+            style={[s.smallBtn, { flex: 1.5, height: 44, backgroundColor: UI.accent, borderColor: UI.accent }]}
           >
-            <Text style={{ color: "#fff", fontWeight: "900", fontSize: 13 }}>В бухгалтерию</Text>
+            <Text style={{ color: "#000", fontWeight: "900", fontSize: 13 }}>В бухгалтерию</Text>
           </Pressable>
         )}
 
         {String(head?.status).startsWith("На доработке") && onOpenRework && pidStr && (
           <Pressable
             onPress={() => onOpenRework(pidStr)}
-            style={[s.smallBtn, { flex: 1.5, backgroundColor: "#f97316", borderColor: "#f97316" }]}
+            style={[s.smallBtn, { flex: 1.5, height: 44, backgroundColor: "#f97316", borderColor: "#f97316" }]}
           >
             <Text style={{ color: "#fff", fontWeight: "900", fontSize: 13 }}>Доработать</Text>
           </Pressable>
@@ -115,16 +115,18 @@ export function BuyerPropDetailsSheetBody({
               if (!ctxLines.length && !supplier) return null;
 
               return (
-                <View style={[s.reqNoteBox, { marginBottom: 16 }]}>
+                <View style={[s.reqNoteBox, { marginBottom: 16, backgroundColor: 'rgba(255,255,255,0.04)', borderColor: 'rgba(255,255,255,0.1)' }]}>
                   {ctxLines.map((t, idx) => (
-                    <Text key={idx} style={s.reqNoteLine} numberOfLines={1}>
+                    <Text key={idx} style={[s.reqNoteLine, { fontSize: 13, color: 'rgba(255,255,255,0.9)' }]} numberOfLines={1}>
                       {t}
                     </Text>
                   ))}
                   {supplier ? (
-                    <Text style={[s.reqNoteLine, { fontWeight: "900", marginTop: 4 }]} numberOfLines={1}>
-                      Поставщик: {supplier}
-                    </Text>
+                    <View style={{ marginTop: 6, paddingTop: 6, borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.1)' }}>
+                      <Text style={[s.reqNoteLine, { fontWeight: "900", color: UI.accent }]} numberOfLines={1}>
+                        Поставщик: {supplier}
+                      </Text>
+                    </View>
                   ) : null}
                 </View>
               );
@@ -132,12 +134,12 @@ export function BuyerPropDetailsSheetBody({
 
             <View style={{ marginBottom: 12 }}>
               <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-                <Text style={{ fontWeight: "900", color: D.text, flex: 1 }}>Вложения</Text>
+                <Text style={{ fontWeight: "900", color: D.text, flex: 1, fontSize: 16 }}>Вложения</Text>
 
                 <Pressable
                   onPress={onReloadAttachments}
                   disabled={propAttBusy}
-                  style={[s.smallBtn, { height: 32, paddingVertical: 0, paddingHorizontal: 12, borderColor: "rgba(255,255,255,0.18)", backgroundColor: "rgba(255,255,255,0.06)" }]}
+                  style={[s.smallBtn, { height: 32, paddingVertical: 0, paddingHorizontal: 10, borderColor: "rgba(255,255,255,0.1)", backgroundColor: "rgba(255,255,255,0.05)" }]}
                 >
                   <Text style={{ color: D.text, fontWeight: "900", fontSize: 11 }}>{propAttBusy ? "..." : "Обновить"}</Text>
                 </Pressable>
@@ -145,7 +147,7 @@ export function BuyerPropDetailsSheetBody({
                 <Pressable
                   onPress={onAttachFile}
                   disabled={propAttBusy}
-                  style={[s.smallBtn, { height: 32, paddingVertical: 0, paddingHorizontal: 12, backgroundColor: "rgba(255,255,255,0.06)", borderColor: "rgba(255,255,255,0.15)" }]}
+                  style={[s.smallBtn, { height: 32, paddingVertical: 0, paddingHorizontal: 10, backgroundColor: "rgba(255,255,255,0.05)", borderColor: "rgba(255,255,255,0.1)" }]}
                 >
                   <Text style={{ color: D.text, fontWeight: "900", fontSize: 11 }}>+ Файл</Text>
                 </Pressable>
@@ -158,25 +160,28 @@ export function BuyerPropDetailsSheetBody({
               ) : null}
 
               {attachments?.length ? (
-                <View style={{ marginTop: 8, gap: 6 }}>
+                <View style={{ marginTop: 10, gap: 8 }}>
                   {attachments.slice(0, 10).map((a, idx: number) => (
                     <Pressable
                       key={a?.id ?? `${a?.file_name ?? "f"}:${idx}`}
                       onPress={() => onOpenAttachment(a)}
                       style={{
-                        padding: 10,
-                        borderRadius: 12,
+                        padding: 12,
+                        borderRadius: 14,
                         borderWidth: 1,
-                        borderColor: "rgba(255,255,255,0.12)",
-                        backgroundColor: "rgba(255,255,255,0.06)",
+                        borderColor: "rgba(255,255,255,0.1)",
+                        backgroundColor: "rgba(255,255,255,0.04)",
+                        flexDirection: "row",
+                        alignItems: "center",
+                        gap: 10
                       }}
                     >
-                      <Text style={{ color: D.text, fontWeight: "900" }} numberOfLines={1}>
-                        {String(a?.file_name ?? "Файл")}
-                      </Text>
-                      <Text style={{ color: D.sub, fontWeight: "800", fontSize: 11, marginTop: 4 }} numberOfLines={1}>
-                        {a?.created_at ? new Date(a.created_at).toLocaleString() : ""}
-                      </Text>
+                      <Text style={{ fontSize: 16 }}>📄</Text>
+                      <View style={{ flex: 1 }}>
+                        <Text style={{ color: D.text, fontWeight: "900", fontSize: 13 }} numberOfLines={1}>
+                          {String(a?.file_name ?? "Файл")}
+                        </Text>
+                      </View>
                     </Pressable>
                   ))}
                 </View>
@@ -185,30 +190,39 @@ export function BuyerPropDetailsSheetBody({
               )}
             </View>
 
-            <Text style={{ fontWeight: "900", color: D.text, marginBottom: 8 }}>Состав</Text>
+            <View style={{ marginTop: 12, marginBottom: 8 }}>
+              <Text style={{ fontWeight: "900", color: D.text, fontSize: 16 }}>Состав</Text>
+            </View>
           </View>
         }
-        contentContainerStyle={{ paddingBottom: 32 }}
+        contentContainerStyle={{ paddingBottom: 40 }}
         renderItem={({ item: ln }) => {
           const noteRaw = String(ln?.note ?? "").trim();
           const hideNote = isReqContextNote(noteRaw);
 
           return (
-            <View style={[s.dirMobCard, { marginHorizontal: 16 }]}>
+            <View style={[s.dirMobCard, { marginHorizontal: 16, padding: 14 }]}>
               <View style={s.dirMobMain}>
-                <Text style={[s.dirMobTitle, { color: D.text }]} numberOfLines={3}>
+                <Text style={[s.dirMobTitle, { color: D.text, fontSize: 15 }]} numberOfLines={3}>
                   {ln?.name_human || ln?.rik_code || `Позиция ${String(ln?.request_item_id || "").slice(0, 6)}`}
                 </Text>
 
-                <Text style={[s.dirMobMeta, { color: D.sub, marginTop: 4 }]} numberOfLines={2}>
-                  {`${Number(ln?.qty ?? 0)} ${ln?.uom ?? ""}`.trim()}
-                  {ln?.price != null ? ` · Цена: ${ln.price}` : ""}
-                </Text>
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 6, marginTop: 6 }}>
+                  <Text style={[s.dirMobMeta, { color: UI.accent, fontSize: 14, fontWeight: "900" }]}>
+                    {Number(ln?.qty ?? 0)} {ln?.uom ?? ""}
+                  </Text>
+                  <Text style={{ color: "rgba(255,255,255,0.2)" }}>•</Text>
+                  <Text style={[s.dirMobMeta, { color: D.text, fontSize: 14, fontWeight: "800" }]}>
+                    {ln?.price != null ? `${Number(ln.price).toLocaleString()} сом` : "Цена не указана"}
+                  </Text>
+                </View>
 
                 {!hideNote && noteRaw ? (
-                  <Text style={[s.dirMobNote, { color: D.text, marginTop: 4, fontStyle: "italic" }]} numberOfLines={3}>
-                    Прим.: {noteRaw}
-                  </Text>
+                  <View style={{ marginTop: 8, padding: 8, backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: 8 }}>
+                    <Text style={[s.dirMobNote, { color: 'rgba(255,255,255,0.7)', fontSize: 12 }]} numberOfLines={2}>
+                      {noteRaw}
+                    </Text>
+                  </View>
                 ) : null}
               </View>
             </View>

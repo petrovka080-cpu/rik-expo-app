@@ -3,7 +3,6 @@ import {
   View,
   Text,
   Animated,
-  ActivityIndicator,
   RefreshControl,
   Keyboard,
   Platform,
@@ -13,7 +12,9 @@ import { UI } from "../buyerUi";
 import { SafeView } from "./common/SafeView";
 import type { BuyerTab } from "../buyer.types";
 import type { StylesBag } from "./component.types";
-type ListItem = { request_id?: string | number | null; id?: string | number | null };
+import { BuyerCardSkeleton } from "./BuyerCardSkeleton";
+
+type ListItem = { request_id?: string | number | null; id?: string | number | null; __skeleton?: boolean };
 
 export const BuyerMainList = React.memo(function BuyerMainList(props: {
   s: StylesBag;
@@ -28,6 +29,8 @@ export const BuyerMainList = React.memo(function BuyerMainList(props: {
   scrollY: Animated.Value;
   renderGroupBlock: (g: ListItem, index: number) => React.ReactNode;
   renderProposalCard: (item: ListItem) => React.ReactNode;
+  searchQuery?: string;
+  setSearchQuery?: (q: string) => void;
 }) {
   const {
     tab,
@@ -41,51 +44,58 @@ export const BuyerMainList = React.memo(function BuyerMainList(props: {
     scrollY,
     renderGroupBlock,
     renderProposalCard,
+    s,
   } = props;
+
+  const isLoading = (tab === "inbox" && loadingInbox) || (tab !== "inbox" && loadingBuckets);
+
+  const skeletonData: ListItem[] = [
+    { id: "s1", __skeleton: true },
+    { id: "s2", __skeleton: true },
+    { id: "s3", __skeleton: true },
+    { id: "s4", __skeleton: true },
+  ];
+
+  const finalData = (isLoading && !refreshing && (!data || data.length === 0)) ? skeletonData : data;
 
   return (
     <Animated.FlatList
       ref={listRef}
-      data={data}
-      keyExtractor={(item) =>
-        tab === "inbox"
-          ? `g:${String(item?.request_id ?? "")}`
-          : `p:${String(item?.id ?? "")}`
-      }
-      renderItem={({ item, index }) => (
-        <View style={{ marginBottom: 12 }}>
-          {tab === "inbox" ? renderGroupBlock(item, index) : renderProposalCard(item)}
-        </View>
-      )}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+      data={finalData}
+      keyExtractor={(item, index) => {
+        if (item.__skeleton) return `skel:${index}`;
+        return tab === "inbox"
+          ? `g:${String(item?.request_id ?? index)}`
+          : `p:${String(item?.id ?? index)}`;
+      }}
+      renderItem={({ item, index }) => {
+        if (item.__skeleton) {
+          return <View style={{ marginBottom: 12, paddingHorizontal: 16 }}><BuyerCardSkeleton s={s} /></View>;
+        }
+        return (
+          <View style={{ marginBottom: 12, paddingHorizontal: 16 }}>
+            {tab === "inbox" ? renderGroupBlock(item as ListItem, index) : renderProposalCard(item as ListItem)}
+          </View>
+        );
+      }}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={UI.accent} colors={[UI.accent]} />}
       ListEmptyComponent={
-        loadingInbox || loadingBuckets
-          ? (<SafeView style={{ padding: 24, alignItems: "center" }}><ActivityIndicator /></SafeView>)
-          : (<SafeView style={{ padding: 24 }}><Text style={{ color: UI.sub }}>Пока пусто</Text></SafeView>)
+        !isLoading ? (
+          <SafeView style={{ padding: 24, alignItems: "center" }}>
+            <Text style={{ color: UI.sub, fontSize: 15, fontWeight: "800" }}>Пока пусто</Text>
+          </SafeView>
+        ) : null
       }
       onScroll={Animated.event([{ nativeEvent: { contentOffset: { y: scrollY } } }], { useNativeDriver: false })}
       scrollEventThrottle={16}
-      contentInsetAdjustmentBehavior="never"
-      automaticallyAdjustContentInsets={false}
       contentContainerStyle={{
-        paddingTop: measuredHeaderMax + 16,
-        paddingHorizontal: 12,
-        paddingBottom: 24,
+        paddingTop: measuredHeaderMax + 4,
+        paddingBottom: 60,
       }}
       keyboardShouldPersistTaps="handled"
       keyboardDismissMode="on-drag"
       onScrollBeginDrag={() => { Keyboard.dismiss(); }}
       removeClippedSubviews={Platform.OS === "web" ? false : true}
-      onScrollToIndexFailed={(info: { index: number; averageItemLength: number }) => {
-        requestAnimationFrame(() => {
-          try {
-            listRef?.current?.scrollToOffset?.({
-              offset: info.averageItemLength * info.index,
-              animated: true,
-            });
-          } catch { }
-        });
-      }}
     />
   );
 });

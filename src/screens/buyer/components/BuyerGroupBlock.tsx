@@ -1,5 +1,5 @@
-import React from "react";
-import { View, Text, Pressable } from "react-native";
+import React, { useRef } from "react";
+import { View, Text, Pressable, Animated } from "react-native";
 
 import type { BuyerInboxRow } from "../../../lib/catalog_api";
 import type { Attachment, BuyerGroup, DraftAttachmentMap } from "../buyer.types";
@@ -25,70 +25,85 @@ export const BuyerGroupBlock = React.memo(function BuyerGroupBlock(props: {
   renderItemRow: (it: BuyerInboxRow, idx2: number) => React.ReactNode;
 }) {
   const {
-    isOpen,
     headerTitle,
     headerMeta,
     onToggle,
     s,
   } = props;
 
+  const scaleAnim = useRef(new Animated.Value(1)).current;
+
+  const handlePressIn = () => {
+    Animated.spring(scaleAnim, {
+      toValue: 0.97,
+      useNativeDriver: true,
+      speed: 50,
+      bounciness: 0,
+    }).start();
+  };
+
+  const handlePressOut = () => {
+    Animated.spring(scaleAnim, {
+      toValue: 1,
+      useNativeDriver: true,
+      speed: 40,
+    }).start();
+  };
+
   const isRejectedHeader =
     String(headerMeta || "").startsWith("❌ ОТКЛОНЕНА") ||
     String(headerMeta || "").includes("❌ отклонено");
 
+  const itemsCntText = `${props.g.items.length} поз.`;
+
   return (
-    <View style={s.group}>
-      <Pressable
-        onPress={onToggle}
-        style={({ pressed }) => [
-          s.groupHeader,
-          {
-            opacity: pressed ? 0.7 : 1,
-            paddingVertical: 14,
-            paddingHorizontal: 16
-          }
-        ]}
-      >
-        <View style={{ flex: 1, minWidth: 0 }}>
-          <Text style={[s.groupTitle, { fontSize: 16, fontWeight: "900", color: UI.text }]} numberOfLines={1}>
-            {headerTitle}
-          </Text>
-
-          <Text
-            style={[
-              s.groupMeta,
-              { marginTop: 4, fontSize: 13, color: "rgba(255,255,255,0.6)" },
-              isRejectedHeader && { color: "#F87171", fontWeight: "900" }
-            ]}
-            numberOfLines={1}
-          >
-            {headerMeta}
-          </Text>
-        </View>
-
-        <View style={{ marginLeft: 8 }}>
-          <Text style={{ color: UI.accent, fontSize: 20, fontWeight: "300" }}>›</Text>
-        </View>
-      </Pressable>
-
-      {/* In place expansion is disabled in main list by hardcoding isOpen=false in renderer, 
-          but we keep this logic for cases where it might be used elsewhere or if design changes back. */}
-      {isOpen ? (
-        <View style={s.openBody}>
-          <View style={s.itemsPanel}>
-            <View style={s.itemsBox}>
-              {props.g.items.map((item, idx2) => (
-                <React.Fragment
-                  key={item?.request_item_id ? `ri:${item.request_item_id}` : `f:${props.g.request_id}:${idx2}`}
-                >
-                  {props.renderItemRow(item, idx2)}
-                </React.Fragment>
-              ))}
-              <View style={{ height: 12 }} />
+    <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
+      <View style={[s.group, { borderWidth: 1, borderColor: "rgba(255,255,255,0.08)" }]}>
+        <Pressable
+          onPressIn={handlePressIn}
+          onPressOut={handlePressOut}
+          onPress={onToggle}
+          style={({ pressed }) => [
+            s.groupHeader,
+            {
+              opacity: pressed ? 0.9 : 1,
+              paddingVertical: 12,
+              paddingHorizontal: 16,
+              borderBottomWidth: 0,
+              flexDirection: "column",
+              alignItems: "flex-start",
+              gap: 4
+            }
+          ]}
+        >
+          <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", width: "100%" }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+              <Text style={[s.groupTitle, { fontSize: 16, fontWeight: "900", color: UI.text }]} numberOfLines={1}>
+                {headerTitle}
+              </Text>
+              <Text style={{ fontSize: 14 }}>⏳</Text>
             </View>
+            <Text style={{ color: UI.accent, fontSize: 18, fontWeight: "300" }}>›</Text>
           </View>
-        </View>
-      ) : null}
-    </View>
+
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+            <Text style={{ color: UI.sub, fontSize: 13, fontWeight: "800" }}>{itemsCntText}</Text>
+
+            <Text style={{ color: "rgba(255,255,255,0.2)" }}>•</Text>
+
+            <Text
+              style={[
+                s.groupMeta,
+                { fontSize: 13, color: "rgba(255,255,255,0.5)", flex: 1 },
+                isRejectedHeader && { color: "#F87171", fontWeight: "900" }
+              ]}
+              numberOfLines={1}
+            >
+              {headerMeta}
+            </Text>
+          </View>
+        </Pressable>
+      </View>
+    </Animated.View>
   );
 });

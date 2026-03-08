@@ -1,10 +1,10 @@
-﻿// app/(tabs)/buyer.tsx 
+﻿// app/(tabs)/buyer.tsx
 import { formatRequestDisplay } from "../../src/lib/format";
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   View, FlatList, Alert, Platform, ScrollView, Animated,
-  KeyboardAvoidingView
+  KeyboardAvoidingView, TextInput
 } from 'react-native';
 import { useLatest } from "../../src/lib/useLatest";
 import IconSquareButton from "../../src/ui/IconSquareButton";
@@ -251,6 +251,8 @@ export default function BuyerScreen() {
     setSubcontractCount,
   } = useBuyerState();
 
+  const [searchQuery, setSearchQuery] = useState("");
+
   const {
     titleByPid,
     proposalNoByPid,
@@ -342,6 +344,8 @@ export default function BuyerScreen() {
     pending,
     approved,
     rejected,
+    searchQuery,
+    titleByPid
   });
 
   useEffect(() => {
@@ -611,6 +615,26 @@ export default function BuyerScreen() {
         headerShadow={headerShadow}
       />
 
+      <Animated.View style={{
+        position: 'absolute',
+        top: headerHeight,
+        left: 0,
+        right: 0,
+        zIndex: 40,
+        backgroundColor: UI.bg,
+        paddingHorizontal: 16,
+        paddingBottom: 10,
+        paddingTop: 4
+      }}>
+        <TextInput
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+          placeholder="🔎 Поиск (№, Поставщик, Объект...)"
+          placeholderTextColor="rgba(255,255,255,0.4)"
+          style={[s.fieldInput, { backgroundColor: 'rgba(255,255,255,0.06)', borderRadius: 14, height: 44, borderStyle: 'dashed' }]}
+        />
+      </Animated.View>
+
       {tab === "subcontracts" ? (
         <BuyerSubcontractTab
           contentTopPad={measuredHeaderMax}
@@ -623,7 +647,7 @@ export default function BuyerScreen() {
           tab={tab}
           data={listData}
           listRef={listRef}
-          measuredHeaderMax={measuredHeaderMax}
+          measuredHeaderMax={measuredHeaderMax + 58} // Height of header + search bar
           refreshing={refreshing}
           onRefresh={onRefresh}
           loadingInbox={loadingInbox}
@@ -631,6 +655,8 @@ export default function BuyerScreen() {
           scrollY={scrollY}
           renderGroupBlock={renderGroupBlock}
           renderProposalCard={renderProposalCard}
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
         />
       )}
 

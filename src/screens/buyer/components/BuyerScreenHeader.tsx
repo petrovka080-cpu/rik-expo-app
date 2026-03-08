@@ -60,7 +60,7 @@ export const BuyerScreenHeader = React.memo(function BuyerScreenHeader(props: {
         >
           <View style={s.tabLabelRow}>
             <Text style={[s.tabPillText, tab === "inbox" && s.tabPillTextActive]}>Вход</Text>
-            <TabCount n={inboxCount} active={tab === "inbox"} s={s} />
+            <TabCount n={inboxCount} active={tab === "inbox"} s={s} kind="inbox" />
           </View>
         </Pressable>
 
@@ -70,7 +70,7 @@ export const BuyerScreenHeader = React.memo(function BuyerScreenHeader(props: {
         >
           <View style={s.tabLabelRow}>
             <Text style={[s.tabPillText, tab === "pending" && s.tabPillTextActive]}>Контроль</Text>
-            <TabCount n={pendingCount} active={tab === "pending"} s={s} />
+            <TabCount n={pendingCount} active={tab === "pending"} s={s} kind="pending" />
           </View>
         </Pressable>
 
@@ -80,7 +80,7 @@ export const BuyerScreenHeader = React.memo(function BuyerScreenHeader(props: {
         >
           <View style={s.tabLabelRow}>
             <Text style={[s.tabPillText, tab === "approved" && s.tabPillTextActive]}>Готово</Text>
-            <TabCount n={approvedCount} active={tab === "approved"} s={s} />
+            <TabCount n={approvedCount} active={tab === "approved"} s={s} kind="approved" />
           </View>
         </Pressable>
 
@@ -90,7 +90,7 @@ export const BuyerScreenHeader = React.memo(function BuyerScreenHeader(props: {
         >
           <View style={s.tabLabelRow}>
             <Text style={[s.tabPillText, tab === "rejected" && s.tabPillTextActive]}>Правки</Text>
-            <TabCount n={rejectedCount} active={tab === "rejected"} s={s} />
+            <TabCount n={rejectedCount} active={tab === "rejected"} s={s} kind="rejected" />
           </View>
         </Pressable>
 

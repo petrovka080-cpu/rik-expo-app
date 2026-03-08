@@ -26,6 +26,8 @@ type UseBuyerDerivedParams = {
   pending: BuyerProposalBucketRow[];
   approved: BuyerProposalBucketRow[];
   rejected: BuyerProposalBucketRow[];
+  searchQuery?: string;
+  titleByPid?: Record<string, string>;
 };
 
 export function useBuyerDerived({
@@ -39,6 +41,8 @@ export function useBuyerDerived({
   pending,
   approved,
   rejected,
+  searchQuery,
+  titleByPid,
 }: UseBuyerDerivedParams) {
   const groups = useMemo(() => selectGroups(rows), [rows]);
 
@@ -78,8 +82,8 @@ export function useBuyerDerived({
   );
 
   const listData = useMemo(
-    () => selectListData(tab, groups, pending, approved, rejected),
-    [tab, groups, pending, approved, rejected]
+    () => selectListData(tab, groups, pending, approved, rejected, searchQuery, titleByPid),
+    [tab, groups, pending, approved, rejected, searchQuery, titleByPid]
   );
 
   return {
