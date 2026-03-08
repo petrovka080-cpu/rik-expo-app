@@ -98,7 +98,9 @@ export function useAccountantCardFlow(params: Params) {
           const { data } = await supabase.auth.getUser();
           const fio = String(data?.user?.user_metadata?.full_name ?? data?.user?.user_metadata?.name ?? "").trim();
           if (fio) setAccountantFio((prev) => (prev?.trim() ? prev : fio));
-        } catch {}
+        } catch (e) {
+          console.warn("[useAccountantCardFlow] auth.getUser failed", e);
+        }
       })();
     },
     [

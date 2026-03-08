@@ -25,6 +25,7 @@ import { useForemanDicts } from "../../src/screens/foreman/useForemanDicts";
 import { resolveForemanContext } from "../../src/screens/foreman/foreman.context.resolver";
 import { adaptFormContext } from "../../src/screens/foreman/foreman.locator.adapter";
 import { debugForemanLog } from "../../src/screens/foreman/foreman.debug";
+import { getObjectDisplayName } from "../../src/screens/foreman/foreman.options";
 import { s } from "../../src/screens/foreman/foreman.styles";
 import { FOREMAN_TEXT, REQUEST_STATUS_STYLES, UI } from "../../src/screens/foreman/foreman.ui";
 import { useCollapsingHeader } from "../../src/screens/shared/useCollapsingHeader";
@@ -81,7 +82,9 @@ type WebUiApi = {
   confirm?: (msg: string) => boolean;
 };
 
-const webUi = (globalThis as any) as WebUiApi;
+declare global {
+  var webUi: WebUiApi;
+}
 
 export default function ForemanScreen() {
   const gbusy = useGlobalBusy();
@@ -144,7 +147,11 @@ export default function ForemanScreen() {
   const [workTypePickerVisible, setWorkTypePickerVisible] = useState(false);
   const [selectedWorkType, setSelectedWorkType] = useState<{ code: string; name: string } | null>(null);
 
-  const { objOptions, lvlOptions, sysOptions, zoneOptions, appOptions } = useForemanDicts();
+  const {
+    objOptions, lvlOptions, sysOptions, zoneOptions,
+    objAllOptions, sysAllOptions,
+    appOptions,
+  } = useForemanDicts();
 
   const refreshForemanHistory = useCallback(async () => {
     setForemanHistory(await loadForemanHistory());
@@ -287,7 +294,7 @@ export default function ForemanScreen() {
   }, [ensureEditableContext, items.length]);
 
   const [selectedObjectName, setSelectedObjectName] = useState('');
-  const displayObjectName = selectedObjectName || objOptions.find(o => o.code === objectType)?.name || requestDetails?.object_name_ru || '';
+  const displayObjectName = selectedObjectName || getObjectDisplayName(objectType, objAllOptions);
   const objectName = displayObjectName; // Alias for backward compatibility
 
   // --- Construction Context Engine (CCE) v2.0 Integration ---
@@ -337,7 +344,7 @@ export default function ForemanScreen() {
       field1_object: {
         label: 'Объект / Блок',
         value: objectType,
-        selectedName: objOptions.find(o => o.code === objectType)?.name || '',
+        selectedName: getObjectDisplayName(objectType, objAllOptions),
         options: objOptions.map(o => ({ code: o.code, name: o.name })),
       },
 
@@ -365,7 +372,7 @@ export default function ForemanScreen() {
         options: formUi?.zone?.options?.map(o => ({ code: o.code, name: o.name })),
       },
     });
-  }, [displayObjectName, objectType, contextResult, formUi, level, system, zone, filteredSysOptions, objOptions, safeLevel, safeSystem, safeZone]);
+  }, [displayObjectName, objectType, contextResult, formUi, level, system, zone, filteredSysOptions, objOptions, objAllOptions, safeLevel, safeSystem, safeZone]);
   const scopeNote = useMemo(() => buildScopeNote(objectName, levelName, systemName, zoneName) || '—', [objectName, levelName, systemName, zoneName]);
 
   const actions = useForemanActions({
@@ -387,7 +394,7 @@ export default function ForemanScreen() {
 
   const handleObjectChange = useCallback((code: string) => {
     setObjectType(code);
-    const opt = objOptions.find(o => o.code === code);
+    const opt = objAllOptions.find(o => o.code === code);
     setSelectedObjectName(opt?.name || ''); // Immediate sync for CCE
 
     setRequestDetails(prev => {
@@ -410,7 +417,7 @@ export default function ForemanScreen() {
     setLevel("");
     setSystem("");
     setZone("");
-  }, [objOptions, lvlOptions, setObjectType, setLevel, setSystem, setZone]);
+  }, [objAllOptions, setObjectType, setLevel, setSystem, setZone]);
 
   const handleLevelChange = useCallback((code: string) => {
     setLevel(code);
@@ -424,9 +431,9 @@ export default function ForemanScreen() {
 
   const handleSystemChange = useCallback((code: string) => {
     setSystem(code);
-    const opt = sysOptions.find(o => o.code === code);
+    const opt = sysAllOptions.find(o => o.code === code);
     setRequestDetails(prev => prev ? { ...prev, system_code: code || null, system_name_ru: opt?.name ?? prev.system_name_ru ?? null } : prev);
-  }, [sysOptions, setSystem]);
+  }, [sysAllOptions, setSystem]);
 
   const handleZoneChange = useCallback((code: string) => {
     setZone(code);
@@ -722,6 +729,7 @@ export default function ForemanScreen() {
               foreman={foreman}
               onOpenFioModal={() => setIsFioConfirmVisible(true)}
               objectType={objectType}
+              objectDisplayName={displayObjectName}
               level={safeLevel}
               system={safeSystem}
               zone={safeZone}

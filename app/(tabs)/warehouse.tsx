@@ -1,4 +1,4 @@
-import React from "react";
+﻿import React from "react";
 import { View, Text, ActivityIndicator, Animated, type ViewStyle } from "react-native";
 import { UI, s } from "../../src/screens/warehouse/warehouse.styles";
 import WarehouseHeader from "../../src/screens/warehouse/components/WarehouseHeader";
@@ -52,12 +52,22 @@ export default function Warehouse() {
             <ActivityIndicator size="large" />
             <Text style={{ marginTop: 8, color: UI.sub }}>{"\u0417\u0430\u0433\u0440\u0443\u0437\u043A\u0430..."}</Text>
           </View>
+        ) : !vm.warehousemanFio && vm.isFioConfirmVisible ? (
+          <View style={[LOADER_STYLE, { paddingHorizontal: 40 }]}>
+            <Text style={{ color: UI.text, fontSize: 18, fontWeight: "900", textAlign: "center" }}>
+              Пожалуйста, представьтесь для доступа к складу
+            </Text>
+            <Text style={{ color: UI.sub, fontSize: 14, marginTop: 12, textAlign: "center" }}>
+              Это необходимо для формирования документов.
+            </Text>
+          </View>
         ) : (
           <View style={CONTENT_STYLE}>
             <WarehouseTabContent {...vm.tabContentProps} />
           </View>
         )}
       </View>
+
 
       <WarehouseModalsManager {...vm.modalsManagerProps} />
     </View>

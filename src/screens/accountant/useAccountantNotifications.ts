@@ -22,7 +22,9 @@ export function useAccountantNotifications(params: {
     try {
       const list = await notifList("accountant", 20);
       setNotifs(Array.isArray(list) ? list : []);
-    } catch {}
+    } catch (e) {
+      console.warn("[useAccountantNotifications] loadNotifs failed", e);
+    }
   }, [focusedRef]);
 
   useEffect(() => {
@@ -31,31 +33,41 @@ export function useAccountantNotifications(params: {
     (async () => {
       try {
         await initDing();
-      } catch {}
+      } catch (e) {
+        console.warn("[useAccountantNotifications] initDing failed", e);
+      }
     })();
     return () => {
       if (!mounted) return;
       mounted = false;
       try {
         unloadDing();
-      } catch {}
+      } catch (e) {
+        console.log("[useAccountantNotifications] unloadDing failed", e);
+      }
     };
   }, []);
 
   const playDing = useCallback(async () => {
     try {
       await playDingSound();
-    } catch {}
+    } catch (e) {
+      console.warn("[useAccountantNotifications] playDingSound failed", e);
+    }
     try {
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    } catch {}
+    } catch (e) {
+      console.log("[useAccountantNotifications] Haptics failed", e);
+    }
   }, []);
 
   const markAllRead = useCallback(async () => {
     try {
       await notifMarkRead("accountant");
       setNotifs([]);
-    } catch {}
+    } catch (e) {
+      console.error("[useAccountantNotifications] markAllRead failed", e);
+    }
     setBellOpen(false);
   }, []);
 
@@ -84,7 +96,9 @@ export function useAccountantNotifications(params: {
       return () => {
         try {
           supabase.removeChannel(ch);
-        } catch {}
+        } catch (e) {
+          console.warn("[useAccountantNotifications] removeChannel failed", e);
+        }
       };
     }, [focusedRef, freezeWhileOpen, onNotifReloadList, playDing]),
   );

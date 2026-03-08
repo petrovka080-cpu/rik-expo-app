@@ -14,6 +14,7 @@ type Props = {
   onZoneChange: (v: string) => void;
   onOpenFioModal: () => void;
   objectType: string;
+  objectDisplayName: string;
   level: string; // Already sanitized in parent
   system: string;
   zone: string; // Already sanitized in parent
@@ -84,6 +85,7 @@ export default function ForemanEditorSection(p: Props) {
             showLabel={true}
             options={p.objOptions}
             value={p.objectType}
+            valueLabelOverride={p.objectDisplayName}
             onChange={p.onObjectChange}
             placeholder="Выбрать объект..."
             width={360}

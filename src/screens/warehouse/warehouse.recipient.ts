@@ -16,7 +16,7 @@ export function useWarehouseRecipient(args: {
   const [recipientSuggestOpen, setRecipientSuggestOpen] = useState(false);
   const [recipientRecent, setRecipientRecent] = useState<string[]>([]);
 
-  
+
   useEffect(() => {
     if (!enabled) return;
 
@@ -34,21 +34,15 @@ export function useWarehouseRecipient(args: {
   }, [enabled]);
 
   const recipientSuggestions = useMemo(() => {
-    const q = String(recipientText ?? "").trim().toLowerCase();
-
-    const recent = (recipientRecent || [])
-      .filter((x) => (q ? String(x).toLowerCase().includes(q) : true))
-      .slice(0, 4);
-
+    const recent = recipientRecent || [];
     const fromProfiles = (recipientList || [])
       .map((x) => x?.label)
       .filter(Boolean)
-      .map((x) => String(x))
-      .filter((x) => (q ? x.toLowerCase().includes(q) : false))
-      .slice(0, 4);
+      .map((x) => String(x));
 
-    return Array.from(new Set([...recent, ...fromProfiles])).slice(0, 6);
-  }, [recipientText, recipientRecent, recipientList]);
+    // Return union of recent and profiles, limited to 100 for safety
+    return Array.from(new Set([...recent, ...fromProfiles])).slice(0, 100);
+  }, [recipientRecent, recipientList]);
 
   const commitRecipient = useCallback(async (name: string) => {
     const t = String(name ?? "").trim();
@@ -58,7 +52,8 @@ export function useWarehouseRecipient(args: {
     setRecipientSuggestOpen(false);
 
     setRecipientRecent((prev) => {
-      const next = [t, ...(prev || []).filter((x) => x !== t)].slice(0, 8);
+      // Increase history size to 50
+      const next = [t, ...(prev || []).filter((x) => x !== t)].slice(0, 50);
       void saveJson(RECIPIENT_RECENT_KEY, next);
       return next;
     });

@@ -70,10 +70,10 @@ export default function DirectorFinanceCardModal({
     });
 
     return () => {
-      try {
-        // @ts-ignore
-        task?.cancel?.();
-      } catch { }
+      // Safely check for cancel if the handle supports it
+      if (task && 'cancel' in task) {
+        (task as any).cancel();
+      }
     };
   }, [visible]);
 
@@ -249,8 +249,7 @@ export default function DirectorFinanceCardModal({
               top: 0,
               bottom: 0,
               zIndex: 99999999,
-              // @ts-ignore
-              elevation: 99999999,
+              ...(Platform.OS === "android" ? { elevation: 99999999 } : {}),
             }}
           >
             {overlay}

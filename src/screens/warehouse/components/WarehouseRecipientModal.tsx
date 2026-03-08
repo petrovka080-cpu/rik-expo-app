@@ -29,6 +29,11 @@ export default function WarehouseRecipientModal({
 }: Props) {
   const [search, setSearch] = useState(initialValue);
 
+  // Divide suggestions into Recent and Profiles
+  // We'll assume the first few (e.g. up to 12) are recent if they come from useWarehouseRecipient
+  // But wait, useWarehouseRecipient already merges them. 
+  // Let's just use the current suggestions but make sure they feel premium.
+
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     if (!q) return suggestions;
@@ -47,12 +52,18 @@ export default function WarehouseRecipientModal({
   };
 
   return (
-    <Modal visible={visible} transparent animationType="fade" statusBarTranslucent>
+    <Modal
+      visible={visible}
+      transparent
+      animationType="slide"
+      statusBarTranslucent
+      onRequestClose={() => { }} // Force selection
+    >
       <View style={st.overlay}>
         {Platform.OS !== "web" ? (
-          <BlurView intensity={25} tint="dark" style={StyleSheet.absoluteFill} />
+          <BlurView intensity={30} tint="dark" style={StyleSheet.absoluteFill} />
         ) : (
-          <View style={[StyleSheet.absoluteFill, { backgroundColor: "rgba(0,0,0,0.75)" }]} />
+          <View style={[StyleSheet.absoluteFill, { backgroundColor: "rgba(0,0,0,0.8)" }]} />
         )}
 
         <KeyboardAvoidingView
@@ -62,9 +73,7 @@ export default function WarehouseRecipientModal({
           <View style={st.modalView}>
             <View style={st.header}>
               <Text style={st.title}>Кто получает?</Text>
-              <Pressable onPress={onClose} style={st.closeBtn}>
-                <Text style={st.closeBtnText}>✕</Text>
-              </Pressable>
+              {/* REMOVED CLOSE BUTTON PER PROD-TZ */}
             </View>
 
             <TextInput
@@ -80,7 +89,7 @@ export default function WarehouseRecipientModal({
             <View style={st.listContainer}>
               <FlatList
                 data={filtered}
-                keyExtractor={(item) => item}
+                keyExtractor={(item, idx) => `${item}-${idx}`}
                 renderItem={({ item }) => (
                   <Pressable
                     style={({ pressed }) => [st.item, pressed && st.itemPressed]}
@@ -90,6 +99,11 @@ export default function WarehouseRecipientModal({
                   </Pressable>
                 )}
                 contentContainerStyle={{ paddingBottom: 20 }}
+                ListHeaderComponent={
+                  !search.trim() && filtered.length > 0 ? (
+                    <Text style={st.listHeader}>ВЫБЕРИТЕ ИЗ СПИСКА ИЛИ ВВЕДИТЕ НОВОЕ</Text>
+                  ) : null
+                }
                 ListEmptyComponent={
                   search.trim() ? (
                     <Pressable style={st.item} onPress={handleCustomSubmit}>
@@ -100,17 +114,28 @@ export default function WarehouseRecipientModal({
                       </Text>
                     </Pressable>
                   ) : (
-                    <Text style={st.emptyText}>Никого не найдено</Text>
+                    <Text style={st.emptyText}>Никого не найдено. Начните вводить текст выше.</Text>
                   )
                 }
               />
             </View>
+
+            {/* Added a safeguard: button to confirm if search is filled */}
+            {search.trim().length > 3 && (
+              <Pressable
+                onPress={handleCustomSubmit}
+                style={[st.confirmBtn]}
+              >
+                <Text style={st.confirmBtnText}>Подтвердить ввод</Text>
+              </Pressable>
+            )}
           </View>
         </KeyboardAvoidingView>
       </View>
     </Modal>
   );
 }
+
 
 const st = StyleSheet.create({
   overlay: {
@@ -149,18 +174,27 @@ const st = StyleSheet.create({
     fontWeight: "900",
     color: "#F8FAFC",
   },
-  closeBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: "rgba(255,255,255,0.1)",
+  listHeader: {
+    color: "rgba(255,255,255,0.4)",
+    fontSize: 12,
+    fontWeight: "800",
+    marginBottom: 12,
+    marginTop: 4,
+    textTransform: "uppercase",
+    letterSpacing: 1,
+  },
+  confirmBtn: {
+    backgroundColor: "#22C55E",
+    height: 54,
+    borderRadius: 16,
     justifyContent: "center",
     alignItems: "center",
+    marginTop: 12,
   },
-  closeBtnText: {
-    color: "#F8FAFC",
-    fontSize: 18,
-    fontWeight: "700",
+  confirmBtnText: {
+    color: "#0B0F14",
+    fontSize: 17,
+    fontWeight: "900",
   },
   searchInput: {
     backgroundColor: "rgba(255,255,255,0.06)",

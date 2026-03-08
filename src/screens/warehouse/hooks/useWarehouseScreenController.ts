@@ -14,6 +14,7 @@ export function useWarehouseScreenController() {
     stockCount: data.stockCount,
     titleSize: data.headerApi.titleSize,
     warehousemanFio: data.warehousemanFio,
+    isFioConfirmVisible: data.isFioConfirmVisible,
     onOpenFioModal: () => data.setIsFioConfirmVisible(true),
     headerHeight: data.headerApi.headerHeight,
     headerTranslateY: data.headerApi.headerTranslateY,

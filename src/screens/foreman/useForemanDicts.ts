@@ -1,6 +1,12 @@
-﻿import { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "../../lib/supabaseClient";
 import type { AppOption, RefOption } from "./foreman.types";
+import {
+  getForemanLevelOptions,
+  getForemanObjectOptions,
+  getForemanSystemOptions,
+  getForemanZoneOptions,
+} from "./foreman.options";
 
 type DictRow = { code: string; name?: string | null; name_ru?: string | null };
 type AppRow = { app_code: string; name_human?: string | null };
@@ -44,6 +50,10 @@ export function useForemanDicts() {
   const [lvlOptions, setLvlOptions] = useState<RefOption[]>([]);
   const [sysOptions, setSysOptions] = useState<RefOption[]>([]);
   const [zoneOptions, setZoneOptions] = useState<RefOption[]>([]);
+  const [objAllOptions, setObjAllOptions] = useState<RefOption[]>([]);
+  const [lvlAllOptions, setLvlAllOptions] = useState<RefOption[]>([]);
+  const [sysAllOptions, setSysAllOptions] = useState<RefOption[]>([]);
+  const [zoneAllOptions, setZoneAllOptions] = useState<RefOption[]>([]);
   const [appOptions, setAppOptions] = useState<AppOption[]>([]);
 
   useEffect(() => {
@@ -84,10 +94,26 @@ export function useForemanDicts() {
           return includeEmpty ? [{ code: "", name: "— Не выбрано —" }, ...fetched] : fetched;
         };
 
-        if (!obj.error && Array.isArray(obj.data)) setObjOptions(toRefOptions(obj.data, false));
-        if (!lvl.error && Array.isArray(lvl.data)) setLvlOptions(toRefOptions(lvl.data, true));
-        if (!sys.error && Array.isArray(sys.data)) setSysOptions(toRefOptions(sys.data, true));
-        if (!zn.error && Array.isArray(zn.data)) setZoneOptions(toRefOptions(zn.data, true));
+        if (!obj.error && Array.isArray(obj.data)) {
+          const all = toRefOptions(obj.data, false);
+          setObjAllOptions(all);
+          setObjOptions(getForemanObjectOptions(all));
+        }
+        if (!lvl.error && Array.isArray(lvl.data)) {
+          const all = toRefOptions(lvl.data, true);
+          setLvlAllOptions(all);
+          setLvlOptions(getForemanLevelOptions(all));
+        }
+        if (!sys.error && Array.isArray(sys.data)) {
+          const all = toRefOptions(sys.data, true);
+          setSysAllOptions(all);
+          setSysOptions(getForemanSystemOptions(all));
+        }
+        if (!zn.error && Array.isArray(zn.data)) {
+          const all = toRefOptions(zn.data, true);
+          setZoneAllOptions(all);
+          setZoneOptions(getForemanZoneOptions(all));
+        }
       } catch (e) {
         console.warn(e);
       }
@@ -133,5 +159,16 @@ export function useForemanDicts() {
     };
   }, []);
 
-  return { objOptions, lvlOptions, sysOptions, zoneOptions, appOptions };
+  return {
+    objOptions,
+    lvlOptions,
+    sysOptions,
+    zoneOptions,
+    objAllOptions,
+    lvlAllOptions,
+    sysAllOptions,
+    zoneAllOptions,
+    appOptions,
+  };
 }
+

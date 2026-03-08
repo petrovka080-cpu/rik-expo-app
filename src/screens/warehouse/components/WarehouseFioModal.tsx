@@ -42,6 +42,7 @@ export default function WarehouseFioModal({ visible, initialFio, onConfirm, load
             transparent
             animationType="fade"
             statusBarTranslucent
+            onRequestClose={() => { }}
         >
             <View style={st.overlay}>
                 {Platform.OS !== "web" ? (
