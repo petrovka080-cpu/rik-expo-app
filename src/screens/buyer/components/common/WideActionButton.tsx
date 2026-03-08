@@ -30,8 +30,8 @@ export const WideActionButton = ({
       style={({ pressed }) => [
         {
           width: "100%",
-          height: 52,
-          borderRadius: 16,
+          height: 54,
+          borderRadius: 18,
           alignItems: "center",
           justifyContent: "center",
           borderWidth: 1,
@@ -41,7 +41,7 @@ export const WideActionButton = ({
         },
       ]}
     >
-      <Text style={{ color: tone.text, fontWeight: "900", fontSize: 14 }}>
+      <Text style={{ color: tone.text, fontWeight: "900", fontSize: 14, letterSpacing: 0.2 }}>
         {loading ? "..." : label}
       </Text>
     </Pressable>

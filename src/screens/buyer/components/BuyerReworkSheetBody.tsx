@@ -262,15 +262,15 @@ export function SheetFooterActions({
 }) {
   return (
     <View style={s.reqActionsBottom}>
-      <View style={{ width: 52, height: 52 }}>{left ?? null}</View>
+      <View style={{ width: 54, height: 54, alignItems: "center", justifyContent: "center" }}>{left ?? null}</View>
 
-      <View style={{ width: 8 }} />
+      <View style={{ width: 10 }} />
 
       <View style={{ flex: 1, minWidth: 0 }}>{center ?? null}</View>
 
-      <View style={{ width: 8 }} />
+      <View style={{ width: 10 }} />
 
-      <View style={{ width: 52, height: 52 }}>{right ?? null}</View>
+      <View style={{ width: 54, height: 54, alignItems: "center", justifyContent: "center" }}>{right ?? null}</View>
     </View>
   );
 }
