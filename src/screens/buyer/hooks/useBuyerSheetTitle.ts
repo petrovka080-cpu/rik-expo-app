@@ -19,16 +19,16 @@ export function useBuyerSheetTitle(params: {
       return prettyLabel(sheetGroup.request_id, sheetGroup.request_id_old ?? null);
     }
     if (sheetKind === "accounting" && acctProposalId != null) {
-      return `В бухгалтерию • ${formatProposalBaseNo(null, String(acctProposalId))}`;
+      return formatProposalBaseNo(null, String(acctProposalId));
     }
     if (sheetKind === "rework" && rwPid) {
-      return `Доработка • ${formatProposalBaseNo(null, String(rwPid))}`;
+      return formatProposalBaseNo(null, String(rwPid));
     }
     if (sheetKind === "prop_details" && propViewId) {
-      return `Предложение • ${formatProposalBaseNo(
+      return formatProposalBaseNo(
         proposalNoByPid[String(propViewId)] || null,
         String(propViewId)
-      )}`;
+      );
     }
     if (sheetKind === "rfq") {
       return "Торги (RFQ)";
@@ -36,4 +36,3 @@ export function useBuyerSheetTitle(params: {
     return "—";
   }, [sheetKind, sheetGroup, acctProposalId, rwPid, propViewId, proposalNoByPid, prettyLabel]);
 }
-

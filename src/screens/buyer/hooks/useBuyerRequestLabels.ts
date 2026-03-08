@@ -21,14 +21,18 @@ export function useBuyerRequestLabels() {
   }, [displayNoByReq]);
 
   useEffect(() => {
+    displayNoByReqRef.current = displayNoByReq || {};
+  }, [displayNoByReq]);
+
+  useEffect(() => {
     prNoByReqRef.current = prNoByReq || {};
   }, [prNoByReq]);
 
   const prettyLabel = useCallback((rid: string, ridOld?: number | null) => {
     const key = String(rid).trim();
     const dn = displayNoByReqRef.current?.[key];
-    if (dn) return `Заявка ${dn}`;
-    return `Заявка ${formatRequestDisplay(String(rid), ridOld ?? null)}`;
+    if (dn) return dn;
+    return formatRequestDisplay(String(rid), ridOld ?? null);
   }, []);
 
   const preloadDisplayNos = useCallback(async (ids: string[]) => {
@@ -51,7 +55,6 @@ export function useBuyerRequestLabels() {
     const ids = Array.from(new Set((reqIds || []).map(String).map((s) => s.trim()).filter(Boolean)));
     const need = ids.filter((id) => prNoByReqRef.current?.[id] == null);
 
-    console.log("[buyer] resolve_req_pr_map need sample:", need.slice(0, 3), "needLen=", need.length);
     if (!need.length) return;
 
     try {
@@ -61,7 +64,6 @@ export function useBuyerRequestLabels() {
       const rowsTyped = Array.isArray(data)
         ? (data as Array<{ request_id?: string | number | null; proposal_no?: string | null }>)
         : [];
-      console.log("[buyer] resolve_req_pr_map dataLen:", rowsTyped.length, "sample:", rowsTyped.slice(0, 3));
 
       const patch: Record<string, string> = {};
       for (const r of rowsTyped) {
