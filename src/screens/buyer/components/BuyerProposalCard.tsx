@@ -3,9 +3,8 @@ import { View, Text, Pressable, Animated } from "react-native";
 
 import type { BuyerProposalBucketRow } from "../buyer.fetchers";
 import { UI } from "../buyerUi";
-import { Chip } from "./common/Chip";
+import { StatusBadge } from "../../../ui/StatusBadge";
 import type { StylesBag } from "./component.types";
-import { statusColors } from "./statusColors";
 
 // We extend ProposalHeadLite internally to support items_cnt if available
 type CardHead = BuyerProposalBucketRow & { items_cnt?: number };
@@ -20,8 +19,6 @@ export const BuyerProposalCard = React.memo(function BuyerProposalCard(props: {
   const { head, s, onOpenDetails } = props;
 
   const pidStr = String(head.id);
-  const sc = statusColors(head.status);
-
   // Scale animation
   const scaleAnim = useRef(new Animated.Value(1)).current;
 
@@ -91,7 +88,7 @@ export const BuyerProposalCard = React.memo(function BuyerProposalCard(props: {
             </View>
           </View>
 
-          <Chip label={statusText} bg={sc.bg} fg={sc.fg} />
+          <StatusBadge label={statusText} tone="neutral" compact />
         </View>
 
         <View style={{ flexDirection: "row", alignItems: "center", gap: 6, marginTop: 8 }}>
