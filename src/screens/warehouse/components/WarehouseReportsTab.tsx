@@ -5,6 +5,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import TopRightActionBar from "../../../ui/TopRightActionBar";
 import SectionBlock from "../../../ui/SectionBlock";
+import RoleScreenLayout from "../../../components/layout/RoleScreenLayout";
 import type { TopRightAction } from "../../../ui/TopRightActionBar";
 import { UI, s } from "../warehouse.styles";
 import type { WarehouseReportRow } from "../warehouse.types";
@@ -285,7 +286,7 @@ export default function WarehouseReportsTab(props: Props) {
   }
 
   return (
-    <View style={{ flex: 1 }}>
+    <RoleScreenLayout>
       <ScrollView
         style={{ flex: 1 }}
         contentContainerStyle={{
@@ -357,6 +358,6 @@ export default function WarehouseReportsTab(props: Props) {
 
         <View style={{ height: 8 }} />
       </ScrollView>
-    </View>
+    </RoleScreenLayout>
   );
 }
