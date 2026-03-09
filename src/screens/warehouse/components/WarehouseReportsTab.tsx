@@ -4,6 +4,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import TopRightActionBar from "../../../ui/TopRightActionBar";
+import SectionBlock from "../../../ui/SectionBlock";
 import type { TopRightAction } from "../../../ui/TopRightActionBar";
 import { UI, s } from "../warehouse.styles";
 import type { WarehouseReportRow } from "../warehouse.types";
@@ -316,7 +317,7 @@ export default function WarehouseReportsTab(props: Props) {
           </Text>
         </View>
 
-        <View style={[s.sectionBox, { paddingHorizontal: 16 }]}>
+        <SectionBlock style={[s.sectionBox, { paddingHorizontal: 16 }]} contentStyle={{ gap: 0 }}>
           <Text style={s.sectionBoxTitle}>ПЕРИОД ОТЧЁТА</Text>
 
           <TopRightActionBar
@@ -333,7 +334,7 @@ export default function WarehouseReportsTab(props: Props) {
               btnBg: "rgba(255,255,255,0.06)",
             }}
           />
-        </View>
+        </SectionBlock>
 
         <View style={[s.sectionBox, { paddingHorizontal: 16 }]}>
           <Text style={s.sectionBoxTitle}>{sectionTitle}</Text>
