@@ -2,9 +2,9 @@
 import { Pressable, Text, View } from "react-native";
 import type { AccountantInboxRow } from "../../../lib/rik_api";
 import { UI } from "../ui";
-import { statusFromRaw, statusColors } from "../helpers";
-import Chip from "./Chip";
+import { statusFromRaw } from "../helpers";
 import { normalizeRuText } from "../../../lib/text/encoding";
+import { StatusBadge } from "../../../ui/StatusBadge";
 
 type ListRowItem = AccountantInboxRow & {
   total_paid?: number | null;
@@ -28,11 +28,18 @@ function ListRowInner({
   const rest = sum > 0 ? Math.max(0, sum - total) : 0;
 
   const st = statusFromRaw(item.payment_status, false);
-  const sc = statusColors(st.key);
   const isPaidFull = rest === 0 && st.key === "PAID";
   const supplier = normalizeRuText(String(item.supplier || "—"));
   const invoiceNo = normalizeRuText(String(item.invoice_number || "без №"));
   const invoiceDate = normalizeRuText(String(item.invoice_date || "—"));
+  const toneByStatus = {
+    PAID: "success",
+    PART: "warning",
+    REWORK: "danger",
+    K_PAY: "info",
+    HISTORY: "neutral",
+  } as const;
+  const tone = toneByStatus[st.key] ?? "neutral";
 
   return (
     <Pressable
@@ -71,11 +78,11 @@ function ListRowInner({
           )}
         </View>
 
-        <View style={{ alignItems: 'flex-end', gap: 6 }}>
+        <View style={{ alignItems: "flex-end", gap: 6 }}>
           <Text style={{ fontSize: 16, fontWeight: "900", color: UI.text }}>
             {sum.toLocaleString()}
           </Text>
-          <Chip label={st.label} bg={sc.bg} fg={sc.fg} />
+          <StatusBadge label={st.label} tone={tone} compact />
         </View>
       </View>
     </Pressable>

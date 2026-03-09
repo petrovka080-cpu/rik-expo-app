@@ -1,4 +1,4 @@
-import React from "react";
+﻿import React from "react";
 import { Pressable, Text, View } from "react-native";
 import { formatProposalBaseNo } from "../../../lib/format";
 import { StatusBadge } from "../../../ui/StatusBadge";
@@ -27,7 +27,7 @@ export default function IncomingRowItem({
     row.purchase_id,
   );
 
-  const dateStr = fmtRuDate(row.purchase_created_at) || "—";
+  const dateStr = fmtRuDate(row.purchase_created_at) || "вЂ”";
 
   return (
     <View style={s.listItemContainer}>
@@ -48,12 +48,13 @@ export default function IncomingRowItem({
           </View>
 
           <View style={s.incomingItemRow2}>
-            <StatusBadge label={`Принято ${recSum}`} tone="neutral" compact />
-            <Text style={s.incomingItemLeftText}>Осталось {leftSum}</Text>
+            <StatusBadge label={`РџСЂРёРЅСЏС‚Рѕ ${recSum}`} tone="neutral" compact />
+            <StatusBadge label={`Осталось ${leftSum}`} tone="info" compact />
           </View>
         </View>
       </Pressable>
     </View>
   );
 }
+
 
