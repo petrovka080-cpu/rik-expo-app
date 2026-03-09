@@ -1,6 +1,7 @@
 ﻿// src/screens/warehouse/components/StockRowView.tsx
 import React from "react";
 import { View, Text, Pressable } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { UI, s } from "../warehouse.styles";
 import { nz } from "../warehouse.utils";
 import { uomLabelRu } from "../warehouse.uom";
@@ -26,7 +27,7 @@ function StockRowView({ r, pickedQty, onPress }: Props) {
   const isPicked = Number(pickedQty ?? 0) > 0;
 
   return (
-    <View style={{ marginBottom: 12, paddingHorizontal: 16 }}>
+    <View style={{ marginBottom: 10, paddingHorizontal: 16 }}>
       <Pressable onPress={() => onPress(r)}>
         <RoleCard
           title={String(r.name ?? "").trim() || "—"}
@@ -40,11 +41,12 @@ function StockRowView({ r, pickedQty, onPress }: Props) {
           titleStyle={s.mobTitle}
           subtitleStyle={s.mobMeta}
           metaStyle={{ marginTop: 6, color: UI.text, fontWeight: "900" }}
-          rightIndicator={
+          status={
             <View style={s.metaPill}>
               <Text style={s.metaPillText}>{fmtQty(onHand)}</Text>
             </View>
           }
+          rightIndicator={<Ionicons name="chevron-forward" size={18} color="rgba(248,250,252,0.5)" />}
         />
       </Pressable>
     </View>

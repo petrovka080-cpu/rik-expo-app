@@ -70,10 +70,10 @@ export const BuyerMainList = React.memo(function BuyerMainList(props: {
       }}
       renderItem={({ item, index }) => {
         if (item.__skeleton) {
-          return <View style={{ marginBottom: 12, paddingHorizontal: 16 }}><BuyerCardSkeleton s={s} /></View>;
+          return <View style={{ marginBottom: 10, paddingHorizontal: 16 }}><BuyerCardSkeleton s={s} /></View>;
         }
         return (
-          <View style={{ marginBottom: 12, paddingHorizontal: 16 }}>
+          <View style={{ marginBottom: 10, paddingHorizontal: 16 }}>
             {tab === "inbox" ? renderGroupBlock(item as ListItem, index) : renderProposalCard(item as ListItem)}
           </View>
         );
@@ -89,8 +89,8 @@ export const BuyerMainList = React.memo(function BuyerMainList(props: {
       onScroll={Animated.event([{ nativeEvent: { contentOffset: { y: scrollY } } }], { useNativeDriver: false })}
       scrollEventThrottle={16}
       contentContainerStyle={{
-        paddingTop: measuredHeaderMax + 4,
-        paddingBottom: 60,
+        paddingTop: measuredHeaderMax + 10,
+        paddingBottom: 30,
       }}
       keyboardShouldPersistTaps="handled"
       keyboardDismissMode="on-drag"

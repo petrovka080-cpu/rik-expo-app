@@ -1,5 +1,6 @@
 ﻿import React from "react";
 import { Pressable, View } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { formatProposalBaseNo } from "../../../lib/format";
 import { StatusBadge } from "../../../ui/StatusBadge";
 import { RoleCard } from "../../../components/ui/RoleCard";
@@ -40,10 +41,14 @@ export default function IncomingRowItem({
           titleStyle={{ fontSize: 16 }}
           subtitleStyle={s.incomingItemDate}
           status={<StatusBadge label={`Принято ${recSum}`} tone="neutral" compact />}
-          rightIndicator={<StatusBadge label={`Осталось ${leftSum}`} tone="info" compact />}
+          rightIndicator={
+            <View style={{ alignItems: "flex-end", gap: 6 }}>
+              <StatusBadge label={`Осталось ${leftSum}`} tone="info" compact />
+              <Ionicons name="chevron-forward" size={18} color="rgba(248,250,252,0.5)" />
+            </View>
+          }
         />
       </Pressable>
     </View>
   );
 }
-
