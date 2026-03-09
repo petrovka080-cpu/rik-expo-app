@@ -240,7 +240,15 @@ const REQUESTS_SELECT_PLANS = [
   "id",
 ] as const;
 
+const REQUESTS_DISCIPLINE_SELECT_PLANS = [
+  "id,level_code,system_code",
+  "id,level_code",
+  "id,system_code",
+  "id",
+] as const;
+
 let requestsSelectPlanCache: string | null = null;
+let requestsDisciplineSelectPlanCache: string | null = null;
 
 async function fetchRequestsRowsSafe(ids: string[]): Promise<any[]> {
   const reqIds = Array.from(new Set((ids || []).map((x) => String(x ?? "").trim()).filter(Boolean)));
@@ -263,6 +271,36 @@ async function fetchRequestsRowsSafe(ids: string[]): Promise<any[]> {
     const q = await runSelect(selectCols);
     if (!q.error) {
       requestsSelectPlanCache = selectCols;
+      return Array.isArray(q.data) ? q.data : [];
+    }
+    lastError = q.error;
+  }
+
+  if (lastError) throw lastError;
+  return [];
+}
+
+async function fetchRequestsDisciplineRowsSafe(ids: string[]): Promise<any[]> {
+  const reqIds = Array.from(new Set((ids || []).map((x) => String(x ?? "").trim()).filter(Boolean)));
+  if (!reqIds.length) return [];
+
+  const runSelect = async (selectCols: string) =>
+    supabase
+      .from("requests" as any)
+      .select(selectCols)
+      .in("id", reqIds as any);
+
+  if (requestsDisciplineSelectPlanCache) {
+    const cached = await runSelect(requestsDisciplineSelectPlanCache);
+    if (!cached.error) return Array.isArray(cached.data) ? cached.data : [];
+    requestsDisciplineSelectPlanCache = null;
+  }
+
+  let lastError: any = null;
+  for (const selectCols of REQUESTS_DISCIPLINE_SELECT_PLANS) {
+    const q = await runSelect(selectCols);
+    if (!q.error) {
+      requestsDisciplineSelectPlanCache = selectCols;
       return Array.isArray(q.data) ? q.data : [];
     }
     lastError = q.error;
@@ -1176,6 +1214,182 @@ async function fetchAllFactRowsFromTables(p: {
   return out;
 }
 
+async function fetchDisciplineFactRowsFromTables(p: {
+  from: string;
+  to: string;
+  objectName: string | null;
+}): Promise<DirectorFactRow[]> {
+  const tTotal = nowMs();
+  const issuesById = new Map<string, any>();
+  const pageSize = 2500;
+  let fromIdx = 0;
+
+  while (true) {
+    let q = supabase
+      .from("warehouse_issues" as any)
+      .select("id,iss_date,object_name,work_name,request_id,status,note")
+      .eq("status", "Подтверждено");
+
+    if (p.from) q = q.gte("iss_date", toRangeStart(p.from));
+    if (p.to) q = q.lte("iss_date", toRangeEnd(p.to));
+    if (p.objectName != null) q = q.eq("object_name", p.objectName);
+
+    q = q.order("iss_date", { ascending: false })
+      .range(fromIdx, fromIdx + pageSize - 1);
+
+    const { data, error } = await q;
+    if (error) throw error;
+
+    const rows = Array.isArray(data) ? data : [];
+    for (const r of rows) {
+      const id = String(r?.id ?? "").trim();
+      if (!id) continue;
+      issuesById.set(id, r);
+    }
+
+    if (rows.length < pageSize) break;
+    fromIdx += pageSize;
+    if (fromIdx > 500000) break;
+  }
+  logTiming("discipline.rows.light.issues_scan", tTotal);
+
+  if (!issuesById.size) return [];
+  const issueIds = Array.from(issuesById.keys());
+  if (!issueIds.length) return [];
+
+  const issueItems: any[] = [];
+  const tIssueItems = nowMs();
+  await forEachChunkParallel(issueIds, 500, 6, async (ids) => {
+    const { data, error } = await supabase
+      .from("warehouse_issue_items" as any)
+      .select("issue_id,rik_code,uom_id,qty,request_item_id")
+      .in("issue_id", ids as any);
+    if (error) throw error;
+    if (Array.isArray(data)) issueItems.push(...data);
+  });
+  logTiming("discipline.rows.light.issue_items", tIssueItems);
+  if (!issueItems.length) return [];
+
+  const requestItemIds = Array.from(
+    new Set(
+      issueItems
+        .map((x) => String(x?.request_item_id ?? "").trim())
+        .filter(Boolean),
+    ),
+  );
+  const requestIdByRequestItem = new Map<string, string>();
+  const tReqItems = nowMs();
+  await forEachChunkParallel(requestItemIds, 500, 6, async (ids) => {
+    const { data, error } = await supabase
+      .from("request_items" as any)
+      .select("id,request_id")
+      .in("id", ids as any);
+    if (error) throw error;
+    const rows = Array.isArray(data) ? data : [];
+    for (const r of rows) {
+      const id = String(r?.id ?? "").trim();
+      const reqId = String(r?.request_id ?? "").trim();
+      if (id && reqId) requestIdByRequestItem.set(id, reqId);
+    }
+  });
+  logTiming("discipline.rows.light.request_items", tReqItems);
+
+  const requestIds = Array.from(
+    new Set(
+      [
+        ...Array.from(issuesById.values()).map((iss) => String(iss?.request_id ?? "").trim()),
+        ...Array.from(requestIdByRequestItem.values()).map((rid) => String(rid ?? "").trim()),
+      ].filter(Boolean),
+    ),
+  );
+
+  const requestById = new Map<string, any>();
+  const tReq = nowMs();
+  await forEachChunkParallel(requestIds, 500, 4, async (ids) => {
+    const rows = await fetchRequestsDisciplineRowsSafe(ids as any);
+    for (const r of rows) {
+      const id = String(r?.id ?? "").trim();
+      if (id) requestById.set(id, r);
+    }
+  });
+  logTiming("discipline.rows.light.requests", tReq);
+
+  const systemCodes = Array.from(
+    new Set(
+      Array.from(requestById.values())
+        .map((req) => String(req?.system_code ?? "").trim())
+        .filter(Boolean),
+    ),
+  );
+  const systemNameByCode = new Map<string, string>();
+  const tSystems = nowMs();
+  await forEachChunkParallel(systemCodes, 500, 4, async (codes) => {
+    const { data, error } = await supabase
+      .from("ref_systems" as any)
+      .select("code,name_human_ru,display_name,alias_ru,name")
+      .in("code", codes as any);
+    if (error) throw error;
+    const rows = Array.isArray(data) ? data : [];
+    for (const r of rows) {
+      const code = String(r?.code ?? "").trim();
+      const name =
+        String(r?.name_human_ru ?? "").trim() ||
+        String(r?.display_name ?? "").trim() ||
+        String(r?.alias_ru ?? "").trim() ||
+        String(r?.name ?? "").trim();
+      if (code && name) systemNameByCode.set(code, name);
+    }
+  });
+  logTiming("discipline.rows.light.systems", tSystems);
+
+  const out: DirectorFactRow[] = [];
+  const tBuild = nowMs();
+  for (const it of issueItems) {
+    const issueId = String(it?.issue_id ?? "").trim();
+    const issue = issuesById.get(issueId);
+    if (!issue) continue;
+
+    const reqItemId = String(it?.request_item_id ?? "").trim();
+    const issueReqId = String(issue?.request_id ?? "").trim();
+    const reqId =
+      (reqItemId ? requestIdByRequestItem.get(reqItemId) : null) ??
+      (issueReqId || null);
+    const req = reqId ? requestById.get(reqId) : null;
+
+    const objectName = String(issue?.object_name ?? "").trim() || WITHOUT_OBJECT;
+    if (p.objectName != null && objectName !== p.objectName) continue;
+
+    const reqSystemCode = String(req?.system_code ?? "").trim();
+    const reqSystemName = (reqSystemCode && systemNameByCode.get(reqSystemCode)) || reqSystemCode;
+    const workName =
+      String(issue?.work_name ?? "").trim() ||
+      reqSystemName ||
+      WITHOUT_WORK;
+    const freeCtx = parseFreeIssueContext(issue?.note ?? null);
+    const levelName = req ? normLevelName(req?.level_code) : normLevelName(freeCtx.levelName);
+
+    const code = String(it?.rik_code ?? "").trim().toUpperCase();
+    if (!code) continue;
+
+    out.push({
+      issue_id: issueId,
+      iss_date: String(issue?.iss_date ?? ""),
+      object_name: objectName,
+      work_name: workName,
+      level_name: levelName,
+      request_item_id: reqItemId || null,
+      rik_code: code,
+      material_name_ru: code,
+      uom: String(it?.uom_id ?? "").trim(),
+      qty: toNum(it?.qty),
+      is_without_request: !reqItemId,
+    });
+  }
+  logTiming("discipline.rows.light.build", tBuild);
+  logTiming("discipline.rows.light.total", tTotal);
+  return out;
+}
+
 export async function fetchDirectorWarehouseReportOptions(p: {
   from: string;
   to: string;
@@ -1798,13 +2012,17 @@ async function fetchFactRowsForDiscipline(p: {
     }
     if (!rows.length) {
       try {
-        rows = await fetchAllFactRowsFromTables({ from: p.from, to: p.to, objectName });
+        rows = await fetchDisciplineFactRowsFromTables({ from: p.from, to: p.to, objectName });
         if (rows.length) return { rows, source: "tables" };
       } catch { }
     }
     return { rows: [], source: "none" };
   }
 
+  try {
+    rows = await fetchDisciplineFactRowsFromTables({ from: p.from, to: p.to, objectName });
+    if (rows.length) return { rows, source: "tables" };
+  } catch { }
   try {
     rows = await fetchAllFactRowsFromTables({ from: p.from, to: p.to, objectName });
     if (rows.length) return { rows, source: "tables" };
