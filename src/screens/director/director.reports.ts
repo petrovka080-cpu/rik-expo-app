@@ -99,16 +99,13 @@ export function useDirectorReports({ fmtDateOnly }: Deps) {
     }
   }, []);
 
-  const mapSig = useCallback((m: Record<string, string | null>) => {
-    const keys = Object.keys(m || {}).sort();
-    return keys.map((k) => `${k}:${String(m[k] ?? "")}`).join("|");
-  }, []);
-
   const optionsKey = useCallback((from: string, to: string) => `${from}|${to}`, []);
   const reportKey = useCallback(
     (from: string, to: string, objectName: string | null, objectMap: Record<string, string | null>) =>
-      `${from}|${to}|${String(objectName ?? "")}|${mapSig(objectMap)}`,
-    [mapSig],
+      `${from}|${to}|${String(objectName ?? "")}|${String(
+        objectName == null ? "" : (objectMap?.[objectName] ?? ""),
+      )}`,
+    [],
   );
   const disciplineKey = reportKey;
 

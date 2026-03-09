@@ -265,6 +265,15 @@ const buildDisciplineRowsCacheKey = (p: {
   return `${String(p.from || "")}|${String(p.to || "")}|${String(objectName ?? "")}|${String(objectId ?? "")}`;
 };
 
+const filterDisciplineRowsByObject = (
+  rows: DirectorFactRow[],
+  objectName: string | null,
+): DirectorFactRow[] => {
+  if (objectName == null) return rows;
+  const target = canonicalObjectName(objectName);
+  return rows.filter((r) => canonicalObjectName((r as any)?.object_name) === target);
+};
+
 async function fetchRequestsRowsSafe(ids: string[]): Promise<any[]> {
   const reqIds = Array.from(new Set((ids || []).map((x) => String(x ?? "").trim()).filter(Boolean)));
   if (!reqIds.length) return [];
@@ -2317,6 +2326,25 @@ export async function fetchDirectorWarehouseReportDiscipline(p: {
     rowsResult = { rows: cachedRows.rows, source: cachedRows.source };
   } else if (cachedRows) {
     disciplineRowsCache.delete(rowsKey);
+  }
+  if (!rowsResult && p.objectName != null) {
+    const baseRowsKey = buildDisciplineRowsCacheKey({
+      from: pFrom,
+      to: pTo,
+      objectName: null,
+      objectIdByName: p.objectIdByName ?? {},
+    });
+    const baseCachedRows = disciplineRowsCache.get(baseRowsKey);
+    if (baseCachedRows && Date.now() - baseCachedRows.ts <= DISCIPLINE_ROWS_CACHE_TTL_MS) {
+      const slicedRows = filterDisciplineRowsByObject(baseCachedRows.rows, p.objectName);
+      rowsResult = { rows: slicedRows, source: baseCachedRows.source };
+      disciplineRowsCache.set(rowsKey, { ts: Date.now(), rows: slicedRows, source: baseCachedRows.source });
+      if (REPORTS_TIMING) {
+        console.info(
+          `[director_reports] discipline.rows.cache_slice: object=${String(p.objectName)} rows=${slicedRows.length}`,
+        );
+      }
+    }
   }
   const tRows = nowMs();
   if (!rowsResult) {
