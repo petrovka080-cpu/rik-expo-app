@@ -1,7 +1,8 @@
-import React from "react";
+﻿import React from "react";
 import { Pressable, Text, View } from "react-native";
 import type { ReqHeadRow } from "../warehouse.types";
 import { UI, s } from "../warehouse.styles";
+import { RoleCard } from "../../../components/ui/RoleCard";
 
 type Props = {
   row: ReqHeadRow;
@@ -27,51 +28,51 @@ export default function ReqHeadRowItem({ row, onPress, fmtRuDate }: Props) {
   if (sys) locParts.push(sys);
 
   const dateStr = fmtRuDate(row.submitted_at);
+  const title = row.display_no || `REQ-${row.request_id.slice(0, 8)}`;
+  const locationText = locParts.length > 0 ? locParts.join(" • ") : undefined;
+
+  const statusNode = isFullyIssued ? (
+    <Text style={s.reqItemStatusFullyIssued}>Выдано полностью</Text>
+  ) : (
+    <Text style={s.reqItemStatusNotFullyIssued}>
+      К выдаче:{" "}
+      <Text style={{ color: hasToIssue ? "#22c55e" : UI.text, fontWeight: "900" }}>
+        {hasToIssue
+          ? `${openPos} ${openPos === 1 ? "позиция" : openPos > 1 && openPos < 5 ? "позиции" : "позиций"}`
+          : "0"}
+      </Text>
+      {" • "}
+      Выдано:{" "}
+      <Text style={{ color: issuedPos > 0 ? "#22c55e" : UI.text, fontWeight: "800" }}>
+        {issuedPos}
+      </Text>
+    </Text>
+  );
 
   return (
     <View style={s.listItemContainer}>
       <Pressable
         onPress={() => onPress(row)}
-        style={({ pressed }) => [
-          s.groupHeader,
-          s.reqItemPressable,
-          {
-            borderLeftWidth: hasToIssue ? 5 : 0,
-            borderLeftColor: "#22c55e",
-          },
-          pressed && { opacity: 0.9 },
-        ]}
+        style={({ pressed }) => [s.reqItemPressable, pressed && { opacity: 0.9 }]}
       >
-        <View style={s.listItemFlex}>
-          <View style={s.listItemRow1}>
-            <Text style={[s.groupTitle, { fontSize: 16 }]} numberOfLines={1}>
-              {row.display_no || `REQ-${row.request_id.slice(0, 8)}`}
-            </Text>
-            <Text style={s.reqItemDate}>{dateStr}</Text>
-          </View>
-
-          <View style={s.reqItemRow2}>
-            {isFullyIssued ? (
-              <Text style={s.reqItemStatusFullyIssued}>Выдано полностью</Text>
-            ) : (
-              <Text style={s.reqItemStatusNotFullyIssued}>
-                К выдаче:{" "}
-                <Text style={{ color: hasToIssue ? "#22c55e" : UI.text, fontWeight: "900" }}>
-                  {hasToIssue ? `${openPos} ${openPos === 1 ? "позиция" : openPos > 1 && openPos < 5 ? "позиции" : "позиций"}` : "0"}
-                </Text>
-                {" • "}
-                Выдано:{" "}
-                <Text style={{ color: issuedPos > 0 ? "#22c55e" : UI.text, fontWeight: "800" }}>
-                  {issuedPos}
-                </Text>
-              </Text>
-            )}
-          </View>
-
-          {locParts.length > 0 && <Text style={s.reqItemRow3}>{locParts.join(" • ")}</Text>}
-        </View>
+        <RoleCard
+          title={title}
+          subtitle={dateStr}
+          meta={locationText}
+          status={statusNode}
+          style={[
+            s.groupHeader,
+            {
+              marginBottom: 0,
+              borderLeftWidth: hasToIssue ? 5 : 0,
+              borderLeftColor: "#22c55e",
+            },
+          ]}
+          titleStyle={[s.groupTitle, { fontSize: 16 }]}
+          subtitleStyle={s.reqItemDate}
+          metaStyle={s.reqItemRow3}
+        />
       </Pressable>
     </View>
   );
 }
-
