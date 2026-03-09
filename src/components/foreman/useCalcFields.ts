@@ -1,5 +1,6 @@
-﻿import { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "../../../src/lib/supabaseClient";
+import { enrichFieldUiMeta, type FieldUiPriority } from "./calcFieldProfiles";
 
 export type BasisKey = string;
 const isDemoWorkType = (code?: string | null) => {
@@ -10,12 +11,20 @@ const isDemoWorkType = (code?: string | null) => {
 export type Field = {
   key: BasisKey;
   label: string;
+  displayLabelRu?: string;
+  displayHintRu?: string;
   uom?: string | null;
   hint?: string | null;
   required?: boolean;
   defaultValue?: number | null;
   order?: number | null;
   usedInNorms?: boolean;
+  familyCode?: string;
+  semanticRole?: string;
+  uiPriority?: FieldUiPriority;
+  visibleInBaseUi?: boolean;
+  editable?: boolean;
+  hiddenInUi?: boolean;
 };
 
 type CalcValues = Record<BasisKey, number | null>;
@@ -81,6 +90,18 @@ export function useCalcFields(workTypeCode?: string | null) {
           ? "v_reno_calc_fields_ui_clean"
           : "v_reno_calc_fields_ui";
 
+        let familyCode: string | null = null;
+        try {
+          const familyRes = await supabase
+            .from("v_work_types_picker")
+            .select("family_code")
+            .eq("code", code)
+            .maybeSingle();
+          familyCode = String(familyRes.data?.family_code ?? "").trim() || null;
+        } catch {
+          familyCode = null;
+        }
+
         const { data, error } = await supabase
           .from(viewName)
           .select(`
@@ -98,22 +119,43 @@ export function useCalcFields(workTypeCode?: string | null) {
 
         if (error) throw error;
 
-        const list: Field[] = (Array.isArray(data) ? data : [])
+        const rawList: FieldRow[] = (Array.isArray(data) ? data : [])
           .map(toFieldRow)
-          .filter((r): r is FieldRow => !!r)
-          .map((r) => ({
+          .filter((r): r is FieldRow => !!r);
+
+        const allKeys = rawList.map((r) => r.basis_key);
+
+        const list: Field[] = rawList.map((r) => {
+          const uiMeta = enrichFieldUiMeta({
+            workTypeCode: code,
+            familyCode,
+            basisKey: r.basis_key,
+            originalLabel: r.label_ru || r.basis_key,
+            originalHint: r.hint_ru ?? null,
+            allBasisKeys: allKeys,
+          });
+          return {
             key: r.basis_key,
-            label: r.label_ru || r.basis_key,
+            label: uiMeta.displayLabelRu || r.label_ru || r.basis_key,
+            displayLabelRu: uiMeta.displayLabelRu,
             uom: r.uom_code ?? null,
-            hint: r.hint_ru ?? null,
+            hint: uiMeta.displayHintRu ?? r.hint_ru ?? null,
+            displayHintRu: uiMeta.displayHintRu,
             required: !!r.is_required,
             usedInNorms: !!r.used_in_norms,
             defaultValue: typeof r.default_value === "number" ? r.default_value : null,
             order: r.sort_order ?? null,
-          }));
+            familyCode: uiMeta.familyCode,
+            semanticRole: uiMeta.semanticRole,
+            uiPriority: uiMeta.uiPriority,
+            visibleInBaseUi: uiMeta.visibleInBaseUi,
+            editable: uiMeta.editable,
+            hiddenInUi: uiMeta.hiddenInUi,
+          };
+        });
 
         if (!cancelled) {
-          setFields(list);
+          setFields(list.filter((f) => f.hiddenInUi !== true));
         }
       } catch {
         if (!cancelled) {
