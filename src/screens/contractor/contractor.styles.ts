@@ -28,7 +28,7 @@ const MODAL_BORDER = "#e2e8f0";
 const DIVIDER = "#f1f5f9";
 
 export const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16, backgroundColor: UI.bg },
+  container: { flex: 1, paddingHorizontal: 16, paddingTop: 10, paddingBottom: 30, backgroundColor: UI.bg },
   homeContainer: {
     backgroundColor: "#071124",
   },
@@ -66,7 +66,7 @@ export const styles = StyleSheet.create({
   activateText: { color: "#fff", fontWeight: "700" },
 
   header: { paddingBottom: 6, borderBottomWidth: 1, borderColor: UI.border },
-  headerTitle: { fontSize: 20, fontWeight: "800", color: UI.text },
+  headerTitle: { fontSize: 22, fontWeight: "600", color: UI.text },
   homeHeader: {
     marginHorizontal: -16,
     marginTop: -16,
@@ -183,9 +183,10 @@ export const styles = StyleSheet.create({
 
   card: {
     marginTop: 10,
-    padding: 12,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
     backgroundColor: "#fff",
-    borderRadius: 10,
+    borderRadius: 16,
     borderWidth: 1,
     borderColor: UI.border,
   },
@@ -198,14 +199,14 @@ export const styles = StyleSheet.create({
     backgroundColor: "#0F172A",
     borderColor: "rgba(255,255,255,0.14)",
   },
-  cardTitle: { fontSize: 16, fontWeight: "700" },
+  cardTitle: { fontSize: 16, fontWeight: "600" },
   cardCompany: { fontSize: 20, fontWeight: "800", color: UI.text },
   cardWork: { fontSize: 13, color: "#0F172A", marginTop: 4 },
   cardObject: { fontSize: 13, color: UI.sub, marginTop: 4 },
   cardCompanyDark: { color: "#F8FAFC" },
   cardWorkDark: { color: "rgba(248,250,252,0.85)" },
   cardObjectDark: { color: "rgba(226,232,240,0.9)" },
-  cardMetaDark: { fontSize: 13, color: "rgba(226,232,240,0.9)", marginTop: 2 },
+  cardMetaDark: { fontSize: 13, color: "rgba(226,232,240,0.9)", marginTop: 4, opacity: 0.7 },
   cardStatsRow: { flexDirection: "row", justifyContent: "space-between", gap: 8, marginTop: 6 },
   cardProgressTrack: {
     height: 6,
@@ -219,7 +220,7 @@ export const styles = StyleSheet.create({
     borderRadius: 999,
     backgroundColor: "#0EA5E9",
   },
-  cardMeta: { fontSize: 13, color: UI.sub, marginTop: 2 },
+  cardMeta: { fontSize: 13, color: UI.sub, marginTop: 4, opacity: 0.7 },
   workCardTap: {
     borderRadius: 10,
     padding: 2,

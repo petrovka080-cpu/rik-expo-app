@@ -3,7 +3,7 @@ import { TYPO, UI } from './foreman.ui';
 
 export const s = StyleSheet.create({
   container: { flex: 1 },
-  pagePad: { padding: 16, paddingBottom: 120 },
+  pagePad: { paddingHorizontal: 16, paddingTop: 10, paddingBottom: 120 },
 
   small: {
     color: UI.sub,
@@ -118,7 +118,7 @@ export const s = StyleSheet.create({
   requestSummaryBox: {
     borderWidth: 1.25,
     borderColor: "rgba(255,255,255,0.10)",
-    borderRadius: 18,
+    borderRadius: 16,
     padding: 14,
     backgroundColor: "rgba(255,255,255,0.04)",
     marginTop: 4,
@@ -138,14 +138,14 @@ export const s = StyleSheet.create({
     gap: 12,
   },
 
-  requestNumber: { fontSize: 16, fontWeight: "900", color: UI.text },
+  requestNumber: { fontSize: 16, fontWeight: "600", color: UI.text },
 
   requestMeta: {
     marginTop: 6,
     color: "rgba(255,255,255,0.78)",
-    fontSize: 12,
-    fontWeight: "800",
-    letterSpacing: 0.2,
+    fontSize: 13,
+    fontWeight: "600",
+    letterSpacing: 0,
   },
 
   bgGlow: {
@@ -162,18 +162,19 @@ export const s = StyleSheet.create({
 
   // ===== section blocks
   section: {
-    marginTop: 14,
+    marginTop: 18,
     marginBottom: 8,
     padding: 12,
-    borderRadius: 18,
+    borderRadius: 16,
     backgroundColor: "transparent",
     borderWidth: 0,
   },
   sectionTitle: {
     color: UI.sub,
-    fontWeight: "900",
-    fontSize: 12,
-    letterSpacing: 0.4,
+    fontWeight: "600",
+    fontSize: 14,
+    letterSpacing: 0,
+    opacity: 0.7,
   },
 
   pickTabsRow: {

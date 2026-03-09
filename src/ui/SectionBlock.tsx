@@ -73,10 +73,12 @@ const styles = StyleSheet.create({
     width: "100%",
   },
   baseRegular: {
-    marginBottom: 14,
+    marginTop: 18,
+    marginBottom: 0,
   },
   baseCompact: {
-    marginBottom: 10,
+    marginTop: 12,
+    marginBottom: 0,
   },
   headerRow: {
     flexDirection: "row",
@@ -84,7 +86,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   headerRowRegular: {
-    marginBottom: 10,
+    marginBottom: 8,
     gap: 10,
   },
   headerRowCompact: {
@@ -100,12 +102,13 @@ const styles = StyleSheet.create({
     alignSelf: "center",
   },
   title: {
-    fontWeight: "800",
+    fontWeight: "600",
     color: "#F8FAFC",
+    opacity: 0.7,
   },
   titleRegular: {
-    fontSize: 16,
-    lineHeight: 20,
+    fontSize: 14,
+    lineHeight: 18,
   },
   titleCompact: {
     fontSize: 14,

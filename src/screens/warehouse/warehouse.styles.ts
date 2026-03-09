@@ -69,7 +69,7 @@ export const s = StyleSheet.create({
     gap: 10,
     paddingVertical: 14,
     paddingHorizontal: 16,
-    borderRadius: 14,
+    borderRadius: 16,
     backgroundColor: UI.cardBg,
     borderWidth: 1,
     borderColor: "rgba(255,255,255,0.18)",
@@ -80,7 +80,7 @@ export const s = StyleSheet.create({
     elevation: 6,
     minHeight: 72,
   },
-  groupTitle: { fontSize: 16, fontWeight: "500", color: UI.text },
+  groupTitle: { fontSize: 16, fontWeight: "600", color: UI.text },
   cardMeta: {
     marginTop: 4,
     color: UI.sub,
@@ -120,7 +120,7 @@ export const s = StyleSheet.create({
     gap: 10,
     paddingVertical: 14,
     paddingHorizontal: 16,
-    borderRadius: 14,
+    borderRadius: 16,
     backgroundColor: "rgba(16,24,38,0.92)",
     borderWidth: 1.25,
     borderColor: "rgba(255,255,255,0.16)",
@@ -131,11 +131,11 @@ export const s = StyleSheet.create({
     elevation: 6,
   },
   mobMain: { flex: 1, minWidth: 0 },
-  mobTitle: { fontSize: 16, fontWeight: "500", color: UI.text },
+  mobTitle: { fontSize: 16, fontWeight: "600", color: UI.text },
   mobMeta: { marginTop: 4, fontSize: 13, fontWeight: "600", color: UI.sub },
 
   sectionBox: {
-    marginTop: 10,
+    marginTop: 18,
     padding: 12,
     borderRadius: 18,
     backgroundColor: "rgba(255,255,255,0.04)",
@@ -144,10 +144,11 @@ export const s = StyleSheet.create({
   },
   sectionBoxTitle: {
     color: UI.sub,
-    fontWeight: "900",
-    fontSize: 12,
-    letterSpacing: 0.4,
-    marginBottom: 10,
+    fontWeight: "600",
+    fontSize: 14,
+    letterSpacing: 0,
+    opacity: 0.7,
+    marginBottom: 8,
   },
 
   input: {
@@ -161,7 +162,7 @@ export const s = StyleSheet.create({
     fontWeight: "800",
   },
 
-  listItemContainer: { marginBottom: 10, paddingHorizontal: 6 },
+  listItemContainer: { marginBottom: 10, paddingHorizontal: 16 },
   reqItemPressable: { paddingHorizontal: 12 },
   listItemFlex: { flex: 1 },
   listItemRow1: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 5 },

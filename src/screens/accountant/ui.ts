@@ -20,7 +20,7 @@ export const UI = {
 };
 
 export const TOK = {
-  rCard: 18,
+  rCard: 16,
   rBox: 16,
   rBtn: 14,
 
@@ -69,4 +69,3 @@ export const S = {
     fontWeight: "700" as const,
   }),
 };
-

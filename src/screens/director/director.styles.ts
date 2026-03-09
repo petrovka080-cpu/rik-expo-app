@@ -94,7 +94,7 @@ collapsingHeader: {
     }),
   },
 
-  sectionTitle: { fontSize: 20, fontWeight: "800", color: UI.text },
+  sectionTitle: { fontSize: 14, fontWeight: "600", color: UI.text, opacity: 0.7 },
 
   kpiRow: {
     width: "100%",
@@ -126,14 +126,14 @@ collapsingHeader: {
   kpiValue: { color: UI.text, fontWeight: "900", fontSize: 12 },
 
   // ===== LIST CARD =====
-  group: { marginBottom: 12, paddingHorizontal: 16 },
+  group: { marginBottom: 10, paddingHorizontal: 16 },
   groupHeader: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     paddingVertical: 14,
     paddingHorizontal: 16,
-    borderRadius: 14,
+    borderRadius: 16,
     backgroundColor: UI.cardBg,
     borderWidth: 1,
     borderColor: "rgba(255,255,255,0.18)",
@@ -144,7 +144,7 @@ collapsingHeader: {
     elevation: 6,
     minHeight: 72,
   },
-  groupTitle: { fontSize: 16, fontWeight: "500", color: UI.text },
+  groupTitle: { fontSize: 16, fontWeight: "600", color: UI.text },
   cardMeta: {
     marginTop: 4,
     color: UI.sub,
@@ -190,7 +190,7 @@ collapsingHeader: {
     marginTop: 8,
     marginBottom: 12,
     padding: 12,
-    borderRadius: 14,
+    borderRadius: 16,
     backgroundColor: "#0F172A",
     borderWidth: 1,
     borderColor: UI.border,
@@ -216,7 +216,7 @@ collapsingHeader: {
     elevation: 6,
   },
   mobMain: { flex: 1, minWidth: 0 },
-  mobTitle: { fontSize: 16, fontWeight: "500", color: UI.text },
+  mobTitle: { fontSize: 16, fontWeight: "600", color: UI.text },
   mobMeta: { marginTop: 4, fontSize: 13, fontWeight: "600", color: UI.sub },
 
   kindPill: {

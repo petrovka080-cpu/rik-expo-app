@@ -79,10 +79,10 @@ export function RoleCard({
 
 const s = StyleSheet.create({
   card: {
-    borderRadius: 14,
+    borderRadius: 16,
     paddingVertical: 14,
     paddingHorizontal: 16,
-    marginBottom: 12,
+    marginBottom: 10,
     backgroundColor: "#101826",
     borderWidth: 1,
     borderColor: "rgba(255,255,255,0.14)",
@@ -97,13 +97,13 @@ const s = StyleSheet.create({
   },
   title: {
     fontSize: 16,
-    fontWeight: "500",
+    fontWeight: "600",
     color: "#F8FAFC",
     lineHeight: 20,
   },
   subtitle: {
     fontSize: 14,
-    fontWeight: "500",
+    fontWeight: "600",
     color: "#E2E8F0",
     opacity: 0.8,
     marginTop: 2,
@@ -111,7 +111,7 @@ const s = StyleSheet.create({
   },
   meta: {
     fontSize: 13,
-    fontWeight: "500",
+    fontWeight: "600",
     color: "#9CA3AF",
     opacity: 0.7,
     marginTop: 4,

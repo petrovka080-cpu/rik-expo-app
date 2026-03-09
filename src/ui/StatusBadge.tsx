@@ -26,29 +26,29 @@ type ToneColors = {
 
 const TONE_COLORS: Record<StatusBadgeTone, ToneColors> = {
   neutral: {
-    bg: "rgba(255,255,255,0.08)",
-    border: "rgba(255,255,255,0.16)",
-    text: "#E5E7EB",
+    bg: "#EEF2F7",
+    border: "#D7DEE8",
+    text: "#475467",
   },
   success: {
-    bg: "rgba(34,197,94,0.15)",
-    border: "rgba(34,197,94,0.35)",
-    text: "#86EFAC",
+    bg: "#E7F7EF",
+    border: "#B8E7CC",
+    text: "#1A7F55",
   },
   warning: {
-    bg: "rgba(245,158,11,0.15)",
-    border: "rgba(245,158,11,0.35)",
-    text: "#FCD34D",
+    bg: "#FFF3E0",
+    border: "#FFD9A8",
+    text: "#B26A00",
   },
   danger: {
-    bg: "rgba(239,68,68,0.15)",
-    border: "rgba(239,68,68,0.35)",
-    text: "#FCA5A5",
+    bg: "#FDEAEA",
+    border: "#F7C4C0",
+    text: "#B42318",
   },
   info: {
-    bg: "rgba(59,130,246,0.15)",
-    border: "rgba(59,130,246,0.35)",
-    text: "#93C5FD",
+    bg: "#EAF2FF",
+    border: "#C9DBFF",
+    text: "#1D4ED8",
   },
 };
 
@@ -101,25 +101,25 @@ const styles = StyleSheet.create({
   },
   regular: {
     paddingHorizontal: 10,
-    paddingVertical: 5,
-    minHeight: 24,
+    paddingVertical: 4,
+    minHeight: 22,
   },
   compact: {
-    paddingHorizontal: 8,
+    paddingHorizontal: 10,
     paddingVertical: 3,
     minHeight: 20,
   },
   text: {
-    fontWeight: "800",
-    letterSpacing: 0.2,
+    fontWeight: "600",
+    letterSpacing: 0,
   },
   textRegular: {
-    fontSize: 11,
-    lineHeight: 13,
+    fontSize: 12,
+    lineHeight: 14,
   },
   textCompact: {
-    fontSize: 10,
-    lineHeight: 12,
+    fontSize: 12,
+    lineHeight: 14,
   },
 });
 

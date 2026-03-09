@@ -53,9 +53,9 @@ export const buyerStyles = StyleSheet.create({
   tabBadgeTextActive: { color: '#FFF' },
 
   group: {
-    borderRadius: 22,
+    borderRadius: 16,
     backgroundColor: 'rgba(255,255,255,0.03)',
-    marginBottom: 8,
+    marginBottom: 10,
     overflow: 'hidden',
   },
   groupHeader: {
@@ -66,26 +66,27 @@ export const buyerStyles = StyleSheet.create({
     paddingHorizontal: 16,
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.06)',
-    borderRadius: 22,
+    borderRadius: 16,
   },
-  groupTitle: { fontSize: 16, fontWeight: '900', color: UI.text },
-  groupMeta: { fontSize: 13, fontWeight: '700', color: UI.sub, marginTop: 2 },
+  groupTitle: { fontSize: 16, fontWeight: '600', color: UI.text },
+  groupMeta: { fontSize: 13, fontWeight: '600', color: UI.sub, marginTop: 4 },
 
   card: {
-    padding: 14,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
     borderWidth: 1.5,
     borderColor: 'rgba(255,255,255,0.08)',
-    borderRadius: 20,
+    borderRadius: 16,
     backgroundColor: UI.cardBg,
-    marginBottom: 8,
+    marginBottom: 10,
   },
   cardPicked: {
     borderColor: UI.accent,
     backgroundColor: 'rgba(34,197,94,0.04)',
   },
 
-  cardTitle: { fontSize: 16, fontWeight: '900', color: UI.text },
-  cardMeta: { marginTop: 4, color: UI.sub, fontSize: 13, fontWeight: '700' },
+  cardTitle: { fontSize: 16, fontWeight: '600', color: UI.text },
+  cardMeta: { marginTop: 4, color: UI.sub, fontSize: 13, fontWeight: '600' },
 
   smallBtn: {
     borderWidth: 1.5,
@@ -114,11 +115,11 @@ export const buyerStyles = StyleSheet.create({
 
   proposalCard: {
     padding: 16,
-    borderRadius: 24,
+    borderRadius: 16,
     backgroundColor: 'rgba(255,255,255,0.03)',
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.06)',
-    marginBottom: 8,
+    marginBottom: 10,
   },
 
   dirSheet: {
