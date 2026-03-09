@@ -127,12 +127,27 @@ const REPORTS_TIMING = typeof __DEV__ !== "undefined" ? __DEV__ : false;
 const DISCIPLINE_ROWS_CACHE_TTL_MS = 2 * 60 * 1000;
 const DIRECTOR_REPORTS_CANONICAL_ENABLED =
   String((globalThis as any)?.process?.env?.EXPO_PUBLIC_DIRECTOR_REPORTS_CANONICAL ?? "1").trim() !== "0";
-type CanonicalRpcStatus = "unknown" | "available" | "missing";
-type CanonicalRpcKind = "materials" | "works";
-const canonicalRpcStatus: Record<CanonicalRpcKind, CanonicalRpcStatus> = {
-  materials: "unknown",
-  works: "unknown",
+const DIRECTOR_REPORTS_CANONICAL_MATERIALS_ENABLED =
+  String((globalThis as any)?.process?.env?.EXPO_PUBLIC_DIRECTOR_REPORTS_CANONICAL_MATERIALS ?? "").trim() !== "0";
+const DIRECTOR_REPORTS_CANONICAL_WORKS_ENABLED =
+  String((globalThis as any)?.process?.env?.EXPO_PUBLIC_DIRECTOR_REPORTS_CANONICAL_WORKS ?? "").trim() !== "0";
+const DIRECTOR_REPORTS_CANONICAL_SUMMARY_ENABLED =
+  String((globalThis as any)?.process?.env?.EXPO_PUBLIC_DIRECTOR_REPORTS_CANONICAL_SUMMARY ?? "").trim() !== "0";
+const DIRECTOR_REPORTS_CANONICAL_DIVERGENCE_LOG =
+  String((globalThis as any)?.process?.env?.EXPO_PUBLIC_DIRECTOR_REPORTS_CANONICAL_DIVERGENCE_LOG ?? "0").trim() === "1";
+const CANONICAL_FAILED_COOLDOWN_MS = 10 * 60 * 1000;
+const DIVERGENCE_LOG_TTL_MS = 10 * 60 * 1000;
+type CanonicalRpcStatus = "unknown" | "available" | "missing" | "failed";
+type CanonicalRpcKind = "materials" | "works" | "summary";
+type CanonicalRpcMeta = { status: CanonicalRpcStatus; updatedAt: number };
+const canonicalRpcMeta: Record<CanonicalRpcKind, CanonicalRpcMeta> = {
+  materials: { status: "unknown", updatedAt: 0 },
+  works: { status: "unknown", updatedAt: 0 },
+  summary: { status: "unknown", updatedAt: 0 },
 };
+const legacyMaterialsSnapshotCache = new Map<string, { ts: number; kpi: { items_total: number; items_without_request: number }; rows_count: number }>();
+const legacyWorksSnapshotCache = new Map<string, { ts: number; summary: { total_positions: number; req_positions: number; free_positions: number; issue_cost_total: number; purchase_cost_total: number; unpriced_issue_pct: number }; works_count: number }>();
+const divergenceLogSeen = new Map<string, number>();
 
 const isMissingCanonicalRpcError = (error: any, fnName: string): boolean => {
   const message = String(error?.message ?? error ?? "").toLowerCase();
@@ -149,11 +164,25 @@ const isMissingCanonicalRpcError = (error: any, fnName: string): boolean => {
 };
 
 const markCanonicalRpcStatus = (kind: CanonicalRpcKind, status: CanonicalRpcStatus) => {
-  canonicalRpcStatus[kind] = status;
+  canonicalRpcMeta[kind] = { status, updatedAt: Date.now() };
+};
+
+const isCanonicalFeatureEnabled = (kind: CanonicalRpcKind): boolean => {
+  if (!DIRECTOR_REPORTS_CANONICAL_ENABLED) return false;
+  if (kind === "materials") return DIRECTOR_REPORTS_CANONICAL_MATERIALS_ENABLED;
+  if (kind === "works") return DIRECTOR_REPORTS_CANONICAL_WORKS_ENABLED;
+  if (kind === "summary") return DIRECTOR_REPORTS_CANONICAL_SUMMARY_ENABLED;
+  return false;
 };
 
 const canUseCanonicalRpc = (kind: CanonicalRpcKind): boolean =>
-  DIRECTOR_REPORTS_CANONICAL_ENABLED && canonicalRpcStatus[kind] !== "missing";
+  (() => {
+    if (!isCanonicalFeatureEnabled(kind)) return false;
+    const meta = canonicalRpcMeta[kind];
+    if (meta.status === "missing") return false;
+    if (meta.status === "failed" && Date.now() - meta.updatedAt < CANONICAL_FAILED_COOLDOWN_MS) return false;
+    return true;
+  })();
 
 const toNum = (v: any): number => {
   const n = Number(v ?? 0);
@@ -1812,6 +1841,100 @@ const unwrapRpcPayload = (data: any): any => {
   return data ?? null;
 };
 
+const canonicalKey = (mode: "materials" | "works", from: string, to: string, objectName: string | null) =>
+  `${mode}|${from}|${to}|${String(objectName ?? "")}`;
+
+const maybeLogDivergence = (key: string, details: Record<string, any>) => {
+  if (!DIRECTOR_REPORTS_CANONICAL_DIVERGENCE_LOG) return;
+  const seenAt = divergenceLogSeen.get(key) ?? 0;
+  if (Date.now() - seenAt < DIVERGENCE_LOG_TTL_MS) return;
+  divergenceLogSeen.set(key, Date.now());
+  console.warn("[director_reports] canonical_divergence", { key, ...details });
+};
+
+const adaptCanonicalMaterialsPayload = (payloadRaw: any): DirectorReportPayload | null => {
+  const p = payloadRaw && typeof payloadRaw === "object" ? payloadRaw : null;
+  if (!p) return null;
+  const rows = Array.isArray((p as any).rows) ? (p as any).rows : [];
+  const kpi = (p as any).kpi && typeof (p as any).kpi === "object" ? (p as any).kpi : {};
+  const report_options =
+    (p as any).report_options && typeof (p as any).report_options === "object"
+      ? (p as any).report_options
+      : { objects: [], objectIdByName: {} };
+  return {
+    ...p,
+    rows,
+    kpi: {
+      issues_total: toNum((kpi as any).issues_total),
+      issues_without_object: toNum((kpi as any).issues_without_object),
+      items_total: toNum((kpi as any).items_total),
+      items_without_request: toNum((kpi as any).items_without_request),
+    },
+    report_options: {
+      objects: Array.isArray((report_options as any).objects) ? (report_options as any).objects : [],
+      objectIdByName:
+        (report_options as any).objectIdByName && typeof (report_options as any).objectIdByName === "object"
+          ? (report_options as any).objectIdByName
+          : {},
+    },
+  } as DirectorReportPayload;
+};
+
+const adaptCanonicalWorksPayload = (payloadRaw: any): DirectorDisciplinePayload | null => {
+  const p = payloadRaw && typeof payloadRaw === "object" ? payloadRaw : null;
+  if (!p) return null;
+  const summary = (p as any).summary && typeof (p as any).summary === "object" ? (p as any).summary : null;
+  const works = Array.isArray((p as any).works) ? (p as any).works : null;
+  if (!summary || !works) return null;
+  return p as DirectorDisciplinePayload;
+};
+
+const adaptCanonicalSummaryPayload = (payloadRaw: any): {
+  issue_cost_total: number;
+  purchase_cost_total: number;
+  unevaluated_ratio: number;
+  base_ready: boolean;
+} | null => {
+  const p = payloadRaw && typeof payloadRaw === "object" ? payloadRaw : null;
+  if (!p) return null;
+  return {
+    issue_cost_total: toNum((p as any).issue_cost_total),
+    purchase_cost_total: toNum((p as any).purchase_cost_total),
+    unevaluated_ratio: toNum((p as any).unevaluated_ratio),
+    base_ready: !!(p as any).base_ready,
+  };
+};
+
+const materialSnapshotFromPayload = (payload: DirectorReportPayload | null | undefined) => {
+  const kpi: any = (payload as any)?.kpi ?? {};
+  const rowsCount = Array.isArray((payload as any)?.rows) ? (payload as any).rows.length : 0;
+  return {
+    kpi: {
+      items_total: toNum(kpi?.items_total),
+      items_without_request: toNum(kpi?.items_without_request),
+    },
+    rows_count: rowsCount,
+  };
+};
+
+const worksSnapshotFromPayload = (payload: DirectorDisciplinePayload | null | undefined) => {
+  const s: any = (payload as any)?.summary ?? {};
+  const works = Array.isArray((payload as any)?.works) ? (payload as any).works : [];
+  const reqPositions = works.reduce((acc: number, w: any) => acc + toNum(w?.req_positions), 0);
+  const freePositions = works.reduce((acc: number, w: any) => acc + toNum(w?.free_positions), 0);
+  return {
+    summary: {
+      total_positions: toNum(s?.total_positions),
+      req_positions: reqPositions,
+      free_positions: freePositions,
+      issue_cost_total: toNum(s?.issue_cost_total),
+      purchase_cost_total: toNum(s?.purchase_cost_total),
+      unpriced_issue_pct: toNum(s?.unpriced_issue_pct),
+    },
+    works_count: works.length,
+  };
+};
+
 async function fetchDirectorReportCanonicalMaterials(p: {
   from: string;
   to: string;
@@ -1824,8 +1947,7 @@ async function fetchDirectorReportCanonicalMaterials(p: {
   } as any);
   if (error) throw error;
   const payload = unwrapRpcPayload(data);
-  if (!payload || typeof payload !== "object") return null;
-  return payload as DirectorReportPayload;
+  return adaptCanonicalMaterialsPayload(payload);
 }
 
 async function fetchDirectorReportCanonicalWorks(p: {
@@ -1842,8 +1964,27 @@ async function fetchDirectorReportCanonicalWorks(p: {
   } as any);
   if (error) throw error;
   const payload = unwrapRpcPayload(data);
-  if (!payload || typeof payload !== "object") return null;
-  return payload as DirectorDisciplinePayload;
+  return adaptCanonicalWorksPayload(payload);
+}
+
+async function fetchDirectorReportCanonicalSummary(p: {
+  from: string;
+  to: string;
+  objectName: string | null;
+}): Promise<{
+  issue_cost_total: number;
+  purchase_cost_total: number;
+  unevaluated_ratio: number;
+  base_ready: boolean;
+} | null> {
+  const { data, error } = await supabase.rpc("director_report_fetch_summary_v1" as any, {
+    p_from: p.from || "1970-01-01",
+    p_to: p.to || "2099-12-31",
+    p_object_name: p.objectName ?? null,
+  } as any);
+  if (error) throw error;
+  const payload = unwrapRpcPayload(data);
+  return adaptCanonicalSummaryPayload(payload);
 }
 
 async function fetchPriceByRequestItemId(requestItemIds: string[]): Promise<Map<string, number>> {
@@ -2226,6 +2367,7 @@ export async function fetchDirectorWarehouseReport(p: {
   const pFrom = rpcDate(p.from, "1970-01-01");
   const pTo = rpcDate(p.to, "2099-12-31");
   const selectedObjectId = objectName == null ? null : (p.objectIdByName[objectName] ?? null);
+  const cKey = canonicalKey("materials", pFrom, pTo, objectName);
 
   if (canUseCanonicalRpc("materials")) {
     const tCanonical = nowMs();
@@ -2237,12 +2379,29 @@ export async function fetchDirectorWarehouseReport(p: {
       });
       if (canonical) {
         markCanonicalRpcStatus("materials", "available");
+        const legacySnap = legacyMaterialsSnapshotCache.get(cKey);
+        if (legacySnap && Date.now() - legacySnap.ts <= DIVERGENCE_LOG_TTL_MS) {
+          const canSnap = materialSnapshotFromPayload(canonical);
+          const mismatch =
+            canSnap.rows_count !== legacySnap.rows_count ||
+            canSnap.kpi.items_total !== legacySnap.kpi.items_total ||
+            canSnap.kpi.items_without_request !== legacySnap.kpi.items_without_request;
+          if (mismatch) {
+            maybeLogDivergence(cKey, {
+              mode: "materials",
+              canonical: canSnap,
+              legacy: legacySnap,
+            });
+          }
+        }
         logTiming("report.canonical_materials", tCanonical);
         return canonical;
       }
     } catch (e: any) {
       if (isMissingCanonicalRpcError(e, "director_report_fetch_materials_v1")) {
         markCanonicalRpcStatus("materials", "missing");
+      } else {
+        markCanonicalRpcStatus("materials", "failed");
       }
       if (REPORTS_TIMING) {
         console.info(`[director_reports] report.canonical_materials.failed: ${e?.message ?? e}`);
@@ -2262,6 +2421,7 @@ export async function fetchDirectorWarehouseReport(p: {
         objectId: selectedObjectId,
         objectName,
       });
+      legacyMaterialsSnapshotCache.set(cKey, { ts: Date.now(), ...materialSnapshotFromPayload(fast) });
       logTiming("report.fast_rpc", t0);
       return fast;
     } catch {
@@ -2303,15 +2463,18 @@ export async function fetchDirectorWarehouseReport(p: {
       rows,
     });
     payload.discipline = buildDisciplinePayloadFromFactRows(rows);
+    legacyMaterialsSnapshotCache.set(cKey, { ts: Date.now(), ...materialSnapshotFromPayload(payload) });
     return payload;
   }
 
-  return fetchViaLegacyRpc({
+  const fallback = await fetchViaLegacyRpc({
     from: pFrom,
     to: pTo,
     objectId: selectedObjectId,
     objectName,
   });
+  legacyMaterialsSnapshotCache.set(cKey, { ts: Date.now(), ...materialSnapshotFromPayload(fallback) });
+  return fallback;
 }
 
 export async function fetchDirectorWarehouseReportDiscipline(p: {
@@ -2323,24 +2486,72 @@ export async function fetchDirectorWarehouseReportDiscipline(p: {
   const tTotal = nowMs();
   const pFrom = rpcDate(p.from, "1970-01-01");
   const pTo = rpcDate(p.to, "2099-12-31");
+  const cKey = canonicalKey("works", pFrom, pTo, p.objectName ?? null);
 
   if (canUseCanonicalRpc("works")) {
     const tCanonical = nowMs();
     try {
-      const canonical = await fetchDirectorReportCanonicalWorks({
+      let canonical = await fetchDirectorReportCanonicalWorks({
         from: pFrom,
         to: pTo,
         objectName: p.objectName ?? null,
         includeCosts: !opts?.skipPrices,
       });
       if (canonical) {
+        if (!opts?.skipPrices && canUseCanonicalRpc("summary")) {
+          try {
+            const sm = await fetchDirectorReportCanonicalSummary({
+              from: pFrom,
+              to: pTo,
+              objectName: p.objectName ?? null,
+            });
+            if (sm?.base_ready) {
+              canonical = {
+                ...canonical,
+                summary: {
+                  ...canonical.summary,
+                  issue_cost_total: sm.issue_cost_total,
+                  purchase_cost_total: sm.purchase_cost_total,
+                  unpriced_issue_pct: toNum(sm.unevaluated_ratio) * 100,
+                },
+              };
+              markCanonicalRpcStatus("summary", "available");
+            }
+          } catch (e: any) {
+            if (isMissingCanonicalRpcError(e, "director_report_fetch_summary_v1")) {
+              markCanonicalRpcStatus("summary", "missing");
+            } else {
+              markCanonicalRpcStatus("summary", "failed");
+            }
+          }
+        }
         markCanonicalRpcStatus("works", "available");
+        const legacySnap = legacyWorksSnapshotCache.get(cKey);
+        if (legacySnap && Date.now() - legacySnap.ts <= DIVERGENCE_LOG_TTL_MS) {
+          const canSnap = worksSnapshotFromPayload(canonical);
+          const mismatch =
+            canSnap.summary.total_positions !== legacySnap.summary.total_positions ||
+            canSnap.summary.req_positions !== legacySnap.summary.req_positions ||
+            canSnap.summary.free_positions !== legacySnap.summary.free_positions ||
+            canSnap.summary.issue_cost_total !== legacySnap.summary.issue_cost_total ||
+            canSnap.summary.purchase_cost_total !== legacySnap.summary.purchase_cost_total ||
+            canSnap.works_count !== legacySnap.works_count;
+          if (mismatch) {
+            maybeLogDivergence(cKey, {
+              mode: "works",
+              canonical: canSnap,
+              legacy: legacySnap,
+            });
+          }
+        }
         logTiming("discipline.canonical_works", tCanonical);
         return canonical;
       }
     } catch (e: any) {
       if (isMissingCanonicalRpcError(e, "director_report_fetch_works_v1")) {
         markCanonicalRpcStatus("works", "missing");
+      } else {
+        markCanonicalRpcStatus("works", "failed");
       }
       if (REPORTS_TIMING) {
         console.info(`[director_reports] discipline.canonical_works.failed: ${e?.message ?? e}`);
@@ -2426,6 +2637,7 @@ export async function fetchDirectorWarehouseReportDiscipline(p: {
       price_by_code: new Map(),
       price_by_request_item: new Map(),
     });
+    legacyWorksSnapshotCache.set(cKey, { ts: Date.now(), ...worksSnapshotFromPayload(payload) });
     logTiming("discipline.total", tTotal);
     return payload;
   }
@@ -2488,6 +2700,7 @@ export async function fetchDirectorWarehouseReportDiscipline(p: {
     price_by_code: priceByCode,
     price_by_request_item: priceByRequestItem,
   });
+  legacyWorksSnapshotCache.set(cKey, { ts: Date.now(), ...worksSnapshotFromPayload(payload) });
   logTiming("discipline.total", tTotal);
   return payload;
 }
