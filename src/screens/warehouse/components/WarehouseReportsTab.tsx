@@ -341,7 +341,7 @@ export default function WarehouseReportsTab(props: Props) {
             const dayCount = g.items.length;
 
             return (
-              <Pressable key={g.day} onPress={() => setActiveDay(g)} style={{ marginBottom: 14 }}>
+              <Pressable key={g.day} onPress={() => setActiveDay(g)} style={{ marginBottom: 12 }}>
                 <View style={s.mobCard}>
                   <View style={s.mobMain}>
                     <Text style={s.mobTitle}>{g.day}</Text>
