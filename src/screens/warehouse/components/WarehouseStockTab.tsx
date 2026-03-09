@@ -8,6 +8,7 @@ import {
   type NativeScrollEvent,
   type NativeSyntheticEvent,
 } from "react-native";
+import SectionBlock from "../../../ui/SectionBlock";
 import type { StockRow } from "../warehouse.types";
 
 const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
@@ -35,12 +36,12 @@ export default function WarehouseStockTab({
 }: Props) {
   if (stockSupported === false) {
     return (
-      <View style={{ padding: 12 }}>
+      <SectionBlock style={{ padding: 12, marginBottom: 0 }} contentStyle={{ gap: 0 }}>
         <Text style={{ color: "#475569" }}>
           Раздел «Склад факт» требует вью <Text style={{ fontWeight: "700" }}>v_warehouse_fact</Text> или
           RPC с фактическими остатками.
         </Text>
-      </View>
+      </SectionBlock>
     );
   }
 
