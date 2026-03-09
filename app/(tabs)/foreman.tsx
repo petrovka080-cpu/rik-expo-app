@@ -21,6 +21,7 @@ import ForemanDraftModal from "../../src/screens/foreman/ForemanDraftModal";
 import ForemanEditorSection from "../../src/screens/foreman/ForemanEditorSection";
 import ForemanSubcontractTab from "../../src/screens/foreman/ForemanSubcontractTab";
 import WarehouseFioModal from "../../src/screens/warehouse/components/WarehouseFioModal";
+import RoleScreenLayout from "../../src/components/layout/RoleScreenLayout";
 import { useForemanDicts } from "../../src/screens/foreman/useForemanDicts";
 import { resolveForemanContext } from "../../src/screens/foreman/foreman.context.resolver";
 import { adaptFormContext } from "../../src/screens/foreman/foreman.locator.adapter";
@@ -618,7 +619,7 @@ export default function ForemanScreen() {
       style={{ flex: 1 }}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
-      <View style={[s.container, { backgroundColor: UI.bg }]}>
+      <RoleScreenLayout style={[s.container, { backgroundColor: UI.bg }]}>
         <View pointerEvents="none" style={s.bgGlow} />
         <Animated.View
           style={[
@@ -822,7 +823,7 @@ export default function ForemanScreen() {
             />
           </>
         ) : null}
-      </View>
+      </RoleScreenLayout>
     </KeyboardAvoidingView>
   );
 }
