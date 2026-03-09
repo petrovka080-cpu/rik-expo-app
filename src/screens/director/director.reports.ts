@@ -115,7 +115,7 @@ export function useDirectorReports({ fmtDateOnly }: Deps) {
       : "Весь период";
   }, [repFrom, repTo, fmtDateOnly]);
 
-  const fetchReport = useCallback(async (objectNameArg?: string | null) => {
+  const fetchReport = useCallback(async (objectNameArg?: string | null, opts?: { background?: boolean }) => {
     const from = repFrom ? String(repFrom).slice(0, 10) : "";
     const to = repTo ? String(repTo).slice(0, 10) : "";
     const objectName = objectNameArg === undefined ? repObjectName : objectNameArg;
@@ -133,7 +133,7 @@ export function useDirectorReports({ fmtDateOnly }: Deps) {
 
     const reqId = ++reportReqSeqRef.current;
     const task = (async () => {
-      setRepLoading(true);
+      if (!opts?.background) setRepLoading(true);
       try {
         const payload = await fetchDirectorWarehouseReport({
           from,
@@ -170,11 +170,13 @@ export function useDirectorReports({ fmtDateOnly }: Deps) {
       } catch (e: any) {
         if (reqId !== reportReqSeqRef.current) return;
         console.warn("[director] fetchReport:", e?.message ?? e);
-        setRepData(null);
-        Alert.alert("Отчеты", e?.message ?? "Не удалось получить отчет");
+        if (!opts?.background) {
+          setRepData(null);
+          Alert.alert("Отчеты", e?.message ?? "Не удалось получить отчет");
+        }
       } finally {
         inFlightReportRef.current.delete(key);
-        if (reqId === reportReqSeqRef.current) setRepLoading(false);
+        if (!opts?.background && reqId === reportReqSeqRef.current) setRepLoading(false);
       }
     })();
     inFlightReportRef.current.set(key, task);
@@ -284,11 +286,20 @@ export function useDirectorReports({ fmtDateOnly }: Deps) {
     await task;
   }, [repFrom, repTo, repObjectName, repOptObjectIdByName, disciplineKey, getCached, setCached]);
 
+  const syncScopeBothModes = useCallback(async (objectName: string | null) => {
+    if (repTab === "discipline") {
+      await fetchDiscipline(objectName);
+      void fetchReport(objectName, { background: true });
+      return;
+    }
+    await fetchReport(objectName);
+    void fetchDiscipline(objectName, { background: true });
+  }, [fetchDiscipline, fetchReport, repTab]);
+
   const applyObjectFilter = useCallback(async (obj: string | null) => {
     setRepObjectName(obj);
-    if (repTab === "discipline") await fetchDiscipline(obj);
-    else await fetchReport(obj);
-  }, [fetchDiscipline, fetchReport, repTab]);
+    await syncScopeBothModes(obj);
+  }, [syncScopeBothModes]);
 
   const fetchReportOptions = useCallback(async () => {
     const from = repFrom ? String(repFrom).slice(0, 10) : "";
@@ -371,14 +382,15 @@ export function useDirectorReports({ fmtDateOnly }: Deps) {
         objectIdByName: opt.objectIdByName ?? {},
       });
       setRepData((payload ?? null) as any);
-      if (repTab === "discipline") {
-        const discipline = await fetchDirectorWarehouseReportDiscipline({
-          from,
-          to,
-          objectName: null,
-          objectIdByName: opt.objectIdByName ?? {},
-        });
-        setRepDiscipline((discipline ?? null) as any);
+      const discipline = await fetchDirectorWarehouseReportDiscipline({
+        from,
+        to,
+        objectName: null,
+        objectIdByName: opt.objectIdByName ?? {},
+      }, { skipPrices: repTab !== "discipline" });
+      setRepDiscipline((discipline ?? null) as any);
+      if (repTab !== "discipline") {
+        void fetchDiscipline(null, { background: true });
       }
     } catch (e: any) {
       console.warn("[director] applyReportPeriod:", e?.message ?? e);
@@ -390,7 +402,7 @@ export function useDirectorReports({ fmtDateOnly }: Deps) {
       setRepOptLoading(false);
       setRepLoading(false);
     }
-  }, [getCached, optionsKey, reportKey, repTab]);
+  }, [getCached, optionsKey, reportKey, repTab, fetchDiscipline]);
 
   const clearReportPeriod = useCallback(() => {
     const to = isoDate(new Date());
@@ -424,16 +436,17 @@ export function useDirectorReports({ fmtDateOnly }: Deps) {
       const normalized = (payload ?? null) as any;
       setCached(reportCacheRef.current, reportKey(from, to, currentObject, optNorm.objectIdByName), normalized);
       setRepData(normalized);
-      if (repTab === "discipline") {
-        const discipline = await fetchDirectorWarehouseReportDiscipline({
-          from,
-          to,
-          objectName: currentObject,
-          objectIdByName: optNorm.objectIdByName,
-        });
-        const disNorm = (discipline ?? null) as RepDisciplinePayload | null;
-        setCached(disciplineCacheRef.current, disciplineKey(from, to, currentObject, optNorm.objectIdByName), disNorm);
-        setRepDiscipline(disNorm);
+      const discipline = await fetchDirectorWarehouseReportDiscipline({
+        from,
+        to,
+        objectName: currentObject,
+        objectIdByName: optNorm.objectIdByName,
+      }, { skipPrices: repTab !== "discipline" });
+      const disNorm = (discipline ?? null) as RepDisciplinePayload | null;
+      setCached(disciplineCacheRef.current, disciplineKey(from, to, currentObject, optNorm.objectIdByName), disNorm);
+      setRepDiscipline(disNorm);
+      if (repTab !== "discipline") {
+        void fetchDiscipline(currentObject, { background: true });
       }
     } catch (e: any) {
       console.warn("[director] refreshReports:", e?.message ?? e);
@@ -443,7 +456,7 @@ export function useDirectorReports({ fmtDateOnly }: Deps) {
       setRepOptLoading(false);
       setRepLoading(false);
     }
-  }, [repFrom, repTo, repObjectName, optionsKey, reportKey, setCached, repTab, disciplineKey]);
+  }, [repFrom, repTo, repObjectName, optionsKey, reportKey, setCached, repTab, disciplineKey, fetchDiscipline]);
 
   const setReportTab = useCallback((t: RepTab) => {
     const switchStart = nowMs();
@@ -463,8 +476,10 @@ export function useDirectorReports({ fmtDateOnly }: Deps) {
         void fetchDiscipline();
       }
       logTiming("tab_switch_to_works", switchStart);
+      return;
     }
-  }, [disciplineKey, fetchDiscipline, repData, repDiscipline, repFrom, repObjectName, repOptObjectIdByName, repTo]);
+    void fetchReport(undefined, { background: true });
+  }, [disciplineKey, fetchDiscipline, repData, repDiscipline, repFrom, repObjectName, repOptObjectIdByName, repTo, fetchReport]);
 
   const openReports = useCallback(() => {
     const startedAt = nowMs();
