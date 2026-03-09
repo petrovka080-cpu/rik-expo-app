@@ -69,6 +69,7 @@ import { useAccountantHeaderAnimation } from "../../src/screens/accountant/useAc
 import { useAccountantInvoiceForm } from "../../src/screens/accountant/useAccountantInvoiceForm";
 import { useAccountantHistoryFlow } from "../../src/screens/accountant/useAccountantHistoryFlow";
 import { AccountantHeader } from "../../src/screens/accountant/components/AccountantHeader";
+import RoleScreenLayout from "../../src/components/layout/RoleScreenLayout";
 
 const TAB_PAY: Tab = TABS[0];
 const TAB_PART: Tab = TABS[1];
@@ -376,6 +377,7 @@ export default function AccountantScreen() {
 
   return (
     <SafeView style={{ flex: 1, backgroundColor: UI.bg }}>
+      <RoleScreenLayout>
       <AccountantHeader
         headerHeight={headerHeight}
         headerShadow={headerShadow}
@@ -540,6 +542,7 @@ export default function AccountantScreen() {
 
       <NotificationsModal visible={bellOpen} notifs={notifs} onMarkAllRead={markAllRead} onClose={() => setBellOpen(false)} />
       <WarehouseFioModal visible={isFioConfirmVisible} initialFio={accountantFio} onConfirm={handleFioConfirm} loading={isFioLoading} history={accountantHistory} />
+      </RoleScreenLayout>
     </SafeView >
   );
 }
