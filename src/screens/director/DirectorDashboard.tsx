@@ -19,7 +19,7 @@ import DirectorSubcontractTab from "./DirectorSubcontractTab";
 type Group = { request_id: number | string; items: any[] };
 type ProposalHead = { id: string; submitted_at?: string | null; pretty?: string | null };
 
-// finance (РѕСЃС‚Р°РІР»СЏРµРј вЂњanyвЂќ, С‡С‚РѕР±С‹ РЅРµ С‚Р°С‰РёС‚СЊ 10 С‚РёРїРѕРІ)
+// finance (оставляем "any", чтобы не тащить 10 типов)
 type FinanceRow = any;
 
 type FinPage = "home" | "debt" | "spend" | "kind" | "supplier";
@@ -91,10 +91,10 @@ export default function DirectorDashboard(p: Props) {
 
   const periodShort =
     p.finFrom || p.finTo
-      ? `${p.finFrom ? p.fmtDateOnly(p.finFrom) : "вЂ”"} в†’ ${p.finTo ? p.fmtDateOnly(p.finTo) : "вЂ”"}`
-      : "Р’РµСЃСЊ РїРµСЂРёРѕРґ";
+      ? `${p.finFrom ? p.fmtDateOnly(p.finFrom) : "—"} → ${p.finTo ? p.fmtDateOnly(p.finTo) : "—"}`
+      : "Весь период";
 
-  const headerTitle = "РљРѕРЅС‚СЂРѕР»СЊ";
+  const headerTitle = "Контроль";
   const headerPadTop = Platform.OS === "web" ? 10 : 0;
   const contentTopPad = Math.max(p.HEADER_MAX + 16 + headerPadTop, p.HEADER_MIN + 16 + headerPadTop);
 
@@ -125,7 +125,7 @@ export default function DirectorDashboard(p: Props) {
       {/* TOP tabs */}
       <FlatList
         ref={topTabsRef}
-        data={["Р—Р°СЏРІРєРё", "РџРѕРґСЂСЏРґС‹", "Р¤РёРЅР°РЅСЃС‹", "РЎРєР»Р°Рґ", "РћС‚С‡С‘С‚С‹"]}
+        data={["Заявки", "Подряды", "Финансы", "Склад", "Отчёты"]}
         keyExtractor={(t) => t}
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -139,7 +139,7 @@ export default function DirectorDashboard(p: Props) {
               onLayout={(e) => onTopTabLayout(t, e)}
               onPress={() => {
                 p.setDirTab(t as DirTopTab);
-                if (t !== "Р—Р°СЏРІРєРё") p.closeSheet();
+                if (t !== "Заявки") p.closeSheet();
               }}
               style={[s.tab, active && s.tabActive, { marginRight: 8 }]}
             >
@@ -158,7 +158,7 @@ export default function DirectorDashboard(p: Props) {
       />
 
       {/* SUB tabs */}
-      {String(p.dirTab) === "Р—Р°СЏРІРєРё" ? (
+      {String(p.dirTab) === "Заявки" ? (
         <View style={{ paddingTop: 6, paddingBottom: 2, minHeight: 44, justifyContent: "center" }}>
           <View style={{ flexDirection: "row", alignItems: "center" }}>
             {(["foreman", "buyer"] as Tab[]).map((t) => {
@@ -170,7 +170,7 @@ export default function DirectorDashboard(p: Props) {
                   style={[s.tab, active && s.tabActive, { marginRight: 8 }]}
                 >
                   <Text numberOfLines={1} style={{ color: active ? UI.text : UI.sub, fontWeight: "600" }}>
-                    {t === "foreman" ? "РџСЂРѕСЂР°Р±" : "РЎРЅР°Р±Р¶РµРЅРµС†"}
+                    {t === "foreman" ? "Прораб" : "Снабженец"}
                   </Text>
                 </Pressable>
               );
@@ -180,37 +180,37 @@ export default function DirectorDashboard(p: Props) {
       ) : null}
 
       {/* KPI */}
-      {String(p.dirTab) === "Р—Р°СЏРІРєРё" ? (
+      {String(p.dirTab) === "Заявки" ? (
         <Animated.View style={{ opacity: p.subOpacity }}>
           {p.tab === "foreman" ? (
             <View style={s.sectionHeader}>
-              <Text style={s.sectionTitle}>Р—Р°СЏРІРєРё</Text>
+              <Text style={s.sectionTitle}>Заявки</Text>
 
               <View style={s.kpiRow}>
                 <View style={s.kpiPillHalf}>
-                  <Text style={s.kpiLabel}>Р—Р°СЏРІРѕРє</Text>
-                  <Text style={s.kpiValue}>{(p.loadingRows && !p.foremanRequestsCount) ? "вЂ¦" : String(p.foremanRequestsCount)}</Text>
+                  <Text style={s.kpiLabel}>Заявок</Text>
+                  <Text style={s.kpiValue}>{(p.loadingRows && !p.foremanRequestsCount) ? "..." : String(p.foremanRequestsCount)}</Text>
                 </View>
 
                 <View style={s.kpiPillHalf}>
-                  <Text style={s.kpiLabel}>РџРѕР·РёС†РёР№</Text>
-                  <Text style={s.kpiValue}>{(p.loadingRows && !p.foremanPositionsCount) ? "вЂ¦" : String(p.foremanPositionsCount)}</Text>
+                  <Text style={s.kpiLabel}>Позиций</Text>
+                  <Text style={s.kpiValue}>{(p.loadingRows && !p.foremanPositionsCount) ? "..." : String(p.foremanPositionsCount)}</Text>
                 </View>
               </View>
             </View>
           ) : (
             <View style={s.sectionHeader}>
-              <Text style={s.sectionTitle}>РџСЂРµРґР»РѕР¶РµРЅРёСЏ</Text>
+              <Text style={s.sectionTitle}>Предложения</Text>
 
               <View style={s.kpiRow}>
                 <View style={s.kpiPillHalf}>
-                  <Text style={s.kpiLabel}>РџСЂРµРґР»РѕР¶РµРЅРёР№</Text>
-                  <Text style={s.kpiValue}>{(p.loadingProps && !p.buyerPropsCount) ? "вЂ¦" : String(p.buyerPropsCount)}</Text>
+                  <Text style={s.kpiLabel}>Предложений</Text>
+                  <Text style={s.kpiValue}>{(p.loadingProps && !p.buyerPropsCount) ? "..." : String(p.buyerPropsCount)}</Text>
                 </View>
 
                 <View style={s.kpiPillHalf}>
-                  <Text style={s.kpiLabel}>РџРѕР·РёС†РёР№</Text>
-                  <Text style={s.kpiValue}>{(p.loadingProps && !p.buyerPositionsCount) ? "вЂ¦" : String(p.buyerPositionsCount)}</Text>
+                  <Text style={s.kpiLabel}>Позиций</Text>
+                  <Text style={s.kpiValue}>{(p.loadingProps && !p.buyerPositionsCount) ? "..." : String(p.buyerPositionsCount)}</Text>
                 </View>
               </View>
             </View>
@@ -253,7 +253,7 @@ export default function DirectorDashboard(p: Props) {
           >
             <Text style={{ color: UI.text, fontWeight: "600", fontSize: 13 }} numberOfLines={1}>
               {p.rtToast.title}
-              {p.rtToast.count > 1 ? ` В· x${p.rtToast.count}` : ""}
+              {p.rtToast.count > 1 ? ` · x${p.rtToast.count}` : ""}
             </Text>
 
             {p.rtToast.body ? (
@@ -290,7 +290,7 @@ export default function DirectorDashboard(p: Props) {
       </Animated.View>
 
       {/* BODY */}
-      {String(p.dirTab) === "Р—Р°СЏРІРєРё" ? (
+      {String(p.dirTab) === "Заявки" ? (
         <>
           {p.tab === "foreman" ? (
             <FlatList
@@ -313,13 +313,13 @@ export default function DirectorDashboard(p: Props) {
                       </Text>
                       <Text style={s.mobMeta} numberOfLines={2}>
                         {p.fmtDateOnly(submittedAt)}
-                        {` В· РїРѕР·РёС†РёР№ ${item.items.length}`}
+                        {` · позиций ${item.items.length}`}
                       </Text>
                     </View>
 
                     <View style={{ marginLeft: 10 }}>
                       <View style={[s.openBtn, { minWidth: 0, paddingVertical: 8, paddingHorizontal: 12 }]}>
-                        <Text style={[s.openBtnText, { fontSize: 12 }]}>РћС‚РєСЂС‹С‚СЊ</Text>
+                        <Text style={[s.openBtnText, { fontSize: 12 }]}>Открыть</Text>
                       </View>
                     </View>
                   </Pressable>
@@ -327,7 +327,7 @@ export default function DirectorDashboard(p: Props) {
               }}
               ListEmptyComponent={
                 !p.loadingRows ? (
-                  <Text style={{ opacity: 0.6, padding: 16, color: UI.sub }}>РќРµС‚ РѕР¶РёРґР°СЋС‰РёС… РїРѕР·РёС†РёР№</Text>
+                  <Text style={{ opacity: 0.6, padding: 16, color: UI.sub }}>Нет ожидающих позиций</Text>
                 ) : null
               }
               refreshControl={
@@ -374,7 +374,7 @@ export default function DirectorDashboard(p: Props) {
             />
           )}
         </>
-      ) : String(p.dirTab) === "Р¤РёРЅР°РЅСЃС‹" ? (
+      ) : String(p.dirTab) === "Финансы" ? (
         <FlatList
           data={[{ key: "debt" }, { key: "spend" }]}
           keyExtractor={(x) => x.key}
@@ -386,7 +386,7 @@ export default function DirectorDashboard(p: Props) {
                   style={[s.groupHeader, { marginHorizontal: 16, marginBottom: 12 }]}
                 >
                   <Text style={{ color: UI.text, fontWeight: "600", fontSize: 14 }} numberOfLines={1}>
-                    РћР±СЏР·Р°С‚РµР»СЊСЃС‚РІР°
+                    Обязательства
                   </Text>
                 </Pressable>
 
@@ -399,7 +399,7 @@ export default function DirectorDashboard(p: Props) {
                 style={[s.groupHeader, { marginHorizontal: 16, marginBottom: 12 }]}
               >
                 <Text style={{ color: UI.text, fontWeight: "600", fontSize: 14 }} numberOfLines={1}>
-                  Р Р°СЃС…РѕРґС‹
+                  Расходы
                 </Text>
               </Pressable>
 
@@ -407,18 +407,18 @@ export default function DirectorDashboard(p: Props) {
           }}
           ListHeaderComponent={
             <View style={{ paddingHorizontal: 16, paddingBottom: 10 }}>
-              {/* РњРѕР¶РЅРѕ РїРѕР·Р¶Рµ СЃСЋРґР° РґРѕР±Р°РІРёС‚СЊ РјР°Р»РµРЅСЊРєРёРµ KPI РёР· p.finRep, РЅРѕ РјРѕРґР°Р»РєРё Р±РѕР»СЊС€Рµ РќР• СЂРµРЅРґРµСЂРёРј */}
+              {/* Можно позже сюда добавить маленькие KPI из p.finRep, но модалки больше не рендерим */}
               {rep?.debtCount != null ? (
                 <View style={[s.mobCard, { marginBottom: 12 }]}>
                   <Text style={{ color: UI.text, fontWeight: "600" }} numberOfLines={1}>
-                    Рљ РѕРїР»Р°С‚Рµ:{" "}
+                    К оплате:{" "}
                     <Text style={{ color: UI.sub, fontWeight: "600" }}>
-                      {p.money(rep?.debtAmount ?? 0)} KGS В· {String(rep?.debtCount ?? 0)} СЃС‡.
+                      {p.money(rep?.debtAmount ?? 0)} KGS · {String(rep?.debtCount ?? 0)} сч.
                     </Text>
                   </Text>
                   {rep?.overdueCount ? (
                     <Text style={{ color: UI.sub, fontWeight: "600", marginTop: 6 }} numberOfLines={1}>
-                      РўСЂРµР±СѓРµС‚ РѕРїР»Р°С‚С‹: {String(rep?.overdueCount ?? 0)} В· РєСЂРёС‚РёС‡РЅРѕ: {String(rep?.criticalCount ?? 0)}
+                      Требует оплаты: {String(rep?.overdueCount ?? 0)} · критично: {String(rep?.criticalCount ?? 0)}
                     </Text>
                   ) : null}
                 </View>
@@ -432,40 +432,40 @@ export default function DirectorDashboard(p: Props) {
           onScroll={p.onScroll}
           scrollEventThrottle={16}
         />
-      ) : String(p.dirTab) === "РџРѕРґСЂСЏРґС‹" ? (
+      ) : String(p.dirTab) === "Подряды" ? (
         <DirectorSubcontractTab
           contentTopPad={contentTopPad}
           onScroll={p.onScroll}
         />
-      ) : String(p.dirTab) === "РЎРєР»Р°Рґ" ? (
+      ) : String(p.dirTab) === "Склад" ? (
         <View style={{ paddingTop: contentTopPad + 4, paddingHorizontal: 16 }}>
-          <Text style={{ color: UI.sub, fontWeight: "600" }}>РЎРєР»Р°Рґ: РїРѕР·Р¶Рµ СЃРґРµР»Р°РµРј СЃРІРѕРґРєСѓ.</Text>
+          <Text style={{ color: UI.sub, fontWeight: "600" }}>Склад: позже сделаем сводку.</Text>
         </View>
       ) : (
         <View style={{ paddingTop: contentTopPad + 4, paddingHorizontal: 16 }}>
-          {/* вњ… РћС‚С‡С‘С‚С‹: РєР°СЂС‚РѕС‡РєР° РѕС‚С‡С‘С‚Р° */}
+          {/* Отчёты: карточка отчёта */}
           <Pressable
             onPress={() => (p as any).openReports?.()}
             style={[s.mobCard, { marginBottom: 12 }]}
           >
             <View style={s.mobMain}>
               <Text style={s.mobTitle} numberOfLines={1}>
-                Р¤Р°РєС‚ РІС‹РґР°С‡Рё (СЃРєР»Р°Рґ)
+                Факт выдачи (склад)
               </Text>
               <Text style={s.mobMeta} numberOfLines={2}>
-                {(p as any).reportsPeriodShort ? `РџРµСЂРёРѕРґ: ${(p as any).reportsPeriodShort}` : "РџРµСЂРёРѕРґ: 30 РґРЅРµР№"}
+                {(p as any).reportsPeriodShort ? `Период: ${(p as any).reportsPeriodShort}` : "Период: 30 дней"}
               </Text>
             </View>
 
             <View style={{ marginLeft: 10 }}>
               <View style={[s.openBtn, { minWidth: 0, paddingVertical: 8, paddingHorizontal: 12 }]}>
-                <Text style={[s.openBtnText, { fontSize: 12 }]}>РћС‚РєСЂС‹С‚СЊ</Text>
+                <Text style={[s.openBtnText, { fontSize: 12 }]}>Открыть</Text>
               </View>
             </View>
           </Pressable>
 
           <Text style={{ color: UI.sub, fontWeight: "600", opacity: 0.85 }}>
-            РћС‚С‡С‘С‚ РїРѕРєР°Р·С‹РІР°РµС‚ С„Р°РєС‚ РІС‹РґР°С‡Рё СЃРѕ СЃРєР»Р°РґР° Рё РґРёСЃС†РёРїР»РёРЅСѓ (Р±РµР· Р·Р°СЏРІРєРё/Р±РµР· РѕР±СЉРµРєС‚Р°).
+            Отчёт показывает факт выдачи со склада и дисциплину (без заявки/без объекта).
           </Text>
         </View>
       )}
@@ -473,4 +473,3 @@ export default function DirectorDashboard(p: Props) {
     </View>
   );
 }
-

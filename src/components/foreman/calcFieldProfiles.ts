@@ -1,4 +1,5 @@
 import { FINAL_WORK_TYPE_INPUT_PROFILE_MAP } from "./finalWorkTypeInputProfiles";
+import { normalizeWorkTypeCode } from "./workTypeCode";
 
 export type FieldUiPriority = "core" | "secondary" | "engineering" | "advanced" | "derived" | "hidden";
 
@@ -38,8 +39,6 @@ const ENGINEERING = "engineering" as const;
 const ADVANCED = "advanced" as const;
 const DERIVED = "derived" as const;
 const HIDDEN = "hidden" as const;
-
-const normalizeCode = (code: string) => String(code || "").trim().toUpperCase();
 
 const toSet = (items?: string[]) => new Set((items ?? []).map((v) => String(v || "").trim()).filter(Boolean));
 
@@ -381,25 +380,27 @@ const WORK_TYPE_OVERRIDES: Record<string, WorkTypeInputOverride> = {
   },
 };
 
-const FINAL_WORK_TYPE_OVERRIDES: Record<string, WorkTypeInputOverride> = Object.fromEntries(
-  Object.entries(FINAL_WORK_TYPE_INPUT_PROFILE_MAP).map(([code, profile]) => [
-    normalizeCode(code),
-    {
-      workTypeCode: profile.workTypeCode,
-      familyCode: undefined,
-      coreFields: Array.from(profile.core),
-      engineeringFields: profile.engineering ? Array.from(profile.engineering) : undefined,
-      derivedFields: profile.derived ? Array.from(profile.derived) : undefined,
-      hiddenFields: profile.hidden ? Array.from(profile.hidden) : undefined,
-      labelOverrides: profile.labels,
-      notes: profile.notes,
-    } satisfies WorkTypeInputOverride,
-  ]),
-);
+const toProfileOverride = (
+  profile: (typeof FINAL_WORK_TYPE_INPUT_PROFILE_MAP)[string],
+): WorkTypeInputOverride => ({
+  workTypeCode: profile.workTypeCode,
+  familyCode: undefined,
+  coreFields: Array.from(profile.core),
+  engineeringFields: profile.engineering ? Array.from(profile.engineering) : undefined,
+  derivedFields: profile.derived ? Array.from(profile.derived) : undefined,
+  hiddenFields: profile.hidden ? Array.from(profile.hidden) : undefined,
+  labelOverrides: profile.labels,
+  notes: profile.notes,
+});
 
-const getWorkTypeOverride = (workTypeCode: string) =>
-  FINAL_WORK_TYPE_OVERRIDES[normalizeCode(workTypeCode)] ??
-  WORK_TYPE_OVERRIDES[normalizeCode(workTypeCode)];
+const getWorkTypeOverride = (workTypeCode: string) => {
+  const normalizedCode = normalizeWorkTypeCode(workTypeCode);
+  const canonicalProfile = FINAL_WORK_TYPE_INPUT_PROFILE_MAP[normalizedCode];
+  if (canonicalProfile) {
+    return toProfileOverride(canonicalProfile);
+  }
+  return WORK_TYPE_OVERRIDES[normalizedCode];
+};
 
 const BASIS_KEY_ALIASES: Record<string, string> = {
   points_socket: "points_outlet",
@@ -413,7 +414,7 @@ const normalizeBasisKeyForOverride = (basisKey: BasisKey) =>
 const hasKey = (keys: Set<string>, key: string) => keys.has(key);
 
 const inferFamilyByCode = (workTypeCode: string): string => {
-  const c = normalizeCode(workTypeCode);
+  const c = normalizeWorkTypeCode(workTypeCode);
   if (c.includes("FACADE")) return "facade";
   if (c.includes("CONC") || c.includes("CONCRETE") || c.includes("FND")) return "concrete";
   if (c.includes("MASONRY") || c.includes("BLOCK") || c.includes("BRICK")) return "masonry";
@@ -451,7 +452,7 @@ const shouldDeriveConcreteVolume = (workTypeCode: string, allKeys: Set<string>) 
 
   const hasAreaThickness = hasKey(allKeys, "area_m2") && hasKey(allKeys, "height_m");
   const hasStripGeometry = hasKey(allKeys, "perimeter_m") && hasKey(allKeys, "length_m") && hasKey(allKeys, "height_m");
-  const code = normalizeCode(workTypeCode);
+  const code = normalizeWorkTypeCode(workTypeCode);
   const concreteLike =
     code.includes("CONC") ||
     code.includes("CONCRETE") ||
@@ -470,7 +471,7 @@ const resolveConcretePriority = (
   workTypeCode: string,
   allKeys: Set<string>,
 ): FieldUiPriority => {
-  const code = normalizeCode(workTypeCode);
+  const code = normalizeWorkTypeCode(workTypeCode);
 
   if (basisKey === "volume_m3" && shouldDeriveConcreteVolume(workTypeCode, allKeys)) return DERIVED;
 
@@ -517,7 +518,7 @@ const resolvePriorityByFamily = (
   allKeys: Set<string>,
 ): FieldUiPriority => {
   const family = familyCode.toLowerCase();
-  const code = normalizeCode(workTypeCode);
+  const code = normalizeWorkTypeCode(workTypeCode);
 
   if (family === "concrete") return resolveConcretePriority(basisKey, workTypeCode, allKeys);
 
@@ -577,8 +578,8 @@ const resolvePriorityByFamily = (
       return ADVANCED;
     }
     if (code === "SANITARY") {
-      if (basisKey === "points_shower" || basisKey === "points_sink" || basisKey === "points_wc" || basisKey === "points_wm") return CORE;
-      if (basisKey === "length_m") return SECONDARY;
+      if (basisKey === "points_shower" || basisKey === "points_sink" || basisKey === "points_wc") return CORE;
+      if (basisKey === "points_wm" || basisKey === "pipe_length_m" || basisKey === "length_m") return ENGINEERING;
       return ADVANCED;
     }
     if (code === "IND_PIPING") {
@@ -764,7 +765,7 @@ export const enrichFieldUiMeta = (params: {
   originalHint?: string | null;
   allBasisKeys: BasisKey[];
 }): CalcFieldUiMeta => {
-  const code = normalizeCode(params.workTypeCode);
+  const code = normalizeWorkTypeCode(params.workTypeCode);
   const override = getWorkTypeOverride(code);
 
   const familyCode = resolveFamily(code, params.familyCode);

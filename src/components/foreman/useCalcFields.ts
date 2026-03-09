@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../../../src/lib/supabaseClient";
 import { enrichFieldUiMeta, type FieldUiPriority } from "./calcFieldProfiles";
+import { normalizeWorkTypeCode } from "./workTypeCode";
 
 export type BasisKey = string;
 const isDemoWorkType = (code?: string | null) => {
-  const c = String(code ?? "").trim();
+  const c = normalizeWorkTypeCode(code);
   return c.startsWith("WT-DEM-") || c === "WT-DEMO";
 };
 
@@ -75,18 +76,19 @@ export function useCalcFields(workTypeCode?: string | null) {
     let cancelled = false;
 
     async function load() {
-      const code = String(workTypeCode ?? "").trim();
-      if (!code) {
+      const rawWorkTypeCode = String(workTypeCode ?? "").trim();
+      if (!rawWorkTypeCode) {
         setFields([]);
         setError(null);
         return;
       }
+      const normalizedWorkTypeCode = normalizeWorkTypeCode(rawWorkTypeCode);
 
       setLoading(true);
       setError(null);
 
       try {
-        const viewName = isDemoWorkType(code)
+        const viewName = isDemoWorkType(rawWorkTypeCode)
           ? "v_reno_calc_fields_ui_clean"
           : "v_reno_calc_fields_ui";
 
@@ -95,7 +97,7 @@ export function useCalcFields(workTypeCode?: string | null) {
           const familyRes = await supabase
             .from("v_work_types_picker")
             .select("family_code")
-            .eq("code", code)
+            .eq("code", rawWorkTypeCode)
             .maybeSingle();
           familyCode = String(familyRes.data?.family_code ?? "").trim() || null;
         } catch {
@@ -114,7 +116,7 @@ export function useCalcFields(workTypeCode?: string | null) {
             sort_order,
             used_in_norms
           `)
-          .eq("work_type_code", code)
+          .eq("work_type_code", rawWorkTypeCode)
           .order("sort_order", { ascending: true });
 
         if (error) throw error;
@@ -127,7 +129,7 @@ export function useCalcFields(workTypeCode?: string | null) {
 
         const list: Field[] = rawList.map((r) => {
           const uiMeta = enrichFieldUiMeta({
-            workTypeCode: code,
+            workTypeCode: normalizedWorkTypeCode,
             familyCode,
             basisKey: r.basis_key,
             originalLabel: r.label_ru || r.basis_key,

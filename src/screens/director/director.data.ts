@@ -54,10 +54,18 @@ export function useDirectorData({ supabase }: Deps) {
     if (!need.length) return;
 
     try {
-      const q = await supabase
+      let q = await supabase
         .from("requests")
         .select("id, object_name, object, level_code, system_code, zone_code, site_address_snapshot, note, comment")
         .in("id", need);
+
+      // Fallback for installations where some optional columns are absent.
+      if (q.error) {
+        q = await supabase
+          .from("requests")
+          .select("id, object_name, level_code, system_code, zone_code, note")
+          .in("id", need);
+      }
 
       if (q.error) throw q.error;
 
