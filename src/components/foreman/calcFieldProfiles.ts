@@ -1,3 +1,5 @@
+import { FINAL_WORK_TYPE_INPUT_MATRIX } from "./finalWorkTypeInputMatrix";
+
 export type FieldUiPriority = "core" | "secondary" | "engineering" | "advanced" | "derived" | "hidden";
 
 export type WorkTypeInputOverride = {
@@ -379,6 +381,26 @@ const WORK_TYPE_OVERRIDES: Record<string, WorkTypeInputOverride> = {
   },
 };
 
+const FINAL_WORK_TYPE_OVERRIDES: Record<string, WorkTypeInputOverride> = Object.fromEntries(
+  Object.entries(FINAL_WORK_TYPE_INPUT_MATRIX).map(([code, profile]) => [
+    code,
+    {
+      workTypeCode: profile.workTypeCode,
+      familyCode: profile.familyCode,
+      coreFields: Array.from(profile.core),
+      engineeringFields: profile.engineering ? Array.from(profile.engineering) : undefined,
+      derivedFields: profile.derived ? Array.from(profile.derived) : undefined,
+      hiddenFields: profile.hidden ? Array.from(profile.hidden) : undefined,
+      labelOverrides: profile.labels,
+      notes: profile.notes,
+    } satisfies WorkTypeInputOverride,
+  ]),
+);
+
+const getWorkTypeOverride = (workTypeCode: string) =>
+  FINAL_WORK_TYPE_OVERRIDES[normalizeCode(workTypeCode)] ??
+  WORK_TYPE_OVERRIDES[normalizeCode(workTypeCode)];
+
 const hasKey = (keys: Set<string>, key: string) => keys.has(key);
 
 const inferFamilyByCode = (workTypeCode: string): string => {
@@ -408,7 +430,7 @@ const inferFamilyByCode = (workTypeCode: string): string => {
 };
 
 const resolveFamily = (workTypeCode: string, familyCode?: string | null) => {
-  const overrideFamily = WORK_TYPE_OVERRIDES[normalizeCode(workTypeCode)]?.familyCode;
+  const overrideFamily = getWorkTypeOverride(workTypeCode)?.familyCode;
   if (overrideFamily) return overrideFamily.toLowerCase();
   const fam = String(familyCode || "").trim().toLowerCase();
   if (fam) return fam;
@@ -729,7 +751,7 @@ export const enrichFieldUiMeta = (params: {
   allBasisKeys: BasisKey[];
 }): CalcFieldUiMeta => {
   const code = normalizeCode(params.workTypeCode);
-  const override = WORK_TYPE_OVERRIDES[code];
+  const override = getWorkTypeOverride(code);
 
   const familyCode = resolveFamily(code, params.familyCode);
   const allKeys = new Set((params.allBasisKeys || []).map((k) => String(k)));
