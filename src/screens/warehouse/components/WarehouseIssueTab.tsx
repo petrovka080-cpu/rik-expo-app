@@ -3,12 +3,12 @@ import {
   Animated,
   FlatList,
   Text,
-  View,
   type ListRenderItem,
   type NativeScrollEvent,
   type NativeSyntheticEvent,
   type RefreshControlProps,
 } from "react-native";
+import RoleScreenLayout from "../../../components/layout/RoleScreenLayout";
 import type { ReqHeadRow } from "../warehouse.types";
 
 const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
@@ -39,7 +39,7 @@ export default function WarehouseIssueTab({
   emptyColor,
 }: Props) {
   return (
-    <View style={{ flex: 1 }}>
+    <RoleScreenLayout>
       <AnimatedFlatList
         data={data}
         keyExtractor={(x: ReqHeadRow) => x.request_id}
@@ -63,6 +63,6 @@ export default function WarehouseIssueTab({
           )
         }
       />
-    </View>
+    </RoleScreenLayout>
   );
 }
