@@ -3,12 +3,12 @@ import {
   Animated,
   FlatList,
   Text,
-  View,
   type ListRenderItem,
   type NativeScrollEvent,
   type NativeSyntheticEvent,
 } from "react-native";
 import SectionBlock from "../../../ui/SectionBlock";
+import RoleScreenLayout from "../../../components/layout/RoleScreenLayout";
 import type { StockRow } from "../warehouse.types";
 
 const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
@@ -36,27 +36,31 @@ export default function WarehouseStockTab({
 }: Props) {
   if (stockSupported === false) {
     return (
-      <SectionBlock style={{ padding: 12, marginBottom: 0 }} contentStyle={{ gap: 0 }}>
-        <Text style={{ color: "#475569" }}>
-          Раздел «Склад факт» требует вью <Text style={{ fontWeight: "700" }}>v_warehouse_fact</Text> или
-          RPC с фактическими остатками.
-        </Text>
-      </SectionBlock>
+      <RoleScreenLayout>
+        <SectionBlock style={{ padding: 12, marginBottom: 0 }} contentStyle={{ gap: 0 }}>
+          <Text style={{ color: "#475569" }}>
+            Раздел «Склад факт» требует вью <Text style={{ fontWeight: "700" }}>v_warehouse_fact</Text> или
+            RPC с фактическими остатками.
+          </Text>
+        </SectionBlock>
+      </RoleScreenLayout>
     );
   }
 
   return (
-    <AnimatedFlatList
-      data={data}
-      keyExtractor={(i: StockRow) => String(i.material_id || `${i.code || ""}:${i.uom_id || ""}`)}
-      contentContainerStyle={contentContainerStyle}
-      onScroll={onScroll}
-      scrollEventThrottle={scrollEventThrottle}
-      renderItem={renderItem}
-      ListHeaderComponent={header}
-      ListEmptyComponent={
-        <Text style={{ color: emptyColor, paddingHorizontal: 16, fontWeight: "800" }}>Пока нет данных по складу.</Text>
-      }
-    />
+    <RoleScreenLayout>
+      <AnimatedFlatList
+        data={data}
+        keyExtractor={(i: StockRow) => String(i.material_id || `${i.code || ""}:${i.uom_id || ""}`)}
+        contentContainerStyle={contentContainerStyle}
+        onScroll={onScroll}
+        scrollEventThrottle={scrollEventThrottle}
+        renderItem={renderItem}
+        ListHeaderComponent={header}
+        ListEmptyComponent={
+          <Text style={{ color: emptyColor, paddingHorizontal: 16, fontWeight: "800" }}>Пока нет данных по складу.</Text>
+        }
+      />
+    </RoleScreenLayout>
   );
 }
