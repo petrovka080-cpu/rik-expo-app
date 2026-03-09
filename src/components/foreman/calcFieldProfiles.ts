@@ -111,26 +111,24 @@ const WORK_TYPE_OVERRIDES: Record<string, WorkTypeInputOverride> = {
   "WT-CONC": {
     workTypeCode: "WT-CONC",
     familyCode: "concrete",
-    coreFields: ["area_m2", "height_m"],
+    coreFields: ["area_m2"],
     secondaryFields: ["formwork_m2", "rebar_kg"],
     advancedFields: ["pump_m3", "excavation_m3", "backfill_m3", "subconcrete_m3", "waterproof_m2"],
     derivedFields: ["volume_m3"],
     labelOverrides: {
       area_m2: "Площадь бетонирования, м²",
-      height_m: "Толщина / высота слоя, м",
       volume_m3: "Объём бетона, м³ (авто)",
     },
   },
   IND_CONCRETE: {
     workTypeCode: "ind_concrete",
     familyCode: "concrete",
-    coreFields: ["area_m2", "height_m"],
+    coreFields: ["area_m2"],
     secondaryFields: ["formwork_m2", "rebar_kg"],
     advancedFields: ["film_m2", "mesh_m2", "pump_m3", "subbase_m3", "count"],
     derivedFields: ["volume_m3"],
     labelOverrides: {
       area_m2: "Площадь бетонирования, м²",
-      height_m: "Толщина / высота слоя, м",
       volume_m3: "Объём бетона, м³ (авто)",
     },
   },
@@ -151,14 +149,12 @@ const WORK_TYPE_OVERRIDES: Record<string, WorkTypeInputOverride> = {
     workTypeCode: "WT-CONCRETE-SLAB-PRO",
     familyCode: "concrete",
     coreFields: ["area_m2", "height_m"],
-    secondaryFields: ["perimeter_m", "count"],
     derivedFields: ["volume_m3"],
   },
   "WT-CONC-FLOOR": {
     workTypeCode: "WT-CONC-FLOOR",
     familyCode: "floor",
     coreFields: ["area_m2", "height_m"],
-    secondaryFields: ["perimeter_m", "count"],
     derivedFields: ["volume_m3"],
     labelOverrides: {
       area_m2: "Площадь пола, м²",
@@ -183,7 +179,6 @@ const WORK_TYPE_OVERRIDES: Record<string, WorkTypeInputOverride> = {
     workTypeCode: "WT-CONCRETE-STRIP-PRO",
     familyCode: "concrete",
     coreFields: ["perimeter_m", "length_m", "height_m"],
-    secondaryFields: ["count"],
     derivedFields: ["volume_m3"],
     labelOverrides: {
       perimeter_m: "Длина ленты / контур, м",
@@ -194,40 +189,35 @@ const WORK_TYPE_OVERRIDES: Record<string, WorkTypeInputOverride> = {
   "WT-CONCRETE-MONO": {
     workTypeCode: "WT-CONCRETE-MONO",
     familyCode: "concrete",
-    coreFields: ["area_m2", "height_m"],
-    secondaryFields: ["count"],
+    coreFields: ["area_m2"],
     derivedFields: ["volume_m3"],
   },
   "WT-CONCRETE-BEAM": {
     workTypeCode: "WT-CONCRETE-BEAM",
     familyCode: "concrete",
-    coreFields: ["area_m2", "height_m"],
+    coreFields: ["area_m2"],
     secondaryFields: ["count"],
     derivedFields: ["volume_m3"],
     labelOverrides: {
       area_m2: "Площадь бетонирования, м²",
-      height_m: "Высота / толщина, м",
     },
   },
   "WT-CONCRETE-COLUMN": {
     workTypeCode: "WT-CONCRETE-COLUMN",
     familyCode: "concrete",
     coreFields: ["count"],
-    secondaryFields: ["height_m", "length_m"],
     derivedFields: ["volume_m3"],
   },
   "WT-CONCRETE-FOOTING": {
     workTypeCode: "WT-CONCRETE-FOOTING",
     familyCode: "concrete",
     coreFields: ["count"],
-    secondaryFields: ["height_m", "length_m"],
     derivedFields: ["volume_m3"],
   },
   "WT-CONCRETE-PILE": {
     workTypeCode: "WT-CONCRETE-PILE",
     familyCode: "concrete",
     coreFields: ["count"],
-    secondaryFields: ["height_m", "length_m"],
     derivedFields: ["volume_m3"],
   },
   "WT-BLOCK": {
@@ -271,7 +261,6 @@ const WORK_TYPE_OVERRIDES: Record<string, WorkTypeInputOverride> = {
     workTypeCode: "WT-ELEC-CABLE",
     familyCode: "elec",
     coreFields: ["length_m"],
-    advancedFields: ["count"],
     labelOverrides: {
       length_m: "Длина кабельной линии, м",
     },

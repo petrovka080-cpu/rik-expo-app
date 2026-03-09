@@ -211,6 +211,7 @@ useEffect(() => {
 
   const [calculating, setCalculating] = useState(false);
   const [addingToRequest, setAddingToRequest] = useState(false);
+  const [showSecondaryFields, setShowSecondaryFields] = useState(false);
 
   // вњ… РїРѕР»СЏ СЃРІРѕСЂР°С‡РёРІР°РµРј РўРћР›Р¬РљРћ РїРѕСЃР»Рµ СЂР°СЃС‡С‘С‚Р° (UI)
   const [fieldsCollapsed, setFieldsCollapsed] = useState(false);
@@ -229,6 +230,21 @@ useEffect(() => {
 
   const hasWastePctField = useMemo(
     () => fields.some((f) => f.key === "waste_pct" || f.key === "loss"),
+    [fields],
+  );
+
+  const coreFields = useMemo(
+    () => fields.filter((f) => (f.uiPriority ?? "core") === "core" && f.visibleInBaseUi !== false),
+    [fields],
+  );
+
+  const secondaryFields = useMemo(
+    () => fields.filter((f) => (f.uiPriority ?? "core") === "secondary"),
+    [fields],
+  );
+
+  const derivedFields = useMemo(
+    () => fields.filter((f) => (f.uiPriority ?? "core") === "derived"),
     [fields],
   );
 
@@ -325,6 +341,7 @@ useEffect(() => {
       setManualKeys(new Set());
       setCalculating(false);
       setAddingToRequest(false);
+      setShowSecondaryFields(false);
       return;
     }
   }, [visible]);
@@ -339,6 +356,7 @@ useEffect(() => {
     setLossTouched(false);
     setFilmTouched(false);
     setManualKeys(new Set());
+    setShowSecondaryFields(false);
   }, [workType?.code, visible]);
 
   useEffect(() => {
@@ -392,8 +410,10 @@ useEffect(() => {
   }, [hasMultiplierField, lossInvalid, lossValue, measures.multiplier]);
 
   const requiredKeys = useMemo(() => {
-    return fields.filter((f) => f.usedInNorms || f.required).map((f) => f.key);
-  }, [fields]);
+    return coreFields
+      .filter((f) => (f.usedInNorms || f.required) && f.editable !== false)
+      .map((f) => f.key);
+  }, [coreFields]);
 
   const canCalculate = useMemo(() => {
     if (!workType?.code) return false;
@@ -489,7 +509,7 @@ useEffect(() => {
     (key: BasisKey, value: string) => {
       if (workType?.code === "ind_concrete" && key === "film_m2") setFilmTouched(true);
 
-      if (key === "volume_m3" || key === "area_m2" || key === "perimeter_m") {
+      if (key === "area_m2" || key === "perimeter_m") {
         setManualKeys((prev) => {
           const next = new Set(prev);
           const trimmed = String(value ?? "").trim();
@@ -570,7 +590,17 @@ useEffect(() => {
       return;
     }
 
-    const parseResult = runParse(fields.map((f) => f.key), true);
+    const parseKeys = fields
+      .filter((f) => {
+        if (f.editable === false) return false;
+        if ((f.uiPriority ?? "core") === "core") return true;
+        if ((f.uiPriority ?? "core") === "secondary" && showSecondaryFields) return true;
+        const raw = (inputs as InputMap)[f.key];
+        return typeof raw === "string" && raw.trim() !== "";
+      })
+      .map((f) => f.key);
+
+    const parseResult = runParse(parseKeys, true);
 
     setLossTouched(true);
     if (lossInvalid) return;
@@ -625,6 +655,7 @@ useEffect(() => {
   const renderField = (field: Field) => {
     const value = inputs[field.key] ?? "";
     const errorText = errors[field.key];
+    const editable = field.editable !== false;
 
     return (
       <View key={field.key} style={{ marginBottom: 12 }}>
@@ -639,26 +670,43 @@ useEffect(() => {
           <Hint text={field.hint ?? ""} />
         </View>
 
-        <TextInput
-          keyboardType="numeric"
-          placeholder={field.hint ?? ""}
-          placeholderTextColor="#94A3B8"
-          value={value}
-          onChangeText={(t) => handleInputChange(field.key, t)}
-          onBlur={() => handleBlur(field.key)}
-          style={{
-            borderWidth: 1,
-            borderColor: errorText ? "#ef4444" : "#e5e7eb",
-            borderRadius: 12,
-            paddingHorizontal: 12,
-            paddingVertical: Platform.OS === "web" ? 10 : 12,
-            fontSize: 16,
-            backgroundColor: "#fff",
-          }}
-          onFocus={() => {
-            if (rows) setFieldsCollapsed(false);
-          }}
-        />
+        {editable ? (
+          <TextInput
+            keyboardType="numeric"
+            placeholder={field.hint ?? ""}
+            placeholderTextColor="#94A3B8"
+            value={value}
+            onChangeText={(t) => handleInputChange(field.key, t)}
+            onBlur={() => handleBlur(field.key)}
+            style={{
+              borderWidth: 1,
+              borderColor: errorText ? "#ef4444" : "#e5e7eb",
+              borderRadius: 12,
+              paddingHorizontal: 12,
+              paddingVertical: Platform.OS === "web" ? 10 : 12,
+              fontSize: 16,
+              backgroundColor: "#fff",
+            }}
+            onFocus={() => {
+              if (rows) setFieldsCollapsed(false);
+            }}
+          />
+        ) : (
+          <View
+            style={{
+              borderWidth: 1,
+              borderColor: "#e5e7eb",
+              borderRadius: 12,
+              paddingHorizontal: 12,
+              paddingVertical: Platform.OS === "web" ? 10 : 12,
+              backgroundColor: "#f8fafc",
+            }}
+          >
+            <Text style={{ fontSize: 16, color: "#0F172A", fontWeight: "600" }}>
+              {value || "—"}
+            </Text>
+          </View>
+        )}
 
         {errorText ? (
           <Text style={{ color: "#ef4444", marginTop: 4 }}>{errorText}</Text>
@@ -843,7 +891,38 @@ useEffect(() => {
                       </Text>
                     ) : (
                       <>
-                        {fields.map((field) => renderField(field))}
+                        {coreFields.map((field) => renderField(field))}
+
+                        {secondaryFields.length > 0 ? (
+                          <View style={{ marginBottom: 12 }}>
+                            <Pressable
+                              onPress={() => setShowSecondaryFields((prev) => !prev)}
+                              style={{
+                                borderWidth: 1,
+                                borderColor: "#e5e7eb",
+                                borderRadius: 12,
+                                paddingHorizontal: 12,
+                                paddingVertical: 10,
+                                backgroundColor: "#f8fafc",
+                              }}
+                            >
+                              <Text style={{ color: "#0F172A", fontWeight: "700" }}>
+                                Дополнительные параметры {showSecondaryFields ? "▴" : "▾"}
+                              </Text>
+                            </Pressable>
+                          </View>
+                        ) : null}
+
+                        {showSecondaryFields ? secondaryFields.map((field) => renderField(field)) : null}
+
+                        {derivedFields.length > 0 ? (
+                          <View style={{ marginBottom: 8 }}>
+                            <Text style={{ fontWeight: "700", marginBottom: 6, color: "#0F172A" }}>
+                              Расчётные значения
+                            </Text>
+                            {derivedFields.map((field) => renderField(field))}
+                          </View>
+                        ) : null}
 
                         {!hasMultiplierField && !hasWastePctField && (
                           <View style={{ marginTop: 4 }}>
