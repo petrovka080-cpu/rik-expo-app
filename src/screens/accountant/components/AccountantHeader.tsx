@@ -46,7 +46,7 @@ export const AccountantHeader = memo(function AccountantHeader({
                 borderBottomWidth: 1,
                 borderColor: UI.border,
                 paddingTop: Platform.OS === "web" ? 10 : 12,
-                paddingBottom: 10,
+                paddingBottom: 12,
                 shadowColor: "#000",
                 shadowOffset: { width: 0, height: 6 },
                 shadowRadius: 14,

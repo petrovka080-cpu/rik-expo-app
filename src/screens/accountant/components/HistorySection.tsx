@@ -62,15 +62,15 @@ export const HistoryHeader = memo(function HistoryHeader({
           borderRadius: 12,
           padding: 10,
           color: ui.text,
-          fontWeight: "700",
+          fontWeight: "500",
         }}
       />
 
       <View style={{ height: 8 }} />
       <View style={{ paddingBottom: 4 }}>
-        <Text style={{ color: ui.sub, fontWeight: "700" }}>
-          Найдено: <Text style={{ fontWeight: "900", color: ui.text }}>{rows.length}</Text>
-          {"  "}• Сумма: <Text style={{ fontWeight: "900", color: ui.text }}>{total.toFixed(2)} {cur}</Text>
+        <Text style={{ color: ui.sub, fontWeight: "500" }}>
+          Найдено: <Text style={{ fontWeight: "600", color: ui.text }}>{rows.length}</Text>
+          {"  "}• Сумма: <Text style={{ fontWeight: "600", color: ui.text }}>{total.toFixed(2)} {cur}</Text>
         </Text>
       </View>
     </View>
@@ -99,43 +99,44 @@ export const HistoryRowCard = memo(function HistoryRowCard({ item, onOpen, ui }:
         marginHorizontal: 12,
         marginVertical: 4,
         borderRadius: 18,
-        borderWidth: 1.25,
+        borderWidth: 1,
         borderColor: "rgba(255,255,255,0.14)",
-        padding: 14,
-        transform: [{ scale: pressed ? 0.98 : 1 }],
-        opacity: pressed ? 0.9 : 1,
+        paddingHorizontal: 14,
+        paddingVertical: 12,
+        transform: [{ scale: pressed ? 0.997 : 1 }],
+        opacity: pressed ? 0.94 : 1,
         shadowColor: "#000",
-        shadowOffset: { width: 0, height: 6 },
-        shadowOpacity: 0.15,
-        shadowRadius: 12,
-        elevation: 4,
+        shadowOffset: { width: 0, height: 5 },
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
+        elevation: 3,
       })}
     >
       <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 12 }}>
         <View style={{ flex: 1, minWidth: 0 }}>
-          <Text style={{ fontSize: 13, fontWeight: "900", color: ui.text, marginBottom: 4 }} numberOfLines={1}>
+          <Text style={{ fontSize: 15, lineHeight: 20, fontWeight: "600", color: ui.text, marginBottom: 4 }} numberOfLines={1}>
             {supplier}
           </Text>
-          <Text style={{ fontSize: 12, color: ui.sub, fontWeight: "700" }} numberOfLines={1}>
+          <Text style={{ fontSize: 13, lineHeight: 18, color: ui.sub, fontWeight: "500" }} numberOfLines={1}>
             {date} · Счёт {invoiceNo}
           </Text>
           {!!purpose && (
-            <Text style={{ fontSize: 11, color: ui.sub, marginTop: 4, fontStyle: 'italic' }} numberOfLines={1}>
+            <Text style={{ fontSize: 12, lineHeight: 16, color: ui.sub, marginTop: 4 }} numberOfLines={1}>
               {purpose}
             </Text>
           )}
           {!!fio && (
-            <Text style={{ fontSize: 10, color: "rgba(255,255,255,0.35)", marginTop: 6, fontWeight: "800", textTransform: 'uppercase' }}>
-              👤 {fio}
+            <Text style={{ fontSize: 11, lineHeight: 16, color: "rgba(255,255,255,0.48)", marginTop: 6, fontWeight: "500" }}>
+              Бухгалтер: {fio}
             </Text>
           )}
         </View>
 
         <View style={{ alignItems: 'flex-end' }}>
-          <Text style={{ fontSize: 16, fontWeight: "900", color: "#86EFAC" }}>
+          <Text style={{ fontSize: 15, lineHeight: 20, fontWeight: "600", color: "#86EFAC" }}>
             {Number(item.amount || 0).toLocaleString()}
           </Text>
-          <Text style={{ fontSize: 10, color: ui.sub, fontWeight: "900", marginTop: 2 }}>
+          <Text style={{ fontSize: 10, color: ui.sub, fontWeight: "600", marginTop: 2 }}>
             {item.invoice_currency || "KGS"}
           </Text>
         </View>

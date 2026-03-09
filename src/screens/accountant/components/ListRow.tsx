@@ -52,14 +52,15 @@ function ListRowInner({
         borderRadius: 16,
         borderWidth: 1,
         borderColor: "rgba(255,255,255,0.12)",
-        padding: 16,
-        transform: [{ scale: pressed ? 0.995 : 1 }],
+        paddingHorizontal: 16,
+        paddingVertical: 14,
+        transform: [{ scale: pressed ? 0.997 : 1 }],
         opacity: pressed ? 0.94 : 1,
         shadowColor: "#000",
-        shadowOffset: { width: 0, height: 6 },
-        shadowOpacity: 0.12,
-        shadowRadius: 10,
-        elevation: 4,
+        shadowOffset: { width: 0, height: 5 },
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
+        elevation: 3,
       })}
     >
       <View style={{ flexDirection: "row", alignItems: "flex-start", gap: 12 }}>
@@ -73,14 +74,14 @@ function ListRowInner({
           </Text>
 
           {rest > 0 && (
-            <Text style={{ fontSize: 12, fontWeight: "500", color: "#FDE68A", marginTop: 8 }}>
+            <Text style={{ fontSize: 12, fontWeight: "500", color: "#FCD34D", marginTop: 8 }}>
               Остаток: {rest} {item.invoice_currency || "KGS"}
             </Text>
           )}
         </View>
 
-        <View style={{ alignItems: "flex-end", gap: 6 }}>
-          <Text style={{ fontSize: 16, lineHeight: 22, fontWeight: "600", color: UI.text }}>
+        <View style={{ alignItems: "flex-end", gap: 8 }}>
+          <Text style={{ fontSize: 15, lineHeight: 20, fontWeight: "600", color: UI.text }}>
             {sum.toLocaleString()}
           </Text>
           <StatusBadge label={st.label} tone={tone} compact />

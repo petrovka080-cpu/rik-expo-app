@@ -33,16 +33,16 @@ export default function Header({
   onOpenFioModal?: () => void;
 }) {
   return (
-    <SafeView style={{ paddingHorizontal: 12, paddingTop: 10, paddingBottom: 6 }}>
+    <SafeView style={{ paddingHorizontal: 12, paddingTop: 10, paddingBottom: 8 }}>
       <SafeView style={{ flexDirection: "row", alignItems: "center" }}>
         <View>
-          <Animated.Text style={{ fontSize: titleSize, fontWeight: "900", color: UI.text }}>
+          <Animated.Text style={{ fontSize: titleSize, fontWeight: "600", color: UI.text }}>
             Бухгалтер
           </Animated.Text>
           {!!accountantFio && (
             <Pressable onPress={onOpenFioModal}>
-              <Text style={{ fontSize: 13, color: UI.accent, fontWeight: "800", marginTop: 2 }}>
-                👤 {accountantFio}
+              <Text style={{ fontSize: 13, color: UI.sub, fontWeight: "500", marginTop: 4 }}>
+                {accountantFio}
               </Text>
             </Pressable>
           )}
@@ -115,7 +115,7 @@ export default function Header({
                       borderColor: active ? UI.accent : "rgba(255,255,255,0.14)",
                     }}
                   >
-                    <Text style={{ color: active ? UI.tabActiveText : UI.tabInactiveText, fontWeight: "800" }}>
+                    <Text style={{ color: active ? UI.tabActiveText : UI.tabInactiveText, fontWeight: "600" }}>
                       {t}
                     </Text>
                   </Pressable>
@@ -128,9 +128,9 @@ export default function Header({
 
       <Animated.View style={{ opacity: subOpacity, marginTop: 10 }}>
         {tab === "История" ? (
-          <Text style={{ color: UI.sub, fontWeight: "800" }}>Фильтры истории ниже в списке</Text>
+          <Text style={{ color: UI.sub, fontWeight: "500" }}>Фильтры истории ниже в списке</Text>
         ) : (
-          <Text style={{ color: UI.sub, fontWeight: "800" }}>
+          <Text style={{ color: UI.sub, fontWeight: "500" }}>
             {rowsCount} документов • обновляй свайпом вниз
           </Text>
         )}

@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+﻿import React, { useMemo, useState } from "react";
 import { View, Text, Pressable, ScrollView } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -102,13 +102,13 @@ export default function WarehouseReportsTab(props: Props) {
     return actions;
   }, [isIncoming, onOpenPeriod, onRefresh, onPdfRegister, onPdfMaterials, onPdfObjectWork]);
 
-  const sectionTitle = isIncoming ? "ПРИХОДЫ ЗА ПЕРИОД" : "ВЫДАЧИ ЗА ПЕРИОД";
+  const sectionTitle = isIncoming ? "РџР РРҐРћР”Р« Р—Рђ РџР•Р РРћР”" : "Р’Р«Р”РђР§Р Р—Рђ РџР•Р РРћР”";
 
   if (mode === "choice") {
     return (
       <View style={{ flex: 1, paddingHorizontal: 16, paddingTop: headerTopPad + 20 }}>
-        <Text style={{ color: UI.text, fontSize: 24, fontWeight: "900", textAlign: "center", marginBottom: 40 }}>
-          ОТЧЁТЫ
+        <Text style={{ color: UI.text, fontSize: 22, fontWeight: "600", textAlign: "center", marginBottom: 28 }}>
+          РћРўР§РЃРўР«
         </Text>
 
         <View style={{ gap: 16 }}>
@@ -123,10 +123,10 @@ export default function WarehouseReportsTab(props: Props) {
                 paddingVertical: 24,
                 alignItems: "center",
               },
-              pressed && { opacity: 0.7, backgroundColor: "rgba(255,255,255,0.1)" },
+              pressed && { opacity: 0.9, backgroundColor: "rgba(255,255,255,0.08)" },
             ]}
           >
-            <Text style={{ color: UI.text, fontSize: 20, fontWeight: "800" }}>[ Выдача ]</Text>
+            <Text style={{ color: UI.text, fontSize: 18, fontWeight: "600" }}>[ Р’С‹РґР°С‡Р° ]</Text>
           </Pressable>
 
           <Pressable
@@ -140,10 +140,10 @@ export default function WarehouseReportsTab(props: Props) {
                 paddingVertical: 24,
                 alignItems: "center",
               },
-              pressed && { opacity: 0.7, backgroundColor: "rgba(255,255,255,0.1)" },
+              pressed && { opacity: 0.9, backgroundColor: "rgba(255,255,255,0.08)" },
             ]}
           >
-            <Text style={{ color: UI.text, fontSize: 20, fontWeight: "800" }}>[ Приход ]</Text>
+            <Text style={{ color: UI.text, fontSize: 18, fontWeight: "600" }}>[ РџСЂРёС…РѕРґ ]</Text>
           </Pressable>
         </View>
       </View>
@@ -188,7 +188,7 @@ export default function WarehouseReportsTab(props: Props) {
             style={{
               flex: 1,
               fontSize: 16,
-              fontWeight: "900",
+                fontWeight: "600",
               color: UI.text,
             }}
           >
@@ -235,9 +235,9 @@ export default function WarehouseReportsTab(props: Props) {
         <ScrollView
           style={{ flex: 1 }}
           contentContainerStyle={{
-            paddingTop: 16,
+            paddingTop: 20,
             paddingHorizontal: 16,
-            paddingBottom: Math.max(24, insets.bottom + 16),
+            paddingBottom: Math.max(24, insets.bottom + 20),
           }}
           showsVerticalScrollIndicator
           keyboardShouldPersistTaps="handled"
@@ -246,7 +246,7 @@ export default function WarehouseReportsTab(props: Props) {
             const docId = isIncoming ? (h.incoming_id || h.id) : h.issue_id;
             const docNo = isIncoming
               ? (h.display_no || `PR-${String(docId).slice(0, 8)}`)
-              : (h.issue_no || (Number.isFinite(docId) ? `ISSUE-${docId}` : "ISSUE-—"));
+              : (h.issue_no || (Number.isFinite(docId) ? `ISSUE-${docId}` : "ISSUE-вЂ”"));
 
             return (
               <View key={`${activeDay.day}_${docId || idx}_${idx}`} style={{ marginBottom: 12 }}>
@@ -292,8 +292,8 @@ export default function WarehouseReportsTab(props: Props) {
       <ScrollView
         style={{ flex: 1 }}
         contentContainerStyle={{
-          paddingTop: headerTopPad,
-          paddingBottom: Math.max(16, insets.bottom + 12),
+          paddingTop: headerTopPad + 4,
+          paddingBottom: Math.max(20, insets.bottom + 16),
         }}
         showsVerticalScrollIndicator
         keyboardShouldPersistTaps="handled"
@@ -315,17 +315,17 @@ export default function WarehouseReportsTab(props: Props) {
           >
             <Ionicons name="close" size={22} color={UI.text} />
           </Pressable>
-          <Text style={{ color: UI.text, fontSize: 18, fontWeight: "900" }}>
-            {isIncoming ? "ПРИХОД" : "ВЫДАЧИ"}
+          <Text style={{ color: UI.text, fontSize: 18, fontWeight: "600" }}>
+            {isIncoming ? "РџР РРҐРћР”" : "Р’Р«Р”РђР§Р"}
           </Text>
         </View>
 
-        <SectionBlock title="ПЕРИОД ОТЧЁТА" style={[s.sectionBox, { paddingHorizontal: 16 }]} contentStyle={{ gap: 0 }}>
+        <SectionBlock title="РџР•Р РРћР” РћРўР§РЃРўРђ" style={[s.sectionBox, { paddingHorizontal: 16 }]} contentStyle={{ gap: 0 }}>
           <TopRightActionBar
             titleLeft={
               periodFrom || periodTo
-                ? `${periodFrom || "—"} → ${periodTo || "—"}`
-                : "Весь период"
+                ? `${periodFrom || "вЂ”"} в†’ ${periodTo || "вЂ”"}`
+                : "Р’РµСЃСЊ РїРµСЂРёРѕРґ"
             }
             actions={reportActions}
             ui={{
@@ -346,7 +346,7 @@ export default function WarehouseReportsTab(props: Props) {
                 <View style={s.mobCard}>
                   <View style={s.mobMain}>
                     <Text style={s.mobTitle}>{g.day}</Text>
-                    <Text style={s.mobMeta}>Документов: {dayCount}</Text>
+                    <Text style={s.mobMeta}>Р”РѕРєСѓРјРµРЅС‚РѕРІ: {dayCount}</Text>
                   </View>
 
                   <View style={{ flexDirection: "row", gap: 10, alignItems: "center" }}>
@@ -364,3 +364,4 @@ export default function WarehouseReportsTab(props: Props) {
     </RoleScreenLayout>
   );
 }
+

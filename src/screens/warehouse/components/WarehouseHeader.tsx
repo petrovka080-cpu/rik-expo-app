@@ -1,9 +1,7 @@
-import React, { useMemo, useRef } from "react";
+﻿import React, { useMemo, useRef } from "react";
 import { View, Text, Pressable, ScrollView, Animated, Platform } from "react-native";
 import { UI, s } from "../warehouse.styles";
-import type { Tab } from "../warehouse.types";
-
-const TABS: Tab[] = ["К приходу", "Склад факт", "Расход", "Отчёты"];
+import { WAREHOUSE_TABS, type Tab } from "../warehouse.types";
 
 type AnimNum = number | Animated.Value | Animated.AnimatedInterpolation<number>;
 
@@ -82,18 +80,18 @@ export default function WarehouseHeader(props: {
 
   const tabLabel = useMemo(
     () => (t: Tab) => {
-      if (t === "К приходу") return `К приходу (${incomingCount})`;
-      if (t === "Склад факт") return `Склад факт (${stockCount})`;
+      if (t === WAREHOUSE_TABS[0]) return `${WAREHOUSE_TABS[0]} (${incomingCount})`;
+      if (t === WAREHOUSE_TABS[1]) return `${WAREHOUSE_TABS[1]} (${stockCount})`;
       return t;
     },
     [incomingCount, stockCount],
   );
 
   const headerTitle =
-    tab === "К приходу" ? "К приходу" :
-      tab === "Склад факт" ? "Склад факт" :
-        tab === "Расход" ? "Расход" :
-          "Отчёты";
+    tab === WAREHOUSE_TABS[0] ? WAREHOUSE_TABS[0] :
+      tab === WAREHOUSE_TABS[1] ? WAREHOUSE_TABS[1] :
+        tab === WAREHOUSE_TABS[2] ? WAREHOUSE_TABS[2] :
+          WAREHOUSE_TABS[3];
 
   return (
     <View>
@@ -102,21 +100,21 @@ export default function WarehouseHeader(props: {
           {headerTitle}
         </Animated.Text>
         {!!warehousemanFio && (
-          <Pressable onPress={onOpenFioModal} style={{ marginTop: 2, marginBottom: 10 }}>
-            <Text style={{ fontSize: 13, color: UI.sub, fontWeight: "500" }}>
-              👤 {warehousemanFio}
+          <Pressable onPress={onOpenFioModal} style={{ marginTop: 4, marginBottom: 12 }}>
+            <Text style={{ fontSize: 13, color: UI.sub, fontWeight: "500", opacity: 0.9 }}>
+              {warehousemanFio}
             </Text>
           </Pressable>
         )}
-        {!warehousemanFio && <View style={{ height: 10 }} />}
+        {!warehousemanFio && <View style={{ height: 12 }} />}
       </View>
 
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{ gap: 8, paddingRight: 16 }}
+        contentContainerStyle={{ gap: 8, paddingHorizontal: 16 }}
       >
-        {TABS.map((t) => {
+        {WAREHOUSE_TABS.map((t) => {
           const active = tab === t;
           return (
             <Pressable
@@ -124,7 +122,7 @@ export default function WarehouseHeader(props: {
               onPress={() => onTab(t)}
               style={[s.tab, active && s.tabActive]}
             >
-              <Text numberOfLines={1} style={{ color: active ? UI.text : UI.sub, fontWeight: "600", fontSize: 13 }}>
+              <Text numberOfLines={1} style={{ color: active ? UI.text : UI.sub, fontWeight: "500", fontSize: 13 }}>
                 {tabLabel(t)}
               </Text>
             </Pressable>

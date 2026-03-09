@@ -93,7 +93,7 @@ export function AccountantListBlock<TInbox extends InboxRowBase>({
             </View>
           ) : (
             <View style={{ padding: 24, alignItems: "center" }}>
-              <Text style={{ color: uiSubColor, fontWeight: "700" }}>История пуста</Text>
+              <Text style={{ color: uiSubColor, fontWeight: "500" }}>История пуста</Text>
             </View>
           )
         ) : loading ? (
@@ -111,7 +111,7 @@ export function AccountantListBlock<TInbox extends InboxRowBase>({
       }
       onScroll={onScroll}
       scrollEventThrottle={16}
-      contentContainerStyle={{ paddingTop: contentTopPad, paddingBottom: 140 }}
+      contentContainerStyle={{ paddingTop: contentTopPad, paddingBottom: 128 }}
       removeClippedSubviews={Platform.OS === "web" ? false : true}
     />
   );

@@ -40,18 +40,18 @@ export const s = StyleSheet.create({
     borderColor: UI.border,
     paddingHorizontal: 16,
     paddingTop: Platform.OS === "web" ? 10 : 12,
-    paddingBottom: 10,
+    paddingBottom: 12,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 6 },
     shadowRadius: 14,
   },
 
-  collapsingTitle: { fontWeight: "900", color: UI.text, marginBottom: 8 },
+  collapsingTitle: { fontWeight: "600", color: UI.text, marginBottom: 8 },
 
   tabs: { flexDirection: "row", flexWrap: "nowrap", alignItems: "center" },
 
   tab: {
-    height: 36,
+    height: 34,
     paddingHorizontal: 14,
     borderRadius: 18,
     borderWidth: 1,
@@ -72,12 +72,12 @@ export const s = StyleSheet.create({
     borderRadius: 16,
     backgroundColor: UI.cardBg,
     borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.14)",
+    borderColor: "rgba(255,255,255,0.12)",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.16,
-    shadowRadius: 14,
-    elevation: 4,
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+    elevation: 3,
     minHeight: 72,
   },
   groupTitle: { fontSize: 16, fontWeight: "600", color: UI.text },
@@ -85,7 +85,7 @@ export const s = StyleSheet.create({
     marginTop: 4,
     color: UI.sub,
     fontSize: 13,
-    fontWeight: "400",
+    fontWeight: "500",
   },
 
   rightStack: { alignItems: "flex-end", justifyContent: "center", gap: 8 },
@@ -100,7 +100,7 @@ export const s = StyleSheet.create({
     alignItems: "center",
     flexShrink: 0,
   },
-  metaPillText: { color: "#E5E7EB", fontWeight: "600", fontSize: 12 },
+  metaPillText: { color: "#E5E7EB", fontWeight: "500", fontSize: 12 },
 
   openBtn: {
     paddingVertical: 10,
@@ -112,7 +112,7 @@ export const s = StyleSheet.create({
     minWidth: 96,
     alignItems: "center",
   },
-  openBtnText: { color: "#FFFFFF", fontWeight: "600", fontSize: 13, letterSpacing: 0 },
+  openBtnText: { color: "#FFFFFF", fontWeight: "500", fontSize: 13, letterSpacing: 0 },
 
   mobCard: {
     flexDirection: "row",
@@ -126,9 +126,9 @@ export const s = StyleSheet.create({
     borderColor: "rgba(255,255,255,0.16)",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.16,
-    shadowRadius: 14,
-    elevation: 4,
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+    elevation: 3,
   },
   mobMain: { flex: 1, minWidth: 0 },
   mobTitle: { fontSize: 16, fontWeight: "600", color: UI.text },

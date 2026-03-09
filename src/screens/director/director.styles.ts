@@ -22,7 +22,7 @@ export const UI = {
 export const s = StyleSheet.create({
   container: { flex: 1 },
 
-collapsingHeader: {
+  collapsingHeader: {
   position: "absolute",
   top: 0,
   left: 0,
@@ -38,7 +38,7 @@ collapsingHeader: {
   paddingHorizontal: 16,
   paddingTop: 0,
 
-  paddingBottom: 10,
+  paddingBottom: 12,
   shadowColor: "#000",
   shadowOffset: { width: 0, height: 6 },
   shadowRadius: 14,
@@ -46,9 +46,9 @@ collapsingHeader: {
 
 
   collapsingTitle: {
-    fontWeight: "900",
+    fontWeight: "600",
     color: UI.text,
-    marginBottom: 8,
+    marginBottom: 10,
   },
 
 
@@ -60,7 +60,7 @@ collapsingHeader: {
     marginVertical: -4,
   },
   tab: {
-    height: 36,
+    height: 34,
     paddingHorizontal: 14,
     borderRadius: 18,
     borderWidth: 1,
@@ -80,7 +80,7 @@ collapsingHeader: {
   sectionHeader: {
     paddingHorizontal: 16,
     paddingTop: 12,
-    paddingBottom: 6,
+    paddingBottom: 8,
     ...Platform.select({
       web: {
         flexDirection: "row",
@@ -94,7 +94,7 @@ collapsingHeader: {
     }),
   },
 
-  sectionTitle: { fontSize: 14, fontWeight: "600", color: UI.text, opacity: 0.7 },
+  sectionTitle: { fontSize: 14, fontWeight: "600", color: UI.text, opacity: 0.82 },
 
   kpiRow: {
     width: "100%",
@@ -106,11 +106,11 @@ collapsingHeader: {
   },
 
   kpiPillHalf: {
-    paddingVertical: 8,
+    paddingVertical: 10,
     paddingHorizontal: 12,
     borderRadius: 999,
     borderWidth: 1,
-    borderColor: UI.border,
+    borderColor: "rgba(255,255,255,0.14)",
     backgroundColor: UI.cardBg,
     flexDirection: "row",
     alignItems: "center",
@@ -122,8 +122,8 @@ collapsingHeader: {
     minWidth: 0,
   },
 
-  kpiLabel: { color: UI.sub, fontWeight: "700", fontSize: 12, flexShrink: 0 },
-  kpiValue: { color: UI.text, fontWeight: "900", fontSize: 12 },
+  kpiLabel: { color: UI.sub, fontWeight: "500", fontSize: 12, flexShrink: 0 },
+  kpiValue: { color: UI.text, fontWeight: "600", fontSize: 13 },
 
   // ===== LIST CARD =====
   group: { marginBottom: 10, paddingHorizontal: 16 },
@@ -136,12 +136,12 @@ collapsingHeader: {
     borderRadius: 16,
     backgroundColor: UI.cardBg,
     borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.18)",
+    borderColor: "rgba(255,255,255,0.14)",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.22,
-    shadowRadius: 18,
-    elevation: 6,
+    shadowOpacity: 0.14,
+    shadowRadius: 14,
+    elevation: 4,
     minHeight: 72,
   },
   groupTitle: { fontSize: 16, fontWeight: "600", color: UI.text },
@@ -149,7 +149,7 @@ collapsingHeader: {
     marginTop: 4,
     color: UI.sub,
     fontSize: 13,
-    fontWeight: "600",
+    fontWeight: "500",
   },
 
   // RIGHT STACK
@@ -166,7 +166,7 @@ collapsingHeader: {
     alignItems: "center",
     flexShrink: 0,
   },
-  metaPillText: { color: "#E5E7EB", fontWeight: "900", fontSize: 12 },
+  metaPillText: { color: "#E5E7EB", fontWeight: "600", fontSize: 12 },
 
   openBtn: {
     paddingVertical: 10,
@@ -180,7 +180,7 @@ collapsingHeader: {
   },
   openBtnText: {
     color: "#FFFFFF",
-    fontWeight: "900",
+    fontWeight: "600",
     fontSize: 13,
     letterSpacing: 0.2,
   },
@@ -211,13 +211,13 @@ collapsingHeader: {
     borderColor: "rgba(255,255,255,0.16)",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.22,
-    shadowRadius: 18,
-    elevation: 6,
+    shadowOpacity: 0.14,
+    shadowRadius: 14,
+    elevation: 4,
   },
   mobMain: { flex: 1, minWidth: 0 },
   mobTitle: { fontSize: 16, fontWeight: "600", color: UI.text },
-  mobMeta: { marginTop: 4, fontSize: 13, fontWeight: "600", color: UI.sub },
+  mobMeta: { marginTop: 4, fontSize: 13, fontWeight: "500", color: UI.sub },
 
   kindPill: {
     paddingVertical: 4,
