@@ -211,6 +211,26 @@ const chunk = <T,>(arr: T[], size = 500): T[][] => {
   return out;
 };
 
+const forEachChunkParallel = async <T,>(
+  arr: T[],
+  size: number,
+  concurrency: number,
+  worker: (part: T[]) => Promise<void>,
+) => {
+  const parts = chunk(arr, size);
+  if (!parts.length) return;
+  const c = Math.max(1, Math.min(concurrency, parts.length));
+  let idx = 0;
+  const runners = Array.from({ length: c }, async () => {
+    while (true) {
+      const i = idx++;
+      if (i >= parts.length) return;
+      await worker(parts[i]);
+    }
+  });
+  await Promise.all(runners);
+};
+
 const REQUESTS_SELECT_PLANS = [
   "id,object_id,object_name,object_type_code,system_code,level_code,object",
   "id,object_id,object_name,system_code,level_code,object",
@@ -878,8 +898,9 @@ async function fetchAllFactRowsFromTables(p: {
   to: string;
   objectName: string | null;
 }): Promise<DirectorFactRow[]> {
+  const tTotal = nowMs();
   const issuesById = new Map<string, any>();
-  const pageSize = 1000;
+  const pageSize = 2500;
   let fromIdx = 0;
 
   while (true) {
@@ -890,6 +911,7 @@ async function fetchAllFactRowsFromTables(p: {
 
     if (p.from) q = q.gte("iss_date", toRangeStart(p.from));
     if (p.to) q = q.lte("iss_date", toRangeEnd(p.to));
+    if (p.objectName != null) q = q.eq("object_name", p.objectName);
 
     q = q.order("iss_date", { ascending: false })
       .range(fromIdx, fromIdx + pageSize - 1);
@@ -908,6 +930,7 @@ async function fetchAllFactRowsFromTables(p: {
     fromIdx += pageSize;
     if (fromIdx > 500000) break;
   }
+  logTiming("discipline.rows.tables.issues_scan", tTotal);
 
   if (!issuesById.size) return [];
 
@@ -915,14 +938,16 @@ async function fetchAllFactRowsFromTables(p: {
   if (!issueIds.length) return [];
 
   const issueItems: any[] = [];
-  for (const ids of chunk(issueIds, 100)) {
+  const tIssueItems = nowMs();
+  await forEachChunkParallel(issueIds, 500, 6, async (ids) => {
     const { data, error } = await supabase
       .from("warehouse_issue_items" as any)
       .select("issue_id,rik_code,uom_id,qty,request_item_id")
       .in("issue_id", ids as any);
     if (error) throw error;
     if (Array.isArray(data)) issueItems.push(...data);
-  }
+  });
+  logTiming("discipline.rows.tables.issue_items", tIssueItems);
 
   if (!issueItems.length) return [];
 
@@ -935,7 +960,8 @@ async function fetchAllFactRowsFromTables(p: {
   );
 
   const requestIdByRequestItem = new Map<string, string>();
-  for (const ids of chunk(requestItemIds, 500)) {
+  const tReqItems = nowMs();
+  await forEachChunkParallel(requestItemIds, 500, 6, async (ids) => {
     const { data, error } = await supabase
       .from("request_items" as any)
       .select("id,request_id")
@@ -948,7 +974,8 @@ async function fetchAllFactRowsFromTables(p: {
       const reqId = String(r?.request_id ?? "").trim();
       if (id && reqId) requestIdByRequestItem.set(id, reqId);
     }
-  }
+  });
+  logTiming("discipline.rows.tables.request_items", tReqItems);
 
   const requestIds = Array.from(
     new Set(
@@ -963,13 +990,15 @@ async function fetchAllFactRowsFromTables(p: {
   );
 
   const requestById = new Map<string, any>();
-  for (const ids of chunk(requestIds, 500)) {
+  const tReq = nowMs();
+  await forEachChunkParallel(requestIds, 500, 4, async (ids) => {
     const rows = await fetchRequestsRowsSafe(ids as any);
     for (const r of rows) {
       const id = String(r?.id ?? "").trim();
       if (id) requestById.set(id, r);
     }
-  }
+  });
+  logTiming("discipline.rows.tables.requests", tReq);
 
   const objectIds = Array.from(
     new Set(
@@ -981,7 +1010,8 @@ async function fetchAllFactRowsFromTables(p: {
   );
 
   const objectNameById = new Map<string, string>();
-  for (const ids of chunk(objectIds, 500)) {
+  const tObjects = nowMs();
+  await forEachChunkParallel(objectIds, 500, 4, async (ids) => {
     const { data, error } = await supabase
       .from("objects" as any)
       .select("id,name")
@@ -993,7 +1023,8 @@ async function fetchAllFactRowsFromTables(p: {
       const name = String(r?.name ?? "").trim();
       if (id && name) objectNameById.set(id, name);
     }
-  }
+  });
+  logTiming("discipline.rows.tables.objects", tObjects);
 
   const objectTypeCodes = Array.from(
     new Set(
@@ -1004,7 +1035,8 @@ async function fetchAllFactRowsFromTables(p: {
   );
 
   const objectTypeNameByCode = new Map<string, string>();
-  for (const codes of chunk(objectTypeCodes, 500)) {
+  const tObjTypes = nowMs();
+  await forEachChunkParallel(objectTypeCodes, 500, 4, async (codes) => {
     const { data, error } = await supabase
       .from("ref_object_types" as any)
       .select("code,name_human_ru,display_name,name")
@@ -1019,7 +1051,8 @@ async function fetchAllFactRowsFromTables(p: {
         String(r?.name ?? "").trim();
       if (code && name) objectTypeNameByCode.set(code, name);
     }
-  }
+  });
+  logTiming("discipline.rows.tables.object_types", tObjTypes);
 
   const systemCodes = Array.from(
     new Set(
@@ -1030,7 +1063,8 @@ async function fetchAllFactRowsFromTables(p: {
   );
 
   const systemNameByCode = new Map<string, string>();
-  for (const codes of chunk(systemCodes, 500)) {
+  const tSystems = nowMs();
+  await forEachChunkParallel(systemCodes, 500, 4, async (codes) => {
     const { data, error } = await supabase
       .from("ref_systems" as any)
       .select("code,name_human_ru,display_name,alias_ru,name")
@@ -1046,7 +1080,8 @@ async function fetchAllFactRowsFromTables(p: {
         String(r?.name ?? "").trim();
       if (code && name) systemNameByCode.set(code, name);
     }
-  }
+  });
+  logTiming("discipline.rows.tables.systems", tSystems);
 
   const codes = Array.from(
     new Set(
@@ -1059,26 +1094,28 @@ async function fetchAllFactRowsFromTables(p: {
   const nameRuByCode = new Map<string, string>();
   if (codes.length) {
     const probe = await probeNameSources();
-    let canUseVrr = probe.vrr;
+    const canUseVrr = probe.vrr;
 
-    for (const part of chunk(codes, 100)) {
-      if (canUseVrr) {
-        const vrrRes = await supabase
-          .from("v_rik_names_ru" as any)
-          .select("code,name_ru")
-          .in("code", part as any);
-        if (vrrRes.error) {
-          canUseVrr = false;
-          console.warn("[director_reports] disable v_rik_names_ru:", vrrRes.error.message);
-        } else {
+    const tNames = nowMs();
+    if (canUseVrr) {
+      try {
+        await forEachChunkParallel(codes, 500, 6, async (part) => {
+          const vrrRes = await supabase
+            .from("v_rik_names_ru" as any)
+            .select("code,name_ru")
+            .in("code", part as any);
+          if (vrrRes.error) throw vrrRes.error;
           for (const r of Array.isArray(vrrRes.data) ? vrrRes.data : []) {
             const c = String(r?.code ?? "").trim().toUpperCase();
             const n = String(r?.name_ru ?? "").trim();
             if (c && n && !nameRuByCode.has(c)) nameRuByCode.set(c, n);
           }
-        }
+        });
+      } catch (e: any) {
+        console.warn("[director_reports] disable v_rik_names_ru:", e?.message ?? e);
       }
     }
+    logTiming("discipline.rows.tables.name_resolve", tNames);
   }
 
   const out: DirectorFactRow[] = [];
@@ -1135,6 +1172,7 @@ async function fetchAllFactRowsFromTables(p: {
     });
   }
 
+  logTiming("discipline.rows.tables.total", tTotal);
   return out;
 }
 
@@ -1734,12 +1772,14 @@ function buildDisciplinePayloadFromFactRows(
   };
 }
 
+type DisciplineRowsSource = "tables" | "acc_rpc" | "view" | "none";
+
 async function fetchFactRowsForDiscipline(p: {
   from: string;
   to: string;
   objectName: string | null;
   objectIdByName: Record<string, string | null>;
-}): Promise<DirectorFactRow[]> {
+}): Promise<{ rows: DirectorFactRow[]; source: DisciplineRowsSource }> {
   const objectName = p.objectName ?? null;
   const selectedObjectId = objectName == null ? null : (p.objectIdByName[objectName] ?? null);
   const preferAccPath = objectName != null && selectedObjectId == null;
@@ -1748,34 +1788,40 @@ async function fetchFactRowsForDiscipline(p: {
   if (preferAccPath) {
     try {
       rows = await fetchDirectorFactViaAccRpc({ from: p.from, to: p.to, objectName });
+      if (rows.length) return { rows, source: "acc_rpc" };
     } catch { }
     if (!rows.length) {
       try {
         rows = await fetchAllFactRowsFromView({ from: p.from, to: p.to, objectName });
+        if (rows.length) return { rows, source: "view" };
       } catch { }
     }
     if (!rows.length) {
       try {
         rows = await fetchAllFactRowsFromTables({ from: p.from, to: p.to, objectName });
+        if (rows.length) return { rows, source: "tables" };
       } catch { }
     }
-    return rows;
+    return { rows: [], source: "none" };
   }
 
   try {
     rows = await fetchAllFactRowsFromTables({ from: p.from, to: p.to, objectName });
+    if (rows.length) return { rows, source: "tables" };
   } catch { }
   if (!rows.length) {
     try {
       rows = await fetchDirectorFactViaAccRpc({ from: p.from, to: p.to, objectName });
+      if (rows.length) return { rows, source: "acc_rpc" };
     } catch { }
   }
   if (!rows.length) {
     try {
       rows = await fetchAllFactRowsFromView({ from: p.from, to: p.to, objectName });
+      if (rows.length) return { rows, source: "view" };
     } catch { }
   }
-  return rows;
+  return { rows: [], source: "none" };
 }
 
 export async function fetchDirectorWarehouseReport(p: {
@@ -1879,17 +1925,27 @@ export async function fetchDirectorWarehouseReportDiscipline(p: {
   const pFrom = rpcDate(p.from, "1970-01-01");
   const pTo = rpcDate(p.to, "2099-12-31");
   const tRows = nowMs();
-  let rows = await fetchFactRowsForDiscipline({
+  const rowsResult = await fetchFactRowsForDiscipline({
     from: pFrom,
     to: pTo,
     objectName: p.objectName ?? null,
     objectIdByName: p.objectIdByName ?? {},
   });
+  let rows = rowsResult.rows;
   logTiming("discipline.fetch_rows", tRows);
+  if (REPORTS_TIMING) {
+    console.info(`[director_reports] discipline.rows_source: ${rowsResult.source} rows=${rows.length}`);
+  }
   try {
-    const tNames = nowMs();
-    rows = await enrichFactRowsMaterialNames(rows);
-    logTiming("discipline.enrich_material_names", tNames);
+    // Table path already resolves names by code during row materialization.
+    // Skip expensive cross-source enrichment here to keep works first paint fast.
+    if (rowsResult.source !== "tables") {
+      const tNames = nowMs();
+      rows = await enrichFactRowsMaterialNames(rows);
+      logTiming("discipline.enrich_material_names", tNames);
+    } else if (REPORTS_TIMING) {
+      console.info("[director_reports] discipline.enrich_material_names: skipped_for_tables_source");
+    }
   } catch { }
   try {
     const tLevels = nowMs();
