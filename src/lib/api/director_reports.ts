@@ -125,6 +125,8 @@ const WITHOUT_LEVEL = "Без этажа";
 const DASH = "—";
 const REPORTS_TIMING = typeof __DEV__ !== "undefined" ? __DEV__ : false;
 const DISCIPLINE_ROWS_CACHE_TTL_MS = 2 * 60 * 1000;
+const DIRECTOR_REPORTS_CANONICAL_ENABLED =
+  String((globalThis as any)?.process?.env?.EXPO_PUBLIC_DIRECTOR_REPORTS_CANONICAL ?? "").trim() === "1";
 
 const toNum = (v: any): number => {
   const n = Number(v ?? 0);
@@ -1764,6 +1766,50 @@ async function fetchIssuePriceMapByCode(opts?: {
   return out;
 }
 
+const unwrapRpcPayload = (data: any): any => {
+  if (Array.isArray(data)) {
+    if (!data.length) return null;
+    const first = data[0];
+    if (first && typeof first === "object" && "payload" in first) return (first as any).payload ?? null;
+    return first ?? null;
+  }
+  return data ?? null;
+};
+
+async function fetchDirectorReportCanonicalMaterials(p: {
+  from: string;
+  to: string;
+  objectName: string | null;
+}): Promise<DirectorReportPayload | null> {
+  const { data, error } = await supabase.rpc("director_report_fetch_materials_v1" as any, {
+    p_from: p.from || "1970-01-01",
+    p_to: p.to || "2099-12-31",
+    p_object_name: p.objectName ?? null,
+  } as any);
+  if (error) throw error;
+  const payload = unwrapRpcPayload(data);
+  if (!payload || typeof payload !== "object") return null;
+  return payload as DirectorReportPayload;
+}
+
+async function fetchDirectorReportCanonicalWorks(p: {
+  from: string;
+  to: string;
+  objectName: string | null;
+  includeCosts: boolean;
+}): Promise<DirectorDisciplinePayload | null> {
+  const { data, error } = await supabase.rpc("director_report_fetch_works_v1" as any, {
+    p_from: p.from || "1970-01-01",
+    p_to: p.to || "2099-12-31",
+    p_object_name: p.objectName ?? null,
+    p_include_costs: !!p.includeCosts,
+  } as any);
+  if (error) throw error;
+  const payload = unwrapRpcPayload(data);
+  if (!payload || typeof payload !== "object") return null;
+  return payload as DirectorDisciplinePayload;
+}
+
 async function fetchPriceByRequestItemId(requestItemIds: string[]): Promise<Map<string, number>> {
   const out = new Map<string, number>();
   const ids = Array.from(new Set((requestItemIds || []).map((x) => String(x || "").trim()).filter(Boolean)));
@@ -2172,6 +2218,26 @@ export async function fetchDirectorWarehouseReport(p: {
   const pTo = rpcDate(p.to, "2099-12-31");
   const selectedObjectId = objectName == null ? null : (p.objectIdByName[objectName] ?? null);
 
+  if (DIRECTOR_REPORTS_CANONICAL_ENABLED) {
+    const tCanonical = nowMs();
+    try {
+      const canonical = await fetchDirectorReportCanonicalMaterials({
+        from: pFrom,
+        to: pTo,
+        objectName,
+      });
+      if (canonical) {
+        logTiming("report.canonical_materials", tCanonical);
+        return canonical;
+      }
+    } catch (e: any) {
+      if (REPORTS_TIMING) {
+        console.info(`[director_reports] report.canonical_materials.failed: ${e?.message ?? e}`);
+      }
+    }
+    logTiming("report.canonical_materials_fallback", tCanonical);
+  }
+
   // Production-first path: try optimized RPC first.
   // For object filter we need a real object_id; if absent, preserve old behavior and use detailed paths.
   if (objectName == null || selectedObjectId != null) {
@@ -2261,6 +2327,28 @@ export async function fetchDirectorWarehouseReportDiscipline(p: {
   const tTotal = nowMs();
   const pFrom = rpcDate(p.from, "1970-01-01");
   const pTo = rpcDate(p.to, "2099-12-31");
+
+  if (DIRECTOR_REPORTS_CANONICAL_ENABLED) {
+    const tCanonical = nowMs();
+    try {
+      const canonical = await fetchDirectorReportCanonicalWorks({
+        from: pFrom,
+        to: pTo,
+        objectName: p.objectName ?? null,
+        includeCosts: !opts?.skipPrices,
+      });
+      if (canonical) {
+        logTiming("discipline.canonical_works", tCanonical);
+        return canonical;
+      }
+    } catch (e: any) {
+      if (REPORTS_TIMING) {
+        console.info(`[director_reports] discipline.canonical_works.failed: ${e?.message ?? e}`);
+      }
+    }
+    logTiming("discipline.canonical_works_fallback", tCanonical);
+  }
+
   const rowsKey = buildDisciplineRowsCacheKey({
     from: pFrom,
     to: pTo,
