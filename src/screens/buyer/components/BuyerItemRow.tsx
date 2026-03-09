@@ -1,11 +1,12 @@
 ﻿import React from "react";
 import { View, Text, Pressable, TextInput } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 
 import type { BuyerInboxRow } from "../../../lib/catalog_api";
+import StatusBadge from "../../../ui/StatusBadge";
 import type { LineMeta } from "../buyer.types";
 import { splitNote, mergeNote } from "../buyerUtils";
 import { P_LIST, P_SHEET } from "../buyerUi";
-import { Chip } from "./common/Chip";
 import type { StylesBag } from "./component.types";
 
 export const BuyerItemRow = React.memo(function BuyerItemRow(props: {
@@ -83,22 +84,25 @@ export const BuyerItemRow = React.memo(function BuyerItemRow(props: {
             <Text style={[s.cardMeta, { color: P.sub }]}>{prettyText}</Text>
           </View>
 
-          <Pressable
-            onPress={onTogglePick}
-            style={[
-              s.smallBtn,
-              {
-                borderColor: selected ? "#2563eb" : P.btnBorder,
-                backgroundColor: selected ? "#2563eb" : P.btnBg,
-                minWidth: 86,
-                alignItems: "center",
-              },
-            ]}
-          >
-            <Text style={[s.smallBtnText, { color: selected ? "#fff" : P.text }]}>
-              {selected ? "Снять" : "Выбрать"}
-            </Text>
-          </Pressable>
+          <View style={{ alignItems: "flex-end", gap: 8 }}>
+            <Pressable
+              onPress={onTogglePick}
+              style={[
+                s.smallBtn,
+                {
+                  borderColor: selected ? "#2563eb" : P.btnBorder,
+                  backgroundColor: selected ? "#2563eb" : P.btnBg,
+                  minWidth: 86,
+                  alignItems: "center",
+                },
+              ]}
+            >
+              <Text style={[s.smallBtnText, { color: selected ? "#fff" : P.text }]}>
+                {selected ? "Снять" : "Выбрать"}
+              </Text>
+            </Pressable>
+            <Ionicons name="chevron-forward" size={16} color={P.sub} />
+          </View>
         </View>
 
         <View style={{ gap: 2 }}>
@@ -120,17 +124,9 @@ export const BuyerItemRow = React.memo(function BuyerItemRow(props: {
         <View style={{ flexDirection: "row", marginTop: 6 }}>
           <View style={{ marginLeft: "auto" }}>
             {selected ? (
-              <Chip
-                label="Выбрано"
-                bg={inSheet ? "rgba(59,130,246,0.20)" : "#E0F2FE"}
-                fg={inSheet ? "#BFDBFE" : "#075985"}
-              />
+              <StatusBadge label="Выбрано" tone="info" compact />
             ) : (
-              <Chip
-                label="Заполни и выбери"
-                bg={inSheet ? "rgba(255,255,255,0.06)" : "#F1F5F9"}
-                fg={inSheet ? "#E5E7EB" : "#334155"}
-              />
+              <StatusBadge label="Заполни и выбери" tone="neutral" compact />
             )}
           </View>
         </View>
@@ -216,3 +212,4 @@ export const BuyerItemRow = React.memo(function BuyerItemRow(props: {
     </View>
   );
 });
+

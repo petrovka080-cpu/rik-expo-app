@@ -5,6 +5,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import TopRightActionBar from "../../../ui/TopRightActionBar";
 import SectionBlock from "../../../ui/SectionBlock";
+import StatusBadge from "../../../ui/StatusBadge";
 import RoleScreenLayout from "../../../components/layout/RoleScreenLayout";
 import type { TopRightAction } from "../../../ui/TopRightActionBar";
 import { UI, s } from "../warehouse.styles";
@@ -347,8 +348,9 @@ export default function WarehouseReportsTab(props: Props) {
                     <Text style={s.mobMeta}>Документов: {dayCount}</Text>
                   </View>
 
-                  <View style={{ flexDirection: "row", gap: 14, alignItems: "center" }}>
-                    <Ionicons name="chevron-forward" size={20} color={UI.text} />
+                  <View style={{ flexDirection: "row", gap: 10, alignItems: "center" }}>
+                    <StatusBadge label={`${dayCount}`} tone="info" compact />
+                    <Ionicons name="chevron-forward" size={18} color={UI.sub} />
                   </View>
                 </View>
               </Pressable>
