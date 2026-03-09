@@ -8,6 +8,7 @@ import {
   type TextStyle,
   type ViewStyle,
 } from "react-native";
+import { ROLE_COLOR, ROLE_SPACE, ROLE_TYPE } from "./roleVisual";
 
 export type SectionBlockProps = {
   title?: string;
@@ -73,11 +74,11 @@ const styles = StyleSheet.create({
     width: "100%",
   },
   baseRegular: {
-    marginTop: 18,
+    marginTop: ROLE_SPACE.xl,
     marginBottom: 0,
   },
   baseCompact: {
-    marginTop: 12,
+    marginTop: ROLE_SPACE.md,
     marginBottom: 0,
   },
   headerRow: {
@@ -86,52 +87,53 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   headerRowRegular: {
-    marginBottom: 8,
-    gap: 10,
+    marginBottom: ROLE_SPACE.md,
+    gap: ROLE_SPACE.md,
   },
   headerRowCompact: {
-    marginBottom: 8,
-    gap: 8,
+    marginBottom: ROLE_SPACE.sm,
+    gap: ROLE_SPACE.sm,
   },
   headerTextCol: {
     flex: 1,
     minWidth: 0,
   },
   rightSlot: {
-    marginLeft: 8,
-    alignSelf: "center",
+    marginLeft: ROLE_SPACE.sm,
+    alignSelf: "flex-start",
   },
   title: {
-    fontWeight: "600",
-    color: "#F8FAFC",
-    opacity: 0.7,
+    ...ROLE_TYPE.sectionTitle,
+    color: ROLE_COLOR.text,
+    opacity: 0.82,
   },
   titleRegular: {
-    fontSize: 14,
-    lineHeight: 18,
+    fontSize: ROLE_TYPE.sectionTitle.fontSize,
+    lineHeight: ROLE_TYPE.sectionTitle.lineHeight,
   },
   titleCompact: {
-    fontSize: 14,
-    lineHeight: 18,
+    fontSize: ROLE_TYPE.sectionTitle.fontSize,
+    lineHeight: ROLE_TYPE.sectionTitle.lineHeight,
   },
   subtitle: {
-    color: "#9CA3AF",
-    fontWeight: "600",
-    marginTop: 2,
+    color: ROLE_COLOR.subText,
+    fontWeight: "400",
+    marginTop: ROLE_SPACE.xs,
+    opacity: 0.86,
   },
   subtitleRegular: {
-    fontSize: 12,
-    lineHeight: 16,
+    fontSize: 13,
+    lineHeight: 18,
   },
   subtitleCompact: {
-    fontSize: 11,
-    lineHeight: 14,
+    fontSize: 12,
+    lineHeight: 16,
   },
   content: {
     width: "100%",
   },
   contentRegular: {
-    gap: 10,
+    gap: ROLE_SPACE.md,
   },
   contentCompact: {
     gap: 8,

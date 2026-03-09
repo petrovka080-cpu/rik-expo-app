@@ -22,7 +22,7 @@ export const UI = {
 export const TOK = {
   rCard: 16,
   rBox: 16,
-  rBtn: 14,
+  rBtn: 12,
 
   borderStrong: "rgba(255,255,255,0.16)",
   borderSoft: "rgba(255,255,255,0.10)",
@@ -44,7 +44,7 @@ export const S = {
     borderWidth: 1,
     borderColor: TOK.borderStrong,
     borderRadius: TOK.rBox,
-    padding: 12,
+    padding: 16,
     ...TOK.shadow,
   },
 
@@ -53,11 +53,11 @@ export const S = {
     borderWidth: 1,
     borderColor: TOK.borderSoft,
     borderRadius: TOK.rBox,
-    padding: 10,
+    padding: 12,
   },
 
-  label: { color: UI.sub, fontWeight: "800" as const, fontSize: 12, letterSpacing: 0.3 },
-  value: { color: UI.text, fontWeight: "900" as const },
+  label: { color: UI.sub, fontWeight: "600" as const, fontSize: 12, letterSpacing: 0 },
+  value: { color: UI.text, fontWeight: "600" as const },
 
   input: (ok: boolean) => ({
     borderWidth: 1,
@@ -66,6 +66,6 @@ export const S = {
     borderRadius: 12,
     padding: 12,
     color: UI.text,
-    fontWeight: "700" as const,
+    fontWeight: "500" as const,
   }),
 };

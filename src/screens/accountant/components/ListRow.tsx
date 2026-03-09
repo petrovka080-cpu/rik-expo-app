@@ -5,6 +5,7 @@ import { UI } from "../ui";
 import { statusFromRaw } from "../helpers";
 import { normalizeRuText } from "../../../lib/text/encoding";
 import { StatusBadge } from "../../../ui/StatusBadge";
+import ChevronIndicator from "../../../ui/ChevronIndicator";
 
 type ListRowItem = AccountantInboxRow & {
   total_paid?: number | null;
@@ -47,42 +48,43 @@ function ListRowInner({
       style={({ pressed }) => ({
         backgroundColor: UI.cardBg,
         marginHorizontal: 12,
-        marginVertical: 4,
-        borderRadius: 18,
-        borderWidth: 1.25,
-        borderColor: "rgba(255,255,255,0.14)",
-        padding: 14,
-        transform: [{ scale: pressed ? 0.98 : 1 }],
-        opacity: pressed ? 0.9 : 1,
+        marginVertical: 6,
+        borderRadius: 16,
+        borderWidth: 1,
+        borderColor: "rgba(255,255,255,0.12)",
+        padding: 16,
+        transform: [{ scale: pressed ? 0.995 : 1 }],
+        opacity: pressed ? 0.94 : 1,
         shadowColor: "#000",
         shadowOffset: { width: 0, height: 6 },
-        shadowOpacity: 0.15,
-        shadowRadius: 12,
+        shadowOpacity: 0.12,
+        shadowRadius: 10,
         elevation: 4,
       })}
     >
       <View style={{ flexDirection: "row", alignItems: "flex-start", gap: 12 }}>
         <View style={{ flex: 1, minWidth: 0 }}>
-          <Text style={{ fontSize: 13, fontWeight: "900", color: UI.text, marginBottom: 4 }} numberOfLines={1}>
+          <Text style={{ fontSize: 16, lineHeight: 22, fontWeight: "600", color: UI.text, marginBottom: 4 }} numberOfLines={1}>
             {supplier}
           </Text>
 
-          <Text style={{ fontSize: 12, color: UI.sub, fontWeight: "700" }} numberOfLines={1}>
+          <Text style={{ fontSize: 14, lineHeight: 20, color: UI.sub, fontWeight: "500" }} numberOfLines={1}>
             Счёт {invoiceNo} · {invoiceDate}
           </Text>
 
           {rest > 0 && (
-            <Text style={{ fontSize: 11, fontWeight: "800", color: "#FDE68A", marginTop: 6 }}>
+            <Text style={{ fontSize: 12, fontWeight: "500", color: "#FDE68A", marginTop: 8 }}>
               Остаток: {rest} {item.invoice_currency || "KGS"}
             </Text>
           )}
         </View>
 
         <View style={{ alignItems: "flex-end", gap: 6 }}>
-          <Text style={{ fontSize: 16, fontWeight: "900", color: UI.text }}>
+          <Text style={{ fontSize: 16, lineHeight: 22, fontWeight: "600", color: UI.text }}>
             {sum.toLocaleString()}
           </Text>
           <StatusBadge label={st.label} tone={tone} compact />
+          <ChevronIndicator />
         </View>
       </View>
     </Pressable>

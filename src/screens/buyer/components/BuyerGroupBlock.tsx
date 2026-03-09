@@ -1,11 +1,12 @@
 ﻿import React, { useRef } from "react";
-import { View, Text, Pressable, Animated } from "react-native";
+import { View, Pressable, Animated } from "react-native";
 
 import type { BuyerInboxRow } from "../../../lib/catalog_api";
 import type { Attachment, BuyerGroup, DraftAttachmentMap } from "../buyer.types";
 import type { StylesBag } from "./component.types";
 import { UI } from "../buyerUi";
 import { RoleCard } from "../../../components/ui/RoleCard";
+import ChevronIndicator from "../../../ui/ChevronIndicator";
 
 export const BuyerGroupBlock = React.memo(function BuyerGroupBlock(props: {
   g: BuyerGroup;
@@ -31,7 +32,7 @@ export const BuyerGroupBlock = React.memo(function BuyerGroupBlock(props: {
 
   const handlePressIn = () => {
     Animated.spring(scaleAnim, {
-      toValue: 0.97,
+      toValue: 0.985,
       useNativeDriver: true,
       speed: 50,
       bounciness: 0,
@@ -65,8 +66,7 @@ export const BuyerGroupBlock = React.memo(function BuyerGroupBlock(props: {
             title={headerTitle}
             subtitle={itemsCntText}
             meta={headerMeta}
-            status={<Text style={{ fontSize: 14 }}>⏳</Text>}
-            rightIndicator={<Text style={{ color: UI.accent, fontSize: 18, fontWeight: "300" }}>›</Text>}
+            rightIndicator={<ChevronIndicator color={UI.accent} />}
             style={[
               s.groupHeader,
               {

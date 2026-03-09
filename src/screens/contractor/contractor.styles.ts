@@ -72,16 +72,16 @@ export const styles = StyleSheet.create({
     marginTop: -16,
     paddingHorizontal: 16,
     paddingTop: 12,
-    paddingBottom: 10,
+    paddingBottom: 12,
     borderBottomWidth: 1,
     borderColor: "rgba(255,255,255,0.10)",
     backgroundColor: "#0B1324",
   },
   homeHeaderTitle: {
     color: "#F8FAFC",
-    fontSize: 30,
-    fontWeight: "900",
-    lineHeight: 34,
+    fontSize: 22,
+    fontWeight: "600",
+    lineHeight: 28,
   },
   subcontractHeaderCard: {
     position: "relative",
@@ -137,8 +137,8 @@ export const styles = StyleSheet.create({
   modeBtn: {
     width: "100%",
     maxWidth: 370,
-    height: 78,
-    borderRadius: 18,
+    height: 72,
+    borderRadius: 16,
     borderWidth: 1,
     borderColor: "rgba(255,255,255,0.14)",
     alignItems: "center",
@@ -148,9 +148,9 @@ export const styles = StyleSheet.create({
     elevation: 2,
   },
   modeBtnText: {
-    fontSize: 38,
-    lineHeight: 42,
-    fontWeight: "900",
+    fontSize: 22,
+    lineHeight: 28,
+    fontWeight: "600",
     color: "#F8FAFC",
   },
   modeHeader: {
@@ -161,7 +161,7 @@ export const styles = StyleSheet.create({
   },
   modeHeaderTitle: {
     fontSize: 22,
-    fontWeight: "800",
+    fontWeight: "600",
     color: "#F8FAFC",
   },
   modeHeaderClose: {

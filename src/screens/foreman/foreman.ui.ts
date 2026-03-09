@@ -11,16 +11,16 @@ export const UI = {
 } as const;
 
 export const TYPO = {
-  titleLg: { fontSize: 24, fontWeight: "800" as const },
-  titleSm: { fontSize: 16, fontWeight: "900" as const },
-  sectionTitle: { fontSize: 20, fontWeight: "800" as const },
-  groupTitle: { fontSize: 18, fontWeight: "900" as const },
-  bodyStrong: { fontSize: 16, fontWeight: "800" as const },
-  body: { fontSize: 14, fontWeight: "700" as const },
-  meta: { fontSize: 12, fontWeight: "800" as const, letterSpacing: 0.2 },
-  kpiLabel: { fontSize: 12, fontWeight: "700" as const },
-  kpiValue: { fontSize: 12, fontWeight: "900" as const },
-  btn: { fontSize: 13, fontWeight: "900" as const, letterSpacing: 0.2 },
+  titleLg: { fontSize: 22, fontWeight: "600" as const },
+  titleSm: { fontSize: 16, fontWeight: "600" as const },
+  sectionTitle: { fontSize: 14, fontWeight: "600" as const },
+  groupTitle: { fontSize: 16, fontWeight: "600" as const },
+  bodyStrong: { fontSize: 14, fontWeight: "600" as const },
+  body: { fontSize: 14, fontWeight: "500" as const },
+  meta: { fontSize: 13, fontWeight: "400" as const, letterSpacing: 0 },
+  kpiLabel: { fontSize: 12, fontWeight: "500" as const },
+  kpiValue: { fontSize: 12, fontWeight: "600" as const },
+  btn: { fontSize: 13, fontWeight: "600" as const, letterSpacing: 0 },
 } as const;
 
 export const REQUEST_STATUS_STYLES: Record<string, { label: string; bg: string; fg: string }> = {

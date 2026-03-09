@@ -47,7 +47,7 @@ export function useWarehouseHeaderApi(args: {
 
   const titleSize = clampedY.interpolate({
     inputRange: [0, HEADER_SCROLL],
-    outputRange: [24, 16],
+    outputRange: [22, 18],
     extrapolate: "clamp",
   });
 
@@ -103,7 +103,7 @@ export default function WarehouseHeader(props: {
         </Animated.Text>
         {!!warehousemanFio && (
           <Pressable onPress={onOpenFioModal} style={{ marginTop: 2, marginBottom: 10 }}>
-            <Text style={{ fontSize: 13, color: UI.accent, fontWeight: "800" }}>
+            <Text style={{ fontSize: 13, color: UI.sub, fontWeight: "500" }}>
               👤 {warehousemanFio}
             </Text>
           </Pressable>
@@ -124,7 +124,7 @@ export default function WarehouseHeader(props: {
               onPress={() => onTab(t)}
               style={[s.tab, active && s.tabActive]}
             >
-              <Text numberOfLines={1} style={{ color: active ? UI.text : UI.sub, fontWeight: "800" }}>
+              <Text numberOfLines={1} style={{ color: active ? UI.text : UI.sub, fontWeight: "600", fontSize: 13 }}>
                 {tabLabel(t)}
               </Text>
             </Pressable>

@@ -1,12 +1,12 @@
 ﻿// src/screens/warehouse/components/StockRowView.tsx
 import React from "react";
 import { View, Text, Pressable } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
 import { UI, s } from "../warehouse.styles";
 import { nz } from "../warehouse.utils";
 import { uomLabelRu } from "../warehouse.uom";
 import type { StockRow } from "../warehouse.types";
 import { RoleCard } from "../../../components/ui/RoleCard";
+import ChevronIndicator from "../../../ui/ChevronIndicator";
 
 const fmtQty = (n: number) =>
   Number(n).toLocaleString("ru-RU", { maximumFractionDigits: 3 });
@@ -28,7 +28,7 @@ function StockRowView({ r, pickedQty, onPress }: Props) {
 
   return (
     <View style={{ marginBottom: 10, paddingHorizontal: 16 }}>
-      <Pressable onPress={() => onPress(r)}>
+      <Pressable onPress={() => onPress(r)} style={({ pressed }) => pressed && { opacity: 0.94 }}>
         <RoleCard
           title={String(r.name ?? "").trim() || "—"}
           subtitle={`Доступно ${fmtQty(available)} ${uomLabel} · Резерв ${fmtQty(reserved)}`}
@@ -46,7 +46,7 @@ function StockRowView({ r, pickedQty, onPress }: Props) {
               <Text style={s.metaPillText}>{fmtQty(onHand)}</Text>
             </View>
           }
-          rightIndicator={<Ionicons name="chevron-forward" size={18} color="rgba(248,250,252,0.5)" />}
+          rightIndicator={<ChevronIndicator />}
         />
       </Pressable>
     </View>

@@ -10,7 +10,7 @@ export const buyerStyles = StyleSheet.create({
     gap: 8,
     alignItems: 'center',
     paddingRight: 16,
-    paddingVertical: 10,
+    paddingVertical: 12,
   },
   tabLabelRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
 
@@ -32,10 +32,10 @@ export const buyerStyles = StyleSheet.create({
   },
   tabPillText: {
     color: UI.sub,
-    fontWeight: '800',
+    fontWeight: '600',
     fontSize: 13,
   },
-  tabPillTextActive: { color: UI.text, fontWeight: '900' },
+  tabPillTextActive: { color: UI.text, fontWeight: '600' },
 
   tabBadge: {
     minWidth: 20,
@@ -49,20 +49,20 @@ export const buyerStyles = StyleSheet.create({
   tabBadgeActive: {
     // handled via kind in JS to provide semantic colors
   },
-  tabBadgeText: { fontSize: 11, fontWeight: '900', color: '#FFF' },
+  tabBadgeText: { fontSize: 11, fontWeight: '600', color: '#FFF' },
   tabBadgeTextActive: { color: '#FFF' },
 
   group: {
     borderRadius: 16,
     backgroundColor: 'rgba(255,255,255,0.03)',
-    marginBottom: 10,
+    marginBottom: 12,
     overflow: 'hidden',
   },
   groupHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 14,
+    paddingVertical: 16,
     paddingHorizontal: 16,
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.06)',
@@ -78,7 +78,7 @@ export const buyerStyles = StyleSheet.create({
     borderColor: 'rgba(255,255,255,0.08)',
     borderRadius: 16,
     backgroundColor: UI.cardBg,
-    marginBottom: 10,
+    marginBottom: 12,
   },
   cardPicked: {
     borderColor: UI.accent,
@@ -86,7 +86,7 @@ export const buyerStyles = StyleSheet.create({
   },
 
   cardTitle: { fontSize: 16, fontWeight: '600', color: UI.text },
-  cardMeta: { marginTop: 4, color: UI.sub, fontSize: 13, fontWeight: '600' },
+  cardMeta: { marginTop: 4, color: UI.sub, fontSize: 13, fontWeight: '400' },
 
   smallBtn: {
     borderWidth: 1.5,
@@ -111,7 +111,7 @@ export const buyerStyles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  openBtnText: { color: UI.accent, fontWeight: '900', fontSize: 18 },
+  openBtnText: { color: UI.accent, fontWeight: '600', fontSize: 18 },
 
   proposalCard: {
     padding: 16,
@@ -119,7 +119,7 @@ export const buyerStyles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.03)',
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.06)',
-    marginBottom: 10,
+    marginBottom: 12,
   },
 
   dirSheet: {

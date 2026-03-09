@@ -7,6 +7,7 @@ import TopRightActionBar from "../../../ui/TopRightActionBar";
 import SectionBlock from "../../../ui/SectionBlock";
 import StatusBadge from "../../../ui/StatusBadge";
 import RoleScreenLayout from "../../../components/layout/RoleScreenLayout";
+import ChevronIndicator from "../../../ui/ChevronIndicator";
 import type { TopRightAction } from "../../../ui/TopRightActionBar";
 import { UI, s } from "../warehouse.styles";
 import type { WarehouseReportRow } from "../warehouse.types";
@@ -350,7 +351,7 @@ export default function WarehouseReportsTab(props: Props) {
 
                   <View style={{ flexDirection: "row", gap: 10, alignItems: "center" }}>
                     <StatusBadge label={`${dayCount}`} tone="info" compact />
-                    <Ionicons name="chevron-forward" size={18} color={UI.sub} />
+                    <ChevronIndicator />
                   </View>
                 </View>
               </Pressable>

@@ -9,6 +9,7 @@ import {
   type TextStyle,
   type ViewStyle,
 } from "react-native";
+import { ROLE_COLOR, ROLE_RADIUS, ROLE_SPACE, ROLE_TYPE } from "../../ui/roleVisual";
 
 export type RoleCardProps = {
   title: string;
@@ -42,7 +43,7 @@ export function RoleCard({
   const content = (
     <View style={[s.card, style]}>
       <View style={s.left}>
-        <Text style={[s.title, titleStyle]} numberOfLines={1}>
+        <Text style={[s.title, titleStyle]} numberOfLines={2}>
           {title}
         </Text>
 
@@ -71,60 +72,59 @@ export function RoleCard({
   if (!onPress) return content;
 
   return (
-    <Pressable onPress={onPress} style={({ pressed }) => pressed && s.pressed}>
+    <Pressable onPress={onPress} style={({ pressed }) => [s.pressable, pressed && s.pressed]}>
       {content}
     </Pressable>
   );
 }
 
 const s = StyleSheet.create({
+  pressable: {
+    borderRadius: ROLE_RADIUS.card,
+  },
   card: {
-    borderRadius: 16,
-    paddingVertical: 14,
-    paddingHorizontal: 16,
-    marginBottom: 10,
-    backgroundColor: "#101826",
+    borderRadius: ROLE_RADIUS.card,
+    paddingVertical: ROLE_SPACE.lg,
+    paddingHorizontal: ROLE_SPACE.lg,
+    marginBottom: ROLE_SPACE.md,
+    backgroundColor: ROLE_COLOR.cardBg,
     borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.14)",
+    borderColor: ROLE_COLOR.border,
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "center",
-    gap: 12,
+    alignItems: "flex-start",
+    gap: ROLE_SPACE.md,
   },
   left: {
     flex: 1,
     minWidth: 0,
   },
   title: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#F8FAFC",
-    lineHeight: 20,
+    ...ROLE_TYPE.cardTitle,
+    color: ROLE_COLOR.text,
   },
   subtitle: {
-    fontSize: 14,
-    fontWeight: "600",
+    ...ROLE_TYPE.subtitle,
     color: "#E2E8F0",
-    opacity: 0.8,
-    marginTop: 2,
-    lineHeight: 18,
+    opacity: 0.84,
+    marginTop: ROLE_SPACE.xs,
   },
   meta: {
-    fontSize: 13,
-    fontWeight: "600",
-    color: "#9CA3AF",
-    opacity: 0.7,
-    marginTop: 4,
-    lineHeight: 17,
+    ...ROLE_TYPE.meta,
+    color: ROLE_COLOR.subText,
+    opacity: 0.84,
+    marginTop: ROLE_SPACE.sm,
   },
   right: {
     alignItems: "flex-end",
-    justifyContent: "center",
-    gap: 6,
+    justifyContent: "flex-start",
+    gap: ROLE_SPACE.sm,
     flexShrink: 0,
+    paddingTop: ROLE_SPACE.xs,
   },
   pressed: {
-    opacity: 0.9,
+    opacity: 0.94,
+    transform: [{ scale: 0.997 }],
   },
 });
 

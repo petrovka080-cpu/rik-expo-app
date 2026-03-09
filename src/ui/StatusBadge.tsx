@@ -7,6 +7,7 @@ import {
   type TextStyle,
   type ViewStyle,
 } from "react-native";
+import { ROLE_RADIUS, ROLE_TYPE } from "./roleVisual";
 
 export type StatusBadgeTone = "neutral" | "success" | "warning" | "danger" | "info";
 
@@ -26,29 +27,29 @@ type ToneColors = {
 
 const TONE_COLORS: Record<StatusBadgeTone, ToneColors> = {
   neutral: {
-    bg: "#EEF2F7",
-    border: "#D7DEE8",
-    text: "#475467",
+    bg: "rgba(148,163,184,0.14)",
+    border: "rgba(148,163,184,0.35)",
+    text: "#CBD5E1",
   },
   success: {
-    bg: "#E7F7EF",
-    border: "#B8E7CC",
-    text: "#1A7F55",
+    bg: "rgba(34,197,94,0.14)",
+    border: "rgba(34,197,94,0.35)",
+    text: "#86EFAC",
   },
   warning: {
-    bg: "#FFF3E0",
-    border: "#FFD9A8",
-    text: "#B26A00",
+    bg: "rgba(245,158,11,0.16)",
+    border: "rgba(245,158,11,0.38)",
+    text: "#FCD34D",
   },
   danger: {
-    bg: "#FDEAEA",
-    border: "#F7C4C0",
-    text: "#B42318",
+    bg: "rgba(239,68,68,0.14)",
+    border: "rgba(239,68,68,0.36)",
+    text: "#FCA5A5",
   },
   info: {
-    bg: "#EAF2FF",
-    border: "#C9DBFF",
-    text: "#1D4ED8",
+    bg: "rgba(59,130,246,0.14)",
+    border: "rgba(59,130,246,0.36)",
+    text: "#93C5FD",
   },
 };
 
@@ -96,7 +97,7 @@ export function StatusBadge({
 const styles = StyleSheet.create({
   base: {
     borderWidth: 1,
-    borderRadius: 999,
+    borderRadius: ROLE_RADIUS.pill,
     alignSelf: "flex-start",
   },
   regular: {
@@ -105,21 +106,21 @@ const styles = StyleSheet.create({
     minHeight: 22,
   },
   compact: {
-    paddingHorizontal: 10,
-    paddingVertical: 3,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
     minHeight: 20,
   },
   text: {
-    fontWeight: "600",
+    fontWeight: ROLE_TYPE.badge.fontWeight,
     letterSpacing: 0,
   },
   textRegular: {
-    fontSize: 12,
-    lineHeight: 14,
+    fontSize: ROLE_TYPE.badge.fontSize,
+    lineHeight: ROLE_TYPE.badge.lineHeight,
   },
   textCompact: {
-    fontSize: 12,
-    lineHeight: 14,
+    fontSize: ROLE_TYPE.badge.fontSize,
+    lineHeight: ROLE_TYPE.badge.lineHeight,
   },
 });
 

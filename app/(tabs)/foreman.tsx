@@ -642,7 +642,7 @@ export default function ForemanScreen() {
                 </Animated.Text>
                 {!!foreman && (
                   <Pressable onPress={() => setIsFioConfirmVisible(true)}>
-                    <Text style={{ fontSize: 13, color: UI.accent, fontWeight: "800", marginTop: 2 }}>
+                    <Text style={{ fontSize: 13, color: UI.sub, fontWeight: "500", marginTop: 4 }}>
                       👤 {foreman}
                     </Text>
                   </Pressable>
@@ -662,7 +662,7 @@ export default function ForemanScreen() {
                     borderColor: 'rgba(255,255,255,0.14)',
                   }}
                 >
-                  <Text style={{ color: UI.text, fontWeight: '900', fontSize: 24, lineHeight: 24 }}>×</Text>
+                  <Text style={{ color: UI.text, fontWeight: '600', fontSize: 20, lineHeight: 22 }}>×</Text>
                 </Pressable>
               ) : null}
             </View>
@@ -685,8 +685,8 @@ export default function ForemanScreen() {
               style={{
                 width: '100%',
                 maxWidth: 370,
-                height: 78,
-                borderRadius: 18,
+                height: 72,
+                borderRadius: 16,
                 borderWidth: 1,
                 borderColor: 'rgba(255,255,255,0.14)',
                 backgroundColor: '#121A2A',
@@ -694,7 +694,7 @@ export default function ForemanScreen() {
                 justifyContent: 'center',
               }}
             >
-              <Text style={{ color: UI.text, fontWeight: '900', fontSize: 38, lineHeight: 42 }}>[ Материалы ]</Text>
+              <Text style={{ color: UI.text, fontWeight: '600', fontSize: 22, lineHeight: 28 }}>[ Материалы ]</Text>
             </Pressable>
 
             <Pressable
@@ -702,8 +702,8 @@ export default function ForemanScreen() {
               style={{
                 width: '100%',
                 maxWidth: 370,
-                height: 78,
-                borderRadius: 18,
+                height: 72,
+                borderRadius: 16,
                 borderWidth: 1,
                 borderColor: 'rgba(255,255,255,0.14)',
                 backgroundColor: '#121A2A',
@@ -711,7 +711,7 @@ export default function ForemanScreen() {
                 justifyContent: 'center',
               }}
             >
-              <Text style={{ color: UI.text, fontWeight: '900', fontSize: 38, lineHeight: 42 }}>[ Подряды ]</Text>
+              <Text style={{ color: UI.text, fontWeight: '600', fontSize: 22, lineHeight: 28 }}>[ Подряды ]</Text>
             </Pressable>
           </View>
         ) : null}

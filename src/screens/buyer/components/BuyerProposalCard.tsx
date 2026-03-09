@@ -6,6 +6,7 @@ import { UI } from "../buyerUi";
 import { StatusBadge } from "../../../ui/StatusBadge";
 import type { StylesBag } from "./component.types";
 import { RoleCard } from "../../../components/ui/RoleCard";
+import ChevronIndicator from "../../../ui/ChevronIndicator";
 
 // We extend ProposalHeadLite internally to support items_cnt if available
 type CardHead = BuyerProposalBucketRow & { items_cnt?: number };
@@ -40,18 +41,7 @@ export const BuyerProposalCard = React.memo(function BuyerProposalCard(props: {
   };
 
   // Keep existing status mapping behavior unchanged
-  let statusText = String(head.status || "—");
-  let statusIcon = "";
-  if (statusText === "Утверждено") {
-    statusText = `✓ ${statusText}`;
-    statusIcon = "🧾";
-  } else if (statusText === "На утверждении") {
-    statusText = `⏳ ${statusText}`;
-    statusIcon = "⏳";
-  } else if (statusText.includes("На доработке")) {
-    statusText = `✎ ${statusText}`;
-    statusIcon = "✎";
-  }
+  const statusText = String(head.status || "—");
 
   const headerText = props.title || pidStr.slice(0, 8);
   const dateStr = head.submitted_at ? new Date(head.submitted_at).toLocaleDateString() : "";
@@ -83,11 +73,13 @@ export const BuyerProposalCard = React.memo(function BuyerProposalCard(props: {
           metaStyle={{ color: "rgba(255,255,255,0.6)", fontWeight: "700" }}
           status={<StatusBadge label={statusText} tone="neutral" compact />}
           rightIndicator={
-            <View style={{ flexDirection: "row", gap: 4 }}>
-              {statusIcon ? <Text style={{ fontSize: 12 }}>{statusIcon}</Text> : null}
+            <View style={{ flexDirection: "row", gap: 8, alignItems: "center" }}>
               {typeof props.attCount === "number" && props.attCount > 0 ? (
-                <Text style={{ color: "rgba(255,255,255,0.5)", fontSize: 12 }}>📎 {props.attCount}</Text>
+                <Text style={{ color: "rgba(255,255,255,0.62)", fontSize: 12, fontWeight: "500" }}>
+                  Файлы {props.attCount}
+                </Text>
               ) : null}
+              <ChevronIndicator color={UI.accent} />
             </View>
           }
         />

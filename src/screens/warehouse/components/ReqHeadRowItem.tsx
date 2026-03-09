@@ -1,9 +1,9 @@
 ﻿import React from "react";
 import { Pressable, Text, View } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
 import type { ReqHeadRow } from "../warehouse.types";
 import { UI, s } from "../warehouse.styles";
 import { RoleCard } from "../../../components/ui/RoleCard";
+import ChevronIndicator from "../../../ui/ChevronIndicator";
 
 type Props = {
   row: ReqHeadRow;
@@ -61,7 +61,7 @@ export default function ReqHeadRowItem({ row, onPress, fmtRuDate }: Props) {
           subtitle={dateStr}
           meta={locationText}
           status={statusNode}
-          rightIndicator={<Ionicons name="chevron-forward" size={18} color="rgba(248,250,252,0.5)" />}
+          rightIndicator={<ChevronIndicator />}
           style={[
             s.groupHeader,
             {

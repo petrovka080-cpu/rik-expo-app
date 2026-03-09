@@ -8,6 +8,7 @@ import {
   type TextStyle,
   type ViewStyle,
 } from "react-native";
+import { ROLE_COLOR, ROLE_SPACE, ROLE_TYPE } from "../../ui/roleVisual";
 
 type RoleScreenLayoutProps = {
   title?: string;
@@ -70,23 +71,19 @@ const styles = StyleSheet.create({
     minHeight: 0,
   },
   header: {
-    paddingHorizontal: 20,
-    paddingTop: 12,
-    paddingBottom: 8,
+    paddingHorizontal: ROLE_SPACE.lg,
+    paddingTop: ROLE_SPACE.md,
+    paddingBottom: ROLE_SPACE.md,
   },
   title: {
-    fontSize: 22,
-    lineHeight: 26,
-    fontWeight: "600",
-    color: "#F8FAFC",
+    ...ROLE_TYPE.headerTitle,
+    color: ROLE_COLOR.text,
   },
   subtitle: {
-    marginTop: 2,
-    fontSize: 14,
-    lineHeight: 18,
-    fontWeight: "500",
-    opacity: 0.7,
-    color: "#9CA3AF",
+    marginTop: ROLE_SPACE.xs,
+    ...ROLE_TYPE.headerSubtitle,
+    opacity: 0.82,
+    color: ROLE_COLOR.subText,
   },
   content: {
     flex: 1,

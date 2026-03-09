@@ -630,9 +630,9 @@ export default function BuyerScreen() {
         <TextInput
           value={searchQuery}
           onChangeText={setSearchQuery}
-          placeholder="🔎 Поиск (№, Поставщик, Объект...)"
+          placeholder="Поиск (№, поставщик, объект...)"
           placeholderTextColor="rgba(255,255,255,0.4)"
-          style={[s.fieldInput, { backgroundColor: 'rgba(255,255,255,0.06)', borderRadius: 14, height: 44, borderStyle: 'dashed' }]}
+          style={[s.fieldInput, { backgroundColor: 'rgba(255,255,255,0.06)', borderRadius: 16, height: 44, borderStyle: 'solid' }]}
         />
       </Animated.View>
 
