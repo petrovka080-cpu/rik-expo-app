@@ -2,6 +2,7 @@
 import { ActivityIndicator, Pressable, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { normalizeRuText } from "../../../lib/text/encoding";
+import { StatusBadge } from "../../../ui/StatusBadge";
 import type { IssuedItemRow, LinkedReqCard } from "../types";
 
 type IssuedStyles = {
@@ -48,7 +49,7 @@ export default function IssuedSection(props: Props) {
               {props.linkedReqCards.map((card) => (
                 <View key={card.request_id} style={props.styles.workModalLinkedReqCard}>
                   <Text style={props.styles.workModalLinkedReqTitle}>{normalizeRuText(card.req_no)}</Text>
-                  <Text style={props.styles.workModalLinkedReqMeta}>Статус: {normalizeRuText(card.status || "—")}</Text>
+                  <StatusBadge label={`Статус: ${normalizeRuText(card.status || "—")}`} tone="neutral" compact />
                   <Text style={props.styles.workModalLinkedReqMeta}>
                     Номера выдач: {card.issue_nos.length ? card.issue_nos.map((x) => normalizeRuText(x)).join(", ") : "нет выдач"}
                   </Text>
