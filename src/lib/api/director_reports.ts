@@ -1233,6 +1233,83 @@ async function fetchDisciplineFactRowsFromTables(p: {
   objectName: string | null;
 }): Promise<DirectorFactRow[]> {
   const tTotal = nowMs();
+  const tryJoinedIssueItemsPath = async (): Promise<DirectorFactRow[] | null> => {
+    const tJoined = nowMs();
+    try {
+      const out: DirectorFactRow[] = [];
+      const pageSize = 3000;
+      let fromIdx = 0;
+      let totalIssueItems = 0;
+      while (true) {
+        let q = supabase
+          .from("warehouse_issue_items" as any)
+          .select("issue_id,rik_code,uom_id,qty,request_item_id,warehouse_issues!inner(id,iss_date,object_name,work_name,status,note)")
+          .eq("warehouse_issues.status", "Подтверждено");
+        if (p.from) q = q.gte("warehouse_issues.iss_date", toRangeStart(p.from));
+        if (p.to) q = q.lte("warehouse_issues.iss_date", toRangeEnd(p.to));
+        if (p.objectName != null) q = q.eq("warehouse_issues.object_name", p.objectName);
+        q = q.order("issue_id", { ascending: false }).range(fromIdx, fromIdx + pageSize - 1);
+
+        const { data, error } = await q;
+        if (error) throw error;
+        const rows = Array.isArray(data) ? data : [];
+        if (!rows.length) break;
+        totalIssueItems += rows.length;
+
+        for (const it of rows) {
+          const issue: any = Array.isArray((it as any)?.warehouse_issues)
+            ? ((it as any).warehouse_issues[0] ?? null)
+            : ((it as any)?.warehouse_issues ?? null);
+          if (!issue) continue;
+          const issueId = String((it as any)?.issue_id ?? issue?.id ?? "").trim();
+          const code = String((it as any)?.rik_code ?? "").trim().toUpperCase();
+          if (!issueId || !code) continue;
+
+          const issueWorkName = String(issue?.work_name ?? "").trim();
+          const freeCtx = parseFreeIssueContext(issue?.note ?? null);
+          const workName = issueWorkName || freeCtx.workName || WITHOUT_WORK;
+          const levelName = issueWorkName ? WITHOUT_LEVEL : normLevelName(freeCtx.levelName);
+          const objectName = String(issue?.object_name ?? "").trim() || WITHOUT_OBJECT;
+
+          out.push({
+            issue_id: issueId,
+            iss_date: String(issue?.iss_date ?? ""),
+            object_name: objectName,
+            work_name: workName,
+            level_name: levelName,
+            request_item_id: String((it as any)?.request_item_id ?? "").trim() || null,
+            rik_code: code,
+            material_name_ru: code,
+            uom: String((it as any)?.uom_id ?? "").trim(),
+            qty: toNum((it as any)?.qty),
+            is_without_request: !String((it as any)?.request_item_id ?? "").trim(),
+          });
+        }
+
+        if (rows.length < pageSize) break;
+        fromIdx += pageSize;
+        if (fromIdx > 500000) break;
+      }
+
+      if (REPORTS_TIMING) {
+        console.info(`[director_reports] discipline.rows.light.counts(joined): issue_items=${totalIssueItems} final_rows=${out.length}`);
+      }
+      logTiming("discipline.rows.light.joined.total", tJoined);
+      return out;
+    } catch (e: any) {
+      if (REPORTS_TIMING) {
+        console.info(`[director_reports] discipline.rows.light.joined.failed: ${e?.message ?? e}`);
+      }
+      return null;
+    }
+  };
+
+  const joinedRows = await tryJoinedIssueItemsPath();
+  if (joinedRows && joinedRows.length) {
+    logTiming("discipline.rows.light.total", tTotal);
+    return joinedRows;
+  }
+
   const issuesById = new Map<string, any>();
   const pageSize = 2500;
   let fromIdx = 0;
@@ -1265,6 +1342,7 @@ async function fetchDisciplineFactRowsFromTables(p: {
     if (fromIdx > 500000) break;
   }
   logTiming("discipline.rows.light.issues_scan", tTotal);
+  if (REPORTS_TIMING) console.info(`[director_reports] discipline.rows.light.counts: issues=${issuesById.size}`);
 
   if (!issuesById.size) return [];
   const issueIds = Array.from(issuesById.keys());
@@ -1281,6 +1359,7 @@ async function fetchDisciplineFactRowsFromTables(p: {
     if (Array.isArray(data)) issueItems.push(...data);
   });
   logTiming("discipline.rows.light.issue_items", tIssueItems);
+  if (REPORTS_TIMING) console.info(`[director_reports] discipline.rows.light.counts: issue_items=${issueItems.length}`);
   if (!issueItems.length) return [];
 
   const issuesMissingWork = new Set<string>();
@@ -1320,6 +1399,7 @@ async function fetchDisciplineFactRowsFromTables(p: {
       }
     });
     logTiming("discipline.rows.light.request_items", tReqItems);
+    if (REPORTS_TIMING) console.info(`[director_reports] discipline.rows.light.counts: request_items=${requestItemIds.length}`);
   }
 
   const requestIds = Array.from(
@@ -1345,6 +1425,7 @@ async function fetchDisciplineFactRowsFromTables(p: {
       }
     });
     logTiming("discipline.rows.light.requests", tReq);
+    if (REPORTS_TIMING) console.info(`[director_reports] discipline.rows.light.counts: requests=${requestIds.length}`);
   }
 
   const systemCodes = Array.from(
@@ -1423,6 +1504,7 @@ async function fetchDisciplineFactRowsFromTables(p: {
     });
   }
   logTiming("discipline.rows.light.build", tBuild);
+  if (REPORTS_TIMING) console.info(`[director_reports] discipline.rows.light.counts: final_rows=${out.length}`);
   logTiming("discipline.rows.light.total", tTotal);
   return out;
 }
