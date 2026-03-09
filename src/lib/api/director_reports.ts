@@ -124,6 +124,7 @@ const WITHOUT_WORK = "Без вида работ";
 const WITHOUT_LEVEL = "Без этажа";
 const DASH = "—";
 const REPORTS_TIMING = typeof __DEV__ !== "undefined" ? __DEV__ : false;
+const DISCIPLINE_ROWS_CACHE_TTL_MS = 2 * 60 * 1000;
 
 const toNum = (v: any): number => {
   const n = Number(v ?? 0);
@@ -249,6 +250,18 @@ const REQUESTS_DISCIPLINE_SELECT_PLANS = [
 
 let requestsSelectPlanCache: string | null = null;
 let requestsDisciplineSelectPlanCache: string | null = null;
+const disciplineRowsCache = new Map<string, { ts: number; rows: DirectorFactRow[]; source: DisciplineRowsSource }>();
+
+const buildDisciplineRowsCacheKey = (p: {
+  from: string;
+  to: string;
+  objectName: string | null;
+  objectIdByName: Record<string, string | null>;
+}): string => {
+  const objectName = p.objectName ?? null;
+  const objectId = objectName == null ? null : (p.objectIdByName?.[objectName] ?? null);
+  return `${String(p.from || "")}|${String(p.to || "")}|${String(objectName ?? "")}|${String(objectId ?? "")}`;
+};
 
 async function fetchRequestsRowsSafe(ids: string[]): Promise<any[]> {
   const reqIds = Array.from(new Set((ids || []).map((x) => String(x ?? "").trim()).filter(Boolean)));
@@ -2138,17 +2151,33 @@ export async function fetchDirectorWarehouseReportDiscipline(p: {
   to: string;
   objectName: string | null;
   objectIdByName: Record<string, string | null>;
-}): Promise<DirectorDisciplinePayload> {
+}, opts?: { skipPrices?: boolean }): Promise<DirectorDisciplinePayload> {
   const tTotal = nowMs();
   const pFrom = rpcDate(p.from, "1970-01-01");
   const pTo = rpcDate(p.to, "2099-12-31");
-  const tRows = nowMs();
-  const rowsResult = await fetchFactRowsForDiscipline({
+  const rowsKey = buildDisciplineRowsCacheKey({
     from: pFrom,
     to: pTo,
     objectName: p.objectName ?? null,
     objectIdByName: p.objectIdByName ?? {},
   });
+  let rowsResult: { rows: DirectorFactRow[]; source: DisciplineRowsSource } | null = null;
+  const cachedRows = disciplineRowsCache.get(rowsKey);
+  if (cachedRows && Date.now() - cachedRows.ts <= DISCIPLINE_ROWS_CACHE_TTL_MS) {
+    rowsResult = { rows: cachedRows.rows, source: cachedRows.source };
+  } else if (cachedRows) {
+    disciplineRowsCache.delete(rowsKey);
+  }
+  const tRows = nowMs();
+  if (!rowsResult) {
+    rowsResult = await fetchFactRowsForDiscipline({
+      from: pFrom,
+      to: pTo,
+      objectName: p.objectName ?? null,
+      objectIdByName: p.objectIdByName ?? {},
+    });
+    disciplineRowsCache.set(rowsKey, { ts: Date.now(), rows: rowsResult.rows, source: rowsResult.source });
+  }
   let rows = rowsResult.rows;
   logTiming("discipline.fetch_rows", tRows);
   if (REPORTS_TIMING) {
@@ -2170,6 +2199,20 @@ export async function fetchDirectorWarehouseReportDiscipline(p: {
     rows = await enrichFactRowsLevelNames(rows);
     logTiming("discipline.enrich_level_names", tLevels);
   } catch { }
+
+  if (opts?.skipPrices) {
+    const payload = buildDisciplinePayloadFromFactRows(rows, {
+      issue_cost_total: 0,
+      purchase_cost_total: 0,
+      issue_to_purchase_pct: 0,
+      unpriced_issue_pct: 0,
+      price_by_code: new Map(),
+      price_by_request_item: new Map(),
+    });
+    logTiming("discipline.total", tTotal);
+    return payload;
+  }
+
   const requestItemIds = Array.from(
     new Set(
       rows

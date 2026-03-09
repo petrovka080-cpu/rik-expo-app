@@ -134,6 +134,7 @@ export default function DirectorScreen() {
         repDiscipline={vm.reports.repDiscipline}
         repPeriodShort={vm.reports.repPeriodShort}
         repLoading={vm.reports.repLoading}
+        repDisciplinePriceLoading={vm.reports.repDisciplinePriceLoading}
         repPeriodOpen={vm.reports.repPeriodOpen}
         onOpenPeriod={() => vm.reports.setRepPeriodOpen(true)}
         onClosePeriod={() => vm.reports.setRepPeriodOpen(false)}

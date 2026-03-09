@@ -21,6 +21,7 @@ type Props = {
   repDiscipline: RepDisciplinePayload | null;
   repPeriodShort: string;
   repLoading: boolean;
+  repDisciplinePriceLoading: boolean;
   repPeriodOpen: boolean;
   onOpenPeriod: () => void;
   onClosePeriod: () => void;
@@ -64,6 +65,7 @@ export default function DirectorReportsModal({
   repDiscipline,
   repPeriodShort,
   repLoading,
+  repDisciplinePriceLoading,
   repPeriodOpen,
   onOpenPeriod,
   onClosePeriod,
@@ -376,15 +378,15 @@ export default function DirectorReportsModal({
           <View style={[s.mobCard, { marginBottom: 10, borderColor: ratioTint }]}> 
             <View style={s.mobMain}>
               <Text style={s.mobTitle}>Расход / Закупки (%)</Text>
-              <Text style={[s.mobTitle, { color: ratioTint }]}>{`Расход / Закупки: ${repLoading ? "…" : ratioText}`}</Text>
+              <Text style={[s.mobTitle, { color: ratioTint }]}>{`Расход / Закупки: ${repDisciplinePriceLoading ? "…" : ratioText}`}</Text>
               <Text style={s.mobMeta}>по стоимости за период</Text>
-              {!repLoading ? (
+              {!repDisciplinePriceLoading ? (
                 <Text style={s.mobMeta}>{`Расход: ${money(issueCost)} · Закупки: ${money(purchaseCost)}`}</Text>
               ) : null}
-              {!repLoading && Number(disSummary?.unpriced_issue_pct ?? 0) > 0 ? (
+              {!repDisciplinePriceLoading && Number(disSummary?.unpriced_issue_pct ?? 0) > 0 ? (
                 <Text style={s.mobMeta}>{`Неоценено: ${Number(disSummary?.unpriced_issue_pct ?? 0)}%`}</Text>
               ) : null}
-              {!repLoading && !hasCostBase ? (
+              {!repDisciplinePriceLoading && !hasCostBase ? (
                 <Text style={s.mobMeta}>Недостаточно цен для расчета базы закупок.</Text>
               ) : null}
             </View>

@@ -39,6 +39,7 @@ export function useDirectorReports({ fmtDateOnly }: Deps) {
   const [repTo, setRepTo] = useState<string | null>(null);
   const [repObjectName, setRepObjectName] = useState<string | null>(null);
   const [repLoading, setRepLoading] = useState(false);
+  const [repDisciplinePriceLoading, setRepDisciplinePriceLoading] = useState(false);
   const [repData, setRepData] = useState<RepPayload | null>(null);
   const [repDiscipline, setRepDiscipline] = useState<RepDisciplinePayload | null>(null);
   const [repOptLoading, setRepOptLoading] = useState(false);
@@ -54,6 +55,7 @@ export function useDirectorReports({ fmtDateOnly }: Deps) {
   const disciplineCacheRef = useRef<Map<string, CacheEntry<RepDisciplinePayload | null>>>(new Map());
   const optionsCacheRef = useRef<Map<string, CacheEntry<{ objects: string[]; objectIdByName: Record<string, string | null> }>>>(new Map());
   const lastDisciplineLoadKeyRef = useRef<string>("");
+  const disciplinePricesReadyRef = useRef<Set<string>>(new Set());
 
   const nowMs = () => {
     try {
@@ -193,6 +195,30 @@ export function useDirectorReports({ fmtDateOnly }: Deps) {
     if (cached !== null) {
       setRepDiscipline(cached ?? null);
       lastDisciplineLoadKeyRef.current = key;
+      const pricesReady = disciplinePricesReadyRef.current.has(key);
+      setRepDisciplinePriceLoading(!pricesReady);
+      if (!pricesReady) {
+        const activeReqId = disciplineReqSeqRef.current;
+        void (async () => {
+          try {
+            const payload = await fetchDirectorWarehouseReportDiscipline({
+              from,
+              to,
+              objectName: objectName ?? null,
+              objectIdByName: repOptObjectIdByName,
+            });
+            if (activeReqId !== disciplineReqSeqRef.current) return;
+            const full = (payload ?? null) as RepDisciplinePayload | null;
+            disciplinePricesReadyRef.current.add(key);
+            setCached(disciplineCacheRef.current, key, full);
+            setRepDiscipline(full);
+          } catch {
+            // keep base payload rendered
+          } finally {
+            if (activeReqId === disciplineReqSeqRef.current) setRepDisciplinePriceLoading(false);
+          }
+        })();
+      }
       logTiming("api:discipline:cache_hit", totalStart);
       return;
     }
@@ -206,24 +232,48 @@ export function useDirectorReports({ fmtDateOnly }: Deps) {
     const reqId = ++disciplineReqSeqRef.current;
     const task = (async () => {
       if (!opts?.background) setRepLoading(true);
+      setRepDisciplinePriceLoading(true);
       try {
         const apiStart = nowMs();
-        const payload = await fetchDirectorWarehouseReportDiscipline({
+        const basePayload = await fetchDirectorWarehouseReportDiscipline({
           from,
           to,
           objectName: objectName ?? null,
           objectIdByName: repOptObjectIdByName,
-        });
+        }, { skipPrices: true });
         logTiming("api:discipline:network_done", apiStart);
         if (reqId !== disciplineReqSeqRef.current) return;
-        const normalized = (payload ?? null) as RepDisciplinePayload | null;
-        setCached(disciplineCacheRef.current, key, normalized);
-        setRepDiscipline(normalized);
+        const normalizedBase = (basePayload ?? null) as RepDisciplinePayload | null;
+        disciplinePricesReadyRef.current.delete(key);
+        setCached(disciplineCacheRef.current, key, normalizedBase);
+        setRepDiscipline(normalizedBase);
         lastDisciplineLoadKeyRef.current = key;
+        if (!opts?.background && reqId === disciplineReqSeqRef.current) setRepLoading(false);
+
+        void (async () => {
+          try {
+            const fullPayload = await fetchDirectorWarehouseReportDiscipline({
+              from,
+              to,
+              objectName: objectName ?? null,
+              objectIdByName: repOptObjectIdByName,
+            });
+            if (reqId !== disciplineReqSeqRef.current) return;
+            const normalizedFull = (fullPayload ?? null) as RepDisciplinePayload | null;
+            disciplinePricesReadyRef.current.add(key);
+            setCached(disciplineCacheRef.current, key, normalizedFull);
+            setRepDiscipline(normalizedFull);
+          } catch (e: any) {
+            if (REPORTS_TIMING) console.warn("[director_works] prices_stage_failed:", e?.message ?? e);
+          } finally {
+            if (reqId === disciplineReqSeqRef.current) setRepDisciplinePriceLoading(false);
+          }
+        })();
       } catch (e: any) {
         if (reqId !== disciplineReqSeqRef.current) return;
         console.warn("[director] fetchDiscipline:", e?.message ?? e);
         setRepDiscipline(null);
+        setRepDisciplinePriceLoading(false);
         if (!opts?.background) {
           Alert.alert("Отчеты", e?.message ?? "Не удалось получить дисциплины");
         }
@@ -442,6 +492,7 @@ export function useDirectorReports({ fmtDateOnly }: Deps) {
     repTo,
     repObjectName,
     repLoading,
+    repDisciplinePriceLoading,
     repData,
     repDiscipline,
     repOptLoading,
