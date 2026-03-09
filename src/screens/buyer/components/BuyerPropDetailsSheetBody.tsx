@@ -4,6 +4,7 @@ import { View, Text, Pressable, ActivityIndicator, FlatList } from "react-native
 import type { ProposalViewLine, ProposalHeadLite } from "../buyer.types";
 import { D, UI } from "../buyerUi";
 import type { StylesBag } from "./component.types";
+import SectionBlock from "../../../ui/SectionBlock";
 
 type ProposalAttachmentLite = {
   id?: string | number | null;
@@ -190,9 +191,9 @@ export function BuyerPropDetailsSheetBody({
               )}
             </View>
 
-            <View style={{ marginTop: 12, marginBottom: 8 }}>
+            <SectionBlock style={{ marginTop: 12, marginBottom: 8 }} contentStyle={{ gap: 0 }}>
               <Text style={{ fontWeight: "900", color: D.text, fontSize: 16 }}>Состав</Text>
-            </View>
+            </SectionBlock>
           </View>
         }
         contentContainerStyle={{ paddingBottom: 40 }}
