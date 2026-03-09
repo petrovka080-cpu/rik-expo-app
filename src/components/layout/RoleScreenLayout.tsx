@@ -49,7 +49,9 @@ export default function RoleScreenLayout({
         </View>
       ) : null}
       {tabs}
-      <View style={[styles.content, contentStyle]}>{children}</View>
+      <View style={styles.contentContainer}>
+        <View style={[styles.content, contentStyle]}>{children}</View>
+      </View>
     </View>
   );
 }
@@ -80,5 +82,11 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     minHeight: 0,
+  },
+  contentContainer: {
+    flex: 1,
+    minHeight: 0,
+    width: "100%",
+    alignSelf: "stretch",
   },
 });
