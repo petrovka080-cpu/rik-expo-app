@@ -334,9 +334,7 @@ export default function WarehouseReportsTab(props: Props) {
           />
         </SectionBlock>
 
-        <View style={[s.sectionBox, { paddingHorizontal: 16 }]}>
-          <Text style={s.sectionBoxTitle}>{sectionTitle}</Text>
-
+        <SectionBlock title={sectionTitle} style={[s.sectionBox, { paddingHorizontal: 16 }]} contentStyle={{ gap: 0 }}>
           {(isIncoming ? reportsUi.incomingByDay : reportsUi.vydachaByDay).map((g) => {
             const dayCount = g.items.length;
 
@@ -355,7 +353,7 @@ export default function WarehouseReportsTab(props: Props) {
               </Pressable>
             );
           })}
-        </View>
+        </SectionBlock>
 
         <View style={{ height: 8 }} />
       </ScrollView>
