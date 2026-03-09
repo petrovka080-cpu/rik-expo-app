@@ -2,6 +2,7 @@
 import React from "react";
 import { View, Text, Pressable } from "react-native";
 import { UI, s } from "../warehouse.styles";
+import SectionBlock from "../../../ui/SectionBlock";
 
 type Props = {
   recipientText: string;
@@ -11,7 +12,7 @@ type Props = {
 function ExpenditureHeader({ recipientText, onOpenRecipientModal }: Props) {
   return (
     <View style={{ paddingHorizontal: 16, paddingBottom: 10 }}>
-      <View style={s.sectionBox}>
+      <SectionBlock style={s.sectionBox} contentStyle={{ gap: 0 }}>
         <View style={{ marginTop: 2 }}>
           <Text style={{ color: UI.sub, fontWeight: "800", marginBottom: 6 }}>
             Эту партию получает
@@ -35,7 +36,7 @@ function ExpenditureHeader({ recipientText, onOpenRecipientModal }: Props) {
             </Text>
           </Pressable>
         </View>
-      </View>
+      </SectionBlock>
     </View>
   );
 }
