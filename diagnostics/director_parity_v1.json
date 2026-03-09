@@ -1,0 +1,263 @@
+{
+  "generated_at": "2026-03-09T09:18:55.017Z",
+  "company_id": null,
+  "scopes_checked": 4,
+  "results": [
+    {
+      "scope": {
+        "key": "all_wide",
+        "from": "2020-01-01",
+        "to": "2030-01-01",
+        "objectName": null,
+        "tag": "all"
+      },
+      "canonical": {
+        "materials": {
+          "ok": false,
+          "sig": "old",
+          "error": "Could not find the function public.director_report_fetch_materials_v1(p_from, p_object_name, p_to) in the schema cache"
+        },
+        "works": {
+          "ok": false,
+          "sig": "old",
+          "error": "Could not find the function public.director_report_fetch_works_v1(p_from, p_include_costs, p_object_name, p_to) in the schema cache"
+        },
+        "summary": {
+          "ok": false,
+          "sig": "old",
+          "error": "Could not find the function public.director_report_fetch_summary_v1(p_from, p_mode, p_object_name, p_to) in the schema cache"
+        }
+      },
+      "materials": {
+        "legacy": {
+          "kpi": {
+            "issues_total": 401,
+            "items_total": 1086,
+            "items_without_request": 0
+          },
+          "rows_count": 348,
+          "qty_total": 0
+        },
+        "canonical": null,
+        "compare": null
+      },
+      "works": {
+        "legacy": {
+          "summary": {
+            "total_positions": 1000,
+            "req_positions": 765,
+            "free_positions": 235,
+            "total_qty": 215964.70799999993,
+            "issue_cost_total": null,
+            "purchase_cost_total": null,
+            "unpriced_issue_pct": null
+          },
+          "works_count": 24
+        },
+        "canonical": null,
+        "compare": null
+      },
+      "summary": {
+        "canonical": null
+      },
+      "mismatches": [
+        {
+          "sev": "P0",
+          "metric": "canonical_rpc_unavailable"
+        }
+      ]
+    },
+    {
+      "scope": {
+        "key": "medium_object",
+        "from": "2020-01-01",
+        "to": "2030-01-01",
+        "objectName": "Котельная",
+        "tag": "medium"
+      },
+      "canonical": {
+        "materials": {
+          "ok": false,
+          "sig": "old",
+          "error": "Could not find the function public.director_report_fetch_materials_v1(p_from, p_object_name, p_to) in the schema cache"
+        },
+        "works": {
+          "ok": false,
+          "sig": "old",
+          "error": "Could not find the function public.director_report_fetch_works_v1(p_from, p_include_costs, p_object_name, p_to) in the schema cache"
+        },
+        "summary": {
+          "ok": false,
+          "sig": "old",
+          "error": "Could not find the function public.director_report_fetch_summary_v1(p_from, p_mode, p_object_name, p_to) in the schema cache"
+        }
+      },
+      "materials": {
+        "legacy": {
+          "kpi": {
+            "issues_total": 0,
+            "items_total": 0,
+            "items_without_request": 0
+          },
+          "rows_count": 348,
+          "qty_total": 0
+        },
+        "canonical": null,
+        "compare": null
+      },
+      "works": {
+        "legacy": {
+          "summary": {
+            "total_positions": 1,
+            "req_positions": 0,
+            "free_positions": 1,
+            "total_qty": 10,
+            "issue_cost_total": null,
+            "purchase_cost_total": null,
+            "unpriced_issue_pct": null
+          },
+          "works_count": 1
+        },
+        "canonical": null,
+        "compare": null
+      },
+      "summary": {
+        "canonical": null
+      },
+      "mismatches": [
+        {
+          "sev": "P0",
+          "metric": "canonical_rpc_unavailable"
+        }
+      ]
+    },
+    {
+      "scope": {
+        "key": "complex_object",
+        "from": "2020-01-01",
+        "to": "2030-01-01",
+        "objectName": "Административное здание",
+        "tag": "complex"
+      },
+      "canonical": {
+        "materials": {
+          "ok": false,
+          "sig": "old",
+          "error": "Could not find the function public.director_report_fetch_materials_v1(p_from, p_object_name, p_to) in the schema cache"
+        },
+        "works": {
+          "ok": false,
+          "sig": "old",
+          "error": "Could not find the function public.director_report_fetch_works_v1(p_from, p_include_costs, p_object_name, p_to) in the schema cache"
+        },
+        "summary": {
+          "ok": false,
+          "sig": "old",
+          "error": "Could not find the function public.director_report_fetch_summary_v1(p_from, p_mode, p_object_name, p_to) in the schema cache"
+        }
+      },
+      "materials": {
+        "legacy": {
+          "kpi": {
+            "issues_total": 179,
+            "items_total": 450,
+            "items_without_request": 0
+          },
+          "rows_count": 348,
+          "qty_total": 0
+        },
+        "canonical": null,
+        "compare": null
+      },
+      "works": {
+        "legacy": {
+          "summary": {
+            "total_positions": 16,
+            "req_positions": 0,
+            "free_positions": 16,
+            "total_qty": 767.5,
+            "issue_cost_total": null,
+            "purchase_cost_total": null,
+            "unpriced_issue_pct": null
+          },
+          "works_count": 8
+        },
+        "canonical": null,
+        "compare": null
+      },
+      "summary": {
+        "canonical": null
+      },
+      "mismatches": [
+        {
+          "sev": "P0",
+          "metric": "canonical_rpc_unavailable"
+        }
+      ]
+    },
+    {
+      "scope": {
+        "key": "period_30d_all",
+        "from": "2026-02-07",
+        "to": "2026-03-09",
+        "objectName": null,
+        "tag": "period"
+      },
+      "canonical": {
+        "materials": {
+          "ok": false,
+          "sig": "old",
+          "error": "Could not find the function public.director_report_fetch_materials_v1(p_from, p_object_name, p_to) in the schema cache"
+        },
+        "works": {
+          "ok": false,
+          "sig": "old",
+          "error": "Could not find the function public.director_report_fetch_works_v1(p_from, p_include_costs, p_object_name, p_to) in the schema cache"
+        },
+        "summary": {
+          "ok": false,
+          "sig": "old",
+          "error": "Could not find the function public.director_report_fetch_summary_v1(p_from, p_mode, p_object_name, p_to) in the schema cache"
+        }
+      },
+      "materials": {
+        "legacy": {
+          "kpi": {
+            "issues_total": 401,
+            "items_total": 1086,
+            "items_without_request": 0
+          },
+          "rows_count": 343,
+          "qty_total": 0
+        },
+        "canonical": null,
+        "compare": null
+      },
+      "works": {
+        "legacy": {
+          "summary": {
+            "total_positions": 1000,
+            "req_positions": 765,
+            "free_positions": 235,
+            "total_qty": 215964.70799999993,
+            "issue_cost_total": null,
+            "purchase_cost_total": null,
+            "unpriced_issue_pct": null
+          },
+          "works_count": 24
+        },
+        "canonical": null,
+        "compare": null
+      },
+      "summary": {
+        "canonical": null
+      },
+      "mismatches": [
+        {
+          "sev": "P0",
+          "metric": "canonical_rpc_unavailable"
+        }
+      ]
+    }
+  ]
+}
