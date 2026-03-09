@@ -1,4 +1,4 @@
-import { FINAL_WORK_TYPE_INPUT_MATRIX } from "./finalWorkTypeInputMatrix";
+import { FINAL_WORK_TYPE_INPUT_PROFILE_MAP } from "./finalWorkTypeInputProfiles";
 
 export type FieldUiPriority = "core" | "secondary" | "engineering" | "advanced" | "derived" | "hidden";
 
@@ -382,11 +382,11 @@ const WORK_TYPE_OVERRIDES: Record<string, WorkTypeInputOverride> = {
 };
 
 const FINAL_WORK_TYPE_OVERRIDES: Record<string, WorkTypeInputOverride> = Object.fromEntries(
-  Object.entries(FINAL_WORK_TYPE_INPUT_MATRIX).map(([code, profile]) => [
-    code,
+  Object.entries(FINAL_WORK_TYPE_INPUT_PROFILE_MAP).map(([code, profile]) => [
+    normalizeCode(code),
     {
       workTypeCode: profile.workTypeCode,
-      familyCode: profile.familyCode,
+      familyCode: undefined,
       coreFields: Array.from(profile.core),
       engineeringFields: profile.engineering ? Array.from(profile.engineering) : undefined,
       derivedFields: profile.derived ? Array.from(profile.derived) : undefined,
@@ -400,6 +400,15 @@ const FINAL_WORK_TYPE_OVERRIDES: Record<string, WorkTypeInputOverride> = Object.
 const getWorkTypeOverride = (workTypeCode: string) =>
   FINAL_WORK_TYPE_OVERRIDES[normalizeCode(workTypeCode)] ??
   WORK_TYPE_OVERRIDES[normalizeCode(workTypeCode)];
+
+const BASIS_KEY_ALIASES: Record<string, string> = {
+  points_socket: "points_outlet",
+  points_outlet: "points_outlet",
+  points_panel: "points",
+};
+
+const normalizeBasisKeyForOverride = (basisKey: BasisKey) =>
+  BASIS_KEY_ALIASES[String(basisKey).trim()] ?? String(basisKey).trim();
 
 const hasKey = (keys: Set<string>, key: string) => keys.has(key);
 
@@ -700,14 +709,18 @@ const resolveDisplayLabel = (args: {
   override?: WorkTypeInputOverride;
 }) => {
   const familyCode = String(args.familyCode || "").toLowerCase();
+  const normalizedKey = normalizeBasisKeyForOverride(args.basisKey);
 
   const workTypeLabels = args.override?.labelOverrides ?? {};
   const familyLabels = FAMILY_LABEL_OVERRIDES[familyCode] ?? {};
 
   return (
     workTypeLabels[args.basisKey] ??
+    workTypeLabels[normalizedKey] ??
     familyLabels[args.basisKey] ??
+    familyLabels[normalizedKey] ??
     NEUTRAL_BASIS_LABELS[args.basisKey] ??
+    NEUTRAL_BASIS_LABELS[normalizedKey] ??
     args.originalLabel
   );
 };
@@ -718,13 +731,14 @@ const resolveDisplayHint = (args: {
   override?: WorkTypeInputOverride;
 }) => {
   const hints = args.override?.hintOverrides ?? {};
-  const hint = hints[args.basisKey];
+  const hint = hints[args.basisKey] ?? hints[normalizeBasisKeyForOverride(args.basisKey)];
   if (typeof hint === "string" && hint.trim()) return hint;
   return args.originalHint ?? undefined;
 };
 
 const resolvePriorityByOverride = (basisKey: BasisKey, override?: WorkTypeInputOverride): FieldUiPriority | null => {
   if (!override) return null;
+  const normalizedKey = normalizeBasisKeyForOverride(basisKey);
 
   const core = toSet(override.coreFields);
   const secondary = toSet(override.secondaryFields);
@@ -733,12 +747,12 @@ const resolvePriorityByOverride = (basisKey: BasisKey, override?: WorkTypeInputO
   const derived = toSet(override.derivedFields);
   const hidden = toSet(override.hiddenFields);
 
-  if (hidden.has(basisKey)) return HIDDEN;
-  if (core.has(basisKey)) return CORE;
-  if (engineering.has(basisKey)) return ENGINEERING;
-  if (secondary.has(basisKey)) return SECONDARY;
-  if (derived.has(basisKey)) return DERIVED;
-  if (advanced.has(basisKey)) return ADVANCED;
+  if (hidden.has(basisKey) || hidden.has(normalizedKey)) return HIDDEN;
+  if (core.has(basisKey) || core.has(normalizedKey)) return CORE;
+  if (engineering.has(basisKey) || engineering.has(normalizedKey)) return ENGINEERING;
+  if (secondary.has(basisKey) || secondary.has(normalizedKey)) return SECONDARY;
+  if (derived.has(basisKey) || derived.has(normalizedKey)) return DERIVED;
+  if (advanced.has(basisKey) || advanced.has(normalizedKey)) return ADVANCED;
   return null;
 };
 
@@ -763,11 +777,15 @@ export const enrichFieldUiMeta = (params: {
   const familyPriority = resolvePriorityByFamily(params.basisKey, familyCode, code, allKeys);
   const uiPriority = overridePriority ?? familyPriority;
 
-  const editableOverride = override?.editableOverrides?.[params.basisKey];
+  const normalizedBasisKey = normalizeBasisKeyForOverride(params.basisKey);
+  const editableOverride =
+    override?.editableOverrides?.[params.basisKey] ??
+    override?.editableOverrides?.[normalizedBasisKey];
   const editable = typeof editableOverride === "boolean" ? editableOverride : uiPriority !== DERIVED && uiPriority !== HIDDEN;
 
   const semanticRole =
     override?.semanticRoleOverrides?.[params.basisKey] ??
+    override?.semanticRoleOverrides?.[normalizedBasisKey] ??
     resolveSemanticRole(params.basisKey);
 
   return {
