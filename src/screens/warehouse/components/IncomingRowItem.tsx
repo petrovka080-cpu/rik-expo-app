@@ -1,7 +1,8 @@
 ﻿import React from "react";
-import { Pressable, Text, View } from "react-native";
+import { Pressable, View } from "react-native";
 import { formatProposalBaseNo } from "../../../lib/format";
 import { StatusBadge } from "../../../ui/StatusBadge";
+import { RoleCard } from "../../../components/ui/RoleCard";
 import type { IncomingRow } from "../warehouse.types";
 import { s } from "../warehouse.styles";
 
@@ -27,34 +28,22 @@ export default function IncomingRowItem({
     row.purchase_id,
   );
 
-  const dateStr = fmtRuDate(row.purchase_created_at) || "вЂ”";
+  const dateStr = fmtRuDate(row.purchase_created_at) || "—";
 
   return (
     <View style={s.listItemContainer}>
-      <Pressable
-        onPress={() => onPress(row)}
-        style={({ pressed }) => [
-          s.groupHeader,
-          s.incomingItemPressable,
-          pressed && { opacity: 0.8, backgroundColor: "rgba(255,255,255,0.08)" },
-        ]}
-      >
-        <View style={s.listItemFlex}>
-          <View style={s.incomingItemRow1}>
-            <Text style={[s.groupTitle, { fontSize: 16 }]} numberOfLines={1}>
-              {prNo}
-            </Text>
-            <Text style={s.incomingItemDate}>{dateStr}</Text>
-          </View>
-
-          <View style={s.incomingItemRow2}>
-            <StatusBadge label={`РџСЂРёРЅСЏС‚Рѕ ${recSum}`} tone="neutral" compact />
-            <StatusBadge label={`Осталось ${leftSum}`} tone="info" compact />
-          </View>
-        </View>
+      <Pressable onPress={() => onPress(row)} style={({ pressed }) => [s.incomingItemPressable, pressed && { opacity: 0.8 }]}> 
+        <RoleCard
+          title={prNo}
+          subtitle={dateStr}
+          style={[s.groupHeader, { marginBottom: 0 }]}
+          titleStyle={{ fontSize: 16 }}
+          subtitleStyle={s.incomingItemDate}
+          status={<StatusBadge label={`Принято ${recSum}`} tone="neutral" compact />}
+          rightIndicator={<StatusBadge label={`Осталось ${leftSum}`} tone="info" compact />}
+        />
       </Pressable>
     </View>
   );
 }
-
 
