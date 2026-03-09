@@ -17,12 +17,14 @@ import { useWarehouseModalsManagerProps } from "./useWarehouseModalsManagerProps
 import type { WarehouseScreenData } from "./useWarehouseScreenData";
 
 export function useWarehouseScreenActions(data: WarehouseScreenData) {
+  const fetchReqHeadsForce = useCallback(() => data.callFetchReqHeads(0, true), [data.callFetchReqHeads]);
+
   useWarehouseLifecycle({
     tab: data.tab,
     setLoading: data.setLoading,
     fetchToReceive: data.callFetchToReceive,
     fetchStock: data.callFetchStock,
-    fetchReqHeadsForce: () => data.callFetchReqHeads(0, true),
+    fetchReqHeadsForce,
     fetchReports: data.callFetchReports,
     onError: showErr,
   });
@@ -32,14 +34,14 @@ export function useWarehouseScreenActions(data: WarehouseScreenData) {
     periodFrom: data.periodFrom,
     periodTo: data.periodTo,
     fetchReports: data.fetchReports,
-    fetchReqHeadsForce: () => data.callFetchReqHeads(0, true),
+    fetchReqHeadsForce,
     onError: showErr,
   });
 
   useWarehouseExpenseRealtime({
     supabase,
     tab: data.tab,
-    fetchReqHeadsForce: () => data.callFetchReqHeads(0, true),
+    fetchReqHeadsForce,
   });
 
   const { pickOptions, pickTitle } = useWarehousePickerUi({

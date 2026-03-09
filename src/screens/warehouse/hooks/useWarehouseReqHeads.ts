@@ -12,7 +12,7 @@ export function useWarehouseReqHeads(params: {
   const [reqHeads, setReqHeads] = useState<ReqHeadRow[]>([]);
   const [reqHeadsLoading, setReqHeadsLoading] = useState(false);
   const [reqHeadsFetchingPage, setReqHeadsFetchingPage] = useState(false);
-  const reqRefs = useRef({ page: 0, hasMore: true, fetching: false });
+  const reqRefs = useRef({ page: 0, hasMore: true, fetching: false, lastErrorAt: 0 });
 
   const fetchReqHeads = useCallback(
     async (pageIndex: number = 0, forceRefresh: boolean = false) => {
@@ -41,6 +41,16 @@ export function useWarehouseReqHeads(params: {
             return [...prev, ...toAdd];
           });
         }
+      } catch (e) {
+        reqRefs.current.hasMore = false;
+        reqRefs.current.lastErrorAt = Date.now();
+        if (pageIndex === 0) setReqHeads([]);
+        console.warn("[warehouse.reqHeads] fetch failed", {
+          pageIndex,
+          forceRefresh,
+          error: (e as { message?: string } | null)?.message ?? String(e),
+        });
+        throw e;
       } finally {
         reqRefs.current.fetching = false;
         setReqHeadsFetchingPage(false);
@@ -58,4 +68,3 @@ export function useWarehouseReqHeads(params: {
     fetchReqHeads,
   };
 }
-

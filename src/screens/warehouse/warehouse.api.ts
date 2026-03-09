@@ -35,6 +35,77 @@ const toTextOrNull = (v: unknown): string | null => {
   return s || null;
 };
 
+const REQUESTS_FALLBACK_SELECT_PLANS = [
+  "id, display_no, status, submitted_at, created_at, object_name, level_name, system_name, zone_name, object_type_code, level_code, system_code, zone_code, contractor_name, contractor_org, subcontractor_name, subcontractor_org, contractor_phone, subcontractor_phone, phone, phone_number, planned_volume, volume, qty_plan, note, comment",
+  "id, display_no, status, submitted_at, created_at, object_name, object_type_code, level_code, system_code, zone_code, contractor_name, contractor_org, subcontractor_name, subcontractor_org, contractor_phone, subcontractor_phone, phone, phone_number, planned_volume, volume, qty_plan, note, comment",
+  "id, display_no, status, submitted_at, created_at, object_name, object_type_code, level_code, system_code, zone_code, note, comment",
+  "id, display_no, status, submitted_at, created_at, object_name, object_type_code, level_code, system_code, zone_code",
+  "id, display_no, status, submitted_at, created_at, object_name, object_type_code",
+  "id, display_no, status, submitted_at, created_at, object_name",
+  "id, display_no, status, submitted_at, created_at",
+] as const;
+
+let requestsFallbackSelectPlanCache: string | null = null;
+let requestsFallbackLastHardFailAt = 0;
+let requestsFallbackLastSkipLogAt = 0;
+const REQUESTS_FALLBACK_FAIL_COOLDOWN_MS = 30000;
+
+async function tryLoadRequestsFallbackRows(
+  supabase: SupabaseClient,
+  pageSize: number,
+): Promise<UnknownRow[]> {
+  const now = Date.now();
+  if (
+    !requestsFallbackSelectPlanCache &&
+    requestsFallbackLastHardFailAt > 0 &&
+    now - requestsFallbackLastHardFailAt < REQUESTS_FALLBACK_FAIL_COOLDOWN_MS
+  ) {
+    if (now - requestsFallbackLastSkipLogAt > 5000) {
+      requestsFallbackLastSkipLogAt = now;
+      console.warn("[warehouse.api] requests fallback select skipped by cooldown after repeated 400 failures");
+    }
+    return [];
+  }
+
+  const fetchBySelect = async (selectCols: string) =>
+    supabase
+      .from("requests")
+      .select(selectCols)
+      .order("submitted_at", { ascending: false, nullsFirst: false })
+      .order("display_no", { ascending: false })
+      .limit(Math.max(pageSize * 6, 600));
+
+  // Canonical anti-drift path: avoid explicit legacy columns and read the current row surface.
+  const star = await fetchBySelect("*");
+  if (!star.error && Array.isArray(star.data)) {
+    return star.data as unknown as UnknownRow[];
+  }
+
+  if (requestsFallbackSelectPlanCache) {
+    const cached = await fetchBySelect(requestsFallbackSelectPlanCache);
+    if (!cached.error && Array.isArray(cached.data)) return cached.data as unknown as UnknownRow[];
+    requestsFallbackSelectPlanCache = null;
+  }
+
+  let lastError: unknown = null;
+  for (const selectCols of REQUESTS_FALLBACK_SELECT_PLANS) {
+    const q = await fetchBySelect(selectCols);
+    if (!q.error) {
+      requestsFallbackSelectPlanCache = selectCols;
+      return Array.isArray(q.data) ? (q.data as unknown as UnknownRow[]) : [];
+    }
+    lastError = q.error;
+  }
+
+  if (lastError) {
+    requestsFallbackLastHardFailAt = Date.now();
+    const msg = String((lastError as { message?: string } | null)?.message ?? lastError ?? "");
+    console.warn("[warehouse.api] requests fallback select failed:", msg);
+  }
+
+  return [];
+}
+
 const parseDisplayNo = (raw: unknown): { year: number; seq: number } => {
   const s = String(raw ?? "").trim();
   const m = s.match(/(\d+)\s*\/\s*(\d{4})/);
@@ -488,19 +559,10 @@ export async function apiFetchReqHeads(
   // On next pages we rely on pure view pagination to avoid duplicate slices.
   if (page === 0) {
     try {
-    const reqQ = await supabase
-      .from("requests")
-      .select(
-        "id, display_no, status, submitted_at, created_at, object_name, level_name, system_name, zone_name, object_type_code, level_code, system_code, zone_code, contractor_name, contractor_org, subcontractor_name, subcontractor_org, contractor_phone, subcontractor_phone, phone, phone_number, planned_volume, volume, qty_plan, note, comment",
-      )
-      .order("submitted_at", { ascending: false, nullsFirst: false })
-      .order("display_no", { ascending: false })
-      // Wide fallback window: approved requests can be outside the first page of heads view.
-      // Keep this broad to avoid "missing REQ in Расход" when numbering/history is dense.
-      .limit(Math.max(pageSize * 6, 600));
+      const reqRows = await tryLoadRequestsFallbackRows(supabase, pageSize);
 
-    if (!reqQ.error && Array.isArray(reqQ.data) && reqQ.data.length) {
-      const approvedReqs = (reqQ.data as UnknownRow[])
+    if (reqRows.length) {
+      const approvedReqs = reqRows
         .filter((r) => isRequestDirectorApproved(r?.status))
         .map((r) => ({
           request_id: String(r.id ?? "").trim(),
@@ -549,7 +611,7 @@ export async function apiFetchReqHeads(
           const fallbackRows: ReqHeadRow[] = approvedReqs
             .filter((r) => !viewIds.has(r.request_id))
             .map((r) => {
-              const reqRaw = (reqQ.data as UnknownRow[]).find((x) => String(x?.id ?? "").trim() === r.request_id) ?? null;
+              const reqRaw = reqRows.find((x) => String(x?.id ?? "").trim() === r.request_id) ?? null;
               const fromReqText = parseReqHeaderContext([
                 String(reqRaw?.note ?? ""),
                 String(reqRaw?.comment ?? ""),
@@ -995,3 +1057,4 @@ export async function apiFetchIncomingLines(
   if (q.error) console.error("[apiFetchIncomingLines] Error:", q.error.message);
   return [];
 }
+

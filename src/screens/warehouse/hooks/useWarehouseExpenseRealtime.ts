@@ -1,6 +1,9 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import type { Tab } from "../warehouse.types";
+import { WAREHOUSE_TABS, type Tab } from "../warehouse.types";
+
+const TAB_EXPENSE = WAREHOUSE_TABS[2];
+const RT_MIN_INTERVAL_MS = 800;
 
 export function useWarehouseExpenseRealtime(params: {
   supabase: SupabaseClient;
@@ -8,35 +11,36 @@ export function useWarehouseExpenseRealtime(params: {
   fetchReqHeadsForce: () => Promise<void>;
 }) {
   const { supabase, tab, fetchReqHeadsForce } = params;
+  const inFlightRef = useRef<Promise<void> | null>(null);
+  const lastStartRef = useRef(0);
 
   useEffect(() => {
+    const triggerRefresh = () => {
+      if (tab !== TAB_EXPENSE) return;
+      const now = Date.now();
+      if (inFlightRef.current) return;
+      if (now - lastStartRef.current < RT_MIN_INTERVAL_MS) return;
+
+      lastStartRef.current = now;
+      const task = fetchReqHeadsForce().finally(() => {
+        if (inFlightRef.current === task) inFlightRef.current = null;
+      });
+      inFlightRef.current = task;
+    };
+
     const ch = supabase
       .channel("warehouse-expense-rt")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "requests" },
-        () => {
-          if (tab !== "Расход") return;
-          void fetchReqHeadsForce();
-        },
-      )
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "request_items" },
-        () => {
-          if (tab !== "Расход") return;
-          void fetchReqHeadsForce();
-        },
-      )
+      .on("postgres_changes", { event: "*", schema: "public", table: "requests" }, triggerRefresh)
+      .on("postgres_changes", { event: "*", schema: "public", table: "request_items" }, triggerRefresh)
       .subscribe();
 
     return () => {
       try {
         ch.unsubscribe();
-      } catch { }
+      } catch {}
       try {
         supabase.removeChannel(ch);
-      } catch { }
+      } catch {}
     };
   }, [supabase, tab, fetchReqHeadsForce]);
 }
