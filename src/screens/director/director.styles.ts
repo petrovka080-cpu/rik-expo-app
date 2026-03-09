@@ -131,8 +131,9 @@ collapsingHeader: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    padding: 14,
-    borderRadius: 18,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderRadius: 14,
     backgroundColor: UI.cardBg,
     borderWidth: 1,
     borderColor: "rgba(255,255,255,0.18)",
@@ -143,13 +144,12 @@ collapsingHeader: {
     elevation: 6,
     minHeight: 72,
   },
-  groupTitle: { fontSize: 18, fontWeight: "900", color: UI.text },
+  groupTitle: { fontSize: 16, fontWeight: "500", color: UI.text },
   cardMeta: {
-    marginTop: 6,
-    color: "rgba(255,255,255,0.78)",
-    fontSize: 12,
-    fontWeight: "800",
-    letterSpacing: 0.2,
+    marginTop: 4,
+    color: UI.sub,
+    fontSize: 13,
+    fontWeight: "600",
   },
 
   // RIGHT STACK
@@ -203,8 +203,9 @@ collapsingHeader: {
   mobCard: {
     flexDirection: "row",
     alignItems: "center",
-    padding: 14,
-    borderRadius: 18,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderRadius: 14,
     backgroundColor: "rgba(16,24,38,0.92)",
     borderWidth: 1.25,
     borderColor: "rgba(255,255,255,0.16)",
@@ -215,8 +216,8 @@ collapsingHeader: {
     elevation: 6,
   },
   mobMain: { flex: 1, minWidth: 0 },
-  mobTitle: { fontSize: 16, fontWeight: "800", color: UI.text },
-  mobMeta: { marginTop: 6, fontSize: 14, fontWeight: "700", color: UI.sub },
+  mobTitle: { fontSize: 16, fontWeight: "500", color: UI.text },
+  mobMeta: { marginTop: 4, fontSize: 13, fontWeight: "600", color: UI.sub },
 
   kindPill: {
     paddingVertical: 4,
