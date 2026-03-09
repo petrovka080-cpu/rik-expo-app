@@ -5,6 +5,7 @@ import { Ionicons } from "@expo/vector-icons";
 import WarehouseSheet from "./WarehouseSheet";
 import { UI } from "../warehouse.styles";
 import IconSquareButton from "../../../ui/IconSquareButton";
+import SectionBlock from "../../../ui/SectionBlock";
 
 type Props = {
     visible: boolean;
@@ -112,7 +113,9 @@ export default function IncomingDetailsSheet({
                 </View>
 
                 {incomingId != null && loadingId === incomingId ? (
-                    <Text style={{ color: UI.sub, fontWeight: "800" }}>Загрузка…</Text>
+                    <SectionBlock style={{ marginBottom: 0 }} contentStyle={{ gap: 0 }}>
+                        <Text style={{ color: UI.sub, fontWeight: "800" }}>Загрузка…</Text>
+                    </SectionBlock>
                 ) : Platform.OS === "web" ? (
                     <View style={{ flex: 1, minHeight: 0 }}>{ListBody}</View>
                 ) : (
@@ -129,3 +132,4 @@ export default function IncomingDetailsSheet({
         </WarehouseSheet>
     );
 }
+
