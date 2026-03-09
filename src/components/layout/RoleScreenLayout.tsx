@@ -22,6 +22,11 @@ type RoleScreenLayoutProps = {
 };
 
 /**
+ * ROLE SCREEN LAYOUT
+ *
+ * All role screens must use this layout.
+ * Do not create alternative role screen wrappers.
+ *
  * Neutral screen composition shell:
  * header -> tabs -> content.
  * No navigation, no role/data logic, no side effects.
@@ -38,6 +43,9 @@ export default function RoleScreenLayout({
   subtitleStyle,
 }: RoleScreenLayoutProps) {
   const hasDefaultHeader = Boolean(title || subtitle);
+  if (__DEV__ && (children == null || children === false)) {
+    console.warn("RoleScreenLayout used without content");
+  }
 
   return (
     <View style={[styles.screen, style]}>
