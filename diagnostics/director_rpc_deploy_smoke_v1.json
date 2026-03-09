@@ -1,0 +1,27 @@
+{
+  "generated_at": "2026-03-09T09:27:34.858Z",
+  "readiness": {
+    "has_v_director_report_fact_daily_v1": {
+      "ok": false,
+      "error": "Could not find the table 'public.v_director_report_fact_daily_v1' in the schema cache"
+    },
+    "has_v_director_report_issue_item_facts_v1": {
+      "ok": false,
+      "error": "Could not find the table 'public.v_director_report_issue_item_facts_v1' in the schema cache"
+    }
+  },
+  "smoke": {
+    "materials": {
+      "ok": false,
+      "error": "Could not find the function public.director_report_fetch_materials_v1(p_from, p_object_name, p_to) in the schema cache"
+    },
+    "works": {
+      "ok": false,
+      "error": "Could not find the function public.director_report_fetch_works_v1(p_from, p_include_costs, p_object_name, p_to) in the schema cache"
+    },
+    "summary": {
+      "ok": false,
+      "error": "Could not find the function public.director_report_fetch_summary_v1(p_from, p_mode, p_object_name, p_to) in the schema cache"
+    }
+  }
+}
