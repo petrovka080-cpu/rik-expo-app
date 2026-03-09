@@ -1,4 +1,5 @@
 import { FINAL_WORK_TYPE_INPUT_PROFILE_MAP } from "./finalWorkTypeInputProfiles";
+import { FIELD_ALIASES } from "./foremanFieldRegistry";
 import { normalizeWorkTypeCode } from "./workTypeCode";
 
 export type FieldUiPriority = "core" | "secondary" | "engineering" | "advanced" | "derived" | "hidden";
@@ -403,9 +404,8 @@ const getWorkTypeOverride = (workTypeCode: string) => {
 };
 
 const BASIS_KEY_ALIASES: Record<string, string> = {
-  points_socket: "points_outlet",
+  ...FIELD_ALIASES,
   points_outlet: "points_outlet",
-  points_panel: "points",
 };
 
 const normalizeBasisKeyForOverride = (basisKey: BasisKey) =>

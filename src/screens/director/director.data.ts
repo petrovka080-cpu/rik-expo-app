@@ -46,6 +46,7 @@ export function useDirectorData({ supabase }: Deps) {
   const [propReqIdsByProp, setPropReqIdsByProp] = useState<Record<string, string[]>>({});
   const propReqIdsByPropRef = useRef<Record<string, string[]>>({});
   useEffect(() => { propReqIdsByPropRef.current = propReqIdsByProp; }, [propReqIdsByProp]);
+  const requestDisplaySelectModeRef = useRef<"request_no+display_no" | "display_no_only">("request_no+display_no");
 
   const preloadRequestMeta = useCallback(async (reqIds: string[]) => {
     const uniq = Array.from(new Set((reqIds || []).map(String).filter(Boolean)));
@@ -153,16 +154,33 @@ export function useDirectorData({ supabase }: Deps) {
     if (!needed.length) return;
 
     try {
-      const { data, error } = await supabase
-        .from("requests")
-        .select("id, request_no, display_no, submitted_at")
-        .in("id", needed);
-      if (error) throw error;
+      let q;
+      if (requestDisplaySelectModeRef.current === "display_no_only") {
+        q = await supabase
+          .from("requests")
+          .select("id, display_no, submitted_at")
+          .in("id", needed);
+      } else {
+        q = await supabase
+          .from("requests")
+          .select("id, request_no, display_no, submitted_at")
+          .in("id", needed);
+      }
+      if (q.error && requestDisplaySelectModeRef.current !== "display_no_only") {
+        q = await supabase
+          .from("requests")
+          .select("id, display_no, submitted_at")
+          .in("id", needed);
+        if (!q.error) {
+          requestDisplaySelectModeRef.current = "display_no_only";
+        }
+      }
+      if (q.error) throw q.error;
 
       const mapDn: Record<string, string> = {};
       const mapSub: Record<string, string> = {};
 
-      const rowsTyped = (data ?? []) as Array<{
+      const rowsTyped = (q.data ?? []) as Array<{
         id?: string | number | null;
         request_no?: string | null;
         display_no?: string | null;

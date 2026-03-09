@@ -1,4 +1,5 @@
-﻿import { normalizeWorkTypeCode } from "./workTypeCode";
+﻿import { assertCanonicalProfileRegistry } from "./foremanFieldRegistry";
+import { normalizeWorkTypeCode } from "./workTypeCode";
 
 export type FinalWorkTypeInputProfile = {
   workTypeCode: string;
@@ -240,7 +241,7 @@ const profiles: FinalWorkTypeInputProfile[] = [
   // Electric
   mk("RES_ELECTRICA", "elec", ["points_light", "points_outlet", "points_switch"], ["length_m"]),
   mk("ELECTRICA", "elec", ["points"], ["length_m"]),
-  mk("COM_MEP_ELECTRICA", "elec", ["points"], ["length_m", "points_light", "points_socket", "points_low", "points_panel"]),
+  mk("COM_MEP_ELECTRICA", "elec", ["points"], ["length_m", "points_light", "points_outlet", "points_low"]),
   mk("WT-ELEC-SWITCH", "elec", ["points_switch"]),
   mk("WT-ELEC-CABLE", "elec", ["length_m"], undefined, undefined, undefined, { length_m: "Длина кабельной линии" }),
   mk("WT-ELEC-TRAY", "elec", ["length_m"], undefined, undefined, undefined, { length_m: "Длина лотка" }),
@@ -330,5 +331,10 @@ export const FINAL_WORK_TYPE_INPUT_PROFILE_MAP: Record<string, FinalWorkTypeInpu
       item,
     ]),
   );
+
+if (typeof __DEV__ !== "undefined" && __DEV__) {
+  assertCanonicalProfileRegistry(FINAL_WORK_TYPE_INPUT_PROFILES);
+}
+
 
 

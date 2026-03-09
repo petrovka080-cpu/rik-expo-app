@@ -211,6 +211,47 @@ const chunk = <T,>(arr: T[], size = 500): T[][] => {
   return out;
 };
 
+const REQUESTS_SELECT_PLANS = [
+  "id,object_id,object_name,object_type_code,system_code,level_code,object",
+  "id,object_id,object_name,system_code,level_code,object",
+  "id,object_id,object_name,object",
+  "id,object_id,object_name",
+  "id,object_name",
+  "id",
+] as const;
+
+let requestsSelectPlanCache: string | null = null;
+
+async function fetchRequestsRowsSafe(ids: string[]): Promise<any[]> {
+  const reqIds = Array.from(new Set((ids || []).map((x) => String(x ?? "").trim()).filter(Boolean)));
+  if (!reqIds.length) return [];
+
+  const runSelect = async (selectCols: string) =>
+    supabase
+      .from("requests" as any)
+      .select(selectCols)
+      .in("id", reqIds as any);
+
+  if (requestsSelectPlanCache) {
+    const cached = await runSelect(requestsSelectPlanCache);
+    if (!cached.error) return Array.isArray(cached.data) ? cached.data : [];
+    requestsSelectPlanCache = null;
+  }
+
+  let lastError: any = null;
+  for (const selectCols of REQUESTS_SELECT_PLANS) {
+    const q = await runSelect(selectCols);
+    if (!q.error) {
+      requestsSelectPlanCache = selectCols;
+      return Array.isArray(q.data) ? q.data : [];
+    }
+    lastError = q.error;
+  }
+
+  if (lastError) throw lastError;
+  return [];
+}
+
 const firstNonEmpty = (...vals: any[]): string => {
   for (const v of vals) {
     const s = String(normalizeRuText(String(v ?? ""))).trim();
@@ -571,14 +612,14 @@ async function fetchDirectorFactViaAccRpc(p: {
 
   const reqById = new Map<string, any>();
   for (const ids of chunk(requestIds, 100)) {
-    const { data, error } = await supabase
-      .from("requests" as any)
-      .select("id,object_id,object_name,object_type_code,system_code,level_code")
-      .in("id", ids as any);
-    if (error) continue;
-    for (const r of Array.isArray(data) ? data : []) {
-      const id = String(r?.id ?? "").trim();
-      if (id) reqById.set(id, r);
+    try {
+      const rows = await fetchRequestsRowsSafe(ids as any);
+      for (const r of rows) {
+        const id = String(r?.id ?? "").trim();
+        if (id) reqById.set(id, r);
+      }
+    } catch {
+      continue;
     }
   }
 
@@ -923,13 +964,7 @@ async function fetchAllFactRowsFromTables(p: {
 
   const requestById = new Map<string, any>();
   for (const ids of chunk(requestIds, 500)) {
-    const { data, error } = await supabase
-      .from("requests" as any)
-      .select("id,object_id,object_name,object_type_code,system_code,level_code")
-      .in("id", ids as any);
-    if (error) throw error;
-
-    const rows = Array.isArray(data) ? data : [];
+    const rows = await fetchRequestsRowsSafe(ids as any);
     for (const r of rows) {
       const id = String(r?.id ?? "").trim();
       if (id) requestById.set(id, r);
@@ -1274,8 +1309,15 @@ function pct(part: number, total: number): number {
   return Math.round((part / total) * 10000) / 100;
 }
 
-async function fetchIssuePriceMapByCode(): Promise<Map<string, number>> {
+async function fetchIssuePriceMapByCode(opts?: {
+  skipPurchaseItems?: boolean;
+  codes?: string[];
+}): Promise<Map<string, number>> {
   const weighted = new Map<string, { sum: number; w: number }>();
+  const scopedCodes = Array.from(
+    new Set((opts?.codes ?? []).map((x) => String(x ?? "").trim().toUpperCase()).filter(Boolean)),
+  );
+  const hasScopedCodes = scopedCodes.length > 0;
 
   const push = (codeRaw: any, priceRaw: any, qtyRaw: any) => {
     const code = String(codeRaw ?? "").trim().toUpperCase();
@@ -1288,24 +1330,58 @@ async function fetchIssuePriceMapByCode(): Promise<Map<string, number>> {
     weighted.set(code, prev);
   };
 
-  try {
-    const q = await supabase
-      .from("purchase_items" as any)
-      .select("rik_code,code,price,qty")
-      .limit(50000);
-    if (!q.error && Array.isArray(q.data)) {
-      for (const r of q.data) push((r as any)?.rik_code ?? (r as any)?.code, (r as any)?.price, (r as any)?.qty);
-    }
-  } catch { }
+  if (!opts?.skipPurchaseItems) {
+    try {
+      if (hasScopedCodes) {
+        for (const part of chunk(scopedCodes, 500)) {
+          const q = await supabase
+            .from("purchase_items" as any)
+            .select("rik_code,code,price,qty")
+            .in("rik_code", part as any)
+            .limit(50000);
+          if (!q.error && Array.isArray(q.data)) {
+            for (const r of q.data) {
+              push((r as any)?.rik_code ?? (r as any)?.code, (r as any)?.price, (r as any)?.qty);
+            }
+          }
+        }
+      } else {
+        const q = await supabase
+          .from("purchase_items" as any)
+          .select("rik_code,code,price,qty")
+          .limit(50000);
+        if (!q.error && Array.isArray(q.data)) {
+          for (const r of q.data) {
+            push((r as any)?.rik_code ?? (r as any)?.code, (r as any)?.price, (r as any)?.qty);
+          }
+        }
+      }
+    } catch { }
+  }
 
   if (!weighted.size) {
     try {
-      const q2 = await supabase
-        .from("proposal_items" as any)
-        .select("rik_code,price,qty")
-        .limit(50000);
-      if (!q2.error && Array.isArray(q2.data)) {
-        for (const r of q2.data) push((r as any)?.rik_code, (r as any)?.price, (r as any)?.qty);
+      if (hasScopedCodes) {
+        for (const part of chunk(scopedCodes, 500)) {
+          const q2 = await supabase
+            .from("proposal_items" as any)
+            .select("rik_code,price,qty")
+            .in("rik_code", part as any)
+            .limit(50000);
+          if (!q2.error && Array.isArray(q2.data)) {
+            for (const r of q2.data) {
+              push((r as any)?.rik_code, (r as any)?.price, (r as any)?.qty);
+            }
+          }
+        }
+      } else {
+        const q2 = await supabase
+          .from("proposal_items" as any)
+          .select("rik_code,price,qty")
+          .limit(50000);
+        if (!q2.error && Array.isArray(q2.data)) {
+          for (const r of q2.data) push((r as any)?.rik_code, (r as any)?.price, (r as any)?.qty);
+        }
       }
     } catch { }
   }
@@ -1437,12 +1513,8 @@ async function fetchPurchaseCostInPeriodScoped(args: {
     const objectNameByReq = new Map<string, string>();
     for (const part of chunk(requestIds, 500)) {
       try {
-        const q = await supabase
-          .from("requests" as any)
-          .select("id,object_name,object,object_type_code")
-          .in("id", part as any);
-        if (q.error || !Array.isArray(q.data)) continue;
-        for (const r of q.data) {
+        const rows = await fetchRequestsRowsSafe(part as any);
+        for (const r of rows) {
           const id = String((r as any)?.id ?? "").trim();
           const onm = canonicalObjectName(firstNonEmpty((r as any)?.object_name, (r as any)?.object, (r as any)?.object_type_code));
           if (id) objectNameByReq.set(id, onm);
@@ -1803,19 +1875,26 @@ export async function fetchDirectorWarehouseReportDiscipline(p: {
   objectName: string | null;
   objectIdByName: Record<string, string | null>;
 }): Promise<DirectorDisciplinePayload> {
+  const tTotal = nowMs();
   const pFrom = rpcDate(p.from, "1970-01-01");
   const pTo = rpcDate(p.to, "2099-12-31");
+  const tRows = nowMs();
   let rows = await fetchFactRowsForDiscipline({
     from: pFrom,
     to: pTo,
     objectName: p.objectName ?? null,
     objectIdByName: p.objectIdByName ?? {},
   });
+  logTiming("discipline.fetch_rows", tRows);
   try {
+    const tNames = nowMs();
     rows = await enrichFactRowsMaterialNames(rows);
+    logTiming("discipline.enrich_material_names", tNames);
   } catch { }
   try {
+    const tLevels = nowMs();
     rows = await enrichFactRowsLevelNames(rows);
+    logTiming("discipline.enrich_level_names", tLevels);
   } catch { }
   const requestItemIds = Array.from(
     new Set(
@@ -1824,12 +1903,24 @@ export async function fetchDirectorWarehouseReportDiscipline(p: {
         .filter(Boolean),
     ),
   );
+  const rowCodes = Array.from(
+    new Set(
+      rows
+        .map((r) => String(r?.rik_code ?? "").trim().toUpperCase())
+        .filter(Boolean),
+    ),
+  );
 
+  const tPrices = nowMs();
   const [priceByCode, priceByRequestItem] = await Promise.all([
-    fetchIssuePriceMapByCode(),
+    // Works mode should not depend on purchase/ledger sources for first paint.
+    // Use proposal-based prices only here to avoid invalid material-only requests.
+    fetchIssuePriceMapByCode({ skipPurchaseItems: true, codes: rowCodes }),
     fetchPriceByRequestItemId(requestItemIds),
   ]);
+  logTiming("discipline.fetch_prices", tPrices);
 
+  const tCost = nowMs();
   let issueCostTotal = 0;
   let issuePositions = 0;
   let unpricedIssuePositions = 0;
@@ -1845,18 +1936,17 @@ export async function fetchDirectorWarehouseReportDiscipline(p: {
     if (price > 0) issueCostTotal += qty * price;
     else unpricedIssuePositions += 1;
   }
+  logTiming("discipline.compute_cost", tCost);
 
-  const purchaseCostTotal = await fetchPurchaseCostInPeriodScoped({
-    from: pFrom,
-    to: pTo,
-    objectName: p.objectName ?? null,
-    codePrice: priceByCode,
-  });
+  // Keep purchase-cost branch out of works first-load path.
+  // In installations where purchase/ledger views are unavailable this avoids 400s
+  // without changing core discipline metrics (positions/req/free breakdown).
+  const purchaseCostTotal = 0;
 
   const issueToPurchasePct = pct(issueCostTotal, purchaseCostTotal);
   const unpricedIssuePct = pct(unpricedIssuePositions, issuePositions);
 
-  return buildDisciplinePayloadFromFactRows(rows, {
+  const payload = buildDisciplinePayloadFromFactRows(rows, {
     issue_cost_total: issueCostTotal,
     purchase_cost_total: purchaseCostTotal,
     issue_to_purchase_pct: issueToPurchasePct,
@@ -1864,6 +1954,8 @@ export async function fetchDirectorWarehouseReportDiscipline(p: {
     price_by_code: priceByCode,
     price_by_request_item: priceByRequestItem,
   });
+  logTiming("discipline.total", tTotal);
+  return payload;
 }
 
 
