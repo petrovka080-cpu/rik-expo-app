@@ -77,14 +77,15 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 20,
     lineHeight: 24,
-    fontWeight: "800",
+    fontWeight: "600",
     color: "#F8FAFC",
   },
   subtitle: {
     marginTop: 2,
     fontSize: 13,
     lineHeight: 17,
-    fontWeight: "600",
+    fontWeight: "500",
+    opacity: 0.7,
     color: "#9CA3AF",
   },
   content: {
