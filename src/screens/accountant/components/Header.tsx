@@ -88,13 +88,13 @@ export default function Header({
             paddingVertical: 2,
           }}
         >
-          <Text style={{ color: "#fff", fontWeight: "900", fontSize: 10 }}>{unread}</Text>
+          <Text style={{ color: "#fff", fontWeight: "600", fontSize: 10 }}>{unread}</Text>
         </View>
       ) : null}
 
       <SafeView style={{ height: 10 }} />
 
-      <View style={{ marginTop: 10 }}>
+      <View style={{ marginTop: 8 }}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingRight: 12 }}>
           <View style={{ flexDirection: "row" }}>
             {TABS.map((t) => {

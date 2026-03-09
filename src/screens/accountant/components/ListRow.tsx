@@ -29,7 +29,6 @@ function ListRowInner({
   const rest = sum > 0 ? Math.max(0, sum - total) : 0;
 
   const st = statusFromRaw(item.payment_status, false);
-  const isPaidFull = rest === 0 && st.key === "PAID";
   const supplier = normalizeRuText(String(item.supplier || "—"));
   const invoiceNo = normalizeRuText(String(item.invoice_number || "без №"));
   const invoiceDate = normalizeRuText(String(item.invoice_date || "—"));
@@ -48,7 +47,7 @@ function ListRowInner({
       style={({ pressed }) => ({
         backgroundColor: UI.cardBg,
         marginHorizontal: 12,
-        marginVertical: 6,
+        marginVertical: 5,
         borderRadius: 16,
         borderWidth: 1,
         borderColor: "rgba(255,255,255,0.12)",
@@ -74,7 +73,7 @@ function ListRowInner({
           </Text>
 
           {rest > 0 && (
-            <Text style={{ fontSize: 12, fontWeight: "500", color: "#FCD34D", marginTop: 8 }}>
+            <Text style={{ fontSize: 12, fontWeight: "500", color: "#FBBF24", marginTop: 8 }}>
               Остаток: {rest} {item.invoice_currency || "KGS"}
             </Text>
           )}

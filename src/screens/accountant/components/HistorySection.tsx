@@ -39,7 +39,7 @@ export const HistoryHeader = memo(function HistoryHeader({
       : "Весь период";
 
   return (
-    <View style={{ paddingHorizontal: 12, paddingTop: 8, paddingBottom: 8 }}>
+    <View style={{ paddingHorizontal: 12, paddingTop: 10, paddingBottom: 8 }}>
       <TopRightActionBar
         titleLeft={periodTitle}
         actions={[
@@ -49,7 +49,7 @@ export const HistoryHeader = memo(function HistoryHeader({
         ui={{ text: ui.text, sub: ui.sub, border: "rgba(255,255,255,0.14)", btnBg: "rgba(255,255,255,0.06)" }}
       />
 
-      <View style={{ height: 8 }} />
+      <View style={{ height: 10 }} />
       <TextInput
         placeholder="Поиск: поставщик / № счёта"
         placeholderTextColor={ui.sub}
@@ -66,7 +66,7 @@ export const HistoryHeader = memo(function HistoryHeader({
         }}
       />
 
-      <View style={{ height: 8 }} />
+      <View style={{ height: 10 }} />
       <View style={{ paddingBottom: 4 }}>
         <Text style={{ color: ui.sub, fontWeight: "500" }}>
           Найдено: <Text style={{ fontWeight: "600", color: ui.text }}>{rows.length}</Text>
@@ -97,7 +97,7 @@ export const HistoryRowCard = memo(function HistoryRowCard({ item, onOpen, ui }:
       style={({ pressed }) => ({
         backgroundColor: ui.cardBg,
         marginHorizontal: 12,
-        marginVertical: 4,
+        marginVertical: 5,
         borderRadius: 18,
         borderWidth: 1,
         borderColor: "rgba(255,255,255,0.14)",

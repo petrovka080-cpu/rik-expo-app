@@ -251,7 +251,7 @@ export default function DirectorDashboard(p: Props) {
               elevation: 9,
             }}
           >
-            <Text style={{ color: UI.text, fontWeight: "900", fontSize: 13 }} numberOfLines={1}>
+            <Text style={{ color: UI.text, fontWeight: "600", fontSize: 13 }} numberOfLines={1}>
               {p.rtToast.title}
               {p.rtToast.count > 1 ? ` В· x${p.rtToast.count}` : ""}
             </Text>
@@ -260,7 +260,7 @@ export default function DirectorDashboard(p: Props) {
               <Text
                 style={{
                   color: "rgba(255,255,255,0.78)",
-                  fontWeight: "700",
+                  fontWeight: "500",
                   fontSize: 12,
                   marginTop: 4,
                 }}
@@ -385,7 +385,7 @@ export default function DirectorDashboard(p: Props) {
                   onPress={() => p.openFinancePage("debt")}
                   style={[s.groupHeader, { marginHorizontal: 16, marginBottom: 12 }]}
                 >
-                  <Text style={{ color: UI.text, fontWeight: "900", fontSize: 14 }} numberOfLines={1}>
+                  <Text style={{ color: UI.text, fontWeight: "600", fontSize: 14 }} numberOfLines={1}>
                     РћР±СЏР·Р°С‚РµР»СЊСЃС‚РІР°
                   </Text>
                 </Pressable>
@@ -398,7 +398,7 @@ export default function DirectorDashboard(p: Props) {
                 onPress={() => p.openFinancePage("spend")}
                 style={[s.groupHeader, { marginHorizontal: 16, marginBottom: 12 }]}
               >
-                <Text style={{ color: UI.text, fontWeight: "900", fontSize: 14 }} numberOfLines={1}>
+                <Text style={{ color: UI.text, fontWeight: "600", fontSize: 14 }} numberOfLines={1}>
                   Р Р°СЃС…РѕРґС‹
                 </Text>
               </Pressable>
@@ -409,10 +409,10 @@ export default function DirectorDashboard(p: Props) {
             <View style={{ paddingHorizontal: 16, paddingBottom: 10 }}>
               {/* РњРѕР¶РЅРѕ РїРѕР·Р¶Рµ СЃСЋРґР° РґРѕР±Р°РІРёС‚СЊ РјР°Р»РµРЅСЊРєРёРµ KPI РёР· p.finRep, РЅРѕ РјРѕРґР°Р»РєРё Р±РѕР»СЊС€Рµ РќР• СЂРµРЅРґРµСЂРёРј */}
               {rep?.debtCount != null ? (
-                <View style={[s.mobCard, { marginBottom: 10 }]}>
-                  <Text style={{ color: UI.text, fontWeight: "900" }} numberOfLines={1}>
+                <View style={[s.mobCard, { marginBottom: 12 }]}>
+                  <Text style={{ color: UI.text, fontWeight: "600" }} numberOfLines={1}>
                     Рљ РѕРїР»Р°С‚Рµ:{" "}
-                    <Text style={{ color: UI.sub, fontWeight: "900" }}>
+                    <Text style={{ color: UI.sub, fontWeight: "600" }}>
                       {p.money(rep?.debtAmount ?? 0)} KGS В· {String(rep?.debtCount ?? 0)} СЃС‡.
                     </Text>
                   </Text>

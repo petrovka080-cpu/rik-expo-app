@@ -1,4 +1,4 @@
-// src/screens/director/director.styles.ts
+﻿// src/screens/director/director.styles.ts
 import { Platform, StyleSheet } from "react-native";
 
 export const UI = {
@@ -23,34 +23,28 @@ export const s = StyleSheet.create({
   container: { flex: 1 },
 
   collapsingHeader: {
-  position: "absolute",
-  top: 0,
-  left: 0,
-  right: 0,
-
-
-  zIndex: 9999,
-  elevation: 9999,
-
-  backgroundColor: UI.cardBg,
-  borderBottomWidth: 1,
-  borderColor: UI.border,
-  paddingHorizontal: 16,
-  paddingTop: 0,
-
-  paddingBottom: 12,
-  shadowColor: "#000",
-  shadowOffset: { width: 0, height: 6 },
-  shadowRadius: 14,
-},
-
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 9999,
+    elevation: 9999,
+    backgroundColor: UI.cardBg,
+    borderBottomWidth: 1,
+    borderColor: UI.border,
+    paddingHorizontal: 16,
+    paddingTop: 0,
+    paddingBottom: 12,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 6 },
+    shadowRadius: 14,
+  },
 
   collapsingTitle: {
     fontWeight: "600",
     color: UI.text,
     marginBottom: 10,
   },
-
 
   tabs: {
     flexDirection: "row",
@@ -76,7 +70,6 @@ export const s = StyleSheet.create({
     borderColor: UI.accent,
   },
 
-  // ===== SECTION HEADER + KPI =====
   sectionHeader: {
     paddingHorizontal: 16,
     paddingTop: 12,
@@ -125,7 +118,6 @@ export const s = StyleSheet.create({
   kpiLabel: { color: UI.sub, fontWeight: "500", fontSize: 12, flexShrink: 0 },
   kpiValue: { color: UI.text, fontWeight: "600", fontSize: 13 },
 
-  // ===== LIST CARD =====
   group: { marginBottom: 10, paddingHorizontal: 16 },
   groupHeader: {
     flexDirection: "row",
@@ -152,7 +144,6 @@ export const s = StyleSheet.create({
     fontWeight: "500",
   },
 
-  // RIGHT STACK
   rightStack: { alignItems: "flex-end", justifyContent: "center" },
   rightStackSpacer: { height: 8 },
 
@@ -182,10 +173,9 @@ export const s = StyleSheet.create({
     color: "#FFFFFF",
     fontWeight: "600",
     fontSize: 13,
-    letterSpacing: 0.2,
+    letterSpacing: 0,
   },
 
-  // ===== REQUEST NOTE =====
   reqNoteBox: {
     marginTop: 8,
     marginBottom: 12,
@@ -199,7 +189,6 @@ export const s = StyleSheet.create({
   },
   reqNoteLine: { color: UI.text, fontSize: 14, lineHeight: 20, marginBottom: 4 },
 
-  // ===== MODAL ITEM ROWS =====
   mobCard: {
     flexDirection: "row",
     alignItems: "center",
@@ -207,7 +196,7 @@ export const s = StyleSheet.create({
     paddingHorizontal: 16,
     borderRadius: 14,
     backgroundColor: "rgba(16,24,38,0.92)",
-    borderWidth: 1.25,
+    borderWidth: 1,
     borderColor: "rgba(255,255,255,0.16)",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 10 },
@@ -227,7 +216,7 @@ export const s = StyleSheet.create({
     borderColor: UI.border,
     backgroundColor: "transparent",
   },
-  kindPillText: { fontSize: 12, fontWeight: "700", color: UI.text },
+  kindPillText: { fontSize: 12, fontWeight: "600", color: UI.text },
 
   reqActionsBottom: {
     marginTop: 12,
@@ -260,10 +249,8 @@ export const s = StyleSheet.create({
   },
 
   sp8: { width: 8 },
+  actionText: { color: "#fff", fontWeight: "600" },
 
-  actionText: { color: "#fff", fontWeight: "900" },
-
-  // ===== SHEET CONTAINER =====
   sheet: {
     minHeight: "78%",
     maxHeight: "94%",
@@ -294,7 +281,7 @@ export const s = StyleSheet.create({
     flex: 1,
     minWidth: 0,
     color: UI.text,
-    fontWeight: "900",
+    fontWeight: "600",
     fontSize: 18,
   },
   sheetCloseBtn: {
@@ -307,5 +294,5 @@ export const s = StyleSheet.create({
     flexShrink: 0,
     marginLeft: 10,
   },
-  sheetCloseText: { color: "#0B0F14", fontWeight: "900", fontSize: 13 },
+  sheetCloseText: { color: "#0B0F14", fontWeight: "600", fontSize: 13 },
 });

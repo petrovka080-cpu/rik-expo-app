@@ -46,7 +46,7 @@ export const s = StyleSheet.create({
     shadowRadius: 14,
   },
 
-  collapsingTitle: { fontWeight: "600", color: UI.text, marginBottom: 8 },
+  collapsingTitle: { fontWeight: "600", color: UI.text, marginBottom: 6 },
 
   tabs: { flexDirection: "row", flexWrap: "nowrap", alignItems: "center" },
 
@@ -159,7 +159,7 @@ export const s = StyleSheet.create({
     paddingVertical: 10,
     backgroundColor: "rgba(255,255,255,0.06)",
     color: UI.text,
-    fontWeight: "800",
+    fontWeight: "600",
   },
 
   listItemContainer: { marginBottom: 12, paddingHorizontal: 16 },
@@ -168,7 +168,7 @@ export const s = StyleSheet.create({
   listItemRow1: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 5 },
   reqItemDate: { color: UI.sub, fontSize: 13, fontWeight: "500" },
   reqItemRow2: { marginBottom: 5 },
-  reqItemStatusFullyIssued: { color: "#22c55e", fontWeight: "900", fontSize: 13 },
+  reqItemStatusFullyIssued: { color: "#22c55e", fontWeight: "600", fontSize: 13 },
   reqItemStatusNotFullyIssued: { color: UI.sub, fontSize: 13, fontWeight: "500" },
   reqItemRow3: { color: UI.sub, fontSize: 13, fontWeight: "400", lineHeight: 18 },
 
@@ -176,6 +176,6 @@ export const s = StyleSheet.create({
   incomingItemRow1: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 6 },
   incomingItemDate: { color: UI.sub, fontSize: 13, fontWeight: "500" },
   incomingItemRow2: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
-  incomingItemRecText: { color: "#22c55e", fontSize: 14, fontWeight: "900" },
-  incomingItemLeftText: { color: "#ef4444", fontSize: 14, fontWeight: "900" },
+  incomingItemRecText: { color: "#22c55e", fontSize: 14, fontWeight: "600" },
+  incomingItemLeftText: { color: "#ef4444", fontSize: 14, fontWeight: "600" },
 });

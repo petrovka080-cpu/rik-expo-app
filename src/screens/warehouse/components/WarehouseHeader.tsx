@@ -112,7 +112,7 @@ export default function WarehouseHeader(props: {
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{ gap: 8, paddingHorizontal: 16 }}
+        contentContainerStyle={{ gap: 8, paddingHorizontal: 16, paddingBottom: 2 }}
       >
         {WAREHOUSE_TABS.map((t) => {
           const active = tab === t;

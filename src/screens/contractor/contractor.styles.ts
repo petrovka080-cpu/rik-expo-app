@@ -177,7 +177,7 @@ export const styles = StyleSheet.create({
   modeHeaderCloseText: {
     fontSize: 24,
     lineHeight: 24,
-    fontWeight: "900",
+    fontWeight: "600",
     color: "#F8FAFC",
   },
 
@@ -200,7 +200,7 @@ export const styles = StyleSheet.create({
     borderColor: "rgba(255,255,255,0.14)",
   },
   cardTitle: { fontSize: 16, fontWeight: "600" },
-  cardCompany: { fontSize: 20, fontWeight: "800", color: UI.text },
+  cardCompany: { fontSize: 20, fontWeight: "600", color: UI.text },
   cardWork: { fontSize: 13, color: "#0F172A", marginTop: 4 },
   cardObject: { fontSize: 13, color: UI.sub, marginTop: 4 },
   cardCompanyDark: { color: "#F8FAFC" },

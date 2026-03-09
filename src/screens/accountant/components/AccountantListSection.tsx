@@ -17,9 +17,9 @@ type ListItem<TInbox extends InboxRowBase> = { __kind: "history"; data: HistoryR
 export function AccountantEmptyState({ title, hint, titleColor, hintColor }: { title: string; hint: string; titleColor: string; hintColor: string }) {
   return (
     <View style={{ flex: 1, alignItems: "center", justifyContent: "center", padding: 24 }}>
-      <Text style={{ fontSize: 40, marginBottom: 8 }}>...</Text>
-      <Text style={{ fontSize: 16, fontWeight: "900", color: titleColor, marginBottom: 4 }}>{title}</Text>
-      <Text style={{ color: hintColor, textAlign: "center", fontWeight: "700" }}>{hint}</Text>
+      <Text style={{ fontSize: 28, marginBottom: 8, color: hintColor, opacity: 0.7 }}>...</Text>
+      <Text style={{ fontSize: 16, fontWeight: "600", color: titleColor, marginBottom: 4 }}>{title}</Text>
+      <Text style={{ color: hintColor, textAlign: "center", fontWeight: "500" }}>{hint}</Text>
     </View>
   );
 }

@@ -16,7 +16,7 @@ export default function ContractorModeHeader(props: Props) {
         <Text style={[styles.headerTitle, styles.homeHeaderTitle]}>{title}</Text>
         {listMode !== "home" ? (
           <Pressable style={styles.modeHeaderClose} onPress={onBackHome}>
-            <Text style={styles.modeHeaderCloseText}>✕</Text>
+            <Text style={styles.modeHeaderCloseText}>x</Text>
           </Pressable>
         ) : null}
       </View>

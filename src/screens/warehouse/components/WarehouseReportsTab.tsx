@@ -111,7 +111,7 @@ export default function WarehouseReportsTab(props: Props) {
           РћРўР§РЃРўР«
         </Text>
 
-        <View style={{ gap: 16 }}>
+        <View style={{ gap: 12 }}>
           <Pressable
             onPress={() => onSelectMode("issue")}
             style={({ pressed }) => [
@@ -120,13 +120,13 @@ export default function WarehouseReportsTab(props: Props) {
                 borderWidth: 1,
                 borderColor: "rgba(255,255,255,0.12)",
                 borderRadius: 16,
-                paddingVertical: 24,
+                paddingVertical: 20,
                 alignItems: "center",
               },
               pressed && { opacity: 0.9, backgroundColor: "rgba(255,255,255,0.08)" },
             ]}
           >
-            <Text style={{ color: UI.text, fontSize: 18, fontWeight: "600" }}>[ Р’С‹РґР°С‡Р° ]</Text>
+            <Text style={{ color: UI.text, fontSize: 17, fontWeight: "600" }}>Р’С‹РґР°С‡Р°</Text>
           </Pressable>
 
           <Pressable
@@ -137,13 +137,13 @@ export default function WarehouseReportsTab(props: Props) {
                 borderWidth: 1,
                 borderColor: "rgba(255,255,255,0.12)",
                 borderRadius: 16,
-                paddingVertical: 24,
+                paddingVertical: 20,
                 alignItems: "center",
               },
               pressed && { opacity: 0.9, backgroundColor: "rgba(255,255,255,0.08)" },
             ]}
           >
-            <Text style={{ color: UI.text, fontSize: 18, fontWeight: "600" }}>[ РџСЂРёС…РѕРґ ]</Text>
+            <Text style={{ color: UI.text, fontSize: 17, fontWeight: "600" }}>РџСЂРёС…РѕРґ</Text>
           </Pressable>
         </View>
       </View>
@@ -188,7 +188,7 @@ export default function WarehouseReportsTab(props: Props) {
             style={{
               flex: 1,
               fontSize: 16,
-                fontWeight: "600",
+              fontWeight: "600",
               color: UI.text,
             }}
           >
