@@ -126,7 +126,7 @@ const DASH = "—";
 const REPORTS_TIMING = typeof __DEV__ !== "undefined" ? __DEV__ : false;
 const DISCIPLINE_ROWS_CACHE_TTL_MS = 2 * 60 * 1000;
 const DIRECTOR_REPORTS_CANONICAL_ENABLED =
-  String((globalThis as any)?.process?.env?.EXPO_PUBLIC_DIRECTOR_REPORTS_CANONICAL ?? "").trim() === "1";
+  String((globalThis as any)?.process?.env?.EXPO_PUBLIC_DIRECTOR_REPORTS_CANONICAL ?? "1").trim() !== "0";
 
 const toNum = (v: any): number => {
   const n = Number(v ?? 0);
@@ -2160,48 +2160,21 @@ async function fetchFactRowsForDiscipline(p: {
   objectIdByName: Record<string, string | null>;
 }): Promise<{ rows: DirectorFactRow[]; source: DisciplineRowsSource }> {
   const objectName = p.objectName ?? null;
-  const selectedObjectId = objectName == null ? null : (p.objectIdByName[objectName] ?? null);
-  const preferAccPath = objectName != null && selectedObjectId == null;
-
   let rows: DirectorFactRow[] = [];
-  if (preferAccPath) {
-    try {
-      rows = await fetchDirectorFactViaAccRpc({ from: p.from, to: p.to, objectName });
-      if (rows.length) return { rows, source: "acc_rpc" };
-    } catch { }
-    if (!rows.length) {
-      try {
-        rows = await fetchAllFactRowsFromView({ from: p.from, to: p.to, objectName });
-        if (rows.length) return { rows, source: "view" };
-      } catch { }
-    }
-    if (!rows.length) {
-      try {
-        rows = await fetchDisciplineFactRowsFromTables({ from: p.from, to: p.to, objectName });
-        if (rows.length) return { rows, source: "tables" };
-      } catch { }
-    }
-    return { rows: [], source: "none" };
-  }
-
   try {
-    rows = await fetchDisciplineFactRowsFromTables({ from: p.from, to: p.to, objectName });
-    if (rows.length) return { rows, source: "tables" };
+    rows = await fetchDirectorFactViaAccRpc({ from: p.from, to: p.to, objectName });
+    if (rows.length) return { rows, source: "acc_rpc" };
   } catch { }
-  try {
-    rows = await fetchAllFactRowsFromTables({ from: p.from, to: p.to, objectName });
-    if (rows.length) return { rows, source: "tables" };
-  } catch { }
-  if (!rows.length) {
-    try {
-      rows = await fetchDirectorFactViaAccRpc({ from: p.from, to: p.to, objectName });
-      if (rows.length) return { rows, source: "acc_rpc" };
-    } catch { }
-  }
   if (!rows.length) {
     try {
       rows = await fetchAllFactRowsFromView({ from: p.from, to: p.to, objectName });
       if (rows.length) return { rows, source: "view" };
+    } catch { }
+  }
+  if (!rows.length) {
+    try {
+      rows = await fetchDisciplineFactRowsFromTables({ from: p.from, to: p.to, objectName });
+      if (rows.length) return { rows, source: "tables" };
     } catch { }
   }
   return { rows: [], source: "none" };
@@ -2257,40 +2230,23 @@ export async function fetchDirectorWarehouseReport(p: {
   }
 
   let rows: DirectorFactRow[] = [];
-  const preferAccPath = objectName != null && selectedObjectId == null;
-
-  if (preferAccPath) {
+  try {
+    rows = await fetchDirectorFactViaAccRpc({ from: pFrom, to: pTo, objectName });
+  } catch { }
+  if (!rows.length) {
     try {
-      rows = await fetchDirectorFactViaAccRpc({ from: pFrom, to: pTo, objectName });
+      rows = await fetchAllFactRowsFromView({ from: pFrom, to: pTo, objectName });
     } catch { }
-
-    if (!rows.length) {
-      try {
-        rows = await fetchAllFactRowsFromView({ from: pFrom, to: pTo, objectName });
-      } catch { }
-    }
-
-    if (!rows.length) {
-      try {
-        rows = await fetchAllFactRowsFromTables({ from: pFrom, to: pTo, objectName });
-      } catch { }
-    }
-  } else {
+  }
+  if (!rows.length) {
+    try {
+      rows = await fetchDisciplineFactRowsFromTables({ from: pFrom, to: pTo, objectName });
+    } catch { }
+  }
+  if (!rows.length) {
     try {
       rows = await fetchAllFactRowsFromTables({ from: pFrom, to: pTo, objectName });
     } catch { }
-
-    if (!rows.length) {
-      try {
-        rows = await fetchDirectorFactViaAccRpc({ from: pFrom, to: pTo, objectName });
-      } catch { }
-    }
-
-    if (!rows.length) {
-      try {
-        rows = await fetchAllFactRowsFromView({ from: pFrom, to: pTo, objectName });
-      } catch { }
-    }
   }
 
   if (rows.length) {
