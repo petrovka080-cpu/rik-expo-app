@@ -1283,49 +1283,69 @@ async function fetchDisciplineFactRowsFromTables(p: {
   logTiming("discipline.rows.light.issue_items", tIssueItems);
   if (!issueItems.length) return [];
 
+  const issuesMissingWork = new Set<string>();
+  for (const [id, issue] of issuesById.entries()) {
+    const w = String(issue?.work_name ?? "").trim();
+    if (!w) issuesMissingWork.add(id);
+  }
+
   const requestItemIds = Array.from(
     new Set(
       issueItems
+        .filter((x) => {
+          const issueId = String((x as any)?.issue_id ?? "").trim();
+          const issue = issuesById.get(issueId);
+          if (!issue) return false;
+          const issueReqId = String(issue?.request_id ?? "").trim();
+          return !issueReqId && issuesMissingWork.has(issueId);
+        })
         .map((x) => String(x?.request_item_id ?? "").trim())
         .filter(Boolean),
     ),
   );
   const requestIdByRequestItem = new Map<string, string>();
-  const tReqItems = nowMs();
-  await forEachChunkParallel(requestItemIds, 500, 6, async (ids) => {
-    const { data, error } = await supabase
-      .from("request_items" as any)
-      .select("id,request_id")
-      .in("id", ids as any);
-    if (error) throw error;
-    const rows = Array.isArray(data) ? data : [];
-    for (const r of rows) {
-      const id = String(r?.id ?? "").trim();
-      const reqId = String(r?.request_id ?? "").trim();
-      if (id && reqId) requestIdByRequestItem.set(id, reqId);
-    }
-  });
-  logTiming("discipline.rows.light.request_items", tReqItems);
+  if (requestItemIds.length) {
+    const tReqItems = nowMs();
+    await forEachChunkParallel(requestItemIds, 500, 6, async (ids) => {
+      const { data, error } = await supabase
+        .from("request_items" as any)
+        .select("id,request_id")
+        .in("id", ids as any);
+      if (error) throw error;
+      const rows = Array.isArray(data) ? data : [];
+      for (const r of rows) {
+        const id = String(r?.id ?? "").trim();
+        const reqId = String(r?.request_id ?? "").trim();
+        if (id && reqId) requestIdByRequestItem.set(id, reqId);
+      }
+    });
+    logTiming("discipline.rows.light.request_items", tReqItems);
+  }
 
   const requestIds = Array.from(
     new Set(
       [
-        ...Array.from(issuesById.values()).map((iss) => String(iss?.request_id ?? "").trim()),
-        ...Array.from(requestIdByRequestItem.values()).map((rid) => String(rid ?? "").trim()),
+        ...Array.from(issuesById.entries())
+          .filter(([issueId]) => issuesMissingWork.has(issueId))
+          .map(([, iss]) => String(iss?.request_id ?? "").trim()),
+        ...Array.from(requestIdByRequestItem.values())
+          .map((rid) => String(rid ?? "").trim()),
       ].filter(Boolean),
     ),
   );
 
   const requestById = new Map<string, any>();
-  const tReq = nowMs();
-  await forEachChunkParallel(requestIds, 500, 4, async (ids) => {
-    const rows = await fetchRequestsDisciplineRowsSafe(ids as any);
-    for (const r of rows) {
-      const id = String(r?.id ?? "").trim();
-      if (id) requestById.set(id, r);
-    }
-  });
-  logTiming("discipline.rows.light.requests", tReq);
+  if (requestIds.length) {
+    const tReq = nowMs();
+    await forEachChunkParallel(requestIds, 500, 4, async (ids) => {
+      const rows = await fetchRequestsDisciplineRowsSafe(ids as any);
+      for (const r of rows) {
+        const id = String(r?.id ?? "").trim();
+        if (id) requestById.set(id, r);
+      }
+    });
+    logTiming("discipline.rows.light.requests", tReq);
+  }
 
   const systemCodes = Array.from(
     new Set(
@@ -1335,25 +1355,27 @@ async function fetchDisciplineFactRowsFromTables(p: {
     ),
   );
   const systemNameByCode = new Map<string, string>();
-  const tSystems = nowMs();
-  await forEachChunkParallel(systemCodes, 500, 4, async (codes) => {
-    const { data, error } = await supabase
-      .from("ref_systems" as any)
-      .select("code,name_human_ru,display_name,alias_ru,name")
-      .in("code", codes as any);
-    if (error) throw error;
-    const rows = Array.isArray(data) ? data : [];
-    for (const r of rows) {
-      const code = String(r?.code ?? "").trim();
-      const name =
-        String(r?.name_human_ru ?? "").trim() ||
-        String(r?.display_name ?? "").trim() ||
-        String(r?.alias_ru ?? "").trim() ||
-        String(r?.name ?? "").trim();
-      if (code && name) systemNameByCode.set(code, name);
-    }
-  });
-  logTiming("discipline.rows.light.systems", tSystems);
+  if (systemCodes.length) {
+    const tSystems = nowMs();
+    await forEachChunkParallel(systemCodes, 500, 4, async (codes) => {
+      const { data, error } = await supabase
+        .from("ref_systems" as any)
+        .select("code,name_human_ru,display_name,alias_ru,name")
+        .in("code", codes as any);
+      if (error) throw error;
+      const rows = Array.isArray(data) ? data : [];
+      for (const r of rows) {
+        const code = String(r?.code ?? "").trim();
+        const name =
+          String(r?.name_human_ru ?? "").trim() ||
+          String(r?.display_name ?? "").trim() ||
+          String(r?.alias_ru ?? "").trim() ||
+          String(r?.name ?? "").trim();
+        if (code && name) systemNameByCode.set(code, name);
+      }
+    });
+    logTiming("discipline.rows.light.systems", tSystems);
+  }
 
   const out: DirectorFactRow[] = [];
   const tBuild = nowMs();
@@ -1364,9 +1386,11 @@ async function fetchDisciplineFactRowsFromTables(p: {
 
     const reqItemId = String(it?.request_item_id ?? "").trim();
     const issueReqId = String(issue?.request_id ?? "").trim();
+    const issueWorkName = String(issue?.work_name ?? "").trim();
     const reqId =
-      (reqItemId ? requestIdByRequestItem.get(reqItemId) : null) ??
-      (issueReqId || null);
+      issueWorkName
+        ? (issueReqId || null)
+        : ((reqItemId ? requestIdByRequestItem.get(reqItemId) : null) ?? (issueReqId || null));
     const req = reqId ? requestById.get(reqId) : null;
 
     const objectName = String(issue?.object_name ?? "").trim() || WITHOUT_OBJECT;
@@ -1375,7 +1399,7 @@ async function fetchDisciplineFactRowsFromTables(p: {
     const reqSystemCode = String(req?.system_code ?? "").trim();
     const reqSystemName = (reqSystemCode && systemNameByCode.get(reqSystemCode)) || reqSystemCode;
     const workName =
-      String(issue?.work_name ?? "").trim() ||
+      issueWorkName ||
       reqSystemName ||
       WITHOUT_WORK;
     const freeCtx = parseFreeIssueContext(issue?.note ?? null);
@@ -2195,9 +2219,13 @@ export async function fetchDirectorWarehouseReportDiscipline(p: {
     }
   } catch { }
   try {
-    const tLevels = nowMs();
-    rows = await enrichFactRowsLevelNames(rows);
-    logTiming("discipline.enrich_level_names", tLevels);
+    if (!opts?.skipPrices) {
+      const tLevels = nowMs();
+      rows = await enrichFactRowsLevelNames(rows);
+      logTiming("discipline.enrich_level_names", tLevels);
+    } else if (REPORTS_TIMING) {
+      console.info("[director_reports] discipline.enrich_level_names: skipped_in_first_stage");
+    }
   } catch { }
 
   if (opts?.skipPrices) {
