@@ -51,12 +51,14 @@ export const s = StyleSheet.create({
   tabs: { flexDirection: "row", flexWrap: "nowrap", alignItems: "center" },
 
   tab: {
-    paddingVertical: 8,
+    height: 36,
     paddingHorizontal: 14,
-    borderRadius: 999,
+    borderRadius: 18,
     borderWidth: 1,
     borderColor: UI.border,
     backgroundColor: UI.tabInactiveBg,
+    alignItems: "center",
+    justifyContent: "center",
   },
   tabActive: { backgroundColor: UI.tabActiveBg, borderColor: UI.accent },
 

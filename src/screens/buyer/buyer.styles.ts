@@ -15,9 +15,9 @@ export const buyerStyles = StyleSheet.create({
   tabLabelRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
 
   tabPill: {
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 16,
+    height: 36,
+    paddingHorizontal: 14,
+    borderRadius: 18,
     borderWidth: 1.5,
     borderColor: 'rgba(255,255,255,0.06)',
     backgroundColor: 'rgba(255,255,255,0.03)',
@@ -33,7 +33,7 @@ export const buyerStyles = StyleSheet.create({
   tabPillText: {
     color: UI.sub,
     fontWeight: '800',
-    fontSize: 14,
+    fontSize: 13,
   },
   tabPillTextActive: { color: UI.text, fontWeight: '900' },
 
