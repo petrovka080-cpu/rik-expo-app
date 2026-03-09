@@ -127,6 +127,33 @@ const REPORTS_TIMING = typeof __DEV__ !== "undefined" ? __DEV__ : false;
 const DISCIPLINE_ROWS_CACHE_TTL_MS = 2 * 60 * 1000;
 const DIRECTOR_REPORTS_CANONICAL_ENABLED =
   String((globalThis as any)?.process?.env?.EXPO_PUBLIC_DIRECTOR_REPORTS_CANONICAL ?? "1").trim() !== "0";
+type CanonicalRpcStatus = "unknown" | "available" | "missing";
+type CanonicalRpcKind = "materials" | "works";
+const canonicalRpcStatus: Record<CanonicalRpcKind, CanonicalRpcStatus> = {
+  materials: "unknown",
+  works: "unknown",
+};
+
+const isMissingCanonicalRpcError = (error: any, fnName: string): boolean => {
+  const message = String(error?.message ?? error ?? "").toLowerCase();
+  const details = String(error?.details ?? "").toLowerCase();
+  const hint = String(error?.hint ?? "").toLowerCase();
+  const code = String(error?.code ?? "").toLowerCase();
+  const fn = fnName.toLowerCase();
+  const text = `${message} ${details} ${hint}`;
+  return (
+    text.includes(`function public.${fn}`) ||
+    text.includes("could not find the function") ||
+    code === "pgrst202"
+  );
+};
+
+const markCanonicalRpcStatus = (kind: CanonicalRpcKind, status: CanonicalRpcStatus) => {
+  canonicalRpcStatus[kind] = status;
+};
+
+const canUseCanonicalRpc = (kind: CanonicalRpcKind): boolean =>
+  DIRECTOR_REPORTS_CANONICAL_ENABLED && canonicalRpcStatus[kind] !== "missing";
 
 const toNum = (v: any): number => {
   const n = Number(v ?? 0);
@@ -2200,7 +2227,7 @@ export async function fetchDirectorWarehouseReport(p: {
   const pTo = rpcDate(p.to, "2099-12-31");
   const selectedObjectId = objectName == null ? null : (p.objectIdByName[objectName] ?? null);
 
-  if (DIRECTOR_REPORTS_CANONICAL_ENABLED) {
+  if (canUseCanonicalRpc("materials")) {
     const tCanonical = nowMs();
     try {
       const canonical = await fetchDirectorReportCanonicalMaterials({
@@ -2209,10 +2236,14 @@ export async function fetchDirectorWarehouseReport(p: {
         objectName,
       });
       if (canonical) {
+        markCanonicalRpcStatus("materials", "available");
         logTiming("report.canonical_materials", tCanonical);
         return canonical;
       }
     } catch (e: any) {
+      if (isMissingCanonicalRpcError(e, "director_report_fetch_materials_v1")) {
+        markCanonicalRpcStatus("materials", "missing");
+      }
       if (REPORTS_TIMING) {
         console.info(`[director_reports] report.canonical_materials.failed: ${e?.message ?? e}`);
       }
@@ -2293,7 +2324,7 @@ export async function fetchDirectorWarehouseReportDiscipline(p: {
   const pFrom = rpcDate(p.from, "1970-01-01");
   const pTo = rpcDate(p.to, "2099-12-31");
 
-  if (DIRECTOR_REPORTS_CANONICAL_ENABLED) {
+  if (canUseCanonicalRpc("works")) {
     const tCanonical = nowMs();
     try {
       const canonical = await fetchDirectorReportCanonicalWorks({
@@ -2303,10 +2334,14 @@ export async function fetchDirectorWarehouseReportDiscipline(p: {
         includeCosts: !opts?.skipPrices,
       });
       if (canonical) {
+        markCanonicalRpcStatus("works", "available");
         logTiming("discipline.canonical_works", tCanonical);
         return canonical;
       }
     } catch (e: any) {
+      if (isMissingCanonicalRpcError(e, "director_report_fetch_works_v1")) {
+        markCanonicalRpcStatus("works", "missing");
+      }
       if (REPORTS_TIMING) {
         console.info(`[director_reports] discipline.canonical_works.failed: ${e?.message ?? e}`);
       }
