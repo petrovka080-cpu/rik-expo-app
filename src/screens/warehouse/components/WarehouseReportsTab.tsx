@@ -317,9 +317,7 @@ export default function WarehouseReportsTab(props: Props) {
           </Text>
         </View>
 
-        <SectionBlock style={[s.sectionBox, { paddingHorizontal: 16 }]} contentStyle={{ gap: 0 }}>
-          <Text style={s.sectionBoxTitle}>ПЕРИОД ОТЧЁТА</Text>
-
+        <SectionBlock title="ПЕРИОД ОТЧЁТА" style={[s.sectionBox, { paddingHorizontal: 16 }]} contentStyle={{ gap: 0 }}>
           <TopRightActionBar
             titleLeft={
               periodFrom || periodTo
