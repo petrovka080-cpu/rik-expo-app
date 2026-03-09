@@ -1,0 +1,352 @@
+work_type_code,work_type_name_ru,family_code,basis_key,label_ru,uom_code,status,notes
+com_fitout,Коммерческая отделка,finish,area_m2,"Площадь металлоконструкций, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+com_fitout,Коммерческая отделка,finish,area_wall_m2,Площадь стен,м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+finish_paint,Отделка / Покраска,finish,area_m2,"Площадь металлоконструкций, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+ind_concrete,Бетонные работы,concrete,area_m2,"Площадь бетонирования, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+ind_concrete,Бетонные работы,concrete,count,Количество,шт,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+ind_concrete,Бетонные работы,concrete,volume_m3,"Объём бетона, м³ (авто)",м³,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+ind_floor_epoxy,Наливные/эпоксидные полы,floor,area_m2,"Площадь металлоконструкций, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+ind_piping,Трубопроводы,plumb,count,Количество,шт,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+ind_piping,Трубопроводы,plumb,length_m,"Длина балки, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+ind_steel,Металлоконструкции,metal,area_m2,"Площадь металлоконструкций, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+ind_steel,Металлоконструкции,metal,length_m,"Длина балки, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+res_electrica,Электрика (жилые),elec,count,Количество,шт,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+res_electrica,Электрика (жилые),elec,length_m,"Длина балки, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+res_finish_paint,Покраска/отделка,finish,area_m2,"Площадь металлоконструкций, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+sanitary,Сантехника (универсальная),plumb,count,Количество,шт,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+sanitary,Сантехника (универсальная),plumb,length_m,"Длина балки, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-BATH,Санузел / Ванная (комплект),plumb,area_m2,"Площадь металлоконструкций, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-BATH,Санузел / Ванная (комплект),plumb,count,Количество,шт,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-BATH,Санузел / Ванная (комплект),plumb,perimeter_m,"Периметр фасада/контур, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-BLOCK,Кладка блоков,masonry,area_m2,"Площадь металлоконструкций, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-BLOCK,Кладка блоков,masonry,count,Количество,шт,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-BLOCK,Кладка блоков,masonry,height_m,Высота облицовки,м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-BLOCK,Кладка блоков,masonry,length_m,"Длина балки, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-BLOCK,Кладка блоков,masonry,perimeter_m,"Периметр фасада/контур, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-CEIL-ARMSTRONG-600,Потолок Армстронг 600×600,ceil,area_m2,"Площадь металлоконструкций, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-CEIL-CLIPIN,Потолок Clip-in (скрытая подвеска),ceil,area_m2,"Площадь металлоконструкций, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-CEIL-CLIPIN,Потолок Clip-in (скрытая подвеска),ceil,perimeter_m,"Периметр фасада/контур, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-CEIL-CLIPIN-300x1200,Потолок Clip-in 300×1200,ceil,area_m2,"Площадь металлоконструкций, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-CEIL-CLIPIN-600,Потолок Clip-in 600×600,ceil,area_m2,"Площадь металлоконструкций, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-CEIL-GKL-1L,Потолок ГКЛ одноуровневый,ceil,area_m2,"Площадь металлоконструкций, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-CEIL-GKL-2L,Потолок ГКЛ двухуровневый,ceil,area_m2,"Площадь металлоконструкций, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-CEIL-GKL-BOX,Потолок ГКЛ короб/ниша,ceil,area_m2,"Площадь металлоконструкций, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-CEIL-GRID,Потолок кассетный (армстронг),ceil,area_m2,"Площадь металлоконструкций, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-CEIL-GRID,Потолок кассетный (армстронг),ceil,perimeter_m,"Периметр фасада/контур, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-CEIL-GRILIATO-050,Потолок грильято (ячейка 50×50),ceil,area_m2,"Площадь металлоконструкций, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-CEIL-GRILIATO-050,Потолок грильято (ячейка 50×50),ceil,perimeter_m,"Периметр фасада/контур, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-CEIL-GRILIATO-075,Потолок грильято (ячейка 75×75),ceil,area_m2,"Площадь металлоконструкций, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-CEIL-GRILIATO-075,Потолок грильято (ячейка 75×75),ceil,perimeter_m,"Периметр фасада/контур, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-CEIL-GRILIATO-100,Потолок грильято (ячейка 100×100),ceil,area_m2,"Площадь металлоконструкций, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-CEIL-GRILIATO-100,Потолок грильято (ячейка 100×100),ceil,perimeter_m,"Периметр фасада/контур, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-CEIL-GRILIATO-PYR-050,Потолок грильято пирамидальный (яч. 50×50),ceil,area_m2,"Площадь металлоконструкций, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-CEIL-GRILIATO-PYR-050,Потолок грильято пирамидальный (яч. 50×50),ceil,perimeter_m,"Периметр фасада/контур, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-CEIL-GRILIATO-PYR-075,Потолок грильято пирамидальный (яч. 75×75),ceil,area_m2,"Площадь металлоконструкций, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-CEIL-GRILIATO-PYR-075,Потолок грильято пирамидальный (яч. 75×75),ceil,perimeter_m,"Периметр фасада/контур, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-CEIL-GRILIATO-PYR-100,Потолок грильято пирамидальный (яч. 100×100),ceil,area_m2,"Площадь металлоконструкций, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-CEIL-GRILIATO-PYR-100,Потолок грильято пирамидальный (яч. 100×100),ceil,perimeter_m,"Периметр фасада/контур, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-CEIL-RACK,Потолок реечный,ceil,area_m2,"Площадь металлоконструкций, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-CEIL-RACK,Потолок реечный,ceil,perimeter_m,"Периметр фасада/контур, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-CEIL-RACK-LENS,Потолок реечный линзованный,ceil,area_m2,"Площадь металлоконструкций, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-CEIL-RACK-LENS,Потолок реечный линзованный,ceil,perimeter_m,"Периметр фасада/контур, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-CEIL-STRETCH,Потолок натяжной,ceil,area_m2,"Площадь металлоконструкций, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-CEIL-STRETCH,Потолок натяжной,ceil,perimeter_m,"Периметр фасада/контур, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-CONC,Бетонные работы,concrete,area_m2,"Площадь бетонирования, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-CONC,Бетонные работы,concrete,count,Количество,шт,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-CONC,Бетонные работы,concrete,volume_m3,"Объём бетона, м³ (авто)",м³,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-CONC-FLOOR,Бетонирование пола,concrete,area_m2,"Площадь пола, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-CONC-FLOOR,Бетонирование пола,concrete,height_m,"Толщина слоя, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-CONC-FLOOR,Бетонирование пола,concrete,volume_m3,"Объём бетона, м³ (авто)",м³,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-CONCRETE-BEAM,Монолитная балка,concrete,area_m2,"Площадь бетонирования, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-CONCRETE-BEAM,Монолитная балка,concrete,count,Количество,шт,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-CONCRETE-BEAM,Монолитная балка,concrete,volume_m3,"Объём бетона, м³ (авто)",м³,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-CONCRETE-COLUMN,Монолитная колонна,concrete,count,Количество,шт,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-CONCRETE-COLUMN,Монолитная колонна,concrete,volume_m3,"Объём бетона, м³ (авто)",м³,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-CONCRETE-FLOOR,Бетонирование пола,floor,area_m2,"Площадь металлоконструкций, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-CONCRETE-FLOOR,Бетонирование пола,floor,perimeter_m,"Периметр фасада/контур, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-CONCRETE-FLOOR,Бетонирование пола,floor,volume_m3,"Объём грунта под фундамент (траншеи/котлован), м³",м³,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-CONCRETE-FOOTING,Монолитная тумба/башмак,concrete,count,Количество,шт,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-CONCRETE-FOOTING,Монолитная тумба/башмак,concrete,volume_m3,"Объём бетона, м³ (авто)",м³,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-CONCRETE-MONO,Бетонирование / монолит,concrete,area_m2,"Площадь бетонирования, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-CONCRETE-MONO,Бетонирование / монолит,concrete,volume_m3,"Объём бетона, м³ (авто)",м³,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-CONCRETE-PILE,Бетон: сваи/столбы (армирование),concrete,count,Количество,шт,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-CONCRETE-PILE,Бетон: сваи/столбы (армирование),concrete,volume_m3,"Объём бетона, м³ (авто)",м³,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-CONCRETE-SLAB,Монолитная плита,concrete,area_m2,"Площадь бетонирования, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-CONCRETE-SLAB,Монолитная плита,concrete,height_m,"Толщина плиты, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-CONCRETE-SLAB,Монолитная плита,concrete,volume_m3,"Объём бетона, м³ (авто)",м³,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-CONCRETE-SLAB,Монолитная плита,concrete,perimeter_m,"Периметр плиты/контур, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-CONCRETE-SLAB,Монолитная плита,concrete,count,Количество,шт,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-CONCRETE-SLAB-PRO,"Фундамент плита (бетон, PRO)",concrete,area_m2,"Площадь бетонирования, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-CONCRETE-SLAB-PRO,"Фундамент плита (бетон, PRO)",concrete,height_m,"Толщина плиты, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-CONCRETE-SLAB-PRO,"Фундамент плита (бетон, PRO)",concrete,volume_m3,"Объём бетона, м³ (авто)",м³,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-CONCRETE-STRIP,Ленточный фундамент,concrete,perimeter_m,"Длина ленты/контур, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-CONCRETE-STRIP,Ленточный фундамент,concrete,length_m,"Ширина ленты, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-CONCRETE-STRIP,Ленточный фундамент,concrete,height_m,"Высота ленты, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-CONCRETE-STRIP,Ленточный фундамент,concrete,volume_m3,"Объём бетона, м³ (авто)",м³,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-CONCRETE-STRIP,Ленточный фундамент,concrete,count,Количество,шт,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-CONCRETE-STRIP-PRO,"Фундамент ленточный (бетон, PRO)",concrete,perimeter_m,"Длина ленты/контур, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-CONCRETE-STRIP-PRO,"Фундамент ленточный (бетон, PRO)",concrete,length_m,"Ширина ленты, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-CONCRETE-STRIP-PRO,"Фундамент ленточный (бетон, PRO)",concrete,height_m,"Высота ленты, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-CONCRETE-STRIP-PRO,"Фундамент ленточный (бетон, PRO)",concrete,volume_m3,"Объём бетона, м³ (авто)",м³,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-DELIVERY,Логистика: поставка/рейсы,logist,count,Количество,шт,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-DEM-CEIL,Демонтаж потолка,demo,area_m2,"Площадь демонтажа потолка, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui_clean
+WT-DEM-DOOR,Демонтаж дверей,demo,count,"Количество дверей, шт",шт,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui_clean
+WT-DEM-FLOOR,Демонтаж напольных покрытий,demo,area_m2,"Площадь демонтажа пола, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui_clean
+WT-DEM-GKL,Демонтаж ГКЛ,demo,area_m2,"Площадь демонтажа ГКЛ, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui_clean
+WT-DEM-INSUL,Демонтаж утеплителя,demo,area_m2,"Площадь демонтажа утеплителя, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui_clean
+WT-DEM-LIGHT,Демонтаж светильников,demo,count,"Количество светильников/точек, шт",шт,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui_clean
+WT-DEM-OUTLET,Демонтаж розеток/выключателей,demo,count,"Количество розеток, шт",шт,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui_clean
+WT-DEM-PLASTER,Демонтаж штукатурки,demo,area_m2,"Площадь демонтажа штукатурки, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui_clean
+WT-DEM-PLUMB-FIX,Демонтаж сантехприборов,demo,count,"Количество сантехточек, шт",шт,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui_clean
+WT-DEM-RADIATOR,Демонтаж радиаторов,demo,count,"Количество радиаторов, шт",шт,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui_clean
+WT-DEM-ROOF,Демонтаж кровли,demo,area_m2,"Площадь демонтажа кровли, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui_clean
+WT-DEM-SCREED,Демонтаж стяжки,demo,area_m2,"Площадь демонтажа стяжки, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui_clean
+WT-DEM-TILE-FLOOR,Демонтаж плитки (пол),demo,area_m2,"Площадь демонтажа плитки (пол), м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui_clean
+WT-DEM-TILE-WALL,Демонтаж плитки (стены),demo,area_m2,"Площадь демонтажа плитки (стены), м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui_clean
+WT-DEM-WALL,Демонтаж обоев/стен,demo,area_m2,"Площадь демонтажа стен, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui_clean
+WT-DEM-WINDOW,Демонтаж окон,demo,count,"Количество окон, шт",шт,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui_clean
+WT-DEMO,Демонтаж (общий),demo,area_m2,"Площадь демонтажа, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui_clean
+WT-DOOR,Двери (монтаж),doors,count,Количество,шт,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-DOOR-SET,Установка двери (комплект),doors,count,Количество,шт,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-EARTHWORK-PRO,Земляные работы под фундамент (PRO),concrete,volume_m3,"Объём грунта под фундамент (траншеи/котлован), м³",м³,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-ELEC,Электромонтаж (общий),elec,length_m,"Длина балки, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-ELEC-CABLE,Электрика: кабельные линии/штробы,elec,length_m,"Длина балки, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-ELEC-LIGHT,Электрика: светильники,elec,count,Количество,шт,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-ELEC-OUTLET,Электрика: розетки,elec,count,Количество,шт,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-ELEC-SWITCH,Электрика: выключатели,elec,count,Количество,шт,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-ELEC-TRAY,Электрика: кабельные лотки,elec,count,Количество,шт,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-ELEC-TRAY,Электрика: кабельные лотки,elec,length_m,"Длина балки, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-EXT-ASPHALT,Асфальтирование площадки/проезда,ext,area_m2,"Площадь металлоконструкций, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-EXT-ASPHALT-PRO,"Асфальтирование дороги (двухслойное, PRO)",ext,area_m2,"Площадь металлоконструкций, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-EXT-CURB,Бордюр дорожный,ext,length_m,"Длина балки, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-EXT-DRAIN-CHANNEL,Водоотводные лотки вдоль дороги,ext,length_m,"Длина балки, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-EXT-OTMOSTKA,Отмостка вокруг здания (бетон),ext,area_m2,"Площадь металлоконструкций, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-EXT-PAVING,Тротуарная плитка (наружная),ext,area_m2,"Площадь металлоконструкций, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-ACP,Фасад навесной: алюкобонд/ACP,facade,area_m2,"Площадь фасада, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-ACP,Фасад навесной: алюкобонд/ACP,facade,perimeter_m,"Периметр фасада, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-ACP,Фасад навесной: алюкобонд/ACP,facade,height_m,"Высота фасада, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-ACP,Фасад навесной: алюкобонд/ACP,facade,length_m,"Длина фасада, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-ACP,Фасад навесной: алюкобонд/ACP,facade,area_wall_m2,"Площадь проёмов, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-ACP,Фасад навесной: алюкобонд/ACP,facade,pipe_length_m,"Периметр проёмов, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-CASSETTE-INSTALL,Фасад: металлокассеты (вент),facade,area_m2,"Площадь фасада, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-CASSETTE-INSTALL,Фасад: металлокассеты (вент),facade,perimeter_m,"Периметр фасада, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-CASSETTE-INSTALL,Фасад: металлокассеты (вент),facade,height_m,"Высота фасада, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-CASSETTE-INSTALL,Фасад: металлокассеты (вент),facade,length_m,"Длина фасада, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-CASSETTE-INSTALL,Фасад: металлокассеты (вент),facade,area_wall_m2,"Площадь проёмов, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-CASSETTE-INSTALL,Фасад: металлокассеты (вент),facade,pipe_length_m,"Периметр проёмов, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-CLINKER-VF,Фасад навесной: клинкерная плитка,facade,area_m2,"Площадь фасада, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-CLINKER-VF,Фасад навесной: клинкерная плитка,facade,perimeter_m,"Периметр фасада, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-CLINKER-VF,Фасад навесной: клинкерная плитка,facade,height_m,"Высота фасада, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-CLINKER-VF,Фасад навесной: клинкерная плитка,facade,length_m,"Длина фасада, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-CLINKER-VF,Фасад навесной: клинкерная плитка,facade,area_wall_m2,"Площадь проёмов, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-CLINKER-VF,Фасад навесной: клинкерная плитка,facade,pipe_length_m,"Периметр проёмов, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-FC-H,Фасад FC на заклёпке (общ.),facade,area_m2,"Площадь фасада, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-FC-H,Фасад FC на заклёпке (общ.),facade,perimeter_m,"Периметр фасада, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-FC-H,Фасад FC на заклёпке (общ.),facade,height_m,"Высота фасада, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-FC-H,Фасад FC на заклёпке (общ.),facade,length_m,"Длина фасада, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-FC-H,Фасад FC на заклёпке (общ.),facade,area_wall_m2,"Площадь проёмов, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-FC-H,Фасад FC на заклёпке (общ.),facade,pipe_length_m,"Периметр проёмов, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-FC-H-10,Фиброцементный фасад (H-профиль) 10 мм,facade,area_m2,"Площадь фасада, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-FC-H-10,Фиброцементный фасад (H-профиль) 10 мм,facade,perimeter_m,"Периметр фасада, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-FC-H-10,Фиброцементный фасад (H-профиль) 10 мм,facade,height_m,"Высота фасада, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-FC-H-10,Фиброцементный фасад (H-профиль) 10 мм,facade,length_m,"Длина фасада, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-FC-H-10,Фиброцементный фасад (H-профиль) 10 мм,facade,area_wall_m2,"Площадь проёмов, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-FC-H-10,Фиброцементный фасад (H-профиль) 10 мм,facade,pipe_length_m,"Периметр проёмов, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-FC-H-12,Фиброцементный фасад (H-профиль) 12 мм,facade,area_m2,"Площадь фасада, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-FC-H-12,Фиброцементный фасад (H-профиль) 12 мм,facade,perimeter_m,"Периметр фасада, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-FC-H-12,Фиброцементный фасад (H-профиль) 12 мм,facade,height_m,"Высота фасада, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-FC-H-12,Фиброцементный фасад (H-профиль) 12 мм,facade,length_m,"Длина фасада, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-FC-H-12,Фиброцементный фасад (H-профиль) 12 мм,facade,area_wall_m2,"Площадь проёмов, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-FC-H-12,Фиброцементный фасад (H-профиль) 12 мм,facade,pipe_length_m,"Периметр проёмов, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-FC-H-8,Фиброцементный фасад (H-профиль) 8 мм,facade,area_m2,"Площадь фасада, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-FC-H-8,Фиброцементный фасад (H-профиль) 8 мм,facade,perimeter_m,"Периметр фасада, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-FC-H-8,Фиброцементный фасад (H-профиль) 8 мм,facade,height_m,"Высота фасада, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-FC-H-8,Фиброцементный фасад (H-профиль) 8 мм,facade,length_m,"Длина фасада, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-FC-H-8,Фиброцементный фасад (H-профиль) 8 мм,facade,area_wall_m2,"Площадь проёмов, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-FC-H-8,Фиброцементный фасад (H-профиль) 8 мм,facade,pipe_length_m,"Периметр проёмов, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-FC-RIVET,Фасад FC на заклёпке (серия),facade,area_m2,"Площадь фасада, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-FC-RIVET,Фасад FC на заклёпке (серия),facade,perimeter_m,"Периметр фасада, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-FC-RIVET,Фасад FC на заклёпке (серия),facade,height_m,"Высота фасада, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-FC-RIVET,Фасад FC на заклёпке (серия),facade,length_m,"Длина фасада, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-FC-RIVET,Фасад FC на заклёпке (серия),facade,area_wall_m2,"Площадь проёмов, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-FC-RIVET,Фасад FC на заклёпке (серия),facade,pipe_length_m,"Периметр проёмов, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-FC-RIVET-10,"Фасад FC на заклёпке ⌀4,8×10",facade,area_m2,"Площадь фасада, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-FC-RIVET-10,"Фасад FC на заклёпке ⌀4,8×10",facade,perimeter_m,"Периметр фасада, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-FC-RIVET-10,"Фасад FC на заклёпке ⌀4,8×10",facade,height_m,"Высота фасада, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-FC-RIVET-10,"Фасад FC на заклёпке ⌀4,8×10",facade,length_m,"Длина фасада, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-FC-RIVET-10,"Фасад FC на заклёпке ⌀4,8×10",facade,area_wall_m2,"Площадь проёмов, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-FC-RIVET-10,"Фасад FC на заклёпке ⌀4,8×10",facade,pipe_length_m,"Периметр проёмов, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-FC-RIVET-12,"Фасад FC на заклёпке ⌀4,8×12",facade,area_m2,"Площадь фасада, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-FC-RIVET-12,"Фасад FC на заклёпке ⌀4,8×12",facade,perimeter_m,"Периметр фасада, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-FC-RIVET-12,"Фасад FC на заклёпке ⌀4,8×12",facade,height_m,"Высота фасада, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-FC-RIVET-12,"Фасад FC на заклёпке ⌀4,8×12",facade,length_m,"Длина фасада, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-FC-RIVET-12,"Фасад FC на заклёпке ⌀4,8×12",facade,area_wall_m2,"Площадь проёмов, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-FC-RIVET-12,"Фасад FC на заклёпке ⌀4,8×12",facade,pipe_length_m,"Периметр проёмов, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-FC-RIVET-8,"Фасад FC на заклёпке ⌀4,8×8",facade,area_m2,"Площадь фасада, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-FC-RIVET-8,"Фасад FC на заклёпке ⌀4,8×8",facade,perimeter_m,"Периметр фасада, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-FC-RIVET-8,"Фасад FC на заклёпке ⌀4,8×8",facade,height_m,"Высота фасада, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-FC-RIVET-8,"Фасад FC на заклёпке ⌀4,8×8",facade,length_m,"Длина фасада, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-FC-RIVET-8,"Фасад FC на заклёпке ⌀4,8×8",facade,area_wall_m2,"Площадь проёмов, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-FC-RIVET-8,"Фасад FC на заклёпке ⌀4,8×8",facade,pipe_length_m,"Периметр проёмов, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-FCB,Фасад навесной: фиброцементные плиты,facade,area_m2,"Площадь фасада, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-FCB,Фасад навесной: фиброцементные плиты,facade,perimeter_m,"Периметр фасада, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-FCB,Фасад навесной: фиброцементные плиты,facade,height_m,"Высота фасада, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-FCB,Фасад навесной: фиброцементные плиты,facade,length_m,"Длина фасада, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-FCB,Фасад навесной: фиброцементные плиты,facade,area_wall_m2,"Площадь проёмов, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-FCB,Фасад навесной: фиброцементные плиты,facade,pipe_length_m,"Периметр проёмов, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-HPL,Фасад навесной: HPL панели,facade,area_m2,"Площадь фасада, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-HPL,Фасад навесной: HPL панели,facade,perimeter_m,"Периметр фасада, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-HPL,Фасад навесной: HPL панели,facade,height_m,"Высота фасада, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-HPL,Фасад навесной: HPL панели,facade,length_m,"Длина фасада, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-HPL,Фасад навесной: HPL панели,facade,area_wall_m2,"Площадь проёмов, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-HPL,Фасад навесной: HPL панели,facade,pipe_length_m,"Периметр проёмов, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-HPL-INSTALL,Фасад: монтаж HPL-панелей,facade,area_m2,"Площадь фасада, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-HPL-INSTALL,Фасад: монтаж HPL-панелей,facade,perimeter_m,"Периметр фасада, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-HPL-INSTALL,Фасад: монтаж HPL-панелей,facade,height_m,"Высота фасада, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-HPL-INSTALL,Фасад: монтаж HPL-панелей,facade,length_m,"Длина фасада, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-HPL-INSTALL,Фасад: монтаж HPL-панелей,facade,area_wall_m2,"Площадь проёмов, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-HPL-INSTALL,Фасад: монтаж HPL-панелей,facade,pipe_length_m,"Периметр проёмов, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-HPL-LSTK,Фасад HPL (LSTK-набор),facade,area_m2,"Площадь фасада, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-HPL-LSTK,Фасад HPL (LSTK-набор),facade,perimeter_m,"Периметр фасада, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-HPL-LSTK,Фасад HPL (LSTK-набор),facade,height_m,"Высота фасада, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-HPL-LSTK,Фасад HPL (LSTK-набор),facade,length_m,"Длина фасада, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-HPL-LSTK,Фасад HPL (LSTK-набор),facade,area_wall_m2,"Площадь проёмов, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-HPL-LSTK,Фасад HPL (LSTK-набор),facade,pipe_length_m,"Периметр проёмов, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-PORC,Фасад навесной: керамогранит,facade,area_m2,"Площадь фасада, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-PORC,Фасад навесной: керамогранит,facade,perimeter_m,"Периметр фасада, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-PORC,Фасад навесной: керамогранит,facade,height_m,"Высота фасада, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-PORC,Фасад навесной: керамогранит,facade,length_m,"Длина фасада, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-PORC,Фасад навесной: керамогранит,facade,area_wall_m2,"Площадь проёмов, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-PORC,Фасад навесной: керамогранит,facade,pipe_length_m,"Периметр проёмов, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-PORCELAIN-VENT,Фасад: керамогранит (вент),facade,area_m2,"Площадь фасада, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-PORCELAIN-VENT,Фасад: керамогранит (вент),facade,perimeter_m,"Периметр фасада, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-PORCELAIN-VENT,Фасад: керамогранит (вент),facade,height_m,"Высота фасада, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-PORCELAIN-VENT,Фасад: керамогранит (вент),facade,length_m,"Длина фасада, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-PORCELAIN-VENT,Фасад: керамогранит (вент),facade,area_wall_m2,"Площадь проёмов, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-PORCELAIN-VENT,Фасад: керамогранит (вент),facade,pipe_length_m,"Периметр проёмов, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-STONE,Фасад навесной: камень,facade,area_m2,"Площадь фасада, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-STONE,Фасад навесной: камень,facade,perimeter_m,"Периметр фасада, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-STONE,Фасад навесной: камень,facade,height_m,"Высота фасада, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-STONE,Фасад навесной: камень,facade,length_m,"Длина фасада, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-STONE,Фасад навесной: камень,facade,area_wall_m2,"Площадь проёмов, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-STONE,Фасад навесной: камень,facade,pipe_length_m,"Периметр проёмов, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-WET,Фасад “мокрый” (СФТК),facade,area_m2,"Площадь фасада, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-WET,Фасад “мокрый” (СФТК),facade,perimeter_m,"Периметр фасада, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-WET,Фасад “мокрый” (СФТК),facade,height_m,"Высота фасада, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-WET,Фасад “мокрый” (СФТК),facade,length_m,"Длина фасада, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-WET,Фасад “мокрый” (СФТК),facade,area_wall_m2,"Площадь проёмов, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-WET,Фасад “мокрый” (СФТК),facade,pipe_length_m,"Периметр проёмов, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-WET-SYSTEM,Фасад: «мокрый» (ETICS),facade,area_m2,"Площадь фасада, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-WET-SYSTEM,Фасад: «мокрый» (ETICS),facade,perimeter_m,"Периметр фасада, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-WET-SYSTEM,Фасад: «мокрый» (ETICS),facade,height_m,"Высота фасада, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-WET-SYSTEM,Фасад: «мокрый» (ETICS),facade,length_m,"Длина фасада, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-WET-SYSTEM,Фасад: «мокрый» (ETICS),facade,area_wall_m2,"Площадь проёмов, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FACADE-WET-SYSTEM,Фасад: «мокрый» (ETICS),facade,pipe_length_m,"Периметр проёмов, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FLOOR-LAMINATE,Ламинат/плинтус,floor,area_m2,"Площадь металлоконструкций, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FLOOR-LAMINATE,Ламинат/плинтус,floor,count,Количество,шт,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FLOOR-LAMINATE,Ламинат/плинтус,floor,perimeter_m,"Периметр фасада/контур, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FLR-HEAT-ELEC,Тёплый пол электрический (кабель/маты),floor,area_m2,"Площадь металлоконструкций, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FLR-HEAT-WATER,Тёплый пол водяной,floor,area_m2,"Площадь металлоконструкций, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FLR-HEAT-WATER,Тёплый пол водяной,floor,pipe_length_m,"Длина трубы, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FLR-TOPPING,Пол: топпинг/устройство,floor,area_m2,"Площадь металлоконструкций, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-FND-MKD,Фундамент многоэтажного дома (ленточный/монолитный),concrete,volume_m3,"Объём бетона, м³ (авто)",м³,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-GKL,Монтаж ГКЛ/каркаса,gkl,area_m2,"Площадь металлоконструкций, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-GKL-CEIL-PRO,ГКЛ потолок (PRO),gkl,area_m2,"Площадь металлоконструкций, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-GKL-WALL,ГКЛ стены/перегородки,gkl,area_m2,"Площадь металлоконструкций, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-GKL-WALL,ГКЛ стены/перегородки,gkl,perimeter_m,"Периметр фасада/контур, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-GKL-WALL-PRO,ГКЛ стены/перегородки (PRO),gkl,area_m2,"Площадь металлоконструкций, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-GKL-WALL-PRO,ГКЛ стены/перегородки (PRO),gkl,perimeter_m,"Периметр фасада/контур, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-HVAC,Вентиляция/кондиционирование,hvac,area_m2,"Площадь металлоконструкций, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-HVAC,Вентиляция/кондиционирование,hvac,length_m,"Длина балки, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-HYDRO,Гидроизоляция,hydro,area_m2,"Площадь металлоконструкций, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-HYDRO,Гидроизоляция,hydro,count,Количество,шт,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-HYDRO-FOUND-PRO,Гидроизоляция фундамента (PRO),concrete,area_m2,"Площадь бетонирования, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-INSUL-CEIL-INT,Утепление / звукоизоляция потолков,insul,area_m2,"Площадь металлоконструкций, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-INSUL-CEIL-PRO,Утепление / звукоизоляция потолков (PRO),insul,area_m2,"Площадь металлоконструкций, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-INSUL-WALL-PRO,Утепление / звукоизоляция стен (PRO),insul,area_m2,"Площадь металлоконструкций, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-LEVEL,Наливной пол,floor,area_m2,"Площадь металлоконструкций, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-LEVEL,Наливной пол,floor,count,Количество,шт,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-MASONRY-BLOCK,Кладка блоков (газоблок),masonry,area_m2,"Площадь металлоконструкций, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-MASONRY-BLOCK,Кладка блоков (газоблок),masonry,count,Количество,шт,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-MASONRY-BLOCK,Кладка блоков (газоблок),masonry,length_m,"Длина балки, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-MASONRY-BRICK,Кладка кирпича,masonry,area_m2,"Площадь металлоконструкций, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-MASONRY-BRICK,Кладка кирпича,masonry,height_m,Высота облицовки,м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-MASONRY-BRICK,Кладка кирпича,masonry,length_m,"Длина балки, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-MASONRY-BRICK,Кладка кирпича,masonry,perimeter_m,"Периметр фасада/контур, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-MASONRY-BRICK-CLINKER,Кладка облицовочная: кирпич клинкер,masonry,area_m2,"Площадь металлоконструкций, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-MASONRY-BRICK-CLINKER,Кладка облицовочная: кирпич клинкер,masonry,height_m,Высота облицовки,м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-MASONRY-BRICK-CLINKER,Кладка облицовочная: кирпич клинкер,masonry,length_m,"Длина балки, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-MASONRY-BRICK-CLINKER,Кладка облицовочная: кирпич клинкер,masonry,perimeter_m,"Периметр фасада/контур, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-PAINT,Покраска стен/потолков,finish,area_m2,"Площадь металлоконструкций, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-PAINT-INT,Покраска (интерьер),finish,area_m2,"Площадь металлоконструкций, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-PLASTER,Штукатурка стен,finish,area_m2,"Площадь металлоконструкций, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-PLASTER,Штукатурка стен,finish,perimeter_m,"Периметр фасада/контур, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-PLASTER-FACADE,Фасад: утепление и декоративная штукатурка,roof,area_m2,"Площадь металлоконструкций, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-PLASTER-INT,Штукатурка внутренних стен,finish,area_m2,"Площадь металлоконструкций, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-PLASTER-INT,Штукатурка внутренних стен,finish,perimeter_m,"Периметр фасада/контур, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-PLASTER-WALL-PRO,Штукатурка стен по маякам (PRO),finish,area_m2,"Площадь металлоконструкций, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-PLASTER-WALL-PRO,Штукатурка стен по маякам (PRO),finish,perimeter_m,"Периметр фасада/контур, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-PLINTH,Плинтуса (монтаж),floor,perimeter_m,"Периметр фасада/контур, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-PLMB,Сантехника/трубопроводы,plumb,area_m2,"Площадь металлоконструкций, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-PLMB,Сантехника/трубопроводы,plumb,count,Количество,шт,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-PLMB,Сантехника/трубопроводы,plumb,length_m,"Длина балки, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-PUTTY,Шпаклёвка (финиш),finish,area_m2,"Площадь металлоконструкций, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-PUTTY,Шпаклёвка (финиш),finish,count,Количество,шт,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-RF-CARPET,Фальшпол с ковровым покрытием,floor,area_m2,"Площадь металлоконструкций, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-RF-HPL,Фальшпол с HPL антистатиком (панели ESD),floor,area_m2,"Площадь металлоконструкций, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-RF-PORCELAIN,Фальшпол под керамогранит (усиленный),floor,area_m2,"Площадь металлоконструкций, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-RF-PVC,Фальшпол с ПВХ-ESD покрытием,floor,area_m2,"Площадь металлоконструкций, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-ROAD-MARKING,Дорожная разметка,ext,length_m,"Длина балки, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-ROAD-MEDIAN,Разделительный барьер / отбойник,ext,length_m,"Длина балки, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-ROOF-FRAME,Стропильная система / обрешётка (общ.),roof,area_m2,"Площадь металлоконструкций, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-ROOF-FRAME-MTL,Обрешётка/каркас под металл,roof,area_m2,"Площадь металлоконструкций, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-ROOF-FRAME-SHINGLE,Обрешётка/каркас под ГЧ,roof,area_m2,"Площадь металлоконструкций, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-ROOF-FRAME-SHINGLE,Обрешётка/каркас под ГЧ,roof,perimeter_m,"Периметр фасада/контур, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-ROOF-FRAME-SLATE,Обрешётка/каркас под шифер,roof,area_m2,"Площадь металлоконструкций, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-ROOF-FRAME-SLATE,Обрешётка/каркас под шифер,roof,perimeter_m,"Периметр фасада/контур, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-ROOF-METAL,Кровля: металл (общ.),roof,area_m2,"Площадь металлоконструкций, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-ROOF-METAL,Кровля: металл (общ.),roof,perimeter_m,"Периметр фасада/контур, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-ROOF-MTL,Кровля: металлочерепица,roof,area_m2,"Площадь металлоконструкций, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-ROOF-ROLLED,Кровля: рулонные материалы,roof,area_m2,"Площадь металлоконструкций, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-ROOF-SANDWICH,Кровля: сэндвич-панели,roof,area_m2,"Площадь металлоконструкций, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-ROOF-SHINGLE,Кровля: гибкая черепица,roof,area_m2,"Площадь металлоконструкций, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-ROOF-SLATE,Кровля: шифер,roof,area_m2,"Площадь металлоконструкций, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-SCREED,Стяжка пола,floor,area_m2,"Площадь металлоконструкций, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-SCREED,Стяжка пола,floor,volume_m3,"Объём грунта под фундамент (траншеи/котлован), м³",м³,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-STEEL-CANOPY-GABLE,Навес двускатный (металл),roof,area_m2,"Площадь металлоконструкций, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-STEEL-CANOPY-HIP,Навес вальмовый (металл),roof,area_m2,"Площадь металлоконструкций, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-STEEL-CANOPY-LEAN,Навес односкатный (металл),roof,area_m2,"Площадь металлоконструкций, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-STEEL-CUT,Резка металла,metal,length_m,"Длина балки, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-STEEL-DRILL,Сверление отверстий,metal,length_m,"Длина балки, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-STEEL-FENCE-MESH,Металлоконструкции: забор из сетки,metal,length_m,"Длина балки, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-STEEL-FENCE-PROF,Металлоконструкции: забор из профлиста,metal,length_m,"Длина балки, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-STEEL-GATE-OVERHEAD,Металлоконструкции: ворота подъемные (секционные),metal,area_m2,"Площадь металлоконструкций, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-STEEL-GATE-OVERHEAD,Металлоконструкции: ворота подъемные (секционные),metal,count,Количество,шт,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-STEEL-GATE-SLIDE,Металлоконструкции: ворота откатные,metal,count,Количество,шт,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-STEEL-GATE-SLIDE,Металлоконструкции: ворота откатные,metal,length_m,"Длина балки, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-STEEL-GATE-SWING,Металлоконструкции: ворота распашные,metal,count,Количество,шт,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-STEEL-GATE-SWING,Металлоконструкции: ворота распашные,metal,length_m,"Длина балки, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-STEEL-PAINT,Окраска металлоконструкций,metal,area_m2,"Площадь металлоконструкций, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-STEEL-PAINT,Окраска металлоконструкций,metal,length_m,"Длина балки, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-STEEL-PRIME,Металлоконструкции: грунтование,metal,area_m2,"Площадь металлоконструкций, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-STEEL-PRIME,Металлоконструкции: грунтование,metal,length_m,"Длина балки, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-STEEL-RAILING,Металлоконструкции: перила/ограждения,metal,length_m,"Длина балки, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-STEEL-STAIR,Металлоконструкции: лестница (металл),metal,count,Количество,шт,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-STEEL-STAIR,Металлоконструкции: лестница (металл),metal,length_m,"Длина балки, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-STEEL-TRUSS-HEAVY,Металлоконструкции: ферма (усиленная),metal,count,Количество,шт,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-STEEL-TRUSS-HEAVY,Металлоконструкции: ферма (усиленная),metal,length_m,"Длина балки, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-STEEL-TRUSS-LIGHT,Металлоконструкции: ферма (облегчённая),metal,count,Количество,шт,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-STEEL-TRUSS-LIGHT,Металлоконструкции: ферма (облегчённая),metal,length_m,"Длина балки, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-STEEL-WELD-MIG-A4,"Сварка MIG/MAG, катет a=4 мм",metal,length_m,"Длина балки, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-STEEL-WELD-MMA,Сварка ручная дуговая (MMA),metal,length_m,"Длина балки, м",м,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-SUBBASE-PRO,Подготовка основания под фундамент (PRO),concrete,area_m2,"Площадь бетонирования, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-TILE,Плитка (пол/стены),tile,area_m2,"Площадь металлоконструкций, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-WALLPAPER,Обои (поклейка),finish,area_m2,"Площадь металлоконструкций, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-WASTE,Вывоз мусора/утилизация,waste,volume_m3,"Объём грунта под фундамент (траншеи/котлован), м³",м³,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-WINDOW-AL,Окна алюминиевые / витражи,windows,area_m2,"Площадь металлоконструкций, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-WINDOW-AL,Окна алюминиевые / витражи,windows,count,Количество,шт,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-WINDOW-PVC,Окна ПВХ (монтаж/замена),windows,area_m2,"Площадь металлоконструкций, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-WINDOW-PVC,Окна ПВХ (монтаж/замена),windows,count,Количество,шт,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-WINDOW-REVEAL,Откосы и подоконники (внутренние),windows,area_m2,"Площадь металлоконструкций, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-WINDOW-REVEAL,Откосы и подоконники (внутренние),windows,count,Количество,шт,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui
+WT-WP,Гидроизоляция,hydro,area_m2,"Площадь металлоконструкций, м²",м²,DUPLICATE_PATTERN|LABEL_MISMATCH|NEEDS_REVIEW,v_reno_calc_fields_ui

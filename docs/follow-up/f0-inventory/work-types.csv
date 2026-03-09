@@ -1,0 +1,174 @@
+work_type_code,work_type_name_ru,family_code,family_name_ru,family_sort,is_active,ui_source
+WT-DEMO,Демонтаж (общий),demo,Демонтаж,10,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-DEM-GKL,Демонтаж ГКЛ,demo,Демонтаж,10,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-DEM-DOOR,Демонтаж дверей,demo,Демонтаж,10,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-DEM-ROOF,Демонтаж кровли,demo,Демонтаж,10,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-DEM-FLOOR,Демонтаж напольных покрытий,demo,Демонтаж,10,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-DEM-WALL,Демонтаж обоев/стен,demo,Демонтаж,10,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-DEM-WINDOW,Демонтаж окон,demo,Демонтаж,10,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-DEM-TILE-FLOOR,Демонтаж плитки (пол),demo,Демонтаж,10,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-DEM-TILE-WALL,Демонтаж плитки (стены),demo,Демонтаж,10,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-DEM-CEIL,Демонтаж потолка,demo,Демонтаж,10,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-DEM-RADIATOR,Демонтаж радиаторов,demo,Демонтаж,10,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-DEM-OUTLET,Демонтаж розеток/выключателей,demo,Демонтаж,10,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-DEM-PLUMB-FIX,Демонтаж сантехприборов,demo,Демонтаж,10,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-DEM-LIGHT,Демонтаж светильников,demo,Демонтаж,10,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-DEM-SCREED,Демонтаж стяжки,demo,Демонтаж,10,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-DEM-INSUL,Демонтаж утеплителя,demo,Демонтаж,10,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-DEM-PLASTER,Демонтаж штукатурки,demo,Демонтаж,10,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-CONCRETE-PILE,Бетон: сваи/столбы (армирование),concrete,Бетон,20,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-CONCRETE-MONO,Бетонирование / монолит,concrete,Бетон,20,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-CONC-FLOOR,Бетонирование пола,concrete,Бетон,20,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+ind_concrete,Бетонные работы,concrete,Бетон,20,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-CONC,Бетонные работы,concrete,Бетон,20,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-HYDRO-FOUND-PRO,Гидроизоляция фундамента (PRO),concrete,Бетон,20,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-EARTHWORK-PRO,Земляные работы под фундамент (PRO),concrete,Бетон,20,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-CONCRETE-STRIP,Ленточный фундамент,concrete,Бетон,20,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-CONCRETE-BEAM,Монолитная балка,concrete,Бетон,20,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-CONCRETE-COLUMN,Монолитная колонна,concrete,Бетон,20,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-CONCRETE-SLAB,Монолитная плита,concrete,Бетон,20,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-CONCRETE-FOOTING,Монолитная тумба/башмак,concrete,Бетон,20,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-SUBBASE-PRO,Подготовка основания под фундамент (PRO),concrete,Бетон,20,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-FACADE-WET,Фасад “мокрый” (СФТК),facade,Фасады,20,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-FACADE-FC-H,Фасад FC на заклёпке (общ.),facade,Фасады,20,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-FACADE-FC-RIVET,Фасад FC на заклёпке (серия),facade,Фасады,20,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-FACADE-FC-RIVET-10,"Фасад FC на заклёпке ⌀4,8×10",facade,Фасады,20,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-FACADE-FC-RIVET-12,"Фасад FC на заклёпке ⌀4,8×12",facade,Фасады,20,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-FACADE-FC-RIVET-8,"Фасад FC на заклёпке ⌀4,8×8",facade,Фасады,20,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-FACADE-HPL-LSTK,Фасад HPL (LSTK-набор),facade,Фасады,20,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-FACADE-HPL,Фасад навесной: HPL панели,facade,Фасады,20,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-FACADE-ACP,Фасад навесной: алюкобонд/ACP,facade,Фасады,20,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-FACADE-STONE,Фасад навесной: камень,facade,Фасады,20,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-FACADE-PORC,Фасад навесной: керамогранит,facade,Фасады,20,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-FACADE-CLINKER-VF,Фасад навесной: клинкерная плитка,facade,Фасады,20,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-FACADE-FCB,Фасад навесной: фиброцементные плиты,facade,Фасады,20,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-FACADE-WET-SYSTEM,Фасад: «мокрый» (ETICS),facade,Фасады,20,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-FACADE-PORCELAIN-VENT,Фасад: керамогранит (вент),facade,Фасады,20,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-FACADE-CASSETTE-INSTALL,Фасад: металлокассеты (вент),facade,Фасады,20,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-FACADE-HPL-INSTALL,Фасад: монтаж HPL-панелей,facade,Фасады,20,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-FACADE-FC-H-10,Фиброцементный фасад (H-профиль) 10 мм,facade,Фасады,20,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-FACADE-FC-H-12,Фиброцементный фасад (H-профиль) 12 мм,facade,Фасады,20,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-FACADE-FC-H-8,Фиброцементный фасад (H-профиль) 8 мм,facade,Фасады,20,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-CONCRETE-STRIP-PRO,"Фундамент ленточный (бетон, PRO)",concrete,Бетон,20,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-FND-MKD,Фундамент многоэтажного дома (ленточный/монолитный),concrete,Бетон,20,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-CONCRETE-SLAB-PRO,"Фундамент плита (бетон, PRO)",concrete,Бетон,20,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-BLOCK,Кладка блоков,masonry,Кладка,30,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-MASONRY-BLOCK,Кладка блоков (газоблок),masonry,Кладка,30,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-MASONRY-BRICK,Кладка кирпича,masonry,Кладка,30,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-MASONRY-BRICK-CLINKER,Кладка облицовочная: кирпич клинкер,masonry,Кладка,30,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-GKL-CEIL-PRO,ГКЛ потолок (PRO),gkl,ГКЛ,40,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-GKL-WALL,ГКЛ стены/перегородки,gkl,ГКЛ,40,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-GKL-WALL-PRO,ГКЛ стены/перегородки (PRO),gkl,ГКЛ,40,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-GKL,Монтаж ГКЛ/каркаса,gkl,ГКЛ,40,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-CEIL-CLIPIN,Потолок Clip-in (скрытая подвеска),ceil,Потолки,50,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-CEIL-CLIPIN-300x1200,Потолок Clip-in 300×1200,ceil,Потолки,50,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-CEIL-CLIPIN-600,Потолок Clip-in 600×600,ceil,Потолки,50,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-CEIL-ARMSTRONG-600,Потолок Армстронг 600×600,ceil,Потолки,50,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-CEIL-GKL-2L,Потолок ГКЛ двухуровневый,ceil,Потолки,50,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-CEIL-GKL-BOX,Потолок ГКЛ короб/ниша,ceil,Потолки,50,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-CEIL-GKL-1L,Потолок ГКЛ одноуровневый,ceil,Потолки,50,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-CEIL-GRILIATO-100,Потолок грильято (ячейка 100×100),ceil,Потолки,50,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-CEIL-GRILIATO-050,Потолок грильято (ячейка 50×50),ceil,Потолки,50,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-CEIL-GRILIATO-075,Потолок грильято (ячейка 75×75),ceil,Потолки,50,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-CEIL-GRILIATO-PYR-100,Потолок грильято пирамидальный (яч. 100×100),ceil,Потолки,50,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-CEIL-GRILIATO-PYR-050,Потолок грильято пирамидальный (яч. 50×50),ceil,Потолки,50,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-CEIL-GRILIATO-PYR-075,Потолок грильято пирамидальный (яч. 75×75),ceil,Потолки,50,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-CEIL-GRID,Потолок кассетный (армстронг),ceil,Потолки,50,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-CEIL-STRETCH,Потолок натяжной,ceil,Потолки,50,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-CEIL-RACK,Потолок реечный,ceil,Потолки,50,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-CEIL-RACK-LENS,Потолок реечный линзованный,ceil,Потолки,50,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-EXT-ASPHALT-PRO,"Асфальтирование дороги (двухслойное, PRO)",ext,Наружка,55,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-EXT-ASPHALT,Асфальтирование площадки/проезда,ext,Наружка,55,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-EXT-CURB,Бордюр дорожный,ext,Наружка,55,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-EXT-DRAIN-CHANNEL,Водоотводные лотки вдоль дороги,ext,Наружка,55,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-ROAD-MARKING,Дорожная разметка,ext,Наружка,55,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-EXT-OTMOSTKA,Отмостка вокруг здания (бетон),ext,Наружка,55,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-ROAD-MEDIAN,Разделительный барьер / отбойник,ext,Наружка,55,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-EXT-PAVING,Тротуарная плитка (наружная),ext,Наружка,55,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+com_fitout,Коммерческая отделка,finish,Отделка,60,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-WALLPAPER,Обои (поклейка),finish,Отделка,60,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+finish_paint,Отделка / Покраска,finish,Отделка,60,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-PAINT-INT,Покраска (интерьер),finish,Отделка,60,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-PAINT,Покраска стен/потолков,finish,Отделка,60,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+res_finish_paint,Покраска/отделка,finish,Отделка,60,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-PUTTY,Шпаклёвка (финиш),finish,Отделка,60,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-PLASTER-INT,Штукатурка внутренних стен,finish,Отделка,60,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-PLASTER,Штукатурка стен,finish,Отделка,60,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-PLASTER-WALL-PRO,Штукатурка стен по маякам (PRO),finish,Отделка,60,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-WINDOW-AL,Окна алюминиевые / витражи,windows,Окна,65,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-WINDOW-PVC,Окна ПВХ (монтаж/замена),windows,Окна,65,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-WINDOW-REVEAL,Откосы и подоконники (внутренние),windows,Окна,65,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-CONCRETE-FLOOR,Бетонирование пола,floor,Полы,70,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-FLOOR-LAMINATE,Ламинат/плинтус,floor,Полы,70,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-LEVEL,Наливной пол,floor,Полы,70,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+ind_floor_epoxy,Наливные/эпоксидные полы,floor,Полы,70,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-PLINTH,Плинтуса (монтаж),floor,Полы,70,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-FLR-TOPPING,Пол: топпинг/устройство,floor,Полы,70,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-SCREED,Стяжка пола,floor,Полы,70,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-FLR-HEAT-WATER,Тёплый пол водяной,floor,Полы,70,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-FLR-HEAT-ELEC,Тёплый пол электрический (кабель/маты),floor,Полы,70,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-RF-PORCELAIN,Фальшпол под керамогранит (усиленный),floor,Полы,70,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-RF-HPL,Фальшпол с HPL антистатиком (панели ESD),floor,Полы,70,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-RF-CARPET,Фальшпол с ковровым покрытием,floor,Полы,70,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-RF-PVC,Фальшпол с ПВХ-ESD покрытием,floor,Полы,70,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-TILE,Плитка (пол/стены),tile,Плитка,80,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-WP,Гидроизоляция,hydro,Гидроизоляция,90,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-HYDRO,Гидроизоляция,hydro,Гидроизоляция,90,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-INSUL-CEIL-INT,Утепление / звукоизоляция потолков,insul,Утепление,95,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-INSUL-CEIL-PRO,Утепление / звукоизоляция потолков (PRO),insul,Утепление,95,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-INSUL-WALL-PRO,Утепление / звукоизоляция стен (PRO),insul,Утепление,95,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-INSUL-WALL-INT,Утепление / звукоизоляция стен (изнутри),insul,Утепление,95,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+res_electrica,Электрика (жилые),elec,Электрика,100,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+electrica,Электрика (универсальная),elec,Электрика,100,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+com_mep_electrica,Электрика офисная,elec,Электрика,100,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-ELEC-SWITCH,Электрика: выключатели,elec,Электрика,100,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-ELEC-CABLE,Электрика: кабельные линии/штробы,elec,Электрика,100,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-ELEC-TRAY,Электрика: кабельные лотки,elec,Электрика,100,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-ELEC-OUTLET,Электрика: розетки,elec,Электрика,100,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-ELEC-LIGHT,Электрика: светильники,elec,Электрика,100,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-ELEC,Электромонтаж (общий),elec,Электрика,100,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+com_plumbing,Сантехника (офис/ТЦ),plumb,Сантехника,110,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+sanitary,Сантехника (универсальная),plumb,Сантехника,110,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-PLMB-SHOWER,Сантехника: душ/смеситель (точка),plumb,Сантехника,110,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-PLMB-SINK,Сантехника: раковина,plumb,Сантехника,110,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-PLMB-WM,Сантехника: стиральная/посудомоечная машина,plumb,Сантехника,110,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-PLMB-TOILET,Сантехника: унитаз,plumb,Сантехника,110,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-PLMB,Сантехника/трубопроводы,plumb,Сантехника,110,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-BATH,Санузел / Ванная (комплект),plumb,Сантехника,110,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+ind_piping,Трубопроводы,plumb,Сантехника,110,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-HVAC,Вентиляция/кондиционирование,hvac,Вентиляция,120,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+ind_steel,Металлоконструкции,metal,Металлоконструкции / ограждения / каркасы,130,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-STEEL-GATE-SLIDE,Металлоконструкции: ворота откатные,metal,Металлоконструкции / ограждения / каркасы,130,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-STEEL-GATE-OVERHEAD,Металлоконструкции: ворота подъемные (секционные),metal,Металлоконструкции / ограждения / каркасы,130,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-STEEL-GATE-SWING,Металлоконструкции: ворота распашные,metal,Металлоконструкции / ограждения / каркасы,130,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-STEEL-PRIME,Металлоконструкции: грунтование,metal,Металлоконструкции / ограждения / каркасы,130,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-STEEL-FENCE-PROF,Металлоконструкции: забор из профлиста,metal,Металлоконструкции / ограждения / каркасы,130,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-STEEL-FENCE-MESH,Металлоконструкции: забор из сетки,metal,Металлоконструкции / ограждения / каркасы,130,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-STEEL-STAIR,Металлоконструкции: лестница (металл),metal,Металлоконструкции / ограждения / каркасы,130,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-STEEL-RAILING,Металлоконструкции: перила/ограждения,metal,Металлоконструкции / ограждения / каркасы,130,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-STEEL-TRUSS-LIGHT,Металлоконструкции: ферма (облегчённая),metal,Металлоконструкции / ограждения / каркасы,130,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-STEEL-TRUSS-HEAVY,Металлоконструкции: ферма (усиленная),metal,Металлоконструкции / ограждения / каркасы,130,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-STEEL-PAINT,Окраска металлоконструкций,metal,Металлоконструкции / ограждения / каркасы,130,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-STEEL-CUT,Резка металла,metal,Металлоконструкции / ограждения / каркасы,130,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-STEEL-WELD-MIG-A4,"Сварка MIG/MAG, катет a=4 мм",metal,Металлоконструкции / ограждения / каркасы,130,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-STEEL-WELD-MMA,Сварка ручная дуговая (MMA),metal,Металлоконструкции / ограждения / каркасы,130,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-STEEL-DRILL,Сверление отверстий,metal,Металлоконструкции / ограждения / каркасы,130,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-ROOF-SHINGLE,Кровля: гибкая черепица,roof,Кровля,140,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-ROOF-METAL,Кровля: металл (общ.),roof,Кровля,140,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-ROOF-MTL,Кровля: металлочерепица,roof,Кровля,140,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-ROOF-ROLLED,Кровля: рулонные материалы,roof,Кровля,140,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-ROOF-SANDWICH,Кровля: сэндвич-панели,roof,Кровля,140,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-ROOF-SLATE,Кровля: шифер,roof,Кровля,140,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-STEEL-CANOPY-HIP,Навес вальмовый (металл),roof,Кровля,140,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-STEEL-CANOPY-GABLE,Навес двускатный (металл),roof,Кровля,140,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-STEEL-CANOPY-LEAN,Навес односкатный (металл),roof,Кровля,140,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-ROOF-FRAME-SHINGLE,Обрешётка/каркас под ГЧ,roof,Кровля,140,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-ROOF-FRAME-MTL,Обрешётка/каркас под металл,roof,Кровля,140,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-ROOF-FRAME-SLATE,Обрешётка/каркас под шифер,roof,Кровля,140,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-ROOF-FRAME,Стропильная система / обрешётка (общ.),roof,Кровля,140,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-PLASTER-FACADE,Фасад: утепление и декоративная штукатурка,roof,Кровля,140,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-DOOR,Двери (монтаж),doors,Двери,150,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-DOOR-SET,Установка двери (комплект),doors,Двери,150,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-DELIVERY,Логистика: поставка/рейсы,logist,Логистика,160,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-WASTE,Вывоз мусора/утилизация,waste,Мусор,170,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker
+WT-CLEANING-FINISH,Клининг после ремонта,waste,Мусор,170,N/A (not provided by v_work_types_picker),src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker

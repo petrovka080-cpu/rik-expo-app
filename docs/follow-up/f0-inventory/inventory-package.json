@@ -1,0 +1,19 @@
+{
+  "generated_at": "2026-03-09T03:40:56.149Z",
+  "source_of_truth": {
+    "work_types_ui": "src/components/foreman/WorkTypePicker.tsx -> v_work_types_picker",
+    "calc_fields_ui": "src/components/foreman/useCalcFields.ts -> v_reno_calc_fields_ui / v_reno_calc_fields_ui_clean"
+  },
+  "counts": {
+    "work_types": 173,
+    "total_fields": 404,
+    "basis_keys": 36,
+    "mismatches": 351,
+    "no_fields_types": 3
+  },
+  "no_fields_work_types": [
+    "WT-INSUL-WALL-INT",
+    "electrica",
+    "WT-CLEANING-FINISH"
+  ]
+}
