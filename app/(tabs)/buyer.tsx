@@ -99,6 +99,7 @@ import { useBuyerSheetTitle } from "../../src/screens/buyer/hooks/useBuyerSheetT
 import { useBuyerRfqPublish } from "../../src/screens/buyer/hooks/useBuyerRfqPublish";
 import { useBuyerInboxRenderers } from "../../src/screens/buyer/hooks/useBuyerInboxRenderers";
 import { useBuyerProposalCardRenderer } from "../../src/screens/buyer/hooks/useBuyerProposalCardRenderer";
+import RoleScreenLayout from "../../src/components/layout/RoleScreenLayout";
 
 const isWeb = Platform.OS === 'web';
 import BuyerSubcontractTab from "../../src/screens/buyer/BuyerSubcontractTab";
@@ -607,7 +608,7 @@ export default function BuyerScreen() {
   ]);
 
   const ScreenBody = (
-    <View style={[s.screen, { backgroundColor: UI.bg }]}>
+    <RoleScreenLayout style={[s.screen, { backgroundColor: UI.bg }]}>
       <BuyerStickyHeader
         header={header}
         onHeaderMeasure={onHeaderMeasure}
@@ -881,7 +882,7 @@ export default function BuyerScreen() {
 
       </BuyerSheetShell>
       <ToastOverlay toast={toast} />
-    </View>
+    </RoleScreenLayout>
   );
   return ScreenBody;
 }
