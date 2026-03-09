@@ -238,8 +238,12 @@ useEffect(() => {
     [fields],
   );
 
-  const secondaryFields = useMemo(
-    () => fields.filter((f) => (f.uiPriority ?? "core") === "secondary"),
+  const additionalFields = useMemo(
+    () =>
+      fields.filter((f) => {
+        const priority = f.uiPriority ?? "core";
+        return priority === "secondary" || priority === "engineering";
+      }),
     [fields],
   );
 
@@ -594,7 +598,7 @@ useEffect(() => {
       .filter((f) => {
         if (f.editable === false) return false;
         if ((f.uiPriority ?? "core") === "core") return true;
-        if ((f.uiPriority ?? "core") === "secondary" && showSecondaryFields) return true;
+        if (((f.uiPriority ?? "core") === "secondary" || (f.uiPriority ?? "core") === "engineering") && showSecondaryFields) return true;
         const raw = (inputs as InputMap)[f.key];
         return typeof raw === "string" && raw.trim() !== "";
       })
@@ -893,7 +897,7 @@ useEffect(() => {
                       <>
                         {coreFields.map((field) => renderField(field))}
 
-                        {secondaryFields.length > 0 ? (
+                        {additionalFields.length > 0 ? (
                           <View style={{ marginBottom: 12 }}>
                             <Pressable
                               onPress={() => setShowSecondaryFields((prev) => !prev)}
@@ -913,7 +917,7 @@ useEffect(() => {
                           </View>
                         ) : null}
 
-                        {showSecondaryFields ? secondaryFields.map((field) => renderField(field)) : null}
+                        {showSecondaryFields ? additionalFields.map((field) => renderField(field)) : null}
 
                         {derivedFields.length > 0 ? (
                           <View style={{ marginBottom: 8 }}>

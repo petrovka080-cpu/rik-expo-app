@@ -1,10 +1,11 @@
-export type FieldUiPriority = "core" | "secondary" | "advanced" | "derived";
+export type FieldUiPriority = "core" | "secondary" | "engineering" | "advanced" | "derived" | "hidden";
 
 export type WorkTypeInputOverride = {
   workTypeCode: string;
   familyCode?: string;
   coreFields?: string[];
   secondaryFields?: string[];
+  engineeringFields?: string[];
   advancedFields?: string[];
   derivedFields?: string[];
   hiddenFields?: string[];
@@ -31,8 +32,10 @@ type LabelMap = Record<string, string>;
 
 const CORE = "core" as const;
 const SECONDARY = "secondary" as const;
+const ENGINEERING = "engineering" as const;
 const ADVANCED = "advanced" as const;
 const DERIVED = "derived" as const;
+const HIDDEN = "hidden" as const;
 
 const normalizeCode = (code: string) => String(code || "").trim().toUpperCase();
 
@@ -111,7 +114,7 @@ const WORK_TYPE_OVERRIDES: Record<string, WorkTypeInputOverride> = {
   "WT-CONC": {
     workTypeCode: "WT-CONC",
     familyCode: "concrete",
-    coreFields: ["area_m2"],
+    coreFields: ["area_m2", "height_m"],
     secondaryFields: ["formwork_m2", "rebar_kg"],
     advancedFields: ["pump_m3", "excavation_m3", "backfill_m3", "subconcrete_m3", "waterproof_m2"],
     derivedFields: ["volume_m3"],
@@ -123,7 +126,7 @@ const WORK_TYPE_OVERRIDES: Record<string, WorkTypeInputOverride> = {
   IND_CONCRETE: {
     workTypeCode: "ind_concrete",
     familyCode: "concrete",
-    coreFields: ["area_m2"],
+    coreFields: ["area_m2", "height_m"],
     secondaryFields: ["formwork_m2", "rebar_kg"],
     advancedFields: ["film_m2", "mesh_m2", "pump_m3", "subbase_m3", "count"],
     derivedFields: ["volume_m3"],
@@ -189,13 +192,13 @@ const WORK_TYPE_OVERRIDES: Record<string, WorkTypeInputOverride> = {
   "WT-CONCRETE-MONO": {
     workTypeCode: "WT-CONCRETE-MONO",
     familyCode: "concrete",
-    coreFields: ["area_m2"],
+    coreFields: ["area_m2", "height_m"],
     derivedFields: ["volume_m3"],
   },
   "WT-CONCRETE-BEAM": {
     workTypeCode: "WT-CONCRETE-BEAM",
     familyCode: "concrete",
-    coreFields: ["area_m2"],
+    coreFields: ["area_m2", "height_m"],
     secondaryFields: ["count"],
     derivedFields: ["volume_m3"],
     labelOverrides: {
@@ -387,9 +390,18 @@ const inferFamilyByCode = (workTypeCode: string): string => {
   if (c.includes("PLMB") || c.includes("PLUMB") || c.includes("BATH") || c.includes("PIP") || c.includes("SANITARY")) return "plumb";
   if (c.includes("CEIL")) return "ceil";
   if (c.includes("PAINT") || c.includes("PLASTER") || c.includes("WALLPAPER") || c.includes("PUTTY")) return "finish";
+  if (c.includes("GKL") || c.includes("GYPSUM") || c.includes("DRYWALL")) return "gkl";
+  if (c.includes("TILE")) return "tile";
   if (c.includes("HYDRO") || c.includes("WP")) return "hydro";
   if (c.includes("INSUL")) return "insul";
   if (c.includes("FLOOR") || c.includes("SCREED") || c.includes("FLR")) return "floor";
+  if (c.includes("HVAC") || c.includes("VENT")) return "hvac";
+  if (c.includes("METAL") || c.includes("STEEL")) return "metal";
+  if (c.includes("ROOF")) return "roof";
+  if (c.includes("WINDOW") || c.startsWith("WT-WIN")) return "window";
+  if (c.includes("DOOR") || c.startsWith("WT-DOOR")) return "doors";
+  if (c.includes("LOGISTIC") || c.includes("DELIVERY")) return "logistics";
+  if (c.includes("TRASH") || c.includes("WASTE") || c.includes("MUSOR")) return "trash";
   if (c.includes("DEM")) return "demo";
   if (c.includes("EXT") || c.includes("ROAD") || c.includes("CURB")) return "ext";
   return "other";
@@ -454,13 +466,15 @@ const resolveConcretePriority = (
 
   if (code.includes("PILE") || code.includes("FOOTING") || code.includes("COLUMN")) {
     if (basisKey === "count") return CORE;
-    if (basisKey === "height_m" || basisKey === "length_m") return SECONDARY;
+    if (basisKey === "height_m" || basisKey === "length_m" || basisKey === "width_m") return ENGINEERING;
     if (basisKey === "volume_m3") return hasKey(allKeys, "height_m") ? DERIVED : SECONDARY;
     return ADVANCED;
   }
 
   if (basisKey === "volume_m3" && shouldDeriveConcreteVolume(workTypeCode, allKeys)) return DERIVED;
   if (basisKey === "area_m2" || basisKey === "height_m") return CORE;
+  if (basisKey === "length_m" || basisKey === "width_m" || basisKey === "depth_m") return ENGINEERING;
+  if (basisKey === "formwork_m2" || basisKey === "rebar_kg") return SECONDARY;
   if (basisKey === "count") return SECONDARY;
   return ADVANCED;
 };
@@ -479,12 +493,26 @@ const resolvePriorityByFamily = (
   if (family === "finish") {
     if (basisKey === "area_m2") return CORE;
     if (basisKey === "perimeter_m") return SECONDARY;
+    if (basisKey === "height_m") return ENGINEERING;
     return ADVANCED;
   }
 
   if (family === "hydro" || family === "insul") {
     if (basisKey === "area_m2") return CORE;
-    if (basisKey === "count") return SECONDARY;
+    if (basisKey === "layers_count" || basisKey === "thickness_mm") return SECONDARY;
+    if (basisKey === "perimeter_m" || basisKey === "count") return ENGINEERING;
+    return ADVANCED;
+  }
+
+  if (family === "tile") {
+    if (basisKey === "area_m2") return CORE;
+    if (basisKey === "tile_size_mm" || basisKey === "joint_mm") return SECONDARY;
+    return ADVANCED;
+  }
+
+  if (family === "gkl") {
+    if (basisKey === "area_m2") return CORE;
+    if (basisKey === "perimeter_m" || basisKey === "levels_count") return SECONDARY;
     return ADVANCED;
   }
 
@@ -505,6 +533,7 @@ const resolvePriorityByFamily = (
     if (code === "WT-ELEC-OUTLET" && basisKey === "points_outlet") return CORE;
     if (code === "WT-ELEC-SWITCH" && basisKey === "points_switch") return CORE;
     if (basisKey === "length_m") return CORE;
+    if (basisKey === "cable_section_mm") return SECONDARY;
     if (basisKey === "count") return SECONDARY;
     if (basisKey.startsWith("points_") || basisKey === "points") return SECONDARY;
     return ADVANCED;
@@ -527,7 +556,8 @@ const resolvePriorityByFamily = (
       return ADVANCED;
     }
     if (basisKey === "points") return CORE;
-    if (basisKey === "pipe_length_m" || basisKey === "length_m") return CORE;
+    if (basisKey === "pipe_length_m" || basisKey === "length_m") return SECONDARY;
+    if (basisKey === "diameter_mm") return ENGINEERING;
     if (basisKey === "count") return SECONDARY;
     return ADVANCED;
   }
@@ -535,34 +565,87 @@ const resolvePriorityByFamily = (
   if (family === "ceil") {
     if (basisKey === "area_m2") return CORE;
     if (basisKey === "perimeter_m") return SECONDARY;
-    if (basisKey.startsWith("points") || basisKey === "points") return ADVANCED;
+    if (basisKey.startsWith("points") || basisKey === "points") return SECONDARY;
     return ADVANCED;
   }
 
   if (family === "facade") {
     if (basisKey === "area_m2") return CORE;
-    if (basisKey === "perimeter_m" || basisKey === "height_m" || basisKey === "length_m") return SECONDARY;
-    if (basisKey === "area_wall_m2" || basisKey === "pipe_length_m") return ADVANCED;
+    if (basisKey === "perimeter_m" || basisKey === "height_m" || basisKey === "length_m") return ENGINEERING;
+    if (basisKey === "area_wall_m2" || basisKey === "pipe_length_m" || basisKey === "opening_area_m2" || basisKey === "opening_count") {
+      return SECONDARY;
+    }
     return ADVANCED;
   }
 
   if (family === "masonry") {
-    if (basisKey === "area_m2") return CORE;
-    if (basisKey === "length_m" || basisKey === "height_m") return SECONDARY;
+    if (basisKey === "length_m" || basisKey === "height_m") return CORE;
+    if (basisKey === "area_m2") return DERIVED;
     if (basisKey === "perimeter_m") return SECONDARY;
+    if (basisKey === "block_size_mm" || basisKey === "joint_thickness_mm") return ENGINEERING;
     return ADVANCED;
   }
 
   if (family === "demo") {
     if (basisKey === "area_m2" || basisKey === "count" || basisKey === "length_m") return CORE;
+    if (basisKey === "height_m" || basisKey === "thickness_mm") return SECONDARY;
+    if (basisKey === "volume_m3" && hasKey(allKeys, "area_m2") && hasKey(allKeys, "thickness_mm")) return DERIVED;
     return ADVANCED;
   }
 
   if (family === "floor") {
     if (basisKey === "volume_m3" && hasKey(allKeys, "area_m2") && hasKey(allKeys, "height_m")) return DERIVED;
     if (basisKey === "area_m2") return CORE;
-    if (basisKey === "height_m" || basisKey === "pipe_length_m") return SECONDARY;
+    if (basisKey === "height_m" || basisKey === "thickness_mm") return SECONDARY;
+    if (basisKey === "pipe_length_m") return ENGINEERING;
     if (basisKey === "perimeter_m" || basisKey === "count" || basisKey === "volume_m3") return SECONDARY;
+    return ADVANCED;
+  }
+
+  if (family === "ext" || family === "outside") {
+    if (basisKey === "length_m" || basisKey === "area_m2") return CORE;
+    if (basisKey === "thickness_cm" || basisKey === "layers_count") return SECONDARY;
+    return ADVANCED;
+  }
+
+  if (family === "roof") {
+    if (basisKey === "area_m2") return CORE;
+    if (basisKey === "length_m" || basisKey === "width_m" || basisKey === "ridge_height_m" || basisKey === "overhang_m") return ENGINEERING;
+    if (basisKey === "roof_area_m2") return DERIVED;
+    if (basisKey === "perimeter_m") return SECONDARY;
+    return ADVANCED;
+  }
+
+  if (family === "doors" || family === "door" || family === "window" || family === "windows") {
+    if (basisKey === "count") return CORE;
+    if (basisKey === "width_m" || basisKey === "height_m") return ENGINEERING;
+    if (basisKey === "area_m2") return DERIVED;
+    return ADVANCED;
+  }
+
+  if (family === "logistics") {
+    if (basisKey === "count") return CORE;
+    if (basisKey === "distance_km" || basisKey === "weight_ton") return SECONDARY;
+    return ADVANCED;
+  }
+
+  if (family === "trash" || family === "waste") {
+    if (basisKey === "volume_m3") return CORE;
+    return ADVANCED;
+  }
+
+  if (family === "metal" || family === "metall" || family === "metals") {
+    if (basisKey === "count" || basisKey === "length_m") return CORE;
+    if (basisKey === "weight_ton") return SECONDARY;
+    if (basisKey === "height_m" || basisKey === "width_m") return ENGINEERING;
+    if (basisKey === "area_m2") return SECONDARY;
+    return ADVANCED;
+  }
+
+  if (family === "hvac" || family === "vent" || family === "ventilation") {
+    if (basisKey === "length_m") return CORE;
+    if (basisKey === "diameter_mm") return SECONDARY;
+    if (basisKey === "area_m2") return ENGINEERING;
     return ADVANCED;
   }
 
@@ -573,8 +656,14 @@ const resolveSemanticRole = (basisKey: BasisKey): string => {
   if (basisKey === "area_m2") return "area";
   if (basisKey === "perimeter_m") return "perimeter";
   if (basisKey === "length_m") return "length";
+  if (basisKey === "width_m") return "width";
   if (basisKey === "pipe_length_m") return "pipe_length";
   if (basisKey === "height_m") return "height_or_thickness";
+  if (basisKey === "thickness_mm") return "thickness";
+  if (basisKey === "diameter_mm") return "diameter";
+  if (basisKey === "layers_count") return "layers";
+  if (basisKey === "overhang_m") return "overhang";
+  if (basisKey === "ridge_height_m") return "ridge_height";
   if (basisKey === "volume_m3") return "volume";
   if (basisKey === "count") return "count";
   if (basisKey === "points" || basisKey.startsWith("points_")) return "points";
@@ -617,10 +706,14 @@ const resolvePriorityByOverride = (basisKey: BasisKey, override?: WorkTypeInputO
 
   const core = toSet(override.coreFields);
   const secondary = toSet(override.secondaryFields);
+  const engineering = toSet(override.engineeringFields);
   const advanced = toSet(override.advancedFields);
   const derived = toSet(override.derivedFields);
+  const hidden = toSet(override.hiddenFields);
 
+  if (hidden.has(basisKey)) return HIDDEN;
   if (core.has(basisKey)) return CORE;
+  if (engineering.has(basisKey)) return ENGINEERING;
   if (secondary.has(basisKey)) return SECONDARY;
   if (derived.has(basisKey)) return DERIVED;
   if (advanced.has(basisKey)) return ADVANCED;
@@ -649,7 +742,7 @@ export const enrichFieldUiMeta = (params: {
   const uiPriority = overridePriority ?? familyPriority;
 
   const editableOverride = override?.editableOverrides?.[params.basisKey];
-  const editable = typeof editableOverride === "boolean" ? editableOverride : uiPriority !== DERIVED;
+  const editable = typeof editableOverride === "boolean" ? editableOverride : uiPriority !== DERIVED && uiPriority !== HIDDEN;
 
   const semanticRole =
     override?.semanticRoleOverrides?.[params.basisKey] ??
