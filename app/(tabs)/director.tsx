@@ -1,9 +1,10 @@
-﻿import React from 'react';
+import React from 'react';
 import { View, ScrollView, Animated } from 'react-native';
 import { openSignedUrlUniversal } from "../../src/lib/files";
 import { UI, s } from "../../src/screens/director/director.styles";
 import DirectorDashboard from "../../src/screens/director/DirectorDashboard";
 import PeriodPickerSheet from "../../src/components/PeriodPickerSheet";
+import RoleScreenLayout from "../../src/components/layout/RoleScreenLayout";
 import { ensureSignedIn } from '../../src/lib/supabaseClient';
 import DirectorFinanceCardModal from "../../src/screens/director/DirectorFinanceCardModal";
 import DirectorFinanceContent from "../../src/screens/director/DirectorFinanceContent";
@@ -24,7 +25,7 @@ export default function DirectorScreen() {
   }), []);
 
   return (
-    <View style={[s.container, { backgroundColor: UI.bg }]}>
+    <RoleScreenLayout style={[s.container, { backgroundColor: UI.bg }]}>
       <DirectorDashboard
         HEADER_MAX={vm.HEADER_MAX}
         HEADER_MIN={vm.HEADER_MIN}
@@ -192,6 +193,7 @@ export default function DirectorScreen() {
         exportProposalExcel={vm.proposalActions.exportProposalExcel}
         approveProposal={vm.proposalActions.approveProposal}
       />
-    </View>
+    </RoleScreenLayout>
   );
 }
+
