@@ -5,6 +5,7 @@ import {
   Alert,
   Platform,
 } from "react-native";
+import RoleScreenLayout from "../../src/components/layout/RoleScreenLayout";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { supabase } from "../../src/lib/supabaseClient";
 import { mapCatalogSearchToWorkMaterials } from "../../src/screens/contractor/contractor.search";
@@ -480,7 +481,7 @@ export default function ContractorScreen() {
 
   // ---- Contractor active: show works ----
   return (
-    <View style={[styles.container, styles.homeContainer]}>
+    <RoleScreenLayout style={[styles.container, styles.homeContainer]}>
       <View pointerEvents="none" style={styles.homeGlow} />
       <View style={styles.homeHeader}>
         <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
@@ -544,7 +545,7 @@ export default function ContractorScreen() {
         workStageOptions={workStageOptions}
         renderWorkStageItem={renderWorkStageItem}
       />
-    </View>
+    </RoleScreenLayout>
   );
 }
 
