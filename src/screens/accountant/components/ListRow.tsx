@@ -1,11 +1,10 @@
-Ôªøimport React from "react";
+import React from "react";
 import { Pressable, Text, View } from "react-native";
 import type { AccountantInboxRow } from "../../../lib/rik_api";
 import { UI } from "../ui";
-import { statusFromRaw } from "../helpers";
-import { normalizeRuText } from "../../../lib/text/encoding";
 import { StatusBadge } from "../../../ui/StatusBadge";
 import ChevronIndicator from "../../../ui/ChevronIndicator";
+import { mapAccountantListRowToProps } from "../presentation/accountantRowAdapters";
 
 type ListRowItem = AccountantInboxRow & {
   total_paid?: number | null;
@@ -24,22 +23,7 @@ function ListRowInner({
   item: ListRowItem;
   onPress: () => void;
 }) {
-  const total = Number(item.total_paid ?? 0);
-  const sum = Number(item.invoice_amount ?? 0);
-  const rest = sum > 0 ? Math.max(0, sum - total) : 0;
-
-  const st = statusFromRaw(item.payment_status, false);
-  const supplier = normalizeRuText(String(item.supplier || "‚Äî"));
-  const invoiceNo = normalizeRuText(String(item.invoice_number || "–±–µ–∑ ‚Ññ"));
-  const invoiceDate = normalizeRuText(String(item.invoice_date || "‚Äî"));
-  const toneByStatus = {
-    PAID: "success",
-    PART: "warning",
-    REWORK: "danger",
-    K_PAY: "info",
-    HISTORY: "neutral",
-  } as const;
-  const tone = toneByStatus[st.key] ?? "neutral";
+  const row = mapAccountantListRowToProps(item);
 
   return (
     <Pressable
@@ -65,25 +49,25 @@ function ListRowInner({
       <View style={{ flexDirection: "row", alignItems: "flex-start", gap: 12 }}>
         <View style={{ flex: 1, minWidth: 0 }}>
           <Text style={{ fontSize: 16, lineHeight: 22, fontWeight: "600", color: UI.text, marginBottom: 4 }} numberOfLines={1}>
-            {supplier}
+            {row.supplier}
           </Text>
 
           <Text style={{ fontSize: 14, lineHeight: 20, color: UI.sub, fontWeight: "500" }} numberOfLines={1}>
-            –°—á—ë—Ç {invoiceNo} ¬∑ {invoiceDate}
+            —˜∏Ú {row.invoiceNo} ∑ {row.invoiceDate}
           </Text>
 
-          {rest > 0 && (
+          {row.rest > 0 && (
             <Text style={{ fontSize: 12, fontWeight: "500", color: "#FBBF24", marginTop: 8 }}>
-              –û—Å—Ç–∞—Ç–æ–∫: {rest} {item.invoice_currency || "KGS"}
+              ŒÒÚ‡ÚÓÍ: {row.rest} {row.currency}
             </Text>
           )}
         </View>
 
         <View style={{ alignItems: "flex-end", gap: 8 }}>
           <Text style={{ fontSize: 15, lineHeight: 20, fontWeight: "600", color: UI.text }}>
-            {sum.toLocaleString()}
+            {row.sum.toLocaleString()}
           </Text>
-          <StatusBadge label={st.label} tone={tone} compact />
+          <StatusBadge label={row.statusLabel} tone={row.statusTone} compact />
           <ChevronIndicator />
         </View>
       </View>

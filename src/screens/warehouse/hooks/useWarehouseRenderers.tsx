@@ -4,7 +4,6 @@ import type { ListRenderItem } from "react-native";
 import IncomingRowItem from "../components/IncomingRowItem";
 import ReqHeadRowItem from "../components/ReqHeadRowItem";
 import StockRowView from "../components/StockRowView";
-import { nz } from "../warehouse.utils";
 import type { IncomingRow, ReqHeadRow, StockRow } from "../warehouse.types";
 
 export function useWarehouseRenderers(params: {
@@ -24,12 +23,6 @@ export function useWarehouseRenderers(params: {
     openStockIssue,
   } = params;
 
-  const getIncomingHeadStats = useCallback((item: IncomingRow) => {
-    const recSum = Math.round(nz(item.qty_received_sum, 0));
-    const leftSum = Math.round(nz(item.qty_expected_sum, 0) - nz(item.qty_received_sum, 0));
-    return { recSum, leftSum };
-  }, []);
-
   const renderReqHeadItem = useCallback<ListRenderItem<ReqHeadRow>>(({ item }) => {
     return <ReqHeadRowItem row={item} onPress={openReq} fmtRuDate={fmtRuDate} />;
   }, [openReq, fmtRuDate]);
@@ -40,11 +33,10 @@ export function useWarehouseRenderers(params: {
         row={item}
         onPress={openItemsModal}
         fmtRuDate={fmtRuDate}
-        getIncomingHeadStats={getIncomingHeadStats}
         proposalNoByPurchase={proposalNoByPurchase}
       />
     );
-  }, [openItemsModal, fmtRuDate, getIncomingHeadStats, proposalNoByPurchase]);
+  }, [openItemsModal, fmtRuDate, proposalNoByPurchase]);
 
   const renderStockItem = useCallback<ListRenderItem<StockRow>>(({ item }) => {
     const codeRaw = String(item.code ?? "").trim();
@@ -54,4 +46,3 @@ export function useWarehouseRenderers(params: {
 
   return { renderReqHeadItem, renderIncomingItem, renderStockItem };
 }
-

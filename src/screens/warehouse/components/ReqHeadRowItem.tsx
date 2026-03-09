@@ -4,6 +4,7 @@ import type { ReqHeadRow } from "../warehouse.types";
 import { UI, s } from "../warehouse.styles";
 import { RoleCard } from "../../../components/ui/RoleCard";
 import ChevronIndicator from "../../../ui/ChevronIndicator";
+import { mapWarehouseReqHeadToCardProps } from "../presentation/warehouseRowAdapters";
 
 type Props = {
   row: ReqHeadRow;
@@ -12,40 +13,22 @@ type Props = {
 };
 
 export default function ReqHeadRowItem({ row, onPress, fmtRuDate }: Props) {
-  const totalPos = Math.max(0, Number(row.items_cnt ?? 0));
-  const openPos = Math.max(0, Number(row.ready_cnt ?? 0));
-  const issuedPos = Math.max(0, Number(row.done_cnt ?? 0));
+  const card = mapWarehouseReqHeadToCardProps({ row, fmtRuDate });
 
-  const hasToIssue = openPos > 0;
-  const isFullyIssued = issuedPos >= totalPos && totalPos > 0;
-
-  const locParts: string[] = [];
-  const obj = String(row.object_name || "").trim();
-  const lvl = String(row.level_name || row.level_code || "").trim();
-  const sys = String(row.system_name || row.system_code || "").trim();
-
-  if (obj) locParts.push(obj);
-  if (lvl) locParts.push(lvl);
-  if (sys) locParts.push(sys);
-
-  const dateStr = fmtRuDate(row.submitted_at);
-  const title = row.display_no || `REQ-${row.request_id.slice(0, 8)}`;
-  const locationText = locParts.length > 0 ? locParts.join(" • ") : undefined;
-
-  const statusNode = isFullyIssued ? (
+  const statusNode = card.isFullyIssued ? (
     <Text style={s.reqItemStatusFullyIssued}>Выдано полностью</Text>
   ) : (
     <Text style={s.reqItemStatusNotFullyIssued}>
       К выдаче:{" "}
-      <Text style={{ color: hasToIssue ? "#22c55e" : UI.text, fontWeight: "900" }}>
-        {hasToIssue
-          ? `${openPos} ${openPos === 1 ? "позиция" : openPos > 1 && openPos < 5 ? "позиции" : "позиций"}`
+      <Text style={{ color: card.hasToIssue ? "#22c55e" : UI.text, fontWeight: "900" }}>
+        {card.hasToIssue
+          ? `${card.openPos} ${card.openPos === 1 ? "позиция" : card.openPos > 1 && card.openPos < 5 ? "позиции" : "позиций"}`
           : "0"}
       </Text>
       {" • "}
       Выдано:{" "}
-      <Text style={{ color: issuedPos > 0 ? "#22c55e" : UI.text, fontWeight: "800" }}>
-        {issuedPos}
+      <Text style={{ color: card.issuedPos > 0 ? "#22c55e" : UI.text, fontWeight: "800" }}>
+        {card.issuedPos}
       </Text>
     </Text>
   );
@@ -57,16 +40,16 @@ export default function ReqHeadRowItem({ row, onPress, fmtRuDate }: Props) {
         style={({ pressed }) => [s.reqItemPressable, pressed && { opacity: 0.9 }]}
       >
         <RoleCard
-          title={title}
-          subtitle={dateStr}
-          meta={locationText}
+          title={card.title}
+          subtitle={card.subtitle}
+          meta={card.meta}
           status={statusNode}
           rightIndicator={<ChevronIndicator />}
           style={[
             s.groupHeader,
             {
               marginBottom: 0,
-              borderLeftWidth: hasToIssue ? 5 : 0,
+              borderLeftWidth: card.hasToIssue ? 5 : 0,
               borderLeftColor: "#22c55e",
             },
           ]}

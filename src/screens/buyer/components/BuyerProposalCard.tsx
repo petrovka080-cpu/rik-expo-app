@@ -7,6 +7,7 @@ import { StatusBadge } from "../../../ui/StatusBadge";
 import type { StylesBag } from "./component.types";
 import { RoleCard } from "../../../components/ui/RoleCard";
 import ChevronIndicator from "../../../ui/ChevronIndicator";
+import { mapBuyerProposalToCardProps } from "../presentation/buyerRowAdapters";
 
 // We extend ProposalHeadLite internally to support items_cnt if available
 type CardHead = BuyerProposalBucketRow & { items_cnt?: number };
@@ -20,7 +21,6 @@ export const BuyerProposalCard = React.memo(function BuyerProposalCard(props: {
 }) {
   const { head, s, onOpenDetails } = props;
 
-  const pidStr = String(head.id);
   const scaleAnim = useRef(new Animated.Value(1)).current;
 
   const handlePressIn = () => {
@@ -41,25 +41,20 @@ export const BuyerProposalCard = React.memo(function BuyerProposalCard(props: {
   };
 
   // Keep existing status mapping behavior unchanged
-  const statusText = String(head.status || "—");
-
-  const headerText = props.title || pidStr.slice(0, 8);
-  const dateStr = head.submitted_at ? new Date(head.submitted_at).toLocaleDateString() : "";
-  const amountText = `${Number(head.total_sum ?? 0).toLocaleString()} сом`;
-  const metaText = `${head.items_cnt || 0} поз.${dateStr ? ` • ${dateStr}` : ""}`;
+  const card = mapBuyerProposalToCardProps(head, props.title);
 
   return (
     <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
       <Pressable
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
-        onPress={() => onOpenDetails(pidStr)}
+        onPress={() => onOpenDetails(card.pidStr)}
         style={({ pressed }) => ({ opacity: pressed ? 0.9 : 1 })}
       >
         <RoleCard
-          title={headerText}
-          subtitle={amountText}
-          meta={metaText}
+          title={card.title}
+          subtitle={card.subtitle}
+          meta={card.meta}
           style={[
             s.proposalCard,
             {
@@ -71,7 +66,7 @@ export const BuyerProposalCard = React.memo(function BuyerProposalCard(props: {
           ]}
           subtitleStyle={{ color: UI.accent, fontWeight: "900" }}
           metaStyle={{ color: "rgba(255,255,255,0.6)", fontWeight: "700" }}
-          status={<StatusBadge label={statusText} tone="neutral" compact />}
+          status={<StatusBadge label={card.statusText} tone="neutral" compact />}
           rightIndicator={
             <View style={{ flexDirection: "row", gap: 8, alignItems: "center" }}>
               {typeof props.attCount === "number" && props.attCount > 0 ? (
