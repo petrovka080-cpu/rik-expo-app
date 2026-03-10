@@ -1,6 +1,11 @@
 import { useCallback, useEffect, useRef } from "react";
 import { useFocusEffect } from "expo-router";
-import type { Tab } from "../warehouse.types";
+import { WAREHOUSE_TABS, type Tab } from "../warehouse.types";
+
+const TAB_INCOMING = WAREHOUSE_TABS[0];
+const TAB_STOCK_FACT = WAREHOUSE_TABS[1];
+const TAB_EXPENSE = WAREHOUSE_TABS[2];
+const TAB_REPORTS = WAREHOUSE_TABS[3];
 
 export function useWarehouseLifecycle(params: {
   tab: Tab;
@@ -46,19 +51,19 @@ export function useWarehouseLifecycle(params: {
   }, [loadAll]);
 
   const refreshActiveTab = useCallback(async () => {
-    if (tab === "К приходу") {
+    if (tab === TAB_INCOMING) {
       await fetchToReceive();
       return;
     }
-    if (tab === "Склад факт") {
+    if (tab === TAB_STOCK_FACT) {
       await fetchStock();
       return;
     }
-    if (tab === "Расход") {
+    if (tab === TAB_EXPENSE) {
       await fetchReqHeadsForce();
       return;
     }
-    if (tab === "Отчёты") {
+    if (tab === TAB_REPORTS) {
       await fetchReports();
     }
   }, [tab, fetchToReceive, fetchStock, fetchReqHeadsForce, fetchReports]);

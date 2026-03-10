@@ -1,5 +1,10 @@
 import { useCallback, useState } from "react";
-import type { Tab } from "../warehouse.types";
+import { WAREHOUSE_TABS, type Tab } from "../warehouse.types";
+
+const TAB_INCOMING = WAREHOUSE_TABS[0];
+const TAB_STOCK_FACT = WAREHOUSE_TABS[1];
+const TAB_EXPENSE = WAREHOUSE_TABS[2];
+const TAB_REPORTS = WAREHOUSE_TABS[3];
 
 export function useWarehouseState(params: {
   tab: Tab;
@@ -16,10 +21,10 @@ export function useWarehouseState(params: {
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     try {
-      if (tab === "К приходу") await fetchToReceive();
-      else if (tab === "Склад факт") await fetchStock();
-      else if (tab === "Отчёты") await fetchReports();
-      else if (tab === "Расход") await fetchReqHeads();
+      if (tab === TAB_INCOMING) await fetchToReceive();
+      else if (tab === TAB_STOCK_FACT) await fetchStock();
+      else if (tab === TAB_REPORTS) await fetchReports();
+      else if (tab === TAB_EXPENSE) await fetchReqHeads();
     } catch (e) {
       onError(e);
     } finally {

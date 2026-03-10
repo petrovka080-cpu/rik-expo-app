@@ -35,17 +35,6 @@ const toTextOrNull = (v: unknown): string | null => {
   return s || null;
 };
 
-const REQUESTS_FALLBACK_SELECT_PLANS = [
-  "id, display_no, status, submitted_at, created_at, object_name, level_name, system_name, zone_name, object_type_code, level_code, system_code, zone_code, contractor_name, contractor_org, subcontractor_name, subcontractor_org, contractor_phone, subcontractor_phone, phone, phone_number, planned_volume, volume, qty_plan, note, comment",
-  "id, display_no, status, submitted_at, created_at, object_name, object_type_code, level_code, system_code, zone_code, contractor_name, contractor_org, subcontractor_name, subcontractor_org, contractor_phone, subcontractor_phone, phone, phone_number, planned_volume, volume, qty_plan, note, comment",
-  "id, display_no, status, submitted_at, created_at, object_name, object_type_code, level_code, system_code, zone_code, note, comment",
-  "id, display_no, status, submitted_at, created_at, object_name, object_type_code, level_code, system_code, zone_code",
-  "id, display_no, status, submitted_at, created_at, object_name, object_type_code",
-  "id, display_no, status, submitted_at, created_at, object_name",
-  "id, display_no, status, submitted_at, created_at",
-] as const;
-
-let requestsFallbackSelectPlanCache: string | null = null;
 let requestsFallbackLastHardFailAt = 0;
 let requestsFallbackLastSkipLogAt = 0;
 const REQUESTS_FALLBACK_FAIL_COOLDOWN_MS = 30000;
@@ -56,7 +45,6 @@ async function tryLoadRequestsFallbackRows(
 ): Promise<UnknownRow[]> {
   const now = Date.now();
   if (
-    !requestsFallbackSelectPlanCache &&
     requestsFallbackLastHardFailAt > 0 &&
     now - requestsFallbackLastHardFailAt < REQUESTS_FALLBACK_FAIL_COOLDOWN_MS
   ) {
@@ -80,28 +68,9 @@ async function tryLoadRequestsFallbackRows(
   if (!star.error && Array.isArray(star.data)) {
     return star.data as unknown as UnknownRow[];
   }
-
-  if (requestsFallbackSelectPlanCache) {
-    const cached = await fetchBySelect(requestsFallbackSelectPlanCache);
-    if (!cached.error && Array.isArray(cached.data)) return cached.data as unknown as UnknownRow[];
-    requestsFallbackSelectPlanCache = null;
-  }
-
-  let lastError: unknown = null;
-  for (const selectCols of REQUESTS_FALLBACK_SELECT_PLANS) {
-    const q = await fetchBySelect(selectCols);
-    if (!q.error) {
-      requestsFallbackSelectPlanCache = selectCols;
-      return Array.isArray(q.data) ? (q.data as unknown as UnknownRow[]) : [];
-    }
-    lastError = q.error;
-  }
-
-  if (lastError) {
-    requestsFallbackLastHardFailAt = Date.now();
-    const msg = String((lastError as { message?: string } | null)?.message ?? lastError ?? "");
-    console.warn("[warehouse.api] requests fallback select failed:", msg);
-  }
+  requestsFallbackLastHardFailAt = Date.now();
+  const msg = String((star.error as { message?: string } | null)?.message ?? star.error ?? "unknown");
+  console.warn("[warehouse.api] requests fallback select(*) failed:", msg);
 
   return [];
 }
@@ -557,7 +526,7 @@ export async function apiFetchReqHeads(
   // Fallback only on first page:
   // include approved requests not yet materialized in warehouse view.
   // On next pages we rely on pure view pagination to avoid duplicate slices.
-  if (page === 0) {
+  if (page === 0 && viewRows.length < pageSize) {
     try {
       const reqRows = await tryLoadRequestsFallbackRows(supabase, pageSize);
 

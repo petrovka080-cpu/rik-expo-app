@@ -4,6 +4,12 @@ import { UI, s } from "../warehouse.styles";
 import { WAREHOUSE_TABS, type Tab } from "../warehouse.types";
 
 type AnimNum = number | Animated.Value | Animated.AnimatedInterpolation<number>;
+const WAREHOUSE_TAB_LABELS = [
+  "\u041a \u043f\u0440\u0438\u0445\u043e\u0434\u0443",
+  "\u0421\u043a\u043b\u0430\u0434 \u0444\u0430\u043a\u0442",
+  "\u0420\u0430\u0441\u0445\u043e\u0434",
+  "\u041e\u0442\u0447\u0451\u0442\u044b",
+] as const;
 
 export type WarehouseHeaderApi = {
   headerHeight: AnimNum;
@@ -77,21 +83,28 @@ export default function WarehouseHeader(props: {
   onOpenFioModal?: () => void;
 }) {
   const { tab, onTab, incomingCount, stockCount, titleSize, warehousemanFio, onOpenFioModal } = props;
+  const tabDisplayByValue = useMemo(
+    () =>
+      new Map<Tab, string>([
+        [WAREHOUSE_TABS[0], WAREHOUSE_TAB_LABELS[0]],
+        [WAREHOUSE_TABS[1], WAREHOUSE_TAB_LABELS[1]],
+        [WAREHOUSE_TABS[2], WAREHOUSE_TAB_LABELS[2]],
+        [WAREHOUSE_TABS[3], WAREHOUSE_TAB_LABELS[3]],
+      ]),
+    [],
+  );
 
   const tabLabel = useMemo(
     () => (t: Tab) => {
-      if (t === WAREHOUSE_TABS[0]) return `${WAREHOUSE_TABS[0]} (${incomingCount})`;
-      if (t === WAREHOUSE_TABS[1]) return `${WAREHOUSE_TABS[1]} (${stockCount})`;
-      return t;
+      const display = tabDisplayByValue.get(t) ?? String(t);
+      if (t === WAREHOUSE_TABS[0]) return `${display} (${incomingCount})`;
+      if (t === WAREHOUSE_TABS[1]) return `${display} (${stockCount})`;
+      return display;
     },
-    [incomingCount, stockCount],
+    [incomingCount, stockCount, tabDisplayByValue],
   );
 
-  const headerTitle =
-    tab === WAREHOUSE_TABS[0] ? WAREHOUSE_TABS[0] :
-      tab === WAREHOUSE_TABS[1] ? WAREHOUSE_TABS[1] :
-        tab === WAREHOUSE_TABS[2] ? WAREHOUSE_TABS[2] :
-          WAREHOUSE_TABS[3];
+  const headerTitle = tabDisplayByValue.get(tab) ?? String(tab);
 
   return (
     <View>
