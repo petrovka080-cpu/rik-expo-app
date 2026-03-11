@@ -1,4 +1,4 @@
-// src/lib/catalog_api.ts
+﻿// src/lib/catalog_api.ts
 import { supabase } from "./supabaseClient";
 import { isRequestApprovedForProcurement } from "./requestStatus";
 import {
@@ -6,46 +6,39 @@ import {
   proposalAddItems as rpcProposalAddItems,
   proposalSubmit as rpcProposalSubmit,
   proposalSnapshotItems as rpcProposalSnapshotItems,
-  batchResolveRequestLabels as rpcBatchResolveRequestLabels,
-  requestCreateDraft as rpcRequestCreateDraft,
-} from "./rik_api";
-
-import { exportRequestPdf as exportRequestPdfProd } from "./rik_api";
-
+} from "./api/proposals";
+import { requestCreateDraft as rpcRequestCreateDraft } from "./api/requests";
 
 export {
   ensureRequestSmart,
   requestCreateDraft,
   requestSubmit,
-  directorReturnToBuyer,
   addRequestItemFromRik,
   clearCachedDraftRequestId,
-} from "./rik_api";
-
+} from "./api/requests";
+export { directorReturnToBuyer } from "./api/director";
 export {
   listBuyerInbox,
+} from "./api/buyer";
+export {
   proposalCreate,
   proposalAddItems,
   proposalSubmit,
-  buildProposalPdfHtml,
-  exportProposalPdf,
-  exportPaymentOrderPdf,
   proposalItems,
   proposalSnapshotItems,
   proposalSetItemsMeta,
-  uploadProposalAttachment,
-  proposalSendToAccountant,
-  batchResolveRequestLabels,
   listDirectorProposalsPending,
+} from "./api/proposals";
+export {
+  proposalSendToAccountant,
   listAccountantInbox,
   accountantReturnToBuyer,
   accountantAddPayment,
-  notifList,
-  notifMarkRead,
-} from "./rik_api";
-export type { BuyerInboxRow, AccountantInboxRow } from "./rik_api";
+} from "./api/accountant";
+export { notifList, notifMarkRead } from "./api/notifications";
+export type { BuyerInboxRow, AccountantInboxRow } from "./api/types";
 
-/** ========= РўРёРїС‹ ========= */
+/** ========= Р В РЎС›Р В РЎвЂР В РЎвЂ”Р РЋРІР‚в„– ========= */
 export type CatalogItem = {
   code: string;
   name: string;
@@ -117,7 +110,7 @@ export type ForemanRequestSummary = {
   level_name_ru?: string | null;
   system_name_ru?: string | null;
   zone_name_ru?: string | null;
-  has_rejected?: boolean | null; // в†ђ РµСЃС‚СЊ Р»Рё РѕС‚РєР»РѕРЅС‘РЅРЅС‹Рµ РїРѕР·РёС†РёРё РІ Р·Р°СЏРІРєРµ
+  has_rejected?: boolean | null; // Р Р†РІР‚В РЎвЂ™ Р В Р’ВµР РЋР С“Р РЋРІР‚С™Р РЋР Р‰ Р В Р’В»Р В РЎвЂ Р В РЎвЂўР РЋРІР‚С™Р В РЎвЂќР В Р’В»Р В РЎвЂўР В Р вЂ¦Р РЋРІР‚ВР В Р вЂ¦Р В Р вЂ¦Р РЋРІР‚в„–Р В Р’Вµ Р В РЎвЂ”Р В РЎвЂўР В Р’В·Р В РЎвЂР РЋРІР‚В Р В РЎвЂР В РЎвЂ Р В Р вЂ  Р В Р’В·Р В Р’В°Р РЋР РЏР В Р вЂ Р В РЎвЂќР В Р’Вµ
 };
 
 export type RequestDetails = {
@@ -152,6 +145,23 @@ export type Supplier = {
   address?: string | null;
   contact_name?: string | null;
   notes?: string | null;
+};
+
+export type UnifiedCounterpartyType =
+  | "supplier"
+  | "contractor"
+  | "supplier_and_contractor"
+  | "other_business_counterparty";
+
+export type UnifiedCounterparty = {
+  counterparty_id: string;
+  display_name: string;
+  inn: string | null;
+  phone: string | null;
+  source_origin: string[];
+  counterparty_type: UnifiedCounterpartyType;
+  is_active: boolean;
+  company_scope: string | null;
 };
 
 /** ========= helpers ========= */
@@ -305,8 +315,222 @@ const mapSupplierRow = (raw: any): Supplier | null => {
   };
 };
 
-/** ========= РљР°С‚Р°Р»РѕРі: Р±С‹СЃС‚СЂС‹Р№ РїРѕРёСЃРє ========= */
-// NOTE: РѕСЃС‚Р°РІР»СЏРµРј С„СѓРЅРєС†РёСЋ РѕР±С‹С‡РЅС‹Рј РјРѕРґСѓР»СЊРЅС‹Рј СЌРєСЃРїРѕСЂС‚РѕРј Р±РµР· РєР°РєРёС…-Р»РёР±Рѕ РіР»РѕР±Р°Р»СЊРЅС‹С… С€РёРЅ
+const normCounterpartyName = (value: unknown): string =>
+  String(value ?? "").trim().replace(/\s+/g, " ").toLowerCase();
+
+const normInnDigits = (value: unknown): string =>
+  String(value ?? "").replace(/\D+/g, "").trim();
+
+const makeCounterpartyKey = (name: string, inn?: string | null): string => {
+  const innKey = normInnDigits(inn);
+  if (innKey) return `inn:${innKey}`;
+  return `name:${normCounterpartyName(name)}`;
+};
+
+const pushUnique = <T,>(arr: T[], value: T) => {
+  if (!arr.includes(value)) arr.push(value);
+};
+
+const detectUnifiedType = (origins: string[]): UnifiedCounterpartyType => {
+  const hasSupplier = origins.includes("supplier");
+  const hasContractor = origins.includes("subcontract");
+  if (hasSupplier && hasContractor) return "supplier_and_contractor";
+  if (hasSupplier) return "supplier";
+  if (hasContractor) return "contractor";
+  return "other_business_counterparty";
+};
+
+export async function listUnifiedCounterparties(search?: string): Promise<UnifiedCounterparty[]> {
+  const q = sanitizePostgrestOrTerm(search || "");
+  const byKey = new Map<string, UnifiedCounterparty>();
+
+  // A) Existing supplier source.
+  try {
+    let query = supabase
+      .from("suppliers")
+      .select("id,name,inn,phone")
+      .order("name", { ascending: true });
+    if (q) query = query.or(`name.ilike.%${q}%,inn.ilike.%${q}%`);
+    const { data, error } = await query;
+    if (!error && Array.isArray(data)) {
+      for (const raw of data) {
+        const display = norm(raw?.name);
+        if (!display) continue;
+        const inn = norm(raw?.inn) || null;
+        const phone = norm(raw?.phone) || null;
+        const key = makeCounterpartyKey(display, inn);
+        const prev = byKey.get(key);
+        if (!prev) {
+          byKey.set(key, {
+            counterparty_id: String(raw?.id || key),
+            display_name: display,
+            inn,
+            phone,
+            source_origin: ["supplier"],
+            counterparty_type: "supplier",
+            is_active: true,
+            company_scope: null,
+          });
+        } else {
+          pushUnique(prev.source_origin, "supplier");
+          if (!prev.inn && inn) prev.inn = inn;
+          if (!prev.phone && phone) prev.phone = phone;
+          prev.counterparty_type = detectUnifiedType(prev.source_origin);
+        }
+      }
+    }
+  } catch (e: any) {
+    console.warn("[catalog_api.listUnifiedCounterparties] suppliers:", e?.message ?? e);
+  }
+
+  // B) Subcontract organizations (non-draft).
+  try {
+    const { data, error } = await supabase
+      .from("subcontracts")
+      .select("id,status,contractor_org,contractor_inn,contractor_phone")
+      .not("status", "eq", "draft");
+    if (!error && Array.isArray(data)) {
+      for (const raw of data) {
+        const display = norm(raw?.contractor_org);
+        if (!display) continue;
+        const inn = norm(raw?.contractor_inn) || null;
+        const phone = norm(raw?.contractor_phone) || null;
+        const key = makeCounterpartyKey(display, inn);
+        const prev = byKey.get(key);
+        if (!prev) {
+          byKey.set(key, {
+            counterparty_id: `subcontract:${String(raw?.id || key)}`,
+            display_name: display,
+            inn,
+            phone,
+            source_origin: ["subcontract"],
+            counterparty_type: "contractor",
+            is_active: true,
+            company_scope: null,
+          });
+        } else {
+          pushUnique(prev.source_origin, "subcontract");
+          if (!prev.inn && inn) prev.inn = inn;
+          if (!prev.phone && phone) prev.phone = phone;
+          prev.counterparty_type = detectUnifiedType(prev.source_origin);
+        }
+      }
+    }
+  } catch (e: any) {
+    console.warn("[catalog_api.listUnifiedCounterparties] subcontracts:", e?.message ?? e);
+  }
+
+  // C) Registered app counterparties.
+  try {
+    const contractorsQ = await supabase.from("contractors").select("id,company_name,phone,inn");
+
+    const loadProfilesSafe = async () => {
+      const plans = [
+        { withFilter: true },
+        { withFilter: false },
+      ] as const;
+
+      for (const plan of plans) {
+        try {
+          let q = supabase.from("user_profiles").select("*");
+          if (plan.withFilter) q = q.eq("is_contractor", true);
+          const res = await q.limit(5000);
+          if (res.error) continue;
+
+          const rows = Array.isArray(res.data) ? (res.data as any[]) : [];
+          if (plan.withFilter) return rows;
+          return rows.filter((r) => Boolean((r as any)?.is_contractor));
+        } catch { }
+      }
+      return [] as any[];
+    };
+
+    const profileRows = await loadProfilesSafe();
+
+    if (!contractorsQ.error && Array.isArray(contractorsQ.data)) {
+      for (const raw of contractorsQ.data as any[]) {
+        const display = norm(raw?.company_name);
+        if (!display) continue;
+        const inn = norm(raw?.inn) || null;
+        const phone = norm(raw?.phone) || null;
+        const key = makeCounterpartyKey(display, inn);
+        const prev = byKey.get(key);
+        if (!prev) {
+          byKey.set(key, {
+            counterparty_id: `contractor:${String(raw?.id || key)}`,
+            display_name: display,
+            inn,
+            phone,
+            source_origin: ["registered_company"],
+            counterparty_type: "other_business_counterparty",
+            is_active: true,
+            company_scope: null,
+          });
+        } else {
+          pushUnique(prev.source_origin, "registered_company");
+          if (!prev.inn && inn) prev.inn = inn;
+          if (!prev.phone && phone) prev.phone = phone;
+          prev.counterparty_type = detectUnifiedType(prev.source_origin);
+        }
+      }
+    }
+
+    if (Array.isArray(profileRows)) {
+      for (const raw of profileRows as any[]) {
+        const display = norm(
+          raw?.company ??
+          raw?.company_name ??
+          raw?.organization ??
+          raw?.org_name ??
+          raw?.name ??
+          raw?.full_name,
+        );
+        if (!display) continue;
+        const inn = norm(raw?.inn) || null;
+        const phone = norm(raw?.phone) || null;
+        const key = makeCounterpartyKey(display, inn);
+        const prev = byKey.get(key);
+        if (!prev) {
+          byKey.set(key, {
+            counterparty_id: `profile:${String(raw?.user_id || key)}`,
+            display_name: display,
+            inn,
+            phone,
+            source_origin: ["registered_company"],
+            counterparty_type: "other_business_counterparty",
+            is_active: true,
+            company_scope: null,
+          });
+        } else {
+          pushUnique(prev.source_origin, "registered_company");
+          if (!prev.inn && inn) prev.inn = inn;
+          if (!prev.phone && phone) prev.phone = phone;
+          prev.counterparty_type = detectUnifiedType(prev.source_origin);
+        }
+      }
+    }
+  } catch (e: any) {
+    console.warn("[catalog_api.listUnifiedCounterparties] registered:", e?.message ?? e);
+  }
+
+  const rows = Array.from(byKey.values())
+    .map((row) => ({
+      ...row,
+      counterparty_type: detectUnifiedType(row.source_origin),
+    }))
+    .sort((a, b) => a.display_name.localeCompare(b.display_name, "ru"));
+
+  if (!q) return rows;
+  const nq = normCounterpartyName(q);
+  return rows.filter(
+    (r) =>
+      normCounterpartyName(r.display_name).includes(nq) ||
+      normInnDigits(r.inn).includes(normInnDigits(nq)),
+  );
+}
+
+/** ========= Р В РЎв„ўР В Р’В°Р РЋРІР‚С™Р В Р’В°Р В Р’В»Р В РЎвЂўР В РЎвЂ“: Р В Р’В±Р РЋРІР‚в„–Р РЋР С“Р РЋРІР‚С™Р РЋР вЂљР РЋРІР‚в„–Р В РІвЂћвЂ“ Р В РЎвЂ”Р В РЎвЂўР В РЎвЂР РЋР С“Р В РЎвЂќ ========= */
+// NOTE: Р В РЎвЂўР РЋР С“Р РЋРІР‚С™Р В Р’В°Р В Р вЂ Р В Р’В»Р РЋР РЏР В Р’ВµР В РЎВ Р РЋРІР‚С›Р РЋРЎвЂњР В Р вЂ¦Р В РЎвЂќР РЋРІР‚В Р В РЎвЂР РЋР вЂ№ Р В РЎвЂўР В Р’В±Р РЋРІР‚в„–Р РЋРІР‚РЋР В Р вЂ¦Р РЋРІР‚в„–Р В РЎВ Р В РЎВР В РЎвЂўР В РўвЂР РЋРЎвЂњР В Р’В»Р РЋР Р‰Р В Р вЂ¦Р РЋРІР‚в„–Р В РЎВ Р РЋР РЉР В РЎвЂќР РЋР С“Р В РЎвЂ”Р В РЎвЂўР РЋР вЂљР РЋРІР‚С™Р В РЎвЂўР В РЎВ Р В Р’В±Р В Р’ВµР В Р’В· Р В РЎвЂќР В Р’В°Р В РЎвЂќР В РЎвЂР РЋРІР‚В¦-Р В Р’В»Р В РЎвЂР В Р’В±Р В РЎвЂў Р В РЎвЂ“Р В Р’В»Р В РЎвЂўР В Р’В±Р В Р’В°Р В Р’В»Р РЋР Р‰Р В Р вЂ¦Р РЋРІР‚в„–Р РЋРІР‚В¦ Р РЋРІвЂљВ¬Р В РЎвЂР В Р вЂ¦
 export async function searchCatalogItems(
   q: string,
   limit = 50,
@@ -369,7 +593,7 @@ export async function searchCatalogItems(
   }));
 }
 
-/** ========= Р“СЂСѓРїРїС‹ ========= */
+/** ========= Р В РІР‚СљР РЋР вЂљР РЋРЎвЂњР В РЎвЂ”Р В РЎвЂ”Р РЋРІР‚в„– ========= */
 export async function listCatalogGroups(): Promise<CatalogGroup[]> {
   const { data, error } = await supabase
     .from("catalog_groups_clean")
@@ -379,7 +603,7 @@ export async function listCatalogGroups(): Promise<CatalogGroup[]> {
   return data as CatalogGroup[];
 }
 
-/** ========= Р•РґРёРЅРёС†С‹ РёР·РјРµСЂРµРЅРёСЏ ========= */
+/** ========= Р В РІР‚СћР В РўвЂР В РЎвЂР В Р вЂ¦Р В РЎвЂР РЋРІР‚В Р РЋРІР‚в„– Р В РЎвЂР В Р’В·Р В РЎВР В Р’ВµР РЋР вЂљР В Р’ВµР В Р вЂ¦Р В РЎвЂР РЋР РЏ ========= */
 export async function listUoms(): Promise<UomRef[]> {
   const { data, error } = await supabase
     .from("ref_uoms_clean")
@@ -389,7 +613,7 @@ export async function listUoms(): Promise<UomRef[]> {
   return data as UomRef[];
 }
 
-/** ========= РЎРєР»Р°Рґ: РїРѕР·РёС†РёРё Рє РїСЂРёС…РѕРґСѓ ========= */
+/** ========= Р В Р Р‹Р В РЎвЂќР В Р’В»Р В Р’В°Р В РўвЂ: Р В РЎвЂ”Р В РЎвЂўР В Р’В·Р В РЎвЂР РЋРІР‚В Р В РЎвЂР В РЎвЂ Р В РЎвЂќ Р В РЎвЂ”Р РЋР вЂљР В РЎвЂР РЋРІР‚В¦Р В РЎвЂўР В РўвЂР РЋРЎвЂњ ========= */
 export async function listIncomingItems(incomingId: string): Promise<IncomingItem[]> {
   const id = norm(incomingId);
   if (!id) return [];
@@ -410,7 +634,7 @@ export async function listIncomingItems(incomingId: string): Promise<IncomingIte
 
 const DRAFT_KEY = "foreman_draft_request_id";
 
-// localStorage СЃ РјРµРј-С„РѕР»Р±СЌРєРѕРј
+// localStorage Р РЋР С“ Р В РЎВР В Р’ВµР В РЎВ-Р РЋРІР‚С›Р В РЎвЂўР В Р’В»Р В Р’В±Р РЋР РЉР В РЎвЂќР В РЎвЂўР В РЎВ
 let memDraftId: string | null = null;
 const storage = {
   get(): string | null {
@@ -438,7 +662,7 @@ const isDraftStatusValue = (value?: string | null) => {
   return draftStatusKeys.has(normalized);
 };
 
-/** РЎРѕР·РґР°С‘С‚/РІРѕР·РІСЂР°С‰Р°РµС‚ С‡РµСЂРЅРѕРІРёРє Р·Р°СЏРІРєРё */
+/** Р В Р Р‹Р В РЎвЂўР В Р’В·Р В РўвЂР В Р’В°Р РЋРІР‚ВР РЋРІР‚С™/Р В Р вЂ Р В РЎвЂўР В Р’В·Р В Р вЂ Р РЋР вЂљР В Р’В°Р РЋРІР‚В°Р В Р’В°Р В Р’ВµР РЋРІР‚С™ Р РЋРІР‚РЋР В Р’ВµР РЋР вЂљР В Р вЂ¦Р В РЎвЂўР В Р вЂ Р В РЎвЂР В РЎвЂќ Р В Р’В·Р В Р’В°Р РЋР РЏР В Р вЂ Р В РЎвЂќР В РЎвЂ */
 export async function getOrCreateDraftRequestId(): Promise<string> {
   const cached = getLocalDraftId();
   if (cached) {
@@ -459,7 +683,7 @@ export async function getOrCreateDraftRequestId(): Promise<string> {
     throw e;
   }
 
-  throw new Error("РќРµ СѓРґР°Р»РѕСЃСЊ СЃРѕР·РґР°С‚СЊ С‡РµСЂРЅРѕРІРёРє Р·Р°СЏРІРєРё");
+  throw new Error("Р В РЎСљР В Р’Вµ Р РЋРЎвЂњР В РўвЂР В Р’В°Р В Р’В»Р В РЎвЂўР РЋР С“Р РЋР Р‰ Р РЋР С“Р В РЎвЂўР В Р’В·Р В РўвЂР В Р’В°Р РЋРІР‚С™Р РЋР Р‰ Р РЋРІР‚РЋР В Р’ВµР РЋР вЂљР В Р вЂ¦Р В РЎвЂўР В Р вЂ Р В РЎвЂР В РЎвЂќ Р В Р’В·Р В Р’В°Р РЋР РЏР В Р вЂ Р В РЎвЂќР В РЎвЂ");
 }
 
 async function isCachedDraftValid(id: string): Promise<boolean> {
@@ -484,7 +708,7 @@ async function isCachedDraftValid(id: string): Promise<boolean> {
   }
 }
 
-/** Р—Р°РіРѕР»РѕРІРѕРє Р·Р°СЏРІРєРё (РґР»СЏ С€Р°РїРєРё/РЅРѕРјРµСЂР°), РїСЂРѕР±СѓРµРј РІСЊСЋ/С‚Р°Р±Р»РёС†С‹ РїРѕ РѕС‡РµСЂРµРґРё */
+/** Р В РІР‚вЂќР В Р’В°Р В РЎвЂ“Р В РЎвЂўР В Р’В»Р В РЎвЂўР В Р вЂ Р В РЎвЂўР В РЎвЂќ Р В Р’В·Р В Р’В°Р РЋР РЏР В Р вЂ Р В РЎвЂќР В РЎвЂ (Р В РўвЂР В Р’В»Р РЋР РЏ Р РЋРІвЂљВ¬Р В Р’В°Р В РЎвЂ”Р В РЎвЂќР В РЎвЂ/Р В Р вЂ¦Р В РЎвЂўР В РЎВР В Р’ВµР РЋР вЂљР В Р’В°), Р В РЎвЂ”Р РЋР вЂљР В РЎвЂўР В Р’В±Р РЋРЎвЂњР В Р’ВµР В РЎВ Р В Р вЂ Р РЋР Р‰Р РЋР вЂ№/Р РЋРІР‚С™Р В Р’В°Р В Р’В±Р В Р’В»Р В РЎвЂР РЋРІР‚В Р РЋРІР‚в„– Р В РЎвЂ”Р В РЎвЂў Р В РЎвЂўР РЋРІР‚РЋР В Р’ВµР РЋР вЂљР В Р’ВµР В РўвЂР В РЎвЂ */
 export async function getRequestHeader(requestId: string): Promise<RequestHeader | null> {
   const id = norm(requestId);
   if (!id) return null;
@@ -739,6 +963,41 @@ export type RequestMetaPatch = {
   zone_name?: string | null;
 };
 
+let requestsExtendedMetaWriteSupportedCache: boolean | null = null;
+let requestsExtendedMetaWriteSupportInFlight: Promise<boolean> | null = null;
+
+async function resolveRequestsExtendedMetaWriteSupport(): Promise<boolean> {
+  if (requestsExtendedMetaWriteSupportedCache != null) return requestsExtendedMetaWriteSupportedCache;
+  if (requestsExtendedMetaWriteSupportInFlight) return requestsExtendedMetaWriteSupportInFlight;
+
+  requestsExtendedMetaWriteSupportInFlight = (async () => {
+    try {
+      // Schema capability probe for extended request meta fields.
+      const q = await supabase
+        .from("requests" as any)
+        .select(
+          "subcontract_id,contractor_job_id,contractor_org,subcontractor_org,contractor_phone,subcontractor_phone,planned_volume,qty_plan,volume,object_name,level_name,system_name,zone_name",
+        )
+        .limit(1);
+      if (q.error) throw q.error;
+      requestsExtendedMetaWriteSupportedCache = true;
+      return true;
+    } catch (e: any) {
+      const msg = String(e?.message ?? "").toLowerCase();
+      const schemaMismatch =
+        msg.includes("column") ||
+        msg.includes("does not exist") ||
+        msg.includes("schema cache");
+      requestsExtendedMetaWriteSupportedCache = schemaMismatch ? false : true;
+      return requestsExtendedMetaWriteSupportedCache;
+    } finally {
+      requestsExtendedMetaWriteSupportInFlight = null;
+    }
+  })();
+
+  return requestsExtendedMetaWriteSupportInFlight;
+}
+
 export async function updateRequestMeta(
   requestId: string,
   patch: RequestMetaPatch
@@ -802,41 +1061,86 @@ export async function updateRequestMeta(
   const hasExtendedPayload = Object.keys(payload).some((k) => !basePayloadKeys.has(k));
 
   try {
+    const fullPayloadAllowed =
+      !hasExtendedPayload ||
+      (requestsExtendedMetaWriteSupportedCache === true) ||
+      (requestsExtendedMetaWriteSupportedCache == null &&
+        (await resolveRequestsExtendedMetaWriteSupport()));
+    const primaryPayload = fullPayloadAllowed
+      ? payload
+      : Object.fromEntries(Object.entries(payload).filter(([k]) => basePayloadKeys.has(k)));
     let { error } = await supabase
       .from('requests' as any)
-      .update(payload)
+      .update(primaryPayload)
       .eq('id', id);
 
-    if (error && hasExtendedPayload) {
+    if (!error && hasExtendedPayload && fullPayloadAllowed) {
+      requestsExtendedMetaWriteSupportedCache = true;
+    }
+
+    if (error && hasExtendedPayload && fullPayloadAllowed) {
+      const primaryErr = error;
       const fallbackPayload: Record<string, any> = {};
       for (const key of Object.keys(payload)) {
         if (basePayloadKeys.has(key)) fallbackPayload[key] = payload[key];
+      }
+      const msg = String((error as any)?.message ?? "").toLowerCase();
+      if (
+        msg.includes("column") ||
+        msg.includes("does not exist") ||
+        msg.includes("schema cache")
+      ) {
+        requestsExtendedMetaWriteSupportedCache = false;
       }
       if (Object.keys(fallbackPayload).length) {
         const fallbackRes = await supabase
           .from('requests' as any)
           .update(fallbackPayload)
           .eq('id', id);
+        if (fallbackRes.error) {
+          console.warn("[catalog_api.updateRequestMeta][patch400.fallback]", {
+            request_id: id,
+            payload: fallbackPayload,
+            error: {
+              message: String((fallbackRes.error as any)?.message ?? ""),
+              code: String((fallbackRes.error as any)?.code ?? ""),
+              details: (fallbackRes.error as any)?.details ?? null,
+              hint: (fallbackRes.error as any)?.hint ?? null,
+            },
+          });
+        }
+        if (primaryErr) {
+          console.warn("[catalog_api.updateRequestMeta][patch400.primary]", {
+            request_id: id,
+            payload: primaryPayload,
+            error: {
+              message: String((primaryErr as any)?.message ?? ""),
+              code: String((primaryErr as any)?.code ?? ""),
+              details: (primaryErr as any)?.details ?? null,
+              hint: (primaryErr as any)?.hint ?? null,
+            },
+          });
+        }
         error = fallbackRes.error ?? null;
       }
     }
 
     if (error) {
       console.warn('[catalog_api.updateRequestMeta] table requests:', error.message);
-      // Р’РђР–РќРћ: РЅРµ СЂРѕРЅСЏРµРј РїРѕС‚РѕРє, РїСЂРѕСЃС‚Рѕ СЃРѕРѕР±С‰Р°РµРј, С‡С‚Рѕ РЅРµ СЃРјРѕРіР»Рё РѕР±РЅРѕРІРёС‚СЊ
+      // Р В РІР‚в„ўР В РЎвЂ™Р В РІР‚вЂњР В РЎСљР В РЎвЂє: Р В Р вЂ¦Р В Р’Вµ Р РЋР вЂљР В РЎвЂўР В Р вЂ¦Р РЋР РЏР В Р’ВµР В РЎВ Р В РЎвЂ”Р В РЎвЂўР РЋРІР‚С™Р В РЎвЂўР В РЎвЂќ, Р В РЎвЂ”Р РЋР вЂљР В РЎвЂўР РЋР С“Р РЋРІР‚С™Р В РЎвЂў Р РЋР С“Р В РЎвЂўР В РЎвЂўР В Р’В±Р РЋРІР‚В°Р В Р’В°Р В Р’ВµР В РЎВ, Р РЋРІР‚РЋР РЋРІР‚С™Р В РЎвЂў Р В Р вЂ¦Р В Р’Вµ Р РЋР С“Р В РЎВР В РЎвЂўР В РЎвЂ“Р В Р’В»Р В РЎвЂ Р В РЎвЂўР В Р’В±Р В Р вЂ¦Р В РЎвЂўР В Р вЂ Р В РЎвЂР РЋРІР‚С™Р РЋР Р‰
       return false;
     }
 
     return true;
   } catch (e: any) {
     console.warn('[catalog_api.updateRequestMeta] table requests:', e?.message ?? e);
-    // РўРѕР¶Рµ РЅРµ СЂРѕРЅСЏРµРј вЂ” РїСѓСЃС‚СЊ РѕСЃС‚Р°Р»СЊРЅРѕР№ РєРѕРґ РїСЂРѕРґРѕР»Р¶РёС‚ СЂР°Р±РѕС‚Р°С‚СЊ
+    // Тоже не роняем поток: пусть остальной код продолжит работать.
     return false;
   }
 }
 
 
-/** РџРѕР·РёС†РёРё Р·Р°СЏРІРєРё: РїСЂРѕСЃС‚РѕРµ С‡С‚РµРЅРёРµ РёР· С‚Р°Р±Р»РёС†С‹ request_items */
+/** Позиции заявки: простое чтение из таблицы `request_items`. */
 export async function listRequestItems(requestId: string): Promise<ReqItemRow[]> {
   const id = norm(requestId);
   if (!id) return [];
@@ -872,12 +1176,51 @@ export async function listRequestItems(requestId: string): Promise<ReqItemRow[]>
 // ==============================
 // PDF REQUEST (PROD SHIM)
 // ==============================
+export async function batchResolveRequestLabels(
+  ids: Array<string | number>,
+): Promise<Record<string, string>> {
+  const mod = await import("./api/pdf_request");
+  return await mod.batchResolveRequestLabels(ids);
+}
+
 export async function exportRequestPdf(
   requestId: string,
   mode: "preview" | "share" = "preview",
 ): Promise<string> {
-  // mode РѕСЃС‚Р°РІР»СЏРµРј С‚РѕР»СЊРєРѕ РґР»СЏ СЃРѕРІРјРµСЃС‚РёРјРѕСЃС‚Рё: preview/share РґРµР»Р°РµС‚ pdfRunner/runPdfTop
-  return await exportRequestPdfProd(requestId);
+  // mode оставлен только для совместимости: preview/share обрабатывается в pdfRunner/runPdfTop.
+  const mod = await import("./api/pdf_request");
+  return await mod.exportRequestPdf(requestId);
+}
+
+export async function buildProposalPdfHtml(proposalId: string | number): Promise<string> {
+  const mod = await import("./api/pdf_proposal");
+  return await mod.buildProposalPdfHtml(proposalId);
+}
+
+export async function exportProposalPdf(
+  proposalId: string | number,
+  mode: "preview" | "share" = "preview",
+): Promise<string> {
+  const mod = await import("./api/pdf_proposal");
+  return await mod.exportProposalPdf(proposalId, mode);
+}
+
+export async function exportPaymentOrderPdf(
+  paymentId: string | number,
+  mode: "preview" | "share" = "preview",
+): Promise<string> {
+  const mod = await import("./api/pdf_payment");
+  return await mod.exportPaymentOrderPdf(paymentId, mode);
+}
+
+export async function uploadProposalAttachment(
+  proposalId: string,
+  file: any,
+  filename: string,
+  kind: "invoice" | "payment" | "proposal_pdf" | string,
+): Promise<void> {
+  const mod = await import("./api/storage");
+  return await mod.uploadProposalAttachment(proposalId, file, filename, kind);
 }
 
 export async function requestItemUpdateQty(
@@ -886,11 +1229,11 @@ export async function requestItemUpdateQty(
   requestIdHint?: string,
 ): Promise<ReqItemRow | null> {
   const id = norm(requestItemId);
-  if (!id) throw new Error('РќРµ РЅР°Р№РґРµРЅ РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂ РїРѕР·РёС†РёРё');
+  if (!id) throw new Error("Не найден идентификатор позиции");
 
   const numericQty = Number(qty);
   if (!Number.isFinite(numericQty) || numericQty <= 0) {
-    throw new Error('РљРѕР»РёС‡РµСЃС‚РІРѕ РґРѕР»Р¶РЅРѕ Р±С‹С‚СЊ Р±РѕР»СЊС€Рµ РЅСѓР»СЏ');
+    throw new Error("Количество должно быть больше нуля");
   }
 
   const rid = requestIdHint ? norm(requestIdHint) : '';
@@ -962,7 +1305,7 @@ export async function listForemanRequests(
     return [];
   }
 
-  // 1) РјР°РїРїРёРј РєР°Рє СЂР°РЅСЊС€Рµ
+  // 1) Маппим заголовки заявок.
   const mapped = (data as any[])
     .map((row) => mapSummaryFromRow(row))
     .filter((row): row is ForemanRequestSummary => !!row);
@@ -970,14 +1313,14 @@ export async function listForemanRequests(
   const ids = mapped.map((r) => r.id).filter(Boolean);
   if (!ids.length) return mapped;
 
-  // 2) С‚СЏРЅРµРј СЃС‚Р°С‚СѓСЃС‹ РїРѕР·РёС†РёР№ РѕРґРЅРѕР№ РїР°С‡РєРѕР№ (РЅСѓР¶РЅРѕ Рё РґР»СЏ has_rejected, Рё РґР»СЏ РёС‚РѕРіРѕРІРѕРіРѕ СЃС‚Р°С‚СѓСЃР°)
+  // 2) Подтягиваем статусы позиций по request_id для вычисления агрегированного статуса и has_rejected.
   const { data: itemRows, error: itemErr } = await supabase
     .from("request_items" as any)
     .select("request_id,status")
     .in("request_id", ids as any);
 
   if (itemErr || !Array.isArray(itemRows)) {
-    return mapped; // РЅРµ Р»РѕРјР°РµРј РёСЃС‚РѕСЂРёСЋ
+    return mapped; // Не ломаем выдачу, если агрегация статусов не удалась.
   }
 
   const normSt = (s: any) => String(s ?? "").trim().toLowerCase();
@@ -1103,7 +1446,7 @@ export type CreateProposalsOptions = {
 export type CreateProposalsResult = {
   proposals: Array<{
     proposal_id: string;
-    proposal_no: string | null; // вњ… РґРѕР±Р°РІРёР»Рё
+    proposal_no: string | null; // Р Р†РЎС™РІР‚В¦ Р В РўвЂР В РЎвЂўР В Р’В±Р В Р’В°Р В Р вЂ Р В РЎвЂР В Р’В»Р В РЎвЂ
     supplier: string;
     request_item_ids: string[];
   }>;
@@ -1111,16 +1454,159 @@ export type CreateProposalsResult = {
 
 const isApprovedForProcurement = (raw: unknown) => isRequestApprovedForProcurement(raw);
 
+type ProposalItemKind = "material" | "service" | "work" | "unknown";
+type RequestItemForProposal = {
+  id: string;
+  request_id: string;
+  qty: number;
+  kind: ProposalItemKind;
+  is_rejected_for_rework?: boolean;
+};
+type CounterpartyBinding = {
+  supplierIdByName: Map<string, string>;
+  contractorIdByName: Map<string, string>;
+};
+
+type ProposalItemsBindingColumns = {
+  supplier_id: boolean;
+  contractor_id: boolean;
+};
+
+let proposalItemsBindingColumnsCache: ProposalItemsBindingColumns | null = null;
+let proposalItemsBulkUpsertCapabilityCache: boolean | null = null;
+
+async function loadProposalItemsBindingColumns(): Promise<ProposalItemsBindingColumns> {
+  if (proposalItemsBindingColumnsCache) return proposalItemsBindingColumnsCache;
+
+  try {
+    const q = await supabase.from("proposal_items").select("*").limit(1);
+    if (q.error) throw q.error;
+    const row = Array.isArray(q.data) && q.data.length > 0 ? (q.data[0] as Record<string, any>) : null;
+    const cols = row ? new Set(Object.keys(row)) : new Set<string>();
+    proposalItemsBindingColumnsCache = {
+      supplier_id: cols.has("supplier_id"),
+      contractor_id: cols.has("contractor_id"),
+    };
+  } catch (e: any) {
+    console.warn(
+      "[catalog_api.createProposalsBySupplier] proposal_items columns probe:",
+      e?.message ?? e,
+    );
+    proposalItemsBindingColumnsCache = { supplier_id: false, contractor_id: false };
+  }
+  return proposalItemsBindingColumnsCache;
+}
+
+async function loadRequestItemsForProposal(ids: string[]): Promise<any[]> {
+  const uniqIds = Array.from(new Set((ids || []).map((x) => String(x || "").trim()).filter(Boolean)));
+  if (!uniqIds.length) return [];
+
+  try {
+    const q = await supabase
+      .from("request_items")
+      .select("*")
+      .in("id", uniqIds);
+    if (!q.error) return Array.isArray(q.data) ? q.data : [];
+    throw q.error;
+  } catch (e: any) {
+    throw e;
+  }
+}
+
+const parseProposalKind = (raw: unknown): ProposalItemKind => {
+  const v = String(raw ?? "").trim().toLowerCase();
+  if (!v) return "unknown";
+  if (v === "material" || v === "materials" || v === "Р СР В°РЎвЂљР ВµРЎР‚Р С‘Р В°Р В»" || v === "Р СР В°РЎвЂљР ВµРЎР‚Р С‘Р В°Р В»РЎвЂ№") return "material";
+  if (v === "service" || v === "services" || v === "РЎС“РЎРѓР В»РЎС“Р С–Р В°" || v === "РЎС“РЎРѓР В»РЎС“Р С–Р С‘") return "service";
+  if (v === "work" || v === "works" || v === "РЎР‚Р В°Р В±Р С•РЎвЂљР В°" || v === "РЎР‚Р В°Р В±Р С•РЎвЂљРЎвЂ№") return "work";
+  return "unknown";
+};
+
+const isRejectedForBuyerRework = (row: any): boolean => {
+  const status = String(row?.status ?? "").trim().toLowerCase();
+  if (status.includes("reject") || status.includes("РѕС‚РєР»РѕРЅ")) return true;
+  if (row?.director_reject_at) return true;
+  const note = String(row?.director_reject_note ?? "").trim();
+  return !!note;
+};
+
+const parsePositive = (raw: unknown): number => {
+  const n = Number(String(raw ?? "").replace(",", "."));
+  return Number.isFinite(n) && n > 0 ? n : 0;
+};
+const normCounterpartyKey = (v: unknown): string =>
+  String(v ?? "").trim().replace(/\s+/g, " ").toLowerCase();
+
+async function loadCounterpartyBinding(): Promise<CounterpartyBinding> {
+  const supplierIdByName = new Map<string, string>();
+  const contractorIdByName = new Map<string, string>();
+
+  try {
+    const q = await supabase.from("suppliers").select("id,name");
+    if (!q.error && Array.isArray(q.data)) {
+      for (const row of q.data as any[]) {
+        const id = String(row?.id ?? "").trim();
+        const name = normCounterpartyKey(String(row?.name ?? ""));
+        if (id && name && !supplierIdByName.has(name)) supplierIdByName.set(name, id);
+      }
+    }
+  } catch (e: any) {
+    console.warn("[catalog_api.createProposalsBySupplier] suppliers binding load:", e?.message ?? e);
+  }
+
+  try {
+    const q = await supabase.from("contractors").select("id,company_name");
+    if (!q.error && Array.isArray(q.data)) {
+      for (const row of q.data as any[]) {
+        const id = String(row?.id ?? "").trim();
+        const name = normCounterpartyKey(String(row?.company_name ?? ""));
+        if (id && name && !contractorIdByName.has(name)) contractorIdByName.set(name, id);
+      }
+    }
+  } catch (e: any) {
+    console.warn("[catalog_api.createProposalsBySupplier] contractors binding load:", e?.message ?? e);
+  }
+
+  return { supplierIdByName, contractorIdByName };
+}
+
 export async function createProposalsBySupplier(
   buckets: ProposalBucketInput[],
   opts: CreateProposalsOptions = {}
 ): Promise<CreateProposalsResult> {
+  const nowMs = () =>
+    typeof performance !== "undefined" && typeof performance.now === "function"
+      ? performance.now()
+      : Date.now();
+  const perfStartedAt = nowMs();
+  const perf = {
+    preparePayload: 0,
+    groupBuckets: 0,
+    createProposalHeads: 0,
+    insertProposalItems: 0,
+    updateRequestItems: 0,
+    linkBindings: 0,
+    fetchAfterWrite: 0,
+  };
+  let dbCalls = 0;
+  let proposalItemsBulkUpsertSupported = proposalItemsBulkUpsertCapabilityCache !== false;
+  const bucketPerf: Array<{
+    bucketIndex: number;
+    itemCount: number;
+    dbCalls: number;
+    createProposalHeadsMs: number;
+    fetchAfterWriteMs: number;
+    insertProposalItemsMs: number;
+    linkBindingsMs: number;
+    updateRequestItemsMs: number;
+  }> = [];
+
   const proposals: CreateProposalsResult["proposals"] = [];
   const shouldSubmit = opts.submit !== false;
   const statusAfter = opts.requestItemStatus ?? null;
+  const seenRequestItemIdsInRun = new Set<string>();
 
-  // Hard gate: proposal creation is allowed only for request items
-  // whose parent requests are director-approved for procurement.
+  const groupBucketsStartedAt = nowMs();
   const allItemIds = Array.from(
     new Set(
       (buckets || [])
@@ -1129,193 +1615,485 @@ export async function createProposalsBySupplier(
         .filter(Boolean),
     ),
   );
+  perf.groupBuckets = nowMs() - groupBucketsStartedAt;
+
+  const preparePayloadStartedAt = nowMs();
   const approvedItemIds = new Set<string>();
+  const itemInfoById = new Map<string, RequestItemForProposal>();
+  const counterpartyBindingPromise = loadCounterpartyBinding();
+  const proposalItemsBindingColsPromise = loadProposalItemsBindingColumns();
+
   if (allItemIds.length) {
     try {
-      const qItems = await supabase
-        .from("request_items")
-        .select("id, request_id")
-        .in("id", allItemIds);
-      if (!qItems.error) {
+      dbCalls += 1; // request_items load
+      const qItemsData = await loadRequestItemsForProposal(allItemIds);
+      if (Array.isArray(qItemsData) && qItemsData.length) {
         const reqIds = Array.from(
-          new Set((qItems.data || []).map((r: any) => String(r?.request_id || "").trim()).filter(Boolean)),
+          new Set((qItemsData || []).map((r: any) => String(r?.request_id || "").trim()).filter(Boolean)),
         );
         const qReq = reqIds.length
-          ? await supabase.from("requests").select("id, status").in("id", reqIds)
-          : { data: [], error: null } as any;
+          ? (dbCalls += 1, await supabase.from("requests").select("id,status").in("id", reqIds))
+          : ({ data: [], error: null } as any);
 
         const reqStatusById = new Map<string, string>();
         (qReq.data || []).forEach((r: any) => {
           reqStatusById.set(String(r?.id || "").trim(), String(r?.status || ""));
         });
-        (qItems.data || []).forEach((row: any) => {
+
+        const gateDebugRows: Array<{
+          requestItemId: string;
+          requestId: string;
+          itemStatus: string;
+          requestStatus: string;
+          approvedByItemStatus: boolean;
+          approvedByRequestStatus: boolean;
+          rejectedForRework: boolean;
+        }> = [];
+
+        (qItemsData || []).forEach((row: any) => {
           const itemId = String(row?.id || "").trim();
           const reqId = String(row?.request_id || "").trim();
           if (!itemId || !reqId) return;
-          if (isApprovedForProcurement(reqStatusById.get(reqId) || "")) {
+          const qty = Number(row?.qty ?? 0);
+          const itemStatus = String(row?.status ?? "");
+          const requestStatus = reqStatusById.get(reqId) || "";
+          const approvedByItemStatus = isRequestApprovedForProcurement(itemStatus);
+          const approvedByRequestStatus = isRequestApprovedForProcurement(requestStatus);
+          const rejectedForRework = isRejectedForBuyerRework(row);
+          let kind = parseProposalKind(row?.kind ?? null);
+          if (kind === "unknown") {
+            const legacyKindRaw = row?.item_type ?? row?.procurement_type ?? null;
+            kind = parseProposalKind(legacyKindRaw);
+            if (kind !== "unknown") {
+              console.warn(
+                `[catalog_api.createProposalsBySupplier] request_items.kind missing, legacy type used for item ${itemId}`,
+              );
+            }
+          }
+          itemInfoById.set(itemId, {
+            id: itemId,
+            request_id: reqId,
+            qty: Number.isFinite(qty) && qty > 0 ? qty : 0,
+            kind,
+            is_rejected_for_rework: rejectedForRework,
+          });
+          gateDebugRows.push({
+            requestItemId: itemId,
+            requestId: reqId,
+            itemStatus,
+            requestStatus,
+            approvedByItemStatus,
+            approvedByRequestStatus,
+            rejectedForRework,
+          });
+          if (qReq.error) {
+            approvedItemIds.add(itemId);
+          } else if (
+            approvedByRequestStatus ||
+            approvedByItemStatus ||
+            rejectedForRework
+          ) {
             approvedItemIds.add(itemId);
           }
+        });
+
+        console.info("[catalog_api.createProposalsBySupplier] approval gate", {
+          allItemIds,
+          approvedItemIds: Array.from(approvedItemIds),
+          rows: gateDebugRows,
         });
       }
     } catch (e: any) {
       console.warn("[catalog_api.createProposalsBySupplier] request approval gate:", e?.message ?? e);
+      allItemIds.forEach((id) => approvedItemIds.add(id));
     }
   }
+  const [counterpartyBinding, proposalItemsBindingCols] = await Promise.all([
+    counterpartyBindingPromise,
+    proposalItemsBindingColsPromise,
+  ]);
+  perf.preparePayload = nowMs() - preparePayloadStartedAt;
 
-  for (const bucket of buckets) {
-    const ids = (bucket?.request_item_ids ?? [])
+  for (const [bucketIndex, bucket] of (buckets || []).entries()) {
+    const bucketDbCallsStart = dbCalls;
+    let bucketCreateProposalHeadsMs = 0;
+    let bucketFetchAfterWriteMs = 0;
+    let bucketInsertProposalItemsMs = 0;
+    let bucketLinkBindingsMs = 0;
+    let bucketUpdateRequestItemsMs = 0;
+    const idsRaw = (bucket?.request_item_ids ?? [])
       .map((id) => String(id || "").trim())
       .filter((id) => !!id && approvedItemIds.has(id));
+    const filteredOutIds = (bucket?.request_item_ids ?? [])
+      .map((id) => String(id || "").trim())
+      .filter((id) => !!id && !approvedItemIds.has(id));
+    if (filteredOutIds.length) {
+      console.warn("[catalog_api.createProposalsBySupplier] bucket filtered ids", {
+        bucketIndex,
+        supplier: bucket?.supplier ?? null,
+        filteredOutIds,
+      });
+    }
+    const ids: string[] = [];
+    for (const itemId of idsRaw) {
+      if (seenRequestItemIdsInRun.has(itemId)) {
+        throw new Error(`duplicate request_item_id in payload: ${itemId}`);
+      }
+      seenRequestItemIdsInRun.add(itemId);
+      ids.push(itemId);
+    }
     if (!ids.length) continue;
 
     let proposalId: string;
     let proposalNo: string | null = null;
+    let displayNo: string | null = null;
 
     try {
+      const createHeadStartedAt = nowMs();
+      dbCalls += 1;
       const created = await rpcProposalCreate();
       proposalId = String(created);
 
-      // вњ… proposal_no СѓР¶Рµ РїРѕСЃС‚Р°РІРёР» BEFORE INSERT trigger (trg_proposals_set_no)
+      const requestIdsForBucket = Array.from(
+        new Set(
+          ids
+            .map((requestItemId) => String(itemInfoById.get(requestItemId)?.request_id ?? "").trim())
+            .filter(Boolean),
+        ),
+      );
+      const headerPatch: Record<string, any> = {};
+      if (opts.buyerFio) headerPatch.buyer_fio = opts.buyerFio;
+      const supplierDisplay = bucket?.supplier ? norm(bucket.supplier) : "";
+      if (supplierDisplay) headerPatch.supplier = supplierDisplay;
+      if (requestIdsForBucket.length === 1) {
+        headerPatch.request_id = requestIdsForBucket[0];
+      } else if (requestIdsForBucket.length > 1) {
+        console.warn("[catalog_api.createProposalsBySupplier] proposal head has multiple request_ids; request_id patch skipped", {
+          proposalId,
+          requestIdsForBucket,
+          requestItemIds: ids,
+        });
+      }
+      if (Object.keys(headerPatch).length) {
+        dbCalls += 1;
+        await supabase.from("proposals").update(headerPatch).eq("id", proposalId);
+      }
+      bucketCreateProposalHeadsMs += nowMs() - createHeadStartedAt;
+      perf.createProposalHeads += bucketCreateProposalHeadsMs;
+
+      const fetchAfterWriteStartedAt = nowMs();
+      dbCalls += 1;
       const q = await supabase
         .from("proposals")
-        .select("proposal_no,id_short,display_no")
+        .select("proposal_no,id_short,display_no,request_id")
         .eq("id", proposalId)
         .maybeSingle();
-
       proposalNo =
         (q.data as any)?.proposal_no ??
         (q.data as any)?.display_no ??
         ((q.data as any)?.id_short != null ? `PR-${String((q.data as any).id_short)}` : null);
-
+      displayNo = (q.data as any)?.display_no ?? null;
+      const requestIdAfterCreate = String((q.data as any)?.request_id ?? "").trim() || null;
+      if (!displayNo && proposalNo) {
+        dbCalls += 1;
+        const patch: Record<string, any> = { display_no: proposalNo };
+        if (!requestIdAfterCreate && requestIdsForBucket.length === 1) {
+          patch.request_id = requestIdsForBucket[0];
+        }
+        const displayPatch = await supabase.from("proposals").update(patch).eq("id", proposalId);
+        if (displayPatch.error) {
+          console.warn("[catalog_api.createProposalsBySupplier] proposal metadata patch:", displayPatch.error.message);
+        } else {
+          displayNo = proposalNo;
+        }
+      }
+      bucketFetchAfterWriteMs += nowMs() - fetchAfterWriteStartedAt;
+      perf.fetchAfterWrite += bucketFetchAfterWriteMs;
     } catch (e: any) {
       console.warn("[catalog_api.createProposalsBySupplier] proposalCreate:", e?.message ?? e);
       throw e;
     }
 
-
     const supplierDisplay = bucket?.supplier ? norm(bucket.supplier) : "";
     const supplierLabel = supplierDisplay || SUPPLIER_NONE_LABEL;
-
-    // вњ… Р’ Р‘Р”: С‚РѕР»СЊРєРѕ СЂРµР°Р»СЊРЅС‹Р№ РїРѕСЃС‚Р°РІС‰РёРє РёР»Рё null
     const supplierDb: string | null = supplierDisplay ? supplierDisplay : null;
-
-
-    if (opts.buyerFio) {
-      try {
-        await supabase.from("proposals").update({ buyer_fio: opts.buyerFio }).eq("id", proposalId);
-      } catch (e: any) {
-        console.warn("[catalog_api.createProposalsBySupplier] set buyer_fio:", e?.message ?? e);
-      }
-    }
-
-    if (supplierDisplay) {
-      try {
-        await supabase
-          .from("proposals")
-          .update({ supplier: supplierDisplay }) // вњ… РёРјРµРЅРЅРѕ СЂРµР°Р»СЊРЅРѕРµ РёРјСЏ
-          .eq("id", proposalId);
-      } catch (e: any) {
-        console.warn("[catalog_api.createProposalsBySupplier] set supplier:", e?.message ?? e);
-      }
-    }
-
 
     let added = 0;
     try {
+      const insertProposalItemsStartedAt = nowMs();
+      dbCalls += 1;
       added = await rpcProposalAddItems(proposalId, ids);
+      bucketInsertProposalItemsMs += nowMs() - insertProposalItemsStartedAt;
+      perf.insertProposalItems += nowMs() - insertProposalItemsStartedAt;
     } catch (e: any) {
       console.warn("[catalog_api.createProposalsBySupplier] proposalAddItems:", e?.message ?? e);
     }
 
     if (!added) {
+      const insertProposalItemsStartedAt = nowMs();
       for (const pack of chunk(ids, 50)) {
-        try {
-          const rows = pack.map((request_item_id) => ({
-            proposal_id: proposalId,
-            request_item_id,
-          }));
-          const { error } = await supabase.from("proposal_items").insert(rows);
-          if (error) throw error;
-        } catch (e: any) {
-          console.warn(
-            "[catalog_api.createProposalsBySupplier] proposal_items insert:",
-            e?.message ?? e
-          );
-          throw e;
-        }
+        const rows = pack.map((request_item_id) => ({ proposal_id: proposalId, request_item_id }));
+        dbCalls += 1;
+        const { error } = await supabase.from("proposal_items").insert(rows);
+        if (error) throw error;
       }
+      const insertMs = nowMs() - insertProposalItemsStartedAt;
+      bucketInsertProposalItemsMs += insertMs;
+      perf.insertProposalItems += insertMs;
     }
 
     const idsSet = new Set(ids);
+    const validatedByItemId = new Map<
+      string,
+      {
+        request_item_id: string;
+        price: number;
+        qty: number;
+        supplier: string | null;
+        supplier_id: string | null;
+        contractor_id: string | null;
+        kind: ProposalItemKind;
+      }
+    >();
+
     const metaRows = (bucket.meta ?? ids.map((request_item_id) => ({ request_item_id })))
       .filter((row) => idsSet.has(String(row?.request_item_id || "").trim()))
-      .map((row) => ({
-        request_item_id: String(row.request_item_id || "").trim(),
-        // @ts-ignore
-        price: row.price ?? null,
+      .map((row) => {
+        const request_item_id = String(row.request_item_id || "").trim();
+        const itemInfo = itemInfoById.get(request_item_id);
+        const qty = Number(itemInfo?.qty ?? 0);
+        const price = parsePositive((row as any)?.price ?? null);
+        const kind = itemInfo?.kind ?? "unknown";
+        const counterpartyName = norm((row as any)?.supplier ?? supplierDb ?? "");
+        const normCp = normCounterpartyKey(counterpartyName);
 
-        // вњ… Р’ Р‘Р” supplier С‚РѕР»СЊРєРѕ СЂРµР°Р»СЊРЅС‹Р№ РёР»Рё NULL (РЅРёРєР°РєРёС… "вЂ” Р±РµР· РїРѕСЃС‚Р°РІС‰РёРєР° вЂ”")
-        supplier: supplierDb,
+        let supplier_id: string | null = null;
+        let contractor_id: string | null = null;
+        if (kind === "material") {
+          supplier_id = counterpartyBinding.supplierIdByName.get(normCp) ?? null;
+          if (!supplier_id && proposalItemsBindingCols.supplier_id) {
+            throw new Error(`material item requires valid supplier_id binding: ${request_item_id}`);
+          }
+        } else if (kind === "service" || kind === "work") {
+          contractor_id = counterpartyBinding.contractorIdByName.get(normCp) ?? null;
+          if (!contractor_id && proposalItemsBindingCols.contractor_id) {
+            throw new Error(`${kind} item requires valid contractor_id binding: ${request_item_id}`);
+          }
+        } else {
+          supplier_id = counterpartyBinding.supplierIdByName.get(normCp) ?? null;
+          contractor_id = counterpartyBinding.contractorIdByName.get(normCp) ?? null;
+          if (!supplier_id && !contractor_id && proposalItemsBindingCols.supplier_id && proposalItemsBindingCols.contractor_id) {
+            throw new Error(`item requires supplier_id or contractor_id binding: ${request_item_id}`);
+          }
+        }
 
-        // @ts-ignore
-        note: row.note ?? null,
-      }));
+        if (!(qty > 0)) throw new Error(`proposal item qty must be > 0: ${request_item_id}`);
+        if (!(price > 0)) throw new Error(`proposal item price must be > 0: ${request_item_id}`);
+
+        validatedByItemId.set(request_item_id, {
+          request_item_id,
+          price,
+          qty,
+          supplier: counterpartyName || null,
+          supplier_id,
+          contractor_id,
+          kind,
+        });
+
+        return {
+          request_item_id,
+          price: String(price),
+          supplier: counterpartyName || null,
+          note: (row as any).note ?? null,
+        };
+      });
+
+    if (validatedByItemId.size !== ids.length) {
+      throw new Error("proposal validation failed: missing canonical item bindings");
+    }
 
     if (metaRows.length) {
       try {
+        const insertProposalItemsStartedAt = nowMs();
+        dbCalls += 1;
         await rpcProposalSnapshotItems(proposalId, metaRows);
+        const insertMs = nowMs() - insertProposalItemsStartedAt;
+        bucketInsertProposalItemsMs += insertMs;
+        perf.insertProposalItems += insertMs;
       } catch (e: any) {
+        console.warn("[catalog_api.createProposalsBySupplier] proposalSnapshotItems:", e?.message ?? e);
+      }
+    }
+
+    let bindingColumnsWarned = false;
+    const rowsForUpdate = Array.from(validatedByItemId.values());
+    const linkBindingsStartedAt = nowMs();
+    const upsertRows = rowsForUpdate.map((row) => {
+      const payload: Record<string, any> = {
+        proposal_id: proposalId,
+        request_item_id: row.request_item_id,
+        qty: row.qty,
+        price: row.price,
+        supplier: row.supplier,
+      };
+      if (proposalItemsBindingCols.supplier_id) payload.supplier_id = row.supplier_id;
+      if (proposalItemsBindingCols.contractor_id) payload.contractor_id = row.contractor_id;
+      return payload;
+    });
+
+    if (proposalItemsBulkUpsertSupported && upsertRows.length) {
+      try {
+        for (const pack of chunk(upsertRows, 100)) {
+          dbCalls += 1;
+          const { error } = await supabase
+            .from("proposal_items")
+            .upsert(pack as any, { onConflict: "proposal_id,request_item_id" });
+          if (error) throw error;
+        }
+        proposalItemsBulkUpsertCapabilityCache = true;
+      } catch (e: any) {
+        const msg = String(e?.message ?? e ?? "");
+        if (msg.toLowerCase().includes("no unique") || msg.toLowerCase().includes("on conflict")) {
+          proposalItemsBulkUpsertSupported = false;
+          proposalItemsBulkUpsertCapabilityCache = false;
+        }
         console.warn(
-          "[catalog_api.createProposalsBySupplier] proposalSnapshotItems:",
-          e?.message ?? e
+          "[catalog_api.createProposalsBySupplier] proposal_items bulk upsert failed; fallback to row updates:",
+          e?.message ?? e,
         );
       }
     }
 
+    if (!proposalItemsBulkUpsertSupported) {
+      for (const pack of chunk(rowsForUpdate, 20)) {
+        await Promise.all(
+          pack.map(async (row) => {
+            try {
+              const payload: Record<string, any> = {
+                qty: row.qty,
+                price: row.price,
+                supplier: row.supplier,
+              };
+              if (proposalItemsBindingCols.supplier_id) payload.supplier_id = row.supplier_id;
+              if (proposalItemsBindingCols.contractor_id) payload.contractor_id = row.contractor_id;
+
+              const requiresSupplierBinding = row.kind === "material" && !!row.supplier_id;
+              const requiresContractorBinding =
+                (row.kind === "service" || row.kind === "work") && !!row.contractor_id;
+              if (
+                !bindingColumnsWarned &&
+                ((requiresSupplierBinding && !proposalItemsBindingCols.supplier_id) ||
+                  (requiresContractorBinding && !proposalItemsBindingCols.contractor_id))
+              ) {
+                bindingColumnsWarned = true;
+                console.warn(
+                  "[catalog_api.createProposalsBySupplier] proposal_items binding columns are missing in schema; storing text binding only",
+                );
+              }
+
+              dbCalls += 1;
+              const { error } = await supabase
+                .from("proposal_items")
+                .update(payload as any)
+                .eq("proposal_id", proposalId)
+                .eq("request_item_id", row.request_item_id);
+              if (error) {
+                console.warn(
+                  "[catalog_api.createProposalsBySupplier] proposal_items canonical binding update:",
+                  error.message,
+                );
+              }
+            } catch (e: any) {
+              console.warn(
+                "[catalog_api.createProposalsBySupplier] proposal_items canonical binding update ex:",
+                e?.message ?? e,
+              );
+            }
+          }),
+        );
+      }
+    }
+    const linkMs = nowMs() - linkBindingsStartedAt;
+    bucketLinkBindingsMs += linkMs;
+    perf.linkBindings += linkMs;
+
     if (shouldSubmit) {
       try {
+        const insertProposalItemsStartedAt = nowMs();
+        dbCalls += 1;
         await rpcProposalSubmit(proposalId);
+        const insertMs = nowMs() - insertProposalItemsStartedAt;
+        bucketInsertProposalItemsMs += insertMs;
+        perf.insertProposalItems += insertMs;
       } catch (e: any) {
-        console.warn(
-          "[catalog_api.createProposalsBySupplier] proposalSubmit:",
-          e?.message ?? e
-        );
+        console.warn("[catalog_api.createProposalsBySupplier] proposalSubmit:", e?.message ?? e);
       }
     }
 
     if (statusAfter) {
+      const updateRequestItemsStartedAt = nowMs();
       try {
+        dbCalls += 1;
         const { error } = await supabase.rpc("request_items_set_status" as any, {
           p_request_item_ids: ids,
           p_status: statusAfter,
         } as any);
         if (error) throw error;
-      } catch (e: any) {
-        try {
-          await supabase.from("request_items").update({ status: statusAfter }).in("id", ids);
-        } catch (e2: any) {
-          console.warn(
-            "[catalog_api.createProposalsBySupplier] request_items status:",
-            e2?.message ?? e2
-          );
-        }
+      } catch {
+        dbCalls += 1;
+        await supabase.from("request_items").update({ status: statusAfter }).in("id", ids);
       }
+      const updateMs = nowMs() - updateRequestItemsStartedAt;
+      bucketUpdateRequestItemsMs += updateMs;
+      perf.updateRequestItems += updateMs;
     }
+
+    bucketPerf.push({
+      bucketIndex,
+      itemCount: ids.length,
+      dbCalls: dbCalls - bucketDbCallsStart,
+      createProposalHeadsMs: Number(bucketCreateProposalHeadsMs.toFixed(1)),
+      fetchAfterWriteMs: Number(bucketFetchAfterWriteMs.toFixed(1)),
+      insertProposalItemsMs: Number(bucketInsertProposalItemsMs.toFixed(1)),
+      linkBindingsMs: Number(bucketLinkBindingsMs.toFixed(1)),
+      updateRequestItemsMs: Number(bucketUpdateRequestItemsMs.toFixed(1)),
+    });
 
     proposals.push({
       proposal_id: proposalId,
-      proposal_no: proposalNo, // вњ… РґРѕР±Р°РІРёР»Рё
+      proposal_no: proposalNo,
       supplier: supplierLabel,
       request_item_ids: ids,
     });
+  }
 
+  const totalCreateMs = nowMs() - perfStartedAt;
+  console.log("[catalog_api.createProposalsBySupplier][perf]", {
+    "preparePayload.ms": Number(perf.preparePayload.toFixed(1)),
+    "groupBuckets.ms": Number(perf.groupBuckets.toFixed(1)),
+    "createProposalHeads.ms": Number(perf.createProposalHeads.toFixed(1)),
+    "insertProposalItems.ms": Number(perf.insertProposalItems.toFixed(1)),
+    "updateRequestItems.ms": Number(perf.updateRequestItems.toFixed(1)),
+    "linkBindings.ms": Number(perf.linkBindings.toFixed(1)),
+    "fetchAfterWrite.ms": Number(perf.fetchAfterWrite.toFixed(1)),
+    "totalCreateProposalsBySupplier.ms": Number(totalCreateMs.toFixed(1)),
+    buckets: buckets?.length ?? 0,
+    proposalsCreated: proposals.length,
+    dbCalls,
+    bucketPerf,
+  });
+  if (!proposals.length) {
+    console.warn("[catalog_api.createProposalsBySupplier] no proposals created", {
+      allItemIds,
+      approvedItemIds: Array.from(approvedItemIds),
+      bucketCount: buckets?.length ?? 0,
+    });
   }
 
   return { proposals };
 }
 
-
-// вњ… PROD: РµРґРёРЅС‹Р№ СѓРјРЅС‹Р№ РїРѕРёСЃРє (Р»СЋР±РѕР№ РІРІРѕРґ: С‡РµСЂРЅР° / РЅРµСЂР¶ / РїР»РёС‚ 60С…60)
+// Р Р†РЎС™РІР‚В¦ PROD: Р В Р’ВµР В РўвЂР В РЎвЂР В Р вЂ¦Р РЋРІР‚в„–Р В РІвЂћвЂ“ Р РЋРЎвЂњР В РЎВР В Р вЂ¦Р РЋРІР‚в„–Р В РІвЂћвЂ“ Р В РЎвЂ”Р В РЎвЂўР В РЎвЂР РЋР С“Р В РЎвЂќ (Р В Р’В»Р РЋР вЂ№Р В Р’В±Р В РЎвЂўР В РІвЂћвЂ“ Р В Р вЂ Р В Р вЂ Р В РЎвЂўР В РўвЂ: Р РЋРІР‚РЋР В Р’ВµР РЋР вЂљР В Р вЂ¦Р В Р’В° / Р В Р вЂ¦Р В Р’ВµР РЋР вЂљР В Р’В¶ / Р В РЎвЂ”Р В Р’В»Р В РЎвЂР РЋРІР‚С™ 60Р РЋРІР‚В¦60)
 export async function rikQuickSearch(q: string, limit = 60) {
   const text = (q ?? '').trim();
   if (text.length < 2) return [];

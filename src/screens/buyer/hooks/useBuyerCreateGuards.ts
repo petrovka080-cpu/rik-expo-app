@@ -1,9 +1,12 @@
-import { useCallback } from "react";
+﻿import { useCallback } from "react";
 import type { Dispatch, SetStateAction } from "react";
 import { Alert } from "react-native";
 
 import type { BuyerGroup } from "../buyer.types";
 import type { BuyerInboxRow } from "../../../lib/catalog_api";
+import type { DraftAttachmentMap } from "../buyer.types";
+import { getBuyerItemProcurementType, getCounterpartyLabel } from "../procurementTyping";
+import { SUPP_NONE, normName } from "../buyerUtils";
 
 type AlertFn = (title: string, message?: string) => void;
 
@@ -11,6 +14,7 @@ export function useBuyerCreateGuards(params: {
   groups: BuyerGroup[];
   picked: Record<string, boolean>;
   meta: Record<string, { price?: number | string | null; supplier?: string | null }>;
+  attachments: DraftAttachmentMap;
   attachMissingCount: number;
   attachSlotsTotal: number;
   missingAttachSuppliers: string[];
@@ -22,6 +26,7 @@ export function useBuyerCreateGuards(params: {
     groups,
     picked,
     meta,
+    attachments,
     attachMissingCount,
     attachSlotsTotal,
     missingAttachSuppliers,
@@ -30,52 +35,85 @@ export function useBuyerCreateGuards(params: {
     alertUser,
   } = params;
 
+  const hasPositivePrice = (raw: unknown) => {
+    const n = Number(String(raw ?? "").replace(",", ".").trim());
+    return Number.isFinite(n) && n > 0;
+  };
+
   const validatePicked = useCallback(() => {
     const missing: string[] = [];
+    let missingSupplierCount = 0;
+    let missingPriceCount = 0;
+    let missingAttachmentCount = 0;
+
     for (const group of groups) {
       group.items.forEach((it, idx) => {
         const key = String(it.request_item_id || `${group.request_id}:${idx}`);
         if (!picked[key]) return;
         const itemMeta = meta[key] || {};
-        if (!itemMeta.price || !itemMeta.supplier) {
-          missing.push(`• ${formatRequestDisplay(group.request_id, group.request_id_old ?? null)}: ${it.name_human}`);
+        const counterpartyLabel = getCounterpartyLabel(getBuyerItemProcurementType(it));
+        const supplierLabel = String(itemMeta.supplier ?? "").trim();
+        const supplierKey = normName(supplierLabel) || SUPP_NONE;
+
+        if (!supplierLabel || supplierKey === (normName(SUPP_NONE) || SUPP_NONE)) {
+          missingSupplierCount += 1;
+          missing.push(
+            `• ${formatRequestDisplay(group.request_id, group.request_id_old ?? null)}: ${it.name_human} — Не выбран ${counterpartyLabel.toLowerCase()}`,
+          );
+        }
+
+        if (!hasPositivePrice(itemMeta.price)) {
+          missingPriceCount += 1;
+          missing.push(
+            `• ${formatRequestDisplay(group.request_id, group.request_id_old ?? null)}: ${it.name_human} — Не выбрана цена поставщика`,
+          );
+        }
+
+        if (supplierLabel && supplierKey !== (normName(SUPP_NONE) || SUPP_NONE) && !attachments?.[supplierKey]?.file) {
+          missingAttachmentCount += 1;
+          missing.push(
+            `• ${formatRequestDisplay(group.request_id, group.request_id_old ?? null)}: ${it.name_human} — Не выбраны вложения (${supplierLabel})`,
+          );
         }
       });
     }
+
     if (missing.length) {
       alertUser(
-        "Заполните данные",
-        `Укажи цену и поставщика:\n\n${missing.slice(0, 10).join("\n")}${missing.length > 10 ? "\n…" : ""}`
+        "Исправьте данные перед отправкой",
+        [
+          "Submit заблокирован.",
+          missingSupplierCount > 0 ? `• Не выбран поставщик/подрядчик: ${missingSupplierCount}` : null,
+          missingPriceCount > 0 ? `• Не выбрана цена поставщика: ${missingPriceCount}` : null,
+          missingAttachmentCount > 0 ? `• Не выбраны вложения: ${missingAttachmentCount}` : null,
+          "",
+          ...missing.slice(0, 12),
+          missing.length > 12 ? "…" : null,
+        ]
+          .filter(Boolean)
+          .join("\n"),
       );
       return false;
     }
     return true;
-  }, [groups, picked, meta, formatRequestDisplay, alertUser]);
+  }, [groups, picked, meta, attachments, formatRequestDisplay, alertUser]);
 
   const removeFromInboxLocally = useCallback(
     (ids: string[]) => {
       setRows((prev) => prev.filter((r) => !ids.includes(String(r.request_item_id))));
     },
-    [setRows]
+    [setRows],
   );
 
   const confirmSendWithoutAttachments = useCallback(async (): Promise<boolean> => {
     if (attachMissingCount === 0) return true;
     if (attachSlotsTotal === 0) return true;
-
-    const list = missingAttachSuppliers.slice(0, 3).join(", ");
-    const more = missingAttachSuppliers.length > 3 ? ` и ещё ${missingAttachSuppliers.length - 3}` : "";
-
-    return await new Promise<boolean>((resolve) => {
-      Alert.alert(
-        "Не все вложения прикреплены",
-        `Нет вложений для: ${list}${more}.\nПозиции этих поставщиков уйдут директору без вложений. Продолжить?`,
-        [
-          { text: "Отмена", style: "cancel", onPress: () => resolve(false) },
-          { text: "Отправить без части вложений", style: "destructive", onPress: () => resolve(true) },
-        ]
-      );
-    });
+    const list = missingAttachSuppliers.slice(0, 6).join(", ");
+    Alert.alert(
+      "Не выбраны вложения",
+      `Заполните обязательные вложения для поставщиков:\n${list}${missingAttachSuppliers.length > 6 ? ` и ещё ${missingAttachSuppliers.length - 6}` : ""}`,
+    );
+    return false;
   }, [attachMissingCount, attachSlotsTotal, missingAttachSuppliers]);
 
   return { validatePicked, removeFromInboxLocally, confirmSendWithoutAttachments };

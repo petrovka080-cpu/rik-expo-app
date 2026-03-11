@@ -5,6 +5,7 @@ import type { BuyerGroup, BuyerSheetKind, DraftAttachmentMap, LineMeta } from ".
 import type { StylesBag } from "../components/component.types";
 import { BuyerGroupBlock, BuyerItemRow } from "../buyer.components";
 import { mergeNote, normName, splitNote } from "../buyerUtils";
+import { getBuyerItemProcurementType, getCounterpartyLabel, getCounterpartyRoleGate } from "../procurementTyping";
 
 export function useBuyerInboxRenderers(params: {
   s: StylesBag;
@@ -13,7 +14,7 @@ export function useBuyerInboxRenderers(params: {
   lineTotal: (row: BuyerInboxRow) => number;
   togglePick: (row: BuyerInboxRow) => void;
   setLineMeta: (key: string, patch: Partial<LineMeta>) => void;
-  getSupplierSuggestions: (q: string) => string[];
+  getSupplierSuggestions: (q: string, roleGate?: "supplier" | "contractor" | null) => string[];
   suppliers: Supplier[];
   isSheetOpen: boolean;
   sheetKind: BuyerSheetKind;
@@ -25,6 +26,8 @@ export function useBuyerInboxRenderers(params: {
   attachments: DraftAttachmentMap;
   setAttachments: React.Dispatch<React.SetStateAction<DraftAttachmentMap>>;
   isWeb: boolean;
+  hasAnyCounterpartyOptions: boolean;
+  counterpartyHardFailure: boolean;
 }) {
   const {
     s,
@@ -45,6 +48,8 @@ export function useBuyerInboxRenderers(params: {
     attachments,
     setAttachments,
     isWeb,
+    hasAnyCounterpartyOptions,
+    counterpartyHardFailure,
   } = params;
 
   const renderItemRow = useCallback(
@@ -57,8 +62,13 @@ export function useBuyerInboxRenderers(params: {
       const prettyText = `${it.qty} ${it.uom || ""}`.trim();
       const rejectInfo = it as Partial<{ director_reject_at: unknown; director_reject_note: unknown }>;
       const rejectedByDirector = !!rejectInfo.director_reject_at || !!rejectInfo.director_reject_note;
+      const procurementType = getBuyerItemProcurementType(it);
+      const counterpartyLabel = getCounterpartyLabel(procurementType);
+      const roleGate = getCounterpartyRoleGate(procurementType);
 
-      const sugg = getSupplierSuggestions(String(m.supplier ?? ""));
+      // Keep full role-gated dropdown list even when a value is already selected.
+      // Filtering by current value collapses choices to a single previously picked supplier.
+      const sugg = getSupplierSuggestions("", roleGate);
 
       return (
         <BuyerItemRow
@@ -74,7 +84,10 @@ export function useBuyerInboxRenderers(params: {
           onSetPrice={(v) => setLineMeta(key, { price: v })}
           onSetSupplier={(v) => setLineMeta(key, { supplier: v })}
           onSetNote={(v) => setLineMeta(key, { note: v })}
+          counterpartyLabel={counterpartyLabel}
           supplierSuggestions={sugg}
+          hasAnyCounterpartyOptions={hasAnyCounterpartyOptions}
+          counterpartyHardFailure={counterpartyHardFailure}
           onPickSupplier={(name) => {
             const match = suppliers.find((sp) => normName(sp.name) === normName(name)) || null;
 
@@ -109,6 +122,8 @@ export function useBuyerInboxRenderers(params: {
       suppliers,
       isSheetOpen,
       sheetKind,
+      hasAnyCounterpartyOptions,
+      counterpartyHardFailure,
       s,
       setShowAttachBlock,
     ]

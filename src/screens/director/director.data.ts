@@ -47,6 +47,30 @@ export function useDirectorData({ supabase }: Deps) {
   const propReqIdsByPropRef = useRef<Record<string, string[]>>({});
   useEffect(() => { propReqIdsByPropRef.current = propReqIdsByProp; }, [propReqIdsByProp]);
   const requestDisplaySelectModeRef = useRef<"request_no+display_no" | "display_no_only">("request_no+display_no");
+  const requestNoCapabilityInFlightRef = useRef<Promise<"request_no+display_no" | "display_no_only"> | null>(null);
+
+  const resolveRequestDisplaySelectMode = useCallback(async (): Promise<"request_no+display_no" | "display_no_only"> => {
+    if (requestDisplaySelectModeRef.current === "display_no_only") return "display_no_only";
+    if (requestNoCapabilityInFlightRef.current) return requestNoCapabilityInFlightRef.current;
+
+    requestNoCapabilityInFlightRef.current = (async () => {
+      try {
+        const q = await supabase.from("requests").select("*").limit(1);
+        if (q.error) throw q.error;
+        const first =
+          Array.isArray(q.data) && q.data.length ? (q.data[0] as Record<string, unknown>) : null;
+        const hasRequestNo = !!first && Object.prototype.hasOwnProperty.call(first, "request_no");
+        requestDisplaySelectModeRef.current = hasRequestNo ? "request_no+display_no" : "display_no_only";
+      } catch {
+        requestDisplaySelectModeRef.current = "display_no_only";
+      } finally {
+        requestNoCapabilityInFlightRef.current = null;
+      }
+      return requestDisplaySelectModeRef.current;
+    })();
+
+    return requestNoCapabilityInFlightRef.current;
+  }, [supabase]);
 
   const preloadRequestMeta = useCallback(async (reqIds: string[]) => {
     const uniq = Array.from(new Set((reqIds || []).map(String).filter(Boolean)));
@@ -154,6 +178,7 @@ export function useDirectorData({ supabase }: Deps) {
     if (!needed.length) return;
 
     try {
+      await resolveRequestDisplaySelectMode();
       let q;
       if (requestDisplaySelectModeRef.current === "display_no_only") {
         q = await supabase

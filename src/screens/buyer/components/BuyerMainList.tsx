@@ -57,11 +57,34 @@ export const BuyerMainList = React.memo(function BuyerMainList(props: {
   ];
 
   const finalData = (isLoading && !refreshing && (!data || data.length === 0)) ? skeletonData : data;
+  const renderCell: React.ComponentProps<typeof FlatList<ListItem>>["CellRendererComponent"] = ({
+    children,
+    style,
+    index,
+    ...rest
+  }) => (
+    <View
+      {...rest}
+      style={[
+        style,
+        {
+          position: "relative",
+          overflow: "visible",
+          zIndex: Math.max(1, 1000 - Math.max(0, index ?? 0)),
+          elevation: Math.max(1, 1000 - Math.max(0, index ?? 0)),
+          pointerEvents: "box-none",
+        },
+      ]}
+    >
+      {children}
+    </View>
+  );
 
   return (
     <Animated.FlatList
       ref={listRef}
       data={finalData}
+      CellRendererComponent={renderCell}
       keyExtractor={(item, index) => {
         if (item.__skeleton) return `skel:${index}`;
         return tab === "inbox"
@@ -72,8 +95,19 @@ export const BuyerMainList = React.memo(function BuyerMainList(props: {
         if (item.__skeleton) {
           return <View style={{ marginBottom: 10, paddingHorizontal: 16 }}><BuyerCardSkeleton s={s} /></View>;
         }
+        const rowZ = Math.max(1, 1000 - Math.max(0, index));
         return (
-          <View style={{ marginBottom: 10, paddingHorizontal: 16 }}>
+          <View
+            style={{
+              marginBottom: 10,
+              paddingHorizontal: 16,
+              position: "relative",
+              overflow: "visible",
+              zIndex: rowZ,
+              elevation: rowZ,
+              pointerEvents: "box-none",
+            }}
+          >
             {tab === "inbox" ? renderGroupBlock(item as ListItem, index) : renderProposalCard(item as ListItem)}
           </View>
         );
@@ -95,7 +129,7 @@ export const BuyerMainList = React.memo(function BuyerMainList(props: {
       keyboardShouldPersistTaps="handled"
       keyboardDismissMode="on-drag"
       onScrollBeginDrag={() => { Keyboard.dismiss(); }}
-      removeClippedSubviews={Platform.OS === "web" ? false : true}
+      removeClippedSubviews={false}
     />
   );
 });

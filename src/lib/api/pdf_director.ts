@@ -1,6 +1,7 @@
 // src/lib/api/pdf_director.ts
 import { openHtmlAsPdfUniversal } from "./pdf";
 import { listAccountantInbox } from "./accountant";
+import { supabase } from "../supabaseClient";
 import { normalizeRuText } from "../text/encoding";
 
 const esc = (s: any) =>
@@ -1046,6 +1047,350 @@ export async function exportDirectorManagementReportPdf(p: {
 
   <div class="page-footer"></div>
 </body></html>`;
+
+  return openHtmlAsPdfUniversal(normalizeRuText(html));
+}
+
+type DirectorProductionPdfInput = {
+  companyName?: string | null;
+  generatedBy?: string | null;
+  periodFrom?: string | null;
+  periodTo?: string | null;
+  objectName?: string | null;
+  repData?: any;
+  repDiscipline?: any;
+};
+
+export async function exportDirectorProductionReportPdf(p: DirectorProductionPdfInput): Promise<string> {
+  const companyName = String(p.companyName ?? "RIK Construction").trim() || "RIK Construction";
+  const generatedBy = String(p.generatedBy ?? "Директор").trim() || "Директор";
+  const from = String(p.periodFrom ?? "").trim();
+  const to = String(p.periodTo ?? "").trim();
+  const objectName = String(p.objectName ?? "").trim() || "Все объекты";
+  const generatedAt = new Date().toLocaleString("ru-RU");
+
+  const data = p.repData ?? {};
+  const kpi = data?.kpi ?? {};
+  const rows = Array.isArray(data?.rows) ? data.rows : [];
+  const discipline = p.repDiscipline ?? data?.discipline ?? null;
+  const works = Array.isArray(discipline?.works) ? discipline.works : [];
+  const disSummary = discipline?.summary ?? {};
+
+  const issuesTotal = nnum(kpi?.issues_total);
+  const itemsTotal = nnum(kpi?.items_total);
+  const issuesNoObj = nnum(kpi?.issues_without_object ?? kpi?.issues_no_obj);
+  const itemsNoReq = nnum(kpi?.items_without_request ?? kpi?.items_free);
+
+  const worksSorted = [...works].sort((a: any, b: any) => nnum(b?.total_positions) - nnum(a?.total_positions));
+  const worksTop = worksSorted.slice(0, 50);
+  const materialsTop = [...rows]
+    .sort((a: any, b: any) => nnum(b?.qty_total) - nnum(a?.qty_total))
+    .slice(0, 60);
+
+  const byObject = new Map<string, { docs: number; positions: number; noReq: number; noWork: number }>();
+  for (const w of worksSorted) {
+    const levels = Array.isArray(w?.levels) ? w.levels : [];
+    for (const lv of levels) {
+      const obj = String((lv as any)?.object_name ?? objectName ?? "Без объекта").trim() || "Без объекта";
+      const cur = byObject.get(obj) ?? { docs: 0, positions: 0, noReq: 0, noWork: 0 };
+      cur.docs += nnum((lv as any)?.total_docs);
+      cur.positions += nnum((lv as any)?.total_positions);
+      cur.noReq += nnum((lv as any)?.free_positions);
+      if (String(w?.work_type_name ?? "").trim().toLowerCase() === "без вида работ") {
+        cur.noWork += nnum((lv as any)?.total_positions);
+      }
+      byObject.set(obj, cur);
+    }
+  }
+  const objectRows = Array.from(byObject.entries())
+    .map(([obj, v]) => ({ obj, ...v }))
+    .sort((a, b) => b.positions - a.positions);
+
+  const withoutWork = worksSorted
+    .filter((w: any) => String(w?.work_type_name ?? "").trim().toLowerCase() === "без вида работ")
+    .reduce((s: number, w: any) => s + nnum(w?.total_positions), 0);
+
+  const issueCost = nnum(disSummary?.issue_cost_total);
+  const purchaseCost = nnum(disSummary?.purchase_cost_total);
+  const ratioPct = nnum(disSummary?.issue_to_purchase_pct);
+
+  const periodText = from || to ? `${fmtDateOnly(from || "—")} – ${fmtDateOnly(to || "—")}` : "Весь период";
+  const rowsLimitedNote = worksSorted.length > worksTop.length ? `Показаны top ${worksTop.length} строк.` : "";
+
+  const html = `<!doctype html><html><head><meta charset="utf-8"/>
+  <title>Директорский производственный отчёт</title>
+  <style>
+    @page { margin: 12mm; }
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;color:#0f172a}
+    h1{font-size:20px;margin:0 0 6px 0}
+    h2{font-size:15px;margin:14px 0 8px}
+    .muted{color:#64748b}
+    .box{border:1px solid #e5e7eb;border-radius:12px;padding:10px;margin-top:8px}
+    .grid{display:grid;grid-template-columns:repeat(4,minmax(120px,1fr));gap:8px}
+    .kpi{border:1px solid #e5e7eb;border-radius:10px;padding:8px;background:#f8fafc}
+    .kpi .l{font-size:11px;color:#64748b}
+    .kpi .v{font-size:18px;font-weight:800;margin-top:3px}
+    table{width:100%;border-collapse:collapse}
+    th,td{border:1px solid #e5e7eb;padding:6px 8px;font-size:12px;vertical-align:top}
+    th{background:#f8fafc;text-align:left}
+    .warn{color:#b91c1c;font-weight:700}
+    .r{text-align:right}
+    .page-footer{position:fixed;left:0;right:0;bottom:-8mm;text-align:center;color:#64748b;font-size:11px}
+    .page-footer:after{content:"Стр. " counter(page)}
+  </style></head><body>
+    <h1>Директорский производственный отчёт</h1>
+    <div class="muted">Компания: <b>${esc(companyName)}</b> · Период: <b>${esc(periodText)}</b> · Объект: <b>${esc(objectName)}</b></div>
+    <div class="muted">Сформировано: ${esc(generatedAt)} · Сформировал: ${esc(generatedBy)}</div>
+
+    <h2>Сводка KPI</h2>
+    <div class="grid">
+      <div class="kpi"><div class="l">Документы</div><div class="v">${esc(String(issuesTotal))}</div></div>
+      <div class="kpi"><div class="l">Позиции</div><div class="v">${esc(String(itemsTotal))}</div></div>
+      <div class="kpi"><div class="l">Без заявки</div><div class="v">${esc(String(itemsNoReq))}</div></div>
+      <div class="kpi"><div class="l">Без вида работ</div><div class="v">${esc(String(withoutWork))}</div></div>
+      <div class="kpi"><div class="l">Без объекта</div><div class="v">${esc(String(issuesNoObj))}</div></div>
+      <div class="kpi"><div class="l">Расход</div><div class="v">${esc(money(issueCost))}</div></div>
+      <div class="kpi"><div class="l">Закупки</div><div class="v">${esc(money(purchaseCost))}</div></div>
+      <div class="kpi"><div class="l">Расход / Закупки</div><div class="v">${esc(String(ratioPct))}%</div></div>
+    </div>
+
+    <h2>Сводка по видам работ</h2>
+    <div class="box">
+      <table>
+        <thead><tr><th>Вид работ</th><th class="r">Позиции</th><th class="r">По заявке</th><th class="r">Свободно</th><th class="r">Документов</th></tr></thead>
+        <tbody>
+          ${worksTop.map((w: any) => `<tr>
+            <td>${String(w?.work_type_name ?? "").trim().toLowerCase() === "без вида работ" ? `<span class="warn">${esc(w?.work_type_name ?? "Без вида работ")}</span>` : esc(w?.work_type_name ?? "—")}</td>
+            <td class="r">${esc(String(nnum(w?.total_positions)))}</td>
+            <td class="r">${esc(String(nnum(w?.req_positions)))}</td>
+            <td class="r">${esc(String(nnum(w?.free_positions)))}</td>
+            <td class="r">${esc(String(nnum(w?.total_docs)))}</td>
+          </tr>`).join("") || `<tr><td colspan="5">Нет данных</td></tr>`}
+        </tbody>
+      </table>
+      ${rowsLimitedNote ? `<div class="muted" style="margin-top:8px">${esc(rowsLimitedNote)} Полная детализация доступна в Excel.</div>` : ""}
+    </div>
+
+    <h2>Сводка по объектам</h2>
+    <div class="box">
+      <table>
+        <thead><tr><th>Объект</th><th class="r">Документы</th><th class="r">Позиции</th><th class="r">Без заявки</th><th class="r">Без вида работ</th></tr></thead>
+        <tbody>
+          ${objectRows.map((o: any) => `<tr>
+            <td>${esc(o.obj)}</td>
+            <td class="r">${esc(String(o.docs))}</td>
+            <td class="r">${esc(String(o.positions))}</td>
+            <td class="r">${esc(String(o.noReq))}</td>
+            <td class="r">${esc(String(o.noWork))}</td>
+          </tr>`).join("") || `<tr><td colspan="5">Нет данных</td></tr>`}
+        </tbody>
+      </table>
+    </div>
+
+    <h2>Материалы</h2>
+    <div class="box">
+      <table>
+        <thead><tr><th>Материал</th><th class="r">Кол-во</th><th>Ед.</th><th class="r">Документов</th><th class="r">Без заявки</th></tr></thead>
+        <tbody>
+          ${materialsTop.map((m: any) => `<tr>
+            <td>${esc(m?.name_human_ru || m?.rik_code || "—")}</td>
+            <td class="r">${esc(String(nnum(m?.qty_total)))}</td>
+            <td>${esc(m?.uom || "")}</td>
+            <td class="r">${esc(String(nnum(m?.docs_cnt)))}</td>
+            <td class="r">${esc(String(nnum(m?.qty_without_request ?? m?.qty_free)))}</td>
+          </tr>`).join("") || `<tr><td colspan="5">Нет данных</td></tr>`}
+        </tbody>
+      </table>
+    </div>
+
+    <h2>Проблемные зоны</h2>
+    <div class="box">
+      <table>
+        <thead><tr><th>Проблема</th><th class="r">Кол-во</th><th>Комментарий</th></tr></thead>
+        <tbody>
+          <tr><td>Без вида работ</td><td class="r">${esc(String(withoutWork))}</td><td>Требует контроля источника</td></tr>
+          <tr><td>Без заявки</td><td class="r">${esc(String(itemsNoReq))}</td><td>Есть выдачи без request item</td></tr>
+          <tr><td>Без объекта</td><td class="r">${esc(String(issuesNoObj))}</td><td>Проверить привязку объекта</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>Подписи</h2>
+    <div class="box">
+      <div>Директор: ____________________</div>
+      <div style="margin-top:10px">Ответственный: ____________________</div>
+    </div>
+
+    <div class="page-footer"></div>
+  </body></html>`;
+
+  return openHtmlAsPdfUniversal(normalizeRuText(html));
+}
+
+type DirectorSubcontractPdfInput = {
+  companyName?: string | null;
+  generatedBy?: string | null;
+  periodFrom?: string | null;
+  periodTo?: string | null;
+  objectName?: string | null;
+};
+
+export async function exportDirectorSubcontractReportPdf(p: DirectorSubcontractPdfInput): Promise<string> {
+  const companyName = String(p.companyName ?? "RIK Construction").trim() || "RIK Construction";
+  const generatedBy = String(p.generatedBy ?? "Директор").trim() || "Директор";
+  const from = String(p.periodFrom ?? "").trim();
+  const to = String(p.periodTo ?? "").trim();
+  const objectName = String(p.objectName ?? "").trim() || null;
+  const generatedAt = new Date().toLocaleString("ru-RU");
+
+  let q = supabase
+    .from("subcontracts" as any)
+    .select("id,display_no,status,object_name,work_type,contractor_org,total_price,approved_at,submitted_at,rejected_at,director_comment")
+    .order("approved_at", { ascending: false, nullsFirst: false });
+  if (from) q = q.gte("created_at", `${from}T00:00:00.000Z`);
+  if (to) q = q.lte("created_at", `${to}T23:59:59.999Z`);
+  if (objectName) q = q.eq("object_name", objectName);
+
+  const { data, error } = await q;
+  if (error) throw error;
+  const rows = Array.isArray(data) ? data : [];
+
+  const approvedLike = rows.filter((r: any) => ["approved", "closed"].includes(String(r?.status ?? "").trim()));
+  const approved = rows.filter((r: any) => String(r?.status ?? "").trim() === "approved");
+  const pending = rows.filter((r: any) => String(r?.status ?? "").trim() === "pending");
+  const rejected = rows.filter((r: any) => String(r?.status ?? "").trim() === "rejected");
+
+  const sumApproved = approvedLike.reduce((s: number, r: any) => s + nnum(r?.total_price), 0);
+  const noAmount = approvedLike.filter((r: any) => nnum(r?.total_price) <= 0).length;
+  const noWork = approvedLike.filter((r: any) => !String(r?.work_type ?? "").trim()).length;
+  const noObject = approvedLike.filter((r: any) => !String(r?.object_name ?? "").trim()).length;
+  const noContractor = approvedLike.filter((r: any) => !String(r?.contractor_org ?? "").trim()).length;
+
+  const byContractor = new Map<string, { count: number; amount: number; objects: Set<string>; works: Set<string> }>();
+  const byObject = new Map<string, { count: number; amount: number; contractors: Set<string>; works: Set<string> }>();
+  const byWork = new Map<string, { count: number; amount: number; contractors: Set<string> }>();
+
+  for (const r of approvedLike) {
+    const contractor = String((r as any)?.contractor_org ?? "").trim() || "Без подрядчика";
+    const obj = String((r as any)?.object_name ?? "").trim() || "Без объекта";
+    const work = String((r as any)?.work_type ?? "").trim() || "Без вида работ";
+    const amount = nnum((r as any)?.total_price);
+
+    const c = byContractor.get(contractor) ?? { count: 0, amount: 0, objects: new Set<string>(), works: new Set<string>() };
+    c.count += 1; c.amount += amount; c.objects.add(obj); c.works.add(work); byContractor.set(contractor, c);
+
+    const o = byObject.get(obj) ?? { count: 0, amount: 0, contractors: new Set<string>(), works: new Set<string>() };
+    o.count += 1; o.amount += amount; o.contractors.add(contractor); o.works.add(work); byObject.set(obj, o);
+
+    const w = byWork.get(work) ?? { count: 0, amount: 0, contractors: new Set<string>() };
+    w.count += 1; w.amount += amount; w.contractors.add(contractor); byWork.set(work, w);
+  }
+
+  const contractorRows = Array.from(byContractor.entries())
+    .map(([k, v]) => ({ contractor: k, count: v.count, amount: v.amount, objects: v.objects.size, works: v.works.size }))
+    .sort((a, b) => b.amount - a.amount);
+  const objectRows = Array.from(byObject.entries())
+    .map(([k, v]) => ({ object_name: k, count: v.count, amount: v.amount, contractors: v.contractors.size, works: v.works.size }))
+    .sort((a, b) => b.amount - a.amount);
+  const workRows = Array.from(byWork.entries())
+    .map(([k, v]) => ({ work_type: k, count: v.count, amount: v.amount, contractors: v.contractors.size }))
+    .sort((a, b) => b.amount - a.amount);
+
+  const periodText = from || to ? `${fmtDateOnly(from || "—")} – ${fmtDateOnly(to || "—")}` : "Весь период";
+  const objectText = objectName || "Все объекты";
+
+  const html = `<!doctype html><html><head><meta charset="utf-8"/>
+  <title>Директорский отчёт по подрядам</title>
+  <style>
+    @page { margin: 12mm; }
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;color:#0f172a}
+    h1{font-size:20px;margin:0 0 6px 0}
+    h2{font-size:15px;margin:14px 0 8px}
+    .muted{color:#64748b}
+    .grid{display:grid;grid-template-columns:repeat(4,minmax(120px,1fr));gap:8px}
+    .kpi{border:1px solid #e5e7eb;border-radius:10px;padding:8px;background:#f8fafc}
+    .kpi .l{font-size:11px;color:#64748b}
+    .kpi .v{font-size:18px;font-weight:800;margin-top:3px}
+    .box{border:1px solid #e5e7eb;border-radius:12px;padding:10px;margin-top:8px}
+    table{width:100%;border-collapse:collapse}
+    th,td{border:1px solid #e5e7eb;padding:6px 8px;font-size:12px;vertical-align:top}
+    th{background:#f8fafc;text-align:left}
+    .r{text-align:right}
+    .page-footer{position:fixed;left:0;right:0;bottom:-8mm;text-align:center;color:#64748b;font-size:11px}
+    .page-footer:after{content:"Стр. " counter(page)}
+  </style></head><body>
+    <h1>Директорский отчёт по подрядам</h1>
+    <div class="muted">Компания: <b>${esc(companyName)}</b> · Период: <b>${esc(periodText)}</b> · Объект: <b>${esc(objectText)}</b></div>
+    <div class="muted">Сформировано: ${esc(generatedAt)} · Сформировал: ${esc(generatedBy)}</div>
+
+    <h2>KPI по подрядам</h2>
+    <div class="grid">
+      <div class="kpi"><div class="l">Всего подрядов</div><div class="v">${esc(String(rows.length))}</div></div>
+      <div class="kpi"><div class="l">Утверждено</div><div class="v">${esc(String(approved.length))}</div></div>
+      <div class="kpi"><div class="l">Активных подрядчиков</div><div class="v">${esc(String(byContractor.size))}</div></div>
+      <div class="kpi"><div class="l">Объектов с подрядами</div><div class="v">${esc(String(byObject.size))}</div></div>
+      <div class="kpi"><div class="l">Общая сумма</div><div class="v">${esc(money(sumApproved))}</div></div>
+      <div class="kpi"><div class="l">Без суммы</div><div class="v">${esc(String(noAmount))}</div></div>
+      <div class="kpi"><div class="l">Без вида работ</div><div class="v">${esc(String(noWork))}</div></div>
+      <div class="kpi"><div class="l">Без объекта</div><div class="v">${esc(String(noObject))}</div></div>
+    </div>
+
+    <h2>Сводка по подрядчикам</h2>
+    <div class="box"><table>
+      <thead><tr><th>Подрядчик</th><th class="r">Подрядов</th><th class="r">Объектов</th><th class="r">Видов работ</th><th class="r">Сумма</th></tr></thead>
+      <tbody>${contractorRows.map((r) => `<tr><td>${esc(r.contractor)}</td><td class="r">${r.count}</td><td class="r">${r.objects}</td><td class="r">${r.works}</td><td class="r">${esc(money(r.amount))}</td></tr>`).join("") || `<tr><td colspan="5">Нет данных</td></tr>`}</tbody>
+    </table></div>
+
+    <h2>Сводка по объектам</h2>
+    <div class="box"><table>
+      <thead><tr><th>Объект</th><th class="r">Подрядов</th><th class="r">Подрядчиков</th><th class="r">Видов работ</th><th class="r">Сумма</th></tr></thead>
+      <tbody>${objectRows.map((r) => `<tr><td>${esc(r.object_name)}</td><td class="r">${r.count}</td><td class="r">${r.contractors}</td><td class="r">${r.works}</td><td class="r">${esc(money(r.amount))}</td></tr>`).join("") || `<tr><td colspan="5">Нет данных</td></tr>`}</tbody>
+    </table></div>
+
+    <h2>Утверждённые подряды</h2>
+    <div class="box"><table>
+      <thead><tr><th>№</th><th>Подрядчик</th><th>Объект</th><th>Вид работ</th><th>Статус</th><th class="r">Сумма</th><th>Утверждено</th></tr></thead>
+      <tbody>${approvedLike
+        .sort((a: any, b: any) => String(b?.approved_at ?? "").localeCompare(String(a?.approved_at ?? "")))
+        .map((r: any) => `<tr>
+          <td>${esc(String(r?.display_no ?? r?.id ?? "").slice(0, 20))}</td>
+          <td>${esc(r?.contractor_org || "—")}</td>
+          <td>${esc(r?.object_name || "—")}</td>
+          <td>${esc(r?.work_type || "—")}</td>
+          <td>${esc(r?.status || "—")}</td>
+          <td class="r">${esc(money(r?.total_price))}</td>
+          <td>${esc(fmtDateOnly(String(r?.approved_at || "")))}</td>
+        </tr>`).join("") || `<tr><td colspan="7">Нет данных</td></tr>`}
+      </tbody>
+    </table></div>
+
+    <h2>Подряды по видам работ</h2>
+    <div class="box"><table>
+      <thead><tr><th>Вид работ</th><th class="r">Подрядов</th><th class="r">Подрядчиков</th><th class="r">Сумма</th></tr></thead>
+      <tbody>${workRows.map((r) => `<tr><td>${esc(r.work_type)}</td><td class="r">${r.count}</td><td class="r">${r.contractors}</td><td class="r">${esc(money(r.amount))}</td></tr>`).join("") || `<tr><td colspan="4">Нет данных</td></tr>`}</tbody>
+    </table></div>
+
+    <h2>Проблемные зоны</h2>
+    <div class="box"><table>
+      <thead><tr><th>Проблема</th><th class="r">Кол-во</th><th>Комментарий</th></tr></thead>
+      <tbody>
+        <tr><td>Подряды без суммы</td><td class="r">${noAmount}</td><td>Проверить total_price</td></tr>
+        <tr><td>Подряды без объекта</td><td class="r">${noObject}</td><td>Проверить object_name</td></tr>
+        <tr><td>Подряды без вида работ</td><td class="r">${noWork}</td><td>Проверить work_type</td></tr>
+        <tr><td>Подряды без подрядчика</td><td class="r">${noContractor}</td><td>Проверить contractor_org</td></tr>
+        <tr><td>Pending</td><td class="r">${pending.length}</td><td>Ожидают решения директора</td></tr>
+        <tr><td>Rejected</td><td class="r">${rejected.length}</td><td>Отклонены директором</td></tr>
+      </tbody>
+    </table></div>
+
+    <h2>Подписи</h2>
+    <div class="box">
+      <div>Директор: ____________________</div>
+      <div style="margin-top:10px">Ответственный: ____________________</div>
+    </div>
+
+    <div class="page-footer"></div>
+  </body></html>`;
 
   return openHtmlAsPdfUniversal(normalizeRuText(html));
 }

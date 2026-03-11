@@ -39,6 +39,8 @@ type Props = {
   repTab: RepTab;
   setRepTab: (t: RepTab) => void;
   onRefresh: () => Promise<void>;
+  onExportProductionPdf?: () => Promise<void> | void;
+  onExportSubcontractPdf?: () => Promise<void> | void;
 };
 
 const pct = (a: number, b: number) => {
@@ -57,6 +59,7 @@ const ratioColor = (v: number) => {
 
 const money = (v: number) => `${Math.round(Number(v || 0)).toLocaleString("ru-RU")} KGS`;
 const normKey = (v: string) => String(v || "").trim().toLowerCase();
+const TOP_ACTIONS_INTERACTIVE_HEIGHT = 132;
 
 export default function DirectorReportsModal({
   visible,
@@ -83,6 +86,8 @@ export default function DirectorReportsModal({
   repTab,
   setRepTab,
   onRefresh,
+  onExportProductionPdf,
+  onExportSubcontractPdf,
 }: Props) {
   const data = repData as Partial<RepPayload> | null;
   const kpi: RepKpi | null = data?.kpi ?? null;
@@ -93,9 +98,9 @@ export default function DirectorReportsModal({
   const [levelModal, setLevelModal] = React.useState<{ work: RepDisciplineWork; level: RepDisciplineLevel } | null>(null);
 
   const issuesTotal = Number(kpi?.issues_total ?? 0);
-  const issuesNoObj = Number(kpi?.issues_no_obj ?? 0);
+  const issuesNoObj = Number((kpi as any)?.issues_without_object ?? kpi?.issues_no_obj ?? 0);
   const itemsTotal = Number(kpi?.items_total ?? 0);
-  const itemsNoReq = Number(kpi?.items_free ?? 0);
+  const itemsNoReq = Number((kpi as any)?.items_without_request ?? kpi?.items_free ?? 0);
 
   const worksTop30 = React.useMemo(() => {
     const arr = Array.isArray(discipline?.works) ? [...discipline.works] : [];
@@ -105,6 +110,40 @@ export default function DirectorReportsModal({
   const levelsTop30 = React.useMemo(() => {
     if (!workModal) return [] as RepDisciplineLevel[];
     return [...(workModal.levels || [])].sort((a, b) => b.total_positions - a.total_positions).slice(0, 30);
+  }, [workModal]);
+  const workTopMaterials = React.useMemo(() => {
+    if (!workModal) return [] as Array<{
+      rik_code: string;
+      material_name: string;
+      uom: string;
+      qty_sum: number;
+      docs_count: number;
+    }>;
+
+    const levels = Array.isArray(workModal.levels) ? workModal.levels : [];
+    const acc = new Map<string, { rik_code: string; material_name: string; uom: string; qty_sum: number; docs_count: number }>();
+    for (const lv of levels) {
+      const mats = Array.isArray(lv.materials) ? lv.materials : [];
+      for (const m of mats) {
+        const key = `${String(m.rik_code || "").trim()}|${String(m.uom || "").trim()}|${String(m.material_name || "").trim()}`;
+        const prev = acc.get(key);
+        if (prev) {
+          prev.qty_sum += Number(m.qty_sum || 0);
+          prev.docs_count += Number(m.docs_count || 0);
+        } else {
+          acc.set(key, {
+            rik_code: String(m.rik_code || ""),
+            material_name: String(m.material_name || m.rik_code || "—"),
+            uom: String(m.uom || ""),
+            qty_sum: Number(m.qty_sum || 0),
+            docs_count: Number(m.docs_count || 0),
+          });
+        }
+      }
+    }
+    return Array.from(acc.values())
+      .sort((a, b) => b.qty_sum - a.qty_sum)
+      .slice(0, 20);
   }, [workModal]);
 
   const materialsTop20 = React.useMemo(() => {
@@ -149,7 +188,10 @@ export default function DirectorReportsModal({
       loading={repLoading}
       onOpenPeriod={onOpenPeriod}
       onRefresh={onRefresh}
-      onPdf={() => Alert.alert("PDF", "Позже добавим единый PDF.")}
+      onPdf={() => void onExportProductionPdf?.()}
+      onPdfSecondary={() => void onExportSubcontractPdf?.()}
+      pdfPrimaryLabel={"PDF \u041f\u0440\u043e\u0438\u0437\u0432\u043e\u0434\u0441\u0442\u0432\u043e"}
+      pdfSecondaryLabel={"PDF \u041f\u043e\u0434\u0440\u044f\u0434\u044b"}
       overlay={
         repPeriodOpen ? (
           <PeriodPickerSheet
@@ -205,93 +247,120 @@ export default function DirectorReportsModal({
               </ScrollView>
             </View>
           </RNModal>
-        ) : levelModal ? (
-          <RNModal
-            isVisible={!!levelModal}
-            onBackdropPress={() => setLevelModal(null)}
-            onBackButtonPress={() => setLevelModal(null)}
-            backdropOpacity={0.55}
-            useNativeDriver
-            useNativeDriverForBackdrop
-            hideModalContentWhileAnimating
-            style={{ margin: 0, justifyContent: "flex-end" }}
-          >
-            <View style={s.sheet}>
-              <View style={s.sheetHandle} />
-              <View style={{ flexDirection: "row", justifyContent: "space-between", paddingHorizontal: 14, paddingBottom: 10 }}>
-                <Text style={{ color: UI.text, fontWeight: "900", fontSize: 16 }} numberOfLines={2}>{levelModalTitle}</Text>
-                <View style={{ flexDirection: "row", alignItems: "center", gap: 14 }}>
-                  <Pressable
-                    onPress={() => {
-                      setWorkModal(levelModal.work);
-                      setLevelModal(null);
-                    }}
-                  >
-                    <Text style={{ color: UI.sub, fontWeight: "900" }}>Назад</Text>
-                  </Pressable>
-                  <Pressable onPress={() => setLevelModal(null)}><Text style={{ color: UI.sub, fontWeight: "900" }}>Закрыть</Text></Pressable>
+                ) : levelModal ? (
+          <View pointerEvents="box-none" style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0 }}>
+            <Pressable
+              onPress={() => setLevelModal(null)}
+              style={{
+                position: "absolute",
+                top: TOP_ACTIONS_INTERACTIVE_HEIGHT,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: "rgba(0,0,0,0.55)",
+              }}
+            />
+            <View style={{ position: "absolute", left: 0, right: 0, bottom: 0 }}>
+              <View style={s.sheet}>
+                <View style={s.sheetHandle} />
+                <View style={{ flexDirection: "row", justifyContent: "space-between", paddingHorizontal: 14, paddingBottom: 10 }}>
+                  <Text style={{ color: UI.text, fontWeight: "900", fontSize: 16 }} numberOfLines={2}>{levelModalTitle}</Text>
+                  <View style={{ flexDirection: "row", alignItems: "center", gap: 14 }}>
+                    <Pressable
+                      onPress={() => {
+                        setWorkModal(levelModal.work);
+                        setLevelModal(null);
+                      }}
+                    >
+                      <Text style={{ color: UI.sub, fontWeight: "900" }}>Назад</Text>
+                    </Pressable>
+                    <Pressable onPress={() => setLevelModal(null)}><Text style={{ color: UI.sub, fontWeight: "900" }}>Закрыть</Text></Pressable>
+                  </View>
                 </View>
+                <ScrollView
+                  style={{ flex: 1 }}
+                  contentContainerStyle={{ paddingBottom: 4 }}
+                  keyboardShouldPersistTaps="handled"
+                >
+                  {materialsTop20.map((m, idx) => (
+                    <View key={`${m.rik_code}:${m.uom}:${idx}`} style={[s.mobCard, { marginHorizontal: 12, marginBottom: 10 }]}>
+                      <View style={s.mobMain}>
+                        <Text style={s.mobTitle} numberOfLines={2}>{m.material_name}</Text>
+                        <Text style={s.mobMeta} numberOfLines={1}>{`${m.qty_sum} ${m.uom || ""}`}</Text>
+                        <Text style={s.mobMeta} numberOfLines={1}>
+                          {`Цена: ${money(Number(m.unit_price ?? 0))} · Сумма: ${money(Number(m.amount_sum ?? 0))}`}
+                        </Text>
+                      </View>
+                    </View>
+                  ))}
+                </ScrollView>
               </View>
-              <ScrollView
-                style={{ flex: 1 }}
-                contentContainerStyle={{ paddingBottom: 4 }}
-                keyboardShouldPersistTaps="handled"
-              >
-                {materialsTop20.map((m, idx) => (
-                  <View key={`${m.rik_code}:${m.uom}:${idx}`} style={[s.mobCard, { marginHorizontal: 12, marginBottom: 10 }]}>
+            </View>
+          </View>
+                ) : workModal ? (
+          <View pointerEvents="box-none" style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0 }}>
+            <Pressable
+              onPress={() => setWorkModal(null)}
+              style={{
+                position: "absolute",
+                top: TOP_ACTIONS_INTERACTIVE_HEIGHT,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: "rgba(0,0,0,0.55)",
+              }}
+            />
+            <View style={{ position: "absolute", left: 0, right: 0, bottom: 0 }}>
+              <View style={s.sheet}>
+                <View style={s.sheetHandle} />
+                <View style={{ flexDirection: "row", justifyContent: "space-between", paddingHorizontal: 14, paddingBottom: 10 }}>
+                  <Text style={{ color: UI.text, fontWeight: "900", fontSize: 16 }} numberOfLines={1}>{`Работа: ${workModal.work_type_name}`}</Text>
+                  <Pressable onPress={() => setWorkModal(null)}><Text style={{ color: UI.sub, fontWeight: "900" }}>Закрыть</Text></Pressable>
+                </View>
+                <ScrollView
+                  style={{ flex: 1 }}
+                  contentContainerStyle={{ paddingBottom: 4 }}
+                  keyboardShouldPersistTaps="handled"
+                >
+                  <View style={[s.mobCard, { marginHorizontal: 12, marginBottom: 10 }]}>
                     <View style={s.mobMain}>
-                      <Text style={s.mobTitle} numberOfLines={2}>{m.material_name}</Text>
-                      <Text style={s.mobMeta} numberOfLines={1}>{`${m.qty_sum} ${m.uom || ""}`}</Text>
-                      <Text style={s.mobMeta} numberOfLines={1}>
-                        {`Цена: ${money(Number(m.unit_price ?? 0))} · Сумма: ${money(Number(m.amount_sum ?? 0))}`}
-                      </Text>
+                      <Text style={s.mobTitle} numberOfLines={1}>{workModal.work_type_name}</Text>
+                      <Text style={s.mobMeta} numberOfLines={1}>{`Позиции: ${workModal.total_positions}`}</Text>
+                      <Text style={s.mobMeta} numberOfLines={1}>{`По заявке: ${workModal.req_positions} · Свободно: ${workModal.free_positions}`}</Text>
+                      <Text style={s.mobMeta} numberOfLines={1}>{`Документов: ${workModal.total_docs} · Кол-во: ${workModal.total_qty}`}</Text>
                     </View>
                   </View>
-                ))}
-              </ScrollView>
-            </View>
-          </RNModal>
-        ) : workModal ? (
-          <RNModal
-            isVisible={!!workModal}
-            onBackdropPress={() => setWorkModal(null)}
-            onBackButtonPress={() => setWorkModal(null)}
-            backdropOpacity={0.55}
-            useNativeDriver
-            useNativeDriverForBackdrop
-            hideModalContentWhileAnimating
-            style={{ margin: 0, justifyContent: "flex-end" }}
-          >
-            <View style={s.sheet}>
-              <View style={s.sheetHandle} />
-              <View style={{ flexDirection: "row", justifyContent: "space-between", paddingHorizontal: 14, paddingBottom: 10 }}>
-                <Text style={{ color: UI.text, fontWeight: "900", fontSize: 16 }} numberOfLines={1}>{`Работа: ${workModal.work_type_name}`}</Text>
-                <Pressable onPress={() => setWorkModal(null)}><Text style={{ color: UI.sub, fontWeight: "900" }}>Закрыть</Text></Pressable>
-              </View>
-              <ScrollView
-                style={{ flex: 1 }}
-                contentContainerStyle={{ paddingBottom: 4 }}
-                keyboardShouldPersistTaps="handled"
-              >
-                {levelsTop30.map((lv) => (
-                  <Pressable
-                    key={lv.id}
-                    onPress={() => {
-                      setLevelModal({ work: workModal, level: lv });
-                      setWorkModal(null);
-                    }}
-                    style={[s.mobCard, { marginHorizontal: 12, marginBottom: 10 }]}
-                  >
-                    <View style={s.mobMain}>
-                      <Text style={s.mobTitle} numberOfLines={1}>{lv.level_name}</Text>
-                      <Text style={s.mobMeta} numberOfLines={1}>{`Позиции: ${lv.total_positions}`}</Text>
-                      <Text style={s.mobMeta} numberOfLines={1}>{`По заявке: ${lv.req_positions} · Свободно: ${lv.free_positions}`}</Text>
+
+                  {levelsTop30.map((lv) => (
+                    <Pressable
+                      key={lv.id}
+                      onPress={() => {
+                        setLevelModal({ work: workModal, level: lv });
+                        setWorkModal(null);
+                      }}
+                      style={[s.mobCard, { marginHorizontal: 12, marginBottom: 10 }]}
+                    >
+                      <View style={s.mobMain}>
+                        <Text style={s.mobTitle} numberOfLines={1}>{lv.level_name}</Text>
+                        <Text style={s.mobMeta} numberOfLines={1}>{`Позиции: ${lv.total_positions}`}</Text>
+                        <Text style={s.mobMeta} numberOfLines={1}>{`По заявке: ${lv.req_positions} · Свободно: ${lv.free_positions}`}</Text>
+                      </View>
+                    </Pressable>
+                  ))}
+
+                  {workTopMaterials.map((m, idx) => (
+                    <View key={`${m.rik_code}:${m.uom}:${idx}`} style={[s.mobCard, { marginHorizontal: 12, marginBottom: 10 }]}>
+                      <View style={s.mobMain}>
+                        <Text style={s.mobTitle} numberOfLines={2}>{m.material_name}</Text>
+                        <Text style={s.mobMeta} numberOfLines={1}>{`${m.qty_sum} ${m.uom || ""}`}</Text>
+                        <Text style={s.mobMeta} numberOfLines={1}>{`Документов: ${m.docs_count}`}</Text>
+                      </View>
                     </View>
-                  </Pressable>
-                ))}
-              </ScrollView>
+                  ))}
+                </ScrollView>
+              </View>
             </View>
-          </RNModal>
+          </View>
         ) : null
       }
     >
@@ -309,7 +378,7 @@ export default function DirectorReportsModal({
               <Text numberOfLines={1} style={{ color: UI.text, fontWeight: "900", maxWidth: 220 }}>{repObjectName}</Text>
             </Pressable>
           ) : null}
-          {repOptLoading ? <Text style={{ color: UI.sub, fontWeight: "800", marginLeft: 4, marginTop: 8 }}>•</Text> : null}
+          {repOptLoading ? <Text style={{ color: UI.sub, fontWeight: "800", marginLeft: 4, marginTop: 8 }}>…</Text> : null}
         </View>
       </View>
 

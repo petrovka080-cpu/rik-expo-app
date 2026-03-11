@@ -30,6 +30,9 @@ export default function DirectorFinanceCardModal({
   onOpenPeriod,
   onRefresh,
   onPdf,
+  onPdfSecondary,
+  pdfPrimaryLabel = "PDF",
+  pdfSecondaryLabel = "PDF 2",
 
   children,
   overlay,
@@ -46,6 +49,9 @@ export default function DirectorFinanceCardModal({
   onOpenPeriod: () => void;
   onRefresh: () => void;
   onPdf: () => Promise<any> | any;
+  onPdfSecondary?: () => Promise<any> | any;
+  pdfPrimaryLabel?: string;
+  pdfSecondaryLabel?: string;
 
   children: React.ReactNode;
   overlay?: React.ReactNode;
@@ -170,8 +176,17 @@ export default function DirectorFinanceCardModal({
                     icon: "document-text-outline",
                     onPress: () => onPdf(),
                     disabled: !!loading,
-                    ariaLabel: "PDF",
+                    ariaLabel: pdfPrimaryLabel,
                   },
+                  ...(onPdfSecondary
+                    ? [{
+                        key: "pdf2",
+                        icon: "document-attach-outline" as const,
+                        onPress: () => onPdfSecondary(),
+                        disabled: !!loading,
+                        ariaLabel: pdfSecondaryLabel,
+                      }]
+                    : []),
                   {
                     key: "close",
                     icon: "close-outline",

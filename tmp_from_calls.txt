@@ -1,0 +1,101 @@
+.from("catalog_groups_clean")
+.from("catalog_items")
+.from("catalog_name_overrides")
+.from("contractors")
+.from("market_listings_map")
+.from("notifications")
+.from("objects" as any)
+.from("proposal_attachments")
+.from("proposal_items" as any)
+.from("proposal_items")
+.from("proposal_items_view")
+.from("proposal_payment_allocations")
+.from("proposal_payments")
+.from("proposal_snapshot_items")
+.from("proposals")
+.from("purchase_items" as any)
+.from("purchase_items")
+.from("purchases")
+.from("ref_levels" as any)
+.from("ref_levels")
+.from("ref_object_types" as any)
+.from("ref_object_types")
+.from("ref_systems" as any)
+.from("ref_systems")
+.from("ref_uoms_clean")
+.from("ref_zones")
+.from("request_items" as any)
+.from("request_items")
+.from("requests" as any)
+.from("requests")
+.from("rik_aliases")
+.from("rik_item_apps")
+.from("rik_items")
+.from("rik_materials")
+.from("rik_uoms")
+.from("subcontract_items")
+.from("subcontracts" as any)
+.from("subcontracts")
+.from("supplier_files")
+.from("suppliers")
+.from("user_profiles")
+.from("v_director_finance_spend_kinds_v3")
+.from("v_director_issued_fact_rows" as any)
+.from("v_proposals_summary")
+.from("v_rik_names_ru" as any)
+.from("v_rik_names_ru")
+.from("v_wh_balance_ledger_truth_ui")
+.from("v_wh_balance_ledger_ui")
+.from("v_wh_incoming_heads_ui" as any)
+.from("v_wh_incoming_heads_ui")
+.from("v_wh_incoming_items_ui")
+.from("v_wh_issue_req_heads_ui")
+.from("v_wh_issue_req_items_ui")
+.from("v_work_types_picker")
+.from("v_works_fact")
+.from("warehouse_issue_items" as any)
+.from("warehouse_issues" as any)
+.from("warehouse_issues")
+.from("wh_incoming")
+.from("wh_incoming_items")
+.from("wh_incoming_items_clean")
+.from("wh_ledger" as any)
+.from("wh_ledger")
+.from("work_default_materials")
+.from("work_progress")
+.from("work_progress_log")
+.from("work_progress_log_materials")
+.from("work_stages")
+? await supabase.from("requests").select("id, status").in("id", reqIds)
+await supabase.from("proposals").update({ buyer_fio: opts.buyerFio }).eq("id", proposalId);
+await supabase.from("proposals").update(upd).eq("id", proposalId);
+await supabase.from("request_items" as any).update(patch).eq("id", itemId);
+await supabase.from("request_items").delete().eq("request_id", requestId);
+await supabase.from("request_items").update({ status: statusAfter }).in("id", ids);
+await supabase.from("request_items").update(patch).eq("id", itemId);
+await supabase.from("supplier_files").insert({
+const { data, error } = await client.from("requests").select("id, status").in("id", reqIds);
+const { error } = await supabase.from("demand_offers").insert({
+const { error } = await supabase.from("proposal_items").insert(rows);
+const { error } = await supabase.from("proposals").update(upd).eq("id", pid);
+const { error } = await supabase.from("request_items").delete().eq("id", id);
+const { error } = await supabase.from("subcontracts").update(patch).eq("id", id);
+const { error: insertError } = await supabase.from("app_errors").insert(payload);
+const a = await supabase.from("rik_apps").select("app_code, name_human").order("app_code", { ascending: true });
+const al2 = await client.from("rik_aliases").select("rik_code,alias").in("rik_code", allCodes);
+const apps = await client.from("rik_apps" as any).select("app_code,name_human");
+const bucket = supabase.storage.from("supplier_files");
+const ins = await client.from("proposals").insert({}).select("id,proposal_no,id_short").single();
+const ins = await supabase.from("proposal_attachments").insert(row);
+const ins = await supabase.from("wh_incoming_items").upsert(rows, {
+const insPI = await supabase.from("purchase_items").insert(piToInsert);
+const pi = await supabase.from("proposal_items").select("proposal_id").in("proposal_id", ids);
+const q = await supabase.from("proposals").select("id, proposal_no").in("id", part);
+const q = await supabase.from("ref_object_types").select("code").limit(1);
+const reqQ = await supabase.from("requests").select("*").in("id", idsNeedMeta);
+const reqs = await client.from("requests").select("id, id_old").eq("status", "На утверждении");
+const v = await supabase.from("v_warehouse_stock").select("*").range(offset, offset + limit - 1);
+supabase.from("contractors").select("id,company_name,phone,inn"),
+supabase.from("user_profiles").select("user_id,company,phone,inn").eq("is_contractor", true),
+supabaseClient.from("work_progress").select("*").eq("id", progressId).maybeSingle(),
+supabaseClient.from("work_progress").select("*").eq("progress_id", progressId).maybeSingle(),

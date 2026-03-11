@@ -1,17 +1,15 @@
 // app/_layout.tsx  (PROD, чистый)
-// ✅ без boot-test, без лишнего, стабильный init/redirect, web-фиксы сохранены
+
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Platform, LogBox } from "react-native";
 import { Slot, router, useSegments } from "expo-router";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
-import Toast from "react-native-toast-message";
 import { Host } from "react-native-portalize";
 
-import { supabase, isSupabaseEnvValid } from "../src/lib/supabaseClient";
-import { ensureMyProfile, getMyRole } from "../src/lib/api/profile";
+import { supabase } from "../src/lib/supabaseClient";
+import { ensureMyProfile, getMyRole } from "../src/lib/rik_api";
 import { GlobalBusyProvider } from "../src/ui/GlobalBusy";
-
 // --- WEB: тихо глушим шумные предупреждения (только в браузере) ---
 if (Platform.OS === "web") {
   LogBox.ignoreLogs([
@@ -45,8 +43,6 @@ export default function RootLayout() {
 
   const roleLoadingRef = useRef(false);
   const initStartedRef = useRef(false);
-  const lastRoleLoadAtRef = useRef(0);
-
   // --- WEB: нормальный контейнер/скролл + leaflet css (если нужен) ---
   useEffect(() => {
     if (Platform.OS !== "web") return;
@@ -69,17 +65,13 @@ export default function RootLayout() {
         (root as any).style.height = "100%";
         (root as any).style.overflow = "auto";
       }
-    } catch (e) {
-      console.warn(e);
-    }
+    } catch {}
   }, []);
 
   // --- роль/профиль грузим в фоне, НЕ блокируя вход ---
-  const loadRoleForCurrentSession = useCallback(async (force = false) => {
-    if (!isSupabaseEnvValid) return;
+  const loadRoleForCurrentSession = useCallback(async () => {
+    if (!supabase) return;
     if (roleLoadingRef.current) return;
-    const now = Date.now();
-    if (!force && now - lastRoleLoadAtRef.current < 5 * 60 * 1000) return;
     roleLoadingRef.current = true;
 
     try {
@@ -97,8 +89,7 @@ export default function RootLayout() {
         new Promise((_, rej) => setTimeout(() => rej(new Error("getMyRole TIMEOUT")), 8000)),
       ]);
 
-      setRole((r as string | null) ?? null);
-      lastRoleLoadAtRef.current = Date.now();
+      setRole(typeof r === "string" ? r : null);
     } catch (e: any) {
       console.warn("[RootLayout] role load failed:", e?.message ?? e);
       setRole(null);
@@ -110,12 +101,7 @@ export default function RootLayout() {
 
   // --- INIT: читаем session один раз, роль — фоном ---
   useEffect(() => {
-    if (!isSupabaseEnvValid) {
-      // Если env битые, сразу отправляем на fallback/login или просто останавливаем загрузку
-      setHasSession(false);
-      setSessionLoaded(true);
-      return;
-    }
+    if (!supabase) return;
     if (initStartedRef.current) return;
     initStartedRef.current = true;
 
@@ -130,7 +116,7 @@ export default function RootLayout() {
         setHasSession(has);
         setSessionLoaded(true);
 
-        if (has) loadRoleForCurrentSession(true);
+        if (has) loadRoleForCurrentSession();
         else {
           setRole(null);
           setRoleLoaded(true);
@@ -145,7 +131,7 @@ export default function RootLayout() {
       }
     })();
 
-    const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
       const has = Boolean(session);
       setHasSession(has);
       setSessionLoaded(true);
@@ -157,16 +143,14 @@ export default function RootLayout() {
         return;
       }
 
-      if (event === "SIGNED_IN" || event === "USER_UPDATED" || event === "INITIAL_SESSION") {
-        loadRoleForCurrentSession(true);
-      }
+      loadRoleForCurrentSession();
     });
 
     return () => {
       active = false;
       listener?.subscription?.unsubscribe();
     };
-  }, []); // 🔥 PROD FIX: Убрали loadRoleForCurrentSession из зависимостей, чтобы onAuthStateChange не пересоздавался и не спамил запросами
+  }, [loadRoleForCurrentSession]);
 
   // --- redirect только по sessionLoaded/hasSession ---
   useEffect(() => {
@@ -195,8 +179,8 @@ export default function RootLayout() {
             <Slot />
           </SafeAreaView>
         </GlobalBusyProvider>
-        <Toast />
       </Host>
     </SafeAreaProvider>
   );
+
 }

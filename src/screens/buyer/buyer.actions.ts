@@ -1,4 +1,4 @@
-// src/screens/buyer/buyer.actions.ts
+﻿// src/screens/buyer/buyer.actions.ts
 import { SUPP_NONE, normName } from "./buyerUtils";
 import type {
   ProposalBucketInput,
@@ -13,6 +13,7 @@ import {
   type RepoProposalItemUpdate,
 } from "./buyer.repo";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { enqueueSubmitJob, JOB_QUEUE_ENABLED } from "../../lib/infra/jobQueue";
 
 type AlertFn = (title: string, message: string) => void;
 type FileLike = File | Blob | { name?: string | null; uri?: string | null; mimeType?: string | null; size?: number | null };
@@ -90,6 +91,14 @@ type CreateProposalsApi = (
   payload: ProposalBucketInput[],
   opts?: CatalogCreateProposalsOptions
 ) => Promise<CatalogCreateProposalsResult>;
+type BuyerSubmitIntentPayload = {
+  requestId: string | null;
+  requestItemIds: string[];
+  metaById: Record<string, { supplier?: string; price?: number | string | null; note?: string | null }>;
+  buyerId: string | null;
+  buyerFio: string;
+  attachmentNames: Array<{ key: string; name: string }>;
+};
 
 const errMessage = (e: unknown, fallback = "Unknown error"): string => {
   if (e instanceof Error && e.message.trim()) return e.message.trim();
@@ -121,11 +130,13 @@ type CreateProposalsDeps = {
   creating: boolean;
   sendingRef: { current: boolean };
 
-  // data (через refs — как у тебя)
+  // data (С‡РµСЂРµР· refs вЂ” РєР°Рє Сѓ С‚РµР±СЏ)
   pickedIds: string[];
   metaNow: Record<string, { supplier?: string; price?: number | string | null; note?: string | null }>;
   attachmentsNow: Record<string, { file?: FileLike; name?: string }>;
   buyerFio: string;
+  buyerId?: string | null;
+  requestId?: string | null;
 
   // ui flags
   needAttachWarn: boolean;
@@ -161,14 +172,14 @@ export async function handleCreateProposalsBySupplierAction(p: CreateProposalsDe
 
   const ids = p.pickedIds || [];
   if (ids.length === 0) {
-    p.showToast("Выбери позиции");
-    p.alert("Пусто", "Выбери позиции");
+    p.showToast("Р’С‹Р±РµСЂРё РїРѕР·РёС†РёРё");
+    p.alert("РџСѓСЃС‚Рѕ", "Р’С‹Р±РµСЂРё РїРѕР·РёС†РёРё");
     return;
   }
 
   if (p.needAttachWarn && !p.kbOpen) {
     p.setShowAttachBlock(true);
-    p.showToast("Вложения не добавлены — можно отправить без них");
+    p.showToast("Р’Р»РѕР¶РµРЅРёСЏ РЅРµ РґРѕР±Р°РІР»РµРЅС‹ вЂ” РјРѕР¶РЅРѕ РѕС‚РїСЂР°РІРёС‚СЊ Р±РµР· РЅРёС…");
   }
 
   if (!p.validatePicked()) return;
@@ -176,10 +187,74 @@ export async function handleCreateProposalsBySupplierAction(p: CreateProposalsDe
   p.sendingRef.current = true;
 
   try {
+    const tAll = Date.now();
+    const tIntent = tAll;
+    let queueInsertMs = 0;
     const okNoAtt = await p.confirmSendWithoutAttachments();
     if (!okNoAtt) return;
+    const submitIntentMs = Date.now() - tIntent;
+    console.info(
+      JOB_QUEUE_ENABLED
+        ? "[buyer.submit] queue-mode path"
+        : "[buyer.submit] legacy sync path",
+      "rows=",
+      ids.length,
+    );
 
-    // группируем по поставщику (как было)
+    if (JOB_QUEUE_ENABLED) {
+      const tQueue = Date.now();
+      const clientRequestId =
+        typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
+          ? crypto.randomUUID()
+          : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+      const intentPayload: BuyerSubmitIntentPayload = {
+        requestId: p.requestId ? String(p.requestId).trim() || null : null,
+        requestItemIds: ids,
+        metaById: p.metaNow || {},
+        buyerId: p.buyerId ? String(p.buyerId).trim() || null : null,
+        buyerFio: (p.buyerFio || "").trim(),
+        attachmentNames: Object.entries(p.attachmentsNow || {}).flatMap(([key, value]) => {
+          const fileName = String(value?.name || "").trim();
+          return fileName ? [{ key, name: fileName }] : [];
+        }),
+      };
+      await enqueueSubmitJob({
+        jobType: "buyer_submit_proposal",
+        entityType: "request_items",
+        entityId: ids[0] || null,
+        entityKey: p.requestId ? String(p.requestId).trim() || null : ids[0] || null,
+        payload: intentPayload as unknown as Record<string, unknown>,
+        clientRequestId,
+      });
+      queueInsertMs = Date.now() - tQueue;
+
+      // Fast UX path: enqueue accepted.
+      p.clearPick();
+      p.closeSheet();
+      p.alert("Отправлено", "Заявка поставлена в очередь на обработку.");
+      void Promise.allSettled([p.fetchInbox(), p.fetchBuckets()]);
+      console.info(
+        "[buyer.submit] queued",
+        "submitIntentMs=",
+        submitIntentMs,
+        "queueInsertMs=",
+        queueInsertMs,
+        "rows=",
+        ids.length,
+      );
+      console.info("[buyer.submit] queue-mode enqueued, returning early");
+      console.info(
+        "[buyer.submit] totalUserWait.ms=",
+        Date.now() - tAll,
+        "submitIntentMs=",
+        submitIntentMs,
+        "queueInsertMs=",
+        queueInsertMs,
+      );
+      return;
+    }
+
+    // РіСЂСѓРїРїРёСЂСѓРµРј РїРѕ РїРѕСЃС‚Р°РІС‰РёРєСѓ (РєР°Рє Р±С‹Р»Рѕ)
     const bySupp = new Map<string, { ids: string[]; display: string }>();
     for (const id of ids) {
       const raw = (p.metaNow?.[id]?.supplier || "").trim();
@@ -203,18 +278,44 @@ export async function handleCreateProposalsBySupplierAction(p: CreateProposalsDe
       };
     });
 
-    const result = await p.apiCreateProposalsBySupplier(payload, {
-      buyerFio: (p.buyerFio || "").trim(),
-      requestItemStatus: "У директора",
-    });
+    const tCreate = Date.now();
+    let result: CatalogCreateProposalsResult;
+    try {
+      result = await p.apiCreateProposalsBySupplier(payload, {
+        buyerFio: (p.buyerFio || "").trim(),
+      });
+    } catch (e) {
+      console.warn("[buyer.submit] createProposalsBySupplier.failed", {
+        error: errMessage(e),
+        pickedIds: ids,
+        payloadBuckets: payload.length,
+        payloadPreview: payload.map((x) => ({
+          supplier: x.supplier,
+          count: Array.isArray(x.request_item_ids) ? x.request_item_ids.length : 0,
+        })),
+      });
+      throw e;
+    }
+    console.info(
+      "[buyer.submit] createProposalsBySupplier.ms=",
+      Date.now() - tCreate,
+      "rows=",
+      ids.length,
+      "buckets=",
+      payload.length,
+      "submitIntentMs=",
+      submitIntentMs,
+      "queueInsertMs=",
+      queueInsertMs,
+    );
 
     const created: CreatedProposalRow[] = Array.isArray(result?.proposals) ? result.proposals : [];
     if (!created.length) {
-      p.alert("Внимание", "Не удалось сформировать предложения");
+      p.alert("Р’РЅРёРјР°РЅРёРµ", "РќРµ СѓРґР°Р»РѕСЃСЊ СЃС„РѕСЂРјРёСЂРѕРІР°С‚СЊ РїСЂРµРґР»РѕР¶РµРЅРёСЏ");
       return;
     }
 
-    // ✅ прикрепляем supplier_quote (как было)
+    // Upload supplier_quote in parallel to avoid long sequential wait on many proposals.
     try {
       const proposalIds = Array.from(
         new Set(
@@ -233,6 +334,7 @@ export async function handleCreateProposalsBySupplierAction(p: CreateProposalsDe
         if (qProps.error) throw qProps.error;
 
         const proposalRows: ProposalRowLite[] = Array.isArray(qProps.data) ? qProps.data : [];
+        const uploads: Promise<void>[] = [];
         for (const r of proposalRows) {
           const pid = String(r?.id ?? "").trim();
           if (!pid) continue;
@@ -244,11 +346,15 @@ export async function handleCreateProposalsBySupplierAction(p: CreateProposalsDe
           if (!att?.file) continue;
 
           const fileName = String(att.name || `file_${Date.now()}`).trim();
-          await p.uploadProposalAttachment(pid, att.file, fileName, "supplier_quote");
+          uploads.push(p.uploadProposalAttachment(pid, att.file, fileName, "supplier_quote"));
         }
+        const tAtt = Date.now();
+        const settled = await Promise.allSettled(uploads);
+        const failed = settled.filter((x) => x.status === "rejected").length;
+        console.info("[buyer.submit] attachmentUploads.ms=", Date.now() - tAtt, "total=", uploads.length, "failed=", failed);
       }
     } catch (e: unknown) {
-      p.alert("Вложения", errMessage(e) ?? "Предложения созданы, но вложения не прикрепились.");
+      p.alert("Р’Р»РѕР¶РµРЅРёСЏ", errMessage(e) ?? "РџСЂРµРґР»РѕР¶РµРЅРёСЏ СЃРѕР·РґР°РЅС‹, РЅРѕ РІР»РѕР¶РµРЅРёСЏ РЅРµ РїСЂРёРєСЂРµРїРёР»РёСЃСЊ.");
     }
 
     p.setAttachments({});
@@ -256,23 +362,51 @@ export async function handleCreateProposalsBySupplierAction(p: CreateProposalsDe
       Array.isArray(x?.request_item_ids) ? x.request_item_ids : []
     );
 
-    try {
-      await p.supabase
-        .from("request_items")
-        .update({ director_reject_note: null, director_reject_at: null })
-        .in("id", affectedIds);
-    } catch { }
+    // Post-submit request_items maintenance in background (non-blocking for UX wait).
+    void (async () => {
+      if (!affectedIds.length) return;
+      const tPost = Date.now();
+      try {
+        const rpc = await p.supabase.rpc("request_items_set_status" as any, {
+          p_request_item_ids: affectedIds,
+          p_status: "У директора",
+        } as any);
+        if (rpc.error) throw rpc.error;
+      } catch {
+        try {
+          await p.supabase.from("request_items").update({ status: "У директора" }).in("id", affectedIds);
+        } catch {}
+      }
+      try {
+        await p.supabase
+          .from("request_items")
+          .update({ director_reject_note: null, director_reject_at: null })
+          .in("id", affectedIds);
+      } catch {}
+      console.info("[buyer.submit] postSubmitRequestItems.ms=", Date.now() - tPost, "rows=", affectedIds.length);
+    })();
 
     p.removeFromInboxLocally(affectedIds);
     p.clearPick();
 
-    p.alert("Отправлено", `Создано предложений: ${created.length}`);
-    await p.fetchInbox();
-    await p.fetchBuckets();
+    p.alert("РћС‚РїСЂР°РІР»РµРЅРѕ", `РЎРѕР·РґР°РЅРѕ РїСЂРµРґР»РѕР¶РµРЅРёР№: ${created.length}`);
     p.setTab("pending");
     p.closeSheet();
+    // Do not block UX on full screen reload; refresh in background.
+    const tRefresh = Date.now();
+    void Promise.allSettled([p.fetchInbox(), p.fetchBuckets()]).then(() => {
+      console.info("[buyer.submit] backgroundRefresh.ms=", Date.now() - tRefresh);
+    });
+    console.info(
+      "[buyer.submit] totalUserWait.ms=",
+      Date.now() - tAll,
+      "submitIntentMs=",
+      submitIntentMs,
+      "queueInsertMs=",
+      queueInsertMs,
+    );
   } catch (e: unknown) {
-    p.alert("Ошибка", errMessage(e) ?? "Не удалось отправить директору");
+    p.alert("РћС€РёР±РєР°", errMessage(e) ?? "РќРµ СѓРґР°Р»РѕСЃСЊ РѕС‚РїСЂР°РІРёС‚СЊ РґРёСЂРµРєС‚РѕСЂСѓ");
   } finally {
     p.sendingRef.current = false;
   }
@@ -303,30 +437,30 @@ type PublishRfqDeps = {
 export async function publishRfqAction(p: PublishRfqDeps) {
   try {
     if (p.pickedIds.length === 0) {
-      p.alert("Пусто", "Выбери позиции для торгов");
+      p.alert("РџСѓСЃС‚Рѕ", "Р’С‹Р±РµСЂРё РїРѕР·РёС†РёРё РґР»СЏ С‚РѕСЂРіРѕРІ");
       return;
     }
 
     const d = new Date(p.rfqDeadlineIso);
     if (Number.isNaN(d.getTime())) {
-      p.alert("Дедлайн", "Неверная дата");
+      p.alert("Р”РµРґР»Р°Р№РЅ", "РќРµРІРµСЂРЅР°СЏ РґР°С‚Р°");
       return;
     }
     if (d.getTime() < Date.now() + 5 * 60 * 1000) {
-      p.alert("Дедлайн", "Поставь минимум +5 минут от текущего времени");
+      p.alert("Р”РµРґР»Р°Р№РЅ", "РџРѕСЃС‚Р°РІСЊ РјРёРЅРёРјСѓРј +5 РјРёРЅСѓС‚ РѕС‚ С‚РµРєСѓС‰РµРіРѕ РІСЂРµРјРµРЅРё");
       return;
     }
 
     const deliveryDays = Number(String(p.rfqDeliveryDays).trim());
     if (!Number.isFinite(deliveryDays) || deliveryDays < 0) {
-      p.alert("Срок поставки", "Укажи число дней (0 или больше)");
+      p.alert("РЎСЂРѕРє РїРѕСЃС‚Р°РІРєРё", "РЈРєР°Р¶Рё С‡РёСЃР»Рѕ РґРЅРµР№ (0 РёР»Рё Р±РѕР»СЊС€Рµ)");
       return;
     }
 
     const city = p.rfqCity.trim();
     const addr = p.rfqAddressText.trim();
     if (!city && !addr) {
-      p.alert("Место поставки", "Укажи город или адрес");
+      p.alert("РњРµСЃС‚Рѕ РїРѕСЃС‚Р°РІРєРё", "РЈРєР°Р¶Рё РіРѕСЂРѕРґ РёР»Рё Р°РґСЂРµСЃ");
       return;
     }
 
@@ -337,7 +471,7 @@ export async function publishRfqAction(p: PublishRfqDeps) {
     const email = String(p.rfqEmail ?? "").trim() || null;
 
     if (!(phoneFull || email)) {
-      p.alert("Контакты", "Укажи телефон или email");
+      p.alert("РљРѕРЅС‚Р°РєС‚С‹", "РЈРєР°Р¶Рё С‚РµР»РµС„РѕРЅ РёР»Рё email");
       return;
     }
 
@@ -371,10 +505,10 @@ export async function publishRfqAction(p: PublishRfqDeps) {
 
     const tenderId = res.data;
 
-    p.alert("Готово", `Торги опубликованы (${String(tenderId).slice(0, 8)})`);
+    p.alert("Р“РѕС‚РѕРІРѕ", `РўРѕСЂРіРё РѕРїСѓР±Р»РёРєРѕРІР°РЅС‹ (${String(tenderId).slice(0, 8)})`);
     p.closeSheet();
   } catch (e: unknown) {
-    p.alert("Ошибка", errMessage(e));
+    p.alert("РћС€РёР±РєР°", errMessage(e));
   } finally {
     p.setBusy(false);
   }
@@ -388,21 +522,21 @@ type SendToAccountingDeps<TApproved extends MaybeId = MaybeId> = {
   invCurrency: string;
   invFile?: FileLike | null;
 
-  invoiceUploadedName?: string; // важно для условия "!invoiceUploadedName && invFile"
+  invoiceUploadedName?: string; // РІР°Р¶РЅРѕ РґР»СЏ СѓСЃР»РѕРІРёСЏ "!invoiceUploadedName && invFile"
 
-  // html предложения -> прикрепить proposal_pdf
+  // html РїСЂРµРґР»РѕР¶РµРЅРёСЏ -> РїСЂРёРєСЂРµРїРёС‚СЊ proposal_pdf
   buildProposalPdfHtml: (pidStr: string) => Promise<string>;
 
-  // основной адаптер
+  // РѕСЃРЅРѕРІРЅРѕР№ Р°РґР°РїС‚РµСЂ
   proposalSendToAccountant: (p: ProposalSendToAccountantPayload) => Promise<void>;
 
-  // вложения
+  // РІР»РѕР¶РµРЅРёСЏ
   uploadProposalAttachment: (pid: string, file: FileLike, name: string, key: string) => Promise<void>;
 
-  // гарант-флаги (твоя функция из buyer.tsx)
+  // РіР°СЂР°РЅС‚-С„Р»Р°РіРё (С‚РІРѕСЏ С„СѓРЅРєС†РёСЏ РёР· buyer.tsx)
   ensureAccountingFlags: (pidStr: string, invoiceAmountNum?: number) => Promise<void>;
 
-  // supabase (для fallback RPC + chk)
+  // supabase (РґР»СЏ fallback RPC + chk)
   supabase: SupabaseClient;
 
   // UI
@@ -418,19 +552,19 @@ type SendToAccountingDeps<TApproved extends MaybeId = MaybeId> = {
 export async function sendToAccountingAction<TApproved extends MaybeId = MaybeId>(p: SendToAccountingDeps<TApproved>) {
   if (!p.acctProposalId) return;
 
-  // 1) валидация полей (1:1)
+  // 1) РІР°Р»РёРґР°С†РёСЏ РїРѕР»РµР№ (1:1)
   const amount = Number(String(p.invAmount).replace(",", "."));
   const dateOk = /^\d{4}-\d{2}-\d{2}$/.test(String(p.invDate || "").trim());
 
-  if (!String(p.invNumber || "").trim()) { p.alert("№ счёта", "Укажите номер счёта"); return; }
-  if (!dateOk) { p.alert("Дата счёта", "Формат YYYY-MM-DD"); return; }
-  if (!Number.isFinite(amount) || amount <= 0) { p.alert("Сумма", "Введите положительную сумму"); return; }
+  if (!String(p.invNumber || "").trim()) { p.alert("в„– СЃС‡С‘С‚Р°", "РЈРєР°Р¶РёС‚Рµ РЅРѕРјРµСЂ СЃС‡С‘С‚Р°"); return; }
+  if (!dateOk) { p.alert("Р”Р°С‚Р° СЃС‡С‘С‚Р°", "Р¤РѕСЂРјР°С‚ YYYY-MM-DD"); return; }
+  if (!Number.isFinite(amount) || amount <= 0) { p.alert("РЎСѓРјРјР°", "Р’РІРµРґРёС‚Рµ РїРѕР»РѕР¶РёС‚РµР»СЊРЅСѓСЋ СЃСѓРјРјСѓ"); return; }
 
   p.setBusy(true);
   const pidStr = String(p.acctProposalId);
 
   try {
-    // 2) если ещё не грузили мгновенно — прикрепим выбранный файл как invoice (1:1)
+    // 2) РµСЃР»Рё РµС‰С‘ РЅРµ РіСЂСѓР·РёР»Рё РјРіРЅРѕРІРµРЅРЅРѕ вЂ” РїСЂРёРєСЂРµРїРёРј РІС‹Р±СЂР°РЅРЅС‹Р№ С„Р°Р№Р» РєР°Рє invoice (1:1)
     if (!p.invoiceUploadedName && p.invFile) {
       await p.uploadProposalAttachment(
         pidStr,
@@ -440,7 +574,7 @@ export async function sendToAccountingAction<TApproved extends MaybeId = MaybeId
       );
     }
 
-    // 3) HTML предложения (если ещё нет) — создаём/обновляем (1:1)
+    // 3) HTML РїСЂРµРґР»РѕР¶РµРЅРёСЏ (РµСЃР»Рё РµС‰С‘ РЅРµС‚) вЂ” СЃРѕР·РґР°С‘Рј/РѕР±РЅРѕРІР»СЏРµРј (1:1)
     try {
       const html = await p.buildProposalPdfHtml(pidStr);
       const blob = new Blob([html], { type: "text/html;charset=utf-8" });
@@ -454,7 +588,7 @@ export async function sendToAccountingAction<TApproved extends MaybeId = MaybeId
       p.log?.("[buyer] attach proposal doc failed:", errMessage(e));
     }
 
-    // 4) отправка в бухгалтерию (адаптер -> fallback RPC) (1:1)
+    // 4) РѕС‚РїСЂР°РІРєР° РІ Р±СѓС…РіР°Р»С‚РµСЂРёСЋ (Р°РґР°РїС‚РµСЂ -> fallback RPC) (1:1)
     try {
       await p.proposalSendToAccountant({
         proposalId: pidStr,
@@ -474,10 +608,10 @@ export async function sendToAccountingAction<TApproved extends MaybeId = MaybeId
       if (error) throw error;
     }
 
-    // ✅ ГАРАНТ-ФЛАГИ (1:1)
+    // вњ… Р“РђР РђРќРў-Р¤Р›РђР“Р (1:1)
     await p.ensureAccountingFlags(pidStr, amount);
 
-    // 5) контроль select proposals (1:1)
+    // 5) РєРѕРЅС‚СЂРѕР»СЊ select proposals (1:1)
     const chk = await p.supabase
       .from("proposals")
       .select("payment_status, sent_to_accountant_at")
@@ -485,15 +619,15 @@ export async function sendToAccountingAction<TApproved extends MaybeId = MaybeId
       .maybeSingle();
     if (chk.error) throw chk.error;
 
-    // 6) локально убрать из approved (1:1) и обновить бакеты
+    // 6) Р»РѕРєР°Р»СЊРЅРѕ СѓР±СЂР°С‚СЊ РёР· approved (1:1) Рё РѕР±РЅРѕРІРёС‚СЊ Р±Р°РєРµС‚С‹
     p.setApproved((prev) => prev.filter((x) => String(x?.id ?? "") !== pidStr));
     await p.fetchBuckets();
 
-    p.alert("Готово", "Счёт отправлен бухгалтеру.");
+    p.alert("Р“РѕС‚РѕРІРѕ", "РЎС‡С‘С‚ РѕС‚РїСЂР°РІР»РµРЅ Р±СѓС…РіР°Р»С‚РµСЂСѓ.");
     p.closeSheet();
   } catch (e: unknown) {
     const msg = errMessage(e);
-    p.alert("Ошибка отправки", msg);
+    p.alert("РћС€РёР±РєР° РѕС‚РїСЂР°РІРєРё", msg);
   } finally {
     p.setBusy(false);
   }
@@ -513,15 +647,15 @@ export type RwItem = {
 
 function detectReworkSourceSafe(r: ReworkProposalRow | null | undefined): "director" | "accountant" {
   const st = String(r?.status || "").toLowerCase();
-  if (st.includes("бух")) return "accountant";
-  if (st.includes("дир")) return "director";
+  if (st.includes("Р±СѓС…")) return "accountant";
+  if (st.includes("РґРёСЂ")) return "director";
 
   const base = String(
     r?.return_reason || r?.accountant_comment || r?.accountant_note || ""
   ).toLowerCase();
 
-  if (base.includes("бух") || base.includes("account")) return "accountant";
-  if (base.includes("дир")) return "director";
+  if (base.includes("Р±СѓС…") || base.includes("account")) return "accountant";
+  if (base.includes("РґРёСЂ")) return "director";
 
   return "director";
 }
@@ -571,7 +705,7 @@ async function rwEnsureProposalPdf(
       "proposal_pdf"
     );
   } catch {
-    // 1:1 не ломаем UX
+    // 1:1 РЅРµ Р»РѕРјР°РµРј UX
   }
 }
 
@@ -582,7 +716,7 @@ type OpenReworkDeps = {
 
   openReworkSheet: (pid: string) => void;
 
-  // setters (1:1 как в buyer.tsx)
+  // setters (1:1 РєР°Рє РІ buyer.tsx)
   setRwBusy: (v: boolean) => void;
   setRwPid: (v: string | null) => void;
   setRwReason: (v: string) => void;
@@ -612,7 +746,7 @@ export async function openReworkAction(p: OpenReworkDeps) {
   p.setRwInvUploadedName("");
 
   try {
-    // 1) читаем поля безопасно (1:1): сначала расширенно, потом fallback
+    // 1) С‡РёС‚Р°РµРј РїРѕР»СЏ Р±РµР·РѕРїР°СЃРЅРѕ (1:1): СЃРЅР°С‡Р°Р»Р° СЂР°СЃС€РёСЂРµРЅРЅРѕ, РїРѕС‚РѕРј fallback
     let r: ReworkProposalRow | null = null;
 
     try {
@@ -635,14 +769,14 @@ export async function openReworkAction(p: OpenReworkDeps) {
       } catch { }
     }
 
-    // 2) источник
+    // 2) РёСЃС‚РѕС‡РЅРёРє
     const src: "director" | "accountant" =
       r?.redo_source === "accountant" ? "accountant"
         : r?.redo_source === "director" ? "director"
           : detectReworkSourceSafe(r || {});
     p.setRwSource(src);
 
-    // 3) причина
+    // 3) РїСЂРёС‡РёРЅР°
     let base = String(
       r?.redo_comment ??
       r?.return_comment ??
@@ -650,14 +784,14 @@ export async function openReworkAction(p: OpenReworkDeps) {
       ""
     ).trim();
 
-    if (!/Источник:/i.test(base)) {
+    if (!/РСЃС‚РѕС‡РЅРёРє:/i.test(base)) {
       base = base
-        ? `${base}\nИсточник: ${src === "accountant" ? "бухгалтера" : "директора"}`
-        : `Источник: ${src === "accountant" ? "бухгалтера" : "директора"}`;
+        ? `${base}\nРСЃС‚РѕС‡РЅРёРє: ${src === "accountant" ? "Р±СѓС…РіР°Р»С‚РµСЂР°" : "РґРёСЂРµРєС‚РѕСЂР°"}`
+        : `РСЃС‚РѕС‡РЅРёРє: ${src === "accountant" ? "Р±СѓС…РіР°Р»С‚РµСЂР°" : "РґРёСЂРµРєС‚РѕСЂР°"}`;
     }
     p.setRwReason(base);
 
-    // 4) строки предложения
+    // 4) СЃС‚СЂРѕРєРё РїСЂРµРґР»РѕР¶РµРЅРёСЏ
     const pi = await p.supabase
       .from("proposal_items")
       .select("request_item_id, price, supplier, note")
@@ -665,7 +799,7 @@ export async function openReworkAction(p: OpenReworkDeps) {
 
     const items: ReworkProposalItemRow[] = Array.isArray(pi.data) ? pi.data : [];
 
-    // имена/единицы/количество из request_items
+    // РёРјРµРЅР°/РµРґРёРЅРёС†С‹/РєРѕР»РёС‡РµСЃС‚РІРѕ РёР· request_items
     const ids = Array.from(new Set(items.map((x) => String(x.request_item_id)).filter(Boolean)));
     const names = new Map<string, RequestItemNameRow>();
 
@@ -695,7 +829,7 @@ export async function openReworkAction(p: OpenReworkDeps) {
       })
     );
   } catch (e: unknown) {
-    p.alert("Ошибка", errMessage(e) ?? "Не удалось открыть доработку");
+    p.alert("РћС€РёР±РєР°", errMessage(e) ?? "РќРµ СѓРґР°Р»РѕСЃСЊ РѕС‚РєСЂС‹С‚СЊ РґРѕСЂР°Р±РѕС‚РєСѓ");
   } finally {
     p.setRwBusy(false);
   }
@@ -713,9 +847,9 @@ export async function rwSaveItemsAction(p: RwSaveItemsDeps) {
   p.setBusy(true);
   try {
     await rwPersistItems(p.supabase, p.pid, p.items);
-    p.alert("Сохранено", "Изменения по позициям сохранены");
+    p.alert("РЎРѕС…СЂР°РЅРµРЅРѕ", "РР·РјРµРЅРµРЅРёСЏ РїРѕ РїРѕР·РёС†РёСЏРј СЃРѕС…СЂР°РЅРµРЅС‹");
   } catch (e: unknown) {
-    p.alert("Ошибка сохранения", errMessage(e));
+    p.alert("РћС€РёР±РєР° СЃРѕС…СЂР°РЅРµРЅРёСЏ", errMessage(e));
   } finally {
     p.setBusy(false);
   }
@@ -753,10 +887,10 @@ export async function rwSendToDirectorAction<TRejected extends MaybeId = MaybeId
     await p.fetchBuckets();
     p.setRejected((prev) => prev.filter((x) => String(x?.id ?? "") !== p.pid));
 
-    p.alert("Готово", "Отправлено директору.");
+    p.alert("Р“РѕС‚РѕРІРѕ", "РћС‚РїСЂР°РІР»РµРЅРѕ РґРёСЂРµРєС‚РѕСЂСѓ.");
     p.closeSheet();
   } catch (e: unknown) {
-    p.alert("Ошибка отправки", errMessage(e));
+    p.alert("РћС€РёР±РєР° РѕС‚РїСЂР°РІРєРё", errMessage(e));
   } finally {
     p.setBusy(false);
   }
@@ -794,9 +928,9 @@ export async function rwSendToAccountingAction<TRejected extends MaybeId = Maybe
   const dateStr = String(p.invDate || "").trim();
   const dateOk = /^\d{4}-\d{2}-\d{2}$/.test(dateStr);
 
-  if (!String(p.invNumber || "").trim()) { p.alert("№ счёта", "Укажите номер счёта"); return; }
-  if (!dateOk) { p.alert("Дата счёта", "Формат YYYY-MM-DD"); return; }
-  if (!Number.isFinite(amt) || amt <= 0) { p.alert("Сумма", "Введите положительную сумму"); return; }
+  if (!String(p.invNumber || "").trim()) { p.alert("в„– СЃС‡С‘С‚Р°", "РЈРєР°Р¶РёС‚Рµ РЅРѕРјРµСЂ СЃС‡С‘С‚Р°"); return; }
+  if (!dateOk) { p.alert("Р”Р°С‚Р° СЃС‡С‘С‚Р°", "Р¤РѕСЂРјР°С‚ YYYY-MM-DD"); return; }
+  if (!Number.isFinite(amt) || amt <= 0) { p.alert("РЎСѓРјРјР°", "Р’РІРµРґРёС‚Рµ РїРѕР»РѕР¶РёС‚РµР»СЊРЅСѓСЋ СЃСѓРјРјСѓ"); return; }
 
   p.setBusy(true);
   try {
@@ -837,10 +971,10 @@ export async function rwSendToAccountingAction<TRejected extends MaybeId = Maybe
     await p.fetchBuckets();
     p.setRejected((prev) => prev.filter((x) => String(x?.id ?? "") !== p.pid));
 
-    p.alert("Готово", "Отправлено бухгалтеру.");
+    p.alert("Р“РѕС‚РѕРІРѕ", "РћС‚РїСЂР°РІР»РµРЅРѕ Р±СѓС…РіР°Р»С‚РµСЂСѓ.");
     p.closeSheet();
   } catch (e: unknown) {
-    p.alert("Ошибка отправки", errMessage(e));
+    p.alert("РћС€РёР±РєР° РѕС‚РїСЂР°РІРєРё", errMessage(e));
   } finally {
     p.setBusy(false);
   }
@@ -940,16 +1074,16 @@ export async function preloadProposalTitlesAction(p: PreloadProposalTitlesDeps) 
       map = {};
     }
 
-    // 5) titles exactly like было
+    // 5) titles exactly like Р±С‹Р»Рѕ
     const next: Record<string, string> = {};
     Object.entries(reqIdsByProp).forEach(([pid, rids]) => {
       const uniqReq = Array.from(new Set(rids));
       const labels = uniqReq.map((id) => map?.[id] || (id.length > 8 ? id.slice(0, 8) : id));
 
       next[pid] =
-        labels.length === 1 ? `Заявка ${labels[0]}` :
-          labels.length === 2 ? `Заявки ${labels[0]} + ${labels[1]}` :
-            `Заявки ${labels[0]} + ${labels[1]} + … (${labels.length})`;
+        labels.length === 1 ? `Р—Р°СЏРІРєР° ${labels[0]}` :
+          labels.length === 2 ? `Р—Р°СЏРІРєРё ${labels[0]} + ${labels[1]}` :
+            `Р—Р°СЏРІРєРё ${labels[0]} + ${labels[1]} + вЂ¦ (${labels.length})`;
     });
 
     p.setTitleByPid((prev) => ({ ...prev, ...next }));
@@ -958,7 +1092,7 @@ export async function preloadProposalTitlesAction(p: PreloadProposalTitlesDeps) 
   }
 }
 // =====================================
-// buyer.actions.ts — финальные write ops
+// buyer.actions.ts вЂ” С„РёРЅР°Р»СЊРЅС‹Рµ write ops
 // =====================================
 
 export async function setProposalBuyerFioAction(opts: {
@@ -976,7 +1110,7 @@ export async function setProposalBuyerFioAction(opts: {
       fio =
         (data?.user?.user_metadata?.full_name?.trim()) ||
         (data?.user?.user_metadata?.name?.trim()) ||
-        "Снабженец";
+        "РЎРЅР°Р±Р¶РµРЅРµС†";
     }
 
     await repoSetProposalBuyerFio(supabase, propId, fio);
@@ -999,7 +1133,7 @@ export async function snapshotProposalItemsAction(opts: {
     const cleanIds = Array.from(new Set((ids || []).map(String).filter(Boolean)));
     if (!cleanIds.length) return;
 
-    // 1) пытаемся взять из request_items (как было)
+    // 1) РїС‹С‚Р°РµРјСЃСЏ РІР·СЏС‚СЊ РёР· request_items (РєР°Рє Р±С‹Р»Рѕ)
     let riData: RequestItemViewRow[] = [];
     try {
       const ri = await supabase
@@ -1010,7 +1144,7 @@ export async function snapshotProposalItemsAction(opts: {
       if (!ri.error && Array.isArray(ri.data)) riData = ri.data;
     } catch { }
 
-    // 2) fallback из текущего inbox rows (как было)
+    // 2) fallback РёР· С‚РµРєСѓС‰РµРіРѕ inbox rows (РєР°Рє Р±С‹Р»Рѕ)
     if (!riData.length) {
       const byId = new Map((rows || []).map((r) => [String(r.request_item_id), r]));
       riData = cleanIds.map((id) => {
@@ -1040,7 +1174,7 @@ export async function snapshotProposalItemsAction(opts: {
         qty: r?.qty ?? null,
         app_code: r?.app_code ?? null,
         rik_code: r?.rik_code ?? null,
-        // ⚠️ supplier НЕ трогаем — как и было
+        // вљ пёЏ supplier РќР• С‚СЂРѕРіР°РµРј вЂ” РєР°Рє Рё Р±С‹Р»Рѕ
       };
 
       if (m.price != null && String(m.price).trim() !== "") {

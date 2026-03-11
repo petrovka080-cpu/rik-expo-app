@@ -143,22 +143,6 @@ export function useDirectorReports({ fmtDateOnly }: Deps) {
         });
         if (reqId !== reportReqSeqRef.current) return;
         const normalized = (payload ?? null) as any;
-        const fromReportObjects = Array.isArray(normalized?.report_options?.objects)
-          ? (normalized.report_options.objects as string[])
-          : null;
-        const fromReportMap =
-          normalized?.report_options?.objectIdByName &&
-            typeof normalized.report_options.objectIdByName === "object"
-            ? (normalized.report_options.objectIdByName as Record<string, string | null>)
-            : null;
-        if ((objectName ?? null) == null && fromReportObjects && fromReportMap) {
-          setRepOptObjects(fromReportObjects);
-          setRepOptObjectIdByName(fromReportMap);
-          setCached(optionsCacheRef.current, optionsKey(from, to), {
-            objects: fromReportObjects,
-            objectIdByName: fromReportMap,
-          });
-        }
         setCached(reportCacheRef.current, key, normalized);
         setRepData(normalized);
         const disciplinePayload = (normalized as any)?.discipline ?? null;
@@ -486,9 +470,10 @@ export function useDirectorReports({ fmtDateOnly }: Deps) {
     if (REPORTS_TIMING) console.info("[director_works] click:open_reports");
     setRepOpen(true);
     setRepTab("materials");
+    void fetchReportOptions();
     void fetchReport();
     logTiming("open_reports_dispatch", startedAt);
-  }, [fetchReport]);
+  }, [fetchReport, fetchReportOptions]);
 
   const closeReports = useCallback(() => {
     setRepOpen(false);

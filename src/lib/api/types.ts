@@ -69,6 +69,12 @@ export type BuyerInboxRow = {
   object_name?: string | null;
   status: string;
   created_at?: string;
+  director_reject_note?: string | null;
+  director_reject_at?: string | null;
+  director_reject_reason?: string | null;
+  last_offer_supplier?: string | null;
+  last_offer_price?: number | null;
+  last_offer_note?: string | null;
 };
 
 export type ProposalItemRow = {

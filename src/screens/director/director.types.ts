@@ -76,8 +76,10 @@ export type RepWho = { who: string; items_cnt: number };
 export type RepKpi = {
   issues_total: number;
   issues_no_obj: number;
+  issues_without_object?: number;
   items_total: number;
   items_free: number;
+  items_without_request?: number;
 };
 
 export type RepDisciplineMaterial = {

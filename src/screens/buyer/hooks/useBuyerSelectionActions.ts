@@ -23,8 +23,31 @@ export function useBuyerSelectionActions({
   const togglePick = useCallback((ri: BuyerInboxRow) => {
     const key = String(ri.request_item_id ?? "").trim();
     if (!key) return;
-    setPicked((prev) => ({ ...prev, [key]: !prev[key] }));
-  }, [setPicked]);
+    setPicked((prev) => {
+      const nextPicked = !prev[key];
+      if (nextPicked) {
+        const fallbackSupplier = String((ri as any)?.last_offer_supplier ?? "").trim();
+        const fallbackPriceRaw = (ri as any)?.last_offer_price;
+        const fallbackPrice =
+          typeof fallbackPriceRaw === "number" && Number.isFinite(fallbackPriceRaw)
+            ? String(fallbackPriceRaw)
+            : "";
+        setMeta((prevMeta) => {
+          if (prevMeta[key]?.supplier || prevMeta[key]?.price) return prevMeta;
+          if (!fallbackSupplier && !fallbackPrice) return prevMeta;
+          return {
+            ...prevMeta,
+            [key]: {
+              ...(prevMeta[key] || {}),
+              supplier: fallbackSupplier || prevMeta[key]?.supplier,
+              price: fallbackPrice || prevMeta[key]?.price,
+            },
+          };
+        });
+      }
+      return { ...prev, [key]: nextPicked };
+    });
+  }, [setPicked, setMeta]);
 
   const clearPick = useCallback(() => {
     setPicked({});
@@ -56,4 +79,3 @@ export function useBuyerSelectionActions({
 
   return { togglePick, clearPick, setLineMeta, applyToPickedInGroup };
 }
-

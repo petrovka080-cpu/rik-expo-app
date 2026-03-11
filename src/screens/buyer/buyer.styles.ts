@@ -56,7 +56,7 @@ export const buyerStyles = StyleSheet.create({
     borderRadius: 16,
     backgroundColor: 'rgba(255,255,255,0.03)',
     marginBottom: 12,
-    overflow: 'hidden',
+    overflow: 'visible',
   },
   groupHeader: {
     flexDirection: 'row',
@@ -79,6 +79,7 @@ export const buyerStyles = StyleSheet.create({
     borderRadius: 16,
     backgroundColor: UI.cardBg,
     marginBottom: 12,
+    overflow: 'visible',
   },
   cardPicked: {
     borderColor: UI.accent,
@@ -223,10 +224,14 @@ export const buyerStyles = StyleSheet.create({
     top: 50,
     left: 0,
     right: 0,
-    zIndex: 99,
+    zIndex: 1000,
+    elevation: 60,
+    maxHeight: 260,
+    pointerEvents: 'auto',
   },
   suggestItem: {
     padding: 12,
+    minHeight: 44,
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(255,255,255,0.08)',
   },
@@ -237,10 +242,12 @@ export const buyerStyles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.04)',
     borderWidth: 1.5,
     borderColor: 'rgba(255,255,255,0.1)',
+    overflow: 'visible',
   },
   buyerMobCardPicked: {
     borderColor: UI.accent,
     backgroundColor: 'rgba(34,197,94,0.06)',
+    overflow: 'visible',
   },
 
   sendBtnWarnWrap: {

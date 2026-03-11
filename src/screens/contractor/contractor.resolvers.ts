@@ -92,11 +92,12 @@ export async function resolveContractorJobIdForRow(
   const progressId = String(row.progress_id || "").trim();
   if (!looksLikeUuid(progressId)) return "";
 
-  const [wpById, wpByProgress] = await Promise.all([
-    supabaseClient.from("work_progress").select("*").eq("id", progressId).maybeSingle(),
-    supabaseClient.from("work_progress").select("*").eq("progress_id", progressId).maybeSingle(),
-  ]);
-  const wpData = (wpById.data || wpByProgress.data) as WorkProgressRow | null;
+  const wpById = await supabaseClient
+    .from("work_progress")
+    .select("*")
+    .eq("id", progressId)
+    .maybeSingle();
+  const wpData = (wpById.data || null) as WorkProgressRow | null;
   if (!wpData) return "";
   return String(wpData.contractor_job_id || wpData.subcontract_id || "").trim();
 }

@@ -53,7 +53,7 @@ type RequestItemRawRow = {
 type RequestRawRow = {
   id?: string | null;
   status?: string | null;
-  subcontract_id?: string | null;
+  contractor_job_id?: string | null;
   object_type_code?: string | null;
   level_code?: string | null;
   system_code?: string | null;
@@ -226,16 +226,10 @@ export async function enrichWorksRows(params: {
   );
   const reqById = new Map<string, RequestRawRow>();
   if (reqIds.length) {
-    let rq = await supabaseClient
+    const rq = await supabaseClient
       .from("requests")
-      .select("id, status, subcontract_id, object_type_code, level_code, system_code")
+      .select("id, status, contractor_job_id, object_type_code, level_code, system_code")
       .in("id", reqIds);
-    if (rq.error) {
-      rq = await supabaseClient
-        .from("requests")
-        .select("id, status, object_type_code, level_code, system_code")
-        .in("id", reqIds);
-    }
     if (!rq.error && Array.isArray(rq.data)) {
       for (const r of rq.data as RequestRawRow[]) {
         const id = String(r.id || "").trim();
@@ -254,7 +248,7 @@ export async function enrichWorksRows(params: {
     return {
       ...r,
       request_status: r.request_status || req.status || null,
-      contractor_job_id: r.contractor_job_id || req.subcontract_id || null,
+      contractor_job_id: r.contractor_job_id || req.contractor_job_id || null,
       object_name: r.object_name || reqObject || null,
     };
   });

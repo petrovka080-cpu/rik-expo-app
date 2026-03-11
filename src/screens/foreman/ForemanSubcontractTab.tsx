@@ -142,6 +142,21 @@ const UOM_OPTIONS = [
 ];
 
 type DateTarget = "contractDate" | "dateStart" | "dateEnd" | null;
+let requestsHasRequestNoCache: boolean | null = null;
+
+async function resolveRequestsHasRequestNo(): Promise<boolean> {
+  if (requestsHasRequestNoCache != null) return requestsHasRequestNoCache;
+  try {
+    const q = await supabase.from("requests" as any).select("*").limit(1);
+    if (q.error) throw q.error;
+    const first = Array.isArray(q.data) && q.data.length ? (q.data[0] as Record<string, any>) : null;
+    requestsHasRequestNoCache = !!first && Object.prototype.hasOwnProperty.call(first, "request_no");
+    return requestsHasRequestNoCache;
+  } catch {
+    requestsHasRequestNoCache = false;
+    return false;
+  }
+}
 
 const toNum = (v: string) => {
   const n = Number(String(v || "").trim().replace(",", "."));
@@ -510,11 +525,29 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
     let cancelled = false;
     (async () => {
       try {
-        const rq = await supabase
+        const hasRequestNo = await resolveRequestsHasRequestNo();
+        const primarySelect = hasRequestNo ? "request_no, display_no" : "display_no";
+        let rq = await supabase
           .from("requests" as any)
-          .select("request_no, display_no")
+          .select(primarySelect)
           .eq("id", requestId)
           .maybeSingle();
+        if (rq.error) {
+          const msg = String(rq.error.message || "").toLowerCase();
+          const requestNoMissing =
+            primarySelect.includes("request_no") &&
+            (msg.includes("request_no") || msg.includes("column") || msg.includes("does not exist"));
+          if (requestNoMissing) {
+            requestsHasRequestNoCache = false;
+            rq = await supabase
+              .from("requests" as any)
+              .select("display_no")
+              .eq("id", requestId)
+              .maybeSingle();
+          }
+        } else if (primarySelect.includes("request_no")) {
+          requestsHasRequestNoCache = true;
+        }
         if (cancelled || rq.error || !rq.data) return;
         const label = String((rq.data as any).request_no || (rq.data as any).display_no || "").trim();
         if (label) setDisplayNo(label);
@@ -572,6 +605,16 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
         .update(directPatch as any)
         .eq("id", rid);
       if (directRes.error) {
+        console.warn("[foreman.subcontract][requests.patch400.direct]", {
+          request_id: rid,
+          payload: directPatch,
+          error: {
+            message: String((directRes.error as any)?.message ?? ""),
+            code: String((directRes.error as any)?.code ?? ""),
+            details: (directRes.error as any)?.details ?? null,
+            hint: (directRes.error as any)?.hint ?? null,
+          },
+        });
         const msg = String(directRes.error.message || "");
         if (msg.toLowerCase().includes("does not exist")) {
           throw new Error("В таблице requests отсутствуют поля subcontract_id/contractor_job_id. Нужна миграция БД.");

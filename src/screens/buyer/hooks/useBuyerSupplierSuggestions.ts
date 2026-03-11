@@ -1,22 +1,26 @@
 import { useCallback } from "react";
 
-import type { Supplier } from "../../../lib/catalog_api";
+import type { BuyerCounterpartySuggestion } from "./useBuyerSuppliers";
+import type { CounterpartyRoleGate } from "../procurementTyping";
 import { normName } from "../buyerUtils";
 
-export function useBuyerSupplierSuggestions(suppliers: Supplier[]) {
+export function useBuyerSupplierSuggestions(counterparties: BuyerCounterpartySuggestion[]) {
   const getSupplierSuggestions = useCallback(
-    (query: string) => {
+    (query: string, roleGate: CounterpartyRoleGate = null) => {
       const needle = normName(query);
-      if (!needle) return [];
-      return suppliers
-        .filter((s) => normName(s.name).includes(needle))
-        .slice(0, 8)
-        .map((s) => s.name)
-        .filter(Boolean);
+      const roleFiltered = counterparties.filter((cp) => {
+        if (roleGate === "supplier") return cp.role === "supplier" || cp.role === "both";
+        if (roleGate === "contractor") return cp.role === "contractor" || cp.role === "both";
+        return true;
+      });
+
+      const byNeedle = needle ? roleFiltered.filter((cp) => normName(cp.name).includes(needle)) : roleFiltered;
+      const source = byNeedle.length > 0 ? byNeedle : roleFiltered;
+      const rawNames = source.map((cp) => String(cp?.name ?? "").trim()).filter(Boolean);
+      return Array.from(new Set(rawNames));
     },
-    [suppliers]
+    [counterparties]
   );
 
   return { getSupplierSuggestions };
 }
-

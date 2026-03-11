@@ -50,6 +50,7 @@ type RequestDisplayRow = {
   request_no?: string | null;
   status?: string | null;
 };
+let requestsHasRequestNoInWorkModalCache: boolean | null = null;
 
 type WarehouseIssueHeadRow = {
   id?: string | null;
@@ -258,9 +259,25 @@ export async function loadIssuedTodayData(
     };
   }
 
+  if (requestsHasRequestNoInWorkModalCache == null) {
+    try {
+      const probe = await supabaseClient.from("requests").select("*").limit(1);
+      if (probe.error) throw probe.error;
+      const first =
+        Array.isArray(probe.data) && probe.data.length ? (probe.data[0] as Record<string, unknown>) : null;
+      requestsHasRequestNoInWorkModalCache =
+        !!first && Object.prototype.hasOwnProperty.call(first, "request_no");
+    } catch {
+      requestsHasRequestNoInWorkModalCache = false;
+    }
+  }
+
+  const reqDisplaySelect = requestsHasRequestNoInWorkModalCache
+    ? "id, display_no, request_no, status"
+    : "id, display_no, status";
   const reqDisplayQ = await supabaseClient
     .from("requests")
-    .select("id, display_no, request_no, status")
+    .select(reqDisplaySelect)
     .in("id", requestIds);
   const reqDisplayById = new Map<string, { req_no: string; status: string | null }>();
   if (!reqDisplayQ.error && Array.isArray(reqDisplayQ.data)) {

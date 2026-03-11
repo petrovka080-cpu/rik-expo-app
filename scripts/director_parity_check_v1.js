@@ -13,6 +13,7 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const DATE_WIDE_FROM = "2020-01-01";
 const DATE_WIDE_TO = "2030-01-01";
+const LEGACY_PAGE_SIZE = 1000;
 
 const normObj = (v) => String(v ?? "").trim() || "Без объекта";
 const normWork = (v) => String(v ?? "").trim() || "Без вида работ";
@@ -21,6 +22,18 @@ const toNum = (v) => {
   return Number.isFinite(n) ? n : 0;
 };
 const pct = (a, b) => (b > 0 ? Math.round((a * 10000) / b) / 100 : 0);
+
+const COMPARABLE_METRICS = {
+  works: ["total_positions", "req_positions", "free_positions", "works_count"],
+  materials: ["items_total", "items_without_request", "rows_count"],
+};
+
+const NON_COMPARABLE_METRICS = {
+  works: ["total_qty", "issue_cost_total", "purchase_cost_total", "unpriced_issue_pct"],
+  materials: ["qty_total"],
+  summary: ["issue_cost_total", "purchase_cost_total", "unevaluated_ratio"],
+};
+let confirmedStatusValueCache = null;
 
 async function pickCompanyId() {
   {
@@ -32,6 +45,19 @@ async function pickCompanyId() {
     if (!error) return data?.[0]?.company_id ?? null;
   }
   return null;
+}
+
+async function resolveConfirmedStatusValue() {
+  if (confirmedStatusValueCache) return confirmedStatusValueCache;
+  const { data, error } = await supabase.from("warehouse_issues").select("status").limit(500);
+  if (error || !Array.isArray(data) || !data.length) {
+    confirmedStatusValueCache = "Подтверждено";
+    return confirmedStatusValueCache;
+  }
+  const statuses = Array.from(new Set(data.map((r) => String(r?.status ?? "").trim()).filter(Boolean)));
+  const match = statuses.find((s) => s.toLowerCase().includes("подт"));
+  confirmedStatusValueCache = match || statuses[0] || "Подтверждено";
+  return confirmedStatusValueCache;
 }
 
 async function callCanonicalMaterials(scope, companyId) {
@@ -50,6 +76,10 @@ async function callCanonicalMaterials(scope, companyId) {
     p_to: scope.to,
     p_object_name: scope.objectName,
   };
+  const isTransientGateway = (e) => {
+    const msg = String(e?.message ?? e ?? "");
+    return msg.includes("502") || msg.includes("Bad gateway") || msg.includes("<!DOCTYPE html>");
+  };
   let data = null;
   let error = null;
   if (companyId) {
@@ -58,9 +88,14 @@ async function callCanonicalMaterials(scope, companyId) {
     error = r.error;
     if (!error) return { ok: true, data, sig: "new" };
   }
-  const r2 = await supabase.rpc("director_report_fetch_materials_v1", argsOld);
+  let r2 = await supabase.rpc("director_report_fetch_materials_v1", argsOld);
   data = r2.data;
   error = r2.error;
+  if (error && isTransientGateway(error)) {
+    r2 = await supabase.rpc("director_report_fetch_materials_v1", argsOld);
+    data = r2.data;
+    error = r2.error;
+  }
   if (error) return { ok: false, error: error.message || String(error), sig: companyId ? "new+old_failed" : "old" };
   return { ok: true, data, sig: "old" };
 }
@@ -82,6 +117,10 @@ async function callCanonicalWorks(scope, companyId, includeCosts) {
     p_object_name: scope.objectName,
     p_include_costs: !!includeCosts,
   };
+  const isTransientGateway = (e) => {
+    const msg = String(e?.message ?? e ?? "");
+    return msg.includes("502") || msg.includes("Bad gateway") || msg.includes("<!DOCTYPE html>");
+  };
   let data = null;
   let error = null;
   if (companyId) {
@@ -90,9 +129,14 @@ async function callCanonicalWorks(scope, companyId, includeCosts) {
     error = r.error;
     if (!error) return { ok: true, data, sig: "new" };
   }
-  const r2 = await supabase.rpc("director_report_fetch_works_v1", argsOld);
+  let r2 = await supabase.rpc("director_report_fetch_works_v1", argsOld);
   data = r2.data;
   error = r2.error;
+  if (error && isTransientGateway(error)) {
+    r2 = await supabase.rpc("director_report_fetch_works_v1", argsOld);
+    data = r2.data;
+    error = r2.error;
+  }
   if (error) return { ok: false, error: error.message || String(error), sig: companyId ? "new+old_failed" : "old" };
   return { ok: true, data, sig: "old" };
 }
@@ -112,11 +156,18 @@ async function callCanonicalSummary(scope, companyId) {
     p_object_name: scope.objectName,
     p_mode: null,
   };
+  const isTransientGateway = (e) => {
+    const msg = String(e?.message ?? e ?? "");
+    return msg.includes("502") || msg.includes("Bad gateway") || msg.includes("<!DOCTYPE html>");
+  };
   if (companyId) {
     const r = await supabase.rpc("director_report_fetch_summary_v1", argsNew);
     if (!r.error) return { ok: true, data: r.data, sig: "new" };
   }
-  const r2 = await supabase.rpc("director_report_fetch_summary_v1", argsOld);
+  let r2 = await supabase.rpc("director_report_fetch_summary_v1", argsOld);
+  if (r2.error && isTransientGateway(r2.error)) {
+    r2 = await supabase.rpc("director_report_fetch_summary_v1", argsOld);
+  }
   if (r2.error) return { ok: false, error: r2.error.message || String(r2.error), sig: companyId ? "new+old_failed" : "old" };
   return { ok: true, data: r2.data, sig: "old" };
 }
@@ -131,76 +182,82 @@ function unwrapPayload(data) {
   return data ?? null;
 }
 
-async function fetchLegacyMaterials(scope) {
-  const fromIso = `${scope.from}T00:00:00Z`;
-  const toIso = `${scope.to}T23:59:59Z`;
-  let payloadKpi = null;
-  try {
-    const reqCtx = await supabase.rpc("rpc_wh_report_issued_by_req_context_v2", {
-      p_from: fromIso,
-      p_to: toIso,
-      p_object_name: scope.objectName,
-      p_level_code: null,
-      p_system_code: null,
-      p_zone_code: null,
-    });
-    if (!reqCtx.error && reqCtx.data && typeof reqCtx.data === "object") payloadKpi = reqCtx.data.kpi || null;
-  } catch {}
-  const byObj = await supabase.rpc("wh_report_issued_by_object_fast", { p_from: fromIso, p_to: toIso, p_object_id: null });
-  const mats = await supabase.rpc("wh_report_issued_materials_fast", { p_from: fromIso, p_to: toIso, p_object_id: null });
-  if (byObj.error) throw byObj.error;
-  if (mats.error) throw mats.error;
-  const byObjRows = Array.isArray(byObj.data) ? byObj.data : [];
-  const matRows = Array.isArray(mats.data) ? mats.data : [];
-  const targetObj = scope.objectName ? normObj(scope.objectName) : null;
-  const filteredByObj = targetObj ? byObjRows.filter((r) => normObj(r.object_name) === targetObj) : byObjRows;
-  return {
-    kpi: {
-      issues_total: toNum(payloadKpi?.issues_total ?? filteredByObj.reduce((a, r) => a + Math.round(toNum(r.docs_cnt)), 0)),
-      items_total: toNum(payloadKpi?.items_total ?? 0),
-      items_without_request: toNum(payloadKpi?.items_without_request ?? payloadKpi?.items_free ?? 0),
-    },
-    rows_count: matRows.length,
-    qty_total: matRows.reduce((a, r) => a + toNum(r.qty_total), 0),
-  };
-}
-
-async function fetchLegacyWorks(scope) {
+async function fetchLegacyIssueRows(scope) {
+  const confirmedStatus = await resolveConfirmedStatusValue();
   const fromIso = `${scope.from}T00:00:00.000Z`;
   const toIso = `${scope.to}T23:59:59.999Z`;
   const out = [];
-  const pageSize = 3000;
   let fromIdx = 0;
+
   while (true) {
     let q = supabase
       .from("warehouse_issue_items")
       .select("issue_id,rik_code,uom_id,qty,request_item_id,warehouse_issues!inner(id,iss_date,object_name,work_name,status,note)")
-      .eq("warehouse_issues.status", "Подтверждено")
+      .eq("warehouse_issues.status", confirmedStatus)
       .gte("warehouse_issues.iss_date", fromIso)
       .lte("warehouse_issues.iss_date", toIso)
       .order("issue_id", { ascending: false })
-      .range(fromIdx, fromIdx + pageSize - 1);
+      .range(fromIdx, fromIdx + LEGACY_PAGE_SIZE - 1);
     if (scope.objectName) q = q.eq("warehouse_issues.object_name", scope.objectName);
+
     const { data, error } = await q;
     if (error) throw error;
     const rows = Array.isArray(data) ? data : [];
     if (!rows.length) break;
-    for (const it of rows) {
-      const issue = Array.isArray(it.warehouse_issues) ? (it.warehouse_issues[0] ?? null) : (it.warehouse_issues ?? null);
-      if (!issue) continue;
-      const code = String(it.rik_code ?? "").trim().toUpperCase();
-      if (!code) continue;
-      out.push({
-        work_name: normWork(issue.work_name),
-        issue_item_id: String(it.issue_id ?? issue.id ?? ""),
-        request_item_id: String(it.request_item_id ?? "").trim() || null,
-        qty: toNum(it.qty),
-        code,
-      });
-    }
-    if (rows.length < pageSize) break;
-    fromIdx += pageSize;
-    if (fromIdx > 500000) break;
+    out.push(...rows);
+    if (rows.length < LEGACY_PAGE_SIZE) break;
+    fromIdx += LEGACY_PAGE_SIZE;
+    if (fromIdx > 1000000) break;
+  }
+
+  return out;
+}
+
+async function fetchLegacyMaterials(scope) {
+  const items = await fetchLegacyIssueRows(scope);
+  const rows = [];
+  for (const it of items) {
+    const issue = Array.isArray(it.warehouse_issues) ? (it.warehouse_issues[0] ?? null) : (it.warehouse_issues ?? null);
+    if (!issue) continue;
+    const code = String(it.rik_code ?? "").trim().toUpperCase();
+    if (!code) continue;
+    rows.push({
+      issue_id: String(it.issue_id ?? issue.id ?? ""),
+      request_item_id: String(it.request_item_id ?? "").trim() || null,
+      qty: toNum(it.qty),
+      code,
+    });
+  }
+  const uniqCodes = new Set(rows.map((r) => r.code));
+  const issues = new Set(rows.map((r) => r.issue_id));
+  const itemsWithoutRequest = rows.reduce((a, r) => a + (r.request_item_id ? 0 : 1), 0);
+  return {
+    kpi: {
+      issues_total: issues.size,
+      items_total: rows.length,
+      items_without_request: itemsWithoutRequest,
+    },
+    rows_count: uniqCodes.size,
+    qty_total: rows.reduce((a, r) => a + toNum(r.qty), 0),
+    _meta: { page_size: LEGACY_PAGE_SIZE, fetched_rows: items.length },
+  };
+}
+
+async function fetchLegacyWorks(scope) {
+  const items = await fetchLegacyIssueRows(scope);
+  const out = [];
+  for (const it of items) {
+    const issue = Array.isArray(it.warehouse_issues) ? (it.warehouse_issues[0] ?? null) : (it.warehouse_issues ?? null);
+    if (!issue) continue;
+    const code = String(it.rik_code ?? "").trim().toUpperCase();
+    if (!code) continue;
+    out.push({
+      work_name: normWork(issue.work_name),
+      issue_item_id: String(it.issue_id ?? issue.id ?? ""),
+      request_item_id: String(it.request_item_id ?? "").trim() || null,
+      qty: toNum(it.qty),
+      code,
+    });
   }
   const byWork = new Map();
   let totalQty = 0;
@@ -224,8 +281,10 @@ async function fetchLegacyWorks(scope) {
       unpriced_issue_pct: null,
     },
     works_count: byWork.size,
+    _meta: { page_size: LEGACY_PAGE_SIZE, fetched_rows: items.length },
   };
 }
+
 
 function canonicalMaterialsMetrics(payload) {
   const p = unwrapPayload(payload) || {};
@@ -383,6 +442,10 @@ async function run() {
     generated_at: new Date().toISOString(),
     company_id: companyId,
     scopes_checked: scopes.length,
+    metric_contract: {
+      comparable: COMPARABLE_METRICS,
+      non_comparable: NON_COMPARABLE_METRICS,
+    },
     results,
   };
   const outDir = path.join(process.cwd(), "diagnostics");

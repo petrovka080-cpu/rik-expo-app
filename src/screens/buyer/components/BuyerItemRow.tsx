@@ -1,5 +1,12 @@
 ﻿import React from "react";
-import { View, Text, Pressable, TextInput } from "react-native";
+import {
+  View,
+  Text,
+  Pressable,
+  TextInput,
+  FlatList,
+  Platform,
+} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
 import type { BuyerInboxRow } from "../../../lib/catalog_api";
@@ -24,8 +31,11 @@ export const BuyerItemRow = React.memo(function BuyerItemRow(props: {
   onSetPrice: (v: string) => void;
   onSetSupplier: (v: string) => void;
   onSetNote: (v: string) => void;
+  counterpartyLabel: string;
 
   supplierSuggestions: string[];
+  hasAnyCounterpartyOptions: boolean;
+  counterpartyHardFailure: boolean;
   onPickSupplier: (name: string) => void;
 
   onFocusField?: () => void;
@@ -33,13 +43,97 @@ export const BuyerItemRow = React.memo(function BuyerItemRow(props: {
   const {
     it, selected, inSheet, m, sum, prettyText, rejectedByDirector,
     onTogglePick, onSetPrice, onSetSupplier, onSetNote,
-    supplierSuggestions, onPickSupplier,
+    counterpartyLabel,
+    supplierSuggestions, hasAnyCounterpartyOptions, counterpartyHardFailure, onPickSupplier,
     onFocusField,
     s,
   } = props;
 
   const P = inSheet ? P_SHEET : P_LIST;
   const { user: noteUser, auto: noteAuto } = splitNote(m.note);
+  const [priceDraft, setPriceDraft] = React.useState(String(m.price ?? ""));
+  const [priceFocused, setPriceFocused] = React.useState(false);
+  const [supplierQueryDraft, setSupplierQueryDraft] = React.useState("");
+  const [selectedSupplierLabel, setSelectedSupplierLabel] = React.useState(String(m.supplier ?? ""));
+  const [selectedSupplierId, setSelectedSupplierId] = React.useState("");
+  const [isDropdownOpen, setIsDropdownOpen] = React.useState(false);
+  const [supplierInputHeight, setSupplierInputHeight] = React.useState(46);
+  const blurCloseTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+  const selectingOptionRef = React.useRef(false);
+  const makeSupplierId = React.useCallback(
+    (label: string) => String(label || "").trim().toLowerCase().replace(/\s+/g, " "),
+    [],
+  );
+  const commitSelectedSupplier = React.useCallback(
+    (rawName: string) => {
+      if (blurCloseTimerRef.current) {
+        clearTimeout(blurCloseTimerRef.current);
+        blurCloseTimerRef.current = null;
+      }
+      const selectedLabel = String(rawName || "").trim();
+      if (!selectedLabel) return;
+      const selectedId = makeSupplierId(selectedLabel);
+      onSetSupplier(selectedLabel);
+      onPickSupplier(selectedLabel);
+      setSelectedSupplierLabel(selectedLabel);
+      setSelectedSupplierId(selectedId);
+      setSupplierQueryDraft("");
+      setIsDropdownOpen(false);
+      // Let blur pass after commit is applied to parent meta.
+      setTimeout(() => {
+        selectingOptionRef.current = false;
+      }, 0);
+    },
+    [blurCloseTimerRef, makeSupplierId, onPickSupplier, onSetSupplier],
+  );
+
+  const filteredSuppliers = React.useMemo(() => {
+    // Force ultimate rendering uniqueness here to collapse equal names from distinct sources (e.g. `supplier` vs `contractor`)
+    const all = Array.from(new Set((supplierSuggestions || []).map((name) => String(name || "").trim()).filter(Boolean)));
+    const needle = String(supplierQueryDraft || "").trim().toLowerCase();
+    if (needle.length < 2) return [];
+    // Filter across the full source list; UI height limits visible rows, not filtering scope.
+    return all.filter((name) => String(name).toLowerCase().includes(needle));
+  }, [supplierSuggestions, supplierQueryDraft]);
+
+  React.useEffect(() => {
+    if (priceFocused) return;
+    const next = String(m.price ?? "");
+    if (next !== priceDraft) setPriceDraft(next);
+    // Keep draft in sync only when input is not focused to avoid caret/focus jumps.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [m.price, priceFocused]);
+
+  React.useEffect(() => {
+    if (isDropdownOpen) return;
+    const next = String(m.supplier ?? "");
+    if (next !== selectedSupplierLabel) setSelectedSupplierLabel(next);
+    const nextId = makeSupplierId(next);
+    if (nextId !== selectedSupplierId) setSelectedSupplierId(nextId);
+  }, [m.supplier, isDropdownOpen, selectedSupplierLabel, selectedSupplierId, makeSupplierId]);
+
+  const rejectReason = String(
+    (it as any)?.director_reject_reason ??
+    (it as any)?.director_reject_note ??
+    "",
+  ).trim();
+  const lastOfferSupplier = String((it as any)?.last_offer_supplier ?? "").trim();
+  const lastOfferPriceRaw = (it as any)?.last_offer_price;
+  const lastOfferPrice =
+    typeof lastOfferPriceRaw === "number" && Number.isFinite(lastOfferPriceRaw)
+      ? lastOfferPriceRaw
+      : null;
+
+  const openPicker = React.useCallback(() => {
+    if (!hasAnyCounterpartyOptions) return;
+    if (blurCloseTimerRef.current) {
+      clearTimeout(blurCloseTimerRef.current);
+      blurCloseTimerRef.current = null;
+    }
+    onFocusField?.();
+    setSupplierQueryDraft(selectedSupplierLabel);
+    setIsDropdownOpen(true);
+  }, [onFocusField, selectedSupplierLabel, hasAnyCounterpartyOptions]);
 
   return (
     <View
@@ -47,7 +141,11 @@ export const BuyerItemRow = React.memo(function BuyerItemRow(props: {
         inSheet ? s.buyerMobCard : s.card,
         inSheet ? null : { backgroundColor: P.cardBg, borderColor: P.border },
         selected && (inSheet ? s.buyerMobCardPicked : s.cardPicked),
+        selected
+          ? { position: "relative", overflow: "visible", zIndex: 500, elevation: 30 }
+          : { position: "relative", overflow: "visible", zIndex: 1, elevation: 1 },
       ]}
+      pointerEvents="box-none"
     >
       <View style={{ gap: 6 }}>
         <View style={{ flexDirection: "row", alignItems: "flex-start", gap: 8 }}>
@@ -108,7 +206,7 @@ export const BuyerItemRow = React.memo(function BuyerItemRow(props: {
         <View style={{ gap: 2 }}>
           <Text style={{ color: P.sub }}>
             Цена: <Text style={{ color: P.text, fontWeight: "800" }}>{m.price || "—"}</Text>{" "}
-            • Поставщик: <Text style={{ color: P.text, fontWeight: "800" }}>{m.supplier || "—"}</Text>{" "}
+            • {counterpartyLabel}: <Text style={{ color: P.text, fontWeight: "800" }}>{m.supplier || "—"}</Text>{" "}
             • Прим.: <Text style={{ color: P.text, fontWeight: "800" }}>{noteUser || "—"}</Text>
           </Text>
 
@@ -119,6 +217,29 @@ export const BuyerItemRow = React.memo(function BuyerItemRow(props: {
             </Text>{" "}
             сом
           </Text>
+
+          {rejectedByDirector ? (
+            <View
+              style={{
+                marginTop: 6,
+                padding: 10,
+                borderRadius: 12,
+                borderWidth: 1,
+                borderColor: inSheet ? "rgba(239,68,68,0.45)" : "#FCA5A5",
+                backgroundColor: inSheet ? "rgba(239,68,68,0.12)" : "#FEF2F2",
+              }}
+            >
+              <Text style={{ color: inSheet ? "#FCA5A5" : "#991B1B", fontWeight: "900", fontSize: 12 }}>
+                Причина отклонения:{" "}
+                <Text style={{ color: inSheet ? "#FECACA" : "#7F1D1D", fontWeight: "800" }}>
+                  {rejectReason || "Отклонено директором"}
+                </Text>
+              </Text>
+              <Text style={{ color: inSheet ? "#FECACA" : "#7F1D1D", fontWeight: "800", marginTop: 4, fontSize: 12 }}>
+                Предыдущее предложение: {lastOfferSupplier || "—"} • {lastOfferPrice != null ? `${lastOfferPrice}` : "—"} сом
+              </Text>
+            </View>
+          ) : null}
         </View>
 
         <View style={{ flexDirection: "row", marginTop: 6 }}>
@@ -133,47 +254,133 @@ export const BuyerItemRow = React.memo(function BuyerItemRow(props: {
       </View>
 
       {selected && (
-        <View style={{ marginTop: 10, gap: 8 }}>
-          <View style={{ flexDirection: "row", gap: 8 }}>
+        <View style={{ marginTop: 10, gap: 8, position: "relative", overflow: "visible" }}>
+          <View
+            style={{
+              flexDirection: "row",
+              gap: 8,
+              position: "relative",
+              overflow: "visible",
+              zIndex: isDropdownOpen ? 1200 : 10,
+              elevation: isDropdownOpen ? 80 : 1,
+            }}
+          >
             <View style={{ flex: 1 }}>
               <TextInput
-                value={String(m.price ?? "")}
-                onChangeText={onSetPrice}
-                keyboardType="decimal-pad"
+                value={priceDraft}
+                onChangeText={(v) => setPriceDraft(v)}
+                keyboardType={Platform.OS === "web" ? "default" : "decimal-pad"}
                 placeholder="Цена *"
                 placeholderTextColor={P.sub}
-                onFocus={onFocusField}
+                autoCorrect={false}
+                autoCapitalize="none"
+                onFocus={() => {
+                  setPriceFocused(true);
+                  onFocusField?.();
+                }}
+                onBlur={() => {
+                  setPriceFocused(false);
+                  onSetPrice(String(priceDraft ?? ""));
+                }}
+                onEndEditing={() => onSetPrice(String(priceDraft ?? ""))}
                 style={[s.fieldInput, { backgroundColor: P.inputBg, borderColor: P.inputBorder, color: P.text }]}
               />
             </View>
 
-            <View style={{ flex: 1 }}>
-              <TextInput
-                value={String(m.supplier ?? "")}
-                onChangeText={onSetSupplier}
-                placeholder="Поставщик *"
-                placeholderTextColor={P.sub}
-                onFocus={onFocusField}
-                style={[s.fieldInput, { backgroundColor: P.inputBg, borderColor: P.inputBorder, color: P.text }]}
-              />
+            <View style={{ flex: 1, position: "relative", zIndex: isDropdownOpen ? 2600 : 700, elevation: isDropdownOpen ? 120 : 40 }}>
+              <View
+                onLayout={(e) => {
+                  const h = Number(e?.nativeEvent?.layout?.height ?? 0);
+                  if (Number.isFinite(h) && h > 0) setSupplierInputHeight(h);
+                }}
+              >
+                <TextInput
+                  value={isDropdownOpen ? supplierQueryDraft : selectedSupplierLabel}
+                  onChangeText={(v) => {
+                    setSupplierQueryDraft(v);
+                    if (!isDropdownOpen) setIsDropdownOpen(true);
+                  }}
+                  placeholder={`${counterpartyLabel} *`}
+                  placeholderTextColor={P.sub}
+                  editable={hasAnyCounterpartyOptions}
+                  onFocus={openPicker}
+                  onBlur={() => {
+                    if (selectingOptionRef.current) return;
+                    blurCloseTimerRef.current = setTimeout(() => {
+                      setIsDropdownOpen(false);
+                      setSupplierQueryDraft("");
+                    }, 120);
+                  }}
+                  style={[s.fieldInput, { backgroundColor: P.inputBg, borderColor: P.inputBorder, color: P.text }]}
+                />
+              </View>
 
-              {supplierSuggestions.length > 0 && (
-                <View style={[s.suggestBoxInline, { borderColor: P.inputBorder, backgroundColor: P.cardBg }]}>
-                  {supplierSuggestions.map((name) => (
-                    <Pressable
-                      key={name}
-                      onPress={() => onPickSupplier(name)}
-                      style={[s.suggestItem, { borderColor: P.inputBorder, backgroundColor: P.cardBg }]}
-                    >
-                      <Text style={{ color: P.text, fontWeight: "800" }}>{name}</Text>
-                    </Pressable>
-                  ))}
+              {isDropdownOpen && filteredSuppliers.length > 0 ? (
+                <View
+                  style={[
+                    s.suggestBoxInline,
+                    {
+                      borderColor: P.inputBorder,
+                      backgroundColor: "#1E2A38", // Solid UI.cardBg equivalent
+                      top: supplierInputHeight + 6,
+                      zIndex: 3000,
+                      elevation: 160,
+                      maxHeight: 220,
+                    },
+                  ]}
+                  pointerEvents="auto"
+                >
+                  <FlatList
+                    data={filteredSuppliers}
+                    keyExtractor={(item, idx) => `${item}:${idx}`}
+                    keyboardShouldPersistTaps="always"
+                    style={{ maxHeight: 220 }}
+                    renderItem={({ item }) => (
+                      <Pressable
+                        android_ripple={{ color: "rgba(255,255,255,0.08)" }}
+                        hitSlop={{ top: 2, bottom: 2, left: 2, right: 2 }}
+                        onPressIn={() => {
+                          selectingOptionRef.current = true;
+                          if (blurCloseTimerRef.current) {
+                            clearTimeout(blurCloseTimerRef.current);
+                            blurCloseTimerRef.current = null;
+                          }
+                        }}
+                        style={({ pressed }) => [
+                          s.suggestItem,
+                          {
+                            borderColor: P.inputBorder,
+                            backgroundColor: pressed ? "rgba(255,255,255,0.08)" : "#1E2A38", // Solid UI.cardBg equivalent instead of transparent P.cardBg
+                            minHeight: 44,
+                            justifyContent: "center",
+                          },
+                        ]}
+                        onPress={() => commitSelectedSupplier(item)}
+                      >
+                        <Text style={{ color: P.text, fontWeight: "800" }} numberOfLines={1}>
+                          {item}
+                        </Text>
+                      </Pressable>
+                    )}
+                  />
                 </View>
-              )}
+              ) : null}
+              {counterpartyHardFailure ? (
+                <Text style={{ color: "#fca5a5", marginTop: 6, fontSize: 12, fontWeight: "700" }}>
+                  Справочник контрагентов недоступен. Проверьте источники `suppliers/contractors/subcontracts`.
+                </Text>
+              ) : null}
             </View>
           </View>
 
-          <View>
+          <View
+            pointerEvents={isDropdownOpen ? "none" : "auto"}
+            style={{
+              position: "relative",
+              zIndex: 1,
+              elevation: 0,
+            }}
+          >
             <TextInput
               value={noteUser}
               onChangeText={(v) => onSetNote(mergeNote(v, noteAuto))}
@@ -209,7 +416,7 @@ export const BuyerItemRow = React.memo(function BuyerItemRow(props: {
           ) : null}
         </View>
       )}
+
     </View>
   );
 });
-

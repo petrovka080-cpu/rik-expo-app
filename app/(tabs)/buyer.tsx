@@ -261,7 +261,7 @@ export default function BuyerScreen() {
     preloadProposalTitles,
   } = useBuyerProposalCaches();
 
-  const { suppliers } = useBuyerSuppliers();
+  const { suppliers, counterparties, hasAnyOptions, hasHardFailure } = useBuyerSuppliers();
 
 
   const [acctProposalId, setAcctProposalId] = useState<string | number | null>(null);
@@ -320,7 +320,7 @@ export default function BuyerScreen() {
     alert: alertUser,
     log: console.warn,
   });
-  const { getSupplierSuggestions } = useBuyerSupplierSuggestions(suppliers);
+  const { getSupplierSuggestions } = useBuyerSupplierSuggestions(counterparties);
 
   const {
     groups,
@@ -400,12 +400,15 @@ export default function BuyerScreen() {
     attachments,
     setAttachments,
     isWeb,
+    hasAnyCounterpartyOptions: hasAnyOptions,
+    counterpartyHardFailure: hasHardFailure,
   });
 
   const { validatePicked, removeFromInboxLocally, confirmSendWithoutAttachments } = useBuyerCreateGuards({
     groups,
     picked,
     meta,
+    attachments,
     attachMissingCount,
     attachSlotsTotal,
     missingAttachSuppliers,

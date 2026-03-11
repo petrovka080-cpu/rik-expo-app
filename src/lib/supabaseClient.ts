@@ -1,11 +1,30 @@
 // src/lib/supabaseClient.ts
-import "react-native-url-polyfill/auto";
 import { createClient, SupabaseClient } from "@supabase/supabase-js";
-import { router } from "expo-router";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { Platform } from "react-native";
 
-const isWeb = Platform.OS === "web";
+const isWeb = typeof window !== "undefined" && typeof document !== "undefined";
+const isNodeRuntime =
+  typeof process !== "undefined" &&
+  !!(process as any).versions?.node &&
+  typeof window === "undefined";
+
+if (!isNodeRuntime) {
+  try {
+    const req = (0, eval)("require") as (m: string) => unknown;
+    req("react-native-url-polyfill/auto");
+  } catch {
+    // no-op
+  }
+}
+
+function tryLoadAsyncStorage(): any | undefined {
+  try {
+    // Keep RN persistence in mobile runtime; avoid hard dependency in Node worker.
+    const req = (0, eval)("require") as (m: string) => any;
+    return req("@react-native-async-storage/async-storage").default;
+  } catch {
+    return undefined;
+  }
+}
 
 const DEBUG_SUPABASE_REST = false; // ⚠️ debug-флаг, НЕ влияет на логику
 
@@ -18,6 +37,14 @@ const rawUrl = String(process.env.EXPO_PUBLIC_SUPABASE_URL ?? "")
 const rawKey = String(process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? "")
   .trim()
   .replace(/^['"]|['"]$/g, "");
+const rawServiceRoleKey = String(process.env.SUPABASE_SERVICE_ROLE_KEY ?? "")
+  .trim()
+  .replace(/^['"]|['"]$/g, "");
+const useServiceRoleInNodeWorker =
+  isNodeRuntime &&
+  process.env.RIK_QUEUE_WORKER_USE_SERVICE_ROLE === "true" &&
+  !!rawServiceRoleKey;
+const resolvedSupabaseKey = useServiceRoleInNodeWorker ? rawServiceRoleKey : rawKey;
 
 // нормализуем URL: убираем хвостовой слеш и сразу валидируем
 function normUrl(u: string): string {
@@ -29,6 +56,7 @@ function normUrl(u: string): string {
 
 export const SUPABASE_URL = rawUrl ? normUrl(rawUrl) : "";
 export const SUPABASE_ANON_KEY = rawKey;
+export const SUPABASE_KEY_KIND = useServiceRoleInNodeWorker ? "service_role" : "anon";
 export const SUPABASE_HOST = (() => {
   try {
     return SUPABASE_URL ? new URL(SUPABASE_URL).host : "";
@@ -121,7 +149,7 @@ const wrapFetchWithLog = (tag: string, baseFetch: typeof fetch): typeof fetch =>
 // если env битые — не создаём клиент (чтобы не спамить сетевыми ошибками)
 function assertEnv() {
   const ok =
-    SUPABASE_URL && /^https?:\/\//i.test(SUPABASE_URL) && SUPABASE_ANON_KEY;
+    SUPABASE_URL && /^https?:\/\//i.test(SUPABASE_URL) && resolvedSupabaseKey;
   const looksLikeTargetProject = SUPABASE_HOST?.startsWith(`${SUPABASE_PROJECT_REF}.`);
 
   if (ok && !looksLikeTargetProject) {
@@ -142,10 +170,10 @@ const supabaseFetch: typeof fetch | undefined = isWeb
   ? wrapFetchWithLog("🌐", (input: any, init: any = {}) => {
     const headers = new Headers(init.headers || {});
 
-    if (SUPABASE_ANON_KEY) {
-      if (!headers.has("apikey")) headers.set("apikey", SUPABASE_ANON_KEY);
+    if (resolvedSupabaseKey) {
+      if (!headers.has("apikey")) headers.set("apikey", resolvedSupabaseKey);
       if (!headers.has("Authorization"))
-        headers.set("Authorization", `Bearer ${SUPABASE_ANON_KEY}`);
+        headers.set("Authorization", `Bearer ${resolvedSupabaseKey}`);
     }
 
     const controller = new AbortController();
@@ -182,13 +210,18 @@ function createMissingSupabaseClient(): SupabaseClient {
 
 // —–– CLIENT —––
 export const isSupabaseEnvValid = assertEnv();
+const authStorage = isWeb
+  ? window.localStorage
+  : isNodeRuntime
+    ? undefined
+    : tryLoadAsyncStorage();
 export const supabase: SupabaseClient = isSupabaseEnvValid
-  ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  ? createClient(SUPABASE_URL, resolvedSupabaseKey, {
     auth: {
-      persistSession: true,
-      autoRefreshToken: true,
+      persistSession: !useServiceRoleInNodeWorker,
+      autoRefreshToken: !useServiceRoleInNodeWorker,
       detectSessionInUrl: isWeb,
-      storage: isWeb ? window.localStorage : AsyncStorage,
+      storage: authStorage,
     },
     realtime: { params: { eventsPerSecond: 5 } },
     global: {
@@ -211,7 +244,14 @@ export async function ensureSignedIn(): Promise<boolean> {
     }
   }
 
-  router.replace("/auth/login");
+  if (!isNodeRuntime) {
+    try {
+      const mod = await import("expo-router");
+      mod.router.replace("/auth/login");
+    } catch {
+      // Node worker / non-router runtimes: no-op redirect.
+    }
+  }
   return false;
 }
 

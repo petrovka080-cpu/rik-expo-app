@@ -260,17 +260,54 @@ export function SheetFooterActions({
   center?: React.ReactNode;
   right?: React.ReactNode;
 }) {
+  const sideSlotWidth = 60;
+  const slotHeight = 56;
+
   return (
-    <View style={s.reqActionsBottom}>
-      <View style={{ width: 54, height: 54, alignItems: "center", justifyContent: "center" }}>{left ?? null}</View>
+    <View
+      style={[
+        s.reqActionsBottom,
+        {
+          width: "100%",
+          flexDirection: "row",
+          alignItems: "center",
+        },
+      ]}
+    >
+      <View
+        style={{
+          width: sideSlotWidth,
+          minWidth: sideSlotWidth,
+          height: slotHeight,
+          alignItems: "flex-start",
+          justifyContent: "center",
+        }}
+      >
+        {left ?? null}
+      </View>
 
-      <View style={{ width: 10 }} />
+      <View
+        style={{
+          flex: 1,
+          minWidth: 0,
+          marginHorizontal: 12,
+          justifyContent: "center",
+        }}
+      >
+        {center ?? null}
+      </View>
 
-      <View style={{ flex: 1, minWidth: 0 }}>{center ?? null}</View>
-
-      <View style={{ width: 10 }} />
-
-      <View style={{ width: 54, height: 54, alignItems: "center", justifyContent: "center" }}>{right ?? null}</View>
+      <View
+        style={{
+          width: sideSlotWidth,
+          minWidth: sideSlotWidth,
+          height: slotHeight,
+          alignItems: "flex-end",
+          justifyContent: "center",
+        }}
+      >
+        {right ?? null}
+      </View>
     </View>
   );
 }
@@ -366,6 +403,8 @@ export function BuyerAttachmentsSticky({
           {requiredSuppliers.map((label) => {
             const k = normName(label) || SUPP_NONE;
             const rowWarn = pickedIdsLen > 0 && !attachments?.[k]?.file;
+            const current = attachments?.[k];
+            const fileName = String(current?.name || "").trim();
 
             return (
               <View
@@ -383,7 +422,7 @@ export function BuyerAttachmentsSticky({
                   s={s}
                   label={label}
                   disabled={creating}
-                  current={attachments?.[k]}
+                  current={current}
                   onPick={(att) => {
                     setAttachments((prev) => {
                       const next = { ...prev };
@@ -393,6 +432,19 @@ export function BuyerAttachmentsSticky({
                     });
                   }}
                 />
+                <Text
+                  style={{
+                    marginTop: 6,
+                    color: rowWarn ? "#FCA5A5" : UI.sub,
+                    fontWeight: rowWarn ? "900" : "700",
+                    fontSize: 12,
+                  }}
+                  numberOfLines={1}
+                >
+                  {rowWarn
+                    ? `Не выбраны вложения для: ${label}`
+                    : `Вложение прикреплено: ${fileName || "файл"}`}
+                </Text>
               </View>
             );
           })}

@@ -9,7 +9,11 @@ select
   wi.id::text as issue_id,
   wi.iss_date::timestamptz as iss_date,
   coalesce(nullif(trim(wi.object_name), ''), 'Без объекта') as object_name,
-  coalesce(nullif(trim(wi.work_name), ''), 'Без вида работ') as work_name,
+  coalesce(
+    nullif(trim(wi.work_name), ''),
+    nullif(trim(req.system_code::text), ''),
+    'Без вида работ'
+  ) as work_name,
   wii.request_item_id::text as request_item_id,
   upper(coalesce(nullif(trim(wii.rik_code), ''), '—')) as rik_code,
   coalesce(nullif(trim(wii.uom_id), ''), '') as uom,
@@ -17,6 +21,8 @@ select
   case when coalesce(nullif(trim(wii.request_item_id::text), ''), '') = '' then true else false end as is_without_request
 from public.warehouse_issue_items wii
 join public.warehouse_issues wi on wi.id = wii.issue_id
+left join public.request_items ri on ri.id::text = wii.request_item_id::text
+left join public.requests req on req.id::text = coalesce(ri.request_id::text, wi.request_id::text)
 where wi.status = 'Подтверждено';
 
 comment on view public.v_director_report_issue_item_facts_v1 is

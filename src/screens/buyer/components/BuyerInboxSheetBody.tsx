@@ -59,20 +59,45 @@ export function BuyerInboxSheetBody({
   renderItemRow: (it: BuyerLineLite, idx2: number) => React.ReactNode;
   footer?: React.ReactNode;
 }) {
+  const renderCell: React.ComponentProps<typeof FlatList<InboxSheetRow>>["CellRendererComponent"] = ({
+    children,
+    style,
+    index,
+    ...rest
+  }) => (
+    <View
+      {...rest}
+      style={[
+        style,
+        {
+          position: "relative",
+          overflow: "visible",
+          zIndex: Math.max(1, 1000 - Math.max(0, index ?? 0)),
+          elevation: Math.max(1, 1000 - Math.max(0, index ?? 0)),
+          pointerEvents: "box-none",
+        },
+      ]}
+    >
+      {children}
+    </View>
+  );
+
   return (
     <View style={s.sheetSection}>
       <FlatList
         data={sheetData}
+        CellRendererComponent={renderCell}
         stickyHeaderIndices={[1]}
         keyExtractor={(item, idx: number) => {
           if ("__kind" in item && item.__kind === "attachments") return "hdr:attachments";
           const row = item as BuyerLineLite;
           return row?.request_item_id ? `ri:${row.request_item_id}` : `f:${String(sheetGroup?.request_id ?? "x")}:${idx}`;
         }}
-        keyboardShouldPersistTaps="handled"
+        keyboardShouldPersistTaps="always"
         nestedScrollEnabled
+        removeClippedSubviews={false}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 12 + 86 }}
+        contentContainerStyle={{ paddingBottom: 12 + 86, overflow: "visible" }}
         ListHeaderComponent={
           <View>
             {!kbOpen ? (
@@ -137,7 +162,20 @@ export function BuyerInboxSheetBody({
           }
 
           const realIndex = index - 1;
-          return <View style={{ marginBottom: 10 }}>{renderItemRow(item as BuyerLineLite, realIndex)}</View>;
+          return (
+            <View
+              style={{
+                marginBottom: 10,
+                position: "relative",
+                overflow: "visible",
+                zIndex: Math.max(1, 1000 - Math.max(0, realIndex)),
+                elevation: Math.max(1, 1000 - Math.max(0, realIndex)),
+                pointerEvents: "box-none",
+              }}
+            >
+              {renderItemRow(item as BuyerLineLite, realIndex)}
+            </View>
+          );
         }}
       />
 
@@ -145,4 +183,3 @@ export function BuyerInboxSheetBody({
     </View>
   );
 }
-
