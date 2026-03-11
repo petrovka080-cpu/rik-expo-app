@@ -39,6 +39,7 @@ export function BuyerInboxSheetBody({
   setAttachments,
   renderItemRow,
   editorSection,
+  editorTitle,
   footer,
 }: {
   s: StylesBag;
@@ -59,6 +60,7 @@ export function BuyerInboxSheetBody({
   setAttachments: StateSetter<DraftAttachmentMap>;
   renderItemRow: (it: BuyerLineLite, idx2: number) => React.ReactNode;
   editorSection?: React.ReactNode;
+  editorTitle?: string;
   footer?: React.ReactNode;
 }) {
   const footerBottomInset = 18;
@@ -185,15 +187,46 @@ export function BuyerInboxSheetBody({
       />
 
       {editorSection ? (
-        <ScrollView
-          style={{ maxHeight: 320, flexShrink: 1 }}
-          contentContainerStyle={{ paddingTop: 8, paddingBottom: 12, gap: 8 }}
-          keyboardShouldPersistTaps="always"
-          nestedScrollEnabled
-          showsVerticalScrollIndicator={false}
+        <View
+          style={{
+            marginTop: 8,
+            marginBottom: 10,
+            marginHorizontal: 2,
+            borderRadius: 22,
+            borderWidth: 1,
+            borderColor: "rgba(59,130,246,0.24)",
+            backgroundColor: "rgba(15,23,42,0.96)",
+            overflow: "hidden",
+          }}
         >
-          {editorSection}
-        </ScrollView>
+          <View
+            style={{
+              paddingHorizontal: 16,
+              paddingTop: 14,
+              paddingBottom: 12,
+              borderBottomWidth: 1,
+              borderBottomColor: "rgba(255,255,255,0.08)",
+              backgroundColor: "rgba(37,99,235,0.10)",
+            }}
+          >
+            <Text style={{ color: "#DBEAFE", fontWeight: "900", fontSize: 16 }} numberOfLines={1}>
+              {editorTitle || "Редактирование выбранной позиции"}
+            </Text>
+            <Text style={{ color: "rgba(219,234,254,0.72)", fontWeight: "700", fontSize: 12, marginTop: 4 }}>
+              Изменения относятся к выбранной позиции и сохраняются теми же обработчиками.
+            </Text>
+          </View>
+
+          <ScrollView
+            style={{ maxHeight: 320, flexShrink: 1 }}
+            contentContainerStyle={{ paddingTop: 8, paddingBottom: 12, paddingHorizontal: 8, gap: 8 }}
+            keyboardShouldPersistTaps="always"
+            nestedScrollEnabled
+            showsVerticalScrollIndicator={false}
+          >
+            {editorSection}
+          </ScrollView>
+        </View>
       ) : null}
       {footer ? <View style={{ paddingBottom: footerBottomInset }}>{footer}</View> : null}
     </View>

@@ -132,21 +132,36 @@ export const BuyerItemEditor = React.memo(function BuyerItemEditor(props: BuyerI
     <View
       style={[
         {
-          marginTop: 10,
+          marginTop: 0,
           gap: 8,
           position: "relative",
           overflow: "visible",
           padding: 14,
           borderRadius: 18,
           borderWidth: 1,
-          borderColor: "rgba(255,255,255,0.10)",
-          backgroundColor: "rgba(255,255,255,0.04)",
+          borderColor: "rgba(34,197,94,0.26)",
+          backgroundColor: "rgba(2,132,199,0.06)",
         },
       ]}
     >
-      <Text style={{ color: P.text, fontWeight: "900", fontSize: 15 }} numberOfLines={1}>
-        {it.name_human || "Позиция"}
-      </Text>
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: 12,
+        }}
+      >
+        <View style={{ flex: 1, minWidth: 0 }}>
+          <Text style={{ color: P.text, fontWeight: "900", fontSize: 15 }} numberOfLines={1}>
+            {it.name_human || "Позиция"}
+          </Text>
+          <Text style={{ color: P.sub, fontWeight: "700", fontSize: 12, marginTop: 2 }} numberOfLines={1}>
+            {`${String(it.qty ?? "")} ${String(it.uom ?? "")}`.trim()}
+          </Text>
+        </View>
+        <StatusBadge label="Редактируется" tone="info" compact />
+      </View>
 
       <View
         style={{

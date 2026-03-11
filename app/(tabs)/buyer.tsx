@@ -587,6 +587,15 @@ export default function BuyerScreen() {
     if (!selectedItems.length) return null;
     return selectedItems.map((it) => renderEditorRow(it));
   }, [isWeb, sheetKind, sheetGroup, picked, renderEditorRow]);
+  const mobileSheetEditorTitle = useMemo(() => {
+    if (isWeb || sheetKind !== "inbox" || !sheetGroup?.items?.length) return "";
+    const selectedItems = sheetGroup.items.filter((it) => !!picked[String(it.request_item_id ?? "")]);
+    if (!selectedItems.length) return "";
+    if (selectedItems.length === 1) {
+      return `Редактирование: ${String(selectedItems[0]?.name_human || "позиция")}`;
+    }
+    return `Редактирование: ${selectedItems.length} позиций`;
+  }, [isWeb, sheetKind, sheetGroup, picked]);
   const header = useMemo(() => (
     <BuyerScreenHeader
       s={s}
@@ -709,6 +718,7 @@ export default function BuyerScreen() {
                 setAttachments={setAttachments}
                 renderItemRow={renderItemRow}
                 editorSection={mobileSheetEditors}
+                editorTitle={mobileSheetEditorTitle}
                 footer={
                   !inboxKeyboardLayoutActive ? (
                     <SheetFooterActions
