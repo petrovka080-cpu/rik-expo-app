@@ -1,155 +1,223 @@
-// src/lib/api/storage.ts
 import { Platform } from "react-native";
-import { supabase } from "../supabaseClient";
 import * as FileSystem from "expo-file-system/legacy";
-
+import { supabase } from "../supabaseClient";
 
 const FILES_BUCKET = "proposal_files";
+type NativeFileLike = {
+  name?: string | null;
+  uri?: string | null;
+  fileCopyUri?: string | null;
+  mimeType?: string | null;
+  type?: string | null;
+  size?: number | null;
+  assets?: NativeFileLike[] | null;
+};
 
 function inferContentType(filename: string, fallback?: string) {
   const f = String(filename || "").toLowerCase();
-  const fb = String(fallback || "").trim();
+  const fb = String(fallback || "").trim().toLowerCase();
   if (fb.includes("/")) return fb;
 
   if (f.endsWith(".pdf")) return "application/pdf";
   if (f.endsWith(".png")) return "image/png";
   if (f.endsWith(".jpg") || f.endsWith(".jpeg")) return "image/jpeg";
-  if (f.endsWith(".xlsx"))
+  if (f.endsWith(".xlsx")) {
     return "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+  }
   if (f.endsWith(".xls")) return "application/vnd.ms-excel";
-  if (f.endsWith(".docx"))
+  if (f.endsWith(".docx")) {
     return "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+  }
   if (f.endsWith(".doc")) return "application/msword";
   return "application/octet-stream";
 }
 
+function extensionFromMime(mimeType: string): string | null {
+  switch (mimeType) {
+    case "application/pdf":
+      return "pdf";
+    case "image/png":
+      return "png";
+    case "image/jpeg":
+      return "jpg";
+    case "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet":
+      return "xlsx";
+    case "application/vnd.ms-excel":
+      return "xls";
+    case "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
+      return "docx";
+    case "application/msword":
+      return "doc";
+    default:
+      return null;
+  }
+}
+
 function base64ToUint8Array(b64: string) {
-  const g: any = globalThis as any;
+  const g = globalThis as typeof globalThis & {
+    atob?: (value: string) => string;
+    Buffer?: {
+      from(input: string, encoding: string): { toString(enc: string): string };
+    };
+  };
 
   const bin =
     typeof g.atob === "function"
       ? g.atob(b64)
       : typeof g.Buffer !== "undefined"
-      ? g.Buffer.from(b64, "base64").toString("binary")
-      : "";
+        ? g.Buffer.from(b64, "base64").toString("binary")
+        : "";
 
   if (!bin) throw new Error("base64 decode failed");
 
   const bytes = new Uint8Array(bin.length);
-  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+  for (let i = 0; i < bin.length; i += 1) bytes[i] = bin.charCodeAt(i);
   return bytes;
 }
 
-function pickUriFromAny(file: any): string {
-  const direct = String(file?.uri ?? "").trim();
-  if (direct) return direct;
-
-  const fileCopy = String(file?.fileCopyUri ?? "").trim();
-  if (fileCopy) return fileCopy;
-
-  const asset0 = file?.assets?.[0];
-  const aUri = String(asset0?.uri ?? "").trim();
-  if (aUri) return aUri;
-
-  const aCopy = String(asset0?.fileCopyUri ?? "").trim();
-  if (aCopy) return aCopy;
-
-  return "";
+function inferNameFromUri(uri: string): string {
+  const cleanUri = String(uri || "").split("?")[0].split("#")[0];
+  return (cleanUri.split("/").pop() || "").trim();
 }
 
-function pickMimeFromAny(file: any): string {
-  const direct = String(file?.mimeType ?? file?.type ?? "").trim();
-  if (direct) return direct;
-
-  const asset0 = file?.assets?.[0];
-  const aMime = String(asset0?.mimeType ?? asset0?.type ?? "").trim();
-  if (aMime) return aMime;
-
-  return "";
+function hasReadableBlob(value: unknown): value is Blob {
+  return Boolean(
+    value &&
+      typeof value === "object" &&
+      typeof (value as Blob).arrayBuffer === "function" &&
+      typeof (value as Blob).size === "number",
+  );
 }
 
-// ✅ делаем uri, который реально можно прочитать FileSystem.readAsStringAsync
-async function ensureReadableFileUri(rawUri: string, safeName: string): Promise<string> {
-  const uri = String(rawUri || "").trim();
-  if (!uri) throw new Error("file uri пустой");
+function normalizeNativeFile(file: NativeFileLike | null | undefined, fallbackName: string) {
+  const asset = file?.assets?.[0] ?? file;
+  const uri = String(asset?.uri ?? asset?.fileCopyUri ?? "").trim();
+  const mimeType = String(asset?.mimeType ?? asset?.type ?? "").trim();
+  const name =
+    String(asset?.name ?? "").trim() ||
+    inferNameFromUri(uri) ||
+    fallbackName;
 
-  // уже нормальный file://
-  if (uri.startsWith("file://")) return uri;
-
-  // iOS photo library (ph://) — копируем в cache
-  if (uri.startsWith("ph://")) {
-    const target = `${FileSystem.cacheDirectory}${Date.now()}_${safeName}`;
-    // copyAsync с ph:// может работать, а если нет — упадёт
-    await FileSystem.copyAsync({ from: uri, to: target });
-    return target;
-  }
-
-  // content:// (Android обычно) — часто читается напрямую, но на всякий случай тоже копируем
-  if (uri.startsWith("content://")) {
-    const target = `${FileSystem.cacheDirectory}${Date.now()}_${safeName}`;
-    try {
-      await FileSystem.copyAsync({ from: uri, to: target });
-      return target;
-    } catch {
-      // если copyAsync не смог — попробуем читать напрямую
-      return uri;
-    }
-  }
-
-  // любые другие схемы — пробуем читать напрямую
-  return uri;
+  return {
+    uri,
+    fileCopyUri: String(asset?.fileCopyUri ?? "").trim(),
+    mimeType,
+    name,
+  };
 }
 
-export async function uploadProposalAttachment(
-  proposalId: string,
-  file: any,
-  filename: string,
-  kind: "invoice" | "payment" | "proposal_pdf" | string
-): Promise<void> {
-  const pid = String(proposalId ?? "").trim();
-  const gk = String(kind ?? "").trim();
-  if (!pid) throw new Error("uploadProposalAttachment: proposalId пустой");
-  if (!gk) throw new Error("uploadProposalAttachment: kind/group_key пустой");
+function ensureFilename(name: string, mimeType: string) {
+  const raw = String(name || "").trim() || `file_${Date.now()}`;
+  const hasExt = /\.[a-z0-9]+$/i.test(raw);
+  if (hasExt) return raw;
 
-  const rawName = String(filename || "file").trim();
+  const ext = extensionFromMime(inferContentType(raw, mimeType));
+  return ext ? `${raw}.${ext}` : raw;
+}
 
-  const safe =
-    rawName
+function sanitizeFilename(name: string) {
+  return (
+    name
       .normalize("NFKD")
       .replace(/[\u0300-\u036f]/g, "")
       .replace(/[^a-zA-Z0-9._-]+/g, "_")
       .replace(/_+/g, "_")
-      .replace(/^_+|_+$/g, "") || `file_${Date.now()}.bin`;
+      .replace(/^_+|_+$/g, "") || `file_${Date.now()}.bin`
+  );
+}
 
-  const base = `proposals/${pid}/${gk}`;
-  const storagePath = `${base}/${Date.now()}-${safe}`;
+async function ensureReadableFileUri(rawUri: string, safeName: string): Promise<string> {
+  const uri = String(rawUri || "").trim();
+  if (!uri) throw new Error("uploadProposalAttachment: file uri пустой");
+
+  if (uri.startsWith("file://")) return uri;
+
+  const target = `${FileSystem.cacheDirectory}${Date.now()}_${safeName}`;
+
+  if (uri.startsWith("ph://")) {
+    await FileSystem.copyAsync({ from: uri, to: target });
+    return target;
+  }
+
+  if (uri.startsWith("content://")) {
+    try {
+      await FileSystem.copyAsync({ from: uri, to: target });
+      return target;
+    } catch {
+      return uri;
+    }
+  }
+
+  return uri;
+}
+
+async function buildNativeUploadPayload(file: unknown, fallbackName: string) {
+  if (hasReadableBlob(file)) {
+    const inferredName = ensureFilename(fallbackName, String((file as Blob).type || "").trim());
+    const bytes = new Uint8Array(await file.arrayBuffer());
+    if (!bytes.byteLength) {
+      throw new Error("uploadProposalAttachment: пустой Blob для native upload");
+    }
+    return {
+      uploadBody: bytes,
+      fileName: inferredName,
+      contentType: inferContentType(inferredName, String((file as Blob).type || "").trim()),
+    };
+  }
+
+  const normalized = normalizeNativeFile(file as NativeFileLike, fallbackName);
+  if (!normalized.uri) {
+    throw new Error("uploadProposalAttachment: file.uri пустой");
+  }
+
+  const fileName = ensureFilename(normalized.name || fallbackName, normalized.mimeType);
+  const readableUri = await ensureReadableFileUri(normalized.uri, sanitizeFilename(fileName));
+  const base64 = await FileSystem.readAsStringAsync(readableUri, {
+    encoding: FileSystem.EncodingType.Base64,
+  });
+
+  if (!base64) {
+    throw new Error("uploadProposalAttachment: не удалось прочитать файл");
+  }
+
+  return {
+    uploadBody: base64ToUint8Array(base64),
+    fileName,
+    contentType: inferContentType(fileName, normalized.mimeType),
+  };
+}
+
+export async function uploadProposalAttachment(
+  proposalId: string,
+  file: unknown,
+  filename: string,
+  kind: "invoice" | "payment" | "proposal_pdf" | string,
+): Promise<void> {
+  const pid = String(proposalId ?? "").trim();
+  const groupKey = String(kind ?? "").trim();
+  if (!pid) throw new Error("uploadProposalAttachment: proposalId пустой");
+  if (!groupKey) throw new Error("uploadProposalAttachment: kind/group_key пустой");
+
+  const requestedName = String(filename || "").trim() || `file_${Date.now()}`;
 
   let uploadBody: Blob | File | Uint8Array;
-  let contentType = "application/octet-stream";
+  let fileName = requestedName;
+  let contentType = inferContentType(fileName);
 
   if (Platform.OS === "web") {
-    const f = file as File;
-    if (!f) throw new Error("uploadProposalAttachment: file пустой (web)");
-    uploadBody = f;
-    contentType = inferContentType(rawName, (f as any)?.type || "");
+    const webFile = file as File;
+    if (!webFile) throw new Error("uploadProposalAttachment: file пустой (web)");
+    fileName = ensureFilename(String(webFile.name || fileName).trim() || fileName, webFile.type || "");
+    uploadBody = webFile;
+    contentType = inferContentType(fileName, webFile.type || "");
   } else {
-    // ✅ iOS/Android: берем uri из разных полей и делаем его читаемым
-    const pickedUri = pickUriFromAny(file);
-    if (!pickedUri) throw new Error("uploadProposalAttachment: file.uri пустой");
-
-    const readableUri = await ensureReadableFileUri(pickedUri, safe);
-
-    // ✅ PROD: Base64 → bytes (без fetch)
-    const b64 = await FileSystem.readAsStringAsync(readableUri, {
-      encoding: FileSystem.EncodingType.Base64,
-    });
-    if (!b64) throw new Error("uploadProposalAttachment: не удалось прочитать файл (base64 пустой)");
-
-    uploadBody = base64ToUint8Array(b64);
-
-    const mime = pickMimeFromAny(file);
-    contentType = inferContentType(rawName, mime);
+    const nativePayload = await buildNativeUploadPayload(file, requestedName);
+    uploadBody = nativePayload.uploadBody;
+    fileName = nativePayload.fileName;
+    contentType = nativePayload.contentType;
   }
+
+  const storagePath = `proposals/${pid}/${groupKey}/${Date.now()}-${sanitizeFilename(fileName)}`;
 
   const { error: upErr } = await supabase.storage
     .from(FILES_BUCKET)
@@ -160,24 +228,23 @@ export async function uploadProposalAttachment(
 
   if (upErr) {
     throw new Error(
-      `Storage upload failed: ${upErr.message}\nbucket=${FILES_BUCKET}\npath=${storagePath}`
+      `Storage upload failed: ${upErr.message}\nbucket=${FILES_BUCKET}\npath=${storagePath}\ncontentType=${contentType}`,
     );
   }
 
-  const row: any = {
+  const row = {
     proposal_id: pid,
     bucket_id: FILES_BUCKET,
     storage_path: storagePath,
-    file_name: rawName, // ✅ показываем человеку нормальное имя
-    group_key: gk,
+    file_name: fileName,
+    group_key: groupKey,
     url: null,
   };
 
   const ins = await supabase.from("proposal_attachments").insert(row);
   if (ins.error) {
     throw new Error(
-      `proposal_attachments INSERT failed: ${ins.error.message}\nproposal_id=${pid}\ngroup_key=${gk}\nfile_name=${rawName}\npath=${storagePath}`
+      `proposal_attachments INSERT failed: ${ins.error.message}\nproposal_id=${pid}\ngroup_key=${groupKey}\nfile_name=${fileName}\npath=${storagePath}`,
     );
   }
 }
-

@@ -8,6 +8,7 @@ type Deps = {
   propAttBusyByProp: Record<string, boolean>;
   setPropAttBusyByProp: React.Dispatch<React.SetStateAction<Record<string, boolean>>>;
   setPropAttByProp: React.Dispatch<React.SetStateAction<Record<string, ProposalAttachmentRow[]>>>;
+  setPropAttErrByProp: React.Dispatch<React.SetStateAction<Record<string, string>>>;
   setPropReturnId: React.Dispatch<React.SetStateAction<string | null>>;
   setItemsByProp: React.Dispatch<React.SetStateAction<Record<string, ProposalItem[]>>>;
   setLoadedByProp: React.Dispatch<React.SetStateAction<Record<string, boolean>>>;
@@ -17,8 +18,26 @@ type Deps = {
 };
 
 const errText = (error: unknown): string => {
-  if (error instanceof Error && error.message.trim()) return error.message.trim();
-  return String(error ?? "");
+  if (error instanceof Error) {
+    const message = error.message.trim();
+    if (message) return message;
+  }
+  if (typeof error === "string") {
+    const message = error.trim();
+    if (message) return message;
+  }
+  if (error && typeof error === "object") {
+    const record = error as Record<string, unknown>;
+    for (const key of ["message", "error", "details", "hint", "code"] as const) {
+      const value = String(record[key] ?? "").trim();
+      if (value) return value;
+    }
+    try {
+      const json = JSON.stringify(error);
+      if (json && json !== "{}") return json;
+    } catch {}
+  }
+  return "";
 };
 
 export function useDirectorProposalDetail({
@@ -26,6 +45,7 @@ export function useDirectorProposalDetail({
   propAttBusyByProp,
   setPropAttBusyByProp,
   setPropAttByProp,
+  setPropAttErrByProp,
   setPropReturnId,
   setItemsByProp,
   setLoadedByProp,
@@ -39,11 +59,12 @@ export function useDirectorProposalDetail({
 
     if (propAttBusyByProp[pid]) return;
     setPropAttBusyByProp((prev) => ({ ...prev, [pid]: true }));
+    setPropAttErrByProp((prev) => ({ ...prev, [pid]: "" }));
 
     try {
       const q = await supabase
         .from("proposal_attachments")
-        .select("id, file_name, url, group_key, created_at, bucket_id, storage_path")
+        .select("id, proposal_id, file_name, url, group_key, created_at, bucket_id, storage_path")
         .eq("proposal_id", pid)
         .order("created_at", { ascending: false });
 
@@ -74,6 +95,7 @@ export function useDirectorProposalDetail({
 
         rows.push({
           id,
+          proposal_id: String(r.proposal_id ?? "").trim() || pid,
           file_name: String(r.file_name ?? "").trim() || "file",
           url,
           group_key: (r.group_key as string | null | undefined) ?? null,
@@ -85,12 +107,14 @@ export function useDirectorProposalDetail({
 
       setPropAttByProp((prev) => ({ ...prev, [pid]: rows }));
     } catch (e: unknown) {
-      console.warn("[director] loadProposalAttachments:", errText(e));
+      const message = errText(e) || "Не удалось загрузить вложения предложения";
+      console.warn("[director] loadProposalAttachments:", message);
+      setPropAttErrByProp((prev) => ({ ...prev, [pid]: message }));
       setPropAttByProp((prev) => ({ ...prev, [pid]: [] }));
     } finally {
       setPropAttBusyByProp((prev) => ({ ...prev, [pid]: false }));
     }
-  }, [supabase, propAttBusyByProp, setPropAttBusyByProp, setPropAttByProp]);
+  }, [supabase, propAttBusyByProp, setPropAttBusyByProp, setPropAttByProp, setPropAttErrByProp]);
 
   const onDirectorReturn = useCallback(async (proposalId: string | number, note?: string) => {
     const pidStr = String(proposalId);

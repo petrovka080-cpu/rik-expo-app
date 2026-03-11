@@ -16,7 +16,14 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { enqueueSubmitJob, JOB_QUEUE_ENABLED } from "../../lib/infra/jobQueue";
 
 type AlertFn = (title: string, message: string) => void;
-type FileLike = File | Blob | { name?: string | null; uri?: string | null; mimeType?: string | null; size?: number | null };
+type FileLike = File | Blob | {
+  name?: string | null;
+  uri?: string | null;
+  fileCopyUri?: string | null;
+  mimeType?: string | null;
+  type?: string | null;
+  size?: number | null;
+};
 type LogFn = (...args: unknown[]) => void;
 type CreateProposalMetaRow = {
   request_item_id: string;
@@ -101,8 +108,29 @@ type BuyerSubmitIntentPayload = {
 };
 
 const errMessage = (e: unknown, fallback = "Unknown error"): string => {
-  if (e instanceof Error && e.message.trim()) return e.message.trim();
-  return String(e ?? fallback);
+  if (e instanceof Error) {
+    const message = e.message.trim();
+    if (message) return message;
+  }
+
+  if (typeof e === "string") {
+    const message = e.trim();
+    if (message) return message;
+  }
+
+  if (e && typeof e === "object") {
+    const record = e as Record<string, unknown>;
+    for (const key of ["message", "error", "details", "hint", "code"] as const) {
+      const value = String(record[key] ?? "").trim();
+      if (value) return value;
+    }
+    try {
+      const json = JSON.stringify(e);
+      if (json && json !== "{}") return json;
+    } catch {}
+  }
+
+  return fallback;
 };
 const toPriceString = (v: number | string | null | undefined): string | null => {
   if (v == null) return null;
@@ -172,14 +200,14 @@ export async function handleCreateProposalsBySupplierAction(p: CreateProposalsDe
 
   const ids = p.pickedIds || [];
   if (ids.length === 0) {
-    p.showToast("Р’С‹Р±РµСЂРё РїРѕР·РёС†РёРё");
-    p.alert("РџСѓСЃС‚Рѕ", "Р’С‹Р±РµСЂРё РїРѕР·РёС†РёРё");
+    p.showToast("Выбери позиции");
+    p.alert("Пусто", "Выбери позиции");
     return;
   }
 
   if (p.needAttachWarn && !p.kbOpen) {
     p.setShowAttachBlock(true);
-    p.showToast("Р’Р»РѕР¶РµРЅРёСЏ РЅРµ РґРѕР±Р°РІР»РµРЅС‹ вЂ” РјРѕР¶РЅРѕ РѕС‚РїСЂР°РІРёС‚СЊ Р±РµР· РЅРёС…");
+    p.showToast("Вложения не добавлены, но отправка без них разрешена");
   }
 
   if (!p.validatePicked()) return;
@@ -311,7 +339,7 @@ export async function handleCreateProposalsBySupplierAction(p: CreateProposalsDe
 
     const created: CreatedProposalRow[] = Array.isArray(result?.proposals) ? result.proposals : [];
     if (!created.length) {
-      p.alert("Р’РЅРёРјР°РЅРёРµ", "РќРµ СѓРґР°Р»РѕСЃСЊ СЃС„РѕСЂРјРёСЂРѕРІР°С‚СЊ РїСЂРµРґР»РѕР¶РµРЅРёСЏ");
+      p.alert("Внимание", "Не удалось сформировать предложения");
       return;
     }
 
@@ -354,7 +382,10 @@ export async function handleCreateProposalsBySupplierAction(p: CreateProposalsDe
         console.info("[buyer.submit] attachmentUploads.ms=", Date.now() - tAtt, "total=", uploads.length, "failed=", failed);
       }
     } catch (e: unknown) {
-      p.alert("Р’Р»РѕР¶РµРЅРёСЏ", errMessage(e) ?? "РџСЂРµРґР»РѕР¶РµРЅРёСЏ СЃРѕР·РґР°РЅС‹, РЅРѕ РІР»РѕР¶РµРЅРёСЏ РЅРµ РїСЂРёРєСЂРµРїРёР»РёСЃСЊ.");
+      p.alert(
+        "Вложения",
+        errMessage(e, "Предложения созданы, но вложения не прикрепились."),
+      );
     }
 
     p.setAttachments({});
@@ -389,7 +420,7 @@ export async function handleCreateProposalsBySupplierAction(p: CreateProposalsDe
     p.removeFromInboxLocally(affectedIds);
     p.clearPick();
 
-    p.alert("РћС‚РїСЂР°РІР»РµРЅРѕ", `РЎРѕР·РґР°РЅРѕ РїСЂРµРґР»РѕР¶РµРЅРёР№: ${created.length}`);
+    p.alert("Отправлено", `Создано предложений: ${created.length}`);
     p.setTab("pending");
     p.closeSheet();
     // Do not block UX on full screen reload; refresh in background.
@@ -406,7 +437,7 @@ export async function handleCreateProposalsBySupplierAction(p: CreateProposalsDe
       queueInsertMs,
     );
   } catch (e: unknown) {
-    p.alert("РћС€РёР±РєР°", errMessage(e) ?? "РќРµ СѓРґР°Р»РѕСЃСЊ РѕС‚РїСЂР°РІРёС‚СЊ РґРёСЂРµРєС‚РѕСЂСѓ");
+    p.alert("Ошибка", errMessage(e, "Не удалось отправить директору"));
   } finally {
     p.sendingRef.current = false;
   }

@@ -33,6 +33,7 @@ export type ProposalItem = {
 
 export type ProposalAttachmentRow = {
   id: string;
+  proposal_id?: string | null;
   file_name: string;
   url?: string | null;
   group_key?: string | null;

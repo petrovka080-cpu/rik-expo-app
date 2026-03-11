@@ -173,6 +173,7 @@ export function useDirectorScreenController() {
     const [propReturnId, setPropReturnId] = useState<string | null>(null);
     const [propAttByProp, setPropAttByProp] = useState<Record<string, ProposalAttachmentRow[]>>({});
     const [propAttBusyByProp, setPropAttBusyByProp] = useState<Record<string, boolean>>({});
+    const [propAttErrByProp, setPropAttErrByProp] = useState<Record<string, string>>({});
     const [sheetKind, setSheetKind] = useState<SheetKind>('none');
     const [sheetRequest, setSheetRequest] = useState<Group | null>(null);
     const [sheetProposalId, setSheetProposalId] = useState<string | null>(null);
@@ -225,6 +226,7 @@ export function useDirectorScreenController() {
 
     const proposalDetail = useDirectorProposalDetail({
         supabase, propAttBusyByProp, setPropAttBusyByProp, setPropAttByProp,
+        setPropAttErrByProp,
         setPropReturnId, setItemsByProp, setLoadedByProp, setPdfHtmlByProp,
         fetchProps: data.fetchProps, closeSheet
     });
@@ -349,6 +351,7 @@ export function useDirectorScreenController() {
         sheetKind, sheetRequest, sheetProposalId,
         actingId, reqDeleteId, reqSendId, propApproveId, propReturnId,
         itemsByProp, loadedByProp, decidingId, actingPropItemId, propAttByProp, propAttBusyByProp,
+        propAttErrByProp,
         pdfHtmlByProp,
 
         // Helpers

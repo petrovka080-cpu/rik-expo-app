@@ -41,6 +41,7 @@ type Props = {
   actingPropItemId: number | null;
   propAttByProp: Record<string, ProposalAttachmentRow[]>;
   propAttBusyByProp: Record<string, boolean>;
+  propAttErrByProp: Record<string, string>;
   reqItemNoteById: Record<string, string>;
   propReqIdsByProp: Record<string, string[]>;
   reqMetaById: Record<string, RequestMeta>;
@@ -108,6 +109,7 @@ export default function DirectorSheetModal(props: Props) {
             actingPropItemId={props.actingPropItemId}
             propAttByProp={props.propAttByProp}
             propAttBusyByProp={props.propAttBusyByProp}
+            propAttErrByProp={props.propAttErrByProp}
             reqItemNoteById={props.reqItemNoteById}
             propReqIdsByProp={props.propReqIdsByProp}
             reqMetaById={props.reqMetaById}

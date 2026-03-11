@@ -240,6 +240,7 @@ export default function DirectorScreen() {
         actingPropItemId={vm.actingPropItemId}
         propAttByProp={vm.propAttByProp}
         propAttBusyByProp={vm.propAttBusyByProp}
+        propAttErrByProp={vm.propAttErrByProp}
         reqItemNoteById={vm.data.reqItemNoteByIdRef.current}
         propReqIdsByProp={vm.data.propReqIdsByPropRef.current}
         reqMetaById={vm.data.reqMetaByIdRef.current}

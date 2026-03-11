@@ -15,6 +15,7 @@ type Props = {
   actingPropItemId: number | null;
   propAttByProp: Record<string, ProposalAttachmentRow[]>;
   propAttBusyByProp: Record<string, boolean>;
+  propAttErrByProp: Record<string, string>;
   reqItemNoteById: Record<string, string>;
   propReqIdsByProp: Record<string, string[]>;
   reqMetaById: Record<string, RequestMeta>;
@@ -40,6 +41,7 @@ export default function DirectorProposalContainer({
   actingPropItemId,
   propAttByProp,
   propAttBusyByProp,
+  propAttErrByProp,
   reqItemNoteById,
   propReqIdsByProp,
   reqMetaById,
@@ -86,6 +88,7 @@ export default function DirectorProposalContainer({
         approveDisabled={approveDisabled}
         files={propAttByProp[pidStr] || []}
         busyAtt={!!propAttBusyByProp[pidStr]}
+        attError={propAttErrByProp[pidStr] || ""}
         reqItemNoteById={reqItemNoteById}
         propReqIds={propReqIdsByProp?.[pidStr] || []}
         reqMetaById={reqMetaById}

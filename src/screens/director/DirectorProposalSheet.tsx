@@ -21,6 +21,7 @@ type Props = {
   approveDisabled: boolean;
   files: ProposalAttachmentRow[];
   busyAtt: boolean;
+  attError: string;
   reqItemNoteById: Record<string, string>;
   propReqIds: string[];
   reqMetaById: Record<string, RequestMeta>;
@@ -47,6 +48,7 @@ export default function DirectorProposalSheet({
   approveDisabled,
   files,
   busyAtt,
+  attError,
   reqItemNoteById,
   propReqIds,
   reqMetaById,
@@ -81,6 +83,7 @@ export default function DirectorProposalSheet({
       <DirectorProposalAttachments
         files={files}
         busyAtt={busyAtt}
+        error={attError}
         onRefresh={onRefreshAttachments}
         onOpenUrl={onOpenAttachment}
       />

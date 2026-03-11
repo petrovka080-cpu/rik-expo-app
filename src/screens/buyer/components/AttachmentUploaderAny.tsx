@@ -3,6 +3,33 @@ import { View, Text, Pressable, Alert, Platform } from "react-native";
 import { UI } from "../buyerUi";
 import type { Attachment } from "../buyer.types";
 import type { StylesBag } from "./component.types";
+import { normalizeNativePickedFile } from "../../../lib/filePick";
+
+function normalizeErrorMessage(error: unknown, fallback: string): string {
+  if (error instanceof Error) {
+    const message = error.message.trim();
+    if (message) return message;
+  }
+
+  if (typeof error === "string") {
+    const message = error.trim();
+    if (message) return message;
+  }
+
+  if (error && typeof error === "object") {
+    const record = error as Record<string, unknown>;
+    for (const key of ["message", "error", "details", "hint", "code"] as const) {
+      const value = String(record[key] ?? "").trim();
+      if (value) return value;
+    }
+    try {
+      const json = JSON.stringify(error);
+      if (json && json !== "{}") return json;
+    } catch {}
+  }
+
+  return fallback;
+}
 
 export function AttachmentUploaderAny({
   label,
@@ -30,7 +57,9 @@ export function AttachmentUploaderAny({
           input.accept = accept;
           input.onchange = () => {
             const file = (input.files && input.files[0]) || null;
-            try { input.remove(); } catch { }
+            try {
+              input.remove();
+            } catch {}
             resolve(file);
           };
           input.click();
@@ -49,13 +78,14 @@ export function AttachmentUploaderAny({
       });
 
       if (res?.canceled) return;
-      const f = res?.assets?.[0] ?? null;
-      if (!f) return;
+      const file = normalizeNativePickedFile(res);
+      if (!file) {
+        throw new Error("Не удалось получить данные выбранного файла");
+      }
 
-      const name = String(f?.name ?? `file_${Date.now()}`).trim();
-      onPick({ name, file: f });
+      onPick({ name: file.name, file });
     } catch (e: unknown) {
-      Alert.alert("Вложение", (e as { message?: string } | null)?.message ?? "Не удалось выбрать файл");
+      Alert.alert("Вложение", normalizeErrorMessage(e, "Не удалось выбрать файл"));
     }
   };
 
