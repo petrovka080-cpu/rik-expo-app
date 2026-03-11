@@ -5,8 +5,8 @@ export function useBuyerKeyboard() {
   const [kbOpen, setKbOpen] = useState(false);
 
   useEffect(() => {
-    const showEvt = Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow";
-    const hideEvt = Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide";
+    const showEvt = "keyboardDidShow";
+    const hideEvt = "keyboardDidHide";
 
     const showSub = Keyboard.addListener(showEvt, () => setKbOpen(true));
     const hideSub = Keyboard.addListener(hideEvt, () => setKbOpen(false));
@@ -27,4 +27,3 @@ export function useBuyerKeyboard() {
 
   return { kbOpen };
 }
-

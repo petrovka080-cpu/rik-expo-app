@@ -18,7 +18,7 @@ export const BuyerSheetShell = React.memo(function BuyerSheetShell(props: {
       onBackdropPress={onClose}
       onBackButtonPress={onClose}
       backdropOpacity={0.55}
-      avoidKeyboard
+      avoidKeyboard={false}
       propagateSwipe
       useNativeDriver={false}
       useNativeDriverForBackdrop={false}
