@@ -46,7 +46,7 @@ export const BuyerItemEditor = React.memo(function BuyerItemEditor(props: BuyerI
   const P = inSheet ? P_SHEET : P_LIST;
   const isMobileRuntime = Platform.OS !== "web";
   const { width: viewportWidth } = useWindowDimensions();
-  const { user: noteUser } = splitNote(m.note);
+  const { user: noteUser, auto: noteAuto } = splitNote(m.note);
   const [priceDraft, setPriceDraft] = React.useState(String(m.price ?? ""));
   const [priceFocused, setPriceFocused] = React.useState(false);
   const [noteDraft, setNoteDraft] = React.useState(String(noteUser ?? ""));
