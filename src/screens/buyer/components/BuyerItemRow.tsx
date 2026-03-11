@@ -7,6 +7,7 @@ import {
   FlatList,
   Platform,
   Modal,
+  SafeAreaView,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
@@ -461,33 +462,50 @@ export const BuyerItemRow = React.memo(function BuyerItemRow(props: {
       {isMobileRuntime ? (
         <Modal
           visible={isSupplierModalOpen}
-          transparent
-          animationType="fade"
+          transparent={false}
+          animationType="slide"
+          presentationStyle="fullScreen"
           onRequestClose={() => setIsSupplierModalOpen(false)}
         >
-          <Pressable
-            onPress={() => setIsSupplierModalOpen(false)}
+          <SafeAreaView
             style={{
               flex: 1,
-              backgroundColor: "rgba(0,0,0,0.55)",
-              justifyContent: "center",
-              paddingHorizontal: 16,
+              backgroundColor: "#0B1220",
             }}
           >
-            <Pressable
-              onPress={() => undefined}
+            <View
               style={{
-                borderRadius: 20,
-                backgroundColor: "#101826",
-                borderWidth: 1,
-                borderColor: "rgba(255,255,255,0.12)",
-                padding: 14,
-                maxHeight: "70%",
+                flex: 1,
+                paddingHorizontal: 16,
+                paddingTop: 8,
+                paddingBottom: 16,
               }}
             >
-              <Text style={{ color: P.text, fontWeight: "900", fontSize: 16, marginBottom: 12 }}>
-                Выбери {counterpartyLabel.toLowerCase()}
-              </Text>
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  marginBottom: 12,
+                }}
+              >
+                <Text style={{ color: P.text, fontWeight: "900", fontSize: 20 }}>
+                  Выбери {counterpartyLabel.toLowerCase()}
+                </Text>
+                <Pressable
+                  onPress={() => setIsSupplierModalOpen(false)}
+                  style={{
+                    minHeight: 40,
+                    minWidth: 40,
+                    borderRadius: 12,
+                    alignItems: "center",
+                    justifyContent: "center",
+                    backgroundColor: "rgba(255,255,255,0.08)",
+                  }}
+                >
+                  <Ionicons name="close" size={20} color={P.text} />
+                </Pressable>
+              </View>
 
               <TextInput
                 value={supplierQueryDraft}
@@ -504,6 +522,7 @@ export const BuyerItemRow = React.memo(function BuyerItemRow(props: {
                     borderColor: P.inputBorder,
                     color: P.text,
                     marginBottom: 12,
+                    minHeight: 48,
                   },
                 ]}
               />
@@ -512,20 +531,26 @@ export const BuyerItemRow = React.memo(function BuyerItemRow(props: {
                 data={filteredSuppliers}
                 keyExtractor={(item, idx) => `${item}:${idx}`}
                 keyboardShouldPersistTaps="always"
+                contentContainerStyle={{ paddingBottom: 24 }}
                 renderItem={({ item }) => (
                   <Pressable
                     onPress={() => commitSelectedSupplier(item)}
                     style={{
-                      minHeight: 48,
+                      minHeight: 56,
                       justifyContent: "center",
-                      paddingHorizontal: 12,
-                      paddingVertical: 10,
-                      borderRadius: 12,
+                      paddingHorizontal: 14,
+                      paddingVertical: 12,
+                      borderRadius: 16,
                       backgroundColor:
                         makeSupplierId(item) === selectedSupplierId
                           ? "rgba(34,197,94,0.16)"
                           : "rgba(255,255,255,0.04)",
                       marginBottom: 8,
+                      borderWidth: 1,
+                      borderColor:
+                        makeSupplierId(item) === selectedSupplierId
+                          ? "rgba(34,197,94,0.4)"
+                          : "rgba(255,255,255,0.08)",
                     }}
                   >
                     <Text style={{ color: P.text, fontWeight: "800" }} numberOfLines={1}>
@@ -539,8 +564,8 @@ export const BuyerItemRow = React.memo(function BuyerItemRow(props: {
                   </Text>
                 }
               />
-            </Pressable>
-          </Pressable>
+            </View>
+          </SafeAreaView>
         </Modal>
       ) : null}
 

@@ -4,7 +4,7 @@ import { formatRequestDisplay } from "../../src/lib/format";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   View, FlatList, Alert, Platform, ScrollView, Animated,
-  KeyboardAvoidingView, TextInput
+  TextInput
 } from 'react-native';
 import { useLatest } from "../../src/lib/useLatest";
 import IconSquareButton from "../../src/ui/IconSquareButton";
@@ -681,12 +681,7 @@ export default function BuyerScreen() {
         title={sheetTitle}
 
       >
-        <KeyboardAvoidingView
-          style={{ flex: 1, minHeight: 0 }}
-          behavior={Platform.OS === "ios" ? "padding" : undefined}
-          keyboardVerticalOffset={Platform.OS === "ios" ? 10 : 0}
-        >
-          <View style={s.sheetBody}>
+        <View style={[s.sheetBody, { flex: 1, minHeight: 0 }]}>
             {sheetKind === "inbox" && sheetGroup ? (
               <BuyerInboxSheetBody
                 s={s}
@@ -881,7 +876,6 @@ export default function BuyerScreen() {
               />
             ) : null}
           </View>
-        </KeyboardAvoidingView>
 
       </BuyerSheetShell>
       <ToastOverlay toast={toast} />
