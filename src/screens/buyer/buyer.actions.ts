@@ -48,6 +48,7 @@ type CreatedProposalRow = {
   id?: string | null;
   proposal_id?: string | null;
   request_item_ids?: string[] | null;
+  supplier?: string | null;
 };
 type ProposalRowLite = { id?: string | null; supplier?: string | null };
 type ProposalItemLinkRow = { proposal_id?: string | null; request_item_id?: string | null };
@@ -131,6 +132,10 @@ const errMessage = (e: unknown, fallback = "Unknown error"): string => {
   }
 
   return fallback;
+};
+
+const normalizeRuntimeError = (e: unknown, fallback: string): Error => {
+  return new Error(errMessage(e, fallback));
 };
 const toPriceString = (v: number | string | null | undefined): string | null => {
   if (v == null) return null;
@@ -237,6 +242,7 @@ export async function handleCreateProposalsBySupplierAction(p: CreateProposalsDe
     const okNoAtt = await p.confirmSendWithoutAttachments();
     if (!okNoAtt) return;
     const submitIntentMs = Date.now() - tIntent;
+    console.info("[buyer.submit] queue.enabled", { queueEnabled: JOB_QUEUE_ENABLED });
     console.info(
       JOB_QUEUE_ENABLED
         ? "[buyer.submit] queue-mode path"
@@ -262,14 +268,24 @@ export async function handleCreateProposalsBySupplierAction(p: CreateProposalsDe
           return fileName ? [{ key, name: fileName }] : [];
         }),
       };
-      await enqueueSubmitJob({
-        jobType: "buyer_submit_proposal",
-        entityType: "request_items",
-        entityId: ids[0] || null,
-        entityKey: p.requestId ? String(p.requestId).trim() || null : ids[0] || null,
-        payload: intentPayload as unknown as Record<string, unknown>,
-        clientRequestId,
-      });
+      try {
+        await enqueueSubmitJob({
+          jobType: "buyer_submit_proposal",
+          entityType: "request_items",
+          entityId: ids[0] || null,
+          entityKey: p.requestId ? String(p.requestId).trim() || null : ids[0] || null,
+          payload: intentPayload as unknown as Record<string, unknown>,
+          clientRequestId,
+        });
+      } catch (e: unknown) {
+        console.warn("[buyer.submit] queue.enqueue.failed", {
+          clientRequestId,
+          requestItemIds: ids,
+          error: errMessage(e, "Не удалось поставить заявку в очередь."),
+          raw: e,
+        });
+        throw normalizeRuntimeError(e, "Не удалось поставить заявку в очередь.");
+      }
       queueInsertMs = Date.now() - tQueue;
       console.info("[buyer.submit] queue.enqueued", {
         clientRequestId,
@@ -343,7 +359,7 @@ export async function handleCreateProposalsBySupplierAction(p: CreateProposalsDe
           count: Array.isArray(x.request_item_ids) ? x.request_item_ids.length : 0,
         })),
       });
-      throw e;
+      throw normalizeRuntimeError(e, "Не удалось создать предложения.");
     }
     console.info(
       "[buyer.submit] createProposalsBySupplier.ms=",
@@ -411,10 +427,7 @@ export async function handleCreateProposalsBySupplierAction(p: CreateProposalsDe
         console.info("[buyer.submit] attachmentUploads.ms=", Date.now() - tAtt, "total=", uploads.length, "failed=", failed);
       }
     } catch (e: unknown) {
-      p.alert(
-        "Вложения",
-        errMessage(e, "Предложения созданы, но вложения не прикрепились."),
-      );
+      p.alert("Вложения", errMessage(e, "Предложения созданы, но вложения не прикрепились."));
     }
 
     p.setAttachments({});
@@ -466,7 +479,9 @@ export async function handleCreateProposalsBySupplierAction(p: CreateProposalsDe
       queueInsertMs,
     );
   } catch (e: unknown) {
-    p.alert("Ошибка", errMessage(e, "Не удалось отправить директору"));
+    const message = errMessage(e, "Не удалось отправить директору");
+    console.warn("[buyer.submit] final.error", { error: message, raw: e });
+    p.alert("Ошибка", message);
   } finally {
     p.sendingRef.current = false;
   }

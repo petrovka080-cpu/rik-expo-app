@@ -107,7 +107,33 @@ import BuyerSubcontractTab from "../../src/screens/buyer/BuyerSubcontractTab";
 
 export default function BuyerScreen() {
   const busy = useGlobalBusy();
-  const alertUser = useCallback((title: string, message?: string) => Alert.alert(title, message), []);
+  const normalizeAlertPart = useCallback((value: unknown, fallback: string): string => {
+    if (typeof value === "string") {
+      const message = value.trim();
+      if (message && message !== "[object Object]") return message;
+    }
+    if (value instanceof Error) {
+      const message = value.message.trim();
+      if (message && message !== "[object Object]") return message;
+    }
+    if (value && typeof value === "object") {
+      const record = value as Record<string, unknown>;
+      for (const key of ["message", "error", "details", "hint", "code"] as const) {
+        const part = String(record[key] ?? "").trim();
+        if (part && part !== "[object Object]") return part;
+      }
+      try {
+        const json = JSON.stringify(value);
+        if (json && json !== "{}" && json !== '"[object Object]"') return json;
+      } catch {}
+    }
+    return fallback;
+  }, []);
+  const alertUser = useCallback((title: string, message?: string) => {
+    const safeTitle = normalizeAlertPart(title, "Ошибка");
+    const safeMessage = normalizeAlertPart(message, "Произошла ошибка");
+    Alert.alert(safeTitle, safeMessage);
+  }, [normalizeAlertPart]);
   const [tab, setTab] = useState<BuyerTab>("inbox");
   const [buyerFio, setBuyerFio] = useState<string>("");
   const {
