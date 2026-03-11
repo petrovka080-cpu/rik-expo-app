@@ -14,6 +14,7 @@ import {
 } from "./buyer.repo";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { enqueueSubmitJob, JOB_QUEUE_ENABLED } from "../../lib/infra/jobQueue";
+import { stageProposalAttachmentForQueue, type QueuedProposalAttachment } from "../../lib/api/storage";
 
 type AlertFn = (title: string, message: string) => void;
 type FileLike = File | Blob | {
@@ -105,7 +106,7 @@ type BuyerSubmitIntentPayload = {
   metaById: Record<string, { supplier?: string; price?: number | string | null; note?: string | null }>;
   buyerId: string | null;
   buyerFio: string;
-  attachmentNames: Array<{ key: string; name: string }>;
+  attachments: QueuedProposalAttachment[];
 };
 
 const bytesToUuid = (bytes: Uint8Array): string => {
@@ -290,16 +291,21 @@ export async function handleCreateProposalsBySupplierAction(p: CreateProposalsDe
     if (JOB_QUEUE_ENABLED) {
       const tQueue = Date.now();
       const clientRequestId = makeClientRequestId();
+      const stagedAttachments: QueuedProposalAttachment[] = [];
+      for (const [key, value] of Object.entries(p.attachmentsNow || {})) {
+        const fileName = String(value?.name || "").trim();
+        if (!fileName || !value?.file) continue;
+        stagedAttachments.push(
+          await stageProposalAttachmentForQueue(value.file, fileName, key, "supplier_quote"),
+        );
+      }
       const intentPayload: BuyerSubmitIntentPayload = {
         requestId: p.requestId ? String(p.requestId).trim() || null : null,
         requestItemIds: ids,
         metaById: p.metaNow || {},
         buyerId: p.buyerId ? String(p.buyerId).trim() || null : null,
         buyerFio: (p.buyerFio || "").trim(),
-        attachmentNames: Object.entries(p.attachmentsNow || {}).flatMap(([key, value]) => {
-          const fileName = String(value?.name || "").trim();
-          return fileName ? [{ key, name: fileName }] : [];
-        }),
+        attachments: stagedAttachments,
       };
       try {
         await enqueueSubmitJob({
@@ -314,6 +320,7 @@ export async function handleCreateProposalsBySupplierAction(p: CreateProposalsDe
         console.warn("[buyer.submit] queue.enqueue.failed", {
           clientRequestId,
           requestItemIds: ids,
+          attachmentCount: stagedAttachments.length,
           error: errMessage(e, "Не удалось поставить заявку в очередь."),
           raw: e,
         });
@@ -324,6 +331,7 @@ export async function handleCreateProposalsBySupplierAction(p: CreateProposalsDe
         clientRequestId,
         queueInsertMs,
         requestItemIds: ids,
+        attachmentCount: stagedAttachments.length,
       });
 
       // Fast UX path: enqueue accepted.

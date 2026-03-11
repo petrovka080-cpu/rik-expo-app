@@ -4,6 +4,10 @@ import type {
   CreateProposalsOptions as CatalogCreateProposalsOptions,
   CreateProposalsResult as CatalogCreateProposalsResult,
 } from "../lib/catalog_api";
+import {
+  bindQueuedProposalAttachmentToProposal,
+  type QueuedProposalAttachment,
+} from "../lib/api/storage";
 
 type CreateProposalsApi = (
   payload: ProposalBucketInput[],
@@ -29,8 +33,7 @@ type BuyerSubmitIntentPayload = {
   metaById: Record<string, { supplier?: string; price?: number | string | null; note?: string | null }>;
   buyerId?: string | null;
   buyerFio: string;
-  // Queue foundation keeps file names only. Real file blobs are not yet persisted for worker pickup.
-  attachmentNames?: Array<{ key: string; name: string }>;
+  attachments?: QueuedProposalAttachment[];
 };
 
 type Deps = {
@@ -45,6 +48,16 @@ const toPriceString = (value: number | string | null | undefined): string | null
   const s = String(value).trim();
   return s.length ? s : null;
 };
+
+const normalizeSupplierKey = (value: unknown): string =>
+  String(value ?? "")
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, " ")
+    .replace(/[“”"']/g, "")
+    .replace(/[.,;:()\-_/\\]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 
 const SUPP_NONE = "— без поставщика —";
 
@@ -100,10 +113,24 @@ export async function processBuyerSubmitJob(job: SubmitJobRow, deps: Deps): Prom
     throw new Error("createProposalsBySupplier returned empty proposals");
   }
 
-  // Queue foundation does not persist file blobs yet; attachment upload is intentionally deferred.
-  // Keep explicit warning so this is visible in runtime logs.
-  if (Array.isArray(payload.attachmentNames) && payload.attachmentNames.length) {
-    console.warn("[buyer.worker] attachment upload skipped in queue mode: only file names are stored in payload");
+  const attachments = Array.isArray(payload.attachments) ? payload.attachments : [];
+  if (attachments.length) {
+    const proposalIdBySupplierKey = new Map<string, string>();
+    for (const row of created) {
+      const proposalId = norm(row?.proposal_id);
+      if (!proposalId) continue;
+      const supplierKey = normalizeSupplierKey(row?.supplier) || SUPP_NONE;
+      proposalIdBySupplierKey.set(supplierKey, proposalId);
+    }
+
+    for (const attachment of attachments) {
+      const supplierKey = normalizeSupplierKey(attachment.supplierKey) || SUPP_NONE;
+      const proposalId = proposalIdBySupplierKey.get(supplierKey);
+      if (!proposalId) {
+        throw new Error(`queue attachment bind failed: no final proposal for supplierKey=${supplierKey}`);
+      }
+      await bindQueuedProposalAttachmentToProposal(proposalId, attachment);
+    }
   }
 
   console.info("[buyer.worker] jobProcessingMs=", Date.now() - t0, "jobType=buyer_submit_proposal", "retryCount=", Number(job.retry_count || 0));

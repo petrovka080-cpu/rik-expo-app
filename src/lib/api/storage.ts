@@ -3,6 +3,15 @@ import * as FileSystem from "expo-file-system/legacy";
 import { supabase } from "../supabaseClient";
 
 const FILES_BUCKET = "proposal_files";
+export type QueuedProposalAttachment = {
+  supplierKey: string;
+  fileName: string;
+  bucketId: string;
+  storagePath: string;
+  groupKey: string;
+  mimeType?: string | null;
+  size?: number | null;
+};
 type NativeFileLike = {
   name?: string | null;
   uri?: string | null;
@@ -242,6 +251,115 @@ export async function uploadProposalAttachment(
   };
 
   const ins = await supabase.from("proposal_attachments").insert(row);
+  if (ins.error) {
+    throw new Error(
+      `proposal_attachments INSERT failed: ${ins.error.message}\nproposal_id=${pid}\ngroup_key=${groupKey}\nfile_name=${fileName}\npath=${storagePath}`,
+    );
+  }
+}
+
+export async function stageProposalAttachmentForQueue(
+  file: unknown,
+  filename: string,
+  supplierKey: string,
+  kind: "invoice" | "payment" | "proposal_pdf" | string,
+): Promise<QueuedProposalAttachment> {
+  const groupKey = String(kind ?? "").trim();
+  if (!groupKey) throw new Error("stageProposalAttachmentForQueue: kind/group_key пустой");
+
+  const requestedName = String(filename || "").trim() || `file_${Date.now()}`;
+  const supplierSegment = sanitizeFilename(String(supplierKey || "").trim() || "unknown_supplier");
+
+  let uploadBody: Blob | File | Uint8Array;
+  let fileName = requestedName;
+  let contentType = inferContentType(fileName);
+  let size: number | null = null;
+
+  if (Platform.OS === "web") {
+    const webFile = file as File;
+    if (!webFile) throw new Error("stageProposalAttachmentForQueue: file пустой (web)");
+    fileName = ensureFilename(String(webFile.name || fileName).trim() || fileName, webFile.type || "");
+    uploadBody = webFile;
+    contentType = inferContentType(fileName, webFile.type || "");
+    size = typeof webFile.size === "number" ? webFile.size : null;
+  } else {
+    const nativePayload = await buildNativeUploadPayload(file, requestedName);
+    uploadBody = nativePayload.uploadBody;
+    fileName = nativePayload.fileName;
+    contentType = nativePayload.contentType;
+    const rawSize = Number((file as NativeFileLike | null | undefined)?.size ?? NaN);
+    size = Number.isFinite(rawSize) ? rawSize : null;
+  }
+
+  const storagePath =
+    `queued/${groupKey}/${supplierSegment}/${Date.now()}-${sanitizeFilename(fileName)}`;
+
+  const { error: upErr } = await supabase.storage
+    .from(FILES_BUCKET)
+    .upload(storagePath, uploadBody as any, {
+      contentType,
+      upsert: false,
+    });
+
+  if (upErr) {
+    throw new Error(
+      `Queue attachment upload failed: ${upErr.message}\nbucket=${FILES_BUCKET}\npath=${storagePath}\ncontentType=${contentType}`,
+    );
+  }
+
+  return {
+    supplierKey: String(supplierKey || "").trim(),
+    fileName,
+    bucketId: FILES_BUCKET,
+    storagePath,
+    groupKey,
+    mimeType: contentType,
+    size,
+  };
+}
+
+export async function bindQueuedProposalAttachmentToProposal(
+  proposalId: string,
+  attachment: QueuedProposalAttachment,
+): Promise<void> {
+  const pid = String(proposalId ?? "").trim();
+  const bucketId = String(attachment.bucketId ?? "").trim();
+  const storagePath = String(attachment.storagePath ?? "").trim();
+  const fileName = String(attachment.fileName ?? "").trim();
+  const groupKey = String(attachment.groupKey ?? "").trim();
+
+  if (!pid) throw new Error("bindQueuedProposalAttachmentToProposal: proposalId пустой");
+  if (!bucketId) throw new Error("bindQueuedProposalAttachmentToProposal: bucket_id пустой");
+  if (!storagePath) throw new Error("bindQueuedProposalAttachmentToProposal: storage_path пустой");
+  if (!fileName) throw new Error("bindQueuedProposalAttachmentToProposal: file_name пустой");
+  if (!groupKey) throw new Error("bindQueuedProposalAttachmentToProposal: group_key пустой");
+
+  const existing = await supabase
+    .from("proposal_attachments")
+    .select("id")
+    .eq("proposal_id", pid)
+    .eq("bucket_id", bucketId)
+    .eq("storage_path", storagePath)
+    .eq("group_key", groupKey)
+    .limit(1)
+    .maybeSingle();
+
+  if (existing.error) {
+    throw new Error(
+      `proposal_attachments SELECT failed: ${existing.error.message}\nproposal_id=${pid}\nbucket_id=${bucketId}\npath=${storagePath}`,
+    );
+  }
+  if (existing.data?.id) return;
+
+  const ins = await supabase.from("proposal_attachments").insert({
+    proposal_id: pid,
+    bucket_id: bucketId,
+    storage_path: storagePath,
+    file_name: fileName,
+    group_key: groupKey,
+    url: null,
+  });
+
   if (ins.error) {
     throw new Error(
       `proposal_attachments INSERT failed: ${ins.error.message}\nproposal_id=${pid}\ngroup_key=${groupKey}\nfile_name=${fileName}\npath=${storagePath}`,
