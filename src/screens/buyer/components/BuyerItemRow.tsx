@@ -8,6 +8,7 @@ import {
   Platform,
   Modal,
   SafeAreaView,
+  useWindowDimensions,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
@@ -36,7 +37,7 @@ type BuyerItemEditorProps = {
 
 export const BuyerItemEditor = React.memo(function BuyerItemEditor(props: BuyerItemEditorProps) {
   const {
-    it, m, s, inSheet,
+    m, s, inSheet,
     counterpartyLabel,
     supplierSuggestions, hasAnyCounterpartyOptions, counterpartyHardFailure,
     onSetPrice, onSetSupplier, onSetNote, onPickSupplier, onFocusField,
@@ -44,7 +45,8 @@ export const BuyerItemEditor = React.memo(function BuyerItemEditor(props: BuyerI
 
   const P = inSheet ? P_SHEET : P_LIST;
   const isMobileRuntime = Platform.OS !== "web";
-  const { user: noteUser, auto: noteAuto } = splitNote(m.note);
+  const { width: viewportWidth } = useWindowDimensions();
+  const { user: noteUser } = splitNote(m.note);
   const [priceDraft, setPriceDraft] = React.useState(String(m.price ?? ""));
   const [priceFocused, setPriceFocused] = React.useState(false);
   const [noteDraft, setNoteDraft] = React.useState(String(noteUser ?? ""));
@@ -89,6 +91,24 @@ export const BuyerItemEditor = React.memo(function BuyerItemEditor(props: BuyerI
     if (!isMobileRuntime && needle.length < 2) return [];
     return all.filter((name) => String(name).toLowerCase().includes(needle));
   }, [supplierSuggestions, supplierQueryDraft, isMobileRuntime]);
+  const shouldStackPrimaryFields = isMobileRuntime && viewportWidth < 420;
+  const editorCardStyle = isMobileRuntime
+    ? {
+        marginTop: 10,
+        gap: 10,
+        padding: 12,
+        borderRadius: 16,
+        borderColor: "rgba(59,130,246,0.24)",
+        backgroundColor: "rgba(255,255,255,0.04)",
+      }
+    : {
+        marginTop: 0,
+        gap: 8,
+        padding: 14,
+        borderRadius: 18,
+        borderColor: "rgba(34,197,94,0.26)",
+        backgroundColor: "rgba(2,132,199,0.06)",
+      };
 
   const commitSelectedSupplier = React.useCallback(
     (rawName: string) => {
@@ -132,40 +152,27 @@ export const BuyerItemEditor = React.memo(function BuyerItemEditor(props: BuyerI
     <View
       style={[
         {
-          marginTop: 0,
-          gap: 8,
           position: "relative",
           overflow: "visible",
-          padding: 14,
-          borderRadius: 18,
           borderWidth: 1,
-          borderColor: "rgba(34,197,94,0.26)",
-          backgroundColor: "rgba(2,132,199,0.06)",
         },
+        editorCardStyle,
       ]}
     >
       <View
         style={{
           flexDirection: "row",
           alignItems: "center",
-          justifyContent: "space-between",
+          justifyContent: "flex-end",
           gap: 12,
         }}
       >
-        <View style={{ flex: 1, minWidth: 0 }}>
-          <Text style={{ color: P.text, fontWeight: "900", fontSize: 15 }} numberOfLines={1}>
-            {it.name_human || "Позиция"}
-          </Text>
-          <Text style={{ color: P.sub, fontWeight: "700", fontSize: 12, marginTop: 2 }} numberOfLines={1}>
-            {`${String(it.qty ?? "")} ${String(it.uom ?? "")}`.trim()}
-          </Text>
-        </View>
         <StatusBadge label="Редактируется" tone="info" compact />
       </View>
 
       <View
         style={{
-          flexDirection: "row",
+          flexDirection: shouldStackPrimaryFields ? "column" : "row",
           gap: 8,
           position: "relative",
           overflow: "visible",
@@ -205,7 +212,7 @@ export const BuyerItemEditor = React.memo(function BuyerItemEditor(props: BuyerI
               style={[
                 s.fieldInput,
                 {
-                  minHeight: 46,
+                  minHeight: isMobileRuntime ? 44 : 46,
                   backgroundColor: P.inputBg,
                   borderColor: P.inputBorder,
                   flexDirection: "row",
@@ -327,7 +334,13 @@ export const BuyerItemEditor = React.memo(function BuyerItemEditor(props: BuyerI
         }}
         style={[
           s.fieldInput,
-          { minHeight: 44, backgroundColor: P.inputBg, borderColor: P.inputBorder, color: P.text },
+          {
+            minHeight: isMobileRuntime ? 42 : 44,
+            backgroundColor: P.inputBg,
+            borderColor: P.inputBorder,
+            color: P.text,
+            textAlignVertical: "top",
+          },
         ]}
       />
 
@@ -369,7 +382,7 @@ export const BuyerItemEditor = React.memo(function BuyerItemEditor(props: BuyerI
                 }}
               >
                 <Text style={{ color: P.text, fontWeight: "900", fontSize: 20 }}>
-                  Выбери {counterpartyLabel.toLowerCase()}
+                  Выберите {counterpartyLabel.toLowerCase()}
                 </Text>
                 <Pressable
                   onPress={() => setIsSupplierModalOpen(false)}
@@ -401,7 +414,7 @@ export const BuyerItemEditor = React.memo(function BuyerItemEditor(props: BuyerI
                     borderColor: P.inputBorder,
                     color: P.text,
                     marginBottom: 12,
-                    minHeight: 48,
+                    minHeight: 46,
                   },
                 ]}
               />
@@ -487,7 +500,7 @@ function BuyerItemRowInner(props: {
   } = props;
 
   const P = inSheet ? P_SHEET : P_LIST;
-  const { user: noteUser, auto: noteAuto } = splitNote(m.note);
+  const { user: noteUser } = splitNote(m.note);
 
   const rejectReason = String(
     (it as any)?.director_reject_reason ??
@@ -565,7 +578,7 @@ function BuyerItemRowInner(props: {
                 {selected ? "Снять" : "Выбрать"}
               </Text>
             </Pressable>
-            <Ionicons name="chevron-forward" size={16} color={P.sub} />
+            {!selected ? <Ionicons name="chevron-forward" size={16} color={P.sub} /> : null}
           </View>
         </View>
 

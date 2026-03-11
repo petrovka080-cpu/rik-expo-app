@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, FlatList, ScrollView } from "react-native";
+import { View, Text, FlatList } from "react-native";
 
 import type { BuyerInboxRow } from "../../../lib/catalog_api";
 import type { DraftAttachmentMap } from "../buyer.types";
@@ -38,8 +38,6 @@ export function BuyerInboxSheetBody({
   attachments,
   setAttachments,
   renderItemRow,
-  editorSection,
-  editorTitle,
   footer,
 }: {
   s: StylesBag;
@@ -58,13 +56,30 @@ export function BuyerInboxSheetBody({
   pickedIdsLen: number;
   attachments: DraftAttachmentMap;
   setAttachments: StateSetter<DraftAttachmentMap>;
-  renderItemRow: (it: BuyerLineLite, idx2: number) => React.ReactNode;
-  editorSection?: React.ReactNode;
-  editorTitle?: string;
+  renderItemRow: (it: BuyerLineLite, idx2: number, onFocusRow?: () => void) => React.ReactNode;
   footer?: React.ReactNode;
 }) {
+  const listRef = React.useRef<FlatList<InboxSheetRow> | null>(null);
   const footerBottomInset = 18;
   const footerReservedHeight = 86 + footerBottomInset;
+  const bottomPadding = kbOpen ? 220 : 12 + footerReservedHeight;
+  const scrollToRow = React.useCallback((realIndex: number) => {
+    const targetIndex = Math.max(0, realIndex + 1);
+    requestAnimationFrame(() => {
+      try {
+        listRef.current?.scrollToIndex?.({
+          index: targetIndex,
+          animated: true,
+          viewPosition: 0.18,
+        });
+      } catch {
+        listRef.current?.scrollToOffset?.({
+          offset: Math.max(0, targetIndex * 140),
+          animated: true,
+        });
+      }
+    });
+  }, []);
 
   const renderCell: React.ComponentProps<typeof FlatList<InboxSheetRow>>["CellRendererComponent"] = ({
     children,
@@ -92,6 +107,7 @@ export function BuyerInboxSheetBody({
   return (
     <View style={s.sheetSection}>
       <FlatList
+        ref={listRef}
         data={sheetData}
         CellRendererComponent={renderCell}
         stickyHeaderIndices={[1]}
@@ -104,7 +120,20 @@ export function BuyerInboxSheetBody({
         nestedScrollEnabled
         removeClippedSubviews={false}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 12 + footerReservedHeight, overflow: "visible" }}
+        contentContainerStyle={{ paddingBottom: bottomPadding, overflow: "visible" }}
+        onScrollToIndexFailed={(info) => {
+          listRef.current?.scrollToOffset?.({
+            offset: Math.max(0, info.averageItemLength * info.index),
+            animated: true,
+          });
+          setTimeout(() => {
+            listRef.current?.scrollToIndex?.({
+              index: info.index,
+              animated: true,
+              viewPosition: 0.18,
+            });
+          }, 80);
+        }}
         ListHeaderComponent={
           <View>
             {!kbOpen ? (
@@ -180,54 +209,12 @@ export function BuyerInboxSheetBody({
                 pointerEvents: "box-none",
               }}
             >
-              {renderItemRow(item as BuyerLineLite, realIndex)}
+              {renderItemRow(item as BuyerLineLite, realIndex, () => scrollToRow(realIndex))}
             </View>
           );
         }}
       />
 
-      {editorSection ? (
-        <View
-          style={{
-            marginTop: 8,
-            marginBottom: 10,
-            marginHorizontal: 2,
-            borderRadius: 22,
-            borderWidth: 1,
-            borderColor: "rgba(59,130,246,0.24)",
-            backgroundColor: "rgba(15,23,42,0.96)",
-            overflow: "hidden",
-          }}
-        >
-          <View
-            style={{
-              paddingHorizontal: 16,
-              paddingTop: 14,
-              paddingBottom: 12,
-              borderBottomWidth: 1,
-              borderBottomColor: "rgba(255,255,255,0.08)",
-              backgroundColor: "rgba(37,99,235,0.10)",
-            }}
-          >
-            <Text style={{ color: "#DBEAFE", fontWeight: "900", fontSize: 16 }} numberOfLines={1}>
-              {editorTitle || "Редактирование выбранной позиции"}
-            </Text>
-            <Text style={{ color: "rgba(219,234,254,0.72)", fontWeight: "700", fontSize: 12, marginTop: 4 }}>
-              Изменения относятся к выбранной позиции и сохраняются теми же обработчиками.
-            </Text>
-          </View>
-
-          <ScrollView
-            style={{ maxHeight: 320, flexShrink: 1 }}
-            contentContainerStyle={{ paddingTop: 8, paddingBottom: 12, paddingHorizontal: 8, gap: 8 }}
-            keyboardShouldPersistTaps="always"
-            nestedScrollEnabled
-            showsVerticalScrollIndicator={false}
-          >
-            {editorSection}
-          </ScrollView>
-        </View>
-      ) : null}
       {footer ? <View style={{ paddingBottom: footerBottomInset }}>{footer}</View> : null}
     </View>
   );

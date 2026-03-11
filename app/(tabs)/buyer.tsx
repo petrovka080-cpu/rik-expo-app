@@ -381,7 +381,7 @@ export default function BuyerScreen() {
     pickedRef,
     showToast,
   });
-  const { renderItemRow, renderEditorRow, renderGroupBlock } = useBuyerInboxRenderers({
+  const { renderItemRow, renderGroupBlock } = useBuyerInboxRenderers({
     s,
     picked,
     meta,
@@ -580,22 +580,7 @@ export default function BuyerScreen() {
     proposalNoByPid,
     prettyLabel,
   });
-  const inboxKeyboardLayoutActive = isWeb ? kbOpen : false;
-  const mobileSheetEditors = useMemo(() => {
-    if (isWeb || sheetKind !== "inbox" || !sheetGroup?.items?.length) return null;
-    const selectedItems = sheetGroup.items.filter((it) => !!picked[String(it.request_item_id ?? "")]);
-    if (!selectedItems.length) return null;
-    return selectedItems.map((it) => renderEditorRow(it));
-  }, [isWeb, sheetKind, sheetGroup, picked, renderEditorRow]);
-  const mobileSheetEditorTitle = useMemo(() => {
-    if (isWeb || sheetKind !== "inbox" || !sheetGroup?.items?.length) return "";
-    const selectedItems = sheetGroup.items.filter((it) => !!picked[String(it.request_item_id ?? "")]);
-    if (!selectedItems.length) return "";
-    if (selectedItems.length === 1) {
-      return `Редактирование: ${String(selectedItems[0]?.name_human || "позиция")}`;
-    }
-    return `Редактирование: ${selectedItems.length} позиций`;
-  }, [isWeb, sheetKind, sheetGroup, picked]);
+  const inboxKeyboardLayoutActive = kbOpen;
   const header = useMemo(() => (
     <BuyerScreenHeader
       s={s}
@@ -717,8 +702,6 @@ export default function BuyerScreen() {
                 attachments={attachments}
                 setAttachments={setAttachments}
                 renderItemRow={renderItemRow}
-                editorSection={mobileSheetEditors}
-                editorTitle={mobileSheetEditorTitle}
                 footer={
                   !inboxKeyboardLayoutActive ? (
                     <SheetFooterActions
