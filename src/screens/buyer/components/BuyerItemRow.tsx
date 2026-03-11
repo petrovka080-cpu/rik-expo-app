@@ -270,6 +270,8 @@ export const BuyerItemRow = React.memo(function BuyerItemRow(props: {
                 value={priceDraft}
                 onChangeText={(v) => setPriceDraft(v)}
                 keyboardType={Platform.OS === "web" ? "default" : "decimal-pad"}
+                returnKeyType="done"
+                blurOnSubmit={false}
                 placeholder="Цена *"
                 placeholderTextColor={P.sub}
                 autoCorrect={false}
@@ -300,6 +302,8 @@ export const BuyerItemRow = React.memo(function BuyerItemRow(props: {
                     setSupplierQueryDraft(v);
                     if (!isDropdownOpen) setIsDropdownOpen(true);
                   }}
+                  returnKeyType="done"
+                  blurOnSubmit={false}
                   placeholder={`${counterpartyLabel} *`}
                   placeholderTextColor={P.sub}
                   editable={hasAnyCounterpartyOptions}
@@ -387,6 +391,7 @@ export const BuyerItemRow = React.memo(function BuyerItemRow(props: {
               placeholder="Примечание"
               placeholderTextColor={P.sub}
               multiline
+              blurOnSubmit={false}
               onFocus={onFocusField}
               style={[
                 s.fieldInput,

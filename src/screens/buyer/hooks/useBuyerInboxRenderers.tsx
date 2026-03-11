@@ -107,7 +107,9 @@ export function useBuyerInboxRenderers(params: {
             setLineMeta(key, { supplier: name, note: mergeNote(user, auto) });
           }}
           onFocusField={() => {
-            setShowAttachBlock(false);
+            if (isWeb) {
+              setShowAttachBlock(false);
+            }
           }}
         />
       );
@@ -126,6 +128,7 @@ export function useBuyerInboxRenderers(params: {
       counterpartyHardFailure,
       s,
       setShowAttachBlock,
+      isWeb,
     ]
   );
 

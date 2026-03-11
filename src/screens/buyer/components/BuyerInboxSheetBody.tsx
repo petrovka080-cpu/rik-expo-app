@@ -59,6 +59,9 @@ export function BuyerInboxSheetBody({
   renderItemRow: (it: BuyerLineLite, idx2: number) => React.ReactNode;
   footer?: React.ReactNode;
 }) {
+  const footerBottomInset = 18;
+  const footerReservedHeight = 86 + footerBottomInset;
+
   const renderCell: React.ComponentProps<typeof FlatList<InboxSheetRow>>["CellRendererComponent"] = ({
     children,
     style,
@@ -97,7 +100,7 @@ export function BuyerInboxSheetBody({
         nestedScrollEnabled
         removeClippedSubviews={false}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 12 + 86, overflow: "visible" }}
+        contentContainerStyle={{ paddingBottom: 12 + footerReservedHeight, overflow: "visible" }}
         ListHeaderComponent={
           <View>
             {!kbOpen ? (
@@ -179,7 +182,7 @@ export function BuyerInboxSheetBody({
         }}
       />
 
-      {footer ?? null}
+      {footer ? <View style={{ paddingBottom: footerBottomInset }}>{footer}</View> : null}
     </View>
   );
 }
