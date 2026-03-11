@@ -1,4 +1,4 @@
-﻿import React from "react";
+import React from "react";
 import {
   View,
   Text,
@@ -488,6 +488,8 @@ function BuyerItemRowInner(props: {
   showInlineEditor?: boolean;
 
   onFocusField?: () => void;
+  onEditMobile?: () => void;
+  isMobileEditorOpen?: boolean;
 }) {
   const {
     it, selected, inSheet, m, sum, prettyText, rejectedByDirector,
@@ -496,8 +498,12 @@ function BuyerItemRowInner(props: {
     supplierSuggestions, hasAnyCounterpartyOptions, counterpartyHardFailure, onPickSupplier,
     showInlineEditor = true,
     onFocusField,
+    onEditMobile,
+    isMobileEditorOpen,
     s,
   } = props;
+
+  const isMobileRuntime = Platform.OS !== "web";
 
   const P = inSheet ? P_SHEET : P_LIST;
   const { user: noteUser } = splitNote(m.note);
@@ -621,9 +627,30 @@ function BuyerItemRowInner(props: {
           ) : null}
         </View>
 
-        <View style={{ flexDirection: "row", marginTop: 6 }}>
+        <View style={{ flexDirection: "row", marginTop: 6, alignItems: "center" }}>
+          <View>
+            {selected && !showInlineEditor && isMobileRuntime ? (
+              <Pressable
+                onPress={onEditMobile}
+                style={{
+                  paddingVertical: 6,
+                  paddingHorizontal: 12,
+                  backgroundColor: "rgba(59, 130, 246, 0.15)",
+                  borderColor: "rgba(59, 130, 246, 0.4)",
+                  borderWidth: 1,
+                  borderRadius: 8,
+                }}
+              >
+                <Text style={{ color: "#60A5FA", fontWeight: "700", fontSize: 13 }}>Редактировать</Text>
+              </Pressable>
+            ) : null}
+          </View>
           <View style={{ marginLeft: "auto" }}>
-            {selected ? (
+            {selected && showInlineEditor ? (
+              <StatusBadge label="Редактируется" tone="info" compact />
+            ) : selected && isMobileEditorOpen ? (
+              <StatusBadge label="Открыто в редакторе" tone="info" compact />
+            ) : selected ? (
               <StatusBadge label="Выбрано" tone="info" compact />
             ) : (
               <StatusBadge label="Заполни и выбери" tone="neutral" compact />
@@ -665,6 +692,7 @@ export const BuyerItemRow = React.memo(BuyerItemRowInner, (prev, next) => {
     prev.hasAnyCounterpartyOptions === next.hasAnyCounterpartyOptions &&
     prev.counterpartyHardFailure === next.counterpartyHardFailure &&
     prev.showInlineEditor === next.showInlineEditor &&
+    prev.isMobileEditorOpen === next.isMobileEditorOpen &&
     prev.it?.request_item_id === next.it?.request_item_id &&
     prev.it?.name_human === next.it?.name_human &&
     prev.it?.qty === next.it?.qty &&

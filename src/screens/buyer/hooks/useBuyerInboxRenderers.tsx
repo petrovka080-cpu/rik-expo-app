@@ -1,9 +1,10 @@
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 
 import type { Supplier, BuyerInboxRow } from "../../../lib/catalog_api";
 import type { BuyerGroup, BuyerSheetKind, DraftAttachmentMap, LineMeta } from "../buyer.types";
 import type { StylesBag } from "../components/component.types";
 import { BuyerGroupBlock, BuyerItemRow } from "../buyer.components";
+import { BuyerMobileItemEditorModal } from "../components/BuyerMobileItemEditorModal";
 import { mergeNote, normName, splitNote } from "../buyerUtils";
 import { getBuyerItemProcurementType, getCounterpartyLabel, getCounterpartyRoleGate } from "../procurementTyping";
 
@@ -53,6 +54,8 @@ export function useBuyerInboxRenderers(params: {
     counterpartyHardFailure,
     onFocusRow,
   } = params;
+
+  const [editingItem, setEditingItem] = useState<BuyerInboxRow | null>(null);
 
   const renderItemRow = useCallback(
     (it: BuyerInboxRow, idx: number, onFocusRowForSheet?: () => void) => {
@@ -104,7 +107,9 @@ export function useBuyerInboxRenderers(params: {
 
             setLineMeta(key, { supplier: name, note: mergeNote(user, auto) });
           }}
-          showInlineEditor={selected}
+          showInlineEditor={selected && isWeb}
+          onEditMobile={() => setEditingItem(it)}
+          isMobileEditorOpen={editingItem?.request_item_id === it.request_item_id}
           onFocusField={() => {
             if (isSheetOpen && sheetKind === "inbox" && !isWeb) {
               onFocusRowForSheet?.();
@@ -133,8 +138,59 @@ export function useBuyerInboxRenderers(params: {
       onFocusRow,
       setShowAttachBlock,
       isWeb,
+      editingItem,
     ]
   );
+
+  const renderMobileEditorModal = useCallback(() => {
+    if (!editingItem) return null;
+    const key = String(editingItem.request_item_id ?? "");
+    const m = meta[key] || {};
+    const procurementType = getBuyerItemProcurementType(editingItem);
+    const counterpartyLabel = getCounterpartyLabel(procurementType);
+    const roleGate = getCounterpartyRoleGate(procurementType);
+    const sugg = getSupplierSuggestions("", roleGate);
+
+    return (
+      <BuyerMobileItemEditorModal
+        it={editingItem}
+        m={m}
+        s={s}
+        counterpartyLabel={counterpartyLabel}
+        supplierSuggestions={sugg}
+        hasAnyCounterpartyOptions={hasAnyCounterpartyOptions}
+        counterpartyHardFailure={counterpartyHardFailure}
+        onSetPrice={(v) => setLineMeta(key, { price: v })}
+        onSetSupplier={(v) => setLineMeta(key, { supplier: v })}
+        onSetNote={(v) => setLineMeta(key, { note: v })}
+        onPickSupplier={(name) => {
+          const match = suppliers.find((sp) => normName(sp.name) === normName(name)) || null;
+          const parts = splitNote(m.note);
+          const user = parts.user;
+          let auto = "";
+          if (match) {
+            const partsAuto: string[] = [];
+            if (match.inn) partsAuto.push(`ИНН: ${match.inn}`);
+            if (match.bank_account) partsAuto.push(`Счёт: ${match.bank_account}`);
+            if (match.phone) partsAuto.push(`Тел.: ${match.phone}`);
+            if (match.email) partsAuto.push(`Email: ${match.email}`);
+            auto = partsAuto.join(" • ");
+          }
+          setLineMeta(key, { supplier: name, note: mergeNote(user, auto) });
+        }}
+        onClose={() => setEditingItem(null)}
+      />
+    );
+  }, [
+    editingItem,
+    meta,
+    hasAnyCounterpartyOptions,
+    counterpartyHardFailure,
+    setLineMeta,
+    suppliers,
+    getSupplierSuggestions,
+    s,
+  ]);
 
   const renderGroupBlock = useCallback(
     (group: BuyerGroup, index: number) => {
@@ -191,5 +247,5 @@ export function useBuyerInboxRenderers(params: {
     ]
   );
 
-  return { renderItemRow, renderGroupBlock };
+  return { renderItemRow, renderGroupBlock, editingItem, setEditingItem, renderMobileEditorModal };
 }

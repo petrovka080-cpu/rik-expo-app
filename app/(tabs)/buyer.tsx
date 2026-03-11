@@ -1,4 +1,4 @@
-﻿// app/(tabs)/buyer.tsx
+// app/(tabs)/buyer.tsx
 import { formatRequestDisplay } from "../../src/lib/format";
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -381,7 +381,7 @@ export default function BuyerScreen() {
     pickedRef,
     showToast,
   });
-  const { renderItemRow, renderGroupBlock } = useBuyerInboxRenderers({
+  const { renderItemRow, renderGroupBlock, renderMobileEditorModal } = useBuyerInboxRenderers({
     s,
     picked,
     meta,
@@ -747,6 +747,8 @@ export default function BuyerScreen() {
                 }
               />
             ) : null}
+
+            {renderMobileEditorModal?.()}
 
             {sheetKind === "prop_details" ? (
               <BuyerPropDetailsSheetBody
