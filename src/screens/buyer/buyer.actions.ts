@@ -108,6 +108,42 @@ type BuyerSubmitIntentPayload = {
   attachmentNames: Array<{ key: string; name: string }>;
 };
 
+const bytesToUuid = (bytes: Uint8Array): string => {
+  const hex = Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join("");
+  return [
+    hex.slice(0, 8),
+    hex.slice(8, 12),
+    hex.slice(12, 16),
+    hex.slice(16, 20),
+    hex.slice(20, 32),
+  ].join("-");
+};
+
+const makeClientRequestId = (): string | null => {
+  const cryptoLike =
+    typeof globalThis !== "undefined"
+      ? (globalThis as typeof globalThis & {
+          crypto?: {
+            randomUUID?: () => string;
+            getRandomValues?: (array: Uint8Array) => Uint8Array;
+          };
+        }).crypto
+      : undefined;
+
+  if (typeof cryptoLike?.randomUUID === "function") {
+    return cryptoLike.randomUUID();
+  }
+
+  if (typeof cryptoLike?.getRandomValues === "function") {
+    const bytes = cryptoLike.getRandomValues(new Uint8Array(16));
+    bytes[6] = (bytes[6] & 0x0f) | 0x40;
+    bytes[8] = (bytes[8] & 0x3f) | 0x80;
+    return bytesToUuid(bytes);
+  }
+
+  return null;
+};
+
 const errMessage = (e: unknown, fallback = "Unknown error"): string => {
   if (e instanceof Error) {
     const message = e.message.trim();
@@ -253,10 +289,7 @@ export async function handleCreateProposalsBySupplierAction(p: CreateProposalsDe
 
     if (JOB_QUEUE_ENABLED) {
       const tQueue = Date.now();
-      const clientRequestId =
-        typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
-          ? crypto.randomUUID()
-          : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+      const clientRequestId = makeClientRequestId();
       const intentPayload: BuyerSubmitIntentPayload = {
         requestId: p.requestId ? String(p.requestId).trim() || null : null,
         requestItemIds: ids,
