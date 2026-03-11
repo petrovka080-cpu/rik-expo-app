@@ -18,7 +18,7 @@ import { splitNote, mergeNote } from "../buyerUtils";
 import { P_LIST, P_SHEET } from "../buyerUi";
 import type { StylesBag } from "./component.types";
 
-export const BuyerItemRow = React.memo(function BuyerItemRow(props: {
+function BuyerItemRowInner(props: {
   it: BuyerInboxRow;
   selected: boolean;
   inSheet?: boolean;
@@ -56,6 +56,8 @@ export const BuyerItemRow = React.memo(function BuyerItemRow(props: {
   const { user: noteUser, auto: noteAuto } = splitNote(m.note);
   const [priceDraft, setPriceDraft] = React.useState(String(m.price ?? ""));
   const [priceFocused, setPriceFocused] = React.useState(false);
+  const [noteDraft, setNoteDraft] = React.useState(String(noteUser ?? ""));
+  const [noteFocused, setNoteFocused] = React.useState(false);
   const [supplierQueryDraft, setSupplierQueryDraft] = React.useState("");
   const [selectedSupplierLabel, setSelectedSupplierLabel] = React.useState(String(m.supplier ?? ""));
   const [selectedSupplierId, setSelectedSupplierId] = React.useState("");
@@ -109,6 +111,12 @@ export const BuyerItemRow = React.memo(function BuyerItemRow(props: {
     // Keep draft in sync only when input is not focused to avoid caret/focus jumps.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [m.price, priceFocused]);
+
+  React.useEffect(() => {
+    if (noteFocused) return;
+    const next = String(noteUser ?? "");
+    if (next !== noteDraft) setNoteDraft(next);
+  }, [noteDraft, noteFocused, noteUser]);
 
   React.useEffect(() => {
     if (isDropdownOpen) return;
@@ -423,13 +431,20 @@ export const BuyerItemRow = React.memo(function BuyerItemRow(props: {
             }}
           >
             <TextInput
-              value={noteUser}
-              onChangeText={(v) => onSetNote(mergeNote(v, noteAuto))}
+              value={noteDraft}
+              onChangeText={setNoteDraft}
               placeholder="Примечание"
               placeholderTextColor={P.sub}
               multiline
               blurOnSubmit={false}
-              onFocus={onFocusField}
+              onFocus={() => {
+                setNoteFocused(true);
+                onFocusField?.();
+              }}
+              onBlur={() => {
+                setNoteFocused(false);
+                onSetNote(mergeNote(String(noteDraft ?? ""), noteAuto));
+              }}
               style={[
                 s.fieldInput,
                 { minHeight: 44, backgroundColor: P.inputBg, borderColor: P.inputBorder, color: P.text },
@@ -570,5 +585,28 @@ export const BuyerItemRow = React.memo(function BuyerItemRow(props: {
       ) : null}
 
     </View>
+  );
+}
+
+export const BuyerItemRow = React.memo(BuyerItemRowInner, (prev, next) => {
+  return (
+    prev.selected === next.selected &&
+    prev.inSheet === next.inSheet &&
+    prev.sum === next.sum &&
+    prev.prettyText === next.prettyText &&
+    prev.rejectedByDirector === next.rejectedByDirector &&
+    prev.counterpartyLabel === next.counterpartyLabel &&
+    prev.hasAnyCounterpartyOptions === next.hasAnyCounterpartyOptions &&
+    prev.counterpartyHardFailure === next.counterpartyHardFailure &&
+    prev.it?.request_item_id === next.it?.request_item_id &&
+    prev.it?.name_human === next.it?.name_human &&
+    prev.it?.qty === next.it?.qty &&
+    prev.it?.uom === next.it?.uom &&
+    prev.it?.app_code === next.it?.app_code &&
+    prev.m?.price === next.m?.price &&
+    prev.m?.supplier === next.m?.supplier &&
+    prev.m?.note === next.m?.note &&
+    prev.s === next.s &&
+    prev.supplierSuggestions === next.supplierSuggestions
   );
 });
