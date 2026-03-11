@@ -64,7 +64,7 @@ export function useDirectorProposalDetail({
     try {
       const q = await supabase
         .from("proposal_attachments")
-        .select("id, proposal_id, file_name, url, group_key, created_at, bucket_id, storage_path")
+        .select("id, proposal_id, file_name, group_key, created_at, bucket_id, storage_path")
         .eq("proposal_id", pid)
         .order("created_at", { ascending: false });
 
@@ -80,24 +80,10 @@ export function useDirectorProposalDetail({
         if (seen.has(id)) continue;
         seen.add(id);
 
-        let url = (r.url as string | null | undefined) ?? null;
-
-        if (!url) {
-          const bucket = String(r.bucket_id ?? "").trim();
-          const path = String(r.storage_path ?? "").trim();
-          if (bucket && path) {
-            try {
-              const s = await supabase.storage.from(bucket).createSignedUrl(path, 60 * 60);
-              if (!s.error && s.data?.signedUrl) url = s.data.signedUrl;
-            } catch { }
-          }
-        }
-
         rows.push({
           id,
           proposal_id: String(r.proposal_id ?? "").trim() || pid,
           file_name: String(r.file_name ?? "").trim() || "file",
-          url,
           group_key: (r.group_key as string | null | undefined) ?? null,
           created_at: (r.created_at as string | null | undefined) ?? null,
           bucket_id: (r.bucket_id as string | null | undefined) ?? null,

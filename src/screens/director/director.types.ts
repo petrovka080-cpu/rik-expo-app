@@ -35,7 +35,6 @@ export type ProposalAttachmentRow = {
   id: string;
   proposal_id?: string | null;
   file_name: string;
-  url?: string | null;
   group_key?: string | null;
   created_at?: string | null;
   bucket_id?: string | null;
