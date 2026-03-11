@@ -11,7 +11,7 @@ export type {
 
 export { AttachmentUploaderAny } from "./components/AttachmentUploaderAny";
 
-export { BuyerItemRow } from "./components/BuyerItemRow";
+export { BuyerItemRow, BuyerItemEditor } from "./components/BuyerItemRow";
 export { BuyerGroupBlock } from "./components/BuyerGroupBlock";
 export { BuyerProposalCard } from "./components/BuyerProposalCard";
 

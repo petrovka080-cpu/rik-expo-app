@@ -3,7 +3,7 @@ import { useCallback } from "react";
 import type { Supplier, BuyerInboxRow } from "../../../lib/catalog_api";
 import type { BuyerGroup, BuyerSheetKind, DraftAttachmentMap, LineMeta } from "../buyer.types";
 import type { StylesBag } from "../components/component.types";
-import { BuyerGroupBlock, BuyerItemRow } from "../buyer.components";
+import { BuyerGroupBlock, BuyerItemEditor, BuyerItemRow } from "../buyer.components";
 import { mergeNote, normName, splitNote } from "../buyerUtils";
 import { getBuyerItemProcurementType, getCounterpartyLabel, getCounterpartyRoleGate } from "../procurementTyping";
 
@@ -106,6 +106,7 @@ export function useBuyerInboxRenderers(params: {
 
             setLineMeta(key, { supplier: name, note: mergeNote(user, auto) });
           }}
+          showInlineEditor={!(isSheetOpen && sheetKind === "inbox" && !isWeb)}
           onFocusField={() => {
             if (isWeb) {
               setShowAttachBlock(false);
@@ -129,6 +130,67 @@ export function useBuyerInboxRenderers(params: {
       s,
       setShowAttachBlock,
       isWeb,
+    ]
+  );
+
+  const renderEditorRow = useCallback(
+    (it: BuyerInboxRow) => {
+      const key = String(it.request_item_id ?? "");
+      const m = (key && meta[key]) || {};
+      const procurementType = getBuyerItemProcurementType(it);
+      const counterpartyLabel = getCounterpartyLabel(procurementType);
+      const roleGate = getCounterpartyRoleGate(procurementType);
+      const sugg = getSupplierSuggestions("", roleGate);
+
+      return (
+        <BuyerItemEditor
+          key={`editor:${key}`}
+          s={s}
+          it={it}
+          inSheet={isSheetOpen && sheetKind === "inbox"}
+          m={m}
+          onSetPrice={(v) => setLineMeta(key, { price: v })}
+          onSetSupplier={(v) => setLineMeta(key, { supplier: v })}
+          onSetNote={(v) => setLineMeta(key, { note: v })}
+          counterpartyLabel={counterpartyLabel}
+          supplierSuggestions={sugg}
+          hasAnyCounterpartyOptions={hasAnyCounterpartyOptions}
+          counterpartyHardFailure={counterpartyHardFailure}
+          onPickSupplier={(name) => {
+            const match = suppliers.find((sp) => normName(sp.name) === normName(name)) || null;
+            const parts = splitNote(m.note);
+            const user = parts.user;
+            let auto = "";
+            if (match) {
+              const partsAuto: string[] = [];
+              if (match.inn) partsAuto.push(`РРќРќ: ${match.inn}`);
+              if (match.bank_account) partsAuto.push(`РЎС‡С‘С‚: ${match.bank_account}`);
+              if (match.phone) partsAuto.push(`РўРµР».: ${match.phone}`);
+              if (match.email) partsAuto.push(`Email: ${match.email}`);
+              auto = partsAuto.join(" вЂў ");
+            }
+            setLineMeta(key, { supplier: name, note: mergeNote(user, auto) });
+          }}
+          onFocusField={() => {
+            if (isWeb) {
+              setShowAttachBlock(false);
+            }
+          }}
+        />
+      );
+    },
+    [
+      meta,
+      getSupplierSuggestions,
+      suppliers,
+      isSheetOpen,
+      sheetKind,
+      hasAnyCounterpartyOptions,
+      counterpartyHardFailure,
+      s,
+      setShowAttachBlock,
+      isWeb,
+      setLineMeta,
     ]
   );
 
@@ -187,5 +249,5 @@ export function useBuyerInboxRenderers(params: {
     ]
   );
 
-  return { renderItemRow, renderGroupBlock };
+  return { renderItemRow, renderEditorRow, renderGroupBlock };
 }

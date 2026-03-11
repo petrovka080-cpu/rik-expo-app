@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, FlatList } from "react-native";
+import { View, Text, FlatList, ScrollView } from "react-native";
 
 import type { BuyerInboxRow } from "../../../lib/catalog_api";
 import type { DraftAttachmentMap } from "../buyer.types";
@@ -38,6 +38,7 @@ export function BuyerInboxSheetBody({
   attachments,
   setAttachments,
   renderItemRow,
+  editorSection,
   footer,
 }: {
   s: StylesBag;
@@ -57,6 +58,7 @@ export function BuyerInboxSheetBody({
   attachments: DraftAttachmentMap;
   setAttachments: StateSetter<DraftAttachmentMap>;
   renderItemRow: (it: BuyerLineLite, idx2: number) => React.ReactNode;
+  editorSection?: React.ReactNode;
   footer?: React.ReactNode;
 }) {
   const footerBottomInset = 18;
@@ -182,6 +184,17 @@ export function BuyerInboxSheetBody({
         }}
       />
 
+      {editorSection ? (
+        <ScrollView
+          style={{ maxHeight: 320, flexShrink: 1 }}
+          contentContainerStyle={{ paddingTop: 8, paddingBottom: 12, gap: 8 }}
+          keyboardShouldPersistTaps="always"
+          nestedScrollEnabled
+          showsVerticalScrollIndicator={false}
+        >
+          {editorSection}
+        </ScrollView>
+      ) : null}
       {footer ? <View style={{ paddingBottom: footerBottomInset }}>{footer}</View> : null}
     </View>
   );

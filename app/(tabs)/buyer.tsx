@@ -381,7 +381,7 @@ export default function BuyerScreen() {
     pickedRef,
     showToast,
   });
-  const { renderItemRow, renderGroupBlock } = useBuyerInboxRenderers({
+  const { renderItemRow, renderEditorRow, renderGroupBlock } = useBuyerInboxRenderers({
     s,
     picked,
     meta,
@@ -581,6 +581,12 @@ export default function BuyerScreen() {
     prettyLabel,
   });
   const inboxKeyboardLayoutActive = isWeb ? kbOpen : false;
+  const mobileSheetEditors = useMemo(() => {
+    if (isWeb || sheetKind !== "inbox" || !sheetGroup?.items?.length) return null;
+    const selectedItems = sheetGroup.items.filter((it) => !!picked[String(it.request_item_id ?? "")]);
+    if (!selectedItems.length) return null;
+    return selectedItems.map((it) => renderEditorRow(it));
+  }, [isWeb, sheetKind, sheetGroup, picked, renderEditorRow]);
   const header = useMemo(() => (
     <BuyerScreenHeader
       s={s}
@@ -702,6 +708,7 @@ export default function BuyerScreen() {
                 attachments={attachments}
                 setAttachments={setAttachments}
                 renderItemRow={renderItemRow}
+                editorSection={mobileSheetEditors}
                 footer={
                   !inboxKeyboardLayoutActive ? (
                     <SheetFooterActions
