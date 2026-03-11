@@ -199,6 +199,20 @@ export async function handleCreateProposalsBySupplierAction(p: CreateProposalsDe
   if (p.sendingRef.current) return;
 
   const ids = p.pickedIds || [];
+  console.info("[buyer.submit] pressed", {
+    pickedIds: ids,
+    pickedCount: ids.length,
+    metaSnapshot: ids.map((id) => ({
+      requestItemId: id,
+      supplier: String(p.metaNow?.[id]?.supplier ?? "").trim(),
+      price: String(p.metaNow?.[id]?.price ?? "").trim(),
+      note: String(p.metaNow?.[id]?.note ?? "").trim(),
+    })),
+    attachmentKeys: Object.keys(p.attachmentsNow || {}),
+    queueEnabled: JOB_QUEUE_ENABLED,
+    needAttachWarn: p.needAttachWarn,
+    kbOpen: p.kbOpen,
+  });
   if (ids.length === 0) {
     p.showToast("Выбери позиции");
     p.alert("Пусто", "Выбери позиции");
@@ -210,7 +224,9 @@ export async function handleCreateProposalsBySupplierAction(p: CreateProposalsDe
     p.showToast("Вложения не добавлены, но отправка без них разрешена");
   }
 
-  if (!p.validatePicked()) return;
+  const validateOk = p.validatePicked();
+  console.info("[buyer.submit] validatePicked.result", { validateOk });
+  if (!validateOk) return;
 
   p.sendingRef.current = true;
 
@@ -255,6 +271,11 @@ export async function handleCreateProposalsBySupplierAction(p: CreateProposalsDe
         clientRequestId,
       });
       queueInsertMs = Date.now() - tQueue;
+      console.info("[buyer.submit] queue.enqueued", {
+        clientRequestId,
+        queueInsertMs,
+        requestItemIds: ids,
+      });
 
       // Fast UX path: enqueue accepted.
       p.clearPick();
@@ -338,6 +359,14 @@ export async function handleCreateProposalsBySupplierAction(p: CreateProposalsDe
     );
 
     const created: CreatedProposalRow[] = Array.isArray(result?.proposals) ? result.proposals : [];
+    console.info("[buyer.submit] create.result", {
+      createdCount: created.length,
+      proposals: created.map((row) => ({
+        proposalId: String(row?.proposal_id ?? row?.id ?? "").trim(),
+        requestItemIds: Array.isArray(row?.request_item_ids) ? row.request_item_ids : [],
+        supplier: row?.supplier ?? null,
+      })),
+    });
     if (!created.length) {
       p.alert("Внимание", "Не удалось сформировать предложения");
       return;

@@ -45,6 +45,12 @@ export function useBuyerCreateGuards(params: {
     let missingSupplierCount = 0;
     let missingPriceCount = 0;
     let missingAttachmentCount = 0;
+    const pickedSnapshot: Array<{
+      requestItemId: string;
+      supplier: string;
+      price: string;
+      hasAttachment: boolean;
+    }> = [];
 
     for (const group of groups) {
       group.items.forEach((it, idx) => {
@@ -54,6 +60,12 @@ export function useBuyerCreateGuards(params: {
         const counterpartyLabel = getCounterpartyLabel(getBuyerItemProcurementType(it));
         const supplierLabel = String(itemMeta.supplier ?? "").trim();
         const supplierKey = normName(supplierLabel) || SUPP_NONE;
+        pickedSnapshot.push({
+          requestItemId: key,
+          supplier: supplierLabel,
+          price: String(itemMeta.price ?? "").trim(),
+          hasAttachment: !!attachments?.[supplierKey]?.file,
+        });
 
         if (!supplierLabel || supplierKey === (normName(SUPP_NONE) || SUPP_NONE)) {
           missingSupplierCount += 1;
@@ -78,6 +90,14 @@ export function useBuyerCreateGuards(params: {
       });
     }
 
+    console.info("[buyer.validatePicked]", {
+      pickedCount: pickedSnapshot.length,
+      pickedSnapshot,
+      missingSupplierCount,
+      missingPriceCount,
+      missingAttachmentCount,
+    });
+
     if (missing.length) {
       alertUser(
         "Исправьте данные перед отправкой",
@@ -93,8 +113,10 @@ export function useBuyerCreateGuards(params: {
           .filter(Boolean)
           .join("\n"),
       );
+      console.info("[buyer.validatePicked] blocked");
       return false;
     }
+    console.info("[buyer.validatePicked] passed");
     return true;
   }, [groups, picked, meta, attachments, formatRequestDisplay, alertUser]);
 

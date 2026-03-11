@@ -59,7 +59,15 @@ export function useBuyerSelectionActions({
   const setLineMeta = useCallback((id: string, patch: Partial<LineMeta>) => {
     const key = String(id || "").trim();
     if (!key) return;
-    setMeta((prev) => ({ ...prev, [key]: { ...(prev[key] || {}), ...patch } }));
+    setMeta((prev) => {
+      const next = { ...prev, [key]: { ...(prev[key] || {}), ...patch } };
+      console.info("[buyer.meta] setLineMeta", {
+        requestItemId: key,
+        patch,
+        nextMeta: next[key],
+      });
+      return next;
+    });
   }, [setMeta]);
 
   const applyToPickedInGroup = useCallback((g: BuyerGroup, patch: Partial<LineMeta>) => {

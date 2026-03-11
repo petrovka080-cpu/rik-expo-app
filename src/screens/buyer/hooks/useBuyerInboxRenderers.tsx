@@ -57,6 +57,25 @@ export function useBuyerInboxRenderers(params: {
 
   const [editingItem, setEditingItem] = useState<BuyerInboxRow | null>(null);
 
+  const applySupplierSelection = useCallback((row: BuyerInboxRow, currentMeta: Partial<LineMeta>, name: string) => {
+    const key = String(row.request_item_id ?? "");
+    const match = suppliers.find((sp) => normName(sp.name) === normName(name)) || null;
+    const parts = splitNote(currentMeta.note);
+    const user = parts.user;
+
+    let auto = "";
+    if (match) {
+      const partsAuto: string[] = [];
+      if (match.inn) partsAuto.push(`ИНН: ${match.inn}`);
+      if (match.bank_account) partsAuto.push(`Счёт: ${match.bank_account}`);
+      if (match.phone) partsAuto.push(`Тел.: ${match.phone}`);
+      if (match.email) partsAuto.push(`Email: ${match.email}`);
+      auto = partsAuto.join(" • ");
+    }
+
+    setLineMeta(key, { supplier: name, note: mergeNote(user, auto) });
+  }, [setLineMeta, suppliers]);
+
   const renderItemRow = useCallback(
     (it: BuyerInboxRow, idx: number, onFocusRowForSheet?: () => void) => {
       const key = String(it.request_item_id ?? "");
@@ -90,24 +109,8 @@ export function useBuyerInboxRenderers(params: {
           supplierSuggestions={sugg}
           hasAnyCounterpartyOptions={hasAnyCounterpartyOptions}
           counterpartyHardFailure={counterpartyHardFailure}
-          onPickSupplier={(name) => {
-            const match = suppliers.find((sp) => normName(sp.name) === normName(name)) || null;
-            const parts = splitNote(m.note);
-            const user = parts.user;
-
-            let auto = "";
-            if (match) {
-              const partsAuto: string[] = [];
-              if (match.inn) partsAuto.push(`ИНН: ${match.inn}`);
-              if (match.bank_account) partsAuto.push(`Счёт: ${match.bank_account}`);
-              if (match.phone) partsAuto.push(`Тел.: ${match.phone}`);
-              if (match.email) partsAuto.push(`Email: ${match.email}`);
-              auto = partsAuto.join(" • ");
-            }
-
-            setLineMeta(key, { supplier: name, note: mergeNote(user, auto) });
-          }}
-          showInlineEditor={selected && isWeb}
+          onPickSupplier={(name) => applySupplierSelection(it, m, name)}
+          showInlineEditor={false}
           onEditMobile={() => setEditingItem(it)}
           isMobileEditorOpen={editingItem?.request_item_id === it.request_item_id}
           onFocusField={() => {
@@ -129,7 +132,6 @@ export function useBuyerInboxRenderers(params: {
       togglePick,
       setLineMeta,
       getSupplierSuggestions,
-      suppliers,
       isSheetOpen,
       sheetKind,
       hasAnyCounterpartyOptions,
@@ -139,6 +141,7 @@ export function useBuyerInboxRenderers(params: {
       setShowAttachBlock,
       isWeb,
       editingItem,
+      applySupplierSelection,
     ]
   );
 
@@ -163,21 +166,7 @@ export function useBuyerInboxRenderers(params: {
         onSetPrice={(v) => setLineMeta(key, { price: v })}
         onSetSupplier={(v) => setLineMeta(key, { supplier: v })}
         onSetNote={(v) => setLineMeta(key, { note: v })}
-        onPickSupplier={(name) => {
-          const match = suppliers.find((sp) => normName(sp.name) === normName(name)) || null;
-          const parts = splitNote(m.note);
-          const user = parts.user;
-          let auto = "";
-          if (match) {
-            const partsAuto: string[] = [];
-            if (match.inn) partsAuto.push(`ИНН: ${match.inn}`);
-            if (match.bank_account) partsAuto.push(`Счёт: ${match.bank_account}`);
-            if (match.phone) partsAuto.push(`Тел.: ${match.phone}`);
-            if (match.email) partsAuto.push(`Email: ${match.email}`);
-            auto = partsAuto.join(" • ");
-          }
-          setLineMeta(key, { supplier: name, note: mergeNote(user, auto) });
-        }}
+        onPickSupplier={(name) => applySupplierSelection(editingItem, m, name)}
         onClose={() => setEditingItem(null)}
       />
     );
@@ -187,9 +176,9 @@ export function useBuyerInboxRenderers(params: {
     hasAnyCounterpartyOptions,
     counterpartyHardFailure,
     setLineMeta,
-    suppliers,
     getSupplierSuggestions,
     s,
+    applySupplierSelection,
   ]);
 
   const renderGroupBlock = useCallback(
@@ -207,11 +196,11 @@ export function useBuyerInboxRenderers(params: {
       }).length;
       const allRejected = total > 0 && rejectedCount === total;
 
-      const baseMeta = `${total} позиций${gsum ? ` · итого ${gsum.toLocaleString()} сом` : ""}`;
+      const baseMeta = `${total} позиций${gsum ? ` • итого ${gsum.toLocaleString()} сом` : ""}`;
       const headerMeta = allRejected
-        ? "❌ ОТКЛОНЕНА"
+        ? "ОТКЛОНЕНА"
         : rejectedCount > 0
-          ? `${baseMeta} · ❌ отклонено ${rejectedCount}/${total}`
+          ? `${baseMeta} • отклонено ${rejectedCount}/${total}`
           : baseMeta;
 
       return (
@@ -228,9 +217,7 @@ export function useBuyerInboxRenderers(params: {
           isWeb={isWeb}
           supplierGroups={supplierGroups}
           attachments={attachments}
-          onPickAttachment={(key, att) =>
-            setAttachments((prev) => ({ ...prev, [key]: att }))
-          }
+          onPickAttachment={(nextKey, att) => setAttachments((prev) => ({ ...prev, [nextKey]: att }))}
         />
       );
     },

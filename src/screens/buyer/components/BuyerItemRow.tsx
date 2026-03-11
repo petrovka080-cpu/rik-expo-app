@@ -37,10 +37,18 @@ type BuyerItemEditorProps = {
 
 export const BuyerItemEditor = React.memo(function BuyerItemEditor(props: BuyerItemEditorProps) {
   const {
-    m, s, inSheet,
+    m,
+    s,
+    inSheet,
     counterpartyLabel,
-    supplierSuggestions, hasAnyCounterpartyOptions, counterpartyHardFailure,
-    onSetPrice, onSetSupplier, onSetNote, onPickSupplier, onFocusField,
+    supplierSuggestions,
+    hasAnyCounterpartyOptions,
+    counterpartyHardFailure,
+    onSetPrice,
+    onSetSupplier,
+    onSetNote,
+    onPickSupplier,
+    onFocusField,
   } = props;
 
   const P = inSheet ? P_SHEET : P_LIST;
@@ -91,6 +99,7 @@ export const BuyerItemEditor = React.memo(function BuyerItemEditor(props: BuyerI
     if (!isMobileRuntime && needle.length < 2) return [];
     return all.filter((name) => String(name).toLowerCase().includes(needle));
   }, [supplierSuggestions, supplierQueryDraft, isMobileRuntime]);
+
   const shouldStackPrimaryFields = isMobileRuntime && viewportWidth < 420;
   const editorCardStyle = isMobileRuntime
     ? {
@@ -159,14 +168,7 @@ export const BuyerItemEditor = React.memo(function BuyerItemEditor(props: BuyerI
         editorCardStyle,
       ]}
     >
-      <View
-        style={{
-          flexDirection: "row",
-          alignItems: "center",
-          justifyContent: "flex-end",
-          gap: 12,
-        }}
-      >
+      <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "flex-end", gap: 12 }}>
         <StatusBadge label="Редактируется" tone="info" compact />
       </View>
 
@@ -212,7 +214,7 @@ export const BuyerItemEditor = React.memo(function BuyerItemEditor(props: BuyerI
               style={[
                 s.fieldInput,
                 {
-                  minHeight: isMobileRuntime ? 44 : 46,
+                  minHeight: 44,
                   backgroundColor: P.inputBg,
                   borderColor: P.inputBorder,
                   flexDirection: "row",
@@ -222,10 +224,7 @@ export const BuyerItemEditor = React.memo(function BuyerItemEditor(props: BuyerI
                 },
               ]}
             >
-              <Text
-                style={{ color: selectedSupplierLabel ? P.text : P.sub, fontWeight: "700", flex: 1 }}
-                numberOfLines={1}
-              >
+              <Text style={{ color: selectedSupplierLabel ? P.text : P.sub, fontWeight: "700", flex: 1 }} numberOfLines={1}>
                 {selectedSupplierLabel || `${counterpartyLabel} *`}
               </Text>
               <Ionicons name="chevron-down" size={18} color={P.sub} />
@@ -373,14 +372,7 @@ export const BuyerItemEditor = React.memo(function BuyerItemEditor(props: BuyerI
         >
           <SafeAreaView style={{ flex: 1, backgroundColor: "#0B1220" }}>
             <View style={{ flex: 1, paddingHorizontal: 16, paddingTop: 8, paddingBottom: 16 }}>
-              <View
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  marginBottom: 12,
-                }}
-              >
+              <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
                 <Text style={{ color: P.text, fontWeight: "900", fontSize: 20 }}>
                   Выберите {counterpartyLabel.toLowerCase()}
                 </Text>
@@ -472,53 +464,55 @@ function BuyerItemRowInner(props: {
   sum: number;
   prettyText: string;
   rejectedByDirector: boolean;
-
   s: StylesBag;
-
   onTogglePick: () => void;
   onSetPrice: (v: string) => void;
   onSetSupplier: (v: string) => void;
   onSetNote: (v: string) => void;
   counterpartyLabel: string;
-
   supplierSuggestions: string[];
   hasAnyCounterpartyOptions: boolean;
   counterpartyHardFailure: boolean;
   onPickSupplier: (name: string) => void;
   showInlineEditor?: boolean;
-
   onFocusField?: () => void;
   onEditMobile?: () => void;
   isMobileEditorOpen?: boolean;
 }) {
   const {
-    it, selected, inSheet, m, sum, prettyText, rejectedByDirector,
-    onTogglePick, onSetPrice, onSetSupplier, onSetNote,
+    it,
+    selected,
+    inSheet,
+    m,
+    sum,
+    prettyText,
+    rejectedByDirector,
+    onTogglePick,
     counterpartyLabel,
-    supplierSuggestions, hasAnyCounterpartyOptions, counterpartyHardFailure, onPickSupplier,
-    showInlineEditor = true,
-    onFocusField,
+    showInlineEditor = false,
     onEditMobile,
     isMobileEditorOpen,
     s,
   } = props;
 
-  const isMobileRuntime = Platform.OS !== "web";
-
   const P = inSheet ? P_SHEET : P_LIST;
   const { user: noteUser } = splitNote(m.note);
 
   const rejectReason = String(
-    (it as any)?.director_reject_reason ??
-    (it as any)?.director_reject_note ??
+    (it as { director_reject_reason?: unknown }).director_reject_reason ??
+    (it as { director_reject_note?: unknown }).director_reject_note ??
     "",
   ).trim();
-  const lastOfferSupplier = String((it as any)?.last_offer_supplier ?? "").trim();
-  const lastOfferPriceRaw = (it as any)?.last_offer_price;
+  const lastOfferSupplier = String((it as { last_offer_supplier?: unknown }).last_offer_supplier ?? "").trim();
+  const lastOfferPriceRaw = (it as { last_offer_price?: unknown }).last_offer_price;
   const lastOfferPrice =
     typeof lastOfferPriceRaw === "number" && Number.isFinite(lastOfferPriceRaw)
       ? lastOfferPriceRaw
       : null;
+
+  const isEditing = selected && !showInlineEditor && !!isMobileEditorOpen;
+  const statusLabel = isEditing ? "Редактируется" : selected ? "Выбрано" : "Заполни и выбери";
+  const statusTone = selected ? "info" : "neutral";
 
   return (
     <View
@@ -532,8 +526,8 @@ function BuyerItemRowInner(props: {
       ]}
       pointerEvents="box-none"
     >
-      <View style={{ gap: 6 }}>
-        <View style={{ flexDirection: "row", alignItems: "flex-start", gap: 8 }}>
+      <View style={{ gap: 8 }}>
+        <View style={{ flexDirection: "row", alignItems: "flex-start", gap: 10 }}>
           <View style={{ flex: 1, minWidth: 0 }}>
             <View style={{ flexDirection: "row", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
               <Text style={[s.cardTitle, { color: P.text }]}>{it.name_human}</Text>
@@ -588,19 +582,18 @@ function BuyerItemRowInner(props: {
           </View>
         </View>
 
-        <View style={{ gap: 2 }}>
+        <View style={{ gap: 4 }}>
           <Text style={{ color: P.sub }}>
-            Цена: <Text style={{ color: P.text, fontWeight: "800" }}>{m.price || "—"}</Text>{" "}
-            • {counterpartyLabel}: <Text style={{ color: P.text, fontWeight: "800" }}>{m.supplier || "—"}</Text>{" "}
-            • Прим.: <Text style={{ color: P.text, fontWeight: "800" }}>{noteUser || "—"}</Text>
+            Цена: <Text style={{ color: P.text, fontWeight: "800" }}>{m.price || "—"}</Text>
+            {" • "}
+            {counterpartyLabel}: <Text style={{ color: P.text, fontWeight: "800" }}>{m.supplier || "—"}</Text>
+            {" • "}
+            Прим.: <Text style={{ color: P.text, fontWeight: "800" }}>{noteUser || "—"}</Text>
           </Text>
 
           <Text style={{ color: P.sub }}>
             Сумма по позиции:{" "}
-            <Text style={{ color: P.text, fontWeight: "800" }}>
-              {sum ? sum.toLocaleString() : "0"}
-            </Text>{" "}
-            сом
+            <Text style={{ color: P.text, fontWeight: "800" }}>{sum ? sum.toLocaleString() : "0"}</Text> сом
           </Text>
 
           {rejectedByDirector ? (
@@ -627,56 +620,28 @@ function BuyerItemRowInner(props: {
           ) : null}
         </View>
 
-        <View style={{ flexDirection: "row", marginTop: 6, alignItems: "center" }}>
-          <View>
-            {selected && !showInlineEditor && isMobileRuntime ? (
-              <Pressable
-                onPress={onEditMobile}
-                style={{
-                  paddingVertical: 6,
-                  paddingHorizontal: 12,
-                  backgroundColor: "rgba(59, 130, 246, 0.15)",
-                  borderColor: "rgba(59, 130, 246, 0.4)",
-                  borderWidth: 1,
-                  borderRadius: 8,
-                }}
-              >
-                <Text style={{ color: "#60A5FA", fontWeight: "700", fontSize: 13 }}>Редактировать</Text>
-              </Pressable>
-            ) : null}
-          </View>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+          {selected ? (
+            <Pressable
+              onPress={onEditMobile}
+              style={{
+                paddingVertical: 8,
+                paddingHorizontal: 12,
+                backgroundColor: "rgba(59,130,246,0.15)",
+                borderColor: "rgba(59,130,246,0.4)",
+                borderWidth: 1,
+                borderRadius: 10,
+              }}
+            >
+              <Text style={{ color: "#60A5FA", fontWeight: "700", fontSize: 13 }}>Редактировать</Text>
+            </Pressable>
+          ) : null}
+
           <View style={{ marginLeft: "auto" }}>
-            {selected && showInlineEditor ? (
-              <StatusBadge label="Редактируется" tone="info" compact />
-            ) : selected && isMobileEditorOpen ? (
-              <StatusBadge label="Открыто в редакторе" tone="info" compact />
-            ) : selected ? (
-              <StatusBadge label="Выбрано" tone="info" compact />
-            ) : (
-              <StatusBadge label="Заполни и выбери" tone="neutral" compact />
-            )}
+            <StatusBadge label={statusLabel} tone={statusTone} compact />
           </View>
         </View>
       </View>
-
-      {selected && showInlineEditor ? (
-        <BuyerItemEditor
-          it={it}
-          m={m}
-          s={s}
-          inSheet={inSheet}
-          counterpartyLabel={counterpartyLabel}
-          supplierSuggestions={supplierSuggestions}
-          hasAnyCounterpartyOptions={hasAnyCounterpartyOptions}
-          counterpartyHardFailure={counterpartyHardFailure}
-          onSetPrice={onSetPrice}
-          onSetSupplier={onSetSupplier}
-          onSetNote={onSetNote}
-          onPickSupplier={onPickSupplier}
-          onFocusField={onFocusField}
-        />
-      ) : null}
-
     </View>
   );
 }
