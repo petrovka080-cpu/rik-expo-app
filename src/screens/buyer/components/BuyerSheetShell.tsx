@@ -18,10 +18,11 @@ export const BuyerSheetShell = React.memo(function BuyerSheetShell(props: {
       onBackdropPress={onClose}
       onBackButtonPress={onClose}
       backdropOpacity={0.55}
+      avoidKeyboard
       propagateSwipe
-      useNativeDriver={Platform.OS !== "web"}
-      useNativeDriverForBackdrop={Platform.OS !== "web"}
-      hideModalContentWhileAnimating={Platform.OS !== "web"}
+      useNativeDriver={false}
+      useNativeDriverForBackdrop={false}
+      hideModalContentWhileAnimating={false}
       style={{ margin: 0, justifyContent: "flex-end", alignItems: "stretch" }}
     >
       <View style={s.dirSheet}>
