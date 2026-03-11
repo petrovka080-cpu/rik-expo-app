@@ -60,6 +60,8 @@ export const BuyerItemRow = React.memo(function BuyerItemRow(props: {
   const [selectedSupplierId, setSelectedSupplierId] = React.useState("");
   const [isDropdownOpen, setIsDropdownOpen] = React.useState(false);
   const [isSupplierModalOpen, setIsSupplierModalOpen] = React.useState(false);
+  const [mobileEditorKind, setMobileEditorKind] = React.useState<null | "price" | "note">(null);
+  const [mobileEditorDraft, setMobileEditorDraft] = React.useState("");
   const [supplierInputHeight, setSupplierInputHeight] = React.useState(46);
   const blurCloseTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
   const selectingOptionRef = React.useRef(false);
@@ -143,6 +145,30 @@ export const BuyerItemRow = React.memo(function BuyerItemRow(props: {
     }
     setIsDropdownOpen(true);
   }, [onFocusField, selectedSupplierLabel, hasAnyCounterpartyOptions, isMobileRuntime]);
+
+  const openMobileEditor = React.useCallback(
+    (kind: "price" | "note") => {
+      onFocusField?.();
+      setMobileEditorKind(kind);
+      setMobileEditorDraft(kind === "price" ? String(priceDraft ?? "") : String(noteUser ?? ""));
+    },
+    [noteUser, onFocusField, priceDraft],
+  );
+
+  const closeMobileEditor = React.useCallback(() => {
+    setMobileEditorKind(null);
+    setMobileEditorDraft("");
+  }, []);
+
+  const commitMobileEditor = React.useCallback(() => {
+    if (mobileEditorKind === "price") {
+      setPriceDraft(String(mobileEditorDraft ?? ""));
+      onSetPrice(String(mobileEditorDraft ?? ""));
+    } else if (mobileEditorKind === "note") {
+      onSetNote(mergeNote(String(mobileEditorDraft ?? ""), noteAuto));
+    }
+    closeMobileEditor();
+  }, [closeMobileEditor, mobileEditorDraft, mobileEditorKind, noteAuto, onSetNote, onSetPrice]);
 
   return (
     <View
@@ -275,27 +301,46 @@ export const BuyerItemRow = React.memo(function BuyerItemRow(props: {
             }}
           >
             <View style={{ flex: 1 }}>
-              <TextInput
-                value={priceDraft}
-                onChangeText={(v) => setPriceDraft(v)}
-                keyboardType={Platform.OS === "web" ? "default" : "decimal-pad"}
-                returnKeyType="done"
-                blurOnSubmit={false}
-                placeholder="Цена *"
-                placeholderTextColor={P.sub}
-                autoCorrect={false}
-                autoCapitalize="none"
-                onFocus={() => {
-                  setPriceFocused(true);
-                  onFocusField?.();
-                }}
-                onBlur={() => {
-                  setPriceFocused(false);
-                  onSetPrice(String(priceDraft ?? ""));
-                }}
-                onEndEditing={() => onSetPrice(String(priceDraft ?? ""))}
-                style={[s.fieldInput, { backgroundColor: P.inputBg, borderColor: P.inputBorder, color: P.text }]}
-              />
+              {isMobileRuntime ? (
+                <Pressable
+                  onPress={() => openMobileEditor("price")}
+                  style={[
+                    s.fieldInput,
+                    {
+                      minHeight: 46,
+                      backgroundColor: P.inputBg,
+                      borderColor: P.inputBorder,
+                      justifyContent: "center",
+                    },
+                  ]}
+                >
+                  <Text style={{ color: priceDraft ? P.text : P.sub, fontWeight: "700" }} numberOfLines={1}>
+                    {priceDraft || "Цена *"}
+                  </Text>
+                </Pressable>
+              ) : (
+                <TextInput
+                  value={priceDraft}
+                  onChangeText={(v) => setPriceDraft(v)}
+                  keyboardType={Platform.OS === "web" ? "default" : "decimal-pad"}
+                  returnKeyType="done"
+                  blurOnSubmit={false}
+                  placeholder="Цена *"
+                  placeholderTextColor={P.sub}
+                  autoCorrect={false}
+                  autoCapitalize="none"
+                  onFocus={() => {
+                    setPriceFocused(true);
+                    onFocusField?.();
+                  }}
+                  onBlur={() => {
+                    setPriceFocused(false);
+                    onSetPrice(String(priceDraft ?? ""));
+                  }}
+                  onEndEditing={() => onSetPrice(String(priceDraft ?? ""))}
+                  style={[s.fieldInput, { backgroundColor: P.inputBg, borderColor: P.inputBorder, color: P.text }]}
+                />
+              )}
             </View>
 
             <View style={{ flex: 1, position: "relative", zIndex: isDropdownOpen ? 2600 : 700, elevation: isDropdownOpen ? 120 : 40 }}>
@@ -421,19 +466,38 @@ export const BuyerItemRow = React.memo(function BuyerItemRow(props: {
               elevation: 0,
             }}
           >
-            <TextInput
-              value={noteUser}
-              onChangeText={(v) => onSetNote(mergeNote(v, noteAuto))}
-              placeholder="Примечание"
-              placeholderTextColor={P.sub}
-              multiline
-              blurOnSubmit={false}
-              onFocus={onFocusField}
-              style={[
-                s.fieldInput,
-                { minHeight: 44, backgroundColor: P.inputBg, borderColor: P.inputBorder, color: P.text },
-              ]}
-            />
+            {isMobileRuntime ? (
+              <Pressable
+                onPress={() => openMobileEditor("note")}
+                style={[
+                  s.fieldInput,
+                  {
+                    minHeight: 44,
+                    backgroundColor: P.inputBg,
+                    borderColor: P.inputBorder,
+                    justifyContent: "center",
+                  },
+                ]}
+              >
+                <Text style={{ color: noteUser ? P.text : P.sub, fontWeight: "700" }} numberOfLines={2}>
+                  {noteUser || "Примечание"}
+                </Text>
+              </Pressable>
+            ) : (
+              <TextInput
+                value={noteUser}
+                onChangeText={(v) => onSetNote(mergeNote(v, noteAuto))}
+                placeholder="Примечание"
+                placeholderTextColor={P.sub}
+                multiline
+                blurOnSubmit={false}
+                onFocus={onFocusField}
+                style={[
+                  s.fieldInput,
+                  { minHeight: 44, backgroundColor: P.inputBg, borderColor: P.inputBorder, color: P.text },
+                ]}
+              />
+            )}
           </View>
 
           {noteAuto ? (
@@ -539,6 +603,95 @@ export const BuyerItemRow = React.memo(function BuyerItemRow(props: {
                   </Text>
                 }
               />
+            </Pressable>
+          </Pressable>
+        </Modal>
+      ) : null}
+
+      {isMobileRuntime && mobileEditorKind ? (
+        <Modal
+          visible
+          transparent
+          animationType="fade"
+          onRequestClose={closeMobileEditor}
+        >
+          <Pressable
+            onPress={closeMobileEditor}
+            style={{
+              flex: 1,
+              backgroundColor: "rgba(0,0,0,0.55)",
+              justifyContent: "center",
+              paddingHorizontal: 16,
+            }}
+          >
+            <Pressable
+              onPress={() => undefined}
+              style={{
+                borderRadius: 20,
+                backgroundColor: "#101826",
+                borderWidth: 1,
+                borderColor: "rgba(255,255,255,0.12)",
+                padding: 14,
+                gap: 12,
+              }}
+            >
+              <Text style={{ color: P.text, fontWeight: "900", fontSize: 16 }}>
+                {mobileEditorKind === "price" ? "Введи цену" : "Введи примечание"}
+              </Text>
+
+              <TextInput
+                value={mobileEditorDraft}
+                onChangeText={setMobileEditorDraft}
+                autoFocus
+                keyboardType={mobileEditorKind === "price" ? "decimal-pad" : "default"}
+                returnKeyType="done"
+                blurOnSubmit={false}
+                multiline={mobileEditorKind === "note"}
+                placeholder={mobileEditorKind === "price" ? "Цена *" : "Примечание"}
+                placeholderTextColor={P.sub}
+                style={[
+                  s.fieldInput,
+                  {
+                    backgroundColor: P.inputBg,
+                    borderColor: P.inputBorder,
+                    color: P.text,
+                    minHeight: mobileEditorKind === "note" ? 104 : 46,
+                    textAlignVertical: mobileEditorKind === "note" ? "top" : "center",
+                  },
+                ]}
+              />
+
+              <View style={{ flexDirection: "row", gap: 10 }}>
+                <Pressable
+                  onPress={closeMobileEditor}
+                  style={{
+                    flex: 1,
+                    minHeight: 46,
+                    borderRadius: 14,
+                    alignItems: "center",
+                    justifyContent: "center",
+                    backgroundColor: "rgba(255,255,255,0.08)",
+                    borderWidth: 1,
+                    borderColor: "rgba(255,255,255,0.12)",
+                  }}
+                >
+                  <Text style={{ color: P.text, fontWeight: "800" }}>Отмена</Text>
+                </Pressable>
+
+                <Pressable
+                  onPress={commitMobileEditor}
+                  style={{
+                    flex: 1,
+                    minHeight: 46,
+                    borderRadius: 14,
+                    alignItems: "center",
+                    justifyContent: "center",
+                    backgroundColor: "#2563eb",
+                  }}
+                >
+                  <Text style={{ color: "#fff", fontWeight: "900" }}>Сохранить</Text>
+                </Pressable>
+              </View>
             </Pressable>
           </Pressable>
         </Modal>
