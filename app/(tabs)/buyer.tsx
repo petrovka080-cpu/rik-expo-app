@@ -155,7 +155,7 @@ export default function BuyerScreen() {
   }, [sheetKind]);
 
   useEffect(() => {
-    if (kbOpen) setShowAttachBlock(false);
+    if (isWeb && kbOpen) setShowAttachBlock(false);
   }, [kbOpen]);
 
   const { toast, showToast } = useTimedToast(TOAST_DEFAULT_MS);
@@ -580,6 +580,7 @@ export default function BuyerScreen() {
     proposalNoByPid,
     prettyLabel,
   });
+  const inboxKeyboardLayoutActive = isWeb ? kbOpen : false;
   const header = useMemo(() => (
     <BuyerScreenHeader
       s={s}
@@ -687,7 +688,7 @@ export default function BuyerScreen() {
                 s={s}
                 sheetGroup={sheetGroup}
                 sheetData={sheetData}
-                kbOpen={kbOpen}
+                kbOpen={inboxKeyboardLayoutActive}
                 creating={creating}
                 needAttachWarn={needAttachWarn}
                 showAttachBlock={showAttachBlock}
@@ -702,7 +703,7 @@ export default function BuyerScreen() {
                 setAttachments={setAttachments}
                 renderItemRow={renderItemRow}
                 footer={
-                  !kbOpen ? (
+                  !inboxKeyboardLayoutActive ? (
                     <SheetFooterActions
                       s={s}
                       left={
