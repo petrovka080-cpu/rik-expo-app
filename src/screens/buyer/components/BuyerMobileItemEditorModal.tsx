@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef, useCallback } from "react";
+import React, { useState, useMemo, useCallback } from "react";
 import { View, Text, Pressable, TextInput, FlatList, Modal, SafeAreaView, Platform } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import type { BuyerInboxRow } from "../../../lib/catalog_api";
@@ -40,8 +40,6 @@ export function BuyerMobileItemEditorModal(props: BuyerMobileItemEditorModalProp
   
   const [isSupplierModalOpen, setIsSupplierModalOpen] = useState(false);
   const [supplierQueryDraft, setSupplierQueryDraft] = useState("");
-
-  const makeSupplierId = useCallback((label: string) => String(label || "").trim().toLowerCase().replace(/\s+/g, " "), []);
 
   const commitSelectedSupplier = useCallback((rawName: string) => {
     const selectedLabel = String(rawName || "").trim();

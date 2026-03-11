@@ -1,10 +1,16 @@
 import { useEffect, useState } from "react";
 import { Keyboard } from "react-native";
 
-export function useBuyerKeyboard() {
+export function useBuyerKeyboard(options?: { enabled?: boolean }) {
+  const enabled = options?.enabled ?? true;
   const [kbOpen, setKbOpen] = useState(false);
 
   useEffect(() => {
+    if (!enabled) {
+      setKbOpen(false);
+      return;
+    }
+
     const showEvt = "keyboardDidShow";
     const hideEvt = "keyboardDidHide";
 
@@ -23,7 +29,7 @@ export function useBuyerKeyboard() {
         // no-op
       }
     };
-  }, []);
+  }, [enabled]);
 
   return { kbOpen };
 }

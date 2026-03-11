@@ -247,5 +247,12 @@ export function useBuyerInboxRenderers(params: {
     ]
   );
 
-  return { renderItemRow, renderGroupBlock, editingItem, setEditingItem, renderMobileEditorModal };
+  return {
+    renderItemRow,
+    renderGroupBlock,
+    editingItem,
+    setEditingItem,
+    renderMobileEditorModal,
+    isMobileEditorVisible: !!editingItem,
+  };
 }

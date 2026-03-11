@@ -147,17 +147,6 @@ export default function BuyerScreen() {
     onCloseExtras: () => setShowAttachBlock(false),
   });
 
-  const { kbOpen } = useBuyerKeyboard();
-
-  useEffect(() => {
-
-    if (sheetKind === "inbox") setShowAttachBlock(false);
-  }, [sheetKind]);
-
-  useEffect(() => {
-    if (isWeb && kbOpen) setShowAttachBlock(false);
-  }, [kbOpen]);
-
   const { toast, showToast } = useTimedToast(TOAST_DEFAULT_MS);
   const {
     rfqBusy,
@@ -381,7 +370,12 @@ export default function BuyerScreen() {
     pickedRef,
     showToast,
   });
-  const { renderItemRow, renderGroupBlock, renderMobileEditorModal } = useBuyerInboxRenderers({
+  const {
+    renderItemRow,
+    renderGroupBlock,
+    renderMobileEditorModal,
+    isMobileEditorVisible,
+  } = useBuyerInboxRenderers({
     s,
     picked,
     meta,
@@ -403,6 +397,15 @@ export default function BuyerScreen() {
     hasAnyCounterpartyOptions: hasAnyOptions,
     counterpartyHardFailure: hasHardFailure,
   });
+  const { kbOpen } = useBuyerKeyboard({ enabled: !isMobileEditorVisible });
+
+  useEffect(() => {
+    if (sheetKind === "inbox") setShowAttachBlock(false);
+  }, [sheetKind]);
+
+  useEffect(() => {
+    if (isWeb && kbOpen) setShowAttachBlock(false);
+  }, [kbOpen]);
 
   const { validatePicked, removeFromInboxLocally, confirmSendWithoutAttachments } = useBuyerCreateGuards({
     groups,
@@ -580,7 +583,7 @@ export default function BuyerScreen() {
     proposalNoByPid,
     prettyLabel,
   });
-  const inboxKeyboardLayoutActive = kbOpen;
+  const inboxKeyboardLayoutActive = kbOpen && !isMobileEditorVisible;
   const header = useMemo(() => (
     <BuyerScreenHeader
       s={s}
