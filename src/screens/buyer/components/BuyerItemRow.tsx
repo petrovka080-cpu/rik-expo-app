@@ -6,6 +6,7 @@ import {
   TextInput,
   FlatList,
   Platform,
+  Modal,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
@@ -50,6 +51,7 @@ export const BuyerItemRow = React.memo(function BuyerItemRow(props: {
   } = props;
 
   const P = inSheet ? P_SHEET : P_LIST;
+  const isMobileRuntime = Platform.OS !== "web";
   const { user: noteUser, auto: noteAuto } = splitNote(m.note);
   const [priceDraft, setPriceDraft] = React.useState(String(m.price ?? ""));
   const [priceFocused, setPriceFocused] = React.useState(false);
@@ -57,6 +59,7 @@ export const BuyerItemRow = React.memo(function BuyerItemRow(props: {
   const [selectedSupplierLabel, setSelectedSupplierLabel] = React.useState(String(m.supplier ?? ""));
   const [selectedSupplierId, setSelectedSupplierId] = React.useState("");
   const [isDropdownOpen, setIsDropdownOpen] = React.useState(false);
+  const [isSupplierModalOpen, setIsSupplierModalOpen] = React.useState(false);
   const [supplierInputHeight, setSupplierInputHeight] = React.useState(46);
   const blurCloseTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
   const selectingOptionRef = React.useRef(false);
@@ -79,6 +82,7 @@ export const BuyerItemRow = React.memo(function BuyerItemRow(props: {
       setSelectedSupplierId(selectedId);
       setSupplierQueryDraft("");
       setIsDropdownOpen(false);
+      setIsSupplierModalOpen(false);
       // Let blur pass after commit is applied to parent meta.
       setTimeout(() => {
         selectingOptionRef.current = false;
@@ -91,10 +95,11 @@ export const BuyerItemRow = React.memo(function BuyerItemRow(props: {
     // Force ultimate rendering uniqueness here to collapse equal names from distinct sources (e.g. `supplier` vs `contractor`)
     const all = Array.from(new Set((supplierSuggestions || []).map((name) => String(name || "").trim()).filter(Boolean)));
     const needle = String(supplierQueryDraft || "").trim().toLowerCase();
-    if (needle.length < 2) return [];
+    if (!needle) return isMobileRuntime ? all : [];
+    if (!isMobileRuntime && needle.length < 2) return [];
     // Filter across the full source list; UI height limits visible rows, not filtering scope.
     return all.filter((name) => String(name).toLowerCase().includes(needle));
-  }, [supplierSuggestions, supplierQueryDraft]);
+  }, [supplierSuggestions, supplierQueryDraft, isMobileRuntime]);
 
   React.useEffect(() => {
     if (priceFocused) return;
@@ -132,8 +137,12 @@ export const BuyerItemRow = React.memo(function BuyerItemRow(props: {
     }
     onFocusField?.();
     setSupplierQueryDraft(selectedSupplierLabel);
+    if (isMobileRuntime) {
+      setIsSupplierModalOpen(true);
+      return;
+    }
     setIsDropdownOpen(true);
-  }, [onFocusField, selectedSupplierLabel, hasAnyCounterpartyOptions]);
+  }, [onFocusField, selectedSupplierLabel, hasAnyCounterpartyOptions, isMobileRuntime]);
 
   return (
     <View
@@ -290,34 +299,61 @@ export const BuyerItemRow = React.memo(function BuyerItemRow(props: {
             </View>
 
             <View style={{ flex: 1, position: "relative", zIndex: isDropdownOpen ? 2600 : 700, elevation: isDropdownOpen ? 120 : 40 }}>
-              <View
-                onLayout={(e) => {
-                  const h = Number(e?.nativeEvent?.layout?.height ?? 0);
-                  if (Number.isFinite(h) && h > 0) setSupplierInputHeight(h);
-                }}
-              >
-                <TextInput
-                  value={isDropdownOpen ? supplierQueryDraft : selectedSupplierLabel}
-                  onChangeText={(v) => {
-                    setSupplierQueryDraft(v);
-                    if (!isDropdownOpen) setIsDropdownOpen(true);
+              {isMobileRuntime ? (
+                <Pressable
+                  onPress={openPicker}
+                  disabled={!hasAnyCounterpartyOptions}
+                  style={[
+                    s.fieldInput,
+                    {
+                      minHeight: 46,
+                      backgroundColor: P.inputBg,
+                      borderColor: P.inputBorder,
+                      flexDirection: "row",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      opacity: hasAnyCounterpartyOptions ? 1 : 0.6,
+                    },
+                  ]}
+                >
+                  <Text
+                    style={{ color: selectedSupplierLabel ? P.text : P.sub, fontWeight: "700", flex: 1 }}
+                    numberOfLines={1}
+                  >
+                    {selectedSupplierLabel || `${counterpartyLabel} *`}
+                  </Text>
+                  <Ionicons name="chevron-down" size={18} color={P.sub} />
+                </Pressable>
+              ) : (
+                <View
+                  onLayout={(e) => {
+                    const h = Number(e?.nativeEvent?.layout?.height ?? 0);
+                    if (Number.isFinite(h) && h > 0) setSupplierInputHeight(h);
                   }}
-                  returnKeyType="done"
-                  blurOnSubmit={false}
-                  placeholder={`${counterpartyLabel} *`}
-                  placeholderTextColor={P.sub}
-                  editable={hasAnyCounterpartyOptions}
-                  onFocus={openPicker}
-                  onBlur={() => {
-                    if (selectingOptionRef.current) return;
-                    blurCloseTimerRef.current = setTimeout(() => {
-                      setIsDropdownOpen(false);
-                      setSupplierQueryDraft("");
-                    }, 120);
-                  }}
-                  style={[s.fieldInput, { backgroundColor: P.inputBg, borderColor: P.inputBorder, color: P.text }]}
-                />
-              </View>
+                >
+                  <TextInput
+                    value={isDropdownOpen ? supplierQueryDraft : selectedSupplierLabel}
+                    onChangeText={(v) => {
+                      setSupplierQueryDraft(v);
+                      if (!isDropdownOpen) setIsDropdownOpen(true);
+                    }}
+                    returnKeyType="done"
+                    blurOnSubmit={false}
+                    placeholder={`${counterpartyLabel} *`}
+                    placeholderTextColor={P.sub}
+                    editable={hasAnyCounterpartyOptions}
+                    onFocus={openPicker}
+                    onBlur={() => {
+                      if (selectingOptionRef.current) return;
+                      blurCloseTimerRef.current = setTimeout(() => {
+                        setIsDropdownOpen(false);
+                        setSupplierQueryDraft("");
+                      }, 120);
+                    }}
+                    style={[s.fieldInput, { backgroundColor: P.inputBg, borderColor: P.inputBorder, color: P.text }]}
+                  />
+                </View>
+              )}
 
               {isDropdownOpen && filteredSuppliers.length > 0 ? (
                 <View
@@ -421,6 +457,92 @@ export const BuyerItemRow = React.memo(function BuyerItemRow(props: {
           ) : null}
         </View>
       )}
+
+      {isMobileRuntime ? (
+        <Modal
+          visible={isSupplierModalOpen}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setIsSupplierModalOpen(false)}
+        >
+          <Pressable
+            onPress={() => setIsSupplierModalOpen(false)}
+            style={{
+              flex: 1,
+              backgroundColor: "rgba(0,0,0,0.55)",
+              justifyContent: "center",
+              paddingHorizontal: 16,
+            }}
+          >
+            <Pressable
+              onPress={() => undefined}
+              style={{
+                borderRadius: 20,
+                backgroundColor: "#101826",
+                borderWidth: 1,
+                borderColor: "rgba(255,255,255,0.12)",
+                padding: 14,
+                maxHeight: "70%",
+              }}
+            >
+              <Text style={{ color: P.text, fontWeight: "900", fontSize: 16, marginBottom: 12 }}>
+                Выбери {counterpartyLabel.toLowerCase()}
+              </Text>
+
+              <TextInput
+                value={supplierQueryDraft}
+                onChangeText={setSupplierQueryDraft}
+                autoFocus
+                returnKeyType="search"
+                blurOnSubmit={false}
+                placeholder={`Поиск ${counterpartyLabel.toLowerCase()}`}
+                placeholderTextColor={P.sub}
+                style={[
+                  s.fieldInput,
+                  {
+                    backgroundColor: P.inputBg,
+                    borderColor: P.inputBorder,
+                    color: P.text,
+                    marginBottom: 12,
+                  },
+                ]}
+              />
+
+              <FlatList
+                data={filteredSuppliers}
+                keyExtractor={(item, idx) => `${item}:${idx}`}
+                keyboardShouldPersistTaps="always"
+                renderItem={({ item }) => (
+                  <Pressable
+                    onPress={() => commitSelectedSupplier(item)}
+                    style={{
+                      minHeight: 48,
+                      justifyContent: "center",
+                      paddingHorizontal: 12,
+                      paddingVertical: 10,
+                      borderRadius: 12,
+                      backgroundColor:
+                        makeSupplierId(item) === selectedSupplierId
+                          ? "rgba(34,197,94,0.16)"
+                          : "rgba(255,255,255,0.04)",
+                      marginBottom: 8,
+                    }}
+                  >
+                    <Text style={{ color: P.text, fontWeight: "800" }} numberOfLines={1}>
+                      {item}
+                    </Text>
+                  </Pressable>
+                )}
+                ListEmptyComponent={
+                  <Text style={{ color: P.sub, fontWeight: "700", paddingVertical: 12 }}>
+                    Ничего не найдено
+                  </Text>
+                }
+              />
+            </Pressable>
+          </Pressable>
+        </Modal>
+      ) : null}
 
     </View>
   );
