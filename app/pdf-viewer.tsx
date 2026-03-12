@@ -23,6 +23,19 @@ import {
   sharePdfDocument,
 } from "../src/lib/documents/pdfDocumentActions";
 
+let FileSystem: any = null;
+try {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  FileSystem = Platform.OS === "web" ? null : require("expo-file-system/legacy");
+} catch {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    FileSystem = require("expo-file-system");
+  } catch {
+    FileSystem = null;
+  }
+}
+
 type ViewerState = "init" | "loading" | "ready" | "error" | "empty";
 
 const FALLBACK_ROUTE = "/";
@@ -53,6 +66,16 @@ export default function PdfViewerScreen() {
   const openedAtRef = React.useRef<number>(Date.now());
   const loadingTimeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
   const initialAssetUriRef = React.useRef("");
+
+  React.useEffect(() => {
+    console.info("[pdf-viewer] viewer_route_mounted", {
+      platform: Platform.OS,
+      sessionId,
+      receivedSessionId: params.sessionId ?? null,
+      initialUri: snapshot.asset?.uri ?? null,
+      initialScheme: getUriScheme(snapshot.asset?.uri),
+    });
+  }, [params.sessionId, sessionId, snapshot.asset?.uri]);
 
   const syncSnapshot = React.useCallback(() => {
     const next = getDocumentSessionSnapshot(sessionId);
@@ -233,8 +256,65 @@ export default function PdfViewerScreen() {
     return { uri: asset.uri };
   }, [asset]);
 
+  React.useEffect(() => {
+    let cancelled = false;
+
+    const inspect = async () => {
+      if (!asset?.uri) return;
+      const scheme = getUriScheme(asset.uri);
+      let exists: boolean | undefined;
+      let size: number | undefined;
+
+      if (Platform.OS !== "web" && scheme === "file" && FileSystem?.getInfoAsync) {
+        try {
+          const info = await FileSystem.getInfoAsync(asset.uri);
+          exists = Boolean(info?.exists);
+          size = Number.isFinite(Number(info?.size)) ? Number(info.size) : undefined;
+        } catch (error) {
+          console.error("[pdf-viewer] viewer_file_inspect_failed", {
+            sessionId,
+            uri: asset.uri,
+            error: error instanceof Error ? error.message : String(error),
+          });
+        }
+      }
+
+      if (!cancelled) {
+        if (Platform.OS !== "web" && scheme === "file" && exists === false) {
+          console.error("[pdf-viewer] viewer_file_not_found", {
+            sessionId,
+            uri: asset.uri,
+            fileName: asset.fileName,
+          });
+        }
+        console.info("[pdf-viewer] viewer_before_render", {
+          platform: Platform.OS,
+          sessionId,
+          documentType: asset.documentType,
+          originModule: asset.originModule,
+          uri: asset.uri,
+          scheme,
+          fileName: asset.fileName,
+          mimeType: asset.mimeType,
+          exists,
+          sizeBytes: size ?? asset.sizeBytes,
+          source,
+        });
+      }
+    };
+
+    void inspect();
+    return () => {
+      cancelled = true;
+    };
+  }, [asset, sessionId, source]);
+
   const body = (() => {
     if (state === "empty") {
+      console.error("[pdf-viewer] viewer_missing_session", {
+        platform: Platform.OS,
+        sessionId,
+      });
       return (
         <EmptyState
           title="Document not found"
@@ -244,6 +324,13 @@ export default function PdfViewerScreen() {
     }
 
     if (state === "error") {
+      console.error("[pdf-viewer] viewer_error_state", {
+        platform: Platform.OS,
+        sessionId,
+        errorText,
+        uri: asset?.uri ?? null,
+        scheme: getUriScheme(asset?.uri),
+      });
       return (
         <CenteredPanel
           title="Unable to open document"
@@ -257,6 +344,12 @@ export default function PdfViewerScreen() {
     }
 
     if (!asset?.uri || !source) {
+      console.error("[pdf-viewer] viewer_invalid_asset", {
+        platform: Platform.OS,
+        sessionId,
+        hasAsset: Boolean(asset),
+        uri: asset?.uri ?? null,
+      });
       return <EmptyState title="Document not found" subtitle="Missing document asset." />;
     }
 
@@ -309,6 +402,13 @@ export default function PdfViewerScreen() {
             setSupportMultipleWindows={false}
             onLoadStart={() => enterLoading()}
             onLoadEnd={() => markReady()}
+            onLoad={() => {
+              console.info("[pdf-viewer] viewer_native_loaded", {
+                sessionId,
+                uri: asset.uri,
+                scheme: getUriScheme(asset.uri),
+              });
+            }}
             onShouldStartLoadWithRequest={(request) => {
               const requestUrl = String(request.url || "");
               const requestScheme = getUriScheme(requestUrl);
@@ -343,8 +443,23 @@ export default function PdfViewerScreen() {
               });
               markError("Blocked external handoff during mobile preview.");
             }}
+            onHttpError={(event) => {
+              console.error("[pdf-viewer] viewer_http_error", {
+                sessionId,
+                statusCode: event.nativeEvent.statusCode,
+                description: event.nativeEvent.description,
+                url: event.nativeEvent.url,
+              });
+              markError(event.nativeEvent.description || `HTTP ${event.nativeEvent.statusCode}`);
+            }}
             onError={(event) => {
               const message = event.nativeEvent.description || "WebView failed";
+              console.error("[pdf-viewer] viewer_native_error", {
+                sessionId,
+                message,
+                url: event.nativeEvent.url,
+                code: event.nativeEvent.code,
+              });
               markError(message);
             }}
             style={{ flex: 1, backgroundColor: "#0A0F18" }}

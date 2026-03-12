@@ -1,3 +1,4 @@
+import { Platform } from "react-native";
 import type { DocumentDescriptor } from "./pdfDocument";
 import { createDocumentPreviewSession } from "./pdfDocumentSessions";
 import {
@@ -48,12 +49,17 @@ export async function previewPdfDocument(
 ): Promise<void> {
   const scheme = String(doc.uri || "").match(/^([a-z0-9+.-]+):/i)?.[1]?.toLowerCase() || "";
   console.info("[pdf-document-actions] preview", {
+    stage: "preview_requested",
+    platform: Platform.OS,
     documentType: doc.documentType,
     originModule: doc.originModule,
     scheme,
+    uri: doc.uri,
+    fileName: doc.fileName,
   });
   const { session, asset } = await createDocumentPreviewSession(doc);
   console.info("[pdf-document-actions] preview_asset", {
+    stage: "preview_asset_ready",
     sessionId: session.sessionId,
     documentType: asset.documentType,
     originModule: asset.originModule,
@@ -64,12 +70,37 @@ export async function previewPdfDocument(
     sizeBytes: asset.sizeBytes,
   });
   if (opts?.router) {
-    opts.router.push({
-      pathname: "/pdf-viewer",
-      params: { sessionId: session.sessionId },
+    console.info("[pdf-document-actions] about_to_navigate_to_viewer", {
+      sessionId: session.sessionId,
+      documentType: asset.documentType,
+      originModule: asset.originModule,
+      finalUri: asset.uri,
+      finalScheme: String(asset.uri || "").match(/^([a-z0-9+.-]+):/i)?.[1]?.toLowerCase() || "",
+      isLocalFile: /^file:\/\//i.test(String(asset.uri || "")),
+      fileName: asset.fileName,
     });
-    return;
+    try {
+      opts.router.push({
+        pathname: "/pdf-viewer",
+        params: { sessionId: session.sessionId },
+      });
+      return;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      console.error("[pdf-document-actions] preview_navigation_failed", {
+        sessionId: session.sessionId,
+        documentType: asset.documentType,
+        originModule: asset.originModule,
+        error: message,
+      });
+      throw error;
+    }
   }
+  console.warn("[pdf-document-actions] preview_without_router_fallback", {
+    documentType: asset.documentType,
+    originModule: asset.originModule,
+    finalUri: asset.uri,
+  });
   await openPdfPreview(asset.uri);
 }
 
