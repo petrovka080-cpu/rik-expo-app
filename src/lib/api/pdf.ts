@@ -1,6 +1,6 @@
 import { Platform } from "react-native";
 import * as Print from "expo-print";
-import * as FileSystemModule from "expo-file-system";
+import * as FileSystemModule from "expo-file-system/legacy";
 import { getFileSystemPaths } from "../fileSystemPaths";
 import { normalizeLocalFileUri } from "../pdfFileContract";
 import { hashString32 } from "../pdfFileContract";

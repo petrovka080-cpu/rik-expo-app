@@ -3,7 +3,7 @@
 import { Alert, Linking, Platform } from "react-native";
 import * as IntentLauncher from "expo-intent-launcher";
 import * as Sharing from "expo-sharing";
-import * as FileSystemModule from "expo-file-system";
+import * as FileSystemModule from "expo-file-system/legacy";
 
 import { normalizePdfFileName } from "./documents/pdfDocument";
 import { getFileSystemPaths } from "./fileSystemPaths";

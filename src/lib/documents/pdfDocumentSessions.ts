@@ -1,5 +1,5 @@
 import { Platform } from "react-native";
-import * as FileSystemModule from "expo-file-system";
+import * as FileSystemModule from "expo-file-system/legacy";
 import type { DocumentDescriptor } from "./pdfDocument";
 import { normalizePdfFileName } from "./pdfDocument";
 import { getFileSystemPaths } from "../fileSystemPaths";
