@@ -10,7 +10,7 @@ import {
 import { router, useLocalSearchParams } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { WebView } from "react-native-webview";
-import * as FileSystemModule from "expo-file-system/legacy";
+import * as FileSystemModule from "expo-file-system";
 
 import {
   failDocumentSession,
