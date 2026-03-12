@@ -1,7 +1,8 @@
 import { Platform } from "react-native";
-import * as FileSystem from "expo-file-system/legacy";
+import * as FileSystem from "expo-file-system";
 import { supabase } from "../supabaseClient";
 import type { QueuedProposalAttachment } from "./queuedProposalAttachments";
+const FileSystemCompat = FileSystem as any;
 
 const FILES_BUCKET = "proposal_files";
 const TECHNICAL_ATTACHMENT_GROUPS = new Set(["proposal_html"]);
@@ -134,16 +135,16 @@ async function ensureReadableFileUri(rawUri: string, safeName: string): Promise<
 
   if (uri.startsWith("file://")) return uri;
 
-  const target = `${FileSystem.cacheDirectory}${Date.now()}_${safeName}`;
+  const target = `${FileSystemCompat.cacheDirectory}${Date.now()}_${safeName}`;
 
   if (uri.startsWith("ph://")) {
-    await FileSystem.copyAsync({ from: uri, to: target });
+    await FileSystemCompat.copyAsync({ from: uri, to: target });
     return target;
   }
 
   if (uri.startsWith("content://")) {
     try {
-      await FileSystem.copyAsync({ from: uri, to: target });
+      await FileSystemCompat.copyAsync({ from: uri, to: target });
       return target;
     } catch {
       return uri;
@@ -174,8 +175,8 @@ async function buildNativeUploadPayload(file: unknown, fallbackName: string) {
 
   const fileName = ensureFilename(normalized.name || fallbackName, normalized.mimeType);
   const readableUri = await ensureReadableFileUri(normalized.uri, sanitizeFilename(fileName));
-  const base64 = await FileSystem.readAsStringAsync(readableUri, {
-    encoding: FileSystem.EncodingType.Base64,
+  const base64 = await FileSystemCompat.readAsStringAsync(readableUri, {
+    encoding: "base64",
   });
 
   if (!base64) {

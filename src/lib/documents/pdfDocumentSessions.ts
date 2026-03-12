@@ -1,6 +1,8 @@
 import { Platform } from "react-native";
+import * as FileSystem from "expo-file-system";
 import type { DocumentDescriptor } from "./pdfDocument";
 import { normalizePdfFileName } from "./pdfDocument";
+const FileSystemCompat = FileSystem as any;
 
 export type DocumentAsset = {
   assetId: string;
@@ -41,19 +43,6 @@ const sessions = new Map<string, DocumentSession>();
 const assets = new Map<string, DocumentAsset>();
 
 let seq = 0;
-let FileSystem: any = null;
-
-try {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  FileSystem = Platform.OS === "web" ? null : require("expo-file-system/legacy");
-} catch {
-  try {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    FileSystem = require("expo-file-system");
-  } catch {
-    FileSystem = null;
-  }
-}
 
 const nowIso = () => new Date().toISOString();
 
@@ -75,27 +64,27 @@ const isHttpUri = (uri: string) => /^https?:\/\//i.test(String(uri || "").trim()
 const isFileUri = (uri: string) => /^file:\/\//i.test(String(uri || "").trim());
 
 async function getFileInfo(uri: string) {
-  if (!FileSystem?.getInfoAsync) return null;
+  if (!FileSystemCompat?.getInfoAsync) return null;
   try {
-    return await FileSystem.getInfoAsync(uri);
+    return await FileSystemCompat.getInfoAsync(uri);
   } catch {
     return null;
   }
 }
 
 async function ensureLocalPdfUri(uri: string, fileName: string): Promise<{ uri: string; sizeBytes?: number }> {
-  if (!FileSystem) {
+  if (!FileSystemCompat) {
     throw new Error("Mobile PDF materialization requires expo-file-system");
   }
 
   const normalizedName = normalizePdfFileName(fileName, "document");
-  const cacheDir = FileSystem.cacheDirectory || FileSystem.documentDirectory;
+  const cacheDir = FileSystemCompat.cacheDirectory || FileSystemCompat.documentDirectory;
   if (!cacheDir) throw new Error("FileSystem cacheDirectory is unavailable");
   const targetName = `${Date.now()}_${sanitizeStem(normalizedName, "document.pdf")}`;
   const targetUri = `${cacheDir}${targetName}`;
 
   if (isHttpUri(uri)) {
-    const downloaded = await FileSystem.downloadAsync(uri, targetUri);
+    const downloaded = await FileSystemCompat.downloadAsync(uri, targetUri);
     const downloadedUri = String(downloaded?.uri || targetUri);
     const info = await getFileInfo(downloadedUri);
     if (!info?.exists) throw new Error("Downloaded PDF file is missing after materialization");
@@ -123,7 +112,7 @@ async function ensureLocalPdfUri(uri: string, fileName: string): Promise<{ uri: 
     };
   }
 
-  await FileSystem.copyAsync({ from: sourceUri, to: targetUri });
+  await FileSystemCompat.copyAsync({ from: sourceUri, to: targetUri });
   const copiedInfo = await getFileInfo(targetUri);
   if (!copiedInfo?.exists) throw new Error("Materialized local PDF file is missing");
   return {

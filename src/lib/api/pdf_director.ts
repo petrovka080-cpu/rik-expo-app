@@ -1272,7 +1272,7 @@ export async function exportDirectorSubcontractReportPdf(p: DirectorSubcontractP
   if (objectName) q = q.eq("object_name", objectName);
 
   const { data, error } = await q;
-  if (error) throw error;
+  if (error) throw new Error(`subcontracts lookup failed: ${error.message}`);
   const rows = Array.isArray(data) ? data : [];
 
   const approvedLike = rows.filter((r: any) => ["approved", "closed"].includes(String(r?.status ?? "").trim()));

@@ -3,18 +3,11 @@
 import { Alert, Linking, Platform } from "react-native";
 import * as IntentLauncher from "expo-intent-launcher";
 import * as Sharing from "expo-sharing";
+import * as FileSystem from "expo-file-system";
 
 import { normalizePdfFileName } from "./documents/pdfDocument";
 import { SUPABASE_ANON_KEY } from "./supabaseClient";
-
-let FileSystem: any = null;
-try {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  FileSystem = Platform.OS === "web" ? null : require("expo-file-system/legacy");
-} catch {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  FileSystem = require("expo-file-system");
-}
+const FileSystemCompat = FileSystem as any;
 
 export type BusyLike = {
   run?: <T>(
@@ -64,7 +57,7 @@ function hash32(input: string) {
 
 async function fileExists(uri: string) {
   try {
-    const info = await FileSystem.getInfoAsync(uri);
+    const info = await FileSystemCompat.getInfoAsync(uri);
     return !!info?.exists;
   } catch {
     return false;
@@ -101,7 +94,7 @@ export async function preparePdfLocalUri(args: {
 
   const baseName = safeName(args.fileName);
   const localName = baseName.replace(/\.pdf$/i, `_${hash32(url)}.pdf`);
-  const cacheDir = FileSystem.cacheDirectory || FileSystem.documentDirectory;
+  const cacheDir = FileSystemCompat.cacheDirectory || FileSystemCompat.documentDirectory;
   const localOutput = `${cacheDir}${localName}`;
 
   if (await fileExists(localOutput)) {
@@ -110,7 +103,7 @@ export async function preparePdfLocalUri(args: {
   }
 
   const headers = await getAuthHeader(args.supabase);
-  const dl = await FileSystem.downloadAsync(url, localOutput, { headers });
+  const dl = await FileSystemCompat.downloadAsync(url, localOutput, { headers });
   const uri = dl?.uri || localOutput;
   urlToLocal.set(url, uri);
   return uri;
@@ -124,7 +117,7 @@ export async function openPdfPreview(localUri: string) {
   }
 
   if (Platform.OS === "android") {
-    const contentUri = await FileSystem.getContentUriAsync(localUri);
+    const contentUri = await FileSystemCompat.getContentUriAsync(localUri);
     await IntentLauncher.startActivityAsync((IntentLauncher as any).ActivityAction.VIEW, {
       data: contentUri,
       flags: 1,

@@ -7,7 +7,7 @@ import {
 } from "react-native";
 import * as Print from "expo-print";
 import * as Sharing from "expo-sharing";
-import * as FileSystem from "expo-file-system/legacy";
+import * as FileSystem from "expo-file-system";
 import { supabase } from "../../src/lib/supabaseClient";
 import { LineChart, PieChart } from "react-native-chart-kit";
 import { openHtmlAsPdfUniversal } from "../../src/lib/api/pdf";
@@ -16,6 +16,7 @@ import { preparePdfDocument, previewPdfDocument } from "../../src/lib/documents/
 import { createGeneratedPdfDocument } from "../../src/lib/documents/pdfDocumentGenerators";
 // alias (РЅР° РІСЃСЏРєРёР№ СЃР»СѓС‡Р°Р№, С‡С‚РѕР±С‹ РЅРµ РєРѕРЅС„Р»РёРєС‚РѕРІР°С‚СЊ СЃ РёРјРµРЅРµРј Sharing)
 import * as ExpoSharing from "expo-sharing";
+const FileSystemCompat = FileSystem as any;
 
 const w = Dimensions.get("window").width;
 const fmt = (n: any) => Number(n ?? 0).toLocaleString("ru-RU", { maximumFractionDigits: 2 });
@@ -87,8 +88,8 @@ export default function Reports() {
         pipe.map((x) => [humanStatus(x.status), x.cnt])
       );
 
-          const path = FileSystem.cacheDirectory + "reports.csv";
-          await FileSystem.writeAsStringAsync(path, csv, { encoding: FileSystem.EncodingType.UTF8 });
+          const path = FileSystemCompat.cacheDirectory + "reports.csv";
+          await FileSystemCompat.writeAsStringAsync(path, csv, { encoding: "utf8" });
       await Sharing.shareAsync(path);
     } catch (e: any) {
       Alert.alert("РћС€РёР±РєР° СЌРєСЃРїРѕСЂС‚Р°", e.message);

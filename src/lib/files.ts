@@ -1,7 +1,8 @@
-﻿// src/lib/files.ts
+// src/lib/files.ts
 import { Platform, Linking, Alert } from "react-native";
+import * as FileSystem from "expo-file-system";
 import { supabase } from "./supabaseClient";
-import * as FileSystem from "expo-file-system/legacy";
+const FileSystemCompat = FileSystem as any;
 
 
 /** РџРµСЂРµРёСЃРїРѕР»СЊР·СѓРµРј Р°РїР»РѕР°РґРµСЂ РёР· rik_api.ts */
@@ -33,6 +34,8 @@ type SupplierFileMetaRow = {
 };
 
 const errorText = (e: unknown) => (e instanceof Error ? e.message : String(e));
+const toSupabaseError = (context: string, error: unknown) =>
+  new Error(`${context}: ${error instanceof Error ? error.message : String(error)}`);
 
 export const isPdfLike = (fileName?: string | null, url?: string | null) => {
   const name = String(fileName || "").trim().toLowerCase();
@@ -59,7 +62,7 @@ async function openLocalFilePreview(uri: string) {
   if (Platform.OS === "android") {
     try {
       const IntentLauncher = (await import("expo-intent-launcher")) as unknown as IntentLauncherModule;
-      const contentUri = await FileSystem.getContentUriAsync(uri);
+      const contentUri = await FileSystemCompat.getContentUriAsync(uri);
 
       await IntentLauncher.startActivityAsync(
         IntentLauncher.ActivityAction.VIEW,
@@ -166,9 +169,9 @@ export async function openSignedUrlUniversal(url: string, fileName?: string) {
 
   // NATIVE: СЃРєР°С‡РёРІР°РµРј РІ cache Рё РѕС‚РєСЂС‹РІР°РµРј Р»РѕРєР°Р»СЊРЅРѕ
   const clean = safeFileName(fileName || "document.bin");
-  const target = `${FileSystem.cacheDirectory}${Date.now()}_${clean}`;
+  const target = `${FileSystemCompat.cacheDirectory}${Date.now()}_${clean}`;
 
-  const res = await FileSystem.downloadAsync(u, target);
+  const res = await FileSystemCompat.downloadAsync(u, target);
   const localUri = res?.uri;
   if (!localUri) throw new Error("РќРµ СѓРґР°Р»РѕСЃСЊ СЃРѕС…СЂР°РЅРёС‚СЊ С„Р°Р№Р»");
 
@@ -221,7 +224,7 @@ export async function openAttachment(
 
   const makeSignedUrl = async (bucket: string, path: string) => {
     const { data, error } = await supabase.storage.from(bucket).createSignedUrl(path, 60 * 10);
-    if (error) throw error;
+    if (error) throw toSupabaseError("createSignedUrl failed", error);
     const url = data?.signedUrl;
     if (!url) throw new Error("РќРµ СѓРґР°Р»РѕСЃСЊ РїРѕР»СѓС‡РёС‚СЊ СЃСЃС‹Р»РєСѓ");
     return url;
@@ -265,7 +268,7 @@ export async function getLatestProposalAttachmentPreview(
     .limit(1)
     .maybeSingle();
 
-  if (q.error) throw q.error;
+  if (q.error) throw toSupabaseError("proposal_attachments lookup failed", q.error);
   const row = q.data as AttRow | null;
   if (!row) throw new Error(notFoundMsg(String(groupKey)));
 
@@ -274,7 +277,7 @@ export async function getLatestProposalAttachmentPreview(
   if (!bucket || !path) throw new Error("bucket_id/storage_path пустые");
 
   const signed = await supabase.storage.from(bucket).createSignedUrl(path, 60 * 10);
-  if (signed.error) throw signed.error;
+  if (signed.error) throw toSupabaseError("createSignedUrl failed", signed.error);
   const url = String(signed.data?.signedUrl || "").trim();
   if (!url) throw new Error("Не удалось получить signed URL вложения");
   return {

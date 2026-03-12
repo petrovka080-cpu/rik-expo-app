@@ -32,7 +32,7 @@ export async function batchResolveRequestLabels(
       .from("requests" as any)
       .select("id, display_no")
       .in("id", uniq);
-    if (error) throw error;
+    if (error) throw new Error(`requests lookup failed: ${error.message}`);
     const m: Record<string, string> = {};
     for (const r of data ?? []) {
       const id = String((r as any).id ?? "");

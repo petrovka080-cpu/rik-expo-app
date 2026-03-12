@@ -10,6 +10,7 @@ import {
 import { router, useLocalSearchParams } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { WebView } from "react-native-webview";
+import * as FileSystem from "expo-file-system";
 
 import {
   failDocumentSession,
@@ -23,20 +24,8 @@ import {
   sharePdfDocument,
 } from "../src/lib/documents/pdfDocumentActions";
 
-let FileSystem: any = null;
-try {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  FileSystem = Platform.OS === "web" ? null : require("expo-file-system/legacy");
-} catch {
-  try {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    FileSystem = require("expo-file-system");
-  } catch {
-    FileSystem = null;
-  }
-}
-
 type ViewerState = "init" | "loading" | "ready" | "error" | "empty";
+const FileSystemCompat = FileSystem as any;
 
 const FALLBACK_ROUTE = "/";
 
@@ -54,6 +43,14 @@ function getUriScheme(uri?: string | null) {
   return match?.[1]?.toLowerCase() || "";
 }
 
+function getReadAccessParentUri(uri?: string | null) {
+  const value = String(uri || "").trim();
+  if (!value.startsWith("file://")) return undefined;
+  const slashIndex = value.lastIndexOf("/");
+  if (slashIndex <= "file://".length) return undefined;
+  return value.slice(0, slashIndex);
+}
+
 export default function PdfViewerScreen() {
   const params = useLocalSearchParams<{ sessionId?: string }>();
   const sessionId = React.useMemo(() => String(params.sessionId || "").trim(), [params.sessionId]);
@@ -63,8 +60,10 @@ export default function PdfViewerScreen() {
   const [state, setState] = React.useState<ViewerState>(resolveViewerState(snapshot.session, snapshot.asset));
   const [errorText, setErrorText] = React.useState(snapshot.session?.errorMessage || "");
   const [menuOpen, setMenuOpen] = React.useState(false);
+  const [isReadyToRender, setIsReadyToRender] = React.useState(false);
   const openedAtRef = React.useRef<number>(Date.now());
   const loadingTimeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+  const renderDelayRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
   const initialAssetUriRef = React.useRef("");
 
   React.useEffect(() => {
@@ -90,6 +89,13 @@ export default function PdfViewerScreen() {
     if (loadingTimeoutRef.current) {
       clearTimeout(loadingTimeoutRef.current);
       loadingTimeoutRef.current = null;
+    }
+  }, []);
+
+  const clearRenderDelay = React.useCallback(() => {
+    if (renderDelayRef.current) {
+      clearTimeout(renderDelayRef.current);
+      renderDelayRef.current = null;
     }
   }, []);
 
@@ -146,6 +152,8 @@ export default function PdfViewerScreen() {
   React.useEffect(() => {
     openedAtRef.current = Date.now();
     clearLoadingTimeout();
+    clearRenderDelay();
+    setIsReadyToRender(false);
     const next = syncSnapshot();
 
     if (!next.session) {
@@ -179,6 +187,11 @@ export default function PdfViewerScreen() {
         return;
       }
       enterLoading();
+      // Add a small delay to ensure navigation transition is finished before WebView starts
+      renderDelayRef.current = setTimeout(() => {
+        setIsReadyToRender(true);
+        renderDelayRef.current = null;
+      }, Platform.OS === "ios" ? 150 : 50);
     }
 
     return () => {
@@ -189,8 +202,9 @@ export default function PdfViewerScreen() {
         scheme: getUriScheme(next.asset?.uri),
       });
       clearLoadingTimeout();
+      clearRenderDelay();
     };
-  }, [clearLoadingTimeout, enterLoading, markError, sessionId, syncSnapshot]);
+  }, [clearLoadingTimeout, clearRenderDelay, enterLoading, markError, sessionId, syncSnapshot]);
 
   const onShare = React.useCallback(async () => {
     if (!asset) return;
@@ -265,9 +279,9 @@ export default function PdfViewerScreen() {
       let exists: boolean | undefined;
       let size: number | undefined;
 
-      if (Platform.OS !== "web" && scheme === "file" && FileSystem?.getInfoAsync) {
+      if (Platform.OS !== "web" && scheme === "file" && FileSystemCompat?.getInfoAsync) {
         try {
-          const info = await FileSystem.getInfoAsync(asset.uri);
+          const info = await FileSystemCompat.getInfoAsync(asset.uri);
           exists = Boolean(info?.exists);
           size = Number.isFinite(Number(info?.size)) ? Number(info.size) : undefined;
         } catch (error) {
@@ -353,6 +367,17 @@ export default function PdfViewerScreen() {
       return <EmptyState title="Document not found" subtitle="Missing document asset." />;
     }
 
+    if (!isReadyToRender) {
+      return (
+        <View style={{ flex: 1, backgroundColor: "#0A0F18", alignItems: "center", justifyContent: "center" }}>
+          <ActivityIndicator size="large" color="#38BDF8" />
+          <Text style={{ color: "#E2E8F0", marginTop: 12, fontWeight: "700" }}>
+            Preparing viewer...
+          </Text>
+        </View>
+      );
+    }
+
     return (
       <View style={{ flex: 1, backgroundColor: "#0A0F18" }}>
         {state === "loading" ? (
@@ -398,7 +423,9 @@ export default function PdfViewerScreen() {
             allowFileAccess
             allowFileAccessFromFileURLs
             allowUniversalAccessFromFileURLs
-            allowingReadAccessToURL={Platform.OS === "ios" ? asset.uri : undefined}
+            allowingReadAccessToURL={
+              Platform.OS === "ios" ? getReadAccessParentUri(asset.uri) : undefined
+            }
             setSupportMultipleWindows={false}
             onLoadStart={() => enterLoading()}
             onLoadEnd={() => markReady()}

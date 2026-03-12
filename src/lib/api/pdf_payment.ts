@@ -107,7 +107,7 @@ export async function buildPaymentOrderHtml(paymentId: number, draft?: PaymentPd
   if (!Number.isFinite(pid) || pid <= 0) throw new Error("payment_id invalid");
 
   const { data, error } = await supabase.rpc("get_payment_order_data", { p_payment_id: pid } as any);
-  if (error) throw error;
+  if (error) throw new Error(`get_payment_order_data failed: ${error.message}`);
   if (!data) throw new Error("Нет данных для платёжки");
 
   const payload = data as any;
