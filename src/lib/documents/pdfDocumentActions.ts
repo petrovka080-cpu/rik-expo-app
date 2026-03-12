@@ -46,6 +46,12 @@ export async function previewPdfDocument(
     router?: { push: (href: { pathname: string; params: Record<string, string> }) => void };
   },
 ): Promise<void> {
+  const scheme = String(doc.uri || "").match(/^([a-z0-9+.-]+):/i)?.[1]?.toLowerCase() || "";
+  console.info("[pdf-document-actions] preview", {
+    documentType: doc.documentType,
+    originModule: doc.originModule,
+    scheme,
+  });
   const { session } = createDocumentPreviewSession(doc);
   if (opts?.router) {
     opts.router.push({

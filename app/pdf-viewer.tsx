@@ -35,6 +35,12 @@ function resolveViewerState(session: DocumentSession | null, asset: DocumentAsse
   return "loading";
 }
 
+function getUriScheme(uri?: string | null) {
+  const value = String(uri || "").trim();
+  const match = value.match(/^([a-z0-9+.-]+):/i);
+  return match?.[1]?.toLowerCase() || "";
+}
+
 export default function PdfViewerScreen() {
   const params = useLocalSearchParams<{ sessionId?: string }>();
   const sessionId = React.useMemo(() => String(params.sessionId || "").trim(), [params.sessionId]);
@@ -46,6 +52,7 @@ export default function PdfViewerScreen() {
   const [menuOpen, setMenuOpen] = React.useState(false);
   const openedAtRef = React.useRef<number>(Date.now());
   const loadingTimeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+  const initialAssetUriRef = React.useRef("");
 
   const syncSnapshot = React.useCallback(() => {
     const next = getDocumentSessionSnapshot(sessionId);
@@ -127,20 +134,34 @@ export default function PdfViewerScreen() {
     setErrorText(next.session.errorMessage || "");
     setState(resolveViewerState(next.session, next.asset));
     if (next.asset) {
+      const scheme = getUriScheme(next.asset.uri);
+      initialAssetUriRef.current = String(next.asset.uri || "");
       console.info("[pdf-viewer] open", {
         sessionId: next.session.sessionId,
         documentType: next.asset.documentType,
         originModule: next.asset.originModule,
         uri: next.asset.uri,
+        scheme,
+        renderer: Platform.OS === "web" ? "web" : "mobile",
         openTime: new Date().toISOString(),
       });
+      if (Platform.OS !== "web" && scheme === "blob") {
+        markError("Mobile preview received unsupported blob URI.");
+        return;
+      }
       enterLoading();
     }
 
     return () => {
+      console.info("[pdf-viewer] unmount", {
+        sessionId,
+        documentType: next.asset?.documentType ?? null,
+        originModule: next.asset?.originModule ?? null,
+        scheme: getUriScheme(next.asset?.uri),
+      });
       clearLoadingTimeout();
     };
-  }, [clearLoadingTimeout, enterLoading, syncSnapshot]);
+  }, [clearLoadingTimeout, enterLoading, markError, sessionId, syncSnapshot]);
 
   const onShare = React.useCallback(async () => {
     if (!asset) return;
@@ -276,9 +297,38 @@ export default function PdfViewerScreen() {
             source={source}
             originWhitelist={["*"]}
             allowFileAccess
-            allowingReadAccessToURL={asset.uri}
+            allowFileAccessFromFileURLs
+            allowUniversalAccessFromFileURLs
+            allowingReadAccessToURL={Platform.OS === "ios" ? asset.uri : undefined}
+            setSupportMultipleWindows={false}
             onLoadStart={() => enterLoading()}
             onLoadEnd={() => markReady()}
+            onShouldStartLoadWithRequest={(request) => {
+              const requestUrl = String(request.url || "");
+              const requestScheme = getUriScheme(requestUrl);
+              const initialUrl = initialAssetUriRef.current;
+              const isInitial = requestUrl === initialUrl;
+              const isSameDocument = !!initialUrl && requestUrl.startsWith(initialUrl);
+              const allow =
+                isInitial ||
+                isSameDocument ||
+                requestUrl === "about:blank" ||
+                requestScheme === "file" ||
+                requestScheme === "http" ||
+                requestScheme === "https";
+
+              if (!allow) {
+                console.error("[pdf-viewer] blocked_mobile_navigation", {
+                  requestUrl,
+                  requestScheme,
+                  initialUrl,
+                  documentType: asset?.documentType ?? null,
+                  originModule: asset?.originModule ?? null,
+                });
+                markError(`Blocked unsupported mobile navigation: ${requestScheme || "unknown"}`);
+              }
+              return allow;
+            }}
             onError={(event) => {
               const message = event.nativeEvent.description || "WebView failed";
               markError(message);

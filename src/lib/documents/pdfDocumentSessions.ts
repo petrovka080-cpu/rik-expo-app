@@ -1,3 +1,4 @@
+import { Platform } from "react-native";
 import type { DocumentDescriptor } from "./pdfDocument";
 
 export type DocumentAsset = {
@@ -41,6 +42,12 @@ const assets = new Map<string, DocumentAsset>();
 let seq = 0;
 
 const nowIso = () => new Date().toISOString();
+
+const getUriScheme = (uri: string) => {
+  const value = String(uri || "").trim();
+  const match = value.match(/^([a-z0-9+.-]+):/i);
+  return match?.[1]?.toLowerCase() || "";
+};
 
 const makeId = (prefix: string) => {
   seq += 1;
@@ -100,10 +107,16 @@ export function clearDocumentSessions() {
 
 export function materializePdfAsset(doc: DocumentDescriptor): DocumentAsset {
   cleanupExpiredDocumentSessions();
+  const uri = String(doc.uri || "").trim();
+  const scheme = getUriScheme(uri);
+  if (!uri) throw new Error("Document asset URI is empty");
+  if (Platform.OS !== "web" && scheme === "blob") {
+    throw new Error("Mobile preview cannot use blob URI; expected file:// or https://");
+  }
   const assetId = makeId("asset");
   const asset: DocumentAsset = {
     assetId,
-    uri: doc.uri,
+    uri,
     fileName: doc.fileName,
     title: doc.title,
     mimeType: doc.mimeType,
