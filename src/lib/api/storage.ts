@@ -4,6 +4,16 @@ import { supabase } from "../supabaseClient";
 import type { QueuedProposalAttachment } from "./queuedProposalAttachments";
 const FileSystemCompat = FileSystem as any;
 
+function getFileSystemPaths() {
+  const fs = FileSystemCompat || {};
+  const cache = fs.cacheDirectory || fs.CacheDirectory;
+  const docs = fs.documentDirectory || fs.DocumentDirectory;
+  return {
+    cacheDirectory: cache || null,
+    documentDirectory: docs || null,
+  };
+}
+
 const FILES_BUCKET = "proposal_files";
 const TECHNICAL_ATTACHMENT_GROUPS = new Set(["proposal_html"]);
 type NativeFileLike = {
@@ -135,7 +145,14 @@ async function ensureReadableFileUri(rawUri: string, safeName: string): Promise<
 
   if (uri.startsWith("file://")) return uri;
 
-  const target = `${FileSystemCompat.cacheDirectory}${Date.now()}_${safeName}`;
+  const paths = getFileSystemPaths();
+  const baseDir = paths.cacheDirectory || paths.documentDirectory;
+  if (!baseDir) {
+    throw new Error(
+      `FileSystem directory unavailable (Native module not initialized?). Available keys: ${Object.keys(FileSystemCompat || {}).join(", ")}`,
+    );
+  }
+  const target = `${baseDir}${Date.now()}_${safeName}`;
 
   if (uri.startsWith("ph://")) {
     await FileSystemCompat.copyAsync({ from: uri, to: target });

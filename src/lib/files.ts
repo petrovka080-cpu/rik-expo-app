@@ -4,6 +4,16 @@ import * as FileSystem from "expo-file-system";
 import { supabase } from "./supabaseClient";
 const FileSystemCompat = FileSystem as any;
 
+function getFileSystemPaths() {
+  const fs = FileSystemCompat || {};
+  const cache = fs.cacheDirectory || fs.CacheDirectory;
+  const docs = fs.documentDirectory || fs.DocumentDirectory;
+  return {
+    cacheDirectory: cache || null,
+    documentDirectory: docs || null,
+  };
+}
+
 
 /** РџРµСЂРµРёСЃРїРѕР»СЊР·СѓРµРј Р°РїР»РѕР°РґРµСЂ РёР· rik_api.ts */
 export { uploadProposalAttachment } from "./catalog_api";
@@ -169,7 +179,14 @@ export async function openSignedUrlUniversal(url: string, fileName?: string) {
 
   // NATIVE: СЃРєР°С‡РёРІР°РµРј РІ cache Рё РѕС‚РєСЂС‹РІР°РµРј Р»РѕРєР°Р»СЊРЅРѕ
   const clean = safeFileName(fileName || "document.bin");
-  const target = `${FileSystemCompat.cacheDirectory}${Date.now()}_${clean}`;
+  const paths = getFileSystemPaths();
+  const baseDir = paths.cacheDirectory || paths.documentDirectory;
+  if (!baseDir) {
+    throw new Error(
+      `FileSystem directory unavailable (Native module not initialized?). Available keys: ${Object.keys(FileSystemCompat || {}).join(", ")}`,
+    );
+  }
+  const target = `${baseDir}${Date.now()}_${clean}`;
 
   const res = await FileSystemCompat.downloadAsync(u, target);
   const localUri = res?.uri;

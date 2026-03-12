@@ -6,12 +6,13 @@ export const nz = (v: unknown, d = 0) => (Number.isFinite(Number(v)) ? Number(v)
 
 export const pickErr = (e: unknown) => {
   const err = e as { message?: string; error_description?: string; hint?: string } | null;
-  return String(err?.message || err?.error_description || err?.hint || JSON.stringify(e) || "Ошибка");
+  const msg = err?.message || err?.error_description || err?.hint || (typeof e === 'string' ? e : JSON.stringify(e));
+  return String(msg || "Error");
 };
 
 export const showErr = (e: unknown) => {
   console.error("[warehouse error]", pickErr(e));
-  Alert.alert("Ошибка", pickErr(e));
+  Alert.alert("Error", pickErr(e));
 };
 
 
