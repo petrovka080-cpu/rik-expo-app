@@ -1,10 +1,10 @@
 import { Platform } from "react-native";
-import * as FileSystem from "expo-file-system";
+import * as FileSystemModule from "expo-file-system";
 import type { DocumentDescriptor } from "./pdfDocument";
 import { normalizePdfFileName } from "./pdfDocument";
 import { getFileSystemPaths } from "../fileSystemPaths";
 import { getUriScheme, hashString32, isHttpUri, normalizeLocalFileUri } from "../pdfFileContract";
-const FileSystemCompat = FileSystem as any;
+const FileSystemCompat = FileSystemModule as any;
 
 export type DocumentAsset = {
   assetId: string;
@@ -165,7 +165,7 @@ async function ensureLocalPdfUri(uri: string, fileName: string): Promise<{ uri: 
     fileName,
   });
   if (!sourceExists) {
-    throw new Error("Local PDF file does not exist");
+    throw new Error(`Local PDF file does not exist: ${normalizedSourceUri.slice(-100)}`);
   }
 
   const sourceUri = normalizedSourceUri;

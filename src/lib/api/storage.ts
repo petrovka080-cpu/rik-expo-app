@@ -1,9 +1,9 @@
 import { Platform } from "react-native";
-import * as FileSystem from "expo-file-system";
+import * as FileSystemModule from "expo-file-system";
 import { getFileSystemPaths } from "../fileSystemPaths";
 import { supabase } from "../supabaseClient";
 import type { QueuedProposalAttachment } from "./queuedProposalAttachments";
-const FileSystemCompat = FileSystem as any;
+const FileSystemCompat = FileSystemModule as any;
 
 const FILES_BUCKET = "proposal_files";
 const TECHNICAL_ATTACHMENT_GROUPS = new Set(["proposal_html"]);

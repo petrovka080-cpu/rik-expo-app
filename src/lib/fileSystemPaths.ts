@@ -1,4 +1,4 @@
-import * as FileSystem from "expo-file-system";
+import * as FileSystemModule from "expo-file-system";
 
 type FileSystemPaths = {
   cacheDir: string;
@@ -27,13 +27,21 @@ function getDirectoryUri(input: unknown): string {
 }
 
 export function getFileSystemPaths(): FileSystemPaths {
-  const paths = (FileSystem as { Paths?: { cache?: unknown; document?: unknown } }).Paths;
+  const paths = (FileSystemModule as any)?.Paths;
   if (!paths) {
-    const availableKeys = Object.keys(FileSystem || {}).join(", ");
-    console.error("[fs-paths] pdf_flow_aborted_missing_directory", {
-      reason: "Paths missing",
+    const availableKeys = Object.keys(FileSystemModule || {}).join(", ");
+    console.warn("[fs-paths] Paths missing from FileSystemModule", {
       availableKeys,
     });
+    // Fallback if Paths is missing (common in some Expo versions or on Web)
+    const cache = (FileSystemModule as any)?.cacheDirectory || "";
+    const doc = (FileSystemModule as any)?.documentDirectory || "";
+    if (cache || doc) {
+      return { 
+        cacheDir: cache ? ensureTrailingSlash(cache) : "", 
+        documentDir: doc ? ensureTrailingSlash(doc) : "" 
+      };
+    }
     throw new Error(`FileSystem Paths unavailable. Available keys: ${availableKeys}`);
   }
 

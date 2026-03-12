@@ -3,13 +3,13 @@
 import { Alert, Linking, Platform } from "react-native";
 import * as IntentLauncher from "expo-intent-launcher";
 import * as Sharing from "expo-sharing";
-import * as FileSystem from "expo-file-system";
+import * as FileSystemModule from "expo-file-system";
 
 import { normalizePdfFileName } from "./documents/pdfDocument";
 import { getFileSystemPaths } from "./fileSystemPaths";
 import { getUriScheme, hashString32, isHttpUri, normalizeLocalFileUri } from "./pdfFileContract";
 import { SUPABASE_ANON_KEY } from "./supabaseClient";
-const FileSystemCompat = FileSystem as any;
+const FileSystemCompat = FileSystemModule as any;
 
 export type BusyLike = {
   run?: <T>(

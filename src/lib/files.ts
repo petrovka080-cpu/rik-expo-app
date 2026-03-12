@@ -1,10 +1,10 @@
 // src/lib/files.ts
 import { Platform, Linking, Alert } from "react-native";
-import * as FileSystem from "expo-file-system";
+import * as FileSystemModule from "expo-file-system";
 import { getFileSystemPaths } from "./fileSystemPaths";
 import { hashString32 } from "./pdfFileContract";
 import { supabase } from "./supabaseClient";
-const FileSystemCompat = FileSystem as any;
+const FileSystemCompat = FileSystemModule as any;
 
 
 /** РџРµСЂРµРёСЃРїРѕР»СЊР·СѓРµРј Р°РїР»РѕР°РґРµСЂ РёР· rik_api.ts */

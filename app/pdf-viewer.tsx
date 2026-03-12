@@ -10,7 +10,7 @@ import {
 import { router, useLocalSearchParams } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { WebView } from "react-native-webview";
-import * as FileSystem from "expo-file-system";
+import * as FileSystemModule from "expo-file-system";
 
 import {
   failDocumentSession,
@@ -25,7 +25,7 @@ import {
 } from "../src/lib/documents/pdfDocumentActions";
 
 type ViewerState = "init" | "loading" | "ready" | "error" | "empty";
-const FileSystemCompat = FileSystem as any;
+const FileSystemCompat = FileSystemModule as any;
 
 const FALLBACK_ROUTE = "/";
 
