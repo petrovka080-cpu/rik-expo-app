@@ -4,7 +4,7 @@ import { Alert, Platform } from "react-native";
 import { useRouter } from "expo-router";
 import * as XLSX from "xlsx";
 import { generateRequestPdfDocument } from "../../lib/catalog_api";
-import { preparePdfDocument, previewPdfDocument } from "../../lib/documents/pdfDocumentActions";
+import { getPdfFlowErrorMessage, preparePdfDocument, previewPdfDocument } from "../../lib/documents/pdfDocumentActions";
 import { buildPdfFileName } from "../../lib/documents/pdfDocument";
 import { toFilterId } from "./director.helpers";
 import type { Group, PendingRow } from "./director.types";
@@ -128,25 +128,29 @@ export function useDirectorRequestActions({
   const openRequestPdf = useCallback(async (g: Group) => {
     const rid = String(g?.request_id ?? "").trim();
     if (!rid) return;
-    const title = labelForRequest(g.request_id) || `Request ${rid}`;
-    const template = await generateRequestPdfDocument(rid);
-    const doc = await preparePdfDocument({
-      busy,
-      supabase,
-      key: `pdf:req:${rid}`,
-      label: "Открываю PDF…",
-      descriptor: {
-        ...template,
-        title,
-        fileName: buildPdfFileName({
-          documentType: "request",
+    try {
+      const title = labelForRequest(g.request_id) || `Request ${rid}`;
+      const template = await generateRequestPdfDocument(rid);
+      const doc = await preparePdfDocument({
+        busy,
+        supabase,
+        key: `pdf:req:${rid}`,
+        label: "Открываю PDF…",
+        descriptor: {
+          ...template,
           title,
-          entityId: rid,
-        }),
-      },
-      getRemoteUrl: () => template.uri,
-    });
-    await previewPdfDocument(doc, { router });
+          fileName: buildPdfFileName({
+            documentType: "request",
+            title,
+            entityId: rid,
+          }),
+        },
+        getRemoteUrl: () => template.uri,
+      });
+      await previewPdfDocument(doc, { router });
+    } catch (error) {
+      Alert.alert("Ошибка", getPdfFlowErrorMessage(error, "Не удалось открыть PDF"));
+    }
   }, [busy, supabase, labelForRequest, router]);
 
   const isRequestPdfBusy = useCallback((g: Group) => {

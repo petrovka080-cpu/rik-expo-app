@@ -1,10 +1,15 @@
 import { useCallback } from "react";
+import { Alert } from "react-native";
 import { useRouter } from "expo-router";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { generateProposalPdfDocument } from "../../lib/catalog_api";
 import { buildPdfFileName } from "../../lib/documents/pdfDocument";
-import { preparePdfDocument, previewPdfDocument } from "../../lib/documents/pdfDocumentActions";
+import {
+  getPdfFlowErrorMessage,
+  preparePdfDocument,
+  previewPdfDocument,
+} from "../../lib/documents/pdfDocumentActions";
 
 export function useBuyerDocuments(params: {
   busy: unknown;
@@ -18,25 +23,29 @@ export function useBuyerDocuments(params: {
       const id = String(pid || "").trim();
       if (!id) return;
 
-      const template = await generateProposalPdfDocument(id, "buyer");
-      const doc = await preparePdfDocument({
-        busy,
-        supabase,
-        key: `pdf:proposal:${id}`,
-        label: "Открываю PDF…",
-        descriptor: {
-          ...template,
-          title: `Предложение ${id.slice(0, 8)}`,
-          fileName: buildPdfFileName({
-            documentType: "proposal",
-            title: "predlozhenie",
-            entityId: id,
-          }),
-        },
-        getRemoteUrl: () => template.uri,
-      });
+      try {
+        const template = await generateProposalPdfDocument(id, "buyer");
+        const doc = await preparePdfDocument({
+          busy,
+          supabase,
+          key: `pdf:proposal:${id}`,
+          label: "Открываю PDF…",
+          descriptor: {
+            ...template,
+            title: `Предложение ${id.slice(0, 8)}`,
+            fileName: buildPdfFileName({
+              documentType: "proposal",
+              title: "predlozhenie",
+              entityId: id,
+            }),
+          },
+          getRemoteUrl: () => template.uri,
+        });
 
-      await previewPdfDocument(doc, { router });
+        await previewPdfDocument(doc, { router });
+      } catch (error) {
+        Alert.alert("PDF", getPdfFlowErrorMessage(error, "Не удалось открыть PDF"));
+      }
     },
     [busy, supabase, router],
   );

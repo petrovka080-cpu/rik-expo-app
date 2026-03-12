@@ -11,7 +11,7 @@ import {
 } from "../../lib/api/pdf_warehouse";
 import { apiFetchIncomingLines } from "./warehouse.api";
 import { buildPdfFileName } from "../../lib/documents/pdfDocument";
-import { preparePdfDocument, previewPdfDocument } from "../../lib/documents/pdfDocumentActions";
+import { getPdfFlowErrorMessage, preparePdfDocument, previewPdfDocument } from "../../lib/documents/pdfDocumentActions";
 import { generateWarehousePdfDocument } from "../../lib/documents/pdfDocumentGenerators";
 
 type BusyLike = {
@@ -99,24 +99,28 @@ export function useWarehousePdf(args: UseWarehousePdfArgs) {
       entityId?: string;
       getRemoteUrl: () => Promise<string>;
     }) => {
-      const template = await generateWarehousePdfDocument({
-        title: params.title,
-        fileName: params.fileName,
-        documentType: params.documentType,
-        entityId: params.entityId,
-        getUri: params.getRemoteUrl,
-      });
-      const doc = await preparePdfDocument({
-        busy,
-        supabase,
-        key: params.key,
-        label: params.label,
-        descriptor: template,
-        getRemoteUrl: () => template.uri,
-      });
-      await previewPdfDocument(doc, { router });
+      try {
+        const template = await generateWarehousePdfDocument({
+          title: params.title,
+          fileName: params.fileName,
+          documentType: params.documentType,
+          entityId: params.entityId,
+          getUri: params.getRemoteUrl,
+        });
+        const doc = await preparePdfDocument({
+          busy,
+          supabase,
+          key: params.key,
+          label: params.label,
+          descriptor: template,
+          getRemoteUrl: () => template.uri,
+        });
+        await previewPdfDocument(doc, { router });
+      } catch (error) {
+        notifyError("PDF", getPdfFlowErrorMessage(error, "Не удалось открыть PDF"));
+      }
     },
-    [busy, supabase, router],
+    [busy, notifyError, supabase, router],
   );
 
   const onPdfDocument = useCallback(
@@ -203,7 +207,9 @@ export function useWarehousePdf(args: UseWarehousePdfArgs) {
               const err = e as { message?: string; reason?: string };
               const msg = String(err?.message ?? "").toLowerCase();
               const reason = String(err?.reason ?? "").trim() || (msg.includes("timeout") ? "timeout" : "build_error");
-              console.error(`INCOMING_PDF_FAIL pr_id=${pid} reason=${reason}`, e);
+              console.error(`INCOMING_PDF_FAIL pr_id=${pid} reason=${reason}`, {
+                errorMessage: getPdfFlowErrorMessage(e, "Incoming PDF build failed"),
+              });
               throw e;
             }
           },

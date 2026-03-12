@@ -6,7 +6,7 @@ import { openHtmlAsPdfUniversal } from "../../lib/api/pdf";
 import { normalizeRuText, normalizeRuTextForHtml } from "../../lib/text/encoding";
 import { supabase } from "../../lib/supabaseClient";
 import { buildPdfFileName } from "../../lib/documents/pdfDocument";
-import { preparePdfDocument, previewPdfDocument } from "../../lib/documents/pdfDocumentActions";
+import { getPdfFlowErrorMessage, preparePdfDocument, previewPdfDocument } from "../../lib/documents/pdfDocumentActions";
 import { createGeneratedPdfDocument } from "../../lib/documents/pdfDocumentGenerators";
 
 export type ContractorPdfWork = {
@@ -345,8 +345,8 @@ async function generateWorkPdf(
     });
     await previewPdfDocument(doc, { router });
   } catch (e: unknown) {
-    console.warn("[generateWorkPdf] general error", e);
-    const message = e instanceof Error ? e.message : String(e);
+    const message = getPdfFlowErrorMessage(e, "Не удалось открыть PDF");
+    console.warn("[generateWorkPdf] general error", { errorMessage: message });
     Alert.alert("Ошибка PDF", message);
   }
 }
