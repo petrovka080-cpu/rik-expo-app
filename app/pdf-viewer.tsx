@@ -295,10 +295,29 @@ export default function PdfViewerScreen() {
 
       if (!cancelled) {
         if (Platform.OS !== "web" && scheme === "file" && exists === false) {
+          console.info("[pdf-viewer] viewer_local_file_exists_no", {
+            sessionId,
+            uri: asset.uri,
+            exists: false,
+            sizeBytes: size ?? asset.sizeBytes,
+            sourceKind: "local",
+            documentType: asset.documentType,
+            originModule: asset.originModule,
+          });
           console.error("[pdf-viewer] viewer_file_not_found", {
             sessionId,
             uri: asset.uri,
             fileName: asset.fileName,
+          });
+        } else if (Platform.OS !== "web" && scheme === "file" && exists === true) {
+          console.info("[pdf-viewer] viewer_local_file_exists_yes", {
+            sessionId,
+            uri: asset.uri,
+            exists: true,
+            sizeBytes: size ?? asset.sizeBytes,
+            sourceKind: "local",
+            documentType: asset.documentType,
+            originModule: asset.originModule,
           });
         }
         console.info("[pdf-viewer] viewer_before_render", {

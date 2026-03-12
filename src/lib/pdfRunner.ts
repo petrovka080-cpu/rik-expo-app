@@ -7,6 +7,7 @@ import * as FileSystem from "expo-file-system";
 
 import { normalizePdfFileName } from "./documents/pdfDocument";
 import { getFileSystemPaths } from "./fileSystemPaths";
+import { getUriScheme, isHttpUri, normalizeLocalFileUri } from "./pdfFileContract";
 import { SUPABASE_ANON_KEY } from "./supabaseClient";
 const FileSystemCompat = FileSystem as any;
 
@@ -41,6 +42,27 @@ const withTimeout = async <T,>(p: Promise<T>, ms: number, msg: string): Promise<
 
 function normalizeRemoteUrl(raw: unknown) {
   return String(raw || "").trim().replace(/^"+|"+$/g, "").trim();
+}
+
+function logPdfRunnerStage(
+  stage: string,
+  payload: {
+    uri?: string | null;
+    exists?: boolean;
+    size?: number;
+    sourceKind: "remote" | "local";
+    fileName?: string;
+  },
+) {
+  console.info(`[pdf-runner] ${stage}`, {
+    stage,
+    uri: payload.uri ?? null,
+    scheme: getUriScheme(payload.uri),
+    exists: payload.exists,
+    sizeBytes: payload.size,
+    sourceKind: payload.sourceKind,
+    fileName: payload.fileName ?? null,
+  });
 }
 
 function safeName(name?: string) {
@@ -86,12 +108,46 @@ export async function preparePdfLocalUri(args: {
   const remote = await Promise.resolve(args.getRemoteUrl());
   const url = normalizeRemoteUrl(remote);
   if (!url) throw new Error("PDF URL is empty");
+  logPdfRunnerStage("pdf_source_received", {
+    uri: url,
+    sourceKind: isHttpUri(url) ? "remote" : "local",
+    fileName: args.fileName,
+  });
 
   if (Platform.OS === "web") return url;
-  if (!/^https?:\/\//i.test(url)) return url;
+  if (!isHttpUri(url)) {
+    logPdfRunnerStage("pdf_source_classified_local", {
+      uri: url,
+      sourceKind: "local",
+      fileName: args.fileName,
+    });
+    const normalizedLocalUri = normalizeLocalFileUri(url);
+    logPdfRunnerStage("pdf_local_uri_normalized", {
+      uri: normalizedLocalUri,
+      sourceKind: "local",
+      fileName: args.fileName,
+    });
+    return normalizedLocalUri;
+  }
+  logPdfRunnerStage("pdf_source_classified_remote", {
+    uri: url,
+    sourceKind: "remote",
+    fileName: args.fileName,
+  });
 
   const cached = urlToLocal.get(url);
-  if (cached && (await fileExists(cached))) return cached;
+  if (cached && (await fileExists(cached))) {
+    const normalizedCachedUri = normalizeLocalFileUri(cached);
+    const info = await FileSystemCompat.getInfoAsync(normalizedCachedUri);
+    logPdfRunnerStage("pdf_download_exists_yes", {
+      uri: normalizedCachedUri,
+      exists: Boolean(info?.exists),
+      size: Number.isFinite(Number(info?.size)) ? Number(info.size) : undefined,
+      sourceKind: "local",
+      fileName: args.fileName,
+    });
+    return normalizedCachedUri;
+  }
 
   const baseName = safeName(args.fileName);
   const localName = baseName.replace(/\.pdf$/i, `_${hash32(url)}.pdf`);
@@ -100,13 +156,42 @@ export async function preparePdfLocalUri(args: {
   const localOutput = `${cacheDir}${localName}`;
 
   if (await fileExists(localOutput)) {
-    urlToLocal.set(url, localOutput);
-    return localOutput;
+    const normalizedLocalOutput = normalizeLocalFileUri(localOutput);
+    urlToLocal.set(url, normalizedLocalOutput);
+    const info = await FileSystemCompat.getInfoAsync(normalizedLocalOutput);
+    logPdfRunnerStage("pdf_download_exists_yes", {
+      uri: normalizedLocalOutput,
+      exists: Boolean(info?.exists),
+      size: Number.isFinite(Number(info?.size)) ? Number(info.size) : undefined,
+      sourceKind: "local",
+      fileName: args.fileName,
+    });
+    return normalizedLocalOutput;
   }
 
   const headers = await getAuthHeader(args.supabase);
+  logPdfRunnerStage("pdf_download_started", {
+    uri: localOutput,
+    sourceKind: "remote",
+    fileName: args.fileName,
+  });
   const dl = await FileSystemCompat.downloadAsync(url, localOutput, { headers });
-  const uri = dl?.uri || localOutput;
+  const uri = normalizeLocalFileUri(dl?.uri || localOutput);
+  logPdfRunnerStage("pdf_download_done", {
+    uri,
+    sourceKind: "local",
+    fileName: args.fileName,
+  });
+  const info = await FileSystemCompat.getInfoAsync(uri);
+  const exists = Boolean(info?.exists);
+  logPdfRunnerStage(exists ? "pdf_download_exists_yes" : "pdf_download_exists_no", {
+    uri,
+    exists,
+    size: Number.isFinite(Number(info?.size)) ? Number(info.size) : undefined,
+    sourceKind: "local",
+    fileName: args.fileName,
+  });
+  if (!exists) throw new Error("Downloaded PDF file does not exist after download");
   urlToLocal.set(url, uri);
   return uri;
 }

@@ -3,6 +3,7 @@ import * as FileSystem from "expo-file-system";
 import type { DocumentDescriptor } from "./pdfDocument";
 import { normalizePdfFileName } from "./pdfDocument";
 import { getFileSystemPaths } from "../fileSystemPaths";
+import { getUriScheme, isHttpUri, normalizeLocalFileUri } from "../pdfFileContract";
 const FileSystemCompat = FileSystem as any;
 
 export type DocumentAsset = {
@@ -47,12 +48,6 @@ let seq = 0;
 
 const nowIso = () => new Date().toISOString();
 
-const getUriScheme = (uri: string) => {
-  const value = String(uri || "").trim();
-  const match = value.match(/^([a-z0-9+.-]+):/i);
-  return match?.[1]?.toLowerCase() || "";
-};
-
 const sanitizeStem = (value: string, fallback: string) =>
   (String(value || "").trim() || fallback)
     .normalize("NFKD")
@@ -61,8 +56,32 @@ const sanitizeStem = (value: string, fallback: string) =>
     .replace(/_+/g, "_")
     .replace(/^_+|_+$/g, "") || fallback;
 
-const isHttpUri = (uri: string) => /^https?:\/\//i.test(String(uri || "").trim());
 const isFileUri = (uri: string) => /^file:\/\//i.test(String(uri || "").trim());
+
+function logMaterializeStage(
+  stage: string,
+  payload: {
+    uri?: string | null;
+    exists?: boolean;
+    size?: number;
+    sourceKind: "remote" | "local";
+    fileName?: string;
+    documentType?: string;
+    originModule?: string;
+  },
+) {
+  console.info(`[pdf-document-sessions] ${stage}`, {
+    stage,
+    uri: payload.uri ?? null,
+    scheme: getUriScheme(payload.uri),
+    exists: payload.exists,
+    sizeBytes: payload.size,
+    sourceKind: payload.sourceKind,
+    fileName: payload.fileName ?? null,
+    documentType: payload.documentType ?? null,
+    originModule: payload.originModule ?? null,
+  });
+}
 
 async function getFileInfo(uri: string) {
   if (!FileSystemCompat?.getInfoAsync) return null;
@@ -83,24 +102,72 @@ async function ensureLocalPdfUri(uri: string, fileName: string): Promise<{ uri: 
   const cacheDir = paths.cacheDir;
   const targetName = `${Date.now()}_${sanitizeStem(normalizedName, "document.pdf")}`;
   const targetUri = `${cacheDir}${targetName}`;
+  logMaterializeStage("pdf_source_received", {
+    uri,
+    sourceKind: isHttpUri(uri) ? "remote" : "local",
+    fileName,
+  });
 
   if (isHttpUri(uri)) {
+    logMaterializeStage("pdf_source_classified_remote", {
+      uri,
+      sourceKind: "remote",
+      fileName,
+    });
+    logMaterializeStage("pdf_download_started", {
+      uri: targetUri,
+      sourceKind: "remote",
+      fileName,
+    });
     const downloaded = await FileSystemCompat.downloadAsync(uri, targetUri);
-    const downloadedUri = String(downloaded?.uri || targetUri);
+    const downloadedUri = normalizeLocalFileUri(String(downloaded?.uri || targetUri));
+    logMaterializeStage("pdf_download_done", {
+      uri: downloadedUri,
+      sourceKind: "local",
+      fileName,
+    });
     const info = await getFileInfo(downloadedUri);
-    if (!info?.exists) throw new Error("Downloaded PDF file is missing after materialization");
+    const exists = Boolean(info?.exists);
+    logMaterializeStage(exists ? "pdf_download_exists_yes" : "pdf_download_exists_no", {
+      uri: downloadedUri,
+      exists,
+      size: Number.isFinite(Number(info?.size)) ? Number(info.size) : undefined,
+      sourceKind: "local",
+      fileName,
+    });
+    if (!exists) throw new Error("Downloaded PDF file is missing after materialization");
     return {
       uri: downloadedUri,
       sizeBytes: Number.isFinite(Number(info.size)) ? Number(info.size) : undefined,
     };
   }
 
-  const info = await getFileInfo(uri);
-  if (!info?.exists) {
+  logMaterializeStage("pdf_source_classified_local", {
+    uri,
+    sourceKind: "local",
+    fileName,
+  });
+  const normalizedSourceUri = normalizeLocalFileUri(uri);
+  logMaterializeStage("pdf_local_uri_normalized", {
+    uri: normalizedSourceUri,
+    sourceKind: "local",
+    fileName,
+  });
+
+  const info = await getFileInfo(normalizedSourceUri);
+  const sourceExists = Boolean(info?.exists);
+  logMaterializeStage(sourceExists ? "pdf_materialize_exists_yes" : "pdf_materialize_exists_no", {
+    uri: normalizedSourceUri,
+    exists: sourceExists,
+    size: Number.isFinite(Number(info?.size)) ? Number(info.size) : undefined,
+    sourceKind: "local",
+    fileName,
+  });
+  if (!sourceExists) {
     throw new Error("Local PDF file does not exist");
   }
 
-  const sourceUri = String(uri || "").trim();
+  const sourceUri = normalizedSourceUri;
   const keepAsIs =
     isFileUri(sourceUri) &&
     normalizedName.toLowerCase().endsWith(".pdf") &&
@@ -113,9 +180,27 @@ async function ensureLocalPdfUri(uri: string, fileName: string): Promise<{ uri: 
     };
   }
 
+  logMaterializeStage("pdf_materialize_started", {
+    uri: sourceUri,
+    sourceKind: "local",
+    fileName,
+  });
   await FileSystemCompat.copyAsync({ from: sourceUri, to: targetUri });
   const copiedInfo = await getFileInfo(targetUri);
-  if (!copiedInfo?.exists) throw new Error("Materialized local PDF file is missing");
+  const copiedExists = Boolean(copiedInfo?.exists);
+  logMaterializeStage("pdf_materialize_done", {
+    uri: targetUri,
+    sourceKind: "local",
+    fileName,
+  });
+  logMaterializeStage(copiedExists ? "pdf_materialize_exists_yes" : "pdf_materialize_exists_no", {
+    uri: targetUri,
+    exists: copiedExists,
+    size: Number.isFinite(Number(copiedInfo?.size)) ? Number(copiedInfo?.size) : undefined,
+    sourceKind: "local",
+    fileName,
+  });
+  if (!copiedExists) throw new Error("Materialized local PDF file is missing");
   return {
     uri: targetUri,
     sizeBytes: Number.isFinite(Number(copiedInfo.size)) ? Number(copiedInfo.size) : undefined,
@@ -202,8 +287,26 @@ export async function materializePdfAsset(doc: DocumentDescriptor): Promise<Docu
 
     const finalInfo = await getFileInfo(finalUri);
     if (!finalInfo?.exists) {
+      logMaterializeStage("pdf_session_asset_exists_no", {
+        uri: finalUri,
+        exists: false,
+        size: Number.isFinite(Number(finalInfo?.size)) ? Number(finalInfo?.size) : undefined,
+        sourceKind: "local",
+        fileName: doc.fileName,
+        documentType: doc.documentType,
+        originModule: doc.originModule,
+      });
       throw new Error("Mobile preview local PDF asset is missing");
     }
+    logMaterializeStage("pdf_session_asset_exists_yes", {
+      uri: finalUri,
+      exists: true,
+      size: Number.isFinite(Number(finalInfo?.size)) ? Number(finalInfo?.size) : undefined,
+      sourceKind: "local",
+      fileName: doc.fileName,
+      documentType: doc.documentType,
+      originModule: doc.originModule,
+    });
   }
 
   const assetId = makeId("asset");
@@ -221,6 +324,15 @@ export async function materializePdfAsset(doc: DocumentDescriptor): Promise<Docu
     sizeBytes,
   };
   assets.set(assetId, asset);
+  logMaterializeStage("pdf_session_asset_written", {
+    uri: asset.uri,
+    exists: typeof asset.sizeBytes === "number" ? true : undefined,
+    size: asset.sizeBytes,
+    sourceKind: "local",
+    fileName: asset.fileName,
+    documentType: asset.documentType,
+    originModule: asset.originModule,
+  });
   console.info("[pdf-document-sessions] materialized_asset", {
     platform: Platform.OS,
     documentType: asset.documentType,
