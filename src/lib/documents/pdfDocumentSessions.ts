@@ -103,6 +103,7 @@ async function ensureLocalPdfUri(uri: string, fileName: string): Promise<{ uri: 
   const hash = hashString32(uri);
   const targetName = `pdf_${hash}_${sanitizeStem(normalizedName, "document.pdf")}`;
   const targetUri = `${cacheDir}${targetName}`;
+  
   logMaterializeStage("pdf_source_received", {
     uri,
     sourceKind: isHttpUri(uri) ? "remote" : "local",
@@ -110,11 +111,6 @@ async function ensureLocalPdfUri(uri: string, fileName: string): Promise<{ uri: 
   });
 
   if (isHttpUri(uri)) {
-    logMaterializeStage("pdf_source_classified_remote", {
-      uri,
-      sourceKind: "remote",
-      fileName,
-    });
     logMaterializeStage("pdf_download_started", {
       uri: targetUri,
       sourceKind: "remote",
@@ -122,89 +118,56 @@ async function ensureLocalPdfUri(uri: string, fileName: string): Promise<{ uri: 
     });
     const downloaded = await FileSystemCompat.downloadAsync(uri, targetUri);
     const downloadedUri = normalizeLocalFileUri(String(downloaded?.uri || targetUri));
-    logMaterializeStage("pdf_download_done", {
-      uri: downloadedUri,
-      sourceKind: "local",
-      fileName,
-    });
+    
     const info = await getFileInfo(downloadedUri);
     const exists = Boolean(info?.exists);
-    logMaterializeStage(exists ? "pdf_download_exists_yes" : "pdf_download_exists_no", {
+    if (!exists) throw new Error("Downloaded PDF file is missing after materialization");
+    
+    return {
       uri: downloadedUri,
-      exists,
-      size: Number.isFinite(Number(info?.size)) ? Number(info.size) : undefined,
+      sizeBytes: Number.isFinite(Number(info.size)) ? Number(info.size) : undefined,
+    };
+  }
+
+  // Local file materialization (e.g. from Library/Caches/Print/)
+  const sourceUri = normalizeLocalFileUri(uri);
+  const info = await getFileInfo(sourceUri);
+  const sourceExists = Boolean(info?.exists);
+
+  if (!sourceExists) {
+    // Highly aggressive fallback for iOS paths that might be absolute but missing file:// or vice-versa
+    const altUri = sourceUri.startsWith("file://") ? sourceUri.replace("file://", "") : `file://${sourceUri}`;
+    const altInfo = await getFileInfo(altUri);
+    if (!altInfo?.exists) {
+      throw new Error(`PDF source not found: ${sourceUri.slice(-60)}`);
+    }
+    // If alt exists, use it
+    return ensureLocalPdfUri(altUri, fileName);
+  }
+
+  // Even if keepAsIs could be true, on iOS 18 it's safer to always copy to our own controlled cache
+  // if the file is in a volatile location like /Print/
+  const isVolatile = sourceUri.includes("/Caches/Print/") || sourceUri.includes("/T/");
+  
+  if (isVolatile || sourceUri !== targetUri) {
+    logMaterializeStage("pdf_materialize_copy_started", {
+      uri: sourceUri,
       sourceKind: "local",
       fileName,
     });
-    if (!exists) throw new Error("Downloaded PDF file is missing after materialization");
+    await FileSystemCompat.copyAsync({ from: sourceUri, to: targetUri });
+    const copiedInfo = await getFileInfo(targetUri);
+    if (!copiedInfo?.exists) throw new Error("Materialized local PDF file is missing after copy");
+    
     return {
-      uri: downloadedUri,
-      sizeBytes: Number.isFinite(Number(info.size)) ? Number(info.size) : undefined,
+      uri: targetUri,
+      sizeBytes: Number.isFinite(Number(copiedInfo.size)) ? Number(copiedInfo.size) : undefined,
     };
   }
 
-  logMaterializeStage("pdf_source_classified_local", {
-    uri,
-    sourceKind: "local",
-    fileName,
-  });
-  const normalizedSourceUri = normalizeLocalFileUri(uri);
-  logMaterializeStage("pdf_local_uri_normalized", {
-    uri: normalizedSourceUri,
-    sourceKind: "local",
-    fileName,
-  });
-
-  const info = await getFileInfo(normalizedSourceUri);
-  const sourceExists = Boolean(info?.exists);
-  logMaterializeStage(sourceExists ? "pdf_materialize_exists_yes" : "pdf_materialize_exists_no", {
-    uri: normalizedSourceUri,
-    exists: sourceExists,
-    size: Number.isFinite(Number(info?.size)) ? Number(info.size) : undefined,
-    sourceKind: "local",
-    fileName,
-  });
-  if (!sourceExists) {
-    throw new Error(`Local PDF file does not exist: ${normalizedSourceUri.slice(-100)}`);
-  }
-
-  const sourceUri = normalizedSourceUri;
-  const keepAsIs =
-    isFileUri(sourceUri) &&
-    normalizedName.toLowerCase().endsWith(".pdf") &&
-    sourceUri.toLowerCase().endsWith(".pdf");
-
-  if (keepAsIs) {
-    return {
-      uri: sourceUri,
-      sizeBytes: Number.isFinite(Number(info.size)) ? Number(info.size) : undefined,
-    };
-  }
-
-  logMaterializeStage("pdf_materialize_started", {
-    uri: sourceUri,
-    sourceKind: "local",
-    fileName,
-  });
-  await FileSystemCompat.copyAsync({ from: sourceUri, to: targetUri });
-  const copiedInfo = await getFileInfo(targetUri);
-  const copiedExists = Boolean(copiedInfo?.exists);
-  logMaterializeStage("pdf_materialize_done", {
-    uri: targetUri,
-    sourceKind: "local",
-    fileName,
-  });
-  logMaterializeStage(copiedExists ? "pdf_materialize_exists_yes" : "pdf_materialize_exists_no", {
-    uri: targetUri,
-    exists: copiedExists,
-    size: Number.isFinite(Number(copiedInfo?.size)) ? Number(copiedInfo?.size) : undefined,
-    sourceKind: "local",
-    fileName,
-  });
-  if (!copiedExists) throw new Error("Materialized local PDF file is missing");
   return {
-    uri: targetUri,
-    sizeBytes: Number.isFinite(Number(copiedInfo.size)) ? Number(copiedInfo.size) : undefined,
+    uri: sourceUri,
+    sizeBytes: Number.isFinite(Number(info.size)) ? Number(info.size) : undefined,
   };
 }
 
