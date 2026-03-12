@@ -1,5 +1,9 @@
 import { Platform } from "react-native";
 import * as Print from "expo-print";
+import * as FileSystemModule from "expo-file-system";
+import { getFileSystemPaths } from "../fileSystemPaths";
+import { normalizeLocalFileUri } from "../pdfFileContract";
+import { hashString32 } from "../pdfFileContract";
 
 type OpenDocOpts = { share?: boolean };
 
@@ -42,18 +46,40 @@ export async function openHtmlAsPdfUniversal(
       "PDF generates too slowly. Try again.",
     );
 
-    const uri = (res as any)?.uri;
-    if (!uri) throw new Error("printToFileAsync returned empty uri");
+    const rawUri = (res as any)?.uri;
+    if (!rawUri) throw new Error("printToFileAsync returned empty uri");
 
-    console.info("[pdf-api] native_print_ready", {
-      stage: "native_print_ready",
-      platform: Platform.OS,
-      uri,
-      scheme: String(uri || "").match(/^([a-z0-9+.-]+):/i)?.[1]?.toLowerCase() || "",
-    });
+    // Move the generated file out of volatile iOS print storage immediately.
+    if ((Platform.OS as string) !== "web") {
+      const sourceUri = normalizeLocalFileUri(rawUri);
+      const { cacheDir } = getFileSystemPaths();
+      const stableName = `gen_${hashString32(html || "pdf")}.pdf`;
+      const stableUri = `${cacheDir}${stableName}`;
+      
+      let lastError: any;
+      for (let attempt = 1; attempt <= 3; attempt++) {
+        try {
+          if (attempt > 1) await uiYield(100 * attempt);
+          await FileSystemModule.copyAsync({ from: sourceUri, to: stableUri });
+          const copiedInfo = await FileSystemModule.getInfoAsync(stableUri);
+          if (!copiedInfo?.exists) throw new Error("Generated PDF copy is missing after materialization");
+          console.info("[pdf-api] native_print_ready", {
+            stage: "native_print_ready",
+            platform: Platform.OS,
+            uri: stableUri,
+            sourceUri,
+            scheme: String(stableUri || "").match(/^([a-z0-9+.-]+):/i)?.[1]?.toLowerCase() || "",
+          });
+          return stableUri;
+        } catch (e) {
+          lastError = e;
+          console.warn(`[pdf-api] copy_attempt_failed`, { attempt, sourceUri, stableUri, error: String(e) });
+        }
+      }
+      throw lastError || new Error("Failed to stabilize generated PDF file");
+    }
 
-    await uiYield(Platform.OS === "ios" ? 80 : 10);
-    return uri;
+    return rawUri;
   } catch (error) {
     const message =
       error && typeof error === "object" && "message" in error && typeof (error as { message?: unknown }).message === "string"

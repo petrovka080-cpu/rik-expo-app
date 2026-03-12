@@ -85,11 +85,17 @@ function logMaterializeStage(
 
 async function getFileInfo(uri: string) {
   if (!FileSystemCompat?.getInfoAsync) return null;
-  try {
-    return await FileSystemCompat.getInfoAsync(uri);
-  } catch {
-    return null;
+  let lastError: any;
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      if (attempt > 1) await new Promise((r) => setTimeout(r, 100 * attempt));
+      const info = await FileSystemCompat.getInfoAsync(uri);
+      if (info) return info;
+    } catch (e) {
+      lastError = e;
+    }
   }
+  return { exists: false, error: lastError };
 }
 
 async function ensureLocalPdfUri(uri: string, fileName: string): Promise<{ uri: string; sizeBytes?: number }> {
@@ -135,14 +141,7 @@ async function ensureLocalPdfUri(uri: string, fileName: string): Promise<{ uri: 
   const sourceExists = Boolean(info?.exists);
 
   if (!sourceExists) {
-    // Highly aggressive fallback for iOS paths that might be absolute but missing file:// or vice-versa
-    const altUri = sourceUri.startsWith("file://") ? sourceUri.replace("file://", "") : `file://${sourceUri}`;
-    const altInfo = await getFileInfo(altUri);
-    if (!altInfo?.exists) {
-      throw new Error(`PDF source not found: ${sourceUri.slice(-60)}`);
-    }
-    // If alt exists, use it
-    return ensureLocalPdfUri(altUri, fileName);
+    throw new Error(`PDF source not found: ${sourceUri.slice(-60)}`);
   }
 
   // Even if keepAsIs could be true, on iOS 18 it's safer to always copy to our own controlled cache
