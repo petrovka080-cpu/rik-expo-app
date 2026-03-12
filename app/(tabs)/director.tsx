@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, ScrollView, Animated, Platform } from 'react-native';
+import { View, ScrollView, Animated } from 'react-native';
+import { useRouter } from 'expo-router';
 import { openSignedUrlUniversal } from "../../src/lib/files";
 import { UI, s } from "../../src/screens/director/director.styles";
 import DirectorDashboard from "../../src/screens/director/DirectorDashboard";
@@ -12,7 +13,9 @@ import DirectorReportsModal from "../../src/screens/director/DirectorReportsModa
 import DirectorSheetModal from "../../src/screens/director/DirectorSheetModal";
 import { useDirectorScreenController } from "../../src/screens/director/useDirectorScreenController";
 import { useGlobalBusy } from "../../src/ui/GlobalBusy";
-import { runPdfTop } from "../../src/lib/pdfRunner";
+import { buildPdfFileName } from "../../src/lib/documents/pdfDocument";
+import { preparePdfDocument, previewPdfDocument } from "../../src/lib/documents/pdfDocumentActions";
+import { generateDirectorPdfDocument } from "../../src/lib/documents/pdfDocumentGenerators";
 import {
   exportDirectorProductionReportPdf,
   exportDirectorSubcontractReportPdf,
@@ -21,17 +24,20 @@ import {
 export default function DirectorScreen() {
   const vm = useDirectorScreenController();
   const busy = useGlobalBusy();
+  const router = useRouter();
   const reportsCompanyName = String((globalThis as any)?.process?.env?.EXPO_PUBLIC_COMPANY_NAME ?? "RIK Construction");
 
-    const onExportProductionPdf = React.useCallback(async () => {
-    await runPdfTop({
-      busy,
-      supabase,
-      key: "pdf:director:reports:production",
-      label: "Готовлю производственный PDF...",
-      mode: Platform.OS === "web" ? "preview" : "share",
-      fileName: "Director_Production_Report",
-      getRemoteUrl: async () => {
+  const onExportProductionPdf = React.useCallback(async () => {
+    const title = "Производственный отчет";
+    const template = await generateDirectorPdfDocument({
+      title,
+      fileName: buildPdfFileName({
+        documentType: "director_report",
+        title,
+        dateIso: vm.reports.repTo ?? vm.reports.repFrom ?? undefined,
+      }),
+      documentType: "director_report",
+      getUri: async () => {
         return await exportDirectorProductionReportPdf({
           companyName: reportsCompanyName,
           generatedBy: "Директор",
@@ -43,8 +49,18 @@ export default function DirectorScreen() {
         });
       },
     });
+    const doc = await preparePdfDocument({
+      busy,
+      supabase,
+      key: "pdf:director:reports:production",
+      label: "Открываю PDF…",
+      descriptor: template,
+      getRemoteUrl: () => template.uri,
+    });
+    await previewPdfDocument(doc, { router });
   }, [
     busy,
+    router,
     reportsCompanyName,
     vm.reports.repFrom,
     vm.reports.repTo,
@@ -53,15 +69,17 @@ export default function DirectorScreen() {
     vm.reports.repDiscipline,
   ]);
 
-    const onExportSubcontractPdf = React.useCallback(async () => {
-    await runPdfTop({
-      busy,
-      supabase,
-      key: "pdf:director:reports:subcontract",
-      label: "Готовлю подрядный PDF...",
-      mode: Platform.OS === "web" ? "preview" : "share",
-      fileName: "Director_Subcontract_Report",
-      getRemoteUrl: async () => {
+  const onExportSubcontractPdf = React.useCallback(async () => {
+    const title = "Отчет по подрядам";
+    const template = await generateDirectorPdfDocument({
+      title,
+      fileName: buildPdfFileName({
+        documentType: "director_report",
+        title,
+        dateIso: vm.reports.repTo ?? vm.reports.repFrom ?? undefined,
+      }),
+      documentType: "director_report",
+      getUri: async () => {
         return await exportDirectorSubcontractReportPdf({
           companyName: reportsCompanyName,
           generatedBy: "Директор",
@@ -71,7 +89,16 @@ export default function DirectorScreen() {
         });
       },
     });
-  }, [busy, reportsCompanyName, vm.reports.repFrom, vm.reports.repTo, vm.reports.repObjectName]);
+    const doc = await preparePdfDocument({
+      busy,
+      supabase,
+      key: "pdf:director:reports:subcontract",
+      label: "Открываю PDF…",
+      descriptor: template,
+      getRemoteUrl: () => template.uri,
+    });
+    await previewPdfDocument(doc, { router });
+  }, [busy, router, reportsCompanyName, vm.reports.repFrom, vm.reports.repTo, vm.reports.repObjectName]);
 
   const financePeriodUi = React.useMemo(() => ({
     cardBg: UI.cardBg,
@@ -258,4 +285,3 @@ export default function DirectorScreen() {
     </RoleScreenLayout>
   );
 }
-

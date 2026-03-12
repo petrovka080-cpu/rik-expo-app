@@ -63,7 +63,7 @@ export function useBuyerAccountingModal(params: {
         const blob = new Blob([html], { type: "text/html;charset=utf-8" });
         const name = `proposal_${proposalId.slice(0, 8)}.html`;
 
-        await uploadProposalAttachment(proposalId, blob, name, "proposal_pdf");
+        await uploadProposalAttachment(proposalId, blob, name, "proposal_html");
         setPropDocAttached({ name });
       } catch (error) {
         console.warn("[buyer] ensureProposalDocumentAttached:", error);
@@ -141,4 +141,3 @@ export function useBuyerAccountingModal(params: {
 
   return { openAccountingModal };
 }
-

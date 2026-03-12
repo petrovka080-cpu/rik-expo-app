@@ -1,8 +1,11 @@
 ﻿import type React from "react";
 import { useCallback, useRef } from "react";
 import { Alert, Platform } from "react-native";
+import { useRouter } from "expo-router";
 import * as XLSX from "xlsx";
-import { runPdfTop } from "../../lib/pdfRunner";
+import { generateProposalPdfDocument } from "../../lib/catalog_api";
+import { buildPdfFileName } from "../../lib/documents/pdfDocument";
+import { preparePdfDocument, previewPdfDocument } from "../../lib/documents/pdfDocumentActions";
 import type { ProposalItem } from "./director.types";
 
 type BusyLike = { isBusy: (key: string) => boolean };
@@ -41,6 +44,7 @@ export function useDirectorProposalActions({
   closeSheet,
   showSuccess,
 }: Deps) {
+  const router = useRouter();
   const approveInFlightRef = useRef<Record<string, boolean>>({});
   const approveDoneAtRef = useRef<Record<string, number>>({});
   const APPROVE_DONE_COOLDOWN_MS = 15_000;
@@ -161,25 +165,32 @@ export function useDirectorProposalActions({
     pdfTapLockRef.current[pdfKey] = true;
 
     try {
-      await runPdfTop({
+      const template = await generateProposalPdfDocument(pidStr, "director");
+      const title = `Предложение ${pidStr.slice(0, 8)}`;
+      const doc = await preparePdfDocument({
         busy,
         supabase,
         key: pdfKey,
-        label: "Р“РѕС‚РѕРІР»СЋ С„Р°Р№Р»вЂ¦",
-        mode: "share",
-        fileName: `РџСЂРµРґР»РѕР¶РµРЅРёРµ_${pidStr}`,
-        getRemoteUrl: async () => {
-          const { exportProposalPdf } = await import("../../lib/rik_api");
-          return await exportProposalPdf(pidStr, "share");
+        label: "Открываю PDF…",
+        descriptor: {
+          ...template,
+          title,
+          fileName: buildPdfFileName({
+            documentType: "proposal",
+            title,
+            entityId: pidStr,
+          }),
         },
+        getRemoteUrl: () => template.uri,
       });
+      await previewPdfDocument(doc, { router });
     } catch (e: unknown) {
       if (String(errText(e) || "").toLowerCase().includes("busy")) return;
-      Alert.alert("РћС€РёР±РєР°", errText(e) || "РќРµ СѓРґР°Р»РѕСЃСЊ РѕС‚РїСЂР°РІРёС‚СЊ PDF");
+      Alert.alert("РћС€РёР±РєР°", errText(e) || "РќРµ СѓРґР°Р»РѕСЃСЊ РѕС‚РєСЂС‹С‚СЊ PDF");
     } finally {
       setTimeout(() => { pdfTapLockRef.current[pdfKey] = false; }, 450);
     }
-  }, [busy, supabase, isProposalPdfBusy, pdfTapLockRef]);
+  }, [busy, supabase, isProposalPdfBusy, pdfTapLockRef, router]);
 
   const exportProposalExcel = useCallback(async (pidStr: string, pretty: string, items: ProposalItem[], screenLocked: boolean) => {
     if (screenLocked) return;

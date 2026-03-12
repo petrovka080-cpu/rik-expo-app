@@ -34,6 +34,12 @@ type SupplierFileMetaRow = {
 
 const errorText = (e: unknown) => (e instanceof Error ? e.message : String(e));
 
+export const isPdfLike = (fileName?: string | null, url?: string | null) => {
+  const name = String(fileName || "").trim().toLowerCase();
+  const href = String(url || "").trim().toLowerCase();
+  return name.endsWith(".pdf") || href.includes(".pdf") || href.includes("application/pdf");
+};
+
 function notFoundMsg(groupKey: string) {
   return groupKey === "invoice"
     ? "РЎС‡С‘С‚ РЅРµ РїСЂРёРєСЂРµРїР»С‘РЅ"
@@ -69,19 +75,7 @@ async function openLocalFilePreview(uri: string) {
     }
   }
 
-  // 2) iOS Рё fallback: Sharing
-  try {
-    const Sharing = await import("expo-sharing");
-    const isAvail = await Sharing.isAvailableAsync();
-    if (isAvail) {
-      await Sharing.shareAsync(uri);
-      return;
-    }
-  } catch {
-    // fallback РЅРёР¶Рµ
-  }
-
-  // 3) РїРѕСЃР»РµРґРЅРёР№ С€Р°РЅСЃ: Linking
+  // 2) iOS Рё fallback: external open, РЅРѕ РЅРµ share semantics
   try {
     await Linking.openURL(uri);
   } catch (e: unknown) {
@@ -253,6 +247,41 @@ export async function openAttachment(
   }
 
   return rows;
+}
+
+export async function getLatestProposalAttachmentPreview(
+  proposalId: string | number,
+  groupKey: "invoice" | "payment" | "proposal_pdf" | string,
+): Promise<{ url: string; fileName: string; row: AttRow }> {
+  const pid = String(proposalId || "").trim();
+  if (!pid) throw new Error("proposalId is empty");
+
+  const q = await supabase
+    .from("proposal_attachments")
+    .select("id,bucket_id,storage_path,file_name,group_key,created_at")
+    .eq("proposal_id", pid)
+    .eq("group_key", groupKey)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (q.error) throw q.error;
+  const row = q.data as AttRow | null;
+  if (!row) throw new Error(notFoundMsg(String(groupKey)));
+
+  const bucket = String(row.bucket_id || "").trim();
+  const path = String(row.storage_path || "").trim();
+  if (!bucket || !path) throw new Error("bucket_id/storage_path пустые");
+
+  const signed = await supabase.storage.from(bucket).createSignedUrl(path, 60 * 10);
+  if (signed.error) throw signed.error;
+  const url = String(signed.data?.signedUrl || "").trim();
+  if (!url) throw new Error("Не удалось получить signed URL вложения");
+  return {
+    url,
+    fileName: String(row?.file_name || "document.pdf"),
+    row,
+  };
 }
 
 /* =======================================================================================

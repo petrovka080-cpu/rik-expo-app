@@ -1,5 +1,6 @@
 ﻿// FILE: app/(tabs)/reports.tsx
 import React, { useCallback, useEffect, useState } from "react";
+import { useRouter } from "expo-router";
 import {
   View, Text, ScrollView, TextInput, Pressable,
   ActivityIndicator, Alert, Platform, Share, Dimensions
@@ -9,6 +10,10 @@ import * as Sharing from "expo-sharing";
 import * as FileSystem from "expo-file-system/legacy";
 import { supabase } from "../../src/lib/supabaseClient";
 import { LineChart, PieChart } from "react-native-chart-kit";
+import { openHtmlAsPdfUniversal } from "../../src/lib/api/pdf";
+import { buildPdfFileName } from "../../src/lib/documents/pdfDocument";
+import { preparePdfDocument, previewPdfDocument } from "../../src/lib/documents/pdfDocumentActions";
+import { createGeneratedPdfDocument } from "../../src/lib/documents/pdfDocumentGenerators";
 // alias (РЅР° РІСЃСЏРєРёР№ СЃР»СѓС‡Р°Р№, С‡С‚РѕР±С‹ РЅРµ РєРѕРЅС„Р»РёРєС‚РѕРІР°С‚СЊ СЃ РёРјРµРЅРµРј Sharing)
 import * as ExpoSharing from "expo-sharing";
 
@@ -18,6 +23,7 @@ const today = () => new Date().toISOString().slice(0, 10);
 const monthAgo = () => { const d = new Date(); d.setMonth(d.getMonth() - 1); return d.toISOString().slice(0, 10); };
 
 export default function Reports() {
+  const router = useRouter();
   const [start, setStart] = useState(monthAgo());
   const [end, setEnd] = useState(today());
   const [loading, setLoading] = useState(false);
@@ -138,8 +144,25 @@ export default function Reports() {
         pipe.map((x) => [humanStatus(x.status), x.cnt])
       )}
       </body></html>`;
-      const { uri } = await Print.printToFileAsync({ html });
-      await Sharing.shareAsync(uri);
+      const template = await createGeneratedPdfDocument({
+        uri: await openHtmlAsPdfUniversal(html),
+        title: `Отчет ${start} - ${end}`,
+        fileName: buildPdfFileName({
+          documentType: "report_export",
+          title: "reports_export",
+          dateIso: end || start || undefined,
+        }),
+        documentType: "report_export",
+        originModule: "reports",
+      });
+      const doc = await preparePdfDocument({
+        supabase,
+        key: `pdf:reports:${start}:${end}`,
+        label: "Открываю PDF…",
+        descriptor: template,
+        getRemoteUrl: () => template.uri,
+      });
+      await previewPdfDocument(doc, { router });
     } catch (e: any) {
       Alert.alert("РћС€РёР±РєР° PDF", e.message);
     }

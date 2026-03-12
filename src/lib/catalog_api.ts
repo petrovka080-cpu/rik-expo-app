@@ -1192,6 +1192,14 @@ export async function exportRequestPdf(
   return await mod.exportRequestPdf(requestId);
 }
 
+export async function generateRequestPdfDocument(requestId: string) {
+  const mod = await import("./documents/pdfDocumentGenerators");
+  return await mod.generateRequestPdfDocument({
+    requestId,
+    originModule: "director",
+  });
+}
+
 export async function buildProposalPdfHtml(proposalId: string | number): Promise<string> {
   const mod = await import("./api/pdf_proposal");
   return await mod.buildProposalPdfHtml(proposalId);
@@ -1205,12 +1213,29 @@ export async function exportProposalPdf(
   return await mod.exportProposalPdf(proposalId, mode);
 }
 
+export async function generateProposalPdfDocument(
+  proposalId: string | number,
+  originModule: "buyer" | "accountant" | "director" = "buyer",
+) {
+  const mod = await import("./documents/pdfDocumentGenerators");
+  return await mod.generateProposalPdfDocument({ proposalId, originModule });
+}
+
 export async function exportPaymentOrderPdf(
   paymentId: string | number,
-  mode: "preview" | "share" = "preview",
+  modeOrDraft: "preview" | "share" | Record<string, unknown> = "preview",
 ): Promise<string> {
   const mod = await import("./api/pdf_payment");
-  return await mod.exportPaymentOrderPdf(paymentId, mode);
+  const draft = typeof modeOrDraft === "string" ? undefined : modeOrDraft;
+  return await mod.exportPaymentOrderPdf(Number(paymentId), draft as any);
+}
+
+export async function generatePaymentOrderPdfDocument(
+  paymentId: string | number,
+  originModule: "accountant" | "director" = "accountant",
+) {
+  const mod = await import("./documents/pdfDocumentGenerators");
+  return await mod.generatePaymentOrderPdfDocument({ paymentId, originModule });
 }
 
 export async function uploadProposalAttachment(

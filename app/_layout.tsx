@@ -8,6 +8,7 @@ import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { Host } from "react-native-portalize";
 
 import { supabase } from "../src/lib/supabaseClient";
+import { clearDocumentSessions } from "../src/lib/documents/pdfDocumentSessions";
 import { ensureMyProfile, getMyRole } from "../src/lib/rik_api";
 import { GlobalBusyProvider } from "../src/ui/GlobalBusy";
 // --- WEB: тихо глушим шумные предупреждения (только в браузере) ---
@@ -118,6 +119,7 @@ export default function RootLayout() {
 
         if (has) loadRoleForCurrentSession();
         else {
+          clearDocumentSessions();
           setRole(null);
           setRoleLoaded(true);
         }
@@ -125,6 +127,7 @@ export default function RootLayout() {
         console.warn("[RootLayout] session load failed:", e?.message ?? e);
         if (!active) return;
         setHasSession(false);
+        clearDocumentSessions();
         setRole(null);
         setRoleLoaded(true);
         setSessionLoaded(true);
@@ -137,6 +140,7 @@ export default function RootLayout() {
       setSessionLoaded(true);
 
       if (!has) {
+        clearDocumentSessions();
         setRole(null);
         setRoleLoaded(true);
         router.replace("/auth/login");

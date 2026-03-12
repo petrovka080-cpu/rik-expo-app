@@ -1,9 +1,13 @@
-import { Alert, Platform } from "react-native";
-import * as Sharing from "expo-sharing";
+import { Alert } from "react-native";
+import { router } from "expo-router";
 
 import type { WorkMaterialRow } from "../../components/WorkMaterialsEditor";
 import { openHtmlAsPdfUniversal } from "../../lib/api/pdf";
 import { normalizeRuText } from "../../lib/text/encoding";
+import { supabase } from "../../lib/supabaseClient";
+import { buildPdfFileName } from "../../lib/documents/pdfDocument";
+import { preparePdfDocument, previewPdfDocument } from "../../lib/documents/pdfDocumentActions";
+import { createGeneratedPdfDocument } from "../../lib/documents/pdfDocumentGenerators";
 
 export type ContractorPdfWork = {
   progress_id: string;
@@ -313,23 +317,28 @@ async function generateWorkPdf(
 
     const pdfUri = await openHtmlAsPdfUniversal(normalizeRuText(html));
     if (!pdfUri) {
-      Alert.alert("PDF", "Не удалось сформировать PDF-файл. Повторите попытку.");
+      Alert.alert("PDF", "Unable to generate PDF. Please try again.");
       return;
     }
 
-    if (Platform.OS === "web") {
-      const w = window.open(pdfUri, "_blank", "noopener,noreferrer");
-      if (!w) {
-        Alert.alert("PDF", "Браузер заблокировал новое окно. Разрешите pop-up для этого сайта.");
-      }
-      return;
-    }
-
-    try {
-      await Sharing.shareAsync(pdfUri);
-    } catch (e) {
-      console.warn("[generateWorkPdf] shareAsync error", e);
-    }
+    const template = await createGeneratedPdfDocument({
+      uri: pdfUri,
+      title: `Act ${actNo}`,
+      fileName: buildPdfFileName({
+        documentType: "contractor_act",
+        title: "contractor_act",
+        entityId: actNo,
+      }),
+      documentType: "contractor_act",
+      originModule: "contractor",
+      entityId: work.progress_id || actNo,
+    });
+    const doc = await preparePdfDocument({
+      supabase,
+      descriptor: template,
+      getRemoteUrl: () => template.uri,
+    });
+    await previewPdfDocument(doc, { router });
   } catch (e: unknown) {
     console.warn("[generateWorkPdf] general error", e);
     const message = e instanceof Error ? e.message : String(e);

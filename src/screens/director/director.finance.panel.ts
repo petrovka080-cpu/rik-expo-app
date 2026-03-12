@@ -1,6 +1,9 @@
-import { Alert, Platform } from "react-native";
+import { Alert } from "react-native";
 import { useCallback, useMemo } from "react";
-import { runPdfTop } from "../../lib/pdfRunner";
+import { useRouter } from "expo-router";
+import { buildPdfFileName } from "../../lib/documents/pdfDocument";
+import { preparePdfDocument, previewPdfDocument } from "../../lib/documents/pdfDocumentActions";
+import { generateDirectorPdfDocument } from "../../lib/documents/pdfDocumentGenerators";
 import {
   addDaysIso,
   mid,
@@ -68,14 +71,12 @@ export function useDirectorFinancePanel({
   FIN_DUE_DAYS_DEFAULT,
   FIN_CRITICAL_DAYS,
 }: Deps) {
+  const router = useRouter();
+
   const openSupplier = useCallback((s: any) => {
     const supplierName = (() => {
       if (typeof s === "string") return s.trim() || "—";
-      const v =
-        s?.supplier?.supplier ??
-        s?.supplier ??
-        s?.name ??
-        "";
+      const v = s?.supplier?.supplier ?? s?.supplier ?? s?.name ?? "";
       return String(v).trim() || "—";
     })();
 
@@ -218,14 +219,16 @@ export function useDirectorFinancePanel({
   }, [setFinKindName, setFinKindList, popFin]);
 
   const onFinancePdf = useCallback(async () => {
-    await runPdfTop({
-      busy,
-      supabase,
-      key: "pdf:director:finance",
-      label: "Готовлю управленческий отчёт...",
-      mode: Platform.OS === "web" ? "preview" : "share",
-      fileName: "Director_Management_Report",
-      getRemoteUrl: async () => {
+    const title = "Финансовый управленческий отчет";
+    const template = await generateDirectorPdfDocument({
+      title,
+      fileName: buildPdfFileName({
+        documentType: "director_report",
+        title,
+        dateIso: finTo ?? finFrom ?? undefined,
+      }),
+      documentType: "director_report",
+      getUri: async () => {
         const { exportDirectorManagementReportPdf } = await import("../../lib/api/pdf_director");
         return await exportDirectorManagementReportPdf({
           periodFrom: finFrom,
@@ -238,7 +241,16 @@ export function useDirectorFinancePanel({
         });
       },
     });
-  }, [busy, supabase, finFrom, finTo, finRows, finSpendRows, FIN_DUE_DAYS_DEFAULT, FIN_CRITICAL_DAYS]);
+    const doc = await preparePdfDocument({
+      busy,
+      supabase,
+      key: "pdf:director:finance",
+      label: "Открываю PDF…",
+      descriptor: template,
+      getRemoteUrl: () => template.uri,
+    });
+    await previewPdfDocument(doc, { router });
+  }, [busy, supabase, finFrom, finTo, finRows, finSpendRows, FIN_DUE_DAYS_DEFAULT, FIN_CRITICAL_DAYS, router]);
 
   const onSupplierPdf = useCallback(async () => {
     const supName = String((finSupplier as any)?.supplier ?? "").trim();
@@ -247,17 +259,23 @@ export function useDirectorFinancePanel({
       return;
     }
 
-    await runPdfTop({
-      busy,
-      supabase,
-      key: `pdf:director:supplier:${supName}`,
-      label: "Готовлю сводку...",
-      mode: Platform.OS === "web" ? "preview" : "share",
-      fileName: `Supplier_${supName}`,
-      getRemoteUrl: async () => {
-        const kindName = String((finSupplier as any)?._kindName ?? "").trim();
-        const inPeriod = makeIsoInPeriod(finFrom, finTo);
+    const kindName = String((finSupplier as any)?._kindName ?? "").trim();
+    const inPeriod = makeIsoInPeriod(finFrom, finTo);
+    const title = kindName
+      ? `Сводка по поставщику: ${supName} (${kindName})`
+      : `Сводка по поставщику: ${supName}`;
 
+    const template = await generateDirectorPdfDocument({
+      title,
+      fileName: buildPdfFileName({
+        documentType: "supplier_summary",
+        title: supName,
+        entityId: supName,
+        dateIso: finTo ?? finFrom ?? undefined,
+      }),
+      documentType: "supplier_summary",
+      entityId: supName,
+      getUri: async () => {
         const financeFiltered = (Array.isArray(finRows) ? finRows : [])
           .filter((r: any) => String(r?.supplier ?? "").trim() === supName)
           .filter((r: any) => inPeriod(r?.approvedAtIso ?? r?.approved_at ?? r?.director_approved_at));
@@ -282,7 +300,16 @@ export function useDirectorFinancePanel({
         });
       },
     });
-  }, [busy, supabase, finSupplier, finFrom, finTo, finRows, finSpendRows]);
+    const doc = await preparePdfDocument({
+      busy,
+      supabase,
+      key: `pdf:director:supplier:${supName}`,
+      label: "Открываю PDF…",
+      descriptor: template,
+      getRemoteUrl: () => template.uri,
+    });
+    await previewPdfDocument(doc, { router });
+  }, [busy, supabase, finSupplier, finFrom, finTo, finRows, finSpendRows, router]);
 
   const financePeriodShort = useMemo(() => {
     return finFrom || finTo

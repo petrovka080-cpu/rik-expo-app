@@ -1,6 +1,16 @@
-import { Platform, Share } from "react-native";
+import { Share } from "react-native";
+import { router } from "expo-router";
+
 import { exportProposalPdf } from "../../lib/catalog_api";
-import { openAttachment, uploadProposalAttachment } from "../../lib/files";
+import {
+  getLatestProposalAttachmentPreview,
+  isPdfLike,
+  openSignedUrlUniversal,
+  uploadProposalAttachment,
+} from "../../lib/files";
+import { supabase } from "../../lib/supabaseClient";
+import { buildPdfFileName, createPdfDocumentDescriptor } from "../../lib/documents/pdfDocument";
+import { preparePdfDocument, previewPdfDocument } from "../../lib/documents/pdfDocumentActions";
 import { safeAlert } from "./helpers";
 import { pickAnyFile } from "./pickAnyFile";
 
@@ -9,23 +19,51 @@ export async function shareProposalCard(proposalId: string): Promise<void> {
   if (!pid) return;
 
   const uriOrUrl = await exportProposalPdf(pid, "preview");
-  if (Platform.OS === "web") {
-    window.open(String(uriOrUrl), "_blank", "noopener,noreferrer");
+  await Share.share({ message: String(uriOrUrl) });
+}
+
+async function previewProposalAttachment(
+  proposalId: string,
+  groupKey: "proposal_pdf" | "invoice" | "payment",
+  title: string,
+): Promise<void> {
+  const preview = await getLatestProposalAttachmentPreview(proposalId, groupKey);
+  if (!isPdfLike(preview.fileName, preview.url)) {
+    await openSignedUrlUniversal(preview.url, preview.fileName);
     return;
   }
-  await Share.share({ message: String(uriOrUrl) });
+
+  const doc = await preparePdfDocument({
+    supabase,
+    descriptor: createPdfDocumentDescriptor({
+      uri: preview.url,
+      title,
+      fileName: buildPdfFileName({
+        documentType: "attachment_pdf",
+        title,
+        entityId: proposalId,
+      }),
+      documentType: "attachment_pdf",
+      source: "attachment",
+      originModule: "accountant",
+      entityId: proposalId,
+    }),
+    getRemoteUrl: () => preview.url,
+  });
+
+  await previewPdfDocument(doc, { router });
 }
 
 export async function openProposalSourceDoc(proposalId: string): Promise<void> {
   const pid = String(proposalId || "").trim();
   if (!pid) return;
-  await openAttachment(pid, "proposal_pdf", { all: false });
+  await previewProposalAttachment(pid, "proposal_pdf", "Proposal document");
 }
 
 export async function openInvoiceDoc(proposalId: string): Promise<void> {
   const pid = String(proposalId || "").trim();
   if (!pid) return;
-  await openAttachment(pid, "invoice", { all: false });
+  await previewProposalAttachment(pid, "invoice", "Invoice");
 }
 
 export async function openPaymentDocsOrUpload(p: {
@@ -36,15 +74,14 @@ export async function openPaymentDocsOrUpload(p: {
   if (!pid) return;
 
   try {
-    await openAttachment(pid, "payment", { all: true });
+    await previewProposalAttachment(pid, "payment", "Payment document");
     return;
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
     const low = msg.toLowerCase();
-    const notFound =
-      low.includes("не найдены") || low.includes("не найден") || low.includes("not found");
+    const notFound = low.includes("not found") || low.includes("не найден");
     if (!notFound) {
-      safeAlert("Платёжные документы", msg);
+      safeAlert("Payment documents", msg);
       return;
     }
   }
@@ -57,9 +94,8 @@ export async function openPaymentDocsOrUpload(p: {
   await p.reload();
 
   try {
-    await openAttachment(pid, "payment", { all: false });
+    await previewProposalAttachment(pid, "payment", "Payment document");
   } catch {
-    safeAlert("Загружено", "Файл загружен, но открыть не удалось. Нажмите ещё раз.");
+    safeAlert("Uploaded", "File uploaded, but preview could not be opened. Try again.");
   }
 }
-

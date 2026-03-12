@@ -1,4 +1,11 @@
 // src/screens/buyer/buyer.pdf.ts
+import { router } from "expo-router";
+
+import { openHtmlAsPdfUniversal } from "../../lib/api/pdf";
+import { supabase } from "../../lib/supabaseClient";
+import { buildPdfFileName } from "../../lib/documents/pdfDocument";
+import { preparePdfDocument, previewPdfDocument } from "../../lib/documents/pdfDocumentActions";
+import { createGeneratedPdfDocument } from "../../lib/documents/pdfDocumentGenerators";
 
 type ProposalPdfItemRow = {
   total_qty?: number | null;
@@ -8,28 +15,16 @@ type ProposalPdfItemRow = {
   rik_code?: string | null;
   price?: number | string | null;
 };
+
 type PdfDeps = {
   isWeb: boolean;
-  // внешний генератор HTML (серверный)
   buildProposalPdfHtml: (pidStr: string) => Promise<string>;
-  // fallback: тянем строки
   proposalItems: (pidStr: string) => Promise<ProposalPdfItemRow[]>;
-  // fallback: красивый заголовок
   resolveProposalPrettyTitle: (pidStr: string) => Promise<string>;
-  // web: supabase read метаданных
   getProposalMeta: (pidStr: string) => Promise<{ status?: string | null; buyer_fio?: string | null; submitted_at?: string | null }>;
-  // native: открыть PDF как раньше
   exportProposalPdfNative: (pid: string | number) => Promise<void>;
-
-  // UI hooks
   alert: (title: string, message: string) => void;
 };
-
-/** web util */
-function writeSafe(w: Window | null, html: string) {
-  if (!w) return;
-  try { w.document.open(); w.document.write(html); w.document.close(); w.focus(); } catch {}
-}
 
 function escHtml(s: unknown) {
   const map: Record<string, string> = {
@@ -42,48 +37,53 @@ function escHtml(s: unknown) {
   return String(s ?? "").replace(/[&<>"']/g, (m) => map[m] ?? m);
 }
 
-/** ===== Fallback HTML builder (когда серверный HTML пуст/ошибка) ===== */
 export async function buildFallbackProposalHtmlClient(pidStr: string, deps: PdfDeps): Promise<string> {
-  // тянем строки предложения
   let rows: ProposalPdfItemRow[] = [];
   try {
     const r = await deps.proposalItems(pidStr);
     rows = Array.isArray(r) ? r : [];
-  } catch { rows = []; }
+  } catch {
+    rows = [];
+  }
 
-  // красивый заголовок
   let pretty = "";
-  try { pretty = (await deps.resolveProposalPrettyTitle(pidStr)) || ""; } catch {}
+  try {
+    pretty = (await deps.resolveProposalPrettyTitle(pidStr)) || "";
+  } catch {}
 
-  // метаданные
   let meta: { status?: string | null; buyer_fio?: string | null; submitted_at?: string | null } = {};
-  try { meta = (await deps.getProposalMeta(pidStr)) || {}; } catch {}
+  try {
+    meta = (await deps.getProposalMeta(pidStr)) || {};
+  } catch {}
 
   let total = 0;
-  const trs = rows.map((r, i: number) => {
-    const qty = Number(r?.total_qty ?? r?.qty ?? 0) || 0;
-    const uom = r?.uom ?? "";
-    const name = r?.name_human ?? "";
-    const rik = r?.rik_code ? ` (${r.rik_code})` : "";
-    const price = r?.price != null ? Number(r.price) : NaN;
-    const sum = Number.isFinite(price) ? qty * price : NaN;
-    if (Number.isFinite(sum)) total += sum;
+  const trs = rows
+    .map((r, i: number) => {
+      const qty = Number(r?.total_qty ?? r?.qty ?? 0) || 0;
+      const uom = r?.uom ?? "";
+      const name = r?.name_human ?? "";
+      const rik = r?.rik_code ? ` (${r.rik_code})` : "";
+      const price = r?.price != null ? Number(r.price) : Number.NaN;
+      const sum = Number.isFinite(price) ? qty * price : Number.NaN;
+      if (Number.isFinite(sum)) total += sum;
 
-    return `<tr>
+      return `<tr>
       <td>${i + 1}</td>
       <td>${escHtml(name)}${escHtml(rik)}</td>
       <td>${qty}</td>
       <td>${escHtml(uom)}</td>
-      <td>${Number.isFinite(price) ? price.toLocaleString() : "—"}</td>
-      <td>${Number.isFinite(sum) ? sum.toLocaleString() : "—"}</td>
+      <td>${Number.isFinite(price) ? price.toLocaleString() : "-"}</td>
+      <td>${Number.isFinite(sum) ? sum.toLocaleString() : "-"}</td>
     </tr>`;
-  }).join("");
+    })
+    .join("");
 
-  const title =
-    pretty ? `Предложение: ${escHtml(pretty)}` : `Предложение #${escHtml(pidStr).slice(0, 8)}`;
+  const title = pretty
+    ? `Proposal: ${escHtml(pretty)}`
+    : `Proposal #${escHtml(pidStr).slice(0, 8)}`;
 
   return `<!doctype html>
-<html lang="ru"><head>
+<html lang="en"><head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>${title}</title>
@@ -100,47 +100,28 @@ export async function buildFallbackProposalHtmlClient(pidStr: string, deps: PdfD
 </head>
 <body>
   <h1>${title}</h1>
-  <div class="meta">Статус: ${escHtml(meta.status ?? "—")} · Снабженец: ${escHtml(meta.buyer_fio ?? "—")} · Отправлено: ${
-    meta.submitted_at ? new Date(meta.submitted_at).toLocaleString() : "—"
+  <div class="meta">Status: ${escHtml(meta.status ?? "-")} &middot; Buyer: ${escHtml(meta.buyer_fio ?? "-")} &middot; Sent: ${
+    meta.submitted_at ? new Date(meta.submitted_at).toLocaleString() : "-"
   }</div>
 
   <table>
     <thead>
-      <tr><th>#</th><th>Наименование</th><th>Кол-во</th><th>Ед.</th><th>Цена</th><th>Сумма</th></tr>
+      <tr><th>#</th><th>Name</th><th>Qty</th><th>UOM</th><th>Price</th><th>Total</th></tr>
     </thead>
     <tbody>
-      ${trs || '<tr><td colspan="6" style="color:#64748b">Пусто</td></tr>'}
+      ${trs || '<tr><td colspan="6" style="color:#64748b">Empty</td></tr>'}
     </tbody>
     <tfoot>
-      <tr><td colspan="5" style="text-align:right">Итого:</td><td>${total ? total.toLocaleString() : "0"}</td></tr>
+      <tr><td colspan="5" style="text-align:right">Total:</td><td>${total ? total.toLocaleString() : "0"}</td></tr>
     </tfoot>
   </table>
 </body></html>`;
 }
 
-/** ===== Unified open (web/new tab OR native) ===== */
 export async function openBuyerProposalPdf(pid: string | number, deps: PdfDeps) {
   const pidStr = String(pid);
 
   try {
-    if (!deps.isWeb) {
-      await deps.exportProposalPdfNative(pid);
-      return;
-    }
-
-    const w = window.open("about:blank", "_blank");
-    if (!w) {
-      deps.alert("Pop-up", "Разрешите всплывающие окна для сайта.");
-      return;
-    }
-
-    writeSafe(
-      w,
-      '<!doctype html><meta charset="utf-8"><title>Готовим…</title>' +
-        '<body style="font-family:system-ui;padding:24px;color:#0f172a">' +
-        "<h1>Готовим документ…</h1><p>Пожалуйста, подождите.</p></body>"
-    );
-
     let html = "";
     try {
       html = await deps.buildProposalPdfHtml(pidStr);
@@ -148,29 +129,31 @@ export async function openBuyerProposalPdf(pid: string | number, deps: PdfDeps) 
       html = "";
     }
 
-    // если серверный HTML пустой/битый — fallback
     if (!html || String(html).trim().length < 80) {
       html = await buildFallbackProposalHtmlClient(pidStr, deps);
     }
 
-    writeSafe(w, html);
+    const uri = await openHtmlAsPdfUniversal(html);
+    const template = await createGeneratedPdfDocument({
+      uri,
+      title: `Proposal ${pidStr.slice(0, 8)}`,
+      fileName: buildPdfFileName({
+        documentType: "proposal",
+        title: "proposal",
+        entityId: pidStr,
+      }),
+      documentType: "proposal",
+      originModule: "buyer",
+      entityId: pidStr,
+    });
+    const doc = await preparePdfDocument({
+      supabase,
+      descriptor: template,
+      getRemoteUrl: () => template.uri,
+    });
+    await previewPdfDocument(doc, { router });
   } catch (e: unknown) {
     const msg = e instanceof Error && e.message ? e.message : String(e);
-    if (deps.isWeb) {
-      const w = window.open("", "_blank");
-      if (w) {
-        writeSafe(
-          w,
-          `<!doctype html><meta charset="utf-8"><title>Ошибка</title>
-          <body style="font-family:system-ui;padding:24px;color:#0f172a">
-            <h1>Ошибка</h1>
-            <pre style="white-space:pre-wrap;background:#f1f5f9;padding:12px;border-radius:8px">${escHtml(msg)}</pre>
-          </body>`
-        );
-        return;
-      }
-    }
-    deps.alert("Ошибка", msg);
+    deps.alert("Error", msg);
   }
 }
-

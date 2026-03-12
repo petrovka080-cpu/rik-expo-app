@@ -3,11 +3,8 @@ import React from "react";
 import { Alert, Platform, Text, View } from "react-native";
 import type { PropsWithChildren } from "react";
 import type { ViewProps } from "react-native";
-import * as WebBrowser from "expo-web-browser";
-import * as Sharing from "expo-sharing";
-import * as FileSystem from "expo-file-system/legacy";
-
 import { supabase, SUPABASE_ANON_KEY } from "../../lib/supabaseClient";
+import { openSignedUrlUniversal } from "../../lib/files";
 import type { AccountantInboxRow } from "../../lib/rik_api";
 import type { StatusKey } from "./types";
 import { normalizePaymentStatusKind } from "./accountant.status";
@@ -96,32 +93,7 @@ export function guessMime(name: string) {
 }
 
 export async function openSignedUrlAcc(url: string, fileName?: string) {
-  const u = String(url || "").trim();
-  if (!u) throw new Error("РџСѓСЃС‚РѕР№ URL");
-
-  if (Platform.OS === "web") {
-    const w = globalThis as typeof globalThis & {
-      open?: (url?: string, target?: string, features?: string) => unknown;
-    };
-    w.open?.(u, "_blank", "noopener,noreferrer");
-    return;
-  }
-
-  const fixedName = ensureExt(safeFileNameLite(fileName || "file"), u);
-  const target = (FileSystem.cacheDirectory || FileSystem.documentDirectory || "") + fixedName;
-  const headers = await getAuthHeadersAcc();
-
-  const res = await FileSystem.downloadAsync(u, target, headers ? { headers } : undefined);
-  const fileUri = res?.uri || target;
-
-  const canShare = await Sharing.isAvailableAsync();
-  if (canShare) {
-    const mimeType = guessMime(fixedName);
-    await Sharing.shareAsync(fileUri, mimeType ? { mimeType } : undefined);
-    return;
-  }
-
-  await WebBrowser.openBrowserAsync(u);
+  await openSignedUrlUniversal(url, ensureExt(safeFileNameLite(fileName || "file"), url));
 }
 
 export function rowsShallowEqual(a: AccountantInboxRow[], b: AccountantInboxRow[]) {

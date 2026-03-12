@@ -30,7 +30,10 @@ import {
   type ReqItemRow,
   type RequestMetaPatch
 } from "../../lib/catalog_api";
-import { runPdfTop } from "../../lib/pdfRunner";
+import { useRouter } from "expo-router";
+import { buildPdfFileName } from "../../lib/documents/pdfDocument";
+import { preparePdfDocument, previewPdfDocument } from "../../lib/documents/pdfDocumentActions";
+import { generateRequestPdfDocument } from "../../lib/documents/pdfDocumentGenerators";
 import ForemanDropdown from "./ForemanDropdown";
 import { s } from "./foreman.styles";
 import { UI } from "./foreman.ui";
@@ -211,6 +214,7 @@ const getErrorMessage = (error: unknown, fallback: string) => {
 };
 
 export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }: Props) {
+  const router = useRouter();
   const insets = useSafeAreaInsets();
   const modalHeaderTopPad = Platform.OS === "web" ? 16 : (insets.top + 10);
   const [userId, setUserId] = useState("");
@@ -765,16 +769,28 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
       Alert.alert("PDF", "Сначала создайте черновик заявки.");
       return;
     }
-    const fileName = displayNo ? `Черновик_${displayNo}` : `Черновик_${rid}`;
-    await runPdfTop({
+    const template = await generateRequestPdfDocument({
+      requestId: rid,
+      originModule: "foreman",
+    });
+    const title = displayNo ? `Черновик ${displayNo}` : `Черновик ${rid}`;
+    const doc = await preparePdfDocument({
       supabase,
       key: `pdf:subcontracts-request:${rid}`,
-      label: "Формируем PDF...",
-      mode: "preview",
-      fileName,
-      getRemoteUrl: () => exportRequestPdf(rid, "preview"),
+      label: "Открываю PDF…",
+      descriptor: {
+        ...template,
+        title,
+        fileName: buildPdfFileName({
+          documentType: "request",
+          title: displayNo || "chernovik",
+          entityId: rid,
+        }),
+      },
+      getRemoteUrl: () => template.uri,
     });
-  }, [requestId, displayNo]);
+    await previewPdfDocument(doc, { router });
+  }, [requestId, displayNo, router]);
 
   const clearDraft = useCallback(async () => {
     if (requestId) {

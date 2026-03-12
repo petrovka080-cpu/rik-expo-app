@@ -1,10 +1,17 @@
 import { useCallback } from "react";
 import type { Dispatch, SetStateAction } from "react";
+import { useRouter } from "expo-router";
 import { Platform, Share } from "react-native";
-import { runPdfTop } from "../../lib/pdfRunner";
+
 import { supabase } from "../../lib/supabaseClient";
-import { exportPaymentOrderPdf, exportProposalPdf } from "../../lib/catalog_api";
-import { openAttachment } from "../../lib/files";
+import {
+  exportProposalPdf,
+  generatePaymentOrderPdfDocument,
+  generateProposalPdfDocument,
+} from "../../lib/catalog_api";
+import { getLatestProposalAttachmentPreview, isPdfLike, openAttachment, openSignedUrlUniversal } from "../../lib/files";
+import { buildPdfFileName, createPdfDocumentDescriptor } from "../../lib/documents/pdfDocument";
+import { preparePdfDocument, previewPdfDocument } from "../../lib/documents/pdfDocumentActions";
 import { fetchLastPaymentIdByProposal } from "./accountant.payment";
 import type { AccountantInboxUiRow } from "./types";
 
@@ -31,32 +38,36 @@ export function useAccountantDocuments(params: Params) {
     currentPaymentId,
     setCurrentPaymentId,
     supplierName,
-    invoiceNo,
-    invoiceDate,
-    bankName,
-    bik,
-    rs,
-    inn,
-    kpp,
     gbusy,
     safeAlert,
     getErrorText,
   } = params;
+  const router = useRouter();
 
   const onOpenProposalPdf = useCallback(async () => {
     const pid = String(current?.proposal_id ?? "").trim();
     if (!pid) return;
 
-    await runPdfTop({
+    const template = await generateProposalPdfDocument(pid, "accountant");
+    const doc = await preparePdfDocument({
       busy: gbusy,
       supabase,
       key: `pdf:acc:prop:${pid}`,
-      label: "Готовлю PDF...",
-      mode: "preview",
-      fileName: `Предложение_${pid}`,
-      getRemoteUrl: () => exportProposalPdf(pid, "preview"),
+      label: "Открываю PDF…",
+      descriptor: {
+        ...template,
+        title: `Предложение ${pid.slice(0, 8)}`,
+        fileName: buildPdfFileName({
+          documentType: "proposal",
+          title: "predlozhenie",
+          entityId: pid,
+        }),
+      },
+      getRemoteUrl: () => template.uri,
     });
-  }, [current, gbusy]);
+
+    await previewPdfDocument(doc, { router });
+  }, [current, gbusy, router]);
 
   const onShareCard = useCallback(async () => {
     try {
@@ -75,30 +86,54 @@ export function useAccountantDocuments(params: Params) {
     }
   }, [current, getErrorText, safeAlert]);
 
+  const previewAttachment = useCallback(async (pid: string, groupKey: string, title: string, busyKey: string) => {
+    const att = await getLatestProposalAttachmentPreview(pid, groupKey);
+    if (!isPdfLike(att.fileName, att.url)) {
+      await openSignedUrlUniversal(att.url, att.fileName);
+      return;
+    }
+
+    const template = createPdfDocumentDescriptor({
+      uri: att.url,
+      title,
+      fileName: att.fileName,
+      documentType: "attachment_pdf",
+      source: "attachment",
+      originModule: "accountant",
+      entityId: pid,
+    });
+    const doc = await preparePdfDocument({
+      busy: gbusy,
+      supabase,
+      key: busyKey,
+      label: "Открываю документ…",
+      descriptor: template,
+      getRemoteUrl: () => att.url,
+    });
+    await previewPdfDocument(doc, { router });
+  }, [gbusy, router]);
+
   const onOpenProposalSource = useCallback(async () => {
     const pid = String(current?.proposal_id ?? "").trim();
     if (!pid) return;
 
     try {
-      await openAttachment(pid, "proposal_pdf", { all: false });
+      await previewAttachment(pid, "proposal_pdf", "Документ предложения", `pdf:acc:proposal-src:${pid}`);
     } catch (e: unknown) {
-      safeAlert(
-        "Р В Р’В Р вЂ™Р’В Р В РІР‚в„ўР вЂ™Р’ВР В Р’В Р В Р‹РВ Р’В Р РЋРІР‚њРВ Р’В Р В Р‹РВ Р†РВ РІР‚С™Р вЂ™Р’В¦Р В Р’В Р вЂ™Р’В Р В Р Р‹Р Р†Р вЂљРЎС›Р В Р’В Р вЂ™Р’В Р В РЎС›Р Р†Р вЂљР’ВР В Р’В Р вЂ™Р’В Р В Р’В Р Р†Р вЂљР’В¦Р В Р’В Р вЂ™Р’В Р В Р Р‹Р Р†Р вЂљР’ВР В Р’В Р вЂ™Р’В Р В Р Р‹Р Р†Р‚Сњ РВ Р’В Р вЂ™Р’В Р В Р Р‹Р Р†Р вЂљРІР‚ќРВ Р’В Р В Р‹РВ Р’В Р Р†Р вЂљРЎв„ўР В Р’В Р вЂ™Р’В Р В РІР‚в„ўР вЂ™Р’ВµР В Р’В Р вЂ™Р’В Р В РЎС›Р Р†Р вЂљР’ВР В Р’В Р вЂ™Р’В Р В РІР‚в„ўР вЂ™Р’В»Р В Р’В Р вЂ™Р’В Р В Р Р‹Р Р†Р вЂљРЎС›Р В Р’В Р вЂ™Р’В Р В РІР‚в„ўР вЂ™Р’В¶Р В Р’В Р вЂ™Р’В Р В РІР‚в„ўР вЂ™Р’ВµР В Р’В Р вЂ™Р’В Р В Р’В Р Р†Р вЂљР’В¦Р В Р’В Р вЂ™Р’В Р В Р Р‹Р Р†Р вЂљР’ВР В Р’В Р В Р‹РВ Р’В Р В Џ",
-        getErrorText(e),
-      );
+      safeAlert("Документ предложения", getErrorText(e));
     }
-  }, [current, getErrorText, safeAlert]);
+  }, [current, getErrorText, previewAttachment, safeAlert]);
 
   const onOpenInvoiceDoc = useCallback(async () => {
     const pid = String(current?.proposal_id ?? "").trim();
     if (!pid) return;
 
     try {
-      await openAttachment(pid, "invoice", { all: false });
+      await previewAttachment(pid, "invoice", "Счет", `pdf:acc:invoice:${pid}`);
     } catch (e: unknown) {
-      safeAlert("Р В Р’В Р вЂ™Р’В Р В Р’В Р В РІР‚в„–Р В Р’В Р В Р‹РВ Р†РВ РІР‚С™Р В Р‹РВ Р’В Р В Р‹РВ Р†РВ РІР‚С™Р вЂ™Р’ВР В Р’В Р В Р‹РВ Р†РВ РІР‚С™С™ (invoice)", getErrorText(e));
+      safeAlert("Счет", getErrorText(e));
     }
-  }, [current, getErrorText, safeAlert]);
+  }, [current, getErrorText, previewAttachment, safeAlert]);
 
   const onOpenPaymentReport = useCallback(async () => {
     const propId = String(current?.proposal_id ?? "").trim();
@@ -110,47 +145,33 @@ export function useAccountantDocuments(params: Params) {
     }
 
     if (!payId) {
-      safeAlert(
-        "Р В Р’В Р вЂ™Р’В Р В Р Р‹РЎСџРВ Р’В Р вЂ™Р’В Р В РІР‚в„ўР вЂ™Р’В»Р В Р’В Р вЂ™Р’В Р В РІР‚в„ўР вЂ™Р’В°Р В Р’В Р В Р‹РВ Р†РВ РІР‚С™РЎв„ўРВ Р’В Р В Р‹РВ Р†РВ РІР‚С™Р вЂ™Р’ВР В Р’В Р вЂ™Р’В Р В РІР‚в„ўР вЂ™Р’В¶Р В Р’В Р вЂ™Р’В Р В Р’В Р Р†Р вЂљР’В¦Р В Р’В Р В Р‹РВ Р†РВ РІР‚С™Р Р†РІР‚С›РІР‚“РВ Р’В Р вЂ™Р’В Р В Р вЂ Р Р†Р вЂљРЎвЂєР Р†Р вЂљРІР‚њ РВ Р’В Р вЂ™Р’В Р В Р Р‹Р Р†Р вЂљРЎС›Р В Р’В Р В Р‹РВ Р†РВ РІР‚С™РЎв„ўРВ Р’В Р В Р‹РВ Р†РВ РІР‚С™Р В Р‹РВ Р’В Р В Р‹РВ Р†РВ РІР‚С™Р вЂ™Р’ВР В Р’В Р В Р‹РВ Р†РВ РІР‚С™РЎв„ў",
-        "РВ Р’В Р вЂ™Р’В Р В Р Р‹Р РЋРЎв„ўР В Р’В Р вЂ™Р’В Р В РІР‚в„ўР вЂ™Р’ВµР В Р’В Р В Р‹РВ Р†РВ РІР‚С™РЎв„ў payment_id. РВ Р’В Р вЂ™Р’В Р В Р’В Р В РІР‚в„–Р В Р’В Р вЂ™Р’В Р В Р’В Р Р†Р вЂљР’В¦Р В Р’В Р вЂ™Р’В Р В РІР‚в„ўР вЂ™Р’В°Р В Р’В Р В Р‹РВ Р†РВ РІР‚С™Р В Р‹РВ Р’В Р вЂ™Р’В Р В РІР‚в„ўР вЂ™Р’В°Р В Р’В Р вЂ™Р’В Р В РІР‚в„ўР вЂ™Р’В»Р В Р’В Р вЂ™Р’В Р В РІР‚в„ўР вЂ™Р’В° Р В Р’В Р вЂ™Р’В Р В РЎС›Р Р†Р вЂљР’ВР В Р’В Р вЂ™Р’В Р В Р Р‹Р Р†Р вЂљРЎС›Р В Р’В Р вЂ™Р’В Р В РІР‚в„ўР вЂ™Р’В±Р В Р’В Р вЂ™Р’В Р В РІР‚в„ўР вЂ™Р’В°Р В Р’В Р вЂ™Р’В Р В Р’В Р Р†Р вЂљР’В Р В Р’В Р В Р‹РВ Р’В Р В РІР‚В°Р В Р’В Р В Р‹РВ Р†РВ РІР‚С™РЎв„ўРВ Р’В Р вЂ™Р’В Р В РІР‚в„ўР вЂ™Р’Вµ Р В Р’В Р вЂ™Р’В Р В Р Р‹Р Р†Р вЂљРІР‚ќРВ Р’В Р вЂ™Р’В Р В РІР‚в„ўР вЂ™Р’В»Р В Р’В Р вЂ™Р’В Р В РІР‚в„ўР вЂ™Р’В°Р В Р’В Р В Р‹РВ Р†РВ РІР‚С™РЎв„ўРВ Р’В Р В Р‹РВ Р†РВ РІР‚С™Р вЂ™Р’ВР В Р’В Р вЂ™Р’В Р В РІР‚в„ўР вЂ™Р’В¶ Р В Р’В Р вЂ™Р’В Р В Р Р‹Р Р†Р вЂљР’ВР В Р’В Р вЂ™Р’В Р В РІР‚в„ўР вЂ™Р’В»Р В Р’В Р вЂ™Р’В Р В Р Р‹Р Р†Р вЂљР’В Р В Р’В Р вЂ™Р’В Р В Р Р‹Р Р†Р вЂљРЎС›Р В Р’В Р В Р‹РВ Р†РВ РІР‚С™РЎв„ўРВ Р’В Р вЂ™Р’В Р В Р Р‹Р Р†Р‚СњРВ Р’В Р В Р‹РВ Р’В Р Р†Р вЂљРЎв„ўР В Р’В Р вЂ™Р’В Р В Р Р‹Р Р†Р вЂљРЎС›Р В Р’В Р вЂ™Р’В Р В Р вЂ Р Р†Р вЂљРЎвЂєР Р†Р вЂљРІР‚њРВ Р’В Р В Р‹РВ Р†РВ РІР‚С™РЎв„ўРВ Р’В Р вЂ™Р’В Р В РІР‚в„ўР вЂ™Р’Вµ Р В Р’В Р вЂ™Р’В Р В Р Р‹Р Р†Р вЂљР’ВР В Р’В Р вЂ™Р’В Р В РІР‚в„ўР вЂ™Р’В· Р В Р’В Р вЂ™Р’В Р В Р’В Р Р†Р вЂљР’В Р В Р’В Р вЂ™Р’В Р В Р Р‹Р Р†Р‚СњРВ Р’В Р вЂ™Р’В Р В РІР‚в„ўР вЂ™Р’В»Р В Р’В Р вЂ™Р’В Р В РІР‚в„ўР вЂ™Р’В°Р В Р’В Р вЂ™Р’В Р В РЎС›Р Р†Р вЂљР’ВР В Р’В Р вЂ™Р’В Р В Р Р‹Р Р†Р‚СњРВ Р’В Р вЂ™Р’В Р В Р Р‹Р Р†Р вЂљР’В Р В Р’В Р Р†Р‚в„ўРВ РІР‚в„ўР вЂ™Р’В«Р В Р’В Р вЂ™Р’В Р В РІР‚в„ўР вЂ™Р’ВР В Р’В Р В Р‹РВ Р’В Р РЋРІР‚њРВ Р’В Р В Р‹РВ Р†РВ РІР‚С™РЎв„ўРВ Р’В Р вЂ™Р’В Р В Р Р‹Р Р†Р вЂљРЎС›Р В Р’В Р В Р‹РВ Р’В Р Р†Р вЂљРЎв„ўР В Р’В Р вЂ™Р’В Р В Р Р‹Р Р†Р вЂљР’ВР В Р’В Р В Р‹РВ Р’В Р В РЏРВ Р’В Р Р†Р‚в„ўРВ РІР‚в„ўР вЂ™Р’В».",
-      );
+      safeAlert("Платежное поручение", "Не найден payment_id для выбранного предложения.");
       return;
     }
 
-    await runPdfTop({
+    const template = await generatePaymentOrderPdfDocument(payId, "accountant");
+    const doc = await preparePdfDocument({
       busy: gbusy,
       supabase,
       key: `pdf:acc:pay:${payId}`,
-      label: "Р В Р’В Р вЂ™Р’В Р В Р Р‹Р Р†Р вЂљРЎвЂќР В Р’В Р В Р‹РВ Р†РВ РІР‚С™РЎв„ўРВ Р’В Р вЂ™Р’В Р В Р Р‹Р Р†Р‚СњРВ Р’В Р В Р‹РВ Р’В Р Р†Р вЂљРЎв„ўР В Р’В Р В Р‹РВ Р†РВ РІР‚С™Р Р†РІР‚С›РІР‚“РВ Р’В Р вЂ™Р’В Р В Р’В Р Р†Р вЂљР’В Р В Р’В Р вЂ™Р’В Р В РІР‚в„ўР вЂ™Р’В°Р В Р’В Р В Р‹РВ Р’В Р Р†Р вЂљРІвЂћвЂ“ Р В Р’В Р вЂ™Р’В Р В Р Р‹Р Р†Р вЂљРЎС›Р В Р’В Р В Р‹РВ Р†РВ РІР‚С™РЎв„ўРВ Р’В Р В Р‹РВ Р†РВ РІР‚С™Р В Р‹РВ Р’В Р В Р‹РВ Р†РВ РІР‚С™Р вЂ™Р’ВР В Р’В Р В Р‹РВ Р†РВ РІР‚С™РЎв„ўРВ Р’В Р В РІР‚В Р В Р’В Р Р†Р вЂљРЎв„ўР В РІР‚в„ўР вЂ™Р’В¦",
-      mode: "preview",
-      fileName: `Р В Р’В Р вЂ™Р’В Р В Р Р‹РЎСџРВ Р’В Р вЂ™Р’В Р В РІР‚в„ўР вЂ™Р’В»Р В Р’В Р вЂ™Р’В Р В РІР‚в„ўР вЂ™Р’В°Р В Р’В Р В Р‹РВ Р†РВ РІР‚С™РЎв„ўРВ Р’В Р вЂ™Р’В Р В РІР‚в„ўР вЂ™Р’ВµР В Р’В Р вЂ™Р’В Р В РІР‚в„ўР вЂ™Р’В¶_${payId}`,
-      getRemoteUrl: () =>
-        exportPaymentOrderPdf(payId, {
-          supplier: supplierName || current?.supplier || null,
-          invoice_number: invoiceNo || current?.invoice_number || null,
-          invoice_date: invoiceDate || current?.invoice_date || null,
-          bank_name: bankName || null,
-          bik: bik || null,
-          rs: rs || null,
-          inn: inn || null,
-          kpp: kpp || null,
+      label: "Открываю платежное поручение…",
+      descriptor: {
+        ...template,
+        title: `Платежное поручение ${payId}`,
+        fileName: buildPdfFileName({
+          documentType: "payment_order",
+          title: supplierName || "payment_order",
+          entityId: payId,
         }),
+      },
+      getRemoteUrl: () => template.uri,
     });
-  }, [
-    bankName,
-    bik,
-    current,
-    currentPaymentId,
-    gbusy,
-    inn,
-    invoiceDate,
-    invoiceNo,
-    kpp,
-    rs,
-    safeAlert,
-    setCurrentPaymentId,
-    supplierName,
-  ]);
+    await previewPdfDocument(doc, { router });
+  }, [current, currentPaymentId, gbusy, router, safeAlert, setCurrentPaymentId, supplierName]);
+
+  const openLegacyAttachment = useCallback(async (pid: string, groupKey: string) => {
+    await openAttachment(pid, groupKey, { all: false });
+  }, []);
 
   return {
     onOpenProposalPdf,
@@ -158,5 +179,6 @@ export function useAccountantDocuments(params: Params) {
     onOpenProposalSource,
     onOpenInvoiceDoc,
     onOpenPaymentReport,
+    openLegacyAttachment,
   };
 }

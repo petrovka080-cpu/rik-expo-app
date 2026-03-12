@@ -1,13 +1,23 @@
 ﻿import type React from "react";
 import { useCallback } from "react";
 import { Alert, Platform } from "react-native";
+import { useRouter } from "expo-router";
 import * as XLSX from "xlsx";
-import { runPdfTop } from "../../lib/pdfRunner";
-import { exportRequestPdf } from "../../lib/catalog_api";
+import { generateRequestPdfDocument } from "../../lib/catalog_api";
+import { preparePdfDocument, previewPdfDocument } from "../../lib/documents/pdfDocumentActions";
+import { buildPdfFileName } from "../../lib/documents/pdfDocument";
 import { toFilterId } from "./director.helpers";
 import type { Group, PendingRow } from "./director.types";
 
-type BusyLike = { isBusy: (key: string) => boolean };
+type BusyLike = {
+  isBusy: (key: string) => boolean;
+  run?: <T>(
+    fn: () => Promise<T>,
+    opts?: { key?: string; label?: string; minMs?: number },
+  ) => Promise<T | null>;
+  show?: (key?: string, label?: string) => void;
+  hide?: (key?: string) => void;
+};
 
 type Deps = {
   busy: BusyLike;
@@ -46,6 +56,7 @@ export function useDirectorRequestActions({
   closeSheet,
   showSuccess,
 }: Deps) {
+  const router = useRouter();
   const exportRequestExcel = useCallback((g: Group) => {
     const rows = g.items;
     if (!rows.length) {
@@ -117,17 +128,26 @@ export function useDirectorRequestActions({
   const openRequestPdf = useCallback(async (g: Group) => {
     const rid = String(g?.request_id ?? "").trim();
     if (!rid) return;
-
-    await runPdfTop({
+    const title = labelForRequest(g.request_id) || `Request ${rid}`;
+    const template = await generateRequestPdfDocument(rid);
+    const doc = await preparePdfDocument({
       busy,
       supabase,
       key: `pdf:req:${rid}`,
       label: "Открываю PDF…",
-      mode: "preview",
-      fileName: `Заявка_${rid}`,
-      getRemoteUrl: () => exportRequestPdf(rid, "preview"),
+      descriptor: {
+        ...template,
+        title,
+        fileName: buildPdfFileName({
+          documentType: "request",
+          title,
+          entityId: rid,
+        }),
+      },
+      getRemoteUrl: () => template.uri,
     });
-  }, [busy, supabase]);
+    await previewPdfDocument(doc, { router });
+  }, [busy, supabase, labelForRequest, router]);
 
   const isRequestPdfBusy = useCallback((g: Group) => {
     const rid = String(g?.request_id ?? "").trim();

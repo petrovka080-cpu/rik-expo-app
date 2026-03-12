@@ -14,7 +14,8 @@ import {
 } from "./buyer.repo";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { enqueueSubmitJob, JOB_QUEUE_ENABLED } from "../../lib/infra/jobQueue";
-import { stageProposalAttachmentForQueue, type QueuedProposalAttachment } from "../../lib/api/storage";
+import { stageProposalAttachmentForQueue } from "../../lib/api/storage";
+import type { QueuedProposalAttachment } from "../../lib/api/queuedProposalAttachments";
 
 type AlertFn = (title: string, message: string) => void;
 type FileLike = File | Blob | {
@@ -648,7 +649,7 @@ type SendToAccountingDeps<TApproved extends MaybeId = MaybeId> = {
 
   invoiceUploadedName?: string; // РІР°Р¶РЅРѕ РґР»СЏ СѓСЃР»РѕРІРёСЏ "!invoiceUploadedName && invFile"
 
-  // html РїСЂРµРґР»РѕР¶РµРЅРёСЏ -> РїСЂРёРєСЂРµРїРёС‚СЊ proposal_pdf
+  // html РїСЂРµРґР»РѕР¶РµРЅРёСЏ -> technical attachment, РЅРµ proposal_pdf
   buildProposalPdfHtml: (pidStr: string) => Promise<string>;
 
   // РѕСЃРЅРѕРІРЅРѕР№ Р°РґР°РїС‚РµСЂ
@@ -706,7 +707,7 @@ export async function sendToAccountingAction<TApproved extends MaybeId = MaybeId
         pidStr,
         blob,
         `proposal_${pidStr.slice(0, 8)}.html`,
-        "proposal_pdf"
+        "proposal_html"
       );
     } catch (e: unknown) {
       p.log?.("[buyer] attach proposal doc failed:", errMessage(e));
@@ -826,7 +827,7 @@ async function rwEnsureProposalPdf(
       pid,
       blob,
       `proposal_${pid.slice(0, 8)}.html`,
-      "proposal_pdf"
+      "proposal_html"
     );
   } catch {
     // 1:1 РЅРµ Р»РѕРјР°РµРј UX

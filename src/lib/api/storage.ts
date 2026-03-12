@@ -4,6 +4,7 @@ import { supabase } from "../supabaseClient";
 import type { QueuedProposalAttachment } from "./queuedProposalAttachments";
 
 const FILES_BUCKET = "proposal_files";
+const TECHNICAL_ATTACHMENT_GROUPS = new Set(["proposal_html"]);
 type NativeFileLike = {
   name?: string | null;
   uri?: string | null;
@@ -192,7 +193,7 @@ export async function uploadProposalAttachment(
   proposalId: string,
   file: unknown,
   filename: string,
-  kind: "invoice" | "payment" | "proposal_pdf" | string,
+  kind: "invoice" | "payment" | "proposal_pdf" | "proposal_html" | string,
 ): Promise<void> {
   const pid = String(proposalId ?? "").trim();
   const groupKey = String(kind ?? "").trim();
@@ -216,6 +217,13 @@ export async function uploadProposalAttachment(
     uploadBody = nativePayload.uploadBody;
     fileName = nativePayload.fileName;
     contentType = nativePayload.contentType;
+  }
+
+  if (groupKey === "proposal_pdf" && contentType !== "application/pdf") {
+    throw new Error("proposal_pdf attachments must be real PDF files");
+  }
+  if (!TECHNICAL_ATTACHMENT_GROUPS.has(groupKey) && groupKey.endsWith("_html")) {
+    throw new Error("HTML technical attachments must use an explicit technical group");
   }
 
   const storagePath = `proposals/${pid}/${groupKey}/${Date.now()}-${sanitizeFilename(fileName)}`;
@@ -254,7 +262,7 @@ export async function stageProposalAttachmentForQueue(
   file: unknown,
   filename: string,
   supplierKey: string,
-  kind: "invoice" | "payment" | "proposal_pdf" | string,
+  kind: "invoice" | "payment" | "proposal_pdf" | "proposal_html" | string,
 ): Promise<QueuedProposalAttachment> {
   const groupKey = String(kind ?? "").trim();
   if (!groupKey) throw new Error("stageProposalAttachmentForQueue: kind/group_key пустой");
@@ -281,6 +289,10 @@ export async function stageProposalAttachmentForQueue(
     contentType = nativePayload.contentType;
     const rawSize = Number((file as NativeFileLike | null | undefined)?.size ?? NaN);
     size = Number.isFinite(rawSize) ? rawSize : null;
+  }
+
+  if (groupKey === "proposal_pdf" && contentType !== "application/pdf") {
+    throw new Error("proposal_pdf queue attachments must be real PDF files");
   }
 
   const storagePath =
