@@ -2,23 +2,8 @@ import { Platform } from "react-native";
 import * as FileSystem from "expo-file-system";
 import type { DocumentDescriptor } from "./pdfDocument";
 import { normalizePdfFileName } from "./pdfDocument";
+import { getFileSystemPaths } from "../fileSystemPaths";
 const FileSystemCompat = FileSystem as any;
-
-function getFileSystemPaths() {
-  const fs = FileSystemCompat || {};
-  // Handle various Expo versions/New Arch property names
-  const cache = fs.cacheDirectory || fs.CacheDirectory;
-  const docs = fs.documentDirectory || fs.DocumentDirectory;
-  
-  if (!cache && !docs) {
-    console.warn("[pdf-document-sessions] FileSystem constants missing. Keys:", Object.keys(fs));
-  }
-  
-  return {
-    cacheDirectory: cache || null,
-    documentDirectory: docs || null
-  };
-}
 
 export type DocumentAsset = {
   assetId: string;
@@ -95,12 +80,7 @@ async function ensureLocalPdfUri(uri: string, fileName: string): Promise<{ uri: 
 
   const normalizedName = normalizePdfFileName(fileName, "document");
   const paths = getFileSystemPaths();
-  const cacheDir = paths.cacheDirectory || paths.documentDirectory;
-  
-  if (!cacheDir) {
-    const keys = Object.keys(FileSystemCompat || {}).join(", ");
-    throw new Error(`FileSystem directory unavailable (Native module not initialized?). Available keys: ${keys}`);
-  }
+  const cacheDir = paths.cacheDir;
   const targetName = `${Date.now()}_${sanitizeStem(normalizedName, "document.pdf")}`;
   const targetUri = `${cacheDir}${targetName}`;
 

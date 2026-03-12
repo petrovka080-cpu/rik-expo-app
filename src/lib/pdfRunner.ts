@@ -6,19 +6,9 @@ import * as Sharing from "expo-sharing";
 import * as FileSystem from "expo-file-system";
 
 import { normalizePdfFileName } from "./documents/pdfDocument";
+import { getFileSystemPaths } from "./fileSystemPaths";
 import { SUPABASE_ANON_KEY } from "./supabaseClient";
 const FileSystemCompat = FileSystem as any;
-
-function getFileSystemPaths() {
-  const fs = FileSystemCompat || {};
-  // Handle various Expo versions/New Arch property names
-  const cache = fs.cacheDirectory || fs.CacheDirectory;
-  const docs = fs.documentDirectory || fs.DocumentDirectory;
-  return {
-    cacheDirectory: cache || null,
-    documentDirectory: docs || null
-  };
-}
 
 export type BusyLike = {
   run?: <T>(
@@ -106,11 +96,7 @@ export async function preparePdfLocalUri(args: {
   const baseName = safeName(args.fileName);
   const localName = baseName.replace(/\.pdf$/i, `_${hash32(url)}.pdf`);
   const paths = getFileSystemPaths();
-  const cacheDir = paths.cacheDirectory || paths.documentDirectory;
-  
-  if (!cacheDir) {
-    throw new Error(`FileSystem directory unavailable (Native module not initialized?). Available keys: ${Object.keys(FileSystemCompat || {}).join(", ")}`);
-  }
+  const cacheDir = paths.cacheDir;
   const localOutput = `${cacheDir}${localName}`;
 
   if (await fileExists(localOutput)) {

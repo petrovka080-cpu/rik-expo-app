@@ -8,6 +8,7 @@ import {
 import * as Print from "expo-print";
 import * as Sharing from "expo-sharing";
 import * as FileSystem from "expo-file-system";
+import { getFileSystemPaths } from "../../src/lib/fileSystemPaths";
 import { supabase } from "../../src/lib/supabaseClient";
 import { LineChart, PieChart } from "react-native-chart-kit";
 import { openHtmlAsPdfUniversal } from "../../src/lib/api/pdf";
@@ -88,7 +89,8 @@ export default function Reports() {
         pipe.map((x) => [humanStatus(x.status), x.cnt])
       );
 
-          const path = FileSystemCompat.cacheDirectory + "reports.csv";
+          const { cacheDir } = getFileSystemPaths();
+          const path = `${cacheDir}reports.csv`;
           await FileSystemCompat.writeAsStringAsync(path, csv, { encoding: "utf8" });
       await Sharing.shareAsync(path);
     } catch (e: any) {

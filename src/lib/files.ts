@@ -1,18 +1,9 @@
 // src/lib/files.ts
 import { Platform, Linking, Alert } from "react-native";
 import * as FileSystem from "expo-file-system";
+import { getFileSystemPaths } from "./fileSystemPaths";
 import { supabase } from "./supabaseClient";
 const FileSystemCompat = FileSystem as any;
-
-function getFileSystemPaths() {
-  const fs = FileSystemCompat || {};
-  const cache = fs.cacheDirectory || fs.CacheDirectory;
-  const docs = fs.documentDirectory || fs.DocumentDirectory;
-  return {
-    cacheDirectory: cache || null,
-    documentDirectory: docs || null,
-  };
-}
 
 
 /** РџРµСЂРµРёСЃРїРѕР»СЊР·СѓРµРј Р°РїР»РѕР°РґРµСЂ РёР· rik_api.ts */
@@ -180,12 +171,7 @@ export async function openSignedUrlUniversal(url: string, fileName?: string) {
   // NATIVE: СЃРєР°С‡РёРІР°РµРј РІ cache Рё РѕС‚РєСЂС‹РІР°РµРј Р»РѕРєР°Р»СЊРЅРѕ
   const clean = safeFileName(fileName || "document.bin");
   const paths = getFileSystemPaths();
-  const baseDir = paths.cacheDirectory || paths.documentDirectory;
-  if (!baseDir) {
-    throw new Error(
-      `FileSystem directory unavailable (Native module not initialized?). Available keys: ${Object.keys(FileSystemCompat || {}).join(", ")}`,
-    );
-  }
+  const baseDir = paths.cacheDir;
   const target = `${baseDir}${Date.now()}_${clean}`;
 
   const res = await FileSystemCompat.downloadAsync(u, target);
