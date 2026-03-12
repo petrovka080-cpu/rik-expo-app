@@ -52,7 +52,17 @@ export async function previewPdfDocument(
     originModule: doc.originModule,
     scheme,
   });
-  const { session } = createDocumentPreviewSession(doc);
+  const { session, asset } = await createDocumentPreviewSession(doc);
+  console.info("[pdf-document-actions] preview_asset", {
+    sessionId: session.sessionId,
+    documentType: asset.documentType,
+    originModule: asset.originModule,
+    uri: asset.uri,
+    scheme: String(asset.uri || "").match(/^([a-z0-9+.-]+):/i)?.[1]?.toLowerCase() || "",
+    fileName: asset.fileName,
+    exists: typeof asset.sizeBytes === "number" ? true : undefined,
+    sizeBytes: asset.sizeBytes,
+  });
   if (opts?.router) {
     opts.router.push({
       pathname: "/pdf-viewer",
@@ -60,7 +70,7 @@ export async function previewPdfDocument(
     });
     return;
   }
-  await openPdfPreview(doc.uri);
+  await openPdfPreview(asset.uri);
 }
 
 export async function sharePdfDocument(doc: DocumentDescriptor): Promise<void> {

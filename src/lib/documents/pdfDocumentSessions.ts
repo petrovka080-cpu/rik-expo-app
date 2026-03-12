@@ -1,5 +1,6 @@
 import { Platform } from "react-native";
 import type { DocumentDescriptor } from "./pdfDocument";
+import { normalizePdfFileName } from "./pdfDocument";
 
 export type DocumentAsset = {
   assetId: string;
@@ -40,6 +41,19 @@ const sessions = new Map<string, DocumentSession>();
 const assets = new Map<string, DocumentAsset>();
 
 let seq = 0;
+let FileSystem: any = null;
+
+try {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  FileSystem = Platform.OS === "web" ? null : require("expo-file-system/legacy");
+} catch {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    FileSystem = require("expo-file-system");
+  } catch {
+    FileSystem = null;
+  }
+}
 
 const nowIso = () => new Date().toISOString();
 
@@ -48,6 +62,75 @@ const getUriScheme = (uri: string) => {
   const match = value.match(/^([a-z0-9+.-]+):/i);
   return match?.[1]?.toLowerCase() || "";
 };
+
+const sanitizeStem = (value: string, fallback: string) =>
+  (String(value || "").trim() || fallback)
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-zA-Z0-9._-]+/g, "_")
+    .replace(/_+/g, "_")
+    .replace(/^_+|_+$/g, "") || fallback;
+
+const isHttpUri = (uri: string) => /^https?:\/\//i.test(String(uri || "").trim());
+const isFileUri = (uri: string) => /^file:\/\//i.test(String(uri || "").trim());
+
+async function getFileInfo(uri: string) {
+  if (!FileSystem?.getInfoAsync) return null;
+  try {
+    return await FileSystem.getInfoAsync(uri);
+  } catch {
+    return null;
+  }
+}
+
+async function ensureLocalPdfUri(uri: string, fileName: string): Promise<{ uri: string; sizeBytes?: number }> {
+  if (!FileSystem) {
+    throw new Error("Mobile PDF materialization requires expo-file-system");
+  }
+
+  const normalizedName = normalizePdfFileName(fileName, "document");
+  const cacheDir = FileSystem.cacheDirectory || FileSystem.documentDirectory;
+  if (!cacheDir) throw new Error("FileSystem cacheDirectory is unavailable");
+  const targetName = `${Date.now()}_${sanitizeStem(normalizedName, "document.pdf")}`;
+  const targetUri = `${cacheDir}${targetName}`;
+
+  if (isHttpUri(uri)) {
+    const downloaded = await FileSystem.downloadAsync(uri, targetUri);
+    const downloadedUri = String(downloaded?.uri || targetUri);
+    const info = await getFileInfo(downloadedUri);
+    if (!info?.exists) throw new Error("Downloaded PDF file is missing after materialization");
+    return {
+      uri: downloadedUri,
+      sizeBytes: Number.isFinite(Number(info.size)) ? Number(info.size) : undefined,
+    };
+  }
+
+  const info = await getFileInfo(uri);
+  if (!info?.exists) {
+    throw new Error("Local PDF file does not exist");
+  }
+
+  const sourceUri = String(uri || "").trim();
+  const keepAsIs =
+    isFileUri(sourceUri) &&
+    normalizedName.toLowerCase().endsWith(".pdf") &&
+    sourceUri.toLowerCase().endsWith(".pdf");
+
+  if (keepAsIs) {
+    return {
+      uri: sourceUri,
+      sizeBytes: Number.isFinite(Number(info.size)) ? Number(info.size) : undefined,
+    };
+  }
+
+  await FileSystem.copyAsync({ from: sourceUri, to: targetUri });
+  const copiedInfo = await getFileInfo(targetUri);
+  if (!copiedInfo?.exists) throw new Error("Materialized local PDF file is missing");
+  return {
+    uri: targetUri,
+    sizeBytes: Number.isFinite(Number(copiedInfo.size)) ? Number(copiedInfo.size) : undefined,
+  };
+}
 
 const makeId = (prefix: string) => {
   seq += 1;
@@ -105,18 +188,38 @@ export function clearDocumentSessions() {
   assets.clear();
 }
 
-export function materializePdfAsset(doc: DocumentDescriptor): DocumentAsset {
+export async function materializePdfAsset(doc: DocumentDescriptor): Promise<DocumentAsset> {
   cleanupExpiredDocumentSessions();
-  const uri = String(doc.uri || "").trim();
-  const scheme = getUriScheme(uri);
-  if (!uri) throw new Error("Document asset URI is empty");
-  if (Platform.OS !== "web" && scheme === "blob") {
-    throw new Error("Mobile preview cannot use blob URI; expected file:// or https://");
+  const rawUri = String(doc.uri || "").trim();
+  const rawScheme = getUriScheme(rawUri);
+  if (!rawUri) throw new Error("Document asset URI is empty");
+
+  let finalUri = rawUri;
+  let sizeBytes: number | undefined;
+
+  if (Platform.OS !== "web") {
+    if (rawScheme === "blob" || rawScheme === "data") {
+      throw new Error("Mobile preview cannot use blob/data URI; expected a local PDF file");
+    }
+
+    const materialized = await ensureLocalPdfUri(rawUri, doc.fileName);
+    finalUri = materialized.uri;
+    sizeBytes = materialized.sizeBytes;
+
+    if (getUriScheme(finalUri) !== "file") {
+      throw new Error("Mobile preview session requires a local file:// PDF asset");
+    }
+
+    const finalInfo = await getFileInfo(finalUri);
+    if (!finalInfo?.exists) {
+      throw new Error("Mobile preview local PDF asset is missing");
+    }
   }
+
   const assetId = makeId("asset");
   const asset: DocumentAsset = {
     assetId,
-    uri,
+    uri: finalUri,
     fileName: doc.fileName,
     title: doc.title,
     mimeType: doc.mimeType,
@@ -125,8 +228,22 @@ export function materializePdfAsset(doc: DocumentDescriptor): DocumentAsset {
     source: doc.source,
     createdAt: doc.createdAt || nowIso(),
     entityId: doc.entityId,
+    sizeBytes,
   };
   assets.set(assetId, asset);
+  console.info("[pdf-document-sessions] materialized_asset", {
+    platform: Platform.OS,
+    documentType: asset.documentType,
+    originModule: asset.originModule,
+    source: asset.source,
+    rawUri,
+    rawScheme,
+    finalUri: asset.uri,
+    finalScheme: getUriScheme(asset.uri),
+    fileName: asset.fileName,
+    exists: typeof asset.sizeBytes === "number" ? true : undefined,
+    sizeBytes: asset.sizeBytes,
+  });
   return asset;
 }
 
@@ -145,8 +262,8 @@ export function createDocumentSession(asset: DocumentAsset, status: DocumentSess
   return session;
 }
 
-export function createDocumentPreviewSession(doc: DocumentDescriptor): { session: DocumentSession; asset: DocumentAsset } {
-  const asset = materializePdfAsset(doc);
+export async function createDocumentPreviewSession(doc: DocumentDescriptor): Promise<{ session: DocumentSession; asset: DocumentAsset }> {
+  const asset = await materializePdfAsset(doc);
   const session = createDocumentSession(asset, "ready");
   return { session, asset };
 }

@@ -142,11 +142,17 @@ export default function PdfViewerScreen() {
         originModule: next.asset.originModule,
         uri: next.asset.uri,
         scheme,
+        fileName: next.asset.fileName,
+        exists: typeof next.asset.sizeBytes === "number" ? true : undefined,
+        sizeBytes: next.asset.sizeBytes,
         renderer: Platform.OS === "web" ? "web" : "mobile",
         openTime: new Date().toISOString(),
       });
-      if (Platform.OS !== "web" && scheme === "blob") {
-        markError("Mobile preview received unsupported blob URI.");
+      if (
+        Platform.OS !== "web" &&
+        (scheme !== "file" || !String(next.asset.uri || "").toLowerCase().endsWith(".pdf"))
+      ) {
+        markError("Mobile preview requires a local file:// PDF asset.");
         return;
       }
       enterLoading();
@@ -328,6 +334,14 @@ export default function PdfViewerScreen() {
                 markError(`Blocked unsupported mobile navigation: ${requestScheme || "unknown"}`);
               }
               return allow;
+            }}
+            onOpenWindow={(event) => {
+              console.error("[pdf-viewer] blocked_mobile_window_open", {
+                targetUrl: event.nativeEvent.targetUrl,
+                documentType: asset?.documentType ?? null,
+                originModule: asset?.originModule ?? null,
+              });
+              markError("Blocked external handoff during mobile preview.");
             }}
             onError={(event) => {
               const message = event.nativeEvent.description || "WebView failed";
