@@ -291,13 +291,21 @@ export async function handleCreateProposalsBySupplierAction(p: CreateProposalsDe
     if (JOB_QUEUE_ENABLED) {
       const tQueue = Date.now();
       const clientRequestId = makeClientRequestId();
+      const attachmentEntries = Object.entries(p.attachmentsNow || {});
+      const attachmentInputCount = attachmentEntries.filter(([, value]) => !!value?.file).length;
       const stagedAttachments: QueuedProposalAttachment[] = [];
-      for (const [key, value] of Object.entries(p.attachmentsNow || {})) {
+      for (const [key, value] of attachmentEntries) {
         const fileName = String(value?.name || "").trim();
         if (!fileName || !value?.file) continue;
         stagedAttachments.push(
           await stageProposalAttachmentForQueue(value.file, fileName, key, "supplier_quote"),
         );
+      }
+      if (attachmentInputCount > 0 && stagedAttachments.length === 0) {
+        console.warn("[buyer.submit] queue.attachments.stagedEmpty", {
+          attachmentKeys: attachmentEntries.map(([key]) => key),
+          attachmentInputCount,
+        });
       }
       const intentPayload: BuyerSubmitIntentPayload = {
         requestId: p.requestId ? String(p.requestId).trim() || null : null,

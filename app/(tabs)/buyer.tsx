@@ -150,13 +150,10 @@ export default function BuyerScreen() {
 
   const pickedIds = useMemo(() => selectPickedIds(picked), [picked]);
 
-
-
   const pickedIdsRef = useLatest(pickedIds);
   const metaRef = useLatest(meta);
   const attachmentsRef = useLatest(attachments);
   const buyerFioRef = useLatest(buyerFio);
-
 
   const [showAttachBlock, setShowAttachBlock] = useState(false);
   const {

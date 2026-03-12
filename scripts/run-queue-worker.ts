@@ -1,5 +1,16 @@
 import fs from "node:fs";
 import path from "node:path";
+import process from "node:process";
+
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+function ignoreBrokenPipe(stream: NodeJS.WriteStream | undefined) {
+  if (!stream) return;
+  stream.on("error", (error: NodeJS.ErrnoException) => {
+    if (error?.code === "EPIPE") return;
+    throw error;
+  });
+}
 
 function loadEnvFile(filePath: string) {
   if (!fs.existsSync(filePath)) return;
@@ -20,6 +31,9 @@ loadEnvFile(path.join(root, ".env.local"));
 loadEnvFile(path.join(root, ".env"));
 process.env.RIK_QUEUE_WORKER_USE_SERVICE_ROLE = "true";
 
+ignoreBrokenPipe(process.stdout);
+ignoreBrokenPipe(process.stderr);
+
 async function main() {
   console.info("[queue.runner] starting", {
     JOB_QUEUE_ENABLED:
@@ -28,14 +42,41 @@ async function main() {
       process.env.RIK_QUEUE_WORKER_USE_SERVICE_ROLE === "true" ? "service_role" : "anon",
   });
 
-  const { startQueueWorker } = await import("../src/workers/queueWorker");
-  startQueueWorker({
-    workerId: `node:${Date.now().toString(36)}`,
+  let handle: { stop: () => void } | null = null;
+
+  const stop = () => {
+    try {
+      handle?.stop();
+    } catch {}
+  };
+
+  process.on("SIGINT", () => {
+    stop();
+    process.exit(0);
+  });
+  process.on("SIGTERM", () => {
+    stop();
+    process.exit(0);
   });
 
-  setInterval(() => {
-    // Keep process alive.
-  }, 1 << 30);
+  while (true) {
+    try {
+      const { startQueueWorker } = await import("../src/workers/queueWorker");
+      handle = startQueueWorker({
+        workerId: `node:${Date.now().toString(36)}`,
+      });
+
+      await new Promise<void>(() => {
+        // Keep process alive while the worker loop runs.
+      });
+    } catch (error: unknown) {
+      const message = error instanceof Error && error.message.trim()
+        ? error.message.trim()
+        : String(error ?? "unknown worker bootstrap error");
+      console.error("[queue.runner] crashed, restarting", { message });
+      await sleep(5000);
+    }
+  }
 }
 
 void main();

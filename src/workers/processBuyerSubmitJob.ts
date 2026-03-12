@@ -7,7 +7,7 @@ import type {
 import {
   bindQueuedProposalAttachmentToProposal,
   type QueuedProposalAttachment,
-} from "../lib/api/storage";
+} from "../lib/api/queuedProposalAttachments";
 
 type CreateProposalsApi = (
   payload: ProposalBucketInput[],

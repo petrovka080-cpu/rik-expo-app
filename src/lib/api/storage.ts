@@ -1,17 +1,9 @@
 import { Platform } from "react-native";
 import * as FileSystem from "expo-file-system/legacy";
 import { supabase } from "../supabaseClient";
+import type { QueuedProposalAttachment } from "./queuedProposalAttachments";
 
 const FILES_BUCKET = "proposal_files";
-export type QueuedProposalAttachment = {
-  supplierKey: string;
-  fileName: string;
-  bucketId: string;
-  storagePath: string;
-  groupKey: string;
-  mimeType?: string | null;
-  size?: number | null;
-};
 type NativeFileLike = {
   name?: string | null;
   uri?: string | null;
