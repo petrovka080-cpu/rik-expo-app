@@ -2,6 +2,7 @@
 import { Platform, Linking, Alert } from "react-native";
 import * as FileSystem from "expo-file-system";
 import { getFileSystemPaths } from "./fileSystemPaths";
+import { hashString32 } from "./pdfFileContract";
 import { supabase } from "./supabaseClient";
 const FileSystemCompat = FileSystem as any;
 
@@ -172,7 +173,8 @@ export async function openSignedUrlUniversal(url: string, fileName?: string) {
   const clean = safeFileName(fileName || "document.bin");
   const paths = getFileSystemPaths();
   const baseDir = paths.cacheDir;
-  const target = `${baseDir}${Date.now()}_${clean}`;
+  const hash = hashString32(u);
+  const target = `${baseDir}file_${hash}_${clean}`;
 
   const res = await FileSystemCompat.downloadAsync(u, target);
   const localUri = res?.uri;

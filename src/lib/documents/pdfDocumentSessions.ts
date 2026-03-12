@@ -3,7 +3,7 @@ import * as FileSystem from "expo-file-system";
 import type { DocumentDescriptor } from "./pdfDocument";
 import { normalizePdfFileName } from "./pdfDocument";
 import { getFileSystemPaths } from "../fileSystemPaths";
-import { getUriScheme, isHttpUri, normalizeLocalFileUri } from "../pdfFileContract";
+import { getUriScheme, hashString32, isHttpUri, normalizeLocalFileUri } from "../pdfFileContract";
 const FileSystemCompat = FileSystem as any;
 
 export type DocumentAsset = {
@@ -100,7 +100,8 @@ async function ensureLocalPdfUri(uri: string, fileName: string): Promise<{ uri: 
   const normalizedName = normalizePdfFileName(fileName, "document");
   const paths = getFileSystemPaths();
   const cacheDir = paths.cacheDir;
-  const targetName = `${Date.now()}_${sanitizeStem(normalizedName, "document.pdf")}`;
+  const hash = hashString32(uri);
+  const targetName = `pdf_${hash}_${sanitizeStem(normalizedName, "document.pdf")}`;
   const targetUri = `${cacheDir}${targetName}`;
   logMaterializeStage("pdf_source_received", {
     uri,

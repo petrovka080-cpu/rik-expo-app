@@ -8,6 +8,16 @@ export function isHttpUri(uri?: string | null): boolean {
   return /^https?:\/\//i.test(String(uri || "").trim());
 }
 
+export function hashString32(input: string): string {
+  let h = 2166136261;
+  const s = String(input || "");
+  for (let i = 0; i < s.length; i += 1) {
+    h ^= s.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return (h >>> 0).toString(16);
+}
+
 export function normalizeLocalFileUri(uri?: string | null): string {
   const value = String(uri || "").trim();
   if (!value) {
@@ -16,11 +26,14 @@ export function normalizeLocalFileUri(uri?: string | null): string {
 
   const scheme = getUriScheme(value);
   if (scheme === "file") return value;
-  if (scheme) {
-    throw new Error(`Unsupported local file URI scheme: ${scheme}`);
+  
+  // If no scheme but looks like absolute path (starts with / on Unix/iOS or C:\ on Windows)
+  if (value.startsWith("/") || /^[a-zA-Z]:\\/.test(value)) {
+    return `file://${value}`;
   }
 
-  if (value.startsWith("/")) {
+  // Handle common Expo FileSystem constants if they leaked as strings
+  if (value.includes("FileSystem/")) {
     return `file://${value}`;
   }
 

@@ -7,7 +7,7 @@ import * as FileSystem from "expo-file-system";
 
 import { normalizePdfFileName } from "./documents/pdfDocument";
 import { getFileSystemPaths } from "./fileSystemPaths";
-import { getUriScheme, isHttpUri, normalizeLocalFileUri } from "./pdfFileContract";
+import { getUriScheme, hashString32, isHttpUri, normalizeLocalFileUri } from "./pdfFileContract";
 import { SUPABASE_ANON_KEY } from "./supabaseClient";
 const FileSystemCompat = FileSystem as any;
 
@@ -65,18 +65,11 @@ function logPdfRunnerStage(
   });
 }
 
-function safeName(name?: string) {
-  return normalizePdfFileName(name, `pdf_${Date.now()}`);
+function safeName(name?: string, stableSeed?: string) {
+  const fallbackHash = hashString32(String(name || stableSeed || "pdf"));
+  return normalizePdfFileName(name, `pdf_${fallbackHash}.pdf`);
 }
 
-function hash32(input: string) {
-  let h = 2166136261;
-  for (let i = 0; i < input.length; i += 1) {
-    h ^= input.charCodeAt(i);
-    h = Math.imul(h, 16777619);
-  }
-  return (h >>> 0).toString(16);
-}
 
 async function fileExists(uri: string) {
   try {
@@ -149,23 +142,19 @@ export async function preparePdfLocalUri(args: {
     return normalizedCachedUri;
   }
 
-  const baseName = safeName(args.fileName);
-  const localName = baseName.replace(/\.pdf$/i, `_${hash32(url)}.pdf`);
+  const baseName = safeName(args.fileName, url);
+  const localName = baseName.replace(/\.pdf$/i, `_${hashString32(url)}.pdf`);
   const paths = getFileSystemPaths();
   const cacheDir = paths.cacheDir;
+
+  if (!cacheDir) {
+    throw new Error(`FileSystem directory unavailable (Native module not initialized?). Available keys: ${Object.keys(FileSystemCompat || {}).join(", ")}`);
+  }
   const localOutput = `${cacheDir}${localName}`;
 
   if (await fileExists(localOutput)) {
     const normalizedLocalOutput = normalizeLocalFileUri(localOutput);
     urlToLocal.set(url, normalizedLocalOutput);
-    const info = await FileSystemCompat.getInfoAsync(normalizedLocalOutput);
-    logPdfRunnerStage("pdf_download_exists_yes", {
-      uri: normalizedLocalOutput,
-      exists: Boolean(info?.exists),
-      size: Number.isFinite(Number(info?.size)) ? Number(info.size) : undefined,
-      sourceKind: "local",
-      fileName: args.fileName,
-    });
     return normalizedLocalOutput;
   }
 
