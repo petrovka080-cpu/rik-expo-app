@@ -3,7 +3,7 @@ import { router } from "expo-router";
 
 import type { WorkMaterialRow } from "../../components/WorkMaterialsEditor";
 import { openHtmlAsPdfUniversal } from "../../lib/api/pdf";
-import { normalizeRuText } from "../../lib/text/encoding";
+import { normalizeRuText, normalizeRuTextForHtml } from "../../lib/text/encoding";
 import { supabase } from "../../lib/supabaseClient";
 import { buildPdfFileName } from "../../lib/documents/pdfDocument";
 import { preparePdfDocument, previewPdfDocument } from "../../lib/documents/pdfDocumentActions";
@@ -315,7 +315,12 @@ async function generateWorkPdf(
     </html>
     `;
 
-    const pdfUri = await openHtmlAsPdfUniversal(normalizeRuText(html));
+    const pdfUri = await openHtmlAsPdfUniversal(
+      normalizeRuTextForHtml(html, {
+        documentType: "contractor_act",
+        source: "contractor_generate_work_pdf",
+      }),
+    );
     if (!pdfUri) {
       Alert.alert("PDF", "Unable to generate PDF. Please try again.");
       return;

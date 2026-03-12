@@ -1,6 +1,6 @@
 // src/lib/api/pdf_warehouse.ts
 import { openHtmlAsPdfUniversal } from "./pdf";
-import { normalizeRuText } from "../text/encoding";
+import { normalizeRuText, normalizeRuTextForHtml } from "../text/encoding";
 
 export type WarehouseIssueHead = {
   issue_id: number | string;
@@ -455,10 +455,16 @@ export function buildWarehouseIssuesRegisterHtml(args: {
 }
 
 export async function exportWarehouseHtmlPdf(opts: { fileName: string; html: string }): Promise<string> {
-  return await openHtmlAsPdfUniversal(normalizeRuText(opts.html), {
-    fileName: opts.fileName,
-    title: opts.fileName,
-  } as any);
+  return await openHtmlAsPdfUniversal(
+    normalizeRuTextForHtml(opts.html, {
+      documentType: "warehouse_document",
+      source: "warehouse_html_export",
+    }),
+    {
+      fileName: opts.fileName,
+      title: opts.fileName,
+    } as any,
+  );
 }
 
 // ====== NEW REPORTS (period) — Materials + Objects/Works ======

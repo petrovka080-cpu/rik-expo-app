@@ -2,7 +2,7 @@
 import { openHtmlAsPdfUniversal } from "./pdf";
 import { listAccountantInbox } from "./accountant";
 import { supabase } from "../supabaseClient";
-import { normalizeRuText } from "../text/encoding";
+import { normalizeRuText, normalizeRuTextForHtml } from "../text/encoding";
 
 const esc = (s: any) =>
   String(s ?? "")
@@ -27,7 +27,12 @@ export async function exportDirectorFinancePdf(): Promise<string> {
     <pre>${esc(JSON.stringify(rows ?? [], null, 2))}</pre>
   </body></html>`;
 
-  return openHtmlAsPdfUniversal(normalizeRuText(html));
+  return openHtmlAsPdfUniversal(
+    normalizeRuTextForHtml(html, {
+      documentType: "director_report",
+      source: "director_finance",
+    }),
+  );
 }
 
 const nnum = (v: any) => {
@@ -523,7 +528,12 @@ export async function exportDirectorSupplierSummaryPdf(p: {
   <div class="page-footer"></div>
 </body></html>`;
 
-  return openHtmlAsPdfUniversal(normalizeRuText(html));
+  return openHtmlAsPdfUniversal(
+    normalizeRuTextForHtml(html, {
+      documentType: "supplier_summary",
+      source: "director_supplier_summary",
+    }),
+  );
 }
 
 // ============================================================================
@@ -1048,7 +1058,12 @@ export async function exportDirectorManagementReportPdf(p: {
   <div class="page-footer"></div>
 </body></html>`;
 
-  return openHtmlAsPdfUniversal(normalizeRuText(html));
+  return openHtmlAsPdfUniversal(
+    normalizeRuTextForHtml(html, {
+      documentType: "director_report",
+      source: "director_management",
+    }),
+  );
 }
 
 type DirectorProductionPdfInput = {
@@ -1224,7 +1239,12 @@ export async function exportDirectorProductionReportPdf(p: DirectorProductionPdf
     <div class="page-footer"></div>
   </body></html>`;
 
-  return openHtmlAsPdfUniversal(normalizeRuText(html));
+  return openHtmlAsPdfUniversal(
+    normalizeRuTextForHtml(html, {
+      documentType: "director_report",
+      source: "director_production",
+    }),
+  );
 }
 
 type DirectorSubcontractPdfInput = {
@@ -1392,5 +1412,10 @@ export async function exportDirectorSubcontractReportPdf(p: DirectorSubcontractP
     <div class="page-footer"></div>
   </body></html>`;
 
-  return openHtmlAsPdfUniversal(normalizeRuText(html));
+  return openHtmlAsPdfUniversal(
+    normalizeRuTextForHtml(html, {
+      documentType: "director_report",
+      source: "director_subcontract",
+    }),
+  );
 }

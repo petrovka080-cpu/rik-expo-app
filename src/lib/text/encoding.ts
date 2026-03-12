@@ -151,3 +151,59 @@ export function normalizeRuText<T>(value: T): T {
 
   return (best as unknown) as T;
 }
+
+type NormalizeRuHtmlOptions = {
+  documentType?: string | null;
+  source?: string | null;
+  maxLength?: number;
+};
+
+const looksLikeHtmlDocument = (input: string) =>
+  /<!doctype html|<html\b|<head\b|<body\b|<\/html>/i.test(input);
+
+export function normalizeRuTextForHtml<T>(value: T, opts?: NormalizeRuHtmlOptions): T {
+  if (value == null) return value;
+
+  try {
+    const src = String(value);
+    if (!src) return value;
+
+    const htmlLike = looksLikeHtmlDocument(src);
+    const maxLength = Number.isFinite(Number(opts?.maxLength)) ? Number(opts?.maxLength) : 12000;
+
+    console.info("[encoding] normalize_ru_text_started", {
+      inputType: typeof value,
+      stringLength: src.length,
+      looksLikeHtml: htmlLike,
+      documentType: opts?.documentType ?? null,
+      source: opts?.source ?? null,
+    });
+
+    if (htmlLike && src.length > maxLength) {
+      console.warn("[encoding] normalize_ru_text_skipped_large_html", {
+        stringLength: src.length,
+        maxLength,
+        documentType: opts?.documentType ?? null,
+        source: opts?.source ?? null,
+      });
+      return value;
+    }
+
+    const out = normalizeRuText(value);
+    console.info("[encoding] normalize_ru_text_done", {
+      stringLength: src.length,
+      looksLikeHtml: htmlLike,
+      documentType: opts?.documentType ?? null,
+      source: opts?.source ?? null,
+    });
+    return out;
+  } catch (error) {
+    console.error("[encoding] normalize_ru_text_failed", {
+      inputType: typeof value,
+      documentType: opts?.documentType ?? null,
+      source: opts?.source ?? null,
+      error: error instanceof Error ? error.message : String(error),
+    });
+    return value;
+  }
+}

@@ -20,9 +20,27 @@ type PreparePdfDocumentArgs = {
 
 export async function preparePdfDocument(args: PreparePdfDocumentArgs): Promise<DocumentDescriptor> {
   const run = async () => {
+    console.info("[pdf-document-actions] prepare_requested", {
+      stage: "prepare_requested",
+      platform: Platform.OS,
+      documentType: args.descriptor.documentType,
+      originModule: args.descriptor.originModule,
+      sourceUri: args.descriptor.uri ?? null,
+      fileName: args.descriptor.fileName,
+      busyKey: args.key ?? null,
+    });
     const uri = await preparePdfLocalUri({
       supabase: args.supabase,
       getRemoteUrl: args.getRemoteUrl,
+      fileName: args.descriptor.fileName,
+    });
+    console.info("[pdf-document-actions] prepare_ready", {
+      stage: "prepare_ready",
+      platform: Platform.OS,
+      documentType: args.descriptor.documentType,
+      originModule: args.descriptor.originModule,
+      finalUri: uri,
+      finalScheme: String(uri || "").match(/^([a-z0-9+.-]+):/i)?.[1]?.toLowerCase() || "",
       fileName: args.descriptor.fileName,
     });
     return { ...args.descriptor, uri };
