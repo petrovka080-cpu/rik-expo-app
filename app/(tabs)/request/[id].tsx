@@ -24,8 +24,8 @@ export default function RequestDetails() {
         .single();
 
       if (error) {
-        setErrorText("Ошибка загрузки заявки.");
-        console.log("Supabase error:", error);
+        setErrorText("Не удалось загрузить заявку.");
+        if (__DEV__) console.log("Supabase error:", error);
       } else {
         setItem(data);
       }
@@ -38,7 +38,7 @@ export default function RequestDetails() {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
         <ActivityIndicator size="large" />
-        <Text style={{ marginTop: 8 }}>Загрузка…</Text>
+        <Text style={{ marginTop: 8 }}>Загрузка...</Text>
       </View>
     );
   }
@@ -92,6 +92,3 @@ export default function RequestDetails() {
     </View>
   );
 }
-
-
-

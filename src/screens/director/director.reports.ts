@@ -187,7 +187,7 @@ export function useDirectorReports({ fmtDateOnly }: Deps) {
         console.warn("[director] fetchReport:", message);
         if (!opts?.background) {
           setRepData(null);
-          Alert.alert("??????", message);
+          Alert.alert("Не удалось получить отчет", message);
         }
       } finally {
         inFlightReportRef.current.delete(key);
@@ -290,7 +290,7 @@ export function useDirectorReports({ fmtDateOnly }: Deps) {
         setRepDiscipline(null);
         setRepDisciplinePriceLoading(false);
         if (!opts?.background) {
-          Alert.alert("??????", message);
+          Alert.alert("Не удалось получить дисциплины", message);
         }
       } finally {
         inFlightDisciplineRef.current.delete(key);
@@ -414,7 +414,7 @@ export function useDirectorReports({ fmtDateOnly }: Deps) {
       setRepData(null);
       setRepOptObjects([]);
       setRepOptObjectIdByName({});
-      Alert.alert("??????", message);
+      Alert.alert("Не удалось пересчитать отчет", message);
     } finally {
       setRepOptLoading(false);
       setRepLoading(false);
@@ -469,7 +469,7 @@ export function useDirectorReports({ fmtDateOnly }: Deps) {
       const message = getErrorMessage(e, "Не удалось обновить отчет");
       console.warn("[director] refreshReports:", message);
       setRepData(null);
-      Alert.alert("??????", message);
+      Alert.alert("Не удалось обновить отчет", message);
     } finally {
       setRepOptLoading(false);
       setRepLoading(false);

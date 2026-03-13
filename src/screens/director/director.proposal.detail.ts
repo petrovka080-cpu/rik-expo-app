@@ -94,7 +94,7 @@ export function useDirectorProposalDetail({
       setPropAttByProp((prev) => ({ ...prev, [pid]: rows }));
     } catch (e: unknown) {
       const message = errText(e) || "Не удалось загрузить вложения предложения";
-      console.warn("[director] loadProposalAttachments:", message);
+      if (__DEV__) console.warn("[director] loadProposalAttachments:", message);
       setPropAttErrByProp((prev) => ({ ...prev, [pid]: message }));
       setPropAttByProp((prev) => ({ ...prev, [pid]: [] }));
     } finally {
@@ -160,7 +160,7 @@ export function useDirectorProposalDetail({
       await fetchProps(true);
       closeSheet();
     } catch (e: unknown) {
-      Alert.alert("Ошибка", errText(e) || "Не удалось вернуть предложение");
+      Alert.alert("Не удалось вернуть предложение", errText(e) || "Попробуйте еще раз.");
     } finally {
       setPropReturnId(null);
     }

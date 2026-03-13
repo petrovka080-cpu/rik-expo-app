@@ -7,12 +7,12 @@ export const nz = (v: unknown, d = 0) => (Number.isFinite(Number(v)) ? Number(v)
 export const pickErr = (e: unknown) => {
   const err = e as { message?: string; error_description?: string; hint?: string } | null;
   const msg = err?.message || err?.error_description || err?.hint || (typeof e === 'string' ? e : JSON.stringify(e));
-  return String(msg || "Error");
+  return String(msg || "Неизвестная ошибка");
 };
 
 export const showErr = (e: unknown) => {
   console.error("[warehouse error]", pickErr(e));
-  Alert.alert("Error", pickErr(e));
+  Alert.alert("Не удалось выполнить действие", pickErr(e));
 };
 
 

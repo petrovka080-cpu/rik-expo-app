@@ -123,13 +123,13 @@ export function useDirectorProposalActions({
 
       const rid = String(q.data?.request_item_id || "").trim();
       if (!rid) {
-        Alert.alert("РћС€РёР±РєР°", "Р’ СЃС‚СЂРѕРєРµ РїСЂРµРґР»РѕР¶РµРЅРёСЏ РЅРµС‚ request_item_id (РІ Р±Р°Р·Рµ).");
+        Alert.alert("Данные не найдены", "В строке предложения отсутствует request_item_id.");
         return;
       }
 
       const beforeCount = (itemsByProp[pidStr] || items || []).length;
       const isLast = beforeCount <= 1;
-      const payload = [{ request_item_id: rid, decision: "rejected", comment: "РћС‚РєР»РѕРЅРµРЅРѕ РґРёСЂРµРєС‚РѕСЂРѕРј" }];
+      const payload = [{ request_item_id: rid, decision: "rejected", comment: "Отклонено директором" }];
 
       const res = await supabase.rpc("director_decide_proposal_items", {
         p_proposal_id: pidStr,
@@ -150,7 +150,7 @@ export function useDirectorProposalActions({
         closeSheet();
       }
     } catch (e: unknown) {
-      Alert.alert("РћС€РёР±РєР°", errText(e) || "РќРµ СѓРґР°Р»РѕСЃСЊ РѕС‚РєР»РѕРЅРёС‚СЊ РїРѕР·РёС†РёСЋ");
+      Alert.alert("Не удалось отклонить позицию", errText(e) || "Попробуйте еще раз.");
     } finally {
       setActingPropItemId(null);
       setDecidingId(null);
@@ -186,7 +186,7 @@ export function useDirectorProposalActions({
       await previewPdfDocument(doc, { router });
     } catch (e: unknown) {
       if (String(errText(e) || "").toLowerCase().includes("busy")) return;
-      Alert.alert("РћС€РёР±РєР°", errText(e) || "РќРµ СѓРґР°Р»РѕСЃСЊ РѕС‚РєСЂС‹С‚СЊ PDF");
+      Alert.alert("Не удалось открыть PDF", errText(e) || "Попробуйте еще раз.");
     } finally {
       setTimeout(() => { pdfTapLockRef.current[pdfKey] = false; }, 450);
     }
@@ -197,19 +197,19 @@ export function useDirectorProposalActions({
 
     try {
       if (Platform.OS !== "web") {
-        Alert.alert("Excel", "Excel СЌРєСЃРїРѕСЂС‚ СЃРµР№С‡Р°СЃ СЂРµР°Р»РёР·РѕРІР°РЅ С‚РѕР»СЊРєРѕ РґР»СЏ Web-РІРµСЂСЃРёРё.");
+        Alert.alert("Excel", "Экспорт Excel сейчас доступен только в web-версии.");
         return;
       }
       if (!items.length) {
-        Alert.alert("Excel", "РќРµС‚ СЃС‚СЂРѕРє РґР»СЏ РІС‹РіСЂСѓР·РєРё.");
+        Alert.alert("Excel", "Нет строк для выгрузки.");
         return;
       }
 
       const safe = (v: unknown) => (v == null ? "" : String(v).replace(/[\r\n]+/g, " ").trim());
       const title = (pretty || `PROPOSAL-${pidStr.slice(0, 8)}`).replace(/[^\w\u0400-\u04FF0-9]/g, "_");
-      const sheetName = title.slice(0, 31) || "РџСЂРµРґР»РѕР¶РµРЅРёРµ";
+      const sheetName = title.slice(0, 31) || "Предложение";
 
-      const data: Array<Array<string | number>> = [["в„–", "РќР°РёРјРµРЅРѕРІР°РЅРёРµ", "РљРѕР»-РІРѕ", "Р•Рґ. РёР·Рј.", "РџСЂРёРјРµРЅРµРЅРёРµ"]];
+      const data: Array<Array<string | number>> = [["№", "Наименование", "Кол-во", "Ед. изм.", "Применение"]];
       items.forEach((it, idx) =>
         data.push([idx + 1, safe(it.name_human), safe(it.total_qty), safe(it.uom), safe(it.app_code)])
       );
@@ -232,7 +232,7 @@ export function useDirectorProposalActions({
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
     } catch (e: unknown) {
-      Alert.alert("РћС€РёР±РєР°", errText(e) || "РќРµ СѓРґР°Р»РѕСЃСЊ СЃС„РѕСЂРјРёСЂРѕРІР°С‚СЊ Excel");
+      Alert.alert("Не удалось сформировать Excel", errText(e) || "Попробуйте еще раз.");
     }
   }, []);
 
@@ -242,13 +242,13 @@ export function useDirectorProposalActions({
     if (!pid) return;
 
     if (approveInFlightRef.current[pid]) {
-      console.warn(`[director.approve] duplicate approve suppressed (in-flight): ${pid}`);
+      if (__DEV__) console.warn(`[director.approve] duplicate approve suppressed (in-flight): ${pid}`);
       return;
     }
 
     const doneAt = approveDoneAtRef.current[pid] ?? 0;
     if (doneAt > 0 && Date.now() - doneAt < APPROVE_DONE_COOLDOWN_MS) {
-      console.warn(`[director.approve] duplicate approve suppressed (cooldown): ${pid}`);
+      if (__DEV__) console.warn(`[director.approve] duplicate approve suppressed (cooldown): ${pid}`);
       return;
     }
 
@@ -285,7 +285,7 @@ export function useDirectorProposalActions({
       try {
         if (ensuredPurchaseId) {
           const rW = await supabase.rpc("work_seed_from_purchase", { p_purchase_id: ensuredPurchaseId });
-          if (rW.error) console.warn("[work_seed_from_purchase] error:", rW.error.message);
+          if (__DEV__ && rW.error) console.warn("[work_seed_from_purchase] error:", rW.error.message);
         }
       } catch { }
 
@@ -304,9 +304,9 @@ export function useDirectorProposalActions({
       void fetchRows(true);
       closeSheet();
       approveDoneAtRef.current[pid] = Date.now();
-      showSuccess("РЈС‚РІРµСЂР¶РґРµРЅРѕ в†’ Р±СѓС…РіР°Р»С‚РµСЂ в†’ СЃРєР»Р°Рґ/РїРѕРґСЂСЏРґС‡РёРєРё");
+      showSuccess("Утверждено -> бухгалтер -> склад/подрядчики");
     } catch (e: unknown) {
-      Alert.alert("РћС€РёР±РєР°", errText(e) || "РќРµ СѓРґР°Р»РѕСЃСЊ СѓС‚РІРµСЂРґРёС‚СЊ");
+      Alert.alert("Не удалось утвердить", errText(e) || "Попробуйте еще раз.");
     } finally {
       delete approveInFlightRef.current[pid];
       setPropApproveId(null);

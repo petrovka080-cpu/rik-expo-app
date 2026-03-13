@@ -225,7 +225,7 @@ export default function DirectorSubcontractTab({ contentTopPad, onScroll }: Prop
       const list = await listDirectorSubcontracts();
       setItems(list);
     } catch (e: unknown) {
-      console.warn('[DirectorSubcontractTab] load error:', errText(e, 'load failed'));
+      if (__DEV__) console.warn('[DirectorSubcontractTab] load error:', errText(e, 'load failed'));
     } finally {
       setLoading(false);
     }
@@ -256,7 +256,7 @@ export default function DirectorSubcontractTab({ contentTopPad, onScroll }: Prop
       setSelected(null);
       await load();
     } catch (e: unknown) {
-      Alert.alert('Ошибка', errText(e, 'Не удалось утвердить'));
+      Alert.alert('Не удалось утвердить', errText(e, 'Попробуйте еще раз.'));
     } finally {
       setDeciding(false);
     }
@@ -272,7 +272,7 @@ export default function DirectorSubcontractTab({ contentTopPad, onScroll }: Prop
         setSelected(null);
         await load();
       } catch (e: unknown) {
-        Alert.alert('Ошибка', errText(e, 'Не удалось отклонить'));
+        Alert.alert('Не удалось отклонить', errText(e, 'Попробуйте еще раз.'));
       } finally {
         setDeciding(false);
       }
