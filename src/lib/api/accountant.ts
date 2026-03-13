@@ -1,5 +1,6 @@
 ﻿import { client, rpcCompat } from "./_core";
 import type { AccountantInboxRow } from "./types";
+import type { Database } from "../database.types";
 
 type SendToAccountantInput = {
   proposalId: string | number;
@@ -14,13 +15,8 @@ type ReturnToBuyerInput = {
   comment?: string;
 };
 
-type SendToAccountantRpcArgs = {
-  p_proposal_id: string;
-  p_invoice_number?: string;
-  p_invoice_date?: string;
-  p_invoice_amount?: number;
-  p_invoice_currency?: string;
-};
+type SendToAccountantRpcArgs =
+  Database["public"]["Functions"]["proposal_send_to_accountant_min"]["Args"];
 
 const isSendToAccountantInput = (v: unknown): v is SendToAccountantInput =>
   typeof v === "object" && v !== null && "proposalId" in v;
@@ -45,11 +41,13 @@ export async function proposalSendToAccountant(
     return s.slice(0, 10); // YYYY-MM-DD
   })();
 
-  const args: SendToAccountantRpcArgs = { p_proposal_id: pid };
-  if (invoiceNumber != null && String(invoiceNumber).trim()) args.p_invoice_number = String(invoiceNumber);
-  if (invoiceDate != null && String(invoiceDate).trim()) args.p_invoice_date = String(invoiceDate);
-  if (typeof invoiceAmount === "number") args.p_invoice_amount = Number(invoiceAmount);
-  if (invoiceCurrency != null && String(invoiceCurrency).trim()) args.p_invoice_currency = String(invoiceCurrency);
+  const args: SendToAccountantRpcArgs = {
+    p_proposal_id: pid,
+    p_invoice_number: String(invoiceNumber ?? "").trim(),
+    p_invoice_date: String(invoiceDate ?? "").trim(),
+    p_invoice_amount: typeof invoiceAmount === "number" ? Number(invoiceAmount) : 0,
+    p_invoice_currency: String(invoiceCurrency ?? "").trim(),
+  };
 
   const { error } = await client.rpc("proposal_send_to_accountant_min", args);
   if (error) throw error;
@@ -73,8 +71,7 @@ export async function accountantAddPayment(input: {
   await rpcCompat<void>([
     { fn: "acc_add_payment_min", args: argsP },
     { fn: "acc_add_payment_min_compat", args: argsRaw },
-    { fn: "acc_add_payment", args: argsP },
-    { fn: "acc_add_payment", args: argsRaw },
+    { fn: "acc_add_payment_min_uuid", args: argsP },
   ]);
   return true;
 }
@@ -91,6 +88,8 @@ export async function accountantReturnToBuyer(
     { fn: "acc_return_min_auto", args: { p_proposal_id: pid, ...(c ? { p_comment: c } : {}) } },
     { fn: "acc_return_min", args: { p_proposal_id: pid, ...(c ? { p_comment: c } : {}) } },
     { fn: "acc_return", args: { p_proposal_id: pid, ...(c ? { p_comment: c } : {}) } },
+    { fn: "acc_return_min_compat", args: { p_proposal_id: pid, ...(c ? { p_comment: c } : {}) } },
+    { fn: "acc_return_min_uuid", args: { p_proposal_id: pid, ...(c ? { p_comment: c } : {}) } },
   ]);
   return true;
 }
@@ -110,11 +109,11 @@ export async function listAccountantInbox(status?: string) {
             : "К оплате";
 
   // 1) новый RPC с датами оплаты
-  const n = await client.rpc("list_accountant_inbox_fact", { p_tab: norm });
+  const n = await client.rpc("list_accountant_inbox_fact", norm ? { p_tab: norm } : {});
   if (!n.error) return (n.data ?? []) as AccountantInboxRow[];
 
   // 2) fallback: старый RPC
-  const r = await client.rpc("list_accountant_inbox", { p_tab: norm });
+  const r = await client.rpc("list_accountant_inbox", { p_tab: norm ?? "К оплате" });
   if (r.error) return [];
   return (r.data ?? []) as AccountantInboxRow[];
 }

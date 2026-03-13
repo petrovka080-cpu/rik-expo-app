@@ -233,7 +233,7 @@ export default function BuyerSubcontractTab({ contentTopPad, onScroll, buyerFio 
     try {
       const upd = await supabase
         .from("subcontracts")
-        .update({ contractor_id: cid })
+        .update({ contractor_id: cid } as never)
         .eq("id", sid);
       if (upd.error && __DEV__) {
         console.warn("[BuyerSubcontractTab] contractor_id attach skipped:", upd.error.message);

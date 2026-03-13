@@ -2,6 +2,12 @@ import { Platform } from "react-native";
 import { supabase } from "./supabaseClient";
 
 type Extra = Record<string, unknown> | undefined;
+type AppErrorInsert = {
+  context: string;
+  message: string;
+  extra: Record<string, unknown> | null;
+  platform: string;
+};
 
 const isDevRuntime =
   (typeof __DEV__ !== "undefined" && __DEV__) ||
@@ -18,7 +24,7 @@ const toMessage = (error: unknown): string => {
 
 export function logError(context: string, error: unknown, extra?: Extra): void {
   const message = toMessage(error);
-  const payload = {
+  const payload: AppErrorInsert = {
     context,
     message,
     extra: extra ?? null,
@@ -32,7 +38,9 @@ export function logError(context: string, error: unknown, extra?: Extra): void {
 
   void (async () => {
     try {
-      const { error: insertError } = await supabase.from("app_errors").insert(payload);
+      const { error: insertError } = await supabase
+        .from("app_errors" as never)
+        .insert(payload as never);
       if (insertError && isDevRuntime) {
         console.error("[logError][insert]", insertError.message);
       }

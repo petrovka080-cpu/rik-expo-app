@@ -102,6 +102,35 @@ type Item = {
   rik_code?: string | null;
 };
 
+const asRecord = (value: unknown): Record<string, unknown> =>
+  value && typeof value === "object" ? (value as Record<string, unknown>) : {};
+
+const normalizeItem = (value: unknown): Item | null => {
+  const row = asRecord(value);
+  const id = String(row.id ?? "").trim();
+  if (!id) return null;
+  return {
+    id,
+    name_human: row.name_human == null ? null : String(row.name_human),
+    uom: row.uom == null ? null : String(row.uom),
+    qty: row.qty == null ? null : nnum(row.qty),
+    price: row.price == null ? null : nnum(row.price),
+    rik_code: row.rik_code == null ? null : String(row.rik_code),
+  };
+};
+
+const normalizePaidAllocRow = (
+  value: unknown,
+): { proposal_item_id?: string | null; amount?: number | string | null } | null => {
+  const row = asRecord(value);
+  const proposal_item_id = String(row.proposal_item_id ?? "").trim();
+  if (!proposal_item_id) return null;
+  return {
+    proposal_item_id,
+    amount: row.amount == null ? null : nnum(row.amount),
+  };
+};
+
 function kindOf(it: Item) {
   const c = String(it?.rik_code ?? "").toUpperCase();
   if (c.startsWith("MAT-")) return "Материалы";
@@ -203,7 +232,7 @@ export default function ActivePaymentForm({
           .order("id", { ascending: true });
 
         if (q.error) throw q.error;
-        setItems(Array.isArray(q.data) ? (q.data as Item[]) : []);
+        setItems(Array.isArray(q.data) ? q.data.map(normalizeItem).filter((row): row is Item => !!row) : []);
       } catch {
         setItems([]);
       } finally {
@@ -236,7 +265,7 @@ export default function ActivePaymentForm({
         const m = new Map<string, number>();
         let sum = 0;
 
-        for (const r of (q.data || []) as Array<{ proposal_item_id?: string | null; amount?: number | string | null }>) {
+        for (const r of (Array.isArray(q.data) ? q.data.map(normalizePaidAllocRow).filter((row): row is { proposal_item_id?: string | null; amount?: number | string | null } => !!row) : [])) {
           const k = String(r.proposal_item_id ?? "").trim();
           const a = round2(nnum(r.amount));
           if (!k || a <= 0) continue;

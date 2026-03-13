@@ -1,6 +1,30 @@
 import { supabase } from "../supabaseClient";
+import type { Database } from "../database.types";
 import { client, toRpcId, parseErr } from "./_core";
 import type { DirectorPendingRow, DirectorInboxRow } from "./types";
+
+type RequestStatus = Database["public"]["Enums"]["request_status_enum"];
+type DirectorInboxStatusArg =
+  Database["public"]["Functions"]["list_director_inbox"]["Args"]["p_status"];
+type DirectorReturnArgs =
+  Database["public"]["Functions"]["director_return_min_auto"]["Args"];
+type PendingRpcName =
+  | "list_pending_foreman_items"
+  | "listPending"
+  | "list_pending"
+  | "listpending";
+
+const asRequestStatus = (value: string): RequestStatus => value as RequestStatus;
+
+function asDirectorPendingRows(value: unknown): DirectorPendingRow[] {
+  return Array.isArray(value) ? (value as DirectorPendingRow[]) : [];
+}
+
+async function callPendingRpc(name: PendingRpcName): Promise<DirectorPendingRow[]> {
+  const rpc = await client.rpc(name);
+  if (rpc.error) return [];
+  return asDirectorPendingRows(rpc.data);
+}
 
 export async function listPending(): Promise<DirectorPendingRow[]> {
   const ridMap = new Map<string, number>();
@@ -27,24 +51,27 @@ export async function listPending(): Promise<DirectorPendingRow[]> {
     });
 
   try {
-    let rpc = await client.rpc("list_pending_foreman_items");
-    if (!rpc.error && Array.isArray(rpc.data)) return normalize(rpc.data as any[]);
+    const rpcRows = await callPendingRpc("list_pending_foreman_items");
+    if (rpcRows.length) return normalize(rpcRows);
 
-    rpc = await client.rpc("listPending");
-    if (!rpc.error && Array.isArray(rpc.data)) return normalize(rpc.data as any[]);
+    const rpcRowsCompat = await callPendingRpc("listPending");
+    if (rpcRowsCompat.length) return normalize(rpcRowsCompat);
 
-    rpc = await client.rpc("list_pending");
-    if (!rpc.error && Array.isArray(rpc.data)) return normalize(rpc.data as any[]);
+    const rpcRowsLegacy = await callPendingRpc("list_pending");
+    if (rpcRowsLegacy.length) return normalize(rpcRowsLegacy);
 
-    rpc = await client.rpc("listpending");
-    if (!rpc.error && Array.isArray(rpc.data)) return normalize(rpc.data as any[]);
+    const rpcRowsAlt = await callPendingRpc("listpending");
+    if (rpcRowsAlt.length) return normalize(rpcRowsAlt);
   } catch (e) {
     console.warn("[listPending] rpc failed → fallback", parseErr(e));
   }
 
   // fallback (как у тебя было)
   try {
-    const reqs = await client.from("requests").select("id, id_old").eq("status", "На утверждении");
+    const reqs = await client
+      .from("requests")
+      .select("id, id_old")
+      .eq("status", asRequestStatus("На утверждении"));
     const ids = (reqs.data || []).map((r: any) => String(r.id));
     if (!ids.length) return [];
 
@@ -57,7 +84,7 @@ export async function listPending(): Promise<DirectorPendingRow[]> {
       .from("request_items")
       .select("id,request_id,name_human,qty,uom,status")
       .in("request_id", ids)
-      .neq("status", "Утверждено")
+      .neq("status", asRequestStatus("Утверждено"))
       .order("request_id", { ascending: true })
       .order("id", { ascending: true });
 
@@ -90,14 +117,14 @@ export async function listPending(): Promise<DirectorPendingRow[]> {
 
 export async function approve(approvalId: number | string) {
   try {
-    const rpc = await client.rpc("approve_one", { p_proposal_id: toRpcId(approvalId) } as any);
+    const rpc = await client.rpc("approve_one", { p_proposal_id: toRpcId(approvalId) });
     if (!rpc.error) return true;
   } catch {}
 
   const upd = await client
     .from("proposals")
     .update({ status: "Утверждено" })
-    .eq("id", approvalId)
+    .eq("id", String(approvalId))
     .eq("status", "На утверждении")
     .select("id")
     .maybeSingle();
@@ -108,14 +135,14 @@ export async function approve(approvalId: number | string) {
 
 export async function reject(approvalId: number | string, _reason = "Без причины") {
   try {
-    const rpc = await client.rpc("reject_one", { p_proposal_id: toRpcId(approvalId) } as any);
+    const rpc = await client.rpc("reject_one", { p_proposal_id: toRpcId(approvalId) });
     if (!rpc.error) return true;
   } catch {}
 
   const upd = await client
     .from("proposals")
     .update({ status: "Отклонено" })
-    .eq("id", approvalId)
+    .eq("id", String(approvalId))
     .eq("status", "На утверждении")
     .select("id")
     .maybeSingle();
@@ -128,14 +155,16 @@ export async function directorReturnToBuyer(
   a: { proposalId: string | number; comment?: string } | string | number,
   b?: string | null
 ) {
-  const pid = typeof a === "object" && a !== null ? String((a as any).proposalId) : String(a);
-  const comment = typeof a === "object" && a !== null ? (a as any).comment : b;
+  const payload = typeof a === "object" && a !== null ? a : null;
+  const pid = payload ? String(payload.proposalId) : String(a);
+  const comment = payload?.comment ?? b;
   const c = (comment ?? "").trim() || null;
 
-  const { error } = await supabase.rpc("director_return_min_auto", {
+  const args: DirectorReturnArgs = {
     p_proposal_id: pid,
     p_comment: c,
-  } as any);
+  };
+  const { error } = await supabase.rpc("director_return_min_auto", args);
 
   if (error) throw error;
   return true;
@@ -144,11 +173,12 @@ export async function directorReturnToBuyer(
 export async function listDirectorInbox(
   status: "На утверждении" | "Утверждено" | "Отклонено" = "На утверждении"
 ) {
-  const { data, error } = await client.rpc("list_director_inbox", { p_status: status } as any);
+  const args: { p_status?: DirectorInboxStatusArg } = { p_status: status };
+  const { data, error } = await client.rpc("list_director_inbox", args);
   if (error) {
-    console.warn("[listDirectorInbox]", error.message);
+    console.warn("[listDirectorInbox]", parseErr(error));
     return [];
   }
-  const rows = (data ?? []) as DirectorInboxRow[];
+  const rows = Array.isArray(data) ? (data as DirectorInboxRow[]) : [];
   return rows.filter((r) => (r?.kind ?? "") !== "request");
 }

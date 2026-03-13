@@ -38,6 +38,51 @@ export type SubmitJobMetrics = {
   oldest_pending: string | null;
 };
 
+type SubmitJobPartialRow = Partial<SubmitJobRow> & {
+  id?: string | number | null;
+  retry_count?: number | string | null;
+  payload?: Record<string, unknown> | null;
+};
+
+type SubmitJobMetricRow = {
+  pending?: number | string | null;
+  processing?: number | string | null;
+  failed?: number | string | null;
+  oldest_pending?: string | null;
+};
+
+function getObjectField<T>(value: unknown, key: string): T | undefined {
+  if (typeof value !== "object" || value === null || !(key in value)) return undefined;
+  return (value as Record<string, unknown>)[key] as T;
+}
+
+function normalizeSubmitJobRow(value: unknown): SubmitJobRow {
+  const row = (typeof value === "object" && value !== null ? value : {}) as SubmitJobPartialRow;
+  return {
+    id: String(row.id ?? ""),
+    client_request_id: row.client_request_id ?? null,
+    job_type: String(row.job_type ?? ""),
+    entity_type: row.entity_type ?? null,
+    entity_id: row.entity_id ?? null,
+    entity_key: row.entity_key ?? null,
+    payload: row.payload ?? null,
+    status: (String(row.status ?? "failed") as SubmitJobStatus),
+    retry_count: Number(row.retry_count ?? 0) || 0,
+    error: row.error ?? null,
+    created_by: row.created_by ?? null,
+    created_at: String(row.created_at ?? ""),
+    started_at: row.started_at ?? null,
+    worker_id: row.worker_id ?? null,
+    next_retry_at: row.next_retry_at ?? null,
+    locked_until: row.locked_until ?? null,
+    processed_at: row.processed_at ?? null,
+  };
+}
+
+function normalizeSubmitJobRows(value: unknown): SubmitJobRow[] {
+  return Array.isArray(value) ? value.map(normalizeSubmitJobRow).filter((row) => row.id) : [];
+}
+
 const toBool = (value: unknown): boolean => {
   const v = String(value ?? "").trim().toLowerCase();
   return v === "1" || v === "true" || v === "yes" || v === "on";
@@ -100,7 +145,7 @@ export async function enqueueSubmitJob(input: EnqueueSubmitJobInput): Promise<Su
     .single();
 
   if (error) throw error;
-  return data as SubmitJobRow;
+  return normalizeSubmitJobRow(data);
 }
 
 export async function claimSubmitJobs(workerId: string, limit = WORKER_BATCH_SIZE, jobType?: string): Promise<SubmitJobRow[]> {
@@ -111,7 +156,7 @@ export async function claimSubmitJobs(workerId: string, limit = WORKER_BATCH_SIZ
   } as any;
 
   const first = await supabase.rpc("submit_jobs_claim" as any, payload);
-  if (!first.error) return (Array.isArray(first.data) ? first.data : []) as SubmitJobRow[];
+  if (!first.error) return normalizeSubmitJobRows(first.data);
 
   const msg = String(first.error.message || "");
   const isOldSignature =
@@ -123,7 +168,7 @@ export async function claimSubmitJobs(workerId: string, limit = WORKER_BATCH_SIZ
     p_worker_id: workerId,
     p_limit: limit,
   } as any);
-  if (!second.error) return (Array.isArray(second.data) ? second.data : []) as SubmitJobRow[];
+  if (!second.error) return normalizeSubmitJobRows(second.data);
 
   const secondMsg = String(second.error.message || "");
   const missingClaimRpc = secondMsg.includes("submit_jobs_claim") && secondMsg.includes("schema cache");
@@ -157,7 +202,7 @@ export async function claimSubmitJobs(workerId: string, limit = WORKER_BATCH_SIZ
     .eq("status", "pending")
     .select(JOB_SELECT);
   if (upd.error) throw upd.error;
-  return (Array.isArray(upd.data) ? upd.data : []) as SubmitJobRow[];
+  return normalizeSubmitJobRows(upd.data);
 }
 
 export async function recoverStuckSubmitJobs(): Promise<number> {
@@ -206,8 +251,8 @@ export async function markSubmitJobFailed(jobId: string, message: string): Promi
   if (!first.error) {
     const row = Array.isArray(first.data) && first.data.length ? first.data[0] : (first.data ?? null);
     return {
-      retryCount: Number((row as any)?.retry_count ?? 0),
-      status: String((row as any)?.status ?? "failed"),
+      retryCount: Number(getObjectField<number | string>(row, "retry_count") ?? 0),
+      status: String(getObjectField<string>(row, "status") ?? "failed"),
     };
   }
 
@@ -221,7 +266,7 @@ export async function markSubmitJobFailed(jobId: string, message: string): Promi
     .eq("id", jobId)
     .maybeSingle();
   if (current.error) throw current.error;
-  const retryCount = Number((current.data as any)?.retry_count ?? 0) + 1;
+  const retryCount = Number(getObjectField<number | string>(current.data, "retry_count") ?? 0) + 1;
   const status = retryCount >= 5 ? "failed" : "pending";
   const nextRetryAt = status === "pending" ? new Date(Date.now() + 30_000).toISOString() : null;
   const patch = await supabase
@@ -245,11 +290,11 @@ export async function markSubmitJobFailed(jobId: string, message: string): Promi
 export async function fetchSubmitJobMetrics(): Promise<SubmitJobMetrics> {
   const { data, error } = await supabase.rpc("submit_jobs_metrics" as any);
   if (error) throw error;
-  const row = Array.isArray(data) && data.length ? data[0] : (data ?? {});
+  const row = (Array.isArray(data) && data.length ? data[0] : (data ?? {})) as SubmitJobMetricRow;
   return {
-    pending: Number((row as any)?.pending ?? 0),
-    processing: Number((row as any)?.processing ?? 0),
-    failed: Number((row as any)?.failed ?? 0),
-    oldest_pending: ((row as any)?.oldest_pending as string | null) ?? null,
+    pending: Number(row.pending ?? 0),
+    processing: Number(row.processing ?? 0),
+    failed: Number(row.failed ?? 0),
+    oldest_pending: row.oldest_pending ?? null,
   };
 }

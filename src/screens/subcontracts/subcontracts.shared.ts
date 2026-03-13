@@ -60,6 +60,28 @@ export type NewSubcontractItem = {
   uom?: string | null;
 };
 
+const asSubcontractItem = (value: unknown): SubcontractItem | null => {
+  if (!value || typeof value !== "object") return null;
+  const row = value as Record<string, unknown>;
+  const id = String(row.id ?? "").trim();
+  const subcontract_id = String(row.subcontract_id ?? "").trim();
+  if (!id || !subcontract_id) return null;
+  return {
+    id,
+    created_at: String(row.created_at ?? ""),
+    subcontract_id,
+    created_by: row.created_by == null ? null : String(row.created_by),
+    source: String(row.source ?? "catalog") === "smeta" ? "smeta" : "catalog",
+    rik_code: row.rik_code == null ? null : String(row.rik_code),
+    name: String(row.name ?? "").trim() || "Позиция",
+    qty: Number.isFinite(Number(row.qty)) ? Number(row.qty) : 0,
+    uom: row.uom == null ? null : String(row.uom),
+    status: String(row.status ?? "draft") === "canceled" ? "canceled" : "draft",
+  };
+};
+
+const subcontractItemsTable = () => supabase.from("subcontract_items" as never);
+
 export const STATUS_CONFIG: Record<SubcontractStatus, { label: string; bg: string; fg: string }> = {
   draft: { label: "Черновик", bg: "#E2E8F0", fg: "#475569" },
   pending: { label: "На утверждении", bg: "#FEF3C7", fg: "#92400E" },
@@ -294,14 +316,13 @@ export async function rejectSubcontract(id: string, comment: string): Promise<vo
 export async function listSubcontractItems(subcontractId: string): Promise<SubcontractItem[]> {
   const sid = String(subcontractId || "").trim();
   if (!sid) return [];
-  const { data, error } = await supabase
-    .from("subcontract_items")
+  const { data, error } = await subcontractItemsTable()
     .select("*")
     .eq("subcontract_id", sid)
     .eq("status", "draft")
     .order("created_at", { ascending: false });
   if (error) throw error;
-  return (data ?? []) as SubcontractItem[];
+  return Array.isArray(data) ? data.map(asSubcontractItem).filter((row): row is SubcontractItem => !!row) : [];
 }
 
 export async function appendSubcontractItems(
@@ -321,19 +342,17 @@ export async function appendSubcontractItems(
     uom: it.uom ?? null,
     status: "draft",
   }));
-  const { data, error } = await supabase
-    .from("subcontract_items")
-    .insert(payload)
+  const { data, error } = await subcontractItemsTable()
+    .insert(payload as never)
     .select("*");
   if (error) throw error;
-  return (data ?? []) as SubcontractItem[];
+  return Array.isArray(data) ? data.map(asSubcontractItem).filter((row): row is SubcontractItem => !!row) : [];
 }
 
 export async function removeSubcontractItem(itemId: string): Promise<void> {
   const iid = String(itemId || "").trim();
   if (!iid) return;
-  const { error } = await supabase
-    .from("subcontract_items")
+  const { error } = await subcontractItemsTable()
     .delete()
     .eq("id", iid);
   if (error) throw error;
@@ -342,8 +361,7 @@ export async function removeSubcontractItem(itemId: string): Promise<void> {
 export async function clearSubcontractItems(subcontractId: string): Promise<void> {
   const sid = String(subcontractId || "").trim();
   if (!sid) return;
-  const { error } = await supabase
-    .from("subcontract_items")
+  const { error } = await subcontractItemsTable()
     .delete()
     .eq("subcontract_id", sid);
   if (error) throw error;

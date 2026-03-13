@@ -99,6 +99,23 @@ type DirectorFactRow = {
   is_without_request: boolean | null;
 };
 
+type IdObjectRow = {
+  id?: string | number | null;
+  object_id?: string | number | null;
+  request_id?: string | number | null;
+  object_name?: string | null;
+  name?: string | null;
+};
+
+type CodeNameRow = {
+  code?: string | null;
+  name_human_ru?: string | null;
+  display_name?: string | null;
+  alias_ru?: string | null;
+  name_ru?: string | null;
+  name?: string | null;
+};
+
 type AccIssueHead = {
   issue_id: number | string;
   event_dt: string | null;
@@ -407,6 +424,36 @@ const firstNonEmpty = (...vals: any[]): string => {
   return "";
 };
 
+const asRecord = (value: unknown): Record<string, unknown> =>
+  value && typeof value === "object" ? (value as Record<string, unknown>) : {};
+
+const normalizeIdObjectRow = (value: unknown): IdObjectRow | null => {
+  const row = asRecord(value);
+  const id = row.id == null ? null : String(row.id).trim();
+  if (!id) return null;
+  return {
+    id,
+    object_id: row.object_id == null ? null : String(row.object_id).trim(),
+    request_id: row.request_id == null ? null : String(row.request_id).trim(),
+    object_name: row.object_name == null ? null : String(row.object_name),
+    name: row.name == null ? null : String(row.name),
+  };
+};
+
+const normalizeCodeNameRow = (value: unknown): CodeNameRow | null => {
+  const row = asRecord(value);
+  const code = row.code == null ? null : String(row.code).trim();
+  if (!code) return null;
+  return {
+    code,
+    name_human_ru: row.name_human_ru == null ? null : String(row.name_human_ru),
+    display_name: row.display_name == null ? null : String(row.display_name),
+    alias_ru: row.alias_ru == null ? null : String(row.alias_ru),
+    name_ru: row.name_ru == null ? null : String(row.name_ru),
+    name: row.name == null ? null : String(row.name),
+  };
+};
+
 async function enrichObjectIdsForOptions(
   p: { from: string; to: string },
   base: DirectorReportOptions,
@@ -443,7 +490,7 @@ async function enrichObjectIdsForOptions(
         .from("purchases" as any)
         .select("id,object_id,object_name")
         .in("id", ids as any);
-      for (const r of Array.isArray(data) ? data : []) {
+      for (const r of Array.isArray(data) ? data.map(normalizeIdObjectRow).filter((row): row is IdObjectRow => !!row) : []) {
         const id = String(r?.id ?? "").trim();
         const objId = String(r?.object_id ?? "").trim();
         if (id && objId) purchaseObjectById.set(id, objId);
@@ -828,7 +875,7 @@ async function fetchDirectorFactViaAccRpc(p: {
       .select("id,name")
       .in("id", ids as any);
     if (error) continue;
-    for (const r of Array.isArray(data) ? data : []) {
+    for (const r of Array.isArray(data) ? data.map(normalizeIdObjectRow).filter((row): row is IdObjectRow => !!row) : []) {
       const id = String(r?.id ?? "").trim();
       const nm = String(r?.name ?? "").trim();
       if (id && nm) objectNameById.set(id, nm);
@@ -849,7 +896,7 @@ async function fetchDirectorFactViaAccRpc(p: {
       .select("code,name_human_ru,display_name,name")
       .in("code", codes as any);
     if (error) continue;
-    for (const r of Array.isArray(data) ? data : []) {
+    for (const r of Array.isArray(data) ? data.map(normalizeCodeNameRow).filter((row): row is CodeNameRow => !!row) : []) {
       const c = String(r?.code ?? "").trim();
       const nm = firstNonEmpty(r?.name_human_ru, r?.display_name, r?.name);
       if (c && nm) objectTypeNameByCode.set(c, nm);
@@ -870,7 +917,7 @@ async function fetchDirectorFactViaAccRpc(p: {
       .select("code,name_human_ru,display_name,alias_ru,name")
       .in("code", codes as any);
     if (error) continue;
-    for (const r of Array.isArray(data) ? data : []) {
+    for (const r of Array.isArray(data) ? data.map(normalizeCodeNameRow).filter((row): row is CodeNameRow => !!row) : []) {
       const c = String(r?.code ?? "").trim();
       const nm = firstNonEmpty(r?.name_human_ru, r?.display_name, r?.alias_ru, r?.name);
       if (c && nm) systemNameByCode.set(c, nm);
@@ -984,7 +1031,7 @@ async function fetchAllFactRowsFromView(p: {
     const { data, error } = await q;
     if (error) throw error;
 
-    const rows = Array.isArray(data) ? (data as DirectorFactRow[]) : [];
+    const rows = Array.isArray(data) ? (data as unknown as DirectorFactRow[]) : [];
     out.push(...rows);
     if (rows.length < pageSize) break;
     fromIdx += pageSize;
@@ -1090,7 +1137,7 @@ async function fetchAllFactRowsFromTables(p: {
     const { data, error } = await q;
     if (error) throw error;
 
-    const rows = Array.isArray(data) ? data : [];
+    const rows = Array.isArray(data) ? data.map(normalizeIdObjectRow).filter((row): row is IdObjectRow => !!row) : [];
     for (const r of rows) {
       const id = String(r?.id ?? "").trim();
       if (!id) continue;
@@ -1140,7 +1187,7 @@ async function fetchAllFactRowsFromTables(p: {
         .in("id", ids as any);
       if (error) throw error;
 
-      const rows = Array.isArray(data) ? data : [];
+      const rows = Array.isArray(data) ? data.map(normalizeIdObjectRow).filter((row): row is IdObjectRow => !!row) : [];
       for (const r of rows) {
         const id = String(r?.id ?? "").trim();
         const reqId = String(r?.request_id ?? "").trim();
@@ -1192,7 +1239,7 @@ async function fetchAllFactRowsFromTables(p: {
       .select("id,name")
       .in("id", ids as any);
     if (error) throw error;
-    const rows = Array.isArray(data) ? data : [];
+    const rows = Array.isArray(data) ? data.map(normalizeIdObjectRow).filter((row): row is IdObjectRow => !!row) : [];
     for (const r of rows) {
       const id = String(r?.id ?? "").trim();
       const name = String(r?.name ?? "").trim();
@@ -1217,7 +1264,7 @@ async function fetchAllFactRowsFromTables(p: {
       .select("code,name_human_ru,display_name,name")
       .in("code", codes as any);
     if (error) throw error;
-    const rows = Array.isArray(data) ? data : [];
+    const rows = Array.isArray(data) ? data.map(normalizeCodeNameRow).filter((row): row is CodeNameRow => !!row) : [];
     for (const r of rows) {
       const code = String(r?.code ?? "").trim();
       const name =
@@ -1245,7 +1292,7 @@ async function fetchAllFactRowsFromTables(p: {
       .select("code,name_human_ru,display_name,alias_ru,name")
       .in("code", codes as any);
     if (error) throw error;
-    const rows = Array.isArray(data) ? data : [];
+    const rows = Array.isArray(data) ? data.map(normalizeCodeNameRow).filter((row): row is CodeNameRow => !!row) : [];
     for (const r of rows) {
       const code = String(r?.code ?? "").trim();
       const name =
@@ -1280,7 +1327,7 @@ async function fetchAllFactRowsFromTables(p: {
             .select("code,name_ru")
             .in("code", part as any);
           if (vrrRes.error) throw vrrRes.error;
-          for (const r of Array.isArray(vrrRes.data) ? vrrRes.data : []) {
+          for (const r of Array.isArray(vrrRes.data) ? vrrRes.data.map(normalizeCodeNameRow).filter((row): row is CodeNameRow => !!row) : []) {
             const c = String(r?.code ?? "").trim().toUpperCase();
             const n = String(r?.name_ru ?? "").trim();
             if (c && n && !nameRuByCode.has(c)) nameRuByCode.set(c, n);
@@ -1460,7 +1507,7 @@ async function fetchDisciplineFactRowsFromTables(p: {
     const { data, error } = await q;
     if (error) throw error;
 
-    const rows = Array.isArray(data) ? data : [];
+    const rows = Array.isArray(data) ? data.map(normalizeIdObjectRow).filter((row): row is IdObjectRow => !!row) : [];
     for (const r of rows) {
       const id = String(r?.id ?? "").trim();
       if (!id) continue;
@@ -1521,7 +1568,7 @@ async function fetchDisciplineFactRowsFromTables(p: {
         .select("id,request_id")
         .in("id", ids as any);
       if (error) throw error;
-      const rows = Array.isArray(data) ? data : [];
+      const rows = Array.isArray(data) ? data.map(normalizeIdObjectRow).filter((row): row is IdObjectRow => !!row) : [];
       for (const r of rows) {
         const id = String(r?.id ?? "").trim();
         const reqId = String(r?.request_id ?? "").trim();
@@ -1574,7 +1621,7 @@ async function fetchDisciplineFactRowsFromTables(p: {
         .select("code,name_human_ru,display_name,alias_ru,name")
         .in("code", codes as any);
       if (error) throw error;
-      const rows = Array.isArray(data) ? data : [];
+      const rows = Array.isArray(data) ? data.map(normalizeCodeNameRow).filter((row): row is CodeNameRow => !!row) : [];
       for (const r of rows) {
         const code = String(r?.code ?? "").trim();
         const name =

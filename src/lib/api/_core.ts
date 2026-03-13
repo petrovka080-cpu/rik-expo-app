@@ -1,7 +1,12 @@
 import { supabase } from "../supabaseClient";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "../database.types";
 
-export const client: SupabaseClient = supabase;
+type RpcFunctions = Database["public"]["Functions"];
+type RpcName = keyof RpcFunctions;
+type RpcArgs<TName extends RpcName> = RpcFunctions[TName]["Args"];
+
+export const client: SupabaseClient<Database> = supabase;
 
 type ErrorLike = {
   message?: unknown;
@@ -10,7 +15,7 @@ type ErrorLike = {
 };
 
 type RpcVariant = {
-  fn: string;
+  fn: RpcName;
   args?: Record<string, unknown>;
 };
 
@@ -59,13 +64,19 @@ export const toRpcId = (id: number | string) => String(id);
 export async function rpcCompat<T = unknown>(
   variants: RpcVariant[],
 ): Promise<T> {
+  const runRpc = async <TName extends RpcName>(variant: { fn: TName; args?: Record<string, unknown> }) =>
+    (await supabase.rpc(
+      variant.fn as never,
+      (variant.args ?? {}) as RpcArgs<TName> & never,
+    )) as { data: unknown; error: unknown };
+
   let lastErr: unknown = null;
   for (const v of variants) {
     try {
-      const { data, error } = await supabase.rpc(v.fn, v.args);
+      const { data, error } = await runRpc(v);
       if (!error) return data as T;
       lastErr = error;
-      const msg = String(error?.message || "");
+      const msg = String(asErrorLike(error)?.message || "");
       if (msg.includes("Could not find") || asErrorLike(error)?.code === "PGRST302") continue;
     } catch (e: unknown) {
       lastErr = e;

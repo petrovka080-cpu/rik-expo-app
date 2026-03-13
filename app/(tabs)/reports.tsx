@@ -10,6 +10,7 @@ import * as Sharing from "expo-sharing";
 import * as FileSystem from "expo-file-system";
 import { getFileSystemPaths } from "../../src/lib/fileSystemPaths";
 import { supabase } from "../../src/lib/supabaseClient";
+import { parseErr } from "../../src/lib/api/_core";
 import { LineChart, PieChart } from "react-native-chart-kit";
 import { openHtmlAsPdfUniversal } from "../../src/lib/api/pdf";
 import { buildPdfFileName } from "../../src/lib/documents/pdfDocument";
@@ -23,6 +24,9 @@ const w = Dimensions.get("window").width;
 const fmt = (n: any) => Number(n ?? 0).toLocaleString("ru-RU", { maximumFractionDigits: 2 });
 const today = () => new Date().toISOString().slice(0, 10);
 const monthAgo = () => { const d = new Date(); d.setMonth(d.getMonth() - 1); return d.toISOString().slice(0, 10); };
+const asRows = (value: unknown): any[] => (Array.isArray(value) ? value : []);
+const runReportRpc = async <T = unknown>(fn: string, args?: Record<string, unknown>) =>
+  (await supabase.rpc(fn as never, (args ?? {}) as never)) as { data: T | null; error: unknown };
 
 export default function Reports() {
   const router = useRouter();
@@ -37,21 +41,23 @@ export default function Reports() {
   const run = useCallback(async () => {
     try {
       setLoading(true);
-      const { data: t, error: e1 } = await supabase.rpc("list_report_stock_turnover", { p_start: start, p_end: end });
-      if (e1) throw e1;
-      const { data: c, error: e2 } = await supabase.rpc("list_report_costs_by_object", { p_start: start, p_end: end });
-      if (e2) throw e2;
-      const { data: a, error: e3 } = await supabase.rpc("list_report_ap_aging");
-      if (e3) throw e3;
-      const { data: p, error: e4 } = await supabase.rpc("list_report_purchase_pipeline", { p_start: start, p_end: end });
-      if (e4) throw e4;
+      const [tRes, cRes, aRes, pRes] = await Promise.all([
+        runReportRpc<any[]>("list_report_stock_turnover", { p_start: start, p_end: end }),
+        runReportRpc<any[]>("list_report_costs_by_object", { p_start: start, p_end: end }),
+        runReportRpc<any[]>("list_report_ap_aging"),
+        runReportRpc<any[]>("list_report_purchase_pipeline", { p_start: start, p_end: end }),
+      ]);
+      if (tRes.error) throw tRes.error;
+      if (cRes.error) throw cRes.error;
+      if (aRes.error) throw aRes.error;
+      if (pRes.error) throw pRes.error;
 
-      setTurnover(t || []);
-      setCosts(c || []);
-      setAging(a || []);
-      setPipe(p || []);
-    } catch (e: any) {
-      Alert.alert("РћС€РёР±РєР°", e.message || "РќРµ СѓРґР°Р»РѕСЃСЊ СЃС„РѕСЂРјРёСЂРѕРІР°С‚СЊ РѕС‚С‡С‘С‚С‹");
+      setTurnover(asRows(tRes.data));
+      setCosts(asRows(cRes.data));
+      setAging(asRows(aRes.data));
+      setPipe(asRows(pRes.data));
+    } catch (e: unknown) {
+      Alert.alert("РћС€РёР±РєР°", parseErr(e) || "РќРµ СѓРґР°Р»РѕСЃСЊ СЃС„РѕСЂРјРёСЂРѕРІР°С‚СЊ РѕС‚С‡С‘С‚С‹");
     } finally {
       setLoading(false);
     }

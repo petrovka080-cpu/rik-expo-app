@@ -336,7 +336,7 @@ export default function ProfileScreen() {
 
     try {
       setSavingUsage(true);
-      const payload: Partial<UserProfile> = {
+      const payload = {
         id: profile.id || undefined,
         user_id: profile.user_id,
         full_name: profile.full_name,
@@ -901,7 +901,7 @@ export default function ProfileScreen() {
     if (!profile) return;
     try {
       setSavingProfile(true);
-      const payload: Partial<UserProfile> = {
+      const payload = {
         id: profile.id || undefined,
         user_id: profile.user_id,
         full_name: profileNameInput.trim() || null,

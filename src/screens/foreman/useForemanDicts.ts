@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import type { Database } from "../../lib/database.types";
 import { supabase } from "../../lib/supabaseClient";
 import type { AppOption, RefOption } from "./foreman.types";
 import {
@@ -11,6 +12,11 @@ import {
 type DictRow = { code: string; name?: string | null; name_ru?: string | null };
 type AppRow = { app_code: string; name_human?: string | null };
 type ItemAppRow = { app_code: string | null };
+type DictTable = "ref_object_types" | "ref_levels" | "ref_systems" | "ref_zones";
+type DictSelectResult = {
+  data: Database["public"]["Tables"]["ref_object_types"]["Row"][] | null;
+  error: { message?: string | null } | null;
+};
 
 const asRecord = (value: unknown): Record<string, unknown> =>
   value && typeof value === "object" ? (value as Record<string, unknown>) : {};
@@ -61,12 +67,23 @@ export function useForemanDicts() {
     (async () => {
       try {
         const fetchWithFallback = async (
-          table: string,
+          table: DictTable,
           select: string,
           orderColumn: string,
           fallbackSelect: string,
         ) => {
-          const run = (cols: string) => supabase.from(table).select(cols).order(orderColumn);
+          const run = async (cols: string): Promise<DictSelectResult> => {
+            switch (table) {
+              case "ref_object_types":
+                return (await supabase.from("ref_object_types").select(cols).order(orderColumn)) as DictSelectResult;
+              case "ref_levels":
+                return (await supabase.from("ref_levels").select(cols).order(orderColumn)) as DictSelectResult;
+              case "ref_systems":
+                return (await supabase.from("ref_systems").select(cols).order(orderColumn)) as DictSelectResult;
+              case "ref_zones":
+                return (await supabase.from("ref_zones").select(cols).order(orderColumn)) as DictSelectResult;
+            }
+          };
           let result = await run(select);
           if (result.error) {
             const msg = String(result.error.message ?? "").toLowerCase();
@@ -171,4 +188,3 @@ export function useForemanDicts() {
     appOptions,
   };
 }
-

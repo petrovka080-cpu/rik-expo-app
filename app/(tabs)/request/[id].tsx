@@ -20,7 +20,7 @@ export default function RequestDetails() {
       const { data, error } = await supabase
         .from("requests")
         .select("*")
-        .eq("id", Number(id))
+        .eq("id", String(id))
         .single();
 
       if (error) {
@@ -92,7 +92,6 @@ export default function RequestDetails() {
     </View>
   );
 }
-
 
 
 

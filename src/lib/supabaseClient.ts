@@ -1,5 +1,6 @@
 // src/lib/supabaseClient.ts
 import { createClient, SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "./database.types";
 
 const isWeb = typeof window !== "undefined" && typeof document !== "undefined";
 const isNodeRuntime =
@@ -195,7 +196,7 @@ const supabaseFetch: typeof fetch | undefined = isWeb
 // NATIVE fetch: логируем и чиним URL
 const nativeFetch: typeof fetch = wrapFetchWithLog("📱", fetch);
 
-function createMissingSupabaseClient(): SupabaseClient {
+function createMissingSupabaseClient(): SupabaseClient<Database> {
   const err =
     "[supabaseClient] Supabase client is unavailable: missing/invalid EXPO_PUBLIC_SUPABASE_URL or EXPO_PUBLIC_SUPABASE_ANON_KEY.";
   return new Proxy(
@@ -205,7 +206,7 @@ function createMissingSupabaseClient(): SupabaseClient {
         throw new Error(err);
       },
     },
-  ) as SupabaseClient;
+  ) as SupabaseClient<Database>;
 }
 
 // —–– CLIENT —––
@@ -215,8 +216,8 @@ const authStorage = isWeb
   : isNodeRuntime
     ? undefined
     : tryLoadAsyncStorage();
-export const supabase: SupabaseClient = isSupabaseEnvValid
-  ? createClient(SUPABASE_URL, resolvedSupabaseKey, {
+export const supabase: SupabaseClient<Database> = isSupabaseEnvValid
+  ? createClient<Database>(SUPABASE_URL, resolvedSupabaseKey, {
     auth: {
       persistSession: !useServiceRoleInNodeWorker,
       autoRefreshToken: !useServiceRoleInNodeWorker,

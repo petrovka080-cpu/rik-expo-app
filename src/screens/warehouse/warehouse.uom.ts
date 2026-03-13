@@ -11,6 +11,22 @@ type UomRow = {
   uom_code?: string | null;
 };
 
+const asUnitRow = (value: unknown): UnitRow | null => {
+  if (!value || typeof value !== "object") return null;
+  const row = value as Record<string, unknown>;
+  return {
+    unit_id: row.unit_id == null ? null : String(row.unit_id),
+  };
+};
+
+const asUomRow = (value: unknown): UomRow | null => {
+  if (!value || typeof value !== "object") return null;
+  const row = value as Record<string, unknown>;
+  return {
+    uom_code: row.uom_code == null ? null : String(row.uom_code),
+  };
+};
+
 export async function resolveUnitIdByCode(code: string): Promise<string | null> {
   const c = String(code ?? "").trim();
   if (!c) return null;
@@ -22,7 +38,7 @@ export async function resolveUnitIdByCode(code: string): Promise<string | null> 
       .eq("mat_code", c)
       .maybeSingle();
 
-    const row = (m.data ?? null) as UnitRow | null;
+    const row = asUnitRow(m.data ?? null);
     if (!m.error && row?.unit_id) return String(row.unit_id);
     return null;
   } catch {
@@ -49,7 +65,7 @@ export async function resolveUomTextByCode(
       .eq("mat_code", c)
       .maybeSingle();
 
-    const row = (m.data ?? null) as UnitRow | null;
+    const row = asUnitRow(m.data ?? null);
     unit = String(row?.unit_id ?? "").trim();
     if (!unit) return null;
   } catch {
@@ -60,12 +76,12 @@ export async function resolveUomTextByCode(
 
   try {
     const u = await supabase
-      .from("rik_uoms")
+      .from("rik_uoms" as never)
       .select("uom_code")
       .eq("id", unit)
       .maybeSingle();
 
-    const row = (u.data ?? null) as UomRow | null;
+    const row = asUomRow(u.data ?? null);
     const codeText = String(row?.uom_code ?? "").trim();
     return codeText || null;
   } catch {

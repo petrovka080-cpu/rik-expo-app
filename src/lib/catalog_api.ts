@@ -75,6 +75,24 @@ export type RequestHeader = {
   created_at?: string | null;
 };
 
+const asRequestHeader = (value: unknown): RequestHeader | null => {
+  if (!value || typeof value !== "object") return null;
+  const row = value as Record<string, unknown>;
+  const id = String(row.id ?? "").trim();
+  if (!id) return null;
+  return {
+    id,
+    display_no: row.display_no == null ? null : String(row.display_no),
+    status: row.status == null ? null : String(row.status),
+    created_at: row.created_at == null ? null : String(row.created_at),
+  };
+};
+
+const asRequestStatusRow = (value: unknown): { id: string; status?: string | null; display_no?: string | null } | null => {
+  const header = asRequestHeader(value);
+  return header ? header : null;
+};
+
 export type RequestItem = {
   id?: string;
   request_id: string;
@@ -697,8 +715,9 @@ async function isCachedDraftValid(id: string): Promise<boolean> {
       .eq('id', rid)
       .maybeSingle();
     if (error) throw error;
-    if (!data?.id) return false;
-    return isDraftStatusValue(data.status);
+    const row = asRequestStatusRow(data);
+    if (!row?.id) return false;
+    return isDraftStatusValue(row.status);
   } catch (e: any) {
     const msg = String(e?.message ?? '').toLowerCase();
     if (!msg.includes('permission denied')) {
@@ -727,7 +746,8 @@ export async function getRequestHeader(requestId: string): Promise<RequestHeader
         .select(view.cols)
         .eq("id", id)
         .maybeSingle();
-      if (!error && data) return data as RequestHeader;
+      const row = asRequestHeader(data);
+      if (!error && row) return row;
     } catch { }
   }
 
@@ -744,7 +764,8 @@ export async function fetchRequestDisplayNo(requestId: string): Promise<string |
       .select("id,display_no")
       .eq("id", id)
       .maybeSingle();
-    if (!error && data?.display_no) return String(data.display_no);
+    const row = asRequestHeader(data);
+    if (!error && row?.display_no) return String(row.display_no);
   } catch (e: any) {
     const msg = String(e?.message ?? "").toLowerCase();
     if (!msg.includes("permission denied") && !msg.includes("does not exist")) {
@@ -1857,9 +1878,13 @@ export async function createProposalsBySupplier(
     if (!added) {
       const insertProposalItemsStartedAt = nowMs();
       for (const pack of chunk(ids, 50)) {
-        const rows = pack.map((request_item_id) => ({ proposal_id: proposalId, request_item_id }));
+        const rows = pack.map((request_item_id) => ({
+          proposal_id: proposalId,
+          proposal_id_text: proposalId,
+          request_item_id,
+        }));
         dbCalls += 1;
-        const { error } = await supabase.from("proposal_items").insert(rows);
+        const { error } = await supabase.from("proposal_items").insert(rows as never);
         if (error) throw error;
       }
       const insertMs = nowMs() - insertProposalItemsStartedAt;
