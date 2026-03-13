@@ -3,7 +3,6 @@ import * as Print from "expo-print";
 import * as FileSystemModule from "expo-file-system/legacy";
 import { getFileSystemPaths } from "../fileSystemPaths";
 import { normalizeLocalFileUri } from "../pdfFileContract";
-import { hashString32 } from "../pdfFileContract";
 
 type OpenDocOpts = { share?: boolean };
 
@@ -41,45 +40,32 @@ export async function openHtmlAsPdfUniversal(
     });
 
     const res = await withTimeout(
-      Print.printToFileAsync({ html, base64: true }),
-      25000,
+      Print.printToFileAsync({ html }),
+      35000,
       "PDF generates too slowly. Try again.",
     );
 
     const rawUri = (res as any)?.uri;
-    const base64Data = (res as any)?.base64;
-    
-    if (!rawUri && !base64Data) throw new Error("printToFileAsync returned empty payload");
+    if (!rawUri) throw new Error("printToFileAsync returned empty uri");
 
-    // iOS 18 stabilization: Use base64 + writeAsStringAsync instead of copyAsync.
-    // This avoids a native crash (SIGABRT) when the legacy bridge tries to access the volatile /Print/ directory.
-    if ((Platform.OS as string) !== "web" && base64Data) {
+    if ((Platform.OS as string) !== "web") {
+      const sourceUri = normalizeLocalFileUri(rawUri);
       const { cacheDir } = getFileSystemPaths();
-      const stableName = `gen_${hashString32(html || "pdf")}.pdf`;
+      // Generate a simple unique name instead of hashing a 5MB string which can crash Hermes
+      const stableName = `gen_${Date.now()}_${Math.random().toString(36).substring(2, 9)}.pdf`;
       const stableUri = `${cacheDir}${stableName}`;
       
       let lastError: any;
       for (let attempt = 1; attempt <= 3; attempt++) {
         try {
-          if (attempt > 1) await uiYield(100 * attempt);
-          await FileSystemModule.writeAsStringAsync(stableUri, base64Data, {
-            encoding: FileSystemModule.EncodingType.Base64,
-          });
-          const copiedInfo = await FileSystemModule.getInfoAsync(stableUri);
-          if (!copiedInfo?.exists) throw new Error("Generated PDF copy is missing after materialization (writeAsStringAsync failed)");
-          console.info("[pdf-api] native_print_ready_via_base64", {
-            stage: "native_print_ready",
-            platform: Platform.OS,
-            uri: stableUri,
-            scheme: String(stableUri || "").match(/^([a-z0-9+.-]+):/i)?.[1]?.toLowerCase() || "",
-          });
+          if (attempt > 1) await uiYield(200 * attempt);
+          await FileSystemModule.copyAsync({ from: sourceUri, to: stableUri });
           return stableUri;
         } catch (e) {
           lastError = e;
-          console.warn(`[pdf-api] write_attempt_failed`, { attempt, stableUri, error: String(e) });
         }
       }
-      throw lastError || new Error("Failed to stabilize generated PDF file via base64");
+      throw lastError || new Error("Failed to stabilize generated PDF file via copyAsync");
     }
 
     return rawUri;
