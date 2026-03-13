@@ -5,6 +5,11 @@ import { normalizeLocalFileUri } from "../pdfFileContract";
 
 type OpenDocOpts = { share?: boolean };
 
+const logPdfDebug = (level: "info" | "warn", message: string, payload: Record<string, unknown>) => {
+  if (!__DEV__) return;
+  console[level](message, payload);
+};
+
 const uiYield = async (ms = 0) => {
   await new Promise<void>((resolve) => setTimeout(resolve, ms));
 };
@@ -32,7 +37,7 @@ export async function openHtmlAsPdfUniversal(
     }
 
     await uiYield(50);
-    console.info("[pdf-api] native_print_requested", {
+    logPdfDebug("info", "[pdf-api] native_print_requested", {
       stage: "native_print_requested",
       platform: Platform.OS,
       htmlLength: String(html || "").length,
@@ -66,7 +71,7 @@ export async function openHtmlAsPdfUniversal(
           if (!copiedInfo?.exists) {
             throw new Error("Generated PDF copy is missing after File API materialization");
           }
-          console.info("[pdf-api] native_print_materialized", {
+          logPdfDebug("info", "[pdf-api] native_print_materialized", {
             stage: "native_print_materialized",
             platform: Platform.OS,
             rawUri,
@@ -76,7 +81,7 @@ export async function openHtmlAsPdfUniversal(
           return copiedUri;
         } catch (e) {
           lastError = e;
-          console.warn("[pdf-api] native_print_materialize_failed", {
+          logPdfDebug("warn", "[pdf-api] native_print_materialize_failed", {
             stage: "native_print_materialize_failed",
             platform: Platform.OS,
             rawUri,

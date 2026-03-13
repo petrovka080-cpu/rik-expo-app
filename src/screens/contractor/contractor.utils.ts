@@ -1,4 +1,4 @@
-import { normalizeRuText } from "../../lib/text/encoding";
+﻿import { normalizeRuText } from "../../lib/text/encoding";
 
 const ACT_META_PREFIX = "ACT_META::";
 const EXCLUDED_WORK_CODE_PREFIXES = [
@@ -58,7 +58,7 @@ export const parseActMeta = (
   }
 };
 
-export const pickFirstNonEmpty = (...vals: any[]): string | null => {
+export const pickFirstNonEmpty = (...vals: unknown[]): string | null => {
   for (const v of vals) {
     const s = typeof v === "string" ? v.trim() : String(v ?? "").trim();
     if (s) return s;
@@ -66,7 +66,7 @@ export const pickFirstNonEmpty = (...vals: any[]): string | null => {
   return null;
 };
 
-export const textOrDash = (v: any): string => {
+export const textOrDash = (v: unknown): string => {
   const s = String(v ?? "").trim();
   return s || "—";
 };
@@ -78,8 +78,17 @@ export const toLocalDateKey = (value: string | Date | null | undefined): string 
   return dt.toLocaleDateString("en-CA", { timeZone: "Asia/Bishkek" });
 };
 
-export const pickWorkProgressRow = (row: any): string => {
-  return String(row?.id || row?.progress_id || "").trim();
+type WorkProgressRowLike = {
+  id?: unknown;
+  progress_id?: unknown;
+};
+
+const asWorkProgressRow = (value: unknown): WorkProgressRowLike =>
+  value && typeof value === "object" ? (value as WorkProgressRowLike) : {};
+
+export const pickWorkProgressRow = (row: unknown): string => {
+  const normalized = asWorkProgressRow(row);
+  return String(normalized.id || normalized.progress_id || "").trim();
 };
 
 export const looksLikeUuid = (v: string): boolean =>
@@ -92,12 +101,35 @@ export function isActiveWork(w: { work_status?: string | null; qty_left?: number
   return hasLeft && !closed.includes(status);
 }
 
-export const pickErr = (e: any) =>
-  String(e?.message || e?.error_description || e?.hint || e || "Ошибка");
+type ErrorLike = {
+  message?: unknown;
+  error_description?: unknown;
+  hint?: unknown;
+};
+
+const asErrorLike = (value: unknown): ErrorLike =>
+  value && typeof value === "object" ? (value as ErrorLike) : {};
+
+const toErrorText = (value: unknown): string => {
+  if (typeof value === "string") return value.trim();
+  if (typeof value === "number" || typeof value === "boolean") return String(value);
+  return "";
+};
+
+export const pickErr = (e: unknown) => {
+  const errorLike = asErrorLike(e);
+  return (
+    toErrorText(errorLike.message) ||
+    toErrorText(errorLike.error_description) ||
+    toErrorText(errorLike.hint) ||
+    toErrorText(e) ||
+    "Ошибка"
+  );
+};
 
 const textNormCache = new Map<string, string>();
 const MAX_TEXT_NORM_CACHE_SIZE = 5000;
-export const normText = (v: any): string => {
+export const normText = (v: unknown): string => {
   const raw = String(v ?? "");
   const cached = textNormCache.get(raw);
   if (cached !== undefined) return cached;
@@ -107,10 +139,11 @@ export const normText = (v: any): string => {
   return normalized;
 };
 
-export function debounce<F extends (...args: any[]) => any>(fn: F, delay: number) {
-  let timer: any;
+export function debounce<F extends (...args: unknown[]) => unknown>(fn: F, delay: number) {
+  let timer: ReturnType<typeof setTimeout> | null = null;
   return (...args: Parameters<F>) => {
     if (timer) clearTimeout(timer);
     timer = setTimeout(() => fn(...args), delay);
   };
 }
+

@@ -16,6 +16,17 @@ export type BuyerCounterpartySourceDiag = {
   error: string | null;
 };
 
+const logBuyerSuppliersDiag = (diag: BuyerCounterpartySourceDiag) => {
+  if (!__DEV__) return;
+  if (!diag.ok) {
+    console.warn(
+      `[buyer.suppliers] source=${diag.source} ok=false query=${diag.query} error=${diag.error ?? "unknown"} rows=${diag.rows}`,
+    );
+    return;
+  }
+  console.info(`[buyer.suppliers] source=${diag.source} ok=true rows=${diag.rows}`);
+};
+
 export function useBuyerSuppliers() {
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [counterparties, setCounterparties] = useState<BuyerCounterpartySuggestion[]>([]);
@@ -167,8 +178,7 @@ export function useBuyerSuppliers() {
         ];
         setSourceDiag(diags);
         for (const d of diags) {
-          if (!d.ok) console.warn(`[buyer.suppliers] source=${d.source} ok=false query=${d.query} error=${d.error ?? "unknown"} rows=${d.rows}`);
-          else console.info(`[buyer.suppliers] source=${d.source} ok=true rows=${d.rows}`);
+          logBuyerSuppliersDiag(d);
         }
 
         const counterpartiesList: BuyerCounterpartySuggestion[] = [];

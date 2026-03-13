@@ -213,6 +213,11 @@ const getErrorMessage = (error: unknown, fallback: string) => {
   return fallback;
 };
 
+const logForemanSubcontractDebug = (...args: unknown[]) => {
+  if (!__DEV__) return;
+  console.warn(...args);
+};
+
 export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }: Props) {
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -419,7 +424,7 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
       const rows = await listForemanSubcontracts(uid);
       setHistory(rows);
     } catch (e) {
-      Alert.alert("Ошибка", getErrorMessage(e, "Не удалось загрузить историю подрядов."));
+      Alert.alert("Не удалось загрузить данные", getErrorMessage(e, "Не удалось загрузить историю подрядов."));
     } finally {
       setHistoryLoading(false);
     }
@@ -435,7 +440,7 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
       const rows = await listRequestItems(id);
       setDraftItems(rows || []);
     } catch (e) {
-      console.warn("[loadDraftItems] error:", e);
+      logForemanSubcontractDebug("[loadDraftItems] error:", e);
       setDraftItems([]);
     }
   }, []);
@@ -460,7 +465,7 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
           const x = String((prof as { full_name?: string } | null)?.full_name || "").trim();
           if (x) setForemanName(x);
         } catch (e) {
-          console.warn("foreman profile load failed", e);
+          logForemanSubcontractDebug("foreman profile load failed", e);
         }
       }
 
@@ -576,7 +581,7 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
     }
 
     if (!userId) {
-      Alert.alert("Ошибка", "Профиль пользователя не найден.");
+      Alert.alert("Данные не загружены", "Профиль пользователя не найден.");
       return null;
     }
 
@@ -609,7 +614,7 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
         .update(directPatch as any)
         .eq("id", rid);
       if (directRes.error) {
-        console.warn("[foreman.subcontract][requests.patch400.direct]", {
+        logForemanSubcontractDebug("[foreman.subcontract][requests.patch400.direct]", {
           request_id: rid,
           payload: directPatch,
           error: {
@@ -632,7 +637,7 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
       activeDraftScopeKeyRef.current = draftScopeKey;
       return rid;
     } catch (e) {
-      Alert.alert("Ошибка", getErrorMessage(e, "Не удалось создать черновик заявки."));
+      Alert.alert("Не удалось создать черновик", getErrorMessage(e, "Не удалось создать черновик заявки."));
       return null;
     } finally {
       setSaving(false);
@@ -671,7 +676,7 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
       }
       await loadDraftItems(rid);
     } catch (e) {
-      Alert.alert("Ошибка", getErrorMessage(e, "Не удалось добавить позиции из каталога."));
+      Alert.alert("Не удалось обновить заявку", getErrorMessage(e, "Не удалось добавить позиции из каталога."));
     } finally {
       setSaving(false);
     }
@@ -698,7 +703,7 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
       }
       await loadDraftItems(rid);
     } catch (e) {
-      Alert.alert("Ошибка", getErrorMessage(e, "Не удалось добавить позиции из сметы."));
+      Alert.alert("Не удалось обновить заявку", getErrorMessage(e, "Не удалось добавить позиции из сметы."));
     } finally {
       setSaving(false);
     }
@@ -711,7 +716,7 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
       if (error) throw error;
       await loadDraftItems(requestId);
     } catch (e) {
-      Alert.alert("Ошибка", getErrorMessage(e, "Не удалось удалить позицию."));
+      Alert.alert("Не удалось обновить заявку", getErrorMessage(e, "Не удалось удалить позицию."));
     } finally {
       setSaving(false);
     }
@@ -722,7 +727,7 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
     if (!subcontractId) return;
 
     if (!requestId) {
-      Alert.alert("Ошибка", "Сначала сформируйте заявку.");
+      Alert.alert("Внимание", "Сначала сформируйте заявку.");
       return;
     }
     setSending(true);
@@ -757,7 +762,7 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
       activeDraftScopeKeyRef.current = "";
       setDraftOpen(false);
     } catch (e) {
-      Alert.alert("Ошибка", getErrorMessage(e, "Не удалось отправить заявку директору."));
+      Alert.alert("Не удалось отправить заявку", getErrorMessage(e, "Не удалось отправить заявку директору."));
     } finally {
       setSending(false);
     }
@@ -797,7 +802,7 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
       try {
         await supabase.from("request_items").delete().eq("request_id", requestId);
       } catch (e) {
-        Alert.alert("Ошибка", getErrorMessage(e, "Не удалось очистить черновик."));
+        Alert.alert("Не удалось очистить черновик", getErrorMessage(e, "Не удалось очистить черновик."));
         return;
       }
     }

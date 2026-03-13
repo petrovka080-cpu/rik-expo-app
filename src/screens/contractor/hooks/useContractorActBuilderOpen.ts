@@ -22,6 +22,12 @@ type ActBuilderDispatch = (action: {
   payload: { items: any[]; works: any[] };
 }) => void;
 
+const ACT_BUILDER_DATA_MISSING_TITLE = "Данные не загружены";
+const ACT_BUILDER_DATA_MISSING_MESSAGE = "Данные подряда не загружены";
+const ACT_BUILDER_LOADING_TITLE = "Загрузка";
+const ACT_BUILDER_LOADING_MESSAGE = "Дождитесь загрузки данных подряда";
+const ACT_BUILDER_LOADING_HINT = "Загрузка данных подряда...";
+
 export function useContractorActBuilderOpen(params: {
   supabaseClient: any;
   workModalRow: ContractorWorkRow | null;
@@ -72,14 +78,14 @@ export function useContractorActBuilderOpen(params: {
   const openActBuilder = useCallback(async () => {
     if (!workModalRow) {
       setActBuilderLoadState("error");
-      setActBuilderHint("Данные подряда не загружены");
-      Alert.alert("Ошибка", "Данные подряда не загружены");
+      setActBuilderHint(ACT_BUILDER_DATA_MISSING_MESSAGE);
+      Alert.alert(ACT_BUILDER_DATA_MISSING_TITLE, ACT_BUILDER_DATA_MISSING_MESSAGE);
       return;
     }
     if (workModalLoading || loadingIssued) {
       setActBuilderLoadState("loading");
-      setActBuilderHint("Загрузка данных подряда...");
-      Alert.alert("Загрузка", "Дождитесь загрузки данных подряда");
+      setActBuilderHint(ACT_BUILDER_LOADING_HINT);
+      Alert.alert(ACT_BUILDER_LOADING_TITLE, ACT_BUILDER_LOADING_MESSAGE);
       return;
     }
 
@@ -95,8 +101,8 @@ export function useContractorActBuilderOpen(params: {
     });
     if (ensured.fatalError) {
       setActBuilderLoadState("error");
-      setActBuilderHint("Данные подряда не загружены");
-      Alert.alert("Ошибка", ensured.fatalError);
+      setActBuilderHint(ACT_BUILDER_DATA_MISSING_MESSAGE);
+      Alert.alert(ACT_BUILDER_DATA_MISSING_TITLE, ensured.fatalError);
       return;
     }
 
@@ -125,8 +131,8 @@ export function useContractorActBuilderOpen(params: {
     const hasWorks = nextWorks.length > 0;
     if (!hasHeader || !hasObject || !hasWorks) {
       setActBuilderLoadState("error");
-      setActBuilderHint("Данные подряда не загружены");
-      Alert.alert("Ошибка", "Данные подряда не загружены");
+      setActBuilderHint(ACT_BUILDER_DATA_MISSING_MESSAGE);
+      Alert.alert(ACT_BUILDER_DATA_MISSING_TITLE, ACT_BUILDER_DATA_MISSING_MESSAGE);
       return;
     }
 
