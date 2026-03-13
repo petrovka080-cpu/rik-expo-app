@@ -2,6 +2,7 @@ import { supabase } from "../supabaseClient";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "../database.types";
 import { openHtmlAsPdfUniversal } from "./pdf";
+import { normalizeRuTextForHtml } from "../text/encoding";
 
 const logPdfRequestDebug = (...args: unknown[]) => {
   if (__DEV__) {
@@ -178,13 +179,14 @@ function formatDateTime(value: unknown, locale: string) {
 }
 
 function normalizeStatusRu(raw?: string | null) {
-  const s = String(raw ?? "").trim().toLowerCase();
+  const original = String(raw ?? "").trim();
+  const s = original.toLowerCase();
   if (!s) return "—";
   if (s === "draft" || s === "черновик") return "Черновик";
   if (s === "pending" || s === "на утверждении") return "На утверждении";
   if (s === "approved" || s === "утверждено" || s === "утверждена") return "Утверждена";
   if (s === "rejected" || s === "cancelled" || s === "отклонено" || s === "отклонена") return "Отклонена";
-  return raw ?? "—";
+  return original || "—";
 }
 
 export async function buildRequestPdfHtml(requestId: number | string): Promise<string> {
@@ -414,7 +416,7 @@ export async function buildRequestPdfHtml(requestId: number | string): Promise<s
     <table class="items">
       <thead>
         <tr>
-          <th>в„–</th>
+          <th>№</th>
           <th>Позиция</th>
           <th>Ед.</th>
           <th>Количество</th>
@@ -444,5 +446,10 @@ export async function buildRequestPdfHtml(requestId: number | string): Promise<s
 
 export async function exportRequestPdf(requestId: number | string) {
   const html = await buildRequestPdfHtml(requestId);
-  return openHtmlAsPdfUniversal(html);
+  const normalizedHtml = normalizeRuTextForHtml(html, {
+    documentType: "request",
+    source: "buyer",
+    maxLength: 500_000,
+  });
+  return openHtmlAsPdfUniversal(normalizedHtml);
 }
