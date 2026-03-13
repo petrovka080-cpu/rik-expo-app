@@ -1,7 +1,6 @@
 import { Platform } from "react-native";
 import * as Print from "expo-print";
-import * as FileSystemModule from "expo-file-system/legacy";
-import { getFileSystemPaths } from "../fileSystemPaths";
+import { File, Paths } from "expo-file-system";
 import { normalizeLocalFileUri } from "../pdfFileContract";
 
 type OpenDocOpts = { share?: boolean };
@@ -50,22 +49,44 @@ export async function openHtmlAsPdfUniversal(
 
     if ((Platform.OS as string) !== "web") {
       const sourceUri = normalizeLocalFileUri(rawUri);
-      const { cacheDir } = getFileSystemPaths();
-      // Generate a simple unique name instead of hashing a 5MB string which can crash Hermes
       const stableName = `gen_${Date.now()}_${Math.random().toString(36).substring(2, 9)}.pdf`;
-      const stableUri = `${cacheDir}${stableName}`;
-      
+      const sourceFile = new File(sourceUri);
+      const destinationFile = new File(Paths.cache, stableName);
+      const copiedUri = destinationFile.uri;
+
       let lastError: any;
       for (let attempt = 1; attempt <= 3; attempt++) {
         try {
           if (attempt > 1) await uiYield(200 * attempt);
-          await FileSystemModule.copyAsync({ from: sourceUri, to: stableUri });
-          return stableUri;
+          if (destinationFile.exists) {
+            destinationFile.delete();
+          }
+          sourceFile.copy(destinationFile);
+          const copiedInfo = destinationFile.info();
+          if (!copiedInfo?.exists) {
+            throw new Error("Generated PDF copy is missing after File API materialization");
+          }
+          console.info("[pdf-api] native_print_materialized", {
+            stage: "native_print_materialized",
+            platform: Platform.OS,
+            rawUri,
+            copiedUri,
+            attempt,
+          });
+          return copiedUri;
         } catch (e) {
           lastError = e;
+          console.warn("[pdf-api] native_print_materialize_failed", {
+            stage: "native_print_materialize_failed",
+            platform: Platform.OS,
+            rawUri,
+            copiedUri,
+            attempt,
+            error: e instanceof Error ? e.message : String(e),
+          });
         }
       }
-      throw lastError || new Error("Failed to stabilize generated PDF file via copyAsync");
+      throw lastError || new Error("Failed to materialize generated PDF into app cache");
     }
 
     return rawUri;
