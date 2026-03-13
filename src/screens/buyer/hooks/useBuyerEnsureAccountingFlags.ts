@@ -1,5 +1,6 @@
 import { useCallback } from "react";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { fetchBuyerAccountingFlags, updateBuyerAccountingFlags } from "./useBuyerAccountingFlagsRepo";
 
 export function useBuyerEnsureAccountingFlags(params: {
   supabase: SupabaseClient;
@@ -10,11 +11,7 @@ export function useBuyerEnsureAccountingFlags(params: {
   const ensureAccountingFlags = useCallback(
     async (proposalId: string, invoiceAmountNum?: number) => {
       try {
-        const chk = await supabase
-          .from("proposals")
-          .select("payment_status, sent_to_accountant_at, invoice_amount")
-          .eq("id", proposalId)
-          .maybeSingle();
+        const chk = await fetchBuyerAccountingFlags(supabase, proposalId);
 
         if (chk.error) return;
 
@@ -30,7 +27,7 @@ export function useBuyerEnsureAccountingFlags(params: {
             upd.invoice_amount = invoiceAmountNum;
           }
           if (Object.keys(upd).length) {
-            await supabase.from("proposals").update(upd).eq("id", proposalId);
+            await updateBuyerAccountingFlags(supabase, proposalId, upd);
             await proposalSubmit(proposalId);
           }
         }
@@ -43,4 +40,3 @@ export function useBuyerEnsureAccountingFlags(params: {
 
   return { ensureAccountingFlags };
 }
-

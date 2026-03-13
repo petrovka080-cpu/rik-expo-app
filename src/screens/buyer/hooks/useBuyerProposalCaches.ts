@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase } from "../../../lib/supabaseClient";
 import { batchResolveRequestLabels } from "../../../lib/catalog_api";
 import { preloadProposalTitlesAction } from "../buyer.actions";
+import { fetchBuyerProposalNos } from "./useBuyerProposalNos";
 
 const errText = (error: unknown): string => {
   if (error instanceof Error && error.message.trim()) return error.message.trim();
@@ -65,7 +66,7 @@ export function useBuyerProposalCaches() {
           const patch: Record<string, string> = {};
 
           for (const part of chunk(toFetch, 250)) {
-            const q = await supabase.from("proposals").select("id, proposal_no").in("id", part);
+            const q = await fetchBuyerProposalNos(part);
 
             if (!q.error && Array.isArray(q.data)) {
               const rowsTyped = q.data as Array<{ id?: string | number | null; proposal_no?: string | null }>;

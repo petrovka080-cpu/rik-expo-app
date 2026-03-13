@@ -4,6 +4,7 @@ import { client, normStr } from "./_core";
 import { openHtmlAsPdfUniversal } from "./pdf";
 import { listSuppliers } from "./suppliers";
 import type { Supplier } from "./types";
+import { normalizeRuTextForHtml } from "../text/encoding";
 
 type ProposalHeadRow = Pick<
   Database["public"]["Tables"]["proposals"]["Row"],
@@ -89,16 +90,16 @@ function rikKindLabel(rikCode?: string | null): string {
   const p = String(rikCode ?? "").trim().toUpperCase().split("-")[0];
   switch (p) {
     case "MAT":
-      return "РњР°С‚РµСЂРёР°Р»";
+      return "Материал";
     case "WRK":
     case "WORK":
-      return "Р Р°Р±РѕС‚Р°";
+      return "Работа";
     case "SRV":
-      return "РЈСЃР»СѓРіР°";
+      return "Услуга";
     case "KIT":
-      return "РљРѕРјРїР»РµРєС‚";
+      return "Комплект";
     case "SPEC":
-      return "РЎРїРµС†.";
+      return "Спец.";
     default:
       return "";
   }
@@ -108,10 +109,10 @@ function stripContextFromText(raw: unknown) {
   const s = String(raw ?? "").trim();
   if (!s) return "";
   return s
-    .replace(/РѕР±СЉРµРєС‚\s*:\s*[^;\n]+;?\s*/gi, "")
-    .replace(/СЌС‚Р°Р¶\s*\/?\s*СѓСЂРѕРІРµРЅСЊ\s*:\s*[^;\n]+;?\s*/gi, "")
-    .replace(/СЃРёСЃС‚РµРјР°\s*:\s*[^;\n]+;?\s*/gi, "")
-    .replace(/Р·РѕРЅР°\s*\/?\s*СѓС‡Р°СЃС‚РѕРє\s*:\s*[^;\n]+;?\s*/gi, "")
+    .replace(/объект\s*:\s*[^;\n]+;?\s*/gi, "")
+    .replace(/этаж\s*\/?\s*уровень\s*:\s*[^;\n]+;?\s*/gi, "")
+    .replace(/система\s*:\s*[^;\n]+;?\s*/gi, "")
+    .replace(/зона\s*\/?\s*участок\s*:\s*[^;\n]+;?\s*/gi, "")
     .replace(/\s{2,}/g, " ")
     .trim();
 }
@@ -151,13 +152,14 @@ function formatDateTime(value: unknown, locale: string) {
 }
 
 function normalizeStatusRu(raw?: string | null) {
-  const s = String(raw ?? "").trim().toLowerCase();
-  if (!s) return "вЂ”";
-  if (s === "draft" || s === "С‡РµСЂРЅРѕРІРёРє") return "Р§РµСЂРЅРѕРІРёРє";
-  if (s === "pending" || s === "РЅР° СѓС‚РІРµСЂР¶РґРµРЅРёРё") return "РќР° СѓС‚РІРµСЂР¶РґРµРЅРёРё";
-  if (s === "approved" || s === "СѓС‚РІРµСЂР¶РґРµРЅРѕ" || s === "СѓС‚РІРµСЂР¶РґРµРЅР°") return "РЈС‚РІРµСЂР¶РґРµРЅР°";
-  if (s === "rejected" || s === "cancelled" || s === "РѕС‚РєР»РѕРЅРµРЅРѕ" || s === "РѕС‚РєР»РѕРЅРµРЅР°") return "РћС‚РєР»РѕРЅРµРЅР°";
-  return raw ?? "вЂ”";
+  const original = String(raw ?? "").trim();
+  const s = original.toLowerCase();
+  if (!s) return "-";
+  if (s === "draft" || s === "черновик") return "Черновик";
+  if (s === "pending" || s === "на утверждении") return "На утверждении";
+  if (s === "approved" || s === "утверждено" || s === "утверждена") return "Утверждена";
+  if (s === "rejected" || s === "cancelled" || s === "отклонено" || s === "отклонена") return "Отклонена";
+  return original || "-";
 }
 
 export async function buildProposalPdfHtml(proposalId: number | string): Promise<string> {
@@ -310,7 +312,7 @@ export async function buildProposalPdfHtml(proposalId: number | string): Promise
     const body = (pi.length ? pi : [{ id: 0 }])
       .map((r, i: number) => {
         if (!pi.length) {
-          return `<tr><td colspan="${includeSupplier ? 8 : 7}" class="empty">РќРµС‚ СЃС‚СЂРѕРє</td></tr>`;
+          return `<tr><td colspan="${includeSupplier ? 8 : 7}" class="empty">Нет строк</td></tr>`;
         }
 
         const qty = num(r.qty);
@@ -322,16 +324,16 @@ export async function buildProposalPdfHtml(proposalId: number | string): Promise
         const appCode = getObjectField<string>(r, "app_code");
         const app = appCode ? appNames[appCode] ?? appCode : "";
         const noteText = stripContextFromText(
-          String(getObjectField<string>(r, "note") ?? "").trim().replace(/^РџСЂРёРј\.\:\s*/i, "")
+          String(getObjectField<string>(r, "note") ?? "").trim().replace(/^прим\.\:\s*/i, "")
         );
-        const appAndNote = [app, noteText].filter(Boolean).join(" В· ");
+        const appAndNote = [app, noteText].filter(Boolean).join(" · ");
         const supplier = String(getObjectField<string>(r, "supplier") ?? "");
 
         return `<tr>
 <td class="c-num">${i + 1}</td>
 <td class="c-name">
   ${esc(name)}
-  ${kind ? `<div class="sub">РўРёРї: ${esc(kind)}</div>` : ``}
+  ${kind ? `<div class="sub">Тип: ${esc(kind)}</div>` : ``}
 </td>
 <td class="c-qty">${qty ? fmt(qty) : ""}</td>
 <td class="c-uom">${esc(uom)}</td>
@@ -345,16 +347,16 @@ ${includeSupplier ? `<td class="c-supp">${esc(supplier)}</td>` : ``}
 
     const suppliersHtml = supplierCards.length
       ? `
-<div class="section-title">РџРѕСЃС‚Р°РІС‰РёРєРё</div>
+<div class="section-title">Поставщики</div>
 ${supplierCards
   .map((s) => {
     const meta: string[] = [];
-    if (s.phone) meta.push(`РўРµР».: ${esc(s.phone)}`);
+    if (s.phone) meta.push(`Тел.: ${esc(s.phone)}`);
     if (s.email) meta.push(`Email: ${esc(s.email)}`);
-    if (s.inn) meta.push(`РРќРќ: ${esc(s.inn)}`);
-    if (s.address) meta.push(`РђРґСЂРµСЃ: ${esc(s.address)}`);
+    if (s.inn) meta.push(`ИНН: ${esc(s.inn)}`);
+    if (s.address) meta.push(`Адрес: ${esc(s.address)}`);
 
-    const metaLine = meta.filter(Boolean).join(" В· ");
+    const metaLine = meta.filter(Boolean).join(" · ");
     return `
 <div class="supplier-line">
   <div class="s-name">${esc(s.name)}</div>
@@ -368,22 +370,22 @@ ${supplierCards
     const total = pi.reduce((acc, r) => acc + num(r.qty) * num(r.price), 0);
     const generatedAt = new Date().toLocaleString(locale);
     const dateStr = (submittedAt ? new Date(submittedAt) : new Date()).toLocaleString(locale);
-    const supplierTh = includeSupplier ? `<th style="width:160px">РџРѕСЃС‚Р°РІС‰РёРє</th>` : ``;
+    const supplierTh = includeSupplier ? `<th style="width:160px">Поставщик</th>` : ``;
     const sumColspan = includeSupplier ? 7 : 6;
 
     const leftPairs: Array<{ label: string; value: string }> = [
-      { label: "РћР±СЉРµРєС‚", value: objectName || "вЂ”" },
-      { label: "Р­С‚Р°Р¶ / СѓСЂРѕРІРµРЅСЊ", value: levelName || "вЂ”" },
-      { label: "РЎРёСЃС‚РµРјР°", value: systemName || "вЂ”" },
-      { label: "Р—РѕРЅР° / СѓС‡Р°СЃС‚РѕРє", value: zoneName || "вЂ”" },
+      { label: "Объект", value: objectName || "-" },
+      { label: "Этаж / уровень", value: levelName || "-" },
+      { label: "Система", value: systemName || "-" },
+      { label: "Зона / участок", value: zoneName || "-" },
     ];
 
     const rightPairs: Array<{ label: string; value: string }> = [
-      { label: "РЎРЅР°Р±Р¶РµРЅРµС†", value: buyerFio || "вЂ”" },
-      { label: "РќСѓР¶РЅРѕ Рє", value: requestNeedBy || "вЂ”" },
-      { label: "Р”Р°С‚Р° СЃРѕР·РґР°РЅРёСЏ", value: requestCreatedAt || dateStr },
-      { label: "РЎС‚Р°С‚СѓСЃ", value: requestStatus || normalizeStatusRu(status) || "вЂ”" },
-      { label: "Р—Р°СЏРІРєР°", value: requestDisplayNo ? `#${requestDisplayNo}` : "вЂ”" },
+      { label: "Снабженец", value: buyerFio || "-" },
+      { label: "Нужно к", value: requestNeedBy || "-" },
+      { label: "Дата создания", value: requestCreatedAt || dateStr },
+      { label: "Статус", value: requestStatus || normalizeStatusRu(status) || "-" },
+      { label: "Заявка", value: requestDisplayNo ? `#${requestDisplayNo}` : "-" },
     ];
 
     const leftHtml = leftPairs
@@ -398,7 +400,7 @@ ${supplierCards
 <html lang="ru">
 <head>
 <meta charset="utf-8"/>
-<title>РџСЂРµРґР»РѕР¶РµРЅРёРµ ${esc(prettyNo)}</title>
+<title>Предложение ${esc(prettyNo)}</title>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <style>
   :root{ --ink:#000; --muted:#222; --line:#000; --bg:#fff; }
@@ -477,11 +479,11 @@ ${supplierCards
 <body>
 <div class="container">
   <header>
-    <h1>РџСЂРµРґР»РѕР¶РµРЅРёРµ РЅР° Р·Р°РєСѓРїРєСѓ в„– ${esc(prettyNo)}</h1>
+    <h1>Предложение на закупку № ${esc(prettyNo)}</h1>
     <div class="subtitle">
-      РЎС„РѕСЂРјРёСЂРѕРІР°РЅРѕ: ${esc(generatedAt)}
-      ${approvedAt ? ` В· <b>РЈС‚РІРµСЂР¶РґРµРЅРѕ:</b> ${esc(new Date(approvedAt).toLocaleString(locale))}` : ""}
-      ${status ? ` В· <b>РЎС‚Р°С‚СѓСЃ:</b> ${esc(normalizeStatusRu(status))}` : ""}
+      Сформировано: ${esc(generatedAt)}
+      ${approvedAt ? ` · <b>Утверждено:</b> ${esc(new Date(approvedAt).toLocaleString(locale))}` : ""}
+      ${status ? ` · <b>Статус:</b> ${esc(normalizeStatusRu(status))}` : ""}
     </div>
   </header>
 
@@ -502,36 +504,36 @@ ${supplierCards
     <thead>
       <tr>
         <th style="width:36px">#</th>
-        <th>РќР°РёРјРµРЅРѕРІР°РЅРёРµ</th>
-        <th style="width:90px">РљРѕР»-РІРѕ</th>
-        <th style="width:70px">Р•Рґ.</th>
-        <th style="width:160px">РџСЂРёРјРµРЅРµРЅРёРµ</th>
+        <th>Наименование</th>
+        <th style="width:90px">Кол-во</th>
+        <th style="width:70px">Ед.</th>
+        <th style="width:160px">Применение</th>
         ${supplierTh}
-        <th style="width:110px">Р¦РµРЅР°</th>
-        <th style="width:120px">РЎСѓРјРјР°</th>
+        <th style="width:110px">Цена</th>
+        <th style="width:120px">Сумма</th>
       </tr>
     </thead>
     <tbody>
       ${body}
-      ${pi.length ? `<tr class="sumline"><td colspan="${sumColspan}" style="text-align:right">РРўРћР“Рћ</td><td style="text-align:right">${fmt(total)}</td></tr>` : ""}
+      ${pi.length ? `<tr class="sumline"><td colspan="${sumColspan}" style="text-align:right">ИТОГО</td><td style="text-align:right">${fmt(total)}</td></tr>` : ""}
     </tbody>
   </table>
 
   <div class="signs">
     <div class="sign">
-      <div><b>РЎРЅР°Р±Р¶РµРЅРµС†</b></div>
+      <div><b>Снабженец</b></div>
       <div class="line"></div>
       <div class="muted" style="margin-top:6px">/ ${esc(buyerFio || "")} /</div>
     </div>
     <div class="sign">
-      <div><b>Р”РёСЂРµРєС‚РѕСЂ</b></div>
+      <div><b>Директор</b></div>
       <div class="line"></div>
       <div class="muted" style="margin-top:6px">/  /</div>
     </div>
   </div>
 
   <div class="muted" style="margin-top:14px">
-    РЎР»СѓР¶РµР±РЅС‹Р№ ID: ${esc(pid)}
+    Служебный ID: ${esc(pid)}
   </div>
 </div>
 </body>
@@ -540,8 +542,8 @@ ${supplierCards
     const esc2 = (s: unknown) =>
       String(s ?? "").replace(/[&<>"]/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[m]!));
 
-    return `<!doctype html><meta charset="utf-8"/><title>РћС€РёР±РєР°</title>
-<pre style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; padding:16px;">РћС€РёР±РєР° РїРѕРґРіРѕС‚РѕРІРєРё PDF: ${esc2(
+    return `<!doctype html><meta charset="utf-8"/><title>Ошибка</title>
+<pre style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; padding:16px;">Ошибка подготовки PDF: ${esc2(
       getObjectField<string>(e, "message") || e
     )}</pre>`;
   }
@@ -552,5 +554,10 @@ export async function exportProposalPdf(
   mode: "preview" | "share" = "preview"
 ) {
   const html = await buildProposalPdfHtml(proposalId);
-  return openHtmlAsPdfUniversal(html, { share: mode === "share" });
+  const normalizedHtml = normalizeRuTextForHtml(html, {
+    documentType: "proposal",
+    source: "director",
+    maxLength: 500_000,
+  });
+  return openHtmlAsPdfUniversal(normalizedHtml, { share: mode === "share" });
 }

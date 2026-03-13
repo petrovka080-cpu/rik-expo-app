@@ -17,6 +17,7 @@ import {
   apiFetchIncomingLines,
   apiFetchIncomingMaterialsReportFast,
 } from "./warehouse.api";
+import { fetchWarehouseIssueLines } from "./warehouse.reports.repo";
 
 type ReportRow = Record<string, unknown>;
 type BusyLike = unknown; // useGlobalBusy
@@ -203,9 +204,7 @@ export function useWarehouseReports(args: {
       if (Array.isArray(cached) && cached.length > 0) return cached;
       setIssueLinesLoadingId(issueId);
       try {
-        const r = await supabase.rpc("acc_report_issue_lines", { p_issue_id: issueId });
-        if (r.error) throw r.error;
-        const lines: ReportRow[] = Array.isArray(r.data) ? (r.data as ReportRow[]) : [];
+        const lines = await fetchWarehouseIssueLines(supabase, issueId);
         setIssueLinesById((prev) => ({ ...(prev || {}), [key]: lines }));
         return lines;
       } finally {

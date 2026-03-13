@@ -6,6 +6,7 @@ import type { BuyerInboxRow } from "../../../lib/catalog_api";
 import type { BuyerProposalBucketRow } from "../buyer.fetchers";
 import { fetchBuyerInboxProd, fetchBuyerBucketsProd } from "../buyer.fetchers";
 import { attachBuyerSubscriptions } from "../buyer.subscriptions";
+import { fetchBuyerSubcontractCount } from "./useBuyerSubcontractCount";
 
 type AlertFn = (title: string, message?: string) => void;
 type LogFn = (msg: unknown, ...rest: unknown[]) => void;
@@ -94,11 +95,8 @@ export function useBuyerLoadingController(params: {
       const { data: userData } = await supabase.auth.getUser();
       const uid = userData?.user?.id;
       if (!uid) return;
-      const { count, error } = await supabase
-        .from("subcontracts")
-        .select("*", { count: "exact", head: true })
-        .eq("created_by", uid);
-      if (!error && count != null) setSubcontractCount(count);
+      const count = await fetchBuyerSubcontractCount(supabase, uid);
+      if (count != null) setSubcontractCount(count);
     } catch {
       // no-op
     }

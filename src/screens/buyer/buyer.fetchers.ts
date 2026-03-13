@@ -1,6 +1,13 @@
-// src/screens/buyer/buyer.fetchers.ts
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { BuyerInboxRow } from "../../lib/catalog_api";
+import {
+  BUYER_STATUS_APPROVED,
+  BUYER_STATUS_PENDING,
+  BUYER_STATUS_REWORK,
+  fetchBuyerProposalItemIds,
+  fetchBuyerProposalSummaryByStatus,
+  fetchBuyerRejectedProposalRows,
+} from "./buyer.buckets.repo";
 
 export type BuyerProposalBucketRow = {
   id: string;
@@ -10,6 +17,8 @@ export type BuyerProposalBucketRow = {
   sent_to_accountant_at?: string | null;
   items_cnt?: number;
 };
+
+const REWORK_STATUS_LOWER = BUYER_STATUS_REWORK.toLowerCase();
 
 export async function fetchBuyerInboxProd(params: {
   focusedRef: { current: boolean };
@@ -53,7 +62,6 @@ export async function fetchBuyerInboxProd(params: {
       inbox = [];
     }
 
-    // Approval gate is already applied in data layer (listBuyerInbox).
     setRows(inbox || []);
 
     const reqIds = Array.from(new Set((inbox || []).map((r) => String(r?.request_id)).filter(Boolean)));
@@ -108,13 +116,7 @@ export async function fetchBuyerBucketsProd(params: {
 
   setLoadingBuckets(true);
   try {
-    // PENDING
-    const pQ = await supabase
-      .from("v_proposals_summary")
-      .select("proposal_id,status,submitted_at,sent_to_accountant_at,total_sum,items_cnt")
-      .eq("status", "На утверждении")
-      .gt("items_cnt", 0)
-      .order("submitted_at", { ascending: false });
+    const pQ = await fetchBuyerProposalSummaryByStatus(supabase, BUYER_STATUS_PENDING);
 
     const pendingClean: BuyerProposalBucketRow[] =
       !pQ.error && Array.isArray(pQ.data)
@@ -129,13 +131,7 @@ export async function fetchBuyerBucketsProd(params: {
         : [];
     setPending(pendingClean);
 
-    // APPROVED
-    const apQ = await supabase
-      .from("v_proposals_summary")
-      .select("proposal_id,status,submitted_at,sent_to_accountant_at,total_sum,items_cnt")
-      .eq("status", "Утверждено")
-      .gt("items_cnt", 0)
-      .order("submitted_at", { ascending: false });
+    const apQ = await fetchBuyerProposalSummaryByStatus(supabase, BUYER_STATUS_APPROVED);
 
     const approvedClean: BuyerProposalBucketRow[] =
       !apQ.error && Array.isArray(apQ.data)
@@ -150,13 +146,7 @@ export async function fetchBuyerBucketsProd(params: {
         : [];
     setApproved(approvedClean);
 
-    // REJECTED from accountant flow only
-    const reAcc = await supabase
-      .from("proposals")
-      .select("id, payment_status, submitted_at, created_at")
-      .ilike("payment_status", "%На доработке%")
-      .order("submitted_at", { ascending: false, nullsFirst: false })
-      .order("created_at", { ascending: false, nullsFirst: false });
+    const reAcc = await fetchBuyerRejectedProposalRows(supabase);
 
     const seen = new Set<string>();
     const rejectedRaw: BuyerProposalBucketRow[] = (reAcc.data || [])
@@ -166,19 +156,19 @@ export async function fetchBuyerBucketsProd(params: {
         seen.add(id);
 
         const ps = String(x?.payment_status ?? "").toLowerCase();
-        return ps.startsWith("на доработке");
+        return ps.startsWith(REWORK_STATUS_LOWER);
       })
       .map((x: Record<string, unknown>) => {
-        const ps = String(x.payment_status ?? "На доработке");
-        const submitted_at = x.submitted_at ?? x.created_at ?? null;
-        return { id: String(x.id), status: ps, submitted_at: (submitted_at as string | null) };
+        const ps = String(x.payment_status ?? BUYER_STATUS_REWORK);
+        const submittedAt = x.submitted_at ?? x.created_at ?? null;
+        return { id: String(x.id), status: ps, submitted_at: (submittedAt as string | null) };
       });
 
     let rejectedClean = rejectedRaw;
     try {
       const ids = rejectedRaw.map((r) => r.id);
       if (ids.length) {
-        const pi = await supabase.from("proposal_items").select("proposal_id").in("proposal_id", ids);
+        const pi = await fetchBuyerProposalItemIds(supabase, ids);
         if (!pi.error) {
           const cnt: Record<string, number> = {};
           (pi.data || []).forEach((row: Record<string, unknown>) => {

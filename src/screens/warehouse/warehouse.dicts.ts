@@ -6,6 +6,11 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Option, Tab } from "./warehouse.types";
 import { showErr } from "./warehouse.utils";
+import {
+  fetchWarehouseDictRows,
+  fetchWarehouseRefRows,
+  probeWarehouseObjectTypes,
+} from "./warehouse.dicts.repo";
 
 type DictRow = Record<string, unknown>;
 const asRows = (data: unknown): DictRow[] => {
@@ -21,8 +26,7 @@ export function useWarehouseDicts(supabase: SupabaseClient, tab: Tab) {
   const [recipientList, setRecipientList] = useState<Option[]>([]);
 
   const tryOptions = useCallback(async (table: string, columns: string[]) => {
-    const colList = columns.join(",");
-    const q = await supabase.from(table).select(colList).limit(1000);
+    const q = await fetchWarehouseDictRows(supabase, table, columns);
     if (q.error || !Array.isArray(q.data)) return [] as Option[];
     const opts: Option[] = [];
     for (const r of asRows(q.data)) {
@@ -45,16 +49,7 @@ export function useWarehouseDicts(supabase: SupabaseClient, tab: Tab) {
 
   const tryRefOptions = useCallback(
     async (table: string, opts?: { order?: string }) => {
-      let q = supabase
-        .from(table)
-        .select("code,display_name,name_human_ru,name_ru,name")
-        .limit(2000);
-
-      if (opts?.order) {
-        q = q.order(opts.order, { ascending: true });
-      }
-
-      const res = await q;
+      const res = await fetchWarehouseRefRows(supabase, table, opts);
 
       if (res.error || !Array.isArray(res.data)) {
         console.log(`[${table}] error:`, res.error?.message);
@@ -83,7 +78,7 @@ export function useWarehouseDicts(supabase: SupabaseClient, tab: Tab) {
   );
 
   const loadObjects = useCallback(async () => {
-    const q = await supabase.from("ref_object_types").select("code").limit(1);
+    const q = await probeWarehouseObjectTypes(supabase);
     console.log(
       "[ref_object_types] err=",
       q.error?.message,
@@ -142,4 +137,3 @@ export function useWarehouseDicts(supabase: SupabaseClient, tab: Tab) {
     recipientList,
   };
 }
-

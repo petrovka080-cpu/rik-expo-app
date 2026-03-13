@@ -4,6 +4,19 @@ import type { StockRow, ReqHeadRow, ReqItemUiRow } from "./warehouse.types";
 import { nz, parseNum } from "./warehouse.utils";
 import { normalizeRuText } from "../../lib/text/encoding";
 import { isRequestDirectorApproved } from "../../lib/requestStatus";
+import {
+  asUnknownRows,
+  fetchWarehouseIncomingLedgerRows,
+  fetchWarehouseIncomingLineRows,
+  fetchWarehouseIncomingReportRows,
+  fetchWarehouseIssueLineRows,
+  fetchWarehouseIssuedByObjectFastRows,
+  fetchWarehouseIssuedMaterialsFastRows,
+  fetchWarehouseReportsBundle,
+  fetchWarehouseRequestItemNoteRows,
+  fetchWarehouseRequestMetaRows,
+  fetchWarehouseStockViewRows,
+} from "./warehouse.api.repo";
 
 type UnknownRow = Record<string, unknown>;
 
@@ -164,7 +177,7 @@ async function enrichReqHeadsMeta(
 
   if (!idsNeedMeta.length) return rows;
 
-  const reqQ = await supabase.from("requests").select("*").in("id", idsNeedMeta);
+  const reqQ = await fetchWarehouseRequestMetaRows(supabase, idsNeedMeta);
   const reqById: Record<string, UnknownRow> = {};
   if (!reqQ.error && Array.isArray(reqQ.data)) {
     for (const r of reqQ.data as UnknownRow[]) {
@@ -173,10 +186,7 @@ async function enrichReqHeadsMeta(
     }
   }
 
-  const itemQ = await supabase
-    .from("request_items")
-    .select("request_id, note")
-    .in("request_id", idsNeedMeta);
+  const itemQ = await fetchWarehouseRequestItemNoteRows(supabase, idsNeedMeta);
   const itemNotesByReq: Record<string, string[]> = {};
   if (!itemQ.error && Array.isArray(itemQ.data)) {
     for (const it of itemQ.data as UnknownRow[]) {
@@ -393,7 +403,7 @@ export async function apiFetchStock(
     }
 
 
-    const v = await supabase.from("v_warehouse_stock").select("*").range(offset, offset + limit - 1);
+    const v = await fetchWarehouseStockViewRows(supabase, offset, limit);
     if (!v.error && Array.isArray(v.data)) {
       const rows = (v.data || []).map(
         (x: UnknownRow) =>
@@ -829,15 +839,11 @@ export async function apiFetchReports(
   periodTo?: string,
 ): Promise<{ supported: boolean; repStock: StockRow[]; repMov: UnknownRow[]; repIssues: UnknownRow[] }> {
   try {
-    const s = await supabase.rpc("acc_report_stock", {});
-    const m = await supabase.rpc("acc_report_movement", {
-      p_from: periodFrom || null,
-      p_to: periodTo || null,
-    });
-    const iss = await supabase.rpc("acc_report_issues_v2", {
-      p_from: periodFrom || null,
-      p_to: periodTo || null,
-    });
+    const { stock: s, movement: m, issues: iss } = await fetchWarehouseReportsBundle(
+      supabase,
+      periodFrom,
+      periodTo,
+    );
 
     return {
       supported: true,
@@ -854,7 +860,7 @@ export async function apiEnsureIssueLines(
   supabase: SupabaseClient,
   issueId: number,
 ): Promise<UnknownRow[]> {
-  const r = await supabase.rpc("acc_report_issue_lines", { p_issue_id: issueId });
+  const r = await fetchWarehouseIssueLineRows(supabase, issueId);
   if (!r.error && Array.isArray(r.data)) return r.data as UnknownRow[];
   return [];
 }
@@ -889,10 +895,10 @@ export async function apiFetchIssuedMaterialsReportFast(
   supabase: SupabaseClient,
   p: { from?: string | null; to?: string | null; objectId?: string | null },
 ): Promise<IssuedMaterialsFastRow[]> {
-  const r = await supabase.rpc("wh_report_issued_materials_fast", {
-    p_from: normDateArg(p.from),
-    p_to: normDateArg(p.to),
-    p_object_id: p.objectId ?? null,
+  const r = await fetchWarehouseIssuedMaterialsFastRows(supabase, {
+    from: normDateArg(p.from),
+    to: normDateArg(p.to),
+    objectId: p.objectId ?? null,
   });
 
   if (!r.error && Array.isArray(r.data)) return r.data as IssuedMaterialsFastRow[];
@@ -903,10 +909,10 @@ export async function apiFetchIssuedByObjectReportFast(
   supabase: SupabaseClient,
   p: { from?: string | null; to?: string | null; objectId?: string | null },
 ): Promise<IssuedByObjectFastRow[]> {
-  const r = await supabase.rpc("wh_report_issued_by_object_fast", {
-    p_from: normDateArg(p.from),
-    p_to: normDateArg(p.to),
-    p_object_id: p.objectId ?? null,
+  const r = await fetchWarehouseIssuedByObjectFastRows(supabase, {
+    from: normDateArg(p.from),
+    to: normDateArg(p.to),
+    objectId: p.objectId ?? null,
   });
 
   if (!r.error && Array.isArray(r.data)) return r.data as IssuedByObjectFastRow[];
@@ -917,9 +923,9 @@ export async function apiFetchIncomingReports(
   supabase: SupabaseClient,
   p: { from?: string | null; to?: string | null },
 ): Promise<UnknownRow[]> {
-  const r = await supabase.rpc("acc_report_incoming_v2", {
-    p_from: normDateArg(p.from),
-    p_to: normDateArg(p.to),
+  const r = await fetchWarehouseIncomingReportRows(supabase, {
+    from: normDateArg(p.from),
+    to: normDateArg(p.to),
   });
 
   if (!r.error && Array.isArray(r.data)) return r.data as UnknownRow[];
@@ -943,12 +949,10 @@ export async function apiFetchIncomingMaterialsReportFast(
   // and to avoid 404 errors in console
   console.log("[apiFetchIncomingMaterialsReportFast] Fetching from ledger for", p);
 
-  const q = await supabase
-    .from("wh_ledger")
-    .select("code, uom_id, qty, moved_at, warehouseman_fio")
-    .eq("direction", "in")
-    .gte("moved_at", normDateArg(p.from))
-    .lte("moved_at", normDateArg(p.to));
+  const q = await fetchWarehouseIncomingLedgerRows(supabase, {
+    from: normDateArg(p.from),
+    to: normDateArg(p.to),
+  });
 
 
   if (q.error || !q.data) {
@@ -985,15 +989,11 @@ export async function apiFetchIncomingLines(
 ): Promise<UnknownRow[]> {
   console.log("[apiFetchIncomingLines] Direct fetch for:", incomingId);
 
-  const q = await supabase
-    .from("wh_ledger")
-    .select("code, uom_id, qty")
-    .eq("incoming_id", incomingId)
-    .eq("direction", "in");
+  const q = await fetchWarehouseIncomingLineRows(supabase, incomingId);
 
   if (!q.error && Array.isArray(q.data)) {
     console.log("[apiFetchIncomingLines] Success:", q.data.length, "lines");
-    const rows = q.data as UnknownRow[];
+    const rows = asUnknownRows(q.data);
     const codesUpper = Array.from(
       new Set(rows.map((ln) => String(ln?.code ?? "").trim().toUpperCase()).filter(Boolean))
     );

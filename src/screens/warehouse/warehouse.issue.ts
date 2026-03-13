@@ -2,6 +2,12 @@
 import type { ReqItemUiRow, ReqPickLine, StockPickLine } from "./warehouse.types";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { normMatCode, normUomId } from "./warehouse.utils";
+import {
+  addWarehouseIssueItem,
+  commitWarehouseIssue,
+  createWarehouseIssue,
+  issueWarehouseFreeAtomic,
+} from "./warehouse.issue.repo";
 
 export type IssueMsg = { kind: "error" | "ok" | null; text: string };
 
@@ -107,13 +113,13 @@ export function makeWarehouseIssueActions(args: {
         .filter(Boolean)
         .join(" · ");
 
-      const r1 = await supabase.rpc("issue_via_ui" , {
+      const r1 = await createWarehouseIssue(supabase, {
         p_who: who,
         p_note: note,
         p_request_id: rid,
         p_object_name: getObjName(),
         p_work_name: getWorkName(),
-      } );
+      });
       if (r1.error || !r1.data) throw r1.error;
       const issueId = Number(r1.data);
       const byId: Record<string, ReqItemUiRow> = {};
@@ -138,29 +144,29 @@ export function makeWarehouseIssueActions(args: {
         const qtyOver = Math.max(0, want - qtyInReq);
 
         if (qtyInReq > 0) {
-          const rA = await supabase.rpc("issue_add_item_via_ui" , {
+          const rA = await addWarehouseIssueItem(supabase, {
             p_issue_id: issueId,
             p_rik_code: ln.rik_code,
             p_uom_id: uomCode,
             p_qty: qtyInReq,
             p_request_item_id: ln.request_item_id,
-          } );
+          });
           if (rA.error) throw rA.error;
         }
 
         if (qtyOver > 0) {
-          const rB = await supabase.rpc("issue_add_item_via_ui" , {
+          const rB = await addWarehouseIssueItem(supabase, {
             p_issue_id: issueId,
             p_rik_code: ln.rik_code,
             p_uom_id: uomCode,
             p_qty: qtyOver,
             p_request_item_id: null,
-          } );
+          });
           if (rB.error) throw rB.error;
         }
       }
 
-      const r3 = await supabase.rpc("acc_issue_commit_ledger" , { p_issue_id: issueId } );
+      const r3 = await commitWarehouseIssue(supabase, issueId);
       if (r3.error) throw r3.error;
 
       clearReqPick();
@@ -243,13 +249,13 @@ export function makeWarehouseIssueActions(args: {
         qty: nz(l.qty, 0),
       }));
 
-      const r = await supabase.rpc("wh_issue_free_atomic_v4" , {
+      const r = await issueWarehouseFreeAtomic(supabase, {
         p_who: who,
         p_object_name: getObjName(),
         p_work_name: getWorkName(),
         p_note: getWarehousemanFio() ? `Кладовщик: ${getWarehousemanFio()}` : null,
         p_lines: payloadLines,
-      } );
+      });
 
       if (r.error) {
         const rawMsg = String((r.error )?.message ?? "");
@@ -327,29 +333,29 @@ export function makeWarehouseIssueActions(args: {
         .filter(Boolean)
         .join(" · ");
 
-      const r1 = await supabase.rpc("issue_via_ui" , {
+      const r1 = await createWarehouseIssue(supabase, {
         p_who: who,
         p_note: note,
         p_request_id: requestId,
         p_object_name: getObjName(),
         p_work_name: getWorkName(),
-      } );
+      });
       if (r1.error || !r1.data) throw r1.error;
       const issueId = Number(r1.data);
 
       const uomCode = String((row )?.uom ?? "").trim();
       if (!uomCode) throw new Error(`Пустой uom у ${(row )?.rik_code}`);
 
-      const r2 = await supabase.rpc("issue_add_item_via_ui" , {
+      const r2 = await addWarehouseIssueItem(supabase, {
         p_issue_id: issueId,
         p_rik_code: (row ).rik_code,
         p_uom_id: uomCode,
         p_qty: qty,
         p_request_item_id: requestItemId,
-      } );
+      });
       if (r2.error) throw r2.error;
 
-      const r3 = await supabase.rpc("acc_issue_commit_ledger" , { p_issue_id: issueId } );
+      const r3 = await commitWarehouseIssue(supabase, issueId);
       if (r3.error) throw r3.error;
 
       await fetchStock();

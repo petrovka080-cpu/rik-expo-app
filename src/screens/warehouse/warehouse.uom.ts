@@ -1,7 +1,6 @@
 // src/screens/warehouse/warehouse.uom.ts
-import { supabase } from "../../lib/supabaseClient";
-
 import { isUuid } from "./warehouse.utils";
+import { fetchWarehouseMaterialUnitId, fetchWarehouseUomCode } from "./warehouse.uom.repo";
 
 type UnitRow = {
   unit_id?: string | null;
@@ -32,11 +31,7 @@ export async function resolveUnitIdByCode(code: string): Promise<string | null> 
   if (!c) return null;
 
   try {
-    const m = await supabase
-      .from("rik_materials")
-      .select("unit_id")
-      .eq("mat_code", c)
-      .maybeSingle();
+    const m = await fetchWarehouseMaterialUnitId(c);
 
     const row = asUnitRow(m.data ?? null);
     if (!m.error && row?.unit_id) return String(row.unit_id);
@@ -59,11 +54,7 @@ export async function resolveUomTextByCode(
   // 1) сначала берём unit_id из rik_materials
   let unit: string = "";
   try {
-    const m = await supabase
-      .from("rik_materials")
-      .select("unit_id")
-      .eq("mat_code", c)
-      .maybeSingle();
+    const m = await fetchWarehouseMaterialUnitId(c);
 
     const row = asUnitRow(m.data ?? null);
     unit = String(row?.unit_id ?? "").trim();
@@ -75,11 +66,7 @@ export async function resolveUomTextByCode(
   if (!isUuid(unit)) return unit;
 
   try {
-    const u = await supabase
-      .from("rik_uoms" as never)
-      .select("uom_code")
-      .eq("id", unit)
-      .maybeSingle();
+    const u = await fetchWarehouseUomCode(unit);
 
     const row = asUomRow(u.data ?? null);
     const codeText = String(row?.uom_code ?? "").trim();

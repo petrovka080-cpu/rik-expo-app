@@ -4,6 +4,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { seedEnsureIncomingItems } from "../warehouse.seed";
 import { nz, parseQtySelected, pickErr } from "../warehouse.utils";
 import type { RpcReceiveApplyResult } from "../warehouse.types";
+import { applyWarehouseReceive } from "./useWarehouseReceiveApply";
 
 export function useWarehouseReceiveFlow(params: {
   supabase: SupabaseClient;
@@ -100,11 +101,11 @@ export function useWarehouseReceiveFlow(params: {
           return;
         }
 
-        const { data, error } = await supabase.rpc("wh_receive_apply_ui", {
-          p_incoming_id: incomingId,
-          p_items: toApply,
-          p_warehouseman_fio: warehousemanFio.trim(),
-          p_note: null,
+        const { data, error } = await applyWarehouseReceive({
+          supabase,
+          incomingId,
+          items: toApply,
+          warehousemanFio,
         });
 
         if (error) {

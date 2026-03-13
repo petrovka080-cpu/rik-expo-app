@@ -1,7 +1,13 @@
 import { useEffect, useState } from "react";
 
 import { listSuppliers, type Supplier } from "../../../lib/catalog_api";
-import { supabase } from "../../../lib/supabaseClient";
+import {
+  fetchBuyerContractorsBasic,
+  fetchBuyerContractorsFallback,
+  fetchBuyerProposalSuppliersBasic,
+  fetchBuyerProposalSuppliersFallback,
+  fetchBuyerSubcontracts,
+} from "./useBuyerCounterpartyRepo";
 
 export type BuyerCounterpartySuggestion = {
   name: string;
@@ -82,36 +88,27 @@ export function useBuyerSuppliers() {
           loadWithPlans("contractors", [
             {
               query: 'contractors.select("id,company_name,phone,inn").order("company_name")',
-              run: async () =>
-                await supabase
-                  .from("contractors")
-                  .select("id,company_name,phone,inn")
-                  .order("company_name", { ascending: true }),
+              run: fetchBuyerContractorsBasic,
             },
             {
               query: 'contractors.select("*").limit(3000)',
-              run: async () => await supabase.from("contractors").select("*").limit(3000),
+              run: fetchBuyerContractorsFallback,
             },
           ]),
           loadWithPlans("subcontracts", [
             {
               query: 'subcontracts.select("*").limit(2000)',
-              run: async () => await supabase.from("subcontracts").select("*").limit(2000),
+              run: fetchBuyerSubcontracts,
             },
           ]),
           loadWithPlans("proposal_items", [
             {
               query: 'proposal_items.select("supplier").not("supplier","is",null).limit(3000)',
-              run: async () =>
-                await supabase
-                  .from("proposal_items")
-                  .select("supplier")
-                  .not("supplier", "is", null)
-                  .limit(3000),
+              run: fetchBuyerProposalSuppliersBasic,
             },
             {
               query: 'proposal_items.select("*").limit(3000)',
-              run: async () => await supabase.from("proposal_items").select("*").limit(3000),
+              run: fetchBuyerProposalSuppliersFallback,
             },
           ]),
         ]);

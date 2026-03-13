@@ -12,6 +12,13 @@ import {
   repoUpdateProposalItems,
   type RepoProposalItemUpdate,
 } from "./buyer.repo";
+import {
+  clearRequestItemsDirectorRejectState,
+  publishRfq,
+  sendProposalToAccountingMin,
+  setRequestItemsDirectorStatus,
+  setRequestItemsDirectorStatusFallback,
+} from "./buyer.actions.repo";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { enqueueSubmitJob, JOB_QUEUE_ENABLED } from "../../lib/infra/jobQueue";
 import { stageProposalAttachmentForQueue } from "../../lib/api/storage";
@@ -495,21 +502,15 @@ export async function handleCreateProposalsBySupplierAction(p: CreateProposalsDe
       if (!affectedIds.length) return;
       const tPost = Date.now();
       try {
-        const rpc = await p.supabase.rpc("request_items_set_status", {
-          p_request_item_ids: affectedIds,
-          p_status: "У директора",
-        });
+        const rpc = await setRequestItemsDirectorStatus(p.supabase, affectedIds);
         if (rpc.error) throw rpc.error;
       } catch {
         try {
-          await p.supabase.from("request_items").update({ status: "У директора" }).in("id", affectedIds);
+          await setRequestItemsDirectorStatusFallback(p.supabase, affectedIds);
         } catch {}
       }
       try {
-        await p.supabase
-          .from("request_items")
-          .update({ director_reject_note: null, director_reject_at: null })
-          .in("id", affectedIds);
+        await clearRequestItemsDirectorRejectState(p.supabase, affectedIds);
       } catch {}
       logBuyerActionDebug("info", "[buyer.submit] postSubmitRequestItems.ms=", Date.now() - tPost, "rows=", affectedIds.length);
     })();
@@ -609,7 +610,7 @@ export async function publishRfqAction(p: PublishRfqDeps) {
 
     p.setBusy(true);
 
-    const res = await p.supabase.rpc("rfq_create_and_publish", {
+    const res = await publishRfq(p.supabase, {
       p_request_item_ids: p.pickedIds,
       p_deadline_at: d.toISOString(),
 
@@ -728,7 +729,7 @@ export async function sendToAccountingAction<TApproved extends MaybeId = MaybeId
         invoiceCurrency: String(p.invCurrency || "KGS").trim(),
       });
     } catch {
-      const { error } = await p.supabase.rpc("proposal_send_to_accountant_min", {
+      const { error } = await sendProposalToAccountingMin(p.supabase, {
         p_proposal_id: pidStr,
         p_invoice_number: String(p.invNumber).trim(),
         p_invoice_date: String(p.invDate).trim(),
@@ -1086,7 +1087,7 @@ export async function rwSendToAccountingAction<TRejected extends MaybeId = Maybe
         invoiceCurrency: String(p.invCurrency || "KGS").trim(),
       });
     } catch {
-      const { error } = await p.supabase.rpc("proposal_send_to_accountant_min", {
+      const { error } = await sendProposalToAccountingMin(p.supabase, {
         p_proposal_id: p.pid,
         p_invoice_number: String(p.invNumber).trim(),
         p_invoice_date: dateStr,

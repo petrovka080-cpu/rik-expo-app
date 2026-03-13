@@ -2,8 +2,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 import { formatRequestDisplay } from "../../../lib/format";
 import { batchResolveRequestLabels } from "../../../lib/catalog_api";
-import { supabase } from "../../../lib/supabaseClient";
 import { normalizeRuText } from "../../../lib/text/encoding";
+import { fetchBuyerRequestProposalMap } from "./useBuyerRequestProposalMap";
 
 const errText = (error: unknown): string => {
   if (error instanceof Error && error.message.trim()) return error.message.trim();
@@ -81,7 +81,7 @@ export function useBuyerRequestLabels() {
     if (!need.length) return;
 
     try {
-      const { data, error } = await supabase.rpc("resolve_req_pr_map", { p_request_ids: need });
+      const { data, error } = await fetchBuyerRequestProposalMap(need);
       if (error) throw error;
 
       const rowsTyped = Array.isArray(data)

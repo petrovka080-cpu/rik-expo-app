@@ -1,8 +1,13 @@
 // src/screens/warehouse/warehouse.incoming.ts
 import { useCallback, useEffect, useRef, useState } from "react";
-import { supabase } from "../../lib/supabaseClient";
 import type { IncomingRow, ItemRow } from "./warehouse.types";
-import { nz, pickErr, withTimeout } from "./warehouse.utils";
+import { nz, pickErr } from "./warehouse.utils";
+import {
+  fetchWarehouseIncomingHeadsPage,
+  fetchWarehouseIncomingItems,
+  fetchWarehouseProposalNos,
+  fetchWarehousePurchaseProposalLinks,
+} from "./warehouse.incoming.repo";
 
 // РјР°Р»РµРЅСЊРєРёРµ СѓС‚РёР»РёС‚С‹ (Р»РѕРєР°Р»СЊРЅРѕ РІ РјРѕРґСѓР»Рµ)
 const uniq = (arr: string[]) => Array.from(new Set(arr.filter(Boolean)));
@@ -92,14 +97,7 @@ export function useWarehouseIncoming() {
           const purchaseToProposal = new Map<string, string>();
 
           for (const part of chunk(toFetch, 250)) {
-            const r1 = await withTimeout(
-              supabase
-                .from("purchases")
-                .select("id, proposal_id")
-                .in("id", part),
-              15000,
-              "purchases->proposal_id",
-            );
+            const r1 = await fetchWarehousePurchaseProposalLinks(part);
             if (!r1?.error && Array.isArray(r1.data)) {
               for (const row of r1.data) {
                 const pid = String(row?.id ?? "").trim();
@@ -117,14 +115,7 @@ export function useWarehouseIncoming() {
 
           const propIdToNo = new Map<string, string>();
           for (const part of chunk(propIds, 250)) {
-            const r2 = await withTimeout(
-              supabase
-                .from("proposals")
-                .select("id, proposal_no")
-                .in("id", part),
-              15000,
-              "proposals->proposal_no",
-            );
+            const r2 = await fetchWarehouseProposalNos(part);
             if (!r2?.error && Array.isArray(r2.data)) {
               for (const row of r2.data) {
                 const id = String(row?.id ?? "").trim();
@@ -173,11 +164,7 @@ export function useWarehouseIncoming() {
     setToReceiveIsFetching(true);
 
     try {
-      const q = await supabase
-        .from("v_wh_incoming_heads_ui")
-        .select("*")
-        .order("purchase_created_at", { ascending: false })
-        .range(pageIndex * PAGE_SIZE, (pageIndex + 1) * PAGE_SIZE - 1);
+      const q = await fetchWarehouseIncomingHeadsPage(pageIndex, PAGE_SIZE);
 
       if (q.error || !Array.isArray(q.data)) {
         console.warn("[warehouse.incoming] v_wh_incoming_heads_ui error:", q.error?.message);
@@ -260,11 +247,7 @@ export function useWarehouseIncoming() {
       if (cached) return cached;
     }
 
-    const q = await supabase
-      .from("v_wh_incoming_items_ui")
-      .select("*")
-      .eq("incoming_id", incomingId)
-      .order("sort_key", { ascending: true });
+    const q = await fetchWarehouseIncomingItems(incomingId);
 
     if (q.error) {
       console.warn("[warehouse.incoming] v_wh_incoming_items_ui error:", q.error.message);
