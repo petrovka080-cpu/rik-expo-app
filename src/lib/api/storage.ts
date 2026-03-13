@@ -1,5 +1,5 @@
 import { Platform } from "react-native";
-import * as FileSystemModule from "expo-file-system";
+import * as FileSystemModule from "expo-file-system/legacy";
 import { getFileSystemPaths } from "../fileSystemPaths";
 import { supabase } from "../supabaseClient";
 import type { QueuedProposalAttachment } from "./queuedProposalAttachments";

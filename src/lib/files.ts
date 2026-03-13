@@ -1,6 +1,6 @@
 // src/lib/files.ts
 import { Platform, Linking, Alert } from "react-native";
-import * as FileSystemModule from "expo-file-system";
+import * as FileSystemModule from "expo-file-system/legacy";
 import { getFileSystemPaths } from "./fileSystemPaths";
 import { hashString32 } from "./pdfFileContract";
 import { supabase } from "./supabaseClient";

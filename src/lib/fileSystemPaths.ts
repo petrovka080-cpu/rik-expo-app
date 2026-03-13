@@ -1,4 +1,4 @@
-import * as FileSystemModule from "expo-file-system";
+import * as FileSystemModule from "expo-file-system/legacy";
 
 type FileSystemPaths = {
   cacheDir: string;
