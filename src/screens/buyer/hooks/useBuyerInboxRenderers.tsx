@@ -66,11 +66,11 @@ export function useBuyerInboxRenderers(params: {
     let auto = "";
     if (match) {
       const partsAuto: string[] = [];
-      if (match.inn) partsAuto.push(`ИНН: ${match.inn}`);
-      if (match.bank_account) partsAuto.push(`Счёт: ${match.bank_account}`);
-      if (match.phone) partsAuto.push(`Тел.: ${match.phone}`);
+      if (match.inn) partsAuto.push(`\u0418\u041d\u041d: ${match.inn}`);
+      if (match.bank_account) partsAuto.push(`\u0421\u0447\u0451\u0442: ${match.bank_account}`);
+      if (match.phone) partsAuto.push(`\u0422\u0435\u043b.: ${match.phone}`);
       if (match.email) partsAuto.push(`Email: ${match.email}`);
-      auto = partsAuto.join(" • ");
+      auto = partsAuto.join(" \u2022 ");
     }
 
     setLineMeta(key, { supplier: name, note: mergeNote(user, auto) });
@@ -196,11 +196,11 @@ export function useBuyerInboxRenderers(params: {
       }).length;
       const allRejected = total > 0 && rejectedCount === total;
 
-      const baseMeta = `${total} позиций${gsum ? ` • итого ${gsum.toLocaleString()} сом` : ""}`;
+      const baseMeta = `${total} \u043f\u043e\u0437\u0438\u0446\u0438\u0439${gsum ? ` \u2022 \u0438\u0442\u043e\u0433\u043e ${gsum.toLocaleString()} \u0441\u043e\u043c` : ""}`;
       const headerMeta = allRejected
-        ? "ОТКЛОНЕНА"
+        ? "\u041e\u0422\u041a\u041b\u041e\u041d\u0415\u041d\u0410"
         : rejectedCount > 0
-          ? `${baseMeta} • отклонено ${rejectedCount}/${total}`
+          ? `${baseMeta} \u2022 \u043e\u0442\u043a\u043b\u043e\u043d\u0435\u043d\u043e ${rejectedCount}/${total}`
           : baseMeta;
 
       return (

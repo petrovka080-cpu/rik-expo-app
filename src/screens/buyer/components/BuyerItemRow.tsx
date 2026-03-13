@@ -9,6 +9,7 @@ import {
   Modal,
   SafeAreaView,
   useWindowDimensions,
+  InteractionManager,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
@@ -66,6 +67,7 @@ export const BuyerItemEditor = React.memo(function BuyerItemEditor(props: BuyerI
   const [isSupplierModalOpen, setIsSupplierModalOpen] = React.useState(false);
   const [supplierInputHeight, setSupplierInputHeight] = React.useState(46);
   const blurCloseTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+  const resetSelectionTaskRef = React.useRef<{ cancel?: () => void } | null>(null);
   const selectingOptionRef = React.useRef(false);
   const makeSupplierId = React.useCallback(
     (label: string) => String(label || "").trim().toLowerCase().replace(/\s+/g, " "),
@@ -135,12 +137,20 @@ export const BuyerItemEditor = React.memo(function BuyerItemEditor(props: BuyerI
       setSupplierQueryDraft("");
       setIsDropdownOpen(false);
       setIsSupplierModalOpen(false);
-      setTimeout(() => {
+      resetSelectionTaskRef.current?.cancel?.();
+      resetSelectionTaskRef.current = InteractionManager.runAfterInteractions(() => {
         selectingOptionRef.current = false;
-      }, 0);
+      });
     },
     [makeSupplierId, onPickSupplier, onSetSupplier],
   );
+
+  React.useEffect(() => {
+    return () => {
+      resetSelectionTaskRef.current?.cancel?.();
+      resetSelectionTaskRef.current = null;
+    };
+  }, []);
 
   const openPicker = React.useCallback(() => {
     if (!hasAnyCounterpartyOptions) return;
@@ -584,11 +594,11 @@ function BuyerItemRowInner(props: {
 
         <View style={{ gap: 4 }}>
           <Text style={{ color: P.sub }}>
-            Цена: <Text style={{ color: P.text, fontWeight: "800" }}>{m.price || "—"}</Text>
+            Цена: <Text style={{ color: P.text, fontWeight: "800" }}>{m.price || "?"}</Text>
             {" • "}
-            {counterpartyLabel}: <Text style={{ color: P.text, fontWeight: "800" }}>{m.supplier || "—"}</Text>
+            {counterpartyLabel}: <Text style={{ color: P.text, fontWeight: "800" }}>{m.supplier || "?"}</Text>
             {" • "}
-            Прим.: <Text style={{ color: P.text, fontWeight: "800" }}>{noteUser || "—"}</Text>
+            Прим.: <Text style={{ color: P.text, fontWeight: "800" }}>{noteUser || "?"}</Text>
           </Text>
 
           <Text style={{ color: P.sub }}>
@@ -614,7 +624,7 @@ function BuyerItemRowInner(props: {
                 </Text>
               </Text>
               <Text style={{ color: inSheet ? "#FECACA" : "#7F1D1D", fontWeight: "800", marginTop: 4, fontSize: 12 }}>
-                Предыдущее предложение: {lastOfferSupplier || "—"} • {lastOfferPrice != null ? `${lastOfferPrice}` : "—"} сом
+                Предыдущее предложение: {lastOfferSupplier || "?"} • {lastOfferPrice != null ? `${lastOfferPrice}` : "?"} сом
               </Text>
             </View>
           ) : null}

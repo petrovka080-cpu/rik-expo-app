@@ -34,11 +34,27 @@ export async function pickAnyFile(): Promise<PickedFile | null> {
         finish(f);
       };
 
+      const runAfterFocusRestore = (task: () => void) => {
+        if (typeof requestAnimationFrame === "function") {
+          requestAnimationFrame(() => {
+            requestAnimationFrame(task);
+          });
+          return;
+        }
+
+        if (typeof queueMicrotask === "function") {
+          queueMicrotask(task);
+          return;
+        }
+
+        task();
+      };
+
       const onFocus = () => {
-        setTimeout(() => {
+        runAfterFocusRestore(() => {
           const f = (input.files && input.files[0]) || null;
           finish(f);
-        }, 250);
+        });
       };
 
       input.addEventListener("change", onChange, { once: true });
@@ -57,4 +73,3 @@ export async function pickAnyFile(): Promise<PickedFile | null> {
   if (res?.canceled) return null;
   return (res?.assets?.[0] as PickedFile | undefined) ?? null;
 }
-

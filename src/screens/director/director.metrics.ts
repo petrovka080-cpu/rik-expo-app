@@ -20,9 +20,30 @@ export type DirectorDashMetrics = {
   wh_pending: number;
 };
 
-const norm = (s: any) => String(s ?? "").trim().toLowerCase();
+type ProposalMetricRowLike = {
+  payment_status?: unknown;
+};
 
-function payBucket(raw: any): "to_pay" | "partial" | "paid" | "rework" | null {
+type IncomingMetricRowLike = {
+  qty_expected_sum?: unknown;
+  qty_received_sum?: unknown;
+  pending_cnt?: unknown;
+  partial_cnt?: unknown;
+};
+
+const asRecord = (value: unknown): Record<string, unknown> | null =>
+  value && typeof value === "object" ? (value as Record<string, unknown>) : null;
+
+const asProposalMetricRow = (value: unknown): ProposalMetricRowLike =>
+  asRecord(value) ?? {};
+
+const asIncomingMetricRow = (value: unknown): IncomingMetricRowLike =>
+  asRecord(value) ?? {};
+
+const norm = (s: unknown) => String(s ?? "").trim().toLowerCase();
+const toNumber = (value: unknown) => Number(value ?? 0) || 0;
+
+function payBucket(raw: unknown): "to_pay" | "partial" | "paid" | "rework" | null {
   const s = norm(raw);
   if (!s) return "to_pay";
 
@@ -70,8 +91,9 @@ export async function loadDirectorDashMetrics(
       .limit(5000);
 
     if (!q.error && Array.isArray(q.data)) {
-      for (const r of q.data as any[]) {
-        const b = payBucket(r?.payment_status);
+      for (const rawRow of q.data) {
+        const row = asProposalMetricRow(rawRow);
+        const b = payBucket(row.payment_status);
         if (b === "to_pay") out.pay_to_pay += 1;
         else if (b === "partial") out.pay_partial += 1;
         else if (b === "paid") out.pay_paid += 1;
@@ -95,9 +117,10 @@ export async function loadDirectorDashMetrics(
       let partialHeads = 0;
       let pendingHeads = 0;
 
-      for (const r of q.data as any[]) {
-        const exp = Number(r?.qty_expected_sum ?? 0) || 0;
-        const rec = Number(r?.qty_received_sum ?? 0) || 0;
+      for (const rawRow of q.data) {
+        const row = asIncomingMetricRow(rawRow);
+        const exp = toNumber(row.qty_expected_sum);
+        const rec = toNumber(row.qty_received_sum);
         const left = Math.max(0, exp - rec);
 
         // считаем только те, где реально осталось
@@ -105,8 +128,8 @@ export async function loadDirectorDashMetrics(
 
         total += 1;
 
-        const pendCnt = Number(r?.pending_cnt ?? 0) || 0;
-        const partCnt = Number(r?.partial_cnt ?? 0) || 0;
+        const pendCnt = toNumber(row.pending_cnt);
+        const partCnt = toNumber(row.partial_cnt);
 
         // если есть факт приемки (rec>0) или partial_cnt>0 => "частично"
         const isPartial = (rec > 0 && left > 0) || partCnt > 0;

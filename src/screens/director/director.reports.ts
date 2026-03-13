@@ -1,4 +1,4 @@
-import { Alert } from "react-native";
+﻿import { Alert } from "react-native";
 import { useCallback, useMemo, useRef, useState } from "react";
 import {
   fetchDirectorWarehouseReport,
@@ -16,6 +16,36 @@ type CacheEntry<T> = { ts: number; value: T };
 const REPORTS_CACHE_TTL_MS = 5 * 60 * 1000;
 const REPORTS_CACHE_MAX = 40;
 const REPORTS_TIMING = typeof __DEV__ !== "undefined" ? __DEV__ : false;
+
+type PerformanceLike = {
+  now?: () => number;
+};
+
+const getPerformance = (): PerformanceLike | null => {
+  if (typeof globalThis !== "undefined" && "performance" in globalThis) {
+    return (globalThis as typeof globalThis & { performance?: PerformanceLike }).performance ?? null;
+  }
+  return null;
+};
+
+const getErrorMessage = (error: unknown, fallback: string): string => {
+  if (error instanceof Error) {
+    const message = error.message.trim();
+    if (message) return message;
+  }
+
+  if (error && typeof error === "object") {
+    const record = error as Record<string, unknown>;
+    const message = String(record.message ?? "").trim();
+    if (message) return message;
+  }
+
+  const raw = String(error ?? "").trim();
+  return raw || fallback;
+};
+
+const getDisciplineFromPayload = (payload: RepPayload | null): RepDisciplinePayload | null =>
+  payload?.discipline ?? null;
 
 const isoDate = (d: Date) => {
   const yyyy = d.getFullYear();
@@ -59,8 +89,8 @@ export function useDirectorReports({ fmtDateOnly }: Deps) {
 
   const nowMs = () => {
     try {
-      // @ts-ignore cross-platform
-      return typeof performance !== "undefined" && performance.now ? performance.now() : Date.now();
+      const perf = getPerformance();
+      return typeof perf?.now === "function" ? perf.now() : Date.now();
     } catch {
       return Date.now();
     }
@@ -111,7 +141,7 @@ export function useDirectorReports({ fmtDateOnly }: Deps) {
 
   const repPeriodShort = useMemo(() => {
     return repFrom || repTo
-      ? `${repFrom ? fmtDateOnly(repFrom) : "—"} → ${repTo ? fmtDateOnly(repTo) : "—"}`
+      ? `${repFrom ? fmtDateOnly(repFrom) : "—"} -> ${repTo ? fmtDateOnly(repTo) : "—"}`
       : "Весь период";
   }, [repFrom, repTo, fmtDateOnly]);
 
@@ -142,21 +172,22 @@ export function useDirectorReports({ fmtDateOnly }: Deps) {
           objectIdByName: repOptObjectIdByName,
         });
         if (reqId !== reportReqSeqRef.current) return;
-        const normalized = (payload ?? null) as any;
+        const normalized = (payload ?? null) as unknown as RepPayload | null;
         setCached(reportCacheRef.current, key, normalized);
         setRepData(normalized);
-        const disciplinePayload = (normalized as any)?.discipline ?? null;
+        const disciplinePayload = getDisciplineFromPayload(normalized);
         if (disciplinePayload) {
           setCached(disciplineCacheRef.current, key, disciplinePayload);
           setRepDiscipline(disciplinePayload);
           lastDisciplineLoadKeyRef.current = key;
         }
-      } catch (e: any) {
+      } catch (e: unknown) {
         if (reqId !== reportReqSeqRef.current) return;
-        console.warn("[director] fetchReport:", e?.message ?? e);
+        const message = getErrorMessage(e, "Не удалось получить отчет");
+        console.warn("[director] fetchReport:", message);
         if (!opts?.background) {
           setRepData(null);
-          Alert.alert("Отчеты", e?.message ?? "Не удалось получить отчет");
+          Alert.alert("??????", message);
         }
       } finally {
         inFlightReportRef.current.delete(key);
@@ -246,19 +277,20 @@ export function useDirectorReports({ fmtDateOnly }: Deps) {
             disciplinePricesReadyRef.current.add(key);
             setCached(disciplineCacheRef.current, key, normalizedFull);
             setRepDiscipline(normalizedFull);
-          } catch (e: any) {
-            if (REPORTS_TIMING) console.warn("[director_works] prices_stage_failed:", e?.message ?? e);
+          } catch (e: unknown) {
+            if (REPORTS_TIMING) console.warn("[director_works] prices_stage_failed:", getErrorMessage(e, "prices stage failed"));
           } finally {
             if (reqId === disciplineReqSeqRef.current) setRepDisciplinePriceLoading(false);
           }
         })();
-      } catch (e: any) {
+      } catch (e: unknown) {
         if (reqId !== disciplineReqSeqRef.current) return;
-        console.warn("[director] fetchDiscipline:", e?.message ?? e);
+        const message = getErrorMessage(e, "Не удалось получить дисциплины");
+        console.warn("[director] fetchDiscipline:", message);
         setRepDiscipline(null);
         setRepDisciplinePriceLoading(false);
         if (!opts?.background) {
-          Alert.alert("Отчеты", e?.message ?? "Не удалось получить дисциплины");
+          Alert.alert("??????", message);
         }
       } finally {
         inFlightDisciplineRef.current.delete(key);
@@ -314,9 +346,9 @@ export function useDirectorReports({ fmtDateOnly }: Deps) {
         setCached(optionsCacheRef.current, key, normalized);
         setRepOptObjects(normalized.objects);
         setRepOptObjectIdByName(normalized.objectIdByName);
-      } catch (e: any) {
+      } catch (e: unknown) {
         if (reqId !== optionsReqSeqRef.current) return;
-        console.warn("[director] fetchReportOptions:", e?.message ?? e);
+        console.warn("[director] fetchReportOptions:", getErrorMessage(e, "Не удалось получить опции отчетов"));
         setRepOptObjects([]);
         setRepOptObjectIdByName({});
       } finally {
@@ -365,23 +397,24 @@ export function useDirectorReports({ fmtDateOnly }: Deps) {
         objectName: null,
         objectIdByName: opt.objectIdByName ?? {},
       });
-      setRepData((payload ?? null) as any);
+      setRepData((payload ?? null) as unknown as RepPayload | null);
       const discipline = await fetchDirectorWarehouseReportDiscipline({
         from,
         to,
         objectName: null,
         objectIdByName: opt.objectIdByName ?? {},
       }, { skipPrices: repTab !== "discipline" });
-      setRepDiscipline((discipline ?? null) as any);
+      setRepDiscipline((discipline ?? null) as RepDisciplinePayload | null);
       if (repTab !== "discipline") {
         void fetchDiscipline(null, { background: true });
       }
-    } catch (e: any) {
-      console.warn("[director] applyReportPeriod:", e?.message ?? e);
+    } catch (e: unknown) {
+      const message = getErrorMessage(e, "Не удалось пересчитать отчет");
+      console.warn("[director] applyReportPeriod:", message);
       setRepData(null);
       setRepOptObjects([]);
       setRepOptObjectIdByName({});
-      Alert.alert("Отчеты", e?.message ?? "Не удалось пересчитать отчет");
+      Alert.alert("??????", message);
     } finally {
       setRepOptLoading(false);
       setRepLoading(false);
@@ -417,7 +450,7 @@ export function useDirectorReports({ fmtDateOnly }: Deps) {
         objectName: currentObject,
         objectIdByName: optNorm.objectIdByName,
       });
-      const normalized = (payload ?? null) as any;
+      const normalized = (payload ?? null) as unknown as RepPayload | null;
       setCached(reportCacheRef.current, reportKey(from, to, currentObject, optNorm.objectIdByName), normalized);
       setRepData(normalized);
       const discipline = await fetchDirectorWarehouseReportDiscipline({
@@ -432,10 +465,11 @@ export function useDirectorReports({ fmtDateOnly }: Deps) {
       if (repTab !== "discipline") {
         void fetchDiscipline(currentObject, { background: true });
       }
-    } catch (e: any) {
-      console.warn("[director] refreshReports:", e?.message ?? e);
+    } catch (e: unknown) {
+      const message = getErrorMessage(e, "Не удалось обновить отчет");
+      console.warn("[director] refreshReports:", message);
       setRepData(null);
-      Alert.alert("Отчеты", e?.message ?? "Не удалось обновить отчет");
+      Alert.alert("??????", message);
     } finally {
       setRepOptLoading(false);
       setRepLoading(false);
@@ -509,3 +543,4 @@ export function useDirectorReports({ fmtDateOnly }: Deps) {
     closeReports,
   };
 }
+

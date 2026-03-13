@@ -12,6 +12,7 @@ import {
   StyleSheet,
   Keyboard,
   Animated,
+  InteractionManager,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -94,6 +95,7 @@ export default function CatalogModal(props: {
 
   const tRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const inputRef = useRef<TextInput>(null);
+  const focusTaskRef = useRef<{ cancel?: () => void } | null>(null);
 
   const toastY = useRef(new Animated.Value(-24)).current;
   const [toastText, setToastText] = useState<string>('');
@@ -111,6 +113,13 @@ export default function CatalogModal(props: {
   const canSearch = query.trim().length >= 2;
   const HEADER_PAD_TOP = Platform.OS === 'web' ? 16 : insets.top + 8;
 
+  const scheduleInputFocus = () => {
+    focusTaskRef.current?.cancel?.();
+    focusTaskRef.current = InteractionManager.runAfterInteractions(() => {
+      inputRef.current?.focus?.();
+    });
+  };
+
   useEffect(() => {
     if (!visible) return;
     setQuery('');
@@ -118,7 +127,11 @@ export default function CatalogModal(props: {
     setQtyByCode({});
     setAddBusyByCode({});
     setToastText('');
-    setTimeout(() => inputRef.current?.focus?.(), 400);
+    scheduleInputFocus();
+    return () => {
+      focusTaskRef.current?.cancel?.();
+      focusTaskRef.current = null;
+    };
   }, [visible]);
 
   useEffect(() => {
@@ -188,7 +201,7 @@ export default function CatalogModal(props: {
   const resetSearchAndFocus = () => {
     setQuery('');
     setRows([]);
-    setTimeout(() => inputRef.current?.focus?.(), 50);
+    scheduleInputFocus();
   };
 
   const handleCommit = async (item: CatalogItem) => {

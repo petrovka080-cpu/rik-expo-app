@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import {
+  InteractionManager,
   Keyboard,
   Platform,
   type KeyboardEvent,
@@ -24,8 +25,6 @@ type ScrollResponderLike = {
 
 const asScrollResponder = (v: unknown): ScrollResponderLike | null =>
   v && typeof v === "object" ? (v as ScrollResponderLike) : null;
-const KEYBOARD_SCROLL_DELAY_MS = 60;
-
 export function useAccountantKeyboard(cardScrollRef: { current: unknown }) {
   const [kbdH, setKbdH] = useState(0);
   const [kbOpen, setKbOpen] = useState(false);
@@ -46,8 +45,7 @@ export function useAccountantKeyboard(cardScrollRef: { current: unknown }) {
           ? 190
           : 160;
 
-      // RN keyboard/layout settles asynchronously; short delay prevents missed scroll on focus.
-      setTimeout(() => {
+      InteractionManager.runAfterInteractions(() => {
         try {
           const responderHolder = asScrollResponder(cardScrollRef.current);
           const responder =
@@ -61,7 +59,7 @@ export function useAccountantKeyboard(cardScrollRef: { current: unknown }) {
         } catch {
           // no-op
         }
-      }, KEYBOARD_SCROLL_DELAY_MS);
+      });
     },
     [cardScrollRef],
   );

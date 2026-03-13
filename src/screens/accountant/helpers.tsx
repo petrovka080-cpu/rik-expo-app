@@ -161,6 +161,6 @@ export function runNextTick(task: () => void) {
     queueMicrotask(task);
     return;
   }
-  setTimeout(task, 0);
+  Promise.resolve().then(task);
 }
 

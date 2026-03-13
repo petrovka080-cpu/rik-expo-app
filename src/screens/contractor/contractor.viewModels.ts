@@ -52,8 +52,24 @@ function resolveCompanyName(params: ResolveCompanyParams): {
   const vRow = pickText(rowOrg, normalizeText);
   if (vRow) return { company: vRow, source: "row.contractor_org", raw: String(rowOrg || "") };
 
-  return { company: "Ïîäðÿä÷èê íå óêàçàí", source: "fallback", raw: "" };
+  return { company: "ÐŸÐ¾Ð´Ñ€ÑÐ´Ñ‡Ð¸Ðº Ð½Ðµ ÑƒÐºÐ°Ð·Ð°Ð½", source: "fallback", raw: "" };
 }
+
+const logContractorCardDebug = (
+  enabled: boolean | undefined,
+  cardId: string,
+  debugPlatform: string | undefined,
+  payload: {
+    hasSubcontract: boolean;
+    subcontractId: string | null;
+    source: "subcontract.contractor_org" | "row.contractor_org" | "fallback";
+    rawContractorOrg: string;
+    finalContractorTitle: string;
+  },
+) => {
+  if (!__DEV__ || !enabled) return;
+  console.debug(`[contractor.cards] card:${cardId} platform:${debugPlatform || "unknown"}`, payload);
+};
 
 export function groupWorksByJob<T extends WorkRowLike>(rows: T[]): Map<string, T[]> {
   const map = new Map<string, T[]>();
@@ -103,15 +119,13 @@ export function buildJobCards(params: {
       normalizeText,
     });
 
-    if (__DEV__ && debugCompanySource) {
-      console.log(`[contractor.cards] card:${id} platform:${debugPlatform || "unknown"}`, {
-        hasSubcontract: true,
-        subcontractId: id,
-        source: companyResolved.source,
-        rawContractorOrg: companyResolved.raw,
-        finalContractorTitle: companyResolved.company,
-      });
-    }
+    logContractorCardDebug(debugCompanySource, id, debugPlatform, {
+      hasSubcontract: true,
+      subcontractId: id,
+      source: companyResolved.source,
+      rawContractorOrg: companyResolved.raw,
+      finalContractorTitle: companyResolved.company,
+    });
 
     cards.push({
       id,
@@ -136,15 +150,13 @@ export function buildJobCards(params: {
       normalizeText,
     });
 
-    if (__DEV__ && debugCompanySource) {
-      console.log(`[contractor.cards] card:${jid} platform:${debugPlatform || "unknown"}`, {
-        hasSubcontract: false,
-        subcontractId: null,
-        source: companyResolved.source,
-        rawContractorOrg: companyResolved.raw,
-        finalContractorTitle: companyResolved.company,
-      });
-    }
+    logContractorCardDebug(debugCompanySource, jid, debugPlatform, {
+      hasSubcontract: false,
+      subcontractId: null,
+      source: companyResolved.source,
+      rawContractorOrg: companyResolved.raw,
+      finalContractorTitle: companyResolved.company,
+    });
 
     cards.push({
       id: jid,
@@ -192,15 +204,13 @@ export function buildUnifiedCardsFromJobsAndOthers(params: {
       normalizeText,
     });
 
-    if (__DEV__ && debugCompanySource) {
-      console.log(`[contractor.cards] card:${id} platform:${debugPlatform || "unknown"}`, {
-        hasSubcontract: false,
-        subcontractId: null,
-        source: companyResolved.source,
-        rawContractorOrg: companyResolved.raw,
-        finalContractorTitle: companyResolved.company,
-      });
-    }
+    logContractorCardDebug(debugCompanySource, id, debugPlatform, {
+      hasSubcontract: false,
+      subcontractId: null,
+      source: companyResolved.source,
+      rawContractorOrg: companyResolved.raw,
+      finalContractorTitle: companyResolved.company,
+    });
 
     return {
       id,
@@ -220,3 +230,4 @@ export function buildUnifiedCardsFromJobsAndOthers(params: {
     rowByCardId,
   };
 }
+

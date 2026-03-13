@@ -3,11 +3,30 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { formatRequestDisplay } from "../../../lib/format";
 import { batchResolveRequestLabels } from "../../../lib/catalog_api";
 import { supabase } from "../../../lib/supabaseClient";
+import { normalizeRuText } from "../../../lib/text/encoding";
 
 const errText = (error: unknown): string => {
   if (error instanceof Error && error.message.trim()) return error.message.trim();
   return String(error ?? "");
 };
+
+const extractCanonicalRequestLabel = (value: string): string => {
+  const normalized = normalizeRuText(value).trim();
+  if (!normalized) return "";
+
+  const reqMatch = normalized.match(/\bREQ-[A-Z0-9_-]+\/\d{4}\b/i);
+  if (reqMatch?.[0]) return reqMatch[0].toUpperCase();
+
+  const slashMatch = normalized.match(/\b\d{1,6}\/\d{4}\b/);
+  if (slashMatch?.[0]) return slashMatch[0];
+
+  const requestHashMatch = normalized.match(/\b#\d+\b/);
+  if (requestHashMatch?.[0]) return requestHashMatch[0];
+
+  return normalized;
+};
+
+const cleanLabel = (value: unknown): string => extractCanonicalRequestLabel(String(value ?? ""));
 
 export function useBuyerRequestLabels() {
   const [displayNoByReq, setDisplayNoByReq] = useState<Record<string, string>>({});
@@ -30,9 +49,9 @@ export function useBuyerRequestLabels() {
 
   const prettyLabel = useCallback((rid: string, ridOld?: number | null) => {
     const key = String(rid).trim();
-    const dn = displayNoByReqRef.current?.[key];
+    const dn = cleanLabel(displayNoByReqRef.current?.[key]);
     if (dn) return dn;
-    return formatRequestDisplay(String(rid), ridOld ?? null);
+    return cleanLabel(formatRequestDisplay(String(rid), ridOld ?? null));
   }, []);
 
   const preloadDisplayNos = useCallback(async (ids: string[]) => {
@@ -44,7 +63,11 @@ export function useBuyerRequestLabels() {
     try {
       const map = await batchResolveRequestLabels(need);
       if (map && typeof map === "object") {
-        setDisplayNoByReq((prev) => ({ ...prev, ...map }));
+        const cleanedEntries = Object.entries(map)
+          .map(([id, label]) => [String(id).trim(), cleanLabel(label)] as const)
+          .filter((entry) => entry[0] && entry[1]);
+        if (!cleanedEntries.length) return;
+        setDisplayNoByReq((prev) => ({ ...prev, ...Object.fromEntries(cleanedEntries) }));
       }
     } catch {
       // no-op
@@ -68,7 +91,7 @@ export function useBuyerRequestLabels() {
       const patch: Record<string, string> = {};
       for (const r of rowsTyped) {
         const rid = String(r.request_id ?? "").trim();
-        const pr = String(r.proposal_no ?? "").trim();
+        const pr = cleanLabel(r.proposal_no);
         if (rid && pr) patch[rid] = pr;
       }
 

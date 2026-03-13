@@ -7,6 +7,7 @@ import { Slot, router, useSegments } from "expo-router";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { Host } from "react-native-portalize";
 
+import { clearAppCache } from "../src/lib/cache/clearAppCache";
 import { supabase } from "../src/lib/supabaseClient";
 import { clearDocumentSessions } from "../src/lib/documents/pdfDocumentSessions";
 import { ensureMyProfile, getMyRole } from "../src/lib/rik_api";
@@ -67,6 +68,10 @@ export default function RootLayout() {
         (root as any).style.overflow = "auto";
       }
     } catch {}
+  }, []);
+
+  useEffect(() => {
+    void clearAppCache();
   }, []);
 
   // --- роль/профиль грузим в фоне, НЕ блокируя вход ---

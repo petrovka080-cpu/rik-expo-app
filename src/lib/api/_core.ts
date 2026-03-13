@@ -3,14 +3,34 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 
 export const client: SupabaseClient = supabase;
 
-export const parseErr = (e: any) =>
-  e?.message ||
-  e?.error_description ||
-  (typeof e === "string"
-    ? e
-    : (() => {
-        try { return JSON.stringify(e); } catch { return String(e); }
-      })());
+type ErrorLike = {
+  message?: unknown;
+  error_description?: unknown;
+  code?: unknown;
+};
+
+type RpcVariant = {
+  fn: string;
+  args?: Record<string, unknown>;
+};
+
+const asErrorLike = (value: unknown): ErrorLike | null =>
+  value && typeof value === "object" ? (value as ErrorLike) : null;
+
+export const parseErr = (e: unknown) =>
+  String(
+    asErrorLike(e)?.message ||
+      asErrorLike(e)?.error_description ||
+      (typeof e === "string"
+        ? e
+        : (() => {
+            try {
+              return JSON.stringify(e);
+            } catch {
+              return String(e);
+            }
+          })()),
+  );
 
 export const normStr = (s?: string | null) => String(s ?? "").trim().toLowerCase();
 
@@ -36,18 +56,18 @@ export const toFilterId = (v: number | string) => {
 export const toRpcId = (id: number | string) => String(id);
 
 // rpcCompat как у тебя, но “в ядре”
-export async function rpcCompat<T = any>(
-  variants: Array<{ fn: string; args?: Record<string, any> }>
+export async function rpcCompat<T = unknown>(
+  variants: RpcVariant[],
 ): Promise<T> {
-  let lastErr: any = null;
+  let lastErr: unknown = null;
   for (const v of variants) {
     try {
-      const { data, error } = await supabase.rpc(v.fn as any, v.args as any);
+      const { data, error } = await supabase.rpc(v.fn, v.args);
       if (!error) return data as T;
       lastErr = error;
       const msg = String(error?.message || "");
-      if (msg.includes("Could not find") || (error as any)?.code === "PGRST302") continue;
-    } catch (e: any) {
+      if (msg.includes("Could not find") || asErrorLike(error)?.code === "PGRST302") continue;
+    } catch (e: unknown) {
       lastErr = e;
     }
   }

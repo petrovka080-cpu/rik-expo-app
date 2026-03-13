@@ -26,7 +26,7 @@ export const fmtDateOnly = (iso?: string | null) => {
   }
 };
 
-export const pickIso10 = (...vals: any[]) => {
+export const pickIso10 = (...vals: unknown[]) => {
   for (const v of vals) {
     const s = String(v ?? "").trim();
     if (!s) continue;
@@ -39,7 +39,7 @@ export const makeIsoInPeriod = (fromIso?: string | null, toIso?: string | null) 
   const from = String(fromIso ?? "").slice(0, 10);
   const to = String(toIso ?? "").slice(0, 10);
 
-  return (iso: any) => {
+  return (iso: unknown) => {
     const d = String(iso ?? "").slice(0, 10);
     if (!d) return true;
     if (from && d < from) return false;
@@ -49,5 +49,9 @@ export const makeIsoInPeriod = (fromIso?: string | null, toIso?: string | null) 
 };
 
 export const runNextTick = (fn: () => void) => {
-  setTimeout(fn, 0);
+  if (typeof queueMicrotask === "function") {
+    queueMicrotask(fn);
+    return;
+  }
+  Promise.resolve().then(fn);
 };
