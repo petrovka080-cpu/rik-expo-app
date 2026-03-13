@@ -5,6 +5,11 @@ import WarehouseHeader from "../../src/screens/warehouse/components/WarehouseHea
 import WarehouseModalsManager from "../../src/screens/warehouse/components/WarehouseModalsManager";
 import WarehouseTabContent from "../../src/screens/warehouse/components/WarehouseTabContent";
 import { useWarehouseScreenController } from "../../src/screens/warehouse/hooks/useWarehouseScreenController";
+import {
+  selectWarehouseHeaderProps,
+  selectWarehouseScreenMode,
+  selectWarehouseScreenStateText,
+} from "../../src/screens/warehouse/warehouse.screen.selectors";
 
 const ROOT_STYLE = { flex: 1, backgroundColor: UI.bg };
 const SCREEN_STYLE = { flex: 1 };
@@ -19,6 +24,9 @@ const WEB_STICKY_HEADER_STYLE = {
 
 export default function Warehouse() {
   const vm = useWarehouseScreenController();
+  const screenMode = selectWarehouseScreenMode(vm);
+  const headerProps = selectWarehouseHeaderProps(vm);
+  const screenStateText = selectWarehouseScreenStateText(screenMode);
 
   return (
     <View style={ROOT_STYLE}>
@@ -35,30 +43,22 @@ export default function Warehouse() {
           },
         ]}
       >
-        <WarehouseHeader
-          tab={vm.tab}
-          onTab={vm.onTabChange}
-          incomingCount={vm.incomingCount}
-          stockCount={vm.stockCount}
-          titleSize={vm.titleSize}
-          warehousemanFio={vm.warehousemanFio}
-          onOpenFioModal={vm.onOpenFioModal}
-        />
+        <WarehouseHeader {...headerProps} />
       </Animated.View>
 
       <View style={SCREEN_STYLE}>
-        {vm.loading ? (
+        {screenMode === "loading" ? (
           <View style={LOADER_STYLE}>
             <ActivityIndicator size="large" />
-            <Text style={{ marginTop: 8, color: UI.sub }}>{"\u0417\u0430\u0433\u0440\u0443\u0437\u043A\u0430..."}</Text>
+            <Text style={{ marginTop: 8, color: UI.sub }}>{screenStateText.title}</Text>
           </View>
-        ) : !vm.warehousemanFio && vm.isFioConfirmVisible ? (
+        ) : screenMode === "fio_gate" ? (
           <View style={[LOADER_STYLE, { paddingHorizontal: 40 }]}>
             <Text style={{ color: UI.text, fontSize: 18, fontWeight: "900", textAlign: "center" }}>
-              Пожалуйста, представьтесь для доступа к складу
+              {screenStateText.title}
             </Text>
             <Text style={{ color: UI.sub, fontSize: 14, marginTop: 12, textAlign: "center" }}>
-              Это необходимо для формирования документов.
+              {screenStateText.subtitle}
             </Text>
           </View>
         ) : (

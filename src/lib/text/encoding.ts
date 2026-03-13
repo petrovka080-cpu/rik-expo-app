@@ -158,6 +158,18 @@ type NormalizeRuHtmlOptions = {
   maxLength?: number;
 };
 
+const logEncodingDebug = (...args: unknown[]) => {
+  if (__DEV__) console.info(...args);
+};
+
+const warnEncodingDebug = (...args: unknown[]) => {
+  if (__DEV__) console.warn(...args);
+};
+
+const errorEncodingDebug = (...args: unknown[]) => {
+  if (__DEV__) console.error(...args);
+};
+
 const looksLikeHtmlDocument = (input: string) =>
   /<!doctype html|<html\b|<head\b|<body\b|<\/html>/i.test(input);
 
@@ -171,16 +183,17 @@ export function normalizeRuTextForHtml<T>(value: T, opts?: NormalizeRuHtmlOption
     const htmlLike = looksLikeHtmlDocument(src);
     const maxLength = Number.isFinite(Number(opts?.maxLength)) ? Number(opts?.maxLength) : 12000;
 
-    console.info("[encoding] normalize_ru_text_started", {
+    logEncodingDebug("[encoding] normalize_ru_text_started", {
       inputType: typeof value,
       stringLength: src.length,
       looksLikeHtml: htmlLike,
       documentType: opts?.documentType ?? null,
       source: opts?.source ?? null,
+      suspiciousMojibake: suspiciousMojiRe.test(src),
     });
 
     if (htmlLike && src.length > maxLength) {
-      console.warn("[encoding] normalize_ru_text_skipped_large_html", {
+      warnEncodingDebug("[encoding] normalize_ru_text_skipped_large_html", {
         stringLength: src.length,
         maxLength,
         documentType: opts?.documentType ?? null,
@@ -190,7 +203,7 @@ export function normalizeRuTextForHtml<T>(value: T, opts?: NormalizeRuHtmlOption
     }
 
     const out = normalizeRuText(value);
-    console.info("[encoding] normalize_ru_text_done", {
+    logEncodingDebug("[encoding] normalize_ru_text_done", {
       stringLength: src.length,
       looksLikeHtml: htmlLike,
       documentType: opts?.documentType ?? null,
@@ -198,7 +211,7 @@ export function normalizeRuTextForHtml<T>(value: T, opts?: NormalizeRuHtmlOption
     });
     return out;
   } catch (error) {
-    console.error("[encoding] normalize_ru_text_failed", {
+    errorEncodingDebug("[encoding] normalize_ru_text_failed", {
       inputType: typeof value,
       documentType: opts?.documentType ?? null,
       source: opts?.source ?? null,

@@ -2,6 +2,7 @@ import { useMemo } from "react";
 
 import type { BuyerInboxRow } from "../../../lib/catalog_api";
 import type { BuyerProposalBucketRow } from "../buyer.fetchers";
+import { selectBuyerTabCounts } from "../buyer.screen.selectors";
 import type { BuyerGroup, BuyerSheetKind, DraftAttachmentMap, LineMeta } from "../buyer.types";
 import {
   selectGroups,
@@ -30,27 +31,11 @@ type UseBuyerDerivedParams = {
   titleByPid?: Record<string, string>;
 };
 
-export function useBuyerDerived({
-  rows,
-  pickedIds,
-  meta,
-  attachments,
-  sheetKind,
-  sheetGroup,
-  tab,
-  pending,
-  approved,
-  rejected,
-  searchQuery,
-  titleByPid,
-}: UseBuyerDerivedParams) {
-  const groups = useMemo(() => selectGroups(rows), [rows]);
-
-  const rfqPickedPreview = useMemo(
-    () => selectRfqPickedPreview(rows, pickedIds),
-    [rows, pickedIds]
-  );
-
+function useBuyerAttachmentState(
+  pickedIds: string[],
+  meta: Record<string, LineMeta>,
+  attachments: DraftAttachmentMap
+) {
   const supplierGroups = useMemo(
     () => selectSupplierGroups(pickedIds, meta),
     [pickedIds, meta]
@@ -76,6 +61,48 @@ export function useBuyerDerived({
     [pickedIds.length, attachSlotsTotal, attachMissingCount]
   );
 
+  return {
+    supplierGroups,
+    requiredSuppliers,
+    missingAttachSuppliers,
+    attachSlotsTotal,
+    attachMissingCount,
+    attachFilledCount,
+    needAttachWarn,
+  };
+}
+
+export function useBuyerDerived({
+  rows,
+  pickedIds,
+  meta,
+  attachments,
+  sheetKind,
+  sheetGroup,
+  tab,
+  pending,
+  approved,
+  rejected,
+  searchQuery,
+  titleByPid,
+}: UseBuyerDerivedParams) {
+  const groups = useMemo(() => selectGroups(rows), [rows]);
+
+  const rfqPickedPreview = useMemo(
+    () => selectRfqPickedPreview(rows, pickedIds),
+    [rows, pickedIds]
+  );
+
+  const {
+    supplierGroups,
+    requiredSuppliers,
+    missingAttachSuppliers,
+    attachSlotsTotal,
+    attachMissingCount,
+    attachFilledCount,
+    needAttachWarn,
+  } = useBuyerAttachmentState(pickedIds, meta, attachments);
+
   const sheetData = useMemo(
     () => selectSheetData(sheetKind, sheetGroup),
     [sheetKind, sheetGroup]
@@ -84,6 +111,17 @@ export function useBuyerDerived({
   const listData = useMemo(
     () => selectListData(tab, groups, pending, approved, rejected, searchQuery, titleByPid),
     [tab, groups, pending, approved, rejected, searchQuery, titleByPid]
+  );
+
+  const tabCounts = useMemo(
+    () =>
+      selectBuyerTabCounts({
+        groups,
+        pending,
+        approved,
+        rejected,
+      }),
+    [groups, pending, approved, rejected]
   );
 
   return {
@@ -98,5 +136,6 @@ export function useBuyerDerived({
     needAttachWarn,
     sheetData,
     listData,
+    tabCounts,
   };
 }

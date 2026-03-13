@@ -9,6 +9,11 @@ import {
   type RefreshControlProps,
 } from "react-native";
 import RoleScreenLayout from "../../../components/layout/RoleScreenLayout";
+import {
+  selectWarehouseEmptyTextStyle,
+  selectWarehouseReqHeadKey,
+} from "../warehouse.list.common";
+import { selectWarehouseIssueEmptyText } from "../warehouse.tab.empty";
 import type { ReqHeadRow } from "../warehouse.types";
 
 const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
@@ -42,7 +47,7 @@ export default function WarehouseIssueTab({
     <RoleScreenLayout>
       <AnimatedFlatList
         data={data}
-        keyExtractor={(x: ReqHeadRow) => x.request_id}
+        keyExtractor={selectWarehouseReqHeadKey}
         contentContainerStyle={contentContainerStyle}
         onScroll={onScroll}
         scrollEventThrottle={scrollEventThrottle}
@@ -53,14 +58,9 @@ export default function WarehouseIssueTab({
         ListHeaderComponent={listHeader}
         renderItem={renderItem}
         ListEmptyComponent={
-          loading ? (
-            <Text style={{ color: emptyColor, paddingHorizontal: 16, fontWeight: "800" }}>Загрузка...</Text>
-          ) : (
-            <Text style={{ color: emptyColor, paddingHorizontal: 16, fontWeight: "800" }}>
-              Нет заявок для выдачи.
-              {"\n"}Потяни вниз, чтобы обновить.
-            </Text>
-          )
+          <Text style={selectWarehouseEmptyTextStyle(emptyColor)}>
+            {selectWarehouseIssueEmptyText(loading)}
+          </Text>
         }
       />
     </RoleScreenLayout>

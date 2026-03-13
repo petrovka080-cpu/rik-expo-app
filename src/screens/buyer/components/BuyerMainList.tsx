@@ -9,6 +9,11 @@ import {
   FlatList,
 } from "react-native";
 import { UI } from "../buyerUi";
+import {
+  selectBuyerListLoading,
+  selectBuyerMainListData,
+  selectBuyerShouldShowEmptyState,
+} from "../buyer.list.ui";
 import { SafeView } from "./common/SafeView";
 import type { BuyerTab } from "../buyer.types";
 import type { StylesBag } from "./component.types";
@@ -47,16 +52,9 @@ export const BuyerMainList = React.memo(function BuyerMainList(props: {
     s,
   } = props;
 
-  const isLoading = (tab === "inbox" && loadingInbox) || (tab !== "inbox" && loadingBuckets);
-
-  const skeletonData: ListItem[] = [
-    { id: "s1", __skeleton: true },
-    { id: "s2", __skeleton: true },
-    { id: "s3", __skeleton: true },
-    { id: "s4", __skeleton: true },
-  ];
-
-  const finalData = (isLoading && !refreshing && (!data || data.length === 0)) ? skeletonData : data;
+  const isLoading = selectBuyerListLoading(tab, loadingInbox, loadingBuckets);
+  const finalData = selectBuyerMainListData(data, isLoading, refreshing);
+  const showEmptyState = selectBuyerShouldShowEmptyState(isLoading);
   const renderCell: React.ComponentProps<typeof FlatList<ListItem>>["CellRendererComponent"] = ({
     children,
     style,
@@ -114,7 +112,7 @@ export const BuyerMainList = React.memo(function BuyerMainList(props: {
       }}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={UI.accent} colors={[UI.accent]} />}
       ListEmptyComponent={
-        !isLoading ? (
+        showEmptyState ? (
           <SafeView style={{ padding: 24, alignItems: "center" }}>
             <Text style={{ color: UI.sub, fontSize: 15, fontWeight: "800" }}>Пока пусто</Text>
           </SafeView>

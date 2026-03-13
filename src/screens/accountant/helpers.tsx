@@ -36,7 +36,7 @@ export const safeAlert = (title: string, msg?: string) => {
   }
 };
 
-// ---------- SafeView: С„РёР»СЊС‚СЂСѓРµС‚ СЃС‹СЂРѕР№ С‚РµРєСЃС‚ РІРЅСѓС‚СЂРё View (С„РёРєСЃ RNW) ----------
+// ---------- SafeView: фильтрует сырой текст внутри View (фикс RNW) ----------
 export function SafeView({ children, ...rest }: PropsWithChildren<ViewProps>) {
   const kids = React.Children.toArray(children).map((c, i) => {
     if (typeof c === "string") return c.trim() ? <Text key={`t${i}`}>{c}</Text> : null;
@@ -50,7 +50,7 @@ export function SafeView({ children, ...rest }: PropsWithChildren<ViewProps>) {
 export function safeFileNameLite(name: string) {
   return String(name || `file_${Date.now()}`)
     .replace(/[\\/:*?"<>|]+/g, "_")
-    .replace(/[вЂ”вЂ“]/g, "-")
+    .replace(/[—–]/g, "-")
     .replace(/\s+/g, " ")
     .trim();
 }

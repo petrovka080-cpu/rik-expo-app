@@ -1,7 +1,7 @@
-﻿import React from "react";
+import React from "react";
 import { Pressable, Text, View } from "react-native";
 import type { ReqHeadRow } from "../warehouse.types";
-import { UI, s } from "../warehouse.styles";
+import { s } from "../warehouse.styles";
 import { RoleCard } from "../../../components/ui/RoleCard";
 import ChevronIndicator from "../../../ui/ChevronIndicator";
 import { mapWarehouseReqHeadToCardProps } from "../presentation/warehouseRowAdapters";
@@ -12,50 +12,78 @@ type Props = {
   fmtRuDate: (iso?: string | null) => string;
 };
 
-export default function ReqHeadRowItem({ row, onPress, fmtRuDate }: Props) {
-  const card = mapWarehouseReqHeadToCardProps({ row, fmtRuDate });
-
-  const statusNode = card.isFullyIssued ? (
-    <Text style={s.reqItemStatusFullyIssued}>Выдано полностью</Text>
-  ) : (
-    <Text style={s.reqItemStatusNotFullyIssued}>
-      К выдаче:{" "}
-      <Text style={{ color: card.hasToIssue ? "#22c55e" : UI.text, fontWeight: "900" }}>
-        {card.hasToIssue
-          ? `${card.openPos} ${card.openPos === 1 ? "позиция" : card.openPos > 1 && card.openPos < 5 ? "позиции" : "позиций"}`
-          : "0"}
-      </Text>
-      {" • "}
-      Выдано:{" "}
-      <Text style={{ color: card.issuedPos > 0 ? "#22c55e" : UI.text, fontWeight: "800" }}>
-        {card.issuedPos}
-      </Text>
+function HeaderMetric({
+  issued,
+  total,
+}: {
+  issued: string;
+  total: string;
+}) {
+  return (
+    <Text
+      style={{
+        fontSize: 15,
+        fontWeight: "700",
+        lineHeight: 18,
+        letterSpacing: 0.1,
+      }}
+    >
+      <Text style={{ color: "#22c55e" }}>{issued}</Text>
+      <Text style={{ color: "#94A3B8" }}>{` / ${total}`}</Text>
     </Text>
   );
+}
+
+export default function ReqHeadRowItem({ row, onPress, fmtRuDate }: Props) {
+  const card = mapWarehouseReqHeadToCardProps({ row, fmtRuDate });
 
   return (
     <View style={s.listItemContainer}>
       <Pressable
         onPress={() => onPress(row)}
-        style={({ pressed }) => [s.reqItemPressable, pressed && { opacity: 0.9 }]}
+        style={({ pressed }) => [s.reqItemPressable, pressed && { opacity: 0.92 }]}
       >
         <RoleCard
           title={card.title}
-          subtitle={card.subtitle}
-          meta={card.meta}
-          status={statusNode}
+          subtitle={card.companyLine}
+          meta={card.routeLine}
+          status={<HeaderMetric issued={card.issuedCountLabel} total={card.totalCountLabel} />}
           rightIndicator={<ChevronIndicator />}
           style={[
             s.groupHeader,
             {
               marginBottom: 0,
-              borderLeftWidth: card.hasToIssue ? 5 : 0,
-              borderLeftColor: "#22c55e",
+              paddingVertical: 10,
+              paddingHorizontal: 12,
+              minHeight: 92,
+              borderLeftWidth: 4,
+              borderLeftColor: card.stripeColor,
             },
           ]}
-          titleStyle={[s.groupTitle, { fontSize: 16 }]}
-          subtitleStyle={s.reqItemDate}
-          metaStyle={s.reqItemRow3}
+          titleStyle={[
+            s.groupTitle,
+            {
+              fontSize: 16,
+              fontWeight: "700",
+              lineHeight: 20,
+            },
+          ]}
+          subtitleStyle={[
+            s.reqItemDate,
+            {
+              marginTop: 4,
+              color: "#E5E7EB",
+              fontWeight: "700",
+            },
+          ]}
+          metaStyle={[
+            s.reqItemRow3,
+            {
+              marginTop: 4,
+              fontWeight: "500",
+              color: "#94A3B8",
+            },
+          ]}
         />
       </Pressable>
     </View>

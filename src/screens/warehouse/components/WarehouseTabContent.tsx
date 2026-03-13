@@ -15,9 +15,13 @@ import type {
   Tab,
   WarehouseReportRow,
 } from "../warehouse.types";
+import {
+  selectWarehouseIncomingTabProps,
+  selectWarehouseIssueTabProps,
+  selectWarehouseReportsTabProps,
+  selectWarehouseStockTabProps,
+} from "../warehouse.tab.presentation";
 import { WAREHOUSE_TABS } from "../warehouse.types";
-import StockFactHeader from "./StockFactHeader";
-import ExpenditureHeader from "./ExpenditureHeader";
 import WarehouseIncomingTab from "./WarehouseIncomingTab";
 import WarehouseIssueTab from "./WarehouseIssueTab";
 import WarehouseReportsTab from "./WarehouseReportsTab";
@@ -90,151 +94,19 @@ export type WarehouseTabContentProps = {
 };
 
 export default function WarehouseTabContent(props: WarehouseTabContentProps) {
-  const {
-    tab,
-    emptyColor,
-    listContentStyle,
-    listOnScroll,
-    listScrollEventThrottle,
-    listRefreshControl,
-    incomingData,
-    onIncomingEndReached,
-    renderIncomingItem,
-    stockSupported,
-    stockFiltered,
-    renderStockItem,
-    objectOpt,
-    levelOpt,
-    systemOpt,
-    zoneOpt,
-    onPickObject,
-    onPickLevel,
-    onPickSystem,
-    onPickZone,
-    onOpenRecipientModal,
-    recipientText,
-    stockSearch,
-    onStockSearch,
-    stockPick,
-    onRemovePick,
-    issueBusy,
-    onClearStockPick,
-    onSubmitStockPick,
-    issueMsg,
-    reqHeadsData,
-    onReqEndReached,
-    renderReqHeadItem,
-    reqHeadsLoading,
-    reportsHeaderTopPad,
-    reportsMode,
-    onReportsBack,
-    onReportsSelectMode,
-    reportsOnScroll,
-    reportsScrollEventThrottle,
-    periodFrom,
-    periodTo,
-    repStock,
-    repMov,
-    reportsUi,
-    onOpenRepPeriod,
-    onReportsRefresh,
-    onPdfRegisterPress,
-    onPdfDocumentPress,
-    onPdfMaterialsPress,
-    onPdfObjectWorkPress,
-    onPdfDayRegisterPress,
-    onPdfDayMaterialsPress,
-  } = props;
+  const { tab } = props;
 
   if (tab === WAREHOUSE_TABS[0]) {
-    return (
-      <WarehouseIncomingTab
-        data={incomingData}
-        contentContainerStyle={listContentStyle}
-        onScroll={listOnScroll}
-        scrollEventThrottle={listScrollEventThrottle}
-        onEndReached={onIncomingEndReached}
-        refreshControl={listRefreshControl}
-        renderItem={renderIncomingItem}
-        emptyColor={emptyColor}
-      />
-    );
+    return <WarehouseIncomingTab {...selectWarehouseIncomingTabProps(props)} />;
   }
 
   if (tab === WAREHOUSE_TABS[1]) {
-    return (
-      <WarehouseStockTab
-        stockSupported={stockSupported}
-        data={stockFiltered}
-        contentContainerStyle={listContentStyle}
-        onScroll={listOnScroll}
-        scrollEventThrottle={listScrollEventThrottle}
-        renderItem={renderStockItem}
-        header={
-          <StockFactHeader
-            objectOpt={objectOpt}
-            levelOpt={levelOpt}
-            systemOpt={systemOpt}
-            zoneOpt={zoneOpt}
-            onPickObject={onPickObject}
-            onPickLevel={onPickLevel}
-            onPickSystem={onPickSystem}
-            onPickZone={onPickZone}
-            onOpenRecipientModal={onOpenRecipientModal}
-            recipientText={recipientText}
-            stockSearch={stockSearch}
-            onStockSearch={onStockSearch}
-            stockPick={stockPick}
-            onRemovePick={onRemovePick}
-            issueBusy={issueBusy}
-            onClear={onClearStockPick}
-            onSubmit={onSubmitStockPick}
-            issueMsg={issueMsg}
-          />
-        }
-        emptyColor={emptyColor}
-      />
-    );
+    return <WarehouseStockTab {...selectWarehouseStockTabProps(props)} />;
   }
 
   if (tab === WAREHOUSE_TABS[2]) {
-    return (
-      <WarehouseIssueTab
-        data={reqHeadsData}
-        contentContainerStyle={listContentStyle}
-        onScroll={listOnScroll}
-        scrollEventThrottle={listScrollEventThrottle}
-        onEndReached={onReqEndReached}
-        refreshControl={listRefreshControl}
-        listHeader={<ExpenditureHeader recipientText={recipientText} onOpenRecipientModal={onOpenRecipientModal} />}
-        renderItem={renderReqHeadItem}
-        loading={reqHeadsLoading}
-        emptyColor={emptyColor}
-      />
-    );
+    return <WarehouseIssueTab {...selectWarehouseIssueTabProps(props)} />;
   }
 
-  return (
-    <WarehouseReportsTab
-      headerTopPad={reportsHeaderTopPad}
-      mode={reportsMode}
-      onBack={onReportsBack}
-      onSelectMode={onReportsSelectMode}
-      onScroll={reportsOnScroll}
-      scrollEventThrottle={reportsScrollEventThrottle}
-      periodFrom={periodFrom}
-      periodTo={periodTo}
-      repStock={repStock}
-      repMov={repMov}
-      reportsUi={reportsUi}
-      onOpenPeriod={onOpenRepPeriod}
-      onRefresh={onReportsRefresh}
-      onPdfRegister={onPdfRegisterPress}
-      onPdfDocument={onPdfDocumentPress}
-      onPdfMaterials={onPdfMaterialsPress}
-      onPdfObjectWork={onPdfObjectWorkPress}
-      onPdfDayRegister={onPdfDayRegisterPress}
-      onPdfDayMaterials={onPdfDayMaterialsPress}
-    />
-  );
+  return <WarehouseReportsTab {...selectWarehouseReportsTabProps(props)} />;
 }

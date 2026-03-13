@@ -9,6 +9,11 @@ import {
   type RefreshControlProps,
 } from "react-native";
 import RoleScreenLayout from "../../../components/layout/RoleScreenLayout";
+import {
+  selectWarehouseEmptyTextStyle,
+  selectWarehouseIncomingKey,
+} from "../warehouse.list.common";
+import { selectWarehouseIncomingEmptyText } from "../warehouse.tab.empty";
 import type { IncomingRow } from "../warehouse.types";
 
 const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
@@ -38,9 +43,7 @@ export default function WarehouseIncomingTab({
     <RoleScreenLayout>
       <AnimatedFlatList
         data={data}
-        keyExtractor={(i: IncomingRow) =>
-          String(i.incoming_id || `${i.purchase_id || ""}:${i.po_no || ""}:${i.purchase_created_at || ""}`)
-        }
+        keyExtractor={selectWarehouseIncomingKey}
         contentContainerStyle={contentContainerStyle}
         onScroll={onScroll}
         scrollEventThrottle={scrollEventThrottle}
@@ -50,8 +53,8 @@ export default function WarehouseIncomingTab({
         ListFooterComponent={null}
         renderItem={renderItem}
         ListEmptyComponent={
-          <Text style={{ color: emptyColor, paddingHorizontal: 16, fontWeight: "800" }}>
-            Нет записей в очереди склада.
+          <Text style={selectWarehouseEmptyTextStyle(emptyColor)}>
+            {selectWarehouseIncomingEmptyText()}
           </Text>
         }
         refreshControl={refreshControl}

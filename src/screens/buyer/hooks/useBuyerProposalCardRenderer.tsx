@@ -3,6 +3,7 @@ import { useCallback } from "react";
 import type { BuyerProposalBucketRow } from "../buyer.fetchers";
 import type { StylesBag } from "../components/component.types";
 import { BuyerProposalCard } from "../buyer.components";
+import { selectBuyerProposalCardViewModel } from "../buyer.proposal.presentation";
 
 export function useBuyerProposalCardRenderer(params: {
   s: StylesBag;
@@ -23,15 +24,14 @@ export function useBuyerProposalCardRenderer(params: {
 
   const renderProposalCard = useCallback(
     (item: BuyerProposalBucketRow) => {
-      const pid = String(item?.id ?? "");
-      const cnt = pid ? propAttByPid?.[pid]?.length ?? null : null;
+      const { title, attCount } = selectBuyerProposalCardViewModel(item, titleByPid, propAttByPid);
 
       return (
         <BuyerProposalCard
           s={s}
           head={item}
-          title={titleByPid[String(item?.id ?? "")] || ""}
-          attCount={typeof cnt === "number" ? cnt : null}
+          title={title}
+          attCount={attCount}
           onOpenDetails={(pid2) => openProposalDetailsLines(pid2, item)}
         />
       );

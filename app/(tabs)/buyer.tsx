@@ -3,7 +3,7 @@ import { formatRequestDisplay } from "../../src/lib/format";
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
-  View, FlatList, Alert, Platform, ScrollView, Animated,
+  View, FlatList, Platform, ScrollView, Animated,
   TextInput
 } from 'react-native';
 import { useLatest } from "../../src/lib/useLatest";
@@ -33,6 +33,15 @@ import {
   selectPickedIds,
 } from "../../src/screens/buyer/buyer.selectors";
 import {
+  selectBuyerMainListHeaderPad,
+  selectInboxKeyboardLayoutActive,
+} from "../../src/screens/buyer/buyer.screen.selectors";
+import { BUYER_SEARCH_PLACEHOLDER } from "../../src/screens/buyer/buyer.screen.constants";
+import {
+  selectBuyerDisableInboxFooterActions,
+  selectBuyerShowInboxFooter,
+} from "../../src/screens/buyer/buyer.sheet.footer.selectors";
+import {
   snapshotProposalItemsAction,
   setProposalBuyerFioAction,
 } from "../../src/screens/buyer/buyer.actions";
@@ -41,7 +50,6 @@ import { useBuyerDocuments } from "../../src/screens/buyer/useBuyerDocuments";
 
 import AppButton from "../../src/ui/AppButton";
 import {
-  BuyerScreenHeader,
   BuyerStickyHeader,
   BuyerMainList,
   BuyerSheetShell,
@@ -99,6 +107,8 @@ import { useBuyerSheetTitle } from "../../src/screens/buyer/hooks/useBuyerSheetT
 import { useBuyerRfqPublish } from "../../src/screens/buyer/hooks/useBuyerRfqPublish";
 import { useBuyerInboxRenderers } from "../../src/screens/buyer/hooks/useBuyerInboxRenderers";
 import { useBuyerProposalCardRenderer } from "../../src/screens/buyer/hooks/useBuyerProposalCardRenderer";
+import { useBuyerAlerts } from "../../src/screens/buyer/hooks/useBuyerAlerts";
+import { useBuyerScreenHeader } from "../../src/screens/buyer/hooks/useBuyerScreenHeader";
 import RoleScreenLayout from "../../src/components/layout/RoleScreenLayout";
 
 const isWeb = Platform.OS === 'web';
@@ -107,33 +117,7 @@ import BuyerSubcontractTab from "../../src/screens/buyer/BuyerSubcontractTab";
 
 export default function BuyerScreen() {
   const busy = useGlobalBusy();
-  const normalizeAlertPart = useCallback((value: unknown, fallback: string): string => {
-    if (typeof value === "string") {
-      const message = value.trim();
-      if (message && message !== "[object Object]") return message;
-    }
-    if (value instanceof Error) {
-      const message = value.message.trim();
-      if (message && message !== "[object Object]") return message;
-    }
-    if (value && typeof value === "object") {
-      const record = value as Record<string, unknown>;
-      for (const key of ["message", "error", "details", "hint", "code"] as const) {
-        const part = String(record[key] ?? "").trim();
-        if (part && part !== "[object Object]") return part;
-      }
-      try {
-        const json = JSON.stringify(value);
-        if (json && json !== "{}" && json !== '"[object Object]"') return json;
-      } catch {}
-    }
-    return fallback;
-  }, []);
-  const alertUser = useCallback((title: string, message?: string) => {
-    const safeTitle = normalizeAlertPart(title, "Ошибка");
-    const safeMessage = normalizeAlertPart(message, "Произошла ошибка");
-    Alert.alert(safeTitle, safeMessage);
-  }, [normalizeAlertPart]);
+  const { alertUser: screenAlertUser } = useBuyerAlerts();
   const [tab, setTab] = useState<BuyerTab>("inbox");
   const [buyerFio, setBuyerFio] = useState<string>("");
   const {
@@ -296,7 +280,7 @@ export default function BuyerScreen() {
     phone?: string | null;
     email?: string | null;
   } | null>(null);
-  type ListRow = BuyerGroup | { id: string }; // для табов proposals достаточно id
+  type ListRow = BuyerGroup | { id: string };
   const listRef = useRef<FlatList<ListRow> | null>(null);
 
   const tabsScrollRef = useRef<ScrollView | null>(null);
@@ -329,7 +313,7 @@ export default function BuyerScreen() {
     setRefreshing,
     kickMsInbox: KICK_THROTTLE_MS,
     kickMsBuckets: 900,
-    alert: alertUser,
+    alert: screenAlertUser,
     log: console.warn,
   });
   const { getSupplierSuggestions } = useBuyerSupplierSuggestions(counterparties);
@@ -346,6 +330,7 @@ export default function BuyerScreen() {
     needAttachWarn,
     sheetData,
     listData,
+    tabCounts,
   } = useBuyerDerived({
     rows,
     pickedIds,
@@ -381,7 +366,7 @@ export default function BuyerScreen() {
     supabase,
     setRfqBusy,
     closeSheet,
-    alertUser,
+    alertUser: screenAlertUser,
   });
   const { lineTotal, requestSum, pickedTotal } = useBuyerTotals({ rows, pickedIds, meta });
 
@@ -440,7 +425,7 @@ export default function BuyerScreen() {
     missingAttachSuppliers,
     setRows,
     formatRequestDisplay,
-    alertUser,
+    alertUser: screenAlertUser,
   });
 
   const { creating, handleCreateProposalsBySupplier } = useBuyerCreateProposalsFlow({
@@ -466,7 +451,7 @@ export default function BuyerScreen() {
     closeSheet,
     setShowAttachBlock,
     showToast,
-    alertUser,
+    alertUser: screenAlertUser,
   });
 
   const { openProposalPdf } = useBuyerDocuments({ busy, supabase });
@@ -481,7 +466,7 @@ export default function BuyerScreen() {
     supabase,
     pickFileAny,
     uploadProposalAttachment,
-    alert: alertUser,
+    alert: screenAlertUser,
   });
   const { openAccountingModal } = useBuyerAccountingModal({
     supabase,
@@ -526,7 +511,7 @@ export default function BuyerScreen() {
     setApproved,
     setAcctBusy,
     setInvoiceUploadedName,
-    alertUser,
+    alertUser: screenAlertUser,
   });
 
   const {
@@ -569,7 +554,7 @@ export default function BuyerScreen() {
       await proposalSendToAccountant(payload);
     },
     ensureAccountingFlags,
-    alertUser,
+    alertUser: screenAlertUser,
   });
   const { openProposalDetailsLines, openProposalDetailsAttachments } = useBuyerProposalDetailsFlow({
     supabase,
@@ -593,10 +578,6 @@ export default function BuyerScreen() {
     openProposalDetailsLines,
     openProposalDetailsAttachments,
   });
-  const pendingCount = pending.length;
-  const approvedCount = approved.length;
-  const rejectedCount = rejected.length;
-  const inboxCount = groups.length; // ? кол-во входящих ЗАЯВОК
   const sheetTitle = useBuyerSheetTitle({
     sheetKind,
     sheetGroup,
@@ -606,36 +587,28 @@ export default function BuyerScreen() {
     proposalNoByPid,
     prettyLabel,
   });
-  const inboxKeyboardLayoutActive = kbOpen && !isMobileEditorVisible;
-  const header = useMemo(() => (
-    <BuyerScreenHeader
-      s={s}
-      tab={tab}
-      setTab={setTab}
-      buyerFio={buyerFio}
-      onOpenFioModal={() => setIsFioConfirmVisible(true)}
-      titleSize={titleSize}
-      subOpacity={subOpacity}
-      inboxCount={inboxCount}
-      pendingCount={pendingCount}
-      approvedCount={approvedCount}
-      rejectedCount={rejectedCount}
-      subcontractCount={subcontractCount}
-      tabsScrollRef={tabsScrollRef}
-      scrollTabsToStart={scrollTabsToStart}
-    />
-  ), [
+  const inboxKeyboardLayoutActive = selectInboxKeyboardLayoutActive(kbOpen, isMobileEditorVisible);
+  const header = useBuyerScreenHeader({
+    s,
     tab,
+    setTab,
     buyerFio,
+    onOpenFioModal: () => setIsFioConfirmVisible(true),
     titleSize,
     subOpacity,
-    inboxCount,
-    pendingCount,
-    approvedCount,
-    rejectedCount,
-    subcontractCount,
+    counts: {
+      ...tabCounts,
+      subcontractCount,
+    },
+    tabsScrollRef,
     scrollTabsToStart,
-  ]);
+  });
+  const mainListHeaderPad = selectBuyerMainListHeaderPad(measuredHeaderMax);
+  const showInboxFooter = selectBuyerShowInboxFooter(inboxKeyboardLayoutActive);
+  const { disableClear, disableRfq, disableSend } = selectBuyerDisableInboxFooterActions(
+    pickedIds.length,
+    creating
+  );
 
   const ScreenBody = (
     <RoleScreenLayout style={[s.screen, { backgroundColor: UI.bg }]}>
@@ -660,7 +633,7 @@ export default function BuyerScreen() {
         <TextInput
           value={searchQuery}
           onChangeText={setSearchQuery}
-          placeholder="Поиск (№, поставщик, объект...)"
+          placeholder={BUYER_SEARCH_PLACEHOLDER}
           placeholderTextColor="rgba(255,255,255,0.4)"
           style={[s.fieldInput, { backgroundColor: 'rgba(255,255,255,0.06)', borderRadius: 16, height: 44, borderStyle: 'solid' }]}
         />
@@ -678,7 +651,7 @@ export default function BuyerScreen() {
           tab={tab}
           data={listData}
           listRef={listRef}
-          measuredHeaderMax={measuredHeaderMax + 58} // Height of header + search bar
+          measuredHeaderMax={mainListHeaderPad}
           refreshing={refreshing}
           onRefresh={onRefresh}
           loadingInbox={loadingInbox}
@@ -729,13 +702,13 @@ export default function BuyerScreen() {
                 setAttachments={setAttachments}
                 renderItemRow={renderItemRow}
                 footer={
-                  !inboxKeyboardLayoutActive ? (
+                  showInboxFooter ? (
                     <SheetFooterActions
                       s={s}
                       left={
                         <IconSquareButton
                           onPress={clearPick}
-                          disabled={pickedIds.length === 0 || creating}
+                          disabled={disableClear}
                           accessibilityLabel="Очистить выбор"
                           width={52}
                           height={52}
@@ -753,7 +726,7 @@ export default function BuyerScreen() {
                           label="ТОРГИ"
                           variant="blue"
                           shape="wide"
-                          disabled={creating || pickedIds.length === 0}
+                          disabled={disableRfq}
                           onPress={openRfqSheet}
                         />
                       }
@@ -761,7 +734,7 @@ export default function BuyerScreen() {
                         <View style={needAttachWarn ? s.sendBtnWarnWrap : null}>
                           <SendPrimaryButton
                             variant="green"
-                            disabled={creating}
+                            disabled={disableSend}
                             loading={creating}
                             accessibilityLabel="Отправить директору"
                             onPress={handleCreateProposalsBySupplier}

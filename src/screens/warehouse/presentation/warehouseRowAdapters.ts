@@ -14,13 +14,11 @@ export function mapWarehouseIncomingToCardProps(params: IncomingCardParams) {
   const recSum = Math.round(nz(row.qty_received_sum, 0));
   const leftSum = Math.round(nz(row.qty_expected_sum, 0) - nz(row.qty_received_sum, 0));
 
-  const title = formatProposalBaseNo(
-    proposalNoByPurchase[row.purchase_id] || row.po_no,
-    row.purchase_id,
-  );
-
   return {
-    title,
+    title: formatProposalBaseNo(
+      proposalNoByPurchase[row.purchase_id] || row.po_no,
+      row.purchase_id,
+    ),
     subtitle: fmtRuDate(row.purchase_created_at) || "—",
     receivedLabel: `Принято ${recSum}`,
     leftLabel: `Осталось ${leftSum}`,
@@ -45,7 +43,7 @@ export function mapWarehouseStockToCardProps(params: StockCardParams) {
 
   return {
     title: String(row.name ?? "").trim() || "—",
-    subtitle: `Доступно ${fmtQty(available)} ${uomLabel} · Резерв ${fmtQty(reserved)}`,
+    subtitle: `Доступно ${fmtQty(available)} ${uomLabel} • Резерв ${fmtQty(reserved)}`,
     meta: picked > 0 ? `Выбрано: ${fmtQty(picked)} ${uomLabel}` : undefined,
     onHandLabel: fmtQty(onHand),
     isPicked: picked > 0,
@@ -57,29 +55,43 @@ type ReqHeadCardParams = {
   fmtRuDate: (iso?: string | null) => string;
 };
 
+function formatReqRouteLine(row: ReqHeadRow, fmtRuDate: (iso?: string | null) => string) {
+  return [
+    fmtRuDate(row.submitted_at),
+    String(row.object_name || "").trim(),
+    String(row.level_name || row.level_code || "").trim(),
+    String(row.system_name || row.system_code || row.zone_name || row.zone_code || "").trim(),
+  ]
+    .filter(Boolean)
+    .join(" • ");
+}
+
 export function mapWarehouseReqHeadToCardProps(params: ReqHeadCardParams) {
   const { row, fmtRuDate } = params;
   const totalPos = Math.max(0, Number(row.items_cnt ?? 0));
-  const openPos = Math.max(0, Number(row.ready_cnt ?? 0));
-  const issuedPos = Math.max(0, Number(row.done_cnt ?? 0));
-  const hasToIssue = openPos > 0;
-  const isFullyIssued = issuedPos >= totalPos && totalPos > 0;
+  const remainingQty = Math.max(0, Number(row.qty_left_sum ?? 0));
+  const issuableNowQty = Math.max(0, Number(row.qty_can_issue_now_sum ?? 0));
+  const issuableNowPos = Math.max(0, Number(row.issuable_now_cnt ?? 0));
+  const hasRemaining = remainingQty > 0;
+  const hasIssuableNow = hasRemaining && issuableNowQty > 0 && issuableNowPos > 0;
+  const isBlocked = hasRemaining && !hasIssuableNow;
+  const isFullyIssued = !hasRemaining && totalPos > 0;
+  const companyLine = String(row.contractor_name || "").trim();
 
-  const locParts: string[] = [];
-  const obj = String(row.object_name || "").trim();
-  const lvl = String(row.level_name || row.level_code || "").trim();
-  const sys = String(row.system_name || row.system_code || "").trim();
-  if (obj) locParts.push(obj);
-  if (lvl) locParts.push(lvl);
-  if (sys) locParts.push(sys);
+  const stripeColor = isFullyIssued
+    ? "rgba(156,163,175,0.85)"
+    : hasIssuableNow
+      ? "#22c55e"
+      : isBlocked
+        ? "#f59e0b"
+        : "rgba(156,163,175,0.65)";
 
   return {
     title: row.display_no || `REQ-${row.request_id.slice(0, 8)}`,
-    subtitle: fmtRuDate(row.submitted_at),
-    meta: locParts.length > 0 ? locParts.join(" • ") : undefined,
-    hasToIssue,
-    isFullyIssued,
-    openPos,
-    issuedPos,
+    companyLine: companyLine || "—",
+    routeLine: formatReqRouteLine(row, fmtRuDate),
+    stripeColor,
+    issuedCountLabel: String(Math.max(0, Number(row.done_cnt ?? 0))),
+    totalCountLabel: String(totalPos),
   };
 }

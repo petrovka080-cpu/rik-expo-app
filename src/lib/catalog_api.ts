@@ -38,7 +38,7 @@ export {
 export { notifList, notifMarkRead } from "./api/notifications";
 export type { BuyerInboxRow, AccountantInboxRow } from "./api/types";
 
-/** ========= Р В РЎС›Р В РЎвЂР В РЎвЂ”Р РЋРІР‚в„– ========= */
+/** ========= CATALOG ========= */
 export type CatalogItem = {
   code: string;
   name: string;
@@ -128,7 +128,7 @@ export type ForemanRequestSummary = {
   level_name_ru?: string | null;
   system_name_ru?: string | null;
   zone_name_ru?: string | null;
-  has_rejected?: boolean | null; // Р Р†РІР‚В РЎвЂ™ Р В Р’ВµР РЋР С“Р РЋРІР‚С™Р РЋР Р‰ Р В Р’В»Р В РЎвЂ Р В РЎвЂўР РЋРІР‚С™Р В РЎвЂќР В Р’В»Р В РЎвЂўР В Р вЂ¦Р РЋРІР‚ВР В Р вЂ¦Р В Р вЂ¦Р РЋРІР‚в„–Р В Р’Вµ Р В РЎвЂ”Р В РЎвЂўР В Р’В·Р В РЎвЂР РЋРІР‚В Р В РЎвЂР В РЎвЂ Р В Р вЂ  Р В Р’В·Р В Р’В°Р РЋР РЏР В Р вЂ Р В РЎвЂќР В Р’Вµ
+  has_rejected?: boolean | null; // Признак наличия отклоненных позиций по заявке
 };
 
 export type RequestDetails = {
@@ -547,8 +547,8 @@ export async function listUnifiedCounterparties(search?: string): Promise<Unifie
   );
 }
 
-/** ========= Р В РЎв„ўР В Р’В°Р РЋРІР‚С™Р В Р’В°Р В Р’В»Р В РЎвЂўР В РЎвЂ“: Р В Р’В±Р РЋРІР‚в„–Р РЋР С“Р РЋРІР‚С™Р РЋР вЂљР РЋРІР‚в„–Р В РІвЂћвЂ“ Р В РЎвЂ”Р В РЎвЂўР В РЎвЂР РЋР С“Р В РЎвЂќ ========= */
-// NOTE: Р В РЎвЂўР РЋР С“Р РЋРІР‚С™Р В Р’В°Р В Р вЂ Р В Р’В»Р РЋР РЏР В Р’ВµР В РЎВ Р РЋРІР‚С›Р РЋРЎвЂњР В Р вЂ¦Р В РЎвЂќР РЋРІР‚В Р В РЎвЂР РЋР вЂ№ Р В РЎвЂўР В Р’В±Р РЋРІР‚в„–Р РЋРІР‚РЋР В Р вЂ¦Р РЋРІР‚в„–Р В РЎВ Р В РЎВР В РЎвЂўР В РўвЂР РЋРЎвЂњР В Р’В»Р РЋР Р‰Р В Р вЂ¦Р РЋРІР‚в„–Р В РЎВ Р РЋР РЉР В РЎвЂќР РЋР С“Р В РЎвЂ”Р В РЎвЂўР РЋР вЂљР РЋРІР‚С™Р В РЎвЂўР В РЎВ Р В Р’В±Р В Р’ВµР В Р’В· Р В РЎвЂќР В Р’В°Р В РЎвЂќР В РЎвЂР РЋРІР‚В¦-Р В Р’В»Р В РЎвЂР В Р’В±Р В РЎвЂў Р В РЎвЂ“Р В Р’В»Р В РЎвЂўР В Р’В±Р В Р’В°Р В Р’В»Р РЋР Р‰Р В Р вЂ¦Р РЋРІР‚в„–Р РЋРІР‚В¦ Р РЋРІвЂљВ¬Р В РЎвЂР В Р вЂ¦
+/** ========= SEARCH / CATALOG ========= */
+// NOTE: сначала пробуем RPC-поиск, затем мягко падаем на PostgREST fallback.
 export async function searchCatalogItems(
   q: string,
   limit = 50,
@@ -611,7 +611,7 @@ export async function searchCatalogItems(
   }));
 }
 
-/** ========= Р В РІР‚СљР РЋР вЂљР РЋРЎвЂњР В РЎвЂ”Р В РЎвЂ”Р РЋРІР‚в„– ========= */
+/** ========= GROUPS ========= */
 export async function listCatalogGroups(): Promise<CatalogGroup[]> {
   const { data, error } = await supabase
     .from("catalog_groups_clean")
@@ -621,7 +621,7 @@ export async function listCatalogGroups(): Promise<CatalogGroup[]> {
   return data as CatalogGroup[];
 }
 
-/** ========= Р В РІР‚СћР В РўвЂР В РЎвЂР В Р вЂ¦Р В РЎвЂР РЋРІР‚В Р РЋРІР‚в„– Р В РЎвЂР В Р’В·Р В РЎВР В Р’ВµР РЋР вЂљР В Р’ВµР В Р вЂ¦Р В РЎвЂР РЋР РЏ ========= */
+/** ========= UOMS ========= */
 export async function listUoms(): Promise<UomRef[]> {
   const { data, error } = await supabase
     .from("ref_uoms_clean")
@@ -631,7 +631,7 @@ export async function listUoms(): Promise<UomRef[]> {
   return data as UomRef[];
 }
 
-/** ========= Р В Р Р‹Р В РЎвЂќР В Р’В»Р В Р’В°Р В РўвЂ: Р В РЎвЂ”Р В РЎвЂўР В Р’В·Р В РЎвЂР РЋРІР‚В Р В РЎвЂР В РЎвЂ Р В РЎвЂќ Р В РЎвЂ”Р РЋР вЂљР В РЎвЂР РЋРІР‚В¦Р В РЎвЂўР В РўвЂР РЋРЎвЂњ ========= */
+/** ========= INCOMING ITEMS ========= */
 export async function listIncomingItems(incomingId: string): Promise<IncomingItem[]> {
   const id = norm(incomingId);
   if (!id) return [];
@@ -652,7 +652,7 @@ export async function listIncomingItems(incomingId: string): Promise<IncomingIte
 
 const DRAFT_KEY = "foreman_draft_request_id";
 
-// localStorage Р РЋР С“ Р В РЎВР В Р’ВµР В РЎВ-Р РЋРІР‚С›Р В РЎвЂўР В Р’В»Р В Р’В±Р РЋР РЉР В РЎвЂќР В РЎвЂўР В РЎВ
+// localStorage helper for web, in-memory fallback otherwise
 let memDraftId: string | null = null;
 const storage = {
   get(): string | null {
@@ -680,7 +680,7 @@ const isDraftStatusValue = (value?: string | null) => {
   return draftStatusKeys.has(normalized);
 };
 
-/** Р В Р Р‹Р В РЎвЂўР В Р’В·Р В РўвЂР В Р’В°Р РЋРІР‚ВР РЋРІР‚С™/Р В Р вЂ Р В РЎвЂўР В Р’В·Р В Р вЂ Р РЋР вЂљР В Р’В°Р РЋРІР‚В°Р В Р’В°Р В Р’ВµР РЋРІР‚С™ Р РЋРІР‚РЋР В Р’ВµР РЋР вЂљР В Р вЂ¦Р В РЎвЂўР В Р вЂ Р В РЎвЂР В РЎвЂќ Р В Р’В·Р В Р’В°Р РЋР РЏР В Р вЂ Р В РЎвЂќР В РЎвЂ */
+/** Создание или получение черновика заявки */
 export async function getOrCreateDraftRequestId(): Promise<string> {
   const cached = getLocalDraftId();
   if (cached) {
@@ -701,7 +701,7 @@ export async function getOrCreateDraftRequestId(): Promise<string> {
     throw e;
   }
 
-  throw new Error("Р В РЎСљР В Р’Вµ Р РЋРЎвЂњР В РўвЂР В Р’В°Р В Р’В»Р В РЎвЂўР РЋР С“Р РЋР Р‰ Р РЋР С“Р В РЎвЂўР В Р’В·Р В РўвЂР В Р’В°Р РЋРІР‚С™Р РЋР Р‰ Р РЋРІР‚РЋР В Р’ВµР РЋР вЂљР В Р вЂ¦Р В РЎвЂўР В Р вЂ Р В РЎвЂР В РЎвЂќ Р В Р’В·Р В Р’В°Р РЋР РЏР В Р вЂ Р В РЎвЂќР В РЎвЂ");
+  throw new Error("Не удалось создать или получить черновик заявки");
 }
 
 async function isCachedDraftValid(id: string): Promise<boolean> {
@@ -727,7 +727,7 @@ async function isCachedDraftValid(id: string): Promise<boolean> {
   }
 }
 
-/** Р В РІР‚вЂќР В Р’В°Р В РЎвЂ“Р В РЎвЂўР В Р’В»Р В РЎвЂўР В Р вЂ Р В РЎвЂўР В РЎвЂќ Р В Р’В·Р В Р’В°Р РЋР РЏР В Р вЂ Р В РЎвЂќР В РЎвЂ (Р В РўвЂР В Р’В»Р РЋР РЏ Р РЋРІвЂљВ¬Р В Р’В°Р В РЎвЂ”Р В РЎвЂќР В РЎвЂ/Р В Р вЂ¦Р В РЎвЂўР В РЎВР В Р’ВµР РЋР вЂљР В Р’В°), Р В РЎвЂ”Р РЋР вЂљР В РЎвЂўР В Р’В±Р РЋРЎвЂњР В Р’ВµР В РЎВ Р В Р вЂ Р РЋР Р‰Р РЋР вЂ№/Р РЋРІР‚С™Р В Р’В°Р В Р’В±Р В Р’В»Р В РЎвЂР РЋРІР‚В Р РЋРІР‚в„– Р В РЎвЂ”Р В РЎвЂў Р В РЎвЂўР РЋРІР‚РЋР В Р’ВµР РЋР вЂљР В Р’ВµР В РўвЂР В РЎвЂ */
+/** Получение шапки заявки из доступных представлений и fallback-таблицы */
 export async function getRequestHeader(requestId: string): Promise<RequestHeader | null> {
   const id = norm(requestId);
   if (!id) return null;
@@ -1148,7 +1148,7 @@ export async function updateRequestMeta(
 
     if (error) {
       console.warn('[catalog_api.updateRequestMeta] table requests:', error.message);
-      // Р В РІР‚в„ўР В РЎвЂ™Р В РІР‚вЂњР В РЎСљР В РЎвЂє: Р В Р вЂ¦Р В Р’Вµ Р РЋР вЂљР В РЎвЂўР В Р вЂ¦Р РЋР РЏР В Р’ВµР В РЎВ Р В РЎвЂ”Р В РЎвЂўР РЋРІР‚С™Р В РЎвЂўР В РЎвЂќ, Р В РЎвЂ”Р РЋР вЂљР В РЎвЂўР РЋР С“Р РЋРІР‚С™Р В РЎвЂў Р РЋР С“Р В РЎвЂўР В РЎвЂўР В Р’В±Р РЋРІР‚В°Р В Р’В°Р В Р’ВµР В РЎВ, Р РЋРІР‚РЋР РЋРІР‚С™Р В РЎвЂў Р В Р вЂ¦Р В Р’Вµ Р РЋР С“Р В РЎВР В РЎвЂўР В РЎвЂ“Р В Р’В»Р В РЎвЂ Р В РЎвЂўР В Р’В±Р В Р вЂ¦Р В РЎвЂўР В Р вЂ Р В РЎвЂР РЋРІР‚С™Р РЋР Р‰
+      // Не роняем поток: если update не прошел, остальной экран продолжает жить.
       return false;
     }
 
@@ -1492,7 +1492,7 @@ export type CreateProposalsOptions = {
 export type CreateProposalsResult = {
   proposals: Array<{
     proposal_id: string;
-    proposal_no: string | null; // Р Р†РЎС™РІР‚В¦ Р В РўвЂР В РЎвЂўР В Р’В±Р В Р’В°Р В Р вЂ Р В РЎвЂР В Р’В»Р В РЎвЂ
+    proposal_no: string | null;
     supplier: string;
     request_item_ids: string[];
   }>;
@@ -1562,15 +1562,15 @@ async function loadRequestItemsForProposal(ids: string[]): Promise<any[]> {
 const parseProposalKind = (raw: unknown): ProposalItemKind => {
   const v = String(raw ?? "").trim().toLowerCase();
   if (!v) return "unknown";
-  if (v === "material" || v === "materials" || v === "Р СР В°РЎвЂљР ВµРЎР‚Р С‘Р В°Р В»" || v === "Р СР В°РЎвЂљР ВµРЎР‚Р С‘Р В°Р В»РЎвЂ№") return "material";
-  if (v === "service" || v === "services" || v === "РЎС“РЎРѓР В»РЎС“Р С–Р В°" || v === "РЎС“РЎРѓР В»РЎС“Р С–Р С‘") return "service";
-  if (v === "work" || v === "works" || v === "РЎР‚Р В°Р В±Р С•РЎвЂљР В°" || v === "РЎР‚Р В°Р В±Р С•РЎвЂљРЎвЂ№") return "work";
+  if (v === "material" || v === "materials" || v === "материал" || v === "материалы") return "material";
+  if (v === "service" || v === "services" || v === "услуга" || v === "услуги") return "service";
+  if (v === "work" || v === "works" || v === "работа" || v === "работы") return "work";
   return "unknown";
 };
 
 const isRejectedForBuyerRework = (row: any): boolean => {
   const status = String(row?.status ?? "").trim().toLowerCase();
-  if (status.includes("reject") || status.includes("РѕС‚РєР»РѕРЅ")) return true;
+  if (status.includes("reject") || status.includes("отклон")) return true;
   if (row?.director_reject_at) return true;
   const note = String(row?.director_reject_note ?? "").trim();
   return !!note;
@@ -2143,7 +2143,7 @@ export async function createProposalsBySupplier(
   return { proposals };
 }
 
-// Р Р†РЎС™РІР‚В¦ PROD: Р В Р’ВµР В РўвЂР В РЎвЂР В Р вЂ¦Р РЋРІР‚в„–Р В РІвЂћвЂ“ Р РЋРЎвЂњР В РЎВР В Р вЂ¦Р РЋРІР‚в„–Р В РІвЂћвЂ“ Р В РЎвЂ”Р В РЎвЂўР В РЎвЂР РЋР С“Р В РЎвЂќ (Р В Р’В»Р РЋР вЂ№Р В Р’В±Р В РЎвЂўР В РІвЂћвЂ“ Р В Р вЂ Р В Р вЂ Р В РЎвЂўР В РўвЂ: Р РЋРІР‚РЋР В Р’ВµР РЋР вЂљР В Р вЂ¦Р В Р’В° / Р В Р вЂ¦Р В Р’ВµР РЋР вЂљР В Р’В¶ / Р В РЎвЂ”Р В Р’В»Р В РЎвЂР РЋРІР‚С™ 60Р РЋРІР‚В¦60)
+// PROD quick search: предпочитаем новый поиск, но допускаем мягкий fallback.
 export async function rikQuickSearch(q: string, limit = 60) {
   const text = (q ?? '').trim();
   if (text.length < 2) return [];

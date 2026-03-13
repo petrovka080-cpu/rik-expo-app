@@ -1,9 +1,9 @@
 import { useCallback } from "react";
-import type { ListRenderItem } from "react-native";
-
-import IncomingRowItem from "../components/IncomingRowItem";
-import ReqHeadRowItem from "../components/ReqHeadRowItem";
-import StockRowView from "../components/StockRowView";
+import {
+  createWarehouseIncomingRenderer,
+  createWarehouseReqHeadRenderer,
+  createWarehouseStockRenderer,
+} from "../warehouse.renderers";
 import type { IncomingRow, ReqHeadRow, StockRow } from "../warehouse.types";
 
 export function useWarehouseRenderers(params: {
@@ -14,35 +14,38 @@ export function useWarehouseRenderers(params: {
   getPickedQty: (codeRaw: string, uomId: string | null) => number;
   openStockIssue: (row: StockRow) => void;
 }) {
-  const {
-    openReq,
-    fmtRuDate,
-    openItemsModal,
-    proposalNoByPurchase,
-    getPickedQty,
-    openStockIssue,
-  } = params;
+  const reqRendererParams = {
+    openReq: params.openReq,
+    fmtRuDate: params.fmtRuDate,
+  };
+  const incomingRendererParams = {
+    openItemsModal: params.openItemsModal,
+    fmtRuDate: params.fmtRuDate,
+    proposalNoByPurchase: params.proposalNoByPurchase,
+  };
+  const stockRendererParams = {
+    getPickedQty: params.getPickedQty,
+    openStockIssue: params.openStockIssue,
+  };
 
-  const renderReqHeadItem = useCallback<ListRenderItem<ReqHeadRow>>(({ item }) => {
-    return <ReqHeadRowItem row={item} onPress={openReq} fmtRuDate={fmtRuDate} />;
-  }, [openReq, fmtRuDate]);
+  const renderReqHeadItem = useCallback(
+    createWarehouseReqHeadRenderer(reqRendererParams),
+    [reqRendererParams.openReq, reqRendererParams.fmtRuDate],
+  );
 
-  const renderIncomingItem = useCallback<ListRenderItem<IncomingRow>>(({ item }) => {
-    return (
-      <IncomingRowItem
-        row={item}
-        onPress={openItemsModal}
-        fmtRuDate={fmtRuDate}
-        proposalNoByPurchase={proposalNoByPurchase}
-      />
-    );
-  }, [openItemsModal, fmtRuDate, proposalNoByPurchase]);
+  const renderIncomingItem = useCallback(
+    createWarehouseIncomingRenderer(incomingRendererParams),
+    [
+      incomingRendererParams.openItemsModal,
+      incomingRendererParams.fmtRuDate,
+      incomingRendererParams.proposalNoByPurchase,
+    ],
+  );
 
-  const renderStockItem = useCallback<ListRenderItem<StockRow>>(({ item }) => {
-    const codeRaw = String(item.code ?? "").trim();
-    const pickedQty = getPickedQty(codeRaw, item?.uom_id ? String(item.uom_id).trim() : null);
-    return <StockRowView r={item} pickedQty={pickedQty} onPress={openStockIssue} />;
-  }, [getPickedQty, openStockIssue]);
+  const renderStockItem = useCallback(
+    createWarehouseStockRenderer(stockRendererParams),
+    [stockRendererParams.getPickedQty, stockRendererParams.openStockIssue],
+  );
 
   return { renderReqHeadItem, renderIncomingItem, renderStockItem };
 }

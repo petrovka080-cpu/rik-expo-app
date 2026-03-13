@@ -213,7 +213,7 @@ type CreateProposalsDeps = {
   creating: boolean;
   sendingRef: { current: boolean };
 
-  // data (С‡РµСЂРµР· refs вЂ” РєР°Рє Сѓ С‚РµР±СЏ)
+  // data (через refs)
   pickedIds: string[];
   metaNow: Record<string, { supplier?: string; price?: number | string | null; note?: string | null }>;
   attachmentsNow: Record<string, { file?: FileLike; name?: string }>;
@@ -695,7 +695,7 @@ export async function sendToAccountingAction<TApproved extends MaybeId = MaybeId
   const pidStr = String(p.acctProposalId);
 
   try {
-    // 2) РµСЃР»Рё РµС‰С‘ РЅРµ РіСЂСѓР·РёР»Рё РјРіРЅРѕРІРµРЅРЅРѕ вЂ” РїСЂРёРєСЂРµРїРёРј РІС‹Р±СЂР°РЅРЅС‹Р№ С„Р°Р№Р» РєР°Рє invoice (1:1)
+    // 2) если еще не грузили мгновенно - прикрепим выбранный файл как invoice (1:1)
     if (!p.invoiceUploadedName && p.invFile) {
       await p.uploadProposalAttachment(
         pidStr,
@@ -705,7 +705,7 @@ export async function sendToAccountingAction<TApproved extends MaybeId = MaybeId
       );
     }
 
-    // 3) HTML РїСЂРµРґР»РѕР¶РµРЅРёСЏ (РµСЃР»Рё РµС‰С‘ РЅРµС‚) вЂ” СЃРѕР·РґР°С‘Рј/РѕР±РЅРѕРІР»СЏРµРј (1:1)
+    // 3) HTML предложения (если еще нет) - создаем/обновляем (1:1)
     try {
       const html = await p.buildProposalPdfHtml(pidStr);
       const blob = new Blob([html], { type: "text/html;charset=utf-8" });
@@ -719,7 +719,7 @@ export async function sendToAccountingAction<TApproved extends MaybeId = MaybeId
       p.log?.("[buyer] attach proposal doc failed:", errMessage(e));
     }
 
-    // 4) РѕС‚РїСЂР°РІРєР° РІ Р±СѓС…РіР°Р»С‚РµСЂРёСЋ (Р°РґР°РїС‚РµСЂ -> fallback RPC) (1:1)
+    // 4) отправка в бухгалтерию (адаптер -> fallback RPC) (1:1)
     try {
       await p.proposalSendToAccountant({
         proposalId: pidStr,
@@ -1223,7 +1223,7 @@ export async function preloadProposalTitlesAction(p: PreloadProposalTitlesDeps) 
   }
 }
 // =====================================
-// buyer.actions.ts вЂ” С„РёРЅР°Р»СЊРЅС‹Рµ write ops
+// buyer.actions.ts - final write ops
 // =====================================
 
 export async function setProposalBuyerFioAction(opts: {
@@ -1305,7 +1305,7 @@ export async function snapshotProposalItemsAction(opts: {
         qty: r?.qty ?? null,
         app_code: r?.app_code ?? null,
         rik_code: r?.rik_code ?? null,
-        // вљ пёЏ supplier РќР• С‚СЂРѕРіР°РµРј вЂ” РєР°Рє Рё Р±С‹Р»Рѕ
+        // supplier intentionally stays untouched
       };
 
       if (m.price != null && String(m.price).trim() !== "") {

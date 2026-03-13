@@ -1,11 +1,13 @@
 ﻿// src/screens/warehouse/components/StockRowView.tsx
 import React from "react";
-import { View, Text, Pressable } from "react-native";
+import { View } from "react-native";
 import { UI, s } from "../warehouse.styles";
 import type { StockRow } from "../warehouse.types";
 import { RoleCard } from "../../../components/ui/RoleCard";
 import ChevronIndicator from "../../../ui/ChevronIndicator";
 import { mapWarehouseStockToCardProps } from "../presentation/warehouseRowAdapters";
+import WarehouseCardShell from "./WarehouseCardShell";
+import { renderWarehouseOnHandBadge } from "./warehouse.card.parts";
 
 type Props = {
   r: StockRow;
@@ -17,8 +19,11 @@ function StockRowView({ r, pickedQty, onPress }: Props) {
   const card = mapWarehouseStockToCardProps({ row: r, pickedQty });
 
   return (
-    <View style={{ marginBottom: 10, paddingHorizontal: 16 }}>
-      <Pressable onPress={() => onPress(r)} style={({ pressed }) => pressed && { opacity: 0.94 }}>
+    <WarehouseCardShell
+      onPress={() => onPress(r)}
+      containerStyle={{ marginBottom: 10, paddingHorizontal: 16 }}
+      pressedOpacity={0.94}
+    >
         <RoleCard
           title={card.title}
           subtitle={card.subtitle}
@@ -31,15 +36,10 @@ function StockRowView({ r, pickedQty, onPress }: Props) {
           titleStyle={s.mobTitle}
           subtitleStyle={s.mobMeta}
           metaStyle={{ marginTop: 6, color: UI.text, fontWeight: "900" }}
-          status={
-            <View style={s.metaPill}>
-              <Text style={s.metaPillText}>{card.onHandLabel}</Text>
-            </View>
-          }
+          status={renderWarehouseOnHandBadge(card.onHandLabel)}
           rightIndicator={<ChevronIndicator />}
         />
-      </Pressable>
-    </View>
+    </WarehouseCardShell>
   );
 }
 

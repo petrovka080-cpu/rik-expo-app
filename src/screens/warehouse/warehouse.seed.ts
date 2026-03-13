@@ -64,7 +64,7 @@ async function reseedIncomingItems(
   incomingId: string,
   purchaseId: string,
 ): Promise<boolean> {
-  // 1) С‡РёС‚Р°РµРј purchase_items (РµСЃР»Рё РїСѓСЃС‚Рѕ вЂ” РїС‹С‚Р°РµРјСЃСЏ seed РёР· proposal_snapshot_items)
+  // 1) читаем purchase_items (если пусто - пытаемся seed из proposal_snapshot_items)
   let pi = await supabase
     .from("purchase_items")
     .select(

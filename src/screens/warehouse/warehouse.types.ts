@@ -71,6 +71,8 @@ export type ReqHeadRow = {
   qty_limit_sum: number;
   qty_issued_sum: number;
   qty_left_sum: number;
+  qty_can_issue_now_sum?: number;
+  issuable_now_cnt?: number;
 
   issue_status: "READY" | "WAITING_STOCK" | "PARTIAL" | "DONE" | string;
 };

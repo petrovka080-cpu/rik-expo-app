@@ -293,9 +293,9 @@ export async function getLatestProposalAttachmentPreview(
 }
 
 /* =======================================================================================
- *                                Рџ Рћ РЎ Рў Рђ Р’ Р© Р Рљ Р
+ *                                ПОСТАВЩИКИ
  *  Bucket: supplier_files (public)
- *  Table:  supplier_files (meta) вЂ” РѕРїС†РёРѕРЅР°Р»СЊРЅРѕ
+ *  Table:  supplier_files (meta) - опционально
  * ======================================================================================= */
 
 export type SupplierFileGroup = "price" | "photo" | "file";

@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 
-import { formatProposalBaseNo } from "../../../lib/format";
+import { selectBuyerSheetTitle } from "../buyer.sheet.selectors";
 import type { BuyerGroup, BuyerSheetKind } from "../buyer.types";
 
 export function useBuyerSheetTitle(params: {
@@ -14,25 +14,17 @@ export function useBuyerSheetTitle(params: {
 }) {
   const { sheetKind, sheetGroup, acctProposalId, rwPid, propViewId, proposalNoByPid, prettyLabel } = params;
 
-  return useMemo(() => {
-    if (sheetKind === "inbox" && sheetGroup) {
-      return prettyLabel(sheetGroup.request_id, sheetGroup.request_id_old ?? null);
-    }
-    if (sheetKind === "accounting" && acctProposalId != null) {
-      return formatProposalBaseNo(null, String(acctProposalId));
-    }
-    if (sheetKind === "rework" && rwPid) {
-      return formatProposalBaseNo(null, String(rwPid));
-    }
-    if (sheetKind === "prop_details" && propViewId) {
-      return formatProposalBaseNo(
-        proposalNoByPid[String(propViewId)] || null,
-        String(propViewId)
-      );
-    }
-    if (sheetKind === "rfq") {
-      return "Торги (RFQ)";
-    }
-    return "—";
-  }, [sheetKind, sheetGroup, acctProposalId, rwPid, propViewId, proposalNoByPid, prettyLabel]);
+  return useMemo(
+    () =>
+      selectBuyerSheetTitle({
+        sheetKind,
+        sheetGroup,
+        acctProposalId,
+        rwPid,
+        propViewId,
+        proposalNoByPid,
+        prettyLabel,
+      }),
+    [sheetKind, sheetGroup, acctProposalId, rwPid, propViewId, proposalNoByPid, prettyLabel]
+  );
 }

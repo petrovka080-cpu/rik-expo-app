@@ -3,6 +3,10 @@ import type { BuyerInboxRow } from "./types";
 import { isRequestApprovedForProcurement } from "../requestStatus";
 import { normalizeRuText } from "../text/encoding";
 
+const logBuyerApiDebug = (...args: unknown[]) => {
+  if (__DEV__) console.warn(...args);
+};
+
 const isApprovedForBuyer = (raw: unknown) => isRequestApprovedForProcurement(raw);
 
 type RequestStatusRow = {
@@ -48,7 +52,7 @@ const normalizeStatus = (value: unknown): string =>
 
 const isRejectedStatus = (value: unknown): boolean => {
   const s = normalizeStatus(value);
-  return s.includes("РѕС‚РєР»РѕРЅ") || s.includes("reject");
+  return s.includes("отклон") || s.includes("reject");
 };
 
 const isProcurementReadyItemStatus = (value: unknown): boolean => {
@@ -92,7 +96,7 @@ async function enrichRejectedRows(rows: BuyerInboxRow[]): Promise<BuyerInboxRow[
     ctxErr = q.error;
   }
   if (ctxErr) {
-    console.warn("[listBuyerInbox] reject context load failed:", parseErr(ctxErr));
+    logBuyerApiDebug("[listBuyerInbox] reject context load failed:", parseErr(ctxErr));
     return list;
   }
 
@@ -150,7 +154,7 @@ async function filterInboxByRequestStatus(rows: BuyerInboxRow[]): Promise<BuyerI
       return isApprovedForBuyer(statusByReqId.get(String(r?.request_id || "").trim()) || "");
     });
   } catch (e) {
-    console.warn("[listBuyerInbox] request-status gate failed:", parseErr(e));
+    logBuyerApiDebug("[listBuyerInbox] request-status gate failed:", parseErr(e));
     return list.filter((r) => isRejectedInboxRow(r) || isProcurementReadyItemStatus(r?.status));
   }
 }
@@ -163,7 +167,7 @@ export async function listBuyerInbox(): Promise<BuyerInboxRow[]> {
     const rows = Array.isArray(data) ? (data as BuyerInboxRow[]) : [];
     return await enrichRejectedRows(rows);
   } catch (e) {
-    console.warn("[listBuyerInbox] rpc list_buyer_inbox failed, hitting fallback:", parseErr(e));
+    logBuyerApiDebug("[listBuyerInbox] rpc list_buyer_inbox failed, hitting fallback:", parseErr(e));
   }
 
   try {
@@ -207,7 +211,7 @@ export async function listBuyerInbox(): Promise<BuyerInboxRow[]> {
         request_id_old: Number.isFinite(reqIdOld) ? reqIdOld : null,
         request_item_id: String(r.id || ""),
         rik_code: null,
-        name_human: String(r.name_human ?? "вЂ”"),
+        name_human: String(r.name_human ?? "—"),
         qty: r.qty ?? 0,
         uom: r.uom ?? null,
         app_code: r.app_code ?? null,
@@ -223,7 +227,7 @@ export async function listBuyerInbox(): Promise<BuyerInboxRow[]> {
     }) as Array<BuyerInboxRow & { request_status?: string }>;
     return await enrichRejectedRows(rows as BuyerInboxRow[]);
   } catch (err) {
-    console.warn("[listBuyerInbox] fallback failed:", parseErr(err));
+    logBuyerApiDebug("[listBuyerInbox] fallback failed:", parseErr(err));
     return [];
   }
 }

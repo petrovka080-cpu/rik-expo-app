@@ -1,12 +1,20 @@
 import { useCallback, useState } from "react";
 
 import type { Supplier, BuyerInboxRow } from "../../../lib/catalog_api";
+import {
+  selectBuyerCounterpartyUi,
+  selectBuyerGroupHeaderMeta,
+  selectBuyerItemPrettyText,
+  selectBuyerItemRejectedByDirector,
+  selectBuyerMobileEditorViewModel,
+  selectBuyerSupplierAutoText,
+  selectBuyerSupplierMetaPatch,
+} from "../buyer.inbox.presentation";
 import type { BuyerGroup, BuyerSheetKind, DraftAttachmentMap, LineMeta } from "../buyer.types";
 import type { StylesBag } from "../components/component.types";
 import { BuyerGroupBlock, BuyerItemRow } from "../buyer.components";
 import { BuyerMobileItemEditorModal } from "../components/BuyerMobileItemEditorModal";
-import { mergeNote, normName, splitNote } from "../buyerUtils";
-import { getBuyerItemProcurementType, getCounterpartyLabel, getCounterpartyRoleGate } from "../procurementTyping";
+import { normName } from "../buyerUtils";
 
 export function useBuyerInboxRenderers(params: {
   s: StylesBag;
@@ -60,20 +68,8 @@ export function useBuyerInboxRenderers(params: {
   const applySupplierSelection = useCallback((row: BuyerInboxRow, currentMeta: Partial<LineMeta>, name: string) => {
     const key = String(row.request_item_id ?? "");
     const match = suppliers.find((sp) => normName(sp.name) === normName(name)) || null;
-    const parts = splitNote(currentMeta.note);
-    const user = parts.user;
-
-    let auto = "";
-    if (match) {
-      const partsAuto: string[] = [];
-      if (match.inn) partsAuto.push(`\u0418\u041d\u041d: ${match.inn}`);
-      if (match.bank_account) partsAuto.push(`\u0421\u0447\u0451\u0442: ${match.bank_account}`);
-      if (match.phone) partsAuto.push(`\u0422\u0435\u043b.: ${match.phone}`);
-      if (match.email) partsAuto.push(`Email: ${match.email}`);
-      auto = partsAuto.join(" \u2022 ");
-    }
-
-    setLineMeta(key, { supplier: name, note: mergeNote(user, auto) });
+    const auto = selectBuyerSupplierAutoText(match);
+    setLineMeta(key, selectBuyerSupplierMetaPatch(currentMeta, name, auto));
   }, [setLineMeta, suppliers]);
 
   const renderItemRow = useCallback(
@@ -82,13 +78,9 @@ export function useBuyerInboxRenderers(params: {
       const selected = !!picked[key];
       const m = (key && meta[key]) || {};
       const sum = lineTotal(it);
-
-      const prettyText = `${it.qty} ${it.uom || ""}`.trim();
-      const rejectInfo = it as Partial<{ director_reject_at: unknown; director_reject_note: unknown }>;
-      const rejectedByDirector = !!rejectInfo.director_reject_at || !!rejectInfo.director_reject_note;
-      const procurementType = getBuyerItemProcurementType(it);
-      const counterpartyLabel = getCounterpartyLabel(procurementType);
-      const roleGate = getCounterpartyRoleGate(procurementType);
+      const prettyText = selectBuyerItemPrettyText(it);
+      const rejectedByDirector = selectBuyerItemRejectedByDirector(it);
+      const { counterpartyLabel, roleGate } = selectBuyerCounterpartyUi(it);
       const sugg = getSupplierSuggestions("", roleGate);
 
       return (
@@ -149,10 +141,9 @@ export function useBuyerInboxRenderers(params: {
     if (!editingItem) return null;
     const key = String(editingItem.request_item_id ?? "");
     const m = meta[key] || {};
-    const procurementType = getBuyerItemProcurementType(editingItem);
-    const counterpartyLabel = getCounterpartyLabel(procurementType);
-    const roleGate = getCounterpartyRoleGate(procurementType);
-    const sugg = getSupplierSuggestions("", roleGate);
+    const baseUi = selectBuyerCounterpartyUi(editingItem);
+    const sugg = getSupplierSuggestions("", baseUi.roleGate);
+    const { counterpartyLabel } = selectBuyerMobileEditorViewModel(editingItem, m, sugg, "");
 
     return (
       <BuyerMobileItemEditorModal
@@ -183,25 +174,10 @@ export function useBuyerInboxRenderers(params: {
 
   const renderGroupBlock = useCallback(
     (group: BuyerGroup, index: number) => {
-      const gsum = requestSum(group);
       const isOpen = false;
-
+      const { gsum, headerMeta } = selectBuyerGroupHeaderMeta(group, requestSum);
       const reqLabel = prettyLabel(group.request_id, group.request_id_old ?? null);
       const headerTitle = reqLabel;
-
-      const total = group.items.length;
-      const rejectedCount = group.items.filter((it) => {
-        const rejectInfo = it as Partial<{ director_reject_at: unknown; director_reject_note: unknown }>;
-        return !!rejectInfo.director_reject_at || !!rejectInfo.director_reject_note;
-      }).length;
-      const allRejected = total > 0 && rejectedCount === total;
-
-      const baseMeta = `${total} \u043f\u043e\u0437\u0438\u0446\u0438\u0439${gsum ? ` \u2022 \u0438\u0442\u043e\u0433\u043e ${gsum.toLocaleString()} \u0441\u043e\u043c` : ""}`;
-      const headerMeta = allRejected
-        ? "\u041e\u0422\u041a\u041b\u041e\u041d\u0415\u041d\u0410"
-        : rejectedCount > 0
-          ? `${baseMeta} \u2022 \u043e\u0442\u043a\u043b\u043e\u043d\u0435\u043d\u043e ${rejectedCount}/${total}`
-          : baseMeta;
 
       return (
         <BuyerGroupBlock

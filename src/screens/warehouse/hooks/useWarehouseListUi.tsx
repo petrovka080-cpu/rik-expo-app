@@ -1,5 +1,11 @@
 import React, { useCallback, useMemo } from "react";
 import { RefreshControl, type NativeScrollEvent, type NativeSyntheticEvent } from "react-native";
+import {
+  formatWarehouseRuDate,
+  selectWarehouseListContentStyle,
+  selectWarehouseListOnScroll,
+  selectWarehouseListScrollEventThrottle,
+} from "../warehouse.list.ui";
 
 export function useWarehouseListUi(params: {
   headerMax: number;
@@ -11,7 +17,7 @@ export function useWarehouseListUi(params: {
   const { headerMax, refreshing, onRefresh, isWeb, onListScroll } = params;
 
   const listContentStyle = useMemo(
-    () => ({ paddingTop: headerMax + 12, paddingBottom: 24 }),
+    () => selectWarehouseListContentStyle(headerMax),
     [headerMax],
   );
 
@@ -21,24 +27,17 @@ export function useWarehouseListUi(params: {
   );
 
   const listOnScroll = useMemo(
-    () => (isWeb ? undefined : onListScroll),
+    () => selectWarehouseListOnScroll({ isWeb, onListScroll }),
     [isWeb, onListScroll],
   );
 
   const listScrollEventThrottle = useMemo(
-    () => (isWeb ? undefined : 16),
+    () => selectWarehouseListScrollEventThrottle(isWeb),
     [isWeb],
   );
 
   const fmtRuDate = useCallback((iso?: string | null) => {
-    if (!iso) return "";
-    const date = new Date(iso);
-    if (Number.isNaN(date.getTime())) return "";
-    return date.toLocaleDateString("ru-RU", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-    });
+    return formatWarehouseRuDate(iso);
   }, []);
 
   return {

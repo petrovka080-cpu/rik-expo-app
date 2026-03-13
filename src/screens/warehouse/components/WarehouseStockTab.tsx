@@ -9,6 +9,14 @@ import {
 } from "react-native";
 import SectionBlock from "../../../ui/SectionBlock";
 import RoleScreenLayout from "../../../components/layout/RoleScreenLayout";
+import {
+  selectWarehouseEmptyTextStyle,
+  selectWarehouseStockKey,
+} from "../warehouse.list.common";
+import {
+  selectWarehouseStockEmptyText,
+  selectWarehouseStockUnsupportedText,
+} from "../warehouse.tab.empty";
 import type { StockRow } from "../warehouse.types";
 
 const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
@@ -39,8 +47,8 @@ export default function WarehouseStockTab({
       <RoleScreenLayout>
         <SectionBlock style={{ padding: 12, marginBottom: 0 }} contentStyle={{ gap: 0 }}>
           <Text style={{ color: "#475569" }}>
-            Раздел «Склад факт» требует вью <Text style={{ fontWeight: "700" }}>v_warehouse_fact</Text> или
-            RPC с фактическими остатками.
+            {selectWarehouseStockUnsupportedText()}{" "}
+            <Text style={{ fontWeight: "700" }}>v_warehouse_fact</Text>.
           </Text>
         </SectionBlock>
       </RoleScreenLayout>
@@ -51,14 +59,16 @@ export default function WarehouseStockTab({
     <RoleScreenLayout>
       <AnimatedFlatList
         data={data}
-        keyExtractor={(i: StockRow) => String(i.material_id || `${i.code || ""}:${i.uom_id || ""}`)}
+        keyExtractor={selectWarehouseStockKey}
         contentContainerStyle={contentContainerStyle}
         onScroll={onScroll}
         scrollEventThrottle={scrollEventThrottle}
         renderItem={renderItem}
         ListHeaderComponent={header}
         ListEmptyComponent={
-          <Text style={{ color: emptyColor, paddingHorizontal: 16, fontWeight: "800" }}>Пока нет данных по складу.</Text>
+          <Text style={selectWarehouseEmptyTextStyle(emptyColor)}>
+            {selectWarehouseStockEmptyText()}
+          </Text>
         }
       />
     </RoleScreenLayout>

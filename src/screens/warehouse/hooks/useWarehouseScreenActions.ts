@@ -1,6 +1,7 @@
 import { useCallback } from "react";
 import { UI } from "../warehouse.styles";
 import type { WarehouseTabContentProps } from "../components/WarehouseTabContent";
+import type { WarehouseModalsManagerProps } from "../components/WarehouseModalsManager";
 import { supabase } from "../../../lib/supabaseClient";
 import { showErr } from "../warehouse.utils";
 import { useWarehouseLifecycle } from "./useWarehouseLifecycle";
@@ -15,6 +16,8 @@ import { useWarehouseRenderers } from "./useWarehouseRenderers";
 import { useWarehousePickerActions } from "./useWarehousePickerActions";
 import { useWarehouseModalsManagerProps } from "./useWarehouseModalsManagerProps";
 import type { WarehouseScreenData } from "./useWarehouseScreenData";
+import { selectWarehouseModalsManagerParams } from "../warehouse.modals.selectors";
+import { selectWarehouseTabContentProps } from "../warehouse.tab.content.selectors";
 
 export function useWarehouseScreenActions(data: WarehouseScreenData) {
   const fetchReqHeadsForce = useCallback(() => data.callFetchReqHeads(0, true), [data.callFetchReqHeads]);
@@ -142,115 +145,41 @@ export function useWarehouseScreenActions(data: WarehouseScreenData) {
     setIsRecipientModalVisible: data.setIsRecipientModalVisible,
   });
 
-  const modalsManagerProps = useWarehouseModalsManagerProps({
-    stockIssueModal: data.stockPickUi.stockIssueModal,
-    stockIssueQty: data.stockPickUi.stockIssueQty,
-    setStockIssueQty: data.stockPickUi.setStockIssueQty,
-    issueBusy: data.issueBusy,
-    addStockPickLine: data.stockPickUi.addStockPickLine,
-    closeStockIssue: data.stockPickUi.closeStockIssue,
-    itemsModal: data.itemsModal,
-    onCloseItemsModal: closeItemsModal,
-    proposalNoByPurchase: data.incoming.proposalNoByPurchase,
-    itemsByHead: data.incoming.itemsByHead,
-    kbH: data.kbH,
-    qtyInputByItem: data.qtyInputByItem,
-    setQtyInputByItem: data.setQtyInputByItem,
-    receivingHeadId: data.receivingHeadId,
-    onIncomingItemsSubmit,
-    issueDetailsId: data.issueDetailsId,
-    issueLinesLoadingId: data.issueLinesLoadingId,
-    issueLinesById: data.issueLinesById,
-    matNameByCode: data.matNameByCode,
-    onCloseIssueDetails: data.reportsUi.closeIssueDetails,
-    incomingDetailsId: data.incomingDetailsId,
-    incomingLinesLoadingId: data.incomingLinesLoadingId,
-    incomingLinesById: data.incomingLinesById,
-    onCloseIncomingDetails: closeIncomingDetails,
-    reqModal: data.reqModal,
-    onCloseReqModal: data.closeReq,
-    reqItems: data.reqItems,
-    reqItemsLoading: data.reqItemsLoading,
-    reqQtyInputByItem: data.reqPickUi.reqQtyInputByItem,
-    setReqQtyInputByItem: data.reqPickUi.setReqQtyInputByItem,
-    recipientText: data.rec.recipientText,
-    addReqPickLine: data.reqPickUi.addReqPickLine,
-    submitReqPick: data.submitReqPick,
-    reqPick: data.reqPickUi.reqPick,
-    removeReqPickLine: data.reqPickUi.removeReqPickLine,
-    issueMsg: data.issueMsg,
-    pickVisible: !!data.pickModal.what,
-    pickTitle,
-    pickFilter: data.pickFilter,
-    setPickFilter: data.setPickFilter,
-    pickOptions,
-    onPickOption,
-    closePick: data.closePick,
-    repPeriodOpen: data.repPeriodOpen,
-    closeReportPeriod,
-    periodFrom: data.periodFrom,
-    periodTo: data.periodTo,
-    applyReportPeriod,
-    clearReportPeriod,
-    repPeriodUi,
-    isFioConfirmVisible: data.isFioConfirmVisible,
-    warehousemanFio: data.warehousemanFio,
-    handleFioConfirm: data.handleFioConfirm,
-    isFioLoading: data.isFioLoading,
-    warehousemanHistory: data.warehousemanHistory,
-    isRecipientModalVisible: data.isRecipientModalVisible,
-    recipientSuggestions: data.rec.recipientSuggestions,
-    recipientInitialValue: data.rec.recipientText,
-    setIsRecipientModalVisible: data.setIsRecipientModalVisible,
-    onPickRecipient,
-  });
+  const modalsManagerProps = useWarehouseModalsManagerProps(
+    selectWarehouseModalsManagerParams(data, {
+      closeItemsModal,
+      onIncomingItemsSubmit,
+      closeIncomingDetails,
+      onPickOption,
+      closeReportPeriod,
+      applyReportPeriod,
+      clearReportPeriod,
+      repPeriodUi,
+      pickOptions,
+      pickTitle,
+      onPickRecipient,
+    })
+  );
 
-  const tabContentProps: WarehouseTabContentProps = {
-    tab: data.tab,
-    emptyColor: UI.sub,
+  const tabContentProps = selectWarehouseTabContentProps(data, {
     listContentStyle,
     listOnScroll,
     listScrollEventThrottle,
     listRefreshControl,
-    incomingData: data.incoming.toReceive,
     onIncomingEndReached,
     renderIncomingItem,
-    stockSupported: data.stockSupported,
-    stockFiltered: data.stockFiltered,
     renderStockItem,
-    objectOpt: data.objectOpt,
-    levelOpt: data.levelOpt,
-    systemOpt: data.systemOpt,
-    zoneOpt: data.zoneOpt,
     onPickObject,
     onPickLevel,
     onPickSystem,
     onPickZone,
     onOpenRecipientModal,
-    recipientText: data.rec.recipientText,
-    stockSearch: data.stockSearch,
-    onStockSearch: data.setStockSearch,
-    stockPick: data.stockPickUi.stockPick,
-    onRemovePick: data.stockPickUi.removeStockPickLine,
-    issueBusy: data.issueBusy,
-    onClearStockPick: data.stockPickUi.clearStockPick,
-    onSubmitStockPick: data.submitStockPick,
-    issueMsg: data.issueMsg,
-    reqHeadsData: data.sortedReqHeads,
     onReqEndReached,
     renderReqHeadItem,
-    reqHeadsLoading: data.reqHeadsLoading,
-    reportsHeaderTopPad: data.HEADER_MAX + 8,
-    reportsMode: data.reportsMode,
     onReportsBack,
     onReportsSelectMode,
     reportsOnScroll,
     reportsScrollEventThrottle,
-    periodFrom: data.periodFrom,
-    periodTo: data.periodTo,
-    repStock: data.repStock,
-    repMov: data.repMov,
-    reportsUi: data.reportsUi,
     onOpenRepPeriod,
     onReportsRefresh,
     onPdfRegisterPress,
@@ -259,7 +188,7 @@ export function useWarehouseScreenActions(data: WarehouseScreenData) {
     onPdfObjectWorkPress,
     onPdfDayRegisterPress,
     onPdfDayMaterialsPress,
-  };
+  });
 
   return { tabContentProps, modalsManagerProps };
 }

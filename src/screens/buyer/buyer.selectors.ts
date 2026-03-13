@@ -1,6 +1,8 @@
 // src/screens/buyer/buyer.selectors.ts
 import type { BuyerInboxRow } from "../../lib/catalog_api";
 import type { LineMeta, DraftAttachmentMap, BuyerTab, BuyerSheetKind, BuyerGroup } from "./buyer.types";
+import { selectBuyerBaseListData, selectFilteredBuyerListData } from "./buyer.list.selectors";
+import { selectBuyerSheetData, type SheetHdrRow } from "./buyer.sheet.selectors";
 import { SUPP_NONE, normName } from "./buyerUtils";
 import { buildRfqPickedPreview } from "./buyer.helpers";
 
@@ -9,8 +11,6 @@ type BuyerInboxRowWithKeys = BuyerInboxRow & {
   request_id?: string | number | null;
   request_id_old?: number | null;
 };
-
-export type SheetHdrRow = { __kind: "attachments" };
 
 export function selectPickedIds(picked: Record<string, boolean>) {
   return Object.keys(picked || {}).filter((k) => !!picked[k]);
@@ -84,8 +84,7 @@ export function selectNeedAttachWarn(pickedIdsLen: number, attachSlotsTotal: num
 }
 
 export function selectSheetData(sheetKind: BuyerSheetKind, sheetGroup: BuyerGroup | null) {
-  if (!(sheetKind === "inbox" && sheetGroup)) return [];
-  return [{ __kind: "attachments" } as SheetHdrRow, ...(sheetGroup.items || [])];
+  return selectBuyerSheetData(sheetKind, sheetGroup);
 }
 
 export function selectListData(
@@ -97,41 +96,6 @@ export function selectListData(
   search?: string,
   titleByPid?: Record<string, string>
 ) {
-  let base =
-    tab === "inbox"
-      ? groups
-      : tab === "pending"
-        ? pending
-        : tab === "approved"
-          ? approved
-          : rejected;
-
-  if (!search) return base;
-
-  const q = search.toLowerCase().trim();
-  return (base as any[]).filter((item: any) => {
-    // Search in ID/Title
-    const id = String(item.id || item.request_id || "").toLowerCase();
-    const title = titleByPid ? String(titleByPid[item.id] || "").toLowerCase() : "";
-    if (id.includes(q) || title.includes(q)) return true;
-
-    // Search in items (for groups/inbox)
-    if (item.items && Array.isArray(item.items)) {
-      return item.items.some((it: any) => {
-        const name = String(it.name_human || "").toLowerCase();
-        const obj = String(it.object_name || "").toLowerCase();
-        const sys = String(it.system_name || it.system || "").toLowerCase();
-        const mat = String(it.material || "").toLowerCase();
-        const code = String(it.rik_code || "").toLowerCase();
-        return name.includes(q) || obj.includes(q) || sys.includes(q) || mat.includes(q) || code.includes(q);
-      });
-    }
-
-    // Search in bucket row props (for proposals)
-    const supplier = String(item.supplier || "").toLowerCase();
-    const objName = String(item.object_name || "").toLowerCase();
-    if (supplier.includes(q) || objName.includes(q)) return true;
-
-    return false;
-  });
+  const base = selectBuyerBaseListData(tab, groups, pending, approved, rejected);
+  return selectFilteredBuyerListData(base, search, titleByPid);
 }

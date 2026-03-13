@@ -48,6 +48,18 @@ const toTextOrNull = (v: unknown): string | null => {
   return s || null;
 };
 
+type ReqHeadTruth = {
+  items_cnt: number;
+  ready_cnt: number;
+  done_cnt: number;
+  qty_limit_sum: number;
+  qty_issued_sum: number;
+  qty_left_sum: number;
+  qty_can_issue_now_sum: number;
+  issuable_now_cnt: number;
+  issue_status: "READY" | "WAITING_STOCK" | "PARTIAL" | "DONE";
+};
+
 let requestsFallbackLastHardFailAt = 0;
 let requestsFallbackLastSkipLogAt = 0;
 const REQUESTS_FALLBACK_FAIL_COOLDOWN_MS = 30000;
@@ -109,6 +121,112 @@ const reqHeadSort = (a: ReqHeadRow, b: ReqHeadRow): number => {
   const rb = String(b?.request_id ?? "");
   return rb.localeCompare(ra);
 };
+
+function finalizeReqHeadTruth(agg: Omit<ReqHeadTruth, "issue_status">): ReqHeadTruth {
+  const qtyLeft = Math.max(0, agg.qty_left_sum);
+  const qtyCanIssueNow = Math.max(0, agg.qty_can_issue_now_sum);
+  let issueStatus: ReqHeadTruth["issue_status"] = "WAITING_STOCK";
+  if (qtyLeft <= 0) issueStatus = "DONE";
+  else if (qtyCanIssueNow > 0) issueStatus = "READY";
+  else if (agg.qty_issued_sum > 0) issueStatus = "PARTIAL";
+  return {
+    ...agg,
+    qty_left_sum: qtyLeft,
+    qty_can_issue_now_sum: qtyCanIssueNow,
+    issue_status: issueStatus,
+  };
+}
+
+function aggregateReqItemTruthRows(rows: UnknownRow[]): Record<string, ReqHeadTruth> {
+  const byReq: Record<
+    string,
+    Record<
+      string,
+      {
+        qty_limit: number;
+        qty_issued: number;
+        qty_left: number;
+        qty_can_issue_now: number;
+      }
+    >
+  > = {};
+
+  for (const row of rows) {
+    const requestId = String(row?.request_id ?? "").trim();
+    const requestItemId = String(row?.request_item_id ?? "").trim();
+    if (!requestId || !requestItemId) continue;
+    if (!byReq[requestId]) byReq[requestId] = {};
+
+    const prev = byReq[requestId][requestItemId];
+    const next = {
+      qty_limit: parseNum(row?.qty_limit, 0),
+      qty_issued: parseNum(row?.qty_issued, 0),
+      qty_left: parseNum(row?.qty_left, 0),
+      qty_can_issue_now: parseNum(row?.qty_can_issue_now, 0),
+    };
+
+    if (!prev) {
+      byReq[requestId][requestItemId] = next;
+      continue;
+    }
+
+    byReq[requestId][requestItemId] = {
+      qty_limit: Math.max(prev.qty_limit, next.qty_limit),
+      qty_issued: Math.max(prev.qty_issued, next.qty_issued),
+      qty_left: Math.max(prev.qty_left, next.qty_left),
+      qty_can_issue_now: Math.max(prev.qty_can_issue_now, next.qty_can_issue_now),
+    };
+  }
+
+  const out: Record<string, ReqHeadTruth> = {};
+  for (const [requestId, itemMap] of Object.entries(byReq)) {
+    const items = Object.values(itemMap);
+    const agg = items.reduce(
+      (acc, item) => {
+        const left = Math.max(0, item.qty_left);
+        const canIssueNow = Math.max(0, Math.min(left, item.qty_can_issue_now));
+        acc.items_cnt += 1;
+        acc.ready_cnt += left > 0 ? 1 : 0;
+        acc.done_cnt += left <= 0 && item.qty_limit > 0 ? 1 : 0;
+        acc.qty_limit_sum += Math.max(0, item.qty_limit);
+        acc.qty_issued_sum += Math.max(0, item.qty_issued);
+        acc.qty_left_sum += left;
+        acc.qty_can_issue_now_sum += canIssueNow;
+        acc.issuable_now_cnt += left > 0 && canIssueNow > 0 ? 1 : 0;
+        return acc;
+      },
+      {
+        items_cnt: 0,
+        ready_cnt: 0,
+        done_cnt: 0,
+        qty_limit_sum: 0,
+        qty_issued_sum: 0,
+        qty_left_sum: 0,
+        qty_can_issue_now_sum: 0,
+        issuable_now_cnt: 0,
+      },
+    );
+    out[requestId] = finalizeReqHeadTruth(agg);
+  }
+
+  return out;
+}
+
+async function loadReqHeadTruthByRequestIds(
+  supabase: SupabaseClient,
+  requestIds: string[],
+): Promise<Record<string, ReqHeadTruth>> {
+  const ids = Array.from(new Set(requestIds.map((x) => String(x || "").trim()).filter(Boolean)));
+  if (!ids.length) return {};
+
+  const q = await supabase
+    .from("v_wh_issue_req_items_ui")
+    .select("request_id, request_item_id, qty_limit, qty_issued, qty_left, qty_can_issue_now")
+    .in("request_id", ids);
+
+  if (q.error || !Array.isArray(q.data) || q.data.length === 0) return {};
+  return aggregateReqItemTruthRows(q.data as UnknownRow[]);
+}
 
 function parseReqHeaderContext(rawParts: (string | null | undefined)[]) {
   const out: { contractor: string; phone: string; volume: string } = {
@@ -497,7 +615,32 @@ export async function apiFetchReqHeads(
 
   rows.sort(reqHeadSort);
 
-  let viewRows = rows.filter((r) => {
+  const viewTruthByReq = await loadReqHeadTruthByRequestIds(
+    supabase,
+    rows.map((r) => String(r.request_id ?? "").trim()),
+  );
+
+  const rowsWithTruth = rows.map((row) => {
+    const truth = viewTruthByReq[String(row.request_id ?? "").trim()];
+    if (!truth) return row;
+    return {
+      ...row,
+      items_cnt: truth.items_cnt,
+      ready_cnt: truth.ready_cnt,
+      done_cnt: truth.done_cnt,
+      qty_limit_sum: truth.qty_limit_sum,
+      qty_issued_sum: truth.qty_issued_sum,
+      qty_left_sum: truth.qty_left_sum,
+      qty_can_issue_now_sum: truth.qty_can_issue_now_sum,
+      issuable_now_cnt: truth.issuable_now_cnt,
+      issue_status: truth.issue_status,
+    };
+  });
+  const materializedReqIds = new Set(
+    rowsWithTruth.map((r) => String(r.request_id || "").trim()).filter(Boolean),
+  );
+
+  let viewRows = rowsWithTruth.filter((r) => {
     const notDone = String(r.issue_status ?? "").trim().toUpperCase() !== "DONE";
     const hasLeft = parseNum(r.qty_left_sum, 0) > 0;
     return notDone && hasLeft;
@@ -561,9 +704,10 @@ export async function apiFetchReqHeads(
         const viewIds = new Set(viewRows.map((r) => String(r.request_id)));
         const missingReqIds = approvedReqs
           .map((r) => r.request_id)
-          .filter((id) => !viewIds.has(id));
+          .filter((id) => !materializedReqIds.has(id));
 
         if (missingReqIds.length) {
+          const fallbackTruthByReq = await loadReqHeadTruthByRequestIds(supabase, missingReqIds);
           const itQ = await supabase
             .from("request_items")
             .select("id, request_id, status, qty")
@@ -588,7 +732,7 @@ export async function apiFetchReqHeads(
           }
 
           const fallbackRows: ReqHeadRow[] = approvedReqs
-            .filter((r) => !viewIds.has(r.request_id))
+            .filter((r) => !materializedReqIds.has(r.request_id))
             .map((r) => {
               const reqRaw = reqRows.find((x) => String(x?.id ?? "").trim() === r.request_id) ?? null;
               const fromReqText = parseReqHeaderContext([
@@ -622,6 +766,18 @@ export async function apiFetchReqHeads(
                 ).trim() || fromReqText.volume || null;
               const s = stat[r.request_id] ?? { items: 0, qty: 0, done: 0, rejected: 0 };
               const readyCnt = Math.max(0, s.items - s.done - s.rejected);
+              const truth =
+                fallbackTruthByReq[r.request_id] ??
+                finalizeReqHeadTruth({
+                  items_cnt: s.items,
+                  ready_cnt: readyCnt,
+                  done_cnt: s.done,
+                  qty_limit_sum: s.qty,
+                  qty_issued_sum: 0,
+                  qty_left_sum: s.qty,
+                  qty_can_issue_now_sum: s.qty,
+                  issuable_now_cnt: readyCnt,
+                });
               return {
                 request_id: r.request_id,
                 display_no: r.display_no,
@@ -638,13 +794,15 @@ export async function apiFetchReqHeads(
                 note: reqRaw?.note == null ? null : String(reqRaw.note),
                 comment: reqRaw?.comment == null ? null : String(reqRaw.comment),
                 submitted_at: r.submitted_at,
-                items_cnt: s.items,
-                ready_cnt: readyCnt,
-                done_cnt: s.done,
-                qty_limit_sum: s.qty,
-                qty_issued_sum: 0,
-                qty_left_sum: s.qty,
-                issue_status: readyCnt > 0 ? "READY" : "WAITING_STOCK",
+                items_cnt: truth.items_cnt,
+                ready_cnt: truth.ready_cnt,
+                done_cnt: truth.done_cnt,
+                qty_limit_sum: truth.qty_limit_sum,
+                qty_issued_sum: truth.qty_issued_sum,
+                qty_left_sum: truth.qty_left_sum,
+                qty_can_issue_now_sum: truth.qty_can_issue_now_sum,
+                issuable_now_cnt: truth.issuable_now_cnt,
+                issue_status: truth.issue_status,
               };
             })
             .filter((r) => parseNum(r.qty_left_sum, 0) > 0);

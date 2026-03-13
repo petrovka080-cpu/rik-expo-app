@@ -14,6 +14,10 @@ import { buildPdfFileName } from "../../lib/documents/pdfDocument";
 import { getPdfFlowErrorMessage, preparePdfDocument, previewPdfDocument } from "../../lib/documents/pdfDocumentActions";
 import { generateWarehousePdfDocument } from "../../lib/documents/pdfDocumentGenerators";
 
+const logWarehousePdfDebug = (...args: unknown[]) => {
+  if (__DEV__) console.info(...args);
+};
+
 type BusyLike = {
   run?: <T>(
     fn: () => Promise<T>,
@@ -55,7 +59,7 @@ const isMissingName = (v: unknown): boolean => {
   if (/^[-\u2014\u2013\u2212]+$/.test(s)) return true;
   const l = s.toLowerCase();
   if (l === "null" || l === "undefined" || l === "n/a") return true;
-  if (l.includes("Р Р†РЎвЂ™")) return true;
+  if (l.includes("отсутств")) return true;
   return false;
 };
 
@@ -145,7 +149,7 @@ export function useWarehousePdf(args: UseWarehousePdfArgs) {
           entityId: pid,
           getRemoteUrl: async () => {
             const t0 = Date.now();
-            console.info(`INCOMING_PDF_START pr_id=${pid}`);
+            logWarehousePdfDebug(`INCOMING_PDF_START pr_id=${pid}`);
             let source: "main" | "fallback" = "main";
             try {
               const head = (repIncoming || []).find(
@@ -201,7 +205,7 @@ export function useWarehousePdf(args: UseWarehousePdfArgs) {
                 html,
               });
 
-              console.info(`INCOMING_PDF_OK pr_id=${pid} ms=${Date.now() - t0} source=${source}`);
+              logWarehousePdfDebug(`INCOMING_PDF_OK pr_id=${pid} ms=${Date.now() - t0} source=${source}`);
               return url;
             } catch (e: unknown) {
               const err = e as { message?: string; reason?: string };
