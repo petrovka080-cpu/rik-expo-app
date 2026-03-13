@@ -41,7 +41,9 @@ export function useBuyerFioConfirm(params: {
           }
         }
       } catch (e) {
-        console.warn("[buyerFio] load failed", e);
+        if (__DEV__) {
+          console.warn("[buyerFio] load failed", e);
+        }
       }
     })();
 
@@ -81,7 +83,9 @@ export function useBuyerFioConfirm(params: {
         ]);
         setIsFioConfirmVisible(false);
       } catch (e) {
-        console.warn(e);
+        if (__DEV__) {
+          console.warn(e);
+        }
       } finally {
         setIsFioLoading(false);
       }
@@ -97,4 +101,3 @@ export function useBuyerFioConfirm(params: {
     handleFioConfirm,
   };
 }
-

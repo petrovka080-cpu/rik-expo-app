@@ -1,4 +1,10 @@
-﻿import { client, parseErr } from "./_core";
+import { client, parseErr } from "./_core";
+
+const logNotificationsDebug = (...args: unknown[]) => {
+  if (__DEV__) {
+    console.warn(...args);
+  }
+};
 
 type AppRole = "accountant" | "buyer" | "director";
 
@@ -24,7 +30,7 @@ export async function notifList(role: AppRole, limit = 20): Promise<Notification
     if (error) throw error;
     return Array.isArray(data) ? (data as NotificationRow[]) : [];
   } catch (e) {
-    console.warn("[notifList]", parseErr(e));
+    logNotificationsDebug("[notifList]", parseErr(e));
     return [];
   }
 }
@@ -40,7 +46,7 @@ export async function notifMarkRead(role: AppRole) {
     if (error) throw error;
     return true;
   } catch (e) {
-    console.warn("[notifMarkRead]", parseErr(e));
+    logNotificationsDebug("[notifMarkRead]", parseErr(e));
     return false;
   }
 }

@@ -7,6 +7,12 @@ import { notifList, notifMarkRead } from "../../lib/catalog_api";
 import type { NotificationRow } from "./types";
 import { initDing, playDing as playDingSound, unloadDing } from "../../lib/notify";
 
+const logAccountantNotificationsDebug = (...args: unknown[]) => {
+  if (__DEV__) {
+    console.warn(...args);
+  }
+};
+
 export function useAccountantNotifications(params: {
   focusedRef: React.MutableRefObject<boolean>;
   freezeWhileOpen: boolean;
@@ -23,7 +29,7 @@ export function useAccountantNotifications(params: {
       const list = await notifList("accountant", 20);
       setNotifs(Array.isArray(list) ? list : []);
     } catch (e) {
-      console.warn("[useAccountantNotifications] loadNotifs failed", e);
+      logAccountantNotificationsDebug("[useAccountantNotifications] loadNotifs failed", e);
     }
   }, [focusedRef]);
 
@@ -34,7 +40,7 @@ export function useAccountantNotifications(params: {
       try {
         await initDing();
       } catch (e) {
-        console.warn("[useAccountantNotifications] initDing failed", e);
+        logAccountantNotificationsDebug("[useAccountantNotifications] initDing failed", e);
       }
     })();
     return () => {
@@ -43,7 +49,7 @@ export function useAccountantNotifications(params: {
       try {
         unloadDing();
       } catch (e) {
-        console.log("[useAccountantNotifications] unloadDing failed", e);
+        logAccountantNotificationsDebug("[useAccountantNotifications] unloadDing failed", e);
       }
     };
   }, []);
@@ -52,12 +58,12 @@ export function useAccountantNotifications(params: {
     try {
       await playDingSound();
     } catch (e) {
-      console.warn("[useAccountantNotifications] playDingSound failed", e);
+      logAccountantNotificationsDebug("[useAccountantNotifications] playDingSound failed", e);
     }
     try {
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } catch (e) {
-      console.log("[useAccountantNotifications] Haptics failed", e);
+      logAccountantNotificationsDebug("[useAccountantNotifications] Haptics failed", e);
     }
   }, []);
 
@@ -97,7 +103,7 @@ export function useAccountantNotifications(params: {
         try {
           supabase.removeChannel(ch);
         } catch (e) {
-          console.warn("[useAccountantNotifications] removeChannel failed", e);
+          logAccountantNotificationsDebug("[useAccountantNotifications] removeChannel failed", e);
         }
       };
     }, [focusedRef, freezeWhileOpen, onNotifReloadList, playDing]),

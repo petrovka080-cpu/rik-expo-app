@@ -3,6 +3,12 @@ import type { Database } from "../database.types";
 import { client, toRpcId, parseErr } from "./_core";
 import type { DirectorPendingRow, DirectorInboxRow } from "./types";
 
+const logDirectorApiDebug = (...args: unknown[]) => {
+  if (__DEV__) {
+    console.warn(...args);
+  }
+};
+
 type RequestStatus = Database["public"]["Enums"]["request_status_enum"];
 type DirectorInboxStatusArg =
   Database["public"]["Functions"]["list_director_inbox"]["Args"]["p_status"];
@@ -63,7 +69,7 @@ export async function listPending(): Promise<DirectorPendingRow[]> {
     const rpcRowsAlt = await callPendingRpc("listpending");
     if (rpcRowsAlt.length) return normalize(rpcRowsAlt);
   } catch (e) {
-    console.warn("[listPending] rpc failed → fallback", parseErr(e));
+    logDirectorApiDebug("[listPending] rpc failed → fallback", parseErr(e));
   }
 
   // fallback (как у тебя было)
@@ -110,7 +116,7 @@ export async function listPending(): Promise<DirectorPendingRow[]> {
     }
     return out;
   } catch (e) {
-    console.warn("[listPending/fallback]", parseErr(e));
+    logDirectorApiDebug("[listPending/fallback]", parseErr(e));
     return [];
   }
 }
@@ -176,7 +182,7 @@ export async function listDirectorInbox(
   const args: { p_status?: DirectorInboxStatusArg } = { p_status: status };
   const { data, error } = await client.rpc("list_director_inbox", args);
   if (error) {
-    console.warn("[listDirectorInbox]", parseErr(error));
+    logDirectorApiDebug("[listDirectorInbox]", parseErr(error));
     return [];
   }
   const rows = Array.isArray(data) ? (data as DirectorInboxRow[]) : [];

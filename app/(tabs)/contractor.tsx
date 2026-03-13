@@ -47,7 +47,7 @@ import { useContractorScreenState } from "../../src/screens/contractor/hooks/use
 
 const showErr = (e: any) =>
   Alert.alert(
-    "\u041e\u0448\u0438\u0431\u043a\u0430",
+    "\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u0432\u044b\u043f\u043e\u043b\u043d\u0438\u0442\u044c \u0434\u0435\u0439\u0441\u0442\u0432\u0438\u0435",
     String(e?.message || e?.error_description || e?.hint || e || "\u041d\u0435\u0438\u0437\u0432\u0435\u0441\u0442\u043d\u0430\u044f \u043e\u0448\u0438\u0431\u043a\u0430")
   );
 
@@ -213,7 +213,7 @@ export default function ContractorScreen() {
     },
     onError: (error) => {
       const message = error instanceof Error ? error.message : String(error || "\u041e\u0448\u0438\u0431\u043a\u0430");
-      Alert.alert("\u041e\u0448\u0438\u0431\u043a\u0430", message);
+      Alert.alert("\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u0430\u043a\u0442\u0438\u0432\u0438\u0440\u043e\u0432\u0430\u0442\u044c \u043a\u043e\u0434", message);
     },
   });
 

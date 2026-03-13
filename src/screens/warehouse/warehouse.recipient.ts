@@ -28,7 +28,9 @@ export function useWarehouseRecipient(args: {
       }
       setRecipientRecent(Array.isArray(recent) ? recent : []);
     })().catch((e) => {
-      console.warn("[warehouse.recipient] bootstrap failed", e);
+      if (__DEV__) {
+        console.warn("[warehouse.recipient] bootstrap failed", e);
+      }
     });
 
   }, [enabled]);

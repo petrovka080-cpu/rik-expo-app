@@ -31,7 +31,9 @@ export default function Index() {
         }
         router.replace(href);
       } catch (e) {
-        console.warn('[index] session bootstrap failed:', (e as any)?.message ?? e);
+        if (__DEV__) {
+          console.warn('[index] session bootstrap failed:', (e as any)?.message ?? e);
+        }
         router.replace('/auth/login');
       } finally {
         if (active) setChecking(false);

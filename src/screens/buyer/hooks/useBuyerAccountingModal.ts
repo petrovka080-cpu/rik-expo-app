@@ -66,7 +66,9 @@ export function useBuyerAccountingModal(params: {
         await uploadProposalAttachment(proposalId, blob, name, "proposal_html");
         setPropDocAttached({ name });
       } catch (error) {
-        console.warn("[buyer] ensureProposalDocumentAttached:", error);
+        if (__DEV__) {
+          console.warn("[buyer] ensureProposalDocumentAttached:", error);
+        }
       } finally {
         setPropDocBusy(false);
       }

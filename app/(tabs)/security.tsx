@@ -39,14 +39,14 @@ export default function SecurityScreen() {
 
       Alert.alert('TOTP', 'Сканируй QR в приложении-аутентификаторе, затем введи 6-значный код ниже.');
     } catch (e: any) {
-      Alert.alert('Ошибка', e?.message ?? 'Не удалось включить TOTP');
+      Alert.alert('Не удалось включить TOTP', e?.message ?? 'Попробуйте еще раз.');
     } finally {
       setEnrolling(false);
     }
   }, []);
 
   const verifyTotp = useCallback(async () => {
-    if (!factorId) { Alert.alert('Ошибка', 'Сначала включи TOTP'); return; }
+    if (!factorId) { Alert.alert('TOTP не настроен', 'Сначала включите TOTP.'); return; }
     const clean = code.replace(/\s+/g, '');
     if (clean.length < 6) { Alert.alert('Код', 'Введи 6-значный код из приложения'); return; }
 
@@ -67,14 +67,14 @@ export default function SecurityScreen() {
       setEnabled(true);
       Alert.alert('Готово', 'TOTP включён для вашей учётной записи.');
     } catch (e: any) {
-      Alert.alert('Ошибка', e?.message ?? 'Неверный код или ошибка верификации');
+      Alert.alert('Не удалось подтвердить код', e?.message ?? 'Неверный код или ошибка верификации.');
     } finally {
       setVerifying(false);
     }
   }, [factorId, code]);
 
   const unenrollTotp = useCallback(async () => {
-    if (!factorId) { Alert.alert('Ошибка', 'Нет активного фактора'); return; }
+    if (!factorId) { Alert.alert('Нет активного фактора', 'Сначала включите TOTP.'); return; }
     try {
       setUnenrolling(true);
       const { error } = await supabase.auth.mfa.unenroll({ factorId });
@@ -87,7 +87,7 @@ export default function SecurityScreen() {
       setCode('');
       Alert.alert('Отключено', 'TOTP-фактор удалён.');
     } catch (e: any) {
-      Alert.alert('Ошибка', e?.message ?? 'Не удалось отключить TOTP');
+      Alert.alert('Не удалось отключить TOTP', e?.message ?? 'Попробуйте еще раз.');
     } finally {
       setUnenrolling(false);
     }

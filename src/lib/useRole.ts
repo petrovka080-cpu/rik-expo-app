@@ -21,7 +21,9 @@ export function useRole() {
         .single();
       if (!mounted) return;
       if (error) {
-        console.warn('useRole error:', error.message);
+        if (__DEV__) {
+          console.warn('useRole error:', error.message);
+        }
         setRole(null);
       } else {
         setRole((data?.role ?? null) as any);
@@ -33,4 +35,3 @@ export function useRole() {
 
   return { role, loading };
 }
-

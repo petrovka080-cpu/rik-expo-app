@@ -237,7 +237,11 @@ export default function ForemanScreen() {
       system_code: system || null,
       zone_code: zone || null,
     };
-    await updateRequestMeta(rid, meta).catch((e) => console.warn(`[Foreman] updateMeta err in ${context}:`, e));
+    await updateRequestMeta(rid, meta).catch((e) => {
+      if (__DEV__) {
+        console.warn(`[Foreman] updateMeta err in ${context}:`, e);
+      }
+    });
   }, [foreman, comment, objectType, level, system, zone]);
 
   const loadDetails = useCallback(async (rid?: string | number | null) => {
@@ -251,7 +255,9 @@ export default function ForemanScreen() {
       syncHeaderFromDetails(details);
       return details;
     } catch (e) {
-      console.warn('[Foreman] loadDetails:', toErrorText(e, ""));
+      if (__DEV__) {
+        console.warn('[Foreman] loadDetails:', toErrorText(e, ""));
+      }
       return null;
     }
   }, [requestId, setDisplayNoByReq, syncHeaderFromDetails]);

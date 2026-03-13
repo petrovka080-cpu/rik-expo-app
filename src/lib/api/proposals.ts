@@ -3,6 +3,12 @@ import type { Database } from "../database.types";
 import { client, toRpcId } from "./_core";
 import type { ProposalItemRow } from "./types";
 
+const logProposalsDebug = (...args: unknown[]) => {
+  if (__DEV__) {
+    console.warn(...args);
+  }
+};
+
 type ProposalRow = Pick<
   Database["public"]["Tables"]["proposals"]["Row"],
   "id" | "proposal_no" | "id_short"
@@ -128,10 +134,10 @@ export async function proposalAddItems(proposalId: number | string, requestItemI
         };
         const ins = await client.from("proposal_items").insert(payload).select("id").single();
         if (!ins.error) ok++;
-        else console.warn("[proposalAddItems/fallback/insert]", ins.error.message);
+        else logProposalsDebug("[proposalAddItems/fallback/insert]", ins.error.message);
       } catch (e) {
         const msg = e instanceof Error ? e.message : String(e);
-        console.warn("[proposalAddItems/fallback/insert ex]", msg);
+        logProposalsDebug("[proposalAddItems/fallback/insert ex]", msg);
       }
     }
     return ok;
@@ -180,7 +186,7 @@ export async function listDirectorProposalsPending(): Promise<Array<{ id: string
           .filter((x) => x.submitted_at != null);
       }
     } catch {}
-    console.warn("[listDirectorProposalsPending] error:", rowsFromTable.error?.message);
+    logProposalsDebug("[listDirectorProposalsPending] error:", rowsFromTable.error?.message);
     return [];
   }
 
@@ -204,7 +210,7 @@ export async function proposalItems(proposalId: string | number): Promise<Propos
     }
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
-    console.warn("[proposalItems/table]", msg);
+    logProposalsDebug("[proposalItems/table]", msg);
   }
 
   try {

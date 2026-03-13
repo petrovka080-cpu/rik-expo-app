@@ -8,6 +8,11 @@ import type { Attachment } from "../buyer.types";
 
 type AlertFn = (title: string, message?: string) => void;
 type FileLike = File | Blob | { name?: string | null; uri?: string | null; mimeType?: string | null; size?: number | null };
+const logBuyerAccountingDebug = (...args: unknown[]) => {
+  if (__DEV__) {
+    console.warn(...args);
+  }
+};
 
 export function useBuyerAccountingSend<TApproved extends { id?: string | number | null }>(params: {
   acctProposalId: string | number | null;
@@ -98,7 +103,7 @@ export function useBuyerAccountingSend<TApproved extends { id?: string | number 
       setApproved,
       setBusy: setAcctBusy,
       alert: alertUser,
-      log: console.warn,
+      log: logBuyerAccountingDebug,
     });
   }, [
     acctProposalId,

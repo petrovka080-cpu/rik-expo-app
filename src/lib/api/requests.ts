@@ -2,6 +2,12 @@ import { supabase } from "../supabaseClient";
 import { client, parseErr, normalizeUuid, toFilterId } from "./_core";
 import type { ReqItemRow, RequestMeta, RequestRecord } from "./types";
 
+const logRequestsDebug = (...args: unknown[]) => {
+  if (__DEV__) {
+    console.warn(...args);
+  }
+};
+
 // cache id черновика на сессию (uuid или int)
 let _draftRequestIdAny: string | number | null = null;
 let _requestsSubmittedAtSupportedCache: boolean | null = null;
@@ -130,7 +136,7 @@ export async function listRequestItems(requestId: number | string): Promise<ReqI
       note: r.note ?? null,
     })) as ReqItemRow[];
   } catch (e) {
-    console.warn("[listRequestItems]", (e as any)?.message ?? e);
+    logRequestsDebug("[listRequestItems]", (e as any)?.message ?? e);
     return [];
   }
 }
@@ -163,7 +169,7 @@ export async function requestCreateDraft(meta?: RequestMeta): Promise<RequestRec
       return row;
     }
   } catch (e) {
-    console.warn("[requestCreateDraft]", parseErr(e));
+    logRequestsDebug("[requestCreateDraft]", parseErr(e));
     throw e;
   }
 
@@ -176,7 +182,7 @@ export async function ensureRequestSmart(currentId?: number | string, meta?: Req
     const created = await requestCreateDraft(meta);
     if (created?.id) return created.id;
   } catch (e) {
-    console.warn("[ensureRequestSmart]", parseErr(e));
+    logRequestsDebug("[ensureRequestSmart]", parseErr(e));
   }
   return currentId ?? "";
 }
@@ -211,7 +217,7 @@ export async function ensureRequest(requestId: number | string): Promise<number 
 
     if (!up.error && up.data?.id != null) return up.data.id;
   } catch (e) {
-    console.warn("[ensureRequest/upsert]", parseErr(e));
+    logRequestsDebug("[ensureRequest/upsert]", parseErr(e));
   }
 
   return rid;
@@ -278,7 +284,7 @@ async function requestHasPostDraftItems(requestId: string): Promise<boolean> {
     const rows = Array.isArray(q.data) ? (q.data as Array<{ status?: string | null }>) : [];
     return rows.some((row) => !isDraftOrPendingStatus(row?.status ?? null));
   } catch (e) {
-    console.warn("[requestSubmit/guard probe]", parseErr(e));
+    logRequestsDebug("[requestSubmit/guard probe]", parseErr(e));
     return false;
   }
 }
@@ -331,7 +337,7 @@ export async function requestSubmit(requestId: number | string): Promise<Request
       return row;
     }
   } catch (e) {
-    console.warn("[requestSubmit/rpc]", parseErr(e));
+    logRequestsDebug("[requestSubmit/rpc]", parseErr(e));
   }
 
   // fallback update
@@ -387,7 +393,7 @@ export async function requestSubmit(requestId: number | string): Promise<Request
       .eq("request_id", requestFilter)
       .is("status", null);
   } catch (e) {
-    console.warn("[requestSubmit/request_items fallback]", parseErr(e));
+    logRequestsDebug("[requestSubmit/request_items fallback]", parseErr(e));
   }
   await reconcileRequestHeadStatus(String(ridForRpc));
 

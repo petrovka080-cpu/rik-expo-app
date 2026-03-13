@@ -7,7 +7,7 @@ import { supabase } from "./supabaseClient";
 const FileSystemCompat = FileSystemModule as any;
 
 
-/** РџРµСЂРµРёСЃРїРѕР»СЊР·СѓРµРј Р°РїР»РѕР°РґРµСЂ РёР· rik_api.ts */
+/** Reuse uploader from rik_api.ts */
 export { uploadProposalAttachment } from "./catalog_api";
 
 type AttRow = {
@@ -18,7 +18,7 @@ type AttRow = {
   group_key: string;
   created_at: string;
 
-  // вњ… Р”Р»СЏ UI/WEB: С‡С‚РѕР±С‹ РјРѕР¶РЅРѕ Р±С‹Р»Рѕ РѕС‚РєСЂС‹С‚СЊ СЃР°РјРѕРјСѓ, РµСЃР»Рё pop-up Р·Р°Р±Р»РѕРєРёСЂРѕРІР°РЅ
+  // For UI/web fallback opening when pop-up is blocked
   signed_url?: string | null;
 };
 
@@ -47,20 +47,20 @@ export const isPdfLike = (fileName?: string | null, url?: string | null) => {
 
 function notFoundMsg(groupKey: string) {
   return groupKey === "invoice"
-    ? "РЎС‡С‘С‚ РЅРµ РїСЂРёРєСЂРµРїР»С‘РЅ"
+    ? "Счет не прикреплен"
     : groupKey === "payment"
-      ? "РџР»Р°С‚С‘Р¶РЅС‹Рµ РґРѕРєСѓРјРµРЅС‚С‹ РЅРµ РЅР°Р№РґРµРЅС‹"
-      : "Р’Р»РѕР¶РµРЅРёСЏ РЅРµ РЅР°Р№РґРµРЅС‹";
+      ? "Платежные документы не найдены"
+      : "Вложения не найдены";
 }
 
-/** РќРѕСЂРјР°Р»РёР·СѓРµРј РёРјСЏ С„Р°Р№Р»Р° вЂ” Р±РµР·РѕРїР°СЃРЅРѕ РґР»СЏ РїСѓС‚РµР№/СЃРѕС…СЂР°РЅРµРЅРёСЏ */
+/** Normalize file name for safe local paths. */
 function safeFileName(name: string | undefined) {
   const base = name || "file.bin";
   return base.replace(/[^\p{L}\p{N}_\-(). ]+/gu, "_");
 }
 
 async function openLocalFilePreview(uri: string) {
-  // 1) Android: РѕС‚РєСЂС‹РІР°РµРј С‡РµСЂРµР· Intent (СЃР°РјС‹Р№ СЃС‚Р°Р±РёР»СЊРЅС‹Р№ РїСѓС‚СЊ)
+  // 1) Android: open through Intent first
   if (Platform.OS === "android") {
     try {
       const IntentLauncher = (await import("expo-intent-launcher")) as unknown as IntentLauncherModule;
@@ -76,11 +76,11 @@ async function openLocalFilePreview(uri: string) {
       );
       return;
     } catch {
-      // fallback РЅРёР¶Рµ
+      // fallback below
     }
   }
 
-  // 2) iOS Рё fallback: external open, РЅРѕ РЅРµ share semantics
+  // 2) iOS and generic fallback: open externally
   try {
     await Linking.openURL(uri);
   } catch (e: unknown) {
@@ -88,10 +88,10 @@ async function openLocalFilePreview(uri: string) {
   }
 }
 
-// ===== WEB: РѕС‚РєСЂС‹РІР°РµРј РєР°Рє blob-url (РѕР±С…РѕРґРёС‚ Chrome PDF viewer / signed-url РіР»СЋРєРё) =====
+// ===== WEB: open as blob-url first =====
 async function webOpenAsBlobWindow(url: string, fileName?: string) {
   const u = String(url || "").trim();
-  if (!u) throw new Error("РџСѓСЃС‚Р°СЏ СЃСЃС‹Р»РєР°");
+  if (!u) throw new Error("Пустая ссылка");
 
   const res = await fetch(u);
   if (!res.ok) {
@@ -119,7 +119,7 @@ async function webOpenAsBlobWindow(url: string, fileName?: string) {
 
 function webOpenUrlStrict(url: string) {
   const u = String(url || "").trim();
-  if (!u) throw new Error("РџСѓСЃС‚Р°СЏ СЃСЃС‹Р»РєР°");
+  if (!u) throw new Error("Пустая ссылка");
 
   const w = window.open(u, "_blank", "noopener,noreferrer");
   if (w) return;
@@ -136,9 +136,9 @@ function webOpenUrlStrict(url: string) {
   } catch { }
 
   try {
-    window.prompt("РЎСЃС‹Р»РєР° (СЃРєРѕРїРёСЂСѓР№ Рё РѕС‚РєСЂРѕР№ РІ РЅРѕРІРѕР№ РІРєР»Р°РґРєРµ):", u);
+    window.prompt("Ссылка: скопируйте и откройте в новой вкладке.", u);
   } catch {
-    alert("Pop-up Р·Р°Р±Р»РѕРєРёСЂРѕРІР°РЅ. РЎРєРѕРїРёСЂСѓР№ СЃСЃС‹Р»РєСѓ РёР· Р°РґСЂРµСЃРЅРѕР№ СЃС‚СЂРѕРєРё (DevTools/Network).");
+    alert("Всплывающее окно заблокировано. Скопируйте ссылку и откройте ее вручную.");
   }
 }
 
@@ -153,13 +153,13 @@ function guardOpenOnce(key: string, ms = 1200) {
 
 export async function openSignedUrlUniversal(url: string, fileName?: string) {
   const u = String(url || "").trim();
-  if (!u) throw new Error("РџСѓСЃС‚Р°СЏ СЃСЃС‹Р»РєР°");
+  if (!u) throw new Error("Пустая ссылка");
 
   const base = u.split("?")[0];
   const name = String(fileName || "").trim();
   if (!guardOpenOnce(`${Platform.OS}|${base}|${name}`)) return;
 
-  // WEB: blob-open в†’ fallback РїСЂСЏРјРѕР№ open
+  // WEB: blob-open with direct-open fallback
   if (Platform.OS === "web") {
     try {
       await webOpenAsBlobWindow(u, fileName);
@@ -169,7 +169,7 @@ export async function openSignedUrlUniversal(url: string, fileName?: string) {
     return;
   }
 
-  // NATIVE: СЃРєР°С‡РёРІР°РµРј РІ cache Рё РѕС‚РєСЂС‹РІР°РµРј Р»РѕРєР°Р»СЊРЅРѕ
+  // NATIVE: download to cache and open locally
   const clean = safeFileName(fileName || "document.bin");
   const paths = getFileSystemPaths();
   const baseDir = paths.cacheDir;
@@ -178,7 +178,7 @@ export async function openSignedUrlUniversal(url: string, fileName?: string) {
 
   const res = await FileSystemCompat.downloadAsync(u, target);
   const localUri = res?.uri;
-  if (!localUri) throw new Error("РќРµ СѓРґР°Р»РѕСЃСЊ СЃРѕС…СЂР°РЅРёС‚СЊ С„Р°Р№Р»");
+  if (!localUri) throw new Error("Не удалось сохранить файл");
 
   await openLocalFilePreview(localUri);
 }
@@ -193,7 +193,7 @@ export async function openAttachment(
 
   let rows: AttRow[] = [];
 
-  // 1) RPC list_attachments (РµСЃР»Рё РµСЃС‚СЊ)
+  // 1) RPC list_attachments when available
   try {
     const { data, error } = await supabase.rpc(
       "list_attachments",
@@ -205,7 +205,7 @@ export async function openAttachment(
     if (!error && Array.isArray(data)) rows = data as AttRow[];
   } catch { }
 
-  // 2) Fallback: С‚Р°Р±Р»РёС†Р° proposal_attachments
+  // 2) Fallback: proposal_attachments table
   if (!rows.length) {
     const q = await supabase
       .from("proposal_attachments")
@@ -231,14 +231,14 @@ export async function openAttachment(
     const { data, error } = await supabase.storage.from(bucket).createSignedUrl(path, 60 * 10);
     if (error) throw toSupabaseError("createSignedUrl failed", error);
     const url = data?.signedUrl;
-    if (!url) throw new Error("РќРµ СѓРґР°Р»РѕСЃСЊ РїРѕР»СѓС‡РёС‚СЊ СЃСЃС‹Р»РєСѓ");
+    if (!url) throw new Error("Не удалось получить ссылку");
     return url;
   };
 
   const openOne = async (row: AttRow) => {
     const bucket = String(row.bucket_id || "").trim();
     const path = String(row.storage_path || "").trim();
-    if (!bucket || !path) throw new Error("bucket_id/storage_path РїСѓСЃС‚С‹Рµ");
+    if (!bucket || !path) throw new Error("Пустой bucket_id или storage_path");
 
     const signedUrl = await makeSignedUrl(bucket, path);
     row.signed_url = signedUrl;
@@ -369,7 +369,7 @@ export async function openSupplierFile(
     limit: opts?.all ? 1000 : 50,
   });
 
-  if (!meta.length) throw new Error("Р¤Р°Р№Р»С‹ РїРѕСЃС‚Р°РІС‰РёРєР° РЅРµ РЅР°Р№РґРµРЅС‹");
+  if (!meta.length) throw new Error("Файлы поставщика не найдены");
 
   const rows = meta
     .slice()
@@ -377,7 +377,7 @@ export async function openSupplierFile(
 
   const openUrl = async (url: string) => {
     const u = String(url || "").trim();
-    if (!u) throw new Error("РџСѓСЃС‚Р°СЏ СЃСЃС‹Р»РєР° С„Р°Р№Р»Р° РїРѕСЃС‚Р°РІС‰РёРєР°");
+    if (!u) throw new Error("Пустая ссылка на файл поставщика");
 
     if (Platform.OS === "web") {
       try {
@@ -391,7 +391,7 @@ export async function openSupplierFile(
     try {
       await Linking.openURL(u);
     } catch (e: unknown) {
-      Alert.alert("РќРµ СѓРґР°Р»РѕСЃСЊ РѕС‚РєСЂС‹С‚СЊ С„Р°Р№Р»", errorText(e));
+      Alert.alert("Не удалось открыть файл", errorText(e));
     }
   };
 

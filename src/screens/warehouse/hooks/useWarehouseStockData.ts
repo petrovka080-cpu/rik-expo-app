@@ -22,7 +22,9 @@ export function useWarehouseStockData(params: { supabase: SupabaseClient }) {
       setStockCount(newRows.length);
       setStockSupported(r.supported);
     } catch (e) {
-      console.warn("[fetchStock] error", e);
+      if (__DEV__) {
+        console.warn("[fetchStock] error", e);
+      }
     } finally {
       stockFetchMutex.current = false;
     }
@@ -35,4 +37,3 @@ export function useWarehouseStockData(params: { supabase: SupabaseClient }) {
     fetchStock,
   };
 }
-

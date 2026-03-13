@@ -211,7 +211,10 @@ export function useDirectorProposalRow({
         }, 0);
       }
     } catch (e: unknown) {
-      Alert.alert("Ошибка", errText(e) || "Не удалось загрузить строки предложения");
+      Alert.alert(
+        "Не удалось загрузить строки предложения",
+        errText(e) || "Попробуйте еще раз.",
+      );
       setItemsByProp((prev) => ({ ...prev, [pidStr]: [] }));
       setLoadedByProp((prev) => ({ ...prev, [pidStr]: true }));
     } finally {

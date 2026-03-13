@@ -20,7 +20,9 @@ export async function listSuppliers(q?: string): Promise<Supplier[]> {
         normStr(s.specialization).includes(n)
     );
   } catch (e) {
-    console.warn("[listSuppliers]", parseErr(e));
+    if (__DEV__) {
+      console.warn("[listSuppliers]", parseErr(e));
+    }
     return [];
   }
 }
@@ -75,7 +77,9 @@ export async function listSupplierFiles(supplierId: string) {
     if (r.error) throw r.error;
     return r.data || [];
   } catch (e) {
-    console.warn("[listSupplierFiles]", parseErr(e));
+    if (__DEV__) {
+      console.warn("[listSupplierFiles]", parseErr(e));
+    }
     return [];
   }
 }

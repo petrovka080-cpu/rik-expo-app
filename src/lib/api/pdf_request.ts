@@ -3,6 +3,12 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "../database.types";
 import { openHtmlAsPdfUniversal } from "./pdf";
 
+const logPdfRequestDebug = (...args: unknown[]) => {
+  if (__DEV__) {
+    console.warn(...args);
+  }
+};
+
 type RequestLabelRow = Pick<Database["public"]["Tables"]["requests"]["Row"], "id" | "display_no">;
 type RequestHeadRow = Pick<
   Database["public"]["Tables"]["requests"]["Row"],
@@ -42,7 +48,7 @@ export async function resolveRequestLabel(rid: string | number): Promise<string>
       if (dn) return dn;
     }
   } catch (e: unknown) {
-    console.warn("[resolveRequestLabel]", getObjectField<string>(e, "message") ?? e);
+    logPdfRequestDebug("[resolveRequestLabel]", getObjectField<string>(e, "message") ?? e);
   }
   return /^\d+$/.test(id) ? `#${id}` : `#${id.slice(0, 8)}`;
 }

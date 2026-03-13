@@ -45,7 +45,9 @@ export function useWarehousemanFio({ getTodaySixAM, onError }: UseWarehousemanFi
           setIsFioConfirmVisible(true);
         }
       } catch (e) {
-        console.warn("[warehousemanFio] load failed", e);
+        if (__DEV__) {
+          console.warn("[warehousemanFio] load failed", e);
+        }
       }
     })();
     return () => {

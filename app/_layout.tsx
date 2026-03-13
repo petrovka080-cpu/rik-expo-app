@@ -97,7 +97,9 @@ export default function RootLayout() {
 
       setRole(typeof r === "string" ? r : null);
     } catch (e: any) {
-      console.warn("[RootLayout] role load failed:", e?.message ?? e);
+      if (__DEV__) {
+        console.warn("[RootLayout] role load failed:", e?.message ?? e);
+      }
       setRole(null);
     } finally {
       roleLoadingRef.current = false;
@@ -129,7 +131,9 @@ export default function RootLayout() {
           setRoleLoaded(true);
         }
       } catch (e: any) {
-        console.warn("[RootLayout] session load failed:", e?.message ?? e);
+        if (__DEV__) {
+          console.warn("[RootLayout] session load failed:", e?.message ?? e);
+        }
         if (!active) return;
         setHasSession(false);
         clearDocumentSessions();
