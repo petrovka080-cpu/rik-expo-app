@@ -37,13 +37,6 @@ const VIEWER_BORDER = "rgba(255,255,255,0.08)";
 const VIEWER_TEXT = "#F8FAFC";
 const VIEWER_SUBTLE = "rgba(255,255,255,0.72)";
 const VIEWER_DIM = "rgba(255,255,255,0.52)";
-const WEB_PDFJS_URL = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js";
-const WEB_PDFJS_WORKER_URL = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
-
-type PageTelemetry = {
-  current: number;
-  total: number;
-};
 
 function resolveViewerState(session: DocumentSession | null, asset: DocumentAsset | null): ViewerState {
   if (!session) return "empty";
@@ -65,142 +58,6 @@ function getReadAccessParentUri(uri?: string | null) {
   const slashIndex = value.lastIndexOf("/");
   if (slashIndex <= "file://".length) return undefined;
   return value.slice(0, slashIndex);
-}
-
-function buildWebPdfTelemetryHtml(pdfUrl: string) {
-  const urlLiteral = JSON.stringify(pdfUrl);
-  const pdfJsLiteral = JSON.stringify(WEB_PDFJS_URL);
-  const workerLiteral = JSON.stringify(WEB_PDFJS_WORKER_URL);
-
-  return `<!doctype html>
-<html>
-  <head>
-    <meta charset="utf-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes"
-    />
-    <style>
-      html, body {
-        margin: 0;
-        padding: 0;
-        background: #111111;
-        height: 100%;
-        overflow: hidden;
-      }
-      #app {
-        height: 100%;
-        overflow: auto;
-        -webkit-overflow-scrolling: touch;
-        padding: 20px 0 48px;
-        box-sizing: border-box;
-      }
-      .page-wrap {
-        width: min(100%, 980px);
-        margin: 0 auto 14px;
-        display: flex;
-        justify-content: center;
-      }
-      canvas {
-        display: block;
-        background: white;
-        box-shadow: 0 18px 36px rgba(0, 0, 0, 0.24);
-      }
-      #status {
-        color: rgba(255,255,255,0.72);
-        font: 14px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
-        height: 100%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
-    </style>
-  </head>
-  <body>
-    <div id="app"><div id="status">Preparing document...</div></div>
-    <script src=${pdfJsLiteral}></script>
-    <script>
-      (function () {
-        const pdfUrl = ${urlLiteral};
-        const app = document.getElementById('app');
-        const statusNode = document.getElementById('status');
-        const pageNodes = [];
-        let totalPages = 0;
-        let lastCurrent = 1;
-
-        function emit(payload) {
-          const message = { __pdfTelemetry: true, ...payload };
-          try { window.parent.postMessage(message, '*'); } catch {}
-          try {
-            if (window.ReactNativeWebView && typeof window.ReactNativeWebView.postMessage === 'function') {
-              window.ReactNativeWebView.postMessage(JSON.stringify(message));
-            }
-          } catch {}
-        }
-
-        function reportCurrentPage() {
-          if (!pageNodes.length) return;
-          const viewportH = window.innerHeight || document.documentElement.clientHeight || 0;
-          let bestPage = 1;
-          let bestVisible = -1;
-          for (const entry of pageNodes) {
-            const rect = entry.node.getBoundingClientRect();
-            const top = Math.max(rect.top, 0);
-            const bottom = Math.min(rect.bottom, viewportH);
-            const visible = Math.max(0, bottom - top);
-            if (visible > bestVisible) {
-              bestVisible = visible;
-              bestPage = entry.page;
-            }
-          }
-          if (bestPage !== lastCurrent) {
-            lastCurrent = bestPage;
-            emit({ type: 'page', current: bestPage, total: totalPages });
-          }
-        }
-
-        async function render() {
-          try {
-            pdfjsLib.GlobalWorkerOptions.workerSrc = ${workerLiteral};
-            const loadingTask = pdfjsLib.getDocument(pdfUrl);
-            const pdf = await loadingTask.promise;
-            totalPages = Number(pdf.numPages || 0);
-            lastCurrent = totalPages > 0 ? 1 : 0;
-            app.innerHTML = '';
-            emit({ type: 'ready', current: lastCurrent, total: totalPages });
-
-            for (let pageNumber = 1; pageNumber <= totalPages; pageNumber += 1) {
-              const page = await pdf.getPage(pageNumber);
-              const initialViewport = page.getViewport({ scale: 1 });
-              const containerWidth = Math.min(app.clientWidth || window.innerWidth || initialViewport.width, 980);
-              const scale = containerWidth / initialViewport.width;
-              const viewport = page.getViewport({ scale });
-              const wrap = document.createElement('div');
-              wrap.className = 'page-wrap';
-              const canvas = document.createElement('canvas');
-              canvas.width = Math.floor(viewport.width);
-              canvas.height = Math.floor(viewport.height);
-              wrap.appendChild(canvas);
-              app.appendChild(wrap);
-              pageNodes.push({ page: pageNumber, node: wrap });
-              await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
-            }
-
-            reportCurrentPage();
-            app.addEventListener('scroll', reportCurrentPage, { passive: true });
-            window.addEventListener('resize', reportCurrentPage);
-          } catch (error) {
-            const message = error && error.message ? error.message : String(error || 'Failed to render PDF');
-            if (statusNode) statusNode.textContent = message;
-            emit({ type: 'error', message });
-          }
-        }
-
-        render();
-      })();
-    </script>
-  </body>
-</html>`;
 }
 
 async function downloadPdfAsset(asset: DocumentAsset) {
@@ -253,7 +110,6 @@ export default function PdfViewerScreen() {
   const [menuOpen, setMenuOpen] = React.useState(false);
   const [isReadyToRender, setIsReadyToRender] = React.useState(false);
   const [chromeVisible, setChromeVisible] = React.useState(true);
-  const [pageTelemetry, setPageTelemetry] = React.useState<PageTelemetry>({ current: 1, total: 1 });
   const openedAtRef = React.useRef<number>(Date.now());
   const loadingTimeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
   const renderDelayRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -349,7 +205,6 @@ export default function PdfViewerScreen() {
     setIsReadyToRender(false);
     setChromeVisible(true);
     setMenuOpen(false);
-    setPageTelemetry({ current: 1, total: 1 });
     const next = syncSnapshot();
 
     if (!next.session) {
@@ -489,18 +344,9 @@ export default function PdfViewerScreen() {
     return { uri: asset.uri };
   }, [asset]);
 
-  const webPdfHtml = React.useMemo(() => {
-    if (Platform.OS !== "web") return "";
-    if (!asset?.uri) return "";
-    return buildWebPdfTelemetryHtml(asset.uri);
-  }, [asset?.uri]);
-
   const showChrome = Platform.OS === "web" ? true : chromeVisible;
   const headerHeight = Platform.OS === "web" || width >= 768 ? 56 : 50;
-  const pageIndicatorText =
-    state === "ready"
-      ? `${Math.max(1, pageTelemetry.current)} / ${Math.max(1, pageTelemetry.total)}`
-      : "…";
+  const pageIndicatorText = state === "ready" ? "1 / 1" : "…";
 
   const toggleChrome = React.useCallback(() => {
     if (Platform.OS === "web") return;
@@ -580,43 +426,6 @@ export default function PdfViewerScreen() {
     };
   }, [asset, sessionId, source]);
 
-  React.useEffect(() => {
-    if (Platform.OS !== "web") return;
-
-    const onMessage = (event: MessageEvent) => {
-      const payload = event.data;
-      if (!payload || typeof payload !== "object" || payload.__pdfTelemetry !== true) return;
-
-      if (payload.type === "ready") {
-        const current = Number(payload.current || 1);
-        const total = Number(payload.total || 1);
-        setPageTelemetry({
-          current: Number.isFinite(current) && current > 0 ? current : 1,
-          total: Number.isFinite(total) && total > 0 ? total : 1,
-        });
-        markReady();
-        return;
-      }
-
-      if (payload.type === "page") {
-        const current = Number(payload.current || 1);
-        const total = Number(payload.total || pageTelemetry.total || 1);
-        setPageTelemetry({
-          current: Number.isFinite(current) && current > 0 ? current : 1,
-          total: Number.isFinite(total) && total > 0 ? total : 1,
-        });
-        return;
-      }
-
-      if (payload.type === "error") {
-        markError(String(payload.message || "Web PDF renderer failed."));
-      }
-    };
-
-    window.addEventListener("message", onMessage);
-    return () => window.removeEventListener("message", onMessage);
-  }, [markError, markReady, pageTelemetry.total]);
-
   const body = (() => {
     if (state === "empty") {
       console.error("[pdf-viewer] viewer_missing_session", {
@@ -689,7 +498,8 @@ export default function PdfViewerScreen() {
             >
               <iframe
                 title={asset.title || "PDF"}
-                srcDoc={webPdfHtml}
+                src={asset.uri}
+                onLoad={() => markReady()}
                 onError={() => markError("Web PDF frame failed to load.")}
                 style={{
                   width: "100%",
