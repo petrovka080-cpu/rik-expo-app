@@ -8,15 +8,15 @@ import {
   fetchBuyerProposalSummaryByStatus,
   fetchBuyerRejectedProposalRows,
 } from "./buyer.buckets.repo";
+import {
+  buildProposalItemCountMap,
+  filterProposalBucketsWithItems,
+  mapProposalSummaryRows,
+  mapRejectedProposalRows,
+  type BuyerProposalBucketRow,
+} from "./buyer.fetchers.data";
 
-export type BuyerProposalBucketRow = {
-  id: string;
-  status: string;
-  submitted_at: string | null;
-  total_sum?: number;
-  sent_to_accountant_at?: string | null;
-  items_cnt?: number;
-};
+export type { BuyerProposalBucketRow } from "./buyer.fetchers.data";
 
 const REWORK_STATUS_LOWER = BUYER_STATUS_REWORK.toLowerCase();
 
@@ -117,52 +117,15 @@ export async function fetchBuyerBucketsProd(params: {
   setLoadingBuckets(true);
   try {
     const pQ = await fetchBuyerProposalSummaryByStatus(supabase, BUYER_STATUS_PENDING);
-
-    const pendingClean: BuyerProposalBucketRow[] =
-      !pQ.error && Array.isArray(pQ.data)
-        ? (pQ.data as Array<Record<string, unknown>>).map((x) => ({
-            id: String(x.proposal_id),
-            status: String(x.status),
-            submitted_at: (x.submitted_at as string | null) ?? null,
-            total_sum: Number(x.total_sum ?? 0),
-            sent_to_accountant_at: (x.sent_to_accountant_at as string | null) ?? null,
-            items_cnt: Number(x.items_cnt ?? 0),
-          }))
-        : [];
+    const pendingClean = !pQ.error ? mapProposalSummaryRows(pQ.data) : [];
     setPending(pendingClean);
 
     const apQ = await fetchBuyerProposalSummaryByStatus(supabase, BUYER_STATUS_APPROVED);
-
-    const approvedClean: BuyerProposalBucketRow[] =
-      !apQ.error && Array.isArray(apQ.data)
-        ? (apQ.data as Array<Record<string, unknown>>).map((x) => ({
-            id: String(x.proposal_id),
-            status: String(x.status),
-            submitted_at: (x.submitted_at as string | null) ?? null,
-            total_sum: Number(x.total_sum ?? 0),
-            sent_to_accountant_at: (x.sent_to_accountant_at as string | null) ?? null,
-            items_cnt: Number(x.items_cnt ?? 0),
-          }))
-        : [];
+    const approvedClean = !apQ.error ? mapProposalSummaryRows(apQ.data) : [];
     setApproved(approvedClean);
 
     const reAcc = await fetchBuyerRejectedProposalRows(supabase);
-
-    const seen = new Set<string>();
-    const rejectedRaw: BuyerProposalBucketRow[] = (reAcc.data || [])
-      .filter((x: Record<string, unknown>) => {
-        const id = String(x?.id ?? "").trim();
-        if (!id || seen.has(id)) return false;
-        seen.add(id);
-
-        const ps = String(x?.payment_status ?? "").toLowerCase();
-        return ps.startsWith(REWORK_STATUS_LOWER);
-      })
-      .map((x: Record<string, unknown>) => {
-        const ps = String(x.payment_status ?? BUYER_STATUS_REWORK);
-        const submittedAt = x.submitted_at ?? x.created_at ?? null;
-        return { id: String(x.id), status: ps, submitted_at: (submittedAt as string | null) };
-      });
+    const rejectedRaw = !reAcc.error ? mapRejectedProposalRows(reAcc.data, REWORK_STATUS_LOWER) : [];
 
     let rejectedClean = rejectedRaw;
     try {
@@ -170,13 +133,10 @@ export async function fetchBuyerBucketsProd(params: {
       if (ids.length) {
         const pi = await fetchBuyerProposalItemIds(supabase, ids);
         if (!pi.error) {
-          const cnt: Record<string, number> = {};
-          (pi.data || []).forEach((row: Record<string, unknown>) => {
-            const pid = String(row?.proposal_id || "");
-            if (!pid) return;
-            cnt[pid] = (cnt[pid] || 0) + 1;
-          });
-          rejectedClean = rejectedRaw.filter((r) => (cnt[r.id] || 0) > 0);
+          rejectedClean = filterProposalBucketsWithItems(
+            rejectedRaw,
+            buildProposalItemCountMap(pi.data),
+          );
         }
       }
     } catch {
