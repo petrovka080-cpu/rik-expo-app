@@ -164,9 +164,9 @@ export async function previewPdfDocument(
 }
 
 export async function sharePdfDocument(doc: DocumentDescriptor): Promise<void> {
-  await openPdfShare(doc.uri);
+  await openPdfShare(doc.uri, doc.fileName);
 }
 
 export async function openPdfDocumentExternal(doc: DocumentDescriptor): Promise<void> {
-  await openPdfExternal(doc.uri);
+  await openPdfExternal(doc.uri, doc.fileName);
 }
