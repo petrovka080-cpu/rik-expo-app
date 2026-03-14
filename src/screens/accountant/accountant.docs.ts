@@ -2,10 +2,10 @@ import { Share } from "react-native";
 import { router } from "expo-router";
 
 import { exportProposalPdf } from "../../lib/catalog_api";
+import { openAppAttachment } from "../../lib/documents/attachmentOpener";
 import {
   getLatestProposalAttachmentPreview,
   isPdfLike,
-  openSignedUrlUniversal,
   uploadProposalAttachment,
 } from "../../lib/files";
 import { supabase } from "../../lib/supabaseClient";
@@ -29,7 +29,7 @@ async function previewProposalAttachment(
 ): Promise<void> {
   const preview = await getLatestProposalAttachmentPreview(proposalId, groupKey);
   if (!isPdfLike(preview.fileName, preview.url)) {
-    await openSignedUrlUniversal(preview.url, preview.fileName);
+    await openAppAttachment({ url: preview.url, fileName: preview.fileName });
     return;
   }
 
@@ -79,7 +79,7 @@ export async function openPaymentDocsOrUpload(p: {
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
     const low = msg.toLowerCase();
-    const notFound = low.includes("not found") || low.includes("не найден");
+    const notFound = low.includes("not found") || low.includes("РЅРµ РЅР°Р№РґРµРЅ");
     if (!notFound) {
       safeAlert("Payment documents", msg);
       return;

@@ -3,13 +3,14 @@ import type { Dispatch, SetStateAction } from "react";
 import { useRouter } from "expo-router";
 import { Platform, Share } from "react-native";
 
+import { openAppAttachment } from "../../lib/documents/attachmentOpener";
 import { supabase } from "../../lib/supabaseClient";
 import {
   exportProposalPdf,
   generatePaymentOrderPdfDocument,
   generateProposalPdfDocument,
 } from "../../lib/catalog_api";
-import { getLatestProposalAttachmentPreview, isPdfLike, openAttachment, openSignedUrlUniversal } from "../../lib/files";
+import { getLatestProposalAttachmentPreview, isPdfLike, openAttachment } from "../../lib/files";
 import { buildPdfFileName, createPdfDocumentDescriptor } from "../../lib/documents/pdfDocument";
 import { preparePdfDocument, previewPdfDocument } from "../../lib/documents/pdfDocumentActions";
 import { fetchLastPaymentIdByProposal } from "./accountant.payment";
@@ -53,10 +54,10 @@ export function useAccountantDocuments(params: Params) {
       busy: gbusy,
       supabase,
       key: `pdf:acc:prop:${pid}`,
-      label: "Открываю PDF…",
+      label: "РћС‚РєСЂС‹РІР°СЋ PDFвЂ¦",
       descriptor: {
         ...template,
-        title: `Предложение ${pid.slice(0, 8)}`,
+        title: `РџСЂРµРґР»РѕР¶РµРЅРёРµ ${pid.slice(0, 8)}`,
         fileName: buildPdfFileName({
           documentType: "proposal",
           title: "predlozhenie",
@@ -82,14 +83,14 @@ export function useAccountantDocuments(params: Params) {
       }
       await Share.share({ message: String(uriOrUrl) });
     } catch (e: unknown) {
-      safeAlert("Ошибка", getErrorText(e));
+      safeAlert("РћС€РёР±РєР°", getErrorText(e));
     }
   }, [current, getErrorText, safeAlert]);
 
   const previewAttachment = useCallback(async (pid: string, groupKey: string, title: string, busyKey: string) => {
     const att = await getLatestProposalAttachmentPreview(pid, groupKey);
     if (!isPdfLike(att.fileName, att.url)) {
-      await openSignedUrlUniversal(att.url, att.fileName);
+      await openAppAttachment({ url: att.url, fileName: att.fileName });
       return;
     }
 
@@ -106,7 +107,7 @@ export function useAccountantDocuments(params: Params) {
       busy: gbusy,
       supabase,
       key: busyKey,
-      label: "Открываю документ…",
+      label: "РћС‚РєСЂС‹РІР°СЋ РґРѕРєСѓРјРµРЅС‚вЂ¦",
       descriptor: template,
       getRemoteUrl: () => att.url,
     });
@@ -118,9 +119,9 @@ export function useAccountantDocuments(params: Params) {
     if (!pid) return;
 
     try {
-      await previewAttachment(pid, "proposal_pdf", "Документ предложения", `pdf:acc:proposal-src:${pid}`);
+      await previewAttachment(pid, "proposal_pdf", "Р”РѕРєСѓРјРµРЅС‚ РїСЂРµРґР»РѕР¶РµРЅРёСЏ", `pdf:acc:proposal-src:${pid}`);
     } catch (e: unknown) {
-      safeAlert("Документ предложения", getErrorText(e));
+      safeAlert("Р”РѕРєСѓРјРµРЅС‚ РїСЂРµРґР»РѕР¶РµРЅРёСЏ", getErrorText(e));
     }
   }, [current, getErrorText, previewAttachment, safeAlert]);
 
@@ -129,9 +130,9 @@ export function useAccountantDocuments(params: Params) {
     if (!pid) return;
 
     try {
-      await previewAttachment(pid, "invoice", "Счет", `pdf:acc:invoice:${pid}`);
+      await previewAttachment(pid, "invoice", "РЎС‡РµС‚", `pdf:acc:invoice:${pid}`);
     } catch (e: unknown) {
-      safeAlert("Счет", getErrorText(e));
+      safeAlert("РЎС‡РµС‚", getErrorText(e));
     }
   }, [current, getErrorText, previewAttachment, safeAlert]);
 
@@ -145,7 +146,7 @@ export function useAccountantDocuments(params: Params) {
     }
 
     if (!payId) {
-      safeAlert("Платежное поручение", "Не найден payment_id для выбранного предложения.");
+      safeAlert("РџР»Р°С‚РµР¶РЅРѕРµ РїРѕСЂСѓС‡РµРЅРёРµ", "РќРµ РЅР°Р№РґРµРЅ payment_id РґР»СЏ РІС‹Р±СЂР°РЅРЅРѕРіРѕ РїСЂРµРґР»РѕР¶РµРЅРёСЏ.");
       return;
     }
 
@@ -154,10 +155,10 @@ export function useAccountantDocuments(params: Params) {
       busy: gbusy,
       supabase,
       key: `pdf:acc:pay:${payId}`,
-      label: "Открываю платежное поручение…",
+      label: "РћС‚РєСЂС‹РІР°СЋ РїР»Р°С‚РµР¶РЅРѕРµ РїРѕСЂСѓС‡РµРЅРёРµвЂ¦",
       descriptor: {
         ...template,
-        title: `Платежное поручение ${payId}`,
+        title: `РџР»Р°С‚РµР¶РЅРѕРµ РїРѕСЂСѓС‡РµРЅРёРµ ${payId}`,
         fileName: buildPdfFileName({
           documentType: "payment_order",
           title: supplierName || "payment_order",

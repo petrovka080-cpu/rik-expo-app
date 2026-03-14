@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, ScrollView, Animated } from 'react-native';
 import { useRouter } from 'expo-router';
-import { openSignedUrlUniversal } from "../../src/lib/files";
+import { openAppAttachment } from "../../src/lib/documents/attachmentOpener";
 import { UI, s } from "../../src/screens/director/director.styles";
 import DirectorDashboard from "../../src/screens/director/DirectorDashboard";
 import PeriodPickerSheet from "../../src/components/PeriodPickerSheet";
@@ -273,8 +273,13 @@ export default function DirectorScreen() {
         reqMetaById={vm.data.reqMetaByIdRef.current}
         isProposalPdfBusy={vm.proposalActions.isProposalPdfBusy}
         loadProposalAttachments={vm.proposalDetail.loadProposalAttachments}
-        onOpenAttachment={(url, fileName) => {
-          void openSignedUrlUniversal(url, fileName);
+        onOpenAttachment={(file) => {
+          void openAppAttachment({
+            url: file.url,
+            bucketId: file.bucket_id,
+            storagePath: file.storage_path,
+            fileName: file.file_name,
+          });
         }}
         rejectProposalItem={vm.proposalActions.rejectProposalItem}
         onDirectorReturn={vm.proposalDetail.onDirectorReturn}

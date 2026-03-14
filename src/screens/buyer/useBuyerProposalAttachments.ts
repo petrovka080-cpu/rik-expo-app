@@ -1,12 +1,14 @@
 import { useCallback, useState } from "react";
 import { useRouter } from "expo-router";
+import type { SupabaseClient } from "@supabase/supabase-js";
+
+import { openAppAttachment } from "../../lib/documents/attachmentOpener";
 import { createPdfDocumentDescriptor } from "../../lib/documents/pdfDocument";
 import { preparePdfDocument, previewPdfDocument } from "../../lib/documents/pdfDocumentActions";
-import { getLatestProposalAttachmentPreview, isPdfLike, openSignedUrlUniversal } from "../../lib/files";
+import { getLatestProposalAttachmentPreview, isPdfLike } from "../../lib/files";
 import { attachFileToProposalAction } from "./buyer.attachments.actions";
-import { repoListProposalAttachments, type PropAttachmentRow } from "./buyer.repo";
 import type { PickedFile } from "./buyer.attachments.actions";
-import type { SupabaseClient } from "@supabase/supabase-js";
+import { repoListProposalAttachments, type PropAttachmentRow } from "./buyer.repo";
 
 const errText = (error: unknown): string => {
   if (error instanceof Error && error.message.trim()) return error.message.trim();
@@ -71,7 +73,7 @@ export function useBuyerProposalAttachments(params: {
             if (isPdfLike(fileName, url)) {
               const template = createPdfDocumentDescriptor({
                 uri: url,
-                title: fileName.replace(/\.pdf$/i, "") || "Вложение",
+                title: fileName.replace(/\.pdf$/i, "") || "Р’Р»РѕР¶РµРЅРёРµ",
                 fileName,
                 documentType: "attachment_pdf",
                 source: "attachment",
@@ -82,7 +84,7 @@ export function useBuyerProposalAttachments(params: {
                 busy,
                 supabase,
                 key: `pdf:buyer:attachment:${attId || pid}`,
-                label: "Открываю вложение…",
+                label: "РћС‚РєСЂС‹РІР°СЋ РІР»РѕР¶РµРЅРёРµвЂ¦",
                 descriptor: template,
                 getRemoteUrl: () => url,
               });
@@ -93,12 +95,18 @@ export function useBuyerProposalAttachments(params: {
         }
 
         if (!url) {
-          alert("Вложение", "Нет ссылки на файл");
+          alert("Р’Р»РѕР¶РµРЅРёРµ", "РќРµС‚ СЃСЃС‹Р»РєРё РЅР° С„Р°Р№Р»");
           return;
         }
-        await openSignedUrlUniversal(url, String(att?.file_name ?? att?.name ?? "file"));
+
+        await openAppAttachment({
+          url,
+          bucketId: String(att?.bucket_id ?? "").trim() || null,
+          storagePath: String(att?.storage_path ?? "").trim() || null,
+          fileName: String(att?.file_name ?? att?.name ?? "file"),
+        });
       } catch (e: unknown) {
-        alert("Вложение", errText(e) || "Не удалось открыть файл");
+        alert("Р’Р»РѕР¶РµРЅРёРµ", errText(e) || "РќРµ СѓРґР°Р»РѕСЃСЊ РѕС‚РєСЂС‹С‚СЊ С„Р°Р№Р»");
       }
     },
     [alert, busy, router, supabase],

@@ -1,7 +1,9 @@
 import { useCallback, useRef, useState } from "react";
+
+import { openAppAttachment } from "../../lib/documents/attachmentOpener";
 import { supabase } from "../../lib/supabaseClient";
 import type { AttachmentRow } from "./types";
-import { openSignedUrlAcc, withTimeout } from "./helpers";
+import { withTimeout } from "./helpers";
 import {
   ensureAttachmentSignedUrl,
   hydrateAttachmentUrls,
@@ -45,7 +47,7 @@ export function useAccountantAttachments(params: {
         attCacheRef.current[pid] = { ts: Date.now(), rows: out };
       } catch (e: unknown) {
         if (!opts?.silent) {
-          safeAlert("Ошибка вложений", e instanceof Error ? e.message : String(e));
+          safeAlert("РћС€РёР±РєР° РІР»РѕР¶РµРЅРёР№", e instanceof Error ? e.message : String(e));
         }
       } finally {
         attLoadingRef.current = false;
@@ -57,17 +59,26 @@ export function useAccountantAttachments(params: {
   const openOneAttachment = useCallback(
     async (f: AttachmentRow) => {
       const id = String(f?.id ?? "");
-      const nameRaw = String(f?.file_name ?? "file.pdf");
+      const nameRaw = String(f?.file_name ?? "file");
       try {
         const ready = await ensureAttachmentSignedUrl(supabase, f);
         setAttRows((prev) =>
           prev.map((x) => (String(x.id) === id && !String(x.url ?? "").trim() ? { ...x, url: ready } : x)),
         );
         await runAction("acc_open_att", async () => {
-          await withTimeout(openSignedUrlAcc(ready, nameRaw), 25000, "openSignedUrlAcc stuck");
+          await withTimeout(
+            openAppAttachment({
+              url: ready,
+              bucketId: f.bucket_id,
+              storagePath: f.storage_path,
+              fileName: nameRaw,
+            }),
+            25000,
+            "openAppAttachment stuck",
+          );
         });
       } catch (e: unknown) {
-        safeAlert("Ошибка открытия вложения", e instanceof Error ? e.message : String(e));
+        safeAlert("РћС€РёР±РєР° РѕС‚РєСЂС‹С‚РёСЏ РІР»РѕР¶РµРЅРёСЏ", e instanceof Error ? e.message : String(e));
       }
     },
     [runAction, safeAlert],

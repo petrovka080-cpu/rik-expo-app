@@ -47,7 +47,7 @@ type Props = {
   reqMetaById: Record<string, RequestMeta>;
   isProposalPdfBusy: (pidStr: string) => boolean;
   loadProposalAttachments: (pidStr: string) => Promise<void>;
-  onOpenAttachment: (url: string, fileName: string) => void;
+  onOpenAttachment: (file: ProposalAttachmentRow) => void;
   rejectProposalItem: (pidStr: string, it: ProposalItem, items: ProposalItem[]) => Promise<void>;
   onDirectorReturn: (pidStr: string) => void;
   openProposalPdf: (pidStr: string, screenLocked: boolean) => Promise<void>;

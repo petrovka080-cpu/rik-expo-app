@@ -1,10 +1,11 @@
-﻿// src/screens/accountant/helpers.ts
+// src/screens/accountant/helpers.ts
 import React from "react";
 import { Alert, Platform, Text, View } from "react-native";
 import type { PropsWithChildren } from "react";
 import type { ViewProps } from "react-native";
+
+import { openAppAttachment } from "../../lib/documents/attachmentOpener";
 import { supabase, SUPABASE_ANON_KEY } from "../../lib/supabaseClient";
-import { openSignedUrlUniversal } from "../../lib/files";
 import type { AccountantInboxRow } from "../../lib/rik_api";
 import type { StatusKey } from "./types";
 import { normalizePaymentStatusKind } from "./accountant.status";
@@ -22,7 +23,6 @@ export function toRpcDateOrNull(v: string) {
   return s;
 }
 
-// ============================== MAYAK: PROD LOG (ACC) ==============================
 export const DLOG = (...args: unknown[]) => {
   if (__DEV__) console.log(...args);
 };
@@ -36,7 +36,6 @@ export const safeAlert = (title: string, msg?: string) => {
   }
 };
 
-// ---------- SafeView: фильтрует сырой текст внутри View (фикс RNW) ----------
 export function SafeView({ children, ...rest }: PropsWithChildren<ViewProps>) {
   const kids = React.Children.toArray(children).map((c, i) => {
     if (typeof c === "string") return c.trim() ? <Text key={`t${i}`}>{c}</Text> : null;
@@ -61,8 +60,8 @@ export async function getAuthHeadersAcc(): Promise<Record<string, string> | unde
     const token = data?.session?.access_token;
 
     const h: Record<string, string> = {};
-    if (SUPABASE_ANON_KEY) h["apikey"] = SUPABASE_ANON_KEY;
-    if (token) h["Authorization"] = `Bearer ${token}`;
+    if (SUPABASE_ANON_KEY) h.apikey = SUPABASE_ANON_KEY;
+    if (token) h.Authorization = `Bearer ${token}`;
 
     return Object.keys(h).length ? h : undefined;
   } catch {
@@ -93,15 +92,18 @@ export function guessMime(name: string) {
 }
 
 export async function openSignedUrlAcc(url: string, fileName?: string) {
-  await openSignedUrlUniversal(url, ensureExt(safeFileNameLite(fileName || "file"), url));
+  await openAppAttachment({
+    url,
+    fileName: ensureExt(safeFileNameLite(fileName || "file"), url),
+  });
 }
 
 export function rowsShallowEqual(a: AccountantInboxRow[], b: AccountantInboxRow[]) {
   if (a === b) return true;
   if (a.length !== b.length) return false;
   for (let i = 0; i < a.length; i++) {
-    const ai = a[i],
-      bi = b[i];
+    const ai = a[i];
+    const bi = b[i];
     if (String(ai.proposal_id) !== String(bi.proposal_id)) return false;
     const aps = String(ai.payment_status ?? "").trim();
     const bps = String(bi.payment_status ?? "").trim();
@@ -163,4 +165,3 @@ export function runNextTick(task: () => void) {
   }
   Promise.resolve().then(task);
 }
-

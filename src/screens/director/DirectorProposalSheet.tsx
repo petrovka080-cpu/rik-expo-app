@@ -27,7 +27,7 @@ type Props = {
   reqMetaById: Record<string, RequestMeta>;
   isPdfBusy: boolean;
   onRefreshAttachments: () => void;
-  onOpenAttachment: (url: string, fileName: string) => void;
+  onOpenAttachment: (file: ProposalAttachmentRow) => void;
   onRejectItem: (it: ProposalItem) => Promise<void>;
   onReturn: () => void;
   onPdf: () => Promise<void>;
@@ -85,7 +85,7 @@ export default function DirectorProposalSheet({
         busyAtt={busyAtt}
         error={attError}
         onRefresh={onRefreshAttachments}
-        onOpenUrl={onOpenAttachment}
+        onOpenAttachment={onOpenAttachment}
       />
 
       <FlatList

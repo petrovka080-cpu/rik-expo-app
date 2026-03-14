@@ -1,6 +1,6 @@
 import React from "react";
 import { Alert, Pressable, Text, View } from "react-native";
-import { supabase } from "../../lib/supabaseClient";
+
 import { UI } from "./director.styles";
 import { type ProposalAttachmentRow } from "./director.types";
 
@@ -9,7 +9,7 @@ type Props = {
   busyAtt: boolean;
   error?: string;
   onRefresh: () => void;
-  onOpenUrl: (url: string, fileName: string) => void;
+  onOpenAttachment: (file: ProposalAttachmentRow) => void;
 };
 
 function formatCreatedAt(value?: string | null) {
@@ -32,34 +32,12 @@ function formatCreatedAt(value?: string | null) {
   }
 }
 
-async function resolveAttachmentUrl(file: ProposalAttachmentRow) {
-  const directUrl = String(file.url || "").trim();
-  if (directUrl) return directUrl;
-
-  const bucketId = String(file.bucket_id || "").trim();
-  const storagePath = String(file.storage_path || "").trim();
-
-  if (!bucketId || !storagePath) {
-    throw new Error("Attachment corrupted");
-  }
-
-  const signed = await supabase.storage.from(bucketId).createSignedUrl(storagePath, 60 * 60);
-  if (!signed.error && signed.data?.signedUrl) {
-    return signed.data.signedUrl;
-  }
-
-  const publicUrl = supabase.storage.from(bucketId).getPublicUrl(storagePath).data.publicUrl;
-  if (publicUrl) return publicUrl;
-
-  throw signed.error ?? new Error("Не удалось получить ссылку на файл");
-}
-
 export default function DirectorProposalAttachments({
   files,
   busyAtt,
   error,
   onRefresh,
-  onOpenUrl,
+  onOpenAttachment,
 }: Props) {
   return (
     <View style={{ marginTop: 6, marginBottom: 12 }}>
@@ -120,23 +98,21 @@ export default function DirectorProposalAttachments({
             const hasDirectUrl = !!String(file.url || "").trim();
             const hasBucket = !!String(file.bucket_id || "").trim();
             const hasStoragePath = !!String(file.storage_path || "").trim();
-            const corrupted =
-              !hasDirectUrl && (!hasBucket || !hasStoragePath);
+            const corrupted = !hasDirectUrl && (!hasBucket || !hasStoragePath);
             const createdAt = formatCreatedAt(file.created_at);
 
             return (
               <Pressable
                 key={`${file.id}:${idx}`}
                 disabled={corrupted}
-                onPress={async () => {
+                onPress={() => {
                   if (corrupted) {
                     Alert.alert("Вложение", "Attachment corrupted");
                     return;
                   }
 
                   try {
-                    const fileUrl = await resolveAttachmentUrl(file);
-                    onOpenUrl(fileUrl, String(file.file_name || "file"));
+                    onOpenAttachment(file);
                   } catch (openError: unknown) {
                     const message =
                       openError instanceof Error && openError.message.trim()

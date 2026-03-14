@@ -1,11 +1,8 @@
 // src/lib/files.ts
-import { Platform, Linking, Alert } from "react-native";
-import * as FileSystemModule from "expo-file-system/legacy";
-import { getFileSystemPaths } from "./fileSystemPaths";
-import { hashString32 } from "./pdfFileContract";
-import { supabase } from "./supabaseClient";
-const FileSystemCompat = FileSystemModule as any;
+import { Platform } from "react-native";
 
+import { supabase } from "./supabaseClient";
+import { openAppAttachment } from "./documents/attachmentOpener";
 
 /** Reuse uploader from rik_api.ts */
 export { uploadProposalAttachment } from "./catalog_api";
@@ -17,14 +14,7 @@ type AttRow = {
   file_name: string;
   group_key: string;
   created_at: string;
-
-  // For UI/web fallback opening when pop-up is blocked
   signed_url?: string | null;
-};
-
-type IntentLauncherModule = {
-  startActivityAsync: (action: string, params: { data: string; flags?: number; type?: string }) => Promise<void>;
-  ActivityAction: { VIEW: string };
 };
 
 type SupplierFileMetaRow = {
@@ -35,7 +25,6 @@ type SupplierFileMetaRow = {
   group_key?: string;
 };
 
-const errorText = (e: unknown) => (e instanceof Error ? e.message : String(e));
 const toSupabaseError = (context: string, error: unknown) =>
   new Error(`${context}: ${error instanceof Error ? error.message : String(error)}`);
 
@@ -47,99 +36,44 @@ export const isPdfLike = (fileName?: string | null, url?: string | null) => {
 
 function notFoundMsg(groupKey: string) {
   return groupKey === "invoice"
-    ? "Счет не прикреплен"
+    ? "РЎС‡РµС‚ РЅРµ РїСЂРёРєСЂРµРїР»РµРЅ"
     : groupKey === "payment"
-      ? "Платежные документы не найдены"
-      : "Вложения не найдены";
+      ? "РџР»Р°С‚РµР¶РЅС‹Рµ РґРѕРєСѓРјРµРЅС‚С‹ РЅРµ РЅР°Р№РґРµРЅС‹"
+      : "Р’Р»РѕР¶РµРЅРёСЏ РЅРµ РЅР°Р№РґРµРЅС‹";
 }
 
-/** Normalize file name for safe local paths. */
 function safeFileName(name: string | undefined) {
   const base = name || "file.bin";
   return base.replace(/[^\p{L}\p{N}_\-(). ]+/gu, "_");
 }
 
-async function openLocalFilePreview(uri: string) {
-  // 1) Android: open through Intent first
-  if (Platform.OS === "android") {
-    try {
-      const IntentLauncher = (await import("expo-intent-launcher")) as unknown as IntentLauncherModule;
-      const contentUri = await FileSystemCompat.getContentUriAsync(uri);
+async function webOpenBlobOrDirect(url: string, fileName?: string) {
+  const w = window.open(url, "_blank", "noopener,noreferrer");
+  if (w) return;
 
-      await IntentLauncher.startActivityAsync(
-        IntentLauncher.ActivityAction.VIEW,
-        {
-          data: contentUri,
-          flags: 1, // FLAG_GRANT_READ_URI_PERMISSION
-          type: "*/*",
-        }
-      );
-      return;
-    } catch {
-      // fallback below
-    }
-  }
-
-  // 2) iOS and generic fallback: open externally
   try {
-    await Linking.openURL(uri);
-  } catch (e: unknown) {
-    throw new Error(`open file failed: ${errorText(e)}`);
-  }
-}
-
-// ===== WEB: open as blob-url first =====
-async function webOpenAsBlobWindow(url: string, fileName?: string) {
-  const u = String(url || "").trim();
-  if (!u) throw new Error("Пустая ссылка");
-
-  const res = await fetch(u);
-  if (!res.ok) {
-    const txt = await res.text().catch(() => "");
-    throw new Error(`HTTP ${res.status}: ${txt.slice(0, 200)}`);
-  }
-
-  const blob = await res.blob();
-  const ct = blob.type || res.headers.get("content-type") || "application/octet-stream";
-
-  const blobUrl = URL.createObjectURL(new Blob([blob], { type: ct }));
-
-  const w = window.open(blobUrl, "_blank", "noopener,noreferrer");
-  if (!w) {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const blob = await res.blob();
+    const blobUrl = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = blobUrl;
     a.download = fileName || "file";
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
-  }
-
-  setTimeout(() => URL.revokeObjectURL(blobUrl), 60_000);
-}
-
-function webOpenUrlStrict(url: string) {
-  const u = String(url || "").trim();
-  if (!u) throw new Error("Пустая ссылка");
-
-  const w = window.open(u, "_blank", "noopener,noreferrer");
-  if (w) return;
-
-  try {
-    const a = document.createElement("a");
-    a.href = u;
-    a.target = "_blank";
-    a.rel = "noopener noreferrer";
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(blobUrl), 60_000);
     return;
-  } catch { }
+  } catch {}
 
-  try {
-    window.prompt("Ссылка: скопируйте и откройте в новой вкладке.", u);
-  } catch {
-    alert("Всплывающее окно заблокировано. Скопируйте ссылку и откройте ее вручную.");
-  }
+  const a = document.createElement("a");
+  a.href = url;
+  a.target = "_blank";
+  a.rel = "noopener noreferrer";
+  a.download = fileName || "file";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
 }
 
 const __openGuard = { t: 0, key: "" };
@@ -153,59 +87,38 @@ function guardOpenOnce(key: string, ms = 1200) {
 
 export async function openSignedUrlUniversal(url: string, fileName?: string) {
   const u = String(url || "").trim();
-  if (!u) throw new Error("Пустая ссылка");
+  if (!u) throw new Error("РџСѓСЃС‚Р°СЏ СЃСЃС‹Р»РєР°");
 
   const base = u.split("?")[0];
   const name = String(fileName || "").trim();
   if (!guardOpenOnce(`${Platform.OS}|${base}|${name}`)) return;
 
-  // WEB: blob-open with direct-open fallback
   if (Platform.OS === "web") {
-    try {
-      await webOpenAsBlobWindow(u, fileName);
-    } catch {
-      webOpenUrlStrict(u);
-    }
+    await webOpenBlobOrDirect(u, fileName);
     return;
   }
 
-  // NATIVE: download to cache and open locally
-  const clean = safeFileName(fileName || "document.bin");
-  const paths = getFileSystemPaths();
-  const baseDir = paths.cacheDir;
-  const hash = hashString32(u);
-  const target = `${baseDir}file_${hash}_${clean}`;
-
-  const res = await FileSystemCompat.downloadAsync(u, target);
-  const localUri = res?.uri;
-  if (!localUri) throw new Error("Не удалось сохранить файл");
-
-  await openLocalFilePreview(localUri);
+  await openAppAttachment({ url: u, fileName });
 }
 
 export async function openAttachment(
   proposalId: string | number,
   groupKey: "invoice" | "payment" | "proposal_pdf" | string,
-  opts?: { all?: boolean }
+  opts?: { all?: boolean },
 ) {
   const pid = String(proposalId || "").trim();
   if (!pid) throw new Error("proposalId is empty");
 
   let rows: AttRow[] = [];
 
-  // 1) RPC list_attachments when available
   try {
-    const { data, error } = await supabase.rpc(
-      "list_attachments",
-      {
-        p_proposal_id: pid,
-        p_group_key: groupKey,
-      }
-    );
+    const { data, error } = await supabase.rpc("list_attachments", {
+      p_proposal_id: pid,
+      p_group_key: groupKey,
+    });
     if (!error && Array.isArray(data)) rows = data as AttRow[];
-  } catch { }
+  } catch {}
 
-  // 2) Fallback: proposal_attachments table
   if (!rows.length) {
     const q = await supabase
       .from("proposal_attachments")
@@ -231,27 +144,29 @@ export async function openAttachment(
     const { data, error } = await supabase.storage.from(bucket).createSignedUrl(path, 60 * 10);
     if (error) throw toSupabaseError("createSignedUrl failed", error);
     const url = data?.signedUrl;
-    if (!url) throw new Error("Не удалось получить ссылку");
+    if (!url) throw new Error("РќРµ СѓРґР°Р»РѕСЃСЊ РїРѕР»СѓС‡РёС‚СЊ СЃСЃС‹Р»РєСѓ");
     return url;
   };
 
   const openOne = async (row: AttRow) => {
     const bucket = String(row.bucket_id || "").trim();
     const path = String(row.storage_path || "").trim();
-    if (!bucket || !path) throw new Error("Пустой bucket_id или storage_path");
+    if (!bucket || !path) throw new Error("РџСѓСЃС‚РѕР№ bucket_id РёР»Рё storage_path");
 
     const signedUrl = await makeSignedUrl(bucket, path);
     row.signed_url = signedUrl;
-
-    await openSignedUrlUniversal(signedUrl, row.file_name || "file");
+    await openAppAttachment({
+      url: signedUrl,
+      bucketId: row.bucket_id,
+      storagePath: row.storage_path,
+      fileName: row.file_name || "file",
+    });
   };
 
   if (groupKey === "invoice" || !opts?.all) {
     await openOne(rows[0]);
   } else {
-    for (const r of rows) {
-      await openOne(r);
-    }
+    for (const row of rows) await openOne(row);
   }
 
   return rows;
@@ -279,12 +194,12 @@ export async function getLatestProposalAttachmentPreview(
 
   const bucket = String(row.bucket_id || "").trim();
   const path = String(row.storage_path || "").trim();
-  if (!bucket || !path) throw new Error("bucket_id/storage_path пустые");
+  if (!bucket || !path) throw new Error("bucket_id/storage_path РїСѓСЃС‚С‹Рµ");
 
   const signed = await supabase.storage.from(bucket).createSignedUrl(path, 60 * 10);
   if (signed.error) throw toSupabaseError("createSignedUrl failed", signed.error);
   const url = String(signed.data?.signedUrl || "").trim();
-  if (!url) throw new Error("Не удалось получить signed URL вложения");
+  if (!url) throw new Error("РќРµ СѓРґР°Р»РѕСЃСЊ РїРѕР»СѓС‡РёС‚СЊ signed URL РІР»РѕР¶РµРЅРёСЏ");
   return {
     url,
     fileName: String(row?.file_name || "document.pdf"),
@@ -292,19 +207,13 @@ export async function getLatestProposalAttachmentPreview(
   };
 }
 
-/* =======================================================================================
- *                                ПОСТАВЩИКИ
- *  Bucket: supplier_files (public)
- *  Table:  supplier_files (meta) - опционально
- * ======================================================================================= */
-
 export type SupplierFileGroup = "price" | "photo" | "file";
 
 export async function uploadSupplierFile(
   supplierId: string,
   file: any,
   fileName: string,
-  group: SupplierFileGroup = "file"
+  group: SupplierFileGroup = "file",
 ): Promise<{ url: string; path: string }> {
   const id = String(supplierId).trim();
   if (!id) throw new Error("supplierId is required");
@@ -326,14 +235,14 @@ export async function uploadSupplierFile(
       file_url: url,
       group_key: group,
     });
-  } catch { }
+  } catch {}
 
   return { url, path };
 }
 
 export async function listSupplierFilesMeta(
   supplierId: string,
-  opts?: { group?: SupplierFileGroup; limit?: number }
+  opts?: { group?: SupplierFileGroup; limit?: number },
 ): Promise<SupplierFileMetaRow[]> {
   const id = String(supplierId).trim();
   if (!id) return [];
@@ -350,7 +259,6 @@ export async function listSupplierFilesMeta(
 
     const r = await q;
     if (r.error) throw r.error;
-
     return Array.isArray(r.data) ? (r.data as SupplierFileMetaRow[]) : [];
   } catch {
     return [];
@@ -359,7 +267,7 @@ export async function listSupplierFilesMeta(
 
 export async function openSupplierFile(
   supplierId: string,
-  opts?: { group?: SupplierFileGroup; all?: boolean }
+  opts?: { group?: SupplierFileGroup; all?: boolean },
 ) {
   const id = String(supplierId).trim();
   if (!id) throw new Error("supplierId is required");
@@ -369,39 +277,20 @@ export async function openSupplierFile(
     limit: opts?.all ? 1000 : 50,
   });
 
-  if (!meta.length) throw new Error("Файлы поставщика не найдены");
+  if (!meta.length) throw new Error("Р¤Р°Р№Р»С‹ РїРѕСЃС‚Р°РІС‰РёРєР° РЅРµ РЅР°Р№РґРµРЅС‹");
 
   const rows = meta
     .slice()
     .sort((a, b) => Date.parse(String(b.created_at || 0)) - Date.parse(String(a.created_at || 0)));
 
-  const openUrl = async (url: string) => {
-    const u = String(url || "").trim();
-    if (!u) throw new Error("Пустая ссылка на файл поставщика");
-
-    if (Platform.OS === "web") {
-      try {
-        await webOpenAsBlobWindow(u);
-      } catch {
-        webOpenUrlStrict(u);
-      }
-      return;
-    }
-
-    try {
-      await Linking.openURL(u);
-    } catch (e: unknown) {
-      Alert.alert("Не удалось открыть файл", errorText(e));
-    }
-  };
-
   const openOne = async (row: SupplierFileMetaRow) => {
-    await openUrl(row.file_url);
+    const url = String(row.file_url || "").trim();
+    if (!url) throw new Error("РџСѓСЃС‚Р°СЏ СЃСЃС‹Р»РєР° РЅР° С„Р°Р№Р» РїРѕСЃС‚Р°РІС‰РёРєР°");
+    await openAppAttachment({ url, fileName: row.file_name });
   };
 
   if (!opts?.all) await openOne(rows[0]);
-  else for (const r of rows) await openOne(r);
+  else for (const row of rows) await openOne(row);
 
   return rows;
 }
-
