@@ -1,4 +1,41 @@
-﻿import { supabase } from "../../lib/supabaseClient";
+import { supabase } from "../../lib/supabaseClient";
+import type { Database } from "../../lib/database.types";
+
+type SubcontractInsert = Database["public"]["Tables"]["subcontracts"]["Insert"];
+type SubcontractCreateDraftArgs = Database["public"]["Functions"]["subcontract_create_draft"]["Args"];
+type SubcontractCreateDraftArgsCompat = SubcontractCreateDraftArgs & {
+  p_contractor_inn?: string | null;
+};
+type SubcontractItemInsert = {
+  subcontract_id: string;
+  created_by?: string | null;
+  source?: SubcontractItemSource;
+  rik_code?: string | null;
+  name: string;
+  qty?: number;
+  uom?: string | null;
+  status?: "draft" | "canceled";
+};
+type SubcontractItemsQueryResult = { data: unknown; error: { message?: string } | null };
+type SubcontractItemsSelectChain = {
+  eq(column: string, value: string): SubcontractItemsSelectChain;
+  order(column: string, options: { ascending: boolean }): Promise<SubcontractItemsQueryResult>;
+};
+type SubcontractItemsDeleteChain = {
+  eq(column: string, value: string): Promise<{ error: { message?: string } | null }>;
+};
+type SubcontractItemsInsertChain = {
+  select(columns: string): Promise<SubcontractItemsQueryResult>;
+};
+type SubcontractItemsTable = {
+  select(columns: string): SubcontractItemsSelectChain;
+  insert(rows: SubcontractItemInsert[]): SubcontractItemsInsertChain;
+  delete(): SubcontractItemsDeleteChain;
+};
+type SubcontractItemsBoundary = {
+  from(relation: "subcontract_items"): SubcontractItemsTable;
+};
+
 
 export type SubcontractStatus = "draft" | "pending" | "approved" | "rejected" | "closed";
 export type SubcontractWorkMode = "labor_only" | "turnkey" | "mixed";
@@ -80,7 +117,8 @@ const asSubcontractItem = (value: unknown): SubcontractItem | null => {
   };
 };
 
-const subcontractItemsTable = () => supabase.from("subcontract_items" as never);
+const subcontractItemsTable = (): SubcontractItemsTable =>
+  (supabase as unknown as SubcontractItemsBoundary).from("subcontract_items");
 
 export const STATUS_CONFIG: Record<SubcontractStatus, { label: string; bg: string; fg: string }> = {
   draft: { label: "Черновик", bg: "#E2E8F0", fg: "#475569" },
@@ -170,7 +208,7 @@ export async function createSubcontractDraftWithPatch(
     return val.trim();
   };
 
-  const payload = {
+  const payload: SubcontractCreateDraftArgsCompat = {
     p_created_by: userId,
     p_foreman_name: foremanName || null,
     p_contractor_org: patch.contractor_org ?? null,
@@ -203,12 +241,31 @@ export async function createSubcontractDraftWithPatch(
     };
   };
 
-  const payloadLegacy = { ...payload } as Record<string, unknown>;
-  delete payloadLegacy.p_contractor_inn;
+  const payloadLegacy: SubcontractCreateDraftArgs = {
+    p_created_by: payload.p_created_by,
+    p_foreman_name: payload.p_foreman_name,
+    p_contractor_org: payload.p_contractor_org,
+    p_contractor_rep: payload.p_contractor_rep,
+    p_contractor_phone: payload.p_contractor_phone,
+    p_contract_number: payload.p_contract_number,
+    p_contract_date: payload.p_contract_date,
+    p_object_name: payload.p_object_name,
+    p_work_zone: payload.p_work_zone,
+    p_work_type: payload.p_work_type,
+    p_qty_planned: payload.p_qty_planned,
+    p_uom: payload.p_uom,
+    p_date_start: payload.p_date_start,
+    p_date_end: payload.p_date_end,
+    p_work_mode: payload.p_work_mode,
+    p_price_per_unit: payload.p_price_per_unit,
+    p_total_price: payload.p_total_price,
+    p_price_type: payload.p_price_type,
+    p_foreman_comment: payload.p_foreman_comment,
+  };
 
   // 1) New RPC signature (with p_contractor_inn).
   {
-    const { data, error } = await supabase.rpc("subcontract_create_draft", payload as any);
+    const { data, error } = await supabase.rpc("subcontract_create_draft", payload);
     if (!error) {
       const row = parseRpcRow(data);
       if (row) return row;
@@ -218,7 +275,7 @@ export async function createSubcontractDraftWithPatch(
 
   // 2) Legacy RPC signature (without p_contractor_inn).
   {
-    const { data, error } = await supabase.rpc("subcontract_create_draft", payloadLegacy as any);
+    const { data, error } = await supabase.rpc("subcontract_create_draft", payloadLegacy);
     if (!error) {
       const row = parseRpcRow(data);
       if (row) return row;
@@ -227,7 +284,7 @@ export async function createSubcontractDraftWithPatch(
   }
 
   // 3) Hard fallback: direct insert (for envs where RPC is absent).
-  const insertPayloadBase: Record<string, unknown> = {
+  const insertPayloadBase = {
     created_by: userId,
     status: "draft",
     foreman_name: foremanName || null,
@@ -249,11 +306,11 @@ export async function createSubcontractDraftWithPatch(
     total_price: patch.total_price ?? null,
     price_type: patch.price_type ?? null,
     foreman_comment: patch.foreman_comment ?? null,
-  };
+  } satisfies Partial<SubcontractInsert>;
 
   let ins = await supabase
     .from("subcontracts")
-    .insert(insertPayloadBase as any)
+    .insert(insertPayloadBase)
     .select("id, display_no")
     .single();
 
@@ -263,7 +320,7 @@ export async function createSubcontractDraftWithPatch(
     delete retryPayload.contractor_inn;
     ins = await supabase
       .from("subcontracts")
-      .insert(retryPayload as any)
+      .insert(retryPayload)
       .select("id, display_no")
       .single();
   }
@@ -332,7 +389,7 @@ export async function appendSubcontractItems(
 ): Promise<SubcontractItem[]> {
   const sid = String(subcontractId || "").trim();
   if (!sid || !items.length) return [];
-  const payload = items.map((it) => ({
+  const payload: SubcontractItemInsert[] = items.map((it) => ({
     subcontract_id: sid,
     created_by: createdBy || null,
     source: it.source,
@@ -343,7 +400,7 @@ export async function appendSubcontractItems(
     status: "draft",
   }));
   const { data, error } = await subcontractItemsTable()
-    .insert(payload as never)
+    .insert(payload)
     .select("*");
   if (error) throw error;
   return Array.isArray(data) ? data.map(asSubcontractItem).filter((row): row is SubcontractItem => !!row) : [];

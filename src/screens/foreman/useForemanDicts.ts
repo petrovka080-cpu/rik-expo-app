@@ -18,6 +18,12 @@ type DictSelectResult = {
   error: { message?: string | null } | null;
 };
 
+const warnForemanDicts = (scope: "refs load failed" | "app load failed", error: unknown) => {
+  if (__DEV__) {
+    console.warn(`[foreman.dicts] ${scope}`, error);
+  }
+};
+
 const asRecord = (value: unknown): Record<string, unknown> =>
   value && typeof value === "object" ? (value as Record<string, unknown>) : {};
 
@@ -132,7 +138,7 @@ export function useForemanDicts() {
           setZoneOptions(getForemanZoneOptions(all));
         }
       } catch (e) {
-        console.warn(e);
+        warnForemanDicts("refs load failed", e);
       }
     })();
     return () => {
@@ -168,7 +174,7 @@ export function useForemanDicts() {
           setAppOptions(uniq.map((code) => ({ code: String(code), label: String(code) })));
         }
       } catch (e) {
-        console.warn(e);
+        warnForemanDicts("app load failed", e);
       }
     })();
     return () => {

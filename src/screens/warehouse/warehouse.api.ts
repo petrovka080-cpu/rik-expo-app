@@ -1,9 +1,10 @@
-// src/screens/warehouse/warehouse.api.ts
+﻿// src/screens/warehouse/warehouse.api.ts
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { StockRow, ReqHeadRow, ReqItemUiRow } from "./warehouse.types";
 import { nz, parseNum } from "./warehouse.utils";
 import { normalizeRuText } from "../../lib/text/encoding";
 import { isRequestDirectorApproved } from "../../lib/requestStatus";
+import { fetchWarehouseNameMapUi } from "./warehouse.nameMap.ui";
 import {
   asUnknownRows,
   fetchWarehouseIncomingLedgerRows,
@@ -91,11 +92,13 @@ async function tryLoadRequestsFallbackRows(
   // Canonical anti-drift path: avoid explicit legacy columns and read the current row surface.
   const star = await fetchBySelect("*");
   if (!star.error && Array.isArray(star.data)) {
-    return star.data as unknown as UnknownRow[];
+    return asUnknownRows(star.data);
   }
   requestsFallbackLastHardFailAt = Date.now();
   const msg = String((star.error as { message?: string } | null)?.message ?? star.error ?? "unknown");
-  console.warn("[warehouse.api] requests fallback select(*) failed:", msg);
+  if (__DEV__) {
+    console.warn("[warehouse.api] requests fallback select(*) failed:", msg);
+  }
 
   return [];
 }
@@ -456,16 +459,84 @@ async function loadNameMapLedgerUi(
   return out;
 }
 
+function pickStockDisplayName(params: {
+  codeKey: string;
+  projectionMap?: Record<string, string>;
+  overMap?: Record<string, string>;
+  rikMap?: Record<string, string>;
+  uiMap?: Record<string, string>;
+}): string {
+  const { codeKey, projectionMap = {}, overMap = {}, rikMap = {}, uiMap = {} } = params;
+  const nProjection = String(normalizeRuText(String(projectionMap[codeKey] ?? ""))).trim();
+  const nOver = String(normalizeRuText(String(overMap[codeKey] ?? ""))).trim();
+  const nRik = String(normalizeRuText(String(rikMap[codeKey] ?? ""))).trim();
+  const nUi = String(normalizeRuText(String(uiMap[codeKey] ?? ""))).trim();
+
+  return (
+    (nProjection && !looksLikeCode(nProjection) ? nProjection : nProjection) ||
+    (nOver && !looksLikeCode(nOver) ? nOver : nOver) ||
+    (nRik && !looksLikeCode(nRik) ? nRik : nRik) ||
+    (nUi && !looksLikeCode(nUi) ? nUi : "") ||
+    "РІР‚вЂќ"
+  );
+}
+
+function mapTruthRowsToStockRows(
+  truthRows: UnknownRow[],
+  maps: {
+    projectionMap?: Record<string, string>;
+    overMap?: Record<string, string>;
+    rikMap?: Record<string, string>;
+    uiMap?: Record<string, string>;
+  },
+): StockRow[] {
+  return truthRows.map((x) => {
+    const code = String(x.code ?? "").trim();
+    const codeKey = code.toUpperCase();
+    const uom = String(x.uom_id ?? "").trim();
+    const avail = nz(x.qty_available, 0);
+    const picked = pickStockDisplayName({
+      codeKey,
+      projectionMap: maps.projectionMap,
+      overMap: maps.overMap,
+      rikMap: maps.rikMap,
+      uiMap: maps.uiMap,
+    });
+
+    return {
+      material_id: `${code}::${uom}`,
+      code: code || null,
+      name: normalizeRuText(picked || "РІР‚вЂќ"),
+      uom_id: pickUom(x.uom_id) ?? null,
+      qty_on_hand: avail,
+      qty_reserved: 0,
+      qty_available: avail,
+      updated_at: x.updated_at ?? null,
+    } as StockRow;
+  });
+}
+
 /**
- * вњ… PROD stock
- * - qty: v_wh_balance_ledger_truth_ui (РёСЃС‚РёРЅР°)
+ * РІСљвЂ¦ PROD stock
+ * - qty: v_wh_balance_ledger_truth_ui (Р С‘РЎРѓРЎвЂљР С‘Р Р…Р В°)
  * - name: overrides -> v_rik_names_ru -> v_wh_balance_ledger_ui
  */
 export async function apiFetchStock(
   supabase: SupabaseClient,
   offset: number = 0,
   limit: number = 400
-): Promise<{ supported: boolean; rows: StockRow[] }> {
+): Promise<{
+  supported: boolean;
+  rows: StockRow[];
+  rikDeferredCodes?: string[];
+  overrideCodes?: string[];
+  missingProjectionCodes?: string[];
+  projectionAvailable?: boolean;
+  projectionHitCount?: number;
+  projectionMissCount?: number;
+  projectionReadMs?: number;
+  fallbackReadMs?: number;
+}> {
   try {
     const truth = await supabase
       .from("v_wh_balance_ledger_truth_ui")
@@ -480,44 +551,63 @@ export async function apiFetchStock(
         .map((x) => String(x.code ?? "").trim().toUpperCase())
         .filter(Boolean);
 
-      // вњ… РїСЂРёРѕСЂРёС‚РµС‚: overrides -> v_rik_names_ru -> ledger_ui
-      const [overMap, rikMap, uiMap] = await Promise.all([
-        loadNameMapOverrides(supabase, codesUpper),
-        loadNameMapRikRu(supabase, codesUpper),
-        loadNameMapLedgerUi(supabase, codesUpper),
-      ]);
+      const projectionStartedAt = Date.now();
+      const projection = await fetchWarehouseNameMapUi(supabase, codesUpper);
+      const projectionReadMs = Date.now() - projectionStartedAt;
 
-      const rows: StockRow[] = truthRows.map((x) => {
-        const code = String(x.code ?? "").trim();
-        const codeKey = code.toUpperCase();
-        const uom = String(x.uom_id ?? "").trim();
-        const avail = nz(x.qty_available, 0);
+      if (projection.available) {
+        const missingProjectionCodes = codesUpper.filter((code) => !projection.map[code]);
+        const fallbackStartedAt = Date.now();
+        const [overMap, uiMap] =
+          missingProjectionCodes.length > 0
+            ? await Promise.all([
+                loadNameMapOverrides(supabase, missingProjectionCodes),
+                loadNameMapLedgerUi(supabase, missingProjectionCodes),
+              ])
+            : [{}, {}];
+        const fallbackReadMs = missingProjectionCodes.length > 0 ? Date.now() - fallbackStartedAt : 0;
 
-        const nOver = String(normalizeRuText(String(overMap[codeKey] ?? ""))).trim();
-        const nRik = String(normalizeRuText(String(rikMap[codeKey] ?? ""))).trim();
-        const nUi = String(normalizeRuText(String(uiMap[codeKey] ?? ""))).trim();
-
-        const picked =
-          (nOver && !looksLikeCode(nOver) ? nOver : nOver) ||
-          (nRik && !looksLikeCode(nRik) ? nRik : nRik) ||
-          (nUi && !looksLikeCode(nUi) ? nUi : "") ||
-          "—";
+        const rows = mapTruthRowsToStockRows(truthRows, {
+          projectionMap: projection.map,
+          overMap,
+          uiMap,
+        });
 
         return {
-          material_id: `${code}::${uom}`,
-          code: code || null,
-          name: normalizeRuText(picked || "—"),
-          uom_id: pickUom(x.uom_id) ?? null,
+          supported: true,
+          rows,
+          missingProjectionCodes,
+          projectionAvailable: true,
+          projectionHitCount: codesUpper.length - missingProjectionCodes.length,
+          projectionMissCount: missingProjectionCodes.length,
+          projectionReadMs,
+          fallbackReadMs,
+        };
+      }
 
-          qty_on_hand: avail,
-          qty_reserved: 0,
-          qty_available: avail,
+      // Legacy compatibility path until warehouse_name_map_ui is migrated in DB.
+      const fallbackStartedAt = Date.now();
+      const [overMap, uiMap] = await Promise.all([
+        loadNameMapOverrides(supabase, codesUpper),
+        loadNameMapLedgerUi(supabase, codesUpper),
+      ]);
+      const fallbackReadMs = Date.now() - fallbackStartedAt;
 
-          updated_at: x.updated_at ?? null,
-        } as StockRow;
-      });
+      const rows = mapTruthRowsToStockRows(truthRows, { overMap, uiMap });
+      const overrideCodes = Object.keys(overMap).filter(Boolean);
+      const rikDeferredCodes = codesUpper.filter((code) => !overrideCodes.includes(code));
 
-      return { supported: true, rows };
+      return {
+        supported: true,
+        rows,
+        rikDeferredCodes,
+        overrideCodes,
+        projectionAvailable: false,
+        projectionHitCount: 0,
+        projectionMissCount: codesUpper.length,
+        projectionReadMs,
+        fallbackReadMs,
+      };
     }
 
 
@@ -551,6 +641,43 @@ export async function apiFetchStock(
   } catch {
     return { supported: false, rows: [] };
   }
+}
+
+export async function apiEnrichStockNamesFromRikRu(
+  supabase: SupabaseClient,
+  rows: StockRow[],
+  options?: { rikDeferredCodes?: string[]; overrideCodes?: string[] },
+): Promise<StockRow[]> {
+  const baseRows = Array.isArray(rows) ? rows : [];
+  if (!baseRows.length) return baseRows;
+
+  const skipCodes = new Set(
+    (options?.overrideCodes ?? []).map((x) => String(x || "").trim().toUpperCase()).filter(Boolean),
+  );
+  const codesUpper = Array.from(
+    new Set(
+      (options?.rikDeferredCodes ?? baseRows.map((row) => String(row.code ?? "").trim().toUpperCase()))
+        .filter(Boolean)
+        .filter((code) => !skipCodes.has(code)),
+    ),
+  );
+  if (!codesUpper.length) return baseRows;
+
+  const rikMap = await loadNameMapRikRu(supabase, codesUpper);
+  if (!Object.keys(rikMap).length) return baseRows;
+
+  return baseRows.map((row) => {
+    const codeKey = String(row.code ?? "").trim().toUpperCase();
+    if (!codeKey || skipCodes.has(codeKey)) return row;
+
+    const rikName = String(normalizeRuText(String(rikMap[codeKey] ?? ""))).trim();
+    if (!rikName) return row;
+
+    return {
+      ...row,
+      name: rikName,
+    };
+  });
 }
 
 export async function apiFetchReqHeads(
@@ -650,7 +777,7 @@ export async function apiFetchReqHeads(
   );
 
   // Hard gate: warehouse issue queue must contain only director-approved requests.
-  // This prevents accidental exposure of "На утверждении" requests if a view returns them.
+  // This prevents accidental exposure of "РќР° СѓС‚РІРµСЂР¶РґРµРЅРёРё" requests if a view returns them.
   if (viewReqIds.length) {
     try {
       const rsQ = await supabase
@@ -726,8 +853,8 @@ export async function apiFetchReqHeads(
               const status = String(it?.status ?? "").trim().toLowerCase();
               stat[rid].items += 1;
               stat[rid].qty += parseNum(it?.qty, 0);
-              if (status.includes("выдан") || status === "done") stat[rid].done += 1;
-              if (status.includes("отклон")) stat[rid].rejected += 1;
+              if (status.includes("РІС‹РґР°РЅ") || status === "done") stat[rid].done += 1;
+              if (status.includes("РѕС‚РєР»РѕРЅ")) stat[rid].rejected += 1;
             }
           }
 
@@ -906,7 +1033,7 @@ export async function apiFetchReqItems(
     // keep base rows if enrichment fails
   }
 
-  // вњ… РґРµРґСѓРї РїРѕ request_item_id (Р±РµСЂС‘Рј РјР°РєСЃРёРјР°Р»СЊРЅС‹Рµ С‡РёСЃР»Р°)
+  // РІСљвЂ¦ Р Т‘Р ВµР Т‘РЎС“Р С— Р С—Р С• request_item_id (Р В±Р ВµРЎР‚РЎвЂР С Р СР В°Р С”РЎРѓР С‘Р СР В°Р В»РЎРЉР Р…РЎвЂ№Р Вµ РЎвЂЎР С‘РЎРѓР В»Р В°)
   const byId: Record<string, ReqItemUiRowWithMeta> = {};
   for (const it of raw) {
     const id = String(it.request_item_id ?? "").trim();
@@ -959,7 +1086,7 @@ export async function apiFetchReqItems(
       .order("name_human", { ascending: true });
     if (!f.error && Array.isArray(f.data) && f.data.length) {
       const direct = (f.data as UnknownRow[])
-        .filter((x) => !String(x?.status ?? "").toLowerCase().includes("отклон"))
+        .filter((x) => !String(x?.status ?? "").toLowerCase().includes("РѕС‚РєР»РѕРЅ"))
         .map((x) => {
           const qty = parseNum(x?.qty, 0);
           const available = qty; // unknown here; keep non-blocking until stock check in UI
@@ -1105,7 +1232,9 @@ export async function apiFetchIncomingMaterialsReportFast(
 ): Promise<IncomingMaterialsFastRow[]> {
   // No RPC for this on server yet, use ledger directly for stability
   // and to avoid 404 errors in console
-  console.log("[apiFetchIncomingMaterialsReportFast] Fetching from ledger for", p);
+  if (__DEV__) {
+    console.info("[apiFetchIncomingMaterialsReportFast] Fetching from ledger for", p);
+  }
 
   const q = await fetchWarehouseIncomingLedgerRows(supabase, {
     from: normDateArg(p.from),
@@ -1114,7 +1243,7 @@ export async function apiFetchIncomingMaterialsReportFast(
 
 
   if (q.error || !q.data) {
-    if (q.error) console.warn("[apiFetchIncomingMaterialsReportFast] fallback err:", q.error.message);
+    if (__DEV__ && q.error) console.warn("[apiFetchIncomingMaterialsReportFast] fallback err:", q.error.message);
     return [];
   }
 
@@ -1145,12 +1274,16 @@ export async function apiFetchIncomingLines(
   supabase: SupabaseClient,
   incomingId: string,
 ): Promise<UnknownRow[]> {
-  console.log("[apiFetchIncomingLines] Direct fetch for:", incomingId);
+  if (__DEV__) {
+    console.info("[apiFetchIncomingLines] Direct fetch for:", incomingId);
+  }
 
   const q = await fetchWarehouseIncomingLineRows(supabase, incomingId);
 
   if (!q.error && Array.isArray(q.data)) {
-    console.log("[apiFetchIncomingLines] Success:", q.data.length, "lines");
+    if (__DEV__) {
+      console.info("[apiFetchIncomingLines] Success:", q.data.length, "lines");
+    }
     const rows = asUnknownRows(q.data);
     const codesUpper = Array.from(
       new Set(rows.map((ln) => String(ln?.code ?? "").trim().toUpperCase()).filter(Boolean))
@@ -1168,20 +1301,21 @@ export async function apiFetchIncomingLines(
       const nOver = String(normalizeRuText(String(overMap[key] ?? ""))).trim();
       const nRik = String(normalizeRuText(String(rikMap[key] ?? ""))).trim();
       const nUi = String(normalizeRuText(String(uiMap[key] ?? ""))).trim();
-      const nameRu = normalizeRuText(nOver || nRik || nUi || code || "Позиция");
+      const nameRu = normalizeRuText(nOver || nRik || nUi || code || "РџРѕР·РёС†РёСЏ");
 
       return {
         ...ln,
         name_ru: nameRu,
         material_name: nameRu,
         name: nameRu,
-        uom: ln.uom_id || "—",
+        uom: ln.uom_id || "вЂ”",
         qty_received: ln.qty,
       };
     });
   }
 
-  if (q.error) console.error("[apiFetchIncomingLines] Error:", q.error.message);
+  if (__DEV__ && q.error) console.error("[apiFetchIncomingLines] Error:", q.error.message);
   return [];
 }
+
 

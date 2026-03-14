@@ -13,6 +13,25 @@ const errText = (error: unknown): string => {
   return String(error ?? "");
 };
 
+const warnDirectorData = (
+  scope:
+    | "preloadRequestMeta"
+    | "preloadProposalRequestIds"
+    | "preloadDisplayNos"
+    | "list_director_items_stable"
+    | "proposals list",
+  error: unknown,
+  level: "warn" | "error" = "warn",
+) => {
+  if (!__DEV__) return;
+  const message = errText(error);
+  if (level === "error") {
+    console.error(`[director] ${scope}:`, message);
+    return;
+  }
+  console.warn(`[director] ${scope}:`, message);
+};
+
 export function useDirectorData({ supabase }: Deps) {
   const fetchTicket = useRef(0);
   const lastNonEmptyRows = useRef<PendingRow[]>([]);
@@ -125,7 +144,7 @@ export function useDirectorData({ supabase }: Deps) {
         setReqMetaById((prev) => ({ ...prev, ...next }));
       }
     } catch (e) {
-      console.warn("[director] preloadRequestMeta:", errText(e));
+      warnDirectorData("preloadRequestMeta", e);
     }
   }, [supabase]);
 
@@ -154,7 +173,7 @@ export function useDirectorData({ supabase }: Deps) {
       setPropReqIdsByProp((prev) => ({ ...prev, [pid]: reqIds }));
       await preloadRequestMeta(reqIds);
     } catch (e) {
-      console.warn("[director] preloadProposalRequestIds:", errText(e));
+      warnDirectorData("preloadProposalRequestIds", e);
     }
   }, [supabase, preloadRequestMeta]);
 
@@ -225,7 +244,7 @@ export function useDirectorData({ supabase }: Deps) {
       if (Object.keys(mapDn).length) setDisplayNoByReq((prev) => ({ ...prev, ...mapDn }));
       if (Object.keys(mapSub).length) setSubmittedAtByReq((prev) => ({ ...prev, ...mapSub }));
     } catch (e) {
-      console.warn("[director] preloadDisplayNos]:", errText(e));
+      warnDirectorData("preloadDisplayNos", e);
     }
   }, [supabase]);
 
@@ -261,7 +280,7 @@ export function useDirectorData({ supabase }: Deps) {
       const ids = Array.from(new Set(normalized.map((r) => String(r.request_id ?? "").trim()).filter(Boolean)));
       if (ids.length) await preloadDisplayNos(ids);
     } catch (e) {
-      console.error("[director] list_director_items_stable]:", errText(e));
+      warnDirectorData("list_director_items_stable", e, "error");
     } finally {
       if (my === fetchTicket.current) setLoadingRows(false);
     }
@@ -334,7 +353,7 @@ export function useDirectorData({ supabase }: Deps) {
       const perPropCountMap: Record<string, number> = {};
       const nonEmptyPids = new Set<string>();
       if (!countsRes.error && Array.isArray(countsRes.data)) {
-        countsRes.data.forEach((r: any) => {
+        countsRes.data.forEach((r: { proposal_id?: string | null }) => {
           const pid = String(r.proposal_id ?? "");
           if (!pid) return;
           perPropCountMap[pid] = (perPropCountMap[pid] || 0) + 1;
@@ -354,7 +373,7 @@ export function useDirectorData({ supabase }: Deps) {
       lastFetchedPropsAt.current = Date.now();
 
     } catch (e) {
-      console.error("[director] proposals list]:", errText(e));
+      warnDirectorData("proposals list", e, "error");
     } finally {
       setLoadingProps(false);
     }

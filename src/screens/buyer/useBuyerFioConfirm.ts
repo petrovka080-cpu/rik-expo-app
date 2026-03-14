@@ -7,6 +7,12 @@ const BUYER_FIO_KEY = "buyer_fio";
 const CONFIRM_TS_KEY = "buyer_confirm_ts";
 const BUYER_HISTORY_KEY = "buyer_history_v1";
 
+const warnBuyerFio = (scope: "load" | "confirm", error: unknown) => {
+  if (__DEV__) {
+    console.warn(`[buyerFio] ${scope} failed`, error);
+  }
+};
+
 export function useBuyerFioConfirm(params: {
   setBuyerFio: Dispatch<SetStateAction<string>>;
 }) {
@@ -41,9 +47,7 @@ export function useBuyerFioConfirm(params: {
           }
         }
       } catch (e) {
-        if (__DEV__) {
-          console.warn("[buyerFio] load failed", e);
-        }
+        warnBuyerFio("load", e);
       }
     })();
 
@@ -83,9 +87,7 @@ export function useBuyerFioConfirm(params: {
         ]);
         setIsFioConfirmVisible(false);
       } catch (e) {
-        if (__DEV__) {
-          console.warn(e);
-        }
+        warnBuyerFio("confirm", e);
       } finally {
         setIsFioLoading(false);
       }

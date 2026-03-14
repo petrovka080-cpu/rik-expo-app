@@ -2,6 +2,12 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { fetchRequestDisplayNo } from '../../../lib/catalog_api';
 import { toErrorText } from '../foreman.helpers';
 
+const warnForemanDisplayNo = (error: unknown) => {
+    if (__DEV__) {
+        console.warn('[Foreman] preloadDisplayNo:', toErrorText(error, String(error ?? "")));
+    }
+};
+
 export function useForemanDisplayNo() {
     const [displayNoByReq, setDisplayNoByReq] = useState<Record<string, string>>({});
     const displayNoCacheRef = useRef<Record<string, string>>({});
@@ -29,7 +35,7 @@ export function useForemanDisplayNo() {
             displayNoCacheRef.current[key] = val;
             setDisplayNoByReq((prev) => ({ ...prev, [key]: val }));
         } catch (e) {
-            console.warn('[Foreman] preloadDisplayNo:', toErrorText(e, String(e ?? "")));
+            warnForemanDisplayNo(e);
         }
     }, []);
 

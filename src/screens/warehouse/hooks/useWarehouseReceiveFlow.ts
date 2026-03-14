@@ -54,11 +54,19 @@ export function useWarehouseReceiveFlow(params: {
   useEffect(() => {
     const incomingId = String(itemsModalIncomingId ?? "").trim();
     if (!incomingId) return;
+    let cancelled = false;
 
     (async () => {
       await seedEnsureIncomingItems({ supabase, incomingId });
+      if (cancelled) return;
       await loadItemsForHead(incomingId, true);
-    })().catch((e) => onError(e));
+    })().catch((e) => {
+      if (!cancelled) onError(e);
+    });
+
+    return () => {
+      cancelled = true;
+    };
   }, [itemsModalIncomingId, loadItemsForHead, onError, supabase]);
 
   const receiveSelectedForHead = useCallback(
@@ -109,7 +117,9 @@ export function useWarehouseReceiveFlow(params: {
         });
 
         if (error) {
-          console.warn("[wh_receive_apply_ui] error:", error.message);
+          if (__DEV__) {
+            console.warn("[wh_receive_apply_ui] error:", error.message);
+          }
           return notifyError("Ошибка прихода", pickErr(error));
         }
 

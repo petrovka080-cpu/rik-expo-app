@@ -53,6 +53,7 @@ export function useWarehouseIncoming() {
   const [toReceivePage, setToReceivePage] = useState(0);
   const [toReceiveHasMore, setToReceiveHasMore] = useState(true);
   const [toReceiveIsFetching, setToReceiveIsFetching] = useState(false);
+  const toReceiveFetchMutexRef = useRef(false);
   const PAGE_SIZE = 30;
 
   const [itemsByHead, setItemsByHead] = useState<Record<string, ItemRow[]>>({});
@@ -137,7 +138,9 @@ export function useWarehouseIncoming() {
             setProposalNoByPurchase((prev) => ({ ...(prev || {}), ...patch }));
           }
         } catch (e) {
-          console.warn("[warehouse.incoming] preloadProposalNos failed:", pickErr(e));
+          if (__DEV__) {
+            console.warn("[warehouse.incoming] preloadProposalNos failed:", pickErr(e));
+          }
         }
       })();
 
@@ -159,15 +162,18 @@ export function useWarehouseIncoming() {
   }, []);
 
   const fetchToReceive = useCallback(async (pageIndex: number = 0, forceRefresh: boolean = false) => {
-    if (toReceiveIsFetching) return;
+    if (toReceiveFetchMutexRef.current) return;
     if (pageIndex > 0 && !toReceiveHasMore && !forceRefresh) return;
+    toReceiveFetchMutexRef.current = true;
     setToReceiveIsFetching(true);
 
     try {
       const q = await fetchWarehouseIncomingHeadsPage(pageIndex, PAGE_SIZE);
 
       if (q.error || !Array.isArray(q.data)) {
-        console.warn("[warehouse.incoming] v_wh_incoming_heads_ui error:", q.error?.message);
+        if (__DEV__) {
+          console.warn("[warehouse.incoming] v_wh_incoming_heads_ui error:", q.error?.message);
+        }
         if (pageIndex === 0) {
           setToReceive([]);
           setIncomingCount(0);
@@ -229,15 +235,18 @@ export function useWarehouseIncoming() {
         setIncomingCount((prev) => prev + queue.length);
       }
     } catch (e) {
-      console.warn("[warehouse.incoming] fetchToReceive throw:", e);
+      if (__DEV__) {
+        console.warn("[warehouse.incoming] fetchToReceive throw:", e);
+      }
       if (pageIndex === 0) {
         setToReceive([]);
         setIncomingCount(0);
       }
     } finally {
+      toReceiveFetchMutexRef.current = false;
       setToReceiveIsFetching(false);
     }
-  }, [preloadProposalNosByPurchases, toReceiveHasMore, toReceiveIsFetching]);
+  }, [preloadProposalNosByPurchases, toReceiveHasMore]);
 
   const loadItemsForHead = useCallback(async (incomingId: string, force = false) => {
     if (!incomingId) return [] as ItemRow[];
@@ -250,7 +259,9 @@ export function useWarehouseIncoming() {
     const q = await fetchWarehouseIncomingItems(incomingId);
 
     if (q.error) {
-      console.warn("[warehouse.incoming] v_wh_incoming_items_ui error:", q.error.message);
+      if (__DEV__) {
+        console.warn("[warehouse.incoming] v_wh_incoming_items_ui error:", q.error.message);
+      }
       setItemsByHead((prev) => ({ ...(prev || {}), [incomingId]: [] }));
       return [] as ItemRow[];
     }

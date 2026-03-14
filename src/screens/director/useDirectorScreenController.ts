@@ -35,6 +35,13 @@ import {
 } from "./director.finance";
 import { useIsFocused } from "@react-navigation/native";
 
+const warnDirectorFinance = (scope: "fetchFinSpendRows" | "fetchFinance", error: unknown) => {
+    if (__DEV__) {
+        const message = error instanceof Error ? error.message : String(error ?? "");
+        console.warn(`[director] ${scope}:`, message || error);
+    }
+};
+
 export function useDirectorScreenController() {
     const busy = useGlobalBusy();
     const isScreenFocused = useIsFocused();
@@ -73,8 +80,8 @@ export function useDirectorScreenController() {
             const { data, error } = await q;
             if (error) throw error;
             setFinSpendRows(Array.isArray(data) ? data : []);
-        } catch (e: any) {
-            console.warn("[director] fetchFinSpendRows:", e?.message ?? e);
+        } catch (e: unknown) {
+            warnDirectorFinance("fetchFinSpendRows", e);
         }
     }, [finFrom, finTo]);
 
@@ -114,8 +121,8 @@ export function useDirectorScreenController() {
             setFinRows(mapped);
             setFinRep(rep);
             await fetchFinSpendRows();
-        } catch (e: any) {
-            console.warn("[director] fetchFinance:", e?.message ?? e);
+        } catch (e: unknown) {
+            warnDirectorFinance("fetchFinance", e);
             if (nextRows) {
                 setFinRows(nextRows);
                 setFinRep(computeFinanceRep(nextRows, { dueDaysDefault: FIN_DUE_DAYS_DEFAULT, criticalDays: FIN_CRITICAL_DAYS }));

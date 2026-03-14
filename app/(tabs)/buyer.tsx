@@ -543,6 +543,7 @@ export default function BuyerScreen() {
     proposalSubmit: async (pid) => {
       await proposalSubmit(pid);
     },
+    fetchInbox,
     fetchBuckets,
     setRejected,
     closeSheet,

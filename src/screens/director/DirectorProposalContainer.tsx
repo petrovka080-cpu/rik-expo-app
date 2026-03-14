@@ -67,8 +67,8 @@ export default function DirectorProposalContainer({
 
   const pretty = String(propsHeads.find((x) => String(x.id) === pidStr)?.pretty ?? "").trim();
   const totalSum = (items || []).reduce((acc, it) => {
-    const pr = Number((it as any).price ?? 0);
-    const q = Number((it as any).total_qty ?? 0);
+    const pr = Number(it?.price ?? 0);
+    const q = Number(it?.total_qty ?? 0);
     return acc + pr * q;
   }, 0);
   const isPdfBusy = isProposalPdfBusy(pidStr);

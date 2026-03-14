@@ -76,6 +76,19 @@ export function makeWarehouseIssueActions(args: {
 
   const getObjName = () => toNull(getObjectLabel?.());
   const getWorkName = () => toNull(getWorkLabel?.());
+  const refreshAfterIssueCommit = async (requestId?: string | null) => {
+    const refreshTasks: Promise<unknown>[] = [fetchStock(), fetchReqHeads()];
+    const rid = String(requestId ?? "").trim();
+    if (rid) {
+      refreshTasks.push(fetchReqItems(rid));
+    }
+
+    const results = await Promise.allSettled(refreshTasks);
+    const rejected = results.find(
+      (result): result is PromiseRejectedResult => result.status === "rejected",
+    );
+    if (rejected) throw rejected.reason;
+  };
 
   async function submitReqPick(input: {
     requestId: string;
@@ -177,9 +190,7 @@ export function makeWarehouseIssueActions(args: {
         if (id) clearReqQtyInput?.(id);
       }
 
-      await fetchStock();
-      await fetchReqItems(rid);
-      await fetchReqHeads();
+      await refreshAfterIssueCommit(rid);
 
       setIssueMsg({ kind: "ok", text: `✓ Выдано по заявке: позиций ${lines.length}` });
       return true;
@@ -358,9 +369,7 @@ export function makeWarehouseIssueActions(args: {
       const r3 = await commitWarehouseIssue(supabase, issueId);
       if (r3.error) throw r3.error;
 
-      await fetchStock();
-      await fetchReqItems(requestId);
-      await fetchReqHeads();
+      await refreshAfterIssueCommit(requestId);
 
       const uomLabel = String((row )?.uom ?? "—");
       setIssueMsg({

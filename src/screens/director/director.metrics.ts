@@ -40,6 +40,9 @@ const asProposalMetricRow = (value: unknown): ProposalMetricRowLike =>
 const asIncomingMetricRow = (value: unknown): IncomingMetricRowLike =>
   asRecord(value) ?? {};
 
+const fromIncomingHeadsUi = (supabase: SupabaseClient) =>
+  supabase.from("v_wh_incoming_heads_ui" as never);
+
 const norm = (s: unknown) => String(s ?? "").trim().toLowerCase();
 const toNumber = (value: unknown) => Number(value ?? 0) || 0;
 
@@ -107,8 +110,7 @@ export async function loadDirectorDashMetrics(
   // ---- WAREHOUSE COUNTS (очередь прихода) ----
   // Берем то, что ты уже используешь в warehouse.tsx: v_wh_incoming_heads_ui
   try {
-    const q = await supabase
-      .from("v_wh_incoming_heads_ui" as any)
+    const q = await fromIncomingHeadsUi(supabase)
       .select("incoming_id,qty_expected_sum,qty_received_sum,pending_cnt,partial_cnt")
       .limit(5000);
 

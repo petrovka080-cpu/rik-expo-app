@@ -9,6 +9,8 @@ export function useWarehouseDerived(params: {
 }) {
   const { reqHeads, stock, stockSearchDeb } = params;
 
+  const stockRows = stock as WarehouseStockLike[];
+
   const sortedReqHeads = useMemo(() => {
     return [...reqHeads].sort((a, b) => {
       const readyA = Math.max(0, Number(a.ready_cnt ?? 0));
@@ -20,7 +22,7 @@ export function useWarehouseDerived(params: {
   }, [reqHeads]);
 
   const stockFiltered = useMemo(() => {
-    const baseAll = stock || [];
+    const baseAll = stockRows || [];
 
     // PROD: by default hide zero-availability rows.
     const base = baseAll.filter((r) => nz(r.qty_available, 0) > 0);
@@ -39,11 +41,11 @@ export function useWarehouseDerived(params: {
       if (out.length >= 400) break;
     }
     return out;
-  }, [stock, stockSearchDeb]);
+  }, [stockRows, stockSearchDeb]);
 
   const matNameByCode = useMemo(() => {
     const m: Record<string, string> = {};
-    for (const r of (stock || []) as WarehouseStockLike[]) {
+    for (const r of stockRows || []) {
       const code = String(r.rik_code ?? r.code ?? r.material_code ?? "")
         .trim()
         .toUpperCase();
@@ -53,7 +55,7 @@ export function useWarehouseDerived(params: {
       if (code && name && !m[code]) m[code] = name;
     }
     return m;
-  }, [stock]);
+  }, [stockRows]);
 
   return {
     sortedReqHeads,
@@ -61,4 +63,3 @@ export function useWarehouseDerived(params: {
     matNameByCode,
   };
 }
-

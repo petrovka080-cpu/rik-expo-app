@@ -13,12 +13,24 @@ export function useWarehouseTabEffects(params: {
   onError: (e: unknown) => void;
 }) {
   const { tab, periodFrom, periodTo, fetchReports, fetchReqHeadsForce, onError } = params;
+  const reportsInFlightRef = useRef<Promise<void> | null>(null);
+  const reportsLastKeyRef = useRef("");
   const reqHeadsInFlightRef = useRef<Promise<void> | null>(null);
   const reqHeadsLastStartRef = useRef(0);
 
   useEffect(() => {
     if (tab !== TAB_REPORTS) return;
-    fetchReports().catch((e) => onError(e));
+    const key = `${periodFrom || ""}|${periodTo || ""}`;
+    if (reportsInFlightRef.current && reportsLastKeyRef.current === key) return;
+
+    reportsLastKeyRef.current = key;
+    const task = fetchReports()
+      .catch((e) => onError(e))
+      .finally(() => {
+        if (reportsInFlightRef.current === task) reportsInFlightRef.current = null;
+      });
+
+    reportsInFlightRef.current = task;
   }, [tab, periodFrom, periodTo, fetchReports, onError]);
 
   useEffect(() => {

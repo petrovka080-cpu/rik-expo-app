@@ -10,6 +10,12 @@ type ProposalAttachmentUploader = (
   groupKey: string
 ) => Promise<unknown>;
 
+const warnBuyerAccountingModal = (scope: string, error: unknown) => {
+  if (__DEV__) {
+    console.warn(`[buyer.accounting] ${scope}:`, error);
+  }
+};
+
 export function useBuyerAccountingModal(params: {
   supabase: SupabaseClient;
   buildProposalPdfHtml: (proposalId: string) => Promise<string>;
@@ -66,9 +72,7 @@ export function useBuyerAccountingModal(params: {
         await uploadProposalAttachment(proposalId, blob, name, "proposal_html");
         setPropDocAttached({ name });
       } catch (error) {
-        if (__DEV__) {
-          console.warn("[buyer] ensureProposalDocumentAttached:", error);
-        }
+        warnBuyerAccountingModal("ensureProposalDocumentAttached", error);
       } finally {
         setPropDocBusy(false);
       }

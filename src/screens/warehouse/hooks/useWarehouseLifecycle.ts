@@ -33,8 +33,9 @@ export function useWarehouseLifecycle(params: {
   const loadAll = useCallback(async () => {
     setLoading(true);
     try {
-      await fetchToReceive();
-      await fetchStock();
+      const [incomingRes, stockRes] = await Promise.allSettled([fetchToReceive(), fetchStock()]);
+      if (incomingRes.status === "rejected") throw incomingRes.reason;
+      if (stockRes.status === "rejected") throw stockRes.reason;
     } catch (e) {
       onError(e);
     } finally {
@@ -45,6 +46,8 @@ export function useWarehouseLifecycle(params: {
   useEffect(() => {
     if (didInitLoadRef.current) return;
     didInitLoadRef.current = true;
+    // Prevent an immediate focus-refresh from duplicating the initial bootstrap fetches.
+    lastFocusRefreshAtRef.current = Date.now();
     void loadAll().finally(() => {
       lastFocusRefreshAtRef.current = Date.now();
     });

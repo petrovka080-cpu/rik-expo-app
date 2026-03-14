@@ -18,6 +18,11 @@ import DirectorSubcontractTab from "./DirectorSubcontractTab";
 
 type Group = { request_id: number | string; items: any[] };
 type ProposalHead = { id: string; submitted_at?: string | null; pretty?: string | null };
+type TopTabsListRef = { scrollToOffset?: (params: { offset: number; animated?: boolean }) => void };
+type ReportsOpenProps = Props & {
+  openReports?: () => void;
+  reportsPeriodShort?: string;
+};
 
 // finance (оставляем "any", чтобы не тащить 10 типов)
 type FinanceRow = any;
@@ -108,7 +113,7 @@ export default function DirectorDashboard(p: Props) {
   }, []);
 
   React.useEffect(() => {
-    const sv = topTabsRef.current as any;
+    const sv = topTabsRef.current as TopTabsListRef | null;
     const rec = topTabXRef.current?.[p.dirTab];
     if (!sv || !rec) return;
     try {
@@ -445,7 +450,7 @@ export default function DirectorDashboard(p: Props) {
         <View style={{ paddingTop: contentTopPad + 4, paddingHorizontal: 16 }}>
           {/* Отчёты: карточка отчёта */}
           <Pressable
-            onPress={() => (p as any).openReports?.()}
+            onPress={() => (p as ReportsOpenProps).openReports?.()}
             style={[s.mobCard, { marginBottom: 12 }]}
           >
             <View style={s.mobMain}>
@@ -453,7 +458,7 @@ export default function DirectorDashboard(p: Props) {
                 Факт выдачи (склад)
               </Text>
               <Text style={s.mobMeta} numberOfLines={2}>
-                {(p as any).reportsPeriodShort ? `Период: ${(p as any).reportsPeriodShort}` : "Период: 30 дней"}
+                {(p as ReportsOpenProps).reportsPeriodShort ? `Период: ${(p as ReportsOpenProps).reportsPeriodShort}` : "Период: 30 дней"}
               </Text>
             </View>
 

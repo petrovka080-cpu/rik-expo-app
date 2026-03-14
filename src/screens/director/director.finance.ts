@@ -34,7 +34,14 @@ export type FinanceRow = {
   pretty?: string | null;
 
   // passthrough
-  raw?: any;
+  raw?: Record<string, unknown> | null;
+};
+
+type FinanceSourceRow = Record<string, unknown> & {
+  row?: Record<string, unknown> | null;
+  list_accountant_inbox_fact?: Record<string, unknown> | null;
+  data?: Record<string, unknown> | null;
+  raw?: Record<string, unknown> | null;
 };
 
 export type FinSupplierDebt = {
@@ -67,7 +74,7 @@ export type FinRep = {
   };
 };
 
-export const nnum = (v: any): number => {
+export const nnum = (v: unknown): number => {
   if (v == null) return 0;
   if (typeof v === "number") return Number.isFinite(v) ? v : 0;
 
@@ -88,14 +95,14 @@ export const nnum = (v: any): number => {
   return Number.isFinite(n) ? n : 0;
 };
 
-export const money = (v: any): string => {
+export const money = (v: unknown): string => {
   const n = Number(v ?? 0);
   if (!Number.isFinite(n)) return "0";
   return Math.round(n).toLocaleString("ru-RU");
 };
 
 // ✅ у тебя в director.tsx mid/parseMid сравниваются как числа (timestamps)
-export const mid = (v: any): number => {
+export const mid = (v: unknown): number => {
   if (!v) return 0;
   if (v instanceof Date) return v.getTime();
   const d = new Date(String(v));
@@ -103,7 +110,7 @@ export const mid = (v: any): number => {
   return Number.isNaN(t) ? 0 : t;
 };
 
-export const parseMid = (v: any): number => {
+export const parseMid = (v: unknown): number => {
   // совместимость: parseMid("2026-02-01") -> timestamp
   return mid(v);
 };
@@ -116,7 +123,7 @@ export const addDaysIso = (iso: string, days: number) => {
   return d.toISOString().slice(0, 10);
 };
 
-const pickIso10 = (...vals: any[]) => {
+const pickIso10 = (...vals: unknown[]) => {
   for (const v of vals) {
     const s = String(v ?? "").trim();
     if (!s || s === "—") continue;
@@ -125,7 +132,7 @@ const pickIso10 = (...vals: any[]) => {
   return null;
 };
 
-export const pickApprovedIso = (r: any) =>
+export const pickApprovedIso = (r: FinanceSourceRow) =>
   pickIso10(
     r?.approvedAtIso,
     r?.director_approved_at,
@@ -134,22 +141,28 @@ export const pickApprovedIso = (r: any) =>
     r?.approved_at_iso
   );
 
-export const pickInvoiceIso = (r: any) =>
+export const pickInvoiceIso = (r: FinanceSourceRow) =>
   pickIso10(r?.invoiceDate, r?.invoice_date, r?.invoiceIso, r?.invoice_at, r?.created_at, r?.raw?.created_at);
 
-export const pickFinanceAmount = (r: any) =>
+export const pickFinanceAmount = (r: FinanceSourceRow) =>
   nnum(r?.amount ?? r?.invoice_amount ?? r?.invoiceAmount ?? r?.approved_amount ?? 0);
 
-export const pickFinancePaid = (r: any) =>
+export const pickFinancePaid = (r: FinanceSourceRow) =>
   nnum(r?.paidAmount ?? r?.total_paid ?? r?.totalPaid ?? r?.paid_amount ?? 0);
 
-export const mapToFinanceRow = (r: any): FinanceRow => {
-  // ============================== MAYAK: NORMALIZE RPC/SQL WRAPPERS ==============================
-  const src =
-    (r && typeof r === "object" && r !== null
-      ? (r.row ?? r.list_accountant_inbox_fact ?? r.data ?? r)
-      : r) as any;
-  // ============================ END MAYAK: NORMALIZE RPC/SQL WRAPPERS ============================
+const asFinanceSourceRow = (value: unknown): FinanceSourceRow => {
+  if (!value || typeof value !== "object") return {};
+  return value as FinanceSourceRow;
+};
+
+const normalizeFinanceSource = (value: unknown): FinanceSourceRow => {
+  const row = asFinanceSourceRow(value);
+  const nested = row.row ?? row.list_accountant_inbox_fact ?? row.data;
+  return nested && typeof nested === "object" ? asFinanceSourceRow(nested) : row;
+};
+
+export const mapToFinanceRow = (r: unknown): FinanceRow => {
+  const src = normalizeFinanceSource(r);
 
   const supplier = String(src?.supplier ?? "—").trim() || "—";
 

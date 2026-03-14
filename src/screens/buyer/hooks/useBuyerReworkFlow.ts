@@ -19,6 +19,7 @@ export function useBuyerReworkFlow<TRejected extends { id?: string | number | nu
   supabase: SupabaseClient;
   openReworkSheet: (proposalId?: string | number | null) => void;
   proposalSubmit: (proposalId: string) => Promise<unknown>;
+  fetchInbox: () => Promise<void>;
   fetchBuckets: () => Promise<void>;
   setRejected: Dispatch<SetStateAction<TRejected[]>>;
   closeSheet: () => void;
@@ -43,6 +44,7 @@ export function useBuyerReworkFlow<TRejected extends { id?: string | number | nu
     supabase,
     openReworkSheet,
     proposalSubmit,
+    fetchInbox,
     fetchBuckets,
     setRejected,
     closeSheet,
@@ -115,13 +117,14 @@ export function useBuyerReworkFlow<TRejected extends { id?: string | number | nu
       proposalSubmit: async (pid) => {
         await proposalSubmit(pid);
       },
+      fetchInbox,
       fetchBuckets,
       setRejected,
       closeSheet,
       setBusy: setRwBusy,
       alert: alertUser,
     });
-  }, [rwPid, rwItems, supabase, proposalSubmit, fetchBuckets, setRejected, closeSheet, alertUser]);
+  }, [rwPid, rwItems, supabase, proposalSubmit, fetchInbox, fetchBuckets, setRejected, closeSheet, alertUser]);
 
   const rwSendToAccounting = useCallback(async () => {
     if (!rwPid) return;

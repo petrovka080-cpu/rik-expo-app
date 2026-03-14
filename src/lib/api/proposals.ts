@@ -34,6 +34,8 @@ type ProposalItemsRpcRow = {
 
 const PROPOSAL_STATUS_PENDING = "На утверждении";
 
+const PROPOSAL_STATUS_PENDING_CANONICAL = "\u041d\u0430 \u0443\u0442\u0432\u0435\u0440\u0436\u0434\u0435\u043d\u0438\u0438";
+
 function getObjectField<T>(value: unknown, key: string): T | undefined {
   if (typeof value !== "object" || value === null || !(key in value)) return undefined;
   return (value as Record<string, unknown>)[key] as T;
@@ -155,7 +157,7 @@ export async function proposalSubmit(proposalId: number | string) {
   } catch {
     const upd = await client
       .from("proposals")
-      .update({ status: PROPOSAL_STATUS_PENDING, submitted_at: new Date().toISOString() })
+      .update({ status: PROPOSAL_STATUS_PENDING_CANONICAL, submitted_at: new Date().toISOString() })
       .eq("id", pid)
       .select("id")
       .maybeSingle();
@@ -175,7 +177,7 @@ export async function listDirectorProposalsPending(): Promise<Array<{ id: string
   const rowsFromTable = await client
     .from("proposals")
     .select("id, submitted_at")
-    .eq("status", PROPOSAL_STATUS_PENDING)
+    .eq("status", PROPOSAL_STATUS_PENDING_CANONICAL)
     .not("submitted_at", "is", null)
     .order("submitted_at", { ascending: false });
 

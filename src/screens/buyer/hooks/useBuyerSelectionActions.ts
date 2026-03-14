@@ -8,6 +8,10 @@ type MetaMap = Record<string, LineMeta>;
 
 type Setter<T> = (v: T | ((prev: T) => T)) => void;
 type RefLike<T> = { current: T };
+type BuyerInboxOfferFallback = BuyerInboxRow & {
+  last_offer_supplier?: string | null;
+  last_offer_price?: number | null;
+};
 
 export function useBuyerSelectionActions({
   setPicked,
@@ -26,8 +30,9 @@ export function useBuyerSelectionActions({
     setPicked((prev) => {
       const nextPicked = !prev[key];
       if (nextPicked) {
-        const fallbackSupplier = String((ri as any)?.last_offer_supplier ?? "").trim();
-        const fallbackPriceRaw = (ri as any)?.last_offer_price;
+        const fallbackRow = ri as BuyerInboxOfferFallback;
+        const fallbackSupplier = String(fallbackRow.last_offer_supplier ?? "").trim();
+        const fallbackPriceRaw = fallbackRow.last_offer_price;
         const fallbackPrice =
           typeof fallbackPriceRaw === "number" && Number.isFinite(fallbackPriceRaw)
             ? String(fallbackPriceRaw)
@@ -61,11 +66,13 @@ export function useBuyerSelectionActions({
     if (!key) return;
     setMeta((prev) => {
       const next = { ...prev, [key]: { ...(prev[key] || {}), ...patch } };
-      console.info("[buyer.meta] setLineMeta", {
-        requestItemId: key,
-        patch,
-        nextMeta: next[key],
-      });
+      if (__DEV__) {
+        console.info("[buyer.meta] setLineMeta", {
+          requestItemId: key,
+          patch,
+          nextMeta: next[key],
+        });
+      }
       return next;
     });
   }, [setMeta]);

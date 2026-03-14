@@ -3,6 +3,11 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { apiFetchReqHeads } from "../warehouse.api";
 import type { ReqHeadRow } from "../warehouse.types";
 
+const pickErrMessage = (error: unknown) => {
+  if (error instanceof Error && error.message.trim()) return error.message.trim();
+  return String(error ?? "");
+};
+
 export function useWarehouseReqHeads(params: {
   supabase: SupabaseClient;
   pageSize: number;
@@ -31,7 +36,9 @@ export function useWarehouseReqHeads(params: {
         if (reqRefs.current.lastErrorAt > 0 && now - reqRefs.current.lastErrorAt < FORCE_REFRESH_ERROR_COOLDOWN_MS) {
           if (now - reqRefs.current.lastForceSkipLogAt > 2000) {
             reqRefs.current.lastForceSkipLogAt = now;
-            console.warn("[warehouse.reqHeads] force refresh skipped by error cooldown");
+            if (__DEV__) {
+              console.warn("[warehouse.reqHeads] force refresh skipped by error cooldown");
+            }
           }
           return;
         }
@@ -67,11 +74,13 @@ export function useWarehouseReqHeads(params: {
         reqRefs.current.hasMore = false;
         reqRefs.current.lastErrorAt = Date.now();
         if (pageIndex === 0) setReqHeads([]);
-        console.warn("[warehouse.reqHeads] fetch failed", {
-          pageIndex,
-          forceRefresh,
-          error: (e as { message?: string } | null)?.message ?? String(e),
-        });
+        if (__DEV__) {
+          console.warn("[warehouse.reqHeads] fetch failed", {
+            pageIndex,
+            forceRefresh,
+            error: pickErrMessage(e),
+          });
+        }
         throw e;
       } finally {
         reqRefs.current.fetching = false;

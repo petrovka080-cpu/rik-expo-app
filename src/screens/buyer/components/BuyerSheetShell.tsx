@@ -3,6 +3,18 @@ import { Modal, Platform, Pressable, Text, View, type ViewStyle } from "react-na
 
 import type { StylesBag } from "./component.types";
 
+type WebSheetStyle = Omit<ViewStyle, "position"> & {
+  position?: "absolute" | "relative" | "fixed";
+  left?: number;
+  right?: number;
+  top?: number;
+  bottom?: number;
+  zIndex?: number;
+  backgroundColor?: string;
+};
+
+const asWebStyle = (style: WebSheetStyle): ViewStyle => style as ViewStyle;
+
 function WebSheet(props: {
   isOpen: boolean;
   title: string;
@@ -15,44 +27,38 @@ function WebSheet(props: {
 
   return (
     <View
-      style={
-        {
-          position: "fixed",
-          left: 0,
-          right: 0,
-          top: 0,
-          bottom: 0,
-          zIndex: 9999,
-        } as unknown as ViewStyle
-      }
+      style={asWebStyle({
+        position: "fixed",
+        left: 0,
+        right: 0,
+        top: 0,
+        bottom: 0,
+        zIndex: 9999,
+      })}
       pointerEvents="auto"
     >
       <Pressable
         onPress={onClose}
-        style={
-          {
-            position: "absolute",
-            left: 0,
-            right: 0,
-            top: 0,
-            bottom: 0,
-            backgroundColor: "rgba(0,0,0,0.55)",
-          } as unknown as ViewStyle
-        }
+        style={asWebStyle({
+          position: "absolute",
+          left: 0,
+          right: 0,
+          top: 0,
+          bottom: 0,
+          backgroundColor: "rgba(0,0,0,0.55)",
+        })}
       />
 
       <View
-        style={
-          {
-            position: "fixed",
-            left: 0,
-            right: 0,
-            bottom: 0,
-            height: "88%",
-            minHeight: 0,
-            overflow: "hidden",
-          } as unknown as ViewStyle
-        }
+        style={asWebStyle({
+          position: "fixed",
+          left: 0,
+          right: 0,
+          bottom: 0,
+          height: "88%",
+          minHeight: 0,
+          overflow: "hidden",
+        })}
       >
         <View style={s.dirSheet}>
           <View style={s.dirSheetHandle} />

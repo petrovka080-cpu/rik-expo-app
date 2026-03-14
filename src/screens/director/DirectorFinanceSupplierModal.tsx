@@ -61,7 +61,9 @@ export default function DirectorFinanceSupplierModal(p: {
                   e && typeof e === "object" && "message" in e
                     ? String((e as ErrorLike).message ?? e)
                     : String(e);
-                console.log("PDF ERR", message);
+                if (__DEV__) {
+                  console.warn("[director.financeSupplier] pdf failed", message);
+                }
               }
             }}
             style={{

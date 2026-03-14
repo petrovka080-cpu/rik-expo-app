@@ -3,6 +3,12 @@ import { listForemanRequests, type ForemanRequestSummary } from '../../../lib/ca
 import { FOREMAN_TEXT } from '../foreman.ui';
 import { Alert } from 'react-native';
 
+const warnForemanHistory = (error: unknown) => {
+    if (__DEV__) {
+        console.warn('[Foreman] listForemanRequests:', error);
+    }
+};
+
 export function useForemanHistory() {
     const [historyRequests, setHistoryRequests] = useState<ForemanRequestSummary[]>([]);
     const [historyLoading, setHistoryLoading] = useState(false);
@@ -26,7 +32,7 @@ export function useForemanHistory() {
             const rows = await listForemanRequests(name, 50);
             setHistoryRequests(Array.isArray(rows) ? rows : []);
         } catch (e) {
-            console.warn('[Foreman] listForemanRequests:', e);
+            warnForemanHistory(e);
             Alert.alert(FOREMAN_TEXT.historyTitle, FOREMAN_TEXT.historyLoadError);
             setHistoryRequests([]);
         } finally {

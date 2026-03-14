@@ -48,6 +48,13 @@ import {
   type SubcontractPriceType,
   type SubcontractWorkMode,
 } from "../subcontracts/subcontracts.shared";
+import {
+  fetchForemanRequestDisplayLabel,
+  type ForemanRequestDirectPatch,
+  fetchForemanRequestLink,
+  patchForemanRequestLink,
+  pickForemanRequestLinkId,
+} from "./foreman.requests";
 
 type Props = {
   contentTopPad: number;
@@ -145,21 +152,6 @@ const UOM_OPTIONS = [
 ];
 
 type DateTarget = "contractDate" | "dateStart" | "dateEnd" | null;
-let requestsHasRequestNoCache: boolean | null = null;
-
-async function resolveRequestsHasRequestNo(): Promise<boolean> {
-  if (requestsHasRequestNoCache != null) return requestsHasRequestNoCache;
-  try {
-    const q = await supabase.from("requests" as any).select("*").limit(1);
-    if (q.error) throw q.error;
-    const first = Array.isArray(q.data) && q.data.length ? (q.data[0] as Record<string, any>) : null;
-    requestsHasRequestNoCache = !!first && Object.prototype.hasOwnProperty.call(first, "request_no");
-    return requestsHasRequestNoCache;
-  } catch {
-    requestsHasRequestNoCache = false;
-    return false;
-  }
-}
 
 const toNum = (v: string) => {
   const n = Number(String(v || "").trim().replace(",", "."));
@@ -216,6 +208,10 @@ const getErrorMessage = (error: unknown, fallback: string) => {
 const logForemanSubcontractDebug = (...args: unknown[]) => {
   if (!__DEV__) return;
   console.warn(...args);
+};
+
+const warnForemanSubcontract = (scope: string, error: unknown) => {
+  logForemanSubcontractDebug(`[ForemanSubcontractTab] ${scope}:`, error);
 };
 
 export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }: Props) {
@@ -534,31 +530,8 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
     let cancelled = false;
     (async () => {
       try {
-        const hasRequestNo = await resolveRequestsHasRequestNo();
-        const primarySelect = hasRequestNo ? "request_no, display_no" : "display_no";
-        let rq = await supabase
-          .from("requests" as any)
-          .select(primarySelect)
-          .eq("id", requestId)
-          .maybeSingle();
-        if (rq.error) {
-          const msg = String(rq.error.message || "").toLowerCase();
-          const requestNoMissing =
-            primarySelect.includes("request_no") &&
-            (msg.includes("request_no") || msg.includes("column") || msg.includes("does not exist"));
-          if (requestNoMissing) {
-            requestsHasRequestNoCache = false;
-            rq = await supabase
-              .from("requests" as any)
-              .select("display_no")
-              .eq("id", requestId)
-              .maybeSingle();
-          }
-        } else if (primarySelect.includes("request_no")) {
-          requestsHasRequestNoCache = true;
-        }
-        if (cancelled || rq.error || !rq.data) return;
-        const label = String((rq.data as any).request_no || (rq.data as any).display_no || "").trim();
+        const label = await fetchForemanRequestDisplayLabel(requestId);
+        if (cancelled || !label) return;
         if (label) setDisplayNo(label);
       } catch {
         // old schema without request_no; keep existing display
@@ -602,36 +575,28 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
       const objectNameForRequest = String(
         templateObjectName || objectName || templateContract?.object_name || "",
       ).trim();
-      const directPatch: Record<string, any> = {
+      const directPatch: ForemanRequestDirectPatch = {
         subcontract_id: subcontractId,
         contractor_job_id: subcontractId,
       };
       if (objectNameForRequest) {
         directPatch.object_name = objectNameForRequest;
       }
-      const directRes = await supabase
-        .from("requests")
-        .update(directPatch as any)
-        .eq("id", rid);
-      if (directRes.error) {
+      const directError = await patchForemanRequestLink(rid, directPatch);
+      if (directError) {
         logForemanSubcontractDebug("[foreman.subcontract][requests.patch400.direct]", {
           request_id: rid,
           payload: directPatch,
-          error: {
-            message: String((directRes.error as any)?.message ?? ""),
-            code: String((directRes.error as any)?.code ?? ""),
-            details: (directRes.error as any)?.details ?? null,
-            hint: (directRes.error as any)?.hint ?? null,
-          },
+          error: directError,
         });
-        const msg = String(directRes.error.message || "");
+        const msg = String(directError.message || "");
         if (msg.toLowerCase().includes("does not exist")) {
           throw new Error("В таблице requests отсутствуют поля subcontract_id/contractor_job_id. Нужна миграция БД.");
         }
-        throw directRes.error;
+        throw new Error(directError.message || "Не удалось сохранить привязку заявки к подряду.");
       }
 
-      const displayLabel = String((res as any)?.request_no || res?.display_no || "DRAFT").trim() || "DRAFT";
+      const displayLabel = String(res?.display_no || "DRAFT").trim() || "DRAFT";
       setRequestId(rid);
       setDisplayNo(displayLabel || res.display_no || "DRAFT");
       activeDraftScopeKeyRef.current = draftScopeKey;
@@ -732,21 +697,17 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
     }
     setSending(true);
     try {
-      const linked = await supabase
-        .from("requests")
-        .select("id, subcontract_id, contractor_job_id")
-        .eq("id", requestId)
-        .maybeSingle();
-      if (linked.error) {
-        const msg = String(linked.error.message || "");
+      let linked = null;
+      try {
+        linked = await fetchForemanRequestLink(requestId);
+      } catch (error) {
+        const msg = getErrorMessage(error, "");
         if (msg.toLowerCase().includes("does not exist")) {
           throw new Error("В таблице requests отсутствуют поля subcontract_id/contractor_job_id. Нужна миграция БД.");
         }
-        throw linked.error;
+        throw error;
       }
-      const reqLink = String(
-        (linked.data as any)?.subcontract_id || (linked.data as any)?.contractor_job_id || ""
-      ).trim();
+      const reqLink = pickForemanRequestLinkId(linked);
       if (!reqLink || reqLink !== subcontractId) {
         throw new Error("Текущая заявка привязана к другому подряду.");
       }

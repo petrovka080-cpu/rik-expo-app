@@ -11,7 +11,9 @@ export const pickErr = (e: unknown) => {
 };
 
 export const showErr = (e: unknown) => {
-  console.error("[warehouse error]", pickErr(e));
+  if (__DEV__) {
+    console.error("[warehouse error]", pickErr(e));
+  }
   Alert.alert("Не удалось выполнить действие", pickErr(e));
 };
 

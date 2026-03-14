@@ -60,6 +60,10 @@ const ratioColor = (v: number) => {
 const money = (v: number) => `${Math.round(Number(v || 0)).toLocaleString("ru-RU")} KGS`;
 const normKey = (v: string) => String(v || "").trim().toLowerCase();
 const TOP_ACTIONS_INTERACTIVE_HEIGHT = 132;
+type DirectorReportsKpiCompat = RepKpi & {
+  issues_without_object?: number | null;
+  items_without_request?: number | null;
+};
 
 export default function DirectorReportsModal({
   visible,
@@ -90,7 +94,7 @@ export default function DirectorReportsModal({
   onExportSubcontractPdf,
 }: Props) {
   const data = repData as Partial<RepPayload> | null;
-  const kpi: RepKpi | null = data?.kpi ?? null;
+  const kpi: DirectorReportsKpiCompat | null = data?.kpi ?? null;
   const rows: RepRow[] = Array.isArray(data?.rows) ? data.rows : [];
   const discipline: RepDisciplinePayload | null = repDiscipline ?? data?.discipline ?? null;
 
@@ -98,9 +102,9 @@ export default function DirectorReportsModal({
   const [levelModal, setLevelModal] = React.useState<{ work: RepDisciplineWork; level: RepDisciplineLevel } | null>(null);
 
   const issuesTotal = Number(kpi?.issues_total ?? 0);
-  const issuesNoObj = Number((kpi as any)?.issues_without_object ?? kpi?.issues_no_obj ?? 0);
+  const issuesNoObj = Number(kpi?.issues_without_object ?? kpi?.issues_no_obj ?? 0);
   const itemsTotal = Number(kpi?.items_total ?? 0);
-  const itemsNoReq = Number((kpi as any)?.items_without_request ?? kpi?.items_free ?? 0);
+  const itemsNoReq = Number(kpi?.items_without_request ?? kpi?.items_free ?? 0);
 
   const worksTop30 = React.useMemo(() => {
     const arr = Array.isArray(discipline?.works) ? [...discipline.works] : [];

@@ -34,6 +34,7 @@ type FallbackBuyerRow = {
 
 type BuyerRejectContextRow = {
   request_item_id?: string | null;
+  proposal_id?: string | null;
   supplier?: string | null;
   price?: number | null;
   note?: string | null;
@@ -41,6 +42,13 @@ type BuyerRejectContextRow = {
   director_decision?: string | null;
   updated_at?: string | null;
   created_at?: string | null;
+};
+
+type ProposalLifecycleRow = {
+  proposal_id?: string | null;
+  status?: string | null;
+  sent_to_accountant_at?: string | null;
+  submitted_at?: string | null;
 };
 
 // REQUEST_ITEMS_FALLBACK_SELECT_PLANS removed to avoid 400 Bad Request probes
@@ -55,9 +63,77 @@ const isRejectedStatus = (value: unknown): boolean => {
   return s.includes("отклон") || s.includes("reject");
 };
 
+const isReworkStatus = (value: unknown): boolean => {
+  const s = normalizeStatus(value);
+  return s.includes("доработ") || s.includes("rework");
+};
+
 const isProcurementReadyItemStatus = (value: unknown): boolean => {
   return isApprovedForBuyer(value);
 };
+
+const rowTimestampMs = (...values: Array<string | null | undefined>): number => {
+  for (const value of values) {
+    const raw = String(value ?? "").trim();
+    if (!raw) continue;
+    const ms = new Date(raw).getTime();
+    if (Number.isFinite(ms) && ms > 0) return ms;
+  }
+  return 0;
+};
+
+async function loadLatestProposalLifecycleByRequestItem(
+  requestItemIds: string[],
+): Promise<Map<string, ProposalLifecycleRow>> {
+  const ids = Array.from(new Set((requestItemIds || []).map((id) => String(id || "").trim()).filter(Boolean)));
+  if (!ids.length) return new Map();
+
+  const piQ = await client
+    .from("proposal_items_view")
+    .select("proposal_id, request_item_id")
+    .in("request_item_id", ids);
+  if (piQ.error) throw piQ.error;
+
+  const proposalItems = Array.isArray(piQ.data) ? (piQ.data as BuyerRejectContextRow[]) : [];
+  const proposalIds = Array.from(
+    new Set(proposalItems.map((row) => String(row?.proposal_id || "").trim()).filter(Boolean)),
+  );
+  if (!proposalIds.length) return new Map();
+
+  const propQ = await client
+    .from("v_proposals_summary")
+    .select("proposal_id, status, sent_to_accountant_at, submitted_at")
+    .in("proposal_id", proposalIds);
+  if (propQ.error) throw propQ.error;
+
+  const proposalById = new Map<string, ProposalLifecycleRow>();
+  (propQ.data || []).forEach((raw) => {
+    const row = raw as ProposalLifecycleRow;
+    const id = String(row?.proposal_id || "").trim();
+    if (!id) return;
+    proposalById.set(id, row);
+  });
+
+  const bestByRequestItem = new Map<string, { row: ProposalLifecycleRow; ts: number }>();
+  for (const raw of proposalItems) {
+    const requestItemId = String(raw?.request_item_id || "").trim();
+    const proposalId = String(raw?.proposal_id || "").trim();
+    const proposal = proposalById.get(proposalId);
+    if (!requestItemId || !proposal) continue;
+
+    const ts = rowTimestampMs(
+      proposal.sent_to_accountant_at,
+      proposal.submitted_at,
+    );
+
+    const prev = bestByRequestItem.get(requestItemId);
+    if (!prev || ts >= prev.ts) {
+      bestByRequestItem.set(requestItemId, { row: proposal, ts });
+    }
+  }
+
+  return new Map(Array.from(bestByRequestItem.entries()).map(([key, value]) => [key, value.row]));
+}
 
 const isRejectedInboxRow = (row: Partial<BuyerInboxRow> | null | undefined): boolean =>
   !!row && (!!row.director_reject_at || !!row.director_reject_note || isRejectedStatus(row.status));
@@ -148,14 +224,41 @@ async function filterInboxByRequestStatus(rows: BuyerInboxRow[]): Promise<BuyerI
       statusByReqId.set(String(r.id || "").trim(), String(r.status || ""));
     });
 
+    const rejectedItemIds = list
+      .filter((row) => isRejectedInboxRow(row))
+      .map((row) => String(row?.request_item_id || "").trim())
+      .filter(Boolean);
+
+    let latestProposalByRequestItem = new Map<string, ProposalLifecycleRow>();
+    if (rejectedItemIds.length) {
+      try {
+        latestProposalByRequestItem = await loadLatestProposalLifecycleByRequestItem(rejectedItemIds);
+      } catch (proposalErr) {
+        logBuyerApiDebug("[listBuyerInbox] latest proposal gate failed:", parseErr(proposalErr));
+      }
+    }
+
     return list.filter((r) => {
-      if (isRejectedInboxRow(r)) return true;
-      if (isProcurementReadyItemStatus(r?.status)) return true;
-      return isApprovedForBuyer(statusByReqId.get(String(r?.request_id || "").trim()) || "");
+      const requestStatus = statusByReqId.get(String(r?.request_id || "").trim()) || "";
+      const requestReady = isApprovedForBuyer(requestStatus);
+      const itemReady = isProcurementReadyItemStatus(r?.status);
+
+      if (isRejectedInboxRow(r)) {
+        const latestProposal = latestProposalByRequestItem.get(String(r?.request_item_id || "").trim());
+        if (latestProposal) return isReworkStatus(latestProposal.status);
+        // Old reject residue must not keep item in inbox after a new approved/pending cycle.
+        return !requestReady && !itemReady;
+      }
+
+      if (itemReady) return true;
+      return requestReady;
     });
   } catch (e) {
     logBuyerApiDebug("[listBuyerInbox] request-status gate failed:", parseErr(e));
-    return list.filter((r) => isRejectedInboxRow(r) || isProcurementReadyItemStatus(r?.status));
+    return list.filter((r) => {
+      if (isRejectedInboxRow(r)) return !isProcurementReadyItemStatus(r?.status);
+      return isProcurementReadyItemStatus(r?.status);
+    });
   }
 }
 
@@ -165,7 +268,8 @@ export async function listBuyerInbox(): Promise<BuyerInboxRow[]> {
     if (error) throw error;
 
     const rows = Array.isArray(data) ? (data as BuyerInboxRow[]) : [];
-    return await enrichRejectedRows(rows);
+    const gatedRows = await filterInboxByRequestStatus(rows);
+    return await enrichRejectedRows(gatedRows);
   } catch (e) {
     logBuyerApiDebug("[listBuyerInbox] rpc list_buyer_inbox failed, hitting fallback:", parseErr(e));
   }
@@ -225,7 +329,8 @@ export async function listBuyerInbox(): Promise<BuyerInboxRow[]> {
         request_status: String(r.requests?.status ?? r.request_status ?? ""),
       };
     }) as Array<BuyerInboxRow & { request_status?: string }>;
-    return await enrichRejectedRows(rows as BuyerInboxRow[]);
+    const gatedRows = await filterInboxByRequestStatus(rows as BuyerInboxRow[]);
+    return await enrichRejectedRows(gatedRows);
   } catch (err) {
     logBuyerApiDebug("[listBuyerInbox] fallback failed:", parseErr(err));
     return [];

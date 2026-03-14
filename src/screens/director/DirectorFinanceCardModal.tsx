@@ -17,6 +17,10 @@ import { UI } from "./director.styles";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import TopRightActionBar from "../../ui/TopRightActionBar";
 
+type CancellableTask = {
+  cancel?: () => void;
+};
+
 export default function DirectorFinanceCardModal({
   visible,
   onClose,
@@ -76,10 +80,7 @@ export default function DirectorFinanceCardModal({
     });
 
     return () => {
-      // Safely check for cancel if the handle supports it
-      if (task && 'cancel' in task) {
-        (task as any).cancel();
-      }
+      (task as CancellableTask | null)?.cancel?.();
     };
   }, [visible]);
 

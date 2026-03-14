@@ -2,17 +2,18 @@
 import { useCallback, useRef } from "react";
 import { Alert, Platform } from "react-native";
 import { useRouter } from "expo-router";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import * as XLSX from "xlsx";
 import { generateProposalPdfDocument } from "../../lib/catalog_api";
 import { buildPdfFileName } from "../../lib/documents/pdfDocument";
 import { preparePdfDocument, previewPdfDocument } from "../../lib/documents/pdfDocumentActions";
+import type { Database } from "../../lib/database.types";
 import type { ProposalItem } from "./director.types";
 
 type BusyLike = { isBusy: (key: string) => boolean };
-
 type Deps = {
   busy: BusyLike;
-  supabase: any;
+  supabase: SupabaseClient<Database>;
   pdfTapLockRef: React.MutableRefObject<Record<string, boolean>>;
   itemsByProp: Record<string, ProposalItem[]>;
   setItemsByProp: React.Dispatch<React.SetStateAction<Record<string, ProposalItem[]>>>;
@@ -28,6 +29,21 @@ type Deps = {
 const errText = (error: unknown): string => {
   if (error instanceof Error && error.message.trim()) return error.message.trim();
   return String(error ?? "");
+};
+
+const asRecord = (value: unknown): Record<string, unknown> | null =>
+  value && typeof value === "object" ? (value as Record<string, unknown>) : null;
+
+const pickTrimmedString = (value: unknown): string => String(value ?? "").trim();
+
+const pickMaybeId = (value: unknown, key = "id"): string | null => {
+  const row = asRecord(value);
+  return row ? pickTrimmedString(row[key]) || null : null;
+};
+
+const hasSentToAccountant = (value: unknown): boolean => {
+  const row = asRecord(value);
+  return !!pickTrimmedString(row?.sent_to_accountant_at);
 };
 
 export function useDirectorProposalActions({
@@ -64,9 +80,7 @@ export function useDirectorProposalActions({
           .eq("id", proposalId)
           .maybeSingle();
         if (q.error) continue;
-        const row = q.data as any;
-        const sentAt = String(row?.sent_to_accountant_at ?? "").trim();
-        if (sentAt) return true;
+        if (hasSentToAccountant(q.data)) return true;
       } catch {}
     }
     return false;
@@ -82,8 +96,7 @@ export function useDirectorProposalActions({
         .limit(1)
         .maybeSingle();
       if (q.error) return null;
-      const id = String((q.data as any)?.id ?? "").trim();
-      return id || null;
+      return pickMaybeId(q.data);
     } catch {
       return null;
     }
@@ -278,7 +291,7 @@ export function useDirectorProposalActions({
           p_proposal_id: pid,
         });
         if (rInc?.error) throw rInc.error;
-        const rpcPurchaseId = String(((rInc?.data as { purchase_id?: string | number | null } | null)?.purchase_id ?? "")).trim();
+        const rpcPurchaseId = pickMaybeId(rInc?.data, "purchase_id");
         ensuredPurchaseId = rpcPurchaseId || ensuredPurchaseId;
       }
 

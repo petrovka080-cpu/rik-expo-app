@@ -1,6 +1,6 @@
 // src/screens/warehouse/warehouse.availability.ts
 // Shared availability lookup: eliminates duplicate getAvailableByCode/getAvailableByCodeUom logic.
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import type { StockRow } from "./warehouse.types";
 import { nz, normMatCode } from "./warehouse.utils";
 
@@ -22,21 +22,39 @@ export function useStockAvailability(
   stock: StockLike[],
   matNameByCode: Record<string, string>,
 ): AvailabilityApi {
+  const availableByCode = useMemo(() => {
+    const map: Record<string, number> = {};
+    for (const row of stock) {
+      const rowKey = normMatCode(
+        String(row.rik_code ?? row.code ?? row.material_code ?? ""),
+      );
+      if (!rowKey) continue;
+      map[rowKey] = (map[rowKey] || 0) + nz(row.qty_available, 0);
+    }
+    return map;
+  }, [stock]);
+
+  const availableByCodeUom = useMemo(() => {
+    const map: Record<string, number> = {};
+    for (const row of stock) {
+      const rowKey = normMatCode(
+        String(row.rik_code ?? row.code ?? row.material_code ?? ""),
+      );
+      if (!rowKey) continue;
+      const rowUom = String(row.uom_id ?? "").trim().toLowerCase();
+      const key = `${rowKey}::${rowUom}`;
+      map[key] = (map[key] || 0) + nz(row.qty_available, 0);
+    }
+    return map;
+  }, [stock]);
+
   const getAvailableByCode = useCallback(
     (code: string): number => {
       const key = normMatCode(code);
       if (!key) return 0;
-      let sum = 0;
-      for (const row of stock) {
-        const rowKey = normMatCode(
-          String(row.rik_code ?? row.code ?? row.material_code ?? ""),
-        );
-        if (rowKey !== key) continue;
-        sum += nz(row.qty_available, 0);
-      }
-      return sum;
+      return availableByCode[key] || 0;
     },
-    [stock],
+    [availableByCode],
   );
 
   const getAvailableByCodeUom = useCallback(
@@ -44,19 +62,10 @@ export function useStockAvailability(
       const key = normMatCode(code);
       const u = String(uomId ?? "").trim().toLowerCase();
       if (!key) return 0;
-      let sum = 0;
-      for (const row of stock) {
-        const rowKey = normMatCode(
-          String(row.rik_code ?? row.code ?? row.material_code ?? ""),
-        );
-        if (rowKey !== key) continue;
-        const rowU = String(row.uom_id ?? "").trim().toLowerCase();
-        if (u && rowU !== u) continue;
-        sum += nz(row.qty_available, 0);
-      }
-      return sum;
+      if (!u) return availableByCode[key] || 0;
+      return availableByCodeUom[`${key}::${u}`] || 0;
     },
-    [stock],
+    [availableByCode, availableByCodeUom],
   );
 
   const getMaterialNameByCode = useCallback(

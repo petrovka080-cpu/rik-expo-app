@@ -19,6 +19,12 @@ const chunk = <T,>(arr: T[], size: number) => {
   return out;
 };
 
+const warnBuyerProposalCaches = (scope: string, error: unknown) => {
+  if (__DEV__) {
+    console.warn(`[buyer.caches] ${scope}:`, errText(error));
+  }
+};
+
 export function useBuyerProposalCaches() {
   const [titleByPid, setTitleByPid] = useState<Record<string, string>>({});
   const titleByPidRef = useRef<Record<string, string>>({});
@@ -87,7 +93,7 @@ export function useBuyerProposalCaches() {
             });
           }
         } catch (e) {
-          console.warn("[buyer] preloadProposalNosByIds failed:", errText(e));
+          warnBuyerProposalCaches("preloadProposalNosByIds failed", e);
         }
       })();
 

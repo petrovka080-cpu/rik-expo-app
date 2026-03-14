@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { SubmitJobRow } from "../lib/infra/jobQueue";
 import { processBuyerSubmitJob } from "./processBuyerSubmitJob";
+import { processWarehouseNameMapRefreshJob } from "./processWarehouseNameMapRefreshJob";
 
 type DispatchDeps = {
   supabase: SupabaseClient;
@@ -40,6 +41,9 @@ export async function dispatchJob(job: SubmitJobRow, deps: DispatchDeps): Promis
       });
       return;
     }
+    case "warehouse_refresh_name_map_ui":
+      await processWarehouseNameMapRefreshJob(job, { supabase: deps.supabase });
+      return;
     default:
       throw new Error(`unknown job_type: ${job.job_type}`);
   }

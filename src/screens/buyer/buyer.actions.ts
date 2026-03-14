@@ -116,6 +116,7 @@ type BuyerSubmitIntentPayload = {
   buyerFio: string;
   attachments: QueuedProposalAttachment[];
 };
+type BuyerSubmitIntentPayloadRecord = Record<string, unknown>;
 
 const logBuyerActionDebug = (level: "info" | "warn", ...args: unknown[]) => {
   if (!__DEV__) return;
@@ -328,13 +329,21 @@ export async function handleCreateProposalsBySupplierAction(p: CreateProposalsDe
         buyerFio: (p.buyerFio || "").trim(),
         attachments: stagedAttachments,
       };
+      const queuePayload: BuyerSubmitIntentPayloadRecord = {
+        requestId: intentPayload.requestId,
+        requestItemIds: intentPayload.requestItemIds,
+        metaById: intentPayload.metaById,
+        buyerId: intentPayload.buyerId,
+        buyerFio: intentPayload.buyerFio,
+        attachments: intentPayload.attachments,
+      };
       try {
         await enqueueSubmitJob({
           jobType: "buyer_submit_proposal",
           entityType: "request_items",
           entityId: ids[0] || null,
           entityKey: p.requestId ? String(p.requestId).trim() || null : ids[0] || null,
-          payload: intentPayload as unknown as Record<string, unknown>,
+          payload: queuePayload,
           clientRequestId,
         });
       } catch (e: unknown) {
@@ -991,6 +1000,7 @@ type RwSendToDirectorDeps<TRejected extends MaybeId = MaybeId> = {
   items: RwItem[];
   supabase: SupabaseClient;
   proposalSubmit: (pid: string) => Promise<void>;
+  fetchInbox: () => Promise<void>;
   fetchBuckets: () => Promise<void>;
   setRejected: (fn: (prev: TRejected[]) => TRejected[]) => void;
   closeSheet: () => void;
@@ -1001,7 +1011,20 @@ type RwSendToDirectorDeps<TRejected extends MaybeId = MaybeId> = {
 export async function rwSendToDirectorAction<TRejected extends MaybeId = MaybeId>(p: RwSendToDirectorDeps<TRejected>) {
   p.setBusy(true);
   try {
+    const affectedIds = Array.from(
+      new Set(
+        (p.items || [])
+          .map((item) => String(item?.request_item_id ?? ""))
+          .map((id) => id.trim())
+          .filter(Boolean),
+      ),
+    );
+
     await rwPersistItems(p.supabase, p.pid, p.items);
+
+    if (affectedIds.length) {
+      await clearRequestItemsDirectorRejectState(p.supabase, affectedIds);
+    }
 
     await p.supabase
       .from("proposals")
@@ -1015,7 +1038,7 @@ export async function rwSendToDirectorAction<TRejected extends MaybeId = MaybeId
       .update({ sent_to_accountant_at: null })
       .eq("id", p.pid);
 
-    await p.fetchBuckets();
+    await Promise.allSettled([p.fetchInbox(), p.fetchBuckets()]);
     p.setRejected((prev) => prev.filter((x) => String(x?.id ?? "") !== p.pid));
 
     p.alert("Готово", "Отправлено директору.");
@@ -1233,6 +1256,11 @@ export async function setProposalBuyerFioAction(opts: {
   log?: (...a: unknown[]) => void;
 }) {
   const { supabase, propId, typedFio, log } = opts;
+  const warn = (message: string) => {
+    if (__DEV__) {
+      console.warn(message);
+    }
+  };
   try {
     let fio = String(typedFio ?? "").trim();
 
@@ -1246,7 +1274,7 @@ export async function setProposalBuyerFioAction(opts: {
 
     await repoSetProposalBuyerFio(supabase, propId, fio);
   } catch (e: unknown) {
-    (log ?? console.warn)?.("[buyer_fio]", errMessage(e));
+    (log ?? warn)(`[buyer_fio] ${errMessage(e)}`);
   }
 }
 
@@ -1259,6 +1287,11 @@ export async function snapshotProposalItemsAction(opts: {
   log?: (...a: unknown[]) => void;
 }) {
   const { supabase, proposalId, ids, rows, meta, log } = opts;
+  const warn = (message: string) => {
+    if (__DEV__) {
+      console.warn(message);
+    }
+  };
 
   try {
     const cleanIds = Array.from(new Set((ids || []).map(String).filter(Boolean)));
@@ -1320,7 +1353,7 @@ export async function snapshotProposalItemsAction(opts: {
 
     await repoUpdateProposalItems(supabase, proposalId, payload);
   } catch (e: unknown) {
-    (log ?? console.warn)?.("[snapshotProposalItems]", errMessage(e));
+    (log ?? warn)(`[snapshotProposalItems] ${errMessage(e)}`);
   }
 }
 

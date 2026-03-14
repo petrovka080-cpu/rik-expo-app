@@ -47,6 +47,12 @@ const getErrorMessage = (error: unknown, fallback: string): string => {
 const getDisciplineFromPayload = (payload: RepPayload | null): RepDisciplinePayload | null =>
   payload?.discipline ?? null;
 
+const normalizeRepPayload = (payload: unknown): RepPayload | null =>
+  payload && typeof payload === "object" ? (payload as RepPayload) : null;
+
+const normalizeRepDisciplinePayload = (payload: unknown): RepDisciplinePayload | null =>
+  payload && typeof payload === "object" ? (payload as RepDisciplinePayload) : null;
+
 const isoDate = (d: Date) => {
   const yyyy = d.getFullYear();
   const mm = String(d.getMonth() + 1).padStart(2, "0");
@@ -172,7 +178,7 @@ export function useDirectorReports({ fmtDateOnly }: Deps) {
           objectIdByName: repOptObjectIdByName,
         });
         if (reqId !== reportReqSeqRef.current) return;
-        const normalized = (payload ?? null) as unknown as RepPayload | null;
+        const normalized = normalizeRepPayload(payload);
         setCached(reportCacheRef.current, key, normalized);
         setRepData(normalized);
         const disciplinePayload = getDisciplineFromPayload(normalized);
@@ -184,7 +190,9 @@ export function useDirectorReports({ fmtDateOnly }: Deps) {
       } catch (e: unknown) {
         if (reqId !== reportReqSeqRef.current) return;
         const message = getErrorMessage(e, "Не удалось получить отчет");
-        console.warn("[director] fetchReport:", message);
+        if (__DEV__) {
+          console.warn("[director] fetchReport:", message);
+        }
         if (!opts?.background) {
           setRepData(null);
           Alert.alert("Не удалось получить отчет", message);
@@ -222,7 +230,7 @@ export function useDirectorReports({ fmtDateOnly }: Deps) {
               objectIdByName: repOptObjectIdByName,
             });
             if (activeReqId !== disciplineReqSeqRef.current) return;
-            const full = (payload ?? null) as RepDisciplinePayload | null;
+            const full = normalizeRepDisciplinePayload(payload);
             disciplinePricesReadyRef.current.add(key);
             setCached(disciplineCacheRef.current, key, full);
             setRepDiscipline(full);
@@ -257,7 +265,7 @@ export function useDirectorReports({ fmtDateOnly }: Deps) {
         }, { skipPrices: true });
         logTiming("api:discipline:network_done", apiStart);
         if (reqId !== disciplineReqSeqRef.current) return;
-        const normalizedBase = (basePayload ?? null) as RepDisciplinePayload | null;
+        const normalizedBase = normalizeRepDisciplinePayload(basePayload);
         disciplinePricesReadyRef.current.delete(key);
         setCached(disciplineCacheRef.current, key, normalizedBase);
         setRepDiscipline(normalizedBase);
@@ -273,7 +281,7 @@ export function useDirectorReports({ fmtDateOnly }: Deps) {
               objectIdByName: repOptObjectIdByName,
             });
             if (reqId !== disciplineReqSeqRef.current) return;
-            const normalizedFull = (fullPayload ?? null) as RepDisciplinePayload | null;
+            const normalizedFull = normalizeRepDisciplinePayload(fullPayload);
             disciplinePricesReadyRef.current.add(key);
             setCached(disciplineCacheRef.current, key, normalizedFull);
             setRepDiscipline(normalizedFull);
@@ -286,7 +294,9 @@ export function useDirectorReports({ fmtDateOnly }: Deps) {
       } catch (e: unknown) {
         if (reqId !== disciplineReqSeqRef.current) return;
         const message = getErrorMessage(e, "Не удалось получить дисциплины");
-        console.warn("[director] fetchDiscipline:", message);
+        if (__DEV__) {
+          console.warn("[director] fetchDiscipline:", message);
+        }
         setRepDiscipline(null);
         setRepDisciplinePriceLoading(false);
         if (!opts?.background) {
@@ -348,7 +358,9 @@ export function useDirectorReports({ fmtDateOnly }: Deps) {
         setRepOptObjectIdByName(normalized.objectIdByName);
       } catch (e: unknown) {
         if (reqId !== optionsReqSeqRef.current) return;
-        console.warn("[director] fetchReportOptions:", getErrorMessage(e, "Не удалось получить опции отчетов"));
+        if (__DEV__) {
+          console.warn("[director] fetchReportOptions:", getErrorMessage(e, "Не удалось получить опции отчетов"));
+        }
         setRepOptObjects([]);
         setRepOptObjectIdByName({});
       } finally {
@@ -397,20 +409,22 @@ export function useDirectorReports({ fmtDateOnly }: Deps) {
         objectName: null,
         objectIdByName: opt.objectIdByName ?? {},
       });
-      setRepData((payload ?? null) as unknown as RepPayload | null);
+      setRepData(normalizeRepPayload(payload));
       const discipline = await fetchDirectorWarehouseReportDiscipline({
         from,
         to,
         objectName: null,
         objectIdByName: opt.objectIdByName ?? {},
       }, { skipPrices: repTab !== "discipline" });
-      setRepDiscipline((discipline ?? null) as RepDisciplinePayload | null);
+      setRepDiscipline(normalizeRepDisciplinePayload(discipline));
       if (repTab !== "discipline") {
         void fetchDiscipline(null, { background: true });
       }
     } catch (e: unknown) {
       const message = getErrorMessage(e, "Не удалось пересчитать отчет");
-      console.warn("[director] applyReportPeriod:", message);
+      if (__DEV__) {
+        console.warn("[director] applyReportPeriod:", message);
+      }
       setRepData(null);
       setRepOptObjects([]);
       setRepOptObjectIdByName({});
@@ -450,7 +464,7 @@ export function useDirectorReports({ fmtDateOnly }: Deps) {
         objectName: currentObject,
         objectIdByName: optNorm.objectIdByName,
       });
-      const normalized = (payload ?? null) as unknown as RepPayload | null;
+      const normalized = normalizeRepPayload(payload);
       setCached(reportCacheRef.current, reportKey(from, to, currentObject, optNorm.objectIdByName), normalized);
       setRepData(normalized);
       const discipline = await fetchDirectorWarehouseReportDiscipline({
@@ -459,7 +473,7 @@ export function useDirectorReports({ fmtDateOnly }: Deps) {
         objectName: currentObject,
         objectIdByName: optNorm.objectIdByName,
       }, { skipPrices: repTab !== "discipline" });
-      const disNorm = (discipline ?? null) as RepDisciplinePayload | null;
+      const disNorm = normalizeRepDisciplinePayload(discipline);
       setCached(disciplineCacheRef.current, disciplineKey(from, to, currentObject, optNorm.objectIdByName), disNorm);
       setRepDiscipline(disNorm);
       if (repTab !== "discipline") {
@@ -467,7 +481,9 @@ export function useDirectorReports({ fmtDateOnly }: Deps) {
       }
     } catch (e: unknown) {
       const message = getErrorMessage(e, "Не удалось обновить отчет");
-      console.warn("[director] refreshReports:", message);
+      if (__DEV__) {
+        console.warn("[director] refreshReports:", message);
+      }
       setRepData(null);
       Alert.alert("Не удалось обновить отчет", message);
     } finally {

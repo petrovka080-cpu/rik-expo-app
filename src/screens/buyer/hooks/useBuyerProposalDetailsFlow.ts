@@ -5,6 +5,12 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { ProposalHeadLite, ProposalViewLine } from "../buyer.types";
 import { openProposalViewAction } from "../buyer.actions";
 
+const warnBuyerProposalDetails = (...args: unknown[]) => {
+  if (__DEV__) {
+    console.warn(...args);
+  }
+};
+
 export function useBuyerProposalDetailsFlow(params: {
   supabase: SupabaseClient;
   isPropDetailsOpen: boolean;
@@ -44,7 +50,7 @@ export function useBuyerProposalDetailsFlow(params: {
         setPropViewHead,
         setPropViewLines,
         setPropViewBusy,
-        log: console.warn,
+        log: warnBuyerProposalDetails,
       });
     },
     [

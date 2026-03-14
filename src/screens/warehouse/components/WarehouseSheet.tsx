@@ -4,6 +4,8 @@ import { View, Pressable, Platform, type ViewStyle } from "react-native";
 import RNModal from "react-native-modal";
 import { UI } from "../warehouse.styles";
 
+const asWebStyle = (style: Record<string, unknown>) => style as unknown as ViewStyle;
+
 function WebSheet({
   visible,
   onClose,
@@ -28,55 +30,49 @@ function WebSheet({
 
   return (
     <View
-      style={
-        {
-          position: "fixed",
-          left: 0,
-          right: 0,
-          top: 0,
-          bottom: 0,
-          zIndex: 9999,
-        } as unknown as ViewStyle
-      }
+      style={asWebStyle({
+        position: "fixed",
+        left: 0,
+        right: 0,
+        top: 0,
+        bottom: 0,
+        zIndex: 9999,
+      })}
       pointerEvents="auto"
     >
       <Pressable
         onPress={onClose}
-        style={
-          {
-            position: "absolute",
-            left: 0,
-            right: 0,
-            top: 0,
-            bottom: 0,
-            backgroundColor: "rgba(0,0,0,0.55)",
-          } as unknown as ViewStyle
-        }
+        style={asWebStyle({
+          position: "absolute",
+          left: 0,
+          right: 0,
+          top: 0,
+          bottom: 0,
+          backgroundColor: "rgba(0,0,0,0.55)",
+        })}
       />
 
       <View
         {...({ onWheelCapture: handleWheelCapture } as Record<string, unknown>)}
-        style={
-          {
-            position: "fixed",
-            left: 0,
-            right: 0,
-            bottom: 0,
-            height: sheetHeight,
-            backgroundColor: UI.cardBg,
-            borderTopLeftRadius: 22,
-            borderTopRightRadius: 22,
-            paddingTop: 10,
-            paddingHorizontal: 16,
-            paddingBottom: 16,
-            borderWidth: 1,
-            borderColor: "rgba(255,255,255,0.10)",
-            display: "flex",
-            flexDirection: "column",
-            minHeight: 0,
-            overflow: "hidden",
-          } as unknown as ViewStyle
-        }
+        style={asWebStyle({
+          position: "fixed",
+          left: 0,
+          right: 0,
+          bottom: 0,
+          height: sheetHeight,
+          backgroundColor: UI.cardBg,
+          borderTopLeftRadius: 22,
+          borderTopRightRadius: 22,
+          paddingTop: 10,
+          paddingHorizontal: 16,
+          paddingBottom: 16,
+          borderWidth: 1,
+          borderColor: "rgba(255,255,255,0.10)",
+          display: "flex",
+          flexDirection: "column",
+          minHeight: 0,
+          overflow: "hidden",
+        })}
       >
         <View
           style={{
@@ -90,16 +86,14 @@ function WebSheet({
         />
 
         <View
-          style={
-            {
-              flex: 1,
-              minHeight: 0,
-              overflowY: "auto",
-              overflowX: "hidden",
-              WebkitOverflowScrolling: "touch",
-              overscrollBehavior: "contain",
-            } as ViewStyle
-          }
+          style={asWebStyle({
+            flex: 1,
+            minHeight: 0,
+            overflowY: "auto",
+            overflowX: "hidden",
+            WebkitOverflowScrolling: "touch",
+            overscrollBehavior: "contain",
+          })}
         >
           {children}
         </View>

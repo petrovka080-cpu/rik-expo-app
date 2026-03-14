@@ -37,6 +37,15 @@ import {
   type SubcontractWorkMode,
 } from "../subcontracts/subcontracts.shared";
 
+const warnBuyerSubcontract = (
+  scope: "load error" | "contractor_id attach skipped" | "contractor_id attach exception",
+  error: unknown,
+) => {
+  if (__DEV__) {
+    console.warn(`[BuyerSubcontractTab] ${scope}:`, error);
+  }
+};
+
 type Props = {
   contentTopPad: number;
   onScroll?: (event: NativeSyntheticEvent<NativeScrollEvent>) => void;
@@ -144,7 +153,7 @@ export default function BuyerSubcontractTab({ contentTopPad, onScroll, buyerFio 
       const list = await listForemanSubcontracts(uid);
       setItems(list);
     } catch (e) {
-      console.warn("[BuyerSubcontractTab] load error:", e);
+      warnBuyerSubcontract("load error", e);
     } finally {
       setLoading(false);
     }
@@ -236,10 +245,10 @@ export default function BuyerSubcontractTab({ contentTopPad, onScroll, buyerFio 
         .update({ contractor_id: cid } as never)
         .eq("id", sid);
       if (upd.error && __DEV__) {
-        console.warn("[BuyerSubcontractTab] contractor_id attach skipped:", upd.error.message);
+        warnBuyerSubcontract("contractor_id attach skipped", upd.error.message);
       }
     } catch (e) {
-      if (__DEV__) console.warn("[BuyerSubcontractTab] contractor_id attach exception:", e);
+      warnBuyerSubcontract("contractor_id attach exception", e);
     }
   }, []);
 

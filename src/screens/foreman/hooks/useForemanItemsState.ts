@@ -8,6 +8,12 @@ import {
 import { ridStr } from '../foreman.helpers';
 import type { RequestDraftMeta } from '../foreman.types';
 
+const warnForemanItemsState = (error: unknown) => {
+    if (__DEV__) {
+        console.error('[Foreman] loadItems error:', error);
+    }
+};
+
 export function useForemanItemsState(formatQtyInput: (v?: number | null) => string) {
     const [requestId, setRequestId] = useState<string>("");
     const [items, setItems] = useState<ReqItemRow[]>([]);
@@ -25,7 +31,7 @@ export function useForemanItemsState(formatQtyInput: (v?: number | null) => stri
             const rows = await listRequestItems(key);
             setItems(Array.isArray(rows) ? rows : []);
         } catch (e) {
-            console.error('[Foreman] loadItems error:', e);
+            warnForemanItemsState(e);
             setItems([]);
         }
     }, [requestId]);

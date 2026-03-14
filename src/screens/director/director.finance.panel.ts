@@ -1,5 +1,6 @@
 import { Alert } from "react-native";
 import { useCallback, useMemo } from "react";
+import type { Dispatch, SetStateAction } from "react";
 import { useRouter } from "expo-router";
 import { buildPdfFileName } from "../../lib/documents/pdfDocument";
 import { preparePdfDocument, previewPdfDocument } from "../../lib/documents/pdfDocumentActions";
@@ -20,6 +21,117 @@ import { makeIsoInPeriod, pickIso10 } from "./director.helpers";
 
 type BusyLike = { isBusy: (key: string) => boolean };
 
+type FinSpendRowLike = {
+  supplier?: string | null;
+  kind_name?: string | null;
+  proposal_id?: string | null;
+  proposal_no?: string | null;
+  director_approved_at?: string | null;
+  approved_at?: string | null;
+  approvedAtIso?: string | null;
+};
+
+type FinSupplierInvoice = {
+  id: string;
+  title: string;
+  amount: number;
+  paid: number;
+  rest: number;
+  isOverdue: boolean;
+  isCritical: boolean;
+  approvedIso: string | null;
+  invoiceIso: string | null;
+  dueIso: string | null;
+};
+
+type FinSupplierPanelState = FinSupplierDebt & {
+  _kindName?: string | null;
+  kindName?: string | null;
+  invoices?: FinSupplierInvoice[];
+};
+
+type FinSupplierInput =
+  | FinSupplierDebt
+  | FinSupplierPanelState
+  | {
+      supplier?: unknown;
+      name?: unknown;
+      _kindName?: unknown;
+      kindName?: unknown;
+      amount?: unknown;
+      count?: unknown;
+      overdueCount?: unknown;
+      criticalCount?: unknown;
+      invoices?: unknown;
+    };
+
+type FinSupplierViewModel = {
+  supplier: string;
+  name?: string | null;
+  _kindName?: string | null;
+  kindName?: string | null;
+  amount?: number;
+  count?: number;
+  overdueCount?: number;
+  criticalCount?: number;
+  invoices?: FinSupplierInvoice[];
+};
+
+const textValue = (value: unknown): string => String(value ?? "").trim();
+
+const numericValue = (value: unknown): number | undefined =>
+  typeof value === "number" && Number.isFinite(value) ? value : undefined;
+
+const pickSupplierText = (value: unknown): string => {
+  if (!value || typeof value !== "object") return "";
+  const row = value as Record<string, unknown>;
+  if (typeof row.supplier === "string") return row.supplier.trim();
+  if (row.supplier && typeof row.supplier === "object") {
+    const nested = row.supplier as Record<string, unknown>;
+    return textValue(nested.supplier);
+  }
+  return textValue(row.name);
+};
+
+const normalizeSupplierInput = (value: FinSupplierInput | string): FinSupplierViewModel => {
+  if (typeof value === "string") {
+    return {
+      supplier: value.trim() || "РІР‚вЂќ",
+      _kindName: "",
+    };
+  }
+
+  const row = value as Record<string, unknown>;
+  return {
+    supplier: pickSupplierText(value) || "РІР‚вЂќ",
+    name: textValue(row.name) || null,
+    _kindName: textValue(row._kindName) || null,
+    kindName: textValue(row.kindName) || null,
+    amount: numericValue(row.amount),
+    count: numericValue(row.count),
+    overdueCount: numericValue(row.overdueCount),
+    criticalCount: numericValue(row.criticalCount),
+    invoices: Array.isArray(row.invoices) ? (row.invoices as FinSupplierInvoice[]) : undefined,
+  };
+};
+
+type NormalizedSpendRow = FinSpendRowLike & {
+  supplierName: string;
+  kindName: string;
+  proposalId: string;
+  proposalNo: string;
+  approvedIso: string | null;
+};
+
+const normalizeSpendRow = (row: FinSpendRowLike): NormalizedSpendRow => ({
+  ...row,
+  supplierName: textValue(row?.supplier),
+  kindName: textValue(row?.kind_name),
+  proposalId: textValue(row?.proposal_id),
+  proposalNo: textValue(row?.proposal_no),
+  approvedIso: pickIso10(row?.director_approved_at, row?.approved_at, row?.approvedAtIso),
+});
+
 type Deps = {
   busy: BusyLike;
   supabase: any;
@@ -27,17 +139,17 @@ type Deps = {
   finFrom: string | null;
   finTo: string | null;
   finRows: FinanceRow[];
-  finSpendRows: any[];
+  finSpendRows: FinSpendRowLike[];
   finLoading: boolean;
-  finSupplier: FinSupplierDebt | null;
+  finSupplier: FinSupplierPanelState | null;
   finKindName: string;
   fmtDateOnly: (iso?: string | null) => string;
   pushFin: (p: "home" | "debt" | "spend" | "kind" | "supplier") => void;
   popFin: () => void;
   closeFinance: () => void;
-  setFinSupplier: (s: any) => void;
+  setFinSupplier: Dispatch<SetStateAction<FinSupplierDebt | null>>;
   setFinKindName: (s: string) => void;
-  setFinKindList: (v: any[]) => void;
+  setFinKindList: (v: FinSpendRowLike[]) => void;
   setFinFrom: (v: string | null) => void;
   setFinTo: (v: string | null) => void;
   setFinPeriodOpen: (v: boolean) => void;
@@ -73,19 +185,10 @@ export function useDirectorFinancePanel({
 }: Deps) {
   const router = useRouter();
 
-  const openSupplier = useCallback((s: any) => {
-    const supplierName = (() => {
-      if (typeof s === "string") return s.trim() || "—";
-      const v = s?.supplier?.supplier ?? s?.supplier ?? s?.name ?? "";
-      return String(v).trim() || "—";
-    })();
-
-    const kindName = (() => {
-      if (typeof s === "string") return "";
-      const v = s?._kindName ?? s?.kindName ?? "";
-      return String(v).trim();
-    })();
-
+  const openSupplier = useCallback((value: FinSupplierInput | string) => {
+    const supplierInput = normalizeSupplierInput(value);
+    const supplierName = supplierInput.supplier;
+    const kindName = textValue(supplierInput._kindName ?? supplierInput.kindName);
     const inPeriod = makeIsoInPeriod(finFrom, finTo);
 
     let allowedProposalIds: Set<string> | null = null;
@@ -93,27 +196,24 @@ export function useDirectorFinancePanel({
 
     if (kindName) {
       const spend = (Array.isArray(finSpendRows) ? finSpendRows : [])
-        .filter((r: any) => String(r?.supplier ?? "").trim() === supplierName)
-        .filter((r: any) => String(r?.kind_name ?? "").trim() === kindName)
-        .filter((r: any) => inPeriod(r?.director_approved_at ?? r?.approved_at ?? r?.approvedAtIso));
+        .map(normalizeSpendRow)
+        .filter((r) => r.supplierName === supplierName)
+        .filter((r) => r.kindName === kindName)
+        .filter((r) => inPeriod(r.approvedIso));
 
-      allowedProposalIds = new Set(
-        spend.map((r: any) => String(r?.proposal_id ?? "").trim()).filter(Boolean),
-      );
+      allowedProposalIds = new Set(spend.map((r) => r.proposalId).filter(Boolean));
 
-      for (const r of spend) {
-        const pid = String(r?.proposal_id ?? "").trim();
-        const pno = String(r?.proposal_no ?? "").trim();
-        if (pid && pno) proposalNoById[pid] = pno;
+      for (const row of spend) {
+        if (row.proposalId && row.proposalNo) proposalNoById[row.proposalId] = row.proposalNo;
       }
     }
 
     const fin = (Array.isArray(finRows) ? finRows : [])
-      .filter((r: any) => String(r?.supplier ?? "").trim() === supplierName)
-      .filter((r: any) => inPeriod(r?.approvedAtIso ?? r?.approved_at ?? r?.director_approved_at))
-      .filter((r: any) => {
+      .filter((r) => textValue(r?.supplier) === supplierName)
+      .filter((r) => inPeriod(r?.approvedAtIso ?? r?.raw?.approved_at ?? r?.raw?.director_approved_at))
+      .filter((r) => {
         if (!allowedProposalIds) return true;
-        const pid = String(r?.proposalId ?? r?.proposal_id ?? "").trim();
+        const pid = textValue(r?.proposalId ?? r?.proposal_id);
         return pid && allowedProposalIds.has(pid);
       });
 
@@ -121,13 +221,13 @@ export function useDirectorFinancePanel({
     const dueDays = FIN_DUE_DAYS_DEFAULT;
 
     const invoices = fin
-      .map((r: any, idx: number) => {
+      .map((r, idx: number) => {
         const amount = pickFinanceAmount(r);
         const paid = pickFinancePaid(r);
         const rest = Math.max(amount - paid, 0);
 
-        const pid = String(r?.proposalId ?? r?.proposal_id ?? "").trim();
-        const invNo = String(r?.invoiceNumber ?? r?.invoice_number ?? "").trim();
+        const pid = textValue(r?.proposalId ?? r?.proposal_id);
+        const invNo = textValue(r?.invoiceNumber ?? r?.raw?.invoice_number);
 
         const approvedIso =
           pickApprovedIso(r) ??
@@ -137,16 +237,16 @@ export function useDirectorFinancePanel({
           pickInvoiceIso(r) ??
           pickIso10(r?.raw?.invoice_date, r?.raw?.invoice_at, r?.raw?.created_at);
 
-        const pno = pid ? String(proposalNoById[pid] ?? r?.proposal_no ?? "").trim() : "";
+        const pno = pid ? textValue(proposalNoById[pid] ?? r?.proposal_no) : "";
         const title =
-          invNo ? `Счёт №${invNo}` :
-            pno ? `Предложение ${pno}` :
-              pid ? `Предложение #${pid.slice(0, 8)}` :
-                "Счёт";
+          invNo ? `РЎС‡С‘С‚ в„–${invNo}` :
+            pno ? `РџСЂРµРґР»РѕР¶РµРЅРёРµ ${pno}` :
+              pid ? `РџСЂРµРґР»РѕР¶РµРЅРёРµ #${pid.slice(0, 8)}` :
+                "РЎС‡С‘С‚";
 
         const dueIso =
           r?.dueDate ??
-          r?.due_date ??
+          r?.raw?.due_date ??
           (invoiceIso ? addDaysIso(String(invoiceIso).slice(0, 10), dueDays) : null) ??
           (approvedIso ? addDaysIso(String(approvedIso).slice(0, 10), dueDays) : null);
 
@@ -180,33 +280,36 @@ export function useDirectorFinancePanel({
           dueIso: dueIso ? String(dueIso) : null,
         };
       })
-      .filter((x: any) => x.amount > 0 || x.rest > 0);
+      .filter((x) => x.amount > 0 || x.rest > 0);
 
-    const debtAmount = invoices.reduce((s2: number, x: any) => s2 + Math.max(nnum(x.rest), 0), 0);
-    const debtCount = invoices.filter((x: any) => Math.max(nnum(x.rest), 0) > 0).length;
-    const overdueCount = invoices.filter((x: any) => x.isOverdue && Math.max(nnum(x.rest), 0) > 0).length;
-    const criticalCount = invoices.filter((x: any) => x.isCritical && Math.max(nnum(x.rest), 0) > 0).length;
+    const debtAmount = invoices.reduce((sum, row) => sum + Math.max(nnum(row.rest), 0), 0);
+    const debtCount = invoices.filter((row) => Math.max(nnum(row.rest), 0) > 0).length;
+    const overdueCount = invoices.filter((row) => row.isOverdue && Math.max(nnum(row.rest), 0) > 0).length;
+    const criticalCount = invoices.filter((row) => row.isCritical && Math.max(nnum(row.rest), 0) > 0).length;
 
-    const payload: any = {
+    const payload: FinSupplierPanelState = {
       supplier: supplierName,
-      _kindName: kindName || "",
-      amount: debtAmount,
       count: debtCount,
+      approved: debtAmount,
+      paid: 0,
+      toPay: debtAmount,
       overdueCount,
       criticalCount,
+      _kindName: kindName || "",
+      kindName: kindName || "",
       invoices,
     };
 
     setFinSupplier(payload);
     pushFin("supplier");
-  }, [finFrom, finTo, finRows, finSpendRows, FIN_DUE_DAYS_DEFAULT, FIN_CRITICAL_DAYS, setFinSupplier, pushFin]);
+  }, [FIN_CRITICAL_DAYS, FIN_DUE_DAYS_DEFAULT, finFrom, finRows, finSpendRows, finTo, pushFin, setFinSupplier]);
 
   const closeSupplier = useCallback(() => {
     setFinSupplier(null);
     popFin();
   }, [setFinSupplier, popFin]);
 
-  const openFinKind = useCallback((kind: string, list: any[]) => {
+  const openFinKind = useCallback((kind: string, list: FinSpendRowLike[]) => {
     setFinKindName(String(kind || ""));
     setFinKindList(Array.isArray(list) ? list : []);
     pushFin("kind");
@@ -219,7 +322,7 @@ export function useDirectorFinancePanel({
   }, [setFinKindName, setFinKindList, popFin]);
 
   const onFinancePdf = useCallback(async () => {
-    const title = "Финансовый управленческий отчет";
+    const title = "Р¤РёРЅР°РЅСЃРѕРІС‹Р№ СѓРїСЂР°РІР»РµРЅС‡РµСЃРєРёР№ РѕС‚С‡РµС‚";
     const template = await generateDirectorPdfDocument({
       title,
       fileName: buildPdfFileName({
@@ -245,7 +348,7 @@ export function useDirectorFinancePanel({
       busy,
       supabase,
       key: "pdf:director:finance",
-      label: "Открываю PDF…",
+      label: "РћС‚РєСЂС‹РІР°СЋ PDFвЂ¦",
       descriptor: template,
       getRemoteUrl: () => template.uri,
     });
@@ -253,17 +356,17 @@ export function useDirectorFinancePanel({
   }, [busy, supabase, finFrom, finTo, finRows, finSpendRows, FIN_DUE_DAYS_DEFAULT, FIN_CRITICAL_DAYS, router]);
 
   const onSupplierPdf = useCallback(async () => {
-    const supName = String((finSupplier as any)?.supplier ?? "").trim();
+    const supName = textValue(finSupplier?.supplier);
     if (!supName) {
-      Alert.alert("PDF", "Поставщик не выбран");
+      Alert.alert("PDF", "РџРѕСЃС‚Р°РІС‰РёРє РЅРµ РІС‹Р±СЂР°РЅ");
       return;
     }
 
-    const kindName = String((finSupplier as any)?._kindName ?? "").trim();
+    const kindName = textValue(finSupplier?._kindName);
     const inPeriod = makeIsoInPeriod(finFrom, finTo);
     const title = kindName
-      ? `Сводка по поставщику: ${supName} (${kindName})`
-      : `Сводка по поставщику: ${supName}`;
+      ? `РЎРІРѕРґРєР° РїРѕ РїРѕСЃС‚Р°РІС‰РёРєСѓ: ${supName} (${kindName})`
+      : `РЎРІРѕРґРєР° РїРѕ РїРѕСЃС‚Р°РІС‰РёРєСѓ: ${supName}`;
 
     const template = await generateDirectorPdfDocument({
       title,
@@ -277,18 +380,19 @@ export function useDirectorFinancePanel({
       entityId: supName,
       getUri: async () => {
         const financeFiltered = (Array.isArray(finRows) ? finRows : [])
-          .filter((r: any) => String(r?.supplier ?? "").trim() === supName)
-          .filter((r: any) => inPeriod(r?.approvedAtIso ?? r?.approved_at ?? r?.director_approved_at));
+          .filter((r) => textValue(r?.supplier) === supName)
+          .filter((r) => inPeriod(r?.approvedAtIso ?? r?.raw?.approved_at ?? r?.raw?.director_approved_at));
 
         let spendFiltered = (Array.isArray(finSpendRows) ? finSpendRows : [])
-          .filter((r: any) => String(r?.supplier ?? "").trim() === supName)
-          .filter((r: any) => inPeriod(r?.director_approved_at ?? r?.approved_at ?? r?.approvedAtIso));
+          .map(normalizeSpendRow)
+          .filter((r) => r.supplierName === supName)
+          .filter((r) => inPeriod(r.approvedIso));
 
         if (kindName) {
-          spendFiltered = spendFiltered.filter((r: any) => String(r?.kind_name ?? "").trim() === kindName);
+          spendFiltered = spendFiltered.filter((r) => r.kindName === kindName);
         }
 
-        spendFiltered = (spendFiltered as any[]).filter((r) => String(r?.proposal_id ?? "").trim());
+        spendFiltered = spendFiltered.filter((r) => r.proposalId);
 
         const { exportDirectorSupplierSummaryPdf } = await import("../../lib/api/pdf_director");
         return await exportDirectorSupplierSummaryPdf({
@@ -304,7 +408,7 @@ export function useDirectorFinancePanel({
       busy,
       supabase,
       key: `pdf:director:supplier:${supName}`,
-      label: "Открываю PDF…",
+      label: "РћС‚РєСЂС‹РІР°СЋ PDFвЂ¦",
       descriptor: template,
       getRemoteUrl: () => template.uri,
     });
@@ -313,25 +417,25 @@ export function useDirectorFinancePanel({
 
   const financePeriodShort = useMemo(() => {
     return finFrom || finTo
-      ? `${finFrom ? fmtDateOnly(finFrom) : "—"} → ${finTo ? fmtDateOnly(finTo) : "—"}`
-      : "Весь период";
+      ? `${finFrom ? fmtDateOnly(finFrom) : "вЂ”"} в†’ ${finTo ? fmtDateOnly(finTo) : "вЂ”"}`
+      : "Р’РµСЃСЊ РїРµСЂРёРѕРґ";
   }, [finFrom, finTo, fmtDateOnly]);
 
   const financeSupplierName = useMemo(() => {
-    return String((finSupplier as any)?.supplier ?? "").trim();
+    return textValue(finSupplier?.supplier);
   }, [finSupplier]);
 
   const financeTitle = useMemo(() => {
-    if (finPage === "debt") return "Долги и риски";
-    if (finPage === "spend") return "Расходы (период)";
-    if (finPage === "kind") return finKindName ? `${finKindName}: поставщики` : "Поставщики";
+    if (finPage === "debt") return "Р”РѕР»РіРё Рё СЂРёСЃРєРё";
+    if (finPage === "spend") return "Р Р°СЃС…РѕРґС‹ (РїРµСЂРёРѕРґ)";
+    if (finPage === "kind") return finKindName ? `${finKindName}: РїРѕСЃС‚Р°РІС‰РёРєРё` : "РџРѕСЃС‚Р°РІС‰РёРєРё";
     if (finPage === "supplier") {
       const s = financeSupplierName;
-      if (!s || s === "—") return "Поставщик";
-      if (/^\d+$/.test(s) || s.length < 3) return `Поставщик: ${s}`;
+      if (!s || s === "вЂ”") return "РџРѕСЃС‚Р°РІС‰РёРє";
+      if (/^\d+$/.test(s) || s.length < 3) return `РџРѕСЃС‚Р°РІС‰РёРє: ${s}`;
       return s;
     }
-    return "Финансы";
+    return "Р¤РёРЅР°РЅСЃС‹";
   }, [finPage, finKindName, financeSupplierName]);
 
   const financeTopPdfKey = useMemo(() => {

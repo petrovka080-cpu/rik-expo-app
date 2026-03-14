@@ -1,12 +1,16 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 type UnknownRow = Record<string, unknown>;
-
 export async function fetchWarehouseRequestMetaRows(
   supabase: SupabaseClient,
   requestIds: string[],
 ) {
-  return await supabase.from("requests").select("*").in("id", requestIds);
+  return await supabase
+    .from("requests")
+    .select(
+      "id,note,comment,contractor_name,contractor_org,subcontractor_name,subcontractor_org,contractor,supplier_name,contractor_phone,subcontractor_phone,phone,phone_number,phone_no,tel,planned_volume,qty_planned,planned_qty,volume,qty_plan",
+    )
+    .in("id", requestIds);
 }
 
 export async function fetchWarehouseRequestItemNoteRows(

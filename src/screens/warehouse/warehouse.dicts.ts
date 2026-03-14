@@ -52,7 +52,9 @@ export function useWarehouseDicts(supabase: SupabaseClient, tab: Tab) {
       const res = await fetchWarehouseRefRows(supabase, table, opts);
 
       if (res.error || !Array.isArray(res.data)) {
-        console.log(`[${table}] error:`, res.error?.message);
+        if (__DEV__) {
+          console.info(`[${table}] error:`, res.error?.message);
+        }
         return [] as Option[];
       }
 
@@ -79,12 +81,14 @@ export function useWarehouseDicts(supabase: SupabaseClient, tab: Tab) {
 
   const loadObjects = useCallback(async () => {
     const q = await probeWarehouseObjectTypes(supabase);
-    console.log(
-      "[ref_object_types] err=",
-      q.error?.message,
-      "rows=",
-      Array.isArray(q.data) ? q.data.length : "no-data",
-    );
+    if (__DEV__) {
+      console.info(
+        "[ref_object_types] err=",
+        q.error?.message,
+        "rows=",
+        Array.isArray(q.data) ? q.data.length : "no-data",
+      );
+    }
 
     const opts = await tryRefOptions("ref_object_types", { order: "name" });
 

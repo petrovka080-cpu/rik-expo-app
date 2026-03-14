@@ -10,7 +10,12 @@ type WebUiApi = {
   confirm?: (message?: string) => boolean;
 };
 
-const webUi = (globalThis as any) as WebUiApi;
+const getWebUi = (): WebUiApi => {
+  if (!globalThis || typeof globalThis !== "object") return {};
+  const candidate = globalThis as Record<string, unknown>;
+  const confirm = candidate.confirm;
+  return typeof confirm === "function" ? { confirm: confirm as WebUiApi["confirm"] } : {};
+};
 
 type Props = {
   visible: boolean;
@@ -34,6 +39,7 @@ type Props = {
 };
 
 export default function ForemanDraftModal(p: Props) {
+  const webUi = getWebUi();
   return (
     <RNModal
       isVisible={p.visible}

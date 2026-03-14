@@ -28,6 +28,12 @@ const extractCanonicalRequestLabel = (value: string): string => {
 
 const cleanLabel = (value: unknown): string => extractCanonicalRequestLabel(String(value ?? ""));
 
+const warnBuyerRequestLabels = (error: unknown) => {
+  if (__DEV__) {
+    console.warn("[buyer] preloadPrNosByRequests failed:", errText(error));
+  }
+};
+
 export function useBuyerRequestLabels() {
   const [displayNoByReq, setDisplayNoByReq] = useState<Record<string, string>>({});
   const displayNoByReqRef = useRef<Record<string, string>>({});
@@ -99,7 +105,7 @@ export function useBuyerRequestLabels() {
         setPrNoByReq((prev) => ({ ...(prev || {}), ...patch }));
       }
     } catch (e) {
-      console.warn("[buyer] preloadPrNosByRequests failed:", errText(e));
+      warnBuyerRequestLabels(e);
     }
   }, []);
 

@@ -3,6 +3,13 @@ import type { BuyerInboxRow } from "../../lib/catalog_api";
 export type ProcurementItemType = "material" | "service" | "work" | "unknown";
 export type CounterpartyRoleGate = "supplier" | "contractor" | null;
 
+type BuyerProcurementHintRow = BuyerInboxRow & {
+  item_type?: string | null;
+  procurement_type?: string | null;
+  type?: string | null;
+  kind?: string | null;
+};
+
 const norm = (v: unknown) => String(v ?? "").trim().toLowerCase();
 
 const parseTypedValue = (raw: unknown): ProcurementItemType => {
@@ -15,19 +22,19 @@ const parseTypedValue = (raw: unknown): ProcurementItemType => {
 };
 
 export function getBuyerItemProcurementType(item: BuyerInboxRow): ProcurementItemType {
-  const asAny = item as any;
+  const row = item as BuyerProcurementHintRow;
 
   const typed = parseTypedValue(
-    asAny?.item_type ?? asAny?.procurement_type ?? asAny?.type ?? asAny?.kind ?? null,
+    row.item_type ?? row.procurement_type ?? row.type ?? row.kind ?? null,
   );
   if (typed !== "unknown") return typed;
 
-  const appCode = String(asAny?.app_code ?? "").trim().toUpperCase();
+  const appCode = String(row.app_code ?? "").trim().toUpperCase();
   if (appCode.startsWith("SRV-") || appCode.startsWith("SERVICE")) return "service";
   if (appCode.startsWith("WORK-") || appCode.startsWith("WT-")) return "work";
   if (appCode.startsWith("MAT-") || appCode.startsWith("TOOL-") || appCode.startsWith("KIT-")) return "material";
 
-  const rikCode = String(asAny?.rik_code ?? "").trim().toUpperCase();
+  const rikCode = String(row.rik_code ?? "").trim().toUpperCase();
   if (rikCode.startsWith("SRV-") || rikCode.startsWith("SERV-")) return "service";
   if (rikCode.startsWith("WORK-") || rikCode.startsWith("WT-")) return "work";
   if (rikCode.startsWith("MAT-") || rikCode.startsWith("TOOL-") || rikCode.startsWith("KIT-")) return "material";

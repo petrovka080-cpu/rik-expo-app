@@ -1,5 +1,6 @@
 ﻿// src/lib/catalog_api.ts
 import { supabase } from "./supabaseClient";
+import type { Database } from "./database.types";
 import { isRequestApprovedForProcurement } from "./requestStatus";
 import {
   proposalCreate as rpcProposalCreate,
@@ -182,6 +183,63 @@ export type UnifiedCounterparty = {
   company_scope: string | null;
 };
 
+type RequestsUpdate = Database["public"]["Tables"]["requests"]["Update"];
+type RequestItemsUpdate = Database["public"]["Tables"]["request_items"]["Update"];
+type ProposalsUpdate = Database["public"]["Tables"]["proposals"]["Update"];
+type ProposalItemsInsert = Database["public"]["Tables"]["proposal_items"]["Insert"];
+type ProposalItemsUpdate = Database["public"]["Tables"]["proposal_items"]["Update"];
+type RequestItemUpdateQtyArgs = Database["public"]["Functions"]["request_item_update_qty"]["Args"];
+type RequestItemsSetStatusArgs = Database["public"]["Functions"]["request_items_set_status"]["Args"];
+
+type RequestsExtendedMetaUpdate = RequestsUpdate & {
+  planned_volume?: number | null;
+  qty_plan?: number | null;
+  volume?: number | null;
+  level_name?: string | null;
+  system_name?: string | null;
+  zone_name?: string | null;
+  contractor_org?: string | null;
+  subcontractor_org?: string | null;
+  contractor_phone?: string | null;
+  subcontractor_phone?: string | null;
+};
+
+type ProposalItemsCompatInsertUpsert = ProposalItemsInsert & {
+  supplier_id?: string | null;
+  contractor_id?: string | null;
+};
+
+type ProposalItemsCompatUpdate = ProposalItemsUpdate & {
+    supplier_id?: string | null;
+    contractor_id?: string | null;
+  };
+
+type RequestsCompatTable = {
+  update(values: RequestsExtendedMetaUpdate): {
+    eq(column: "id", value: string): Promise<{ error: { message?: string; code?: string; details?: string | null; hint?: string | null } | null }>;
+  };
+};
+
+type ProposalItemsCompatTable = {
+  insert(values: ProposalItemsCompatInsertUpsert[]): {
+    select(columns: string): Promise<{ error: { message?: string } | null }>;
+  };
+  upsert(
+    values: ProposalItemsCompatInsertUpsert[],
+    options: { onConflict: string },
+  ): Promise<{ error: { message?: string } | null }>;
+  update(values: ProposalItemsCompatUpdate): {
+    eq(column: "proposal_id", value: string): {
+      eq(column: "request_item_id", value: string): Promise<{ error: { message?: string } | null }>;
+    };
+  };
+};
+
+type CatalogCompatBoundary = {
+  from(relation: "requests"): RequestsCompatTable;
+  from(relation: "proposal_items"): ProposalItemsCompatTable;
+};
+
 /** ========= helpers ========= */
 const norm = (s?: string | null) => String(s ?? "").trim();
 const clamp = (n: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, n));
@@ -357,6 +415,8 @@ const detectUnifiedType = (origins: string[]): UnifiedCounterpartyType => {
   if (hasContractor) return "contractor";
   return "other_business_counterparty";
 };
+
+const compatFrom = (): CatalogCompatBoundary => supabase as unknown as CatalogCompatBoundary;
 
 export async function listUnifiedCounterparties(search?: string): Promise<UnifiedCounterparty[]> {
   const q = sanitizePostgrestOrTerm(search || "");
@@ -1026,7 +1086,7 @@ export async function updateRequestMeta(
   const id = norm(requestId);
   if (!id) return false;
 
-  const payload: Record<string, any> = {};
+  const payload: RequestsExtendedMetaUpdate = {};
   if (Object.prototype.hasOwnProperty.call(patch, "need_by"))
     payload.need_by = norm(patch.need_by) || null;
   if (Object.prototype.hasOwnProperty.call(patch, "comment"))
@@ -1090,10 +1150,10 @@ export async function updateRequestMeta(
     const primaryPayload = fullPayloadAllowed
       ? payload
       : Object.fromEntries(Object.entries(payload).filter(([k]) => basePayloadKeys.has(k)));
-    let { error } = await supabase
-      .from('requests' as any)
+    let { error } = await compatFrom()
+      .from("requests")
       .update(primaryPayload)
-      .eq('id', id);
+      .eq("id", id);
 
     if (!error && hasExtendedPayload && fullPayloadAllowed) {
       requestsExtendedMetaWriteSupportedCache = true;
@@ -1101,7 +1161,7 @@ export async function updateRequestMeta(
 
     if (error && hasExtendedPayload && fullPayloadAllowed) {
       const primaryErr = error;
-      const fallbackPayload: Record<string, any> = {};
+      const fallbackPayload: RequestsUpdate = {};
       for (const key of Object.keys(payload)) {
         if (basePayloadKeys.has(key)) fallbackPayload[key] = payload[key];
       }
@@ -1115,9 +1175,9 @@ export async function updateRequestMeta(
       }
       if (Object.keys(fallbackPayload).length) {
         const fallbackRes = await supabase
-          .from('requests' as any)
+          .from("requests")
           .update(fallbackPayload)
-          .eq('id', id);
+          .eq("id", id);
         if (fallbackRes.error) {
           console.warn("[catalog_api.updateRequestMeta][patch400.fallback]", {
             request_id: id,
@@ -1286,10 +1346,11 @@ export async function requestItemUpdateQty(
   let lastErr: any = null;
 
   try {
-    const { data, error } = await supabase.rpc('request_item_update_qty' as any, {
+    const args: RequestItemUpdateQtyArgs = {
       p_request_item_id: id,
       p_qty: numericQty,
-    } as any);
+    };
+    const { data, error } = await supabase.rpc("request_item_update_qty", args);
     if (!error && data) {
       const mapped = mapRequestItemRow(data, rid || '');
       if (mapped) return mapped;
@@ -1302,16 +1363,16 @@ export async function requestItemUpdateQty(
 
   try {
     const { data, error } = await supabase
-      .from('request_items' as any)
-      .update({ qty: numericQty })
-      .eq('id', id)
+      .from("request_items")
+      .update({ qty: numericQty } satisfies RequestItemsUpdate)
+      .eq("id", id)
       .select(
-        'id,request_id,rik_code,name_human,uom,qty,status,note,app_code,supplier_hint,row_no,position_order',
+        "id,request_id,rik_code,name_human,uom,qty,status,note,app_code,supplier_hint,row_no,position_order",
       )
       .maybeSingle();
     if (error) throw error;
     if (data) {
-      const mapped = mapRequestItemRow(data, rid || String((data as any)?.request_id ?? ''));
+      const mapped = mapRequestItemRow(data, rid || String((data as { request_id?: unknown })?.request_id ?? ""));
       if (mapped) return mapped;
     }
   } catch (e: any) {
@@ -1807,7 +1868,7 @@ export async function createProposalsBySupplier(
             .filter(Boolean),
         ),
       );
-      const headerPatch: Record<string, any> = {};
+      const headerPatch: ProposalsUpdate = {};
       if (opts.buyerFio) headerPatch.buyer_fio = opts.buyerFio;
       const supplierDisplay = bucket?.supplier ? norm(bucket.supplier) : "";
       if (supplierDisplay) headerPatch.supplier = supplierDisplay;
@@ -1842,7 +1903,7 @@ export async function createProposalsBySupplier(
       const requestIdAfterCreate = String((q.data as any)?.request_id ?? "").trim() || null;
       if (!displayNo && proposalNo) {
         dbCalls += 1;
-        const patch: Record<string, any> = { display_no: proposalNo };
+        const patch: ProposalsUpdate = { display_no: proposalNo };
         if (!requestIdAfterCreate && requestIdsForBucket.length === 1) {
           patch.request_id = requestIdsForBucket[0];
         }
@@ -1878,13 +1939,13 @@ export async function createProposalsBySupplier(
     if (!added) {
       const insertProposalItemsStartedAt = nowMs();
       for (const pack of chunk(ids, 50)) {
-        const rows = pack.map((request_item_id) => ({
+        const rows: ProposalItemsInsert[] = pack.map((request_item_id) => ({
           proposal_id: proposalId,
           proposal_id_text: proposalId,
           request_item_id,
         }));
         dbCalls += 1;
-        const { error } = await supabase.from("proposal_items").insert(rows as never);
+        const { error } = await supabase.from("proposal_items").insert(rows);
         if (error) throw error;
       }
       const insertMs = nowMs() - insertProposalItemsStartedAt;
@@ -1978,9 +2039,10 @@ export async function createProposalsBySupplier(
     let bindingColumnsWarned = false;
     const rowsForUpdate = Array.from(validatedByItemId.values());
     const linkBindingsStartedAt = nowMs();
-    const upsertRows = rowsForUpdate.map((row) => {
-      const payload: Record<string, any> = {
+    const upsertRows: ProposalItemsCompatInsertUpsert[] = rowsForUpdate.map((row) => {
+      const payload: ProposalItemsCompatInsertUpsert = {
         proposal_id: proposalId,
+        proposal_id_text: proposalId,
         request_item_id: row.request_item_id,
         qty: row.qty,
         price: row.price,
@@ -1995,9 +2057,9 @@ export async function createProposalsBySupplier(
       try {
         for (const pack of chunk(upsertRows, 100)) {
           dbCalls += 1;
-          const { error } = await supabase
+          const { error } = await compatFrom()
             .from("proposal_items")
-            .upsert(pack as any, { onConflict: "proposal_id,request_item_id" });
+            .upsert(pack, { onConflict: "proposal_id,request_item_id" });
           if (error) throw error;
         }
         proposalItemsBulkUpsertCapabilityCache = true;
@@ -2019,7 +2081,7 @@ export async function createProposalsBySupplier(
         await Promise.all(
           pack.map(async (row) => {
             try {
-              const payload: Record<string, any> = {
+              const payload: ProposalItemsCompatUpdate = {
                 qty: row.qty,
                 price: row.price,
                 supplier: row.supplier,
@@ -2042,9 +2104,9 @@ export async function createProposalsBySupplier(
               }
 
               dbCalls += 1;
-              const { error } = await supabase
+              const { error } = await compatFrom()
                 .from("proposal_items")
-                .update(payload as any)
+                .update(payload)
                 .eq("proposal_id", proposalId)
                 .eq("request_item_id", row.request_item_id);
               if (error) {
@@ -2084,14 +2146,18 @@ export async function createProposalsBySupplier(
       const updateRequestItemsStartedAt = nowMs();
       try {
         dbCalls += 1;
-        const { error } = await supabase.rpc("request_items_set_status" as any, {
+        const args: RequestItemsSetStatusArgs = {
           p_request_item_ids: ids,
           p_status: statusAfter,
-        } as any);
+        };
+        const { error } = await supabase.rpc("request_items_set_status", args);
         if (error) throw error;
       } catch {
         dbCalls += 1;
-        await supabase.from("request_items").update({ status: statusAfter }).in("id", ids);
+        await supabase
+          .from("request_items")
+          .update({ status: statusAfter } satisfies RequestItemsUpdate)
+          .in("id", ids);
       }
       const updateMs = nowMs() - updateRequestItemsStartedAt;
       bucketUpdateRequestItemsMs += updateMs;

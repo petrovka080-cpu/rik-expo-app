@@ -13,6 +13,9 @@
     "test:watch": "jest --watch --passWithNoTests",
     "preflight:prod": "node scripts/preflight-prod.js",
     "queue:worker": "tsx scripts/run-queue-worker.ts",
+    "warehouse:name-map:backfill": "tsx scripts/warehouse_name_map_backfill.ts",
+    "warehouse:name-map:validate": "tsx scripts/warehouse_name_map_validate.ts",
+    "buyer:startup:diagnostic": "tsx scripts/buyer_startup_diagnostic.ts",
     "fix-encoding:one": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/fix-encoding-one.ps1",
     "fix-encoding:all": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/fix-encoding-all.ps1"
   },
