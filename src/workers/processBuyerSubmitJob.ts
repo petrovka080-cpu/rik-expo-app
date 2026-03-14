@@ -123,13 +123,28 @@ export async function processBuyerSubmitJob(job: SubmitJobRow, deps: Deps): Prom
       proposalIdBySupplierKey.set(supplierKey, proposalId);
     }
 
+    const missingSupplierKeys = new Set<string>();
     for (const attachment of attachments) {
       const supplierKey = normalizeSupplierKey(attachment.supplierKey) || SUPP_NONE;
       const proposalId = proposalIdBySupplierKey.get(supplierKey);
       if (!proposalId) {
-        throw new Error(`queue attachment bind failed: no final proposal for supplierKey=${supplierKey}`);
+        missingSupplierKeys.add(supplierKey);
+        console.warn("[buyer.worker] queue attachment skipped: no final proposal", {
+          jobId: job.id,
+          supplierKey,
+          fileName: attachment.fileName ?? null,
+          groupKey: attachment.groupKey ?? null,
+        });
+        continue;
       }
       await bindQueuedProposalAttachmentToProposal(proposalId, attachment);
+    }
+
+    if (missingSupplierKeys.size) {
+      console.warn("[buyer.worker] attachment binding completed with skipped suppliers", {
+        jobId: job.id,
+        skippedSupplierKeys: Array.from(missingSupplierKeys),
+      });
     }
   }
 

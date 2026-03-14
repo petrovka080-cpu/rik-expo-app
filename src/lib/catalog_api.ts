@@ -1,6 +1,6 @@
 ﻿// src/lib/catalog_api.ts
 import { supabase } from "./supabaseClient";
-import type { Database } from "./database.types";
+import type { Database, Tables } from "./database.types";
 import { isRequestApprovedForProcurement } from "./requestStatus";
 import {
   proposalCreate as rpcProposalCreate,
@@ -164,6 +164,91 @@ export type Supplier = {
   address?: string | null;
   contact_name?: string | null;
   notes?: string | null;
+};
+
+const SUPPLIERS_TABLE_SELECT =
+  "id,name,inn,bank_account,specialization,phone,email,website,address,contact_name,notes";
+const SUPPLIERS_COUNTERPARTY_SELECT = "id,name,inn,phone";
+const SUPPLIERS_BINDING_SELECT = "id,name";
+const SUBCONTRACTS_COUNTERPARTY_SELECT = "id,status,contractor_org,contractor_inn,contractor_phone";
+const CONTRACTORS_COUNTERPARTY_SELECT = "id,company_name,phone,inn";
+const CONTRACTORS_BINDING_SELECT = "id,company_name";
+const CATALOG_SEARCH_FALLBACK_SELECT =
+  "rik_code,name_human,uom_code,sector_code,spec,kind,group_code";
+
+type SupplierTableRow = Pick<
+  Database["public"]["Tables"]["suppliers"]["Row"],
+  | "id"
+  | "name"
+  | "inn"
+  | "bank_account"
+  | "specialization"
+  | "phone"
+  | "email"
+  | "website"
+  | "address"
+  | "contact_name"
+  | "notes"
+>;
+
+type SupplierCounterpartyRow = Pick<Database["public"]["Tables"]["suppliers"]["Row"], "id" | "name" | "inn" | "phone">;
+type SupplierBindingRow = Pick<Database["public"]["Tables"]["suppliers"]["Row"], "id" | "name">;
+type SubcontractCounterpartyRow = Pick<
+  Database["public"]["Tables"]["subcontracts"]["Row"],
+  "id" | "status" | "contractor_org" | "contractor_inn" | "contractor_phone"
+>;
+type ContractorCounterpartyRow = Pick<
+  Database["public"]["Tables"]["contractors"]["Row"],
+  "id" | "company_name" | "phone" | "inn"
+>;
+type ContractorBindingRow = Pick<Database["public"]["Tables"]["contractors"]["Row"], "id" | "company_name">;
+type SuppliersListRpcArgs = { p_search?: string | null };
+type SuppliersListRpcRow = {
+  id: string | null;
+  name: string | null;
+  inn?: string | null;
+  bank_account?: string | null;
+  specialization?: string | null;
+  phone?: string | null;
+  email?: string | null;
+  website?: string | null;
+  address?: string | null;
+  contact_name?: string | null;
+  notes?: string | null;
+  comment?: string | null;
+};
+type CatalogSearchRpcName = "rik_quick_ru" | "rik_quick_search_typed" | "rik_quick_search";
+type CatalogSearchRpcArgs = {
+  p_q: string;
+  p_limit: number;
+  p_apps?: string[] | null;
+};
+type CatalogSearchRpcRow = {
+  code?: string | null;
+  rik_code?: string | null;
+  name?: string | null;
+  name_human?: string | null;
+  uom?: string | null;
+  uom_code?: string | null;
+  sector_code?: string | null;
+  spec?: string | null;
+  kind?: string | null;
+  group_code?: string | null;
+};
+type CatalogSearchFallbackRow = Pick<
+  Tables<"rik_items">,
+  "rik_code" | "name_human" | "uom_code" | "sector_code" | "spec" | "kind" | "group_code"
+>;
+type ProfileContractorCompatRow = Pick<
+  Database["public"]["Tables"]["user_profiles"]["Row"],
+  "user_id" | "full_name" | "phone" | "is_contractor"
+> & {
+  company?: string | null;
+  company_name?: string | null;
+  organization?: string | null;
+  org_name?: string | null;
+  name?: string | null;
+  inn?: string | null;
 };
 
 export type UnifiedCounterpartyType =
@@ -372,23 +457,87 @@ const mapRequestItemRow = (raw: any, requestId: string): ReqItemRow | null => {
   };
 };
 
-const mapSupplierRow = (raw: any): Supplier | null => {
-  const id = raw?.id;
-  const name = norm(raw?.name);
+const mapSupplierRow = (raw: SupplierTableRow | SuppliersListRpcRow): Supplier | null => {
+  const id = raw.id;
+  const name = norm(raw.name);
   if (!id || !name) return null;
+  const legacyComment = "comment" in raw ? raw.comment ?? null : null;
   return {
     id: String(id),
     name,
-    inn: raw?.inn ?? null,
-    bank_account: raw?.bank_account ?? null,
-    specialization: raw?.specialization ?? null,
-    phone: raw?.phone ?? null,
-    email: raw?.email ?? null,
-    website: raw?.website ?? null,
-    address: raw?.address ?? null,
-    contact_name: raw?.contact_name ?? null,
-    notes: raw?.notes ?? null,
+    inn: raw.inn ?? null,
+    bank_account: raw.bank_account ?? null,
+    specialization: raw.specialization ?? null,
+    phone: raw.phone ?? null,
+    email: raw.email ?? null,
+    website: raw.website ?? null,
+    address: raw.address ?? null,
+    contact_name: raw.contact_name ?? null,
+    notes: raw.notes ?? legacyComment,
   };
+};
+
+const mapSupplierRows = (rows: Array<SupplierTableRow | SuppliersListRpcRow>): Supplier[] =>
+  rows
+    .map(mapSupplierRow)
+    .filter((row): row is Supplier => !!row)
+    .sort((a, b) => a.name.localeCompare(b.name, "ru"));
+
+const mapCatalogSearchRow = (raw: CatalogSearchRpcRow | CatalogSearchFallbackRow): CatalogItem | null => {
+  const code = norm(raw.rik_code ?? ("code" in raw ? raw.code : null));
+  if (!code) return null;
+  const fallbackName = "name" in raw ? raw.name : null;
+  const fallbackUom = "uom" in raw ? raw.uom : null;
+  return {
+    code,
+    name: norm(raw.name_human ?? fallbackName ?? code) || code,
+    uom: raw.uom_code ?? fallbackUom ?? null,
+    sector_code: raw.sector_code ?? null,
+    spec: raw.spec ?? null,
+    kind: raw.kind ?? null,
+    group_code: raw.group_code ?? null,
+  };
+};
+
+const mapCatalogSearchRows = (rows: Array<CatalogSearchRpcRow | CatalogSearchFallbackRow>): CatalogItem[] =>
+  rows
+    .map(mapCatalogSearchRow)
+    .filter((row): row is CatalogItem => !!row);
+
+const runCatalogSearchRpc = async (
+  fn: CatalogSearchRpcName,
+  args: CatalogSearchRpcArgs,
+): Promise<CatalogSearchRpcRow[] | null> => {
+  switch (fn) {
+    case "rik_quick_ru": {
+      const { data, error } = await supabase.rpc("rik_quick_ru", {
+        p_q: args.p_q,
+        p_limit: args.p_limit,
+      });
+      return error || !Array.isArray(data) ? null : (data as CatalogSearchRpcRow[]);
+    }
+    case "rik_quick_search_typed": {
+      const { data, error } = await supabase.rpc("rik_quick_search_typed", {
+        p_q: args.p_q,
+        p_limit: args.p_limit,
+        p_apps: args.p_apps ?? undefined,
+      });
+      return error || !Array.isArray(data) ? null : (data as CatalogSearchRpcRow[]);
+    }
+    case "rik_quick_search": {
+      const { data, error } = await supabase.rpc("rik_quick_search", {
+        p_q: args.p_q,
+        p_limit: args.p_limit,
+        p_apps: args.p_apps ?? undefined,
+      });
+      return error || !Array.isArray(data) ? null : (data as CatalogSearchRpcRow[]);
+    }
+  }
+};
+
+const asProfileContractorRows = (rows: unknown): ProfileContractorCompatRow[] => {
+  if (!Array.isArray(rows)) return [];
+  return rows.filter((row): row is ProfileContractorCompatRow => !!row && typeof row === "object");
 };
 
 const normCounterpartyName = (value: unknown): string =>
@@ -426,21 +575,21 @@ export async function listUnifiedCounterparties(search?: string): Promise<Unifie
   try {
     let query = supabase
       .from("suppliers")
-      .select("id,name,inn,phone")
+      .select(SUPPLIERS_COUNTERPARTY_SELECT)
       .order("name", { ascending: true });
     if (q) query = query.or(`name.ilike.%${q}%,inn.ilike.%${q}%`);
     const { data, error } = await query;
     if (!error && Array.isArray(data)) {
-      for (const raw of data) {
-        const display = norm(raw?.name);
+      for (const raw of data as SupplierCounterpartyRow[]) {
+        const display = norm(raw.name);
         if (!display) continue;
-        const inn = norm(raw?.inn) || null;
-        const phone = norm(raw?.phone) || null;
+        const inn = norm(raw.inn) || null;
+        const phone = norm(raw.phone) || null;
         const key = makeCounterpartyKey(display, inn);
         const prev = byKey.get(key);
         if (!prev) {
           byKey.set(key, {
-            counterparty_id: String(raw?.id || key),
+            counterparty_id: String(raw.id || key),
             display_name: display,
             inn,
             phone,
@@ -465,19 +614,19 @@ export async function listUnifiedCounterparties(search?: string): Promise<Unifie
   try {
     const { data, error } = await supabase
       .from("subcontracts")
-      .select("id,status,contractor_org,contractor_inn,contractor_phone")
+      .select(SUBCONTRACTS_COUNTERPARTY_SELECT)
       .not("status", "eq", "draft");
     if (!error && Array.isArray(data)) {
-      for (const raw of data) {
-        const display = norm(raw?.contractor_org);
+      for (const raw of data as SubcontractCounterpartyRow[]) {
+        const display = norm(raw.contractor_org);
         if (!display) continue;
-        const inn = norm(raw?.contractor_inn) || null;
-        const phone = norm(raw?.contractor_phone) || null;
+        const inn = norm(raw.contractor_inn) || null;
+        const phone = norm(raw.contractor_phone) || null;
         const key = makeCounterpartyKey(display, inn);
         const prev = byKey.get(key);
         if (!prev) {
           byKey.set(key, {
-            counterparty_id: `subcontract:${String(raw?.id || key)}`,
+            counterparty_id: `subcontract:${String(raw.id || key)}`,
             display_name: display,
             inn,
             phone,
@@ -500,7 +649,7 @@ export async function listUnifiedCounterparties(search?: string): Promise<Unifie
 
   // C) Registered app counterparties.
   try {
-    const contractorsQ = await supabase.from("contractors").select("id,company_name,phone,inn");
+    const contractorsQ = await supabase.from("contractors").select(CONTRACTORS_COUNTERPARTY_SELECT);
 
     const loadProfilesSafe = async () => {
       const plans = [
@@ -515,27 +664,27 @@ export async function listUnifiedCounterparties(search?: string): Promise<Unifie
           const res = await q.limit(5000);
           if (res.error) continue;
 
-          const rows = Array.isArray(res.data) ? (res.data as any[]) : [];
+          const rows = asProfileContractorRows(res.data);
           if (plan.withFilter) return rows;
-          return rows.filter((r) => Boolean((r as any)?.is_contractor));
+          return rows.filter((r) => Boolean(r.is_contractor));
         } catch { }
       }
-      return [] as any[];
+      return [] as ProfileContractorCompatRow[];
     };
 
     const profileRows = await loadProfilesSafe();
 
     if (!contractorsQ.error && Array.isArray(contractorsQ.data)) {
-      for (const raw of contractorsQ.data as any[]) {
-        const display = norm(raw?.company_name);
+      for (const raw of contractorsQ.data as ContractorCounterpartyRow[]) {
+        const display = norm(raw.company_name);
         if (!display) continue;
-        const inn = norm(raw?.inn) || null;
-        const phone = norm(raw?.phone) || null;
+        const inn = norm(raw.inn) || null;
+        const phone = norm(raw.phone) || null;
         const key = makeCounterpartyKey(display, inn);
         const prev = byKey.get(key);
         if (!prev) {
           byKey.set(key, {
-            counterparty_id: `contractor:${String(raw?.id || key)}`,
+            counterparty_id: `contractor:${String(raw.id || key)}`,
             display_name: display,
             inn,
             phone,
@@ -554,23 +703,23 @@ export async function listUnifiedCounterparties(search?: string): Promise<Unifie
     }
 
     if (Array.isArray(profileRows)) {
-      for (const raw of profileRows as any[]) {
+      for (const raw of profileRows) {
         const display = norm(
-          raw?.company ??
-          raw?.company_name ??
-          raw?.organization ??
-          raw?.org_name ??
-          raw?.name ??
-          raw?.full_name,
+          raw.company ??
+          raw.company_name ??
+          raw.organization ??
+          raw.org_name ??
+          raw.name ??
+          raw.full_name,
         );
         if (!display) continue;
-        const inn = norm(raw?.inn) || null;
-        const phone = norm(raw?.phone) || null;
+        const inn = norm(raw.inn) || null;
+        const phone = norm(raw.phone) || null;
         const key = makeCounterpartyKey(display, inn);
         const prev = byKey.get(key);
         if (!prev) {
           byKey.set(key, {
-            counterparty_id: `profile:${String(raw?.user_id || key)}`,
+            counterparty_id: `profile:${String(raw.user_id || key)}`,
             display_name: display,
             inn,
             phone,
@@ -620,24 +769,17 @@ export async function searchCatalogItems(
   const pLimit = clamp(limit || 50, 1, 200);
 
   // 1) Try RPCs first
-  const rpcs = ["rik_quick_ru", "rik_quick_search_typed", "rik_quick_search"];
+  const rpcArgs: CatalogSearchRpcArgs = {
+    p_q: pQuery,
+    p_limit: pLimit,
+    p_apps: apps ?? null,
+  };
+  const rpcs: CatalogSearchRpcName[] = ["rik_quick_ru", "rik_quick_search_typed", "rik_quick_search"];
   for (const fn of rpcs) {
     try {
-      const { data, error } = await supabase.rpc(fn as any, {
-        p_q: pQuery,
-        p_limit: pLimit,
-        p_apps: apps ?? null,
-      } as any);
-      if (!error && Array.isArray(data) && data.length > 0) {
-        return (data as any[]).slice(0, pLimit).map((r) => ({
-          code: r.rik_code || r.code,
-          name: r.name_human || r.name || r.rik_code,
-          uom: r.uom || r.uom_code || null,
-          sector_code: r.sector_code || null,
-          spec: r.spec || null,
-          kind: r.kind || null,
-          group_code: r.group_code || null,
-        }));
+      const data = await runCatalogSearchRpc(fn, rpcArgs);
+      if (data && data.length > 0) {
+        return mapCatalogSearchRows(data.slice(0, pLimit));
       }
     } catch { }
   }
@@ -646,7 +788,7 @@ export async function searchCatalogItems(
   const tokens = pQuery.split(/\s+/).filter(t => t.length >= 2);
   let queryBuilder = supabase
     .from("rik_items")
-    .select("rik_code,name_human,uom_code,sector_code,spec,kind,group_code")
+    .select(CATALOG_SEARCH_FALLBACK_SELECT)
     .limit(pLimit);
 
   if (tokens.length > 0) {
@@ -660,15 +802,7 @@ export async function searchCatalogItems(
   const { data, error } = await queryBuilder.order("rik_code", { ascending: true });
   if (error || !Array.isArray(data)) return [];
 
-  return (data as any[]).map((r) => ({
-    code: r.rik_code,
-    name: r.name_human || r.rik_code,
-    uom: r.uom_code || null,
-    sector_code: r.sector_code || null,
-    spec: r.spec || null,
-    kind: r.kind || null,
-    group_code: r.group_code || null,
-  }));
+  return mapCatalogSearchRows(data as CatalogSearchFallbackRow[]);
 }
 
 /** ========= GROUPS ========= */
@@ -1487,14 +1621,10 @@ export async function listSuppliers(search?: string): Promise<Supplier[]> {
   const q = sanitizePostgrestOrTerm(search || "");
 
   try {
-    const { data, error } = await supabase.rpc("suppliers_list" as any, {
-      p_search: q || null,
-    } as any);
+    const rpcArgs: SuppliersListRpcArgs = { p_search: q || null };
+    const { data, error } = await supabase.rpc("suppliers_list", rpcArgs);
     if (!error && Array.isArray(data)) {
-      const mapped = (data as any[])
-        .map(mapSupplierRow)
-        .filter((row): row is Supplier => !!row)
-        .sort((a, b) => a.name.localeCompare(b.name, "ru"));
+      const mapped = mapSupplierRows(data as SuppliersListRpcRow[]);
       if (mapped.length) return mapped;
     } else if (error) {
       const msg = String(error.message || "");
@@ -1511,9 +1641,7 @@ export async function listSuppliers(search?: string): Promise<Supplier[]> {
   try {
     let query = supabase
       .from("suppliers")
-      .select(
-        "id,name,inn,bank_account,specialization,phone,email,website,address,contact_name,notes"
-      )
+      .select(SUPPLIERS_TABLE_SELECT)
       .order("name", { ascending: true });
     if (q) {
       query = query.or(`name.ilike.%${q}%,inn.ilike.%${q}%,specialization.ilike.%${q}%`);
@@ -1521,10 +1649,7 @@ export async function listSuppliers(search?: string): Promise<Supplier[]> {
     const { data, error } = await query;
     if (error) throw error;
     if (Array.isArray(data)) {
-      return (data as any[])
-        .map(mapSupplierRow)
-        .filter((row): row is Supplier => !!row)
-        .sort((a, b) => a.name.localeCompare(b.name, "ru"));
+      return mapSupplierRows(data as SupplierTableRow[]);
     }
   } catch (e: any) {
     console.warn("[catalog_api.listSuppliers] table suppliers:", e?.message ?? e);
@@ -1649,11 +1774,11 @@ async function loadCounterpartyBinding(): Promise<CounterpartyBinding> {
   const contractorIdByName = new Map<string, string>();
 
   try {
-    const q = await supabase.from("suppliers").select("id,name");
+    const q = await supabase.from("suppliers").select(SUPPLIERS_BINDING_SELECT);
     if (!q.error && Array.isArray(q.data)) {
-      for (const row of q.data as any[]) {
-        const id = String(row?.id ?? "").trim();
-        const name = normCounterpartyKey(String(row?.name ?? ""));
+      for (const row of q.data as SupplierBindingRow[]) {
+        const id = String(row.id ?? "").trim();
+        const name = normCounterpartyKey(String(row.name ?? ""));
         if (id && name && !supplierIdByName.has(name)) supplierIdByName.set(name, id);
       }
     }
@@ -1662,11 +1787,11 @@ async function loadCounterpartyBinding(): Promise<CounterpartyBinding> {
   }
 
   try {
-    const q = await supabase.from("contractors").select("id,company_name");
+    const q = await supabase.from("contractors").select(CONTRACTORS_BINDING_SELECT);
     if (!q.error && Array.isArray(q.data)) {
-      for (const row of q.data as any[]) {
-        const id = String(row?.id ?? "").trim();
-        const name = normCounterpartyKey(String(row?.company_name ?? ""));
+      for (const row of q.data as ContractorBindingRow[]) {
+        const id = String(row.id ?? "").trim();
+        const name = normCounterpartyKey(String(row.company_name ?? ""));
         if (id && name && !contractorIdByName.has(name)) contractorIdByName.set(name, id);
       }
     }

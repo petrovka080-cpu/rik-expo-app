@@ -33,6 +33,9 @@ function formatCreatedAt(value?: string | null) {
 }
 
 async function resolveAttachmentUrl(file: ProposalAttachmentRow) {
+  const directUrl = String(file.url || "").trim();
+  if (directUrl) return directUrl;
+
   const bucketId = String(file.bucket_id || "").trim();
   const storagePath = String(file.storage_path || "").trim();
 
@@ -114,9 +117,11 @@ export default function DirectorProposalAttachments({
       ) : (
         <View style={{ marginTop: 8 }}>
           {files.map((file, idx) => {
+            const hasDirectUrl = !!String(file.url || "").trim();
+            const hasBucket = !!String(file.bucket_id || "").trim();
+            const hasStoragePath = !!String(file.storage_path || "").trim();
             const corrupted =
-              !String(file.bucket_id || "").trim() ||
-              !String(file.storage_path || "").trim();
+              !hasDirectUrl && (!hasBucket || !hasStoragePath);
             const createdAt = formatCreatedAt(file.created_at);
 
             return (

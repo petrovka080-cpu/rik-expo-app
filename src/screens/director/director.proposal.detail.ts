@@ -62,15 +62,22 @@ export function useDirectorProposalDetail({
     setPropAttErrByProp((prev) => ({ ...prev, [pid]: "" }));
 
     try {
-      const q = await supabase
-        .from("proposal_attachments")
-        .select("id, proposal_id, file_name, group_key, created_at, bucket_id, storage_path")
-        .eq("proposal_id", pid)
-        .order("created_at", { ascending: false });
+      let raw: Array<Record<string, unknown>> = [];
 
-      if (q.error) throw q.error;
+      const rpc = await supabase.rpc("proposal_attachments_list", { p_proposal_id: pid });
+      if (!rpc.error && Array.isArray(rpc.data)) {
+        raw = rpc.data as Array<Record<string, unknown>>;
+      } else {
+        const q = await supabase
+          .from("proposal_attachments")
+          .select("id, proposal_id, file_name, url, group_key, created_at, bucket_id, storage_path")
+          .eq("proposal_id", pid)
+          .order("created_at", { ascending: false });
 
-      const raw = (q.data || []) as Array<Record<string, unknown>>;
+        if (q.error) throw q.error;
+        raw = (q.data || []) as Array<Record<string, unknown>>;
+      }
+
       const rows: ProposalAttachmentRow[] = [];
       const seen = new Set<string>();
 
@@ -84,6 +91,7 @@ export function useDirectorProposalDetail({
           id,
           proposal_id: String(r.proposal_id ?? "").trim() || pid,
           file_name: String(r.file_name ?? "").trim() || "file",
+          url: (r.url as string | null | undefined) ?? null,
           group_key: (r.group_key as string | null | undefined) ?? null,
           created_at: (r.created_at as string | null | undefined) ?? null,
           bucket_id: (r.bucket_id as string | null | undefined) ?? null,

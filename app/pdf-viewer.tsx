@@ -4,13 +4,16 @@ import {
   Platform,
   Pressable,
   ScrollView,
+  StyleSheet,
   Text,
+  useWindowDimensions,
   View,
 } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { WebView } from "react-native-webview";
 import * as FileSystemModule from "expo-file-system/legacy";
+import { Ionicons } from "@expo/vector-icons";
 
 import {
   failDocumentSession,
@@ -28,6 +31,19 @@ type ViewerState = "init" | "loading" | "ready" | "error" | "empty";
 const FileSystemCompat = FileSystemModule as any;
 
 const FALLBACK_ROUTE = "/";
+const VIEWER_BG = "#111111";
+const VIEWER_HEADER_BG = "rgba(17,17,17,0.94)";
+const VIEWER_BORDER = "rgba(255,255,255,0.08)";
+const VIEWER_TEXT = "#F8FAFC";
+const VIEWER_SUBTLE = "rgba(255,255,255,0.72)";
+const VIEWER_DIM = "rgba(255,255,255,0.52)";
+const WEB_PDFJS_URL = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js";
+const WEB_PDFJS_WORKER_URL = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+
+type PageTelemetry = {
+  current: number;
+  total: number;
+};
 
 function resolveViewerState(session: DocumentSession | null, asset: DocumentAsset | null): ViewerState {
   if (!session) return "empty";
@@ -51,8 +67,183 @@ function getReadAccessParentUri(uri?: string | null) {
   return value.slice(0, slashIndex);
 }
 
+function buildWebPdfTelemetryHtml(pdfUrl: string) {
+  const urlLiteral = JSON.stringify(pdfUrl);
+  const pdfJsLiteral = JSON.stringify(WEB_PDFJS_URL);
+  const workerLiteral = JSON.stringify(WEB_PDFJS_WORKER_URL);
+
+  return `<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes"
+    />
+    <style>
+      html, body {
+        margin: 0;
+        padding: 0;
+        background: #111111;
+        height: 100%;
+        overflow: hidden;
+      }
+      #app {
+        height: 100%;
+        overflow: auto;
+        -webkit-overflow-scrolling: touch;
+        padding: 20px 0 48px;
+        box-sizing: border-box;
+      }
+      .page-wrap {
+        width: min(100%, 980px);
+        margin: 0 auto 14px;
+        display: flex;
+        justify-content: center;
+      }
+      canvas {
+        display: block;
+        background: white;
+        box-shadow: 0 18px 36px rgba(0, 0, 0, 0.24);
+      }
+      #status {
+        color: rgba(255,255,255,0.72);
+        font: 14px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app"><div id="status">Preparing document...</div></div>
+    <script src=${pdfJsLiteral}></script>
+    <script>
+      (function () {
+        const pdfUrl = ${urlLiteral};
+        const app = document.getElementById('app');
+        const statusNode = document.getElementById('status');
+        const pageNodes = [];
+        let totalPages = 0;
+        let lastCurrent = 1;
+
+        function emit(payload) {
+          const message = { __pdfTelemetry: true, ...payload };
+          try { window.parent.postMessage(message, '*'); } catch {}
+          try {
+            if (window.ReactNativeWebView && typeof window.ReactNativeWebView.postMessage === 'function') {
+              window.ReactNativeWebView.postMessage(JSON.stringify(message));
+            }
+          } catch {}
+        }
+
+        function reportCurrentPage() {
+          if (!pageNodes.length) return;
+          const viewportH = window.innerHeight || document.documentElement.clientHeight || 0;
+          let bestPage = 1;
+          let bestVisible = -1;
+          for (const entry of pageNodes) {
+            const rect = entry.node.getBoundingClientRect();
+            const top = Math.max(rect.top, 0);
+            const bottom = Math.min(rect.bottom, viewportH);
+            const visible = Math.max(0, bottom - top);
+            if (visible > bestVisible) {
+              bestVisible = visible;
+              bestPage = entry.page;
+            }
+          }
+          if (bestPage !== lastCurrent) {
+            lastCurrent = bestPage;
+            emit({ type: 'page', current: bestPage, total: totalPages });
+          }
+        }
+
+        async function render() {
+          try {
+            pdfjsLib.GlobalWorkerOptions.workerSrc = ${workerLiteral};
+            const loadingTask = pdfjsLib.getDocument(pdfUrl);
+            const pdf = await loadingTask.promise;
+            totalPages = Number(pdf.numPages || 0);
+            lastCurrent = totalPages > 0 ? 1 : 0;
+            app.innerHTML = '';
+            emit({ type: 'ready', current: lastCurrent, total: totalPages });
+
+            for (let pageNumber = 1; pageNumber <= totalPages; pageNumber += 1) {
+              const page = await pdf.getPage(pageNumber);
+              const initialViewport = page.getViewport({ scale: 1 });
+              const containerWidth = Math.min(app.clientWidth || window.innerWidth || initialViewport.width, 980);
+              const scale = containerWidth / initialViewport.width;
+              const viewport = page.getViewport({ scale });
+              const wrap = document.createElement('div');
+              wrap.className = 'page-wrap';
+              const canvas = document.createElement('canvas');
+              canvas.width = Math.floor(viewport.width);
+              canvas.height = Math.floor(viewport.height);
+              wrap.appendChild(canvas);
+              app.appendChild(wrap);
+              pageNodes.push({ page: pageNumber, node: wrap });
+              await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
+            }
+
+            reportCurrentPage();
+            app.addEventListener('scroll', reportCurrentPage, { passive: true });
+            window.addEventListener('resize', reportCurrentPage);
+          } catch (error) {
+            const message = error && error.message ? error.message : String(error || 'Failed to render PDF');
+            if (statusNode) statusNode.textContent = message;
+            emit({ type: 'error', message });
+          }
+        }
+
+        render();
+      })();
+    </script>
+  </body>
+</html>`;
+}
+
+async function downloadPdfAsset(asset: DocumentAsset) {
+  if (Platform.OS === "web") {
+    if (typeof document === "undefined") return;
+    const link = document.createElement("a");
+    link.href = asset.uri;
+    link.download = asset.fileName || `${asset.title || "document"}.pdf`;
+    link.rel = "noopener";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    return;
+  }
+  await sharePdfDocument(asset);
+}
+
+async function printPdfAsset(asset: DocumentAsset) {
+  if (Platform.OS === "web") {
+    if (typeof document === "undefined") return;
+    const frame = document.createElement("iframe");
+    frame.style.position = "fixed";
+    frame.style.width = "0";
+    frame.style.height = "0";
+    frame.style.opacity = "0";
+    frame.style.pointerEvents = "none";
+    frame.src = asset.uri;
+    document.body.appendChild(frame);
+    frame.onload = () => {
+      frame.contentWindow?.focus();
+      frame.contentWindow?.print();
+      setTimeout(() => {
+        document.body.removeChild(frame);
+      }, 1200);
+    };
+    return;
+  }
+  await openPdfDocumentExternal(asset);
+}
+
 export default function PdfViewerScreen() {
   const params = useLocalSearchParams<{ sessionId?: string }>();
+  const { width } = useWindowDimensions();
   const sessionId = React.useMemo(() => String(params.sessionId || "").trim(), [params.sessionId]);
   const snapshot = React.useMemo(() => getDocumentSessionSnapshot(sessionId), [sessionId]);
   const [session, setSession] = React.useState<DocumentSession | null>(snapshot.session);
@@ -61,6 +252,8 @@ export default function PdfViewerScreen() {
   const [errorText, setErrorText] = React.useState(snapshot.session?.errorMessage || "");
   const [menuOpen, setMenuOpen] = React.useState(false);
   const [isReadyToRender, setIsReadyToRender] = React.useState(false);
+  const [chromeVisible, setChromeVisible] = React.useState(true);
+  const [pageTelemetry, setPageTelemetry] = React.useState<PageTelemetry>({ current: 1, total: 1 });
   const openedAtRef = React.useRef<number>(Date.now());
   const loadingTimeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
   const renderDelayRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -154,6 +347,9 @@ export default function PdfViewerScreen() {
     clearLoadingTimeout();
     clearRenderDelay();
     setIsReadyToRender(false);
+    setChromeVisible(true);
+    setMenuOpen(false);
+    setPageTelemetry({ current: 1, total: 1 });
     const next = syncSnapshot();
 
     if (!next.session) {
@@ -187,7 +383,6 @@ export default function PdfViewerScreen() {
         return;
       }
       enterLoading();
-      // Add a small delay to ensure navigation transition is finished before WebView starts
       renderDelayRef.current = setTimeout(() => {
         setIsReadyToRender(true);
         renderDelayRef.current = null;
@@ -240,6 +435,30 @@ export default function PdfViewerScreen() {
     }
   }, [asset, markError]);
 
+  const onDownload = React.useCallback(async () => {
+    if (!asset) return;
+    try {
+      await downloadPdfAsset(asset);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      markError(message);
+    } finally {
+      setMenuOpen(false);
+    }
+  }, [asset, markError]);
+
+  const onPrint = React.useCallback(async () => {
+    if (!asset) return;
+    try {
+      await printPdfAsset(asset);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      markError(message);
+    } finally {
+      setMenuOpen(false);
+    }
+  }, [asset, markError]);
+
   const onRetry = React.useCallback(() => {
     const next = syncSnapshot();
     if (!next.session) {
@@ -269,6 +488,25 @@ export default function PdfViewerScreen() {
     if (!asset?.uri) return undefined;
     return { uri: asset.uri };
   }, [asset]);
+
+  const webPdfHtml = React.useMemo(() => {
+    if (Platform.OS !== "web") return "";
+    if (!asset?.uri) return "";
+    return buildWebPdfTelemetryHtml(asset.uri);
+  }, [asset?.uri]);
+
+  const showChrome = Platform.OS === "web" ? true : chromeVisible;
+  const headerHeight = Platform.OS === "web" || width >= 768 ? 56 : 50;
+  const pageIndicatorText =
+    state === "ready"
+      ? `${Math.max(1, pageTelemetry.current)} / ${Math.max(1, pageTelemetry.total)}`
+      : "…";
+
+  const toggleChrome = React.useCallback(() => {
+    if (Platform.OS === "web") return;
+    setMenuOpen(false);
+    setChromeVisible((value) => !value);
+  }, []);
 
   React.useEffect(() => {
     let cancelled = false;
@@ -342,6 +580,43 @@ export default function PdfViewerScreen() {
     };
   }, [asset, sessionId, source]);
 
+  React.useEffect(() => {
+    if (Platform.OS !== "web") return;
+
+    const onMessage = (event: MessageEvent) => {
+      const payload = event.data;
+      if (!payload || typeof payload !== "object" || payload.__pdfTelemetry !== true) return;
+
+      if (payload.type === "ready") {
+        const current = Number(payload.current || 1);
+        const total = Number(payload.total || 1);
+        setPageTelemetry({
+          current: Number.isFinite(current) && current > 0 ? current : 1,
+          total: Number.isFinite(total) && total > 0 ? total : 1,
+        });
+        markReady();
+        return;
+      }
+
+      if (payload.type === "page") {
+        const current = Number(payload.current || 1);
+        const total = Number(payload.total || pageTelemetry.total || 1);
+        setPageTelemetry({
+          current: Number.isFinite(current) && current > 0 ? current : 1,
+          total: Number.isFinite(total) && total > 0 ? total : 1,
+        });
+        return;
+      }
+
+      if (payload.type === "error") {
+        markError(String(payload.message || "Web PDF renderer failed."));
+      }
+    };
+
+    window.addEventListener("message", onMessage);
+    return () => window.removeEventListener("message", onMessage);
+  }, [markError, markReady, pageTelemetry.total]);
+
   const body = (() => {
     if (state === "empty") {
       console.error("[pdf-viewer] viewer_missing_session", {
@@ -388,52 +663,42 @@ export default function PdfViewerScreen() {
 
     if (!isReadyToRender) {
       return (
-        <View style={{ flex: 1, backgroundColor: "#0A0F18", alignItems: "center", justifyContent: "center" }}>
-          <ActivityIndicator size="large" color="#38BDF8" />
-          <Text style={{ color: "#E2E8F0", marginTop: 12, fontWeight: "700" }}>
-            Preparing viewer...
-          </Text>
+        <View style={styles.loadingState}>
+          <ActivityIndicator size="large" color="#FFFFFF" />
+          <Text style={styles.loadingText}>Preparing viewer...</Text>
         </View>
       );
     }
 
     return (
-      <View style={{ flex: 1, backgroundColor: "#0A0F18" }}>
+      <Pressable style={styles.viewerBody} onPress={toggleChrome}>
         {state === "loading" ? (
-          <View
-            style={{
-              position: "absolute",
-              top: 0,
-              right: 0,
-              bottom: 0,
-              left: 0,
-              alignItems: "center",
-              justifyContent: "center",
-              zIndex: 2,
-              backgroundColor: "rgba(10,15,24,0.18)",
-            }}
-          >
-            <ActivityIndicator size="large" color="#38BDF8" />
-            <Text style={{ color: "#E2E8F0", marginTop: 12, fontWeight: "700" }}>
-              Preparing document...
-            </Text>
+          <View style={styles.loadingOverlay}>
+            <ActivityIndicator size="large" color="#FFFFFF" />
+            <Text style={styles.loadingText}>Preparing document...</Text>
           </View>
         ) : null}
 
         {Platform.OS === "web" ? (
-          <View style={{ flex: 1, backgroundColor: "#0A0F18" }}>
-            <iframe
-              title={asset.title || "PDF"}
-              src={asset.uri}
-              onLoad={() => markReady()}
-              onError={() => markError("Web PDF frame failed to load.")}
-              style={{
-                width: "100%",
-                height: "100%",
-                border: "none",
-                background: "#0A0F18",
-              }}
-            />
+          <View style={styles.viewerBody}>
+            <View
+              style={[
+                styles.webFrameWrap,
+                { maxWidth: width >= 1200 ? 1080 : width >= 860 ? 960 : width },
+              ]}
+            >
+              <iframe
+                title={asset.title || "PDF"}
+                srcDoc={webPdfHtml}
+                onError={() => markError("Web PDF frame failed to load.")}
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  border: "none",
+                  background: VIEWER_BG,
+                }}
+              />
+            </View>
           </View>
         ) : (
           <WebView
@@ -508,133 +773,82 @@ export default function PdfViewerScreen() {
               });
               markError(message);
             }}
-            style={{ flex: 1, backgroundColor: "#0A0F18" }}
+            style={styles.nativeWebView}
           />
         )}
-      </View>
+      </Pressable>
     );
   })();
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#08111C" }}>
-      <View
-        style={{
-          flexDirection: "row",
-          alignItems: "center",
-          paddingHorizontal: 14,
-          paddingVertical: 10,
-          borderBottomWidth: 1,
-          borderBottomColor: "rgba(255,255,255,0.08)",
-          backgroundColor: "#08111C",
-          gap: 10,
-        }}
-      >
-        <Pressable onPress={onBack} style={headerButtonStyle}>
-          <Text style={headerButtonText}>Back</Text>
-        </Pressable>
+    <SafeAreaView style={styles.screen} edges={showChrome ? undefined : ["left", "right"]}>
+      <View style={styles.screen}>
+        {showChrome ? (
+          <View style={[styles.header, { height: headerHeight }]}>
+            <Pressable onPress={onBack} style={styles.iconButton} accessibilityLabel="Back">
+              <Ionicons name="chevron-back" size={20} color={VIEWER_TEXT} />
+            </Pressable>
 
-        <View style={{ flex: 1, minWidth: 0 }}>
-          <Text numberOfLines={1} style={{ color: "#F8FAFC", fontSize: 16, fontWeight: "800" }}>
-            {asset?.title || "PDF"}
-          </Text>
-          <Text numberOfLines={1} style={{ color: "#94A3B8", fontSize: 12 }}>
-            {asset ? `${asset.documentType} · ${asset.originModule}` : "document"}
-          </Text>
-        </View>
-
-        <Pressable onPress={() => void onShare()} style={headerButtonStyle} disabled={!asset}>
-          <Text style={headerButtonText}>Share</Text>
-        </Pressable>
-
-        <View>
-          <Pressable onPress={() => setMenuOpen((v) => !v)} style={headerButtonStyle} disabled={!asset}>
-            <Text style={headerButtonText}>...</Text>
-          </Pressable>
-          {menuOpen && asset ? (
-            <View
-              style={{
-                position: "absolute",
-                top: 44,
-                right: 0,
-                width: 180,
-                borderRadius: 14,
-                padding: 8,
-                backgroundColor: "#0F172A",
-                borderWidth: 1,
-                borderColor: "rgba(255,255,255,0.12)",
-                zIndex: 5,
-              }}
-            >
-              <MenuAction label="Share" onPress={() => void onShare()} />
-              <MenuAction label="Open in other app" onPress={() => void onOpenExternal()} />
+            <View style={styles.headerTitleWrap}>
+              <Text numberOfLines={1} style={styles.headerTitle}>
+                {asset?.title || "PDF"}
+              </Text>
             </View>
-          ) : null}
-        </View>
+
+            <View style={styles.menuAnchor}>
+              <Pressable
+                onPress={() => setMenuOpen((value) => !value)}
+                style={styles.iconButton}
+                disabled={!asset}
+                accessibilityLabel="Document actions"
+              >
+                <Ionicons name="ellipsis-horizontal" size={18} color={VIEWER_TEXT} />
+              </Pressable>
+              {menuOpen && asset ? (
+                <View style={styles.menu}>
+                  <MenuAction icon="share-outline" label="Share" onPress={() => void onShare()} />
+                  <MenuAction icon="download-outline" label="Download" onPress={() => void onDownload()} />
+                  <MenuAction icon="open-outline" label="Open externally" onPress={() => void onOpenExternal()} />
+                  <MenuAction icon="print-outline" label="Print" onPress={() => void onPrint()} />
+                </View>
+              ) : null}
+            </View>
+          </View>
+        ) : null}
+
+        <View style={styles.documentStage}>{body}</View>
+
+        {asset ? (
+          <View
+            pointerEvents="none"
+            style={[
+              styles.pageIndicatorWrap,
+              showChrome ? styles.pageIndicatorVisible : styles.pageIndicatorHidden,
+            ]}
+          >
+            <View style={styles.pageIndicator}>
+              <Text style={styles.pageIndicatorText}>{pageIndicatorText}</Text>
+            </View>
+          </View>
+        ) : null}
       </View>
-
-      <View style={{ flex: 1 }}>{body}</View>
-
-      {asset ? (
-        <View
-          style={{
-            flexDirection: "row",
-            gap: 10,
-            paddingHorizontal: 14,
-            paddingVertical: 12,
-            borderTopWidth: 1,
-            borderTopColor: "rgba(255,255,255,0.08)",
-            backgroundColor: "#08111C",
-          }}
-        >
-          <ActionButton label="Share" onPress={() => void onShare()} primary />
-          <ActionButton label="Open externally" onPress={() => void onOpenExternal()} />
-        </View>
-      ) : null}
     </SafeAreaView>
   );
 }
 
-function MenuAction({ label, onPress }: { label: string; onPress: () => void }) {
-  return (
-    <Pressable
-      onPress={onPress}
-      style={{
-        paddingHorizontal: 12,
-        paddingVertical: 12,
-        borderRadius: 10,
-      }}
-    >
-      <Text style={{ color: "#E2E8F0", fontWeight: "700" }}>{label}</Text>
-    </Pressable>
-  );
-}
-
-function ActionButton({
+function MenuAction({
+  icon,
   label,
   onPress,
-  primary = false,
 }: {
+  icon: keyof typeof Ionicons.glyphMap;
   label: string;
   onPress: () => void;
-  primary?: boolean;
 }) {
   return (
-    <Pressable
-      onPress={onPress}
-      style={{
-        flex: 1,
-        height: 44,
-        borderRadius: 12,
-        alignItems: "center",
-        justifyContent: "center",
-        backgroundColor: primary ? "#38BDF8" : "rgba(255,255,255,0.06)",
-        borderWidth: 1,
-        borderColor: primary ? "#38BDF8" : "rgba(255,255,255,0.12)",
-      }}
-    >
-      <Text style={{ color: primary ? "#06131D" : "#E2E8F0", fontWeight: "800" }}>
-        {label}
-      </Text>
+    <Pressable onPress={onPress} style={styles.menuAction}>
+      <Ionicons name={icon} size={18} color={VIEWER_TEXT} />
+      <Text style={styles.menuActionText}>{label}</Text>
     </Pressable>
   );
 }
@@ -665,15 +879,15 @@ function CenteredPanel({
         alignItems: "center",
         justifyContent: "center",
         paddingHorizontal: 28,
-        backgroundColor: "#0A0F18",
+        backgroundColor: VIEWER_BG,
       }}
     >
-      <Text style={{ color: "#F8FAFC", fontSize: 22, fontWeight: "800", textAlign: "center" }}>
+      <Text style={{ color: VIEWER_TEXT, fontSize: 22, fontWeight: "800", textAlign: "center" }}>
         {title}
       </Text>
       <Text
         style={{
-          color: "#94A3B8",
+          color: VIEWER_SUBTLE,
           fontSize: 14,
           textAlign: "center",
           marginTop: 10,
@@ -693,10 +907,12 @@ function CenteredPanel({
             borderRadius: 12,
             alignItems: "center",
             justifyContent: "center",
-            backgroundColor: "#38BDF8",
+            backgroundColor: "rgba(255,255,255,0.12)",
+            borderWidth: 1,
+            borderColor: VIEWER_BORDER,
           }}
         >
-          <Text style={{ color: "#06131D", fontWeight: "800" }}>{actionLabel}</Text>
+          <Text style={{ color: VIEWER_TEXT, fontWeight: "800" }}>{actionLabel}</Text>
         </Pressable>
       ) : null}
       {secondaryLabel && onSecondaryAction ? (
@@ -711,14 +927,14 @@ function CenteredPanel({
             justifyContent: "center",
             backgroundColor: "rgba(255,255,255,0.06)",
             borderWidth: 1,
-            borderColor: "rgba(255,255,255,0.12)",
+            borderColor: VIEWER_BORDER,
           }}
         >
-          <Text style={{ color: "#E2E8F0", fontWeight: "800" }}>{secondaryLabel}</Text>
+          <Text style={{ color: VIEWER_TEXT, fontWeight: "800" }}>{secondaryLabel}</Text>
         </Pressable>
       ) : null}
       {Platform.OS === "web" ? (
-        <Text style={{ color: "#64748B", fontSize: 12, marginTop: 14 }}>
+        <Text style={{ color: VIEWER_DIM, fontSize: 12, marginTop: 14 }}>
           Web preview uses in-app iframe rendering.
         </Text>
       ) : null}
@@ -726,18 +942,136 @@ function CenteredPanel({
   );
 }
 
-const headerButtonStyle = {
-  height: 38,
-  paddingHorizontal: 12,
-  borderRadius: 12,
-  alignItems: "center",
-  justifyContent: "center",
-  backgroundColor: "rgba(255,255,255,0.06)",
-  borderWidth: 1,
-  borderColor: "rgba(255,255,255,0.12)",
-} as const;
-
-const headerButtonText = {
-  color: "#E2E8F0",
-  fontWeight: "800",
-} as const;
+const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+    backgroundColor: VIEWER_BG,
+  },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: VIEWER_BORDER,
+    backgroundColor: VIEWER_HEADER_BG,
+    zIndex: 8,
+  },
+  iconButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  headerTitleWrap: {
+    flex: 1,
+    minWidth: 0,
+    paddingHorizontal: 8,
+  },
+  headerTitle: {
+    color: VIEWER_TEXT,
+    fontSize: 16,
+    fontWeight: "700",
+  },
+  menuAnchor: {
+    position: "relative",
+  },
+  menu: {
+    position: "absolute",
+    top: 40,
+    right: 0,
+    width: 220,
+    borderRadius: 16,
+    paddingVertical: 6,
+    backgroundColor: "rgba(22,22,22,0.98)",
+    borderWidth: 1,
+    borderColor: VIEWER_BORDER,
+    zIndex: 20,
+    shadowColor: "#000",
+    shadowOpacity: 0.28,
+    shadowRadius: 18,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 12,
+  },
+  menuAction: {
+    minHeight: 42,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+  },
+  menuActionText: {
+    color: VIEWER_TEXT,
+    fontSize: 15,
+    fontWeight: "600",
+  },
+  documentStage: {
+    flex: 1,
+    backgroundColor: VIEWER_BG,
+  },
+  viewerBody: {
+    flex: 1,
+    backgroundColor: VIEWER_BG,
+  },
+  webFrameWrap: {
+    flex: 1,
+    width: "100%",
+    alignSelf: "center",
+    backgroundColor: VIEWER_BG,
+  },
+  nativeWebView: {
+    flex: 1,
+    backgroundColor: VIEWER_BG,
+  },
+  loadingState: {
+    flex: 1,
+    backgroundColor: VIEWER_BG,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  loadingOverlay: {
+    position: "absolute",
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0,
+    alignItems: "center",
+    justifyContent: "center",
+    zIndex: 2,
+    backgroundColor: "rgba(17,17,17,0.16)",
+  },
+  loadingText: {
+    color: VIEWER_TEXT,
+    marginTop: 12,
+    fontWeight: "700",
+  },
+  pageIndicatorWrap: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    bottom: 18,
+    alignItems: "center",
+  },
+  pageIndicatorVisible: {
+    opacity: 1,
+  },
+  pageIndicatorHidden: {
+    opacity: 0.18,
+  },
+  pageIndicator: {
+    minWidth: 54,
+    height: 28,
+    paddingHorizontal: 10,
+    borderRadius: 14,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "rgba(0,0,0,0.42)",
+  },
+  pageIndicatorText: {
+    color: "#FFFFFF",
+    fontSize: 12,
+    fontWeight: "700",
+    letterSpacing: 0.2,
+  },
+});

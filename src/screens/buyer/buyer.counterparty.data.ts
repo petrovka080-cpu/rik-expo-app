@@ -1,5 +1,4 @@
 import { listSuppliers, type Supplier } from "../../lib/catalog_api";
-import type { Database } from "../../lib/database.types";
 import {
   fetchBuyerContractorsBasic,
   fetchBuyerContractorsFallback,
@@ -7,6 +6,11 @@ import {
   fetchBuyerProposalSuppliersFallback,
   fetchBuyerSubcontracts,
 } from "./hooks/useBuyerCounterpartyRepo";
+import type {
+  BuyerCounterpartyRepoContractorFallbackRow,
+  BuyerCounterpartyRepoProposalSupplierFallbackRow,
+  BuyerCounterpartyRepoSubcontractRow,
+} from "./hooks/useBuyerCounterpartyRepo.data";
 
 export type BuyerCounterpartySuggestion = {
   name: string;
@@ -21,39 +25,11 @@ export type BuyerCounterpartySourceDiag = {
   error: string | null;
 };
 
-type BuyerContractorRow = Pick<
-  Database["public"]["Tables"]["contractors"]["Row"],
-  "id" | "company_name" | "phone" | "inn"
-> & {
-  name?: string | null;
-  organization?: string | null;
-  org_name?: string | null;
-};
+type BuyerContractorRow = BuyerCounterpartyRepoContractorFallbackRow;
 
-type BuyerSubcontractRow = Database["public"]["Tables"]["subcontracts"]["Row"] & {
-  counterparty_type?: string | null;
-  party_role?: string | null;
-  role?: string | null;
-  contractor_org?: string | null;
-  subcontractor_org?: string | null;
-  supplier_org?: string | null;
-  company_name?: string | null;
-  organization?: string | null;
-  inn?: string | null;
-  phone?: string | null;
-  contractor_inn?: string | null;
-  supplier_inn?: string | null;
-  contractor_phone?: string | null;
-  supplier_phone?: string | null;
-};
+type BuyerSubcontractRow = BuyerCounterpartyRepoSubcontractRow;
 
-type BuyerProposalSupplierRow = Pick<
-  Database["public"]["Tables"]["proposal_items"]["Row"],
-  "supplier"
-> & {
-  supplier_name?: string | null;
-  company_name?: string | null;
-};
+type BuyerProposalSupplierRow = BuyerCounterpartyRepoProposalSupplierFallbackRow;
 
 type QueryLikeError = { message?: unknown } | null | undefined;
 type QueryLikeResult<TRow> = { data: TRow[] | null; error: QueryLikeError };
