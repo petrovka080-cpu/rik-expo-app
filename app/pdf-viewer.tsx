@@ -347,7 +347,7 @@ export default function PdfViewerScreen() {
 
   const showChrome = Platform.OS === "web" ? true : chromeVisible;
   const headerBarHeight = Platform.OS === "web" || width >= 768 ? 56 : 50;
-  const headerHeight = showChrome ? headerBarHeight + (Platform.OS === "web" ? 0 : insets.top) : 0;
+  const headerHeight = headerBarHeight + (Platform.OS === "web" ? 0 : insets.top);
   const pageIndicatorText = state === "ready" ? "1 / 1" : "…";
 
   const toggleChrome = React.useCallback(() => {
@@ -601,8 +601,14 @@ export default function PdfViewerScreen() {
   return (
     <SafeAreaView style={styles.screen} edges={["left", "right", "bottom"]}>
       <View style={styles.screenRoot}>
-        {showChrome ? (
-          <View style={[styles.header, { height: headerHeight, paddingTop: Platform.OS === "web" ? 0 : insets.top }]}>
+        <View
+          pointerEvents={showChrome ? "auto" : "none"}
+          style={[
+            styles.header,
+            showChrome ? styles.chromeVisible : styles.chromeHidden,
+            { height: headerHeight, paddingTop: Platform.OS === "web" ? 0 : insets.top },
+          ]}
+        >
             <Pressable onPress={onBack} style={styles.iconButton} accessibilityLabel="Back">
               <Ionicons name="chevron-back" size={20} color={VIEWER_TEXT} />
             </Pressable>
@@ -631,10 +637,9 @@ export default function PdfViewerScreen() {
                 </View>
               ) : null}
             </View>
-          </View>
-        ) : null}
+        </View>
 
-        <View style={[styles.documentStage, { top: headerHeight }]}>{body}</View>
+        <View style={styles.documentStage}>{body}</View>
 
         {asset ? (
           <View
@@ -833,8 +838,15 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: "600",
   },
+  chromeVisible: {
+    opacity: 1,
+  },
+  chromeHidden: {
+    opacity: 0,
+  },
   documentStage: {
     position: "absolute",
+    top: 0,
     left: 0,
     right: 0,
     bottom: 0,
