@@ -1,6 +1,6 @@
 import { supabase } from "../supabaseClient";
 import type { Database } from "../database.types";
-import { client, toRpcId } from "./_core";
+import { client } from "./_core";
 import type { ProposalItemRow } from "./types";
 
 const logProposalsDebug = (...args: unknown[]) => {
@@ -21,7 +21,8 @@ type ProposalItemTableRow = Pick<
 >;
 type ProposalItemViewRow = Database["public"]["Views"]["proposal_items_view"]["Row"];
 type ProposalSnapshotItemRow = Database["public"]["Views"]["proposal_snapshot_items"]["Row"];
-type ProposalCreateRpcRow = { id: string | number };
+type ProposalCreateRpcResult = Database["public"]["Functions"]["proposal_create"]["Returns"];
+type ProposalCreateCompatRow = { id: string | number };
 type ProposalPendingRpcRow = { id: string | number; submitted_at: string | null };
 type ProposalItemsRpcRow = {
   id: number | null;
@@ -31,16 +32,25 @@ type ProposalItemsRpcRow = {
   app_code: string | null;
   total_qty: number | null;
 };
+type ProposalAddItemsRpcArgsCompat =
+  | { p_proposal_id: number; p_request_item_ids: string[] }
+  | { p_proposal_id: string; p_request_item_ids: string[] }
+  | { p_proposal_id_text: string; p_request_item_ids: string[] };
+type ProposalAddItemsRpcResult = Database["public"]["Functions"]["proposal_add_items"]["Returns"];
+type ProposalSubmitRpcArgsCompat = { p_proposal_id: string };
+type ProposalItemsSnapshotRpcArgs = Database["public"]["Functions"]["proposal_items_snapshot"]["Args"];
+type ProposalMutationMetaRow = {
+  request_item_id: string;
+  price?: string | null;
+  supplier?: string | null;
+  note?: string | null;
+};
 
 const PROPOSAL_STATUS_PENDING = "На утверждении";
 
 const PROPOSAL_STATUS_PENDING_CANONICAL = "\u041d\u0430 \u0443\u0442\u0432\u0435\u0440\u0436\u0434\u0435\u043d\u0438\u0438";
 
-function getObjectField<T>(value: unknown, key: string): T | undefined {
-  if (typeof value !== "object" || value === null || !(key in value)) return undefined;
-  return (value as Record<string, unknown>)[key] as T;
-}
-
+// ============================== Boundary parsers ==============================
 function normalizeProposalMeta(row: ProposalRow | null | undefined, fallbackId: string) {
   return {
     id: String(row?.id ?? fallbackId),
@@ -60,6 +70,68 @@ function normalizeProposalItems(rows: ProposalItemsRpcRow[]): ProposalItemRow[] 
   }));
 }
 
+function buildProposalCreateFallbackInsert(): ProposalInsert {
+  return {};
+}
+
+function parseProposalCreateResult(data: ProposalCreateRpcResult): string | null {
+  if (typeof data === "string" && data.trim()) return data.trim();
+  const record = data as unknown as ProposalCreateCompatRow | null;
+  if (record && typeof record.id !== "undefined" && record.id !== null) {
+    const id = String(record.id).trim();
+    return id || null;
+  }
+  return null;
+}
+
+function buildProposalAddItemsArgs(
+  proposalId: number | string,
+  requestItemIds: string[],
+): ProposalAddItemsRpcArgsCompat {
+  if (typeof proposalId === "number" && Number.isFinite(proposalId)) {
+    return { p_proposal_id: proposalId, p_request_item_ids: requestItemIds };
+  }
+  return { p_proposal_id: String(proposalId), p_request_item_ids: requestItemIds };
+}
+
+function parseProposalAddItemsResult(data: ProposalAddItemsRpcResult): number {
+  return Number(data ?? 0);
+}
+
+function buildProposalItemInsert(
+  proposalIdText: string,
+  requestItemId: string,
+): ProposalItemInsert {
+  return {
+    proposal_id: proposalIdText,
+    proposal_id_text: proposalIdText,
+    request_item_id: requestItemId,
+  };
+}
+
+function buildProposalSubmitArgs(proposalId: string): ProposalSubmitRpcArgsCompat {
+  return { p_proposal_id: proposalId };
+}
+
+function buildProposalSubmitFallbackUpdate() {
+  return { status: PROPOSAL_STATUS_PENDING_CANONICAL, submitted_at: new Date().toISOString() };
+}
+
+function buildProposalSubmitCleanupUpdate() {
+  return { payment_status: null, sent_to_accountant_at: null };
+}
+
+function buildProposalItemsSnapshotArgs(
+  proposalId: number | string,
+  metaRows: ProposalMutationMetaRow[],
+): ProposalItemsSnapshotRpcArgs {
+  return {
+    p_proposal_id: String(proposalId),
+    p_meta: metaRows,
+  };
+}
+
+// ============================== Boundary aggregators ==============================
 function aggregateTableProposalItems(rows: ProposalItemTableRow[]): ProposalItemRow[] {
   const key = (r: ProposalItemTableRow) =>
     [String(r.name_human ?? ""), String(r.uom ?? ""), String(r.app_code ?? ""), String(r.rik_code ?? "")].join("||");
@@ -86,28 +158,71 @@ function aggregateTableProposalItems(rows: ProposalItemTableRow[]): ProposalItem
 }
 
 async function runProposalSubmitRpc(proposalId: string) {
-  return client.rpc("proposal_submit", {
-    p_proposal_id: proposalId as never,
-  });
+  return client.rpc("proposal_submit", buildProposalSubmitArgs(proposalId));
+}
+
+// ============================== Low-level proposal helpers ==============================
+async function runProposalCreateRpc() {
+  return client.rpc("proposal_create");
+}
+
+async function selectProposalMetaById(proposalId: string) {
+  return client
+    .from("proposals")
+    .select("id,proposal_no,id_short")
+    .eq("id", proposalId)
+    .maybeSingle();
+}
+
+async function insertProposalHeadFallback(payload: ProposalInsert) {
+  return client.from("proposals").insert(payload).select("id,proposal_no,id_short").single();
+}
+
+async function runProposalAddItemsRpc(
+  proposalId: number | string,
+  requestItemIds: string[],
+) {
+  return client.rpc("proposal_add_items", buildProposalAddItemsArgs(proposalId, requestItemIds));
+}
+
+async function insertProposalItemFallback(
+  proposalIdText: string,
+  requestItemId: string,
+) {
+  const payload = buildProposalItemInsert(proposalIdText, requestItemId);
+  return client.from("proposal_items").insert(payload).select("id").single();
+}
+
+async function updateProposalPendingFallback(proposalId: string) {
+  return client
+    .from("proposals")
+    .update(buildProposalSubmitFallbackUpdate())
+    .eq("id", proposalId)
+    .select("id")
+    .maybeSingle();
+}
+
+async function cleanupProposalSubmission(proposalId: string) {
+  return client
+    .from("proposals")
+    .update(buildProposalSubmitCleanupUpdate())
+    .eq("id", proposalId);
 }
 
 export async function proposalCreateFull(): Promise<{ id: string; proposal_no: string | null; id_short: number | null }> {
   try {
-    const { data, error } = await client.rpc("proposal_create");
+    const { data, error } = await runProposalCreateRpc();
     if (!error && data != null) {
-      const id = String(getObjectField<string | number>(data, "id") ?? data);
-      const q = await client
-        .from("proposals")
-        .select("id,proposal_no,id_short")
-        .eq("id", id)
-        .maybeSingle();
+      const id = parseProposalCreateResult(data);
+      if (!id) throw new Error("proposal_create returned empty id");
+      const q = await selectProposalMetaById(id);
 
       return normalizeProposalMeta(q.data, id);
     }
   } catch {}
 
-  const insertPayload: ProposalInsert = {};
-  const ins = await client.from("proposals").insert(insertPayload).select("id,proposal_no,id_short").single();
+  const insertPayload = buildProposalCreateFallbackInsert();
+  const ins = await insertProposalHeadFallback(insertPayload);
   if (ins.error) throw ins.error;
 
   return normalizeProposalMeta(ins.data, "");
@@ -121,22 +236,14 @@ export async function proposalCreate(): Promise<number | string> {
 export async function proposalAddItems(proposalId: number | string, requestItemIds: string[]) {
   const proposalIdText = String(proposalId);
   try {
-    const { data, error } = await client.rpc("proposal_add_items", {
-      p_proposal_id: toRpcId(proposalId),
-      p_request_item_ids: requestItemIds,
-    });
+    const { data, error } = await runProposalAddItemsRpc(proposalId, requestItemIds);
     if (error) throw error;
-    return Number(data ?? 0);
+    return parseProposalAddItemsResult(data);
   } catch {
     let ok = 0;
     for (const requestItemId of requestItemIds) {
       try {
-        const payload: ProposalItemInsert = {
-          proposal_id: proposalIdText,
-          proposal_id_text: proposalIdText,
-          request_item_id: requestItemId,
-        };
-        const ins = await client.from("proposal_items").insert(payload).select("id").single();
+        const ins = await insertProposalItemFallback(proposalIdText, requestItemId);
         if (!ins.error) ok++;
         else logProposalsDebug("[proposalAddItems/fallback/insert]", ins.error.message);
       } catch (e) {
@@ -155,20 +262,12 @@ export async function proposalSubmit(proposalId: number | string) {
     const { error } = await runProposalSubmitRpc(pid);
     if (error) throw error;
   } catch {
-    const upd = await client
-      .from("proposals")
-      .update({ status: PROPOSAL_STATUS_PENDING_CANONICAL, submitted_at: new Date().toISOString() })
-      .eq("id", pid)
-      .select("id")
-      .maybeSingle();
+    const upd = await updateProposalPendingFallback(pid);
     if (upd.error) throw upd.error;
     if (!upd.data?.id) return 0;
   }
 
-  await client
-    .from("proposals")
-    .update({ payment_status: null, sent_to_accountant_at: null })
-    .eq("id", pid);
+  await cleanupProposalSubmission(pid);
 
   return 1;
 }
@@ -251,12 +350,9 @@ export async function proposalItems(proposalId: string | number): Promise<Propos
 
 export async function proposalSnapshotItems(
   proposalId: number | string,
-  metaRows: { request_item_id: string; price?: string | null; supplier?: string | null; note?: string | null }[] = [],
+  metaRows: ProposalMutationMetaRow[] = [],
 ) {
-  const { error } = await client.rpc("proposal_items_snapshot", {
-    p_proposal_id: String(proposalId),
-    p_meta: metaRows,
-  });
+  const { error } = await client.rpc("proposal_items_snapshot", buildProposalItemsSnapshotArgs(proposalId, metaRows));
 
   if (error) throw error;
   return true;

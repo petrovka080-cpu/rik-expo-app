@@ -43,6 +43,7 @@ type RequestItemsByRequestRow = Database["public"]["Functions"]["request_items_b
 type RequestSubmitArgs = Database["public"]["Functions"]["request_submit"]["Args"];
 type RequestSubmitResultRow = Database["public"]["Functions"]["request_submit"]["Returns"];
 type RequestStatusRecalcArgsCompat = { p_request_id: number | string };
+type RequestIdLookupRow = Pick<RequestsTable["Row"], "id">;
 
 const REQUEST_DRAFT_STATUS: RequestStatusEnum = "╨з╨╡╤А╨╜╨╛╨▓╨╕╨║";
 const REQUEST_PENDING_STATUS: RequestStatusEnum = "pending";
@@ -62,6 +63,7 @@ const normalizeRequestFilterId = (value: number | string): string => {
   return String(value ?? "").trim().replace(/^#/, "");
 };
 
+// ============================== Boundary builders ==============================
 function buildRequestDraftInsert(meta?: RequestMeta): RequestDraftInsertPayload {
   return {
     status: REQUEST_DRAFT_STATUS,
@@ -126,6 +128,7 @@ function buildRequestItemsPendingPatch(): RequestItemStatusPatch {
   return { status: REQUEST_PENDING_RU_STATUS };
 }
 
+// ============================== Boundary parsers ==============================
 function parseRequestItemRow(raw: unknown): ReqItemRow | null {
   if (!isRecord(raw)) return null;
   const id = typeof raw.id === "string" ? raw.id.trim() : "";
@@ -152,10 +155,15 @@ function parseRequestItemsByRequestRows(data: unknown): ReqItemRow[] {
   });
 }
 
+function parseRequestSubmitResultRow(data: unknown): RequestRecord | null {
+  return mapRequestRow(data as RequestSubmitResultRow);
+}
+
 export function clearCachedDraftRequestId() {
   _draftRequestIdAny = null;
 }
 
+// ============================== Request read capabilities ==============================
 async function resolveRequestsReadableColumns(): Promise<Set<string>> {
   if (_requestsReadableColumnsCache) return _requestsReadableColumnsCache;
   if (_requestsReadableColumnsInFlight) return _requestsReadableColumnsInFlight;
@@ -261,6 +269,76 @@ const isDraftOrPendingStatus = (raw: unknown): boolean => {
   return s === "draft" || s.includes("С‡РµСЂРЅРѕРІ") || s === "pending" || s.includes("РЅР° СѓС‚РІРµСЂР¶РґРµРЅРёРё");
 };
 
+// ============================== Low-level request helpers ==============================
+async function selectRequestIdByFilter(requestFilterId: string): Promise<RequestIdLookupRow | null> {
+  const found = await client
+    .from("requests")
+    .select("id")
+    .eq("id", requestFilterId)
+    .limit(1)
+    .maybeSingle();
+
+  if (found.error) throw found.error;
+  return found.data ?? null;
+}
+
+async function upsertDraftRequestId(requestId: number | string): Promise<RequestIdLookupRow | null> {
+  const up = await client
+    .from("requests")
+    .upsert(buildRequestDraftUpsert(requestId), { onConflict: "id" })
+    .select("id")
+    .single();
+
+  if (up.error) throw up.error;
+  return up.data ?? null;
+}
+
+async function selectRequestRecordById(
+  requestFilterId: string,
+  requestReadSelect: string,
+): Promise<RequestRecord | null> {
+  const existing = await client
+    .from("requests")
+    .select(requestReadSelect)
+    .eq("id", requestFilterId)
+    .maybeSingle();
+
+  if (existing.error) throw existing.error;
+  return existing.data ? mapRequestRow(existing.data) : null;
+}
+
+async function updateRequestHeadStatus(
+  requestFilterId: string,
+  payload: RequestHeadStatusUpdatePayload,
+  requestReadSelect: string,
+): Promise<RequestRecord | null> {
+  const upd = await client
+    .from("requests")
+    .update(payload)
+    .eq("id", requestFilterId)
+    .select(requestReadSelect)
+    .maybeSingle();
+
+  if (upd.error) throw upd.error;
+  return upd.data ? mapRequestRow(upd.data) : null;
+}
+
+async function updateRequestItemsPendingStatus(requestFilterId: string): Promise<void> {
+  const pendingPayload = buildRequestItemsPendingPatch();
+
+  await client
+    .from("request_items")
+    .update(pendingPayload)
+    .eq("request_id", requestFilterId)
+    .not("status", "in", '("Р Р€РЎвЂљР Р†Р ВµРЎР‚Р В¶Р Т‘Р ВµР Р…Р С•","Р С›РЎвЂљР С”Р В»Р С•Р Р…Р ВµР Р…Р С•","approved","rejected")');
+
+  await client
+    .from("request_items")
+    .update(pendingPayload)
+    .eq("request_id", requestFilterId)
+    .is("status", null);
+}
+
 // ============================== Requests / Items ==============================
 export async function listRequestItems(requestId: number | string): Promise<ReqItemRow[]> {
   try {
@@ -327,24 +405,13 @@ export async function ensureRequest(requestId: number | string): Promise<number 
   const requestFilterId = normalizeRequestFilterId(rid);
 
   try {
-    const found = await client
-      .from("requests")
-      .select("id")
-      .eq("id", requestFilterId)
-      .limit(1)
-      .maybeSingle();
-
-    if (!found.error && found.data?.id != null) return found.data.id;
+    const found = await selectRequestIdByFilter(requestFilterId);
+    if (found?.id != null) return found.id;
   } catch {}
 
   try {
-    const up = await client
-      .from("requests")
-      .upsert(buildRequestDraftUpsert(rid), { onConflict: "id" })
-      .select("id")
-      .single();
-
-    if (!up.error && up.data?.id != null) return up.data.id;
+    const up = await upsertDraftRequestId(rid);
+    if (up?.id != null) return up.id;
   } catch (e) {
     logRequestsDebug("[ensureRequest/upsert]", parseErr(e));
   }
@@ -440,13 +507,7 @@ export async function requestSubmit(requestId: number | string): Promise<Request
   const requestReadSelect = await buildRequestSelectSchemaSafe();
   if (hasPostDraftRoute) {
     await reconcileRequestHeadStatus(String(ridForRpc));
-    const existing = await client
-      .from("requests")
-      .select(requestReadSelect)
-      .eq("id", requestFilterId)
-      .maybeSingle();
-    if (existing.error) throw existing.error;
-    return existing.data ? mapRequestRow(existing.data) : null;
+    return await selectRequestRecordById(requestFilterId, requestReadSelect);
   }
 
   try {
@@ -454,7 +515,7 @@ export async function requestSubmit(requestId: number | string): Promise<Request
     if (error) throw error;
     await reconcileRequestHeadStatus(String(ridForRpc));
 
-    const row = mapRequestRow(data as RequestSubmitResultRow);
+    const row = parseRequestSubmitResultRow(data);
     if (row) {
       if (_draftRequestIdAny != null && String(_draftRequestIdAny) === String(ridForRpc)) {
         _draftRequestIdAny = null;
@@ -466,33 +527,31 @@ export async function requestSubmit(requestId: number | string): Promise<Request
   }
 
   const canWriteSubmittedAt = await requestsSupportsSubmittedAt();
-  let upd = await client
-    .from("requests")
-    .update(buildRequestSubmitFallbackUpdate(canWriteSubmittedAt))
-    .eq("id", requestFilterId)
-    .select(requestReadSelect)
-    .maybeSingle();
+  let fallback: RequestRecord | null = null;
 
-  if (upd.error) {
-    const msg = getErrorMessage(upd.error).toLowerCase();
+  try {
+    fallback = await updateRequestHeadStatus(
+      requestFilterId,
+      buildRequestSubmitFallbackUpdate(canWriteSubmittedAt),
+      requestReadSelect,
+    );
+  } catch (error) {
+    const msg = getErrorMessage(error).toLowerCase();
     const submittedAtMismatch =
       msg.includes("submitted_at") ||
       msg.includes("column") ||
       msg.includes("does not exist");
     if (submittedAtMismatch) {
       _requestsSubmittedAtSupportedCache = false;
-      upd = await client
-        .from("requests")
-        .update(buildRequestSubmitFallbackUpdate(false))
-        .eq("id", requestFilterId)
-        .select(requestReadSelect)
-        .maybeSingle();
+      fallback = await updateRequestHeadStatus(
+        requestFilterId,
+        buildRequestSubmitFallbackUpdate(false),
+        requestReadSelect,
+      );
+    } else {
+      throw error;
     }
   }
-
-  if (upd.error) throw upd.error;
-
-  const fallback = upd.data ? mapRequestRow(upd.data) : null;
 
   if (fallback && _draftRequestIdAny != null && String(_draftRequestIdAny) === String(ridForRpc)) {
     _draftRequestIdAny = null;

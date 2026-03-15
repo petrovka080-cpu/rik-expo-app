@@ -17,6 +17,11 @@ export const showErr = (e: unknown) => {
   Alert.alert("Не удалось выполнить действие", pickErr(e));
 };
 
+const logWarehouseUtilsFallback = (scope: string, error: unknown) => {
+  if (__DEV__) {
+    console.warn(`[warehouse.utils] ${scope}:`, pickErr(error));
+  }
+};
 
 export const norm = (s: string) =>
   (s || "")
@@ -70,7 +75,9 @@ export const webUnstickPress = () => {
   try {
     const el = document.activeElement as HTMLElement | null;
     el?.blur?.();
-  } catch { }
+  } catch (error) {
+    logWarehouseUtilsFallback("webUnstickPress", error);
+  }
 };
 
 export const safeAlert = (title: string, msg?: string) => {
@@ -83,7 +90,8 @@ export async function loadString(key: string): Promise<string | null> {
     if (Platform.OS === "web") return window.localStorage.getItem(key);
     const mod = await import("@react-native-async-storage/async-storage");
     return await mod.default.getItem(key);
-  } catch {
+  } catch (error) {
+    logWarehouseUtilsFallback(`loadString(${key})`, error);
     return null;
   }
 }
@@ -96,7 +104,9 @@ export async function saveString(key: string, value: string): Promise<void> {
     }
     const mod = await import("@react-native-async-storage/async-storage");
     await mod.default.setItem(key, value);
-  } catch { }
+  } catch (error) {
+    logWarehouseUtilsFallback(`saveString(${key})`, error);
+  }
 }
 
 export async function loadJson<T>(key: string, fallback: T): Promise<T> {
@@ -104,7 +114,8 @@ export async function loadJson<T>(key: string, fallback: T): Promise<T> {
     const raw = await loadString(key);
     if (!raw) return fallback;
     return JSON.parse(raw) as T;
-  } catch {
+  } catch (error) {
+    logWarehouseUtilsFallback(`loadJson(${key})`, error);
     return fallback;
   }
 }
@@ -112,7 +123,9 @@ export async function loadJson<T>(key: string, fallback: T): Promise<T> {
 export async function saveJson(key: string, value: unknown): Promise<void> {
   try {
     await saveString(key, JSON.stringify(value));
-  } catch { }
+  } catch (error) {
+    logWarehouseUtilsFallback(`saveJson(${key})`, error);
+  }
 }
 
 export const normMatCode = (raw: unknown) => {

@@ -21,6 +21,13 @@ import {
 
 type UnknownRow = Record<string, unknown>;
 
+const logWarehouseApiFallback = (scope: string, error: unknown) => {
+  if (__DEV__) {
+    const message = error instanceof Error ? error.message : String(error ?? "unknown");
+    console.warn(`[warehouse.api] ${scope}:`, message);
+  }
+};
+
 const pickUom = (v: unknown): string | null => {
   const s = v == null ? "" : String(v).trim();
   return s !== "" ? s : null;
@@ -638,7 +645,8 @@ export async function apiFetchStock(
     }
 
     return { supported: false, rows: [] };
-  } catch {
+  } catch (error) {
+    logWarehouseApiFallback("apiFetchStock", error);
     return { supported: false, rows: [] };
   }
 }
@@ -798,7 +806,8 @@ export async function apiFetchReqHeads(
       } else {
         viewRows = [];
       }
-    } catch {
+    } catch (error) {
+      logWarehouseApiFallback("apiFetchReqHeads/director-approval-gate", error);
       viewRows = [];
     }
   }
@@ -939,20 +948,23 @@ export async function apiFetchReqHeads(
             .slice(0, pageSize);
           try {
             return await enrichReqHeadsMeta(supabase, merged);
-          } catch {
+          } catch (error) {
+            logWarehouseApiFallback("apiFetchReqHeads/fallback-enrich-merged", error);
             return merged;
           }
         }
       }
     }
-    } catch {
+    } catch (error) {
+      logWarehouseApiFallback("apiFetchReqHeads/fallback-load", error);
       // keep view rows when fallback fails
     }
   }
 
   try {
     return await enrichReqHeadsMeta(supabase, viewRows);
-  } catch {
+  } catch (error) {
+    logWarehouseApiFallback("apiFetchReqHeads/enrich-view", error);
     return viewRows;
   }
 }
@@ -1029,7 +1041,8 @@ export async function apiFetchReqItems(
         });
       }
     }
-  } catch {
+  } catch (error) {
+    logWarehouseApiFallback("apiFetchReqItems/enrich-notes", error);
     // keep base rows if enrichment fails
   }
 
@@ -1112,8 +1125,8 @@ export async function apiFetchReqItems(
         });
       return direct;
     }
-  } catch {
-    // ignore
+  } catch (error) {
+    logWarehouseApiFallback("apiFetchReqItems/fallback-direct", error);
   }
 
   return viewItems;
@@ -1136,7 +1149,8 @@ export async function apiFetchReports(
       repMov: !m.error && Array.isArray(m.data) ? (m.data as UnknownRow[]) : [],
       repIssues: !iss.error && Array.isArray(iss.data) ? (iss.data as UnknownRow[]) : [],
     };
-  } catch {
+  } catch (error) {
+    logWarehouseApiFallback("apiFetchReports", error);
     return { supported: false, repStock: [], repMov: [], repIssues: [] };
   }
 }

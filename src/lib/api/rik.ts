@@ -1,53 +1,97 @@
 import { client } from "./_core";
 import type { CatalogItem } from "./types";
 
+type RikQuickSearchArgs = {
+  p_q: string;
+  p_limit: number;
+  p_apps: string[] | null;
+};
+
+type RikQuickSearchRpcRow = CatalogItem;
+
+type RikItemsFallbackRow = Pick<
+  CatalogItem,
+  "rik_code" | "name_human" | "uom_code" | "sector_code" | "spec" | "kind"
+> & {
+  name_human_ru?: string | null;
+};
+
+type RikAliasCodeRow = {
+  rik_code: string | null;
+};
+
+type RikAliasRow = {
+  rik_code: string | null;
+  alias: string | null;
+};
+
+function buildRikQuickSearchArgs(
+  pQuery: string,
+  pLimit: number,
+  apps?: string[]
+): RikQuickSearchArgs {
+  return {
+    p_q: pQuery,
+    p_limit: pLimit,
+    p_apps: apps ?? null,
+  };
+}
+
+function parseRikQuickSearchRows(data: unknown): RikQuickSearchRpcRow[] {
+  return Array.isArray(data) ? (data as RikQuickSearchRpcRow[]) : [];
+}
+
+function parseRikItemsFallbackRows(data: unknown): RikItemsFallbackRow[] {
+  return Array.isArray(data) ? (data as RikItemsFallbackRow[]) : [];
+}
+
+function parseRikAliasCodeRows(data: unknown): RikAliasCodeRow[] {
+  return Array.isArray(data) ? (data as RikAliasCodeRow[]) : [];
+}
+
+function parseRikAliasRows(data: unknown): RikAliasRow[] {
+  return Array.isArray(data) ? (data as RikAliasRow[]) : [];
+}
+
 // ============================== RIK search ==============================
 export async function rikQuickSearch(q: string, limit = 50, apps?: string[]) {
   const pQuery = (q ?? "").trim();
   const pLimit = Math.max(1, Math.min(200, limit || 50));
+  const args = buildRikQuickSearchArgs(pQuery, pLimit, apps);
 
-  // ✅ 1) RU — главный (фразы/порядок слов)
+  // 1) RU - главный (фразы/порядок слов)
   try {
-    const { data, error } = await client.rpc("rik_quick_ru", {
-      p_q: pQuery,
-      p_limit: pLimit,
-      p_apps: apps ?? null,
-    } as any);
+    const { data, error } = await client.rpc("rik_quick_ru", args);
+    const rows = parseRikQuickSearchRows(data);
 
-    if (!error && Array.isArray(data) && data.length > 0) {
-      return data as CatalogItem[];
+    if (!error && rows.length > 0) {
+      return rows;
     }
   } catch {}
 
-  // ✅ 2) typed — вторым
+  // 2) typed - вторым
   try {
-    const { data, error } = await client.rpc("rik_quick_search_typed", {
-      p_q: pQuery,
-      p_limit: pLimit,
-      p_apps: apps ?? null,
-    } as any);
+    const { data, error } = await client.rpc("rik_quick_search_typed", args);
+    const rows = parseRikQuickSearchRows(data);
 
-    if (!error && Array.isArray(data) && data.length > 0) {
-      return data as CatalogItem[];
+    if (!error && rows.length > 0) {
+      return rows;
     }
   } catch {}
 
-  // ✅ 3) legacy — третьим
+  // 3) legacy - третьим
   try {
-    const { data, error } = await client.rpc("rik_quick_search", {
-      p_q: pQuery,
-      p_limit: pLimit,
-      p_apps: apps ?? null,
-    } as any);
+    const { data, error } = await client.rpc("rik_quick_search", args);
+    const rows = parseRikQuickSearchRows(data);
 
-    if (!error && Array.isArray(data) && data.length > 0) {
-      return data as CatalogItem[];
+    if (!error && rows.length > 0) {
+      return rows;
     }
   } catch {}
 
   if (!pQuery) return [];
 
-  let base: any[] = [];
+  let base: RikItemsFallbackRow[] = [];
   {
     const fb = await client
       .from("rik_items")
@@ -58,7 +102,7 @@ export async function rikQuickSearch(q: string, limit = 50, apps?: string[]) {
       .order("rik_code", { ascending: true })
       .limit(pLimit * 2);
 
-    if (!fb.error && Array.isArray(fb.data)) base = fb.data as any[];
+    if (!fb.error) base = parseRikItemsFallbackRows(fb.data);
   }
 
   let aliasCodes: string[] = [];
@@ -68,9 +112,9 @@ export async function rikQuickSearch(q: string, limit = 50, apps?: string[]) {
       .select("rik_code")
       .ilike("alias", `%${pQuery}%`)
       .limit(pLimit * 2);
-    if (!al.error && Array.isArray(al.data)) {
+    if (!al.error) {
       aliasCodes = Array.from(
-        new Set((al.data as any[]).map((r) => String(r.rik_code)))
+        new Set(parseRikAliasCodeRows(al.data).map((r) => String(r.rik_code)))
       );
     }
   } catch {}
@@ -84,7 +128,7 @@ export async function rikQuickSearch(q: string, limit = 50, apps?: string[]) {
         .select("rik_code,name_human,uom_code,sector_code,spec,kind")
         .in("rik_code", extraCodes)
         .limit(pLimit * 2);
-      if (!add.error && Array.isArray(add.data)) base = base.concat(add.data as any[]);
+      if (!add.error) base = base.concat(parseRikItemsFallbackRows(add.data));
     }
   }
 
@@ -95,11 +139,14 @@ export async function rikQuickSearch(q: string, limit = 50, apps?: string[]) {
 
   if (allCodes.length) {
     try {
-      const al2 = await client.from("rik_aliases").select("rik_code,alias").in("rik_code", allCodes);
-      if (!al2.error && Array.isArray(al2.data)) {
+      const al2 = await client
+        .from("rik_aliases")
+        .select("rik_code,alias")
+        .in("rik_code", allCodes);
+      if (!al2.error) {
         const prefer = pQuery.toLowerCase();
         const byCode: Record<string, { hit?: string; any?: string }> = {};
-        for (const r of al2.data as any[]) {
+        for (const r of parseRikAliasRows(al2.data)) {
           const a = (r.alias || "").trim();
           if (!a) continue;
           if (!/[А-Яа-яЁё]/.test(a)) continue;
@@ -131,17 +178,17 @@ export async function rikQuickSearch(q: string, limit = 50, apps?: string[]) {
     const ra = aName.startsWith(qa)
       ? 0
       : aCode.startsWith(qa)
-      ? 1
-      : aName.includes(qa)
-      ? 2
-      : 3;
+        ? 1
+        : aName.includes(qa)
+          ? 2
+          : 3;
     const rb = bName.startsWith(qa)
       ? 0
       : bCode.startsWith(qa)
-      ? 1
-      : bName.includes(qa)
-      ? 2
-      : 3;
+        ? 1
+        : bName.includes(qa)
+          ? 2
+          : 3;
     return ra - rb || String(a.rik_code).localeCompare(String(b.rik_code));
   });
 

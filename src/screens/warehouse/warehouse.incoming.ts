@@ -157,7 +157,11 @@ export function useWarehouseIncoming() {
     if (wait.length) {
       try {
         await Promise.all(wait);
-      } catch { }
+      } catch (e) {
+        if (__DEV__) {
+          console.warn("[warehouse.incoming] preloadProposalNos wait failed:", pickErr(e));
+        }
+      }
     }
   }, []);
 
