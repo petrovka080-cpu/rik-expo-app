@@ -11,9 +11,9 @@ import {
   Animated,
   ListRenderItem,
 } from 'react-native';
+import { useRouter } from 'expo-router';
 import CalcModal from "../../src/components/foreman/CalcModal";
 import WorkTypePicker from "../../src/components/foreman/WorkTypePicker";
-import { runPdfTop } from "../../src/lib/pdfRunner";
 import CatalogModal from '../../src/components/foreman/CatalogModal';
 import ForemanReqItemRow from "../../src/screens/foreman/ForemanReqItemRow";
 import ForemanHistoryModal from "../../src/screens/foreman/ForemanHistoryModal";
@@ -36,7 +36,6 @@ import {
   rikQuickSearch,
   fetchRequestDetails,
   updateRequestMeta,
-  exportRequestPdf,
   getLocalDraftId,
   clearLocalDraftId,
   clearCachedDraftRequestId,
@@ -56,6 +55,13 @@ import {
   resolveStatusInfo as resolveStatusHelper,
 } from "../../src/screens/foreman/foreman.helpers";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { buildPdfFileName } from "../../src/lib/documents/pdfDocument";
+import {
+  getPdfFlowErrorMessage,
+  preparePdfDocument,
+  previewPdfDocument,
+} from "../../src/lib/documents/pdfDocumentActions";
+import { generateRequestPdfDocument } from "../../src/lib/documents/pdfDocumentGenerators";
 
 import { useForemanHeader } from '../../src/screens/foreman/hooks/useForemanHeader';
 import { useForemanHistory } from '../../src/screens/foreman/hooks/useForemanHistory';
@@ -89,6 +95,7 @@ declare global {
 
 export default function ForemanScreen() {
   const gbusy = useGlobalBusy();
+  const router = useRouter();
   // Safe global access for web-specific UI bridge
   const safeWebUi = typeof webUi !== 'undefined' ? webUi : undefined;
 
@@ -468,11 +475,32 @@ export default function ForemanScreen() {
   const openHistoryPdf = useCallback(async (reqId: string) => {
     const rid = ridStr(reqId);
     if (!rid) return;
-    await runPdfTop({
-      busy: gbusy, supabase, key: `pdf:history:${rid}`, label: "Готовлю PDF...", mode: "preview",
-      fileName: `Заявка_${rid}`, getRemoteUrl: () => exportRequestPdf(rid, "preview"),
-    });
-  }, [gbusy]);
+    try {
+      const template = await generateRequestPdfDocument({
+        requestId: rid,
+        originModule: "foreman",
+      });
+      const doc = await preparePdfDocument({
+        busy: gbusy,
+        supabase,
+        key: `pdf:history:${rid}`,
+        label: "Готовлю PDF...",
+        descriptor: {
+          ...template,
+          title: `Заявка ${rid}`,
+          fileName: buildPdfFileName({
+            documentType: "request",
+            title: rid,
+            entityId: rid,
+          }),
+        },
+        getRemoteUrl: () => template.uri,
+      });
+      await previewPdfDocument(doc, { router });
+    } catch (error) {
+      Alert.alert("PDF", getPdfFlowErrorMessage(error, "Не удалось открыть PDF"));
+    }
+  }, [gbusy, router]);
 
   useEffect(() => {
     let cancelled = false;

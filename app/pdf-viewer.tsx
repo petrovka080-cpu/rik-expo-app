@@ -10,7 +10,7 @@ import {
   View,
 } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { WebView } from "react-native-webview";
 import * as FileSystemModule from "expo-file-system/legacy";
 import { Ionicons } from "@expo/vector-icons";
@@ -101,6 +101,7 @@ async function printPdfAsset(asset: DocumentAsset) {
 export default function PdfViewerScreen() {
   const params = useLocalSearchParams<{ sessionId?: string }>();
   const { width } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
   const sessionId = React.useMemo(() => String(params.sessionId || "").trim(), [params.sessionId]);
   const snapshot = React.useMemo(() => getDocumentSessionSnapshot(sessionId), [sessionId]);
   const [session, setSession] = React.useState<DocumentSession | null>(snapshot.session);
@@ -345,7 +346,8 @@ export default function PdfViewerScreen() {
   }, [asset]);
 
   const showChrome = Platform.OS === "web" ? true : chromeVisible;
-  const headerHeight = Platform.OS === "web" || width >= 768 ? 56 : 50;
+  const headerBarHeight = Platform.OS === "web" || width >= 768 ? 56 : 50;
+  const headerHeight = showChrome ? headerBarHeight + (Platform.OS === "web" ? 0 : insets.top) : 0;
   const pageIndicatorText = state === "ready" ? "1 / 1" : "…";
 
   const toggleChrome = React.useCallback(() => {
@@ -517,6 +519,12 @@ export default function PdfViewerScreen() {
             allowFileAccess
             allowFileAccessFromFileURLs
             allowUniversalAccessFromFileURLs
+            bounces={false}
+            contentInsetAdjustmentBehavior="never"
+            automaticallyAdjustContentInsets={false}
+            nestedScrollEnabled={false}
+            overScrollMode="never"
+            scalesPageToFit
             allowingReadAccessToURL={
               Platform.OS === "ios" ? getReadAccessParentUri(asset.uri) : undefined
             }
@@ -591,10 +599,10 @@ export default function PdfViewerScreen() {
   })();
 
   return (
-    <SafeAreaView style={styles.screen} edges={showChrome ? undefined : ["left", "right"]}>
-      <View style={styles.screen}>
+    <SafeAreaView style={styles.screen} edges={["left", "right", "bottom"]}>
+      <View style={styles.screenRoot}>
         {showChrome ? (
-          <View style={[styles.header, { height: headerHeight }]}>
+          <View style={[styles.header, { height: headerHeight, paddingTop: Platform.OS === "web" ? 0 : insets.top }]}>
             <Pressable onPress={onBack} style={styles.iconButton} accessibilityLabel="Back">
               <Ionicons name="chevron-back" size={20} color={VIEWER_TEXT} />
             </Pressable>
@@ -626,7 +634,7 @@ export default function PdfViewerScreen() {
           </View>
         ) : null}
 
-        <View style={styles.documentStage}>{body}</View>
+        <View style={[styles.documentStage, { top: headerHeight }]}>{body}</View>
 
         {asset ? (
           <View
@@ -757,7 +765,16 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: VIEWER_BG,
   },
+  screenRoot: {
+    flex: 1,
+    backgroundColor: VIEWER_BG,
+    overflow: "hidden",
+  },
   header: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: 8,
@@ -817,12 +834,17 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   documentStage: {
-    flex: 1,
+    position: "absolute",
+    left: 0,
+    right: 0,
+    bottom: 0,
     backgroundColor: VIEWER_BG,
+    overflow: "hidden",
   },
   viewerBody: {
     flex: 1,
     backgroundColor: VIEWER_BG,
+    overflow: "hidden",
   },
   webFrameWrap: {
     flex: 1,
@@ -831,7 +853,7 @@ const styles = StyleSheet.create({
     backgroundColor: VIEWER_BG,
   },
   nativeWebView: {
-    flex: 1,
+    ...StyleSheet.absoluteFillObject,
     backgroundColor: VIEWER_BG,
   },
   loadingState: {

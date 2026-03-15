@@ -3,7 +3,7 @@ import { supabase } from "./supabaseClient";
 import type { Database, Tables } from "./database.types";
 import { isRequestApprovedForProcurement } from "./requestStatus";
 import {
-  proposalCreate as rpcProposalCreate,
+  proposalCreateFull as rpcProposalCreateFull,
   proposalAddItems as rpcProposalAddItems,
   proposalSubmit as rpcProposalSubmit,
   proposalSnapshotItems as rpcProposalSnapshotItems,
@@ -175,6 +175,8 @@ const CONTRACTORS_COUNTERPARTY_SELECT = "id,company_name,phone,inn";
 const CONTRACTORS_BINDING_SELECT = "id,company_name";
 const CATALOG_SEARCH_FALLBACK_SELECT =
   "rik_code,name_human,uom_code,sector_code,spec,kind,group_code";
+const RIK_QUICK_SEARCH_FALLBACK_FIELDS = "rik_code,name_human,uom_code,kind,name_human_ru";
+const RIK_QUICK_SEARCH_RPCS: CatalogSearchRpcName[] = ["rik_quick_ru", "rik_quick_search_typed", "rik_quick_search"];
 
 type SupplierTableRow = Pick<
   Database["public"]["Tables"]["suppliers"]["Row"],
@@ -239,6 +241,30 @@ type CatalogSearchFallbackRow = Pick<
   Tables<"rik_items">,
   "rik_code" | "name_human" | "uom_code" | "sector_code" | "spec" | "kind" | "group_code"
 >;
+type RikQuickSearchRpcRow = {
+  code?: string | null;
+  rik_code?: string | null;
+  name?: string | null;
+  name_human?: string | null;
+  name_human_ru?: string | null;
+  name_ru?: string | null;
+  item_name?: string | null;
+  uom?: string | null;
+  uom_code?: string | null;
+  kind?: string | null;
+};
+type RikQuickSearchFallbackRow = Pick<
+  Tables<"rik_items">,
+  "rik_code" | "name_human" | "uom_code" | "kind" | "name_human_ru"
+>;
+type RikQuickSearchItem = {
+  rik_code: string;
+  name_human: string;
+  name_human_ru: string | null;
+  uom_code: string | null;
+  kind: string | null;
+  apps: null;
+};
 type ProfileContractorCompatRow = Pick<
   Database["public"]["Tables"]["user_profiles"]["Row"],
   "user_id" | "full_name" | "phone" | "is_contractor"
@@ -302,6 +328,9 @@ type ProposalItemsCompatUpdate = ProposalItemsUpdate & {
 type RequestsCompatTable = {
   update(values: RequestsExtendedMetaUpdate): {
     eq(column: "id", value: string): Promise<{ error: { message?: string; code?: string; details?: string | null; hint?: string | null } | null }>;
+  };
+  select(columns: string): {
+    limit(count: number): Promise<{ error: { message?: string; code?: string; details?: string | null; hint?: string | null } | null }>;
   };
 };
 
@@ -535,6 +564,84 @@ const runCatalogSearchRpc = async (
   }
 };
 
+const asUnknownRecord = (value: unknown): Record<string, unknown> | null =>
+  typeof value === "object" && value !== null ? (value as Record<string, unknown>) : null;
+
+const parseRikQuickSearchRpcRow = (value: unknown): RikQuickSearchRpcRow | null => {
+  const row = asUnknownRecord(value);
+  if (!row) return null;
+  return {
+    code: row.code == null ? null : String(row.code),
+    rik_code: row.rik_code == null ? null : String(row.rik_code),
+    name: row.name == null ? null : String(row.name),
+    name_human: row.name_human == null ? null : String(row.name_human),
+    name_human_ru: row.name_human_ru == null ? null : String(row.name_human_ru),
+    name_ru: row.name_ru == null ? null : String(row.name_ru),
+    item_name: row.item_name == null ? null : String(row.item_name),
+    uom: row.uom == null ? null : String(row.uom),
+    uom_code: row.uom_code == null ? null : String(row.uom_code),
+    kind: row.kind == null ? null : String(row.kind),
+  };
+};
+
+const parseRikQuickSearchFallbackRow = (value: unknown): RikQuickSearchFallbackRow | null => {
+  const row = asUnknownRecord(value);
+  if (!row) return null;
+  return {
+    rik_code: row.rik_code == null ? null : String(row.rik_code),
+    name_human: row.name_human == null ? null : String(row.name_human),
+    uom_code: row.uom_code == null ? null : String(row.uom_code),
+    kind: row.kind == null ? null : String(row.kind),
+    name_human_ru: row.name_human_ru == null ? null : String(row.name_human_ru),
+  };
+};
+
+const mapRikQuickSearchRpcRow = (row: RikQuickSearchRpcRow): RikQuickSearchItem | null => {
+  const rikCode = norm(row.rik_code ?? row.code);
+  if (!rikCode) return null;
+  const nameHuman =
+    norm(row.name_human ?? row.name ?? row.name_ru ?? row.item_name ?? rikCode) || rikCode;
+  return {
+    rik_code: rikCode,
+    name_human: nameHuman,
+    name_human_ru: row.name_human_ru ?? row.name_human ?? row.name_ru ?? null,
+    uom_code: row.uom_code ?? row.uom ?? null,
+    kind: row.kind ?? null,
+    apps: null,
+  };
+};
+
+const mapRikQuickSearchFallbackRow = (row: RikQuickSearchFallbackRow): RikQuickSearchItem | null => {
+  const rikCode = norm(row.rik_code);
+  if (!rikCode) return null;
+  return {
+    rik_code: rikCode,
+    name_human: norm(row.name_human ?? rikCode) || rikCode,
+    name_human_ru: row.name_human_ru ?? row.name_human ?? null,
+    uom_code: row.uom_code ?? null,
+    kind: row.kind ?? null,
+    apps: null,
+  };
+};
+
+const mapRikQuickSearchRpcRows = (rows: unknown[]): RikQuickSearchItem[] =>
+  rows
+    .map((value) => {
+      const row = parseRikQuickSearchRpcRow(value);
+      if (!row) return null;
+      return mapRikQuickSearchRpcRow(row);
+    })
+    .filter((item): item is RikQuickSearchItem => !!item);
+
+const mapRikQuickSearchFallbackRows = (rows: unknown[]): RikQuickSearchItem[] =>
+  rows
+    .map((value) => {
+      const row = parseRikQuickSearchFallbackRow(value);
+      if (!row) return null;
+      return mapRikQuickSearchFallbackRow(row);
+    })
+    .filter((item): item is RikQuickSearchItem => !!item);
+
 const asProfileContractorRows = (rows: unknown): ProfileContractorCompatRow[] => {
   if (!Array.isArray(rows)) return [];
   return rows.filter((row): row is ProfileContractorCompatRow => !!row && typeof row === "object");
@@ -566,6 +673,20 @@ const detectUnifiedType = (origins: string[]): UnifiedCounterpartyType => {
 };
 
 const compatFrom = (): CatalogCompatBoundary => supabase as unknown as CatalogCompatBoundary;
+
+type CatalogCompatError = {
+  message?: string;
+  code?: string;
+  details?: string | null;
+  hint?: string | null;
+} | null;
+
+const getCompatErrorInfo = (error: CatalogCompatError) => ({
+  message: String(error?.message ?? ""),
+  code: String(error?.code ?? ""),
+  details: error?.details ?? null,
+  hint: error?.hint ?? null,
+});
 
 export async function listUnifiedCounterparties(search?: string): Promise<UnifiedCounterparty[]> {
   const q = sanitizePostgrestOrTerm(search || "");
@@ -1188,8 +1309,8 @@ async function resolveRequestsExtendedMetaWriteSupport(): Promise<boolean> {
   requestsExtendedMetaWriteSupportInFlight = (async () => {
     try {
       // Schema capability probe for extended request meta fields.
-      const q = await supabase
-        .from("requests" as any)
+      const q = await compatFrom()
+        .from("requests")
         .select(
           "subcontract_id,contractor_job_id,contractor_org,subcontractor_org,contractor_phone,subcontractor_phone,planned_volume,qty_plan,volume,object_name,level_name,system_name,zone_name",
         )
@@ -1197,8 +1318,8 @@ async function resolveRequestsExtendedMetaWriteSupport(): Promise<boolean> {
       if (q.error) throw q.error;
       requestsExtendedMetaWriteSupportedCache = true;
       return true;
-    } catch (e: any) {
-      const msg = String(e?.message ?? "").toLowerCase();
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message.toLowerCase() : String(e ?? "").toLowerCase();
       const schemaMismatch =
         msg.includes("column") ||
         msg.includes("does not exist") ||
@@ -1299,7 +1420,7 @@ export async function updateRequestMeta(
       for (const key of Object.keys(payload)) {
         if (basePayloadKeys.has(key)) fallbackPayload[key] = payload[key];
       }
-      const msg = String((error as any)?.message ?? "").toLowerCase();
+      const msg = String(error?.message ?? "").toLowerCase();
       if (
         msg.includes("column") ||
         msg.includes("does not exist") ||
@@ -1316,24 +1437,14 @@ export async function updateRequestMeta(
           console.warn("[catalog_api.updateRequestMeta][patch400.fallback]", {
             request_id: id,
             payload: fallbackPayload,
-            error: {
-              message: String((fallbackRes.error as any)?.message ?? ""),
-              code: String((fallbackRes.error as any)?.code ?? ""),
-              details: (fallbackRes.error as any)?.details ?? null,
-              hint: (fallbackRes.error as any)?.hint ?? null,
-            },
+            error: getCompatErrorInfo(fallbackRes.error),
           });
         }
         if (primaryErr) {
           console.warn("[catalog_api.updateRequestMeta][patch400.primary]", {
             request_id: id,
             payload: primaryPayload,
-            error: {
-              message: String((primaryErr as any)?.message ?? ""),
-              code: String((primaryErr as any)?.code ?? ""),
-              details: (primaryErr as any)?.details ?? null,
-              hint: (primaryErr as any)?.hint ?? null,
-            },
+            error: getCompatErrorInfo(primaryErr),
           });
         }
         error = fallbackRes.error ?? null;
@@ -1347,8 +1458,8 @@ export async function updateRequestMeta(
     }
 
     return true;
-  } catch (e: any) {
-    console.warn('[catalog_api.updateRequestMeta] table requests:', e?.message ?? e);
+  } catch (e: unknown) {
+    console.warn('[catalog_api.updateRequestMeta] table requests:', e instanceof Error ? e.message : e);
     // Тоже не роняем поток: пусть остальной код продолжит работать.
     return false;
   }
@@ -1694,6 +1805,29 @@ type RequestItemForProposal = {
   kind: ProposalItemKind;
   is_rejected_for_rework?: boolean;
 };
+type RequestStatusLiteRow = Pick<Database["public"]["Tables"]["requests"]["Row"], "id" | "status">;
+type ProposalHeadMetaRow = Pick<
+  Database["public"]["Tables"]["proposals"]["Row"],
+  "proposal_no" | "id_short" | "display_no" | "request_id"
+>;
+type RequestItemForProposalRow = {
+  id: string | null;
+  request_id: string | null;
+  qty: number | null;
+  status: string | null;
+  kind: string | null;
+  item_type: string | null;
+  procurement_type: string | null;
+  director_reject_at: string | null;
+  director_reject_note: string | null;
+};
+type ProposalBucketMetaInput = NonNullable<ProposalBucketInput["meta"]>[number];
+type ProposalSnapshotMetaRow = {
+  request_item_id: string;
+  price: string;
+  supplier: string | null;
+  note: string | null;
+};
 type CounterpartyBinding = {
   supplierIdByName: Map<string, string>;
   contractorIdByName: Map<string, string>;
@@ -1768,6 +1902,82 @@ const parsePositive = (raw: unknown): number => {
 };
 const normCounterpartyKey = (v: unknown): string =>
   String(v ?? "").trim().replace(/\s+/g, " ").toLowerCase();
+
+const parseRequestStatusLiteRows = (value: unknown): RequestStatusLiteRow[] => {
+  if (!Array.isArray(value)) return [];
+  return value
+    .map((row) => {
+      const record = asUnknownRecord(row);
+      if (!record) return null;
+      const id = norm(record.id == null ? null : String(record.id));
+      if (!id) return null;
+      return {
+        id,
+        status: record.status == null ? null : String(record.status),
+      };
+    })
+    .filter((row): row is RequestStatusLiteRow => !!row);
+};
+
+const parseRequestItemsForProposalRows = (value: unknown): RequestItemForProposalRow[] => {
+  if (!Array.isArray(value)) return [];
+  return value
+    .map((row) => {
+      const record = asUnknownRecord(row);
+      if (!record) return null;
+      return {
+        id: record.id == null ? null : String(record.id),
+        request_id: record.request_id == null ? null : String(record.request_id),
+        qty: parseNumberValue(record.qty) ?? null,
+        status: record.status == null ? null : String(record.status),
+        kind: record.kind == null ? null : String(record.kind),
+        item_type: record.item_type == null ? null : String(record.item_type),
+        procurement_type: record.procurement_type == null ? null : String(record.procurement_type),
+        director_reject_at:
+          record.director_reject_at == null ? null : String(record.director_reject_at),
+        director_reject_note:
+          record.director_reject_note == null ? null : String(record.director_reject_note),
+      };
+    })
+    .filter((row): row is RequestItemForProposalRow => !!row);
+};
+
+const parseProposalHeadMetaRow = (value: unknown): ProposalHeadMetaRow | null => {
+  const row = asUnknownRecord(value);
+  if (!row) return null;
+  return {
+    proposal_no: row.proposal_no == null ? null : String(row.proposal_no),
+    id_short: parseNumberValue(row.id_short),
+    display_no: row.display_no == null ? null : String(row.display_no),
+    request_id: row.request_id == null ? null : String(row.request_id),
+  };
+};
+
+const mapProposalHeadDisplay = (
+  row:
+    | ProposalHeadMetaRow
+    | { proposal_no: string | null; id_short: number | null; display_no?: string | null; request_id?: string | null }
+    | null,
+): { proposalNo: string | null; displayNo: string | null; requestId: string | null } => {
+  const proposalNo =
+    row?.proposal_no ??
+    row?.display_no ??
+    (row?.id_short != null ? `PR-${String(row.id_short)}` : null);
+  return {
+    proposalNo,
+    displayNo: row?.display_no ?? null,
+    requestId: norm(row?.request_id ?? null) || null,
+  };
+};
+
+const parseProposalBucketMetaInput = (
+  row: ProposalBucketMetaInput | { request_item_id: string },
+): ProposalBucketMetaInput => ({
+  request_item_id: String(row.request_item_id || "").trim(),
+  price: "price" in row ? row.price ?? null : null,
+  supplier: "supplier" in row ? row.supplier ?? null : null,
+  note: "note" in row ? row.note ?? null : null,
+});
 
 async function loadCounterpartyBinding(): Promise<CounterpartyBinding> {
   const supplierIdByName = new Map<string, string>();
@@ -1858,18 +2068,20 @@ export async function createProposalsBySupplier(
   if (allItemIds.length) {
     try {
       dbCalls += 1; // request_items load
-      const qItemsData = await loadRequestItemsForProposal(allItemIds);
-      if (Array.isArray(qItemsData) && qItemsData.length) {
+      const qItemsData = parseRequestItemsForProposalRows(
+        await loadRequestItemsForProposal(allItemIds),
+      );
+      if (qItemsData.length) {
         const reqIds = Array.from(
-          new Set((qItemsData || []).map((r: any) => String(r?.request_id || "").trim()).filter(Boolean)),
+          new Set(qItemsData.map((r) => norm(r.request_id)).filter(Boolean)),
         );
         const qReq = reqIds.length
           ? (dbCalls += 1, await supabase.from("requests").select("id,status").in("id", reqIds))
-          : ({ data: [], error: null } as any);
+          : { data: [] as RequestStatusLiteRow[], error: null };
 
         const reqStatusById = new Map<string, string>();
-        (qReq.data || []).forEach((r: any) => {
-          reqStatusById.set(String(r?.id || "").trim(), String(r?.status || ""));
+        parseRequestStatusLiteRows(qReq.data).forEach((r) => {
+          reqStatusById.set(String(r.id || "").trim(), String(r.status || ""));
         });
 
         const gateDebugRows: Array<{
@@ -1882,19 +2094,19 @@ export async function createProposalsBySupplier(
           rejectedForRework: boolean;
         }> = [];
 
-        (qItemsData || []).forEach((row: any) => {
-          const itemId = String(row?.id || "").trim();
-          const reqId = String(row?.request_id || "").trim();
+        qItemsData.forEach((row) => {
+          const itemId = String(row.id || "").trim();
+          const reqId = String(row.request_id || "").trim();
           if (!itemId || !reqId) return;
-          const qty = Number(row?.qty ?? 0);
-          const itemStatus = String(row?.status ?? "");
+          const qty = Number(row.qty ?? 0);
+          const itemStatus = String(row.status ?? "");
           const requestStatus = reqStatusById.get(reqId) || "";
           const approvedByItemStatus = isRequestApprovedForProcurement(itemStatus);
           const approvedByRequestStatus = isRequestApprovedForProcurement(requestStatus);
           const rejectedForRework = isRejectedForBuyerRework(row);
-          let kind = parseProposalKind(row?.kind ?? null);
+          let kind = parseProposalKind(row.kind ?? null);
           if (kind === "unknown") {
-            const legacyKindRaw = row?.item_type ?? row?.procurement_type ?? null;
+            const legacyKindRaw = row.item_type ?? row.procurement_type ?? null;
             kind = parseProposalKind(legacyKindRaw);
             if (kind !== "unknown") {
               console.warn(
@@ -1983,8 +2195,11 @@ export async function createProposalsBySupplier(
     try {
       const createHeadStartedAt = nowMs();
       dbCalls += 1;
-      const created = await rpcProposalCreate();
-      proposalId = String(created);
+      const created = await rpcProposalCreateFull();
+      proposalId = String(created.id);
+      const createdHead = mapProposalHeadDisplay(created);
+      proposalNo = createdHead.proposalNo;
+      displayNo = createdHead.displayNo;
 
       const requestIdsForBucket = Array.from(
         new Set(
@@ -2014,18 +2229,7 @@ export async function createProposalsBySupplier(
       perf.createProposalHeads += bucketCreateProposalHeadsMs;
 
       const fetchAfterWriteStartedAt = nowMs();
-      dbCalls += 1;
-      const q = await supabase
-        .from("proposals")
-        .select("proposal_no,id_short,display_no,request_id")
-        .eq("id", proposalId)
-        .maybeSingle();
-      proposalNo =
-        (q.data as any)?.proposal_no ??
-        (q.data as any)?.display_no ??
-        ((q.data as any)?.id_short != null ? `PR-${String((q.data as any).id_short)}` : null);
-      displayNo = (q.data as any)?.display_no ?? null;
-      const requestIdAfterCreate = String((q.data as any)?.request_id ?? "").trim() || null;
+      const requestIdAfterCreate = createdHead.requestId;
       if (!displayNo && proposalNo) {
         dbCalls += 1;
         const patch: ProposalsUpdate = { display_no: proposalNo };
@@ -2092,15 +2296,16 @@ export async function createProposalsBySupplier(
       }
     >();
 
-    const metaRows = (bucket.meta ?? ids.map((request_item_id) => ({ request_item_id })))
-      .filter((row) => idsSet.has(String(row?.request_item_id || "").trim()))
+    const metaRows: ProposalSnapshotMetaRow[] = (bucket.meta ?? ids.map((request_item_id) => ({ request_item_id })))
+      .map(parseProposalBucketMetaInput)
+      .filter((row) => idsSet.has(row.request_item_id))
       .map((row) => {
-        const request_item_id = String(row.request_item_id || "").trim();
+        const request_item_id = row.request_item_id;
         const itemInfo = itemInfoById.get(request_item_id);
         const qty = Number(itemInfo?.qty ?? 0);
-        const price = parsePositive((row as any)?.price ?? null);
+        const price = parsePositive(row.price ?? null);
         const kind = itemInfo?.kind ?? "unknown";
-        const counterpartyName = norm((row as any)?.supplier ?? supplierDb ?? "");
+        const counterpartyName = norm(row.supplier ?? supplierDb ?? "");
         const normCp = normCounterpartyKey(counterpartyName);
 
         let supplier_id: string | null = null;
@@ -2140,7 +2345,7 @@ export async function createProposalsBySupplier(
           request_item_id,
           price: String(price),
           supplier: counterpartyName || null,
-          note: (row as any).note ?? null,
+          note: row.note ?? null,
         };
       });
 
@@ -2336,59 +2541,46 @@ export async function createProposalsBySupplier(
 
 // PROD quick search: предпочитаем новый поиск, но допускаем мягкий fallback.
 export async function rikQuickSearch(q: string, limit = 60) {
-  const text = (q ?? '').trim();
+  const text = norm(q);
   if (text.length < 2) return [];
 
   const pQuery = sanitizePostgrestOrTerm(text);
-  const rpcs = ['rik_quick_ru', 'rik_quick_search_typed', 'rik_quick_search'];
+  const pLimit = Math.min(limit, 100);
 
-  for (const fn of rpcs) {
+  for (const fn of RIK_QUICK_SEARCH_RPCS) {
     try {
-      const { data, error } = await supabase.rpc(fn as any, {
+      const rpcArgs: CatalogSearchRpcArgs = {
         p_q: pQuery,
-        p_limit: Math.min(limit, 100),
+        p_limit: pLimit,
         p_apps: null,
-      } as any);
+      };
+      const data = await runCatalogSearchRpc(fn, rpcArgs);
 
-      if (!error && Array.isArray(data) && data.length > 0) {
-        return data.map((r: any) => ({
-          rik_code: r.rik_code || r.code,
-          name_human: r.name_human || r.name || r.name_ru || r.item_name || r.rik_code,
-          name_human_ru: r.name_human_ru ?? r.name_human ?? r.name_ru ?? null,
-          uom_code: r.uom_code ?? r.uom ?? null,
-          kind: r.kind ?? null,
-          apps: null,
-        }));
+      if (data && data.length > 0) {
+        return mapRikQuickSearchRpcRows(data);
       }
-    } catch (e) { }
+    } catch { }
   }
 
   // Fallback: Smart ILIKE on rik_items
-  const tokens = pQuery.split(/\s+/).filter(t => t.length >= 2);
+  const tokens = pQuery.split(/\s+/).filter((token) => token.length >= 2);
   let builder = supabase
-    .from('rik_items')
-    .select('rik_code,name_human,uom_code,kind,name_human_ru')
+    .from("rik_items")
+    .select(RIK_QUICK_SEARCH_FALLBACK_FIELDS)
     .limit(limit);
 
   if (tokens.length > 0) {
-    tokens.forEach(t => {
+    tokens.forEach((t) => {
       builder = builder.or(`name_human.ilike.%${t}%,rik_code.ilike.%${t}%`);
     });
   } else {
     builder = builder.or(`name_human.ilike.%${pQuery}%,rik_code.ilike.%${pQuery}%`);
   }
 
-  const { data, error } = await builder.order('rik_code', { ascending: true });
+  const { data, error } = await builder.order("rik_code", { ascending: true });
   if (error || !Array.isArray(data)) return [];
 
-  return data.map((r: any) => ({
-    rik_code: r.rik_code,
-    name_human: r.name_human || r.rik_code,
-    name_human_ru: r.name_human_ru ?? r.name_human ?? null,
-    uom_code: r.uom_code || null,
-    kind: r.kind ?? null,
-    apps: null,
-  }));
+  return mapRikQuickSearchFallbackRows(data);
 }
 // ===============================
 // CANCEL REQUEST ITEM
