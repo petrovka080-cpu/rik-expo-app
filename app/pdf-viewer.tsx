@@ -38,6 +38,94 @@ const VIEWER_TEXT = "#F8FAFC";
 const VIEWER_SUBTLE = "rgba(255,255,255,0.72)";
 const VIEWER_DIM = "rgba(255,255,255,0.52)";
 
+function appendPdfViewerHash(uri: string) {
+  const value = String(uri || "").trim();
+  if (!value) return "";
+  const hashJoiner = value.includes("#") ? "&" : "#";
+  return `${value}${hashJoiner}page=1&view=FitH&toolbar=0&navpanes=0&scrollbar=0`;
+}
+
+function escapeHtmlAttr(value: string) {
+  return value
+    .replaceAll("&", "&amp;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;");
+}
+
+function buildMobilePdfShell(uri: string) {
+  const viewerUri = escapeHtmlAttr(appendPdfViewerHash(uri));
+  return `<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta
+    name="viewport"
+    content="width=device-width,height=device-height,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"
+  />
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: ${VIEWER_BG};
+    }
+    body {
+      position: fixed;
+      inset: 0;
+    }
+    #viewport {
+      position: fixed;
+      inset: 0;
+      overflow: hidden;
+      background: ${VIEWER_BG};
+    }
+    #frame, #embed {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      border: 0;
+      background: ${VIEWER_BG};
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <div id="viewport">
+    <iframe id="frame" src="${viewerUri}" title="PDF" allowfullscreen></iframe>
+    <embed id="embed" src="${viewerUri}" type="application/pdf" />
+  </div>
+  <script>
+    (function () {
+      var root = document.documentElement;
+      var body = document.body;
+      var viewport = document.getElementById("viewport");
+      function sync() {
+        if (!root || !body || !viewport) return;
+        var h = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight || 0;
+        root.style.height = h + "px";
+        body.style.height = h + "px";
+        viewport.style.height = h + "px";
+        window.scrollTo(0, 0);
+      }
+      window.addEventListener("load", sync, { passive: true });
+      window.addEventListener("resize", sync, { passive: true });
+      sync();
+      requestAnimationFrame(sync);
+      setTimeout(sync, 30);
+      setTimeout(sync, 150);
+    })();
+  </script>
+</body>
+</html>`;
+}
+
 function resolveViewerState(session: DocumentSession | null, asset: DocumentAsset | null): ViewerState {
   if (!session) return "empty";
   if (session.status === "error") return "error";
@@ -342,6 +430,12 @@ export default function PdfViewerScreen() {
 
   const source = React.useMemo(() => {
     if (!asset?.uri) return undefined;
+    if (Platform.OS !== "web") {
+      return {
+        html: buildMobilePdfShell(asset.uri),
+        baseUrl: getReadAccessParentUri(asset.uri) ?? asset.uri,
+      };
+    }
     return { uri: asset.uri };
   }, [asset]);
 
