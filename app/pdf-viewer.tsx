@@ -348,6 +348,22 @@ export default function PdfViewerScreen() {
   const showChrome = Platform.OS === "web" ? true : chromeVisible;
   const headerBarHeight = Platform.OS === "web" || width >= 768 ? 56 : 50;
   const headerHeight = headerBarHeight + (Platform.OS === "web" ? 0 : insets.top);
+  const iosWebViewContentInset =
+    Platform.OS === "ios"
+      ? {
+          top: headerHeight,
+          left: 0,
+          right: 0,
+          bottom: 0,
+        }
+      : undefined;
+  const iosWebViewContentOffset =
+    Platform.OS === "ios"
+      ? {
+          x: 0,
+          y: -headerHeight,
+        }
+      : undefined;
   const pageIndicatorText = state === "ready" ? "1 / 1" : "…";
 
   const toggleChrome = React.useCallback(() => {
@@ -520,6 +536,8 @@ export default function PdfViewerScreen() {
             allowFileAccessFromFileURLs
             allowUniversalAccessFromFileURLs
             bounces={false}
+            contentInset={iosWebViewContentInset}
+            contentOffset={iosWebViewContentOffset}
             contentInsetAdjustmentBehavior="never"
             automaticallyAdjustContentInsets={false}
             nestedScrollEnabled={false}
