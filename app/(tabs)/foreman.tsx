@@ -16,7 +16,9 @@ import CalcModal from "../../src/components/foreman/CalcModal";
 import WorkTypePicker from "../../src/components/foreman/WorkTypePicker";
 import CatalogModal from '../../src/components/foreman/CatalogModal';
 import ForemanReqItemRow from "../../src/screens/foreman/ForemanReqItemRow";
+import ForemanHistoryBar from "../../src/screens/foreman/ForemanHistoryBar";
 import ForemanHistoryModal from "../../src/screens/foreman/ForemanHistoryModal";
+import ForemanSubcontractHistoryModal from "../../src/screens/foreman/ForemanSubcontractHistoryModal";
 import ForemanDraftModal from "../../src/screens/foreman/ForemanDraftModal";
 import ForemanEditorSection from "../../src/screens/foreman/ForemanEditorSection";
 import ForemanSubcontractTab from "../../src/screens/foreman/ForemanSubcontractTab";
@@ -29,6 +31,7 @@ import { debugForemanLogLazy } from "../../src/screens/foreman/foreman.debug";
 import { getObjectDisplayName } from "../../src/screens/foreman/foreman.options";
 import { s } from "../../src/screens/foreman/foreman.styles";
 import { FOREMAN_TEXT, REQUEST_STATUS_STYLES, UI } from "../../src/screens/foreman/foreman.ui";
+import { useForemanSubcontractHistory } from "../../src/screens/foreman/hooks/useForemanSubcontractHistory";
 import { useCollapsingHeader } from "../../src/screens/shared/useCollapsingHeader";
 import { useGlobalBusy } from '../../src/ui/GlobalBusy';
 import { supabase } from '../../src/lib/supabaseClient';
@@ -118,6 +121,13 @@ export default function ForemanScreen() {
     fetchHistory,
     closeHistory,
   } = useForemanHistory();
+  const {
+    history: subcontractHistory,
+    historyLoading: subcontractHistoryLoading,
+    historyVisible: subcontractHistoryVisible,
+    fetchHistory: fetchSubcontractHistory,
+    closeHistory: closeSubcontractHistory,
+  } = useForemanSubcontractHistory();
 
   const {
     displayNoByReq,
@@ -787,8 +797,15 @@ export default function ForemanScreen() {
               setDraftOpen={setDraftOpen}
               currentDisplayLabel={currentDisplayLabel}
               itemsCount={items.length}
-              onOpenHistory={() => fetchHistory(foreman)}
               ui={UI} styles={s}
+            />
+
+            <ForemanHistoryBar
+              busy={busy}
+              onOpenRequestHistory={() => fetchHistory(foreman)}
+              onOpenSubcontractHistory={() => void fetchSubcontractHistory()}
+              ui={UI}
+              styles={s}
             />
 
             <ForemanHistoryModal
@@ -802,6 +819,15 @@ export default function ForemanScreen() {
               isPdfBusy={(key) => gbusy.isBusy(key)}
               shortId={shortId}
               styles={s}
+            />
+
+            <ForemanSubcontractHistoryModal
+              visible={subcontractHistoryVisible}
+              onClose={closeSubcontractHistory}
+              loading={subcontractHistoryLoading}
+              history={subcontractHistory}
+              styles={s}
+              ui={UI}
             />
 
             <CatalogModal

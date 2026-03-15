@@ -32,8 +32,8 @@ export async function fetchBuyerContractorsFallback(): Promise<
 }
 
 export async function fetchBuyerSubcontracts(): Promise<PostgrestResponse<BuyerCounterpartyRepoSubcontractRow>> {
-  const query = supabase.from("subcontracts").select(BUYER_SUBCONTRACTS_SELECT).limit(2000);
-  return (await query) as PostgrestResponse<BuyerCounterpartyRepoSubcontractRow>;
+  const result = await supabase.from("subcontracts").select(BUYER_SUBCONTRACTS_SELECT).limit(2000);
+  return result as PostgrestResponse<BuyerCounterpartyRepoSubcontractRow>;
 }
 
 export async function fetchBuyerProposalSuppliersBasic(): Promise<

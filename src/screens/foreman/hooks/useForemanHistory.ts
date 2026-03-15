@@ -2,6 +2,7 @@ import { useCallback, useState } from 'react';
 import { listForemanRequests, type ForemanRequestSummary } from '../../../lib/catalog_api';
 import { FOREMAN_TEXT } from '../foreman.ui';
 import { Alert } from 'react-native';
+import { supabase } from '../../../lib/supabaseClient';
 
 const warnForemanHistory = (error: unknown) => {
     if (__DEV__) {
@@ -16,11 +17,13 @@ export function useForemanHistory() {
 
     const fetchHistory = useCallback(async (foremanName: string) => {
         const name = String(foremanName || "").trim();
+        const auth = await supabase.auth.getUser();
+        const userId = String(auth.data?.user?.id || "").trim();
 
-        if (!name) {
+        if (!name && !userId) {
             Alert.alert(
                 'История заявок',
-                'Укажи ФИО прораба в шапке, чтобы посмотреть его историю.',
+                'Не удалось определить прораба для истории заявок.',
             );
             return;
         }
@@ -29,7 +32,7 @@ export function useForemanHistory() {
         setHistoryLoading(true);
 
         try {
-            const rows = await listForemanRequests(name, 50);
+            const rows = await listForemanRequests(name, 50, userId);
             setHistoryRequests(Array.isArray(rows) ? rows : []);
         } catch (e) {
             warnForemanHistory(e);

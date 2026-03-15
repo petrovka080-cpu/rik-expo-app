@@ -308,8 +308,16 @@ export function useDirectorScreenController() {
             if (!map.has(k)) map.set(k, []);
             map.get(k)!.push(r);
         }
-        return Array.from(map.entries()).map(([request_id, items]) => ({ request_id, items }));
-    }, [data.rows]);
+        return Array.from(map.entries())
+            .map(([request_id, items]) => ({ request_id, items }))
+            .sort((a, b) => {
+                const aTsRaw = data.submittedAtByReq[String(a.request_id ?? "").trim()] ?? null;
+                const bTsRaw = data.submittedAtByReq[String(b.request_id ?? "").trim()] ?? null;
+                const aTs = aTsRaw ? Date.parse(String(aTsRaw)) : 0;
+                const bTs = bTsRaw ? Date.parse(String(bTsRaw)) : 0;
+                return bTs - aTs;
+            });
+    }, [data.rows, data.submittedAtByReq]);
 
     const sheetTitle = useMemo(() => {
         if (sheetKind === "request" && sheetRequest) {

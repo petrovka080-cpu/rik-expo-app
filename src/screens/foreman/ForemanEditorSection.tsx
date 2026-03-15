@@ -35,7 +35,6 @@ type Props = {
   setDraftOpen: (v: boolean) => void;
   currentDisplayLabel: string;
   itemsCount: number;
-  onOpenHistory: () => void;
   ui: { text: string; sub: string };
   styles: typeof import("./foreman.styles").s;
 };
@@ -204,14 +203,6 @@ export default function ForemanEditorSection(p: Props) {
         </Pressable>
       </Animated.ScrollView>
 
-      <View style={p.styles.stickyBar}>
-        <View style={p.styles.miniBar}>
-          <Pressable onPress={p.onOpenHistory} disabled={p.busy} style={[p.styles.miniBtn, p.busy && { opacity: 0.5 }]}>
-            <Ionicons name="time-outline" size={18} color={p.ui.text} />
-            <Text style={p.styles.miniText}>История</Text>
-          </Pressable>
-        </View>
-      </View>
     </>
   );
 }

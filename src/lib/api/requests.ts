@@ -9,7 +9,7 @@ const logRequestsDebug = (...args: unknown[]) => {
   }
 };
 
-// cache id С‡РµСЂРЅРѕРІРёРєР° РЅР° СЃРµСЃСЃРёСЋ (uuid РёР»Рё int)
+// cache id черновика на сессию (uuid или int)
 let _draftRequestIdAny: string | number | null = null;
 let _requestsSubmittedAtSupportedCache: boolean | null = null;
 let _requestsReadableColumnsCache: Set<string> | null = null;
@@ -45,9 +45,12 @@ type RequestSubmitResultRow = Database["public"]["Functions"]["request_submit"][
 type RequestStatusRecalcArgsCompat = { p_request_id: number | string };
 type RequestIdLookupRow = Pick<RequestsTable["Row"], "id">;
 
-const REQUEST_DRAFT_STATUS: RequestStatusEnum = "╨з╨╡╤А╨╜╨╛╨▓╨╕╨║";
-const REQUEST_PENDING_STATUS: RequestStatusEnum = "pending";
-const REQUEST_PENDING_RU_STATUS: RequestStatusEnum = "╨Э╨░ ╤Г╤В╨▓╨╡╤А╨╢╨┤╨╡╨╜╨╕╨╕";
+export const REQUEST_DRAFT_STATUS: RequestStatusEnum = "Черновик";
+export const REQUEST_PENDING_STATUS: RequestStatusEnum = "На утверждении";
+export const REQUEST_APPROVED_STATUS: RequestStatusEnum = "Утверждено";
+export const REQUEST_REJECTED_STATUS: RequestStatusEnum = "Отклонено";
+export const REQUEST_PENDING_EN = "pending";
+export const REQUEST_DRAFT_EN = "draft";
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   value != null && typeof value === "object" && !Array.isArray(value);
@@ -125,7 +128,7 @@ function buildRequestSubmitFallbackUpdate(canWriteSubmittedAt: boolean): Request
 }
 
 function buildRequestItemsPendingPatch(): RequestItemStatusPatch {
-  return { status: REQUEST_PENDING_RU_STATUS };
+  return { status: REQUEST_PENDING_STATUS };
 }
 
 // ============================== Boundary parsers ==============================
@@ -137,7 +140,7 @@ function parseRequestItemRow(raw: unknown): ReqItemRow | null {
   return {
     id,
     request_id: requestId,
-    name_human: typeof raw.name_human === "string" && raw.name_human.trim() ? raw.name_human : "вЂ”",
+    name_human: typeof raw.name_human === "string" && raw.name_human.trim() ? raw.name_human : "—",
     qty: Number(raw.qty ?? 0),
     uom: typeof raw.uom === "string" ? raw.uom : null,
     status: typeof raw.status === "string" ? raw.status : null,
@@ -263,10 +266,15 @@ function mapRequestRow(raw: unknown): RequestRecord | null {
 const normalizeStatus = (raw: unknown): string =>
   String(raw ?? "").trim().toLowerCase().replace(/\s+/g, " ");
 
-const isDraftOrPendingStatus = (raw: unknown): boolean => {
+export const isDraftOrPendingStatus = (raw: unknown): boolean => {
   const s = normalizeStatus(raw);
   if (!s) return true;
-  return s === "draft" || s.includes("С‡РµСЂРЅРѕРІ") || s === "pending" || s.includes("РЅР° СѓС‚РІРµСЂР¶РґРµРЅРёРё");
+  return (
+    s === REQUEST_DRAFT_EN ||
+    s === REQUEST_PENDING_EN ||
+    s.includes("чернов") ||
+    s.includes("на утверждении")
+  );
 };
 
 // ============================== Low-level request helpers ==============================
@@ -330,7 +338,7 @@ async function updateRequestItemsPendingStatus(requestFilterId: string): Promise
     .from("request_items")
     .update(pendingPayload)
     .eq("request_id", requestFilterId)
-    .not("status", "in", '("Р Р€РЎвЂљР Р†Р ВµРЎР‚Р В¶Р Т‘Р ВµР Р…Р С•","Р С›РЎвЂљР С”Р В»Р С•Р Р…Р ВµР Р…Р С•","approved","rejected")');
+    .not("status", "in", `("${REQUEST_APPROVED_STATUS}","${REQUEST_REJECTED_STATUS}","approved","rejected")`);
 
   await client
     .from("request_items")
@@ -564,7 +572,7 @@ export async function requestSubmit(requestId: number | string): Promise<Request
       .from("request_items")
       .update(pendingPayload)
       .eq("request_id", requestFilterId)
-      .not("status", "in", '("РЈС‚РІРµСЂР¶РґРµРЅРѕ","РћС‚РєР»РѕРЅРµРЅРѕ","approved","rejected")');
+      .not("status", "in", `("${REQUEST_APPROVED_STATUS}","${REQUEST_REJECTED_STATUS}","approved","rejected")`);
 
     await client
       .from("request_items")

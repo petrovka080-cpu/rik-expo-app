@@ -32,6 +32,30 @@ const warnDirectorData = (
   console.warn(`[director] ${scope}:`, message);
 };
 
+const normalizeDirectorPendingRows = (rows: Array<Record<string, unknown>>): PendingRow[] =>
+  rows.map((r, idx: number) => ({
+    id: idx,
+    request_id: String(r.request_id ?? ""),
+    request_item_id:
+      r.request_item_id != null
+        ? String(r.request_item_id)
+        : r.id != null
+          ? String(r.id)
+          : null,
+    name_human: String(r.name_human ?? ""),
+    qty: Number(r.qty ?? 0),
+    uom: r.uom != null ? String(r.uom) : null,
+    rik_code: r.rik_code != null ? String(r.rik_code) : null,
+    app_code: r.app_code != null ? String(r.app_code) : null,
+    item_kind: r.item_kind != null ? String(r.item_kind) : null,
+    note: r.note != null ? String(r.note) : null,
+  }));
+
+const uniqRequestCount = (rows: PendingRow[]): number =>
+  new Set(rows.map((r) => String(r.request_id ?? "").trim()).filter(Boolean)).size;
+
+const DIRECTOR_VISIBLE_ITEM_STATUSES = new Set(["На утверждении", "У директора", "pending"]);
+
 export function useDirectorData({ supabase }: Deps) {
   const fetchTicket = useRef(0);
   const lastNonEmptyRows = useRef<PendingRow[]>([]);
@@ -248,6 +272,47 @@ export function useDirectorData({ supabase }: Deps) {
     }
   }, [supabase]);
 
+  const loadDirectorRowsFallback = useCallback(async (): Promise<PendingRow[]> => {
+    const reqs = await supabase
+      .from("requests")
+      .select("id, submitted_at")
+      .eq("status", "На утверждении");
+    if (reqs.error) throw reqs.error;
+
+    const reqRows = ((reqs.data ?? []) as Array<{ id?: string | number | null; submitted_at?: string | null }>)
+      .map((r) => ({
+        id: String(r.id ?? "").trim(),
+        submitted_at: r.submitted_at ? String(r.submitted_at) : null,
+      }))
+      .filter((r) => r.id);
+    reqRows.sort((a, b) => {
+      const aTs = a.submitted_at ? Date.parse(a.submitted_at) : 0;
+      const bTs = b.submitted_at ? Date.parse(b.submitted_at) : 0;
+      return bTs - aTs;
+    });
+
+    const reqIds = reqRows.map((r) => r.id);
+    if (!reqIds.length) return [];
+
+    const reqRank = new Map<string, number>(reqRows.map((r, idx) => [r.id, idx]));
+
+    const items = await supabase
+      .from("request_items")
+      .select("id,request_id,name_human,qty,uom,rik_code,app_code,item_kind,note,status")
+      .in("request_id", reqIds)
+      .in("status", Array.from(DIRECTOR_VISIBLE_ITEM_STATUSES));
+    if (items.error) throw items.error;
+
+    const normalized = normalizeDirectorPendingRows((items.data ?? []) as Array<Record<string, unknown>>);
+    normalized.sort((a, b) => {
+      const aRank = reqRank.get(String(a.request_id ?? "").trim()) ?? Number.MAX_SAFE_INTEGER;
+      const bRank = reqRank.get(String(b.request_id ?? "").trim()) ?? Number.MAX_SAFE_INTEGER;
+      if (aRank !== bRank) return aRank - bRank;
+      return a.id - b.id;
+    });
+    return normalized;
+  }, [supabase]);
+
   const fetchRows = useCallback(async (force = false) => {
     const now = Date.now();
     // Skip if recently fetched and not forced
@@ -256,22 +321,34 @@ export function useDirectorData({ supabase }: Deps) {
     const my = ++fetchTicket.current;
     setLoadingRows(true);
     try {
-      const { data, error } = await supabase.rpc("list_director_items_stable");
-      if (error) throw error;
+      let normalized: PendingRow[] = [];
+      let rpcFailed = false;
 
-      const rowsTyped = (data ?? []) as Array<Record<string, unknown>>;
-      const normalized: PendingRow[] = rowsTyped.map((r, idx: number) => ({
-        id: idx,
-        request_id: String(r.request_id ?? ""),
-        request_item_id: r.request_item_id != null ? String(r.request_item_id) : null,
-        name_human: String(r.name_human ?? ""),
-        qty: Number(r.qty ?? 0),
-        uom: r.uom != null ? String(r.uom) : null,
-        rik_code: r.rik_code != null ? String(r.rik_code) : null,
-        app_code: r.app_code != null ? String(r.app_code) : null,
-        item_kind: r.item_kind != null ? String(r.item_kind) : null,
-        note: r.note != null ? String(r.note) : null,
-      }));
+      try {
+        const { data, error } = await supabase.rpc("list_director_items_stable");
+        if (error) throw error;
+        normalized = normalizeDirectorPendingRows((data ?? []) as Array<Record<string, unknown>>);
+      } catch (e) {
+        rpcFailed = true;
+        warnDirectorData("list_director_items_stable", e, "error");
+      }
+
+      try {
+        const fallbackRows = await loadDirectorRowsFallback();
+        if (
+          fallbackRows.length > 0 &&
+          (
+            rpcFailed ||
+            fallbackRows.length !== normalized.length ||
+            uniqRequestCount(fallbackRows) !== uniqRequestCount(normalized)
+          )
+        ) {
+          normalized = fallbackRows;
+        }
+      } catch (e) {
+        if (!normalized.length) throw e;
+        warnDirectorData("list_director_items_stable", e, "warn");
+      }
 
       lastNonEmptyRows.current = normalized;
       lastFetchedRowsAt.current = Date.now();
@@ -284,7 +361,7 @@ export function useDirectorData({ supabase }: Deps) {
     } finally {
       if (my === fetchTicket.current) setLoadingRows(false);
     }
-  }, [supabase, preloadDisplayNos]);
+  }, [supabase, preloadDisplayNos, loadDirectorRowsFallback, rows.length]);
 
   const fetchProps = useCallback(async (force = false) => {
     const now = Date.now();

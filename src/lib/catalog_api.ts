@@ -1631,34 +1631,68 @@ export async function requestItemUpdateQty(
 export async function listForemanRequests(
   foremanName: string,
   limit = 50,
+  userId?: string | null,
 ): Promise<ForemanRequestSummary[]> {
   const name = norm(foremanName);
-  if (!name) return [];
+  const uid = norm(userId);
+  if (!name && !uid) return [];
 
   const take = clamp(limit, 1, 200);
+  const requestSelect =
+    `id,status,created_at,need_by,display_no,
+     object_type_code,level_code,system_code,zone_code,
+     object:ref_object_types(*),
+     level:ref_levels(*),
+     system:ref_systems(*),
+     zone:ref_zones(*)`;
 
-  const { data, error } = await supabase
-    .from("requests" as any)
-    .select(
-      `id,status,created_at,need_by,display_no,
-       object_type_code,level_code,system_code,zone_code,
-       object:ref_object_types(*),
-       level:ref_levels(*),
-       system:ref_systems(*),
-       zone:ref_zones(*)`,
-    )
-    .ilike("foreman_name", name)
-    .not("display_no", "is", null)
-    .order("created_at", { ascending: false })
-    .limit(take);
-
-  if (error || !Array.isArray(data)) {
-    if (error) console.warn("[listForemanRequests]", error.message);
-    return [];
+  const results: Array<{ data: unknown; error: { message?: string } | null }> = [];
+  if (name) {
+    results.push(
+      await supabase
+        .from("requests" as any)
+        .select(requestSelect)
+        .ilike("foreman_name", name)
+        .not("display_no", "is", null)
+        .order("created_at", { ascending: false })
+        .limit(take),
+    );
+  }
+  if (uid) {
+    results.push(
+      await supabase
+        .from("requests" as any)
+        .select(requestSelect)
+        .eq("created_by", uid)
+        .not("display_no", "is", null)
+        .order("created_at", { ascending: false })
+        .limit(take),
+    );
   }
 
+  const mergedById = new Map<string, any>();
+  for (const result of results) {
+    if (result.error) {
+      console.warn("[listForemanRequests]", result.error.message);
+      continue;
+    }
+    if (!Array.isArray(result.data)) continue;
+    for (const row of result.data as any[]) {
+      const id = String(row?.id ?? "").trim();
+      if (!id || mergedById.has(id)) continue;
+      mergedById.set(id, row);
+    }
+  }
+
+  const data = Array.from(mergedById.values()).sort((a, b) => {
+    const aTs = Date.parse(String(a?.created_at ?? "")) || 0;
+    const bTs = Date.parse(String(b?.created_at ?? "")) || 0;
+    return bTs - aTs;
+  }).slice(0, take);
+  if (!data.length) return [];
+
   // 1) Маппим заголовки заявок.
-  const mapped = (data as any[])
+  const mapped = data
     .map((row) => mapSummaryFromRow(row))
     .filter((row): row is ForemanRequestSummary => !!row);
 

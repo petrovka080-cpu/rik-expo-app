@@ -17,8 +17,8 @@ export default function RejectItemButton({
   return (
     <IconSquareButton
       onPress={onPress}
-      disabled={disabled}
-      loading={loading}
+      disabled={disabled || loading}
+      loading={false}
       accessibilityLabel="Отклонить позицию"
       width={52}
       height={52}

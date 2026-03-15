@@ -35,8 +35,12 @@ import { buildPdfFileName } from "../../lib/documents/pdfDocument";
 import { preparePdfDocument, previewPdfDocument } from "../../lib/documents/pdfDocumentActions";
 import { generateRequestPdfDocument } from "../../lib/documents/pdfDocumentGenerators";
 import ForemanDropdown from "./ForemanDropdown";
+import ForemanHistoryBar from "./ForemanHistoryBar";
+import ForemanHistoryModal from "./ForemanHistoryModal";
+import ForemanSubcontractHistoryModal from "./ForemanSubcontractHistoryModal";
 import { s } from "./foreman.styles";
-import { UI } from "./foreman.ui";
+import { REQUEST_STATUS_STYLES, UI } from "./foreman.ui";
+import { resolveStatusInfo as resolveStatusHelper, shortId } from "./foreman.helpers";
 import DeleteAllButton from "../../ui/DeleteAllButton";
 import SendPrimaryButton from "../../ui/SendPrimaryButton";
 import CloseIconButton from "../../ui/CloseIconButton";
@@ -52,9 +56,11 @@ import {
   fetchForemanRequestDisplayLabel,
   type ForemanRequestDirectPatch,
   fetchForemanRequestLink,
+  findLatestDraftRequestByLink,
   patchForemanRequestLink,
   pickForemanRequestLinkId,
 } from "./foreman.requests";
+import { useForemanHistory } from "./hooks/useForemanHistory";
 
 type Props = {
   contentTopPad: number;
@@ -214,10 +220,20 @@ const warnForemanSubcontract = (scope: string, error: unknown) => {
   logForemanSubcontractDebug(`[ForemanSubcontractTab] ${scope}:`, error);
 };
 
+const resolveRequestStatusInfo = (raw?: string | null) =>
+  resolveStatusHelper(raw, REQUEST_STATUS_STYLES);
+
 export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }: Props) {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const modalHeaderTopPad = Platform.OS === "web" ? 16 : (insets.top + 10);
+  const {
+    historyRequests,
+    historyLoading: requestHistoryLoading,
+    historyVisible: requestHistoryVisible,
+    fetchHistory: fetchRequestHistory,
+    closeHistory: closeRequestHistory,
+  } = useForemanHistory();
   const [userId, setUserId] = useState("");
   const [foremanName, setForemanName] = useState("");
 
@@ -560,6 +576,17 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
 
     setSaving(true);
     try {
+      const existingDraft = await findLatestDraftRequestByLink(subcontractId);
+      if (existingDraft?.id) {
+        const rid = String(existingDraft.id).trim();
+        const displayLabel = String(existingDraft.request_no || existingDraft.display_no || "").trim();
+        setRequestId(rid);
+        setDisplayNo(displayLabel);
+        activeDraftScopeKeyRef.current = draftScopeKey;
+        await loadDraftItems(rid);
+        return rid;
+      }
+
       // Clear Rik draft cache to ensure autonomy from Materials tab
       clearCachedDraftRequestId();
       const res = await requestCreateDraft(requestMetaFromTemplate);
@@ -757,6 +784,36 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
     });
     await previewPdfDocument(doc, { router });
   }, [requestId, displayNo, router]);
+
+  const openRequestHistoryPdf = useCallback(async (reqId: string) => {
+    const rid = String(reqId || "").trim();
+    if (!rid) return;
+    const template = await generateRequestPdfDocument({
+      requestId: rid,
+      originModule: "foreman",
+    });
+    const doc = await preparePdfDocument({
+      supabase,
+      key: `pdf:history:${rid}`,
+      label: "Открываю PDF…",
+      descriptor: {
+        ...template,
+        title: `Заявка ${rid}`,
+        fileName: buildPdfFileName({
+          documentType: "request",
+          title: rid,
+          entityId: rid,
+        }),
+      },
+      getRemoteUrl: () => template.uri,
+    });
+    await previewPdfDocument(doc, { router });
+  }, [router]);
+
+  const handleRequestHistorySelect = useCallback(async (reqId: string) => {
+    closeRequestHistory();
+    await openRequestHistoryPdf(reqId);
+  }, [closeRequestHistory, openRequestHistoryPdf]);
 
   const clearDraft = useCallback(async () => {
     if (requestId) {
@@ -1008,12 +1065,13 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
         </View>
       </RNModal>
 
-      <View style={s.stickyBar}>
-        <Pressable style={s.miniBtn} onPress={() => setHistoryOpen(true)}>
-          <Ionicons name="time-outline" size={20} color={UI.text} />
-          <Text style={s.miniText}>История</Text>
-        </Pressable>
-      </View>
+      <ForemanHistoryBar
+        busy={saving || sending}
+        onOpenRequestHistory={() => fetchRequestHistory(foremanName)}
+        onOpenSubcontractHistory={() => setHistoryOpen(true)}
+        ui={UI}
+        styles={s}
+      />
 
       <RNModal
         isVisible={draftOpen}
@@ -1196,52 +1254,28 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
         }}
       />
 
-      <RNModal
-        isVisible={historyOpen}
-        onBackdropPress={() => setHistoryOpen(false)}
-        onBackButtonPress={() => setHistoryOpen(false)}
-        backdropOpacity={0.55}
-        useNativeDriver={Platform.OS !== "web"}
-        useNativeDriverForBackdrop={Platform.OS !== "web"}
-        hideModalContentWhileAnimating
-        style={{ margin: 0, justifyContent: "flex-end" }}
-      >
-        <View style={s.historyModal}>
-          <View style={s.historyModalHeader}>
-            <Text style={s.historyModalTitle}>История подрядов</Text>
-            <Pressable onPress={() => setHistoryOpen(false)}><Text style={s.historyModalClose}>Закрыть</Text></Pressable>
-          </View>
+      <ForemanHistoryModal
+        visible={requestHistoryVisible}
+        onClose={closeRequestHistory}
+        loading={requestHistoryLoading}
+        requests={historyRequests}
+        resolveStatusInfo={resolveRequestStatusInfo}
+        onSelect={(reqId) => void handleRequestHistorySelect(reqId)}
+        onOpenPdf={(reqId) => void openRequestHistoryPdf(reqId)}
+        isPdfBusy={() => false}
+        shortId={shortId}
+        styles={s}
+      />
 
-          {historyLoading ? (
-            <View style={{ paddingVertical: 24 }}><ActivityIndicator color={UI.text} /></View>
-          ) : history.length === 0 ? (
-            <Text style={s.historyModalEmpty}>Подрядов пока нет.</Text>
-          ) : (
-            <FlatList
-              data={history}
-              keyExtractor={(it) => it.id}
-              contentContainerStyle={{ paddingBottom: 8 }}
-              renderItem={({ item }) => {
-                const st = STATUS_CONFIG[item.status] || STATUS_CONFIG.draft;
-                return (
-                  <Pressable style={s.historyModalRow} onPress={() => openFromHistory(item)}>
-                    <View style={{ flex: 1, minWidth: 0 }}>
-                      <Text style={s.historyModalPrimary}>
-                        Подряд
-                      </Text>
-                      <Text style={s.historyModalMeta} numberOfLines={1}>{item.object_name || "—"} · {item.work_type || "—"}</Text>
-                      <Text style={s.historyModalMetaSecondary} numberOfLines={1}>{fmtAmount(item.qty_planned)} {item.uom || ""}</Text>
-                    </View>
-                    <View style={[s.historyStatusBadge, { backgroundColor: st.bg }]}>
-                      <Text style={{ color: st.fg, fontWeight: "900", fontSize: 12 }}>{st.label}</Text>
-                    </View>
-                  </Pressable>
-                );
-              }}
-            />
-          )}
-        </View>
-      </RNModal>
+      <ForemanSubcontractHistoryModal
+        visible={historyOpen}
+        onClose={() => setHistoryOpen(false)}
+        loading={historyLoading}
+        history={history}
+        onSelect={openFromHistory}
+        styles={s}
+        ui={UI}
+      />
 
     </View>
   );

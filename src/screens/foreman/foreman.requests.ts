@@ -6,6 +6,10 @@ type RequestUpdate = Database["public"]["Tables"]["requests"]["Update"];
 
 type RequestDisplayRow = Pick<RequestRow, "display_no" | "request_no">;
 type RequestLinkRow = Pick<RequestRow, "id" | "subcontract_id" | "contractor_job_id">;
+type LinkedDraftRequestRow = Pick<
+  RequestRow,
+  "id" | "display_no" | "request_no" | "status" | "subcontract_id" | "contractor_job_id" | "created_at"
+>;
 type RequestPatchError = {
   message: string;
   code: string;
@@ -104,4 +108,32 @@ export async function fetchForemanRequestLink(requestId: string): Promise<Reques
 
 export function pickForemanRequestLinkId(row: RequestLinkRow | null | undefined): string {
   return String(row?.subcontract_id ?? row?.contractor_job_id ?? "").trim();
+}
+
+export async function findLatestDraftRequestByLink(linkId: string): Promise<LinkedDraftRequestRow | null> {
+  const normalized = String(linkId || "").trim();
+  if (!normalized) return null;
+
+  const query = await supabase
+    .from("requests")
+    .select("id, display_no, request_no, status, subcontract_id, contractor_job_id, created_at")
+    .eq("subcontract_id", normalized)
+    .eq("status", "Черновик")
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle<LinkedDraftRequestRow>();
+
+  if (!query.error) return query.data ?? null;
+
+  const queryFallback = await supabase
+    .from("requests")
+    .select("id, display_no, request_no, status, subcontract_id, contractor_job_id, created_at")
+    .eq("contractor_job_id", normalized)
+    .eq("status", "Черновик")
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle<LinkedDraftRequestRow>();
+
+  if (queryFallback.error) throw queryFallback.error;
+  return queryFallback.data ?? null;
 }
