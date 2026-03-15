@@ -1,5 +1,5 @@
-﻿import React, { useMemo, useState } from "react";
-import { View, Text, Pressable, ScrollView } from "react-native";
+import React, { useMemo, useState } from "react";
+import { View, Text, Pressable, FlatList } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -89,6 +89,7 @@ export default function WarehouseReportsTab(props: Props) {
   const [activeDay, setActiveDay] = useState<ReportDayGroup | null>(null);
 
   const isIncoming = mode === "incoming";
+  const dayGroups = isIncoming ? reportsUi.incomingByDay : reportsUi.vydachaByDay;
   const reportActions: TopRightAction[] = useMemo(() => {
     const actions: TopRightAction[] = [
       { key: "period", icon: "calendar-outline", onPress: onOpenPeriod },
@@ -103,6 +104,114 @@ export default function WarehouseReportsTab(props: Props) {
   }, [isIncoming, onOpenPeriod, onRefresh, onPdfRegister, onPdfMaterials, onPdfObjectWork]);
 
   const sectionTitle = isIncoming ? "ПРИХОДЫ ЗА ПЕРИОД" : "ВЫДАЧИ ЗА ПЕРИОД";
+
+  const renderActiveDayItem = React.useCallback(({ item, index }: { item: ReportDocRow; index: number }) => {
+    const docId = isIncoming ? (item.incoming_id || item.id) : item.issue_id;
+    const docNo = isIncoming
+      ? (item.display_no || `PR-${String(docId).slice(0, 8)}`)
+      : (item.issue_no || (Number.isFinite(docId) ? `ISSUE-${docId}` : "ISSUE-—"));
+
+    return (
+      <View style={{ marginBottom: 12 }}>
+        <Pressable
+          onPress={() => {
+            if (!docId) return;
+            if (isIncoming) {
+              void reportsUi.openIncomingDetails(docId);
+            } else {
+              void reportsUi.openIssueDetails(docId);
+            }
+          }}
+        >
+          <View style={s.mobCard}>
+            <View style={s.mobMain}>
+              <Text style={s.mobTitle}>{docNo}</Text>
+              {!!item?.who && <Text style={s.mobMeta}>{String(item.who)}</Text>}
+              {!!item?.obj_name && <Text style={s.mobMeta}>{String(item.obj_name)}</Text>}
+            </View>
+
+            <Pressable
+              hitSlop={10}
+              onPress={(e) => {
+                e.stopPropagation?.();
+                if (!docId) return;
+                void onPdfDocument(docId);
+              }}
+            >
+              <Ionicons name="document-text-outline" size={20} color={UI.text} />
+            </Pressable>
+          </View>
+        </Pressable>
+      </View>
+    );
+  }, [isIncoming, onPdfDocument, reportsUi]);
+
+  const renderDayGroupItem = React.useCallback(({ item }: { item: ReportDayGroup }) => {
+    const dayCount = item.items.length;
+
+    return (
+      <Pressable onPress={() => setActiveDay(item)} style={{ marginBottom: 12, marginHorizontal: 16 }}>
+        <View style={s.mobCard}>
+          <View style={s.mobMain}>
+            <Text style={s.mobTitle}>{item.day}</Text>
+            <Text style={s.mobMeta}>Документов: {dayCount}</Text>
+          </View>
+
+          <View style={{ flexDirection: "row", gap: 10, alignItems: "center" }}>
+            <StatusBadge label={`${dayCount}`} tone="info" compact />
+            <ChevronIndicator />
+          </View>
+        </View>
+      </Pressable>
+    );
+  }, []);
+
+  const reportsListHeader = React.useMemo(() => (
+    <>
+      <View style={{ paddingHorizontal: 16, marginBottom: 16, flexDirection: "row", alignItems: "center", gap: 12 }}>
+        <Pressable
+          onPress={onBack}
+          style={{
+            width: 38,
+            height: 38,
+            borderRadius: 12,
+            alignItems: "center",
+            justifyContent: "center",
+            backgroundColor: "rgba(255,255,255,0.08)",
+            borderWidth: 1,
+            borderColor: "rgba(255,255,255,0.12)",
+          }}
+          hitSlop={15}
+        >
+          <Ionicons name="close" size={22} color={UI.text} />
+        </Pressable>
+        <Text style={{ color: UI.text, fontSize: 18, fontWeight: "600" }}>
+          {isIncoming ? "ПРИХОД" : "ВЫДАЧИ"}
+        </Text>
+      </View>
+
+      <SectionBlock title="ПЕРИОД ОТЧЁТА" style={[s.sectionBox, { paddingHorizontal: 16 }]} contentStyle={{ gap: 0 }}>
+        <TopRightActionBar
+          titleLeft={
+            periodFrom || periodTo
+              ? `${periodFrom || "—"} → ${periodTo || "—"}`
+              : "Весь период"
+          }
+          actions={reportActions}
+          ui={{
+            text: UI.text,
+            sub: UI.sub,
+            border: "rgba(255,255,255,0.14)",
+            btnBg: "rgba(255,255,255,0.06)",
+          }}
+        />
+      </SectionBlock>
+
+      <SectionBlock title={sectionTitle} style={[s.sectionBox, { paddingHorizontal: 16 }]} contentStyle={{ gap: 0 }}>
+        <View />
+      </SectionBlock>
+    </>
+  ), [isIncoming, onBack, periodFrom, periodTo, reportActions, sectionTitle]);
 
   if (mode === "choice") {
     return (
@@ -232,7 +341,13 @@ export default function WarehouseReportsTab(props: Props) {
           </View>
         </View>
 
-        <ScrollView
+        <FlatList
+          data={activeDay.items}
+          renderItem={renderActiveDayItem}
+          keyExtractor={(item, index) => {
+            const docId = isIncoming ? (item.incoming_id || item.id) : item.issue_id;
+            return `${activeDay.day}_${docId || index}_${index}`;
+          }}
           style={{ flex: 1 }}
           contentContainerStyle={{
             paddingTop: 20,
@@ -241,55 +356,18 @@ export default function WarehouseReportsTab(props: Props) {
           }}
           showsVerticalScrollIndicator
           keyboardShouldPersistTaps="handled"
-        >
-          {activeDay.items.map((h, idx: number) => {
-            const docId = isIncoming ? (h.incoming_id || h.id) : h.issue_id;
-            const docNo = isIncoming
-              ? (h.display_no || `PR-${String(docId).slice(0, 8)}`)
-              : (h.issue_no || (Number.isFinite(docId) ? `ISSUE-${docId}` : "ISSUE-—"));
-
-            return (
-              <View key={`${activeDay.day}_${docId || idx}_${idx}`} style={{ marginBottom: 12 }}>
-                <Pressable
-                  onPress={() => {
-                    if (!docId) return;
-                    if (isIncoming) {
-                      void reportsUi.openIncomingDetails(docId);
-                    } else {
-                      void reportsUi.openIssueDetails(docId);
-                    }
-                  }}
-                >
-                  <View style={s.mobCard}>
-                    <View style={s.mobMain}>
-                      <Text style={s.mobTitle}>{docNo}</Text>
-                      {!!h?.who && <Text style={s.mobMeta}>{String(h.who)}</Text>}
-                      {!!h?.obj_name && <Text style={s.mobMeta}>{String(h.obj_name)}</Text>}
-                    </View>
-
-                    <Pressable
-                      hitSlop={10}
-                      onPress={(e) => {
-                        e.stopPropagation?.();
-                        if (!docId) return;
-                        void onPdfDocument(docId);
-                      }}
-                    >
-                      <Ionicons name="document-text-outline" size={20} color={UI.text} />
-                    </Pressable>
-                  </View>
-                </Pressable>
-              </View>
-            );
-          })}
-        </ScrollView>
+          removeClippedSubviews
+        />
       </View>
     );
   }
 
   return (
     <RoleScreenLayout>
-      <ScrollView
+      <FlatList
+        data={dayGroups}
+        renderItem={renderDayGroupItem}
+        keyExtractor={(item) => item.day}
         style={{ flex: 1 }}
         contentContainerStyle={{
           paddingTop: headerTopPad + 4,
@@ -297,71 +375,10 @@ export default function WarehouseReportsTab(props: Props) {
         }}
         showsVerticalScrollIndicator
         keyboardShouldPersistTaps="handled"
-      >
-        <View style={{ paddingHorizontal: 16, marginBottom: 16, flexDirection: "row", alignItems: "center", gap: 12 }}>
-          <Pressable
-            onPress={onBack}
-            style={{
-              width: 38,
-              height: 38,
-              borderRadius: 12,
-              alignItems: "center",
-              justifyContent: "center",
-              backgroundColor: "rgba(255,255,255,0.08)",
-              borderWidth: 1,
-              borderColor: "rgba(255,255,255,0.12)",
-            }}
-            hitSlop={15}
-          >
-            <Ionicons name="close" size={22} color={UI.text} />
-          </Pressable>
-          <Text style={{ color: UI.text, fontSize: 18, fontWeight: "600" }}>
-            {isIncoming ? "ПРИХОД" : "ВЫДАЧИ"}
-          </Text>
-        </View>
-
-        <SectionBlock title="ПЕРИОД ОТЧЁТА" style={[s.sectionBox, { paddingHorizontal: 16 }]} contentStyle={{ gap: 0 }}>
-          <TopRightActionBar
-            titleLeft={
-              periodFrom || periodTo
-                ? `${periodFrom || "—"} → ${periodTo || "—"}`
-                : "Весь период"
-            }
-            actions={reportActions}
-            ui={{
-              text: UI.text,
-              sub: UI.sub,
-              border: "rgba(255,255,255,0.14)",
-              btnBg: "rgba(255,255,255,0.06)",
-            }}
-          />
-        </SectionBlock>
-
-        <SectionBlock title={sectionTitle} style={[s.sectionBox, { paddingHorizontal: 16 }]} contentStyle={{ gap: 0 }}>
-          {(isIncoming ? reportsUi.incomingByDay : reportsUi.vydachaByDay).map((g) => {
-            const dayCount = g.items.length;
-
-            return (
-              <Pressable key={g.day} onPress={() => setActiveDay(g)} style={{ marginBottom: 12 }}>
-                <View style={s.mobCard}>
-                  <View style={s.mobMain}>
-                    <Text style={s.mobTitle}>{g.day}</Text>
-                    <Text style={s.mobMeta}>Документов: {dayCount}</Text>
-                  </View>
-
-                  <View style={{ flexDirection: "row", gap: 10, alignItems: "center" }}>
-                    <StatusBadge label={`${dayCount}`} tone="info" compact />
-                    <ChevronIndicator />
-                  </View>
-                </View>
-              </Pressable>
-            );
-          })}
-        </SectionBlock>
-
-        <View style={{ height: 8 }} />
-      </ScrollView>
+        removeClippedSubviews
+        ListHeaderComponent={reportsListHeader}
+        ListFooterComponent={<View style={{ height: 8 }} />}
+      />
     </RoleScreenLayout>
   );
 }
-

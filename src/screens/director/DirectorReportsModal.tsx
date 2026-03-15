@@ -1,5 +1,5 @@
 import React from "react";
-import { Alert, Pressable, ScrollView, Text, View } from "react-native";
+import { Alert, FlatList, Pressable, ScrollView, Text, View } from "react-native";
 import RNModal from "react-native-modal";
 import PeriodPickerSheet from "../../components/PeriodPickerSheet";
 import DirectorFinanceCardModal from "./DirectorFinanceCardModal";
@@ -115,6 +115,7 @@ export default function DirectorReportsModal({
     if (!workModal) return [] as RepDisciplineLevel[];
     return [...(workModal.levels || [])].sort((a, b) => b.total_positions - a.total_positions).slice(0, 30);
   }, [workModal]);
+
   const workTopMaterials = React.useMemo(() => {
     if (!workModal) return [] as Array<{
       rik_code: string;
@@ -154,6 +155,7 @@ export default function DirectorReportsModal({
     if (!levelModal?.level) return [] as RepDisciplineLevel["materials"];
     return [...(levelModal.level.materials || [])].sort((a, b) => b.qty_sum - a.qty_sum).slice(0, 20);
   }, [levelModal]);
+
   const levelModalTitle = React.useMemo(() => {
     if (!levelModal) return "";
     const w = String(levelModal.work.work_type_name || "").trim();
@@ -182,6 +184,62 @@ export default function DirectorReportsModal({
     setLevelModal(null);
     onClose();
   }, [onClose]);
+
+  const renderMaterialRow = React.useCallback(({ item }: { item: RepRow }) => {
+    const qAll = Number(item.qty_total || 0);
+    const qNoReq = Number(item.qty_free || 0);
+    const docs = Number(item.docs_cnt || 0);
+    const docsNoReq = Number(item.docs_free || 0);
+    return (
+      <View style={[s.mobCard, { marginBottom: 10 }]}>
+        <View style={s.mobMain}>
+          <Text style={s.mobTitle} numberOfLines={2}>{item.name_human_ru || item.rik_code}</Text>
+          <Text style={s.mobMeta} numberOfLines={2}>
+            {`Выдано: ${qAll} ${item.uom} · док ${docs}`}
+            {qNoReq > 0 ? ` · без заявки: ${qNoReq} (${docsNoReq} док)` : ""}
+          </Text>
+        </View>
+      </View>
+    );
+  }, []);
+
+  const renderWorkRow = React.useCallback(({ item }: { item: RepDisciplineWork }) => {
+    const isMissingWork = String(item.work_type_name || "").trim().toLowerCase() === "без вида работ";
+    return (
+      <Pressable
+        onPress={() => {
+          setLevelModal(null);
+          setWorkModal(item);
+        }}
+        style={[s.mobCard, { marginBottom: 10 }]}
+      >
+        <View style={s.mobMain}>
+          <Text style={[s.mobTitle, isMissingWork ? { color: "#EF4444" } : null]} numberOfLines={1}>{item.work_type_name}</Text>
+          <Text style={s.mobMeta} numberOfLines={1}>{`Позиции: ${item.total_positions}`}</Text>
+          <Text style={s.mobMeta} numberOfLines={1}>{`По заявке: ${item.req_positions} · Свободно: ${item.free_positions}`}</Text>
+        </View>
+      </Pressable>
+    );
+  }, []);
+
+  const disciplineListHeader = React.useMemo(() => (
+    <View style={[s.mobCard, { marginBottom: 10, borderColor: ratioTint }]}>
+      <View style={s.mobMain}>
+        <Text style={s.mobTitle}>Расход / Закупки (%)</Text>
+        <Text style={[s.mobTitle, { color: ratioTint }]}>{`Расход / Закупки: ${repDisciplinePriceLoading ? "…" : ratioText}`}</Text>
+        <Text style={s.mobMeta}>по стоимости за период</Text>
+        {!repDisciplinePriceLoading ? (
+          <Text style={s.mobMeta}>{`Расход: ${money(issueCost)} · Закупки: ${money(purchaseCost)}`}</Text>
+        ) : null}
+        {!repDisciplinePriceLoading && Number(disSummary?.unpriced_issue_pct ?? 0) > 0 ? (
+          <Text style={s.mobMeta}>{`Неоценено: ${Number(disSummary?.unpriced_issue_pct ?? 0)}%`}</Text>
+        ) : null}
+        {!repDisciplinePriceLoading && !hasCostBase ? (
+          <Text style={s.mobMeta}>Недостаточно цен для расчета базы закупок.</Text>
+        ) : null}
+      </View>
+    </View>
+  ), [disSummary?.unpriced_issue_pct, hasCostBase, issueCost, purchaseCost, ratioText, ratioTint, repDisciplinePriceLoading]);
 
   return (
     <DirectorFinanceCardModal
@@ -251,7 +309,7 @@ export default function DirectorReportsModal({
               </ScrollView>
             </View>
           </RNModal>
-                ) : levelModal ? (
+        ) : levelModal ? (
           <View pointerEvents="box-none" style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0 }}>
             <Pressable
               onPress={() => setLevelModal(null)}
@@ -301,7 +359,7 @@ export default function DirectorReportsModal({
               </View>
             </View>
           </View>
-                ) : workModal ? (
+        ) : workModal ? (
           <View pointerEvents="box-none" style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0 }}>
             <Pressable
               onPress={() => setWorkModal(null)}
@@ -371,14 +429,14 @@ export default function DirectorReportsModal({
       <View style={{ marginBottom: 10 }}>
         <Text style={{ color: UI.sub, fontWeight: "900", marginBottom: 6 }}>Склад</Text>
         <View style={{ flexDirection: "row", flexWrap: "wrap" }}>
-          <Pressable onPress={() => void applyObjectFilter(null)} style={[s.tab, !repObjectName && s.tabActive, { marginRight: 8, marginBottom: 8 }]}> 
+          <Pressable onPress={() => void applyObjectFilter(null)} style={[s.tab, !repObjectName && s.tabActive, { marginRight: 8, marginBottom: 8 }]}>
             <Text style={{ color: !repObjectName ? UI.text : UI.sub, fontWeight: "900" }}>Все</Text>
           </Pressable>
-          <Pressable onPress={onOpenRepObj} style={[s.tab, repObjectName && s.tabActive, { marginRight: 8, marginBottom: 8 }]}> 
+          <Pressable onPress={onOpenRepObj} style={[s.tab, repObjectName && s.tabActive, { marginRight: 8, marginBottom: 8 }]}>
             <Text style={{ color: repObjectName ? UI.text : UI.sub, fontWeight: "900" }}>{`Объекты · ${(repOptObjects?.length ?? 0)}`}</Text>
           </Pressable>
           {repObjectName ? (
-            <Pressable onPress={onOpenRepObj} style={[s.tab, s.tabActive, { marginRight: 8, marginBottom: 8 }]}> 
+            <Pressable onPress={onOpenRepObj} style={[s.tab, s.tabActive, { marginRight: 8, marginBottom: 8 }]}>
               <Text numberOfLines={1} style={{ color: UI.text, fontWeight: "900", maxWidth: 220 }}>{repObjectName}</Text>
             </Pressable>
           ) : null}
@@ -416,7 +474,7 @@ export default function DirectorReportsModal({
         {(["materials", "discipline"] as RepTab[]).map((t) => {
           const active = repTab === t;
           return (
-            <Pressable key={t} onPress={() => onTabPress(t)} style={[s.tab, active && s.tabActive, { marginRight: 8 }]}> 
+            <Pressable key={t} onPress={() => onTabPress(t)} style={[s.tab, active && s.tabActive, { marginRight: 8 }]}>
               <Text style={{ color: active ? UI.text : UI.sub, fontWeight: "900" }}>
                 {t === "materials" ? "Материалы" : "Работы"}
               </Text>
@@ -426,69 +484,32 @@ export default function DirectorReportsModal({
       </View>
 
       {repTab === "materials" ? (
-        <ScrollView keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
-          {rows.map((item, idx) => {
-            const qAll = Number(item.qty_total || 0);
-            const qNoReq = Number(item.qty_free || 0);
-            const docs = Number(item.docs_cnt || 0);
-            const docsNoReq = Number(item.docs_free || 0);
-            return (
-              <View key={`${item.rik_code}:${item.uom}:${idx}`} style={[s.mobCard, { marginBottom: 10 }]}> 
-                <View style={s.mobMain}>
-                  <Text style={s.mobTitle} numberOfLines={2}>{item.name_human_ru || item.rik_code}</Text>
-                  <Text style={s.mobMeta} numberOfLines={2}>
-                    {`Выдано: ${qAll} ${item.uom} · док ${docs}`}
-                    {qNoReq > 0 ? ` · без заявки: ${qNoReq} (${docsNoReq} док)` : ""}
-                  </Text>
-                </View>
-              </View>
-            );
-          })}
-          {!repLoading && rows.length === 0 ? <Text style={{ opacity: 0.7, color: UI.sub, paddingVertical: 8 }}>Нет выдач за выбранный период.</Text> : null}
-        </ScrollView>
+        <FlatList
+          data={rows}
+          renderItem={renderMaterialRow}
+          keyExtractor={(item, index) => `${item.rik_code}:${item.uom}:${index}`}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+          removeClippedSubviews
+          ListEmptyComponent={
+            !repLoading ? <Text style={{ opacity: 0.7, color: UI.sub, paddingVertical: 8 }}>Нет выдач за выбранный период.</Text> : null
+          }
+        />
       ) : (
-        <ScrollView keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
-          <View style={[s.mobCard, { marginBottom: 10, borderColor: ratioTint }]}> 
-            <View style={s.mobMain}>
-              <Text style={s.mobTitle}>Расход / Закупки (%)</Text>
-              <Text style={[s.mobTitle, { color: ratioTint }]}>{`Расход / Закупки: ${repDisciplinePriceLoading ? "…" : ratioText}`}</Text>
-              <Text style={s.mobMeta}>по стоимости за период</Text>
-              {!repDisciplinePriceLoading ? (
-                <Text style={s.mobMeta}>{`Расход: ${money(issueCost)} · Закупки: ${money(purchaseCost)}`}</Text>
-              ) : null}
-              {!repDisciplinePriceLoading && Number(disSummary?.unpriced_issue_pct ?? 0) > 0 ? (
-                <Text style={s.mobMeta}>{`Неоценено: ${Number(disSummary?.unpriced_issue_pct ?? 0)}%`}</Text>
-              ) : null}
-              {!repDisciplinePriceLoading && !hasCostBase ? (
-                <Text style={s.mobMeta}>Недостаточно цен для расчета базы закупок.</Text>
-              ) : null}
-            </View>
-          </View>
-
-          {worksTop30.map((w) => {
-            const isMissingWork = String(w.work_type_name || "").trim().toLowerCase() === "без вида работ";
-            return (
-              <Pressable
-                key={w.id}
-                onPress={() => {
-                  setLevelModal(null);
-                  setWorkModal(w);
-                }}
-                style={[s.mobCard, { marginBottom: 10 }]}
-              >
-                <View style={s.mobMain}>
-                  <Text style={[s.mobTitle, isMissingWork ? { color: "#EF4444" } : null]} numberOfLines={1}>{w.work_type_name}</Text>
-                  <Text style={s.mobMeta} numberOfLines={1}>{`Позиции: ${w.total_positions}`}</Text>
-                  <Text style={s.mobMeta} numberOfLines={1}>{`По заявке: ${w.req_positions} · Свободно: ${w.free_positions}`}</Text>
-                </View>
-              </Pressable>
-            );
-          })}
-
-          {!repLoading && worksTop30.length === 0 ? (
-            <Text style={{ opacity: 0.7, color: UI.sub, paddingVertical: 8 }}>Нет данных по работам за период.</Text>
-          ) : null}
-        </ScrollView>
+        <FlatList
+          data={worksTop30}
+          renderItem={renderWorkRow}
+          keyExtractor={(item) => item.id}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+          removeClippedSubviews
+          ListHeaderComponent={disciplineListHeader}
+          ListEmptyComponent={
+            !repLoading ? (
+              <Text style={{ opacity: 0.7, color: UI.sub, paddingVertical: 8 }}>Нет данных по работам за период.</Text>
+            ) : null
+          }
+        />
       )}
 
       <View style={{ marginTop: 10, flexDirection: "row", gap: 8 }}>

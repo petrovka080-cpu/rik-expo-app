@@ -5,6 +5,11 @@ import { WAREHOUSE_TABS, type Tab } from "../warehouse.types";
 const TAB_EXPENSE = WAREHOUSE_TABS[2];
 const RT_MIN_INTERVAL_MS = 800;
 
+function logWarehouseExpenseRealtimeFallback(scope: string, error: unknown) {
+  if (!__DEV__) return;
+  console.warn(`[warehouse-expense-rt] ${scope}`, error);
+}
+
 export function useWarehouseExpenseRealtime(params: {
   supabase: SupabaseClient;
   tab: Tab;
@@ -37,10 +42,14 @@ export function useWarehouseExpenseRealtime(params: {
     return () => {
       try {
         ch.unsubscribe();
-      } catch {}
+      } catch (error) {
+        logWarehouseExpenseRealtimeFallback("unsubscribe", error);
+      }
       try {
         supabase.removeChannel(ch);
-      } catch {}
+      } catch (error) {
+        logWarehouseExpenseRealtimeFallback("removeChannel", error);
+      }
     };
   }, [supabase, tab, fetchReqHeadsForce]);
 }
