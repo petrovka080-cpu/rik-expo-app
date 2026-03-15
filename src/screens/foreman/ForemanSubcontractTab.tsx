@@ -1272,7 +1272,6 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
         onClose={() => setHistoryOpen(false)}
         loading={historyLoading}
         history={history}
-        onSelect={openFromHistory}
         styles={s}
         ui={UI}
       />

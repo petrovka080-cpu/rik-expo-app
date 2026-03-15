@@ -10,6 +10,10 @@ type LinkedDraftRequestRow = Pick<
   RequestRow,
   "id" | "display_no" | "request_no" | "status" | "subcontract_id" | "contractor_job_id" | "created_at"
 >;
+type LinkedRequestSummaryRow = Pick<
+  RequestRow,
+  "id" | "display_no" | "request_no" | "created_at" | "subcontract_id" | "contractor_job_id"
+>;
 type RequestPatchError = {
   message: string;
   code: string;
@@ -108,6 +112,43 @@ export async function fetchForemanRequestLink(requestId: string): Promise<Reques
 
 export function pickForemanRequestLinkId(row: RequestLinkRow | null | undefined): string {
   return String(row?.subcontract_id ?? row?.contractor_job_id ?? "").trim();
+}
+
+export async function listLinkedRequestsByLink(linkId: string): Promise<LinkedRequestSummaryRow[]> {
+  const normalized = String(linkId || "").trim();
+  if (!normalized) return [];
+
+  const select = "id, display_no, request_no, created_at, subcontract_id, contractor_job_id";
+  const [primary, fallback] = await Promise.all([
+    supabase
+      .from("requests")
+      .select(select)
+      .eq("subcontract_id", normalized)
+      .not("display_no", "is", null)
+      .order("created_at", { ascending: false }),
+    supabase
+      .from("requests")
+      .select(select)
+      .eq("contractor_job_id", normalized)
+      .not("display_no", "is", null)
+      .order("created_at", { ascending: false }),
+  ]);
+
+  const merged = new Map<string, LinkedRequestSummaryRow>();
+  for (const result of [primary, fallback]) {
+    if (result.error || !Array.isArray(result.data)) continue;
+    for (const row of result.data as LinkedRequestSummaryRow[]) {
+      const id = String(row.id ?? "").trim();
+      if (!id || merged.has(id)) continue;
+      merged.set(id, row);
+    }
+  }
+
+  return Array.from(merged.values()).sort((a, b) => {
+    const aTs = Date.parse(String(a.created_at ?? "")) || 0;
+    const bTs = Date.parse(String(b.created_at ?? "")) || 0;
+    return bTs - aTs;
+  });
 }
 
 export async function findLatestDraftRequestByLink(linkId: string): Promise<LinkedDraftRequestRow | null> {
