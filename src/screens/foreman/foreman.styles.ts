@@ -203,16 +203,28 @@ export const s = StyleSheet.create({
 
   // ===== bottom bar (dark)
   stickyBar: {
+    position: "relative",
+    zIndex: 40,
     borderTopWidth: 1,
     borderColor: "rgba(255,255,255,0.10)",
     backgroundColor: UI.cardBg,
     paddingHorizontal: 16,
     paddingVertical: 10,
+    ...Platform.select({
+      web: {},
+      default: {
+        elevation: 12,
+        shadowColor: "#000",
+        shadowOpacity: 0.18,
+        shadowOffset: { width: 0, height: -4 },
+        shadowRadius: 10,
+      },
+    }),
   },
   miniBar: { marginTop: 10, flexDirection: "row", alignItems: "center", gap: 10 },
   miniBtn: {
     flex: 1,
-    height: 42,
+    minHeight: 46,
     borderRadius: 16,
     borderWidth: 1,
     borderColor: "rgba(255,255,255,0.12)",
@@ -221,12 +233,23 @@ export const s = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     gap: 8,
+    paddingHorizontal: 12,
+    overflow: "hidden",
+  },
+  miniBtnPressed: {
+    backgroundColor: "rgba(255,255,255,0.10)",
+    borderColor: "rgba(255,255,255,0.20)",
   },
   miniText: {
     color: UI.text,
     fontWeight: "900",
     fontSize: 13,
     letterSpacing: 0.2,
+  },
+  miniTextCompact: {
+    fontSize: 12,
+    letterSpacing: 0,
+    flexShrink: 1,
   },
 
   // ===== history modal (bottom sheet dark)

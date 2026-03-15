@@ -1,6 +1,7 @@
 import React from "react";
-import { Pressable, Text, View } from "react-native";
+import { Platform, Pressable, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 type Props = {
   busy?: boolean;
@@ -17,25 +18,48 @@ export default function ForemanHistoryBar({
   styles,
   ui,
 }: Props) {
+  const insets = useSafeAreaInsets();
+  const isMobile = Platform.OS !== "web";
+  const requestLabel = isMobile ? "Заявки" : "История заявок";
+  const subcontractLabel = isMobile ? "Подряды" : "История подрядов";
+
   return (
-    <View style={styles.stickyBar}>
+    <View style={[styles.stickyBar, isMobile && { paddingBottom: Math.max(insets.bottom, 10) }]}>
       <View style={styles.miniBar}>
         <Pressable
           onPress={onOpenRequestHistory}
           disabled={busy}
-          style={[styles.miniBtn, busy && { opacity: 0.5 }]}
+          hitSlop={10}
+          pressRetentionOffset={16}
+          android_ripple={{ color: "rgba(255,255,255,0.08)", borderless: false }}
+          style={({ pressed }) => [
+            styles.miniBtn,
+            busy && { opacity: 0.5 },
+            pressed && !busy ? styles.miniBtnPressed : null,
+          ]}
         >
-          <Ionicons name="time-outline" size={18} color={ui.text} />
-          <Text style={styles.miniText}>История заявок</Text>
+          <Ionicons name="time-outline" size={isMobile ? 19 : 18} color={ui.text} />
+          <Text numberOfLines={1} style={[styles.miniText, isMobile && styles.miniTextCompact]}>
+            {requestLabel}
+          </Text>
         </Pressable>
 
         <Pressable
           onPress={onOpenSubcontractHistory}
           disabled={busy}
-          style={[styles.miniBtn, busy && { opacity: 0.5 }]}
+          hitSlop={10}
+          pressRetentionOffset={16}
+          android_ripple={{ color: "rgba(255,255,255,0.08)", borderless: false }}
+          style={({ pressed }) => [
+            styles.miniBtn,
+            busy && { opacity: 0.5 },
+            pressed && !busy ? styles.miniBtnPressed : null,
+          ]}
         >
-          <Ionicons name="briefcase-outline" size={18} color={ui.text} />
-          <Text style={styles.miniText}>История подрядов</Text>
+          <Ionicons name="briefcase-outline" size={isMobile ? 19 : 18} color={ui.text} />
+          <Text numberOfLines={1} style={[styles.miniText, isMobile && styles.miniTextCompact]}>
+            {subcontractLabel}
+          </Text>
         </Pressable>
       </View>
     </View>

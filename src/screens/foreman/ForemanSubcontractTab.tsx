@@ -60,6 +60,7 @@ import {
   patchForemanRequestLink,
   pickForemanRequestLinkId,
 } from "./foreman.requests";
+import { readForemanProfileName } from "./foreman.dicts.repo";
 import { useForemanHistory } from "./hooks/useForemanHistory";
 
 type Props = {
@@ -469,12 +470,7 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
 
       if (!nm) {
         try {
-          const { data: prof } = await supabase
-            .from("user_profiles")
-            .select("full_name")
-            .eq("user_id", uid)
-            .maybeSingle();
-          const x = String((prof as { full_name?: string } | null)?.full_name || "").trim();
+          const x = await readForemanProfileName(uid);
           if (x) setForemanName(x);
         } catch (e) {
           logForemanSubcontractDebug("foreman profile load failed", e);
