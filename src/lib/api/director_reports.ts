@@ -99,6 +99,23 @@ type DirectorFactRow = {
   is_without_request: boolean | null;
 };
 
+type DirectorReportOptionRow = {
+  object_name?: string | null;
+  object_id?: string | number | null;
+};
+
+type DirectorFactViewRow = {
+  issue_id?: string | number | null;
+  iss_date?: string | null;
+  object_name?: string | null;
+  work_name?: string | null;
+  rik_code?: string | null;
+  material_name_ru?: string | null;
+  uom?: string | null;
+  qty?: number | string | null;
+  is_without_request?: boolean | null;
+};
+
 type IdObjectRow = {
   id?: string | number | null;
   object_id?: string | number | null;
@@ -143,9 +160,132 @@ type RequestItemLookupRow = {
   request_id?: string | number | null;
 };
 
+type RequestItemRequestLinkRow = {
+  id: string;
+  request_id: string | null;
+};
+
 type RikNameLookupRow = {
   code?: string | null;
   name_ru?: string | null;
+};
+
+type LegacyFastMaterialRow = {
+  material_code?: string | null;
+  material_name?: string | null;
+  uom?: string | null;
+  sum_total?: number | string | null;
+  docs_cnt?: number | string | null;
+  sum_free?: number | string | null;
+  docs_free?: number | string | null;
+  lines_cnt?: number | string | null;
+  lines_free?: number | string | null;
+};
+
+type LegacyByObjectRow = {
+  object_id?: string | number | null;
+  object_name?: string | null;
+  work_name?: string | null;
+  lines_cnt?: number | string | null;
+  docs_cnt?: number | string | null;
+};
+
+type PurchaseItemPriceRow = {
+  rik_code?: string | null;
+  code?: string | null;
+  price?: number | string | null;
+  qty?: number | string | null;
+};
+
+type ProposalItemPriceRow = {
+  rik_code?: string | null;
+  price?: number | string | null;
+  qty?: number | string | null;
+};
+
+type PurchaseItemRequestPriceRow = {
+  request_item_id?: string | number | null;
+  price?: number | string | null;
+  qty?: number | string | null;
+};
+
+type LedgerIncomingRow = {
+  purchase_item_id?: string | number | null;
+  code?: string | null;
+  qty?: number | string | null;
+};
+
+type PurchaseItemByIdRow = {
+  id?: string | number | null;
+  purchase_id?: string | number | null;
+  rik_code?: string | null;
+  code?: string | null;
+  price?: number | string | null;
+};
+
+type PurchaseObjectRow = {
+  id?: string | number | null;
+  object_name?: string | null;
+};
+
+type WarehouseIssueOptionLookupRow = {
+  object_name?: string | null;
+  target_object_id?: string | number | null;
+  purchase_id?: string | number | null;
+};
+
+type WarehouseIssueFactRow = {
+  id: string;
+  iss_date: string | null;
+  object_name: string | null;
+  work_name: string | null;
+  request_id: string | null;
+  status: string | null;
+  note: string | null;
+  target_object_id: string | null;
+};
+
+type WarehouseIssueItemFactRow = {
+  id: string | null;
+  issue_id: string | null;
+  rik_code: string | null;
+  uom_id: string | null;
+  qty: number | string | null;
+  request_item_id: string | null;
+};
+
+type JoinedWarehouseIssueFactRow = {
+  id: string | null;
+  iss_date: string | null;
+  object_name: string | null;
+  work_name: string | null;
+  status: string | null;
+  note: string | null;
+};
+
+type JoinedWarehouseIssueItemFactRow = WarehouseIssueItemFactRow & {
+  warehouse_issues: JoinedWarehouseIssueFactRow | JoinedWarehouseIssueFactRow[] | null;
+};
+
+type RefSystemLookupRow = {
+  code: string;
+  name_human_ru: string | null;
+  display_name: string | null;
+  alias_ru: string | null;
+  name: string | null;
+};
+
+type CanonicalMaterialsPayloadRaw = {
+  rows?: unknown;
+  kpi?: unknown;
+  report_options?: unknown;
+} & Record<string, unknown>;
+
+type CanonicalSummaryPayloadRaw = {
+  issue_cost_total?: unknown;
+  purchase_cost_total?: unknown;
+  unevaluated_ratio?: unknown;
+  base_ready?: unknown;
 };
 
 type AccIssueHead = {
@@ -257,12 +397,47 @@ const logTiming = (label: string, startedAt: number) => {
   console.info(`[director_reports] ${label}: ${ms}ms`);
 };
 
-const optionObjectName = (v: any): string => {
+const optionObjectName = (v: unknown): string => {
   const s = String(normalizeRuText(String(v ?? ""))).trim();
   return s || WITHOUT_OBJECT;
 };
 
-const buildReportOptionsFromByObjRows = (rows: any[]): DirectorReportOptions => {
+const normalizeDirectorReportOptionRow = (value: unknown): DirectorReportOptionRow => {
+  const row = asRecord(value);
+  return {
+    object_name: row.object_name == null ? null : String(row.object_name),
+    object_id: row.object_id == null ? null : String(row.object_id).trim(),
+  };
+};
+
+const normalizeDirectorFactViewRow = (value: unknown): DirectorFactRow | null => {
+  const row = asRecord(value);
+  const issueId = row.issue_id == null ? "" : String(row.issue_id).trim();
+  const rikCode = row.rik_code == null ? "" : String(row.rik_code).trim().toUpperCase();
+  if (!issueId || !rikCode) return null;
+  return {
+    issue_id: issueId,
+    iss_date: row.iss_date == null ? "" : String(row.iss_date),
+    object_name: row.object_name == null ? null : String(row.object_name),
+    work_name: row.work_name == null ? null : String(row.work_name),
+    rik_code: rikCode,
+    material_name_ru: row.material_name_ru == null ? null : String(row.material_name_ru),
+    uom: row.uom == null ? null : String(row.uom),
+    qty: row.qty == null ? null : (row.qty as number | string),
+    is_without_request: row.is_without_request == null ? null : Boolean(row.is_without_request),
+  };
+};
+
+const normalizeWarehouseIssueOptionLookupRow = (value: unknown): WarehouseIssueOptionLookupRow => {
+  const row = asRecord(value);
+  return {
+    object_name: row.object_name == null ? null : String(row.object_name),
+    target_object_id: row.target_object_id == null ? null : String(row.target_object_id).trim(),
+    purchase_id: row.purchase_id == null ? null : String(row.purchase_id).trim(),
+  };
+};
+
+const buildReportOptionsFromByObjRows = (rows: DirectorReportOptionRow[]): DirectorReportOptions => {
   const objectIdByName: Record<string, string | null> = {};
   for (const r of rows || []) {
     const name = optionObjectName(r?.object_name);
@@ -274,7 +449,7 @@ const buildReportOptionsFromByObjRows = (rows: any[]): DirectorReportOptions => 
   return { objects, objectIdByName };
 };
 
-const canonicalObjectName = (v: any): string => {
+const canonicalObjectName = (v: unknown): string => {
   let s = String(normalizeRuText(String(v ?? ""))).trim();
   if (!s) return WITHOUT_OBJECT;
 
@@ -288,9 +463,9 @@ const canonicalObjectName = (v: any): string => {
   return s || WITHOUT_OBJECT;
 };
 
-const normObjectName = (v: any): string => canonicalObjectName(v);
+const normObjectName = (v: unknown): string => canonicalObjectName(v);
 
-const normWorkName = (v: any): string => {
+const normWorkName = (v: unknown): string => {
   const s = String(normalizeRuText(String(v ?? "")))
     .replace(/\s+/g, " ")
     .replace(/\s*\/\s*/g, " / ")
@@ -298,7 +473,7 @@ const normWorkName = (v: any): string => {
   return s || WITHOUT_WORK;
 };
 
-const normLevelName = (v: any): string => {
+const normLevelName = (v: unknown): string => {
   const s = String(normalizeRuText(String(v ?? "")))
     .replace(/\s+/g, " ")
     .replace(/\s*\/\s*/g, " / ")
@@ -396,10 +571,10 @@ const filterDisciplineRowsByObject = (
 ): DirectorFactRow[] => {
   if (objectName == null) return rows;
   const target = canonicalObjectName(objectName);
-  return rows.filter((r) => canonicalObjectName((r as any)?.object_name) === target);
+  return rows.filter((r) => canonicalObjectName(r.object_name) === target);
 };
 
-async function fetchRequestsRowsSafe(ids: string[]): Promise<any[]> {
+async function fetchRequestsRowsSafe(ids: string[]): Promise<RequestLookupRow[]> {
   if (DIRECTOR_REPORTS_STRICT_FACT_SOURCES) return [];
   const reqIds = Array.from(new Set((ids || []).map((x) => String(x ?? "").trim()).filter(Boolean)));
   if (!reqIds.length) return [];
@@ -472,7 +647,7 @@ async function fetchRequestsRowsSafe(ids: string[]): Promise<any[]> {
   }
 }
 
-async function fetchRequestsDisciplineRowsSafe(ids: string[]): Promise<any[]> {
+async function fetchRequestsDisciplineRowsSafe(ids: string[]): Promise<RequestLookupRow[]> {
   if (DIRECTOR_REPORTS_STRICT_FACT_SOURCES) return [];
   const reqIds = Array.from(new Set((ids || []).map((x) => String(x ?? "").trim()).filter(Boolean)));
   if (!reqIds.length) return [];
@@ -591,12 +766,182 @@ const normalizeRequestLookupRow = (value: unknown): RequestLookupRow | null => {
   };
 };
 
+const normalizeRequestItemRequestLinkRow = (value: unknown): RequestItemRequestLinkRow | null => {
+  const row = asRecord(value);
+  const id = row.id == null ? "" : String(row.id).trim();
+  if (!id) return null;
+  return {
+    id,
+    request_id: row.request_id == null ? null : String(row.request_id).trim(),
+  };
+};
+
 const normalizeObjectLookupRow = (value: unknown): ObjectLookupRow | null => {
   const row = asRecord(value);
   const id = row.id == null ? "" : String(row.id).trim();
   if (!id) return null;
   return {
     id,
+    name: row.name == null ? null : String(row.name),
+  };
+};
+
+const normalizeLegacyFastMaterialRow = (value: unknown): LegacyFastMaterialRow => {
+  const row = asRecord(value);
+  return {
+    material_code: row.material_code == null ? null : String(row.material_code),
+    material_name: row.material_name == null ? null : String(row.material_name),
+    uom: row.uom == null ? null : String(row.uom),
+    sum_total: row.sum_total == null ? null : (row.sum_total as number | string),
+    docs_cnt: row.docs_cnt == null ? null : (row.docs_cnt as number | string),
+    sum_free: row.sum_free == null ? null : (row.sum_free as number | string),
+    docs_free: row.docs_free == null ? null : (row.docs_free as number | string),
+    lines_cnt: row.lines_cnt == null ? null : (row.lines_cnt as number | string),
+    lines_free: row.lines_free == null ? null : (row.lines_free as number | string),
+  };
+};
+
+const normalizeLegacyByObjectRow = (value: unknown): LegacyByObjectRow => {
+  const row = asRecord(value);
+  return {
+    object_id: row.object_id == null ? null : String(row.object_id),
+    object_name: row.object_name == null ? null : String(row.object_name),
+    work_name: row.work_name == null ? null : String(row.work_name),
+    lines_cnt: row.lines_cnt == null ? null : (row.lines_cnt as number | string),
+    docs_cnt: row.docs_cnt == null ? null : (row.docs_cnt as number | string),
+  };
+};
+
+const normalizePurchaseItemPriceRow = (value: unknown): PurchaseItemPriceRow => {
+  const row = asRecord(value);
+  return {
+    rik_code: row.rik_code == null ? null : String(row.rik_code),
+    code: row.code == null ? null : String(row.code),
+    price: row.price == null ? null : (row.price as number | string),
+    qty: row.qty == null ? null : (row.qty as number | string),
+  };
+};
+
+const normalizeProposalItemPriceRow = (value: unknown): ProposalItemPriceRow => {
+  const row = asRecord(value);
+  return {
+    rik_code: row.rik_code == null ? null : String(row.rik_code),
+    price: row.price == null ? null : (row.price as number | string),
+    qty: row.qty == null ? null : (row.qty as number | string),
+  };
+};
+
+const normalizePurchaseItemRequestPriceRow = (value: unknown): PurchaseItemRequestPriceRow => {
+  const row = asRecord(value);
+  return {
+    request_item_id: row.request_item_id == null ? null : String(row.request_item_id),
+    price: row.price == null ? null : (row.price as number | string),
+    qty: row.qty == null ? null : (row.qty as number | string),
+  };
+};
+
+const normalizeLedgerIncomingRow = (value: unknown): LedgerIncomingRow => {
+  const row = asRecord(value);
+  return {
+    purchase_item_id: row.purchase_item_id == null ? null : String(row.purchase_item_id),
+    code: row.code == null ? null : String(row.code),
+    qty: row.qty == null ? null : (row.qty as number | string),
+  };
+};
+
+const normalizePurchaseItemByIdRow = (value: unknown): PurchaseItemByIdRow => {
+  const row = asRecord(value);
+  return {
+    id: row.id == null ? null : String(row.id),
+    purchase_id: row.purchase_id == null ? null : String(row.purchase_id),
+    rik_code: row.rik_code == null ? null : String(row.rik_code),
+    code: row.code == null ? null : String(row.code),
+    price: row.price == null ? null : (row.price as number | string),
+  };
+};
+
+const normalizePurchaseObjectRow = (value: unknown): PurchaseObjectRow => {
+  const row = asRecord(value);
+  return {
+    id: row.id == null ? null : String(row.id),
+    object_name: row.object_name == null ? null : String(row.object_name),
+  };
+};
+
+const normalizeWarehouseIssueFactRow = (value: unknown): WarehouseIssueFactRow | null => {
+  const row = asRecord(value);
+  const id = row.id == null ? "" : String(row.id).trim();
+  if (!id) return null;
+  return {
+    id,
+    iss_date: row.iss_date == null ? null : String(row.iss_date),
+    object_name: row.object_name == null ? null : String(row.object_name),
+    work_name: row.work_name == null ? null : String(row.work_name),
+    request_id: row.request_id == null ? null : String(row.request_id).trim(),
+    status: row.status == null ? null : String(row.status),
+    note: row.note == null ? null : String(row.note),
+    target_object_id: row.target_object_id == null ? null : String(row.target_object_id).trim(),
+  };
+};
+
+const normalizeWarehouseIssueItemFactRow = (value: unknown): WarehouseIssueItemFactRow | null => {
+  const row = asRecord(value);
+  return {
+    id: row.id == null ? null : String(row.id).trim(),
+    issue_id: row.issue_id == null ? null : String(row.issue_id).trim(),
+    rik_code: row.rik_code == null ? null : String(row.rik_code),
+    uom_id: row.uom_id == null ? null : String(row.uom_id),
+    qty: row.qty == null ? null : (row.qty as number | string),
+    request_item_id: row.request_item_id == null ? null : String(row.request_item_id).trim(),
+  };
+};
+
+const normalizeJoinedWarehouseIssueFactRow = (value: unknown): JoinedWarehouseIssueFactRow | null => {
+  const row = asRecord(value);
+  const id = row.id == null ? null : String(row.id).trim();
+  return {
+    id,
+    iss_date: row.iss_date == null ? null : String(row.iss_date),
+    object_name: row.object_name == null ? null : String(row.object_name),
+    work_name: row.work_name == null ? null : String(row.work_name),
+    status: row.status == null ? null : String(row.status),
+    note: row.note == null ? null : String(row.note),
+  };
+};
+
+const normalizeJoinedWarehouseIssueItemFactRow = (value: unknown): JoinedWarehouseIssueItemFactRow | null => {
+  const row = asRecord(value);
+  const item = normalizeWarehouseIssueItemFactRow(value);
+  if (!item) return null;
+  const nestedRaw = row.warehouse_issues;
+  const warehouse_issues = Array.isArray(nestedRaw)
+    ? nestedRaw
+        .map(normalizeJoinedWarehouseIssueFactRow)
+        .filter((nested): nested is JoinedWarehouseIssueFactRow => !!nested)
+    : normalizeJoinedWarehouseIssueFactRow(nestedRaw);
+  return {
+    ...item,
+    warehouse_issues,
+  };
+};
+
+const extractJoinedWarehouseIssueFactRow = (
+  item: JoinedWarehouseIssueItemFactRow,
+): JoinedWarehouseIssueFactRow | null => {
+  return Array.isArray(item.warehouse_issues)
+    ? (item.warehouse_issues[0] ?? null)
+    : (item.warehouse_issues ?? null);
+};
+
+const normalizeRefSystemLookupRow = (value: unknown): RefSystemLookupRow | null => {
+  const row = asRecord(value);
+  const code = row.code == null ? "" : String(row.code).trim();
+  if (!code) return null;
+  return {
+    code,
+    name_human_ru: row.name_human_ru == null ? null : String(row.name_human_ru),
+    display_name: row.display_name == null ? null : String(row.display_name),
+    alias_ru: row.alias_ru == null ? null : String(row.alias_ru),
     name: row.name == null ? null : String(row.name),
   };
 };
@@ -792,18 +1137,21 @@ async function enrichObjectIdsForOptions(
   const toTs = toRangeEnd(rpcDate(p.to, "2099-12-31"));
 
   const { data: issues, error: issuesErr } = await supabase
-    .from("warehouse_issues" as any)
+    .from("warehouse_issues" as never)
     .select("object_name,target_object_id,purchase_id,iss_date,status")
     .eq("status", "Подтверждено")
     .gte("iss_date", fromTs)
     .lte("iss_date", toTs)
     .limit(10000);
-  if (issuesErr || !Array.isArray(issues)) return base;
+  const normalizedIssues = Array.isArray(issues)
+    ? issues.map(normalizeWarehouseIssueOptionLookupRow)
+    : [];
+  if (issuesErr || !normalizedIssues.length) return base;
 
   const purchaseIds = Array.from(
     new Set(
-      issues
-        .map((r: any) => String(r?.purchase_id ?? "").trim())
+      normalizedIssues
+        .map((r) => String(r.purchase_id ?? "").trim())
         .filter(Boolean),
     ),
   );
@@ -811,9 +1159,9 @@ async function enrichObjectIdsForOptions(
   if (purchaseIds.length) {
     for (const ids of chunk(purchaseIds, 500)) {
       const { data } = await supabase
-        .from("purchases" as any)
+        .from("purchases" as never)
         .select("id,object_id,object_name")
-        .in("id", ids as any);
+        .in("id", ids);
       for (const r of Array.isArray(data) ? data.map(normalizeIdObjectRow).filter((row): row is IdObjectRow => !!row) : []) {
         const id = String(r?.id ?? "").trim();
         const objId = String(r?.object_id ?? "").trim();
@@ -822,17 +1170,17 @@ async function enrichObjectIdsForOptions(
     }
   }
 
-  for (const iss of issues) {
-    const name = optionObjectName((iss as any)?.object_name);
+  for (const iss of normalizedIssues) {
+    const name = optionObjectName(iss.object_name);
     if (!(name in byName) || byName[name] != null) continue;
 
-    const targetObjId = String((iss as any)?.target_object_id ?? "").trim();
+    const targetObjId = String(iss.target_object_id ?? "").trim();
     if (targetObjId) {
       byName[name] = targetObjId;
       continue;
     }
 
-    const purchaseId = String((iss as any)?.purchase_id ?? "").trim();
+    const purchaseId = String(iss.purchase_id ?? "").trim();
     const purchaseObjId = purchaseId ? purchaseObjectById.get(purchaseId) : null;
     if (purchaseObjId) byName[name] = purchaseObjId;
   }
@@ -1333,8 +1681,8 @@ async function fetchAllFactRowsFromView(p: {
 
   while (true) {
     let q = supabase
-      .from("v_director_issued_fact_rows" as any)
-      .select("issue_id,iss_date,object_name,work_name,rik_code,material_name_ru,uom,qty,is_without_request")
+      .from("v_director_issued_fact_rows" as never)
+      .select("issue_id,iss_date,object_name,work_name,rik_code,material_name_ru,uom,qty,is_without_request");
     if (p.from) q = q.gte("iss_date", toRangeStart(p.from));
     if (p.to) q = q.lte("iss_date", toRangeEnd(p.to));
     if (p.objectName != null) q = q.eq("object_name", p.objectName);
@@ -1345,7 +1693,9 @@ async function fetchAllFactRowsFromView(p: {
     const { data, error } = await q;
     if (error) throw error;
 
-    const rows = Array.isArray(data) ? (data as unknown as DirectorFactRow[]) : [];
+    const rows = Array.isArray(data)
+      ? data.map(normalizeDirectorFactViewRow).filter((row): row is DirectorFactRow => !!row)
+      : [];
     out.push(...rows);
     if (rows.length < pageSize) break;
     fromIdx += pageSize;
@@ -1387,37 +1737,40 @@ async function fetchViaLegacyRpc(p: {
   const matRows = Array.isArray(materialsRes.data) ? materialsRes.data : [];
   const objRows = Array.isArray(byObjRes.data) ? byObjRes.data : [];
 
-  const rows: DirectorReportRow[] = matRows
-    .map((r: any) => ({
-      rik_code: String(r?.material_code ?? "").trim().toUpperCase(),
-      name_human_ru: String(r?.material_name ?? "").trim() || String(r?.material_code ?? "").trim(),
-      uom: String(r?.uom ?? ""),
-      qty_total: toNum(r?.sum_total),
-      docs_cnt: Math.round(toNum(r?.docs_cnt)),
-      qty_without_request: toNum(r?.sum_free),
-      docs_without_request: Math.round(toNum(r?.docs_free)),
+  const normalizedMatRows = matRows.map(normalizeLegacyFastMaterialRow);
+  const normalizedObjRows = objRows.map(normalizeLegacyByObjectRow);
+
+  const rows: DirectorReportRow[] = normalizedMatRows
+    .map((r) => ({
+      rik_code: String(r.material_code ?? "").trim().toUpperCase(),
+      name_human_ru: String(r.material_name ?? "").trim() || String(r.material_code ?? "").trim(),
+      uom: String(r.uom ?? ""),
+      qty_total: toNum(r.sum_total),
+      docs_cnt: Math.round(toNum(r.docs_cnt)),
+      qty_without_request: toNum(r.sum_free),
+      docs_without_request: Math.round(toNum(r.docs_free)),
     }))
     .sort((a, b) => b.qty_total - a.qty_total);
 
   const disciplineAgg = new Map<string, number>();
-  for (const r of objRows) {
-    const who = normWorkName(r?.work_name);
-    disciplineAgg.set(who, (disciplineAgg.get(who) || 0) + Math.round(toNum(r?.lines_cnt)));
+  for (const r of normalizedObjRows) {
+    const who = normWorkName(r.work_name);
+    disciplineAgg.set(who, (disciplineAgg.get(who) || 0) + Math.round(toNum(r.lines_cnt)));
   }
   const discipline_who: DirectorReportWho[] = Array.from(disciplineAgg.entries())
     .map(([who, items_cnt]) => ({ who, items_cnt }))
     .sort((a, b) => b.items_cnt - a.items_cnt);
-  const reportOptions = buildReportOptionsFromByObjRows(objRows);
+  const reportOptions = buildReportOptionsFromByObjRows(normalizedObjRows);
 
   return {
     meta: { from: p.from, to: p.to, object_name: p.objectName },
     kpi: {
       issues_total: Math.round(toNum(summary?.docs_total)),
-      issues_without_object: objRows
-        .filter((r: any) => normObjectName(r?.object_name) === WITHOUT_OBJECT)
-        .reduce((acc: number, r: any) => acc + Math.round(toNum(r?.docs_cnt)), 0),
-      items_total: matRows.reduce((acc: number, r: any) => acc + Math.round(toNum(r?.lines_cnt)), 0),
-      items_without_request: matRows.reduce((acc: number, r: any) => acc + Math.round(toNum(r?.lines_free)), 0),
+      issues_without_object: normalizedObjRows
+        .filter((r) => normObjectName(r.object_name) === WITHOUT_OBJECT)
+        .reduce((acc: number, r) => acc + Math.round(toNum(r.docs_cnt)), 0),
+      items_total: normalizedMatRows.reduce((acc: number, r) => acc + Math.round(toNum(r.lines_cnt)), 0),
+      items_without_request: normalizedMatRows.reduce((acc: number, r) => acc + Math.round(toNum(r.lines_free)), 0),
     },
     rows,
     discipline_who,
@@ -1431,13 +1784,13 @@ async function fetchAllFactRowsFromTables(p: {
   objectName: string | null;
 }): Promise<DirectorFactRow[]> {
   const tTotal = nowMs();
-  const issuesById = new Map<string, any>();
+  const issuesById = new Map<string, WarehouseIssueFactRow>();
   const pageSize = 2500;
   let fromIdx = 0;
 
   while (true) {
     let q = supabase
-      .from("warehouse_issues" as any)
+      .from("warehouse_issues" as never)
       .select("id,iss_date,object_name,work_name,request_id,status,note,target_object_id")
       .eq("status", "Подтверждено");
 
@@ -1451,12 +1804,10 @@ async function fetchAllFactRowsFromTables(p: {
     const { data, error } = await q;
     if (error) throw error;
 
-    const rows = Array.isArray(data) ? data.map(normalizeIdObjectRow).filter((row): row is IdObjectRow => !!row) : [];
-    for (const r of rows) {
-      const id = String(r?.id ?? "").trim();
-      if (!id) continue;
-      issuesById.set(id, r);
-    }
+    const rows = Array.isArray(data)
+      ? data.map(normalizeWarehouseIssueFactRow).filter((row): row is WarehouseIssueFactRow => !!row)
+      : [];
+    for (const r of rows) issuesById.set(r.id, r);
 
     if (rows.length < pageSize) break;
     fromIdx += pageSize;
@@ -1469,15 +1820,21 @@ async function fetchAllFactRowsFromTables(p: {
   const issueIds = Array.from(issuesById.keys()).filter(id => id !== "");
   if (!issueIds.length) return [];
 
-  const issueItems: any[] = [];
+  const issueItems: WarehouseIssueItemFactRow[] = [];
   const tIssueItems = nowMs();
   await forEachChunkParallel(issueIds, 500, 6, async (ids) => {
     const { data, error } = await supabase
-      .from("warehouse_issue_items" as any)
+      .from("warehouse_issue_items" as never)
       .select("issue_id,rik_code,uom_id,qty,request_item_id")
-      .in("issue_id", ids as any);
+      .in("issue_id", ids);
     if (error) throw error;
-    if (Array.isArray(data)) issueItems.push(...data);
+    if (Array.isArray(data)) {
+      issueItems.push(
+        ...data
+          .map(normalizeWarehouseIssueItemFactRow)
+          .filter((row): row is WarehouseIssueItemFactRow => !!row),
+      );
+    }
   });
   logTiming("discipline.rows.tables.issue_items", tIssueItems);
 
@@ -1496,15 +1853,19 @@ async function fetchAllFactRowsFromTables(p: {
     const tReqItems = nowMs();
     await forEachChunkParallel(requestItemIds, 500, 6, async (ids) => {
       const { data, error } = await supabase
-        .from("request_items" as any)
+        .from("request_items" as never)
         .select("id,request_id")
-        .in("id", ids as any);
+        .in("id", ids);
       if (error) throw error;
 
-      const rows = Array.isArray(data) ? data.map(normalizeIdObjectRow).filter((row): row is IdObjectRow => !!row) : [];
+      const rows = Array.isArray(data)
+        ? data
+            .map(normalizeRequestItemRequestLinkRow)
+            .filter((row): row is RequestItemRequestLinkRow => !!row)
+        : [];
       for (const r of rows) {
-        const id = String(r?.id ?? "").trim();
-        const reqId = String(r?.request_id ?? "").trim();
+        const id = r.id;
+        const reqId = String(r.request_id ?? "").trim();
         if (id && reqId) requestIdByRequestItem.set(id, reqId);
       }
     });
@@ -1523,11 +1884,11 @@ async function fetchAllFactRowsFromTables(p: {
     ),
   );
 
-  const requestById = new Map<string, any>();
+  const requestById = new Map<string, RequestLookupRow>();
   if (!DIRECTOR_REPORTS_STRICT_FACT_SOURCES) {
     const tReq = nowMs();
     await forEachChunkParallel(requestIds, 500, 4, async (ids) => {
-      const rows = await fetchRequestsRowsSafe(ids as any);
+      const rows = await fetchRequestsRowsSafe(ids);
       for (const r of rows) {
         const id = String(r?.id ?? "").trim();
         if (id) requestById.set(id, r);
@@ -1671,7 +2032,7 @@ async function fetchDisciplineFactRowsFromTables(p: {
       let totalIssueItems = 0;
       while (true) {
         let q = supabase
-          .from("warehouse_issue_items" as any)
+          .from("warehouse_issue_items" as never)
           .select("id,issue_id,rik_code,uom_id,qty,request_item_id,warehouse_issues!inner(id,iss_date,object_name,work_name,status,note)")
           .eq("warehouse_issues.status", "Подтверждено");
         if (p.from) q = q.gte("warehouse_issues.iss_date", toRangeStart(p.from));
@@ -1681,23 +2042,25 @@ async function fetchDisciplineFactRowsFromTables(p: {
 
         const { data, error } = await q;
         if (error) throw error;
-        const rows = Array.isArray(data) ? data : [];
+        const rows = Array.isArray(data)
+          ? data
+              .map(normalizeJoinedWarehouseIssueItemFactRow)
+              .filter((row): row is JoinedWarehouseIssueItemFactRow => !!row)
+          : [];
         if (!rows.length) break;
         totalIssueItems += rows.length;
         const seenIssueItemIds = new Set<string>();
 
         for (const it of rows) {
-          const issueItemId = String((it as any)?.id ?? "").trim();
+          const issueItemId = String(it.id ?? "").trim();
           if (issueItemId) {
             if (seenIssueItemIds.has(issueItemId)) continue;
             seenIssueItemIds.add(issueItemId);
           }
-          const issue: any = Array.isArray((it as any)?.warehouse_issues)
-            ? ((it as any).warehouse_issues[0] ?? null)
-            : ((it as any)?.warehouse_issues ?? null);
+          const issue = extractJoinedWarehouseIssueFactRow(it);
           if (!issue) continue;
-          const issueId = String((it as any)?.issue_id ?? issue?.id ?? "").trim();
-          const code = String((it as any)?.rik_code ?? "").trim().toUpperCase();
+          const issueId = String(it.issue_id ?? issue.id ?? "").trim();
+          const code = String(it.rik_code ?? "").trim().toUpperCase();
           if (!issueId || !code) continue;
 
           const issueWorkName = String(issue?.work_name ?? "").trim();
@@ -1712,12 +2075,12 @@ async function fetchDisciplineFactRowsFromTables(p: {
             object_name: objectName,
             work_name: workName,
             level_name: levelName,
-            request_item_id: String((it as any)?.request_item_id ?? "").trim() || null,
+            request_item_id: String(it.request_item_id ?? "").trim() || null,
             rik_code: code,
             material_name_ru: code,
-            uom: String((it as any)?.uom_id ?? "").trim(),
-            qty: toNum((it as any)?.qty),
-            is_without_request: !String((it as any)?.request_item_id ?? "").trim(),
+            uom: String(it.uom_id ?? "").trim(),
+            qty: toNum(it.qty),
+            is_without_request: !String(it.request_item_id ?? "").trim(),
           });
         }
 
@@ -1745,13 +2108,13 @@ async function fetchDisciplineFactRowsFromTables(p: {
     return joinedRows;
   }
 
-  const issuesById = new Map<string, any>();
+  const issuesById = new Map<string, WarehouseIssueFactRow>();
   const pageSize = 2500;
   let fromIdx = 0;
 
   while (true) {
     let q = supabase
-      .from("warehouse_issues" as any)
+      .from("warehouse_issues" as never)
       .select("id,iss_date,object_name,work_name,request_id,status,note")
       .eq("status", "Подтверждено");
 
@@ -1765,12 +2128,10 @@ async function fetchDisciplineFactRowsFromTables(p: {
     const { data, error } = await q;
     if (error) throw error;
 
-    const rows = Array.isArray(data) ? data.map(normalizeIdObjectRow).filter((row): row is IdObjectRow => !!row) : [];
-    for (const r of rows) {
-      const id = String(r?.id ?? "").trim();
-      if (!id) continue;
-      issuesById.set(id, r);
-    }
+    const rows = Array.isArray(data)
+      ? data.map(normalizeWarehouseIssueFactRow).filter((row): row is WarehouseIssueFactRow => !!row)
+      : [];
+    for (const r of rows) issuesById.set(r.id, r);
 
     if (rows.length < pageSize) break;
     fromIdx += pageSize;
@@ -1783,15 +2144,21 @@ async function fetchDisciplineFactRowsFromTables(p: {
   const issueIds = Array.from(issuesById.keys());
   if (!issueIds.length) return [];
 
-  const issueItems: any[] = [];
+  const issueItems: WarehouseIssueItemFactRow[] = [];
   const tIssueItems = nowMs();
   await forEachChunkParallel(issueIds, 500, 6, async (ids) => {
     const { data, error } = await supabase
-      .from("warehouse_issue_items" as any)
+      .from("warehouse_issue_items" as never)
       .select("id,issue_id,rik_code,uom_id,qty,request_item_id")
-      .in("issue_id", ids as any);
+      .in("issue_id", ids);
     if (error) throw error;
-    if (Array.isArray(data)) issueItems.push(...data);
+    if (Array.isArray(data)) {
+      issueItems.push(
+        ...data
+          .map(normalizeWarehouseIssueItemFactRow)
+          .filter((row): row is WarehouseIssueItemFactRow => !!row),
+      );
+    }
   });
   logTiming("discipline.rows.light.issue_items", tIssueItems);
   if (REPORTS_TIMING) console.info(`[director_reports] discipline.rows.light.counts: issue_items=${issueItems.length}`);
@@ -1807,7 +2174,7 @@ async function fetchDisciplineFactRowsFromTables(p: {
     new Set(
       issueItems
         .filter((x) => {
-          const issueId = String((x as any)?.issue_id ?? "").trim();
+          const issueId = String(x.issue_id ?? "").trim();
           const issue = issuesById.get(issueId);
           if (!issue) return false;
           const issueReqId = String(issue?.request_id ?? "").trim();
@@ -1822,14 +2189,18 @@ async function fetchDisciplineFactRowsFromTables(p: {
     const tReqItems = nowMs();
     await forEachChunkParallel(requestItemIds, 500, 6, async (ids) => {
       const { data, error } = await supabase
-        .from("request_items" as any)
+        .from("request_items" as never)
         .select("id,request_id")
-        .in("id", ids as any);
+        .in("id", ids);
       if (error) throw error;
-      const rows = Array.isArray(data) ? data.map(normalizeIdObjectRow).filter((row): row is IdObjectRow => !!row) : [];
+      const rows = Array.isArray(data)
+        ? data
+            .map(normalizeRequestItemRequestLinkRow)
+            .filter((row): row is RequestItemRequestLinkRow => !!row)
+        : [];
       for (const r of rows) {
-        const id = String(r?.id ?? "").trim();
-        const reqId = String(r?.request_id ?? "").trim();
+        const id = r.id;
+        const reqId = String(r.request_id ?? "").trim();
         if (id && reqId) requestIdByRequestItem.set(id, reqId);
       }
     });
@@ -1849,11 +2220,11 @@ async function fetchDisciplineFactRowsFromTables(p: {
     ),
   );
 
-  const requestById = new Map<string, any>();
+  const requestById = new Map<string, RequestLookupRow>();
   if (requestIds.length && !DIRECTOR_REPORTS_STRICT_FACT_SOURCES) {
     const tReq = nowMs();
     await forEachChunkParallel(requestIds, 500, 4, async (ids) => {
-      const rows = await fetchRequestsDisciplineRowsSafe(ids as any);
+      const rows = await fetchRequestsDisciplineRowsSafe(ids);
       for (const r of rows) {
         const id = String(r?.id ?? "").trim();
         if (id) requestById.set(id, r);
@@ -1875,18 +2246,22 @@ async function fetchDisciplineFactRowsFromTables(p: {
     const tSystems = nowMs();
     await forEachChunkParallel(systemCodes, 500, 4, async (codes) => {
       const { data, error } = await supabase
-        .from("ref_systems" as any)
+        .from("ref_systems" as never)
         .select("code,name_human_ru,display_name,alias_ru,name")
-        .in("code", codes as any);
+        .in("code", codes);
       if (error) throw error;
-      const rows = Array.isArray(data) ? data.map(normalizeCodeNameRow).filter((row): row is CodeNameRow => !!row) : [];
+      const rows = Array.isArray(data)
+        ? data
+            .map(normalizeRefSystemLookupRow)
+            .filter((row): row is RefSystemLookupRow => !!row)
+        : [];
       for (const r of rows) {
-        const code = String(r?.code ?? "").trim();
+        const code = r.code;
         const name =
-          String(r?.name_human_ru ?? "").trim() ||
-          String(r?.display_name ?? "").trim() ||
-          String(r?.alias_ru ?? "").trim() ||
-          String(r?.name ?? "").trim();
+          String(r.name_human_ru ?? "").trim() ||
+          String(r.display_name ?? "").trim() ||
+          String(r.alias_ru ?? "").trim() ||
+          String(r.name ?? "").trim();
         if (code && name) systemNameByCode.set(code, name);
       }
     });
@@ -1897,7 +2272,7 @@ async function fetchDisciplineFactRowsFromTables(p: {
   const seenIssueItemIds = new Set<string>();
   const tBuild = nowMs();
   for (const it of issueItems) {
-    const issueItemId = String((it as any)?.id ?? "").trim();
+    const issueItemId = String(it.id ?? "").trim();
     if (issueItemId) {
       if (seenIssueItemIds.has(issueItemId)) continue;
       seenIssueItemIds.add(issueItemId);
@@ -1961,13 +2336,15 @@ export async function fetchDirectorWarehouseReportOptions(p: {
   {
     const t0 = nowMs();
     try {
-      const { data, error } = await supabase.rpc("wh_report_issued_by_object_fast" as any, {
+      const { data, error } = await runTypedRpc<DirectorReportOptionRow>("wh_report_issued_by_object_fast", {
         p_from: pFrom,
         p_to: pTo,
         p_object_id: null,
-      } as any);
+      });
       if (!error) {
-        const rpcRows = Array.isArray(data) ? data : [];
+        const rpcRows = Array.isArray(data)
+          ? data.map(normalizeDirectorReportOptionRow)
+          : [];
         const base = buildReportOptionsFromByObjRows(rpcRows);
         const enriched = await enrichObjectIdsForOptions({ from: pFrom, to: pTo }, base);
         logTiming("options.fast_rpc", t0);
@@ -2131,7 +2508,7 @@ async function fetchIssuePriceMapByCode(opts?: {
   );
   const hasScopedCodes = scopedCodes.length > 0;
 
-  const push = (codeRaw: any, priceRaw: any, qtyRaw: any) => {
+  const push = (codeRaw: unknown, priceRaw: unknown, qtyRaw: unknown) => {
     const code = String(codeRaw ?? "").trim().toUpperCase();
     const price = toNum(priceRaw);
     if (!code || !(price > 0)) return;
@@ -2147,24 +2524,26 @@ async function fetchIssuePriceMapByCode(opts?: {
       if (hasScopedCodes) {
         for (const part of chunk(scopedCodes, 500)) {
           const q = await supabase
-            .from("purchase_items" as any)
+            .from("purchase_items" as never)
             .select("rik_code,code,price,qty")
-            .in("rik_code", part as any)
+            .in("rik_code", part)
             .limit(50000);
           if (!q.error && Array.isArray(q.data)) {
             for (const r of q.data) {
-              push((r as any)?.rik_code ?? (r as any)?.code, (r as any)?.price, (r as any)?.qty);
+              const row = normalizePurchaseItemPriceRow(r);
+              push(row.rik_code ?? row.code, row.price, row.qty);
             }
           }
         }
       } else {
         const q = await supabase
-          .from("purchase_items" as any)
+          .from("purchase_items" as never)
           .select("rik_code,code,price,qty")
           .limit(50000);
         if (!q.error && Array.isArray(q.data)) {
           for (const r of q.data) {
-            push((r as any)?.rik_code ?? (r as any)?.code, (r as any)?.price, (r as any)?.qty);
+            const row = normalizePurchaseItemPriceRow(r);
+            push(row.rik_code ?? row.code, row.price, row.qty);
           }
         }
       }
@@ -2176,23 +2555,27 @@ async function fetchIssuePriceMapByCode(opts?: {
       if (hasScopedCodes) {
         for (const part of chunk(scopedCodes, 500)) {
           const q2 = await supabase
-            .from("proposal_items" as any)
+            .from("proposal_items" as never)
             .select("rik_code,price,qty")
-            .in("rik_code", part as any)
+            .in("rik_code", part)
             .limit(50000);
           if (!q2.error && Array.isArray(q2.data)) {
             for (const r of q2.data) {
-              push((r as any)?.rik_code, (r as any)?.price, (r as any)?.qty);
+              const row = normalizeProposalItemPriceRow(r);
+              push(row.rik_code, row.price, row.qty);
             }
           }
         }
       } else {
         const q2 = await supabase
-          .from("proposal_items" as any)
+          .from("proposal_items" as never)
           .select("rik_code,price,qty")
           .limit(50000);
         if (!q2.error && Array.isArray(q2.data)) {
-          for (const r of q2.data) push((r as any)?.rik_code, (r as any)?.price, (r as any)?.qty);
+          for (const r of q2.data) {
+            const row = normalizeProposalItemPriceRow(r);
+            push(row.rik_code, row.price, row.qty);
+          }
         }
       }
     } catch { }
@@ -2205,11 +2588,13 @@ async function fetchIssuePriceMapByCode(opts?: {
   return out;
 }
 
-const unwrapRpcPayload = (data: any): any => {
+const unwrapRpcPayload = (data: unknown): unknown => {
   if (Array.isArray(data)) {
     if (!data.length) return null;
     const first = data[0];
-    if (first && typeof first === "object" && "payload" in first) return (first as any).payload ?? null;
+    if (first && typeof first === "object" && "payload" in first) {
+      return (first as { payload?: unknown }).payload ?? null;
+    }
     return first ?? null;
   }
   return data ?? null;
@@ -2226,62 +2611,59 @@ const maybeLogDivergence = (key: string, details: Record<string, any>) => {
   console.warn("[director_reports] canonical_divergence", { key, ...details });
 };
 
-const adaptCanonicalMaterialsPayload = (payloadRaw: any): DirectorReportPayload | null => {
-  const p = payloadRaw && typeof payloadRaw === "object" ? payloadRaw : null;
+const adaptCanonicalMaterialsPayload = (payloadRaw: unknown): DirectorReportPayload | null => {
+  const p = payloadRaw && typeof payloadRaw === "object" ? (payloadRaw as CanonicalMaterialsPayloadRaw) : null;
   if (!p) return null;
-  const rows = Array.isArray((p as any).rows) ? (p as any).rows : [];
-  const kpi = (p as any).kpi && typeof (p as any).kpi === "object" ? (p as any).kpi : {};
-  const report_options =
-    (p as any).report_options && typeof (p as any).report_options === "object"
-      ? (p as any).report_options
-      : { objects: [], objectIdByName: {} };
+  const rows = Array.isArray(p.rows) ? p.rows : [];
+  const kpi = asRecord(p.kpi);
+  const reportOptions = asRecord(p.report_options);
+  const objectIdByName = asRecord(reportOptions.objectIdByName);
   return {
     ...p,
     rows,
     kpi: {
-      issues_total: toNum((kpi as any).issues_total),
-      issues_without_object: toNum((kpi as any).issues_without_object),
-      items_total: toNum((kpi as any).items_total),
-      items_without_request: toNum((kpi as any).items_without_request),
+      issues_total: toNum(kpi.issues_total),
+      issues_without_object: toNum(kpi.issues_without_object),
+      items_total: toNum(kpi.items_total),
+      items_without_request: toNum(kpi.items_without_request),
     },
     report_options: {
-      objects: Array.isArray((report_options as any).objects) ? (report_options as any).objects : [],
-      objectIdByName:
-        (report_options as any).objectIdByName && typeof (report_options as any).objectIdByName === "object"
-          ? (report_options as any).objectIdByName
-          : {},
+      objects: Array.isArray(reportOptions.objects) ? reportOptions.objects.map((v) => String(v)) : [],
+      objectIdByName: Object.fromEntries(
+        Object.entries(objectIdByName).map(([key, value]) => [key, value == null ? null : String(value)]),
+      ),
     },
-  } as DirectorReportPayload;
+  };
 };
 
-const adaptCanonicalWorksPayload = (payloadRaw: any): DirectorDisciplinePayload | null => {
+const adaptCanonicalWorksPayload = (payloadRaw: unknown): DirectorDisciplinePayload | null => {
   const p = payloadRaw && typeof payloadRaw === "object" ? payloadRaw : null;
   if (!p) return null;
-  const summary = (p as any).summary && typeof (p as any).summary === "object" ? (p as any).summary : null;
-  const works = Array.isArray((p as any).works) ? (p as any).works : null;
+  const summary = "summary" in p ? asRecord((p as { summary?: unknown }).summary) : null;
+  const works = "works" in p && Array.isArray((p as { works?: unknown }).works) ? (p as { works: unknown[] }).works : null;
   if (!summary || !works) return null;
   return p as DirectorDisciplinePayload;
 };
 
-const adaptCanonicalSummaryPayload = (payloadRaw: any): {
+const adaptCanonicalSummaryPayload = (payloadRaw: unknown): {
   issue_cost_total: number;
   purchase_cost_total: number;
   unevaluated_ratio: number;
   base_ready: boolean;
 } | null => {
-  const p = payloadRaw && typeof payloadRaw === "object" ? payloadRaw : null;
+  const p = payloadRaw && typeof payloadRaw === "object" ? (payloadRaw as CanonicalSummaryPayloadRaw) : null;
   if (!p) return null;
   return {
-    issue_cost_total: toNum((p as any).issue_cost_total),
-    purchase_cost_total: toNum((p as any).purchase_cost_total),
-    unevaluated_ratio: toNum((p as any).unevaluated_ratio),
-    base_ready: !!(p as any).base_ready,
+    issue_cost_total: toNum(p.issue_cost_total),
+    purchase_cost_total: toNum(p.purchase_cost_total),
+    unevaluated_ratio: toNum(p.unevaluated_ratio),
+    base_ready: !!p.base_ready,
   };
 };
 
 const materialSnapshotFromPayload = (payload: DirectorReportPayload | null | undefined) => {
-  const kpi: any = (payload as any)?.kpi ?? {};
-  const rowsCount = Array.isArray((payload as any)?.rows) ? (payload as any).rows.length : 0;
+  const kpi = payload?.kpi;
+  const rowsCount = Array.isArray(payload?.rows) ? payload.rows.length : 0;
   return {
     kpi: {
       items_total: toNum(kpi?.items_total),
@@ -2292,21 +2674,27 @@ const materialSnapshotFromPayload = (payload: DirectorReportPayload | null | und
 };
 
 const worksSnapshotFromPayload = (payload: DirectorDisciplinePayload | null | undefined) => {
-  const s: any = (payload as any)?.summary ?? {};
-  const works = Array.isArray((payload as any)?.works) ? (payload as any).works : [];
-  const reqPositions = works.reduce((acc: number, w: any) => acc + toNum(w?.req_positions), 0);
-  const freePositions = works.reduce((acc: number, w: any) => acc + toNum(w?.free_positions), 0);
+  const summary = payload?.summary;
+  const works = Array.isArray(payload?.works) ? payload.works : [];
+  const reqPositions = works.reduce((acc, w) => acc + toNum(w?.req_positions), 0);
+  const freePositions = works.reduce((acc, w) => acc + toNum(w?.free_positions), 0);
   return {
     summary: {
-      total_positions: toNum(s?.total_positions),
+      total_positions: toNum(summary?.total_positions),
       req_positions: reqPositions,
       free_positions: freePositions,
-      issue_cost_total: toNum(s?.issue_cost_total),
-      purchase_cost_total: toNum(s?.purchase_cost_total),
-      unpriced_issue_pct: toNum(s?.unpriced_issue_pct),
+      issue_cost_total: toNum(summary?.issue_cost_total),
+      purchase_cost_total: toNum(summary?.purchase_cost_total),
+      unpriced_issue_pct: toNum(summary?.unpriced_issue_pct),
     },
     works_count: works.length,
   };
+};
+
+const hasCanonicalWorksDetailLevels = (payload: DirectorDisciplinePayload | null | undefined): boolean => {
+  const works = Array.isArray(payload?.works) ? payload.works : [];
+  if (!works.length) return false;
+  return works.some((work) => Array.isArray(work?.levels) && work.levels.length > 0);
 };
 
 async function fetchDirectorReportCanonicalMaterials(p: {
@@ -2328,12 +2716,12 @@ async function fetchDirectorReportCanonicalMaterials(p: {
     new Set(
       adapted.rows
         .filter((r) => {
-          const code = String((r as any)?.rik_code ?? "").trim().toUpperCase();
+          const code = String(r.rik_code ?? "").trim().toUpperCase();
           if (!code) return false;
-          const nm = String((r as any)?.name_human_ru ?? "").trim();
+          const nm = String(r.name_human_ru ?? "").trim();
           return !nm || looksLikeMaterialCode(nm);
         })
-        .map((r) => String((r as any)?.rik_code ?? "").trim().toUpperCase())
+        .map((r) => String(r.rik_code ?? "").trim().toUpperCase())
         .filter(Boolean),
     ),
   );
@@ -2345,14 +2733,14 @@ async function fetchDirectorReportCanonicalMaterials(p: {
     return {
       ...adapted,
       rows: adapted.rows.map((r) => {
-        const code = String((r as any)?.rik_code ?? "").trim().toUpperCase();
+        const code = String(r.rik_code ?? "").trim().toUpperCase();
         const best = nameByCode.get(code);
         if (!best) return r;
-        const curr = String((r as any)?.name_human_ru ?? "").trim();
+        const curr = String(r.name_human_ru ?? "").trim();
         if (curr && !looksLikeMaterialCode(curr)) return r;
-        return { ...r, name_human_ru: best } as any;
+        return { ...r, name_human_ru: best };
       }),
-    } as DirectorReportPayload;
+    };
   } catch {
     return adapted;
   }
@@ -2403,17 +2791,18 @@ async function fetchPriceByRequestItemId(requestItemIds: string[]): Promise<Map<
   for (const part of chunk(ids, 500)) {
     try {
       const q = await supabase
-        .from("purchase_items" as any)
+        .from("purchase_items" as never)
         .select("request_item_id,price,qty")
-        .in("request_item_id", part as any);
+        .in("request_item_id", part);
       if (q.error || !Array.isArray(q.data)) continue;
 
       const agg = new Map<string, { sum: number; w: number }>();
       for (const r of q.data) {
-        const id = String((r as any)?.request_item_id ?? "").trim();
-        const price = toNum((r as any)?.price);
+        const row = normalizePurchaseItemRequestPriceRow(r);
+        const id = String(row.request_item_id ?? "").trim();
+        const price = toNum(row.price);
         if (!id || !(price > 0)) continue;
-        const w = Math.max(1, toNum((r as any)?.qty));
+        const w = Math.max(1, toNum(row.qty));
         const prev = agg.get(id) ?? { sum: 0, w: 0 };
         prev.sum += price * w;
         prev.w += w;
@@ -2441,7 +2830,7 @@ async function fetchPurchaseCostInPeriodScoped(args: {
   let fromIdx = 0;
   while (true) {
     let q = supabase
-      .from("wh_ledger" as any)
+      .from("wh_ledger" as never)
       .select("purchase_item_id,code,qty,moved_at,direction")
       .eq("direction", "in")
       .order("moved_at", { ascending: false })
@@ -2452,12 +2841,13 @@ async function fetchPurchaseCostInPeriodScoped(args: {
     const { data, error } = await q;
     if (error || !Array.isArray(data) || !data.length) break;
     for (const r of data) {
-      const pid = String((r as any)?.purchase_item_id ?? "").trim();
+      const row = normalizeLedgerIncomingRow(r);
+      const pid = String(row.purchase_item_id ?? "").trim();
       if (!pid) continue;
       incomingRows.push({
         purchase_item_id: pid,
-        code: String((r as any)?.code ?? "").trim().toUpperCase(),
-        qty: toNum((r as any)?.qty),
+        code: String(row.code ?? "").trim().toUpperCase(),
+        qty: toNum(row.qty),
       });
     }
     if (data.length < pageSize) break;
@@ -2472,16 +2862,17 @@ async function fetchPurchaseCostInPeriodScoped(args: {
   for (const part of chunk(purchaseItemIds, 500)) {
     try {
       const q = await supabase
-        .from("purchase_items" as any)
+        .from("purchase_items" as never)
           .select("id,purchase_id,rik_code,code,price")
-        .in("id", part as any);
+        .in("id", part);
       if (q.error || !Array.isArray(q.data)) continue;
       for (const r of q.data) {
-        const id = String((r as any)?.id ?? "").trim();
+        const row = normalizePurchaseItemByIdRow(r);
+        const id = String(row.id ?? "").trim();
         if (!id) continue;
-        const code = String((r as any)?.rik_code ?? (r as any)?.code ?? "").trim().toUpperCase();
-        const price = toNum((r as any)?.price);
-        const purchase_id = String((r as any)?.purchase_id ?? "").trim() || null;
+        const code = String(row.rik_code ?? row.code ?? "").trim().toUpperCase();
+        const price = toNum(row.price);
+        const purchase_id = String(row.purchase_id ?? "").trim() || null;
         piById.set(id, { purchase_id, code, price });
       }
     } catch { }
@@ -2501,13 +2892,14 @@ async function fetchPurchaseCostInPeriodScoped(args: {
     for (const part of chunk(purchaseIds, 500)) {
       try {
         const q = await supabase
-          .from("purchases" as any)
+          .from("purchases" as never)
           .select("id,object_name")
-          .in("id", part as any);
+          .in("id", part);
         if (q.error || !Array.isArray(q.data)) continue;
         for (const r of q.data) {
-          const id = String((r as any)?.id ?? "").trim();
-          const onm = canonicalObjectName((r as any)?.object_name);
+          const row = normalizePurchaseObjectRow(r);
+          const id = String(row.id ?? "").trim();
+          const onm = canonicalObjectName(row.object_name);
           if (id && onm === targetObject) matched.add(id);
         }
       } catch { }
@@ -2921,10 +3313,8 @@ export async function fetchDirectorWarehouseReportDiscipline(p: {
       });
       if (canonical) {
         if (REPORTS_TIMING) {
-          const worksCount = Array.isArray((canonical as any)?.works) ? (canonical as any).works.length : 0;
-          const hasDetailLevels =
-            worksCount > 0 &&
-            (canonical as any).works.some((w: any) => Array.isArray(w?.levels) && w.levels.length > 0);
+          const worksCount = Array.isArray(canonical?.works) ? canonical.works.length : 0;
+          const hasDetailLevels = hasCanonicalWorksDetailLevels(canonical);
           if (!hasDetailLevels) {
             console.info("[director_reports] discipline.canonical_works.accepted_without_levels");
           }

@@ -1,8 +1,31 @@
-﻿import React from "react";
-import { View, Text, Pressable, TextInput, ScrollView } from "react-native";
+import React from "react";
+import { View, Text, Pressable, TextInput, ScrollView, FlatList } from "react-native";
 
 import { D } from "../buyerUi";
 import type { StateSetter, StylesBag } from "./component.types";
+
+type RfqPreviewItem = { id: string; title: string; qty: number; uom: string };
+type DeliveryType = "delivery" | "pickup" | "on_site";
+type VisibilityType = "open" | "company_only";
+type PaymentTermsType = "cash" | "bank" | "after" | "deferred";
+
+const DEADLINE_HOURS = [6, 12, 24, 48, 72] as const;
+const DELIVERY_OPTIONS: ReadonlyArray<{ key: DeliveryType; label: string }> = [
+  { key: "delivery", label: "Доставка" },
+  { key: "pickup", label: "Самовывоз" },
+  { key: "on_site", label: "На объект" },
+];
+const VISIBILITY_OPTIONS: ReadonlyArray<{ key: VisibilityType; label: string }> = [
+  { key: "open", label: "Всем" },
+  { key: "company_only", label: "Только свои" },
+];
+const PAYMENT_TERMS_OPTIONS: ReadonlyArray<{ key: PaymentTermsType; label: string }> = [
+  { key: "cash", label: "Нал" },
+  { key: "bank", label: "Безнал" },
+  { key: "after", label: "По факту" },
+  { key: "deferred", label: "Отсрочка" },
+];
+
 export function BuyerRfqSheetBody({
   s,
 
@@ -38,7 +61,7 @@ export function BuyerRfqSheetBody({
   setRfqDeliveryWindow,
 
   rfqCountryCode,
-  setRfqCountryCodeTouched, // optional helper (можно не использовать)
+  setRfqCountryCodeTouched,
   rfqPhone,
   setRfqPhone,
 
@@ -74,7 +97,7 @@ export function BuyerRfqSheetBody({
   pickedIdsLen: number;
   rfqShowItems: boolean;
   setRfqShowItems: StateSetter<boolean>;
-  rfqPickedPreview: { id: string; title: string; qty: number; uom: string }[];
+  rfqPickedPreview: RfqPreviewItem[];
 
   fmtLocal: (iso: string) => string;
   rfqDeadlineIso: string;
@@ -84,12 +107,12 @@ export function BuyerRfqSheetBody({
   rfqDeliveryDays: string;
   setRfqDeliveryDays: (v: string) => void;
 
-  rfqDeliveryType: "delivery" | "pickup" | "on_site";
-  setRfqDeliveryType: (v: "delivery" | "pickup" | "on_site") => void;
+  rfqDeliveryType: DeliveryType;
+  setRfqDeliveryType: (v: DeliveryType) => void;
 
   rfqCity: string;
   setRfqCity: (v: string) => void;
-  rfqCountryCodeTouchedRef: { current: boolean } | null; // useRef<boolean>
+  rfqCountryCodeTouchedRef: { current: boolean } | null;
   inferCountryCode: (cityRaw?: string, phoneRaw?: string) => string;
   setRfqCountryCode: StateSetter<string>;
 
@@ -100,7 +123,7 @@ export function BuyerRfqSheetBody({
   setRfqDeliveryWindow: (v: string) => void;
 
   rfqCountryCode: string;
-  setRfqCountryCodeTouched?: (v: boolean) => void; // не обязателен
+  setRfqCountryCodeTouched?: (v: boolean) => void;
   rfqPhone: string;
   setRfqPhone: (v: string) => void;
 
@@ -110,11 +133,11 @@ export function BuyerRfqSheetBody({
   rfqRememberContacts: boolean;
   setRfqRememberContacts: StateSetter<boolean>;
 
-  rfqVisibility: "open" | "company_only";
-  setRfqVisibility: (v: "open" | "company_only") => void;
+  rfqVisibility: VisibilityType;
+  setRfqVisibility: (v: VisibilityType) => void;
 
-  rfqPaymentTerms: "cash" | "bank" | "after" | "deferred";
-  setRfqPaymentTerms: (v: "cash" | "bank" | "after" | "deferred") => void;
+  rfqPaymentTerms: PaymentTermsType;
+  setRfqPaymentTerms: (v: PaymentTermsType) => void;
 
   rfqNeedInvoice: boolean;
   setRfqNeedInvoice: StateSetter<boolean>;
@@ -128,9 +151,33 @@ export function BuyerRfqSheetBody({
 
   publishRfq: () => Promise<void> | void;
 }) {
+  const handleCityChange = React.useCallback(
+    (text: string) => {
+      setRfqCity(text);
+      if (!rfqCountryCodeTouchedRef?.current) setRfqCountryCode(inferCountryCode(text));
+    },
+    [inferCountryCode, rfqCountryCodeTouchedRef, setRfqCity, setRfqCountryCode],
+  );
+  const handleToggleCountryCode = React.useCallback(() => {
+    if (rfqCountryCodeTouchedRef) rfqCountryCodeTouchedRef.current = true;
+    setRfqCountryCodeTouched?.(true);
+    setRfqCountryCode((prev) => (prev === "+996" ? "+7" : "+996"));
+  }, [rfqCountryCodeTouchedRef, setRfqCountryCode, setRfqCountryCodeTouched]);
+  const renderPickedPreviewItem = React.useCallback(
+    ({ item }: { item: RfqPreviewItem }) => (
+      <Text numberOfLines={1} style={{ color: D.text, fontWeight: "700" }}>
+        • {item.title} — {item.qty} {item.uom}
+      </Text>
+    ),
+    [],
+  );
+  const keyExtractor = React.useCallback((item: RfqPreviewItem, index: number) => `${item.id}-${index}`, []);
+  const handlePublish = React.useCallback(async () => {
+    await publishRfq();
+  }, [publishRfq]);
+
   return (
     <View style={{ flex: 1, minHeight: 0 }}>
-      {/* HEADER */}
       <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
         <Text style={[s.modalTitle, { flex: 1, color: D.text }]}>Торги (RFQ)</Text>
 
@@ -146,7 +193,6 @@ export function BuyerRfqSheetBody({
         </Pressable>
       </View>
 
-      {/* POSITIONS */}
       <View
         style={{
           marginTop: 10,
@@ -176,12 +222,18 @@ export function BuyerRfqSheetBody({
         </View>
 
         {rfqShowItems ? (
-          <View style={{ marginTop: 8, gap: 6 }}>
-            {rfqPickedPreview.map((x) => (
-              <Text key={x.id} numberOfLines={1} style={{ color: D.text, fontWeight: "700" }}>
-                • {x.title} — {x.qty} {x.uom}
-              </Text>
-            ))}
+          <View style={{ marginTop: 8 }}>
+            <FlatList
+              data={rfqPickedPreview}
+              renderItem={renderPickedPreviewItem}
+              keyExtractor={keyExtractor}
+              scrollEnabled={false}
+              removeClippedSubviews={false}
+              initialNumToRender={8}
+              maxToRenderPerBatch={8}
+              windowSize={5}
+              ItemSeparatorComponent={() => <View style={{ height: 6 }} />}
+            />
             {pickedIdsLen > rfqPickedPreview.length ? (
               <Text style={{ color: D.sub, marginTop: 4, fontWeight: "800" }}>
                 + ещё {pickedIdsLen - rfqPickedPreview.length}
@@ -191,33 +243,31 @@ export function BuyerRfqSheetBody({
         ) : null}
       </View>
 
-      {/* SCROLL CONTENT */}
       <ScrollView
         style={{ flex: 1, marginTop: 10 }}
         contentContainerStyle={{ paddingBottom: 24 }}
         keyboardShouldPersistTaps="handled"
       >
-        {/* SECTION: СРОКИ */}
         <Text style={[s.modalHelp, { marginTop: 2, color: D.sub, fontWeight: "800" }]}>Сроки</Text>
         <Text style={{ fontWeight: "900", marginBottom: 6, color: D.text }}>
           {fmtLocal(rfqDeadlineIso)}
         </Text>
 
         <View style={{ flexDirection: "row", gap: 8, flexWrap: "wrap" }}>
-          {[6, 12, 24, 48, 72].map((h) => (
+          {DEADLINE_HOURS.map((hours) => (
             <Pressable
-              key={h}
-              onPress={() => setDeadlineHours(h)}
+              key={hours}
+              onPress={() => setDeadlineHours(hours)}
               style={[
                 s.smallBtn,
                 { borderColor: "rgba(255,255,255,0.18)", backgroundColor: "rgba(255,255,255,0.06)" },
-                isDeadlineHoursActive(h) && {
+                isDeadlineHoursActive(hours) && {
                   backgroundColor: "rgba(34,197,94,0.18)",
                   borderColor: "rgba(34,197,94,0.55)",
                 },
               ]}
             >
-              <Text style={{ fontWeight: "900", color: D.text }}>{h} ч</Text>
+              <Text style={{ fontWeight: "900", color: D.text }}>{hours} ч</Text>
             </Pressable>
           ))}
         </View>
@@ -236,27 +286,22 @@ export function BuyerRfqSheetBody({
           placeholderTextColor={D.sub}
         />
 
-        {/* SECTION: ДОСТАВКА */}
         <Text style={[s.modalHelp, { marginTop: 14, color: D.sub, fontWeight: "800" }]}>Доставка</Text>
         <View style={{ flexDirection: "row", gap: 8, flexWrap: "wrap" }}>
-          {[
-            { k: "delivery", t: "Доставка" },
-            { k: "pickup", t: "Самовывоз" },
-            { k: "on_site", t: "На объект" },
-          ].map((x) => (
+          {DELIVERY_OPTIONS.map((option) => (
             <Pressable
-              key={x.k}
-              onPress={() => setRfqDeliveryType(x.k as "delivery" | "pickup" | "on_site")}
+              key={option.key}
+              onPress={() => setRfqDeliveryType(option.key)}
               style={[
                 s.smallBtn,
                 { borderColor: "rgba(255,255,255,0.18)", backgroundColor: "rgba(255,255,255,0.06)" },
-                rfqDeliveryType === (x.k as "delivery" | "pickup" | "on_site") && {
+                rfqDeliveryType === option.key && {
                   backgroundColor: "rgba(34,197,94,0.18)",
                   borderColor: "rgba(34,197,94,0.55)",
                 },
               ]}
             >
-              <Text style={{ fontWeight: "900", color: D.text }}>{x.t}</Text>
+              <Text style={{ fontWeight: "900", color: D.text }}>{option.label}</Text>
             </Pressable>
           ))}
         </View>
@@ -264,10 +309,7 @@ export function BuyerRfqSheetBody({
         <Text style={[s.modalHelp, { marginTop: 10, color: D.sub, fontWeight: "800" }]}>Город</Text>
         <TextInput
           value={rfqCity}
-          onChangeText={(t) => {
-            setRfqCity(t);
-            if (!rfqCountryCodeTouchedRef?.current) setRfqCountryCode(inferCountryCode(t));
-          }}
+          onChangeText={handleCityChange}
           placeholder="Бишкек"
           placeholderTextColor={D.sub}
           style={[
@@ -299,16 +341,12 @@ export function BuyerRfqSheetBody({
           ]}
         />
 
-        {/* CONTACTS */}
         <Text style={[s.modalHelp, { marginTop: 14, color: D.sub, fontWeight: "800" }]}>Контакты</Text>
 
         <Text style={[s.modalHelp, { color: D.sub, fontWeight: "800" }]}>Телефон</Text>
         <View style={{ flexDirection: "row", gap: 8 }}>
           <Pressable
-            onPress={() => {
-              if (rfqCountryCodeTouchedRef) rfqCountryCodeTouchedRef.current = true;
-              setRfqCountryCode((prev) => (prev === "+996" ? "+7" : "+996"));
-            }}
+            onPress={handleToggleCountryCode}
             style={[
               s.input,
               {
@@ -325,7 +363,7 @@ export function BuyerRfqSheetBody({
 
           <TextInput
             value={rfqPhone}
-            onChangeText={(t) => setRfqPhone(String(t).replace(/[^\d]/g, ""))}
+            onChangeText={(text) => setRfqPhone(String(text).replace(/[^\d]/g, ""))}
             placeholder="номер"
             placeholderTextColor={D.sub}
             keyboardType="phone-pad"
@@ -355,7 +393,7 @@ export function BuyerRfqSheetBody({
         />
 
         <Pressable
-          onPress={() => setRfqRememberContacts((v) => !v)}
+          onPress={() => setRfqRememberContacts((value) => !value)}
           style={[
             s.smallBtn,
             { marginTop: 10, borderColor: "rgba(255,255,255,0.18)", backgroundColor: "rgba(255,255,255,0.06)" },
@@ -366,50 +404,44 @@ export function BuyerRfqSheetBody({
           </Text>
         </Pressable>
 
-        {/* PARAMETERS */}
         <Text style={[s.modalHelp, { marginTop: 14, color: D.sub, fontWeight: "800" }]}>Параметры</Text>
 
         <Text style={[s.modalHelp, { color: D.sub, fontWeight: "800" }]}>Видимость</Text>
         <View style={{ flexDirection: "row", gap: 8, flexWrap: "wrap" }}>
-          {[
-            { k: "open", t: "Всем" },
-            { k: "company_only", t: "Только свои" },
-          ].map((x) => (
+          {VISIBILITY_OPTIONS.map((option) => (
             <Pressable
-              key={x.k}
-              onPress={() => setRfqVisibility(x.k as "open" | "company_only")}
+              key={option.key}
+              onPress={() => setRfqVisibility(option.key)}
               style={[
                 s.smallBtn,
                 { borderColor: "rgba(255,255,255,0.18)", backgroundColor: "rgba(255,255,255,0.06)" },
-                rfqVisibility === (x.k as "open" | "company_only") && {
+                rfqVisibility === option.key && {
                   backgroundColor: "rgba(34,197,94,0.18)",
                   borderColor: "rgba(34,197,94,0.55)",
                 },
               ]}
             >
-              <Text style={{ fontWeight: "900", color: D.text }}>{x.t}</Text>
+              <Text style={{ fontWeight: "900", color: D.text }}>{option.label}</Text>
             </Pressable>
           ))}
         </View>
 
         <Text style={[s.modalHelp, { marginTop: 10, color: D.sub, fontWeight: "800" }]}>Условия оплаты</Text>
         <View style={{ flexDirection: "row", gap: 8, flexWrap: "wrap" }}>
-          {(["cash", "bank", "after", "deferred"] as const).map((k) => (
+          {PAYMENT_TERMS_OPTIONS.map((option) => (
             <Pressable
-              key={k}
-              onPress={() => setRfqPaymentTerms(k)}
+              key={option.key}
+              onPress={() => setRfqPaymentTerms(option.key)}
               style={[
                 s.smallBtn,
                 { borderColor: "rgba(255,255,255,0.18)", backgroundColor: "rgba(255,255,255,0.06)" },
-                rfqPaymentTerms === k && {
+                rfqPaymentTerms === option.key && {
                   backgroundColor: "rgba(34,197,94,0.18)",
                   borderColor: "rgba(34,197,94,0.55)",
                 },
               ]}
             >
-              <Text style={{ fontWeight: "900", color: D.text }}>
-                {k === "cash" ? "Нал" : k === "bank" ? "Безнал" : k === "after" ? "По факту" : "Отсрочка"}
-              </Text>
+              <Text style={{ fontWeight: "900", color: D.text }}>{option.label}</Text>
             </Pressable>
           ))}
         </View>
@@ -417,7 +449,7 @@ export function BuyerRfqSheetBody({
         <Text style={[s.modalHelp, { marginTop: 10, color: D.sub, fontWeight: "800" }]}>Документы</Text>
         <View style={{ flexDirection: "row", gap: 8, flexWrap: "wrap" }}>
           <Pressable
-            onPress={() => setRfqNeedInvoice((v) => !v)}
+            onPress={() => setRfqNeedInvoice((value) => !value)}
             style={[
               s.smallBtn,
               { borderColor: "rgba(255,255,255,0.18)", backgroundColor: "rgba(255,255,255,0.06)" },
@@ -428,7 +460,7 @@ export function BuyerRfqSheetBody({
           </Pressable>
 
           <Pressable
-            onPress={() => setRfqNeedWaybill((v) => !v)}
+            onPress={() => setRfqNeedWaybill((value) => !value)}
             style={[
               s.smallBtn,
               { borderColor: "rgba(255,255,255,0.18)", backgroundColor: "rgba(255,255,255,0.06)" },
@@ -439,7 +471,7 @@ export function BuyerRfqSheetBody({
           </Pressable>
 
           <Pressable
-            onPress={() => setRfqNeedCert((v) => !v)}
+            onPress={() => setRfqNeedCert((value) => !value)}
             style={[
               s.smallBtn,
               { borderColor: "rgba(255,255,255,0.18)", backgroundColor: "rgba(255,255,255,0.06)" },
@@ -463,7 +495,6 @@ export function BuyerRfqSheetBody({
         />
       </ScrollView>
 
-      {/* FOOTER */}
       <View style={{ flexDirection: "row", gap: 10, marginTop: 12 }}>
         <Pressable
           onPress={closeSheet}
@@ -478,7 +509,9 @@ export function BuyerRfqSheetBody({
 
         <Pressable
           disabled={rfqBusy}
-          onPress={async () => { await publishRfq(); }}
+          onPress={() => {
+            void handlePublish();
+          }}
           style={[
             s.smallBtn,
             { flex: 1, alignItems: "center", backgroundColor: "#22C55E", borderColor: "#22C55E", opacity: rfqBusy ? 0.6 : 1 },

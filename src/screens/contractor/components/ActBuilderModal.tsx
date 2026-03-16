@@ -1,13 +1,13 @@
-﻿import React from "react";
-import { Modal, ScrollView, Text, View } from "react-native";
+import React from "react";
+import { FlatList, Modal, Text, View, type ListRenderItemInfo } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import type { ActBuilderItem, ActBuilderWorkItem } from "../types";
 import ModalSheetHeader from "./ModalSheetHeader";
 import ActBuilderHeaderInfo from "./ActBuilderHeaderInfo";
-import ActBuilderWorksList from "./ActBuilderWorksList";
-import ActBuilderMaterialsList from "./ActBuilderMaterialsList";
 import ActBuilderTotalsCard from "./ActBuilderTotalsCard";
 import ActBuilderFooter from "./ActBuilderFooter";
+import ActBuilderWorkRow from "./ActBuilderWorkRow";
+import ActBuilderMaterialRow from "./ActBuilderMaterialRow";
 
 type JobHeader = {
   contract_number?: string | null;
@@ -54,7 +54,160 @@ type Props = {
   onSubmit: () => void;
 };
 
+type ActBuilderListEntry =
+  | { key: string; kind: "work"; item: ActBuilderWorkItem; index: number }
+  | { key: string; kind: "works_empty" }
+  | { key: string; kind: "counts" }
+  | { key: string; kind: "materials_title" }
+  | { key: string; kind: "material"; item: ActBuilderItem; index: number }
+  | { key: string; kind: "materials_empty" };
+
 export default function ActBuilderModal(props: Props) {
+  const listData = React.useMemo<ActBuilderListEntry[]>(() => {
+    const entries: ActBuilderListEntry[] = [];
+
+    if (props.works.length > 0) {
+      entries.push(
+        ...props.works.map((item, index) => ({
+          key: `work:${item.id}`,
+          kind: "work" as const,
+          item,
+          index,
+        })),
+      );
+    } else {
+      entries.push({ key: "works_empty", kind: "works_empty" });
+    }
+
+    entries.push(
+      { key: "counts", kind: "counts" },
+      { key: "materials_title", kind: "materials_title" },
+    );
+
+    if (props.items.length > 0) {
+      entries.push(
+        ...props.items.map((item, index) => ({
+          key: `material:${item.id}`,
+          kind: "material" as const,
+          item,
+          index,
+        })),
+      );
+    } else {
+      entries.push({ key: "materials_empty", kind: "materials_empty" });
+    }
+
+    return entries;
+  }, [props.items, props.works]);
+
+  const listHeader = React.useMemo(
+    () => (
+      <ActBuilderHeaderInfo
+        jobHeader={props.jobHeader}
+        resolvedObjectName={props.resolvedObjectName}
+        selectedWorkCount={props.selectedWorkCount}
+        selectedMatCount={props.selectedMatCount}
+        matSum={props.actBuilderMatSum}
+        actDateText={props.actBuilderDateText}
+      />
+    ),
+    [
+      props.jobHeader,
+      props.resolvedObjectName,
+      props.selectedWorkCount,
+      props.selectedMatCount,
+      props.actBuilderMatSum,
+      props.actBuilderDateText,
+    ],
+  );
+
+  const listFooter = React.useMemo(
+    () => <ActBuilderTotalsCard workSum={props.actBuilderWorkSum} matSum={props.actBuilderMatSum} />,
+    [props.actBuilderMatSum, props.actBuilderWorkSum],
+  );
+
+  const renderItem = React.useCallback(
+    ({ item }: ListRenderItemInfo<ActBuilderListEntry>) => {
+      switch (item.kind) {
+        case "work":
+          return (
+            <ActBuilderWorkRow
+              item={item.item}
+              expanded={props.expandedWorkId === item.item.id}
+              resolvedObjectName={props.resolvedObjectName}
+              onToggleExpanded={() => props.onToggleExpandedWork(item.item.id)}
+              onToggleInclude={() => props.onToggleIncludeWork(item.index)}
+              onQtyChange={(txt) => props.onQtyChangeWork(item.index, txt)}
+              onUnitChange={(txt) => props.onUnitChangeWork(item.index, txt)}
+              onPriceChange={(txt) => props.onPriceChangeWork(item.index, txt)}
+            />
+          );
+        case "works_empty":
+          return <Text style={{ fontSize: 12, color: "#94a3b8" }}>Нет работ для выбора</Text>;
+        case "counts":
+          return (
+            <View style={{ marginBottom: 8 }}>
+              <Text style={{ color: "#334155", fontSize: 12, marginBottom: 4 }}>
+                Работ с выбором: {props.selectedWorkCount}
+              </Text>
+              <Text style={{ color: "#334155", fontSize: 12 }}>
+                Материалов с выбором: {props.selectedMatCount}
+              </Text>
+            </View>
+          );
+        case "materials_title":
+          return (
+            <Text style={{ fontWeight: "700", color: "#334155", marginBottom: 8 }}>
+              Материалы по складу
+            </Text>
+          );
+        case "material":
+          return (
+            <ActBuilderMaterialRow
+              item={item.item}
+              expanded={props.expandedMatId === item.item.id}
+              onToggleExpanded={() => props.onToggleExpandedMat(item.item.id)}
+              onToggleInclude={() => props.onToggleIncludeMat(item.index)}
+              onDecrement={() => props.onDecrementMat(item.index)}
+              onIncrement={() => props.onIncrementMat(item.index)}
+              onPriceChange={(txt) => props.onPriceChangeMat(item.index, txt)}
+            />
+          );
+        case "materials_empty":
+          return (
+            <View
+              style={{
+                backgroundColor: "#fff",
+                borderWidth: 1,
+                borderColor: "#e2e8f0",
+                borderRadius: 12,
+                padding: 12,
+              }}
+            >
+              <Text style={{ color: "#94a3b8" }}>Нет позиций для акта.</Text>
+            </View>
+          );
+      }
+    },
+    [
+      props.expandedMatId,
+      props.expandedWorkId,
+      props.onDecrementMat,
+      props.onIncrementMat,
+      props.onPriceChangeMat,
+      props.onPriceChangeWork,
+      props.onQtyChangeWork,
+      props.onToggleExpandedMat,
+      props.onToggleExpandedWork,
+      props.onToggleIncludeMat,
+      props.onToggleIncludeWork,
+      props.onUnitChangeWork,
+      props.resolvedObjectName,
+      props.selectedMatCount,
+      props.selectedWorkCount,
+    ],
+  );
+
   return (
     <Modal
       visible={props.visible}
@@ -88,46 +241,20 @@ export default function ActBuilderModal(props: Props) {
           closeTextStyle={{ color: "#64748b", fontWeight: "800", fontSize: 20 }}
         />
 
-        <ScrollView style={{ flex: 1 }} keyboardShouldPersistTaps="handled">
-          <View style={{ padding: 16, gap: 16 }}>
-            <ActBuilderHeaderInfo
-              jobHeader={props.jobHeader}
-              resolvedObjectName={props.resolvedObjectName}
-              selectedWorkCount={props.selectedWorkCount}
-              selectedMatCount={props.selectedMatCount}
-              matSum={props.actBuilderMatSum}
-              actDateText={props.actBuilderDateText}
-            />
-            <ActBuilderWorksList
-              works={props.works}
-              expandedWorkId={props.expandedWorkId}
-              resolvedObjectName={props.resolvedObjectName}
-              onToggleExpanded={props.onToggleExpandedWork}
-              onToggleInclude={props.onToggleIncludeWork}
-              onQtyChange={props.onQtyChangeWork}
-              onUnitChange={props.onUnitChangeWork}
-              onPriceChange={props.onPriceChangeWork}
-            />
-            <Text style={{ color: "#334155", fontSize: 12, marginBottom: 4 }}>
-              Работ с выбором: {props.selectedWorkCount}
-            </Text>
-            <Text style={{ color: "#334155", fontSize: 12, marginBottom: 8 }}>
-              Материалов с выбором: {props.selectedMatCount}
-            </Text>
-            <Text style={{ fontWeight: "700", color: "#334155", marginBottom: 8 }}>Материалы по складу</Text>
-
-            <ActBuilderMaterialsList
-              items={props.items}
-              expandedMatId={props.expandedMatId}
-              onToggleExpanded={props.onToggleExpandedMat}
-              onToggleInclude={props.onToggleIncludeMat}
-              onDecrement={props.onDecrementMat}
-              onIncrement={props.onIncrementMat}
-              onPriceChange={props.onPriceChangeMat}
-            />
-            <ActBuilderTotalsCard workSum={props.actBuilderWorkSum} matSum={props.actBuilderMatSum} />
-          </View>
-        </ScrollView>
+        <FlatList
+          data={listData}
+          style={{ flex: 1 }}
+          contentContainerStyle={{ padding: 16, paddingBottom: 20 }}
+          keyboardShouldPersistTaps="handled"
+          keyExtractor={(item) => item.key}
+          renderItem={renderItem}
+          ListHeaderComponent={listHeader}
+          ListFooterComponent={listFooter}
+          initialNumToRender={10}
+          maxToRenderPerBatch={10}
+          windowSize={8}
+          removeClippedSubviews={false}
+        />
 
         <ActBuilderFooter
           saving={props.saving}

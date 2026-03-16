@@ -1,5 +1,5 @@
-﻿import React from "react";
-import { View, Text, TextInput, ScrollView, Pressable } from "react-native";
+import React from "react";
+import { FlatList, View, Text, TextInput, Pressable, type ListRenderItemInfo } from "react-native";
 
 import type { Attachment, DraftAttachmentMap } from "../buyer.types";
 import { D, UI } from "../buyerUi";
@@ -74,179 +74,224 @@ export function BuyerReworkSheetBody({
   rwSendToAccounting: () => Promise<void> | void;
   closeSheet: () => void;
 }) {
+  const listHeader = React.useMemo(
+    () => (
+      <>
+        <Text style={{ fontSize: 12, color: D.sub, fontWeight: "800" }}>
+          {rwPid ? `Документ: #${rwPid.slice(0, 8)}` : "Документ не выбран"}
+        </Text>
+
+        {!!rwReason && (
+          <View
+            style={{
+              marginTop: 10,
+              padding: 12,
+              borderWidth: 1,
+              borderColor: "rgba(255,255,255,0.12)",
+              borderRadius: 14,
+              backgroundColor: "rgba(255,255,255,0.06)",
+            }}
+          >
+            <Text style={{ fontWeight: "900", color: "#F59E0B" }}>Причина возврата</Text>
+            <Text style={{ color: D.text, marginTop: 6, fontWeight: "700" }}>
+              {rwReason || "—"}
+            </Text>
+          </View>
+        )}
+      </>
+    ),
+    [rwPid, rwReason],
+  );
+
+  const renderItem = React.useCallback(
+    ({ item, index }: ListRenderItemInfo<ReworkItem>) => (
+      <View
+        style={{
+          marginTop: 10,
+          padding: 12,
+          borderRadius: 18,
+          backgroundColor: "rgba(16,24,38,0.92)",
+          borderWidth: 1.25,
+          borderColor: "rgba(255,255,255,0.16)",
+        }}
+      >
+        <Text style={{ fontWeight: "900", color: D.text }}>
+          {item.name_human || `Позиция ${item.request_item_id}`}
+        </Text>
+
+        <Text style={{ color: D.sub, fontWeight: "800", marginTop: 6 }}>
+          {`${item.qty ?? "—"} ${item.uom ?? ""}`}
+        </Text>
+
+        <TextInput
+          placeholder="Цена"
+          keyboardType="decimal-pad"
+          value={item.price ?? ""}
+          onChangeText={(v) =>
+            setRwItems((prev) =>
+              prev.map((x, i) => (i === index ? { ...x, price: v } : x))
+            )
+          }
+          style={[s.input, { marginTop: 10 }]}
+        />
+
+        <TextInput
+          placeholder="Поставщик"
+          value={item.supplier ?? ""}
+          onChangeText={(v) =>
+            setRwItems((prev) =>
+              prev.map((x, i) => (i === index ? { ...x, supplier: v } : x))
+            )
+          }
+          style={[s.input, { marginTop: 10 }]}
+        />
+
+        <TextInput
+          placeholder="Примечание"
+          value={item.note ?? ""}
+          onChangeText={(v) =>
+            setRwItems((prev) =>
+              prev.map((x, i) => (i === index ? { ...x, note: v } : x))
+            )
+          }
+          multiline
+          style={[s.input, { marginTop: 10, minHeight: 70 }]}
+        />
+      </View>
+    ),
+    [s.input, setRwItems],
+  );
+
+  const listEmpty = React.useMemo(
+    () => (
+      <Text style={{ color: D.sub, fontWeight: "800", marginTop: 10 }}>
+        {rwBusy ? "Загрузка…" : "Нет строк в предложении"}
+      </Text>
+    ),
+    [rwBusy],
+  );
+
+  const listFooter = React.useMemo(
+    () => (
+      <>
+        <View style={{ marginTop: 14 }}>
+          <Text style={{ fontSize: 12, color: D.sub, fontWeight: "800" }}>Счёт</Text>
+
+          <TextInput
+            placeholder="Номер счёта"
+            value={rwInvNumber}
+            onChangeText={setRwInvNumber}
+            style={[s.input, { marginTop: 6 }]}
+          />
+
+          <TextInput
+            placeholder="Дата (YYYY-MM-DD)"
+            value={rwInvDate}
+            onChangeText={setRwInvDate}
+            style={[s.input, { marginTop: 6 }]}
+          />
+
+          <TextInput
+            placeholder="Сумма"
+            keyboardType="decimal-pad"
+            value={rwInvAmount}
+            onChangeText={setRwInvAmount}
+            style={[s.input, { marginTop: 6 }]}
+          />
+
+          <TextInput
+            placeholder="Валюта"
+            value={rwInvCurrency}
+            onChangeText={setRwInvCurrency}
+            style={[s.input, { marginTop: 6 }]}
+          />
+
+          <Pressable
+            onPress={async () => {
+              const f = await pickInvoiceFile();
+              if (f) setRwInvFile(f);
+            }}
+            style={[s.smallBtn, { marginTop: 10 }]}
+          >
+            <Text style={{ color: D.text, fontWeight: "900" }}>
+              {rwInvUploadedName
+                ? `Счёт прикреплён: ${rwInvUploadedName}`
+                : "Прикрепить счёт"}
+            </Text>
+          </Pressable>
+        </View>
+
+        <View style={{ flexDirection: "row", gap: 10, marginTop: 14 }}>
+          <WideActionButton
+            label="Сохранить"
+            variant="blue"
+            disabled={rwBusy}
+            onPress={rwSaveItems}
+          />
+
+          <WideActionButton
+            label="Директору"
+            variant="green"
+            disabled={rwBusy}
+            onPress={rwSendToDirector}
+          />
+        </View>
+
+        <View style={{ flexDirection: "row", gap: 10, marginTop: 10 }}>
+          <WideActionButton
+            label="Бухгалтеру"
+            variant="green"
+            disabled={rwBusy}
+            onPress={rwSendToAccounting}
+          />
+
+          <WideActionButton
+            label="Закрыть"
+            variant="neutral"
+            disabled={rwBusy}
+            onPress={closeSheet}
+          />
+        </View>
+      </>
+    ),
+    [
+      closeSheet,
+      pickInvoiceFile,
+      rwBusy,
+      rwInvAmount,
+      rwInvCurrency,
+      rwInvDate,
+      rwInvNumber,
+      rwInvUploadedName,
+      rwSaveItems,
+      rwSendToAccounting,
+      rwSendToDirector,
+      s.input,
+      s.smallBtn,
+      setRwInvAmount,
+      setRwInvCurrency,
+      setRwInvDate,
+      setRwInvFile,
+      setRwInvNumber,
+    ],
+  );
+
   return (
-    <ScrollView
+    <FlatList
+      data={rwItems}
+      keyExtractor={(item, index) => `${item.request_item_id}-${index}`}
       style={{ flex: 1 }}
       contentContainerStyle={{ paddingBottom: 24 }}
       keyboardShouldPersistTaps="handled"
-    >
-      <Text style={{ fontSize: 12, color: D.sub, fontWeight: "800" }}>
-        {rwPid ? `Документ: #${rwPid.slice(0, 8)}` : "Документ не выбран"}
-      </Text>
-
-      {!!rwReason && (
-        <View
-          style={{
-            marginTop: 10,
-            padding: 12,
-            borderWidth: 1,
-            borderColor: "rgba(255,255,255,0.12)",
-            borderRadius: 14,
-            backgroundColor: "rgba(255,255,255,0.06)",
-          }}
-        >
-          <Text style={{ fontWeight: "900", color: "#F59E0B" }}>Причина возврата</Text>
-          <Text style={{ color: D.text, marginTop: 6, fontWeight: "700" }}>
-            {rwReason || "—"}
-          </Text>
-        </View>
-      )}
-
-      <View style={{ marginTop: 10 }}>
-        {rwItems.length === 0 ? (
-          <Text style={{ color: D.sub, fontWeight: "800" }}>
-            {rwBusy ? "Загрузка…" : "Нет строк в предложении"}
-          </Text>
-        ) : (
-          rwItems.map((it, idx: number) => (
-            <View
-              key={`${it.request_item_id}-${idx}`}
-              style={{
-                marginTop: 10,
-                padding: 12,
-                borderRadius: 18,
-                backgroundColor: "rgba(16,24,38,0.92)",
-                borderWidth: 1.25,
-                borderColor: "rgba(255,255,255,0.16)",
-              }}
-            >
-              <Text style={{ fontWeight: "900", color: D.text }}>
-                {it.name_human || `Позиция ${it.request_item_id}`}
-              </Text>
-
-              <Text style={{ color: D.sub, fontWeight: "800", marginTop: 6 }}>
-                {`${it.qty ?? "—"} ${it.uom ?? ""}`}
-              </Text>
-
-              <TextInput
-                placeholder="Цена"
-                keyboardType="decimal-pad"
-                value={it.price ?? ""}
-                onChangeText={(v) =>
-                  setRwItems((prev) =>
-                    prev.map((x, i) => (i === idx ? { ...x, price: v } : x))
-                  )
-                }
-                style={[s.input, { marginTop: 10 }]}
-              />
-
-              <TextInput
-                placeholder="Поставщик"
-                value={it.supplier ?? ""}
-                onChangeText={(v) =>
-                  setRwItems((prev) =>
-                    prev.map((x, i) => (i === idx ? { ...x, supplier: v } : x))
-                  )
-                }
-                style={[s.input, { marginTop: 10 }]}
-              />
-
-              <TextInput
-                placeholder="Примечание"
-                value={it.note ?? ""}
-                onChangeText={(v) =>
-                  setRwItems((prev) =>
-                    prev.map((x, i) => (i === idx ? { ...x, note: v } : x))
-                  )
-                }
-                multiline
-                style={[s.input, { marginTop: 10, minHeight: 70 }]}
-              />
-            </View>
-          ))
-        )}
-      </View>
-
-      {/* INVOICE (если возврат от бухгалтера) */}
-      <View style={{ marginTop: 14 }}>
-        <Text style={{ fontSize: 12, color: D.sub, fontWeight: "800" }}>Счёт</Text>
-
-        <TextInput
-          placeholder="Номер счёта"
-          value={rwInvNumber}
-          onChangeText={setRwInvNumber}
-          style={[s.input, { marginTop: 6 }]}
-        />
-
-        <TextInput
-          placeholder="Дата (YYYY-MM-DD)"
-          value={rwInvDate}
-          onChangeText={setRwInvDate}
-          style={[s.input, { marginTop: 6 }]}
-        />
-
-        <TextInput
-          placeholder="Сумма"
-          keyboardType="decimal-pad"
-          value={rwInvAmount}
-          onChangeText={setRwInvAmount}
-          style={[s.input, { marginTop: 6 }]}
-        />
-
-        <TextInput
-          placeholder="Валюта"
-          value={rwInvCurrency}
-          onChangeText={setRwInvCurrency}
-          style={[s.input, { marginTop: 6 }]}
-        />
-
-        <Pressable
-          onPress={async () => {
-            const f = await pickInvoiceFile();
-            if (f) setRwInvFile(f);
-          }}
-          style={[s.smallBtn, { marginTop: 10 }]}
-        >
-          <Text style={{ color: D.text, fontWeight: "900" }}>
-            {rwInvUploadedName
-              ? `Счёт прикреплён: ${rwInvUploadedName}`
-              : "Прикрепить счёт"}
-          </Text>
-        </Pressable>
-      </View>
-
-      <View style={{ flexDirection: "row", gap: 10, marginTop: 14 }}>
-        <WideActionButton
-          label="Сохранить"
-          variant="blue"
-          disabled={rwBusy}
-          onPress={rwSaveItems}
-        />
-
-        <WideActionButton
-          label="Директору"
-          variant="green"
-          disabled={rwBusy}
-          onPress={rwSendToDirector}
-        />
-      </View>
-
-      <View style={{ flexDirection: "row", gap: 10, marginTop: 10 }}>
-        <WideActionButton
-          label="Бухгалтеру"
-          variant="green"
-          disabled={rwBusy}
-          onPress={rwSendToAccounting}
-        />
-
-        <WideActionButton
-          label="Закрыть"
-          variant="neutral"
-          disabled={rwBusy}
-          onPress={closeSheet}
-        />
-      </View>
-    </ScrollView>
+      renderItem={renderItem}
+      ListHeaderComponent={listHeader}
+      ListEmptyComponent={listEmpty}
+      ListFooterComponent={listFooter}
+      initialNumToRender={8}
+      maxToRenderPerBatch={8}
+      windowSize={8}
+      removeClippedSubviews={false}
+    />
   );
 }
 export function SheetFooterActions({

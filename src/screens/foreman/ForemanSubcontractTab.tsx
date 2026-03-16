@@ -1,18 +1,11 @@
 ﻿import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
-  ActivityIndicator,
   Alert,
-  FlatList,
   Platform,
-  Pressable,
-  ScrollView,
-  Text,
-  TextInput,
   View,
 } from "react-native";
 import RNModal from "react-native-modal";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Ionicons } from "@expo/vector-icons";
 import { supabase } from "../../lib/supabaseClient";
 import PeriodPickerSheet from "../../components/PeriodPickerSheet";
 import CatalogModal, { type PickedRow as CatalogPickedRow } from "../../components/foreman/CatalogModal";
@@ -24,7 +17,7 @@ import {
   requestSubmit,
   updateRequestMeta,
   listRequestItems,
-  addRequestItemFromRik,
+  addRequestItemsFromRikBatch,
   exportRequestPdf,
   clearCachedDraftRequestId,
   type ReqItemRow,
@@ -34,16 +27,17 @@ import { useRouter } from "expo-router";
 import { buildPdfFileName } from "../../lib/documents/pdfDocument";
 import { preparePdfDocument, previewPdfDocument } from "../../lib/documents/pdfDocumentActions";
 import { generateRequestPdfDocument } from "../../lib/documents/pdfDocumentGenerators";
-import ForemanDropdown from "./ForemanDropdown";
 import ForemanHistoryBar from "./ForemanHistoryBar";
 import ForemanHistoryModal from "./ForemanHistoryModal";
 import ForemanSubcontractHistoryModal from "./ForemanSubcontractHistoryModal";
+import {
+  ApprovedContractsList,
+  DraftSheetBody,
+  SubcontractDetailsModalBody,
+} from "./ForemanSubcontractTab.sections";
 import { s } from "./foreman.styles";
 import { REQUEST_STATUS_STYLES, UI } from "./foreman.ui";
 import { resolveStatusInfo as resolveStatusHelper, shortId } from "./foreman.helpers";
-import DeleteAllButton from "../../ui/DeleteAllButton";
-import SendPrimaryButton from "../../ui/SendPrimaryButton";
-import CloseIconButton from "../../ui/CloseIconButton";
 import {
   STATUS_CONFIG,
   fmtAmount,
@@ -650,18 +644,18 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
 
     setSaving(true);
     try {
-      for (const r of rows) {
-        await addRequestItemFromRik(
-          rid,
-          r.rik_code || "",
-          Math.max(1, Number(String(r.qty || "1").replace(",", ".")) || 1),
-          {
+      await addRequestItemsFromRikBatch(
+        rid,
+        rows.map((r) => ({
+          rik_code: r.rik_code || "",
+          qty: Math.max(1, Number(String(r.qty || "1").replace(",", ".")) || 1),
+          opts: {
             name_human: r.name || "",
             uom: r.uom || null,
             note: scopeNote || null,
-          }
-        );
-      }
+          },
+        })),
+      );
       await loadDraftItems(rid);
     } catch (e) {
       Alert.alert("Не удалось обновить заявку", getErrorMessage(e, "Не удалось добавить позиции из каталога."));
@@ -677,18 +671,18 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
 
     setSaving(true);
     try {
-      for (const r of rows) {
-        await addRequestItemFromRik(
-          rid,
-          r.rik_code || "",
-          Math.max(1, Number(r.qty) || 1),
-          {
+      await addRequestItemsFromRikBatch(
+        rid,
+        rows.map((r) => ({
+          rik_code: r.rik_code || "",
+          qty: Math.max(1, Number(r.qty) || 1),
+          opts: {
             name_human: r.item_name_ru || r.name_human || "Без названия",
             uom: r.uom_code || null,
             note: scopeNote || null,
           },
-        );
-      }
+        })),
+      );
       await loadDraftItems(rid);
     } catch (e) {
       Alert.alert("Не удалось обновить заявку", getErrorMessage(e, "Не удалось добавить позиции из сметы."));
@@ -865,99 +859,16 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
 
   return (
     <View style={{ flex: 1 }}>
-      <ScrollView
-        contentContainerStyle={{ paddingTop: contentTopPad, paddingHorizontal: 16, paddingBottom: 120 }}
+      <ApprovedContractsList
+        approvedContracts={approvedContracts}
+        historyLoading={historyLoading}
+        contentTopPad={contentTopPad}
         onScroll={onScroll}
-        scrollEventThrottle={16}
-        keyboardShouldPersistTaps="handled"
-        keyboardDismissMode={Platform.OS === "ios" ? "interactive" : "on-drag"}
-      >
-        <View
-          style={{
-            borderRadius: 14,
-            borderWidth: 1,
-            borderColor: "rgba(255,255,255,0.12)",
-            backgroundColor: "rgba(17,26,42,0.55)",
-            paddingHorizontal: 8,
-            paddingVertical: 8,
-            marginBottom: 20,
-          }}
-        >
-          {historyLoading ? (
-            <View style={{ paddingVertical: 14 }}>
-              <ActivityIndicator color={UI.text} />
-            </View>
-          ) : approvedContracts.length === 0 ? (
-            <Text style={{ color: UI.sub, fontWeight: "700", paddingVertical: 8 }}>
-              Нет утвержденных подрядов
-            </Text>
-          ) : (
-            approvedContracts.map((item) => (
-              (() => {
-                                const objectLabel =
-                  resolveCodeOrName(dicts.objOptions || [], item.object_name) ||
-                  String(item.object_name || "").trim() ||
-                  "—";
-                const workLabel =
-                  resolveCodeOrName(dicts.sysOptions || [], item.work_type) ||
-                  String(item.work_type || "").trim() ||
-                  "—";
-                return (
-              <Pressable
-                key={item.id}
-                onPress={() => acceptApprovedFromDirector(item)}
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  gap: 10,
-                  paddingVertical: 12,
-                  paddingHorizontal: 10,
-                  borderRadius: 12,
-                  backgroundColor:
-                    String(templateContract?.id || "") === String(item.id || "")
-                      ? "rgba(34,197,94,0.14)"
-                      : "rgba(255,255,255,0.04)",
-                  borderWidth: 1,
-                  borderColor:
-                    String(templateContract?.id || "") === String(item.id || "")
-                      ? "rgba(34,197,94,0.28)"
-                      : "rgba(255,255,255,0.12)",
-                  marginBottom: 14,
-                  shadowColor: "#000",
-                  shadowOpacity: 0.16,
-                  shadowRadius: 10,
-                  shadowOffset: { width: 0, height: 4 },
-                  elevation: 3,
-                }}
-              >
-                <View style={{ flex: 1, minWidth: 0 }}>
-                  
-                  <Text style={{ color: UI.sub, fontWeight: "700" }} numberOfLines={1}>
-                    {item.contractor_org || "—"} · {objectLabel}
-                  </Text>
-                  <Text style={{ color: "rgba(255,255,255,0.65)", fontWeight: "700" }} numberOfLines={1}>
-                    {workLabel} · {fmtAmount(item.qty_planned)} {item.uom || ""}
-                  </Text>
-                </View>
-                <Ionicons
-                  name={String(templateContract?.id || "") === String(item.id || "") ? "checkmark-circle" : "chevron-forward"}
-                  size={18}
-                  color={String(templateContract?.id || "") === String(item.id || "") ? "#22C55E" : UI.sub}
-                />
-              </Pressable>
-                );
-              })()
-            ))
-          )}
-        </View>
-
-        <View style={{ marginTop: 40, alignItems: 'center' }}>
-          <Ionicons name="hand-left-outline" size={48} color={UI.sub} />
-          <Text style={{ color: UI.sub, fontSize: 16, textAlign: 'center', marginTop: 12 }}>
-            Нажми на карточку подряда выше.
-          </Text>
-        </View>
-      </ScrollView>
+        objOptions={dicts.objOptions}
+        sysOptions={dicts.sysOptions}
+        selectedTemplateId={templateContract?.id ?? null}
+        onSelect={acceptApprovedFromDirector}
+      />
 
       <RNModal
         isVisible={subcontractModalOpen && !!templateContract}
@@ -969,96 +880,27 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
         hideModalContentWhileAnimating
         style={{ margin: 0 }}
       >
-        <View style={{ flex: 1, backgroundColor: UI.cardBg }}>
-          <View style={{ paddingHorizontal: 16, paddingTop: modalHeaderTopPad, paddingBottom: 10, borderBottomWidth: 1, borderBottomColor: "rgba(255,255,255,0.10)" }}>
-            <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
-              <Text style={{ color: UI.text, fontSize: 20, fontWeight: "900" }}>Детали подряда</Text>
-              <Pressable onPress={() => setSubcontractModalOpen(false)}>
-                <Text style={{ color: UI.sub, fontWeight: "900" }}>Закрыть</Text>
-              </Pressable>
-            </View>
-          </View>
-
-          <ScrollView
-            contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 120, paddingTop: 10 }}
-            keyboardShouldPersistTaps="handled"
-            keyboardDismissMode={Platform.OS === "ios" ? "interactive" : "on-drag"}
-          >
-            <View style={s.detailsCard}>
-              <Text style={s.detailsRow}><Text style={s.detailsLabel}>ПОДРЯДЧИК:</Text> {templateContract?.contractor_org || "—"}</Text>
-              <Text style={s.detailsRow}><Text style={s.detailsLabel}>ТЕЛЕФОН:</Text> {templateContract?.contractor_phone || "—"}</Text>
-              <View style={{ height: 8 }} />
-              <Text style={s.detailsRow}><Text style={s.detailsLabel}>ОБЪЕКТ:</Text> {templateObjectName || "—"}</Text>
-              <Text style={s.detailsRow}><Text style={s.detailsLabel}>ЭТАЖ/УРОВЕНЬ:</Text> {templateLevelName || "—"}</Text>
-              <Text style={s.detailsRow}><Text style={s.detailsLabel}>ВИД РАБОТ:</Text> {templateSystemName || "—"}</Text>
-              <Text style={s.detailsRow}><Text style={s.detailsLabel}>ОБЪЕМ:</Text> {fmtAmount(templateContract?.qty_planned)} {templateContract?.uom || ""}</Text>
-              <View style={{ height: 10 }} />
-              <Text style={s.detailsRow}>
-                <Text style={s.detailsLabel}>ПАРАМЕТРЫ ЗАЯВКИ (REQ):</Text> этаж, вид работ, зона
-              </Text>
-              <View style={{ marginTop: 8, gap: 8 }}>
-                <ForemanDropdown
-                  label="Этаж / уровень"
-                  value={form.levelCode}
-                  options={dicts.lvlOptions}
-                  placeholder={templateLevelName || "Выбери этаж/уровень"}
-                  onChange={(value) => setField("levelCode", value)}
-                  ui={UI}
-                  styles={s}
-                />
-                <ForemanDropdown
-                  label="Вид работ / система"
-                  value={form.systemCode}
-                  options={dicts.sysOptions}
-                  placeholder={templateSystemName || "Выбери вид работ"}
-                  onChange={(value) => setField("systemCode", value)}
-                  ui={UI}
-                  styles={s}
-                />
-                <TextInput
-                  value={form.zoneText}
-                  onChangeText={(v) => setField("zoneText", v)}
-                  placeholder="Зона / участок (например: секция A)"
-                  placeholderTextColor="rgba(255,255,255,0.45)"
-                  style={s.input}
-                />
-              </View>
-            </View>
-
-            <View style={s.pickTabsRow}>
-              <Pressable
-                style={s.pickTabBtn}
-                onPress={() => setCatalogVisible(true)}
-              >
-                <Ionicons name="list" size={18} color={UI.text} />
-                <Text style={s.pickTabText}>Каталог</Text>
-              </Pressable>
-              <Pressable
-                style={s.pickTabBtn}
-                onPress={() => setWorkTypePickerVisible(true)}
-              >
-                <Ionicons name="calculator" size={18} color={UI.text} />
-                <Text style={s.pickTabText}>Смета</Text>
-              </Pressable>
-            </View>
-
-            <Pressable
-              style={s.draftCard}
-              onPress={() => setDraftOpen(true)}
-            >
-              <View style={{ flex: 1, minWidth: 0 }}>
-                <Text style={s.draftTitle}>ЗАЯВКА НА МАТЕРИАЛЫ</Text>
-                <Text style={s.draftNo}>{displayNo || "будет создана автоматически"}</Text>
-                <Text style={s.draftHint}>{draftItems.length > 0 ? "Открыть позиции и отправить" : "Добавьте материалы из каталога или сметы"}</Text>
-              </View>
-              <View style={s.posPill}>
-                <Ionicons name="cube" size={18} color={UI.text} />
-                <Text style={s.posPillText}>Позиции</Text>
-                <View style={s.posCountPill}><Text style={s.posCountText}>{draftItems.length}</Text></View>
-              </View>
-            </Pressable>
-          </ScrollView>
-        </View>
+        <SubcontractDetailsModalBody
+          modalHeaderTopPad={modalHeaderTopPad}
+          onClose={() => setSubcontractModalOpen(false)}
+          templateContract={templateContract}
+          templateObjectName={templateObjectName}
+          templateLevelName={templateLevelName}
+          templateSystemName={templateSystemName}
+          formLevelCode={form.levelCode}
+          formSystemCode={form.systemCode}
+          formZoneText={form.zoneText}
+          draftItemsCount={draftItems.length}
+          lvlOptions={dicts.lvlOptions}
+          sysOptions={dicts.sysOptions}
+          onChangeLevelCode={(value) => setField("levelCode", value)}
+          onChangeSystemCode={(value) => setField("systemCode", value)}
+          onChangeZoneText={(value) => setField("zoneText", value)}
+          onOpenCatalog={() => setCatalogVisible(true)}
+          onOpenCalc={() => setWorkTypePickerVisible(true)}
+          onOpenDraft={() => setDraftOpen(true)}
+          displayNo={displayNo}
+        />
       </RNModal>
 
       <ForemanHistoryBar
@@ -1079,109 +921,29 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
         hideModalContentWhileAnimating
         style={{ margin: 0, justifyContent: "flex-end" }}
       >
-        <View style={s.sheet}>
-          <View style={s.sheetHandle} />
-
-          <View style={s.sheetTopBar}>
-            <Text style={s.sheetTitle} numberOfLines={1}>Черновик {displayNo || ""}</Text>
-            <CloseIconButton onPress={() => setDraftOpen(false)} accessibilityLabel="Закрыть черновик" size={24} color={UI.text} />
-          </View>
-
-          <View style={s.sheetMetaBox}>
-            <Text style={s.sheetMetaLine}>
-              Объект: <Text style={s.sheetMetaValue}>{objectName || templateObjectName || "—"}</Text>
-            </Text>
-            <Text style={s.sheetMetaLine}>
-              Этаж/уровень: <Text style={s.sheetMetaValue}>{levelName || templateLevelName || "—"}</Text>
-            </Text>
-            <Text style={s.sheetMetaLine}>
-              Система: <Text style={s.sheetMetaValue}>{systemName || templateSystemName || "—"}</Text>
-            </Text>
-            <Text style={s.sheetMetaLine}>
-              Зона: <Text style={s.sheetMetaValue}>{zoneName || "—"}</Text>
-            </Text>
-            <Text style={s.sheetMetaLine}>
-              Подрядчик: <Text style={s.sheetMetaValue}>{templateContract?.contractor_org || form.contractorOrg || "—"}</Text>
-            </Text>
-            <Text style={s.sheetMetaLine}>
-              Телефон: <Text style={s.sheetMetaValue}>{templateContract?.contractor_phone || form.contractorPhone || "—"}</Text>
-            </Text>
-            <Text style={s.sheetMetaLine}>
-              Объём: <Text style={s.sheetMetaValue}>{`${fmtAmount(templateContract?.qty_planned ?? toNum(form.qtyPlanned))} ${templateContract?.uom || form.uom || ""}`.trim() || "—"}</Text>
-            </Text>
-          </View>
-
-          <View style={{ flex: 1, minHeight: 0 }}>
-            {draftItems.length > 0 ? (
-              <FlatList
-                data={draftItems}
-                keyExtractor={(it) => it.id}
-                renderItem={({ item }) => (
-                  <View style={s.draftRowCard}>
-                    <View style={s.draftRowMain}>
-                      <Text style={s.draftRowTitle}>{item.name_human}</Text>
-                      <Text style={s.draftRowMeta}>{`${item.qty} ${item.uom || ""}`.trim()}</Text>
-                      <Text style={s.draftRowStatus}>Статус: <Text style={s.draftRowStatusStrong}>Черновик</Text></Text>
-                    </View>
-                    <Pressable style={s.rejectBtn} onPress={() => removeDraftItem(item.id)}>
-                      <Text style={s.rejectIcon}>×</Text>
-                    </Pressable>
-                  </View>
-                )}
-              />
-            ) : (
-              <Text style={s.historyModalEmpty}>Позиции не найдены</Text>
-            )}
-          </View>
-
-          <View style={s.reqActionsBottom}>
-            <View style={s.actionBtnSquare}>
-              <DeleteAllButton
-                disabled={saving || sending}
-                loading={false}
-                accessibilityLabel="Удалить черновик"
-                onPress={() => void clearDraft()}
-              />
-            </View>
-
-            <View style={s.sp8} />
-
-            <Pressable
-              disabled={saving || sending || !requestId}
-              onPress={() => void onPdf()}
-              style={({ pressed }) => [
-                s.actionBtnWide,
-                { backgroundColor: pressed ? "#31343A" : "#2A2D32", opacity: saving || sending || !requestId ? 0.6 : 1 },
-              ]}
-            >
-              <Text style={s.actionText}>PDF</Text>
-            </Pressable>
-
-            <View style={s.sp8} />
-
-            <Pressable
-              disabled={saving || sending}
-              onPress={() => Alert.alert("Excel", "Экспорт Excel для подрядов будет добавлен.")}
-              style={({ pressed }) => [
-                s.actionBtnWide,
-                { backgroundColor: pressed ? "#31343A" : "#2A2D32", opacity: saving || sending ? 0.6 : 1 },
-              ]}
-            >
-              <Text style={s.actionText}>Excel</Text>
-            </Pressable>
-
-            <View style={s.sp8} />
-
-            <View style={s.actionBtnSquare}>
-              <SendPrimaryButton
-                variant="green"
-                disabled={saving || sending || !requestId}
-                loading={sending}
-                onPress={() => void sendToDirector()}
-              />
-            </View>
-          </View>
-        </View>
+        <DraftSheetBody
+          displayNo={displayNo}
+          onClose={() => setDraftOpen(false)}
+          objectName={objectName}
+          templateObjectName={templateObjectName}
+          levelName={levelName}
+          templateLevelName={templateLevelName}
+          systemName={systemName}
+          templateSystemName={templateSystemName}
+          zoneName={zoneName}
+          contractorName={templateContract?.contractor_org || form.contractorOrg || ""}
+          phoneName={templateContract?.contractor_phone || form.contractorPhone || ""}
+          volumeText={`${fmtAmount(templateContract?.qty_planned ?? toNum(form.qtyPlanned))} ${templateContract?.uom || form.uom || ""}`.trim()}
+          draftItems={draftItems}
+          saving={saving}
+          sending={sending}
+          requestId={requestId}
+          onRemoveDraftItem={removeDraftItem}
+          onClearDraft={() => void clearDraft()}
+          onPdf={() => void onPdf()}
+          onExcel={() => Alert.alert("Excel", "Экспорт Excel для подрядов будет добавлен.")}
+          onSendToDirector={() => void sendToDirector()}
+        />
       </RNModal>
 
       <PeriodPickerSheet

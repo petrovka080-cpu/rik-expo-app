@@ -49,6 +49,18 @@ type RequestItemMetaPatch = Pick<
   "status" | "note" | "app_code" | "kind" | "name_human" | "uom"
 >;
 type RequestItemStatusPatch = Pick<RequestItemsTable["Update"], "status">;
+type RequestItemAddOpts = {
+  note?: string;
+  app_code?: string;
+  kind?: string;
+  name_human?: string;
+  uom?: string | null;
+};
+type RequestItemBatchInput = {
+  rik_code: string;
+  qty: number;
+  opts?: RequestItemAddOpts;
+};
 type RequestDraftSelectRow = Pick<
   RequestsTable["Row"],
   | "id"
@@ -319,7 +331,7 @@ export async function addRequestItemFromRik(
   requestId: number | string,
   rik_code: string,
   qty: number,
-  opts?: { note?: string; app_code?: string; kind?: string; name_human?: string; uom?: string | null },
+  opts?: RequestItemAddOpts,
 ): Promise<boolean> {
   if (!rik_code) throw new Error("rik_code required");
 
@@ -348,6 +360,57 @@ export async function addRequestItemFromRik(
   }
 
   return true;
+}
+
+export async function addRequestItemsFromRikBatch(
+  requestId: number | string,
+  items: RequestItemBatchInput[],
+): Promise<number> {
+  const rid = normalizeRequestFilterId(requestId);
+  if (!rid) throw new Error("request_id is empty");
+
+  const prepared = (items || []).map((item) => ({
+    rik_code: String(item?.rik_code ?? "").trim(),
+    qty: Number(item?.qty),
+    opts: item?.opts,
+  }));
+  if (!prepared.length) return 0;
+
+  for (const item of prepared) {
+    if (!item.rik_code) throw new Error("rik_code required");
+    if (!Number.isFinite(item.qty) || item.qty <= 0) throw new Error("qty must be > 0");
+  }
+
+  const chunkSize = 8;
+  let okCount = 0;
+
+  for (let idx = 0; idx < prepared.length; idx += chunkSize) {
+    const pack = prepared.slice(idx, idx + chunkSize);
+    const results = await Promise.allSettled(
+      pack.map((item) => addRequestItemFromRik(rid, item.rik_code, item.qty, item.opts)),
+    );
+
+    let firstError: unknown = null;
+    for (const result of results) {
+      if (result.status === "fulfilled") {
+        okCount += 1;
+        continue;
+      }
+      if (firstError == null) firstError = result.reason;
+    }
+
+    if (firstError != null) {
+      logRequestsDebug("[addRequestItemsFromRikBatch]", {
+        okCount,
+        total: prepared.length,
+        failedAt: idx,
+        error: parseErr(firstError),
+      });
+      throw firstError;
+    }
+  }
+
+  return okCount;
 }
 
 async function requestHasPostDraftItems(requestId: string): Promise<boolean> {

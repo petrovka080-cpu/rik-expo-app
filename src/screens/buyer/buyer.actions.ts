@@ -200,6 +200,47 @@ const reportBuyerWriteFailure = (
   alert?.(title, message);
 };
 
+const logBuyerSecondaryPhaseWarning = (scope: string, error: unknown) => {
+  if (!__DEV__) return;
+  console.warn(`[buyer.secondary] ${scope}: ${errMessage(error)}`);
+};
+
+const refreshBuyerBucketsAndInboxInBackground = (
+  fetchInbox: () => Promise<void>,
+  fetchBuckets: () => Promise<void>,
+  startedAt?: number,
+) => {
+  void Promise.allSettled([fetchInbox(), fetchBuckets()]).then(() => {
+    if (typeof startedAt === "number") {
+      logBuyerActionDebug("info", "[buyer.submit] backgroundRefresh.ms=", Date.now() - startedAt);
+    }
+  });
+};
+
+async function sendToAccountingWithFallback(params: {
+  proposalSendToAccountant: (payload: ProposalSendToAccountantPayload) => Promise<void>;
+  supabase: SupabaseClient;
+  payload: ProposalSendToAccountantPayload;
+}) {
+  try {
+    await params.proposalSendToAccountant(params.payload);
+    return;
+  } catch (primaryError: unknown) {
+    const { error } = await sendProposalToAccountingMin(params.supabase, {
+      p_proposal_id: params.payload.proposalId,
+      p_invoice_number: params.payload.invoiceNumber,
+      p_invoice_date: params.payload.invoiceDate,
+      p_invoice_amount: params.payload.invoiceAmount,
+      p_invoice_currency: params.payload.invoiceCurrency,
+    });
+    if (error) throw error;
+    logBuyerActionDebug("warn", "[buyer.accounting] adapter failed, fallback RPC used", {
+      proposalId: params.payload.proposalId,
+      error: errMessage(primaryError),
+    });
+  }
+}
+
 const throwIfMutationFailed = (error: unknown) => {
   if (error) throw error;
 };
@@ -380,11 +421,11 @@ export async function handleCreateProposalsBySupplierAction(p: CreateProposalsDe
         attachmentCount: stagedAttachments.length,
       });
 
-      // Fast UX path: enqueue accepted.
+      // Main success boundary: queue accepted. Reload is secondary convergence only.
       p.clearPick();
       p.closeSheet();
       p.alert("Отправлено", "Заявка поставлена в очередь на обработку.");
-      void Promise.allSettled([p.fetchInbox(), p.fetchBuckets()]);
+      refreshBuyerBucketsAndInboxInBackground(p.fetchInbox, p.fetchBuckets);
       logBuyerActionDebug("info",
         "[buyer.submit] queued",
         "submitIntentMs=",
@@ -522,22 +563,37 @@ export async function handleCreateProposalsBySupplierAction(p: CreateProposalsDe
       Array.isArray(x?.request_item_ids) ? x.request_item_ids : []
     );
 
-    // Post-submit request_items maintenance in background (non-blocking for UX wait).
+    // Main success boundary is reached above; request_items maintenance is best-effort secondary work.
     void (async () => {
       if (!affectedIds.length) return;
       const tPost = Date.now();
+      let statusSyncWarning: string | null = null;
+      let rejectClearWarning: string | null = null;
       try {
         const rpc = await setRequestItemsDirectorStatus(p.supabase, affectedIds);
         if (rpc.error) throw rpc.error;
-      } catch {
+      } catch (primaryStatusError: unknown) {
         try {
           await setRequestItemsDirectorStatusFallback(p.supabase, affectedIds);
-        } catch {}
+        } catch (fallbackStatusError: unknown) {
+          statusSyncWarning = errMessage(fallbackStatusError, errMessage(primaryStatusError));
+          logBuyerSecondaryPhaseWarning("postSubmitRequestItems.status", fallbackStatusError);
+        }
       }
       try {
         await clearRequestItemsDirectorRejectState(p.supabase, affectedIds);
-      } catch {}
+      } catch (rejectStateError: unknown) {
+        rejectClearWarning = errMessage(rejectStateError);
+        logBuyerSecondaryPhaseWarning("postSubmitRequestItems.rejectState", rejectStateError);
+      }
       logBuyerActionDebug("info", "[buyer.submit] postSubmitRequestItems.ms=", Date.now() - tPost, "rows=", affectedIds.length);
+      if (statusSyncWarning || rejectClearWarning) {
+        logBuyerActionDebug("warn", "[buyer.submit] postSubmitRequestItems.partial", {
+          rows: affectedIds.length,
+          statusSyncWarning,
+          rejectClearWarning,
+        });
+      }
     })();
 
     p.removeFromInboxLocally(affectedIds);
@@ -548,9 +604,7 @@ export async function handleCreateProposalsBySupplierAction(p: CreateProposalsDe
     p.closeSheet();
     // Do not block UX on full screen reload; refresh in background.
     const tRefresh = Date.now();
-    void Promise.allSettled([p.fetchInbox(), p.fetchBuckets()]).then(() => {
-      logBuyerActionDebug("info", "[buyer.submit] backgroundRefresh.ms=", Date.now() - tRefresh);
-    });
+    refreshBuyerBucketsAndInboxInBackground(p.fetchInbox, p.fetchBuckets, tRefresh);
     logBuyerActionDebug("info",
       "[buyer.submit] totalUserWait.ms=",
       Date.now() - tAll,
@@ -747,25 +801,18 @@ export async function sendToAccountingAction<TApproved extends MaybeId = MaybeId
       p.log?.("[buyer] attach proposal doc failed:", attachmentWarning);
     }
 
-    // 4) отправка в бухгалтерию (адаптер -> fallback RPC) (1:1)
-    try {
-      await p.proposalSendToAccountant({
+    // 4) Main mutation boundary: accountant send is complete after adapter/RPC fallback path succeeds.
+    await sendToAccountingWithFallback({
+      proposalSendToAccountant: p.proposalSendToAccountant,
+      supabase: p.supabase,
+      payload: {
         proposalId: pidStr,
         invoiceNumber: String(p.invNumber).trim(),
         invoiceDate: String(p.invDate).trim(),
         invoiceAmount: amount,
         invoiceCurrency: String(p.invCurrency || "KGS").trim(),
-      });
-    } catch {
-      const { error } = await sendProposalToAccountingMin(p.supabase, {
-        p_proposal_id: pidStr,
-        p_invoice_number: String(p.invNumber).trim(),
-        p_invoice_date: String(p.invDate).trim(),
-        p_invoice_amount: amount,
-        p_invoice_currency: String(p.invCurrency || "KGS").trim(),
-      });
-      if (error) throw error;
-    }
+      },
+    });
 
     // вњ… Р“РђР РђРќРў-Р¤Р›РђР“Р (1:1)
     await p.ensureAccountingFlags(pidStr, amount);
@@ -1138,24 +1185,17 @@ export async function rwSendToAccountingAction<TRejected extends MaybeId = Maybe
       p.uploadProposalAttachment,
     );
 
-    try {
-      await p.proposalSendToAccountant({
+    await sendToAccountingWithFallback({
+      proposalSendToAccountant: p.proposalSendToAccountant,
+      supabase: p.supabase,
+      payload: {
         proposalId: p.pid,
         invoiceNumber: String(p.invNumber).trim(),
         invoiceDate: dateStr,
         invoiceAmount: amt,
         invoiceCurrency: String(p.invCurrency || "KGS").trim(),
-      });
-    } catch {
-      const { error } = await sendProposalToAccountingMin(p.supabase, {
-        p_proposal_id: p.pid,
-        p_invoice_number: String(p.invNumber).trim(),
-        p_invoice_date: dateStr,
-        p_invoice_amount: amt,
-        p_invoice_currency: String(p.invCurrency || "KGS").trim(),
-      });
-      if (error) throw error;
-    }
+      },
+    });
 
     await p.ensureAccountingFlags(p.pid, amt);
 

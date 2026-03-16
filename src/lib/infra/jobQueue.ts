@@ -197,6 +197,9 @@ const parseSubmitJobMetricsRow = (value: unknown): SubmitJobMetrics => {
   };
 };
 
+const queueInfraError = (scope: string, error: { message?: string | null } | null) =>
+  new Error(`${scope}: ${String(error?.message || "unknown")}`);
+
 const toBool = (value: unknown): boolean => {
   const v = String(value ?? "").trim().toLowerCase();
   return v === "1" || v === "true" || v === "yes" || v === "on";
@@ -358,7 +361,7 @@ export async function claimSubmitJobs(workerId: string, limit = WORKER_BATCH_SIZ
 
 export async function recoverStuckSubmitJobs(): Promise<number> {
   const { data, error } = await supabase.rpc("submit_jobs_recover_stuck");
-  if (error) throw error;
+  if (error) throw queueInfraError("recoverStuckSubmitJobs", error);
   return getNumberOrDefault(data as SubmitJobsRecoverStuckRpcReturns, 0);
 }
 
@@ -369,19 +372,19 @@ export async function markSubmitJobCompleted(jobId: string): Promise<void> {
       .from("submit_jobs")
       .update(buildSubmitJobsCompletedCleanupUpdate())
       .eq("id", jobId);
-    if (normalize.error) throw normalize.error;
+    if (normalize.error) throw queueInfraError("markSubmitJobCompleted.normalizeCleanup", normalize.error);
     return;
   }
 
   const msg = String(first.error.message || "");
   const fallbackNeeded = msg.includes("submit_jobs_mark_completed") && msg.includes("schema cache");
-  if (!fallbackNeeded) throw first.error;
+  if (!fallbackNeeded) throw queueInfraError("markSubmitJobCompleted.rpc", first.error);
 
   const fallback = await supabase
     .from("submit_jobs")
     .update(buildSubmitJobsCompletedFallbackUpdate())
     .eq("id", jobId);
-  if (fallback.error) throw fallback.error;
+  if (fallback.error) throw queueInfraError("markSubmitJobCompleted.fallbackUpdate", fallback.error);
 }
 
 export async function markSubmitJobFailed(jobId: string, message: string): Promise<{ retryCount: number; status: string }> {
@@ -395,14 +398,14 @@ export async function markSubmitJobFailed(jobId: string, message: string): Promi
 
   const msg = String(first.error.message || "");
   const fallbackNeeded = msg.includes("submit_jobs_mark_failed") && msg.includes("schema cache");
-  if (!fallbackNeeded) throw first.error;
+  if (!fallbackNeeded) throw queueInfraError("markSubmitJobFailed.rpc", first.error);
 
   const current = await supabase
     .from("submit_jobs")
     .select(SUBMIT_JOBS_RETRY_COUNT_SELECT)
     .eq("id", jobId)
     .maybeSingle();
-  if (current.error) throw current.error;
+  if (current.error) throw queueInfraError("markSubmitJobFailed.readRetryCount", current.error);
   const retryCount = (parseSubmitJobRetryCountRow(current.data)?.retry_count ?? 0) + 1;
   const status = retryCount >= 5 ? "failed" : "pending";
   const nextRetryAt = status === "pending" ? new Date(Date.now() + 30_000).toISOString() : null;
@@ -410,7 +413,7 @@ export async function markSubmitJobFailed(jobId: string, message: string): Promi
     .from("submit_jobs")
     .update(buildSubmitJobsFailedFallbackUpdate(retryCount, message, status, nextRetryAt))
     .eq("id", jobId);
-  if (patch.error) throw patch.error;
+  if (patch.error) throw queueInfraError("markSubmitJobFailed.fallbackUpdate", patch.error);
 
   return {
     retryCount,

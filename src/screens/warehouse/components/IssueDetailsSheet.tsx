@@ -41,15 +41,15 @@ export default function IssueDetailsSheet({
     return issueId != null ? `Детали выдачи ISSUE-${issueId}` : "Детали выдачи";
   }, [issueId]);
 
-  const renderLine = ({ item: ln, index }: { item: IssueDetailsLine; index: number }) => {
+  const renderLine = React.useCallback(({ item: ln }: { item: IssueDetailsLine; index: number }) => {
     const code = String(ln.rik_code ?? "").trim();
     const name =
       String(ln.name_human ?? "").trim() ||
       String(ln.item_name_ru ?? "").trim() ||
       (code ? String(matNameByCode[code] ?? "").trim() : "") ||
-      "РџРѕР·РёС†РёСЏ";
+      "Позиция";
 
-    const uom = String(ln.uom ?? ln.uom_id ?? "вЂ”");
+    const uom = String(ln.uom ?? ln.uom_id ?? "—");
 
     return (
       <View
@@ -71,65 +71,27 @@ export default function IssueDetailsSheet({
         </Text>
 
         <Text style={{ marginTop: 6, color: UI.sub, fontWeight: "800" }} numberOfLines={2}>
-          {`РІСЃРµРіРѕ ${String(ln.qty_total ?? 0)} В· РїРѕ Р·Р°СЏРІРєРµ ${String(
+          {`всего ${String(ln.qty_total ?? 0)} · по заявке ${String(
             ln.qty_in_req ?? 0,
-          )} В· РїРµСЂРµСЂР°СЃС…РѕРґ ${String(ln.qty_over ?? 0)}`}
+          )} · перерасход ${String(ln.qty_over ?? 0)}`}
         </Text>
       </View>
     );
-  };
+  }, [matNameByCode]);
 
-  const ListBody = (
-    <View style={{ paddingBottom: 28 }}>
-      {lines.length ? (
-        lines.map((ln, idx: number) => {
-          const code = String(ln.rik_code ?? "").trim();
-          const name =
-            String(ln.name_human ?? "").trim() ||
-            String(ln.item_name_ru ?? "").trim() ||
-            (code ? String(matNameByCode[code] ?? "").trim() : "") ||
-            "Позиция";
+  const keyExtractor = React.useCallback(
+    (item: IssueDetailsLine, index: number) => `${String(item.rik_code ?? "").trim() || "x"}:${index}`,
+    [],
+  );
 
-          const uom = String(ln.uom ?? ln.uom_id ?? "—");
-
-          return (
-            <View
-              key={`${code || "x"}:${idx}`}
-              style={{
-                padding: 12,
-                borderRadius: 14,
-                borderWidth: 1,
-                borderColor: "rgba(255,255,255,0.10)",
-                backgroundColor: "rgba(255,255,255,0.04)",
-                marginBottom: 10,
-              }}
-            >
-              <Text style={{ color: UI.text, fontWeight: "900" }} numberOfLines={2}>
-                {name}
-              </Text>
-
-              <Text style={{ marginTop: 4, color: UI.sub, fontWeight: "800" }} numberOfLines={2}>
-                {uom}
-              </Text>
-
-              <Text style={{ marginTop: 6, color: UI.sub, fontWeight: "800" }} numberOfLines={2}>
-                {`всего ${String(ln.qty_total ?? 0)} · по заявке ${String(
-                  ln.qty_in_req ?? 0,
-                )} · перерасход ${String(ln.qty_over ?? 0)}`}
-              </Text>
-            </View>
-          );
-        })
-      ) : (
-        <Text style={{ color: UI.sub, fontWeight: "800" }}>Нет строк.</Text>
-      )}
-    </View>
+  const emptyState = React.useMemo(
+    () => <Text style={{ color: UI.sub, fontWeight: "800" }}>Нет строк.</Text>,
+    [],
   );
 
   return (
     <WarehouseSheet visible={visible} onClose={onClose} heightPct={0.86}>
       <View style={{ flex: 1, minHeight: 0 }}>
-        {/* HEADER */}
         <View style={{ flexDirection: "row", alignItems: "center", gap: 10, marginBottom: 10 }}>
           <Text style={{ flex: 1, color: UI.text, fontWeight: "900", fontSize: 18 }} numberOfLines={1}>
             {title}
@@ -152,21 +114,20 @@ export default function IssueDetailsSheet({
 
         {issueId != null && loadingId === issueId ? (
           <Text style={{ color: UI.sub, fontWeight: "800" }}>Загрузка…</Text>
-        ) : Platform.OS === "web" ? (
-          // ✅ WEB: скроллит сам WarehouseSheet (overflow:auto)
-          <View style={{ flex: 1, minHeight: 0 }}>{ListBody}</View>
         ) : (
-          // ✅ NATIVE: скроллим внутри
           <FlatList
             data={lines}
             renderItem={renderLine}
-            keyExtractor={(item, index) => `${String(item.rik_code ?? "").trim() || "x"}:${index}`}
+            keyExtractor={keyExtractor}
             style={{ flex: 1 }}
             contentContainerStyle={{ paddingBottom: 28 }}
             showsVerticalScrollIndicator
             keyboardShouldPersistTaps="handled"
-            removeClippedSubviews
-            ListEmptyComponent={<Text style={{ color: UI.sub, fontWeight: "800" }}>РќРµС‚ СЃС‚СЂРѕРє.</Text>}
+            initialNumToRender={12}
+            maxToRenderPerBatch={12}
+            windowSize={8}
+            removeClippedSubviews={Platform.OS === "android"}
+            ListEmptyComponent={emptyState}
           />
         )}
       </View>

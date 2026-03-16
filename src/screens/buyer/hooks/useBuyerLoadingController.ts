@@ -11,6 +11,18 @@ import { fetchBuyerSubcontractCount } from "./useBuyerSubcontractCount";
 type AlertFn = (title: string, message?: string) => void;
 type LogFn = (msg: unknown, ...rest: unknown[]) => void;
 
+type RefreshState = {
+  inFlight: Promise<void> | null;
+  rerunQueued: boolean;
+  rerunWaiter: Promise<void> | null;
+  resolveRerunWaiter: (() => void) | null;
+  rejectRerunWaiter: ((error: unknown) => void) | null;
+};
+
+type RefreshStateRef = {
+  current: RefreshState;
+};
+
 export function useBuyerLoadingController(params: {
   supabase: SupabaseClient;
   listBuyerInbox: () => Promise<BuyerInboxRow[]>;
@@ -51,33 +63,85 @@ export function useBuyerLoadingController(params: {
   const focusedRef = useRef(false);
   const lastInboxKickRef = useRef(0);
   const lastBucketsKickRef = useRef(0);
+  const inboxRefreshRef = useRef<RefreshState>({ inFlight: null, rerunQueued: false, rerunWaiter: null, resolveRerunWaiter: null, rejectRerunWaiter: null });
+  const bucketsRefreshRef = useRef<RefreshState>({ inFlight: null, rerunQueued: false, rerunWaiter: null, resolveRerunWaiter: null, rejectRerunWaiter: null });
+  const subcontractsRefreshRef = useRef<RefreshState>({ inFlight: null, rerunQueued: false, rerunWaiter: null, resolveRerunWaiter: null, rejectRerunWaiter: null });
+
+  const runRefresh = useCallback((stateRef: RefreshStateRef, refresh: () => Promise<void>) => {
+    if (stateRef.current.inFlight) {
+      stateRef.current.rerunQueued = true;
+      if (!stateRef.current.rerunWaiter) {
+        stateRef.current.rerunWaiter = new Promise<void>((resolve, reject) => {
+          stateRef.current.resolveRerunWaiter = resolve;
+          stateRef.current.rejectRerunWaiter = reject;
+        });
+      }
+      return stateRef.current.rerunWaiter;
+    }
+
+    const start = () => {
+      const task = (async () => {
+        try {
+          await refresh();
+          if (!stateRef.current.rerunQueued) {
+            stateRef.current.resolveRerunWaiter?.();
+            stateRef.current.rerunWaiter = null;
+            stateRef.current.resolveRerunWaiter = null;
+            stateRef.current.rejectRerunWaiter = null;
+          }
+        } catch (error) {
+          if (!stateRef.current.rerunQueued) {
+            stateRef.current.rejectRerunWaiter?.(error);
+            stateRef.current.rerunWaiter = null;
+            stateRef.current.resolveRerunWaiter = null;
+            stateRef.current.rejectRerunWaiter = null;
+          }
+          throw error;
+        } finally {
+          stateRef.current.inFlight = null;
+          if (stateRef.current.rerunQueued) {
+            stateRef.current.rerunQueued = false;
+            void start();
+          }
+        }
+      })();
+      stateRef.current.inFlight = task;
+      return task;
+    };
+
+    return start();
+  }, []);
 
   const fetchInbox = useCallback(async () => {
-    await fetchBuyerInboxProd({
-      focusedRef,
-      lastKickRef: lastInboxKickRef,
-      kickMs: kickMsInbox,
-      listBuyerInbox,
-      preloadDisplayNos,
-      setLoadingInbox,
-      setRows,
-      alert,
-      log,
+    await runRefresh(inboxRefreshRef, async () => {
+      await fetchBuyerInboxProd({
+        focusedRef,
+        lastKickRef: lastInboxKickRef,
+        kickMs: kickMsInbox,
+        listBuyerInbox,
+        preloadDisplayNos,
+        setLoadingInbox,
+        setRows,
+        alert,
+        log,
+      });
     });
-  }, [kickMsInbox, listBuyerInbox, preloadDisplayNos, setLoadingInbox, setRows, alert, log]);
+  }, [kickMsInbox, listBuyerInbox, preloadDisplayNos, setLoadingInbox, setRows, alert, log, runRefresh]);
 
   const fetchBuckets = useCallback(async () => {
-    await fetchBuyerBucketsProd({
-      focusedRef,
-      lastKickRef: lastBucketsKickRef,
-      kickMs: kickMsBuckets,
-      supabase,
-      preloadProposalTitles,
-      setLoadingBuckets,
-      setPending,
-      setApproved,
-      setRejected,
-      log,
+    await runRefresh(bucketsRefreshRef, async () => {
+      await fetchBuyerBucketsProd({
+        focusedRef,
+        lastKickRef: lastBucketsKickRef,
+        kickMs: kickMsBuckets,
+        supabase,
+        preloadProposalTitles,
+        setLoadingBuckets,
+        setPending,
+        setApproved,
+        setRejected,
+        log,
+      });
     });
   }, [
     kickMsBuckets,
@@ -88,19 +152,22 @@ export function useBuyerLoadingController(params: {
     setApproved,
     setRejected,
     log,
+    runRefresh,
   ]);
 
   const fetchSubcontractsCount = useCallback(async () => {
-    try {
-      const { data: userData } = await supabase.auth.getUser();
-      const uid = userData?.user?.id;
-      if (!uid) return;
-      const count = await fetchBuyerSubcontractCount(supabase, uid);
-      if (count != null) setSubcontractCount(count);
-    } catch {
-      // no-op
-    }
-  }, [supabase, setSubcontractCount]);
+    await runRefresh(subcontractsRefreshRef, async () => {
+      try {
+        const { data: userData } = await supabase.auth.getUser();
+        const uid = userData?.user?.id;
+        if (!uid) return;
+        const count = await fetchBuyerSubcontractCount(supabase, uid);
+        if (count != null) setSubcontractCount(count);
+      } catch {
+        // no-op
+      }
+    });
+  }, [supabase, setSubcontractCount, runRefresh]);
 
   useFocusEffect(
     useCallback(() => {

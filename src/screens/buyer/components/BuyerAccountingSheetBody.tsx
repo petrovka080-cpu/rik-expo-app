@@ -6,6 +6,16 @@ import { D } from "../buyerUi";
 import { WideActionButton } from "./common/WideActionButton";
 import type { StylesBag } from "./component.types";
 
+type AccountingSupplier = {
+  name: string;
+  inn?: string | null;
+  bank?: string | null;
+  phone?: string | null;
+  email?: string | null;
+};
+
+type InvoiceFile = Attachment["file"] | null;
+
 export function BuyerAccountingSheetBody({
   s,
   isWeb,
@@ -35,13 +45,7 @@ export function BuyerAccountingSheetBody({
   acctProposalId: string | number | null;
   propDocBusy: boolean;
   propDocAttached: { name: string; url?: string } | null;
-  acctSupp: {
-    name: string;
-    inn?: string | null;
-    bank?: string | null;
-    phone?: string | null;
-    email?: string | null;
-  } | null;
+  acctSupp: AccountingSupplier | null;
   invNumber: string;
   setInvNumber: (v: string) => void;
   invDate: string;
@@ -52,9 +56,9 @@ export function BuyerAccountingSheetBody({
   setInvCurrency: (v: string) => void;
   invoiceUploadedName: string;
   openInvoicePickerWeb: () => void;
-  invFile: Attachment["file"] | null;
-  pickInvoiceFile: () => Promise<Attachment["file"] | null>;
-  setInvFile: (v: Attachment["file"] | null) => void;
+  invFile: InvoiceFile;
+  pickInvoiceFile: () => Promise<InvoiceFile>;
+  setInvFile: (v: InvoiceFile) => void;
   acctBusy: boolean;
   sendToAccounting: () => void | Promise<void>;
   closeSheet: () => void;
@@ -63,19 +67,38 @@ export function BuyerAccountingSheetBody({
     invFile && typeof invFile === "object" && "name" in invFile && typeof invFile.name === "string"
       ? invFile.name
       : "";
+  const invoiceLabel = isWeb
+    ? invoiceUploadedName
+      ? `РЎС‡РµС‚ РїСЂРёРєСЂРµРїР»РµРЅ: ${invoiceUploadedName}`
+      : "РџСЂРёРєСЂРµРїРёС‚СЊ СЃС‡РµС‚ (PDF/JPG/PNG)"
+    : invFileName
+      ? `РЎС‡РµС‚ РїСЂРёРєСЂРµРїР»РµРЅ: ${invFileName}`
+      : "РџСЂРёРєСЂРµРїРёС‚СЊ СЃС‡РµС‚ (PDF/JPG/PNG)";
+  const handlePickInvoice = React.useCallback(async () => {
+    if (isWeb) {
+      openInvoicePickerWeb();
+      return;
+    }
+    const file = await pickInvoiceFile();
+    if (file) setInvFile(file);
+  }, [isWeb, openInvoicePickerWeb, pickInvoiceFile, setInvFile]);
 
   return (
-    <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 24 }} keyboardShouldPersistTaps="handled">
+    <ScrollView
+      style={{ flex: 1 }}
+      contentContainerStyle={{ paddingBottom: 24 }}
+      keyboardShouldPersistTaps="handled"
+    >
       <Text style={{ fontSize: 12, color: D.sub, fontWeight: "800" }}>
-        {acctProposalId ? `Документ: #${String(acctProposalId).slice(0, 8)}` : "Документ не выбран"}
+        {acctProposalId ? `Р”РѕРєСѓРјРµРЅС‚: #${String(acctProposalId).slice(0, 8)}` : "Р”РѕРєСѓРјРµРЅС‚ РЅРµ РІС‹Р±СЂР°РЅ"}
       </Text>
 
       <Text style={{ fontSize: 12, color: D.sub, marginTop: 8, fontWeight: "800" }}>
         {propDocBusy
-          ? "Готовим файл предложения..."
+          ? "Р“РѕС‚РѕРІРёРј С„Р°Р№Р» РїСЂРµРґР»РѕР¶РµРЅРёСЏ..."
           : propDocAttached
-            ? `Файл предложения: ${propDocAttached.name}`
-            : "Файл предложения будет прикреплен"}
+            ? `Р¤Р°Р№Р» РїСЂРµРґР»РѕР¶РµРЅРёСЏ: ${propDocAttached.name}`
+            : "Р¤Р°Р№Р» РїСЂРµРґР»РѕР¶РµРЅРёСЏ Р±СѓРґРµС‚ РїСЂРёРєСЂРµРїР»РµРЅ"}
       </Text>
 
       {acctSupp ? (
@@ -91,15 +114,15 @@ export function BuyerAccountingSheetBody({
         >
           <Text style={{ fontWeight: "900", color: D.text }}>{acctSupp.name}</Text>
           <Text style={{ color: D.sub, marginTop: 6, fontWeight: "700" }}>
-            {acctSupp.inn ? `ИНН: ${acctSupp.inn} · ` : ""}
-            {acctSupp.bank ? `Счет: ${acctSupp.bank} · ` : ""}
-            {acctSupp.phone ? `Тел.: ${acctSupp.phone} · ` : ""}
+            {acctSupp.inn ? `РРќРќ: ${acctSupp.inn} В· ` : ""}
+            {acctSupp.bank ? `РЎС‡РµС‚: ${acctSupp.bank} В· ` : ""}
+            {acctSupp.phone ? `РўРµР».: ${acctSupp.phone} В· ` : ""}
             {acctSupp.email ? `Email: ${acctSupp.email}` : ""}
           </Text>
         </View>
       ) : null}
 
-      <Text style={{ fontSize: 12, color: D.sub, marginTop: 14, fontWeight: "800" }}>Номер счета</Text>
+      <Text style={{ fontSize: 12, color: D.sub, marginTop: 14, fontWeight: "800" }}>РќРѕРјРµСЂ СЃС‡РµС‚Р°</Text>
       <TextInput
         value={invNumber}
         onChangeText={setInvNumber}
@@ -109,7 +132,7 @@ export function BuyerAccountingSheetBody({
         ]}
       />
 
-      <Text style={{ fontSize: 12, color: D.sub, marginTop: 10, fontWeight: "800" }}>Дата (YYYY-MM-DD)</Text>
+      <Text style={{ fontSize: 12, color: D.sub, marginTop: 10, fontWeight: "800" }}>Р”Р°С‚Р° (YYYY-MM-DD)</Text>
       <TextInput
         value={invDate}
         onChangeText={setInvDate}
@@ -119,7 +142,7 @@ export function BuyerAccountingSheetBody({
         ]}
       />
 
-      <Text style={{ fontSize: 12, color: D.sub, marginTop: 10, fontWeight: "800" }}>Сумма</Text>
+      <Text style={{ fontSize: 12, color: D.sub, marginTop: 10, fontWeight: "800" }}>РЎСѓРјРјР°</Text>
       <TextInput
         value={invAmount}
         onChangeText={setInvAmount}
@@ -130,7 +153,7 @@ export function BuyerAccountingSheetBody({
         ]}
       />
 
-      <Text style={{ fontSize: 12, color: D.sub, marginTop: 10, fontWeight: "800" }}>Валюта</Text>
+      <Text style={{ fontSize: 12, color: D.sub, marginTop: 10, fontWeight: "800" }}>Р’Р°Р»СЋС‚Р°</Text>
       <TextInput
         value={invCurrency}
         onChangeText={setInvCurrency}
@@ -140,47 +163,29 @@ export function BuyerAccountingSheetBody({
         ]}
       />
 
-      {isWeb ? (
-        <Pressable
-          onPress={openInvoicePickerWeb}
-          style={[
-            s.smallBtn,
-            { marginTop: 12, borderColor: "rgba(255,255,255,0.18)", backgroundColor: "rgba(255,255,255,0.06)" },
-          ]}
-        >
-          <Text style={{ color: D.text, fontWeight: "900" }}>
-            {invoiceUploadedName ? `Счет прикреплен: ${invoiceUploadedName}` : "Прикрепить счет (PDF/JPG/PNG)"}
-          </Text>
-        </Pressable>
-      ) : (
-        <Pressable
-          onPress={async () => {
-            const f = await pickInvoiceFile();
-            if (f) setInvFile(f);
-          }}
-          style={[
-            s.smallBtn,
-            { marginTop: 12, borderColor: "rgba(255,255,255,0.18)", backgroundColor: "rgba(255,255,255,0.06)" },
-          ]}
-        >
-          <Text style={{ color: D.text, fontWeight: "900" }}>
-            {invFileName ? `Счет прикреплен: ${invFileName}` : "Прикрепить счет (PDF/JPG/PNG)"}
-          </Text>
-        </Pressable>
-      )}
+      <Pressable
+        onPress={() => {
+          void handlePickInvoice();
+        }}
+        style={[
+          s.smallBtn,
+          { marginTop: 12, borderColor: "rgba(255,255,255,0.18)", backgroundColor: "rgba(255,255,255,0.06)" },
+        ]}
+      >
+        <Text style={{ color: D.text, fontWeight: "900" }}>{invoiceLabel}</Text>
+      </Pressable>
 
       <View style={{ flexDirection: "row", gap: 10, marginTop: 14 }}>
         <WideActionButton
-          label={acctBusy ? "Отправляем..." : "Отправить"}
+          label={acctBusy ? "РћС‚РїСЂР°РІР»СЏРµРј..." : "РћС‚РїСЂР°РІРёС‚СЊ"}
           variant="green"
           disabled={acctBusy}
           loading={acctBusy}
           onPress={sendToAccounting}
         />
 
-        <WideActionButton label="Отмена" variant="neutral" disabled={acctBusy} onPress={closeSheet} />
+        <WideActionButton label="РћС‚РјРµРЅР°" variant="neutral" disabled={acctBusy} onPress={closeSheet} />
       </View>
     </ScrollView>
   );
 }
-

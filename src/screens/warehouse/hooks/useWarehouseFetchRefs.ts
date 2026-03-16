@@ -5,6 +5,16 @@ type FetchStockFn = () => Promise<void>;
 type FetchReqHeadsFn = (pageIndex?: number, forceRefresh?: boolean) => Promise<void>;
 type FetchReportsFn = () => Promise<void>;
 
+type RefreshState = {
+  inFlight: Promise<void> | null;
+  rerunQueued: boolean;
+  rerunForce: boolean;
+};
+
+type RefreshStateRef = {
+  current: RefreshState;
+};
+
 export function useWarehouseFetchRefs(params: {
   fetchToReceive: FetchToReceiveFn;
   fetchStock: FetchStockFn;
@@ -17,6 +27,10 @@ export function useWarehouseFetchRefs(params: {
   const fetchStockRef = useRef(fetchStock);
   const fetchReqHeadsRef = useRef(fetchReqHeads);
   const fetchReportsRef = useRef(fetchReports);
+  const incomingRefreshRef = useRef<RefreshState>({ inFlight: null, rerunQueued: false, rerunForce: false });
+  const stockRefreshRef = useRef<RefreshState>({ inFlight: null, rerunQueued: false, rerunForce: false });
+  const reqHeadsRefreshRef = useRef<RefreshState>({ inFlight: null, rerunQueued: false, rerunForce: false });
+  const reportsRefreshRef = useRef<RefreshState>({ inFlight: null, rerunQueued: false, rerunForce: false });
 
   useEffect(() => {
     fetchToReceiveRef.current = fetchToReceive;
@@ -31,18 +45,64 @@ export function useWarehouseFetchRefs(params: {
     fetchReportsRef.current = fetchReports;
   }, [fetchReports]);
 
+  const runRefresh = useCallback(
+    (
+      stateRef: RefreshStateRef,
+      refresh: (force?: boolean) => Promise<void>,
+      options?: { force?: boolean; queueOnOverlap?: boolean },
+    ) => {
+      const force = !!options?.force;
+      if (stateRef.current.inFlight) {
+        if (force) {
+          stateRef.current.rerunQueued = true;
+          stateRef.current.rerunForce = true;
+        } else if (options?.queueOnOverlap) {
+          stateRef.current.rerunQueued = true;
+        }
+        return stateRef.current.inFlight;
+      }
+
+      const start = (nextForce: boolean) => {
+        const task = (async () => {
+          try {
+            await refresh(nextForce);
+          } finally {
+            stateRef.current.inFlight = null;
+            if (stateRef.current.rerunQueued) {
+              const rerunForce = stateRef.current.rerunForce;
+              stateRef.current.rerunQueued = false;
+              stateRef.current.rerunForce = false;
+              void start(rerunForce);
+            }
+          }
+        })();
+        stateRef.current.inFlight = task;
+        return task;
+      };
+
+      return start(force);
+    },
+    [],
+  );
+
   const callFetchToReceive = useCallback((page?: number) => {
-    return fetchToReceiveRef.current(page);
-  }, []);
+    if ((page ?? 0) > 0) return fetchToReceiveRef.current(page);
+    return runRefresh(incomingRefreshRef, () => fetchToReceiveRef.current(0), { queueOnOverlap: true });
+  }, [runRefresh]);
   const callFetchStock = useCallback(() => {
-    return fetchStockRef.current();
-  }, []);
+    return runRefresh(stockRefreshRef, () => fetchStockRef.current(), { queueOnOverlap: true });
+  }, [runRefresh]);
   const callFetchReqHeads = useCallback((pageIndex?: number, forceRefresh?: boolean) => {
-    return fetchReqHeadsRef.current(pageIndex, forceRefresh);
-  }, []);
+    if ((pageIndex ?? 0) > 0) return fetchReqHeadsRef.current(pageIndex, forceRefresh);
+    return runRefresh(
+      reqHeadsRefreshRef,
+      (nextForce) => fetchReqHeadsRef.current(0, nextForce),
+      { force: !!forceRefresh, queueOnOverlap: true },
+    );
+  }, [runRefresh]);
   const callFetchReports = useCallback(() => {
-    return fetchReportsRef.current();
-  }, []);
+    return runRefresh(reportsRefreshRef, () => fetchReportsRef.current(), { queueOnOverlap: true });
+  }, [runRefresh]);
 
   return {
     callFetchToReceive,
@@ -51,4 +111,3 @@ export function useWarehouseFetchRefs(params: {
     callFetchReports,
   };
 }
-

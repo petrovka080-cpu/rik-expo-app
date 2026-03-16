@@ -37,11 +37,51 @@ export type QueueWorkerHandle = {
   stop: () => void;
 };
 
+const queueErrorText = (error: unknown): string =>
+  error instanceof Error ? error.message : String(error ?? "unknown");
+
+async function markCompactedDuplicatesCompleted(groups: ReturnType<typeof compactJobsByEntity>, workerId: string) {
+  let duplicateCount = 0;
+  let failedCount = 0;
+
+  for (const group of groups) {
+    const dupIds = group.compactedJobIds.filter((id) => id !== group.job.id);
+    duplicateCount += dupIds.length;
+    for (const id of dupIds) {
+      try {
+        await markSubmitJobCompleted(id);
+      } catch (error: unknown) {
+        failedCount += 1;
+        console.warn("[queue.worker] compacted duplicate completion failed", {
+          workerId,
+          keptJobId: group.job.id,
+          duplicateJobId: id,
+          error: queueErrorText(error),
+        });
+      }
+    }
+  }
+
+  return { duplicateCount, failedCount };
+}
+
 async function processOne(job: SubmitJobRow, workerId: string) {
   const t0 = Date.now();
   try {
     await dispatchJob(job, { supabase });
-    await markSubmitJobCompleted(job.id);
+    try {
+      await markSubmitJobCompleted(job.id);
+    } catch (completionError: unknown) {
+      console.warn("[queue.worker] completion persistence failed after dispatch", {
+        workerId,
+        jobId: job.id,
+        jobType: job.job_type,
+        retryCount: job.retry_count,
+        jobProcessingMs: Date.now() - t0,
+        error: queueErrorText(completionError),
+      });
+      throw completionError;
+    }
     console.info("[queue.worker] job done", {
       workerId,
       jobId: job.id,
@@ -49,30 +89,44 @@ async function processOne(job: SubmitJobRow, workerId: string) {
       retryCount: job.retry_count,
       jobProcessingMs: Date.now() - t0,
     });
-  } catch (e: any) {
-    const failed = await markSubmitJobFailed(job.id, String(e?.message ?? e));
-    console.warn("[queue.worker] job failed", {
-      workerId,
-      jobId: job.id,
-      jobType: job.job_type,
-      retryCount: failed.retryCount,
-      status: failed.status,
-      jobProcessingMs: Date.now() - t0,
-      error: String(e?.message ?? e),
-    });
+  } catch (error: unknown) {
+    const message = queueErrorText(error);
+    try {
+      const failed = await markSubmitJobFailed(job.id, message);
+      console.warn("[queue.worker] job failed", {
+        workerId,
+        jobId: job.id,
+        jobType: job.job_type,
+        retryCount: failed.retryCount,
+        status: failed.status,
+        jobProcessingMs: Date.now() - t0,
+        error: message,
+      });
+    } catch (failurePersistError: unknown) {
+      console.error("[queue.worker] failure persistence failed", {
+        workerId,
+        jobId: job.id,
+        jobType: job.job_type,
+        retryCount: job.retry_count,
+        jobProcessingMs: Date.now() - t0,
+        processingError: message,
+        failurePersistError: queueErrorText(failurePersistError),
+      });
+      throw failurePersistError;
+    }
   }
 }
 
 async function processBatch(jobs: SubmitJobRow[], workerId: string, concurrency: number) {
   const compacted = compactJobsByEntity(jobs);
-  // Mark duplicate compacted jobs as completed to avoid repeated identical work.
-  for (const group of compacted) {
-    const dupIds = group.compactedJobIds.filter((id) => id !== group.job.id);
-    for (const id of dupIds) {
-      try {
-        await markSubmitJobCompleted(id);
-      } catch {}
-    }
+  // Duplicate completion is a secondary integrity step; failed marking should stay observable.
+  const compactedDuplicates = await markCompactedDuplicatesCompleted(compacted, workerId);
+  if (compactedDuplicates.duplicateCount > 0) {
+    console.info("[queue.worker] compacted duplicates processed", {
+      workerId,
+      duplicateCount: compactedDuplicates.duplicateCount,
+      failedCount: compactedDuplicates.failedCount,
+    });
   }
 
   const queue = compacted.map((x) => x.job);
@@ -117,6 +171,7 @@ export function startQueueWorker(options: QueueWorkerOptions = {}): QueueWorkerH
     console.info("[queue.worker] started", { workerId, batchSize, concurrency });
     console.info("[queue.worker] polling loop entered", { workerId });
     while (!stopped) {
+      let loopPhase = "recover";
       try {
         recoveryTick += 1;
         if (recoveryTick % 10 === 0) {
@@ -127,28 +182,36 @@ export function startQueueWorker(options: QueueWorkerOptions = {}): QueueWorkerH
           }
         }
 
+        loopPhase = "claim";
         console.info("[queue.worker] claiming jobs", { workerId, batchSize });
         const claimed = await claimSubmitJobs(workerId, batchSize);
         console.info("[queue.worker] claim result", { workerId, claimed: claimed.length });
         if (!claimed.length) {
+          loopPhase = "idle_sleep";
           console.info("[queue.worker] idle sleep", { workerId, pollIdleMs });
           await sleep(pollIdleMs);
           continue;
         }
 
         // Small debounce window to compact burst submits for same entity.
+        loopPhase = "compaction_delay";
         console.info("[queue.worker] compaction delay", { workerId, COMPACTION_DELAY_MS });
         await sleep(COMPACTION_DELAY_MS);
 
         // Batch processing path.
+        loopPhase = "process_batch";
         console.info("[queue.worker] processing batch", {
           workerId,
           claimed: claimed.length,
           concurrency,
         });
         await processBatch(claimed, workerId, concurrency);
-      } catch (e: any) {
-        console.warn("[queue.worker] loop error", { workerId, error: String(e?.message ?? e) });
+      } catch (error: unknown) {
+        console.warn("[queue.worker] loop error", {
+          workerId,
+          phase: loopPhase,
+          error: queueErrorText(error),
+        });
         await sleep(pollIdleMs);
       }
     }

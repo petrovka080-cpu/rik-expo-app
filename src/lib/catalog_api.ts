@@ -15,6 +15,7 @@ export {
   requestCreateDraft,
   requestSubmit,
   addRequestItemFromRik,
+  addRequestItemsFromRikBatch,
   clearCachedDraftRequestId,
 } from "./api/requests";
 export { directorReturnToBuyer } from "./api/director";

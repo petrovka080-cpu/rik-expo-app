@@ -20,6 +20,34 @@ import {
 } from "./warehouse.api.repo";
 
 type UnknownRow = Record<string, unknown>;
+type RequestFallbackRow = {
+  id: string | null;
+  display_no: string | null;
+  status: string | null;
+  object_name: string | null;
+  object_type_code: string | null;
+  level_name: string | null;
+  level_code: string | null;
+  system_name: string | null;
+  system_code: string | null;
+  zone_name: string | null;
+  zone_code: string | null;
+  submitted_at: string | null;
+  created_at: string | null;
+  contractor_org: string | null;
+  subcontractor_org: string | null;
+  contractor_name: string | null;
+  subcontractor_name: string | null;
+  contractor_phone: string | null;
+  subcontractor_phone: string | null;
+  phone: string | null;
+  phone_number: string | null;
+  planned_volume: string | null;
+  volume: string | null;
+  qty_plan: string | null;
+  note: string | null;
+  comment: string | null;
+};
 type NameMapSource = "projection" | "overrides" | "rik_ru" | "ledger_ui";
 type NameMapCacheValue = {
   available?: boolean;
@@ -68,6 +96,64 @@ const toTextOrNull = (v: unknown): string | null => {
   const s = String(v ?? "").trim();
   return s || null;
 };
+
+const REQUESTS_FALLBACK_SELECT = [
+  "id",
+  "display_no",
+  "status",
+  "object_name",
+  "object_type_code",
+  "level_name",
+  "level_code",
+  "system_name",
+  "system_code",
+  "zone_name",
+  "zone_code",
+  "submitted_at",
+  "created_at",
+  "contractor_name",
+  "contractor_org",
+  "subcontractor_name",
+  "subcontractor_org",
+  "contractor_phone",
+  "subcontractor_phone",
+  "phone",
+  "phone_number",
+  "planned_volume",
+  "volume",
+  "qty_plan",
+  "note",
+  "comment",
+].join(", ");
+
+const normalizeRequestFallbackRow = (row: UnknownRow): RequestFallbackRow => ({
+  id: toTextOrNull(row.id),
+  display_no: toTextOrNull(row.display_no),
+  status: toTextOrNull(row.status),
+  object_name: toTextOrNull(row.object_name),
+  object_type_code: toTextOrNull(row.object_type_code),
+  level_name: toTextOrNull(row.level_name),
+  level_code: toTextOrNull(row.level_code),
+  system_name: toTextOrNull(row.system_name),
+  system_code: toTextOrNull(row.system_code),
+  zone_name: toTextOrNull(row.zone_name),
+  zone_code: toTextOrNull(row.zone_code),
+  submitted_at: toTextOrNull(row.submitted_at),
+  created_at: toTextOrNull(row.created_at),
+  contractor_name: toTextOrNull(row.contractor_name),
+  contractor_org: toTextOrNull(row.contractor_org),
+  subcontractor_name: toTextOrNull(row.subcontractor_name),
+  subcontractor_org: toTextOrNull(row.subcontractor_org),
+  contractor_phone: toTextOrNull(row.contractor_phone),
+  subcontractor_phone: toTextOrNull(row.subcontractor_phone),
+  phone: toTextOrNull(row.phone),
+  phone_number: toTextOrNull(row.phone_number),
+  planned_volume: toTextOrNull(row.planned_volume),
+  volume: toTextOrNull(row.volume),
+  qty_plan: toTextOrNull(row.qty_plan),
+  note: toTextOrNull(row.note),
+  comment: toTextOrNull(row.comment),
+});
 
 const now = () => Date.now();
 
@@ -139,7 +225,7 @@ const REQUESTS_FALLBACK_FAIL_COOLDOWN_MS = 30000;
 async function tryLoadRequestsFallbackRows(
   supabase: SupabaseClient,
   pageSize: number,
-): Promise<UnknownRow[]> {
+): Promise<RequestFallbackRow[]> {
   const now = Date.now();
   if (
     requestsFallbackLastHardFailAt > 0 &&
@@ -160,15 +246,15 @@ async function tryLoadRequestsFallbackRows(
       .order("display_no", { ascending: false })
       .limit(Math.max(pageSize * 6, 600));
 
-  // Canonical anti-drift path: avoid explicit legacy columns and read the current row surface.
-  const star = await fetchBySelect("*");
-  if (!star.error && Array.isArray(star.data)) {
-    return asUnknownRows(star.data);
+  // Fallback path only consumes a narrow request-head surface; keep it explicit to reduce drift/overfetch.
+  const narrow = await fetchBySelect(REQUESTS_FALLBACK_SELECT);
+  if (!narrow.error && Array.isArray(narrow.data)) {
+    return asUnknownRows(narrow.data).map(normalizeRequestFallbackRow);
   }
   requestsFallbackLastHardFailAt = Date.now();
-  const msg = String((star.error as { message?: string } | null)?.message ?? star.error ?? "unknown");
+  const msg = String((narrow.error as { message?: string } | null)?.message ?? narrow.error ?? "unknown");
   if (__DEV__) {
-    console.warn("[warehouse.api] requests fallback select(*) failed:", msg);
+    console.warn("[warehouse.api] requests fallback select failed:", msg);
   }
 
   return [];
