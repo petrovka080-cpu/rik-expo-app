@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import { View, Text, ScrollView, Platform } from "react-native";
+import { View, Text, FlatList, Platform } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
 import WarehouseSheet from "./WarehouseSheet";
@@ -40,6 +40,44 @@ export default function IssueDetailsSheet({
   const title = useMemo(() => {
     return issueId != null ? `Детали выдачи ISSUE-${issueId}` : "Детали выдачи";
   }, [issueId]);
+
+  const renderLine = ({ item: ln, index }: { item: IssueDetailsLine; index: number }) => {
+    const code = String(ln.rik_code ?? "").trim();
+    const name =
+      String(ln.name_human ?? "").trim() ||
+      String(ln.item_name_ru ?? "").trim() ||
+      (code ? String(matNameByCode[code] ?? "").trim() : "") ||
+      "РџРѕР·РёС†РёСЏ";
+
+    const uom = String(ln.uom ?? ln.uom_id ?? "вЂ”");
+
+    return (
+      <View
+        style={{
+          padding: 12,
+          borderRadius: 14,
+          borderWidth: 1,
+          borderColor: "rgba(255,255,255,0.10)",
+          backgroundColor: "rgba(255,255,255,0.04)",
+          marginBottom: 10,
+        }}
+      >
+        <Text style={{ color: UI.text, fontWeight: "900" }} numberOfLines={2}>
+          {name}
+        </Text>
+
+        <Text style={{ marginTop: 4, color: UI.sub, fontWeight: "800" }} numberOfLines={2}>
+          {uom}
+        </Text>
+
+        <Text style={{ marginTop: 6, color: UI.sub, fontWeight: "800" }} numberOfLines={2}>
+          {`РІСЃРµРіРѕ ${String(ln.qty_total ?? 0)} В· РїРѕ Р·Р°СЏРІРєРµ ${String(
+            ln.qty_in_req ?? 0,
+          )} В· РїРµСЂРµСЂР°СЃС…РѕРґ ${String(ln.qty_over ?? 0)}`}
+        </Text>
+      </View>
+    );
+  };
 
   const ListBody = (
     <View style={{ paddingBottom: 28 }}>
@@ -119,14 +157,17 @@ export default function IssueDetailsSheet({
           <View style={{ flex: 1, minHeight: 0 }}>{ListBody}</View>
         ) : (
           // ✅ NATIVE: скроллим внутри
-          <ScrollView
+          <FlatList
+            data={lines}
+            renderItem={renderLine}
+            keyExtractor={(item, index) => `${String(item.rik_code ?? "").trim() || "x"}:${index}`}
             style={{ flex: 1 }}
             contentContainerStyle={{ paddingBottom: 28 }}
             showsVerticalScrollIndicator
             keyboardShouldPersistTaps="handled"
-          >
-            {ListBody}
-          </ScrollView>
+            removeClippedSubviews
+            ListEmptyComponent={<Text style={{ color: UI.sub, fontWeight: "800" }}>РќРµС‚ СЃС‚СЂРѕРє.</Text>}
+          />
         )}
       </View>
     </WarehouseSheet>

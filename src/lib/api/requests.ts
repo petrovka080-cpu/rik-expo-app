@@ -36,6 +36,20 @@ type RequestItemMetaPatch = Pick<
   "status" | "note" | "app_code" | "kind" | "name_human" | "uom"
 >;
 type RequestItemStatusPatch = Pick<RequestItemsTable["Update"], "status">;
+type RequestDraftSelectRow = Pick<
+  RequestsTable["Row"],
+  | "id"
+  | "status"
+  | "display_no"
+  | "need_by"
+  | "comment"
+  | "foreman_name"
+  | "object_type_code"
+  | "level_code"
+  | "system_code"
+  | "zone_code"
+  | "created_at"
+>;
 type RequestItemAddOrIncArgs = Database["public"]["Functions"]["request_item_add_or_inc"]["Args"];
 type RequestItemAddOrIncResult = Database["public"]["Functions"]["request_item_add_or_inc"]["Returns"];
 type RequestItemsByRequestArgs = Database["public"]["Functions"]["request_items_by_request"]["Args"];
@@ -45,12 +59,21 @@ type RequestSubmitResultRow = Database["public"]["Functions"]["request_submit"][
 type RequestStatusRecalcArgsCompat = { p_request_id: number | string };
 type RequestIdLookupRow = Pick<RequestsTable["Row"], "id">;
 
+const REQUEST_DRAFT_SELECT =
+  "id,status,display_no,need_by,comment,foreman_name,object_type_code,level_code,system_code,zone_code,created_at";
+
 export const REQUEST_DRAFT_STATUS: RequestStatusEnum = "Черновик";
 export const REQUEST_PENDING_STATUS: RequestStatusEnum = "На утверждении";
 export const REQUEST_APPROVED_STATUS: RequestStatusEnum = "Утверждено";
 export const REQUEST_REJECTED_STATUS: RequestStatusEnum = "Отклонено";
 export const REQUEST_PENDING_EN = "pending";
 export const REQUEST_DRAFT_EN = "draft";
+const REQUEST_APPROVED_EN = "approved";
+const REQUEST_REJECTED_EN = "rejected";
+const REQUEST_STATUS_MATCHERS = {
+  draftFragment: "чернов",
+  pendingFragment: "на утверждении",
+} as const;
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   value != null && typeof value === "object" && !Array.isArray(value);
@@ -159,7 +182,8 @@ function parseRequestItemsByRequestRows(data: unknown): ReqItemRow[] {
 }
 
 function parseRequestSubmitResultRow(data: unknown): RequestRecord | null {
-  return mapRequestRow(data as RequestSubmitResultRow);
+  const row = data as RequestSubmitResultRow | null;
+  return mapRequestRow(row);
 }
 
 export function clearCachedDraftRequestId() {
@@ -266,14 +290,16 @@ function mapRequestRow(raw: unknown): RequestRecord | null {
 const normalizeStatus = (raw: unknown): string =>
   String(raw ?? "").trim().toLowerCase().replace(/\s+/g, " ");
 
+const REQUEST_TERMINAL_ITEM_STATUS_FILTER = `("${REQUEST_APPROVED_STATUS}","${REQUEST_REJECTED_STATUS}","${REQUEST_APPROVED_EN}","${REQUEST_REJECTED_EN}")`;
+
 export const isDraftOrPendingStatus = (raw: unknown): boolean => {
   const s = normalizeStatus(raw);
   if (!s) return true;
   return (
     s === REQUEST_DRAFT_EN ||
     s === REQUEST_PENDING_EN ||
-    s.includes("чернов") ||
-    s.includes("на утверждении")
+    s.includes(REQUEST_STATUS_MATCHERS.draftFragment) ||
+    s.includes(REQUEST_STATUS_MATCHERS.pendingFragment)
   );
 };
 
@@ -334,17 +360,24 @@ async function updateRequestHeadStatus(
 async function updateRequestItemsPendingStatus(requestFilterId: string): Promise<void> {
   const pendingPayload = buildRequestItemsPendingPatch();
 
-  await client
+  const nextStatus = await client
     .from("request_items")
     .update(pendingPayload)
     .eq("request_id", requestFilterId)
-    .not("status", "in", `("${REQUEST_APPROVED_STATUS}","${REQUEST_REJECTED_STATUS}","approved","rejected")`);
+    .not("status", "in", REQUEST_TERMINAL_ITEM_STATUS_FILTER);
+  if (nextStatus.error) throw nextStatus.error;
 
-  await client
+  const nullStatus = await client
     .from("request_items")
     .update(pendingPayload)
     .eq("request_id", requestFilterId)
     .is("status", null);
+  if (nullStatus.error) throw nullStatus.error;
+}
+
+async function patchRequestItemMeta(itemId: string, patch: RequestItemMetaPatch): Promise<void> {
+  const updateResult = await supabase.from("request_items").update(patch).eq("id", itemId);
+  if (updateResult.error) throw updateResult.error;
 }
 
 // ============================== Requests / Items ==============================
@@ -371,13 +404,11 @@ export async function requestCreateDraft(meta?: RequestMeta): Promise<RequestRec
     const { data, error } = await client
       .from("requests")
       .insert(payload)
-      .select(
-        "id,status,display_no,need_by,comment,foreman_name,object_type_code,level_code,system_code,zone_code,created_at",
-      )
+      .select(REQUEST_DRAFT_SELECT)
       .single();
 
     if (error) throw error;
-    const row = mapRequestRow(data);
+    const row = mapRequestRow(data as RequestDraftSelectRow | null);
     if (row) {
       _draftRequestIdAny = row.id;
       return row;
@@ -415,7 +446,9 @@ export async function ensureRequest(requestId: number | string): Promise<number 
   try {
     const found = await selectRequestIdByFilter(requestFilterId);
     if (found?.id != null) return found.id;
-  } catch {}
+  } catch (e) {
+    logRequestsDebug("[ensureRequest/select]", parseErr(e));
+  }
 
   try {
     const up = await upsertDraftRequestId(rid);
@@ -454,8 +487,10 @@ export async function addRequestItemFromRik(
   const patch = buildRequestItemMetaPatch(opts);
 
   try {
-    await supabase.from("request_items").update(patch).eq("id", itemId);
-  } catch {}
+    await patchRequestItemMeta(itemId, patch);
+  } catch (e) {
+    logRequestsDebug("[addRequestItemFromRik/patch]", parseErr(e));
+  }
 
   return true;
 }
@@ -501,7 +536,9 @@ async function reconcileRequestHeadStatus(requestId: string): Promise<void> {
     try {
       await run();
       return;
-    } catch {}
+    } catch (e) {
+      logRequestsDebug("[reconcileRequestHeadStatus]", parseErr(e));
+    }
   }
 }
 
@@ -565,20 +602,8 @@ export async function requestSubmit(requestId: number | string): Promise<Request
     _draftRequestIdAny = null;
   }
 
-  const pendingPayload = buildRequestItemsPendingPatch();
-
   try {
-    await client
-      .from("request_items")
-      .update(pendingPayload)
-      .eq("request_id", requestFilterId)
-      .not("status", "in", `("${REQUEST_APPROVED_STATUS}","${REQUEST_REJECTED_STATUS}","approved","rejected")`);
-
-    await client
-      .from("request_items")
-      .update(pendingPayload)
-      .eq("request_id", requestFilterId)
-      .is("status", null);
+    await updateRequestItemsPendingStatus(requestFilterId);
   } catch (e) {
     logRequestsDebug("[requestSubmit/request_items fallback]", parseErr(e));
   }
