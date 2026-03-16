@@ -8,6 +8,11 @@ const pickErrMessage = (error: unknown) => {
   return String(error ?? "");
 };
 
+type ReqHeadsSnapshot = {
+  rows: ReqHeadRow[];
+  pageSize: number;
+};
+
 export function useWarehouseReqHeads(params: {
   supabase: SupabaseClient;
   pageSize: number;
@@ -27,6 +32,8 @@ export function useWarehouseReqHeads(params: {
     lastForceStartAt: 0,
     lastForceSkipLogAt: 0,
   });
+  const cacheRef = useRef<ReqHeadsSnapshot | null>(null);
+  const inFlightRef = useRef(new Map<string, Promise<ReqHeadRow[]>>());
 
   const fetchReqHeads = useCallback(
     async (pageIndex: number = 0, forceRefresh: boolean = false) => {
@@ -47,13 +54,28 @@ export function useWarehouseReqHeads(params: {
 
       if (reqRefs.current.fetching) return;
       if (pageIndex > 0 && !reqRefs.current.hasMore && !forceRefresh) return;
+      if (pageIndex === 0 && !forceRefresh) {
+        const cached = cacheRef.current;
+        if (cached && cached.pageSize === pageSize) {
+          reqRefs.current.page = 0;
+          reqRefs.current.hasMore = cached.rows.length > 0;
+          setReqHeads(cached.rows);
+          return;
+        }
+      }
 
       reqRefs.current.fetching = true;
       setReqHeadsFetchingPage(true);
       if (pageIndex === 0) setReqHeadsLoading(true);
 
       try {
-        const rows = await apiFetchReqHeads(supabase, pageIndex, pageSize);
+        const requestKey = `${pageIndex}:${forceRefresh ? 1 : 0}:${pageSize}`;
+        let request = inFlightRef.current.get(requestKey);
+        if (!request) {
+          request = apiFetchReqHeads(supabase, pageIndex, pageSize);
+          inFlightRef.current.set(requestKey, request);
+        }
+        const rows = await request;
 
         // apiFetchReqHeads applies status/view filtering, so page can be shorter than pageSize
         // even when more rows exist in later ranges. Stop only when backend returns zero rows.
@@ -62,6 +84,7 @@ export function useWarehouseReqHeads(params: {
         reqRefs.current.page = pageIndex;
 
         if (pageIndex === 0) {
+          cacheRef.current = { rows, pageSize };
           setReqHeads(rows);
         } else {
           setReqHeads((prev) => {
@@ -73,7 +96,10 @@ export function useWarehouseReqHeads(params: {
       } catch (e) {
         reqRefs.current.hasMore = false;
         reqRefs.current.lastErrorAt = Date.now();
-        if (pageIndex === 0) setReqHeads([]);
+        if (pageIndex === 0) {
+          cacheRef.current = null;
+          setReqHeads([]);
+        }
         if (__DEV__) {
           console.warn("[warehouse.reqHeads] fetch failed", {
             pageIndex,
@@ -83,6 +109,8 @@ export function useWarehouseReqHeads(params: {
         }
         throw e;
       } finally {
+        const requestKey = `${pageIndex}:${forceRefresh ? 1 : 0}:${pageSize}`;
+        inFlightRef.current.delete(requestKey);
         reqRefs.current.fetching = false;
         setReqHeadsFetchingPage(false);
         if (pageIndex === 0) setReqHeadsLoading(false);
