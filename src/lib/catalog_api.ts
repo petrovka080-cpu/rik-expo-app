@@ -327,35 +327,6 @@ type ProposalItemsCompatUpdate = ProposalItemsUpdate & {
     contractor_id?: string | null;
   };
 
-type RequestsCompatTable = {
-  update(values: RequestsExtendedMetaUpdate): {
-    eq(column: "id", value: string): Promise<{ error: { message?: string; code?: string; details?: string | null; hint?: string | null } | null }>;
-  };
-  select(columns: string): {
-    limit(count: number): Promise<{ error: { message?: string; code?: string; details?: string | null; hint?: string | null } | null }>;
-  };
-};
-
-type ProposalItemsCompatTable = {
-  insert(values: ProposalItemsCompatInsertUpsert[]): {
-    select(columns: string): Promise<{ error: { message?: string } | null }>;
-  };
-  upsert(
-    values: ProposalItemsCompatInsertUpsert[],
-    options: { onConflict: string },
-  ): Promise<{ error: { message?: string } | null }>;
-  update(values: ProposalItemsCompatUpdate): {
-    eq(column: "proposal_id", value: string): {
-      eq(column: "request_item_id", value: string): Promise<{ error: { message?: string } | null }>;
-    };
-  };
-};
-
-type CatalogCompatBoundary = {
-  from(relation: "requests"): RequestsCompatTable;
-  from(relation: "proposal_items"): ProposalItemsCompatTable;
-};
-
 type CatalogDynamicReadSource =
   | "request_display"
   | "vi_requests_display"
@@ -715,7 +686,6 @@ const detectUnifiedType = (origins: string[]): UnifiedCounterpartyType => {
   return "other_business_counterparty";
 };
 
-const compatFrom = (): CatalogCompatBoundary => supabase as unknown as CatalogCompatBoundary;
 const compatReadFrom = (): CatalogDynamicReadBoundary => supabase as unknown as CatalogDynamicReadBoundary;
 
 type CatalogCompatError = {
@@ -1353,7 +1323,7 @@ async function resolveRequestsExtendedMetaWriteSupport(): Promise<boolean> {
   requestsExtendedMetaWriteSupportInFlight = (async () => {
     try {
       // Schema capability probe for extended request meta fields.
-      const q = await compatFrom()
+      const q = await supabase
         .from("requests")
         .select(
           "subcontract_id,contractor_job_id,contractor_org,subcontractor_org,contractor_phone,subcontractor_phone,planned_volume,qty_plan,volume,object_name,level_name,system_name,zone_name",
@@ -1449,7 +1419,7 @@ export async function updateRequestMeta(
     const primaryPayload = fullPayloadAllowed
       ? payload
       : Object.fromEntries(Object.entries(payload).filter(([k]) => basePayloadKeys.has(k)));
-    let { error } = await compatFrom()
+    let { error } = await supabase
       .from("requests")
       .update(primaryPayload)
       .eq("id", id);
@@ -2465,7 +2435,7 @@ export async function createProposalsBySupplier(
       try {
         for (const pack of chunk(upsertRows, 100)) {
           dbCalls += 1;
-          const { error } = await compatFrom()
+          const { error } = await supabase
             .from("proposal_items")
             .upsert(pack, { onConflict: "proposal_id,request_item_id" });
           if (error) throw error;
@@ -2512,7 +2482,7 @@ export async function createProposalsBySupplier(
               }
 
               dbCalls += 1;
-              const { error } = await compatFrom()
+              const { error } = await supabase
                 .from("proposal_items")
                 .update(payload)
                 .eq("proposal_id", proposalId)
