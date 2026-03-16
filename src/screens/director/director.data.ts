@@ -19,6 +19,7 @@ const warnDirectorData = (
     | "preloadProposalRequestIds"
     | "preloadDisplayNos"
     | "list_director_items_stable"
+    | "list_director_items_stable_fallback"
     | "proposals list",
   error: unknown,
   level: "warn" | "error" = "warn",
@@ -322,32 +323,33 @@ export function useDirectorData({ supabase }: Deps) {
     setLoadingRows(true);
     try {
       let normalized: PendingRow[] = [];
-      let rpcFailed = false;
+      let shouldUseFallback = false;
 
       try {
         const { data, error } = await supabase.rpc("list_director_items_stable");
         if (error) throw error;
         normalized = normalizeDirectorPendingRows((data ?? []) as Array<Record<string, unknown>>);
       } catch (e) {
-        rpcFailed = true;
+        shouldUseFallback = true;
         warnDirectorData("list_director_items_stable", e, "error");
       }
 
-      try {
-        const fallbackRows = await loadDirectorRowsFallback();
-        if (
-          fallbackRows.length > 0 &&
-          (
-            rpcFailed ||
-            fallbackRows.length !== normalized.length ||
-            uniqRequestCount(fallbackRows) !== uniqRequestCount(normalized)
-          )
-        ) {
+      if (!shouldUseFallback && normalized.length === 0) {
+        shouldUseFallback = true;
+      }
+
+      if (shouldUseFallback) {
+        try {
+          const fallbackRows = await loadDirectorRowsFallback();
           normalized = fallbackRows;
+          if (__DEV__) {
+            const reason = normalized.length > 0 ? "bootstrap_restore" : "bootstrap_empty";
+            console.info(`[director] list_director_items_stable_fallback: reason=${reason} rows=${normalized.length}`);
+          }
+        } catch (e) {
+          if (!normalized.length) throw e;
+          warnDirectorData("list_director_items_stable_fallback", e, "warn");
         }
-      } catch (e) {
-        if (!normalized.length) throw e;
-        warnDirectorData("list_director_items_stable", e, "warn");
       }
 
       lastNonEmptyRows.current = normalized;

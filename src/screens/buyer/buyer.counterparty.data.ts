@@ -50,6 +50,21 @@ type BuyerCounterpartyLoadResult = {
   sourceDiag: BuyerCounterpartySourceDiag[];
 };
 
+type BuyerCounterpartyCacheEntry = {
+  value: BuyerCounterpartyLoadResult | null;
+  expiresAt: number;
+  promise: Promise<BuyerCounterpartyLoadResult> | null;
+};
+
+const BUYER_COUNTERPARTY_CACHE_TTL_MS = 5 * 60 * 1000;
+const buyerCounterpartyCache: BuyerCounterpartyCacheEntry = {
+  value: null,
+  expiresAt: 0,
+  promise: null,
+};
+
+const now = () => Date.now();
+
 const asErrorMessage = (value: unknown): string => {
   if (value instanceof Error && value.message.trim()) return value.message.trim();
   if (value && typeof value === "object" && "message" in value) {
@@ -110,6 +125,33 @@ const pushCounterparty = (
   seen.add(key);
   list.push({ name: normalized, role });
 };
+
+const cloneBuyerCounterpartyDiag = (
+  diag: BuyerCounterpartySourceDiag,
+): BuyerCounterpartySourceDiag => ({
+  source: diag.source,
+  ok: diag.ok,
+  rows: diag.rows,
+  query: diag.query,
+  error: diag.error,
+});
+
+const cloneSupplier = (row: Supplier): Supplier => ({ ...row });
+
+const cloneBuyerCounterpartySuggestion = (
+  row: BuyerCounterpartySuggestion,
+): BuyerCounterpartySuggestion => ({ ...row });
+
+const cloneBuyerCounterpartyLoadResult = (
+  result: BuyerCounterpartyLoadResult,
+): BuyerCounterpartyLoadResult => ({
+  suppliers: result.suppliers.map(cloneSupplier),
+  counterparties: result.counterparties.map(cloneBuyerCounterpartySuggestion),
+  sourceDiag: result.sourceDiag.map(cloneBuyerCounterpartyDiag),
+});
+
+const isBuyerCounterpartyCacheable = (result: BuyerCounterpartyLoadResult): boolean =>
+  result.sourceDiag.length > 0 && result.sourceDiag.every((diag) => diag.ok);
 
 const mapBuyerCounterpartyData = (params: {
   supplierRows: Supplier[];
@@ -200,7 +242,7 @@ const mapBuyerCounterpartyData = (params: {
   };
 };
 
-export async function loadBuyerCounterpartyData(): Promise<BuyerCounterpartyLoadResult> {
+async function loadBuyerCounterpartyDataFresh(): Promise<BuyerCounterpartyLoadResult> {
   const [supplierRowsSettled, contractorsSettled, subcontractsSettled, proposalSuppliersSettled] =
     await Promise.allSettled([
       listSuppliers(),
@@ -273,4 +315,35 @@ export async function loadBuyerCounterpartyData(): Promise<BuyerCounterpartyLoad
     ...mapped,
     sourceDiag: [supplierDiag, contractors.diag, subcontracts.diag, proposalSuppliers.diag],
   };
+}
+
+export async function loadBuyerCounterpartyData(
+  opts?: { force?: boolean },
+): Promise<BuyerCounterpartyLoadResult> {
+  const force = opts?.force === true;
+  if (!force && buyerCounterpartyCache.value && buyerCounterpartyCache.expiresAt > now()) {
+    return cloneBuyerCounterpartyLoadResult(buyerCounterpartyCache.value);
+  }
+
+  if (!force && buyerCounterpartyCache.promise) {
+    return cloneBuyerCounterpartyLoadResult(await buyerCounterpartyCache.promise);
+  }
+
+  buyerCounterpartyCache.promise = (async () => {
+    const result = await loadBuyerCounterpartyDataFresh();
+    if (isBuyerCounterpartyCacheable(result)) {
+      buyerCounterpartyCache.value = cloneBuyerCounterpartyLoadResult(result);
+      buyerCounterpartyCache.expiresAt = now() + BUYER_COUNTERPARTY_CACHE_TTL_MS;
+    } else {
+      buyerCounterpartyCache.value = null;
+      buyerCounterpartyCache.expiresAt = 0;
+    }
+    return result;
+  })();
+
+  try {
+    return cloneBuyerCounterpartyLoadResult(await buyerCounterpartyCache.promise);
+  } finally {
+    buyerCounterpartyCache.promise = null;
+  }
 }

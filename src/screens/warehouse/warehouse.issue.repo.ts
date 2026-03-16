@@ -26,6 +26,21 @@ export async function addWarehouseIssueItem(
   return await supabase.rpc("issue_add_item_via_ui", payload);
 }
 
+export async function addWarehouseIssueItems(
+  supabase: SupabaseClient,
+  payload: {
+    p_issue_id: number;
+    p_lines: Array<{
+      rik_code: string;
+      uom_id: string;
+      qty: number;
+      request_item_id: string | null;
+    }>;
+  },
+) {
+  return await supabase.rpc("issue_add_items_via_ui", payload);
+}
+
 export async function commitWarehouseIssue(
   supabase: SupabaseClient,
   issueId: number,

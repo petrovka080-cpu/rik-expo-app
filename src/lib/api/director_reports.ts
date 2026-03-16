@@ -116,6 +116,38 @@ type CodeNameRow = {
   name?: string | null;
 };
 
+type RequestLookupRow = {
+  id: string;
+  object_id: string | null;
+  object_name: string | null;
+  object_type_code: string | null;
+  system_code: string | null;
+  level_code: string | null;
+  object: string | null;
+};
+
+type ObjectLookupRow = {
+  id: string;
+  name: string | null;
+};
+
+type PriceLookupRow = {
+  rik_code?: string | null;
+  code?: string | null;
+  price?: number | string | null;
+  qty?: number | string | null;
+};
+
+type RequestItemLookupRow = {
+  id?: string | number | null;
+  request_id?: string | number | null;
+};
+
+type RikNameLookupRow = {
+  code?: string | null;
+  name_ru?: string | null;
+};
+
 type AccIssueHead = {
   issue_id: number | string;
   event_dt: string | null;
@@ -142,6 +174,7 @@ const WITHOUT_LEVEL = "Без этажа";
 const DASH = "—";
 const REPORTS_TIMING = typeof __DEV__ !== "undefined" ? __DEV__ : false;
 const DISCIPLINE_ROWS_CACHE_TTL_MS = 2 * 60 * 1000;
+const DIRECTOR_REPORTS_LOOKUP_TTL_MS = 5 * 60 * 1000;
 const DIRECTOR_REPORTS_CANONICAL_ENABLED =
   String((globalThis as any)?.process?.env?.EXPO_PUBLIC_DIRECTOR_REPORTS_CANONICAL ?? "1").trim() !== "0";
 const DIRECTOR_REPORTS_CANONICAL_MATERIALS_ENABLED =
@@ -333,6 +366,18 @@ const REQUESTS_DISCIPLINE_SELECT_PLANS = [
 let requestsSelectPlanCache: string | null = null;
 let requestsDisciplineSelectPlanCache: string | null = null;
 const disciplineRowsCache = new Map<string, { ts: number; rows: DirectorFactRow[]; source: DisciplineRowsSource }>();
+const requestLookupCache = new Map<string, { ts: number; value: RequestLookupRow | null }>();
+const requestLookupInFlight = new Map<string, Promise<RequestLookupRow[]>>();
+const objectLookupCache = new Map<string, { ts: number; value: string | null }>();
+const objectLookupInFlight = new Map<string, Promise<Map<string, string>>>();
+const objectTypeLookupCache = new Map<string, { ts: number; value: string | null }>();
+const objectTypeLookupInFlight = new Map<string, Promise<Map<string, string>>>();
+const systemLookupCache = new Map<string, { ts: number; value: string | null }>();
+const systemLookupInFlight = new Map<string, Promise<Map<string, string>>>();
+const levelLookupCache = new Map<string, { ts: number; value: string | null }>();
+const levelLookupInFlight = new Map<string, Promise<Map<string, string>>>();
+const rikNameLookupCache = new Map<string, { ts: number; value: string | null }>();
+const rikNameLookupInFlight = new Map<string, Promise<Map<string, string>>>();
 
 const buildDisciplineRowsCacheKey = (p: {
   from: string;
@@ -359,30 +404,72 @@ async function fetchRequestsRowsSafe(ids: string[]): Promise<any[]> {
   const reqIds = Array.from(new Set((ids || []).map((x) => String(x ?? "").trim()).filter(Boolean)));
   if (!reqIds.length) return [];
 
-  const runSelect = async (selectCols: string) =>
-    supabase
-      .from("requests" as any)
-      .select(selectCols)
-      .in("id", reqIds as any);
-
-  if (requestsSelectPlanCache) {
-    const cached = await runSelect(requestsSelectPlanCache);
-    if (!cached.error) return Array.isArray(cached.data) ? cached.data : [];
-    requestsSelectPlanCache = null;
-  }
-
-  let lastError: any = null;
-  for (const selectCols of REQUESTS_SELECT_PLANS) {
-    const q = await runSelect(selectCols);
-    if (!q.error) {
-      requestsSelectPlanCache = selectCols;
-      return Array.isArray(q.data) ? q.data : [];
+  const cachedRows: RequestLookupRow[] = [];
+  const missingIds: string[] = [];
+  for (const id of reqIds) {
+    const cached = getFreshLookupValue(requestLookupCache, id);
+    if (cached !== undefined) {
+      if (cached) cachedRows.push(cached);
+      continue;
     }
-    lastError = q.error;
+    missingIds.push(id);
+  }
+  if (!missingIds.length) return cachedRows;
+
+  const runSelect = async (selectCols: string, idsPart: string[]) =>
+    await supabase
+      .from("requests" as never)
+      .select(selectCols)
+      .in("id", idsPart);
+
+  const loadMissing = async (): Promise<RequestLookupRow[]> => {
+    if (requestsSelectPlanCache) {
+      const cached = await runSelect(requestsSelectPlanCache, missingIds);
+      if (!cached.error) {
+        const rows = Array.isArray(cached.data)
+          ? cached.data.map(normalizeRequestLookupRow).filter((row): row is RequestLookupRow => !!row)
+          : [];
+        const seen = new Set(rows.map((row) => row.id));
+        for (const row of rows) setLookupValue(requestLookupCache, row.id, row);
+        for (const id of missingIds) if (!seen.has(id)) setLookupValue(requestLookupCache, id, null);
+        return rows;
+      }
+      requestsSelectPlanCache = null;
+    }
+
+    let lastError: any = null;
+    for (const selectCols of REQUESTS_SELECT_PLANS) {
+      const q = await runSelect(selectCols, missingIds);
+      if (!q.error) {
+        requestsSelectPlanCache = selectCols;
+        const rows = Array.isArray(q.data)
+          ? q.data.map(normalizeRequestLookupRow).filter((row): row is RequestLookupRow => !!row)
+          : [];
+        const seen = new Set(rows.map((row) => row.id));
+        for (const row of rows) setLookupValue(requestLookupCache, row.id, row);
+        for (const id of missingIds) if (!seen.has(id)) setLookupValue(requestLookupCache, id, null);
+        return rows;
+      }
+      lastError = q.error;
+    }
+
+    if (lastError) throw lastError;
+    return [];
+  };
+
+  const inFlightKey = missingIds.slice().sort().join("|");
+  let pending = requestLookupInFlight.get(inFlightKey);
+  if (!pending) {
+    pending = loadMissing();
+    requestLookupInFlight.set(inFlightKey, pending);
   }
 
-  if (lastError) throw lastError;
-  return [];
+  try {
+    const loaded = await pending;
+    return [...cachedRows, ...loaded];
+  } finally {
+    requestLookupInFlight.delete(inFlightKey);
+  }
 }
 
 async function fetchRequestsDisciplineRowsSafe(ids: string[]): Promise<any[]> {
@@ -390,15 +477,41 @@ async function fetchRequestsDisciplineRowsSafe(ids: string[]): Promise<any[]> {
   const reqIds = Array.from(new Set((ids || []).map((x) => String(x ?? "").trim()).filter(Boolean)));
   if (!reqIds.length) return [];
 
+  const cachedRows: RequestLookupRow[] = [];
+  const missingIds: string[] = [];
+  for (const id of reqIds) {
+    const cached = getFreshLookupValue(requestLookupCache, id);
+    const hasDisciplineFields =
+      cached !== undefined &&
+      (!!cached?.level_code || !!cached?.system_code || cached?.level_code === null || cached?.system_code === null);
+    if (hasDisciplineFields) {
+      if (cached) cachedRows.push(cached);
+      continue;
+    }
+    missingIds.push(id);
+  }
+  if (!missingIds.length) return cachedRows;
+
   const runSelect = async (selectCols: string) =>
-    supabase
-      .from("requests" as any)
+    await supabase
+      .from("requests" as never)
       .select(selectCols)
-      .in("id", reqIds as any);
+      .in("id", missingIds);
 
   if (requestsDisciplineSelectPlanCache) {
     const cached = await runSelect(requestsDisciplineSelectPlanCache);
-    if (!cached.error) return Array.isArray(cached.data) ? cached.data : [];
+    if (!cached.error) {
+      const rows = Array.isArray(cached.data)
+        ? cached.data.map(normalizeRequestLookupRow).filter((row): row is RequestLookupRow => !!row)
+        : [];
+      const seen = new Set(rows.map((row) => row.id));
+      for (const row of rows) {
+        const prev = getFreshLookupValue(requestLookupCache, row.id);
+        setLookupValue(requestLookupCache, row.id, { ...(prev ?? { id: row.id, object_id: null, object_name: null, object_type_code: null, system_code: null, level_code: null, object: null }), ...row });
+      }
+      for (const id of missingIds) if (!seen.has(id)) setLookupValue(requestLookupCache, id, null);
+      return [...cachedRows, ...rows];
+    }
     requestsDisciplineSelectPlanCache = null;
   }
 
@@ -407,7 +520,16 @@ async function fetchRequestsDisciplineRowsSafe(ids: string[]): Promise<any[]> {
     const q = await runSelect(selectCols);
     if (!q.error) {
       requestsDisciplineSelectPlanCache = selectCols;
-      return Array.isArray(q.data) ? q.data : [];
+      const rows = Array.isArray(q.data)
+        ? q.data.map(normalizeRequestLookupRow).filter((row): row is RequestLookupRow => !!row)
+        : [];
+      const seen = new Set(rows.map((row) => row.id));
+      for (const row of rows) {
+        const prev = getFreshLookupValue(requestLookupCache, row.id);
+        setLookupValue(requestLookupCache, row.id, { ...(prev ?? { id: row.id, object_id: null, object_name: null, object_type_code: null, system_code: null, level_code: null, object: null }), ...row });
+      }
+      for (const id of missingIds) if (!seen.has(id)) setLookupValue(requestLookupCache, id, null);
+      return [...cachedRows, ...rows];
     }
     lastError = q.error;
   }
@@ -453,6 +575,208 @@ const normalizeCodeNameRow = (value: unknown): CodeNameRow | null => {
     name: row.name == null ? null : String(row.name),
   };
 };
+
+const normalizeRequestLookupRow = (value: unknown): RequestLookupRow | null => {
+  const row = asRecord(value);
+  const id = row.id == null ? "" : String(row.id).trim();
+  if (!id) return null;
+  return {
+    id,
+    object_id: row.object_id == null ? null : String(row.object_id).trim(),
+    object_name: row.object_name == null ? null : String(row.object_name),
+    object_type_code: row.object_type_code == null ? null : String(row.object_type_code).trim(),
+    system_code: row.system_code == null ? null : String(row.system_code).trim(),
+    level_code: row.level_code == null ? null : String(row.level_code).trim(),
+    object: row.object == null ? null : String(row.object),
+  };
+};
+
+const normalizeObjectLookupRow = (value: unknown): ObjectLookupRow | null => {
+  const row = asRecord(value);
+  const id = row.id == null ? "" : String(row.id).trim();
+  if (!id) return null;
+  return {
+    id,
+    name: row.name == null ? null : String(row.name),
+  };
+};
+
+const isFreshLookupValue = <T,>(
+  cache: Map<string, { ts: number; value: T | null }>,
+  key: string,
+): boolean => {
+  const hit = cache.get(key);
+  return !!hit && Date.now() - hit.ts <= DIRECTOR_REPORTS_LOOKUP_TTL_MS;
+};
+
+const getFreshLookupValue = <T,>(
+  cache: Map<string, { ts: number; value: T | null }>,
+  key: string,
+): T | null | undefined => {
+  const hit = cache.get(key);
+  if (!hit) return undefined;
+  if (Date.now() - hit.ts > DIRECTOR_REPORTS_LOOKUP_TTL_MS) {
+    cache.delete(key);
+    return undefined;
+  }
+  return hit.value;
+};
+
+const setLookupValue = <T,>(
+  cache: Map<string, { ts: number; value: T | null }>,
+  key: string,
+  value: T | null,
+) => {
+  cache.set(key, { ts: Date.now(), value });
+};
+
+async function runTypedRpc<TRow>(
+  fnName:
+    | "acc_report_issues_v2"
+    | "acc_report_issue_lines"
+    | "wh_report_issued_summary_fast"
+    | "wh_report_issued_materials_fast"
+    | "wh_report_issued_by_object_fast"
+    | "director_report_fetch_materials_v1"
+    | "director_report_fetch_works_v1"
+    | "director_report_fetch_summary_v1",
+  params: Record<string, unknown>,
+): Promise<{ data: TRow[] | null; error: { message?: string | null } | null }> {
+  const { data, error } = await supabase.rpc(fnName as never, params as never);
+  return {
+    data: Array.isArray(data) ? (data as TRow[]) : null,
+    error: error ? { message: error.message } : null,
+  };
+}
+
+async function fetchObjectsByIds(idsRaw: string[]): Promise<Map<string, string>> {
+  const ids = Array.from(new Set((idsRaw || []).map((x) => String(x ?? "").trim()).filter(Boolean)));
+  const out = new Map<string, string>();
+  if (!ids.length) return out;
+
+  const missingIds: string[] = [];
+  for (const id of ids) {
+    const cached = getFreshLookupValue(objectLookupCache, id);
+    if (cached !== undefined) {
+      if (cached) out.set(id, cached);
+      continue;
+    }
+    missingIds.push(id);
+  }
+  if (!missingIds.length) return out;
+
+  const inFlightKey = missingIds.slice().sort().join("|");
+  let pending = objectLookupInFlight.get(inFlightKey);
+  if (!pending) {
+    pending = (async () => {
+      const loaded = new Map<string, string>();
+      for (const part of chunk(missingIds, 500)) {
+        const { data, error } = await supabase
+          .from("objects" as never)
+          .select("id,name")
+          .in("id", part);
+        if (error) throw error;
+        const rows = Array.isArray(data)
+          ? data.map(normalizeObjectLookupRow).filter((row): row is ObjectLookupRow => !!row)
+          : [];
+        const seen = new Set<string>();
+        for (const row of rows) {
+          seen.add(row.id);
+          const name = String(row.name ?? "").trim();
+          setLookupValue(objectLookupCache, row.id, name || null);
+          if (name) loaded.set(row.id, name);
+        }
+        for (const id of part) {
+          if (!seen.has(id)) setLookupValue(objectLookupCache, id, null);
+        }
+      }
+      return loaded;
+    })();
+    objectLookupInFlight.set(inFlightKey, pending);
+  }
+
+  try {
+    const loaded = await pending;
+    for (const [id, name] of loaded.entries()) out.set(id, name);
+    for (const id of missingIds) {
+      const cached = getFreshLookupValue(objectLookupCache, id);
+      if (cached) out.set(id, cached);
+    }
+    return out;
+  } finally {
+    objectLookupInFlight.delete(inFlightKey);
+  }
+}
+
+async function fetchCodeLookupByCodes(
+  cache: Map<string, { ts: number; value: string | null }>,
+  inFlight: Map<string, Promise<Map<string, string>>>,
+  table: "ref_object_types" | "ref_systems" | "ref_levels" | "v_rik_names_ru",
+  selectCols: string,
+  codesRaw: string[],
+  resolveName: (row: CodeNameRow | RikNameLookupRow) => string,
+): Promise<Map<string, string>> {
+  const codes = Array.from(new Set((codesRaw || []).map((x) => String(x ?? "").trim().toUpperCase()).filter(Boolean)));
+  const out = new Map<string, string>();
+  if (!codes.length) return out;
+
+  const missingCodes: string[] = [];
+  for (const code of codes) {
+    const cached = getFreshLookupValue(cache, code);
+    if (cached !== undefined) {
+      if (cached) out.set(code, cached);
+      continue;
+    }
+    missingCodes.push(code);
+  }
+  if (!missingCodes.length) return out;
+
+  const inFlightKey = `${table}:${missingCodes.slice().sort().join("|")}`;
+  let pending = inFlight.get(inFlightKey);
+  if (!pending) {
+    pending = (async () => {
+      const loaded = new Map<string, string>();
+      for (const part of chunk(missingCodes, 500)) {
+        const { data, error } = await supabase
+          .from(table as never)
+          .select(selectCols)
+          .in("code", part);
+        if (error) throw error;
+        const rows = Array.isArray(data)
+          ? data
+              .map((row) => (table === "v_rik_names_ru" ? normalizeCodeNameRow(row) : normalizeCodeNameRow(row)))
+              .filter((row): row is CodeNameRow => !!row)
+          : [];
+        const seen = new Set<string>();
+        for (const row of rows) {
+          const code = String(row.code ?? "").trim().toUpperCase();
+          if (!code) continue;
+          seen.add(code);
+          const name = resolveName(row).trim();
+          setLookupValue(cache, code, name || null);
+          if (name) loaded.set(code, name);
+        }
+        for (const code of part) {
+          if (!seen.has(code)) setLookupValue(cache, code, null);
+        }
+      }
+      return loaded;
+    })();
+    inFlight.set(inFlightKey, pending);
+  }
+
+  try {
+    const loaded = await pending;
+    for (const [code, name] of loaded.entries()) out.set(code, name);
+    for (const code of missingCodes) {
+      const cached = getFreshLookupValue(cache, code);
+      if (cached) out.set(code, cached);
+    }
+    return out;
+  } finally {
+    inFlight.delete(inFlightKey);
+  }
+}
 
 async function enrichObjectIdsForOptions(
   p: { from: string; to: string },
@@ -517,6 +841,45 @@ async function enrichObjectIdsForOptions(
     objects: base.objects,
     objectIdByName: byName,
   };
+}
+
+async function fetchObjectTypeNamesByCode(codes: string[]): Promise<Map<string, string>> {
+  return await fetchCodeLookupByCodes(
+    objectTypeLookupCache,
+    objectTypeLookupInFlight,
+    "ref_object_types",
+    "code,name_human_ru,display_name,name",
+    codes,
+    (row) => firstNonEmpty((row as CodeNameRow).name_human_ru, (row as CodeNameRow).display_name, (row as CodeNameRow).name),
+  );
+}
+
+async function fetchSystemNamesByCode(codes: string[]): Promise<Map<string, string>> {
+  return await fetchCodeLookupByCodes(
+    systemLookupCache,
+    systemLookupInFlight,
+    "ref_systems",
+    "code,name_human_ru,display_name,alias_ru,name",
+    codes,
+    (row) =>
+      firstNonEmpty(
+        (row as CodeNameRow).name_human_ru,
+        (row as CodeNameRow).display_name,
+        (row as CodeNameRow).alias_ru,
+        (row as CodeNameRow).name,
+      ),
+  );
+}
+
+async function fetchRikNamesRuByCode(codes: string[]): Promise<Map<string, string>> {
+  return await fetchCodeLookupByCodes(
+    rikNameLookupCache,
+    rikNameLookupInFlight,
+    "v_rik_names_ru",
+    "code,name_ru",
+    codes,
+    (row) => String((row as CodeNameRow).name_ru ?? "").trim(),
+  );
 }
 
 type NameSourcesProbe = {
@@ -704,32 +1067,19 @@ async function enrichFactRowsMaterialNames(rows: DirectorFactRow[]): Promise<Dir
 }
 
 async function fetchLevelNamesByCode(codesRaw: string[]): Promise<Map<string, string>> {
-  const codes = Array.from(
-    new Set(
-      (codesRaw || [])
-        .map((c) => String(c ?? "").trim().toUpperCase())
-        .filter(Boolean),
-    ),
+  return await fetchCodeLookupByCodes(
+    levelLookupCache,
+    levelLookupInFlight,
+    "ref_levels",
+    "code,name_human_ru,display_name,name",
+    codesRaw,
+    (row) =>
+      firstNonEmpty(
+        (row as CodeNameRow).name_human_ru,
+        (row as CodeNameRow).display_name,
+        (row as CodeNameRow).name,
+      ),
   );
-  const out = new Map<string, string>();
-  if (!codes.length) return out;
-
-  for (const part of chunk(codes, 500)) {
-    try {
-      const q = await supabase
-        .from("ref_levels" as any)
-        .select("code,name_human_ru,display_name,name")
-        .in("code", part as any);
-      if (q.error || !Array.isArray(q.data)) continue;
-      for (const r of q.data as any[]) {
-        const code = String((r as any)?.code ?? "").trim().toUpperCase();
-        const nm = firstNonEmpty((r as any)?.name_human_ru, (r as any)?.display_name, (r as any)?.name);
-        if (code && nm) out.set(code, nm);
-      }
-    } catch { }
-  }
-
-  return out;
 }
 
 async function enrichFactRowsLevelNames(rows: DirectorFactRow[]): Promise<DirectorFactRow[]> {
@@ -790,12 +1140,12 @@ async function fetchIssueHeadsViaAccRpc(p: {
   from: string;
   to: string;
 }): Promise<AccIssueHead[]> {
-  const { data, error } = await supabase.rpc("acc_report_issues_v2" as any, {
+  const { data, error } = await runTypedRpc<AccIssueHead>("acc_report_issues_v2", {
     p_from: p.from || "1970-01-01",
     p_to: p.to || "2099-12-31",
-  } as any);
+  });
   if (error) throw error;
-  return Array.isArray(data) ? (data as AccIssueHead[]) : [];
+  return Array.isArray(data) ? data : [];
 }
 
 async function fetchIssueLinesViaAccRpc(issueIds: string[]): Promise<AccIssueLine[]> {
@@ -813,9 +1163,9 @@ async function fetchIssueLinesViaAccRpc(issueIds: string[]): Promise<AccIssueLin
           const numId = Number(id);
           if (isNaN(numId)) return [] as AccIssueLine[];
 
-          const { data, error } = await supabase.rpc("acc_report_issue_lines" as any, {
+          const { data, error } = await runTypedRpc<AccIssueLine>("acc_report_issue_lines", {
             p_issue_id: numId,
-          } as any);
+          });
           if (error) {
             console.warn(`[fetchIssueLines] RPC Error for ${id}:`, error.message);
             return [] as AccIssueLine[];
@@ -868,19 +1218,7 @@ async function fetchDirectorFactViaAccRpc(p: {
         .filter(id => id !== ""),
     ),
   );
-  const objectNameById = new Map<string, string>();
-  for (const ids of chunk(objectIds, 100)) {
-    const { data, error } = await supabase
-      .from("objects" as any)
-      .select("id,name")
-      .in("id", ids as any);
-    if (error) continue;
-    for (const r of Array.isArray(data) ? data.map(normalizeIdObjectRow).filter((row): row is IdObjectRow => !!row) : []) {
-      const id = String(r?.id ?? "").trim();
-      const nm = String(r?.name ?? "").trim();
-      if (id && nm) objectNameById.set(id, nm);
-    }
-  }
+  const objectNameById = await fetchObjectsByIds(objectIds);
 
   const objectTypeCodes = Array.from(
     new Set(
@@ -889,19 +1227,7 @@ async function fetchDirectorFactViaAccRpc(p: {
         .filter(id => id !== ""),
     ),
   );
-  const objectTypeNameByCode = new Map<string, string>();
-  for (const codes of chunk(objectTypeCodes, 100)) {
-    const { data, error } = await supabase
-      .from("ref_object_types" as any)
-      .select("code,name_human_ru,display_name,name")
-      .in("code", codes as any);
-    if (error) continue;
-    for (const r of Array.isArray(data) ? data.map(normalizeCodeNameRow).filter((row): row is CodeNameRow => !!row) : []) {
-      const c = String(r?.code ?? "").trim();
-      const nm = firstNonEmpty(r?.name_human_ru, r?.display_name, r?.name);
-      if (c && nm) objectTypeNameByCode.set(c, nm);
-    }
-  }
+  const objectTypeNameByCode = await fetchObjectTypeNamesByCode(objectTypeCodes);
 
   const systemCodes = Array.from(
     new Set(
@@ -910,19 +1236,7 @@ async function fetchDirectorFactViaAccRpc(p: {
         .filter(id => id !== ""),
     ),
   );
-  const systemNameByCode = new Map<string, string>();
-  for (const codes of chunk(systemCodes, 100)) {
-    const { data, error } = await supabase
-      .from("ref_systems" as any)
-      .select("code,name_human_ru,display_name,alias_ru,name")
-      .in("code", codes as any);
-    if (error) continue;
-    for (const r of Array.isArray(data) ? data.map(normalizeCodeNameRow).filter((row): row is CodeNameRow => !!row) : []) {
-      const c = String(r?.code ?? "").trim();
-      const nm = firstNonEmpty(r?.name_human_ru, r?.display_name, r?.alias_ru, r?.name);
-      if (c && nm) systemNameByCode.set(c, nm);
-    }
-  }
+  const systemNameByCode = await fetchSystemNamesByCode(systemCodes);
 
   const headCtxByIssueId = new Map<
     string,
@@ -1048,30 +1362,30 @@ async function fetchViaLegacyRpc(p: {
   objectName: string | null;
 }): Promise<DirectorReportPayload> {
   const [summaryRes, materialsRes, byObjRes] = await Promise.all([
-    supabase.rpc("wh_report_issued_summary_fast" as any, {
+    runTypedRpc<Record<string, unknown>>("wh_report_issued_summary_fast", {
       p_from: p.from,
       p_to: p.to,
       p_object_id: p.objectId,
-    } as any),
-    supabase.rpc("wh_report_issued_materials_fast" as any, {
+    }),
+    runTypedRpc<Record<string, unknown>>("wh_report_issued_materials_fast", {
       p_from: p.from,
       p_to: p.to,
       p_object_id: p.objectId,
-    } as any),
-    supabase.rpc("wh_report_issued_by_object_fast" as any, {
+    }),
+    runTypedRpc<Record<string, unknown>>("wh_report_issued_by_object_fast", {
       p_from: p.from,
       p_to: p.to,
       p_object_id: p.objectId,
-    } as any),
+    }),
   ]);
 
   if (summaryRes.error) throw summaryRes.error;
   if (materialsRes.error) throw materialsRes.error;
   if (byObjRes.error) throw byObjRes.error;
 
-  const summary = Array.isArray(summaryRes.data) ? summaryRes.data[0] : summaryRes.data;
-  const matRows = Array.isArray(materialsRes.data) ? (materialsRes.data as any[]) : [];
-  const objRows = Array.isArray(byObjRes.data) ? (byObjRes.data as any[]) : [];
+  const summary = Array.isArray(summaryRes.data) ? summaryRes.data[0] : null;
+  const matRows = Array.isArray(materialsRes.data) ? materialsRes.data : [];
+  const objRows = Array.isArray(byObjRes.data) ? byObjRes.data : [];
 
   const rows: DirectorReportRow[] = matRows
     .map((r: any) => ({
@@ -1231,21 +1545,8 @@ async function fetchAllFactRowsFromTables(p: {
     ),
   );
 
-  const objectNameById = new Map<string, string>();
   const tObjects = nowMs();
-  await forEachChunkParallel(objectIds, 500, 4, async (ids) => {
-    const { data, error } = await supabase
-      .from("objects" as any)
-      .select("id,name")
-      .in("id", ids as any);
-    if (error) throw error;
-    const rows = Array.isArray(data) ? data.map(normalizeIdObjectRow).filter((row): row is IdObjectRow => !!row) : [];
-    for (const r of rows) {
-      const id = String(r?.id ?? "").trim();
-      const name = String(r?.name ?? "").trim();
-      if (id && name) objectNameById.set(id, name);
-    }
-  });
+  const objectNameById = await fetchObjectsByIds(objectIds);
   logTiming("discipline.rows.tables.objects", tObjects);
 
   const objectTypeCodes = Array.from(
@@ -1256,24 +1557,8 @@ async function fetchAllFactRowsFromTables(p: {
     ),
   );
 
-  const objectTypeNameByCode = new Map<string, string>();
   const tObjTypes = nowMs();
-  await forEachChunkParallel(objectTypeCodes, 500, 4, async (codes) => {
-    const { data, error } = await supabase
-      .from("ref_object_types" as any)
-      .select("code,name_human_ru,display_name,name")
-      .in("code", codes as any);
-    if (error) throw error;
-    const rows = Array.isArray(data) ? data.map(normalizeCodeNameRow).filter((row): row is CodeNameRow => !!row) : [];
-    for (const r of rows) {
-      const code = String(r?.code ?? "").trim();
-      const name =
-        String(r?.name_human_ru ?? "").trim() ||
-        String(r?.display_name ?? "").trim() ||
-        String(r?.name ?? "").trim();
-      if (code && name) objectTypeNameByCode.set(code, name);
-    }
-  });
+  const objectTypeNameByCode = await fetchObjectTypeNamesByCode(objectTypeCodes);
   logTiming("discipline.rows.tables.object_types", tObjTypes);
 
   const systemCodes = Array.from(
@@ -1284,25 +1569,8 @@ async function fetchAllFactRowsFromTables(p: {
     ),
   );
 
-  const systemNameByCode = new Map<string, string>();
   const tSystems = nowMs();
-  await forEachChunkParallel(systemCodes, 500, 4, async (codes) => {
-    const { data, error } = await supabase
-      .from("ref_systems" as any)
-      .select("code,name_human_ru,display_name,alias_ru,name")
-      .in("code", codes as any);
-    if (error) throw error;
-    const rows = Array.isArray(data) ? data.map(normalizeCodeNameRow).filter((row): row is CodeNameRow => !!row) : [];
-    for (const r of rows) {
-      const code = String(r?.code ?? "").trim();
-      const name =
-        String(r?.name_human_ru ?? "").trim() ||
-        String(r?.display_name ?? "").trim() ||
-        String(r?.alias_ru ?? "").trim() ||
-        String(r?.name ?? "").trim();
-      if (code && name) systemNameByCode.set(code, name);
-    }
-  });
+  const systemNameByCode = await fetchSystemNamesByCode(systemCodes);
   logTiming("discipline.rows.tables.systems", tSystems);
 
   const codes = Array.from(
@@ -1315,27 +1583,17 @@ async function fetchAllFactRowsFromTables(p: {
 
   const nameRuByCode = new Map<string, string>();
   if (codes.length) {
-    const probe = await probeNameSources();
-    const canUseVrr = probe.vrr;
-
     const tNames = nowMs();
-    if (canUseVrr) {
-      try {
-        await forEachChunkParallel(codes, 500, 6, async (part) => {
-          const vrrRes = await supabase
-            .from("v_rik_names_ru" as any)
-            .select("code,name_ru")
-            .in("code", part as any);
-          if (vrrRes.error) throw vrrRes.error;
-          for (const r of Array.isArray(vrrRes.data) ? vrrRes.data.map(normalizeCodeNameRow).filter((row): row is CodeNameRow => !!row) : []) {
-            const c = String(r?.code ?? "").trim().toUpperCase();
-            const n = String(r?.name_ru ?? "").trim();
-            if (c && n && !nameRuByCode.has(c)) nameRuByCode.set(c, n);
-          }
-        });
-      } catch (e: any) {
-        console.warn("[director_reports] disable v_rik_names_ru:", e?.message ?? e);
+    try {
+      const probe = await probeNameSources();
+      if (probe.vrr) {
+        const resolved = await fetchRikNamesRuByCode(codes);
+        for (const [code, name] of resolved.entries()) {
+          if (code && name && !nameRuByCode.has(code)) nameRuByCode.set(code, name);
+        }
       }
+    } catch (e: any) {
+      console.warn("[director_reports] disable v_rik_names_ru:", e?.message ?? e);
     }
     logTiming("discipline.rows.tables.name_resolve", tNames);
   }
@@ -2056,11 +2314,11 @@ async function fetchDirectorReportCanonicalMaterials(p: {
   to: string;
   objectName: string | null;
 }): Promise<DirectorReportPayload | null> {
-  const { data, error } = await supabase.rpc("director_report_fetch_materials_v1" as any, {
+  const { data, error } = await runTypedRpc<Record<string, unknown>>("director_report_fetch_materials_v1", {
     p_from: p.from || "1970-01-01",
     p_to: p.to || "2099-12-31",
     p_object_name: p.objectName ?? null,
-  } as any);
+  });
   if (error) throw error;
   const payload = unwrapRpcPayload(data);
   const adapted = adaptCanonicalMaterialsPayload(payload);
@@ -2106,12 +2364,12 @@ async function fetchDirectorReportCanonicalWorks(p: {
   objectName: string | null;
   includeCosts: boolean;
 }): Promise<DirectorDisciplinePayload | null> {
-  const { data, error } = await supabase.rpc("director_report_fetch_works_v1" as any, {
+  const { data, error } = await runTypedRpc<Record<string, unknown>>("director_report_fetch_works_v1", {
     p_from: p.from || "1970-01-01",
     p_to: p.to || "2099-12-31",
     p_object_name: p.objectName ?? null,
     p_include_costs: !!p.includeCosts,
-  } as any);
+  });
   if (error) throw error;
   const payload = unwrapRpcPayload(data);
   return adaptCanonicalWorksPayload(payload);
@@ -2127,11 +2385,11 @@ async function fetchDirectorReportCanonicalSummary(p: {
   unevaluated_ratio: number;
   base_ready: boolean;
 } | null> {
-  const { data, error } = await supabase.rpc("director_report_fetch_summary_v1" as any, {
+  const { data, error } = await runTypedRpc<Record<string, unknown>>("director_report_fetch_summary_v1", {
     p_from: p.from || "1970-01-01",
     p_to: p.to || "2099-12-31",
     p_object_name: p.objectName ?? null,
-  } as any);
+  });
   if (error) throw error;
   const payload = unwrapRpcPayload(data);
   return adaptCanonicalSummaryPayload(payload);
@@ -2464,6 +2722,34 @@ function buildDisciplinePayloadFromFactRows(
   };
 }
 
+function collectDisciplinePriceInputs(rows: DirectorFactRow[]): {
+  requestItemIds: string[];
+  rowCodes: string[];
+  costInputs: Array<{ code: string; requestItemId: string; qty: number }>;
+} {
+  const requestItemIds = new Set<string>();
+  const rowCodes = new Set<string>();
+  const costInputs: Array<{ code: string; requestItemId: string; qty: number }> = [];
+
+  for (const r of rows) {
+    const requestItemId = String(r?.request_item_id ?? "").trim();
+    const code = String(r?.rik_code ?? "").trim().toUpperCase();
+    const qty = toNum(r?.qty);
+
+    if (requestItemId) requestItemIds.add(requestItemId);
+    if (code) rowCodes.add(code);
+    if (!code || qty <= 0) continue;
+
+    costInputs.push({ code, requestItemId, qty });
+  }
+
+  return {
+    requestItemIds: Array.from(requestItemIds),
+    rowCodes: Array.from(rowCodes),
+    costInputs,
+  };
+}
+
 type DisciplineRowsSource = "tables" | "acc_rpc" | "view" | "none";
 
 async function fetchFactRowsForDiscipline(p: {
@@ -2787,20 +3073,7 @@ export async function fetchDirectorWarehouseReportDiscipline(p: {
     return payload;
   }
 
-  const requestItemIds = Array.from(
-    new Set(
-      rows
-        .map((r) => String(r?.request_item_id ?? "").trim())
-        .filter(Boolean),
-    ),
-  );
-  const rowCodes = Array.from(
-    new Set(
-      rows
-        .map((r) => String(r?.rik_code ?? "").trim().toUpperCase())
-        .filter(Boolean),
-    ),
-  );
+  const { requestItemIds, rowCodes, costInputs } = collectDisciplinePriceInputs(rows);
 
   const tPrices = nowMs();
   const [priceByCode, priceByRequestItem] = await Promise.all([
@@ -2815,16 +3088,12 @@ export async function fetchDirectorWarehouseReportDiscipline(p: {
   let issueCostTotal = 0;
   let issuePositions = 0;
   let unpricedIssuePositions = 0;
-  for (const r of rows) {
-    const code = String(r?.rik_code ?? "").trim().toUpperCase();
-    const qty = toNum(r?.qty);
-    if (!code || qty <= 0) continue;
+  for (const row of costInputs) {
     issuePositions += 1;
-    const reqItemId = String(r?.request_item_id ?? "").trim();
-    const price = reqItemId
-      ? toNum(priceByRequestItem.get(reqItemId) ?? priceByCode.get(code) ?? 0)
-      : toNum(priceByCode.get(code) ?? 0);
-    if (price > 0) issueCostTotal += qty * price;
+    const price = row.requestItemId
+      ? toNum(priceByRequestItem.get(row.requestItemId) ?? priceByCode.get(row.code) ?? 0)
+      : toNum(priceByCode.get(row.code) ?? 0);
+    if (price > 0) issueCostTotal += row.qty * price;
     else unpricedIssuePositions += 1;
   }
   logTiming("discipline.compute_cost", tCost);

@@ -116,6 +116,13 @@ export function useDirectorProposalActions({
     }
   }, [supabase]);
 
+  const refreshDirectorApprovalViews = useCallback(async () => {
+    const propsRefresh = fetchProps(true);
+    const rowsRefresh = fetchRows(true);
+    await propsRefresh;
+    void rowsRefresh;
+  }, [fetchProps, fetchRows]);
+
   const isProposalPdfBusy = useCallback((pidStr: string) => {
     const pid = String(pidStr || "").trim();
     return pid ? busy.isBusy(`pdfshare:prop:${pid}`) : false;
@@ -319,8 +326,7 @@ export function useDirectorProposalActions({
         if (accErr) throw accErr;
       }
 
-      await fetchProps(true);
-      void fetchRows(true);
+      await refreshDirectorApprovalViews();
       approveDoneAtRef.current[pid] = Date.now();
       if (workSeedErrorMessage) {
         Alert.alert(
@@ -344,6 +350,7 @@ export function useDirectorProposalActions({
     fetchRows,
     closeSheet,
     showSuccess,
+    refreshDirectorApprovalViews,
     proposalSentToAccountant,
     getPurchaseIdByProposal,
     hasIncomingByPurchase,

@@ -20,6 +20,19 @@ import {
 } from "./warehouse.api.repo";
 
 type UnknownRow = Record<string, unknown>;
+type NameMapSource = "projection" | "overrides" | "rik_ru" | "ledger_ui";
+type NameMapCacheValue = {
+  available?: boolean;
+  map: Record<string, string>;
+};
+type NameMapCacheEntry = {
+  value: NameMapCacheValue | null;
+  expiresAt: number;
+  promise: Promise<NameMapCacheValue> | null;
+};
+
+const WAREHOUSE_STOCK_REFERENCE_TTL_MS = 5 * 60 * 1000;
+const warehouseNameMapCache = new Map<string, NameMapCacheEntry>();
 
 const logWarehouseApiFallback = (scope: string, error: unknown) => {
   if (__DEV__) {
@@ -55,6 +68,57 @@ const toTextOrNull = (v: unknown): string | null => {
   const s = String(v ?? "").trim();
   return s || null;
 };
+
+const now = () => Date.now();
+
+const normalizeCodeList = (codesUpper: string[]): string[] =>
+  Array.from(new Set((codesUpper || []).map((x) => String(x ?? "").trim().toUpperCase()).filter(Boolean)));
+
+const cloneNameMapValue = (value: NameMapCacheValue): NameMapCacheValue => ({
+  available: value.available,
+  map: { ...value.map },
+});
+
+const getNameMapCacheEntry = (key: string): NameMapCacheEntry => {
+  let entry = warehouseNameMapCache.get(key);
+  if (!entry) {
+    entry = { value: null, expiresAt: 0, promise: null };
+    warehouseNameMapCache.set(key, entry);
+  }
+  return entry;
+};
+
+async function readWarehouseNameMapCached(
+  source: NameMapSource,
+  codesUpper: string[],
+  loader: () => Promise<{ value: NameMapCacheValue; cacheable: boolean }>,
+): Promise<NameMapCacheValue> {
+  const codes = normalizeCodeList(codesUpper);
+  if (!codes.length) return { map: {} };
+
+  const key = `${source}:${codes.join("|")}`;
+  const entry = getNameMapCacheEntry(key);
+  if (entry.value && entry.expiresAt > now()) return cloneNameMapValue(entry.value);
+  if (entry.promise) return cloneNameMapValue(await entry.promise);
+
+  entry.promise = (async () => {
+    const { value, cacheable } = await loader();
+    if (cacheable) {
+      entry.value = cloneNameMapValue(value);
+      entry.expiresAt = now() + WAREHOUSE_STOCK_REFERENCE_TTL_MS;
+    } else {
+      entry.value = null;
+      entry.expiresAt = 0;
+    }
+    return value;
+  })();
+
+  try {
+    return cloneNameMapValue(await entry.promise);
+  } finally {
+    entry.promise = null;
+  }
+}
 
 type ReqHeadTruth = {
   items_cnt: number;
@@ -406,67 +470,94 @@ async function loadNameMapOverrides(
   supabase: SupabaseClient,
   codesUpper: string[],
 ): Promise<Record<string, string>> {
-  const out: Record<string, string> = {};
-  if (!codesUpper.length) return out;
+  const cached = await readWarehouseNameMapCached("overrides", codesUpper, async () => {
+    const out: Record<string, string> = {};
+    const codes = normalizeCodeList(codesUpper);
+    if (!codes.length) return { value: { map: out }, cacheable: true };
 
-  // catalog_name_overrides: pk(code)
-  const q = await supabase
-    .from("catalog_name_overrides")
-    .select("code, name_ru")
-    .in("code", codesUpper.slice(0, 5000));
+    const q = await supabase
+      .from("catalog_name_overrides")
+      .select("code, name_ru")
+      .in("code", codes.slice(0, 5000));
 
-  if (q.error || !Array.isArray(q.data)) return out;
+    if (q.error || !Array.isArray(q.data)) return { value: { map: out }, cacheable: false };
 
-  for (const r of q.data as UnknownRow[]) {
-    const c = String(r.code ?? "").trim().toUpperCase();
-    const nm = String(normalizeRuText(String(r.name_ru ?? ""))).trim();
-    if (c && nm && !out[c]) out[c] = nm;
-  }
-  return out;
+    for (const r of q.data as UnknownRow[]) {
+      const c = String(r.code ?? "").trim().toUpperCase();
+      const nm = String(normalizeRuText(String(r.name_ru ?? ""))).trim();
+      if (c && nm && !out[c]) out[c] = nm;
+    }
+    return { value: { map: out }, cacheable: true };
+  });
+  return cached.map;
 }
 
 async function loadNameMapRikRu(
   supabase: SupabaseClient,
   codesUpper: string[],
 ): Promise<Record<string, string>> {
-  const out: Record<string, string> = {};
-  if (!codesUpper.length) return out;
+  const cached = await readWarehouseNameMapCached("rik_ru", codesUpper, async () => {
+    const out: Record<string, string> = {};
+    const codes = normalizeCodeList(codesUpper);
+    if (!codes.length) return { value: { map: out }, cacheable: true };
 
-  const q = await supabase
-    .from("v_rik_names_ru")
-    .select("code, name_ru")
-    .in("code", codesUpper.slice(0, 5000));
+    const q = await supabase
+      .from("v_rik_names_ru")
+      .select("code, name_ru")
+      .in("code", codes.slice(0, 5000));
 
-  if (q.error || !Array.isArray(q.data)) return out;
+    if (q.error || !Array.isArray(q.data)) return { value: { map: out }, cacheable: false };
 
-  for (const r of q.data as UnknownRow[]) {
-    const c = String(r.code ?? "").trim().toUpperCase();
-    const nm = String(normalizeRuText(String(r.name_ru ?? ""))).trim();
-    if (c && nm && !out[c]) out[c] = nm;
-  }
-  return out;
+    for (const r of q.data as UnknownRow[]) {
+      const c = String(r.code ?? "").trim().toUpperCase();
+      const nm = String(normalizeRuText(String(r.name_ru ?? ""))).trim();
+      if (c && nm && !out[c]) out[c] = nm;
+    }
+    return { value: { map: out }, cacheable: true };
+  });
+  return cached.map;
 }
 
 async function loadNameMapLedgerUi(
   supabase: SupabaseClient,
   codesUpper: string[],
 ): Promise<Record<string, string>> {
-  const out: Record<string, string> = {};
-  if (!codesUpper.length) return out;
+  const cached = await readWarehouseNameMapCached("ledger_ui", codesUpper, async () => {
+    const out: Record<string, string> = {};
+    const codes = normalizeCodeList(codesUpper);
+    if (!codes.length) return { value: { map: out }, cacheable: true };
 
-  const q = await supabase
-    .from("v_wh_balance_ledger_ui")
-    .select("code, name")
-    .in("code", codesUpper.slice(0, 5000));
+    const q = await supabase
+      .from("v_wh_balance_ledger_ui")
+      .select("code, name")
+      .in("code", codes.slice(0, 5000));
 
-  if (q.error || !Array.isArray(q.data)) return out;
+    if (q.error || !Array.isArray(q.data)) return { value: { map: out }, cacheable: false };
 
-  for (const r of q.data as UnknownRow[]) {
-    const c = String(r.code ?? "").trim().toUpperCase();
-    const nm = String(normalizeRuText(String(r.name ?? ""))).trim();
-    if (c && nm && !out[c]) out[c] = nm;
-  }
-  return out;
+    for (const r of q.data as UnknownRow[]) {
+      const c = String(r.code ?? "").trim().toUpperCase();
+      const nm = String(normalizeRuText(String(r.name ?? ""))).trim();
+      if (c && nm && !out[c]) out[c] = nm;
+    }
+    return { value: { map: out }, cacheable: true };
+  });
+  return cached.map;
+}
+
+async function loadWarehouseProjectionNameMapUi(
+  supabase: SupabaseClient,
+  codesUpper: string[],
+): Promise<{ available: boolean; map: Record<string, string> }> {
+  const cached = await readWarehouseNameMapCached("projection", codesUpper, async () => {
+    const codes = normalizeCodeList(codesUpper);
+    if (!codes.length) return { value: { available: true, map: {} }, cacheable: true };
+    const result = await fetchWarehouseNameMapUi(supabase, codes);
+    return {
+      value: { available: result.available, map: result.map },
+      cacheable: result.available,
+    };
+  });
+  return { available: cached.available === true, map: cached.map };
 }
 
 function pickStockDisplayName(params: {
@@ -562,7 +653,7 @@ export async function apiFetchStock(
         .filter(Boolean);
 
       const projectionStartedAt = Date.now();
-      const projection = await fetchWarehouseNameMapUi(supabase, codesUpper);
+      const projection = await loadWarehouseProjectionNameMapUi(supabase, codesUpper);
       const projectionReadMs = Date.now() - projectionStartedAt;
 
       if (projection.available) {

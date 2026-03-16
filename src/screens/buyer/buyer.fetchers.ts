@@ -19,6 +19,8 @@ import {
 export type { BuyerProposalBucketRow } from "./buyer.fetchers.data";
 
 const REWORK_STATUS_LOWER = BUYER_STATUS_REWORK.toLowerCase();
+const uniqIds = (values: Array<string | null | undefined>) =>
+  Array.from(new Set((values || []).map((value) => String(value ?? "").trim()).filter(Boolean)));
 
 export async function fetchBuyerInboxProd(params: {
   focusedRef: { current: boolean };
@@ -64,7 +66,7 @@ export async function fetchBuyerInboxProd(params: {
 
     setRows(inbox || []);
 
-    const reqIds = Array.from(new Set((inbox || []).map((r) => String(r?.request_id)).filter(Boolean)));
+    const reqIds = uniqIds((inbox || []).map((r) => r?.request_id));
 
     try {
       await preloadDisplayNos(reqIds);
@@ -116,15 +118,19 @@ export async function fetchBuyerBucketsProd(params: {
 
   setLoadingBuckets(true);
   try {
-    const pQ = await fetchBuyerProposalSummaryByStatus(supabase, BUYER_STATUS_PENDING);
+    const pendingPromise = fetchBuyerProposalSummaryByStatus(supabase, BUYER_STATUS_PENDING);
+    const approvedPromise = fetchBuyerProposalSummaryByStatus(supabase, BUYER_STATUS_APPROVED);
+    const rejectedPromise = fetchBuyerRejectedProposalRows(supabase);
+
+    const pQ = await pendingPromise;
     const pendingClean = !pQ.error ? mapProposalSummaryRows(pQ.data) : [];
     setPending(pendingClean);
 
-    const apQ = await fetchBuyerProposalSummaryByStatus(supabase, BUYER_STATUS_APPROVED);
+    const apQ = await approvedPromise;
     const approvedClean = !apQ.error ? mapProposalSummaryRows(apQ.data) : [];
     setApproved(approvedClean);
 
-    const reAcc = await fetchBuyerRejectedProposalRows(supabase);
+    const reAcc = await rejectedPromise;
     const rejectedRaw = !reAcc.error ? mapRejectedProposalRows(reAcc.data, REWORK_STATUS_LOWER) : [];
 
     let rejectedClean = rejectedRaw;
@@ -146,11 +152,14 @@ export async function fetchBuyerBucketsProd(params: {
     setRejected(rejectedClean);
 
     try {
-      await preloadProposalTitles?.([
+      const proposalIds = uniqIds([
         ...pendingClean.map((x) => x.id),
         ...approvedClean.map((x) => x.id),
         ...rejectedClean.map((x) => x.id),
       ]);
+      if (proposalIds.length) {
+        await preloadProposalTitles?.(proposalIds);
+      }
     } catch {
       // no-op
     }

@@ -3,6 +3,22 @@ import { AppState } from "react-native";
 import { ensureSignedIn, supabase } from "../../lib/supabaseClient";
 import { logError } from "../../lib/logError";
 
+type RefreshState = {
+  inFlight: Promise<void> | null;
+  rerunQueued: boolean;
+  rerunForce: boolean;
+};
+
+type RefreshStateRef = {
+  current: RefreshState;
+};
+
+type RefreshFn = (force?: boolean) => Promise<void>;
+
+type RefreshFnRef = {
+  current: RefreshFn;
+};
+
 type Deps = {
   dirTab: string;
   finFrom: string | null;
@@ -35,6 +51,61 @@ export function useDirectorLifecycle({
   const lastInitedPeriodRef = useRef<string>("");
   const appStateRef = useRef(AppState.currentState);
   const rtChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
+  const rowsRefreshRef = useRef<RefreshState>({ inFlight: null, rerunQueued: false, rerunForce: false });
+  const propsRefreshRef = useRef<RefreshState>({ inFlight: null, rerunQueued: false, rerunForce: false });
+  const financeRefreshRef = useRef<RefreshState>({ inFlight: null, rerunQueued: false, rerunForce: false });
+  const reportRefreshRef = useRef<RefreshState>({ inFlight: null, rerunQueued: false, rerunForce: false });
+  const rowsRefreshFnRef = useRef<RefreshFn>(fetchRows);
+  const propsRefreshFnRef = useRef<RefreshFn>(fetchProps);
+  const financeRefreshFnRef = useRef<RefreshFn>(() => fetchFinance());
+  const reportRefreshFnRef = useRef<RefreshFn>(() => fetchReport());
+
+  rowsRefreshFnRef.current = fetchRows;
+  propsRefreshFnRef.current = fetchProps;
+  financeRefreshFnRef.current = () => fetchFinance();
+  reportRefreshFnRef.current = () => fetchReport();
+
+  const runRefresh = (
+    stateRef: RefreshStateRef,
+    refreshRef: RefreshFnRef,
+    options?: { force?: boolean; queueOnOverlap?: boolean },
+  ) => {
+    const force = !!options?.force;
+    if (stateRef.current.inFlight) {
+      if (force) {
+        stateRef.current.rerunQueued = true;
+        stateRef.current.rerunForce = true;
+      } else if (options?.queueOnOverlap) {
+        stateRef.current.rerunQueued = true;
+      }
+      return stateRef.current.inFlight;
+    }
+
+    const start = (nextForce: boolean) => {
+      const p = (async () => {
+        try {
+          await refreshRef.current(nextForce);
+        } finally {
+          stateRef.current.inFlight = null;
+          if (stateRef.current.rerunQueued) {
+            const rerunForce = stateRef.current.rerunForce;
+            stateRef.current.rerunQueued = false;
+            stateRef.current.rerunForce = false;
+            void start(rerunForce);
+          }
+        }
+      })();
+      stateRef.current.inFlight = p;
+      return p;
+    };
+
+    return start(force);
+  };
+
+  const refreshRows = (force = false) => runRefresh(rowsRefreshRef, rowsRefreshFnRef, { force });
+  const refreshProps = (force = false) => runRefresh(propsRefreshRef, propsRefreshFnRef, { force });
+  const refreshFinance = () => runRefresh(financeRefreshRef, financeRefreshFnRef, { queueOnOverlap: true });
+  const refreshReport = () => runRefresh(reportRefreshRef, reportRefreshFnRef, { queueOnOverlap: true });
 
   useEffect(() => {
     if (didInit.current || !isScreenFocused) return;
@@ -43,8 +114,8 @@ export function useDirectorLifecycle({
     (async () => {
       try {
         await ensureSignedIn();
-        void fetchRows();
-        void fetchProps();
+        void refreshRows();
+        void refreshProps();
       } catch (e) {
         logError("director.lifecycle.ensureSignedIn", e);
       }
@@ -63,9 +134,9 @@ export function useDirectorLifecycle({
     lastInitedPeriodRef.current = periodKey;
 
     if (tabKey === "Финансы") {
-      void fetchFinance();
+      void refreshFinance();
     } else if (tabKey === "Отчёты") {
-      void fetchReport();
+      void refreshReport();
     }
     // "Подряды" — DirectorSubcontractTab загружает данные самостоятельно
   }, [isScreenFocused, dirTab, finFrom, finTo, repFrom, repTo, fetchFinance, fetchReport]);
@@ -80,12 +151,12 @@ export function useDirectorLifecycle({
       if (!resumed) return;
 
       if (dirTab === "Заявки") {
-        void fetchRows();
-        void fetchProps();
+        void refreshRows();
+        void refreshProps();
       } else if (dirTab === "Финансы") {
-        void fetchFinance();
+        void refreshFinance();
       } else if (dirTab === "Отчёты") {
-        void fetchReport();
+        void refreshReport();
       }
     });
 
@@ -124,8 +195,8 @@ export function useDirectorLifecycle({
           const next = payload.new;
           const n = next && typeof next === "object" ? (next as { title?: string; body?: string }) : {};
           showRtToast(n.title, n.body);
-          void fetchRows(true);
-          void fetchProps(true);
+          void refreshRows(true);
+          void refreshProps(true);
         },
       )
       .subscribe();

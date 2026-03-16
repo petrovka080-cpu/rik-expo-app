@@ -2,7 +2,7 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { useRouter } from "expo-router";
 import {
-  View, Text, ScrollView, TextInput, Pressable,
+  View, Text, SectionList, TextInput, Pressable,
   ActivityIndicator, Alert, Platform, Share, Dimensions
 } from "react-native";
 import * as Print from "expo-print";
@@ -27,6 +27,14 @@ const monthAgo = () => { const d = new Date(); d.setMonth(d.getMonth() - 1); ret
 const asRows = (value: unknown): any[] => (Array.isArray(value) ? value : []);
 const runReportRpc = async <T = unknown>(fn: string, args?: Record<string, unknown>) =>
   (await supabase.rpc(fn as never, (args ?? {}) as never)) as { data: T | null; error: unknown };
+type ReportRow = (string | number)[];
+type ReportSection = {
+  key: string;
+  title: string;
+  columns: string[];
+  data: ReportRow[];
+  chart?: "turnover" | "pipe" | null;
+};
 
 export default function Reports() {
   const router = useRouter();
@@ -184,59 +192,119 @@ export default function Reports() {
       ${rows.map((r) => `<tr>${r.map((c) => `<td>${c}</td>`).join("")}</tr>`).join("")}
     </table>`;
 
-  return (
-    <ScrollView style={{ flex: 1, backgroundColor: "#f8fafc" }} contentContainerStyle={{ padding: 12, gap: 16 }}>
-      <Text style={{ fontSize: 22, fontWeight: "700", color: "#0f172a" }}>Отчеты</Text>
+  const sections = React.useMemo<ReportSection[]>(
+    () => [
+      {
+        key: "turnover",
+        title: "Обороты склада",
+        columns: ["Код", "Приход", "Расход", "Баланс"],
+        data: turnover.map((x) => [x.rik_code, fmt(x.incoming), fmt(x.outgoing), fmt(x.balance)]),
+        chart: "turnover",
+      },
+      {
+        key: "costs",
+        title: "Затраты по объектам",
+        columns: ["Объект", "Статья", "Кол-во", "Сумма"],
+        data: costs.map((x) => [x.object_id || "—", humanArticle(x.article), fmt(x.fact_qty), fmt(x.fact_amount)]),
+        chart: null,
+      },
+      {
+        key: "aging",
+        title: "Долги по контрагентам",
+        columns: ["Контрагент", "Выставлено", "Оплачено", "Баланс"],
+        data: aging.map((x) => [x.counterparty_id, fmt(x.total_billed), fmt(x.total_paid), fmt(x.balance)]),
+        chart: null,
+      },
+      {
+        key: "pipe",
+        title: "Воронка закупок",
+        columns: ["Статус", "Кол-во"],
+        data: pipe.map((x) => [humanStatus(x.status), x.cnt]),
+        chart: "pipe",
+      },
+    ],
+    [aging, costs, pipe, turnover],
+  );
 
-      {/* Filters and export */}
-      <View style={card}>
-        <Text style={{ fontWeight: "600", fontSize: 16 }}>Период</Text>
-        <View style={{ flexDirection: "row", gap: 8 }}>
-          <TextInput style={inp} value={start} onChangeText={setStart} placeholder="YYYY-MM-DD" />
-          <TextInput style={inp} value={end} onChangeText={setEnd} placeholder="YYYY-MM-DD" />
-          <Pressable style={btnBlue} onPress={run}>
-            <Text style={{ color: "#fff", fontWeight: "700" }}>Сформировать</Text>
-          </Pressable>
-        </View>
-        <View style={{ flexDirection: "row", gap: 8 }}>
-          <Pressable style={btnGray} onPress={exportCSV}><Text>Экспорт CSV</Text></Pressable>
-          <Pressable style={btnGray} onPress={exportPDF}><Text>Экспорт PDF</Text></Pressable>
-        </View>
+  const renderSectionHeader = React.useCallback(({ section }: { section: ReportSection }) => (
+    <View style={{ marginBottom: 0 }}>
+      <View style={reportCardShell}>
+        <Text style={{ fontSize: 16, fontWeight: "700", color: "#0f172a" }}>{section.title}</Text>
+        {section.chart === "turnover" ? <ChartTurnover data={turnover} /> : null}
+        {section.chart === "pipe" ? <ChartPie data={pipe} /> : null}
       </View>
+      <View style={tableHeaderWrap}>
+        {section.columns.map((c, i) => (
+          <Text key={`${section.key}:col:${i}`} style={{ flex: 1, fontWeight: "700" }}>
+            {c}
+          </Text>
+        ))}
+      </View>
+    </View>
+  ), [pipe, turnover]);
 
-      {loading && <ActivityIndicator size="large" />}
+  const renderSectionItem = React.useCallback(
+    ({ item, section }: { item: ReportRow; section: ReportSection }) => (
+      <View style={tableRow}>
+        {item.map((c, i) => (
+          <Text key={`${section.key}:cell:${i}`} style={{ flex: 1 }}>
+            {String(c)}
+          </Text>
+        ))}
+      </View>
+    ),
+    [],
+  );
 
-      {/* 1. Обороты склада */}
-      <ReportCard title="Обороты склада">
-        <ChartTurnover data={turnover} />
-        <Table
-          columns={["Код", "Приход", "Расход", "Баланс"]}
-          rows={turnover.map((x) => [x.rik_code, fmt(x.incoming), fmt(x.outgoing), fmt(x.balance)])}
-        />
-      </ReportCard>
+  const renderSectionFooter = React.useCallback(({ section }: { section: ReportSection }) => {
+    if (!section.data.length) {
+      return (
+        <View style={tableFooterEmpty}>
+          <Text style={{ color: "#64748b" }}>Нет данных</Text>
+        </View>
+      );
+    }
 
-      {/* 2. Затраты по объектам */}
-      <ReportCard title="Затраты по объектам">
-        <Table
-          columns={["Объект", "Статья", "Кол-во", "Сумма"]}
-          rows={costs.map((x) => [x.object_id || "—", humanArticle(x.article), fmt(x.fact_qty), fmt(x.fact_amount)])}
-        />
-      </ReportCard>
+    return <View style={tableFooterCap} />;
+  }, []);
 
-      {/* 3. Долги по контрагентам */}
-      <ReportCard title="Долги по контрагентам">
-        <Table
-          columns={["Контрагент", "Выставлено", "Оплачено", "Баланс"]}
-          rows={aging.map((x) => [x.counterparty_id, fmt(x.total_billed), fmt(x.total_paid), fmt(x.balance)])}
-        />
-      </ReportCard>
+  const filtersBlock = (
+    <View style={card}>
+      <Text style={{ fontWeight: "600", fontSize: 16 }}>Период</Text>
+      <View style={{ flexDirection: "row", gap: 8 }}>
+        <TextInput style={inp} value={start} onChangeText={setStart} placeholder="YYYY-MM-DD" />
+        <TextInput style={inp} value={end} onChangeText={setEnd} placeholder="YYYY-MM-DD" />
+        <Pressable style={btnBlue} onPress={run}>
+          <Text style={{ color: "#fff", fontWeight: "700" }}>Сформировать</Text>
+        </Pressable>
+      </View>
+      <View style={{ flexDirection: "row", gap: 8 }}>
+        <Pressable style={btnGray} onPress={exportCSV}><Text>Экспорт CSV</Text></Pressable>
+        <Pressable style={btnGray} onPress={exportPDF}><Text>Экспорт PDF</Text></Pressable>
+      </View>
+    </View>
+  );
 
-      {/* 4. Воронка закупок */}
-      <ReportCard title="Воронка закупок">
-        <ChartPie data={pipe} />
-        <Table columns={["Статус", "Кол-во"]} rows={pipe.map((x) => [humanStatus(x.status), x.cnt])} />
-      </ReportCard>
-    </ScrollView>
+  return (
+    <SectionList
+      sections={sections}
+      keyExtractor={(item, index) => `${index}:${String(item[0] ?? "")}`}
+      renderSectionHeader={renderSectionHeader}
+      renderItem={renderSectionItem}
+      renderSectionFooter={renderSectionFooter}
+      stickySectionHeadersEnabled={false}
+      keyboardShouldPersistTaps="handled"
+      removeClippedSubviews
+      style={{ flex: 1, backgroundColor: "#f8fafc" }}
+      contentContainerStyle={{ padding: 12, gap: 16, paddingBottom: 24 }}
+      ListHeaderComponent={
+        <View style={{ gap: 16 }}>
+          <Text style={{ fontSize: 22, fontWeight: "700", color: "#0f172a" }}>Отчеты</Text>
+          {filtersBlock}
+          {loading ? <ActivityIndicator size="large" /> : null}
+        </View>
+      }
+    />
   );
 }
 
@@ -245,31 +313,57 @@ const card = { backgroundColor: "#fff", padding: 12, borderRadius: 10, borderWid
 const inp = { borderWidth: 1, borderColor: "#e2e8f0", borderRadius: 8, paddingHorizontal: 10, paddingVertical: 8, flex: 1, backgroundColor: "#fff" };
 const btnBlue = { backgroundColor: "#0ea5e9", borderRadius: 8, paddingHorizontal: 14, paddingVertical: 10 };
 const btnGray = { backgroundColor: "#f1f5f9", borderRadius: 8, paddingHorizontal: 14, paddingVertical: 10 };
-
-function ReportCard({ title, children }: { title: string; children: any }) {
-  return (
-    <View style={{ backgroundColor: "#fff", padding: 12, borderRadius: 10, borderWidth: 1, borderColor: "#e2e8f0", gap: 8 }}>
-      <Text style={{ fontSize: 16, fontWeight: "700", color: "#0f172a" }}>{title}</Text>
-      {children}
-    </View>
-  );
-}
-
-function Table({ columns, rows }: { columns: string[]; rows: (string | number)[][] }) {
-  if (!rows.length) return <Text style={{ color: "#64748b" }}>Нет данных</Text>;
-  return (
-    <View style={{ borderWidth: 1, borderColor: "#e2e8f0", borderRadius: 8 }}>
-      <View style={{ flexDirection: "row", backgroundColor: "#f1f5f9", padding: 8 }}>
-        {columns.map((c, i) => <Text key={i} style={{ flex: 1, fontWeight: "700" }}>{c}</Text>)}
-      </View>
-      {rows.map((r, idx) => (
-        <View key={idx} style={{ flexDirection: "row", padding: 8, borderTopWidth: 1, borderTopColor: "#e2e8f0" }}>
-          {r.map((c, i) => <Text key={i} style={{ flex: 1 }}>{String(c)}</Text>)}
-        </View>
-      ))}
-    </View>
-  );
-}
+const reportCardShell = {
+  backgroundColor: "#fff",
+  padding: 12,
+  borderTopLeftRadius: 10,
+  borderTopRightRadius: 10,
+  borderWidth: 1,
+  borderBottomWidth: 0,
+  borderColor: "#e2e8f0",
+  gap: 8,
+};
+const tableHeaderWrap = {
+  flexDirection: "row" as const,
+  backgroundColor: "#f1f5f9",
+  padding: 8,
+  borderLeftWidth: 1,
+  borderRightWidth: 1,
+  borderTopWidth: 1,
+  borderColor: "#e2e8f0",
+};
+const tableRow = {
+  flexDirection: "row" as const,
+  padding: 8,
+  borderLeftWidth: 1,
+  borderRightWidth: 1,
+  borderTopWidth: 1,
+  borderColor: "#e2e8f0",
+  backgroundColor: "#fff",
+};
+const tableFooterCap = {
+  height: 0,
+  marginBottom: 16,
+  borderLeftWidth: 1,
+  borderRightWidth: 1,
+  borderBottomWidth: 1,
+  borderBottomLeftRadius: 10,
+  borderBottomRightRadius: 10,
+  borderColor: "#e2e8f0",
+  backgroundColor: "#fff",
+};
+const tableFooterEmpty = {
+  padding: 12,
+  marginBottom: 16,
+  borderLeftWidth: 1,
+  borderRightWidth: 1,
+  borderBottomWidth: 1,
+  borderTopWidth: 1,
+  borderBottomLeftRadius: 10,
+  borderBottomRightRadius: 10,
+  borderColor: "#e2e8f0",
+  backgroundColor: "#fff",
+};
 
 function humanArticle(a: string) {
   switch (a) {

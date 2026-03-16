@@ -1,10 +1,8 @@
 import React from "react";
-import { View, Text, Pressable } from "react-native";
+import { FlatList, Pressable, Text, View } from "react-native";
 import { UI, s } from "./director.styles";
 
 type Props = {
-  // ⚠️ эти поля могут остаться в типе (чтобы не ломать импорт/вызовы),
-  // но внутри компонента они больше не используются:
   visible?: boolean;
   onClose?: () => void;
 
@@ -48,10 +46,13 @@ export default function DirectorFinanceDebtModal(p: Props) {
   const [suppliersOpen, setSuppliersOpen] = React.useState(false);
 
   React.useEffect(() => {
-    // когда "страница" скрыта (родитель меняет finPage) — сбрасываем раскрытие
-    // (родитель не обязан передавать visible, но если передаст — используем)
     if (p.visible === false) setSuppliersOpen(false);
   }, [p.visible]);
+
+  const suppliers = React.useMemo(
+    () => (Array.isArray(rep?.report?.suppliers) ? rep.report.suppliers : []),
+    [rep?.report?.suppliers],
+  );
 
   const overdueCount = rep?.summary?.overdueCount ?? 0;
   const overdueAmount = rep?.summary?.overdueAmount ?? 0;
@@ -65,30 +66,65 @@ export default function DirectorFinanceDebtModal(p: Props) {
   const overduePct = pct(overdueAmount, debtAmount);
   const criticalPct = pct(criticalAmount, debtAmount);
 
-  return (
+  const renderSupplierRow = React.useCallback(
+    ({ item }: { item: any }) => (
+      <Pressable
+        onPress={() => p.openSupplier(item)}
+        style={[
+          s.mobCard,
+          {
+            marginBottom: 10,
+            paddingVertical: 10,
+            paddingHorizontal: 12,
+            flexDirection: "column",
+            alignItems: "stretch",
+          },
+        ]}
+      >
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+          <View style={{ flex: 1, minWidth: 0 }}>
+            <Text style={{ color: UI.text, fontWeight: "900" }} numberOfLines={1}>
+              {item.supplier}
+            </Text>
+          </View>
+
+          <Text style={{ color: UI.sub, fontWeight: "900" }} numberOfLines={1}>
+            {p.money(item.toPay)} KGS
+          </Text>
+        </View>
+
+        <Text style={{ color: UI.sub, fontWeight: "800", marginTop: 4 }} numberOfLines={2}>
+          Счетов {item.count} · требует оплаты {item.overdueCount} · критично {item.criticalCount}
+        </Text>
+      </Pressable>
+    ),
+    [p],
+  );
+
+  const listHeader = (
     <View>
       <Text style={{ color: "#F59E0B", fontWeight: "900" }} numberOfLines={2}>
-        ⚠️ Требует оплаты:{" "}
+        Требует оплаты:{" "}
         <Text style={{ color: UI.sub }}>
-          {p.loading ? "…" : `${overdueCount} сч.`} · {p.loading ? "…" : `${p.money(overdueAmount)} KGS`}
+          {p.loading ? "..." : `${overdueCount} сч.`} · {p.loading ? "..." : `${p.money(overdueAmount)} KGS`}
           {!p.loading && debtAmount > 0 ? ` · ${overduePct}%` : ""}
         </Text>
       </Text>
 
-      {(criticalCount ?? 0) > 0 ? (
+      {criticalCount > 0 ? (
         <Text style={{ color: UI.text, fontWeight: "900", marginTop: 10 }} numberOfLines={2}>
-          🔥 Критично (в периоде):{" "}
+          Критично (в периоде):{" "}
           <Text style={{ color: UI.sub }}>
-            {p.loading ? "…" : `${criticalCount} сч.`} · {p.loading ? "…" : `${p.money(criticalAmount)} KGS`}
+            {p.loading ? "..." : `${criticalCount} сч.`} · {p.loading ? "..." : `${p.money(criticalAmount)} KGS`}
             {!p.loading && debtAmount > 0 ? ` · ${criticalPct}%` : ""}
           </Text>
         </Text>
       ) : null}
 
       <Text style={{ color: UI.text, fontWeight: "900", marginTop: 10 }} numberOfLines={2}>
-        💳 К оплате:{" "}
+        К оплате:{" "}
         <Text style={{ color: UI.sub }}>
-          {p.loading ? "…" : `${debtCount} сч.`} · {p.loading ? "…" : `${p.money(debtAmount)} KGS`}
+          {p.loading ? "..." : `${debtCount} сч.`} · {p.loading ? "..." : `${p.money(debtAmount)} KGS`}
         </Text>
       </Text>
 
@@ -98,6 +134,7 @@ export default function DirectorFinanceDebtModal(p: Props) {
           s.mobCard,
           {
             marginTop: 14,
+            marginBottom: suppliersOpen ? 10 : 0,
             paddingVertical: 10,
             paddingHorizontal: 12,
             flexDirection: "row",
@@ -110,9 +147,9 @@ export default function DirectorFinanceDebtModal(p: Props) {
           <Text style={{ color: UI.text, fontWeight: "900", fontSize: 14 }} numberOfLines={1}>
             Поставщики (долг)
           </Text>
-          {rep?.report?.suppliers?.[0] ? (
+          {suppliers[0] ? (
             <Text style={{ color: UI.sub, fontWeight: "800", fontSize: 12 }} numberOfLines={1}>
-              Лидер: {rep.report.suppliers[0].supplier} · {p.money(rep.report.suppliers[0].toPay)} KGS
+              Лидер: {suppliers[0].supplier} · {p.money(suppliers[0].toPay)} KGS
             </Text>
           ) : null}
         </View>
@@ -121,47 +158,22 @@ export default function DirectorFinanceDebtModal(p: Props) {
           {suppliersOpen ? "▴" : "▾"}
         </Text>
       </Pressable>
-
-      {suppliersOpen ? (
-        <View style={{ marginTop: 10 }}>
-          {!rep?.report?.suppliers?.length ? (
-            <Text style={{ color: UI.sub, fontWeight: "800" }}>Нет данных</Text>
-          ) : (
-            rep.report.suppliers.map((srow: any) => (
-              <Pressable
-                key={String(srow.supplier)}
-                onPress={() => p.openSupplier(srow)}
-                style={[
-                  s.mobCard,
-                  {
-                    marginBottom: 10,
-                    paddingVertical: 10,
-                    paddingHorizontal: 12,
-                    flexDirection: "column",
-                    alignItems: "stretch",
-                  },
-                ]}
-              >
-                <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-                  <View style={{ flex: 1, minWidth: 0 }}>
-                    <Text style={{ color: UI.text, fontWeight: "900" }} numberOfLines={1}>
-                      {srow.supplier}
-                    </Text>
-                  </View>
-
-                  <Text style={{ color: UI.sub, fontWeight: "900" }} numberOfLines={1}>
-                    {p.money(srow.toPay)} KGS
-                  </Text>
-                </View>
-
-                <Text style={{ color: UI.sub, fontWeight: "800", marginTop: 4 }} numberOfLines={2}>
-                  Счетов {srow.count} · требует оплаты {srow.overdueCount} · критично {srow.criticalCount}
-                </Text>
-              </Pressable>
-            ))
-          )}
-        </View>
-      ) : null}
     </View>
+  );
+
+  return (
+    <FlatList
+      data={suppliersOpen ? suppliers : []}
+      renderItem={renderSupplierRow}
+      keyExtractor={(item, index) => `${String(item?.supplier ?? "supplier")}:${index}`}
+      ListHeaderComponent={listHeader}
+      ListEmptyComponent={
+        suppliersOpen ? <Text style={{ color: UI.sub, fontWeight: "800" }}>Нет данных</Text> : null
+      }
+      contentContainerStyle={{ paddingBottom: 24 }}
+      keyboardShouldPersistTaps="handled"
+      showsVerticalScrollIndicator={false}
+      removeClippedSubviews
+    />
   );
 }

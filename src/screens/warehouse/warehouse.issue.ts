@@ -4,6 +4,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { normMatCode, normUomId } from "./warehouse.utils";
 import {
   addWarehouseIssueItem,
+  addWarehouseIssueItems,
   commitWarehouseIssue,
   createWarehouseIssue,
   issueWarehouseFreeAtomic,
@@ -143,6 +144,12 @@ export function makeWarehouseIssueActions(args: {
         ensureWarehouseRpcData(r1.data, "Не удалось создать документ выдачи по заявке"),
       );
       const byId: Record<string, ReqItemUiRow> = {};
+      const issueLines: Array<{
+        rik_code: string;
+        uom_id: string;
+        qty: number;
+        request_item_id: string | null;
+      }> = [];
       for (const it of input.reqItems || []) byId[String(it.request_item_id)] = it;
 
       for (const ln of lines) {
@@ -164,27 +171,29 @@ export function makeWarehouseIssueActions(args: {
         const qtyOver = Math.max(0, want - qtyInReq);
 
         if (qtyInReq > 0) {
-          const rA = await addWarehouseIssueItem(supabase, {
-            p_issue_id: issueId,
-            p_rik_code: ln.rik_code,
-            p_uom_id: uomCode,
-            p_qty: qtyInReq,
-            p_request_item_id: ln.request_item_id,
+          issueLines.push({
+            rik_code: ln.rik_code,
+            uom_id: uomCode,
+            qty: qtyInReq,
+            request_item_id: ln.request_item_id,
           });
-          if (rA.error) throw rA.error;
         }
 
         if (qtyOver > 0) {
-          const rB = await addWarehouseIssueItem(supabase, {
-            p_issue_id: issueId,
-            p_rik_code: ln.rik_code,
-            p_uom_id: uomCode,
-            p_qty: qtyOver,
-            p_request_item_id: null,
+          issueLines.push({
+            rik_code: ln.rik_code,
+            uom_id: uomCode,
+            qty: qtyOver,
+            request_item_id: null,
           });
-          if (rB.error) throw rB.error;
         }
       }
+
+      const r2 = await addWarehouseIssueItems(supabase, {
+        p_issue_id: issueId,
+        p_lines: issueLines,
+      });
+      if (r2.error) throw r2.error;
 
       const r3 = await commitWarehouseIssue(supabase, issueId);
       if (r3.error) throw r3.error;

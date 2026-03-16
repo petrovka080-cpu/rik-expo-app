@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, ScrollView, Animated } from 'react-native';
+import { View, Animated } from 'react-native';
 import { useRouter } from 'expo-router';
 import { openAppAttachment } from "../../src/lib/documents/attachmentOpener";
 import { UI, s } from "../../src/screens/director/director.styles";
@@ -188,28 +188,22 @@ export default function DirectorScreen() {
           ) : null
         }
       >
-        <ScrollView
-          keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingBottom: 24 }}
-        >
-          <DirectorFinanceContent
-            finPage={vm.finPage}
-            finLoading={vm.finLoading}
-            finRep={vm.finRep}
-            finSpendRows={vm.finSpendRows}
-            finKindName={vm.finKindName}
-            finKindList={vm.finKindList}
-            finSupplier={vm.finSupplier}
-            supplierPdfBusy={vm.financePanel.supplierPdfBusy}
-            FIN_CRITICAL_DAYS={14}
-            pushFin={vm.pushFin}
-            openSupplier={vm.financePanel.openSupplier}
-            openFinKind={vm.financePanel.openFinKind}
-            onSupplierPdf={vm.financePanel.onSupplierPdf}
-            fmtDateOnly={vm.fmtDateOnly}
-          />
-        </ScrollView>
+        <DirectorFinanceContent
+          finPage={vm.finPage}
+          finLoading={vm.finLoading}
+          finRep={vm.finRep}
+          finSpendRows={vm.finSpendRows}
+          finKindName={vm.finKindName}
+          finKindList={vm.finKindList}
+          finSupplier={vm.finSupplier}
+          supplierPdfBusy={vm.financePanel.supplierPdfBusy}
+          FIN_CRITICAL_DAYS={14}
+          pushFin={vm.pushFin}
+          openSupplier={vm.financePanel.openSupplier}
+          openFinKind={vm.financePanel.openFinKind}
+          onSupplierPdf={vm.financePanel.onSupplierPdf}
+          fmtDateOnly={vm.fmtDateOnly}
+        />
       </DirectorFinanceCardModal>
 
       <DirectorReportsModal
