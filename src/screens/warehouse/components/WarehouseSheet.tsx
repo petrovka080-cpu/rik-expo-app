@@ -6,6 +6,13 @@ import { UI } from "../warehouse.styles";
 
 const asWebStyle = (style: Record<string, unknown>) => style as unknown as ViewStyle;
 
+const warnWarehouseSheet = (scope: string, error: unknown) => {
+  if (__DEV__) {
+    const message = error instanceof Error ? error.message : String(error ?? "");
+    console.warn(`[warehouse.sheet] ${scope}:`, message || error);
+  }
+};
+
 function WebSheet({
   visible,
   onClose,
@@ -23,8 +30,8 @@ function WebSheet({
   const handleWheelCapture = (e: { stopPropagation?: () => void }) => {
     try {
       e?.stopPropagation?.();
-    } catch {
-      // no-op
+    } catch (error) {
+      warnWarehouseSheet("handleWheelCapture", error);
     }
   };
 

@@ -10,6 +10,13 @@ type UomRow = {
   uom_code?: string | null;
 };
 
+const warnWarehouseUom = (scope: string, error: unknown) => {
+  if (__DEV__) {
+    const message = error instanceof Error ? error.message : String(error ?? "");
+    console.warn(`[warehouse.uom] ${scope}:`, message || error);
+  }
+};
+
 const asUnitRow = (value: unknown): UnitRow | null => {
   if (!value || typeof value !== "object") return null;
   const row = value as Record<string, unknown>;
@@ -36,7 +43,8 @@ export async function resolveUnitIdByCode(code: string): Promise<string | null> 
     const row = asUnitRow(m.data ?? null);
     if (!m.error && row?.unit_id) return String(row.unit_id);
     return null;
-  } catch {
+  } catch (error) {
+    warnWarehouseUom("resolveUnitIdByCode", error);
     return null;
   }
 }
@@ -59,7 +67,8 @@ export async function resolveUomTextByCode(
     const row = asUnitRow(m.data ?? null);
     unit = String(row?.unit_id ?? "").trim();
     if (!unit) return null;
-  } catch {
+  } catch (error) {
+    warnWarehouseUom("resolveUomTextByCode/material-unit", error);
     return null;
   }
 
@@ -71,7 +80,8 @@ export async function resolveUomTextByCode(
     const row = asUomRow(u.data ?? null);
     const codeText = String(row?.uom_code ?? "").trim();
     return codeText || null;
-  } catch {
+  } catch (error) {
+    warnWarehouseUom("resolveUomTextByCode/uom-code", error);
     return null;
   }
 }

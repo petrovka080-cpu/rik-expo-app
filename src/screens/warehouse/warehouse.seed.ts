@@ -44,6 +44,11 @@ const toNum = (v: unknown): number => {
   return Number.isFinite(n) ? n : 0;
 };
 
+const warnWarehouseSeed = (scope: string, error: unknown) => {
+  const message = error instanceof Error ? error.message : String(error ?? "");
+  console.warn(`[warehouse.seed] ${scope}:`, message || error);
+};
+
 async function getPurchaseIdByIncoming(supabase: Supa, incomingId: string): Promise<string | null> {
   try {
     const head = await supabase
@@ -54,7 +59,8 @@ async function getPurchaseIdByIncoming(supabase: Supa, incomingId: string): Prom
 
     const pId = !head.error && head.data?.purchase_id ? String(head.data.purchase_id) : null;
     return pId ? pId : null;
-  } catch {
+  } catch (error) {
+    warnWarehouseSeed("getPurchaseIdByIncoming", error);
     return null;
   }
 }
@@ -317,7 +323,10 @@ export async function seedEnsureIncomingItems(params: {
     try {
       const r = await supabase.rpc(fn, { p_incoming_id: incomingId });
       if (!r.error) break;
-    } catch {}
+      if (r.error) warnWarehouseSeed(`rpc ${fn}`, r.error.message);
+    } catch (error) {
+      warnWarehouseSeed(`rpc ${fn}`, error);
+    }
   }
 
   // 3) recheck
