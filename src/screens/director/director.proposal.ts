@@ -295,12 +295,18 @@ export function useDirectorProposalActions({
         ensuredPurchaseId = rpcPurchaseId || ensuredPurchaseId;
       }
 
+      let workSeedErrorMessage: string | null = null;
       try {
         if (ensuredPurchaseId) {
           const rW = await supabase.rpc("work_seed_from_purchase", { p_purchase_id: ensuredPurchaseId });
-          if (__DEV__ && rW.error) console.warn("[work_seed_from_purchase] error:", rW.error.message);
+          if (rW.error) {
+            workSeedErrorMessage = errText(rW.error) || "Не удалось подготовить работы по закупке.";
+            if (__DEV__) console.warn("[work_seed_from_purchase] error:", rW.error.message);
+          }
         }
-      } catch { }
+      } catch (e: unknown) {
+        workSeedErrorMessage = errText(e) || "Не удалось подготовить работы по закупке.";
+      }
 
       if (!alreadySent) {
         const { error: accErr } = await supabase.rpc("proposal_send_to_accountant_min", {
@@ -315,9 +321,16 @@ export function useDirectorProposalActions({
 
       await fetchProps(true);
       void fetchRows(true);
-      closeSheet();
       approveDoneAtRef.current[pid] = Date.now();
-      showSuccess("Утверждено -> бухгалтер -> склад/подрядчики");
+      if (workSeedErrorMessage) {
+        Alert.alert(
+          "Утверждено с предупреждением",
+          `Предложение утверждено и отправлено дальше, но подготовка работ не завершилась: ${workSeedErrorMessage}`,
+        );
+      } else {
+        closeSheet();
+        showSuccess("Утверждено -> бухгалтер -> склад/подрядчики");
+      }
     } catch (e: unknown) {
       Alert.alert("Не удалось утвердить", errText(e) || "Попробуйте еще раз.");
     } finally {

@@ -1,7 +1,4 @@
 // src/lib/rik_api.ts — боевой минимальный API (стабильно, без спорных SELECT'ов)
-import { supabase } from './supabaseClient';
-import type { SupabaseClient } from '@supabase/supabase-js';
-
 import {
   proposalCreate,
   proposalAddItems,
@@ -252,41 +249,6 @@ export type Supplier = {
   contact_name?: string | null;
   notes?: string | null;
 };
-
-// ============================== Internals ==============================
-const client: SupabaseClient = supabase;
-const toRpcId = (id: number | string) => String(id);
-const parseErr = (e: any) =>
-  e?.message ||
-  e?.error_description ||
-  (typeof e === 'string'
-    ? e
-    : (() => {
-        try { return JSON.stringify(e); } catch { return String(e); }
-      })());
-
-const normStr = (s?: string | null) => String(s ?? '').trim().toLowerCase();
-
-// универсальный ретрай RPC с разными именами параметров/имен функций
-async function rpcCompat<T = any>(
-  variants: Array<{ fn: string; args?: Record<string, any> }>
-): Promise<T> {
-  let lastErr: any = null;
-  for (const v of variants) {
-    try {
-      const { data, error } = await supabase.rpc(v.fn as any, v.args as any);
-      if (!error) return data as T;
-      lastErr = error;
-      const msg = String(error?.message || '');
-      if (msg.includes('Could not find') || error?.code === 'PGRST302') continue;
-    } catch (e: any) {
-      lastErr = e;
-    }
-  }
-  if (lastErr) throw lastErr;
-  return [] as unknown as T;
-}
-
 
 const toFilterId = (v: number | string) => {
   const raw = String(v ?? '').trim().replace(/^#/, '');

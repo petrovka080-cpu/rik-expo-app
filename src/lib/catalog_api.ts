@@ -94,6 +94,15 @@ const asRequestStatusRow = (value: unknown): { id: string; status?: string | nul
   return header ? header : null;
 };
 
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  !!value && typeof value === "object" && !Array.isArray(value);
+
+type RequestListMergedRow = Record<string, unknown>;
+type RequestItemStatusAggRow = {
+  request_id?: unknown;
+  status?: unknown;
+};
+
 export type RequestItem = {
   id?: string;
   request_id: string;
@@ -335,18 +344,8 @@ type CatalogDynamicReadSource =
   | "v_request_pdf_header"
   | "requests";
 
-type CatalogDynamicReadRow = Record<string, unknown>;
-type CatalogDynamicReadTable = {
-  select(columns: string): {
-    eq(column: "id", value: string): {
-      maybeSingle(): Promise<{ data: CatalogDynamicReadRow | null; error: { message?: string } | null }>;
-    };
-  };
-};
-
-type CatalogDynamicReadBoundary = {
-  from(relation: CatalogDynamicReadSource): CatalogDynamicReadTable;
-};
+type CatalogDynamicReadLegacySource = "vi_requests_display" | "vi_requests";
+type CatalogDynamicReadResponse = Promise<{ data: unknown; error: { message?: string } | null }>;
 
 /** ========= helpers ========= */
 const norm = (s?: string | null) => String(s ?? "").trim();
@@ -686,7 +685,39 @@ const detectUnifiedType = (origins: string[]): UnifiedCounterpartyType => {
   return "other_business_counterparty";
 };
 
-const compatReadFrom = (): CatalogDynamicReadBoundary => supabase as unknown as CatalogDynamicReadBoundary;
+const readCatalogLegacyView = (
+  relation: CatalogDynamicReadLegacySource,
+) =>
+  (supabase.from.bind(supabase) as (
+    name: CatalogDynamicReadLegacySource,
+  ) => {
+    select(columns: string): {
+      eq(column: "id", value: string): {
+        maybeSingle(): CatalogDynamicReadResponse;
+      };
+    };
+  })(relation);
+
+const selectCatalogDynamicReadSingle = async (
+  relation: CatalogDynamicReadSource,
+  columns: string,
+  id: string,
+): CatalogDynamicReadResponse => {
+  switch (relation) {
+    case "request_display":
+      return await supabase.from("request_display").select(columns).eq("id", id).maybeSingle();
+    case "vi_requests_display":
+      return await readCatalogLegacyView("vi_requests_display").select(columns).eq("id", id).maybeSingle();
+    case "vi_requests":
+      return await readCatalogLegacyView("vi_requests").select(columns).eq("id", id).maybeSingle();
+    case "v_requests_display":
+      return await supabase.from("v_requests_display").select(columns).eq("id", id).maybeSingle();
+    case "v_request_pdf_header":
+      return await supabase.from("v_request_pdf_header").select(columns).eq("id", id).maybeSingle();
+    case "requests":
+      return await supabase.from("requests").select(columns).eq("id", id).maybeSingle();
+  }
+};
 
 type CatalogCompatError = {
   message?: string;
@@ -1070,11 +1101,7 @@ export async function getRequestHeader(requestId: string): Promise<RequestHeader
 
   for (const view of views) {
     try {
-      const { data, error } = await compatReadFrom()
-        .from(view.src)
-        .select(view.cols)
-        .eq("id", id)
-        .maybeSingle();
+      const { data, error } = await selectCatalogDynamicReadSingle(view.src, view.cols, id);
       const row = asRequestHeader(data);
       if (!error && row) return row;
     } catch { }
@@ -1129,12 +1156,9 @@ export async function fetchRequestDisplayNo(requestId: string): Promise<string |
 
   for (const { src, col } of views) {
     try {
-      const { data, error } = await compatReadFrom()
-        .from(src)
-        .select(`id,${col}`)
-        .eq("id", id)
-        .maybeSingle();
-      if (!error && data && data[col] != null) return String(data[col]);
+      const { data, error } = await selectCatalogDynamicReadSingle(src, `id,${col}`, id);
+      const row = asUnknownRecord(data);
+      if (!error && row && row[col] != null) return String(row[col]);
     } catch (e: any) {
       const msg = String(e?.message ?? "").toLowerCase();
       if (!msg.includes("permission denied") && !msg.includes("does not exist")) {
@@ -1264,11 +1288,7 @@ export async function fetchRequestDetails(requestId: string): Promise<RequestDet
   const views = ["v_requests_display", "v_request_pdf_header"] as const;
   for (const view of views) {
     try {
-      const { data, error } = await compatReadFrom()
-        .from(view)
-        .select("*")
-        .eq("id", id)
-        .maybeSingle();
+      const { data, error } = await selectCatalogDynamicReadSingle(view, "*", id);
       if (!error && data) {
         const mapped = mapDetailsFromRow(data);
         if (mapped) return mapped;
@@ -1503,7 +1523,8 @@ export async function listRequestItems(requestId: string): Promise<ReqItemRow[]>
 
     if (!Array.isArray(data) || !data.length) return [];
 
-    const mapped = (data as any[])
+    const rows = Array.isArray(data) ? (data as unknown[]) : []
+    const mapped = rows
       .map((row) => mapRequestItemRow(row, id))
       .filter((row): row is ReqItemRow => !!row);
 
@@ -1691,8 +1712,11 @@ export async function listForemanRequests(
       continue;
     }
     if (!Array.isArray(result.data)) continue;
-    for (const row of result.data as any[]) {
-      const id = String(row?.id ?? "").trim();
+    const rows = Array.isArray(result.data) ? (result.data as unknown[]) : [];
+    for (const rawRow of rows) {
+      if (!isRecord(rawRow)) continue;
+      const row = rawRow as RequestListMergedRow;
+      const id = String(row.id ?? "").trim();
       if (!id || mergedById.has(id)) continue;
       mergedById.set(id, row);
     }
@@ -1738,8 +1762,12 @@ export async function listForemanRequests(
     st === "pending";
 
   const agg = new Map<string, { total: number; ok: number; bad: number; pend: number }>();
-  for (const row of itemRows as any[]) {
-    const rid = String(row.request_id);
+  const statusRows = Array.isArray(itemRows) ? (itemRows as unknown[]) : [];
+  for (const rawRow of statusRows) {
+    if (!isRecord(rawRow)) continue;
+    const row = rawRow as RequestItemStatusAggRow;
+    const rid = String(row.request_id ?? "");
+    if (!rid) continue;
     const st = normSt(row.status);
     const cur = agg.get(rid) ?? { total: 0, ok: 0, bad: 0, pend: 0 };
     cur.total += 1;

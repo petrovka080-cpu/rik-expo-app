@@ -151,7 +151,7 @@ const toRefOptions = (rows: unknown[], includeEmpty: boolean) => {
     .filter((row): row is DictRow => !!row)
     .map((row) => ({ code: row.code, name: mapName(row) }))
     .filter((row) => String(row.code).trim() && String(row.name).trim());
-  return includeEmpty ? [{ code: "", name: "вЂ” РќРµ РІС‹Р±СЂР°РЅРѕ вЂ”" }, ...fetched] : fetched;
+  return includeEmpty ? [{ code: "", name: "— Не выбрано —" }, ...fetched] : fetched;
 };
 
 const loadForemanDictsSnapshot = async (): Promise<DictsSnapshot> => {

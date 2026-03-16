@@ -4,8 +4,8 @@ export const BUYER_CONTRACTORS_BASIC_SELECT = "id,company_name,phone,inn";
 export const BUYER_CONTRACTORS_FALLBACK_SELECT = "id,company_name,phone,inn,name,organization,org_name";
 export const BUYER_SUBCONTRACTS_SELECT = [
   "id",
-  "party_role",
   "role",
+  "counterparty_type",
   "contractor_org",
   "subcontractor_org",
   "supplier_org",

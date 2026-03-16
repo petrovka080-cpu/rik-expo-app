@@ -5,6 +5,11 @@ import type { Database } from "../database.types";
 type RpcFunctions = Database["public"]["Functions"];
 type RpcName = keyof RpcFunctions;
 type RpcArgs<TName extends RpcName> = RpcFunctions[TName]["Args"];
+type RpcVariantMap = {
+  [TName in RpcName]: undefined extends RpcArgs<TName>
+    ? { fn: TName; args?: RpcArgs<TName> }
+    : { fn: TName; args: RpcArgs<TName> };
+};
 
 export const client: SupabaseClient<Database> = supabase;
 
@@ -14,10 +19,7 @@ type ErrorLike = {
   code?: unknown;
 };
 
-type RpcVariant = {
-  fn: RpcName;
-  args?: Record<string, unknown>;
-};
+type RpcVariant<TName extends RpcName = RpcName> = RpcVariantMap[TName];
 
 const asErrorLike = (value: unknown): ErrorLike | null =>
   value && typeof value === "object" ? (value as ErrorLike) : null;
@@ -62,13 +64,14 @@ export const toRpcId = (id: number | string) => String(id);
 
 // rpcCompat как у тебя, но “в ядре”
 export async function rpcCompat<T = unknown>(
-  variants: RpcVariant[],
+  variants: ReadonlyArray<RpcVariant>,
 ): Promise<T> {
-  const runRpc = async <TName extends RpcName>(variant: { fn: TName; args?: Record<string, unknown> }) =>
-    (await supabase.rpc(
-      variant.fn as never,
-      (variant.args ?? {}) as RpcArgs<TName> & never,
-    )) as { data: unknown; error: unknown };
+  const runRpc = async <TName extends RpcName>(variant: RpcVariant<TName>) => {
+    if ("args" in variant && variant.args !== undefined) {
+      return (await supabase.rpc(variant.fn, variant.args)) as { data: unknown; error: unknown };
+    }
+    return (await supabase.rpc(variant.fn)) as { data: unknown; error: unknown };
+  };
 
   let lastErr: unknown = null;
   for (const v of variants) {

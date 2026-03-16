@@ -193,6 +193,52 @@ async function insertProposalItemFallback(
   return client.from("proposal_items").insert(payload).select("id").single();
 }
 
+const chunkProposalItemIds = (requestItemIds: string[], size: number): string[][] => {
+  if (size <= 0) return [requestItemIds];
+  const out: string[][] = [];
+  for (let i = 0; i < requestItemIds.length; i += size) {
+    out.push(requestItemIds.slice(i, i + size));
+  }
+  return out;
+};
+
+async function insertProposalItemsFallbackBulk(
+  proposalIdText: string,
+  requestItemIds: string[],
+): Promise<number> {
+  let ok = 0;
+
+  for (const pack of chunkProposalItemIds(requestItemIds, 100)) {
+    const payload = pack.map((requestItemId) => buildProposalItemInsert(proposalIdText, requestItemId));
+
+    try {
+      const { error, data } = await client
+        .from("proposal_items")
+        .insert(payload)
+        .select("id");
+      if (error) throw error;
+      ok += Array.isArray(data) ? data.length : pack.length;
+      continue;
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      logProposalsDebug("[proposalAddItems/fallback/bulk]", msg);
+    }
+
+    for (const requestItemId of pack) {
+      try {
+        const ins = await insertProposalItemFallback(proposalIdText, requestItemId);
+        if (!ins.error) ok++;
+        else logProposalsDebug("[proposalAddItems/fallback/insert]", ins.error.message);
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : String(e);
+        logProposalsDebug("[proposalAddItems/fallback/insert ex]", msg);
+      }
+    }
+  }
+
+  return ok;
+}
+
 async function updateProposalPendingFallback(proposalId: string) {
   return client
     .from("proposals")
@@ -240,18 +286,7 @@ export async function proposalAddItems(proposalId: number | string, requestItemI
     if (error) throw error;
     return parseProposalAddItemsResult(data);
   } catch {
-    let ok = 0;
-    for (const requestItemId of requestItemIds) {
-      try {
-        const ins = await insertProposalItemFallback(proposalIdText, requestItemId);
-        if (!ins.error) ok++;
-        else logProposalsDebug("[proposalAddItems/fallback/insert]", ins.error.message);
-      } catch (e) {
-        const msg = e instanceof Error ? e.message : String(e);
-        logProposalsDebug("[proposalAddItems/fallback/insert ex]", msg);
-      }
-    }
-    return ok;
+    return await insertProposalItemsFallbackBulk(proposalIdText, requestItemIds);
   }
 }
 

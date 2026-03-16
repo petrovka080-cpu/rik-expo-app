@@ -79,7 +79,7 @@ export function useWarehouseReceiveFlow(params: {
         if (!freshRows.length) {
           return notifyError(
             "Нет материалов",
-            "В этой поставке нет материалов для склада. Работы/услуги смотри в «Подрядчики».",
+            "В этой поставке нет материалов для склада. Работы/услуги смотрите в «Подрядчики».",
           );
         }
 
@@ -130,11 +130,23 @@ export function useWarehouseReceiveFlow(params: {
           );
         }
 
-        await Promise.all([
-          fetchToReceive(),
-          fetchStock(),
-          loadItemsForHead(incomingId, true),
-        ]);
+        const result = (data as RpcReceiveApplyResult | null) ?? null;
+        const ok = Number(result?.ok ?? 0);
+        const fail = Number(result?.fail ?? 0);
+        const leftAfter = nz(result?.left_after, 0);
+
+        try {
+          await Promise.all([
+            fetchToReceive(),
+            fetchStock(),
+            loadItemsForHead(incomingId, true),
+          ]);
+        } catch (e) {
+          return notifyError(
+            "Приход выполнен с предупреждением",
+            `Материалы приняты, но обновление экрана не завершилось: ${pickErr(e)}`,
+          );
+        }
 
         setQtyInputByItem((prev) => {
           const next = { ...(prev || {}) };
@@ -145,16 +157,18 @@ export function useWarehouseReceiveFlow(params: {
           return next;
         });
 
-        const d = (data as RpcReceiveApplyResult | null) ?? null;
-        const ok = Number(d?.ok ?? 0);
-        const fail = Number(d?.fail ?? 0);
-        const leftAfter = nz(d?.left_after, 0);
+        if (fail > 0) {
+          return notifyError(
+            "Приход выполнен с предупреждением",
+            `Принято позиций: ${ok}, ошибок: ${fail}. Осталось: ${leftAfter}.`,
+          );
+        }
 
         if (leftAfter <= 0) setItemsModal(null);
 
         notifyInfo(
           "Готово",
-          `Принято позиций: ${ok}${fail ? `, ошибок: ${fail}` : ""} \nОсталось: ${leftAfter} `,
+          `Принято позиций: ${ok}\nОсталось: ${leftAfter}`,
         );
       } catch (e) {
         onError(e);

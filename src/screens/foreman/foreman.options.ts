@@ -27,4 +27,3 @@ export const getObjectDisplayName = (code: string, allOptions: RefOption[]) => {
 };
 
 export const isObjectSelectable = (code: string) => !HIDDEN_OBJECT_CODES.has(normalizeCode(code));
-

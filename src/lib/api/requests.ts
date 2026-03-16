@@ -1,6 +1,23 @@
 import { supabase } from "../supabaseClient";
 import type { Database } from "../database.types";
 import { client, normalizeUuid, parseErr, rpcCompat, toFilterId } from "./_core";
+import {
+  mapRequestRow,
+  parseRequestItemsByRequestRows,
+  parseRequestSubmitResultRow,
+} from "./requests.parsers";
+import {
+  buildRequestSelectSchemaSafe,
+  requestsSupportsSubmittedAt,
+} from "./requests.read-capabilities";
+import {
+  REQUEST_APPROVED_STATUS,
+  REQUEST_DRAFT_STATUS,
+  REQUEST_PENDING_STATUS,
+  REQUEST_REJECTED_STATUS,
+  REQUEST_TERMINAL_ITEM_STATUS_FILTER,
+  isDraftOrPendingStatus,
+} from "./requests.status";
 import type { ReqItemRow, RequestMeta, RequestRecord } from "./types";
 
 const logRequestsDebug = (...args: unknown[]) => {
@@ -11,13 +28,9 @@ const logRequestsDebug = (...args: unknown[]) => {
 
 // cache id черновика на сессию (uuid или int)
 let _draftRequestIdAny: string | number | null = null;
-let _requestsSubmittedAtSupportedCache: boolean | null = null;
-let _requestsReadableColumnsCache: Set<string> | null = null;
-let _requestsReadableColumnsInFlight: Promise<Set<string>> | null = null;
 
 type RequestsTable = Database["public"]["Tables"]["requests"];
 type RequestItemsTable = Database["public"]["Tables"]["request_items"];
-type RequestStatusEnum = Database["public"]["Enums"]["request_status_enum"];
 type RequestDraftInsertPayload = Pick<
   RequestsTable["Insert"],
   | "status"
@@ -61,19 +74,6 @@ type RequestIdLookupRow = Pick<RequestsTable["Row"], "id">;
 
 const REQUEST_DRAFT_SELECT =
   "id,status,display_no,need_by,comment,foreman_name,object_type_code,level_code,system_code,zone_code,created_at";
-
-export const REQUEST_DRAFT_STATUS: RequestStatusEnum = "Черновик";
-export const REQUEST_PENDING_STATUS: RequestStatusEnum = "На утверждении";
-export const REQUEST_APPROVED_STATUS: RequestStatusEnum = "Утверждено";
-export const REQUEST_REJECTED_STATUS: RequestStatusEnum = "Отклонено";
-export const REQUEST_PENDING_EN = "pending";
-export const REQUEST_DRAFT_EN = "draft";
-const REQUEST_APPROVED_EN = "approved";
-const REQUEST_REJECTED_EN = "rejected";
-const REQUEST_STATUS_MATCHERS = {
-  draftFragment: "чернов",
-  pendingFragment: "на утверждении",
-} as const;
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   value != null && typeof value === "object" && !Array.isArray(value);
@@ -154,154 +154,9 @@ function buildRequestItemsPendingPatch(): RequestItemStatusPatch {
   return { status: REQUEST_PENDING_STATUS };
 }
 
-// ============================== Boundary parsers ==============================
-function parseRequestItemRow(raw: unknown): ReqItemRow | null {
-  if (!isRecord(raw)) return null;
-  const id = typeof raw.id === "string" ? raw.id.trim() : "";
-  const requestId = raw.request_id;
-  if (!id || (typeof requestId !== "string" && typeof requestId !== "number")) return null;
-  return {
-    id,
-    request_id: requestId,
-    name_human: typeof raw.name_human === "string" && raw.name_human.trim() ? raw.name_human : "—",
-    qty: Number(raw.qty ?? 0),
-    uom: typeof raw.uom === "string" ? raw.uom : null,
-    status: typeof raw.status === "string" ? raw.status : null,
-    supplier_hint: typeof raw.supplier_hint === "string" ? raw.supplier_hint : null,
-    app_code: typeof raw.app_code === "string" ? raw.app_code : null,
-    note: typeof raw.note === "string" ? raw.note : null,
-  };
-}
-
-function parseRequestItemsByRequestRows(data: unknown): ReqItemRow[] {
-  if (!Array.isArray(data)) return [];
-  return data.flatMap((row) => {
-    const parsed = parseRequestItemRow(row);
-    return parsed ? [parsed] : [];
-  });
-}
-
-function parseRequestSubmitResultRow(data: unknown): RequestRecord | null {
-  const row = data as RequestSubmitResultRow | null;
-  return mapRequestRow(row);
-}
-
 export function clearCachedDraftRequestId() {
   _draftRequestIdAny = null;
 }
-
-// ============================== Request read capabilities ==============================
-async function resolveRequestsReadableColumns(): Promise<Set<string>> {
-  if (_requestsReadableColumnsCache) return _requestsReadableColumnsCache;
-  if (_requestsReadableColumnsInFlight) return _requestsReadableColumnsInFlight;
-
-  _requestsReadableColumnsInFlight = (async () => {
-    try {
-      const q = await client.from("requests").select("*").limit(1);
-      if (q.error) throw q.error;
-      const first =
-        Array.isArray(q.data) && q.data.length ? (q.data[0] as Record<string, unknown>) : null;
-      const cols = new Set<string>(first ? Object.keys(first) : ["id", "status", "display_no", "created_at"]);
-      _requestsReadableColumnsCache = cols;
-      return cols;
-    } catch {
-      const fallback = new Set<string>(["id", "status", "display_no", "created_at"]);
-      _requestsReadableColumnsCache = fallback;
-      return fallback;
-    } finally {
-      _requestsReadableColumnsInFlight = null;
-    }
-  })();
-
-  return _requestsReadableColumnsInFlight;
-}
-
-async function buildRequestSelectSchemaSafe(): Promise<string> {
-  const desired = [
-    "id",
-    "status",
-    "display_no",
-    "foreman_name",
-    "need_by",
-    "comment",
-    "object_type_code",
-    "level_code",
-    "system_code",
-    "zone_code",
-    "created_at",
-    "year",
-    "seq",
-  ];
-  const cols = await resolveRequestsReadableColumns();
-  const filtered = desired.filter((c) => cols.has(c));
-  return filtered.length ? filtered.join(", ") : "id,status,created_at";
-}
-
-async function requestsSupportsSubmittedAt(): Promise<boolean> {
-  if (_requestsSubmittedAtSupportedCache != null) return _requestsSubmittedAtSupportedCache;
-  try {
-    const q = await client.from("requests").select("submitted_at").limit(1);
-    if (q.error) throw q.error;
-    _requestsSubmittedAtSupportedCache = true;
-    return true;
-  } catch (e) {
-    const msg = getErrorMessage(e).toLowerCase();
-    if (msg.includes("submitted_at") || msg.includes("column") || msg.includes("does not exist")) {
-      _requestsSubmittedAtSupportedCache = false;
-      return false;
-    }
-    _requestsSubmittedAtSupportedCache = true;
-    return true;
-  }
-}
-
-function mapRequestRow(raw: unknown): RequestRecord | null {
-  if (!isRecord(raw)) return null;
-  const idRaw = raw.id ?? raw.request_id ?? null;
-  if (!idRaw) return null;
-
-  const id = String(idRaw);
-
-  const norm = (v: unknown) => (v == null ? null : String(v).trim());
-
-  const asNumber = (v: unknown) => {
-    if (typeof v === "number" && Number.isFinite(v)) return v;
-    const parsed = Number(v);
-    return Number.isFinite(parsed) ? parsed : null;
-  };
-
-  return {
-    id,
-    status: typeof raw.status === "string" ? raw.status : null,
-    display_no: norm(raw.display_no ?? raw.number ?? raw.label ?? raw.display) || null,
-    year: asNumber(raw.year),
-    seq: asNumber(raw.seq),
-    foreman_name: norm(raw.foreman_name),
-    need_by: norm(raw.need_by),
-    comment: norm(raw.comment),
-    object_type_code: norm(raw.object_type_code),
-    level_code: norm(raw.level_code),
-    system_code: norm(raw.system_code),
-    zone_code: norm(raw.zone_code),
-    created_at: norm(raw.created_at),
-  };
-}
-
-const normalizeStatus = (raw: unknown): string =>
-  String(raw ?? "").trim().toLowerCase().replace(/\s+/g, " ");
-
-const REQUEST_TERMINAL_ITEM_STATUS_FILTER = `("${REQUEST_APPROVED_STATUS}","${REQUEST_REJECTED_STATUS}","${REQUEST_APPROVED_EN}","${REQUEST_REJECTED_EN}")`;
-
-export const isDraftOrPendingStatus = (raw: unknown): boolean => {
-  const s = normalizeStatus(raw);
-  if (!s) return true;
-  return (
-    s === REQUEST_DRAFT_EN ||
-    s === REQUEST_PENDING_EN ||
-    s.includes(REQUEST_STATUS_MATCHERS.draftFragment) ||
-    s.includes(REQUEST_STATUS_MATCHERS.pendingFragment)
-  );
-};
 
 // ============================== Low-level request helpers ==============================
 async function selectRequestIdByFilter(requestFilterId: string): Promise<RequestIdLookupRow | null> {
@@ -587,7 +442,6 @@ export async function requestSubmit(requestId: number | string): Promise<Request
       msg.includes("column") ||
       msg.includes("does not exist");
     if (submittedAtMismatch) {
-      _requestsSubmittedAtSupportedCache = false;
       fallback = await updateRequestHeadStatus(
         requestFilterId,
         buildRequestSubmitFallbackUpdate(false),

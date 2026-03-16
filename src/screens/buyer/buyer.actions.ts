@@ -188,6 +188,22 @@ const errMessage = (e: unknown, fallback = "Unknown error"): string => {
 const normalizeRuntimeError = (e: unknown, fallback: string): Error => {
   return new Error(errMessage(e, fallback));
 };
+
+const reportBuyerWriteFailure = (
+  alert: AlertFn | undefined,
+  title: string,
+  error: unknown,
+  log?: (...args: unknown[]) => void,
+) => {
+  const message = errMessage(error, "Не удалось сохранить изменения.");
+  (log ?? console.warn)(`[buyer.write] ${title}: ${message}`);
+  alert?.(title, message);
+};
+
+const throwIfMutationFailed = (error: unknown) => {
+  if (error) throw error;
+};
+
 const toPriceString = (v: number | string | null | undefined): string | null => {
   if (v == null) return null;
   const s = String(v).trim();
@@ -704,6 +720,8 @@ export async function sendToAccountingAction<TApproved extends MaybeId = MaybeId
   const pidStr = String(p.acctProposalId);
 
   try {
+    let attachmentWarning: string | null = null;
+
     // 2) если еще не грузили мгновенно - прикрепим выбранный файл как invoice (1:1)
     if (!p.invoiceUploadedName && p.invFile) {
       await p.uploadProposalAttachment(
@@ -725,7 +743,8 @@ export async function sendToAccountingAction<TApproved extends MaybeId = MaybeId
         "proposal_html"
       );
     } catch (e: unknown) {
-      p.log?.("[buyer] attach proposal doc failed:", errMessage(e));
+      attachmentWarning = errMessage(e, "Не удалось обновить HTML-вложение предложения.");
+      p.log?.("[buyer] attach proposal doc failed:", attachmentWarning);
     }
 
     // 4) отправка в бухгалтерию (адаптер -> fallback RPC) (1:1)
@@ -763,7 +782,14 @@ export async function sendToAccountingAction<TApproved extends MaybeId = MaybeId
     p.setApproved((prev) => prev.filter((x) => String(x?.id ?? "") !== pidStr));
     await p.fetchBuckets();
 
-    p.alert("Готово", "Счёт отправлен бухгалтеру.");
+    if (attachmentWarning) {
+      p.alert(
+        "Готово с предупреждением",
+        `Счёт отправлен бухгалтеру, но HTML-вложение предложения не обновилось. ${attachmentWarning}`,
+      );
+    } else {
+      p.alert("Готово", "Счёт отправлен бухгалтеру.");
+    }
     p.closeSheet();
   } catch (e: unknown) {
     const msg = errMessage(e);
@@ -801,23 +827,24 @@ function detectReworkSourceSafe(r: ReworkProposalRow | null | undefined): "direc
 }
 
 async function rwPersistItems(supabase: SupabaseClient, pid: string, items: RwItem[]) {
+  const payload: RepoProposalItemUpdate[] = [];
+
   for (const it of items || []) {
-    const upd: { price?: number; supplier?: string | null; note?: string | null } = {};
+    const requestItemId = String(it?.request_item_id ?? "").trim();
+    if (!requestItemId) continue;
+
+    const upd: RepoProposalItemUpdate = { request_item_id: requestItemId };
     const pv = Number(String(it.price ?? "").replace(",", "."));
     if (Number.isFinite(pv) && pv > 0) upd.price = pv;
     if (it.supplier != null) upd.supplier = it.supplier?.trim() || null;
     if (it.note != null) upd.note = it.note?.trim() || null;
 
-    if (!Object.keys(upd).length) continue;
-
-    const q = await supabase
-      .from("proposal_items")
-      .update(upd)
-      .eq("proposal_id", pid)
-      .eq("request_item_id", it.request_item_id);
-
-    if (q.error) throw q.error;
+    if (Object.keys(upd).length === 1) continue;
+    payload.push(upd);
   }
+
+  if (!payload.length) return;
+  await repoUpdateProposalItems(supabase, pid, payload);
 }
 
 async function rwEnsureProposalPdf(
@@ -825,7 +852,7 @@ async function rwEnsureProposalPdf(
   pid: string,
   buildProposalPdfHtml: (pidStr: string) => Promise<string>,
   uploadProposalAttachment: (pid: string, file: FileLike, name: string, key: string) => Promise<void>
-) {
+): Promise<string | null> {
   try {
     const q = await supabase
       .from("proposal_attachments")
@@ -834,7 +861,7 @@ async function rwEnsureProposalPdf(
       .eq("group_key", "proposal_pdf")
       .limit(1);
 
-    if (!q.error && (q.data || []).length) return;
+    if (!q.error && (q.data || []).length) return null;
 
     const html = await buildProposalPdfHtml(pid);
     const blob = new Blob([html], { type: "text/html;charset=utf-8" });
@@ -844,8 +871,9 @@ async function rwEnsureProposalPdf(
       `proposal_${pid.slice(0, 8)}.html`,
       "proposal_html"
     );
-  } catch {
-    // 1:1 РЅРµ Р»РѕРјР°РµРј UX
+    return null;
+  } catch (e: unknown) {
+    return errMessage(e, "Не удалось обновить HTML-вложение предложения.");
   }
 }
 
@@ -1026,17 +1054,19 @@ export async function rwSendToDirectorAction<TRejected extends MaybeId = MaybeId
       await clearRequestItemsDirectorRejectState(p.supabase, affectedIds);
     }
 
-    await p.supabase
+    const resetAccountingState = await p.supabase
       .from("proposals")
       .update({ payment_status: null, sent_to_accountant_at: null })
       .eq("id", p.pid);
+    if (resetAccountingState.error) throw resetAccountingState.error;
 
     await p.proposalSubmit(p.pid);
 
-    await p.supabase
+    const clearSentToAccountantAt = await p.supabase
       .from("proposals")
       .update({ sent_to_accountant_at: null })
       .eq("id", p.pid);
+    if (clearSentToAccountantAt.error) throw clearSentToAccountantAt.error;
 
     await Promise.allSettled([p.fetchInbox(), p.fetchBuckets()]);
     p.setRejected((prev) => prev.filter((x) => String(x?.id ?? "") !== p.pid));
@@ -1088,6 +1118,8 @@ export async function rwSendToAccountingAction<TRejected extends MaybeId = Maybe
 
   p.setBusy(true);
   try {
+    let attachmentWarning: string | null = null;
+
     await rwPersistItems(p.supabase, p.pid, p.items);
 
     if (p.invFile) {
@@ -1099,7 +1131,12 @@ export async function rwSendToAccountingAction<TRejected extends MaybeId = Maybe
       );
     }
 
-    await rwEnsureProposalPdf(p.supabase, p.pid, p.buildProposalPdfHtml, p.uploadProposalAttachment);
+    attachmentWarning = await rwEnsureProposalPdf(
+      p.supabase,
+      p.pid,
+      p.buildProposalPdfHtml,
+      p.uploadProposalAttachment,
+    );
 
     try {
       await p.proposalSendToAccountant({
@@ -1125,7 +1162,14 @@ export async function rwSendToAccountingAction<TRejected extends MaybeId = Maybe
     await p.fetchBuckets();
     p.setRejected((prev) => prev.filter((x) => String(x?.id ?? "") !== p.pid));
 
-    p.alert("Готово", "Отправлено бухгалтеру.");
+    if (attachmentWarning) {
+      p.alert(
+        "Готово с предупреждением",
+        `Отправлено бухгалтеру, но HTML-вложение предложения не обновилось. ${attachmentWarning}`,
+      );
+    } else {
+      p.alert("Готово", "Отправлено бухгалтеру.");
+    }
     p.closeSheet();
   } catch (e: unknown) {
     p.alert("Ошибка отправки", errMessage(e));
@@ -1253,9 +1297,10 @@ export async function setProposalBuyerFioAction(opts: {
   supabase: SupabaseClient;
   propId: string | number;
   typedFio?: string;
+  alert?: AlertFn;
   log?: (...a: unknown[]) => void;
 }) {
-  const { supabase, propId, typedFio, log } = opts;
+  const { supabase, propId, typedFio, alert, log } = opts;
   const warn = (message: string) => {
     if (__DEV__) {
       console.warn(message);
@@ -1274,7 +1319,7 @@ export async function setProposalBuyerFioAction(opts: {
 
     await repoSetProposalBuyerFio(supabase, propId, fio);
   } catch (e: unknown) {
-    (log ?? warn)(`[buyer_fio] ${errMessage(e)}`);
+    reportBuyerWriteFailure(alert, "Не удалось сохранить ФИО снабженца", e, log ?? warn);
   }
 }
 
@@ -1284,9 +1329,10 @@ export async function snapshotProposalItemsAction(opts: {
   ids: string[];
   rows: BuyerInboxLikeRow[]; // BuyerInboxRow[]
   meta: Record<string, SnapshotMetaRow>;
+  alert?: AlertFn;
   log?: (...a: unknown[]) => void;
 }) {
-  const { supabase, proposalId, ids, rows, meta, log } = opts;
+  const { supabase, proposalId, ids, rows, meta, alert, log } = opts;
   const warn = (message: string) => {
     if (__DEV__) {
       console.warn(message);
@@ -1353,7 +1399,7 @@ export async function snapshotProposalItemsAction(opts: {
 
     await repoUpdateProposalItems(supabase, proposalId, payload);
   } catch (e: unknown) {
-    (log ?? warn)(`[snapshotProposalItems] ${errMessage(e)}`);
+    reportBuyerWriteFailure(alert, "Не удалось сохранить позиции предложения", e, log ?? warn);
   }
 }
 

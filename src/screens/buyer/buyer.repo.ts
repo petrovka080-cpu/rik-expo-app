@@ -193,7 +193,54 @@ export type RepoProposalItemUpdate = {
   app_code?: string | null;
   rik_code?: string | null;
   price?: number | null;
+  supplier?: string | null;
   note?: string | null;
+};
+
+type ProposalItemBulkMutationRow = {
+  proposal_id: string;
+  request_item_id: string;
+  name_human?: string | null;
+  uom?: string | null;
+  qty?: number | null;
+  app_code?: string | null;
+  rik_code?: string | null;
+  price?: number | null;
+  supplier?: string | null;
+  note?: string | null;
+};
+
+let proposalItemsBulkUpsertAvailable: boolean | null = null;
+
+const chunkRows = <T,>(rows: T[], size: number): T[][] => {
+  if (size <= 0) return [rows];
+  const out: T[][] = [];
+  for (let i = 0; i < rows.length; i += size) out.push(rows.slice(i, i + size));
+  return out;
+};
+
+const buildProposalItemMutationPayload = (
+  proposalId: string,
+  row: RepoProposalItemUpdate,
+): ProposalItemBulkMutationRow | null => {
+  const requestItemId = String(row?.request_item_id || "").trim();
+  if (!proposalId || !requestItemId) return null;
+
+  const payload: ProposalItemBulkMutationRow = {
+    proposal_id: proposalId,
+    request_item_id: requestItemId,
+  };
+
+  if ("name_human" in row) payload.name_human = row.name_human ?? null;
+  if ("uom" in row) payload.uom = row.uom ?? null;
+  if ("qty" in row) payload.qty = row.qty ?? null;
+  if ("app_code" in row) payload.app_code = row.app_code ?? null;
+  if ("rik_code" in row) payload.rik_code = row.rik_code ?? null;
+  if (typeof row.price === "number" && Number.isFinite(row.price)) payload.price = row.price;
+  if ("supplier" in row) payload.supplier = row.supplier ?? null;
+  if ("note" in row) payload.note = row.note ?? null;
+
+  return payload;
 };
 
 export async function repoUpdateProposalItems(
@@ -205,33 +252,63 @@ export async function repoUpdateProposalItems(
   if (!pid) return;
   if (!Array.isArray(rows) || rows.length === 0) return;
 
+  const payloads = rows
+    .map((row) => buildProposalItemMutationPayload(pid, row))
+    .filter((row): row is ProposalItemBulkMutationRow => !!row);
+
+  if (!payloads.length) return;
+
+  if (proposalItemsBulkUpsertAvailable !== false) {
+    try {
+      for (const pack of chunkRows(payloads, 100)) {
+        const { error } = await supabase
+          .from("proposal_items")
+          .upsert(pack, { onConflict: "proposal_id,request_item_id" });
+        if (error) throw error;
+      }
+      proposalItemsBulkUpsertAvailable = true;
+      return;
+    } catch (e) {
+      const message = e instanceof Error ? e.message : String(e ?? "");
+      if (__DEV__) {
+        console.warn("[buyer.repo] proposal_items bulk upsert fallback:", message);
+      }
+      if (
+        message.toLowerCase().includes("no unique") ||
+        message.toLowerCase().includes("on conflict") ||
+        message.toLowerCase().includes("constraint")
+      ) {
+        proposalItemsBulkUpsertAvailable = false;
+      }
+    }
+  }
+
   // ✅ 1:1 логика как была: обновляем по одному item (без изменения бизнес-логики)
   for (const r of rows) {
     const rid = String(r?.request_item_id || "").trim();
     if (!rid) continue;
 
     const upd: {
-      name_human: string | null;
-      uom: string | null;
-      qty: number | null;
-      app_code: string | null;
-      rik_code: string | null;
+      name_human?: string | null;
+      uom?: string | null;
+      qty?: number | null;
+      app_code?: string | null;
+      rik_code?: string | null;
       price?: number;
+      supplier?: string | null;
       note?: string | null;
-    } = {
-      name_human: r.name_human ?? null,
-      uom: r.uom ?? null,
-      qty: r.qty ?? null,
-      app_code: r.app_code ?? null,
-      rik_code: r.rik_code ?? null,
-    };
+    } = {};
 
-    if (typeof r.price === "number" && Number.isFinite(r.price)) {
-      upd.price = r.price;
-    }
-    if (r.note != null) {
-      upd.note = r.note;
-    }
+    if ("name_human" in r) upd.name_human = r.name_human ?? null;
+    if ("uom" in r) upd.uom = r.uom ?? null;
+    if ("qty" in r) upd.qty = r.qty ?? null;
+    if ("app_code" in r) upd.app_code = r.app_code ?? null;
+    if ("rik_code" in r) upd.rik_code = r.rik_code ?? null;
+    if (typeof r.price === "number" && Number.isFinite(r.price)) upd.price = r.price;
+    if ("supplier" in r) upd.supplier = r.supplier ?? null;
+    if ("note" in r) upd.note = r.note ?? null;
+
+    if (!Object.keys(upd).length) continue;
 
     await supabase
       .from("proposal_items")
