@@ -11,6 +11,11 @@ import {
 
 export type IssueMsg = { kind: "error" | "ok" | null; text: string };
 
+const ensureWarehouseRpcData = <T,>(value: T | null | undefined, message: string): T => {
+  if (value == null) throw new Error(message);
+  return value;
+};
+
 export function makeWarehouseIssueActions(args: {
   supabase: SupabaseClient;
 
@@ -133,8 +138,10 @@ export function makeWarehouseIssueActions(args: {
         p_object_name: getObjName(),
         p_work_name: getWorkName(),
       });
-      if (r1.error || !r1.data) throw r1.error;
-      const issueId = Number(r1.data);
+      if (r1.error) throw r1.error;
+      const issueId = Number(
+        ensureWarehouseRpcData(r1.data, "Не удалось создать документ выдачи по заявке"),
+      );
       const byId: Record<string, ReqItemUiRow> = {};
       for (const it of input.reqItems || []) byId[String(it.request_item_id)] = it;
 
@@ -287,6 +294,7 @@ export function makeWarehouseIssueActions(args: {
         }
         throw r.error;
       }
+      ensureWarehouseRpcData(r.data ?? true, "Сервер не подтвердил выдачу со склада");
 
       await fetchStock();
       clearStockPick();
@@ -351,8 +359,10 @@ export function makeWarehouseIssueActions(args: {
         p_object_name: getObjName(),
         p_work_name: getWorkName(),
       });
-      if (r1.error || !r1.data) throw r1.error;
-      const issueId = Number(r1.data);
+      if (r1.error) throw r1.error;
+      const issueId = Number(
+        ensureWarehouseRpcData(r1.data, "Не удалось создать документ точечной выдачи"),
+      );
 
       const uomCode = String((row )?.uom ?? "").trim();
       if (!uomCode) throw new Error(`Пустой uom у ${(row )?.rik_code}`);

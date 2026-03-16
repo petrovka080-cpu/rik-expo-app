@@ -123,6 +123,13 @@ export function useWarehouseReceiveFlow(params: {
           return notifyError("Ошибка прихода", pickErr(error));
         }
 
+        if (!data) {
+          return notifyError(
+            "Ошибка прихода",
+            "Сервер не подтвердил приход материалов. Повторите действие.",
+          );
+        }
+
         await Promise.all([
           fetchToReceive(),
           fetchStock(),
