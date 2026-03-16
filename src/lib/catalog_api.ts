@@ -301,6 +301,8 @@ type ProposalItemsInsert = Database["public"]["Tables"]["proposal_items"]["Inser
 type ProposalItemsUpdate = Database["public"]["Tables"]["proposal_items"]["Update"];
 type RequestItemUpdateQtyArgs = Database["public"]["Functions"]["request_item_update_qty"]["Args"];
 type RequestItemsSetStatusArgs = Database["public"]["Functions"]["request_items_set_status"]["Args"];
+type RequestDisplayRpcArgs = Database["public"]["Functions"]["request_display_no"]["Args"];
+type RequestDisplayRpcName = "request_display_no" | "request_display" | "request_label";
 
 type RequestsExtendedMetaUpdate = RequestsUpdate & {
   planned_volume?: number | null;
@@ -352,6 +354,27 @@ type ProposalItemsCompatTable = {
 type CatalogCompatBoundary = {
   from(relation: "requests"): RequestsCompatTable;
   from(relation: "proposal_items"): ProposalItemsCompatTable;
+};
+
+type CatalogDynamicReadSource =
+  | "request_display"
+  | "vi_requests_display"
+  | "vi_requests"
+  | "v_requests_display"
+  | "v_request_pdf_header"
+  | "requests";
+
+type CatalogDynamicReadRow = Record<string, unknown>;
+type CatalogDynamicReadTable = {
+  select(columns: string): {
+    eq(column: "id", value: string): {
+      maybeSingle(): Promise<{ data: CatalogDynamicReadRow | null; error: { message?: string } | null }>;
+    };
+  };
+};
+
+type CatalogDynamicReadBoundary = {
+  from(relation: CatalogDynamicReadSource): CatalogDynamicReadTable;
 };
 
 /** ========= helpers ========= */
@@ -533,6 +556,26 @@ const mapCatalogSearchRows = (rows: Array<CatalogSearchRpcRow | CatalogSearchFal
     .map(mapCatalogSearchRow)
     .filter((row): row is CatalogItem => !!row);
 
+const runRequestDisplayRpc = async (
+  fn: RequestDisplayRpcName,
+  args: RequestDisplayRpcArgs,
+): Promise<{ data: string | null; error: { message?: string } | null }> => {
+  switch (fn) {
+    case "request_display_no": {
+      const { data, error } = await supabase.rpc("request_display_no", args);
+      return { data: typeof data === "string" ? data : data == null ? null : String(data), error };
+    }
+    case "request_display": {
+      const { data, error } = await supabase.rpc("request_display", args);
+      return { data: typeof data === "string" ? data : data == null ? null : String(data), error };
+    }
+    case "request_label": {
+      const { data, error } = await supabase.rpc("request_label", args);
+      return { data: typeof data === "string" ? data : data == null ? null : String(data), error };
+    }
+  }
+};
+
 const runCatalogSearchRpc = async (
   fn: CatalogSearchRpcName,
   args: CatalogSearchRpcArgs,
@@ -673,6 +716,7 @@ const detectUnifiedType = (origins: string[]): UnifiedCounterpartyType => {
 };
 
 const compatFrom = (): CatalogCompatBoundary => supabase as unknown as CatalogCompatBoundary;
+const compatReadFrom = (): CatalogDynamicReadBoundary => supabase as unknown as CatalogDynamicReadBoundary;
 
 type CatalogCompatError = {
   message?: string;
@@ -1025,7 +1069,7 @@ async function isCachedDraftValid(id: string): Promise<boolean> {
 
   try {
     const { data, error } = await supabase
-      .from('requests' as any)
+      .from("requests")
       .select('id,status')
       .eq('id', rid)
       .maybeSingle();
@@ -1056,8 +1100,8 @@ export async function getRequestHeader(requestId: string): Promise<RequestHeader
 
   for (const view of views) {
     try {
-      const { data, error } = await supabase
-        .from(view.src as any)
+      const { data, error } = await compatReadFrom()
+        .from(view.src)
         .select(view.cols)
         .eq("id", id)
         .maybeSingle();
@@ -1074,8 +1118,8 @@ export async function fetchRequestDisplayNo(requestId: string): Promise<string |
   if (!id) return null;
 
   try {
-    const { data, error } = await supabase
-      .from("requests" as any)
+      const { data, error } = await supabase
+        .from("requests")
       .select("id,display_no")
       .eq("id", id)
       .maybeSingle();
@@ -1091,7 +1135,7 @@ export async function fetchRequestDisplayNo(requestId: string): Promise<string |
   const rpcVariants = ["request_display_no", "request_display", "request_label"] as const;
   for (const fn of rpcVariants) {
     try {
-      const { data, error } = await supabase.rpc(fn as any, { p_request_id: id } as any);
+      const { data, error } = await runRequestDisplayRpc(fn, { p_request_id: id });
       if (!error && data != null) {
         if (typeof data === "string" || typeof data === "number") return String(data);
         const obj = data as Record<string, any>;
@@ -1115,8 +1159,8 @@ export async function fetchRequestDisplayNo(requestId: string): Promise<string |
 
   for (const { src, col } of views) {
     try {
-      const { data, error } = await supabase
-        .from(src as any)
+      const { data, error } = await compatReadFrom()
+        .from(src)
         .select(`id,${col}`)
         .eq("id", id)
         .maybeSingle();
@@ -1219,7 +1263,7 @@ export async function fetchRequestDetails(requestId: string): Promise<RequestDet
 
   try {
     const { data, error } = await supabase
-      .from("requests" as any)
+      .from("requests")
       .select(
         `id,status,display_no,year,seq,created_at,need_by,comment,foreman_name,
          object_type_code,level_code,system_code,zone_code,
@@ -1250,8 +1294,8 @@ export async function fetchRequestDetails(requestId: string): Promise<RequestDet
   const views = ["v_requests_display", "v_request_pdf_header"] as const;
   for (const view of views) {
     try {
-      const { data, error } = await supabase
-        .from(view as any)
+      const { data, error } = await compatReadFrom()
+        .from(view)
         .select("*")
         .eq("id", id)
         .maybeSingle();
@@ -1472,8 +1516,8 @@ export async function listRequestItems(requestId: string): Promise<ReqItemRow[]>
   if (!id) return [];
 
   try {
-    const { data, error } = await supabase
-      .from('request_items' as any)
+      const { data, error } = await supabase
+        .from("request_items")
       .select(
         'id,request_id,rik_code,name_human,uom,qty,status,note,app_code,supplier_hint,row_no,position_order',
       )
@@ -1650,7 +1694,7 @@ export async function listForemanRequests(
   if (name) {
     results.push(
       await supabase
-        .from("requests" as any)
+        .from("requests")
         .select(requestSelect)
         .ilike("foreman_name", name)
         .not("display_no", "is", null)
@@ -1661,7 +1705,7 @@ export async function listForemanRequests(
   if (uid) {
     results.push(
       await supabase
-        .from("requests" as any)
+        .from("requests")
         .select(requestSelect)
         .eq("created_by", uid)
         .not("display_no", "is", null)
@@ -1701,9 +1745,9 @@ export async function listForemanRequests(
 
   // 2) Подтягиваем статусы позиций по request_id для вычисления агрегированного статуса и has_rejected.
   const { data: itemRows, error: itemErr } = await supabase
-    .from("request_items" as any)
+    .from("request_items")
     .select("request_id,status")
-    .in("request_id", ids as any);
+    .in("request_id", ids);
 
   if (itemErr || !Array.isArray(itemRows)) {
     return mapped; // Не ломаем выдачу, если агрегация статусов не удалась.
