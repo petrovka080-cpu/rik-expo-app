@@ -289,14 +289,11 @@ export default function DirectorReportsModal({
                 <Text style={{ color: UI.text, fontWeight: "900", fontSize: 16 }}>{`Объекты (${repOptObjects?.length ?? 0})`}</Text>
                 <Pressable onPress={onCloseRepObj}><Text style={{ color: UI.sub, fontWeight: "900" }}>Закрыть</Text></Pressable>
               </View>
-              <ScrollView
-                style={{ maxHeight: 420 }}
-                contentContainerStyle={{ paddingBottom: 4 }}
-                keyboardShouldPersistTaps="handled"
-              >
-                {(repOptObjects || []).map((item, i) => (
+              <FlatList
+                data={repOptObjects || []}
+                keyExtractor={(item, index) => `${item}:${index}`}
+                renderItem={({ item }) => (
                   <Pressable
-                    key={`${item}:${i}`}
                     onPress={async () => {
                       onCloseRepObj();
                       await applyObjectFilter(item);
@@ -305,8 +302,13 @@ export default function DirectorReportsModal({
                   >
                     <Text style={{ color: UI.text, fontWeight: "900" }} numberOfLines={2}>{item}</Text>
                   </Pressable>
-                ))}
-              </ScrollView>
+                )}
+                style={{ maxHeight: 420 }}
+                contentContainerStyle={{ paddingBottom: 4 }}
+                keyboardShouldPersistTaps="handled"
+                showsVerticalScrollIndicator={false}
+                removeClippedSubviews
+              />
             </View>
           </RNModal>
         ) : levelModal ? (
