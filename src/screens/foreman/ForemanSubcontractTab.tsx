@@ -1,10 +1,10 @@
 ﻿import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Alert,
+  Modal,
   Platform,
   View,
 } from "react-native";
-import RNModal from "react-native-modal";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { supabase } from "../../lib/supabaseClient";
 import PeriodPickerSheet from "../../components/PeriodPickerSheet";
@@ -882,39 +882,37 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
         onSelect={acceptApprovedFromDirector}
       />
 
-      <RNModal
-        isVisible={subcontractDetailsVisible}
-        onBackdropPress={closeSubcontractFlow}
-        onBackButtonPress={closeSubcontractFlow}
-        backdropOpacity={0.45}
+      <Modal
+        visible={subcontractDetailsVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={closeSubcontractFlow}
         statusBarTranslucent={Platform.OS === "android"}
-        useNativeDriver={Platform.OS !== "web"}
-        useNativeDriverForBackdrop={Platform.OS !== "web"}
-        hideModalContentWhileAnimating
-        style={{ margin: 0 }}
       >
-        <SubcontractDetailsModalBody
-          modalHeaderTopPad={modalHeaderTopPad}
-          onClose={closeSubcontractFlow}
-          templateContract={templateContract}
-          templateObjectName={templateObjectName}
-          templateLevelName={templateLevelName}
-          templateSystemName={templateSystemName}
-          formLevelCode={form.levelCode}
-          formSystemCode={form.systemCode}
-          formZoneText={form.zoneText}
-          draftItemsCount={draftItems.length}
-          lvlOptions={dicts.lvlOptions}
-          sysOptions={dicts.sysOptions}
-          onChangeLevelCode={(value) => setField("levelCode", value)}
-          onChangeSystemCode={(value) => setField("systemCode", value)}
-          onChangeZoneText={(value) => setField("zoneText", value)}
-          onOpenCatalog={() => setSubcontractFlowScreen("catalog")}
-          onOpenCalc={() => setSubcontractFlowScreen("workType")}
-          onOpenDraft={() => setSubcontractFlowScreen("draft")}
-          displayNo={displayNo}
-        />
-      </RNModal>
+        <View style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.45)" }}>
+          <SubcontractDetailsModalBody
+            modalHeaderTopPad={modalHeaderTopPad}
+            onClose={closeSubcontractFlow}
+            templateContract={templateContract}
+            templateObjectName={templateObjectName}
+            templateLevelName={templateLevelName}
+            templateSystemName={templateSystemName}
+            formLevelCode={form.levelCode}
+            formSystemCode={form.systemCode}
+            formZoneText={form.zoneText}
+            draftItemsCount={draftItems.length}
+            lvlOptions={dicts.lvlOptions}
+            sysOptions={dicts.sysOptions}
+            onChangeLevelCode={(value) => setField("levelCode", value)}
+            onChangeSystemCode={(value) => setField("systemCode", value)}
+            onChangeZoneText={(value) => setField("zoneText", value)}
+            onOpenCatalog={() => setSubcontractFlowScreen("catalog")}
+            onOpenCalc={() => setSubcontractFlowScreen("workType")}
+            onOpenDraft={() => setSubcontractFlowScreen("draft")}
+            displayNo={displayNo}
+          />
+        </View>
+      </Modal>
 
       <ForemanHistoryBar
         busy={saving || sending}
@@ -924,40 +922,39 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
         styles={s}
       />
 
-      <RNModal
-        isVisible={draftOpen}
-        onBackdropPress={() => setSubcontractFlowScreen("details")}
-        onBackButtonPress={() => setSubcontractFlowScreen("details")}
-        backdropOpacity={0.55}
-        useNativeDriver={Platform.OS !== "web"}
-        useNativeDriverForBackdrop={Platform.OS !== "web"}
-        hideModalContentWhileAnimating
-        style={{ margin: 0, justifyContent: "flex-end" }}
+      <Modal
+        visible={draftOpen}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setSubcontractFlowScreen("details")}
+        statusBarTranslucent={Platform.OS === "android"}
       >
-        <DraftSheetBody
-          displayNo={displayNo}
-          onClose={() => setSubcontractFlowScreen("details")}
-          objectName={objectName}
-          templateObjectName={templateObjectName}
-          levelName={levelName}
-          templateLevelName={templateLevelName}
-          systemName={systemName}
-          templateSystemName={templateSystemName}
-          zoneName={zoneName}
-          contractorName={templateContract?.contractor_org || form.contractorOrg || ""}
-          phoneName={templateContract?.contractor_phone || form.contractorPhone || ""}
-          volumeText={`${fmtAmount(templateContract?.qty_planned ?? toNum(form.qtyPlanned))} ${templateContract?.uom || form.uom || ""}`.trim()}
-          draftItems={draftItems}
-          saving={saving}
-          sending={sending}
-          requestId={requestId}
-          onRemoveDraftItem={removeDraftItem}
-          onClearDraft={() => void clearDraft()}
-          onPdf={() => void onPdf()}
-          onExcel={() => Alert.alert("Excel", "Экспорт Excel для подрядов будет добавлен.")}
-          onSendToDirector={() => void sendToDirector()}
-        />
-      </RNModal>
+        <View style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.55)", justifyContent: "flex-end" }}>
+          <DraftSheetBody
+            displayNo={displayNo}
+            onClose={() => setSubcontractFlowScreen("details")}
+            objectName={objectName}
+            templateObjectName={templateObjectName}
+            levelName={levelName}
+            templateLevelName={templateLevelName}
+            systemName={systemName}
+            templateSystemName={templateSystemName}
+            zoneName={zoneName}
+            contractorName={templateContract?.contractor_org || form.contractorOrg || ""}
+            phoneName={templateContract?.contractor_phone || form.contractorPhone || ""}
+            volumeText={`${fmtAmount(templateContract?.qty_planned ?? toNum(form.qtyPlanned))} ${templateContract?.uom || form.uom || ""}`.trim()}
+            draftItems={draftItems}
+            saving={saving}
+            sending={sending}
+            requestId={requestId}
+            onRemoveDraftItem={removeDraftItem}
+            onClearDraft={() => void clearDraft()}
+            onPdf={() => void onPdf()}
+            onExcel={() => Alert.alert("Excel", "Экспорт Excel для подрядов будет добавлен.")}
+            onSendToDirector={() => void sendToDirector()}
+          />
+        </View>
+      </Modal>
 
       <PeriodPickerSheet
         visible={!!dateTarget}
