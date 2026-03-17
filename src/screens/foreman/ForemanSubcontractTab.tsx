@@ -281,6 +281,29 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
     () => resolveCodeFromDict(dicts.sysOptions || [], templateContract?.work_type),
     [dicts.sysOptions, templateContract?.work_type],
   );
+  const subcontractDetailsVisible = useMemo(
+    () =>
+      subcontractModalOpen &&
+      !!templateContract &&
+      !draftOpen &&
+      !catalogVisible &&
+      !workTypePickerVisible &&
+      !calcVisible &&
+      !requestHistoryVisible &&
+      !historyOpen &&
+      !dateTarget,
+    [
+      calcVisible,
+      catalogVisible,
+      dateTarget,
+      draftOpen,
+      historyOpen,
+      requestHistoryVisible,
+      subcontractModalOpen,
+      templateContract,
+      workTypePickerVisible,
+    ],
+  );
   const scopeNote = useMemo(() => {
     const obj = String(objectName || templateObjectName || "").trim();
     const lvl = String(levelName || templateLevelName || "").trim();
@@ -871,10 +894,11 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
       />
 
       <RNModal
-        isVisible={subcontractModalOpen && !!templateContract}
+        isVisible={subcontractDetailsVisible}
         onBackdropPress={() => setSubcontractModalOpen(false)}
         onBackButtonPress={() => setSubcontractModalOpen(false)}
         backdropOpacity={0.45}
+        statusBarTranslucent={Platform.OS === "android"}
         useNativeDriver={Platform.OS !== "web"}
         useNativeDriverForBackdrop={Platform.OS !== "web"}
         hideModalContentWhileAnimating

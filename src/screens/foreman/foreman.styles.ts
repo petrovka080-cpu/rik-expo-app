@@ -259,7 +259,8 @@ export const s = StyleSheet.create({
     borderTopRightRadius: 22,
     padding: 20,
     paddingBottom: 32,
-    maxHeight: "80%",
+    maxHeight: Platform.OS === "web" ? "80%" : "94%",
+    minHeight: Platform.OS === "web" ? undefined : "90%",
     borderWidth: 1,
     borderColor: "rgba(255,255,255,0.10)",
     ...Platform.select({
@@ -281,14 +282,14 @@ export const s = StyleSheet.create({
   },
   historyModalTitle: { fontSize: 18, fontWeight: "900", color: UI.text },
   historyModalClose: { color: "#E5E7EB", fontWeight: "900" },
-  historyModalBody: { flexGrow: 1 },
+  historyModalBody: { flex: 1, minHeight: 0 },
   historyModalEmpty: {
     color: UI.sub,
     textAlign: "center",
     marginTop: 16,
     fontWeight: "800",
   },
-  historyModalList: { maxHeight: 360 },
+  historyModalList: { flex: 1, minHeight: 0 },
   historyModalRow: {
     flexDirection: "row",
     alignItems: "center",

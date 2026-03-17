@@ -15,6 +15,7 @@ import {
   TextInput,
   Pressable,
   ScrollView,
+  FlatList,
   Platform,
   ActivityIndicator,
   Alert,
@@ -62,6 +63,8 @@ type Row = {
   item_name_ru: string | null;
 };
 
+type CalcRpcRow = Partial<Row>;
+
 const formatNumber = (value: number) => {
   if (!Number.isFinite(value)) return "";
   const fixed = value.toFixed(6);
@@ -91,6 +94,29 @@ const evaluateExpression = (rawInput: string): number => {
 };
 
 const LOSS_ERROR_TEXT = "Некорректное значение";
+
+const rowKeyOf = (row: Pick<Row, "section" | "rik_code">) => `${row.section}:${row.rik_code}`;
+
+const normalizeCalcRow = (row: CalcRpcRow): Row => ({
+  work_type_code: String(row.work_type_code ?? ""),
+  rik_code: String(row.rik_code ?? ""),
+  section: String(row.section ?? ""),
+  uom_code: String(row.uom_code ?? ""),
+  basis: String(row.basis ?? ""),
+  base_coeff: Number.isFinite(Number(row.base_coeff)) ? Number(row.base_coeff) : 0,
+  effective_coeff: Number.isFinite(Number(row.effective_coeff)) ? Number(row.effective_coeff) : 0,
+  qty: Number.isFinite(Number(row.qty)) ? Number(row.qty) : 0,
+  suggested_qty:
+    row.suggested_qty == null || !Number.isFinite(Number(row.suggested_qty))
+      ? null
+      : Number(row.suggested_qty),
+  packs: row.packs == null || !Number.isFinite(Number(row.packs)) ? null : Number(row.packs),
+  pack_size:
+    row.pack_size == null || !Number.isFinite(Number(row.pack_size)) ? null : Number(row.pack_size),
+  pack_uom: row.pack_uom == null ? null : String(row.pack_uom),
+  hint: row.hint == null ? null : String(row.hint),
+  item_name_ru: row.item_name_ru == null ? null : String(row.item_name_ru),
+});
 
 // ===== SHADOW (PROD cross-platform) =====
 const SHADOW_CARD =
@@ -576,7 +602,7 @@ useEffect(() => {
   const removeRow = (rowKey: string) => {
     setRows((prev) => {
       if (!prev) return prev;
-      return prev.filter((r) => `${r.section}:${r.rik_code}` !== rowKey);
+      return prev.filter((r) => rowKeyOf(r) !== rowKey);
     });
   };
 
@@ -646,7 +672,7 @@ useEffect(() => {
         throw error;
       }
 
-      setRows(Array.isArray(data) ? (data as Row[]) : []);
+      setRows(Array.isArray(data) ? data.map((row) => normalizeCalcRow(row as CalcRpcRow)) : []);
     } catch (e: unknown) {
       console.error("[CalcModal]", e);
       Alert.alert("Ошибка", "Не удалось выполнить расчет. Проверьте параметры и попробуйте еще раз.");
@@ -720,6 +746,112 @@ useEffect(() => {
       </View>
     );
   };
+
+  const renderResultRow = useCallback(
+    ({ item }: { item: Row }) => {
+      const rowKey = rowKeyOf(item);
+      return (
+        <View
+          style={{
+            paddingVertical: 10,
+            borderBottomWidth: 1,
+            borderBottomColor: "#f3f4f6",
+          }}
+        >
+          <Text style={{ fontWeight: "800", fontSize: 15, color: "#111827" }}>
+            {item.item_name_ru ?? item.rik_code}
+            {item.section ? <Text style={{ color: "#6b7280" }}>{` (${item.section})`}</Text> : null}
+          </Text>
+
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginTop: 8 }}>
+            <View style={{ flex: 1 }}>
+              <Text style={{ color: "#6b7280", fontSize: 12 }}>Кол-во</Text>
+
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+                <TextInput
+                  value={String(qtyIssue(Number(item.qty ?? 0))).replace(".", ",")}
+                  onChangeText={(text) => setRowQty(rowKey, text)}
+                  keyboardType="numeric"
+                  style={{
+                    fontSize: 18,
+                    fontWeight: "900",
+                    color: "#111827",
+                    paddingVertical: 6,
+                    paddingHorizontal: 10,
+                    borderWidth: 1,
+                    borderColor: "#e5e7eb",
+                    borderRadius: 12,
+                    minWidth: 96,
+                    textAlign: "center",
+                    backgroundColor: "#fff",
+                  }}
+                />
+                <Text style={{ fontSize: 14, fontWeight: "800", color: "#374151" }}>
+                  {item.uom_code}
+                </Text>
+              </View>
+
+              {Number.isFinite(item.suggested_qty as number) ? (
+                <Text style={{ color: "#374151", marginTop: 4 }}>
+                  К выдаче:{" "}
+                  <Text style={{ fontWeight: "900" }}>
+                    {qtyIssue(Number(item.suggested_qty ?? 0))}
+                  </Text>{" "}
+                  {item.uom_code}
+                </Text>
+              ) : null}
+            </View>
+
+            <Pressable
+              onPress={() => incRow(rowKey, -1)}
+              hitSlop={8}
+              style={{
+                paddingHorizontal: 12,
+                paddingVertical: 10,
+                borderRadius: 12,
+                backgroundColor: "#f3f4f6",
+              }}
+            >
+              <Text style={{ fontWeight: "900" }}>-</Text>
+            </Pressable>
+
+            <Pressable
+              onPress={() => incRow(rowKey, +1)}
+              hitSlop={8}
+              style={{
+                paddingHorizontal: 12,
+                paddingVertical: 10,
+                borderRadius: 12,
+                backgroundColor: "#f3f4f6",
+              }}
+            >
+              <Text style={{ fontWeight: "900" }}>+</Text>
+            </Pressable>
+
+            <Pressable
+              onPress={() => removeRow(rowKey)}
+              hitSlop={8}
+              style={{
+                width: 44,
+                height: 44,
+                borderRadius: 12,
+                alignItems: "center",
+                justifyContent: "center",
+                backgroundColor: "#DC2626",
+              }}
+            >
+              <Text style={{ color: "#fff", fontSize: 22, fontWeight: "900", lineHeight: 22 }}>
+                ×
+              </Text>
+            </Pressable>
+          </View>
+        </View>
+      );
+    },
+    [incRow, removeRow, setRowQty],
+  );
+
+  const keyExtractor = useCallback((item: Row) => rowKeyOf(item), []);
 
   const canSend = !!rows && rows.length > 0 && !addingToRequest && !calculating;
 
@@ -1002,107 +1134,16 @@ useEffect(() => {
 
                     {rows.length > 0 ? (
                       <View style={{ borderRadius: 16, backgroundColor: "#fff" }}>
-                        {rows.map((r) => {
-                          const rowKey = `${r.section}:${r.rik_code}`;
-                          return (
-                            <View
-                              key={rowKey}
-                              style={{
-                                paddingVertical: 10,
-                                borderBottomWidth: 1,
-                                borderBottomColor: "#f3f4f6",
-                              }}
-                            >
-                              <Text style={{ fontWeight: "800", fontSize: 15, color: "#111827" }}>
-                                {r.item_name_ru ?? r.rik_code}
-                                {r.section ? <Text style={{ color: "#6b7280" }}>{` (${r.section})`}</Text> : null}
-                              </Text>
-
-                              <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginTop: 8 }}>
-                                <View style={{ flex: 1 }}>
-                                  <Text style={{ color: "#6b7280", fontSize: 12 }}>Кол-во</Text>
-
-                                  <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-                                    <TextInput
-                                      value={String(qtyIssue(Number(r.qty ?? 0))).replace(".", ",")}
-                                      onChangeText={(t) => setRowQty(rowKey, t)}
-                                      keyboardType="numeric"
-                                      style={{
-                                        fontSize: 18,
-                                        fontWeight: "900",
-                                        color: "#111827",
-                                        paddingVertical: 6,
-                                        paddingHorizontal: 10,
-                                        borderWidth: 1,
-                                        borderColor: "#e5e7eb",
-                                        borderRadius: 12,
-                                        minWidth: 96,
-                                        textAlign: "center",
-                                        backgroundColor: "#fff",
-                                      }}
-                                    />
-                                    <Text style={{ fontSize: 14, fontWeight: "800", color: "#374151" }}>
-                                      {r.uom_code}
-                                    </Text>
-                                  </View>
-
-                                  {Number.isFinite(r.suggested_qty as number) ? (
-                                    <Text style={{ color: "#374151", marginTop: 4 }}>
-                                      К выдаче:{" "}
-                                      <Text style={{ fontWeight: "900" }}>
-                                        {qtyIssue(Number(r.suggested_qty ?? 0))}
-                                      </Text>{" "}
-                                      {r.uom_code}
-                                    </Text>
-                                  ) : null}
-                                </View>
-
-                                <Pressable
-                                  onPress={() => incRow(rowKey, -1)}
-                                  hitSlop={8}
-                                  style={{
-                                    paddingHorizontal: 12,
-                                    paddingVertical: 10,
-                                    borderRadius: 12,
-                                    backgroundColor: "#f3f4f6",
-                                  }}
-                                >
-                                  <Text style={{ fontWeight: "900" }}>-</Text>
-                                </Pressable>
-
-                                <Pressable
-                                  onPress={() => incRow(rowKey, +1)}
-                                  hitSlop={8}
-                                  style={{
-                                    paddingHorizontal: 12,
-                                    paddingVertical: 10,
-                                    borderRadius: 12,
-                                    backgroundColor: "#f3f4f6",
-                                  }}
-                                >
-                                  <Text style={{ fontWeight: "900" }}>+</Text>
-                                </Pressable>
-
-                                <Pressable
-                                  onPress={() => removeRow(rowKey)}
-                                  hitSlop={8}
-                                  style={{
-                                    width: 44,
-                                    height: 44,
-                                    borderRadius: 12,
-                                    alignItems: "center",
-                                    justifyContent: "center",
-                                    backgroundColor: "#DC2626",
-                                  }}
-                                >
-                                  <Text style={{ color: "#fff", fontSize: 22, fontWeight: "900", lineHeight: 22 }}>
-                                    ×
-                                  </Text>
-                                </Pressable>
-                              </View>
-                            </View>
-                          );
-                        })}
+                        <FlatList
+                          data={rows}
+                          renderItem={renderResultRow}
+                          keyExtractor={keyExtractor}
+                          scrollEnabled={false}
+                          removeClippedSubviews={false}
+                          initialNumToRender={8}
+                          maxToRenderPerBatch={8}
+                          windowSize={5}
+                        />
                       </View>
                     ) : (
                       <Text style={{ color: "#6b7280" }}>Для указанных параметров нормы не найдены.</Text>

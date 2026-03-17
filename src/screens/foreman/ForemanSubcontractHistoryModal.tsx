@@ -74,6 +74,7 @@ export default function ForemanSubcontractHistoryModal({
       onBackdropPress={mode === "details" ? closeDetails : handleClose}
       onBackButtonPress={mode === "details" ? closeDetails : handleClose}
       backdropOpacity={0.55}
+      statusBarTranslucent={Platform.OS === "android"}
       useNativeDriver={Platform.OS !== "web"}
       useNativeDriverForBackdrop={Platform.OS !== "web"}
       hideModalContentWhileAnimating
@@ -107,6 +108,7 @@ export default function ForemanSubcontractHistoryModal({
             <FlatList
               data={history}
               keyExtractor={(it) => it.id}
+              style={styles.historyModalList}
               contentContainerStyle={{ paddingBottom: 8 }}
               renderItem={({ item }) => {
                 const st = STATUS_CONFIG[item.status] || STATUS_CONFIG.draft;

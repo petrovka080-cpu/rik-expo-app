@@ -71,6 +71,7 @@ export default function ForemanHistoryModal(p: Props) {
       onBackdropPress={p.onClose}
       onBackButtonPress={p.onClose}
       backdropOpacity={0.55}
+      statusBarTranslucent={Platform.OS === "android"}
       useNativeDriver={Platform.OS !== "web"}
       useNativeDriverForBackdrop={Platform.OS !== "web"}
       hideModalContentWhileAnimating
@@ -95,6 +96,7 @@ export default function ForemanHistoryModal(p: Props) {
               renderItem={renderRequestItem}
               keyExtractor={(item) => item.id}
               style={p.styles.historyModalList}
+              contentContainerStyle={{ paddingBottom: 8 }}
               keyboardShouldPersistTaps="handled"
               showsVerticalScrollIndicator
               removeClippedSubviews

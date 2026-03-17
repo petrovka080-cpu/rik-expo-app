@@ -4,7 +4,9 @@
   loadConsumedByCode,
 } from "./contractor.data";
 import type { WorkMaterialRow } from "../../components/WorkMaterialsEditor";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import type { IssuedItemRow, LinkedReqCard } from "./types";
+import type { Database } from "../../lib/database.types";
 
 type WorkRowLike = {
   progress_id: string;
@@ -53,8 +55,8 @@ type RequestDisplayRow = {
 let requestsHasRequestNoInWorkModalCache: boolean | null = null;
 
 type WarehouseIssueHeadRow = {
-  id?: string | null;
-  request_id?: string | null;
+  id?: string | number | null;
+  request_id?: string | number | null;
   base_no?: string | null;
 };
 
@@ -106,8 +108,157 @@ type WorkStageRow = {
   name?: string | null;
 };
 
+type RequestNoProbeRow = {
+  id?: string | null;
+  request_no?: string | null;
+};
+
+type CatalogMeta = {
+  name: string;
+  uom: string | null;
+};
+
 const looksLikeUuid = (v: string): boolean =>
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(v);
+
+const WORK_MODAL_SUBCONTRACT_SELECT = [
+  "contractor_org",
+  "contractor_inn",
+  "contractor_rep",
+  "contractor_phone",
+  "contract_number",
+  "contract_date",
+  "object_name",
+  "work_type",
+  "work_zone",
+  "qty_planned",
+  "uom",
+  "price_per_unit",
+  "total_price",
+  "date_start",
+  "date_end",
+].join(", ");
+
+const WORK_DEFAULT_MATERIALS_SELECT = "mat_code, uom";
+
+const asArray = <T>(value: T[] | null | undefined): T[] => (Array.isArray(value) ? value : []);
+
+const asRecord = (value: unknown): Record<string, unknown> | null =>
+  value && typeof value === "object" ? (value as Record<string, unknown>) : null;
+
+const normalizeRequestHeaderRow = (row: unknown): RequestHeaderRow => {
+  const record = asRecord(row);
+  return {
+    display_no: typeof record?.display_no === "string" ? record.display_no : null,
+    object_type_code: typeof record?.object_type_code === "string" ? record.object_type_code : null,
+    level_code: typeof record?.level_code === "string" ? record.level_code : null,
+    system_code: typeof record?.system_code === "string" ? record.system_code : null,
+    contractor_org: typeof record?.contractor_org === "string" ? record.contractor_org : null,
+    contractor_phone: typeof record?.contractor_phone === "string" ? record.contractor_phone : null,
+  };
+};
+
+const normalizeSubcontractHeaderRow = (row: unknown): SubcontractHeaderRow => {
+  const record = asRecord(row);
+  return {
+    contractor_org: typeof record?.contractor_org === "string" ? record.contractor_org : null,
+    contractor_inn: typeof record?.contractor_inn === "string" ? record.contractor_inn : null,
+    contractor_rep: typeof record?.contractor_rep === "string" ? record.contractor_rep : null,
+    contractor_phone: typeof record?.contractor_phone === "string" ? record.contractor_phone : null,
+    contract_number: typeof record?.contract_number === "string" ? record.contract_number : null,
+    contract_date: typeof record?.contract_date === "string" ? record.contract_date : null,
+    object_name: typeof record?.object_name === "string" ? record.object_name : null,
+    work_type: typeof record?.work_type === "string" ? record.work_type : null,
+    work_zone: typeof record?.work_zone === "string" ? record.work_zone : null,
+    qty_planned: typeof record?.qty_planned === "number" ? record.qty_planned : null,
+    uom: typeof record?.uom === "string" ? record.uom : null,
+    price_per_unit: typeof record?.price_per_unit === "number" ? record.price_per_unit : null,
+    total_price: typeof record?.total_price === "number" ? record.total_price : null,
+    date_start: typeof record?.date_start === "string" ? record.date_start : null,
+    date_end: typeof record?.date_end === "string" ? record.date_end : null,
+  };
+};
+
+const normalizeRequestDisplayRow = (
+  row: RequestDisplayRow | null | undefined,
+): RequestDisplayRow => ({
+  id: row?.id ?? null,
+  display_no: row?.display_no ?? null,
+  request_no: row?.request_no ?? null,
+  status: row?.status ?? null,
+});
+
+const normalizeWarehouseIssueHeadRow = (
+  row: WarehouseIssueHeadRow | null | undefined,
+): WarehouseIssueHeadRow => ({
+  id: row?.id ?? null,
+  request_id: row?.request_id ?? null,
+  base_no: row?.base_no ?? null,
+});
+
+const normalizeIssueReqHeadUiRow = (
+  row: IssueReqHeadUiRow | null | undefined,
+): IssueReqHeadUiRow => ({
+  request_id: row?.request_id ?? null,
+  submitted_at: row?.submitted_at ?? null,
+  issue_status: row?.issue_status ?? null,
+  qty_issued_sum: row?.qty_issued_sum ?? null,
+});
+
+const normalizeIssueReqItemUiRow = (
+  row: IssueReqItemUiRow | null | undefined,
+): IssueReqItemUiRow => ({
+  request_item_id: row?.request_item_id ?? null,
+  rik_code: row?.rik_code ?? null,
+  request_id: row?.request_id ?? null,
+  name_human: row?.name_human ?? null,
+  uom: row?.uom ?? null,
+  qty_issued: row?.qty_issued ?? null,
+  price: row?.price ?? null,
+});
+
+const normalizeWorkProgressLogMaterialRow = (
+  row: WorkProgressLogMaterialRow | null | undefined,
+): WorkProgressLogMaterialRow => ({
+  mat_code: row?.mat_code ?? null,
+  uom_mat: row?.uom_mat ?? null,
+  qty_fact: row?.qty_fact ?? null,
+});
+
+const normalizeCatalogItemRow = (row: CatalogItemRow | null | undefined): CatalogItemRow => ({
+  rik_code: row?.rik_code ?? null,
+  name_human_ru: row?.name_human_ru ?? null,
+  name_human: row?.name_human ?? null,
+  uom_code: row?.uom_code ?? null,
+});
+
+const normalizeWorkDefaultMaterialRow = (
+  row: WorkDefaultMaterialRow | null | undefined,
+): WorkDefaultMaterialRow => ({
+  mat_code: row?.mat_code ?? null,
+  uom: row?.uom ?? null,
+});
+
+const normalizeWorkStageRow = (row: WorkStageRow | null | undefined): WorkStageRow => ({
+  code: row?.code ?? null,
+  name: row?.name ?? null,
+});
+
+const buildCatalogMetaMap = (
+  rows: CatalogItemRow[] | null | undefined,
+): Record<string, CatalogMeta> => {
+  const namesMap: Record<string, CatalogMeta> = {};
+  for (const rawRow of asArray(rows)) {
+    const row = normalizeCatalogItemRow(rawRow);
+    const code = String(row.rik_code || "").trim();
+    if (!code) continue;
+    namesMap[code] = {
+      name: row.name_human_ru || row.name_human || code,
+      uom: row.uom_code ?? null,
+    };
+  }
+  return namesMap;
+};
 
 type ContractorJobHeader = {
   contractor_org: string | null;
@@ -129,7 +280,7 @@ type ContractorJobHeader = {
 };
 
 type LoadHeaderParams = {
-  supabaseClient: any;
+  supabaseClient: SupabaseClient<Database>;
   row: WorkRowLike;
   resolveContractorJobId: (row: WorkRowLike) => Promise<string>;
   resolveRequestId: (row: WorkRowLike) => Promise<string>;
@@ -158,7 +309,7 @@ export async function loadContractorJobHeaderData(
       .maybeSingle();
     if (req.error || !req.data) return { header: null, objectNameOverride: null };
 
-    const r = req.data as RequestHeaderRow;
+    const r = normalizeRequestHeaderRow(req.data);
     const reqObject = [r.object_type_code, r.level_code, r.system_code]
       .map((v) => String(v || "").trim())
       .filter(Boolean)
@@ -189,12 +340,12 @@ export async function loadContractorJobHeaderData(
 
   const sq = await supabaseClient
     .from("subcontracts")
-    .select("*")
+    .select(WORK_MODAL_SUBCONTRACT_SELECT)
     .eq("id", String(jobId))
     .maybeSingle();
   if (sq.error || !sq.data) return { header: null, objectNameOverride: null };
 
-  const s = sq.data as SubcontractHeaderRow;
+  const s = normalizeSubcontractHeaderRow(sq.data);
   const header: ContractorJobHeader = {
     contractor_org: normText(s.contractor_org) || null,
     contractor_inn: normText(s.contractor_inn) || null,
@@ -220,7 +371,7 @@ export async function loadContractorJobHeaderData(
 }
 
 type LoadIssuedParams = {
-  supabaseClient: any;
+  supabaseClient: SupabaseClient<Database>;
   row: WorkRowLike;
   allRows: WorkRowLike[];
   resolveContractorJobId: (row: WorkRowLike) => Promise<string>;
@@ -261,12 +412,10 @@ export async function loadIssuedTodayData(
 
   if (requestsHasRequestNoInWorkModalCache == null) {
     try {
-      const probe = await supabaseClient.from("requests").select("*").limit(1);
+      const probe = await supabaseClient.from("requests").select("id, request_no").limit(1);
       if (probe.error) throw probe.error;
-      const first =
-        Array.isArray(probe.data) && probe.data.length ? (probe.data[0] as Record<string, unknown>) : null;
-      requestsHasRequestNoInWorkModalCache =
-        !!first && Object.prototype.hasOwnProperty.call(first, "request_no");
+      const first = asArray(probe.data as RequestNoProbeRow[])[0];
+      requestsHasRequestNoInWorkModalCache = !!first && "request_no" in first;
     } catch {
       requestsHasRequestNoInWorkModalCache = false;
     }
@@ -281,7 +430,8 @@ export async function loadIssuedTodayData(
     .in("id", requestIds);
   const reqDisplayById = new Map<string, { req_no: string; status: string | null }>();
   if (!reqDisplayQ.error && Array.isArray(reqDisplayQ.data)) {
-    for (const rowReq of reqDisplayQ.data as RequestDisplayRow[]) {
+    for (const rawRowReq of asArray(reqDisplayQ.data as RequestDisplayRow[])) {
+      const rowReq = normalizeRequestDisplayRow(rawRowReq);
       const rid = String(rowReq.id || "").trim();
       if (!rid) continue;
       const reqNo = String(rowReq.request_no || rowReq.display_no || `REQ-${rid.slice(0, 8)}`).trim();
@@ -296,7 +446,8 @@ export async function loadIssuedTodayData(
     .in("request_id", requestIds);
   const issueNosByReq = new Map<string, string[]>();
   if (!issueHeadsQ.error && Array.isArray(issueHeadsQ.data)) {
-    for (const issue of issueHeadsQ.data as WarehouseIssueHeadRow[]) {
+    for (const rawIssue of asArray(issueHeadsQ.data as WarehouseIssueHeadRow[])) {
+      const issue = normalizeWarehouseIssueHeadRow(rawIssue);
       const rid = String(issue.request_id || "").trim();
       if (!rid) continue;
       const issueNo = String(issue.base_no || "").trim() || `ISSUE-${String(issue.id || "").slice(0, 8)}`;
@@ -329,7 +480,8 @@ export async function loadIssuedTodayData(
   const todayKey = toLocalDateKey(new Date());
   const todayReqIds = new Set<string>();
   if (!headsQ.error && Array.isArray(headsQ.data)) {
-    for (const h of headsQ.data as IssueReqHeadUiRow[]) {
+    for (const rawHead of asArray(headsQ.data as IssueReqHeadUiRow[])) {
+      const h = normalizeIssueReqHeadUiRow(rawHead);
       const rid = String(h.request_id || "").trim();
       if (!rid) continue;
       const issueStatus = String(h.issue_status || "").trim();
@@ -369,8 +521,9 @@ export async function loadIssuedTodayData(
   const progressIdsForSubcontract = getProgressIdsForSubcontract(allRows, jobId, row);
   const consumedByCode = await loadConsumedByCode(supabaseClient, progressIdsForSubcontract, { positiveOnly: true });
 
-  const mapped: IssuedItemRow[] = (itemsQ.data as IssueReqItemUiRow[])
-    .map((r, idx: number) => {
+  const mapped: IssuedItemRow[] = asArray(itemsQ.data as IssueReqItemUiRow[])
+    .map((rawRow, idx: number) => {
+      const r = normalizeIssueReqItemUiRow(rawRow);
       const code = String(r.rik_code || r.request_item_id || `${r.request_id || ""}-${idx}`);
       const issuedQty = Number(r.qty_issued ?? 0);
       const consumed = Number(consumedByCode.get(code) || 0);
@@ -407,7 +560,7 @@ export async function loadIssuedTodayData(
 }
 
 type LoadInitialMaterialsParams = {
-  supabaseClient: any;
+  supabaseClient: SupabaseClient<Database>;
   row: WorkRowLike;
 };
 
@@ -444,9 +597,11 @@ export async function loadInitialWorkMaterialsForModal(
       .eq("log_id", logId);
 
     if (!matsQ.error && Array.isArray(matsQ.data) && matsQ.data.length) {
-      const matsRows = matsQ.data as WorkProgressLogMaterialRow[];
+      const matsRows = asArray(matsQ.data as WorkProgressLogMaterialRow[]).map(
+        normalizeWorkProgressLogMaterialRow,
+      );
       const codes = matsRows.map((m) => m.mat_code).filter(Boolean);
-      const namesMap: Record<string, { name: string; uom: string | null }> = {};
+      let namesMap: Record<string, CatalogMeta> = {};
 
       if (codes.length) {
         const ci = await supabaseClient
@@ -454,12 +609,7 @@ export async function loadInitialWorkMaterialsForModal(
           .select("rik_code, name_human_ru, name_human, uom_code")
           .in("rik_code", codes);
         if (!ci.error && Array.isArray(ci.data)) {
-          for (const n of ci.data as CatalogItemRow[]) {
-            const code = String(n.rik_code);
-            const name = n.name_human_ru || n.name_human || code;
-            const uom = n.uom_code ?? null;
-            namesMap[code] = { name, uom };
-          }
+          namesMap = buildCatalogMetaMap(ci.data as CatalogItemRow[]);
         }
       }
 
@@ -486,20 +636,22 @@ export async function loadInitialWorkMaterialsForModal(
   let defaults: WorkDefaultMaterialRow[] = [];
   const q1 = await supabaseClient
     .from("work_default_materials")
-    .select("*")
+    .select(WORK_DEFAULT_MATERIALS_SELECT)
     .eq("work_code", workCode)
     .limit(100);
   if (!q1.error && Array.isArray(q1.data) && q1.data.length) {
-    defaults = q1.data;
+    defaults = asArray(q1.data as WorkDefaultMaterialRow[]).map(normalizeWorkDefaultMaterialRow);
   } else {
     const seed = await supabaseClient.rpc("work_seed_defaults_auto", { p_work_code: workCode });
     if (!seed.error) {
       const q2 = await supabaseClient
         .from("work_default_materials")
-        .select("*")
+        .select(WORK_DEFAULT_MATERIALS_SELECT)
         .eq("work_code", workCode)
         .limit(100);
-      if (!q2.error && Array.isArray(q2.data)) defaults = q2.data;
+      if (!q2.error && Array.isArray(q2.data)) {
+        defaults = asArray(q2.data as WorkDefaultMaterialRow[]).map(normalizeWorkDefaultMaterialRow);
+      }
     } else {
       console.warn("[work_seed_defaults_auto] error:", seed.error.message);
     }
@@ -507,19 +659,14 @@ export async function loadInitialWorkMaterialsForModal(
 
   if (!defaults.length) return [];
   const codes = defaults.map((d) => d.mat_code).filter(Boolean);
-  const namesMap: Record<string, { name: string; uom: string | null }> = {};
+  let namesMap: Record<string, CatalogMeta> = {};
   if (codes.length) {
     const ci = await supabaseClient
       .from("catalog_items")
       .select("rik_code, name_human_ru, name_human, uom_code")
       .in("rik_code", codes);
     if (!ci.error && Array.isArray(ci.data)) {
-      for (const n of ci.data as CatalogItemRow[]) {
-        const code = String(n.rik_code);
-        const name = n.name_human_ru || n.name_human || code;
-        const uom = n.uom_code ?? null;
-        namesMap[code] = { name, uom };
-      }
+      namesMap = buildCatalogMetaMap(ci.data as CatalogItemRow[]);
     }
   }
 
@@ -539,7 +686,7 @@ export async function loadInitialWorkMaterialsForModal(
 }
 
 export async function loadWorkStageOptions(params: {
-  supabaseClient: any;
+  supabaseClient: SupabaseClient<Database>;
 }): Promise<Array<{ code: string; name: string }>> {
   const { supabaseClient } = params;
   const { data, error } = await supabaseClient
@@ -548,8 +695,11 @@ export async function loadWorkStageOptions(params: {
     .eq("is_active", true)
     .order("sort_order", { ascending: true });
   if (error || !Array.isArray(data)) return [];
-  return (data as WorkStageRow[]).map((s) => ({
-    code: String(s.code),
-    name: String(s.name),
-  }));
+  return asArray(data as WorkStageRow[]).map((rawStage) => {
+    const s = normalizeWorkStageRow(rawStage);
+    return {
+      code: String(s.code),
+      name: String(s.name),
+    };
+  });
 }
