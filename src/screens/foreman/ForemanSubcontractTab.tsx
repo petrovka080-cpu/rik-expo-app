@@ -281,17 +281,19 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
     () => resolveCodeFromDict(dicts.sysOptions || [], templateContract?.work_type),
     [dicts.sysOptions, templateContract?.work_type],
   );
-  const subcontractDetailsVisible = useMemo(
+  const subcontractFlowActive = useMemo(
+    () => subcontractModalOpen && !!templateContract,
+    [subcontractModalOpen, templateContract],
+  );
+  const subcontractChildOverlayVisible = useMemo(
     () =>
-      subcontractModalOpen &&
-      !!templateContract &&
-      !draftOpen &&
-      !catalogVisible &&
-      !workTypePickerVisible &&
-      !calcVisible &&
-      !requestHistoryVisible &&
-      !historyOpen &&
-      !dateTarget,
+      draftOpen ||
+      catalogVisible ||
+      workTypePickerVisible ||
+      calcVisible ||
+      requestHistoryVisible ||
+      historyOpen ||
+      !!dateTarget,
     [
       calcVisible,
       catalogVisible,
@@ -299,8 +301,6 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
       draftOpen,
       historyOpen,
       requestHistoryVisible,
-      subcontractModalOpen,
-      templateContract,
       workTypePickerVisible,
     ],
   );
@@ -894,37 +894,43 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
       />
 
       <RNModal
-        isVisible={subcontractDetailsVisible}
-        onBackdropPress={() => setSubcontractModalOpen(false)}
-        onBackButtonPress={() => setSubcontractModalOpen(false)}
-        backdropOpacity={0.45}
+        isVisible={subcontractFlowActive}
+        onBackdropPress={subcontractChildOverlayVisible ? undefined : () => setSubcontractModalOpen(false)}
+        onBackButtonPress={subcontractChildOverlayVisible ? undefined : () => setSubcontractModalOpen(false)}
+        hasBackdrop={!subcontractChildOverlayVisible}
+        backdropOpacity={subcontractChildOverlayVisible ? 0 : 0.45}
         statusBarTranslucent={Platform.OS === "android"}
         useNativeDriver={Platform.OS !== "web"}
         useNativeDriverForBackdrop={Platform.OS !== "web"}
         hideModalContentWhileAnimating
         style={{ margin: 0 }}
       >
-        <SubcontractDetailsModalBody
-          modalHeaderTopPad={modalHeaderTopPad}
-          onClose={() => setSubcontractModalOpen(false)}
-          templateContract={templateContract}
-          templateObjectName={templateObjectName}
-          templateLevelName={templateLevelName}
-          templateSystemName={templateSystemName}
-          formLevelCode={form.levelCode}
-          formSystemCode={form.systemCode}
-          formZoneText={form.zoneText}
-          draftItemsCount={draftItems.length}
-          lvlOptions={dicts.lvlOptions}
-          sysOptions={dicts.sysOptions}
-          onChangeLevelCode={(value) => setField("levelCode", value)}
-          onChangeSystemCode={(value) => setField("systemCode", value)}
-          onChangeZoneText={(value) => setField("zoneText", value)}
-          onOpenCatalog={() => setCatalogVisible(true)}
-          onOpenCalc={() => setWorkTypePickerVisible(true)}
-          onOpenDraft={() => setDraftOpen(true)}
-          displayNo={displayNo}
-        />
+        <View
+          style={{ flex: 1 }}
+          pointerEvents={subcontractChildOverlayVisible ? "none" : "auto"}
+        >
+          <SubcontractDetailsModalBody
+            modalHeaderTopPad={modalHeaderTopPad}
+            onClose={() => setSubcontractModalOpen(false)}
+            templateContract={templateContract}
+            templateObjectName={templateObjectName}
+            templateLevelName={templateLevelName}
+            templateSystemName={templateSystemName}
+            formLevelCode={form.levelCode}
+            formSystemCode={form.systemCode}
+            formZoneText={form.zoneText}
+            draftItemsCount={draftItems.length}
+            lvlOptions={dicts.lvlOptions}
+            sysOptions={dicts.sysOptions}
+            onChangeLevelCode={(value) => setField("levelCode", value)}
+            onChangeSystemCode={(value) => setField("systemCode", value)}
+            onChangeZoneText={(value) => setField("zoneText", value)}
+            onOpenCatalog={() => setCatalogVisible(true)}
+            onOpenCalc={() => setWorkTypePickerVisible(true)}
+            onOpenDraft={() => setDraftOpen(true)}
+            displayNo={displayNo}
+          />
+        </View>
       </RNModal>
 
       <ForemanHistoryBar
