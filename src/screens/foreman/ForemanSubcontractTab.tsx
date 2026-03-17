@@ -153,6 +153,7 @@ const UOM_OPTIONS = [
 ];
 
 type DateTarget = "contractDate" | "dateStart" | "dateEnd" | null;
+type SubcontractFlowMode = "closed" | "details" | "draft" | "catalog" | "workType" | "calc";
 
 const toNum = (v: string) => {
   const n = Number(String(v || "").trim().replace(",", "."));
@@ -240,12 +241,8 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
   const [historyLoading, setHistoryLoading] = useState(false);
   const [history, setHistory] = useState<Subcontract[]>([]);
 
-  const [draftOpen, setDraftOpen] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
-  const [catalogVisible, setCatalogVisible] = useState(false);
-  const [workTypePickerVisible, setWorkTypePickerVisible] = useState(false);
-  const [calcVisible, setCalcVisible] = useState(false);
-  const [subcontractModalOpen, setSubcontractModalOpen] = useState(false);
+  const [subcontractFlowMode, setSubcontractFlowMode] = useState<SubcontractFlowMode>("closed");
   const [selectedWorkType, setSelectedWorkType] = useState<{ code: string; name: string } | null>(null);
   const [draftItems, setDraftItems] = useState<ReqItemRow[]>([]);
   const [dateTarget, setDateTarget] = useState<DateTarget>(null);
@@ -281,29 +278,11 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
     () => resolveCodeFromDict(dicts.sysOptions || [], templateContract?.work_type),
     [dicts.sysOptions, templateContract?.work_type],
   );
-  const subcontractFlowActive = useMemo(
-    () => subcontractModalOpen && !!templateContract,
-    [subcontractModalOpen, templateContract],
-  );
-  const subcontractChildOverlayVisible = useMemo(
-    () =>
-      draftOpen ||
-      catalogVisible ||
-      workTypePickerVisible ||
-      calcVisible ||
-      requestHistoryVisible ||
-      historyOpen ||
-      !!dateTarget,
-    [
-      calcVisible,
-      catalogVisible,
-      dateTarget,
-      draftOpen,
-      historyOpen,
-      requestHistoryVisible,
-      workTypePickerVisible,
-    ],
-  );
+  const subcontractDetailsVisible = subcontractFlowMode === "details" && !!templateContract;
+  const draftOpen = subcontractFlowMode === "draft";
+  const catalogVisible = subcontractFlowMode === "catalog";
+  const workTypePickerVisible = subcontractFlowMode === "workType";
+  const calcVisible = subcontractFlowMode === "calc";
   const scopeNote = useMemo(() => {
     const obj = String(objectName || templateObjectName || "").trim();
     const lvl = String(levelName || templateLevelName || "").trim();
@@ -759,9 +738,9 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
       setDisplayNo("");
       setDraftItems([]);
       setTemplateContract(null);
-      setSubcontractModalOpen(false);
+      setSubcontractFlowMode("closed");
       activeDraftScopeKeyRef.current = "";
-      setDraftOpen(false);
+      setSelectedWorkType(null);
     } catch (e) {
       Alert.alert("Не удалось отправить заявку", getErrorMessage(e, "Не удалось отправить заявку директору."));
     } finally {
@@ -842,9 +821,9 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
     setForm(EMPTY_FORM);
     setDraftItems([]);
     setTemplateContract(null);
-    setSubcontractModalOpen(false);
+    setSubcontractFlowMode("closed");
     activeDraftScopeKeyRef.current = "";
-    setDraftOpen(false);
+    setSelectedWorkType(null);
   }, [requestId]);
 
   const openFromHistory = useCallback((it: Subcontract) => {
@@ -862,7 +841,8 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
     setDisplayNo("");
     setDraftItems([]);
     activeDraftScopeKeyRef.current = "";
-    setSubcontractModalOpen(true);
+    setSelectedWorkType(null);
+    setSubcontractFlowMode("details");
     setHistoryOpen(false);
   }, [dicts.lvlOptions, dicts.objOptions, dicts.sysOptions]);
 
@@ -877,7 +857,8 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
     }));
     setRequestId(""); // Force new draft on first item
     setDisplayNo("");
-    setSubcontractModalOpen(true);
+    setSelectedWorkType(null);
+    setSubcontractFlowMode("details");
   }, [dicts.lvlOptions, dicts.objOptions, dicts.sysOptions]);
 
   return (
@@ -894,43 +875,37 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
       />
 
       <RNModal
-        isVisible={subcontractFlowActive}
-        onBackdropPress={subcontractChildOverlayVisible ? undefined : () => setSubcontractModalOpen(false)}
-        onBackButtonPress={subcontractChildOverlayVisible ? undefined : () => setSubcontractModalOpen(false)}
-        hasBackdrop={!subcontractChildOverlayVisible}
-        backdropOpacity={subcontractChildOverlayVisible ? 0 : 0.45}
+        isVisible={subcontractDetailsVisible}
+        onBackdropPress={() => setSubcontractFlowMode("closed")}
+        onBackButtonPress={() => setSubcontractFlowMode("closed")}
+        backdropOpacity={0.45}
         statusBarTranslucent={Platform.OS === "android"}
         useNativeDriver={Platform.OS !== "web"}
         useNativeDriverForBackdrop={Platform.OS !== "web"}
         hideModalContentWhileAnimating
         style={{ margin: 0 }}
       >
-        <View
-          style={{ flex: 1 }}
-          pointerEvents={subcontractChildOverlayVisible ? "none" : "auto"}
-        >
-          <SubcontractDetailsModalBody
-            modalHeaderTopPad={modalHeaderTopPad}
-            onClose={() => setSubcontractModalOpen(false)}
-            templateContract={templateContract}
-            templateObjectName={templateObjectName}
-            templateLevelName={templateLevelName}
-            templateSystemName={templateSystemName}
-            formLevelCode={form.levelCode}
-            formSystemCode={form.systemCode}
-            formZoneText={form.zoneText}
-            draftItemsCount={draftItems.length}
-            lvlOptions={dicts.lvlOptions}
-            sysOptions={dicts.sysOptions}
-            onChangeLevelCode={(value) => setField("levelCode", value)}
-            onChangeSystemCode={(value) => setField("systemCode", value)}
-            onChangeZoneText={(value) => setField("zoneText", value)}
-            onOpenCatalog={() => setCatalogVisible(true)}
-            onOpenCalc={() => setWorkTypePickerVisible(true)}
-            onOpenDraft={() => setDraftOpen(true)}
-            displayNo={displayNo}
-          />
-        </View>
+        <SubcontractDetailsModalBody
+          modalHeaderTopPad={modalHeaderTopPad}
+          onClose={() => setSubcontractFlowMode("closed")}
+          templateContract={templateContract}
+          templateObjectName={templateObjectName}
+          templateLevelName={templateLevelName}
+          templateSystemName={templateSystemName}
+          formLevelCode={form.levelCode}
+          formSystemCode={form.systemCode}
+          formZoneText={form.zoneText}
+          draftItemsCount={draftItems.length}
+          lvlOptions={dicts.lvlOptions}
+          sysOptions={dicts.sysOptions}
+          onChangeLevelCode={(value) => setField("levelCode", value)}
+          onChangeSystemCode={(value) => setField("systemCode", value)}
+          onChangeZoneText={(value) => setField("zoneText", value)}
+          onOpenCatalog={() => setSubcontractFlowMode("catalog")}
+          onOpenCalc={() => setSubcontractFlowMode("workType")}
+          onOpenDraft={() => setSubcontractFlowMode("draft")}
+          displayNo={displayNo}
+        />
       </RNModal>
 
       <ForemanHistoryBar
@@ -943,8 +918,8 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
 
       <RNModal
         isVisible={draftOpen}
-        onBackdropPress={() => setDraftOpen(false)}
-        onBackButtonPress={() => setDraftOpen(false)}
+        onBackdropPress={() => setSubcontractFlowMode("details")}
+        onBackButtonPress={() => setSubcontractFlowMode("details")}
         backdropOpacity={0.55}
         useNativeDriver={Platform.OS !== "web"}
         useNativeDriverForBackdrop={Platform.OS !== "web"}
@@ -953,7 +928,7 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
       >
         <DraftSheetBody
           displayNo={displayNo}
-          onClose={() => setDraftOpen(false)}
+          onClose={() => setSubcontractFlowMode("details")}
           objectName={objectName}
           templateObjectName={templateObjectName}
           levelName={levelName}
@@ -1003,41 +978,37 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
 
       <CatalogModal
         visible={catalogVisible}
-        onClose={() => setCatalogVisible(false)}
+        onClose={() => setSubcontractFlowMode("details")}
         rikQuickSearch={rikQuickSearch}
         onCommitToDraft={(rows) => void appendCatalogRows(rows)}
         onOpenDraft={() => {
-          setCatalogVisible(false);
-          setDraftOpen(true);
+          setSubcontractFlowMode("draft");
         }}
         draftCount={draftItems.length}
       />
 
       <WorkTypePicker
         visible={workTypePickerVisible}
-        onClose={() => setWorkTypePickerVisible(false)}
+        onClose={() => setSubcontractFlowMode("details")}
         onSelect={(wt) => {
           setSelectedWorkType(wt);
-          setWorkTypePickerVisible(false);
-          setCalcVisible(true);
+          setSubcontractFlowMode("calc");
         }}
       />
 
       <CalcModal
         visible={calcVisible}
         onClose={() => {
-          setCalcVisible(false);
+          setSubcontractFlowMode("details");
           setSelectedWorkType(null);
         }}
         onBack={() => {
-          setCalcVisible(false);
-          setSelectedWorkType(null);
-          setWorkTypePickerVisible(true);
+          setSubcontractFlowMode("workType");
         }}
         workType={selectedWorkType}
         onAddToRequest={async (rows) => {
           await appendCalcRows(rows as CalcPickedRow[]);
-          setCalcVisible(false);
+          setSubcontractFlowMode("details");
           setSelectedWorkType(null);
         }}
       />
