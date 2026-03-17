@@ -75,6 +75,10 @@ export type ReqHeadRow = {
   issuable_now_cnt?: number;
 
   issue_status: "READY" | "WAITING_STOCK" | "PARTIAL" | "DONE" | string;
+  visible_in_expense_queue?: boolean;
+  can_issue_now?: boolean;
+  waiting_stock?: boolean;
+  all_done?: boolean;
 };
 
 export type ReqItemUiRow = {

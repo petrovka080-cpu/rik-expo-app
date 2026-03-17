@@ -83,6 +83,35 @@ type RequestSubmitArgs = Database["public"]["Functions"]["request_submit"]["Args
 type RequestSubmitResultRow = Database["public"]["Functions"]["request_submit"]["Returns"];
 type RequestStatusRecalcArgsCompat = { p_request_id: number | string };
 type RequestIdLookupRow = Pick<RequestsTable["Row"], "id">;
+type RequestSubmitPath =
+  | "post_draft_short_circuit"
+  | "rpc_submit"
+  | "head_update_fallback";
+type RequestSubmitPreconditionsResolved = {
+  request_id: string;
+  request_filter_id: string;
+  request_read_select: string;
+  has_post_draft_items: boolean;
+};
+type RequestSubmitPrimaryStageResult = {
+  path: RequestSubmitPath;
+  record: RequestRecord | null;
+  request_items_pending_sync_needed: boolean;
+  cache_clear_candidate: boolean;
+};
+type RequestSubmitCompletionResult = {
+  reconciled: boolean;
+  request_items_pending_synced: boolean;
+  record_override: RequestRecord | null;
+};
+type RequestSubmitMutationResult = {
+  request_id: string;
+  path: RequestSubmitPath;
+  has_post_draft_items: boolean;
+  record: RequestRecord | null;
+  reconciled: boolean;
+  request_items_pending_synced: boolean;
+};
 
 const REQUEST_DRAFT_SELECT =
   "id,status,display_no,need_by,comment,foreman_name,object_type_code,level_code,system_code,zone_code,created_at";
@@ -429,9 +458,9 @@ async function requestHasPostDraftItems(requestId: string): Promise<boolean> {
   }
 }
 
-async function reconcileRequestHeadStatus(requestId: string): Promise<void> {
+async function reconcileRequestHeadStatus(requestId: string): Promise<boolean> {
   const rid = normalizeUuid(requestId) ?? requestId;
-  if (!rid) return;
+  if (!rid) return false;
 
   const plans = [
     () =>
@@ -453,37 +482,57 @@ async function reconcileRequestHeadStatus(requestId: string): Promise<void> {
   for (const run of plans) {
     try {
       await run();
-      return;
+      return true;
     } catch (e) {
       logRequestsDebug("[reconcileRequestHeadStatus]", parseErr(e));
     }
   }
+
+  return false;
 }
 
-export async function requestSubmit(requestId: number | string): Promise<RequestRecord | null> {
+async function resolveRequestSubmitPreconditions(
+  requestId: number | string,
+): Promise<RequestSubmitPreconditionsResolved> {
   const asStr = String(requestId ?? "").trim();
-  const ridForRpc = normalizeUuid(asStr) ?? asStr;
-  if (!ridForRpc) throw new Error("request_id is empty");
+  const request_id = normalizeUuid(asStr) ?? asStr;
+  if (!request_id) throw new Error("request_id is empty");
 
-  const requestFilterId = normalizeRequestFilterId(requestId);
-  const hasPostDraftRoute = await requestHasPostDraftItems(String(ridForRpc));
-  const requestReadSelect = await buildRequestSelectSchemaSafe();
-  if (hasPostDraftRoute) {
-    await reconcileRequestHeadStatus(String(ridForRpc));
-    return await selectRequestRecordById(requestFilterId, requestReadSelect);
+  return {
+    request_id,
+    request_filter_id: normalizeRequestFilterId(requestId),
+    request_read_select: await buildRequestSelectSchemaSafe(),
+    has_post_draft_items: await requestHasPostDraftItems(request_id),
+  };
+}
+
+async function runRequestSubmitPrimaryStage(
+  preconditions: RequestSubmitPreconditionsResolved,
+): Promise<RequestSubmitPrimaryStageResult> {
+  if (preconditions.has_post_draft_items) {
+    return {
+      path: "post_draft_short_circuit",
+      record: null,
+      request_items_pending_sync_needed: false,
+      cache_clear_candidate: false,
+    };
   }
 
   try {
-    const { data, error } = await client.rpc("request_submit", buildRequestSubmitArgs(ridForRpc));
+    const { data, error } = await client.rpc(
+      "request_submit",
+      buildRequestSubmitArgs(preconditions.request_id),
+    );
     if (error) throw error;
-    await reconcileRequestHeadStatus(String(ridForRpc));
 
     const row = parseRequestSubmitResultRow(data);
     if (row) {
-      if (_draftRequestIdAny != null && String(_draftRequestIdAny) === String(ridForRpc)) {
-        _draftRequestIdAny = null;
-      }
-      return row;
+      return {
+        path: "rpc_submit",
+        record: row,
+        request_items_pending_sync_needed: false,
+        cache_clear_candidate: true,
+      };
     }
   } catch (e) {
     logRequestsDebug("[requestSubmit/rpc]", parseErr(e));
@@ -494,9 +543,9 @@ export async function requestSubmit(requestId: number | string): Promise<Request
 
   try {
     fallback = await updateRequestHeadStatus(
-      requestFilterId,
+      preconditions.request_filter_id,
       buildRequestSubmitFallbackUpdate(canWriteSubmittedAt),
-      requestReadSelect,
+      preconditions.request_read_select,
     );
   } catch (error) {
     const msg = getErrorMessage(error).toLowerCase();
@@ -506,25 +555,84 @@ export async function requestSubmit(requestId: number | string): Promise<Request
       msg.includes("does not exist");
     if (submittedAtMismatch) {
       fallback = await updateRequestHeadStatus(
-        requestFilterId,
+        preconditions.request_filter_id,
         buildRequestSubmitFallbackUpdate(false),
-        requestReadSelect,
+        preconditions.request_read_select,
       );
     } else {
       throw error;
     }
   }
 
-  if (fallback && _draftRequestIdAny != null && String(_draftRequestIdAny) === String(ridForRpc)) {
+  return {
+    path: "head_update_fallback",
+    record: fallback,
+    request_items_pending_sync_needed: true,
+    cache_clear_candidate: !!fallback,
+  };
+}
+
+async function completeRequestSubmitStage(
+  preconditions: RequestSubmitPreconditionsResolved,
+  primary: RequestSubmitPrimaryStageResult,
+): Promise<RequestSubmitCompletionResult> {
+  let request_items_pending_synced = false;
+  if (primary.request_items_pending_sync_needed) {
+    try {
+      await updateRequestItemsPendingStatus(preconditions.request_filter_id);
+      request_items_pending_synced = true;
+    } catch (e) {
+      logRequestsDebug("[requestSubmit/request_items fallback]", parseErr(e));
+    }
+  }
+
+  const reconciled = await reconcileRequestHeadStatus(preconditions.request_id);
+  const record_override =
+    reconciled && primary.path === "post_draft_short_circuit"
+      ? await selectRequestRecordById(
+          preconditions.request_filter_id,
+          preconditions.request_read_select,
+        )
+      : null;
+  return {
+    reconciled,
+    request_items_pending_synced,
+    record_override,
+  };
+}
+
+function finalizeRequestSubmitMutationResult(
+  preconditions: RequestSubmitPreconditionsResolved,
+  primary: RequestSubmitPrimaryStageResult,
+  completion: RequestSubmitCompletionResult,
+): RequestSubmitMutationResult {
+  if (
+    primary.cache_clear_candidate &&
+    _draftRequestIdAny != null &&
+    String(_draftRequestIdAny) === String(preconditions.request_id)
+  ) {
     _draftRequestIdAny = null;
   }
 
-  try {
-    await updateRequestItemsPendingStatus(requestFilterId);
-  } catch (e) {
-    logRequestsDebug("[requestSubmit/request_items fallback]", parseErr(e));
-  }
-  await reconcileRequestHeadStatus(String(ridForRpc));
+  return {
+    request_id: preconditions.request_id,
+    path: primary.path,
+    has_post_draft_items: preconditions.has_post_draft_items,
+    record: completion.record_override ?? primary.record,
+    reconciled: completion.reconciled,
+    request_items_pending_synced: completion.request_items_pending_synced,
+  };
+}
 
-  return fallback;
+function mapRequestSubmitMutationResult(result: RequestSubmitMutationResult): RequestRecord | null {
+  return result.record;
+}
+
+export async function requestSubmit(requestId: number | string): Promise<RequestRecord | null> {
+  const preconditions = await resolveRequestSubmitPreconditions(requestId);
+  const primary = await runRequestSubmitPrimaryStage(preconditions);
+  const completion = await completeRequestSubmitStage(preconditions, primary);
+  return mapRequestSubmitMutationResult(
+    finalizeRequestSubmitMutationResult(preconditions, primary, completion),
+  );
 }

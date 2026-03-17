@@ -218,6 +218,13 @@ type ReqHeadTruth = {
   issue_status: "READY" | "WAITING_STOCK" | "PARTIAL" | "DONE";
 };
 
+type ReqHeadQueueState = {
+  visible_in_expense_queue: boolean;
+  can_issue_now: boolean;
+  waiting_stock: boolean;
+  all_done: boolean;
+};
+
 let requestsFallbackLastHardFailAt = 0;
 let requestsFallbackLastSkipLogAt = 0;
 const REQUESTS_FALLBACK_FAIL_COOLDOWN_MS = 30000;
@@ -295,6 +302,49 @@ function finalizeReqHeadTruth(agg: Omit<ReqHeadTruth, "issue_status">): ReqHeadT
     qty_can_issue_now_sum: qtyCanIssueNow,
     issue_status: issueStatus,
   };
+}
+
+function deriveReqHeadQueueState(row: Pick<
+  ReqHeadRow,
+  "qty_left_sum" | "qty_can_issue_now_sum" | "issue_status"
+>): ReqHeadQueueState {
+  const qtyLeft = Math.max(0, parseNum(row.qty_left_sum, 0));
+  const qtyCanIssueNow = Math.max(0, parseNum(row.qty_can_issue_now_sum, 0));
+  const all_done = String(row.issue_status ?? "").trim().toUpperCase() === "DONE" || qtyLeft <= 0;
+  const visible_in_expense_queue = !all_done && qtyLeft > 0;
+  const can_issue_now = visible_in_expense_queue && qtyCanIssueNow > 0;
+  const waiting_stock = visible_in_expense_queue && !can_issue_now;
+  return {
+    visible_in_expense_queue,
+    can_issue_now,
+    waiting_stock,
+    all_done,
+  };
+}
+
+function applyReqHeadQueueState(row: ReqHeadRow): ReqHeadRow {
+  return {
+    ...row,
+    ...deriveReqHeadQueueState(row),
+  };
+}
+
+function applyReqHeadTruth(row: ReqHeadRow, truth?: ReqHeadTruth): ReqHeadRow {
+  const next = truth
+    ? {
+        ...row,
+        items_cnt: truth.items_cnt,
+        ready_cnt: truth.ready_cnt,
+        done_cnt: truth.done_cnt,
+        qty_limit_sum: truth.qty_limit_sum,
+        qty_issued_sum: truth.qty_issued_sum,
+        qty_left_sum: truth.qty_left_sum,
+        qty_can_issue_now_sum: truth.qty_can_issue_now_sum,
+        issuable_now_cnt: truth.issuable_now_cnt,
+        issue_status: truth.issue_status,
+      }
+    : row;
+  return applyReqHeadQueueState(next);
 }
 
 function aggregateReqItemTruthRows(rows: UnknownRow[]): Record<string, ReqHeadTruth> {
@@ -386,6 +436,83 @@ async function loadReqHeadTruthByRequestIds(
 
   if (q.error || !Array.isArray(q.data) || q.data.length === 0) return {};
   return aggregateReqItemTruthRows(q.data as UnknownRow[]);
+}
+
+async function loadApprovedViewReqHeadsWindow(
+  supabase: SupabaseClient,
+  offset: number,
+  limit: number,
+): Promise<ReqHeadRow[]> {
+  const q = await supabase
+    .from("v_wh_issue_req_heads_ui")
+    .select("*")
+    .order("submitted_at", { ascending: false, nullsFirst: false })
+    .order("display_no", { ascending: false })
+    .order("request_id", { ascending: false })
+    .range(offset, offset + limit - 1);
+
+  if (q.error || !Array.isArray(q.data) || q.data.length === 0) return [];
+
+  const rows: ReqHeadRow[] = (q.data as UnknownRow[]).map((x) => ({
+    request_id: String(x.request_id),
+    display_no: toTextOrNull(x.display_no),
+    object_name: toTextOrNull(x.object_name),
+    level_code: toTextOrNull(x.level_code),
+    system_code: toTextOrNull(x.system_code),
+    zone_code: toTextOrNull(x.zone_code),
+    level_name: toTextOrNull(x.level_name),
+    system_name: toTextOrNull(x.system_name),
+    zone_name: toTextOrNull(x.zone_name),
+    contractor_name: toTextOrNull(x.contractor_name ?? x.contractor_org ?? x.subcontractor_name),
+    contractor_phone: toTextOrNull(x.contractor_phone ?? x.phone ?? x.phone_number),
+    planned_volume: toTextOrNull(x.planned_volume ?? x.volume ?? x.qty_plan),
+    note: toTextOrNull(x.note),
+    comment: toTextOrNull(x.comment),
+    submitted_at: toTextOrNull(x.submitted_at),
+    items_cnt: Number(x.items_cnt ?? 0),
+    ready_cnt: Number(x.ready_cnt ?? 0),
+    done_cnt: Number(x.done_cnt ?? 0),
+    qty_limit_sum: parseNum(x.qty_limit_sum, 0),
+    qty_issued_sum: parseNum(x.qty_issued_sum, 0),
+    qty_left_sum: parseNum(x.qty_left_sum, 0),
+    qty_can_issue_now_sum: parseNum(x.qty_can_issue_now_sum, 0),
+    issuable_now_cnt: parseNum(x.issuable_now_cnt, 0),
+    issue_status: String(x.issue_status ?? "READY"),
+  }));
+
+  rows.sort(reqHeadSort);
+
+  const requestIds = Array.from(
+    new Set(rows.map((r) => String(r.request_id ?? "").trim()).filter(Boolean)),
+  );
+  if (!requestIds.length) return [];
+
+  const approvalStatusRows = await supabase
+    .from("requests")
+    .select("id, status")
+    .in("id", requestIds);
+  if (approvalStatusRows.error || !Array.isArray(approvalStatusRows.data)) return [];
+
+  const approvedById = new Map<string, string>();
+  for (const row of approvalStatusRows.data as UnknownRow[]) {
+    const id = String(row?.id ?? "").trim();
+    if (!id) continue;
+    approvedById.set(id, String(row?.status ?? ""));
+  }
+
+  const approvedRows = rows.filter((row) =>
+    isRequestDirectorApproved(approvedById.get(String(row.request_id ?? "").trim()) || ""),
+  );
+  if (!approvedRows.length) return [];
+
+  const truthByReq = await loadReqHeadTruthByRequestIds(
+    supabase,
+    approvedRows.map((row) => row.request_id),
+  );
+
+  return approvedRows
+    .map((row) => applyReqHeadTruth(row, truthByReq[String(row.request_id ?? "").trim()]))
+    .filter((row) => row.visible_in_expense_queue);
 }
 
 function parseReqHeaderContext(rawParts: (string | null | undefined)[]) {
@@ -885,110 +1012,28 @@ export async function apiFetchReqHeads(
     if (digits.length < 9) return "";
     return candidate.replace(/\s+/g, "");
   };
-  const q = await supabase
-    .from("v_wh_issue_req_heads_ui")
-    .select("*")
-    // 1) recency by submitted timestamp (cheap and stable for view)
-    .order("submitted_at", { ascending: false, nullsFirst: false })
-    // 2) stable tiebreakers
-    .order("display_no", { ascending: false })
-    .order("request_id", { ascending: false })
-    .range(page * pageSize, (page + 1) * pageSize - 1);
+  const targetVisibleCount = Math.max(0, (page + 1) * pageSize);
+  const viewChunkSize = Math.max(pageSize, 50);
+  const maxWindowScans = 8;
+  const visibleViewRows: ReqHeadRow[] = [];
+  const materializedReqIds = new Set<string>();
 
-  if (q.error || !Array.isArray(q.data)) return [];
-
-  const rows: ReqHeadRow[] = (q.data as UnknownRow[]).map((x) => ({
-    request_id: String(x.request_id),
-    display_no: toTextOrNull(x.display_no),
-    object_name: toTextOrNull(x.object_name),
-
-    level_code: toTextOrNull(x.level_code),
-    system_code: toTextOrNull(x.system_code),
-    zone_code: toTextOrNull(x.zone_code),
-
-    level_name: toTextOrNull(x.level_name),
-    system_name: toTextOrNull(x.system_name),
-    zone_name: toTextOrNull(x.zone_name),
-    contractor_name: toTextOrNull(x.contractor_name ?? x.contractor_org ?? x.subcontractor_name),
-    contractor_phone: toTextOrNull(x.contractor_phone ?? x.phone ?? x.phone_number),
-    planned_volume: toTextOrNull(x.planned_volume ?? x.volume ?? x.qty_plan),
-    note: toTextOrNull(x.note),
-    comment: toTextOrNull(x.comment),
-
-    submitted_at: toTextOrNull(x.submitted_at),
-
-    items_cnt: Number(x.items_cnt ?? 0),
-    ready_cnt: Number(x.ready_cnt ?? 0),
-    done_cnt: Number(x.done_cnt ?? 0),
-
-    qty_limit_sum: parseNum(x.qty_limit_sum, 0),
-    qty_issued_sum: parseNum(x.qty_issued_sum, 0),
-    qty_left_sum: parseNum(x.qty_left_sum, 0),
-
-    issue_status: String(x.issue_status ?? "READY"),
-  }));
-
-  rows.sort(reqHeadSort);
-
-  const baseReqIds = Array.from(
-    new Set(rows.map((r) => String(r.request_id ?? "").trim()).filter(Boolean)),
-  );
-  const materializedReqIds = new Set(baseReqIds);
-
-  let approvedViewRows = rows;
-  if (baseReqIds.length) {
-    try {
-      const approvalStatusRows = await supabase
-        .from("requests")
-        .select("id, status")
-        .in("id", baseReqIds);
-      if (!approvalStatusRows.error && Array.isArray(approvalStatusRows.data)) {
-        const byId = new Map<string, string>();
-        for (const row of approvalStatusRows.data as UnknownRow[]) {
-          const id = String(row?.id ?? "").trim();
-          if (!id) continue;
-          byId.set(id, String(row?.status ?? ""));
-        }
-        approvedViewRows = rows.filter((r) => {
-          const st = byId.get(String(r.request_id || "").trim()) || "";
-          return isRequestDirectorApproved(st);
-        });
-      } else {
-        approvedViewRows = [];
-      }
-    } catch (error) {
-      logWarehouseApiFallback("apiFetchReqHeads/director-approval-gate", error);
-      approvedViewRows = [];
+  for (let scan = 0; scan < maxWindowScans && visibleViewRows.length < targetVisibleCount; scan += 1) {
+    const offset = scan * viewChunkSize;
+    const windowRows = await loadApprovedViewReqHeadsWindow(supabase, offset, viewChunkSize);
+    if (!windowRows.length) break;
+    for (const row of windowRows) {
+      const requestId = String(row.request_id ?? "").trim();
+      if (!requestId || materializedReqIds.has(requestId)) continue;
+      materializedReqIds.add(requestId);
+      visibleViewRows.push(row);
     }
+    if (windowRows.length < viewChunkSize) break;
   }
 
-  const approvedViewReqIds = Array.from(
-    new Set(approvedViewRows.map((r) => String(r.request_id ?? "").trim()).filter(Boolean)),
-  );
-  const viewTruthByReq = await loadReqHeadTruthByRequestIds(supabase, approvedViewReqIds);
-
-  let viewRows = approvedViewRows
-    .map((row) => {
-      const truth = viewTruthByReq[String(row.request_id ?? "").trim()];
-      if (!truth) return row;
-      return {
-        ...row,
-        items_cnt: truth.items_cnt,
-        ready_cnt: truth.ready_cnt,
-        done_cnt: truth.done_cnt,
-        qty_limit_sum: truth.qty_limit_sum,
-        qty_issued_sum: truth.qty_issued_sum,
-        qty_left_sum: truth.qty_left_sum,
-        qty_can_issue_now_sum: truth.qty_can_issue_now_sum,
-        issuable_now_cnt: truth.issuable_now_cnt,
-        issue_status: truth.issue_status,
-      };
-    })
-    .filter((r) => {
-      const notDone = String(r.issue_status ?? "").trim().toUpperCase() !== "DONE";
-      const hasLeft = parseNum(r.qty_left_sum, 0) > 0;
-      return notDone && hasLeft;
-    });
+  let viewRows = visibleViewRows
+    .sort(reqHeadSort)
+    .slice(page * pageSize, (page + 1) * pageSize);
 
   // Fallback only on first page:
   // include approved requests not yet materialized in warehouse view.
@@ -1105,7 +1150,7 @@ export async function apiFetchReqHeads(
                     issuable_now_cnt: readyCnt,
                   });
                 })();
-              return {
+              return applyReqHeadTruth({
                 request_id: r.request_id,
                 display_no: r.display_no,
                 object_name: r.object_name,
@@ -1130,9 +1175,9 @@ export async function apiFetchReqHeads(
                 qty_can_issue_now_sum: truth.qty_can_issue_now_sum,
                 issuable_now_cnt: truth.issuable_now_cnt,
                 issue_status: truth.issue_status,
-              };
+              }, truth);
             })
-            .filter((r) => parseNum(r.qty_left_sum, 0) > 0);
+            .filter((r) => r.visible_in_expense_queue);
 
           const merged = [...viewRows, ...fallbackRows]
             .sort(reqHeadSort)

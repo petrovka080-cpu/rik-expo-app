@@ -1,4 +1,4 @@
-﻿import { supabase } from "../supabaseClient";
+import { supabase } from "../supabaseClient";
 import { normalizeRuText } from "../text/encoding";
 
 type DirectorReportOptions = {
@@ -85,19 +85,68 @@ type DirectorReportPayload = {
   report_options?: DirectorReportOptions;
 };
 
-type DirectorFactRow = {
-  issue_id: number | string;
+type DirectorFactRowNormalized = {
+  issue_id: string;
+  issue_item_id: string | null;
   iss_date: string;
-  object_name: string | null;
-  work_name: string | null;
-  level_name?: string | null;
-  request_item_id?: string | null;
-  rik_code: string;
-  material_name_ru: string | null;
-  uom: string | null;
-  qty: number | string | null;
-  is_without_request: boolean | null;
+  request_id: string | null;
+  request_item_id: string | null;
+  object_id_resolved: string | null;
+  object_name_resolved: string;
+  work_name_resolved: string;
+  level_name_resolved: string;
+  material_name_resolved: string;
+  rik_code_resolved: string;
+  uom_resolved: string;
+  qty: number;
+  is_without_request: boolean;
 };
+
+type DirectorFactContextResolved = {
+  request_id: string | null;
+  request_item_id: string | null;
+  object_id_resolved: string | null;
+  object_name_resolved: string;
+  work_name_resolved: string;
+  level_name_resolved: string;
+  is_without_request: boolean;
+};
+
+type DirectorObjectIdentityResolved = {
+  object_name_display: string;
+  object_name_canonical: string;
+  object_id_resolved: string | null;
+  is_without_object: boolean;
+};
+
+type DirectorFactContextInput = {
+  request_id?: string | null;
+  request_item_id?: string | null;
+  request?: RequestLookupRow | null;
+  issue_object_id?: string | null;
+  issue_note?: string | null;
+  issue_object_name?: string | null;
+  issue_work_name?: string | null;
+  issue_object_name_by_id?: string | null;
+  request_object_name_by_id?: string | null;
+  request_object_type_name?: string | null;
+  request_system_name?: string | null;
+  use_free_issue_object_fallback?: boolean;
+  force_without_level_when_issue_work_name?: boolean;
+};
+
+type DirectorFactRowNormalizeInput = {
+  issue_id: string | number | null | undefined;
+  issue_item_id?: string | number | null | undefined;
+  iss_date?: string | null | undefined;
+  context: DirectorFactContextResolved;
+  material_name?: string | null | undefined;
+  rik_code?: string | null | undefined;
+  uom?: string | null | undefined;
+  qty?: number | string | null | undefined;
+};
+
+type DirectorFactRow = DirectorFactRowNormalized;
 
 type DirectorReportOptionRow = {
   object_name?: string | null;
@@ -410,22 +459,154 @@ const normalizeDirectorReportOptionRow = (value: unknown): DirectorReportOptionR
   };
 };
 
-const normalizeDirectorFactViewRow = (value: unknown): DirectorFactRow | null => {
-  const row = asRecord(value);
-  const issueId = row.issue_id == null ? "" : String(row.issue_id).trim();
-  const rikCode = row.rik_code == null ? "" : String(row.rik_code).trim().toUpperCase();
+const resolveDirectorObjectIdentity = (input: {
+  object_name_display?: unknown;
+  object_id_resolved?: unknown;
+}): DirectorObjectIdentityResolved => {
+  const display = firstNonEmpty(input.object_name_display) || WITHOUT_OBJECT;
+  const canonical = canonicalObjectName(display);
+  const objectId = String(input.object_id_resolved ?? "").trim() || null;
+  return {
+    object_name_display: display,
+    object_name_canonical: canonical,
+    object_id_resolved: objectId,
+    is_without_object: canonical === WITHOUT_OBJECT,
+  };
+};
+
+const getDirectorFactObjectIdentity = (
+  row: Pick<DirectorFactRowNormalized, "object_name_resolved" | "object_id_resolved">,
+): DirectorObjectIdentityResolved =>
+  resolveDirectorObjectIdentity({
+    object_name_display: row.object_name_resolved,
+    object_id_resolved: row.object_id_resolved,
+  });
+
+const matchesDirectorObjectIdentity = (
+  selectedObjectName: string | null,
+  row: Pick<DirectorFactRowNormalized, "object_name_resolved" | "object_id_resolved">,
+): boolean => {
+  if (selectedObjectName == null) return true;
+  const target = resolveDirectorObjectIdentity({ object_name_display: selectedObjectName });
+  const identity = getDirectorFactObjectIdentity(row);
+  return identity.object_name_canonical === target.object_name_canonical;
+};
+
+const buildDirectorReportOptionsFromIdentities = (
+  identities: DirectorObjectIdentityResolved[],
+): DirectorReportOptions => {
+  const objectIdByName: Record<string, string | null> = {};
+  for (const identity of identities) {
+    const key = identity.object_name_canonical;
+    if (!(key in objectIdByName)) objectIdByName[key] = identity.object_id_resolved;
+    if (objectIdByName[key] == null && identity.object_id_resolved) {
+      objectIdByName[key] = identity.object_id_resolved;
+    }
+  }
+  const objects = Object.keys(objectIdByName).sort((a, b) => a.localeCompare(b, "ru"));
+  return { objects, objectIdByName };
+};
+
+const resolveDirectorFactContext = (
+  input: DirectorFactContextInput,
+): DirectorFactContextResolved => {
+  const requestId = String(input.request_id ?? input.request?.id ?? "").trim() || null;
+  const requestItemId = String(input.request_item_id ?? "").trim() || null;
+  const issueObjectId = String(input.issue_object_id ?? "").trim() || null;
+  const issueWorkName = String(input.issue_work_name ?? "").trim();
+  const issueObjectName = String(input.issue_object_name ?? "").trim();
+  const issueObjectNameById = String(input.issue_object_name_by_id ?? "").trim();
+  const requestObjectNameById = String(input.request_object_name_by_id ?? "").trim();
+  const requestObjectTypeName = String(input.request_object_type_name ?? "").trim();
+  const requestSystemName = String(input.request_system_name ?? "").trim();
+  const freeCtx = parseFreeIssueContext(input.issue_note ?? null);
+  const request = input.request ?? null;
+
+  if (request) {
+    return {
+      request_id: requestId,
+      request_item_id: requestItemId,
+      object_id_resolved: String(request?.object_id ?? "").trim() || issueObjectId,
+      object_name_resolved:
+        firstNonEmpty(
+          requestObjectNameById,
+          request?.object_name,
+          requestObjectTypeName,
+          issueObjectNameById,
+          issueObjectName,
+        ) || WITHOUT_OBJECT,
+      work_name_resolved:
+        firstNonEmpty(issueWorkName, requestSystemName, request?.system_code) || WITHOUT_WORK,
+      level_name_resolved: normLevelName(request?.level_code),
+      is_without_request: false,
+    };
+  }
+
+  return {
+    request_id: requestId,
+    request_item_id: requestItemId,
+    object_id_resolved: issueObjectId,
+    object_name_resolved:
+      firstNonEmpty(
+        issueObjectNameById,
+        issueObjectName,
+        input.use_free_issue_object_fallback === false ? "" : freeCtx.objectName,
+      ) || WITHOUT_OBJECT,
+    work_name_resolved: firstNonEmpty(issueWorkName, freeCtx.workName) || WITHOUT_WORK,
+    level_name_resolved:
+      input.force_without_level_when_issue_work_name && issueWorkName
+        ? WITHOUT_LEVEL
+        : normLevelName(freeCtx.levelName),
+    is_without_request: !requestItemId,
+  };
+};
+
+const normalizeDirectorFactRow = (
+  input: DirectorFactRowNormalizeInput,
+): DirectorFactRowNormalized | null => {
+  const issueId = String(input.issue_id ?? "").trim();
+  const rikCode = String(input.rik_code ?? "").trim().toUpperCase();
   if (!issueId || !rikCode) return null;
+
+  const materialName = String(input.material_name ?? "").trim() || rikCode;
+
   return {
     issue_id: issueId,
+    issue_item_id: String(input.issue_item_id ?? "").trim() || null,
+    iss_date: String(input.iss_date ?? ""),
+    request_id: input.context.request_id,
+    request_item_id: input.context.request_item_id,
+    object_id_resolved: input.context.object_id_resolved,
+    object_name_resolved: input.context.object_name_resolved,
+    work_name_resolved: input.context.work_name_resolved,
+    level_name_resolved: input.context.level_name_resolved,
+    material_name_resolved: materialName,
+    rik_code_resolved: rikCode,
+    uom_resolved: String(input.uom ?? "").trim(),
+    qty: toNum(input.qty),
+    is_without_request: !!input.context.is_without_request,
+  };
+};
+
+const normalizeDirectorFactViewRow = (value: unknown): DirectorFactRowNormalized | null => {
+  const row = asRecord(value);
+  const context = resolveDirectorFactContext({
+    issue_object_name: row.object_name == null ? null : String(row.object_name),
+    issue_work_name: row.work_name == null ? null : String(row.work_name),
+    use_free_issue_object_fallback: false,
+  });
+  return normalizeDirectorFactRow({
+    issue_id: row.issue_id == null ? "" : String(row.issue_id).trim(),
     iss_date: row.iss_date == null ? "" : String(row.iss_date),
-    object_name: row.object_name == null ? null : String(row.object_name),
-    work_name: row.work_name == null ? null : String(row.work_name),
-    rik_code: rikCode,
-    material_name_ru: row.material_name_ru == null ? null : String(row.material_name_ru),
+    context: {
+      ...context,
+      is_without_request: row.is_without_request == null ? context.is_without_request : Boolean(row.is_without_request),
+    },
+    material_name: row.material_name_ru == null ? null : String(row.material_name_ru),
+    rik_code: row.rik_code == null ? null : String(row.rik_code),
     uom: row.uom == null ? null : String(row.uom),
     qty: row.qty == null ? null : (row.qty as number | string),
-    is_without_request: row.is_without_request == null ? null : Boolean(row.is_without_request),
-  };
+  });
 };
 
 const normalizeWarehouseIssueOptionLookupRow = (value: unknown): WarehouseIssueOptionLookupRow => {
@@ -438,15 +619,14 @@ const normalizeWarehouseIssueOptionLookupRow = (value: unknown): WarehouseIssueO
 };
 
 const buildReportOptionsFromByObjRows = (rows: DirectorReportOptionRow[]): DirectorReportOptions => {
-  const objectIdByName: Record<string, string | null> = {};
-  for (const r of rows || []) {
-    const name = optionObjectName(r?.object_name);
-    const id = r?.object_id == null ? null : String(r.object_id);
-    if (!(name in objectIdByName)) objectIdByName[name] = id;
-    if (objectIdByName[name] == null && id) objectIdByName[name] = id;
-  }
-  const objects = Object.keys(objectIdByName).sort((a, b) => a.localeCompare(b, "ru"));
-  return { objects, objectIdByName };
+  return buildDirectorReportOptionsFromIdentities(
+    (rows || []).map((r) =>
+      resolveDirectorObjectIdentity({
+        object_name_display: optionObjectName(r?.object_name),
+        object_id_resolved: r?.object_id,
+      }),
+    ),
+  );
 };
 
 const canonicalObjectName = (v: unknown): string => {
@@ -463,7 +643,8 @@ const canonicalObjectName = (v: unknown): string => {
   return s || WITHOUT_OBJECT;
 };
 
-const normObjectName = (v: unknown): string => canonicalObjectName(v);
+const normObjectName = (v: unknown): string =>
+  resolveDirectorObjectIdentity({ object_name_display: v }).object_name_canonical;
 
 const normWorkName = (v: unknown): string => {
   const s = String(normalizeRuText(String(v ?? "")))
@@ -560,18 +741,20 @@ const buildDisciplineRowsCacheKey = (p: {
   objectName: string | null;
   objectIdByName: Record<string, string | null>;
 }): string => {
-  const objectName = p.objectName ?? null;
-  const objectId = objectName == null ? null : (p.objectIdByName?.[objectName] ?? null);
-  return `${String(p.from || "")}|${String(p.to || "")}|${String(objectName ?? "")}|${String(objectId ?? "")}`;
+  const identity =
+    p.objectName == null
+      ? null
+      : resolveDirectorObjectIdentity({ object_name_display: p.objectName });
+  const objectKey = identity?.object_name_canonical ?? null;
+  const objectId = objectKey == null ? null : (p.objectIdByName?.[objectKey] ?? null);
+  return `${String(p.from || "")}|${String(p.to || "")}|${String(objectKey ?? "")}|${String(objectId ?? "")}`;
 };
 
 const filterDisciplineRowsByObject = (
   rows: DirectorFactRow[],
   objectName: string | null,
 ): DirectorFactRow[] => {
-  if (objectName == null) return rows;
-  const target = canonicalObjectName(objectName);
-  return rows.filter((r) => canonicalObjectName(r.object_name) === target);
+  return rows.filter((r) => matchesDirectorObjectIdentity(objectName, r));
 };
 
 async function fetchRequestsRowsSafe(ids: string[]): Promise<RequestLookupRow[]> {
@@ -967,12 +1150,24 @@ const getFreshLookupValue = <T,>(
   return hit.value;
 };
 
+const MAX_LOOKUP_CACHE_SIZE = 2000;
+const trimMap = <K, V>(map: Map<K, V>, max = MAX_LOOKUP_CACHE_SIZE) => {
+  if (map.size <= max) return;
+  const excess = map.size - max;
+  const iter = map.keys();
+  for (let i = 0; i < excess; i++) {
+    const k = iter.next().value;
+    if (k !== undefined) map.delete(k);
+  }
+};
+
 const setLookupValue = <T,>(
   cache: Map<string, { ts: number; value: T | null }>,
   key: string,
   value: T | null,
 ) => {
   cache.set(key, { ts: Date.now(), value });
+  trimMap(cache);
 };
 
 async function runTypedRpc<TRow>(
@@ -1389,12 +1584,12 @@ async function enrichFactRowsMaterialNames(rows: DirectorFactRow[]): Promise<Dir
     new Set(
       rows
         .filter((r) => {
-          const code = String(r?.rik_code ?? "").trim().toUpperCase();
+          const code = String(r?.rik_code_resolved ?? "").trim().toUpperCase();
           if (!code) return false;
-          const currentName = normMaterialName(r?.material_name_ru ?? "");
+          const currentName = normMaterialName(r?.material_name_resolved ?? "");
           return !currentName || looksLikeMaterialCode(currentName);
         })
-        .map((r) => String(r?.rik_code ?? "").trim().toUpperCase())
+        .map((r) => String(r?.rik_code_resolved ?? "").trim().toUpperCase())
         .filter(Boolean),
     ),
   );
@@ -1404,13 +1599,13 @@ async function enrichFactRowsMaterialNames(rows: DirectorFactRow[]): Promise<Dir
   if (!byCode.size) return rows;
 
   return rows.map((r) => {
-    const code = String(r?.rik_code ?? "").trim().toUpperCase();
+    const code = String(r?.rik_code_resolved ?? "").trim().toUpperCase();
     if (!code) return r;
     const bestName = byCode.get(code);
     if (!bestName) return r;
-    const currentName = normMaterialName(r?.material_name_ru ?? "");
+    const currentName = normMaterialName(r?.material_name_resolved ?? "");
     if (currentName && !looksLikeMaterialCode(currentName)) return r;
-    return { ...r, material_name_ru: bestName };
+    return { ...r, material_name_resolved: bestName };
   });
 }
 
@@ -1436,7 +1631,7 @@ async function enrichFactRowsLevelNames(rows: DirectorFactRow[]): Promise<Direct
   const levelCodes = Array.from(
     new Set(
       rows
-        .map((r) => String(r?.level_name ?? "").trim())
+        .map((r) => String(r?.level_name_resolved ?? "").trim())
         .filter((lv) => looksLikeLevelCode(lv))
         .map((lv) => lv.toUpperCase()),
     ),
@@ -1447,11 +1642,11 @@ async function enrichFactRowsLevelNames(rows: DirectorFactRow[]): Promise<Direct
   if (!byCode.size) return rows;
 
   return rows.map((r) => {
-    const raw = String(r?.level_name ?? "").trim();
+    const raw = String(r?.level_name_resolved ?? "").trim();
     if (!raw || !looksLikeLevelCode(raw)) return r;
     const mapped = byCode.get(raw.toUpperCase());
     if (!mapped) return r;
-    return { ...r, level_name: mapped };
+    return { ...r, level_name_resolved: mapped };
   });
 }
 
@@ -1591,52 +1786,35 @@ async function fetchDirectorFactViaAccRpc(p: {
     {
       issueId: string;
       issDate: string;
-      objectName: string;
-      workName: string;
-      levelName: string;
-      isWithoutRequest: boolean;
+      context: DirectorFactContextResolved;
     }
   >();
   for (const h of heads) {
     const issueId = String(h?.issue_id ?? "").trim();
     if (!issueId) continue;
     const reqId = String(h?.request_id ?? "").trim();
+    const request = reqId ? (reqById.get(reqId) ?? null) : null;
+    const context = resolveDirectorFactContext({
+      request_id: reqId,
+      request,
+      issue_note: h?.note ?? null,
+      request_object_name_by_id: objectNameById.get(String(request?.object_id ?? "").trim()) ?? null,
+      request_object_type_name: firstNonEmpty(
+        objectTypeNameByCode.get(String(request?.object_type_code ?? "").trim()),
+        request?.object_type_code,
+      ) || null,
+      request_system_name: firstNonEmpty(
+        systemNameByCode.get(String(request?.system_code ?? "").trim()),
+        request?.system_code,
+      ) || null,
+    });
 
-    let objectName = WITHOUT_OBJECT;
-    let workName = WITHOUT_WORK;
-    let levelName = WITHOUT_LEVEL;
-    let isWithoutRequest = true;
-
-    if (reqId) {
-      const r = reqById.get(reqId);
-      objectName = firstNonEmpty(
-        objectNameById.get(String(r?.object_id ?? "").trim()),
-        r?.object_name,
-        objectTypeNameByCode.get(String(r?.object_type_code ?? "").trim()),
-      ) || WITHOUT_OBJECT;
-      workName = firstNonEmpty(
-        systemNameByCode.get(String(r?.system_code ?? "").trim()),
-        r?.system_code,
-      ) || WITHOUT_WORK;
-      levelName = normLevelName(r?.level_code);
-      isWithoutRequest = false;
-    } else {
-      const parsed = parseFreeIssueContext(h?.note ?? null);
-      objectName = parsed.objectName || WITHOUT_OBJECT;
-      workName = parsed.workName || WITHOUT_WORK;
-      levelName = parsed.levelName || WITHOUT_LEVEL;
-      isWithoutRequest = true;
-    }
-
-    if (p.objectName != null && objectName !== p.objectName) continue;
+    if (!matchesDirectorObjectIdentity(p.objectName, context)) continue;
 
     headCtxByIssueId.set(issueId, {
       issueId,
       issDate: String(h?.event_dt ?? ""),
-      objectName,
-      workName,
-      levelName,
-      isWithoutRequest,
+      context,
     });
   }
 
@@ -1651,20 +1829,16 @@ async function fetchDirectorFactViaAccRpc(p: {
     const issueId = String(ln?.issue_id ?? "").trim();
     const ctx = headCtxByIssueId.get(issueId);
     if (!ctx) continue;
-    const code = String(ln?.rik_code ?? "").trim().toUpperCase();
-    if (!code) continue;
-    out.push({
+    const row = normalizeDirectorFactRow({
       issue_id: issueId,
       iss_date: ctx.issDate,
-      object_name: ctx.objectName,
-      work_name: ctx.workName,
-      level_name: ctx.levelName,
-      rik_code: code,
-      material_name_ru: firstNonEmpty(ln?.name_human, code),
-      uom: String(ln?.uom ?? "").trim(),
-      qty: toNum(ln?.qty_total),
-      is_without_request: ctx.isWithoutRequest,
+      context: ctx.context,
+      material_name: firstNonEmpty(ln?.name_human, ln?.rik_code),
+      rik_code: ln?.rik_code,
+      uom: ln?.uom,
+      qty: ln?.qty_total,
     });
+    if (row) out.push(row);
   }
 
   return out;
@@ -1825,7 +1999,7 @@ async function fetchAllFactRowsFromTables(p: {
   await forEachChunkParallel(issueIds, 500, 6, async (ids) => {
     const { data, error } = await supabase
       .from("warehouse_issue_items" as never)
-      .select("issue_id,rik_code,uom_id,qty,request_item_id")
+      .select("id,issue_id,rik_code,uom_id,qty,request_item_id")
       .in("issue_id", ids);
     if (error) throw error;
     if (Array.isArray(data)) {
@@ -1953,8 +2127,8 @@ async function fetchAllFactRowsFromTables(p: {
           if (code && name && !nameRuByCode.has(code)) nameRuByCode.set(code, name);
         }
       }
-    } catch (e: any) {
-      console.warn("[director_reports] disable v_rik_names_ru:", e?.message ?? e);
+    } catch (e: unknown) {
+      console.warn("[director_reports] disable v_rik_names_ru:", (e as Error)?.message ?? e);
     }
     logTiming("discipline.rows.tables.name_resolve", tNames);
   }
@@ -1971,46 +2145,39 @@ async function fetchAllFactRowsFromTables(p: {
       (reqItemId ? requestIdByRequestItem.get(reqItemId) : null) ??
       (issueReqId || null);
     const req = reqId ? requestById.get(reqId) : null;
-
-    const issueObjectById = objectNameById.get(String(issue?.target_object_id ?? "").trim()) || "";
-    const reqObjectById = objectNameById.get(String(req?.object_id ?? "").trim()) || "";
-    const reqObjectByName = String(req?.object_name ?? "").trim();
-    const issueObjectByName = String(issue?.object_name ?? "").trim();
-    const reqObjectTypeCode = String(req?.object_type_code ?? "").trim();
-    const reqObjectTypeName =
-      (reqObjectTypeCode && objectTypeNameByCode.get(reqObjectTypeCode)) || reqObjectTypeCode;
-
-    const objectName = req
-      ? reqObjectById || reqObjectByName || reqObjectTypeName || issueObjectById || issueObjectByName || WITHOUT_OBJECT
-      : issueObjectById || issueObjectByName || reqObjectById || reqObjectByName || reqObjectTypeName || WITHOUT_OBJECT;
-
-    if (p.objectName != null && objectName !== p.objectName) continue;
-
-    const reqSystemCode = String(req?.system_code ?? "").trim();
-    const reqSystemName = (reqSystemCode && systemNameByCode.get(reqSystemCode)) || reqSystemCode;
-    const workName =
-      String(issue?.work_name ?? "").trim() ||
-      reqSystemName ||
-      WITHOUT_WORK;
-    const freeCtx = parseFreeIssueContext(issue?.note ?? null);
-    const levelName = req ? normLevelName(req?.level_code) : normLevelName(freeCtx.levelName);
-
-    const code = String(it?.rik_code ?? "").trim().toUpperCase();
-    if (!code) continue;
-
-    out.push({
-      issue_id: issueId,
-      iss_date: String(issue?.iss_date ?? ""),
-      object_name: objectName,
-      work_name: workName,
-      level_name: levelName,
+    const context = resolveDirectorFactContext({
+      request_id: reqId,
       request_item_id: reqItemId || null,
-      rik_code: code,
-      material_name_ru: nameRuByCode.get(code) || code,
-      uom: String(it?.uom_id ?? "").trim(),
-      qty: toNum(it?.qty),
-      is_without_request: !reqItemId,
+      request: req,
+      issue_object_id: issue?.target_object_id ?? null,
+      issue_note: issue?.note ?? null,
+      issue_object_name: issue?.object_name ?? null,
+      issue_work_name: issue?.work_name ?? null,
+      issue_object_name_by_id: objectNameById.get(String(issue?.target_object_id ?? "").trim()) ?? null,
+      request_object_name_by_id: objectNameById.get(String(req?.object_id ?? "").trim()) ?? null,
+      request_object_type_name: firstNonEmpty(
+        objectTypeNameByCode.get(String(req?.object_type_code ?? "").trim()),
+        req?.object_type_code,
+      ) || null,
+      request_system_name: firstNonEmpty(
+        systemNameByCode.get(String(req?.system_code ?? "").trim()),
+        req?.system_code,
+      ) || null,
     });
+
+    if (!matchesDirectorObjectIdentity(p.objectName, context)) continue;
+
+    const row = normalizeDirectorFactRow({
+      issue_id: issueId,
+      issue_item_id: it?.id ?? null,
+      iss_date: String(issue?.iss_date ?? ""),
+      context,
+      material_name: nameRuByCode.get(String(it?.rik_code ?? "").trim().toUpperCase()) ?? String(it?.rik_code ?? ""),
+      rik_code: it?.rik_code,
+      uom: it?.uom_id,
+      qty: it?.qty,
+    });
+    if (row) out.push(row);
   }
 
   logTiming("discipline.rows.tables.total", tTotal);
@@ -2060,28 +2227,26 @@ async function fetchDisciplineFactRowsFromTables(p: {
           const issue = extractJoinedWarehouseIssueFactRow(it);
           if (!issue) continue;
           const issueId = String(it.issue_id ?? issue.id ?? "").trim();
-          const code = String(it.rik_code ?? "").trim().toUpperCase();
-          if (!issueId || !code) continue;
-
-          const issueWorkName = String(issue?.work_name ?? "").trim();
-          const freeCtx = parseFreeIssueContext(issue?.note ?? null);
-          const workName = issueWorkName || freeCtx.workName || WITHOUT_WORK;
-          const levelName = issueWorkName ? WITHOUT_LEVEL : normLevelName(freeCtx.levelName);
-          const objectName = String(issue?.object_name ?? "").trim() || WITHOUT_OBJECT;
-
-          out.push({
-            issue_id: issueId,
-            iss_date: String(issue?.iss_date ?? ""),
-            object_name: objectName,
-            work_name: workName,
-            level_name: levelName,
-            request_item_id: String(it.request_item_id ?? "").trim() || null,
-            rik_code: code,
-            material_name_ru: code,
-            uom: String(it.uom_id ?? "").trim(),
-            qty: toNum(it.qty),
-            is_without_request: !String(it.request_item_id ?? "").trim(),
+          const requestItemId = String(it.request_item_id ?? "").trim() || null;
+          const context = resolveDirectorFactContext({
+            request_item_id: requestItemId,
+            issue_note: issue?.note ?? null,
+            issue_object_name: issue?.object_name ?? null,
+            issue_work_name: issue?.work_name ?? null,
+            force_without_level_when_issue_work_name: true,
+            use_free_issue_object_fallback: false,
           });
+          const row = normalizeDirectorFactRow({
+            issue_id: issueId,
+            issue_item_id: issueItemId,
+            iss_date: String(issue?.iss_date ?? ""),
+            context,
+            material_name: it.rik_code == null ? null : String(it.rik_code),
+            rik_code: it.rik_code,
+            uom: it.uom_id,
+            qty: it.qty,
+          });
+          if (row) out.push(row);
         }
 
         if (rows.length < pageSize) break;
@@ -2094,9 +2259,9 @@ async function fetchDisciplineFactRowsFromTables(p: {
       }
       logTiming("discipline.rows.light.joined.total", tJoined);
       return out;
-    } catch (e: any) {
+    } catch (e: unknown) {
       if (REPORTS_TIMING) {
-        console.info(`[director_reports] discipline.rows.light.joined.failed: ${e?.message ?? e}`);
+        console.info(`[director_reports] discipline.rows.light.joined.failed: ${(e as Error)?.message ?? e}`);
       }
       return null;
     }
@@ -2290,34 +2455,33 @@ async function fetchDisciplineFactRowsFromTables(p: {
         : ((reqItemId ? requestIdByRequestItem.get(reqItemId) : null) ?? (issueReqId || null));
     const req = reqId ? requestById.get(reqId) : null;
 
-    const objectName = String(issue?.object_name ?? "").trim() || WITHOUT_OBJECT;
-    if (p.objectName != null && objectName !== p.objectName) continue;
-
-    const reqSystemCode = String(req?.system_code ?? "").trim();
-    const reqSystemName = (reqSystemCode && systemNameByCode.get(reqSystemCode)) || reqSystemCode;
-    const workName =
-      issueWorkName ||
-      reqSystemName ||
-      WITHOUT_WORK;
-    const freeCtx = parseFreeIssueContext(issue?.note ?? null);
-    const levelName = req ? normLevelName(req?.level_code) : normLevelName(freeCtx.levelName);
-
-    const code = String(it?.rik_code ?? "").trim().toUpperCase();
-    if (!code) continue;
-
-    out.push({
-      issue_id: issueId,
-      iss_date: String(issue?.iss_date ?? ""),
-      object_name: objectName,
-      work_name: workName,
-      level_name: levelName,
+    const context = resolveDirectorFactContext({
+      request_id: reqId,
       request_item_id: reqItemId || null,
-      rik_code: code,
-      material_name_ru: code,
-      uom: String(it?.uom_id ?? "").trim(),
-      qty: toNum(it?.qty),
-      is_without_request: !reqItemId,
+      request: req,
+      issue_note: issue?.note ?? null,
+      issue_object_name: issue?.object_name ?? null,
+      issue_work_name: issue?.work_name ?? null,
+      request_system_name: firstNonEmpty(
+        systemNameByCode.get(String(req?.system_code ?? "").trim()),
+        req?.system_code,
+      ) || null,
+      use_free_issue_object_fallback: false,
+      force_without_level_when_issue_work_name: true,
     });
+    if (!matchesDirectorObjectIdentity(p.objectName, context)) continue;
+
+    const row = normalizeDirectorFactRow({
+      issue_id: issueId,
+      issue_item_id: issueItemId,
+      iss_date: String(issue?.iss_date ?? ""),
+      context,
+      material_name: it?.rik_code == null ? null : String(it.rik_code),
+      rik_code: it?.rik_code,
+      uom: it?.uom_id,
+      qty: it?.qty,
+    });
+    if (row) out.push(row);
   }
   logTiming("discipline.rows.light.build", tBuild);
   if (REPORTS_TIMING) console.info(`[director_reports] discipline.rows.light.counts: final_rows=${out.length}`);
@@ -2374,13 +2538,7 @@ export async function fetchDirectorWarehouseReportOptions(p: {
     return { objects: [], objectIdByName: {} };
   }
 
-  const objectIdByName: Record<string, string | null> = {};
-  for (const r of rows) {
-    const name = normObjectName(r?.object_name);
-    if (!(name in objectIdByName)) objectIdByName[name] = null;
-  }
-  const objects = Object.keys(objectIdByName).sort((a, b) => a.localeCompare(b, "ru"));
-  return { objects, objectIdByName };
+  return buildDirectorReportOptionsFromIdentities(rows.map((r) => getDirectorFactObjectIdentity(r)));
 }
 
 function buildPayloadFromFactRows(p: {
@@ -2413,16 +2571,17 @@ function buildPayloadFromFactRows(p: {
     const issueId = String(r?.issue_id ?? "").trim();
     if (!issueId) continue;
 
-    const objectName = normObjectName(r?.object_name);
-    const workName = normWorkName(r?.work_name);
-    const code = String(r?.rik_code ?? "").trim().toUpperCase();
+    const objectIdentity = getDirectorFactObjectIdentity(r);
+    const objectName = objectIdentity.object_name_canonical;
+    const workName = normWorkName(r?.work_name_resolved);
+    const code = String(r?.rik_code_resolved ?? "").trim().toUpperCase();
     const qty = toNum(r?.qty);
-    const uom = String(r?.uom ?? "").trim();
-    const nameRu = String(r?.material_name_ru ?? "").trim();
+    const uom = String(r?.uom_resolved ?? "").trim();
+    const nameRu = String(r?.material_name_resolved ?? "").trim();
     const isWithoutRequest = !!r?.is_without_request;
 
     issueIds.add(issueId);
-    if (objectName === WITHOUT_OBJECT) issueIdsWithoutObject.add(issueId);
+    if (objectIdentity.is_without_object) issueIdsWithoutObject.add(issueId);
 
     itemsTotal += 1;
     if (isWithoutRequest) itemsWithoutRequest += 1;
@@ -2476,20 +2635,9 @@ function buildPayloadFromFactRows(p: {
     },
     rows: materialRows,
     discipline_who,
-    report_options: {
-      objects: Array.from(
-        new Set(
-          p.rows.map((r) => normObjectName(r?.object_name)).filter(Boolean),
-        ),
-      ).sort((a, b) => a.localeCompare(b, "ru")),
-      objectIdByName: Object.fromEntries(
-        Array.from(
-          new Set(
-            p.rows.map((r) => normObjectName(r?.object_name)).filter(Boolean),
-          ),
-        ).map((name) => [name, null]),
-      ),
-    },
+    report_options: buildDirectorReportOptionsFromIdentities(
+      p.rows.map((r) => getDirectorFactObjectIdentity(r)),
+    ),
   };
 }
 
@@ -2608,6 +2756,7 @@ const maybeLogDivergence = (key: string, details: Record<string, any>) => {
   const seenAt = divergenceLogSeen.get(key) ?? 0;
   if (Date.now() - seenAt < DIVERGENCE_LOG_TTL_MS) return;
   divergenceLogSeen.set(key, Date.now());
+  trimMap(divergenceLogSeen);
   console.warn("[director_reports] canonical_divergence", { key, ...details });
 };
 
@@ -2887,7 +3036,9 @@ async function fetchPurchaseCostInPeriodScoped(args: {
           .filter(Boolean),
       ),
     );
-    const targetObject = canonicalObjectName(objectName);
+    const targetObject = resolveDirectorObjectIdentity({
+      object_name_display: objectName,
+    }).object_name_canonical;
     const matched = new Set<string>();
     for (const part of chunk(purchaseIds, 500)) {
       try {
@@ -2899,7 +3050,9 @@ async function fetchPurchaseCostInPeriodScoped(args: {
         for (const r of q.data) {
           const row = normalizePurchaseObjectRow(r);
           const id = String(row.id ?? "").trim();
-          const onm = canonicalObjectName(row.object_name);
+          const onm = resolveDirectorObjectIdentity({
+            object_name_display: row.object_name,
+          }).object_name_canonical;
           if (id && onm === targetObject) matched.add(id);
         }
       } catch { }
@@ -2981,11 +3134,11 @@ function buildDisciplinePayloadFromFactRows(
   for (const r of rows) {
     const issueId = String(r?.issue_id ?? "").trim();
     if (!issueId) continue;
-    const workName = normWorkName(r?.work_name);
-    const levelName = normLevelName(r?.level_name);
-    const code = String(r?.rik_code ?? "").trim().toUpperCase() || DASH;
-    const uom = String(r?.uom ?? "").trim();
-    const materialName = String(r?.material_name_ru ?? "").trim() || code;
+    const workName = normWorkName(r?.work_name_resolved);
+    const levelName = normLevelName(r?.level_name_resolved);
+    const code = String(r?.rik_code_resolved ?? "").trim().toUpperCase() || DASH;
+    const uom = String(r?.uom_resolved ?? "").trim();
+    const materialName = String(r?.material_name_resolved ?? "").trim() || code;
     const qty = toNum(r?.qty);
     const reqItemId = String(r?.request_item_id ?? "").trim();
     const price = reqItemId
@@ -3125,7 +3278,7 @@ function collectDisciplinePriceInputs(rows: DirectorFactRow[]): {
 
   for (const r of rows) {
     const requestItemId = String(r?.request_item_id ?? "").trim();
-    const code = String(r?.rik_code ?? "").trim().toUpperCase();
+    const code = String(r?.rik_code_resolved ?? "").trim().toUpperCase();
     const qty = toNum(r?.qty);
 
     if (requestItemId) requestItemIds.add(requestItemId);
@@ -3178,9 +3331,12 @@ export async function fetchDirectorWarehouseReport(p: {
   objectIdByName: Record<string, string | null>;
 }): Promise<DirectorReportPayload> {
   const objectName = p.objectName ?? null;
+  const objectIdentity =
+    objectName == null ? null : resolveDirectorObjectIdentity({ object_name_display: objectName });
   const pFrom = rpcDate(p.from, "1970-01-01");
   const pTo = rpcDate(p.to, "2099-12-31");
-  const selectedObjectId = objectName == null ? null : (p.objectIdByName[objectName] ?? null);
+  const selectedObjectId =
+    objectIdentity == null ? null : (p.objectIdByName[objectIdentity.object_name_canonical] ?? null);
   const cKey = canonicalKey("materials", pFrom, pTo, objectName);
 
   if (canUseCanonicalRpc("materials")) {
@@ -3211,14 +3367,14 @@ export async function fetchDirectorWarehouseReport(p: {
         logTiming("report.canonical_materials", tCanonical);
         return canonical;
       }
-    } catch (e: any) {
+    } catch (e: unknown) {
       if (isMissingCanonicalRpcError(e, "director_report_fetch_materials_v1")) {
         markCanonicalRpcStatus("materials", "missing");
       } else {
         markCanonicalRpcStatus("materials", "failed");
       }
       if (REPORTS_TIMING) {
-        console.info(`[director_reports] report.canonical_materials.failed: ${e?.message ?? e}`);
+        console.info(`[director_reports] report.canonical_materials.failed: ${(e as Error)?.message ?? e}`);
       }
     }
     logTiming("report.canonical_materials_fallback", tCanonical);
@@ -3236,6 +3392,7 @@ export async function fetchDirectorWarehouseReport(p: {
         objectName,
       });
       legacyMaterialsSnapshotCache.set(cKey, { ts: Date.now(), ...materialSnapshotFromPayload(fast) });
+      trimMap(legacyMaterialsSnapshotCache);
       logTiming("report.fast_rpc", t0);
       return fast;
     } catch {
@@ -3278,6 +3435,7 @@ export async function fetchDirectorWarehouseReport(p: {
     });
     payload.discipline = buildDisciplinePayloadFromFactRows(rows);
     legacyMaterialsSnapshotCache.set(cKey, { ts: Date.now(), ...materialSnapshotFromPayload(payload) });
+    trimMap(legacyMaterialsSnapshotCache);
     return payload;
   }
 
@@ -3288,6 +3446,7 @@ export async function fetchDirectorWarehouseReport(p: {
     objectName,
   });
   legacyMaterialsSnapshotCache.set(cKey, { ts: Date.now(), ...materialSnapshotFromPayload(fallback) });
+  trimMap(legacyMaterialsSnapshotCache);
   return fallback;
 }
 
@@ -3338,7 +3497,7 @@ export async function fetchDirectorWarehouseReportDiscipline(p: {
               };
               markCanonicalRpcStatus("summary", "available");
             }
-          } catch (e: any) {
+          } catch (e: unknown) {
             if (isMissingCanonicalRpcError(e, "director_report_fetch_summary_v1")) {
               markCanonicalRpcStatus("summary", "missing");
             } else {
@@ -3368,14 +3527,14 @@ export async function fetchDirectorWarehouseReportDiscipline(p: {
         logTiming("discipline.canonical_works", tCanonical);
         return canonical;
       }
-    } catch (e: any) {
+    } catch (e: unknown) {
       if (isMissingCanonicalRpcError(e, "director_report_fetch_works_v1")) {
         markCanonicalRpcStatus("works", "missing");
       } else {
         markCanonicalRpcStatus("works", "failed");
       }
       if (REPORTS_TIMING) {
-        console.info(`[director_reports] discipline.canonical_works.failed: ${e?.message ?? e}`);
+        console.info(`[director_reports] discipline.canonical_works.failed: ${(e as Error)?.message ?? e}`);
       }
     }
     logTiming("discipline.canonical_works_fallback", tCanonical);
@@ -3406,6 +3565,7 @@ export async function fetchDirectorWarehouseReportDiscipline(p: {
       const slicedRows = filterDisciplineRowsByObject(baseCachedRows.rows, p.objectName);
       rowsResult = { rows: slicedRows, source: baseCachedRows.source };
       disciplineRowsCache.set(rowsKey, { ts: Date.now(), rows: slicedRows, source: baseCachedRows.source });
+      trimMap(disciplineRowsCache);
       if (REPORTS_TIMING) {
         console.info(
           `[director_reports] discipline.rows.cache_slice: object=${String(p.objectName)} rows=${slicedRows.length}`,
@@ -3422,6 +3582,7 @@ export async function fetchDirectorWarehouseReportDiscipline(p: {
       objectIdByName: p.objectIdByName ?? {},
     });
     disciplineRowsCache.set(rowsKey, { ts: Date.now(), rows: rowsResult.rows, source: rowsResult.source });
+    trimMap(disciplineRowsCache);
   }
   let rows = rowsResult.rows;
   logTiming("discipline.fetch_rows", tRows);
@@ -3459,6 +3620,7 @@ export async function fetchDirectorWarehouseReportDiscipline(p: {
       price_by_request_item: new Map(),
     });
     legacyWorksSnapshotCache.set(cKey, { ts: Date.now(), ...worksSnapshotFromPayload(payload) });
+    trimMap(legacyWorksSnapshotCache);
     logTiming("discipline.total", tTotal);
     return payload;
   }
@@ -3505,6 +3667,7 @@ export async function fetchDirectorWarehouseReportDiscipline(p: {
     price_by_request_item: priceByRequestItem,
   });
   legacyWorksSnapshotCache.set(cKey, { ts: Date.now(), ...worksSnapshotFromPayload(payload) });
+  trimMap(legacyWorksSnapshotCache);
   logTiming("discipline.total", tTotal);
   return payload;
 }

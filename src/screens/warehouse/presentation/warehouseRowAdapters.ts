@@ -77,6 +77,9 @@ export function mapWarehouseReqHeadToCardProps(params: ReqHeadCardParams) {
   const isBlocked = hasRemaining && !hasIssuableNow;
   const isFullyIssued = !hasRemaining && totalPos > 0;
   const companyLine = String(row.contractor_name || "").trim();
+  const waitingLabel =
+    row.waiting_stock || (hasRemaining && !hasIssuableNow) ? "Ожидает остатка" : "";
+  const routeLine = [formatReqRouteLine(row, fmtRuDate), waitingLabel].filter(Boolean).join(" • ");
 
   const stripeColor = isFullyIssued
     ? "rgba(156,163,175,0.85)"
@@ -89,7 +92,7 @@ export function mapWarehouseReqHeadToCardProps(params: ReqHeadCardParams) {
   return {
     title: row.display_no || `REQ-${row.request_id.slice(0, 8)}`,
     companyLine: companyLine || "—",
-    routeLine: formatReqRouteLine(row, fmtRuDate),
+    routeLine,
     stripeColor,
     issuedCountLabel: String(Math.max(0, Number(row.done_cnt ?? 0))),
     totalCountLabel: String(totalPos),

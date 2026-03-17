@@ -1,4 +1,4 @@
-﻿// src/lib/catalog_api.ts
+// src/lib/catalog_api.ts
 import { supabase } from "./supabaseClient";
 import type { Database, Tables } from "./database.types";
 import { isRequestApprovedForProcurement } from "./requestStatus";
@@ -773,8 +773,8 @@ export async function listUnifiedCounterparties(search?: string): Promise<Unifie
         }
       }
     }
-  } catch (e: any) {
-    console.warn("[catalog_api.listUnifiedCounterparties] suppliers:", e?.message ?? e);
+  } catch (e: unknown) {
+    console.warn("[catalog_api.listUnifiedCounterparties] suppliers:", (e as Error)?.message ?? e);
   }
 
   // B) Subcontract organizations (non-draft).
@@ -810,8 +810,8 @@ export async function listUnifiedCounterparties(search?: string): Promise<Unifie
         }
       }
     }
-  } catch (e: any) {
-    console.warn("[catalog_api.listUnifiedCounterparties] subcontracts:", e?.message ?? e);
+  } catch (e: unknown) {
+    console.warn("[catalog_api.listUnifiedCounterparties] subcontracts:", (e as Error)?.message ?? e);
   }
 
   // C) Registered app counterparties.
@@ -903,8 +903,8 @@ export async function listUnifiedCounterparties(search?: string): Promise<Unifie
         }
       }
     }
-  } catch (e: any) {
-    console.warn("[catalog_api.listUnifiedCounterparties] registered:", e?.message ?? e);
+  } catch (e: unknown) {
+    console.warn("[catalog_api.listUnifiedCounterparties] registered:", (e as Error)?.message ?? e);
   }
 
   const rows = Array.from(byKey.values())
@@ -1079,10 +1079,10 @@ async function isCachedDraftValid(id: string): Promise<boolean> {
     const row = asRequestStatusRow(data);
     if (!row?.id) return false;
     return isDraftStatusValue(row.status);
-  } catch (e: any) {
-    const msg = String(e?.message ?? '').toLowerCase();
+  } catch (e: unknown) {
+    const msg = String((e as Error)?.message ?? '').toLowerCase();
     if (!msg.includes('permission denied')) {
-      console.warn('[catalog_api.getOrCreateDraftRequestId] draft check:', e?.message ?? e);
+      console.warn('[catalog_api.getOrCreateDraftRequestId] draft check:', (e as Error)?.message ?? e);
     }
     return false;
   }
@@ -1123,10 +1123,10 @@ export async function fetchRequestDisplayNo(requestId: string): Promise<string |
       .maybeSingle();
     const row = asRequestHeader(data);
     if (!error && row?.display_no) return String(row.display_no);
-  } catch (e: any) {
-    const msg = String(e?.message ?? "").toLowerCase();
+  } catch (e: unknown) {
+    const msg = String((e as Error)?.message ?? "").toLowerCase();
     if (!msg.includes("permission denied") && !msg.includes("does not exist")) {
-      console.warn(`[catalog_api.fetchRequestDisplayNo] requests:`, e?.message ?? e);
+      console.warn(`[catalog_api.fetchRequestDisplayNo] requests:`, (e as Error)?.message ?? e);
     }
   }
 
@@ -1140,10 +1140,10 @@ export async function fetchRequestDisplayNo(requestId: string): Promise<string |
         const val = obj.display_no ?? obj.display ?? obj.label ?? null;
         if (val != null) return String(val);
       }
-    } catch (e: any) {
-      const msg = String(e?.message ?? "");
+    } catch (e: unknown) {
+      const msg = String((e as Error)?.message ?? "");
       if (!msg.includes("function") && !msg.includes("does not exist")) {
-        console.warn(`[catalog_api.fetchRequestDisplayNo] rpc ${fn}:`, e?.message ?? e);
+        console.warn(`[catalog_api.fetchRequestDisplayNo] rpc ${fn}:`, (e as Error)?.message ?? e);
       }
     }
   }
@@ -1160,10 +1160,10 @@ export async function fetchRequestDisplayNo(requestId: string): Promise<string |
       const { data, error } = await selectCatalogDynamicReadSingle(src, `id,${col}`, id);
       const row = asUnknownRecord(data);
       if (!error && row && row[col] != null) return String(row[col]);
-    } catch (e: any) {
-      const msg = String(e?.message ?? "").toLowerCase();
+    } catch (e: unknown) {
+      const msg = String((e as Error)?.message ?? "").toLowerCase();
       if (!msg.includes("permission denied") && !msg.includes("does not exist")) {
-        console.warn(`[catalog_api.fetchRequestDisplayNo] ${src}:`, e?.message ?? e);
+        console.warn(`[catalog_api.fetchRequestDisplayNo] ${src}:`, (e as Error)?.message ?? e);
       }
     }
   }
@@ -1279,10 +1279,10 @@ export async function fetchRequestDetails(requestId: string): Promise<RequestDet
         console.warn("[catalog_api.fetchRequestDetails] requests:", error.message);
       }
     }
-  } catch (e: any) {
-    const msg = String(e?.message ?? "").toLowerCase();
+  } catch (e: unknown) {
+    const msg = String((e as Error)?.message ?? "").toLowerCase();
     if (!msg.includes("permission denied") && !msg.includes("does not exist")) {
-      console.warn("[catalog_api.fetchRequestDetails] requests:", e?.message ?? e);
+      console.warn("[catalog_api.fetchRequestDetails] requests:", (e as Error)?.message ?? e);
     }
   }
 
@@ -1300,10 +1300,10 @@ export async function fetchRequestDetails(requestId: string): Promise<RequestDet
           console.warn(`[catalog_api.fetchRequestDetails] ${view}:`, error.message);
         }
       }
-    } catch (e: any) {
-      const msg = String(e?.message ?? "").toLowerCase();
+    } catch (e: unknown) {
+      const msg = String((e as Error)?.message ?? "").toLowerCase();
       if (!msg.includes("permission denied") && !msg.includes("does not exist")) {
-        console.warn(`[catalog_api.fetchRequestDetails] ${view}:`, e?.message ?? e);
+        console.warn(`[catalog_api.fetchRequestDetails] ${view}:`, (e as Error)?.message ?? e);
       }
     }
   }
@@ -1530,8 +1530,8 @@ export async function listRequestItems(requestId: string): Promise<ReqItemRow[]>
       .filter((row): row is ReqItemRow => !!row);
 
     return mapped.sort((a, b) => (a.line_no ?? 0) - (b.line_no ?? 0));
-  } catch (e: any) {
-    console.warn('[catalog_api.listRequestItems] request_items:', e?.message ?? e);
+  } catch (e: unknown) {
+    console.warn('[catalog_api.listRequestItems] request_items:', (e as Error)?.message ?? e);
     return [];
   }
 }
@@ -1638,7 +1638,7 @@ export async function requestItemUpdateQty(
     } else if (error) {
       lastErr = error;
     }
-  } catch (e: any) {
+  } catch (e: unknown) {
     lastErr = e;
   }
 
@@ -1656,7 +1656,7 @@ export async function requestItemUpdateQty(
       const mapped = mapRequestItemRow(data, rid || String((data as { request_id?: unknown })?.request_id ?? ""));
       if (mapped) return mapped;
     }
-  } catch (e: any) {
+  } catch (e: unknown) {
     lastErr = e;
   }
 
@@ -1820,9 +1820,9 @@ export async function listSuppliers(search?: string): Promise<Supplier[]> {
         console.warn("[catalog_api.listSuppliers] rpc suppliers_list:", error.message);
       }
     }
-  } catch (e: any) {
-    if (!String(e?.message ?? "").includes("does not exist")) {
-      console.warn("[catalog_api.listSuppliers] rpc suppliers_list:", e?.message ?? e);
+  } catch (e: unknown) {
+    if (!String((e as Error)?.message ?? "").includes("does not exist")) {
+      console.warn("[catalog_api.listSuppliers] rpc suppliers_list:", (e as Error)?.message ?? e);
     }
   }
 
@@ -1839,8 +1839,8 @@ export async function listSuppliers(search?: string): Promise<Supplier[]> {
     if (Array.isArray(data)) {
       return mapSupplierRows(data as SupplierTableRow[]);
     }
-  } catch (e: any) {
-    console.warn("[catalog_api.listSuppliers] table suppliers:", e?.message ?? e);
+  } catch (e: unknown) {
+    console.warn("[catalog_api.listSuppliers] table suppliers:", (e as Error)?.message ?? e);
   }
 
   return [];
@@ -1870,6 +1870,68 @@ export type CreateProposalsResult = {
     supplier: string;
     request_item_ids: string[];
   }>;
+};
+
+type ProposalCreationBindingResolved = {
+  request_item_id: string;
+  price: number;
+  qty: number;
+  supplier: string | null;
+  supplier_id: string | null;
+  contractor_id: string | null;
+  kind: ProposalItemKind;
+};
+
+type ProposalCreationPreconditionsResolved = {
+  shouldSubmit: boolean;
+  statusAfter: string | null;
+  itemInfoById: Map<string, RequestItemForProposal>;
+  approvedItemIds: Set<string>;
+  counterpartyBinding: CounterpartyBinding;
+  proposalItemsBindingCols: ProposalItemsBindingColumns;
+};
+
+type ProposalCreationBucketPrepared = {
+  bucketIndex: number;
+  supplierLabel: string;
+  supplierDisplay: string;
+  supplierDb: string | null;
+  request_item_ids: string[];
+  metaRows: ProposalSnapshotMetaRow[];
+  validatedBindings: ProposalCreationBindingResolved[];
+};
+
+type ProposalCreationBucketMutationResult = {
+  bucketIndex: number;
+  proposal_id: string;
+  proposal_no: string | null;
+  display_no: string | null;
+  supplier: string;
+  request_item_ids: string[];
+  linked_request_item_ids: string[];
+  resolved_bindings: ProposalCreationBindingResolved[];
+  submitted: boolean;
+  request_item_status_synced: boolean;
+};
+
+type ProposalCreationMutationResult = {
+  proposals: ProposalCreationBucketMutationResult[];
+};
+
+type ProposalCreationHeadCreated = {
+  proposal_id: string;
+  proposal_no: string | null;
+  display_no: string | null;
+};
+
+type ProposalCreationCompletionResult = {
+  resolved_bindings: ProposalCreationBindingResolved[];
+  submitted: boolean;
+};
+
+type ProposalCreationRuntime = {
+  dbCalls: number;
+  proposalItemsBulkUpsertSupported: boolean;
 };
 
 const isApprovedForProcurement = (raw: unknown) => isRequestApprovedForProcurement(raw);
@@ -1930,10 +1992,10 @@ async function loadProposalItemsBindingColumns(): Promise<ProposalItemsBindingCo
       supplier_id: cols.has("supplier_id"),
       contractor_id: cols.has("contractor_id"),
     };
-  } catch (e: any) {
+  } catch (e: unknown) {
     console.warn(
       "[catalog_api.createProposalsBySupplier] proposal_items columns probe:",
-      e?.message ?? e,
+      (e as Error)?.message ?? e,
     );
     proposalItemsBindingColumnsCache = { supplier_id: false, contractor_id: false };
   }
@@ -1951,7 +2013,7 @@ async function loadRequestItemsForProposal(ids: string[]): Promise<any[]> {
       .in("id", uniqIds);
     if (!q.error) return Array.isArray(q.data) ? q.data : [];
     throw q.error;
-  } catch (e: any) {
+  } catch (e: unknown) {
     throw e;
   }
 }
@@ -2069,8 +2131,8 @@ async function loadCounterpartyBinding(): Promise<CounterpartyBinding> {
         if (id && name && !supplierIdByName.has(name)) supplierIdByName.set(name, id);
       }
     }
-  } catch (e: any) {
-    console.warn("[catalog_api.createProposalsBySupplier] suppliers binding load:", e?.message ?? e);
+  } catch (e: unknown) {
+    console.warn("[catalog_api.createProposalsBySupplier] suppliers binding load:", (e as Error)?.message ?? e);
   }
 
   try {
@@ -2082,61 +2144,18 @@ async function loadCounterpartyBinding(): Promise<CounterpartyBinding> {
         if (id && name && !contractorIdByName.has(name)) contractorIdByName.set(name, id);
       }
     }
-  } catch (e: any) {
-    console.warn("[catalog_api.createProposalsBySupplier] contractors binding load:", e?.message ?? e);
+  } catch (e: unknown) {
+    console.warn("[catalog_api.createProposalsBySupplier] contractors binding load:", (e as Error)?.message ?? e);
   }
 
   return { supplierIdByName, contractorIdByName };
 }
 
-export async function createProposalsBySupplier(
-  buckets: ProposalBucketInput[],
-  opts: CreateProposalsOptions = {}
-): Promise<CreateProposalsResult> {
-  const nowMs = () =>
-    typeof performance !== "undefined" && typeof performance.now === "function"
-      ? performance.now()
-      : Date.now();
-  const perfStartedAt = nowMs();
-  const perf = {
-    preparePayload: 0,
-    groupBuckets: 0,
-    createProposalHeads: 0,
-    insertProposalItems: 0,
-    updateRequestItems: 0,
-    linkBindings: 0,
-    fetchAfterWrite: 0,
-  };
-  let dbCalls = 0;
-  let proposalItemsBulkUpsertSupported = proposalItemsBulkUpsertCapabilityCache !== false;
-  const bucketPerf: Array<{
-    bucketIndex: number;
-    itemCount: number;
-    dbCalls: number;
-    createProposalHeadsMs: number;
-    fetchAfterWriteMs: number;
-    insertProposalItemsMs: number;
-    linkBindingsMs: number;
-    updateRequestItemsMs: number;
-  }> = [];
-
-  const proposals: CreateProposalsResult["proposals"] = [];
-  const shouldSubmit = opts.submit !== false;
-  const statusAfter = opts.requestItemStatus ?? null;
-  const seenRequestItemIdsInRun = new Set<string>();
-
-  const groupBucketsStartedAt = nowMs();
-  const allItemIds = Array.from(
-    new Set(
-      (buckets || [])
-        .flatMap((b) => b?.request_item_ids ?? [])
-        .map((id) => String(id || "").trim())
-        .filter(Boolean),
-    ),
-  );
-  perf.groupBuckets = nowMs() - groupBucketsStartedAt;
-
-  const preparePayloadStartedAt = nowMs();
+async function resolveProposalCreationPreconditions(
+  allItemIds: string[],
+  opts: CreateProposalsOptions,
+  runtime: ProposalCreationRuntime,
+): Promise<ProposalCreationPreconditionsResolved> {
   const approvedItemIds = new Set<string>();
   const itemInfoById = new Map<string, RequestItemForProposal>();
   const counterpartyBindingPromise = loadCounterpartyBinding();
@@ -2144,7 +2163,7 @@ export async function createProposalsBySupplier(
 
   if (allItemIds.length) {
     try {
-      dbCalls += 1; // request_items load
+      runtime.dbCalls += 1;
       const qItemsData = parseRequestItemsForProposalRows(
         await loadRequestItemsForProposal(allItemIds),
       );
@@ -2153,7 +2172,8 @@ export async function createProposalsBySupplier(
           new Set(qItemsData.map((r) => norm(r.request_id)).filter(Boolean)),
         );
         const qReq = reqIds.length
-          ? (dbCalls += 1, await supabase.from("requests").select("id,status").in("id", reqIds))
+          ? (runtime.dbCalls += 1,
+            await supabase.from("requests").select("id,status").in("id", reqIds))
           : { data: [] as RequestStatusLiteRow[], error: null };
 
         const reqStatusById = new Map<string, string>();
@@ -2209,11 +2229,7 @@ export async function createProposalsBySupplier(
           });
           if (qReq.error) {
             approvedItemIds.add(itemId);
-          } else if (
-            approvedByRequestStatus ||
-            approvedByItemStatus ||
-            rejectedForRework
-          ) {
+          } else if (approvedByRequestStatus || approvedByItemStatus || rejectedForRework) {
             approvedItemIds.add(itemId);
           }
         });
@@ -2224,357 +2240,509 @@ export async function createProposalsBySupplier(
           rows: gateDebugRows,
         });
       }
-    } catch (e: any) {
-      console.warn("[catalog_api.createProposalsBySupplier] request approval gate:", e?.message ?? e);
+    } catch (e: unknown) {
+      console.warn("[catalog_api.createProposalsBySupplier] request approval gate:", (e as Error)?.message ?? e);
       allItemIds.forEach((id) => approvedItemIds.add(id));
     }
   }
+
   const [counterpartyBinding, proposalItemsBindingCols] = await Promise.all([
     counterpartyBindingPromise,
     proposalItemsBindingColsPromise,
   ]);
+
+  return {
+    shouldSubmit: opts.submit !== false,
+    statusAfter: opts.requestItemStatus ?? null,
+    itemInfoById,
+    approvedItemIds,
+    counterpartyBinding,
+    proposalItemsBindingCols,
+  };
+}
+
+function prepareProposalCreationBucket(
+  bucket: ProposalBucketInput,
+  bucketIndex: number,
+  preconditions: ProposalCreationPreconditionsResolved,
+  seenRequestItemIdsInRun: Set<string>,
+): ProposalCreationBucketPrepared | null {
+  const idsRaw = (bucket?.request_item_ids ?? [])
+    .map((id) => String(id || "").trim())
+    .filter((id) => !!id && preconditions.approvedItemIds.has(id));
+  const filteredOutIds = (bucket?.request_item_ids ?? [])
+    .map((id) => String(id || "").trim())
+    .filter((id) => !!id && !preconditions.approvedItemIds.has(id));
+  if (filteredOutIds.length) {
+    console.warn("[catalog_api.createProposalsBySupplier] bucket filtered ids", {
+      bucketIndex,
+      supplier: bucket?.supplier ?? null,
+      filteredOutIds,
+    });
+  }
+
+  const request_item_ids: string[] = [];
+  for (const itemId of idsRaw) {
+    if (seenRequestItemIdsInRun.has(itemId)) {
+      throw new Error(`duplicate request_item_id in payload: ${itemId}`);
+    }
+    seenRequestItemIdsInRun.add(itemId);
+    request_item_ids.push(itemId);
+  }
+  if (!request_item_ids.length) return null;
+
+  const supplierDisplay = bucket?.supplier ? norm(bucket.supplier) : "";
+  const supplierLabel = supplierDisplay || SUPPLIER_NONE_LABEL;
+  const supplierDb: string | null = supplierDisplay ? supplierDisplay : null;
+  const idsSet = new Set(request_item_ids);
+  const validatedByItemId = new Map<string, ProposalCreationBindingResolved>();
+  const metaRows: ProposalSnapshotMetaRow[] = (
+    bucket.meta ?? request_item_ids.map((request_item_id) => ({ request_item_id }))
+  )
+    .map(parseProposalBucketMetaInput)
+    .filter((row) => idsSet.has(row.request_item_id))
+    .map((row) => {
+      const request_item_id = row.request_item_id;
+      const itemInfo = preconditions.itemInfoById.get(request_item_id);
+      const qty = Number(itemInfo?.qty ?? 0);
+      const price = parsePositive(row.price ?? null);
+      const kind = itemInfo?.kind ?? "unknown";
+      const counterpartyName = norm(row.supplier ?? supplierDb ?? "");
+      const normCp = normCounterpartyKey(counterpartyName);
+
+      let supplier_id: string | null = null;
+      let contractor_id: string | null = null;
+      if (kind === "material") {
+        supplier_id = preconditions.counterpartyBinding.supplierIdByName.get(normCp) ?? null;
+        if (!supplier_id && preconditions.proposalItemsBindingCols.supplier_id) {
+          throw new Error(`material item requires valid supplier_id binding: ${request_item_id}`);
+        }
+      } else if (kind === "service" || kind === "work") {
+        contractor_id = preconditions.counterpartyBinding.contractorIdByName.get(normCp) ?? null;
+        if (!contractor_id && preconditions.proposalItemsBindingCols.contractor_id) {
+          throw new Error(`${kind} item requires valid contractor_id binding: ${request_item_id}`);
+        }
+      } else {
+        supplier_id = preconditions.counterpartyBinding.supplierIdByName.get(normCp) ?? null;
+        contractor_id = preconditions.counterpartyBinding.contractorIdByName.get(normCp) ?? null;
+        if (
+          !supplier_id &&
+          !contractor_id &&
+          preconditions.proposalItemsBindingCols.supplier_id &&
+          preconditions.proposalItemsBindingCols.contractor_id
+        ) {
+          throw new Error(`item requires supplier_id or contractor_id binding: ${request_item_id}`);
+        }
+      }
+
+      if (!(qty > 0)) throw new Error(`proposal item qty must be > 0: ${request_item_id}`);
+      if (!(price > 0)) throw new Error(`proposal item price must be > 0: ${request_item_id}`);
+
+      const validated: ProposalCreationBindingResolved = {
+        request_item_id,
+        price,
+        qty,
+        supplier: counterpartyName || null,
+        supplier_id,
+        contractor_id,
+        kind,
+      };
+      validatedByItemId.set(request_item_id, validated);
+
+      return {
+        request_item_id,
+        price: String(price),
+        supplier: counterpartyName || null,
+        note: row.note ?? null,
+      };
+    });
+
+  if (validatedByItemId.size !== request_item_ids.length) {
+    throw new Error("proposal validation failed: missing canonical item bindings");
+  }
+
+  return {
+    bucketIndex,
+    supplierLabel,
+    supplierDisplay,
+    supplierDb,
+    request_item_ids,
+    metaRows,
+    validatedBindings: Array.from(validatedByItemId.values()),
+  };
+}
+
+async function createProposalHeadStage(
+  prepared: ProposalCreationBucketPrepared,
+  preconditions: ProposalCreationPreconditionsResolved,
+  opts: CreateProposalsOptions,
+  runtime: ProposalCreationRuntime,
+): Promise<ProposalCreationHeadCreated> {
+  runtime.dbCalls += 1;
+  const created = await rpcProposalCreateFull();
+  const proposal_id = String(created.id);
+  const createdHead = mapProposalHeadDisplay(created);
+  let proposal_no = createdHead.proposalNo;
+  let display_no = createdHead.displayNo;
+
+  const requestIdsForBucket = Array.from(
+    new Set(
+      prepared.request_item_ids
+        .map((requestItemId) =>
+          String(preconditions.itemInfoById.get(requestItemId)?.request_id ?? "").trim(),
+        )
+        .filter(Boolean),
+    ),
+  );
+  const headerPatch: ProposalsUpdate = {};
+  if (opts.buyerFio) headerPatch.buyer_fio = opts.buyerFio;
+  if (prepared.supplierDisplay) headerPatch.supplier = prepared.supplierDisplay;
+  if (requestIdsForBucket.length === 1) {
+    headerPatch.request_id = requestIdsForBucket[0];
+  } else if (requestIdsForBucket.length > 1) {
+    console.warn(
+      "[catalog_api.createProposalsBySupplier] proposal head has multiple request_ids; request_id patch skipped",
+      {
+        proposalId: proposal_id,
+        requestIdsForBucket,
+        requestItemIds: prepared.request_item_ids,
+      },
+    );
+  }
+  if (Object.keys(headerPatch).length) {
+    runtime.dbCalls += 1;
+    await supabase.from("proposals").update(headerPatch).eq("id", proposal_id);
+  }
+
+  const requestIdAfterCreate = createdHead.requestId;
+  if (!display_no && proposal_no) {
+    runtime.dbCalls += 1;
+    const patch: ProposalsUpdate = { display_no: proposal_no };
+    if (!requestIdAfterCreate && requestIdsForBucket.length === 1) {
+      patch.request_id = requestIdsForBucket[0];
+    }
+    const displayPatch = await supabase.from("proposals").update(patch).eq("id", proposal_id);
+    if (displayPatch.error) {
+      console.warn(
+        "[catalog_api.createProposalsBySupplier] proposal metadata patch:",
+        displayPatch.error.message,
+      );
+    } else {
+      display_no = proposal_no;
+    }
+  }
+
+  return { proposal_id, proposal_no, display_no };
+}
+
+async function linkProposalItemsStage(
+  proposalId: string,
+  requestItemIds: string[],
+  runtime: ProposalCreationRuntime,
+): Promise<string[]> {
+  let added = 0;
+  try {
+    runtime.dbCalls += 1;
+    added = await rpcProposalAddItems(proposalId, requestItemIds);
+  } catch (e: unknown) {
+    console.warn("[catalog_api.createProposalsBySupplier] proposalAddItems:", (e as Error)?.message ?? e);
+  }
+
+  if (!added) {
+    for (const pack of chunk(requestItemIds, 50)) {
+      const rows: ProposalItemsInsert[] = pack.map((request_item_id) => ({
+        proposal_id: proposalId,
+        proposal_id_text: proposalId,
+        request_item_id,
+      }));
+      runtime.dbCalls += 1;
+      const { error } = await supabase.from("proposal_items").insert(rows);
+      if (error) throw error;
+    }
+  }
+
+  return requestItemIds;
+}
+
+async function completeProposalCreationStage(
+  proposalId: string,
+  prepared: ProposalCreationBucketPrepared,
+  preconditions: ProposalCreationPreconditionsResolved,
+  runtime: ProposalCreationRuntime,
+): Promise<ProposalCreationCompletionResult> {
+  if (prepared.metaRows.length) {
+    try {
+      runtime.dbCalls += 1;
+      await rpcProposalSnapshotItems(proposalId, prepared.metaRows);
+    } catch (e: unknown) {
+      console.warn("[catalog_api.createProposalsBySupplier] proposalSnapshotItems:", (e as Error)?.message ?? e);
+    }
+  }
+
+  let bindingColumnsWarned = false;
+  const rowsForUpdate = prepared.validatedBindings;
+  const upsertRows: ProposalItemsCompatInsertUpsert[] = rowsForUpdate.map((row) => {
+    const payload: ProposalItemsCompatInsertUpsert = {
+      proposal_id: proposalId,
+      proposal_id_text: proposalId,
+      request_item_id: row.request_item_id,
+      qty: row.qty,
+      price: row.price,
+      supplier: row.supplier,
+    };
+    if (preconditions.proposalItemsBindingCols.supplier_id) payload.supplier_id = row.supplier_id;
+    if (preconditions.proposalItemsBindingCols.contractor_id) {
+      payload.contractor_id = row.contractor_id;
+    }
+    return payload;
+  });
+
+  if (runtime.proposalItemsBulkUpsertSupported && upsertRows.length) {
+    try {
+      for (const pack of chunk(upsertRows, 100)) {
+        runtime.dbCalls += 1;
+        const { error } = await supabase
+          .from("proposal_items")
+          .upsert(pack, { onConflict: "proposal_id,request_item_id" });
+        if (error) throw error;
+      }
+      proposalItemsBulkUpsertCapabilityCache = true;
+    } catch (e: unknown) {
+      const msg = String((e as Error)?.message ?? e ?? "");
+      if (msg.toLowerCase().includes("no unique") || msg.toLowerCase().includes("on conflict")) {
+        runtime.proposalItemsBulkUpsertSupported = false;
+        proposalItemsBulkUpsertCapabilityCache = false;
+      }
+      console.warn(
+        "[catalog_api.createProposalsBySupplier] proposal_items bulk upsert failed; fallback to row updates:",
+        (e as Error)?.message ?? e,
+      );
+    }
+  }
+
+  if (!runtime.proposalItemsBulkUpsertSupported) {
+    for (const pack of chunk(rowsForUpdate, 20)) {
+      await Promise.all(
+        pack.map(async (row) => {
+          try {
+            const payload: ProposalItemsCompatUpdate = {
+              qty: row.qty,
+              price: row.price,
+              supplier: row.supplier,
+            };
+            if (preconditions.proposalItemsBindingCols.supplier_id) {
+              payload.supplier_id = row.supplier_id;
+            }
+            if (preconditions.proposalItemsBindingCols.contractor_id) {
+              payload.contractor_id = row.contractor_id;
+            }
+
+            const requiresSupplierBinding = row.kind === "material" && !!row.supplier_id;
+            const requiresContractorBinding =
+              (row.kind === "service" || row.kind === "work") && !!row.contractor_id;
+            if (
+              !bindingColumnsWarned &&
+              ((requiresSupplierBinding && !preconditions.proposalItemsBindingCols.supplier_id) ||
+                (requiresContractorBinding &&
+                  !preconditions.proposalItemsBindingCols.contractor_id))
+            ) {
+              bindingColumnsWarned = true;
+              console.warn(
+                "[catalog_api.createProposalsBySupplier] proposal_items binding columns are missing in schema; storing text binding only",
+              );
+            }
+
+            runtime.dbCalls += 1;
+            const { error } = await supabase
+              .from("proposal_items")
+              .update(payload)
+              .eq("proposal_id", proposalId)
+              .eq("request_item_id", row.request_item_id);
+            if (error) {
+              console.warn(
+                "[catalog_api.createProposalsBySupplier] proposal_items canonical binding update:",
+                error.message,
+              );
+            }
+          } catch (e: unknown) {
+            console.warn(
+              "[catalog_api.createProposalsBySupplier] proposal_items canonical binding update ex:",
+              (e as Error)?.message ?? e,
+            );
+          }
+        }),
+      );
+    }
+  }
+
+  let submitted = false;
+  if (preconditions.shouldSubmit) {
+    try {
+      runtime.dbCalls += 1;
+      await rpcProposalSubmit(proposalId);
+      submitted = true;
+    } catch (e: unknown) {
+      console.warn("[catalog_api.createProposalsBySupplier] proposalSubmit:", (e as Error)?.message ?? e);
+    }
+  }
+
+  return {
+    resolved_bindings: rowsForUpdate,
+    submitted,
+  };
+}
+
+async function syncProposalRequestItemStatusStage(
+  prepared: ProposalCreationBucketPrepared,
+  preconditions: ProposalCreationPreconditionsResolved,
+  runtime: ProposalCreationRuntime,
+): Promise<boolean> {
+  if (!preconditions.statusAfter) return false;
+  try {
+    runtime.dbCalls += 1;
+    const args: RequestItemsSetStatusArgs = {
+      p_request_item_ids: prepared.request_item_ids,
+      p_status: preconditions.statusAfter,
+    };
+    const { error } = await supabase.rpc("request_items_set_status", args);
+    if (error) throw error;
+    return true;
+  } catch {
+    runtime.dbCalls += 1;
+    await supabase
+      .from("request_items")
+      .update({ status: preconditions.statusAfter } satisfies RequestItemsUpdate)
+      .in("id", prepared.request_item_ids);
+    return true;
+  }
+}
+
+function mapProposalCreationMutationResult(
+  result: ProposalCreationMutationResult,
+): CreateProposalsResult {
+  return {
+    proposals: result.proposals.map((proposal) => ({
+      proposal_id: proposal.proposal_id,
+      proposal_no: proposal.proposal_no,
+      supplier: proposal.supplier,
+      request_item_ids: proposal.request_item_ids,
+    })),
+  };
+}
+
+export async function createProposalsBySupplier(
+  buckets: ProposalBucketInput[],
+  opts: CreateProposalsOptions = {}
+): Promise<CreateProposalsResult> {
+  const nowMs = () =>
+    typeof performance !== "undefined" && typeof performance.now === "function"
+      ? performance.now()
+      : Date.now();
+  const perfStartedAt = nowMs();
+  const perf = {
+    preparePayload: 0,
+    groupBuckets: 0,
+    createProposalHeads: 0,
+    insertProposalItems: 0,
+    updateRequestItems: 0,
+    linkBindings: 0,
+    fetchAfterWrite: 0,
+  };
+  const runtime: ProposalCreationRuntime = {
+    dbCalls: 0,
+    proposalItemsBulkUpsertSupported: proposalItemsBulkUpsertCapabilityCache !== false,
+  };
+  const bucketPerf: Array<{
+    bucketIndex: number;
+    itemCount: number;
+    dbCalls: number;
+    createProposalHeadsMs: number;
+    fetchAfterWriteMs: number;
+    insertProposalItemsMs: number;
+    linkBindingsMs: number;
+    updateRequestItemsMs: number;
+  }> = [];
+
+  const mutationResult: ProposalCreationMutationResult = { proposals: [] };
+  const seenRequestItemIdsInRun = new Set<string>();
+
+  const groupBucketsStartedAt = nowMs();
+  const allItemIds = Array.from(
+    new Set(
+      (buckets || [])
+        .flatMap((b) => b?.request_item_ids ?? [])
+        .map((id) => String(id || "").trim())
+        .filter(Boolean),
+    ),
+  );
+  perf.groupBuckets = nowMs() - groupBucketsStartedAt;
+
+  const preparePayloadStartedAt = nowMs();
+  const preconditions = await resolveProposalCreationPreconditions(allItemIds, opts, runtime);
   perf.preparePayload = nowMs() - preparePayloadStartedAt;
 
   for (const [bucketIndex, bucket] of (buckets || []).entries()) {
-    const bucketDbCallsStart = dbCalls;
+    const bucketDbCallsStart = runtime.dbCalls;
     let bucketCreateProposalHeadsMs = 0;
     let bucketFetchAfterWriteMs = 0;
     let bucketInsertProposalItemsMs = 0;
     let bucketLinkBindingsMs = 0;
     let bucketUpdateRequestItemsMs = 0;
-    const idsRaw = (bucket?.request_item_ids ?? [])
-      .map((id) => String(id || "").trim())
-      .filter((id) => !!id && approvedItemIds.has(id));
-    const filteredOutIds = (bucket?.request_item_ids ?? [])
-      .map((id) => String(id || "").trim())
-      .filter((id) => !!id && !approvedItemIds.has(id));
-    if (filteredOutIds.length) {
-      console.warn("[catalog_api.createProposalsBySupplier] bucket filtered ids", {
-        bucketIndex,
-        supplier: bucket?.supplier ?? null,
-        filteredOutIds,
-      });
-    }
-    const ids: string[] = [];
-    for (const itemId of idsRaw) {
-      if (seenRequestItemIdsInRun.has(itemId)) {
-        throw new Error(`duplicate request_item_id in payload: ${itemId}`);
-      }
-      seenRequestItemIdsInRun.add(itemId);
-      ids.push(itemId);
-    }
-    if (!ids.length) continue;
-
-    let proposalId: string;
-    let proposalNo: string | null = null;
-    let displayNo: string | null = null;
+    const prepared = prepareProposalCreationBucket(
+      bucket,
+      bucketIndex,
+      preconditions,
+      seenRequestItemIdsInRun,
+    );
+    if (!prepared) continue;
+    let createdHead: ProposalCreationHeadCreated;
 
     try {
       const createHeadStartedAt = nowMs();
-      dbCalls += 1;
-      const created = await rpcProposalCreateFull();
-      proposalId = String(created.id);
-      const createdHead = mapProposalHeadDisplay(created);
-      proposalNo = createdHead.proposalNo;
-      displayNo = createdHead.displayNo;
-
-      const requestIdsForBucket = Array.from(
-        new Set(
-          ids
-            .map((requestItemId) => String(itemInfoById.get(requestItemId)?.request_id ?? "").trim())
-            .filter(Boolean),
-        ),
-      );
-      const headerPatch: ProposalsUpdate = {};
-      if (opts.buyerFio) headerPatch.buyer_fio = opts.buyerFio;
-      const supplierDisplay = bucket?.supplier ? norm(bucket.supplier) : "";
-      if (supplierDisplay) headerPatch.supplier = supplierDisplay;
-      if (requestIdsForBucket.length === 1) {
-        headerPatch.request_id = requestIdsForBucket[0];
-      } else if (requestIdsForBucket.length > 1) {
-        console.warn("[catalog_api.createProposalsBySupplier] proposal head has multiple request_ids; request_id patch skipped", {
-          proposalId,
-          requestIdsForBucket,
-          requestItemIds: ids,
-        });
-      }
-      if (Object.keys(headerPatch).length) {
-        dbCalls += 1;
-        await supabase.from("proposals").update(headerPatch).eq("id", proposalId);
-      }
-      bucketCreateProposalHeadsMs += nowMs() - createHeadStartedAt;
-      perf.createProposalHeads += bucketCreateProposalHeadsMs;
-
-      const fetchAfterWriteStartedAt = nowMs();
-      const requestIdAfterCreate = createdHead.requestId;
-      if (!displayNo && proposalNo) {
-        dbCalls += 1;
-        const patch: ProposalsUpdate = { display_no: proposalNo };
-        if (!requestIdAfterCreate && requestIdsForBucket.length === 1) {
-          patch.request_id = requestIdsForBucket[0];
-        }
-        const displayPatch = await supabase.from("proposals").update(patch).eq("id", proposalId);
-        if (displayPatch.error) {
-          console.warn("[catalog_api.createProposalsBySupplier] proposal metadata patch:", displayPatch.error.message);
-        } else {
-          displayNo = proposalNo;
-        }
-      }
-      bucketFetchAfterWriteMs += nowMs() - fetchAfterWriteStartedAt;
-      perf.fetchAfterWrite += bucketFetchAfterWriteMs;
-    } catch (e: any) {
-      console.warn("[catalog_api.createProposalsBySupplier] proposalCreate:", e?.message ?? e);
+      createdHead = await createProposalHeadStage(prepared, preconditions, opts, runtime);
+      const createMs = nowMs() - createHeadStartedAt;
+      bucketCreateProposalHeadsMs += createMs;
+      perf.createProposalHeads += createMs;
+    } catch (e: unknown) {
+      console.warn("[catalog_api.createProposalsBySupplier] proposalCreate:", (e as Error)?.message ?? e);
       throw e;
     }
 
-    const supplierDisplay = bucket?.supplier ? norm(bucket.supplier) : "";
-    const supplierLabel = supplierDisplay || SUPPLIER_NONE_LABEL;
-    const supplierDb: string | null = supplierDisplay ? supplierDisplay : null;
+    const insertProposalItemsStartedAt = nowMs();
+    const linked_request_item_ids = await linkProposalItemsStage(
+      createdHead.proposal_id,
+      prepared.request_item_ids,
+      runtime,
+    );
+    const insertMs = nowMs() - insertProposalItemsStartedAt;
+    bucketInsertProposalItemsMs += insertMs;
+    perf.insertProposalItems += insertMs;
 
-    let added = 0;
-    try {
-      const insertProposalItemsStartedAt = nowMs();
-      dbCalls += 1;
-      added = await rpcProposalAddItems(proposalId, ids);
-      bucketInsertProposalItemsMs += nowMs() - insertProposalItemsStartedAt;
-      perf.insertProposalItems += nowMs() - insertProposalItemsStartedAt;
-    } catch (e: any) {
-      console.warn("[catalog_api.createProposalsBySupplier] proposalAddItems:", e?.message ?? e);
-    }
+    const completionStartedAt = nowMs();
+    const completion = await completeProposalCreationStage(
+      createdHead.proposal_id,
+      prepared,
+      preconditions,
+      runtime,
+    );
+    const completionMs = nowMs() - completionStartedAt;
+    bucketLinkBindingsMs += completionMs;
+    perf.linkBindings += completionMs;
 
-    if (!added) {
-      const insertProposalItemsStartedAt = nowMs();
-      for (const pack of chunk(ids, 50)) {
-        const rows: ProposalItemsInsert[] = pack.map((request_item_id) => ({
-          proposal_id: proposalId,
-          proposal_id_text: proposalId,
-          request_item_id,
-        }));
-        dbCalls += 1;
-        const { error } = await supabase.from("proposal_items").insert(rows);
-        if (error) throw error;
-      }
-      const insertMs = nowMs() - insertProposalItemsStartedAt;
-      bucketInsertProposalItemsMs += insertMs;
-      perf.insertProposalItems += insertMs;
-    }
-
-    const idsSet = new Set(ids);
-    const validatedByItemId = new Map<
-      string,
-      {
-        request_item_id: string;
-        price: number;
-        qty: number;
-        supplier: string | null;
-        supplier_id: string | null;
-        contractor_id: string | null;
-        kind: ProposalItemKind;
-      }
-    >();
-
-    const metaRows: ProposalSnapshotMetaRow[] = (bucket.meta ?? ids.map((request_item_id) => ({ request_item_id })))
-      .map(parseProposalBucketMetaInput)
-      .filter((row) => idsSet.has(row.request_item_id))
-      .map((row) => {
-        const request_item_id = row.request_item_id;
-        const itemInfo = itemInfoById.get(request_item_id);
-        const qty = Number(itemInfo?.qty ?? 0);
-        const price = parsePositive(row.price ?? null);
-        const kind = itemInfo?.kind ?? "unknown";
-        const counterpartyName = norm(row.supplier ?? supplierDb ?? "");
-        const normCp = normCounterpartyKey(counterpartyName);
-
-        let supplier_id: string | null = null;
-        let contractor_id: string | null = null;
-        if (kind === "material") {
-          supplier_id = counterpartyBinding.supplierIdByName.get(normCp) ?? null;
-          if (!supplier_id && proposalItemsBindingCols.supplier_id) {
-            throw new Error(`material item requires valid supplier_id binding: ${request_item_id}`);
-          }
-        } else if (kind === "service" || kind === "work") {
-          contractor_id = counterpartyBinding.contractorIdByName.get(normCp) ?? null;
-          if (!contractor_id && proposalItemsBindingCols.contractor_id) {
-            throw new Error(`${kind} item requires valid contractor_id binding: ${request_item_id}`);
-          }
-        } else {
-          supplier_id = counterpartyBinding.supplierIdByName.get(normCp) ?? null;
-          contractor_id = counterpartyBinding.contractorIdByName.get(normCp) ?? null;
-          if (!supplier_id && !contractor_id && proposalItemsBindingCols.supplier_id && proposalItemsBindingCols.contractor_id) {
-            throw new Error(`item requires supplier_id or contractor_id binding: ${request_item_id}`);
-          }
-        }
-
-        if (!(qty > 0)) throw new Error(`proposal item qty must be > 0: ${request_item_id}`);
-        if (!(price > 0)) throw new Error(`proposal item price must be > 0: ${request_item_id}`);
-
-        validatedByItemId.set(request_item_id, {
-          request_item_id,
-          price,
-          qty,
-          supplier: counterpartyName || null,
-          supplier_id,
-          contractor_id,
-          kind,
-        });
-
-        return {
-          request_item_id,
-          price: String(price),
-          supplier: counterpartyName || null,
-          note: row.note ?? null,
-        };
-      });
-
-    if (validatedByItemId.size !== ids.length) {
-      throw new Error("proposal validation failed: missing canonical item bindings");
-    }
-
-    if (metaRows.length) {
-      try {
-        const insertProposalItemsStartedAt = nowMs();
-        dbCalls += 1;
-        await rpcProposalSnapshotItems(proposalId, metaRows);
-        const insertMs = nowMs() - insertProposalItemsStartedAt;
-        bucketInsertProposalItemsMs += insertMs;
-        perf.insertProposalItems += insertMs;
-      } catch (e: any) {
-        console.warn("[catalog_api.createProposalsBySupplier] proposalSnapshotItems:", e?.message ?? e);
-      }
-    }
-
-    let bindingColumnsWarned = false;
-    const rowsForUpdate = Array.from(validatedByItemId.values());
-    const linkBindingsStartedAt = nowMs();
-    const upsertRows: ProposalItemsCompatInsertUpsert[] = rowsForUpdate.map((row) => {
-      const payload: ProposalItemsCompatInsertUpsert = {
-        proposal_id: proposalId,
-        proposal_id_text: proposalId,
-        request_item_id: row.request_item_id,
-        qty: row.qty,
-        price: row.price,
-        supplier: row.supplier,
-      };
-      if (proposalItemsBindingCols.supplier_id) payload.supplier_id = row.supplier_id;
-      if (proposalItemsBindingCols.contractor_id) payload.contractor_id = row.contractor_id;
-      return payload;
-    });
-
-    if (proposalItemsBulkUpsertSupported && upsertRows.length) {
-      try {
-        for (const pack of chunk(upsertRows, 100)) {
-          dbCalls += 1;
-          const { error } = await supabase
-            .from("proposal_items")
-            .upsert(pack, { onConflict: "proposal_id,request_item_id" });
-          if (error) throw error;
-        }
-        proposalItemsBulkUpsertCapabilityCache = true;
-      } catch (e: any) {
-        const msg = String(e?.message ?? e ?? "");
-        if (msg.toLowerCase().includes("no unique") || msg.toLowerCase().includes("on conflict")) {
-          proposalItemsBulkUpsertSupported = false;
-          proposalItemsBulkUpsertCapabilityCache = false;
-        }
-        console.warn(
-          "[catalog_api.createProposalsBySupplier] proposal_items bulk upsert failed; fallback to row updates:",
-          e?.message ?? e,
-        );
-      }
-    }
-
-    if (!proposalItemsBulkUpsertSupported) {
-      for (const pack of chunk(rowsForUpdate, 20)) {
-        await Promise.all(
-          pack.map(async (row) => {
-            try {
-              const payload: ProposalItemsCompatUpdate = {
-                qty: row.qty,
-                price: row.price,
-                supplier: row.supplier,
-              };
-              if (proposalItemsBindingCols.supplier_id) payload.supplier_id = row.supplier_id;
-              if (proposalItemsBindingCols.contractor_id) payload.contractor_id = row.contractor_id;
-
-              const requiresSupplierBinding = row.kind === "material" && !!row.supplier_id;
-              const requiresContractorBinding =
-                (row.kind === "service" || row.kind === "work") && !!row.contractor_id;
-              if (
-                !bindingColumnsWarned &&
-                ((requiresSupplierBinding && !proposalItemsBindingCols.supplier_id) ||
-                  (requiresContractorBinding && !proposalItemsBindingCols.contractor_id))
-              ) {
-                bindingColumnsWarned = true;
-                console.warn(
-                  "[catalog_api.createProposalsBySupplier] proposal_items binding columns are missing in schema; storing text binding only",
-                );
-              }
-
-              dbCalls += 1;
-              const { error } = await supabase
-                .from("proposal_items")
-                .update(payload)
-                .eq("proposal_id", proposalId)
-                .eq("request_item_id", row.request_item_id);
-              if (error) {
-                console.warn(
-                  "[catalog_api.createProposalsBySupplier] proposal_items canonical binding update:",
-                  error.message,
-                );
-              }
-            } catch (e: any) {
-              console.warn(
-                "[catalog_api.createProposalsBySupplier] proposal_items canonical binding update ex:",
-                e?.message ?? e,
-              );
-            }
-          }),
-        );
-      }
-    }
-    const linkMs = nowMs() - linkBindingsStartedAt;
-    bucketLinkBindingsMs += linkMs;
-    perf.linkBindings += linkMs;
-
-    if (shouldSubmit) {
-      try {
-        const insertProposalItemsStartedAt = nowMs();
-        dbCalls += 1;
-        await rpcProposalSubmit(proposalId);
-        const insertMs = nowMs() - insertProposalItemsStartedAt;
-        bucketInsertProposalItemsMs += insertMs;
-        perf.insertProposalItems += insertMs;
-      } catch (e: any) {
-        console.warn("[catalog_api.createProposalsBySupplier] proposalSubmit:", e?.message ?? e);
-      }
-    }
-
-    if (statusAfter) {
-      const updateRequestItemsStartedAt = nowMs();
-      try {
-        dbCalls += 1;
-        const args: RequestItemsSetStatusArgs = {
-          p_request_item_ids: ids,
-          p_status: statusAfter,
-        };
-        const { error } = await supabase.rpc("request_items_set_status", args);
-        if (error) throw error;
-      } catch {
-        dbCalls += 1;
-        await supabase
-          .from("request_items")
-          .update({ status: statusAfter } satisfies RequestItemsUpdate)
-          .in("id", ids);
-      }
-      const updateMs = nowMs() - updateRequestItemsStartedAt;
-      bucketUpdateRequestItemsMs += updateMs;
-      perf.updateRequestItems += updateMs;
-    }
+    const updateRequestItemsStartedAt = nowMs();
+    const request_item_status_synced = await syncProposalRequestItemStatusStage(
+      prepared,
+      preconditions,
+      runtime,
+    );
+    const updateMs = nowMs() - updateRequestItemsStartedAt;
+    bucketUpdateRequestItemsMs += updateMs;
+    perf.updateRequestItems += updateMs;
 
     bucketPerf.push({
       bucketIndex,
-      itemCount: ids.length,
-      dbCalls: dbCalls - bucketDbCallsStart,
+      itemCount: prepared.request_item_ids.length,
+      dbCalls: runtime.dbCalls - bucketDbCallsStart,
       createProposalHeadsMs: Number(bucketCreateProposalHeadsMs.toFixed(1)),
       fetchAfterWriteMs: Number(bucketFetchAfterWriteMs.toFixed(1)),
       insertProposalItemsMs: Number(bucketInsertProposalItemsMs.toFixed(1)),
@@ -2582,11 +2750,17 @@ export async function createProposalsBySupplier(
       updateRequestItemsMs: Number(bucketUpdateRequestItemsMs.toFixed(1)),
     });
 
-    proposals.push({
-      proposal_id: proposalId,
-      proposal_no: proposalNo,
-      supplier: supplierLabel,
-      request_item_ids: ids,
+    mutationResult.proposals.push({
+      bucketIndex,
+      proposal_id: createdHead.proposal_id,
+      proposal_no: createdHead.proposal_no,
+      display_no: createdHead.display_no,
+      supplier: prepared.supplierLabel,
+      request_item_ids: prepared.request_item_ids,
+      linked_request_item_ids,
+      resolved_bindings: completion.resolved_bindings,
+      submitted: completion.submitted,
+      request_item_status_synced,
     });
   }
 
@@ -2601,19 +2775,19 @@ export async function createProposalsBySupplier(
     "fetchAfterWrite.ms": Number(perf.fetchAfterWrite.toFixed(1)),
     "totalCreateProposalsBySupplier.ms": Number(totalCreateMs.toFixed(1)),
     buckets: buckets?.length ?? 0,
-    proposalsCreated: proposals.length,
-    dbCalls,
+    proposalsCreated: mutationResult.proposals.length,
+    dbCalls: runtime.dbCalls,
     bucketPerf,
   });
-  if (!proposals.length) {
+  if (!mutationResult.proposals.length) {
     console.warn("[catalog_api.createProposalsBySupplier] no proposals created", {
       allItemIds,
-      approvedItemIds: Array.from(approvedItemIds),
+      approvedItemIds: Array.from(preconditions.approvedItemIds),
       bucketCount: buckets?.length ?? 0,
     });
   }
 
-  return { proposals };
+  return mapProposalCreationMutationResult(mutationResult);
 }
 
 // PROD quick search: предпочитаем новый поиск, но допускаем мягкий fallback.
