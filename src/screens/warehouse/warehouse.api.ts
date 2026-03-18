@@ -1,7 +1,7 @@
 ﻿// src/screens/warehouse/warehouse.api.ts
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { StockRow, ReqHeadRow, ReqItemUiRow } from "./warehouse.types";
-import { nz, parseNum } from "./warehouse.utils";
+import { normMatCode, normUomId, nz, parseNum } from "./warehouse.utils";
 import { normalizeRuText } from "../../lib/text/encoding";
 import { isRequestVisibleInWarehouseIssueQueue } from "../../lib/requestStatus";
 import { fetchWarehouseNameMapUi } from "./warehouse.nameMap.ui";
@@ -47,6 +47,20 @@ type RequestFallbackRow = {
   qty_plan: string | null;
   note: string | null;
   comment: string | null;
+};
+type RequestItemFallbackRow = {
+  request_id: string;
+  request_item_id: string;
+  rik_code: string | null;
+  name_human: string | null;
+  uom: string | null;
+  qty: number;
+  status: string | null;
+  note: string | null;
+};
+type StockAvailabilityMap = {
+  byCode: Record<string, number>;
+  byCodeUom: Record<string, number>;
 };
 type NameMapSource = "projection" | "overrides" | "rik_ru" | "ledger_ui";
 type NameMapCacheValue = {
@@ -141,6 +155,27 @@ const REQUESTS_FALLBACK_SELECT = [
   "comment",
 ].join(", ");
 
+const REQUESTS_FALLBACK_SELECT_MINIMAL = [
+  "id",
+  "display_no",
+  "status",
+  "object_name",
+  "object_type_code",
+  "level_code",
+  "system_code",
+  "zone_code",
+  "submitted_at",
+  "created_at",
+  "note",
+  "comment",
+].join(", ");
+
+const REQUESTS_FALLBACK_SELECT_PLANS = [
+  REQUESTS_FALLBACK_SELECT,
+  REQUESTS_FALLBACK_SELECT_MINIMAL,
+  "*",
+] as const;
+
 const normalizeRequestFallbackRow = (row: UnknownRow): RequestFallbackRow => ({
   id: toTextOrNull(row.id),
   display_no: toTextOrNull(row.display_no),
@@ -169,6 +204,28 @@ const normalizeRequestFallbackRow = (row: UnknownRow): RequestFallbackRow => ({
   note: toTextOrNull(row.note),
   comment: toTextOrNull(row.comment),
 });
+
+const normalizeRequestItemFallbackRow = (row: UnknownRow): RequestItemFallbackRow => ({
+  request_id: String(row.request_id ?? "").trim(),
+  request_item_id: String(row.id ?? row.request_item_id ?? "").trim(),
+  rik_code: toTextOrNull(row.rik_code),
+  name_human: toTextOrNull(row.name_human),
+  uom: toTextOrNull(row.uom),
+  qty: Math.max(0, parseNum(row.qty, 0)),
+  status: toTextOrNull(row.status),
+  note: toTextOrNull(row.note),
+});
+
+const buildStockAvailabilityCodeKey = (raw: unknown): string =>
+  String(normMatCode(raw ?? "")).trim().toUpperCase();
+
+const buildStockAvailabilityCodeUomKey = (rawCode: unknown, rawUom: unknown): string => {
+  const code = buildStockAvailabilityCodeKey(rawCode);
+  const uom = String(normUomId(rawUom ?? "") ?? "")
+    .trim()
+    .toLowerCase();
+  return `${code}::${uom || "-"}`;
+};
 
 const now = () => Date.now();
 
@@ -268,13 +325,19 @@ async function tryLoadRequestsFallbackRows(
       .order("display_no", { ascending: false })
       .limit(Math.max(pageSize * 6, 600));
 
-  // Fallback path only consumes a narrow request-head surface; keep it explicit to reduce drift/overfetch.
-  const narrow = await fetchBySelect(REQUESTS_FALLBACK_SELECT);
-  if (!narrow.error && Array.isArray(narrow.data)) {
-    return asUnknownRows(narrow.data).map(normalizeRequestFallbackRow);
+  let lastError: unknown = null;
+  for (const selectCols of REQUESTS_FALLBACK_SELECT_PLANS) {
+    const acc = await fetchBySelect(selectCols);
+    if (!acc.error && Array.isArray(acc.data)) {
+      requestsFallbackLastHardFailAt = 0;
+      requestsFallbackLastSkipLogAt = 0;
+      return asUnknownRows(acc.data).map(normalizeRequestFallbackRow);
+    }
+    lastError = acc.error ?? lastError;
   }
+
   requestsFallbackLastHardFailAt = Date.now();
-  const msg = String((narrow.error as { message?: string } | null)?.message ?? narrow.error ?? "unknown");
+  const msg = String((lastError as { message?: string } | null)?.message ?? lastError ?? "unknown");
   if (__DEV__) {
     console.warn("[warehouse.api] requests fallback select failed:", msg);
   }
@@ -435,6 +498,112 @@ function aggregateReqItemTruthRows(rows: UnknownRow[]): Record<string, ReqHeadTr
   }
 
   return out;
+}
+
+function aggregateReqItemUiRows(rows: ReqItemUiRow[]): Record<string, ReqHeadTruth> {
+  return aggregateReqItemTruthRows(
+    rows.map((row) => ({
+      request_id: row.request_id,
+      request_item_id: row.request_item_id,
+      qty_limit: row.qty_limit,
+      qty_issued: row.qty_issued,
+      qty_left: row.qty_left,
+      qty_can_issue_now: row.qty_can_issue_now,
+    })),
+  );
+}
+
+async function loadFallbackStockAvailability(
+  supabase: SupabaseClient,
+  rows: RequestItemFallbackRow[],
+): Promise<StockAvailabilityMap> {
+  const codes = Array.from(
+    new Set(
+      rows
+        .map((row) => buildStockAvailabilityCodeKey(row.rik_code))
+        .filter(Boolean),
+    ),
+  );
+  if (!codes.length) return { byCode: {}, byCodeUom: {} };
+
+  const q = await supabase
+    .from("v_warehouse_stock")
+    .select("rik_code, uom_id, qty_available")
+    .in("rik_code", codes);
+
+  if (q.error || !Array.isArray(q.data) || !q.data.length) {
+    return { byCode: {}, byCodeUom: {} };
+  }
+
+  const byCode: Record<string, number> = {};
+  const byCodeUom: Record<string, number> = {};
+  for (const raw of q.data as UnknownRow[]) {
+    const codeKey = buildStockAvailabilityCodeKey(raw.rik_code);
+    if (!codeKey) continue;
+    const qty = Math.max(0, parseNum(raw.qty_available, 0));
+    byCode[codeKey] = (byCode[codeKey] ?? 0) + qty;
+    const key = buildStockAvailabilityCodeUomKey(raw.rik_code, raw.uom_id);
+    byCodeUom[key] = (byCodeUom[key] ?? 0) + qty;
+  }
+
+  return { byCode, byCodeUom };
+}
+
+function materializeFallbackReqItems(
+  rows: RequestItemFallbackRow[],
+  stockAvailability: StockAvailabilityMap,
+): ReqItemUiRow[] {
+  const remainingByCode = { ...stockAvailability.byCode };
+  const remainingByCodeUom = { ...stockAvailability.byCodeUom };
+
+  return rows
+    .filter((row) => !isRejectedRequestItemStatus(row.status))
+    .sort((a, b) => {
+      const reqCmp = String(a.request_id ?? "").localeCompare(String(b.request_id ?? ""));
+      if (reqCmp !== 0) return reqCmp;
+      const nameCmp = String(a.name_human ?? "").localeCompare(String(b.name_human ?? ""));
+      if (nameCmp !== 0) return nameCmp;
+      return String(a.request_item_id ?? "").localeCompare(String(b.request_item_id ?? ""));
+    })
+    .map((row) => {
+      const qtyLimit = Math.max(0, row.qty);
+      const issued = isIssuedRequestItemStatus(row.status) ? qtyLimit : 0;
+      const qtyLeft = Math.max(0, qtyLimit - issued);
+      const codeKey = buildStockAvailabilityCodeKey(row.rik_code);
+      const codeUomKey = buildStockAvailabilityCodeUomKey(row.rik_code, row.uom);
+
+      const exactAvailable = stockAvailability.byCodeUom[codeUomKey];
+      const totalAvailable = exactAvailable ?? stockAvailability.byCode[codeKey] ?? 0;
+      const remainingAvailable =
+        exactAvailable != null
+          ? remainingByCodeUom[codeUomKey] ?? totalAvailable
+          : remainingByCode[codeKey] ?? totalAvailable;
+      const qtyCanIssueNow = Math.max(0, Math.min(qtyLeft, remainingAvailable));
+
+      if (exactAvailable != null) {
+        remainingByCodeUom[codeUomKey] = Math.max(0, remainingAvailable - qtyCanIssueNow);
+      } else if (codeKey) {
+        remainingByCode[codeKey] = Math.max(0, remainingAvailable - qtyCanIssueNow);
+      }
+
+      return {
+        request_id: row.request_id,
+        request_item_id: row.request_item_id,
+        display_no: null,
+        object_name: null,
+        level_code: null,
+        system_code: null,
+        zone_code: null,
+        rik_code: String(row.rik_code ?? ""),
+        name_human: String(row.name_human ?? row.rik_code ?? ""),
+        uom: row.uom,
+        qty_limit: qtyLimit,
+        qty_issued: issued,
+        qty_left: qtyLeft,
+        qty_available: Math.max(0, totalAvailable),
+        qty_can_issue_now: qtyCanIssueNow,
+      };
+    });
 }
 
 async function loadReqHeadTruthByRequestIds(
@@ -1092,7 +1261,7 @@ export async function apiFetchReqHeads(
           const fallbackItemStatsQ = unresolvedStatReqIds.length
             ? await supabase
                 .from("request_items")
-                .select("id, request_id, status, qty")
+                .select("id, request_id, rik_code, name_human, uom, status, qty, note")
                 .in("request_id", unresolvedStatReqIds)
             : { error: null, data: [] as UnknownRow[] };
 
@@ -1117,6 +1286,14 @@ export async function apiFetchReqHeads(
               stat[rid].qty += Math.max(0, parseNum(it?.qty, 0));
               if (isIssuedRequestItemStatus(it?.status)) stat[rid].done += 1;
             }
+          }
+
+          let directFallbackTruthByReq: Record<string, ReqHeadTruth> = {};
+          if (!fallbackItemStatsQ.error && Array.isArray(fallbackItemStatsQ.data) && fallbackItemStatsQ.data.length) {
+            const normalizedFallbackRows = asUnknownRows(fallbackItemStatsQ.data).map(normalizeRequestItemFallbackRow);
+            const stockAvailability = await loadFallbackStockAvailability(supabase, normalizedFallbackRows);
+            const directFallbackRows = materializeFallbackReqItems(normalizedFallbackRows, stockAvailability);
+            directFallbackTruthByReq = aggregateReqItemUiRows(directFallbackRows);
           }
 
           const fallbackRows: ReqHeadRow[] = approvedReqs
@@ -1154,6 +1331,7 @@ export async function apiFetchReqHeads(
                 ).trim() || fromReqText.volume || null;
               const truth =
                 fallbackTruthByReq[r.request_id] ??
+                directFallbackTruthByReq[r.request_id] ??
                 (() => {
                   const s = stat[r.request_id] ?? { items: 0, qty: 0, done: 0, rejected: 0 };
                   const readyCnt = Math.max(0, s.items - s.done - s.rejected);
@@ -1164,8 +1342,8 @@ export async function apiFetchReqHeads(
                     qty_limit_sum: s.qty,
                     qty_issued_sum: 0,
                     qty_left_sum: s.qty,
-                    qty_can_issue_now_sum: s.qty,
-                    issuable_now_cnt: readyCnt,
+                    qty_can_issue_now_sum: 0,
+                    issuable_now_cnt: 0,
                   });
                 })();
               return applyReqHeadTruth({
@@ -1348,31 +1526,9 @@ export async function apiFetchReqItems(
       .eq("request_id", rid)
       .order("name_human", { ascending: true });
     if (!f.error && Array.isArray(f.data) && f.data.length) {
-      const direct = (f.data as UnknownRow[])
-        .filter((x) => !isRejectedRequestItemStatus(x?.status))
-        .map((x) => {
-          const qty = parseNum(x?.qty, 0);
-          const available = qty; // unknown here; keep non-blocking until stock check in UI
-          return {
-            request_id: String(x.request_id ?? rid),
-            request_item_id: String(x.id ?? ""),
-            display_no: null,
-            object_name: null,
-            level_code: null,
-            system_code: null,
-            zone_code: null,
-            rik_code: String(x.rik_code ?? ""),
-            name_human: String(x.name_human ?? x.rik_code ?? ""),
-            uom: x.uom ?? null,
-            qty_limit: qty,
-            qty_issued: 0,
-            qty_left: qty,
-            qty_available: available,
-            qty_can_issue_now: Math.max(0, Math.min(qty, available)),
-            note: x.note ?? null,
-            comment: null,
-          } as ReqItemUiRow;
-        });
+      const normalizedFallbackRows = asUnknownRows(f.data).map(normalizeRequestItemFallbackRow);
+      const stockAvailability = await loadFallbackStockAvailability(supabase, normalizedFallbackRows);
+      const direct = materializeFallbackReqItems(normalizedFallbackRows, stockAvailability);
       return direct;
     }
   } catch (error) {

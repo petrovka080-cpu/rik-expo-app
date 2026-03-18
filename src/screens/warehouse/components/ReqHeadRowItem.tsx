@@ -15,9 +15,11 @@ type Props = {
 function HeaderMetric({
   issued,
   total,
+  color,
 }: {
   issued: string;
   total: string;
+  color: string;
 }) {
   return (
     <Text
@@ -28,7 +30,7 @@ function HeaderMetric({
         letterSpacing: 0.1,
       }}
     >
-      <Text style={{ color: "#22c55e" }}>{issued}</Text>
+      <Text style={{ color }}>{issued}</Text>
       <Text style={{ color: "#94A3B8" }}>{` / ${total}`}</Text>
     </Text>
   );
@@ -47,7 +49,7 @@ export default function ReqHeadRowItem({ row, onPress, fmtRuDate }: Props) {
           title={card.title}
           subtitle={card.companyLine}
           meta={card.routeLine}
-          status={<HeaderMetric issued={card.issuedCountLabel} total={card.totalCountLabel} />}
+          status={<HeaderMetric issued={card.issuedCountLabel} total={card.totalCountLabel} color={card.metricColor} />}
           rightIndicator={<ChevronIndicator />}
           style={[
             s.groupHeader,

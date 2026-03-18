@@ -88,12 +88,20 @@ export function mapWarehouseReqHeadToCardProps(params: ReqHeadCardParams) {
       : isBlocked
         ? "#f59e0b"
         : "rgba(156,163,175,0.65)";
+  const metricColor = isFullyIssued
+    ? "rgba(156,163,175,0.85)"
+    : hasIssuableNow
+      ? "#22c55e"
+      : isBlocked
+        ? "#f59e0b"
+        : "#94A3B8";
 
   return {
     title: row.display_no || `REQ-${row.request_id.slice(0, 8)}`,
     companyLine: companyLine || "—",
     routeLine,
     stripeColor,
+    metricColor,
     issuedCountLabel: String(Math.max(0, Number(row.done_cnt ?? 0))),
     totalCountLabel: String(totalPos),
   };

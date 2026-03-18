@@ -49,6 +49,8 @@ type HeadLoose = (ReqHeadRow | ReqItemUiRow) & {
   comment?: string | null;
   volume?: string | number | null;
   qty_plan?: string | number | null;
+  can_issue_now?: boolean;
+  waiting_stock?: boolean;
 };
 
 function CloseSquare({
@@ -224,6 +226,10 @@ export default function ReqIssueModal(props: Props) {
   const headContractor = headContractorRaw || fromNote.contractor;
   const headPhone = normalizedHeadPhone || fromNote.phone;
   const headVolume = headVolumeRaw || fromNote.volume;
+  const headAccentColor =
+    headData && "can_issue_now" in headData
+      ? (headData.can_issue_now ? UI.accent : headData.waiting_stock ? "#F59E0B" : "rgba(156,163,175,0.65)")
+      : UI.accent;
 
   const hasHead = !!(headObj || headLevel || headSystem || headZone || headContractor || headPhone || headVolume);
 
@@ -292,7 +298,7 @@ export default function ReqIssueModal(props: Props) {
               borderWidth: 1,
               borderColor: "rgba(255,255,255,0.10)",
               borderLeftWidth: 4,
-              borderLeftColor: UI.accent,
+              borderLeftColor: headAccentColor,
             }}
           >
             {!!headObj ? (
@@ -488,4 +494,3 @@ export default function ReqIssueModal(props: Props) {
     </RNModal>
   );
 }
-

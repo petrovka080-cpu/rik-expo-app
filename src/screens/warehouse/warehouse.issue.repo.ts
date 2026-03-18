@@ -1,5 +1,12 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
+const isMissingRpcFunctionError = (error: unknown): boolean => {
+  const message = String((error as { message?: string } | null)?.message ?? error ?? "")
+    .trim()
+    .toLowerCase();
+  return message.includes("could not find the function") || message.includes("schema cache");
+};
+
 export async function createWarehouseIssue(
   supabase: SupabaseClient,
   payload: {
@@ -30,15 +37,31 @@ export async function addWarehouseIssueItems(
   supabase: SupabaseClient,
   payload: {
     p_issue_id: number;
-    p_lines: Array<{
+    p_lines: {
       rik_code: string;
       uom_id: string;
       qty: number;
       request_item_id: string | null;
-    }>;
+    }[];
   },
 ) {
-  return await supabase.rpc("issue_add_items_via_ui", payload);
+  const batch = await supabase.rpc("issue_add_items_via_ui", payload);
+  if (!batch.error || !isMissingRpcFunctionError(batch.error)) {
+    return batch;
+  }
+
+  for (const line of payload.p_lines || []) {
+    const single = await addWarehouseIssueItem(supabase, {
+      p_issue_id: payload.p_issue_id,
+      p_rik_code: line.rik_code,
+      p_uom_id: line.uom_id,
+      p_qty: line.qty,
+      p_request_item_id: line.request_item_id,
+    });
+    if (single.error) return single;
+  }
+
+  return { data: null, error: null };
 }
 
 export async function commitWarehouseIssue(
@@ -55,7 +78,7 @@ export async function issueWarehouseFreeAtomic(
     p_object_name: string | null;
     p_work_name: string | null;
     p_note: string | null;
-    p_lines: Array<{ rik_code: string; uom_id: string | null; qty: number }>;
+    p_lines: { rik_code: string; uom_id: string | null; qty: number }[];
   },
 ) {
   return await supabase.rpc("wh_issue_free_atomic_v4", payload);

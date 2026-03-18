@@ -2,7 +2,7 @@
 import type { BuyerInboxRow } from "../../lib/catalog_api";
 import type { LineMeta, DraftAttachmentMap, BuyerTab, BuyerSheetKind, BuyerGroup } from "./buyer.types";
 import { selectBuyerBaseListData, selectFilteredBuyerListData } from "./buyer.list.selectors";
-import { selectBuyerSheetData, type SheetHdrRow } from "./buyer.sheet.selectors";
+import { selectBuyerSheetData } from "./buyer.sheet.selectors";
 import { SUPP_NONE, normName } from "./buyerUtils";
 import { buildRfqPickedPreview } from "./buyer.helpers";
 
@@ -10,6 +10,21 @@ export type { BuyerTab, BuyerSheetKind, BuyerGroup } from "./buyer.types";
 type BuyerInboxRowWithKeys = BuyerInboxRow & {
   request_id?: string | number | null;
   request_id_old?: number | null;
+  created_at?: string | null;
+};
+
+const buyerGroupLatestCreatedAtMs = (group: BuyerGroup): number =>
+  (group.items || []).reduce((best, raw) => {
+    const row = raw as BuyerInboxRowWithKeys;
+    const value = String(row.created_at ?? "").trim();
+    if (!value) return best;
+    const ms = new Date(value).getTime();
+    return Number.isFinite(ms) && ms > best ? ms : best;
+  }, 0);
+
+const buyerGroupRequestSeq = (group: BuyerGroup): number | null => {
+  const value = group.request_id_old;
+  return typeof value === "number" && Number.isFinite(value) ? value : null;
 };
 
 export function selectPickedIds(picked: Record<string, boolean>) {
@@ -28,8 +43,20 @@ export function selectGroups(rows: BuyerInboxRow[]): BuyerGroup[] {
     }
     map.get(rid)!.items.push(r);
   }
-  // Sort groups by request_id descending (newest first)
+
   return Array.from(map.values()).sort((a, b) => {
+    const aSeq = buyerGroupRequestSeq(a);
+    const bSeq = buyerGroupRequestSeq(b);
+    if (aSeq != null || bSeq != null) {
+      const left = aSeq ?? Number.NEGATIVE_INFINITY;
+      const right = bSeq ?? Number.NEGATIVE_INFINITY;
+      if (right !== left) return right - left;
+    }
+
+    const aTs = buyerGroupLatestCreatedAtMs(a);
+    const bTs = buyerGroupLatestCreatedAtMs(b);
+    if (bTs !== aTs) return bTs - aTs;
+
     const aid = String(a.request_id);
     const bid = String(b.request_id);
     return bid.localeCompare(aid, undefined, { numeric: true });
