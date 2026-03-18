@@ -20,6 +20,7 @@ import ForemanHistoryBar from "../../src/screens/foreman/ForemanHistoryBar";
 import ForemanHistoryModal from "../../src/screens/foreman/ForemanHistoryModal";
 import ForemanSubcontractHistoryModal from "../../src/screens/foreman/ForemanSubcontractHistoryModal";
 import ForemanDraftModal from "../../src/screens/foreman/ForemanDraftModal";
+import ForemanAiQuickModal from "../../src/screens/foreman/ForemanAiQuickModal";
 import ForemanEditorSection from "../../src/screens/foreman/ForemanEditorSection";
 import ForemanSubcontractTab from "../../src/screens/foreman/ForemanSubcontractTab";
 import WarehouseFioModal from "../../src/screens/warehouse/components/WarehouseFioModal";
@@ -38,6 +39,7 @@ import { supabase } from '../../src/lib/supabaseClient';
 import {
   rikQuickSearch,
   fetchRequestDetails,
+  requestSubmit,
   updateRequestMeta,
   getLocalDraftId,
   clearLocalDraftId,
@@ -49,7 +51,9 @@ import type { CalcRow, PickedRow, RequestDraftMeta, RefOption } from "../../src/
 import {
   isDraftLikeStatus,
   loadForemanHistory,
+  requestItemAddOrIncAndPatchMeta,
   ridStr,
+  runPool,
   saveForemanToHistory,
   shortId,
   toErrorText,
@@ -72,6 +76,11 @@ import { useForemanDisplayNo } from '../../src/screens/foreman/hooks/useForemanD
 import { useForemanItemsState } from '../../src/screens/foreman/hooks/useForemanItemsState';
 import { useForemanPdf } from '../../src/screens/foreman/hooks/useForemanPdf';
 import { useForemanActions } from '../../src/screens/foreman/hooks/useForemanActions';
+import {
+  isForemanQuickRequestConfigured,
+  sendForemanQuickRequestPrompt,
+  type ForemanAiQuickItem,
+} from "../../src/screens/foreman/foreman.ai";
 
 type WebUiApi = {
   onZoneChange: (v: string) => void;
@@ -166,6 +175,12 @@ export default function ForemanScreen() {
   const [catalogVisible, setCatalogVisible] = useState(false);
   const [workTypePickerVisible, setWorkTypePickerVisible] = useState(false);
   const [selectedWorkType, setSelectedWorkType] = useState<{ code: string; name: string } | null>(null);
+  const [aiQuickVisible, setAiQuickVisible] = useState(false);
+  const [aiQuickText, setAiQuickText] = useState("");
+  const [aiQuickLoading, setAiQuickLoading] = useState(false);
+  const [aiQuickError, setAiQuickError] = useState("");
+  const [aiQuickNotice, setAiQuickNotice] = useState("");
+  const [aiQuickPreview, setAiQuickPreview] = useState<ForemanAiQuickItem[]>([]);
 
   const {
     objOptions, lvlOptions, sysOptions, zoneOptions,
@@ -653,6 +668,113 @@ export default function ForemanScreen() {
     setWorkTypePickerVisible(true);
   }, [busy, ensureEditableContext]);
 
+  const handleAiQuickTextChange = useCallback((value: string) => {
+    setAiQuickText(value);
+    setAiQuickError("");
+    setAiQuickNotice("");
+    setAiQuickPreview([]);
+  }, []);
+
+  const appendAiItemsToDraft = useCallback(
+    async (rid: string, generatedItems: ForemanAiQuickItem[]) => {
+      const prepared = generatedItems.map((item) => ({
+        ...item,
+        note: [scopeNote, item.specs].filter(Boolean).join(" | ") || scopeNote || item.specs || null,
+      }));
+
+      const results = await runPool(prepared, Platform.OS === "web" ? 8 : 4, async (item) => {
+        await requestItemAddOrIncAndPatchMeta(rid, item.rik_code, item.qty, {
+          note: item.note,
+          app_code: null,
+          kind: item.kind,
+          name_human: item.name,
+          uom: item.unit,
+        });
+        return true;
+      });
+
+      const okCount = results.filter((result) => result.ok).length;
+      const failCount = results.length - okCount;
+      return { okCount, failCount };
+    },
+    [scopeNote],
+  );
+
+  const handleAiQuickSubmit = useCallback(async () => {
+    const promptText = aiQuickText.trim();
+    if (!promptText || aiQuickLoading) return;
+
+    if (!ensureHeaderReady()) return;
+    if (requestDetails && !isDraftActive) {
+      Alert.alert(FOREMAN_TEXT.readonlyTitle, FOREMAN_TEXT.readonlyHint);
+      return;
+    }
+
+    setAiQuickLoading(true);
+    setAiQuickError("");
+    setAiQuickNotice("");
+
+    try {
+      const parsed = await sendForemanQuickRequestPrompt(promptText);
+      setAiQuickPreview(parsed.items);
+      setAiQuickNotice(parsed.message);
+
+      if (parsed.action === "clarify" || parsed.items.length === 0) {
+        setAiQuickError(parsed.message || "Нужно уточнить позиции или количество.");
+        return;
+      }
+
+      const rid = await ensureRequestId();
+      await syncRequestHeaderMeta(rid, "foremanAiQuickRequest");
+
+      const appendResult = await appendAiItemsToDraft(rid, parsed.items);
+      await loadItems(rid);
+
+      if (appendResult.failCount > 0 || appendResult.okCount === 0) {
+        setAiQuickError(
+          appendResult.okCount > 0
+            ? `Часть позиций не добавилась. Черновик ${currentDisplayLabel} сохранен без отправки.`
+            : "Не удалось добавить AI-позиции в черновик.",
+        );
+        return;
+      }
+
+      const submitted = await requestSubmit(rid);
+      applySubmittedRequestState(rid, submitted);
+
+      const submittedLabel = submitted?.display_no || rid;
+      showHint(
+        FOREMAN_TEXT.submitSentTitle,
+        `Заявка ${submittedLabel} отправлена на утверждение`,
+      );
+      await finalizeAfterSubmit();
+
+      setAiQuickVisible(false);
+      setAiQuickText("");
+      setAiQuickError("");
+      setAiQuickNotice("");
+      setAiQuickPreview([]);
+    } catch (error) {
+      setAiQuickError(toErrorText(error, "Не удалось сформировать AI-заявку."));
+    } finally {
+      setAiQuickLoading(false);
+    }
+  }, [
+    aiQuickLoading,
+    aiQuickText,
+    appendAiItemsToDraft,
+    applySubmittedRequestState,
+    currentDisplayLabel,
+    ensureHeaderReady,
+    ensureRequestId,
+    finalizeAfterSubmit,
+    isDraftActive,
+    loadItems,
+    requestDetails,
+    showHint,
+    syncRequestHeaderMeta,
+  ]);
+
   const openDraftFromCatalog = useCallback(() => {
     setCatalogVisible(false);
     setDraftOpen(true);
@@ -794,6 +916,7 @@ export default function ForemanScreen() {
               setCatalogVisible={setCatalogVisible}
               busy={busy}
               onCalcPress={handleCalcPress}
+              onAiQuickPress={() => setAiQuickVisible(true)}
               setDraftOpen={setDraftOpen}
               currentDisplayLabel={currentDisplayLabel}
               itemsCount={items.length}
@@ -853,6 +976,23 @@ export default function ForemanScreen() {
               onBack={() => { setCalcVisible(false); setSelectedWorkType(null); setWorkTypePickerVisible(true); }}
               workType={selectedWorkType}
               onAddToRequest={handleCalcAddToRequest}
+            />
+            <ForemanAiQuickModal
+              visible={aiQuickVisible}
+              onClose={() => {
+                if (aiQuickLoading) return;
+                setAiQuickVisible(false);
+              }}
+              value={aiQuickText}
+              onChangeText={handleAiQuickTextChange}
+              onSubmit={handleAiQuickSubmit}
+              loading={aiQuickLoading}
+              configured={isForemanQuickRequestConfigured()}
+              error={aiQuickError}
+              notice={aiQuickNotice}
+              preview={aiQuickPreview}
+              ui={UI}
+              styles={s}
             />
             <ForemanDraftModal
               visible={draftOpen}

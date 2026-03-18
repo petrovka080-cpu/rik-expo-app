@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import { Modal, View, Text, Pressable, StyleSheet, ScrollView } from "react-native";
+import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
 const UI = {
   bg: "#020617",
@@ -25,9 +25,23 @@ type Props = {
   city: string | null;
   items: ListingItemJson[];
   onClose: () => void;
+  onOpenDetails?: () => void;
+  onOpenShowcase?: () => void;
+  onOpenChat?: () => void;
+  onAskAssistant?: () => void;
 };
 
-export default function DemandDetailsModal({ visible, title, city, items, onClose }: Props) {
+export default function DemandDetailsModal({
+  visible,
+  title,
+  city,
+  items,
+  onClose,
+  onOpenDetails,
+  onOpenShowcase,
+  onOpenChat,
+  onAskAssistant,
+}: Props) {
   const rows = useMemo(() => (Array.isArray(items) ? items : []), [items]);
 
   return (
@@ -35,7 +49,7 @@ export default function DemandDetailsModal({ visible, title, city, items, onClos
       <View style={styles.backdrop}>
         <View style={styles.sheet}>
           <View style={styles.header}>
-            <View style={{ flex: 1 }}>
+            <View style={styles.headerCopy}>
               <Text style={styles.title} numberOfLines={2}>
                 {title || "Запрос"}
               </Text>
@@ -47,29 +61,56 @@ export default function DemandDetailsModal({ visible, title, city, items, onClos
             </Pressable>
           </View>
 
-          <ScrollView contentContainerStyle={{ padding: 14, paddingBottom: 28 }}>
+          <ScrollView contentContainerStyle={styles.content}>
             <Text style={styles.sectionTitle}>Нужно</Text>
 
             {rows.length === 0 ? (
               <Text style={styles.empty}>Позиции не указаны</Text>
             ) : (
-              rows.map((it, idx) => (
-                <View key={idx} style={styles.itemRow}>
-                  <View style={{ flex: 1 }}>
+              rows.map((item, index) => (
+                <View key={`${title}:${index}`} style={styles.itemRow}>
+                  <View style={styles.itemCopy}>
                     <Text style={styles.itemName} numberOfLines={2}>
-                      {it.name || it.rik_code || "Позиция"}
+                      {item.name || item.rik_code || "Позиция"}
                     </Text>
                     <Text style={styles.itemMeta} numberOfLines={1}>
-                      {it.kind ? it.kind : "—"} {it.rik_code ? `• ${it.rik_code}` : ""}
+                      {item.kind || "—"}
+                      {item.rik_code ? ` • ${item.rik_code}` : ""}
                     </Text>
                   </View>
 
                   <Text style={styles.qty}>
-                    {it.qty != null ? it.qty : "—"} {it.uom || ""}
+                    {item.qty != null ? item.qty : "—"} {item.uom || ""}
                   </Text>
                 </View>
               ))
             )}
+
+            {onOpenDetails || onOpenShowcase || onOpenChat ? (
+              <View style={styles.actionsRow}>
+                {onOpenDetails ? (
+                  <Pressable style={styles.secondaryBtn} onPress={onOpenDetails}>
+                    <Text style={styles.secondaryBtnText}>Открыть</Text>
+                  </Pressable>
+                ) : null}
+                {onOpenShowcase ? (
+                  <Pressable style={styles.secondaryBtn} onPress={onOpenShowcase}>
+                    <Text style={styles.secondaryBtnText}>Витрина</Text>
+                  </Pressable>
+                ) : null}
+                {onOpenChat ? (
+                  <Pressable style={styles.secondaryBtn} onPress={onOpenChat}>
+                    <Text style={styles.secondaryBtnText}>Чат</Text>
+                  </Pressable>
+                ) : null}
+              </View>
+            ) : null}
+
+            {onAskAssistant ? (
+              <Pressable style={styles.assistantBtn} onPress={onAskAssistant}>
+                <Text style={styles.assistantBtnText}>Спросить AI по этому спросу</Text>
+              </Pressable>
+            ) : null}
           </ScrollView>
         </View>
       </View>
@@ -78,7 +119,11 @@ export default function DemandDetailsModal({ visible, title, city, items, onClos
 }
 
 const styles = StyleSheet.create({
-  backdrop: { flex: 1, backgroundColor: "rgba(0,0,0,0.55)", justifyContent: "flex-end" },
+  backdrop: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.55)",
+    justifyContent: "flex-end",
+  },
   sheet: {
     backgroundColor: UI.bg,
     borderTopLeftRadius: 18,
@@ -95,9 +140,19 @@ const styles = StyleSheet.create({
     gap: 10,
     alignItems: "flex-start",
   },
-  title: { color: UI.text, fontWeight: "900", fontSize: 16 },
-  sub: { color: UI.sub, marginTop: 4, fontWeight: "700" },
-
+  headerCopy: {
+    flex: 1,
+  },
+  title: {
+    color: UI.text,
+    fontWeight: "900",
+    fontSize: 16,
+  },
+  sub: {
+    color: UI.sub,
+    marginTop: 4,
+    fontWeight: "700",
+  },
   closeBtn: {
     width: 40,
     height: 40,
@@ -108,11 +163,25 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     backgroundColor: UI.card,
   },
-  closeText: { color: UI.text, fontWeight: "900", fontSize: 16 },
-
-  sectionTitle: { color: UI.text, fontWeight: "900", fontSize: 14, marginBottom: 10 },
-  empty: { color: UI.sub, paddingVertical: 10 },
-
+  closeText: {
+    color: UI.text,
+    fontWeight: "900",
+    fontSize: 16,
+  },
+  content: {
+    padding: 14,
+    paddingBottom: 28,
+  },
+  sectionTitle: {
+    color: UI.text,
+    fontWeight: "900",
+    fontSize: 14,
+    marginBottom: 10,
+  },
+  empty: {
+    color: UI.sub,
+    paddingVertical: 10,
+  },
   itemRow: {
     flexDirection: "row",
     gap: 10,
@@ -123,7 +192,56 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     marginBottom: 10,
   },
-  itemName: { color: UI.text, fontWeight: "900" },
-  itemMeta: { color: UI.sub, marginTop: 4, fontSize: 12 },
-  qty: { color: UI.accent, fontWeight: "900" },
+  itemCopy: {
+    flex: 1,
+  },
+  itemName: {
+    color: UI.text,
+    fontWeight: "900",
+  },
+  itemMeta: {
+    color: UI.sub,
+    marginTop: 4,
+    fontSize: 12,
+  },
+  qty: {
+    color: UI.accent,
+    fontWeight: "900",
+  },
+  actionsRow: {
+    marginTop: 6,
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+  },
+  secondaryBtn: {
+    minHeight: 42,
+    paddingHorizontal: 14,
+    borderRadius: 14,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: UI.card,
+    borderWidth: 1,
+    borderColor: UI.border,
+  },
+  secondaryBtnText: {
+    color: UI.text,
+    fontSize: 13,
+    fontWeight: "900",
+  },
+  assistantBtn: {
+    marginTop: 6,
+    minHeight: 44,
+    borderRadius: 14,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#082F49",
+    borderWidth: 1,
+    borderColor: "#0EA5E9",
+  },
+  assistantBtnText: {
+    color: "#E0F2FE",
+    fontSize: 13,
+    fontWeight: "900",
+  },
 });

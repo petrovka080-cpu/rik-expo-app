@@ -1,4 +1,4 @@
-﻿import type React from "react";
+import type React from "react";
 import { useCallback } from "react";
 import { Alert, Platform } from "react-native";
 import { useRouter } from "expo-router";
@@ -119,9 +119,9 @@ export function useDirectorRequestActions({
           "XLSX экспорт сейчас доступен только в web-версии.",
         );
       }
-    } catch (e: any) {
-      if (__DEV__) console.error("[exportRequestExcel]", e?.message ?? e);
-      Alert.alert("Не удалось сформировать Excel-файл", e?.message ?? "Попробуйте еще раз.");
+    } catch (e: unknown) {
+      if (__DEV__) console.error("[exportRequestExcel]", (e as Error)?.message ?? e);
+      Alert.alert("Не удалось сформировать Excel-файл", (e as Error)?.message ?? "Попробуйте еще раз.");
     }
   }, [labelForRequest]);
 
@@ -173,8 +173,8 @@ export function useDirectorRequestActions({
         ? ({ ...prev, items: prev.items.filter((x) => x.request_item_id !== it.request_item_id) })
         : prev
       );
-    } catch (e: any) {
-      Alert.alert("Не удалось отклонить позицию", e?.message ?? "Попробуйте еще раз.");
+    } catch (e: unknown) {
+      Alert.alert("Не удалось отклонить позицию", (e as Error)?.message ?? "Попробуйте еще раз.");
     } finally {
       setActingId(null);
     }
@@ -194,8 +194,8 @@ export function useDirectorRequestActions({
 
       setRows((prev) => prev.filter((r) => r.request_id !== g.request_id));
       closeSheet();
-    } catch (e: any) {
-      Alert.alert("Не удалось отклонить все позиции", e?.message ?? "Попробуйте еще раз.");
+    } catch (e: unknown) {
+      Alert.alert("Не удалось отклонить все позиции", (e as Error)?.message ?? "Попробуйте еще раз.");
     } finally {
       setReqDeleteId(null);
     }
@@ -242,8 +242,8 @@ export function useDirectorRequestActions({
 
       closeSheet();
       showSuccess(`Заявка ${labelForRequest(g.request_id)} утверждена и отправлена снабженцу`);
-    } catch (e: any) {
-      Alert.alert("Не удалось утвердить и отправить заявку", e?.message ?? "Попробуйте еще раз.");
+    } catch (e: unknown) {
+      Alert.alert("Не удалось утвердить и отправить заявку", (e as Error)?.message ?? "Попробуйте еще раз.");
     } finally {
       setReqSendId(null);
     }

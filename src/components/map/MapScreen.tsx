@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   View,
   Modal,
@@ -11,6 +11,7 @@ import {
   Alert,
   useWindowDimensions,
 } from "react-native";
+import { router, useLocalSearchParams } from "expo-router";
 import { supabase } from "../../lib/supabaseClient";
 import * as Location from "expo-location";
 import DemandDetailsModal from "./DemandDetailsModal";
@@ -46,6 +47,13 @@ type ListingItemJson = {
   price?: number | null;
   city?: string | null;
   kind?: "material" | "work" | "service" | null;
+};
+
+type ListingRouteMeta = {
+  id: string;
+  title: string;
+  user_id: string;
+  company_id: string | null;
 };
 
 export type MarketListing = {
@@ -98,6 +106,12 @@ const regionToBounds = (r: Region) => ({
 
 export default function MapScreen() {
   const { width: screenW } = useWindowDimensions();
+  const params = useLocalSearchParams<{
+    side?: string | string[];
+    kind?: string | string[];
+    city?: string | string[];
+    focusId?: string | string[];
+  }>();
 
   const [listings, setListings] = useState<MarketListing[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -130,6 +144,7 @@ export default function MapScreen() {
 
   const [region, setRegion] = useState<Region>(defaultRegion);
   const [myLoc, setMyLoc] = useState<MyLoc | null>(null);
+  const routeMetaCacheRef = useRef<Map<string, ListingRouteMeta>>(new Map());
 
   // ✅ viewport всегда НЕ null и всегда с bounds
   const [viewport, setViewport] = useState<Viewport>(() => ({
@@ -144,6 +159,10 @@ export default function MapScreen() {
   const [offerDays, setOfferDays] = useState("");
   const [offerComment, setOfferComment] = useState("");
   const [sendingOffer, setSendingOffer] = useState(false);
+  const routeSide = Array.isArray(params.side) ? params.side[0] : params.side;
+  const routeKind = Array.isArray(params.kind) ? params.kind[0] : params.kind;
+  const routeCity = Array.isArray(params.city) ? params.city[0] : params.city;
+  const routeFocusId = Array.isArray(params.focusId) ? params.focusId[0] : params.focusId;
 
   // ✅ debounce region updates (пересчёт кластеров только когда карта “остановилась”)
   const regionTimerRef = useRef<any>(null);
@@ -188,6 +207,15 @@ export default function MapScreen() {
     load();
   }, []);
 
+  useEffect(() => {
+    setFilters((prev) => ({
+      ...prev,
+      side: routeSide === "offer" || routeSide === "demand" ? routeSide : prev.side,
+      kind: routeKind === "material" || routeKind === "work" || routeKind === "service" ? routeKind : prev.kind,
+      city: typeof routeCity === "string" && routeCity.trim() ? routeCity.trim() : prev.city,
+    }));
+  }, [routeCity, routeKind, routeSide]);
+
   // ===== filter =====
   const filteredListings = useMemo(() => {
     const city = filters.city.trim().toLowerCase();
@@ -223,6 +251,21 @@ export default function MapScreen() {
       return true;
     });
   }, [listings, filters]);
+
+  useEffect(() => {
+    if (!routeFocusId) return;
+    const match = filteredListings.find((row) => row.id === routeFocusId) || listings.find((row) => row.id === routeFocusId);
+    if (!match || match.lat == null || match.lng == null) return;
+    setClusterMode(null);
+    setSelectedId(match.id);
+    setRegion({
+      latitude: Number(match.lat),
+      longitude: Number(match.lng),
+      latitudeDelta: 0.05,
+      longitudeDelta: 0.05,
+    });
+    if (match.side === "demand") setDemandDetails(match);
+  }, [filteredListings, listings, routeFocusId]);
 
   // ===== supercluster index =====
   const clusterIndex = useMemo(() => buildIndex(filteredListings), [filteredListings]);
@@ -479,6 +522,46 @@ export default function MapScreen() {
     });
   };
 
+  const openAssistant = useCallback(
+    (row?: MarketListing | null) => {
+      const selected =
+        row ??
+        demandDetails ??
+        offerDemand ??
+        filteredListings.find((item) => item.id === selectedId) ??
+        null;
+
+      const parts: string[] = ["Помоги сориентироваться по карте поставщиков GOX."];
+
+      if (filters.side !== "all") parts.push(`Фильтр по стороне: ${filters.side}.`);
+      if (filters.kind !== "all") parts.push(`Фильтр по типу: ${filters.kind}.`);
+      if (filters.city.trim()) parts.push(`Город: ${filters.city.trim()}.`);
+      if (filters.catalogItem?.name_human) {
+        parts.push(`Каталожная позиция: ${filters.catalogItem.name_human}.`);
+      }
+      if (clusterMode?.title) {
+        parts.push(`Сейчас открыт кластерный режим: ${clusterMode.title}.`);
+      }
+      if (selected) {
+        parts.push(`Сейчас выделено объявление "${selected.title}".`);
+        if (selected.city) parts.push(`Город объявления: ${selected.city}.`);
+        parts.push(selected.side === "demand" ? "Это спрос." : "Это предложение.");
+      } else {
+        parts.push("Подскажи, как лучше использовать текущие фильтры и что открыть дальше.");
+      }
+
+      router.push({
+        pathname: "/(tabs)/ai",
+        params: {
+          prompt: parts.join(" "),
+          autoSend: "1",
+          context: "supplierMap",
+        },
+      } as any);
+    },
+    [clusterMode?.title, demandDetails, filteredListings, filters, offerDemand, selectedId],
+  );
+
   const submitOffer = async () => {
     if (!offerDemand) return;
 
@@ -522,6 +605,63 @@ export default function MapScreen() {
       setSendingOffer(false);
     }
   };
+
+  const resolveListingRouteMeta = useCallback(async (row: Pick<MarketListing, "id" | "title">) => {
+    const cached = routeMetaCacheRef.current.get(row.id);
+    if (cached) return cached;
+
+    const result = await supabase
+      .from("market_listings")
+      .select("id,title,user_id,company_id")
+      .eq("id", row.id)
+      .maybeSingle();
+
+    if (result.error) throw result.error;
+    if (!result.data) return null;
+
+    const nextMeta = result.data as ListingRouteMeta;
+    routeMetaCacheRef.current.set(row.id, nextMeta);
+    return nextMeta;
+  }, []);
+
+  const openListingDetails = useCallback((row: Pick<MarketListing, "id">) => {
+    router.push(`/product/${row.id}` as any);
+  }, []);
+
+  const openListingChat = useCallback((row: Pick<MarketListing, "id" | "title">) => {
+    router.push({
+      pathname: "/chat",
+      params: {
+        listingId: row.id,
+        title: row.title,
+      },
+    } as any);
+  }, []);
+
+  const openListingShowcase = useCallback(
+    async (row: Pick<MarketListing, "id" | "title">) => {
+      try {
+        const meta = await resolveListingRouteMeta(row);
+        if (!meta?.user_id) {
+          Alert.alert("Р’РёС‚СЂРёРЅР°", "РќРµ СѓРґР°Р»РѕСЃСЊ РЅР°Р№С‚Рё РїСЂРѕС„РёР»СЊ РїРѕСЃС‚Р°РІС‰РёРєР°.");
+          return;
+        }
+
+        router.push({
+          pathname: "/supplierShowcase",
+          params: {
+            userId: meta.user_id,
+            ...(meta.company_id ? { companyId: meta.company_id } : {}),
+          },
+        } as any);
+      } catch (error: unknown) {
+        const message =
+          error instanceof Error ? error.message : "РќРµ СѓРґР°Р»РѕСЃСЊ РѕС‚РєСЂС‹С‚СЊ РІРёС‚СЂРёРЅСѓ РїРѕСЃС‚Р°РІС‰РёРєР°.";
+        Alert.alert("Р’РёС‚СЂРёРЅР°", message);
+      }
+    },
+    [resolveListingRouteMeta],
+  );
 
   return (
     <View style={styles.root}>
@@ -612,6 +752,9 @@ export default function MapScreen() {
 
             if (item?.side === "demand") setDemandDetails(item);
           }}
+          onOpenDetails={(row) => openListingDetails(row)}
+          onOpenShowcase={(row) => void openListingShowcase(row)}
+          onOpenChat={(row) => openListingChat(row)}
           onSendOffer={(r) => {
             const item =
               rowsForBottom.find((x) => x.id === r.id) ||
@@ -625,10 +768,14 @@ export default function MapScreen() {
           title={demandDetails?.title || "Запрос"}
           city={demandDetails?.city || null}
           items={Array.isArray(demandDetails?.items_json) ? (demandDetails?.items_json as any) : []}
+          onOpenDetails={demandDetails ? () => openListingDetails(demandDetails) : undefined}
+          onOpenShowcase={demandDetails ? () => void openListingShowcase(demandDetails) : undefined}
+          onOpenChat={demandDetails ? () => openListingChat(demandDetails) : undefined}
+          onAskAssistant={() => openAssistant(demandDetails)}
           onClose={() => setDemandDetails(null)}
         />
 
-        <MapFab onGeo={goToMyLocation} onReset={resetFilters} />
+        <MapFab onGeo={goToMyLocation} onReset={resetFilters} onAssistant={() => openAssistant()} />
       </View>
 
       <Modal
@@ -739,4 +886,3 @@ const styles = StyleSheet.create({
   modalCancel: { marginTop: 10, alignItems: "center" },
   modalCancelText: { color: UI.sub, fontWeight: "900" },
 });
-

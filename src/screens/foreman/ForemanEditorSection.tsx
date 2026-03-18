@@ -32,6 +32,7 @@ type Props = {
   setCatalogVisible: (v: boolean) => void;
   busy: boolean;
   onCalcPress: () => void;
+  onAiQuickPress: () => void;
   setDraftOpen: (v: boolean) => void;
   currentDisplayLabel: string;
   itemsCount: number;
@@ -172,6 +173,24 @@ export default function ForemanEditorSection(p: Props) {
               <Text style={p.styles.pickTabText}>Смета</Text>
             </Pressable>
           </View>
+
+          <Pressable
+            onPress={p.onAiQuickPress}
+            disabled={p.busy}
+            style={[
+              p.styles.pickTabBtn,
+              p.styles.pickTabSoft,
+              {
+                marginTop: 10,
+                borderColor: "rgba(34,197,94,0.32)",
+                backgroundColor: "rgba(34,197,94,0.10)",
+              },
+              p.busy && { opacity: 0.5 },
+            ]}
+          >
+            <Ionicons name="sparkles-outline" size={18} color={p.ui.text} />
+            <Text style={p.styles.pickTabText}>AI заявка</Text>
+          </Pressable>
         </View>
 
         <Pressable

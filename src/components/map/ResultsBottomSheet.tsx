@@ -46,8 +46,9 @@ type Props = {
   selectedId?: string | null;
   onPick: (row: Row) => void;
   onSendOffer?: (row: Row) => void;
-
-  // ✅ режим кластера
+  onOpenDetails?: (row: Row) => void;
+  onOpenShowcase?: (row: Row) => void;
+  onOpenChat?: (row: Row) => void;
   modeLabel?: string | null;
   onClearMode?: () => void;
 };
@@ -58,6 +59,9 @@ export default function ResultsBottomSheet({
   selectedId = null,
   onPick,
   onSendOffer,
+  onOpenDetails,
+  onOpenShowcase,
+  onOpenChat,
   modeLabel = null,
   onClearMode,
 }: Props) {
@@ -94,7 +98,7 @@ export default function ResultsBottomSheet({
           setSnap(snapTo);
         },
       }),
-    [containerH]
+    [containerH],
   );
 
   const screenW = Dimensions.get("window").width;
@@ -104,9 +108,9 @@ export default function ResultsBottomSheet({
   const listRef = useRef<FlatList<Row> | null>(null);
 
   const idToIndex = useMemo(() => {
-    const m = new Map<string, number>();
-    rows.forEach((r, i) => m.set(r.id, i));
-    return m;
+    const map = new Map<string, number>();
+    rows.forEach((row, index) => map.set(row.id, index));
+    return map;
   }, [rows]);
 
   useEffect(() => {
@@ -114,18 +118,20 @@ export default function ResultsBottomSheet({
     const idx = idToIndex.get(selectedId);
     if (idx == null) return;
 
-    const t = setTimeout(() => {
+    const timer = setTimeout(() => {
       try {
         listRef.current?.scrollToIndex({ index: idx, animated: true, viewPosition: 0.5 });
-      } catch {}
+      } catch {
+        // no-op
+      }
     }, Platform.OS === "web" ? 50 : 0);
 
-    return () => clearTimeout(t);
+    return () => clearTimeout(timer);
   }, [selectedId, idToIndex]);
 
   const onViewableItemsChanged = useRef(({ viewableItems }: any) => {
-    const v = viewableItems?.[0]?.item as Row | undefined;
-    if (v?.id) onPick(v);
+    const visible = viewableItems?.[0]?.item as Row | undefined;
+    if (visible?.id) onPick(visible);
   }).current;
 
   const viewabilityConfig = useRef({ itemVisiblePercentThreshold: 70 }).current;
@@ -138,8 +144,8 @@ export default function ResultsBottomSheet({
     const top = items.slice(0, 3);
 
     return (
-      <Pressable onPress={() => onPick(item)} style={[styles.card, { width: cardW }, active && styles.cardActive]}>
-        <View style={{ flex: 1 }}>
+      <View style={[styles.card, { width: cardW }, active && styles.cardActive]}>
+        <Pressable onPress={() => onPick(item)} style={styles.cardMain}>
           <Text style={styles.cardTitle} numberOfLines={2}>
             {item.title}
           </Text>
@@ -152,37 +158,53 @@ export default function ResultsBottomSheet({
             {item.side === "demand"
               ? "СПРОС"
               : item.price != null
-              ? `${item.price.toLocaleString("ru-RU")} KGS`
-              : "Цена по запросу"}
+                ? `${item.price.toLocaleString("ru-RU")} KGS`
+                : "Цена по запросу"}
           </Text>
 
-          {item.side === "demand" && top.length > 0 && (
-            <View style={{ marginTop: 8 }}>
-              <Text style={{ color: UI.sub, fontWeight: "900", fontSize: 12 }}>Нужно:</Text>
-              {top.map((it, idx) => (
-                <Text
-                  key={idx}
-                  style={{ color: UI.text, marginTop: 2, fontWeight: "800", fontSize: 12 }}
-                  numberOfLines={1}
-                >
-                  • {it.name || it.rik_code || "Позиция"}
-                  {it.qty != null ? ` — ${it.qty}` : ""}
-                  {it.uom ? ` ${it.uom}` : ""}
+          {item.side === "demand" && top.length > 0 ? (
+            <View style={styles.itemsBox}>
+              <Text style={styles.itemsTitle}>Нужно:</Text>
+              {top.map((entry, index) => (
+                <Text key={`${item.id}:${index}`} style={styles.itemLine} numberOfLines={1}>
+                  • {entry.name || entry.rik_code || "Позиция"}
+                  {entry.qty != null ? ` — ${entry.qty}` : ""}
+                  {entry.uom ? ` ${entry.uom}` : ""}
                 </Text>
               ))}
-              {items.length > 3 && (
-                <Text style={{ color: UI.sub, marginTop: 2, fontSize: 12 }}>+ ещё {items.length - 3}</Text>
-              )}
+              {items.length > 3 ? (
+                <Text style={styles.itemsMore}>+ еще {items.length - 3}</Text>
+              ) : null}
             </View>
-          )}
-        </View>
+          ) : null}
+        </Pressable>
 
-        {item.side === "demand" && onSendOffer && (
-          <Pressable onPress={() => onSendOffer(item)} style={styles.offerBtn}>
-            <Text style={styles.offerBtnText}>Предложить</Text>
-          </Pressable>
-        )}
-      </Pressable>
+        <View style={styles.actionsRow}>
+          {onOpenDetails ? (
+            <Pressable onPress={() => onOpenDetails(item)} style={styles.softBtn}>
+              <Text style={styles.softBtnText}>Открыть</Text>
+            </Pressable>
+          ) : null}
+
+          {onOpenShowcase ? (
+            <Pressable onPress={() => onOpenShowcase(item)} style={styles.softBtn}>
+              <Text style={styles.softBtnText}>Витрина</Text>
+            </Pressable>
+          ) : null}
+
+          {onOpenChat ? (
+            <Pressable onPress={() => onOpenChat(item)} style={styles.softBtn}>
+              <Text style={styles.softBtnText}>Чат</Text>
+            </Pressable>
+          ) : null}
+
+          {item.side === "demand" && onSendOffer ? (
+            <Pressable onPress={() => onSendOffer(item)} style={styles.offerBtn}>
+              <Text style={styles.offerBtnText}>Предложить</Text>
+            </Pressable>
+          ) : null}
+        </View>
+      </View>
     );
   };
 
@@ -194,9 +216,9 @@ export default function ResultsBottomSheet({
           style={styles.handleArea}
           onStartShouldSetResponder={() => true}
           onMoveShouldSetResponder={() => true}
-          onResponderMove={(e) => {
+          onResponderMove={(event) => {
             if (Platform.OS !== "web") return;
-            const dy = (e as any)?.nativeEvent?.movementY ?? 0;
+            const dy = (event as any)?.nativeEvent?.movementY ?? 0;
             const raw = sheetHeightRef.current + dy / -containerH;
             const clamped = Math.max(MIN, Math.min(MAX, raw));
             setSheetHeight(clamped);
@@ -213,7 +235,7 @@ export default function ResultsBottomSheet({
         </View>
 
         <View style={styles.miniBar}>
-          <View style={{ flex: 1, minWidth: 0 }}>
+          <View style={styles.miniCopy}>
             <Text style={styles.miniText} numberOfLines={1}>
               {modeLabel ? modeLabel : `Найдено: ${count}`}
             </Text>
@@ -231,9 +253,11 @@ export default function ResultsBottomSheet({
         </View>
 
         <FlatList
-          ref={(r) => { listRef.current = r; }}
+          ref={(ref) => {
+            listRef.current = ref;
+          }}
           data={rows}
-          keyExtractor={(x) => x.id}
+          keyExtractor={(item) => item.id}
           horizontal
           showsHorizontalScrollIndicator={false}
           snapToInterval={cardW + 12}
@@ -264,10 +288,17 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: UI.border,
   },
-
-  handleArea: { height: 18, alignItems: "center", justifyContent: "center" },
-  handle: { width: 44, height: 4, borderRadius: 999, backgroundColor: "#4B5563" },
-
+  handleArea: {
+    height: 18,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  handle: {
+    width: 44,
+    height: 4,
+    borderRadius: 999,
+    backgroundColor: "#4B5563",
+  },
   miniBar: {
     paddingHorizontal: 14,
     paddingBottom: 10,
@@ -276,8 +307,14 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     gap: 10,
   },
-  miniText: { color: UI.text, fontWeight: "900" },
-
+  miniCopy: {
+    flex: 1,
+    minWidth: 0,
+  },
+  miniText: {
+    color: UI.text,
+    fontWeight: "900",
+  },
   clearBtn: {
     paddingHorizontal: 10,
     paddingVertical: 8,
@@ -286,25 +323,31 @@ const styles = StyleSheet.create({
     borderColor: UI.border,
     backgroundColor: "#0B1120",
   },
-  clearBtnText: { color: UI.text, fontWeight: "900" },
-
+  clearBtnText: {
+    color: UI.text,
+    fontWeight: "900",
+  },
   listBtn: {
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 999,
     backgroundColor: UI.accent,
   },
-  listBtnText: { color: "#0B1120", fontWeight: "900" },
-
+  listBtnText: {
+    color: "#0B1120",
+    fontWeight: "900",
+  },
   card: {
     backgroundColor: UI.card,
     borderRadius: 16,
     borderWidth: 1,
     borderColor: UI.border,
     padding: 12,
-    flexDirection: "row",
     gap: 10,
     minHeight: 120,
+  },
+  cardMain: {
+    flex: 1,
   },
   cardActive: {
     borderColor: UI.accent,
@@ -314,18 +357,66 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 6 },
     elevation: 6,
   },
-
-  cardTitle: { color: UI.text, fontWeight: "900", fontSize: 14 },
-  cardCity: { color: UI.sub, marginTop: 4, fontWeight: "700" },
-  cardPrice: { color: UI.accent, marginTop: 10, fontWeight: "900" },
-
+  cardTitle: {
+    color: UI.text,
+    fontWeight: "900",
+    fontSize: 14,
+  },
+  cardCity: {
+    color: UI.sub,
+    marginTop: 4,
+    fontWeight: "700",
+  },
+  cardPrice: {
+    color: UI.accent,
+    marginTop: 10,
+    fontWeight: "900",
+  },
+  itemsBox: {
+    marginTop: 8,
+  },
+  itemsTitle: {
+    color: UI.sub,
+    fontWeight: "900",
+    fontSize: 12,
+  },
+  itemLine: {
+    color: UI.text,
+    marginTop: 2,
+    fontWeight: "800",
+    fontSize: 12,
+  },
+  itemsMore: {
+    color: UI.sub,
+    marginTop: 2,
+    fontSize: 12,
+  },
+  actionsRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+  },
+  softBtn: {
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: UI.border,
+    backgroundColor: "#111827",
+  },
+  softBtnText: {
+    color: UI.text,
+    fontWeight: "800",
+    fontSize: 12,
+  },
   offerBtn: {
-    alignSelf: "center",
     paddingHorizontal: 10,
     paddingVertical: 8,
     borderRadius: 10,
     backgroundColor: UI.ok,
   },
-  offerBtnText: { color: "#0B1120", fontWeight: "900" },
+  offerBtnText: {
+    color: "#0B1120",
+    fontWeight: "900",
+  },
 });
-

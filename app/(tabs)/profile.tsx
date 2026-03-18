@@ -103,6 +103,15 @@ type ListingCartItem = {
 type CompanyTab = "main" | "contacts" | "about" | "docs";
 type ProfileMode = "person" | "company" | null;
 
+type ProfileListingSummary = {
+  id: string;
+  title: string;
+  kind: string | null;
+  city: string | null;
+  price: string | number | null;
+  status: string | null;
+};
+
 function generateInviteCode(): string {
   const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
   let code = "";
@@ -111,6 +120,72 @@ function generateInviteCode(): string {
     code += alphabet[idx];
   }
   return `GB-${code}`;
+}
+
+function getListingKindLabel(kind: string | null): string {
+  switch (kind) {
+    case "material":
+      return "материалы";
+    case "service":
+      return "услуги";
+    case "rent":
+      return "аренда";
+    default:
+      return "объявления";
+  }
+}
+
+function buildProfileAssistantPrompt(args: {
+  profileName: string;
+  city: string | null | undefined;
+  companyName: string | null | undefined;
+  modeMarket: boolean;
+  modeBuild: boolean;
+  listings: ProfileListingSummary[];
+}): string {
+  const parts: string[] = [
+    `Помоги мне с интегрированным профилем GOX. Меня зовут ${args.profileName}.`,
+  ];
+
+  if (args.companyName) {
+    parts.push(`Компания: ${args.companyName}.`);
+  }
+
+  if (args.city) {
+    parts.push(`Город: ${args.city}.`);
+  }
+
+  parts.push(
+    `Режим объявлений: ${args.modeMarket ? "включен" : "выключен"}. Режим компании: ${
+      args.modeBuild ? "включен" : "выключен"
+    }.`,
+  );
+
+  if (args.listings.length > 0) {
+    const listingSummary = args.listings
+      .slice(0, 3)
+      .map((item) => {
+        const price =
+          item.price != null && String(item.price).trim()
+            ? `, цена ${String(item.price)}`
+            : "";
+        const city = item.city ? `, ${item.city}` : "";
+        const status = item.status ? `, статус ${item.status}` : "";
+        return `${item.title} (${getListingKindLabel(item.kind)}${city}${price}${status})`;
+      })
+      .join("; ");
+
+    parts.push(`Мои объявления: ${listingSummary}.`);
+    parts.push(
+      "Подскажи, как лучше использовать витрину поставщика, карту и AI внутри текущего приложения без изменения бизнес-логики.",
+    );
+  } else {
+    parts.push(
+      "У меня пока нет опубликованных объявлений. Подскажи, с чего начать витрину поставщика и как связать ее с картой и AI внутри текущего приложения.",
+    );
+  }
+
+  return parts.join(" ");
 }
 export default function ProfileScreen() {
   const router = useRouter();
@@ -1018,6 +1093,34 @@ export default function ProfileScreen() {
     profile?.full_name?.trim() || profile?.user_id?.slice(0, 8) || "GOX";
   const roleLabel = "Профиль GOX";
 
+  const openProfileAssistant = () => {
+    const listings = (myListings || []).map((item) => ({
+      id: String(item?.id ?? ""),
+      title: String(item?.title ?? "Obyavlenie"),
+      kind: typeof item?.kind === "string" ? item.kind : null,
+      city: typeof item?.city === "string" ? item.city : null,
+      price:
+        typeof item?.price === "number" || typeof item?.price === "string"
+          ? item.price
+          : null,
+      status: typeof item?.status === "string" ? item.status : null,
+    }));
+
+    const prompt = buildProfileAssistantPrompt({
+      profileName,
+      city: company?.city || profile?.city,
+      companyName: company?.name,
+      modeMarket,
+      modeBuild,
+      listings,
+    });
+
+    router.push({
+      pathname: "/(tabs)/ai",
+      params: { prompt, autoSend: "1", context: "profile" },
+    } as any);
+  };
+
   if (loading || !profile) {
     return (
       <View style={styles.center}>
@@ -1242,6 +1345,31 @@ export default function ProfileScreen() {
                 subtitle="Товары и услуги"
                 onPress={openListingModal}
               />
+              <QuickAction
+                title="Маркет"
+                subtitle="Объявления, витрины и позиции"
+                onPress={() => router.push("/(tabs)/market" as any)}
+              />
+              <QuickAction
+                title="Карта"
+                subtitle="Поставщики и спрос на карте"
+                onPress={() => router.push("/supplierMap" as any)}
+              />
+              <QuickAction
+                title="Торги"
+                subtitle="Активные и завершенные торги"
+                onPress={() => router.push("/auctions" as any)}
+              />
+              <QuickAction
+                title="AI ассистент"
+                subtitle="Помощь по модулям GOX без изменения данных"
+                onPress={() =>
+                  router.push({
+                    pathname: "/(tabs)/ai",
+                    params: { context: "profile" },
+                  } as any)
+                }
+              />
             </View>
 
             {/* Активность — заглушка */}
@@ -1451,6 +1579,43 @@ export default function ProfileScreen() {
                     >
                       <Text style={styles.companyBtnText}>
                         Открыть витрину поставщика
+                      </Text>
+                    </Pressable>
+                    <View
+                      style={{
+                        flexDirection: "row",
+                        flexWrap: "wrap",
+                        gap: 8,
+                        marginTop: 10,
+                      }}
+                    >
+                      <Pressable
+                        style={[styles.companyBtn, styles.companyBtnSecondary]}
+                        onPress={() => router.push("/(tabs)/market" as any)}
+                      >
+                        <Text style={styles.companyBtnTextSecondary}>
+                          Открыть маркет
+                        </Text>
+                      </Pressable>
+                      <Pressable
+                        style={[styles.companyBtn, styles.companyBtnSecondary]}
+                        onPress={() => router.push("/auctions" as any)}
+                      >
+                        <Text style={styles.companyBtnTextSecondary}>
+                          Открыть торги
+                        </Text>
+                      </Pressable>
+                    </View>
+                    <Pressable
+                      style={[
+                        styles.companyBtn,
+                        styles.companyBtnSecondary,
+                        { marginTop: 10 },
+                      ]}
+                      onPress={openProfileAssistant}
+                    >
+                      <Text style={styles.companyBtnTextSecondary}>
+                        Спросить AI по витрине и объявлениям
                       </Text>
                     </Pressable>
 

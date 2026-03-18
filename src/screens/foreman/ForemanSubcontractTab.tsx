@@ -1,4 +1,4 @@
-﻿import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Alert,
   Modal,
@@ -906,9 +906,21 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
             onChangeLevelCode={(value) => setField("levelCode", value)}
             onChangeSystemCode={(value) => setField("systemCode", value)}
             onChangeZoneText={(value) => setField("zoneText", value)}
-            onOpenCatalog={() => setSubcontractFlowScreen("catalog")}
-            onOpenCalc={() => setSubcontractFlowScreen("workType")}
-            onOpenDraft={() => setSubcontractFlowScreen("draft")}
+            onOpenCatalog={() => {
+              requestAnimationFrame(() => {
+                setTimeout(() => setSubcontractFlowScreen("catalog"), 50);
+              });
+            }}
+            onOpenCalc={() => {
+              requestAnimationFrame(() => {
+                setTimeout(() => setSubcontractFlowScreen("workType"), 50);
+              });
+            }}
+            onOpenDraft={() => {
+              requestAnimationFrame(() => {
+                setTimeout(() => setSubcontractFlowScreen("draft"), 50);
+              });
+            }}
             displayNo={displayNo}
           />
         </View>
