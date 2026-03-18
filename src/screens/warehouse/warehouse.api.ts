@@ -3,7 +3,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { StockRow, ReqHeadRow, ReqItemUiRow } from "./warehouse.types";
 import { nz, parseNum } from "./warehouse.utils";
 import { normalizeRuText } from "../../lib/text/encoding";
-import { isRequestDirectorApproved } from "../../lib/requestStatus";
+import { isRequestVisibleInWarehouseIssueQueue } from "../../lib/requestStatus";
 import { fetchWarehouseNameMapUi } from "./warehouse.nameMap.ui";
 import {
   asUnknownRows,
@@ -95,6 +95,21 @@ const normDateArg = (s?: string | null): string | null => {
 const toTextOrNull = (v: unknown): string | null => {
   const s = String(v ?? "").trim();
   return s || null;
+};
+
+const normalizeRequestItemStatus = (value: unknown): string =>
+  String(normalizeRuText(String(value ?? "")) ?? "")
+    .trim()
+    .toLowerCase();
+
+const isRejectedRequestItemStatus = (value: unknown): boolean => {
+  const status = normalizeRequestItemStatus(value);
+  return status.includes("отклон") || status.includes("reject");
+};
+
+const isIssuedRequestItemStatus = (value: unknown): boolean => {
+  const status = normalizeRequestItemStatus(value);
+  return status.includes("выдан") || status === "done";
 };
 
 const REQUESTS_FALLBACK_SELECT = [
@@ -493,15 +508,17 @@ async function loadApprovedViewReqHeadsWindow(
     .in("id", requestIds);
   if (approvalStatusRows.error || !Array.isArray(approvalStatusRows.data)) return [];
 
-  const approvedById = new Map<string, string>();
+  const requestStatusById = new Map<string, string>();
   for (const row of approvalStatusRows.data as UnknownRow[]) {
     const id = String(row?.id ?? "").trim();
     if (!id) continue;
-    approvedById.set(id, String(row?.status ?? ""));
+    requestStatusById.set(id, String(row?.status ?? ""));
   }
 
   const approvedRows = rows.filter((row) =>
-    isRequestDirectorApproved(approvedById.get(String(row.request_id ?? "").trim()) || ""),
+    isRequestVisibleInWarehouseIssueQueue(
+      requestStatusById.get(String(row.request_id ?? "").trim()) || "",
+    ),
   );
   if (!approvedRows.length) return [];
 
@@ -1031,20 +1048,18 @@ export async function apiFetchReqHeads(
     if (windowRows.length < viewChunkSize) break;
   }
 
-  let viewRows = visibleViewRows
-    .sort(reqHeadSort)
-    .slice(page * pageSize, (page + 1) * pageSize);
+  const sortedVisibleViewRows = [...visibleViewRows].sort(reqHeadSort);
+  let mergedRows = sortedVisibleViewRows;
 
-  // Fallback only on first page:
-  // include approved requests not yet materialized in warehouse view.
-  // On next pages we rely on pure view pagination to avoid duplicate slices.
-  if (page === 0 && viewRows.length < pageSize) {
+  // Merge recent approved requests missing from warehouse views before slicing page 0.
+  // This keeps newly approved demand visible in the expense queue even if the DB view lags.
+  if (page === 0) {
     try {
       const reqRows = await tryLoadRequestsFallbackRows(supabase, pageSize);
 
     if (reqRows.length) {
       const approvedReqs = reqRows
-        .filter((r) => isRequestDirectorApproved(r?.status))
+        .filter((r) => isRequestVisibleInWarehouseIssueQueue(r?.status))
         .map((r) => ({
           request_id: String(r.id ?? "").trim(),
           display_no: toTextOrNull(r.display_no),
@@ -1093,11 +1108,14 @@ export async function apiFetchReqHeads(
             for (const it of fallbackItemStatsQ.data as UnknownRow[]) {
               const rid = String(it?.request_id ?? "").trim();
               if (!rid || !stat[rid]) continue;
-              const status = String(it?.status ?? "").trim().toLowerCase();
+              if (isRejectedRequestItemStatus(it?.status)) {
+                stat[rid].rejected += 1;
+                continue;
+              }
+
               stat[rid].items += 1;
-              stat[rid].qty += parseNum(it?.qty, 0);
-              if (status.includes("РІС‹РґР°РЅ") || status === "done") stat[rid].done += 1;
-              if (status.includes("РѕС‚РєР»РѕРЅ")) stat[rid].rejected += 1;
+              stat[rid].qty += Math.max(0, parseNum(it?.qty, 0));
+              if (isIssuedRequestItemStatus(it?.status)) stat[rid].done += 1;
             }
           }
 
@@ -1179,14 +1197,8 @@ export async function apiFetchReqHeads(
             })
             .filter((r) => r.visible_in_expense_queue);
 
-          const merged = [...viewRows, ...fallbackRows]
-            .sort(reqHeadSort)
-            .slice(0, pageSize);
-          try {
-            return await enrichReqHeadsMeta(supabase, merged);
-          } catch (error) {
-            logWarehouseApiFallback("apiFetchReqHeads/fallback-enrich-merged", error);
-            return merged;
+          if (fallbackRows.length) {
+            mergedRows = [...sortedVisibleViewRows, ...fallbackRows].sort(reqHeadSort);
           }
         }
       }
@@ -1196,6 +1208,8 @@ export async function apiFetchReqHeads(
       // keep view rows when fallback fails
     }
   }
+
+  const viewRows = mergedRows.slice(page * pageSize, (page + 1) * pageSize);
 
   try {
     return await enrichReqHeadsMeta(supabase, viewRows);
@@ -1335,7 +1349,7 @@ export async function apiFetchReqItems(
       .order("name_human", { ascending: true });
     if (!f.error && Array.isArray(f.data) && f.data.length) {
       const direct = (f.data as UnknownRow[])
-        .filter((x) => !String(x?.status ?? "").toLowerCase().includes("РѕС‚РєР»РѕРЅ"))
+        .filter((x) => !isRejectedRequestItemStatus(x?.status))
         .map((x) => {
           const qty = parseNum(x?.qty, 0);
           const available = qty; // unknown here; keep non-blocking until stock check in UI
