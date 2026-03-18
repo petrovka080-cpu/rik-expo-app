@@ -2,7 +2,13 @@ import React from "react";
 import { Pressable, Text, View } from "react-native";
 import { UI, s } from "./director.styles";
 import type { FinPage } from "./director.types";
-import type { FinRep, FinSupplierDebt } from "./director.finance";
+import type {
+  FinKindSupplierRow,
+  FinRep,
+  FinSpendRow,
+  FinSupplierInput,
+  FinSupplierPanelState,
+} from "./director.finance";
 import { money } from "./director.finance";
 import DirectorFinanceDebtModal from "./DirectorFinanceDebtModal";
 import DirectorFinanceSpendModal from "./DirectorFinanceSpendModal";
@@ -13,15 +19,15 @@ type Props = {
   finPage: FinPage;
   finLoading: boolean;
   finRep: FinRep;
-  finSpendRows: any[];
+  finSpendRows: FinSpendRow[];
   finKindName: string;
-  finKindList: any[];
-  finSupplier: FinSupplierDebt | null;
+  finKindList: FinKindSupplierRow[];
+  finSupplier: FinSupplierPanelState | null;
   supplierPdfBusy: boolean;
   FIN_CRITICAL_DAYS: number;
   pushFin: (page: FinPage) => void;
-  openSupplier: (srow: any) => void;
-  openFinKind: (kindName: string, list: any[]) => void;
+  openSupplier: (row: FinSupplierInput | string) => void;
+  openFinKind: (kindName: string, list: FinKindSupplierRow[]) => void;
   onSupplierPdf: () => Promise<void>;
   fmtDateOnly: (iso?: string | null) => string;
 };
@@ -63,7 +69,7 @@ export default function DirectorFinanceContent({
         rep={finRep}
         money={money}
         FIN_CRITICAL_DAYS={FIN_CRITICAL_DAYS}
-        openSupplier={(srow: any) => openSupplier(srow)}
+        openSupplier={openSupplier}
       />
     );
   }
@@ -76,8 +82,7 @@ export default function DirectorFinanceContent({
         sum={finRep?.summary}
         spendRows={finSpendRows}
         money={money}
-        onOpenKind={(kindName, list) => openFinKind(kindName, list)}
-        onOpenSupplier={(supplierName: string) => openSupplier({ supplier: supplierName })}
+        onOpenKind={openFinKind}
       />
     );
   }
@@ -89,7 +94,7 @@ export default function DirectorFinanceContent({
         kindName={finKindName}
         list={finKindList}
         money={money}
-        onOpenSupplier={(payload: any) => openSupplier(payload)}
+        onOpenSupplier={openSupplier}
       />
     );
   }

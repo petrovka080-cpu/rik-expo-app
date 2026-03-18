@@ -1,29 +1,11 @@
 import React from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { UI, s } from "./director.styles";
-
-type InvoiceRow = {
-  id: string | number;
-  title?: string | null;
-  amount?: number | null;
-  isCritical?: boolean;
-  isOverdue?: boolean;
-  approvedIso?: string | null;
-  invoiceIso?: string | null;
-  dueIso?: string | null;
-};
-
-type SupplierPayload = {
-  amount?: number;
-  count?: number;
-  overdueCount?: number;
-  criticalCount?: number;
-  invoices?: InvoiceRow[];
-};
+import type { FinSupplierPanelState } from "./director.finance";
 
 type ErrorLike = { message?: unknown };
 
-export default function DirectorFinanceSupplierModal(p: {
+type Props = {
   visible?: boolean;
   onClose?: () => void;
   loading: boolean;
@@ -31,15 +13,25 @@ export default function DirectorFinanceSupplierModal(p: {
   onOpenPeriod?: () => void;
   onRefresh?: () => void;
   onPdf: () => void | Promise<void>;
-  supplier: SupplierPayload | null;
+  supplier: FinSupplierPanelState | null;
   money: (v: number) => string;
   fmtDateOnly: (iso?: string | null) => string;
-}) {
-  const sup = p.supplier;
+};
 
-  return !sup ? (
-    <Text style={{ color: UI.sub, fontWeight: "800" }}>Нет данных</Text>
-  ) : (
+export default function DirectorFinanceSupplierModal(props: Props) {
+  const supplier = props.supplier;
+
+  if (!supplier) {
+    return <Text style={{ color: UI.sub, fontWeight: "800" }}>Нет данных</Text>;
+  }
+
+  const amount = Number(supplier.amount ?? supplier.toPay ?? 0);
+  const invoiceCount = Number(supplier.count ?? supplier.invoices.length ?? 0);
+  const overdueCount = Number(supplier.overdueCount ?? 0);
+  const criticalCount = Number(supplier.criticalCount ?? 0);
+  const invoices = Array.isArray(supplier.invoices) ? supplier.invoices : [];
+
+  return (
     <ScrollView
       style={{ flex: 1, minHeight: 0 }}
       keyboardShouldPersistTaps="handled"
@@ -48,24 +40,24 @@ export default function DirectorFinanceSupplierModal(p: {
     >
       <View style={[s.reqNoteBox, { borderLeftColor: "#F59E0B" }]}>
         <Text style={[s.reqNoteLine, { fontWeight: "900" }]} numberOfLines={1}>
-          Долг: {p.money(Number(sup.amount ?? 0))} KGS · счетов {Number(sup.count ?? 0)}
+          {`Долг: ${props.money(amount)} KGS · счетов ${invoiceCount}`}
         </Text>
         <Text style={[s.reqNoteLine, { fontWeight: "900" }]} numberOfLines={1}>
-          Требует оплаты: {Number(sup.overdueCount ?? 0)} · критично (в периоде): {Number(sup.criticalCount ?? 0)}
+          {`Требует оплаты: ${overdueCount} · критично (в периоде): ${criticalCount}`}
         </Text>
 
         <View style={{ marginTop: 10 }}>
           <Pressable
-            disabled={p.loading}
+            disabled={props.loading}
             onPress={async () => {
-              if (p.loading) return;
+              if (props.loading) return;
               try {
-                await Promise.resolve(p.onPdf());
-              } catch (e) {
+                await Promise.resolve(props.onPdf());
+              } catch (error) {
                 const message =
-                  e && typeof e === "object" && "message" in e
-                    ? String((e as ErrorLike).message ?? e)
-                    : String(e);
+                  error && typeof error === "object" && "message" in error
+                    ? String((error as ErrorLike).message ?? error)
+                    : String(error);
                 if (__DEV__) {
                   console.warn("[director.financeSupplier] pdf failed", message);
                 }
@@ -79,17 +71,17 @@ export default function DirectorFinanceSupplierModal(p: {
               backgroundColor: "rgba(34,197,94,0.16)",
               borderWidth: 1,
               borderColor: "rgba(34,197,94,0.55)",
-              opacity: p.loading ? 0.6 : 1,
+              opacity: props.loading ? 0.6 : 1,
             }}
           >
-            <Text style={{ color: UI.text, fontWeight: "900" }}>{p.loading ? "..." : "Сводка (PDF)"}</Text>
+            <Text style={{ color: UI.text, fontWeight: "900" }}>{props.loading ? "..." : "Сводка (PDF)"}</Text>
           </Pressable>
         </View>
       </View>
 
-      {(sup.invoices || []).map((it) => (
+      {invoices.map((invoice) => (
         <View
-          key={String(it.id)}
+          key={String(invoice.id)}
           style={[
             s.mobCard,
             {
@@ -102,15 +94,15 @@ export default function DirectorFinanceSupplierModal(p: {
           ]}
         >
           <Text style={{ color: UI.text, fontWeight: "900" }} numberOfLines={2}>
-            {it.title}
+            {invoice.title}
           </Text>
 
           <Text style={{ color: UI.sub, fontWeight: "800", marginTop: 4 }} numberOfLines={3}>
-            {p.money(Number(it.amount ?? 0))} KGS
-            {it.isCritical ? " · критично" : it.isOverdue ? " · требует оплаты" : ""}
-            {it.approvedIso ? ` · утв. ${p.fmtDateOnly(it.approvedIso)}` : ""}
-            {it.invoiceIso ? ` · счет ${p.fmtDateOnly(it.invoiceIso)}` : ""}
-            {it.dueIso ? ` · срок ${p.fmtDateOnly(it.dueIso)}` : ""}
+            {props.money(Number(invoice.amount ?? 0))} KGS
+            {invoice.isCritical ? " · критично" : invoice.isOverdue ? " · требует оплаты" : ""}
+            {invoice.approvedIso ? ` · утв. ${props.fmtDateOnly(invoice.approvedIso)}` : ""}
+            {invoice.invoiceIso ? ` · счет ${props.fmtDateOnly(invoice.invoiceIso)}` : ""}
+            {invoice.dueIso ? ` · срок ${props.fmtDateOnly(invoice.dueIso)}` : ""}
           </Text>
         </View>
       ))}

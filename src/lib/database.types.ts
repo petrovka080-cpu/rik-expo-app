@@ -16357,6 +16357,15 @@ export type Database = {
         Args: { p_decision: string; p_request_id: string }
         Returns: undefined
       }
+      director_finance_fetch_summary_v1: {
+        Args: {
+          p_critical_days?: number
+          p_due_days?: number
+          p_from?: string
+          p_to?: string
+        }
+        Returns: Json
+      }
       director_item_set_status: {
         Args: { p_item_id: string; p_status: string }
         Returns: undefined
@@ -16389,6 +16398,10 @@ export type Database = {
       }
       director_report_fetch_materials_v1: {
         Args: { p_from?: string; p_object_name?: string; p_to?: string }
+        Returns: Json
+      }
+      director_report_fetch_options_v1: {
+        Args: { p_from?: string; p_to?: string }
         Returns: Json
       }
       director_report_fetch_summary_v1: {

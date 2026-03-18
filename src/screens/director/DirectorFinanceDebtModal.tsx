@@ -1,37 +1,20 @@
 import React from "react";
 import { FlatList, Pressable, Text, View } from "react-native";
 import { UI, s } from "./director.styles";
+import type { FinRep, FinSupplierDebt } from "./director.finance";
 
 type Props = {
   visible?: boolean;
   onClose?: () => void;
-
   periodShort?: string;
   loading: boolean;
-
   onOpenPeriod?: () => void;
   onRefresh?: () => void;
   onPdf?: () => void;
-
-  rep?: {
-    summary: {
-      approved: number;
-      paid: number;
-      toPay: number;
-      overdueCount: number;
-      overdueAmount: number;
-      criticalCount: number;
-      criticalAmount: number;
-      debtCount: number;
-    };
-    report: {
-      suppliers: any[];
-    };
-  } | null;
-
+  rep?: FinRep | null;
   money: (v: number) => string;
   FIN_CRITICAL_DAYS: number;
-  openSupplier: (srow: any) => void;
+  openSupplier: (supplierRow: FinSupplierDebt) => void;
 };
 
 const pct = (num: number, den: number) => {
@@ -41,35 +24,36 @@ const pct = (num: number, den: number) => {
   return Math.round((a / b) * 100);
 };
 
-export default function DirectorFinanceDebtModal(p: Props) {
-  const rep = p.rep;
+export default function DirectorFinanceDebtModal(props: Props) {
+  const rep = props.rep;
   const [suppliersOpen, setSuppliersOpen] = React.useState(false);
 
   React.useEffect(() => {
-    if (p.visible === false) setSuppliersOpen(false);
-  }, [p.visible]);
+    if (props.visible === false) setSuppliersOpen(false);
+  }, [props.visible]);
 
-  const suppliers = React.useMemo(
+  const suppliers = React.useMemo<FinSupplierDebt[]>(
     () => (Array.isArray(rep?.report?.suppliers) ? rep.report.suppliers : []),
     [rep?.report?.suppliers],
   );
 
   const overdueCount = rep?.summary?.overdueCount ?? 0;
   const overdueAmount = rep?.summary?.overdueAmount ?? 0;
-
   const criticalCount = rep?.summary?.criticalCount ?? 0;
   const criticalAmount = rep?.summary?.criticalAmount ?? 0;
-
   const debtCount = rep?.summary?.debtCount ?? 0;
   const debtAmount = rep?.summary?.toPay ?? 0;
-
   const overduePct = pct(overdueAmount, debtAmount);
   const criticalPct = pct(criticalAmount, debtAmount);
+  const keyExtractor = React.useCallback(
+    (item: FinSupplierDebt, index: number) => `${String(item.supplier ?? "supplier")}:${index}`,
+    [],
+  );
 
   const renderSupplierRow = React.useCallback(
-    ({ item }: { item: any }) => (
+    ({ item }: { item: FinSupplierDebt }) => (
       <Pressable
-        onPress={() => p.openSupplier(item)}
+        onPress={() => props.openSupplier(item)}
         style={[
           s.mobCard,
           {
@@ -87,27 +71,26 @@ export default function DirectorFinanceDebtModal(p: Props) {
               {item.supplier}
             </Text>
           </View>
-
           <Text style={{ color: UI.sub, fontWeight: "900" }} numberOfLines={1}>
-            {p.money(item.toPay)} KGS
+            {props.money(item.toPay)} KGS
           </Text>
         </View>
 
         <Text style={{ color: UI.sub, fontWeight: "800", marginTop: 4 }} numberOfLines={2}>
-          Счетов {item.count} · требует оплаты {item.overdueCount} · критично {item.criticalCount}
+          {`Счетов ${item.count} · требует оплаты ${item.overdueCount} · критично ${item.criticalCount}`}
         </Text>
       </Pressable>
     ),
-    [p],
+    [props],
   );
 
-  const listHeader = (
+  const listHeader = React.useMemo(() => (
     <View>
       <Text style={{ color: "#F59E0B", fontWeight: "900" }} numberOfLines={2}>
         Требует оплаты:{" "}
         <Text style={{ color: UI.sub }}>
-          {p.loading ? "..." : `${overdueCount} сч.`} · {p.loading ? "..." : `${p.money(overdueAmount)} KGS`}
-          {!p.loading && debtAmount > 0 ? ` · ${overduePct}%` : ""}
+          {props.loading ? "..." : `${overdueCount} сч.`} · {props.loading ? "..." : `${props.money(overdueAmount)} KGS`}
+          {!props.loading && debtAmount > 0 ? ` · ${overduePct}%` : ""}
         </Text>
       </Text>
 
@@ -115,8 +98,8 @@ export default function DirectorFinanceDebtModal(p: Props) {
         <Text style={{ color: UI.text, fontWeight: "900", marginTop: 10 }} numberOfLines={2}>
           Критично (в периоде):{" "}
           <Text style={{ color: UI.sub }}>
-            {p.loading ? "..." : `${criticalCount} сч.`} · {p.loading ? "..." : `${p.money(criticalAmount)} KGS`}
-            {!p.loading && debtAmount > 0 ? ` · ${criticalPct}%` : ""}
+            {props.loading ? "..." : `${criticalCount} сч.`} · {props.loading ? "..." : `${props.money(criticalAmount)} KGS`}
+            {!props.loading && debtAmount > 0 ? ` · ${criticalPct}%` : ""}
           </Text>
         </Text>
       ) : null}
@@ -124,12 +107,12 @@ export default function DirectorFinanceDebtModal(p: Props) {
       <Text style={{ color: UI.text, fontWeight: "900", marginTop: 10 }} numberOfLines={2}>
         К оплате:{" "}
         <Text style={{ color: UI.sub }}>
-          {p.loading ? "..." : `${debtCount} сч.`} · {p.loading ? "..." : `${p.money(debtAmount)} KGS`}
+          {props.loading ? "..." : `${debtCount} сч.`} · {props.loading ? "..." : `${props.money(debtAmount)} KGS`}
         </Text>
       </Text>
 
       <Pressable
-        onPress={() => setSuppliersOpen((v) => !v)}
+        onPress={() => setSuppliersOpen((current) => !current)}
         style={[
           s.mobCard,
           {
@@ -149,7 +132,7 @@ export default function DirectorFinanceDebtModal(p: Props) {
           </Text>
           {suppliers[0] ? (
             <Text style={{ color: UI.sub, fontWeight: "800", fontSize: 12 }} numberOfLines={1}>
-              Лидер: {suppliers[0].supplier} · {p.money(suppliers[0].toPay)} KGS
+              {`Лидер: ${suppliers[0].supplier} · ${props.money(suppliers[0].toPay)} KGS`}
             </Text>
           ) : null}
         </View>
@@ -159,14 +142,14 @@ export default function DirectorFinanceDebtModal(p: Props) {
         </Text>
       </Pressable>
     </View>
-  );
+  ), [criticalAmount, criticalCount, criticalPct, debtAmount, debtCount, overdueAmount, overdueCount, overduePct, props, suppliers, suppliersOpen]);
 
   return (
     <FlatList
       style={{ flex: 1, minHeight: 0 }}
       data={suppliersOpen ? suppliers : []}
       renderItem={renderSupplierRow}
-      keyExtractor={(item, index) => `${String(item?.supplier ?? "supplier")}:${index}`}
+      keyExtractor={keyExtractor}
       ListHeaderComponent={listHeader}
       ListEmptyComponent={
         suppliersOpen ? <Text style={{ color: UI.sub, fontWeight: "800" }}>Нет данных</Text> : null

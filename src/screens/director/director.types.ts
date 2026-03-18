@@ -1,3 +1,5 @@
+import type { FinSupplierPanelState } from "./director.finance";
+
 // src/screens/director/director.types.ts
 export type Tab = "foreman" | "buyer";
 export type DirTopTab = "Заявки" | "Подряды" | "Финансы" | "Склад" | "Отчёты";
@@ -72,8 +74,6 @@ export type RepRow = {
   docs_free: number;
 };
 
-export type RepWho = { who: string; items_cnt: number };
-
 export type RepKpi = {
   issues_total: number;
   issues_no_obj: number;
@@ -91,8 +91,6 @@ export type RepDisciplineMaterial = {
   docs_count: number;
   unit_price?: number;
   amount_sum?: number;
-  source_issue_ids?: string[];
-  source_request_item_ids?: string[];
 };
 
 export type RepDisciplineLevel = {
@@ -108,8 +106,6 @@ export type RepDisciplineLevel = {
   share_in_work_pct: number;
   req_positions: number;
   free_positions: number;
-  source_issue_ids?: string[];
-  source_request_item_ids?: string[];
   materials: RepDisciplineMaterial[];
 };
 
@@ -148,20 +144,7 @@ export type RepPayload = {
   meta?: { from?: string; to?: string; object_name?: string | null };
   kpi?: RepKpi;
   rows?: RepRow[];
-  discipline_who?: RepWho[];
   discipline?: RepDisciplinePayload;
-  report_options?: { objects: string[]; objectIdByName: Record<string, string | null> };
 };
 
-export type FinSupplierDebt = {
-  supplier: string;
-  _kindName?: string;
-  amount: number;
-  count: number;
-  overdueCount: number;
-  criticalCount: number;
-  invoices: any[];
-  approved: number;
-  paid: number;
-  toPay: number;
-};
+export type FinSupplierDebt = FinSupplierPanelState;

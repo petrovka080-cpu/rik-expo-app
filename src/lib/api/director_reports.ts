@@ -167,31 +167,6 @@ type DirectorFactRowNormalizeInput = {
 
 type DirectorFactRow = DirectorFactRowNormalized;
 
-type DirectorReportOptionRow = {
-  object_name?: string | null;
-  object_id?: string | number | null;
-};
-
-type DirectorFactViewRow = {
-  issue_id?: string | number | null;
-  iss_date?: string | null;
-  object_name?: string | null;
-  work_name?: string | null;
-  rik_code?: string | null;
-  material_name_ru?: string | null;
-  uom?: string | null;
-  qty?: number | string | null;
-  is_without_request?: boolean | null;
-};
-
-type IdObjectRow = {
-  id?: string | number | null;
-  object_id?: string | number | null;
-  request_id?: string | number | null;
-  object_name?: string | null;
-  name?: string | null;
-};
-
 type CodeNameRow = {
   code?: string | null;
   name_human_ru?: string | null;
@@ -215,18 +190,6 @@ type RequestLookupRow = {
 type ObjectLookupRow = {
   id: string;
   name: string | null;
-};
-
-type PriceLookupRow = {
-  rik_code?: string | null;
-  code?: string | null;
-  price?: number | string | null;
-  qty?: number | string | null;
-};
-
-type RequestItemLookupRow = {
-  id?: string | number | null;
-  request_id?: string | number | null;
 };
 
 type RequestItemRequestLinkRow = {
@@ -278,31 +241,6 @@ type PurchaseItemRequestPriceRow = {
   qty?: number | string | null;
 };
 
-type LedgerIncomingRow = {
-  purchase_item_id?: string | number | null;
-  code?: string | null;
-  qty?: number | string | null;
-};
-
-type PurchaseItemByIdRow = {
-  id?: string | number | null;
-  purchase_id?: string | number | null;
-  rik_code?: string | null;
-  code?: string | null;
-  price?: number | string | null;
-};
-
-type PurchaseObjectRow = {
-  id?: string | number | null;
-  object_name?: string | null;
-};
-
-type WarehouseIssueOptionLookupRow = {
-  object_name?: string | null;
-  target_object_id?: string | number | null;
-  purchase_id?: string | number | null;
-};
-
 type WarehouseIssueFactRow = {
   id: string;
   iss_date: string | null;
@@ -336,6 +274,26 @@ type JoinedWarehouseIssueItemFactRow = WarehouseIssueItemFactRow & {
   warehouse_issues: JoinedWarehouseIssueFactRow | JoinedWarehouseIssueFactRow[] | null;
 };
 
+type DirectorDisciplineSourceRpcRow = {
+  issue_id?: string | number | null;
+  issue_item_id?: string | number | null;
+  iss_date?: string | null;
+  request_id_from_item?: string | number | null;
+  request_id_from_issue?: string | number | null;
+  request_item_id?: string | number | null;
+  issue_note?: string | null;
+  issue_object_name?: string | null;
+  issue_work_name?: string | null;
+  request_system_code?: string | null;
+  request_system_name?: string | null;
+  request_level_code?: string | null;
+  request_zone_name?: string | null;
+  material_name?: string | null;
+  rik_code?: string | null;
+  uom?: string | null;
+  qty?: number | string | null;
+};
+
 type RefSystemLookupRow = {
   code: string;
   name_human_ru: string | null;
@@ -350,12 +308,10 @@ type CanonicalMaterialsPayloadRaw = {
   report_options?: unknown;
 } & Record<string, unknown>;
 
-type CanonicalSummaryPayloadRaw = {
-  issue_cost_total?: unknown;
-  purchase_cost_total?: unknown;
-  unevaluated_ratio?: unknown;
-  base_ready?: unknown;
-};
+type CanonicalOptionsPayloadRaw = {
+  objects?: unknown;
+  objectIdByName?: unknown;
+} & Record<string, unknown>;
 
 type AccIssueHead = {
   issue_id: number | string;
@@ -384,37 +340,53 @@ const DASH = "—";
 const REPORTS_TIMING = typeof __DEV__ !== "undefined" ? __DEV__ : false;
 const DISCIPLINE_ROWS_CACHE_TTL_MS = 2 * 60 * 1000;
 const DIRECTOR_REPORTS_LOOKUP_TTL_MS = 5 * 60 * 1000;
+type RuntimeProcessEnv = { process?: { env?: Record<string, unknown> } };
+const readRuntimeEnvFlag = (key: string, fallback: string): string =>
+  String(((globalThis as unknown as RuntimeProcessEnv).process?.env ?? {})[key] ?? fallback).trim();
 const DIRECTOR_REPORTS_CANONICAL_ENABLED =
-  String((globalThis as any)?.process?.env?.EXPO_PUBLIC_DIRECTOR_REPORTS_CANONICAL ?? "1").trim() !== "0";
+  readRuntimeEnvFlag("EXPO_PUBLIC_DIRECTOR_REPORTS_CANONICAL", "1") !== "0";
 const DIRECTOR_REPORTS_CANONICAL_MATERIALS_ENABLED =
-  String((globalThis as any)?.process?.env?.EXPO_PUBLIC_DIRECTOR_REPORTS_CANONICAL_MATERIALS ?? "").trim() !== "0";
+  readRuntimeEnvFlag("EXPO_PUBLIC_DIRECTOR_REPORTS_CANONICAL_MATERIALS", "") !== "0";
 const DIRECTOR_REPORTS_CANONICAL_WORKS_ENABLED =
-  String((globalThis as any)?.process?.env?.EXPO_PUBLIC_DIRECTOR_REPORTS_CANONICAL_WORKS ?? "").trim() !== "0";
+  readRuntimeEnvFlag("EXPO_PUBLIC_DIRECTOR_REPORTS_CANONICAL_WORKS", "") !== "0";
 const DIRECTOR_REPORTS_CANONICAL_SUMMARY_ENABLED =
-  String((globalThis as any)?.process?.env?.EXPO_PUBLIC_DIRECTOR_REPORTS_CANONICAL_SUMMARY ?? "").trim() !== "0";
+  readRuntimeEnvFlag("EXPO_PUBLIC_DIRECTOR_REPORTS_CANONICAL_SUMMARY", "") !== "0";
 const DIRECTOR_REPORTS_CANONICAL_DIVERGENCE_LOG =
-  String((globalThis as any)?.process?.env?.EXPO_PUBLIC_DIRECTOR_REPORTS_CANONICAL_DIVERGENCE_LOG ?? "0").trim() === "1";
+  readRuntimeEnvFlag("EXPO_PUBLIC_DIRECTOR_REPORTS_CANONICAL_DIVERGENCE_LOG", "0") === "1";
 const DIRECTOR_REPORTS_STRICT_FACT_SOURCES =
-  String((globalThis as any)?.process?.env?.EXPO_PUBLIC_DIRECTOR_REPORTS_STRICT_FACT_SOURCES ?? "0").trim() !== "0";
+  readRuntimeEnvFlag("EXPO_PUBLIC_DIRECTOR_REPORTS_STRICT_FACT_SOURCES", "0") !== "0";
+const DIRECTOR_REPORTS_SOURCE_RPC_ENABLED =
+  readRuntimeEnvFlag("EXPO_PUBLIC_DIRECTOR_REPORTS_DISCIPLINE_SOURCE_RPC", "1") !== "0";
 const CANONICAL_FAILED_COOLDOWN_MS = 10 * 60 * 1000;
 const DIVERGENCE_LOG_TTL_MS = 10 * 60 * 1000;
 type CanonicalRpcStatus = "unknown" | "available" | "missing" | "failed";
 type CanonicalRpcKind = "materials" | "works" | "summary";
+type DisciplineSourceRpcStatus = "unknown" | "available" | "missing" | "failed";
+type OptionsRpcStatus = "unknown" | "available" | "missing" | "failed";
 type CanonicalRpcMeta = { status: CanonicalRpcStatus; updatedAt: number };
 const canonicalRpcMeta: Record<CanonicalRpcKind, CanonicalRpcMeta> = {
   materials: { status: "unknown", updatedAt: 0 },
   works: { status: "unknown", updatedAt: 0 },
   summary: { status: "unknown", updatedAt: 0 },
 };
+const disciplineSourceRpcMeta: { status: DisciplineSourceRpcStatus; updatedAt: number } = {
+  status: "unknown",
+  updatedAt: 0,
+};
+const optionsRpcMeta: { status: OptionsRpcStatus; updatedAt: number } = {
+  status: "unknown",
+  updatedAt: 0,
+};
 const legacyMaterialsSnapshotCache = new Map<string, { ts: number; kpi: { items_total: number; items_without_request: number }; rows_count: number }>();
 const legacyWorksSnapshotCache = new Map<string, { ts: number; summary: { total_positions: number; req_positions: number; free_positions: number; issue_cost_total: number; purchase_cost_total: number; unpriced_issue_pct: number }; works_count: number }>();
 const divergenceLogSeen = new Map<string, number>();
 
-const isMissingCanonicalRpcError = (error: any, fnName: string): boolean => {
-  const message = String(error?.message ?? error ?? "").toLowerCase();
-  const details = String(error?.details ?? "").toLowerCase();
-  const hint = String(error?.hint ?? "").toLowerCase();
-  const code = String(error?.code ?? "").toLowerCase();
+const isMissingCanonicalRpcError = (error: unknown, fnName: string): boolean => {
+  const errorRecord = asRecord(error);
+  const message = String(errorRecord.message ?? error ?? "").toLowerCase();
+  const details = String(errorRecord.details ?? "").toLowerCase();
+  const hint = String(errorRecord.hint ?? "").toLowerCase();
+  const code = String(errorRecord.code ?? "").toLowerCase();
   const fn = fnName.toLowerCase();
   const text = `${message} ${details} ${hint}`;
   return (
@@ -445,7 +417,37 @@ const canUseCanonicalRpc = (kind: CanonicalRpcKind): boolean =>
     return true;
   })();
 
-const toNum = (v: any): number => {
+const markDisciplineSourceRpcStatus = (status: DisciplineSourceRpcStatus) => {
+  disciplineSourceRpcMeta.status = status;
+  disciplineSourceRpcMeta.updatedAt = Date.now();
+};
+
+const markOptionsRpcStatus = (status: OptionsRpcStatus) => {
+  optionsRpcMeta.status = status;
+  optionsRpcMeta.updatedAt = Date.now();
+};
+
+const canUseDisciplineSourceRpc = (): boolean => {
+  if (!DIRECTOR_REPORTS_SOURCE_RPC_ENABLED) return false;
+  if (disciplineSourceRpcMeta.status === "missing") return false;
+  if (
+    disciplineSourceRpcMeta.status === "failed" &&
+    Date.now() - disciplineSourceRpcMeta.updatedAt < CANONICAL_FAILED_COOLDOWN_MS
+  ) {
+    return false;
+  }
+  return true;
+};
+
+const canUseOptionsRpc = (): boolean => {
+  if (optionsRpcMeta.status === "missing") return false;
+  if (optionsRpcMeta.status === "failed" && Date.now() - optionsRpcMeta.updatedAt < CANONICAL_FAILED_COOLDOWN_MS) {
+    return false;
+  }
+  return true;
+};
+
+const toNum = (v: unknown): number => {
   const n = Number(v ?? 0);
   return Number.isFinite(n) ? n : 0;
 };
@@ -469,14 +471,6 @@ const logTiming = (label: string, startedAt: number) => {
 const optionObjectName = (v: unknown): string => {
   const s = String(normalizeRuText(String(v ?? ""))).trim();
   return s || WITHOUT_OBJECT;
-};
-
-const normalizeDirectorReportOptionRow = (value: unknown): DirectorReportOptionRow => {
-  const row = asRecord(value);
-  return {
-    object_name: row.object_name == null ? null : String(row.object_name),
-    object_id: row.object_id == null ? null : String(row.object_id).trim(),
-  };
 };
 
 const resolveDirectorObjectIdentity = (input: {
@@ -527,20 +521,12 @@ const buildDirectorReportOptionsFromIdentities = (
   return { objects, objectIdByName };
 };
 
-const buildWithoutWorkContextLabelLegacy = (partsRaw: Array<string | null | undefined>): string => {
+const buildWithoutWorkContextLabelLegacy = (partsRaw: (string | null | undefined)[]): string => {
   const parts = partsRaw
     .map((part) => String(part ?? "").trim())
     .filter(Boolean);
   if (!parts.length) return WITHOUT_WORK;
   return `${WITHOUT_WORK} · ${parts.slice(0, 2).join(" · ")}`;
-};
-
-const buildWithoutWorkContextLabel = (partsRaw: Array<string | null | undefined>): string => {
-  const parts = partsRaw
-    .map((part) => String(part ?? "").trim())
-    .filter(Boolean);
-  if (!parts.length) return WITHOUT_WORK;
-  return `${WITHOUT_WORK} / ${parts.slice(0, 2).join(" / ")}`;
 };
 
 const buildDirectorLocationLabelLegacy = (input: {
@@ -560,7 +546,7 @@ const buildDirectorLocationLabelLegacy = (input: {
 
 const resolveDirectorFactContextLegacy = (
   input: DirectorFactContextInput,
-): any => {
+): DirectorFactContextResolved => {
   const requestId = String(input.request_id ?? input.request?.id ?? "").trim() || null;
   const requestItemId = String(input.request_item_id ?? "").trim() || null;
   const issueObjectId = String(input.issue_object_id ?? "").trim() || null;
@@ -597,6 +583,8 @@ const resolveDirectorFactContextLegacy = (
       work_name_resolved:
         firstNonEmpty(issueWorkName, requestSystemName, request?.system_code, itemKindWorkFallback) || WITHOUT_WORK,
       level_name_resolved: normLevelName(request?.level_code),
+      system_name_resolved: requestSystemName || request?.system_code || null,
+      zone_name_resolved: String(input.request_zone_name ?? request?.zone_code ?? "").trim() || null,
       is_without_request: false,
     };
   }
@@ -616,6 +604,8 @@ const resolveDirectorFactContextLegacy = (
       input.force_without_level_when_issue_work_name && issueWorkName
         ? WITHOUT_LEVEL
         : normLevelName(freeCtx.levelName),
+    system_name_resolved: String(freeCtx.systemName ?? "").trim() || null,
+    zone_name_resolved: String(freeCtx.zoneName ?? "").trim() || null,
     is_without_request: !requestItemId,
   };
 };
@@ -631,7 +621,7 @@ const resolveItemKindLegacy = (rikCode: string, inputKind?: string | null): Dire
 
 const normalizeDirectorFactRowLegacy = (
   input: DirectorFactRowNormalizeInput,
-): any => {
+): DirectorFactRowNormalized | null => {
   const issueId = String(input.issue_id ?? "").trim();
   const rikCode = String(input.rik_code ?? "").trim().toUpperCase();
   const itemKind = resolveItemKind(rikCode, input.item_kind);
@@ -654,6 +644,8 @@ const normalizeDirectorFactRowLegacy = (
     object_name_resolved: input.context.object_name_resolved,
     work_name_resolved: input.context.work_name_resolved,
     level_name_resolved: input.context.level_name_resolved,
+    system_name_resolved: input.context.system_name_resolved,
+    zone_name_resolved: input.context.zone_name_resolved,
     material_name_resolved: materialName,
     rik_code_resolved: effectiveCode,
     uom_resolved: String(input.uom ?? "").trim(),
@@ -809,16 +801,58 @@ const normalizeDirectorFactViewRow = (value: unknown): DirectorFactRowNormalized
   });
 };
 
-const normalizeWarehouseIssueOptionLookupRow = (value: unknown): WarehouseIssueOptionLookupRow => {
+const normalizeDirectorDisciplineSourceRpcRow = (value: unknown): DirectorFactRowNormalized | null => {
   const row = asRecord(value);
-  return {
-    object_name: row.object_name == null ? null : String(row.object_name),
-    target_object_id: row.target_object_id == null ? null : String(row.target_object_id).trim(),
-    purchase_id: row.purchase_id == null ? null : String(row.purchase_id).trim(),
-  };
+  const issueWorkName = row.issue_work_name == null ? "" : String(row.issue_work_name).trim();
+  const requestIdFromIssue =
+    row.request_id_from_issue == null ? null : String(row.request_id_from_issue).trim() || null;
+  const requestIdFromItem =
+    row.request_id_from_item == null ? null : String(row.request_id_from_item).trim() || null;
+  const effectiveRequestId = issueWorkName ? requestIdFromIssue : (requestIdFromItem ?? requestIdFromIssue);
+  const request =
+    !issueWorkName && effectiveRequestId
+      ? {
+          id: effectiveRequestId,
+          object_id: null,
+          object_name: null,
+          object_type_code: null,
+          system_code:
+            row.request_system_code == null ? null : String(row.request_system_code).trim() || null,
+          level_code:
+            row.request_level_code == null ? null : String(row.request_level_code).trim() || null,
+          zone_code:
+            row.request_zone_name == null ? null : String(row.request_zone_name).trim() || null,
+          object: null,
+        }
+      : null;
+  const context = resolveDirectorFactContext({
+    request_id: effectiveRequestId,
+    request_item_id:
+      row.request_item_id == null ? null : String(row.request_item_id).trim() || null,
+    request,
+    issue_note: row.issue_note == null ? null : String(row.issue_note),
+    issue_object_name: row.issue_object_name == null ? null : String(row.issue_object_name),
+    issue_work_name: row.issue_work_name == null ? null : String(row.issue_work_name),
+    request_system_name:
+      row.request_system_name == null ? null : String(row.request_system_name),
+    request_zone_name:
+      row.request_zone_name == null ? null : String(row.request_zone_name),
+    use_free_issue_object_fallback: false,
+    force_without_level_when_issue_work_name: true,
+  });
+  return normalizeDirectorFactRow({
+    issue_id: row.issue_id == null ? "" : String(row.issue_id).trim(),
+    issue_item_id: row.issue_item_id == null ? null : String(row.issue_item_id).trim(),
+    iss_date: row.iss_date == null ? "" : String(row.iss_date),
+    context,
+    material_name: row.material_name == null ? null : String(row.material_name),
+    rik_code: row.rik_code == null ? null : String(row.rik_code),
+    uom: row.uom == null ? null : String(row.uom),
+    qty: row.qty == null ? null : (row.qty as number | string),
+  });
 };
 
-const buildReportOptionsFromByObjRows = (rows: DirectorReportOptionRow[]): DirectorReportOptions => {
+const buildReportOptionsFromByObjRows = (rows: { object_name?: string | null; object_id?: string | number | null }[]): DirectorReportOptions => {
   return buildDirectorReportOptionsFromIdentities(
     (rows || []).map((r) =>
       resolveDirectorObjectIdentity({
@@ -922,6 +956,7 @@ const REQUESTS_DISCIPLINE_SELECT_PLANS = [
 let requestsSelectPlanCache: string | null = null;
 let requestsDisciplineSelectPlanCache: string | null = null;
 const disciplineRowsCache = new Map<string, { ts: number; rows: DirectorFactRow[]; source: DisciplineRowsSource }>();
+const disciplineSourceRowsRpcCache = new Map<string, { ts: number; rows: DirectorFactRow[] }>();
 const requestLookupCache = new Map<string, { ts: number; value: RequestLookupRow | null }>();
 const requestLookupInFlight = new Map<string, Promise<RequestLookupRow[]>>();
 const objectLookupCache = new Map<string, { ts: number; value: string | null }>();
@@ -949,6 +984,9 @@ const buildDisciplineRowsCacheKey = (p: {
   const objectId = objectKey == null ? null : (p.objectIdByName?.[objectKey] ?? null);
   return `${String(p.from || "")}|${String(p.to || "")}|${String(objectKey ?? "")}|${String(objectId ?? "")}`;
 };
+
+const buildDisciplineSourceRowsRpcCacheKey = (p: { from: string; to: string }): string =>
+  `${String(p.from || "")}|${String(p.to || "")}`;
 
 const filterDisciplineRowsByObject = (
   rows: DirectorFactRow[],
@@ -994,7 +1032,7 @@ async function fetchRequestsRowsSafe(ids: string[]): Promise<RequestLookupRow[]>
       requestsSelectPlanCache = null;
     }
 
-    let lastError: any = null;
+    let lastError: unknown = null;
     for (const selectCols of REQUESTS_SELECT_PLANS) {
       const q = await runSelect(selectCols, missingIds);
       if (!q.error) {
@@ -1071,7 +1109,7 @@ async function fetchRequestsDisciplineRowsSafe(ids: string[]): Promise<RequestLo
     requestsDisciplineSelectPlanCache = null;
   }
 
-  let lastError: any = null;
+  let lastError: unknown = null;
   for (const selectCols of REQUESTS_DISCIPLINE_SELECT_PLANS) {
     const q = await runSelect(selectCols);
     if (!q.error) {
@@ -1094,7 +1132,7 @@ async function fetchRequestsDisciplineRowsSafe(ids: string[]): Promise<RequestLo
   return [];
 }
 
-const firstNonEmpty = (...vals: any[]): string => {
+const firstNonEmpty = (...vals: unknown[]): string => {
   for (const v of vals) {
     const s = String(normalizeRuText(String(v ?? ""))).trim();
     if (s) return s;
@@ -1104,19 +1142,6 @@ const firstNonEmpty = (...vals: any[]): string => {
 
 const asRecord = (value: unknown): Record<string, unknown> =>
   value && typeof value === "object" ? (value as Record<string, unknown>) : {};
-
-const normalizeIdObjectRow = (value: unknown): IdObjectRow | null => {
-  const row = asRecord(value);
-  const id = row.id == null ? null : String(row.id).trim();
-  if (!id) return null;
-  return {
-    id,
-    object_id: row.object_id == null ? null : String(row.object_id).trim(),
-    request_id: row.request_id == null ? null : String(row.request_id).trim(),
-    object_name: row.object_name == null ? null : String(row.object_name),
-    name: row.name == null ? null : String(row.name),
-  };
-};
 
 const normalizeCodeNameRow = (value: unknown): CodeNameRow | null => {
   const row = asRecord(value);
@@ -1222,34 +1247,6 @@ const normalizePurchaseItemRequestPriceRow = (value: unknown): PurchaseItemReque
   };
 };
 
-const normalizeLedgerIncomingRow = (value: unknown): LedgerIncomingRow => {
-  const row = asRecord(value);
-  return {
-    purchase_item_id: row.purchase_item_id == null ? null : String(row.purchase_item_id),
-    code: row.code == null ? null : String(row.code),
-    qty: row.qty == null ? null : (row.qty as number | string),
-  };
-};
-
-const normalizePurchaseItemByIdRow = (value: unknown): PurchaseItemByIdRow => {
-  const row = asRecord(value);
-  return {
-    id: row.id == null ? null : String(row.id),
-    purchase_id: row.purchase_id == null ? null : String(row.purchase_id),
-    rik_code: row.rik_code == null ? null : String(row.rik_code),
-    code: row.code == null ? null : String(row.code),
-    price: row.price == null ? null : (row.price as number | string),
-  };
-};
-
-const normalizePurchaseObjectRow = (value: unknown): PurchaseObjectRow => {
-  const row = asRecord(value);
-  return {
-    id: row.id == null ? null : String(row.id),
-    object_name: row.object_name == null ? null : String(row.object_name),
-  };
-};
-
 const normalizeWarehouseIssueFactRow = (value: unknown): WarehouseIssueFactRow | null => {
   const row = asRecord(value);
   const id = row.id == null ? "" : String(row.id).trim();
@@ -1328,14 +1325,6 @@ const normalizeRefSystemLookupRow = (value: unknown): RefSystemLookupRow | null 
   };
 };
 
-const isFreshLookupValue = <T,>(
-  cache: Map<string, { ts: number; value: T | null }>,
-  key: string,
-): boolean => {
-  const hit = cache.get(key);
-  return !!hit && Date.now() - hit.ts <= DIRECTOR_REPORTS_LOOKUP_TTL_MS;
-};
-
 const getFreshLookupValue = <T,>(
   cache: Map<string, { ts: number; value: T | null }>,
   key: string,
@@ -1376,15 +1365,24 @@ async function runTypedRpc<TRow>(
     | "wh_report_issued_summary_fast"
     | "wh_report_issued_materials_fast"
     | "wh_report_issued_by_object_fast"
+    | "director_report_fetch_options_v1"
+    | "director_report_fetch_discipline_source_rows_v1"
     | "director_report_fetch_materials_v1"
     | "director_report_fetch_works_v1"
     | "director_report_fetch_summary_v1",
   params: Record<string, unknown>,
-): Promise<{ data: TRow[] | null; error: { message?: string | null } | null }> {
+): Promise<{ data: TRow[] | null; error: { message?: string | null; details?: string | null; hint?: string | null; code?: string | null } | null }> {
   const { data, error } = await supabase.rpc(fnName as never, params as never);
   return {
     data: Array.isArray(data) ? (data as TRow[]) : null,
-    error: error ? { message: error.message } : null,
+    error: error
+      ? {
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+          code: error.code,
+        }
+      : null,
   };
 }
 
@@ -1517,74 +1515,6 @@ async function fetchCodeLookupByCodes(
   }
 }
 
-async function enrichObjectIdsForOptions(
-  p: { from: string; to: string },
-  base: DirectorReportOptions,
-): Promise<DirectorReportOptions> {
-  const unresolved = Object.entries(base.objectIdByName)
-    .filter(([, id]) => id == null)
-    .map(([name]) => name);
-  if (!unresolved.length) return base;
-
-  const byName: Record<string, string | null> = { ...base.objectIdByName };
-  const fromTs = toRangeStart(rpcDate(p.from, "1970-01-01"));
-  const toTs = toRangeEnd(rpcDate(p.to, "2099-12-31"));
-
-  const { data: issues, error: issuesErr } = await supabase
-    .from("warehouse_issues" as never)
-    .select("object_name,target_object_id,purchase_id,iss_date,status")
-    .eq("status", "Подтверждено")
-    .gte("iss_date", fromTs)
-    .lte("iss_date", toTs)
-    .limit(10000);
-  const normalizedIssues = Array.isArray(issues)
-    ? issues.map(normalizeWarehouseIssueOptionLookupRow)
-    : [];
-  if (issuesErr || !normalizedIssues.length) return base;
-
-  const purchaseIds = Array.from(
-    new Set(
-      normalizedIssues
-        .map((r) => String(r.purchase_id ?? "").trim())
-        .filter(Boolean),
-    ),
-  );
-  const purchaseObjectById = new Map<string, string>();
-  if (purchaseIds.length) {
-    for (const ids of chunk(purchaseIds, 500)) {
-      const { data } = await supabase
-        .from("purchases" as never)
-        .select("id,object_id,object_name")
-        .in("id", ids);
-      for (const r of Array.isArray(data) ? data.map(normalizeIdObjectRow).filter((row): row is IdObjectRow => !!row) : []) {
-        const id = String(r?.id ?? "").trim();
-        const objId = String(r?.object_id ?? "").trim();
-        if (id && objId) purchaseObjectById.set(id, objId);
-      }
-    }
-  }
-
-  for (const iss of normalizedIssues) {
-    const name = optionObjectName(iss.object_name);
-    if (!(name in byName) || byName[name] != null) continue;
-
-    const targetObjId = String(iss.target_object_id ?? "").trim();
-    if (targetObjId) {
-      byName[name] = targetObjId;
-      continue;
-    }
-
-    const purchaseId = String(iss.purchase_id ?? "").trim();
-    const purchaseObjId = purchaseId ? purchaseObjectById.get(purchaseId) : null;
-    if (purchaseObjId) byName[name] = purchaseObjId;
-  }
-
-  return {
-    objects: base.objects,
-    objectIdByName: byName,
-  };
-}
-
 async function fetchObjectTypeNamesByCode(codes: string[]): Promise<Map<string, string>> {
   return await fetchCodeLookupByCodes(
     objectTypeLookupCache,
@@ -1640,7 +1570,7 @@ async function probeNameSources(): Promise<NameSourcesProbe> {
 
   try {
     const r = await supabase
-      .from("v_rik_names_ru" as any)
+      .from("v_rik_names_ru" as never)
       .select("code,name_ru")
       .limit(1);
     vrr = !r.error;
@@ -1650,7 +1580,7 @@ async function probeNameSources(): Promise<NameSourcesProbe> {
   return nameSourcesProbeCache;
 }
 
-const looksLikeMaterialCode = (v: any): boolean => {
+const looksLikeMaterialCode = (v: unknown): boolean => {
   const x = String(v ?? "").trim().toUpperCase();
   if (!x) return false;
   if (
@@ -1667,7 +1597,7 @@ const looksLikeMaterialCode = (v: any): boolean => {
   return /^[A-Z0-9._/-]{4,}$/.test(x);
 };
 
-const looksLikeLevelCode = (v: any): boolean => {
+const looksLikeLevelCode = (v: unknown): boolean => {
   const s = String(v ?? "").trim().toUpperCase();
   if (!s) return false;
   if (s === WITHOUT_LEVEL.toUpperCase()) return false;
@@ -1675,7 +1605,7 @@ const looksLikeLevelCode = (v: any): boolean => {
   return /^[A-Z0-9_-]{3,}$/.test(s) && !/\s/.test(s);
 };
 
-const normMaterialName = (v: any): string =>
+const normMaterialName = (v: unknown): string =>
   String(normalizeRuText(String(v ?? ""))).trim();
 
 async function fetchBestMaterialNamesByCode(codesRaw: string[]): Promise<Map<string, string>> {
@@ -1708,7 +1638,15 @@ async function fetchBestMaterialNamesByCode(codesRaw: string[]): Promise<Map<str
   }
 
   const resolveMissing = async (): Promise<Map<string, string>> => {
-    const put = (dst: Map<string, string>, codeRaw: any, nameRaw: any, force = false) => {
+    type DynamicQueryClient = {
+      from: (table: string) => {
+        select: (columns: string) => {
+          in: (field: string, values: string[]) => Promise<{ error: unknown; data: unknown[] | null }>;
+        };
+      };
+    };
+
+    const put = (dst: Map<string, string>, codeRaw: unknown, nameRaw: unknown, force = false) => {
       const code = String(codeRaw ?? "").trim().toUpperCase();
       const name = normMaterialName(nameRaw);
       if (!code || !name) return;
@@ -1725,14 +1663,15 @@ async function fetchBestMaterialNamesByCode(codesRaw: string[]): Promise<Map<str
       const sourceMap = new Map<string, string>();
       for (const part of chunk(missingCodes, 500)) {
         try {
-          const sb: any = supabase;
+          const sb = supabase as unknown as DynamicQueryClient;
           const q = await sb
             .from(table)
             .select(selectCols)
             .in(codeField, part);
           if (!q.error && Array.isArray(q.data)) {
-            for (const r of q.data as any[]) {
-              put(sourceMap, (r as any)?.[codeField], (r as any)?.[nameField]);
+            for (const rowValue of q.data as unknown[]) {
+              const row = asRecord(rowValue);
+              put(sourceMap, row[codeField], row[nameField]);
             }
           }
         } catch { }
@@ -1976,10 +1915,10 @@ async function fetchDirectorFactViaAccRpc(p: {
     ),
   );
 
-  const reqById = new Map<string, any>();
+  const reqById = new Map<string, RequestLookupRow>();
   for (const ids of chunk(requestIds, 100)) {
     try {
-      const rows = await fetchRequestsRowsSafe(ids as any);
+      const rows = await fetchRequestsRowsSafe(ids);
       for (const r of rows) {
         const id = String(r?.id ?? "").trim();
         if (id) reqById.set(id, r);
@@ -2113,6 +2052,33 @@ async function fetchAllFactRowsFromView(p: {
   }
 
   return out;
+}
+
+async function fetchDirectorDisciplineSourceRowsViaRpc(p: {
+  from: string;
+  to: string;
+}): Promise<DirectorFactRow[]> {
+  const cacheKey = buildDisciplineSourceRowsRpcCacheKey(p);
+  const cached = disciplineSourceRowsRpcCache.get(cacheKey);
+  if (cached && Date.now() - cached.ts <= DISCIPLINE_ROWS_CACHE_TTL_MS) {
+    return cached.rows;
+  }
+  if (cached) disciplineSourceRowsRpcCache.delete(cacheKey);
+
+  const { data, error } = await runTypedRpc<DirectorDisciplineSourceRpcRow>(
+    "director_report_fetch_discipline_source_rows_v1",
+    {
+      p_from: p.from || "1970-01-01",
+      p_to: p.to || "2099-12-31",
+    },
+  );
+  if (error) throw error;
+  const rows = Array.isArray(data)
+    ? data.map(normalizeDirectorDisciplineSourceRpcRow).filter((row): row is DirectorFactRow => !!row)
+    : [];
+  disciplineSourceRowsRpcCache.set(cacheKey, { ts: Date.now(), rows });
+  trimMap(disciplineSourceRowsRpcCache);
+  return rows;
 }
 
 async function fetchViaLegacyRpc(p: {
@@ -2735,32 +2701,30 @@ export async function fetchDirectorWarehouseReportOptions(p: {
   const pFrom = rpcDate(p.from, "1970-01-01");
   const pTo = rpcDate(p.to, "2099-12-31");
 
-  // Production-first path: use optimized RPC immediately, keep old heavy paths as fallback.
-  {
+  if (canUseOptionsRpc()) {
     const t0 = nowMs();
     try {
-      const { data, error } = await runTypedRpc<DirectorReportOptionRow>("wh_report_issued_by_object_fast", {
-        p_from: pFrom,
-        p_to: pTo,
-        p_object_id: null,
+      const options = await fetchDirectorReportCanonicalOptions({
+        from: pFrom,
+        to: pTo,
       });
-      if (!error) {
-        const rpcRows = Array.isArray(data)
-          ? data.map(normalizeDirectorReportOptionRow)
-          : [];
-        const base = buildReportOptionsFromByObjRows(rpcRows);
-        const onlyWithoutObject =
-          base.objects.length === 1 &&
-          normObjectName(base.objects[0]) === WITHOUT_OBJECT;
-        if (onlyWithoutObject) {
-          throw new Error("options.fast_rpc_without_real_objects");
-        }
-        const enriched = await enrichObjectIdsForOptions({ from: pFrom, to: pTo }, base);
-        logTiming("options.fast_rpc", t0);
-        return enriched;
+      if (options) {
+        markOptionsRpcStatus("available");
+        logTiming("options.rpc", t0);
+        return options;
       }
-    } catch { }
-    logTiming("options.fast_rpc_failed_fallback", t0);
+      throw new Error("options.rpc_empty_payload");
+    } catch (e: unknown) {
+      if (isMissingCanonicalRpcError(e, "director_report_fetch_options_v1")) {
+        markOptionsRpcStatus("missing");
+      } else {
+        markOptionsRpcStatus("failed");
+      }
+      if (REPORTS_TIMING) {
+        console.info(`[director_reports] options.rpc.failed: ${(e as Error)?.message ?? e}`);
+      }
+    }
+    logTiming("options.rpc_fallback", t0);
   }
 
   let rows: DirectorFactRow[] = [];
@@ -2794,6 +2758,7 @@ function buildPayloadFromFactRows(p: {
 }): DirectorReportPayload {
   const issueIds = new Set<string>();
   const issueIdsWithoutObject = new Set<string>();
+  const objectIdByName: Record<string, string | null> = {};
   let itemsTotal = 0;
   let itemsWithoutRequest = 0;
 
@@ -2817,7 +2782,6 @@ function buildPayloadFromFactRows(p: {
     if (!issueId) continue;
 
     const objectIdentity = getDirectorFactObjectIdentity(r);
-    const objectName = objectIdentity.object_name_canonical;
     const workName = normWorkName(r?.work_name_resolved);
     const code = String(r?.rik_code_resolved ?? "").trim().toUpperCase();
     const qty = toNum(r?.qty);
@@ -2827,6 +2791,14 @@ function buildPayloadFromFactRows(p: {
 
     issueIds.add(issueId);
     if (objectIdentity.is_without_object) issueIdsWithoutObject.add(issueId);
+    if (!(objectIdentity.object_name_canonical in objectIdByName)) {
+      objectIdByName[objectIdentity.object_name_canonical] = objectIdentity.object_id_resolved;
+    } else if (
+      objectIdByName[objectIdentity.object_name_canonical] == null &&
+      objectIdentity.object_id_resolved
+    ) {
+      objectIdByName[objectIdentity.object_name_canonical] = objectIdentity.object_id_resolved;
+    }
 
     itemsTotal += 1;
     if (isWithoutRequest) itemsWithoutRequest += 1;
@@ -2880,9 +2852,10 @@ function buildPayloadFromFactRows(p: {
     },
     rows: materialRows,
     discipline_who,
-    report_options: buildDirectorReportOptionsFromIdentities(
-      p.rows.map((r) => getDirectorFactObjectIdentity(r)),
-    ),
+    report_options: {
+      objects: Object.keys(objectIdByName).sort((a, b) => a.localeCompare(b, "ru")),
+      objectIdByName,
+    },
   };
 }
 
@@ -2996,7 +2969,7 @@ const unwrapRpcPayload = (data: unknown): unknown => {
 const canonicalKey = (mode: "materials" | "works", from: string, to: string, objectName: string | null) =>
   `${mode}|${from}|${to}|${String(objectName ?? "")}`;
 
-const maybeLogDivergence = (key: string, details: Record<string, any>) => {
+const maybeLogDivergence = (key: string, details: Record<string, unknown>) => {
   if (!DIRECTOR_REPORTS_CANONICAL_DIVERGENCE_LOG) return;
   const seenAt = divergenceLogSeen.get(key) ?? 0;
   if (Date.now() - seenAt < DIVERGENCE_LOG_TTL_MS) return;
@@ -3030,28 +3003,132 @@ const adaptCanonicalMaterialsPayload = (payloadRaw: unknown): DirectorReportPayl
   };
 };
 
+const adaptCanonicalOptionsPayload = (payloadRaw: unknown): DirectorReportOptions | null => {
+  const p = payloadRaw && typeof payloadRaw === "object" ? (payloadRaw as CanonicalOptionsPayloadRaw) : null;
+  if (!p) return null;
+  const objectIdByNameRaw = asRecord(p.objectIdByName);
+  const identities: DirectorObjectIdentityResolved[] = [];
+
+  for (const [nameRaw, objectIdRaw] of Object.entries(objectIdByNameRaw)) {
+    identities.push(
+      resolveDirectorObjectIdentity({
+        object_name_display: nameRaw,
+        object_id_resolved: objectIdRaw == null ? null : String(objectIdRaw),
+      }),
+    );
+  }
+
+  if (Array.isArray(p.objects)) {
+    for (const nameRaw of p.objects) {
+      const displayName = String(nameRaw ?? "");
+      identities.push(
+        resolveDirectorObjectIdentity({
+          object_name_display: displayName,
+          object_id_resolved:
+            objectIdByNameRaw[displayName] == null ? null : String(objectIdByNameRaw[displayName]),
+        }),
+      );
+    }
+  }
+
+  if (!identities.length) return { objects: [], objectIdByName: {} };
+  return buildDirectorReportOptionsFromIdentities(identities);
+};
+
 const adaptCanonicalWorksPayload = (payloadRaw: unknown): DirectorDisciplinePayload | null => {
   const p = payloadRaw && typeof payloadRaw === "object" ? payloadRaw : null;
   if (!p) return null;
   const summary = "summary" in p ? asRecord((p as { summary?: unknown }).summary) : null;
   const works = "works" in p && Array.isArray((p as { works?: unknown }).works) ? (p as { works: unknown[] }).works : null;
   if (!summary || !works) return null;
-  return p as DirectorDisciplinePayload;
-};
-
-const adaptCanonicalSummaryPayload = (payloadRaw: unknown): {
-  issue_cost_total: number;
-  purchase_cost_total: number;
-  unevaluated_ratio: number;
-  base_ready: boolean;
-} | null => {
-  const p = payloadRaw && typeof payloadRaw === "object" ? (payloadRaw as CanonicalSummaryPayloadRaw) : null;
-  if (!p) return null;
+  const adaptedWorks: DirectorDisciplineWork[] = works.map((workValue) => {
+    const work = asRecord(workValue);
+    const workTypeName = normWorkName(work.work_type_name ?? work.id);
+    const levelsRaw = Array.isArray(work.levels) ? work.levels : [];
+    const levels: DirectorDisciplineLevel[] = levelsRaw.map((levelValue) => {
+      const level = asRecord(levelValue);
+      const objectName = canonicalObjectName(level.object_name);
+      const levelName = normLevelName(level.level_name);
+      const systemName = String(level.system_name ?? "").trim() || null;
+      const zoneName = String(level.zone_name ?? "").trim() || null;
+      const locationLabel =
+        String(level.location_label ?? "").trim() ||
+        buildDirectorLocationLabel({
+          objectName,
+          levelName,
+          systemName,
+          zoneName,
+        });
+      const materialsRaw = Array.isArray(level.materials) ? level.materials : [];
+      const materials: DirectorDisciplineMaterial[] = materialsRaw.map((materialValue) => {
+        const material = asRecord(materialValue);
+        const rikCode = String(material.rik_code ?? "").trim().toUpperCase() || DASH;
+        const materialName = String(material.material_name ?? "").trim() || rikCode;
+        return {
+          material_name: materialName,
+          rik_code: rikCode,
+          uom: String(material.uom ?? "").trim(),
+          qty_sum: toNum(material.qty_sum),
+          docs_count: toNum(material.docs_count),
+          unit_price: toNum(material.unit_price),
+          amount_sum: toNum(material.amount_sum),
+          source_issue_ids: Array.isArray(material.source_issue_ids)
+            ? material.source_issue_ids.map((value) => String(value ?? "").trim()).filter(Boolean)
+            : [],
+          source_request_item_ids: Array.isArray(material.source_request_item_ids)
+            ? material.source_request_item_ids.map((value) => String(value ?? "").trim()).filter(Boolean)
+            : [],
+        };
+      });
+      return {
+        id: String(level.id ?? `${workTypeName}::${locationLabel}`).trim() || `${workTypeName}::${locationLabel}`,
+        level_name: levelName,
+        object_name: objectName,
+        system_name: systemName,
+        zone_name: zoneName,
+        location_label: locationLabel,
+        total_qty: toNum(level.total_qty),
+        total_docs: toNum(level.total_docs),
+        total_positions: toNum(level.total_positions),
+        share_in_work_pct: toNum(level.share_in_work_pct),
+        req_positions: toNum(level.req_positions),
+        free_positions: toNum(level.free_positions),
+        source_issue_ids: Array.isArray(level.source_issue_ids)
+          ? level.source_issue_ids.map((value) => String(value ?? "").trim()).filter(Boolean)
+          : [],
+        source_request_item_ids: Array.isArray(level.source_request_item_ids)
+          ? level.source_request_item_ids.map((value) => String(value ?? "").trim()).filter(Boolean)
+          : [],
+        materials,
+      };
+    });
+    return {
+      id: String(work.id ?? workTypeName).trim() || workTypeName,
+      work_type_name: workTypeName,
+      total_qty: toNum(work.total_qty),
+      total_docs: toNum(work.total_docs),
+      total_positions: toNum(work.total_positions),
+      share_total_pct: toNum(work.share_total_pct),
+      req_positions: toNum(work.req_positions),
+      free_positions: toNum(work.free_positions),
+      location_count: Math.max(toNum(work.location_count), levels.length),
+      levels,
+    };
+  });
   return {
-    issue_cost_total: toNum(p.issue_cost_total),
-    purchase_cost_total: toNum(p.purchase_cost_total),
-    unevaluated_ratio: toNum(p.unevaluated_ratio),
-    base_ready: !!p.base_ready,
+    summary: {
+      total_qty: toNum(summary.total_qty),
+      total_docs: toNum(summary.total_docs),
+      total_positions: toNum(summary.total_positions),
+      pct_without_work: toNum(summary.pct_without_work),
+      pct_without_level: toNum(summary.pct_without_level),
+      pct_without_request: toNum(summary.pct_without_request),
+      issue_cost_total: toNum(summary.issue_cost_total),
+      purchase_cost_total: toNum(summary.purchase_cost_total),
+      issue_to_purchase_pct: toNum(summary.issue_to_purchase_pct),
+      unpriced_issue_pct: toNum(summary.unpriced_issue_pct),
+    },
+    works: adaptedWorks,
   };
 };
 
@@ -3065,6 +3142,41 @@ const materialSnapshotFromPayload = (payload: DirectorReportPayload | null | und
     },
     rows_count: rowsCount,
   };
+};
+
+const hasDirectorReportMaterialContent = (payload: DirectorReportPayload | null | undefined): boolean => {
+  const rows = Array.isArray(payload?.rows) ? payload.rows : [];
+  if (
+    rows.some(
+      (row) =>
+        toNum(row?.qty_total) > 0 ||
+        Math.round(toNum(row?.docs_cnt)) > 0 ||
+        toNum(row?.qty_without_request) > 0 ||
+        Math.round(toNum(row?.docs_without_request)) > 0,
+    )
+  ) {
+    return true;
+  }
+  const kpi = payload?.kpi;
+  return (
+    toNum(kpi?.issues_total) > 0 ||
+    toNum(kpi?.items_total) > 0 ||
+    toNum(kpi?.items_without_request) > 0
+  );
+};
+
+const shouldRejectAllObjectsEmptyMaterialsPayload = (
+  payload: DirectorReportPayload | null | undefined,
+  objectName: string | null,
+  objectIdByName: Record<string, string | null>,
+): boolean => {
+  if (objectName != null) return false;
+  if (hasDirectorReportMaterialContent(payload)) return false;
+  const reportOptions = payload?.report_options;
+  const payloadOptions = asRecord(reportOptions);
+  const payloadObjects = Array.isArray(payloadOptions.objects) ? payloadOptions.objects : [];
+  const payloadObjectIdByName = asRecord(payloadOptions.objectIdByName);
+  return payloadObjects.length > 0 || Object.keys(payloadObjectIdByName).length > 0 || Object.keys(objectIdByName).length > 0;
 };
 
 const worksSnapshotFromPayload = (payload: DirectorDisciplinePayload | null | undefined) => {
@@ -3167,24 +3279,17 @@ async function fetchDirectorReportCanonicalWorks(p: {
   return adaptCanonicalWorksPayload(payload);
 }
 
-async function fetchDirectorReportCanonicalSummary(p: {
+async function fetchDirectorReportCanonicalOptions(p: {
   from: string;
   to: string;
-  objectName: string | null;
-}): Promise<{
-  issue_cost_total: number;
-  purchase_cost_total: number;
-  unevaluated_ratio: number;
-  base_ready: boolean;
-} | null> {
-  const { data, error } = await runTypedRpc<Record<string, unknown>>("director_report_fetch_summary_v1", {
+}): Promise<DirectorReportOptions | null> {
+  const { data, error } = await runTypedRpc<Record<string, unknown>>("director_report_fetch_options_v1", {
     p_from: p.from || "1970-01-01",
     p_to: p.to || "2099-12-31",
-    p_object_name: p.objectName ?? null,
   });
   if (error) throw error;
   const payload = unwrapRpcPayload(data);
-  return adaptCanonicalSummaryPayload(payload);
+  return adaptCanonicalOptionsPayload(payload);
 }
 
 async function fetchPriceByRequestItemId(requestItemIds: string[]): Promise<Map<string, number>> {
@@ -3219,119 +3324,6 @@ async function fetchPriceByRequestItemId(requestItemIds: string[]): Promise<Map<
   }
 
   return out;
-}
-
-async function fetchPurchaseCostInPeriodScoped(args: {
-  from: string;
-  to: string;
-  objectName: string | null;
-  codePrice: Map<string, number>;
-}): Promise<number> {
-  const { from, to, objectName, codePrice } = args;
-
-  const incomingRows: Array<{ purchase_item_id: string; code: string; qty: number }> = [];
-  const pageSize = 2000;
-  let fromIdx = 0;
-  while (true) {
-    let q = supabase
-      .from("wh_ledger" as never)
-      .select("purchase_item_id,code,qty,moved_at,direction")
-      .eq("direction", "in")
-      .order("moved_at", { ascending: false })
-      .range(fromIdx, fromIdx + pageSize - 1);
-    if (from) q = q.gte("moved_at", toRangeStart(from));
-    if (to) q = q.lte("moved_at", toRangeEnd(to));
-
-    const { data, error } = await q;
-    if (error || !Array.isArray(data) || !data.length) break;
-    for (const r of data) {
-      const row = normalizeLedgerIncomingRow(r);
-      const pid = String(row.purchase_item_id ?? "").trim();
-      if (!pid) continue;
-      incomingRows.push({
-        purchase_item_id: pid,
-        code: String(row.code ?? "").trim().toUpperCase(),
-        qty: toNum(row.qty),
-      });
-    }
-    if (data.length < pageSize) break;
-    fromIdx += pageSize;
-    if (fromIdx > 500000) break;
-  }
-
-  if (!incomingRows.length) return 0;
-
-  const purchaseItemIds = Array.from(new Set(incomingRows.map((x) => x.purchase_item_id)));
-  const piById = new Map<string, { purchase_id: string | null; code: string; price: number }>();
-  for (const part of chunk(purchaseItemIds, 500)) {
-    try {
-      const q = await supabase
-        .from("purchase_items" as never)
-          .select("id,purchase_id,rik_code,code,price")
-        .in("id", part);
-      if (q.error || !Array.isArray(q.data)) continue;
-      for (const r of q.data) {
-        const row = normalizePurchaseItemByIdRow(r);
-        const id = String(row.id ?? "").trim();
-        if (!id) continue;
-        const code = String(row.rik_code ?? row.code ?? "").trim().toUpperCase();
-        const price = toNum(row.price);
-        const purchase_id = String(row.purchase_id ?? "").trim() || null;
-        piById.set(id, { purchase_id, code, price });
-      }
-    } catch { }
-  }
-
-  let allowedPurchaseIds: Set<string> | null = null;
-  if (objectName != null) {
-    const purchaseIds = Array.from(
-      new Set(
-        Array.from(piById.values())
-          .map((x) => String(x.purchase_id ?? "").trim())
-          .filter(Boolean),
-      ),
-    );
-    const targetObject = resolveDirectorObjectIdentity({
-      object_name_display: objectName,
-    }).object_name_canonical;
-    const matched = new Set<string>();
-    for (const part of chunk(purchaseIds, 500)) {
-      try {
-        const q = await supabase
-          .from("purchases" as never)
-          .select("id,object_name")
-          .in("id", part);
-        if (q.error || !Array.isArray(q.data)) continue;
-        for (const r of q.data) {
-          const row = normalizePurchaseObjectRow(r);
-          const id = String(row.id ?? "").trim();
-          const onm = resolveDirectorObjectIdentity({
-            object_name_display: row.object_name,
-          }).object_name_canonical;
-          if (id && onm === targetObject) matched.add(id);
-        }
-      } catch { }
-    }
-    allowedPurchaseIds = matched;
-  }
-
-  let total = 0;
-  for (const r of incomingRows) {
-    const pi = piById.get(r.purchase_item_id);
-    if (!pi) continue;
-
-    if (allowedPurchaseIds != null) {
-      const pid = String(pi.purchase_id ?? "").trim();
-      if (!pid || !allowedPurchaseIds.has(pid)) continue;
-    }
-
-    const code = pi.code || r.code;
-    const price = pi.price > 0 ? pi.price : toNum(codePrice.get(code) ?? 0);
-    if (!(price > 0) || !(r.qty > 0)) continue;
-    total += r.qty * price;
-  }
-
-  return total;
 }
 
 function buildDisciplinePayloadFromFactRowsLegacy(
@@ -3775,11 +3767,11 @@ void buildDisciplinePayloadFromFactRowsLegacy;
 function collectDisciplinePriceInputs(rows: DirectorFactRow[]): {
   requestItemIds: string[];
   rowCodes: string[];
-  costInputs: Array<{ code: string; requestItemId: string; qty: number }>;
+  costInputs: { code: string; requestItemId: string; qty: number }[];
 } {
   const requestItemIds = new Set<string>();
   const rowCodes = new Set<string>();
-  const costInputs: Array<{ code: string; requestItemId: string; qty: number }> = [];
+  const costInputs: { code: string; requestItemId: string; qty: number }[] = [];
 
   for (const r of rows) {
     const requestItemId = String(r?.request_item_id ?? "").trim();
@@ -3800,7 +3792,7 @@ function collectDisciplinePriceInputs(rows: DirectorFactRow[]): {
   };
 }
 
-type DisciplineRowsSource = "tables" | "acc_rpc" | "view" | "none";
+type DisciplineRowsSource = "tables" | "acc_rpc" | "view" | "source_rpc" | "none";
 
 async function fetchFactRowsForDiscipline(p: {
   from: string;
@@ -3814,6 +3806,22 @@ async function fetchFactRowsForDiscipline(p: {
     rows = await fetchDirectorFactViaAccRpc({ from: p.from, to: p.to, objectName });
     if (rows.length) return { rows, source: "acc_rpc" };
   } catch { }
+  if (!rows.length) {
+    if (canUseDisciplineSourceRpc()) {
+      try {
+        const allRows = await fetchDirectorDisciplineSourceRowsViaRpc({ from: p.from, to: p.to });
+        markDisciplineSourceRpcStatus("available");
+        const filteredRows = p.objectName == null ? allRows : filterDisciplineRowsByObject(allRows, p.objectName);
+        return { rows: filteredRows, source: "source_rpc" };
+      } catch (e: unknown) {
+        if (isMissingCanonicalRpcError(e, "director_report_fetch_discipline_source_rows_v1")) {
+          markDisciplineSourceRpcStatus("missing");
+        } else {
+          markDisciplineSourceRpcStatus("failed");
+        }
+      }
+    }
+  }
   if (!rows.length) {
     try {
       rows = await fetchAllFactRowsFromView({ from: p.from, to: p.to, objectName });
@@ -3847,11 +3855,15 @@ export async function fetchDirectorWarehouseReport(p: {
   if (canUseCanonicalRpc("materials")) {
     const tCanonical = nowMs();
     try {
-      const canonical = await fetchDirectorReportCanonicalMaterials({
+      let canonical = await fetchDirectorReportCanonicalMaterials({
         from: pFrom,
         to: pTo,
         objectName,
       });
+      if (shouldRejectAllObjectsEmptyMaterialsPayload(canonical, objectName, p.objectIdByName)) {
+        canonical = null;
+        logTiming("report.canonical_materials_rejected_empty_all_objects", tCanonical);
+      }
       if (canonical) {
         markCanonicalRpcStatus("materials", "available");
         const legacySnap = legacyMaterialsSnapshotCache.get(cKey);
@@ -3896,6 +3908,10 @@ export async function fetchDirectorWarehouseReport(p: {
         objectId: selectedObjectId,
         objectName,
       });
+      if (shouldRejectAllObjectsEmptyMaterialsPayload(fast, objectName, p.objectIdByName)) {
+        logTiming("report.fast_rpc_rejected_empty_all_objects", t0);
+        throw new Error("all-objects materials payload empty for non-empty scope");
+      }
       legacyMaterialsSnapshotCache.set(cKey, { ts: Date.now(), ...materialSnapshotFromPayload(fast) });
       trimMap(legacyMaterialsSnapshotCache);
       logTiming("report.fast_rpc", t0);
@@ -3909,6 +3925,24 @@ export async function fetchDirectorWarehouseReport(p: {
   try {
     rows = await fetchDirectorFactViaAccRpc({ from: pFrom, to: pTo, objectName });
   } catch { }
+  if (!rows.length) {
+    if (canUseDisciplineSourceRpc()) {
+      const tSource = nowMs();
+      try {
+        const allRows = await fetchDirectorDisciplineSourceRowsViaRpc({ from: pFrom, to: pTo });
+        markDisciplineSourceRpcStatus("available");
+        rows = objectName == null ? allRows : filterDisciplineRowsByObject(allRows, objectName);
+        logTiming("report.source_rpc", tSource);
+      } catch (e: unknown) {
+        if (isMissingCanonicalRpcError(e, "director_report_fetch_discipline_source_rows_v1")) {
+          markDisciplineSourceRpcStatus("missing");
+        } else {
+          markDisciplineSourceRpcStatus("failed");
+        }
+        logTiming("report.source_rpc_failed_fallback", tSource);
+      }
+    }
+  }
   if (!rows.length) {
     try {
       rows = await fetchAllFactRowsFromView({ from: pFrom, to: pTo, objectName });
@@ -3987,33 +4021,6 @@ export async function fetchDirectorWarehouseReportDiscipline(p: {
         }
       }
       if (canonical) {
-        if (!opts?.skipPrices && canUseCanonicalRpc("summary")) {
-          try {
-            const sm = await fetchDirectorReportCanonicalSummary({
-              from: pFrom,
-              to: pTo,
-              objectName: p.objectName ?? null,
-            });
-            if (sm?.base_ready) {
-              canonical = {
-                ...canonical,
-                summary: {
-                  ...canonical.summary,
-                  issue_cost_total: sm.issue_cost_total,
-                  purchase_cost_total: sm.purchase_cost_total,
-                  unpriced_issue_pct: toNum(sm.unevaluated_ratio) * 100,
-                },
-              };
-              markCanonicalRpcStatus("summary", "available");
-            }
-          } catch (e: unknown) {
-            if (isMissingCanonicalRpcError(e, "director_report_fetch_summary_v1")) {
-              markCanonicalRpcStatus("summary", "missing");
-            } else {
-              markCanonicalRpcStatus("summary", "failed");
-            }
-          }
-        }
         markCanonicalRpcStatus("works", "available");
         const legacySnap = legacyWorksSnapshotCache.get(cKey);
         if (legacySnap && Date.now() - legacySnap.ts <= DIVERGENCE_LOG_TTL_MS) {

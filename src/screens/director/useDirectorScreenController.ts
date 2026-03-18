@@ -11,33 +11,35 @@ import { useDirectorProposalDetail } from "./director.proposal.detail";
 import { useDirectorProposalRow } from "./director.proposal.row";
 import { useDirectorLifecycle } from "./director.lifecycle";
 import { useGlobalBusy } from "../../ui/GlobalBusy";
-import { fmtDateOnly, runNextTick } from "./director.helpers";
+import { fmtDateOnly } from "./director.helpers";
 import { listAccountantInbox } from "../../lib/api/accountant";
 import {
     type Tab,
     type DirTopTab,
     type FinPage,
-    type FinSupplierDebt,
     type SheetKind,
     type Group,
     type ProposalItem,
     type ProposalAttachmentRow,
-    type ProposalHead
 } from "./director.types";
 import {
     computeFinanceRep,
-    computeFinanceByKind,
+    fetchDirectorFinanceSummaryViaRpc,
     money as moneyHelper,
     mapToFinanceRow,
+    normalizeFinSpendRows,
     mid,
     nnum,
     addDaysIso,
-    parseMid
+    parseMid,
+    type FinanceRow,
+    type FinSpendRow,
+    type FinKindSupplierRow,
+    type FinSupplierPanelState,
 } from "./director.finance";
-import type { FinKindSummary } from "./director.finance";
 import { useIsFocused } from "@react-navigation/native";
 
-const warnDirectorFinance = (scope: "fetchFinSpendRows" | "fetchFinance", error: unknown) => {
+const warnDirectorFinance = (scope: "fetchFinSpendRows" | "fetchFinance" | "fetchFinanceSummary", error: unknown) => {
     if (__DEV__) {
         const message = error instanceof Error ? error.message : String(error ?? "");
         console.warn(`[director] ${scope}:`, message || error);
@@ -56,43 +58,57 @@ export function useDirectorScreenController() {
     const [finOpen, setFinOpen] = useState(false);
     const [finPage, setFinPage] = useState<FinPage>("home");
     const finStackRef = useRef<FinPage[]>(["home"]);
-    const [finSupplier, setFinSupplier] = useState<FinSupplierDebt | null>(null);
+    const [finSupplier, setFinSupplier] = useState<FinSupplierPanelState | null>(null);
     const [finLoading, setFinLoading] = useState(false);
-    const [finRows, setFinRows] = useState<any[]>([]);
-    const [finSpendRows, setFinSpendRows] = useState<any[]>([]);
+    const [finRows, setFinRows] = useState<FinanceRow[]>([]);
+    const [finSpendRows, setFinSpendRows] = useState<FinSpendRow[]>([]);
     const [finRep, setFinRep] = useState(() => computeFinanceRep([], { dueDaysDefault: 7, criticalDays: 14 }));
     const [finPeriodOpen, setFinPeriodOpen] = useState(false);
     const [finFrom, setFinFrom] = useState<string | null>(null);
     const [finTo, setFinTo] = useState<string | null>(null);
     const [finKindName, setFinKindName] = useState<string>("");
-    const [finKindList, setFinKindList] = useState<any[]>([]);
-    const [finByKind, setFinByKind] = useState<FinKindSummary[]>([]);
-
+    const [finKindList, setFinKindList] = useState<FinKindSupplierRow[]>([]);
     const FIN_DUE_DAYS_DEFAULT = 7;
     const FIN_CRITICAL_DAYS = 14;
 
-    const fetchFinSpendRows = useCallback(async () => {
-        try {
-            let q = supabase
-                .from("v_director_finance_spend_kinds_v3")
-                .select("proposal_id,proposal_no,supplier,kind_code,kind_name,approved_alloc,paid_alloc,paid_alloc_cap,overpay_alloc,director_approved_at");
+    const loadFinSpendRows = useCallback(async (): Promise<FinSpendRow[]> => {
+        let q = supabase
+            .from("v_director_finance_spend_kinds_v3")
+            .select("proposal_id,proposal_no,supplier,kind_code,kind_name,approved_alloc,paid_alloc,paid_alloc_cap,overpay_alloc,director_approved_at");
 
-            if (finFrom) q = q.gte("director_approved_at", finFrom);
-            if (finTo) q = q.lte("director_approved_at", finTo);
+        if (finFrom) q = q.gte("director_approved_at", finFrom);
+        if (finTo) q = q.lte("director_approved_at", finTo);
 
-            const { data, error } = await q;
-            if (error) throw error;
-            setFinSpendRows(Array.isArray(data) ? data : []);
-        } catch (e: unknown) {
-            warnDirectorFinance("fetchFinSpendRows", e);
-        }
+        const { data, error } = await q;
+        if (error) throw error;
+        return normalizeFinSpendRows(data);
     }, [finFrom, finTo]);
 
     const fetchFinance = useCallback(async () => {
         setFinLoading(true);
-        let nextRows: any[] | null = null;
+        let nextRows: FinanceRow[] | null = null;
+        let nextSpendRows: FinSpendRow[] | null = null;
         try {
-            const list = await listAccountantInbox();
+            const [listResult, spendResult, summaryResult] = await Promise.allSettled([
+                listAccountantInbox(),
+                loadFinSpendRows(),
+                fetchDirectorFinanceSummaryViaRpc({
+                    dueDaysDefault: FIN_DUE_DAYS_DEFAULT,
+                    criticalDays: FIN_CRITICAL_DAYS,
+                    periodFromIso: finFrom,
+                    periodToIso: finTo,
+                }),
+            ]);
+
+            if (spendResult.status === "fulfilled") {
+                nextSpendRows = spendResult.value;
+                setFinSpendRows(nextSpendRows);
+            } else {
+                warnDirectorFinance("fetchFinSpendRows", spendResult.reason);
+            }
+
+            if (listResult.status !== "fulfilled") throw listResult.reason;
+            const list = listResult.value;
             const mapped = (Array.isArray(list) ? list : [])
                 .map(mapToFinanceRow)
                 .filter(x => !!x && !!x.id)
@@ -115,15 +131,19 @@ export function useDirectorScreenController() {
             });
 
             nextRows = mapped;
-            const rep = computeFinanceRep(mapped, {
-                dueDaysDefault: FIN_DUE_DAYS_DEFAULT,
-                criticalDays: FIN_CRITICAL_DAYS,
-                periodFromIso: finFrom,
-                periodToIso: finTo,
-            });
+            if (summaryResult.status === "rejected") {
+                warnDirectorFinance("fetchFinanceSummary", summaryResult.reason);
+            }
+            const rep = summaryResult.status === "fulfilled" && summaryResult.value
+                ? summaryResult.value
+                : computeFinanceRep(mapped, {
+                    dueDaysDefault: FIN_DUE_DAYS_DEFAULT,
+                    criticalDays: FIN_CRITICAL_DAYS,
+                    periodFromIso: finFrom,
+                    periodToIso: finTo,
+                });
             setFinRows(mapped);
             setFinRep(rep);
-            await fetchFinSpendRows();
 
         } catch (e: unknown) {
             warnDirectorFinance("fetchFinance", e);
@@ -131,11 +151,17 @@ export function useDirectorScreenController() {
                 setFinRows(nextRows);
                 setFinRep(computeFinanceRep(nextRows, { dueDaysDefault: FIN_DUE_DAYS_DEFAULT, criticalDays: FIN_CRITICAL_DAYS }));
             }
-            try { await fetchFinSpendRows(); } catch { }
+            if (nextSpendRows == null) {
+                try {
+                    setFinSpendRows(await loadFinSpendRows());
+                } catch (spendError: unknown) {
+                    warnDirectorFinance("fetchFinSpendRows", spendError);
+                }
+            }
         } finally {
             setFinLoading(false);
         }
-    }, [finFrom, finTo, fetchFinSpendRows]);
+    }, [FIN_CRITICAL_DAYS, FIN_DUE_DAYS_DEFAULT, finFrom, finTo, loadFinSpendRows]);
 
     // Navigation Logic for Finance
     const pushFin = useCallback((p: FinPage) => {
@@ -306,7 +332,7 @@ export function useDirectorScreenController() {
 
     // Groups derivation
     const groups: Group[] = useMemo(() => {
-        const map = new Map<number | string, any[]>();
+        const map = new Map<number | string, Group["items"]>();
         for (const r of data.rows) {
             const k = String(r.request_id ?? '');
             if (!map.has(k)) map.set(k, []);
@@ -333,7 +359,7 @@ export function useDirectorScreenController() {
             return pretty ? `Предложение ${pretty}` : `Предложение #${String(sheetProposalId).slice(0, 8)}`;
         }
         return "—";
-    }, [sheetKind, sheetRequest, sheetProposalId, data.propsHeads, data.labelForRequest]);
+    }, [sheetKind, sheetRequest, sheetProposalId, data]);
 
     return {
         // Derived
@@ -351,7 +377,6 @@ export function useDirectorScreenController() {
 
         // Finance State
         finOpen, finPage, finRows, finSpendRows, finRep, finPeriodOpen, finFrom, finTo, finSupplier, finKindName, finKindList, finLoading,
-        finByKind,
 
         // Actions/Modals
         closeSheet, openRequestSheet, openProposalSheet,
