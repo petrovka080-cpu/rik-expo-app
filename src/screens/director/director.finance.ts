@@ -386,3 +386,46 @@ export const computeFinanceRep = (
     report: { suppliers },
   };
 };
+
+// ============================== KIND GROUPING ==============================
+export type FinKindSummary = {
+  kind_name: string;
+  count: number;
+  approved: number;
+  paid: number;
+  toPay: number;
+};
+
+type FinSpendRowForKind = {
+  kind_name?: string | null;
+  approved_alloc?: number | string | null;
+  paid_alloc?: number | string | null;
+};
+
+export const computeFinanceByKind = (
+  spendRows: FinSpendRowForKind[],
+): FinKindSummary[] => {
+  const list = Array.isArray(spendRows) ? spendRows : [];
+  const byKind = new Map<string, { count: number; approved: number; paid: number }>();
+
+  for (const r of list) {
+    const kind = String(r?.kind_name ?? "").trim() || "Прочее";
+    const approved = nnum(r?.approved_alloc);
+    const paid = nnum(r?.paid_alloc);
+    const prev = byKind.get(kind) ?? { count: 0, approved: 0, paid: 0 };
+    prev.count += 1;
+    prev.approved += approved;
+    prev.paid += paid;
+    byKind.set(kind, prev);
+  }
+
+  return Array.from(byKind.entries())
+    .map(([kind_name, v]) => ({
+      kind_name,
+      count: v.count,
+      approved: v.approved,
+      paid: v.paid,
+      toPay: Math.max(v.approved - v.paid, 0),
+    }))
+    .sort((a, b) => b.approved - a.approved);
+};

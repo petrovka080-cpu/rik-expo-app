@@ -1,4 +1,4 @@
-﻿// src/screens/director/DirectorFinanceCardModal.tsx
+// src/screens/director/DirectorFinanceCardModal.tsx
 import React, { useEffect, useRef } from "react";
 import {
   Keyboard,
@@ -216,6 +216,7 @@ export default function DirectorFinanceCardModal({
             <Animated.View
               style={{
                 flex: 1,
+                minHeight: 0,
                 paddingHorizontal: 12,
                 paddingTop: 12,
                 paddingBottom: Math.max(insets.bottom || 0, 16) + 16,

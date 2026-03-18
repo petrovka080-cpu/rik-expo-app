@@ -5,6 +5,7 @@ import {
   ActivityIndicator,
   Alert,
   FlatList,
+  Image,
   Linking,
   ListRenderItemInfo,
   Pressable,
@@ -19,6 +20,10 @@ import MarketFeedCard from "../market/components/MarketFeedCard";
 import { MARKET_HOME_COLORS } from "../market/marketHome.config";
 import { buildListingAssistantPrompt, buildMarketMapParams } from "../market/marketHome.data";
 import type { MarketHomeListingCard } from "../market/marketHome.types";
+import {
+  EMPTY_CURRENT_PROFILE_IDENTITY,
+  loadCurrentProfileIdentity,
+} from "../profile/currentProfileIdentity";
 import {
   buildSupplierShowcaseAssistantPrompt,
   loadSupplierShowcasePayload,
@@ -59,6 +64,7 @@ export default function SupplierShowcaseScreen() {
   const params = useLocalSearchParams<{ userId?: string | string[]; companyId?: string | string[] }>();
   const { width } = useWindowDimensions();
   const [payload, setPayload] = useState<SupplierShowcasePayload>(EMPTY_PAYLOAD);
+  const [identity, setIdentity] = useState(EMPTY_CURRENT_PROFILE_IDENTITY);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -75,11 +81,15 @@ export default function SupplierShowcaseScreen() {
       else setLoading(true);
 
       try {
-        const nextPayload = await loadSupplierShowcasePayload({
-          userId: Array.isArray(params.userId) ? params.userId[0] : params.userId,
-          companyId: Array.isArray(params.companyId) ? params.companyId[0] : params.companyId,
-        });
+        const [nextPayload, nextIdentity] = await Promise.all([
+          loadSupplierShowcasePayload({
+            userId: Array.isArray(params.userId) ? params.userId[0] : params.userId,
+            companyId: Array.isArray(params.companyId) ? params.companyId[0] : params.companyId,
+          }),
+          loadCurrentProfileIdentity(),
+        ]);
         setPayload(nextPayload);
+        setIdentity(nextIdentity);
       } catch (error: unknown) {
         const message =
           error instanceof Error ? error.message : "Не удалось открыть витрину поставщика.";
@@ -98,7 +108,11 @@ export default function SupplierShowcaseScreen() {
     }, [loadPayload]),
   );
 
-  const displayName = payload.company?.name || payload.profile?.full_name || "Витрина поставщика";
+  const displayName =
+    payload.company?.name ||
+    payload.profile?.full_name ||
+    (payload.isOwnerView ? identity.fullName : null) ||
+    "Витрина поставщика";
   const city = payload.company?.city || payload.profile?.city || null;
   const subtitle = payload.company?.industry || payload.profile?.position || "Профиль поставщика";
   const phone = payload.company?.phone_main || payload.profile?.phone || null;
@@ -106,6 +120,8 @@ export default function SupplierShowcaseScreen() {
   const telegram = payload.company?.telegram || payload.profile?.telegram || null;
   const website = payload.company?.site || null;
   const about = payload.company?.about_short || payload.company?.about_full || payload.profile?.bio || null;
+  const ownerAvatarUrl = payload.isOwnerView ? identity.avatarUrl : null;
+  const ownerEmail = payload.isOwnerView ? identity.email : null;
 
   const openAssistant = useCallback(() => {
     router.push({
@@ -194,7 +210,11 @@ export default function SupplierShowcaseScreen() {
       <View style={styles.heroCard}>
         <View style={styles.heroTop}>
           <View style={styles.avatar}>
-            <Text style={styles.avatarText}>{initialForName(displayName)}</Text>
+            {ownerAvatarUrl ? (
+              <Image source={{ uri: ownerAvatarUrl }} style={styles.avatarImage} />
+            ) : (
+              <Text style={styles.avatarText}>{initialForName(displayName)}</Text>
+            )}
           </View>
           <View style={styles.heroCopy}>
             <Text style={styles.heroTitle}>{displayName}</Text>
@@ -205,6 +225,7 @@ export default function SupplierShowcaseScreen() {
             <Text style={styles.heroMeta}>
               {payload.isOwnerView ? "Ваш интегрированный профиль" : "Поставщик из текущего marketplace"}
             </Text>
+            {ownerEmail ? <Text style={styles.heroMeta}>{ownerEmail}</Text> : null}
           </View>
         </View>
 
@@ -445,6 +466,11 @@ const styles = StyleSheet.create({
     backgroundColor: MARKET_HOME_COLORS.accentSoft,
     alignItems: "center",
     justifyContent: "center",
+    overflow: "hidden",
+  },
+  avatarImage: {
+    width: "100%",
+    height: "100%",
   },
   avatarText: {
     color: MARKET_HOME_COLORS.accentStrong,

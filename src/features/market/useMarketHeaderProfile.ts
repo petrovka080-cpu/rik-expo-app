@@ -1,25 +1,23 @@
 import { useCallback, useState } from "react";
 import { useFocusEffect } from "expo-router";
 
-import { supabase } from "../../lib/supabaseClient";
+import {
+  EMPTY_CURRENT_PROFILE_IDENTITY,
+  loadCurrentProfileIdentity,
+  toProfileAvatarText,
+} from "../profile/currentProfileIdentity";
 
 type MarketHeaderProfile = {
   fullName: string | null;
   avatarText: string;
+  avatarUrl: string | null;
 };
 
 const DEFAULT_PROFILE: MarketHeaderProfile = {
-  fullName: null,
+  fullName: EMPTY_CURRENT_PROFILE_IDENTITY.fullName,
   avatarText: "G",
+  avatarUrl: EMPTY_CURRENT_PROFILE_IDENTITY.avatarUrl,
 };
-
-function toAvatarText(name: string | null | undefined, fallbackId: string | null | undefined): string {
-  const trimmedName = String(name ?? "").trim();
-  if (trimmedName) return trimmedName[0]!.toUpperCase();
-  const trimmedId = String(fallbackId ?? "").trim();
-  if (trimmedId) return trimmedId[0]!.toUpperCase();
-  return "G";
-}
 
 export function useMarketHeaderProfile() {
   const [profile, setProfile] = useState<MarketHeaderProfile>(DEFAULT_PROFILE);
@@ -30,25 +28,18 @@ export function useMarketHeaderProfile() {
 
       const load = async () => {
         try {
-          const sessionResult = await supabase.auth.getSession();
-          const user = sessionResult.data.session?.user;
-          if (!user) {
+          const identity = await loadCurrentProfileIdentity();
+          if (!identity.userId) {
             if (active) setProfile(DEFAULT_PROFILE);
             return;
           }
 
-          const profileResult = await supabase
-            .from("user_profiles")
-            .select("full_name")
-            .eq("user_id", user.id)
-            .maybeSingle();
-
           if (!active) return;
 
-          const fullName = profileResult.data?.full_name ?? null;
           setProfile({
-            fullName,
-            avatarText: toAvatarText(fullName, user.id),
+            fullName: identity.fullName,
+            avatarText: toProfileAvatarText(identity.fullName, identity.userId),
+            avatarUrl: identity.avatarUrl,
           });
         } catch {
           if (active) setProfile(DEFAULT_PROFILE);

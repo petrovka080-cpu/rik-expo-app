@@ -1,5 +1,5 @@
-﻿import React from "react";
-import { Pressable, Text, View } from "react-native";
+import React from "react";
+import { Pressable, ScrollView, Text, View } from "react-native";
 import { UI, s } from "./director.styles";
 import { nnum } from "./director.finance";
 
@@ -49,13 +49,17 @@ type Props = {
 };
 
 export default function DirectorFinanceSpendModal(p: Props) {
+  const onOpenKind = p.onOpenKind;
   const [kindsOpen, setKindsOpen] = React.useState(false);
 
   React.useEffect(() => {
     if (p.visible === false) setKindsOpen(false);
   }, [p.visible]);
 
-  const rows: SpendRow[] = Array.isArray(p.spendRows) ? p.spendRows : [];
+  const rows = React.useMemo<SpendRow[]>(
+    () => (Array.isArray(p.spendRows) ? p.spendRows : []),
+    [p.spendRows],
+  );
 
   const spendHeader = React.useMemo(() => {
     let approved = 0;
@@ -171,11 +175,17 @@ export default function DirectorFinanceSpendModal(p: Props) {
     }
 
     const arr = Array.from(map.values()).sort((a, b) => b.overpay - a.overpay);
-    p.onOpenKind?.("Переплаты / авансы", arr);
-  }, [rows, p.onOpenKind]);
+    onOpenKind?.("Переплаты / авансы", arr);
+  }, [rows, onOpenKind]);
 
   return (
-    <View style={{ flexDirection: "column", alignItems: "stretch" }}>
+    <ScrollView
+      style={{ flex: 1, minHeight: 0 }}
+      keyboardShouldPersistTaps="handled"
+      showsVerticalScrollIndicator={false}
+      contentContainerStyle={{ paddingBottom: 24 }}
+    >
+      <View style={{ flexDirection: "column", alignItems: "stretch" }}>
       <Text style={{ color: UI.text, fontWeight: "900" }}>
         Утверждено: <Text style={{ color: UI.sub }}>{p.loading ? "..." : p.money(spendHeader.approved)}</Text>
       </Text>
@@ -235,7 +245,7 @@ export default function DirectorFinanceSpendModal(p: Props) {
               return (
                 <Pressable
                   key={x.kind}
-                  onPress={() => p.onOpenKind?.(x.kind, list)}
+                  onPress={() => onOpenKind?.(x.kind, list)}
                   hitSlop={12}
                   style={[
                     s.mobCard,
@@ -295,6 +305,7 @@ export default function DirectorFinanceSpendModal(p: Props) {
           <Text style={{ color: UI.sub, fontWeight: "900", fontSize: 16, marginLeft: 10 }}>›</Text>
         </Pressable>
       ) : null}
-    </View>
+      </View>
+    </ScrollView>
   );
 }

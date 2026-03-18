@@ -26,6 +26,7 @@ import {
 } from "./director.types";
 import {
     computeFinanceRep,
+    computeFinanceByKind,
     money as moneyHelper,
     mapToFinanceRow,
     mid,
@@ -33,6 +34,7 @@ import {
     addDaysIso,
     parseMid
 } from "./director.finance";
+import type { FinKindSummary } from "./director.finance";
 import { useIsFocused } from "@react-navigation/native";
 
 const warnDirectorFinance = (scope: "fetchFinSpendRows" | "fetchFinance", error: unknown) => {
@@ -64,6 +66,7 @@ export function useDirectorScreenController() {
     const [finTo, setFinTo] = useState<string | null>(null);
     const [finKindName, setFinKindName] = useState<string>("");
     const [finKindList, setFinKindList] = useState<any[]>([]);
+    const [finByKind, setFinByKind] = useState<FinKindSummary[]>([]);
 
     const FIN_DUE_DAYS_DEFAULT = 7;
     const FIN_CRITICAL_DAYS = 14;
@@ -121,6 +124,7 @@ export function useDirectorScreenController() {
             setFinRows(mapped);
             setFinRep(rep);
             await fetchFinSpendRows();
+
         } catch (e: unknown) {
             warnDirectorFinance("fetchFinance", e);
             if (nextRows) {
@@ -347,6 +351,7 @@ export function useDirectorScreenController() {
 
         // Finance State
         finOpen, finPage, finRows, finSpendRows, finRep, finPeriodOpen, finFrom, finTo, finSupplier, finKindName, finKindList, finLoading,
+        finByKind,
 
         // Actions/Modals
         closeSheet, openRequestSheet, openProposalSheet,

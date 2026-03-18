@@ -222,6 +222,7 @@ export default function MarketHomeScreen() {
         onProfilePress={() => router.push("/(tabs)/profile" as any)}
         avatarText={headerProfile.avatarText}
         avatarLabel={headerProfile.fullName}
+        avatarUrl={headerProfile.avatarUrl}
       />
 
       <MarketHeroCarousel

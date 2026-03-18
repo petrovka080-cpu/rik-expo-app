@@ -1,4 +1,4 @@
-﻿// src/screens/director/director.styles.ts
+// src/screens/director/director.styles.ts
 import { Platform, StyleSheet } from "react-native";
 
 export const UI = {
@@ -254,6 +254,7 @@ export const s = StyleSheet.create({
   sheet: {
     minHeight: "78%",
     maxHeight: "94%",
+    flexShrink: 1,
     backgroundColor: UI.cardBg,
     borderTopLeftRadius: 22,
     borderTopRightRadius: 22,

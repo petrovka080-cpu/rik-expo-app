@@ -29,17 +29,25 @@ type DirectorDisciplineMaterial = {
   docs_count: number;
   unit_price?: number;
   amount_sum?: number;
+  source_issue_ids?: string[];
+  source_request_item_ids?: string[];
 };
 
 type DirectorDisciplineLevel = {
   id: string;
   level_name: string;
+  object_name?: string;
+  system_name?: string | null;
+  zone_name?: string | null;
+  location_label?: string;
   total_qty: number;
   total_docs: number;
   total_positions: number;
   share_in_work_pct: number;
   req_positions: number;
   free_positions: number;
+  source_issue_ids?: string[];
+  source_request_item_ids?: string[];
   materials: DirectorDisciplineMaterial[];
 };
 
@@ -52,6 +60,7 @@ type DirectorDisciplineWork = {
   share_total_pct: number;
   req_positions: number;
   free_positions: number;
+  location_count?: number;
   levels: DirectorDisciplineLevel[];
 };
 
@@ -85,6 +94,8 @@ type DirectorReportPayload = {
   report_options?: DirectorReportOptions;
 };
 
+type DirectorItemKind = "material" | "work" | "service" | "unknown";
+
 type DirectorFactRowNormalized = {
   issue_id: string;
   issue_item_id: string | null;
@@ -95,11 +106,14 @@ type DirectorFactRowNormalized = {
   object_name_resolved: string;
   work_name_resolved: string;
   level_name_resolved: string;
+  system_name_resolved: string | null;
+  zone_name_resolved: string | null;
   material_name_resolved: string;
   rik_code_resolved: string;
   uom_resolved: string;
   qty: number;
   is_without_request: boolean;
+  item_kind: DirectorItemKind;
 };
 
 type DirectorFactContextResolved = {
@@ -109,6 +123,8 @@ type DirectorFactContextResolved = {
   object_name_resolved: string;
   work_name_resolved: string;
   level_name_resolved: string;
+  system_name_resolved: string | null;
+  zone_name_resolved: string | null;
   is_without_request: boolean;
 };
 
@@ -131,8 +147,10 @@ type DirectorFactContextInput = {
   request_object_name_by_id?: string | null;
   request_object_type_name?: string | null;
   request_system_name?: string | null;
+  request_zone_name?: string | null;
   use_free_issue_object_fallback?: boolean;
   force_without_level_when_issue_work_name?: boolean;
+  item_kind?: string | null;
 };
 
 type DirectorFactRowNormalizeInput = {
@@ -144,6 +162,7 @@ type DirectorFactRowNormalizeInput = {
   rik_code?: string | null | undefined;
   uom?: string | null | undefined;
   qty?: number | string | null | undefined;
+  item_kind?: string | null | undefined;
 };
 
 type DirectorFactRow = DirectorFactRowNormalized;
@@ -189,6 +208,7 @@ type RequestLookupRow = {
   object_type_code: string | null;
   system_code: string | null;
   level_code: string | null;
+  zone_code: string | null;
   object: string | null;
 };
 
@@ -375,7 +395,7 @@ const DIRECTOR_REPORTS_CANONICAL_SUMMARY_ENABLED =
 const DIRECTOR_REPORTS_CANONICAL_DIVERGENCE_LOG =
   String((globalThis as any)?.process?.env?.EXPO_PUBLIC_DIRECTOR_REPORTS_CANONICAL_DIVERGENCE_LOG ?? "0").trim() === "1";
 const DIRECTOR_REPORTS_STRICT_FACT_SOURCES =
-  String((globalThis as any)?.process?.env?.EXPO_PUBLIC_DIRECTOR_REPORTS_STRICT_FACT_SOURCES ?? "1").trim() !== "0";
+  String((globalThis as any)?.process?.env?.EXPO_PUBLIC_DIRECTOR_REPORTS_STRICT_FACT_SOURCES ?? "0").trim() !== "0";
 const CANONICAL_FAILED_COOLDOWN_MS = 10 * 60 * 1000;
 const DIVERGENCE_LOG_TTL_MS = 10 * 60 * 1000;
 type CanonicalRpcStatus = "unknown" | "available" | "missing" | "failed";
@@ -507,9 +527,40 @@ const buildDirectorReportOptionsFromIdentities = (
   return { objects, objectIdByName };
 };
 
-const resolveDirectorFactContext = (
+const buildWithoutWorkContextLabelLegacy = (partsRaw: Array<string | null | undefined>): string => {
+  const parts = partsRaw
+    .map((part) => String(part ?? "").trim())
+    .filter(Boolean);
+  if (!parts.length) return WITHOUT_WORK;
+  return `${WITHOUT_WORK} · ${parts.slice(0, 2).join(" · ")}`;
+};
+
+const buildWithoutWorkContextLabel = (partsRaw: Array<string | null | undefined>): string => {
+  const parts = partsRaw
+    .map((part) => String(part ?? "").trim())
+    .filter(Boolean);
+  if (!parts.length) return WITHOUT_WORK;
+  return `${WITHOUT_WORK} / ${parts.slice(0, 2).join(" / ")}`;
+};
+
+const buildDirectorLocationLabelLegacy = (input: {
+  objectName: string;
+  levelName: string;
+  systemName?: string | null;
+  zoneName?: string | null;
+}): string => {
+  const parts = [
+    String(input.objectName ?? "").trim(),
+    String(input.levelName ?? "").trim(),
+    String(input.systemName ?? "").trim(),
+    String(input.zoneName ?? "").trim(),
+  ].filter((part) => !!part && part !== WITHOUT_LEVEL);
+  return parts.join(" · ") || input.objectName || WITHOUT_OBJECT;
+};
+
+const resolveDirectorFactContextLegacy = (
   input: DirectorFactContextInput,
-): DirectorFactContextResolved => {
+): any => {
   const requestId = String(input.request_id ?? input.request?.id ?? "").trim() || null;
   const requestItemId = String(input.request_item_id ?? "").trim() || null;
   const issueObjectId = String(input.issue_object_id ?? "").trim() || null;
@@ -521,6 +572,14 @@ const resolveDirectorFactContext = (
   const requestSystemName = String(input.request_system_name ?? "").trim();
   const freeCtx = parseFreeIssueContext(input.issue_note ?? null);
   const request = input.request ?? null;
+
+  // item_kind → human-readable work name fallback
+  const itemKindRaw = String(input.item_kind ?? "").trim().toLowerCase();
+  const itemKindWorkFallback =
+    itemKindRaw === "work" || itemKindRaw === "работа" || itemKindRaw === "работы" ? "Работы" :
+    itemKindRaw === "service" || itemKindRaw === "услуга" || itemKindRaw === "услуги" ? "Услуги" :
+    itemKindRaw === "material" || itemKindRaw === "материал" || itemKindRaw === "материалы" ? "Материалы" :
+    "";
 
   if (request) {
     return {
@@ -536,7 +595,7 @@ const resolveDirectorFactContext = (
           issueObjectName,
         ) || WITHOUT_OBJECT,
       work_name_resolved:
-        firstNonEmpty(issueWorkName, requestSystemName, request?.system_code) || WITHOUT_WORK,
+        firstNonEmpty(issueWorkName, requestSystemName, request?.system_code, itemKindWorkFallback) || WITHOUT_WORK,
       level_name_resolved: normLevelName(request?.level_code),
       is_without_request: false,
     };
@@ -552,7 +611,7 @@ const resolveDirectorFactContext = (
         issueObjectName,
         input.use_free_issue_object_fallback === false ? "" : freeCtx.objectName,
       ) || WITHOUT_OBJECT,
-    work_name_resolved: firstNonEmpty(issueWorkName, freeCtx.workName) || WITHOUT_WORK,
+    work_name_resolved: firstNonEmpty(issueWorkName, freeCtx.workName, itemKindWorkFallback) || WITHOUT_WORK,
     level_name_resolved:
       input.force_without_level_when_issue_work_name && issueWorkName
         ? WITHOUT_LEVEL
@@ -561,14 +620,29 @@ const resolveDirectorFactContext = (
   };
 };
 
-const normalizeDirectorFactRow = (
+const resolveItemKindLegacy = (rikCode: string, inputKind?: string | null): DirectorItemKind => {
+  const k = String(inputKind ?? "").trim().toLowerCase();
+  if (k === "work" || k === "работа" || k === "работы") return "work";
+  if (k === "service" || k === "услуга" || k === "услуги") return "service";
+  if (k === "material" || k === "материал" || k === "материалы") return "material";
+  // If rik_code is present, it's a material; otherwise unknown
+  return rikCode ? "material" : "unknown";
+};
+
+const normalizeDirectorFactRowLegacy = (
   input: DirectorFactRowNormalizeInput,
-): DirectorFactRowNormalized | null => {
+): any => {
   const issueId = String(input.issue_id ?? "").trim();
   const rikCode = String(input.rik_code ?? "").trim().toUpperCase();
-  if (!issueId || !rikCode) return null;
+  const itemKind = resolveItemKind(rikCode, input.item_kind);
 
-  const materialName = String(input.material_name ?? "").trim() || rikCode;
+  // Accept row if it has an issueId AND either a rik_code (material) or a known item_kind (work/service)
+  if (!issueId) return null;
+  if (!rikCode && itemKind === "unknown") return null;
+
+  // For non-material rows, use a synthetic code for aggregation
+  const effectiveCode = rikCode || `${itemKind.toUpperCase()}::${String(input.material_name ?? "").trim().toUpperCase().slice(0, 40) || "ITEM"}`;
+  const materialName = String(input.material_name ?? "").trim() || effectiveCode;
 
   return {
     issue_id: issueId,
@@ -581,12 +655,137 @@ const normalizeDirectorFactRow = (
     work_name_resolved: input.context.work_name_resolved,
     level_name_resolved: input.context.level_name_resolved,
     material_name_resolved: materialName,
-    rik_code_resolved: rikCode,
+    rik_code_resolved: effectiveCode,
     uom_resolved: String(input.uom ?? "").trim(),
     qty: toNum(input.qty),
     is_without_request: !!input.context.is_without_request,
+    item_kind: itemKind,
   };
 };
+
+const buildDirectorLocationLabel = (input: {
+  objectName: string;
+  levelName: string;
+  systemName?: string | null;
+  zoneName?: string | null;
+}): string => {
+  const parts = [
+    String(input.objectName ?? "").trim(),
+    String(input.levelName ?? "").trim(),
+    String(input.systemName ?? "").trim(),
+    String(input.zoneName ?? "").trim(),
+  ].filter((part) => !!part && part !== WITHOUT_LEVEL);
+  return parts.join(" / ") || input.objectName || WITHOUT_OBJECT;
+};
+
+const resolveDirectorFactContext = (
+  input: DirectorFactContextInput,
+): DirectorFactContextResolved => {
+  const requestId = String(input.request_id ?? input.request?.id ?? "").trim() || null;
+  const requestItemId = String(input.request_item_id ?? "").trim() || null;
+  const issueObjectId = String(input.issue_object_id ?? "").trim() || null;
+  const issueWorkName = String(input.issue_work_name ?? "").trim();
+  const issueObjectName = String(input.issue_object_name ?? "").trim();
+  const issueObjectNameById = String(input.issue_object_name_by_id ?? "").trim();
+  const requestObjectNameById = String(input.request_object_name_by_id ?? "").trim();
+  const requestObjectTypeName = String(input.request_object_type_name ?? "").trim();
+  const requestSystemName = String(input.request_system_name ?? "").trim();
+  const requestZoneName = String(input.request_zone_name ?? "").trim();
+  const freeCtx = parseFreeIssueContext(input.issue_note ?? null);
+  const request = input.request ?? null;
+
+  const itemKindRaw = String(input.item_kind ?? "").trim().toLowerCase();
+  const itemKindWorkFallback =
+    itemKindRaw === "work" || itemKindRaw === "работа" || itemKindRaw === "работы" ? "\u0420\u0430\u0431\u043e\u0442\u044b" :
+    itemKindRaw === "service" || itemKindRaw === "услуга" || itemKindRaw === "услуги" ? "\u0423\u0441\u043b\u0443\u0433\u0438" :
+    itemKindRaw === "material" || itemKindRaw === "материал" || itemKindRaw === "материалы" ? "\u041c\u0430\u0442\u0435\u0440\u0438\u0430\u043b\u044b" :
+    "";
+
+  const objectNameResolved =
+    firstNonEmpty(
+      requestObjectNameById,
+      request?.object_name,
+      requestObjectTypeName,
+      issueObjectNameById,
+      issueObjectName,
+      input.use_free_issue_object_fallback === false ? "" : freeCtx.objectName,
+    ) || WITHOUT_OBJECT;
+  const systemNameResolved =
+    firstNonEmpty(requestSystemName, request?.system_code, freeCtx.systemName) || null;
+  const zoneNameResolved =
+    firstNonEmpty(requestZoneName, request?.zone_code, freeCtx.zoneName) || null;
+  const levelNameResolved = normLevelName(firstNonEmpty(request?.level_code, freeCtx.levelName));
+  const actualWorkName = firstNonEmpty(issueWorkName, freeCtx.workName);
+  const contextualWorkFallback =
+    !actualWorkName
+      ? firstNonEmpty(systemNameResolved, zoneNameResolved)
+      : "";
+  const workNameResolved =
+    actualWorkName ||
+    contextualWorkFallback ||
+    itemKindWorkFallback ||
+    WITHOUT_WORK;
+
+  return {
+    request_id: requestId,
+    request_item_id: requestItemId,
+    object_id_resolved: String(request?.object_id ?? "").trim() || issueObjectId,
+    object_name_resolved: objectNameResolved,
+    work_name_resolved: workNameResolved,
+    level_name_resolved: levelNameResolved,
+    system_name_resolved: systemNameResolved,
+    zone_name_resolved: zoneNameResolved,
+    is_without_request: request ? false : !requestItemId,
+  };
+};
+
+const resolveItemKind = (rikCode: string, inputKind?: string | null): DirectorItemKind => {
+  const k = String(inputKind ?? "").trim().toLowerCase();
+  if (k === "work" || k === "работа" || k === "работы") return "work";
+  if (k === "service" || k === "услуга" || k === "услуги") return "service";
+  if (k === "material" || k === "материал" || k === "материалы") return "material";
+  return rikCode ? "material" : "unknown";
+};
+
+const normalizeDirectorFactRow = (
+  input: DirectorFactRowNormalizeInput,
+): DirectorFactRowNormalized | null => {
+  const issueId = String(input.issue_id ?? "").trim();
+  const rikCode = String(input.rik_code ?? "").trim().toUpperCase();
+  const itemKind = resolveItemKind(rikCode, input.item_kind);
+  if (!issueId) return null;
+  if (!rikCode && itemKind === "unknown") return null;
+
+  const effectiveCode =
+    rikCode ||
+    `${itemKind.toUpperCase()}::${String(input.material_name ?? "").trim().toUpperCase().slice(0, 40) || "ITEM"}`;
+  const materialName = String(input.material_name ?? "").trim() || effectiveCode;
+
+  return {
+    issue_id: issueId,
+    issue_item_id: String(input.issue_item_id ?? "").trim() || null,
+    iss_date: String(input.iss_date ?? ""),
+    request_id: input.context.request_id,
+    request_item_id: input.context.request_item_id,
+    object_id_resolved: input.context.object_id_resolved,
+    object_name_resolved: input.context.object_name_resolved,
+    work_name_resolved: input.context.work_name_resolved,
+    level_name_resolved: input.context.level_name_resolved,
+    system_name_resolved: input.context.system_name_resolved,
+    zone_name_resolved: input.context.zone_name_resolved,
+    material_name_resolved: materialName,
+    rik_code_resolved: effectiveCode,
+    uom_resolved: String(input.uom ?? "").trim(),
+    qty: toNum(input.qty),
+    is_without_request: !!input.context.is_without_request,
+    item_kind: itemKind,
+  };
+};
+void buildWithoutWorkContextLabelLegacy;
+void buildDirectorLocationLabelLegacy;
+void resolveDirectorFactContextLegacy;
+void resolveItemKindLegacy;
+void normalizeDirectorFactRowLegacy;
 
 const normalizeDirectorFactViewRow = (value: unknown): DirectorFactRowNormalized | null => {
   const row = asRecord(value);
@@ -606,6 +805,7 @@ const normalizeDirectorFactViewRow = (value: unknown): DirectorFactRowNormalized
     rik_code: row.rik_code == null ? null : String(row.rik_code),
     uom: row.uom == null ? null : String(row.uom),
     qty: row.qty == null ? null : (row.qty as number | string),
+    item_kind: row.item_kind == null ? null : String(row.item_kind),
   });
 };
 
@@ -704,8 +904,8 @@ const forEachChunkParallel = async <T,>(
 };
 
 const REQUESTS_SELECT_PLANS = [
-  "id,object_id,object_name,object_type_code,system_code,level_code,object",
-  "id,object_id,object_name,system_code,level_code,object",
+  "id,object_id,object_name,object_type_code,system_code,level_code,zone_code,object",
+  "id,object_id,object_name,system_code,level_code,zone_code,object",
   "id,object_id,object_name,object",
   "id,object_id,object_name",
   "id,object_name",
@@ -713,7 +913,7 @@ const REQUESTS_SELECT_PLANS = [
 ] as const;
 
 const REQUESTS_DISCIPLINE_SELECT_PLANS = [
-  "id,level_code,system_code",
+  "id,level_code,system_code,zone_code",
   "id,level_code",
   "id,system_code",
   "id",
@@ -758,7 +958,6 @@ const filterDisciplineRowsByObject = (
 };
 
 async function fetchRequestsRowsSafe(ids: string[]): Promise<RequestLookupRow[]> {
-  if (DIRECTOR_REPORTS_STRICT_FACT_SOURCES) return [];
   const reqIds = Array.from(new Set((ids || []).map((x) => String(x ?? "").trim()).filter(Boolean)));
   if (!reqIds.length) return [];
 
@@ -831,7 +1030,6 @@ async function fetchRequestsRowsSafe(ids: string[]): Promise<RequestLookupRow[]>
 }
 
 async function fetchRequestsDisciplineRowsSafe(ids: string[]): Promise<RequestLookupRow[]> {
-  if (DIRECTOR_REPORTS_STRICT_FACT_SOURCES) return [];
   const reqIds = Array.from(new Set((ids || []).map((x) => String(x ?? "").trim()).filter(Boolean)));
   if (!reqIds.length) return [];
 
@@ -865,7 +1063,7 @@ async function fetchRequestsDisciplineRowsSafe(ids: string[]): Promise<RequestLo
       const seen = new Set(rows.map((row) => row.id));
       for (const row of rows) {
         const prev = getFreshLookupValue(requestLookupCache, row.id);
-        setLookupValue(requestLookupCache, row.id, { ...(prev ?? { id: row.id, object_id: null, object_name: null, object_type_code: null, system_code: null, level_code: null, object: null }), ...row });
+        setLookupValue(requestLookupCache, row.id, { ...(prev ?? { id: row.id, object_id: null, object_name: null, object_type_code: null, system_code: null, level_code: null, zone_code: null, object: null }), ...row });
       }
       for (const id of missingIds) if (!seen.has(id)) setLookupValue(requestLookupCache, id, null);
       return [...cachedRows, ...rows];
@@ -884,7 +1082,7 @@ async function fetchRequestsDisciplineRowsSafe(ids: string[]): Promise<RequestLo
       const seen = new Set(rows.map((row) => row.id));
       for (const row of rows) {
         const prev = getFreshLookupValue(requestLookupCache, row.id);
-        setLookupValue(requestLookupCache, row.id, { ...(prev ?? { id: row.id, object_id: null, object_name: null, object_type_code: null, system_code: null, level_code: null, object: null }), ...row });
+        setLookupValue(requestLookupCache, row.id, { ...(prev ?? { id: row.id, object_id: null, object_name: null, object_type_code: null, system_code: null, level_code: null, zone_code: null, object: null }), ...row });
       }
       for (const id of missingIds) if (!seen.has(id)) setLookupValue(requestLookupCache, id, null);
       return [...cachedRows, ...rows];
@@ -945,6 +1143,7 @@ const normalizeRequestLookupRow = (value: unknown): RequestLookupRow | null => {
     object_type_code: row.object_type_code == null ? null : String(row.object_type_code).trim(),
     system_code: row.system_code == null ? null : String(row.system_code).trim(),
     level_code: row.level_code == null ? null : String(row.level_code).trim(),
+    zone_code: row.zone_code == null ? null : String(row.zone_code).trim(),
     object: row.object == null ? null : String(row.object),
   };
 };
@@ -1650,7 +1849,7 @@ async function enrichFactRowsLevelNames(rows: DirectorFactRow[]): Promise<Direct
   });
 }
 
-function parseFreeIssueContext(note: string | null | undefined): {
+function parseFreeIssueContextLegacy(note: string | null | undefined): {
   objectName: string;
   workName: string;
   levelName: string;
@@ -1678,6 +1877,42 @@ function parseFreeIssueContext(note: string | null | undefined): {
   const level = clean(levelRaw) || WITHOUT_LEVEL;
   return { objectName: obj, workName: sys, levelName: level };
 }
+
+function parseFreeIssueContext(note: string | null | undefined): {
+  objectName: string;
+  workName: string;
+  systemName: string;
+  zoneName: string;
+  levelName: string;
+} {
+  const clean = (v: string): string =>
+    String(v ?? "")
+      .trim()
+      .replace(/\s*(?:·|•|\|)\s*(?:Контекст|Система|Зона|Вид|Этаж|Оси)\s*:.*/i, "")
+      .trim();
+
+  const s = String(note ?? "");
+  const objectName = canonicalObjectName(clean((s.match(/Объект:\s*([^\n\r]+)/i)?.[1] || "").trim()));
+  const workName = clean((s.match(/(?:Вид|Работа):\s*([^\n\r]+)/i)?.[1] || "").trim());
+  const systemName = clean(
+    ((s.match(/Система:\s*([^\n\r]+)/i)?.[1] || "").trim()) ||
+    ((s.match(/Контекст:\s*([^\n\r]+)/i)?.[1] || "").trim()),
+  );
+  const zoneName = clean((s.match(/Зона:\s*([^\n\r]+)/i)?.[1] || "").trim());
+  const levelName = clean(
+    ((s.match(/Этаж:\s*([^\n\r]+)/i)?.[1] || "").trim()) ||
+    ((s.match(/Уровень:\s*([^\n\r]+)/i)?.[1] || "").trim()),
+  ) || WITHOUT_LEVEL;
+
+  return {
+    objectName,
+    workName,
+    systemName,
+    zoneName,
+    levelName,
+  };
+}
+void parseFreeIssueContextLegacy;
 
 async function fetchIssueHeadsViaAccRpc(p: {
   from: string;
@@ -1807,6 +2042,7 @@ async function fetchDirectorFactViaAccRpc(p: {
         systemNameByCode.get(String(request?.system_code ?? "").trim()),
         request?.system_code,
       ) || null,
+      request_zone_name: request?.zone_code ?? null,
     });
 
     if (!matchesDirectorObjectIdentity(p.objectName, context)) continue;
@@ -2023,7 +2259,7 @@ async function fetchAllFactRowsFromTables(p: {
   );
 
   const requestIdByRequestItem = new Map<string, string>();
-  if (!DIRECTOR_REPORTS_STRICT_FACT_SOURCES) {
+  if (requestItemIds.length) {
     const tReqItems = nowMs();
     await forEachChunkParallel(requestItemIds, 500, 6, async (ids) => {
       const { data, error } = await supabase
@@ -2059,7 +2295,7 @@ async function fetchAllFactRowsFromTables(p: {
   );
 
   const requestById = new Map<string, RequestLookupRow>();
-  if (!DIRECTOR_REPORTS_STRICT_FACT_SOURCES) {
+  if (requestIds.length) {
     const tReq = nowMs();
     await forEachChunkParallel(requestIds, 500, 4, async (ids) => {
       const rows = await fetchRequestsRowsSafe(ids);
@@ -2163,6 +2399,7 @@ async function fetchAllFactRowsFromTables(p: {
         systemNameByCode.get(String(req?.system_code ?? "").trim()),
         req?.system_code,
       ) || null,
+      request_zone_name: req?.zone_code ?? null,
     });
 
     if (!matchesDirectorObjectIdentity(p.objectName, context)) continue;
@@ -2350,7 +2587,7 @@ async function fetchDisciplineFactRowsFromTables(p: {
     ),
   );
   const requestIdByRequestItem = new Map<string, string>();
-  if (requestItemIds.length && !DIRECTOR_REPORTS_STRICT_FACT_SOURCES) {
+  if (requestItemIds.length) {
     const tReqItems = nowMs();
     await forEachChunkParallel(requestItemIds, 500, 6, async (ids) => {
       const { data, error } = await supabase
@@ -2386,7 +2623,7 @@ async function fetchDisciplineFactRowsFromTables(p: {
   );
 
   const requestById = new Map<string, RequestLookupRow>();
-  if (requestIds.length && !DIRECTOR_REPORTS_STRICT_FACT_SOURCES) {
+  if (requestIds.length) {
     const tReq = nowMs();
     await forEachChunkParallel(requestIds, 500, 4, async (ids) => {
       const rows = await fetchRequestsDisciplineRowsSafe(ids);
@@ -2466,6 +2703,7 @@ async function fetchDisciplineFactRowsFromTables(p: {
         systemNameByCode.get(String(req?.system_code ?? "").trim()),
         req?.system_code,
       ) || null,
+      request_zone_name: req?.zone_code ?? null,
       use_free_issue_object_fallback: false,
       force_without_level_when_issue_work_name: true,
     });
@@ -2489,6 +2727,7 @@ async function fetchDisciplineFactRowsFromTables(p: {
   return out;
 }
 
+
 export async function fetchDirectorWarehouseReportOptions(p: {
   from: string;
   to: string;
@@ -2510,6 +2749,12 @@ export async function fetchDirectorWarehouseReportOptions(p: {
           ? data.map(normalizeDirectorReportOptionRow)
           : [];
         const base = buildReportOptionsFromByObjRows(rpcRows);
+        const onlyWithoutObject =
+          base.objects.length === 1 &&
+          normObjectName(base.objects[0]) === WITHOUT_OBJECT;
+        if (onlyWithoutObject) {
+          throw new Error("options.fast_rpc_without_real_objects");
+        }
         const enriched = await enrichObjectIdsForOptions({ from: pFrom, to: pTo }, base);
         logTiming("options.fast_rpc", t0);
         return enriched;
@@ -2843,7 +3088,17 @@ const worksSnapshotFromPayload = (payload: DirectorDisciplinePayload | null | un
 const hasCanonicalWorksDetailLevels = (payload: DirectorDisciplinePayload | null | undefined): boolean => {
   const works = Array.isArray(payload?.works) ? payload.works : [];
   if (!works.length) return false;
-  return works.some((work) => Array.isArray(work?.levels) && work.levels.length > 0);
+  return works.some((work) => {
+    const levels = Array.isArray(work?.levels) ? work.levels : [];
+    if (!levels.length) return false;
+    return levels.some((level) =>
+      !!String(level?.object_name ?? "").trim() ||
+      !!String(level?.system_name ?? "").trim() ||
+      !!String(level?.zone_name ?? "").trim() ||
+      !!String(level?.location_label ?? "").trim() ||
+      (Array.isArray(level?.materials) && level.materials.length > 0),
+    );
+  });
 };
 
 async function fetchDirectorReportCanonicalMaterials(p: {
@@ -3079,7 +3334,7 @@ async function fetchPurchaseCostInPeriodScoped(args: {
   return total;
 }
 
-function buildDisciplinePayloadFromFactRows(
+function buildDisciplinePayloadFromFactRowsLegacy(
   rows: DirectorFactRow[],
   cost?: {
     issue_cost_total?: number;
@@ -3266,6 +3521,256 @@ function buildDisciplinePayloadFromFactRows(
     works,
   };
 }
+
+function buildDisciplinePayloadFromFactRows(
+  rows: DirectorFactRow[],
+  cost?: {
+    issue_cost_total?: number;
+    purchase_cost_total?: number;
+    issue_to_purchase_pct?: number;
+    unpriced_issue_pct?: number;
+    price_by_code?: Map<string, number>;
+    price_by_request_item?: Map<string, number>;
+  },
+): DirectorDisciplinePayload {
+  const docsAll = new Set<string>();
+  let totalQty = 0;
+  let totalPositions = 0;
+  let qtyWithoutWork = 0;
+  let qtyWithoutLevel = 0;
+  let positionsWithoutReq = 0;
+
+  const withoutWorkKey = String(WITHOUT_WORK || "").trim().toLowerCase();
+  const byWork = new Map<
+    string,
+    {
+      work_type_name: string;
+      total_qty: number;
+      docs: Set<string>;
+      total_positions: number;
+      req_positions: number;
+      free_positions: number;
+      locations: Map<
+        string,
+        {
+          object_name: string;
+          level_name: string;
+          system_name: string | null;
+          zone_name: string | null;
+          location_label: string;
+          total_qty: number;
+          docs: Set<string>;
+          total_positions: number;
+          req_positions: number;
+          free_positions: number;
+          source_issue_ids: Set<string>;
+          source_request_item_ids: Set<string>;
+          materials: Map<
+            string,
+            {
+              material_name: string;
+              rik_code: string;
+              uom: string;
+              qty_sum: number;
+              amount_sum: number;
+              docs: Set<string>;
+              source_issue_ids: Set<string>;
+              source_request_item_ids: Set<string>;
+            }
+          >;
+        }
+      >;
+    }
+  >();
+
+  for (const r of rows) {
+    if (r.item_kind !== "material") continue;
+    const issueId = String(r?.issue_id ?? "").trim();
+    if (!issueId) continue;
+
+    const workName = normWorkName(r?.work_name_resolved);
+    const objectName = canonicalObjectName(r?.object_name_resolved);
+    const levelName = normLevelName(r?.level_name_resolved);
+    const systemName = String(normalizeRuText(String(r?.system_name_resolved ?? ""))).trim() || null;
+    const zoneName = String(normalizeRuText(String(r?.zone_name_resolved ?? ""))).trim() || null;
+    const locationLabel = buildDirectorLocationLabel({
+      objectName,
+      levelName,
+      systemName,
+      zoneName,
+    });
+    const locationKey = [objectName, levelName, systemName || "", zoneName || ""].join("::");
+
+    const code = String(r?.rik_code_resolved ?? "").trim().toUpperCase() || DASH;
+    const uom = String(r?.uom_resolved ?? "").trim();
+    const materialName = String(r?.material_name_resolved ?? "").trim() || code;
+    const qty = toNum(r?.qty);
+    const reqItemId = String(r?.request_item_id ?? "").trim();
+    const price = reqItemId
+      ? toNum(cost?.price_by_request_item?.get(reqItemId) ?? cost?.price_by_code?.get(code) ?? 0)
+      : toNum(cost?.price_by_code?.get(code) ?? 0);
+    const amount = price > 0 ? qty * price : 0;
+    const isWithoutReq = !!r?.is_without_request;
+    const isWithoutWork = String(workName || "").trim().toLowerCase().startsWith(withoutWorkKey);
+
+    docsAll.add(issueId);
+    totalQty += qty;
+    totalPositions += 1;
+    if (isWithoutWork) qtyWithoutWork += qty;
+    if (levelName === WITHOUT_LEVEL) qtyWithoutLevel += qty;
+    if (isWithoutReq) positionsWithoutReq += 1;
+
+    const workEntry =
+      byWork.get(workName) ?? {
+        work_type_name: workName,
+        total_qty: 0,
+        docs: new Set<string>(),
+        total_positions: 0,
+        req_positions: 0,
+        free_positions: 0,
+        locations: new Map(),
+      };
+    workEntry.total_qty += qty;
+    workEntry.docs.add(issueId);
+    workEntry.total_positions += 1;
+    if (isWithoutReq) workEntry.free_positions += 1;
+    else workEntry.req_positions += 1;
+
+    const locationEntry =
+      workEntry.locations.get(locationKey) ?? {
+        object_name: objectName,
+        level_name: levelName,
+        system_name: systemName,
+        zone_name: zoneName,
+        location_label: locationLabel,
+        total_qty: 0,
+        docs: new Set<string>(),
+        total_positions: 0,
+        req_positions: 0,
+        free_positions: 0,
+        source_issue_ids: new Set<string>(),
+        source_request_item_ids: new Set<string>(),
+        materials: new Map(),
+      };
+    locationEntry.total_qty += qty;
+    locationEntry.docs.add(issueId);
+    locationEntry.total_positions += 1;
+    locationEntry.source_issue_ids.add(issueId);
+    if (reqItemId) locationEntry.source_request_item_ids.add(reqItemId);
+    if (isWithoutReq) locationEntry.free_positions += 1;
+    else locationEntry.req_positions += 1;
+
+    const materialKey = `${code}::${uom}::${materialName}`;
+    const materialEntry =
+      locationEntry.materials.get(materialKey) ?? {
+        material_name: materialName,
+        rik_code: code,
+        uom,
+        qty_sum: 0,
+        amount_sum: 0,
+        docs: new Set<string>(),
+        source_issue_ids: new Set<string>(),
+        source_request_item_ids: new Set<string>(),
+      };
+    materialEntry.qty_sum += qty;
+    materialEntry.amount_sum += amount;
+    materialEntry.docs.add(issueId);
+    materialEntry.source_issue_ids.add(issueId);
+    if (reqItemId) materialEntry.source_request_item_ids.add(reqItemId);
+
+    locationEntry.materials.set(materialKey, materialEntry);
+    workEntry.locations.set(locationKey, locationEntry);
+    byWork.set(workName, workEntry);
+  }
+
+  const works: DirectorDisciplineWork[] = Array.from(byWork.values())
+    .map((w) => {
+      const levels: DirectorDisciplineLevel[] = Array.from(w.locations.values())
+        .map((loc) => {
+          const materials: DirectorDisciplineMaterial[] = Array.from(loc.materials.values())
+            .map((m) => ({
+              material_name: m.material_name,
+              rik_code: m.rik_code,
+              uom: m.uom,
+              qty_sum: m.qty_sum,
+              docs_count: m.docs.size,
+              unit_price: m.qty_sum > 0 ? m.amount_sum / m.qty_sum : 0,
+              amount_sum: m.amount_sum,
+              source_issue_ids: Array.from(m.source_issue_ids.values()),
+              source_request_item_ids: Array.from(m.source_request_item_ids.values()),
+            }))
+            .sort((a, b) => {
+              const byAmount = (b.amount_sum ?? 0) - (a.amount_sum ?? 0);
+              if (byAmount !== 0) return byAmount;
+              const byQty = b.qty_sum - a.qty_sum;
+              if (byQty !== 0) return byQty;
+              return a.material_name.localeCompare(b.material_name, "ru");
+            });
+
+          return {
+            id: `${w.work_type_name}::${loc.location_label}`,
+            level_name: loc.level_name,
+            object_name: loc.object_name,
+            system_name: loc.system_name,
+            zone_name: loc.zone_name,
+            location_label: loc.location_label,
+            total_qty: loc.total_qty,
+            total_docs: loc.docs.size,
+            total_positions: loc.total_positions,
+            share_in_work_pct: pct(loc.total_qty, w.total_qty),
+            req_positions: loc.req_positions,
+            free_positions: loc.free_positions,
+            source_issue_ids: Array.from(loc.source_issue_ids.values()),
+            source_request_item_ids: Array.from(loc.source_request_item_ids.values()),
+            materials,
+          };
+        })
+        .sort((a, b) => {
+          const byQty = b.total_qty - a.total_qty;
+          if (byQty !== 0) return byQty;
+          const byPositions = b.total_positions - a.total_positions;
+          if (byPositions !== 0) return byPositions;
+          return String(a.location_label ?? "").localeCompare(String(b.location_label ?? ""), "ru");
+        });
+
+      return {
+        id: w.work_type_name,
+        work_type_name: w.work_type_name,
+        total_qty: w.total_qty,
+        total_docs: w.docs.size,
+        total_positions: w.total_positions,
+        share_total_pct: pct(w.total_qty, totalQty),
+        req_positions: w.req_positions,
+        free_positions: w.free_positions,
+        location_count: levels.length,
+        levels,
+      };
+    })
+    .sort((a, b) => {
+      const byQty = b.total_qty - a.total_qty;
+      if (byQty !== 0) return byQty;
+      const byPositions = b.total_positions - a.total_positions;
+      if (byPositions !== 0) return byPositions;
+      return a.work_type_name.localeCompare(b.work_type_name, "ru");
+    });
+
+  return {
+    summary: {
+      total_qty: totalQty,
+      total_docs: docsAll.size,
+      total_positions: totalPositions,
+      pct_without_work: pct(qtyWithoutWork, totalQty),
+      pct_without_level: pct(qtyWithoutLevel, totalQty),
+      pct_without_request: pct(positionsWithoutReq, totalPositions),
+      issue_cost_total: Number(cost?.issue_cost_total ?? 0),
+      purchase_cost_total: Number(cost?.purchase_cost_total ?? 0),
+      issue_to_purchase_pct: Number(cost?.issue_to_purchase_pct ?? 0),
+      unpriced_issue_pct: Number(cost?.unpriced_issue_pct ?? 0),
+    },
+    works,
+  };
+}
+void buildDisciplinePayloadFromFactRowsLegacy;
 
 function collectDisciplinePriceInputs(rows: DirectorFactRow[]): {
   requestItemIds: string[];
@@ -3471,13 +3976,17 @@ export async function fetchDirectorWarehouseReportDiscipline(p: {
         includeCosts: !opts?.skipPrices,
       });
       if (canonical) {
+        const hasDetailLevels = hasCanonicalWorksDetailLevels(canonical);
         if (REPORTS_TIMING) {
-          const worksCount = Array.isArray(canonical?.works) ? canonical.works.length : 0;
-          const hasDetailLevels = hasCanonicalWorksDetailLevels(canonical);
           if (!hasDetailLevels) {
-            console.info("[director_reports] discipline.canonical_works.accepted_without_levels");
+            console.info("[director_reports] discipline.canonical_works.rejected_without_semantic_drilldown");
           }
         }
+        if (!hasDetailLevels) {
+          canonical = null;
+        }
+      }
+      if (canonical) {
         if (!opts?.skipPrices && canUseCanonicalRpc("summary")) {
           try {
             const sm = await fetchDirectorReportCanonicalSummary({

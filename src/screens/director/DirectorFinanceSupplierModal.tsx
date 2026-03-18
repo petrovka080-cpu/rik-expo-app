@@ -1,5 +1,5 @@
-﻿import React from "react";
-import { Pressable, Text, View } from "react-native";
+import React from "react";
+import { Pressable, ScrollView, Text, View } from "react-native";
 import { UI, s } from "./director.styles";
 
 type InvoiceRow = {
@@ -40,7 +40,12 @@ export default function DirectorFinanceSupplierModal(p: {
   return !sup ? (
     <Text style={{ color: UI.sub, fontWeight: "800" }}>Нет данных</Text>
   ) : (
-    <View>
+    <ScrollView
+      style={{ flex: 1, minHeight: 0 }}
+      keyboardShouldPersistTaps="handled"
+      showsVerticalScrollIndicator={false}
+      contentContainerStyle={{ paddingBottom: 24 }}
+    >
       <View style={[s.reqNoteBox, { borderLeftColor: "#F59E0B" }]}>
         <Text style={[s.reqNoteLine, { fontWeight: "900" }]} numberOfLines={1}>
           Долг: {p.money(Number(sup.amount ?? 0))} KGS · счетов {Number(sup.count ?? 0)}
@@ -109,6 +114,6 @@ export default function DirectorFinanceSupplierModal(p: {
           </Text>
         </View>
       ))}
-    </View>
+    </ScrollView>
   );
 }

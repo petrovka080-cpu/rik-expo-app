@@ -91,17 +91,25 @@ export type RepDisciplineMaterial = {
   docs_count: number;
   unit_price?: number;
   amount_sum?: number;
+  source_issue_ids?: string[];
+  source_request_item_ids?: string[];
 };
 
 export type RepDisciplineLevel = {
   id: string;
   level_name: string;
+  object_name?: string;
+  system_name?: string | null;
+  zone_name?: string | null;
+  location_label?: string;
   total_qty: number;
   total_docs: number;
   total_positions: number;
   share_in_work_pct: number;
   req_positions: number;
   free_positions: number;
+  source_issue_ids?: string[];
+  source_request_item_ids?: string[];
   materials: RepDisciplineMaterial[];
 };
 
@@ -114,6 +122,7 @@ export type RepDisciplineWork = {
   share_total_pct: number;
   req_positions: number;
   free_positions: number;
+  location_count?: number;
   levels: RepDisciplineLevel[];
 };
 

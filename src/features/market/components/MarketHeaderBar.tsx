@@ -1,5 +1,5 @@
 import React from "react";
-import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { Image, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
 import { MARKET_HOME_COLORS } from "../marketHome.config";
@@ -11,6 +11,7 @@ type Props = {
   onProfilePress: () => void;
   avatarText?: string;
   avatarLabel?: string | null;
+  avatarUrl?: string | null;
 };
 
 function LogoMark() {
@@ -33,6 +34,7 @@ export default function MarketHeaderBar({
   onProfilePress,
   avatarText = "G",
   avatarLabel,
+  avatarUrl,
 }: Props) {
   return (
     <View style={styles.row}>
@@ -60,7 +62,11 @@ export default function MarketHeaderBar({
         accessibilityRole="button"
         accessibilityLabel={avatarLabel ? `Профиль: ${avatarLabel}` : "Профиль"}
       >
-        <Text style={styles.avatarText}>{avatarText}</Text>
+        {avatarUrl ? (
+          <Image source={{ uri: avatarUrl }} style={styles.avatarImage} />
+        ) : (
+          <Text style={styles.avatarText}>{avatarText}</Text>
+        )}
       </Pressable>
     </View>
   );
@@ -139,6 +145,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     overflow: "hidden",
+  },
+  avatarImage: {
+    width: "100%",
+    height: "100%",
   },
   avatarText: {
     color: "#FFFFFF",

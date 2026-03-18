@@ -13,14 +13,18 @@ import {
   LayoutAnimation,
   Platform,
   UIManager,
+  Image,
   Linking,           // ← ДОБАВЬ
 } from "react-native";
 import * as Clipboard from "expo-clipboard"; // ← НОВЫЙ ИМПОРТ
 import * as Location from "expo-location";
+import * as ImagePicker from "expo-image-picker";
+import { decode } from "base64-arraybuffer";
+import { Ionicons } from "@expo/vector-icons";
 
 import { useRouter } from "expo-router";
 import { supabase } from "../../src/lib/supabaseClient";
-console.log("🔥 USING NEW PROFILE FILE");
+import { getMyRole } from "../../src/lib/api/profile";
 
 if (
   Platform.OS === "android" &&
@@ -28,8 +32,6 @@ if (
 ) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
-
-const IS_DEMO = __DEV__;
 
 const UI = {
   bg: "#020617",
@@ -187,6 +189,158 @@ function buildProfileAssistantPrompt(args: {
 
   return parts.join(" ");
 }
+
+function getProfileRoleLabel(role: string | null): string {
+  switch (String(role || "").trim()) {
+    case "director":
+      return "Директор";
+    case "buyer":
+      return "Снабженец";
+    case "foreman":
+      return "Прораб";
+    case "warehouse":
+      return "Склад";
+    case "accountant":
+      return "Бухгалтер";
+    case "security":
+      return "Безопасность";
+    case "contractor":
+      return "Подрядчик";
+    default:
+      return "Профиль GOX";
+  }
+}
+
+function getProfileRoleColor(role: string | null): string {
+  switch (String(role || "").trim()) {
+    case "director":
+      return "#2563EB";
+    case "buyer":
+      return "#14B8A6";
+    case "foreman":
+      return "#F97316";
+    case "warehouse":
+      return "#22C55E";
+    case "accountant":
+      return "#A855F7";
+    case "security":
+      return "#EF4444";
+    case "contractor":
+      return "#F59E0B";
+    default:
+      return UI.accent;
+  }
+}
+
+function getProfileDisplayName(args: {
+  fullName: string | null | undefined;
+  email: string | null | undefined;
+  companyName: string | null | undefined;
+  userId: string | null | undefined;
+}): string {
+  const fullName = args.fullName?.trim() || "";
+  const looksGenerated =
+    !fullName ||
+    /^[0-9a-f]{8,}$/i.test(fullName) ||
+    /^[0-9a-f-]{20,}$/i.test(fullName);
+
+  if (!looksGenerated) {
+    return fullName;
+  }
+
+  return (
+    args.email?.split("@")[0]?.trim() ||
+    args.companyName?.trim() ||
+    args.userId?.slice(0, 8) ||
+    "GOX"
+  );
+}
+
+function hasRealProfileName(fullName: string | null | undefined): boolean {
+  const value = fullName?.trim() || "";
+  if (!value) return false;
+  if (/^[0-9a-f]{8,}$/i.test(value)) return false;
+  if (/^[0-9a-f-]{20,}$/i.test(value)) return false;
+  return true;
+}
+
+function getDefaultCompanyName(args: {
+  fullName: string | null | undefined;
+  email: string | null | undefined;
+}): string {
+  const displayName = getProfileDisplayName({
+    fullName: args.fullName,
+    email: args.email,
+    companyName: null,
+    userId: null,
+  }).trim();
+
+  if (displayName && displayName !== "GOX") {
+    return `Компания ${displayName}`;
+  }
+
+  return "Новая компания";
+}
+
+async function uploadProfileAvatar(userId: string, assetUri: string): Promise<string> {
+  const timestamp = Date.now();
+  let extension = "jpg";
+  let contentType = "image/jpeg";
+  let filePath = `${userId}/${timestamp}.${extension}`;
+
+  if (Platform.OS === "web") {
+    const response = await fetch(assetUri);
+    const blob = await response.blob();
+    const blobType = blob.type || "";
+
+    if (blobType.includes("png")) {
+      extension = "png";
+      contentType = "image/png";
+    } else if (blobType.includes("webp")) {
+      extension = "webp";
+      contentType = "image/webp";
+    } else if (blobType.includes("jpeg") || blobType.includes("jpg")) {
+      extension = "jpg";
+      contentType = "image/jpeg";
+    }
+
+    filePath = `${userId}/${timestamp}.${extension}`;
+    const upload = await supabase.storage.from("avatars").upload(filePath, blob, {
+      contentType,
+      upsert: true,
+    });
+    if (upload.error) throw upload.error;
+  } else {
+    const FileSystemModule = await import("expo-file-system/legacy");
+    const FS: any = FileSystemModule;
+    const uriExtMatch = /\.(png|jpg|jpeg|webp)$/i.exec(assetUri);
+
+    if (uriExtMatch?.[1]) {
+      const ext = uriExtMatch[1].toLowerCase();
+      extension = ext === "jpeg" ? "jpg" : ext;
+      contentType =
+        extension === "png"
+          ? "image/png"
+          : extension === "webp"
+            ? "image/webp"
+            : "image/jpeg";
+    }
+
+    filePath = `${userId}/${timestamp}.${extension}`;
+    const base64 = await FS.readAsStringAsync(assetUri, {
+      encoding: "base64" as any,
+    });
+    const upload = await supabase.storage.from("avatars").upload(filePath, decode(base64), {
+      contentType,
+      upsert: true,
+    });
+    if (upload.error) throw upload.error;
+  }
+
+  const { data } = supabase.storage.from("avatars").getPublicUrl(filePath);
+  return data.publicUrl;
+}
+
 export default function ProfileScreen() {
   const router = useRouter();
 
@@ -196,6 +350,11 @@ export default function ProfileScreen() {
   const [savingUsage, setSavingUsage] = useState(false);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [company, setCompany] = useState<Company | null>(null);
+  const [profileRole, setProfileRole] = useState<string | null>(null);
+  const [profileEmail, setProfileEmail] = useState<string | null>(null);
+  const [profileAvatarUrl, setProfileAvatarUrl] = useState<string | null>(null);
+  const [profileAvatarDraft, setProfileAvatarDraft] = useState<string | null>(null);
+  const [, setSigningOut] = useState(false);
 
   // ===== Мои объявления =====
   const [myListings, setMyListings] = useState<any[]>([]);
@@ -311,6 +470,13 @@ export default function ProfileScreen() {
           throw userErr || new Error("Не найден текущий пользователь");
         }
         const user = userRes.user;
+        setProfileEmail(user.email ?? null);
+        setProfileAvatarUrl(
+          typeof (user.user_metadata as any)?.avatar_url === "string"
+            ? (user.user_metadata as any).avatar_url
+            : null
+        );
+        setProfileRole(await getMyRole());
 
         // Профиль
         const { data: profData, error: profErr } = await supabase
@@ -524,10 +690,14 @@ export default function ProfileScreen() {
       const user = userRes.user;
 
       let comp = company;
+      const fallbackCompanyName = getDefaultCompanyName({
+        fullName: profile?.full_name,
+        email: profileEmail,
+      });
 
       const basePayload = {
         owner_user_id: user.id,
-        name: companyNameInput.trim() || "Моя компания GOX",
+        name: companyNameInput.trim() || fallbackCompanyName,
         city: companyCityInput.trim() || null,
 
         legal_form: companyLegalFormInput.trim() || null,
@@ -614,8 +784,10 @@ export default function ProfileScreen() {
       let comp = company;
 
       if (!comp) {
-        const companyName =
-          profile?.full_name?.trim() || "Моя компания GOX";
+        const companyName = getDefaultCompanyName({
+          fullName: profile?.full_name,
+          email: profileEmail,
+        });
 
         const { data: created, error: insErr } = await supabase
           .from("companies")
@@ -764,9 +936,7 @@ export default function ProfileScreen() {
         const { latitude, longitude } = loc.coords;
         lat = latitude;
         lng = longitude;
-        console.log("listing location:", lat, lng);
-      } catch (e: any) {
-        console.log("location error", e);
+      } catch {
         Alert.alert(
           "Геолокация",
           "Не удалось автоматически определить местоположение. Попробуйте ещё раз."
@@ -969,13 +1139,76 @@ export default function ProfileScreen() {
     setProfileTelegramInput(profile.telegram || "");
     setProfileWhatsappInput(profile.whatsapp || "");
     setProfilePositionInput(profile.position || "");
+    setProfileAvatarDraft(profileAvatarUrl);
     setEditProfileOpen(true);
+  };
+
+  const closeEditProfile = () => {
+    setProfileAvatarDraft(profileAvatarUrl);
+    setEditProfileOpen(false);
+  };
+
+  const pickProfileAvatar = async () => {
+    try {
+      if (Platform.OS !== "web") {
+        const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (!permission.granted) {
+          Alert.alert("Профиль", "Разрешите доступ к фото, чтобы загрузить аватар.");
+          return;
+        }
+      }
+
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.7,
+      });
+
+      if (!result.canceled) {
+        setProfileAvatarDraft(result.assets[0]?.uri ?? null);
+      }
+    } catch (e: any) {
+      Alert.alert("Профиль", e?.message ?? "Не удалось выбрать изображение.");
+    }
+  };
+
+  const handleSignOut = () => {
+    Alert.alert("Выйти из аккаунта", "Завершить текущий сеанс GOX?", [
+      { text: "Отмена", style: "cancel" },
+      {
+        text: "Выйти",
+        style: "destructive",
+        onPress: async () => {
+          try {
+            setSigningOut(true);
+            const result = await supabase.auth.signOut();
+            if (result.error) throw result.error;
+            router.replace("/auth/login" as any);
+          } catch (e: any) {
+            Alert.alert("Профиль", e?.message ?? String(e));
+          } finally {
+            setSigningOut(false);
+          }
+        },
+      },
+    ]);
   };
 
   const saveProfileModal = async () => {
     if (!profile) return;
     try {
       setSavingProfile(true);
+      let nextAvatarUrl = profileAvatarUrl;
+
+      if (
+        profile.user_id &&
+        profileAvatarDraft &&
+        profileAvatarDraft !== profileAvatarUrl
+      ) {
+        nextAvatarUrl = await uploadProfileAvatar(profile.user_id, profileAvatarDraft);
+      }
+
       const payload = {
         id: profile.id || undefined,
         user_id: profile.user_id,
@@ -990,6 +1223,15 @@ export default function ProfileScreen() {
         position: profilePositionInput.trim() || null,
       };
 
+      const authUpdate = await supabase.auth.updateUser({
+        data: {
+          full_name: payload.full_name,
+          city: payload.city,
+          avatar_url: nextAvatarUrl,
+        } as any,
+      });
+      if (authUpdate.error) throw authUpdate.error;
+
       const { data, error } = await supabase
         .from("user_profiles")
         .upsert(payload, { onConflict: "user_id" })
@@ -998,8 +1240,10 @@ export default function ProfileScreen() {
 
       if (error) throw error;
       setProfile(data as UserProfile);
+      setProfileAvatarUrl(nextAvatarUrl);
+      setProfileAvatarDraft(nextAvatarUrl);
       LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-      setEditProfileOpen(false);
+      closeEditProfile();
     } catch (e: any) {
       Alert.alert("Профиль", e?.message ?? String(e));
     } finally {
@@ -1027,10 +1271,14 @@ export default function ProfileScreen() {
       const user = userRes.user;
 
       let comp = company;
+      const fallbackCompanyName = getDefaultCompanyName({
+        fullName: profile?.full_name,
+        email: profileEmail,
+      });
 
       const basePayload = {
         owner_user_id: user.id,
-        name: companyNameInput.trim() || "Моя компания GOX",
+        name: companyNameInput.trim() || fallbackCompanyName,
         city: companyCityInput.trim() || null,
 
         legal_form: companyLegalFormInput.trim() || null,
@@ -1089,14 +1337,57 @@ export default function ProfileScreen() {
     }
   };
 
-  const profileName =
-    profile?.full_name?.trim() || profile?.user_id?.slice(0, 8) || "GOX";
-  const roleLabel = "Профиль GOX";
+  const profileName = getProfileDisplayName({
+    fullName: profile?.full_name,
+    email: profileEmail,
+    companyName: company?.name,
+    userId: profile?.user_id,
+  });
+  const roleLabel = getProfileRoleLabel(profileRole);
+  const roleColor = getProfileRoleColor(profileRole);
+  const avatarLetter = profileName[0]?.toUpperCase() || "G";
+  const accountSubtitle =
+    [company?.name?.trim(), profileEmail].filter(Boolean).join(" · ") ||
+    "Аккаунт GOX";
+  const companyCardTitle = company?.name?.trim() || "Подключить компанию";
+  const companyCardSubtitle = company
+    ? "Откройте кабинет компании, реквизиты и командные функции GOX."
+    : "Создайте кабинет компании, чтобы работать с реквизитами, витриной и приглашениями.";
+  const requisitesVisible = Boolean(company || modeBuild);
+  const listingsSummary =
+    myListings.length > 0
+      ? `${myListings.length} активных объявлений в профиле`
+      : "Объявлений пока нет";
+  const profileCompletionItems = [
+    { key: "name", label: "Имя", done: hasRealProfileName(profile?.full_name) },
+    { key: "phone", label: "Телефон", done: Boolean(profile?.phone?.trim()) },
+    { key: "city", label: "Город", done: Boolean(profile?.city?.trim()) },
+  ];
+  const profileCompletionDone = profileCompletionItems.filter((item) => item.done).length;
+  const profileCompletionPercent = Math.round(
+    (profileCompletionDone / profileCompletionItems.length) * 100,
+  );
+  const companyCompletionItems = [
+    { key: "mode", label: "Режим компании", done: modeBuild },
+    { key: "name", label: "Название", done: Boolean(company?.name?.trim()) },
+    { key: "city", label: "Город", done: Boolean(company?.city?.trim()) },
+    { key: "address", label: "Адрес", done: Boolean(company?.address?.trim()) },
+    {
+      key: "phone",
+      label: "Контакт",
+      done: Boolean(company?.phone_main?.trim() || profile?.phone?.trim()),
+    },
+    { key: "inn", label: "ИНН", done: Boolean(company?.inn?.trim()) },
+  ];
+  const companyCompletionDone = companyCompletionItems.filter((item) => item.done).length;
+  const companyCompletionPercent = Math.round(
+    (companyCompletionDone / companyCompletionItems.length) * 100,
+  );
 
   const openProfileAssistant = () => {
     const listings = (myListings || []).map((item) => ({
       id: String(item?.id ?? ""),
-      title: String(item?.title ?? "Obyavlenie"),
+      title: String(item?.title ?? "Объявление"),
       kind: typeof item?.kind === "string" ? item.kind : null,
       city: typeof item?.city === "string" ? item.city : null,
       price:
@@ -1130,7 +1421,6 @@ export default function ProfileScreen() {
     );
   }
 
-  console.log("MY LISTINGS:", myListings);
   return (
     <View style={styles.screen}>
       <ScrollView
@@ -1138,6 +1428,57 @@ export default function ProfileScreen() {
         contentContainerStyle={{ padding: 16, paddingBottom: 32 }}
       >
         {/* ВЫБОР РЕЖИМА ПРОФИЛЯ */}
+        <View style={styles.profileHeaderCard}>
+          <Pressable
+            onPress={openEditProfile}
+            style={styles.profileHeaderAvatarWrap}
+          >
+            <View
+              style={[
+                styles.profileHeaderAvatar,
+                { backgroundColor: `${roleColor}22`, borderColor: `${roleColor}55` },
+              ]}
+            >
+              {profileAvatarUrl ? (
+                <Image
+                  source={{ uri: profileAvatarUrl }}
+                  style={styles.profileHeaderAvatarImage}
+                />
+              ) : (
+                <Text style={styles.profileHeaderAvatarText}>{avatarLetter}</Text>
+              )}
+            </View>
+            <View style={styles.profileHeaderBadge}>
+              <Ionicons name="camera" size={15} color={UI.accent} />
+            </View>
+          </Pressable>
+          <Text style={styles.profileHeaderName}>{profileName}</Text>
+          <View
+            style={[
+              styles.profileHeaderRoleBadge,
+              { backgroundColor: roleColor },
+            ]}
+          >
+            <Text style={styles.profileHeaderRoleText}>{roleLabel}</Text>
+          </View>
+          <Text style={styles.profileHeaderSubtitle}>{accountSubtitle}</Text>
+        </View>
+
+        <View style={styles.profileTitleRow}>
+          <View style={styles.profileTitleMeta}>
+            <Text style={styles.profileTitle}>Профиль</Text>
+            <Text style={styles.profileTitleSubtitle}>
+              Личный кабинет, контакты, компания и доступ к модулям GOX.
+            </Text>
+          </View>
+          <Pressable
+            style={styles.profileEditButton}
+            onPress={openEditProfile}
+          >
+            <Text style={styles.profileEditButtonText}>Редактировать</Text>
+          </Pressable>
+        </View>
+
         <View style={styles.modeSwitchRow}>
           <Pressable
             style={[
@@ -1182,36 +1523,201 @@ export default function ProfileScreen() {
 
         {profileMode === "person" && (
           <>
-            {/* HERO профиля */}
-            <View style={styles.heroCard}>
-              <View style={styles.avatarWrapper}>
-                <View style={styles.avatarCircle}>
-                  <Text style={styles.avatarInitial}>
-                    {profileName[0]?.toUpperCase() || "G"}
-                  </Text>
-                </View>
-                <View style={styles.heroText}>
-                  <Text style={styles.name}>{profileName}</Text>
-                  <Text style={styles.role}>{roleLabel}</Text>
-                  <View style={styles.statusRow}>
-                    <View style={styles.statusDot} />
-                    <Text style={styles.statusText}>
-                      В сети · отвечает обычно за 2 ч
+            <View style={styles.section}>
+              <View style={styles.completionCard}>
+                <View style={styles.completionHeader}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.completionTitle}>Готовность профиля</Text>
+                    <Text style={styles.completionSubtitle}>
+                      Заполненный профиль лучше выглядит в системе и помогает быстрее работать с модулями GOX.
                     </Text>
                   </View>
+                  <Text style={styles.completionPercent}>{profileCompletionPercent}%</Text>
                 </View>
+                <View style={styles.completionBarTrack}>
+                  <View
+                    style={[
+                      styles.completionBarFill,
+                      { width: `${profileCompletionPercent}%` },
+                    ]}
+                  />
+                </View>
+                <View style={styles.completionList}>
+                  {profileCompletionItems.map((item) => (
+                    <View key={item.key} style={styles.completionItem}>
+                      <Ionicons
+                        name={item.done ? "checkmark-circle" : "ellipse-outline"}
+                        size={16}
+                        color={item.done ? UI.accent : UI.sub}
+                      />
+                      <Text
+                        style={[
+                          styles.completionItemText,
+                          item.done && styles.completionItemTextDone,
+                        ]}
+                      >
+                        {item.label}
+                      </Text>
+                    </View>
+                  ))}
+                </View>
+                {profileCompletionDone < profileCompletionItems.length ? (
+                  <Pressable style={styles.completionAction} onPress={openEditProfile}>
+                    <Text style={styles.completionActionText}>Заполнить профиль</Text>
+                  </Pressable>
+                ) : null}
               </View>
-
-              <Pressable style={styles.heroButton} onPress={openEditProfile}>
-                <Text style={styles.heroButtonText}>
-                  Редактировать профиль
-                </Text>
-              </Pressable>
             </View>
 
-            {/* Как используете GOX */}
             <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Как вы используете GOX?</Text>
+              <View style={styles.profileSectionHeader}>
+                <Ionicons name="person-outline" size={18} color={UI.accent} />
+                <Text style={styles.profileSectionHeaderText}>Информация</Text>
+              </View>
+              <View style={styles.sectionCard}>
+                <RowItem label="Имя" value={profileName} />
+                <RowItem
+                  label="Телефон"
+                  value={profile?.phone?.trim() || "Не указан"}
+                />
+                <RowItem label="Email" value={profileEmail || "Не указан"} />
+                <RowItem
+                  label="Город"
+                  value={profile?.city?.trim() || company?.city?.trim() || "Не указан"}
+                />
+                <RowItem
+                  label="Компания"
+                  value={company?.name?.trim() || "Не подключена"}
+                />
+                <RowItem label="Объявления" value={listingsSummary} last />
+              </View>
+            </View>
+
+            <View style={styles.section}>
+              <View style={styles.profileSectionHeader}>
+                <Ionicons name="business-outline" size={18} color={UI.accent} />
+                <Text style={styles.profileSectionHeaderText}>Компания и команда</Text>
+              </View>
+              <Pressable
+                style={styles.profileActionCard}
+                onPress={company ? openCompanyCabinet : handlePressBuildCard}
+              >
+                <View style={styles.profileActionTextWrap}>
+                  <Text style={styles.profileActionTitle}>{companyCardTitle}</Text>
+                  <Text style={styles.profileActionSubtitle}>{companyCardSubtitle}</Text>
+                </View>
+                <Ionicons name="chevron-forward" size={20} color={UI.sub} />
+              </Pressable>
+
+              {lastInviteCode ? (
+                <View style={styles.profileHintCard}>
+                  <Text style={styles.profileHintTitle}>Последний код приглашения</Text>
+                  <Text style={styles.profileHintValue}>{lastInviteCode}</Text>
+                  <Text style={styles.profileHintSubtitle}>
+                    Используйте код для подключения сотрудников к текущей компании.
+                  </Text>
+                </View>
+              ) : null}
+            </View>
+
+            {requisitesVisible && (
+              <View style={styles.section}>
+                <View style={styles.profileSectionHeader}>
+                  <Ionicons name="document-text-outline" size={18} color={UI.accent} />
+                  <Text style={styles.profileSectionHeaderText}>Реквизиты</Text>
+                </View>
+                <View style={styles.sectionCard}>
+                  <RowItem
+                    label="Компания"
+                    value={company?.name?.trim() || "Не указана"}
+                  />
+                  <RowItem label="ИНН" value={company?.inn?.trim() || "—"} />
+                  <RowItem label="Адрес" value={company?.address?.trim() || "—"} />
+                  <RowItem
+                    label="Банк / реквизиты"
+                    value={company?.bank_details?.trim() || "—"}
+                  />
+                  <RowItem
+                    label="Контакт"
+                    value={
+                      company?.phone_main?.trim() ||
+                      profile?.phone?.trim() ||
+                      "Не указан"
+                    }
+                    last
+                  />
+                </View>
+              </View>
+            )}
+
+            <View style={styles.section}>
+              <View style={styles.profileSectionHeader}>
+                <Ionicons name="settings-outline" size={18} color={UI.accent} />
+                <Text style={styles.profileSectionHeaderText}>Настройки и действия</Text>
+              </View>
+              <View style={styles.sectionCard}>
+                <MenuActionRow
+                  icon="create-outline"
+                  title="Редактировать профиль"
+                  subtitle="Откройте текущую форму редактирования имени, телефона и аватара."
+                  onPress={openEditProfile}
+                />
+                <MenuActionRow
+                  icon="storefront-outline"
+                  title="Маркет и витрина"
+                  subtitle="Откройте маркет, витрину поставщика и текущие объявления."
+                  onPress={() => router.push("/(tabs)/market" as any)}
+                />
+                <MenuActionRow
+                  icon="add-circle-outline"
+                  title="Добавить объявление"
+                  subtitle="Откройте текущую форму публикации товара или услуги."
+                  onPress={openListingModal}
+                />
+                <MenuActionRow
+                  icon="map-outline"
+                  title="Карта спроса и поставщиков"
+                  subtitle="Поставщики, спрос и география позиций на карте."
+                  onPress={() => router.push("/supplierMap" as any)}
+                />
+                <MenuActionRow
+                  icon="hammer-outline"
+                  title="Торги"
+                  subtitle="Актуальные торги, позиции и переход к деталям."
+                  onPress={() => router.push("/auctions" as any)}
+                />
+                <MenuActionRow
+                  icon="sparkles-outline"
+                  title="AI ассистент"
+                  subtitle="Контекстный помощник по профилю, витрине и модулям."
+                  onPress={openProfileAssistant}
+                />
+                <MenuActionRow
+                  icon="business-outline"
+                  title={company ? "Редактировать компанию" : "Создать компанию"}
+                  subtitle={
+                    company
+                      ? "Откройте текущую форму редактирования компании."
+                      : "Подключите кабинет компании без смены действующей логики."
+                  }
+                  onPress={company ? openEditCompany : handlePressBuildCard}
+                />
+                <MenuActionRow
+                  icon="log-out-outline"
+                  title="Выйти из аккаунта"
+                  subtitle="Завершить текущую сессию и вернуться на экран входа."
+                  onPress={handleSignOut}
+                  danger
+                  last
+                />
+              </View>
+            </View>
+
+            <View style={styles.section}>
+              <View style={styles.profileSectionHeader}>
+                <Ionicons name="options-outline" size={18} color={UI.accent} />
+                <Text style={styles.profileSectionHeaderText}>Режим работы в GOX</Text>
+              </View>
               <View style={styles.sectionCard}>
                 <Pressable
                   style={[
@@ -1228,16 +1734,14 @@ export default function ProfileScreen() {
                       ]}
                     >
                       {modeMarket && (
-                        <Text style={styles.modeCheck}>✓</Text>
+                        <Ionicons name="checkmark" size={12} color="#FFFFFF" />
                       )}
                     </View>
-                    <Text style={styles.modeTitle}>
-                      Публикую объявления / услуги
-                    </Text>
+                    <Text style={styles.modeTitle}>Публикую объявления / услуги</Text>
                   </View>
                   <Text style={styles.modeText}>
-                    Продаю материалы, инструмент, технику или предлагаю
-                    ремонтные и строительные услуги.
+                    Продаю материалы, инструмент, технику или предлагаю ремонтные и
+                    строительные услуги.
                   </Text>
                 </Pressable>
 
@@ -1256,16 +1760,14 @@ export default function ProfileScreen() {
                       ]}
                     >
                       {modeBuild && (
-                        <Text style={styles.modeCheck}>✓</Text>
+                        <Ionicons name="checkmark" size={12} color="#FFFFFF" />
                       )}
                     </View>
-                    <Text style={styles.modeTitle}>
-                      Управляю стройкой / бизнесом
-                    </Text>
+                    <Text style={styles.modeTitle}>Управляю стройкой / бизнесом</Text>
                   </View>
                   <Text style={styles.modeText}>
-                    Веду объекты, заявки, снабжение, подрядчиков и учёт работ в
-                    полном объёме как компания или бригада.
+                    Веду объекты, заявки, снабжение, подрядчиков и учет работ в полном
+                    объеме как компания или бригада.
                   </Text>
                 </Pressable>
 
@@ -1274,142 +1776,59 @@ export default function ProfileScreen() {
                 )}
               </View>
             </View>
-
-            {/* Чипы статуса аккаунта */}
-            <View style={styles.chipRow}>
-              {/* === БАЛАНС === */}
-              <View style={styles.chipCard}>
-                <Text style={styles.chipLabel}>Баланс</Text>
-
-                <Text style={styles.chipValue}>
-                  {IS_DEMO ? "47.78 KGS" : "0 KGS"}
-                </Text>
-
-                <Text style={styles.chipHint}>
-                  {IS_DEMO
-                    ? "Пополнить для продвижения заявок"
-                    : "Баланс будет доступен после настройки аккаунта"}
-                </Text>
-              </View>
-
-              {/* === РЕЙТИНГ === */}
-              <View style={styles.chipCard}>
-                <Text style={styles.chipLabel}>Рейтинг</Text>
-
-                <Text style={styles.chipValue}>
-                  {IS_DEMO ? "4.9★" : "—"}
-                </Text>
-
-                <Text style={styles.chipHint}>
-                  {IS_DEMO
-                    ? "Основан на отзывах и сделках"
-                    : "Рейтинг появится после первых сделок"}
-                </Text>
-              </View>
-
-              {/* === ВЕРИФИКАЦИЯ === */}
-              <View style={styles.chipCard}>
-                <Text style={styles.chipLabel}>Верификация</Text>
-
-                <Text style={styles.chipValue}>
-                  {IS_DEMO ? "Проверено" : "Не пройдено"}
-                </Text>
-
-                <Text style={styles.chipHint}>
-                  {IS_DEMO
-                    ? "Документы компании подтверждены"
-                    : "Пройдите верификацию, чтобы получить отметку"}
-                </Text>
-              </View>
-            </View>
-
-            {/* Быстрые действия */}
-            <View style={styles.quickGrid}>
-              <QuickAction
-                title="Мои объекты"
-                subtitle="Стройки и адреса"
-                onPress={() => router.push("/foreman")}
-              />
-              <QuickAction
-                title="Мои заявки"
-                subtitle="Запросы на материалы"
-                onPress={() => router.push("/director")}
-              />
-              <QuickAction
-                title="Мои предложения"
-                subtitle="Ответы на заявки"
-                onPress={() => router.push("/buyer")}
-              />
-              <QuickAction
-                title="Мои объявления"
-                subtitle="Товары и услуги"
-                onPress={openListingModal}
-              />
-              <QuickAction
-                title="Маркет"
-                subtitle="Объявления, витрины и позиции"
-                onPress={() => router.push("/(tabs)/market" as any)}
-              />
-              <QuickAction
-                title="Карта"
-                subtitle="Поставщики и спрос на карте"
-                onPress={() => router.push("/supplierMap" as any)}
-              />
-              <QuickAction
-                title="Торги"
-                subtitle="Активные и завершенные торги"
-                onPress={() => router.push("/auctions" as any)}
-              />
-              <QuickAction
-                title="AI ассистент"
-                subtitle="Помощь по модулям GOX без изменения данных"
-                onPress={() =>
-                  router.push({
-                    pathname: "/(tabs)/ai",
-                    params: { context: "profile" },
-                  } as any)
-                }
-              />
-            </View>
-
-            {/* Активность — заглушка */}
+          </>
+        )}
+        {profileMode === "company" && (
+          <>
             <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Активность</Text>
-
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={{ paddingVertical: 4 }}
-              >
-                <FilterChip active>Заявки</FilterChip>
-                <FilterChip>Предложения</FilterChip>
-                <FilterChip>Объявления</FilterChip>
-                <FilterChip>Отзывы</FilterChip>
-              </ScrollView>
-
-              <View style={styles.emptyActivity}>
-                <Text style={styles.emptyTitle}>
-                  Здесь появится ваша активность в GOX
-                </Text>
-                <Text style={styles.emptyText}>
-                  Создавайте заявки, предлагайте материалы или публикуйте
-                  объявления — история будет отображаться в этом разделе.
-                </Text>
+              <View style={styles.completionCard}>
+                <View style={styles.completionHeader}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.completionTitle}>Готовность кабинета компании</Text>
+                    <Text style={styles.completionSubtitle}>
+                      Чем полнее карточка компании, тем чище работают реквизиты, команда и витрина поставщика.
+                    </Text>
+                  </View>
+                  <Text style={styles.completionPercent}>{companyCompletionPercent}%</Text>
+                </View>
+                <View style={styles.completionBarTrack}>
+                  <View
+                    style={[
+                      styles.completionBarFill,
+                      { width: `${companyCompletionPercent}%` },
+                    ]}
+                  />
+                </View>
+                <View style={styles.completionList}>
+                  {companyCompletionItems.map((item) => (
+                    <View key={item.key} style={styles.completionItem}>
+                      <Ionicons
+                        name={item.done ? "checkmark-circle" : "ellipse-outline"}
+                        size={16}
+                        color={item.done ? UI.accent : UI.sub}
+                      />
+                      <Text
+                        style={[
+                          styles.completionItemText,
+                          item.done && styles.completionItemTextDone,
+                        ]}
+                      >
+                        {item.label}
+                      </Text>
+                    </View>
+                  ))}
+                </View>
                 <Pressable
-                  style={styles.actionBtn}
-                  onPress={() => router.push("/director")}
+                  style={styles.completionAction}
+                  onPress={company ? openEditCompany : openCompanyCabinet}
                 >
-                  <Text style={styles.actionBtnText}>
-                    Создать первую заявку
+                  <Text style={styles.completionActionText}>
+                    {company ? "Заполнить компанию" : "Создать кабинет компании"}
                   </Text>
                 </Pressable>
               </View>
             </View>
-          </>
-        )}
 
-        {profileMode === "company" && (
-          <>
             {/* Моя компания */}
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>Моя компания</Text>
@@ -1526,21 +1945,21 @@ export default function ProfileScreen() {
               <View style={styles.sectionCard}>
                 <RowItem
                   label="Название"
-                  value={company?.name || "GOX Construction Systems"}
+                  value={company?.name || "Не указано"}
                 />
                 <RowItem
                   label="Город"
-                  value={company?.city || profile.city || "Бишкек"}
+                  value={company?.city || profile.city || "Не указан"}
                 />
                 <RowItem
                   label="Вид деятельности"
-                  value={company?.industry || "Строительство / материалы"}
+                  value={company?.industry || "Не указан"}
                 />
                 <RowItem
                   label="Телефон"
-                  value={company?.phone_main || profile.phone || "+996…"}
+                  value={company?.phone_main || profile.phone || "Не указан"}
                 />
-                <RowItem label="Сайт" value={company?.site || "gox.build"} last />
+                <RowItem label="Сайт" value={company?.site || "Не указан"} last />
                 {modeBuild && (
                   <Pressable
                     style={[
@@ -1568,9 +1987,7 @@ export default function ProfileScreen() {
                       Витрина товаров и материалов
                     </Text>
                     <Text style={styles.companyText}>
-                      Показ ваших материалов в формате Netflix-витрины и
-                      карточек как у Zillow. Покажите прайс по разделам и
-                      брендам.
+                      Управляйте своими объявлениями, открывайте витрину поставщика и связывайте профиль с маркетом и картой.
                     </Text>
 
                     <Pressable
@@ -1620,8 +2037,7 @@ export default function ProfileScreen() {
                     </Pressable>
 
                     <Text style={[styles.chipHint, { marginTop: 8 }]}>
-                      Пока показываются примерные данные — позже подключим вашу
-                      базу материалов и склад.
+                      {listingsSummary}. Используйте маркет и карту, чтобы управлять спросом и видимостью объявлений.
                     </Text>
                   </>
                 ) : (
@@ -1638,8 +2054,35 @@ export default function ProfileScreen() {
                 )}
               </View>
             </View>
+
+            <View style={styles.section}>
+              <View style={styles.profileSectionHeader}>
+                <Ionicons name="settings-outline" size={18} color={UI.accent} />
+                <Text style={styles.profileSectionHeaderText}>
+                  Аккаунт и сессия
+                </Text>
+              </View>
+              <View style={styles.sectionCard}>
+                <MenuActionRow
+                  icon="person-outline"
+                  title="Редактировать профиль"
+                  subtitle="Откройте текущую форму редактирования личного профиля."
+                  onPress={openEditProfile}
+                />
+                <MenuActionRow
+                  icon="log-out-outline"
+                  title="Выйти из аккаунта"
+                  subtitle="Завершить текущую сессию и вернуться на экран входа."
+                  onPress={handleSignOut}
+                  danger
+                  last
+                />
+              </View>
+            </View>
           </>
         )}
+
+        <Text style={styles.profileFooterText}>GOX v1.0.0</Text>
       </ScrollView>
 
       {/* Модалка создания объявления */}
@@ -2202,7 +2645,7 @@ export default function ProfileScreen() {
                     label="Название компании"
                     value={companyNameInput}
                     onChangeText={setCompanyNameInput}
-                    placeholder="GOX Construction Systems"
+                    placeholder="Название компании"
                   />
                   <View style={{ flexDirection: "row", gap: 8 }}>
                     <View style={{ flex: 1 }}>
@@ -2270,20 +2713,20 @@ export default function ProfileScreen() {
                     label="Email"
                     value={companyEmailInput}
                     onChangeText={setCompanyEmailInput}
-                    placeholder="info@gox.build"
+                    placeholder="info@company.kg"
                     keyboardType="email-address"
                   />
                   <LabeledInput
                     label="Сайт"
                     value={companySiteInput}
                     onChangeText={setCompanySiteInput}
-                    placeholder="https://gox.build"
+                    placeholder="https://company.kg"
                   />
                   <LabeledInput
                     label="Telegram"
                     value={companyTelegramInput}
                     onChangeText={setCompanyTelegramInput}
-                    placeholder="@gox_company"
+                    placeholder="@company"
                   />
                   <LabeledInput
                     label="График работы"
@@ -2384,7 +2827,7 @@ export default function ProfileScreen() {
         visible={editProfileOpen}
         transparent
         animationType="fade"
-        onRequestClose={() => setEditProfileOpen(false)}
+        onRequestClose={closeEditProfile}
       >
         <View style={styles.modalBackdrop}>
           <View style={[styles.modalCard, { maxHeight: "90%" }]}>
@@ -2397,6 +2840,38 @@ export default function ProfileScreen() {
               style={{ maxHeight: 430 }}
               contentContainerStyle={{ paddingBottom: 10 }}
             >
+              <View style={styles.profileAvatarEditor}>
+                <Pressable
+                  style={styles.profileAvatarEditorPreview}
+                  onPress={pickProfileAvatar}
+                >
+                  {profileAvatarDraft ? (
+                    <Image
+                      source={{ uri: profileAvatarDraft }}
+                      style={styles.profileAvatarEditorImage}
+                    />
+                  ) : (
+                    <Text style={styles.profileAvatarEditorInitial}>{avatarLetter}</Text>
+                  )}
+                </Pressable>
+
+                <View style={styles.profileAvatarEditorMeta}>
+                  <Text style={styles.profileAvatarEditorTitle}>Фото профиля</Text>
+                  <Text style={styles.profileAvatarEditorText}>
+                    Аватар показывается в вашем профиле и связанных экранах.
+                  </Text>
+                  <Pressable
+                    style={styles.profileAvatarEditorButton}
+                    onPress={pickProfileAvatar}
+                    disabled={savingProfile}
+                  >
+                    <Text style={styles.profileAvatarEditorButtonText}>
+                      Выбрать фото
+                    </Text>
+                  </Pressable>
+                </View>
+              </View>
+
               <LabeledInput
                 label="Имя / название профиля"
                 value={profileNameInput}
@@ -2459,7 +2934,7 @@ export default function ProfileScreen() {
             <View style={styles.modalButtonsRow}>
               <Pressable
                 style={[styles.modalBtn, styles.modalBtnSecondary]}
-                onPress={() => setEditProfileOpen(false)}
+                onPress={closeEditProfile}
                 disabled={savingProfile}
               >
                 <Text style={styles.modalBtnSecondaryText}>Отмена</Text>
@@ -2854,7 +3329,7 @@ export default function ProfileScreen() {
                     label="Название компании"
                     value={companyNameInput}
                     onChangeText={setCompanyNameInput}
-                    placeholder="GOX Construction Systems"
+                    placeholder="Название компании"
                   />
                   <View style={{ flexDirection: "row", gap: 8 }}>
                     <View style={{ flex: 1 }}>
@@ -2917,20 +3392,20 @@ export default function ProfileScreen() {
                     label="Email"
                     value={companyEmailInput}
                     onChangeText={setCompanyEmailInput}
-                    placeholder="info@gox.build"
+                    placeholder="info@company.kg"
                     keyboardType="email-address"
                   />
                   <LabeledInput
                     label="Сайт"
                     value={companySiteInput}
                     onChangeText={setCompanySiteInput}
-                    placeholder="https://gox.build"
+                    placeholder="https://company.kg"
                   />
                   <LabeledInput
                     label="Telegram"
                     value={companyTelegramInput}
                     onChangeText={setCompanyTelegramInput}
-                    placeholder="@gox_company"
+                    placeholder="@company"
                   />
                   <LabeledInput
                     label="График работы"
@@ -3049,20 +3524,50 @@ export default function ProfileScreen() {
 
 // ===== ВСПОМОГАТЕЛЬНЫЕ КОМПОНЕНТЫ =====
 
-function QuickAction(props: {
+function MenuActionRow(props: {
+  icon: keyof typeof Ionicons.glyphMap;
   title: string;
   subtitle: string;
   onPress?: () => void;
+  danger?: boolean;
+  last?: boolean;
 }) {
   return (
-    <Pressable style={styles.quickCard} onPress={props.onPress}>
-      <View style={styles.quickIcon}>
-        <Text style={styles.quickIconText}>●</Text>
+    <Pressable
+      style={[
+        styles.profileMenuRow,
+        props.last && styles.profileMenuRowLast,
+      ]}
+      onPress={props.onPress}
+    >
+      <View
+        style={[
+          styles.profileMenuIconWrap,
+          props.danger && styles.profileMenuIconWrapDanger,
+        ]}
+      >
+        <Ionicons
+          name={props.icon}
+          size={18}
+          color={props.danger ? "#FCA5A5" : UI.accent}
+        />
       </View>
-      <View style={{ flex: 1 }}>
-        <Text style={styles.quickTitle}>{props.title}</Text>
-        <Text style={styles.quickSub}>{props.subtitle}</Text>
+      <View style={styles.profileMenuTextWrap}>
+        <Text
+          style={[
+            styles.profileMenuTitle,
+            props.danger && styles.profileMenuTitleDanger,
+          ]}
+        >
+          {props.title}
+        </Text>
+        <Text style={styles.profileMenuSubtitle}>{props.subtitle}</Text>
       </View>
+      <Ionicons
+        name="chevron-forward"
+        size={18}
+        color={props.danger ? "#FCA5A5" : UI.sub}
+      />
     </Pressable>
   );
 }
@@ -3081,29 +3586,6 @@ function RowItem(props: {
     >
       <Text style={styles.rowLabel}>{props.label}</Text>
       <Text style={styles.rowValue}>{props.value}</Text>
-    </View>
-  );
-}
-
-function FilterChip(props: {
-  children: React.ReactNode;
-  active?: boolean;
-}) {
-  return (
-    <View
-      style={[
-        styles.filterChip,
-        props.active && styles.filterChipActive,
-      ]}
-    >
-      <Text
-        style={[
-          styles.filterChipText,
-          props.active && styles.filterChipTextActive,
-        ]}
-      >
-        {props.children}
-      </Text>
     </View>
   );
 }
@@ -3187,80 +3669,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
   },
 
-  heroCard: {
-    backgroundColor: UI.card,
-    borderRadius: 24,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: UI.border,
-    marginBottom: 16,
-  },
-  avatarWrapper: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 12,
-  },
-  avatarCircle: {
-    width: 56,
-    height: 56,
-    borderRadius: 999,
-    backgroundColor: UI.cardSoft,
-    borderWidth: 1,
-    borderColor: UI.border,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  avatarInitial: {
-    fontSize: 22,
-    fontWeight: "700",
-    color: UI.text,
-  },
-  heroText: {
-    marginLeft: 12,
-    flex: 1,
-  },
-  name: {
-    fontSize: 18,
-    fontWeight: "700",
-    color: UI.text,
-  },
-  role: {
-    marginTop: 2,
-    fontSize: 12,
-    color: UI.sub,
-  },
-  statusRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginTop: 6,
-    gap: 4,
-  },
-  statusDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 999,
-    backgroundColor: UI.accent,
-  },
-  statusText: {
-    fontSize: 11,
-    color: UI.sub,
-  },
-  heroButton: {
-    marginTop: 8,
-    alignSelf: "flex-start",
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 999,
-    backgroundColor: UI.accentSoft,
-    borderWidth: 1,
-    borderColor: UI.accent,
-  },
-  heroButtonText: {
-    color: UI.accent,
-    fontSize: 13,
-    fontWeight: "600",
-  },
-
   section: {
     marginBottom: 16,
   },
@@ -3278,6 +3686,288 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     borderWidth: 1,
     borderColor: UI.border,
+  },
+  profileHeaderCard: {
+    backgroundColor: UI.card,
+    borderRadius: 26,
+    paddingHorizontal: 20,
+    paddingVertical: 24,
+    borderWidth: 1,
+    borderColor: UI.border,
+    alignItems: "center",
+    marginBottom: 16,
+  },
+  profileHeaderAvatarWrap: {
+    position: "relative",
+    marginBottom: 14,
+  },
+  profileHeaderAvatar: {
+    width: 104,
+    height: 104,
+    borderRadius: 999,
+    borderWidth: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    overflow: "hidden",
+  },
+  profileHeaderAvatarImage: {
+    width: "100%",
+    height: "100%",
+  },
+  profileHeaderAvatarText: {
+    color: UI.text,
+    fontSize: 34,
+    fontWeight: "800",
+  },
+  profileHeaderBadge: {
+    position: "absolute",
+    right: 0,
+    bottom: 0,
+    width: 32,
+    height: 32,
+    borderRadius: 999,
+    backgroundColor: UI.cardSoft,
+    borderWidth: 1,
+    borderColor: UI.border,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  profileHeaderName: {
+    color: UI.text,
+    fontSize: 22,
+    fontWeight: "800",
+    textAlign: "center",
+  },
+  profileHeaderRoleBadge: {
+    marginTop: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    borderRadius: 999,
+  },
+  profileHeaderRoleText: {
+    color: "#FFFFFF",
+    fontSize: 12,
+    fontWeight: "700",
+  },
+  profileHeaderSubtitle: {
+    marginTop: 10,
+    color: UI.sub,
+    fontSize: 13,
+    textAlign: "center",
+  },
+  profileTitleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 12,
+    marginBottom: 16,
+  },
+  profileTitleMeta: {
+    flex: 1,
+  },
+  profileTitle: {
+    color: UI.text,
+    fontSize: 28,
+    fontWeight: "800",
+  },
+  profileTitleSubtitle: {
+    marginTop: 4,
+    color: UI.sub,
+    fontSize: 12,
+    lineHeight: 18,
+  },
+  completionCard: {
+    backgroundColor: UI.card,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: UI.border,
+    paddingHorizontal: 14,
+    paddingVertical: 14,
+  },
+  completionHeader: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 12,
+  },
+  completionTitle: {
+    color: UI.text,
+    fontSize: 15,
+    fontWeight: "700",
+  },
+  completionSubtitle: {
+    marginTop: 4,
+    color: UI.sub,
+    fontSize: 12,
+    lineHeight: 18,
+  },
+  completionPercent: {
+    color: UI.accent,
+    fontSize: 20,
+    fontWeight: "800",
+  },
+  completionBarTrack: {
+    marginTop: 12,
+    height: 8,
+    borderRadius: 999,
+    backgroundColor: UI.cardSoft,
+    borderWidth: 1,
+    borderColor: UI.border,
+    overflow: "hidden",
+  },
+  completionBarFill: {
+    height: "100%",
+    borderRadius: 999,
+    backgroundColor: UI.accent,
+  },
+  completionList: {
+    marginTop: 12,
+    gap: 8,
+  },
+  completionItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  completionItemText: {
+    color: UI.sub,
+    fontSize: 12,
+  },
+  completionItemTextDone: {
+    color: UI.text,
+  },
+  completionAction: {
+    alignSelf: "flex-start",
+    marginTop: 14,
+    paddingHorizontal: 14,
+    paddingVertical: 9,
+    borderRadius: 999,
+    backgroundColor: UI.accent,
+  },
+  completionActionText: {
+    color: "#0B1120",
+    fontSize: 13,
+    fontWeight: "700",
+  },
+  profileEditButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 12,
+    backgroundColor: UI.card,
+    borderWidth: 1,
+    borderColor: UI.border,
+  },
+  profileEditButtonText: {
+    color: UI.text,
+    fontSize: 13,
+    fontWeight: "700",
+  },
+  profileSectionHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    marginBottom: 8,
+  },
+  profileSectionHeaderText: {
+    color: UI.text,
+    fontSize: 16,
+    fontWeight: "700",
+  },
+  profileActionCard: {
+    backgroundColor: UI.card,
+    borderRadius: 18,
+    paddingHorizontal: 14,
+    paddingVertical: 14,
+    borderWidth: 1,
+    borderColor: UI.border,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 12,
+  },
+  profileActionTextWrap: {
+    flex: 1,
+  },
+  profileActionTitle: {
+    color: UI.text,
+    fontSize: 14,
+    fontWeight: "700",
+  },
+  profileActionSubtitle: {
+    marginTop: 4,
+    color: UI.sub,
+    fontSize: 12,
+    lineHeight: 18,
+  },
+  profileHintCard: {
+    marginTop: 10,
+    backgroundColor: UI.card,
+    borderRadius: 16,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    borderWidth: 1,
+    borderColor: UI.border,
+  },
+  profileHintTitle: {
+    color: UI.sub,
+    fontSize: 11,
+    textTransform: "uppercase",
+    letterSpacing: 0.7,
+  },
+  profileHintValue: {
+    marginTop: 6,
+    color: UI.text,
+    fontSize: 18,
+    fontWeight: "800",
+    letterSpacing: 1,
+  },
+  profileHintSubtitle: {
+    marginTop: 6,
+    color: UI.sub,
+    fontSize: 12,
+    lineHeight: 18,
+  },
+  profileMenuRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: UI.border,
+  },
+  profileMenuRowLast: {
+    borderBottomWidth: 0,
+    paddingBottom: 0,
+  },
+  profileMenuIconWrap: {
+    width: 36,
+    height: 36,
+    borderRadius: 999,
+    backgroundColor: UI.accentSoft,
+    borderWidth: 1,
+    borderColor: UI.accent,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  profileMenuIconWrapDanger: {
+    backgroundColor: "rgba(239,68,68,0.12)",
+    borderColor: "#7F1D1D",
+  },
+  profileMenuTextWrap: {
+    flex: 1,
+  },
+  profileMenuTitle: {
+    color: UI.text,
+    fontSize: 13,
+    fontWeight: "700",
+  },
+  profileMenuTitleDanger: {
+    color: "#FCA5A5",
+  },
+  profileMenuSubtitle: {
+    marginTop: 3,
+    color: UI.sub,
+    fontSize: 11,
+    lineHeight: 17,
   },
 
   modeCard: {
@@ -3378,75 +4068,10 @@ const styles = StyleSheet.create({
     color: UI.text,
   },
 
-  chipRow: {
-    flexDirection: "row",
-    gap: 8,
-    marginBottom: 16,
-  },
-  chipCard: {
-    flex: 1,
-    backgroundColor: UI.card,
-    borderRadius: 16,
-    padding: 10,
-    borderWidth: 1,
-    borderColor: UI.border,
-  },
-  chipLabel: {
-    fontSize: 11,
-    color: UI.sub,
-  },
-  chipValue: {
-    marginTop: 4,
-    fontSize: 15,
-    fontWeight: "700",
-    color: UI.text,
-  },
   chipHint: {
     marginTop: 4,
     fontSize: 11,
     color: UI.sub,
-  },
-
-  quickGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8,
-    marginBottom: 20,
-  },
-  quickCard: {
-    width: "48%",
-    backgroundColor: UI.card,
-    borderRadius: 18,
-    padding: 12,
-    borderWidth: 1,
-    borderColor: UI.border,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-  },
-  quickIcon: {
-    width: 30,
-    height: 30,
-    borderRadius: 999,
-    backgroundColor: UI.cardSoft,
-    borderWidth: 1,
-    borderColor: UI.border,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  quickIconText: {
-    color: UI.sub,
-    fontSize: 12,
-  },
-  quickTitle: {
-    fontSize: 13,
-    fontWeight: "600",
-    color: UI.text,
-  },
-  quickSub: {
-    fontSize: 11,
-    color: UI.sub,
-    marginTop: 2,
   },
 
   // переключатель Физ / Компания
@@ -3512,38 +4137,6 @@ const styles = StyleSheet.create({
     color: UI.sub,
   },
 
-  emptyActivity: {
-    marginTop: 12,
-    backgroundColor: UI.card,
-    borderRadius: 18,
-    padding: 14,
-    borderWidth: 1,
-    borderColor: UI.border,
-  },
-  emptyTitle: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: UI.text,
-  },
-  emptyText: {
-    marginTop: 6,
-    fontSize: 12,
-    color: UI.sub,
-  },
-  actionBtn: {
-    marginTop: 12,
-    alignSelf: "flex-start",
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 999,
-    backgroundColor: UI.accent,
-  },
-  actionBtnText: {
-    fontSize: 13,
-    fontWeight: "600",
-    color: "#0B1120",
-  },
-
   filterChip: {
     borderRadius: 999,
     borderWidth: 1,
@@ -3564,6 +4157,13 @@ const styles = StyleSheet.create({
   filterChipTextActive: {
     color: UI.accent,
     fontWeight: "600",
+  },
+  profileFooterText: {
+    marginTop: 4,
+    marginBottom: 8,
+    color: UI.sub,
+    fontSize: 12,
+    textAlign: "center",
   },
 
   inviteCodeBox: {
@@ -3754,6 +4354,66 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: UI.text,
     backgroundColor: UI.cardSoft,
+  },
+  profileAvatarEditor: {
+    flexDirection: "row",
+    gap: 12,
+    alignItems: "center",
+    padding: 12,
+    marginBottom: 8,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: UI.border,
+    backgroundColor: UI.cardSoft,
+  },
+  profileAvatarEditorPreview: {
+    width: 72,
+    height: 72,
+    borderRadius: 999,
+    overflow: "hidden",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: UI.card,
+    borderWidth: 1,
+    borderColor: UI.border,
+  },
+  profileAvatarEditorImage: {
+    width: "100%",
+    height: "100%",
+  },
+  profileAvatarEditorInitial: {
+    color: UI.text,
+    fontSize: 28,
+    fontWeight: "700",
+  },
+  profileAvatarEditorMeta: {
+    flex: 1,
+  },
+  profileAvatarEditorTitle: {
+    color: UI.text,
+    fontSize: 15,
+    fontWeight: "700",
+  },
+  profileAvatarEditorText: {
+    color: UI.sub,
+    fontSize: 12,
+    lineHeight: 18,
+    marginTop: 4,
+  },
+  profileAvatarEditorButton: {
+    alignSelf: "flex-start",
+    marginTop: 8,
+    borderRadius: 999,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    backgroundColor: UI.accentSoft,
+    borderWidth: 1,
+    borderColor: UI.accent,
+  },
+  profileAvatarEditorButtonText: {
+    color: UI.accent,
+    fontSize: 12,
+    fontWeight: "700",
   },
   modalButtonsRow: {
     flexDirection: "row",

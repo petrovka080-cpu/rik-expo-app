@@ -15,8 +15,6 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { getMyRole } from "../../lib/api/profile";
-import { supabase } from "../../lib/supabaseClient";
 import { supportsAssistantActionMode, tryRunAssistantAction } from "./assistantActions";
 import { isAssistantConfigured, sendAssistantMessage } from "./assistantClient";
 import {
@@ -28,6 +26,7 @@ import {
   normalizeAssistantRole,
 } from "./assistantPrompts";
 import type { AssistantContext, AssistantMessage, AssistantRole } from "./assistant.types";
+import { loadCurrentProfileIdentity } from "../profile/currentProfileIdentity";
 
 const STORAGE_PREFIX = "gox.ai.chat.v1";
 
@@ -106,24 +105,13 @@ export default function AIAssistantScreen() {
   const initialize = useCallback(async () => {
     setBooting(true);
     try {
-      const [roleValue, authResult] = await Promise.all([getMyRole(), supabase.auth.getUser()]);
-
-      const nextRole = normalizeAssistantRole(roleValue);
-      const nextUser = authResult.data.user ?? null;
-      const nextUserId = nextUser?.id ?? null;
+      const identity = await loadCurrentProfileIdentity();
+      const nextRole = normalizeAssistantRole(identity.role);
+      const nextUserId = identity.userId;
 
       setRole(nextRole);
       setUserId(nextUserId);
-
-      let nextFullName: string | null = null;
-      if (nextUserId) {
-        const profileResult = await supabase
-          .from("user_profiles")
-          .select("full_name")
-          .eq("user_id", nextUserId)
-          .maybeSingle();
-        nextFullName = profileResult.data?.full_name ?? null;
-      }
+      const nextFullName = identity.fullName;
       setFullName(nextFullName);
 
       const storageKey = buildStorageKey(nextUserId);

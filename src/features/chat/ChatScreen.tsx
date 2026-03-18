@@ -26,10 +26,10 @@ import {
   subscribeToListingChatMessages,
   type ChatMessage,
 } from "../../lib/chat_api";
-import { supabase } from "../../lib/supabaseClient";
 import { MARKET_HOME_COLORS } from "../market/marketHome.config";
 import { buildMarketMapParams, loadMarketListingById } from "../market/marketHome.data";
 import type { MarketHomeListingCard } from "../market/marketHome.types";
+import { loadCurrentProfileIdentity } from "../profile/currentProfileIdentity";
 
 function getParam(value: string | string[] | undefined): string {
   return Array.isArray(value) ? String(value[0] || "") : String(value || "");
@@ -53,14 +53,16 @@ export default function ChatScreen() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [currentUserName, setCurrentUserName] = useState<string | null>(null);
   const listRef = useRef<FlatList<ChatMessage>>(null);
 
   useEffect(() => {
     let active = true;
     const loadCurrentUser = async () => {
-      const { data } = await supabase.auth.getUser();
+      const identity = await loadCurrentProfileIdentity();
       if (active) {
-        setCurrentUserId(data.user?.id || null);
+        setCurrentUserId(identity.userId);
+        setCurrentUserName(identity.fullName);
       }
     };
     void loadCurrentUser();
@@ -162,13 +164,16 @@ export default function ChatScreen() {
   const renderItem = useCallback(
     ({ item }: { item: ChatMessage }) => {
       const isOwn = currentUserId != null && item.user_id === currentUserId;
+      const authorName = isOwn
+        ? currentUserName || item.user?.name || "Вы"
+        : item.user?.name || "Пользователь";
       return (
         <Pressable
           style={[styles.messageRow, isOwn ? styles.messageRowOwn : null]}
           onLongPress={isOwn ? () => void handleDelete(item.id) : undefined}
         >
           <View style={[styles.messageBubble, isOwn ? styles.messageBubbleOwn : null]}>
-            <Text style={styles.authorText}>{item.user?.name || "Пользователь"}</Text>
+            <Text style={styles.authorText}>{authorName}</Text>
             {item.content ? <Text style={styles.messageText}>{item.content}</Text> : null}
             <Text style={styles.timeText}>
               {new Date(item.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
@@ -177,7 +182,7 @@ export default function ChatScreen() {
         </Pressable>
       );
     },
-    [currentUserId, handleDelete],
+    [currentUserId, currentUserName, handleDelete],
   );
 
   if (!listingId) {

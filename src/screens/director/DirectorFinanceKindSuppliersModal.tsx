@@ -1,6 +1,6 @@
 // src/screens/director/DirectorFinanceKindSuppliersModal.tsx
 import React from "react";
-import { View, Text, Pressable } from "react-native";
+import { View, Text, Pressable, ScrollView } from "react-native";
 import { UI, s } from "./director.styles";
 
 type SupplierAgg = {
@@ -34,7 +34,13 @@ export default function DirectorFinanceKindSuppliersModal(p: {
   ) : !p.list?.length ? (
     <Text style={{ color: UI.sub, fontWeight: "800" }}>Нет данных</Text>
   ) : (
-    <View style={{ flexDirection: "column", alignItems: "stretch" }}>
+    <ScrollView
+      style={{ flex: 1, minHeight: 0 }}
+      keyboardShouldPersistTaps="handled"
+      showsVerticalScrollIndicator={false}
+      contentContainerStyle={{ paddingBottom: 24 }}
+    >
+      <View style={{ flexDirection: "column", alignItems: "stretch" }}>
       {p.list.map((it, idx) => {
         const supplierName = String(it.supplier || "—");
         return (
@@ -70,7 +76,7 @@ export default function DirectorFinanceKindSuppliersModal(p: {
           </Pressable>
         );
       })}
-    </View>
+      </View>
+    </ScrollView>
   );
 }
-

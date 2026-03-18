@@ -96,14 +96,14 @@ const pickSupplierText = (value: unknown): string => {
 const normalizeSupplierInput = (value: FinSupplierInput | string): FinSupplierViewModel => {
   if (typeof value === "string") {
     return {
-      supplier: value.trim() || "РІР‚вЂќ",
+      supplier: value.trim() || "—",
       _kindName: "",
     };
   }
 
   const row = value as Record<string, unknown>;
   return {
-    supplier: pickSupplierText(value) || "РІР‚вЂќ",
+    supplier: pickSupplierText(value) || "—",
     name: textValue(row.name) || null,
     _kindName: textValue(row._kindName) || null,
     kindName: textValue(row.kindName) || null,
@@ -239,10 +239,10 @@ export function useDirectorFinancePanel({
 
         const pno = pid ? textValue(proposalNoById[pid] ?? r?.proposal_no) : "";
         const title =
-          invNo ? `РЎС‡С‘С‚ в„–${invNo}` :
-            pno ? `РџСЂРµРґР»РѕР¶РµРЅРёРµ ${pno}` :
-              pid ? `РџСЂРµРґР»РѕР¶РµРЅРёРµ #${pid.slice(0, 8)}` :
-                "РЎС‡С‘С‚";
+          invNo ? `Счёт №${invNo}` :
+            pno ? `Предложение ${pno}` :
+              pid ? `Предложение #${pid.slice(0, 8)}` :
+                "Счёт";
 
         const dueIso =
           r?.dueDate ??
@@ -322,7 +322,7 @@ export function useDirectorFinancePanel({
   }, [setFinKindName, setFinKindList, popFin]);
 
   const onFinancePdf = useCallback(async () => {
-    const title = "Р¤РёРЅР°РЅСЃРѕРІС‹Р№ СѓРїСЂР°РІР»РµРЅС‡РµСЃРєРёР№ РѕС‚С‡РµС‚";
+    const title = "Финансовый управленческий отчёт";
     const template = await generateDirectorPdfDocument({
       title,
       fileName: buildPdfFileName({
@@ -348,7 +348,7 @@ export function useDirectorFinancePanel({
       busy,
       supabase,
       key: "pdf:director:finance",
-      label: "РћС‚РєСЂС‹РІР°СЋ PDFвЂ¦",
+      label: "Открываю PDF…",
       descriptor: template,
       getRemoteUrl: () => template.uri,
     });
@@ -358,15 +358,15 @@ export function useDirectorFinancePanel({
   const onSupplierPdf = useCallback(async () => {
     const supName = textValue(finSupplier?.supplier);
     if (!supName) {
-      Alert.alert("PDF", "РџРѕСЃС‚Р°РІС‰РёРє РЅРµ РІС‹Р±СЂР°РЅ");
+      Alert.alert("PDF", "Поставщик не выбран");
       return;
     }
 
     const kindName = textValue(finSupplier?._kindName);
     const inPeriod = makeIsoInPeriod(finFrom, finTo);
     const title = kindName
-      ? `РЎРІРѕРґРєР° РїРѕ РїРѕСЃС‚Р°РІС‰РёРєСѓ: ${supName} (${kindName})`
-      : `РЎРІРѕРґРєР° РїРѕ РїРѕСЃС‚Р°РІС‰РёРєСѓ: ${supName}`;
+      ? `Сводка по поставщику: ${supName} (${kindName})`
+      : `Сводка по поставщику: ${supName}`;
 
     const template = await generateDirectorPdfDocument({
       title,
@@ -408,7 +408,7 @@ export function useDirectorFinancePanel({
       busy,
       supabase,
       key: `pdf:director:supplier:${supName}`,
-      label: "РћС‚РєСЂС‹РІР°СЋ PDFвЂ¦",
+      label: "Открываю PDF…",
       descriptor: template,
       getRemoteUrl: () => template.uri,
     });
@@ -417,8 +417,8 @@ export function useDirectorFinancePanel({
 
   const financePeriodShort = useMemo(() => {
     return finFrom || finTo
-      ? `${finFrom ? fmtDateOnly(finFrom) : "вЂ”"} в†’ ${finTo ? fmtDateOnly(finTo) : "вЂ”"}`
-      : "Р’РµСЃСЊ РїРµСЂРёРѕРґ";
+      ? `${finFrom ? fmtDateOnly(finFrom) : "—"} → ${finTo ? fmtDateOnly(finTo) : "—"}`
+      : "Весь период";
   }, [finFrom, finTo, fmtDateOnly]);
 
   const financeSupplierName = useMemo(() => {
@@ -426,16 +426,16 @@ export function useDirectorFinancePanel({
   }, [finSupplier]);
 
   const financeTitle = useMemo(() => {
-    if (finPage === "debt") return "Р”РѕР»РіРё Рё СЂРёСЃРєРё";
-    if (finPage === "spend") return "Р Р°СЃС…РѕРґС‹ (РїРµСЂРёРѕРґ)";
-    if (finPage === "kind") return finKindName ? `${finKindName}: РїРѕСЃС‚Р°РІС‰РёРєРё` : "РџРѕСЃС‚Р°РІС‰РёРєРё";
+    if (finPage === "debt") return "Долги и риски";
+    if (finPage === "spend") return "Расходы (период)";
+    if (finPage === "kind") return finKindName ? `${finKindName}: поставщики` : "Поставщики";
     if (finPage === "supplier") {
       const s = financeSupplierName;
-      if (!s || s === "вЂ”") return "РџРѕСЃС‚Р°РІС‰РёРє";
-      if (/^\d+$/.test(s) || s.length < 3) return `РџРѕСЃС‚Р°РІС‰РёРє: ${s}`;
+      if (!s || s === "—") return "Поставщик";
+      if (/^\d+$/.test(s) || s.length < 3) return `Поставщик: ${s}`;
       return s;
     }
-    return "Р¤РёРЅР°РЅСЃС‹";
+    return "Финансы";
   }, [finPage, finKindName, financeSupplierName]);
 
   const financeTopPdfKey = useMemo(() => {

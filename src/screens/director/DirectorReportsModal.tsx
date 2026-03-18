@@ -1,5 +1,5 @@
 import React from "react";
-import { Alert, FlatList, Pressable, ScrollView, Text, View } from "react-native";
+import { Alert, Pressable, ScrollView, Text, View } from "react-native";
 import RNModal from "react-native-modal";
 import PeriodPickerSheet from "../../components/PeriodPickerSheet";
 import DirectorFinanceCardModal from "./DirectorFinanceCardModal";
@@ -59,6 +59,9 @@ const ratioColor = (v: number) => {
 
 const money = (v: number) => `${Math.round(Number(v || 0)).toLocaleString("ru-RU")} KGS`;
 const normKey = (v: string) => String(v || "").trim().toLowerCase();
+const WITHOUT_WORK_PREFIX = "\u0431\u0435\u0437 \u0432\u0438\u0434\u0430 \u0440\u0430\u0431\u043e\u0442";
+const compactParts = (parts: Array<string | null | undefined>) =>
+  parts.map((part) => String(part ?? "").trim()).filter(Boolean);
 const TOP_ACTIONS_INTERACTIVE_HEIGHT = 132;
 type DirectorReportsKpiCompat = RepKpi & {
   issues_without_object?: number | null;
@@ -108,12 +111,16 @@ export default function DirectorReportsModal({
 
   const worksTop30 = React.useMemo(() => {
     const arr = Array.isArray(discipline?.works) ? [...discipline.works] : [];
-    return arr.sort((a, b) => b.total_positions - a.total_positions).slice(0, 30);
+    return arr.sort((a, b) => b.total_positions - a.total_positions);
   }, [discipline]);
 
   const levelsTop30 = React.useMemo(() => {
     if (!workModal) return [] as RepDisciplineLevel[];
-    return [...(workModal.levels || [])].sort((a, b) => b.total_positions - a.total_positions).slice(0, 30);
+    return [...(workModal.levels || [])].sort((a, b) => {
+      const byPositions = b.total_positions - a.total_positions;
+      if (byPositions !== 0) return byPositions;
+      return String(a.location_label || a.level_name || "").localeCompare(String(b.location_label || b.level_name || ""), "ru");
+    });
   }, [workModal]);
 
   const workTopMaterials = React.useMemo(() => {
@@ -153,11 +160,14 @@ export default function DirectorReportsModal({
 
   const materialsTop20 = React.useMemo(() => {
     if (!levelModal?.level) return [] as RepDisciplineLevel["materials"];
-    return [...(levelModal.level.materials || [])].sort((a, b) => b.qty_sum - a.qty_sum).slice(0, 20);
+    return [...(levelModal.level.materials || [])].sort((a, b) => b.qty_sum - a.qty_sum);
   }, [levelModal]);
 
   const levelModalTitle = React.useMemo(() => {
     if (!levelModal) return "";
+    if (String(levelModal.level.location_label || "").trim()) {
+      return String(levelModal.level.location_label || "").trim();
+    }
     const w = String(levelModal.work.work_type_name || "").trim();
     const lv = String(levelModal.level.level_name || "").trim();
     if (!w) return lv;
@@ -204,7 +214,21 @@ export default function DirectorReportsModal({
   }, []);
 
   const renderWorkRow = React.useCallback(({ item }: { item: RepDisciplineWork }) => {
-    const isMissingWork = String(item.work_type_name || "").trim().toLowerCase() === "без вида работ";
+    const isMissingWork = normKey(String(item.work_type_name || "")).startsWith(WITHOUT_WORK_PREFIX);
+    const locations = Array.isArray(item.levels) ? item.levels : [];
+    const preview = locations
+      .slice(0, 2)
+      .map((level) =>
+        String(
+          level.location_label ||
+          compactParts([level.object_name, level.level_name, level.system_name, level.zone_name]).join(" / ") ||
+          level.level_name ||
+          "",
+        ).trim(),
+      )
+      .filter(Boolean)
+      .join(" | ");
+
     return (
       <Pressable
         onPress={() => {
@@ -215,8 +239,9 @@ export default function DirectorReportsModal({
       >
         <View style={s.mobMain}>
           <Text style={[s.mobTitle, isMissingWork ? { color: "#EF4444" } : null]} numberOfLines={1}>{item.work_type_name}</Text>
-          <Text style={s.mobMeta} numberOfLines={1}>{`Позиции: ${item.total_positions}`}</Text>
+          <Text style={s.mobMeta} numberOfLines={1}>{`Позиции: ${item.total_positions} · Локации: ${Number(item.location_count ?? locations.length)}`}</Text>
           <Text style={s.mobMeta} numberOfLines={1}>{`По заявке: ${item.req_positions} · Свободно: ${item.free_positions}`}</Text>
+          {preview ? <Text style={s.mobMeta} numberOfLines={2}>{preview}</Text> : null}
         </View>
       </Pressable>
     );
@@ -289,11 +314,15 @@ export default function DirectorReportsModal({
                 <Text style={{ color: UI.text, fontWeight: "900", fontSize: 16 }}>{`Объекты (${repOptObjects?.length ?? 0})`}</Text>
                 <Pressable onPress={onCloseRepObj}><Text style={{ color: UI.sub, fontWeight: "900" }}>Закрыть</Text></Pressable>
               </View>
-              <FlatList
-                data={repOptObjects || []}
-                keyExtractor={(item, index) => `${item}:${index}`}
-                renderItem={({ item }) => (
+              <ScrollView
+                style={{ maxHeight: 420 }}
+                contentContainerStyle={{ paddingBottom: 4 }}
+                keyboardShouldPersistTaps="handled"
+                showsVerticalScrollIndicator={false}
+              >
+                {(repOptObjects || []).map((item, index) => (
                   <Pressable
+                    key={`${item}:${index}`}
                     onPress={async () => {
                       onCloseRepObj();
                       await applyObjectFilter(item);
@@ -302,13 +331,8 @@ export default function DirectorReportsModal({
                   >
                     <Text style={{ color: UI.text, fontWeight: "900" }} numberOfLines={2}>{item}</Text>
                   </Pressable>
-                )}
-                style={{ maxHeight: 420 }}
-                contentContainerStyle={{ paddingBottom: 4 }}
-                keyboardShouldPersistTaps="handled"
-                showsVerticalScrollIndicator={false}
-                removeClippedSubviews
-              />
+                ))}
+              </ScrollView>
             </View>
           </RNModal>
         ) : levelModal ? (
@@ -346,6 +370,16 @@ export default function DirectorReportsModal({
                   contentContainerStyle={{ paddingBottom: 4 }}
                   keyboardShouldPersistTaps="handled"
                 >
+                  <View style={[s.mobCard, { marginHorizontal: 12, marginBottom: 10 }]}>
+                    <View style={s.mobMain}>
+                      <Text style={s.mobTitle} numberOfLines={2}>{levelModal.level.location_label || levelModal.level.level_name}</Text>
+                      <Text style={s.mobMeta} numberOfLines={1}>{compactParts([levelModal.level.object_name, levelModal.level.level_name]).join(" / ")}</Text>
+                      {compactParts([levelModal.level.system_name, levelModal.level.zone_name]).length ? (
+                        <Text style={s.mobMeta} numberOfLines={1}>{compactParts([levelModal.level.system_name, levelModal.level.zone_name]).join(" / ")}</Text>
+                      ) : null}
+                      <Text style={s.mobMeta} numberOfLines={1}>{`Позиции: ${levelModal.level.total_positions} · Материалы: ${materialsTop20.length}`}</Text>
+                    </View>
+                  </View>
                   {materialsTop20.map((m, idx) => (
                     <View key={`${m.rik_code}:${m.uom}:${idx}`} style={[s.mobCard, { marginHorizontal: 12, marginBottom: 10 }]}>
                       <View style={s.mobMain}>
@@ -389,6 +423,7 @@ export default function DirectorReportsModal({
                   <View style={[s.mobCard, { marginHorizontal: 12, marginBottom: 10 }]}>
                     <View style={s.mobMain}>
                       <Text style={s.mobTitle} numberOfLines={1}>{workModal.work_type_name}</Text>
+                      <Text style={s.mobMeta} numberOfLines={1}>{`Локации: ${levelsTop30.length}`}</Text>
                       <Text style={s.mobMeta} numberOfLines={1}>{`Позиции: ${workModal.total_positions}`}</Text>
                       <Text style={s.mobMeta} numberOfLines={1}>{`По заявке: ${workModal.req_positions} · Свободно: ${workModal.free_positions}`}</Text>
                       <Text style={s.mobMeta} numberOfLines={1}>{`Документов: ${workModal.total_docs} · Кол-во: ${workModal.total_qty}`}</Text>
@@ -405,8 +440,12 @@ export default function DirectorReportsModal({
                       style={[s.mobCard, { marginHorizontal: 12, marginBottom: 10 }]}
                     >
                       <View style={s.mobMain}>
-                        <Text style={s.mobTitle} numberOfLines={1}>{lv.level_name}</Text>
-                        <Text style={s.mobMeta} numberOfLines={1}>{`Позиции: ${lv.total_positions}`}</Text>
+                        <Text style={s.mobTitle} numberOfLines={2}>{lv.location_label || lv.level_name}</Text>
+                        <Text style={s.mobMeta} numberOfLines={1}>{compactParts([lv.object_name, lv.level_name]).join(" / ")}</Text>
+                        {compactParts([lv.system_name, lv.zone_name]).length ? (
+                          <Text style={s.mobMeta} numberOfLines={1}>{compactParts([lv.system_name, lv.zone_name]).join(" / ")}</Text>
+                        ) : null}
+                        <Text style={s.mobMeta} numberOfLines={1}>{`Позиции: ${lv.total_positions} · Материалы: ${Array.isArray(lv.materials) ? lv.materials.length : 0}`}</Text>
                         <Text style={s.mobMeta} numberOfLines={1}>{`По заявке: ${lv.req_positions} · Свободно: ${lv.free_positions}`}</Text>
                       </View>
                     </Pressable>
@@ -485,34 +524,42 @@ export default function DirectorReportsModal({
         })}
       </View>
 
-      {repTab === "materials" ? (
-        <FlatList
-          data={rows}
-          renderItem={renderMaterialRow}
-          keyExtractor={(item, index) => `${item.rik_code}:${item.uom}:${index}`}
-          keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}
-          removeClippedSubviews
-          ListEmptyComponent={
-            !repLoading ? <Text style={{ opacity: 0.7, color: UI.sub, paddingVertical: 8 }}>Нет выдач за выбранный период.</Text> : null
-          }
-        />
-      ) : (
-        <FlatList
-          data={worksTop30}
-          renderItem={renderWorkRow}
-          keyExtractor={(item) => item.id}
-          keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}
-          removeClippedSubviews
-          ListHeaderComponent={disciplineListHeader}
-          ListEmptyComponent={
-            !repLoading ? (
+      <View style={{ flex: 1, minHeight: 0 }}>
+        {repTab === "materials" ? (
+          <ScrollView
+            style={{ flex: 1 }}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ paddingBottom: 4 }}
+          >
+            {rows.map((item, index) => (
+              <React.Fragment key={`${item.rik_code}:${item.uom}:${index}`}>
+                {renderMaterialRow({ item })}
+              </React.Fragment>
+            ))}
+            {!repLoading && !rows.length ? (
+              <Text style={{ opacity: 0.7, color: UI.sub, paddingVertical: 8 }}>Нет выдач за выбранный период.</Text>
+            ) : null}
+          </ScrollView>
+        ) : (
+          <ScrollView
+            style={{ flex: 1 }}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ paddingBottom: 4 }}
+          >
+            {disciplineListHeader}
+            {worksTop30.map((item) => (
+              <React.Fragment key={item.id}>
+                {renderWorkRow({ item })}
+              </React.Fragment>
+            ))}
+            {!repLoading && !worksTop30.length ? (
               <Text style={{ opacity: 0.7, color: UI.sub, paddingVertical: 8 }}>Нет данных по работам за период.</Text>
-            ) : null
-          }
-        />
-      )}
+            ) : null}
+          </ScrollView>
+        )}
+      </View>
 
       <View style={{ marginTop: 10, flexDirection: "row", gap: 8 }}>
         <Pressable

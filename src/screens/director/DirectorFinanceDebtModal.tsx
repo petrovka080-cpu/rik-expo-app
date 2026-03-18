@@ -163,6 +163,7 @@ export default function DirectorFinanceDebtModal(p: Props) {
 
   return (
     <FlatList
+      style={{ flex: 1, minHeight: 0 }}
       data={suppliersOpen ? suppliers : []}
       renderItem={renderSupplierRow}
       keyExtractor={(item, index) => `${String(item?.supplier ?? "supplier")}:${index}`}
@@ -173,7 +174,6 @@ export default function DirectorFinanceDebtModal(p: Props) {
       contentContainerStyle={{ paddingBottom: 24 }}
       keyboardShouldPersistTaps="handled"
       showsVerticalScrollIndicator={false}
-      removeClippedSubviews
     />
   );
 }
