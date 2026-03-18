@@ -11,7 +11,7 @@ type Props = {
   onChangeText: (value: string) => void;
   onSubmit: () => Promise<void> | void;
   loading: boolean;
-  configured: boolean;
+  onlineConfigured: boolean;
   error: string;
   notice: string;
   preview: ForemanAiQuickItem[];
@@ -48,7 +48,7 @@ export default function ForemanAiQuickModal(props: Props) {
           </Text>
         </View>
 
-        {!props.configured ? (
+        {!props.onlineConfigured ? (
           <View
             style={{
               marginBottom: 12,
@@ -60,7 +60,7 @@ export default function ForemanAiQuickModal(props: Props) {
             }}
           >
             <Text style={{ color: "#fdba74", fontWeight: "800", fontSize: 13 }}>
-              Для AI-заявки нужен настроенный Gemini API key.
+              Gemini key не настроен. Использую локальный разбор и соберу только черновик.
             </Text>
           </View>
         ) : null}
@@ -171,12 +171,12 @@ export default function ForemanAiQuickModal(props: Props) {
 
           <Pressable
             onPress={() => void props.onSubmit()}
-            disabled={props.loading || !props.configured || !props.value.trim()}
+            disabled={props.loading || !props.value.trim()}
             style={[
               props.styles.actionBtnWide,
               {
                 backgroundColor: props.ui.accent,
-                opacity: props.loading || !props.configured || !props.value.trim() ? 0.6 : 1,
+                opacity: props.loading || !props.value.trim() ? 0.6 : 1,
                 flexDirection: "row",
                 gap: 8,
               },
@@ -184,7 +184,7 @@ export default function ForemanAiQuickModal(props: Props) {
           >
             {props.loading ? <ActivityIndicator size="small" color="#0B0F14" /> : null}
             <Text style={[props.styles.actionText, { color: "#0B0F14" }]}>
-              {props.loading ? "Формирую..." : "Сформировать и отправить"}
+              {props.loading ? "Формирую..." : "Сформировать черновик"}
             </Text>
           </Pressable>
         </View>

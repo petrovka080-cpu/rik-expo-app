@@ -1,15 +1,19 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
 import { asListingItems } from "../market/marketHome.data";
 import { supabase } from "../../lib/supabaseClient";
 import {
-  requestCreateDraft,
+  clearLocalDraftId,
+  fetchRequestDetails,
+  getLocalDraftId,
+  getOrCreateDraftRequestId,
   requestSubmit,
   rikQuickSearch,
   updateRequestMeta,
 } from "../../lib/catalog_api";
 import { requestItemAddOrIncAndPatchMeta } from "../../screens/foreman/foreman.helpers";
 import {
-  isForemanQuickRequestConfigured,
-  sendForemanQuickRequestPrompt,
+  resolveForemanQuickRequest,
   type ForemanAiQuickItem,
 } from "../../screens/foreman/foreman.ai";
 import type { AssistantContext, AssistantRole } from "./assistant.types";
@@ -42,16 +46,28 @@ type MarketSearchResult = {
   supplier: string | null;
 };
 
+type ForemanAssistantSession = {
+  draft_request_id: string | null;
+  draft_display_no: string | null;
+  pending_items: AssistantParsedItem[];
+};
+
+type ForemanItemsResolution =
+  | { kind: "items"; items: AssistantParsedItem[] }
+  | { kind: "clarify"; pending: AssistantParsedItem[] };
+
+const FOREMAN_SESSION_PREFIX = "gox.ai.foreman.session.v1";
+
 const CREATE_REQUEST_RE =
   /(сдела(й|ть)|созда(й|ть)|оформи|собери|добав(ь|ить)|нужн[аоы]?|надо|подготовь).{0,24}(заявк|черновик)|\b(заявк[ауеи]|черновик)\b/i;
-const SEND_REQUEST_RE =
-  /(отправ(ь|ить)?|подай|на утверждение|директору|сделай заявку|создай заявку|оформи заявку)/i;
+const SEND_DRAFT_RE =
+  /(отправ(ь|ить)?|подай|на утверждение|директору|пошли).{0,18}(черновик|заявк)?|\bотправь черновик\b/i;
 const MARKET_SEARCH_RE =
   /(найд(и|и мне)|ищ(и|и мне)|поиск|рынок|маркет|сколько стоит|цена|поставщик|сравн(и|ить)|предложени)/i;
 const BUYER_PROPOSAL_RE =
   /(предложени|закупк|оформи заказ|создай заказ|сделай заказ|создай предложение)/i;
 const UNIT_RE =
-  /(\d+(?:[.,]\d+)?)\s*(шт|штук|мешок|мешка|мешков|м2|м²|м3|м³|м|метр(?:а|ов)?|кг|килограмм(?:а|ов)?|т|тонн(?:а|ы)?|л|литр(?:а|ов)?|комплект(?:а|ов)?)/i;
+  /(\d+(?:[.,]\d+)?)\s*(шт|штук|штука|мешок|мешка|мешков|м2|м²|м3|м³|м|метр(?:а|ов)?|кг|килограмм(?:а|ов)?|т|тонн(?:а|ы)?|л|литр(?:а|ов)?|комплект(?:а|ов)?)/i;
 const FILLER_RE =
   /\b(мне|нужен|нужна|нужны|нужно|пожалуйста|срочно|надо|для|сделай|создай|оформи|добавь|в|заявку|черновик|заказ|предложение|закупку|на|рынке|маркет|найди|ищи|цена|стоит|сравни|поставщиков?)\b/gi;
 
@@ -189,6 +205,44 @@ async function loadAssistantActorContext(): Promise<AssistantActorContext | null
   };
 }
 
+function buildForemanSessionKey(userId: string): string {
+  return `${FOREMAN_SESSION_PREFIX}:${userId}`;
+}
+
+async function loadForemanAssistantSession(userId: string): Promise<ForemanAssistantSession> {
+  const raw = await AsyncStorage.getItem(buildForemanSessionKey(userId));
+  if (!raw) {
+    return {
+      draft_request_id: null,
+      draft_display_no: null,
+      pending_items: [],
+    };
+  }
+
+  try {
+    const parsed = JSON.parse(raw) as Partial<ForemanAssistantSession>;
+    return {
+      draft_request_id: parsed.draft_request_id ?? null,
+      draft_display_no: parsed.draft_display_no ?? null,
+      pending_items: Array.isArray(parsed.pending_items) ? parsed.pending_items : [],
+    };
+  } catch {
+    return {
+      draft_request_id: null,
+      draft_display_no: null,
+      pending_items: [],
+    };
+  }
+}
+
+async function saveForemanAssistantSession(userId: string, session: ForemanAssistantSession): Promise<void> {
+  await AsyncStorage.setItem(buildForemanSessionKey(userId), JSON.stringify(session));
+}
+
+async function clearForemanAssistantSession(userId: string): Promise<void> {
+  await AsyncStorage.removeItem(buildForemanSessionKey(userId));
+}
+
 async function searchMarketListings(query: string, limit = 6): Promise<MarketSearchResult[]> {
   const result = await supabase
     .from("market_listings")
@@ -272,7 +326,7 @@ async function smartSearch(query: string, limit = 6): Promise<MarketSearchResult
   }));
 }
 
-function formatSearchResults(prefix: string, queries: string[], resultsByQuery: { query: string; rows: MarketSearchResult[] }[], buyerMode: boolean): string {
+function formatSearchResults(prefix: string, resultsByQuery: { query: string; rows: MarketSearchResult[] }[], buyerMode: boolean): string {
   const sections: string[] = [];
 
   for (const { query, rows } of resultsByQuery) {
@@ -312,9 +366,9 @@ function hasMissingQuantities(items: AssistantParsedItem[]): boolean {
 function formatClarifyReply(items: { name: string }[]): string {
   const names = items.map((item) => item.name).filter(Boolean);
   if (!names.length) {
-    return "Не понял позиции для заявки. Напиши, например: \"цемент М400 50 мешков, кирпич 2000 шт\".";
+    return 'Не понял позиции для заявки. Напиши, например: "цемент М400 50 мешков, кирпич 2000 шт".';
   }
-  return `Нужно уточнить количество для: ${names.join(", ")}. Напиши, например: "цемент М400 50 мешков, ${names[0].toLowerCase()} 2000 шт".`;
+  return `Нужно уточнить количество для: ${names.join(", ")}. Напиши, например: "цемент М400 50 мешков, ${names[0].toLowerCase()} 200 шт".`;
 }
 
 function isLikelyForemanMutation(message: string): boolean {
@@ -322,28 +376,78 @@ function isLikelyForemanMutation(message: string): boolean {
   return CREATE_REQUEST_RE.test(text) || (/\d/.test(text) && /(меш|шт|м2|м3|кг|т|литр|комплект|м\b)/i.test(text));
 }
 
-async function resolveForemanItems(message: string): Promise<AssistantParsedItem[] | "clarify"> {
-  if (isForemanQuickRequestConfigured()) {
-    const aiResult = await sendForemanQuickRequestPrompt(message);
-    if (aiResult.action === "clarify" || !aiResult.items.length) return "clarify";
-    return aiResult.items.map((item: ForemanAiQuickItem) => ({
-      name: item.name,
-      qty: item.qty,
-      unit: item.unit,
-      kind: item.kind,
-      specs: item.specs ?? null,
+function looksLikeQuantityReply(message: string): boolean {
+  const text = String(message || "").trim();
+  if (!text) return false;
+  if (/^(на|по)?\s*\d+(?:[.,]\d+)?(\s*(шт|мешок|мешков|м2|м3|кг|т|л|м))?$/i.test(text)) return true;
+  return text.length <= 32 && /\d/.test(text);
+}
+
+function extractQuantities(message: string): number[] {
+  return Array.from(String(message || "").matchAll(/(\d+(?:[.,]\d+)?)/g))
+    .map((match) => Number(String(match[1]).replace(",", ".")))
+    .filter((value) => Number.isFinite(value) && value > 0);
+}
+
+function resolvePendingClarification(pendingItems: AssistantParsedItem[], message: string): AssistantParsedItem[] | "clarify" {
+  const parsed = parseHeuristicItems(message);
+  if (parsed.length > 0 && !hasMissingQuantities(parsed)) {
+    if (pendingItems.length === 1 && parsed.length >= 1) {
+      return [{ ...pendingItems[0], qty: parsed[0].qty, unit: parsed[0].unit || pendingItems[0].unit }];
+    }
+    if (pendingItems.length === parsed.length) {
+      return pendingItems.map((item, index) => ({
+        ...item,
+        qty: parsed[index].qty,
+        unit: parsed[index].unit || item.unit,
+      }));
+    }
+    return parsed;
+  }
+
+  const quantities = extractQuantities(message);
+  if (pendingItems.length === 1 && quantities.length >= 1) {
+    return [{ ...pendingItems[0], qty: quantities[0] }];
+  }
+  if (quantities.length === pendingItems.length) {
+    return pendingItems.map((item, index) => ({
+      ...item,
+      qty: quantities[index],
     }));
   }
 
-  const parsed = parseHeuristicItems(message);
-  if (!parsed.length || hasMissingQuantities(parsed)) return "clarify";
-  return parsed;
+  return "clarify";
 }
 
-async function createForemanRequestFromItems(
+async function resolveForemanItems(message: string): Promise<ForemanItemsResolution> {
+  const heuristic = parseHeuristicItems(message);
+  const quick = await resolveForemanQuickRequest(message).catch(() => null);
+
+  if (quick?.action === "create_request" && quick.items.length > 0) {
+    return {
+      kind: "items",
+      items: quick.items.map((item: ForemanAiQuickItem) => ({
+        name: item.name,
+        qty: item.qty,
+        unit: item.unit,
+        kind: item.kind,
+        specs: item.specs ?? null,
+      })),
+    };
+  }
+
+  if (heuristic.length > 0) {
+    return { kind: "clarify", pending: heuristic };
+  }
+
+  return { kind: "clarify", pending: [] };
+}
+
+async function createOrAppendForemanDraft(
   actor: AssistantActorContext,
   items: AssistantParsedItem[],
   sourceMessage: string,
+  session: ForemanAssistantSession,
 ): Promise<string> {
   const matches = await Promise.all(
     items.map(async (item) => {
@@ -361,24 +465,17 @@ async function createForemanRequestFromItems(
 
   if (!matched.length) {
     const missing = unmatched.map((entry) => entry.item.name).join(", ");
-    return `Не смог сопоставить позиции с каталогом API: ${missing || "ничего не найдено"}. Уточни названия ближе к каталогу RIK.`;
+    return `Не смог сопоставить позиции с catalog API: ${missing || "ничего не найдено"}. Уточни названия ближе к каталогу RIK.`;
   }
 
-  const draft = await requestCreateDraft({
-    foreman_name: actor.fullName || null,
-    comment: sourceMessage,
-  });
-  if (!draft?.id) {
-    throw new Error("Не удалось создать черновик заявки.");
-  }
-
-  await updateRequestMeta(String(draft.id), {
+  const rid = await getOrCreateDraftRequestId();
+  await updateRequestMeta(rid, {
     foreman_name: actor.fullName || null,
     comment: sourceMessage,
   }).catch(() => false);
 
   for (const entry of matched) {
-    await requestItemAddOrIncAndPatchMeta(String(draft.id), String(entry.match?.code), entry.item.qty, {
+    await requestItemAddOrIncAndPatchMeta(rid, String(entry.match?.code), entry.item.qty, {
       name_human: entry.item.name,
       uom: entry.item.unit,
       kind: entry.item.kind,
@@ -386,14 +483,17 @@ async function createForemanRequestFromItems(
     });
   }
 
-  const shouldSubmit = SEND_REQUEST_RE.test(sourceMessage);
-  const submitted = shouldSubmit ? await requestSubmit(String(draft.id)).catch(() => null) : null;
-  const requestLabel = String(submitted?.display_no || draft.display_no || draft.id || "").trim();
+  const draft = await fetchRequestDetails(rid).catch(() => null);
+  const draftLabel = String(draft?.display_no || session.draft_display_no || rid).trim() || rid;
+
+  await saveForemanAssistantSession(actor.userId, {
+    draft_request_id: rid,
+    draft_display_no: draftLabel,
+    pending_items: [],
+  });
 
   const lines = [
-    shouldSubmit
-      ? `Заявка ${requestLabel || String(draft.id).slice(0, 8)} создана и отправлена на утверждение.`
-      : `Черновик заявки ${requestLabel || String(draft.id).slice(0, 8)} создан.`,
+    `Черновик ${draftLabel} сформирован.`,
     `Через catalog API добавлено позиций: ${matched.length}/${items.length}.`,
   ];
 
@@ -409,7 +509,33 @@ async function createForemanRequestFromItems(
     lines.push(`Не найдены в каталоге: ${unmatched.map((entry) => entry.item.name).join(", ")}.`);
   }
 
+  lines.push('Если все верно, напиши "отправь черновик" или открой экран прораба и отправь его штатной кнопкой.');
   return lines.join("\n\n");
+}
+
+async function submitForemanDraft(actor: AssistantActorContext, session: ForemanAssistantSession): Promise<string> {
+  const rid = String(session.draft_request_id || getLocalDraftId() || "").trim();
+  if (!rid) {
+    return "Сначала сформируй черновик. После этого я смогу отправить его на утверждение.";
+  }
+
+  const currentDraft = await fetchRequestDetails(rid).catch(() => null);
+  if (!currentDraft) {
+    clearLocalDraftId();
+    await clearForemanAssistantSession(actor.userId);
+    return "Не нашел активный черновик. Сначала сформируй его заново.";
+  }
+
+  const submitted = await requestSubmit(rid).catch(() => null);
+  if (!submitted) {
+    return `Не удалось отправить черновик ${currentDraft.display_no || rid}. Проверь позиции и попробуй отправить из экрана прораба.`;
+  }
+
+  clearLocalDraftId();
+  await clearForemanAssistantSession(actor.userId);
+
+  const label = String(submitted.display_no || currentDraft.display_no || rid).trim() || rid;
+  return `Заявка ${label} отправлена на утверждение директору.`;
 }
 
 async function handleForemanAction(message: string): Promise<string> {
@@ -418,18 +544,36 @@ async function handleForemanAction(message: string): Promise<string> {
     return "Чтобы создать AI-заявку, сначала войди в приложение под своим пользователем.";
   }
 
-  const items = await resolveForemanItems(message);
-  if (items === "clarify") {
-    return formatClarifyReply(parseHeuristicItems(message));
+  const session = await loadForemanAssistantSession(actor.userId);
+
+  if (SEND_DRAFT_RE.test(message) && !CREATE_REQUEST_RE.test(message)) {
+    return submitForemanDraft(actor, session);
   }
 
-  return createForemanRequestFromItems(actor, items, message);
+  if (session.pending_items.length > 0) {
+    const resumed = resolvePendingClarification(session.pending_items, message);
+    if (resumed === "clarify") {
+      return formatClarifyReply(session.pending_items);
+    }
+    return createOrAppendForemanDraft(actor, resumed, message, session);
+  }
+
+  const resolution = await resolveForemanItems(message);
+  if (resolution.kind === "clarify") {
+    await saveForemanAssistantSession(actor.userId, {
+      ...session,
+      pending_items: resolution.pending,
+    });
+    return formatClarifyReply(resolution.pending);
+  }
+
+  return createOrAppendForemanDraft(actor, resolution.items, message, session);
 }
 
 async function handleMarketSearchAction(message: string, buyerMode: boolean): Promise<string> {
   const queries = extractSearchQueries(message);
   if (!queries.length) {
-    return "Не понял, что именно искать. Напиши, например: \"найди цемент М400\" или \"сравни цены на кирпич\".";
+    return 'Не понял, что именно искать. Напиши, например: "найди цемент М400" или "сравни цены на кирпич".';
   }
 
   const resultsByQuery = await Promise.all(
@@ -441,7 +585,6 @@ async function handleMarketSearchAction(message: string, buyerMode: boolean): Pr
 
   return formatSearchResults(
     buyerMode ? "Подобрал варианты для снабжения:" : "Нашел варианты на рынке:",
-    queries,
     resultsByQuery,
     buyerMode,
   );
@@ -449,6 +592,13 @@ async function handleMarketSearchAction(message: string, buyerMode: boolean): Pr
 
 function wantsBuyerProposalFlow(message: string): boolean {
   return BUYER_PROPOSAL_RE.test(message);
+}
+
+async function hasPendingForemanSession(): Promise<boolean> {
+  const actor = await loadAssistantActorContext().catch(() => null);
+  if (!actor) return false;
+  const session = await loadForemanAssistantSession(actor.userId);
+  return Boolean(session.pending_items.length || session.draft_request_id);
 }
 
 export async function tryRunAssistantAction(options: {
@@ -461,7 +611,15 @@ export async function tryRunAssistantAction(options: {
   if (!text) return { handled: false };
 
   try {
-    if (isForemanActionContext(role, context) && isLikelyForemanMutation(text)) {
+    if (
+      isForemanActionContext(role, context)
+      && (
+        isLikelyForemanMutation(text)
+        || SEND_DRAFT_RE.test(text)
+        || looksLikeQuantityReply(text)
+        || await hasPendingForemanSession()
+      )
+    ) {
       return { handled: true, reply: await handleForemanAction(text) };
     }
 

@@ -14,6 +14,14 @@ type RawForemanAiResponse = {
   message?: unknown;
 };
 
+type LocalForemanItem = {
+  name: string;
+  qty: number;
+  unit: string;
+  kind: ForemanAiKind;
+  specs?: string | null;
+};
+
 export type ForemanAiQuickItem = {
   rik_code: string;
   name: string;
@@ -63,6 +71,12 @@ const FOREMAN_AGENT_SYSTEM_PROMPT = `
 6) Ответ без markdown и без пояснений вне JSON.
 `;
 
+const LOCAL_UNIT_RE =
+  /(\d+(?:[.,]\d+)?)\s*(шт|штук|штука|мешок|мешка|мешков|м2|м²|м3|м³|м|метр(?:а|ов)?|кг|килограмм(?:а|ов)?|т|тонн(?:а|ы)?|л|литр(?:а|ов)?|комплект(?:а|ов)?)/i;
+const LOCAL_FILLER_RE =
+  /\b(мне|нужен|нужна|нужны|нужно|пожалуйста|срочно|надо|для|сделай|создай|оформи|добавь|в|заявку|черновик|заказ|предложение|закупку|на|рынке|маркет|найди|ищи|цена|стоит|сравни|поставщиков?)\b/gi;
+const LOCAL_SPLIT_RE = /\r?\n|[;,]+|\s+\+\s+|\s+и\s+/gi;
+
 function getGeminiConfig(): { apiKey: string; model: string } {
   const extra = (Constants.expoConfig?.extra || {}) as ExpoExtraConfig;
   const apiKey = String(extra.geminiApiKey || process.env.EXPO_PUBLIC_GEMINI_API_KEY || "").trim();
@@ -98,8 +112,8 @@ function normalizeUnit(rawUnit?: string | null): string {
   if (!unit) return "шт";
   if (["шт", "штука", "штук", "pcs", "pc"].includes(unit)) return "шт";
   if (["м", "метр", "метров", "m"].includes(unit)) return "м";
-  if (["м2", "кв.м", "квм", "sqm", "m2"].includes(unit)) return "м2";
-  if (["м3", "куб", "куб.м", "кубометр", "m3"].includes(unit)) return "м3";
+  if (["м2", "м²", "кв.м", "квм", "sqm", "m2"].includes(unit)) return "м2";
+  if (["м3", "м³", "куб", "куб.м", "кубометр", "m3"].includes(unit)) return "м3";
   if (["кг", "килограмм", "kg"].includes(unit)) return "кг";
   if (["т", "тонна", "тонн", "ton"].includes(unit)) return "т";
   if (["л", "литр", "литров", "l"].includes(unit)) return "л";
@@ -192,6 +206,98 @@ function parseForemanAiResponse(text: string): ForemanAiQuickResult {
   };
 }
 
+function cleanupLocalName(value: string): string {
+  const cleaned = String(value || "")
+    .replace(LOCAL_UNIT_RE, "")
+    .replace(LOCAL_FILLER_RE, " ")
+    .replace(/[.,:]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  return normalizeName(cleaned);
+}
+
+function parseLocalForemanItems(message: string): LocalForemanItem[] {
+  const base = String(message || "")
+    .replace(/\r/g, "\n")
+    .replace(LOCAL_SPLIT_RE, "\n");
+
+  const parsed: Array<LocalForemanItem | null> = base
+    .split("\n")
+    .map((chunk) => {
+      const raw = String(chunk || "").trim();
+      if (!raw) return null;
+
+      const unitMatch = raw.match(LOCAL_UNIT_RE);
+      const qty = unitMatch ? Number(String(unitMatch[1]).replace(",", ".")) : 0;
+      const unit = normalizeUnit(unitMatch?.[2] ?? "шт");
+      const name = cleanupLocalName(raw);
+      if (!name) return null;
+
+      return {
+        name,
+        qty: Number.isFinite(qty) ? qty : 0,
+        unit,
+        kind: normalizeKind(null, name),
+        specs: null,
+      } satisfies LocalForemanItem;
+    });
+
+  return parsed.filter((item): item is LocalForemanItem => Boolean(item));
+}
+
+function buildClarifyMessage(items: LocalForemanItem[]): string {
+  const missing = items.filter((item) => !Number.isFinite(item.qty) || item.qty <= 0);
+  if (!missing.length) {
+    return "Нужно уточнить позиции или количество.";
+  }
+  const names = missing.map((item) => item.name).filter(Boolean);
+  if (!names.length) {
+    return 'Не понял позиции. Напишите, например: "цемент М400 50 мешков, кирпич 2000 шт".';
+  }
+  return `Нужно уточнить количество для: ${names.join(", ")}. Напишите, например: "цемент М400 50 мешков, ${names[0].toLowerCase()} 200 шт".`;
+}
+
+function mapLocalItems(items: LocalForemanItem[]): ForemanAiQuickItem[] {
+  return items
+    .filter((item) => Number.isFinite(item.qty) && item.qty > 0)
+    .map((item) => ({
+      rik_code: generateRikCode(item.kind),
+      name: item.name,
+      qty: item.qty,
+      unit: normalizeUnit(item.unit),
+      kind: item.kind,
+      specs: item.specs ?? null,
+    }));
+}
+
+function resolveLocalForemanQuickRequest(prompt: string): ForemanAiQuickResult {
+  const parsedItems = parseLocalForemanItems(prompt);
+  if (!parsedItems.length) {
+    return {
+      action: "clarify",
+      items: [],
+      message: 'Не понял позиции. Напишите, например: "цемент М400 50 мешков, кирпич 2000 шт".',
+    };
+  }
+
+  if (parsedItems.some((item) => !Number.isFinite(item.qty) || item.qty <= 0)) {
+    return {
+      action: "clarify",
+      items: [],
+      message: buildClarifyMessage(parsedItems),
+    };
+  }
+
+  const normalizedItems = mapLocalItems(parsedItems);
+  return {
+    action: normalizedItems.length ? "create_request" : "clarify",
+    items: normalizedItems,
+    message: normalizedItems.length
+      ? `Локально распознано позиций: ${normalizedItems.length}.`
+      : "Не удалось распознать позиции для черновика.",
+  };
+}
+
 export function isForemanQuickRequestConfigured(): boolean {
   return getGeminiConfig().apiKey.length > 0;
 }
@@ -253,4 +359,11 @@ export async function sendForemanQuickRequestPrompt(prompt: string): Promise<For
   } finally {
     clearTimeout(timeout);
   }
+}
+
+export async function resolveForemanQuickRequest(prompt: string): Promise<ForemanAiQuickResult> {
+  if (isForemanQuickRequestConfigured()) {
+    return sendForemanQuickRequestPrompt(prompt);
+  }
+  return resolveLocalForemanQuickRequest(prompt);
 }

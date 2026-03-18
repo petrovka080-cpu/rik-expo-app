@@ -172,7 +172,8 @@ export function getAssistantQuickPrompts(role: AssistantRole): AssistantQuickPro
   switch (role) {
     case "foreman":
       return [
-        { id: "foreman-ai-request", label: "AI заявка", prompt: "Создай заявку: цемент М400 50 мешков, кирпич 2000 шт." },
+        { id: "foreman-ai-request", label: "Собрать черновик", prompt: "Собери черновик заявки: цемент М400 50 мешков, кирпич 2000 шт." },
+        { id: "foreman-ai-send", label: "Отправить черновик", prompt: "Отправь черновик директору" },
         { id: "foreman-market-search", label: "Найти на рынке", prompt: "Найди на рынке цемент М400 и арматуру A500C." },
         { id: "foreman-flow", label: "Маршрут заявки", prompt: "Куда дальше идет заявка после отправки директору?" },
       ];
@@ -213,7 +214,8 @@ export function getAssistantContextQuickPrompts(context: AssistantContext): Assi
   switch (context) {
     case "foreman":
       return [
-        { id: "ctx-foreman-request", label: "Собрать черновик", prompt: "Создай заявку: цемент М400 50 мешков, щебень 5 м3, арматура A500C 1.2 т." },
+        { id: "ctx-foreman-request", label: "Собрать черновик", prompt: "Собери черновик заявки: цемент М400 50 мешков, щебень 5 м3, арматура A500C 1.2 т." },
+        { id: "ctx-foreman-send", label: "Отправить черновик", prompt: "Отправь черновик директору" },
         { id: "ctx-foreman-clarify", label: "Уточнить позиции", prompt: "Мне нужен цемент и кирпич, помоги собрать заявку и скажи, чего не хватает." },
       ];
     case "market":

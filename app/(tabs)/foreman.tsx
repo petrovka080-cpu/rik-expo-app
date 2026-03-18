@@ -29,6 +29,11 @@ import { useForemanDicts } from "../../src/screens/foreman/useForemanDicts";
 import { resolveForemanContext } from "../../src/screens/foreman/foreman.context.resolver";
 import { adaptFormContext } from "../../src/screens/foreman/foreman.locator.adapter";
 import { debugForemanLogLazy } from "../../src/screens/foreman/foreman.debug";
+import {
+  resolveForemanHeaderRequirements,
+  type ForemanHeaderAttentionState,
+  type ForemanHeaderRequirementResult,
+} from "../../src/screens/foreman/foreman.headerRequirements";
 import { getObjectDisplayName } from "../../src/screens/foreman/foreman.options";
 import { s } from "../../src/screens/foreman/foreman.styles";
 import { FOREMAN_TEXT, REQUEST_STATUS_STYLES, UI } from "../../src/screens/foreman/foreman.ui";
@@ -39,7 +44,6 @@ import { supabase } from '../../src/lib/supabaseClient';
 import {
   rikQuickSearch,
   fetchRequestDetails,
-  requestSubmit,
   updateRequestMeta,
   getLocalDraftId,
   clearLocalDraftId,
@@ -78,7 +82,7 @@ import { useForemanPdf } from '../../src/screens/foreman/hooks/useForemanPdf';
 import { useForemanActions } from '../../src/screens/foreman/hooks/useForemanActions';
 import {
   isForemanQuickRequestConfigured,
-  sendForemanQuickRequestPrompt,
+  resolveForemanQuickRequest,
   type ForemanAiQuickItem,
 } from "../../src/screens/foreman/foreman.ai";
 
@@ -181,6 +185,12 @@ export default function ForemanScreen() {
   const [aiQuickError, setAiQuickError] = useState("");
   const [aiQuickNotice, setAiQuickNotice] = useState("");
   const [aiQuickPreview, setAiQuickPreview] = useState<ForemanAiQuickItem[]>([]);
+  const [headerAttention, setHeaderAttention] = useState<ForemanHeaderAttentionState | null>(null);
+  const headerRequirementsRef = useRef<ForemanHeaderRequirementResult>({
+    missing: [],
+    focusKey: null,
+    message: "",
+  });
 
   const {
     objOptions, lvlOptions, sysOptions, zoneOptions,
@@ -229,13 +239,37 @@ export default function ForemanScreen() {
     else Alert.alert(title, message);
   }, [safeWebUi]);
 
-  const ensureHeaderReady = useCallback(() => {
-    if (!foreman.trim()) { showHint(FOREMAN_TEXT.fillHeaderTitle, FOREMAN_TEXT.fillForeman); return false; }
-    if (!objectType) { showHint(FOREMAN_TEXT.fillHeaderTitle, "Пожалуйста, выберите Объект / Блок"); return false; }
-    // Now level can be empty if "Not required" is chosen (which is our empty code)
-    // We only block if it's absolutely necessary, but usually Object is the key.
+  const clearHeaderAttention = useCallback(() => {
+    setHeaderAttention(null);
+  }, []);
+
+  const activateHeaderAttention = useCallback((messageOverride?: string) => {
+    const current = headerRequirementsRef.current;
+    if (!current.missing.length) return false;
+
+    setHeaderAttention((prev) => ({
+      version: (prev?.version ?? 0) + 1,
+      missingKeys: current.missing.map((item) => item.key),
+      focusKey: current.focusKey,
+      message: messageOverride || current.message,
+    }));
+
+    if (current.focusKey === "foreman") {
+      setIsFioConfirmVisible(true);
+    }
+
     return true;
-  }, [foreman, objectType, showHint]);
+  }, []);
+
+  const ensureHeaderReady = useCallback(() => {
+    const current = headerRequirementsRef.current;
+    if (current.missing.length) {
+      activateHeaderAttention(current.message);
+      showHint(FOREMAN_TEXT.fillHeaderTitle, current.message);
+      return false;
+    }
+    return true;
+  }, [activateHeaderAttention, showHint]);
 
   const ensureEditableContext = useCallback((opts?: { draftMessage?: string; draftFirst?: boolean }) => {
     const checkDraft = () => {
@@ -371,6 +405,21 @@ export default function ForemanScreen() {
   }, [sysOptions, objectType, ctxConfig]);
   const safeSystem = useMemo(() => filteredSysOptions.some((o) => o.code === system) ? system : "", [filteredSysOptions, system]);
 
+  const headerRequirements = useMemo(
+    () =>
+      resolveForemanHeaderRequirements({
+        foreman,
+        objectType,
+        level: safeLevel,
+        formUi,
+      }),
+    [foreman, objectType, safeLevel, formUi],
+  );
+
+  useEffect(() => {
+    headerRequirementsRef.current = headerRequirements;
+  }, [headerRequirements]);
+
   // --- SCOPE NOTE: Unified display string using SAFE values ---
   const levelName = useMemo(() => formUi.locator.options.find(o => o.code === safeLevel)?.name || '', [formUi.locator.options, safeLevel]);
   const systemName = useMemo(() => filteredSysOptions.find(o => o.code === safeSystem)?.name || '', [filteredSysOptions, safeSystem]);
@@ -494,6 +543,36 @@ export default function ForemanScreen() {
       if (zone && !formUi.zone.isValidValue(zone)) handleZoneChange("");
     }
   }, [objectType, level, system, zone, formUi, filteredSysOptions, handleLevelChange, handleSystemChange, handleZoneChange]);
+
+  useEffect(() => {
+    if (!headerAttention) return;
+
+    const remaining = headerRequirements.missing.filter((item) => headerAttention.missingKeys.includes(item.key));
+    if (!remaining.length) {
+      setHeaderAttention(null);
+      return;
+    }
+
+    const remainingKeys = remaining.map((item) => item.key);
+    const sameKeys =
+      remainingKeys.length === headerAttention.missingKeys.length &&
+      remainingKeys.every((key, index) => key === headerAttention.missingKeys[index]);
+
+    if (
+      sameKeys &&
+      remaining[0]?.focusKey === headerAttention.focusKey &&
+      headerAttention.message === headerRequirements.message
+    ) {
+      return;
+    }
+
+    setHeaderAttention((prev) => ({
+      version: prev && prev.focusKey !== remaining[0]?.focusKey ? prev.version + 1 : prev?.version ?? 1,
+      missingKeys: remainingKeys,
+      focusKey: remaining[0]?.focusKey ?? null,
+      message: headerRequirements.message,
+    }));
+  }, [headerAttention, headerRequirements]);
 
   const handleHistorySelect = useCallback((reqId: string) => { openRequestById(reqId); closeHistory(); }, [openRequestById, closeHistory]);
 
@@ -704,7 +783,15 @@ export default function ForemanScreen() {
     const promptText = aiQuickText.trim();
     if (!promptText || aiQuickLoading) return;
 
-    if (!ensureHeaderReady()) return;
+    if (headerRequirements.missing.length) {
+      activateHeaderAttention(`${headerRequirements.message} Я перевел вас к этим полям.`);
+      setAiQuickVisible(false);
+      showHint(
+        FOREMAN_TEXT.fillHeaderTitle,
+        `${headerRequirements.message} Я перевел вас к этим полям сверху.`,
+      );
+      return;
+    }
     if (requestDetails && !isDraftActive) {
       Alert.alert(FOREMAN_TEXT.readonlyTitle, FOREMAN_TEXT.readonlyHint);
       return;
@@ -715,7 +802,7 @@ export default function ForemanScreen() {
     setAiQuickNotice("");
 
     try {
-      const parsed = await sendForemanQuickRequestPrompt(promptText);
+      const parsed = await resolveForemanQuickRequest(promptText);
       setAiQuickPreview(parsed.items);
       setAiQuickNotice(parsed.message);
 
@@ -739,21 +826,20 @@ export default function ForemanScreen() {
         return;
       }
 
-      const submitted = await requestSubmit(rid);
-      applySubmittedRequestState(rid, submitted);
-
-      const submittedLabel = submitted?.display_no || rid;
-      showHint(
-        FOREMAN_TEXT.submitSentTitle,
-        `Заявка ${submittedLabel} отправлена на утверждение`,
-      );
-      await finalizeAfterSubmit();
+      const refreshed = await loadDetails(rid);
+      const draftLabel = String(refreshed?.display_no || currentDisplayLabel || rid).trim() || rid;
+      setAiQuickNotice(`Черновик ${draftLabel} сформирован. Проверьте позиции и отправьте его отдельно.`);
+      clearHeaderAttention();
 
       setAiQuickVisible(false);
       setAiQuickText("");
       setAiQuickError("");
-      setAiQuickNotice("");
       setAiQuickPreview([]);
+      setDraftOpen(true);
+      showHint(
+        "Черновик сформирован",
+        `Черновик ${draftLabel} создан. Проверьте позиции и отправьте его отдельно из карточки черновика.`,
+      );
     } catch (error) {
       setAiQuickError(toErrorText(error, "Не удалось сформировать AI-заявку."));
     } finally {
@@ -762,15 +848,17 @@ export default function ForemanScreen() {
   }, [
     aiQuickLoading,
     aiQuickText,
+    activateHeaderAttention,
     appendAiItemsToDraft,
-    applySubmittedRequestState,
+    clearHeaderAttention,
     currentDisplayLabel,
-    ensureHeaderReady,
+    headerRequirements,
     ensureRequestId,
-    finalizeAfterSubmit,
     isDraftActive,
     loadItems,
+    loadDetails,
     requestDetails,
+    setAiQuickVisible,
     showHint,
     syncRequestHeaderMeta,
   ]);
@@ -920,6 +1008,7 @@ export default function ForemanScreen() {
               setDraftOpen={setDraftOpen}
               currentDisplayLabel={currentDisplayLabel}
               itemsCount={items.length}
+              headerAttention={headerAttention}
               ui={UI} styles={s}
             />
 
@@ -987,7 +1076,7 @@ export default function ForemanScreen() {
               onChangeText={handleAiQuickTextChange}
               onSubmit={handleAiQuickSubmit}
               loading={aiQuickLoading}
-              configured={isForemanQuickRequestConfigured()}
+              onlineConfigured={isForemanQuickRequestConfigured()}
               error={aiQuickError}
               notice={aiQuickNotice}
               preview={aiQuickPreview}

@@ -176,6 +176,26 @@ export const s = StyleSheet.create({
     letterSpacing: 0,
     opacity: 0.7,
   },
+  headerAttentionCard: {
+    marginTop: 10,
+    padding: 14,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "rgba(249,115,22,0.45)",
+    backgroundColor: "rgba(124,45,18,0.28)",
+    gap: 6,
+  },
+  headerAttentionTitle: {
+    color: "#FED7AA",
+    fontWeight: "900",
+    fontSize: 13,
+  },
+  headerAttentionText: {
+    color: "#FDBA74",
+    fontWeight: "700",
+    fontSize: 13,
+    lineHeight: 18,
+  },
 
   pickTabsRow: {
     flexDirection: "row",

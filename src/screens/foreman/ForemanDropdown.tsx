@@ -1,4 +1,4 @@
-﻿import React, { useCallback } from "react";
+import React, { useCallback, useEffect } from "react";
 import {
   FlatList,
   Modal,
@@ -11,10 +11,11 @@ import {
   type DimensionValue,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import type { RefOption } from "./foreman.types";
+
+import { FOREMAN_DROPDOWN_DEFAULT_FIELD } from "./foreman.dropdown.constants";
 import { debugForemanLogLazy } from "./foreman.debug";
 import { useForemanDropdownModel } from "./hooks/useForemanDropdownModel";
-import { FOREMAN_DROPDOWN_DEFAULT_FIELD } from "./foreman.dropdown.constants";
+import type { RefOption } from "./foreman.types";
 
 type Props = {
   label: string;
@@ -28,6 +29,10 @@ type Props = {
   required?: boolean;
   showLabel?: boolean;
   valueLabelOverride?: string;
+  attentionActive?: boolean;
+  attentionHint?: string | null;
+  attentionToken?: number;
+  autoOpenOnAttention?: boolean;
   ui: { text: string };
   styles: typeof import("./foreman.styles").s;
 };
@@ -44,6 +49,10 @@ export default function ForemanDropdown({
   required = false,
   showLabel = true,
   valueLabelOverride,
+  attentionActive = false,
+  attentionHint,
+  attentionToken = 0,
+  autoOpenOnAttention = false,
   styles: s,
   ui,
 }: Props) {
@@ -77,6 +86,11 @@ export default function ForemanDropdown({
     options: options.map((o) => ({ code: o.code, name: o.name })),
   }));
 
+  useEffect(() => {
+    if (!autoOpenOnAttention || !attentionToken || open) return;
+    openModal();
+  }, [attentionToken, autoOpenOnAttention, open, openModal]);
+
   const renderItem = useCallback(
     ({ item }: { item: RefOption }) => (
       <Pressable onPress={() => pickCode(item.code)} style={[s.suggest, localStyles.itemRow]}>
@@ -90,13 +104,21 @@ export default function ForemanDropdown({
   return (
     <View style={localStyles.root}>
       {showLabel ? (
-        <Text style={s.small}>
+        <Text style={[s.small, attentionActive && localStyles.attentionLabel]}>
           {label}
           {required ? <Text style={s.requiredAsterisk}> *</Text> : null}
         </Text>
       ) : null}
 
-      <Pressable onPress={openModal} style={[s.input, s.selectRow, { width: Platform.OS === "web" ? width : "100%" }]}>
+      <Pressable
+        onPress={openModal}
+        style={[
+          s.input,
+          s.selectRow,
+          { width: Platform.OS === "web" ? width : "100%" },
+          attentionActive && localStyles.attentionControl,
+        ]}
+      >
         <View style={s.selectValueWrap}>
           <Text style={[localStyles.valueText, { color: ui.text, opacity: picked ? 1 : 0.55 }]} numberOfLines={1}>
             {picked ? picked.name : valueLabelOverride || placeholder}
@@ -106,6 +128,10 @@ export default function ForemanDropdown({
 
         <Ionicons name="chevron-down" size={18} color="rgba(255,255,255,0.55)" />
       </Pressable>
+
+      {attentionActive && attentionHint ? (
+        <Text style={localStyles.attentionHint}>{attentionHint}</Text>
+      ) : null}
 
       {open ? (
         <Modal transparent animationType="fade" onRequestClose={closeModal}>
@@ -178,4 +204,23 @@ const localStyles = StyleSheet.create({
   itemCode: { color: "rgba(255,255,255,0.5)", fontSize: 12, marginTop: 2 },
   emptyText: { color: "rgba(255,255,255,0.45)", textAlign: "center", marginTop: 20 },
   actionsRow: { flexDirection: "row", justifyContent: "flex-end", marginTop: 12, gap: 10 },
+  attentionLabel: {
+    color: "#FCA5A5",
+  },
+  attentionControl: {
+    borderColor: "#F97316",
+    backgroundColor: "rgba(249,115,22,0.12)",
+    shadowColor: "#F97316",
+    shadowOpacity: 0.18,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 4 },
+  },
+  attentionHint: {
+    marginTop: 6,
+    marginLeft: 4,
+    color: "#FDBA74",
+    fontSize: 12,
+    fontWeight: "800",
+    lineHeight: 16,
+  },
 });
