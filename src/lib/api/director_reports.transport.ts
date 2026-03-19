@@ -712,7 +712,7 @@ async function fetchAllFactRowsFromTables(p: {
   );
 
   const nameRuByCode = new Map<string, string>();
-  if (codes.length) {
+  if (codes.length && !p.skipMaterialNameResolve) {
     const tNames = nowMs();
     try {
       const probe = await probeNameSources();
@@ -784,6 +784,7 @@ async function fetchDisciplineFactRowsFromTables(p: {
   from: string;
   to: string;
   objectName: string | null;
+  skipMaterialNameResolve?: boolean;
 }): Promise<DirectorFactRow[]> {
   const tTotal = nowMs();
   const tryJoinedIssueItemsPath = async (): Promise<DirectorFactRow[] | null> => {
@@ -1294,6 +1295,7 @@ async function fetchFactRowsForDiscipline(p: {
   to: string;
   objectName: string | null;
   objectIdByName: Record<string, string | null>;
+  skipMaterialNameResolve?: boolean;
 }): Promise<{ rows: DirectorFactRow[]; source: DisciplineRowsSource }> {
   const objectName = p.objectName ?? null;
   let rows: DirectorFactRow[] = [];
@@ -1325,7 +1327,12 @@ async function fetchFactRowsForDiscipline(p: {
   }
   if (!rows.length) {
     try {
-      rows = await fetchDisciplineFactRowsFromTables({ from: p.from, to: p.to, objectName });
+      rows = await fetchDisciplineFactRowsFromTables({
+        from: p.from,
+        to: p.to,
+        objectName,
+        skipMaterialNameResolve: p.skipMaterialNameResolve,
+      });
       if (rows.length) return { rows, source: "tables" };
     } catch { }
   }

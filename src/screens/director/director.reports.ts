@@ -165,6 +165,20 @@ const normalizeReportOptionsState = (value: unknown): ReportOptionsState => {
   };
 };
 
+const summarizeRepDiscipline = (payload: RepDisciplinePayload | null) => {
+  const works = Array.isArray(payload?.works) ? payload.works : [];
+  let levels = 0;
+  let materials = 0;
+  for (const work of works) {
+    const workLevels = Array.isArray(work.levels) ? work.levels : [];
+    levels += workLevels.length;
+    for (const level of workLevels) {
+      materials += Array.isArray(level.materials) ? level.materials.length : 0;
+    }
+  }
+  return { works: works.length, levels, materials };
+};
+
 const isoDate = (d: Date) => {
   const yyyy = d.getFullYear();
   const mm = String(d.getMonth() + 1).padStart(2, "0");
@@ -357,14 +371,16 @@ export function useDirectorReports({ fmtDateOnly }: Deps) {
     to: string;
     objectName: string | null;
     optionsState: ReportOptionsState;
+    includeDiscipline?: boolean;
     skipDisciplinePrices: boolean;
   }) => {
     const key = reportKey(args.from, args.to, args.objectName, args.optionsState.objectIdByName);
     const cachedReport = getCached(reportCacheRef.current, key);
-    const cachedDiscipline = getCached(disciplineCacheRef.current, key);
+    const cachedDiscipline = args.includeDiscipline ? getCached(disciplineCacheRef.current, key) : null;
     const disciplinePricesReady = disciplinePricesReadyRef.current.has(key);
-    const useCachedDiscipline = cachedDiscipline !== null && (args.skipDisciplinePrices || disciplinePricesReady);
-    const [reportPayloadRaw, disciplinePayloadRaw] = await Promise.all([
+    const useCachedDiscipline =
+      args.includeDiscipline === true && cachedDiscipline !== null && (args.skipDisciplinePrices || disciplinePricesReady);
+    const reportPromise =
       cachedReport !== null
         ? Promise.resolve(cachedReport)
         : fetchDirectorWarehouseReport({
@@ -372,65 +388,30 @@ export function useDirectorReports({ fmtDateOnly }: Deps) {
             to: args.to,
             objectName: args.objectName,
             objectIdByName: args.optionsState.objectIdByName,
-          }).then(normalizeRepPayload),
-      useCachedDiscipline
-        ? Promise.resolve(cachedDiscipline)
-        : fetchDirectorWarehouseReportDiscipline({
-            from: args.from,
-            to: args.to,
-            objectName: args.objectName,
-            objectIdByName: args.optionsState.objectIdByName,
-          }, { skipPrices: args.skipDisciplinePrices }).then(normalizeRepDisciplinePayload),
-    ]);
+          }).then(normalizeRepPayload);
+    const disciplinePromise =
+      args.includeDiscipline !== true
+        ? Promise.resolve<RepDisciplinePayload | null>(null)
+        : useCachedDiscipline
+          ? Promise.resolve(cachedDiscipline)
+          : fetchDirectorWarehouseReportDiscipline({
+              from: args.from,
+              to: args.to,
+              objectName: args.objectName,
+              objectIdByName: args.optionsState.objectIdByName,
+            }, { skipPrices: args.skipDisciplinePrices }).then(normalizeRepDisciplinePayload);
+    const [reportPayloadRaw, disciplinePayloadRaw] = await Promise.all([reportPromise, disciplinePromise]);
 
     return {
       key,
       report: reportPayloadRaw,
       discipline: disciplinePayloadRaw,
       reportFromCache: cachedReport !== null,
-      disciplineFromCache: useCachedDiscipline,
-      disciplinePricesReady: useCachedDiscipline ? disciplinePricesReady : !args.skipDisciplinePrices,
+      disciplineFromCache: args.includeDiscipline === true ? useCachedDiscipline : false,
+      disciplinePricesReady:
+        args.includeDiscipline === true ? (useCachedDiscipline ? disciplinePricesReady : !args.skipDisciplinePrices) : false,
     };
   }, [getCached, reportKey]);
-
-  const queueScopeDisciplineUpgrade = useCallback((args: {
-    scopeReqId: number;
-    scopeKey: string;
-    from: string;
-    to: string;
-    objectName: string | null;
-    objectIdByName: Record<string, string | null>;
-  }) => {
-    const reqId = ++disciplineReqSeqRef.current;
-    setRepDisciplinePriceLoading(true);
-
-    void (async () => {
-      try {
-        const payload = await fetchDirectorWarehouseReportDiscipline({
-          from: args.from,
-          to: args.to,
-          objectName: args.objectName,
-          objectIdByName: args.objectIdByName,
-        });
-        if (args.scopeReqId !== scopeLoadSeqRef.current) return;
-        if (reqId !== disciplineReqSeqRef.current) return;
-        const normalized = normalizeRepDisciplinePayload(payload);
-        if (normalized) {
-          commitDisciplineState(args.scopeKey, normalized, {
-            pricesReady: true,
-          });
-        }
-      } catch (e: unknown) {
-        if (REPORTS_TIMING) {
-          console.warn("[director_works] scope_prices_stage_failed:", getErrorMessage(e, "prices stage failed"));
-        }
-      } finally {
-        if (args.scopeReqId === scopeLoadSeqRef.current && reqId === disciplineReqSeqRef.current) {
-          setRepDisciplinePriceLoading(false);
-        }
-      }
-    })();
-  }, [commitDisciplineState]);
 
   const fetchReport = useCallback(async (objectNameArg?: string | null, opts?: { background?: boolean }) => {
     const from = repFrom ? String(repFrom).slice(0, 10) : "";
@@ -536,7 +517,15 @@ export function useDirectorReports({ fmtDateOnly }: Deps) {
         logTiming("api:discipline:network_done", apiStart);
         if (reqId !== disciplineReqSeqRef.current) return;
         const normalizedBase = normalizeRepDisciplinePayload(basePayload);
-        if (normalizedBase) commitDisciplineState(key, normalizedBase, { pricesReady: false });
+        if (normalizedBase) {
+          commitDisciplineState(key, normalizedBase, { pricesReady: false });
+          if (REPORTS_TIMING) {
+            const summary = summarizeRepDiscipline(normalizedBase);
+            console.info(
+              `[director_works] api:discipline:base_ready works=${summary.works} levels=${summary.levels} materials=${summary.materials}`,
+            );
+          }
+        }
         if (!opts?.background && reqId === disciplineReqSeqRef.current) setRepLoading(false);
 
         void (async () => {
@@ -549,7 +538,15 @@ export function useDirectorReports({ fmtDateOnly }: Deps) {
             });
             if (reqId !== disciplineReqSeqRef.current) return;
             const normalizedFull = normalizeRepDisciplinePayload(fullPayload);
-            if (normalizedFull) commitDisciplineState(key, normalizedFull, { pricesReady: true });
+            if (normalizedFull) {
+              commitDisciplineState(key, normalizedFull, { pricesReady: true });
+              if (REPORTS_TIMING) {
+                const summary = summarizeRepDiscipline(normalizedFull);
+                console.info(
+                  `[director_works] api:discipline:priced_ready works=${summary.works} levels=${summary.levels} materials=${summary.materials}`,
+                );
+              }
+            }
           } catch (e: unknown) {
             if (REPORTS_TIMING) console.warn("[director_works] prices_stage_failed:", getErrorMessage(e, "prices stage failed"));
           } finally {
@@ -653,6 +650,7 @@ export function useDirectorReports({ fmtDateOnly }: Deps) {
         to,
         objectName: null,
         optionsState: optionsLoad.value,
+        includeDiscipline: repTab === "discipline",
         skipDisciplinePrices: repTab !== "discipline",
       });
       if (scopeReqId !== scopeLoadSeqRef.current) return;
@@ -666,20 +664,15 @@ export function useDirectorReports({ fmtDateOnly }: Deps) {
           cache: !scopeLoad.disciplineFromCache,
           pricesReady: scopeLoad.disciplinePricesReady,
         });
+      } else if (repTab !== "discipline") {
+        if (!applyCachedDisciplineState(scopeLoad.key)) {
+          setRepDiscipline(null);
+          setRepDisciplinePriceLoading(false);
+        }
       } else {
         setRepDiscipline(null);
         lastDisciplineLoadKeyRef.current = scopeLoad.key;
         setRepDisciplinePriceLoading(false);
-      }
-      if (repTab !== "discipline" && !scopeLoad.disciplinePricesReady) {
-        queueScopeDisciplineUpgrade({
-          scopeReqId,
-          scopeKey: scopeLoad.key,
-          from,
-          to,
-          objectName: null,
-          objectIdByName: optionsLoad.value.objectIdByName,
-        });
       }
     } catch (e: unknown) {
       if (scopeReqId !== scopeLoadSeqRef.current) return;
@@ -697,7 +690,7 @@ export function useDirectorReports({ fmtDateOnly }: Deps) {
         setRepLoading(false);
       }
     }
-  }, [beginScopeRefresh, loadOptionsForScope, commitOptionsState, loadReportScope, repTab, commitReportState, commitDisciplineState, queueScopeDisciplineUpgrade]);
+  }, [applyCachedDisciplineState, beginScopeRefresh, loadOptionsForScope, commitOptionsState, loadReportScope, repTab, commitReportState, commitDisciplineState]);
 
   const clearReportPeriod = useCallback(() => {
     const to = isoDate(new Date());
@@ -723,6 +716,7 @@ export function useDirectorReports({ fmtDateOnly }: Deps) {
         to,
         objectName: currentObject,
         optionsState: optionsLoad.value,
+        includeDiscipline: repTab === "discipline",
         skipDisciplinePrices: repTab !== "discipline",
       });
       if (scopeReqId !== scopeLoadSeqRef.current) return;
@@ -736,20 +730,15 @@ export function useDirectorReports({ fmtDateOnly }: Deps) {
           cache: !scopeLoad.disciplineFromCache,
           pricesReady: scopeLoad.disciplinePricesReady,
         });
+      } else if (repTab !== "discipline") {
+        if (!applyCachedDisciplineState(scopeLoad.key)) {
+          setRepDiscipline(null);
+          setRepDisciplinePriceLoading(false);
+        }
       } else {
         setRepDiscipline(null);
         lastDisciplineLoadKeyRef.current = scopeLoad.key;
         setRepDisciplinePriceLoading(false);
-      }
-      if (repTab !== "discipline" && !scopeLoad.disciplinePricesReady) {
-        queueScopeDisciplineUpgrade({
-          scopeReqId,
-          scopeKey: scopeLoad.key,
-          from,
-          to,
-          objectName: currentObject,
-          objectIdByName: optionsLoad.value.objectIdByName,
-        });
       }
     } catch (e: unknown) {
       if (scopeReqId !== scopeLoadSeqRef.current) return;
@@ -765,7 +754,7 @@ export function useDirectorReports({ fmtDateOnly }: Deps) {
         setRepLoading(false);
       }
     }
-  }, [repFrom, repTo, repObjectName, beginScopeRefresh, loadOptionsForScope, commitOptionsState, loadReportScope, repTab, commitReportState, commitDisciplineState, queueScopeDisciplineUpgrade]);
+  }, [applyCachedDisciplineState, repFrom, repTo, repObjectName, beginScopeRefresh, loadOptionsForScope, commitOptionsState, loadReportScope, repTab, commitReportState, commitDisciplineState]);
 
   const setReportTab = useCallback((t: RepTab) => {
     const switchStart = nowMs();

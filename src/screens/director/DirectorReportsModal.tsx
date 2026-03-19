@@ -1,6 +1,7 @@
 import React from "react";
 import { Alert, FlatList, Pressable, Text, View } from "react-native";
 import RNModal from "react-native-modal";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import PeriodPickerSheet from "../../components/PeriodPickerSheet";
 import DirectorFinanceCardModal from "./DirectorFinanceCardModal";
 import { UI, s } from "./director.styles";
@@ -62,7 +63,6 @@ const normKey = (v: string) => String(v || "").trim().toLowerCase();
 const WITHOUT_WORK_PREFIX = "\u0431\u0435\u0437 \u0432\u0438\u0434\u0430 \u0440\u0430\u0431\u043e\u0442";
 const compactParts = (parts: (string | null | undefined)[]) =>
   parts.map((part) => String(part ?? "").trim()).filter(Boolean);
-const TOP_ACTIONS_INTERACTIVE_HEIGHT = 132;
 const toFiniteNumber = (value: unknown): number => {
   const numberValue = Number(value ?? 0);
   return Number.isFinite(numberValue) ? numberValue : 0;
@@ -71,9 +71,30 @@ const textOrFallback = (value: unknown, fallback = ""): string => {
   const text = String(value ?? "").trim();
   return text || fallback;
 };
+const DETAIL_TIMING = typeof __DEV__ !== "undefined" ? __DEV__ : false;
+const nowMs = () => {
+  try {
+    return typeof performance !== "undefined" && typeof performance.now === "function"
+      ? performance.now()
+      : Date.now();
+  } catch {
+    return Date.now();
+  }
+};
 type DirectorReportsKpiCompat = RepKpi & {
   issues_without_object?: number | null;
   items_without_request?: number | null;
+};
+type WorkTopMaterial = {
+  rik_code: string;
+  material_name: string;
+  uom: string;
+  qty_sum: number;
+  docs_count: number;
+};
+type WorkDetailViewModel = {
+  sortedLevels: RepDisciplineLevel[];
+  topMaterials: WorkTopMaterial[];
 };
 
 export default function DirectorReportsModal({
@@ -104,6 +125,7 @@ export default function DirectorReportsModal({
   onExportProductionPdf,
   onExportSubcontractPdf,
 }: Props) {
+  const insets = useSafeAreaInsets();
   const data: RepPayload | null = repData;
   const kpi: DirectorReportsKpiCompat | null = data?.kpi ?? null;
   const rows: RepRow[] = Array.isArray(data?.rows) ? data.rows : [];
@@ -111,65 +133,102 @@ export default function DirectorReportsModal({
 
   const [workModal, setWorkModal] = React.useState<RepDisciplineWork | null>(null);
   const [levelModal, setLevelModal] = React.useState<{ work: RepDisciplineWork; level: RepDisciplineLevel } | null>(null);
+  const workDetailCacheRef = React.useRef(new Map<string, WorkDetailViewModel>());
+  const levelDetailCacheRef = React.useRef(new Map<string, RepDisciplineLevel["materials"]>());
+  const detailOpenTraceRef = React.useRef<{ kind: "work" | "level"; startedAt: number } | null>(null);
 
   const issuesTotal = toFiniteNumber(kpi?.issues_total);
   const issuesNoObj = toFiniteNumber(kpi?.issues_without_object ?? kpi?.issues_no_obj);
   const itemsTotal = toFiniteNumber(kpi?.items_total);
   const itemsNoReq = toFiniteNumber(kpi?.items_without_request ?? kpi?.items_free);
+  const detailTopInset = Math.max(insets.top || 0, 12) + 8;
+  const detailBottomInset = Math.max(insets.bottom || 0, 16) + 12;
+
+  React.useEffect(() => {
+    workDetailCacheRef.current.clear();
+    levelDetailCacheRef.current.clear();
+  }, [discipline]);
+
+  const getWorkDetailViewModel = React.useCallback((work: RepDisciplineWork | null): WorkDetailViewModel => {
+    if (!work) {
+      return {
+        sortedLevels: [],
+        topMaterials: [],
+      };
+    }
+
+    const cached = workDetailCacheRef.current.get(work.id);
+    if (cached) return cached;
+
+    const sortedLevels = [...(work.levels || [])].sort((a, b) => {
+      const byPositions = b.total_positions - a.total_positions;
+      if (byPositions !== 0) return byPositions;
+      return String(a.location_label || a.level_name || "").localeCompare(String(b.location_label || b.level_name || ""), "ru");
+    });
+
+    const acc = new Map<string, WorkTopMaterial>();
+    for (const level of sortedLevels) {
+      const materials = Array.isArray(level.materials) ? level.materials : [];
+      for (const material of materials) {
+        const key = `${String(material.rik_code || "").trim()}|${String(material.uom || "").trim()}|${String(material.material_name || "").trim()}`;
+        const prev = acc.get(key);
+        if (prev) {
+          prev.qty_sum += Number(material.qty_sum || 0);
+          prev.docs_count += Number(material.docs_count || 0);
+        } else {
+          acc.set(key, {
+            rik_code: String(material.rik_code || ""),
+            material_name: String(material.material_name || material.rik_code || "вЂ”"),
+            uom: String(material.uom || ""),
+            qty_sum: Number(material.qty_sum || 0),
+            docs_count: Number(material.docs_count || 0),
+          });
+        }
+      }
+    }
+
+    const value = {
+      sortedLevels,
+      topMaterials: Array.from(acc.values())
+        .sort((a, b) => b.qty_sum - a.qty_sum)
+        .slice(0, 20),
+    };
+    workDetailCacheRef.current.set(work.id, value);
+    return value;
+  }, []);
+
+  const getLevelDetailMaterials = React.useCallback(
+    (workId: string | null, level: RepDisciplineLevel | null): RepDisciplineLevel["materials"] => {
+      if (!workId || !level) return [] as RepDisciplineLevel["materials"];
+
+      const key = `${workId}:${level.id}`;
+      const cached = levelDetailCacheRef.current.get(key);
+      if (cached) return cached;
+
+      const sortedMaterials = [...(level.materials || [])].sort((a, b) => b.qty_sum - a.qty_sum);
+      levelDetailCacheRef.current.set(key, sortedMaterials);
+      return sortedMaterials;
+    },
+    [],
+  );
 
   const sortedWorks = React.useMemo(() => {
     const arr = Array.isArray(discipline?.works) ? [...discipline.works] : [];
     return arr.sort((a, b) => b.total_positions - a.total_positions);
   }, [discipline]);
 
-  const sortedWorkLevels = React.useMemo(() => {
-    if (!workModal) return [] as RepDisciplineLevel[];
-    return [...(workModal.levels || [])].sort((a, b) => {
-      const byPositions = b.total_positions - a.total_positions;
-      if (byPositions !== 0) return byPositions;
-      return String(a.location_label || a.level_name || "").localeCompare(String(b.location_label || b.level_name || ""), "ru");
-    });
-  }, [workModal]);
+  const workDetailViewModel = React.useMemo(
+    () => getWorkDetailViewModel(workModal),
+    [getWorkDetailViewModel, workModal],
+  );
+  const sortedWorkLevels = workDetailViewModel.sortedLevels;
 
-  const topWorkMaterials = React.useMemo(() => {
-    if (!workModal) return [] as {
-      rik_code: string;
-      material_name: string;
-      uom: string;
-      qty_sum: number;
-      docs_count: number;
-    }[];
+  const topWorkMaterials = workDetailViewModel.topMaterials;
 
-    const levels = Array.isArray(workModal.levels) ? workModal.levels : [];
-    const acc = new Map<string, { rik_code: string; material_name: string; uom: string; qty_sum: number; docs_count: number }>();
-    for (const lv of levels) {
-      const mats = Array.isArray(lv.materials) ? lv.materials : [];
-      for (const m of mats) {
-        const key = `${String(m.rik_code || "").trim()}|${String(m.uom || "").trim()}|${String(m.material_name || "").trim()}`;
-        const prev = acc.get(key);
-        if (prev) {
-          prev.qty_sum += Number(m.qty_sum || 0);
-          prev.docs_count += Number(m.docs_count || 0);
-        } else {
-          acc.set(key, {
-            rik_code: String(m.rik_code || ""),
-            material_name: String(m.material_name || m.rik_code || "—"),
-            uom: String(m.uom || ""),
-            qty_sum: Number(m.qty_sum || 0),
-            docs_count: Number(m.docs_count || 0),
-          });
-        }
-      }
-    }
-    return Array.from(acc.values())
-      .sort((a, b) => b.qty_sum - a.qty_sum)
-      .slice(0, 20);
-  }, [workModal]);
-
-  const sortedLevelMaterials = React.useMemo(() => {
-    if (!levelModal?.level) return [] as RepDisciplineLevel["materials"];
-    return [...(levelModal.level.materials || [])].sort((a, b) => b.qty_sum - a.qty_sum);
-  }, [levelModal]);
+  const sortedLevelMaterials = React.useMemo(
+    () => getLevelDetailMaterials(levelModal?.work.id ?? null, levelModal?.level ?? null),
+    [getLevelDetailMaterials, levelModal],
+  );
 
   const objectOptions = React.useMemo(() => (Array.isArray(repOptObjects) ? repOptObjects : []), [repOptObjects]);
 
@@ -191,19 +250,41 @@ export default function DirectorReportsModal({
   const issueCost = Number(disSummary?.issue_cost_total ?? 0);
   const purchaseCost = Number(disSummary?.purchase_cost_total ?? 0);
   const hasCostBase = purchaseCost > 0;
-  const ratioText = hasCostBase ? `${ratioPct}%` : "н/д";
+  const ratioText = hasCostBase ? `${ratioPct}%` : "РЅ/Рґ";
 
   const onTabPress = React.useCallback((t: RepTab) => {
+    detailOpenTraceRef.current = null;
     setWorkModal(null);
     setLevelModal(null);
     setRepTab(t);
   }, [setRepTab]);
 
   const handleCloseAll = React.useCallback(() => {
+    detailOpenTraceRef.current = null;
     setWorkModal(null);
     setLevelModal(null);
     onClose();
   }, [onClose]);
+
+  React.useEffect(() => {
+    if (!DETAIL_TIMING || !workModal) return;
+    if (detailOpenTraceRef.current?.kind !== "work") return;
+    const duration = Math.round(nowMs() - detailOpenTraceRef.current.startedAt);
+    detailOpenTraceRef.current = null;
+    console.info(
+      `[director_works] detail_open:work duration_ms=${duration} levels=${sortedWorkLevels.length} top_materials=${topWorkMaterials.length}`,
+    );
+  }, [sortedWorkLevels.length, topWorkMaterials.length, workModal]);
+
+  React.useEffect(() => {
+    if (!DETAIL_TIMING || !levelModal) return;
+    if (detailOpenTraceRef.current?.kind !== "level") return;
+    const duration = Math.round(nowMs() - detailOpenTraceRef.current.startedAt);
+    detailOpenTraceRef.current = null;
+    console.info(
+      `[director_works] detail_open:level duration_ms=${duration} materials=${sortedLevelMaterials.length}`,
+    );
+  }, [levelModal, sortedLevelMaterials.length]);
 
   const renderMaterialRow = React.useCallback(({ item }: { item: RepRow }) => {
     const qAll = Number(item.qty_total || 0);
@@ -215,8 +296,8 @@ export default function DirectorReportsModal({
         <View style={s.mobMain}>
           <Text style={s.mobTitle} numberOfLines={2}>{item.name_human_ru || item.rik_code}</Text>
           <Text style={s.mobMeta} numberOfLines={2}>
-            {`Выдано: ${qAll} ${item.uom} · док ${docs}`}
-            {qNoReq > 0 ? ` · без заявки: ${qNoReq} (${docsNoReq} док)` : ""}
+            {`Р’С‹РґР°РЅРѕ: ${qAll} ${item.uom} В· РґРѕРє ${docs}`}
+            {qNoReq > 0 ? ` В· Р±РµР· Р·Р°СЏРІРєРё: ${qNoReq} (${docsNoReq} РґРѕРє)` : ""}
           </Text>
         </View>
       </View>
@@ -254,6 +335,7 @@ export default function DirectorReportsModal({
     return (
       <Pressable
         onPress={() => {
+          detailOpenTraceRef.current = { kind: "work", startedAt: nowMs() };
           setLevelModal(null);
           setWorkModal(item);
         }}
@@ -261,8 +343,8 @@ export default function DirectorReportsModal({
       >
         <View style={s.mobMain}>
           <Text style={[s.mobTitle, isMissingWork ? { color: "#EF4444" } : null]} numberOfLines={1}>{item.work_type_name}</Text>
-          <Text style={s.mobMeta} numberOfLines={1}>{`Позиции: ${item.total_positions} · Локации: ${Number(item.location_count ?? locations.length)}`}</Text>
-          <Text style={s.mobMeta} numberOfLines={1}>{`По заявке: ${item.req_positions} · Свободно: ${item.free_positions}`}</Text>
+          <Text style={s.mobMeta} numberOfLines={1}>{`РџРѕР·РёС†РёРё: ${item.total_positions} В· Р›РѕРєР°С†РёРё: ${Number(item.location_count ?? locations.length)}`}</Text>
+          <Text style={s.mobMeta} numberOfLines={1}>{`РџРѕ Р·Р°СЏРІРєРµ: ${item.req_positions} В· РЎРІРѕР±РѕРґРЅРѕ: ${item.free_positions}`}</Text>
           {preview ? <Text style={s.mobMeta} numberOfLines={2}>{preview}</Text> : null}
         </View>
       </Pressable>
@@ -273,6 +355,7 @@ export default function DirectorReportsModal({
     <Pressable
       onPress={() => {
         if (!workModal) return;
+        detailOpenTraceRef.current = { kind: "level", startedAt: nowMs() };
         setLevelModal({ work: workModal, level: item });
         setWorkModal(null);
       }}
@@ -284,8 +367,8 @@ export default function DirectorReportsModal({
         {compactParts([item.system_name, item.zone_name]).length ? (
           <Text style={s.mobMeta} numberOfLines={1}>{compactParts([item.system_name, item.zone_name]).join(" / ")}</Text>
         ) : null}
-        <Text style={s.mobMeta} numberOfLines={1}>{`Позиции: ${item.total_positions} · Материалы: ${Array.isArray(item.materials) ? item.materials.length : 0}`}</Text>
-        <Text style={s.mobMeta} numberOfLines={1}>{`По заявке: ${item.req_positions} · Свободно: ${item.free_positions}`}</Text>
+        <Text style={s.mobMeta} numberOfLines={1}>{`РџРѕР·РёС†РёРё: ${item.total_positions} В· РњР°С‚РµСЂРёР°Р»С‹: ${Array.isArray(item.materials) ? item.materials.length : 0}`}</Text>
+        <Text style={s.mobMeta} numberOfLines={1}>{`РџРѕ Р·Р°СЏРІРєРµ: ${item.req_positions} В· РЎРІРѕР±РѕРґРЅРѕ: ${item.free_positions}`}</Text>
       </View>
     </Pressable>
   ), [workModal]);
@@ -296,7 +379,7 @@ export default function DirectorReportsModal({
         <Text style={s.mobTitle} numberOfLines={2}>{item.material_name}</Text>
         <Text style={s.mobMeta} numberOfLines={1}>{`${item.qty_sum} ${item.uom || ""}`}</Text>
         <Text style={s.mobMeta} numberOfLines={1}>
-          {`Цена: ${money(Number(item.unit_price ?? 0))} · Сумма: ${money(Number(item.amount_sum ?? 0))}`}
+          {`Р¦РµРЅР°: ${money(Number(item.unit_price ?? 0))} В· РЎСѓРјРјР°: ${money(Number(item.amount_sum ?? 0))}`}
         </Text>
       </View>
     </View>
@@ -307,7 +390,7 @@ export default function DirectorReportsModal({
       <View style={s.mobMain}>
         <Text style={s.mobTitle} numberOfLines={2}>{item.material_name}</Text>
         <Text style={s.mobMeta} numberOfLines={1}>{`${item.qty_sum} ${item.uom || ""}`}</Text>
-        <Text style={s.mobMeta} numberOfLines={1}>{`Документов: ${item.docs_count}`}</Text>
+        <Text style={s.mobMeta} numberOfLines={1}>{`Р”РѕРєСѓРјРµРЅС‚РѕРІ: ${item.docs_count}`}</Text>
       </View>
     </View>
   ), []);
@@ -333,17 +416,17 @@ export default function DirectorReportsModal({
   const disciplineListHeader = React.useMemo(() => (
     <View style={[s.mobCard, { marginBottom: 10, borderColor: ratioTint }]}>
       <View style={s.mobMain}>
-        <Text style={s.mobTitle}>Расход / Закупки (%)</Text>
-        <Text style={[s.mobTitle, { color: ratioTint }]}>{`Расход / Закупки: ${repDisciplinePriceLoading ? "…" : ratioText}`}</Text>
-        <Text style={s.mobMeta}>по стоимости за период</Text>
+        <Text style={s.mobTitle}>Р Р°СЃС…РѕРґ / Р—Р°РєСѓРїРєРё (%)</Text>
+        <Text style={[s.mobTitle, { color: ratioTint }]}>{`Р Р°СЃС…РѕРґ / Р—Р°РєСѓРїРєРё: ${repDisciplinePriceLoading ? "вЂ¦" : ratioText}`}</Text>
+        <Text style={s.mobMeta}>РїРѕ СЃС‚РѕРёРјРѕСЃС‚Рё Р·Р° РїРµСЂРёРѕРґ</Text>
         {!repDisciplinePriceLoading ? (
-          <Text style={s.mobMeta}>{`Расход: ${money(issueCost)} · Закупки: ${money(purchaseCost)}`}</Text>
+          <Text style={s.mobMeta}>{`Р Р°СЃС…РѕРґ: ${money(issueCost)} В· Р—Р°РєСѓРїРєРё: ${money(purchaseCost)}`}</Text>
         ) : null}
         {!repDisciplinePriceLoading && Number(disSummary?.unpriced_issue_pct ?? 0) > 0 ? (
-          <Text style={s.mobMeta}>{`Неоценено: ${Number(disSummary?.unpriced_issue_pct ?? 0)}%`}</Text>
+          <Text style={s.mobMeta}>{`РќРµРѕС†РµРЅРµРЅРѕ: ${Number(disSummary?.unpriced_issue_pct ?? 0)}%`}</Text>
         ) : null}
         {!repDisciplinePriceLoading && !hasCostBase ? (
-          <Text style={s.mobMeta}>Недостаточно цен для расчета базы закупок.</Text>
+          <Text style={s.mobMeta}>РќРµРґРѕСЃС‚Р°С‚РѕС‡РЅРѕ С†РµРЅ РґР»СЏ СЂР°СЃС‡РµС‚Р° Р±Р°Р·С‹ Р·Р°РєСѓРїРѕРє.</Text>
         ) : null}
       </View>
     </View>
@@ -359,7 +442,7 @@ export default function DirectorReportsModal({
           {compactParts([levelModal.level.system_name, levelModal.level.zone_name]).length ? (
             <Text style={s.mobMeta} numberOfLines={1}>{compactParts([levelModal.level.system_name, levelModal.level.zone_name]).join(" / ")}</Text>
           ) : null}
-          <Text style={s.mobMeta} numberOfLines={1}>{`Позиции: ${levelModal.level.total_positions} · Материалы: ${sortedLevelMaterials.length}`}</Text>
+          <Text style={s.mobMeta} numberOfLines={1}>{`РџРѕР·РёС†РёРё: ${levelModal.level.total_positions} В· РњР°С‚РµСЂРёР°Р»С‹: ${sortedLevelMaterials.length}`}</Text>
         </View>
       </View>
     );
@@ -371,10 +454,10 @@ export default function DirectorReportsModal({
       <View style={[s.mobCard, { marginHorizontal: 12, marginBottom: 10 }]}>
         <View style={s.mobMain}>
           <Text style={s.mobTitle} numberOfLines={1}>{workModal.work_type_name}</Text>
-          <Text style={s.mobMeta} numberOfLines={1}>{`Локации: ${sortedWorkLevels.length}`}</Text>
-          <Text style={s.mobMeta} numberOfLines={1}>{`Позиции: ${workModal.total_positions}`}</Text>
-          <Text style={s.mobMeta} numberOfLines={1}>{`По заявке: ${workModal.req_positions} · Свободно: ${workModal.free_positions}`}</Text>
-          <Text style={s.mobMeta} numberOfLines={1}>{`Документов: ${workModal.total_docs} · Кол-во: ${workModal.total_qty}`}</Text>
+          <Text style={s.mobMeta} numberOfLines={1}>{`Р›РѕРєР°С†РёРё: ${sortedWorkLevels.length}`}</Text>
+          <Text style={s.mobMeta} numberOfLines={1}>{`РџРѕР·РёС†РёРё: ${workModal.total_positions}`}</Text>
+          <Text style={s.mobMeta} numberOfLines={1}>{`РџРѕ Р·Р°СЏРІРєРµ: ${workModal.req_positions} В· РЎРІРѕР±РѕРґРЅРѕ: ${workModal.free_positions}`}</Text>
+          <Text style={s.mobMeta} numberOfLines={1}>{`Р”РѕРєСѓРјРµРЅС‚РѕРІ: ${workModal.total_docs} В· РљРѕР»-РІРѕ: ${workModal.total_qty}`}</Text>
         </View>
       </View>
     );
@@ -397,7 +480,7 @@ export default function DirectorReportsModal({
     <DirectorFinanceCardModal
       visible={visible}
       onClose={handleCloseAll}
-      title="Весь период (даты)"
+      title="Р’РµСЃСЊ РїРµСЂРёРѕРґ (РґР°С‚С‹)"
       periodShort={repPeriodShort}
       loading={repLoading}
       onOpenPeriod={onOpenPeriod}
@@ -438,8 +521,8 @@ export default function DirectorReportsModal({
             <View style={s.sheet}>
               <View style={s.sheetHandle} />
               <View style={{ flexDirection: "row", justifyContent: "space-between", paddingHorizontal: 14, paddingBottom: 10 }}>
-                <Text style={{ color: UI.text, fontWeight: "900", fontSize: 16 }}>{`Объекты (${repOptObjects?.length ?? 0})`}</Text>
-                <Pressable onPress={onCloseRepObj}><Text style={{ color: UI.sub, fontWeight: "900" }}>Закрыть</Text></Pressable>
+                <Text style={{ color: UI.text, fontWeight: "900", fontSize: 16 }}>{`РћР±СЉРµРєС‚С‹ (${repOptObjects?.length ?? 0})`}</Text>
+                <Pressable onPress={onCloseRepObj}><Text style={{ color: UI.sub, fontWeight: "900" }}>Р—Р°РєСЂС‹С‚СЊ</Text></Pressable>
               </View>
               <FlatList
                 style={{ maxHeight: 420 }}
@@ -453,22 +536,28 @@ export default function DirectorReportsModal({
             </View>
           </RNModal>
         ) : levelModal ? (
-          <View pointerEvents="box-none" style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0 }}>
-            <Pressable
-              onPress={() => setLevelModal(null)}
+          <View
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: UI.bg,
+            }}
+          >
+            <View
               style={{
-                position: "absolute",
-                top: TOP_ACTIONS_INTERACTIVE_HEIGHT,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                backgroundColor: "rgba(0,0,0,0.55)",
+                paddingTop: detailTopInset,
+                paddingHorizontal: 14,
+                paddingBottom: 12,
+                borderBottomWidth: 1,
+                borderBottomColor: UI.line,
+                backgroundColor: UI.bg,
               }}
-            />
-            <View style={{ position: "absolute", left: 0, right: 0, bottom: 0 }}>
-              <View style={s.sheet}>
-                <View style={s.sheetHandle} />
-                <View style={{ flexDirection: "row", justifyContent: "space-between", paddingHorizontal: 14, paddingBottom: 10 }}>
+            >
+              <View style={{ flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
+                <View style={{ flex: 1, minWidth: 0 }}>
                   <Text style={{ color: UI.text, fontWeight: "900", fontSize: 16 }} numberOfLines={2}>{levelModalTitle}</Text>
                   <View style={{ flexDirection: "row", alignItems: "center", gap: 14 }}>
                     <Pressable
@@ -477,76 +566,84 @@ export default function DirectorReportsModal({
                         setLevelModal(null);
                       }}
                     >
-                      <Text style={{ color: UI.sub, fontWeight: "900" }}>Назад</Text>
+                      <Text style={{ color: UI.sub, fontWeight: "900" }}>РќР°Р·Р°Рґ</Text>
                     </Pressable>
-                    <Pressable onPress={() => setLevelModal(null)}><Text style={{ color: UI.sub, fontWeight: "900" }}>Закрыть</Text></Pressable>
+                    <Pressable onPress={() => setLevelModal(null)}><Text style={{ color: UI.sub, fontWeight: "900" }}>Р—Р°РєСЂС‹С‚СЊ</Text></Pressable>
                   </View>
                 </View>
-                <FlatList
-                  style={{ flex: 1 }}
-                  data={sortedLevelMaterials}
-                  renderItem={renderLevelMaterialRow}
-                  keyExtractor={levelMaterialKeyExtractor}
-                  ListHeaderComponent={levelModalHeader}
-                  contentContainerStyle={{ paddingBottom: 4 }}
-                  keyboardShouldPersistTaps="handled"
-                  showsVerticalScrollIndicator={false}
-                />
               </View>
             </View>
+            <FlatList
+              key={`level:${levelModal.work.id}:${levelModal.level.id}`}
+              style={{ flex: 1 }}
+              data={sortedLevelMaterials}
+              renderItem={renderLevelMaterialRow}
+              keyExtractor={levelMaterialKeyExtractor}
+              ListHeaderComponent={levelModalHeader}
+              contentContainerStyle={{ paddingTop: 12, paddingBottom: detailBottomInset }}
+              keyboardShouldPersistTaps="handled"
+              showsVerticalScrollIndicator={false}
+            />
           </View>
         ) : workModal ? (
-          <View pointerEvents="box-none" style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0 }}>
-            <Pressable
-              onPress={() => setWorkModal(null)}
+          <View
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: UI.bg,
+            }}
+          >
+            <View
               style={{
-                position: "absolute",
-                top: TOP_ACTIONS_INTERACTIVE_HEIGHT,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                backgroundColor: "rgba(0,0,0,0.55)",
+                paddingTop: detailTopInset,
+                paddingHorizontal: 14,
+                paddingBottom: 12,
+                borderBottomWidth: 1,
+                borderBottomColor: UI.line,
+                backgroundColor: UI.bg,
               }}
-            />
-            <View style={{ position: "absolute", left: 0, right: 0, bottom: 0 }}>
-              <View style={s.sheet}>
-                <View style={s.sheetHandle} />
-                <View style={{ flexDirection: "row", justifyContent: "space-between", paddingHorizontal: 14, paddingBottom: 10 }}>
-                  <Text style={{ color: UI.text, fontWeight: "900", fontSize: 16 }} numberOfLines={1}>{`Работа: ${workModal.work_type_name}`}</Text>
-                  <Pressable onPress={() => setWorkModal(null)}><Text style={{ color: UI.sub, fontWeight: "900" }}>Закрыть</Text></Pressable>
+            >
+              <View style={{ flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
+                <View style={{ flex: 1, minWidth: 0 }}>
+                  <Text style={{ color: UI.text, fontWeight: "900", fontSize: 16 }} numberOfLines={1}>{`Р Р°Р±РѕС‚Р°: ${workModal.work_type_name}`}</Text>
+                  <Pressable onPress={() => setWorkModal(null)}><Text style={{ color: UI.sub, fontWeight: "900" }}>Р—Р°РєСЂС‹С‚СЊ</Text></Pressable>
                 </View>
-                <FlatList
-                  style={{ flex: 1 }}
-                  data={sortedWorkLevels}
-                  renderItem={renderLevelRow}
-                  keyExtractor={levelKeyExtractor}
-                  ListHeaderComponent={workModalHeader}
-                  ListFooterComponent={workModalFooter}
-                  contentContainerStyle={{ paddingBottom: 4 }}
-                  keyboardShouldPersistTaps="handled"
-                  showsVerticalScrollIndicator={false}
-                />
               </View>
             </View>
+            <FlatList
+              key={`work:${workModal.id}`}
+              style={{ flex: 1 }}
+              data={sortedWorkLevels}
+              renderItem={renderLevelRow}
+              keyExtractor={levelKeyExtractor}
+              ListHeaderComponent={workModalHeader}
+              ListFooterComponent={workModalFooter}
+              contentContainerStyle={{ paddingTop: 12, paddingBottom: detailBottomInset }}
+              keyboardShouldPersistTaps="handled"
+              showsVerticalScrollIndicator={false}
+            />
           </View>
         ) : null
       }
     >
       <View style={{ marginBottom: 10 }}>
-        <Text style={{ color: UI.sub, fontWeight: "900", marginBottom: 6 }}>Склад</Text>
+        <Text style={{ color: UI.sub, fontWeight: "900", marginBottom: 6 }}>РЎРєР»Р°Рґ</Text>
         <View style={{ flexDirection: "row", flexWrap: "wrap" }}>
           <Pressable onPress={() => void applyObjectFilter(null)} style={[s.tab, !repObjectName && s.tabActive, { marginRight: 8, marginBottom: 8 }]}>
-            <Text style={{ color: !repObjectName ? UI.text : UI.sub, fontWeight: "900" }}>Все</Text>
+            <Text style={{ color: !repObjectName ? UI.text : UI.sub, fontWeight: "900" }}>Р’СЃРµ</Text>
           </Pressable>
           <Pressable onPress={onOpenRepObj} style={[s.tab, repObjectName && s.tabActive, { marginRight: 8, marginBottom: 8 }]}>
-            <Text style={{ color: repObjectName ? UI.text : UI.sub, fontWeight: "900" }}>{`Объекты · ${(repOptObjects?.length ?? 0)}`}</Text>
+            <Text style={{ color: repObjectName ? UI.text : UI.sub, fontWeight: "900" }}>{`РћР±СЉРµРєС‚С‹ В· ${(repOptObjects?.length ?? 0)}`}</Text>
           </Pressable>
           {repObjectName ? (
             <Pressable onPress={onOpenRepObj} style={[s.tab, s.tabActive, { marginRight: 8, marginBottom: 8 }]}>
               <Text numberOfLines={1} style={{ color: UI.text, fontWeight: "900", maxWidth: 220 }}>{repObjectName}</Text>
             </Pressable>
           ) : null}
-          {repOptLoading ? <Text style={{ color: UI.sub, fontWeight: "800", marginLeft: 4, marginTop: 8 }}>…</Text> : null}
+          {repOptLoading ? <Text style={{ color: UI.sub, fontWeight: "800", marginLeft: 4, marginTop: 8 }}>вЂ¦</Text> : null}
         </View>
       </View>
 
@@ -554,23 +651,23 @@ export default function DirectorReportsModal({
         <View style={{ marginBottom: 10 }}>
           <View style={{ flexDirection: "row", gap: 8 }}>
             <View style={[s.kpiPillHalf, { flex: 1 }]}>
-              <Text style={s.kpiLabel}>Документов</Text>
-              <Text style={s.kpiValue}>{repLoading ? "…" : String(issuesTotal)}</Text>
+              <Text style={s.kpiLabel}>Р”РѕРєСѓРјРµРЅС‚РѕРІ</Text>
+              <Text style={s.kpiValue}>{repLoading ? "вЂ¦" : String(issuesTotal)}</Text>
             </View>
             <View style={[s.kpiPillHalf, { flex: 1 }]}>
-              <Text style={s.kpiLabel}>Позиции</Text>
-              <Text style={s.kpiValue}>{repLoading ? "…" : String(itemsTotal)}</Text>
+              <Text style={s.kpiLabel}>РџРѕР·РёС†РёРё</Text>
+              <Text style={s.kpiValue}>{repLoading ? "вЂ¦" : String(itemsTotal)}</Text>
             </View>
           </View>
           <View style={{ height: 8 }} />
           <View style={{ flexDirection: "row", gap: 8 }}>
             <View style={[s.kpiPillHalf, { flex: 1 }]}>
-              <Text style={s.kpiLabel}>Без объекта</Text>
-              <Text style={s.kpiValue}>{repLoading ? "…" : `${issuesNoObj} · ${pct(issuesNoObj, issuesTotal)}%`}</Text>
+              <Text style={s.kpiLabel}>Р‘РµР· РѕР±СЉРµРєС‚Р°</Text>
+              <Text style={s.kpiValue}>{repLoading ? "вЂ¦" : `${issuesNoObj} В· ${pct(issuesNoObj, issuesTotal)}%`}</Text>
             </View>
             <View style={[s.kpiPillHalf, { flex: 1 }]}>
-              <Text style={s.kpiLabel}>Без заявки</Text>
-              <Text style={s.kpiValue}>{repLoading ? "…" : `${itemsNoReq} · ${pct(itemsNoReq, itemsTotal)}%`}</Text>
+              <Text style={s.kpiLabel}>Р‘РµР· Р·Р°СЏРІРєРё</Text>
+              <Text style={s.kpiValue}>{repLoading ? "вЂ¦" : `${itemsNoReq} В· ${pct(itemsNoReq, itemsTotal)}%`}</Text>
             </View>
           </View>
         </View>
@@ -582,7 +679,7 @@ export default function DirectorReportsModal({
           return (
             <Pressable key={t} onPress={() => onTabPress(t)} style={[s.tab, active && s.tabActive, { marginRight: 8 }]}>
               <Text style={{ color: active ? UI.text : UI.sub, fontWeight: "900" }}>
-                {t === "materials" ? "Материалы" : "Работы"}
+                {t === "materials" ? "РњР°С‚РµСЂРёР°Р»С‹" : "Р Р°Р±РѕС‚С‹"}
               </Text>
             </Pressable>
           );
@@ -600,7 +697,7 @@ export default function DirectorReportsModal({
             showsVerticalScrollIndicator={false}
             contentContainerStyle={{ paddingBottom: 4 }}
             ListEmptyComponent={!repLoading && !rows.length ? (
-              <Text style={{ opacity: 0.7, color: UI.sub, paddingVertical: 8 }}>Нет выдач за выбранный период.</Text>
+              <Text style={{ opacity: 0.7, color: UI.sub, paddingVertical: 8 }}>РќРµС‚ РІС‹РґР°С‡ Р·Р° РІС‹Р±СЂР°РЅРЅС‹Р№ РїРµСЂРёРѕРґ.</Text>
             ) : null}
           />
         ) : (
@@ -614,7 +711,7 @@ export default function DirectorReportsModal({
             showsVerticalScrollIndicator={false}
             contentContainerStyle={{ paddingBottom: 4 }}
             ListEmptyComponent={!repLoading && !sortedWorks.length ? (
-              <Text style={{ opacity: 0.7, color: UI.sub, paddingVertical: 8 }}>Нет данных по работам за период.</Text>
+              <Text style={{ opacity: 0.7, color: UI.sub, paddingVertical: 8 }}>РќРµС‚ РґР°РЅРЅС‹С… РїРѕ СЂР°Р±РѕС‚Р°Рј Р·Р° РїРµСЂРёРѕРґ.</Text>
             ) : null}
           />
         )}
@@ -622,7 +719,7 @@ export default function DirectorReportsModal({
 
       <View style={{ marginTop: 10, flexDirection: "row", gap: 8 }}>
         <Pressable
-          onPress={() => Alert.alert("Excel", "Позже добавим выгрузку Excel.")}
+          onPress={() => Alert.alert("Excel", "РџРѕР·Р¶Рµ РґРѕР±Р°РІРёРј РІС‹РіСЂСѓР·РєСѓ Excel.")}
           style={[s.openBtn, { paddingVertical: 10, paddingHorizontal: 14, backgroundColor: UI.btnNeutral }]}
         >
           <Text style={[s.openBtnText, { fontSize: 12 }]}>Excel</Text>
@@ -632,7 +729,7 @@ export default function DirectorReportsModal({
           onPress={() => void applyObjectFilter(null)}
           style={[s.openBtn, { paddingVertical: 10, paddingHorizontal: 14, backgroundColor: "rgba(255,255,255,0.06)" }]}
         >
-          <Text style={[s.openBtnText, { fontSize: 12 }]}>Все объекты</Text>
+          <Text style={[s.openBtnText, { fontSize: 12 }]}>Р’СЃРµ РѕР±СЉРµРєС‚С‹</Text>
         </Pressable>
       </View>
     </DirectorFinanceCardModal>

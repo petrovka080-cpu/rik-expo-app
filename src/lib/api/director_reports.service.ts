@@ -62,6 +62,24 @@ import {
   shouldRejectAllObjectsEmptyMaterialsPayload,
 } from "./director_reports.fallbacks";
 
+const summarizeDisciplinePayload = (payload: DirectorDisciplinePayload | null) => {
+  const works = Array.isArray(payload?.works) ? payload.works : [];
+  let levels = 0;
+  let materials = 0;
+  for (const work of works) {
+    const workLevels = Array.isArray(work.levels) ? work.levels : [];
+    levels += workLevels.length;
+    for (const level of workLevels) {
+      materials += Array.isArray(level.materials) ? level.materials.length : 0;
+    }
+  }
+  return {
+    works: works.length,
+    levels,
+    materials,
+  };
+};
+
 export async function fetchDirectorWarehouseReportOptions(p: {
   from: string;
   to: string;
@@ -377,6 +395,7 @@ export async function fetchDirectorWarehouseReportDiscipline(p: {
       to: pTo,
       objectName: p.objectName ?? null,
       objectIdByName: p.objectIdByName ?? {},
+      skipMaterialNameResolve: !!opts?.skipPrices,
     });
     disciplineRowsCache.set(rowsKey, { ts: Date.now(), rows: rowsResult.rows, source: rowsResult.source });
     trimMap(disciplineRowsCache);
@@ -387,14 +406,14 @@ export async function fetchDirectorWarehouseReportDiscipline(p: {
     console.info(`[director_reports] discipline.rows_source: ${rowsResult.source} rows=${rows.length}`);
   }
   try {
-    // Table path already resolves names by code during row materialization.
-    // Skip expensive cross-source enrichment here to keep works first paint fast.
-    if (rowsResult.source !== "tables") {
+    if (!opts?.skipPrices && rowsResult.source !== "tables") {
       const tNames = nowMs();
       rows = await enrichFactRowsMaterialNames(rows);
       logTiming("discipline.enrich_material_names", tNames);
     } else if (REPORTS_TIMING) {
-      console.info("[director_reports] discipline.enrich_material_names: skipped_for_tables_source");
+      console.info(
+        `[director_reports] discipline.enrich_material_names: skipped_${opts?.skipPrices ? "in_first_stage" : "for_tables_source"}`,
+      );
     }
   } catch { }
   try {
@@ -418,6 +437,12 @@ export async function fetchDirectorWarehouseReportDiscipline(p: {
     });
     legacyWorksSnapshotCache.set(cKey, { ts: Date.now(), ...worksSnapshotFromPayload(payload) });
     trimMap(legacyWorksSnapshotCache);
+    if (REPORTS_TIMING) {
+      const summary = summarizeDisciplinePayload(payload);
+      console.info(
+        `[director_reports] discipline.base_ready: works=${summary.works} levels=${summary.levels} materials=${summary.materials}`,
+      );
+    }
     logTiming("discipline.total", tTotal);
     return payload;
   }
@@ -465,6 +490,12 @@ export async function fetchDirectorWarehouseReportDiscipline(p: {
   });
   legacyWorksSnapshotCache.set(cKey, { ts: Date.now(), ...worksSnapshotFromPayload(payload) });
   trimMap(legacyWorksSnapshotCache);
+  if (REPORTS_TIMING) {
+    const summary = summarizeDisciplinePayload(payload);
+    console.info(
+      `[director_reports] discipline.priced_ready: works=${summary.works} levels=${summary.levels} materials=${summary.materials}`,
+    );
+  }
   logTiming("discipline.total", tTotal);
   return payload;
 }
