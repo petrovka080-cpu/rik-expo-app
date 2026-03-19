@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
     listRequestItems,
     type ReqItemRow,
@@ -19,16 +19,22 @@ export function useForemanItemsState(formatQtyInput: (v?: number | null) => stri
     const [items, setItems] = useState<ReqItemRow[]>([]);
     const [qtyDrafts, setQtyDrafts] = useState<Record<string, string>>({});
     const [qtyBusyMap, setQtyBusyMap] = useState<Record<string, boolean>>({});
+    const localHydratedRef = useRef(false);
 
-    const loadItems = useCallback(async (ridOverride?: string | number | null) => {
+    const loadItems = useCallback(async (
+        ridOverride?: string | number | null,
+        options?: { forceRemote?: boolean },
+    ) => {
         const target = ridOverride ?? requestId;
         const key = ridStr(target);
         if (!key) {
+            if (localHydratedRef.current && !options?.forceRemote) return;
             setItems([]);
             return;
         }
         try {
             const rows = await listRequestItems(key);
+            localHydratedRef.current = false;
             setItems(Array.isArray(rows) ? rows : []);
         } catch (e) {
             warnForemanItemsState(e);
@@ -72,6 +78,19 @@ export function useForemanItemsState(formatQtyInput: (v?: number | null) => stri
         });
     }, []);
 
+    const hydrateLocalDraft = useCallback((payload: {
+        requestId?: string | null;
+        items: ReqItemRow[];
+        qtyDrafts?: Record<string, string>;
+    }) => {
+        localHydratedRef.current = true;
+        setRequestId(ridStr(payload.requestId));
+        setItems(Array.isArray(payload.items) ? payload.items : []);
+        if (payload.qtyDrafts) {
+            setQtyDrafts({ ...payload.qtyDrafts });
+        }
+    }, []);
+
     const ensureAndGetId = useCallback(async (meta: RequestDraftMeta, setDisplayNo?: (id: string, no: string) => void) => {
         const existing = ridStr(requestId);
         if (existing) return existing;
@@ -101,6 +120,7 @@ export function useForemanItemsState(formatQtyInput: (v?: number | null) => stri
         loadItems,
         setRowBusy,
         removeRowLocal,
+        hydrateLocalDraft,
         ensureAndGetId,
     };
 }

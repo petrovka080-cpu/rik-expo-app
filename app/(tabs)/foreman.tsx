@@ -5,6 +5,7 @@ import {
   View,
   Text,
   Alert,
+  AppState,
   Platform,
   Pressable,
   KeyboardAvoidingView,
@@ -12,6 +13,7 @@ import {
   ListRenderItem,
 } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useIsFocused } from "@react-navigation/native";
 import CalcModal from "../../src/components/foreman/CalcModal";
 import WorkTypePicker from "../../src/components/foreman/WorkTypePicker";
 import CatalogModal from '../../src/components/foreman/CatalogModal';
@@ -44,20 +46,18 @@ import { supabase } from '../../src/lib/supabaseClient';
 import {
   rikQuickSearch,
   fetchRequestDetails,
-  updateRequestMeta,
   getLocalDraftId,
   clearLocalDraftId,
   clearCachedDraftRequestId,
+  updateRequestMeta,
   type ReqItemRow,
   type RequestDetails,
 } from '../../src/lib/catalog_api';
-import type { CalcRow, PickedRow, RequestDraftMeta, RefOption } from "../../src/screens/foreman/foreman.types";
+import type { RequestDraftMeta, RefOption } from "../../src/screens/foreman/foreman.types";
 import {
   isDraftLikeStatus,
   loadForemanHistory,
-  requestItemAddOrIncAndPatchMeta,
   ridStr,
-  runPool,
   saveForemanToHistory,
   shortId,
   toErrorText,
@@ -85,6 +85,23 @@ import {
   resolveForemanQuickRequest,
   type ForemanAiQuickItem,
 } from "../../src/screens/foreman/foreman.ai";
+import {
+  FOREMAN_LOCAL_ONLY_REQUEST_ID,
+  appendRowsToForemanLocalDraft,
+  buildForemanLocalDraftSnapshot,
+  clearForemanLocalDraftSnapshot,
+  hasForemanLocalDraftContent,
+  loadForemanLocalDraftSnapshot,
+  markForemanLocalDraftSubmitRequested,
+  areForemanLocalDraftSnapshotsEqual,
+  removeForemanLocalDraftItem,
+  saveForemanLocalDraftSnapshot,
+  snapshotToReqItems,
+  syncForemanLocalDraftSnapshot,
+  updateForemanLocalDraftItemQty,
+  type ForemanDraftAppendInput,
+  type ForemanLocalDraftSnapshot,
+} from "../../src/screens/foreman/foreman.localDraft";
 
 type WebUiApi = {
   onZoneChange: (v: string) => void;
@@ -112,6 +129,7 @@ declare global {
 export default function ForemanScreen() {
   const gbusy = useGlobalBusy();
   const router = useRouter();
+  const isScreenFocused = useIsFocused();
   // Safe global access for web-specific UI bridge
   const safeWebUi = typeof webUi !== 'undefined' ? webUi : undefined;
 
@@ -130,7 +148,6 @@ export default function ForemanScreen() {
     historyRequests,
     historyLoading,
     historyVisible,
-    setHistoryVisible,
     fetchHistory,
     closeHistory,
   } = useForemanHistory();
@@ -146,7 +163,6 @@ export default function ForemanScreen() {
     displayNoByReq,
     setDisplayNoByReq,
     preloadDisplayNo,
-    getDisplayNo,
   } = useForemanDisplayNo();
 
   const {
@@ -160,7 +176,7 @@ export default function ForemanScreen() {
     setQtyBusyMap,
     loadItems,
     setRowBusy,
-    removeRowLocal,
+    hydrateLocalDraft,
     ensureAndGetId,
   } = useForemanItemsState(formatQtyInput);
 
@@ -186,11 +202,22 @@ export default function ForemanScreen() {
   const [aiQuickNotice, setAiQuickNotice] = useState("");
   const [aiQuickPreview, setAiQuickPreview] = useState<ForemanAiQuickItem[]>([]);
   const [headerAttention, setHeaderAttention] = useState<ForemanHeaderAttentionState | null>(null);
+  const [localDraftBootstrapReady, setLocalDraftBootstrapReady] = useState(false);
+  const [hasRestoredLocalDraft, setHasRestoredLocalDraft] = useState(false);
+  const [, bumpLocalDraftRevision] = useState(0);
   const headerRequirementsRef = useRef<ForemanHeaderRequirementResult>({
     missing: [],
     focusKey: null,
     message: "",
   });
+  const localDraftSnapshotRef = useRef<ForemanLocalDraftSnapshot | null>(null);
+  const draftSyncInFlightRef = useRef<Promise<void> | null>(null);
+  const appStateRef = useRef(AppState.currentState);
+  const syncLocalDraftNowRef = useRef<((options?: { submit?: boolean; context?: string }) => Promise<{
+    requestId?: string | null;
+    submitted?: unknown | null;
+  } | void>) | null>(null);
+  const wasScreenFocusedRef = useRef(false);
 
   const {
     objOptions, lvlOptions, sysOptions, zoneOptions,
@@ -209,16 +236,126 @@ export default function ForemanScreen() {
     return appOptions.find((o) => o.code === code)?.label || code;
   }, [appOptions]);
 
-  const isDraftActive = useMemo(() => isDraftLikeStatus(requestDetails?.status), [requestDetails?.status]);
+  const persistLocalDraftSnapshot = useCallback((snapshot: ForemanLocalDraftSnapshot | null) => {
+    if (areForemanLocalDraftSnapshotsEqual(localDraftSnapshotRef.current, snapshot, { ignoreUpdatedAt: true })) {
+      return;
+    }
+    localDraftSnapshotRef.current = snapshot;
+    bumpLocalDraftRevision((prev) => prev + 1);
+    void (snapshot && hasForemanLocalDraftContent(snapshot)
+      ? saveForemanLocalDraftSnapshot(snapshot)
+      : clearForemanLocalDraftSnapshot());
+  }, []);
+
+  const getActiveLocalDraftSnapshot = useCallback((targetRequestId?: string | null) => {
+    const snapshot = localDraftSnapshotRef.current;
+    if (!snapshot || !hasForemanLocalDraftContent(snapshot)) return null;
+
+    const currentRequestId = ridStr(targetRequestId ?? requestId);
+    const snapshotRequestId = ridStr(snapshot.requestId);
+
+    if (!snapshotRequestId) {
+      return currentRequestId ? null : snapshot;
+    }
+
+    return snapshotRequestId === currentRequestId ? snapshot : null;
+  }, [requestId]);
+
+  const applyLocalDraftSnapshotToUi = useCallback((snapshot: ForemanLocalDraftSnapshot | null, options?: {
+    restoreHeader?: boolean;
+    clearWhenEmpty?: boolean;
+  }) => {
+    persistLocalDraftSnapshot(snapshot);
+    if (!snapshot) {
+      if (options?.clearWhenEmpty) {
+        hydrateLocalDraft({ requestId: "", items: [], qtyDrafts: {} });
+      }
+      return;
+    }
+
+    hydrateLocalDraft({
+      requestId: snapshot.requestId,
+      items: snapshotToReqItems(snapshot),
+      qtyDrafts: snapshot.qtyDrafts,
+    });
+    if (snapshot.requestId && snapshot.displayNo) {
+      setDisplayNoByReq((prev) => ({ ...prev, [snapshot.requestId]: snapshot.displayNo! }));
+    }
+
+    setRequestDetails((prev) => ({
+      ...(prev ?? { id: snapshot.requestId || FOREMAN_LOCAL_ONLY_REQUEST_ID }),
+      id: snapshot.requestId || FOREMAN_LOCAL_ONLY_REQUEST_ID,
+      status: snapshot.status ?? prev?.status ?? "draft",
+      display_no: snapshot.displayNo ?? prev?.display_no ?? null,
+      foreman_name: snapshot.header.foreman || prev?.foreman_name || null,
+      comment: snapshot.header.comment || prev?.comment || null,
+      object_type_code: snapshot.header.objectType || prev?.object_type_code || null,
+      level_code: snapshot.header.level || prev?.level_code || null,
+      system_code: snapshot.header.system || prev?.system_code || null,
+      zone_code: snapshot.header.zone || prev?.zone_code || null,
+    }));
+
+    if (options?.restoreHeader) {
+      setForeman(snapshot.header.foreman);
+      setComment(snapshot.header.comment);
+      setObjectType(snapshot.header.objectType);
+      setLevel(snapshot.header.level);
+      setSystem(snapshot.header.system);
+      setZone(snapshot.header.zone);
+    }
+  }, [
+    hydrateLocalDraft,
+    persistLocalDraftSnapshot,
+    setDisplayNoByReq,
+    setComment,
+    setForeman,
+    setLevel,
+    setObjectType,
+    setSystem,
+    setZone,
+  ]);
+
+  const buildCurrentLocalDraftSnapshot = useCallback(() => {
+    return buildForemanLocalDraftSnapshot({
+      base: localDraftSnapshotRef.current,
+      requestId,
+      displayNo: requestDetails?.display_no ?? null,
+      status: requestDetails?.status ?? (items.length ? "draft" : null),
+      header: {
+        foreman,
+        comment,
+        objectType,
+        level,
+        system,
+        zone,
+      },
+      items,
+      qtyDrafts,
+    });
+  }, [comment, foreman, items, level, objectType, qtyDrafts, requestDetails?.display_no, requestDetails?.status, requestId, system, zone]);
+
+  const activeLocalDraftSnapshot = getActiveLocalDraftSnapshot();
+
+  const hasLocalDraft = useMemo(
+    () => Boolean(activeLocalDraftSnapshot && hasForemanLocalDraftContent(activeLocalDraftSnapshot)),
+    [activeLocalDraftSnapshot],
+  );
+
+  const isDraftActive = useMemo(
+    () => hasLocalDraft || isDraftLikeStatus(requestDetails?.status),
+    [hasLocalDraft, requestDetails?.status],
+  );
   const screenLock = busy || draftDeleteBusy || draftSendBusy;
 
   const canEditRequestItem = useCallback((row?: ReqItemRow | null) => {
     if (!row) return false;
     const activeRequestId = String(requestDetails?.id ?? '').trim();
-    if (!activeRequestId || !isDraftLikeStatus(requestDetails?.status)) return false;
+    const localRequestId = String(requestId || FOREMAN_LOCAL_ONLY_REQUEST_ID).trim();
+    if (!isDraftActive) return false;
     const itemRequest = String(row.request_id ?? '').trim();
-    return itemRequest === activeRequestId && isDraftLikeStatus(row.status);
-  }, [requestDetails?.id, requestDetails?.status]);
+    if (activeRequestId && itemRequest === activeRequestId && isDraftLikeStatus(requestDetails?.status)) return true;
+    return itemRequest === localRequestId || itemRequest === FOREMAN_LOCAL_ONLY_REQUEST_ID;
+  }, [isDraftActive, requestDetails?.id, requestDetails?.status, requestId]);
 
   const resetDraftState = useCallback(() => {
     setRequestId('');
@@ -228,11 +365,6 @@ export default function ForemanScreen() {
     setQtyBusyMap({});
     resetHeader();
   }, [resetHeader, setItems, setQtyBusyMap, setQtyDrafts, setRequestId]);
-
-  const clearDraftCache = useCallback(() => {
-    clearLocalDraftId();
-    clearCachedDraftRequestId();
-  }, []);
 
   const showHint = useCallback((title: string, message: string) => {
     if (Platform.OS === 'web' && safeWebUi) safeWebUi.alert?.(`${title}\n\n${message}`);
@@ -294,25 +426,120 @@ export default function ForemanScreen() {
     return (dn && dn.trim()) || `#${shortId(key)}`;
   }, [displayNoByReq, requestDetails?.display_no, requestId]);
 
-  const syncRequestHeaderMeta = useCallback(async (rid: string, context: string) => {
-    const meta: RequestDraftMeta = {
+  const buildRequestDraftMeta = useCallback(
+    (): RequestDraftMeta => ({
       foreman_name: foreman.trim() || null,
       comment: comment.trim() || null,
       object_type_code: objectType || null,
       level_code: level || null,
       system_code: system || null,
       zone_code: zone || null,
-    };
-    await updateRequestMeta(rid, meta).catch((e) => {
+    }),
+    [comment, foreman, level, objectType, system, zone],
+  );
+
+  const syncRequestHeaderMeta = useCallback(async (rid: string, context: string) => {
+    await updateRequestMeta(rid, buildRequestDraftMeta()).catch((e) => {
       if (__DEV__) {
         console.warn(`[Foreman] updateMeta err in ${context}:`, e);
       }
     });
-  }, [foreman, comment, objectType, level, system, zone]);
+  }, [buildRequestDraftMeta]);
+
+  const alertError = useCallback((error: unknown, fallback: string) => {
+    Alert.alert(FOREMAN_TEXT.errorTitle, toErrorText(error, fallback));
+  }, []);
+
+  const appendLocalDraftRows = useCallback((rows: ForemanDraftAppendInput[]) => {
+    const next = appendRowsToForemanLocalDraft(buildCurrentLocalDraftSnapshot(), rows);
+    applyLocalDraftSnapshotToUi(next);
+  }, [applyLocalDraftSnapshotToUi, buildCurrentLocalDraftSnapshot]);
+
+  const updateLocalDraftQty = useCallback((item: ReqItemRow, qty: number) => {
+    const next = updateForemanLocalDraftItemQty(buildCurrentLocalDraftSnapshot(), item.id, qty);
+    applyLocalDraftSnapshotToUi(next);
+  }, [applyLocalDraftSnapshotToUi, buildCurrentLocalDraftSnapshot]);
+
+  const removeLocalDraftRow = useCallback((item: ReqItemRow) => {
+    const next = removeForemanLocalDraftItem(buildCurrentLocalDraftSnapshot(), item.id);
+    applyLocalDraftSnapshotToUi(next);
+  }, [applyLocalDraftSnapshotToUi, buildCurrentLocalDraftSnapshot]);
+
+  const syncLocalDraftNow = useCallback(async (options?: { submit?: boolean; context?: string }) => {
+    if (draftSyncInFlightRef.current) {
+      await draftSyncInFlightRef.current;
+    }
+
+    const run = (async () => {
+      if (!isDraftActive) {
+        return { requestId: ridStr(requestId) || null, submitted: null };
+      }
+
+      let snapshot = buildCurrentLocalDraftSnapshot();
+      if (options?.submit) {
+        snapshot = markForemanLocalDraftSubmitRequested(snapshot);
+      }
+
+      if (!snapshot || !hasForemanLocalDraftContent(snapshot)) {
+        return { requestId: ridStr(requestId) || null, submitted: null };
+      }
+
+      persistLocalDraftSnapshot(snapshot);
+
+      try {
+        const result = await syncForemanLocalDraftSnapshot({
+          snapshot,
+          headerMeta: buildRequestDraftMeta(),
+        });
+
+        if (result.snapshot) {
+          applyLocalDraftSnapshotToUi(result.snapshot);
+          setHasRestoredLocalDraft(false);
+          return {
+            requestId: ridStr(result.snapshot.requestId) || ridStr(snapshot.requestId) || ridStr(requestId) || null,
+            submitted: result.submitted ?? null,
+          };
+        }
+
+        persistLocalDraftSnapshot(null);
+        return {
+          requestId: ridStr(snapshot.requestId) || ridStr(requestId) || null,
+          submitted: result.submitted ?? null,
+        };
+      } catch (error) {
+        persistLocalDraftSnapshot({
+          ...snapshot,
+          lastError: toErrorText(error, options?.context || "syncLocalDraftNow"),
+          updatedAt: new Date().toISOString(),
+        });
+        throw error;
+      } finally {
+        draftSyncInFlightRef.current = null;
+      }
+    })();
+
+    draftSyncInFlightRef.current = run.then(
+      () => undefined,
+      () => undefined,
+    );
+
+    return await run;
+  }, [
+    applyLocalDraftSnapshotToUi,
+    buildCurrentLocalDraftSnapshot,
+    buildRequestDraftMeta,
+    isDraftActive,
+    persistLocalDraftSnapshot,
+    requestId,
+  ]);
+
+  useEffect(() => {
+    syncLocalDraftNowRef.current = syncLocalDraftNow;
+  }, [syncLocalDraftNow]);
 
   const loadDetails = useCallback(async (rid?: string | number | null) => {
     const key = rid != null ? ridStr(rid) : requestId;
-    if (!key) { setRequestDetails(null); return null; }
+    if (!key || key === FOREMAN_LOCAL_ONLY_REQUEST_ID) { setRequestDetails(null); return null; }
     try {
       const details = await fetchRequestDetails(key);
       if (!details) { setRequestDetails(null); return null; }
@@ -328,21 +555,33 @@ export default function ForemanScreen() {
     }
   }, [requestId, setDisplayNoByReq, syncHeaderFromDetails]);
 
-  const alertError = useCallback((error: unknown, fallback: string) => {
-    Alert.alert(FOREMAN_TEXT.errorTitle, toErrorText(error, fallback));
-  }, []);
+  const clearDraftCache = useCallback(() => {
+    clearLocalDraftId();
+    clearCachedDraftRequestId();
+    persistLocalDraftSnapshot(null);
+    setHasRestoredLocalDraft(false);
+  }, [persistLocalDraftSnapshot]);
 
   const ensureRequestId = useCallback(async () => {
-    const meta: RequestDraftMeta = {
-      foreman_name: foreman.trim() || null,
-      comment: comment.trim() || null,
-      object_type_code: objectType || null,
-      level_code: level || null,
-      system_code: system || null,
-      zone_code: zone || null,
-    };
-    return await ensureAndGetId(meta, (id, no) => setDisplayNoByReq(p => ({ ...p, [id]: no })));
-  }, [foreman, comment, objectType, level, system, zone, ensureAndGetId, setDisplayNoByReq]);
+    const snapshot = buildCurrentLocalDraftSnapshot();
+    if (snapshot && hasForemanLocalDraftContent(snapshot)) {
+      const synced = await syncLocalDraftNow({ context: "ensureRequestId" });
+      const syncedRequestId = ridStr(synced?.requestId) || ridStr(snapshot.requestId) || ridStr(requestId);
+      if (syncedRequestId) return syncedRequestId;
+    }
+
+    return await ensureAndGetId(
+      buildRequestDraftMeta(),
+      (id, no) => setDisplayNoByReq((prev) => ({ ...prev, [id]: no })),
+    );
+  }, [
+    buildCurrentLocalDraftSnapshot,
+    buildRequestDraftMeta,
+    ensureAndGetId,
+    requestId,
+    setDisplayNoByReq,
+    syncLocalDraftNow,
+  ]);
 
   const finalizeAfterSubmit = useCallback(async () => {
     clearDraftCache();
@@ -352,15 +591,27 @@ export default function ForemanScreen() {
   }, [clearDraftCache, foreman, refreshForemanHistory, resetDraftState]);
 
   const applySubmittedRequestState = useCallback((rid: string, submitted: any) => {
-    if (submitted?.display_no) setDisplayNoByReq(p => ({ ...p, [rid]: String(submitted.display_no) }));
-    setRequestDetails(prev => prev ? {
+    if (submitted?.display_no) setDisplayNoByReq((p) => ({ ...p, [rid]: String(submitted.display_no) }));
+    setRequestId(rid);
+    setRequestDetails((prev) => prev ? {
       ...prev,
+      id: rid,
       status: submitted?.status ?? 'pending',
       display_no: submitted?.display_no ?? prev.display_no ?? null,
       foreman_name: submitted?.foreman_name ?? prev.foreman_name ?? foreman,
       comment: submitted?.comment ?? prev.comment ?? comment,
-    } : prev);
-  }, [comment, foreman, setDisplayNoByReq]);
+    } : {
+      id: rid,
+      status: submitted?.status ?? 'pending',
+      display_no: submitted?.display_no ?? null,
+      foreman_name: submitted?.foreman_name ?? foreman ?? null,
+      comment: submitted?.comment ?? comment ?? null,
+      object_type_code: objectType || null,
+      level_code: level || null,
+      system_code: system || null,
+      zone_code: zone || null,
+    });
+  }, [comment, foreman, level, objectType, setDisplayNoByReq, setRequestId, system, zone]);
 
   const ensureCanSubmitToDirector = useCallback(() => {
     if (!ensureEditableContext({ draftFirst: true, draftMessage: FOREMAN_TEXT.submitNeedDraftHint })) return false;
@@ -369,6 +620,69 @@ export default function ForemanScreen() {
   }, [ensureEditableContext, items.length]);
 
   const [selectedObjectName, setSelectedObjectName] = useState('');
+
+  const detailsRequestId = ridStr(requestDetails?.id);
+  const skipRemoteDraftEffects = useMemo(() => {
+    if (!localDraftBootstrapReady) return true;
+    const snapshot = getActiveLocalDraftSnapshot();
+    if (!snapshot) return false;
+    if (ridStr(snapshot.requestId)) return ridStr(snapshot.requestId) === ridStr(requestId);
+    return !ridStr(requestId);
+  }, [getActiveLocalDraftSnapshot, localDraftBootstrapReady, requestId]);
+
+  useEffect(() => {
+    if (!localDraftBootstrapReady) return;
+    if (!isDraftActive) return;
+    if (requestDetails && detailsRequestId && ridStr(requestId) && detailsRequestId !== ridStr(requestId) && !hasLocalDraft) {
+      return;
+    }
+
+    const snapshot = buildCurrentLocalDraftSnapshot();
+    if (!snapshot || !hasForemanLocalDraftContent(snapshot)) return;
+    persistLocalDraftSnapshot(snapshot);
+  }, [
+    buildCurrentLocalDraftSnapshot,
+    detailsRequestId,
+    hasLocalDraft,
+    isDraftActive,
+    localDraftBootstrapReady,
+    persistLocalDraftSnapshot,
+    requestDetails,
+    requestId,
+  ]);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const snapshot = await loadForemanLocalDraftSnapshot();
+      if (cancelled) return;
+      if (snapshot && hasForemanLocalDraftContent(snapshot)) {
+        setHasRestoredLocalDraft(true);
+        applyLocalDraftSnapshotToUi(snapshot, { restoreHeader: true });
+      }
+      setLocalDraftBootstrapReady(true);
+    })();
+    return () => { cancelled = true; };
+  }, [applyLocalDraftSnapshotToUi]);
+
+  useEffect(() => {
+    const wasFocused = wasScreenFocusedRef.current;
+    wasScreenFocusedRef.current = isScreenFocused;
+    if (!isScreenFocused || wasFocused || !localDraftBootstrapReady) return;
+    void syncLocalDraftNowRef.current?.({ context: "focus" }).catch(() => undefined);
+  }, [isScreenFocused, localDraftBootstrapReady]);
+
+  useEffect(() => {
+    const sub = AppState.addEventListener("change", (nextState) => {
+      const prevState = appStateRef.current;
+      appStateRef.current = nextState;
+      if (!localDraftBootstrapReady) return;
+      if (prevState !== "active" && nextState === "active") {
+        void syncLocalDraftNow({ context: "appActive" }).catch(() => undefined);
+      }
+    });
+    return () => sub.remove();
+  }, [localDraftBootstrapReady, syncLocalDraftNow]);
   const displayObjectName = selectedObjectName || getObjectDisplayName(objectType, objAllOptions);
   const objectName = displayObjectName; // Alias for backward compatibility
 
@@ -466,20 +780,28 @@ export default function ForemanScreen() {
   const scopeNote = useMemo(() => buildScopeNote(objectName, levelName, systemName, zoneName) || '—', [objectName, levelName, systemName, zoneName]);
 
   const actions = useForemanActions({
-    requestId, ensureRequestId, loadItems, syncRequestHeaderMeta, scopeNote,
-    isDraftActive, canEditRequestItem, setItems, setQtyDrafts, setRowBusy, items, qtyDrafts,
+    requestId, scopeNote,
+    isDraftActive, canEditRequestItem, setQtyDrafts, setRowBusy, items, qtyDrafts,
     ensureEditableContext, ensureCanSubmitToDirector, applySubmittedRequestState, finalizeAfterSubmit,
-    showHint, setBusy, alertError, webUi: safeWebUi
+    showHint, setBusy, alertError,
+    appendLocalDraftRows,
+    updateLocalDraftQty,
+    removeLocalDraftRow,
+    syncLocalDraftNow,
+    webUi: safeWebUi,
   });
 
   const {
-    commitCatalogToDraft, commitQtyChange, syncPendingQtyDrafts,
+    commitCatalogToDraft, syncPendingQtyDrafts,
     submitToDirector, handleRemoveDraftRow, handleCalcAddToRequest
   } = actions;
 
   const openRequestById = useCallback((targetId: string | number | null | undefined) => {
     const id = ridStr(targetId);
-    if (id) { setRequestId(id); loadItems(id); }
+    if (!id) return;
+    setRequestDetails(null);
+    setRequestId(id);
+    void loadItems(id, { forceRemote: true });
   }, [loadItems, setRequestId]);
 
   const handleObjectChange = useCallback((code: string) => {
@@ -609,6 +931,7 @@ export default function ForemanScreen() {
   useEffect(() => {
     let cancelled = false;
     (async () => {
+      if (!localDraftBootstrapReady || hasRestoredLocalDraft) return;
       try {
         const localId = ridStr(getLocalDraftId());
         if (!localId) return;
@@ -621,10 +944,10 @@ export default function ForemanScreen() {
           return;
         }
         clearDraftCache();
-      } catch (e: unknown) { clearDraftCache(); }
+      } catch { clearDraftCache(); }
     })();
     return () => { cancelled = true; };
-  }, [clearDraftCache, setRequestId, setDisplayNoByReq]);
+  }, [clearDraftCache, hasRestoredLocalDraft, localDraftBootstrapReady, setRequestId, setDisplayNoByReq]);
 
   useEffect(() => {
     let active = true;
@@ -657,23 +980,22 @@ export default function ForemanScreen() {
   }, [setForeman]);
 
   useEffect(() => {
-    if (!requestId) return;
+    if (!localDraftBootstrapReady || !requestId || skipRemoteDraftEffects) return;
     const rid = ridStr(requestId);
     preloadDisplayNo(rid);
-    loadDetails(rid);
-  }, [requestId, preloadDisplayNo, loadDetails]);
+    void loadDetails(rid);
+  }, [localDraftBootstrapReady, requestId, preloadDisplayNo, loadDetails, skipRemoteDraftEffects]);
 
-  useEffect(() => { loadItems(); }, [loadItems]);
-
-  const onPdfShare = useCallback(async () => {
-    if (!ensureHeaderReady()) return;
-    await runRequestPdf("share", await ensureRequestId(), requestDetails, syncRequestHeaderMeta);
-  }, [runRequestPdf, ensureHeaderReady, ensureRequestId, requestDetails, syncRequestHeaderMeta]);
+  useEffect(() => {
+    if (!localDraftBootstrapReady || skipRemoteDraftEffects) return;
+    void loadItems();
+  }, [loadItems, localDraftBootstrapReady, skipRemoteDraftEffects]);
 
   const onPdf = useCallback(async () => {
     if (!ensureHeaderReady()) return;
+    await syncPendingQtyDrafts();
     await runRequestPdf("preview", await ensureRequestId(), requestDetails, syncRequestHeaderMeta);
-  }, [runRequestPdf, ensureHeaderReady, ensureRequestId, requestDetails, syncRequestHeaderMeta]);
+  }, [ensureHeaderReady, ensureRequestId, requestDetails, runRequestPdf, syncPendingQtyDrafts, syncRequestHeaderMeta]);
 
   const buildReqItemMetaLine = useCallback((item: ReqItemRow) => {
     return [`${item.qty ?? '-'} ${item.uom ?? ''}`.trim(), item.app_code ? labelForApp(item.app_code) : null].filter(Boolean).join(' · ');
@@ -754,31 +1076,6 @@ export default function ForemanScreen() {
     setAiQuickPreview([]);
   }, []);
 
-  const appendAiItemsToDraft = useCallback(
-    async (rid: string, generatedItems: ForemanAiQuickItem[]) => {
-      const prepared = generatedItems.map((item) => ({
-        ...item,
-        note: [scopeNote, item.specs].filter(Boolean).join(" | ") || scopeNote || item.specs || null,
-      }));
-
-      const results = await runPool(prepared, Platform.OS === "web" ? 8 : 4, async (item) => {
-        await requestItemAddOrIncAndPatchMeta(rid, item.rik_code, item.qty, {
-          note: item.note,
-          app_code: null,
-          kind: item.kind,
-          name_human: item.name,
-          uom: item.unit,
-        });
-        return true;
-      });
-
-      const okCount = results.filter((result) => result.ok).length;
-      const failCount = results.length - okCount;
-      return { okCount, failCount };
-    },
-    [scopeNote],
-  );
-
   const handleAiQuickSubmit = useCallback(async () => {
     const promptText = aiQuickText.trim();
     if (!promptText || aiQuickLoading) return;
@@ -811,24 +1108,32 @@ export default function ForemanScreen() {
         return;
       }
 
-      const rid = await ensureRequestId();
-      await syncRequestHeaderMeta(rid, "foremanAiQuickRequest");
+      const prepared: ForemanDraftAppendInput[] = parsed.items.map((item) => ({
+        rik_code: item.rik_code,
+        qty: item.qty,
+        meta: {
+          note: [scopeNote, item.specs].filter(Boolean).join(" | ") || scopeNote || item.specs || null,
+          app_code: null,
+          kind: item.kind,
+          name_human: item.name,
+          uom: item.unit,
+        },
+      }));
 
-      const appendResult = await appendAiItemsToDraft(rid, parsed.items);
-      await loadItems(rid);
+      appendLocalDraftRows(prepared);
 
-      if (appendResult.failCount > 0 || appendResult.okCount === 0) {
-        setAiQuickError(
-          appendResult.okCount > 0
-            ? `Часть позиций не добавилась. Черновик ${currentDisplayLabel} сохранен без отправки.`
-            : "Не удалось добавить AI-позиции в черновик.",
-        );
-        return;
+      let syncedRequestId = ridStr(requestId);
+      try {
+        const syncResult = await syncLocalDraftNow({ context: "foremanAiQuickRequest" });
+        syncedRequestId = ridStr(syncResult?.requestId) || syncedRequestId;
+      } catch {
+        setAiQuickNotice("Позиции сохранены локально. Когда сеть восстановится, черновик синхронизируется автоматически.");
       }
 
-      const refreshed = await loadDetails(rid);
-      const draftLabel = String(refreshed?.display_no || currentDisplayLabel || rid).trim() || rid;
-      setAiQuickNotice(`Черновик ${draftLabel} сформирован. Проверьте позиции и отправьте его отдельно.`);
+      const draftLabel = String(
+        (syncedRequestId && labelForRequest(syncedRequestId)) || currentDisplayLabel || syncedRequestId || "черновик",
+      ).trim() || "черновик";
+      setAiQuickNotice((prev) => prev || `Черновик ${draftLabel} сформирован. Проверьте позиции и отправьте его отдельно.`);
       clearHeaderAttention();
 
       setAiQuickVisible(false);
@@ -849,18 +1154,18 @@ export default function ForemanScreen() {
     aiQuickLoading,
     aiQuickText,
     activateHeaderAttention,
-    appendAiItemsToDraft,
+    appendLocalDraftRows,
     clearHeaderAttention,
     currentDisplayLabel,
     headerRequirements,
-    ensureRequestId,
     isDraftActive,
-    loadItems,
-    loadDetails,
+    labelForRequest,
+    requestId,
     requestDetails,
     setAiQuickVisible,
     showHint,
-    syncRequestHeaderMeta,
+    scopeNote,
+    syncLocalDraftNow,
   ]);
 
   const openDraftFromCatalog = useCallback(() => {
