@@ -25,7 +25,6 @@ import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { supabase } from "../../src/lib/supabaseClient";
 import { getMyRole } from "../../src/lib/api/profile";
-import { ProfileOtaDiagnosticsCard } from "../../src/features/profile/ProfileOtaDiagnosticsCard";
 
 if (
   Platform.OS === "android" &&
@@ -2083,8 +2082,7 @@ export default function ProfileScreen() {
           </>
         )}
 
-        <ProfileOtaDiagnosticsCard />
-        <Text style={styles.profileFooterText}>GOX OTA runtime diagnostics</Text>
+        <Text style={styles.profileFooterText}>GOX v1.0.0</Text>
       </ScrollView>
 
       {/* Модалка создания объявления */}
