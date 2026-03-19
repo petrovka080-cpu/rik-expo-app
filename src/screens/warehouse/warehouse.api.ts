@@ -297,6 +297,24 @@ type ReqHeadQueueState = {
   all_done: boolean;
 };
 
+type ReqHeadsStageMetrics = {
+  stage_a_ms: number;
+  stage_b_ms: number;
+  fallback_missing_ids_count: number;
+  enriched_rows_count: number;
+  page0_required_repair: boolean;
+};
+
+type ReqHeadsConvergedResult = {
+  rows: ReqHeadRow[];
+  metrics: Omit<ReqHeadsStageMetrics, "stage_a_ms">;
+};
+
+const reqHeadsPerfNow = () =>
+  typeof performance !== "undefined" && typeof performance.now === "function"
+    ? performance.now()
+    : Date.now();
+
 let requestsFallbackLastHardFailAt = 0;
 let requestsFallbackLastSkipLogAt = 0;
 const REQUESTS_FALLBACK_FAIL_COOLDOWN_MS = 30000;
@@ -622,22 +640,8 @@ async function loadReqHeadTruthByRequestIds(
   return aggregateReqItemTruthRows(q.data as UnknownRow[]);
 }
 
-async function loadApprovedViewReqHeadsWindow(
-  supabase: SupabaseClient,
-  offset: number,
-  limit: number,
-): Promise<ReqHeadRow[]> {
-  const q = await supabase
-    .from("v_wh_issue_req_heads_ui")
-    .select("*")
-    .order("submitted_at", { ascending: false, nullsFirst: false })
-    .order("display_no", { ascending: false })
-    .order("request_id", { ascending: false })
-    .range(offset, offset + limit - 1);
-
-  if (q.error || !Array.isArray(q.data) || q.data.length === 0) return [];
-
-  const rows: ReqHeadRow[] = (q.data as UnknownRow[]).map((x) => ({
+function mapReqHeadViewRow(x: UnknownRow): ReqHeadRow {
+  return {
     request_id: String(x.request_id),
     display_no: toTextOrNull(x.display_no),
     object_name: toTextOrNull(x.object_name),
@@ -662,7 +666,25 @@ async function loadApprovedViewReqHeadsWindow(
     qty_can_issue_now_sum: parseNum(x.qty_can_issue_now_sum, 0),
     issuable_now_cnt: parseNum(x.issuable_now_cnt, 0),
     issue_status: String(x.issue_status ?? "READY"),
-  }));
+  };
+}
+
+async function loadApprovedViewReqHeadsWindowRows(
+  supabase: SupabaseClient,
+  offset: number,
+  limit: number,
+): Promise<ReqHeadRow[]> {
+  const q = await supabase
+    .from("v_wh_issue_req_heads_ui")
+    .select("*")
+    .order("submitted_at", { ascending: false, nullsFirst: false })
+    .order("display_no", { ascending: false })
+    .order("request_id", { ascending: false })
+    .range(offset, offset + limit - 1);
+
+  if (q.error || !Array.isArray(q.data) || q.data.length === 0) return [];
+
+  const rows: ReqHeadRow[] = (q.data as UnknownRow[]).map(mapReqHeadViewRow);
 
   rows.sort(reqHeadSort);
 
@@ -689,6 +711,25 @@ async function loadApprovedViewReqHeadsWindow(
       requestStatusById.get(String(row.request_id ?? "").trim()) || "",
     ),
   );
+  return approvedRows;
+}
+
+async function loadApprovedViewReqHeadsWindowBase(
+  supabase: SupabaseClient,
+  offset: number,
+  limit: number,
+): Promise<ReqHeadRow[]> {
+  const approvedRows = await loadApprovedViewReqHeadsWindowRows(supabase, offset, limit);
+  if (!approvedRows.length) return [];
+  return approvedRows.map((row) => applyReqHeadQueueState(row)).filter((row) => row.visible_in_expense_queue);
+}
+
+async function loadApprovedViewReqHeadsWindow(
+  supabase: SupabaseClient,
+  offset: number,
+  limit: number,
+): Promise<ReqHeadRow[]> {
+  const approvedRows = await loadApprovedViewReqHeadsWindowRows(supabase, offset, limit);
   if (!approvedRows.length) return [];
 
   const truthByReq = await loadReqHeadTruthByRequestIds(
@@ -1016,6 +1057,302 @@ function mapTruthRowsToStockRows(
   });
 }
 
+async function enrichReqHeadsMetaCounted(
+  supabase: SupabaseClient,
+  rows: ReqHeadRow[],
+): Promise<{ rows: ReqHeadRow[]; enrichedRowsCount: number }> {
+  const nextRows = await enrichReqHeadsMeta(supabase, rows);
+  let enrichedRowsCount = 0;
+  for (let index = 0; index < nextRows.length; index += 1) {
+    const prev = rows[index];
+    const next = nextRows[index];
+    if (!prev || !next) continue;
+    if (
+      prev.contractor_name !== next.contractor_name ||
+      prev.contractor_phone !== next.contractor_phone ||
+      prev.planned_volume !== next.planned_volume ||
+      prev.note !== next.note ||
+      prev.comment !== next.comment
+    ) {
+      enrichedRowsCount += 1;
+    }
+  }
+  return { rows: nextRows, enrichedRowsCount };
+}
+
+async function loadReqHeadsBasePage(
+  supabase: SupabaseClient,
+  page: number,
+  pageSize: number,
+): Promise<{ rows: ReqHeadRow[]; stageDurationMs: number }> {
+  const stageStartedAt = reqHeadsPerfNow();
+  const targetVisibleCount = Math.max(0, (page + 1) * pageSize);
+  const viewChunkSize = Math.max(pageSize, 50);
+  const maxWindowScans = 8;
+  const visibleViewRows: ReqHeadRow[] = [];
+  const materializedReqIds = new Set<string>();
+
+  for (let scan = 0; scan < maxWindowScans && visibleViewRows.length < targetVisibleCount; scan += 1) {
+    const offset = scan * viewChunkSize;
+    const windowRows = await loadApprovedViewReqHeadsWindowBase(supabase, offset, viewChunkSize);
+    if (!windowRows.length) break;
+    for (const row of windowRows) {
+      const requestId = String(row.request_id ?? "").trim();
+      if (!requestId || materializedReqIds.has(requestId)) continue;
+      materializedReqIds.add(requestId);
+      visibleViewRows.push(row);
+    }
+    if (windowRows.length < viewChunkSize) break;
+  }
+
+  return {
+    rows: [...visibleViewRows]
+      .sort(reqHeadSort)
+      .slice(page * pageSize, (page + 1) * pageSize),
+    stageDurationMs: reqHeadsPerfNow() - stageStartedAt,
+  };
+}
+
+async function loadReqHeadsConverged(
+  supabase: SupabaseClient,
+  page: number,
+  pageSize: number,
+): Promise<ReqHeadsConvergedResult> {
+  const normalizePhone = (v: string) => {
+    const src = String(v || "").trim();
+    if (!src) return "";
+    if (/^\d{4}-\d{2}-\d{2}$/.test(src)) return "";
+    if (/^\d{4}[./]\d{2}[./]\d{2}$/.test(src)) return "";
+    const m = src.match(/(\+?\d[\d\s()\-]{7,}\d)/);
+    if (!m) return "";
+    const candidate = String(m[1] || "").trim();
+    const digits = candidate.replace(/[^\d]/g, "");
+    if (digits.length < 9) return "";
+    return candidate.replace(/\s+/g, "");
+  };
+  const stageStartedAt = reqHeadsPerfNow();
+  const targetVisibleCount = Math.max(0, (page + 1) * pageSize);
+  const viewChunkSize = Math.max(pageSize, 50);
+  const maxWindowScans = 8;
+  const visibleViewRows: ReqHeadRow[] = [];
+  const materializedReqIds = new Set<string>();
+
+  for (let scan = 0; scan < maxWindowScans && visibleViewRows.length < targetVisibleCount; scan += 1) {
+    const offset = scan * viewChunkSize;
+    const windowRows = await loadApprovedViewReqHeadsWindow(supabase, offset, viewChunkSize);
+    if (!windowRows.length) break;
+    for (const row of windowRows) {
+      const requestId = String(row.request_id ?? "").trim();
+      if (!requestId || materializedReqIds.has(requestId)) continue;
+      materializedReqIds.add(requestId);
+      visibleViewRows.push(row);
+    }
+    if (windowRows.length < viewChunkSize) break;
+  }
+
+  const sortedVisibleViewRows = [...visibleViewRows].sort(reqHeadSort);
+  let mergedRows = sortedVisibleViewRows;
+  let fallbackMissingIdsCount = 0;
+  let page0RequiredRepair = false;
+
+  // Merge recent approved requests missing from warehouse views before slicing page 0.
+  // This keeps newly approved demand visible in the expense queue even if the DB view lags.
+  if (page === 0) {
+    try {
+      const reqRows = await tryLoadRequestsFallbackRows(supabase, pageSize);
+
+      if (reqRows.length) {
+        const approvedReqs = reqRows
+          .filter((r) => isRequestVisibleInWarehouseIssueQueue(r?.status))
+          .map((r) => ({
+            request_id: String(r.id ?? "").trim(),
+            display_no: toTextOrNull(r.display_no),
+            object_name: toTextOrNull(r.object_name ?? r.object_type_code),
+            level_name: toTextOrNull(r.level_name ?? r.level_code),
+            system_name: toTextOrNull(r.system_name ?? r.system_code),
+            zone_name: toTextOrNull(r.zone_name ?? r.zone_code),
+            level_code: toTextOrNull(r.level_code),
+            system_code: toTextOrNull(r.system_code),
+            zone_code: toTextOrNull(r.zone_code),
+            submitted_at: toTextOrNull(r.submitted_at ?? r.created_at),
+          }))
+          .filter((r) => !!r.request_id);
+
+        if (approvedReqs.length) {
+          const missingReqIds = approvedReqs
+            .map((r) => r.request_id)
+            .filter((id) => !materializedReqIds.has(id));
+
+          fallbackMissingIdsCount = missingReqIds.length;
+          page0RequiredRepair = missingReqIds.length > 0;
+
+          if (missingReqIds.length) {
+            const reqRowsById = new Map<string, UnknownRow>();
+            for (const row of reqRows) {
+              const requestId = String(row?.id ?? "").trim();
+              if (requestId) reqRowsById.set(requestId, row);
+            }
+
+            const fallbackTruthByReq = await loadReqHeadTruthByRequestIds(supabase, missingReqIds);
+
+            const unresolvedStatReqIds = missingReqIds.filter((id) => !fallbackTruthByReq[id]);
+            const fallbackItemStatsQ = unresolvedStatReqIds.length
+              ? await supabase
+                  .from("request_items")
+                  .select("id, request_id, rik_code, name_human, uom, status, qty, note")
+                  .in("request_id", unresolvedStatReqIds)
+              : { error: null, data: [] as UnknownRow[] };
+
+            const stat: Record<
+              string,
+              { items: number; qty: number; done: number; rejected: number }
+            > = {};
+            for (const id of unresolvedStatReqIds) {
+              stat[id] = { items: 0, qty: 0, done: 0, rejected: 0 };
+            }
+
+            if (!fallbackItemStatsQ.error && Array.isArray(fallbackItemStatsQ.data)) {
+              for (const it of fallbackItemStatsQ.data as UnknownRow[]) {
+                const rid = String(it?.request_id ?? "").trim();
+                if (!rid || !stat[rid]) continue;
+                if (isRejectedRequestItemStatus(it?.status)) {
+                  stat[rid].rejected += 1;
+                  continue;
+                }
+
+                stat[rid].items += 1;
+                stat[rid].qty += Math.max(0, parseNum(it?.qty, 0));
+                if (isIssuedRequestItemStatus(it?.status)) stat[rid].done += 1;
+              }
+            }
+
+            let directFallbackTruthByReq: Record<string, ReqHeadTruth> = {};
+            if (!fallbackItemStatsQ.error && Array.isArray(fallbackItemStatsQ.data) && fallbackItemStatsQ.data.length) {
+              const normalizedFallbackRows = asUnknownRows(fallbackItemStatsQ.data).map(normalizeRequestItemFallbackRow);
+              const stockAvailability = await loadFallbackStockAvailability(supabase, normalizedFallbackRows);
+              const directFallbackRows = materializeFallbackReqItems(normalizedFallbackRows, stockAvailability);
+              directFallbackTruthByReq = aggregateReqItemUiRows(directFallbackRows);
+            }
+
+            const fallbackRows: ReqHeadRow[] = approvedReqs
+              .filter((r) => !materializedReqIds.has(r.request_id))
+              .map((r) => {
+                const reqRaw = reqRowsById.get(r.request_id) ?? null;
+                const fromReqText = parseReqHeaderContext([
+                  String(reqRaw?.note ?? ""),
+                  String(reqRaw?.comment ?? ""),
+                ]);
+                const contractor =
+                  String(
+                    reqRaw?.contractor_name ??
+                      reqRaw?.contractor_org ??
+                      reqRaw?.subcontractor_name ??
+                      reqRaw?.subcontractor_org ??
+                      "",
+                  ).trim() || fromReqText.contractor || null;
+                const phone =
+                  normalizePhone(
+                    String(
+                      reqRaw?.contractor_phone ??
+                        reqRaw?.subcontractor_phone ??
+                        reqRaw?.phone ??
+                        reqRaw?.phone_number ??
+                        "",
+                    ).trim(),
+                  ) || normalizePhone(fromReqText.phone) || null;
+                const plannedVolume =
+                  String(
+                    reqRaw?.planned_volume ??
+                      reqRaw?.volume ??
+                      reqRaw?.qty_plan ??
+                      "",
+                  ).trim() || fromReqText.volume || null;
+                const truth =
+                  fallbackTruthByReq[r.request_id] ??
+                  directFallbackTruthByReq[r.request_id] ??
+                  (() => {
+                    const s = stat[r.request_id] ?? { items: 0, qty: 0, done: 0, rejected: 0 };
+                    const readyCnt = Math.max(0, s.items - s.done - s.rejected);
+                    return finalizeReqHeadTruth({
+                      items_cnt: s.items,
+                      ready_cnt: readyCnt,
+                      done_cnt: s.done,
+                      qty_limit_sum: s.qty,
+                      qty_issued_sum: 0,
+                      qty_left_sum: s.qty,
+                      qty_can_issue_now_sum: 0,
+                      issuable_now_cnt: 0,
+                    });
+                  })();
+                return applyReqHeadTruth({
+                  request_id: r.request_id,
+                  display_no: r.display_no,
+                  object_name: r.object_name,
+                  level_code: r.level_code,
+                  system_code: r.system_code,
+                  zone_code: r.zone_code,
+                  level_name: r.level_name,
+                  system_name: r.system_name,
+                  zone_name: r.zone_name,
+                  contractor_name: contractor,
+                  contractor_phone: phone,
+                  planned_volume: plannedVolume,
+                  note: reqRaw?.note == null ? null : String(reqRaw.note),
+                  comment: reqRaw?.comment == null ? null : String(reqRaw.comment),
+                  submitted_at: r.submitted_at,
+                  items_cnt: truth.items_cnt,
+                  ready_cnt: truth.ready_cnt,
+                  done_cnt: truth.done_cnt,
+                  qty_limit_sum: truth.qty_limit_sum,
+                  qty_issued_sum: truth.qty_issued_sum,
+                  qty_left_sum: truth.qty_left_sum,
+                  qty_can_issue_now_sum: truth.qty_can_issue_now_sum,
+                  issuable_now_cnt: truth.issuable_now_cnt,
+                  issue_status: truth.issue_status,
+                }, truth);
+              })
+              .filter((r) => r.visible_in_expense_queue);
+
+            if (fallbackRows.length) {
+              mergedRows = [...sortedVisibleViewRows, ...fallbackRows].sort(reqHeadSort);
+            }
+          }
+        }
+      }
+    } catch (error) {
+      logWarehouseApiFallback("apiFetchReqHeads/fallback-load", error);
+      // keep view rows when fallback fails
+    }
+  }
+
+  const stageBDurationMs = reqHeadsPerfNow() - stageStartedAt;
+  const viewRows = mergedRows.slice(page * pageSize, (page + 1) * pageSize);
+
+  try {
+    const enriched = await enrichReqHeadsMetaCounted(supabase, viewRows);
+    return {
+      rows: enriched.rows,
+      metrics: {
+        stage_b_ms: stageBDurationMs,
+        fallback_missing_ids_count: fallbackMissingIdsCount,
+        enriched_rows_count: enriched.enrichedRowsCount,
+        page0_required_repair: page0RequiredRepair,
+      },
+    };
+  } catch (error) {
+    logWarehouseApiFallback("apiFetchReqHeads/enrich-view", error);
+    return {
+      rows: viewRows,
+      metrics: {
+        stage_b_ms: stageBDurationMs,
+        fallback_missing_ids_count: fallbackMissingIdsCount,
+        enriched_rows_count: 0,
+        page0_required_repair: page0RequiredRepair,
+      },
+    };
+  }
+}
+
 /**
  * РІСљвЂ¦ PROD stock
  * - qty: v_wh_balance_ledger_truth_ui (Р С‘РЎРѓРЎвЂљР С‘Р Р…Р В°)
@@ -1186,215 +1523,39 @@ export async function apiFetchReqHeads(
   page: number = 0,
   pageSize: number = 50
 ): Promise<ReqHeadRow[]> {
-  const normalizePhone = (v: string) => {
-    const src = String(v || "").trim();
-    if (!src) return "";
-    if (/^\d{4}-\d{2}-\d{2}$/.test(src)) return "";
-    if (/^\d{4}[./]\d{2}[./]\d{2}$/.test(src)) return "";
-    const m = src.match(/(\+?\d[\d\s()\-]{7,}\d)/);
-    if (!m) return "";
-    const candidate = String(m[1] || "").trim();
-    const digits = candidate.replace(/[^\d]/g, "");
-    if (digits.length < 9) return "";
-    return candidate.replace(/\s+/g, "");
+  const result = await loadReqHeadsConverged(supabase, page, pageSize);
+  return result.rows;
+}
+
+export async function apiFetchReqHeadsStaged(
+  supabase: SupabaseClient,
+  page: number = 0,
+  pageSize: number = 50,
+): Promise<{
+  baseRows: ReqHeadRow[];
+  metrics: ReqHeadsStageMetrics;
+  finalRowsPromise: Promise<{ rows: ReqHeadRow[]; metrics: ReqHeadsStageMetrics }>;
+}> {
+  const baseStage = await loadReqHeadsBasePage(supabase, page, pageSize);
+  const baseMetrics: ReqHeadsStageMetrics = {
+    stage_a_ms: baseStage.stageDurationMs,
+    stage_b_ms: 0,
+    fallback_missing_ids_count: 0,
+    enriched_rows_count: 0,
+    page0_required_repair: false,
   };
-  const targetVisibleCount = Math.max(0, (page + 1) * pageSize);
-  const viewChunkSize = Math.max(pageSize, 50);
-  const maxWindowScans = 8;
-  const visibleViewRows: ReqHeadRow[] = [];
-  const materializedReqIds = new Set<string>();
 
-  for (let scan = 0; scan < maxWindowScans && visibleViewRows.length < targetVisibleCount; scan += 1) {
-    const offset = scan * viewChunkSize;
-    const windowRows = await loadApprovedViewReqHeadsWindow(supabase, offset, viewChunkSize);
-    if (!windowRows.length) break;
-    for (const row of windowRows) {
-      const requestId = String(row.request_id ?? "").trim();
-      if (!requestId || materializedReqIds.has(requestId)) continue;
-      materializedReqIds.add(requestId);
-      visibleViewRows.push(row);
-    }
-    if (windowRows.length < viewChunkSize) break;
-  }
-
-  const sortedVisibleViewRows = [...visibleViewRows].sort(reqHeadSort);
-  let mergedRows = sortedVisibleViewRows;
-
-  // Merge recent approved requests missing from warehouse views before slicing page 0.
-  // This keeps newly approved demand visible in the expense queue even if the DB view lags.
-  if (page === 0) {
-    try {
-      const reqRows = await tryLoadRequestsFallbackRows(supabase, pageSize);
-
-    if (reqRows.length) {
-      const approvedReqs = reqRows
-        .filter((r) => isRequestVisibleInWarehouseIssueQueue(r?.status))
-        .map((r) => ({
-          request_id: String(r.id ?? "").trim(),
-          display_no: toTextOrNull(r.display_no),
-          object_name: toTextOrNull(r.object_name ?? r.object_type_code),
-          level_name: toTextOrNull(r.level_name ?? r.level_code),
-          system_name: toTextOrNull(r.system_name ?? r.system_code),
-          zone_name: toTextOrNull(r.zone_name ?? r.zone_code),
-          level_code: toTextOrNull(r.level_code),
-          system_code: toTextOrNull(r.system_code),
-          zone_code: toTextOrNull(r.zone_code),
-          submitted_at: toTextOrNull(r.submitted_at ?? r.created_at),
-        }))
-        .filter((r) => !!r.request_id);
-
-      if (approvedReqs.length) {
-        const missingReqIds = approvedReqs
-          .map((r) => r.request_id)
-          .filter((id) => !materializedReqIds.has(id));
-
-        if (missingReqIds.length) {
-          const reqRowsById = new Map<string, UnknownRow>();
-          for (const row of reqRows) {
-            const requestId = String(row?.id ?? "").trim();
-            if (requestId) reqRowsById.set(requestId, row);
-          }
-
-          const fallbackTruthByReq = await loadReqHeadTruthByRequestIds(supabase, missingReqIds);
-
-          const unresolvedStatReqIds = missingReqIds.filter((id) => !fallbackTruthByReq[id]);
-          const fallbackItemStatsQ = unresolvedStatReqIds.length
-            ? await supabase
-                .from("request_items")
-                .select("id, request_id, rik_code, name_human, uom, status, qty, note")
-                .in("request_id", unresolvedStatReqIds)
-            : { error: null, data: [] as UnknownRow[] };
-
-          const stat: Record<
-            string,
-            { items: number; qty: number; done: number; rejected: number }
-          > = {};
-          for (const id of unresolvedStatReqIds) {
-            stat[id] = { items: 0, qty: 0, done: 0, rejected: 0 };
-          }
-
-          if (!fallbackItemStatsQ.error && Array.isArray(fallbackItemStatsQ.data)) {
-            for (const it of fallbackItemStatsQ.data as UnknownRow[]) {
-              const rid = String(it?.request_id ?? "").trim();
-              if (!rid || !stat[rid]) continue;
-              if (isRejectedRequestItemStatus(it?.status)) {
-                stat[rid].rejected += 1;
-                continue;
-              }
-
-              stat[rid].items += 1;
-              stat[rid].qty += Math.max(0, parseNum(it?.qty, 0));
-              if (isIssuedRequestItemStatus(it?.status)) stat[rid].done += 1;
-            }
-          }
-
-          let directFallbackTruthByReq: Record<string, ReqHeadTruth> = {};
-          if (!fallbackItemStatsQ.error && Array.isArray(fallbackItemStatsQ.data) && fallbackItemStatsQ.data.length) {
-            const normalizedFallbackRows = asUnknownRows(fallbackItemStatsQ.data).map(normalizeRequestItemFallbackRow);
-            const stockAvailability = await loadFallbackStockAvailability(supabase, normalizedFallbackRows);
-            const directFallbackRows = materializeFallbackReqItems(normalizedFallbackRows, stockAvailability);
-            directFallbackTruthByReq = aggregateReqItemUiRows(directFallbackRows);
-          }
-
-          const fallbackRows: ReqHeadRow[] = approvedReqs
-            .filter((r) => !materializedReqIds.has(r.request_id))
-            .map((r) => {
-              const reqRaw = reqRowsById.get(r.request_id) ?? null;
-              const fromReqText = parseReqHeaderContext([
-                String(reqRaw?.note ?? ""),
-                String(reqRaw?.comment ?? ""),
-              ]);
-              const contractor =
-                String(
-                  reqRaw?.contractor_name ??
-                    reqRaw?.contractor_org ??
-                    reqRaw?.subcontractor_name ??
-                    reqRaw?.subcontractor_org ??
-                    "",
-                ).trim() || fromReqText.contractor || null;
-              const phone =
-                normalizePhone(
-                  String(
-                    reqRaw?.contractor_phone ??
-                      reqRaw?.subcontractor_phone ??
-                      reqRaw?.phone ??
-                      reqRaw?.phone_number ??
-                      "",
-                  ).trim(),
-                ) || normalizePhone(fromReqText.phone) || null;
-              const plannedVolume =
-                String(
-                  reqRaw?.planned_volume ??
-                    reqRaw?.volume ??
-                    reqRaw?.qty_plan ??
-                    "",
-                ).trim() || fromReqText.volume || null;
-              const truth =
-                fallbackTruthByReq[r.request_id] ??
-                directFallbackTruthByReq[r.request_id] ??
-                (() => {
-                  const s = stat[r.request_id] ?? { items: 0, qty: 0, done: 0, rejected: 0 };
-                  const readyCnt = Math.max(0, s.items - s.done - s.rejected);
-                  return finalizeReqHeadTruth({
-                    items_cnt: s.items,
-                    ready_cnt: readyCnt,
-                    done_cnt: s.done,
-                    qty_limit_sum: s.qty,
-                    qty_issued_sum: 0,
-                    qty_left_sum: s.qty,
-                    qty_can_issue_now_sum: 0,
-                    issuable_now_cnt: 0,
-                  });
-                })();
-              return applyReqHeadTruth({
-                request_id: r.request_id,
-                display_no: r.display_no,
-                object_name: r.object_name,
-                level_code: r.level_code,
-                system_code: r.system_code,
-                zone_code: r.zone_code,
-                level_name: r.level_name,
-                system_name: r.system_name,
-                zone_name: r.zone_name,
-                contractor_name: contractor,
-                contractor_phone: phone,
-                planned_volume: plannedVolume,
-                note: reqRaw?.note == null ? null : String(reqRaw.note),
-                comment: reqRaw?.comment == null ? null : String(reqRaw.comment),
-                submitted_at: r.submitted_at,
-                items_cnt: truth.items_cnt,
-                ready_cnt: truth.ready_cnt,
-                done_cnt: truth.done_cnt,
-                qty_limit_sum: truth.qty_limit_sum,
-                qty_issued_sum: truth.qty_issued_sum,
-                qty_left_sum: truth.qty_left_sum,
-                qty_can_issue_now_sum: truth.qty_can_issue_now_sum,
-                issuable_now_cnt: truth.issuable_now_cnt,
-                issue_status: truth.issue_status,
-              }, truth);
-            })
-            .filter((r) => r.visible_in_expense_queue);
-
-          if (fallbackRows.length) {
-            mergedRows = [...sortedVisibleViewRows, ...fallbackRows].sort(reqHeadSort);
-          }
-        }
-      }
-    }
-    } catch (error) {
-      logWarehouseApiFallback("apiFetchReqHeads/fallback-load", error);
-      // keep view rows when fallback fails
-    }
-  }
-
-  const viewRows = mergedRows.slice(page * pageSize, (page + 1) * pageSize);
-
-  try {
-    return await enrichReqHeadsMeta(supabase, viewRows);
-  } catch (error) {
-    logWarehouseApiFallback("apiFetchReqHeads/enrich-view", error);
-    return viewRows;
-  }
+  return {
+    baseRows: baseStage.rows,
+    metrics: baseMetrics,
+    finalRowsPromise: loadReqHeadsConverged(supabase, page, pageSize).then((result) => ({
+      rows: result.rows,
+      metrics: {
+        ...baseMetrics,
+        ...result.metrics,
+      },
+    })),
+  };
 }
 export async function apiFetchReqItems(
   supabase: SupabaseClient,

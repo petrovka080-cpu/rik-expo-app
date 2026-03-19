@@ -1,11 +1,16 @@
 import { useCallback, useRef, useState } from "react";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { apiFetchReqHeads } from "../warehouse.api";
+import { apiFetchReqHeads, apiFetchReqHeadsStaged } from "../warehouse.api";
 import type { ReqHeadRow } from "../warehouse.types";
 
 const pickErrMessage = (error: unknown) => {
   if (error instanceof Error && error.message.trim()) return error.message.trim();
   return String(error ?? "");
+};
+
+const logReqHeadsMetrics = (scope: string, details: Record<string, unknown>) => {
+  if (!__DEV__) return;
+  console.info(`[warehouse.reqHeads] ${scope}`, details);
 };
 
 type ReqHeadsSnapshot = {
@@ -72,7 +77,34 @@ export function useWarehouseReqHeads(params: {
         const requestKey = `${pageIndex}:${forceRefresh ? 1 : 0}:${pageSize}`;
         let request = inFlightRef.current.get(requestKey);
         if (!request) {
-          request = apiFetchReqHeads(supabase, pageIndex, pageSize);
+          if (pageIndex === 0 && !forceRefresh) {
+            request = (async () => {
+              const staged = await apiFetchReqHeadsStaged(supabase, pageIndex, pageSize);
+              setReqHeads(staged.baseRows);
+              logReqHeadsMetrics("stage_a", {
+                pageIndex,
+                pageSize,
+                forceRefresh,
+                stageA_ms: staged.metrics.stage_a_ms,
+                base_rows_count: staged.baseRows.length,
+              });
+              const finalResult = await staged.finalRowsPromise;
+              logReqHeadsMetrics("stage_b", {
+                pageIndex,
+                pageSize,
+                forceRefresh,
+                stageA_ms: finalResult.metrics.stage_a_ms,
+                stageB_ms: finalResult.metrics.stage_b_ms,
+                fallback_missing_ids_count: finalResult.metrics.fallback_missing_ids_count,
+                enriched_rows_count: finalResult.metrics.enriched_rows_count,
+                page0_required_repair: finalResult.metrics.page0_required_repair,
+                final_rows_count: finalResult.rows.length,
+              });
+              return finalResult.rows;
+            })();
+          } else {
+            request = apiFetchReqHeads(supabase, pageIndex, pageSize);
+          }
           inFlightRef.current.set(requestKey, request);
         }
         const rows = await request;
