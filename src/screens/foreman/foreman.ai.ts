@@ -1,9 +1,7 @@
-import Constants from "expo-constants";
-
-type ExpoExtraConfig = {
-  geminiApiKey?: string;
-  geminiModel?: string;
-};
+import {
+  invokeGeminiGateway,
+  isGeminiGatewayConfigured,
+} from "../../lib/ai/geminiGateway";
 
 type ForemanAiAction = "create_request" | "clarify";
 type ForemanAiKind = "material" | "work" | "service";
@@ -78,20 +76,8 @@ const LOCAL_FILLER_RE =
 const LOCAL_SPLIT_RE = /\r?\n|[;,]+|\s+\+\s+|\s+и\s+/gi;
 
 function getGeminiConfig(): { apiKey: string; model: string } {
-  const extra = (Constants.expoConfig?.extra || {}) as ExpoExtraConfig;
-  const apiKey = String(extra.geminiApiKey || process.env.EXPO_PUBLIC_GEMINI_API_KEY || "").trim();
-  const model = String(extra.geminiModel || process.env.EXPO_PUBLIC_GEMINI_MODEL || DEFAULT_MODEL).trim();
-  return { apiKey, model: model || DEFAULT_MODEL };
-}
-
-function extractGeminiText(payload: any): string {
-  const candidates = Array.isArray(payload?.candidates) ? payload.candidates : [];
-  const parts = Array.isArray(candidates[0]?.content?.parts) ? candidates[0].content.parts : [];
-  return parts
-    .map((part: any) => (typeof part?.text === "string" ? part.text : ""))
-    .filter(Boolean)
-    .join("\n")
-    .trim();
+  const model = String(process.env.EXPO_PUBLIC_GEMINI_MODEL || DEFAULT_MODEL).trim();
+  return { apiKey: "", model: model || DEFAULT_MODEL };
 }
 
 function cleanJsonText(text: string): string {
@@ -221,7 +207,7 @@ function parseLocalForemanItems(message: string): LocalForemanItem[] {
     .replace(/\r/g, "\n")
     .replace(LOCAL_SPLIT_RE, "\n");
 
-  const parsed: Array<LocalForemanItem | null> = base
+  const parsed: (LocalForemanItem | null)[] = base
     .split("\n")
     .map((chunk) => {
       const raw = String(chunk || "").trim();
@@ -299,52 +285,30 @@ function resolveLocalForemanQuickRequest(prompt: string): ForemanAiQuickResult {
 }
 
 export function isForemanQuickRequestConfigured(): boolean {
-  return getGeminiConfig().apiKey.length > 0;
+  return isGeminiGatewayConfigured();
 }
 
 export async function sendForemanQuickRequestPrompt(prompt: string): Promise<ForemanAiQuickResult> {
   const message = String(prompt || "").trim();
   if (!message) throw new Error("Опишите, что нужно добавить в заявку.");
 
-  const { apiKey, model } = getGeminiConfig();
-  if (!apiKey) {
-    throw new Error("Для AI-заявки не настроен Gemini API key.");
+  const { model } = getGeminiConfig();
+  if (!isGeminiGatewayConfigured()) {
+    throw new Error("AI service is not configured.");
   }
 
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 20000);
-
   try {
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(apiKey)}`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          system_instruction: {
-            parts: [{ text: FOREMAN_AGENT_SYSTEM_PROMPT }],
-          },
-          contents: [{ role: "user", parts: [{ text: message }] }],
-          generationConfig: {
-            temperature: 0.2,
-            topP: 0.8,
-            maxOutputTokens: 900,
-            responseMimeType: "application/json",
-          },
-        }),
-        signal: controller.signal,
+    const text = await invokeGeminiGateway({
+      model,
+      systemInstruction: FOREMAN_AGENT_SYSTEM_PROMPT,
+      contents: [{ role: "user", parts: [{ text: message }] }],
+      generationConfig: {
+        temperature: 0.2,
+        topP: 0.8,
+        maxOutputTokens: 900,
+        responseMimeType: "application/json",
       },
-    );
-
-    const payload = await response.json().catch(() => null);
-    if (!response.ok) {
-      const errorMessage = String(payload?.error?.message || "").trim();
-      throw new Error(errorMessage || `Gemini request failed (${response.status}).`);
-    }
-
-    const text = extractGeminiText(payload);
+    });
     if (!text) {
       throw new Error("AI не вернул содержательный ответ.");
     }
@@ -356,14 +320,23 @@ export async function sendForemanQuickRequestPrompt(prompt: string): Promise<For
         ? error.message
         : "Не удалось сформировать AI-заявку.";
     throw new Error(messageText);
-  } finally {
-    clearTimeout(timeout);
   }
 }
 
 export async function resolveForemanQuickRequest(prompt: string): Promise<ForemanAiQuickResult> {
   if (isForemanQuickRequestConfigured()) {
-    return sendForemanQuickRequestPrompt(prompt);
+    try {
+      return await sendForemanQuickRequestPrompt(prompt);
+    } catch {
+      const fallback = resolveLocalForemanQuickRequest(prompt);
+      return {
+        ...fallback,
+        message:
+          fallback.action === "clarify"
+            ? fallback.message
+            : `${fallback.message} AI сервис временно недоступен, собран локальный черновик.`,
+      };
+    }
   }
   return resolveLocalForemanQuickRequest(prompt);
 }
