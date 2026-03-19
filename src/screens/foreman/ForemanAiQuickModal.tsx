@@ -2,6 +2,7 @@ import React from "react";
 import { ActivityIndicator, Pressable, ScrollView, Text, TextInput, View } from "react-native";
 import RNModal from "react-native-modal";
 import CloseIconButton from "../../ui/CloseIconButton";
+import DismissKeyboardView from "../../components/DismissKeyboardView";
 import type { ForemanAiQuickItem } from "./foreman.ai";
 
 type Props = {
@@ -29,7 +30,7 @@ export default function ForemanAiQuickModal(props: Props) {
       useNativeDriver={false}
       style={{ margin: 0, justifyContent: "flex-end" }}
     >
-      <View style={props.styles.sheet}>
+      <DismissKeyboardView style={props.styles.sheet}>
         <View style={props.styles.sheetHandle} />
 
         <View style={props.styles.sheetTopBar}>
@@ -188,7 +189,7 @@ export default function ForemanAiQuickModal(props: Props) {
             </Text>
           </Pressable>
         </View>
-      </View>
+      </DismissKeyboardView>
     </RNModal>
   );
 }
