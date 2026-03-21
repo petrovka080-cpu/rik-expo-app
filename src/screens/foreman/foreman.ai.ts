@@ -2,6 +2,7 @@ import {
   isAiBackendAvailable,
   requestAiGeneratedText,
 } from "../../lib/ai/aiRepository";
+import { rikQuickSearch } from "../../lib/catalog_api";
 
 type ForemanAiAction = "create_request" | "clarify";
 type ForemanAiKind = "material" | "work" | "service";
@@ -20,8 +21,7 @@ type LocalForemanItem = {
   specs?: string | null;
 };
 
-export type ForemanAiQuickItem = {
-  rik_code: string;
+type ParsedForemanAiItem = {
   name: string;
   qty: number;
   unit: string;
@@ -29,11 +29,23 @@ export type ForemanAiQuickItem = {
   specs?: string | null;
 };
 
+export type ForemanAiQuickItem = ParsedForemanAiItem & {
+  rik_code: string;
+};
+
 export type ForemanAiQuickResult = {
   action: ForemanAiAction;
   items: ForemanAiQuickItem[];
   message: string;
 };
+
+type ParsedForemanAiQuickResult = {
+  action: ForemanAiAction;
+  items: ParsedForemanAiItem[];
+  message: string;
+};
+
+type RikCatalogItem = Awaited<ReturnType<typeof rikQuickSearch>>[number];
 
 const DEFAULT_MODEL = "gemini-2.5-flash";
 
@@ -130,28 +142,179 @@ function normalizeKind(kind?: string | null, name?: string | null): ForemanAiKin
   return "material";
 }
 
-function nextRikCategory(kind: ForemanAiKind): "MAT" | "WRK" | "SVC" {
-  if (kind === "work") return "WRK";
-  if (kind === "service") return "SVC";
-  return "MAT";
-}
-
-let generatedCodeCounter = 0;
-
-function generateRikCode(kind: ForemanAiKind): string {
-  generatedCodeCounter += 1;
-  const seq = String(generatedCodeCounter).padStart(4, "0");
-  const timePart = String(Date.now() % 10000).padStart(4, "0");
-  return `RIK-${nextRikCategory(kind)}-${timePart}${seq}`;
-}
-
 function normalizeName(rawName?: string | null): string {
   const name = String(rawName || "").trim();
   if (!name) return "";
   return name.charAt(0).toUpperCase() + name.slice(1);
 }
 
-function normalizeForemanAiItem(rawItem: unknown): ForemanAiQuickItem | null {
+function normalizeSearchText(value: unknown): string {
+  return String(value ?? "")
+    .toLowerCase()
+    .replace(/[.,:;()[\]{}"']/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function splitSearchTokens(value: unknown): string[] {
+  return normalizeSearchText(value)
+    .split(" ")
+    .map((token) => token.trim())
+    .filter((token) => token.length >= 2);
+}
+
+function resolveCatalogKind(item: RikCatalogItem): ForemanAiKind | "unknown" {
+  const rawKind = String(item.kind ?? "").trim().toLowerCase();
+  if (rawKind === "material" || rawKind === "materials" || rawKind === "материал" || rawKind === "материалы") {
+    return "material";
+  }
+  if (rawKind === "work" || rawKind === "works" || rawKind === "работа" || rawKind === "работы") {
+    return "work";
+  }
+  if (rawKind === "service" || rawKind === "services" || rawKind === "услуга" || rawKind === "услуги") {
+    return "service";
+  }
+
+  const code = String(item.rik_code ?? "").trim().toUpperCase();
+  if (code.startsWith("MAT-") || code.startsWith("TOOL-") || code.startsWith("KIT-")) return "material";
+  if (code.startsWith("WT-") || code.startsWith("WORK-")) return "work";
+  if (code.startsWith("SRV-") || code.startsWith("SERV-")) return "service";
+  return "unknown";
+}
+
+function isCatalogKindCompatible(expected: ForemanAiKind, item: RikCatalogItem): boolean {
+  const catalogKind = resolveCatalogKind(item);
+  return catalogKind === "unknown" || catalogKind === expected;
+}
+
+function isUnitCompatible(expectedUnit: string, catalogUnit?: string | null): boolean {
+  const left = normalizeUnit(expectedUnit);
+  const right = normalizeUnit(catalogUnit ?? "");
+  return !left || !right || left === right;
+}
+
+function scoreCatalogCandidate(input: ParsedForemanAiItem, item: RikCatalogItem): number {
+  if (!isCatalogKindCompatible(input.kind, item)) return -1000;
+  if (!isUnitCompatible(input.unit, item.uom_code ?? null)) return -100;
+
+  const queryName = normalizeSearchText(input.name);
+  const queryTokens = splitSearchTokens(input.name);
+  const querySpecTokens = splitSearchTokens(input.specs ?? "");
+  const candidateName = normalizeSearchText(item.name_human ?? "");
+  const candidateCode = String(item.rik_code ?? "").trim().toUpperCase();
+
+  let score = 0;
+  if (!candidateName) score -= 50;
+  if (candidateName === queryName) score += 200;
+  else if (candidateName.startsWith(queryName) || queryName.startsWith(candidateName)) score += 120;
+  else if (candidateName.includes(queryName)) score += 80;
+
+  if (queryTokens.length > 0) {
+    const matched = queryTokens.filter((token) => candidateName.includes(token)).length;
+    const coverage = matched / queryTokens.length;
+    if (coverage >= 1) score += 90;
+    else if (coverage >= 0.75) score += 55;
+    else if (coverage >= 0.5) score += 20;
+  }
+
+  if (querySpecTokens.length > 0) {
+    const matchedSpecs = querySpecTokens.filter((token) => candidateName.includes(token)).length;
+    if (matchedSpecs === querySpecTokens.length) score += 25;
+    else if (matchedSpecs > 0) score += 10;
+  }
+
+  if (candidateCode === queryName.toUpperCase()) score += 180;
+  else if (candidateCode.startsWith(queryName.toUpperCase())) score += 40;
+
+  score += 15;
+  return score;
+}
+
+function buildCatalogQueries(input: ParsedForemanAiItem): string[] {
+  const queries = [
+    [input.name, input.specs].filter(Boolean).join(" ").trim(),
+    input.name.trim(),
+  ];
+  return Array.from(new Set(queries.filter((value) => value.length >= 2)));
+}
+
+async function resolveForemanCatalogItem(input: ParsedForemanAiItem): Promise<ForemanAiQuickItem | null> {
+  const queries = buildCatalogQueries(input);
+  let candidates: RikCatalogItem[] = [];
+
+  for (const query of queries) {
+    try {
+      const found = await rikQuickSearch(query, 10);
+      if (Array.isArray(found) && found.length > 0) {
+        candidates = [...candidates, ...found];
+      }
+    } catch (error) {
+      logForemanAi({
+        phase: "catalog_search_failed",
+        query,
+        errorMessage: error instanceof Error ? error.message : String(error),
+      });
+    }
+  }
+
+  const uniqueCandidates = Array.from(
+    new Map(
+      candidates
+        .filter((item) => String(item.rik_code ?? "").trim())
+        .map((item) => [String(item.rik_code ?? "").trim(), item]),
+    ).values(),
+  );
+
+  let best: { item: RikCatalogItem; score: number } | null = null;
+  for (const candidate of uniqueCandidates) {
+    const score = scoreCatalogCandidate(input, candidate);
+    if (!best || score > best.score) {
+      best = { item: candidate, score };
+    }
+  }
+
+  if (!best || best.score < 120) {
+    logForemanAi({
+      phase: "catalog_unresolved",
+      sourceName: input.name,
+      kind: input.kind,
+      bestScore: best?.score ?? null,
+      candidateCount: uniqueCandidates.length,
+    });
+    return null;
+  }
+
+  return {
+    rik_code: String(best.item.rik_code ?? "").trim(),
+    name: normalizeName(best.item.name_human || input.name),
+    qty: input.qty,
+    unit: normalizeUnit(best.item.uom_code ?? input.unit),
+    kind: input.kind,
+    specs: input.specs ?? null,
+  };
+}
+
+async function resolveCatalogItems(items: ParsedForemanAiItem[]): Promise<{
+  items: ForemanAiQuickItem[];
+  unresolvedNames: string[];
+}> {
+  const resolved = await Promise.all(items.map((item) => resolveForemanCatalogItem(item)));
+  const accepted: ForemanAiQuickItem[] = [];
+  const unresolvedNames: string[] = [];
+
+  items.forEach((item, index) => {
+    const resolvedItem = resolved[index];
+    if (resolvedItem) accepted.push(resolvedItem);
+    else unresolvedNames.push(item.name);
+  });
+
+  return {
+    items: accepted,
+    unresolvedNames,
+  };
+}
+
+function normalizeForemanAiItem(rawItem: unknown): ParsedForemanAiItem | null {
   const row = asRecord(rawItem);
   if (!row) return null;
 
@@ -164,10 +327,8 @@ function normalizeForemanAiItem(rawItem: unknown): ForemanAiQuickItem | null {
   const kind = normalizeKind(typeof row.kind === "string" ? row.kind : null, name);
   const unit = normalizeUnit(typeof row.unit === "string" ? row.unit : null);
   const specs = String(row.specs || "").trim() || null;
-  const rikCode = String(row.rik_code || "").trim() || generateRikCode(kind);
 
   return {
-    rik_code: rikCode,
     name,
     qty,
     unit,
@@ -176,7 +337,7 @@ function normalizeForemanAiItem(rawItem: unknown): ForemanAiQuickItem | null {
   };
 }
 
-function parseForemanAiResponse(text: string): ForemanAiQuickResult {
+function parseForemanAiResponse(text: string): ParsedForemanAiQuickResult {
   let parsed: RawForemanAiResponse;
   try {
     parsed = JSON.parse(cleanJsonText(text)) as RawForemanAiResponse;
@@ -187,7 +348,7 @@ function parseForemanAiResponse(text: string): ForemanAiQuickResult {
   const normalizedItems = Array.isArray(parsed.items)
     ? parsed.items
         .map((item) => normalizeForemanAiItem(item))
-        .filter((item): item is ForemanAiQuickItem => Boolean(item))
+        .filter((item): item is ParsedForemanAiItem => Boolean(item))
     : [];
 
   const requestedAction = String(parsed.action || "").trim().toLowerCase();
@@ -256,11 +417,10 @@ function buildClarifyMessage(items: LocalForemanItem[]): string {
   return `Нужно уточнить количество для: ${names.join(", ")}. Напишите, например: "цемент М400 50 мешков, ${names[0].toLowerCase()} 200 шт".`;
 }
 
-function mapLocalItems(items: LocalForemanItem[]): ForemanAiQuickItem[] {
+function mapLocalItems(items: LocalForemanItem[]): ParsedForemanAiItem[] {
   return items
     .filter((item) => Number.isFinite(item.qty) && item.qty > 0)
     .map((item) => ({
-      rik_code: generateRikCode(item.kind),
       name: item.name,
       qty: item.qty,
       unit: normalizeUnit(item.unit),
@@ -269,7 +429,7 @@ function mapLocalItems(items: LocalForemanItem[]): ForemanAiQuickItem[] {
     }));
 }
 
-function resolveLocalForemanQuickRequest(prompt: string): ForemanAiQuickResult {
+function resolveLocalForemanQuickRequest(prompt: string): ParsedForemanAiQuickResult {
   const parsedItems = parseLocalForemanItems(prompt);
   if (!parsedItems.length) {
     return {
@@ -294,6 +454,54 @@ function resolveLocalForemanQuickRequest(prompt: string): ForemanAiQuickResult {
     message: normalizedItems.length
       ? `Локально распознано позиций: ${normalizedItems.length}.`
       : "Не удалось распознать позиции для черновика.",
+  };
+}
+
+async function finalizeResolvedQuickResult(
+  parsed: ParsedForemanAiQuickResult,
+  sourcePath: "backend" | "local",
+): Promise<ForemanAiQuickResult> {
+  if (parsed.action === "clarify" || parsed.items.length === 0) {
+    return {
+      action: "clarify",
+      items: [],
+      message: parsed.message,
+    };
+  }
+
+  const resolved = await resolveCatalogItems(parsed.items);
+  logForemanAi({
+    phase: "catalog_resolved",
+    sourcePath,
+    parsedItemCount: parsed.items.length,
+    resolvedItemCount: resolved.items.length,
+    unresolvedItemCount: resolved.unresolvedNames.length,
+  });
+
+  if (resolved.unresolvedNames.length > 0) {
+    const unresolvedLabel = resolved.unresolvedNames.join(", ");
+    const resolvedLabel = resolved.items.length > 0
+      ? ` Найдено в каталоге: ${resolved.items.length} из ${parsed.items.length}.`
+      : "";
+    return {
+      action: "clarify",
+      items: [],
+      message: `Не удалось сопоставить с каталогом: ${unresolvedLabel}.${resolvedLabel} В черновик попадают только найденные позиции каталога. Уточните названия или добавьте позиции через каталог вручную.`,
+    };
+  }
+
+  if (!resolved.items.length) {
+    return {
+      action: "clarify",
+      items: [],
+      message: "Не удалось найти позиции в каталоге. В черновик попадают только найденные позиции каталога. Уточните формулировки или добавьте их через каталог вручную.",
+    };
+  }
+
+  return {
+    action: "create_request",
+    items: resolved.items,
+    message: `Найдено в каталоге позиций: ${resolved.items.length}.`,
   };
 }
 
@@ -335,7 +543,7 @@ export async function sendForemanQuickRequestPrompt(prompt: string): Promise<For
       action: parsed.action,
       parsedItemCount: parsed.items.length,
     });
-    return parsed;
+    return await finalizeResolvedQuickResult(parsed, "backend");
   } catch (error) {
     const messageText =
       error instanceof Error && error.message
@@ -351,6 +559,7 @@ export async function resolveForemanQuickRequest(prompt: string): Promise<Forema
       return await sendForemanQuickRequestPrompt(prompt);
     } catch (error) {
       const fallback = resolveLocalForemanQuickRequest(prompt);
+      const resolvedFallback = await finalizeResolvedQuickResult(fallback, "local");
       logForemanAi({
         phase: "fallback_used",
         fallbackUsed: true,
@@ -358,15 +567,17 @@ export async function resolveForemanQuickRequest(prompt: string): Promise<Forema
         errorMessage: error instanceof Error ? error.message : String(error),
         parsedItemCount: fallback.items.length,
         fallbackAction: fallback.action,
+        resolvedItemCount: resolvedFallback.items.length,
       });
       return {
-        ...fallback,
+        ...resolvedFallback,
         message:
-          fallback.action === "clarify"
-            ? fallback.message
-            : `${fallback.message} AI сервис временно недоступен, собран локальный черновик.`,
+          resolvedFallback.action === "clarify"
+            ? resolvedFallback.message
+            : `${resolvedFallback.message} AI сервис временно недоступен, использован локальный разбор с проверкой по каталогу.`,
       };
     }
   }
-  return resolveLocalForemanQuickRequest(prompt);
+
+  return await finalizeResolvedQuickResult(resolveLocalForemanQuickRequest(prompt), "local");
 }
