@@ -18,7 +18,6 @@ type PurchaseItemSeedRow = {
   name_human?: string | null;
   rik_code?: string | null;
   ref_id?: string | null;
-  request_items?: RequestItemMini | RequestItemMini[] | null;
 };
 
 type ProposalSnapshotRow = {
@@ -58,12 +57,7 @@ const PURCHASE_ITEMS_SELECT_PLANS = [
       qty,
       uom,
       name_human,
-      rik_code,
-      request_items:request_items (
-        rik_code,
-        name_human,
-        uom
-      )
+      ref_id,
     `,
   `
       id,
@@ -71,12 +65,7 @@ const PURCHASE_ITEMS_SELECT_PLANS = [
       qty,
       uom,
       name_human,
-      ref_id,
-      request_items:request_items (
-        rik_code,
-        name_human,
-        uom
-      )
+      rik_code
     `,
 ] as const;
 
@@ -116,6 +105,34 @@ async function selectPurchaseItemsForSeed(
   }
 
   return { data: null, error: lastError };
+}
+
+async function loadRequestItemsMiniByIds(
+  supabase: Supa,
+  requestItemIds: string[],
+): Promise<Record<string, RequestItemMini>> {
+  const ids = Array.from(new Set((requestItemIds || []).map((id) => String(id ?? "").trim()).filter(Boolean)));
+  if (!ids.length) return {};
+
+  try {
+    const q = await supabase
+      .from("request_items")
+      .select("id, name_human, rik_code, uom")
+      .in("id", ids);
+
+    if (q.error || !Array.isArray(q.data)) return {};
+
+    const out: Record<string, RequestItemMini> = {};
+    for (const row of q.data as RequestItemMini[]) {
+      const id = String(row.id ?? "").trim();
+      if (!id) continue;
+      out[id] = row;
+    }
+    return out;
+  } catch (error) {
+    warnWarehouseSeed("loadRequestItemsMiniByIds", error);
+    return {};
+  }
 }
 
 async function getPurchaseIdByIncoming(supabase: Supa, incomingId: string): Promise<string | null> {
@@ -239,15 +256,20 @@ async function reseedIncomingItems(
   }
 
   // 2) СЃС‚СЂРѕРёРј wh_incoming_items rows
+  const requestItemsById = await loadRequestItemsMiniByIds(
+    supabase,
+    (((pi.data as PurchaseItemSeedRow[]) || []))
+      .map((row) => String(row.request_item_id ?? "").trim())
+      .filter(Boolean),
+  );
+
   let rows = (((pi.data as PurchaseItemSeedRow[]) || []))
     .map((x) => {
       const piId = String(x.id ?? "");
       const qty_expected = toNum(x.qty ?? 0);
       if (qty_expected <= 0) return null;
 
-      const ri = Array.isArray(x.request_items)
-        ? x.request_items[0]
-        : x.request_items;
+      const ri = requestItemsById[String(x.request_item_id ?? "").trim()] ?? null;
 
       const codeFromPI = normalizeIncomingStockCode(
         x.rik_code && String(x.rik_code).trim()
@@ -333,6 +355,7 @@ async function reseedIncomingItems(
 export async function seedEnsureIncomingItems(params: {
   supabase: Supa;
   incomingId: string;
+  purchaseId?: string | null;
 }): Promise<boolean> {
   const supabase = params.supabase;
   const incomingId = String(params.incomingId ?? "").trim();
@@ -347,6 +370,17 @@ export async function seedEnsureIncomingItems(params: {
 
   if (!pre.error && Array.isArray(pre.data) && pre.data.length > 0) return true;
 
+  const purchaseId = String(
+    params.purchaseId ??
+      (await getPurchaseIdByIncoming(supabase, incomingId)) ??
+      "",
+  ).trim() || null;
+
+  if (purchaseId) {
+    const reseeded = await reseedIncomingItems(supabase, incomingId, purchaseId);
+    if (reseeded) return true;
+  }
+
   // 2) try RPC ensure
   const tryFns = [
     "wh_incoming_ensure_items",
@@ -356,7 +390,11 @@ export async function seedEnsureIncomingItems(params: {
 
   for (const fn of tryFns) {
     try {
-      const r = await supabase.rpc(fn, { p_incoming_id: incomingId });
+      const rpcArgs = fn === "wh_incoming_seed_from_purchase"
+        ? (purchaseId ? { p_purchase_id: purchaseId } : null)
+        : { p_incoming_id: incomingId };
+      if (!rpcArgs) continue;
+      const r = await supabase.rpc(fn, rpcArgs);
       if (!r.error) break;
       if (r.error) warnWarehouseSeed(`rpc ${fn}`, r.error.message);
     } catch (error) {
@@ -374,8 +412,7 @@ export async function seedEnsureIncomingItems(params: {
   if (!fb.error && Array.isArray(fb.data) && fb.data.length > 0) return true;
 
   // 4) fallback reseed using purchase_id
-  const pId = await getPurchaseIdByIncoming(supabase, incomingId);
-  if (pId) return await reseedIncomingItems(supabase, incomingId, pId);
+  if (purchaseId) return await reseedIncomingItems(supabase, incomingId, purchaseId);
 
   return false;
 }

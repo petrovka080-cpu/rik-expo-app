@@ -326,6 +326,7 @@ export function useDirectorProposalActions({
         const warehouseSeeded = await seedEnsureIncomingItems({
           supabase,
           incomingId: ensuredIncomingId,
+          purchaseId: ensuredPurchaseId,
         });
         if (__DEV__) {
           console.info("[director.approve] warehouse_seed", {

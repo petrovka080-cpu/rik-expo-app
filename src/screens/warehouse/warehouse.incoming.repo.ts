@@ -62,7 +62,12 @@ async function repairMissingIncomingItems(rows: IncomingHeadFallbackRow[]): Prom
   let repaired = false;
   for (const incomingId of targets) {
     try {
-      const ok = await seedEnsureIncomingItems({ supabase, incomingId });
+      const sourceRow = rows.find((row) => String(row.incoming_id ?? "").trim() === incomingId);
+      const ok = await seedEnsureIncomingItems({
+        supabase,
+        incomingId,
+        purchaseId: String(sourceRow?.purchase_id ?? "").trim() || null,
+      });
       repaired = repaired || ok;
     } catch {
       // no-op
