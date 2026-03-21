@@ -23,10 +23,12 @@ import {
   type RequestMetaPatch
 } from "../../lib/catalog_api";
 import {
-  isRequestDraftSyncRpcEnabled,
-  syncRequestDraftViaRpc,
+  isForemanAtomicDraftSyncEnabled,
+  mapReqItemsToDraftSyncLines,
+  syncForemanAtomicDraft,
+  type ForemanDraftSyncMutationKind,
   type RequestDraftSyncLineInput,
-} from "../../lib/api/requestDraftSync.service";
+} from "./foreman.draftSync.repository";
 import { useRouter } from "expo-router";
 import { buildPdfFileName } from "../../lib/documents/pdfDocument";
 import { preparePdfDocument, previewPdfDocument } from "../../lib/documents/pdfDocumentActions";
@@ -148,6 +150,8 @@ const UOM_OPTIONS = [
   { code: "час", name: "час" },
 ];
 
+void UOM_OPTIONS;
+
 type DateTarget = "contractDate" | "dateStart" | "dateEnd" | null;
 type SubcontractFlowScreen = "details" | "draft" | "catalog" | "workType" | "calc";
 
@@ -170,7 +174,10 @@ const sanitizePhone = (v: string) => {
   return `${leadPlus ? "+" : ""}${digits}`;
 };
 
-const pickName = (arr: Array<{ code?: string; name?: string }>, code: string) => {
+void sanitizeDecimal;
+void sanitizePhone;
+
+const pickName = (arr: { code?: string; name?: string }[], code: string) => {
   const c = String(code || "").trim();
   if (!c) return "";
   const row = (arr || []).find((x) => String(x?.code || "") === c);
@@ -203,6 +210,86 @@ const getErrorMessage = (error: unknown, fallback: string) => {
   return fallback;
 };
 
+const trim = (value: unknown) => String(value ?? "").trim();
+
+const makeLocalDraftRowId = () => `local:${Date.now().toString(36)}:${Math.random().toString(36).slice(2, 8)}`;
+
+const toPositiveQty = (value: unknown, fallback = 1) => {
+  const parsed = Number(String(value ?? "").trim().replace(",", "."));
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+};
+
+const toRemoteDraftItemId = (value: unknown): string | null => {
+  const id = trim(value);
+  if (!id || id.startsWith("local:")) return null;
+  return id;
+};
+
+const cloneDraftItem = (item: ReqItemRow): ReqItemRow => ({
+  ...item,
+  id: trim(item.id),
+  request_id: trim(item.request_id),
+  rik_code: trim(item.rik_code) || null,
+  name_human: trim(item.name_human) || "—",
+  qty: Number(item.qty ?? 0) || 0,
+  uom: trim(item.uom) || null,
+  status: item.status ?? null,
+  supplier_hint: item.supplier_hint ?? null,
+  app_code: item.app_code ?? null,
+  note: item.note ?? null,
+  line_no: Number.isFinite(Number(item.line_no)) ? Number(item.line_no) : null,
+});
+
+const buildDraftMergeKey = (rikCode?: string | null, uom?: string | null) =>
+  `${trim(rikCode).toLowerCase()}::${trim(uom).toLowerCase()}`;
+
+const appendLineInputsToDraftItems = (
+  currentItems: ReqItemRow[],
+  addRows: RequestDraftSyncLineInput[],
+  requestId: string,
+): ReqItemRow[] => {
+  const next = currentItems.map(cloneDraftItem);
+
+  for (const row of addRows) {
+    const rikCode = trim(row.rik_code);
+    const qty = Number(row.qty ?? 0);
+    if (!rikCode || !Number.isFinite(qty) || qty <= 0) continue;
+
+    const existing = next.find(
+      (item) => buildDraftMergeKey(item.rik_code, item.uom) === buildDraftMergeKey(rikCode, row.uom),
+    );
+    if (existing) {
+      existing.qty = Number(existing.qty ?? 0) + qty;
+      if (row.note !== undefined) existing.note = row.note ?? null;
+      if (row.name_human) existing.name_human = row.name_human;
+      if (row.uom !== undefined) existing.uom = row.uom ?? null;
+      if (row.app_code !== undefined) existing.app_code = row.app_code ?? null;
+      existing.status = existing.status ?? "Черновик";
+      continue;
+    }
+
+    next.push({
+      id: makeLocalDraftRowId(),
+      request_id: trim(requestId),
+      rik_code: rikCode,
+      name_human: trim(row.name_human) || rikCode,
+      qty,
+      uom: trim(row.uom) || null,
+      status: "Черновик",
+      supplier_hint: null,
+      app_code: row.app_code ?? null,
+      note: row.note ?? null,
+      line_no: next.length + 1,
+    });
+  }
+
+  return next.map((item, index) => ({
+    ...item,
+    request_id: trim(item.request_id) || trim(requestId),
+    line_no: index + 1,
+  }));
+};
+
 const logForemanSubcontractDebug = (...args: unknown[]) => {
   if (!__DEV__) return;
   console.warn(...args);
@@ -211,6 +298,8 @@ const logForemanSubcontractDebug = (...args: unknown[]) => {
 const warnForemanSubcontract = (scope: string, error: unknown) => {
   logForemanSubcontractDebug(`[ForemanSubcontractTab] ${scope}:`, error);
 };
+
+void warnForemanSubcontract;
 
 const resolveRequestStatusInfo = (raw?: string | null) =>
   resolveStatusHelper(raw, REQUEST_STATUS_STYLES);
@@ -409,6 +498,8 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
     foreman_comment: form.foremanComment.trim() || null,
   }), [foremanName, form, objectName, levelName, systemName]);
 
+  void patch;
+
   const setField = useCallback(<K extends keyof FormState>(k: K, v: FormState[K]) => {
     setForm((prev) => ({ ...prev, [k]: v }));
   }, []);
@@ -490,13 +581,30 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
 
   const saveDraftAtomic = useCallback(
     async (
-      params: { submit?: boolean; pendingDeleteIds?: string[]; addRows?: RequestDraftSyncLineInput[] } = {}
+      params: {
+        submit?: boolean;
+        pendingDeleteIds?: string[];
+        itemsSnapshot?: ReqItemRow[];
+        mutationKind: ForemanDraftSyncMutationKind;
+        localBeforeCount?: number | null;
+        localAfterCount?: number | null;
+      }
     ): Promise<string | null> => {
       const subcontractId = ensureTemplateContractStrict();
       if (!subcontractId) return null;
 
       if (!userId) {
         Alert.alert("Данные не загружены", "Профиль пользователя не найден.");
+        return null;
+      }
+
+      const snapshotItems = params.itemsSnapshot ?? draftItems;
+      const lines = mapReqItemsToDraftSyncLines(snapshotItems);
+      const pendingDeleteIds = Array.from(
+        new Set((params.pendingDeleteIds || []).map((id) => trim(id)).filter(Boolean)),
+      );
+
+      if (!requestId && lines.length === 0 && pendingDeleteIds.length === 0 && params.submit !== true) {
         return null;
       }
 
@@ -508,18 +616,31 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
           templateObjectName || objectName || templateContract?.object_name || ""
         ).trim();
 
-        const res = await syncRequestDraftViaRpc({
+        const res = await syncForemanAtomicDraft({
+          mutationKind: params.mutationKind,
+          sourcePath: "foreman_subcontract",
+          draftScopeKey,
           requestId: requestId || null,
           submit: params.submit,
-          pendingDeleteIds: params.pendingDeleteIds,
-          lines: params.addRows || [],
+          pendingDeleteIds,
+          lines,
           meta: requestMetaFromTemplate,
-          subcontractId: subcontractId,
+          subcontractId,
           contractorJobId: subcontractId,
-          objectName: objectNameForRequest,
+          objectName: objectNameForRequest || null,
           levelName: levelName || templateLevelName || null,
           systemName: systemName || templateSystemName || null,
-          zoneName: String(form.zoneText || "").trim() || null,
+          zoneName: trim(form.zoneText) || null,
+          beforeLineCount: params.localBeforeCount ?? draftItems.length,
+          afterLocalSnapshotLineCount: params.localAfterCount ?? snapshotItems.length,
+          compatPatch: {
+            metaPatch: requestMetaFromTemplate,
+            directPatch: {
+              subcontract_id: subcontractId,
+              contractor_job_id: subcontractId,
+              object_name: objectNameForRequest || null,
+            },
+          },
         });
 
         const rid = String(res.request.id);
@@ -542,6 +663,7 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
       ensureTemplateContractStrict,
       userId,
       requestId,
+      draftItems,
       requestMetaFromTemplate,
       templateObjectName,
       objectName,
@@ -719,15 +841,21 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
   const appendCatalogRows = useCallback(async (rows: CatalogPickedRow[]) => {
     if (!rows?.length) return;
 
-    if (isRequestDraftSyncRpcEnabled()) {
+    if (isForemanAtomicDraftSyncEnabled()) {
       const lineInputs: RequestDraftSyncLineInput[] = rows.map((r) => ({
         rik_code: r.rik_code || "",
-        qty: Math.max(1, Number(String(r.qty || "1").replace(",", ".")) || 1),
+        qty: toPositiveQty(r.qty, 1),
         uom: r.uom || null,
         name_human: r.name || "",
         note: scopeNote || null,
       }));
-      await saveDraftAtomic({ addRows: lineInputs });
+      const nextItems = appendLineInputsToDraftItems(draftItems, lineInputs, requestId);
+      await saveDraftAtomic({
+        itemsSnapshot: nextItems,
+        mutationKind: "catalog_add",
+        localBeforeCount: draftItems.length,
+        localAfterCount: nextItems.length,
+      });
       return;
     }
 
@@ -755,20 +883,26 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
     } finally {
       setSaving(false);
     }
-  }, [ensureDraftOnly, loadDraftItems, saveDraftAtomic, scopeNote]);
+  }, [ensureDraftOnly, loadDraftItems, saveDraftAtomic, scopeNote, draftItems, requestId]);
 
   const appendCalcRows = useCallback(async (rows: CalcPickedRow[]) => {
     if (!rows?.length) return;
 
-    if (isRequestDraftSyncRpcEnabled()) {
+    if (isForemanAtomicDraftSyncEnabled()) {
       const lineInputs: RequestDraftSyncLineInput[] = rows.map((r) => ({
         rik_code: r.rik_code || "",
-        qty: Math.max(1, Number(r.qty) || 1),
+        qty: toPositiveQty(r.qty, 1),
         uom: r.uom_code || null,
         name_human: r.item_name_ru || r.name_human || "Без названия",
         note: scopeNote || null,
       }));
-      await saveDraftAtomic({ addRows: lineInputs });
+      const nextItems = appendLineInputsToDraftItems(draftItems, lineInputs, requestId);
+      await saveDraftAtomic({
+        itemsSnapshot: nextItems,
+        mutationKind: "calc_add",
+        localBeforeCount: draftItems.length,
+        localAfterCount: nextItems.length,
+      });
       return;
     }
 
@@ -795,11 +929,18 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
     } finally {
       setSaving(false);
     }
-  }, [ensureDraftOnly, loadDraftItems, saveDraftAtomic, scopeNote]);
+  }, [ensureDraftOnly, loadDraftItems, saveDraftAtomic, scopeNote, draftItems, requestId]);
 
   const removeDraftItem = useCallback(async (id: string) => {
-    if (isRequestDraftSyncRpcEnabled()) {
-      await saveDraftAtomic({ pendingDeleteIds: [id] });
+    if (isForemanAtomicDraftSyncEnabled()) {
+      const nextItems = draftItems.filter((item) => trim(item.id) !== trim(id));
+      await saveDraftAtomic({
+        itemsSnapshot: nextItems,
+        pendingDeleteIds: toRemoteDraftItemId(id) ? [id] : [],
+        mutationKind: "row_remove",
+        localBeforeCount: draftItems.length,
+        localAfterCount: nextItems.length,
+      });
       return;
     }
 
@@ -813,7 +954,7 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
     } finally {
       setSaving(false);
     }
-  }, [loadDraftItems, requestId, saveDraftAtomic]);
+  }, [loadDraftItems, requestId, saveDraftAtomic, draftItems]);
 
   const sendToDirector = useCallback(async () => {
     const subcontractId = ensureTemplateContractStrict();
@@ -824,8 +965,19 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
       return;
     }
 
-    if (isRequestDraftSyncRpcEnabled()) {
-      const okId = await saveDraftAtomic({ submit: true });
+    if (draftItems.length === 0) {
+      Alert.alert("Р’РЅРёРјР°РЅРёРµ", "Р’ С‡РµСЂРЅРѕРІРёРєРµ РЅРµС‚ РїРѕР·РёС†РёР№ РґР»СЏ РѕС‚РїСЂР°РІРєРё.");
+      return;
+    }
+
+    if (isForemanAtomicDraftSyncEnabled()) {
+      const okId = await saveDraftAtomic({
+        submit: true,
+        itemsSnapshot: draftItems,
+        mutationKind: "submit",
+        localBeforeCount: draftItems.length,
+        localAfterCount: draftItems.length,
+      });
       if (okId) {
         Alert.alert("Успешно", "Заявка отправлена директору.");
         await loadHistory(userId);
@@ -870,7 +1022,7 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
     } finally {
       setSending(false);
     }
-  }, [closeSubcontractFlow, ensureTemplateContractStrict, loadHistory, requestId, saveDraftAtomic, userId]);
+  }, [closeSubcontractFlow, ensureTemplateContractStrict, loadHistory, requestId, saveDraftAtomic, userId, draftItems]);
 
   const onPdf = useCallback(async () => {
     const rid = String(requestId || "").trim();
@@ -932,7 +1084,21 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
   }, [closeRequestHistory, openRequestHistoryPdf]);
 
   const clearDraft = useCallback(async () => {
-    if (requestId) {
+    if (isForemanAtomicDraftSyncEnabled()) {
+      const pendingDeleteIds = draftItems
+        .map((item) => toRemoteDraftItemId(item.id))
+        .filter((id): id is string => Boolean(id));
+      if (draftItems.length > 0 || pendingDeleteIds.length > 0) {
+        const cleared = await saveDraftAtomic({
+          itemsSnapshot: [],
+          pendingDeleteIds,
+          mutationKind: "whole_cancel",
+          localBeforeCount: draftItems.length,
+          localAfterCount: 0,
+        });
+        if (!cleared) return;
+      }
+    } else if (requestId) {
       try {
         await supabase.from("request_items").delete().eq("request_id", requestId);
       } catch (e) {
@@ -947,7 +1113,7 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
     setTemplateContract(null);
     closeSubcontractFlow();
     activeDraftScopeKeyRef.current = "";
-  }, [requestId, closeSubcontractFlow]);
+  }, [requestId, draftItems, closeSubcontractFlow, saveDraftAtomic]);
 
   const openFromHistory = useCallback((it: Subcontract) => {
     // History row is a subcontract template, not a material request draft.
@@ -967,6 +1133,8 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
     openSubcontractFlow("details");
     setHistoryOpen(false);
   }, [dicts.lvlOptions, dicts.objOptions, dicts.sysOptions, openSubcontractFlow]);
+
+  void openFromHistory;
 
   const acceptApprovedFromDirector = useCallback((it: Subcontract) => {
     setTemplateContract(it);

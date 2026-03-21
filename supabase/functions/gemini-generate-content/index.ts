@@ -22,6 +22,47 @@ type GeminiRequest = {
   generationConfig?: Record<string, unknown>;
 };
 
+const cleanText = (value: unknown) => String(value ?? "").trim();
+
+const asRecord = (value: unknown): Record<string, unknown> | null =>
+  value != null && typeof value === "object" && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : null;
+
+const toErrorBody = (
+  requestId: string,
+  errorCategory: string,
+  error: string,
+) => ({
+  requestId,
+  errorCategory,
+  error,
+});
+
+const normalizeContents = (value: unknown): GeminiContent[] => {
+  if (!Array.isArray(value)) return [];
+
+  return value.flatMap((entry) => {
+    const row = asRecord(entry);
+    if (!row) return [];
+
+    const role = cleanText(row.role);
+    if (role !== "user" && role !== "model") return [];
+
+    const parts = Array.isArray(row.parts)
+      ? row.parts.flatMap((part) => {
+          const partRow = asRecord(part);
+          if (!partRow) return [];
+          const text = cleanText(partRow.text);
+          return text ? [{ text }] : [];
+        })
+      : [];
+
+    if (!parts.length) return [];
+    return [{ role, parts }];
+  });
+};
+
 function json(status: number, body: Record<string, unknown>) {
   return new Response(JSON.stringify(body), {
     status,
@@ -38,81 +79,100 @@ function logEdge(level: "info" | "warn" | "error", message: string, payload?: Re
 }
 
 Deno.serve(async (request) => {
+  const requestId = crypto.randomUUID();
+
   if (request.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
   }
 
   if (request.method !== "POST") {
-    return json(405, { error: "Method not allowed." });
+    return json(405, toErrorBody(requestId, "method_not_allowed", "Method not allowed."));
   }
 
   const apiKey = String(Deno.env.get("GEMINI_API_KEY") || "").trim();
   const defaultModel = String(Deno.env.get("GEMINI_MODEL_DEFAULT") || "gemini-2.5-flash").trim();
 
   if (!apiKey) {
-    logEdge("error", "missing_api_key");
-    return json(500, { error: "Gemini API key is not configured on the server." });
+    logEdge("error", "missing_api_key", { requestId });
+    return json(500, toErrorBody(requestId, "missing_api_key", "Gemini API key is not configured on the server."));
   }
 
   let payload: GeminiRequest;
   try {
     payload = (await request.json()) as GeminiRequest;
   } catch {
-    return json(400, { error: "Invalid JSON body." });
+    return json(400, toErrorBody(requestId, "invalid_json", "Invalid JSON body."));
   }
 
-  const model = String(payload.model || defaultModel).trim() || defaultModel;
-  const systemInstruction = String(payload.systemInstruction || "").trim();
-  const contents = Array.isArray(payload.contents) ? payload.contents : [];
+  const model = cleanText(payload.model || defaultModel) || defaultModel;
+  const systemInstruction = cleanText(payload.systemInstruction);
+  const contents = normalizeContents(payload.contents);
+  const generationConfig =
+    payload.generationConfig && typeof payload.generationConfig === "object" && !Array.isArray(payload.generationConfig)
+      ? payload.generationConfig
+      : {};
 
   logEdge("info", "request_received", {
+    requestId,
     model,
     contentCount: contents.length,
     hasSystemInstruction: !!systemInstruction,
-    generationConfigKeys:
-      payload.generationConfig && typeof payload.generationConfig === "object"
-        ? Object.keys(payload.generationConfig)
-        : [],
+    generationConfigKeys: Object.keys(generationConfig),
   });
 
   if (!systemInstruction) {
-    logEdge("warn", "invalid_request", { reason: "missing_system_instruction" });
-    return json(400, { error: "systemInstruction is required." });
+    logEdge("warn", "invalid_request", { requestId, reason: "missing_system_instruction" });
+    return json(400, toErrorBody(requestId, "invalid_request", "systemInstruction is required."));
   }
 
   if (!contents.length) {
-    logEdge("warn", "invalid_request", { reason: "empty_contents" });
-    return json(400, { error: "contents must not be empty." });
+    logEdge("warn", "invalid_request", { requestId, reason: "empty_contents" });
+    return json(400, toErrorBody(requestId, "invalid_request", "contents must contain at least one text part."));
   }
 
-  const upstreamResponse = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(apiKey)}`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        system_instruction: {
-          parts: [{ text: systemInstruction }],
+  let upstreamResponse: Response;
+  try {
+    upstreamResponse = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(apiKey)}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
         },
-        contents,
-        generationConfig: payload.generationConfig ?? {},
-      }),
-    },
-  );
+        body: JSON.stringify({
+          system_instruction: {
+            parts: [{ text: systemInstruction }],
+          },
+          contents,
+          generationConfig,
+        }),
+      },
+    );
+  } catch (error) {
+    logEdge("error", "transport_error", {
+      requestId,
+      model,
+      error: error instanceof Error ? error.message : String(error),
+    });
+    return json(502, toErrorBody(requestId, "transport_error", "Gemini upstream request failed."));
+  }
 
   const upstreamPayload = await upstreamResponse.json().catch(() => null);
   if (!upstreamResponse.ok) {
-    const errorMessage = String(upstreamPayload?.error?.message || "").trim();
+    const errorMessage = cleanText(upstreamPayload?.error?.message);
     logEdge("error", "upstream_error", {
+      requestId,
       model,
       status: upstreamResponse.status,
       error: errorMessage || null,
       contentCount: contents.length,
     });
     return json(upstreamResponse.status, {
-      error: errorMessage || `Gemini request failed (${upstreamResponse.status}).`,
+      ...toErrorBody(
+        requestId,
+        "upstream_error",
+        errorMessage || `Gemini request failed (${upstreamResponse.status}).`,
+      ),
     });
   }
 
@@ -126,16 +186,18 @@ Deno.serve(async (request) => {
 
   if (!text) {
     logEdge("error", "empty_text", {
+      requestId,
       model,
       candidateCount: candidates.length,
     });
-    return json(502, { error: "Gemini returned empty text." });
+    return json(502, toErrorBody(requestId, "empty_response", "Gemini returned empty text."));
   }
 
   logEdge("info", "success", {
+    requestId,
     model,
     textLength: text.length,
   });
 
-  return json(200, { text });
+  return json(200, { requestId, text });
 });

@@ -1,7 +1,7 @@
 import {
-  invokeGeminiGateway,
-  isGeminiGatewayConfigured,
-} from "../../lib/ai/geminiGateway";
+  isAiBackendAvailable,
+  requestAiGeneratedText,
+} from "../../lib/ai/aiRepository";
 
 type ForemanAiAction = "create_request" | "clarify";
 type ForemanAiKind = "material" | "work" | "service";
@@ -80,6 +80,16 @@ function getGeminiConfig(): { apiKey: string; model: string } {
   return { apiKey: "", model: model || DEFAULT_MODEL };
 }
 
+const asRecord = (value: unknown): Record<string, unknown> | null =>
+  value != null && typeof value === "object" && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : null;
+
+const logForemanAi = (payload: Record<string, unknown>) => {
+  if (!__DEV__) return;
+  console.info("[foreman.ai]", payload);
+};
+
 function cleanJsonText(text: string): string {
   const trimmed = String(text || "")
     .trim()
@@ -141,17 +151,20 @@ function normalizeName(rawName?: string | null): string {
   return name.charAt(0).toUpperCase() + name.slice(1);
 }
 
-function normalizeForemanAiItem(rawItem: any): ForemanAiQuickItem | null {
-  const qty = Number(rawItem?.qty);
+function normalizeForemanAiItem(rawItem: unknown): ForemanAiQuickItem | null {
+  const row = asRecord(rawItem);
+  if (!row) return null;
+
+  const qty = Number(row.qty);
   if (!Number.isFinite(qty) || qty <= 0) return null;
 
-  const name = normalizeName(rawItem?.name);
+  const name = normalizeName(typeof row.name === "string" ? row.name : null);
   if (!name) return null;
 
-  const kind = normalizeKind(rawItem?.kind, name);
-  const unit = normalizeUnit(rawItem?.unit);
-  const specs = String(rawItem?.specs || "").trim() || null;
-  const rikCode = String(rawItem?.rik_code || "").trim() || generateRikCode(kind);
+  const kind = normalizeKind(typeof row.kind === "string" ? row.kind : null, name);
+  const unit = normalizeUnit(typeof row.unit === "string" ? row.unit : null);
+  const specs = String(row.specs || "").trim() || null;
+  const rikCode = String(row.rik_code || "").trim() || generateRikCode(kind);
 
   return {
     rik_code: rikCode,
@@ -285,7 +298,7 @@ function resolveLocalForemanQuickRequest(prompt: string): ForemanAiQuickResult {
 }
 
 export function isForemanQuickRequestConfigured(): boolean {
-  return isGeminiGatewayConfigured();
+  return isAiBackendAvailable();
 }
 
 export async function sendForemanQuickRequestPrompt(prompt: string): Promise<ForemanAiQuickResult> {
@@ -293,27 +306,36 @@ export async function sendForemanQuickRequestPrompt(prompt: string): Promise<For
   if (!message) throw new Error("Опишите, что нужно добавить в заявку.");
 
   const { model } = getGeminiConfig();
-  if (!isGeminiGatewayConfigured()) {
+  if (!isAiBackendAvailable()) {
     throw new Error("AI service is not configured.");
   }
 
   try {
-    const text = await invokeGeminiGateway({
-      model,
-      systemInstruction: FOREMAN_AGENT_SYSTEM_PROMPT,
-      contents: [{ role: "user", parts: [{ text: message }] }],
-      generationConfig: {
-        temperature: 0.2,
-        topP: 0.8,
-        maxOutputTokens: 900,
-        responseMimeType: "application/json",
+    const text = await requestAiGeneratedText({
+      sourcePath: "foreman_quick_request",
+      request: {
+        model,
+        systemInstruction: FOREMAN_AGENT_SYSTEM_PROMPT,
+        contents: [{ role: "user", parts: [{ text: message }] }],
+        generationConfig: {
+          temperature: 0.2,
+          topP: 0.8,
+          maxOutputTokens: 900,
+          responseMimeType: "application/json",
+        },
       },
     });
     if (!text) {
       throw new Error("AI не вернул содержательный ответ.");
     }
 
-    return parseForemanAiResponse(text);
+    const parsed = parseForemanAiResponse(text);
+    logForemanAi({
+      phase: "backend_parsed",
+      action: parsed.action,
+      parsedItemCount: parsed.items.length,
+    });
+    return parsed;
   } catch (error) {
     const messageText =
       error instanceof Error && error.message
@@ -329,9 +351,12 @@ export async function resolveForemanQuickRequest(prompt: string): Promise<Forema
       return await sendForemanQuickRequestPrompt(prompt);
     } catch (error) {
       const fallback = resolveLocalForemanQuickRequest(prompt);
-      console.warn("[foreman.ai] Gemini gateway failed -> local fallback", {
-        error: error instanceof Error ? error.message : String(error),
-        localItemCount: fallback.items.length,
+      logForemanAi({
+        phase: "fallback_used",
+        fallbackUsed: true,
+        errorCategory: "backend_failed",
+        errorMessage: error instanceof Error ? error.message : String(error),
+        parsedItemCount: fallback.items.length,
         fallbackAction: fallback.action,
       });
       return {

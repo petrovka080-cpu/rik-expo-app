@@ -1,8 +1,9 @@
 import type React from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { listDirectorProposalsPending } from "../../lib/catalog_api";
+import { REQUEST_PENDING_EN, REQUEST_PENDING_STATUS } from "../../lib/api/requests.status";
 import { shortId } from "./director.helpers";
-import type { PendingRow, ProposalHead, ProposalItem, RequestMeta } from "./director.types";
+import type { PendingRow, ProposalHead, RequestMeta } from "./director.types";
 
 type Deps = {
   supabase: any;
@@ -52,10 +53,13 @@ const normalizeDirectorPendingRows = (rows: Array<Record<string, unknown>>): Pen
     note: r.note != null ? String(r.note) : null,
   }));
 
-const uniqRequestCount = (rows: PendingRow[]): number =>
-  new Set(rows.map((r) => String(r.request_id ?? "").trim()).filter(Boolean)).size;
+const DIRECTOR_PENDING_ITEM_STATUSES = new Set([REQUEST_PENDING_STATUS, "У директора", REQUEST_PENDING_EN]);
+const DIRECTOR_EXPECTED_REQUEST_STATUSES = [REQUEST_PENDING_STATUS, REQUEST_PENDING_EN] as const;
 
-const DIRECTOR_VISIBLE_ITEM_STATUSES = new Set(["На утверждении", "У директора", "pending"]);
+const logDirectorFetchFilters = (payload: Record<string, unknown>) => {
+  if (!__DEV__) return;
+  console.info("[director fetch filters]", payload);
+};
 
 export function useDirectorData({ supabase }: Deps) {
   const fetchTicket = useRef(0);
@@ -271,19 +275,26 @@ export function useDirectorData({ supabase }: Deps) {
     } catch (e) {
       warnDirectorData("preloadDisplayNos", e);
     }
-  }, [supabase]);
+  }, [supabase, resolveRequestDisplaySelectMode]);
 
   const loadDirectorRowsFallback = useCallback(async (): Promise<PendingRow[]> => {
+    logDirectorFetchFilters({
+      sourcePath: "director.data.loadDirectorRowsFallback",
+      requestSelector: "submitted_at:not_null",
+      expectedRequestStatuses: Array.from(DIRECTOR_EXPECTED_REQUEST_STATUSES),
+      visibleItemStatuses: Array.from(DIRECTOR_PENDING_ITEM_STATUSES),
+    });
     const reqs = await supabase
       .from("requests")
-      .select("id, submitted_at")
-      .eq("status", "На утверждении");
+      .select("id, submitted_at, status")
+      .not("submitted_at", "is", null);
     if (reqs.error) throw reqs.error;
 
-    const reqRows = ((reqs.data ?? []) as Array<{ id?: string | number | null; submitted_at?: string | null }>)
+    const reqRows = ((reqs.data ?? []) as Array<{ id?: string | number | null; submitted_at?: string | null; status?: string | null }>)
       .map((r) => ({
         id: String(r.id ?? "").trim(),
         submitted_at: r.submitted_at ? String(r.submitted_at) : null,
+        status: r.status ? String(r.status) : null,
       }))
       .filter((r) => r.id);
     reqRows.sort((a, b) => {
@@ -301,7 +312,7 @@ export function useDirectorData({ supabase }: Deps) {
       .from("request_items")
       .select("id,request_id,name_human,qty,uom,rik_code,app_code,item_kind,note,status")
       .in("request_id", reqIds)
-      .in("status", Array.from(DIRECTOR_VISIBLE_ITEM_STATUSES));
+      .in("status", Array.from(DIRECTOR_PENDING_ITEM_STATUSES));
     if (items.error) throw items.error;
 
     const normalized = normalizeDirectorPendingRows((items.data ?? []) as Array<Record<string, unknown>>);
@@ -311,6 +322,16 @@ export function useDirectorData({ supabase }: Deps) {
       if (aRank !== bRank) return aRank - bRank;
       return a.id - b.id;
     });
+
+    logDirectorFetchFilters({
+      sourcePath: "director.data.loadDirectorRowsFallback",
+      requestCount: reqRows.length,
+      requestStatusesSample: Array.from(
+        new Set(reqRows.map((row) => String(row.status ?? "").trim()).filter(Boolean)),
+      ).slice(0, 8),
+      syncResultLineCount: normalized.length,
+    });
+
     return normalized;
   }, [supabase]);
 
@@ -329,6 +350,12 @@ export function useDirectorData({ supabase }: Deps) {
         const { data, error } = await supabase.rpc("list_director_items_stable");
         if (error) throw error;
         normalized = normalizeDirectorPendingRows((data ?? []) as Array<Record<string, unknown>>);
+        logDirectorFetchFilters({
+          sourcePath: "director.data.fetchRows",
+          primaryPath: "list_director_items_stable",
+          primaryRowCount: normalized.length,
+          expectedRequestStatuses: Array.from(DIRECTOR_EXPECTED_REQUEST_STATUSES),
+        });
       } catch (e) {
         shouldUseFallback = true;
         warnDirectorData("list_director_items_stable", e, "error");

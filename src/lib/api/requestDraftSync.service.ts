@@ -223,6 +223,16 @@ export async function syncRequestDraftViaRpc(params: {
       resolvedRpcVersion: version,
     });
 
+    if (__DEV__ && params.submit === true) {
+      console.info("[submit]", {
+        requestId: request.id,
+        displayNo: request.display_no ?? null,
+        status: request.status ?? null,
+        sourceBranch: version === "v2" ? "rpc_v2" : "rpc_v1",
+        rpcVersion: version,
+      });
+    }
+
     return {
       request,
       items,

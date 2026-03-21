@@ -4,9 +4,9 @@ import {
 } from "./assistantPrompts";
 import type { AssistantContext, AssistantMessage, AssistantRole } from "./assistant.types";
 import {
-  invokeGeminiGateway,
-  isGeminiGatewayConfigured,
-} from "../../lib/ai/geminiGateway";
+  isAiBackendAvailable,
+  requestAiGeneratedText,
+} from "../../lib/ai/aiRepository";
 
 const DEFAULT_MODEL = "gemini-2.5-flash";
 
@@ -26,7 +26,7 @@ function messageToContent(message: AssistantMessage): {
 }
 
 export function isAssistantConfigured(): boolean {
-  return isGeminiGatewayConfigured();
+  return isAiBackendAvailable();
 }
 
 export async function sendAssistantMessage(options: {
@@ -38,22 +38,25 @@ export async function sendAssistantMessage(options: {
   const { role, context = "unknown", message, history } = options;
   const model = getAssistantModel();
 
-  if (!isGeminiGatewayConfigured()) {
+  if (!isAiBackendAvailable()) {
     return buildOfflineAssistantReply(role, message, context);
   }
 
   try {
-    const text = await invokeGeminiGateway({
-      model,
-      systemInstruction: buildAssistantSystemPrompt(role, context),
-      contents: [
-        ...history.slice(-10).map(messageToContent),
-        { role: "user", parts: [{ text: message }] },
-      ],
-      generationConfig: {
-        temperature: 0.5,
-        topP: 0.9,
-        maxOutputTokens: 700,
+    const text = await requestAiGeneratedText({
+      sourcePath: "assistant_chat",
+      request: {
+        model,
+        systemInstruction: buildAssistantSystemPrompt(role, context),
+        contents: [
+          ...history.slice(-10).map(messageToContent),
+          { role: "user", parts: [{ text: message }] },
+        ],
+        generationConfig: {
+          temperature: 0.5,
+          topP: 0.9,
+          maxOutputTokens: 700,
+        },
       },
     });
     return text || buildOfflineAssistantReply(role, message, context);

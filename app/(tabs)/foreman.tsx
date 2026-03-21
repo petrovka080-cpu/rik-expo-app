@@ -211,10 +211,28 @@ export default function ForemanScreen() {
 
   const screenLock = busy || draftDeleteBusy || draftSendBusy;
 
-  const showHint = useCallback((title: string, message: string) => {
-    if (Platform.OS === 'web' && safeWebUi) safeWebUi.alert?.(`${title}\n\n${message}`);
-    else Alert.alert(title, message);
+  const showWebAlert = useCallback((message: string) => {
+    if (Platform.OS !== 'web') return false;
+    if (typeof window !== 'undefined' && typeof window.alert === 'function') {
+      window.alert(message);
+      return true;
+    }
+    const alertFn = safeWebUi?.alert;
+    if (typeof alertFn === 'function') {
+      try {
+        alertFn.call(globalThis, message);
+        return true;
+      } catch {
+        return false;
+      }
+    }
+    return false;
   }, [safeWebUi]);
+
+  const showHint = useCallback((title: string, message: string) => {
+    if (showWebAlert(`${title}\n\n${message}`)) return;
+    Alert.alert(title, message);
+  }, [showWebAlert]);
 
   const clearHeaderAttention = useCallback(() => {
     setHeaderAttention(null);

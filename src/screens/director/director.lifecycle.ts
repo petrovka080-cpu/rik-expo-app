@@ -1,5 +1,6 @@
-﻿import { useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { AppState } from "react-native";
+import { REQUEST_PENDING_EN, REQUEST_PENDING_STATUS, normalizeStatus } from "../../lib/api/requests.status";
 import { ensureSignedIn, supabase } from "../../lib/supabaseClient";
 import { logError } from "../../lib/logError";
 
@@ -31,6 +32,47 @@ type Deps = {
   fetchFinance: () => Promise<void>;
   fetchReport: () => Promise<void>;
   showRtToast: (title?: string, body?: string) => void;
+};
+
+const DIRECTOR_LIVE_REQUEST_STATUSES = new Set([
+  normalizeStatus(REQUEST_PENDING_STATUS),
+  normalizeStatus(REQUEST_PENDING_EN),
+]);
+
+const DIRECTOR_LIVE_ITEM_STATUSES = new Set([
+  normalizeStatus(REQUEST_PENDING_STATUS),
+  normalizeStatus("У директора"),
+  normalizeStatus(REQUEST_PENDING_EN),
+]);
+const DIRECTOR_REQUESTS_POLL_MS = 5000;
+
+const getRecordValue = (value: unknown, key: string): unknown => {
+  if (value == null || typeof value !== "object" || Array.isArray(value)) return null;
+  return (value as Record<string, unknown>)[key];
+};
+
+const shouldRefreshDirectorRowsForRequestChange = (payload: { new?: unknown; old?: unknown }) => {
+  const nextStatus = normalizeStatus(getRecordValue(payload.new, "status"));
+  const prevStatus = normalizeStatus(getRecordValue(payload.old, "status"));
+  const nextSubmittedAt = String(getRecordValue(payload.new, "submitted_at") ?? "").trim();
+  const prevSubmittedAt = String(getRecordValue(payload.old, "submitted_at") ?? "").trim();
+  return (
+    !!nextSubmittedAt ||
+    !!prevSubmittedAt ||
+    DIRECTOR_LIVE_REQUEST_STATUSES.has(nextStatus) ||
+    DIRECTOR_LIVE_REQUEST_STATUSES.has(prevStatus)
+  );
+};
+
+const shouldRefreshDirectorRowsForItemChange = (payload: { new?: unknown; old?: unknown }) => {
+  const nextStatus = normalizeStatus(getRecordValue(payload.new, "status"));
+  const prevStatus = normalizeStatus(getRecordValue(payload.old, "status"));
+  return DIRECTOR_LIVE_ITEM_STATUSES.has(nextStatus) || DIRECTOR_LIVE_ITEM_STATUSES.has(prevStatus);
+};
+
+const logDirectorLive = (payload: Record<string, unknown>) => {
+  if (!__DEV__) return;
+  console.info("[director.live]", payload);
 };
 
 export function useDirectorLifecycle({
@@ -170,6 +212,23 @@ export function useDirectorLifecycle({
   }, [isScreenFocused, dirTab, fetchRows, fetchProps, fetchFinance, fetchReport]);
 
   useEffect(() => {
+    if (!isScreenFocused || dirTab !== "Заявки") return;
+
+    const timer = setInterval(() => {
+      if (rowsRefreshRef.current.inFlight) return;
+      logDirectorLive({
+        sourcePath: "director.lifecycle.poll",
+        intervalMs: DIRECTOR_REQUESTS_POLL_MS,
+      });
+      rowsRefreshRef.current.inFlight = Promise.resolve(rowsRefreshFnRef.current(true)).finally(() => {
+        if (rowsRefreshRef.current.inFlight) rowsRefreshRef.current.inFlight = null;
+      });
+    }, DIRECTOR_REQUESTS_POLL_MS);
+
+    return () => clearInterval(timer);
+  }, [dirTab, isScreenFocused]);
+
+  useEffect(() => {
     try {
       if (rtChannelRef.current) {
         supabase.removeChannel(rtChannelRef.current);
@@ -199,6 +258,50 @@ export function useDirectorLifecycle({
           void refreshProps(true);
         },
       )
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "requests",
+        },
+        (payload) => {
+          if (dirTab !== "Заявки") return;
+          if (!shouldRefreshDirectorRowsForRequestChange(payload)) return;
+          logDirectorLive({
+            sourcePath: "director.lifecycle.requests",
+            eventType: payload.eventType,
+            requestId:
+              String(getRecordValue(payload.new, "id") ?? getRecordValue(payload.old, "id") ?? "").trim() || null,
+            nextStatus: String(getRecordValue(payload.new, "status") ?? "").trim() || null,
+            prevStatus: String(getRecordValue(payload.old, "status") ?? "").trim() || null,
+          });
+          void refreshRows(true);
+        },
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "request_items",
+        },
+        (payload) => {
+          if (dirTab !== "Заявки") return;
+          if (!shouldRefreshDirectorRowsForItemChange(payload)) return;
+          logDirectorLive({
+            sourcePath: "director.lifecycle.request_items",
+            eventType: payload.eventType,
+            requestId:
+              String(
+                getRecordValue(payload.new, "request_id") ?? getRecordValue(payload.old, "request_id") ?? "",
+              ).trim() || null,
+            nextStatus: String(getRecordValue(payload.new, "status") ?? "").trim() || null,
+            prevStatus: String(getRecordValue(payload.old, "status") ?? "").trim() || null,
+          });
+          void refreshRows(true);
+        },
+      )
       .subscribe();
     rtChannelRef.current = ch;
 
@@ -215,5 +318,5 @@ export function useDirectorLifecycle({
       }
       if (rtChannelRef.current === ch) rtChannelRef.current = null;
     };
-  }, [isScreenFocused, fetchRows, fetchProps, showRtToast]);
+  }, [dirTab, isScreenFocused, fetchRows, fetchProps, showRtToast]);
 }

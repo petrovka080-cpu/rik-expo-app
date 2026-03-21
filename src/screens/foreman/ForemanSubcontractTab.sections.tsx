@@ -422,7 +422,7 @@ export function DraftSheetBody(props: {
         <View style={s.actionBtnSquare}>
           <SendPrimaryButton
             variant="green"
-            disabled={saving || sending || !requestId}
+            disabled={saving || sending || !requestId || draftItems.length === 0}
             loading={sending}
             onPress={onSendToDirector}
           />

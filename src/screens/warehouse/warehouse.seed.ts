@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { normMatCode } from "./warehouse.utils";
 
 type Supa = SupabaseClient;
 
@@ -16,6 +17,7 @@ type PurchaseItemSeedRow = {
   uom?: string | null;
   name_human?: string | null;
   rik_code?: string | null;
+  ref_id?: string | null;
   request_items?: RequestItemMini | RequestItemMini[] | null;
 };
 
@@ -49,6 +51,73 @@ const warnWarehouseSeed = (scope: string, error: unknown) => {
   console.warn(`[warehouse.seed] ${scope}:`, message || error);
 };
 
+const PURCHASE_ITEMS_SELECT_PLANS = [
+  `
+      id,
+      request_item_id,
+      qty,
+      uom,
+      name_human,
+      rik_code,
+      request_items:request_items (
+        rik_code,
+        name_human,
+        uom
+      )
+    `,
+  `
+      id,
+      request_item_id,
+      qty,
+      uom,
+      name_human,
+      ref_id,
+      request_items:request_items (
+        rik_code,
+        name_human,
+        uom
+      )
+    `,
+] as const;
+
+const normalizeIncomingStockCode = (raw: unknown): string | null => {
+  const base = String(normMatCode(raw ?? "")).trim();
+  if (!base) return null;
+  const upper = base.toUpperCase();
+  if (upper.startsWith("RIK-MAT-")) return `MAT-${base.slice(8)}`;
+  if (upper.startsWith("RIK-TOOL-")) return `TOOL-${base.slice(9)}`;
+  if (upper.startsWith("RIK-KIT-")) return `KIT-${base.slice(8)}`;
+  return base;
+};
+
+const isWarehouseSeedCode = (value: unknown): boolean => {
+  const code = String(value ?? "").trim().toUpperCase();
+  return code.startsWith("MAT-") || code.startsWith("TOOL-");
+};
+
+const isKitSeedCode = (value: unknown): boolean =>
+  String(value ?? "").trim().toUpperCase().startsWith("KIT-");
+
+async function selectPurchaseItemsForSeed(
+  supabase: Supa,
+  purchaseId: string,
+) {
+  let lastError: { message?: string } | null = null;
+
+  for (const selectPlan of PURCHASE_ITEMS_SELECT_PLANS) {
+    const q = await supabase
+      .from("purchase_items")
+      .select(selectPlan)
+      .eq("purchase_id", purchaseId)
+      .order("id", { ascending: true });
+
+    if (!q.error) return q;
+    lastError = q.error;
+  }
+
+  return { data: null, error: lastError };
+}
+
 async function getPurchaseIdByIncoming(supabase: Supa, incomingId: string): Promise<string | null> {
   try {
     const head = await supabase
@@ -71,25 +140,7 @@ async function reseedIncomingItems(
   purchaseId: string,
 ): Promise<boolean> {
   // 1) читаем purchase_items (если пусто - пытаемся seed из proposal_snapshot_items)
-  let pi = await supabase
-    .from("purchase_items")
-    .select(
-      `
-      id,
-      request_item_id,
-      qty,
-      uom,
-      name_human,
-      rik_code,
-      request_items:request_items (
-        rik_code,
-        name_human,
-        uom
-      )
-    `,
-    )
-    .eq("purchase_id", purchaseId)
-    .order("id", { ascending: true });
+  let pi = await selectPurchaseItemsForSeed(supabase, purchaseId);
 
   if (pi.error) {
     console.warn("[seed] select purchase_items error:", pi.error.message);
@@ -179,25 +230,7 @@ async function reseedIncomingItems(
     }
 
     // РїРµСЂРµС‡РёС‚С‹РІР°РµРј purchase_items
-    pi = await supabase
-      .from("purchase_items")
-      .select(
-        `
-        id,
-        request_item_id,
-        qty,
-        uom,
-        name_human,
-        rik_code,
-        request_items:request_items (
-          rik_code,
-          name_human,
-          uom
-        )
-      `,
-      )
-      .eq("purchase_id", purchaseId)
-      .order("id", { ascending: true });
+    pi = await selectPurchaseItemsForSeed(supabase, purchaseId);
 
     if (pi.error) {
       console.warn("[seed] reselect purchase_items error:", pi.error.message);
@@ -216,19 +249,21 @@ async function reseedIncomingItems(
         ? x.request_items[0]
         : x.request_items;
 
-      const codeFromPI =
+      const codeFromPI = normalizeIncomingStockCode(
         x.rik_code && String(x.rik_code).trim()
           ? String(x.rik_code).trim()
-          : null;
+          : x.ref_id && String(x.ref_id).trim()
+            ? String(x.ref_id).trim()
+            : null,
+      );
 
-      const codeFromRI =
-        ri?.rik_code && String(ri.rik_code).trim() ? String(ri.rik_code).trim() : null;
+      const codeFromRI = normalizeIncomingStockCode(
+        ri?.rik_code && String(ri.rik_code).trim() ? String(ri.rik_code).trim() : null,
+      );
 
       const baseCode = codeFromPI ?? codeFromRI;
-      const codeU = (baseCode ?? "").toUpperCase();
-
-      const isWarehouse = codeU.startsWith("MAT-") || codeU.startsWith("TOOL-");
-      const isKit = codeU.startsWith("KIT-");
+      const isWarehouse = isWarehouseSeedCode(baseCode);
+      const isKit = isKitSeedCode(baseCode);
       if (isKit) return null;
       if (!isWarehouse) return null;
 
