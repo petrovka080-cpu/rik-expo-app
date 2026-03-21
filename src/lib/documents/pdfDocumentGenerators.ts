@@ -48,16 +48,23 @@ export async function generatePaymentOrderPdfDocument(args: {
   originModule: DocumentDescriptor["originModule"];
 }): Promise<DocumentDescriptor> {
   const mod = await import("../api/pdf_payment");
-  const paymentId = String(args.paymentId);
-  const uri = await mod.exportPaymentOrderPdf(Number(paymentId), args.draft);
+  const service = await import("../api/paymentPdf.service");
+  const paymentId = Number(args.paymentId);
+  const prepared = await service.preparePaymentOrderPdf({
+    paymentId,
+    draft: args.draft,
+    title: args.title,
+    fileName: args.fileName,
+  });
+  const uri = await mod.exportPaymentOrderPdfContract(prepared.contract);
   return createPdfDocumentDescriptor({
     uri,
-    title: args.title || `Payment Order ${paymentId}`,
-    fileName: args.fileName,
-    documentType: "payment_order",
+    title: prepared.contract.title,
+    fileName: prepared.contract.fileName,
+    documentType: prepared.contract.documentType,
     source: "generated",
     originModule: args.originModule,
-    entityId: paymentId,
+    entityId: prepared.contract.entityId,
   });
 }
 

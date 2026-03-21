@@ -16,10 +16,17 @@ export async function fetchBuyerProposalSummaryByStatus(
   supabase: SupabaseClient,
   status: string,
 ) : Promise<PostgrestResponse<BuyerProposalSummaryRow>> {
+  return fetchBuyerProposalSummaryByStatuses(supabase, [status]);
+}
+
+export async function fetchBuyerProposalSummaryByStatuses(
+  supabase: SupabaseClient,
+  statuses: string[],
+): Promise<PostgrestResponse<BuyerProposalSummaryRow>> {
   const query = supabase
     .from("v_proposals_summary")
     .select(BUYER_PROPOSAL_SUMMARY_SELECT)
-    .eq("status", status)
+    .in("status", statuses)
     .gt("items_cnt", 0)
     .order("submitted_at", { ascending: false });
 

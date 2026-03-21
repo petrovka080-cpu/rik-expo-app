@@ -4,7 +4,6 @@ import { WAREHOUSE_TABS, type Tab } from "../warehouse.types";
 
 const TAB_INCOMING = WAREHOUSE_TABS[0];
 const TAB_STOCK_FACT = WAREHOUSE_TABS[1];
-const TAB_EXPENSE = WAREHOUSE_TABS[2];
 const TAB_REPORTS = WAREHOUSE_TABS[3];
 
 export function useWarehouseLifecycle(params: {
@@ -12,7 +11,6 @@ export function useWarehouseLifecycle(params: {
   setLoading: React.Dispatch<React.SetStateAction<boolean>>;
   fetchToReceive: () => Promise<void>;
   fetchStock: () => Promise<void>;
-  fetchReqHeadsForce: () => Promise<void>;
   fetchReports: () => Promise<void>;
   onError: (e: unknown) => void;
 }) {
@@ -21,7 +19,6 @@ export function useWarehouseLifecycle(params: {
     setLoading,
     fetchToReceive,
     fetchStock,
-    fetchReqHeadsForce,
     fetchReports,
     onError,
   } = params;
@@ -62,14 +59,10 @@ export function useWarehouseLifecycle(params: {
       await fetchStock();
       return;
     }
-    if (tab === TAB_EXPENSE) {
-      await fetchReqHeadsForce();
-      return;
-    }
     if (tab === TAB_REPORTS) {
       await fetchReports();
     }
-  }, [tab, fetchToReceive, fetchStock, fetchReqHeadsForce, fetchReports]);
+  }, [tab, fetchToReceive, fetchStock, fetchReports]);
 
   useFocusEffect(
     useCallback(() => {

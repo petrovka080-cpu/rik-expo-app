@@ -1,8 +1,6 @@
 import { useCallback } from "react";
 
 export function useWarehouseListHandlers(params: {
-  reqRefs: React.MutableRefObject<{ page: number; hasMore: boolean; fetching: boolean }>;
-  fetchReqHeads: (page?: number, force?: boolean) => Promise<void>;
   toReceiveHasMore: boolean;
   toReceiveIsFetching: boolean;
   toReceivePage: number;
@@ -20,8 +18,6 @@ export function useWarehouseListHandlers(params: {
   receiveSelectedForHead: (incomingId: string) => Promise<void>;
 }) {
   const {
-    reqRefs,
-    fetchReqHeads,
     toReceiveHasMore,
     toReceiveIsFetching,
     toReceivePage,
@@ -31,12 +27,6 @@ export function useWarehouseListHandlers(params: {
     closeIncomingDetailsRaw,
     receiveSelectedForHead,
   } = params;
-
-  const onReqEndReached = useCallback(() => {
-    if (reqRefs.current.hasMore && !reqRefs.current.fetching) {
-      void fetchReqHeads(reqRefs.current.page + 1);
-    }
-  }, [reqRefs, fetchReqHeads]);
 
   const onIncomingEndReached = useCallback(() => {
     if (toReceiveHasMore && !toReceiveIsFetching) {
@@ -62,7 +52,6 @@ export function useWarehouseListHandlers(params: {
   }, [receiveSelectedForHead]);
 
   return {
-    onReqEndReached,
     onIncomingEndReached,
     closeItemsModal,
     onPickRecipient,

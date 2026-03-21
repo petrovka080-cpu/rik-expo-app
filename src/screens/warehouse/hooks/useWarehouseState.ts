@@ -11,10 +11,10 @@ export function useWarehouseState(params: {
   fetchToReceive: () => Promise<void>;
   fetchStock: () => Promise<void>;
   fetchReports: () => Promise<void>;
-  fetchReqHeads: () => Promise<void>;
+  refreshExpenseQueue: () => Promise<void>;
   onError: (e: unknown) => void;
 }) {
-  const { tab, fetchToReceive, fetchStock, fetchReports, fetchReqHeads, onError } = params;
+  const { tab, fetchToReceive, fetchStock, fetchReports, refreshExpenseQueue, onError } = params;
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -24,13 +24,13 @@ export function useWarehouseState(params: {
       if (tab === TAB_INCOMING) await fetchToReceive();
       else if (tab === TAB_STOCK_FACT) await fetchStock();
       else if (tab === TAB_REPORTS) await fetchReports();
-      else if (tab === TAB_EXPENSE) await fetchReqHeads();
+      else if (tab === TAB_EXPENSE) await refreshExpenseQueue();
     } catch (e) {
       onError(e);
     } finally {
       setRefreshing(false);
     }
-  }, [tab, fetchToReceive, fetchStock, fetchReports, fetchReqHeads, onError]);
+  }, [tab, fetchToReceive, fetchStock, fetchReports, refreshExpenseQueue, onError]);
 
   return {
     loading,

@@ -551,6 +551,7 @@ async function fetchAllFactRowsFromTables(p: {
   from: string;
   to: string;
   objectName: string | null;
+  skipMaterialNameResolve?: boolean;
 }): Promise<DirectorFactRow[]> {
   const tTotal = nowMs();
   const issuesById = new Map<string, WarehouseIssueFactRow>();
@@ -1296,20 +1297,23 @@ async function fetchFactRowsForDiscipline(p: {
   objectName: string | null;
   objectIdByName: Record<string, string | null>;
   skipMaterialNameResolve?: boolean;
-}): Promise<{ rows: DirectorFactRow[]; source: DisciplineRowsSource }> {
+}): Promise<{ rows: DirectorFactRow[]; source: DisciplineRowsSource; chain: DisciplineRowsSource[] }> {
   const objectName = p.objectName ?? null;
+  const chain: DisciplineRowsSource[] = [];
   let rows: DirectorFactRow[] = [];
   try {
+    chain.push("acc_rpc");
     rows = await fetchDirectorFactViaAccRpc({ from: p.from, to: p.to, objectName });
-    if (rows.length) return { rows, source: "acc_rpc" };
+    if (rows.length) return { rows, source: "acc_rpc", chain };
   } catch { }
   if (!rows.length) {
     if (canUseDisciplineSourceRpc()) {
       try {
+        chain.push("source_rpc");
         const allRows = await fetchDirectorDisciplineSourceRowsViaRpc({ from: p.from, to: p.to });
         markDisciplineSourceRpcStatus("available");
         const filteredRows = p.objectName == null ? allRows : filterDisciplineRowsByObject(allRows, p.objectName);
-        return { rows: filteredRows, source: "source_rpc" };
+        return { rows: filteredRows, source: "source_rpc", chain };
       } catch (e: unknown) {
         if (isMissingCanonicalRpcError(e, "director_report_fetch_discipline_source_rows_v1")) {
           markDisciplineSourceRpcStatus("missing");
@@ -1321,22 +1325,24 @@ async function fetchFactRowsForDiscipline(p: {
   }
   if (!rows.length) {
     try {
+      chain.push("view");
       rows = await fetchAllFactRowsFromView({ from: p.from, to: p.to, objectName });
-      if (rows.length) return { rows, source: "view" };
+      if (rows.length) return { rows, source: "view", chain };
     } catch { }
   }
   if (!rows.length) {
     try {
+      chain.push("tables");
       rows = await fetchDisciplineFactRowsFromTables({
         from: p.from,
         to: p.to,
         objectName,
         skipMaterialNameResolve: p.skipMaterialNameResolve,
       });
-      if (rows.length) return { rows, source: "tables" };
+      if (rows.length) return { rows, source: "tables", chain };
     } catch { }
   }
-  return { rows: [], source: "none" };
+  return { rows: [], source: "none", chain };
 }
 
 export {

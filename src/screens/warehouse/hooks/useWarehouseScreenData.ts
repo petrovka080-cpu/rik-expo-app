@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { Platform } from "react-native";
 import { supabase } from "../../../lib/supabaseClient";
 import { useGlobalBusy } from "../../../ui/GlobalBusy";
@@ -13,7 +13,7 @@ import { useStockAvailability } from "../warehouse.availability";
 import { useWarehousePdf } from "../warehouse.pdfs";
 import { useWarehouseDicts } from "../warehouse.dicts";
 import { useWarehouseScope } from "../warehouse.scope";
-import { WAREHOUSE_TABS, type Tab } from "../warehouse.types";
+import { WAREHOUSE_TABS, type Tab, type WarehouseStockLike } from "../warehouse.types";
 import { nz, showErr } from "../warehouse.utils";
 import { useWarehousemanFio } from "./useWarehousemanFio";
 import { useWarehouseKeyboard } from "./useWarehouseKeyboard";
@@ -21,16 +21,14 @@ import { useWarehouseIncomingItemsModal } from "./useWarehouseIncomingItemsModal
 import { useWarehouseModals } from "./useWarehouseModals";
 import { useWarehouseSearch } from "./useWarehouseSearch";
 import { useWarehouseState } from "./useWarehouseState";
-import { useWarehouseReqModalFlow } from "./useWarehouseReqModalFlow";
 import { useWarehouseDerived } from "./useWarehouseDerived";
-import { useWarehouseReqHeads } from "./useWarehouseReqHeads";
 import { useWarehouseReportsData } from "./useWarehouseReportsData";
 import { useWarehouseFetchRefs } from "./useWarehouseFetchRefs";
 import { useWarehouseReceiveFlow } from "./useWarehouseReceiveFlow";
 import { useWarehouseIssueFlow } from "./useWarehouseIssueFlow";
 import { useWarehouseStockData } from "./useWarehouseStockData";
-import { useWarehouseReqItemsData } from "./useWarehouseReqItemsData";
 import { useWarehouseReportState } from "./useWarehouseReportState";
+import { useWarehouseExpenseQueueSlice } from "./useWarehouseExpenseQueueSlice";
 
 const ORG_NAME = "";
 const REQ_PAGE_SIZE = 80;
@@ -80,8 +78,6 @@ export function useWarehouseScreenData() {
     setIsRecipientModalVisible,
     reportsMode,
     setReportsMode,
-    reqModal,
-    setReqModal,
     issueDetailsId,
     setIssueDetailsId,
     incomingDetailsId,
@@ -97,18 +93,20 @@ export function useWarehouseScreenData() {
     receivingHeadId,
     setReceivingHeadId,
   } = useWarehouseIncomingItemsModal();
-  const { reqHeads, reqHeadsLoading, reqRefs, fetchReqHeads } = useWarehouseReqHeads({
-    supabase,
-    pageSize: REQ_PAGE_SIZE,
-  });
-
-  const { reqItems, setReqItems, reqItemsLoading, setReqItemsLoading, fetchReqItems } = useWarehouseReqItemsData({ supabase });
   const { stock, stockSupported, stockCount, fetchStock } = useWarehouseStockData({ supabase });
-  const { sortedReqHeads, stockFiltered, matNameByCode } = useWarehouseDerived({
-    reqHeads,
-    stock,
-    stockSearchDeb,
-  });
+  const matNameByCode = useMemo(() => {
+    const map: Record<string, string> = {};
+    for (const row of stock as WarehouseStockLike[]) {
+      const code = String(row?.rik_code ?? row?.code ?? row?.material_code ?? "")
+        .trim()
+        .toUpperCase();
+      const name = String(row?.name_human ?? row?.name ?? row?.item_name_ru ?? "").trim();
+      if (code && name && !map[code]) {
+        map[code] = name;
+      }
+    }
+    return map;
+  }, [stock]);
 
   const {
     issueLinesById,
@@ -168,21 +166,6 @@ export function useWarehouseScreenData() {
   });
   const { onPdfDocument, onPdfRegister, onPdfMaterials, onPdfObjectWork, onPdfDayRegister, onPdfDayMaterials } = pdfActions;
 
-  const { callFetchToReceive, callFetchStock, callFetchReqHeads, callFetchReports } = useWarehouseFetchRefs({
-    fetchToReceive: incoming.fetchToReceive,
-    fetchStock,
-    fetchReqHeads,
-    fetchReports,
-  });
-  const { loading, setLoading, refreshing, onRefresh } = useWarehouseState({
-    tab,
-    fetchToReceive: callFetchToReceive,
-    fetchStock: callFetchStock,
-    fetchReports: callFetchReports,
-    fetchReqHeads: callFetchReqHeads,
-    onError: showErr,
-  });
-
   const scope = useWarehouseScope();
   const { objectOpt, levelOpt, systemOpt, zoneOpt, scopeLabel, scopeOpt, pickModal, pickFilter, setPickFilter, closePick, applyPick, setPickModal } = scope;
 
@@ -204,13 +187,17 @@ export function useWarehouseScreenData() {
 
   const reqPickUi = useWarehouseReqPick({ nz, setIssueMsg, getAvailableByCode, getAvailableByCodeUom });
   const stockPickUi = useWarehouseStockPick({ nz, rec, objectOpt, workTypeOpt: scopeOpt, setIssueMsg });
-  const { openReq, closeReq } = useWarehouseReqModalFlow({
+  const expenseQueue = useWarehouseExpenseQueueSlice({
     supabase,
+    tab,
+    pageSize: REQ_PAGE_SIZE,
     reqPickUi,
-    setReqModal,
-    setReqItems,
-    setReqItemsLoading,
     onError: showErr,
+  });
+  const { sortedReqHeads, stockFiltered } = useWarehouseDerived({
+    reqHeads: expenseQueue.reqHeads,
+    stock,
+    stockSearchDeb,
   });
   const { submitReqPick, submitStockPick } = useWarehouseIssueFlow({
     supabase,
@@ -219,23 +206,38 @@ export function useWarehouseScreenData() {
     scopeLabel,
     warehousemanFio,
     fetchStock,
-    fetchReqItems,
-    fetchReqHeads: () => fetchReqHeads(),
+    fetchReqItems: expenseQueue.fetchReqItems,
+    fetchReqHeads: () => expenseQueue.refreshExpenseQueue({ force: true, reason: "issue" }),
     getAvailableByCode,
     getAvailableByCodeUom,
     getMaterialNameByCode,
     clearStockPick: stockPickUi.clearStockPick,
     clearReqPick: reqPickUi.clearReqPick,
     clearReqQtyInput: reqPickUi.clearQtyInput,
-    reqModalRequestId: reqModal?.request_id,
-    reqModalDisplayNo: reqModal?.display_no,
+    reqModalRequestId: expenseQueue.reqModal?.request_id,
+    reqModalDisplayNo: expenseQueue.reqModal?.display_no,
     reqPick: reqPickUi.reqPick,
-    reqItems,
+    reqItems: expenseQueue.reqItems,
     stockPick: stockPickUi.stockPick,
-    closeReq,
+    closeReq: expenseQueue.closeReq,
     setIsRecipientModalVisible,
     setIssueBusy,
     setIssueMsg,
+  });
+
+  const { callFetchToReceive, callFetchStock, callFetchReports } = useWarehouseFetchRefs({
+    fetchToReceive: incoming.fetchToReceive,
+    fetchStock,
+    fetchReqHeads: expenseQueue.fetchReqHeads,
+    fetchReports,
+  });
+  const { loading, setLoading, refreshing, onRefresh } = useWarehouseState({
+    tab,
+    fetchToReceive: callFetchToReceive,
+    fetchStock: callFetchStock,
+    fetchReports: callFetchReports,
+    refreshExpenseQueue: () => expenseQueue.refreshExpenseQueue({ force: true, reason: "manual" }),
+    onError: showErr,
   });
 
   const { qtyInputByItem, setQtyInputByItem, receiveSelectedForHead } = useWarehouseReceiveFlow({
@@ -269,9 +271,7 @@ export function useWarehouseScreenData() {
     onRefresh,
     callFetchToReceive,
     callFetchStock,
-    callFetchReqHeads,
     callFetchReports,
-    fetchReqHeads,
     fetchReports,
     setReportsMode,
     setIsRecipientModalVisible,
@@ -279,7 +279,7 @@ export function useWarehouseScreenData() {
     repStock,
     repMov,
     repIncoming,
-    reqHeadsLoading,
+    reqHeadsLoading: expenseQueue.reqHeadsLoading,
     sortedReqHeads,
     stockSupported,
     stockFiltered,
@@ -301,18 +301,19 @@ export function useWarehouseScreenData() {
     rec,
     stockSearch,
     setStockSearch,
-    reqRefs,
+    reqRefs: expenseQueue.reqRefs,
+    onReqEndReached: expenseQueue.onReqEndReached,
     setItemsModal,
     reportsUi,
     receiveSelectedForHead,
-    reqModal,
-    reqItems,
-    reqItemsLoading,
+    reqModal: expenseQueue.reqModal,
+    reqItems: expenseQueue.reqItems,
+    reqItemsLoading: expenseQueue.reqItemsLoading,
     reqPickUi,
     stockPickUi,
     issueBusy,
     issueMsg,
-    openReq,
+    openReq: expenseQueue.openReq,
     openItemsModal,
     itemsModal,
     kbH,
@@ -327,7 +328,7 @@ export function useWarehouseScreenData() {
     incomingDetailsId,
     incomingLinesLoadingId,
     incomingLinesById,
-    closeReq,
+    closeReq: expenseQueue.closeReq,
     repPeriodOpen,
     periodFrom,
     periodTo,

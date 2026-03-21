@@ -1,27 +1,32 @@
-import { useCallback, useRef } from "react";
+import { useCallback, useMemo, useRef } from "react";
 import { useFocusEffect } from "expo-router";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import type { BuyerInboxRow } from "../../../lib/catalog_api";
-import type { BuyerProposalBucketRow } from "../buyer.fetchers";
-import { fetchBuyerInboxProd, fetchBuyerBucketsProd } from "../buyer.fetchers";
+import type {
+  BuyerBucketsLoadResult,
+  BuyerInboxLoadResult,
+  BuyerProposalBucketRow,
+} from "../buyer.fetchers";
+import {
+  createBuyerSummaryService,
+  type BuyerSummaryRefreshReason,
+  type BuyerSummaryScope,
+} from "../buyer.summary.service";
 import { attachBuyerSubscriptions } from "../buyer.subscriptions";
-import { fetchBuyerSubcontractCount } from "./useBuyerSubcontractCount";
 
 type AlertFn = (title: string, message?: string) => void;
 type LogFn = (msg: unknown, ...rest: unknown[]) => void;
 
-type RefreshState = {
-  inFlight: Promise<void> | null;
-  rerunQueued: boolean;
-  rerunWaiter: Promise<void> | null;
-  resolveRerunWaiter: (() => void) | null;
-  rejectRerunWaiter: ((error: unknown) => void) | null;
+type RefreshSummaryOptions = {
+  reason: BuyerSummaryRefreshReason;
+  scopes?: BuyerSummaryScope[];
+  force?: boolean;
+  showScopeLoading?: boolean;
+  showRefreshing?: boolean;
 };
 
-type RefreshStateRef = {
-  current: RefreshState;
-};
+const DEFAULT_SCOPES: BuyerSummaryScope[] = ["inbox", "buckets", "subcontracts"];
 
 export function useBuyerLoadingController(params: {
   supabase: SupabaseClient;
@@ -61,130 +66,134 @@ export function useBuyerLoadingController(params: {
   } = params;
 
   const focusedRef = useRef(false);
-  const lastInboxKickRef = useRef(0);
-  const lastBucketsKickRef = useRef(0);
-  const inboxRefreshRef = useRef<RefreshState>({ inFlight: null, rerunQueued: false, rerunWaiter: null, resolveRerunWaiter: null, rejectRerunWaiter: null });
-  const bucketsRefreshRef = useRef<RefreshState>({ inFlight: null, rerunQueued: false, rerunWaiter: null, resolveRerunWaiter: null, rejectRerunWaiter: null });
-  const subcontractsRefreshRef = useRef<RefreshState>({ inFlight: null, rerunQueued: false, rerunWaiter: null, resolveRerunWaiter: null, rejectRerunWaiter: null });
-
-  const runRefresh = useCallback((stateRef: RefreshStateRef, refresh: () => Promise<void>) => {
-    if (stateRef.current.inFlight) {
-      stateRef.current.rerunQueued = true;
-      if (!stateRef.current.rerunWaiter) {
-        stateRef.current.rerunWaiter = new Promise<void>((resolve, reject) => {
-          stateRef.current.resolveRerunWaiter = resolve;
-          stateRef.current.rejectRerunWaiter = reject;
-        });
-      }
-      return stateRef.current.rerunWaiter;
-    }
-
-    const start = () => {
-      const task = (async () => {
-        try {
-          await refresh();
-          if (!stateRef.current.rerunQueued) {
-            stateRef.current.resolveRerunWaiter?.();
-            stateRef.current.rerunWaiter = null;
-            stateRef.current.resolveRerunWaiter = null;
-            stateRef.current.rejectRerunWaiter = null;
-          }
-        } catch (error) {
-          if (!stateRef.current.rerunQueued) {
-            stateRef.current.rejectRerunWaiter?.(error);
-            stateRef.current.rerunWaiter = null;
-            stateRef.current.resolveRerunWaiter = null;
-            stateRef.current.rejectRerunWaiter = null;
-          }
-          throw error;
-        } finally {
-          stateRef.current.inFlight = null;
-          if (stateRef.current.rerunQueued) {
-            stateRef.current.rerunQueued = false;
-            void start();
-          }
-        }
-      })();
-      stateRef.current.inFlight = task;
-      return task;
-    };
-
-    return start();
-  }, []);
-
-  const fetchInbox = useCallback(async () => {
-    await runRefresh(inboxRefreshRef, async () => {
-      await fetchBuyerInboxProd({
-        focusedRef,
-        lastKickRef: lastInboxKickRef,
-        kickMs: kickMsInbox,
-        listBuyerInbox,
-        preloadDisplayNos,
-        setLoadingInbox,
-        setRows,
-        alert,
-        log,
-      });
-    });
-  }, [kickMsInbox, listBuyerInbox, preloadDisplayNos, setLoadingInbox, setRows, alert, log, runRefresh]);
-
-  const fetchBuckets = useCallback(async () => {
-    await runRefresh(bucketsRefreshRef, async () => {
-      await fetchBuyerBucketsProd({
-        focusedRef,
-        lastKickRef: lastBucketsKickRef,
-        kickMs: kickMsBuckets,
+  const hasHydratedRef = useRef(false);
+  const summaryService = useMemo(
+    () =>
+      createBuyerSummaryService({
         supabase,
-        preloadProposalTitles,
-        setLoadingBuckets,
-        setPending,
-        setApproved,
-        setRejected,
+        listBuyerInbox,
+        kickMsInbox,
+        kickMsBuckets,
         log,
+      }),
+    [supabase, listBuyerInbox, kickMsInbox, kickMsBuckets, log],
+  );
+
+  const applyInboxResult = useCallback(async (inbox: BuyerInboxLoadResult) => {
+    setRows(inbox.rows);
+    if (!inbox.requestIds.length) return;
+    try {
+      await preloadDisplayNos(inbox.requestIds);
+    } catch {
+      // no-op
+    }
+  }, [preloadDisplayNos, setRows]);
+
+  const applyBucketsResult = useCallback(async (buckets: BuyerBucketsLoadResult) => {
+    setPending(buckets.pending);
+    setApproved(buckets.approved);
+    setRejected(buckets.rejected);
+    if (!buckets.proposalIds.length) return;
+    try {
+      await preloadProposalTitles(buckets.proposalIds);
+    } catch {
+      // no-op
+    }
+  }, [preloadProposalTitles, setApproved, setPending, setRejected]);
+
+  const refreshSummary = useCallback(async (options: RefreshSummaryOptions) => {
+    if (!focusedRef.current) return;
+
+    const scopes = options.scopes ?? DEFAULT_SCOPES;
+    const showInboxLoading = !!options.showScopeLoading && scopes.includes("inbox");
+    const showBucketsLoading = !!options.showScopeLoading && scopes.includes("buckets");
+
+    if (options.showRefreshing) setRefreshing(true);
+    if (showInboxLoading) setLoadingInbox(true);
+    if (showBucketsLoading) setLoadingBuckets(true);
+
+    try {
+      const result = await summaryService.load({
+        reason: options.reason,
+        scopes,
+        force: options.force,
       });
-    });
+
+      if (!focusedRef.current) return;
+
+      if (result.inbox) {
+        await applyInboxResult(result.inbox);
+      }
+      if (result.buckets) {
+        await applyBucketsResult(result.buckets);
+      }
+      if (result.subcontracts?.count != null) {
+        setSubcontractCount(result.subcontracts.count);
+      }
+
+      hasHydratedRef.current = true;
+    } catch (e: unknown) {
+      log?.("[buyer.summary] refresh failed:", e instanceof Error ? e.message : String(e));
+    } finally {
+      if (showInboxLoading) setLoadingInbox(false);
+      if (showBucketsLoading) setLoadingBuckets(false);
+      if (options.showRefreshing) setRefreshing(false);
+    }
   }, [
-    kickMsBuckets,
-    supabase,
-    preloadProposalTitles,
-    setLoadingBuckets,
-    setPending,
-    setApproved,
-    setRejected,
+    applyBucketsResult,
+    applyInboxResult,
     log,
-    runRefresh,
+    setLoadingBuckets,
+    setLoadingInbox,
+    setRefreshing,
+    setSubcontractCount,
+    summaryService,
   ]);
 
-  const fetchSubcontractsCount = useCallback(async () => {
-    await runRefresh(subcontractsRefreshRef, async () => {
-      try {
-        const { data: userData } = await supabase.auth.getUser();
-        const uid = userData?.user?.id;
-        if (!uid) return;
-        const count = await fetchBuyerSubcontractCount(supabase, uid);
-        if (count != null) setSubcontractCount(count);
-      } catch {
-        // no-op
-      }
+  const fetchInbox = useCallback(async () => {
+    await refreshSummary({
+      reason: "mutation",
+      scopes: ["inbox"],
+      force: true,
     });
-  }, [supabase, setSubcontractCount, runRefresh]);
+  }, [refreshSummary]);
+
+  const fetchBuckets = useCallback(async () => {
+    await refreshSummary({
+      reason: "mutation",
+      scopes: ["buckets"],
+      force: true,
+    });
+  }, [refreshSummary]);
+
+  const fetchSubcontractsCount = useCallback(async () => {
+    await refreshSummary({
+      reason: "mutation",
+      scopes: ["subcontracts"],
+      force: true,
+    });
+  }, [refreshSummary]);
 
   useFocusEffect(
     useCallback(() => {
       focusedRef.current = true;
 
-      void Promise.all([
-        fetchInbox(),
-        fetchBuckets(),
-        fetchSubcontractsCount()
-      ]);
+      const focusReason: BuyerSummaryRefreshReason = hasHydratedRef.current ? "focus" : "initial";
+      void refreshSummary({
+        reason: focusReason,
+        scopes: DEFAULT_SCOPES,
+        showScopeLoading: !hasHydratedRef.current,
+      });
 
       const detach = attachBuyerSubscriptions({
         supabase,
         focusedRef,
-        onNotif: (t, m) => alert(t, m),
+        onNotif: (title, message) => alert(title, message),
         onProposalsChanged: () => {
-          void Promise.all([fetchBuckets(), fetchInbox()]);
+          void refreshSummary({
+            reason: "subscription",
+            scopes: ["inbox", "buckets"],
+          });
         },
         log,
       });
@@ -197,18 +206,17 @@ export function useBuyerLoadingController(params: {
           // no-op
         }
       };
-    }, [fetchInbox, fetchBuckets, fetchSubcontractsCount, supabase, alert, log])
+    }, [alert, log, refreshSummary, supabase]),
   );
 
   const onRefresh = useCallback(async () => {
-    setRefreshing(true);
-    await Promise.all([
-      fetchInbox(),
-      fetchBuckets(),
-      fetchSubcontractsCount()
-    ]);
-    setRefreshing(false);
-  }, [fetchInbox, fetchBuckets, fetchSubcontractsCount, setRefreshing]);
+    await refreshSummary({
+      reason: "manual",
+      scopes: DEFAULT_SCOPES,
+      force: true,
+      showRefreshing: true,
+    });
+  }, [refreshSummary]);
 
   return {
     fetchInbox,

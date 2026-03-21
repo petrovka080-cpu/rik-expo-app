@@ -143,7 +143,12 @@ const REQUESTS_DISCIPLINE_SELECT_PLANS = [
   "id",
 ] as const;
 
-const disciplineRowsCache = new Map<string, { ts: number; rows: DirectorFactRow[]; source: DisciplineRowsSource }>();
+const disciplineRowsCache = new Map<string, {
+  ts: number;
+  rows: DirectorFactRow[];
+  source: DisciplineRowsSource;
+  chain?: DisciplineRowsSource[];
+}>();
 const disciplineSourceRowsRpcCache = new Map<string, { ts: number; rows: DirectorFactRow[] }>();
 const requestLookupCache = new Map<string, { ts: number; value: RequestLookupRow | null }>();
 const requestLookupInFlight = new Map<string, Promise<RequestLookupRow[]>>();

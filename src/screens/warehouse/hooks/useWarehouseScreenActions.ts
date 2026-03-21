@@ -1,12 +1,7 @@
 import { useCallback } from "react";
-import { UI } from "../warehouse.styles";
-import type { WarehouseTabContentProps } from "../components/WarehouseTabContent";
-import type { WarehouseModalsManagerProps } from "../components/WarehouseModalsManager";
-import { supabase } from "../../../lib/supabaseClient";
 import { showErr } from "../warehouse.utils";
 import { useWarehouseLifecycle } from "./useWarehouseLifecycle";
 import { useWarehouseTabEffects } from "./useWarehouseTabEffects";
-import { useWarehouseExpenseRealtime } from "./useWarehouseExpenseRealtime";
 import { useWarehousePickerUi } from "./useWarehousePickerUi";
 import { useWarehouseReportPeriod } from "./useWarehouseReportPeriod";
 import { useWarehouseListUi } from "./useWarehouseListUi";
@@ -20,14 +15,11 @@ import { selectWarehouseModalsManagerParams } from "../warehouse.modals.selector
 import { selectWarehouseTabContentProps } from "../warehouse.tab.content.selectors";
 
 export function useWarehouseScreenActions(data: WarehouseScreenData) {
-  const fetchReqHeadsForce = useCallback(() => data.callFetchReqHeads(0, true), [data.callFetchReqHeads]);
-
   useWarehouseLifecycle({
     tab: data.tab,
     setLoading: data.setLoading,
     fetchToReceive: data.callFetchToReceive,
     fetchStock: data.callFetchStock,
-    fetchReqHeadsForce,
     fetchReports: data.callFetchReports,
     onError: showErr,
   });
@@ -37,14 +29,7 @@ export function useWarehouseScreenActions(data: WarehouseScreenData) {
     periodFrom: data.periodFrom,
     periodTo: data.periodTo,
     fetchReports: data.fetchReports,
-    fetchReqHeadsForce,
     onError: showErr,
-  });
-
-  useWarehouseExpenseRealtime({
-    supabase,
-    tab: data.tab,
-    fetchReqHeadsForce,
   });
 
   const { pickOptions, pickTitle } = useWarehousePickerUi({
@@ -89,15 +74,12 @@ export function useWarehouseScreenActions(data: WarehouseScreenData) {
   });
 
   const {
-    onReqEndReached,
     onIncomingEndReached,
     closeItemsModal,
     onPickRecipient,
     closeIncomingDetails,
     onIncomingItemsSubmit,
   } = useWarehouseListHandlers({
-    reqRefs: data.reqRefs,
-    fetchReqHeads: data.fetchReqHeads,
     toReceiveHasMore: data.incoming.toReceiveHasMore,
     toReceiveIsFetching: data.incoming.toReceiveIsFetching,
     toReceivePage: data.incoming.toReceivePage,
@@ -174,7 +156,7 @@ export function useWarehouseScreenActions(data: WarehouseScreenData) {
     onPickSystem,
     onPickZone,
     onOpenRecipientModal,
-    onReqEndReached,
+    onReqEndReached: data.onReqEndReached,
     renderReqHeadItem,
     onReportsBack,
     onReportsSelectMode,

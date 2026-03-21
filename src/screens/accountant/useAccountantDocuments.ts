@@ -7,13 +7,12 @@ import { openAppAttachment } from "../../lib/documents/attachmentOpener";
 import { supabase } from "../../lib/supabaseClient";
 import {
   exportProposalPdf,
-  generatePaymentOrderPdfDocument,
   generateProposalPdfDocument,
 } from "../../lib/catalog_api";
 import { getLatestProposalAttachmentPreview, isPdfLike, openAttachment } from "../../lib/files";
 import { buildPdfFileName, createPdfDocumentDescriptor } from "../../lib/documents/pdfDocument";
 import { preparePdfDocument, previewPdfDocument } from "../../lib/documents/pdfDocumentActions";
-import { fetchLastPaymentIdByProposal } from "./accountant.payment";
+import { useAccountantPaymentPdfBoundary } from "./accountant.paymentPdf.boundary";
 import type { AccountantInboxUiRow } from "./types";
 
 type Params = {
@@ -44,6 +43,11 @@ export function useAccountantDocuments(params: Params) {
     getErrorText,
   } = params;
   const router = useRouter();
+  const openPaymentReportPreview = useAccountantPaymentPdfBoundary({
+    busy: gbusy,
+    safeAlert,
+    setCurrentPaymentId,
+  });
 
   const onOpenProposalPdf = useCallback(async () => {
     const pid = String(current?.proposal_id ?? "").trim();
@@ -137,38 +141,12 @@ export function useAccountantDocuments(params: Params) {
   }, [current, getErrorText, previewAttachment, safeAlert]);
 
   const onOpenPaymentReport = useCallback(async () => {
-    const propId = String(current?.proposal_id ?? "").trim();
-
-    let payId = currentPaymentId;
-    if (!payId && propId) {
-      payId = await fetchLastPaymentIdByProposal(propId);
-      if (payId) setCurrentPaymentId(payId);
-    }
-
-    if (!payId) {
-      safeAlert("РџР»Р°С‚РµР¶РЅРѕРµ РїРѕСЂСѓС‡РµРЅРёРµ", "РќРµ РЅР°Р№РґРµРЅ payment_id РґР»СЏ РІС‹Р±СЂР°РЅРЅРѕРіРѕ РїСЂРµРґР»РѕР¶РµРЅРёСЏ.");
-      return;
-    }
-
-    const template = await generatePaymentOrderPdfDocument(payId, "accountant");
-    const doc = await preparePdfDocument({
-      busy: gbusy,
-      supabase,
-      key: `pdf:acc:pay:${payId}`,
-      label: "РћС‚РєСЂС‹РІР°СЋ РїР»Р°С‚РµР¶РЅРѕРµ РїРѕСЂСѓС‡РµРЅРёРµвЂ¦",
-      descriptor: {
-        ...template,
-        title: `РџР»Р°С‚РµР¶РЅРѕРµ РїРѕСЂСѓС‡РµРЅРёРµ ${payId}`,
-        fileName: buildPdfFileName({
-          documentType: "payment_order",
-          title: supplierName || "payment_order",
-          entityId: payId,
-        }),
-      },
-      getRemoteUrl: () => template.uri,
+    await openPaymentReportPreview({
+      proposalId: current?.proposal_id,
+      paymentId: currentPaymentId,
+      supplierName,
     });
-    await previewPdfDocument(doc, { router });
-  }, [current, currentPaymentId, gbusy, router, safeAlert, setCurrentPaymentId, supplierName]);
+  }, [current?.proposal_id, currentPaymentId, openPaymentReportPreview, supplierName]);
 
   const openLegacyAttachment = useCallback(async (pid: string, groupKey: string) => {
     await openAttachment(pid, groupKey, { all: false });
