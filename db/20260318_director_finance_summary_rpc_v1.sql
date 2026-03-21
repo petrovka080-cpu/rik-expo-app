@@ -53,7 +53,7 @@ base as (
         + (select due_days from params)
       )
     end as due_date
-  from unnest(public.list_accountant_inbox_fact(null)) as src(row_json)
+  from public.list_accountant_inbox_fact(null) as src(row_json)
 ),
 filtered as (
   select
