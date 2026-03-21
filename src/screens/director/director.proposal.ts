@@ -9,7 +9,6 @@ import { buildPdfFileName } from "../../lib/documents/pdfDocument";
 import { preparePdfDocument, previewPdfDocument } from "../../lib/documents/pdfDocumentActions";
 import type { Database } from "../../lib/database.types";
 import type { ProposalItem } from "./director.types";
-import { seedEnsureIncomingItems } from "../warehouse/warehouse.seed";
 
 type BusyLike = { isBusy: (key: string) => boolean };
 type Deps = {
@@ -114,22 +113,6 @@ export function useDirectorProposalActions({
       return Array.isArray(q.data) && q.data.length > 0;
     } catch {
       return false;
-    }
-  }, [supabase]);
-
-  const getIncomingIdByPurchase = useCallback(async (purchaseId: string): Promise<string | null> => {
-    try {
-      const q = await supabase
-        .from("wh_incoming")
-        .select("id")
-        .eq("purchase_id", purchaseId)
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
-      if (q.error) return null;
-      return pickMaybeId(q.data);
-    } catch {
-      return null;
     }
   }, [supabase]);
 
@@ -319,25 +302,6 @@ export function useDirectorProposalActions({
         ensuredPurchaseId = rpcPurchaseId || ensuredPurchaseId;
       }
 
-      const ensuredIncomingId = ensuredPurchaseId
-        ? await getIncomingIdByPurchase(ensuredPurchaseId)
-        : null;
-      if (ensuredIncomingId) {
-        const warehouseSeeded = await seedEnsureIncomingItems({
-          supabase,
-          incomingId: ensuredIncomingId,
-          purchaseId: ensuredPurchaseId,
-        });
-        if (__DEV__) {
-          console.info("[director.approve] warehouse_seed", {
-            proposalId: pid,
-            purchaseId: ensuredPurchaseId,
-            incomingId: ensuredIncomingId,
-            warehouseSeeded,
-          });
-        }
-      }
-
       let workSeedErrorMessage: string | null = null;
       try {
         if (ensuredPurchaseId) {
@@ -390,7 +354,6 @@ export function useDirectorProposalActions({
     proposalSentToAccountant,
     getPurchaseIdByProposal,
     hasIncomingByPurchase,
-    getIncomingIdByPurchase,
   ]);
 
   return {
