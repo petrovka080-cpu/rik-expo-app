@@ -10,6 +10,7 @@ import {
 } from "../foreman.helpers";
 import type { CalcRow, PickedRow } from "../foreman.types";
 import { FOREMAN_TEXT } from "../foreman.ui";
+import type { ForemanLocalDraftSnapshot } from "../foreman.localDraft";
 
 type DraftAppendRow = {
   rik_code: string;
@@ -40,10 +41,25 @@ type UseForemanActionsProps = {
   showHint: (title: string, message: string) => void;
   setBusy: (busy: boolean) => void;
   alertError: (error: unknown, fallback: string) => void;
-  appendLocalDraftRows: (rows: DraftAppendRow[]) => void;
-  updateLocalDraftQty: (item: ReqItemRow, qty: number) => void;
-  removeLocalDraftRow: (item: ReqItemRow) => void;
-  syncLocalDraftNow: (options?: { submit?: boolean; context?: string }) => Promise<{
+  appendLocalDraftRows: (rows: DraftAppendRow[]) => ForemanLocalDraftSnapshot | null;
+  updateLocalDraftQty: (item: ReqItemRow, qty: number) => ForemanLocalDraftSnapshot | null;
+  removeLocalDraftRow: (item: ReqItemRow) => ForemanLocalDraftSnapshot | null;
+  syncLocalDraftNow: (options?: {
+    submit?: boolean;
+    context?: string;
+    overrideSnapshot?: ForemanLocalDraftSnapshot | null;
+    mutationKind?:
+      | "catalog_add"
+      | "calc_add"
+      | "ai_local_add"
+      | "qty_update"
+      | "row_remove"
+      | "whole_cancel"
+      | "submit"
+      | "background_sync";
+    localBeforeCount?: number | null;
+    localAfterCount?: number | null;
+  }) => Promise<{
     requestId?: string | null;
     submitted?: unknown | null;
   } | void>;
@@ -75,6 +91,44 @@ export function useForemanActions({
   syncLocalDraftNow,
   webUi,
 }: UseForemanActionsProps) {
+  const runWebConfirm = useCallback(
+    (message: string) => {
+      if (Platform.OS !== "web") return false;
+      if (typeof window !== "undefined" && typeof window.confirm === "function") {
+        return window.confirm(message);
+      }
+      const confirmFn = webUi?.confirm;
+      if (typeof confirmFn === "function") {
+        try {
+          return confirmFn.call(globalThis, message);
+        } catch {
+          return false;
+        }
+      }
+      return false;
+    },
+    [webUi],
+  );
+
+  const runWebAlert = useCallback(
+    (message: string) => {
+      if (Platform.OS !== "web") return;
+      if (typeof window !== "undefined" && typeof window.alert === "function") {
+        window.alert(message);
+        return;
+      }
+      const alertFn = webUi?.alert;
+      if (typeof alertFn === "function") {
+        try {
+          alertFn.call(globalThis, message);
+        } catch {
+          // ignore broken browser bridge alerts
+        }
+      }
+    },
+    [webUi],
+  );
+
   const commitCatalogToDraft = useCallback(
     async (rows: PickedRow[]) => {
       if (!rows?.length) return;
@@ -96,9 +150,16 @@ export function useForemanActions({
           },
         }));
 
-        appendLocalDraftRows(prepared);
+        const beforeLineCount = items.length;
+        const nextSnapshot = appendLocalDraftRows(prepared);
         try {
-          await syncLocalDraftNow({ context: "commitCatalogToDraft" });
+          await syncLocalDraftNow({
+            context: "commitCatalogToDraft",
+            overrideSnapshot: nextSnapshot,
+            mutationKind: "catalog_add",
+            localBeforeCount: beforeLineCount,
+            localAfterCount: nextSnapshot?.items.length ?? 0,
+          });
         } catch {
           showHint("Черновик сохранен", "Позиции сохранены локально и будут синхронизированы позже.");
         }
@@ -108,7 +169,7 @@ export function useForemanActions({
         setBusy(false);
       }
     },
-    [alertError, appendLocalDraftRows, ensureEditableContext, scopeNote, setBusy, showHint, syncLocalDraftNow],
+    [alertError, appendLocalDraftRows, ensureEditableContext, items.length, scopeNote, setBusy, showHint, syncLocalDraftNow],
   );
 
   const commitQtyChange = useCallback(
@@ -134,10 +195,17 @@ export function useForemanActions({
 
       setRowBusy(item.id, true);
       try {
-        updateLocalDraftQty(item, parsed);
+        const beforeLineCount = items.length;
+        const nextSnapshot = updateLocalDraftQty(item, parsed);
         setQtyDrafts((prev) => ({ ...prev, [key]: formatQtyInput(parsed) }));
         try {
-          await syncLocalDraftNow({ context: "commitQtyChange" });
+          await syncLocalDraftNow({
+            context: "commitQtyChange",
+            overrideSnapshot: nextSnapshot,
+            mutationKind: "qty_update",
+            localBeforeCount: beforeLineCount,
+            localAfterCount: nextSnapshot?.items.length ?? 0,
+          });
         } catch {
           // local draft already persisted
         }
@@ -148,7 +216,7 @@ export function useForemanActions({
         setRowBusy(item.id, false);
       }
     },
-    [alertError, canEditRequestItem, isDraftActive, setQtyDrafts, setRowBusy, syncLocalDraftNow, updateLocalDraftQty],
+    [alertError, canEditRequestItem, isDraftActive, items.length, setQtyDrafts, setRowBusy, syncLocalDraftNow, updateLocalDraftQty],
   );
 
   const syncPendingQtyDrafts = useCallback(async () => {
@@ -169,7 +237,13 @@ export function useForemanActions({
     setBusy(true);
     try {
       await syncPendingQtyDrafts();
-      const result = await syncLocalDraftNow({ submit: true, context: "submitToDirector" });
+      const result = await syncLocalDraftNow({
+        submit: true,
+        context: "submitToDirector",
+        mutationKind: "submit",
+        localBeforeCount: items.length,
+        localAfterCount: items.length,
+      });
       const rid = String(
         result && typeof result === "object" && "requestId" in result ? result.requestId ?? requestId : requestId,
       ).trim();
@@ -200,6 +274,7 @@ export function useForemanActions({
     applySubmittedRequestState,
     ensureCanSubmitToDirector,
     finalizeAfterSubmit,
+    items.length,
     requestId,
     setBusy,
     showHint,
@@ -211,19 +286,26 @@ export function useForemanActions({
     async (item: ReqItemRow) => {
       const confirmMsg = `${FOREMAN_TEXT.deleteConfirmTitle}\n\n${item.name_human || FOREMAN_TEXT.deleteConfirmFallback}`;
       const removeAndSync = async () => {
-        removeLocalDraftRow(item);
+        const beforeLineCount = items.length;
+        const nextSnapshot = removeLocalDraftRow(item);
         try {
-          await syncLocalDraftNow({ context: "handleRemoveDraftRow" });
+          await syncLocalDraftNow({
+            context: "handleRemoveDraftRow",
+            overrideSnapshot: nextSnapshot,
+            mutationKind: "row_remove",
+            localBeforeCount: beforeLineCount,
+            localAfterCount: nextSnapshot?.items.length ?? 0,
+          });
         } catch {
           // local draft already persisted
         }
       };
 
       if (Platform.OS === "web") {
-        const ok = webUi?.confirm?.(confirmMsg) ?? false;
+        const ok = runWebConfirm(confirmMsg);
         if (!ok) return;
         await removeAndSync();
-        webUi?.alert?.(FOREMAN_TEXT.deleteDone);
+        runWebAlert(FOREMAN_TEXT.deleteDone);
         return;
       }
 
@@ -236,7 +318,7 @@ export function useForemanActions({
         },
       ]);
     },
-    [removeLocalDraftRow, syncLocalDraftNow, webUi],
+    [items.length, removeLocalDraftRow, runWebAlert, runWebConfirm, syncLocalDraftNow],
   );
 
   const handleCalcAddToRequest = useCallback(
@@ -263,9 +345,16 @@ export function useForemanActions({
           };
         });
 
-        appendLocalDraftRows(prepared);
+        const beforeLineCount = items.length;
+        const nextSnapshot = appendLocalDraftRows(prepared);
         try {
-          await syncLocalDraftNow({ context: "handleCalcAddToRequest" });
+          await syncLocalDraftNow({
+            context: "handleCalcAddToRequest",
+            overrideSnapshot: nextSnapshot,
+            mutationKind: "calc_add",
+            localBeforeCount: beforeLineCount,
+            localAfterCount: nextSnapshot?.items.length ?? 0,
+          });
           Alert.alert("Готово", `Добавлено позиций: ${prepared.length}`);
         } catch {
           Alert.alert("Черновик сохранен", "Позиции сохранены локально и будут синхронизированы позже.");
@@ -276,7 +365,7 @@ export function useForemanActions({
         setBusy(false);
       }
     },
-    [alertError, appendLocalDraftRows, ensureEditableContext, scopeNote, setBusy, syncLocalDraftNow],
+    [alertError, appendLocalDraftRows, ensureEditableContext, items.length, scopeNote, setBusy, syncLocalDraftNow],
   );
 
   return {

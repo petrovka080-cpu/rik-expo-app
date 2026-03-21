@@ -30,6 +30,7 @@ import {
   areForemanLocalDraftSnapshotsEqual,
   buildForemanLocalDraftSnapshot,
   clearForemanLocalDraftSnapshot,
+  discardForemanLocalDraft,
   hasForemanLocalDraftContent,
   hasForemanLocalDraftPendingSync,
   loadForemanLocalDraftSnapshot,
@@ -53,6 +54,15 @@ type UseForemanDraftBoundaryProps = {
 };
 
 type ForemanDraftRestoreSource = "none" | "snapshot" | "remoteDraft";
+type ForemanDraftMutationKind =
+  | "catalog_add"
+  | "calc_add"
+  | "ai_local_add"
+  | "qty_update"
+  | "row_remove"
+  | "whole_cancel"
+  | "submit"
+  | "background_sync";
 
 type ForemanDraftBoundaryState = {
   bootstrapReady: boolean;
@@ -76,6 +86,16 @@ const buildSnapshotRestoreId = (snapshot: ForemanLocalDraftSnapshot | null | und
   if (!snapshot) return null;
   const requestKey = ridStr(snapshot.requestId) || FOREMAN_LOCAL_ONLY_REQUEST_ID;
   return `snapshot:${requestKey}:${snapshot.updatedAt}`;
+};
+
+const countSnapshotLines = (snapshot: ForemanLocalDraftSnapshot | null | undefined): number => {
+  if (!snapshot) return 0;
+  return snapshot.items.filter((item) => Number.isFinite(item.qty) && item.qty > 0).length;
+};
+
+const logDraftSyncTelemetry = (payload: Record<string, unknown>) => {
+  if (!__DEV__) return;
+  console.info("[foreman.draft.sync]", payload);
 };
 
 export function useForemanDraftBoundary({
@@ -393,6 +413,7 @@ export function useForemanDraftBoundary({
     (rows: ForemanDraftAppendInput[]) => {
       const next = appendRowsToForemanLocalDraft(buildCurrentLocalDraftSnapshot(), rows);
       applyLocalDraftSnapshotToBoundary(next);
+      return next;
     },
     [applyLocalDraftSnapshotToBoundary, buildCurrentLocalDraftSnapshot],
   );
@@ -401,6 +422,7 @@ export function useForemanDraftBoundary({
     (item: ReqItemRow, qty: number) => {
       const next = updateForemanLocalDraftItemQty(buildCurrentLocalDraftSnapshot(), item.id, qty);
       applyLocalDraftSnapshotToBoundary(next);
+      return next;
     },
     [applyLocalDraftSnapshotToBoundary, buildCurrentLocalDraftSnapshot],
   );
@@ -409,12 +431,20 @@ export function useForemanDraftBoundary({
     (item: ReqItemRow) => {
       const next = removeForemanLocalDraftItem(buildCurrentLocalDraftSnapshot(), item.id);
       applyLocalDraftSnapshotToBoundary(next);
+      return next;
     },
     [applyLocalDraftSnapshotToBoundary, buildCurrentLocalDraftSnapshot],
   );
 
   const syncLocalDraftNow = useCallback(
-    async (options?: { submit?: boolean; context?: string }) => {
+    async (options?: {
+      submit?: boolean;
+      context?: string;
+      overrideSnapshot?: ForemanLocalDraftSnapshot | null;
+      mutationKind?: ForemanDraftMutationKind;
+      localBeforeCount?: number | null;
+      localAfterCount?: number | null;
+    }) => {
       if (draftSyncInFlightRef.current) {
         await draftSyncInFlightRef.current;
       }
@@ -424,13 +454,51 @@ export function useForemanDraftBoundary({
           return { requestId: ridStr(requestId) || null, submitted: null };
         }
 
-        let snapshot = buildCurrentLocalDraftSnapshot();
+        let snapshot = options?.overrideSnapshot ?? buildCurrentLocalDraftSnapshot();
         if (options?.submit) {
           snapshot = markForemanLocalDraftSubmitRequested(snapshot);
         }
 
+        const mutationKind = options?.mutationKind ?? (options?.submit ? "submit" : "background_sync");
+        const localBeforeCount = options?.localBeforeCount ?? null;
+        const localAfterCount = options?.localAfterCount ?? countSnapshotLines(snapshot);
+        const syncPayloadLineCount = countSnapshotLines(snapshot);
+        const activeRequestId = ridStr(snapshot?.requestId) || ridStr(requestId) || null;
+
         if (!snapshot || !hasForemanLocalDraftContent(snapshot)) {
+          logDraftSyncTelemetry({
+            phase: "skip",
+            mutationKind,
+            context: options?.context ?? null,
+            requestId: activeRequestId,
+            beforeLineCount: localBeforeCount,
+            afterLocalSnapshotLineCount: localAfterCount,
+            syncPayloadLineCount,
+            reason: "empty_snapshot",
+          });
           return { requestId: ridStr(requestId) || null, submitted: null };
+        }
+
+        logDraftSyncTelemetry({
+          phase: "request",
+          mutationKind,
+          context: options?.context ?? null,
+          requestId: activeRequestId,
+          beforeLineCount: localBeforeCount,
+          afterLocalSnapshotLineCount: localAfterCount,
+          syncPayloadLineCount,
+          submitRequested: options?.submit === true,
+        });
+
+        if (
+          syncPayloadLineCount === 0 &&
+          (mutationKind === "catalog_add" || mutationKind === "calc_add" || mutationKind === "ai_local_add")
+        ) {
+          console.warn("[foreman.draft.sync] zero-line payload for add mutation", {
+            mutationKind,
+            context: options?.context ?? null,
+            requestId: activeRequestId,
+          });
         }
 
         persistLocalDraftSnapshot(snapshot);
@@ -443,6 +511,19 @@ export function useForemanDraftBoundary({
 
           if (result.snapshot) {
             applyLocalDraftSnapshotToBoundary(result.snapshot);
+            logDraftSyncTelemetry({
+              phase: "result",
+              mutationKind,
+              context: options?.context ?? null,
+              requestId:
+                ridStr(result.snapshot.requestId) || ridStr(snapshot.requestId) || ridStr(requestId) || null,
+              beforeLineCount: localBeforeCount,
+              afterLocalSnapshotLineCount: localAfterCount,
+              syncPayloadLineCount,
+              syncResultLineCount: result.rows.length,
+              sourcePath: result.branchMeta?.sourcePath ?? "legacy_fallback",
+              submitted: result.submitted != null,
+            });
             return {
               requestId: ridStr(result.snapshot.requestId) || ridStr(snapshot.requestId) || ridStr(requestId) || null,
               submitted: result.submitted ?? null,
@@ -450,11 +531,32 @@ export function useForemanDraftBoundary({
           }
 
           persistLocalDraftSnapshot(null);
+          logDraftSyncTelemetry({
+            phase: "result",
+            mutationKind,
+            context: options?.context ?? null,
+            requestId: ridStr(snapshot.requestId) || ridStr(requestId) || null,
+            beforeLineCount: localBeforeCount,
+            afterLocalSnapshotLineCount: localAfterCount,
+            syncPayloadLineCount,
+            syncResultLineCount: result.rows.length,
+            sourcePath: result.branchMeta?.sourcePath ?? "legacy_fallback",
+            submitted: result.submitted != null,
+          });
           return {
             requestId: ridStr(snapshot.requestId) || ridStr(requestId) || null,
             submitted: result.submitted ?? null,
           };
         } catch (error) {
+          console.warn("[foreman.draft.sync] sync failed", {
+            mutationKind,
+            context: options?.context ?? null,
+            requestId: activeRequestId,
+            beforeLineCount: localBeforeCount,
+            afterLocalSnapshotLineCount: localAfterCount,
+            syncPayloadLineCount,
+            error: toErrorText(error, options?.context || "syncLocalDraftNow"),
+          });
           persistLocalDraftSnapshot({
             ...snapshot,
             lastError: toErrorText(error, options?.context || "syncLocalDraftNow"),
@@ -482,6 +584,41 @@ export function useForemanDraftBoundary({
       requestId,
     ],
   );
+
+  const discardWholeDraft = useCallback(async () => {
+    const currentSnapshot = buildCurrentLocalDraftSnapshot();
+    const beforeLineCount = countSnapshotLines(currentSnapshot);
+    const discardSnapshot = discardForemanLocalDraft(currentSnapshot);
+
+    if (!discardSnapshot) {
+      clearDraftCache();
+      resetDraftState();
+      return;
+    }
+
+    applyLocalDraftSnapshotToBoundary(discardSnapshot);
+
+    try {
+      await syncLocalDraftNow({
+        context: "discardWholeDraft",
+        overrideSnapshot: discardSnapshot,
+        mutationKind: "whole_cancel",
+        localBeforeCount: beforeLineCount,
+        localAfterCount: 0,
+      });
+      clearDraftCache();
+      resetDraftState();
+    } catch (error) {
+      applyLocalDraftSnapshotToBoundary(currentSnapshot, { clearWhenEmpty: true });
+      throw error;
+    }
+  }, [
+    applyLocalDraftSnapshotToBoundary,
+    buildCurrentLocalDraftSnapshot,
+    clearDraftCache,
+    resetDraftState,
+    syncLocalDraftNow,
+  ]);
 
   const ensureRequestId = useCallback(async () => {
     const snapshot = buildCurrentLocalDraftSnapshot();
@@ -832,6 +969,7 @@ export function useForemanDraftBoundary({
     appendLocalDraftRows,
     updateLocalDraftQty,
     removeLocalDraftRow,
+    discardWholeDraft,
     applySubmittedRequestState,
     openRequestById,
     applyObjectTypeSelection,

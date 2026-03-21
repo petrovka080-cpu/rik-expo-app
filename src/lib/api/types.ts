@@ -12,6 +12,7 @@ export type CatalogItem = {
 export type ReqItemRow = {
   id: string;
   request_id: number | string;
+  rik_code?: string | null;
   name_human: string;
   qty: number;
   uom?: string | null;
@@ -19,6 +20,7 @@ export type ReqItemRow = {
   supplier_hint?: string | null;
   app_code?: string | null;
   note?: string | null;
+  line_no?: number | null;
 };
 
 export type RequestMeta = {

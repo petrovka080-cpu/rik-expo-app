@@ -1,4 +1,4 @@
-﻿import React from "react";
+import React from "react";
 import { Alert, FlatList, Platform, Pressable, Text, View } from "react-native";
 import RNModal from "react-native-modal";
 import type { ReqItemRow } from "../../lib/catalog_api";
@@ -7,14 +7,26 @@ import DeleteAllButton from "../../ui/DeleteAllButton";
 import SendPrimaryButton from "../../ui/SendPrimaryButton";
 
 type WebUiApi = {
-  confirm?: (message?: string) => boolean;
+  confirm: (message?: string) => boolean;
 };
 
 const getWebUi = (): WebUiApi => {
-  if (!globalThis || typeof globalThis !== "object") return {};
-  const candidate = globalThis as Record<string, unknown>;
-  const confirm = candidate.confirm;
-  return typeof confirm === "function" ? { confirm: confirm as WebUiApi["confirm"] } : {};
+  return {
+    confirm(message?: string) {
+      if (typeof window !== "undefined" && typeof window.confirm === "function") {
+        return window.confirm(message ?? "");
+      }
+      if (!globalThis || typeof globalThis !== "object") return false;
+      const candidate = globalThis as Record<string, unknown>;
+      const confirm = candidate.confirm;
+      if (typeof confirm !== "function") return false;
+      try {
+        return Boolean(confirm.call(globalThis, message));
+      } catch {
+        return false;
+      }
+    },
+  };
 };
 
 type Props = {
@@ -113,10 +125,9 @@ export default function ForemanDraftModal(p: Props) {
                 };
 
                 if (Platform.OS === "web") {
-                  const ok =
-                    webUi.confirm?.(
-                      "Удалить черновик?\n\nВсе позиции будут удалены, будет создан новый черновик.",
-                    ) ?? false;
+                  const ok = webUi.confirm(
+                    "Удалить черновик?\n\nВесь черновик будет отменен и очищен.",
+                  );
                   if (!ok) return;
                   void doIt();
                   return;
@@ -124,7 +135,7 @@ export default function ForemanDraftModal(p: Props) {
 
                 Alert.alert(
                   "Удалить черновик?",
-                  "Все позиции будут удалены, будет создан новый черновик.",
+                  "Весь черновик будет отменен и очищен.",
                   [
                     { text: "Отмена", style: "cancel" },
                     { text: "Да, удалить", style: "destructive", onPress: () => void doIt() },

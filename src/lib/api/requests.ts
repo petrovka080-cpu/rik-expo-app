@@ -11,10 +11,8 @@ import {
   requestsSupportsSubmittedAt,
 } from "./requests.read-capabilities";
 import {
-  REQUEST_APPROVED_STATUS,
   REQUEST_DRAFT_STATUS,
   REQUEST_PENDING_STATUS,
-  REQUEST_REJECTED_STATUS,
   REQUEST_TERMINAL_ITEM_STATUS_FILTER,
   isDraftOrPendingStatus,
 } from "./requests.status";
@@ -78,9 +76,7 @@ type RequestDraftSelectRow = Pick<
 type RequestItemAddOrIncArgs = Database["public"]["Functions"]["request_item_add_or_inc"]["Args"];
 type RequestItemAddOrIncResult = Database["public"]["Functions"]["request_item_add_or_inc"]["Returns"];
 type RequestItemsByRequestArgs = Database["public"]["Functions"]["request_items_by_request"]["Args"];
-type RequestItemsByRequestRow = Database["public"]["Functions"]["request_items_by_request"]["Returns"][number];
 type RequestSubmitArgs = Database["public"]["Functions"]["request_submit"]["Args"];
-type RequestSubmitResultRow = Database["public"]["Functions"]["request_submit"]["Returns"];
 type RequestStatusRecalcArgsCompat = { p_request_id: number | string };
 type RequestIdLookupRow = Pick<RequestsTable["Row"], "id">;
 type RequestSubmitPath =
@@ -586,7 +582,14 @@ async function completeRequestSubmitStage(
     }
   }
 
-  const reconciled = await reconcileRequestHeadStatus(preconditions.request_id);
+  let reconciled = false;
+  if (primary.path === "rpc_submit") {
+    // rpc_submit is fully server-atomic, skip redundant client reconciliation
+    reconciled = true;
+  } else {
+    reconciled = await reconcileRequestHeadStatus(preconditions.request_id);
+  }
+
   const record_override =
     reconciled && primary.path === "post_draft_short_circuit"
       ? await selectRequestRecordById(

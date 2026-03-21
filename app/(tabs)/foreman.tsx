@@ -147,6 +147,7 @@ export default function ForemanScreen() {
     clearDraftCache,
     resetDraftState,
     syncLocalDraftNow,
+    discardWholeDraft,
     ensureRequestId,
     syncRequestHeaderMeta,
     appendLocalDraftRows,
@@ -570,18 +571,17 @@ export default function ForemanScreen() {
     return gbusy.isBusy(`pdf:request:${ridKey || "draft"}`);
   }, [gbusy, requestId]);
 
-  const handleDeleteDraftFromSheet = useCallback(async () => {
+  const handleCancelWholeDraft = useCallback(async () => {
     setDraftDeleteBusy(true);
     try {
-      clearDraftCache();
-      resetDraftState();
+      await discardWholeDraft();
       setDraftOpen(false);
     } catch (e: unknown) {
       alertError(e, FOREMAN_TEXT.deleteDraftError);
     } finally {
       setDraftDeleteBusy(false);
     }
-  }, [clearDraftCache, resetDraftState, alertError]);
+  }, [alertError, discardWholeDraft]);
 
   const handleSendDraftFromSheet = useCallback(async () => {
     setDraftSendBusy(true);
@@ -652,11 +652,18 @@ export default function ForemanScreen() {
         },
       }));
 
-      appendLocalDraftRows(prepared);
+      const beforeLineCount = items.length;
+      const nextSnapshot = appendLocalDraftRows(prepared);
 
       let syncedRequestId = ridStr(requestId);
       try {
-        const syncResult = await syncLocalDraftNow({ context: "foremanAiQuickRequest" });
+        const syncResult = await syncLocalDraftNow({
+          context: "foremanAiQuickRequest",
+          overrideSnapshot: nextSnapshot,
+          mutationKind: "ai_local_add",
+          localBeforeCount: beforeLineCount,
+          localAfterCount: nextSnapshot?.items.length ?? 0,
+        });
         syncedRequestId = ridStr(syncResult?.requestId) || syncedRequestId;
       } catch {
         setAiQuickNotice("Позиции сохранены локально. Когда сеть восстановится, черновик синхронизируется автоматически.");
@@ -690,6 +697,7 @@ export default function ForemanScreen() {
     clearHeaderAttention,
     currentDisplayLabel,
     headerRequirements,
+    items.length,
     isDraftActive,
     labelForRequest,
     requestId,
@@ -933,7 +941,7 @@ export default function ForemanScreen() {
               screenLock={screenLock}
               draftDeleteBusy={draftDeleteBusy}
               draftSendBusy={draftSendBusy}
-              onDeleteDraft={handleDeleteDraftFromSheet}
+              onDeleteDraft={handleCancelWholeDraft}
               onPdf={onPdf}
               pdfBusy={draftPdfBusy}
               onSend={handleSendDraftFromSheet}

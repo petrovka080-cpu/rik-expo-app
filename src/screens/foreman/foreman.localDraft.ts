@@ -12,6 +12,11 @@ import {
   updateRequestMeta,
   type ReqItemRow,
 } from "../../lib/catalog_api";
+import {
+  isRequestDraftSyncRpcEnabled,
+  syncRequestDraftViaRpc,
+  toRequestDraftSyncFallbackReason,
+} from "../../lib/api/requestDraftSync.service";
 import { supabase } from "../../lib/supabaseClient";
 import { requestItemAddOrIncAndPatchMeta } from "./foreman.helpers";
 import type { RequestDraftMeta } from "./foreman.types";
@@ -78,6 +83,9 @@ export type ForemanLocalDraftSyncResult = {
   snapshot: ForemanLocalDraftSnapshot | null;
   rows: ReqItemRow[];
   submitted: unknown | null;
+  branchMeta?: {
+    sourcePath: "rpc_v1" | "rpc_v2" | "legacy_fallback";
+  };
 };
 
 const emptyHeader = (): ForemanLocalDraftHeader => ({
@@ -497,6 +505,37 @@ export function removeForemanLocalDraftItem(
   return next;
 }
 
+export function discardForemanLocalDraft(
+  snapshot: ForemanLocalDraftSnapshot | null,
+): ForemanLocalDraftSnapshot | null {
+  if (!snapshot) return null;
+
+  const next = clone(snapshot);
+  const requestId = trim(next.requestId);
+  if (!requestId) return null;
+
+  for (const item of next.items) {
+    const remoteItemId = trim(item.remote_item_id);
+    if (!remoteItemId) continue;
+    if (next.pendingDeletes.some((entry) => trim(entry.remote_item_id) === remoteItemId)) continue;
+    next.pendingDeletes.push({
+      local_id: item.local_id,
+      remote_item_id: remoteItemId,
+    });
+  }
+
+  if (next.pendingDeletes.length === 0) {
+    return null;
+  }
+
+  next.items = [];
+  next.qtyDrafts = {};
+  next.submitRequested = false;
+  next.lastError = null;
+  next.updatedAt = new Date().toISOString();
+  return next;
+}
+
 export function markForemanLocalDraftSubmitRequested(
   snapshot: ForemanLocalDraftSnapshot | null,
 ): ForemanLocalDraftSnapshot | null {
@@ -513,12 +552,107 @@ export async function syncForemanLocalDraftSnapshot(params: {
   snapshot: ForemanLocalDraftSnapshot;
   headerMeta: RequestDraftMeta;
 }): Promise<ForemanLocalDraftSyncResult> {
+  if (!isRequestDraftSyncRpcEnabled()) {
+    return syncForemanLocalDraftSnapshotLegacy(params);
+  }
+
+  const next = clone(params.snapshot);
+  const localItems = next.items.filter((item) => Number.isFinite(item.qty) && item.qty > 0);
+
+  if (!trim(next.requestId) && !localItems.length && !next.submitRequested) {
+    return {
+      snapshot: next,
+      rows: snapshotToReqItems(next),
+      submitted: null,
+      branchMeta: {
+        sourcePath: "legacy_fallback",
+      },
+    };
+  }
+
+  try {
+    const rpc = await syncRequestDraftViaRpc({
+      requestId: next.requestId,
+      meta: params.headerMeta,
+      submit: next.submitRequested,
+      pendingDeleteIds: next.pendingDeletes.map((entry) => entry.remote_item_id),
+      lines: localItems.map((item) => ({
+        request_item_id: item.remote_item_id,
+        rik_code: item.rik_code,
+        qty: item.qty,
+        note: item.note,
+        app_code: item.app_code,
+        kind: item.kind,
+        name_human: item.name_human,
+        uom: item.uom,
+      })),
+    });
+
+    next.requestId = trim(rpc.request.id);
+    next.displayNo = trim(rpc.request.display_no) || next.displayNo || null;
+    next.status = trim(rpc.request.status) || next.status || "draft";
+
+    if (next.requestId) {
+      setLocalDraftId(next.requestId);
+    }
+
+    if (rpc.submitted) {
+      clearLocalDraftId();
+      return {
+        snapshot: null,
+        rows: [],
+        submitted: rpc.request,
+        branchMeta: {
+          sourcePath: rpc.branchMeta.sourceBranch === "rpc_v2" ? "rpc_v2" : "rpc_v1",
+        },
+      };
+    }
+
+    next.items = rpc.items.map((row) => {
+      const existing = localItems.find((item) => rowMatchesSnapshotItem(row, item)) ?? null;
+      return reqRowToLocalItem(row, existing);
+    });
+    next.pendingDeletes = [];
+    next.submitRequested = false;
+    next.lastError = null;
+    next.updatedAt = new Date().toISOString();
+
+    return {
+      snapshot: next,
+      rows: rpc.items,
+      submitted: null,
+      branchMeta: {
+        sourcePath: rpc.branchMeta.sourceBranch === "rpc_v2" ? "rpc_v2" : "rpc_v1",
+      },
+    };
+  } catch (error) {
+    console.log("[draft-sync] source=fallback");
+    console.warn("[draft-sync] RPC failed -> fallback path used", error);
+    console.warn("[foreman.localDraft] request_sync_draft fallback", {
+      reason: toRequestDraftSyncFallbackReason(error),
+      error: error instanceof Error ? error.message : String(error),
+    });
+    return syncForemanLocalDraftSnapshotLegacy(params);
+  }
+}
+
+async function syncForemanLocalDraftSnapshotLegacy(params: {
+  snapshot: ForemanLocalDraftSnapshot;
+  headerMeta: RequestDraftMeta;
+}): Promise<ForemanLocalDraftSyncResult> {
   const next = clone(params.snapshot);
   const localItems = next.items.filter((item) => Number.isFinite(item.qty) && item.qty > 0);
 
   if (!trim(next.requestId)) {
     if (!localItems.length && !next.submitRequested) {
-      return { snapshot: next, rows: snapshotToReqItems(next), submitted: null };
+      return {
+        snapshot: next,
+        rows: snapshotToReqItems(next),
+        submitted: null,
+        branchMeta: {
+          sourcePath: "legacy_fallback",
+        },
+      };
     }
     const created = await requestCreateDraft(params.headerMeta);
     const requestId = trim(created?.id);
@@ -587,6 +721,9 @@ export async function syncForemanLocalDraftSnapshot(params: {
       snapshot: null,
       rows: [],
       submitted,
+      branchMeta: {
+        sourcePath: "legacy_fallback",
+      },
     };
   }
 
@@ -604,5 +741,8 @@ export async function syncForemanLocalDraftSnapshot(params: {
     snapshot: next,
     rows: remoteRowsAfter,
     submitted: null,
+    branchMeta: {
+      sourcePath: "legacy_fallback",
+    },
   };
 }

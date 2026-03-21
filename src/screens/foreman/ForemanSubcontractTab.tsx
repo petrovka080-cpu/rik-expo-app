@@ -18,11 +18,15 @@ import {
   updateRequestMeta,
   listRequestItems,
   addRequestItemsFromRikBatch,
-  exportRequestPdf,
   clearCachedDraftRequestId,
   type ReqItemRow,
   type RequestMetaPatch
 } from "../../lib/catalog_api";
+import {
+  isRequestDraftSyncRpcEnabled,
+  syncRequestDraftViaRpc,
+  type RequestDraftSyncLineInput,
+} from "../../lib/api/requestDraftSync.service";
 import { useRouter } from "expo-router";
 import { buildPdfFileName } from "../../lib/documents/pdfDocument";
 import { preparePdfDocument, previewPdfDocument } from "../../lib/documents/pdfDocumentActions";
@@ -39,7 +43,6 @@ import { s } from "./foreman.styles";
 import { REQUEST_STATUS_STYLES, UI } from "./foreman.ui";
 import { resolveStatusInfo as resolveStatusHelper, shortId } from "./foreman.helpers";
 import {
-  STATUS_CONFIG,
   fmtAmount,
   listForemanSubcontracts,
   type Subcontract,
@@ -91,13 +94,6 @@ type FormState = {
   totalPrice: string;
   priceType: SubcontractPriceType | "";
   foremanComment: string;
-};
-
-type LinkedRequestRow = {
-  id: string;
-  created_at: string | null;
-  display_no: string | null;
-  request_no: string | null;
 };
 
 type CalcPickedRow = {
@@ -391,6 +387,7 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
     return subcontractId;
   }, [getTemplateSubcontractId, templateContract?.status]);
 
+
   const patch = useMemo(() => ({
     foreman_name: foremanName || null,
     contractor_org: form.contractorOrg.trim() || null,
@@ -490,6 +487,74 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
   }, [loadHistory]);
 
   const draftScopeKey = useMemo(() => buildDraftScopeKey(form, templateContract?.id), [form, templateContract]);
+
+  const saveDraftAtomic = useCallback(
+    async (
+      params: { submit?: boolean; pendingDeleteIds?: string[]; addRows?: RequestDraftSyncLineInput[] } = {}
+    ): Promise<string | null> => {
+      const subcontractId = ensureTemplateContractStrict();
+      if (!subcontractId) return null;
+
+      if (!userId) {
+        Alert.alert("Данные не загружены", "Профиль пользователя не найден.");
+        return null;
+      }
+
+      setSaving(true);
+      if (params.submit) setSending(true);
+
+      try {
+        const objectNameForRequest = String(
+          templateObjectName || objectName || templateContract?.object_name || ""
+        ).trim();
+
+        const res = await syncRequestDraftViaRpc({
+          requestId: requestId || null,
+          submit: params.submit,
+          pendingDeleteIds: params.pendingDeleteIds,
+          lines: params.addRows || [],
+          meta: requestMetaFromTemplate,
+          subcontractId: subcontractId,
+          contractorJobId: subcontractId,
+          objectName: objectNameForRequest,
+          levelName: levelName || templateLevelName || null,
+          systemName: systemName || templateSystemName || null,
+          zoneName: String(form.zoneText || "").trim() || null,
+        });
+
+        const rid = String(res.request.id);
+        const displayLabel = String(res.request.display_no || res.request.id || "DRAFT");
+        
+        setRequestId(rid);
+        setDisplayNo(displayLabel);
+        setDraftItems(res.items);
+        activeDraftScopeKeyRef.current = draftScopeKey;
+        return rid;
+      } catch (e) {
+        Alert.alert("Ошибка", getErrorMessage(e, "Не удалось выполнить атомарное сохранение заявки."));
+        return null;
+      } finally {
+        setSaving(false);
+        if (params.submit) setSending(false);
+      }
+    },
+    [
+      ensureTemplateContractStrict,
+      userId,
+      requestId,
+      requestMetaFromTemplate,
+      templateObjectName,
+      objectName,
+      templateContract?.object_name,
+      levelName,
+      templateLevelName,
+      systemName,
+      templateSystemName,
+      form.zoneText,
+      draftScopeKey,
+    ]
+  );
+
   const approvedContracts = useMemo(() => {
     return history.filter((h) => h.status === "approved");
   }, [history]);
@@ -653,12 +718,26 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
 
   const appendCatalogRows = useCallback(async (rows: CatalogPickedRow[]) => {
     if (!rows?.length) return;
+
+    if (isRequestDraftSyncRpcEnabled()) {
+      const lineInputs: RequestDraftSyncLineInput[] = rows.map((r) => ({
+        rik_code: r.rik_code || "",
+        qty: Math.max(1, Number(String(r.qty || "1").replace(",", ".")) || 1),
+        uom: r.uom || null,
+        name_human: r.name || "",
+        note: scopeNote || null,
+      }));
+      await saveDraftAtomic({ addRows: lineInputs });
+      return;
+    }
+
     const rid = await ensureDraftOnly();
     if (!rid) return;
 
     setSaving(true);
     try {
       await addRequestItemsFromRikBatch(
+
         rid,
         rows.map((r) => ({
           rik_code: r.rik_code || "",
@@ -676,10 +755,23 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
     } finally {
       setSaving(false);
     }
-  }, [ensureDraftOnly, loadDraftItems, scopeNote]);
+  }, [ensureDraftOnly, loadDraftItems, saveDraftAtomic, scopeNote]);
 
   const appendCalcRows = useCallback(async (rows: CalcPickedRow[]) => {
     if (!rows?.length) return;
+
+    if (isRequestDraftSyncRpcEnabled()) {
+      const lineInputs: RequestDraftSyncLineInput[] = rows.map((r) => ({
+        rik_code: r.rik_code || "",
+        qty: Math.max(1, Number(r.qty) || 1),
+        uom: r.uom_code || null,
+        name_human: r.item_name_ru || r.name_human || "Без названия",
+        note: scopeNote || null,
+      }));
+      await saveDraftAtomic({ addRows: lineInputs });
+      return;
+    }
+
     const rid = await ensureDraftOnly();
     if (!rid) return;
 
@@ -703,9 +795,14 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
     } finally {
       setSaving(false);
     }
-  }, [ensureDraftOnly, loadDraftItems, scopeNote]);
+  }, [ensureDraftOnly, loadDraftItems, saveDraftAtomic, scopeNote]);
 
   const removeDraftItem = useCallback(async (id: string) => {
+    if (isRequestDraftSyncRpcEnabled()) {
+      await saveDraftAtomic({ pendingDeleteIds: [id] });
+      return;
+    }
+
     try {
       setSaving(true);
       const { error } = await supabase.from("request_items").delete().eq("id", id);
@@ -716,7 +813,7 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
     } finally {
       setSaving(false);
     }
-  }, [loadDraftItems, requestId]);
+  }, [loadDraftItems, requestId, saveDraftAtomic]);
 
   const sendToDirector = useCallback(async () => {
     const subcontractId = ensureTemplateContractStrict();
@@ -726,6 +823,22 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
       Alert.alert("Внимание", "Сначала сформируйте заявку.");
       return;
     }
+
+    if (isRequestDraftSyncRpcEnabled()) {
+      const okId = await saveDraftAtomic({ submit: true });
+      if (okId) {
+        Alert.alert("Успешно", "Заявка отправлена директору.");
+        await loadHistory(userId);
+        setRequestId("");
+        setDisplayNo("");
+        setDraftItems([]);
+        setTemplateContract(null);
+        closeSubcontractFlow();
+        activeDraftScopeKeyRef.current = "";
+      }
+      return;
+    }
+
     setSending(true);
     try {
       let linked = null;
@@ -757,7 +870,7 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
     } finally {
       setSending(false);
     }
-  }, [requestId, loadHistory, userId, ensureTemplateContractStrict, closeSubcontractFlow]);
+  }, [closeSubcontractFlow, ensureTemplateContractStrict, loadHistory, requestId, saveDraftAtomic, userId]);
 
   const onPdf = useCallback(async () => {
     const rid = String(requestId || "").trim();

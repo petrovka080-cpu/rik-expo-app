@@ -32,6 +32,11 @@ function json(status: number, body: Record<string, unknown>) {
   });
 }
 
+function logEdge(level: "info" | "warn" | "error", message: string, payload?: Record<string, unknown>) {
+  const logger = level === "error" ? console.error : level === "warn" ? console.warn : console.info;
+  logger(`[gemini-generate-content] ${message}`, payload ?? {});
+}
+
 Deno.serve(async (request) => {
   if (request.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -45,6 +50,7 @@ Deno.serve(async (request) => {
   const defaultModel = String(Deno.env.get("GEMINI_MODEL_DEFAULT") || "gemini-2.5-flash").trim();
 
   if (!apiKey) {
+    logEdge("error", "missing_api_key");
     return json(500, { error: "Gemini API key is not configured on the server." });
   }
 
@@ -59,11 +65,23 @@ Deno.serve(async (request) => {
   const systemInstruction = String(payload.systemInstruction || "").trim();
   const contents = Array.isArray(payload.contents) ? payload.contents : [];
 
+  logEdge("info", "request_received", {
+    model,
+    contentCount: contents.length,
+    hasSystemInstruction: !!systemInstruction,
+    generationConfigKeys:
+      payload.generationConfig && typeof payload.generationConfig === "object"
+        ? Object.keys(payload.generationConfig)
+        : [],
+  });
+
   if (!systemInstruction) {
+    logEdge("warn", "invalid_request", { reason: "missing_system_instruction" });
     return json(400, { error: "systemInstruction is required." });
   }
 
   if (!contents.length) {
+    logEdge("warn", "invalid_request", { reason: "empty_contents" });
     return json(400, { error: "contents must not be empty." });
   }
 
@@ -87,6 +105,12 @@ Deno.serve(async (request) => {
   const upstreamPayload = await upstreamResponse.json().catch(() => null);
   if (!upstreamResponse.ok) {
     const errorMessage = String(upstreamPayload?.error?.message || "").trim();
+    logEdge("error", "upstream_error", {
+      model,
+      status: upstreamResponse.status,
+      error: errorMessage || null,
+      contentCount: contents.length,
+    });
     return json(upstreamResponse.status, {
       error: errorMessage || `Gemini request failed (${upstreamResponse.status}).`,
     });
@@ -101,8 +125,17 @@ Deno.serve(async (request) => {
     .trim();
 
   if (!text) {
+    logEdge("error", "empty_text", {
+      model,
+      candidateCount: candidates.length,
+    });
     return json(502, { error: "Gemini returned empty text." });
   }
+
+  logEdge("info", "success", {
+    model,
+    textLength: text.length,
+  });
 
   return json(200, { text });
 });

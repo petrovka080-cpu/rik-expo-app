@@ -327,8 +327,13 @@ export async function resolveForemanQuickRequest(prompt: string): Promise<Forema
   if (isForemanQuickRequestConfigured()) {
     try {
       return await sendForemanQuickRequestPrompt(prompt);
-    } catch {
+    } catch (error) {
       const fallback = resolveLocalForemanQuickRequest(prompt);
+      console.warn("[foreman.ai] Gemini gateway failed -> local fallback", {
+        error: error instanceof Error ? error.message : String(error),
+        localItemCount: fallback.items.length,
+        fallbackAction: fallback.action,
+      });
       return {
         ...fallback,
         message:

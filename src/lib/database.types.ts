@@ -18373,6 +18373,44 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      request_sync_draft_v1: {
+        Args: {
+          p_comment?: string | null
+          p_foreman_name?: string | null
+          p_items?: Json
+          p_level_code?: string | null
+          p_need_by?: string | null
+          p_object_type_code?: string | null
+          p_pending_delete_ids?: string[]
+          p_request_id?: string | null
+          p_submit?: boolean
+          p_system_code?: string | null
+          p_zone_code?: string | null
+        }
+        Returns: Json
+      }
+      request_sync_draft_v2: {
+        Args: {
+          p_comment?: string | null
+          p_contractor_job_id?: string | null
+          p_foreman_name?: string | null
+          p_items?: Json
+          p_level_code?: string | null
+          p_level_name?: string | null
+          p_need_by?: string | null
+          p_object_name?: string | null
+          p_object_type_code?: string | null
+          p_pending_delete_ids?: string[]
+          p_request_id?: string | null
+          p_submit?: boolean
+          p_subcontract_id?: string | null
+          p_system_code?: string | null
+          p_system_name?: string | null
+          p_zone_code?: string | null
+          p_zone_name?: string | null
+        }
+        Returns: Json
+      }
       request_submit_to_director: {
         Args: { p_request_id: string }
         Returns: undefined

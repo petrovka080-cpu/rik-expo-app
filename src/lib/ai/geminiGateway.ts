@@ -27,6 +27,32 @@ function toErrorMessage(error: unknown, fallback: string): string {
   return fallback;
 }
 
+async function resolveFunctionsInvokeErrorMessage(error: unknown, fallback: string): Promise<string> {
+  const baseMessage = toErrorMessage(error, "");
+  const context = typeof error === "object" && error != null ? (error as { context?: unknown }).context : null;
+
+  if (context && typeof (context as { text?: unknown }).text === "function") {
+    try {
+      const response = context as { clone?: () => { text: () => Promise<string> }; text: () => Promise<string> };
+      const text = await (typeof response.clone === "function" ? response.clone().text() : response.text());
+      const raw = String(text || "").trim();
+      if (raw) {
+        try {
+          const parsed = JSON.parse(raw) as { error?: unknown };
+          const nestedMessage = String(parsed?.error ?? "").trim();
+          if (nestedMessage) return nestedMessage;
+        } catch {
+          return raw;
+        }
+      }
+    } catch {
+      // ignore response body parsing failures
+    }
+  }
+
+  return baseMessage || fallback;
+}
+
 export function isGeminiGatewayConfigured(): boolean {
   return Boolean(isSupabaseEnvValid);
 }
@@ -44,7 +70,11 @@ export async function invokeGeminiGateway(
   );
 
   if (error) {
-    throw new Error(toErrorMessage(error, "Gemini gateway request failed."));
+    throw new Error(await resolveFunctionsInvokeErrorMessage(error, "Gemini gateway request failed."));
+  }
+
+  if (data?.error) {
+    throw new Error(String(data.error).trim() || "Gemini gateway returned an error.");
   }
 
   const text = String(data?.text || "").trim();
