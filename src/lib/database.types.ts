@@ -16366,6 +16366,28 @@ export type Database = {
         }
         Returns: Json
       }
+      pdf_director_finance_source_v1: {
+        Args: {
+          p_critical_days?: number
+          p_due_days?: number
+          p_from?: string
+          p_to?: string
+        }
+        Returns: Json
+      }
+      pdf_director_production_source_v1: {
+        Args: {
+          p_from?: string
+          p_include_costs?: boolean
+          p_object_name?: string
+          p_to?: string
+        }
+        Returns: Json
+      }
+      pdf_director_subcontract_source_v1: {
+        Args: { p_from?: string; p_object_name?: string; p_to?: string }
+        Returns: Json
+      }
       director_item_set_status: {
         Args: { p_item_id: string; p_status: string }
         Returns: undefined
@@ -16402,6 +16424,16 @@ export type Database = {
       }
       director_report_fetch_options_v1: {
         Args: { p_from?: string; p_to?: string }
+        Returns: Json
+      }
+      director_report_transport_scope_v1: {
+        Args: {
+          p_from?: string
+          p_include_costs?: boolean
+          p_include_discipline?: boolean
+          p_object_name?: string
+          p_to?: string
+        }
         Returns: Json
       }
       director_report_fetch_summary_v1: {
@@ -16864,6 +16896,20 @@ export type Database = {
       get_my_role: { Args: never; Returns: string }
       get_my_role_base: { Args: never; Returns: string }
       get_payment_order_data: { Args: { p_payment_id: number }; Returns: Json }
+      pdf_payment_source_v1: { Args: { p_payment_id: number }; Returns: Json }
+      pdf_warehouse_incoming_source_v1: { Args: { p_incoming_id: string }; Returns: Json }
+      pdf_warehouse_incoming_materials_source_v1: {
+        Args: { p_from: string; p_to: string }
+        Returns: Json
+      }
+      pdf_warehouse_day_materials_source_v1: {
+        Args: { p_from: string; p_to: string }
+        Returns: Json
+      }
+      pdf_warehouse_object_work_source_v1: {
+        Args: { p_from: string; p_object_id?: string; p_to: string }
+        Returns: Json
+      }
       grn_create: {
         Args: { p_items_fact: Json; p_photos?: Json; p_po_id: string }
         Returns: string

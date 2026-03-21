@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Animated } from 'react-native';
+import { Animated } from 'react-native';
 import { useRouter } from 'expo-router';
 import { openAppAttachment } from "../../src/lib/documents/attachmentOpener";
 import { UI, s } from "../../src/screens/director/director.styles";
@@ -46,6 +46,7 @@ export default function DirectorScreen() {
           objectName: vm.reports.repObjectName,
           repData: vm.reports.repData,
           repDiscipline: vm.reports.repDiscipline,
+          preferPriceStage: vm.reports.repDisciplinePriceLoading ? "base" : "priced",
         });
       },
     });
@@ -67,6 +68,7 @@ export default function DirectorScreen() {
     vm.reports.repObjectName,
     vm.reports.repData,
     vm.reports.repDiscipline,
+    vm.reports.repDisciplinePriceLoading,
   ]);
 
   const onExportSubcontractPdf = React.useCallback(async () => {

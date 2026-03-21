@@ -41,6 +41,7 @@ export type DirectorProductionPdfInput = {
   objectName?: string | null;
   repData?: any;
   repDiscipline?: any;
+  preferPriceStage?: "base" | "priced";
 };
 
 export type DirectorSubcontractPdfInput = {
@@ -396,11 +397,15 @@ const mapSupplierSummaryItem = (
   };
 };
 
-export async function loadDirectorFinancePreviewPdfModel(): Promise<DirectorFinancePreviewPdfModel> {
-  const rows = await listAccountantInbox();
+export function prepareDirectorFinancePreviewPdfModel(rows: unknown[]): DirectorFinancePreviewPdfModel {
   return {
     rowsJson: JSON.stringify(rows ?? [], null, 2),
   };
+}
+
+export async function loadDirectorFinancePreviewPdfModel(): Promise<DirectorFinancePreviewPdfModel> {
+  const rows = await listAccountantInbox();
+  return prepareDirectorFinancePreviewPdfModel(rows ?? []);
 }
 
 export function prepareDirectorSupplierSummaryPdfModel(
@@ -903,9 +908,10 @@ export function prepareDirectorProductionReportPdfModel(
   };
 }
 
-export async function loadDirectorSubcontractReportPdfModel(
+export function prepareDirectorSubcontractReportPdfModelFromRows(
   p: DirectorSubcontractPdfInput,
-): Promise<DirectorSubcontractReportPdfModel> {
+  rowsInput: unknown[],
+): DirectorSubcontractReportPdfModel {
   const companyName = String(p.companyName ?? "RIK Construction").trim() || "RIK Construction";
   const generatedBy = String(p.generatedBy ?? "Директор").trim() || "Директор";
   const from = String(p.periodFrom ?? "").trim();
@@ -913,18 +919,7 @@ export async function loadDirectorSubcontractReportPdfModel(
   const objectName = String(p.objectName ?? "").trim() || null;
   const generatedAt = new Date().toLocaleString("ru-RU");
 
-  let query = supabase
-    .from("subcontracts" as any)
-    .select("id,display_no,status,object_name,work_type,contractor_org,total_price,approved_at,submitted_at,rejected_at,director_comment")
-    .order("approved_at", { ascending: false, nullsFirst: false });
-
-  if (from) query = query.gte("created_at", `${from}T00:00:00.000Z`);
-  if (to) query = query.lte("created_at", `${to}T23:59:59.999Z`);
-  if (objectName) query = query.eq("object_name", objectName);
-
-  const { data, error } = await query;
-  if (error) throw new Error(`subcontracts lookup failed: ${error.message}`);
-  const rows: any[] = Array.isArray(data) ? data : [];
+  const rows: any[] = Array.isArray(rowsInput) ? rowsInput : [];
 
   const approvedLike = rows.filter((row: any) => ["approved", "closed"].includes(String(row?.status ?? "").trim()));
   const approved = rows.filter((row: any) => String(row?.status ?? "").trim() === "approved");
@@ -1037,4 +1032,25 @@ export async function loadDirectorSubcontractReportPdfModel(
     pendingCount: pending.length,
     rejectedCount: rejected.length,
   };
+}
+
+export async function loadDirectorSubcontractReportPdfModel(
+  p: DirectorSubcontractPdfInput,
+): Promise<DirectorSubcontractReportPdfModel> {
+  const from = String(p.periodFrom ?? "").trim();
+  const to = String(p.periodTo ?? "").trim();
+  const objectName = String(p.objectName ?? "").trim() || null;
+
+  let query = supabase
+    .from("subcontracts" as any)
+    .select("id,display_no,status,object_name,work_type,contractor_org,total_price,approved_at,submitted_at,rejected_at,director_comment")
+    .order("approved_at", { ascending: false, nullsFirst: false });
+
+  if (from) query = query.gte("created_at", `${from}T00:00:00.000Z`);
+  if (to) query = query.lte("created_at", `${to}T23:59:59.999Z`);
+  if (objectName) query = query.eq("object_name", objectName);
+
+  const { data, error } = await query;
+  if (error) throw new Error(`subcontracts lookup failed: ${error.message}`);
+  return prepareDirectorSubcontractReportPdfModelFromRows(p, Array.isArray(data) ? data : []);
 }

@@ -1,17 +1,25 @@
 // src/lib/api/pdf_director.ts
-import { openHtmlAsPdfUniversal } from "./pdf";
 import { normalizeRuTextForHtml } from "../text/encoding";
 import {
   loadDirectorFinancePreviewPdfModel,
-  loadDirectorSubcontractReportPdfModel,
   prepareDirectorManagementReportPdfModel,
   prepareDirectorProductionReportPdfModel,
+  prepareDirectorSubcontractReportPdfModelFromRows,
   prepareDirectorSupplierSummaryPdfModel,
   type DirectorManagementReportPdfInput,
   type DirectorProductionPdfInput,
   type DirectorSubcontractPdfInput,
   type DirectorSupplierSummaryPdfInput,
 } from "./pdf_director.data";
+import {
+  getDirectorFinancePdfSource,
+  getDirectorProductionPdfSource,
+  getDirectorSubcontractPdfSource,
+} from "./directorPdfSource.service";
+import {
+  renderDirectorPdf,
+  type DirectorPdfRenderDocumentKind,
+} from "./directorPdfRender.service";
 import {
   renderDirectorFinancePdfHtml,
   renderDirectorManagementReportPdfHtml,
@@ -22,66 +30,139 @@ import {
 
 const buildDirectorPdf = (
   html: string,
-  documentType: string,
-  source: string,
+  args: {
+    documentKind: DirectorPdfRenderDocumentKind;
+    documentType: "director_report" | "supplier_summary";
+    source: string;
+    sourceBranch?: string | null;
+    sourceFallbackReason?: string | null;
+  },
 ) =>
-  openHtmlAsPdfUniversal(
-    normalizeRuTextForHtml(html, {
-      documentType,
-      source,
+  renderDirectorPdf({
+    documentKind: args.documentKind,
+    documentType: args.documentType,
+    source: args.source,
+    sourceBranch: args.sourceBranch,
+    sourceFallbackReason: args.sourceFallbackReason,
+    html: normalizeRuTextForHtml(html, {
+      documentType: args.documentType,
+      source: args.source,
     }),
-  );
+  });
 
 export async function exportDirectorFinancePdf(): Promise<string> {
   const model = await loadDirectorFinancePreviewPdfModel();
   return buildDirectorPdf(
     renderDirectorFinancePdfHtml(model),
-    "director_report",
-    "director_finance",
+    {
+      documentKind: "finance_preview",
+      documentType: "director_report",
+      source: "director_finance",
+      sourceBranch: "client_only",
+    },
   );
 }
 
 export async function exportDirectorSupplierSummaryPdf(
   p: DirectorSupplierSummaryPdfInput,
 ): Promise<string> {
-  const model = prepareDirectorSupplierSummaryPdfModel(p);
+  const source = await getDirectorFinancePdfSource({
+    periodFrom: p.periodFrom,
+    periodTo: p.periodTo,
+    fallbackFinanceRows: p.financeRows,
+    fallbackSpendRows: p.spendRows,
+  });
+  const model = prepareDirectorSupplierSummaryPdfModel({
+    ...p,
+    financeRows: source.financeRows,
+    spendRows: source.spendRows,
+  });
   return buildDirectorPdf(
     renderDirectorSupplierSummaryPdfHtml(model),
-    "supplier_summary",
-    "director_supplier_summary",
+    {
+      documentKind: "supplier_summary",
+      documentType: "supplier_summary",
+      source: source.source,
+      sourceBranch: source.branchMeta.sourceBranch,
+      sourceFallbackReason: source.branchMeta.fallbackReason ?? null,
+    },
   );
 }
 
 export async function exportDirectorManagementReportPdf(
   p: DirectorManagementReportPdfInput,
 ): Promise<string> {
-  const model = prepareDirectorManagementReportPdfModel(p);
+  const source = await getDirectorFinancePdfSource({
+    periodFrom: p.periodFrom,
+    periodTo: p.periodTo,
+    dueDaysDefault: p.dueDaysDefault,
+    criticalDays: p.criticalDays,
+    fallbackFinanceRows: p.financeRows,
+    fallbackSpendRows: p.spendRows,
+  });
+  const model = prepareDirectorManagementReportPdfModel({
+    ...p,
+    financeRows: source.financeRows,
+    spendRows: source.spendRows,
+  });
   return buildDirectorPdf(
     renderDirectorManagementReportPdfHtml(model),
-    "director_report",
-    "director_management",
+    {
+      documentKind: "management_report",
+      documentType: "director_report",
+      source: source.source,
+      sourceBranch: source.branchMeta.sourceBranch,
+      sourceFallbackReason: source.branchMeta.fallbackReason ?? null,
+    },
   );
 }
 
 export async function exportDirectorProductionReportPdf(
   p: DirectorProductionPdfInput,
 ): Promise<string> {
-  const model = prepareDirectorProductionReportPdfModel(p);
+  const source = await getDirectorProductionPdfSource({
+    periodFrom: p.periodFrom,
+    periodTo: p.periodTo,
+    objectName: p.objectName,
+    fallbackRepData: p.repData,
+    fallbackRepDiscipline: p.repDiscipline,
+    preferPriceStage: p.preferPriceStage,
+  });
+  const model = prepareDirectorProductionReportPdfModel({
+    ...p,
+    repData: source.repData,
+    repDiscipline: source.repDiscipline,
+  });
   return buildDirectorPdf(
     renderDirectorProductionReportPdfHtml(model),
-    "director_report",
-    "director_production",
+    {
+      documentKind: "production_report",
+      documentType: "director_report",
+      source: source.source,
+      sourceBranch: source.branchMeta.sourceBranch,
+      sourceFallbackReason: source.branchMeta.fallbackReason ?? null,
+    },
   );
 }
 
 export async function exportDirectorSubcontractReportPdf(
   p: DirectorSubcontractPdfInput,
 ): Promise<string> {
-  const model = await loadDirectorSubcontractReportPdfModel(p);
+  const source = await getDirectorSubcontractPdfSource({
+    periodFrom: p.periodFrom,
+    periodTo: p.periodTo,
+    objectName: p.objectName,
+  });
+  const model = prepareDirectorSubcontractReportPdfModelFromRows(p, source.rows);
   return buildDirectorPdf(
     renderDirectorSubcontractReportPdfHtml(model),
-    "director_report",
-    "director_subcontract",
+    {
+      documentKind: "subcontract_report",
+      documentType: "director_report",
+      source: source.source,
+      sourceBranch: source.branchMeta.sourceBranch,
+      sourceFallbackReason: source.branchMeta.fallbackReason ?? null,
+    },
   );
 }
 

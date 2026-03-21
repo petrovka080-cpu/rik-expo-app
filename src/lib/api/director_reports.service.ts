@@ -80,15 +80,66 @@ const summarizeDisciplinePayload = (payload: DirectorDisciplinePayload | null) =
   };
 };
 
-export async function fetchDirectorWarehouseReportOptions(p: {
+export type DirectorReportFetchStage = "options" | "report" | "discipline";
+
+export type DirectorReportFetchBranch =
+  | "transport_rpc"
+  | "canonical_rpc"
+  | "legacy_fast_rpc"
+  | "acc_rpc"
+  | "source_rpc"
+  | "view"
+  | "tables"
+  | "empty";
+
+export type DirectorReportFetchMeta = {
+  stage: DirectorReportFetchStage;
+  branch: DirectorReportFetchBranch;
+  chain: DirectorReportFetchBranch[];
+  cacheLayer: "none" | "rows" | "rows_slice";
+  rowsSource?: DisciplineRowsSource | null;
+  pricedStage?: "base" | "priced";
+};
+
+export type DirectorReportTrackedResult<T> = {
+  payload: T;
+  meta: DirectorReportFetchMeta;
+};
+
+const trackedResult = <T,>(payload: T, meta: DirectorReportFetchMeta): DirectorReportTrackedResult<T> => ({
+  payload,
+  meta,
+});
+
+const branchFromDisciplineSource = (source: DisciplineRowsSource): DirectorReportFetchBranch => {
+  switch (source) {
+    case "acc_rpc":
+      return "acc_rpc";
+    case "source_rpc":
+      return "source_rpc";
+    case "view":
+      return "view";
+    case "tables":
+      return "tables";
+    default:
+      return "empty";
+  }
+};
+
+const mapDisciplineChain = (chain: DisciplineRowsSource[] | undefined): DirectorReportFetchBranch[] =>
+  Array.isArray(chain) ? chain.map(branchFromDisciplineSource) : [];
+
+export async function fetchDirectorWarehouseReportOptionsTracked(p: {
   from: string;
   to: string;
-}): Promise<DirectorReportOptions> {
+}): Promise<DirectorReportTrackedResult<DirectorReportOptions>> {
   const pFrom = rpcDate(p.from, "1970-01-01");
   const pTo = rpcDate(p.to, "2099-12-31");
+  const chain: DirectorReportFetchBranch[] = [];
 
   if (canUseOptionsRpc()) {
     const t0 = nowMs();
+    chain.push("canonical_rpc");
     try {
       const options = await fetchDirectorReportCanonicalOptions({
         from: pFrom,
@@ -97,7 +148,12 @@ export async function fetchDirectorWarehouseReportOptions(p: {
       if (options) {
         markOptionsRpcStatus("available");
         logTiming("options.rpc", t0);
-        return options;
+        return trackedResult(options, {
+          stage: "options",
+          branch: "canonical_rpc",
+          chain: [...chain],
+          cacheLayer: "none",
+        });
       }
       throw new Error("options.rpc_empty_payload");
     } catch (e: unknown) {
@@ -114,34 +170,56 @@ export async function fetchDirectorWarehouseReportOptions(p: {
   }
 
   let rows: DirectorFactRow[] = [];
+  chain.push("tables");
   try {
     rows = await fetchAllFactRowsFromTables({ from: pFrom, to: pTo, objectName: null });
   } catch { }
   if (!rows.length) {
+    chain.push("acc_rpc");
     try {
       rows = await fetchDirectorFactViaAccRpc({ from: pFrom, to: pTo, objectName: null });
     } catch { }
   }
 
   if (!rows.length) {
+    chain.push("view");
     try {
       rows = await fetchAllFactRowsFromView({ from: pFrom, to: pTo, objectName: null });
     } catch { }
   }
 
   if (!rows.length) {
-    return { objects: [], objectIdByName: {} };
+    return trackedResult({ objects: [], objectIdByName: {} }, {
+      stage: "options",
+      branch: "empty",
+      chain: [...chain],
+      cacheLayer: "none",
+    });
   }
 
-  return buildDirectorReportOptionsFromIdentities(rows.map((r) => getDirectorFactObjectIdentity(r)));
+  const branch = chain[chain.length - 1] ?? "empty";
+  return trackedResult(buildDirectorReportOptionsFromIdentities(rows.map((r) => getDirectorFactObjectIdentity(r))), {
+    stage: "options",
+    branch: branch === "canonical_rpc" || branch === "legacy_fast_rpc" ? "empty" : branch,
+    chain: [...chain],
+    cacheLayer: "none",
+  });
 }
 
-export async function fetchDirectorWarehouseReport(p: {
+export async function fetchDirectorWarehouseReportOptions(p: {
+  from: string;
+  to: string;
+}): Promise<DirectorReportOptions> {
+  const { payload } = await fetchDirectorWarehouseReportOptionsTracked(p);
+  return payload;
+}
+
+export async function fetchDirectorWarehouseReportTracked(p: {
   from: string;
   to: string;
   objectName: string | null;
   objectIdByName: Record<string, string | null>;
-}): Promise<DirectorReportPayload> {
+}): Promise<DirectorReportTrackedResult<DirectorReportPayload>> {
   const objectName = p.objectName ?? null;
   const objectIdentity =
     objectName == null ? null : resolveDirectorObjectIdentity({ object_name_display: objectName });
@@ -150,9 +228,11 @@ export async function fetchDirectorWarehouseReport(p: {
   const selectedObjectId =
     objectIdentity == null ? null : (p.objectIdByName[objectIdentity.object_name_canonical] ?? null);
   const cKey = canonicalKey("materials", pFrom, pTo, objectName);
+  const chain: DirectorReportFetchBranch[] = [];
 
   if (canUseCanonicalRpc("materials")) {
     const tCanonical = nowMs();
+    chain.push("canonical_rpc");
     try {
       let canonical = await fetchDirectorReportCanonicalMaterials({
         from: pFrom,
@@ -181,7 +261,12 @@ export async function fetchDirectorWarehouseReport(p: {
           }
         }
         logTiming("report.canonical_materials", tCanonical);
-        return canonical;
+        return trackedResult(canonical, {
+          stage: "report",
+          branch: "canonical_rpc",
+          chain: [...chain],
+          cacheLayer: "none",
+        });
       }
     } catch (e: unknown) {
       if (isMissingCanonicalRpcError(e, "director_report_fetch_materials_v1")) {
@@ -200,6 +285,7 @@ export async function fetchDirectorWarehouseReport(p: {
   // For object filter we need a real object_id; if absent, preserve old behavior and use detailed paths.
   if (objectName == null || selectedObjectId != null) {
     const t0 = nowMs();
+    chain.push("legacy_fast_rpc");
     try {
       const fast = await fetchViaLegacyRpc({
         from: pFrom,
@@ -214,23 +300,33 @@ export async function fetchDirectorWarehouseReport(p: {
       legacyMaterialsSnapshotCache.set(cKey, { ts: Date.now(), ...materialSnapshotFromPayload(fast) });
       trimMap(legacyMaterialsSnapshotCache);
       logTiming("report.fast_rpc", t0);
-      return fast;
+      return trackedResult(fast, {
+        stage: "report",
+        branch: "legacy_fast_rpc",
+        chain: [...chain],
+        cacheLayer: "none",
+      });
     } catch {
       logTiming("report.fast_rpc_failed_fallback", t0);
     }
   }
 
   let rows: DirectorFactRow[] = [];
+  let rowBranch: DirectorReportFetchBranch | null = null;
+  chain.push("acc_rpc");
   try {
     rows = await fetchDirectorFactViaAccRpc({ from: pFrom, to: pTo, objectName });
+    if (rows.length) rowBranch = "acc_rpc";
   } catch { }
   if (!rows.length) {
     if (canUseDisciplineSourceRpc()) {
       const tSource = nowMs();
+      chain.push("source_rpc");
       try {
         const allRows = await fetchDirectorDisciplineSourceRowsViaRpc({ from: pFrom, to: pTo });
         markDisciplineSourceRpcStatus("available");
         rows = objectName == null ? allRows : filterDisciplineRowsByObject(allRows, objectName);
+        if (rows.length) rowBranch = "source_rpc";
         logTiming("report.source_rpc", tSource);
       } catch (e: unknown) {
         if (isMissingCanonicalRpcError(e, "director_report_fetch_discipline_source_rows_v1")) {
@@ -243,18 +339,24 @@ export async function fetchDirectorWarehouseReport(p: {
     }
   }
   if (!rows.length) {
+    chain.push("view");
     try {
       rows = await fetchAllFactRowsFromView({ from: pFrom, to: pTo, objectName });
+      if (rows.length) rowBranch = "view";
     } catch { }
   }
   if (!rows.length) {
+    chain.push("tables");
     try {
       rows = await fetchDisciplineFactRowsFromTables({ from: pFrom, to: pTo, objectName });
+      if (rows.length) rowBranch = "tables";
     } catch { }
   }
   if (!rows.length) {
+    chain.push("tables");
     try {
       rows = await fetchAllFactRowsFromTables({ from: pFrom, to: pTo, objectName });
+      if (rows.length) rowBranch = "tables";
     } catch { }
   }
 
@@ -274,9 +376,15 @@ export async function fetchDirectorWarehouseReport(p: {
     payload.discipline = buildDisciplinePayloadFromFactRows(rows);
     legacyMaterialsSnapshotCache.set(cKey, { ts: Date.now(), ...materialSnapshotFromPayload(payload) });
     trimMap(legacyMaterialsSnapshotCache);
-    return payload;
+    return trackedResult(payload, {
+      stage: "report",
+      branch: rowBranch ?? "tables",
+      chain: [...chain],
+      cacheLayer: "none",
+    });
   }
 
+  chain.push("legacy_fast_rpc");
   const fallback = await fetchViaLegacyRpc({
     from: pFrom,
     to: pTo,
@@ -285,22 +393,40 @@ export async function fetchDirectorWarehouseReport(p: {
   });
   legacyMaterialsSnapshotCache.set(cKey, { ts: Date.now(), ...materialSnapshotFromPayload(fallback) });
   trimMap(legacyMaterialsSnapshotCache);
-  return fallback;
+  return trackedResult(fallback, {
+    stage: "report",
+    branch: "legacy_fast_rpc",
+    chain: [...chain],
+    cacheLayer: "none",
+  });
 }
 
-export async function fetchDirectorWarehouseReportDiscipline(p: {
+export async function fetchDirectorWarehouseReport(p: {
   from: string;
   to: string;
   objectName: string | null;
   objectIdByName: Record<string, string | null>;
-}, opts?: { skipPrices?: boolean }): Promise<DirectorDisciplinePayload> {
+}): Promise<DirectorReportPayload> {
+  const { payload } = await fetchDirectorWarehouseReportTracked(p);
+  return payload;
+}
+
+export async function fetchDirectorWarehouseReportDisciplineTracked(p: {
+  from: string;
+  to: string;
+  objectName: string | null;
+  objectIdByName: Record<string, string | null>;
+}, opts?: { skipPrices?: boolean }): Promise<DirectorReportTrackedResult<DirectorDisciplinePayload>> {
   const tTotal = nowMs();
   const pFrom = rpcDate(p.from, "1970-01-01");
   const pTo = rpcDate(p.to, "2099-12-31");
   const cKey = canonicalKey("works", pFrom, pTo, p.objectName ?? null);
+  const pricedStage = opts?.skipPrices ? "base" : "priced";
+  const chain: DirectorReportFetchBranch[] = [];
 
   if (canUseCanonicalRpc("works")) {
     const tCanonical = nowMs();
+    chain.push("canonical_rpc");
     try {
       let canonical = await fetchDirectorReportCanonicalWorks({
         from: pFrom,
@@ -340,7 +466,13 @@ export async function fetchDirectorWarehouseReportDiscipline(p: {
           }
         }
         logTiming("discipline.canonical_works", tCanonical);
-        return canonical;
+        return trackedResult(canonical, {
+          stage: "discipline",
+          branch: "canonical_rpc",
+          chain: [...chain],
+          cacheLayer: "none",
+          pricedStage,
+        });
       }
     } catch (e: unknown) {
       if (isMissingCanonicalRpcError(e, "director_report_fetch_works_v1")) {
@@ -361,10 +493,16 @@ export async function fetchDirectorWarehouseReportDiscipline(p: {
     objectName: p.objectName ?? null,
     objectIdByName: p.objectIdByName ?? {},
   });
-  let rowsResult: { rows: DirectorFactRow[]; source: DisciplineRowsSource } | null = null;
+  let cacheLayer: DirectorReportFetchMeta["cacheLayer"] = "none";
+  let rowsResult: { rows: DirectorFactRow[]; source: DisciplineRowsSource; chain: DisciplineRowsSource[] } | null = null;
   const cachedRows = disciplineRowsCache.get(rowsKey);
   if (cachedRows && Date.now() - cachedRows.ts <= DISCIPLINE_ROWS_CACHE_TTL_MS) {
-    rowsResult = { rows: cachedRows.rows, source: cachedRows.source };
+    rowsResult = {
+      rows: cachedRows.rows,
+      source: cachedRows.source,
+      chain: cachedRows.chain ?? [cachedRows.source],
+    };
+    cacheLayer = "rows";
   } else if (cachedRows) {
     disciplineRowsCache.delete(rowsKey);
   }
@@ -378,8 +516,18 @@ export async function fetchDirectorWarehouseReportDiscipline(p: {
     const baseCachedRows = disciplineRowsCache.get(baseRowsKey);
     if (baseCachedRows && Date.now() - baseCachedRows.ts <= DISCIPLINE_ROWS_CACHE_TTL_MS) {
       const slicedRows = filterDisciplineRowsByObject(baseCachedRows.rows, p.objectName);
-      rowsResult = { rows: slicedRows, source: baseCachedRows.source };
-      disciplineRowsCache.set(rowsKey, { ts: Date.now(), rows: slicedRows, source: baseCachedRows.source });
+      rowsResult = {
+        rows: slicedRows,
+        source: baseCachedRows.source,
+        chain: baseCachedRows.chain ?? [baseCachedRows.source],
+      };
+      cacheLayer = "rows_slice";
+      disciplineRowsCache.set(rowsKey, {
+        ts: Date.now(),
+        rows: slicedRows,
+        source: baseCachedRows.source,
+        chain: baseCachedRows.chain ?? [baseCachedRows.source],
+      });
       trimMap(disciplineRowsCache);
       if (REPORTS_TIMING) {
         console.info(
@@ -397,7 +545,12 @@ export async function fetchDirectorWarehouseReportDiscipline(p: {
       objectIdByName: p.objectIdByName ?? {},
       skipMaterialNameResolve: !!opts?.skipPrices,
     });
-    disciplineRowsCache.set(rowsKey, { ts: Date.now(), rows: rowsResult.rows, source: rowsResult.source });
+    disciplineRowsCache.set(rowsKey, {
+      ts: Date.now(),
+      rows: rowsResult.rows,
+      source: rowsResult.source,
+      chain: rowsResult.chain,
+    });
     trimMap(disciplineRowsCache);
   }
   let rows = rowsResult.rows;
@@ -444,7 +597,14 @@ export async function fetchDirectorWarehouseReportDiscipline(p: {
       );
     }
     logTiming("discipline.total", tTotal);
-    return payload;
+    return trackedResult(payload, {
+      stage: "discipline",
+      branch: branchFromDisciplineSource(rowsResult.source),
+      chain: [...chain, ...mapDisciplineChain(rowsResult.chain)],
+      cacheLayer,
+      rowsSource: rowsResult.source,
+      pricedStage,
+    });
   }
 
   const { requestItemIds, rowCodes, costInputs } = collectDisciplinePriceInputs(rows);
@@ -497,5 +657,22 @@ export async function fetchDirectorWarehouseReportDiscipline(p: {
     );
   }
   logTiming("discipline.total", tTotal);
+  return trackedResult(payload, {
+    stage: "discipline",
+    branch: branchFromDisciplineSource(rowsResult.source),
+    chain: [...chain, ...mapDisciplineChain(rowsResult.chain)],
+    cacheLayer,
+    rowsSource: rowsResult.source,
+    pricedStage,
+  });
+}
+
+export async function fetchDirectorWarehouseReportDiscipline(p: {
+  from: string;
+  to: string;
+  objectName: string | null;
+  objectIdByName: Record<string, string | null>;
+}, opts?: { skipPrices?: boolean }): Promise<DirectorDisciplinePayload> {
+  const { payload } = await fetchDirectorWarehouseReportDisciplineTracked(p, opts);
   return payload;
 }
