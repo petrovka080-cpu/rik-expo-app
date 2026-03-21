@@ -16,8 +16,6 @@ type PurchaseItemSeedRow = {
   qty?: number | string | null;
   uom?: string | null;
   name_human?: string | null;
-  rik_code?: string | null;
-  ref_id?: string | null;
 };
 
 type ProposalSnapshotRow = {
@@ -50,24 +48,13 @@ const warnWarehouseSeed = (scope: string, error: unknown) => {
   console.warn(`[warehouse.seed] ${scope}:`, message || error);
 };
 
-const PURCHASE_ITEMS_SELECT_PLANS = [
-  `
-      id,
-      request_item_id,
-      qty,
-      uom,
-      name_human,
-      ref_id,
-    `,
-  `
-      id,
-      request_item_id,
-      qty,
-      uom,
-      name_human,
-      rik_code
-    `,
-] as const;
+const PURCHASE_ITEMS_SELECT = `
+  id,
+  request_item_id,
+  qty,
+  uom,
+  name_human
+`;
 
 const normalizeIncomingStockCode = (raw: unknown): string | null => {
   const base = String(normMatCode(raw ?? "")).trim();
@@ -91,20 +78,11 @@ async function selectPurchaseItemsForSeed(
   supabase: Supa,
   purchaseId: string,
 ) {
-  let lastError: { message?: string } | null = null;
-
-  for (const selectPlan of PURCHASE_ITEMS_SELECT_PLANS) {
-    const q = await supabase
-      .from("purchase_items")
-      .select(selectPlan)
-      .eq("purchase_id", purchaseId)
-      .order("id", { ascending: true });
-
-    if (!q.error) return q;
-    lastError = q.error;
-  }
-
-  return { data: null, error: lastError };
+  return await supabase
+    .from("purchase_items")
+    .select(PURCHASE_ITEMS_SELECT)
+    .eq("purchase_id", purchaseId)
+    .order("id", { ascending: true });
 }
 
 async function loadRequestItemsMiniByIds(
@@ -132,6 +110,38 @@ async function loadRequestItemsMiniByIds(
   } catch (error) {
     warnWarehouseSeed("loadRequestItemsMiniByIds", error);
     return {};
+  }
+}
+
+async function loadKnownWarehouseCodes(
+  supabase: Supa,
+  codes: string[],
+): Promise<Set<string>> {
+  const normalized = Array.from(
+    new Set(
+      (codes || [])
+        .map((code) => normalizeIncomingStockCode(code))
+        .filter((code): code is string => Boolean(code)),
+    ),
+  );
+  if (!normalized.length) return new Set<string>();
+
+  try {
+    const q = await supabase
+      .from("v_rik_names_ru")
+      .select("code")
+      .in("code", normalized);
+
+    if (q.error || !Array.isArray(q.data)) return new Set<string>();
+
+    return new Set(
+      q.data
+        .map((row) => normalizeIncomingStockCode(row?.code))
+        .filter((code): code is string => Boolean(code)),
+    );
+  } catch (error) {
+    warnWarehouseSeed("loadKnownWarehouseCodes", error);
+    return new Set<string>();
   }
 }
 
@@ -262,6 +272,10 @@ async function reseedIncomingItems(
       .map((row) => String(row.request_item_id ?? "").trim())
       .filter(Boolean),
   );
+  const knownWarehouseCodes = await loadKnownWarehouseCodes(
+    supabase,
+    Object.values(requestItemsById).map((row) => String(row.rik_code ?? "").trim()),
+  );
 
   let rows = (((pi.data as PurchaseItemSeedRow[]) || []))
     .map((x) => {
@@ -271,23 +285,16 @@ async function reseedIncomingItems(
 
       const ri = requestItemsById[String(x.request_item_id ?? "").trim()] ?? null;
 
-      const codeFromPI = normalizeIncomingStockCode(
-        x.rik_code && String(x.rik_code).trim()
-          ? String(x.rik_code).trim()
-          : x.ref_id && String(x.ref_id).trim()
-            ? String(x.ref_id).trim()
-            : null,
-      );
-
       const codeFromRI = normalizeIncomingStockCode(
         ri?.rik_code && String(ri.rik_code).trim() ? String(ri.rik_code).trim() : null,
       );
 
-      const baseCode = codeFromPI ?? codeFromRI;
+      const baseCode = codeFromRI;
       const isWarehouse = isWarehouseSeedCode(baseCode);
       const isKit = isKitSeedCode(baseCode);
       if (isKit) return null;
       if (!isWarehouse) return null;
+      if (!knownWarehouseCodes.has(baseCode)) return null;
 
       const finalCode = baseCode;
 
@@ -331,6 +338,10 @@ async function reseedIncomingItems(
       }
     }
     rows = Array.from(map.values());
+  }
+
+  if (rows.length === 0) {
+    return false;
   }
 
   const ins = await supabase.from("wh_incoming_items").upsert(rows, {
@@ -377,8 +388,7 @@ export async function seedEnsureIncomingItems(params: {
   ).trim() || null;
 
   if (purchaseId) {
-    const reseeded = await reseedIncomingItems(supabase, incomingId, purchaseId);
-    if (reseeded) return true;
+    return await reseedIncomingItems(supabase, incomingId, purchaseId);
   }
 
   // 2) try RPC ensure
