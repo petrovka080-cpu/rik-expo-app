@@ -121,6 +121,14 @@ const buildDraftScopeKey = (form: FormState, templateId?: string | null) =>
     form.contractNumber.trim(),
   ].join("|");
 
+const isCancelledDraftRow = (status?: string | null) => {
+  const normalized = String(status || "").trim().toLowerCase();
+  return normalized === "cancelled" || normalized === "canceled";
+};
+
+const filterActiveDraftItems = (rows: ReqItemRow[] | null | undefined): ReqItemRow[] =>
+  (rows || []).filter((row) => !isCancelledDraftRow(row.status));
+
 const EMPTY_FORM: FormState = {
   contractorOrg: "",
   contractorRep: "",
@@ -553,7 +561,7 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
     }
     try {
       const rows = await listRequestItems(id);
-      setDraftItems(rows || []);
+      setDraftItems(filterActiveDraftItems(rows || []));
     } catch (e) {
       logForemanSubcontractDebug("[loadDraftItems] error:", e);
       setDraftItems([]);
@@ -654,7 +662,7 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
         
         setRequestId(rid);
         setDisplayNo(displayLabel);
-        setDraftItems(res.items);
+        setDraftItems(filterActiveDraftItems(res.items));
         activeDraftScopeKeyRef.current = draftScopeKey;
         return rid;
       } catch (e) {
@@ -1125,40 +1133,58 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
     activeDraftScopeKeyRef.current = "";
   }, [requestId, draftItems, closeSubcontractFlow, saveDraftAtomic, setTemplateContract]);
 
-  const openFromHistory = useCallback((it: Subcontract) => {
-    // History row is a subcontract template, not a material request draft.
-    // Reset request draft and switch current template to selected subcontract.
-    setTemplateContract(it);
-    setForm((prev) => ({
-      ...prev,
-      objectCode: resolveCodeFromDict(dicts.objOptions || [], it.object_name) || prev.objectCode,
-      levelCode: resolveCodeFromDict(dicts.lvlOptions || [], it.work_zone) || prev.levelCode,
-      systemCode: resolveCodeFromDict(dicts.sysOptions || [], it.work_type) || prev.systemCode,
-      zoneText: prev.zoneText || "",
-    }));
-    setRequestId("");
-    setDisplayNo("");
-    setDraftItems([]);
-    activeDraftScopeKeyRef.current = "";
-    openSubcontractFlow("details");
+  const hydrateSelectedSubcontract = useCallback(
+    async (it: Subcontract) => {
+      const nextForm: FormState = {
+        ...form,
+        objectCode: resolveCodeFromDict(dicts.objOptions || [], it.object_name) || form.objectCode,
+        levelCode: resolveCodeFromDict(dicts.lvlOptions || [], it.work_zone) || form.levelCode,
+        systemCode: resolveCodeFromDict(dicts.sysOptions || [], it.work_type) || form.systemCode,
+        zoneText: form.zoneText || "",
+      };
+      const nextScopeKey = buildDraftScopeKey(nextForm, it.id);
+
+      setTemplateContract(it);
+      setForm(nextForm);
+
+      const existingDraft = await findLatestDraftRequestByLink(String(it.id || "").trim());
+      if (existingDraft?.id) {
+        const rid = String(existingDraft.id).trim();
+        const label = String(existingDraft.request_no || existingDraft.display_no || "").trim();
+        setRequestId(rid);
+        setDisplayNo(label);
+        activeDraftScopeKeyRef.current = nextScopeKey;
+        await loadDraftItems(rid);
+      } else {
+        setRequestId("");
+        setDisplayNo("");
+        setDraftItems([]);
+        activeDraftScopeKeyRef.current = "";
+      }
+
+      openSubcontractFlow("details");
+    },
+    [
+      dicts.lvlOptions,
+      dicts.objOptions,
+      dicts.sysOptions,
+      form,
+      loadDraftItems,
+      openSubcontractFlow,
+      setTemplateContract,
+    ],
+  );
+
+  const openFromHistory = useCallback(async (it: Subcontract) => {
+    await hydrateSelectedSubcontract(it);
     setHistoryOpen(false);
-  }, [dicts.lvlOptions, dicts.objOptions, dicts.sysOptions, openSubcontractFlow, setHistoryOpen, setTemplateContract]);
+  }, [hydrateSelectedSubcontract, setHistoryOpen]);
 
   void openFromHistory;
 
-  const acceptApprovedFromDirector = useCallback((it: Subcontract) => {
-    setTemplateContract(it);
-    setForm((prev) => ({
-      ...prev,
-      objectCode: resolveCodeFromDict(dicts.objOptions || [], it.object_name) || prev.objectCode,
-      levelCode: resolveCodeFromDict(dicts.lvlOptions || [], it.work_zone) || prev.levelCode,
-      systemCode: resolveCodeFromDict(dicts.sysOptions || [], it.work_type) || prev.systemCode,
-      zoneText: prev.zoneText || "",
-    }));
-    setRequestId(""); // Force new draft on first item
-    setDisplayNo("");
-    openSubcontractFlow("details");
-  }, [dicts.lvlOptions, dicts.objOptions, dicts.sysOptions, openSubcontractFlow, setTemplateContract]);
+  const acceptApprovedFromDirector = useCallback(async (it: Subcontract) => {
+    await hydrateSelectedSubcontract(it);
+  }, [hydrateSelectedSubcontract]);
 
   return (
     <View style={{ flex: 1 }}>
@@ -1315,7 +1341,9 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
         loading={requestHistoryLoading}
         requests={historyRequests}
         resolveStatusInfo={resolveRequestStatusInfo}
-        onSelect={(reqId) => void handleRequestHistorySelect(reqId)}
+        onSelect={(request) => void handleRequestHistorySelect(request.id)}
+        onReopen={(request) => void handleRequestHistorySelect(request.id)}
+        reopenBusyRequestId={null}
         onOpenPdf={(reqId) => void openRequestHistoryPdf(reqId)}
         isPdfBusy={() => false}
         shortId={shortId}

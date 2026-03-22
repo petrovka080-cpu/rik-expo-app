@@ -44,7 +44,9 @@ import { supabase } from '../../src/lib/supabaseClient';
 import {
   rikQuickSearch,
   type ReqItemRow,
+  type ForemanRequestSummary,
 } from '../../src/lib/catalog_api';
+import { reopenRequestDraft } from "../../src/lib/api/request.repository";
 import type { RefOption } from "../../src/screens/foreman/foreman.types";
 import {
   loadForemanHistory,
@@ -171,6 +173,7 @@ export default function ForemanScreen() {
   const isFioLoading = useForemanUiStore((state) => state.isFioLoading);
   const setIsFioLoading = useForemanUiStore((state) => state.setIsFioLoading);
   const [foremanHistory, setForemanHistory] = useState<string[]>([]);
+  const [historyReopenBusyId, setHistoryReopenBusyId] = useState<string | null>(null);
   const draftOpen = useForemanUiStore((state) => state.draftOpen);
   const setDraftOpen = useForemanUiStore((state) => state.setDraftOpen);
   const busy = useForemanUiStore((state) => state.busy);
@@ -498,7 +501,31 @@ export default function ForemanScreen() {
     }));
   }, [headerAttention, headerRequirements, setHeaderAttention]);
 
-  const handleHistorySelect = useCallback((reqId: string) => { openRequestById(reqId); closeHistory(); }, [openRequestById, closeHistory]);
+  const handleHistorySelect = useCallback((request: ForemanRequestSummary) => {
+    openRequestById(request.id);
+    closeHistory();
+    setDraftOpen(true);
+  }, [closeHistory, openRequestById, setDraftOpen]);
+
+  const handleHistoryReopen = useCallback(async (request: ForemanRequestSummary) => {
+    const requestKey = ridStr(request.id);
+    if (!requestKey) return;
+    setHistoryReopenBusyId(requestKey);
+    try {
+      await reopenRequestDraft({
+        requestId: requestKey,
+        sourcePath: "foreman.history.reopen",
+        draftScopeKey: requestKey,
+      });
+      openRequestById(requestKey);
+      closeHistory();
+      setDraftOpen(true);
+    } catch (error) {
+      alertError(error, "Не удалось вернуть черновик");
+    } finally {
+      setHistoryReopenBusyId(null);
+    }
+  }, [alertError, closeHistory, openRequestById, setDraftOpen]);
 
   const openHistoryPdf = useCallback(async (reqId: string) => {
     const rid = ridStr(reqId);
@@ -914,6 +941,8 @@ export default function ForemanScreen() {
               requests={historyRequests}
               resolveStatusInfo={resolveStatusInfo}
               onSelect={handleHistorySelect}
+              onReopen={handleHistoryReopen}
+              reopenBusyRequestId={historyReopenBusyId}
               onOpenPdf={openHistoryPdf}
               isPdfBusy={(key) => gbusy.isBusy(key)}
               shortId={shortId}

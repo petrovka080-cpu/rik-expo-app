@@ -47,6 +47,7 @@ type RequestItemMetaPatch = Pick<
   "status" | "note" | "app_code" | "kind" | "name_human" | "uom"
 >;
 type RequestItemStatusPatch = Pick<RequestItemsTable["Update"], "status">;
+type RequestItemRestorePatch = Pick<RequestItemsTable["Update"], "status" | "cancelled_at">;
 type RequestItemAddOpts = {
   note?: string;
   app_code?: string;
@@ -191,6 +192,10 @@ function buildRequestItemsPendingPatch(): RequestItemStatusPatch {
   return { status: REQUEST_PENDING_STATUS };
 }
 
+function buildRequestItemsRestorePatch(): RequestItemRestorePatch {
+  return { status: REQUEST_DRAFT_STATUS, cancelled_at: null };
+}
+
 export function clearCachedDraftRequestId() {
   _draftRequestIdAny = null;
 }
@@ -265,6 +270,16 @@ async function updateRequestItemsPendingStatus(requestFilterId: string): Promise
     .eq("request_id", requestFilterId)
     .is("status", null);
   if (nullStatus.error) throw nullStatus.error;
+}
+
+async function restoreCancelledRequestItems(requestFilterId: string): Promise<void> {
+  const restorePayload = buildRequestItemsRestorePatch();
+  const restored = await client
+    .from("request_items")
+    .update(restorePayload)
+    .eq("request_id", requestFilterId)
+    .in("status", ["cancelled", "canceled"]);
+  if (restored.error) throw restored.error;
 }
 
 async function patchRequestItemMeta(itemId: string, patch: RequestItemMetaPatch): Promise<void> {
@@ -642,4 +657,26 @@ export async function requestSubmitMutation(
 
 export async function requestSubmit(requestId: number | string): Promise<RequestRecord | null> {
   return mapRequestSubmitMutationResult(await requestSubmitMutation(requestId));
+}
+
+export async function requestReopen(requestId: number | string): Promise<RequestRecord | null> {
+  const preconditions = await resolveRequestSubmitPreconditions(requestId);
+
+  try {
+    await restoreCancelledRequestItems(preconditions.request_filter_id);
+  } catch (e) {
+    logRequestsDebug("[requestReopen/request_items restore]", parseErr(e));
+    throw e;
+  }
+
+  try {
+    return await updateRequestHeadStatus(
+      preconditions.request_filter_id,
+      { status: REQUEST_DRAFT_STATUS },
+      preconditions.request_read_select,
+    );
+  } catch (e) {
+    logRequestsDebug("[requestReopen/request head restore]", parseErr(e));
+    throw e;
+  }
 }

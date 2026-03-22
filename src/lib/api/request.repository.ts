@@ -1,10 +1,17 @@
 import {
+  requestReopen,
   requestSubmitMutation,
   type RequestSubmitMutationResult,
 } from "./requests";
 import type { RequestRecord } from "./types";
 
 export type SubmitRequestCommand = {
+  requestId: number | string;
+  sourcePath: string;
+  draftScopeKey?: string | null;
+};
+
+export type ReopenRequestCommand = {
   requestId: number | string;
   sourcePath: string;
   draftScopeKey?: string | null;
@@ -47,6 +54,43 @@ export async function submitRequestToDirector(
       requestId: trim(command.requestId) || null,
       draftScopeKey: trim(command.draftScopeKey) || null,
       submit: true,
+      errorCategory: toSubmitErrorCategory(error),
+      errorMessage: error instanceof Error ? error.message : String(error),
+    });
+    throw error;
+  }
+}
+
+export async function reopenRequestDraft(
+  command: ReopenRequestCommand,
+): Promise<RequestRecord | null> {
+  logRequestRepository({
+    phase: "request",
+    sourcePath: command.sourcePath,
+    requestId: trim(command.requestId) || null,
+    draftScopeKey: trim(command.draftScopeKey) || null,
+    reopen: true,
+  });
+
+  try {
+    const record = await requestReopen(command.requestId);
+    logRequestRepository({
+      phase: "result",
+      sourcePath: command.sourcePath,
+      requestId: trim(record?.id) || trim(command.requestId) || null,
+      draftScopeKey: trim(command.draftScopeKey) || null,
+      reopen: true,
+      status: record?.status ?? null,
+      displayNo: record?.display_no ?? null,
+    });
+    return record;
+  } catch (error) {
+    logRequestRepository({
+      phase: "error",
+      sourcePath: command.sourcePath,
+      requestId: trim(command.requestId) || null,
+      draftScopeKey: trim(command.draftScopeKey) || null,
+      reopen: true,
       errorCategory: toSubmitErrorCategory(error),
       errorMessage: error instanceof Error ? error.message : String(error),
     });

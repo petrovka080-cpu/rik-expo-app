@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-03-18T11:00:21.410Z",
+  "generated_at": "2026-03-22T07:08:41.500Z",
   "readiness": {
     "has_v_director_report_fact_daily_v1": {
       "ok": true,
@@ -40,10 +40,10 @@
       "kind": "object",
       "payload": {
         "kpi": {
-          "items_total": 110,
-          "issues_total": 110,
+          "items_total": 111,
+          "issues_total": 111,
           "issues_without_object": 0,
-          "items_without_request": 0
+          "items_without_request": 1
         },
         "meta": {
           "to": "2026-12-31",
@@ -261,18 +261,18 @@
           {
             "uom": "м²",
             "docs_cnt": 1,
-            "rik_code": "MAT-BLOCK-AAC-200",
+            "rik_code": "MAT-BLOCK-AAC-100",
             "qty_total": 76,
-            "name_human_ru": "MAT-BLOCK-AAC-200",
+            "name_human_ru": "MAT-BLOCK-AAC-100",
             "qty_without_request": 0,
             "docs_without_request": 0
           },
           {
             "uom": "м²",
             "docs_cnt": 1,
-            "rik_code": "MAT-BLOCK-AAC-100",
+            "rik_code": "MAT-BLOCK-AAC-200",
             "qty_total": 76,
-            "name_human_ru": "MAT-BLOCK-AAC-100",
+            "name_human_ru": "MAT-BLOCK-AAC-200",
             "qty_without_request": 0,
             "docs_without_request": 0
           },
@@ -295,20 +295,20 @@
             "docs_without_request": 0
           },
           {
-            "uom": "кг",
-            "docs_cnt": 1,
-            "rik_code": "MAT-PRIMER-CONTACT",
-            "qty_total": 62,
-            "name_human_ru": "MAT-PRIMER-CONTACT",
-            "qty_without_request": 0,
-            "docs_without_request": 0
-          },
-          {
             "uom": "м²",
             "docs_cnt": 1,
             "rik_code": "MAT-MESH",
             "qty_total": 62,
             "name_human_ru": "MAT-MESH",
+            "qty_without_request": 0,
+            "docs_without_request": 0
+          },
+          {
+            "uom": "кг",
+            "docs_cnt": 1,
+            "rik_code": "MAT-PRIMER-CONTACT",
+            "qty_total": 62,
+            "name_human_ru": "MAT-PRIMER-CONTACT",
             "qty_without_request": 0,
             "docs_without_request": 0
           },
@@ -369,18 +369,18 @@
           {
             "uom": "м",
             "docs_cnt": 1,
-            "rik_code": "MAT-COPPER-LINES-1-4_3-8",
+            "rik_code": "MAT-INSULATION-LINES",
             "qty_total": 46,
-            "name_human_ru": "MAT-COPPER-LINES-1-4_3-8",
+            "name_human_ru": "MAT-INSULATION-LINES",
             "qty_without_request": 0,
             "docs_without_request": 0
           },
           {
             "uom": "м",
             "docs_cnt": 1,
-            "rik_code": "MAT-INSULATION-LINES",
+            "rik_code": "MAT-COPPER-LINES-1-4_3-8",
             "qty_total": 46,
-            "name_human_ru": "MAT-INSULATION-LINES",
+            "name_human_ru": "MAT-COPPER-LINES-1-4_3-8",
             "qty_without_request": 0,
             "docs_without_request": 0
           },
@@ -466,20 +466,20 @@
             "docs_without_request": 0
           },
           {
-            "uom": "п.м.",
-            "docs_cnt": 1,
-            "rik_code": "MAT-GKL-WALL-ANGLE",
-            "qty_total": 20,
-            "name_human_ru": "MAT-GKL-WALL-ANGLE",
-            "qty_without_request": 0,
-            "docs_without_request": 0
-          },
-          {
             "uom": "м²",
             "docs_cnt": 1,
             "rik_code": "MAT-GKL-WALL-MESH",
             "qty_total": 20,
             "name_human_ru": "MAT-GKL-WALL-MESH",
+            "qty_without_request": 0,
+            "docs_without_request": 0
+          },
+          {
+            "uom": "п.м.",
+            "docs_cnt": 1,
+            "rik_code": "MAT-GKL-WALL-ANGLE",
+            "qty_total": 20,
+            "name_human_ru": "MAT-GKL-WALL-ANGLE",
             "qty_without_request": 0,
             "docs_without_request": 0
           },
@@ -522,18 +522,18 @@
           {
             "uom": "кг",
             "docs_cnt": 1,
-            "rik_code": "MAT-CONC-WIRE",
+            "rik_code": "MAT-PUTTY-FINISH",
             "qty_total": 13,
-            "name_human_ru": "MAT-CONC-WIRE",
+            "name_human_ru": "MAT-PUTTY-FINISH",
             "qty_without_request": 0,
             "docs_without_request": 0
           },
           {
             "uom": "кг",
             "docs_cnt": 1,
-            "rik_code": "MAT-PUTTY-FINISH",
+            "rik_code": "MAT-CONC-WIRE",
             "qty_total": 13,
-            "name_human_ru": "MAT-PUTTY-FINISH",
+            "name_human_ru": "MAT-CONC-WIRE",
             "qty_without_request": 0,
             "docs_without_request": 0
           },
@@ -547,15 +547,6 @@
             "docs_without_request": 0
           },
           {
-            "uom": "м",
-            "docs_cnt": 1,
-            "rik_code": "MAT-CABLE-3X2.5",
-            "qty_total": 11,
-            "name_human_ru": "MAT-CABLE-3X2.5",
-            "qty_without_request": 0,
-            "docs_without_request": 0
-          },
-          {
             "uom": "шт",
             "docs_cnt": 1,
             "rik_code": "MAT-OUTLET-MECH",
@@ -565,38 +556,20 @@
             "docs_without_request": 0
           },
           {
+            "uom": "м",
+            "docs_cnt": 1,
+            "rik_code": "MAT-CABLE-3X2.5",
+            "qty_total": 11,
+            "name_human_ru": "MAT-CABLE-3X2.5",
+            "qty_without_request": 0,
+            "docs_without_request": 0
+          },
+          {
             "uom": "м²",
             "docs_cnt": 1,
             "rik_code": "MAT-CONC-FORMWORK",
             "qty_total": 11,
             "name_human_ru": "MAT-CONC-FORMWORK",
-            "qty_without_request": 0,
-            "docs_without_request": 0
-          },
-          {
-            "uom": "шт",
-            "docs_cnt": 1,
-            "rik_code": "MAT-BACKDRAFT-GRILLE",
-            "qty_total": 10,
-            "name_human_ru": "MAT-BACKDRAFT-GRILLE",
-            "qty_without_request": 0,
-            "docs_without_request": 0
-          },
-          {
-            "uom": "шт",
-            "docs_cnt": 1,
-            "rik_code": "MAT-COM-ELEC-KIT",
-            "qty_total": 10,
-            "name_human_ru": "MAT-COM-ELEC-KIT",
-            "qty_without_request": 0,
-            "docs_without_request": 0
-          },
-          {
-            "uom": "туба",
-            "docs_cnt": 1,
-            "rik_code": "MAT-GKL-WALL-SEALANT",
-            "qty_total": 10,
-            "name_human_ru": "MAT-GKL-WALL-SEALANT",
             "qty_without_request": 0,
             "docs_without_request": 0
           },
@@ -619,11 +592,38 @@
             "docs_without_request": 0
           },
           {
+            "uom": "шт",
+            "docs_cnt": 1,
+            "rik_code": "MAT-BACKDRAFT-GRILLE",
+            "qty_total": 10,
+            "name_human_ru": "MAT-BACKDRAFT-GRILLE",
+            "qty_without_request": 0,
+            "docs_without_request": 0
+          },
+          {
             "uom": "т",
             "docs_cnt": 1,
             "rik_code": "MAT-ARM-A400-10-11_7M",
             "qty_total": 10,
             "name_human_ru": "MAT-ARM-A400-10-11_7M",
+            "qty_without_request": 0,
+            "docs_without_request": 0
+          },
+          {
+            "uom": "туба",
+            "docs_cnt": 1,
+            "rik_code": "MAT-GKL-WALL-SEALANT",
+            "qty_total": 10,
+            "name_human_ru": "MAT-GKL-WALL-SEALANT",
+            "qty_without_request": 0,
+            "docs_without_request": 0
+          },
+          {
+            "uom": "шт",
+            "docs_cnt": 1,
+            "rik_code": "MAT-COM-ELEC-KIT",
+            "qty_total": 10,
+            "name_human_ru": "MAT-COM-ELEC-KIT",
             "qty_without_request": 0,
             "docs_without_request": 0
           },
@@ -664,15 +664,6 @@
             "docs_without_request": 0
           },
           {
-            "uom": "компл.",
-            "docs_cnt": 1,
-            "rik_code": "MAT-AC-BRACKETS",
-            "qty_total": 7,
-            "name_human_ru": "MAT-AC-BRACKETS",
-            "qty_without_request": 0,
-            "docs_without_request": 0
-          },
-          {
             "uom": "шт",
             "docs_cnt": 1,
             "rik_code": "MAT-EXHAUST-FAN-125",
@@ -682,20 +673,20 @@
             "docs_without_request": 0
           },
           {
+            "uom": "компл.",
+            "docs_cnt": 1,
+            "rik_code": "MAT-AC-BRACKETS",
+            "qty_total": 7,
+            "name_human_ru": "MAT-AC-BRACKETS",
+            "qty_without_request": 0,
+            "docs_without_request": 0
+          },
+          {
             "uom": "пара",
             "docs_cnt": 1,
             "rik_code": "MAT-GLOVES",
             "qty_total": 6,
             "name_human_ru": "MAT-GLOVES",
-            "qty_without_request": 0,
-            "docs_without_request": 0
-          },
-          {
-            "uom": "шт",
-            "docs_cnt": 1,
-            "rik_code": "MAT-SWITCH-1G",
-            "qty_total": 6,
-            "name_human_ru": "MAT-SWITCH-1G",
             "qty_without_request": 0,
             "docs_without_request": 0
           },
@@ -714,6 +705,24 @@
             "rik_code": "MAT-ELEC-JUNCTION",
             "qty_total": 6,
             "name_human_ru": "MAT-ELEC-JUNCTION",
+            "qty_without_request": 0,
+            "docs_without_request": 0
+          },
+          {
+            "uom": "шт",
+            "docs_cnt": 1,
+            "rik_code": "MAT-SWITCH-1G",
+            "qty_total": 6,
+            "name_human_ru": "MAT-SWITCH-1G",
+            "qty_without_request": 0,
+            "docs_without_request": 0
+          },
+          {
+            "uom": "компл.",
+            "docs_cnt": 3,
+            "rik_code": "MAT-WIRE-NUTS/WAGO",
+            "qty_total": 4,
+            "name_human_ru": "MAT-WIRE-NUTS/WAGO",
             "qty_without_request": 0,
             "docs_without_request": 0
           },
@@ -746,24 +755,6 @@
           },
           {
             "uom": "компл.",
-            "docs_cnt": 3,
-            "rik_code": "MAT-WIRE-NUTS/WAGO",
-            "qty_total": 4,
-            "name_human_ru": "MAT-WIRE-NUTS/WAGO",
-            "qty_without_request": 0,
-            "docs_without_request": 0
-          },
-          {
-            "uom": "шт",
-            "docs_cnt": 1,
-            "rik_code": "MAT-SPLIT-9K",
-            "qty_total": 4,
-            "name_human_ru": "MAT-SPLIT-9K",
-            "qty_without_request": 0,
-            "docs_without_request": 0
-          },
-          {
-            "uom": "компл.",
             "docs_cnt": 1,
             "rik_code": "MAT-VIBRO-ANCHOR-SET",
             "qty_total": 4,
@@ -777,6 +768,15 @@
             "rik_code": "MAT-TOOLS-SET",
             "qty_total": 4,
             "name_human_ru": "MAT-TOOLS-SET",
+            "qty_without_request": 0,
+            "docs_without_request": 0
+          },
+          {
+            "uom": "шт",
+            "docs_cnt": 1,
+            "rik_code": "MAT-SPLIT-9K",
+            "qty_total": 4,
+            "name_human_ru": "MAT-SPLIT-9K",
             "qty_without_request": 0,
             "docs_without_request": 0
           },
@@ -808,6 +808,24 @@
             "docs_without_request": 0
           },
           {
+            "uom": "л",
+            "docs_cnt": 1,
+            "rik_code": "MAT-PRIMER-ACRYL",
+            "qty_total": 2,
+            "name_human_ru": "MAT-PRIMER-ACRYL",
+            "qty_without_request": 0,
+            "docs_without_request": 0
+          },
+          {
+            "uom": "шт",
+            "docs_cnt": 1,
+            "rik_code": "MAT-DRILL-BIT",
+            "qty_total": 2,
+            "name_human_ru": "MAT-DRILL-BIT",
+            "qty_without_request": 0,
+            "docs_without_request": 0
+          },
+          {
             "uom": "шт",
             "docs_cnt": 1,
             "rik_code": "MAT-BRUSHES",
@@ -822,24 +840,6 @@
             "rik_code": "MAT-ELEC-GROMMET",
             "qty_total": 2,
             "name_human_ru": "MAT-ELEC-GROMMET",
-            "qty_without_request": 0,
-            "docs_without_request": 0
-          },
-          {
-            "uom": "шт",
-            "docs_cnt": 1,
-            "rik_code": "MAT-DRILL-BIT",
-            "qty_total": 2,
-            "name_human_ru": "MAT-DRILL-BIT",
-            "qty_without_request": 0,
-            "docs_without_request": 0
-          },
-          {
-            "uom": "л",
-            "docs_cnt": 1,
-            "rik_code": "MAT-PRIMER-ACRYL",
-            "qty_total": 2,
-            "name_human_ru": "MAT-PRIMER-ACRYL",
             "qty_without_request": 0,
             "docs_without_request": 0
           },
@@ -862,6 +862,15 @@
             "docs_without_request": 0
           },
           {
+            "uom": "шт",
+            "docs_cnt": 1,
+            "rik_code": "MAT-TRASH-BAGS",
+            "qty_total": 1,
+            "name_human_ru": "MAT-TRASH-BAGS",
+            "qty_without_request": 1,
+            "docs_without_request": 1
+          },
+          {
             "uom": "кг",
             "docs_cnt": 1,
             "rik_code": "MAT-PLMB-SEAL-PASTE",
@@ -873,6 +882,7 @@
         ],
         "report_options": {
           "objects": [
+            "Административное здание",
             "Без объекта"
           ],
           "objectIdByName": {}
@@ -892,19 +902,30 @@
             "req_positions": 110,
             "free_positions": 0,
             "work_type_name": "Без вида работ",
-            "share_total_pct": 100,
+            "share_total_pct": 99.99,
             "total_positions": 110
+          },
+          {
+            "id": "Этаж: -1 этаж · Система: Армирование (каркасы/сетки/закладные)",
+            "levels": [],
+            "total_qty": 1,
+            "total_docs": 1,
+            "req_positions": 0,
+            "free_positions": 1,
+            "work_type_name": "Этаж: -1 этаж · Система: Армирование (каркасы/сетки/закладные)",
+            "share_total_pct": 0.01,
+            "total_positions": 1
           }
         ],
         "summary": {
-          "total_qty": 15447,
-          "total_docs": 25,
-          "total_positions": 110,
+          "total_qty": 15448,
+          "total_docs": 26,
+          "total_positions": 111,
           "issue_cost_total": 0,
           "pct_without_work": 0,
           "pct_without_level": 0,
           "unpriced_issue_pct": 0,
-          "pct_without_request": 0,
+          "pct_without_request": 0.9,
           "purchase_cost_total": 0,
           "issue_to_purchase_pct": 0
         }
