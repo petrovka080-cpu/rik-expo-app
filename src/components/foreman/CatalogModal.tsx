@@ -3,7 +3,6 @@ import {
   View,
   Text,
   TextInput,
-  FlatList,
   Pressable,
   Modal,
   Platform,
@@ -14,6 +13,7 @@ import {
   Animated,
   InteractionManager,
 } from 'react-native';
+import { FlashList } from '@shopify/flash-list';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { UI, TYPO } from '../../screens/foreman/foreman.ui';
@@ -198,12 +198,6 @@ export default function CatalogModal(props: {
   const titleOf = (it: CatalogItem) =>
     (it.name_human_ru || it.name_ru || it.name_human || it.display_name || it.rik_code || '-').trim();
 
-  const resetSearchAndFocus = () => {
-    setQuery('');
-    setRows([]);
-    scheduleInputFocus();
-  };
-
   const handleCommit = async (item: CatalogItem) => {
     const code = String(item.rik_code || '').trim();
     if (!code || addBusyByCode[code]) return;
@@ -307,7 +301,7 @@ export default function CatalogModal(props: {
             </Animated.View>
           ) : null}
 
-          <FlatList
+          <FlashList
             data={sortedRows}
             keyExtractor={(it) => `rk:${it.rik_code}`}
             contentContainerStyle={[s.listContent, { paddingBottom: insets.bottom + 20 }]}

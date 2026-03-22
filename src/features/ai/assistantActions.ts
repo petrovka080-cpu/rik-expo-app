@@ -7,10 +7,10 @@ import {
   fetchRequestDetails,
   getLocalDraftId,
   getOrCreateDraftRequestId,
-  requestSubmit,
   rikQuickSearch,
   updateRequestMeta,
 } from "../../lib/catalog_api";
+import { submitRequestToDirector } from "../../lib/api/request.repository";
 import { requestItemAddOrIncAndPatchMeta } from "../../screens/foreman/foreman.helpers";
 import {
   resolveForemanQuickRequest,
@@ -526,7 +526,11 @@ async function submitForemanDraft(actor: AssistantActorContext, session: Foreman
     return "Не нашел активный черновик. Сначала сформируй его заново.";
   }
 
-  const submitted = await requestSubmit(rid).catch(() => null);
+  const submitted = await submitRequestToDirector({
+    requestId: rid,
+    sourcePath: "assistant.foreman.submitDraft",
+    draftScopeKey: rid,
+  }).catch(() => null);
   if (!submitted) {
     return `Не удалось отправить черновик ${currentDraft.display_no || rid}. Проверь позиции и попробуй отправить из экрана прораба.`;
   }

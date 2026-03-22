@@ -1758,11 +1758,16 @@ export async function listForemanRequests(
     st === "\u043e\u0442\u043a\u043b\u043e\u043d\u0435\u043d\u043e" ||
     st === "\u043e\u0442\u043a\u043b\u043e\u043d\u0435\u043d\u0430" ||
     st === "rejected";
+  const isCancelled = (st: string) =>
+    st === "\u043e\u0442\u043c\u0435\u043d\u0435\u043d\u0430" ||
+    st === "\u043e\u0442\u043c\u0435\u043d\u0435\u043d\u043e" ||
+    st === "cancelled" ||
+    st === "canceled";
   const isPending = (st: string) =>
     st === "\u043d\u0430 \u0443\u0442\u0432\u0435\u0440\u0436\u0434\u0435\u043d\u0438\u0438" ||
     st === "pending";
 
-  const agg = new Map<string, { total: number; ok: number; bad: number; pend: number }>();
+  const agg = new Map<string, { total: number; ok: number; bad: number; pend: number; cancelled: number }>();
   const statusRows = Array.isArray(itemRows) ? (itemRows as unknown[]) : [];
   for (const rawRow of statusRows) {
     if (!isRecord(rawRow)) continue;
@@ -1770,10 +1775,11 @@ export async function listForemanRequests(
     const rid = String(row.request_id ?? "");
     if (!rid) continue;
     const st = normSt(row.status);
-    const cur = agg.get(rid) ?? { total: 0, ok: 0, bad: 0, pend: 0 };
+    const cur = agg.get(rid) ?? { total: 0, ok: 0, bad: 0, pend: 0, cancelled: 0 };
     cur.total += 1;
     if (isApproved(st)) cur.ok += 1;
     else if (isRejected(st)) cur.bad += 1;
+    else if (isCancelled(st)) cur.cancelled += 1;
     else if (isPending(st)) cur.pend += 1;
     agg.set(rid, cur);
   }
@@ -1783,6 +1789,10 @@ export async function listForemanRequests(
     if (!a || a.total === 0) return req;
 
     const hasRejected = a.bad > 0;
+
+    if (a.cancelled === a.total) {
+      return { ...req, status: "\u041e\u0442\u043c\u0435\u043d\u0435\u043d\u0430", has_rejected: false };
+    }
 
     if (a.bad === a.total) {
       return { ...req, status: "\u041e\u0442\u043a\u043b\u043e\u043d\u0435\u043d\u0430", has_rejected: true };

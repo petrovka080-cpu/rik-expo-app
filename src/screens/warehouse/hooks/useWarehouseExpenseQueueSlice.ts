@@ -25,6 +25,36 @@ type ReqPickUiLike = {
   clearReqPick: () => void;
 };
 
+const reqModalFieldsEqual = (left: ReqHeadRow, right: ReqHeadRow): boolean =>
+  left.request_id === right.request_id &&
+  left.display_no === right.display_no &&
+  left.object_name === right.object_name &&
+  left.level_code === right.level_code &&
+  left.system_code === right.system_code &&
+  left.zone_code === right.zone_code &&
+  left.level_name === right.level_name &&
+  left.system_name === right.system_name &&
+  left.zone_name === right.zone_name &&
+  left.contractor_name === right.contractor_name &&
+  left.contractor_phone === right.contractor_phone &&
+  left.planned_volume === right.planned_volume &&
+  left.note === right.note &&
+  left.comment === right.comment &&
+  left.submitted_at === right.submitted_at &&
+  left.items_cnt === right.items_cnt &&
+  left.ready_cnt === right.ready_cnt &&
+  left.done_cnt === right.done_cnt &&
+  left.qty_limit_sum === right.qty_limit_sum &&
+  left.qty_issued_sum === right.qty_issued_sum &&
+  left.qty_left_sum === right.qty_left_sum &&
+  left.qty_can_issue_now_sum === right.qty_can_issue_now_sum &&
+  left.issuable_now_cnt === right.issuable_now_cnt &&
+  left.issue_status === right.issue_status &&
+  left.visible_in_expense_queue === right.visible_in_expense_queue &&
+  left.can_issue_now === right.can_issue_now &&
+  left.waiting_stock === right.waiting_stock &&
+  left.all_done === right.all_done;
+
 export function useWarehouseExpenseQueueSlice(params: {
   supabase: SupabaseClient;
   tab: Tab;
@@ -157,14 +187,12 @@ export function useWarehouseExpenseQueueSlice(params: {
   });
 
   useEffect(() => {
-    if (!reqModal) return;
-
     setReqModal((prev) => {
       if (!prev) return prev;
       const updated = reqHeads.find((row) => String(row.request_id) === String(prev.request_id));
       if (!updated) return prev;
 
-      return {
+      const next: ReqHeadRow = {
         ...prev,
         ...updated,
         note: prev.note ?? updated.note ?? null,
@@ -173,8 +201,10 @@ export function useWarehouseExpenseQueueSlice(params: {
         contractor_phone: prev.contractor_phone ?? updated.contractor_phone ?? null,
         planned_volume: prev.planned_volume ?? updated.planned_volume ?? null,
       };
+
+      return reqModalFieldsEqual(prev, next) ? prev : next;
     });
-  }, [reqHeads, reqModal]);
+  }, [reqHeads]);
 
   return {
     reqHeads,

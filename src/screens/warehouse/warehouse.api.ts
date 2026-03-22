@@ -1,7 +1,7 @@
-﻿// src/screens/warehouse/warehouse.api.ts
+// src/screens/warehouse/warehouse.api.ts
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { StockRow, ReqHeadRow, ReqItemUiRow } from "./warehouse.types";
-import { normMatCode, normUomId, nz, parseNum } from "./warehouse.utils";
+import { isUuid, normMatCode, normUomId, nz, parseNum } from "./warehouse.utils";
 import { normalizeRuText } from "../../lib/text/encoding";
 import { isRequestVisibleInWarehouseIssueQueue } from "../../lib/requestStatus";
 import { fetchWarehouseNameMapUi } from "./warehouse.nameMap.ui";
@@ -110,6 +110,9 @@ const toTextOrNull = (v: unknown): string | null => {
   const s = String(v ?? "").trim();
   return s || null;
 };
+
+const normalizeUuidList = (values: unknown[]): string[] =>
+  Array.from(new Set(values.map((value) => String(value ?? "").trim()).filter(isUuid)));
 
 const normalizeRequestItemStatus = (value: unknown): string =>
   String(normalizeRuText(String(value ?? "")) ?? "")
@@ -691,12 +694,13 @@ async function loadApprovedViewReqHeadsWindowRows(
   const requestIds = Array.from(
     new Set(rows.map((r) => String(r.request_id ?? "").trim()).filter(Boolean)),
   );
-  if (!requestIds.length) return [];
+  const safeRequestIds = normalizeUuidList(requestIds);
+  if (!safeRequestIds.length) return [];
 
   const approvalStatusRows = await supabase
     .from("requests")
     .select("id, status")
-    .in("id", requestIds);
+    .in("id", safeRequestIds);
   if (approvalStatusRows.error || !Array.isArray(approvalStatusRows.data)) return [];
 
   const requestStatusById = new Map<string, string>();
@@ -805,7 +809,7 @@ async function enrichReqHeadsMeta(
         !String(r.planned_volume ?? "").trim(),
     )
     .map((r) => String(r.request_id ?? "").trim())
-    .filter(Boolean);
+    .filter(isUuid);
 
   if (!idsNeedMeta.length) return rows;
 
@@ -1601,9 +1605,9 @@ export async function apiFetchReqItems(
 
   // Enrich notes from base request_items table (view may not expose note/comment).
   try {
-    const ids = raw
-      .map((x) => String(x.request_item_id ?? "").trim())
-      .filter(Boolean);
+      const ids = raw
+        .map((x) => String(x.request_item_id ?? "").trim())
+        .filter(isUuid);
     if (ids.length) {
       const nQ = await supabase
         .from("request_items")

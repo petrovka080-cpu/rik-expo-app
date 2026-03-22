@@ -1,5 +1,6 @@
 import React from "react";
-import { Alert, FlatList, Pressable, Text, View } from "react-native";
+import { Alert, Pressable, Text, View } from "react-native";
+import { FlashList } from "@shopify/flash-list";
 import RNModal from "react-native-modal";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import PeriodPickerSheet from "../../components/PeriodPickerSheet";
@@ -345,7 +346,7 @@ export default function DirectorReportsModal({
                 <Text style={{ color: UI.text, fontWeight: "900", fontSize: 16 }}>{`Объекты (${repOptObjects?.length ?? 0})`}</Text>
                 <Pressable onPress={onCloseRepObj}><Text style={{ color: UI.sub, fontWeight: "900" }}>Закрыть</Text></Pressable>
               </View>
-              <FlatList
+              <FlashList
                 style={{ maxHeight: 420 }}
                 data={objectOptions}
                 renderItem={renderObjectOptionRow}
@@ -369,7 +370,7 @@ export default function DirectorReportsModal({
                 </View>
               </View>
             </View>
-            <FlatList
+            <FlashList
               key={`level:${levelModal.work.id}:${levelModal.level.id}`}
               style={{ flex: 1 }}
               data={sortedLevelMaterials}
@@ -391,7 +392,7 @@ export default function DirectorReportsModal({
                 </View>
               </View>
             </View>
-            <FlatList
+            <FlashList
               key={`work:${workModal.id}`}
               style={{ flex: 1 }}
               data={sortedWorkLevels}
@@ -466,7 +467,7 @@ export default function DirectorReportsModal({
 
       <View style={{ flex: 1, minHeight: 0 }}>
         {repTab === "materials" ? (
-          <FlatList
+          <FlashList
             style={{ flex: 1 }}
             data={rows}
             renderItem={renderMaterialRow}
@@ -479,7 +480,7 @@ export default function DirectorReportsModal({
             ) : null}
           />
         ) : (
-          <FlatList
+          <FlashList
             style={{ flex: 1 }}
             data={sortedWorks}
             renderItem={renderWorkRow}

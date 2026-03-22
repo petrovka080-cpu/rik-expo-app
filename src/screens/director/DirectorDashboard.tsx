@@ -9,12 +9,13 @@ import {
   Platform,
   Animated
 } from "react-native";
+import { FlashList } from "@shopify/flash-list";
 import { StatusBar } from "expo-status-bar";
 import { UI, s } from "./director.styles";
 import type { DirTopTab } from "./director.types";
+import DirectorSubcontractTab from "./DirectorSubcontractTab";
 
 type Tab = "foreman" | "buyer";
-import DirectorSubcontractTab from "./DirectorSubcontractTab";
 
 type Group = { request_id: number | string; items: any[] };
 type ProposalHead = { id: string; submitted_at?: string | null; pretty?: string | null };
@@ -91,13 +92,7 @@ type Props = {
 
 export default function DirectorDashboard(p: Props) {
   const finRep = p.finRep;
-  const sum = finRep?.summary;
   const rep = finRep?.report;
-
-  const periodShort =
-    p.finFrom || p.finTo
-      ? `${p.finFrom ? p.fmtDateOnly(p.finFrom) : "—"} → ${p.finTo ? p.fmtDateOnly(p.finTo) : "—"}`
-      : "Весь период";
 
   const headerTitle = "Контроль";
   const headerPadTop = Platform.OS === "web" ? 10 : 0;
@@ -120,6 +115,64 @@ export default function DirectorDashboard(p: Props) {
       sv.scrollToOffset({ offset: Math.max(0, rec.x - 12), animated: true });
     } catch { }
   }, [p.dirTab]);
+
+  const refreshRowsControl = React.useMemo(() => (
+    <RefreshControl
+      refreshing={p.loadingRows}
+      onRefresh={async () => {
+        if (p.loadingRows) return;
+        await p.ensureSignedIn();
+        await p.fetchRows(true);
+      }}
+      title=""
+      tintColor={UI.accent}
+    />
+  ), [p]);
+
+  const refreshPropsControl = React.useMemo(() => (
+    <RefreshControl
+      refreshing={p.loadingProps}
+      onRefresh={async () => {
+        if (p.loadingProps) return;
+        await p.ensureSignedIn();
+        await p.fetchProps(true);
+      }}
+      title=""
+      tintColor={UI.accent}
+    />
+  ), [p]);
+
+  const renderForemanGroup = React.useCallback(({ item }: { item: Group }) => {
+    const submittedAt = p.submittedAtByReq[String(item.request_id ?? "").trim()] ?? null;
+
+    return (
+      <Pressable
+        onPress={() => p.openRequestSheet(item)}
+        style={[s.mobCard, { marginBottom: 12, marginHorizontal: 16 }]}
+      >
+        <View style={s.mobMain}>
+          <Text style={s.mobTitle} numberOfLines={1}>
+            {p.labelForRequest(item.request_id)}
+          </Text>
+          <Text style={s.mobMeta} numberOfLines={2}>
+            {p.fmtDateOnly(submittedAt)}
+            {` · позиций ${item.items.length}`}
+          </Text>
+        </View>
+
+        <View style={{ marginLeft: 10 }}>
+          <View style={[s.openBtn, { minWidth: 0, paddingVertical: 8, paddingHorizontal: 12 }]}>
+            <Text style={[s.openBtnText, { fontSize: 12 }]}>Открыть</Text>
+          </View>
+        </View>
+      </Pressable>
+    );
+  }, [p]);
+
+  const renderProposalHead = React.useCallback(
+    ({ item }: { item: ProposalHead }) => <p.ProposalRow p={item} screenLock={p.screenLock} />,
+    [p],
+  );
 
   const HeaderContent = (
     <View>
@@ -298,77 +351,27 @@ export default function DirectorDashboard(p: Props) {
       {String(p.dirTab) === "Заявки" ? (
         <>
           {p.tab === "foreman" ? (
-            <FlatList
+            <FlashList
               data={p.groups}
               keyExtractor={(g, idx) => (g?.request_id ? `req:${String(g.request_id)}` : `g:${idx}`)}
-              removeClippedSubviews={false}
               keyboardShouldPersistTaps="handled"
-              ListHeaderComponent={null}
-              renderItem={({ item }) => {
-                const submittedAt = p.submittedAtByReq[String(item.request_id ?? "").trim()] ?? null;
-
-                return (
-                  <Pressable
-                    onPress={() => p.openRequestSheet(item)}
-                    style={[s.mobCard, { marginBottom: 12, marginHorizontal: 16 }]}
-                  >
-                    <View style={s.mobMain}>
-                      <Text style={s.mobTitle} numberOfLines={1}>
-                        {p.labelForRequest(item.request_id)}
-                      </Text>
-                      <Text style={s.mobMeta} numberOfLines={2}>
-                        {p.fmtDateOnly(submittedAt)}
-                        {` · позиций ${item.items.length}`}
-                      </Text>
-                    </View>
-
-                    <View style={{ marginLeft: 10 }}>
-                      <View style={[s.openBtn, { minWidth: 0, paddingVertical: 8, paddingHorizontal: 12 }]}>
-                        <Text style={[s.openBtnText, { fontSize: 12 }]}>Открыть</Text>
-                      </View>
-                    </View>
-                  </Pressable>
-                );
-              }}
+              renderItem={renderForemanGroup}
               ListEmptyComponent={
                 !p.loadingRows ? (
                   <Text style={{ opacity: 0.6, padding: 16, color: UI.sub }}>Нет ожидающих позиций</Text>
                 ) : null
               }
-              refreshControl={
-                <RefreshControl
-                  refreshing={p.loadingRows}
-                  onRefresh={async () => {
-                    if (p.loadingRows) return;
-                    await p.ensureSignedIn();
-                    await p.fetchRows(true);
-                  }}
-                  title=""
-                  tintColor={UI.accent}
-                />
-              }
+              refreshControl={refreshRowsControl}
               onScroll={p.onScroll}
               scrollEventThrottle={16}
               contentContainerStyle={{ paddingTop: contentTopPad, paddingBottom: 24 }}
             />
           ) : (
-            <FlatList
+            <FlashList
               data={p.propsHeads}
               keyExtractor={(x, idx) => (x?.id ? `pp:${x.id}` : `pp:${idx}`)}
-              removeClippedSubviews={false}
-              renderItem={({ item }) => <p.ProposalRow p={item} screenLock={p.screenLock} />}
-              refreshControl={
-                <RefreshControl
-                  refreshing={p.loadingProps}
-                  onRefresh={async () => {
-                    if (p.loadingProps) return;
-                    await p.ensureSignedIn();
-                    await p.fetchProps(true);
-                  }}
-                  title=""
-                  tintColor={UI.accent}
-                />
-              }
+              renderItem={renderProposalHead}
+              refreshControl={refreshPropsControl}
               onScroll={p.onScroll}
               scrollEventThrottle={16}
               contentContainerStyle={{

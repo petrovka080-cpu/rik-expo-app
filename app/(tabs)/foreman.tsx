@@ -32,7 +32,6 @@ import { adaptFormContext } from "../../src/screens/foreman/foreman.locator.adap
 import { debugForemanLogLazy } from "../../src/screens/foreman/foreman.debug";
 import {
   resolveForemanHeaderRequirements,
-  type ForemanHeaderAttentionState,
   type ForemanHeaderRequirementResult,
 } from "../../src/screens/foreman/foreman.headerRequirements";
 import { getObjectDisplayName } from "../../src/screens/foreman/foreman.options";
@@ -73,9 +72,9 @@ import { useForemanActions } from '../../src/screens/foreman/hooks/useForemanAct
 import {
   isForemanQuickRequestConfigured,
   resolveForemanQuickRequest,
-  type ForemanAiQuickItem,
 } from "../../src/screens/foreman/foreman.ai";
 import type { ForemanDraftAppendInput } from "../../src/screens/foreman/foreman.localDraft";
+import { useForemanUiStore } from "../../src/screens/foreman/foremanUi.store";
 
 type WebUiApi = {
   onZoneChange: (v: string) => void;
@@ -167,25 +166,43 @@ export default function ForemanScreen() {
 
   const { runRequestPdf } = useForemanPdf(gbusy);
 
-  const [isFioConfirmVisible, setIsFioConfirmVisible] = useState(false);
-  const [isFioLoading, setIsFioLoading] = useState(false);
+  const isFioConfirmVisible = useForemanUiStore((state) => state.isFioConfirmVisible);
+  const setIsFioConfirmVisible = useForemanUiStore((state) => state.setIsFioConfirmVisible);
+  const isFioLoading = useForemanUiStore((state) => state.isFioLoading);
+  const setIsFioLoading = useForemanUiStore((state) => state.setIsFioLoading);
   const [foremanHistory, setForemanHistory] = useState<string[]>([]);
-  const [draftOpen, setDraftOpen] = useState(false);
-  const [busy, setBusy] = useState(false);
-  const [foremanMainTab, setForemanMainTab] = useState<'materials' | 'subcontracts' | null>(null);
-  const [draftDeleteBusy, setDraftDeleteBusy] = useState(false);
-  const [draftSendBusy, setDraftSendBusy] = useState(false);
-  const [calcVisible, setCalcVisible] = useState(false);
-  const [catalogVisible, setCatalogVisible] = useState(false);
-  const [workTypePickerVisible, setWorkTypePickerVisible] = useState(false);
-  const [selectedWorkType, setSelectedWorkType] = useState<{ code: string; name: string } | null>(null);
-  const [aiQuickVisible, setAiQuickVisible] = useState(false);
-  const [aiQuickText, setAiQuickText] = useState("");
-  const [aiQuickLoading, setAiQuickLoading] = useState(false);
-  const [aiQuickError, setAiQuickError] = useState("");
-  const [aiQuickNotice, setAiQuickNotice] = useState("");
-  const [aiQuickPreview, setAiQuickPreview] = useState<ForemanAiQuickItem[]>([]);
-  const [headerAttention, setHeaderAttention] = useState<ForemanHeaderAttentionState | null>(null);
+  const draftOpen = useForemanUiStore((state) => state.draftOpen);
+  const setDraftOpen = useForemanUiStore((state) => state.setDraftOpen);
+  const busy = useForemanUiStore((state) => state.busy);
+  const setBusy = useForemanUiStore((state) => state.setBusy);
+  const foremanMainTab = useForemanUiStore((state) => state.foremanMainTab);
+  const setForemanMainTab = useForemanUiStore((state) => state.setForemanMainTab);
+  const draftDeleteBusy = useForemanUiStore((state) => state.draftDeleteBusy);
+  const setDraftDeleteBusy = useForemanUiStore((state) => state.setDraftDeleteBusy);
+  const draftSendBusy = useForemanUiStore((state) => state.draftSendBusy);
+  const setDraftSendBusy = useForemanUiStore((state) => state.setDraftSendBusy);
+  const calcVisible = useForemanUiStore((state) => state.calcVisible);
+  const setCalcVisible = useForemanUiStore((state) => state.setCalcVisible);
+  const catalogVisible = useForemanUiStore((state) => state.catalogVisible);
+  const setCatalogVisible = useForemanUiStore((state) => state.setCatalogVisible);
+  const workTypePickerVisible = useForemanUiStore((state) => state.workTypePickerVisible);
+  const setWorkTypePickerVisible = useForemanUiStore((state) => state.setWorkTypePickerVisible);
+  const selectedWorkType = useForemanUiStore((state) => state.selectedWorkType);
+  const setSelectedWorkType = useForemanUiStore((state) => state.setSelectedWorkType);
+  const aiQuickVisible = useForemanUiStore((state) => state.aiQuickVisible);
+  const setAiQuickVisible = useForemanUiStore((state) => state.setAiQuickVisible);
+  const aiQuickText = useForemanUiStore((state) => state.aiQuickText);
+  const setAiQuickText = useForemanUiStore((state) => state.setAiQuickText);
+  const aiQuickLoading = useForemanUiStore((state) => state.aiQuickLoading);
+  const setAiQuickLoading = useForemanUiStore((state) => state.setAiQuickLoading);
+  const aiQuickError = useForemanUiStore((state) => state.aiQuickError);
+  const setAiQuickError = useForemanUiStore((state) => state.setAiQuickError);
+  const aiQuickNotice = useForemanUiStore((state) => state.aiQuickNotice);
+  const setAiQuickNotice = useForemanUiStore((state) => state.setAiQuickNotice);
+  const aiQuickPreview = useForemanUiStore((state) => state.aiQuickPreview);
+  const setAiQuickPreview = useForemanUiStore((state) => state.setAiQuickPreview);
+  const headerAttention = useForemanUiStore((state) => state.headerAttention);
+  const setHeaderAttention = useForemanUiStore((state) => state.setHeaderAttention);
   const headerRequirementsRef = useRef<ForemanHeaderRequirementResult>({
     missing: [],
     focusKey: null,
@@ -236,7 +253,7 @@ export default function ForemanScreen() {
 
   const clearHeaderAttention = useCallback(() => {
     setHeaderAttention(null);
-  }, []);
+  }, [setHeaderAttention]);
 
   const activateHeaderAttention = useCallback((messageOverride?: string) => {
     const current = headerRequirementsRef.current;
@@ -254,7 +271,7 @@ export default function ForemanScreen() {
     }
 
     return true;
-  }, []);
+  }, [setHeaderAttention, setIsFioConfirmVisible]);
 
   const ensureHeaderReady = useCallback(() => {
     const current = headerRequirementsRef.current;
@@ -306,7 +323,8 @@ export default function ForemanScreen() {
     return true;
   }, [ensureEditableContext, items.length]);
 
-  const [selectedObjectName, setSelectedObjectName] = useState('');
+  const selectedObjectName = useForemanUiStore((state) => state.selectedObjectName);
+  const setSelectedObjectName = useForemanUiStore((state) => state.setSelectedObjectName);
   const displayObjectName = selectedObjectName || getObjectDisplayName(objectType, objAllOptions);
   const objectName = displayObjectName; // Alias for backward compatibility
 
@@ -424,7 +442,7 @@ export default function ForemanScreen() {
     const opt = objAllOptions.find(o => o.code === code);
     setSelectedObjectName(opt?.name || ''); // Immediate sync for CCE
     applyObjectTypeSelection(code, opt?.name ?? null);
-  }, [applyObjectTypeSelection, objAllOptions]);
+  }, [applyObjectTypeSelection, objAllOptions, setSelectedObjectName]);
 
   const handleLevelChange = useCallback((code: string) => {
     const opt = formUi.locator.options.find(o => o.code === code);
@@ -478,7 +496,7 @@ export default function ForemanScreen() {
       focusKey: remaining[0]?.focusKey ?? null,
       message: headerRequirements.message,
     }));
-  }, [headerAttention, headerRequirements]);
+  }, [headerAttention, headerRequirements, setHeaderAttention]);
 
   const handleHistorySelect = useCallback((reqId: string) => { openRequestById(reqId); closeHistory(); }, [openRequestById, closeHistory]);
 
@@ -525,7 +543,7 @@ export default function ForemanScreen() {
       }
     })();
     return () => { active = false; };
-  }, [setForeman]);
+  }, [setForeman, setIsFioConfirmVisible]);
 
   const handleFioConfirm = useCallback(async (fio: string) => {
     setIsFioLoading(true);
@@ -540,7 +558,7 @@ export default function ForemanScreen() {
       setForemanHistory(await loadForemanHistory());
       setIsFioConfirmVisible(false);
     } finally { setIsFioLoading(false); }
-  }, [setForeman]);
+  }, [setForeman, setIsFioConfirmVisible, setIsFioLoading]);
 
   const onPdf = useCallback(async () => {
     if (!ensureHeaderReady()) return;
@@ -599,7 +617,7 @@ export default function ForemanScreen() {
     } finally {
       setDraftDeleteBusy(false);
     }
-  }, [alertError, discardWholeDraft]);
+  }, [alertError, discardWholeDraft, setDraftDeleteBusy, setDraftOpen]);
 
   const handleSendDraftFromSheet = useCallback(async () => {
     setDraftSendBusy(true);
@@ -611,20 +629,20 @@ export default function ForemanScreen() {
     } finally {
       setDraftSendBusy(false);
     }
-  }, [submitToDirector, alertError]);
+  }, [submitToDirector, alertError, setDraftOpen, setDraftSendBusy]);
 
   const handleCalcPress = useCallback(() => {
     if (busy) return;
     if (!ensureEditableContext()) return;
     setWorkTypePickerVisible(true);
-  }, [busy, ensureEditableContext]);
+  }, [busy, ensureEditableContext, setWorkTypePickerVisible]);
 
   const handleAiQuickTextChange = useCallback((value: string) => {
     setAiQuickText(value);
     setAiQuickError("");
     setAiQuickNotice("");
     setAiQuickPreview([]);
-  }, []);
+  }, [setAiQuickError, setAiQuickNotice, setAiQuickPreview, setAiQuickText]);
 
   const handleAiQuickSubmit = useCallback(async () => {
     const promptText = aiQuickText.trim();
@@ -720,7 +738,13 @@ export default function ForemanScreen() {
     labelForRequest,
     requestId,
     requestDetails,
+    setAiQuickError,
+    setAiQuickLoading,
+    setAiQuickNotice,
+    setAiQuickPreview,
+    setAiQuickText,
     setAiQuickVisible,
+    setDraftOpen,
     showHint,
     scopeNote,
     syncLocalDraftNow,
@@ -729,7 +753,7 @@ export default function ForemanScreen() {
   const openDraftFromCatalog = useCallback(() => {
     setCatalogVisible(false);
     setDraftOpen(true);
-  }, []);
+  }, [setCatalogVisible, setDraftOpen]);
 
   return (
     <KeyboardAvoidingView

@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState, useMemo } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { Platform, Animated } from "react-native";
 import { supabase } from "../../lib/supabaseClient";
 import { useDirectorData } from "./director.data";
@@ -14,10 +14,7 @@ import { useGlobalBusy } from "../../ui/GlobalBusy";
 import { fmtDateOnly } from "./director.helpers";
 import { listAccountantInbox } from "../../lib/api/accountant";
 import {
-    type Tab,
-    type DirTopTab,
     type FinPage,
-    type SheetKind,
     type Group,
     type ProposalItem,
     type ProposalAttachmentRow,
@@ -38,6 +35,7 @@ import {
     type FinSupplierPanelState,
 } from "./director.finance";
 import { useIsFocused } from "@react-navigation/native";
+import { useDirectorUiStore } from "./directorUi.store";
 
 const warnDirectorFinance = (scope: "fetchFinSpendRows" | "fetchFinance" | "fetchFinanceSummary", error: unknown) => {
     if (__DEV__) {
@@ -51,21 +49,28 @@ export function useDirectorScreenController() {
     const isScreenFocused = useIsFocused();
 
     // Tabs
-    const [tab, setTab] = useState<Tab>('foreman');
-    const [dirTab, setDirTab] = useState<DirTopTab>("Заявки");
+    const tab = useDirectorUiStore((state) => state.requestTab);
+    const setTab = useDirectorUiStore((state) => state.setRequestTab);
+    const dirTab = useDirectorUiStore((state) => state.dirTab);
+    const setDirTab = useDirectorUiStore((state) => state.setDirTab);
 
     // Finance State
-    const [finOpen, setFinOpen] = useState(false);
-    const [finPage, setFinPage] = useState<FinPage>("home");
+    const finOpen = useDirectorUiStore((state) => state.finOpen);
+    const setFinOpen = useDirectorUiStore((state) => state.setFinOpen);
+    const finPage = useDirectorUiStore((state) => state.finPage);
+    const setFinPage = useDirectorUiStore((state) => state.setFinPage);
     const finStackRef = useRef<FinPage[]>(["home"]);
     const [finSupplier, setFinSupplier] = useState<FinSupplierPanelState | null>(null);
     const [finLoading, setFinLoading] = useState(false);
     const [finRows, setFinRows] = useState<FinanceRow[]>([]);
     const [finSpendRows, setFinSpendRows] = useState<FinSpendRow[]>([]);
     const [finRep, setFinRep] = useState(() => computeFinanceRep([], { dueDaysDefault: 7, criticalDays: 14 }));
-    const [finPeriodOpen, setFinPeriodOpen] = useState(false);
-    const [finFrom, setFinFrom] = useState<string | null>(null);
-    const [finTo, setFinTo] = useState<string | null>(null);
+    const finPeriodOpen = useDirectorUiStore((state) => state.finPeriodOpen);
+    const setFinPeriodOpen = useDirectorUiStore((state) => state.setFinPeriodOpen);
+    const finFrom = useDirectorUiStore((state) => state.finFrom);
+    const setFinFrom = useDirectorUiStore((state) => state.setFinFrom);
+    const finTo = useDirectorUiStore((state) => state.finTo);
+    const setFinTo = useDirectorUiStore((state) => state.setFinTo);
     const [finKindName, setFinKindName] = useState<string>("");
     const [finKindList, setFinKindList] = useState<FinKindSupplierRow[]>([]);
     const FIN_DUE_DAYS_DEFAULT = 7;
@@ -167,17 +172,16 @@ export function useDirectorScreenController() {
     const pushFin = useCallback((p: FinPage) => {
         finStackRef.current = [...finStackRef.current, p];
         setFinPage(p);
-    }, []);
+    }, [setFinPage]);
 
     const popFin = useCallback(() => {
         const s = finStackRef.current.slice(0, -1);
         finStackRef.current = s.length ? s : ["home"];
         setFinPage(finStackRef.current[finStackRef.current.length - 1] || "home");
-    }, []);
+    }, [setFinPage]);
 
     const closeFinance = useCallback(() => {
-        setFinOpen(false);
-        setFinPage("home");
+        useDirectorUiStore.getState().closeFinanceUi();
         finStackRef.current = ["home"];
         setFinSupplier(null);
         setFinKindName("");
@@ -193,7 +197,7 @@ export function useDirectorScreenController() {
             finStackRef.current = ["home", page];
             setFinPage(page);
         }
-    }, []);
+    }, [setFinOpen, setFinPage]);
 
     // Reports
     const reports = useDirectorReports({ fmtDateOnly });
@@ -211,9 +215,12 @@ export function useDirectorScreenController() {
     const [propAttByProp, setPropAttByProp] = useState<Record<string, ProposalAttachmentRow[]>>({});
     const [propAttBusyByProp, setPropAttBusyByProp] = useState<Record<string, boolean>>({});
     const [propAttErrByProp, setPropAttErrByProp] = useState<Record<string, string>>({});
-    const [sheetKind, setSheetKind] = useState<SheetKind>('none');
-    const [sheetRequest, setSheetRequest] = useState<Group | null>(null);
-    const [sheetProposalId, setSheetProposalId] = useState<string | null>(null);
+    const sheetKind = useDirectorUiStore((state) => state.sheetKind);
+    const setSheetKind = useDirectorUiStore((state) => state.setSheetKind);
+    const sheetRequest = useDirectorUiStore((state) => state.sheetRequest);
+    const setSheetRequest = useDirectorUiStore((state) => state.setSheetRequest);
+    const sheetProposalId = useDirectorUiStore((state) => state.sheetProposalId);
+    const setSheetProposalId = useDirectorUiStore((state) => state.setSheetProposalId);
     const [itemsByProp, setItemsByProp] = useState<Record<string, ProposalItem[]>>({});
     const [loadedByProp, setLoadedByProp] = useState<Record<string, boolean>>({});
     const [loadingPropId, setLoadingPropId] = useState<string | null>(null);
@@ -229,22 +236,20 @@ export function useDirectorScreenController() {
 
     // Actions
     const closeSheet = useCallback(() => {
-        setSheetKind('none');
-        setSheetRequest(null);
-        setSheetProposalId(null);
+        useDirectorUiStore.getState().closeSheetUi();
     }, []);
 
     const openRequestSheet = useCallback((g: Group) => {
         setSheetRequest(g);
         setSheetProposalId(null);
         setSheetKind('request');
-    }, []);
+    }, [setSheetKind, setSheetProposalId, setSheetRequest]);
 
     const openProposalSheet = useCallback((pid: string) => {
         setSheetProposalId(pid);
         setSheetRequest(null);
         setSheetKind('proposal');
-    }, []);
+    }, [setSheetKind, setSheetProposalId, setSheetRequest]);
 
     const requestActions = useDirectorRequestActions({
         busy, supabase, screenLock, reqDeleteId, reqSendId,

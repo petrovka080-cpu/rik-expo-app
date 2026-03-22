@@ -291,6 +291,8 @@ export function resolveStatusInfo(raw: string | null | undefined, styles: Record
       ? "draft"
       : key === "на утверждении"
         ? "pending"
+        : key === "отменена" || key === "отменено" || key === "cancelled" || key === "canceled"
+          ? "cancelled"
         : key === "утверждена" || key === "утверждено" || key === "approved"
           ? "approved"
           : key === "отклонена" || key === "отклонено" || key === "rejected"

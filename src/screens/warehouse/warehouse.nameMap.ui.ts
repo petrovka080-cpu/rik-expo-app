@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { JOB_QUEUE_ENABLED, enqueueSubmitJob } from "../../lib/infra/jobQueue";
+import { isUuid } from "./warehouse.utils";
 
 type UnknownRow = Record<string, unknown>;
 
@@ -91,10 +92,12 @@ export async function scheduleWarehouseNameMapRefresh(params: {
   if (refreshMode !== "full" && !codeList.length) return "noop";
 
   if (JOB_QUEUE_ENABLED) {
+    const entityIdCandidate =
+      refreshMode === "full" ? null : String(codeList[0] ?? "").trim() || null;
     await enqueueSubmitJob({
       jobType: "warehouse_refresh_name_map_ui",
       entityType: "warehouse_name_map_ui",
-      entityId: refreshMode === "full" ? "full" : codeList[0] ?? null,
+      entityId: entityIdCandidate && isUuid(entityIdCandidate) ? entityIdCandidate : null,
       entityKey:
         refreshMode === "full"
           ? "warehouse_name_map_ui:full"

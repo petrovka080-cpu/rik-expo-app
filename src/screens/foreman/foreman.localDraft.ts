@@ -7,18 +7,21 @@ import {
   requestCreateDraft,
   requestItemCancel,
   requestItemUpdateQty,
-  requestSubmit,
   setLocalDraftId,
   updateRequestMeta,
   type ReqItemRow,
 } from "../../lib/catalog_api";
+import { submitRequestToDirector } from "../../lib/api/request.repository";
 import {
   isRequestDraftSyncRpcEnabled,
-  syncRequestDraftViaRpc,
   toRequestDraftSyncFallbackReason,
 } from "../../lib/api/requestDraftSync.service";
 import { supabase } from "../../lib/supabaseClient";
 import { requestItemAddOrIncAndPatchMeta } from "./foreman.helpers";
+import {
+  syncForemanAtomicDraft,
+  type ForemanDraftSyncMutationKind,
+} from "./foreman.draftSync.repository";
 import type { RequestDraftMeta } from "./foreman.types";
 
 const LOCAL_DRAFT_STORAGE_KEY = "foreman_materials_local_draft_v1";
@@ -551,6 +554,9 @@ export function markForemanLocalDraftSubmitRequested(
 export async function syncForemanLocalDraftSnapshot(params: {
   snapshot: ForemanLocalDraftSnapshot;
   headerMeta: RequestDraftMeta;
+  mutationKind?: ForemanDraftSyncMutationKind;
+  localBeforeCount?: number | null;
+  localAfterCount?: number | null;
 }): Promise<ForemanLocalDraftSyncResult> {
   if (!isRequestDraftSyncRpcEnabled()) {
     return syncForemanLocalDraftSnapshotLegacy(params);
@@ -571,7 +577,9 @@ export async function syncForemanLocalDraftSnapshot(params: {
   }
 
   try {
-    const rpc = await syncRequestDraftViaRpc({
+    const rpc = await syncForemanAtomicDraft({
+      mutationKind: params.mutationKind ?? (next.submitRequested ? "submit" : "background_sync"),
+      sourcePath: "foreman_materials",
       requestId: next.requestId,
       meta: params.headerMeta,
       submit: next.submitRequested,
@@ -586,6 +594,8 @@ export async function syncForemanLocalDraftSnapshot(params: {
         name_human: item.name_human,
         uom: item.uom,
       })),
+      beforeLineCount: params.localBeforeCount ?? null,
+      afterLocalSnapshotLineCount: params.localAfterCount ?? localItems.length,
     });
 
     next.requestId = trim(rpc.request.id);
@@ -715,7 +725,11 @@ async function syncForemanLocalDraftSnapshotLegacy(params: {
   next.pendingDeletes = [];
 
   if (next.submitRequested) {
-    const submitted = await requestSubmit(next.requestId);
+    const submitted = await submitRequestToDirector({
+      requestId: next.requestId,
+      sourcePath: "foreman.localDraft.legacySubmit",
+      draftScopeKey: next.requestId,
+    });
     clearLocalDraftId();
     return {
       snapshot: null,

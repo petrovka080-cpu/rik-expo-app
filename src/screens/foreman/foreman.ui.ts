@@ -28,6 +28,7 @@ export const REQUEST_STATUS_STYLES: Record<string, { label: string; bg: string; 
   pending: { label: "На утверждении", bg: "#FEF3C7", fg: "#92400E" },
   approved: { label: "Утверждена", bg: "#DCFCE7", fg: "#166534" },
   rejected: { label: "Отклонена", bg: "#FEE2E2", fg: "#991B1B" },
+  cancelled: { label: "\u041e\u0442\u043c\u0435\u043d\u0435\u043d\u0430", bg: "#E5E7EB", fg: "#374151" },
 };
 
 export const FOREMAN_TEXT = {

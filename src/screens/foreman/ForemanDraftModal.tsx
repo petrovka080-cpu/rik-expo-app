@@ -1,5 +1,6 @@
 import React from "react";
-import { Alert, FlatList, Platform, Pressable, Text, View } from "react-native";
+import { Alert, Platform, Pressable, Text, View } from "react-native";
+import { FlashList } from "@shopify/flash-list";
 import RNModal from "react-native-modal";
 import type { ReqItemRow } from "../../lib/catalog_api";
 import CloseIconButton from "../../ui/CloseIconButton";
@@ -97,7 +98,7 @@ export default function ForemanDraftModal(p: Props) {
         </View>
 
         <View style={{ flex: 1, minHeight: 0 }}>
-          <FlatList
+          <FlashList
             data={p.items}
             keyExtractor={(it, idx) => (it?.id ? `ri:${String(it.id)}` : `ri:${idx}`)}
             renderItem={p.renderReqItem}

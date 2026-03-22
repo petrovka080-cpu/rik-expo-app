@@ -1,12 +1,15 @@
+import type { SupabaseClient } from "@supabase/supabase-js";
 import type React from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { listDirectorProposalsPending } from "../../lib/catalog_api";
+import type { Database } from "../../lib/database.types";
 import { REQUEST_PENDING_EN, REQUEST_PENDING_STATUS } from "../../lib/api/requests.status";
 import { shortId } from "./director.helpers";
+import { fetchDirectorPendingRows } from "./director.repository";
 import type { PendingRow, ProposalHead, RequestMeta } from "./director.types";
 
 type Deps = {
-  supabase: any;
+  supabase: SupabaseClient<Database>;
 };
 
 const errText = (error: unknown): string => {
@@ -34,7 +37,7 @@ const warnDirectorData = (
   console.warn(`[director] ${scope}:`, message);
 };
 
-const normalizeDirectorPendingRows = (rows: Array<Record<string, unknown>>): PendingRow[] =>
+const normalizeDirectorPendingRows = (rows: Record<string, unknown>[]): PendingRow[] =>
   rows.map((r, idx: number) => ({
     id: idx,
     request_id: String(r.request_id ?? ""),
@@ -127,23 +130,22 @@ export function useDirectorData({ supabase }: Deps) {
     if (!need.length) return;
 
     try {
-      let q = await supabase
+      const primaryQuery = await supabase
         .from("requests")
         .select("id, object_name, object, level_code, system_code, zone_code, site_address_snapshot, note, comment")
         .in("id", need);
-
-      // Fallback for installations where some optional columns are absent.
-      if (q.error) {
-        q = await supabase
-          .from("requests")
-          .select("id, object_name, level_code, system_code, zone_code, note")
-          .in("id", need);
-      }
+      const fallbackQuery = primaryQuery.error
+        ? await supabase
+            .from("requests")
+            .select("id, object_name, level_code, system_code, zone_code, note")
+            .in("id", need)
+        : null;
+      const q = fallbackQuery ?? primaryQuery;
 
       if (q.error) throw q.error;
 
       const next: Record<string, RequestMeta> = {};
-      const rowsTyped = (q.data || []) as Array<{
+      const rowsTyped = (q.data || []) as {
         id?: string | number | null;
         object_name?: string | null;
         object?: string | null;
@@ -153,7 +155,7 @@ export function useDirectorData({ supabase }: Deps) {
         site_address_snapshot?: string | null;
         note?: string | null;
         comment?: string | null;
-      }>;
+      }[];
       rowsTyped.forEach((r) => {
         const id = String(r.id || "").trim();
         if (!id) return;
@@ -193,7 +195,7 @@ export function useDirectorData({ supabase }: Deps) {
 
       if (q.error) throw q.error;
 
-      const rowsTyped = (q.data || []) as Array<{ request_id?: string | number | null }>;
+      const rowsTyped = (q.data || []) as { request_id?: string | number | null }[];
       const reqIds = Array.from(
         new Set(rowsTyped.map((r) => String(r.request_id || "").trim()).filter(Boolean)),
       ) as string[];
@@ -214,7 +216,7 @@ export function useDirectorData({ supabase }: Deps) {
     return `#${shortId(rid)}`;
   }, [displayNoByReq]);
 
-  const preloadDisplayNos = useCallback(async (reqIds: Array<number | string>) => {
+  const preloadDisplayNos = useCallback(async (reqIds: (number | string)[]) => {
     const needed = Array.from(
       new Set(
         reqIds
@@ -253,12 +255,12 @@ export function useDirectorData({ supabase }: Deps) {
       const mapDn: Record<string, string> = {};
       const mapSub: Record<string, string> = {};
 
-      const rowsTyped = (q.data ?? []) as Array<{
+      const rowsTyped = (q.data ?? []) as {
         id?: string | number | null;
         request_no?: string | null;
         display_no?: string | null;
         submitted_at?: string | null;
-      }>;
+      }[];
       for (const r of rowsTyped) {
         const id = String(r.id ?? "").trim();
         if (!id) continue;
@@ -290,7 +292,7 @@ export function useDirectorData({ supabase }: Deps) {
       .not("submitted_at", "is", null);
     if (reqs.error) throw reqs.error;
 
-    const reqRows = ((reqs.data ?? []) as Array<{ id?: string | number | null; submitted_at?: string | null; status?: string | null }>)
+    const reqRows = ((reqs.data ?? []) as { id?: string | number | null; submitted_at?: string | null; status?: string | null }[])
       .map((r) => ({
         id: String(r.id ?? "").trim(),
         submitted_at: r.submitted_at ? String(r.submitted_at) : null,
@@ -315,7 +317,7 @@ export function useDirectorData({ supabase }: Deps) {
       .in("status", Array.from(DIRECTOR_PENDING_ITEM_STATUSES));
     if (items.error) throw items.error;
 
-    const normalized = normalizeDirectorPendingRows((items.data ?? []) as Array<Record<string, unknown>>);
+    const normalized = normalizeDirectorPendingRows((items.data ?? []) as Record<string, unknown>[]);
     normalized.sort((a, b) => {
       const aRank = reqRank.get(String(a.request_id ?? "").trim()) ?? Number.MAX_SAFE_INTEGER;
       const bRank = reqRank.get(String(b.request_id ?? "").trim()) ?? Number.MAX_SAFE_INTEGER;
@@ -344,39 +346,13 @@ export function useDirectorData({ supabase }: Deps) {
     setLoadingRows(true);
     try {
       let normalized: PendingRow[] = [];
-      let shouldUseFallback = false;
 
       try {
-        const { data, error } = await supabase.rpc("list_director_items_stable");
-        if (error) throw error;
-        normalized = normalizeDirectorPendingRows((data ?? []) as Array<Record<string, unknown>>);
-        logDirectorFetchFilters({
-          sourcePath: "director.data.fetchRows",
-          primaryPath: "list_director_items_stable",
-          primaryRowCount: normalized.length,
-          expectedRequestStatuses: Array.from(DIRECTOR_EXPECTED_REQUEST_STATUSES),
-        });
+        const result = await fetchDirectorPendingRows({ supabase });
+        normalized = result.rows;
       } catch (e) {
-        shouldUseFallback = true;
         warnDirectorData("list_director_items_stable", e, "error");
-      }
-
-      if (!shouldUseFallback && normalized.length === 0) {
-        shouldUseFallback = true;
-      }
-
-      if (shouldUseFallback) {
-        try {
-          const fallbackRows = await loadDirectorRowsFallback();
-          normalized = fallbackRows;
-          if (__DEV__) {
-            const reason = normalized.length > 0 ? "bootstrap_restore" : "bootstrap_empty";
-            console.info(`[director] list_director_items_stable_fallback: reason=${reason} rows=${normalized.length}`);
-          }
-        } catch (e) {
-          if (!normalized.length) throw e;
-          warnDirectorData("list_director_items_stable_fallback", e, "warn");
-        }
+        normalized = await loadDirectorRowsFallback();
       }
 
       lastNonEmptyRows.current = normalized;
@@ -483,7 +459,7 @@ export function useDirectorData({ supabase }: Deps) {
     } finally {
       setLoadingProps(false);
     }
-  }, [supabase]);
+  }, [propsHeads.length, supabase]);
 
   return {
     rows,

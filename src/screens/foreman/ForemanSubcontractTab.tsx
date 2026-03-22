@@ -14,7 +14,6 @@ import CalcModal from "../../components/foreman/CalcModal";
 import {
   rikQuickSearch,
   requestCreateDraft,
-  requestSubmit,
   updateRequestMeta,
   listRequestItems,
   addRequestItemsFromRikBatch,
@@ -22,6 +21,7 @@ import {
   type ReqItemRow,
   type RequestMetaPatch
 } from "../../lib/catalog_api";
+import { submitRequestToDirector } from "../../lib/api/request.repository";
 import {
   isForemanAtomicDraftSyncEnabled,
   mapReqItemsToDraftSyncLines,
@@ -61,6 +61,10 @@ import {
 } from "./foreman.requests";
 import { readForemanProfileName } from "./foreman.dicts.repo";
 import { useForemanHistory } from "./hooks/useForemanHistory";
+import {
+  useForemanSubcontractUiStore,
+  type SubcontractFlowScreen,
+} from "./foremanSubcontractUi.store";
 
 type Props = {
   contentTopPad: number;
@@ -151,9 +155,6 @@ const UOM_OPTIONS = [
 ];
 
 void UOM_OPTIONS;
-
-type DateTarget = "contractDate" | "dateStart" | "dateEnd" | null;
-type SubcontractFlowScreen = "details" | "draft" | "catalog" | "workType" | "calc";
 
 const toNum = (v: string) => {
   const n = Number(String(v || "").trim().replace(",", "."));
@@ -326,13 +327,20 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
   const [historyLoading, setHistoryLoading] = useState(false);
   const [history, setHistory] = useState<Subcontract[]>([]);
 
-  const [historyOpen, setHistoryOpen] = useState(false);
-  const [subcontractFlowOpen, setSubcontractFlowOpen] = useState(false);
-  const [subcontractFlowScreen, setSubcontractFlowScreen] = useState<SubcontractFlowScreen>("details");
-  const [selectedWorkType, setSelectedWorkType] = useState<{ code: string; name: string } | null>(null);
+  const historyOpen = useForemanSubcontractUiStore((state) => state.historyOpen);
+  const setHistoryOpen = useForemanSubcontractUiStore((state) => state.setHistoryOpen);
+  const subcontractFlowOpen = useForemanSubcontractUiStore((state) => state.subcontractFlowOpen);
+  const setSubcontractFlowOpen = useForemanSubcontractUiStore((state) => state.setSubcontractFlowOpen);
+  const subcontractFlowScreen = useForemanSubcontractUiStore((state) => state.subcontractFlowScreen);
+  const setSubcontractFlowScreen = useForemanSubcontractUiStore((state) => state.setSubcontractFlowScreen);
+  const selectedWorkType = useForemanSubcontractUiStore((state) => state.selectedWorkType);
+  const setSelectedWorkType = useForemanSubcontractUiStore((state) => state.setSelectedWorkType);
   const [draftItems, setDraftItems] = useState<ReqItemRow[]>([]);
-  const [dateTarget, setDateTarget] = useState<DateTarget>(null);
-  const [templateContract, setTemplateContract] = useState<Subcontract | null>(null);
+  const dateTarget = useForemanSubcontractUiStore((state) => state.dateTarget);
+  const setDateTarget = useForemanSubcontractUiStore((state) => state.setDateTarget);
+  const templateContract = useForemanSubcontractUiStore((state) => state.templateContract);
+  const setTemplateContract = useForemanSubcontractUiStore((state) => state.setTemplateContract);
+  const closeSubcontractFlowUi = useForemanSubcontractUiStore((state) => state.closeSubcontractFlow);
   const [requestId, setRequestId] = useState("");
   const activeDraftScopeKeyRef = useRef("");
 
@@ -507,13 +515,11 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
   const openSubcontractFlow = useCallback((screen: SubcontractFlowScreen = "details") => {
     setSubcontractFlowScreen(screen);
     setSubcontractFlowOpen(true);
-  }, []);
+  }, [setSubcontractFlowOpen, setSubcontractFlowScreen]);
 
   const closeSubcontractFlow = useCallback(() => {
-    setSubcontractFlowOpen(false);
-    setSubcontractFlowScreen("details");
-    setSelectedWorkType(null);
-  }, []);
+    closeSubcontractFlowUi();
+  }, [closeSubcontractFlowUi]);
 
   useEffect(() => {
     const qty = toNum(form.qtyPlanned);
@@ -1008,7 +1014,11 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
         throw new Error("Текущая заявка привязана к другому подряду.");
       }
 
-      await requestSubmit(requestId);
+      await submitRequestToDirector({
+        requestId,
+        sourcePath: "foreman.subcontract.legacySubmit",
+        draftScopeKey,
+      });
       Alert.alert("Успешно", "Заявка отправлена директору.");
       await loadHistory(userId);
       setRequestId("");
@@ -1022,7 +1032,7 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
     } finally {
       setSending(false);
     }
-  }, [closeSubcontractFlow, ensureTemplateContractStrict, loadHistory, requestId, saveDraftAtomic, userId, draftItems]);
+  }, [closeSubcontractFlow, draftItems, draftScopeKey, ensureTemplateContractStrict, loadHistory, requestId, saveDraftAtomic, setTemplateContract, userId]);
 
   const onPdf = useCallback(async () => {
     const rid = String(requestId || "").trim();
@@ -1113,7 +1123,7 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
     setTemplateContract(null);
     closeSubcontractFlow();
     activeDraftScopeKeyRef.current = "";
-  }, [requestId, draftItems, closeSubcontractFlow, saveDraftAtomic]);
+  }, [requestId, draftItems, closeSubcontractFlow, saveDraftAtomic, setTemplateContract]);
 
   const openFromHistory = useCallback((it: Subcontract) => {
     // History row is a subcontract template, not a material request draft.
@@ -1132,7 +1142,7 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
     activeDraftScopeKeyRef.current = "";
     openSubcontractFlow("details");
     setHistoryOpen(false);
-  }, [dicts.lvlOptions, dicts.objOptions, dicts.sysOptions, openSubcontractFlow]);
+  }, [dicts.lvlOptions, dicts.objOptions, dicts.sysOptions, openSubcontractFlow, setHistoryOpen, setTemplateContract]);
 
   void openFromHistory;
 
@@ -1148,7 +1158,7 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
     setRequestId(""); // Force new draft on first item
     setDisplayNo("");
     openSubcontractFlow("details");
-  }, [dicts.lvlOptions, dicts.objOptions, dicts.sysOptions, openSubcontractFlow]);
+  }, [dicts.lvlOptions, dicts.objOptions, dicts.sysOptions, openSubcontractFlow, setTemplateContract]);
 
   return (
     <View style={{ flex: 1 }}>
@@ -1187,21 +1197,9 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
             onChangeLevelCode={(value) => setField("levelCode", value)}
             onChangeSystemCode={(value) => setField("systemCode", value)}
             onChangeZoneText={(value) => setField("zoneText", value)}
-            onOpenCatalog={() => {
-              requestAnimationFrame(() => {
-                setTimeout(() => setSubcontractFlowScreen("catalog"), 50);
-              });
-            }}
-            onOpenCalc={() => {
-              requestAnimationFrame(() => {
-                setTimeout(() => setSubcontractFlowScreen("workType"), 50);
-              });
-            }}
-            onOpenDraft={() => {
-              requestAnimationFrame(() => {
-                setTimeout(() => setSubcontractFlowScreen("draft"), 50);
-              });
-            }}
+            onOpenCatalog={() => setSubcontractFlowScreen("catalog")}
+            onOpenCalc={() => setSubcontractFlowScreen("workType")}
+            onOpenDraft={() => setSubcontractFlowScreen("draft")}
             displayNo={displayNo}
           />
         </View>

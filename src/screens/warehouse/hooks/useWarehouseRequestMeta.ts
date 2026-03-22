@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { isUuid } from "../warehouse.utils";
 
 type WarehouseRequestMeta = {
   note: string | null;
@@ -25,10 +26,13 @@ export async function fetchWarehouseRequestMeta(
   supabase: SupabaseClient,
   requestId: string,
 ): Promise<WarehouseRequestMeta | null> {
+  const safeRequestId = String(requestId ?? "").trim();
+  if (!isUuid(safeRequestId)) return null;
+
   const { data, error } = await supabase
     .from("requests")
     .select("*")
-    .eq("id", requestId)
+    .eq("id", safeRequestId)
     .maybeSingle();
 
   if (error || !data) return null;

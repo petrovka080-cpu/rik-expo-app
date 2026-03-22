@@ -79,7 +79,7 @@ type RequestItemsByRequestArgs = Database["public"]["Functions"]["request_items_
 type RequestSubmitArgs = Database["public"]["Functions"]["request_submit"]["Args"];
 type RequestStatusRecalcArgsCompat = { p_request_id: number | string };
 type RequestIdLookupRow = Pick<RequestsTable["Row"], "id">;
-type RequestSubmitPath =
+export type RequestSubmitPath =
   | "post_draft_short_circuit"
   | "rpc_submit"
   | "head_update_fallback";
@@ -100,7 +100,7 @@ type RequestSubmitCompletionResult = {
   request_items_pending_synced: boolean;
   record_override: RequestRecord | null;
 };
-type RequestSubmitMutationResult = {
+export type RequestSubmitMutationResult = {
   request_id: string;
   path: RequestSubmitPath;
   has_post_draft_items: boolean;
@@ -631,11 +631,15 @@ function mapRequestSubmitMutationResult(result: RequestSubmitMutationResult): Re
   return result.record;
 }
 
-export async function requestSubmit(requestId: number | string): Promise<RequestRecord | null> {
+export async function requestSubmitMutation(
+  requestId: number | string,
+): Promise<RequestSubmitMutationResult> {
   const preconditions = await resolveRequestSubmitPreconditions(requestId);
   const primary = await runRequestSubmitPrimaryStage(preconditions);
   const completion = await completeRequestSubmitStage(preconditions, primary);
-  return mapRequestSubmitMutationResult(
-    finalizeRequestSubmitMutationResult(preconditions, primary, completion),
-  );
+  return finalizeRequestSubmitMutationResult(preconditions, primary, completion);
+}
+
+export async function requestSubmit(requestId: number | string): Promise<RequestRecord | null> {
+  return mapRequestSubmitMutationResult(await requestSubmitMutation(requestId));
 }

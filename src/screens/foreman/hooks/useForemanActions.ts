@@ -2,6 +2,7 @@ import { useCallback, type Dispatch, type SetStateAction } from "react";
 import { Alert, Platform } from "react-native";
 
 import type { ReqItemRow } from "../../../lib/catalog_api";
+import type { RequestRecord } from "../../../lib/api/types";
 import {
   aggCalcRows,
   aggPickedRows,
@@ -36,7 +37,7 @@ type UseForemanActionsProps = {
   qtyDrafts: Record<string, string>;
   ensureEditableContext: (opts?: { draftFirst?: boolean; draftMessage?: string }) => boolean;
   ensureCanSubmitToDirector: () => boolean;
-  applySubmittedRequestState: (rid: string, submitted: any) => void;
+  applySubmittedRequestState: (rid: string, submitted: RequestRecord | null) => void;
   finalizeAfterSubmit: () => Promise<void>;
   showHint: (title: string, message: string) => void;
   setBusy: (busy: boolean) => void;
@@ -248,7 +249,9 @@ export function useForemanActions({
         result && typeof result === "object" && "requestId" in result ? result.requestId ?? requestId : requestId,
       ).trim();
       const submitted =
-        result && typeof result === "object" && "submitted" in result ? result.submitted ?? null : null;
+        result && typeof result === "object" && "submitted" in result
+          ? (result.submitted as RequestRecord | null | undefined) ?? null
+          : null;
       if (!rid || !submitted) {
         throw new Error("Не удалось синхронизировать черновик перед отправкой.");
       }

@@ -15,6 +15,11 @@ import type {
   RepPayload,
   RepTab,
 } from "../director.types";
+import {
+  useDirectorReportsUiStore,
+  type DirectorObservedBranchMeta,
+  type DirectorReportsBranchStage,
+} from "../directorReports.store";
 
 type Deps = {
   fmtDateOnly: (iso?: string | null) => string;
@@ -30,16 +35,6 @@ type ReportOptionsState = {
   objects: string[];
   objectIdByName: Record<string, string | null>;
 };
-
-type ReportBranchStage = "options" | "report" | "discipline";
-
-type ObservedBranchMeta = DirectorReportFetchMeta & {
-  observedAt: number;
-  scopeKey: string;
-  fromCache: boolean;
-};
-
-type ReportsBranchMetaState = Record<ReportBranchStage, ObservedBranchMeta | null>;
 
 const REPORTS_CACHE_TTL_MS = 5 * 60 * 1000;
 const REPORTS_CACHE_MAX = 40;
@@ -212,28 +207,30 @@ const minusDays = (days: number) => {
   return d;
 };
 
-const branchStateDefaults = (): ReportsBranchMetaState => ({
-  options: null,
-  report: null,
-  discipline: null,
-});
-
 const deriveDisciplineMeta = (meta: DirectorReportFetchMeta | null): DirectorReportFetchMeta | null =>
   meta ? { ...meta, stage: "discipline", pricedStage: meta.pricedStage ?? "priced" } : null;
 
 export function useDirectorReportsController({ fmtDateOnly }: Deps) {
-  const [repTab, setRepTab] = useState<RepTab>("materials");
-  const [repFrom, setRepFrom] = useState<string | null>(null);
-  const [repTo, setRepTo] = useState<string | null>(null);
-  const [repObjectName, setRepObjectName] = useState<string | null>(null);
-  const [repLoading, setRepLoading] = useState(false);
-  const [repDisciplinePriceLoading, setRepDisciplinePriceLoading] = useState(false);
+  const repTab = useDirectorReportsUiStore((state) => state.repTab);
+  const repFrom = useDirectorReportsUiStore((state) => state.repFrom);
+  const repTo = useDirectorReportsUiStore((state) => state.repTo);
+  const repObjectName = useDirectorReportsUiStore((state) => state.repObjectName);
+  const repLoading = useDirectorReportsUiStore((state) => state.repLoading);
+  const repDisciplinePriceLoading = useDirectorReportsUiStore((state) => state.repDisciplinePriceLoading);
+  const repOptLoading = useDirectorReportsUiStore((state) => state.repOptLoading);
+  const repBranchMeta = useDirectorReportsUiStore((state) => state.repBranchMeta);
+  const setRepTabState = useDirectorReportsUiStore((state) => state.setRepTab);
+  const setReportPeriodState = useDirectorReportsUiStore((state) => state.setReportPeriod);
+  const setRepObjectName = useDirectorReportsUiStore((state) => state.setRepObjectName);
+  const setRepLoading = useDirectorReportsUiStore((state) => state.setRepLoading);
+  const setRepDisciplinePriceLoading = useDirectorReportsUiStore((state) => state.setRepDisciplinePriceLoading);
+  const setRepOptLoading = useDirectorReportsUiStore((state) => state.setRepOptLoading);
+  const setRepBranchStage = useDirectorReportsUiStore((state) => state.setRepBranchStage);
+  const resetRepBranchMeta = useDirectorReportsUiStore((state) => state.resetRepBranchMeta);
   const [repData, setRepData] = useState<RepPayload | null>(null);
   const [repDiscipline, setRepDiscipline] = useState<RepDisciplinePayload | null>(null);
-  const [repOptLoading, setRepOptLoading] = useState(false);
   const [repOptObjects, setRepOptObjects] = useState<string[]>([]);
   const [repOptObjectIdByName, setRepOptObjectIdByName] = useState<Record<string, string | null>>({});
-  const [repBranchMeta, setRepBranchMeta] = useState<ReportsBranchMetaState>(branchStateDefaults);
   const reportReqSeqRef = useRef(0);
   const optionsReqSeqRef = useRef(0);
   const disciplineReqSeqRef = useRef(0);
@@ -263,19 +260,19 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
   }, [nowMs]);
 
   const observeBranch = useCallback((
-    stage: ReportBranchStage,
+    stage: DirectorReportsBranchStage,
     scopeKey: string,
     meta: DirectorReportFetchMeta | null,
     opts?: { fromCache?: boolean },
   ) => {
     if (!meta) return;
-    const observed: ObservedBranchMeta = {
+    const observed: DirectorObservedBranchMeta = {
       ...meta,
       observedAt: Date.now(),
       scopeKey,
       fromCache: !!opts?.fromCache,
     };
-    setRepBranchMeta((current) => ({ ...current, [stage]: observed }));
+    setRepBranchStage(stage, observed);
     if (REPORTS_TIMING) {
       const chain = observed.chain.join(" -> ");
       const cacheNote = observed.fromCache ? "controller_cache" : observed.cacheLayer;
@@ -285,7 +282,7 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
         `[director_reports] ${stage}.branch: branch=${observed.branch} chain=${chain || "none"} cache=${cacheNote}${pricedNote}${rowsSourceNote}`,
       );
     }
-  }, []);
+  }, [setRepBranchStage]);
 
   const getCached = useCallback(<T,>(cache: Map<string, CacheEntry<T>>, key: string): CacheEntry<T> | null => {
     const hit = cache.get(key);
@@ -341,7 +338,7 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
     setRepDisciplinePriceLoading(!disciplinePricesReadyRef.current.has(key));
     observeBranch("discipline", key, cached.meta, { fromCache: true });
     return true;
-  }, [getCached, observeBranch]);
+  }, [getCached, observeBranch, setRepDisciplinePriceLoading]);
 
   const commitDisciplineState = useCallback((
     key: string,
@@ -361,7 +358,7 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
     lastDisciplineLoadKeyRef.current = key;
     setRepDisciplinePriceLoading(!disciplinePricesReadyRef.current.has(key));
     observeBranch("discipline", key, meta, { fromCache: opts?.fromCache });
-  }, [observeBranch, setCached]);
+  }, [observeBranch, setCached, setRepDisciplinePriceLoading]);
 
   const commitReportState = useCallback((
     key: string,
@@ -392,7 +389,7 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
       setRepDiscipline(null);
       setRepDisciplinePriceLoading(false);
     }
-  }, [applyCachedDisciplineState, observeBranch, setCached]);
+  }, [applyCachedDisciplineState, observeBranch, setCached, setRepDisciplinePriceLoading]);
 
   const optionsKey = useCallback((from: string, to: string) => `${from}|${to}`, []);
   const reportKey = useCallback(
@@ -534,7 +531,7 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
       lastDisciplineLoadKeyRef.current = scopeLoad.key;
       setRepDisciplinePriceLoading(false);
     }
-  }, [applyCachedDisciplineState, commitDisciplineState, commitOptionsState, commitReportState]);
+  }, [applyCachedDisciplineState, commitDisciplineState, commitOptionsState, commitReportState, setRepDisciplinePriceLoading]);
 
   const fetchReport = useCallback(async (objectNameArg?: string | null, opts?: { background?: boolean }) => {
     const from = repFrom ? String(repFrom).slice(0, 10) : "";
@@ -582,7 +579,7 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
     })();
     inFlightReportRef.current.set(key, task);
     await task;
-  }, [commitReportState, getCached, repFrom, repObjectName, repOptObjectIdByName, repTo, reportKey]);
+  }, [commitReportState, getCached, repFrom, repObjectName, repOptObjectIdByName, repTo, reportKey, setRepLoading]);
 
   const fetchDiscipline = useCallback(async (
     objectNameArg?: string | null,
@@ -699,7 +696,7 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
     })();
     inFlightDisciplineRef.current.set(key, task);
     await task;
-  }, [applyCachedDisciplineState, commitDisciplineState, disciplineKey, getCached, logTiming, nowMs, repFrom, repObjectName, repOptObjectIdByName, repTo]);
+  }, [applyCachedDisciplineState, commitDisciplineState, disciplineKey, getCached, logTiming, nowMs, repFrom, repObjectName, repOptObjectIdByName, repTo, setRepDisciplinePriceLoading, setRepLoading]);
 
   const syncScopeBothModes = useCallback(async (objectName: string | null, modeOverride?: RepTab) => {
     const from = repFrom ? String(repFrom).slice(0, 10) : "";
@@ -712,6 +709,7 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
         ? { objects: repOptObjects, objectIdByName: repOptObjectIdByName }
         : null;
 
+    resetRepBranchMeta();
     setRepOptLoading(true);
     setRepLoading(true);
     try {
@@ -750,12 +748,12 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
         setRepLoading(false);
       }
     }
-  }, [beginScopeRefresh, commitLoadedScope, fetchDiscipline, loadReportScope, repFrom, repOptObjectIdByName, repOptObjects, repTab, repTo]);
+  }, [beginScopeRefresh, commitLoadedScope, fetchDiscipline, loadReportScope, repFrom, repOptObjectIdByName, repOptObjects, repTab, repTo, resetRepBranchMeta, setRepLoading, setRepOptLoading]);
 
   const applyObjectFilter = useCallback(async (obj: string | null) => {
     setRepObjectName(obj);
     await syncScopeBothModes(obj);
-  }, [syncScopeBothModes]);
+  }, [setRepObjectName, syncScopeBothModes]);
 
   const fetchReportOptions = useCallback(async () => {
     const from = repFrom ? String(repFrom).slice(0, 10) : "";
@@ -794,17 +792,17 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
     })();
     inFlightOptionsRef.current.set(key, task);
     await task;
-  }, [commitOptionsState, getCached, optionsKey, repFrom, repTo]);
+  }, [commitOptionsState, getCached, optionsKey, repFrom, repTo, setRepOptLoading]);
 
   const applyReportPeriod = useCallback(async (nextFrom: string | null, nextTo: string | null) => {
-    setRepFrom(nextFrom);
-    setRepTo(nextTo);
+    setReportPeriodState(nextFrom, nextTo);
     setRepObjectName(null);
 
     const from = nextFrom ? String(nextFrom).slice(0, 10) : "";
     const to = nextTo ? String(nextTo).slice(0, 10) : "";
     const scopeReqId = beginScopeRefresh();
 
+    resetRepBranchMeta();
     setRepOptLoading(true);
     setRepLoading(true);
     try {
@@ -839,7 +837,7 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
         setRepLoading(false);
       }
     }
-  }, [beginScopeRefresh, commitLoadedScope, fetchDiscipline, loadReportScope, repTab]);
+  }, [beginScopeRefresh, commitLoadedScope, fetchDiscipline, loadReportScope, repTab, resetRepBranchMeta, setRepLoading, setRepObjectName, setRepOptLoading, setReportPeriodState]);
 
   const clearReportPeriod = useCallback(() => {
     const to = isoDate(new Date());
@@ -853,6 +851,7 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
     const currentObject = repObjectName ?? null;
     const scopeReqId = beginScopeRefresh();
 
+    resetRepBranchMeta();
     setRepOptLoading(true);
     setRepLoading(true);
     try {
@@ -889,11 +888,11 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
         setRepLoading(false);
       }
     }
-  }, [beginScopeRefresh, commitLoadedScope, fetchDiscipline, loadReportScope, repFrom, repObjectName, repOptObjectIdByName, repOptObjects, repTab, repTo]);
+  }, [beginScopeRefresh, commitLoadedScope, fetchDiscipline, loadReportScope, repFrom, repObjectName, repOptObjectIdByName, repOptObjects, repTab, repTo, resetRepBranchMeta, setRepLoading, setRepOptLoading]);
 
   const setReportTab = useCallback((tab: RepTab) => {
     const switchStart = nowMs();
-    setRepTab(tab);
+    setRepTabState(tab);
     if (tab === "discipline") {
       const from = repFrom ? String(repFrom).slice(0, 10) : "";
       const to = repTo ? String(repTo).slice(0, 10) : "";
@@ -912,12 +911,12 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
       return;
     }
     void fetchReport(undefined, { background: true });
-  }, [disciplineKey, fetchReport, logTiming, nowMs, repData, repDiscipline, repFrom, repObjectName, repOptObjectIdByName, repTo, syncScopeBothModes]);
+  }, [disciplineKey, fetchReport, logTiming, nowMs, repData, repDiscipline, repFrom, repObjectName, repOptObjectIdByName, repTo, setRepTabState, syncScopeBothModes]);
 
   const openReports = useCallback(() => {
     const startedAt = nowMs();
     if (REPORTS_TIMING) console.info("[director_works] click:open_reports");
-    setRepTab("materials");
+    setRepTabState("materials");
     const from = repFrom ? String(repFrom).slice(0, 10) : "";
     const to = repTo ? String(repTo).slice(0, 10) : "";
     const currentObject = repObjectName ?? null;
@@ -927,6 +926,7 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
         ? { objects: repOptObjects, objectIdByName: repOptObjectIdByName }
         : null;
 
+    resetRepBranchMeta();
     setRepOptLoading(true);
     setRepLoading(true);
     void (async () => {
@@ -957,7 +957,7 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
       }
     })();
     logTiming("open_reports_dispatch", startedAt);
-  }, [beginScopeRefresh, commitLoadedScope, loadReportScope, logTiming, nowMs, repFrom, repObjectName, repOptObjectIdByName, repOptObjects, repTo]);
+  }, [beginScopeRefresh, commitLoadedScope, loadReportScope, logTiming, nowMs, repFrom, repObjectName, repOptObjectIdByName, repOptObjects, repTo, resetRepBranchMeta, setRepLoading, setRepOptLoading, setRepTabState]);
 
   return {
     repTab,

@@ -18,6 +18,7 @@ import {
   type ReqItemRow,
   type RequestDetails,
 } from "../../../lib/catalog_api";
+import type { RequestRecord } from "../../../lib/api/types";
 import {
   formatQtyInput,
   isDraftLikeStatus,
@@ -507,6 +508,9 @@ export function useForemanDraftBoundary({
           const result = await syncForemanLocalDraftSnapshot({
             snapshot,
             headerMeta: buildRequestDraftMeta(),
+            mutationKind,
+            localBeforeCount,
+            localAfterCount,
           });
 
           if (result.snapshot) {
@@ -641,10 +645,10 @@ export function useForemanDraftBoundary({
   ]);
 
   const applySubmittedRequestState = useCallback(
-    (rid: string, submitted: any) => {
-      if (submitted?.display_no) {
-        setDisplayNoByReq((prev) => ({ ...prev, [rid]: String(submitted.display_no) }));
-      }
+      (rid: string, submitted: RequestRecord | null) => {
+        if (submitted?.display_no) {
+          setDisplayNoByReq((prev) => ({ ...prev, [rid]: String(submitted.display_no) }));
+        }
       setRequestIdState(rid);
       setRequestDetails((prev) =>
         prev

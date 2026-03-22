@@ -143,6 +143,7 @@ export async function syncForemanAtomicDraft(
     beforeLineCount: command.beforeLineCount ?? null,
     afterLocalSnapshotLineCount: command.afterLocalSnapshotLineCount ?? null,
     syncPayloadLineCount,
+    submitPayloadLineCount: command.submit === true ? syncPayloadLineCount : null,
     submit: command.submit === true,
   });
 
@@ -183,6 +184,8 @@ export async function syncForemanAtomicDraft(
       afterLocalSnapshotLineCount: command.afterLocalSnapshotLineCount ?? null,
       syncPayloadLineCount,
       syncResultLineCount: result.items.length,
+      submitPayloadLineCount: command.submit === true ? syncPayloadLineCount : null,
+      serverAcceptedLineCount: command.submit === true ? result.items.length : null,
       submit: command.submit === true,
       submitted: result.submitted,
       fallbackUsed: false,
@@ -201,6 +204,7 @@ export async function syncForemanAtomicDraft(
       beforeLineCount: command.beforeLineCount ?? null,
       afterLocalSnapshotLineCount: command.afterLocalSnapshotLineCount ?? null,
       syncPayloadLineCount,
+      submitPayloadLineCount: command.submit === true ? syncPayloadLineCount : null,
       submit: command.submit === true,
       fallbackUsed: false,
       errorCategory: toRequestSyncErrorCategory(error),

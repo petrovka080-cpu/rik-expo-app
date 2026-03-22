@@ -1,5 +1,6 @@
-import { useCallback, useState } from "react";
+import { useCallback } from "react";
 import { useDirectorReportsController } from "./hooks/useDirectorReportsController";
+import { useDirectorReportsUiStore } from "./directorReports.store";
 
 type Deps = {
   fmtDateOnly: (iso?: string | null) => string;
@@ -7,30 +8,32 @@ type Deps = {
 
 export function useDirectorReports({ fmtDateOnly }: Deps) {
   const reports = useDirectorReportsController({ fmtDateOnly });
-  const [repOpen, setRepOpen] = useState(false);
-  const [repPeriodOpen, setRepPeriodOpen] = useState(false);
-  const [repObjOpen, setRepObjOpen] = useState(false);
+  const repOpen = useDirectorReportsUiStore((state) => state.repOpen);
+  const repPeriodOpen = useDirectorReportsUiStore((state) => state.repPeriodOpen);
+  const repObjOpen = useDirectorReportsUiStore((state) => state.repObjOpen);
+  const setRepOpen = useDirectorReportsUiStore((state) => state.setRepOpen);
+  const setRepPeriodOpen = useDirectorReportsUiStore((state) => state.setRepPeriodOpen);
+  const setRepObjOpen = useDirectorReportsUiStore((state) => state.setRepObjOpen);
+  const closeReportsUi = useDirectorReportsUiStore((state) => state.closeReportsUi);
 
   const openReports = useCallback(() => {
     setRepOpen(true);
     reports.openReports();
-  }, [reports]);
+  }, [reports, setRepOpen]);
 
   const closeReports = useCallback(() => {
-    setRepOpen(false);
-    setRepPeriodOpen(false);
-    setRepObjOpen(false);
-  }, []);
+    closeReportsUi();
+  }, [closeReportsUi]);
 
   const applyReportPeriod = useCallback(async (from: string | null, to: string | null) => {
     setRepPeriodOpen(false);
     await reports.applyReportPeriod(from, to);
-  }, [reports]);
+  }, [reports, setRepPeriodOpen]);
 
   const clearReportPeriod = useCallback(() => {
     setRepPeriodOpen(false);
     reports.clearReportPeriod();
-  }, [reports]);
+  }, [reports, setRepPeriodOpen]);
 
   return {
     ...reports,

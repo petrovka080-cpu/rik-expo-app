@@ -15,7 +15,6 @@ import {
   TextInput,
   Pressable,
   ScrollView,
-  FlatList,
   Platform,
   ActivityIndicator,
   Alert,
@@ -24,6 +23,7 @@ import {
   Animated,
   type KeyboardEvent,
 } from "react-native";
+import { FlashList } from "@shopify/flash-list";
 import { supabase } from "../../../src/lib/supabaseClient";
 import { useCalcFields, BasisKey, Field } from "./useCalcFields";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -86,7 +86,6 @@ const evaluateExpression = (rawInput: string): number => {
   const sanitized = sanitizeExpression(rawInput);
   if (!sanitized) throw new Error("empty");
   if (!SAFE_EXPRESSION.test(sanitized)) throw new Error("invalid_char");
-  // eslint-disable-next-line no-new-func
   const fn = Function(`"use strict"; return (${sanitized});`);
   const result = fn();
   if (typeof result !== "number" || !Number.isFinite(result)) throw new Error("not_finite");
@@ -1134,15 +1133,11 @@ useEffect(() => {
 
                     {rows.length > 0 ? (
                       <View style={{ borderRadius: 16, backgroundColor: "#fff" }}>
-                        <FlatList
+                        <FlashList
                           data={rows}
                           renderItem={renderResultRow}
                           keyExtractor={keyExtractor}
                           scrollEnabled={false}
-                          removeClippedSubviews={false}
-                          initialNumToRender={8}
-                          maxToRenderPerBatch={8}
-                          windowSize={5}
                         />
                       </View>
                     ) : (

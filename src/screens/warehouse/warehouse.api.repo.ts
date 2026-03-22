@@ -1,26 +1,35 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { isUuid } from "./warehouse.utils";
 
 type UnknownRow = Record<string, unknown>;
 export async function fetchWarehouseRequestMetaRows(
   supabase: SupabaseClient,
   requestIds: string[],
 ) {
+  const safeRequestIds = requestIds.map((id) => String(id ?? "").trim()).filter(isUuid);
+  if (!safeRequestIds.length) {
+    return { data: [] as UnknownRow[], error: null };
+  }
   return await supabase
     .from("requests")
     .select(
       "id,note,comment,contractor_name,contractor_org,subcontractor_name,subcontractor_org,contractor,supplier_name,contractor_phone,subcontractor_phone,phone,phone_number,phone_no,tel,planned_volume,qty_planned,planned_qty,volume,qty_plan",
     )
-    .in("id", requestIds);
+    .in("id", safeRequestIds);
 }
 
 export async function fetchWarehouseRequestItemNoteRows(
   supabase: SupabaseClient,
   requestIds: string[],
 ) {
+  const safeRequestIds = requestIds.map((id) => String(id ?? "").trim()).filter(isUuid);
+  if (!safeRequestIds.length) {
+    return { data: [] as UnknownRow[], error: null };
+  }
   return await supabase
     .from("request_items")
     .select("request_id, note")
-    .in("request_id", requestIds);
+    .in("request_id", safeRequestIds);
 }
 
 export async function fetchWarehouseStockViewRows(

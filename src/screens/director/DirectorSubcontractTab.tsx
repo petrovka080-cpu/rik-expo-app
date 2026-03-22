@@ -2,7 +2,6 @@
 import {
   View,
   Text,
-  FlatList,
   Pressable,
   TextInput,
   Alert,
@@ -15,6 +14,7 @@ import {
   type NativeScrollEvent,
   type NativeSyntheticEvent,
 } from 'react-native';
+import { FlashList } from '@shopify/flash-list';
 import {
   PRICE_TYPE_LABEL,
   STATUS_CONFIG,
@@ -246,6 +246,8 @@ export default function DirectorSubcontractTab({ contentTopPad, onScroll }: Prop
 
   const filtered = items.filter((x) => x.status === filter);
   const pendingCount = items.filter((x) => x.status === 'pending').length;
+  const keyExtractor = useCallback((item: Subcontract) => item.id, []);
+  const renderItem = useCallback(({ item }: { item: Subcontract }) => <SubCard item={item} onPress={setSelected} />, []);
 
   const handleApprove = useCallback(async () => {
     if (!selected) return;
@@ -292,9 +294,10 @@ export default function DirectorSubcontractTab({ contentTopPad, onScroll }: Prop
         />
       ) : null}
 
-      <FlatList
+      <FlashList
         data={filtered}
-        keyExtractor={(x) => x.id}
+        keyExtractor={keyExtractor}
+        renderItem={renderItem}
         onScroll={onScroll}
         scrollEventThrottle={16}
         contentContainerStyle={{ paddingTop: contentTopPad, paddingHorizontal: 16, paddingBottom: 24 }}
@@ -315,7 +318,6 @@ export default function DirectorSubcontractTab({ contentTopPad, onScroll }: Prop
             })}
           </View>
         }
-        renderItem={({ item }) => <SubCard item={item} onPress={setSelected} />}
         ListEmptyComponent={
           loading ? (
             <ActivityIndicator style={{ marginTop: 32 }} color="#0EA5E9" />
