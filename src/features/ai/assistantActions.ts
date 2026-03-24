@@ -14,7 +14,6 @@ import { submitRequestToDirector } from "../../lib/api/request.repository";
 import { requestItemAddOrIncAndPatchMeta } from "../../screens/foreman/foreman.helpers";
 import {
   resolveForemanQuickRequest,
-  type ForemanAiQuickItem,
 } from "../../screens/foreman/foreman.ai";
 import type { AssistantContext, AssistantRole } from "./assistant.types";
 
@@ -423,10 +422,10 @@ async function resolveForemanItems(message: string): Promise<ForemanItemsResolut
   const heuristic = parseHeuristicItems(message);
   const quick = await resolveForemanQuickRequest(message).catch(() => null);
 
-  if (quick?.action === "create_request" && quick.items.length > 0) {
+  if (quick?.type === "resolved_items" && quick.items.length > 0) {
     return {
       kind: "items",
-      items: quick.items.map((item: ForemanAiQuickItem) => ({
+      items: quick.items.map((item) => ({
         name: item.name,
         qty: item.qty,
         unit: item.unit,

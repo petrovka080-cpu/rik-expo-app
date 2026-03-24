@@ -1,16 +1,22 @@
 // src/lib/pdfRunner.ts
 
 import { Alert, Linking, Platform } from "react-native";
-import * as IntentLauncher from "expo-intent-launcher";
 import * as Sharing from "expo-sharing";
 import * as FileSystemModule from "expo-file-system/legacy";
 
 import { normalizePdfFileName } from "./documents/pdfDocument";
 import { getFileSystemPaths } from "./fileSystemPaths";
-import { getUriScheme, hashString32, isHttpUri, normalizeLocalFileUri } from "./pdfFileContract";
+import {
+  createPdfSource,
+  getUriScheme,
+  hashString32,
+  isHttpUri,
+  normalizeLocalFileUri,
+  type PdfSource,
+  type PdfSourceKind,
+} from "./pdfFileContract";
 import { SUPABASE_ANON_KEY } from "./supabaseClient";
 const FileSystemCompat = FileSystemModule as any;
-
 export type BusyLike = {
   run?: <T>(
     fn: () => Promise<T>,
@@ -50,7 +56,7 @@ function logPdfRunnerStage(
     uri?: string | null;
     exists?: boolean;
     size?: number;
-    sourceKind: "remote" | "local";
+    sourceKind: PdfSourceKind;
     fileName?: string;
   },
 ) {
@@ -68,6 +74,20 @@ function logPdfRunnerStage(
 function safeName(name?: string, stableSeed?: string) {
   const fallbackHash = hashString32(String(name || stableSeed || "pdf"));
   return normalizePdfFileName(name, `pdf_${fallbackHash}.pdf`);
+}
+
+async function resolvePdfSource(args: {
+  source?: PdfSource;
+  resolveSource?: () => Promise<PdfSource> | PdfSource;
+  getRemoteUrl?: () => Promise<string> | string;
+}): Promise<PdfSource> {
+  if (args.source) return args.source;
+  if (args.resolveSource) return await Promise.resolve(args.resolveSource());
+
+  const remote = await Promise.resolve(args.getRemoteUrl?.());
+  const url = normalizeRemoteUrl(remote);
+  if (!url) throw new Error("PDF source URI is empty");
+  return createPdfSource(url);
 }
 
 async function ensureNativePdfHandoffUri(uri: string, fileName?: string): Promise<string> {
@@ -104,6 +124,21 @@ async function ensureNativePdfHandoffUri(uri: string, fileName?: string): Promis
   return normalizeLocalFileUri(targetUri);
 }
 
+async function openAndroidPdfContentUri(localUri: string, fileName?: string): Promise<string> {
+  const handoffUri = await ensureNativePdfHandoffUri(localUri, fileName);
+  if (!FileSystemCompat.getContentUriAsync) {
+    throw new Error("Android local PDF handoff requires getContentUriAsync support");
+  }
+  const contentUri = await FileSystemCompat.getContentUriAsync(handoffUri);
+  logPdfRunnerStage("pdf_android_content_uri_ready", {
+    uri: contentUri,
+    sourceKind: "local-file",
+    fileName,
+  });
+  await Linking.openURL(contentUri);
+  return contentUri;
+}
+
 
 async function fileExists(uri: string) {
   try {
@@ -127,38 +162,42 @@ async function getAuthHeader(supabase: any) {
   }
 }
 
-export async function preparePdfLocalUri(args: {
+export async function preparePdfExecutionSource(args: {
   supabase: any;
-  getRemoteUrl: () => Promise<string> | string;
+  source?: PdfSource;
+  resolveSource?: () => Promise<PdfSource> | PdfSource;
+  getRemoteUrl?: () => Promise<string> | string;
   fileName?: string;
-}): Promise<string> {
-  const remote = await Promise.resolve(args.getRemoteUrl());
-  const url = normalizeRemoteUrl(remote);
-  if (!url) throw new Error("PDF URL is empty");
+}): Promise<PdfSource> {
+  const source = await resolvePdfSource(args);
+  const url = source.uri;
   logPdfRunnerStage("pdf_source_received", {
     uri: url,
-    sourceKind: isHttpUri(url) ? "remote" : "local",
+    sourceKind: source.kind,
     fileName: args.fileName,
   });
 
-  if (Platform.OS === "web") return url;
-  if (!isHttpUri(url)) {
+  if (Platform.OS === "web") return source;
+  if (source.kind === "blob") {
+    throw new Error("Native execution cannot use blob/data PDF source");
+  }
+  if (source.kind === "local-file") {
     logPdfRunnerStage("pdf_source_classified_local", {
       uri: url,
-      sourceKind: "local",
+      sourceKind: "local-file",
       fileName: args.fileName,
     });
     const normalizedLocalUri = normalizeLocalFileUri(url);
     logPdfRunnerStage("pdf_local_uri_normalized", {
       uri: normalizedLocalUri,
-      sourceKind: "local",
+      sourceKind: "local-file",
       fileName: args.fileName,
     });
-    return normalizedLocalUri;
+    return createPdfSource(normalizedLocalUri);
   }
   logPdfRunnerStage("pdf_source_classified_remote", {
     uri: url,
-    sourceKind: "remote",
+    sourceKind: "remote-url",
     fileName: args.fileName,
   });
 
@@ -170,10 +209,10 @@ export async function preparePdfLocalUri(args: {
       uri: normalizedCachedUri,
       exists: Boolean(info?.exists),
       size: Number.isFinite(Number(info?.size)) ? Number(info.size) : undefined,
-      sourceKind: "local",
+      sourceKind: "local-file",
       fileName: args.fileName,
     });
-    return normalizedCachedUri;
+    return createPdfSource(normalizedCachedUri);
   }
 
   const baseName = safeName(args.fileName, url);
@@ -189,20 +228,20 @@ export async function preparePdfLocalUri(args: {
   if (await fileExists(localOutput)) {
     const normalizedLocalOutput = normalizeLocalFileUri(localOutput);
     urlToLocal.set(url, normalizedLocalOutput);
-    return normalizedLocalOutput;
+    return createPdfSource(normalizedLocalOutput);
   }
 
   const headers = await getAuthHeader(args.supabase);
   logPdfRunnerStage("pdf_download_started", {
     uri: localOutput,
-    sourceKind: "remote",
+    sourceKind: "remote-url",
     fileName: args.fileName,
   });
   const dl = await FileSystemCompat.downloadAsync(url, localOutput, { headers });
   const uri = normalizeLocalFileUri(dl?.uri || localOutput);
   logPdfRunnerStage("pdf_download_done", {
     uri,
-    sourceKind: "local",
+    sourceKind: "local-file",
     fileName: args.fileName,
   });
   const info = await FileSystemCompat.getInfoAsync(uri);
@@ -211,12 +250,22 @@ export async function preparePdfLocalUri(args: {
     uri,
     exists,
     size: Number.isFinite(Number(info?.size)) ? Number(info.size) : undefined,
-    sourceKind: "local",
+    sourceKind: "local-file",
     fileName: args.fileName,
   });
   if (!exists) throw new Error("Downloaded PDF file does not exist after download");
   urlToLocal.set(url, uri);
-  return uri;
+  return createPdfSource(uri);
+}
+
+export async function preparePdfLocalUri(args: {
+  supabase: any;
+  source?: PdfSource;
+  resolveSource?: () => Promise<PdfSource> | PdfSource;
+  getRemoteUrl?: () => Promise<string> | string;
+  fileName?: string;
+}): Promise<string> {
+  return (await preparePdfExecutionSource(args)).uri;
 }
 
 export async function openPdfPreview(localUri: string, fileName?: string) {
@@ -226,18 +275,12 @@ export async function openPdfPreview(localUri: string, fileName?: string) {
     return;
   }
 
-  const handoffUri = await ensureNativePdfHandoffUri(localUri, fileName);
-
   if (Platform.OS === "android") {
-    const contentUri = await FileSystemCompat.getContentUriAsync(handoffUri);
-    await IntentLauncher.startActivityAsync((IntentLauncher as any).ActivityAction.VIEW, {
-      data: contentUri,
-      flags: 1,
-      type: "application/pdf",
-    });
+    await openAndroidPdfContentUri(localUri, fileName);
     return;
   }
 
+  const handoffUri = await ensureNativePdfHandoffUri(localUri, fileName);
   await Linking.openURL(handoffUri);
 }
 
@@ -264,18 +307,12 @@ export async function openPdfExternal(localUri: string, fileName?: string) {
     return;
   }
 
-  const handoffUri = await ensureNativePdfHandoffUri(localUri, fileName);
-
   if (Platform.OS === "android") {
-    const contentUri = await FileSystemCompat.getContentUriAsync(handoffUri);
-    await IntentLauncher.startActivityAsync((IntentLauncher as any).ActivityAction.VIEW, {
-      data: contentUri,
-      flags: 1,
-      type: "application/pdf",
-    });
+    await openAndroidPdfContentUri(localUri, fileName);
     return;
   }
 
+  const handoffUri = await ensureNativePdfHandoffUri(localUri, fileName);
   const canShare = await Sharing.isAvailableAsync();
   if (canShare) {
     await Sharing.shareAsync(handoffUri, {

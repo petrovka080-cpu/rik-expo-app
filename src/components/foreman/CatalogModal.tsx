@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -13,7 +13,7 @@ import {
   Animated,
   InteractionManager,
 } from 'react-native';
-import { FlashList } from '@shopify/flash-list';
+import { FlashList } from '@/src/ui/FlashList';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { UI, TYPO } from '../../screens/foreman/foreman.ui';
@@ -249,7 +249,7 @@ export default function CatalogModal(props: {
             <View style={s.headerRow}>
               <Text style={s.hTitle}>Каталог</Text>
 
-              <Pressable onPress={onOpenDraft} style={s.hDraftPill}>
+              <Pressable onPress={onOpenDraft} style={s.hDraftPill} accessibilityLabel="Открыть черновик из каталога">
                 <Ionicons name="cart" size={18} color={UI.accent} />
                 <View style={s.badge}>
                   <Text style={s.badgeText}>{draftCount ?? 0}</Text>
@@ -579,3 +579,4 @@ const s = StyleSheet.create({
     ...TYPO.bodyStrong,
   },
 });
+

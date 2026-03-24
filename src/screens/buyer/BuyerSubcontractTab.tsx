@@ -1,8 +1,7 @@
-﻿import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
-  FlatList,
   Pressable,
   RefreshControl,
   ScrollView,
@@ -14,6 +13,7 @@ import {
   type NativeSyntheticEvent,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { FlashList } from "@/src/ui/FlashList";
 
 import { supabase } from "../../lib/supabaseClient";
 import SingleDatePickerSheet from "../../components/SingleDatePickerSheet";
@@ -322,7 +322,7 @@ export default function BuyerSubcontractTab({ contentTopPad, onScroll, buyerFio 
     }
   }, [subId, form.foremanName, buyerFio, patch, closeForm, load, resolveContractorIdByPhone, attachContractorIdIfPossible]);
 
-  const renderCard = ({ item }: { item: Subcontract }) => {
+  const renderCard = useCallback(({ item }: { item: Subcontract }) => {
     const cfg = STATUS_CONFIG[item.status] || STATUS_CONFIG.draft;
     const title = item.work_type || "Подряд";
     return (
@@ -374,7 +374,7 @@ export default function BuyerSubcontractTab({ contentTopPad, onScroll, buyerFio 
         </View>
       </Pressable>
     );
-  };
+  }, []);
 
   const dropdownUi = useMemo(() => ({ text: B_UI.text }), []);
 
@@ -619,10 +619,11 @@ export default function BuyerSubcontractTab({ contentTopPad, onScroll, buyerFio 
           </View>
         </ScrollView>
       ) : (
-        <FlatList
+        <FlashList
           data={items}
           renderItem={renderCard}
           keyExtractor={(item) => item.id}
+          estimatedItemSize={118}
           contentContainerStyle={{ paddingTop: contentTopPad + 10, paddingHorizontal: 16, paddingBottom: 100 }}
           onScroll={onScroll}
           scrollEventThrottle={16}
@@ -838,6 +839,5 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
 });
-
 
 

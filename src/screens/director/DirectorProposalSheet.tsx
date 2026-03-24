@@ -1,5 +1,6 @@
 import React from "react";
-import { FlatList, Pressable, Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
+import { FlashList } from "@/src/ui/FlashList";
 import DeleteAllButton from "../../ui/DeleteAllButton";
 import RejectItemButton from "../../ui/RejectItemButton";
 import SendPrimaryButton from "../../ui/SendPrimaryButton";
@@ -88,9 +89,12 @@ export default function DirectorProposalSheet({
         onOpenAttachment={onOpenAttachment}
       />
 
-      <FlatList
+      <FlashList
         data={items}
         keyExtractor={(it, idx) => `pi:${pidStr}:${it.id}:${idx}`}
+        overrideItemLayout={(layout: any) => {
+          layout.size = 88;
+        }}
         contentContainerStyle={{ paddingBottom: 12 }}
         keyboardShouldPersistTaps="handled"
         nestedScrollEnabled
@@ -201,3 +205,4 @@ export default function DirectorProposalSheet({
     </>
   );
 }
+

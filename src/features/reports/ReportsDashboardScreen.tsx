@@ -1,28 +1,43 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { useRouter } from "expo-router";
 import {
-  View, Text, SectionList, TextInput, Pressable,
-  ActivityIndicator, Alert, Dimensions
+  ActivityIndicator,
+  Alert,
+  Dimensions,
+  Pressable,
+  SectionList,
+  Text,
+  TextInput,
+  View,
 } from "react-native";
-import * as Sharing from "expo-sharing";
 import * as FileSystem from "expo-file-system";
-import { getFileSystemPaths } from "../../lib/fileSystemPaths";
-import { supabase } from "../../lib/supabaseClient";
-import { parseErr } from "../../lib/api/_core";
+import * as Sharing from "expo-sharing";
 import { LineChart, PieChart } from "react-native-chart-kit";
-import { openHtmlAsPdfUniversal } from "../../lib/api/pdf";
+import { parseErr } from "../../lib/api/_core";
+import { getFileSystemPaths } from "../../lib/fileSystemPaths";
 import { buildPdfFileName } from "../../lib/documents/pdfDocument";
-import { preparePdfDocument, previewPdfDocument } from "../../lib/documents/pdfDocumentActions";
-import { createGeneratedPdfDocument } from "../../lib/documents/pdfDocumentGenerators";
-const FileSystemCompat = FileSystem as any;
+import { buildReportsExportPdfModel } from "../../lib/pdf/pdf.builder";
+import {
+  buildGeneratedPdfDescriptor,
+  prepareAndPreviewGeneratedPdf,
+  renderPdfHtmlToUri,
+} from "../../lib/pdf/pdf.runner";
+import { renderReportsExportPdfHtml } from "../../lib/pdf/pdf.template";
+import { supabase } from "../../lib/supabaseClient";
 
+const FileSystemCompat = FileSystem as any;
 const w = Dimensions.get("window").width;
 const fmt = (n: any) => Number(n ?? 0).toLocaleString("ru-RU", { maximumFractionDigits: 2 });
 const today = () => new Date().toISOString().slice(0, 10);
-const monthAgo = () => { const d = new Date(); d.setMonth(d.getMonth() - 1); return d.toISOString().slice(0, 10); };
+const monthAgo = () => {
+  const d = new Date();
+  d.setMonth(d.getMonth() - 1);
+  return d.toISOString().slice(0, 10);
+};
 const asRows = (value: unknown): any[] => (Array.isArray(value) ? value : []);
 const runReportRpc = async <T = unknown>(fn: string, args?: Record<string, unknown>) =>
   (await supabase.rpc(fn as never, (args ?? {}) as never)) as { data: T | null; error: unknown };
+
 type ReportRow = (string | number)[];
 type ReportSection = {
   key: string;
@@ -61,93 +76,91 @@ export default function ReportsDashboardScreen() {
       setAging(asRows(aRes.data));
       setPipe(asRows(pRes.data));
     } catch (e: unknown) {
-      Alert.alert("Не удалось сформировать отчеты", parseErr(e) || "Попробуйте еще раз.");
+      Alert.alert("Не удалось сформировать отчёты", parseErr(e) || "Попробуйте ещё раз.");
     } finally {
       setLoading(false);
     }
-  }, [start, end]);
+  }, [end, start]);
 
-  useEffect(() => { run(); }, [run]);
+  useEffect(() => {
+    run();
+  }, [run]);
 
-  // ===== Export CSV =====
   const exportCSV = async () => {
     try {
-      let csv = `Отчет;${start};${end}\n\n`;
+      let csv = `Отчёт;${start};${end}\n\n`;
       const add = (title: string, cols: string[], rows: any[][]) => {
-        csv += title + "\n" + cols.join(";") + "\n";
-        for (const r of rows) csv += r.map((x) => String(x)).join(";") + "\n";
+        csv += `${title}\n${cols.join(";")}\n`;
+        for (const row of rows) csv += `${row.map((cell) => String(cell)).join(";")}\n`;
         csv += "\n";
       };
+
       add(
         "Обороты склада",
         ["Код", "Приход", "Расход", "Баланс"],
-        turnover.map((x) => [x.rik_code, fmt(x.incoming), fmt(x.outgoing), fmt(x.balance)])
+        turnover.map((x) => [x.rik_code, fmt(x.incoming), fmt(x.outgoing), fmt(x.balance)]),
       );
       add(
         "Затраты по объектам",
         ["Объект", "Статья", "Кол-во", "Сумма"],
-        costs.map((x) => [x.object_id || "—", humanArticle(x.article), fmt(x.fact_qty), fmt(x.fact_amount)])
+        costs.map((x) => [x.object_id || "—", humanArticle(x.article), fmt(x.fact_qty), fmt(x.fact_amount)]),
       );
       add(
         "Долги по контрагентам",
         ["Контрагент", "Выставлено", "Оплачено", "Баланс"],
-        aging.map((x) => [x.counterparty_id, fmt(x.total_billed), fmt(x.total_paid), fmt(x.balance)])
+        aging.map((x) => [x.counterparty_id, fmt(x.total_billed), fmt(x.total_paid), fmt(x.balance)]),
       );
       add(
         "Воронка закупок",
         ["Статус", "Кол-во"],
-        pipe.map((x) => [humanStatus(x.status), x.cnt])
+        pipe.map((x) => [humanStatus(x.status), x.cnt]),
       );
 
-          const { cacheDir } = getFileSystemPaths();
-          const path = `${cacheDir}reports.csv`;
-          await FileSystemCompat.writeAsStringAsync(path, csv, { encoding: "utf8" });
+      const { cacheDir } = getFileSystemPaths();
+      const path = `${cacheDir}reports.csv`;
+      await FileSystemCompat.writeAsStringAsync(path, csv, { encoding: "utf8" });
       await Sharing.shareAsync(path);
     } catch (e: any) {
       Alert.alert("Не удалось экспортировать CSV", e.message);
     }
   };
 
-  // ===== Export PDF =====
   const exportPDF = async () => {
     try {
-      const html = `
-      <html><head>
-      <meta charset="utf-8" />
-      <style>
-        body { font-family: Arial, sans-serif; }
-        h2 { margin: 0 0 12px; }
-        h3 { margin: 18px 0 8px; }
-        table { border-collapse: collapse; width: 100%; font-size: 12px; }
-        th, td { border: 1px solid #ddd; padding: 6px 8px; text-align: left; }
-        th { background: #f2f5f9; }
-      </style>
-      </head><body>
-      <h2>Отчет ${start} — ${end}</h2>
-      ${htmlTable(
-        "Обороты склада",
-        ["Код", "Приход", "Расход", "Баланс"],
-        turnover.map((x) => [x.rik_code, fmt(x.incoming), fmt(x.outgoing), fmt(x.balance)])
-      )}
-      ${htmlTable(
-        "Затраты по объектам",
-        ["Объект", "Статья", "Кол-во", "Сумма"],
-        costs.map((x) => [x.object_id || "—", humanArticle(x.article), fmt(x.fact_qty), fmt(x.fact_amount)])
-      )}
-      ${htmlTable(
-        "Долги по контрагентам",
-        ["Контрагент", "Выставлено", "Оплачено", "Баланс"],
-        aging.map((x) => [x.counterparty_id, fmt(x.total_billed), fmt(x.total_paid), fmt(x.balance)])
-      )}
-      ${htmlTable(
-        "Воронка закупок",
-        ["Статус", "Кол-во"],
-        pipe.map((x) => [humanStatus(x.status), x.cnt])
-      )}
-      </body></html>`;
-      const template = await createGeneratedPdfDocument({
-        uri: await openHtmlAsPdfUniversal(html),
-        title: `Отчет ${start} - ${end}`,
+      const title = `Отчёт ${start} - ${end}`;
+      const model = buildReportsExportPdfModel({
+        title,
+        sections: [
+          {
+            title: "Обороты склада",
+            columns: ["Код", "Приход", "Расход", "Баланс"],
+            rows: turnover.map((x) => [x.rik_code, fmt(x.incoming), fmt(x.outgoing), fmt(x.balance)]),
+          },
+          {
+            title: "Затраты по объектам",
+            columns: ["Объект", "Статья", "Кол-во", "Сумма"],
+            rows: costs.map((x) => [x.object_id || "—", humanArticle(x.article), fmt(x.fact_qty), fmt(x.fact_amount)]),
+          },
+          {
+            title: "Долги по контрагентам",
+            columns: ["Контрагент", "Выставлено", "Оплачено", "Баланс"],
+            rows: aging.map((x) => [x.counterparty_id, fmt(x.total_billed), fmt(x.total_paid), fmt(x.balance)]),
+          },
+          {
+            title: "Воронка закупок",
+            columns: ["Статус", "Кол-во"],
+            rows: pipe.map((x) => [humanStatus(x.status), x.cnt]),
+          },
+        ],
+      });
+      const descriptor = await buildGeneratedPdfDescriptor({
+        getUri: () =>
+          renderPdfHtmlToUri({
+            html: renderReportsExportPdfHtml(model),
+            documentType: "report_export",
+            source: "reports_export",
+          }),
+        title,
         fileName: buildPdfFileName({
           documentType: "report_export",
           title: "reports_export",
@@ -156,25 +169,17 @@ export default function ReportsDashboardScreen() {
         documentType: "report_export",
         originModule: "reports",
       });
-      const doc = await preparePdfDocument({
+      await prepareAndPreviewGeneratedPdf({
         supabase,
         key: `pdf:reports:${start}:${end}`,
         label: "Открываю PDF…",
-        descriptor: template,
-        getRemoteUrl: () => template.uri,
+        descriptor,
+        router,
       });
-      await previewPdfDocument(doc, { router });
     } catch (e: any) {
       Alert.alert("Не удалось подготовить PDF", e.message);
     }
   };
-
-  const htmlTable = (title: string, cols: string[], rows: any[][]) => `
-    <h3>${title}</h3>
-    <table>
-      <tr>${cols.map((c) => `<th>${c}</th>`).join("")}</tr>
-      ${rows.map((r) => `<tr>${r.map((c) => `<td>${c}</td>`).join("")}</tr>`).join("")}
-    </table>`;
 
   const sections = React.useMemo<ReportSection[]>(
     () => [
@@ -210,29 +215,32 @@ export default function ReportsDashboardScreen() {
     [aging, costs, pipe, turnover],
   );
 
-  const renderSectionHeader = React.useCallback(({ section }: { section: ReportSection }) => (
-    <View style={{ marginBottom: 0 }}>
-      <View style={reportCardShell}>
-        <Text style={{ fontSize: 16, fontWeight: "700", color: "#0f172a" }}>{section.title}</Text>
-        {section.chart === "turnover" ? <ChartTurnover data={turnover} /> : null}
-        {section.chart === "pipe" ? <ChartPie data={pipe} /> : null}
+  const renderSectionHeader = React.useCallback(
+    ({ section }: { section: ReportSection }) => (
+      <View style={{ marginBottom: 0 }}>
+        <View style={reportCardShell}>
+          <Text style={{ fontSize: 16, fontWeight: "700", color: "#0f172a" }}>{section.title}</Text>
+          {section.chart === "turnover" ? <ChartTurnover data={turnover} /> : null}
+          {section.chart === "pipe" ? <ChartPie data={pipe} /> : null}
+        </View>
+        <View style={tableHeaderWrap}>
+          {section.columns.map((column, index) => (
+            <Text key={`${section.key}:col:${index}`} style={{ flex: 1, fontWeight: "700" }}>
+              {column}
+            </Text>
+          ))}
+        </View>
       </View>
-      <View style={tableHeaderWrap}>
-        {section.columns.map((c, i) => (
-          <Text key={`${section.key}:col:${i}`} style={{ flex: 1, fontWeight: "700" }}>
-            {c}
-          </Text>
-        ))}
-      </View>
-    </View>
-  ), [pipe, turnover]);
+    ),
+    [pipe, turnover],
+  );
 
   const renderSectionItem = React.useCallback(
     ({ item, section }: { item: ReportRow; section: ReportSection }) => (
       <View style={tableRow}>
-        {item.map((c, i) => (
-          <Text key={`${section.key}:cell:${i}`} style={{ flex: 1 }}>
-            {String(c)}
+        {item.map((cell, index) => (
+          <Text key={`${section.key}:cell:${index}`} style={{ flex: 1 }}>
+            {String(cell)}
           </Text>
         ))}
       </View>
@@ -248,7 +256,6 @@ export default function ReportsDashboardScreen() {
         </View>
       );
     }
-
     return <View style={tableFooterCap} />;
   }, []);
 
@@ -263,8 +270,12 @@ export default function ReportsDashboardScreen() {
         </Pressable>
       </View>
       <View style={{ flexDirection: "row", gap: 8 }}>
-        <Pressable style={btnGray} onPress={exportCSV}><Text>Экспорт CSV</Text></Pressable>
-        <Pressable style={btnGray} onPress={exportPDF}><Text>Экспорт PDF</Text></Pressable>
+        <Pressable style={btnGray} onPress={exportCSV}>
+          <Text>Экспорт CSV</Text>
+        </Pressable>
+        <Pressable style={btnGray} onPress={exportPDF}>
+          <Text>Экспорт PDF</Text>
+        </Pressable>
       </View>
     </View>
   );
@@ -283,7 +294,7 @@ export default function ReportsDashboardScreen() {
       contentContainerStyle={{ padding: 12, gap: 16, paddingBottom: 24 }}
       ListHeaderComponent={
         <View style={{ gap: 16 }}>
-          <Text style={{ fontSize: 22, fontWeight: "700", color: "#0f172a" }}>Отчеты</Text>
+          <Text style={{ fontSize: 22, fontWeight: "700", color: "#0f172a" }}>Отчёты</Text>
           {filtersBlock}
           {loading ? <ActivityIndicator size="large" /> : null}
         </View>
@@ -292,9 +303,23 @@ export default function ReportsDashboardScreen() {
   );
 }
 
-/** ===== Styles and small components ===== */
-const card = { backgroundColor: "#fff", padding: 12, borderRadius: 10, borderWidth: 1, borderColor: "#e2e8f0", gap: 10 };
-const inp = { borderWidth: 1, borderColor: "#e2e8f0", borderRadius: 8, paddingHorizontal: 10, paddingVertical: 8, flex: 1, backgroundColor: "#fff" };
+const card = {
+  backgroundColor: "#fff",
+  padding: 12,
+  borderRadius: 10,
+  borderWidth: 1,
+  borderColor: "#e2e8f0",
+  gap: 10,
+};
+const inp = {
+  borderWidth: 1,
+  borderColor: "#e2e8f0",
+  borderRadius: 8,
+  paddingHorizontal: 10,
+  paddingVertical: 8,
+  flex: 1,
+  backgroundColor: "#fff",
+};
 const btnBlue = { backgroundColor: "#0ea5e9", borderRadius: 8, paddingHorizontal: 14, paddingVertical: 10 };
 const btnGray = { backgroundColor: "#f1f5f9", borderRadius: 8, paddingHorizontal: 14, paddingVertical: 10 };
 const reportCardShell = {
@@ -349,16 +374,21 @@ const tableFooterEmpty = {
   backgroundColor: "#fff",
 };
 
-function humanArticle(a: string) {
-  switch (a) {
-    case "materials": return "Материалы";
-    case "works":     return "Работы";
-    case "transport": return "Транспорт";
-    default:          return a || "—";
+function humanArticle(article: string) {
+  switch (article) {
+    case "materials":
+      return "Материалы";
+    case "works":
+      return "Работы";
+    case "transport":
+      return "Транспорт";
+    default:
+      return article || "—";
   }
 }
-function humanStatus(s: string) {
-  const m: Record<string,string> = {
+
+function humanStatus(status: string) {
+  const map: Record<string, string> = {
     draft: "Черновик",
     pending: "В обработке",
     partial: "Частично",
@@ -366,10 +396,9 @@ function humanStatus(s: string) {
     approved: "Утверждено",
     "На утверждении": "На утверждении",
   };
-  return m[s] || s || "—";
+  return map[status] || status || "—";
 }
 
-/** ===== Charts ===== */
 function ChartTurnover({ data }: { data: any[] }) {
   if (!data.length) return null;
   return (
@@ -392,6 +421,7 @@ function ChartTurnover({ data }: { data: any[] }) {
     />
   );
 }
+
 function ChartPie({ data }: { data: any[] }) {
   if (!data.length) return null;
   return (
@@ -412,4 +442,3 @@ function ChartPie({ data }: { data: any[] }) {
     />
   );
 }
-

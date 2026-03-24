@@ -5,7 +5,7 @@ import type { FinPage } from "./director.types";
 import type {
   FinKindSupplierRow,
   FinRep,
-  FinSpendRow,
+  FinSpendSummary,
   FinSupplierInput,
   FinSupplierPanelState,
 } from "./director.finance";
@@ -19,10 +19,11 @@ type Props = {
   finPage: FinPage;
   finLoading: boolean;
   finRep: FinRep;
-  finSpendRows: FinSpendRow[];
+  finSpendSummary: FinSpendSummary;
   finKindName: string;
   finKindList: FinKindSupplierRow[];
   finSupplier: FinSupplierPanelState | null;
+  finSupplierLoading: boolean;
   supplierPdfBusy: boolean;
   FIN_CRITICAL_DAYS: number;
   pushFin: (page: FinPage) => void;
@@ -36,10 +37,11 @@ export default function DirectorFinanceContent({
   finPage,
   finLoading,
   finRep,
-  finSpendRows,
+  finSpendSummary,
   finKindName,
   finKindList,
   finSupplier,
+  finSupplierLoading,
   supplierPdfBusy,
   FIN_CRITICAL_DAYS,
   pushFin,
@@ -80,7 +82,7 @@ export default function DirectorFinanceContent({
         visible={true}
         loading={finLoading}
         sum={finRep?.summary}
-        spendRows={finSpendRows}
+        spendSummary={finSpendSummary}
         money={money}
         onOpenKind={openFinKind}
       />
@@ -102,7 +104,7 @@ export default function DirectorFinanceContent({
   if (finPage === "supplier") {
     return (
       <DirectorFinanceSupplierModal
-        loading={finLoading || supplierPdfBusy}
+        loading={finLoading || finSupplierLoading || supplierPdfBusy}
         onPdf={onSupplierPdf}
         supplier={finSupplier}
         money={money}

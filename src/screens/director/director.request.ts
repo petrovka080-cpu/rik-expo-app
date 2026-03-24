@@ -4,8 +4,9 @@ import { Alert, Platform } from "react-native";
 import { useRouter } from "expo-router";
 import * as XLSX from "xlsx";
 import { generateRequestPdfDocument } from "../../lib/catalog_api";
-import { getPdfFlowErrorMessage, preparePdfDocument, previewPdfDocument } from "../../lib/documents/pdfDocumentActions";
 import { buildPdfFileName } from "../../lib/documents/pdfDocument";
+import { getPdfFlowErrorMessage } from "../../lib/documents/pdfDocumentActions";
+import { prepareAndPreviewGeneratedPdf } from "../../lib/pdf/pdf.runner";
 import { toFilterId } from "./director.helpers";
 import type { Group, PendingRow } from "./director.types";
 
@@ -27,7 +28,6 @@ type Deps = {
   reqSendId: number | string | null;
   labelForRequest: (rid: number | string | null | undefined, fallbackDocNo?: string | null) => string;
   setRows: React.Dispatch<React.SetStateAction<PendingRow[]>>;
-  setSheetRequest: React.Dispatch<React.SetStateAction<Group | null>>;
   setActingId: React.Dispatch<React.SetStateAction<string | null>>;
   setReqDeleteId: React.Dispatch<React.SetStateAction<number | string | null>>;
   setReqSendId: React.Dispatch<React.SetStateAction<number | string | null>>;
@@ -37,8 +37,6 @@ type Deps = {
   showSuccess: (msg: string) => void;
 };
 
-const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-
 export function useDirectorRequestActions({
   busy,
   supabase,
@@ -47,7 +45,6 @@ export function useDirectorRequestActions({
   reqSendId,
   labelForRequest,
   setRows,
-  setSheetRequest,
   setActingId,
   setReqDeleteId,
   setReqSendId,
@@ -131,7 +128,7 @@ export function useDirectorRequestActions({
     try {
       const title = labelForRequest(g.request_id) || `Request ${rid}`;
       const template = await generateRequestPdfDocument(rid);
-      const doc = await preparePdfDocument({
+      await prepareAndPreviewGeneratedPdf({
         busy,
         supabase,
         key: `pdf:req:${rid}`,
@@ -145,9 +142,8 @@ export function useDirectorRequestActions({
             entityId: rid,
           }),
         },
-        getRemoteUrl: () => template.uri,
+        router,
       });
-      await previewPdfDocument(doc, { router });
     } catch (error) {
       Alert.alert("Не удалось открыть PDF", getPdfFlowErrorMessage(error, "Попробуйте еще раз."));
     }
@@ -169,16 +165,12 @@ export function useDirectorRequestActions({
       if (error) throw error;
 
       setRows((prev) => prev.filter((r) => r.request_item_id !== it.request_item_id));
-      setSheetRequest((prev) => prev
-        ? ({ ...prev, items: prev.items.filter((x) => x.request_item_id !== it.request_item_id) })
-        : prev
-      );
     } catch (e: unknown) {
       Alert.alert("Не удалось отклонить позицию", (e as Error)?.message ?? "Попробуйте еще раз.");
     } finally {
       setActingId(null);
     }
-  }, [supabase, setActingId, setRows, setSheetRequest]);
+  }, [setActingId, setRows, supabase]);
 
   const deleteRequestAll = useCallback(async (g: Group) => {
     setReqDeleteId(g.request_id);
@@ -232,13 +224,8 @@ export function useDirectorRequestActions({
       const reqIdCmp = String(g.request_id ?? "");
       setRows((prev) => prev.filter((r) => String(r.request_id ?? "") !== reqIdCmp));
       await fetchProps(true);
-      void (async () => {
-        for (let i = 0; i < 3; i += 1) {
-          await sleep(450);
-          await fetchRows(true);
-          setRows((prev) => prev.filter((r) => String(r.request_id ?? "") !== reqIdCmp));
-        }
-      })();
+      await fetchRows(true);
+      setRows((prev) => prev.filter((r) => String(r.request_id ?? "") !== reqIdCmp));
 
       closeSheet();
       showSuccess(`Заявка ${labelForRequest(g.request_id)} утверждена и отправлена снабженцу`);

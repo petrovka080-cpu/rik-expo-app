@@ -1,16 +1,18 @@
 // src/lib/api/pdf_director.ts
 import { normalizeRuTextForHtml } from "../text/encoding";
 import {
-  loadDirectorFinancePreviewPdfModel,
-  prepareDirectorManagementReportPdfModel,
-  prepareDirectorProductionReportPdfModel,
-  prepareDirectorSubcontractReportPdfModelFromRows,
-  prepareDirectorSupplierSummaryPdfModel,
-  type DirectorManagementReportPdfInput,
-  type DirectorProductionPdfInput,
-  type DirectorSubcontractPdfInput,
-  type DirectorSupplierSummaryPdfInput,
-} from "./pdf_director.data";
+  buildDirectorFinancePreviewPdfModel,
+  buildDirectorManagementReportPdfModel,
+  buildDirectorProductionReportPdfModel,
+  buildDirectorSubcontractReportPdfModel,
+  buildDirectorSupplierSummaryPdfModel,
+} from "../pdf/pdf.builder";
+import type {
+  DirectorManagementReportPdfInput,
+  DirectorProductionPdfInput,
+  DirectorSubcontractPdfInput,
+  DirectorSupplierSummaryPdfInput,
+} from "../pdf/pdf.model";
 import {
   getDirectorFinancePdfSource,
   getDirectorProductionPdfSource,
@@ -26,7 +28,7 @@ import {
   renderDirectorProductionReportPdfHtml,
   renderDirectorSubcontractReportPdfHtml,
   renderDirectorSupplierSummaryPdfHtml,
-} from "./pdf_director.templates";
+} from "../pdf/pdf.template";
 
 const buildDirectorPdf = (
   html: string,
@@ -51,7 +53,7 @@ const buildDirectorPdf = (
   });
 
 export async function exportDirectorFinancePdf(): Promise<string> {
-  const model = await loadDirectorFinancePreviewPdfModel();
+  const model = await buildDirectorFinancePreviewPdfModel();
   return buildDirectorPdf(
     renderDirectorFinancePdfHtml(model),
     {
@@ -72,7 +74,7 @@ export async function exportDirectorSupplierSummaryPdf(
     fallbackFinanceRows: p.financeRows,
     fallbackSpendRows: p.spendRows,
   });
-  const model = prepareDirectorSupplierSummaryPdfModel({
+  const model = buildDirectorSupplierSummaryPdfModel({
     ...p,
     financeRows: source.financeRows,
     spendRows: source.spendRows,
@@ -100,7 +102,7 @@ export async function exportDirectorManagementReportPdf(
     fallbackFinanceRows: p.financeRows,
     fallbackSpendRows: p.spendRows,
   });
-  const model = prepareDirectorManagementReportPdfModel({
+  const model = buildDirectorManagementReportPdfModel({
     ...p,
     financeRows: source.financeRows,
     spendRows: source.spendRows,
@@ -128,7 +130,7 @@ export async function exportDirectorProductionReportPdf(
     fallbackRepDiscipline: p.repDiscipline,
     preferPriceStage: p.preferPriceStage,
   });
-  const model = prepareDirectorProductionReportPdfModel({
+  const model = buildDirectorProductionReportPdfModel({
     ...p,
     repData: source.repData,
     repDiscipline: source.repDiscipline,
@@ -153,7 +155,7 @@ export async function exportDirectorSubcontractReportPdf(
     periodTo: p.periodTo,
     objectName: p.objectName,
   });
-  const model = prepareDirectorSubcontractReportPdfModelFromRows(p, source.rows);
+  const model = buildDirectorSubcontractReportPdfModel(p, source.rows);
   return buildDirectorPdf(
     renderDirectorSubcontractReportPdfHtml(model),
     {
@@ -171,4 +173,4 @@ export type {
   DirectorProductionPdfInput,
   DirectorSubcontractPdfInput,
   DirectorSupplierSummaryPdfInput,
-} from "./pdf_director.data";
+} from "../pdf/pdf.model";

@@ -1,5 +1,4 @@
 import { isSupabaseEnvValid, supabase } from "../supabaseClient";
-import { openHtmlAsPdfUniversal } from "./pdf";
 import {
   getPdfRenderRolloutAvailability,
   recordPdfRenderRolloutBranch,
@@ -11,6 +10,7 @@ import {
   type PdfRenderRolloutId,
   type PdfRenderRolloutMode,
 } from "../documents/pdfRenderRollout";
+import { renderPdfHtmlToUri } from "../pdf/pdf.runner";
 
 const DIRECTOR_PDF_RENDER_OFFLOAD_V1_MODE_RAW = String(
   process.env.EXPO_PUBLIC_DIRECTOR_PDF_RENDER_OFFLOAD_V1 ?? "",
@@ -23,6 +23,11 @@ const DIRECTOR_PDF_RENDER_MODE: PdfRenderRolloutMode = resolvePdfRenderRolloutMo
   DIRECTOR_PDF_RENDER_OFFLOAD_V1_MODE_RAW,
 );
 const DIRECTOR_PDF_RENDER_FUNCTION = "director-pdf-render";
+
+// Keep current local/dev smoke on the proven client render path until the
+// backend PDF pilot is explicitly verified. This avoids noisy edge 5xx
+// failures in normal Expo/web proof runs without changing production behavior.
+const shouldBypassDirectorPdfEdgeInDev = () => __DEV__;
 
 registerPdfRenderRolloutPath(DIRECTOR_PDF_RENDER_ROLLOUT_ID, DIRECTOR_PDF_RENDER_MODE);
 
@@ -229,7 +234,11 @@ async function renderDirectorPdfViaClientFallback(
   fallbackReason: PdfRenderRolloutFallbackReason,
   error?: unknown,
 ): Promise<string> {
-  const uri = await openHtmlAsPdfUniversal(args.html);
+  const uri = await renderPdfHtmlToUri({
+    html: args.html,
+    documentType: args.documentType,
+    source: args.source,
+  });
   logDirectorPdfRenderBranch(
     args.documentKind,
     args.source,
@@ -249,6 +258,10 @@ async function renderDirectorPdfViaClientFallback(
 }
 
 export async function renderDirectorPdf(args: DirectorPdfRenderArgs): Promise<string> {
+  if (shouldBypassDirectorPdfEdgeInDev()) {
+    return renderDirectorPdfViaClientFallback(args, "disabled");
+  }
+
   if (DIRECTOR_PDF_RENDER_MODE === "force_off") {
     return renderDirectorPdfViaClientFallback(args, "disabled");
   }

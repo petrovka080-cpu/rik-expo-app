@@ -3,6 +3,7 @@ import { listForemanRequests, type ForemanRequestSummary } from '../../../lib/ca
 import { FOREMAN_TEXT } from '../foreman.ui';
 import { Alert } from 'react-native';
 import { supabase } from '../../../lib/supabaseClient';
+import { useForemanHistoryStore } from '../foremanHistory.store';
 
 const warnForemanHistory = (error: unknown) => {
     if (__DEV__) {
@@ -12,8 +13,12 @@ const warnForemanHistory = (error: unknown) => {
 
 export function useForemanHistory() {
     const [historyRequests, setHistoryRequests] = useState<ForemanRequestSummary[]>([]);
-    const [historyLoading, setHistoryLoading] = useState(false);
-    const [historyVisible, setHistoryVisible] = useState(false);
+    const historyLoading = useForemanHistoryStore((state) => state.requestHistoryLoading);
+    const setHistoryLoading = useForemanHistoryStore((state) => state.setRequestHistoryLoading);
+    const historyVisible = useForemanHistoryStore((state) => state.requestHistoryVisible);
+    const openRequestHistory = useForemanHistoryStore((state) => state.openRequestHistory);
+    const closeRequestHistory = useForemanHistoryStore((state) => state.closeRequestHistory);
+    const setRefreshReason = useForemanHistoryStore((state) => state.setRefreshReason);
 
     const fetchHistory = useCallback(async (foremanName: string) => {
         const name = String(foremanName || "").trim();
@@ -28,8 +33,9 @@ export function useForemanHistory() {
             return;
         }
 
-        setHistoryVisible(true);
+        openRequestHistory();
         setHistoryLoading(true);
+        setRefreshReason("history:requests");
 
         try {
             const rows = await listForemanRequests(name, 50, userId);
@@ -41,15 +47,14 @@ export function useForemanHistory() {
         } finally {
             setHistoryLoading(false);
         }
-    }, []);
+    }, [openRequestHistory, setHistoryLoading, setRefreshReason]);
 
-    const closeHistory = useCallback(() => setHistoryVisible(false), []);
+    const closeHistory = useCallback(() => closeRequestHistory(), [closeRequestHistory]);
 
     return {
         historyRequests,
         historyLoading,
         historyVisible,
-        setHistoryVisible,
         fetchHistory,
         closeHistory,
     };

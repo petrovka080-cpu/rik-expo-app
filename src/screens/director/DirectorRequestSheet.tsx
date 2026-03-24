@@ -1,5 +1,6 @@
-﻿import React from "react";
-import { Alert, FlatList, Platform, Pressable, Text, View } from "react-native";
+import React from "react";
+import { Alert, Platform, Pressable, Text, View } from "react-native";
+import { FlashList } from "@/src/ui/FlashList";
 import DeleteAllButton from "../../ui/DeleteAllButton";
 import RejectItemButton from "../../ui/RejectItemButton";
 import SendPrimaryButton from "../../ui/SendPrimaryButton";
@@ -76,9 +77,12 @@ export default function DirectorRequestSheet({
         );
       })()}
 
-      <FlatList
+      <FlashList
         data={sheetRequest.items}
         keyExtractor={(it, idx) => (it.request_item_id ? `mri:${it.request_item_id}` : `mri:${idx}`)}
+        overrideItemLayout={(layout: any) => {
+          layout.size = 88;
+        }}
         contentContainerStyle={{ paddingBottom: 12 }}
         keyboardShouldPersistTaps="handled"
         nestedScrollEnabled
@@ -207,3 +211,4 @@ export default function DirectorRequestSheet({
     </View>
   );
 }
+

@@ -5,7 +5,6 @@ import {
   clampIso,
   fmtDateOnly,
   formatArrowPeriodText,
-  formatDashPeriodText,
   formatPaidRangeText,
   iso10,
   joinBulletParts,
@@ -13,6 +12,9 @@ import {
   nnum,
   todayIso10,
 } from "./pdf_director.format";
+import { prepareDirectorProductionReportPdfModelShared } from "../pdf/directorProductionReport.shared";
+import { prepareDirectorSubcontractReportPdfModelShared } from "../pdf/directorSubcontractReport.shared";
+import { prepareDirectorSupplierSummaryPdfModelShared } from "../pdf/directorSupplierSummary.shared";
 
 export type DirectorSupplierSummaryPdfInput = {
   supplier: string;
@@ -328,6 +330,7 @@ const invoiceTitle = (r: any) => {
   return proposalId ? `Документ #${proposalId.slice(0, 8)}` : "Документ";
 };
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const buildSupplierDatesText = (row: {
   approvedAt: string | null;
   paidFirstAt: string | null;
@@ -342,6 +345,7 @@ const buildSupplierDatesText = (row: {
     row.dueDate ? `срок ${fmtDateOnly(row.dueDate)}` : "",
   ]) || "—";
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const mapSupplierSummaryItem = (
   row: any,
   overpayByProposal: Map<string, number>,
@@ -411,6 +415,9 @@ export async function loadDirectorFinancePreviewPdfModel(): Promise<DirectorFina
 export function prepareDirectorSupplierSummaryPdfModel(
   p: DirectorSupplierSummaryPdfInput,
 ): DirectorSupplierSummaryPdfModel {
+  return prepareDirectorSupplierSummaryPdfModelShared(p);
+
+  /*
   const supplier = String(p.supplier ?? "").trim() || "—";
   const financeRows = Array.isArray(p.financeRows) ? p.financeRows : [];
   const spendRows = Array.isArray(p.spendRows) ? p.spendRows : [];
@@ -554,6 +561,7 @@ export function prepareDirectorSupplierSummaryPdfModel(
     kindRows,
     detailRows,
   };
+  */
 }
 
 export function prepareDirectorManagementReportPdfModel(
@@ -802,6 +810,9 @@ export function prepareDirectorManagementReportPdfModel(
 export function prepareDirectorProductionReportPdfModel(
   p: DirectorProductionPdfInput,
 ): DirectorProductionReportPdfModel {
+  return prepareDirectorProductionReportPdfModelShared(p);
+
+  /*
   const companyName = String(p.companyName ?? "RIK Construction").trim() || "RIK Construction";
   const generatedBy = String(p.generatedBy ?? "Директор").trim() || "Директор";
   const from = String(p.periodFrom ?? "").trim();
@@ -906,12 +917,16 @@ export function prepareDirectorProductionReportPdfModel(
       },
     ],
   };
+  */
 }
 
 export function prepareDirectorSubcontractReportPdfModelFromRows(
   p: DirectorSubcontractPdfInput,
   rowsInput: unknown[],
 ): DirectorSubcontractReportPdfModel {
+  return prepareDirectorSubcontractReportPdfModelShared(p, rowsInput);
+
+  /*
   const companyName = String(p.companyName ?? "RIK Construction").trim() || "RIK Construction";
   const generatedBy = String(p.generatedBy ?? "Директор").trim() || "Директор";
   const from = String(p.periodFrom ?? "").trim();
@@ -1032,6 +1047,7 @@ export function prepareDirectorSubcontractReportPdfModelFromRows(
     pendingCount: pending.length,
     rejectedCount: rejected.length,
   };
+  */
 }
 
 export async function loadDirectorSubcontractReportPdfModel(

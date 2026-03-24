@@ -1,17 +1,17 @@
 import { Alert } from "react-native";
 import { useCallback, useMemo, useRef, useState } from "react";
 import {
-  fetchDirectorWarehouseReportDisciplineTracked,
-  fetchDirectorWarehouseReportOptionsTracked,
-  fetchDirectorWarehouseReportTracked,
   type DirectorReportFetchMeta,
 } from "../../../lib/api/director_reports";
-import { loadDirectorReportTransportScope } from "../../../lib/api/directorReportsTransport.service";
+import {
+  loadDirectorReportUiScope,
+  type DirectorReportScopeDisciplinePayload,
+  type DirectorReportScopeLoadResult,
+  type DirectorReportScopeOptionsState,
+  type DirectorReportScopePayload,
+} from "../../../lib/api/directorReportsScope.service";
 import type {
-  RepDisciplineLevel,
-  RepDisciplineMaterial,
   RepDisciplinePayload,
-  RepDisciplineWork,
   RepPayload,
   RepTab,
 } from "../director.types";
@@ -25,19 +25,8 @@ type Deps = {
   fmtDateOnly: (iso?: string | null) => string;
 };
 
-type CacheEntry<T> = {
-  ts: number;
-  value: T;
-  meta: DirectorReportFetchMeta | null;
-};
+type ReportOptionsState = DirectorReportScopeOptionsState;
 
-type ReportOptionsState = {
-  objects: string[];
-  objectIdByName: Record<string, string | null>;
-};
-
-const REPORTS_CACHE_TTL_MS = 5 * 60 * 1000;
-const REPORTS_CACHE_MAX = 40;
 const REPORTS_TIMING = typeof __DEV__ !== "undefined" ? __DEV__ : false;
 
 type PerformanceLike = {
@@ -67,120 +56,10 @@ const getErrorMessage = (error: unknown, fallback: string): string => {
   return raw || fallback;
 };
 
-const asRecord = (value: unknown): Record<string, unknown> =>
-  value && typeof value === "object" ? (value as Record<string, unknown>) : {};
-
-const toFiniteNumber = (value: unknown): number => {
-  const numeric = Number(value ?? 0);
-  return Number.isFinite(numeric) ? numeric : 0;
-};
-
-const textOrUndefined = (value: unknown): string | undefined => {
-  const text = String(value ?? "").trim();
-  return text || undefined;
-};
-
-const getDisciplineFromPayload = (payload: RepPayload | null): RepDisciplinePayload | null =>
+const getDisciplineFromPayload = (payload: DirectorReportScopePayload | null): DirectorReportScopeDisciplinePayload | null =>
   payload?.discipline ?? null;
 
-const normalizeRepDisciplineMaterial = (value: unknown): RepDisciplineMaterial => {
-  const record = asRecord(value);
-  return {
-    material_name: String(record.material_name ?? record.rik_code ?? "").trim(),
-    rik_code: String(record.rik_code ?? "").trim(),
-    uom: String(record.uom ?? "").trim(),
-    qty_sum: toFiniteNumber(record.qty_sum),
-    docs_count: toFiniteNumber(record.docs_count),
-    unit_price: toFiniteNumber(record.unit_price),
-    amount_sum: toFiniteNumber(record.amount_sum),
-  };
-};
-
-const normalizeRepDisciplineLevel = (value: unknown): RepDisciplineLevel => {
-  const record = asRecord(value);
-  const materialsRaw = Array.isArray(record.materials) ? record.materials : [];
-  return {
-    id: String(record.id ?? "").trim(),
-    level_name: String(record.level_name ?? "").trim(),
-    object_name: textOrUndefined(record.object_name),
-    system_name: textOrUndefined(record.system_name) ?? null,
-    zone_name: textOrUndefined(record.zone_name) ?? null,
-    location_label: textOrUndefined(record.location_label),
-    total_qty: toFiniteNumber(record.total_qty),
-    total_docs: toFiniteNumber(record.total_docs),
-    total_positions: toFiniteNumber(record.total_positions),
-    share_in_work_pct: toFiniteNumber(record.share_in_work_pct),
-    req_positions: toFiniteNumber(record.req_positions),
-    free_positions: toFiniteNumber(record.free_positions),
-    materials: materialsRaw.map(normalizeRepDisciplineMaterial),
-  };
-};
-
-const normalizeRepDisciplineWork = (value: unknown): RepDisciplineWork => {
-  const record = asRecord(value);
-  const levelsRaw = Array.isArray(record.levels) ? record.levels : [];
-  const locationCount =
-    record.location_count == null ? undefined : Math.max(toFiniteNumber(record.location_count), levelsRaw.length);
-  return {
-    id: String(record.id ?? record.work_type_name ?? "").trim(),
-    work_type_name: String(record.work_type_name ?? record.id ?? "").trim(),
-    total_qty: toFiniteNumber(record.total_qty),
-    total_docs: toFiniteNumber(record.total_docs),
-    total_positions: toFiniteNumber(record.total_positions),
-    share_total_pct: toFiniteNumber(record.share_total_pct),
-    req_positions: toFiniteNumber(record.req_positions),
-    free_positions: toFiniteNumber(record.free_positions),
-    location_count: locationCount,
-    levels: levelsRaw.map(normalizeRepDisciplineLevel),
-  };
-};
-
-const normalizeRepPayload = (payload: unknown): RepPayload | null => {
-  if (!payload || typeof payload !== "object") return null;
-  const record = payload as Partial<RepPayload> & { discipline?: unknown };
-  const discipline = normalizeRepDisciplinePayload(record.discipline);
-  return {
-    meta: record.meta,
-    kpi: record.kpi,
-    rows: Array.isArray(record.rows) ? record.rows : undefined,
-    discipline: discipline ?? undefined,
-  };
-};
-
-const normalizeRepDisciplinePayload = (payload: unknown): RepDisciplinePayload | null => {
-  if (!payload || typeof payload !== "object") return null;
-  const record = asRecord(payload);
-  const summary = asRecord(record.summary);
-  const worksRaw = Array.isArray(record.works) ? record.works : [];
-  return {
-    summary: {
-      total_qty: toFiniteNumber(summary.total_qty),
-      total_docs: toFiniteNumber(summary.total_docs),
-      total_positions: toFiniteNumber(summary.total_positions),
-      pct_without_work: toFiniteNumber(summary.pct_without_work),
-      pct_without_level: toFiniteNumber(summary.pct_without_level),
-      pct_without_request: toFiniteNumber(summary.pct_without_request),
-      issue_cost_total: toFiniteNumber(summary.issue_cost_total),
-      purchase_cost_total: toFiniteNumber(summary.purchase_cost_total),
-      issue_to_purchase_pct: toFiniteNumber(summary.issue_to_purchase_pct),
-      unpriced_issue_pct: toFiniteNumber(summary.unpriced_issue_pct),
-    },
-    works: worksRaw.map(normalizeRepDisciplineWork),
-  };
-};
-
-const normalizeReportOptionsState = (value: unknown): ReportOptionsState => {
-  const record = asRecord(value);
-  const objectIdByNameRaw = asRecord(record.objectIdByName);
-  return {
-    objects: Array.isArray(record.objects) ? record.objects.map((item) => String(item ?? "")) : [],
-    objectIdByName: Object.fromEntries(
-      Object.entries(objectIdByNameRaw).map(([key, item]) => [key, item == null ? null : String(item)]),
-    ),
-  };
-};
-
-const summarizeRepDiscipline = (payload: RepDisciplinePayload | null) => {
+const summarizeRepDiscipline = (payload: DirectorReportScopeDisciplinePayload | null) => {
   const works = Array.isArray(payload?.works) ? payload.works : [];
   let levels = 0;
   let materials = 0;
@@ -238,9 +117,6 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
   const inFlightReportRef = useRef<Map<string, Promise<void>>>(new Map());
   const inFlightDisciplineRef = useRef<Map<string, Promise<void>>>(new Map());
   const inFlightOptionsRef = useRef<Map<string, Promise<void>>>(new Map());
-  const reportCacheRef = useRef<Map<string, CacheEntry<RepPayload | null>>>(new Map());
-  const disciplineCacheRef = useRef<Map<string, CacheEntry<RepDisciplinePayload | null>>>(new Map());
-  const optionsCacheRef = useRef<Map<string, CacheEntry<ReportOptionsState>>>(new Map());
   const lastDisciplineLoadKeyRef = useRef<string>("");
   const disciplinePricesReadyRef = useRef<Set<string>>(new Set());
 
@@ -275,7 +151,7 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
     setRepBranchStage(stage, observed);
     if (REPORTS_TIMING) {
       const chain = observed.chain.join(" -> ");
-      const cacheNote = observed.fromCache ? "controller_cache" : observed.cacheLayer;
+      const cacheNote = observed.fromCache ? "transport_cache" : observed.cacheLayer;
       const pricedNote = observed.pricedStage ? ` priced_stage=${observed.pricedStage}` : "";
       const rowsSourceNote = observed.rowsSource ? ` rows_source=${observed.rowsSource}` : "";
       console.info(
@@ -284,71 +160,23 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
     }
   }, [setRepBranchStage]);
 
-  const getCached = useCallback(<T,>(cache: Map<string, CacheEntry<T>>, key: string): CacheEntry<T> | null => {
-    const hit = cache.get(key);
-    if (!hit) return null;
-
-    const expired = Date.now() - hit.ts > REPORTS_CACHE_TTL_MS;
-    if (expired) {
-      cache.delete(key);
-      return null;
-    }
-
-    cache.delete(key);
-    cache.set(key, hit);
-    return hit;
-  }, []);
-
-  const setCached = useCallback(<T,>(
-    cache: Map<string, CacheEntry<T>>,
-    key: string,
-    value: T,
-    meta: DirectorReportFetchMeta | null,
-  ) => {
-    const entry: CacheEntry<T> = { ts: Date.now(), value, meta };
-    if (cache.has(key)) cache.delete(key);
-    cache.set(key, entry);
-
-    while (cache.size > REPORTS_CACHE_MAX) {
-      const oldestKey = cache.keys().next().value as string | undefined;
-      if (!oldestKey) break;
-      cache.delete(oldestKey);
-    }
-  }, []);
-
   const commitOptionsState = useCallback((
     key: string,
     value: ReportOptionsState,
     meta: DirectorReportFetchMeta | null,
-    opts?: { cache?: boolean; fromCache?: boolean },
+    opts?: { fromCache?: boolean },
   ) => {
-    if (opts?.cache !== false) {
-      setCached(optionsCacheRef.current, key, value, meta);
-    }
     setRepOptObjects(value.objects);
     setRepOptObjectIdByName(value.objectIdByName);
     observeBranch("options", key, meta, { fromCache: opts?.fromCache });
-  }, [observeBranch, setCached]);
-
-  const applyCachedDisciplineState = useCallback((key: string) => {
-    const cached = getCached(disciplineCacheRef.current, key);
-    if (cached === null) return false;
-    setRepDiscipline(cached.value ?? null);
-    lastDisciplineLoadKeyRef.current = key;
-    setRepDisciplinePriceLoading(!disciplinePricesReadyRef.current.has(key));
-    observeBranch("discipline", key, cached.meta, { fromCache: true });
-    return true;
-  }, [getCached, observeBranch, setRepDisciplinePriceLoading]);
+  }, [observeBranch]);
 
   const commitDisciplineState = useCallback((
     key: string,
     payload: RepDisciplinePayload,
     meta: DirectorReportFetchMeta | null,
-    opts?: { cache?: boolean; pricesReady?: boolean; fromCache?: boolean },
+    opts?: { pricesReady?: boolean; fromCache?: boolean },
   ) => {
-    if (opts?.cache !== false) {
-      setCached(disciplineCacheRef.current, key, payload, meta);
-    }
     if (opts?.pricesReady === true) {
       disciplinePricesReadyRef.current.add(key);
     } else if (opts?.pricesReady === false) {
@@ -358,17 +186,14 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
     lastDisciplineLoadKeyRef.current = key;
     setRepDisciplinePriceLoading(!disciplinePricesReadyRef.current.has(key));
     observeBranch("discipline", key, meta, { fromCache: opts?.fromCache });
-  }, [observeBranch, setCached, setRepDisciplinePriceLoading]);
+  }, [observeBranch, setRepDisciplinePriceLoading]);
 
   const commitReportState = useCallback((
     key: string,
     payload: RepPayload | null,
     meta: DirectorReportFetchMeta | null,
-    opts?: { cache?: boolean; syncDiscipline?: boolean; fromCache?: boolean },
+    opts?: { syncDiscipline?: boolean; fromCache?: boolean },
   ) => {
-    if (opts?.cache !== false) {
-      setCached(reportCacheRef.current, key, payload, meta);
-    }
     setRepData(payload);
     observeBranch("report", key, meta, { fromCache: opts?.fromCache });
     if (opts?.syncDiscipline === false) return;
@@ -376,7 +201,6 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
     const disciplinePayload = getDisciplineFromPayload(payload);
     if (disciplinePayload) {
       const disciplineMeta = deriveDisciplineMeta(meta);
-      setCached(disciplineCacheRef.current, key, disciplinePayload, disciplineMeta);
       setRepDiscipline(disciplinePayload);
       lastDisciplineLoadKeyRef.current = key;
       setRepDisciplinePriceLoading(!disciplinePricesReadyRef.current.has(key));
@@ -384,12 +208,11 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
       return;
     }
 
-    if (applyCachedDisciplineState(key)) return;
     if (lastDisciplineLoadKeyRef.current !== key) {
       setRepDiscipline(null);
       setRepDisciplinePriceLoading(false);
     }
-  }, [applyCachedDisciplineState, observeBranch, setCached, setRepDisciplinePriceLoading]);
+  }, [observeBranch, setRepDisciplinePriceLoading]);
 
   const optionsKey = useCallback((from: string, to: string) => `${from}|${to}`, []);
   const reportKey = useCallback(
@@ -398,6 +221,20 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
     [],
   );
   const disciplineKey = reportKey;
+  const currentOptionsState = useMemo<ReportOptionsState | null>(() => {
+    if (!repOptObjects.length && !Object.keys(repOptObjectIdByName).length) return null;
+    return {
+      objects: repOptObjects,
+      objectIdByName: repOptObjectIdByName,
+    };
+  }, [repOptObjectIdByName, repOptObjects]);
+  const makeOptionsState = useCallback((objectIdByNameOverride?: Record<string, string | null>) => {
+    if (!objectIdByNameOverride && !currentOptionsState) return null;
+    return {
+      objects: currentOptionsState?.objects ?? repOptObjects,
+      objectIdByName: objectIdByNameOverride ?? currentOptionsState?.objectIdByName ?? repOptObjectIdByName,
+    };
+  }, [currentOptionsState, repOptObjectIdByName, repOptObjects]);
 
   const repPeriodShort = useMemo(() => {
     return repFrom || repTo
@@ -419,130 +256,37 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
     optionsState?: ReportOptionsState | null;
     includeDiscipline?: boolean;
     skipDisciplinePrices: boolean;
-  }) => {
-    const resolvedOptionsState =
-      args.optionsState ??
-      getCached(optionsCacheRef.current, optionsKey(args.from, args.to))?.value ??
-      null;
-    const optionsCacheEntry =
-      resolvedOptionsState == null ? null : getCached(optionsCacheRef.current, optionsKey(args.from, args.to));
-    const precomputedKey =
-      resolvedOptionsState == null
-        ? null
-        : reportKey(args.from, args.to, args.objectName, resolvedOptionsState.objectIdByName);
-    const cachedReport =
-      precomputedKey == null ? null : getCached(reportCacheRef.current, precomputedKey);
-    const cachedDiscipline =
-      precomputedKey == null || args.includeDiscipline !== true
-        ? null
-        : getCached(disciplineCacheRef.current, precomputedKey);
-    const disciplinePricesReady =
-      precomputedKey == null ? false : disciplinePricesReadyRef.current.has(precomputedKey);
-    const useCachedDiscipline =
-      args.includeDiscipline === true &&
-      cachedDiscipline !== null &&
-      (args.skipDisciplinePrices || disciplinePricesReady);
+    bypassCache?: boolean;
+  }) => loadDirectorReportUiScope(args), []);
 
-    if (resolvedOptionsState && cachedReport !== null && (!args.includeDiscipline || useCachedDiscipline)) {
-      return {
-        optionsKey: optionsKey(args.from, args.to),
-        optionsState: resolvedOptionsState,
-        optionsMeta: optionsCacheEntry?.meta ?? null,
-        optionsFromCache: true,
-        key: precomputedKey ?? reportKey(args.from, args.to, args.objectName, resolvedOptionsState.objectIdByName),
-        objectName: args.objectName,
-        report: cachedReport.value,
-        reportMeta: cachedReport.meta,
-        discipline: args.includeDiscipline ? (cachedDiscipline?.value ?? null) : null,
-        disciplineMeta: args.includeDiscipline ? (cachedDiscipline?.meta ?? null) : null,
-        reportFromCache: true,
-        disciplineFromCache: args.includeDiscipline ? cachedDiscipline !== null : false,
-        disciplinePricesReady: args.includeDiscipline ? disciplinePricesReady : false,
-      };
-    }
-
-    const transportResult = await loadDirectorReportTransportScope({
-      from: args.from,
-      to: args.to,
-      objectName: args.objectName,
-      includeDiscipline: !!args.includeDiscipline,
-      skipDisciplinePrices: args.skipDisciplinePrices,
-      legacyObjectIdByName: resolvedOptionsState?.objectIdByName,
-    });
-    const nextOptionsState = normalizeReportOptionsState(transportResult.options);
-    const key = reportKey(args.from, args.to, args.objectName, nextOptionsState.objectIdByName);
-
-    return {
-      optionsKey: optionsKey(args.from, args.to),
-      optionsState: nextOptionsState,
-      optionsMeta: transportResult.optionsMeta,
-      optionsFromCache: false,
-      key,
-      objectName: args.objectName,
-      report: normalizeRepPayload(transportResult.report),
-      reportMeta: transportResult.reportMeta,
-      discipline: normalizeRepDisciplinePayload(transportResult.discipline),
-      disciplineMeta: transportResult.disciplineMeta,
-      reportFromCache: false,
-      disciplineFromCache: false,
-      disciplinePricesReady:
-        args.includeDiscipline === true
-          ? transportResult.disciplineMeta?.pricedStage !== "base"
-          : false,
-    };
-  }, [getCached, optionsKey, reportKey]);
-
-  const commitLoadedScope = useCallback((scopeLoad: {
-    optionsKey: string;
-    optionsState: ReportOptionsState;
-    optionsMeta: DirectorReportFetchMeta | null;
-    optionsFromCache: boolean;
-    key: string;
-    report: RepPayload | null;
-    reportMeta: DirectorReportFetchMeta | null;
-    discipline: RepDisciplinePayload | null;
-    disciplineMeta: DirectorReportFetchMeta | null;
-    reportFromCache: boolean;
-    disciplineFromCache: boolean;
-    disciplinePricesReady: boolean;
-  }, opts?: { includeDiscipline: boolean }) => {
+  const commitLoadedScope = useCallback((scopeLoad: DirectorReportScopeLoadResult, opts?: { includeDiscipline: boolean }) => {
     commitOptionsState(scopeLoad.optionsKey, scopeLoad.optionsState, scopeLoad.optionsMeta, {
-      cache: !scopeLoad.optionsFromCache,
       fromCache: scopeLoad.optionsFromCache,
     });
     commitReportState(scopeLoad.key, scopeLoad.report, scopeLoad.reportMeta, {
-      cache: !scopeLoad.reportFromCache,
       syncDiscipline: false,
       fromCache: scopeLoad.reportFromCache,
     });
     if (scopeLoad.discipline) {
       commitDisciplineState(scopeLoad.key, scopeLoad.discipline, scopeLoad.disciplineMeta, {
-        cache: !scopeLoad.disciplineFromCache,
         pricesReady: scopeLoad.disciplinePricesReady,
         fromCache: scopeLoad.disciplineFromCache,
       });
     } else if (!opts?.includeDiscipline) {
-      if (!applyCachedDisciplineState(scopeLoad.key)) {
-        setRepDiscipline(null);
-        setRepDisciplinePriceLoading(false);
-      }
+      setRepDiscipline(null);
+      setRepDisciplinePriceLoading(false);
     } else {
       setRepDiscipline(null);
       lastDisciplineLoadKeyRef.current = scopeLoad.key;
       setRepDisciplinePriceLoading(false);
     }
-  }, [applyCachedDisciplineState, commitDisciplineState, commitOptionsState, commitReportState, setRepDisciplinePriceLoading]);
+  }, [commitDisciplineState, commitOptionsState, commitReportState, setRepDisciplinePriceLoading]);
 
   const fetchReport = useCallback(async (objectNameArg?: string | null, opts?: { background?: boolean }) => {
     const from = repFrom ? String(repFrom).slice(0, 10) : "";
     const to = repTo ? String(repTo).slice(0, 10) : "";
     const objectName = objectNameArg === undefined ? repObjectName : objectNameArg;
     const key = reportKey(from, to, objectName ?? null, repOptObjectIdByName);
-    const cached = getCached(reportCacheRef.current, key);
-    if (cached !== null) {
-      commitReportState(key, cached.value ?? null, cached.meta, { cache: false, fromCache: true });
-      return;
-    }
     const inFlight = inFlightReportRef.current.get(key);
     if (inFlight) {
       await inFlight;
@@ -553,15 +297,22 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
     const task = (async () => {
       if (!opts?.background) setRepLoading(true);
       try {
-        const result = await fetchDirectorWarehouseReportTracked({
+        const scopeLoad = await loadReportScope({
           from,
           to,
           objectName: objectName ?? null,
-          objectIdByName: repOptObjectIdByName,
+          optionsState: currentOptionsState,
+          includeDiscipline: false,
+          skipDisciplinePrices: true,
         });
         if (reqId !== reportReqSeqRef.current) return;
-        const normalized = normalizeRepPayload(result.payload);
-        commitReportState(key, normalized, result.meta);
+        commitOptionsState(scopeLoad.optionsKey, scopeLoad.optionsState, scopeLoad.optionsMeta, {
+          fromCache: scopeLoad.optionsFromCache,
+        });
+        commitReportState(scopeLoad.key, scopeLoad.report, scopeLoad.reportMeta, {
+          syncDiscipline: false,
+          fromCache: scopeLoad.reportFromCache,
+        });
       } catch (e: unknown) {
         if (reqId !== reportReqSeqRef.current) return;
         const message = getErrorMessage(e, "Не удалось получить отчет");
@@ -579,7 +330,7 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
     })();
     inFlightReportRef.current.set(key, task);
     await task;
-  }, [commitReportState, getCached, repFrom, repObjectName, repOptObjectIdByName, repTo, reportKey, setRepLoading]);
+  }, [commitOptionsState, commitReportState, currentOptionsState, loadReportScope, repFrom, repObjectName, repOptObjectIdByName, repTo, reportKey, setRepLoading]);
 
   const fetchDiscipline = useCallback(async (
     objectNameArg?: string | null,
@@ -592,23 +343,31 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
     const objectIdByName = opts?.objectIdByNameOverride ?? repOptObjectIdByName;
     const key = disciplineKey(from, to, objectName ?? null, objectIdByName);
     if (REPORTS_TIMING) console.info(`[director_works] api:discipline:start key=${key}`);
-    const cached = getCached(disciplineCacheRef.current, key);
-    if (cached !== null) {
-      applyCachedDisciplineState(key);
+    const hasCurrentState = lastDisciplineLoadKeyRef.current === key && repDiscipline != null;
+    if (hasCurrentState) {
       const pricesReady = disciplinePricesReadyRef.current.has(key);
       if (!pricesReady) {
         const activeReqId = disciplineReqSeqRef.current;
         void (async () => {
           try {
-            const result = await fetchDirectorWarehouseReportDisciplineTracked({
+            const pricedScope = await loadReportScope({
               from,
               to,
               objectName: objectName ?? null,
-              objectIdByName,
+              optionsState: makeOptionsState(objectIdByName),
+              includeDiscipline: true,
+              skipDisciplinePrices: false,
             });
             if (activeReqId !== disciplineReqSeqRef.current) return;
-            const full = normalizeRepDisciplinePayload(result.payload);
-            if (full) commitDisciplineState(key, full, result.meta, { pricesReady: true });
+            if (pricedScope.discipline) {
+              commitOptionsState(pricedScope.optionsKey, pricedScope.optionsState, pricedScope.optionsMeta, {
+                fromCache: pricedScope.optionsFromCache,
+              });
+              commitDisciplineState(key, pricedScope.discipline, pricedScope.disciplineMeta, {
+                pricesReady: true,
+                fromCache: pricedScope.disciplineFromCache,
+              });
+            }
           } catch {
             // keep base payload rendered
           } finally {
@@ -632,19 +391,26 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
       setRepDisciplinePriceLoading(true);
       try {
         const apiStart = nowMs();
-        const baseResult = await fetchDirectorWarehouseReportDisciplineTracked({
+        const baseScope = await loadReportScope({
           from,
           to,
           objectName: objectName ?? null,
-          objectIdByName,
-        }, { skipPrices: true });
+          optionsState: makeOptionsState(objectIdByName),
+          includeDiscipline: true,
+          skipDisciplinePrices: true,
+        });
         logTiming("api:discipline:network_done", apiStart);
         if (reqId !== disciplineReqSeqRef.current) return;
-        const normalizedBase = normalizeRepDisciplinePayload(baseResult.payload);
-        if (normalizedBase) {
-          commitDisciplineState(key, normalizedBase, baseResult.meta, { pricesReady: false });
+        commitOptionsState(baseScope.optionsKey, baseScope.optionsState, baseScope.optionsMeta, {
+          fromCache: baseScope.optionsFromCache,
+        });
+        if (baseScope.discipline) {
+          commitDisciplineState(key, baseScope.discipline, baseScope.disciplineMeta, {
+            pricesReady: baseScope.disciplinePricesReady,
+            fromCache: baseScope.disciplineFromCache,
+          });
           if (REPORTS_TIMING) {
-            const summary = summarizeRepDiscipline(normalizedBase);
+            const summary = summarizeRepDiscipline(baseScope.discipline);
             console.info(
               `[director_works] api:discipline:base_ready works=${summary.works} levels=${summary.levels} materials=${summary.materials}`,
             );
@@ -652,20 +418,32 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
         }
         if (!opts?.background && reqId === disciplineReqSeqRef.current) setRepLoading(false);
 
+        if (baseScope.disciplinePricesReady) {
+          if (reqId === disciplineReqSeqRef.current) setRepDisciplinePriceLoading(false);
+          return;
+        }
+
         void (async () => {
           try {
-            const fullResult = await fetchDirectorWarehouseReportDisciplineTracked({
+            const fullScope = await loadReportScope({
               from,
               to,
               objectName: objectName ?? null,
-              objectIdByName,
+              optionsState: makeOptionsState(objectIdByName),
+              includeDiscipline: true,
+              skipDisciplinePrices: false,
             });
             if (reqId !== disciplineReqSeqRef.current) return;
-            const normalizedFull = normalizeRepDisciplinePayload(fullResult.payload);
-            if (normalizedFull) {
-              commitDisciplineState(key, normalizedFull, fullResult.meta, { pricesReady: true });
+            if (fullScope.discipline) {
+              commitOptionsState(fullScope.optionsKey, fullScope.optionsState, fullScope.optionsMeta, {
+                fromCache: fullScope.optionsFromCache,
+              });
+              commitDisciplineState(key, fullScope.discipline, fullScope.disciplineMeta, {
+                pricesReady: true,
+                fromCache: fullScope.disciplineFromCache,
+              });
               if (REPORTS_TIMING) {
-                const summary = summarizeRepDiscipline(normalizedFull);
+                const summary = summarizeRepDiscipline(fullScope.discipline);
                 console.info(
                   `[director_works] api:discipline:priced_ready works=${summary.works} levels=${summary.levels} materials=${summary.materials}`,
                 );
@@ -696,7 +474,7 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
     })();
     inFlightDisciplineRef.current.set(key, task);
     await task;
-  }, [applyCachedDisciplineState, commitDisciplineState, disciplineKey, getCached, logTiming, nowMs, repFrom, repObjectName, repOptObjectIdByName, repTo, setRepDisciplinePriceLoading, setRepLoading]);
+  }, [commitDisciplineState, commitOptionsState, disciplineKey, loadReportScope, logTiming, makeOptionsState, nowMs, repDiscipline, repFrom, repObjectName, repOptObjectIdByName, repTo, setRepDisciplinePriceLoading, setRepLoading]);
 
   const syncScopeBothModes = useCallback(async (objectName: string | null, modeOverride?: RepTab) => {
     const from = repFrom ? String(repFrom).slice(0, 10) : "";
@@ -704,10 +482,6 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
     const scopeReqId = beginScopeRefresh();
     const activeTab = modeOverride ?? repTab;
     const includeDiscipline = activeTab === "discipline";
-    const currentOptionsState: ReportOptionsState | null =
-      repOptObjects.length || Object.keys(repOptObjectIdByName).length
-        ? { objects: repOptObjects, objectIdByName: repOptObjectIdByName }
-        : null;
 
     resetRepBranchMeta();
     setRepOptLoading(true);
@@ -748,7 +522,7 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
         setRepLoading(false);
       }
     }
-  }, [beginScopeRefresh, commitLoadedScope, fetchDiscipline, loadReportScope, repFrom, repOptObjectIdByName, repOptObjects, repTab, repTo, resetRepBranchMeta, setRepLoading, setRepOptLoading]);
+  }, [beginScopeRefresh, commitLoadedScope, currentOptionsState, fetchDiscipline, loadReportScope, repFrom, repTab, repTo, resetRepBranchMeta, setRepLoading, setRepOptLoading]);
 
   const applyObjectFilter = useCallback(async (obj: string | null) => {
     setRepObjectName(obj);
@@ -759,11 +533,6 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
     const from = repFrom ? String(repFrom).slice(0, 10) : "";
     const to = repTo ? String(repTo).slice(0, 10) : "";
     const key = optionsKey(from, to);
-    const cached = getCached(optionsCacheRef.current, key);
-    if (cached) {
-      commitOptionsState(key, cached.value, cached.meta, { cache: false, fromCache: true });
-      return;
-    }
     const inFlight = inFlightOptionsRef.current.get(key);
     if (inFlight) {
       await inFlight;
@@ -774,10 +543,18 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
     const task = (async () => {
       setRepOptLoading(true);
       try {
-        const result = await fetchDirectorWarehouseReportOptionsTracked({ from, to });
+        const result = await loadReportScope({
+          from,
+          to,
+          objectName: repObjectName ?? null,
+          optionsState: currentOptionsState,
+          includeDiscipline: false,
+          skipDisciplinePrices: true,
+        });
         if (reqId !== optionsReqSeqRef.current) return;
-        const normalized = normalizeReportOptionsState(result.payload);
-        commitOptionsState(key, normalized, result.meta);
+        commitOptionsState(key, result.optionsState, result.optionsMeta, {
+          fromCache: result.optionsFromCache,
+        });
       } catch (e: unknown) {
         if (reqId !== optionsReqSeqRef.current) return;
         if (__DEV__) {
@@ -792,7 +569,7 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
     })();
     inFlightOptionsRef.current.set(key, task);
     await task;
-  }, [commitOptionsState, getCached, optionsKey, repFrom, repTo, setRepOptLoading]);
+  }, [commitOptionsState, currentOptionsState, loadReportScope, optionsKey, repFrom, repObjectName, repTo, setRepOptLoading]);
 
   const applyReportPeriod = useCallback(async (nextFrom: string | null, nextTo: string | null) => {
     setReportPeriodState(nextFrom, nextTo);
@@ -859,12 +636,10 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
         from,
         to,
         objectName: currentObject,
-        optionsState:
-          repOptObjects.length || Object.keys(repOptObjectIdByName).length
-            ? { objects: repOptObjects, objectIdByName: repOptObjectIdByName }
-            : null,
+        optionsState: currentOptionsState,
         includeDiscipline: repTab === "discipline",
         skipDisciplinePrices: repTab !== "discipline",
+        bypassCache: true,
       });
       if (scopeReqId !== scopeLoadSeqRef.current) return;
       commitLoadedScope(scopeLoad, { includeDiscipline: repTab === "discipline" });
@@ -888,7 +663,7 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
         setRepLoading(false);
       }
     }
-  }, [beginScopeRefresh, commitLoadedScope, fetchDiscipline, loadReportScope, repFrom, repObjectName, repOptObjectIdByName, repOptObjects, repTab, repTo, resetRepBranchMeta, setRepLoading, setRepOptLoading]);
+  }, [beginScopeRefresh, commitLoadedScope, currentOptionsState, fetchDiscipline, loadReportScope, repFrom, repObjectName, repTab, repTo, resetRepBranchMeta, setRepLoading, setRepOptLoading]);
 
   const setReportTab = useCallback((tab: RepTab) => {
     const switchStart = nowMs();
@@ -921,10 +696,6 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
     const to = repTo ? String(repTo).slice(0, 10) : "";
     const currentObject = repObjectName ?? null;
     const scopeReqId = beginScopeRefresh();
-    const currentOptionsState: ReportOptionsState | null =
-      repOptObjects.length || Object.keys(repOptObjectIdByName).length
-        ? { objects: repOptObjects, objectIdByName: repOptObjectIdByName }
-        : null;
 
     resetRepBranchMeta();
     setRepOptLoading(true);
@@ -957,7 +728,7 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
       }
     })();
     logTiming("open_reports_dispatch", startedAt);
-  }, [beginScopeRefresh, commitLoadedScope, loadReportScope, logTiming, nowMs, repFrom, repObjectName, repOptObjectIdByName, repOptObjects, repTo, resetRepBranchMeta, setRepLoading, setRepOptLoading, setRepTabState]);
+  }, [beginScopeRefresh, commitLoadedScope, currentOptionsState, loadReportScope, logTiming, nowMs, repFrom, repObjectName, repTo, resetRepBranchMeta, setRepLoading, setRepOptLoading, setRepTabState]);
 
   return {
     repTab,

@@ -1,10 +1,11 @@
 import { supabase } from "../supabaseClient";
 import type { Database } from "../database.types";
 import { client, normStr } from "./_core";
-import { openHtmlAsPdfUniversal } from "./pdf";
+import { renderPdfHtmlToUri } from "../pdf/pdf.runner";
+import { renderProposalPdfErrorHtml, renderProposalPdfHtml } from "../pdf/pdf.proposal";
+import type { ProposalPdfModel } from "../pdf/pdf.model";
 import { listSuppliers } from "./suppliers";
 import type { Supplier } from "./types";
-import { normalizeRuTextForHtml } from "../text/encoding";
 
 type ProposalHeadRow = Pick<
   Database["public"]["Tables"]["proposals"]["Row"],
@@ -90,16 +91,16 @@ function rikKindLabel(rikCode?: string | null): string {
   const p = String(rikCode ?? "").trim().toUpperCase().split("-")[0];
   switch (p) {
     case "MAT":
-      return "Материал";
+      return "РњР°С‚РµСЂРёР°Р»";
     case "WRK":
     case "WORK":
-      return "Работа";
+      return "Р Р°Р±РѕС‚Р°";
     case "SRV":
-      return "Услуга";
+      return "РЈСЃР»СѓРіР°";
     case "KIT":
-      return "Комплект";
+      return "РљРѕРјРїР»РµРєС‚";
     case "SPEC":
-      return "Спец.";
+      return "РЎРїРµС†.";
     default:
       return "";
   }
@@ -109,10 +110,10 @@ function stripContextFromText(raw: unknown) {
   const s = String(raw ?? "").trim();
   if (!s) return "";
   return s
-    .replace(/объект\s*:\s*[^;\n]+;?\s*/gi, "")
-    .replace(/этаж\s*\/?\s*уровень\s*:\s*[^;\n]+;?\s*/gi, "")
-    .replace(/система\s*:\s*[^;\n]+;?\s*/gi, "")
-    .replace(/зона\s*\/?\s*участок\s*:\s*[^;\n]+;?\s*/gi, "")
+    .replace(/РѕР±СЉРµРєС‚\s*:\s*[^;\n]+;?\s*/gi, "")
+    .replace(/СЌС‚Р°Р¶\s*\/?\s*СѓСЂРѕРІРµРЅСЊ\s*:\s*[^;\n]+;?\s*/gi, "")
+    .replace(/СЃРёСЃС‚РµРјР°\s*:\s*[^;\n]+;?\s*/gi, "")
+    .replace(/Р·РѕРЅР°\s*\/?\s*СѓС‡Р°СЃС‚РѕРє\s*:\s*[^;\n]+;?\s*/gi, "")
     .replace(/\s{2,}/g, " ")
     .trim();
 }
@@ -155,30 +156,25 @@ function normalizeStatusRu(raw?: string | null) {
   const original = String(raw ?? "").trim();
   const s = original.toLowerCase();
   if (!s) return "-";
-  if (s === "draft" || s === "черновик") return "Черновик";
-  if (s === "pending" || s === "на утверждении") return "На утверждении";
-  if (s === "approved" || s === "утверждено" || s === "утверждена") return "Утверждена";
-  if (s === "rejected" || s === "cancelled" || s === "отклонено" || s === "отклонена") return "Отклонена";
+  if (s === "draft" || s === "С‡РµСЂРЅРѕРІРёРє") return "Р§РµСЂРЅРѕРІРёРє";
+  if (s === "pending" || s === "РЅР° СѓС‚РІРµСЂР¶РґРµРЅРёРё") return "РќР° СѓС‚РІРµСЂР¶РґРµРЅРёРё";
+  if (s === "approved" || s === "СѓС‚РІРµСЂР¶РґРµРЅРѕ" || s === "СѓС‚РІРµСЂР¶РґРµРЅР°") return "РЈС‚РІРµСЂР¶РґРµРЅР°";
+  if (s === "rejected" || s === "cancelled" || s === "РѕС‚РєР»РѕРЅРµРЅРѕ" || s === "РѕС‚РєР»РѕРЅРµРЅР°") return "РћС‚РєР»РѕРЅРµРЅР°";
   return original || "-";
+}
+
+function formatProposalNumber(value: number, locale: string) {
+  return value.toLocaleString(locale);
 }
 
 export async function buildProposalPdfHtml(proposalId: number | string): Promise<string> {
   const pid = String(proposalId);
   const locale = "ru-RU";
 
-  const esc = (s: unknown) =>
-    String(s ?? "")
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;");
-
   const num = (v?: unknown) => {
     const n = Number(String(v ?? "").replace(",", ".").trim());
     return Number.isFinite(n) ? n : 0;
   };
-
-  const fmt = (x: number) => x.toLocaleString(locale);
 
   try {
     const head = await selectProposalHeadSafe(pid);
@@ -302,262 +298,90 @@ export async function buildProposalPdfHtml(proposalId: number | string): Promise
           apps.data.map((a) => [
             String(getObjectField<string>(a, "app_code") ?? ""),
             String(getObjectField<string>(a, "name_human") ?? ""),
-          ])
+          ]),
         );
       }
     } catch {}
 
     const includeSupplier = pi.some((r) => String(r.supplier ?? "").trim() !== "");
-
-    const body = (pi.length ? pi : [{ id: 0 }])
-      .map((r, i: number) => {
-        if (!pi.length) {
-          return `<tr><td colspan="${includeSupplier ? 8 : 7}" class="empty">Нет строк</td></tr>`;
-        }
-
-        const qty = num(r.qty);
-        const price = num(getObjectField<unknown>(r, "price"));
-        const amount = qty * price;
-        const name = getObjectField<string>(r, "name_human") ?? "";
-        const kind = rikKindLabel(getObjectField<string | null>(r, "rik_code"));
-        const uom = getObjectField<string>(r, "uom") ?? "";
-        const appCode = getObjectField<string>(r, "app_code");
-        const app = appCode ? appNames[appCode] ?? appCode : "";
-        const noteText = stripContextFromText(
-          String(getObjectField<string>(r, "note") ?? "").trim().replace(/^прим\.\:\s*/i, "")
-        );
-        const appAndNote = [app, noteText].filter(Boolean).join(" · ");
-        const supplier = String(getObjectField<string>(r, "supplier") ?? "");
-
-        return `<tr>
-<td class="c-num">${i + 1}</td>
-<td class="c-name">
-  ${esc(name)}
-  ${kind ? `<div class="sub">Тип: ${esc(kind)}</div>` : ``}
-</td>
-<td class="c-qty">${qty ? fmt(qty) : ""}</td>
-<td class="c-uom">${esc(uom)}</td>
-<td class="c-app">${esc(appAndNote)}</td>
-${includeSupplier ? `<td class="c-supp">${esc(supplier)}</td>` : ``}
-<td class="c-price">${price ? fmt(price) : ""}</td>
-<td class="c-sum">${amount ? fmt(amount) : ""}</td>
-</tr>`;
-      })
-      .join("");
-
-    const suppliersHtml = supplierCards.length
-      ? `
-<div class="section-title">Поставщики</div>
-${supplierCards
-  .map((s) => {
-    const meta: string[] = [];
-    if (s.phone) meta.push(`Тел.: ${esc(s.phone)}`);
-    if (s.email) meta.push(`Email: ${esc(s.email)}`);
-    if (s.inn) meta.push(`ИНН: ${esc(s.inn)}`);
-    if (s.address) meta.push(`Адрес: ${esc(s.address)}`);
-
-    const metaLine = meta.filter(Boolean).join(" · ");
-    return `
-<div class="supplier-line">
-  <div class="s-name">${esc(s.name)}</div>
-  ${metaLine ? `<div class="s-meta">${metaLine}</div>` : ``}
-</div>`;
-  })
-  .join("")}
-`
-      : "";
-
     const total = pi.reduce((acc, r) => acc + num(r.qty) * num(r.price), 0);
     const generatedAt = new Date().toLocaleString(locale);
-    const dateStr = (submittedAt ? new Date(submittedAt) : new Date()).toLocaleString(locale);
-    const supplierTh = includeSupplier ? `<th style="width:160px">Поставщик</th>` : ``;
-    const sumColspan = includeSupplier ? 7 : 6;
 
-    const leftPairs: Array<{ label: string; value: string }> = [
-      { label: "Объект", value: objectName || "-" },
-      { label: "Этаж / уровень", value: levelName || "-" },
-      { label: "Система", value: systemName || "-" },
-      { label: "Зона / участок", value: zoneName || "-" },
+    const leftMetaFields = [
+      { label: "РћР±СЉРµРєС‚", value: objectName || "-" },
+      { label: "Р­С‚Р°Р¶ / СѓСЂРѕРІРµРЅСЊ", value: levelName || "-" },
+      { label: "РЎРёСЃС‚РµРјР°", value: systemName || "-" },
+      { label: "Р—РѕРЅР° / СѓС‡Р°СЃС‚РѕРє", value: zoneName || "-" },
     ];
 
-    const rightPairs: Array<{ label: string; value: string }> = [
-      { label: "Снабженец", value: buyerFio || "-" },
-      { label: "Нужно к", value: requestNeedBy || "-" },
-      { label: "Дата создания", value: requestCreatedAt || dateStr },
-      { label: "Статус", value: requestStatus || normalizeStatusRu(status) || "-" },
-      { label: "Заявка", value: requestDisplayNo ? `#${requestDisplayNo}` : "-" },
+    const rightMetaFields = [
+      { label: "РЎРЅР°Р±Р¶РµРЅРµС†", value: buyerFio || "-" },
+      { label: "РќСѓР¶РЅРѕ Рє", value: requestNeedBy || "-" },
+      { label: "Р”Р°С‚Р° СЃРѕР·РґР°РЅРёСЏ", value: requestCreatedAt || (submittedAt ? formatDateTime(submittedAt, locale) : generatedAt) },
+      { label: "РЎС‚Р°С‚СѓСЃ", value: requestStatus || normalizeStatusRu(status) || "-" },
+      { label: "Р—Р°СЏРІРєР°", value: requestDisplayNo ? `#${requestDisplayNo}` : "-" },
     ];
 
-    const leftHtml = leftPairs
-      .map((p) => `<div class="meta-item"><span class="ml">${esc(p.label)}:</span><span class="mv">${esc(p.value)}</span></div>`)
-      .join("");
+    const model: ProposalPdfModel = {
+      proposalLabel: prettyNo,
+      generatedAt,
+      approvedAt: approvedAt ? formatDateTime(approvedAt, locale) : "",
+      status: status ? normalizeStatusRu(status) : "",
+      leftMetaFields,
+      rightMetaFields,
+      suppliers: supplierCards.map((supplier) => {
+        const meta: string[] = [];
+        if (supplier.phone) meta.push(`РўРµР».: ${supplier.phone}`);
+        if (supplier.email) meta.push(`Email: ${supplier.email}`);
+        if (supplier.inn) meta.push(`РРќРќ: ${supplier.inn}`);
+        if (supplier.address) meta.push(`РђРґСЂРµСЃ: ${supplier.address}`);
+        return {
+          name: supplier.name,
+          metaLine: meta.filter(Boolean).join(" В· "),
+        };
+      }),
+      includeSupplier,
+      rows: pi.map((row) => {
+        const qty = num(row.qty);
+        const price = num(getObjectField<unknown>(row, "price"));
+        const amount = qty * price;
+        const appCode = getObjectField<string>(row, "app_code");
+        const app = appCode ? appNames[appCode] ?? appCode : "";
+        const noteText = stripContextFromText(
+          String(getObjectField<string>(row, "note") ?? "").trim().replace(/^РїСЂРёРј\.\:\s*/i, ""),
+        );
+        return {
+          name: String(getObjectField<string>(row, "name_human") ?? "").trim(),
+          kind: rikKindLabel(getObjectField<string | null>(row, "rik_code")),
+          qtyText: qty ? formatProposalNumber(qty, locale) : "",
+          uom: String(getObjectField<string>(row, "uom") ?? ""),
+          appAndNote: [app, noteText].filter(Boolean).join(" В· "),
+          supplier: String(getObjectField<string>(row, "supplier") ?? ""),
+          priceText: price ? formatProposalNumber(price, locale) : "",
+          amountText: amount ? formatProposalNumber(amount, locale) : "",
+        };
+      }),
+      totalText: formatProposalNumber(total, locale),
+      buyerFio: buyerFio || "",
+      serviceId: pid,
+    };
 
-    const rightHtml = rightPairs
-      .map((p) => `<div class="meta-item"><span class="ml">${esc(p.label)}:</span><span class="mv">${esc(p.value)}</span></div>`)
-      .join("");
-
-    return `<!doctype html>
-<html lang="ru">
-<head>
-<meta charset="utf-8"/>
-<title>Предложение ${esc(prettyNo)}</title>
-<meta name="viewport" content="width=device-width, initial-scale=1"/>
-<style>
-  :root{ --ink:#000; --muted:#222; --line:#000; --bg:#fff; }
-  *{ box-sizing:border-box; }
-  body{
-    font-family: Arial, Helvetica, sans-serif;
-    margin:0;
-    padding:16px;
-    color:var(--ink);
-    background:var(--bg);
-  }
-  .container{
-    max-width:980px;
-    margin:0 auto;
-    background:#fff;
-    padding:18px 20px;
-  }
-  header{ margin:0 0 14px 0; }
-  h1{ margin:0; font-size:20px; font-weight:700; }
-  .subtitle{ margin-top:6px; font-size:12px; }
-  .meta-wrap{ margin-top:10px; }
-  .meta-2col{
-    display:grid;
-    grid-template-columns: 1fr 1fr;
-    column-gap:40px;
-    align-items:start;
-  }
-  .meta-col{ display:flex; flex-direction:column; gap:6px; }
-  .meta-item{ font-size:12px; line-height:1.25; }
-  .ml{ font-weight:700; }
-  .mv{ margin-left:8px; word-break:break-word; }
-  .section-title{
-    margin-top:16px;
-    font-size:12px;
-    font-weight:700;
-  }
-  .supplier-line{ margin-top:8px; font-size:12px; }
-  .s-name{ font-weight:700; }
-  .s-meta{ margin-top:2px; color:#222; font-size:11px; }
-  table.items{
-    width:100%;
-    border-collapse:collapse;
-    margin-top:16px;
-    font-size:12px;
-  }
-  table.items th, table.items td{
-    border:1px solid var(--line);
-    padding:10px 10px;
-    vertical-align:top;
-  }
-  table.items th{
-    background:transparent;
-    font-weight:700;
-    text-align:center;
-  }
-  .c-num{ width:50px; text-align:center; }
-  .c-qty{ width:90px; text-align:center; }
-  .c-uom{ width:70px; text-align:center; }
-  .c-price{ width:110px; text-align:right; }
-  .c-sum{ width:120px; text-align:right; }
-  .c-supp{ width:160px; }
-  .sub{ margin-top:2px; font-size:11px; color:#222; opacity:.8; }
-  .sumline td{ font-weight:700; }
-  .empty{ text-align:center; font-style:italic; }
-  .signs{display:flex;gap:24px;margin-top:24px;flex-wrap:wrap}
-  .sign{flex:1 1 300px;border:1px dashed #cbd5e1;border-radius:8px;padding:10px 12px}
-  .line{margin-top:24px;border-bottom:1px solid #334155;width:220px}
-  .muted{ color:#333; font-size:11px; }
-  @media print{
-    body{padding:0;}
-    .container{max-width:none;margin:0;padding:12mm;}
-  }
-  @page{ margin:12mm; }
-</style>
-</head>
-<body>
-<div class="container">
-  <header>
-    <h1>Предложение на закупку № ${esc(prettyNo)}</h1>
-    <div class="subtitle">
-      Сформировано: ${esc(generatedAt)}
-      ${approvedAt ? ` · <b>Утверждено:</b> ${esc(new Date(approvedAt).toLocaleString(locale))}` : ""}
-      ${status ? ` · <b>Статус:</b> ${esc(normalizeStatusRu(status))}` : ""}
-    </div>
-  </header>
-
-  <div class="meta-wrap">
-    <div class="meta-2col">
-      <div class="meta-col">
-        ${leftHtml}
-      </div>
-      <div class="meta-col">
-        ${rightHtml}
-      </div>
-    </div>
-  </div>
-
-  ${suppliersHtml}
-
-  <table class="items">
-    <thead>
-      <tr>
-        <th style="width:36px">#</th>
-        <th>Наименование</th>
-        <th style="width:90px">Кол-во</th>
-        <th style="width:70px">Ед.</th>
-        <th style="width:160px">Применение</th>
-        ${supplierTh}
-        <th style="width:110px">Цена</th>
-        <th style="width:120px">Сумма</th>
-      </tr>
-    </thead>
-    <tbody>
-      ${body}
-      ${pi.length ? `<tr class="sumline"><td colspan="${sumColspan}" style="text-align:right">ИТОГО</td><td style="text-align:right">${fmt(total)}</td></tr>` : ""}
-    </tbody>
-  </table>
-
-  <div class="signs">
-    <div class="sign">
-      <div><b>Снабженец</b></div>
-      <div class="line"></div>
-      <div class="muted" style="margin-top:6px">/ ${esc(buyerFio || "")} /</div>
-    </div>
-    <div class="sign">
-      <div><b>Директор</b></div>
-      <div class="line"></div>
-      <div class="muted" style="margin-top:6px">/  /</div>
-    </div>
-  </div>
-
-  <div class="muted" style="margin-top:14px">
-    Служебный ID: ${esc(pid)}
-  </div>
-</div>
-</body>
-</html>`;
+    return renderProposalPdfHtml(model);
   } catch (e: unknown) {
-    const esc2 = (s: unknown) =>
-      String(s ?? "").replace(/[&<>"]/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[m]!));
-
-    return `<!doctype html><meta charset="utf-8"/><title>Ошибка</title>
-<pre style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; padding:16px;">Ошибка подготовки PDF: ${esc2(
-      getObjectField<string>(e, "message") || e
-    )}</pre>`;
+    return renderProposalPdfErrorHtml(String(getObjectField<string>(e, "message") || e));
   }
 }
 
 export async function exportProposalPdf(
   proposalId: number | string,
-  mode: "preview" | "share" = "preview"
+  mode: "preview" | "share" = "preview",
 ) {
   const html = await buildProposalPdfHtml(proposalId);
-  const normalizedHtml = normalizeRuTextForHtml(html, {
+  return renderPdfHtmlToUri({
+    html,
     documentType: "proposal",
     source: "director",
     maxLength: 500_000,
+    share: mode === "share",
   });
-  return openHtmlAsPdfUniversal(normalizedHtml, { share: mode === "share" });
 }

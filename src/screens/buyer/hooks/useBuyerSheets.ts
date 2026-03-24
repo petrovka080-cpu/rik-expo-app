@@ -1,4 +1,5 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo } from "react";
+import { useBuyerStore } from "../buyer.store";
 import type { BuyerGroup, BuyerSheetKind } from "../buyer.types";
 
 type UseBuyerSheetsParams = {
@@ -6,57 +7,56 @@ type UseBuyerSheetsParams = {
 };
 
 export function useBuyerSheets(params?: UseBuyerSheetsParams) {
-  const [sheetKind, setSheetKind] = useState<BuyerSheetKind>("none");
-  const [sheetGroup, setSheetGroup] = useState<BuyerGroup | null>(null);
-  const [sheetPid, setSheetPid] = useState<string | null>(null);
+  const modal = useBuyerStore((state) => state.modal);
+  const selectedRequestId = useBuyerStore((state) => state.selectedRequestId);
+  const setSelectedRequestId = useBuyerStore((state) => state.setSelectedRequestId);
+  const openModal = useBuyerStore((state) => state.openModal);
+  const closeModal = useBuyerStore((state) => state.closeModal);
 
+  const sheetKind: BuyerSheetKind = modal.type;
+  const sheetPid = modal.entityId ?? null;
   const isSheetOpen = sheetKind !== "none";
 
   const closeSheet = useCallback(() => {
-    setSheetKind("none");
-    setSheetGroup(null);
-    setSheetPid(null);
+    closeModal();
+    setSelectedRequestId(null);
     params?.onCloseExtras?.();
-  }, [params]);
+  }, [closeModal, params, setSelectedRequestId]);
 
   const openInboxSheet = useCallback((g: BuyerGroup) => {
-    setSheetGroup(g);
-    setSheetPid(null);
-    setSheetKind("inbox");
-  }, []);
+    const requestId = String(g?.request_id ?? "").trim() || null;
+    setSelectedRequestId(requestId);
+    openModal("inbox", requestId ?? undefined);
+  }, [openModal, setSelectedRequestId]);
 
   const openAccountingSheet = useCallback((pid: string | number) => {
-    setSheetPid(String(pid));
-    setSheetGroup(null);
-    setSheetKind("accounting");
-  }, []);
+    const proposalId = String(pid ?? "").trim();
+    setSelectedRequestId(null);
+    openModal("accounting", proposalId || undefined);
+  }, [openModal, setSelectedRequestId]);
 
   const openReworkSheet = useCallback((pid: string | number) => {
-    setSheetPid(String(pid));
-    setSheetGroup(null);
-    setSheetKind("rework");
-  }, []);
+    const proposalId = String(pid ?? "").trim();
+    setSelectedRequestId(null);
+    openModal("rework", proposalId || undefined);
+  }, [openModal, setSelectedRequestId]);
 
   const openPropDetailsSheet = useCallback((pid: string | number) => {
-    setSheetPid(String(pid));
-    setSheetGroup(null);
-    setSheetKind("prop_details");
-  }, []);
+    const proposalId = String(pid ?? "").trim();
+    setSelectedRequestId(null);
+    openModal("prop_details", proposalId || undefined);
+  }, [openModal, setSelectedRequestId]);
 
   const openRfqSheet = useCallback(() => {
-    setSheetPid(null);
-    setSheetGroup(null);
-    setSheetKind("rfq");
-  }, []);
+    setSelectedRequestId(null);
+    openModal("rfq");
+  }, [openModal, setSelectedRequestId]);
 
   return useMemo(
     () => ({
       sheetKind,
-      setSheetKind,
-      sheetGroup,
-      setSheetGroup,
       sheetPid,
-      setSheetPid,
+      selectedRequestId,
       isSheetOpen,
       closeSheet,
       openInboxSheet,
@@ -66,17 +66,16 @@ export function useBuyerSheets(params?: UseBuyerSheetsParams) {
       openRfqSheet,
     }),
     [
-      sheetKind,
-      sheetGroup,
-      sheetPid,
-      isSheetOpen,
       closeSheet,
-      openInboxSheet,
+      isSheetOpen,
       openAccountingSheet,
-      openReworkSheet,
+      openInboxSheet,
       openPropDetailsSheet,
+      openReworkSheet,
       openRfqSheet,
+      selectedRequestId,
+      sheetKind,
+      sheetPid,
     ],
   );
 }
-

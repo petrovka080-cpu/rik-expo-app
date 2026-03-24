@@ -3,7 +3,7 @@ import { formatRequestDisplay } from "../../src/lib/format";
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
-  View, FlatList, Platform, ScrollView, Animated,
+  View, Platform, ScrollView, Animated,
   TextInput
 } from 'react-native';
 import { useLatest } from "../../src/lib/useLatest";
@@ -18,8 +18,6 @@ import type {
   ProposalHeadLite,
   ProposalViewLine,
   BuyerTab,
-  BuyerGroup,
-  BuyerSheetKind,
 } from "../../src/screens/buyer/buyer.types";
 import ToastOverlay from "../../src/screens/buyer/ToastOverlay";
 import {
@@ -37,6 +35,7 @@ import {
   selectInboxKeyboardLayoutActive,
 } from "../../src/screens/buyer/buyer.screen.selectors";
 import { BUYER_SEARCH_PLACEHOLDER } from "../../src/screens/buyer/buyer.screen.constants";
+import { selectBuyerListLoading } from "../../src/screens/buyer/buyer.list.ui";
 import {
   selectBuyerDisableInboxFooterActions,
   selectBuyerShowInboxFooter,
@@ -109,6 +108,7 @@ import { useBuyerInboxRenderers } from "../../src/screens/buyer/hooks/useBuyerIn
 import { useBuyerProposalCardRenderer } from "../../src/screens/buyer/hooks/useBuyerProposalCardRenderer";
 import { useBuyerAlerts } from "../../src/screens/buyer/hooks/useBuyerAlerts";
 import { useBuyerScreenHeader } from "../../src/screens/buyer/hooks/useBuyerScreenHeader";
+import { useBuyerStore } from "../../src/screens/buyer/buyer.store";
 import RoleScreenLayout from "../../src/components/layout/RoleScreenLayout";
 
 const isWeb = Platform.OS === 'web';
@@ -118,7 +118,12 @@ import BuyerSubcontractTab from "../../src/screens/buyer/BuyerSubcontractTab";
 export default function BuyerScreen() {
   const busy = useGlobalBusy();
   const { alertUser: screenAlertUser } = useBuyerAlerts();
-  const [tab, setTab] = useState<BuyerTab>("inbox");
+  const tab = useBuyerStore((state) => state.activeTab);
+  const setTab = useBuyerStore((state) => state.setTab);
+  const searchQuery = useBuyerStore((state) => state.filters.searchQuery ?? "");
+  const setFilters = useBuyerStore((state) => state.setFilters);
+  const setLoading = useBuyerStore((state) => state.setLoading);
+  const setRefreshReason = useBuyerStore((state) => state.setRefreshReason);
   const [buyerFio, setBuyerFio] = useState<string>("");
   const {
     buyerHistory,
@@ -142,7 +147,7 @@ export default function BuyerScreen() {
   const [showAttachBlock, setShowAttachBlock] = useState(false);
   const {
     sheetKind,
-    sheetGroup,
+    selectedRequestId,
     isSheetOpen,
     closeSheet,
     openInboxSheet,
@@ -248,8 +253,6 @@ export default function BuyerScreen() {
     setSubcontractCount,
   } = useBuyerState();
 
-  const [searchQuery, setSearchQuery] = useState("");
-
   const {
     titleByPid,
     proposalNoByPid,
@@ -280,8 +283,6 @@ export default function BuyerScreen() {
     phone?: string | null;
     email?: string | null;
   } | null>(null);
-  type ListRow = BuyerGroup | { id: string };
-  const listRef = useRef<FlatList<ListRow> | null>(null);
 
   const tabsScrollRef = useRef<ScrollView | null>(null);
   const scrollTabsToStart = useCallback((animated = true) => {
@@ -300,6 +301,7 @@ export default function BuyerScreen() {
   useBuyerTabsAutoScroll(scrollTabsToStart);
   const { fetchInbox, fetchBuckets, onRefresh } = useBuyerLoadingController({
     supabase,
+    activeTab: tab,
     listBuyerInbox,
     preloadDisplayNos,
     preloadProposalTitles,
@@ -311,6 +313,7 @@ export default function BuyerScreen() {
     setRejected,
     setSubcontractCount,
     setRefreshing,
+    setRefreshReason,
     kickMsInbox: KICK_THROTTLE_MS,
     kickMsBuckets: 900,
     alert: screenAlertUser,
@@ -320,6 +323,7 @@ export default function BuyerScreen() {
 
   const {
     groups,
+    sheetGroup,
     rfqPickedPreview,
     supplierGroups,
     requiredSuppliers,
@@ -337,7 +341,7 @@ export default function BuyerScreen() {
     meta,
     attachments,
     sheetKind,
-    sheetGroup,
+    selectedRequestId,
     tab,
     pending,
     approved,
@@ -345,6 +349,10 @@ export default function BuyerScreen() {
     searchQuery,
     titleByPid
   });
+
+  const setSearchQuery = useCallback((value: string) => {
+    setFilters({ searchQuery: value });
+  }, [setFilters]);
 
   useEffect(() => {
     const ids = Array.from(
@@ -579,6 +587,34 @@ export default function BuyerScreen() {
     openProposalDetailsLines,
     openProposalDetailsAttachments,
   });
+
+  useEffect(() => {
+    setLoading({
+      list: selectBuyerListLoading(tab, loadingInbox, loadingBuckets) || refreshing,
+      action:
+        creating
+        || acctBusy
+        || propViewBusy
+        || propDocBusy
+        || propAttBusy
+        || rwBusy
+        || rfqBusy,
+    });
+  }, [
+    acctBusy,
+    creating,
+    loadingBuckets,
+    loadingInbox,
+    propAttBusy,
+    propDocBusy,
+    propViewBusy,
+    refreshing,
+    rfqBusy,
+    rwBusy,
+    setLoading,
+    tab,
+  ]);
+
   const sheetTitle = useBuyerSheetTitle({
     sheetKind,
     sheetGroup,
@@ -610,6 +646,7 @@ export default function BuyerScreen() {
     pickedIds.length,
     creating
   );
+  const showWebRefreshButton = isWeb && __DEV__ && tab !== "subcontracts";
 
   const ScreenBody = (
     <RoleScreenLayout style={[s.screen, { backgroundColor: UI.bg }]}>
@@ -631,13 +668,40 @@ export default function BuyerScreen() {
         paddingBottom: 10,
         paddingTop: 4
       }}>
-        <TextInput
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-          placeholder={BUYER_SEARCH_PLACEHOLDER}
-          placeholderTextColor="rgba(255,255,255,0.4)"
-          style={[s.fieldInput, { backgroundColor: 'rgba(255,255,255,0.06)', borderRadius: 16, height: 44, borderStyle: 'solid' }]}
-        />
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+          <TextInput
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            placeholder={BUYER_SEARCH_PLACEHOLDER}
+            placeholderTextColor="rgba(255,255,255,0.4)"
+            style={[
+              s.fieldInput,
+              {
+                flex: 1,
+                backgroundColor: 'rgba(255,255,255,0.06)',
+                borderRadius: 16,
+                height: 44,
+                borderStyle: 'solid',
+              },
+            ]}
+          />
+          {showWebRefreshButton ? (
+            <IconSquareButton
+              onPress={() => {
+                void onRefresh();
+              }}
+              accessibilityLabel="Обновить buyer"
+              width={44}
+              height={44}
+              radius={14}
+              bg="rgba(255,255,255,0.08)"
+              bgPressed="rgba(255,255,255,0.14)"
+              bgDisabled="rgba(255,255,255,0.04)"
+            >
+              <Ionicons name="refresh" size={18} color="#FFFFFF" />
+            </IconSquareButton>
+          ) : null}
+        </View>
       </Animated.View>
 
       {tab === "subcontracts" ? (
@@ -651,7 +715,6 @@ export default function BuyerScreen() {
           s={s}
           tab={tab}
           data={listData}
-          listRef={listRef}
           measuredHeaderMax={mainListHeaderPad}
           refreshing={refreshing}
           onRefresh={onRefresh}
@@ -660,8 +723,6 @@ export default function BuyerScreen() {
           scrollY={scrollY}
           renderGroupBlock={renderGroupBlock}
           renderProposalCard={renderProposalCard}
-          searchQuery={searchQuery}
-          setSearchQuery={setSearchQuery}
         />
       )}
 

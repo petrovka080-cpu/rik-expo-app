@@ -6,6 +6,11 @@ import {
   type DirectorReportFetchMeta,
 } from "./director_reports";
 import {
+  fetchDirectorReportCanonicalMaterials,
+  fetchDirectorReportCanonicalOptions,
+  fetchDirectorReportCanonicalWorks,
+} from "./director_reports.transport";
+import {
   adaptCanonicalMaterialsPayload,
   adaptCanonicalOptionsPayload,
   adaptCanonicalWorksPayload,
@@ -15,6 +20,11 @@ import type {
   DirectorReportOptions,
   DirectorReportPayload,
 } from "./director_reports.shared";
+import { trimMap } from "./director_reports.cache";
+import {
+  hasCanonicalWorksDetailLevels,
+  shouldRejectAllObjectsEmptyMaterialsPayload,
+} from "./director_reports.fallbacks";
 
 const DIRECTOR_REPORT_TRANSPORT_SCOPE_RPC_V1_MODE_RAW = String(
   process.env.EXPO_PUBLIC_DIRECTOR_REPORT_TRANSPORT_SCOPE_RPC_V1 ?? "",
@@ -47,11 +57,17 @@ export type DirectorReportTransportScopeResult = {
   disciplineMeta: DirectorReportFetchMeta | null;
   source: string;
   branchMeta: {
-    transportBranch: "rpc_scope_v1" | "legacy_scope_fallback";
+    transportBranch: "rpc_scope_v1" | "canonical_scope_fallback" | "legacy_scope_fallback";
     fallbackReason?: DirectorReportTransportScopeFallbackReason;
     rpcVersion?: "v1";
     pricedStage?: "base" | "priced" | null;
   };
+  fromCache: boolean;
+};
+
+type DirectorReportTransportScopeCacheEntry = {
+  ts: number;
+  value: Omit<DirectorReportTransportScopeResult, "fromCache">;
 };
 
 const DIRECTOR_REPORT_TRANSPORT_SCOPE_RPC_MODE: DirectorReportTransportScopeRpcMode = (() => {
@@ -66,6 +82,10 @@ const DIRECTOR_REPORT_TRANSPORT_SCOPE_RPC_MODE: DirectorReportTransportScopeRpcM
 
 let directorReportTransportScopeRpcAvailability: DirectorReportTransportScopeRpcAvailability = "unknown";
 let directorReportTransportScopeLastErrorMessage: string | null = null;
+const DIRECTOR_REPORT_TRANSPORT_SCOPE_CACHE_TTL_MS = 5 * 60 * 1000;
+const DIRECTOR_REPORT_TRANSPORT_SCOPE_CACHE_MAX = 40;
+const directorReportTransportScopeCache = new Map<string, DirectorReportTransportScopeCacheEntry>();
+const directorReportTransportScopeInFlight = new Map<string, Promise<Omit<DirectorReportTransportScopeResult, "fromCache">>>();
 
 class DirectorReportTransportScopeRpcError extends Error {
   disableForSession: boolean;
@@ -86,6 +106,17 @@ const makeTransportMeta = (
   stage,
   branch: "transport_rpc",
   chain: ["transport_rpc", "canonical_rpc"],
+  cacheLayer: "none",
+  pricedStage: stage === "discipline" ? (pricedStage ?? undefined) : undefined,
+});
+
+const makeCanonicalMeta = (
+  stage: DirectorReportFetchMeta["stage"],
+  pricedStage?: "base" | "priced" | null,
+): DirectorReportFetchMeta => ({
+  stage,
+  branch: "canonical_rpc",
+  chain: ["canonical_rpc"],
   cacheLayer: "none",
   pricedStage: stage === "discipline" ? (pricedStage ?? undefined) : undefined,
 });
@@ -157,6 +188,7 @@ const logDirectorReportTransportScope = (
     fallbackReason: result.branchMeta.fallbackReason ?? null,
     rpcVersion: result.branchMeta.rpcVersion ?? null,
     pricedStage: result.branchMeta.pricedStage ?? null,
+    fromCache: result.fromCache,
     optionsObjects: result.options.objects.length,
     reportRows: result.report?.rows?.length ?? 0,
     disciplineWorks: result.discipline?.works?.length ?? 0,
@@ -165,13 +197,56 @@ const logDirectorReportTransportScope = (
   });
 };
 
+const buildDirectorReportTransportScopeCacheKey = (args: {
+  from: string;
+  to: string;
+  objectName: string | null;
+  includeDiscipline: boolean;
+  skipDisciplinePrices: boolean;
+}) =>
+  [
+    String(args.from || ""),
+    String(args.to || ""),
+    String(args.objectName ?? ""),
+    args.includeDiscipline ? "discipline" : "report",
+    args.skipDisciplinePrices ? "base" : "priced",
+  ].join("|");
+
+const getCachedDirectorReportTransportScope = (
+  key: string,
+): Omit<DirectorReportTransportScopeResult, "fromCache"> | null => {
+  const hit = directorReportTransportScopeCache.get(key);
+  if (!hit) return null;
+  if (Date.now() - hit.ts > DIRECTOR_REPORT_TRANSPORT_SCOPE_CACHE_TTL_MS) {
+    directorReportTransportScopeCache.delete(key);
+    return null;
+  }
+  directorReportTransportScopeCache.delete(key);
+  directorReportTransportScopeCache.set(key, hit);
+  return hit.value;
+};
+
+const setCachedDirectorReportTransportScope = (
+  key: string,
+  value: Omit<DirectorReportTransportScopeResult, "fromCache">,
+) => {
+  if (directorReportTransportScopeCache.has(key)) {
+    directorReportTransportScopeCache.delete(key);
+  }
+  directorReportTransportScopeCache.set(key, {
+    ts: Date.now(),
+    value,
+  });
+  trimMap(directorReportTransportScopeCache, DIRECTOR_REPORT_TRANSPORT_SCOPE_CACHE_MAX);
+};
+
 async function fetchDirectorReportTransportScopeViaRpc(args: {
   from: string;
   to: string;
   objectName: string | null;
   includeDiscipline: boolean;
   skipDisciplinePrices: boolean;
-}): Promise<DirectorReportTransportScopeResult> {
+}): Promise<Omit<DirectorReportTransportScopeResult, "fromCache">> {
   const { data, error } = await supabase.rpc("director_report_transport_scope_v1", {
     p_from: args.from || null,
     p_to: args.to || null,
@@ -204,7 +279,7 @@ async function fetchDirectorReportTransportScopeViaRpc(args: {
       ? (envelope.priced_stage ?? (args.skipDisciplinePrices ? "base" : "priced"))
       : null;
 
-  const result: DirectorReportTransportScopeResult = {
+  const result: Omit<DirectorReportTransportScopeResult, "fromCache"> = {
     options,
     report,
     discipline,
@@ -221,6 +296,67 @@ async function fetchDirectorReportTransportScopeViaRpc(args: {
   return result;
 }
 
+async function buildDirectorReportTransportCanonicalScope(args: {
+  from: string;
+  to: string;
+  objectName: string | null;
+  includeDiscipline: boolean;
+  skipDisciplinePrices: boolean;
+  legacyObjectIdByName?: Record<string, string | null>;
+  fallbackReason: DirectorReportTransportScopeFallbackReason;
+}): Promise<Omit<DirectorReportTransportScopeResult, "fromCache"> | null> {
+  const pricedStage =
+    args.includeDiscipline
+      ? (args.skipDisciplinePrices ? "base" : "priced")
+      : null;
+  const [options, report, discipline] = await Promise.all([
+    fetchDirectorReportCanonicalOptions({
+      from: args.from,
+      to: args.to,
+    }),
+    fetchDirectorReportCanonicalMaterials({
+      from: args.from,
+      to: args.to,
+      objectName: args.objectName,
+    }),
+    args.includeDiscipline
+      ? fetchDirectorReportCanonicalWorks({
+        from: args.from,
+        to: args.to,
+        objectName: args.objectName,
+        includeCosts: !args.skipDisciplinePrices,
+      })
+      : Promise.resolve(null),
+  ]);
+
+  const objectIdByName = {
+    ...(options?.objectIdByName ?? {}),
+    ...(args.legacyObjectIdByName ?? {}),
+  };
+  if (!options || !report) return null;
+  if (shouldRejectAllObjectsEmptyMaterialsPayload(report, args.objectName, objectIdByName)) {
+    return null;
+  }
+  if (args.includeDiscipline && (!discipline || !hasCanonicalWorksDetailLevels(discipline))) {
+    return null;
+  }
+
+  return {
+    options,
+    report,
+    discipline: args.includeDiscipline ? discipline : null,
+    optionsMeta: makeCanonicalMeta("options"),
+    reportMeta: makeCanonicalMeta("report"),
+    disciplineMeta: args.includeDiscipline ? makeCanonicalMeta("discipline", pricedStage) : null,
+    source: "transport:director_report_canonical_scope",
+    branchMeta: {
+      transportBranch: "canonical_scope_fallback",
+      fallbackReason: args.fallbackReason,
+      pricedStage,
+    },
+  };
+}
+
 async function buildDirectorReportTransportScopeFallback(args: {
   from: string;
   to: string;
@@ -229,7 +365,21 @@ async function buildDirectorReportTransportScopeFallback(args: {
   skipDisciplinePrices: boolean;
   legacyObjectIdByName?: Record<string, string | null>;
   fallbackReason: DirectorReportTransportScopeFallbackReason;
-}): Promise<DirectorReportTransportScopeResult> {
+}): Promise<Omit<DirectorReportTransportScopeResult, "fromCache">> {
+  try {
+    const canonical = await buildDirectorReportTransportCanonicalScope(args);
+    if (canonical) return canonical;
+  } catch (error) {
+    if (__DEV__) {
+      console.warn("[director-report-transport] canonical fallback failed", {
+        errorMessage: error instanceof Error ? error.message : String(error),
+        from: args.from,
+        to: args.to,
+        objectName: args.objectName ?? null,
+      });
+    }
+  }
+
   const optionsResult = await fetchDirectorWarehouseReportOptionsTracked({
     from: args.from,
     to: args.to,
@@ -275,23 +425,18 @@ async function buildDirectorReportTransportScopeFallback(args: {
   };
 }
 
-export async function loadDirectorReportTransportScope(args: {
+async function loadDirectorReportTransportScopeLive(args: {
   from: string;
   to: string;
   objectName: string | null;
   includeDiscipline: boolean;
   skipDisciplinePrices: boolean;
   legacyObjectIdByName?: Record<string, string | null>;
-}): Promise<DirectorReportTransportScopeResult> {
+}): Promise<Omit<DirectorReportTransportScopeResult, "fromCache">> {
   if (DIRECTOR_REPORT_TRANSPORT_SCOPE_RPC_MODE === "force_off") {
     const fallback = await buildDirectorReportTransportScopeFallback({
       ...args,
       fallbackReason: "disabled",
-    });
-    logDirectorReportTransportScope(fallback, {
-      from: args.from,
-      to: args.to,
-      objectName: args.objectName ?? null,
     });
     return fallback;
   }
@@ -304,11 +449,6 @@ export async function loadDirectorReportTransportScope(args: {
       ...args,
       fallbackReason: "disabled",
     });
-    logDirectorReportTransportScope(fallback, {
-      from: args.from,
-      to: args.to,
-      objectName: args.objectName ?? null,
-    });
     return fallback;
   }
 
@@ -318,11 +458,6 @@ export async function loadDirectorReportTransportScope(args: {
       directorReportTransportScopeRpcAvailability = "available";
       directorReportTransportScopeLastErrorMessage = null;
     }
-    logDirectorReportTransportScope(rpcResult, {
-      from: args.from,
-      to: args.to,
-      objectName: args.objectName ?? null,
-    });
     return rpcResult;
   } catch (error) {
     const fallbackReason =
@@ -348,11 +483,70 @@ export async function loadDirectorReportTransportScope(args: {
       ...args,
       fallbackReason,
     });
-    logDirectorReportTransportScope(fallback, {
+    return fallback;
+  }
+}
+
+export async function loadDirectorReportTransportScope(args: {
+  from: string;
+  to: string;
+  objectName: string | null;
+  includeDiscipline: boolean;
+  skipDisciplinePrices: boolean;
+  legacyObjectIdByName?: Record<string, string | null>;
+  bypassCache?: boolean;
+}): Promise<DirectorReportTransportScopeResult> {
+  const cacheKey = buildDirectorReportTransportScopeCacheKey(args);
+  if (!args.bypassCache) {
+    const cached = getCachedDirectorReportTransportScope(cacheKey);
+    if (cached) {
+      const cachedResult: DirectorReportTransportScopeResult = {
+        ...cached,
+        fromCache: true,
+      };
+      logDirectorReportTransportScope(cachedResult, {
+        from: args.from,
+        to: args.to,
+        objectName: args.objectName ?? null,
+      });
+      return cachedResult;
+    }
+    const inFlight = directorReportTransportScopeInFlight.get(cacheKey);
+    if (inFlight) {
+      const joined = await inFlight;
+      const result: DirectorReportTransportScopeResult = {
+        ...joined,
+        fromCache: false,
+      };
+      logDirectorReportTransportScope(result, {
+        from: args.from,
+        to: args.to,
+        objectName: args.objectName ?? null,
+        joinedInFlight: true,
+      });
+      return result;
+    }
+  }
+
+  const task = loadDirectorReportTransportScopeLive(args);
+  directorReportTransportScopeInFlight.set(cacheKey, task);
+  try {
+    const live = await task;
+    setCachedDirectorReportTransportScope(cacheKey, live);
+    const result: DirectorReportTransportScopeResult = {
+      ...live,
+      fromCache: false,
+    };
+    logDirectorReportTransportScope(result, {
       from: args.from,
       to: args.to,
       objectName: args.objectName ?? null,
     });
-    return fallback;
+    return result;
+  } finally {
+    const activeTask = directorReportTransportScopeInFlight.get(cacheKey);
+    if (activeTask === task) {
+      directorReportTransportScopeInFlight.delete(cacheKey);
+    }
   }
 }

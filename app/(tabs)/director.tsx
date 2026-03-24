@@ -12,12 +12,15 @@ import DirectorFinanceContent from "../../src/screens/director/DirectorFinanceCo
 import DirectorReportsModal from "../../src/screens/director/DirectorReportsModal";
 import DirectorSheetModal from "../../src/screens/director/DirectorSheetModal";
 import { useDirectorScreenController } from "../../src/screens/director/useDirectorScreenController";
+import {
+  buildDirectorProductionReportPdfDescriptor,
+  buildDirectorSubcontractReportPdfDescriptor,
+} from "../../src/screens/director/director.reports.pdfService";
 import { useGlobalBusy } from "../../src/ui/GlobalBusy";
 import { buildPdfFileName } from "../../src/lib/documents/pdfDocument";
-import { preparePdfDocument, previewPdfDocument } from "../../src/lib/documents/pdfDocumentActions";
 import { generateDirectorPdfDocument } from "../../src/lib/documents/pdfDocumentGenerators";
+import { prepareAndPreviewGeneratedPdf } from "../../src/lib/pdf/pdf.runner";
 import {
-  exportDirectorProductionReportPdf,
   exportDirectorSubcontractReportPdf,
 } from "../../src/lib/api/pdf_director";
 
@@ -28,37 +31,24 @@ export default function DirectorScreen() {
   const reportsCompanyName = String((globalThis as any)?.process?.env?.EXPO_PUBLIC_COMPANY_NAME ?? "RIK Construction");
 
   const onExportProductionPdf = React.useCallback(async () => {
-    const title = "Производственный отчет";
-    const template = await generateDirectorPdfDocument({
-      title,
-      fileName: buildPdfFileName({
-        documentType: "director_report",
-        title,
-        dateIso: vm.reports.repTo ?? vm.reports.repFrom ?? undefined,
-      }),
-      documentType: "director_report",
-      getUri: async () => {
-        return await exportDirectorProductionReportPdf({
-          companyName: reportsCompanyName,
-          generatedBy: "Директор",
-          periodFrom: vm.reports.repFrom,
-          periodTo: vm.reports.repTo,
-          objectName: vm.reports.repObjectName,
-          repData: vm.reports.repData,
-          repDiscipline: vm.reports.repDiscipline,
-          preferPriceStage: vm.reports.repDisciplinePriceLoading ? "base" : "priced",
-        });
-      },
+    const template = await buildDirectorProductionReportPdfDescriptor({
+      companyName: reportsCompanyName,
+      generatedBy: "Директор",
+      periodFrom: vm.reports.repFrom,
+      periodTo: vm.reports.repTo,
+      objectName: vm.reports.repObjectName,
+      repData: vm.reports.repData,
+      repDiscipline: vm.reports.repDiscipline,
+      preferPriceStage: vm.reports.repDisciplinePriceLoading ? "base" : "priced",
     });
-    const doc = await preparePdfDocument({
+    await prepareAndPreviewGeneratedPdf({
       busy,
       supabase,
       key: "pdf:director:reports:production",
       label: "Открываю PDF…",
       descriptor: template,
-      getRemoteUrl: () => template.uri,
+      router,
     });
-    await previewPdfDocument(doc, { router });
   }, [
     busy,
     router,
@@ -71,7 +61,7 @@ export default function DirectorScreen() {
     vm.reports.repDisciplinePriceLoading,
   ]);
 
-  const onExportSubcontractPdf = React.useCallback(async () => {
+  const onExportSubcontractPdfLegacy = React.useCallback(async () => {
     const title = "Отчет по подрядам";
     const template = await generateDirectorPdfDocument({
       title,
@@ -91,16 +81,34 @@ export default function DirectorScreen() {
         });
       },
     });
-    const doc = await preparePdfDocument({
+    await prepareAndPreviewGeneratedPdf({
       busy,
       supabase,
       key: "pdf:director:reports:subcontract",
       label: "Открываю PDF…",
       descriptor: template,
-      getRemoteUrl: () => template.uri,
+      router,
     });
-    await previewPdfDocument(doc, { router });
   }, [busy, router, reportsCompanyName, vm.reports.repFrom, vm.reports.repTo, vm.reports.repObjectName]);
+
+  const onExportSubcontractPdf = React.useCallback(async () => {
+    const template = await buildDirectorSubcontractReportPdfDescriptor({
+      companyName: reportsCompanyName,
+      generatedBy: "Р”РёСЂРµРєС‚РѕСЂ",
+      periodFrom: vm.reports.repFrom,
+      periodTo: vm.reports.repTo,
+      objectName: vm.reports.repObjectName,
+    });
+    await prepareAndPreviewGeneratedPdf({
+      busy,
+      supabase,
+      key: "pdf:director:reports:subcontract",
+      label: "РћС‚РєСЂС‹РІР°СЋ PDFвЂ¦",
+      descriptor: template,
+      router,
+    });
+  }, [busy, router, reportsCompanyName, vm.reports.repFrom, vm.reports.repTo, vm.reports.repObjectName]);
+  void onExportSubcontractPdfLegacy;
 
   const financePeriodUi = React.useMemo(() => ({
     cardBg: UI.cardBg,
@@ -194,10 +202,11 @@ export default function DirectorScreen() {
           finPage={vm.finPage}
           finLoading={vm.finLoading}
           finRep={vm.finRep}
-          finSpendRows={vm.finSpendRows}
+          finSpendSummary={vm.finSpendSummary}
           finKindName={vm.finKindName}
           finKindList={vm.finKindList}
           finSupplier={vm.finSupplier}
+          finSupplierLoading={vm.finSupplierLoading}
           supplierPdfBusy={vm.financePanel.supplierPdfBusy}
           FIN_CRITICAL_DAYS={14}
           pushFin={vm.pushFin}

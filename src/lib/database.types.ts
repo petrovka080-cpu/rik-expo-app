@@ -16366,6 +16366,26 @@ export type Database = {
         }
         Returns: Json
       }
+      director_finance_panel_scope_v1: {
+        Args: {
+          p_critical_days?: number
+          p_due_days?: number
+          p_from?: string
+          p_to?: string
+        }
+        Returns: Json
+      }
+      director_finance_supplier_scope_v1: {
+        Args: {
+          p_critical_days?: number
+          p_due_days?: number
+          p_from?: string
+          p_kind_name?: string
+          p_supplier: string
+          p_to?: string
+        }
+        Returns: Json
+      }
       pdf_director_finance_source_v1: {
         Args: {
           p_critical_days?: number

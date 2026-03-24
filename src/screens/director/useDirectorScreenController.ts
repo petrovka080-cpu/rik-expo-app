@@ -12,7 +12,10 @@ import { useDirectorProposalRow } from "./director.proposal.row";
 import { useDirectorLifecycle } from "./director.lifecycle";
 import { useGlobalBusy } from "../../ui/GlobalBusy";
 import { fmtDateOnly } from "./director.helpers";
-import { listAccountantInbox } from "../../lib/api/accountant";
+import {
+    loadDirectorFinanceScreenScope,
+    loadDirectorFinanceSupportRows,
+} from "../../lib/api/directorFinanceScope.service";
 import {
     type FinPage,
     type Group,
@@ -20,28 +23,52 @@ import {
     type ProposalAttachmentRow,
 } from "./director.types";
 import {
-    computeFinanceRep,
-    fetchDirectorFinanceSummaryViaRpc,
     money as moneyHelper,
-    mapToFinanceRow,
-    normalizeFinSpendRows,
-    mid,
-    nnum,
-    addDaysIso,
-    parseMid,
+    type FinRep,
     type FinanceRow,
     type FinSpendRow,
-    type FinKindSupplierRow,
-    type FinSupplierPanelState,
+    type FinSpendSummary,
 } from "./director.finance";
 import { useIsFocused } from "@react-navigation/native";
 import { useDirectorUiStore } from "./directorUi.store";
 
-const warnDirectorFinance = (scope: "fetchFinSpendRows" | "fetchFinance" | "fetchFinanceSummary", error: unknown) => {
+const warnDirectorFinance = (
+    scope: "fetchFinSpendRows" | "fetchFinance" | "fetchFinanceSummary" | "fetchFinancePanelScope",
+    error: unknown,
+) => {
     if (__DEV__) {
         const message = error instanceof Error ? error.message : String(error ?? "");
         console.warn(`[director] ${scope}:`, message || error);
     }
+};
+
+const EMPTY_FIN_REP: FinRep = {
+    summary: {
+        approved: 0,
+        paid: 0,
+        partialPaid: 0,
+        toPay: 0,
+        overdueCount: 0,
+        overdueAmount: 0,
+        criticalCount: 0,
+        criticalAmount: 0,
+        partialCount: 0,
+        debtCount: 0,
+    },
+    report: {
+        suppliers: [],
+    },
+};
+
+const EMPTY_FIN_SPEND_SUMMARY: FinSpendSummary = {
+    header: {
+        approved: 0,
+        paid: 0,
+        toPay: 0,
+        overpay: 0,
+    },
+    kindRows: [],
+    overpaySuppliers: [],
 };
 
 export function useDirectorScreenController() {
@@ -59,114 +86,80 @@ export function useDirectorScreenController() {
     const setFinOpen = useDirectorUiStore((state) => state.setFinOpen);
     const finPage = useDirectorUiStore((state) => state.finPage);
     const setFinPage = useDirectorUiStore((state) => state.setFinPage);
+    const finLoading = useDirectorUiStore((state) => state.finLoading);
+    const setFinLoading = useDirectorUiStore((state) => state.setFinLoading);
     const finStackRef = useRef<FinPage[]>(["home"]);
-    const [finSupplier, setFinSupplier] = useState<FinSupplierPanelState | null>(null);
-    const [finLoading, setFinLoading] = useState(false);
     const [finRows, setFinRows] = useState<FinanceRow[]>([]);
     const [finSpendRows, setFinSpendRows] = useState<FinSpendRow[]>([]);
-    const [finRep, setFinRep] = useState(() => computeFinanceRep([], { dueDaysDefault: 7, criticalDays: 14 }));
+    const [finRep, setFinRep] = useState<FinRep>(EMPTY_FIN_REP);
+    const [finSpendSummary, setFinSpendSummary] = useState<FinSpendSummary>(EMPTY_FIN_SPEND_SUMMARY);
+    const [finSupportRowsLoaded, setFinSupportRowsLoaded] = useState(false);
     const finPeriodOpen = useDirectorUiStore((state) => state.finPeriodOpen);
     const setFinPeriodOpen = useDirectorUiStore((state) => state.setFinPeriodOpen);
     const finFrom = useDirectorUiStore((state) => state.finFrom);
     const setFinFrom = useDirectorUiStore((state) => state.setFinFrom);
     const finTo = useDirectorUiStore((state) => state.finTo);
     const setFinTo = useDirectorUiStore((state) => state.setFinTo);
-    const [finKindName, setFinKindName] = useState<string>("");
-    const [finKindList, setFinKindList] = useState<FinKindSupplierRow[]>([]);
+    const finKindName = useDirectorUiStore((state) => state.finKindName);
+    const setFinKindName = useDirectorUiStore((state) => state.setFinKindName);
+    const finSupplierSelection = useDirectorUiStore((state) => state.finSupplierSelection);
+    const setFinSupplierSelection = useDirectorUiStore((state) => state.setFinSupplierSelection);
     const FIN_DUE_DAYS_DEFAULT = 7;
     const FIN_CRITICAL_DAYS = 14;
 
-    const loadFinSpendRows = useCallback(async (): Promise<FinSpendRow[]> => {
-        let q = supabase
-            .from("v_director_finance_spend_kinds_v3")
-            .select("proposal_id,proposal_no,supplier,kind_code,kind_name,approved_alloc,paid_alloc,paid_alloc_cap,overpay_alloc,director_approved_at");
-
-        if (finFrom) q = q.gte("director_approved_at", finFrom);
-        if (finTo) q = q.lte("director_approved_at", finTo);
-
-        const { data, error } = await q;
-        if (error) throw error;
-        return normalizeFinSpendRows(data);
-    }, [finFrom, finTo]);
-
     const fetchFinance = useCallback(async () => {
         setFinLoading(true);
-        let nextRows: FinanceRow[] | null = null;
-        let nextSpendRows: FinSpendRow[] | null = null;
         try {
-            const [listResult, spendResult, summaryResult] = await Promise.allSettled([
-                listAccountantInbox(),
-                loadFinSpendRows(),
-                fetchDirectorFinanceSummaryViaRpc({
-                    dueDaysDefault: FIN_DUE_DAYS_DEFAULT,
-                    criticalDays: FIN_CRITICAL_DAYS,
-                    periodFromIso: finFrom,
-                    periodToIso: finTo,
-                }),
-            ]);
-
-            if (spendResult.status === "fulfilled") {
-                nextSpendRows = spendResult.value;
-                setFinSpendRows(nextSpendRows);
-            } else {
-                warnDirectorFinance("fetchFinSpendRows", spendResult.reason);
-            }
-
-            if (listResult.status !== "fulfilled") throw listResult.reason;
-            const list = listResult.value;
-            const mapped = (Array.isArray(list) ? list : [])
-                .map(mapToFinanceRow)
-                .filter(x => !!x && !!x.id)
-                .filter(x => Number.isFinite(Number(x.amount)));
-
-            const t0 = mid(new Date());
-            mapped.sort((a, b) => {
-                const aPaid = nnum(a.amount) > 0 && Math.max(nnum(a.amount) - nnum(a.paidAmount), 0) <= 0;
-                const bPaid = nnum(b.amount) > 0 && Math.max(nnum(b.amount) - nnum(b.paidAmount), 0) <= 0;
-                const aDueIso = a.dueDate ?? (a.invoiceDate ? addDaysIso(a.invoiceDate, FIN_DUE_DAYS_DEFAULT) : null) ?? (a.approvedAtIso ? addDaysIso(a.approvedAtIso, FIN_DUE_DAYS_DEFAULT) : null);
-                const bDueIso = b.dueDate ?? (b.invoiceDate ? addDaysIso(b.invoiceDate, FIN_DUE_DAYS_DEFAULT) : null) ?? (b.approvedAtIso ? addDaysIso(b.approvedAtIso, FIN_DUE_DAYS_DEFAULT) : null);
-                const aDue = parseMid(aDueIso) ?? 0;
-                const bDue = parseMid(bDueIso) ?? 0;
-                const aRest = Math.max(nnum(a.amount) - nnum(a.paidAmount), 0);
-                const bRest = Math.max(nnum(b.amount) - nnum(b.paidAmount), 0);
-                const aOver = (!aPaid && aRest > 0 && aDue && aDue < t0) ? 1 : 0;
-                const bOver = (!bPaid && bRest > 0 && bDue && bDue < t0) ? 1 : 0;
-                if (aOver !== bOver) return bOver - aOver;
-                return (aDue || 0) - (bDue || 0);
+            const scope = await loadDirectorFinanceScreenScope({
+                periodFromIso: finFrom,
+                periodToIso: finTo,
+                dueDaysDefault: FIN_DUE_DAYS_DEFAULT,
+                criticalDays: FIN_CRITICAL_DAYS,
+                includeSupportRows: false,
             });
 
-            nextRows = mapped;
-            if (summaryResult.status === "rejected") {
-                warnDirectorFinance("fetchFinanceSummary", summaryResult.reason);
-            }
-            const rep = summaryResult.status === "fulfilled" && summaryResult.value
-                ? summaryResult.value
-                : computeFinanceRep(mapped, {
-                    dueDaysDefault: FIN_DUE_DAYS_DEFAULT,
-                    criticalDays: FIN_CRITICAL_DAYS,
-                    periodFromIso: finFrom,
-                    periodToIso: finTo,
-                });
-            setFinRows(mapped);
-            setFinRep(rep);
-
-        } catch (e: unknown) {
-            warnDirectorFinance("fetchFinance", e);
-            if (nextRows) {
-                setFinRows(nextRows);
-                setFinRep(computeFinanceRep(nextRows, { dueDaysDefault: FIN_DUE_DAYS_DEFAULT, criticalDays: FIN_CRITICAL_DAYS }));
-            }
-            if (nextSpendRows == null) {
-                try {
-                    setFinSpendRows(await loadFinSpendRows());
-                } catch (spendError: unknown) {
-                    warnDirectorFinance("fetchFinSpendRows", spendError);
+            for (const issue of scope.issues) {
+                if (issue.scope === "finance_rows") {
+                    warnDirectorFinance("fetchFinance", issue.error);
+                } else if (issue.scope === "spend_rows") {
+                    warnDirectorFinance("fetchFinSpendRows", issue.error);
+                } else {
+                    warnDirectorFinance("fetchFinancePanelScope", issue.error);
                 }
             }
+
+            setFinRows(scope.financeRows);
+            setFinSpendRows(scope.spendRows);
+            setFinRep(scope.finRep);
+            setFinSpendSummary(scope.finSpendSummary);
+            setFinSupportRowsLoaded(scope.supportRowsLoaded);
+        } catch (e: unknown) {
+            warnDirectorFinance("fetchFinance", e);
         } finally {
             setFinLoading(false);
         }
-    }, [FIN_CRITICAL_DAYS, FIN_DUE_DAYS_DEFAULT, finFrom, finTo, loadFinSpendRows]);
+    }, [FIN_CRITICAL_DAYS, FIN_DUE_DAYS_DEFAULT, finFrom, finTo, setFinLoading]);
+
+    const loadFinanceSupportRows = useCallback(async () => {
+        const supportRows = await loadDirectorFinanceSupportRows({
+            periodFromIso: finFrom,
+            periodToIso: finTo,
+            dueDaysDefault: FIN_DUE_DAYS_DEFAULT,
+        });
+
+        for (const issue of supportRows.issues) {
+            if (issue.scope === "finance_rows") {
+                warnDirectorFinance("fetchFinance", issue.error);
+            } else if (issue.scope === "spend_rows") {
+                warnDirectorFinance("fetchFinSpendRows", issue.error);
+            }
+        }
+
+        setFinRows(supportRows.financeRows);
+        setFinSpendRows(supportRows.spendRows);
+        setFinSupportRowsLoaded(true);
+        return supportRows;
+    }, [FIN_DUE_DAYS_DEFAULT, finFrom, finTo]);
 
     // Navigation Logic for Finance
     const pushFin = useCallback((p: FinPage) => {
@@ -183,9 +176,6 @@ export function useDirectorScreenController() {
     const closeFinance = useCallback(() => {
         useDirectorUiStore.getState().closeFinanceUi();
         finStackRef.current = ["home"];
-        setFinSupplier(null);
-        setFinKindName("");
-        setFinKindList([]);
     }, []);
 
     const openFinancePage = useCallback((page: FinPage) => {
@@ -207,25 +197,32 @@ export function useDirectorScreenController() {
     const { rtToast, showRtToast, showSuccess } = useDirectorRtToast();
 
     // Requests/Proposals State
-    const [actingId, setActingId] = useState<string | null>(null);
-    const [reqDeleteId, setReqDeleteId] = useState<number | string | null>(null);
-    const [reqSendId, setReqSendId] = useState<number | string | null>(null);
-    const [propApproveId, setPropApproveId] = useState<string | null>(null);
-    const [propReturnId, setPropReturnId] = useState<string | null>(null);
+    const actingId = useDirectorUiStore((state) => state.actingId);
+    const setActingId = useDirectorUiStore((state) => state.setActingId);
+    const reqDeleteId = useDirectorUiStore((state) => state.reqDeleteId);
+    const setReqDeleteId = useDirectorUiStore((state) => state.setReqDeleteId);
+    const reqSendId = useDirectorUiStore((state) => state.reqSendId);
+    const setReqSendId = useDirectorUiStore((state) => state.setReqSendId);
+    const propApproveId = useDirectorUiStore((state) => state.propApproveId);
+    const setPropApproveId = useDirectorUiStore((state) => state.setPropApproveId);
+    const propReturnId = useDirectorUiStore((state) => state.propReturnId);
+    const setPropReturnId = useDirectorUiStore((state) => state.setPropReturnId);
     const [propAttByProp, setPropAttByProp] = useState<Record<string, ProposalAttachmentRow[]>>({});
     const [propAttBusyByProp, setPropAttBusyByProp] = useState<Record<string, boolean>>({});
     const [propAttErrByProp, setPropAttErrByProp] = useState<Record<string, string>>({});
     const sheetKind = useDirectorUiStore((state) => state.sheetKind);
-    const setSheetKind = useDirectorUiStore((state) => state.setSheetKind);
-    const sheetRequest = useDirectorUiStore((state) => state.sheetRequest);
-    const setSheetRequest = useDirectorUiStore((state) => state.setSheetRequest);
-    const sheetProposalId = useDirectorUiStore((state) => state.sheetProposalId);
-    const setSheetProposalId = useDirectorUiStore((state) => state.setSheetProposalId);
+    const selectedRequestId = useDirectorUiStore((state) => state.selectedRequestId);
+    const selectedProposalId = useDirectorUiStore((state) => state.selectedProposalId);
+    const openRequestSheetUi = useDirectorUiStore((state) => state.openRequestSheet);
+    const openProposalSheetUi = useDirectorUiStore((state) => state.openProposalSheet);
     const [itemsByProp, setItemsByProp] = useState<Record<string, ProposalItem[]>>({});
     const [loadedByProp, setLoadedByProp] = useState<Record<string, boolean>>({});
-    const [loadingPropId, setLoadingPropId] = useState<string | null>(null);
-    const [decidingId, setDecidingId] = useState<string | null>(null);
-    const [actingPropItemId, setActingPropItemId] = useState<number | null>(null);
+    const loadingPropId = useDirectorUiStore((state) => state.loadingPropId);
+    const setLoadingPropId = useDirectorUiStore((state) => state.setLoadingPropId);
+    const decidingId = useDirectorUiStore((state) => state.decidingId);
+    const setDecidingId = useDirectorUiStore((state) => state.setDecidingId);
+    const actingPropItemId = useDirectorUiStore((state) => state.actingPropItemId);
+    const setActingPropItemId = useDirectorUiStore((state) => state.setActingPropItemId);
     const [pdfHtmlByProp, setPdfHtmlByProp] = useState<Record<string, string>>({});
 
     const pdfTapLockRef = useRef<Record<string, boolean>>({});
@@ -240,21 +237,17 @@ export function useDirectorScreenController() {
     }, []);
 
     const openRequestSheet = useCallback((g: Group) => {
-        setSheetRequest(g);
-        setSheetProposalId(null);
-        setSheetKind('request');
-    }, [setSheetKind, setSheetProposalId, setSheetRequest]);
+        openRequestSheetUi(g.request_id);
+    }, [openRequestSheetUi]);
 
     const openProposalSheet = useCallback((pid: string) => {
-        setSheetProposalId(pid);
-        setSheetRequest(null);
-        setSheetKind('proposal');
-    }, [setSheetKind, setSheetProposalId, setSheetRequest]);
+        openProposalSheetUi(pid);
+    }, [openProposalSheetUi]);
 
     const requestActions = useDirectorRequestActions({
         busy, supabase, screenLock, reqDeleteId, reqSendId,
         labelForRequest: data.labelForRequest, setRows: data.setRows,
-        setSheetRequest, setActingId, setReqDeleteId, setReqSendId,
+        setActingId, setReqDeleteId, setReqSendId,
         fetchRows: data.fetchRows, fetchProps: data.fetchProps,
         closeSheet, showSuccess
     });
@@ -285,16 +278,17 @@ export function useDirectorScreenController() {
     });
 
     const financePanel = useDirectorFinancePanel({
-        busy, supabase, finPage, finFrom, finTo, finRows, finSpendRows, finLoading,
-        finSupplier, finKindName, fmtDateOnly, pushFin, popFin, closeFinance,
-        setFinSupplier, setFinKindName, setFinKindList, setFinFrom, setFinTo,
-        setFinPeriodOpen, fetchFinance,
+        busy, supabase, finPage, finFrom, finTo, finRows, finSpendRows, finSpendSummary, finLoading,
+        finSupportRowsLoaded,
+        finKindName, finSupplierSelection, fmtDateOnly, pushFin, popFin, closeFinance,
+        setFinSupplierSelection, setFinKindName, setFinFrom, setFinTo,
+        setFinPeriodOpen, fetchFinance, loadFinanceSupportRows,
         FIN_DUE_DAYS_DEFAULT, FIN_CRITICAL_DAYS
     });
 
     // Lifecycle
     useDirectorLifecycle({
-        dirTab, finFrom, finTo, repFrom: reports.repFrom, repTo: reports.repTo,
+        dirTab, requestTab: tab, finFrom, finTo, repFrom: reports.repFrom, repTo: reports.repTo,
         isScreenFocused, fetchRows: data.fetchRows, fetchProps: data.fetchProps,
         fetchFinance, fetchReport: reports.fetchReport,
         showRtToast
@@ -354,17 +348,23 @@ export function useDirectorScreenController() {
             });
     }, [data.rows, data.submittedAtByReq]);
 
+    const sheetRequest = useMemo(() => {
+        const requestId = String(selectedRequestId ?? "").trim();
+        if (!requestId) return null;
+        return groups.find((group) => String(group.request_id ?? "").trim() === requestId) ?? null;
+    }, [groups, selectedRequestId]);
+
     const sheetTitle = useMemo(() => {
         if (sheetKind === "request" && sheetRequest) {
             return `Заявка ${data.labelForRequest(sheetRequest.request_id)}`;
         }
-        if (sheetKind === "proposal" && sheetProposalId) {
-            const p = data.propsHeads.find((x) => String(x.id) === String(sheetProposalId));
+        if (sheetKind === "proposal" && selectedProposalId) {
+            const p = data.propsHeads.find((x) => String(x.id) === String(selectedProposalId));
             const pretty = String(p?.pretty ?? "").trim();
-            return pretty ? `Предложение ${pretty}` : `Предложение #${String(sheetProposalId).slice(0, 8)}`;
+            return pretty ? `Предложение ${pretty}` : `Предложение #${String(selectedProposalId).slice(0, 8)}`;
         }
         return "—";
-    }, [sheetKind, sheetRequest, sheetProposalId, data]);
+    }, [data, selectedProposalId, sheetKind, sheetRequest]);
 
     return {
         // Derived
@@ -381,7 +381,20 @@ export function useDirectorScreenController() {
         HEADER_MAX, HEADER_MIN,
 
         // Finance State
-        finOpen, finPage, finRows, finSpendRows, finRep, finPeriodOpen, finFrom, finTo, finSupplier, finKindName, finKindList, finLoading,
+        finOpen,
+        finPage,
+        finRows,
+        finSpendRows,
+        finSpendSummary,
+        finRep,
+        finPeriodOpen,
+        finFrom,
+        finTo,
+        finSupplier: financePanel.finSupplier,
+        finSupplierLoading: financePanel.finSupplierLoading,
+        finKindName,
+        finKindList: financePanel.finKindList,
+        finLoading,
 
         // Actions/Modals
         closeSheet, openRequestSheet, openProposalSheet,
@@ -398,7 +411,7 @@ export function useDirectorScreenController() {
         financePanel,
 
         // Individual flags/IDs for sheet
-        sheetKind, sheetRequest, sheetProposalId,
+        sheetKind, sheetRequest, sheetProposalId: selectedProposalId,
         actingId, reqDeleteId, reqSendId, propApproveId, propReturnId,
         itemsByProp, loadedByProp, decidingId, actingPropItemId, propAttByProp, propAttBusyByProp,
         propAttErrByProp,

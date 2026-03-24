@@ -1,5 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import type { WarehouseIssueHead, WarehouseIssueLine } from "../../lib/api/pdf_warehouse";
+import type { WarehouseIssueHead, WarehouseIssueLine } from "../../lib/pdf/pdf.warehouse";
 import {
   buildWarehouseIncomingMaterialsReportHtml,
   buildWarehouseIncomingRegisterHtml,
@@ -8,7 +8,7 @@ import {
   buildWarehouseMaterialsReportHtml,
   buildWarehouseObjectWorkReportHtml,
   exportWarehouseHtmlPdf,
-} from "../../lib/api/pdf_warehouse";
+} from "../../lib/pdf/pdf.warehouse";
 import {
   apiFetchIssuedMaterialsReportFast,
 } from "./warehouse.api";

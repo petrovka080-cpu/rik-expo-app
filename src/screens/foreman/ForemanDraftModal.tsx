@@ -1,6 +1,6 @@
 import React from "react";
 import { Alert, Platform, Pressable, Text, View } from "react-native";
-import { FlashList } from "@shopify/flash-list";
+import { FlashList } from "@/src/ui/FlashList";
 import RNModal from "react-native-modal";
 import type { ReqItemRow } from "../../lib/catalog_api";
 import CloseIconButton from "../../ui/CloseIconButton";
@@ -202,3 +202,4 @@ export default function ForemanDraftModal(p: Props) {
     </RNModal>
   );
 }
+

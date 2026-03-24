@@ -3,12 +3,21 @@ import * as FileSystemModule from "expo-file-system/legacy";
 import type { DocumentDescriptor } from "./pdfDocument";
 import { normalizePdfFileName } from "./pdfDocument";
 import { getFileSystemPaths } from "../fileSystemPaths";
-import { getUriScheme, hashString32, isHttpUri, normalizeLocalFileUri } from "../pdfFileContract";
+import {
+  createPdfSource,
+  getUriScheme,
+  hashString32,
+  normalizeLocalFileUri,
+  type PdfSource,
+  type PdfSourceKind,
+} from "../pdfFileContract";
 const FileSystemCompat = FileSystemModule as any;
 
 export type DocumentAsset = {
   assetId: string;
   uri: string;
+  fileSource: PdfSource;
+  sourceKind: PdfSourceKind;
   fileName: string;
   title: string;
   mimeType: "application/pdf";
@@ -56,15 +65,13 @@ const sanitizeStem = (value: string, fallback: string) =>
     .replace(/_+/g, "_")
     .replace(/^_+|_+$/g, "") || fallback;
 
-const isFileUri = (uri: string) => /^file:\/\//i.test(String(uri || "").trim());
-
 function logMaterializeStage(
   stage: string,
   payload: {
     uri?: string | null;
     exists?: boolean;
     size?: number;
-    sourceKind: "remote" | "local";
+    sourceKind: PdfSourceKind;
     fileName?: string;
     documentType?: string;
     originModule?: string;
@@ -98,7 +105,10 @@ async function getFileInfo(uri: string) {
   return { exists: false, error: lastError };
 }
 
-async function ensureLocalPdfUri(uri: string, fileName: string): Promise<{ uri: string; sizeBytes?: number }> {
+async function ensureLocalPdfUri(
+  source: PdfSource,
+  fileName: string,
+): Promise<{ uri: string; sizeBytes?: number; sourceKind: "local-file" }> {
   if (!FileSystemCompat) {
     throw new Error("Mobile PDF materialization requires expo-file-system");
   }
@@ -106,23 +116,27 @@ async function ensureLocalPdfUri(uri: string, fileName: string): Promise<{ uri: 
   const normalizedName = normalizePdfFileName(fileName, "document");
   const paths = getFileSystemPaths();
   const cacheDir = paths.cacheDir;
-  const hash = hashString32(uri);
+  const hash = hashString32(source.uri);
   const targetName = `pdf_${hash}_${sanitizeStem(normalizedName, "document.pdf")}`;
   const targetUri = `${cacheDir}${targetName}`;
   
   logMaterializeStage("pdf_source_received", {
-    uri,
-    sourceKind: isHttpUri(uri) ? "remote" : "local",
+    uri: source.uri,
+    sourceKind: source.kind,
     fileName,
   });
 
-  if (isHttpUri(uri)) {
+  if (source.kind === "blob") {
+    throw new Error("Mobile PDF materialization cannot use blob/data source");
+  }
+
+  if (source.kind === "remote-url") {
     logMaterializeStage("pdf_download_started", {
       uri: targetUri,
-      sourceKind: "remote",
+      sourceKind: "remote-url",
       fileName,
     });
-    const downloaded = await FileSystemCompat.downloadAsync(uri, targetUri);
+    const downloaded = await FileSystemCompat.downloadAsync(source.uri, targetUri);
     const downloadedUri = normalizeLocalFileUri(String(downloaded?.uri || targetUri));
     
     const info = await getFileInfo(downloadedUri);
@@ -131,12 +145,13 @@ async function ensureLocalPdfUri(uri: string, fileName: string): Promise<{ uri: 
     
     return {
       uri: downloadedUri,
+      sourceKind: "local-file",
       sizeBytes: Number.isFinite(Number(info.size)) ? Number(info.size) : undefined,
     };
   }
 
   // Local file materialization (e.g. from Library/Caches/Print/)
-  const sourceUri = normalizeLocalFileUri(uri);
+  const sourceUri = normalizeLocalFileUri(source.uri);
   const info = await getFileInfo(sourceUri);
   const sourceExists = Boolean(info?.exists);
 
@@ -151,7 +166,7 @@ async function ensureLocalPdfUri(uri: string, fileName: string): Promise<{ uri: 
   if (isVolatile || sourceUri !== targetUri) {
     logMaterializeStage("pdf_materialize_copy_started", {
       uri: sourceUri,
-      sourceKind: "local",
+      sourceKind: "local-file",
       fileName,
     });
     await FileSystemCompat.copyAsync({ from: sourceUri, to: targetUri });
@@ -160,12 +175,14 @@ async function ensureLocalPdfUri(uri: string, fileName: string): Promise<{ uri: 
     
     return {
       uri: targetUri,
+      sourceKind: "local-file",
       sizeBytes: Number.isFinite(Number(copiedInfo.size)) ? Number(copiedInfo.size) : undefined,
     };
   }
 
   return {
     uri: sourceUri,
+    sourceKind: "local-file",
     sizeBytes: Number.isFinite(Number(info.size)) ? Number(info.size) : undefined,
   };
 }
@@ -228,20 +245,23 @@ export function clearDocumentSessions() {
 
 export async function materializePdfAsset(doc: DocumentDescriptor): Promise<DocumentAsset> {
   cleanupExpiredDocumentSessions();
-  const rawUri = String(doc.uri || "").trim();
+  const rawSource = doc.fileSource ?? createPdfSource(doc.uri);
+  const rawUri = String(rawSource.uri || "").trim();
   const rawScheme = getUriScheme(rawUri);
   if (!rawUri) throw new Error("Document asset URI is empty");
 
   let finalUri = rawUri;
+  let finalSourceKind: PdfSourceKind = rawSource.kind;
   let sizeBytes: number | undefined;
 
   if (Platform.OS !== "web") {
-    if (rawScheme === "blob" || rawScheme === "data") {
+    if (rawSource.kind === "blob") {
       throw new Error("Mobile preview cannot use blob/data URI; expected a local PDF file");
     }
 
-    const materialized = await ensureLocalPdfUri(rawUri, doc.fileName);
+    const materialized = await ensureLocalPdfUri(rawSource, doc.fileName);
     finalUri = materialized.uri;
+    finalSourceKind = materialized.sourceKind;
     sizeBytes = materialized.sizeBytes;
 
     if (getUriScheme(finalUri) !== "file") {
@@ -254,7 +274,7 @@ export async function materializePdfAsset(doc: DocumentDescriptor): Promise<Docu
         uri: finalUri,
         exists: false,
         size: Number.isFinite(Number(finalInfo?.size)) ? Number(finalInfo?.size) : undefined,
-        sourceKind: "local",
+        sourceKind: "local-file",
         fileName: doc.fileName,
         documentType: doc.documentType,
         originModule: doc.originModule,
@@ -265,7 +285,7 @@ export async function materializePdfAsset(doc: DocumentDescriptor): Promise<Docu
       uri: finalUri,
       exists: true,
       size: Number.isFinite(Number(finalInfo?.size)) ? Number(finalInfo?.size) : undefined,
-      sourceKind: "local",
+      sourceKind: "local-file",
       fileName: doc.fileName,
       documentType: doc.documentType,
       originModule: doc.originModule,
@@ -276,6 +296,11 @@ export async function materializePdfAsset(doc: DocumentDescriptor): Promise<Docu
   const asset: DocumentAsset = {
     assetId,
     uri: finalUri,
+    fileSource: {
+      kind: finalSourceKind,
+      uri: finalUri,
+    },
+    sourceKind: finalSourceKind,
     fileName: doc.fileName,
     title: doc.title,
     mimeType: doc.mimeType,
@@ -291,7 +316,7 @@ export async function materializePdfAsset(doc: DocumentDescriptor): Promise<Docu
     uri: asset.uri,
     exists: typeof asset.sizeBytes === "number" ? true : undefined,
     size: asset.sizeBytes,
-    sourceKind: "local",
+    sourceKind: asset.sourceKind,
     fileName: asset.fileName,
     documentType: asset.documentType,
     originModule: asset.originModule,
@@ -301,6 +326,7 @@ export async function materializePdfAsset(doc: DocumentDescriptor): Promise<Docu
     documentType: asset.documentType,
     originModule: asset.originModule,
     source: asset.source,
+    sourceKind: asset.sourceKind,
     rawUri,
     rawScheme,
     finalUri: asset.uri,

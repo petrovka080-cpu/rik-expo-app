@@ -1,7 +1,6 @@
 import React from "react";
-import { Alert, Pressable, Text, View } from "react-native";
-import { FlashList } from "@shopify/flash-list";
-import RNModal from "react-native-modal";
+import { Alert, Modal, Pressable, Text, View } from "react-native";
+import { FlashList } from "@/src/ui/FlashList";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import PeriodPickerSheet from "../../components/PeriodPickerSheet";
 import DirectorFinanceCardModal from "./DirectorFinanceCardModal";
@@ -330,33 +329,34 @@ export default function DirectorReportsModal({
             }}
           />
         ) : repObjOpen ? (
-          <RNModal
-            isVisible={repObjOpen}
-            onBackdropPress={onCloseRepObj}
-            onBackButtonPress={onCloseRepObj}
-            backdropOpacity={0.55}
-            useNativeDriver
-            useNativeDriverForBackdrop
-            hideModalContentWhileAnimating
-            style={{ margin: 0, justifyContent: "flex-end" }}
+          <Modal
+            visible={repObjOpen}
+            transparent
+            animationType="slide"
+            onRequestClose={onCloseRepObj}
           >
-            <View style={s.sheet}>
-              <View style={s.sheetHandle} />
-              <View style={{ flexDirection: "row", justifyContent: "space-between", paddingHorizontal: 14, paddingBottom: 10 }}>
-                <Text style={{ color: UI.text, fontWeight: "900", fontSize: 16 }}>{`Объекты (${repOptObjects?.length ?? 0})`}</Text>
-                <Pressable onPress={onCloseRepObj}><Text style={{ color: UI.sub, fontWeight: "900" }}>Закрыть</Text></Pressable>
-              </View>
-              <FlashList
-                style={{ maxHeight: 420 }}
-                data={objectOptions}
-                renderItem={renderObjectOptionRow}
-                keyExtractor={objectOptionKeyExtractor}
-                contentContainerStyle={{ paddingBottom: 4 }}
-                keyboardShouldPersistTaps="handled"
-                showsVerticalScrollIndicator={false}
-              />
-            </View>
-          </RNModal>
+            <Pressable
+              onPress={onCloseRepObj}
+              style={{ flex: 1, justifyContent: "flex-end", backgroundColor: "rgba(0,0,0,0.55)" }}
+            >
+              <Pressable onPress={() => {}} style={s.sheet}>
+                <View style={s.sheetHandle} />
+                <View style={{ flexDirection: "row", justifyContent: "space-between", paddingHorizontal: 14, paddingBottom: 10 }}>
+                  <Text style={{ color: UI.text, fontWeight: "900", fontSize: 16 }}>{`Объекты (${repOptObjects?.length ?? 0})`}</Text>
+                  <Pressable onPress={onCloseRepObj}><Text style={{ color: UI.sub, fontWeight: "900" }}>Закрыть</Text></Pressable>
+                </View>
+                <FlashList
+                  style={{ maxHeight: 420 }}
+                  data={objectOptions}
+                  renderItem={renderObjectOptionRow}
+                  keyExtractor={objectOptionKeyExtractor}
+                  contentContainerStyle={{ paddingBottom: 4 }}
+                  keyboardShouldPersistTaps="handled"
+                  showsVerticalScrollIndicator={false}
+                />
+              </Pressable>
+            </Pressable>
+          </Modal>
         ) : levelModal ? (
           <View style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, backgroundColor: UI.bg }}>
             <View style={{ paddingTop: detailTopInset, paddingHorizontal: 14, paddingBottom: 12, borderBottomWidth: 1, borderBottomColor: UI.border, backgroundColor: UI.bg }}>
@@ -514,3 +514,4 @@ export default function DirectorReportsModal({
     </DirectorFinanceCardModal>
   );
 }
+

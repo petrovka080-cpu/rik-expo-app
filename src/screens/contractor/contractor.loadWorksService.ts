@@ -33,11 +33,8 @@ export type ContractorWorkRow = {
 type WorkProgressRawRow = {
   id?: string | null;
   progress_id?: string | null;
-  request_id?: string | null;
-  req_id?: string | null;
-  contractor_job_id?: string | null;
-  subcontract_id?: string | null;
-  object_name?: string | null;
+  purchase_item_id?: string | null;
+  object_id?: string | null;
 };
 
 type PurchaseItemRawRow = {
@@ -130,7 +127,7 @@ export async function enrichWorksRows(params: {
     .filter((r) => {
       const id = String(r.progress_id || "").trim();
       if (!looksLikeUuid(id)) return false;
-      return !r.request_id || !r.contractor_job_id || !r.object_name;
+      return !r.request_id && !r.purchase_item_id;
     })
     .map((r) => String(r.progress_id || "").trim());
 
@@ -138,7 +135,7 @@ export async function enrichWorksRows(params: {
   if (wpIds.length) {
     const wpByIdRes = await supabaseClient
       .from("work_progress")
-      .select("id, request_id, req_id, contractor_job_id, subcontract_id, object_name")
+      .select("id, purchase_item_id, object_id")
       .in("id", wpIds);
     if (!wpByIdRes.error && Array.isArray(wpByIdRes.data)) {
       for (const row of wpByIdRes.data as WorkProgressRawRow[]) {
@@ -153,9 +150,7 @@ export async function enrichWorksRows(params: {
     if (!wp) return r;
     return {
       ...r,
-      request_id: r.request_id || wp.request_id || wp.req_id || null,
-      contractor_job_id: r.contractor_job_id || wp.contractor_job_id || wp.subcontract_id || null,
-      object_name: r.object_name || wp.object_name || null,
+      purchase_item_id: r.purchase_item_id || wp.purchase_item_id || null,
     };
   });
 

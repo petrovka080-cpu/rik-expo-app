@@ -1,4 +1,4 @@
-﻿import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -14,7 +14,7 @@ import {
   type NativeScrollEvent,
   type NativeSyntheticEvent,
 } from 'react-native';
-import { FlashList } from '@shopify/flash-list';
+import { FlashList } from '@/src/ui/FlashList';
 import {
   PRICE_TYPE_LABEL,
   STATUS_CONFIG,
@@ -553,3 +553,4 @@ const ds = StyleSheet.create({
     fontSize: 15,
   },
 });
+

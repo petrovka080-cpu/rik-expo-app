@@ -1,13 +1,12 @@
-﻿import React from "react";
+import React, { useCallback } from "react";
 import {
   View,
   Text,
   Animated,
   RefreshControl,
   Keyboard,
-  Platform,
-  FlatList,
 } from "react-native";
+import { FlashList } from "@/src/ui/FlashList";
 import { UI } from "../buyerUi";
 import {
   selectBuyerListLoading,
@@ -25,7 +24,6 @@ export const BuyerMainList = React.memo(function BuyerMainList(props: {
   s: StylesBag;
   tab: BuyerTab;
   data: ListItem[];
-  listRef?: React.RefObject<FlatList<ListItem> | null>;
   measuredHeaderMax: number;
   refreshing: boolean;
   onRefresh: () => void;
@@ -34,13 +32,10 @@ export const BuyerMainList = React.memo(function BuyerMainList(props: {
   scrollY: Animated.Value;
   renderGroupBlock: (g: ListItem, index: number) => React.ReactNode;
   renderProposalCard: (item: ListItem) => React.ReactNode;
-  searchQuery?: string;
-  setSearchQuery?: (q: string) => void;
 }) {
   const {
     tab,
     data,
-    listRef,
     measuredHeaderMax,
     refreshing,
     onRefresh,
@@ -55,60 +50,50 @@ export const BuyerMainList = React.memo(function BuyerMainList(props: {
   const isLoading = selectBuyerListLoading(tab, loadingInbox, loadingBuckets);
   const finalData = selectBuyerMainListData(data, isLoading, refreshing);
   const showEmptyState = selectBuyerShouldShowEmptyState(isLoading);
-  const renderCell: React.ComponentProps<typeof FlatList<ListItem>>["CellRendererComponent"] = ({
-    children,
-    style,
-    index,
-    ...rest
-  }) => (
-    <View
-      {...rest}
-      style={[
-        style,
-        {
-          position: "relative",
-          overflow: "visible",
-          zIndex: Math.max(1, 1000 - Math.max(0, index ?? 0)),
-          elevation: Math.max(1, 1000 - Math.max(0, index ?? 0)),
-          pointerEvents: "box-none",
-        },
-      ]}
-    >
-      {children}
-    </View>
+
+  const renderItem = useCallback(
+    ({ item, index }: { item: ListItem; index: number }) => {
+      if (item.__skeleton) {
+        return (
+          <View style={{ marginBottom: 10, paddingHorizontal: 16 }}>
+            <BuyerCardSkeleton s={s} />
+          </View>
+        );
+      }
+
+      const rowZ = Math.max(1, 1000 - Math.max(0, index));
+      return (
+        <View
+          style={{
+            marginBottom: 10,
+            paddingHorizontal: 16,
+            position: "relative",
+            overflow: "visible",
+            zIndex: rowZ,
+            elevation: rowZ,
+            pointerEvents: "box-none",
+          }}
+        >
+          {tab === "inbox" ? renderGroupBlock(item, index) : renderProposalCard(item)}
+        </View>
+      );
+    },
+    [renderGroupBlock, renderProposalCard, s, tab],
   );
 
   return (
-    <Animated.FlatList
-      ref={listRef}
+    <FlashList
       data={finalData}
-      CellRendererComponent={renderCell}
       keyExtractor={(item, index) => {
         if (item.__skeleton) return `skel:${index}`;
         return tab === "inbox"
           ? `g:${String(item?.request_id ?? index)}`
           : `p:${String(item?.id ?? index)}`;
       }}
-      renderItem={({ item, index }) => {
-        if (item.__skeleton) {
-          return <View style={{ marginBottom: 10, paddingHorizontal: 16 }}><BuyerCardSkeleton s={s} /></View>;
-        }
-        const rowZ = Math.max(1, 1000 - Math.max(0, index));
-        return (
-          <View
-            style={{
-              marginBottom: 10,
-              paddingHorizontal: 16,
-              position: "relative",
-              overflow: "visible",
-              zIndex: rowZ,
-              elevation: rowZ,
-              pointerEvents: "box-none",
-            }}
-          >
-            {tab === "inbox" ? renderGroupBlock(item as ListItem, index) : renderProposalCard(item as ListItem)}
-          </View>
-        );
+      renderItem={renderItem}
+      overrideItemLayout={(layout, item) => {
+        const measuredLayout = layout as { size?: number };
+        measuredLayout.size = item.__skeleton ? 180 : tab === "inbox" ? 192 : 176;
       }}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={UI.accent} colors={[UI.accent]} />}
       ListEmptyComponent={
@@ -126,8 +111,11 @@ export const BuyerMainList = React.memo(function BuyerMainList(props: {
       }}
       keyboardShouldPersistTaps="handled"
       keyboardDismissMode="on-drag"
-      onScrollBeginDrag={() => { Keyboard.dismiss(); }}
+      onScrollBeginDrag={() => {
+        Keyboard.dismiss();
+      }}
       removeClippedSubviews={false}
     />
   );
 });
+

@@ -1,5 +1,6 @@
 import React from "react";
-import { FlatList, Pressable, Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
+import { FlashList } from "@/src/ui/FlashList";
 import { UI, s } from "./director.styles";
 import type { FinRep, FinSupplierDebt } from "./director.finance";
 
@@ -145,11 +146,14 @@ export default function DirectorFinanceDebtModal(props: Props) {
   ), [criticalAmount, criticalCount, criticalPct, debtAmount, debtCount, overdueAmount, overdueCount, overduePct, props, suppliers, suppliersOpen]);
 
   return (
-    <FlatList
+    <FlashList
       style={{ flex: 1, minHeight: 0 }}
       data={suppliersOpen ? suppliers : []}
       renderItem={renderSupplierRow}
       keyExtractor={keyExtractor}
+      overrideItemLayout={(layout: any) => {
+        layout.size = 88;
+      }}
       ListHeaderComponent={listHeader}
       ListEmptyComponent={
         suppliersOpen ? <Text style={{ color: UI.sub, fontWeight: "800" }}>Нет данных</Text> : null
@@ -160,3 +164,4 @@ export default function DirectorFinanceDebtModal(props: Props) {
     />
   );
 }
+

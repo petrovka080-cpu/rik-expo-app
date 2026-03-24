@@ -1,50 +1,51 @@
 import type { SetStateAction } from "react";
 import { create } from "zustand";
+import type { CandidateOptionGroup, ClarifyQuestion, ForemanAiQuickItem } from "./foreman.ai";
 import type { ForemanHeaderAttentionState } from "./foreman.headerRequirements";
-import type { ForemanAiQuickItem } from "./foreman.ai";
 
 export type ForemanMainTab = "materials" | "subcontracts" | null;
-export type ForemanSelectedWorkType = { code: string; name: string } | null;
+export type ForemanAiOutcomeType =
+  | "idle"
+  | "resolved_items"
+  | "candidate_options"
+  | "clarify_required"
+  | "ai_unavailable";
 
 type ForemanUiStore = {
   isFioConfirmVisible: boolean;
   isFioLoading: boolean;
-  draftOpen: boolean;
-  busy: boolean;
+  fioBootstrapScopeKey: string | null;
   foremanMainTab: ForemanMainTab;
-  draftDeleteBusy: boolean;
-  draftSendBusy: boolean;
-  calcVisible: boolean;
-  catalogVisible: boolean;
-  workTypePickerVisible: boolean;
-  selectedWorkType: ForemanSelectedWorkType;
   aiQuickVisible: boolean;
   aiQuickText: string;
   aiQuickLoading: boolean;
   aiQuickError: string;
   aiQuickNotice: string;
   aiQuickPreview: ForemanAiQuickItem[];
+  aiQuickOutcomeType: ForemanAiOutcomeType;
+  aiQuickCandidateGroups: CandidateOptionGroup[];
+  aiQuickQuestions: ClarifyQuestion[];
+  aiUnavailableReason: string;
   headerAttention: ForemanHeaderAttentionState | null;
   selectedObjectName: string;
+  foremanHistory: string[];
   setIsFioConfirmVisible: (value: boolean) => void;
   setIsFioLoading: (value: boolean) => void;
-  setDraftOpen: (value: boolean) => void;
-  setBusy: (value: boolean) => void;
+  setFioBootstrapScopeKey: (value: string | null) => void;
   setForemanMainTab: (value: ForemanMainTab) => void;
-  setDraftDeleteBusy: (value: boolean) => void;
-  setDraftSendBusy: (value: boolean) => void;
-  setCalcVisible: (value: boolean) => void;
-  setCatalogVisible: (value: boolean) => void;
-  setWorkTypePickerVisible: (value: boolean) => void;
-  setSelectedWorkType: (value: ForemanSelectedWorkType) => void;
   setAiQuickVisible: (value: boolean) => void;
   setAiQuickText: (value: string) => void;
   setAiQuickLoading: (value: boolean) => void;
   setAiQuickError: (value: string) => void;
   setAiQuickNotice: (value: SetStateAction<string>) => void;
   setAiQuickPreview: (value: ForemanAiQuickItem[]) => void;
+  setAiQuickOutcomeType: (value: ForemanAiOutcomeType) => void;
+  setAiQuickCandidateGroups: (value: CandidateOptionGroup[]) => void;
+  setAiQuickQuestions: (value: ClarifyQuestion[]) => void;
+  setAiUnavailableReason: (value: string) => void;
   setHeaderAttention: (value: SetStateAction<ForemanHeaderAttentionState | null>) => void;
   setSelectedObjectName: (value: string) => void;
+  setForemanHistory: (value: string[]) => void;
   resetAiQuickUi: () => void;
 };
 
@@ -54,42 +55,40 @@ const resolveUpdate = <T,>(value: SetStateAction<T>, prev: T): T =>
 export const useForemanUiStore = create<ForemanUiStore>((set) => ({
   isFioConfirmVisible: false,
   isFioLoading: false,
-  draftOpen: false,
-  busy: false,
+  fioBootstrapScopeKey: null,
   foremanMainTab: null,
-  draftDeleteBusy: false,
-  draftSendBusy: false,
-  calcVisible: false,
-  catalogVisible: false,
-  workTypePickerVisible: false,
-  selectedWorkType: null,
   aiQuickVisible: false,
   aiQuickText: "",
   aiQuickLoading: false,
   aiQuickError: "",
   aiQuickNotice: "",
   aiQuickPreview: [],
+  aiQuickOutcomeType: "idle",
+  aiQuickCandidateGroups: [],
+  aiQuickQuestions: [],
+  aiUnavailableReason: "",
   headerAttention: null,
   selectedObjectName: "",
+  foremanHistory: [],
   setIsFioConfirmVisible: (value) => set({ isFioConfirmVisible: value }),
   setIsFioLoading: (value) => set({ isFioLoading: value }),
-  setDraftOpen: (value) => set({ draftOpen: value }),
-  setBusy: (value) => set({ busy: value }),
+  setFioBootstrapScopeKey: (value) => set({ fioBootstrapScopeKey: value }),
   setForemanMainTab: (value) => set({ foremanMainTab: value }),
-  setDraftDeleteBusy: (value) => set({ draftDeleteBusy: value }),
-  setDraftSendBusy: (value) => set({ draftSendBusy: value }),
-  setCalcVisible: (value) => set({ calcVisible: value }),
-  setCatalogVisible: (value) => set({ catalogVisible: value }),
-  setWorkTypePickerVisible: (value) => set({ workTypePickerVisible: value }),
-  setSelectedWorkType: (value) => set({ selectedWorkType: value }),
   setAiQuickVisible: (value) => set({ aiQuickVisible: value }),
   setAiQuickText: (value) => set({ aiQuickText: value }),
   setAiQuickLoading: (value) => set({ aiQuickLoading: value }),
   setAiQuickError: (value) => set({ aiQuickError: value }),
   setAiQuickNotice: (value) => set((state) => ({ aiQuickNotice: resolveUpdate(value, state.aiQuickNotice) })),
   setAiQuickPreview: (value) => set({ aiQuickPreview: Array.isArray(value) ? value : [] }),
-  setHeaderAttention: (value) => set((state) => ({ headerAttention: resolveUpdate(value, state.headerAttention) })),
+  setAiQuickOutcomeType: (value) => set({ aiQuickOutcomeType: value }),
+  setAiQuickCandidateGroups: (value) =>
+    set({ aiQuickCandidateGroups: Array.isArray(value) ? value : [] }),
+  setAiQuickQuestions: (value) => set({ aiQuickQuestions: Array.isArray(value) ? value : [] }),
+  setAiUnavailableReason: (value) => set({ aiUnavailableReason: value }),
+  setHeaderAttention: (value) =>
+    set((state) => ({ headerAttention: resolveUpdate(value, state.headerAttention) })),
   setSelectedObjectName: (value) => set({ selectedObjectName: value }),
+  setForemanHistory: (value) => set({ foremanHistory: Array.isArray(value) ? value : [] }),
   resetAiQuickUi: () =>
     set({
       aiQuickVisible: false,
@@ -98,5 +97,9 @@ export const useForemanUiStore = create<ForemanUiStore>((set) => ({
       aiQuickError: "",
       aiQuickNotice: "",
       aiQuickPreview: [],
+      aiQuickOutcomeType: "idle",
+      aiQuickCandidateGroups: [],
+      aiQuickQuestions: [],
+      aiUnavailableReason: "",
     }),
 }));

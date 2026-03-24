@@ -1,5 +1,6 @@
 import React, { useCallback, useMemo } from "react";
-import { ActivityIndicator, FlatList, Platform, Pressable, ScrollView, Text, TextInput, View } from "react-native";
+import { ActivityIndicator, Platform, Pressable, ScrollView, Text, TextInput, View } from "react-native";
+import { FlashList } from "@/src/ui/FlashList";
 import { Ionicons } from "@expo/vector-icons";
 import type { ReqItemRow } from "../../lib/catalog_api";
 import DeleteAllButton from "../../ui/DeleteAllButton";
@@ -129,10 +130,13 @@ export function ApprovedContractsList(props: {
   ), [historyLoading]);
 
   return (
-    <FlatList
+    <FlashList
       data={historyLoading ? [] : approvedContracts}
       keyExtractor={(item) => String(item.id)}
       renderItem={renderApprovedContractItem}
+      overrideItemLayout={(layout: any) => {
+        layout.size = 86;
+      }}
       ListEmptyComponent={listEmpty}
       ListFooterComponent={listFooter}
       contentContainerStyle={{ paddingTop: contentTopPad, paddingHorizontal: 16, paddingBottom: 120 }}
@@ -140,9 +144,6 @@ export function ApprovedContractsList(props: {
       scrollEventThrottle={16}
       keyboardShouldPersistTaps="handled"
       keyboardDismissMode={Platform.OS === "ios" ? "interactive" : "on-drag"}
-      initialNumToRender={8}
-      maxToRenderPerBatch={8}
-      windowSize={8}
       removeClippedSubviews={Platform.OS === "android"}
     />
   );
@@ -330,7 +331,11 @@ export function DraftSheetBody(props: {
         <Text style={s.draftRowMeta}>{`${item.qty} ${item.uom || ""}`.trim()}</Text>
         <Text style={s.draftRowStatus}>Статус: <Text style={s.draftRowStatusStrong}>Черновик</Text></Text>
       </View>
-      <Pressable style={s.rejectBtn} onPress={() => onRemoveDraftItem(item.id)}>
+      <Pressable
+        style={s.rejectBtn}
+        onPress={() => onRemoveDraftItem(item.id)}
+        accessibilityLabel="Удалить позицию"
+      >
         <Text style={s.rejectIcon}>×</Text>
       </Pressable>
     </View>
@@ -371,10 +376,13 @@ export function DraftSheetBody(props: {
 
       <View style={{ flex: 1, minHeight: 0 }}>
         {draftItems.length > 0 ? (
-          <FlatList
+          <FlashList
             data={draftItems}
             keyExtractor={(it) => it.id}
             renderItem={renderDraftItem}
+            overrideItemLayout={(layout: any) => {
+              layout.size = 82;
+            }}
           />
         ) : (
           <Text style={s.historyModalEmpty}>Позиции не найдены</Text>
@@ -431,3 +439,4 @@ export function DraftSheetBody(props: {
     </View>
   );
 }
+

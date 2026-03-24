@@ -2,6 +2,7 @@ import { Alert } from "react-native";
 import { useCallback, useState } from "react";
 import { supabase } from "../../../lib/supabaseClient";
 import { listForemanSubcontracts, type Subcontract } from "../../subcontracts/subcontracts.shared";
+import { useForemanHistoryStore } from "../foremanHistory.store";
 
 const warnForemanSubcontractHistory = (error: unknown) => {
   if (__DEV__) {
@@ -11,8 +12,12 @@ const warnForemanSubcontractHistory = (error: unknown) => {
 
 export function useForemanSubcontractHistory() {
   const [history, setHistory] = useState<Subcontract[]>([]);
-  const [historyLoading, setHistoryLoading] = useState(false);
-  const [historyVisible, setHistoryVisible] = useState(false);
+  const historyLoading = useForemanHistoryStore((state) => state.subcontractHistoryLoading);
+  const setHistoryLoading = useForemanHistoryStore((state) => state.setSubcontractHistoryLoading);
+  const historyVisible = useForemanHistoryStore((state) => state.subcontractHistoryVisible);
+  const openSubcontractHistory = useForemanHistoryStore((state) => state.openSubcontractHistory);
+  const closeSubcontractHistory = useForemanHistoryStore((state) => state.closeSubcontractHistory);
+  const setRefreshReason = useForemanHistoryStore((state) => state.setRefreshReason);
 
   const fetchHistory = useCallback(async (userId?: string | null) => {
     let uid = String(userId || "").trim();
@@ -26,8 +31,9 @@ export function useForemanSubcontractHistory() {
       return;
     }
 
-    setHistoryVisible(true);
+    openSubcontractHistory();
     setHistoryLoading(true);
+    setRefreshReason("history:subcontracts");
     try {
       const rows = await listForemanSubcontracts(uid);
       setHistory(Array.isArray(rows) ? rows : []);
@@ -38,9 +44,9 @@ export function useForemanSubcontractHistory() {
     } finally {
       setHistoryLoading(false);
     }
-  }, []);
+  }, [openSubcontractHistory, setHistoryLoading, setRefreshReason]);
 
-  const closeHistory = useCallback(() => setHistoryVisible(false), []);
+  const closeHistory = useCallback(() => closeSubcontractHistory(), [closeSubcontractHistory]);
 
   return {
     history,
@@ -48,6 +54,5 @@ export function useForemanSubcontractHistory() {
     historyVisible,
     fetchHistory,
     closeHistory,
-    setHistoryVisible,
   };
 }

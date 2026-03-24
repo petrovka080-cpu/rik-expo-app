@@ -5,14 +5,24 @@ import type { Database } from "../../lib/database.types";
 import { supabase } from "../../lib/supabaseClient";
 
 const FINANCE_SUMMARY_RPC_NAME = "director_finance_fetch_summary_v1";
+const FINANCE_PANEL_SCOPE_RPC_NAME = "director_finance_panel_scope_v1";
+const FINANCE_SUPPLIER_SCOPE_RPC_NAME = "director_finance_supplier_scope_v1";
 const FINANCE_SUMMARY_FAILED_COOLDOWN_MS = 10 * 60 * 1000;
 type RuntimeProcessEnv = { process?: { env?: Record<string, unknown> } };
-type FinanceSummaryRpcStatus = "unknown" | "available" | "missing" | "failed";
+type FinanceRpcStatus = "unknown" | "available" | "missing" | "failed";
 const readRuntimeEnvFlag = (key: string, fallback: string): string =>
   String(((globalThis as unknown as RuntimeProcessEnv).process?.env ?? {})[key] ?? fallback).trim();
 const DIRECTOR_FINANCE_SUMMARY_RPC_ENABLED =
   readRuntimeEnvFlag("EXPO_PUBLIC_DIRECTOR_FINANCE_SUMMARY_RPC", "1") !== "0";
-const financeSummaryRpcMeta: { status: FinanceSummaryRpcStatus; updatedAt: number } = {
+const financeSummaryRpcMeta: { status: FinanceRpcStatus; updatedAt: number } = {
+  status: "unknown",
+  updatedAt: 0,
+};
+const financePanelScopeRpcMeta: { status: FinanceRpcStatus; updatedAt: number } = {
+  status: "unknown",
+  updatedAt: 0,
+};
+const financeSupplierScopeRpcMeta: { status: FinanceRpcStatus; updatedAt: number } = {
   status: "unknown",
   updatedAt: 0,
 };
@@ -90,6 +100,26 @@ export type FinKindSupplierRow = {
   count: number;
 };
 
+export type FinSpendSummaryRow = {
+  kind: string;
+  approved: number;
+  paid: number;
+  overpay: number;
+  toPay: number;
+  suppliers: FinKindSupplierRow[];
+};
+
+export type FinSpendSummary = {
+  header: {
+    approved: number;
+    paid: number;
+    toPay: number;
+    overpay: number;
+  };
+  kindRows: FinSpendSummaryRow[];
+  overpaySuppliers: FinKindSupplierRow[];
+};
+
 export type FinSupplierPanelState = FinSupplierDebt & {
   amount?: number;
   _kindName?: string | null;
@@ -142,6 +172,10 @@ export type FinRep = {
   };
 };
 
+export type DirectorFinancePanelScope = FinRep & {
+  spend: FinSpendSummary;
+};
+
 export type FinanceSummary = FinRep["summary"];
 
 const DASH = "—";
@@ -149,12 +183,15 @@ const DASH = "—";
 const asFinanceRecord = (value: unknown): Record<string, unknown> =>
   value && typeof value === "object" ? (value as Record<string, unknown>) : {};
 
-const markFinanceSummaryRpcStatus = (status: FinanceSummaryRpcStatus) => {
-  financeSummaryRpcMeta.status = status;
-  financeSummaryRpcMeta.updatedAt = Date.now();
+const markFinanceRpcStatus = (
+  meta: { status: FinanceRpcStatus; updatedAt: number },
+  status: FinanceRpcStatus,
+) => {
+  meta.status = status;
+  meta.updatedAt = Date.now();
 };
 
-const isMissingFinanceSummaryRpcError = (error: unknown): boolean => {
+const isMissingFinanceRpcError = (error: unknown, fnName: string): boolean => {
   const errorRecord = asFinanceRecord(error);
   const message = String(errorRecord.message ?? error ?? "").toLowerCase();
   const details = String(errorRecord.details ?? "").toLowerCase();
@@ -162,18 +199,18 @@ const isMissingFinanceSummaryRpcError = (error: unknown): boolean => {
   const code = String(errorRecord.code ?? "").toLowerCase();
   const text = `${message} ${details} ${hint}`;
   return (
-    text.includes(`function public.${FINANCE_SUMMARY_RPC_NAME}`) ||
+    text.includes(`function public.${fnName.toLowerCase()}`) ||
     text.includes("could not find the function") ||
     code === "pgrst202"
   );
 };
 
-const canUseFinanceSummaryRpc = (): boolean => {
+const canUseFinanceRpc = (meta: { status: FinanceRpcStatus; updatedAt: number }): boolean => {
   if (!DIRECTOR_FINANCE_SUMMARY_RPC_ENABLED) return false;
-  if (financeSummaryRpcMeta.status === "missing") return false;
+  if (meta.status === "missing") return false;
   if (
-    financeSummaryRpcMeta.status === "failed" &&
-    Date.now() - financeSummaryRpcMeta.updatedAt < FINANCE_SUMMARY_FAILED_COOLDOWN_MS
+    meta.status === "failed" &&
+    Date.now() - meta.updatedAt < FINANCE_SUMMARY_FAILED_COOLDOWN_MS
   ) {
     return false;
   }
@@ -403,7 +440,7 @@ export async function fetchDirectorFinanceSummaryViaRpc(opts?: {
   dueDaysDefault?: number;
   criticalDays?: number;
 }): Promise<FinRep | null> {
-  if (!canUseFinanceSummaryRpc()) return null;
+  if (!canUseFinanceRpc(financeSummaryRpcMeta)) return null;
 
   const args: Database["public"]["Functions"]["director_finance_fetch_summary_v1"]["Args"] = {
     p_from: pickIso10(opts?.periodFromIso),
@@ -414,11 +451,14 @@ export async function fetchDirectorFinanceSummaryViaRpc(opts?: {
 
   const { data, error } = await supabase.rpc(FINANCE_SUMMARY_RPC_NAME, args);
   if (error) {
-    markFinanceSummaryRpcStatus(isMissingFinanceSummaryRpcError(error) ? "missing" : "failed");
+    markFinanceRpcStatus(
+      financeSummaryRpcMeta,
+      isMissingFinanceRpcError(error, FINANCE_SUMMARY_RPC_NAME) ? "missing" : "failed",
+    );
     throw error;
   }
 
-  markFinanceSummaryRpcStatus("available");
+  markFinanceRpcStatus(financeSummaryRpcMeta, "available");
   return adaptDirectorFinanceSummaryPayload(data);
 }
 
@@ -614,3 +654,401 @@ export const computeFinanceByKind = (spendRows: FinSpendRow[]): FinKindSummary[]
     }))
     .sort((left, right) => right.approved - left.approved);
 };
+
+const FINANCE_KIND_FALLBACK = "\u0414\u0440\u0443\u0433\u043e\u0435";
+const FINANCE_KIND_ORDER = [
+  "\u041c\u0430\u0442\u0435\u0440\u0438\u0430\u043b\u044b",
+  "\u0420\u0430\u0431\u043e\u0442\u044b",
+  "\u0423\u0441\u043b\u0443\u0433\u0438",
+  FINANCE_KIND_FALLBACK,
+];
+
+const normalizeFinKindSupplierRow = (value: unknown): FinKindSupplierRow => {
+  const row = asFinanceRecord(value);
+  return {
+    supplier: financeTextOrFallback(row.supplier, DASH),
+    approved: nnum(row.approved),
+    paid: nnum(row.paid),
+    overpay: nnum(row.overpay),
+    count: nnum(row.count),
+  };
+};
+
+const normalizeFinSpendSummaryRow = (value: unknown): FinSpendSummaryRow => {
+  const row = asFinanceRecord(value);
+  return {
+    kind: financeTextOrFallback(row.kind, FINANCE_KIND_FALLBACK),
+    approved: nnum(row.approved),
+    paid: nnum(row.paid),
+    overpay: nnum(row.overpay),
+    toPay: nnum(row.toPay),
+    suppliers: Array.isArray(row.suppliers) ? row.suppliers.map(normalizeFinKindSupplierRow) : [],
+  };
+};
+
+const adaptDirectorFinancePanelScopePayload = (value: unknown): DirectorFinancePanelScope => {
+  const payload = asFinanceRecord(value);
+  const summaryPayload = adaptDirectorFinanceSummaryPayload({
+    summary: payload.summary,
+    report: payload.report,
+  });
+  const spend = asFinanceRecord(payload.spend);
+  const header = asFinanceRecord(spend.header);
+  return {
+    ...summaryPayload,
+    spend: {
+      header: {
+        approved: nnum(header.approved),
+        paid: nnum(header.paid),
+        toPay: nnum(header.toPay),
+        overpay: nnum(header.overpay),
+      },
+      kindRows: Array.isArray(spend.kinds) ? spend.kinds.map(normalizeFinSpendSummaryRow) : [],
+      overpaySuppliers: Array.isArray(spend.overpaySuppliers)
+        ? spend.overpaySuppliers.map(normalizeFinKindSupplierRow)
+        : [],
+    },
+  };
+};
+
+export const computeFinanceSpendSummary = (spendRows: FinSpendRow[]): FinSpendSummary => {
+  const rows = Array.isArray(spendRows) ? spendRows : [];
+  let approved = 0;
+  let paid = 0;
+  let overpay = 0;
+  const byProposal = new Map<string, { approved: number; paid: number }>();
+  const totalsByKind = new Map<string, { approved: number; paid: number; overpay: number }>();
+  const suppliersByKind = new Map<string, Map<string, FinKindSupplierRow>>();
+  const overpayBySupplier = new Map<string, FinKindSupplierRow>();
+
+  for (const row of rows) {
+    const proposalId = financeText(row.proposal_id);
+    const kindName = financeText(row.kind_name) || FINANCE_KIND_FALLBACK;
+    const supplierName = financeText(row.supplier) || DASH;
+    const approvedValue = nnum(row.approved_alloc);
+    const paidValue = nnum(row.paid_alloc_cap ?? row.paid_alloc);
+    const overpayValue = nnum(row.overpay_alloc);
+
+    approved += approvedValue;
+    paid += paidValue;
+    overpay += overpayValue;
+
+    if (proposalId) {
+      const proposalTotals = byProposal.get(proposalId) ?? { approved: 0, paid: 0 };
+      proposalTotals.approved += approvedValue;
+      proposalTotals.paid += paidValue;
+      byProposal.set(proposalId, proposalTotals);
+    }
+
+    const kindTotals = totalsByKind.get(kindName) ?? { approved: 0, paid: 0, overpay: 0 };
+    kindTotals.approved += approvedValue;
+    kindTotals.paid += paidValue;
+    kindTotals.overpay += overpayValue;
+    totalsByKind.set(kindName, kindTotals);
+
+    const kindSuppliers = suppliersByKind.get(kindName) ?? new Map<string, FinKindSupplierRow>();
+    const supplierTotals = kindSuppliers.get(supplierName) ?? {
+      supplier: supplierName,
+      approved: 0,
+      paid: 0,
+      overpay: 0,
+      count: 0,
+    };
+    supplierTotals.approved += approvedValue;
+    supplierTotals.paid += paidValue;
+    supplierTotals.overpay += overpayValue;
+    supplierTotals.count += 1;
+    kindSuppliers.set(supplierName, supplierTotals);
+    suppliersByKind.set(kindName, kindSuppliers);
+
+    if (overpayValue > 0) {
+      const overpayTotals = overpayBySupplier.get(supplierName) ?? {
+        supplier: supplierName,
+        approved: 0,
+        paid: 0,
+        overpay: 0,
+        count: 0,
+      };
+      overpayTotals.overpay += overpayValue;
+      overpayTotals.count += 1;
+      overpayBySupplier.set(supplierName, overpayTotals);
+    }
+  }
+
+  let toPay = 0;
+  for (const proposalTotals of byProposal.values()) {
+    toPay += Math.max(proposalTotals.approved - proposalTotals.paid, 0);
+  }
+
+  const orderedKinds = [
+    ...FINANCE_KIND_ORDER.filter((kind) => totalsByKind.has(kind)),
+    ...Array.from(totalsByKind.keys()).filter((kind) => !FINANCE_KIND_ORDER.includes(kind)),
+  ];
+
+  const kindRows = orderedKinds
+    .map<FinSpendSummaryRow | null>((kind) => {
+      const totals = totalsByKind.get(kind);
+      if (!totals) return null;
+      if (totals.approved === 0 && totals.paid === 0 && totals.overpay === 0) return null;
+
+      const suppliers = Array.from((suppliersByKind.get(kind) ?? new Map()).values()).sort(
+        (left, right) => right.approved - left.approved,
+      );
+
+      return {
+        kind,
+        approved: totals.approved,
+        paid: totals.paid,
+        overpay: totals.overpay,
+        toPay: Math.max(totals.approved - totals.paid, 0),
+        suppliers,
+      };
+    })
+    .filter((row): row is FinSpendSummaryRow => row != null);
+
+  return {
+    header: {
+      approved,
+      paid,
+      toPay,
+      overpay,
+    },
+    kindRows,
+    overpaySuppliers: Array.from(overpayBySupplier.values()).sort((left, right) => right.overpay - left.overpay),
+  };
+};
+
+const makeFinancePeriodFilter = (periodFromIso?: string | null, periodToIso?: string | null) => {
+  const from = pickIso10(periodFromIso);
+  const to = pickIso10(periodToIso);
+  return (iso?: string | null) => {
+    const date = pickIso10(iso);
+    if (!date) return true;
+    if (from && date < from) return false;
+    if (to && date > to) return false;
+    return true;
+  };
+};
+
+export const computeFinanceSupplierPanel = (args: {
+  selection:
+    | {
+        supplier: string;
+        kindName?: string | null;
+      }
+    | null
+    | undefined;
+  rows: FinanceRow[];
+  spendRows: FinSpendRow[];
+  periodFromIso?: string | null;
+  periodToIso?: string | null;
+  dueDaysDefault?: number;
+  criticalDays?: number;
+}): FinSupplierPanelState | null => {
+  const supplierName = financeText(args.selection?.supplier);
+  const kindName = financeText(args.selection?.kindName);
+  if (!supplierName) return null;
+
+  const inPeriod = makeFinancePeriodFilter(args.periodFromIso, args.periodToIso);
+  const normalizedSpendRows = normalizeFinSpendRows(args.spendRows).map((row) => ({
+    ...row,
+    supplierName: financeText(row.supplier),
+    kindName: financeText(row.kind_name),
+    proposalId: financeText(row.proposal_id),
+    proposalNo: financeText(row.proposal_no),
+    approvedIso: pickIso10(row.director_approved_at, row.approved_at, row.approvedAtIso),
+  }));
+
+  const supplierSpendRows = normalizedSpendRows.filter((row) => row.supplierName === supplierName);
+  const supplierFinanceRows = (Array.isArray(args.rows) ? args.rows : []).filter(
+    (row) => financeText(row?.supplier) === supplierName,
+  );
+
+  let allowedProposalIds: Set<string> | null = null;
+  const proposalNoById: Record<string, string> = {};
+
+  if (kindName) {
+    const spend = supplierSpendRows
+      .filter((row) => row.kindName === kindName)
+      .filter((row) => inPeriod(row.approvedIso));
+
+    allowedProposalIds = new Set(spend.map((row) => row.proposalId).filter(Boolean));
+
+    for (const row of spend) {
+      if (row.proposalId && row.proposalNo) proposalNoById[row.proposalId] = row.proposalNo;
+    }
+  }
+
+  const financeRows = supplierFinanceRows
+    .filter((row) => inPeriod(pickIso10(row?.approvedAtIso, row?.raw?.approved_at, row?.raw?.director_approved_at)))
+    .filter((row) => {
+      if (!allowedProposalIds) return true;
+      const proposalId = financeText(row?.proposalId ?? row?.proposal_id);
+      return proposalId && allowedProposalIds.has(proposalId);
+    });
+
+  const dueDays = Number(args.dueDaysDefault ?? 7) || 7;
+  const criticalDays = Number(args.criticalDays ?? 14) || 14;
+  const now = mid(new Date());
+
+  const invoices = financeRows
+    .map((row, index) => {
+      const amount = pickFinanceAmount(row);
+      const paid = pickFinancePaid(row);
+      const rest = Math.max(amount - paid, 0);
+      const proposalId = financeText(row?.proposalId ?? row?.proposal_id);
+      const invoiceNumber = financeText(row?.invoiceNumber ?? row?.raw?.invoice_number);
+      const approvedIso =
+        pickApprovedIso(row) ??
+        pickIso10(row?.raw?.director_approved_at, row?.raw?.approved_at, row?.raw?.approvedAtIso);
+      const invoiceIso =
+        pickInvoiceIso(row) ??
+        pickIso10(row?.raw?.invoice_date, row?.raw?.invoice_at, row?.raw?.created_at);
+      const proposalNo = proposalId ? financeText(proposalNoById[proposalId] ?? row?.proposal_no) : "";
+      const title =
+        invoiceNumber
+          ? `\u0421\u0447\u0451\u0442 \u2116${invoiceNumber}`
+          : proposalNo
+            ? `\u041f\u0440\u0435\u0434\u043b\u043e\u0436\u0435\u043d\u0438\u0435 ${proposalNo}`
+            : proposalId
+              ? `\u041f\u0440\u0435\u0434\u043b\u043e\u0436\u0435\u043d\u0438\u0435 #${proposalId.slice(0, 8)}`
+              : "\u0421\u0447\u0451\u0442";
+      const dueIso =
+        row?.dueDate ??
+        row?.raw?.due_date ??
+        (invoiceIso ? addDaysIso(String(invoiceIso).slice(0, 10), dueDays) : null) ??
+        (approvedIso ? addDaysIso(String(approvedIso).slice(0, 10), dueDays) : null);
+      const dueMid = parseMid(dueIso) ?? 0;
+      const isOverdue = rest > 0 && !!dueMid && dueMid < now;
+
+      let isCritical = false;
+      if (isOverdue && dueMid) {
+        const days = Math.floor((now - dueMid) / (24 * 3600 * 1000));
+        isCritical = days >= criticalDays;
+      }
+
+      return {
+        id: [proposalId || "", invoiceNumber || "", String(invoiceIso ?? ""), String(approvedIso ?? ""), String(index)].join("|"),
+        title,
+        amount,
+        paid,
+        rest,
+        isOverdue,
+        isCritical,
+        approvedIso: approvedIso ? String(approvedIso) : null,
+        invoiceIso: invoiceIso ? String(invoiceIso) : null,
+        dueIso: dueIso ? String(dueIso) : null,
+      };
+    })
+    .filter((row) => row.amount > 0 || row.rest > 0);
+
+  const debtAmount = invoices.reduce((sum, row) => sum + Math.max(nnum(row.rest), 0), 0);
+  const debtCount = invoices.filter((row) => Math.max(nnum(row.rest), 0) > 0).length;
+  const overdueCount = invoices.filter((row) => row.isOverdue && Math.max(nnum(row.rest), 0) > 0).length;
+  const criticalCount = invoices.filter((row) => row.isCritical && Math.max(nnum(row.rest), 0) > 0).length;
+
+  return {
+    supplier: supplierName,
+    amount: debtAmount,
+    count: debtCount,
+    approved: debtAmount,
+    paid: 0,
+    toPay: debtAmount,
+    overdueCount,
+    criticalCount,
+    _kindName: kindName || "",
+    kindName: kindName || "",
+    invoices,
+  };
+};
+
+export async function fetchDirectorFinancePanelScopeViaRpc(opts?: {
+  periodFromIso?: string | null;
+  periodToIso?: string | null;
+  dueDaysDefault?: number;
+  criticalDays?: number;
+}): Promise<DirectorFinancePanelScope | null> {
+  if (!canUseFinanceRpc(financePanelScopeRpcMeta)) return null;
+
+  const args: Database["public"]["Functions"]["director_finance_panel_scope_v1"]["Args"] = {
+    p_from: pickIso10(opts?.periodFromIso),
+    p_to: pickIso10(opts?.periodToIso),
+    p_due_days: normalizeFinanceRpcInteger(opts?.dueDaysDefault, 7),
+    p_critical_days: normalizeFinanceRpcInteger(opts?.criticalDays, 14),
+  };
+
+  const { data, error } = await supabase.rpc(FINANCE_PANEL_SCOPE_RPC_NAME, args);
+  if (error) {
+    markFinanceRpcStatus(
+      financePanelScopeRpcMeta,
+      isMissingFinanceRpcError(error, FINANCE_PANEL_SCOPE_RPC_NAME) ? "missing" : "failed",
+    );
+    throw error;
+  }
+
+  markFinanceRpcStatus(financePanelScopeRpcMeta, "available");
+  return adaptDirectorFinancePanelScopePayload(data);
+}
+
+export async function fetchDirectorFinanceSupplierScopeViaRpc(opts: {
+  supplier: string;
+  kindName?: string | null;
+  periodFromIso?: string | null;
+  periodToIso?: string | null;
+  dueDaysDefault?: number;
+  criticalDays?: number;
+}): Promise<FinSupplierPanelState | null> {
+  const supplier = financeText(opts.supplier);
+  if (!supplier) return null;
+  if (!canUseFinanceRpc(financeSupplierScopeRpcMeta)) return null;
+
+  const args: Database["public"]["Functions"]["director_finance_supplier_scope_v1"]["Args"] = {
+    p_supplier: supplier,
+    p_kind_name: financeText(opts.kindName) || null,
+    p_from: pickIso10(opts.periodFromIso),
+    p_to: pickIso10(opts.periodToIso),
+    p_due_days: normalizeFinanceRpcInteger(opts.dueDaysDefault, 7),
+    p_critical_days: normalizeFinanceRpcInteger(opts.criticalDays, 14),
+  };
+
+  const { data, error } = await supabase.rpc(FINANCE_SUPPLIER_SCOPE_RPC_NAME, args);
+  if (error) {
+    markFinanceRpcStatus(
+      financeSupplierScopeRpcMeta,
+      isMissingFinanceRpcError(error, FINANCE_SUPPLIER_SCOPE_RPC_NAME) ? "missing" : "failed",
+    );
+    throw error;
+  }
+
+  markFinanceRpcStatus(financeSupplierScopeRpcMeta, "available");
+  const payload = asFinanceRecord(data);
+  return {
+    supplier: financeTextOrFallback(payload.supplier, supplier),
+    amount: nnum(payload.amount),
+    count: nnum(payload.count),
+    approved: nnum(payload.approved),
+    paid: nnum(payload.paid),
+    toPay: nnum(payload.toPay),
+    overdueCount: nnum(payload.overdueCount),
+    criticalCount: nnum(payload.criticalCount),
+    _kindName: financeText(payload.kindName) || null,
+    kindName: financeText(payload.kindName) || null,
+    invoices: Array.isArray(payload.invoices)
+      ? payload.invoices.map((item) => {
+          const row = asFinanceRecord(item);
+          return {
+            id: financeTextOrFallback(row.id, DASH),
+            title: financeTextOrFallback(row.title, "\u0421\u0447\u0451\u0442"),
+            amount: nnum(row.amount),
+            paid: nnum(row.paid),
+            rest: nnum(row.rest),
+            isOverdue: !!row.isOverdue,
+            isCritical: !!row.isCritical,
+            approvedIso: pickIso10(row.approvedIso),
+            invoiceIso: pickIso10(row.invoiceIso),
+            dueIso: pickIso10(row.dueIso),
+          };
+        })
+      : [],
+  };
+}

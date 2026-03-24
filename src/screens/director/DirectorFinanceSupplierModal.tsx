@@ -1,5 +1,6 @@
 import React from "react";
-import { Pressable, ScrollView, Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
+import { FlashList } from "@/src/ui/FlashList";
 import { UI, s } from "./director.styles";
 import type { FinSupplierPanelState } from "./director.finance";
 
@@ -31,19 +32,49 @@ export default function DirectorFinanceSupplierModal(props: Props) {
   const criticalCount = Number(supplier.criticalCount ?? 0);
   const invoices = Array.isArray(supplier.invoices) ? supplier.invoices : [];
 
-  return (
-    <ScrollView
-      style={{ flex: 1, minHeight: 0 }}
-      keyboardShouldPersistTaps="handled"
-      showsVerticalScrollIndicator={false}
-      contentContainerStyle={{ paddingBottom: 24 }}
-    >
+  const invoiceKeyExtractor = React.useCallback(
+    (invoice: FinSupplierPanelState["invoices"][number]) => String(invoice.id),
+    [],
+  );
+
+  const renderInvoiceRow = React.useCallback(
+    ({ item: invoice }: { item: FinSupplierPanelState["invoices"][number] }) => (
+      <View
+        style={[
+          s.mobCard,
+          {
+            marginBottom: 10,
+            paddingVertical: 10,
+            paddingHorizontal: 12,
+            flexDirection: "column",
+            alignItems: "stretch",
+          },
+        ]}
+      >
+        <Text style={{ color: UI.text, fontWeight: "900" }} numberOfLines={2}>
+          {invoice.title}
+        </Text>
+
+        <Text style={{ color: UI.sub, fontWeight: "800", marginTop: 4 }} numberOfLines={3}>
+          {props.money(Number(invoice.amount ?? 0))} KGS
+          {invoice.isCritical ? " · критично" : invoice.isOverdue ? " · требует оплаты" : ""}
+          {invoice.approvedIso ? ` · утв. ${props.fmtDateOnly(invoice.approvedIso)}` : ""}
+          {invoice.invoiceIso ? ` · счет ${props.fmtDateOnly(invoice.invoiceIso)}` : ""}
+          {invoice.dueIso ? ` · срок ${props.fmtDateOnly(invoice.dueIso)}` : ""}
+        </Text>
+      </View>
+    ),
+    [props],
+  );
+
+  const listHeader = React.useMemo(
+    () => (
       <View style={[s.reqNoteBox, { borderLeftColor: "#F59E0B" }]}>
         <Text style={[s.reqNoteLine, { fontWeight: "900" }]} numberOfLines={1}>
           {`Долг: ${props.money(amount)} KGS · счетов ${invoiceCount}`}
         </Text>
         <Text style={[s.reqNoteLine, { fontWeight: "900" }]} numberOfLines={1}>
-          {`Требует оплаты: ${overdueCount} · критично (в периоде): ${criticalCount}`}
+          {`Требует оплаты: ${overdueCount} · критично: ${criticalCount}`}
         </Text>
 
         <View style={{ marginTop: 10 }}>
@@ -78,34 +109,24 @@ export default function DirectorFinanceSupplierModal(props: Props) {
           </Pressable>
         </View>
       </View>
+    ),
+    [amount, criticalCount, invoiceCount, overdueCount, props],
+  );
 
-      {invoices.map((invoice) => (
-        <View
-          key={String(invoice.id)}
-          style={[
-            s.mobCard,
-            {
-              marginBottom: 10,
-              paddingVertical: 10,
-              paddingHorizontal: 12,
-              flexDirection: "column",
-              alignItems: "stretch",
-            },
-          ]}
-        >
-          <Text style={{ color: UI.text, fontWeight: "900" }} numberOfLines={2}>
-            {invoice.title}
-          </Text>
-
-          <Text style={{ color: UI.sub, fontWeight: "800", marginTop: 4 }} numberOfLines={3}>
-            {props.money(Number(invoice.amount ?? 0))} KGS
-            {invoice.isCritical ? " · критично" : invoice.isOverdue ? " · требует оплаты" : ""}
-            {invoice.approvedIso ? ` · утв. ${props.fmtDateOnly(invoice.approvedIso)}` : ""}
-            {invoice.invoiceIso ? ` · счет ${props.fmtDateOnly(invoice.invoiceIso)}` : ""}
-            {invoice.dueIso ? ` · срок ${props.fmtDateOnly(invoice.dueIso)}` : ""}
-          </Text>
-        </View>
-      ))}
-    </ScrollView>
+  return (
+    <FlashList
+      style={{ flex: 1, minHeight: 0 }}
+      data={invoices}
+      renderItem={renderInvoiceRow}
+      keyExtractor={invoiceKeyExtractor}
+      overrideItemLayout={(layout: any) => {
+        layout.size = 96;
+      }}
+      ListHeaderComponent={listHeader}
+      contentContainerStyle={{ paddingBottom: 24 }}
+      keyboardShouldPersistTaps="handled"
+      showsVerticalScrollIndicator={false}
+    />
   );
 }
+

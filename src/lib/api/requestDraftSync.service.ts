@@ -15,6 +15,8 @@ const REQUEST_DRAFT_SYNC_RPC_V1_ENABLED =
 
 const REQUEST_DRAFT_SYNC_RPC_V2_ENABLED =
   String(process.env.EXPO_PUBLIC_REQUEST_DRAFT_SYNC_RPC_V2 ?? "").trim() === "1";
+const DIRECTOR_HANDOFF_BROADCAST_CHANNEL = "director-handoff-rt";
+const DIRECTOR_HANDOFF_BROADCAST_EVENT = "foreman_request_submitted";
 
 
 export type RequestDraftSyncLineInput = {
@@ -55,6 +57,110 @@ const isRecord = (value: unknown): value is Record<string, unknown> =>
   value != null && typeof value === "object" && !Array.isArray(value);
 
 const asTrimmedString = (value: unknown): string => String(value ?? "").trim();
+
+const ensureRealtimeAuth = async () => {
+  const session = await supabase.auth.getSession();
+  const accessToken = session.data.session?.access_token ?? null;
+  if (!accessToken) return false;
+  await supabase.realtime.setAuth(accessToken);
+  return true;
+};
+
+const signalDirectorRequestSubmitted = async (params: {
+  requestId: string;
+  displayNo?: string | null;
+  sourcePath: string;
+}) => {
+  const requestId = asTrimmedString(params.requestId);
+  if (!requestId) return;
+
+  const displayNo = asTrimmedString(params.displayNo) || requestId;
+  try {
+    await ensureRealtimeAuth();
+    const channel = supabase.channel(DIRECTOR_HANDOFF_BROADCAST_CHANNEL, {
+      config: {
+        broadcast: {
+          ack: false,
+          self: false,
+        },
+      },
+    });
+    const broadcastResult = await new Promise<string>((resolve, reject) => {
+      let settled = false;
+      channel.subscribe(async (status) => {
+        if (settled) return;
+        if (status === "SUBSCRIBED") {
+          try {
+            const sendResult = await channel.send({
+              type: "broadcast",
+              event: DIRECTOR_HANDOFF_BROADCAST_EVENT,
+              payload: {
+                request_id: requestId,
+                display_no: displayNo,
+                source_path: params.sourcePath,
+              },
+            });
+            settled = true;
+            resolve(String(sendResult));
+          } catch (error) {
+            settled = true;
+            reject(error);
+          }
+          return;
+        }
+
+        if (status === "CHANNEL_ERROR" || status === "TIMED_OUT" || status === "CLOSED") {
+          settled = true;
+          reject(new Error(`broadcast subscribe ${status.toLowerCase()}`));
+        }
+      });
+    });
+    console.info("[request-draft-sync.signal]", {
+      kind: "broadcast",
+      sourcePath: params.sourcePath,
+      requestId,
+      displayNo,
+      result: broadcastResult,
+    });
+    void supabase.removeChannel(channel);
+  } catch (error) {
+    console.warn("[request-draft-sync.signal]", {
+      kind: "broadcast_error",
+      sourcePath: params.sourcePath,
+      requestId,
+      displayNo,
+      error: error instanceof Error ? error.message : String(error),
+    });
+  }
+
+  try {
+    const insertResult = await supabase.from("notifications").insert({
+      role: "director",
+      title: `Новая заявка ${displayNo}`,
+      body: `Прораб отправил ${displayNo} на утверждение.`,
+      payload: {
+        request_id: requestId,
+        display_no: displayNo,
+        source_path: params.sourcePath,
+      },
+    });
+    console.info("[request-draft-sync.signal]", {
+      kind: insertResult.error ? "notification_error" : "notification",
+      sourcePath: params.sourcePath,
+      requestId,
+      displayNo,
+      error: insertResult.error?.message ?? null,
+    });
+  } catch (error) {
+    console.warn("[request-draft-sync.signal]", {
+      kind: "notification_error",
+      sourcePath: params.sourcePath,
+      requestId,
+      displayNo,
+      error: error instanceof Error ? error.message : String(error),
+    });
+  }
+};
 
 const asReqItemRow = (value: unknown): CatalogReqItemRow | null => {
   if (!isRecord(value)) return null;
@@ -230,6 +336,14 @@ export async function syncRequestDraftViaRpc(params: {
         status: request.status ?? null,
         sourceBranch: version === "v2" ? "rpc_v2" : "rpc_v1",
         rpcVersion: version,
+      });
+    }
+
+    if (params.submit === true && envelope.submitted) {
+      await signalDirectorRequestSubmitted({
+        requestId: String(request.id ?? ""),
+        displayNo: request.display_no ?? null,
+        sourcePath: version === "v2" ? "foreman.requestDraftSync.rpc_v2_submit" : "foreman.requestDraftSync.rpc_v1_submit",
       });
     }
 

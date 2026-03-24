@@ -2,7 +2,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import {
   buildWarehouseIncomingFormHtml,
   exportWarehouseHtmlPdf,
-} from "../../lib/api/pdf_warehouse";
+} from "../../lib/pdf/pdf.warehouse";
 import { normalizeRuText } from "../../lib/text/encoding";
 import { apiFetchIncomingLines } from "./warehouse.api";
 import {

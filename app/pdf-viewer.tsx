@@ -26,6 +26,7 @@ import {
   openPdfDocumentExternal,
   sharePdfDocument,
 } from "../src/lib/documents/pdfDocumentActions";
+import { openPdfPreview } from "../src/lib/pdfRunner";
 
 type ViewerState = "init" | "loading" | "ready" | "error" | "empty";
 
@@ -35,10 +36,17 @@ type ViewerResolution =
   | { kind: "missing-asset" }
   | { kind: "unsupported-mobile-source"; errorMessage: string }
   | {
-      kind: "resolved";
+      kind: "resolved-embedded";
       asset: DocumentAsset;
       source: { uri: string };
       scheme: string;
+      sourceKind: DocumentAsset["sourceKind"];
+    }
+  | {
+      kind: "resolved-local-mobile";
+      asset: DocumentAsset;
+      scheme: string;
+      sourceKind: "local-file";
     };
 
 type ViewerFileInfo = {
@@ -86,21 +94,41 @@ function resolveViewerResolution(
   if (!asset?.uri) return { kind: "missing-asset" };
 
   const scheme = getUriScheme(asset.uri);
-  if (
-    Platform.OS !== "web" &&
-    (scheme !== "file" || !String(asset.uri || "").toLowerCase().endsWith(".pdf"))
-  ) {
+  const isPdf = String(asset.uri || "").toLowerCase().endsWith(".pdf");
+  const assetSourceKind = asset.sourceKind;
+
+  if (Platform.OS === "web") {
     return {
-      kind: "unsupported-mobile-source",
-      errorMessage: "Mobile preview requires a local file:// PDF asset.",
+      kind: "resolved-embedded",
+      asset,
+      source: { uri: asset.uri },
+      scheme,
+      sourceKind: assetSourceKind,
+    };
+  }
+
+  if ((assetSourceKind === "local-file" || scheme === "file") && isPdf) {
+    return {
+      kind: "resolved-local-mobile",
+      asset,
+      scheme,
+      sourceKind: "local-file",
+    };
+  }
+
+  if ((assetSourceKind === "remote-url" || scheme === "http" || scheme === "https") && isPdf) {
+    return {
+      kind: "resolved-embedded",
+      asset,
+      source: { uri: asset.uri },
+      scheme,
+      sourceKind: "remote-url",
     };
   }
 
   return {
-    kind: "resolved",
-    asset,
-    source: { uri: asset.uri },
-    scheme,
+    kind: "unsupported-mobile-source",
+    errorMessage: "Mobile preview supports remote http(s) PDFs or local file:// PDF assets.",
   };
 }
 
@@ -178,14 +206,48 @@ export default function PdfViewerScreen() {
   const [menuOpen, setMenuOpen] = React.useState(false);
   const [isReadyToRender, setIsReadyToRender] = React.useState(false);
   const [chromeVisible, setChromeVisible] = React.useState(true);
+  const [loadAttempt, setLoadAttempt] = React.useState(0);
+  const [webRenderUri, setWebRenderUri] = React.useState<string | null>(null);
   const openedAtRef = React.useRef<number>(Date.now());
   const loadingTimeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
   const renderDelayRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
   const initialAssetUriRef = React.useRef("");
+  const isMountedRef = React.useRef(true);
+  const webRenderUriRef = React.useRef<string | null>(null);
   const resolvedSource = React.useMemo(
     () => resolveViewerResolution(session, asset),
     [asset, session],
   );
+
+  React.useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
+
+  const clearWebRenderUri = React.useCallback(() => {
+    const current = webRenderUriRef.current;
+    if (
+      Platform.OS === "web" &&
+      current &&
+      current.startsWith("blob:") &&
+      typeof URL !== "undefined" &&
+      typeof URL.revokeObjectURL === "function"
+    ) {
+      try {
+        URL.revokeObjectURL(current);
+      } catch {}
+    }
+    webRenderUriRef.current = null;
+    setWebRenderUri(null);
+  }, []);
+
+  React.useEffect(() => {
+    return () => {
+      clearWebRenderUri();
+    };
+  }, [clearWebRenderUri]);
 
   React.useEffect(() => {
     console.info("[pdf-viewer] viewer_route_mounted", {
@@ -273,10 +335,58 @@ export default function PdfViewerScreen() {
     }
   }, [clearLoadingTimeout, syncSnapshot]);
 
+  const handoffLocalPreview = React.useCallback(
+    async (resolvedAsset: DocumentAsset, trigger: "auto" | "retry" | "manual") => {
+      clearLoadingTimeout();
+      clearRenderDelay();
+      setMenuOpen(false);
+      setErrorText("");
+      setState("loading");
+      setIsReadyToRender(true);
+
+      try {
+        console.info("[pdf-viewer] local_handoff_start", {
+          sessionId,
+          documentType: resolvedAsset.documentType,
+          originModule: resolvedAsset.originModule,
+          uri: resolvedAsset.uri,
+          scheme: getUriScheme(resolvedAsset.uri),
+          sourceKind: "local-file",
+          trigger,
+        });
+        await openPdfPreview(resolvedAsset.uri, resolvedAsset.fileName);
+        if (!isMountedRef.current) return;
+        markReady();
+        console.info("[pdf-viewer] local_handoff_ready", {
+          sessionId,
+          documentType: resolvedAsset.documentType,
+          originModule: resolvedAsset.originModule,
+          uri: resolvedAsset.uri,
+          sourceKind: "local-file",
+          trigger,
+        });
+      } catch (error) {
+        if (!isMountedRef.current) return;
+        const message = error instanceof Error ? error.message : String(error);
+        console.error("[pdf-viewer] local_handoff_error", {
+          sessionId,
+          documentType: resolvedAsset.documentType,
+          originModule: resolvedAsset.originModule,
+          uri: resolvedAsset.uri,
+          trigger,
+          error: message,
+        });
+        markError(message, "render");
+      }
+    },
+    [clearLoadingTimeout, clearRenderDelay, markError, markReady, sessionId],
+  );
+
   React.useEffect(() => {
     openedAtRef.current = Date.now();
     clearLoadingTimeout();
     clearRenderDelay();
+    clearWebRenderUri();
     setIsReadyToRender(false);
     setChromeVisible(true);
     setMenuOpen(false);
@@ -314,16 +424,25 @@ export default function PdfViewerScreen() {
       }
 
       initialAssetUriRef.current = String(resolution.asset.uri || "");
-      console.info("[pdf-viewer] open", {
-        sessionId: next.session.sessionId,
-        documentType: resolution.asset.documentType,
-        originModule: resolution.asset.originModule,
-        uri: resolution.asset.uri,
-        scheme: resolution.scheme,
-        fileName: resolution.asset.fileName,
-        exists: typeof resolution.asset.sizeBytes === "number" ? true : undefined,
-        sizeBytes: resolution.asset.sizeBytes,
-        renderer: Platform.OS === "web" ? "web" : "mobile",
+        console.info("[pdf-viewer] open", {
+          sessionId: next.session.sessionId,
+          documentType: resolution.asset.documentType,
+          originModule: resolution.asset.originModule,
+          uri: resolution.asset.uri,
+          scheme: resolution.scheme,
+          sourceKind:
+            resolution.kind === "resolved-local-mobile"
+              ? resolution.sourceKind
+              : resolution.sourceKind,
+          fileName: resolution.asset.fileName,
+          exists: typeof resolution.asset.sizeBytes === "number" ? true : undefined,
+          sizeBytes: resolution.asset.sizeBytes,
+        renderer:
+          resolution.kind === "resolved-local-mobile"
+            ? "mobile-local-handoff"
+            : Platform.OS === "web"
+              ? "web"
+              : "mobile-webview",
         openTime: new Date().toISOString(),
       });
 
@@ -346,7 +465,72 @@ export default function PdfViewerScreen() {
         }
       }
 
+      if (resolution.kind === "resolved-local-mobile") {
+        await handoffLocalPreview(resolution.asset, "auto");
+        return;
+      }
+
       enterLoading();
+      if (Platform.OS === "web" && resolution.kind === "resolved-embedded") {
+        if (resolution.sourceKind === "remote-url") {
+          try {
+            console.info("[pdf-viewer] web_remote_fetch_started", {
+              sessionId: next.session.sessionId,
+              documentType: resolution.asset.documentType,
+              originModule: resolution.asset.originModule,
+              uri: resolution.asset.uri,
+              scheme: resolution.scheme,
+            });
+            const response = await fetch(resolution.asset.uri);
+            if (cancelled) return;
+            if (!response.ok) {
+              markError(
+                response.statusText || `Remote PDF fetch failed with HTTP ${response.status}`,
+                "render",
+              );
+              return;
+            }
+            const pdfBlob = await response.blob();
+            if (cancelled) return;
+            if (pdfBlob.size <= 0) {
+              markError("Remote PDF fetch returned an empty document.", "render");
+              return;
+            }
+            const nextRenderUri =
+              typeof URL !== "undefined" && typeof URL.createObjectURL === "function"
+                ? URL.createObjectURL(pdfBlob)
+                : resolution.asset.uri;
+            clearWebRenderUri();
+            webRenderUriRef.current = nextRenderUri;
+            setWebRenderUri(nextRenderUri);
+            console.info("[pdf-viewer] web_remote_fetch_ready", {
+              sessionId: next.session.sessionId,
+              documentType: resolution.asset.documentType,
+              originModule: resolution.asset.originModule,
+              remoteUri: resolution.asset.uri,
+              renderUri: nextRenderUri,
+              renderScheme: getUriScheme(nextRenderUri),
+              sizeBytes: pdfBlob.size,
+            });
+            setIsReadyToRender(true);
+            markReady();
+            return;
+          } catch (error) {
+            if (cancelled) return;
+            const message = error instanceof Error ? error.message : String(error);
+            console.error("[pdf-viewer] web_remote_fetch_error", {
+              sessionId: next.session.sessionId,
+              documentType: resolution.asset.documentType,
+              originModule: resolution.asset.originModule,
+              uri: resolution.asset.uri,
+              error: message,
+            });
+            markError(message || "Remote PDF fetch failed.", "render");
+            return;
+          }
+        }
+        setWebRenderUri(resolution.asset.uri);
+      }
       renderDelayRef.current = setTimeout(() => {
         if (cancelled) return;
         setIsReadyToRender(true);
@@ -367,7 +551,18 @@ export default function PdfViewerScreen() {
       clearLoadingTimeout();
       clearRenderDelay();
     };
-  }, [clearLoadingTimeout, clearRenderDelay, enterLoading, markError, sessionId, syncSnapshot]);
+  }, [
+    clearLoadingTimeout,
+    clearRenderDelay,
+    clearWebRenderUri,
+    enterLoading,
+    handoffLocalPreview,
+    markError,
+    markReady,
+    sessionId,
+    syncSnapshot,
+    loadAttempt,
+  ]);
 
   const onShare = React.useCallback(async () => {
     if (!asset) return;
@@ -433,9 +628,15 @@ export default function PdfViewerScreen() {
       setState("empty");
       return;
     }
+    clearWebRenderUri();
     setErrorText("");
-    enterLoading();
-  }, [enterLoading, syncSnapshot]);
+    const nextResolution = resolveViewerResolution(next.session, next.asset);
+    if (nextResolution.kind === "resolved-local-mobile") {
+      void handoffLocalPreview(nextResolution.asset, "retry");
+      return;
+    }
+    setLoadAttempt((value) => value + 1);
+  }, [clearWebRenderUri, handoffLocalPreview, syncSnapshot]);
 
   const onBack = React.useCallback(() => {
     const canGoBackRouter = typeof (router as any).canGoBack === "function"
@@ -453,8 +654,13 @@ export default function PdfViewerScreen() {
   }, []);
 
   const source = React.useMemo(() => {
-    return resolvedSource.kind === "resolved" ? resolvedSource.source : undefined;
+    return resolvedSource.kind === "resolved-embedded" ? resolvedSource.source : undefined;
   }, [resolvedSource]);
+  const webEmbeddedUri = React.useMemo(() => {
+    if (Platform.OS !== "web" || resolvedSource.kind !== "resolved-embedded") return "";
+    if (resolvedSource.sourceKind === "remote-url") return webRenderUri ?? "";
+    return resolvedSource.asset.uri;
+  }, [resolvedSource, webRenderUri]);
 
   const showChrome = Platform.OS === "web" ? true : chromeVisible;
   const headerBarHeight = Platform.OS === "web" || width >= 768 ? 56 : 50;
@@ -476,6 +682,7 @@ export default function PdfViewerScreen() {
         }
       : undefined;
   const pageIndicatorText = state === "ready" ? "1 / 1" : "…";
+  const showPageIndicator = Boolean(asset) && resolvedSource.kind === "resolved-embedded";
 
   const toggleChrome = React.useCallback(() => {
     if (Platform.OS === "web") return;
@@ -487,7 +694,12 @@ export default function PdfViewerScreen() {
     let cancelled = false;
 
     const inspect = async () => {
-      if (resolvedSource.kind !== "resolved") return;
+      if (
+        resolvedSource.kind !== "resolved-embedded" &&
+        resolvedSource.kind !== "resolved-local-mobile"
+      ) {
+        return;
+      }
       const { asset: resolvedAsset, scheme } = resolvedSource;
       let exists: boolean | undefined;
       let size: number | undefined;
@@ -513,7 +725,7 @@ export default function PdfViewerScreen() {
             uri: resolvedAsset.uri,
             exists: false,
             sizeBytes: size ?? resolvedAsset.sizeBytes,
-            sourceKind: "local",
+            sourceKind: "local-file",
             documentType: resolvedAsset.documentType,
             originModule: resolvedAsset.originModule,
           });
@@ -528,7 +740,7 @@ export default function PdfViewerScreen() {
             uri: resolvedAsset.uri,
             exists: true,
             sizeBytes: size ?? resolvedAsset.sizeBytes,
-            sourceKind: "local",
+            sourceKind: "local-file",
             documentType: resolvedAsset.documentType,
             originModule: resolvedAsset.originModule,
           });
@@ -542,6 +754,10 @@ export default function PdfViewerScreen() {
           scheme,
           fileName: resolvedAsset.fileName,
           mimeType: resolvedAsset.mimeType,
+          sourceKind:
+            resolvedSource.kind === "resolved-local-mobile"
+              ? resolvedSource.sourceKind
+              : resolvedSource.sourceKind,
           exists,
           sizeBytes: size ?? resolvedAsset.sizeBytes,
           source,
@@ -589,7 +805,7 @@ export default function PdfViewerScreen() {
       );
     }
 
-    if (resolvedSource.kind === "missing-asset" || !source) {
+    if (resolvedSource.kind === "missing-asset") {
       console.error("[pdf-viewer] viewer_invalid_asset", {
         platform: Platform.OS,
         sessionId,
@@ -599,7 +815,10 @@ export default function PdfViewerScreen() {
       return <EmptyState title="Document not found" subtitle="Missing document asset." />;
     }
 
-    if (resolvedSource.kind !== "resolved") {
+    if (
+      resolvedSource.kind !== "resolved-embedded" &&
+      resolvedSource.kind !== "resolved-local-mobile"
+    ) {
       return (
         <CenteredPanel
           title="Unable to open document"
@@ -625,6 +844,47 @@ export default function PdfViewerScreen() {
       );
     }
 
+    if (resolvedSource.kind === "resolved-local-mobile") {
+      return (
+        <Pressable style={styles.viewerBody} onPress={toggleChrome}>
+          {state === "loading" ? (
+            <View style={styles.loadingOverlay}>
+              <ActivityIndicator size="large" color="#FFFFFF" />
+              <Text style={styles.loadingText}>Opening local document...</Text>
+            </View>
+          ) : null}
+          <CenteredPanel
+            title={state === "loading" ? "Opening document" : "Document opened in PDF app"}
+            subtitle={
+              state === "loading"
+                ? "Local PDF files on mobile open through the device PDF viewer."
+                : "This local PDF was opened through the device viewer. Use Back to return to the app, or open it again from here."
+            }
+            actionLabel={state === "loading" ? undefined : "Open again"}
+            onAction={
+              state === "loading"
+                ? undefined
+                : () => {
+                    void handoffLocalPreview(resolvedSource.asset, "manual");
+                  }
+            }
+            secondaryLabel={asset ? "Share" : undefined}
+            onSecondaryAction={asset ? () => void onShare() : undefined}
+          />
+        </Pressable>
+      );
+    }
+
+    if (!source) {
+      console.error("[pdf-viewer] viewer_invalid_asset", {
+        platform: Platform.OS,
+        sessionId,
+        hasAsset: Boolean(asset),
+        uri: asset?.uri ?? null,
+      });
+      return <EmptyState title="Document not found" subtitle="Missing document asset." />;
+    }
+
     return (
       <Pressable style={styles.viewerBody} onPress={toggleChrome}>
         {state === "loading" ? (
@@ -644,7 +904,7 @@ export default function PdfViewerScreen() {
             >
               <iframe
                 title={asset.title || "PDF"}
-                src={asset.uri}
+                src={webEmbeddedUri || undefined}
                 onLoad={() => markReady()}
                 onError={() => markError("Web PDF frame failed to load.", "render")}
                 style={{
@@ -793,7 +1053,7 @@ export default function PdfViewerScreen() {
 
         <View style={styles.documentStage}>{body}</View>
 
-        {asset ? (
+        {showPageIndicator ? (
           <View
             pointerEvents="none"
             style={[

@@ -1,5 +1,6 @@
 import React from "react";
-import { ActivityIndicator, FlatList, Platform, Pressable, Text, View } from "react-native";
+import { ActivityIndicator, Platform, Pressable, Text, View } from "react-native";
+import { FlashList } from "@/src/ui/FlashList";
 import { Ionicons } from "@expo/vector-icons";
 import RNModal from "react-native-modal";
 
@@ -10,6 +11,11 @@ type StatusInfo = { label: string; bg: string; fg: string };
 type Props = {
   visible: boolean;
   onClose: () => void;
+  mode: "list" | "details";
+  selectedRequestId: string | null;
+  onShowDetails: (request: ForemanRequestSummary) => void;
+  onBackToList: () => void;
+  onResetView: () => void;
   loading: boolean;
   requests: ForemanRequestSummary[];
   resolveStatusInfo: (status: string | null | undefined) => StatusInfo;
@@ -41,39 +47,28 @@ const isCancelledStatus = (status: string | null | undefined) => {
 };
 
 export default function ForemanHistoryModal(props: Props) {
-  const [mode, setMode] = React.useState<"list" | "details">("list");
-  const [selectedRequestId, setSelectedRequestId] = React.useState<string | null>(null);
-
   const selectedRequest = React.useMemo(
-    () => props.requests.find((entry) => entry.id === selectedRequestId) ?? null,
-    [props.requests, selectedRequestId],
+    () => props.requests.find((entry) => entry.id === props.selectedRequestId) ?? null,
+    [props.requests, props.selectedRequestId],
   );
 
   React.useEffect(() => {
     if (!props.visible) {
-      setMode("list");
-      setSelectedRequestId(null);
+      props.onResetView();
       return;
     }
-    if (selectedRequestId && !selectedRequest) {
-      setMode("list");
-      setSelectedRequestId(null);
+    if (props.selectedRequestId && !selectedRequest) {
+      props.onResetView();
     }
-  }, [props.visible, selectedRequest, selectedRequestId]);
-
-  const showDetails = React.useCallback((request: ForemanRequestSummary) => {
-    setSelectedRequestId(request.id);
-    setMode("details");
-  }, []);
+  }, [props, selectedRequest]);
 
   const closeOrBack = React.useCallback(() => {
-    if (mode === "details") {
-      setMode("list");
-      setSelectedRequestId(null);
+    if (props.mode === "details") {
+      props.onBackToList();
       return;
     }
     props.onClose();
-  }, [mode, props]);
+  }, [props]);
 
   const renderRequestItem = React.useCallback(
     ({ item: request }: { item: ForemanRequestSummary }) => {
@@ -88,7 +83,7 @@ export default function ForemanHistoryModal(props: Props) {
         <View style={props.styles.historyModalRow}>
           <Pressable
             style={{ flex: 1, minWidth: 0, paddingRight: 8 }}
-            onPress={() => (isCancelled ? showDetails(request) : props.onSelect(request))}
+            onPress={() => (isCancelled ? props.onShowDetails(request) : props.onSelect(request))}
           >
             <Text style={props.styles.historyModalPrimary} numberOfLines={1}>
               {request.display_no ?? props.shortId(request.id)}
@@ -134,7 +129,7 @@ export default function ForemanHistoryModal(props: Props) {
         </View>
       );
     },
-    [props, showDetails],
+    [props],
   );
 
   const detailsStatus = selectedRequest ? props.resolveStatusInfo(selectedRequest.status) : null;
@@ -154,15 +149,15 @@ export default function ForemanHistoryModal(props: Props) {
       style={{ margin: 0, justifyContent: "flex-end" }}
     >
       <View style={props.styles.historyModal}>
-        <View style={props.styles.historyModalHeader}>
-          <Text style={props.styles.historyModalTitle}>{mode === "details" ? DETAILS_TITLE : HISTORY_TITLE}</Text>
+          <View style={props.styles.historyModalHeader}>
+          <Text style={props.styles.historyModalTitle}>{props.mode === "details" ? DETAILS_TITLE : HISTORY_TITLE}</Text>
           <Pressable onPress={closeOrBack}>
-            <Text style={props.styles.historyModalClose}>{mode === "details" ? BACK_LABEL : CLOSE_LABEL}</Text>
+            <Text style={props.styles.historyModalClose}>{props.mode === "details" ? BACK_LABEL : CLOSE_LABEL}</Text>
           </Pressable>
         </View>
 
         <View style={props.styles.historyModalBody}>
-          {mode === "details" && selectedRequest && detailsStatus ? (
+          {props.mode === "details" && selectedRequest && detailsStatus ? (
             <View style={{ gap: 14 }}>
               <View style={{ gap: 4 }}>
                 <Text style={props.styles.historyModalPrimary}>
@@ -213,10 +208,13 @@ export default function ForemanHistoryModal(props: Props) {
           ) : props.requests.length === 0 ? (
             <Text style={props.styles.historyModalEmpty}>{EMPTY_LABEL}</Text>
           ) : (
-            <FlatList
+            <FlashList
               data={props.requests}
               renderItem={renderRequestItem}
               keyExtractor={(item) => item.id}
+              overrideItemLayout={(layout: any) => {
+                layout.size = 88;
+              }}
               style={props.styles.historyModalList}
               contentContainerStyle={{ paddingBottom: 8 }}
               keyboardShouldPersistTaps="handled"
@@ -229,3 +227,4 @@ export default function ForemanHistoryModal(props: Props) {
     </RNModal>
   );
 }
+

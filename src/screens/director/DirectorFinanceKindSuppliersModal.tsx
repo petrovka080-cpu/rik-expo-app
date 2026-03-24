@@ -1,5 +1,6 @@
 import React from "react";
-import { Pressable, ScrollView, Text, View } from "react-native";
+import { Text, Pressable } from "react-native";
+import { FlashList } from "@/src/ui/FlashList";
 import { UI, s } from "./director.styles";
 import type { FinKindSupplierRow, FinSupplierInput } from "./director.finance";
 
@@ -26,50 +27,54 @@ export default function DirectorFinanceKindSuppliersModal(props: Props) {
     return <Text style={{ color: UI.sub, fontWeight: "800" }}>Нет данных</Text>;
   }
 
+  const renderSupplierRow = ({ item }: { item: FinKindSupplierRow }) => {
+    const supplierName = String(item.supplier || "—");
+    return (
+      <Pressable
+        onPress={() => {
+          const name = String(item.supplier || "—").trim() || "—";
+          props.onOpenSupplier({ supplier: name, _kindName: props.kindName });
+        }}
+        style={[
+          s.mobCard,
+          {
+            marginBottom: 10,
+            paddingVertical: 10,
+            paddingHorizontal: 12,
+            flexDirection: "column",
+            alignItems: "stretch",
+          },
+        ]}
+      >
+        <Text style={{ color: UI.text, fontWeight: "900" }} numberOfLines={1}>
+          {supplierName}
+        </Text>
+
+        <Text style={{ color: UI.sub, fontWeight: "800", marginTop: 2 }} numberOfLines={2}>
+          {`Утверждено: ${props.money(item.approved)} · оплачено: ${props.money(item.paid)}`}
+          {item.overpay > 0 ? ` · переплата ${props.money(item.overpay)}` : ""}
+        </Text>
+
+        <Text style={{ color: UI.sub, fontWeight: "800", marginTop: 2 }} numberOfLines={1}>
+          {`Счетов: ${item.count}`}
+        </Text>
+      </Pressable>
+    );
+  };
+
   return (
-    <ScrollView
+    <FlashList
       style={{ flex: 1, minHeight: 0 }}
+      data={props.list}
+      renderItem={renderSupplierRow}
+      keyExtractor={(item, index) => `${props.kindName}:${String(item.supplier || "—")}:${index}`}
+      overrideItemLayout={(layout: any) => {
+        layout.size = 92;
+      }}
+      contentContainerStyle={{ paddingBottom: 24 }}
       keyboardShouldPersistTaps="handled"
       showsVerticalScrollIndicator={false}
-      contentContainerStyle={{ paddingBottom: 24 }}
-    >
-      <View style={{ flexDirection: "column", alignItems: "stretch" }}>
-        {props.list.map((item, index) => {
-          const supplierName = String(item.supplier || "—");
-          return (
-            <Pressable
-              key={`${props.kindName}:${supplierName}:${index}`}
-              onPress={() => {
-                const name = String(item.supplier || "—").trim() || "—";
-                props.onOpenSupplier({ supplier: name, _kindName: props.kindName });
-              }}
-              style={[
-                s.mobCard,
-                {
-                  marginBottom: 10,
-                  paddingVertical: 10,
-                  paddingHorizontal: 12,
-                  flexDirection: "column",
-                  alignItems: "stretch",
-                },
-              ]}
-            >
-              <Text style={{ color: UI.text, fontWeight: "900" }} numberOfLines={1}>
-                {supplierName}
-              </Text>
-
-              <Text style={{ color: UI.sub, fontWeight: "800", marginTop: 2 }} numberOfLines={2}>
-                {`Утверждено: ${props.money(item.approved)} · оплачено: ${props.money(item.paid)}`}
-                {item.overpay > 0 ? ` · переплата ${props.money(item.overpay)}` : ""}
-              </Text>
-
-              <Text style={{ color: UI.sub, fontWeight: "800", marginTop: 2 }} numberOfLines={1}>
-                {`Счетов: ${item.count}`}
-              </Text>
-            </Pressable>
-          );
-        })}
-      </View>
-    </ScrollView>
+    />
   );
 }
+

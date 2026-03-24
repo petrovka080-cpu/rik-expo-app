@@ -6,13 +6,12 @@ import { supabase } from "../../../lib/supabaseClient";
 import type { RequestDetails } from "../../../lib/catalog_api";
 import type { BusyCtx } from "../../../ui/GlobalBusy";
 import { buildPdfFileName } from "../../../lib/documents/pdfDocument";
-import {
-  getPdfFlowErrorMessage,
-  preparePdfDocument,
-  previewPdfDocument,
-  sharePdfDocument,
-} from "../../../lib/documents/pdfDocumentActions";
+import { getPdfFlowErrorMessage } from "../../../lib/documents/pdfDocumentActions";
 import { generateRequestPdfDocument } from "../../../lib/documents/pdfDocumentGenerators";
+import {
+  prepareAndPreviewGeneratedPdf,
+  prepareAndShareGeneratedPdf,
+} from "../../../lib/pdf/pdf.runner";
 
 export function useForemanPdf(gbusy: BusyCtx) {
   const router = useRouter();
@@ -37,28 +36,35 @@ export function useForemanPdf(gbusy: BusyCtx) {
         const title = requestDetails?.display_no
           ? `Заявка ${requestDetails.display_no}`
           : `Заявка ${ridKey}`;
-        const doc = await preparePdfDocument({
-          busy: gbusy,
-          supabase,
-          key: mode === "share" ? `pdfshare:request:${ridKey}` : `pdf:request:${ridKey}`,
-          label: mode === "share" ? "Подготавливаю файл..." : "Открываю PDF…",
-          descriptor: {
-            ...template,
-            title,
-            fileName: buildPdfFileName({
-              documentType: "request",
-              title: requestDetails?.display_no || "zayavka",
-              entityId: ridKey,
-            }),
-          },
-          getRemoteUrl: () => template.uri,
-        });
+        const descriptor = {
+          ...template,
+          title,
+          fileName: buildPdfFileName({
+            documentType: "request",
+            title: requestDetails?.display_no || "zayavka",
+            entityId: ridKey,
+          }),
+        };
 
         if (mode === "share") {
-          await sharePdfDocument(doc);
+          await prepareAndShareGeneratedPdf({
+            busy: gbusy,
+            supabase,
+            key: `pdfshare:request:${ridKey}`,
+            label: "Подготавливаю файл...",
+            descriptor,
+          });
           return;
         }
-        await previewPdfDocument(doc, { router });
+
+        await prepareAndPreviewGeneratedPdf({
+          busy: gbusy,
+          supabase,
+          key: `pdf:request:${ridKey}`,
+          label: "Открываю PDF…",
+          descriptor,
+          router,
+        });
       } catch (error) {
         Alert.alert("PDF", getPdfFlowErrorMessage(error, "Не удалось открыть PDF"));
       }

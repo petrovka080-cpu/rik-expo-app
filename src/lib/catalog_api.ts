@@ -1343,16 +1343,33 @@ async function resolveRequestsExtendedMetaWriteSupport(): Promise<boolean> {
 
   requestsExtendedMetaWriteSupportInFlight = (async () => {
     try {
-      // Schema capability probe for extended request meta fields.
+      // Avoid probing missing columns directly: PostgREST returns 400 before we can cache the schema mismatch.
       const q = await supabase
         .from("requests")
-        .select(
-          "subcontract_id,contractor_job_id,contractor_org,subcontractor_org,contractor_phone,subcontractor_phone,planned_volume,qty_plan,volume,object_name,level_name,system_name,zone_name",
-        )
+        .select("*")
         .limit(1);
       if (q.error) throw q.error;
-      requestsExtendedMetaWriteSupportedCache = true;
-      return true;
+      const sample = Array.isArray(q.data) && q.data.length > 0 ? (q.data[0] as Record<string, unknown>) : null;
+      if (!sample) {
+        requestsExtendedMetaWriteSupportedCache = false;
+        return false;
+      }
+      requestsExtendedMetaWriteSupportedCache = [
+        "subcontract_id",
+        "contractor_job_id",
+        "contractor_org",
+        "subcontractor_org",
+        "contractor_phone",
+        "subcontractor_phone",
+        "planned_volume",
+        "qty_plan",
+        "volume",
+        "object_name",
+        "level_name",
+        "system_name",
+        "zone_name",
+      ].every((key) => Object.prototype.hasOwnProperty.call(sample, key));
+      return requestsExtendedMetaWriteSupportedCache;
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message.toLowerCase() : String(e ?? "").toLowerCase();
       const schemaMismatch =

@@ -5,9 +5,10 @@ import {
   openPdfExternal,
   openPdfPreview,
   openPdfShare,
-  preparePdfLocalUri,
+  preparePdfExecutionSource,
   type BusyLike,
 } from "../pdfRunner";
+import { createPdfSource, type PdfSource } from "../pdfFileContract";
 
 export function getPdfFlowErrorMessage(error: unknown, fallback = "Could not open PDF"): string {
   if (error && typeof error === "object") {
@@ -25,7 +26,8 @@ type PreparePdfDocumentArgs = {
   key?: string;
   label?: string;
   descriptor: Omit<DocumentDescriptor, "uri"> & { uri?: string };
-  getRemoteUrl: () => Promise<string> | string;
+  resolveSource?: () => Promise<PdfSource> | PdfSource;
+  getRemoteUrl?: () => Promise<string> | string;
 };
 
 export async function preparePdfDocument(args: PreparePdfDocumentArgs): Promise<DocumentDescriptor> {
@@ -40,11 +42,16 @@ export async function preparePdfDocument(args: PreparePdfDocumentArgs): Promise<
         fileName: args.descriptor.fileName,
         busyKey: args.key ?? null,
       });
-      const uri = await preparePdfLocalUri({
+      const preparedSource = await preparePdfExecutionSource({
         supabase: args.supabase,
+        source:
+          args.descriptor.fileSource ??
+          (args.descriptor.uri ? createPdfSource(args.descriptor.uri) : undefined),
+        resolveSource: args.resolveSource,
         getRemoteUrl: args.getRemoteUrl,
         fileName: args.descriptor.fileName,
       });
+      const uri = preparedSource.uri;
       console.info("[pdf-document-actions] prepare_ready", {
         stage: "prepare_ready",
         platform: Platform.OS,
@@ -52,9 +59,10 @@ export async function preparePdfDocument(args: PreparePdfDocumentArgs): Promise<
         originModule: args.descriptor.originModule,
         finalUri: uri,
         finalScheme: String(uri || "").match(/^([a-z0-9+.-]+):/i)?.[1]?.toLowerCase() || "",
+        finalSourceKind: preparedSource.kind,
         fileName: args.descriptor.fileName,
       });
-      return { ...args.descriptor, uri };
+      return { ...args.descriptor, uri, fileSource: preparedSource };
     } catch (error) {
       const message = getPdfFlowErrorMessage(error, "PDF preparation failed");
       console.error("[pdf-document-actions] prepare_failed", {
@@ -106,6 +114,7 @@ export async function previewPdfDocument(
       sessionId: session.sessionId,
       documentType: asset.documentType,
       originModule: asset.originModule,
+      sourceKind: asset.sourceKind,
       uri: asset.uri,
       scheme: String(asset.uri || "").match(/^([a-z0-9+.-]+):/i)?.[1]?.toLowerCase() || "",
       fileName: asset.fileName,
@@ -119,6 +128,7 @@ export async function previewPdfDocument(
         originModule: asset.originModule,
         finalUri: asset.uri,
         finalScheme: String(asset.uri || "").match(/^([a-z0-9+.-]+):/i)?.[1]?.toLowerCase() || "",
+        finalSourceKind: asset.sourceKind,
         isLocalFile: /^file:\/\//i.test(String(asset.uri || "")),
         fileName: asset.fileName,
       });
@@ -164,9 +174,9 @@ export async function previewPdfDocument(
 }
 
 export async function sharePdfDocument(doc: DocumentDescriptor): Promise<void> {
-  await openPdfShare(doc.uri, doc.fileName);
+  await openPdfShare(doc.fileSource.uri, doc.fileName);
 }
 
 export async function openPdfDocumentExternal(doc: DocumentDescriptor): Promise<void> {
-  await openPdfExternal(doc.uri, doc.fileName);
+  await openPdfExternal(doc.fileSource.uri, doc.fileName);
 }

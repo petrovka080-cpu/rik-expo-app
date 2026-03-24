@@ -1,7 +1,6 @@
 import { Linking, Platform } from "react-native";
 import * as FileSystemModule from "expo-file-system/legacy";
 import * as Sharing from "expo-sharing";
-import * as IntentLauncher from "expo-intent-launcher";
 
 import { getFileSystemPaths } from "../fileSystemPaths";
 import { getUriScheme, hashString32, isHttpUri, normalizeLocalFileUri } from "../pdfFileContract";
@@ -208,22 +207,12 @@ async function openAttachmentOnNative(localUri: string, mimeType: string, mode: 
   }
 
   if (Platform.OS === "android") {
-    try {
-      const contentUri = await FileSystemCompat.getContentUriAsync(localUri);
-      await IntentLauncher.startActivityAsync((IntentLauncher as any).ActivityAction.VIEW, {
-        data: contentUri,
-        flags: 1,
-        type: mimeType || "*/*",
-      });
-      return;
-    } catch {
-      const canShare = await Sharing.isAvailableAsync();
-      if (canShare) {
-        await Sharing.shareAsync(localUri, { mimeType, dialogTitle: "Open attachment" });
-        return;
-      }
-      throw new Error("Attachment open failed");
+    if (!FileSystemCompat.getContentUriAsync) {
+      throw new Error("Android attachment open requires getContentUriAsync support");
     }
+    const contentUri = await FileSystemCompat.getContentUriAsync(localUri);
+    await Linking.openURL(contentUri);
+    return;
   }
 
   const canShare = await Sharing.isAvailableAsync();

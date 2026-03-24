@@ -22,7 +22,7 @@ type UseBuyerDerivedParams = {
   meta: Record<string, LineMeta>;
   attachments: DraftAttachmentMap;
   sheetKind: BuyerSheetKind;
-  sheetGroup: BuyerGroup | null;
+  selectedRequestId?: string | null;
   tab: "inbox" | "pending" | "approved" | "rejected" | "subcontracts";
   pending: BuyerProposalBucketRow[];
   approved: BuyerProposalBucketRow[];
@@ -78,7 +78,7 @@ export function useBuyerDerived({
   meta,
   attachments,
   sheetKind,
-  sheetGroup,
+  selectedRequestId,
   tab,
   pending,
   approved,
@@ -87,6 +87,13 @@ export function useBuyerDerived({
   titleByPid,
 }: UseBuyerDerivedParams) {
   const groups = useMemo(() => selectGroups(rows), [rows]);
+
+  const sheetGroup = useMemo(() => {
+    if (sheetKind !== "inbox") return null;
+    const requestId = String(selectedRequestId ?? "").trim();
+    if (!requestId) return null;
+    return groups.find((group) => String(group?.request_id ?? "").trim() === requestId) ?? null;
+  }, [groups, selectedRequestId, sheetKind]);
 
   const rfqPickedPreview = useMemo(
     () => selectRfqPickedPreview(rows, pickedIds),
@@ -126,6 +133,7 @@ export function useBuyerDerived({
 
   return {
     groups,
+    sheetGroup,
     rfqPickedPreview,
     supplierGroups,
     requiredSuppliers,

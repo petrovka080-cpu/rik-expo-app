@@ -1,3 +1,5 @@
+import { createPdfSource, type PdfSource } from "../pdfFileContract";
+
 export type PdfDocumentType =
   | "request"
   | "proposal"
@@ -22,6 +24,7 @@ export type PdfOriginModule =
 
 export type DocumentDescriptor = {
   uri: string;
+  fileSource: PdfSource;
   fileName: string;
   title: string;
   mimeType: "application/pdf";
@@ -94,8 +97,8 @@ export function buildPdfFileName(args: {
 export function createPdfDocumentDescriptor(
   args: CreatePdfDocumentDescriptorArgs,
 ): DocumentDescriptor {
-  const uri = String(args.uri || "").trim();
-  if (!uri) throw new Error("DocumentDescriptor: uri is empty");
+  const fileSource = createPdfSource(args.uri);
+  const uri = fileSource.uri;
 
   const title = String(args.title || "").trim() || DOC_LABELS[args.documentType];
   const createdAt = args.createdAt || new Date().toISOString();
@@ -112,6 +115,7 @@ export function createPdfDocumentDescriptor(
 
   return {
     uri,
+    fileSource,
     fileName,
     title,
     mimeType: "application/pdf",

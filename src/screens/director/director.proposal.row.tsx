@@ -201,14 +201,14 @@ export function useDirectorProposalRow({
       }, { key: `dir:loadProp:${pidStr}`, label: "Загружаю состав…", minMs: 900 });
 
       if (Platform.OS === "web") {
-        setTimeout(async () => {
+        void (async () => {
           try {
             if (pdfHtmlByProp[pidStr]) return;
             const { buildProposalPdfHtml } = await import("../../lib/rik_api");
             const html = await buildProposalPdfHtml(pidStr);
             setPdfHtmlByProp((prev) => ({ ...prev, [pidStr]: html }));
           } catch { }
-        }, 0);
+        })();
       }
     } catch (e: unknown) {
       Alert.alert(

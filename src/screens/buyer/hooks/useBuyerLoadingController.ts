@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useRef } from "react";
 import { useFocusEffect } from "expo-router";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import type { BuyerTab } from "../buyer.types";
 
 import type { BuyerInboxRow } from "../../../lib/catalog_api";
 import type {
@@ -28,8 +29,25 @@ type RefreshSummaryOptions = {
 
 const DEFAULT_SCOPES: BuyerSummaryScope[] = ["inbox", "buckets", "subcontracts"];
 
+const getVisibleScopes = (activeTab: BuyerTab): BuyerSummaryScope[] => {
+  if (activeTab === "subcontracts") return ["subcontracts"];
+  if (activeTab === "pending" || activeTab === "approved" || activeTab === "rejected") {
+    return ["buckets", "subcontracts"];
+  }
+  return ["inbox", "subcontracts"];
+};
+
+const getProposalChangeScopes = (activeTab: BuyerTab): BuyerSummaryScope[] => {
+  if (activeTab === "pending" || activeTab === "approved" || activeTab === "rejected") {
+    return ["buckets"];
+  }
+  if (activeTab === "inbox") return ["inbox"];
+  return [];
+};
+
 export function useBuyerLoadingController(params: {
   supabase: SupabaseClient;
+  activeTab: BuyerTab;
   listBuyerInbox: () => Promise<BuyerInboxRow[]>;
   preloadDisplayNos: (reqIds: string[]) => void | Promise<void>;
   preloadProposalTitles: (proposalIds: string[]) => void | Promise<void>;
@@ -41,6 +59,7 @@ export function useBuyerLoadingController(params: {
   setRejected: (rows: BuyerProposalBucketRow[]) => void;
   setSubcontractCount: (count: number) => void;
   setRefreshing: (v: boolean) => void;
+  setRefreshReason?: (value: "focus" | "manual" | "mutation" | null) => void;
   kickMsInbox: number;
   kickMsBuckets: number;
   alert: AlertFn;
@@ -48,6 +67,7 @@ export function useBuyerLoadingController(params: {
 }) {
   const {
     supabase,
+    activeTab,
     listBuyerInbox,
     preloadDisplayNos,
     preloadProposalTitles,
@@ -59,6 +79,7 @@ export function useBuyerLoadingController(params: {
     setRejected,
     setSubcontractCount,
     setRefreshing,
+    setRefreshReason,
     kickMsInbox,
     kickMsBuckets,
     alert,
@@ -104,6 +125,10 @@ export function useBuyerLoadingController(params: {
   const refreshSummary = useCallback(async (options: RefreshSummaryOptions) => {
     if (!focusedRef.current) return;
 
+    if (options.reason === "manual") setRefreshReason?.("manual");
+    else if (options.reason === "mutation" || options.reason === "subscription") setRefreshReason?.("mutation");
+    else setRefreshReason?.("focus");
+
     const scopes = options.scopes ?? DEFAULT_SCOPES;
     const showInboxLoading = !!options.showScopeLoading && scopes.includes("inbox");
     const showBucketsLoading = !!options.showScopeLoading && scopes.includes("buckets");
@@ -143,6 +168,7 @@ export function useBuyerLoadingController(params: {
     applyBucketsResult,
     applyInboxResult,
     log,
+    setRefreshReason,
     setLoadingBuckets,
     setLoadingInbox,
     setRefreshing,
@@ -181,7 +207,7 @@ export function useBuyerLoadingController(params: {
       const focusReason: BuyerSummaryRefreshReason = hasHydratedRef.current ? "focus" : "initial";
       void refreshSummary({
         reason: focusReason,
-        scopes: DEFAULT_SCOPES,
+        scopes: getVisibleScopes(activeTab),
         showScopeLoading: !hasHydratedRef.current,
       });
 
@@ -190,9 +216,11 @@ export function useBuyerLoadingController(params: {
         focusedRef,
         onNotif: (title, message) => alert(title, message),
         onProposalsChanged: () => {
+          const scopes = getProposalChangeScopes(activeTab);
+          if (!scopes.length) return;
           void refreshSummary({
             reason: "subscription",
-            scopes: ["inbox", "buckets"],
+            scopes,
           });
         },
         log,
@@ -206,17 +234,17 @@ export function useBuyerLoadingController(params: {
           // no-op
         }
       };
-    }, [alert, log, refreshSummary, supabase]),
+    }, [activeTab, alert, log, refreshSummary, supabase]),
   );
 
   const onRefresh = useCallback(async () => {
     await refreshSummary({
       reason: "manual",
-      scopes: DEFAULT_SCOPES,
+      scopes: getVisibleScopes(activeTab),
       force: true,
       showRefreshing: true,
     });
-  }, [refreshSummary]);
+  }, [activeTab, refreshSummary]);
 
   return {
     fetchInbox,

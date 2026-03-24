@@ -1,5 +1,6 @@
 import React from "react";
-import { ActivityIndicator, FlatList, Platform, Pressable, Text, View } from "react-native";
+import { ActivityIndicator, Platform, Pressable, Text, View } from "react-native";
+import { FlashList } from "@/src/ui/FlashList";
 import RNModal from "react-native-modal";
 import { STATUS_CONFIG, fmtAmount, type Subcontract } from "../subcontracts/subcontracts.shared";
 import { listLinkedRequestsByLink } from "./foreman.requests";
@@ -105,9 +106,12 @@ export default function ForemanSubcontractHistoryModal({
           ) : history.length === 0 ? (
             <Text style={styles.historyModalEmpty}>Подрядов пока нет.</Text>
           ) : (
-            <FlatList
+            <FlashList
               data={history}
               keyExtractor={(it) => it.id}
+              overrideItemLayout={(layout: any) => {
+                layout.size = 84;
+              }}
               style={styles.historyModalList}
               contentContainerStyle={{ paddingBottom: 8 }}
               renderItem={({ item }) => {
@@ -183,3 +187,4 @@ export default function ForemanSubcontractHistoryModal({
     </RNModal>
   );
 }
+

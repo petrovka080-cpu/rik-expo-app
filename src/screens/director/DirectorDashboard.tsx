@@ -1,4 +1,4 @@
-﻿// src/screens/director/DirectorDashboard.tsx
+// src/screens/director/DirectorDashboard.tsx
 import React from "react";
 import {
   View,
@@ -9,7 +9,7 @@ import {
   Platform,
   Animated
 } from "react-native";
-import { FlashList } from "@shopify/flash-list";
+import { FlashList } from "@/src/ui/FlashList";
 import { StatusBar } from "expo-status-bar";
 import { UI, s } from "./director.styles";
 import type { DirTopTab } from "./director.types";
@@ -481,3 +481,4 @@ export default function DirectorDashboard(p: Props) {
     </View>
   );
 }
+

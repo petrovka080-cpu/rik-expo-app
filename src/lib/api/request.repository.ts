@@ -4,6 +4,7 @@ import {
   type RequestSubmitMutationResult,
 } from "./requests";
 import type { RequestRecord } from "./types";
+import { supabase } from "../supabaseClient";
 
 export type SubmitRequestCommand = {
   requestId: number | string;
@@ -22,6 +23,99 @@ const trim = (value: unknown) => String(value ?? "").trim();
 const logRequestRepository = (payload: Record<string, unknown>) => {
   if (!__DEV__) return;
   console.info("[request.repository]", payload);
+};
+
+const DIRECTOR_HANDOFF_BROADCAST_CHANNEL = "director-handoff-rt";
+const DIRECTOR_HANDOFF_BROADCAST_EVENT = "foreman_request_submitted";
+
+const ensureRealtimeAuth = async () => {
+  const session = await supabase.auth.getSession();
+  const accessToken = session.data.session?.access_token ?? null;
+  if (!accessToken) return false;
+  await supabase.realtime.setAuth(accessToken);
+  return true;
+};
+
+const broadcastDirectorRequestSubmitted = async (
+  command: SubmitRequestCommand,
+  record: RequestRecord | null,
+) => {
+  const requestId = trim(record?.id) || trim(command.requestId);
+  if (!requestId) return;
+
+  try {
+    await ensureRealtimeAuth();
+    const displayNo = trim(record?.display_no) || requestId;
+    const channel = supabase.channel(DIRECTOR_HANDOFF_BROADCAST_CHANNEL, {
+      config: {
+        broadcast: {
+          ack: false,
+          self: false,
+        },
+      },
+    });
+    const result = await channel.send({
+      type: "broadcast",
+      event: DIRECTOR_HANDOFF_BROADCAST_EVENT,
+      payload: {
+        request_id: requestId,
+        display_no: displayNo,
+        source_path: trim(command.sourcePath) || null,
+      },
+    });
+    logRequestRepository({
+      phase: "broadcast",
+      sourcePath: command.sourcePath,
+      requestId,
+      submit: true,
+      broadcastChannel: DIRECTOR_HANDOFF_BROADCAST_CHANNEL,
+      broadcastEvent: DIRECTOR_HANDOFF_BROADCAST_EVENT,
+      broadcastResult: result,
+    });
+    void supabase.removeChannel(channel);
+  } catch (error) {
+    logRequestRepository({
+      phase: "warn",
+      sourcePath: command.sourcePath,
+      requestId,
+      submit: true,
+      broadcastChannel: DIRECTOR_HANDOFF_BROADCAST_CHANNEL,
+      broadcastEvent: DIRECTOR_HANDOFF_BROADCAST_EVENT,
+      broadcastError: error instanceof Error ? error.message : String(error),
+    });
+  }
+};
+
+const notifyDirectorRequestSubmitted = async (
+  command: SubmitRequestCommand,
+  record: RequestRecord | null,
+) => {
+  const requestId = trim(record?.id) || trim(command.requestId);
+  if (!requestId) return;
+
+  const displayNo = trim(record?.display_no) || requestId;
+  const payload = {
+    role: "director",
+    title: `Новая заявка ${displayNo}`,
+    body: `Прораб отправил ${displayNo} на утверждение.`,
+    payload: {
+      request_id: requestId,
+      display_no: displayNo,
+      source_path: trim(command.sourcePath) || null,
+    },
+  } as const;
+
+  const result = await supabase.from("notifications").insert(payload);
+  if (!result.error) return;
+
+  logRequestRepository({
+    phase: "warn",
+    sourcePath: command.sourcePath,
+    requestId,
+    submit: true,
+    notifyRole: "director",
+    notifyError: result.error.message,
+  });
 };
 
 const toSubmitErrorCategory = (error: unknown): string => {
@@ -115,5 +209,7 @@ function mapSubmitMutationResult(
     status: mutation.record?.status ?? null,
     displayNo: mutation.record?.display_no ?? null,
   });
+  void broadcastDirectorRequestSubmitted(command, mutation.record);
+  void notifyDirectorRequestSubmitted(command, mutation.record);
   return mutation.record;
 }

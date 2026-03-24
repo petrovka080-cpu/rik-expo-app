@@ -258,7 +258,7 @@ async function loadBuyerCounterpartyDataFresh(): Promise<BuyerCounterpartyLoadRe
       ]),
       loadWithPlans<BuyerSubcontractRow>("subcontracts", [
         {
-          query: 'subcontracts.select("*").limit(2000)',
+          query: 'subcontracts.select("id,contractor_org,contractor_inn,contractor_phone").limit(2000)',
           run: fetchBuyerSubcontracts,
         },
       ]),

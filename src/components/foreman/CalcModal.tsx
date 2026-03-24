@@ -1,4 +1,4 @@
-﻿// src/components/foreman/CalcModal.tsx
+// src/components/foreman/CalcModal.tsx
 // PROD UI. Бизнес-логика не изменена.
 // FIX: footer не двигается вместе с клавиатурой (всегда внизу)
 // FIX: двигается только контент (ScrollView), инпуты прокручиваются выше footer
@@ -23,7 +23,7 @@ import {
   Animated,
   type KeyboardEvent,
 } from "react-native";
-import { FlashList } from "@shopify/flash-list";
+import { FlashList } from "@/src/ui/FlashList";
 import { supabase } from "../../../src/lib/supabaseClient";
 import { useCalcFields, BasisKey, Field } from "./useCalcFields";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -238,7 +238,7 @@ useEffect(() => {
   const [addingToRequest, setAddingToRequest] = useState(false);
   const [showSecondaryFields, setShowSecondaryFields] = useState(false);
 
-  // вњ… РїРѕР»СЏ СЃРІРѕСЂР°С‡РёРІР°РµРј РўРћР›Р¬РљРћ РїРѕСЃР»Рµ СЂР°СЃС‡С‘С‚Р° (UI)
+  // вњ… поля сворачиваем ТОЛЬКО после расчёта (UI)
   const [fieldsCollapsed, setFieldsCollapsed] = useState(false);
   useEffect(() => setFieldsCollapsed(!!rows), [rows]);
 
@@ -854,13 +854,13 @@ useEffect(() => {
 
   const canSend = !!rows && rows.length > 0 && !addingToRequest && !calculating;
 
-  // вњ… РІС‹СЃРѕС‚Р° РЅРёР¶РЅРµР№ РїР°РЅРµР»Рё (РґР»СЏ paddingBottom РєРѕРЅС‚РµРЅС‚Р°)
+  // вњ… высота нижней панели (для paddingBottom контента)
   const BOTTOM_BAR_H = 72;
 
-  // вњ… keyboard overlap СЃРЅРёР·Сѓ (Р±РµР· safe-area)
+  // вњ… keyboard overlap СЃРЅРёР·Сѓ (без safe-area)
   const kbEffective = Math.max(0, keyboardH - insets.bottom);
 
-  // вњ… РЅРёР¶РЅРёР№ РїР°РґРґРёРЅРі footer (safe area)
+  // вњ… РЅРёР¶РЅРёР№ паддинг footer (safe area)
   const footerPadBottom = insets.bottom + 12;
 
   return (
@@ -907,7 +907,7 @@ useEffect(() => {
               <Text style={{ fontSize: 16, fontWeight: "900", color: "#0F172A" }} numberOfLines={1}>
                 Смета
               </Text>
-              {/* Р•СЃР»Рё С…РѕС‡РµС€СЊ СѓР±СЂР°С‚СЊ "Смета" РІРѕРѕР±С‰Рµ: Р·Р°РјРµРЅРё РІРµСЃСЊ СЌС‚РѕС‚ View РЅР° <View style={{ flex: 1 }} /> */}
+              {/* Если хочешь убрать "Смета" вообще: замени весь этот View РЅР° <View style={{ flex: 1 }} /> */}
             </View>
 
             <IconSquareButton
@@ -965,9 +965,9 @@ useEffect(() => {
 </Animated.View>
 
 
-          {/* BODY: РєРѕРЅС‚РµРЅС‚ (KAV) + footer (РІРЅРµ KAV, РІСЃРµРіРґР° РІРЅРёР·Сѓ) */}
+          {/* BODY: контент (KAV) + footer (РІРЅРµ KAV, всегда РІРЅРёР·Сѓ) */}
           <View style={{ flex: 1 }}>
-            {/* вњ… KAV С‚РѕР»СЊРєРѕ РґР»СЏ РєРѕРЅС‚РµРЅС‚Р° */}
+            {/* вњ… KAV только для контента */}
             <KeyboardAvoidingView
               style={{ flex: 1 }}
               behavior={Platform.OS === "ios" ? "padding" : undefined}
@@ -1148,7 +1148,7 @@ useEffect(() => {
               </ScrollView>
             </KeyboardAvoidingView>
 
-            {/* вњ… FOOTER Р’РќР• KAV: РЅРёРєРѕРіРґР° РЅРµ СѓРµР·Р¶Р°РµС‚ РІ СЃРµСЂРµРґРёРЅСѓ */}
+            {/* вњ… FOOTER Р’РќР• KAV: РЅРёРєРѕРіРґР° РЅРµ уезжает РІ середину */}
             <View
               style={{
                 paddingHorizontal: 16,
@@ -1259,6 +1259,7 @@ useEffect(() => {
     </Modal>
   );
 }
+
 
 
 

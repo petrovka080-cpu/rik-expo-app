@@ -6,8 +6,8 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import * as XLSX from "xlsx";
 import { generateProposalPdfDocument } from "../../lib/catalog_api";
 import { buildPdfFileName } from "../../lib/documents/pdfDocument";
-import { preparePdfDocument, previewPdfDocument } from "../../lib/documents/pdfDocumentActions";
 import type { Database } from "../../lib/database.types";
+import { prepareAndPreviewGeneratedPdf } from "../../lib/pdf/pdf.runner";
 import type { ProposalItem } from "./director.types";
 
 type BusyLike = { isBusy: (key: string) => boolean };
@@ -187,7 +187,7 @@ export function useDirectorProposalActions({
     try {
       const template = await generateProposalPdfDocument(pidStr, "director");
       const title = `Предложение ${pidStr.slice(0, 8)}`;
-      const doc = await preparePdfDocument({
+      await prepareAndPreviewGeneratedPdf({
         busy,
         supabase,
         key: pdfKey,
@@ -201,14 +201,13 @@ export function useDirectorProposalActions({
             entityId: pidStr,
           }),
         },
-        getRemoteUrl: () => template.uri,
+        router,
       });
-      await previewPdfDocument(doc, { router });
     } catch (e: unknown) {
       if (String(errText(e) || "").toLowerCase().includes("busy")) return;
       Alert.alert("Не удалось открыть PDF", errText(e) || "Попробуйте еще раз.");
     } finally {
-      setTimeout(() => { pdfTapLockRef.current[pdfKey] = false; }, 450);
+      delete pdfTapLockRef.current[pdfKey];
     }
   }, [busy, supabase, isProposalPdfBusy, pdfTapLockRef, router]);
 

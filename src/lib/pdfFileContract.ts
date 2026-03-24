@@ -1,3 +1,10 @@
+export type PdfSourceKind = "local-file" | "remote-url" | "blob";
+
+export type PdfSource = {
+  kind: PdfSourceKind;
+  uri: string;
+};
+
 export function getUriScheme(uri?: string | null): string {
   const value = String(uri || "").trim();
   const match = value.match(/^([a-z0-9+.-]+):/i);
@@ -16,6 +23,31 @@ export function hashString32(input: string): string {
     h = Math.imul(h, 16777619);
   }
   return (h >>> 0).toString(16);
+}
+
+export function classifyPdfSourceUri(uri?: string | null): PdfSourceKind {
+  const value = String(uri || "").trim();
+  if (!value) {
+    throw new Error("PDF source URI is empty");
+  }
+
+  const scheme = getUriScheme(value);
+  if (scheme === "blob" || scheme === "data") return "blob";
+  if (isHttpUri(value)) return "remote-url";
+  return "local-file";
+}
+
+export function createPdfSource(uri?: string | null): PdfSource {
+  const value = String(uri || "").trim();
+  if (!value) {
+    throw new Error("PDF source URI is empty");
+  }
+
+  const kind = classifyPdfSourceUri(value);
+  return {
+    kind,
+    uri: kind === "local-file" ? normalizeLocalFileUri(value) : value,
+  };
 }
 
 export function normalizeLocalFileUri(uri?: string | null): string {

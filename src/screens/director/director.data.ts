@@ -6,6 +6,7 @@ import type { Database } from "../../lib/database.types";
 import { REQUEST_PENDING_EN, REQUEST_PENDING_STATUS } from "../../lib/api/requests.status";
 import { shortId } from "./director.helpers";
 import { fetchDirectorPendingRows } from "./director.repository";
+import { useDirectorUiStore } from "./directorUi.store";
 import type { PendingRow, ProposalHead, RequestMeta } from "./director.types";
 
 type Deps = {
@@ -71,13 +72,15 @@ export function useDirectorData({ supabase }: Deps) {
   const lastFetchedPropsAt = useRef<number>(0);
 
   const [rows, setRows] = useState<PendingRow[]>([]);
-  const [loadingRows, setLoadingRows] = useState(false);
+  const loadingRows = useDirectorUiStore((state) => state.loadingRows);
+  const setLoadingRows = useDirectorUiStore((state) => state.setLoadingRows);
 
   const [propsHeads, setPropsHeads] = useState<ProposalHead[]>([]);
   const [buyerPropsCount, setBuyerPropsCount] = useState<number>(0);
   const [buyerPositionsCount, setBuyerPositionsCount] = useState<number>(0);
   const [propItemsCount, setPropItemsCount] = useState<Record<string, number>>({});
-  const [loadingProps, setLoadingProps] = useState(false);
+  const loadingProps = useDirectorUiStore((state) => state.loadingProps);
+  const setLoadingProps = useDirectorUiStore((state) => state.setLoadingProps);
 
   const [displayNoByReq, setDisplayNoByReq] = useState<Record<string, string>>({});
   const [submittedAtByReq, setSubmittedAtByReq] = useState<Record<string, string>>({});
@@ -366,7 +369,7 @@ export function useDirectorData({ supabase }: Deps) {
     } finally {
       if (my === fetchTicket.current) setLoadingRows(false);
     }
-  }, [supabase, preloadDisplayNos, loadDirectorRowsFallback, rows.length]);
+  }, [loadDirectorRowsFallback, preloadDisplayNos, rows.length, setLoadingRows, supabase]);
 
   const fetchProps = useCallback(async (force = false) => {
     const now = Date.now();
@@ -459,7 +462,7 @@ export function useDirectorData({ supabase }: Deps) {
     } finally {
       setLoadingProps(false);
     }
-  }, [propsHeads.length, supabase]);
+  }, [propsHeads.length, setLoadingProps, supabase]);
 
   return {
     rows,
