@@ -17,7 +17,7 @@ type Props = {
   onOpenKind?: (kindName: string, list: FinKindSupplierRow[]) => void;
 };
 
-const OVERPAY_KIND = "РџРµСЂРµРїР»Р°С‚С‹ / Р°РІР°РЅСЃС‹";
+const OVERPAY_KIND = "Переплаты / авансы";
 
 export default function DirectorFinanceSpendModal(props: Props) {
   const [kindsOpen, setKindsOpen] = React.useState(false);
@@ -43,24 +43,21 @@ export default function DirectorFinanceSpendModal(props: Props) {
     >
       <View style={{ flexDirection: "column", alignItems: "stretch" }}>
         <Text style={{ color: UI.text, fontWeight: "900" }}>
-          РЈС‚РІРµСЂР¶РґРµРЅРѕ:{" "}
-          <Text style={{ color: UI.sub }}>{props.loading ? "..." : props.money(props.spendSummary.header.approved)}</Text>
+          Утверждено: <Text style={{ color: UI.sub }}>{props.loading ? "..." : props.money(props.spendSummary.header.approved)}</Text>
         </Text>
 
         <Text style={{ color: UI.text, fontWeight: "900", marginTop: 8 }}>
-          РћРїР»Р°С‡РµРЅРѕ:{" "}
-          <Text style={{ color: UI.sub }}>{props.loading ? "..." : props.money(props.spendSummary.header.paid)}</Text>
+          Оплачено: <Text style={{ color: UI.sub }}>{props.loading ? "..." : props.money(props.spendSummary.header.paid)}</Text>
         </Text>
 
         <Text style={{ color: UI.text, fontWeight: "900", marginTop: 8 }}>
-          Рљ РѕРїР»Р°С‚Рµ:{" "}
-          <Text style={{ color: UI.sub }}>{props.loading ? "..." : props.money(props.spendSummary.header.toPay)}</Text>
+          К оплате: <Text style={{ color: UI.sub }}>{props.loading ? "..." : props.money(props.spendSummary.header.toPay)}</Text>
         </Text>
 
         {props.spendSummary.header.overpay > 0 ? (
           <Pressable onPress={openOverpayAsKind} hitSlop={12}>
             <Text style={{ color: "#F59E0B", fontWeight: "900", marginTop: 8 }}>
-              РџРµСЂРµРїР»Р°С‚Р°/Р°РІР°РЅСЃ:{" "}
+              Переплата/аванс:{" "}
               <Text style={{ color: UI.sub }}>{props.loading ? "..." : props.money(props.spendSummary.header.overpay)}</Text>
             </Text>
           </Pressable>
@@ -83,20 +80,20 @@ export default function DirectorFinanceSpendModal(props: Props) {
         >
           <View style={{ flex: 1, minWidth: 0 }}>
             <Text style={{ color: UI.text, fontWeight: "900", fontSize: 14 }} numberOfLines={1}>
-              Р Р°СЃС…РѕРґС‹ РїРѕ РІРёРґР°Рј
+              Расходы по видам
             </Text>
             <Text style={{ color: UI.sub, fontWeight: "800", fontSize: 12 }} numberOfLines={1}>
-              РњР°С‚РµСЂРёР°Р»С‹ В· Р Р°Р±РѕС‚С‹ В· РЈСЃР»СѓРіРё В· Р”СЂСѓРіРѕРµ
+              Материалы · Работы · Услуги · Другое
             </Text>
           </View>
 
-          <Text style={{ color: UI.sub, fontWeight: "900", fontSize: 16, marginLeft: 10 }}>{kindsOpen ? "в–ґ" : "в–ѕ"}</Text>
+          <Text style={{ color: UI.sub, fontWeight: "900", fontSize: 16, marginLeft: 10 }}>{kindsOpen ? "▴" : "▾"}</Text>
         </Pressable>
 
         {kindsOpen ? (
           <View style={{ marginTop: 10 }}>
             {!props.spendSummary.kindRows.length ? (
-              <Text style={{ color: UI.sub, fontWeight: "800" }}>РќРµС‚ РґР°РЅРЅС‹С…</Text>
+              <Text style={{ color: UI.sub, fontWeight: "800" }}>Нет данных</Text>
             ) : (
               props.spendSummary.kindRows.map((row) => (
                 <Pressable
@@ -119,17 +116,17 @@ export default function DirectorFinanceSpendModal(props: Props) {
                   </Text>
 
                   <Text style={{ color: UI.sub, fontWeight: "800", marginTop: 2 }} numberOfLines={2}>
-                    {`РЈС‚РІРµСЂР¶РґРµРЅРѕ: ${props.money(row.approved)} В· РѕРїР»Р°С‡РµРЅРѕ: ${props.money(row.paid)} В· Рє РѕРїР»Р°С‚Рµ: ${props.money(row.toPay)}`}
+                    {`Утверждено: ${props.money(row.approved)} · оплачено: ${props.money(row.paid)} · к оплате: ${props.money(row.toPay)}`}
                   </Text>
 
                   {row.overpay > 0 ? (
                     <Text style={{ color: "#F59E0B", fontWeight: "800", marginTop: 2 }} numberOfLines={1}>
-                      {`РџРµСЂРµРїР»Р°С‚Р°/Р°РІР°РЅСЃ: ${props.money(row.overpay)}`}
+                      {`Переплата/аванс: ${props.money(row.overpay)}`}
                     </Text>
                   ) : null}
 
                   <Text style={{ color: UI.sub, fontWeight: "800", marginTop: 2 }} numberOfLines={1}>
-                    {`РџРѕСЃС‚Р°РІС‰РёРєРѕРІ: ${row.suppliers.length}`}
+                    {`Поставщиков: ${row.suppliers.length}`}
                   </Text>
                 </Pressable>
               ))

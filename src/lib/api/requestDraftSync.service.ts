@@ -14,7 +14,7 @@ const REQUEST_DRAFT_SYNC_RPC_V1_ENABLED =
   String(process.env.EXPO_PUBLIC_REQUEST_DRAFT_SYNC_RPC_V1 ?? "").trim() !== "0";
 
 const REQUEST_DRAFT_SYNC_RPC_V2_ENABLED =
-  String(process.env.EXPO_PUBLIC_REQUEST_DRAFT_SYNC_RPC_V2 ?? "").trim() === "1";
+  String(process.env.EXPO_PUBLIC_REQUEST_DRAFT_SYNC_RPC_V2 ?? "1").trim() !== "0";
 const DIRECTOR_HANDOFF_BROADCAST_CHANNEL = "director-handoff-rt";
 const DIRECTOR_HANDOFF_BROADCAST_EVENT = "foreman_request_submitted";
 

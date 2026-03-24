@@ -85,65 +85,68 @@ export default function DirectorFinanceDebtModal(props: Props) {
     [props],
   );
 
-  const listHeader = React.useMemo(() => (
-    <View>
-      <Text style={{ color: "#F59E0B", fontWeight: "900" }} numberOfLines={2}>
-        Требует оплаты:{" "}
-        <Text style={{ color: UI.sub }}>
-          {props.loading ? "..." : `${overdueCount} сч.`} · {props.loading ? "..." : `${props.money(overdueAmount)} KGS`}
-          {!props.loading && debtAmount > 0 ? ` · ${overduePct}%` : ""}
-        </Text>
-      </Text>
-
-      {criticalCount > 0 ? (
-        <Text style={{ color: UI.text, fontWeight: "900", marginTop: 10 }} numberOfLines={2}>
-          Критично (в периоде):{" "}
+  const listHeader = React.useMemo(
+    () => (
+      <View>
+        <Text style={{ color: "#F59E0B", fontWeight: "900" }} numberOfLines={2}>
+          Требует оплаты:{" "}
           <Text style={{ color: UI.sub }}>
-            {props.loading ? "..." : `${criticalCount} сч.`} · {props.loading ? "..." : `${props.money(criticalAmount)} KGS`}
-            {!props.loading && debtAmount > 0 ? ` · ${criticalPct}%` : ""}
+            {props.loading ? "..." : `${overdueCount} сч.`} · {props.loading ? "..." : `${props.money(overdueAmount)} KGS`}
+            {!props.loading && debtAmount > 0 ? ` · ${overduePct}%` : ""}
           </Text>
         </Text>
-      ) : null}
 
-      <Text style={{ color: UI.text, fontWeight: "900", marginTop: 10 }} numberOfLines={2}>
-        К оплате:{" "}
-        <Text style={{ color: UI.sub }}>
-          {props.loading ? "..." : `${debtCount} сч.`} · {props.loading ? "..." : `${props.money(debtAmount)} KGS`}
-        </Text>
-      </Text>
-
-      <Pressable
-        onPress={() => setSuppliersOpen((current) => !current)}
-        style={[
-          s.mobCard,
-          {
-            marginTop: 14,
-            marginBottom: suppliersOpen ? 10 : 0,
-            paddingVertical: 10,
-            paddingHorizontal: 12,
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "space-between",
-          },
-        ]}
-      >
-        <View style={{ flex: 1, minWidth: 0 }}>
-          <Text style={{ color: UI.text, fontWeight: "900", fontSize: 14 }} numberOfLines={1}>
-            Поставщики (долг)
-          </Text>
-          {suppliers[0] ? (
-            <Text style={{ color: UI.sub, fontWeight: "800", fontSize: 12 }} numberOfLines={1}>
-              {`Лидер: ${suppliers[0].supplier} · ${props.money(suppliers[0].toPay)} KGS`}
+        {criticalCount > 0 ? (
+          <Text style={{ color: UI.text, fontWeight: "900", marginTop: 10 }} numberOfLines={2}>
+            Критично (в периоде):{" "}
+            <Text style={{ color: UI.sub }}>
+              {props.loading ? "..." : `${criticalCount} сч.`} · {props.loading ? "..." : `${props.money(criticalAmount)} KGS`}
+              {!props.loading && debtAmount > 0 ? ` · ${criticalPct}%` : ""}
             </Text>
-          ) : null}
-        </View>
+          </Text>
+        ) : null}
 
-        <Text style={{ color: UI.sub, fontWeight: "900", fontSize: 16, marginLeft: 10 }}>
-          {suppliersOpen ? "▴" : "▾"}
+        <Text style={{ color: UI.text, fontWeight: "900", marginTop: 10 }} numberOfLines={2}>
+          К оплате:{" "}
+          <Text style={{ color: UI.sub }}>
+            {props.loading ? "..." : `${debtCount} сч.`} · {props.loading ? "..." : `${props.money(debtAmount)} KGS`}
+          </Text>
         </Text>
-      </Pressable>
-    </View>
-  ), [criticalAmount, criticalCount, criticalPct, debtAmount, debtCount, overdueAmount, overdueCount, overduePct, props, suppliers, suppliersOpen]);
+
+        <Pressable
+          onPress={() => setSuppliersOpen((current) => !current)}
+          style={[
+            s.mobCard,
+            {
+              marginTop: 14,
+              marginBottom: suppliersOpen ? 10 : 0,
+              paddingVertical: 10,
+              paddingHorizontal: 12,
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "space-between",
+            },
+          ]}
+        >
+          <View style={{ flex: 1, minWidth: 0 }}>
+            <Text style={{ color: UI.text, fontWeight: "900", fontSize: 14 }} numberOfLines={1}>
+              Поставщики (долг)
+            </Text>
+            {suppliers[0] ? (
+              <Text style={{ color: UI.sub, fontWeight: "800", fontSize: 12 }} numberOfLines={1}>
+                {`Лидер: ${suppliers[0].supplier} · ${props.money(suppliers[0].toPay)} KGS`}
+              </Text>
+            ) : null}
+          </View>
+
+          <Text style={{ color: UI.sub, fontWeight: "900", fontSize: 16, marginLeft: 10 }}>
+            {suppliersOpen ? "▴" : "▾"}
+          </Text>
+        </Pressable>
+      </View>
+    ),
+    [criticalAmount, criticalCount, criticalPct, debtAmount, debtCount, overdueAmount, overdueCount, overduePct, props, suppliers, suppliersOpen],
+  );
 
   return (
     <FlashList
@@ -155,13 +158,10 @@ export default function DirectorFinanceDebtModal(props: Props) {
         layout.size = 88;
       }}
       ListHeaderComponent={listHeader}
-      ListEmptyComponent={
-        suppliersOpen ? <Text style={{ color: UI.sub, fontWeight: "800" }}>Нет данных</Text> : null
-      }
+      ListEmptyComponent={suppliersOpen ? <Text style={{ color: UI.sub, fontWeight: "800" }}>Нет данных</Text> : null}
       contentContainerStyle={{ paddingBottom: 24 }}
       keyboardShouldPersistTaps="handled"
       showsVerticalScrollIndicator={false}
     />
   );
 }
-

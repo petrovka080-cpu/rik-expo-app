@@ -24,7 +24,7 @@ import type { DirectorFinanceSupplierSelection } from "./directorUi.store";
 
 type BusyLike = { isBusy: (key: string) => boolean };
 
-const OVERPAY_KIND = "\u041f\u0435\u0440\u0435\u043f\u043b\u0430\u0442\u044b / \u0430\u0432\u0430\u043d\u0441\u044b";
+const OVERPAY_KIND = "Переплаты / авансы";
 
 type Deps = {
   busy: BusyLike;
@@ -103,70 +103,76 @@ export function useDirectorFinancePanel({
     return await loadFinanceSupportRows();
   }, [finRows, finSpendRows, finSupportRowsLoaded, loadFinanceSupportRows]);
 
-  const computeSupplierFallback = useCallback(async (selection: DirectorFinanceSupplierSelection) => {
-    const supportRows = await ensureSupportRows();
-    return computeFinanceSupplierPanel({
-      selection,
-      rows: supportRows.financeRows,
-      spendRows: supportRows.spendRows,
-      periodFromIso: finFrom,
-      periodToIso: finTo,
-      dueDaysDefault: FIN_DUE_DAYS_DEFAULT,
-      criticalDays: FIN_CRITICAL_DAYS,
-    });
-  }, [FIN_CRITICAL_DAYS, FIN_DUE_DAYS_DEFAULT, ensureSupportRows, finFrom, finTo]);
-
-  const loadSupplierScope = useCallback(async (
-    selection: DirectorFinanceSupplierSelection,
-    opts?: { suppressErrors?: boolean },
-  ) => {
-    if (!selection) {
-      setFinSupplier(null);
-      return;
-    }
-
-    setFinSupplierLoading(true);
-    try {
-      const payload = await fetchDirectorFinanceSupplierScopeViaRpc({
-        supplier: selection.supplier,
-        kindName: selection.kindName,
+  const computeSupplierFallback = useCallback(
+    async (selection: DirectorFinanceSupplierSelection) => {
+      const supportRows = await ensureSupportRows();
+      return computeFinanceSupplierPanel({
+        selection,
+        rows: supportRows.financeRows,
+        spendRows: supportRows.spendRows,
         periodFromIso: finFrom,
         periodToIso: finTo,
         dueDaysDefault: FIN_DUE_DAYS_DEFAULT,
         criticalDays: FIN_CRITICAL_DAYS,
       });
-      setFinSupplier(payload ?? await computeSupplierFallback(selection));
-    } catch (error) {
-      if (__DEV__) {
-        console.warn("[director.finance] supplier scope rpc failed", error);
-      }
-      const fallback = await computeSupplierFallback(selection).catch(() => null);
-      setFinSupplier(fallback);
-      if (!opts?.suppressErrors && !fallback) {
-        Alert.alert("Р¤РёРЅР°РЅСЃС‹", "РќРµ СѓРґР°Р»РѕСЃСЊ РѕС‚РєСЂС‹С‚СЊ РїРѕСЃС‚Р°РІС‰РёРєР°");
-      }
-    } finally {
-      setFinSupplierLoading(false);
-    }
-  }, [FIN_CRITICAL_DAYS, FIN_DUE_DAYS_DEFAULT, computeSupplierFallback, finFrom, finTo]);
+    },
+    [FIN_CRITICAL_DAYS, FIN_DUE_DAYS_DEFAULT, ensureSupportRows, finFrom, finTo],
+  );
 
-  const openSupplier = useCallback((value: FinSupplierInput | string) => {
-    const supplierInput = normalizeFinSupplierInput(value);
-    const supplierName = financeText(supplierInput.supplier);
-    const kindName = financeText(supplierInput._kindName ?? supplierInput.kindName);
-    const selection = supplierName
-      ? {
-          supplier: supplierName,
-          kindName,
+  const loadSupplierScope = useCallback(
+    async (selection: DirectorFinanceSupplierSelection, opts?: { suppressErrors?: boolean }) => {
+      if (!selection) {
+        setFinSupplier(null);
+        return;
+      }
+
+      setFinSupplierLoading(true);
+      try {
+        const payload = await fetchDirectorFinanceSupplierScopeViaRpc({
+          supplier: selection.supplier,
+          kindName: selection.kindName,
+          periodFromIso: finFrom,
+          periodToIso: finTo,
+          dueDaysDefault: FIN_DUE_DAYS_DEFAULT,
+          criticalDays: FIN_CRITICAL_DAYS,
+        });
+        setFinSupplier(payload ?? (await computeSupplierFallback(selection)));
+      } catch (error) {
+        if (__DEV__) {
+          console.warn("[director.finance] supplier scope rpc failed", error);
         }
-      : null;
+        const fallback = await computeSupplierFallback(selection).catch(() => null);
+        setFinSupplier(fallback);
+        if (!opts?.suppressErrors && !fallback) {
+          Alert.alert("Финансы", "Не удалось открыть поставщика");
+        }
+      } finally {
+        setFinSupplierLoading(false);
+      }
+    },
+    [FIN_CRITICAL_DAYS, FIN_DUE_DAYS_DEFAULT, computeSupplierFallback, finFrom, finTo],
+  );
 
-    setFinSupplierSelection(selection);
-    setFinSupplier(null);
-    if (!selection) return;
-    pushFin("supplier");
-    void loadSupplierScope(selection);
-  }, [loadSupplierScope, pushFin, setFinSupplierSelection]);
+  const openSupplier = useCallback(
+    (value: FinSupplierInput | string) => {
+      const supplierInput = normalizeFinSupplierInput(value);
+      const supplierName = financeText(supplierInput.supplier);
+      const kindName = financeText(supplierInput._kindName ?? supplierInput.kindName);
+      const selection = supplierName
+        ? {
+            supplier: supplierName,
+            kindName,
+          }
+        : null;
+
+      setFinSupplierSelection(selection);
+      setFinSupplier(null);
+      if (!selection) return;
+      pushFin("supplier");
+      void loadSupplierScope(selection);
+    },
+    [loadSupplierScope, pushFin, setFinSupplierSelection],
+  );
 
   const closeSupplier = useCallback(() => {
     setFinSupplierSelection(null);
@@ -174,10 +180,13 @@ export function useDirectorFinancePanel({
     popFin();
   }, [popFin, setFinSupplierSelection]);
 
-  const openFinKind = useCallback((kind: string, _list?: FinKindSupplierRow[]) => {
-    setFinKindName(String(kind || ""));
-    pushFin("kind");
-  }, [setFinKindName, pushFin]);
+  const openFinKind = useCallback(
+    (kind: string, _list?: FinKindSupplierRow[]) => {
+      setFinKindName(String(kind || ""));
+      pushFin("kind");
+    },
+    [setFinKindName, pushFin],
+  );
 
   const closeFinKind = useCallback(() => {
     setFinKindName("");
@@ -198,7 +207,7 @@ export function useDirectorFinancePanel({
       busy,
       supabase,
       key: "pdf:director:finance",
-      label: "Р С›РЎвЂљР С”РЎР‚РЎвЂ№Р Р†Р В°РЎР‹ PDFРІР‚В¦",
+      label: "Открываю PDF...",
       descriptor: template,
       router,
     });
@@ -207,7 +216,7 @@ export function useDirectorFinancePanel({
   const onSupplierPdf = useCallback(async () => {
     const supName = financeText(finSupplier?.supplier ?? finSupplierSelection?.supplier);
     if (!supName) {
-      Alert.alert("PDF", "Р СџР С•РЎРѓРЎвЂљР В°Р Р†РЎвЂ°Р С‘Р С” Р Р…Р Вµ Р Р†РЎвЂ№Р В±РЎР‚Р В°Р Р…");
+      Alert.alert("PDF", "Поставщик не выбран");
       return;
     }
 
@@ -227,7 +236,7 @@ export function useDirectorFinancePanel({
       busy,
       supabase,
       key: `pdf:director:supplier:${supName}`,
-      label: "Р С›РЎвЂљР С”РЎР‚РЎвЂ№Р Р†Р В°РЎР‹ PDFРІР‚В¦",
+      label: "Открываю PDF...",
       descriptor: template,
       router,
     });
@@ -235,8 +244,8 @@ export function useDirectorFinancePanel({
 
   const financePeriodShort = useMemo(() => {
     return finFrom || finTo
-      ? `${finFrom ? fmtDateOnly(finFrom) : "РІР‚вЂќ"} РІвЂ вЂ™ ${finTo ? fmtDateOnly(finTo) : "РІР‚вЂќ"}`
-      : "Р вЂ™Р ВµРЎРѓРЎРЉ Р С—Р ВµРЎР‚Р С‘Р С•Р Т‘";
+      ? `${finFrom ? fmtDateOnly(finFrom) : "—"} - ${finTo ? fmtDateOnly(finTo) : "—"}`
+      : "Весь период";
   }, [finFrom, finTo, fmtDateOnly]);
 
   const financeSupplierName = useMemo(() => {
@@ -244,16 +253,16 @@ export function useDirectorFinancePanel({
   }, [finSupplier, finSupplierSelection]);
 
   const financeTitle = useMemo(() => {
-    if (finPage === "debt") return "Р вЂќР С•Р В»Р С–Р С‘ Р С‘ РЎР‚Р С‘РЎРѓР С”Р С‘";
-    if (finPage === "spend") return "Р В Р В°РЎРѓРЎвЂ¦Р С•Р Т‘РЎвЂ№ (Р С—Р ВµРЎР‚Р С‘Р С•Р Т‘)";
-    if (finPage === "kind") return finKindName ? `${finKindName}: Р С—Р С•РЎРѓРЎвЂљР В°Р Р†РЎвЂ°Р С‘Р С”Р С‘` : "Р СџР С•РЎРѓРЎвЂљР В°Р Р†РЎвЂ°Р С‘Р С”Р С‘";
+    if (finPage === "debt") return "Долги и риски";
+    if (finPage === "spend") return "Расходы (период)";
+    if (finPage === "kind") return finKindName ? `${finKindName}: Поставщики` : "Поставщики";
     if (finPage === "supplier") {
       const supplierName = financeSupplierName;
-      if (!supplierName || supplierName === "РІР‚вЂќ") return "Р СџР С•РЎРѓРЎвЂљР В°Р Р†РЎвЂ°Р С‘Р С”";
-      if (/^\d+$/.test(supplierName) || supplierName.length < 3) return `Р СџР С•РЎРѓРЎвЂљР В°Р Р†РЎвЂ°Р С‘Р С”: ${supplierName}`;
+      if (!supplierName || supplierName === "—") return "Поставщик";
+      if (/^\d+$/.test(supplierName) || supplierName.length < 3) return `Поставщик: ${supplierName}`;
       return supplierName;
     }
-    return "Р В¤Р С‘Р Р…Р В°Р Р…РЎРѓРЎвЂ№";
+    return "Финансы";
   }, [finPage, finKindName, financeSupplierName]);
 
   const financeTopPdfKey = useMemo(() => {
@@ -284,15 +293,18 @@ export function useDirectorFinancePanel({
     closeFinance();
   }, [closeFinance, closeFinKind, closeSupplier, finPage, popFin]);
 
-  const applyFinPeriod = useCallback(async (from: string, to: string) => {
-    setFinFrom(from || null);
-    setFinTo(to || null);
-    setFinPeriodOpen(false);
-    await fetchFinance();
-    if (finSupplierSelection) {
-      await loadSupplierScope(finSupplierSelection, { suppressErrors: true });
-    }
-  }, [fetchFinance, finSupplierSelection, loadSupplierScope, setFinFrom, setFinPeriodOpen, setFinTo]);
+  const applyFinPeriod = useCallback(
+    async (from: string, to: string) => {
+      setFinFrom(from || null);
+      setFinTo(to || null);
+      setFinPeriodOpen(false);
+      await fetchFinance();
+      if (finSupplierSelection) {
+        await loadSupplierScope(finSupplierSelection, { suppressErrors: true });
+      }
+    },
+    [fetchFinance, finSupplierSelection, loadSupplierScope, setFinFrom, setFinPeriodOpen, setFinTo],
+  );
 
   const clearFinPeriod = useCallback(async () => {
     setFinFrom(null);

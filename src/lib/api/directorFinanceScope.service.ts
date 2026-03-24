@@ -1,15 +1,13 @@
 import { supabase } from "../supabaseClient";
 import { listAccountantInbox } from "./accountant";
 import {
-  addDaysIso,
   computeFinanceRep,
   computeFinanceSpendSummary,
+  fetchDirectorFinancePanelScopeV2ViaRpc,
   fetchDirectorFinancePanelScopeViaRpc,
   mapToFinanceRow,
-  mid,
-  nnum,
   normalizeFinSpendRows,
-  parseMid,
+  type DirectorFinancePanelScopeV2,
   type DirectorFinancePanelScope,
   type FinRep,
   type FinSpendRow,
@@ -32,14 +30,15 @@ export type DirectorFinanceScreenScopeResult = {
   spendRows: FinSpendRow[];
   finRep: FinRep;
   finSpendSummary: FinSpendSummary;
-  panelScope: DirectorFinancePanelScope | null;
+  panelScope: DirectorFinancePanelScope | DirectorFinancePanelScopeV2 | null;
   issues: DirectorFinanceScreenScopeIssue[];
   supportRowsLoaded: boolean;
   sourceMeta: {
-    financeSummary: "rpc_panel_scope" | "client_compute";
-    spendSummary: "rpc_panel_scope" | "client_compute";
+    financeSummary: "rpc_panel_scope_v2" | "rpc_panel_scope_v1" | "client_compute";
+    spendSummary: "rpc_panel_scope_v2" | "rpc_panel_scope_v1" | "client_compute";
     financeRows: "legacy_accountant_inbox" | "not_loaded";
     spendRows: "legacy_spend_view" | "not_loaded";
+    panelScope: "rpc_v2" | "rpc_v1" | "client_fallback";
   };
 };
 
@@ -50,45 +49,12 @@ export type DirectorFinanceSupportRowsResult = {
 };
 
 type DirectorFinanceScreenScopeArgs = {
+  objectId?: string | null;
   periodFromIso?: string | null;
   periodToIso?: string | null;
   dueDaysDefault?: number;
   criticalDays?: number;
   includeSupportRows?: boolean;
-};
-
-const sortFinanceRowsForScreen = (
-  rows: FinanceRow[],
-  dueDaysDefault: number,
-): FinanceRow[] => {
-  const sorted = [...rows];
-  const now = mid(new Date());
-
-  sorted.sort((left, right) => {
-    const leftPaid = nnum(left.amount) > 0 && Math.max(nnum(left.amount) - nnum(left.paidAmount), 0) <= 0;
-    const rightPaid = nnum(right.amount) > 0 && Math.max(nnum(right.amount) - nnum(right.paidAmount), 0) <= 0;
-
-    const leftDueIso =
-      left.dueDate ??
-      (left.invoiceDate ? addDaysIso(left.invoiceDate, dueDaysDefault) : null) ??
-      (left.approvedAtIso ? addDaysIso(left.approvedAtIso, dueDaysDefault) : null);
-    const rightDueIso =
-      right.dueDate ??
-      (right.invoiceDate ? addDaysIso(right.invoiceDate, dueDaysDefault) : null) ??
-      (right.approvedAtIso ? addDaysIso(right.approvedAtIso, dueDaysDefault) : null);
-
-    const leftDue = parseMid(leftDueIso) ?? 0;
-    const rightDue = parseMid(rightDueIso) ?? 0;
-    const leftRest = Math.max(nnum(left.amount) - nnum(left.paidAmount), 0);
-    const rightRest = Math.max(nnum(right.amount) - nnum(right.paidAmount), 0);
-    const leftOverdue = !leftPaid && leftRest > 0 && leftDue && leftDue < now ? 1 : 0;
-    const rightOverdue = !rightPaid && rightRest > 0 && rightDue && rightDue < now ? 1 : 0;
-
-    if (leftOverdue !== rightOverdue) return rightOverdue - leftOverdue;
-    return (leftDue || 0) - (rightDue || 0);
-  });
-
-  return sorted;
 };
 
 async function loadLegacyDirectorFinanceSpendRows(args: {
@@ -120,9 +86,7 @@ async function loadLegacyDirectorFinanceRows(): Promise<FinanceRow[]> {
 export async function loadDirectorFinanceSupportRows(args: {
   periodFromIso?: string | null;
   periodToIso?: string | null;
-  dueDaysDefault?: number;
 }): Promise<DirectorFinanceSupportRowsResult> {
-  const dueDaysDefault = Number(args.dueDaysDefault ?? 7) || 7;
   const issues: DirectorFinanceScreenScopeIssue[] = [];
 
   const [financeRowsResult, spendRowsResult] = await Promise.allSettled([
@@ -133,10 +97,7 @@ export async function loadDirectorFinanceSupportRows(args: {
     }),
   ]);
 
-  const financeRows =
-    financeRowsResult.status === "fulfilled"
-      ? sortFinanceRowsForScreen(financeRowsResult.value, dueDaysDefault)
-      : [];
+  const financeRows = financeRowsResult.status === "fulfilled" ? financeRowsResult.value : [];
   const spendRows = spendRowsResult.status === "fulfilled" ? spendRowsResult.value : [];
 
   if (financeRowsResult.status === "rejected") {
@@ -165,26 +126,42 @@ export async function loadDirectorFinanceScreenScope(
   const includeSupportRows = args.includeSupportRows === true;
   const issues: DirectorFinanceScreenScopeIssue[] = [];
   let panelScope: DirectorFinancePanelScope | null = null;
+  let panelScopeV2: DirectorFinancePanelScopeV2 | null = null;
   let financeRows: FinanceRow[] = [];
   let spendRows: FinSpendRow[] = [];
   let supportRowsLoaded = false;
 
   try {
-    panelScope = await fetchDirectorFinancePanelScopeViaRpc({
+    panelScopeV2 = await fetchDirectorFinancePanelScopeV2ViaRpc({
+      objectId: args.objectId,
       periodFromIso: args.periodFromIso,
       periodToIso: args.periodToIso,
-      dueDaysDefault,
-      criticalDays,
+      limit: 50,
+      offset: 0,
     });
   } catch (error) {
     issues.push({ scope: "panel_scope", error });
   }
 
-  if (includeSupportRows || !panelScope) {
+  if (!panelScopeV2) {
+    try {
+      panelScope = await fetchDirectorFinancePanelScopeViaRpc({
+        periodFromIso: args.periodFromIso,
+        periodToIso: args.periodToIso,
+        dueDaysDefault,
+        criticalDays,
+      });
+    } catch (error) {
+      issues.push({ scope: "panel_scope", error });
+    }
+  }
+
+  const resolvedPanelScope = panelScopeV2 ?? panelScope;
+
+  if (includeSupportRows || !resolvedPanelScope) {
     const supportRows = await loadDirectorFinanceSupportRows({
       periodFromIso: args.periodFromIso,
       periodToIso: args.periodToIso,
-      dueDaysDefault,
     });
     financeRows = supportRows.financeRows;
     spendRows = supportRows.spendRows;
@@ -195,10 +172,10 @@ export async function loadDirectorFinanceScreenScope(
   return {
     financeRows,
     spendRows,
-    panelScope,
+    panelScope: resolvedPanelScope,
     finRep:
-      panelScope != null
-        ? { summary: panelScope.summary, report: panelScope.report }
+      resolvedPanelScope != null
+        ? { summary: resolvedPanelScope.summary, report: resolvedPanelScope.report }
         : computeFinanceRep(financeRows, {
             dueDaysDefault,
             criticalDays,
@@ -206,15 +183,16 @@ export async function loadDirectorFinanceScreenScope(
             periodToIso: args.periodToIso,
           }),
     finSpendSummary:
-      panelScope?.spend ??
+      resolvedPanelScope?.spend ??
       computeFinanceSpendSummary(spendRows),
     issues,
     supportRowsLoaded,
     sourceMeta: {
-      financeSummary: panelScope ? "rpc_panel_scope" : "client_compute",
-      spendSummary: panelScope ? "rpc_panel_scope" : "client_compute",
+      financeSummary: panelScopeV2 ? "rpc_panel_scope_v2" : panelScope ? "rpc_panel_scope_v1" : "client_compute",
+      spendSummary: panelScopeV2 ? "rpc_panel_scope_v2" : panelScope ? "rpc_panel_scope_v1" : "client_compute",
       financeRows: supportRowsLoaded ? "legacy_accountant_inbox" : "not_loaded",
       spendRows: supportRowsLoaded ? "legacy_spend_view" : "not_loaded",
+      panelScope: panelScopeV2 ? "rpc_v2" : panelScope ? "rpc_v1" : "client_fallback",
     },
   };
 }

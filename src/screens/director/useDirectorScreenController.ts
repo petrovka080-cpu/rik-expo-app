@@ -144,7 +144,6 @@ export function useDirectorScreenController() {
         const supportRows = await loadDirectorFinanceSupportRows({
             periodFromIso: finFrom,
             periodToIso: finTo,
-            dueDaysDefault: FIN_DUE_DAYS_DEFAULT,
         });
 
         for (const issue of supportRows.issues) {
@@ -159,7 +158,7 @@ export function useDirectorScreenController() {
         setFinSpendRows(supportRows.spendRows);
         setFinSupportRowsLoaded(true);
         return supportRows;
-    }, [FIN_DUE_DAYS_DEFAULT, finFrom, finTo]);
+    }, [finFrom, finTo]);
 
     // Navigation Logic for Finance
     const pushFin = useCallback((p: FinPage) => {

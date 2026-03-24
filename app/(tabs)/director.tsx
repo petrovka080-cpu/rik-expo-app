@@ -1,12 +1,12 @@
-import React from 'react';
-import { Animated } from 'react-native';
-import { useRouter } from 'expo-router';
+import React from "react";
+import { Animated } from "react-native";
+import { useRouter } from "expo-router";
 import { openAppAttachment } from "../../src/lib/documents/attachmentOpener";
 import { UI, s } from "../../src/screens/director/director.styles";
 import DirectorDashboard from "../../src/screens/director/DirectorDashboard";
 import PeriodPickerSheet from "../../src/components/PeriodPickerSheet";
 import RoleScreenLayout from "../../src/components/layout/RoleScreenLayout";
-import { ensureSignedIn, supabase } from '../../src/lib/supabaseClient';
+import { ensureSignedIn, supabase } from "../../src/lib/supabaseClient";
 import DirectorFinanceCardModal from "../../src/screens/director/DirectorFinanceCardModal";
 import DirectorFinanceContent from "../../src/screens/director/DirectorFinanceContent";
 import DirectorReportsModal from "../../src/screens/director/DirectorReportsModal";
@@ -20,9 +20,7 @@ import { useGlobalBusy } from "../../src/ui/GlobalBusy";
 import { buildPdfFileName } from "../../src/lib/documents/pdfDocument";
 import { generateDirectorPdfDocument } from "../../src/lib/documents/pdfDocumentGenerators";
 import { prepareAndPreviewGeneratedPdf } from "../../src/lib/pdf/pdf.runner";
-import {
-  exportDirectorSubcontractReportPdf,
-} from "../../src/lib/api/pdf_director";
+import { exportDirectorSubcontractReportPdf } from "../../src/lib/api/pdf_director";
 
 export default function DirectorScreen() {
   const vm = useDirectorScreenController();
@@ -45,7 +43,7 @@ export default function DirectorScreen() {
       busy,
       supabase,
       key: "pdf:director:reports:production",
-      label: "Открываю PDF…",
+      label: "Открываю PDF...",
       descriptor: template,
       router,
     });
@@ -62,7 +60,7 @@ export default function DirectorScreen() {
   ]);
 
   const onExportSubcontractPdfLegacy = React.useCallback(async () => {
-    const title = "Отчет по подрядам";
+    const title = "Отчёт по подрядам";
     const template = await generateDirectorPdfDocument({
       title,
       fileName: buildPdfFileName({
@@ -85,7 +83,7 @@ export default function DirectorScreen() {
       busy,
       supabase,
       key: "pdf:director:reports:subcontract",
-      label: "Открываю PDF…",
+      label: "Открываю PDF...",
       descriptor: template,
       router,
     });
@@ -94,7 +92,7 @@ export default function DirectorScreen() {
   const onExportSubcontractPdf = React.useCallback(async () => {
     const template = await buildDirectorSubcontractReportPdfDescriptor({
       companyName: reportsCompanyName,
-      generatedBy: "Р”РёСЂРµРєС‚РѕСЂ",
+      generatedBy: "Директор",
       periodFrom: vm.reports.repFrom,
       periodTo: vm.reports.repTo,
       objectName: vm.reports.repObjectName,
@@ -103,21 +101,24 @@ export default function DirectorScreen() {
       busy,
       supabase,
       key: "pdf:director:reports:subcontract",
-      label: "РћС‚РєСЂС‹РІР°СЋ PDFвЂ¦",
+      label: "Открываю PDF...",
       descriptor: template,
       router,
     });
   }, [busy, router, reportsCompanyName, vm.reports.repFrom, vm.reports.repTo, vm.reports.repObjectName]);
   void onExportSubcontractPdfLegacy;
 
-  const financePeriodUi = React.useMemo(() => ({
-    cardBg: UI.cardBg,
-    text: UI.text,
-    sub: UI.sub,
-    border: "rgba(255,255,255,0.14)",
-    accentBlue: "#3B82F6",
-    approve: "#22C55E",
-  }), []);
+  const financePeriodUi = React.useMemo(
+    () => ({
+      cardBg: UI.cardBg,
+      text: UI.text,
+      sub: UI.sub,
+      border: "rgba(255,255,255,0.14)",
+      accentBlue: "#3B82F6",
+      approve: "#22C55E",
+    }),
+    [],
+  );
 
   return (
     <RoleScreenLayout style={[s.container, { backgroundColor: UI.bg }]}>
@@ -129,36 +130,29 @@ export default function DirectorScreen() {
         headerShadow={vm.headerShadow}
         titleSize={vm.titleSize}
         subOpacity={vm.subOpacity}
-
         dirTab={vm.dirTab}
         setDirTab={vm.setDirTab}
         tab={vm.tab}
         setTab={vm.setTab}
         closeSheet={vm.closeSheet}
-
         groups={vm.groups as any}
         propsHeads={vm.data.propsHeads as any}
         loadingRows={vm.data.loadingRows}
         loadingProps={vm.data.loadingProps}
-
         foremanRequestsCount={vm.groups.length}
         foremanPositionsCount={vm.data.rows.length}
         buyerPropsCount={vm.data.buyerPropsCount}
         buyerPositionsCount={vm.data.buyerPositionsCount}
-
         labelForRequest={(rid: any) => vm.data.labelForRequest(rid)}
         fmtDateOnly={vm.fmtDateOnly}
         submittedAtByReq={vm.data.submittedAtByReq}
-
         openRequestSheet={vm.openRequestSheet as any}
         ProposalRow={vm.propRow.ProposalRow as any}
         screenLock={vm.screenLock}
-
         ensureSignedIn={ensureSignedIn}
         fetchRows={vm.data.fetchRows as any}
         fetchProps={vm.data.fetchProps as any}
         rtToast={vm.rtToast}
-
         finLoading={vm.finLoading}
         finRows={vm.finRows as any}
         finRep={vm.finRep as any}
@@ -169,7 +163,6 @@ export default function DirectorScreen() {
         fetchFinance={vm.financePanel.fetchFinance as any}
         finFrom={vm.finFrom}
         finTo={vm.finTo}
-
         openFinancePage={(page: any) => vm.openFinancePage(page)}
         openReports={() => void vm.reports.openReports()}
         reportsPeriodShort={vm.reports.repPeriodShort}

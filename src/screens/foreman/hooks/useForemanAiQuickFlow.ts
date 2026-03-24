@@ -12,7 +12,7 @@ import { FOREMAN_TEXT } from "../foreman.ui";
 type SyncLocalDraftResult = {
   requestId?: string | null;
   submitted?: unknown | null;
-} | void;
+} | undefined;
 
 type Props = {
   headerRequirements: ForemanHeaderRequirementResult;

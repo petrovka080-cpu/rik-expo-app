@@ -221,6 +221,10 @@ async function openAttachmentOnNative(localUri: string, mimeType: string, mode: 
     return;
   }
 
+  if (Platform.OS === "ios") {
+    throw new Error("Sharing is unavailable on this device");
+  }
+
   await Linking.openURL(localUri);
 }
 

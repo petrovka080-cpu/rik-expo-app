@@ -7,7 +7,7 @@ import {
   Pressable,
   RefreshControl,
   Platform,
-  Animated
+  Animated,
 } from "react-native";
 import { FlashList } from "@/src/ui/FlashList";
 import { StatusBar } from "expo-status-bar";
@@ -16,6 +16,7 @@ import type { DirTopTab } from "./director.types";
 import DirectorSubcontractTab from "./DirectorSubcontractTab";
 
 type Tab = "foreman" | "buyer";
+type TopTabItem = { key: DirTopTab; label: string };
 
 type Group = { request_id: number | string; items: any[] };
 type ProposalHead = { id: string; submitted_at?: string | null; pretty?: string | null };
@@ -25,9 +26,15 @@ type ReportsOpenProps = Props & {
   reportsPeriodShort?: string;
 };
 
-// finance (оставляем "any", чтобы не тащить 10 типов)
-type FinanceRow = any;
+const DIRECTOR_TOP_TABS: TopTabItem[] = [
+  { key: "Заявки", label: "Заявки" },
+  { key: "Подряды", label: "Подряды" },
+  { key: "Финансы", label: "Финансы" },
+  { key: "Склад", label: "Склад" },
+  { key: "Отчёты", label: "Отчёты" },
+];
 
+type FinanceRow = any;
 type FinPage = "home" | "debt" | "spend" | "kind" | "supplier";
 
 type Props = {
@@ -38,39 +45,31 @@ type Props = {
   headerShadow: any;
   titleSize: any;
   subOpacity: any;
-
   headerTopInset?: number;
   onHeaderMeasured?: (h: number) => void;
-
   dirTab: DirTopTab;
   setDirTab: (t: DirTopTab) => void;
   tab: Tab;
   setTab: (t: Tab) => void;
   closeSheet: () => void;
-
   groups: Group[];
   propsHeads: ProposalHead[];
   loadingRows: boolean;
   loadingProps: boolean;
-
   foremanRequestsCount: number;
   foremanPositionsCount: number;
   buyerPropsCount: number;
   buyerPositionsCount: number;
-
   labelForRequest: (rid: any) => string;
   fmtDateOnly: (iso?: string | null) => string;
   submittedAtByReq: Record<string, string>;
-
   openRequestSheet: (g: Group) => void;
   ProposalRow: React.ComponentType<{ p: ProposalHead; screenLock: boolean }>;
   screenLock: boolean;
-
   ensureSignedIn: () => Promise<any>;
   fetchRows: (force?: boolean) => Promise<any>;
   fetchProps: (force?: boolean) => Promise<any>;
   rtToast: { visible: boolean; title: string; body: string; count: number };
-
   finLoading: boolean;
   finRows: FinanceRow[];
   finRep: any;
@@ -78,16 +77,12 @@ type Props = {
   money: (v: number) => string;
   FIN_DUE_DAYS_DEFAULT: number;
   FIN_CRITICAL_DAYS: number;
-
   fetchFinance: () => Promise<any>;
   finFrom?: string | null;
   finTo?: string | null;
-
   openFinancePage: (page: FinPage) => void;
-
   openReports?: () => void;
   reportsPeriodShort?: string;
-
 };
 
 export default function DirectorDashboard(p: Props) {
@@ -98,7 +93,7 @@ export default function DirectorDashboard(p: Props) {
   const headerPadTop = Platform.OS === "web" ? 10 : 0;
   const contentTopPad = Math.max(p.HEADER_MAX + 16 + headerPadTop, p.HEADER_MIN + 16 + headerPadTop);
 
-  const topTabsRef = React.useRef<FlatList<DirTopTab> | null>(null);
+  const topTabsRef = React.useRef<FlatList<TopTabItem> | null>(null);
   const topTabXRef = React.useRef<Record<string, { x: number; w: number }>>({});
 
   const onTopTabLayout = React.useCallback((key: string, e: any) => {
@@ -113,61 +108,70 @@ export default function DirectorDashboard(p: Props) {
     if (!sv || !rec) return;
     try {
       sv.scrollToOffset({ offset: Math.max(0, rec.x - 12), animated: true });
-    } catch { }
+    } catch {}
   }, [p.dirTab]);
 
-  const refreshRowsControl = React.useMemo(() => (
-    <RefreshControl
-      refreshing={p.loadingRows}
-      onRefresh={async () => {
-        if (p.loadingRows) return;
-        await p.ensureSignedIn();
-        await p.fetchRows(true);
-      }}
-      title=""
-      tintColor={UI.accent}
-    />
-  ), [p]);
+  const refreshRowsControl = React.useMemo(
+    () => (
+      <RefreshControl
+        refreshing={p.loadingRows}
+        onRefresh={async () => {
+          if (p.loadingRows) return;
+          await p.ensureSignedIn();
+          await p.fetchRows(true);
+        }}
+        title=""
+        tintColor={UI.accent}
+      />
+    ),
+    [p],
+  );
 
-  const refreshPropsControl = React.useMemo(() => (
-    <RefreshControl
-      refreshing={p.loadingProps}
-      onRefresh={async () => {
-        if (p.loadingProps) return;
-        await p.ensureSignedIn();
-        await p.fetchProps(true);
-      }}
-      title=""
-      tintColor={UI.accent}
-    />
-  ), [p]);
+  const refreshPropsControl = React.useMemo(
+    () => (
+      <RefreshControl
+        refreshing={p.loadingProps}
+        onRefresh={async () => {
+          if (p.loadingProps) return;
+          await p.ensureSignedIn();
+          await p.fetchProps(true);
+        }}
+        title=""
+        tintColor={UI.accent}
+      />
+    ),
+    [p],
+  );
 
-  const renderForemanGroup = React.useCallback(({ item }: { item: Group }) => {
-    const submittedAt = p.submittedAtByReq[String(item.request_id ?? "").trim()] ?? null;
+  const renderForemanGroup = React.useCallback(
+    ({ item }: { item: Group }) => {
+      const submittedAt = p.submittedAtByReq[String(item.request_id ?? "").trim()] ?? null;
 
-    return (
-      <Pressable
-        onPress={() => p.openRequestSheet(item)}
-        style={[s.mobCard, { marginBottom: 12, marginHorizontal: 16 }]}
-      >
-        <View style={s.mobMain}>
-          <Text style={s.mobTitle} numberOfLines={1}>
-            {p.labelForRequest(item.request_id)}
-          </Text>
-          <Text style={s.mobMeta} numberOfLines={2}>
-            {p.fmtDateOnly(submittedAt)}
-            {` · позиций ${item.items.length}`}
-          </Text>
-        </View>
-
-        <View style={{ marginLeft: 10 }}>
-          <View style={[s.openBtn, { minWidth: 0, paddingVertical: 8, paddingHorizontal: 12 }]}>
-            <Text style={[s.openBtnText, { fontSize: 12 }]}>Открыть</Text>
+      return (
+        <Pressable
+          onPress={() => p.openRequestSheet(item)}
+          style={[s.mobCard, { marginBottom: 12, marginHorizontal: 16 }]}
+        >
+          <View style={s.mobMain}>
+            <Text style={s.mobTitle} numberOfLines={1}>
+              {p.labelForRequest(item.request_id)}
+            </Text>
+            <Text style={s.mobMeta} numberOfLines={2}>
+              {p.fmtDateOnly(submittedAt)}
+              {` · позиций ${item.items.length}`}
+            </Text>
           </View>
-        </View>
-      </Pressable>
-    );
-  }, [p]);
+
+          <View style={{ marginLeft: 10 }}>
+            <View style={[s.openBtn, { minWidth: 0, paddingVertical: 8, paddingHorizontal: 12 }]}>
+              <Text style={[s.openBtnText, { fontSize: 12 }]}>Открыть</Text>
+            </View>
+          </View>
+        </Pressable>
+      );
+    },
+    [p],
+  );
 
   const renderProposalHead = React.useCallback(
     ({ item }: { item: ProposalHead }) => <p.ProposalRow p={item} screenLock={p.screenLock} />,
@@ -180,29 +184,28 @@ export default function DirectorDashboard(p: Props) {
         {headerTitle}
       </Animated.Text>
 
-      {/* TOP tabs */}
       <FlatList
         ref={topTabsRef}
-        data={["Заявки", "Подряды", "Финансы", "Склад", "Отчёты"]}
-        keyExtractor={(t) => t}
+        data={DIRECTOR_TOP_TABS}
+        keyExtractor={(item) => item.key}
         horizontal
         showsHorizontalScrollIndicator={false}
         bounces={false}
         keyboardShouldPersistTaps="handled"
-        renderItem={({ item: t }) => {
-          const active = String(p.dirTab) === t;
+        renderItem={({ item }) => {
+          const active = String(p.dirTab) === item.key;
           return (
             <Pressable
-              key={t}
-              onLayout={(e) => onTopTabLayout(t, e)}
+              key={item.key}
+              onLayout={(e) => onTopTabLayout(item.key, e)}
               onPress={() => {
-                p.setDirTab(t as DirTopTab);
-                if (t !== "Заявки") p.closeSheet();
+                p.setDirTab(item.key);
+                if (item.key !== "Заявки") p.closeSheet();
               }}
               style={[s.tab, active && s.tabActive, { marginRight: 8 }]}
             >
               <Text numberOfLines={1} style={{ color: active ? UI.text : UI.sub, fontWeight: "600" }}>
-                {t}
+                {item.label}
               </Text>
             </Pressable>
           );
@@ -215,7 +218,6 @@ export default function DirectorDashboard(p: Props) {
         }}
       />
 
-      {/* SUB tabs */}
       {String(p.dirTab) === "Заявки" ? (
         <View style={{ paddingTop: 6, paddingBottom: 2, minHeight: 44, justifyContent: "center" }}>
           <View style={{ flexDirection: "row", alignItems: "center" }}>
@@ -237,7 +239,6 @@ export default function DirectorDashboard(p: Props) {
         </View>
       ) : null}
 
-      {/* KPI */}
       {String(p.dirTab) === "Заявки" ? (
         <Animated.View style={{ opacity: p.subOpacity }}>
           {p.tab === "foreman" ? (
@@ -247,12 +248,16 @@ export default function DirectorDashboard(p: Props) {
               <View style={s.kpiRow}>
                 <View style={s.kpiPillHalf}>
                   <Text style={s.kpiLabel}>Заявок</Text>
-                  <Text style={s.kpiValue}>{(p.loadingRows && !p.foremanRequestsCount) ? "..." : String(p.foremanRequestsCount)}</Text>
+                  <Text style={s.kpiValue}>
+                    {p.loadingRows && !p.foremanRequestsCount ? "..." : String(p.foremanRequestsCount)}
+                  </Text>
                 </View>
 
                 <View style={s.kpiPillHalf}>
                   <Text style={s.kpiLabel}>Позиций</Text>
-                  <Text style={s.kpiValue}>{(p.loadingRows && !p.foremanPositionsCount) ? "..." : String(p.foremanPositionsCount)}</Text>
+                  <Text style={s.kpiValue}>
+                    {p.loadingRows && !p.foremanPositionsCount ? "..." : String(p.foremanPositionsCount)}
+                  </Text>
                 </View>
               </View>
             </View>
@@ -263,12 +268,16 @@ export default function DirectorDashboard(p: Props) {
               <View style={s.kpiRow}>
                 <View style={s.kpiPillHalf}>
                   <Text style={s.kpiLabel}>Предложений</Text>
-                  <Text style={s.kpiValue}>{(p.loadingProps && !p.buyerPropsCount) ? "..." : String(p.buyerPropsCount)}</Text>
+                  <Text style={s.kpiValue}>
+                    {p.loadingProps && !p.buyerPropsCount ? "..." : String(p.buyerPropsCount)}
+                  </Text>
                 </View>
 
                 <View style={s.kpiPillHalf}>
                   <Text style={s.kpiLabel}>Позиций</Text>
-                  <Text style={s.kpiValue}>{(p.loadingProps && !p.buyerPositionsCount) ? "..." : String(p.buyerPositionsCount)}</Text>
+                  <Text style={s.kpiValue}>
+                    {p.loadingProps && !p.buyerPositionsCount ? "..." : String(p.buyerPositionsCount)}
+                  </Text>
                 </View>
               </View>
             </View>
@@ -282,7 +291,6 @@ export default function DirectorDashboard(p: Props) {
     <View style={[s.container, { backgroundColor: UI.bg }]}>
       <StatusBar style="light" />
 
-      {/* toast */}
       {p.rtToast.visible ? (
         <View
           pointerEvents="none"
@@ -347,7 +355,6 @@ export default function DirectorDashboard(p: Props) {
         {HeaderContent}
       </Animated.View>
 
-      {/* BODY */}
       {String(p.dirTab) === "Заявки" ? (
         <>
           {p.tab === "foreman" ? (
@@ -397,7 +404,6 @@ export default function DirectorDashboard(p: Props) {
                     Обязательства
                   </Text>
                 </Pressable>
-
               );
             }
 
@@ -410,12 +416,10 @@ export default function DirectorDashboard(p: Props) {
                   Расходы
                 </Text>
               </Pressable>
-
             );
           }}
           ListHeaderComponent={
             <View style={{ paddingHorizontal: 16, paddingBottom: 10 }}>
-              {/* Можно позже сюда добавить маленькие KPI из p.finRep, но модалки больше не рендерим */}
               {rep?.debtCount != null ? (
                 <View style={[s.mobCard, { marginBottom: 12 }]}>
                   <Text style={{ color: UI.text, fontWeight: "600" }} numberOfLines={1}>
@@ -441,17 +445,13 @@ export default function DirectorDashboard(p: Props) {
           scrollEventThrottle={16}
         />
       ) : String(p.dirTab) === "Подряды" ? (
-        <DirectorSubcontractTab
-          contentTopPad={contentTopPad}
-          onScroll={p.onScroll}
-        />
+        <DirectorSubcontractTab contentTopPad={contentTopPad} onScroll={p.onScroll} />
       ) : String(p.dirTab) === "Склад" ? (
         <View style={{ paddingTop: contentTopPad + 4, paddingHorizontal: 16 }}>
           <Text style={{ color: UI.sub, fontWeight: "600" }}>Склад: позже сделаем сводку.</Text>
         </View>
       ) : (
         <View style={{ paddingTop: contentTopPad + 4, paddingHorizontal: 16 }}>
-          {/* Отчёты: карточка отчёта */}
           <Pressable
             onPress={() => (p as ReportsOpenProps).openReports?.()}
             style={[s.mobCard, { marginBottom: 12 }]}
@@ -461,7 +461,9 @@ export default function DirectorDashboard(p: Props) {
                 Факт выдачи (склад)
               </Text>
               <Text style={s.mobMeta} numberOfLines={2}>
-                {(p as ReportsOpenProps).reportsPeriodShort ? `Период: ${(p as ReportsOpenProps).reportsPeriodShort}` : "Период: 30 дней"}
+                {(p as ReportsOpenProps).reportsPeriodShort
+                  ? `Период: ${(p as ReportsOpenProps).reportsPeriodShort}`
+                  : "Период: 30 дней"}
               </Text>
             </View>
 
@@ -473,12 +475,10 @@ export default function DirectorDashboard(p: Props) {
           </Pressable>
 
           <Text style={{ color: UI.sub, fontWeight: "600", opacity: 0.85 }}>
-            Отчёт показывает факт выдачи со склада и дисциплину (без заявки/без объекта).
+            Отчёт показывает факт выдачи со склада и дисциплину без заявки и без объекта.
           </Text>
         </View>
       )}
-
     </View>
   );
 }
-

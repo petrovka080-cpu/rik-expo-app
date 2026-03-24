@@ -6,6 +6,8 @@ import { supabase } from "../../lib/supabaseClient";
 
 const FINANCE_SUMMARY_RPC_NAME = "director_finance_fetch_summary_v1";
 const FINANCE_PANEL_SCOPE_RPC_NAME = "director_finance_panel_scope_v1";
+const FINANCE_PANEL_SCOPE_V2_RPC_NAME = "director_finance_panel_scope_v2";
+const FINANCE_SUMMARY_V2_RPC_NAME = "director_finance_summary_v2";
 const FINANCE_SUPPLIER_SCOPE_RPC_NAME = "director_finance_supplier_scope_v1";
 const FINANCE_SUMMARY_FAILED_COOLDOWN_MS = 10 * 60 * 1000;
 type RuntimeProcessEnv = { process?: { env?: Record<string, unknown> } };
@@ -19,6 +21,14 @@ const financeSummaryRpcMeta: { status: FinanceRpcStatus; updatedAt: number } = {
   updatedAt: 0,
 };
 const financePanelScopeRpcMeta: { status: FinanceRpcStatus; updatedAt: number } = {
+  status: "unknown",
+  updatedAt: 0,
+};
+const financePanelScopeV2RpcMeta: { status: FinanceRpcStatus; updatedAt: number } = {
+  status: "unknown",
+  updatedAt: 0,
+};
+const financeSummaryV2RpcMeta: { status: FinanceRpcStatus; updatedAt: number } = {
   status: "unknown",
   updatedAt: 0,
 };
@@ -176,9 +186,101 @@ export type DirectorFinancePanelScope = FinRep & {
   spend: FinSpendSummary;
 };
 
+export type DirectorFinanceStatus = "pending" | "approved" | "paid" | "overdue";
+
+export type DirectorFinanceRowV2 = {
+  requestId: string | null;
+  objectId: string | null;
+  supplierId: string;
+  supplierName: string;
+  proposalId: string | null;
+  invoiceNumber: string | null;
+  amountTotal: number;
+  amountPaid: number;
+  amountDebt: number;
+  dueDate: string | null;
+  isOverdue: boolean;
+  overdueDays: number | null;
+  status: DirectorFinanceStatus;
+};
+
+export type DirectorFinanceSummaryV2Supplier = {
+  supplierId: string;
+  supplierName: string;
+  debt: number;
+};
+
+export type DirectorFinanceSummaryV2 = {
+  totalAmount: number;
+  totalPaid: number;
+  totalDebt: number;
+  overdueAmount: number;
+  bySupplier: DirectorFinanceSummaryV2Supplier[];
+};
+
+export type DirectorFinancePagination = {
+  limit: number;
+  offset: number;
+  total: number;
+};
+
+export type DirectorFinancePanelScopeV2 = DirectorFinancePanelScope & {
+  rows: DirectorFinanceRowV2[];
+  pagination: DirectorFinancePagination;
+  summaryV2: DirectorFinanceSummaryV2;
+};
+
 export type FinanceSummary = FinRep["summary"];
 
 const DASH = "—";
+
+const CP1251_EXTRA_BYTES = new Map<number, number>([
+  [0x0401, 0xa8], [0x0402, 0x80], [0x0403, 0x81], [0x0404, 0xaa], [0x0405, 0xbd], [0x0406, 0xb2],
+  [0x0407, 0xaf], [0x0408, 0xa3], [0x0409, 0x8a], [0x040a, 0x8c], [0x040b, 0x8e], [0x040c, 0x8d],
+  [0x040e, 0xa1], [0x040f, 0x8f], [0x0451, 0xb8], [0x0452, 0x90], [0x0453, 0x83], [0x0454, 0xba],
+  [0x0455, 0xbe], [0x0456, 0xb3], [0x0457, 0xbf], [0x0458, 0xbc], [0x0459, 0x9a], [0x045a, 0x9c],
+  [0x045b, 0x9e], [0x045c, 0x9d], [0x045e, 0xa2], [0x045f, 0x9f], [0x0490, 0xa5], [0x0491, 0xb4],
+  [0x00a0, 0xa0], [0x00a4, 0xa4], [0x00a6, 0xa6], [0x00a7, 0xa7], [0x00a9, 0xa9], [0x00ab, 0xab],
+  [0x00ac, 0xac], [0x00ad, 0xad], [0x00ae, 0xae], [0x00b0, 0xb0], [0x00b1, 0xb1], [0x00b5, 0xb5],
+  [0x00b6, 0xb6], [0x00b7, 0xb7], [0x00bb, 0xbb], [0x2013, 0x96], [0x2014, 0x97], [0x2018, 0x91],
+  [0x2019, 0x92], [0x201a, 0x82], [0x201c, 0x93], [0x201d, 0x94], [0x201e, 0x84], [0x2020, 0x86],
+  [0x2021, 0x87], [0x2022, 0x95], [0x2026, 0x85], [0x2030, 0x89], [0x2039, 0x8b], [0x203a, 0x9b],
+  [0x20ac, 0x88], [0x2116, 0xb9], [0x2122, 0x99],
+]);
+
+const looksLikeFinanceMojibake = (value: string): boolean =>
+  /[¤¦§Ё©«¬®°±¶·ЂЃ‚„…†‡€‰Љ‹ЊЋЏђ‘’“”•–—™љ›њћџ]|вЂ|в–/.test(value);
+
+const encodeCp1251Byte = (char: string): number | null => {
+  const code = char.codePointAt(0);
+  if (code == null) return null;
+  if (code <= 0x7f) return code;
+  if (code >= 0x0410 && code <= 0x042f) return 0xc0 + (code - 0x0410);
+  if (code >= 0x0430 && code <= 0x044f) return 0xe0 + (code - 0x0430);
+  return CP1251_EXTRA_BYTES.get(code) ?? null;
+};
+
+const decodeFinanceMojibake = (value: string): string => {
+  if (!value || !looksLikeFinanceMojibake(value) || typeof TextDecoder === "undefined") {
+    return value;
+  }
+
+  const bytes: number[] = [];
+  for (const char of value) {
+    const byte = encodeCp1251Byte(char);
+    if (byte == null) return value;
+    bytes.push(byte);
+  }
+
+  try {
+    const decoded = new TextDecoder("utf-8", { fatal: true }).decode(Uint8Array.from(bytes)).trim();
+    if (!decoded) return value;
+    if (looksLikeFinanceMojibake(decoded) && decoded !== value) return value;
+    return decoded;
+  } catch {
+    return value;
+  }
+};
 
 const asFinanceRecord = (value: unknown): Record<string, unknown> =>
   value && typeof value === "object" ? (value as Record<string, unknown>) : {};
@@ -217,7 +319,7 @@ const canUseFinanceRpc = (meta: { status: FinanceRpcStatus; updatedAt: number })
   return true;
 };
 
-export const financeText = (value: unknown): string => String(value ?? "").trim();
+export const financeText = (value: unknown): string => decodeFinanceMojibake(String(value ?? "").trim());
 
 export const financeTextOrFallback = (value: unknown, fallback: string): string =>
   financeText(value) || fallback;
@@ -409,8 +511,6 @@ const adaptDirectorFinanceSummaryPayload = (value: unknown): FinRep => {
     ? report.suppliers.map(normalizeFinanceSummarySupplier)
     : [];
 
-  suppliers.sort((left, right) => right.toPay - left.toPay);
-
   return {
     summary: {
       approved: nnum(summary.approved),
@@ -432,6 +532,56 @@ const normalizeFinanceRpcInteger = (value: unknown, fallback: number): number =>
   const numeric = Number(value ?? fallback);
   if (!Number.isFinite(numeric) || numeric === 0) return fallback;
   return Math.trunc(numeric);
+};
+
+const normalizeDirectorFinanceStatus = (value: unknown): DirectorFinanceStatus => {
+  const status = financeText(value).toLowerCase();
+  if (status === "paid" || status === "overdue" || status === "approved") return status;
+  return "pending";
+};
+
+const normalizeDirectorFinanceRowV2 = (value: unknown): DirectorFinanceRowV2 => {
+  const row = asFinanceRecord(value);
+  return {
+    requestId: financeText(row.requestId) || null,
+    objectId: financeText(row.objectId) || null,
+    supplierId: financeTextOrFallback(row.supplierId, DASH),
+    supplierName: financeTextOrFallback(row.supplierName, DASH),
+    proposalId: financeText(row.proposalId) || null,
+    invoiceNumber: financeText(row.invoiceNumber) || null,
+    amountTotal: nnum(row.amountTotal),
+    amountPaid: nnum(row.amountPaid),
+    amountDebt: nnum(row.amountDebt),
+    dueDate: pickIso10(row.dueDate),
+    isOverdue: row.isOverdue === true,
+    overdueDays: optionalNumber(row.overdueDays) ?? null,
+    status: normalizeDirectorFinanceStatus(row.status),
+  };
+};
+
+const normalizeDirectorFinanceSummaryV2Supplier = (
+  value: unknown,
+): DirectorFinanceSummaryV2Supplier => {
+  const row = asFinanceRecord(value);
+  return {
+    supplierId: financeTextOrFallback(row.supplier_id ?? row.supplierId, DASH),
+    supplierName: financeTextOrFallback(row.supplier_name ?? row.supplierName, DASH),
+    debt: nnum(row.debt),
+  };
+};
+
+const adaptDirectorFinanceSummaryV2Payload = (value: unknown): DirectorFinanceSummaryV2 => {
+  const payload = asFinanceRecord(value);
+  const bySupplierPayload = payload.by_supplier ?? payload.bySupplier;
+  return {
+    totalAmount: nnum(payload.total_amount ?? payload.totalAmount),
+    totalPaid: nnum(payload.total_paid ?? payload.totalPaid),
+    totalDebt: nnum(payload.total_debt ?? payload.totalDebt),
+    overdueAmount: nnum(payload.overdue_amount ?? payload.overdueAmount),
+    bySupplier: Array.isArray(bySupplierPayload)
+      ? bySupplierPayload.map(normalizeDirectorFinanceSummaryV2Supplier)
+      : [],
+  };
 };
 
 export async function fetchDirectorFinanceSummaryViaRpc(opts?: {
@@ -460,6 +610,32 @@ export async function fetchDirectorFinanceSummaryViaRpc(opts?: {
 
   markFinanceRpcStatus(financeSummaryRpcMeta, "available");
   return adaptDirectorFinanceSummaryPayload(data);
+}
+
+export async function fetchDirectorFinanceSummaryV2ViaRpc(opts?: {
+  objectId?: string | null;
+  periodFromIso?: string | null;
+  periodToIso?: string | null;
+}): Promise<DirectorFinanceSummaryV2 | null> {
+  if (!canUseFinanceRpc(financeSummaryV2RpcMeta)) return null;
+
+  const args: Database["public"]["Functions"]["director_finance_summary_v2"]["Args"] = {
+    p_object_id: financeText(opts?.objectId) || undefined,
+    p_date_from: pickIso10(opts?.periodFromIso) ?? undefined,
+    p_date_to: pickIso10(opts?.periodToIso) ?? undefined,
+  };
+
+  const { data, error } = await supabase.rpc(FINANCE_SUMMARY_V2_RPC_NAME, args);
+  if (error) {
+    markFinanceRpcStatus(
+      financeSummaryV2RpcMeta,
+      isMissingFinanceRpcError(error, FINANCE_SUMMARY_V2_RPC_NAME) ? "missing" : "failed",
+    );
+    throw error;
+  }
+
+  markFinanceRpcStatus(financeSummaryV2RpcMeta, "available");
+  return adaptDirectorFinanceSummaryV2Payload(data);
 }
 
 const pickSupplierText = (value: unknown): string => {
@@ -708,6 +884,21 @@ const adaptDirectorFinancePanelScopePayload = (value: unknown): DirectorFinanceP
         ? spend.overpaySuppliers.map(normalizeFinKindSupplierRow)
         : [],
     },
+  };
+};
+
+const adaptDirectorFinancePanelScopeV2Payload = (value: unknown): DirectorFinancePanelScopeV2 => {
+  const payload = asFinanceRecord(value);
+  const pagination = asFinanceRecord(payload.pagination);
+  return {
+    ...adaptDirectorFinancePanelScopePayload(payload),
+    rows: Array.isArray(payload.rows) ? payload.rows.map(normalizeDirectorFinanceRowV2) : [],
+    pagination: {
+      limit: nnum(pagination.limit),
+      offset: nnum(pagination.offset),
+      total: nnum(pagination.total),
+    },
+    summaryV2: adaptDirectorFinanceSummaryV2Payload(payload.summary_v2 ?? payload.summaryV2),
   };
 };
 
@@ -961,6 +1152,36 @@ export const computeFinanceSupplierPanel = (args: {
     invoices,
   };
 };
+
+export async function fetchDirectorFinancePanelScopeV2ViaRpc(opts?: {
+  objectId?: string | null;
+  periodFromIso?: string | null;
+  periodToIso?: string | null;
+  limit?: number;
+  offset?: number;
+}): Promise<DirectorFinancePanelScopeV2 | null> {
+  if (!canUseFinanceRpc(financePanelScopeV2RpcMeta)) return null;
+
+  const args: Database["public"]["Functions"]["director_finance_panel_scope_v2"]["Args"] = {
+    p_object_id: financeText(opts?.objectId) || undefined,
+    p_date_from: pickIso10(opts?.periodFromIso) ?? undefined,
+    p_date_to: pickIso10(opts?.periodToIso) ?? undefined,
+    p_limit: normalizeFinanceRpcInteger(opts?.limit, 50),
+    p_offset: Math.max(0, nnum(opts?.offset)),
+  };
+
+  const { data, error } = await supabase.rpc(FINANCE_PANEL_SCOPE_V2_RPC_NAME, args);
+  if (error) {
+    markFinanceRpcStatus(
+      financePanelScopeV2RpcMeta,
+      isMissingFinanceRpcError(error, FINANCE_PANEL_SCOPE_V2_RPC_NAME) ? "missing" : "failed",
+    );
+    throw error;
+  }
+
+  markFinanceRpcStatus(financePanelScopeV2RpcMeta, "available");
+  return adaptDirectorFinancePanelScopeV2Payload(data);
+}
 
 export async function fetchDirectorFinancePanelScopeViaRpc(opts?: {
   periodFromIso?: string | null;

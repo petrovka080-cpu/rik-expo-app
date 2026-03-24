@@ -21,16 +21,11 @@ type Props = {
 
 export default function DirectorFinanceSupplierModal(props: Props) {
   const supplier = props.supplier;
-
-  if (!supplier) {
-    return <Text style={{ color: UI.sub, fontWeight: "800" }}>Нет данных</Text>;
-  }
-
-  const amount = Number(supplier.amount ?? supplier.toPay ?? 0);
-  const invoiceCount = Number(supplier.count ?? supplier.invoices.length ?? 0);
-  const overdueCount = Number(supplier.overdueCount ?? 0);
-  const criticalCount = Number(supplier.criticalCount ?? 0);
-  const invoices = Array.isArray(supplier.invoices) ? supplier.invoices : [];
+  const amount = Number(supplier?.amount ?? supplier?.toPay ?? 0);
+  const invoiceCount = Number(supplier?.count ?? supplier?.invoices.length ?? 0);
+  const overdueCount = Number(supplier?.overdueCount ?? 0);
+  const criticalCount = Number(supplier?.criticalCount ?? 0);
+  const invoices = Array.isArray(supplier?.invoices) ? supplier.invoices : [];
 
   const invoiceKeyExtractor = React.useCallback(
     (invoice: FinSupplierPanelState["invoices"][number]) => String(invoice.id),
@@ -113,6 +108,10 @@ export default function DirectorFinanceSupplierModal(props: Props) {
     [amount, criticalCount, invoiceCount, overdueCount, props],
   );
 
+  if (!supplier) {
+    return <Text style={{ color: UI.sub, fontWeight: "800" }}>Нет данных</Text>;
+  }
+
   return (
     <FlashList
       style={{ flex: 1, minHeight: 0 }}
@@ -129,4 +128,3 @@ export default function DirectorFinanceSupplierModal(props: Props) {
     />
   );
 }
-

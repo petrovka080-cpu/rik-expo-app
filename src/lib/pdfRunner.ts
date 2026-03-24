@@ -139,6 +139,19 @@ async function openAndroidPdfContentUri(localUri: string, fileName?: string): Pr
   return contentUri;
 }
 
+async function openIosPdfShareSheet(localUri: string, fileName?: string, dialogTitle = "Открыть PDF") {
+  const handoffUri = await ensureNativePdfHandoffUri(localUri, fileName);
+  const canShare = await Sharing.isAvailableAsync();
+  if (!canShare) {
+    throw new Error("Sharing is unavailable on this device");
+  }
+  await Sharing.shareAsync(handoffUri, {
+    mimeType: "application/pdf",
+    UTI: "com.adobe.pdf",
+    dialogTitle,
+  });
+}
+
 
 async function fileExists(uri: string) {
   try {
@@ -280,8 +293,7 @@ export async function openPdfPreview(localUri: string, fileName?: string) {
     return;
   }
 
-  const handoffUri = await ensureNativePdfHandoffUri(localUri, fileName);
-  await Linking.openURL(handoffUri);
+  await openIosPdfShareSheet(localUri, fileName, "Открыть PDF");
 }
 
 export async function openPdfShare(localUri: string, fileName?: string) {
@@ -312,18 +324,7 @@ export async function openPdfExternal(localUri: string, fileName?: string) {
     return;
   }
 
-  const handoffUri = await ensureNativePdfHandoffUri(localUri, fileName);
-  const canShare = await Sharing.isAvailableAsync();
-  if (canShare) {
-    await Sharing.shareAsync(handoffUri, {
-      mimeType: "application/pdf",
-      UTI: "com.adobe.pdf",
-      dialogTitle: "Open PDF",
-    });
-    return;
-  }
-
-  await Linking.openURL(handoffUri);
+  await openIosPdfShareSheet(localUri, fileName, "Открыть PDF");
 }
 
 export async function runPdfTop(args: {

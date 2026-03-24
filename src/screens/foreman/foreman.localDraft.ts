@@ -10,6 +10,7 @@ import {
   setLocalDraftId,
   updateRequestMeta,
   type ReqItemRow,
+  type RequestDetails,
 } from "../../lib/catalog_api";
 import { submitRequestToDirector } from "../../lib/api/request.repository";
 import {
@@ -17,7 +18,7 @@ import {
   toRequestDraftSyncFallbackReason,
 } from "../../lib/api/requestDraftSync.service";
 import { supabase } from "../../lib/supabaseClient";
-import { requestItemAddOrIncAndPatchMeta } from "./foreman.helpers";
+import { isDraftLikeStatus, requestItemAddOrIncAndPatchMeta } from "./foreman.helpers";
 import {
   syncForemanAtomicDraft,
   type ForemanDraftSyncMutationKind,
@@ -90,6 +91,26 @@ export type ForemanLocalDraftSyncResult = {
     sourcePath: "rpc_v1" | "rpc_v2" | "legacy_fallback";
   };
 };
+
+export type ForemanDraftBootstrapResolution =
+  | {
+      kind: "snapshot";
+      snapshot: ForemanLocalDraftSnapshot;
+      restoreSource: "snapshot";
+      restoreIdentity: string;
+    }
+  | {
+      kind: "remoteDraft";
+      requestId: string;
+      details: RequestDetails;
+      restoreSource: "remoteDraft";
+      restoreIdentity: string;
+    }
+  | {
+      kind: "none";
+      restoreSource: "none";
+      restoreIdentity: null;
+    };
 
 const emptyHeader = (): ForemanLocalDraftHeader => ({
   foreman: "",
@@ -217,6 +238,84 @@ export const areForemanLocalDraftSnapshotsEqual = (
 ): boolean =>
   JSON.stringify(normalizeSnapshotForCompare(left, options)) ===
   JSON.stringify(normalizeSnapshotForCompare(right, options));
+
+export const buildForemanDraftRestoreId = (
+  snapshot: ForemanLocalDraftSnapshot | null | undefined,
+): string | null => {
+  if (!snapshot) return null;
+  const requestKey = trim(snapshot.requestId) || FOREMAN_LOCAL_ONLY_REQUEST_ID;
+  return `snapshot:${requestKey}:${snapshot.updatedAt}`;
+};
+
+export const countForemanDraftSnapshotLines = (
+  snapshot: ForemanLocalDraftSnapshot | null | undefined,
+): number => {
+  if (!snapshot) return 0;
+  return snapshot.items.filter((item) => Number.isFinite(item.qty) && item.qty > 0).length;
+};
+
+export const buildForemanDraftRequestDetails = (
+  snapshot: ForemanLocalDraftSnapshot,
+  previous: RequestDetails | null,
+): RequestDetails => ({
+  ...(previous ?? { id: snapshot.requestId || FOREMAN_LOCAL_ONLY_REQUEST_ID }),
+  id: snapshot.requestId || FOREMAN_LOCAL_ONLY_REQUEST_ID,
+  status: snapshot.status ?? previous?.status ?? "draft",
+  display_no: snapshot.displayNo ?? previous?.display_no ?? null,
+  foreman_name: snapshot.header.foreman || previous?.foreman_name || null,
+  comment: snapshot.header.comment || previous?.comment || null,
+  object_type_code: snapshot.header.objectType || previous?.object_type_code || null,
+  level_code: snapshot.header.level || previous?.level_code || null,
+  system_code: snapshot.header.system || previous?.system_code || null,
+  zone_code: snapshot.header.zone || previous?.zone_code || null,
+});
+
+export async function resolveForemanDraftBootstrap(params: {
+  localDraftId?: string | null;
+  clearDraftCache: () => void;
+  fetchDetails: (requestId: string) => Promise<RequestDetails | null>;
+}): Promise<ForemanDraftBootstrapResolution> {
+  const snapshot = await loadForemanLocalDraftSnapshot();
+  if (snapshot && hasForemanLocalDraftContent(snapshot)) {
+    return {
+      kind: "snapshot",
+      snapshot,
+      restoreSource: "snapshot",
+      restoreIdentity: buildForemanDraftRestoreId(snapshot) ?? "snapshot:unknown",
+    };
+  }
+
+  const localId = trim(params.localDraftId);
+  if (!localId) {
+    return {
+      kind: "none",
+      restoreSource: "none",
+      restoreIdentity: null,
+    };
+  }
+
+  try {
+    const details = await params.fetchDetails(localId);
+    if (details && isDraftLikeStatus(details.status)) {
+      return {
+        kind: "remoteDraft",
+        requestId: localId,
+        details,
+        restoreSource: "remoteDraft",
+        restoreIdentity: `remote:${localId}`,
+      };
+    }
+    params.clearDraftCache();
+  } catch {
+    params.clearDraftCache();
+  }
+
+  return {
+    kind: "none",
+    restoreSource: "none",
+    restoreIdentity: null,
+  };
+}
 
 const patchRequestItemMetaBestEffort = async (itemId: string, item: ForemanLocalDraftItem) => {
   const update = {

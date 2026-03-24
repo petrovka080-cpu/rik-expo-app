@@ -28,14 +28,16 @@ import {
 import {
   FOREMAN_LOCAL_ONLY_REQUEST_ID,
   appendRowsToForemanLocalDraft,
-  areForemanLocalDraftSnapshotsEqual,
   buildForemanLocalDraftSnapshot,
+  buildForemanDraftRequestDetails,
+  buildForemanDraftRestoreId,
   clearForemanLocalDraftSnapshot,
+  countForemanDraftSnapshotLines,
   discardForemanLocalDraft,
   hasForemanLocalDraftContent,
   hasForemanLocalDraftPendingSync,
-  loadForemanLocalDraftSnapshot,
   markForemanLocalDraftSubmitRequested,
+  resolveForemanDraftBootstrap,
   removeForemanLocalDraftItem,
   saveForemanLocalDraftSnapshot,
   snapshotToReqItems,
@@ -81,17 +83,6 @@ const INITIAL_BOUNDARY_STATE: ForemanDraftBoundaryState = {
   lastRestoredSnapshotId: null,
   draftDirty: false,
   syncNeeded: false,
-};
-
-const buildSnapshotRestoreId = (snapshot: ForemanLocalDraftSnapshot | null | undefined): string | null => {
-  if (!snapshot) return null;
-  const requestKey = ridStr(snapshot.requestId) || FOREMAN_LOCAL_ONLY_REQUEST_ID;
-  return `snapshot:${requestKey}:${snapshot.updatedAt}`;
-};
-
-const countSnapshotLines = (snapshot: ForemanLocalDraftSnapshot | null | undefined): number => {
-  if (!snapshot) return 0;
-  return snapshot.items.filter((item) => Number.isFinite(item.qty) && item.qty > 0).length;
 };
 
 const logDraftSyncTelemetry = (payload: Record<string, unknown>) => {
@@ -166,15 +157,6 @@ export function useForemanDraftBoundary({
 
   const persistLocalDraftSnapshot = useCallback(
     (snapshot: ForemanLocalDraftSnapshot | null) => {
-      if (
-        areForemanLocalDraftSnapshotsEqual(localDraftSnapshotRef.current, snapshot, {
-          ignoreUpdatedAt: true,
-        })
-      ) {
-        updateDraftMarkers(snapshot);
-        return;
-      }
-
       setLocalDraftSnapshot(snapshot);
       updateDraftMarkers(snapshot);
       void (snapshot && hasForemanLocalDraftContent(snapshot)
@@ -238,18 +220,7 @@ export function useForemanDraftBoundary({
         setDisplayNoByReq((prev) => ({ ...prev, [snapshot.requestId]: snapshot.displayNo! }));
       }
 
-      setRequestDetails((prev) => ({
-        ...(prev ?? { id: snapshot.requestId || FOREMAN_LOCAL_ONLY_REQUEST_ID }),
-        id: snapshot.requestId || FOREMAN_LOCAL_ONLY_REQUEST_ID,
-        status: snapshot.status ?? prev?.status ?? "draft",
-        display_no: snapshot.displayNo ?? prev?.display_no ?? null,
-        foreman_name: snapshot.header.foreman || prev?.foreman_name || null,
-        comment: snapshot.header.comment || prev?.comment || null,
-        object_type_code: snapshot.header.objectType || prev?.object_type_code || null,
-        level_code: snapshot.header.level || prev?.level_code || null,
-        system_code: snapshot.header.system || prev?.system_code || null,
-        zone_code: snapshot.header.zone || prev?.zone_code || null,
-      }));
+      setRequestDetails((prev) => buildForemanDraftRequestDetails(snapshot, prev));
 
       if (options?.restoreHeader) {
         setForemanState(snapshot.header.foreman);
@@ -264,9 +235,9 @@ export function useForemanDraftBoundary({
         patchBoundaryState({
           bootstrapReady: true,
           restorePhase: "ready",
-          restoreSource: options.restoreSource,
-          lastRestoredSnapshotId: options.restoreIdentity ?? buildSnapshotRestoreId(snapshot),
-        });
+            restoreSource: options.restoreSource,
+            lastRestoredSnapshotId: options.restoreIdentity ?? buildForemanDraftRestoreId(snapshot),
+          });
       }
     },
     [
@@ -462,8 +433,8 @@ export function useForemanDraftBoundary({
 
         const mutationKind = options?.mutationKind ?? (options?.submit ? "submit" : "background_sync");
         const localBeforeCount = options?.localBeforeCount ?? null;
-        const localAfterCount = options?.localAfterCount ?? countSnapshotLines(snapshot);
-        const syncPayloadLineCount = countSnapshotLines(snapshot);
+        const localAfterCount = options?.localAfterCount ?? countForemanDraftSnapshotLines(snapshot);
+        const syncPayloadLineCount = countForemanDraftSnapshotLines(snapshot);
         const activeRequestId = ridStr(snapshot?.requestId) || ridStr(requestId) || null;
 
         if (!snapshot || !hasForemanLocalDraftContent(snapshot)) {
@@ -591,7 +562,7 @@ export function useForemanDraftBoundary({
 
   const discardWholeDraft = useCallback(async () => {
     const currentSnapshot = buildCurrentLocalDraftSnapshot();
-    const beforeLineCount = countSnapshotLines(currentSnapshot);
+    const beforeLineCount = countForemanDraftSnapshotLines(currentSnapshot);
     const discardSnapshot = discardForemanLocalDraft(currentSnapshot);
 
     if (!discardSnapshot) {
@@ -783,14 +754,18 @@ export function useForemanDraftBoundary({
         restorePhase: "bootstrapping",
       });
 
-      const snapshot = await loadForemanLocalDraftSnapshot();
+      const resolution = await resolveForemanDraftBootstrap({
+        localDraftId: ridStr(getLocalDraftId()),
+        clearDraftCache,
+        fetchDetails: async (requestId) => await fetchRequestDetails(requestId),
+      });
       if (options?.cancelled?.()) return;
 
-      if (snapshot && hasForemanLocalDraftContent(snapshot)) {
-        applyLocalDraftSnapshotToBoundary(snapshot, {
+      if (resolution.kind === "snapshot") {
+        applyLocalDraftSnapshotToBoundary(resolution.snapshot, {
           restoreHeader: true,
-          restoreSource: "snapshot",
-          restoreIdentity: buildSnapshotRestoreId(snapshot),
+          restoreSource: resolution.restoreSource,
+          restoreIdentity: resolution.restoreIdentity,
         });
         patchBoundaryState({
           bootstrapReady: true,
@@ -799,36 +774,27 @@ export function useForemanDraftBoundary({
         return;
       }
 
-      const localId = ridStr(getLocalDraftId());
-      if (localId) {
-        try {
-          const details = await fetchRequestDetails(localId);
-          if (options?.cancelled?.()) return;
-
-          if (details && isDraftLikeStatus(details.status)) {
-            skipRemoteHydrationRequestIdRef.current = localId;
-            setRequestIdState(localId);
-            setRequestDetails(details);
-            syncHeaderFromDetails(details);
-            if (details.display_no) {
-              setDisplayNoByReq((prev) => ({ ...prev, [localId]: String(details.display_no) }));
-            }
-            await loadItems(localId, { forceRemote: true });
-            if (options?.cancelled?.()) return;
-
-            patchBoundaryState({
-              bootstrapReady: true,
-              restorePhase: "ready",
-              restoreSource: "remoteDraft",
-              lastRestoredSnapshotId: `remote:${localId}`,
-            });
-            return;
-          }
-
-          clearDraftCache();
-        } catch {
-          clearDraftCache();
+      if (resolution.kind === "remoteDraft") {
+        skipRemoteHydrationRequestIdRef.current = resolution.requestId;
+        setRequestIdState(resolution.requestId);
+        setRequestDetails(resolution.details);
+        syncHeaderFromDetails(resolution.details);
+        if (resolution.details.display_no) {
+          setDisplayNoByReq((prev) => ({
+            ...prev,
+            [resolution.requestId]: String(resolution.details.display_no),
+          }));
         }
+        await loadItems(resolution.requestId, { forceRemote: true });
+        if (options?.cancelled?.()) return;
+
+        patchBoundaryState({
+          bootstrapReady: true,
+          restorePhase: "ready",
+          restoreSource: resolution.restoreSource,
+          lastRestoredSnapshotId: resolution.restoreIdentity,
+        });
+        return;
       }
 
       if (options?.cancelled?.()) return;

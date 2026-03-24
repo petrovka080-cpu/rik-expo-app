@@ -13,7 +13,7 @@ export type PendingRow = {
   uom?: string | null;
   rik_code?: string | null;
   app_code?: string | null;
-  item_kind?: string | null; // material | work | service
+  item_kind?: string | null;
   note?: string | null;
 };
 
