@@ -6,7 +6,7 @@ import { getFileSystemPaths } from "../fileSystemPaths";
 import { getUriScheme, hashString32, isHttpUri, normalizeLocalFileUri } from "../pdfFileContract";
 import { supabase } from "../supabaseClient";
 
-const FileSystemCompat = FileSystemModule as any;
+const FileSystemCompat = FileSystemModule;
 
 export type AppAttachmentOpenInput = {
   url?: string | null;

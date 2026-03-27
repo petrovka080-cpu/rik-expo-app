@@ -1,4 +1,6 @@
+import type { ComponentType } from "react";
 import { Platform } from "react-native";
+import type { MapRendererProps } from "./mapContracts";
 
 // ⚠️ ВАЖНО:
 // require() — чтобы web не тянул react-native-maps
@@ -11,4 +13,4 @@ const MapRenderer =
     : // eslint-disable-next-line @typescript-eslint/no-var-requires
       require("./MapRenderer.native").default;
 
-export default MapRenderer;
+export default MapRenderer as ComponentType<MapRendererProps>;

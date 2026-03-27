@@ -1,34 +1,8 @@
 import React, { useEffect, useMemo, useRef } from "react";
 import { View, Text, StyleSheet, Animated, Easing, useWindowDimensions } from "react-native";
-import MapView, { Marker, Circle } from "react-native-maps";
-import type { MarketListing } from "./MapScreen";
+import MapView, { Marker, Circle, type Region as NativeMapRegion } from "react-native-maps";
+import type { ClusterListing, MapRendererProps, MapRegion } from "./mapContracts";
 import { zoomFromRegion } from "./pixelCluster";
-
-type Region = {
-  latitude: number;
-  longitude: number;
-  latitudeDelta: number;
-  longitudeDelta: number;
-};
-
-type MyLoc = {
-  latitude: number;
-  longitude: number;
-  heading: number;
-  accuracy: number | null;
-};
-
-type Props = {
-  listings: MarketListing[];
-  spiderPoints?: MarketListing[];
-  hideClusterId?: string | null;
-  selectedId: string | null;
-  region: Region;
-  myLoc: MyLoc | null;
-  onSelect: (id: string) => void;
-  onRegionChange: (r: Region) => void;
-  onViewportChange: (v: { zoom: number }) => void;
-};
 
 const UI = { border: "#1F2937", demand: "#EF4444" };
 
@@ -39,11 +13,13 @@ const getKindColor = (kind?: string | null) => {
   return "#7C3AED";
 };
 
-const getDemandLabel = (item: any) => {
+const getDemandLabel = (
+  item: Pick<ClusterListing, "__clusterCount" | "__clusterItems">,
+) => {
   const cnt =
-    (typeof item?.__clusterCount === "number" && item.__clusterCount > 0)
+    (typeof item.__clusterCount === "number" && item.__clusterCount > 0)
       ? item.__clusterCount
-      : (Array.isArray(item?.__clusterItems) ? item.__clusterItems.length : 0) || 1;
+      : (Array.isArray(item.__clusterItems) ? item.__clusterItems.length : 0) || 1;
 
   return cnt > 1 ? `НУЖНО (${cnt})` : "НУЖНО";
 };
@@ -58,7 +34,7 @@ export default function MapRendererNative({
   onSelect,
   onRegionChange,
   onViewportChange,
-}: Props) {
+}: MapRendererProps) {
   const mapRef = useRef<MapView | null>(null);
   const { width } = useWindowDimensions();
 
@@ -115,9 +91,9 @@ export default function MapRendererNative({
   const hasSpider = Array.isArray(spiderPoints) && spiderPoints.length > 0;
 
   const visibleListings = useMemo(() => {
-    const arr = listings.filter((l: any) => l.lat != null && l.lng != null);
+    const arr = listings.filter((listing) => listing.lat != null && listing.lng != null);
     if (!hasSpider || !hideClusterId) return arr;
-    return arr.filter((x: any) => x.id !== hideClusterId);
+    return arr.filter((listing) => listing.id !== hideClusterId);
   }, [listings, hasSpider, hideClusterId]);
 
   return (
@@ -126,8 +102,13 @@ export default function MapRendererNative({
       style={StyleSheet.absoluteFill}
       initialRegion={region}
       region={region}
-      onRegionChangeComplete={(r) => {
-        const rr = r as any as Region;
+      onRegionChangeComplete={(r: NativeMapRegion) => {
+        const rr: MapRegion = {
+          latitude: r.latitude,
+          longitude: r.longitude,
+          latitudeDelta: r.latitudeDelta,
+          longitudeDelta: r.longitudeDelta,
+        };
         onRegionChange(rr);
         const z = zoomFromRegion(rr.longitudeDelta, width);
         onViewportChange({ zoom: z });
@@ -161,7 +142,7 @@ export default function MapRendererNative({
       )}
 
       {hasSpider &&
-        spiderPoints.map((item: any) => {
+        spiderPoints.map((item) => {
           const isSelected = selectedId === item.id;
           const bg = item.side === "demand" ? UI.demand : getKindColor(item.kind);
 
@@ -190,7 +171,7 @@ export default function MapRendererNative({
           );
         })}
 
-      {visibleListings.map((item: any) => {
+      {visibleListings.map((item) => {
         const isSelected = selectedId === item.id;
         const bg = item.side === "demand" ? UI.demand : getKindColor(item.kind);
 

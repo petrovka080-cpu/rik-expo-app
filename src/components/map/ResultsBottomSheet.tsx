@@ -9,7 +9,10 @@ import {
   Dimensions,
   Platform,
   useWindowDimensions,
+  type GestureResponderEvent,
+  type ViewToken,
 } from "react-native";
+import type { ListingItemJson } from "./mapContracts";
 
 const UI = {
   bgSolid: "#020617",
@@ -19,16 +22,6 @@ const UI = {
   border: "#1F2937",
   accent: "#0EA5E9",
   ok: "#22C55E",
-};
-
-type ListingItemJson = {
-  rik_code?: string | null;
-  name?: string | null;
-  uom?: string | null;
-  qty?: number | null;
-  price?: number | null;
-  city?: string | null;
-  kind?: "material" | "work" | "service" | null;
 };
 
 type Row = {
@@ -52,6 +45,17 @@ type Props = {
   modeLabel?: string | null;
   onClearMode?: () => void;
 };
+
+type ViewabilityChange = {
+  viewableItems: Array<ViewToken & { item?: Row }>;
+};
+
+function readMovementY(event: GestureResponderEvent): number {
+  const nativeEvent = event.nativeEvent as unknown;
+  if (!nativeEvent || typeof nativeEvent !== "object") return 0;
+  const movementY = (nativeEvent as Record<string, unknown>).movementY;
+  return typeof movementY === "number" && Number.isFinite(movementY) ? movementY : 0;
+}
 
 export default function ResultsBottomSheet({
   count,
@@ -129,7 +133,7 @@ export default function ResultsBottomSheet({
     return () => clearTimeout(timer);
   }, [selectedId, idToIndex]);
 
-  const onViewableItemsChanged = useRef(({ viewableItems }: any) => {
+  const onViewableItemsChanged = useRef(({ viewableItems }: ViewabilityChange) => {
     const visible = viewableItems?.[0]?.item as Row | undefined;
     if (visible?.id) onPick(visible);
   }).current;
@@ -218,7 +222,7 @@ export default function ResultsBottomSheet({
           onMoveShouldSetResponder={() => true}
           onResponderMove={(event) => {
             if (Platform.OS !== "web") return;
-            const dy = (event as any)?.nativeEvent?.movementY ?? 0;
+            const dy = readMovementY(event);
             const raw = sheetHeightRef.current + dy / -containerH;
             const clamped = Math.max(MIN, Math.min(MAX, raw));
             setSheetHeight(clamped);

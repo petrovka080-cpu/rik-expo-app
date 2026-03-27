@@ -1,32 +1,10 @@
 import React, { useEffect, useMemo, useRef } from "react";
-import { View, StyleSheet } from "react-native";
 import L from "leaflet";
-import type { MarketListing } from "./MapScreen";
+import type { ClusterListing, MapRendererProps } from "./mapContracts";
 import { zoomFromRegion } from "./pixelCluster";
 
-type Region = {
-  latitude: number;
-  longitude: number;
-  latitudeDelta: number;
-  longitudeDelta: number;
-};
-
-type Props = {
-  listings: MarketListing[];
-  spiderPoints?: MarketListing[];
-  hideClusterId?: string | null;
-  selectedId: string | null;
-  region: Region;
-  myLoc: { latitude: number; longitude: number } | null;
-  onSelect: (id: string) => void;
-  onRegionChange: (r: Region) => void;
-  onViewportChange: (v: {
-    zoom: number;
-    bounds: { west: number; south: number; east: number; north: number };
-  }) => void;
-};
-
 const UI = { border: "#1F2937", demand: "#EF4444" };
+const FILL_STYLE: React.CSSProperties = { position: "absolute", inset: "0" };
 
 const getKindColor = (kind?: string | null) => {
   if (kind === "material") return "#22C55E";
@@ -35,11 +13,13 @@ const getKindColor = (kind?: string | null) => {
   return "#7C3AED";
 };
 
-const getDemandLabel = (item: any) => {
+const getDemandLabel = (
+  item: Pick<ClusterListing, "__clusterCount" | "__clusterItems">,
+) => {
   const cnt =
-    (typeof item?.__clusterCount === "number" && item.__clusterCount > 0)
+    typeof item.__clusterCount === "number" && item.__clusterCount > 0
       ? item.__clusterCount
-      : (Array.isArray(item?.__clusterItems) ? item.__clusterItems.length : 0) || 1;
+      : (Array.isArray(item.__clusterItems) ? item.__clusterItems.length : 0) || 1;
 
   return cnt > 1 ? `НУЖНО (${cnt})` : "НУЖНО";
 };
@@ -54,15 +34,13 @@ export default function MapRendererWeb({
   onSelect,
   onRegionChange,
   onViewportChange,
-}: Props) {
-  const hostRef = useRef<any>(null);
+}: MapRendererProps) {
+  const hostRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<L.Map | null>(null);
-  const markersRef = useRef<Record<string, any>>({});
+  const markersRef = useRef<Record<string, L.Marker>>({});
   const myMarkerRef = useRef<L.Marker | null>(null);
-
-  // ✅ suppress moveend/zoomend while we do programmatic flyTo
   const suppressEmitRef = useRef(false);
-  const suppressTimerRef = useRef<any>(null);
+  const suppressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const safeSetSuppress = (ms: number) => {
     suppressEmitRef.current = true;
@@ -75,39 +53,41 @@ export default function MapRendererWeb({
   const emitViewport = useMemo(() => {
     return () => {
       const map = mapRef.current;
-      if (!map) return;
-      if (suppressEmitRef.current) return;
+      if (!map || suppressEmitRef.current) return;
 
-      const c = map.getCenter();
-      const b = map.getBounds();
-      const ne = b.getNorthEast();
-      const sw = b.getSouthWest();
+      const center = map.getCenter();
+      const bounds = map.getBounds();
+      const northEast = bounds.getNorthEast();
+      const southWest = bounds.getSouthWest();
 
-      const latDelta = Math.max(0.0005, Math.abs(ne.lat - sw.lat));
-      const lngDelta = Math.max(0.0005, Math.abs(ne.lng - sw.lng));
+      const latitudeDelta = Math.max(0.0005, Math.abs(northEast.lat - southWest.lat));
+      const longitudeDelta = Math.max(0.0005, Math.abs(northEast.lng - southWest.lng));
 
       onRegionChange({
-        latitude: c.lat,
-        longitude: c.lng,
-        latitudeDelta: latDelta,
-        longitudeDelta: lngDelta,
+        latitude: center.lat,
+        longitude: center.lng,
+        latitudeDelta,
+        longitudeDelta,
       });
 
       onViewportChange({
         zoom: map.getZoom(),
-        bounds: { west: sw.lng, south: sw.lat, east: ne.lng, north: ne.lat },
+        bounds: {
+          west: southWest.lng,
+          south: southWest.lat,
+          east: northEast.lng,
+          north: northEast.lat,
+        },
       });
     };
   }, [onRegionChange, onViewportChange]);
 
-  // init map
   useEffect(() => {
     if (!hostRef.current || mapRef.current) return;
 
     const map = L.map(hostRef.current, {
       zoomControl: true,
       attributionControl: true,
-      // ✅ чтобы меньше дёргалось во время анимации
       inertia: true,
       worldCopyJump: true,
     }).setView([region.latitude, region.longitude], 12);
@@ -125,54 +105,41 @@ export default function MapRendererWeb({
     mapRef.current = map;
 
     setTimeout(() => {
-      try {
-        emitViewport();
-      } catch {}
+      emitViewport();
     }, 0);
 
     return () => {
+      if (suppressTimerRef.current) clearTimeout(suppressTimerRef.current);
       try {
         map.off("moveend", emitViewport);
         map.off("zoomend", emitViewport);
+        map.remove();
       } catch {}
+      mapRef.current = null;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [emitViewport, region.latitude, region.longitude]);
 
-  // ✅ follow region from outside:
-  // Leaflet ignores latitudeDelta -> so we convert delta -> zoom and flyTo.
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
 
-    const c = map.getCenter();
-    const dLat = Math.abs(c.lat - region.latitude);
-    const dLng = Math.abs(c.lng - region.longitude);
+    const center = map.getCenter();
+    const latitudeDiff = Math.abs(center.lat - region.latitude);
+    const longitudeDiff = Math.abs(center.lng - region.longitude);
+    const microMove = latitudeDiff < 0.00005 && longitudeDiff < 0.00005;
 
-    // ignore micro center diff
-    const micro = dLat < 0.00005 && dLng < 0.00005;
+    const width = Math.max(320, map.getSize()?.x || 360);
+    const targetZoom = zoomFromRegion(region.longitudeDelta, width);
+    const zoomDiff = Math.abs(map.getZoom() - targetZoom);
+    if (microMove && zoomDiff < 1) return;
 
-    // compute target zoom from delta and container width
-    const w = Math.max(320, map.getSize()?.x || 360);
-    const targetZoom = zoomFromRegion(region.longitudeDelta, w);
-
-    const currentZoom = map.getZoom();
-    const zoomDiff = Math.abs(currentZoom - targetZoom);
-
-    // если почти ничего не меняется — не трогаем (главное против "мячика")
-    if (micro && zoomDiff < 1) return;
-
-    // suppress events while we animate
     safeSetSuppress(320);
-
-    // flyTo даёт ровный Zillow-like переход
     map.flyTo([region.latitude, region.longitude], targetZoom, {
       animate: true,
       duration: 0.28,
     });
   }, [region.latitude, region.longitude, region.longitudeDelta]);
 
-  // my loc marker
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
@@ -251,35 +218,35 @@ export default function MapRendererWeb({
 
     if (!myMarkerRef.current) {
       myMarkerRef.current = L.marker(latlng, { icon, interactive: false }).addTo(map);
-    } else {
-      myMarkerRef.current.setLatLng(latlng);
-      myMarkerRef.current.setIcon(icon);
+      return;
     }
+
+    myMarkerRef.current.setLatLng(latlng);
+    myMarkerRef.current.setIcon(icon);
   }, [myLoc]);
 
-  // markers
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
 
-    Object.values(markersRef.current).forEach((m: any) => {
+    Object.values(markersRef.current).forEach((marker) => {
       try {
-        map.removeLayer(m);
+        map.removeLayer(marker);
       } catch {}
     });
     markersRef.current = {};
 
     const hasSpider = Array.isArray(spiderPoints) && spiderPoints.length > 0;
+    const baseListings = listings
+      .filter((listing) => listing.lat != null && listing.lng != null)
+      .filter((listing) => !(hasSpider && hideClusterId && listing.id === hideClusterId));
+    const allToDraw = [...(hasSpider ? spiderPoints : []), ...baseListings];
 
-    const base = listings
-      .filter((l: any) => l.lat != null && l.lng != null)
-      .filter((x: any) => !(hasSpider && hideClusterId && x.id === hideClusterId));
+    allToDraw.forEach((item) => {
+      if (item.lat == null || item.lng == null) return;
 
-    const allToDraw: any[] = [...(hasSpider ? spiderPoints : []), ...base];
-
-    allToDraw.forEach((item: any) => {
       const isSelected = selectedId === item.id;
-      const bg = item.side === "demand" ? UI.demand : getKindColor(item.kind);
+      const background = item.side === "demand" ? UI.demand : getKindColor(item.kind);
       const border = isSelected ? "#F9FAFB" : UI.border;
 
       const label =
@@ -299,7 +266,7 @@ export default function MapRendererWeb({
         <div style="
           padding:4px 10px;
           border-radius:999px;
-          background:${bg};
+          background:${background};
           color:white;
           font-weight:900;
           font-size:12px;
@@ -311,16 +278,14 @@ export default function MapRendererWeb({
 
       const icon = L.divIcon({ html, className: "", iconSize: [120, 32], iconAnchor: [60, 16] });
       const marker = L.marker([Number(item.lat), Number(item.lng)], { icon }).addTo(map);
-
       marker.on("click", () => {
-        // ✅ prevent bounce from immediate emitViewport while click-triggered flyTo happens
         safeSetSuppress(320);
         onSelect(item.id);
       });
 
       markersRef.current[String(item.id)] = marker;
     });
-  }, [listings, spiderPoints, hideClusterId, selectedId, onSelect]);
+  }, [hideClusterId, listings, onSelect, selectedId, spiderPoints]);
 
-  return <View ref={hostRef} style={StyleSheet.absoluteFill as any} />;
+  return <div ref={hostRef} style={FILL_STYLE} />;
 }

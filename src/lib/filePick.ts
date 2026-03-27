@@ -1,4 +1,5 @@
 import { Alert, Platform } from "react-native";
+import type { DocumentPickerAsset, DocumentPickerResult } from "expo-document-picker";
 
 type PickOpts = { accept?: string };
 type NativePickerAsset = {
@@ -90,14 +91,15 @@ export async function pickFileAny(opts: PickOpts = {}) {
     }
 
     const DocPicker = await import("expo-document-picker");
-    const res = await (DocPicker as any).getDocumentAsync({
+    const res: DocumentPickerResult = await DocPicker.getDocumentAsync({
       copyToCacheDirectory: true,
       multiple: false,
       type: "*/*",
     });
 
     if (res?.canceled) return null;
-    return normalizeNativePickedFile(res) || null;
+    const firstAsset: DocumentPickerAsset | null = res.assets?.[0] ?? null;
+    return normalizeNativePickedFile(firstAsset) || null;
   } catch (e: unknown) {
     Alert.alert("Файл", normalizeErrorMessage(e, "Не удалось выбрать файл"));
     return null;

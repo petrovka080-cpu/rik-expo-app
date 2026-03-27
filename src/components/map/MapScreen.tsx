@@ -11,7 +11,7 @@ import {
   Alert,
   useWindowDimensions,
 } from "react-native";
-import { router, useLocalSearchParams } from "expo-router";
+import { router, useLocalSearchParams, type Href } from "expo-router";
 import { supabase } from "../../lib/supabaseClient";
 import * as Location from "expo-location";
 import DemandDetailsModal from "./DemandDetailsModal";
@@ -23,59 +23,26 @@ import ResultsBottomSheet from "./ResultsBottomSheet";
 import MapRenderer from "./MapRenderer";
 import MapFab from "./MapFab";
 import type { Filters, CatalogItem } from "./types";
+import type {
+  ClusterListing,
+  ListingRouteMeta,
+  MapRegion,
+  MapViewport,
+  MapViewportUpdate,
+  MarketListing,
+  MyLoc,
+} from "./mapContracts";
+import { normalizeMarketListingRow } from "./mapContracts";
 
 import {
   buildIndex,
   getClusters,
   getClusterLeaves,
   getExpansionZoom,
+  isPointClusterFeature,
+  toClusterListing,
   zoomFromRegion,
 } from "./pixelCluster";
-
-type Region = {
-  latitude: number;
-  longitude: number;
-  latitudeDelta: number;
-  longitudeDelta: number;
-};
-
-type ListingItemJson = {
-  rik_code?: string | null;
-  name?: string | null;
-  uom?: string | null;
-  qty?: number | null;
-  price?: number | null;
-  city?: string | null;
-  kind?: "material" | "work" | "service" | null;
-};
-
-type ListingRouteMeta = {
-  id: string;
-  title: string;
-  user_id: string;
-  company_id: string | null;
-};
-
-export type MarketListing = {
-  id: string;
-  title: string;
-  price: number | null;
-  city: string | null;
-  lat: number | null;
-  lng: number | null;
-  kind: string | null;
-  items_json: ListingItemJson[] | null;
-  side: "offer" | "demand";
-  status?: string | null;
-  catalog_item_ids?: string[] | null;
-};
-
-type MyLoc = {
-  latitude: number;
-  longitude: number;
-  heading: number;
-  accuracy: number | null;
-};
 
 const UI = {
   bg: "#020617",
@@ -85,24 +52,36 @@ const UI = {
   ok: "#22C55E",
 };
 
-const defaultRegion: Region = {
+const defaultRegion: MapRegion = {
   latitude: 42.8746,
   longitude: 74.5698,
   latitudeDelta: 0.2,
   longitudeDelta: 0.2,
 };
 
-type Viewport = {
-  zoom: number;
-  bounds: { west: number; south: number; east: number; north: number };
-};
-
-const regionToBounds = (r: Region) => ({
+const regionToBounds = (r: MapRegion): MapViewport["bounds"] => ({
   west: r.longitude - r.longitudeDelta / 2,
   east: r.longitude + r.longitudeDelta / 2,
   south: r.latitude - r.latitudeDelta / 2,
   north: r.latitude + r.latitudeDelta / 2,
 });
+
+function normalizeListingRouteMeta(
+  value: {
+    id: string | null;
+    title: string | null;
+    user_id: string | null;
+    company_id: string | null;
+  } | null,
+): ListingRouteMeta | null {
+  if (!value?.id || !value.title || !value.user_id) return null;
+  return {
+    id: value.id,
+    title: value.title,
+    user_id: value.user_id,
+    company_id: value.company_id,
+  };
+}
 
 export default function MapScreen() {
   const { width: screenW } = useWindowDimensions();
@@ -142,12 +121,12 @@ export default function MapScreen() {
     (filters.maxPrice != null ? 1 : 0) +
     (filters.catalogItem ? 1 : 0);
 
-  const [region, setRegion] = useState<Region>(defaultRegion);
+  const [region, setRegion] = useState<MapRegion>(defaultRegion);
   const [myLoc, setMyLoc] = useState<MyLoc | null>(null);
   const routeMetaCacheRef = useRef<Map<string, ListingRouteMeta>>(new Map());
 
   // ✅ viewport всегда НЕ null и всегда с bounds
-  const [viewport, setViewport] = useState<Viewport>(() => ({
+  const [viewport, setViewport] = useState<MapViewport>(() => ({
     zoom: zoomFromRegion(defaultRegion.longitudeDelta, 360),
     bounds: regionToBounds(defaultRegion),
   }));
@@ -165,8 +144,8 @@ export default function MapScreen() {
   const routeFocusId = Array.isArray(params.focusId) ? params.focusId[0] : params.focusId;
 
   // ✅ debounce region updates (пересчёт кластеров только когда карта “остановилась”)
-  const regionTimerRef = useRef<any>(null);
-  const onRegionChangeDebounced = (r: Region) => {
+  const regionTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const onRegionChangeDebounced = (r: MapRegion) => {
     if (regionTimerRef.current) clearTimeout(regionTimerRef.current);
     regionTimerRef.current = setTimeout(() => {
       setRegion(r);
@@ -178,6 +157,12 @@ export default function MapScreen() {
       }));
     }, 140);
   };
+
+  useEffect(() => {
+    return () => {
+      if (regionTimerRef.current) clearTimeout(regionTimerRef.current);
+    };
+  }, []);
 
   // ===== load listings =====
   useEffect(() => {
@@ -193,15 +178,11 @@ export default function MapScreen() {
         return;
       }
 
-      const normalized = (data || []).map((x: any) => ({
-        ...x,
-        side: (x.side === "demand" ? "demand" : "offer") as "offer" | "demand",
-        lat: x.lat != null ? Number(x.lat) : null,
-        lng: x.lng != null ? Number(x.lng) : null,
-        price: x.price != null ? Number(x.price) : null,
-      }));
+      const normalized = (data || [])
+        .map((row) => normalizeMarketListingRow(row))
+        .filter((row): row is MarketListing => Boolean(row));
 
-      setListings(normalized as MarketListing[]);
+      setListings(normalized);
     };
 
     load();
@@ -238,7 +219,7 @@ export default function MapScreen() {
           // ok
         } else {
           const items = Array.isArray(l.items_json) ? l.items_json : [];
-          const hasKind = items.some((it: any) => it.kind === k);
+          const hasKind = items.some((item) => item.kind === k);
           if (!hasKind) return false;
         }
       }
@@ -283,12 +264,12 @@ export default function MapScreen() {
 
   // ===== markers to draw =====
   const listingsForMap = useMemo(() => {
-    const out: any[] = [];
+    const out: ClusterListing[] = [];
 
-    for (const f of clusterFeatures as any[]) {
+    for (const f of clusterFeatures) {
       const [lng, lat] = f.geometry.coordinates;
 
-      if (f.properties?.cluster) {
+      if (!isPointClusterFeature(f)) {
         out.push({
           id: `cluster:${f.properties.cluster_id}`,
           lat,
@@ -298,22 +279,12 @@ export default function MapScreen() {
           price: null,
           city: null,
           title: `НУЖНО (${f.properties.point_count})`,
+          items_json: null,
           __clusterId: f.properties.cluster_id,
           __clusterCount: f.properties.point_count,
         });
       } else {
-        const p = f.properties;
-        out.push({
-          id: p.id,
-          lat,
-          lng,
-          side: p.side,
-          kind: p.kind,
-          price: p.price,
-          city: p.city,
-          title: p.title,
-          items_json: p.items_json,
-        });
+        out.push(toClusterListing(f));
       }
     }
 
@@ -387,21 +358,8 @@ export default function MapScreen() {
       const clusterId = Number(String(id).split(":")[1]);
       const leaves = getClusterLeaves(clusterIndex, clusterId, 200);
 
-      const items = leaves
-        .filter((x: any) => !x.properties?.cluster)
-        .map((x: any) => ({
-          id: x.properties.id,
-          side: x.properties.side,
-          kind: x.properties.kind,
-          price: x.properties.price,
-          city: x.properties.city,
-          title: x.properties.title,
-          items_json: x.properties.items_json,
-          lat: x.geometry.coordinates[1],
-          lng: x.geometry.coordinates[0],
-        })) as MarketListing[];
-
-      const center = (listingsForMap as any[]).find((x) => x.id === id);
+      const items = leaves.map((leaf) => toClusterListing(leaf));
+      const center = listingsForMap.find((item) => item.id === id);
       const lat = Number(center?.lat);
       const lng = Number(center?.lng);
 
@@ -433,29 +391,28 @@ export default function MapScreen() {
     }
 
     // ✅ point click
-    const anyItem: any =
-      (listingsForMap as any[]).find((x) => x.id === id) ||
-      filteredListings.find((x) => x.id === id);
+    const targetItem =
+      listingsForMap.find((item) => item.id === id) ||
+      filteredListings.find((item) => item.id === id);
 
-    if (!anyItem) return;
-    if (!anyItem.lat || !anyItem.lng) return;
+    if (!targetItem) return;
+    if (targetItem.lat == null || targetItem.lng == null) return;
 
     setClusterMode(null);
     setSelectedId(id);
 
     setRegion({
-      latitude: Number(anyItem.lat),
-      longitude: Number(anyItem.lng),
+      latitude: Number(targetItem.lat),
+      longitude: Number(targetItem.lng),
       latitudeDelta: 0.05,
       longitudeDelta: 0.05,
     });
 
-    if (anyItem.side === "demand") setDemandDetails(anyItem);
+    if (targetItem.side === "demand") setDemandDetails(targetItem);
   };
 
   const goToMyLocation = async () => {
     if (Platform.OS === "web") {
-      // @ts-ignore
       const geo = globalThis?.navigator?.geolocation;
       if (!geo) {
         Alert.alert("Геолокация", "Недоступно в этом браузере");
@@ -463,7 +420,7 @@ export default function MapScreen() {
       }
 
       geo.getCurrentPosition(
-        (pos: any) => {
+        (pos: GeolocationPosition) => {
           const { latitude, longitude } = pos.coords;
 
           setMyLoc({
@@ -550,14 +507,15 @@ export default function MapScreen() {
         parts.push("Подскажи, как лучше использовать текущие фильтры и что открыть дальше.");
       }
 
-      router.push({
+      const href: Href = {
         pathname: "/(tabs)/ai",
         params: {
           prompt: parts.join(" "),
           autoSend: "1",
           context: "supplierMap",
         },
-      } as any);
+      };
+      router.push(href);
     },
     [clusterMode?.title, demandDetails, filteredListings, filters, offerDemand, selectedId],
   );
@@ -617,25 +575,26 @@ export default function MapScreen() {
       .maybeSingle();
 
     if (result.error) throw result.error;
-    if (!result.data) return null;
-
-    const nextMeta = result.data as ListingRouteMeta;
+    const nextMeta = normalizeListingRouteMeta(result.data);
+    if (!nextMeta) return null;
     routeMetaCacheRef.current.set(row.id, nextMeta);
     return nextMeta;
   }, []);
 
   const openListingDetails = useCallback((row: Pick<MarketListing, "id">) => {
-    router.push(`/product/${row.id}` as any);
+    const href: Href = { pathname: "/product/[id]", params: { id: row.id } };
+    router.push(href);
   }, []);
 
   const openListingChat = useCallback((row: Pick<MarketListing, "id" | "title">) => {
-    router.push({
+    const href: Href = {
       pathname: "/chat",
       params: {
         listingId: row.id,
         title: row.title,
       },
-    } as any);
+    };
+    router.push(href);
   }, []);
 
   const openListingShowcase = useCallback(
@@ -647,13 +606,14 @@ export default function MapScreen() {
           return;
         }
 
-        router.push({
+        const href: Href = {
           pathname: "/supplierShowcase",
           params: {
             userId: meta.user_id,
             ...(meta.company_id ? { companyId: meta.company_id } : {}),
           },
-        } as any);
+        };
+        router.push(href);
       } catch (error: unknown) {
         const message =
           error instanceof Error ? error.message : "РќРµ СѓРґР°Р»РѕСЃСЊ РѕС‚РєСЂС‹С‚СЊ РІРёС‚СЂРёРЅСѓ РїРѕСЃС‚Р°РІС‰РёРєР°.";
@@ -667,25 +627,19 @@ export default function MapScreen() {
     <View style={styles.root}>
       <View style={styles.stage}>
         <MapRenderer
-          listings={listingsForMap as any}
-          spiderPoints={spiderPoints as any}
+          listings={listingsForMap}
+          spiderPoints={spiderPoints}
           hideClusterId={clusterMode?.clusterId || null}
           selectedId={selectedId}
           region={region}
           myLoc={myLoc}
           onSelect={(id) => focusById(id)}
-          onRegionChange={(r: any) => onRegionChangeDebounced(r)}
-          onViewportChange={(v: any) => {
+          onRegionChange={onRegionChangeDebounced}
+          onViewportChange={(v: MapViewportUpdate) => {
             // web пришлет bounds+zoom, native пришлет только zoom
             setViewport((prev) => ({
-              zoom:
-                typeof v?.zoom === "number"
-                  ? v.zoom
-                  : prev?.zoom ?? zoomFromRegion(region.longitudeDelta, screenW),
-              bounds:
-                v?.bounds?.west != null
-                  ? v.bounds
-                  : prev?.bounds ?? regionToBounds(region),
+              zoom: typeof v.zoom === "number" ? v.zoom : prev.zoom,
+              bounds: v.bounds?.west != null ? v.bounds : prev.bounds,
             }));
           }}
         />
@@ -734,12 +688,12 @@ export default function MapScreen() {
             items_json: x.items_json ?? null,
           }))}
           selectedId={selectedId}
-          onPick={(r: any) => {
-            setSelectedId(r.id);
+          onPick={(row) => {
+            setSelectedId(row.id);
 
             const item =
-              rowsForBottom.find((x) => x.id === r.id) ||
-              filteredListings.find((x) => x.id === r.id);
+              rowsForBottom.find((x) => x.id === row.id) ||
+              filteredListings.find((x) => x.id === row.id);
 
             if (item?.lat != null && item?.lng != null) {
               setRegion({
@@ -767,7 +721,7 @@ export default function MapScreen() {
           visible={!!demandDetails}
           title={demandDetails?.title || "Запрос"}
           city={demandDetails?.city || null}
-          items={Array.isArray(demandDetails?.items_json) ? (demandDetails?.items_json as any) : []}
+          items={Array.isArray(demandDetails?.items_json) ? demandDetails.items_json : []}
           onOpenDetails={demandDetails ? () => openListingDetails(demandDetails) : undefined}
           onOpenShowcase={demandDetails ? () => void openListingShowcase(demandDetails) : undefined}
           onOpenChat={demandDetails ? () => openListingChat(demandDetails) : undefined}
