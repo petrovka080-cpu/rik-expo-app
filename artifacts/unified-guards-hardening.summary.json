@@ -1,0 +1,29 @@
+{
+  "status": "passed",
+  "guardContractReady": true,
+  "buyerAligned": true,
+  "accountantAligned": true,
+  "warehouseAligned": true,
+  "contractorAligned": true,
+  "directorAligned": true,
+  "skippedCount": 4,
+  "overlapCount": 2,
+  "guardReasons": [
+    {
+      "reason": "auth_not_ready",
+      "count": 1
+    },
+    {
+      "reason": "bootstrap_not_ready",
+      "count": 1
+    },
+    {
+      "reason": "network_known_offline",
+      "count": 1
+    },
+    {
+      "reason": "recent_same_scope",
+      "count": 1
+    }
+  ]
+}

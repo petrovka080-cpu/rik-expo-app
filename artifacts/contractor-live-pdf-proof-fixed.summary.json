@@ -1,0 +1,49 @@
+{
+  "generated_at": "2026-03-23T10:31:00Z",
+  "batch": "Contractor Web PDF Proof Fixed",
+  "status": "passed",
+  "scope": "Contractor web modal -> PDF viewer narrow boundary",
+  "auth_user_shape": {
+    "profile_role": "foreman",
+    "is_contractor": true
+  },
+  "five_facts": {
+    "contractor_work_modal_mounted": true,
+    "pdf_cta_pressed": true,
+    "pdf_payload_built": true,
+    "viewer_navigation_fired": true,
+    "viewer_received_valid_source": true
+  },
+  "content_verification": {
+    "template_contains_readable_russian": true,
+    "verified_strings": [
+      "Акт выполненных работ",
+      "Форма КС-2",
+      "Исполнитель (подрядчик)",
+      "Заказчик",
+      "Общий итог",
+      "Проверка документа"
+    ],
+    "visual_pdf_screenshot_rechecked": true,
+    "note": "Blob PDF text is binary; readability was verified by generator output plus screenshot, not by fetch(...).text()."
+  },
+  "viewer_result": {
+    "final_url": "/pdf-viewer?sessionId=session_mn31kvm6_2",
+    "initial_scheme": "blob",
+    "document_type": "contractor_act",
+    "origin_module": "contractor",
+    "viewer_ready": true
+  },
+  "key_runtime_evidence": [
+    "[contractor.handleOpenUnifiedCard] found: true",
+    "[contractor.openWorkInOneClick] progressId: 2f1fa183-cd7a-4412-9e21-f2cfc5f4f03f",
+    "[pdf-document-actions] prepare_ready",
+    "[pdf-document-actions] about_to_navigate_to_viewer",
+    "[pdf-viewer] viewer_route_mounted",
+    "[pdf-viewer] ready"
+  ],
+  "artifacts": {
+    "screenshot": "artifacts/contractor-live-pdf-proof-fixed.png",
+    "raw_runtime_json": "artifacts/contractor-live-pdf-proof-fixed.json"
+  }
+}

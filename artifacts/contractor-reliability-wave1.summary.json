@@ -1,0 +1,65 @@
+{
+  "status": "passed",
+  "offline_draft": {
+    "passed": true,
+    "details": {
+      "restoredStatus": "dirty_local",
+      "restoredMaterialCount": 2,
+      "restoredStage": "Подготовка",
+      "restoredComment": "Черновик офлайн",
+      "restoredLocation": "Секция 1"
+    }
+  },
+  "online_recovery": {
+    "passed": true,
+    "details": {
+      "offlineStatus": "retry_wait",
+      "recoveryStatus": "synced",
+      "remainingCount": 0,
+      "logInsertCount": 1,
+      "materialsInsertCount": 1
+    }
+  },
+  "kill_reopen": {
+    "passed": true,
+    "details": {
+      "queueLengthBeforeFlush": 1,
+      "queueStatusBeforeFlush": "inflight",
+      "finalStatus": "synced",
+      "logInsertCount": 1
+    }
+  },
+  "retry_path": {
+    "passed": true,
+    "details": {
+      "failedStatus": "retry_wait",
+      "pendingLogIdAfterFail": "log-1",
+      "queueLengthAfterFail": 1,
+      "finalStatus": "synced",
+      "logInsertCount": 1,
+      "materialsInsertCount": 1
+    }
+  },
+  "coalescing": {
+    "passed": true,
+    "details": {
+      "coalescedCount": 4,
+      "finalStatus": "synced",
+      "finalQtyFact": 5,
+      "queueLengthAfterSync": 0,
+      "logInsertCount": 1,
+      "materialsInsertCount": 1
+    }
+  },
+  "terminal_failure": {
+    "passed": true,
+    "details": {
+      "failureClass": "failed_terminal",
+      "finalStatus": "failed_terminal",
+      "lastErrorStage": "sync_materials",
+      "queueLength": 0,
+      "logInsertCount": 1,
+      "materialsInsertCount": 0
+    }
+  }
+}

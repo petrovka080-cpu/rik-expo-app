@@ -1,0 +1,34 @@
+{
+  "generated_at": "2026-03-24T13:45:11.664Z",
+  "batch": "Director Batch B Smoke",
+  "status": "passed",
+  "assertions": {
+    "director_login_succeeded": true,
+    "foreman_scope_boot_does_not_fetch_proposals": true,
+    "request_sheet_opened": true,
+    "request_sheet_closed": true,
+    "buyer_scope_opened": true,
+    "buyer_scope_does_not_fetch_request_rows": true,
+    "buyer_resume_respects_visible_scope": true,
+    "finance_tab_opened": true,
+    "finance_tab_has_no_cross_scope_fetch": true,
+    "finance_modal_opened": true,
+    "finance_back_navigation_worked": true,
+    "finance_modal_closed": true,
+    "reports_modal_opened": true,
+    "reports_open_has_no_cross_scope_fetch": true,
+    "reports_period_applied": true,
+    "reports_filter_applied": true,
+    "reports_refresh_worked": true,
+    "reports_resume_respects_visible_scope": true,
+    "reports_modal_closed": true,
+    "request_subtab_persisted_after_top_tab_switch": true,
+    "foreman_scope_restored_without_proposals_fetch": true,
+    "page_errors_empty": true,
+    "console_errors_empty": true
+  },
+  "error": null,
+  "notes": [
+    "reports_filter_object=Административное здание"
+  ]
+}

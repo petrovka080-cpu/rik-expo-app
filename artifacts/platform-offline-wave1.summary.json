@@ -1,0 +1,26 @@
+{
+  "status": "passed",
+  "sharedStatuses": [
+    "idle",
+    "dirty_local",
+    "queued",
+    "syncing",
+    "synced",
+    "retry_wait",
+    "failed_terminal"
+  ],
+  "sharedTriggers": [
+    "bootstrap_complete",
+    "app_active",
+    "network_back",
+    "manual_retry"
+  ],
+  "foremanAligned": true,
+  "warehouseAligned": true,
+  "contractorAligned": true,
+  "offlineTelemetryReady": true,
+  "globalHostReady": true,
+  "networkServiceReady": true,
+  "offlineOverviewLabel": "Нет связи",
+  "syncingOverviewLabel": "Синхронизация"
+}

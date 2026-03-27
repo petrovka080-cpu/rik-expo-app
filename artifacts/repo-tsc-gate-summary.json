@@ -1,0 +1,129 @@
+{
+  "totalErrors": 53,
+  "files": [
+    {
+      "file": "migrated/reports/app/reports/form-c1.tsx",
+      "count": 17,
+      "codes": {
+        "TS2305": 1,
+        "TS2307": 2,
+        "TS2589": 6,
+        "TS2769": 4,
+        "TS2339": 4
+      }
+    },
+    {
+      "file": "migrated/profile/app/(tabs)/profile.tsx",
+      "count": 5,
+      "codes": {
+        "TS2307": 4,
+        "TS2339": 1
+      }
+    },
+    {
+      "file": "migrated/reports/src/lib/rik_api.ts",
+      "count": 4,
+      "codes": {
+        "TS2307": 4
+      }
+    },
+    {
+      "file": "migrated/marketplace-add-product/src/i18n/index.ts",
+      "count": 3,
+      "codes": {
+        "TS2307": 3
+      }
+    },
+    {
+      "file": "migrated/profile/src/i18n/index.ts",
+      "count": 3,
+      "codes": {
+        "TS2307": 3
+      }
+    },
+    {
+      "file": "migrated/profile/src/lib/rik_api.ts",
+      "count": 3,
+      "codes": {
+        "TS2307": 3
+      }
+    },
+    {
+      "file": "migrated/reports/src/i18n/index.ts",
+      "count": 3,
+      "codes": {
+        "TS2307": 3
+      }
+    },
+    {
+      "file": "migrated/reports/src/lib/ai_action_dispatcher.ts",
+      "count": 3,
+      "codes": {
+        "TS2307": 3
+      }
+    },
+    {
+      "file": "migrated/marketplace-add-product/app/(tabs)/supplier.tsx",
+      "count": 2,
+      "codes": {
+        "TS2307": 2
+      }
+    },
+    {
+      "file": "migrated/marketplace-add-product/src/lib/rik_api.ts",
+      "count": 2,
+      "codes": {
+        "TS2307": 2
+      }
+    },
+    {
+      "file": "migrated/reports/app/photo-reports/index.tsx",
+      "count": 2,
+      "codes": {
+        "TS2307": 2
+      }
+    },
+    {
+      "file": "migrated/marketplace-add-product/src/components/ui/Modal.tsx",
+      "count": 1,
+      "codes": {
+        "TS2322": 1
+      }
+    },
+    {
+      "file": "migrated/reports/app/(tabs)/reports.tsx",
+      "count": 1,
+      "codes": {
+        "TS2307": 1
+      }
+    },
+    {
+      "file": "migrated/reports/app/reports/ai-assistant.tsx",
+      "count": 1,
+      "codes": {
+        "TS2307": 1
+      }
+    },
+    {
+      "file": "migrated/reports/app/reports/construction.tsx",
+      "count": 1,
+      "codes": {
+        "TS2307": 1
+      }
+    },
+    {
+      "file": "migrated/reports/src/components/ObjectPicker.tsx",
+      "count": 1,
+      "codes": {
+        "TS2307": 1
+      }
+    },
+    {
+      "file": "migrated/reports/src/lib/gemini_client.ts",
+      "count": 1,
+      "codes": {
+        "TS2307": 1
+      }
+    }
+  ]
+}

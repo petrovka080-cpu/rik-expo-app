@@ -1,0 +1,12 @@
+{
+  "status": "passed",
+  "fioConfirmed": true,
+  "recipientConfirmed": true,
+  "queueRowsVisible": true,
+  "modalOpened": true,
+  "consoleErrorsEmpty": true,
+  "pageErrorsEmpty": true,
+  "badResponsesEmpty": true,
+  "screenshot": "artifacts/warehouse-issue-queue-web-smoke.png",
+  "platformSpecificIssues": []
+}

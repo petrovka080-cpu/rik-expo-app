@@ -1,0 +1,10 @@
+{
+  "status": "passed",
+  "contractorCardVisible": true,
+  "modalOpened": true,
+  "issuedExpanded": true,
+  "screenshot": "artifacts/contractor-web-smoke.png",
+  "blockingConsoleErrors": [],
+  "pageErrors": [],
+  "platformSpecificIssues": []
+}

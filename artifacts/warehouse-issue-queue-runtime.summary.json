@@ -1,0 +1,44 @@
+{
+  "status": "passed",
+  "webPassed": true,
+  "androidPassed": true,
+  "iosPassed": false,
+  "iosResidual": "xcrun is unavailable on this host; iOS simulator cannot be started from Windows",
+  "runtimeVerified": true,
+  "scenariosPassed": {
+    "web": {
+      "initialOpen": true,
+      "queueCorrectness": true,
+      "interactionSanity": true,
+      "refreshLifecycle": true
+    },
+    "android": {
+      "initialOpen": true,
+      "queueCorrectness": true,
+      "interactionSanity": true,
+      "refreshLifecycle": true
+    },
+    "ios": {
+      "initialOpen": false,
+      "queueCorrectness": false,
+      "interactionSanity": false,
+      "refreshLifecycle": false
+    }
+  },
+  "platformSpecificIssues": [
+    {
+      "platform": "ios",
+      "issue": "xcrun is unavailable on this host; iOS simulator cannot be started from Windows"
+    }
+  ],
+  "artifacts": {
+    "webSummary": "artifacts/warehouse-issue-queue-web-smoke.summary.json",
+    "webRuntime": "artifacts/warehouse-issue-queue-web-smoke.json",
+    "androidCurrentXml": "artifacts/android-warehouse-issue-queue-current.xml",
+    "androidCurrentPng": "artifacts/android-warehouse-issue-queue-current.png",
+    "androidAfterRecipientXml": "artifacts/android-warehouse-issue-queue-after-recipient.xml",
+    "androidAfterRecipientPng": "artifacts/android-warehouse-issue-queue-after-recipient.png",
+    "androidModalXml": null,
+    "androidModalPng": null
+  }
+}

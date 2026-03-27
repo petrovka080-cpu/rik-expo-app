@@ -1,0 +1,14 @@
+{
+  "status": "passed",
+  "financeTabOpened": true,
+  "financeHomeCardsRendered": true,
+  "debtModalOpened": true,
+  "supplierToggleVisible": true,
+  "supplierRowVisible": true,
+  "supplierDetailOpened": true,
+  "consoleErrorsEmpty": true,
+  "pageErrorsEmpty": true,
+  "badResponsesEmpty": true,
+  "screenshot": "artifacts/director-finance-web-smoke.png",
+  "platformSpecificIssues": []
+}

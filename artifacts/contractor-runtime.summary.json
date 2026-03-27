@@ -1,0 +1,37 @@
+{
+  "status": "passed",
+  "webPassed": true,
+  "androidPassed": true,
+  "iosPassed": false,
+  "iosResidual": "xcrun is unavailable on this host; iOS simulator cannot be started from Windows",
+  "contractorCardVisible": true,
+  "modalOpened": true,
+  "issuedExpanded": true,
+  "platformSpecificIssues": [
+    {
+      "platform": "ios",
+      "issue": "xcrun is unavailable on this host; iOS simulator cannot be started from Windows"
+    }
+  ],
+  "seed": {
+    "suffix": "mn7i7k9inlaz",
+    "contractorOrg": "Runtime Contractor mn7i7k9inlaz",
+    "objectName": "BLD-MN7I7K9INLAZ",
+    "workName": "Runtime Work mn7i7k9inlaz",
+    "subcontractId": "5e4a52d7-90ec-4b54-b4ee-25a677db8c68",
+    "requestId": "e69f5f9d-8bc5-455b-b2c3-19d2a077f91a",
+    "requestItemId": "c428bd86-0a5c-45eb-b27b-9000a5d7eb88",
+    "purchaseId": "5cf33f13-8e04-469d-bbcb-3cc43e818fda",
+    "purchaseItemId": "36d87cc0-9999-4c1e-89db-17466343ef87",
+    "progressId": "2e03446e-60b2-473c-9217-05af90d6cdb7"
+  },
+  "artifacts": {
+    "webScreenshot": "artifacts/contractor-web-smoke.png",
+    "androidHomeXml": "artifacts/android-contractor-home.xml",
+    "androidHomePng": "artifacts/android-contractor-home.png",
+    "androidModalXml": "artifacts/android-contractor-modal.xml",
+    "androidModalPng": "artifacts/android-contractor-modal.png",
+    "androidIssuedXml": "artifacts/android-contractor-issued.xml",
+    "androidIssuedPng": "artifacts/android-contractor-issued.png"
+  }
+}

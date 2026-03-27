@@ -1,0 +1,30 @@
+{
+  "generated_at": "2026-03-23T11:13:42.809Z",
+  "batch": "Director Reports Batch A Smoke",
+  "status": "warning",
+  "scenario": {
+    "route": "/director",
+    "nav_click": "Отчёты",
+    "card_open_click": "Открыть",
+    "work_tab_click": "Работы",
+    "controls_seen": [
+      "Excel",
+      "Работы"
+    ]
+  },
+  "assertions": {
+    "director_login_succeeded": true,
+    "reports_home_opened": true,
+    "reports_modal_opened": true,
+    "report_scope_requested": true,
+    "discipline_scope_requested": true,
+    "reports_controls_rendered": true,
+    "work_tab_rendered_after_switch": true,
+    "page_errors_empty": true,
+    "console_errors_empty": false
+  },
+  "notes": [
+    "Smoke used a temporary authenticated director user.",
+    "This was a UI/runtime smoke only; it did not assert exact report totals."
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "status": "passed",
+  "route_start": "http://localhost:8081/warehouse",
+  "fio_confirmed": true,
+  "recipient_modal_confirmed": true,
+  "tabs_opened": [
+    "Склад факт",
+    "Расход",
+    "Отчёты"
+  ],
+  "console_errors_empty": true,
+  "page_errors_empty": true,
+  "screenshot": "artifacts/warehouse-wave1-smoke.png",
+  "runtime_json": "artifacts/warehouse-wave1-smoke.json"
+}

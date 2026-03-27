@@ -1,0 +1,32 @@
+{
+  "status": "failed",
+  "webPassed": false,
+  "androidPassed": false,
+  "iosPassed": false,
+  "iosResidual": "xcrun is unavailable on this host; iOS simulator cannot be started from Windows",
+  "runtimeVerified": false,
+  "scenariosPassed": {
+    "web": {
+      "materialsCrud": false,
+      "submitPath": false,
+      "subcontractAtomic": false,
+      "directorHandoff": false
+    },
+    "android": {
+      "routeOpen": false
+    },
+    "ios": {
+      "routeOpen": false
+    }
+  },
+  "platformSpecificIssues": [
+    {
+      "platform": "ios",
+      "issue": "xcrun is unavailable on this host; iOS simulator cannot be started from Windows"
+    }
+  ],
+  "artifacts": {
+    "web": "artifacts/foreman-request-sync-web-smoke.json",
+    "android": null
+  }
+}

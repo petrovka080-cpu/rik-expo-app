@@ -1,0 +1,31 @@
+{
+  "batch": "Batch H backend PDF pilot",
+  "generatedAt": "2026-03-24T13:52:32.087Z",
+  "pilotFamily": "Director finance supplier summary",
+  "status": "passed",
+  "assertions": {
+    "local_browser_ready": true,
+    "function_server_ready": true,
+    "director_login": true,
+    "finance_tab_opened": true,
+    "finance_modal_opened": true,
+    "supplier_scope_opened": true,
+    "backend_endpoint_called": true,
+    "storage_object_exists": true,
+    "signed_url_fetch_ok": true,
+    "viewer_opened": true,
+    "source_remote_url": true,
+    "no_pdf_fallback": true
+  },
+  "functionUrl": "http://127.0.0.1:54321/functions/v1/director-finance-supplier-summary-pdf",
+  "finalUrl": "http://localhost:8081/pdf-viewer?sessionId=session_mn4od1sg_2",
+  "finalSourceKind": "remote-url",
+  "finalScheme": "https",
+  "initialScheme": "https",
+  "bucketId": "director_pdf_exports",
+  "storagePath": "director/supplier_summary/2026/03/24/2026-03-24T13-53-05-244Z_becd292b_director_supplier_summary.pdf",
+  "renderer": "local_browser_puppeteer",
+  "signedUrlStatus": 200,
+  "signedUrlBytes": 75650,
+  "error": null
+}

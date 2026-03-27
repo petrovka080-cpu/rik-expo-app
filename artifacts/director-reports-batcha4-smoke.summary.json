@@ -1,0 +1,23 @@
+{
+  "generated_at": "2026-03-23T11:37:47.315Z",
+  "batch": "Director Reports Batch A4 Smoke",
+  "status": "passed",
+  "assertions": {
+    "director_login_succeeded": true,
+    "reports_home_opened": true,
+    "reports_modal_opened": true,
+    "report_scope_requested": true,
+    "discipline_scope_requested": true,
+    "report_scope_200": true,
+    "discipline_scope_200": true,
+    "reports_controls_rendered": true,
+    "work_tab_rendered_after_switch": true,
+    "page_errors_empty": true,
+    "console_errors_empty": true,
+    "proposals_401_absent": true
+  },
+  "notes": [
+    "Smoke used a temporary authenticated director user.",
+    "This was a UI/runtime smoke only; it did not assert exact report totals."
+  ]
+}

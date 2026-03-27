@@ -1,0 +1,29 @@
+{
+  "status": "failed",
+  "gate": "NOT_GREEN",
+  "addToRequestWorked": false,
+  "createProposalWorked": false,
+  "viewsConnected": true,
+  "usesExistingRequestFlow": true,
+  "usesExistingProposalFlow": true,
+  "paginationConnected": true,
+  "flashListAdopted": true,
+  "uiStoreSafe": true,
+  "asAnyRemoved": true,
+  "brokenRoutesRemoved": true,
+  "stockMarkersPresent": true,
+  "webPassed": true,
+  "androidPassed": false,
+  "iosPassed": false,
+  "iosResidual": "xcrun is unavailable on this host; iOS simulator cannot be started from Windows",
+  "runtimeGateOk": false,
+  "tscPassed": true,
+  "eslintPassed": true,
+  "artifacts": {
+    "webScreenshots": [
+      "artifacts/marketplace-web-foreman.png",
+      "artifacts/marketplace-web-buyer.png"
+    ],
+    "androidArtifacts": null
+  }
+}

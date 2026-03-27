@@ -1,0 +1,10 @@
+{
+  "status": "passed",
+  "assertions": {
+    "route_opened": true,
+    "body_has_text": true,
+    "console_errors_empty": true,
+    "page_errors_empty": true
+  },
+  "screenshot": "artifacts/accountant-windowing-web-current.png"
+}

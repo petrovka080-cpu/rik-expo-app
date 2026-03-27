@@ -1,0 +1,95 @@
+{
+  "status": "passed",
+  "inboxChecks": [
+    {
+      "tab": "К оплате",
+      "legacyDurationMs": 710,
+      "primaryDurationMs": 414,
+      "primaryOwner": "rpc_scope_v1",
+      "fallbackUsed": false,
+      "rowParityOk": true,
+      "totalCountParityOk": true,
+      "hasMoreParityOk": true,
+      "backendFirstPrimary": true,
+      "returnedRowCount": 40,
+      "totalRowCount": 89
+    },
+    {
+      "tab": "Частично",
+      "legacyDurationMs": 403,
+      "primaryDurationMs": 425,
+      "primaryOwner": "rpc_scope_v1",
+      "fallbackUsed": false,
+      "rowParityOk": true,
+      "totalCountParityOk": true,
+      "hasMoreParityOk": true,
+      "backendFirstPrimary": true,
+      "returnedRowCount": 1,
+      "totalRowCount": 1
+    },
+    {
+      "tab": "Оплачено",
+      "legacyDurationMs": 430,
+      "primaryDurationMs": 426,
+      "primaryOwner": "rpc_scope_v1",
+      "fallbackUsed": false,
+      "rowParityOk": true,
+      "totalCountParityOk": true,
+      "hasMoreParityOk": true,
+      "backendFirstPrimary": true,
+      "returnedRowCount": 2,
+      "totalRowCount": 2
+    },
+    {
+      "tab": "На доработке",
+      "legacyDurationMs": 428,
+      "primaryDurationMs": 629,
+      "primaryOwner": "rpc_scope_v1",
+      "fallbackUsed": false,
+      "rowParityOk": true,
+      "totalCountParityOk": true,
+      "hasMoreParityOk": true,
+      "backendFirstPrimary": true,
+      "returnedRowCount": 0,
+      "totalRowCount": 0
+    }
+  ],
+  "history": {
+    "legacyDurationMs": 431,
+    "primaryDurationMs": 421,
+    "primaryOwner": "rpc_scope_v1",
+    "fallbackUsed": false,
+    "backendFirstPrimary": true,
+    "rowParityOk": true,
+    "totalCountParityOk": true,
+    "totalAmountParityOk": true,
+    "hasMoreParityOk": true,
+    "returnedRowCount": 3,
+    "totalRowCount": 3,
+    "totalAmount": 280,
+    "hasMore": false,
+    "searchScenario": {
+      "search": "ОсОО",
+      "legacyDurationMs": 414,
+      "primaryDurationMs": 421,
+      "rowParityOk": true,
+      "totalCountParityOk": true,
+      "totalAmountParityOk": true
+    },
+    "windowScenario": {
+      "durationMs": 422,
+      "returnedRowCount": 1,
+      "totalRowCount": 3,
+      "hasMore": true,
+      "rowSignature": "149|2026-03-13T01:08:30.146478+00:00|a689ed65-8a34-4a3b-8b49-7d5d12ee352b|поролон||2026-03-11|0|KGS|110|банк||false|Барин|Оплата по счёту №без номера от 2026-03-11. Поставщик: поролон."
+    }
+  },
+  "wiring": {
+    "controllerHasLoadMoreInbox": true,
+    "controllerHasLoadMoreHistory": true,
+    "listHasOnEndReachedHistory": true,
+    "listHasFooter": true,
+    "screenWiresHistoryLoadingMore": true,
+    "screenWiresInboxLoadingMore": true
+  }
+}

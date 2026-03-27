@@ -1,0 +1,20 @@
+{
+  "status": "passed",
+  "warehouse": {
+    "store_present": true,
+    "store_adopted": true,
+    "flashlist_migrated": true,
+    "timer_debt_removed": true,
+    "residual_flatlist_files": [],
+    "residual_timer_files": []
+  },
+  "contractor": {
+    "store_present": true,
+    "store_adopted": true,
+    "flashlist_migrated": true,
+    "timer_debt_removed": true,
+    "ui_as_any_removed": true,
+    "residual_flatlist_files": [],
+    "residual_timer_files": []
+  }
+}

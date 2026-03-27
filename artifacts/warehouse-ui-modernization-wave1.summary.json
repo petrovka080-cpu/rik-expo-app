@@ -1,0 +1,28 @@
+{
+  "status": "passed",
+  "gate": "GREEN",
+  "uiStoreNarrowAndTyped": true,
+  "targetListsMigrated": true,
+  "noWarehouseFlatList": true,
+  "orchestrationOk": true,
+  "incomingBackendGatePassed": true,
+  "issueBackendGatePassed": true,
+  "stockBackendGatePassed": true,
+  "stockWindowingPassed": true,
+  "tscPassed": true,
+  "eslintPassed": true,
+  "webPassed": true,
+  "androidPassed": true,
+  "iosPassed": false,
+  "iosResidual": "xcrun is unavailable on this host; iOS simulator cannot be started from Windows",
+  "runtimeGateOk": true,
+  "artifacts": {
+    "warehouseWave1Smoke": "artifacts/warehouse-wave1-smoke.summary.json",
+    "incomingRuntime": "artifacts/warehouse-incoming-queue-runtime.summary.json",
+    "incomingBackendCutover": "artifacts/warehouse-incoming-queue-backend-cutover.summary.json",
+    "issueRuntime": "artifacts/warehouse-issue-queue-runtime.summary.json",
+    "issueBackendCutover": "artifacts/warehouse-issue-queue-backend-cutover.summary.json",
+    "stockCutover": "artifacts/warehouse-stock-cutover-v1.summary.json",
+    "stockWindowing": "artifacts/warehouse-stock-windowing-v2.summary.json"
+  }
+}

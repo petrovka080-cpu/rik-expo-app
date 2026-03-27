@@ -1,0 +1,15 @@
+{
+  "status": "passed",
+  "recommendedWave1Target": "work_progress_submit",
+  "fullQueueNeededForWholeRole": false,
+  "workProgressQueueNeed": "full",
+  "actBuilderQueueNeed": "full",
+  "activationQueueNeed": "none",
+  "currentDurableStateCount": 0,
+  "currentMissingDurableStateCount": 11,
+  "topBlockers": [
+    "work progress submit currently relies on server-assigned logId before materials insert",
+    "all work modal and act builder draft state is in-memory only",
+    "act builder currently mixes persistence with PDF generation side effects"
+  ]
+}

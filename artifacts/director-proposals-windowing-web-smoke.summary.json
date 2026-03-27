@@ -1,0 +1,15 @@
+{
+  "status": "passed",
+  "webPassed": true,
+  "buyerTabOpened": true,
+  "initialLoadPassed": true,
+  "appendExpected": false,
+  "appendPassed": null,
+  "initialOpenCount": 0,
+  "appendOpenCount": 0,
+  "consoleErrorsEmpty": true,
+  "pageErrorsEmpty": true,
+  "finalUrl": "http://localhost:8081/director",
+  "bodySnippet": "Контроль Заявки Подряды Финансы Склад Отчёты Прораб Снабженец Предложения Предложений ... Позиций ...   Прораб   Директор   Снабженец   Бухгалтер   Склад   Безопасность   Маркет   Карта   Профиль   Отчеты   Подрядчик  AI",
+  "screenshot": "artifacts/director-proposals-windowing-web-smoke.png"
+}

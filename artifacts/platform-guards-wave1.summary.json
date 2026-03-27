@@ -1,0 +1,29 @@
+{
+  "status": "passed",
+  "buyerAligned": true,
+  "accountantAligned": true,
+  "warehouseAligned": true,
+  "skippedCount": 6,
+  "guardReasons": [
+    {
+      "reason": "recent_same_scope",
+      "count": 2
+    },
+    {
+      "reason": "auth_not_ready",
+      "count": 1
+    },
+    {
+      "reason": "inactive_tab",
+      "count": 1
+    },
+    {
+      "reason": "no_more_pages",
+      "count": 1
+    },
+    {
+      "reason": "recent_error",
+      "count": 1
+    }
+  ]
+}
