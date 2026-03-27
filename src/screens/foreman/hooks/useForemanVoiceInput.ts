@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Platform } from "react-native";
+
 import { recordPlatformObservability } from "../../../lib/observability/platformObservability";
 
 export type ForemanVoiceStatus =
@@ -77,6 +78,14 @@ type NativeSpeechRecognitionModuleLike = {
   ) => NativeSpeechSubscription;
 };
 
+type WebMediaTrackLike = {
+  stop?: () => void;
+};
+
+type WebMediaStreamLike = {
+  getTracks?: () => ArrayLike<WebMediaTrackLike>;
+};
+
 const getWebSpeechRecognitionCtor = (): WebSpeechRecognitionCtor | null => {
   if (Platform.OS !== "web") return null;
   const root = globalThis as Record<string, unknown>;
@@ -137,7 +146,41 @@ const recordVoiceObservability = (params: {
     },
   });
 
+const mapWebErrorToMessage = (errorCode: string, fallbackMessage?: string): string => {
+  const source = `${errorCode} ${fallbackMessage ?? ""}`.trim().toLowerCase();
+  if (
+    source.includes("not-allowed") ||
+    source.includes("permission") ||
+    source.includes("denied")
+  ) {
+    return "Доступ к микрофону запрещён в браузере. Разрешите микрофон для этого сайта и повторите попытку.";
+  }
+  if (
+    source.includes("audio-capture") ||
+    source.includes("not-found") ||
+    source.includes("no device") ||
+    source.includes("device not found")
+  ) {
+    return "Микрофон не найден или недоступен на этом устройстве.";
+  }
+  if (source.includes("no-speech") || source.includes("speech-timeout")) {
+    return "Речь не распознана. Повторите запись или продолжите текстом.";
+  }
+  if (source.includes("network")) {
+    return "Распознавание речи временно недоступно. Проверьте сеть и повторите попытку.";
+  }
+  if (source.includes("interrupted")) {
+    return "Запись была прервана. Повторите попытку, когда микрофон не занят другим приложением.";
+  }
+  return fallbackMessage?.trim() || "Не удалось запустить голосовой ввод. Проверьте микрофон или продолжите текстом.";
+};
+
 const mapNativeErrorToMessage = (errorCode: string, fallbackMessage?: string): string => {
+  const fallback = String(fallbackMessage || "").trim();
+  const source = `${errorCode} ${fallback}`.trim().toLowerCase();
+  if (source.includes("interrupted")) {
+    return "Аудиосессия была прервана системой или другим приложением. Нажмите «Повторить» и попробуйте снова.";
+  }
   if (errorCode === "not-allowed") {
     return "Доступ к микрофону или распознаванию речи запрещён. Остаётся текстовый ввод.";
   }
@@ -153,10 +196,11 @@ const mapNativeErrorToMessage = (errorCode: string, fallbackMessage?: string): s
   if (errorCode === "busy") {
     return "Распознавание уже запущено. Дождитесь завершения или нажмите стоп.";
   }
-  return fallbackMessage?.trim() || "Не удалось распознать речь. Проверьте микрофон или продолжите текстом.";
+  return fallback || "Не удалось распознать речь. Проверьте микрофон или продолжите текстом.";
 };
 
 export function useForemanVoiceInput(params: {
+  visible?: boolean;
   value: string;
   onChangeText: (value: string) => void;
 }) {
@@ -173,10 +217,12 @@ export function useForemanVoiceInput(params: {
   valueRef.current = params.value;
   onChangeTextRef.current = params.onChangeText;
 
-  const supported =
-    Platform.OS === "web"
-      ? getWebSpeechRecognitionCtor() != null
-      : getNativeSpeechRecognitionModule() != null;
+  const detectSupported = useCallback(
+    () => (Platform.OS === "web" ? getWebSpeechRecognitionCtor() != null : getNativeSpeechRecognitionModule() != null),
+    [],
+  );
+
+  const [supported, setSupported] = useState<boolean>(detectSupported());
   const [status, setStatus] = useState<ForemanVoiceStatus>(supported ? "ready" : "unsupported");
   const [error, setError] = useState("");
 
@@ -191,11 +237,30 @@ export function useForemanVoiceInput(params: {
     nativeSubscriptionsRef.current = [];
   }, []);
 
+  const resetSession = useCallback(
+    (nextSupported?: boolean) => {
+      const resolvedSupported = nextSupported ?? detectSupported();
+      setSupported(resolvedSupported);
+      setError("");
+      setStatus(resolvedSupported ? "ready" : "unsupported");
+      lastAppliedTranscriptRef.current = "";
+      suppressNextValueObservationRef.current = false;
+      transcriptEditedRef.current = false;
+    },
+    [detectSupported],
+  );
+
+  const teardownActiveRecognition = useCallback(() => {
+    webRecognitionRef.current?.abort();
+    webRecognitionRef.current = null;
+    removeNativeSubscriptions();
+    nativeModuleRef.current?.abort();
+    nativeModuleRef.current = null;
+  }, [removeNativeSubscriptions]);
+
   useEffect(() => {
-    const nextSupported =
-      Platform.OS === "web"
-        ? getWebSpeechRecognitionCtor() != null
-        : getNativeSpeechRecognitionModule() != null;
+    const nextSupported = detectSupported();
+    setSupported(nextSupported);
     setStatus(nextSupported ? "ready" : "unsupported");
     if (!nextSupported) {
       recordVoiceObservability({
@@ -207,7 +272,7 @@ export function useForemanVoiceInput(params: {
         },
       });
     }
-  }, []);
+  }, [detectSupported]);
 
   useEffect(() => {
     const nextValue = String(params.value || "").trim();
@@ -231,13 +296,18 @@ export function useForemanVoiceInput(params: {
 
   useEffect(() => {
     return () => {
-      webRecognitionRef.current?.abort();
-      webRecognitionRef.current = null;
-      removeNativeSubscriptions();
-      nativeModuleRef.current?.abort();
-      nativeModuleRef.current = null;
+      teardownActiveRecognition();
     };
-  }, [removeNativeSubscriptions]);
+  }, [teardownActiveRecognition]);
+
+  useEffect(() => {
+    if (params.visible) {
+      resetSession();
+      return;
+    }
+    teardownActiveRecognition();
+    resetSession();
+  }, [params.visible, resetSession, teardownActiveRecognition]);
 
   const stop = useCallback(() => {
     webRecognitionRef.current?.stop();
@@ -248,7 +318,48 @@ export function useForemanVoiceInput(params: {
     });
   }, []);
 
-  const startWebRecognition = useCallback(() => {
+  const requestWebMicrophonePermission = useCallback(async () => {
+    if (Platform.OS !== "web") {
+      return { granted: true, errorCode: "", errorMessage: "" };
+    }
+
+    const root = globalThis as {
+      navigator?: {
+        mediaDevices?: {
+          getUserMedia?: (constraints: { audio: boolean }) => Promise<WebMediaStreamLike>;
+        };
+      };
+    };
+    const getUserMedia = root.navigator?.mediaDevices?.getUserMedia;
+    if (typeof getUserMedia !== "function") {
+      return { granted: true, errorCode: "", errorMessage: "" };
+    }
+
+    try {
+      const stream = await getUserMedia({ audio: true });
+      const tracks = stream?.getTracks?.() ?? [];
+      for (let index = 0; index < tracks.length; index += 1) {
+        try {
+          tracks[index]?.stop?.();
+        } catch {
+          // ignore per-track cleanup failures
+        }
+      }
+      return { granted: true, errorCode: "", errorMessage: "" };
+    } catch (permissionError) {
+      const details =
+        permissionError && typeof permissionError === "object"
+          ? (permissionError as { name?: unknown; message?: unknown })
+          : null;
+      return {
+        granted: false,
+        errorCode: String(details?.name ?? "not-allowed").trim().toLowerCase(),
+        errorMessage: String(details?.message ?? "").trim(),
+      };
+    }
+  }, []);
+
+  const startWebRecognition = useCallback(async () => {
     const SpeechRecognitionCtor = getWebSpeechRecognitionCtor();
     if (!SpeechRecognitionCtor) {
       setStatus("unsupported");
@@ -257,6 +368,22 @@ export function useForemanVoiceInput(params: {
         event: "voice_start_blocked",
         result: "skipped",
         extra: { guardReason: "voice_unsupported" },
+      });
+      return;
+    }
+
+    const permission = await requestWebMicrophonePermission();
+    if (!permission.granted) {
+      setStatus("denied");
+      setError(mapWebErrorToMessage(permission.errorCode, permission.errorMessage));
+      recordVoiceObservability({
+        event: "voice_permission_denied",
+        result: "skipped",
+        extra: {
+          guardReason: "voice_permission_denied",
+          errorCode: permission.errorCode,
+        },
+        errorMessage: permission.errorMessage || permission.errorCode || "voice_permission_denied",
       });
       return;
     }
@@ -315,7 +442,7 @@ export function useForemanVoiceInput(params: {
       const errorCode = String(event.error || "").trim();
       if (errorCode === "not-allowed" || errorCode === "service-not-allowed") {
         setStatus("denied");
-        setError("Доступ к микрофону запрещён. Остаётся текстовый ввод.");
+        setError(mapWebErrorToMessage(errorCode));
         recordVoiceObservability({
           event: "voice_permission_denied",
           result: "skipped",
@@ -336,7 +463,7 @@ export function useForemanVoiceInput(params: {
         return;
       }
       setStatus("failed");
-      setError("Не удалось распознать речь. Проверьте микрофон или продолжите текстом.");
+      setError(mapWebErrorToMessage(errorCode));
       recordVoiceObservability({
         event: "voice_recognition_failed",
         result: "error",
@@ -351,8 +478,20 @@ export function useForemanVoiceInput(params: {
     };
 
     webRecognitionRef.current = recognition;
-    recognition.start();
-  }, []);
+    try {
+      recognition.start();
+    } catch (startError) {
+      webRecognitionRef.current = null;
+      setStatus("failed");
+      setError(mapWebErrorToMessage("start-failed"));
+      recordVoiceObservability({
+        event: "voice_start_failed",
+        result: "error",
+        errorMessage:
+          startError instanceof Error ? startError.message : String(startError ?? "voice_start_failed"),
+      });
+    }
+  }, [requestWebMicrophonePermission]);
 
   const startNativeRecognition = useCallback(() => {
     void (async () => {
@@ -379,8 +518,7 @@ export function useForemanVoiceInput(params: {
         return;
       }
 
-      removeNativeSubscriptions();
-      nativeModuleRef.current?.abort();
+      teardownActiveRecognition();
       nativeModuleRef.current = module;
 
       nativeSubscriptionsRef.current = [
@@ -508,19 +646,20 @@ export function useForemanVoiceInput(params: {
           maxAlternatives: 1,
           iosTaskHint: "search",
         });
-      } catch {
+      } catch (startError) {
         removeNativeSubscriptions();
         nativeModuleRef.current = null;
         setStatus("failed");
-        setError("Не удалось запустить распознавание речи. Остаётся текстовый ввод.");
+        setError(mapNativeErrorToMessage("", startError instanceof Error ? startError.message : ""));
         recordVoiceObservability({
           event: "voice_start_failed",
           result: "error",
-          errorMessage: "voice_start_failed",
+          errorMessage:
+            startError instanceof Error ? startError.message : String(startError ?? "voice_start_failed"),
         });
       }
     })();
-  }, [removeNativeSubscriptions]);
+  }, [removeNativeSubscriptions, teardownActiveRecognition]);
 
   const start = useCallback(() => {
     sessionBaseValueRef.current = String(valueRef.current || "").trim();
@@ -536,7 +675,7 @@ export function useForemanVoiceInput(params: {
     });
 
     if (Platform.OS === "web") {
-      startWebRecognition();
+      void startWebRecognition();
       return;
     }
 

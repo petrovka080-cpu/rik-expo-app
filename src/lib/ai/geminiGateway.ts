@@ -123,7 +123,12 @@ export async function invokeGeminiGateway(
 
   const { data, error } = await supabase.functions.invoke<GeminiGatewayResponse>(
     "gemini-generate-content",
-    { body: request },
+    {
+      body: request,
+      headers: {
+        Accept: "application/json",
+      },
+    },
   );
 
   if (error) {

@@ -68,7 +68,7 @@ function json(status: number, body: Record<string, unknown>) {
     status,
     headers: {
       ...corsHeaders,
-      "Content-Type": "application/json",
+      "Content-Type": "application/json; charset=utf-8",
     },
   });
 }

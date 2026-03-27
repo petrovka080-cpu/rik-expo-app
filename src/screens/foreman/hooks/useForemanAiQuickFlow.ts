@@ -139,11 +139,11 @@ export function useForemanAiQuickFlow({
     if (!promptText || aiQuickLoading) return;
 
     if (headerRequirements.missing.length) {
-      activateHeaderAttention(`${headerRequirements.message} Я перевел вас к этим полям.`);
+      activateHeaderAttention(`${headerRequirements.message} Я перевёл вас к этим полям.`);
       resetAiQuickUi();
       showHint(
         FOREMAN_TEXT.fillHeaderTitle,
-        `${headerRequirements.message} Я перевел вас к этим полям сверху.`,
+        `${headerRequirements.message} Я перевёл вас к этим полям сверху.`,
       );
       return;
     }
@@ -167,8 +167,6 @@ export function useForemanAiQuickFlow({
         networkOnline,
       });
       const outcome = localAssistOutcome ?? await resolveForemanQuickRequest(promptText);
-      setAiQuickNotice(outcome.message);
-
       if (outcome.type === "candidate_options") {
         setAiQuickOutcomeType("candidate_options");
         setAiQuickCandidateGroups(outcome.options);
@@ -176,6 +174,7 @@ export function useForemanAiQuickFlow({
         setAiUnavailableReason("");
         setAiQuickPreview(outcome.resolvedItems ?? []);
         setAiQuickError("");
+        setAiQuickNotice(outcome.message || "");
         return;
       }
 
@@ -195,7 +194,7 @@ export function useForemanAiQuickFlow({
         setAiQuickCandidateGroups(outcome.options ?? []);
         setAiUnavailableReason("");
         setAiQuickPreview(outcome.resolvedItems ?? []);
-        setAiQuickError(outcome.message || "РќСѓР¶РЅРѕ СѓС‚РѕС‡РЅРёС‚СЊ РїРѕР·РёС†РёРё РёР»Рё РґРѕР±Р°РІРёС‚СЊ РёС… РІСЂСѓС‡РЅСѓСЋ.");
+        setAiQuickError(outcome.message || "Нужно уточнить позиции или добавить их вручную.");
         return;
       }
 
@@ -214,6 +213,7 @@ export function useForemanAiQuickFlow({
       setAiQuickCandidateGroups([]);
       setAiQuickQuestions([]);
       setAiUnavailableReason("");
+      setAiQuickNotice(outcome.message || "");
 
       if (outcome.items.length === 0) {
         setAiQuickError(outcome.message || "Нужно уточнить позиции или количество.");

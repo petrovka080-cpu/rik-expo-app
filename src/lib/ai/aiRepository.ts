@@ -45,6 +45,9 @@ export async function requestAiGeneratedText(params: {
 
   try {
     const text = await invokeGeminiGateway(params.request);
+    if (__DEV__) {
+      console.info("[AI RESPONSE RAW]", text);
+    }
     logAiRepository({
       phase: "backend_success",
       sourcePath: params.sourcePath,

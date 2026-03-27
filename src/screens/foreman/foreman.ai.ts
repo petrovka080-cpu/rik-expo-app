@@ -109,32 +109,32 @@ PACKAGING_UNITS.add("\u0431\u0430\u043d\u043a\u0430");
 PACKAGING_UNITS.add("\u043a\u0430\u043d\u0438\u0441\u0442\u0440\u0430");
 PACKAGING_UNITS.add("\u0431\u0443\u0445\u0442\u0430");
 
-const FOREMAN_AGENT_SYSTEM_PROMPT = `
-Ты специализированный AI-агент прораба.
-Из свободного текста сформируй только строительные позиции для заявки директору.
-
-Верни только JSON:
-{
-  "action": "create_request" | "clarify",
-  "items": [
-    {
-      "name": "Арматура A500C 12 мм",
-      "qty": 120,
-      "unit": "м",
-      "kind": "material" | "work" | "service",
-      "specs": "Доп. уточнение"
-    }
-  ],
-  "message": "Краткий итог"
-}
-
-Правила:
-1) Если нельзя уверенно определить хотя бы одну позицию или количество, верни action="clarify".
-2) Не придумывай новые позиции.
-3) Нормализуй единицы к: шт, м, м2, м3, кг, т, л, мешок, комплект.
-4) material = материалы, work = работы, service = доставка/аренда/услуги.
-5) Ответ без markdown и без текста вне JSON.
-`;
+const FOREMAN_AGENT_SYSTEM_PROMPT = [
+  "Ты специализированный AI-агент прораба.",
+  "Из свободного текста сформируй только строительные позиции для заявки директору.",
+  "",
+  "Верни только JSON:",
+  "{",
+  '  "action": "create_request" | "clarify",',
+  '  "items": [',
+  "    {",
+  '      "name": "Арматура A500C 12 мм",',
+  '      "qty": 120,',
+  '      "unit": "м",',
+  '      "kind": "material" | "work" | "service",',
+  '      "specs": "Доп. уточнение"',
+  "    }",
+  "  ],",
+  '  "message": "Краткий итог"',
+  "}",
+  "",
+  "Правила:",
+  '1) Если нельзя уверенно определить хотя бы одну позицию или количество, верни action="clarify".',
+  "2) Не придумывай новые позиции.",
+  "3) Нормализуй единицы к: шт, м, м2, м3, кг, т, л, мешок, комплект.",
+  "4) material = материалы, work = работы, service = доставка/аренда/услуги.",
+  "5) Ответ без markdown и без текста вне JSON.",
+].join("\n");
 
 const getGeminiConfig = (): { model: string } => {
   const model = String(process.env.EXPO_PUBLIC_GEMINI_MODEL || DEFAULT_MODEL).trim();
@@ -998,12 +998,12 @@ const finalizeResolvedQuickResultV2 = async (
     return {
       type: "resolved_items",
       items: resolved.items,
-      message: `РќР°Р№РґРµРЅРѕ РІ РєР°С‚Р°Р»РѕРіРµ РїРѕР·РёС†РёР№: ${resolved.items.length}.`,
+      message: `Найдено в каталоге позиций: ${resolved.items.length}.`,
     };
   }
 
   const unresolvedMessage = resolved.unresolvedNames.length > 0
-    ? `РќРµ СѓРґР°Р»РѕСЃСЊ СЃРѕРїРѕСЃС‚Р°РІРёС‚СЊ СЃ РєР°С‚Р°Р»РѕРіРѕРј: ${resolved.unresolvedNames.join(", ")}. РЈС‚РѕС‡РЅРёС‚Рµ РЅР°Р·РІР°РЅРёСЏ РёР»Рё РґРѕР±Р°РІСЊС‚Рµ РїРѕР·РёС†РёРё РІСЂСѓС‡РЅСѓСЋ С‡РµСЂРµР· РєР°С‚Р°Р»РѕРі.`
+    ? `Не удалось сопоставить с каталогом: ${resolved.unresolvedNames.join(", ")}. Уточните названия или добавьте позиции вручную через каталог.`
     : null;
   const combinedClarifyQuestions = unresolvedMessage
     ? [...resolved.clarifyQuestions, ...buildClarifyQuestions(unresolvedMessage, "catalog_clarify")]
@@ -1017,30 +1017,30 @@ const finalizeResolvedQuickResultV2 = async (
       resolvedItems: resolved.items,
       partialFailure: resolved.items.length > 0,
       message: unresolvedMessage
-        || "Р Р€РЎвЂљР С•РЎвЂЎР Р…Р С‘РЎвЂљР Вµ РЎС“Р С—Р В°Р С”Р С•Р Р†Р С”РЎС“ Р С‘Р В»Р С‘ Р ВµР Т‘Р С‘Р Р…Р С‘РЎвЂ РЎС“ Р С‘Р В·Р СР ВµРЎР‚Р ВµР Р…Р С‘РЎРЏ Р Т‘Р В»РЎРЏ Р Р…Р ВµР С•Р Т‘Р Р…Р С•Р В·Р Р…Р В°РЎвЂЎР Р…РЎвЂ№РЎвЂ¦ Р С—Р С•Р В·Р С‘РЎвЂ Р С‘Р в„–.",
+        || "Уточните упаковку или единицу измерения для неоднозначных позиций.",
     };
   }
 
   if (resolved.candidateGroups.length > 0) {
-    const suffix = resolved.items.length > 0 ? ` РўРѕС‡РЅРѕ СЃРѕРїРѕСЃС‚Р°РІР»РµРЅРѕ: ${resolved.items.length}.` : "";
+    const suffix = resolved.items.length > 0 ? ` Точно сопоставлено: ${resolved.items.length}.` : "";
     return {
       type: "candidate_options",
       options: resolved.candidateGroups,
       questions: [],
       resolvedItems: resolved.items,
       partialFailure: resolved.items.length > 0,
-      message: `РќСѓР¶РЅРѕ РІС‹Р±СЂР°С‚СЊ РїРѕР·РёС†РёРё РёР· РєР°С‚Р°Р»РѕРіР° РґР»СЏ ${resolved.candidateGroups.length} РїСѓРЅРєС‚РѕРІ.${suffix}`,
+      message: `Нужно выбрать позиции из каталога для ${resolved.candidateGroups.length} пунктов.${suffix}`,
     };
   }
 
   return {
     type: "hard_fail_safe",
     reason: "no_safe_resolution_path",
-    questions: buildClarifyQuestions("РЈС‚РѕС‡РЅРёС‚Рµ РїРѕР·РёС†РёРё РёР»Рё РґРѕР±Р°РІСЊС‚Рµ РёС… РІСЂСѓС‡РЅСѓСЋ С‡РµСЂРµР· РєР°С‚Р°Р»РѕРі.", "manual_add"),
+    questions: buildClarifyQuestions("Уточните позиции или добавьте их вручную через каталог.", "manual_add"),
     options: resolved.candidateGroups,
     resolvedItems: resolved.items,
     partialFailure: resolved.items.length > 0,
-    message: "РЈС‚РѕС‡РЅРёС‚Рµ РїРѕР·РёС†РёРё РёР»Рё РґРѕР±Р°РІСЊС‚Рµ РёС… РІСЂСѓС‡РЅСѓСЋ С‡РµСЂРµР· РєР°С‚Р°Р»РѕРі.",
+    message: "Уточните позиции или добавьте их вручную через каталог.",
   };
 };
 
