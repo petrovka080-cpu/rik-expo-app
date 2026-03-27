@@ -1,4 +1,4 @@
-// app/(tabs)/foreman.tsx
+﻿// app/(tabs)/foreman.tsx
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
@@ -686,7 +686,7 @@ function ForemanScreen() {
   const currentDisplayLabel = useMemo(() => {
     if (requestDetails?.display_no) return requestDetails.display_no;
     if (requestId) return labelForRequest(requestId);
-    return 'будет создана автоматически';
+    return 'Черновик';
   }, [labelForRequest, requestDetails?.display_no, requestId]);
 
   const activeDraftDisplayLabel = requestId || requestDetails?.display_no ? currentDisplayLabel : "Новый черновик";
