@@ -62,13 +62,23 @@ export default function ForemanAiQuickModal(props: Props) {
 
   const showPreview = props.preview.length > 0;
   const showCandidates = props.candidateGroups.length > 0;
-  const showQuestions = props.questions.length > 0;
-  const hasStructuredContent = showPreview || showCandidates || showQuestions;
   const showUnavailable = props.outcomeType === "ai_unavailable" || !props.onlineConfigured;
   const showDegradedMode = props.degradedMode;
   const errorKey = normalizeComparableMessage(props.error);
   const noticeKey = normalizeComparableMessage(props.notice);
-  const showInlineError = Boolean(props.error.trim()) && !showUnavailable;
+  const filteredQuestions = props.questions.filter((question) => {
+    const promptKey = normalizeComparableMessage(question.prompt);
+    return promptKey && promptKey !== errorKey && promptKey !== noticeKey;
+  });
+  const showQuestions = filteredQuestions.length > 0;
+  const hasStructuredContent = showPreview || showCandidates || showQuestions;
+  const hasDuplicateQuestionError = props.questions.some(
+    (question) => normalizeComparableMessage(question.prompt) === errorKey,
+  );
+  const showInlineError =
+    Boolean(props.error.trim()) &&
+    !showUnavailable &&
+    (!hasDuplicateQuestionError || filteredQuestions.length === 0);
   const showInlineNotice =
     Boolean(props.notice.trim()) &&
     !showUnavailable &&
@@ -379,7 +389,7 @@ export default function ForemanAiQuickModal(props: Props) {
                       <Text style={{ color: props.ui.text, fontWeight: "800", fontSize: 14, marginBottom: 8 }}>
                         Нужно уточнение
                       </Text>
-                      {props.questions.map((question) => (
+                      {filteredQuestions.map((question) => (
                         <View key={question.id} style={{ paddingVertical: 6 }}>
                           <Text style={{ color: props.ui.text, fontSize: 13 }}>{question.prompt}</Text>
                         </View>

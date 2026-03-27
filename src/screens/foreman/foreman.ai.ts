@@ -271,6 +271,48 @@ const splitSearchTokens = (value: unknown): string[] =>
     .map((token) => token.trim())
     .filter((token) => token.length >= 2);
 
+const SEARCH_MEANINGLESS_TOKENS = new Set([
+  "мм",
+  "см",
+  "кг",
+  "шт",
+  "м2",
+  "м3",
+  "тонн",
+  "тонна",
+  "тн",
+]);
+
+const splitMeaningfulSearchTokens = (value: unknown): string[] =>
+  splitSearchTokens(value).filter((token) => {
+    if (SEARCH_MEANINGLESS_TOKENS.has(token)) return false;
+    return !/^\d+(?:[.,]\d+)?$/.test(token);
+  });
+
+const hasMeaningfulTokenOverlap = (source: unknown, candidate: unknown): boolean => {
+  const sourceTokens = splitMeaningfulSearchTokens(source);
+  if (sourceTokens.length === 0) return true;
+  const candidateText = normalizeSearchText(candidate);
+  return sourceTokens.some((token) => candidateText.includes(token));
+};
+
+const addCatalogQuery = (collector: Set<string>, value: string) => {
+  const normalized = String(value || "").trim().replace(/\s+/g, " ");
+  if (normalized.length >= 2) {
+    collector.add(normalized);
+  }
+};
+
+const extractRebarMark = (value: string): string | null => {
+  const match = String(value || "").match(/\bA\d{3,4}C?\b/i);
+  return match ? match[0].toUpperCase() : null;
+};
+
+const extractDiameter = (value: string): string | null => {
+  const match = String(value || "").match(/\b(\d{1,3})\s*(?:мм|mm)\b/i);
+  return match?.[1] ?? null;
+};
+
 const resolveCatalogKind = (item: RikCatalogItem): ForemanAiKind | "unknown" => {
   const rawKind = String(item.kind ?? "").trim().toLowerCase();
   if (["material", "materials", "материал", "материалы"].includes(rawKind)) return "material";
@@ -332,11 +374,28 @@ const scoreCatalogCandidate = (input: ParsedForemanAiItem, item: RikCatalogItem)
 };
 
 const buildCatalogQueries = (input: ParsedForemanAiItem): string[] => {
-  const queries = [
-    [input.name, input.specs].filter(Boolean).join(" ").trim(),
-    input.name.trim(),
-  ];
-  return Array.from(new Set(queries.filter((value) => value.length >= 2)));
+  const queries = new Set<string>();
+  const fullQuery = [input.name, input.specs].filter(Boolean).join(" ").trim();
+  const nameOnlyQuery = input.name.trim();
+
+  addCatalogQuery(queries, fullQuery);
+  addCatalogQuery(queries, nameOnlyQuery);
+
+  const fullDiameterVariant = fullQuery.replace(/\b(\d{1,3})\s*(?:мм|mm)\b/gi, "Ø$1");
+  const nameDiameterVariant = nameOnlyQuery.replace(/\b(\d{1,3})\s*(?:мм|mm)\b/gi, "Ø$1");
+  addCatalogQuery(queries, fullDiameterVariant);
+  addCatalogQuery(queries, nameDiameterVariant);
+
+  const rebarMark = extractRebarMark(nameOnlyQuery);
+  const diameter = extractDiameter(nameOnlyQuery);
+  if (/арматур/i.test(nameOnlyQuery) && rebarMark) {
+    addCatalogQuery(queries, `Арматура ${rebarMark}`);
+    if (diameter) {
+      addCatalogQuery(queries, `Арматура ${rebarMark} Ø${diameter}`);
+    }
+  }
+
+  return Array.from(queries);
 };
 
 const hasSpecificCatalogResolveSignal = (input: ParsedForemanAiItem): boolean => {
@@ -638,6 +697,17 @@ const resolveCatalogBySynonymPrimary = async (
         kind: input.kind,
         rikCode: match.rikCode,
         matchedBy: match.matchedBy,
+      });
+      return null;
+    }
+    if (!hasMeaningfulTokenOverlap([input.name, input.specs].filter(Boolean).join(" "), match.nameHuman)) {
+      logForemanAi({
+        phase: "synonym_overlap_blocked",
+        sourceName: input.name,
+        kind: input.kind,
+        rikCode: match.rikCode,
+        matchedBy: match.matchedBy,
+        matchedName: match.nameHuman,
       });
       return null;
     }

@@ -2848,9 +2848,10 @@ export async function rikQuickSearch(q: string, limit = 60) {
     .limit(limit);
 
   if (tokens.length > 0) {
-    tokens.forEach((t) => {
-      builder = builder.or(`name_human.ilike.%${t}%,rik_code.ilike.%${t}%`);
-    });
+    const orFilters = tokens
+      .flatMap((token) => [`name_human.ilike.%${token}%`, `rik_code.ilike.%${token}%`])
+      .join(",");
+    builder = builder.or(orFilters);
   } else {
     builder = builder.or(`name_human.ilike.%${pQuery}%,rik_code.ilike.%${pQuery}%`);
   }
