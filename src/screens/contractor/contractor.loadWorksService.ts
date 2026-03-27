@@ -5,6 +5,10 @@ import {
   filterVisibleRows,
   selectScopedApprovedSubcontracts,
 } from "./contractor.rows";
+import {
+  beginPlatformObservability,
+  recordPlatformObservability,
+} from "../../lib/observability/platformObservability";
 
 export type ContractorWorkRow = {
   progress_id: string;
@@ -76,9 +80,173 @@ type SubcontractLiteLike = {
 
 export type ContractorSubcontractCard = SubcontractLiteLike;
 
+export type ContractorWorksBundleSourceMeta = {
+  primaryOwner: "rpc_scope_v1" | "legacy_client_enrich";
+  fallbackUsed: boolean;
+  sourceKind: "rpc:contractor_works_bundle_scope_v1" | "legacy:view:v_works_fact+relational_enrich";
+  rowParityStatus: "not_checked";
+};
+
+export type ContractorWorksBundleResult = {
+  rows: ContractorWorkRow[];
+  subcontractCards: ContractorSubcontractCard[];
+  debug: { isStaff: boolean; subcontractsFound: number; totalApproved: number };
+  sourceMeta: ContractorWorksBundleSourceMeta;
+};
+
+type LoadContractorWorksBundleParams = {
+  supabaseClient: any;
+  normText: (v: unknown) => string;
+  looksLikeUuid: (v: string) => boolean;
+  pickWorkProgressRow: (row: WorkProgressRawRow) => string;
+  myContractorId: string;
+  isStaff: boolean;
+  isExcludedWorkCode: (code: string) => boolean;
+  isApprovedForOtherStatus: (status: string | null | undefined) => boolean;
+};
+
+type ContractorWorksBundleScopeEnvelope = {
+  document_type: "contractor_works_bundle_scope";
+  version: "v1";
+  rows: ContractorWorkRow[];
+  subcontract_cards: ContractorSubcontractCard[];
+  meta: Record<string, unknown>;
+};
+
+type ContractorWorksBundleScopeMetaInput = {
+  total_approved?: unknown;
+  [key: string]: unknown;
+};
+
+const RPC_SOURCE_KIND: ContractorWorksBundleSourceMeta["sourceKind"] =
+  "rpc:contractor_works_bundle_scope_v1";
+const LEGACY_SOURCE_KIND: ContractorWorksBundleSourceMeta["sourceKind"] =
+  "legacy:view:v_works_fact+relational_enrich";
+
+class ContractorWorksBundleScopeValidationError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "ContractorWorksBundleScopeValidationError";
+  }
+}
+
+const asRecord = (value: unknown): Record<string, unknown> =>
+  value && typeof value === "object" && !Array.isArray(value) ? (value as Record<string, unknown>) : {};
+
+const pickNonEmptyString = (value: unknown): string | null => {
+  const normalized = String(value ?? "").trim();
+  return normalized || null;
+};
+
+const requireRecord = (value: unknown, scope: string): Record<string, unknown> => {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    throw new ContractorWorksBundleScopeValidationError(`${scope} must be an object`);
+  }
+  return value as Record<string, unknown>;
+};
+
+const requireArray = (value: unknown, field: string, scope: string): unknown[] => {
+  if (!Array.isArray(value)) {
+    throw new ContractorWorksBundleScopeValidationError(`${scope}.${field} must be an array`);
+  }
+  return value;
+};
+
+const requireString = (value: unknown, field: string, scope: string): string => {
+  const normalized = pickNonEmptyString(value);
+  if (!normalized) {
+    throw new ContractorWorksBundleScopeValidationError(`${scope}.${field} must be a non-empty string`);
+  }
+  return normalized;
+};
+
+const toNumber = (value: unknown, fallback = 0): number => {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : fallback;
+};
+
+const toNullableString = (value: unknown): string | null => pickNonEmptyString(value);
+
+const toErrorMessage = (error: unknown): string => {
+  if (error instanceof Error) return error.message;
+  const record = asRecord(error);
+  return String(record.message ?? error ?? "").trim();
+};
+
+function adaptRpcRows(value: unknown): ContractorWorkRow[] {
+  return requireArray(value, "rows", "contractor_works_bundle_scope_v1").map((rowValue) => {
+    const row = requireRecord(rowValue, "contractor_works_bundle_scope_v1.rows[]");
+    return {
+      progress_id: requireString(row.progress_id, "progress_id", "contractor_works_bundle_scope_v1.rows[]"),
+      created_at: toNullableString(row.created_at),
+      purchase_item_id: toNullableString(row.purchase_item_id),
+      work_code: toNullableString(row.work_code),
+      work_name: toNullableString(row.work_name),
+      object_name: toNullableString(row.object_name),
+      contractor_org: toNullableString(row.contractor_org),
+      contractor_inn: toNullableString(row.contractor_inn),
+      contractor_phone: toNullableString(row.contractor_phone),
+      request_id: toNullableString(row.request_id),
+      request_status: toNullableString(row.request_status),
+      contractor_job_id: toNullableString(row.contractor_job_id),
+      uom_id: toNullableString(row.uom_id),
+      qty_planned: toNumber(row.qty_planned, 0),
+      qty_done: toNumber(row.qty_done, 0),
+      qty_left: toNumber(row.qty_left, 0),
+      unit_price: row.unit_price == null ? null : toNumber(row.unit_price, 0),
+      work_status: String(row.work_status ?? "").trim(),
+      contractor_id: toNullableString(row.contractor_id),
+      started_at: toNullableString(row.started_at),
+      finished_at: toNullableString(row.finished_at),
+    };
+  });
+}
+
+function adaptRpcSubcontractCards(value: unknown): ContractorSubcontractCard[] {
+  return requireArray(value, "subcontract_cards", "contractor_works_bundle_scope_v1").map((cardValue) => {
+    const card = requireRecord(cardValue, "contractor_works_bundle_scope_v1.subcontract_cards[]");
+    return {
+      id: requireString(card.id, "id", "contractor_works_bundle_scope_v1.subcontract_cards[]"),
+      status: toNullableString(card.status),
+      object_name: toNullableString(card.object_name),
+      work_type: toNullableString(card.work_type),
+      qty_planned: card.qty_planned == null ? null : toNumber(card.qty_planned, 0),
+      uom: toNullableString(card.uom),
+      contractor_org: toNullableString(card.contractor_org),
+      contractor_inn: toNullableString(card.contractor_inn),
+      contractor_phone: toNullableString(card.contractor_phone),
+      created_at: toNullableString(card.created_at),
+    };
+  });
+}
+
+function adaptContractorWorksBundleScopeEnvelope(value: unknown): ContractorWorksBundleScopeEnvelope {
+  const root = requireRecord(value, "contractor_works_bundle_scope_v1");
+  const documentType = requireString(root.document_type, "document_type", "contractor_works_bundle_scope_v1");
+  if (documentType !== "contractor_works_bundle_scope") {
+    throw new ContractorWorksBundleScopeValidationError(
+      `contractor_works_bundle_scope_v1 invalid document_type: ${documentType}`,
+    );
+  }
+  const version = requireString(root.version, "version", "contractor_works_bundle_scope_v1");
+  if (version !== "v1") {
+    throw new ContractorWorksBundleScopeValidationError(
+      `contractor_works_bundle_scope_v1 invalid version: ${version}`,
+    );
+  }
+  const meta = asRecord(root.meta) as ContractorWorksBundleScopeMetaInput;
+  return {
+    document_type: "contractor_works_bundle_scope",
+    version: "v1",
+    rows: adaptRpcRows(root.rows),
+    subcontract_cards: adaptRpcSubcontractCards(root.subcontract_cards),
+    meta,
+  };
+}
+
 export function mapWorksFactRows(
   rows: Record<string, unknown>[],
-  normText: (v: unknown) => string
+  normText: (v: unknown) => string,
 ): ContractorWorkRow[] {
   return (rows ?? []).map((x) => ({
     progress_id: String(x.progress_id || "").trim(),
@@ -159,29 +327,23 @@ export async function enrichWorksRows(params: {
       mapped
         .filter((r) => !String(r.request_id || "").trim())
         .map((r) => String(r.purchase_item_id || "").trim())
-        .filter(Boolean)
-    )
+        .filter(Boolean),
+    ),
   );
   const requestIdByPurchaseItem = new Map<string, string>();
   if (piIds.length) {
-    const piQ = await supabaseClient
-      .from("purchase_items")
-      .select("id, request_item_id")
-      .in("id", piIds);
+    const piQ = await supabaseClient.from("purchase_items").select("id, request_item_id").in("id", piIds);
     if (!piQ.error && Array.isArray(piQ.data)) {
       const reqItemIds = Array.from(
         new Set(
           (piQ.data as PurchaseItemRawRow[])
             .map((x) => String(x.request_item_id || "").trim())
-            .filter(Boolean)
-        )
+            .filter(Boolean),
+        ),
       );
       const reqByReqItem = new Map<string, string>();
       if (reqItemIds.length) {
-        const riQ = await supabaseClient
-          .from("request_items")
-          .select("id, request_id")
-          .in("id", reqItemIds);
+        const riQ = await supabaseClient.from("request_items").select("id, request_id").in("id", reqItemIds);
         if (!riQ.error && Array.isArray(riQ.data)) {
           for (const ri of riQ.data as RequestItemRawRow[]) {
             const riId = String(ri.id || "").trim();
@@ -216,8 +378,8 @@ export async function enrichWorksRows(params: {
           return !r.request_status || !r.contractor_job_id || !r.object_name;
         })
         .map((r) => String(r.request_id || "").trim())
-        .filter(Boolean)
-    )
+        .filter(Boolean),
+    ),
   );
   const reqById = new Map<string, RequestRawRow>();
   if (reqIds.length) {
@@ -253,15 +415,12 @@ export async function enrichWorksRows(params: {
       mappedByReq
         .filter((r) => !!String(r.contractor_job_id || "").trim() && !String(r.object_name || "").trim())
         .map((r) => String(r.contractor_job_id || "").trim())
-        .filter(Boolean)
-    )
+        .filter(Boolean),
+    ),
   );
   const objByJob = new Map<string, string>();
   if (jobIds.length) {
-    const sq = await supabaseClient
-      .from("subcontracts")
-      .select("id, object_name")
-      .in("id", jobIds);
+    const sq = await supabaseClient.from("subcontracts").select("id, object_name").in("id", jobIds);
     if (!sq.error && Array.isArray(sq.data)) {
       for (const s of sq.data as SubcontractObjectRawRow[]) {
         const id = String(s.id || "").trim();
@@ -274,20 +433,10 @@ export async function enrichWorksRows(params: {
   return { rows: mappedByReq, objByJob };
 }
 
-export async function loadContractorWorksBundle(params: {
-  supabaseClient: any;
-  normText: (v: unknown) => string;
-  looksLikeUuid: (v: string) => boolean;
-  pickWorkProgressRow: (row: WorkProgressRawRow) => string;
-  myContractorId: string;
-  isStaff: boolean;
-  isExcludedWorkCode: (code: string) => boolean;
-  isApprovedForOtherStatus: (status: string | null | undefined) => boolean;
-}): Promise<{
-  rows: ContractorWorkRow[];
-  subcontractCards: ContractorSubcontractCard[];
-  debug: { isStaff: boolean; subcontractsFound: number; totalApproved: number };
-}> {
+async function loadContractorWorksBundleLegacyInternal(
+  params: LoadContractorWorksBundleParams,
+  options?: { observe?: boolean },
+): Promise<ContractorWorksBundleResult> {
   const {
     supabaseClient,
     normText,
@@ -299,94 +448,263 @@ export async function loadContractorWorksBundle(params: {
     isApprovedForOtherStatus,
   } = params;
 
-  const sqApprovedPromise = supabaseClient
-    .from("subcontracts")
-    .select("id, status, work_type, object_name, qty_planned, uom, contractor_org, contractor_inn, contractor_phone, created_at")
-    .eq("status", "approved")
-    .order("created_at", { ascending: false })
-    .limit(500);
+  const observation =
+    options?.observe !== false
+      ? beginPlatformObservability({
+          screen: "contractor",
+          surface: "works_bundle",
+          category: "fetch",
+          event: "load_works_bundle",
+          sourceKind: LEGACY_SOURCE_KIND,
+        })
+      : null;
 
-  const worksRes = await supabaseClient
-    .from("v_works_fact")
-    .select("*")
-    .order("created_at", { ascending: false });
-  if (worksRes.error) {
-    throw worksRes.error;
-  }
+  try {
+    const sqApprovedPromise = supabaseClient
+      .from("subcontracts")
+      .select(
+        "id, status, work_type, object_name, qty_planned, uom, contractor_org, contractor_inn, contractor_phone, created_at",
+      )
+      .eq("status", "approved")
+      .order("created_at", { ascending: false })
+      .limit(500);
 
-  const mappedBase = mapWorksFactRows(
-    Array.isArray(worksRes.data) ? (worksRes.data as Record<string, unknown>[]) : [],
-    normText
-  );
-  const enrichResult = await enrichWorksRows({
-    supabaseClient,
-    mappedBase,
-    looksLikeUuid,
-    pickWorkProgressRow,
-  });
+    const worksRes = await supabaseClient.from("v_works_fact").select("*").order("created_at", { ascending: false });
+    if (worksRes.error) {
+      throw worksRes.error;
+    }
 
-  const sqApproved = await sqApprovedPromise;
-  if (sqApproved.error) {
-    throw sqApproved.error;
-  }
+    const mappedBase = mapWorksFactRows(
+      Array.isArray(worksRes.data) ? (worksRes.data as Record<string, unknown>[]) : [],
+      normText,
+    );
+    const enrichResult = await enrichWorksRows({
+      supabaseClient,
+      mappedBase,
+      looksLikeUuid,
+      pickWorkProgressRow,
+    });
 
-  const allApproved = Array.isArray(sqApproved.data) ? (sqApproved.data as SubcontractLiteLike[]) : [];
-  const subcontractCards = selectScopedApprovedSubcontracts({
-    allApproved,
-  });
+    const sqApproved = await sqApprovedPromise;
+    if (sqApproved.error) {
+      throw sqApproved.error;
+    }
 
-  const lookupMaps = buildSubcontractLookups(subcontractCards);
-  const mappedWithObject = attachSubcontractAndObject({
-    rows: enrichResult.rows,
-    objByJob: enrichResult.objByJob,
-    lookups: lookupMaps,
-  });
+    const allApproved = Array.isArray(sqApproved.data) ? (sqApproved.data as SubcontractLiteLike[]) : [];
+    const subcontractCards = selectScopedApprovedSubcontracts({
+      allApproved,
+    });
 
-  const allowedJobIds = new Set(subcontractCards.map((s) => String(s.id || "").trim()).filter(Boolean));
-  const filtered = filterVisibleRows({
-    rows: mappedWithObject,
-    allowedJobIds,
-    myContractorId,
-    isStaff,
-    isExcludedWorkCode,
-    isApprovedForOtherStatus,
-  });
+    const lookupMaps = buildSubcontractLookups(subcontractCards);
+    const mappedWithObject = attachSubcontractAndObject({
+      rows: enrichResult.rows,
+      objByJob: enrichResult.objByJob,
+      lookups: lookupMaps,
+    });
 
-  const existingJobIds = new Set(filtered.map((r) => String(r.contractor_job_id || "").trim()).filter(Boolean));
-  const syntheticRows: ContractorWorkRow[] = buildSyntheticSubcontractRows(
-    subcontractCards,
-    existingJobIds
-  ).map((r) => ({
-    progress_id: String(r.progress_id || "").trim(),
-    created_at: null,
-    purchase_item_id: r.purchase_item_id == null ? null : String(r.purchase_item_id),
-    work_code: r.work_code == null ? null : String(r.work_code),
-    work_name: r.work_name == null ? null : String(r.work_name),
-    object_name: r.object_name == null ? null : String(r.object_name),
-    contractor_org: r.contractor_org == null ? null : String(r.contractor_org),
-    contractor_inn: r.contractor_inn == null ? null : String(r.contractor_inn),
-    contractor_phone: r.contractor_phone == null ? null : String(r.contractor_phone),
-    request_id: r.request_id == null ? null : String(r.request_id),
-    request_status: null,
-    contractor_job_id: r.contractor_job_id == null ? null : String(r.contractor_job_id),
-    uom_id: r.uom_id == null ? null : String(r.uom_id),
-    qty_planned: Number(r.qty_planned ?? 0),
-    qty_done: Number(r.qty_done ?? 0),
-    qty_left: Number(r.qty_left ?? 0),
-    unit_price: r.unit_price == null ? null : Number(r.unit_price),
-    work_status: String(r.work_status || ""),
-    contractor_id: r.contractor_id == null ? null : String(r.contractor_id),
-    started_at: r.started_at == null ? null : String(r.started_at),
-    finished_at: r.finished_at == null ? null : String(r.finished_at),
-  }));
-
-  return {
-    rows: [...syntheticRows, ...filtered],
-    subcontractCards,
-    debug: {
+    const allowedJobIds = new Set(subcontractCards.map((s) => String(s.id || "").trim()).filter(Boolean));
+    const filtered = filterVisibleRows({
+      rows: mappedWithObject,
+      allowedJobIds,
+      myContractorId,
       isStaff,
-      subcontractsFound: subcontractCards.length,
-      totalApproved: allApproved.length,
-    },
-  };
+      isExcludedWorkCode,
+      isApprovedForOtherStatus,
+    });
+
+    const existingJobIds = new Set(filtered.map((r) => String(r.contractor_job_id || "").trim()).filter(Boolean));
+    const syntheticRows: ContractorWorkRow[] = buildSyntheticSubcontractRows(subcontractCards, existingJobIds).map((r) => ({
+      progress_id: String(r.progress_id || "").trim(),
+      created_at: null,
+      purchase_item_id: r.purchase_item_id == null ? null : String(r.purchase_item_id),
+      work_code: r.work_code == null ? null : String(r.work_code),
+      work_name: r.work_name == null ? null : String(r.work_name),
+      object_name: r.object_name == null ? null : String(r.object_name),
+      contractor_org: r.contractor_org == null ? null : String(r.contractor_org),
+      contractor_inn: r.contractor_inn == null ? null : String(r.contractor_inn),
+      contractor_phone: r.contractor_phone == null ? null : String(r.contractor_phone),
+      request_id: r.request_id == null ? null : String(r.request_id),
+      request_status: null,
+      contractor_job_id: r.contractor_job_id == null ? null : String(r.contractor_job_id),
+      uom_id: r.uom_id == null ? null : String(r.uom_id),
+      qty_planned: Number(r.qty_planned ?? 0),
+      qty_done: Number(r.qty_done ?? 0),
+      qty_left: Number(r.qty_left ?? 0),
+      unit_price: r.unit_price == null ? null : Number(r.unit_price),
+      work_status: String(r.work_status || ""),
+      contractor_id: r.contractor_id == null ? null : String(r.contractor_id),
+      started_at: r.started_at == null ? null : String(r.started_at),
+      finished_at: r.finished_at == null ? null : String(r.finished_at),
+    }));
+
+    const result: ContractorWorksBundleResult = {
+      rows: [...syntheticRows, ...filtered],
+      subcontractCards,
+      debug: {
+        isStaff,
+        subcontractsFound: subcontractCards.length,
+        totalApproved: allApproved.length,
+      },
+      sourceMeta: {
+        primaryOwner: "legacy_client_enrich",
+        fallbackUsed: true,
+        sourceKind: LEGACY_SOURCE_KIND,
+        rowParityStatus: "not_checked",
+      },
+    };
+
+    observation?.success({
+      rowCount: result.rows.length,
+      sourceKind: LEGACY_SOURCE_KIND,
+      fallbackUsed: true,
+      extra: {
+        subcontractCards: subcontractCards.length,
+        totalApproved: allApproved.length,
+        isStaff,
+        primaryOwner: "legacy_client_enrich",
+      },
+    });
+    return result;
+  } catch (error) {
+    observation?.error(error, {
+      rowCount: 0,
+      errorStage: "load_works_bundle_legacy",
+      sourceKind: LEGACY_SOURCE_KIND,
+    });
+    throw error;
+  }
+}
+
+async function loadContractorWorksBundleRpcInternal(
+  params: LoadContractorWorksBundleParams,
+  options?: { observe?: boolean },
+): Promise<ContractorWorksBundleResult> {
+  const { supabaseClient, myContractorId, isStaff } = params;
+  const observation =
+    options?.observe !== false
+      ? beginPlatformObservability({
+          screen: "contractor",
+          surface: "works_bundle",
+          category: "fetch",
+          event: "load_works_bundle_rpc",
+          sourceKind: RPC_SOURCE_KIND,
+        })
+      : null;
+
+  try {
+    const { data, error } = await supabaseClient.rpc("contractor_works_bundle_scope_v1", {
+      p_my_contractor_id: myContractorId || null,
+      p_is_staff: isStaff,
+    });
+    if (error) throw error;
+
+    const envelope = adaptContractorWorksBundleScopeEnvelope(data);
+    const totalApproved = toNumber(envelope.meta.total_approved, envelope.subcontract_cards.length);
+    const result: ContractorWorksBundleResult = {
+      rows: envelope.rows,
+      subcontractCards: envelope.subcontract_cards,
+      debug: {
+        isStaff,
+        subcontractsFound: envelope.subcontract_cards.length,
+        totalApproved,
+      },
+      sourceMeta: {
+        primaryOwner: "rpc_scope_v1",
+        fallbackUsed: false,
+        sourceKind: RPC_SOURCE_KIND,
+        rowParityStatus: "not_checked",
+      },
+    };
+
+    observation?.success({
+      rowCount: result.rows.length,
+      sourceKind: RPC_SOURCE_KIND,
+      fallbackUsed: false,
+      extra: {
+        subcontractCards: result.subcontractCards.length,
+        totalApproved,
+        isStaff,
+        primaryOwner: "rpc_scope_v1",
+      },
+    });
+    return result;
+  } catch (error) {
+    observation?.error(error, {
+      rowCount: 0,
+      errorStage: "load_works_bundle_rpc",
+      sourceKind: RPC_SOURCE_KIND,
+    });
+    throw error;
+  }
+}
+
+export async function loadContractorWorksBundleLegacy(
+  params: LoadContractorWorksBundleParams,
+): Promise<ContractorWorksBundleResult> {
+  return await loadContractorWorksBundleLegacyInternal(params, { observe: true });
+}
+
+export async function loadContractorWorksBundleRpc(
+  params: LoadContractorWorksBundleParams,
+): Promise<ContractorWorksBundleResult> {
+  return await loadContractorWorksBundleRpcInternal(params, { observe: true });
+}
+
+export async function loadContractorWorksBundle(
+  params: LoadContractorWorksBundleParams,
+): Promise<ContractorWorksBundleResult> {
+  const observation = beginPlatformObservability({
+    screen: "contractor",
+    surface: "works_bundle",
+    category: "fetch",
+    event: "load_works_bundle",
+    sourceKind: RPC_SOURCE_KIND,
+  });
+
+  try {
+    const rpcResult = await loadContractorWorksBundleRpcInternal(params, { observe: false });
+    observation.success({
+      rowCount: rpcResult.rows.length,
+      sourceKind: rpcResult.sourceMeta.sourceKind,
+      fallbackUsed: false,
+      extra: {
+        primaryOwner: rpcResult.sourceMeta.primaryOwner,
+        subcontractCards: rpcResult.subcontractCards.length,
+      },
+    });
+    return rpcResult;
+  } catch (error) {
+    const fallbackReason = toErrorMessage(error);
+    recordPlatformObservability({
+      screen: "contractor",
+      surface: "works_bundle",
+      category: "fetch",
+      event: "load_works_bundle_primary_rpc",
+      result: "error",
+      sourceKind: RPC_SOURCE_KIND,
+      errorStage: "load_works_bundle_rpc",
+      errorClass: error instanceof Error ? error.name : undefined,
+      errorMessage: fallbackReason || undefined,
+      fallbackUsed: true,
+    });
+
+    const legacyResult = await loadContractorWorksBundleLegacyInternal(params, { observe: false });
+    observation.success({
+      rowCount: legacyResult.rows.length,
+      sourceKind: LEGACY_SOURCE_KIND,
+      fallbackUsed: true,
+      extra: {
+        primaryOwner: legacyResult.sourceMeta.primaryOwner,
+        subcontractCards: legacyResult.subcontractCards.length,
+        fallbackReason,
+      },
+    });
+    return {
+      ...legacyResult,
+      sourceMeta: {
+        ...legacyResult.sourceMeta,
+        fallbackUsed: true,
+      },
+    };
+  }
 }

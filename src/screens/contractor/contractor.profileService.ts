@@ -1,3 +1,5 @@
+import { beginPlatformObservability } from "../../lib/observability/platformObservability";
+
 export type ContractorUserProfile = {
   id: string;
   full_name: string | null;
@@ -19,9 +21,19 @@ export async function loadCurrentContractorUserProfile(params: {
   normText: (value: any) => string;
 }): Promise<ContractorUserProfile | null> {
   const { supabaseClient, normText } = params;
+  const observation = beginPlatformObservability({
+    screen: "contractor",
+    surface: "profile_card",
+    category: "fetch",
+    event: "load_user_profile",
+    sourceKind: "auth+table:user_profiles",
+  });
   const { data: auth } = await supabaseClient.auth.getUser();
   const user = auth?.user;
-  if (!user) return null;
+  if (!user) {
+    observation.success({ rowCount: 0 });
+    return null;
+  }
 
   const { data } = await supabaseClient
     .from("user_profiles")
@@ -29,9 +41,12 @@ export async function loadCurrentContractorUserProfile(params: {
     .eq("user_id", user.id)
     .maybeSingle();
 
-  if (!data) return null;
+  if (!data) {
+    observation.success({ rowCount: 0 });
+    return null;
+  }
 
-  return {
+  const result = {
     id: user.id,
     full_name: normText(data.full_name) || null,
     phone: normText(data.phone) || null,
@@ -39,6 +54,8 @@ export async function loadCurrentContractorUserProfile(params: {
     company: normText(data.company) || null,
     is_contractor: data.is_contractor === true,
   };
+  observation.success({ rowCount: 1 });
+  return result;
 }
 
 export async function loadCurrentContractorProfile(params: {
@@ -46,9 +63,19 @@ export async function loadCurrentContractorProfile(params: {
   normText: (value: any) => string;
 }): Promise<ContractorProfileCard | null> {
   const { supabaseClient, normText } = params;
+  const observation = beginPlatformObservability({
+    screen: "contractor",
+    surface: "profile_card",
+    category: "fetch",
+    event: "load_contractor_profile",
+    sourceKind: "auth+table:contractors",
+  });
   const { data: auth } = await supabaseClient.auth.getUser();
   const user = auth?.user;
-  if (!user) return null;
+  if (!user) {
+    observation.success({ rowCount: 0 });
+    return null;
+  }
 
   const { data, error } = await supabaseClient
     .from("contractors")
@@ -58,15 +85,26 @@ export async function loadCurrentContractorProfile(params: {
 
   if (error && error.code !== "PGRST116") {
     console.error("[contractor] loadContractor error:", error.message);
+    observation.error(error, {
+      rowCount: 0,
+      errorStage: "table:contractors",
+    });
   }
-  if (!data) return null;
+  if (!data) {
+    if (!error || error.code === "PGRST116") {
+      observation.success({ rowCount: 0 });
+    }
+    return null;
+  }
 
-  return {
+  const result = {
     id: data.id,
     company_name: normText(data.company_name) || null,
     full_name: normText(data.full_name) || null,
     phone: normText(data.phone) || null,
   };
+  observation.success({ rowCount: 1 });
+  return result;
 }
 
 export async function activateCurrentUserAsContractor(params: {
@@ -84,4 +122,3 @@ export async function activateCurrentUserAsContractor(params: {
 
   if (error) throw error;
 }
-

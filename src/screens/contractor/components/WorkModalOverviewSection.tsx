@@ -1,4 +1,4 @@
-﻿import React from "react";
+import React from "react";
 import { Pressable, Text, View } from "react-native";
 import { normalizeRuText } from "../../../lib/text/encoding";
 
@@ -35,10 +35,25 @@ type Props = {
   workModalSaving: boolean;
   loadingIssued: boolean;
   workModalHint: string;
+  progressSyncLabel: string;
+  progressSyncDetail: string | null;
+  progressSyncTone: "neutral" | "info" | "success" | "warning" | "danger";
+  canSubmitProgress: boolean;
+  canRetryProgress: boolean;
+  onSubmitProgress: () => void;
+  onRetryProgress: () => void;
   onOpenContract: () => void;
   onOpenActBuilder: () => void;
   onOpenSummaryPdf: () => void;
   styles: OverviewStyles;
+};
+
+const statusColorMap: Record<Props["progressSyncTone"], string> = {
+  neutral: "#64748b",
+  info: "#0284c7",
+  success: "#166534",
+  warning: "#b45309",
+  danger: "#b91c1c",
 };
 
 export default function WorkModalOverviewSection(props: Props) {
@@ -79,6 +94,48 @@ export default function WorkModalOverviewSection(props: Props) {
       </View>
 
       <View style={props.styles.workModalActions}>
+        <View
+          style={{
+            marginBottom: 10,
+            padding: 10,
+            borderRadius: 10,
+            borderWidth: 1,
+            borderColor: "#e2e8f0",
+            backgroundColor: "#fff",
+            gap: 6,
+          }}
+        >
+          <Text style={{ fontSize: 13, fontWeight: "800", color: statusColorMap[props.progressSyncTone] }}>
+            {props.progressSyncLabel}
+          </Text>
+          {props.progressSyncDetail ? (
+            <Text style={{ fontSize: 12, color: "#64748b" }}>
+              {normalizeRuText(props.progressSyncDetail)}
+            </Text>
+          ) : null}
+          <View style={{ flexDirection: "row", gap: 8, flexWrap: "wrap" }}>
+            <Pressable
+              onPress={props.onSubmitProgress}
+              disabled={!props.canSubmitProgress || props.workModalSaving || props.loadingIssued}
+              style={[
+                props.styles.workModalMainActionBtn,
+                (!props.canSubmitProgress || props.workModalSaving || props.loadingIssued) &&
+                  props.styles.workModalMainActionBtnDisabled,
+              ]}
+            >
+              <Text style={props.styles.workModalActionText}>
+                {props.workModalSaving ? "Сохранение..." : "Сохранить факт"}
+              </Text>
+            </Pressable>
+
+            {props.canRetryProgress ? (
+              <Pressable onPress={props.onRetryProgress} style={props.styles.workModalSecondaryActionBtn}>
+                <Text style={props.styles.workModalActionText}>Повторить</Text>
+              </Pressable>
+            ) : null}
+          </View>
+        </View>
+
         <Pressable
           onPress={props.onOpenActBuilder}
           disabled={props.workModalSaving || props.loadingIssued}

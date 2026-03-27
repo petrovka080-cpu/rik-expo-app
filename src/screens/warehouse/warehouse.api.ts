@@ -3,6 +3,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { StockRow, ReqHeadRow, ReqItemUiRow } from "./warehouse.types";
 import { isUuid, normMatCode, normUomId, nz, parseNum } from "./warehouse.utils";
 import { normalizeRuText } from "../../lib/text/encoding";
+import { beginPlatformObservability, recordPlatformObservability } from "../../lib/observability/platformObservability";
 import { isRequestVisibleInWarehouseIssueQueue } from "../../lib/requestStatus";
 import { fetchWarehouseNameMapUi } from "./warehouse.nameMap.ui";
 import {
@@ -313,10 +314,154 @@ type ReqHeadsConvergedResult = {
   metrics: Omit<ReqHeadsStageMetrics, "stage_a_ms">;
 };
 
+export type WarehouseReqHeadsSourceMeta = {
+  primaryOwner: "rpc_scope_v4";
+  fallbackUsed: false;
+  sourceKind: "rpc:warehouse_issue_queue_scope_v4";
+  contractVersion: string;
+};
+
+export type WarehouseReqHeadsWindowMeta = {
+  page: number;
+  pageSize: number;
+  pageOffset: number;
+  returnedRowCount: number;
+  totalRowCount: number | null;
+  hasMore: boolean;
+  repairedMissingIdsCount: number;
+  scopeKey: string;
+  generatedAt: string | null;
+  contractVersion: string;
+};
+
+export type WarehouseReqHeadsFetchResult = {
+  rows: ReqHeadRow[];
+  metrics: ReqHeadsStageMetrics;
+  meta: WarehouseReqHeadsWindowMeta;
+  sourceMeta: WarehouseReqHeadsSourceMeta;
+};
+
+type WarehouseReqHeadsLegacyFetchResult = {
+  rows: ReqHeadRow[];
+  metrics: ReqHeadsStageMetrics;
+  meta: WarehouseReqHeadsWindowMeta & {
+    contractVersion: "legacy_converged";
+  };
+  sourceMeta: {
+    primaryOwner: "legacy_converged";
+    fallbackUsed: true;
+    sourceKind: "converged:req_heads";
+    contractVersion: "legacy_converged";
+  };
+};
+
 const reqHeadsPerfNow = () =>
   typeof performance !== "undefined" && typeof performance.now === "function"
     ? performance.now()
     : Date.now();
+
+const WAREHOUSE_REQ_HEADS_RPC_SOURCE_KIND: WarehouseReqHeadsSourceMeta["sourceKind"] =
+  "rpc:warehouse_issue_queue_scope_v4";
+const WAREHOUSE_REQ_HEADS_LEGACY_SOURCE_KIND = "converged:req_heads" as const;
+
+const toReqHeadsScopeKey = (page: number, pageSize: number) =>
+  `warehouse_issue_queue_scope_v4:${Math.max(0, page * pageSize)}:${pageSize}`;
+
+const toReqHeadsContractVersion = (root: Record<string, unknown>, meta: Record<string, unknown>) =>
+  toTextOrNull(root.version) ?? toTextOrNull(meta.payload_shape_version) ?? "v4";
+
+const toReqHeadsRpcMeta = (
+  rootValue: unknown,
+  page: number,
+  pageSize: number,
+  returnedRowCount: number,
+): WarehouseReqHeadsWindowMeta => {
+  const root = rootValue && typeof rootValue === "object" ? (rootValue as Record<string, unknown>) : {};
+  const meta = root.meta && typeof root.meta === "object" ? (root.meta as Record<string, unknown>) : {};
+  const pageOffset = Math.max(0, page * pageSize);
+  const totalRowCountRaw = meta.total ?? meta.total_count ?? null;
+  const totalRowCount =
+    totalRowCountRaw == null
+      ? null
+      : Number.isFinite(Number(totalRowCountRaw))
+        ? Math.max(0, Number(totalRowCountRaw))
+        : null;
+  const normalizedReturnedRowCount = Math.max(
+    0,
+    Number.isFinite(Number(returnedRowCount))
+      ? Number(returnedRowCount)
+      : Number.isFinite(Number(meta.row_count ?? meta.returned_row_count))
+        ? Number(meta.row_count ?? meta.returned_row_count)
+        : 0,
+  );
+  const hasMore =
+    totalRowCount != null
+      ? pageOffset + normalizedReturnedRowCount < totalRowCount
+      : normalizedReturnedRowCount >= pageSize;
+  return {
+    page,
+    pageSize,
+    pageOffset,
+    returnedRowCount: normalizedReturnedRowCount,
+    totalRowCount,
+    hasMore,
+    repairedMissingIdsCount: Math.max(
+      0,
+      Number.isFinite(Number(meta.repaired_missing_ids_count))
+        ? Number(meta.repaired_missing_ids_count)
+        : 0,
+    ),
+    scopeKey: toTextOrNull(meta.scope_key) ?? toReqHeadsScopeKey(page, pageSize),
+    generatedAt: toTextOrNull(meta.generated_at),
+    contractVersion: toReqHeadsContractVersion(root, meta),
+  };
+};
+
+const requireReqHeadsBoolean = (value: unknown, field: string): boolean => {
+  if (typeof value === "boolean") return value;
+  throw new Error(`warehouse_issue_queue_scope_v4 contract mismatch: ${field} must be boolean`);
+};
+
+const adaptReqHeadsRpcRow = (value: unknown, rowIndex: number): ReqHeadRow => {
+  const row = value && typeof value === "object" ? (value as Record<string, unknown>) : {};
+  const requestId = String(row.request_id ?? row.id ?? "").trim();
+  if (!requestId) {
+    throw new Error(`warehouse_issue_queue_scope_v4 contract mismatch: rows[${rowIndex}].request_id is required`);
+  }
+  return {
+    request_id: requestId,
+    display_no: toTextOrNull(row.display_no),
+    object_name: toTextOrNull(row.object_name),
+    level_code: toTextOrNull(row.level_code),
+    system_code: toTextOrNull(row.system_code),
+    zone_code: toTextOrNull(row.zone_code),
+    level_name: toTextOrNull(row.level_name),
+    system_name: toTextOrNull(row.system_name),
+    zone_name: toTextOrNull(row.zone_name),
+    contractor_name: toTextOrNull(row.contractor_name),
+    contractor_phone: toTextOrNull(row.contractor_phone),
+    planned_volume: toTextOrNull(row.planned_volume),
+    note: toTextOrNull(row.note),
+    comment: toTextOrNull(row.comment),
+    submitted_at: toTextOrNull(row.submitted_at),
+    items_cnt: Math.max(0, Number(row.items_cnt ?? 0) || 0),
+    ready_cnt: Math.max(0, Number(row.ready_cnt ?? 0) || 0),
+    done_cnt: Math.max(0, Number(row.done_cnt ?? 0) || 0),
+    qty_limit_sum: parseNum(row.qty_limit_sum, 0),
+    qty_issued_sum: parseNum(row.qty_issued_sum, 0),
+    qty_left_sum: parseNum(row.qty_left_sum, 0),
+    qty_can_issue_now_sum: parseNum(row.qty_can_issue_now_sum, 0),
+    issuable_now_cnt: Math.max(0, Number(row.issuable_now_cnt ?? 0) || 0),
+    issue_status: String(row.issue_status ?? "READY"),
+    visible_in_expense_queue: requireReqHeadsBoolean(
+      row.visible_in_expense_queue,
+      `rows[${rowIndex}].visible_in_expense_queue`,
+    ),
+    can_issue_now: requireReqHeadsBoolean(row.can_issue_now, `rows[${rowIndex}].can_issue_now`),
+    waiting_stock: requireReqHeadsBoolean(row.waiting_stock, `rows[${rowIndex}].waiting_stock`),
+    all_done: requireReqHeadsBoolean(row.all_done, `rows[${rowIndex}].all_done`),
+  };
+};
 
 let requestsFallbackLastHardFailAt = 0;
 let requestsFallbackLastSkipLogAt = 0;
@@ -718,16 +863,6 @@ async function loadApprovedViewReqHeadsWindowRows(
   return approvedRows;
 }
 
-async function loadApprovedViewReqHeadsWindowBase(
-  supabase: SupabaseClient,
-  offset: number,
-  limit: number,
-): Promise<ReqHeadRow[]> {
-  const approvedRows = await loadApprovedViewReqHeadsWindowRows(supabase, offset, limit);
-  if (!approvedRows.length) return [];
-  return approvedRows.map((row) => applyReqHeadQueueState(row)).filter((row) => row.visible_in_expense_queue);
-}
-
 async function loadApprovedViewReqHeadsWindow(
   supabase: SupabaseClient,
   offset: number,
@@ -1084,39 +1219,6 @@ async function enrichReqHeadsMetaCounted(
   return { rows: nextRows, enrichedRowsCount };
 }
 
-async function loadReqHeadsBasePage(
-  supabase: SupabaseClient,
-  page: number,
-  pageSize: number,
-): Promise<{ rows: ReqHeadRow[]; stageDurationMs: number }> {
-  const stageStartedAt = reqHeadsPerfNow();
-  const targetVisibleCount = Math.max(0, (page + 1) * pageSize);
-  const viewChunkSize = Math.max(pageSize, 50);
-  const maxWindowScans = 8;
-  const visibleViewRows: ReqHeadRow[] = [];
-  const materializedReqIds = new Set<string>();
-
-  for (let scan = 0; scan < maxWindowScans && visibleViewRows.length < targetVisibleCount; scan += 1) {
-    const offset = scan * viewChunkSize;
-    const windowRows = await loadApprovedViewReqHeadsWindowBase(supabase, offset, viewChunkSize);
-    if (!windowRows.length) break;
-    for (const row of windowRows) {
-      const requestId = String(row.request_id ?? "").trim();
-      if (!requestId || materializedReqIds.has(requestId)) continue;
-      materializedReqIds.add(requestId);
-      visibleViewRows.push(row);
-    }
-    if (windowRows.length < viewChunkSize) break;
-  }
-
-  return {
-    rows: [...visibleViewRows]
-      .sort(reqHeadSort)
-      .slice(page * pageSize, (page + 1) * pageSize),
-    stageDurationMs: reqHeadsPerfNow() - stageStartedAt,
-  };
-}
-
 async function loadReqHeadsConverged(
   supabase: SupabaseClient,
   page: number,
@@ -1362,11 +1464,29 @@ async function loadReqHeadsConverged(
  * - qty: v_wh_balance_ledger_truth_ui (Р С‘РЎРѓРЎвЂљР С‘Р Р…Р В°)
  * - name: overrides -> v_rik_names_ru -> v_wh_balance_ledger_ui
  */
-export async function apiFetchStock(
-  supabase: SupabaseClient,
-  offset: number = 0,
-  limit: number = 400
-): Promise<{
+export type WarehouseStockSourceMeta = {
+  primaryOwner: "rpc_scope_v2" | "rpc_scope_v1";
+  fallbackUsed: boolean;
+  sourceKind:
+    | "rpc:warehouse_stock_scope_v2"
+    | "rpc:warehouse_stock_scope_v1";
+};
+
+type WarehouseStockLegacySourceMeta = {
+  primaryOwner: "legacy_client_shaping";
+  fallbackUsed: true;
+  sourceKind: "legacy:view:v_wh_balance_ledger_truth_ui+name_map";
+};
+
+export type WarehouseStockWindowMeta = {
+  offset: number;
+  limit: number;
+  returnedRowCount: number;
+  totalRowCount: number | null;
+  hasMore: boolean;
+};
+
+export type WarehouseStockFetchResult = {
   supported: boolean;
   rows: StockRow[];
   rikDeferredCodes?: string[];
@@ -1377,7 +1497,33 @@ export async function apiFetchStock(
   projectionMissCount?: number;
   projectionReadMs?: number;
   fallbackReadMs?: number;
-}> {
+  meta: WarehouseStockWindowMeta;
+  sourceMeta: WarehouseStockSourceMeta;
+};
+
+type WarehouseStockLegacyFetchResult = Omit<WarehouseStockFetchResult, "sourceMeta"> & {
+  sourceMeta: WarehouseStockLegacySourceMeta;
+};
+
+const WAREHOUSE_STOCK_RPC_V2_SOURCE_KIND: WarehouseStockSourceMeta["sourceKind"] =
+  "rpc:warehouse_stock_scope_v2";
+const WAREHOUSE_STOCK_RPC_SOURCE_KIND: WarehouseStockSourceMeta["sourceKind"] =
+  "rpc:warehouse_stock_scope_v1";
+const WAREHOUSE_STOCK_LEGACY_SOURCE_KIND: WarehouseStockLegacySourceMeta["sourceKind"] =
+  "legacy:view:v_wh_balance_ledger_truth_ui+name_map";
+
+async function apiFetchStockLegacy(
+  supabase: SupabaseClient,
+  offset: number = 0,
+  limit: number = 400
+): Promise<WarehouseStockLegacyFetchResult> {
+  const observation = beginPlatformObservability({
+    screen: "warehouse",
+    surface: "stock_list",
+    category: "fetch",
+    event: "fetch_stock",
+    sourceKind: WAREHOUSE_STOCK_LEGACY_SOURCE_KIND,
+  });
   try {
     const truth = await supabase
       .from("v_wh_balance_ledger_truth_ui")
@@ -1414,7 +1560,7 @@ export async function apiFetchStock(
           uiMap,
         });
 
-        return {
+        const result = {
           supported: true,
           rows,
           missingProjectionCodes,
@@ -1423,7 +1569,32 @@ export async function apiFetchStock(
           projectionMissCount: missingProjectionCodes.length,
           projectionReadMs,
           fallbackReadMs,
+          sourceMeta: {
+            primaryOwner: "legacy_client_shaping",
+            fallbackUsed: true,
+            sourceKind: WAREHOUSE_STOCK_LEGACY_SOURCE_KIND,
+          } satisfies WarehouseStockLegacySourceMeta,
+          meta: {
+            offset,
+            limit,
+            returnedRowCount: rows.length,
+            totalRowCount: rows.length === limit ? null : offset + rows.length,
+            hasMore: rows.length === limit,
+          } satisfies WarehouseStockWindowMeta,
         };
+        observation.success({
+          rowCount: rows.length,
+          sourceKind: WAREHOUSE_STOCK_LEGACY_SOURCE_KIND,
+          fallbackUsed: missingProjectionCodes.length > 0,
+          extra: {
+            projectionHitCount: result.projectionHitCount,
+            projectionMissCount: result.projectionMissCount,
+            projectionReadMs,
+            fallbackReadMs,
+            primaryOwner: "legacy_client_shaping",
+          },
+        });
+        return result;
       }
 
       // Legacy compatibility path until warehouse_name_map_ui is migrated in DB.
@@ -1438,7 +1609,7 @@ export async function apiFetchStock(
       const overrideCodes = Object.keys(overMap).filter(Boolean);
       const rikDeferredCodes = codesUpper.filter((code) => !overrideCodes.includes(code));
 
-      return {
+      const result = {
         supported: true,
         rows,
         rikDeferredCodes,
@@ -1448,7 +1619,31 @@ export async function apiFetchStock(
         projectionMissCount: codesUpper.length,
         projectionReadMs,
         fallbackReadMs,
+        meta: {
+          offset,
+          limit,
+          returnedRowCount: rows.length,
+          totalRowCount: rows.length === limit ? null : offset + rows.length,
+          hasMore: rows.length === limit,
+        } satisfies WarehouseStockWindowMeta,
+        sourceMeta: {
+          primaryOwner: "legacy_client_shaping",
+          fallbackUsed: true,
+          sourceKind: WAREHOUSE_STOCK_LEGACY_SOURCE_KIND,
+        } satisfies WarehouseStockLegacySourceMeta,
       };
+      observation.success({
+        rowCount: rows.length,
+        sourceKind: WAREHOUSE_STOCK_LEGACY_SOURCE_KIND,
+        fallbackUsed: true,
+        extra: {
+          projectionReadMs,
+          fallbackReadMs,
+          projectionMissCount: codesUpper.length,
+          primaryOwner: "legacy_client_shaping",
+        },
+      });
+      return result;
     }
 
 
@@ -1475,13 +1670,391 @@ export async function apiFetchStock(
           updated_at: x.updated_at ?? null,
         } as StockRow),
       );
-      return { supported: true, rows };
+      observation.success({
+        rowCount: rows.length,
+        sourceKind: "view:v_wh_balance_stock_ui",
+        fallbackUsed: true,
+      });
+      return {
+        supported: true,
+        rows,
+        meta: {
+          offset,
+          limit,
+          returnedRowCount: rows.length,
+          totalRowCount: rows.length === limit ? null : offset + rows.length,
+          hasMore: rows.length === limit,
+        },
+        sourceMeta: {
+          primaryOwner: "legacy_client_shaping",
+          fallbackUsed: true,
+          sourceKind: WAREHOUSE_STOCK_LEGACY_SOURCE_KIND,
+        },
+      };
     }
 
-    return { supported: false, rows: [] };
+    observation.success({
+      rowCount: 0,
+      sourceKind: "unsupported",
+      fallbackUsed: true,
+    });
+    return {
+      supported: false,
+      rows: [],
+      meta: {
+        offset,
+        limit,
+        returnedRowCount: 0,
+        totalRowCount: 0,
+        hasMore: false,
+      },
+      sourceMeta: {
+        primaryOwner: "legacy_client_shaping",
+        fallbackUsed: true,
+        sourceKind: WAREHOUSE_STOCK_LEGACY_SOURCE_KIND,
+      },
+    };
   } catch (error) {
-    logWarehouseApiFallback("apiFetchStock", error);
-    return { supported: false, rows: [] };
+    logWarehouseApiFallback("apiFetchStockLegacy", error);
+    observation.error(error, {
+      rowCount: 0,
+      errorStage: "fetch_stock_legacy",
+      sourceKind: WAREHOUSE_STOCK_LEGACY_SOURCE_KIND,
+    });
+    return {
+      supported: false,
+      rows: [],
+      meta: {
+        offset,
+        limit,
+        returnedRowCount: 0,
+        totalRowCount: 0,
+        hasMore: false,
+      },
+      sourceMeta: {
+        primaryOwner: "legacy_client_shaping",
+        fallbackUsed: true,
+        sourceKind: WAREHOUSE_STOCK_LEGACY_SOURCE_KIND,
+      },
+    };
+  }
+}
+
+void apiFetchStockLegacy;
+
+type WarehouseStockScopeEnvelope = {
+  document_type: "warehouse_stock_scope";
+  version: "v1" | "v2";
+  rows: StockRow[];
+  meta: Record<string, unknown>;
+};
+
+class WarehouseStockScopeValidationError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "WarehouseStockScopeValidationError";
+  }
+}
+
+const requireWarehouseRecord = (value: unknown, scope: string): Record<string, unknown> => {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    throw new WarehouseStockScopeValidationError(`${scope} must be an object`);
+  }
+  return value as Record<string, unknown>;
+};
+
+const requireWarehouseArray = (value: unknown, field: string, scope: string): unknown[] => {
+  if (!Array.isArray(value)) {
+    throw new WarehouseStockScopeValidationError(`${scope}.${field} must be an array`);
+  }
+  return value;
+};
+
+const requireWarehouseString = (value: unknown, field: string, scope: string): string => {
+  const normalized = String(value ?? "").trim();
+  if (!normalized) {
+    throw new WarehouseStockScopeValidationError(`${scope}.${field} must be a non-empty string`);
+  }
+  return normalized;
+};
+
+const toWarehouseNullableString = (value: unknown): string | null => {
+  const normalized = String(value ?? "").trim();
+  return normalized || null;
+};
+
+function adaptWarehouseStockScopeEnvelope(value: unknown): WarehouseStockScopeEnvelope {
+  const root = requireWarehouseRecord(value, "warehouse_stock_scope");
+  const documentType = requireWarehouseString(root.document_type, "document_type", "warehouse_stock_scope");
+  if (documentType !== "warehouse_stock_scope") {
+    throw new WarehouseStockScopeValidationError(
+      `warehouse_stock_scope invalid document_type: ${documentType}`,
+    );
+  }
+  const version = requireWarehouseString(root.version, "version", "warehouse_stock_scope");
+  if (version !== "v1" && version !== "v2") {
+    throw new WarehouseStockScopeValidationError(`warehouse_stock_scope invalid version: ${version}`);
+  }
+
+  const rows = requireWarehouseArray(root.rows, "rows", "warehouse_stock_scope").map((rowValue) => {
+    const row = requireWarehouseRecord(rowValue, "warehouse_stock_scope.rows[]");
+    const code = toWarehouseNullableString(row.code);
+    const uomId = toWarehouseNullableString(row.uom_id);
+    return {
+      material_id: requireWarehouseString(
+        row.material_id ?? `${code ?? ""}::${uomId ?? ""}`,
+        "material_id",
+        "warehouse_stock_scope.rows[]",
+      ),
+      code,
+      name: toWarehouseNullableString(row.name),
+      uom_id: uomId,
+      qty_on_hand: nz(row.qty_on_hand, 0),
+      qty_reserved: nz(row.qty_reserved, 0),
+      qty_available: nz(row.qty_available, 0),
+      object_name: toWarehouseNullableString(row.object_name),
+      warehouse_name: toWarehouseNullableString(row.warehouse_name),
+      updated_at: toWarehouseNullableString(row.updated_at),
+    } satisfies StockRow;
+  });
+
+  return {
+    document_type: "warehouse_stock_scope",
+    version: version as "v1" | "v2",
+    rows,
+    meta: requireWarehouseRecord(root.meta ?? {}, "warehouse_stock_scope.meta"),
+  };
+}
+
+const adaptWarehouseStockWindowMeta = (
+  meta: Record<string, unknown>,
+  offset: number,
+  limit: number,
+): WarehouseStockWindowMeta => {
+  const returnedRowCount = Math.max(0, nz(meta.returned_row_count ?? meta.row_count, 0));
+  const totalRaw = meta.total_row_count ?? meta.total;
+  const totalRowCount = totalRaw == null ? null : Math.max(0, nz(totalRaw, 0));
+  const hasMore =
+    typeof meta.has_more === "boolean"
+      ? meta.has_more
+      : totalRowCount == null
+        ? returnedRowCount >= limit
+        : offset + returnedRowCount < totalRowCount;
+
+  return {
+    offset,
+    limit,
+    returnedRowCount,
+    totalRowCount,
+    hasMore,
+  };
+};
+
+export async function apiFetchStockRpcV2(
+  supabase: SupabaseClient,
+  offset: number = 0,
+  limit: number = 120,
+): Promise<WarehouseStockFetchResult> {
+  const observation = beginPlatformObservability({
+    screen: "warehouse",
+    surface: "stock_list",
+    category: "fetch",
+    event: "fetch_stock_rpc",
+    sourceKind: WAREHOUSE_STOCK_RPC_V2_SOURCE_KIND,
+  });
+
+  try {
+    const { data, error } = await supabase.rpc("warehouse_stock_scope_v2", {
+      p_limit: limit,
+      p_offset: offset,
+    });
+    if (error) throw error;
+
+    const envelope = adaptWarehouseStockScopeEnvelope(data);
+    const result: WarehouseStockFetchResult = {
+      supported: true,
+      rows: envelope.rows,
+      rikDeferredCodes: [],
+      overrideCodes: [],
+      missingProjectionCodes: [],
+      projectionAvailable: true,
+      projectionHitCount: envelope.rows.length,
+      projectionMissCount: 0,
+      projectionReadMs: 0,
+      fallbackReadMs: 0,
+      meta: adaptWarehouseStockWindowMeta(envelope.meta, offset, limit),
+      sourceMeta: {
+        primaryOwner: "rpc_scope_v2",
+        fallbackUsed: false,
+        sourceKind: WAREHOUSE_STOCK_RPC_V2_SOURCE_KIND,
+      },
+    };
+    observation.success({
+      rowCount: result.rows.length,
+      sourceKind: WAREHOUSE_STOCK_RPC_V2_SOURCE_KIND,
+      fallbackUsed: false,
+      extra: {
+        primaryOwner: "rpc_scope_v2",
+        totalRowCount: result.meta.totalRowCount,
+        hasMore: result.meta.hasMore,
+      },
+    });
+    return result;
+  } catch (error) {
+    observation.error(error, {
+      rowCount: 0,
+      errorStage: "fetch_stock_rpc_v2",
+      sourceKind: WAREHOUSE_STOCK_RPC_V2_SOURCE_KIND,
+    });
+    throw error;
+  }
+}
+
+export async function apiFetchStockRpc(
+  supabase: SupabaseClient,
+  offset: number = 0,
+  limit: number = 400,
+): Promise<WarehouseStockFetchResult> {
+  const observation = beginPlatformObservability({
+    screen: "warehouse",
+    surface: "stock_list",
+    category: "fetch",
+    event: "fetch_stock_rpc",
+    sourceKind: WAREHOUSE_STOCK_RPC_SOURCE_KIND,
+  });
+
+  try {
+    const { data, error } = await supabase.rpc("warehouse_stock_scope_v1", {
+      p_limit: limit,
+      p_offset: offset,
+    });
+    if (error) throw error;
+
+    const envelope = adaptWarehouseStockScopeEnvelope(data);
+    const result: WarehouseStockFetchResult = {
+      supported: true,
+      rows: envelope.rows,
+      rikDeferredCodes: [],
+      overrideCodes: [],
+      missingProjectionCodes: [],
+      projectionAvailable: true,
+      projectionHitCount: envelope.rows.length,
+      projectionMissCount: 0,
+      projectionReadMs: 0,
+      fallbackReadMs: 0,
+      meta: adaptWarehouseStockWindowMeta(envelope.meta, offset, limit),
+      sourceMeta: {
+        primaryOwner: "rpc_scope_v1",
+        fallbackUsed: false,
+        sourceKind: WAREHOUSE_STOCK_RPC_SOURCE_KIND,
+      },
+    };
+    observation.success({
+      rowCount: result.rows.length,
+      sourceKind: WAREHOUSE_STOCK_RPC_SOURCE_KIND,
+      fallbackUsed: false,
+      extra: {
+        primaryOwner: "rpc_scope_v1",
+      },
+    });
+    return result;
+  } catch (error) {
+    observation.error(error, {
+      rowCount: 0,
+      errorStage: "fetch_stock_rpc",
+      sourceKind: WAREHOUSE_STOCK_RPC_SOURCE_KIND,
+    });
+    throw error;
+  }
+}
+
+/**
+ * PROD stock
+ * - primary owner: warehouse_stock_scope_v2
+ * - compatibility fallback: warehouse_stock_scope_v1
+ */
+export async function apiFetchStock(
+  supabase: SupabaseClient,
+  offset: number = 0,
+  limit: number = 120,
+): Promise<WarehouseStockFetchResult> {
+  const observation = beginPlatformObservability({
+    screen: "warehouse",
+    surface: "stock_list",
+    category: "fetch",
+    event: "fetch_stock",
+    sourceKind: WAREHOUSE_STOCK_RPC_V2_SOURCE_KIND,
+  });
+
+  try {
+    const result = await apiFetchStockRpcV2(supabase, offset, limit);
+    observation.success({
+      rowCount: result.rows.length,
+      sourceKind: result.sourceMeta.sourceKind,
+      fallbackUsed: false,
+      extra: {
+        primaryOwner: result.sourceMeta.primaryOwner,
+        totalRowCount: result.meta.totalRowCount,
+        hasMore: result.meta.hasMore,
+      },
+    });
+    return result;
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error ?? "");
+    recordPlatformObservability({
+      screen: "warehouse",
+      surface: "stock_list",
+      category: "fetch",
+      event: "fetch_stock_primary_rpc_v2",
+      result: "error",
+      sourceKind: WAREHOUSE_STOCK_RPC_V2_SOURCE_KIND,
+      errorStage: "fetch_stock_rpc_v2",
+      errorClass: error instanceof Error ? error.name : undefined,
+      errorMessage: message || undefined,
+      fallbackUsed: true,
+    });
+    try {
+      const result = await apiFetchStockRpc(supabase, offset, limit);
+      const fallbackResult: WarehouseStockFetchResult = {
+        ...result,
+        sourceMeta: {
+          ...result.sourceMeta,
+          fallbackUsed: true,
+        },
+      };
+      observation.success({
+        rowCount: fallbackResult.rows.length,
+        sourceKind: fallbackResult.sourceMeta.sourceKind,
+        fallbackUsed: true,
+        extra: {
+          primaryOwner: fallbackResult.sourceMeta.primaryOwner,
+          fallbackReason: message,
+          totalRowCount: fallbackResult.meta.totalRowCount,
+          hasMore: fallbackResult.meta.hasMore,
+        },
+      });
+      return fallbackResult;
+    } catch (v1Error) {
+      const v1Message = v1Error instanceof Error ? v1Error.message : String(v1Error ?? "");
+      recordPlatformObservability({
+        screen: "warehouse",
+        surface: "stock_list",
+        category: "fetch",
+        event: "fetch_stock_primary_rpc_v1",
+        result: "error",
+        sourceKind: WAREHOUSE_STOCK_RPC_SOURCE_KIND,
+        errorStage: "fetch_stock_rpc",
+        errorClass: v1Error instanceof Error ? v1Error.name : undefined,
+        errorMessage: v1Message || undefined,
+        fallbackUsed: true,
+      });
+      observation.error(v1Error, {
+        rowCount: 0,
+        errorStage: "fetch_stock_rpc_v1_hard_cut",
+        sourceKind: WAREHOUSE_STOCK_RPC_SOURCE_KIND,
+      });
+      throw v1Error;
+    }
   }
 }
 
@@ -1522,12 +2095,177 @@ export async function apiEnrichStockNamesFromRikRu(
   });
 }
 
+async function apiFetchReqHeadsLegacyRaw(
+  supabase: SupabaseClient,
+  page: number = 0,
+  pageSize: number = 50,
+): Promise<WarehouseReqHeadsLegacyFetchResult> {
+  const legacy = await loadReqHeadsConverged(supabase, page, pageSize);
+  return {
+    rows: legacy.rows,
+    metrics: {
+      stage_a_ms: 0,
+      ...legacy.metrics,
+    },
+    meta: {
+      page,
+      pageSize,
+      pageOffset: Math.max(0, page * pageSize),
+      returnedRowCount: legacy.rows.length,
+      totalRowCount: null,
+      hasMore: legacy.rows.length > 0,
+      repairedMissingIdsCount: legacy.metrics.fallback_missing_ids_count,
+      scopeKey: `warehouse_issue_queue_legacy:${Math.max(0, page * pageSize)}:${pageSize}`,
+      generatedAt: null,
+      contractVersion: "legacy_converged",
+    },
+    sourceMeta: {
+      primaryOwner: "legacy_converged",
+      fallbackUsed: true,
+      sourceKind: WAREHOUSE_REQ_HEADS_LEGACY_SOURCE_KIND,
+      contractVersion: "legacy_converged",
+    },
+  };
+}
+
+async function apiFetchReqHeadsLegacy(
+  supabase: SupabaseClient,
+  page: number = 0,
+  pageSize: number = 50,
+): Promise<WarehouseReqHeadsLegacyFetchResult> {
+  const observation = beginPlatformObservability({
+    screen: "warehouse",
+    surface: "req_heads",
+    category: "fetch",
+    event: "fetch_req_heads_legacy",
+    sourceKind: WAREHOUSE_REQ_HEADS_LEGACY_SOURCE_KIND,
+  });
+  try {
+    const result = await apiFetchReqHeadsLegacyRaw(supabase, page, pageSize);
+    observation.success({
+      rowCount: result.rows.length,
+      sourceKind: result.sourceMeta.sourceKind,
+      fallbackUsed: result.sourceMeta.fallbackUsed,
+      extra: {
+        page,
+        pageSize,
+        primaryOwner: result.sourceMeta.primaryOwner,
+        stageB_ms: result.metrics.stage_b_ms,
+        repairedMissingIdsCount: result.meta.repairedMissingIdsCount,
+        hasMore: result.meta.hasMore,
+      },
+    });
+    return result;
+  } catch (error) {
+    observation.error(error, {
+      rowCount: 0,
+      errorStage: "fetch_req_heads_legacy",
+      extra: { page, pageSize },
+    });
+    throw error;
+  }
+}
+void apiFetchReqHeadsLegacy;
+
+async function apiFetchReqHeadsRpcRaw(
+  supabase: SupabaseClient,
+  page: number = 0,
+  pageSize: number = 50,
+): Promise<WarehouseReqHeadsFetchResult> {
+  const offset = Math.max(0, page * pageSize);
+  const { data, error } = await supabase.rpc("warehouse_issue_queue_scope_v4", {
+    p_offset: offset,
+    p_limit: pageSize,
+  });
+  if (error) throw error;
+
+  const root = data && typeof data === "object" && !Array.isArray(data)
+    ? (data as Record<string, unknown>)
+    : {};
+  if (!Array.isArray(root.rows)) {
+    throw new Error("warehouse_issue_queue_scope_v4 contract mismatch: rows must be an array");
+  }
+  const rows = root.rows.map((row, index) => adaptReqHeadsRpcRow(row, index));
+  const meta = toReqHeadsRpcMeta(root, page, pageSize, rows.length);
+
+  return {
+    rows,
+    metrics: {
+      stage_a_ms: 0,
+      stage_b_ms: 0,
+      fallback_missing_ids_count: meta.repairedMissingIdsCount,
+      enriched_rows_count: 0,
+      page0_required_repair: meta.repairedMissingIdsCount > 0,
+    },
+    meta,
+    sourceMeta: {
+      primaryOwner: "rpc_scope_v4",
+      fallbackUsed: false,
+      sourceKind: WAREHOUSE_REQ_HEADS_RPC_SOURCE_KIND,
+      contractVersion: meta.contractVersion,
+    },
+  };
+}
+
+export async function apiFetchReqHeadsWindow(
+  supabase: SupabaseClient,
+  page: number = 0,
+  pageSize: number = 50,
+): Promise<WarehouseReqHeadsFetchResult> {
+  const observation = beginPlatformObservability({
+    screen: "warehouse",
+    surface: "req_heads",
+    category: "fetch",
+    event: "fetch_req_heads",
+    sourceKind: WAREHOUSE_REQ_HEADS_RPC_SOURCE_KIND,
+  });
+  try {
+    const result = await apiFetchReqHeadsRpcRaw(supabase, page, pageSize);
+    observation.success({
+      rowCount: result.rows.length,
+      sourceKind: result.sourceMeta.sourceKind,
+      fallbackUsed: false,
+      extra: {
+        page,
+        pageSize,
+        pageOffset: result.meta.pageOffset,
+        scopeKey: result.meta.scopeKey,
+        contractVersion: result.meta.contractVersion,
+        generatedAt: result.meta.generatedAt,
+        append: page > 0,
+        refresh: page === 0,
+        primaryOwner: result.sourceMeta.primaryOwner,
+        totalRowCount: result.meta.totalRowCount,
+        hasMore: result.meta.hasMore,
+        repairedMissingIdsCount: result.meta.repairedMissingIdsCount,
+        enrichedRowsCount: result.metrics.enriched_rows_count,
+      },
+    });
+    return result;
+  } catch (error) {
+    observation.error(error, {
+      rowCount: 0,
+      errorStage: "fetch_req_heads_rpc_v4",
+      fallbackUsed: false,
+      extra: {
+        page,
+        pageSize,
+        pageOffset: Math.max(0, page * pageSize),
+        scopeKey: toReqHeadsScopeKey(page, pageSize),
+        append: page > 0,
+        refresh: page === 0,
+      },
+    });
+    throw error;
+  }
+}
+
 export async function apiFetchReqHeads(
   supabase: SupabaseClient,
   page: number = 0,
   pageSize: number = 50
 ): Promise<ReqHeadRow[]> {
-  const result = await loadReqHeadsConverged(supabase, page, pageSize);
+  const result = await apiFetchReqHeadsWindow(supabase, page, pageSize);
   return result.rows;
 }
 
@@ -1537,28 +2275,67 @@ export async function apiFetchReqHeadsStaged(
   pageSize: number = 50,
 ): Promise<{
   baseRows: ReqHeadRow[];
+  meta: WarehouseReqHeadsWindowMeta;
+  sourceMeta: WarehouseReqHeadsSourceMeta;
   metrics: ReqHeadsStageMetrics;
-  finalRowsPromise: Promise<{ rows: ReqHeadRow[]; metrics: ReqHeadsStageMetrics }>;
+  finalRowsPromise: Promise<WarehouseReqHeadsFetchResult>;
 }> {
-  const baseStage = await loadReqHeadsBasePage(supabase, page, pageSize);
+  const stageStartedAt = reqHeadsPerfNow();
+  const primary = await apiFetchReqHeadsWindow(supabase, page, pageSize);
   const baseMetrics: ReqHeadsStageMetrics = {
-    stage_a_ms: baseStage.stageDurationMs,
+    ...primary.metrics,
+    stage_a_ms: reqHeadsPerfNow() - stageStartedAt,
     stage_b_ms: 0,
-    fallback_missing_ids_count: 0,
-    enriched_rows_count: 0,
-    page0_required_repair: false,
   };
+  recordPlatformObservability({
+    screen: "warehouse",
+    surface: "req_heads",
+    category: "fetch",
+    event: "fetch_req_heads_stage_a",
+    result: "success",
+    durationMs: baseMetrics.stage_a_ms,
+    rowCount: primary.rows.length,
+    sourceKind: primary.sourceMeta.sourceKind,
+    fallbackUsed: primary.sourceMeta.fallbackUsed,
+    extra: {
+      page,
+      pageSize,
+      primaryOwner: primary.sourceMeta.primaryOwner,
+      hasMore: primary.meta.hasMore,
+      repairedMissingIdsCount: primary.meta.repairedMissingIdsCount,
+    },
+  });
 
   return {
-    baseRows: baseStage.rows,
+    baseRows: primary.rows,
+    meta: primary.meta,
+    sourceMeta: primary.sourceMeta,
     metrics: baseMetrics,
-    finalRowsPromise: loadReqHeadsConverged(supabase, page, pageSize).then((result) => ({
-      rows: result.rows,
-      metrics: {
-        ...baseMetrics,
-        ...result.metrics,
-      },
-    })),
+    finalRowsPromise: Promise.resolve({
+      ...primary,
+      metrics: baseMetrics,
+    }).then((result) => {
+      recordPlatformObservability({
+        screen: "warehouse",
+        surface: "req_heads",
+        category: "fetch",
+        event: "fetch_req_heads_stage_b",
+        result: "success",
+        durationMs: result.metrics.stage_b_ms,
+        rowCount: result.rows.length,
+        sourceKind: result.sourceMeta.sourceKind,
+        fallbackUsed: result.sourceMeta.fallbackUsed,
+        extra: {
+          page,
+          pageSize,
+          primaryOwner: result.sourceMeta.primaryOwner,
+          hasMore: result.meta.hasMore,
+          repairedMissingIdsCount: result.meta.repairedMissingIdsCount,
+          enrichedRowsCount: result.metrics.enriched_rows_count,
+        },
+      });
+      return result;
+    }),
   };
 }
 export async function apiFetchReqItems(

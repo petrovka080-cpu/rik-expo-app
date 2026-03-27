@@ -41,11 +41,21 @@ export type MarketListingItem = {
   kind: string | null;
 };
 
+export type MarketListingErpItem = {
+  rikCode: string;
+  nameHuman: string;
+  uom: string | null;
+  qty: number;
+  price: number | null;
+  kind: string | null;
+};
+
 export type MarketHomeListingCard = {
   id: string;
   title: string;
   sellerUserId: string;
   sellerCompanyId: string | null;
+  sellerDisplayName: string;
   subtitle: string;
   city: string | null;
   price: number | null;
@@ -64,14 +74,20 @@ export type MarketHomeListingCard = {
   presentationCategory: MarketHomeCategoryKey;
   imageSource: ImageSourcePropType;
   items: MarketListingItem[];
+  erpItems: MarketListingErpItem[];
   itemsPreview: string[];
   searchText: string;
   isDemand: boolean;
+  stockLabel: string | null;
+  stockQtyAvailable: number | null;
+  stockUom: string | null;
+  totalAvailableCount: number | null;
+  primaryRikCode: string | null;
 };
 
 export type MarketHomeBanner = {
   id: string;
-  imageUri: string;
+  imageSource: ImageSourcePropType;
   title: string;
   description: string;
   ctaLabel: string;
@@ -88,4 +104,14 @@ export type MarketHomeCategoryCard = {
 export type MarketHomePayload = {
   listings: MarketHomeListingCard[];
   activeDemandCount: number;
+  totalCount: number;
+  pageOffset: number;
+  pageSize: number;
+  hasMore: boolean;
+};
+
+export type MarketRoleCapabilities = {
+  role: string | null;
+  canAddToRequest: boolean;
+  canCreateProposal: boolean;
 };

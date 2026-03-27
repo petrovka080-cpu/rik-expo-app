@@ -7,8 +7,10 @@ import { supabase } from "../../lib/supabaseClient";
 const FINANCE_SUMMARY_RPC_NAME = "director_finance_fetch_summary_v1";
 const FINANCE_PANEL_SCOPE_RPC_NAME = "director_finance_panel_scope_v1";
 const FINANCE_PANEL_SCOPE_V2_RPC_NAME = "director_finance_panel_scope_v2";
+const FINANCE_PANEL_SCOPE_V3_RPC_NAME = "director_finance_panel_scope_v3";
 const FINANCE_SUMMARY_V2_RPC_NAME = "director_finance_summary_v2";
 const FINANCE_SUPPLIER_SCOPE_RPC_NAME = "director_finance_supplier_scope_v1";
+const FINANCE_SUPPLIER_SCOPE_V2_RPC_NAME = "director_finance_supplier_scope_v2";
 const FINANCE_SUMMARY_FAILED_COOLDOWN_MS = 10 * 60 * 1000;
 type RuntimeProcessEnv = { process?: { env?: Record<string, unknown> } };
 type FinanceRpcStatus = "unknown" | "available" | "missing" | "failed";
@@ -28,11 +30,19 @@ const financePanelScopeV2RpcMeta: { status: FinanceRpcStatus; updatedAt: number 
   status: "unknown",
   updatedAt: 0,
 };
+const financePanelScopeV3RpcMeta: { status: FinanceRpcStatus; updatedAt: number } = {
+  status: "unknown",
+  updatedAt: 0,
+};
 const financeSummaryV2RpcMeta: { status: FinanceRpcStatus; updatedAt: number } = {
   status: "unknown",
   updatedAt: 0,
 };
 const financeSupplierScopeRpcMeta: { status: FinanceRpcStatus; updatedAt: number } = {
+  status: "unknown",
+  updatedAt: 0,
+};
+const financeSupplierScopeV2RpcMeta: { status: FinanceRpcStatus; updatedAt: number } = {
   status: "unknown",
   updatedAt: 0,
 };
@@ -228,6 +238,62 @@ export type DirectorFinancePanelScopeV2 = DirectorFinancePanelScope & {
   rows: DirectorFinanceRowV2[];
   pagination: DirectorFinancePagination;
   summaryV2: DirectorFinanceSummaryV2;
+};
+
+export type DirectorFinanceSummaryV3 = {
+  totalPayable: number;
+  totalApproved: number;
+  totalPaid: number;
+  totalDebt: number;
+  totalOverpayment: number;
+  overdueAmount: number;
+  criticalAmount: number;
+  overdueCount: number;
+  criticalCount: number;
+  debtCount: number;
+  partialCount: number;
+  partialPaid: number;
+  rowCount: number;
+  supplierRowCount: number;
+};
+
+export type DirectorFinanceSupplierRowV3 = {
+  id: string;
+  supplierId: string;
+  supplierName: string;
+  payable: number;
+  paid: number;
+  debt: number;
+  overpayment: number;
+  overdueAmount: number;
+  criticalAmount: number;
+  invoiceCount: number;
+  debtCount: number;
+  overdueCount: number;
+  criticalCount: number;
+};
+
+export type DirectorFinanceMetaV3 = {
+  owner: string;
+  generatedAt: string | null;
+  sourceVersion: string;
+  payloadShapeVersion: string;
+  filtersEcho: {
+    objectId: string | null;
+    dateFrom: string | null;
+    dateTo: string | null;
+    dueDays: number;
+    criticalDays: number;
+  };
+};
+
+export type DirectorFinancePanelScopeV3 = DirectorFinancePanelScope & {
+  rows: DirectorFinanceRowV2[];
+  pagination: DirectorFinancePagination;
+  summaryV2: DirectorFinanceSummaryV2;
+  summaryV3: DirectorFinanceSummaryV3;
+  supplierRows: DirectorFinanceSupplierRowV3[];
+  meta: DirectorFinanceMetaV3;
 };
 
 export type FinanceSummary = FinRep["summary"];
@@ -584,6 +650,64 @@ const adaptDirectorFinanceSummaryV2Payload = (value: unknown): DirectorFinanceSu
   };
 };
 
+const adaptDirectorFinanceSummaryV3Payload = (value: unknown): DirectorFinanceSummaryV3 => {
+  const payload = asFinanceRecord(value);
+  return {
+    totalPayable: nnum(payload.totalPayable ?? payload.total_payable),
+    totalApproved: nnum(payload.totalApproved ?? payload.total_approved ?? payload.totalPayable ?? payload.total_payable),
+    totalPaid: nnum(payload.totalPaid ?? payload.total_paid),
+    totalDebt: nnum(payload.totalDebt ?? payload.total_debt),
+    totalOverpayment: nnum(payload.totalOverpayment ?? payload.total_overpayment),
+    overdueAmount: nnum(payload.overdueAmount ?? payload.overdue_amount),
+    criticalAmount: nnum(payload.criticalAmount ?? payload.critical_amount),
+    overdueCount: nnum(payload.overdueCount ?? payload.overdue_count),
+    criticalCount: nnum(payload.criticalCount ?? payload.critical_count),
+    debtCount: nnum(payload.debtCount ?? payload.debt_count),
+    partialCount: nnum(payload.partialCount ?? payload.partial_count),
+    partialPaid: nnum(payload.partialPaid ?? payload.partial_paid),
+    rowCount: nnum(payload.rowCount ?? payload.row_count),
+    supplierRowCount: nnum(payload.supplierRowCount ?? payload.supplier_row_count),
+  };
+};
+
+const normalizeDirectorFinanceSupplierRowV3 = (value: unknown): DirectorFinanceSupplierRowV3 => {
+  const row = asFinanceRecord(value);
+  return {
+    id: financeTextOrFallback(row.id, DASH),
+    supplierId: financeTextOrFallback(row.supplierId ?? row.supplier_id, DASH),
+    supplierName: financeTextOrFallback(row.supplierName ?? row.supplier_name, DASH),
+    payable: nnum(row.payable),
+    paid: nnum(row.paid),
+    debt: nnum(row.debt),
+    overpayment: nnum(row.overpayment),
+    overdueAmount: nnum(row.overdueAmount ?? row.overdue_amount),
+    criticalAmount: nnum(row.criticalAmount ?? row.critical_amount),
+    invoiceCount: nnum(row.invoiceCount ?? row.invoice_count),
+    debtCount: nnum(row.debtCount ?? row.debt_count),
+    overdueCount: nnum(row.overdueCount ?? row.overdue_count),
+    criticalCount: nnum(row.criticalCount ?? row.critical_count),
+  };
+};
+
+const adaptDirectorFinanceMetaV3Payload = (value: unknown): DirectorFinanceMetaV3 => {
+  const payload = asFinanceRecord(value);
+  const filters = asFinanceRecord(payload.filtersEcho ?? payload.filters_echo);
+  const generatedAt = financeText(payload.generatedAt ?? payload.generated_at) || null;
+  return {
+    owner: financeText(payload.owner) || "backend",
+    generatedAt,
+    sourceVersion: financeText(payload.sourceVersion ?? payload.source_version) || "director_finance_panel_scope_v3",
+    payloadShapeVersion: financeText(payload.payloadShapeVersion ?? payload.payload_shape_version) || "v3",
+    filtersEcho: {
+      objectId: financeText(filters.objectId ?? filters.object_id) || null,
+      dateFrom: pickIso10(filters.dateFrom, filters.date_from),
+      dateTo: pickIso10(filters.dateTo, filters.date_to),
+      dueDays: nnum(filters.dueDays ?? filters.due_days),
+      criticalDays: nnum(filters.criticalDays ?? filters.critical_days),
+    },
+  };
+};
+
 export async function fetchDirectorFinanceSummaryViaRpc(opts?: {
   periodFromIso?: string | null;
   periodToIso?: string | null;
@@ -636,6 +760,40 @@ export async function fetchDirectorFinanceSummaryV2ViaRpc(opts?: {
 
   markFinanceRpcStatus(financeSummaryV2RpcMeta, "available");
   return adaptDirectorFinanceSummaryV2Payload(data);
+}
+
+export async function fetchDirectorFinancePanelScopeV3ViaRpc(opts?: {
+  objectId?: string | null;
+  periodFromIso?: string | null;
+  periodToIso?: string | null;
+  dueDaysDefault?: number;
+  criticalDays?: number;
+  limit?: number;
+  offset?: number;
+}): Promise<DirectorFinancePanelScopeV3 | null> {
+  if (!canUseFinanceRpc(financePanelScopeV3RpcMeta)) return null;
+
+  const args: Database["public"]["Functions"]["director_finance_panel_scope_v3"]["Args"] = {
+    p_object_id: financeText(opts?.objectId) || undefined,
+    p_date_from: pickIso10(opts?.periodFromIso) ?? undefined,
+    p_date_to: pickIso10(opts?.periodToIso) ?? undefined,
+    p_due_days: normalizeFinanceRpcInteger(opts?.dueDaysDefault, 7),
+    p_critical_days: normalizeFinanceRpcInteger(opts?.criticalDays, 14),
+    p_limit: normalizeFinanceRpcInteger(opts?.limit, 50),
+    p_offset: Math.max(0, nnum(opts?.offset)),
+  };
+
+  const { data, error } = await supabase.rpc(FINANCE_PANEL_SCOPE_V3_RPC_NAME, args);
+  if (error) {
+    markFinanceRpcStatus(
+      financePanelScopeV3RpcMeta,
+      isMissingFinanceRpcError(error, FINANCE_PANEL_SCOPE_V3_RPC_NAME) ? "missing" : "failed",
+    );
+    throw error;
+  }
+
+  markFinanceRpcStatus(financePanelScopeV3RpcMeta, "available");
+  return adaptDirectorFinancePanelScopeV3Payload(data);
 }
 
 const pickSupplierText = (value: unknown): string => {
@@ -899,6 +1057,27 @@ const adaptDirectorFinancePanelScopeV2Payload = (value: unknown): DirectorFinanc
       total: nnum(pagination.total),
     },
     summaryV2: adaptDirectorFinanceSummaryV2Payload(payload.summary_v2 ?? payload.summaryV2),
+  };
+};
+
+const adaptDirectorFinancePanelScopeV3Payload = (value: unknown): DirectorFinancePanelScopeV3 => {
+  const payload = asFinanceRecord(value);
+  const pagination = asFinanceRecord(payload.pagination);
+  const supplierRowsPayload = payload.supplierRows ?? payload.supplier_rows;
+  return {
+    ...adaptDirectorFinancePanelScopePayload(payload),
+    rows: Array.isArray(payload.rows) ? payload.rows.map(normalizeDirectorFinanceRowV2) : [],
+    pagination: {
+      limit: nnum(pagination.limit),
+      offset: nnum(pagination.offset),
+      total: nnum(pagination.total),
+    },
+    summaryV2: adaptDirectorFinanceSummaryV2Payload(payload.summary_v2 ?? payload.summaryV2),
+    summaryV3: adaptDirectorFinanceSummaryV3Payload(payload.summary_v3 ?? payload.summaryV3),
+    supplierRows: Array.isArray(supplierRowsPayload)
+      ? supplierRowsPayload.map(normalizeDirectorFinanceSupplierRowV3)
+      : [],
+    meta: adaptDirectorFinanceMetaV3Payload(payload.meta),
   };
 };
 
@@ -1254,6 +1433,78 @@ export async function fetchDirectorFinanceSupplierScopeViaRpc(opts: {
     criticalCount: nnum(payload.criticalCount),
     _kindName: financeText(payload.kindName) || null,
     kindName: financeText(payload.kindName) || null,
+    invoices: Array.isArray(payload.invoices)
+      ? payload.invoices.map((item) => {
+          const row = asFinanceRecord(item);
+          return {
+            id: financeTextOrFallback(row.id, DASH),
+            title: financeTextOrFallback(row.title, "\u0421\u0447\u0451\u0442"),
+            amount: nnum(row.amount),
+            paid: nnum(row.paid),
+            rest: nnum(row.rest),
+            isOverdue: !!row.isOverdue,
+            isCritical: !!row.isCritical,
+            approvedIso: pickIso10(row.approvedIso),
+            invoiceIso: pickIso10(row.invoiceIso),
+            dueIso: pickIso10(row.dueIso),
+          };
+        })
+      : [],
+  };
+}
+
+export async function fetchDirectorFinanceSupplierScopeV2ViaRpc(opts: {
+  supplier: string;
+  kindName?: string | null;
+  objectId?: string | null;
+  periodFromIso?: string | null;
+  periodToIso?: string | null;
+  dueDaysDefault?: number;
+  criticalDays?: number;
+}): Promise<FinSupplierPanelState | null> {
+  const supplier = financeText(opts.supplier);
+  if (!supplier) return null;
+  if (!canUseFinanceRpc(financeSupplierScopeV2RpcMeta)) return null;
+
+  const args: Database["public"]["Functions"]["director_finance_supplier_scope_v2"]["Args"] = {
+    p_supplier: supplier,
+    p_kind_name: financeText(opts.kindName) || null,
+    p_object_id: financeText(opts.objectId) || undefined,
+    p_from: pickIso10(opts.periodFromIso),
+    p_to: pickIso10(opts.periodToIso),
+    p_due_days: normalizeFinanceRpcInteger(opts.dueDaysDefault, 7),
+    p_critical_days: normalizeFinanceRpcInteger(opts.criticalDays, 14),
+  };
+
+  const { data, error } = await supabase.rpc(FINANCE_SUPPLIER_SCOPE_V2_RPC_NAME, args);
+  if (error) {
+    markFinanceRpcStatus(
+      financeSupplierScopeV2RpcMeta,
+      isMissingFinanceRpcError(error, FINANCE_SUPPLIER_SCOPE_V2_RPC_NAME) ? "missing" : "failed",
+    );
+    throw error;
+  }
+
+  markFinanceRpcStatus(financeSupplierScopeV2RpcMeta, "available");
+  const payload = asFinanceRecord(data);
+  const supplierName =
+    financeText(payload.supplierName ?? payload.supplier_name ?? payload.supplier) || supplier;
+  const summary = asFinanceRecord(payload.summary);
+  const amount = nnum(payload.amount ?? summary.debt);
+  const count = nnum(payload.count ?? summary.invoiceCount ?? summary.invoice_count);
+  const overdueCount = nnum(payload.overdueCount ?? summary.overdueCount ?? summary.overdue_count);
+  const criticalCount = nnum(payload.criticalCount ?? summary.criticalCount ?? summary.critical_count);
+  return {
+    supplier: supplierName,
+    amount,
+    count,
+    approved: nnum(payload.approved ?? summary.payable),
+    paid: nnum(payload.paid ?? summary.paid),
+    toPay: nnum(payload.toPay ?? summary.debt),
+    overdueCount,
+    criticalCount,
+    _kindName: financeText(payload.kindName ?? payload.kind_name) || null,
+    kindName: financeText(payload.kindName ?? payload.kind_name) || null,
     invoices: Array.isArray(payload.invoices)
       ? payload.invoices.map((item) => {
           const row = asFinanceRecord(item);

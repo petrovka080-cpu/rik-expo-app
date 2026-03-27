@@ -3,6 +3,12 @@ import { AppState } from "react-native";
 import { REQUEST_PENDING_EN, REQUEST_PENDING_STATUS, normalizeStatus } from "../../lib/api/requests.status";
 import { logError } from "../../lib/logError";
 import { ensureSignedIn, supabase } from "../../lib/supabaseClient";
+import { recordPlatformObservability } from "../../lib/observability/platformObservability";
+import {
+  isPlatformGuardCoolingDown,
+  recordPlatformGuardSkip,
+} from "../../lib/observability/platformGuardDiscipline";
+import { getPlatformNetworkSnapshot } from "../../lib/offline/platformNetwork.service";
 import { useDirectorUiStore } from "./directorUi.store";
 
 type RefreshState = {
@@ -45,6 +51,7 @@ const DIRECTOR_TAB_REQUESTS = "\u0417\u0430\u044f\u0432\u043a\u0438";
 const DIRECTOR_TAB_FINANCE = "\u0424\u0438\u043d\u0430\u043d\u0441\u044b";
 const DIRECTOR_TAB_REPORTS = "\u041e\u0442\u0447\u0451\u0442\u044b";
 const DIRECTOR_REQUEST_TAB_BUYER = "buyer";
+const DIRECTOR_LIFECYCLE_REFRESH_MIN_INTERVAL_MS = 1200;
 
 const buildRequestsScopeKey = (requestTab: string) => `${DIRECTOR_TAB_REQUESTS}:${requestTab}`;
 
@@ -80,10 +87,23 @@ const logDirectorLive = (payload: Record<string, unknown>) => {
 const runRefresh = (
   stateRef: { current: RefreshState },
   refreshRef: { current: RefreshFn },
+  meta: { surface: string; event: string; trigger: string; scopeKey: string },
   options?: { force?: boolean; queueOnOverlap?: boolean },
 ) => {
   const force = !!options?.force;
   if (stateRef.current.inFlight) {
+    recordPlatformObservability({
+      screen: "director",
+      surface: meta.surface,
+      category: "reload",
+      event: meta.event,
+      result: force || options?.queueOnOverlap ? "queued_rerun" : "joined_inflight",
+      trigger: meta.trigger,
+      extra: {
+        scopeKey: meta.scopeKey,
+        force,
+      },
+    });
     if (force) {
       stateRef.current.rerunQueued = true;
       stateRef.current.rerunForce = true;
@@ -133,6 +153,7 @@ export function useDirectorLifecycle({
   const lastInitedPeriodRef = useRef("");
   const appStateRef = useRef(AppState.currentState);
   const lastWebResumeAtRef = useRef(0);
+  const lastLifecycleRefreshAtRef = useRef(0);
   const rtChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
   const handoffChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
   const rowsRefreshRef = useRef<RefreshState>({ inFlight: null, rerunQueued: false, rerunForce: false });
@@ -152,23 +173,63 @@ export function useDirectorLifecycle({
 
   const refreshRows = useCallback((reason: string, force = false) => {
     setRefreshReason(reason);
-    return runRefresh(rowsRefreshRef, rowsRefreshFnRef, { force });
-  }, [setRefreshReason]);
+    return runRefresh(
+      rowsRefreshRef,
+      rowsRefreshFnRef,
+      {
+        surface: "request_rows",
+        event: "refresh_scope",
+        trigger: reason,
+        scopeKey: `requests:${requestTab}:rows`,
+      },
+      { force },
+    );
+  }, [requestTab, setRefreshReason]);
 
   const refreshProps = useCallback((reason: string, force = false) => {
     setRefreshReason(reason);
-    return runRefresh(propsRefreshRef, propsRefreshFnRef, { force });
-  }, [setRefreshReason]);
+    return runRefresh(
+      propsRefreshRef,
+      propsRefreshFnRef,
+      {
+        surface: "proposal_heads",
+        event: "refresh_scope",
+        trigger: reason,
+        scopeKey: `requests:${requestTab}:buyer_props`,
+      },
+      { force },
+    );
+  }, [requestTab, setRefreshReason]);
 
   const refreshFinanceScoped = useCallback((reason: string) => {
     setRefreshReason(reason);
-    return runRefresh(financeRefreshRef, financeRefreshFnRef, { queueOnOverlap: true });
-  }, [setRefreshReason]);
+    return runRefresh(
+      financeRefreshRef,
+      financeRefreshFnRef,
+      {
+        surface: "finance_panel",
+        event: "refresh_scope",
+        trigger: reason,
+        scopeKey: `finance:${finFrom ?? ""}:${finTo ?? ""}`,
+      },
+      { queueOnOverlap: true },
+    );
+  }, [finFrom, finTo, setRefreshReason]);
 
   const refreshReportScoped = useCallback((reason: string) => {
     setRefreshReason(reason);
-    return runRefresh(reportRefreshRef, reportRefreshFnRef, { queueOnOverlap: true });
-  }, [setRefreshReason]);
+    return runRefresh(
+      reportRefreshRef,
+      reportRefreshFnRef,
+      {
+        surface: "reports_scope",
+        event: "refresh_scope",
+        trigger: reason,
+        scopeKey: `reports:${repFrom ?? ""}:${repTo ?? ""}`,
+      },
+      { queueOnOverlap: true },
+    );
+  }, [repFrom, repTo, setRefreshReason]);
 
   const refreshRequestsScoped = useCallback((reasonBase: string, force = false) => {
     if (requestTab === DIRECTOR_REQUEST_TAB_BUYER) {
@@ -192,13 +253,77 @@ export function useDirectorLifecycle({
     }
   }, [dirTab, refreshFinanceScoped, refreshReportScoped, refreshRequestsScoped]);
 
+  const runLifecycleScopedRefresh = useCallback((reasonBase: string, trigger: string) => {
+    if (!didInit.current) {
+      recordPlatformGuardSkip("bootstrap_not_ready", {
+        screen: "director",
+        surface: "visible_scope",
+        event: "refresh_scope",
+        trigger,
+        extra: {
+          scopeKey: dirTab === DIRECTOR_TAB_REQUESTS ? buildRequestsScopeKey(requestTab) : dirTab,
+        },
+      });
+      return;
+    }
+
+    const networkSnapshot = getPlatformNetworkSnapshot();
+    if (networkSnapshot.hydrated && networkSnapshot.networkKnownOffline) {
+      recordPlatformGuardSkip("network_known_offline", {
+        screen: "director",
+        surface: "visible_scope",
+        event: "refresh_scope",
+        trigger,
+        extra: {
+          scopeKey: dirTab === DIRECTOR_TAB_REQUESTS ? buildRequestsScopeKey(requestTab) : dirTab,
+          networkKnownOffline: true,
+        },
+      });
+      return;
+    }
+
+    const now = Date.now();
+    if (
+      isPlatformGuardCoolingDown({
+        lastAt: lastLifecycleRefreshAtRef.current,
+        minIntervalMs: DIRECTOR_LIFECYCLE_REFRESH_MIN_INTERVAL_MS,
+        now,
+      })
+    ) {
+      recordPlatformGuardSkip("recent_same_scope", {
+        screen: "director",
+        surface: "visible_scope",
+        event: "refresh_scope",
+        trigger,
+        extra: {
+          scopeKey: dirTab === DIRECTOR_TAB_REQUESTS ? buildRequestsScopeKey(requestTab) : dirTab,
+        },
+      });
+      return;
+    }
+
+    lastLifecycleRefreshAtRef.current = now;
+    refreshCurrentVisibleScope(reasonBase, true);
+  }, [dirTab, refreshCurrentVisibleScope, requestTab]);
+
   useEffect(() => {
     if (didInit.current || !isScreenFocused) return;
 
     void (async () => {
       try {
         const signedIn = await ensureSignedIn();
-        if (!signedIn) return;
+        if (!signedIn) {
+          recordPlatformGuardSkip("auth_not_ready", {
+            screen: "director",
+            surface: "visible_scope",
+            event: "refresh_scope",
+            trigger: "screen_init",
+            extra: {
+              scopeKey: dirTab === DIRECTOR_TAB_REQUESTS ? buildRequestsScopeKey(requestTab) : dirTab,
+            },
+          });
+          return;
+        }
 
         didInit.current = true;
         lastInitedTabRef.current = dirTab === DIRECTOR_TAB_REQUESTS ? buildRequestsScopeKey(requestTab) : dirTab;
@@ -249,7 +374,7 @@ export function useDirectorLifecycle({
       const resumed = (previous === "background" || previous === "inactive") && nextState === "active";
       if (!resumed) return;
 
-      refreshCurrentVisibleScope("app_resume", true);
+      runLifecycleScopedRefresh("app_resume", "app_active");
     });
 
     return () => {
@@ -259,7 +384,7 @@ export function useDirectorLifecycle({
         // no-op
       }
     };
-  }, [isScreenFocused, refreshCurrentVisibleScope]);
+  }, [isScreenFocused, runLifecycleScopedRefresh]);
 
   useEffect(() => {
     if (!isScreenFocused) return;
@@ -269,7 +394,7 @@ export function useDirectorLifecycle({
       const now = Date.now();
       if (now - lastWebResumeAtRef.current < 750) return;
       lastWebResumeAtRef.current = now;
-      refreshCurrentVisibleScope(reasonBase, true);
+      runLifecycleScopedRefresh(reasonBase, reasonBase);
     };
 
     const onVisibilityChange = () => {
@@ -288,7 +413,7 @@ export function useDirectorLifecycle({
       document.removeEventListener("visibilitychange", onVisibilityChange);
       window.removeEventListener("focus", onFocus);
     };
-  }, [isScreenFocused, refreshCurrentVisibleScope]);
+  }, [isScreenFocused, runLifecycleScopedRefresh]);
 
   useEffect(() => {
     try {

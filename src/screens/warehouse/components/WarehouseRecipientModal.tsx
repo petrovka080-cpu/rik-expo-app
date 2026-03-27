@@ -7,10 +7,10 @@ import {
   Pressable,
   StyleSheet,
   Platform,
-  FlatList,
   KeyboardAvoidingView,
 } from "react-native";
 import { BlurView } from "expo-blur";
+import { FlashList } from "../../../ui/FlashList";
 
 interface Props {
   visible: boolean;
@@ -87,9 +87,10 @@ export default function WarehouseRecipientModal({
             />
 
             <View style={st.listContainer}>
-              <FlatList
+              <FlashList
                 data={filtered}
                 keyExtractor={(item, idx) => `${item}-${idx}`}
+                estimatedItemSize={56}
                 renderItem={({ item }) => (
                   <Pressable
                     style={({ pressed }) => [st.item, pressed && st.itemPressed]}

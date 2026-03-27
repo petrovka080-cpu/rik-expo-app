@@ -1,5 +1,6 @@
 import { type DirectorReportFetchMeta } from "./director_reports";
 import { loadDirectorReportTransportScope } from "./directorReportsTransport.service";
+import { beginPlatformObservability } from "../observability/platformObservability";
 
 export type DirectorReportScopeOptionsState = {
   objects: string[];
@@ -266,33 +267,60 @@ export async function loadDirectorReportUiScope(args: {
   skipDisciplinePrices: boolean;
   bypassCache?: boolean;
 }): Promise<DirectorReportScopeLoadResult> {
-  const transportResult = await loadDirectorReportTransportScope({
-    from: args.from,
-    to: args.to,
-    objectName: args.objectName,
-    includeDiscipline: !!args.includeDiscipline,
-    skipDisciplinePrices: args.skipDisciplinePrices,
-    legacyObjectIdByName: args.optionsState?.objectIdByName,
-    bypassCache: args.bypassCache,
+  const observation = beginPlatformObservability({
+    screen: "director",
+    surface: "reports_scope",
+    category: "fetch",
+    event: "load_report_scope",
+    sourceKind: "transport:director_report_transport_scope_v1",
+    trigger: args.includeDiscipline ? "discipline" : "report",
   });
-  const optionsState = normalizeOptionsState(transportResult.options);
-
-  return {
-    optionsKey: buildOptionsKey(args.from, args.to),
-    optionsState,
-    optionsMeta: transportResult.optionsMeta,
-    optionsFromCache: transportResult.fromCache,
-    key: buildScopeKey(args.from, args.to, args.objectName, optionsState.objectIdByName),
-    objectName: args.objectName,
-    report: normalizeReportPayload(transportResult.report),
-    reportMeta: transportResult.reportMeta,
-    discipline: normalizeDisciplinePayload(transportResult.discipline),
-    disciplineMeta: transportResult.disciplineMeta,
-    reportFromCache: transportResult.fromCache,
-    disciplineFromCache: transportResult.fromCache,
-    disciplinePricesReady:
-      args.includeDiscipline === true
-        ? transportResult.disciplineMeta?.pricedStage !== "base"
-        : false,
-  };
+  try {
+    const transportResult = await loadDirectorReportTransportScope({
+      from: args.from,
+      to: args.to,
+      objectName: args.objectName,
+      includeDiscipline: !!args.includeDiscipline,
+      skipDisciplinePrices: args.skipDisciplinePrices,
+      legacyObjectIdByName: args.optionsState?.objectIdByName,
+      bypassCache: args.bypassCache,
+    });
+    const optionsState = normalizeOptionsState(transportResult.options);
+    const result = {
+      optionsKey: buildOptionsKey(args.from, args.to),
+      optionsState,
+      optionsMeta: transportResult.optionsMeta,
+      optionsFromCache: transportResult.fromCache,
+      key: buildScopeKey(args.from, args.to, args.objectName, optionsState.objectIdByName),
+      objectName: args.objectName,
+      report: normalizeReportPayload(transportResult.report),
+      reportMeta: transportResult.reportMeta,
+      discipline: normalizeDisciplinePayload(transportResult.discipline),
+      disciplineMeta: transportResult.disciplineMeta,
+      reportFromCache: transportResult.fromCache,
+      disciplineFromCache: transportResult.fromCache,
+      disciplinePricesReady:
+        args.includeDiscipline === true
+          ? transportResult.disciplineMeta?.pricedStage !== "base"
+          : false,
+    };
+    observation.success({
+      rowCount: result.report?.rows?.length ?? 0,
+      sourceKind: transportResult.branchMeta.transportBranch,
+      cacheLayer: transportResult.fromCache ? "transport_cache" : "none",
+      fallbackUsed: transportResult.branchMeta.transportBranch !== "rpc_scope_v1",
+      extra: {
+        optionsObjects: result.optionsState.objects.length,
+        disciplineWorks: result.discipline?.works?.length ?? 0,
+        pricedStage: transportResult.branchMeta.pricedStage ?? null,
+      },
+    });
+    return result;
+  } catch (error) {
+    observation.error(error, {
+      rowCount: 0,
+      errorStage: "load_report_scope",
+    });
+    throw error;
+  }
 }

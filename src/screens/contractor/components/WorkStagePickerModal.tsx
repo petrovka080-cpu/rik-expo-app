@@ -1,5 +1,6 @@
-﻿import React from "react";
-import { FlatList, Modal, Pressable, Text, View } from "react-native";
+import React from "react";
+import { Modal, Pressable, Text, View } from "react-native";
+import { FlashList } from "../../../ui/FlashList";
 
 type StageOption = {
   code: string;
@@ -50,14 +51,15 @@ export default function WorkStagePickerModal(props: Props) {
             Выбор этапа работ
           </Text>
 
-          <FlatList
+          <FlashList
             data={props.workStageOptions}
             keyExtractor={(s, index) => `${s.code}-${index}`}
             style={{ maxHeight: "80%" }}
+            estimatedItemSize={52}
             renderItem={props.renderWorkStageItem}
             ListEmptyComponent={
               <Text style={{ color: "#64748b" }}>
-                Этапы еще не настроены. Добавьте строки в таблицу work_stages.
+                Этапы ещё не настроены. Добавьте строки в таблицу `work_stages`.
               </Text>
             }
           />

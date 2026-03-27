@@ -1,6 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
+import { useWarehouseUiStore } from "../warehouseUi.store";
 
 type UseWarehousemanFioArgs = {
   getTodaySixAM: () => Date;
@@ -22,7 +23,8 @@ const WAREHOUSEMAN_HISTORY_KEY = "wh_warehouseman_history_v1";
 export function useWarehousemanFio({ getTodaySixAM, onError }: UseWarehousemanFioArgs): UseWarehousemanFioResult {
   const [warehousemanFio, setWarehousemanFio] = useState("");
   const [warehousemanHistory, setWarehousemanHistory] = useState<string[]>([]);
-  const [isFioConfirmVisible, setIsFioConfirmVisible] = useState(false);
+  const isFioConfirmVisible = useWarehouseUiStore((state) => state.isFioConfirmVisible);
+  const setIsFioConfirmVisible = useWarehouseUiStore((state) => state.setIsFioConfirmVisible);
   const [isFioLoading, setIsFioLoading] = useState(false);
 
   useEffect(() => {
@@ -53,7 +55,7 @@ export function useWarehousemanFio({ getTodaySixAM, onError }: UseWarehousemanFi
     return () => {
       active = false;
     };
-  }, [getTodaySixAM]);
+  }, [getTodaySixAM, setIsFioConfirmVisible]);
 
   useFocusEffect(
     useCallback(() => {
@@ -66,7 +68,7 @@ export function useWarehousemanFio({ getTodaySixAM, onError }: UseWarehousemanFi
         }
       };
       void checkFio();
-    }, [getTodaySixAM]),
+    }, [getTodaySixAM, setIsFioConfirmVisible]),
   );
 
   const handleFioConfirm = useCallback(
@@ -91,7 +93,7 @@ export function useWarehousemanFio({ getTodaySixAM, onError }: UseWarehousemanFi
         setIsFioLoading(false);
       }
     },
-    [warehousemanHistory, onError],
+    [warehousemanHistory, onError, setIsFioConfirmVisible],
   );
 
   return {

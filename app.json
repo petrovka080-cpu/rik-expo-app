@@ -16,6 +16,17 @@
       "expo-router",
       "expo-updates",
       "expo-audio",
+      [
+        "expo-speech-recognition",
+        {
+          "microphonePermission": "Allow $(PRODUCT_NAME) to use the microphone for foreman voice input.",
+          "speechRecognitionPermission": "Allow $(PRODUCT_NAME) to use speech recognition for foreman voice input.",
+          "androidSpeechServicePackages": [
+            "com.google.android.googlequicksearchbox",
+            "com.google.android.as"
+          ]
+        }
+      ],
       "expo-asset",
       "expo-web-browser",
       "@react-native-community/datetimepicker"

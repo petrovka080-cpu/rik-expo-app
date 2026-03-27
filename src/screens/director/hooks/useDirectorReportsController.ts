@@ -10,6 +10,7 @@ import {
   type DirectorReportScopeOptionsState,
   type DirectorReportScopePayload,
 } from "../../../lib/api/directorReportsScope.service";
+import { recordPlatformObservability } from "../../../lib/observability/platformObservability";
 import type {
   RepDisciplinePayload,
   RepPayload,
@@ -185,6 +186,15 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
     setRepDiscipline(payload);
     lastDisciplineLoadKeyRef.current = key;
     setRepDisciplinePriceLoading(!disciplinePricesReadyRef.current.has(key));
+    recordPlatformObservability({
+      screen: "director",
+      surface: "reports_discipline",
+      category: "ui",
+      event: "content_ready",
+      result: "success",
+      rowCount: Array.isArray(payload?.works) ? payload.works.length : 0,
+      extra: summarizeRepDiscipline(payload),
+    });
     observeBranch("discipline", key, meta, { fromCache: opts?.fromCache });
   }, [observeBranch, setRepDisciplinePriceLoading]);
 
@@ -195,6 +205,14 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
     opts?: { syncDiscipline?: boolean; fromCache?: boolean },
   ) => {
     setRepData(payload);
+    recordPlatformObservability({
+      screen: "director",
+      surface: "reports_summary",
+      category: "ui",
+      event: "content_ready",
+      result: "success",
+      rowCount: payload?.rows?.length ?? 0,
+    });
     observeBranch("report", key, meta, { fromCache: opts?.fromCache });
     if (opts?.syncDiscipline === false) return;
 

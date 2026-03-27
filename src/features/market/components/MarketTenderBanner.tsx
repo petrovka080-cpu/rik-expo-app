@@ -1,25 +1,31 @@
+import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
 
 import { MARKET_HOME_COLORS } from "../marketHome.config";
 
 type Props = {
   count: number;
-  onPress: () => void;
+  onPress?: () => void;
+  comingSoon?: boolean;
 };
 
-export default function MarketTenderBanner({ count, onPress }: Props) {
+export default function MarketTenderBanner({ count, onPress, comingSoon = false }: Props) {
   if (count <= 0) return null;
 
+  const title = comingSoon ? "Торги ERP скоро" : `${count} активных торгов`;
+  const subtitle = comingSoon
+    ? "Интеграция с торгами готовится, текущий маркет уже работает через ERP-действия."
+    : "Смотреть позиции и откликнуться";
+
   return (
-    <Pressable style={styles.banner} onPress={onPress}>
+    <Pressable style={[styles.banner, comingSoon ? styles.bannerSoon : null]} onPress={onPress} disabled={!onPress}>
       <View style={styles.copy}>
-        <Text style={styles.title}>{count} активных торгов</Text>
-        <Text style={styles.subtitle}>Смотреть позиции и откликнуться</Text>
+        <Text style={styles.title}>{title}</Text>
+        <Text style={styles.subtitle}>{subtitle}</Text>
       </View>
       <View style={styles.arrow}>
-        <Ionicons name="arrow-forward" size={24} color="#FFFFFF" />
+        <Ionicons name={comingSoon ? "time-outline" : "arrow-forward"} size={24} color="#FFFFFF" />
       </View>
     </Pressable>
   );
@@ -41,8 +47,13 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 10 },
     elevation: 5,
   },
+  bannerSoon: {
+    backgroundColor: MARKET_HOME_COLORS.text,
+  },
   copy: {
     gap: 6,
+    flex: 1,
+    paddingRight: 12,
   },
   title: {
     color: "#FFFFFF",

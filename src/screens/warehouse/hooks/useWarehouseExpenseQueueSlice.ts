@@ -7,6 +7,10 @@ import { useWarehouseExpenseRealtime } from "./useWarehouseExpenseRealtime";
 import { useWarehouseReqHeads } from "./useWarehouseReqHeads";
 import { useWarehouseReqItemsData } from "./useWarehouseReqItemsData";
 import { useWarehouseReqModalFlow } from "./useWarehouseReqModalFlow";
+import {
+  isPlatformGuardCoolingDown,
+  recordPlatformGuardSkip,
+} from "../../../lib/observability/platformGuardDiscipline";
 
 const TAB_EXPENSE = WAREHOUSE_TABS[2];
 const FOCUS_REFRESH_MIN_INTERVAL_MS = 1200;
@@ -69,6 +73,7 @@ export function useWarehouseExpenseQueueSlice(params: {
     reqHeads,
     reqHeadsLoading,
     reqHeadsFetchingPage,
+    reqHeadsHasMore,
     reqRefs,
     fetchReqHeads,
   } = useWarehouseReqHeads({
@@ -145,16 +150,49 @@ export function useWarehouseExpenseQueueSlice(params: {
   }, [refreshExpenseQueue]);
 
   const onReqEndReached = useCallback(() => {
-    if (reqRefs.current.hasMore && !reqRefs.current.fetching) {
-      void fetchReqHeads(reqRefs.current.page + 1);
+    if (!reqRefs.current.hasMore) {
+      recordPlatformGuardSkip("no_more_pages", {
+        screen: "warehouse",
+        surface: "req_heads",
+        event: "fetch_req_heads",
+        trigger: "scroll",
+        extra: { page: reqRefs.current.page },
+      });
+      return;
     }
+    if (reqRefs.current.fetching) return;
+    void fetchReqHeads(reqRefs.current.page + 1);
   }, [fetchReqHeads, reqRefs]);
 
   useEffect(() => {
-    if (tab !== TAB_EXPENSE) return;
+    if (tab !== TAB_EXPENSE) {
+      recordPlatformGuardSkip("inactive_tab", {
+        screen: "warehouse",
+        surface: "req_heads",
+        event: "refresh_expense_queue",
+        trigger: "tab",
+        extra: { tab },
+      });
+      return;
+    }
 
     const now = Date.now();
-    if (now - lastTabRefreshAtRef.current < TAB_REFRESH_MIN_INTERVAL_MS) return;
+    if (
+      isPlatformGuardCoolingDown({
+        lastAt: lastTabRefreshAtRef.current,
+        minIntervalMs: TAB_REFRESH_MIN_INTERVAL_MS,
+        now,
+      })
+    ) {
+      recordPlatformGuardSkip("recent_same_scope", {
+        screen: "warehouse",
+        surface: "req_heads",
+        event: "refresh_expense_queue",
+        trigger: "tab",
+        extra: { tab },
+      });
+      return;
+    }
     lastTabRefreshAtRef.current = now;
 
     void refreshExpenseQueue({
@@ -165,10 +203,34 @@ export function useWarehouseExpenseQueueSlice(params: {
 
   useFocusEffect(
     useCallback(() => {
-      if (tab !== TAB_EXPENSE) return undefined;
+      if (tab !== TAB_EXPENSE) {
+        recordPlatformGuardSkip("inactive_tab", {
+          screen: "warehouse",
+          surface: "req_heads",
+          event: "refresh_expense_queue",
+          trigger: "focus",
+          extra: { tab },
+        });
+        return undefined;
+      }
 
       const now = Date.now();
-      if (now - lastFocusRefreshAtRef.current < FOCUS_REFRESH_MIN_INTERVAL_MS) return undefined;
+      if (
+        isPlatformGuardCoolingDown({
+          lastAt: lastFocusRefreshAtRef.current,
+          minIntervalMs: FOCUS_REFRESH_MIN_INTERVAL_MS,
+          now,
+        })
+      ) {
+        recordPlatformGuardSkip("recent_same_scope", {
+          screen: "warehouse",
+          surface: "req_heads",
+          event: "refresh_expense_queue",
+          trigger: "focus",
+          extra: { tab },
+        });
+        return undefined;
+      }
       lastFocusRefreshAtRef.current = now;
 
       void refreshExpenseQueue({
@@ -191,18 +253,7 @@ export function useWarehouseExpenseQueueSlice(params: {
       if (!prev) return prev;
       const updated = reqHeads.find((row) => String(row.request_id) === String(prev.request_id));
       if (!updated) return prev;
-
-      const next: ReqHeadRow = {
-        ...prev,
-        ...updated,
-        note: prev.note ?? updated.note ?? null,
-        comment: prev.comment ?? updated.comment ?? null,
-        contractor_name: prev.contractor_name ?? updated.contractor_name ?? null,
-        contractor_phone: prev.contractor_phone ?? updated.contractor_phone ?? null,
-        planned_volume: prev.planned_volume ?? updated.planned_volume ?? null,
-      };
-
-      return reqModalFieldsEqual(prev, next) ? prev : next;
+      return reqModalFieldsEqual(prev, updated) ? prev : updated;
     });
   }, [reqHeads]);
 
@@ -210,6 +261,7 @@ export function useWarehouseExpenseQueueSlice(params: {
     reqHeads,
     reqHeadsLoading,
     reqHeadsFetchingPage,
+    reqHeadsHasMore,
     reqRefs,
     reqModal,
     reqItems,

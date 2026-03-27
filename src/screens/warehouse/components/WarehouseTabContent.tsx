@@ -38,10 +38,15 @@ export type WarehouseTabContentProps = {
 
   incomingData: IncomingRow[];
   onIncomingEndReached: () => void;
+  incomingHasMore: boolean;
+  incomingLoadingMore: boolean;
   renderIncomingItem: ListRenderItem<IncomingRow>;
 
   stockSupported: boolean | null;
   stockFiltered: StockRow[];
+  stockHasMore: boolean;
+  stockLoadingMore: boolean;
+  onStockEndReached: () => void;
   renderStockItem: ListRenderItem<StockRow>;
   objectOpt: Option | null;
   levelOpt: Option | null;
@@ -64,6 +69,8 @@ export type WarehouseTabContentProps = {
 
   reqHeadsData: ReqHeadRow[];
   onReqEndReached: () => void;
+  reqHeadsHasMore: boolean;
+  reqHeadsLoadingMore: boolean;
   renderReqHeadItem: ListRenderItem<ReqHeadRow>;
   reqHeadsLoading: boolean;
 

@@ -1,14 +1,11 @@
 import { supabase } from "../supabaseClient";
+import { beginPlatformObservability } from "../observability/platformObservability";
 import { listAccountantInbox } from "./accountant";
 import {
-  computeFinanceRep,
-  computeFinanceSpendSummary,
-  fetchDirectorFinancePanelScopeV2ViaRpc,
-  fetchDirectorFinancePanelScopeViaRpc,
+  fetchDirectorFinancePanelScopeV3ViaRpc,
   mapToFinanceRow,
   normalizeFinSpendRows,
-  type DirectorFinancePanelScopeV2,
-  type DirectorFinancePanelScope,
+  type DirectorFinancePanelScopeV3,
   type FinRep,
   type FinSpendRow,
   type FinSpendSummary,
@@ -30,15 +27,22 @@ export type DirectorFinanceScreenScopeResult = {
   spendRows: FinSpendRow[];
   finRep: FinRep;
   finSpendSummary: FinSpendSummary;
-  panelScope: DirectorFinancePanelScope | DirectorFinancePanelScopeV2 | null;
+  panelScope: DirectorFinancePanelScopeV3 | null;
   issues: DirectorFinanceScreenScopeIssue[];
   supportRowsLoaded: boolean;
+  cutoverMeta: {
+    primaryOwner: "rpc_v3";
+    contractVersion: "v3";
+    supportRowsReason: "not_requested" | "explicit_include";
+    backendFirstPrimary: boolean;
+    summaryCompatibilityOverlay: boolean;
+  };
   sourceMeta: {
-    financeSummary: "rpc_panel_scope_v2" | "rpc_panel_scope_v1" | "client_compute";
-    spendSummary: "rpc_panel_scope_v2" | "rpc_panel_scope_v1" | "client_compute";
+    financeSummary: "rpc_panel_scope_v3";
+    spendSummary: "rpc_panel_scope_v3";
     financeRows: "legacy_accountant_inbox" | "not_loaded";
     spendRows: "legacy_spend_view" | "not_loaded";
-    panelScope: "rpc_v2" | "rpc_v1" | "client_fallback";
+    panelScope: "rpc_v3";
   };
 };
 
@@ -55,6 +59,11 @@ type DirectorFinanceScreenScopeArgs = {
   dueDaysDefault?: number;
   criticalDays?: number;
   includeSupportRows?: boolean;
+};
+
+type DirectorFinancePrimaryScopeResult = {
+  panelScopeV3: DirectorFinancePanelScopeV3 | null;
+  issues: DirectorFinanceScreenScopeIssue[];
 };
 
 async function loadLegacyDirectorFinanceSpendRows(args: {
@@ -87,55 +96,78 @@ export async function loadDirectorFinanceSupportRows(args: {
   periodFromIso?: string | null;
   periodToIso?: string | null;
 }): Promise<DirectorFinanceSupportRowsResult> {
-  const issues: DirectorFinanceScreenScopeIssue[] = [];
+  const observation = beginPlatformObservability({
+    screen: "director",
+    surface: "finance_support_rows",
+    category: "fetch",
+    event: "load_finance_support_rows",
+    sourceKind: "legacy:accountant_inbox+spend_view",
+  });
+  try {
+    const issues: DirectorFinanceScreenScopeIssue[] = [];
 
-  const [financeRowsResult, spendRowsResult] = await Promise.allSettled([
-    loadLegacyDirectorFinanceRows(),
-    loadLegacyDirectorFinanceSpendRows({
-      periodFromIso: args.periodFromIso,
-      periodToIso: args.periodToIso,
-    }),
-  ]);
+    const [financeRowsResult, spendRowsResult] = await Promise.allSettled([
+      loadLegacyDirectorFinanceRows(),
+      loadLegacyDirectorFinanceSpendRows({
+        periodFromIso: args.periodFromIso,
+        periodToIso: args.periodToIso,
+      }),
+    ]);
 
-  const financeRows = financeRowsResult.status === "fulfilled" ? financeRowsResult.value : [];
-  const spendRows = spendRowsResult.status === "fulfilled" ? spendRowsResult.value : [];
+    const financeRows = financeRowsResult.status === "fulfilled" ? financeRowsResult.value : [];
+    const spendRows = spendRowsResult.status === "fulfilled" ? spendRowsResult.value : [];
 
-  if (financeRowsResult.status === "rejected") {
-    issues.push({ scope: "finance_rows", error: financeRowsResult.reason });
+    if (financeRowsResult.status === "rejected") {
+      issues.push({ scope: "finance_rows", error: financeRowsResult.reason });
+    }
+    if (spendRowsResult.status === "rejected") {
+      issues.push({ scope: "spend_rows", error: spendRowsResult.reason });
+    }
+
+    if (financeRowsResult.status === "rejected" && spendRowsResult.status === "rejected") {
+      throw financeRowsResult.reason ?? spendRowsResult.reason;
+    }
+
+    const result = {
+      financeRows,
+      spendRows,
+      issues,
+    };
+    observation.success({
+      rowCount: financeRows.length + spendRows.length,
+      fallbackUsed: issues.length > 0,
+      extra: {
+        financeRows: financeRows.length,
+        spendRows: spendRows.length,
+        issues: issues.length,
+      },
+    });
+    return result;
+  } catch (error) {
+    observation.error(error, {
+      rowCount: 0,
+      errorStage: "load_finance_support_rows",
+    });
+    throw error;
   }
-  if (spendRowsResult.status === "rejected") {
-    issues.push({ scope: "spend_rows", error: spendRowsResult.reason });
-  }
-
-  if (financeRowsResult.status === "rejected" && spendRowsResult.status === "rejected") {
-    throw financeRowsResult.reason ?? spendRowsResult.reason;
-  }
-
-  return {
-    financeRows,
-    spendRows,
-    issues,
-  };
 }
 
-export async function loadDirectorFinanceScreenScope(
-  args: DirectorFinanceScreenScopeArgs,
-): Promise<DirectorFinanceScreenScopeResult> {
-  const dueDaysDefault = Number(args.dueDaysDefault ?? 7) || 7;
-  const criticalDays = Number(args.criticalDays ?? 14) || 14;
-  const includeSupportRows = args.includeSupportRows === true;
+async function loadDirectorFinancePrimaryScope(
+  args: DirectorFinanceScreenScopeArgs & {
+    dueDaysDefault: number;
+    criticalDays: number;
+  },
+): Promise<DirectorFinancePrimaryScopeResult> {
   const issues: DirectorFinanceScreenScopeIssue[] = [];
-  let panelScope: DirectorFinancePanelScope | null = null;
-  let panelScopeV2: DirectorFinancePanelScopeV2 | null = null;
-  let financeRows: FinanceRow[] = [];
-  let spendRows: FinSpendRow[] = [];
-  let supportRowsLoaded = false;
+  let panelScopeV3: DirectorFinancePanelScopeV3 | null = null;
 
   try {
-    panelScopeV2 = await fetchDirectorFinancePanelScopeV2ViaRpc({
+    panelScopeV3 = await fetchDirectorFinancePanelScopeV3ViaRpc({
       objectId: args.objectId,
       periodFromIso: args.periodFromIso,
       periodToIso: args.periodToIso,
+      dueDaysDefault: args.dueDaysDefault,
+      criticalDays: args.criticalDays,
       limit: 50,
       offset: 0,
     });
@@ -143,22 +175,53 @@ export async function loadDirectorFinanceScreenScope(
     issues.push({ scope: "panel_scope", error });
   }
 
-  if (!panelScopeV2) {
-    try {
-      panelScope = await fetchDirectorFinancePanelScopeViaRpc({
-        periodFromIso: args.periodFromIso,
-        periodToIso: args.periodToIso,
-        dueDaysDefault,
-        criticalDays,
-      });
-    } catch (error) {
-      issues.push({ scope: "panel_scope", error });
-    }
+  return {
+    panelScopeV3,
+    issues,
+  };
+}
+
+export async function loadDirectorFinanceScreenScope(
+  args: DirectorFinanceScreenScopeArgs,
+): Promise<DirectorFinanceScreenScopeResult> {
+  const observation = beginPlatformObservability({
+    screen: "director",
+    surface: "finance_panel",
+    category: "fetch",
+    event: "load_finance_scope",
+    sourceKind: "rpc:director_finance_panel_scope_v3",
+  });
+  const dueDaysDefault = Number(args.dueDaysDefault ?? 7) || 7;
+  const criticalDays = Number(args.criticalDays ?? 14) || 14;
+  const includeSupportRows = args.includeSupportRows === true;
+  let financeRows: FinanceRow[] = [];
+  let spendRows: FinSpendRow[] = [];
+  let supportRowsLoaded = false;
+  const primaryScope = await loadDirectorFinancePrimaryScope({
+    ...args,
+    dueDaysDefault,
+    criticalDays,
+  });
+  const resolvedPanelScope = primaryScope.panelScopeV3;
+  const supportRowsReason = includeSupportRows ? "explicit_include" : "not_requested";
+
+  if (!resolvedPanelScope) {
+    const hardCutError =
+      primaryScope.issues.find((issue) => issue.scope === "panel_scope")?.error ??
+      new Error("director finance panel scope v3 unavailable");
+    observation.error(hardCutError, {
+      rowCount: 0,
+      errorStage: "load_finance_scope",
+      sourceKind: "rpc:director_finance_panel_scope_v3",
+      extra: {
+        supportRowsRequested: includeSupportRows,
+        scopeKey: `finance:${args.objectId ?? ""}:${args.periodFromIso ?? ""}:${args.periodToIso ?? ""}`,
+      },
+    });
+    throw hardCutError;
   }
 
-  const resolvedPanelScope = panelScopeV2 ?? panelScope;
-
-  if (includeSupportRows || !resolvedPanelScope) {
+  if (supportRowsReason !== "not_requested") {
     const supportRows = await loadDirectorFinanceSupportRows({
       periodFromIso: args.periodFromIso,
       periodToIso: args.periodToIso,
@@ -166,33 +229,52 @@ export async function loadDirectorFinanceScreenScope(
     financeRows = supportRows.financeRows;
     spendRows = supportRows.spendRows;
     supportRowsLoaded = true;
-    issues.push(...supportRows.issues);
+    primaryScope.issues.push(...supportRows.issues);
   }
 
-  return {
+  const result: DirectorFinanceScreenScopeResult = {
     financeRows,
     spendRows,
     panelScope: resolvedPanelScope,
-    finRep:
-      resolvedPanelScope != null
-        ? { summary: resolvedPanelScope.summary, report: resolvedPanelScope.report }
-        : computeFinanceRep(financeRows, {
-            dueDaysDefault,
-            criticalDays,
-            periodFromIso: args.periodFromIso,
-            periodToIso: args.periodToIso,
-          }),
-    finSpendSummary:
-      resolvedPanelScope?.spend ??
-      computeFinanceSpendSummary(spendRows),
-    issues,
+    finRep: { summary: resolvedPanelScope.summary, report: resolvedPanelScope.report },
+    finSpendSummary: resolvedPanelScope.spend,
+    issues: primaryScope.issues,
     supportRowsLoaded,
+    cutoverMeta: {
+      primaryOwner: "rpc_v3",
+      contractVersion: "v3",
+      supportRowsReason,
+      backendFirstPrimary: true,
+      summaryCompatibilityOverlay: false,
+    },
     sourceMeta: {
-      financeSummary: panelScopeV2 ? "rpc_panel_scope_v2" : panelScope ? "rpc_panel_scope_v1" : "client_compute",
-      spendSummary: panelScopeV2 ? "rpc_panel_scope_v2" : panelScope ? "rpc_panel_scope_v1" : "client_compute",
+      financeSummary: "rpc_panel_scope_v3",
+      spendSummary: "rpc_panel_scope_v3",
       financeRows: supportRowsLoaded ? "legacy_accountant_inbox" : "not_loaded",
       spendRows: supportRowsLoaded ? "legacy_spend_view" : "not_loaded",
-      panelScope: panelScopeV2 ? "rpc_v2" : panelScope ? "rpc_v1" : "client_fallback",
+      panelScope: "rpc_v3",
     },
   };
+  observation.success({
+    rowCount: financeRows.length + spendRows.length,
+    sourceKind: result.sourceMeta.panelScope,
+    fallbackUsed: false,
+    extra: {
+      issues: result.issues.length,
+      supportRowsLoaded,
+      supportRowsReason,
+      financeRows: financeRows.length,
+      spendRows: spendRows.length,
+      financeSummary: result.sourceMeta.financeSummary,
+      spendSummary: result.sourceMeta.spendSummary,
+      primaryOwner: result.cutoverMeta.primaryOwner,
+      contractVersion: result.cutoverMeta.contractVersion,
+      summaryCompatibilityOverlay: false,
+      owner: resolvedPanelScope.meta.owner,
+      version: resolvedPanelScope.meta.payloadShapeVersion ?? resolvedPanelScope.meta.sourceVersion,
+      totalCount: resolvedPanelScope.pagination.total,
+      scopeKey: `finance:${args.objectId ?? ""}:${args.periodFromIso ?? ""}:${args.periodToIso ?? ""}`,
+    },
+  });
+  return result;
 }

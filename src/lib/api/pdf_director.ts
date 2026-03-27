@@ -66,13 +66,19 @@ export async function exportDirectorFinancePdf(): Promise<string> {
 }
 
 export async function exportDirectorSupplierSummaryPdf(
-  p: DirectorSupplierSummaryPdfInput,
+  p: DirectorSupplierSummaryPdfInput & {
+    loadFallbackRows?: (() => Promise<{
+      financeRows: import("../../screens/director/director.finance").FinanceRow[];
+      spendRows: import("../../screens/director/director.finance").FinSpendRow[];
+    }>) | null;
+  },
 ): Promise<string> {
   const source = await getDirectorFinancePdfSource({
     periodFrom: p.periodFrom,
     periodTo: p.periodTo,
     fallbackFinanceRows: p.financeRows,
     fallbackSpendRows: p.spendRows,
+    fallbackRowsLoader: p.loadFallbackRows,
   });
   const model = buildDirectorSupplierSummaryPdfModel({
     ...p,
@@ -92,7 +98,12 @@ export async function exportDirectorSupplierSummaryPdf(
 }
 
 export async function exportDirectorManagementReportPdf(
-  p: DirectorManagementReportPdfInput,
+  p: DirectorManagementReportPdfInput & {
+    loadFallbackRows?: (() => Promise<{
+      financeRows: import("../../screens/director/director.finance").FinanceRow[];
+      spendRows: import("../../screens/director/director.finance").FinSpendRow[];
+    }>) | null;
+  },
 ): Promise<string> {
   const source = await getDirectorFinancePdfSource({
     periodFrom: p.periodFrom,
@@ -101,6 +112,7 @@ export async function exportDirectorManagementReportPdf(
     criticalDays: p.criticalDays,
     fallbackFinanceRows: p.financeRows,
     fallbackSpendRows: p.spendRows,
+    fallbackRowsLoader: p.loadFallbackRows,
   });
   const model = buildDirectorManagementReportPdfModel({
     ...p,

@@ -1,4 +1,4 @@
-import { useContractorIssuedPolling } from "./useContractorIssuedPolling";
+import { useContractorIssuedRefresh } from "./useContractorIssuedRefresh";
 import { useContractorPdfActions } from "./useContractorPdfActions";
 import { useContractorWorkMaterialUi } from "./useContractorWorkMaterialUi";
 import { useContractorWorkModalDataController } from "./useContractorWorkModalDataController";
@@ -10,8 +10,8 @@ type WorkModalOpenParams = Omit<
   Parameters<typeof useContractorWorkModalOpen>[0],
   "loadWorkLogData" | "resolveRequestId" | "resolveContractorJobId"
 >;
-type IssuedPollingParams = Omit<
-  Parameters<typeof useContractorIssuedPolling>[0],
+type IssuedRefreshParams = Omit<
+  Parameters<typeof useContractorIssuedRefresh>[0],
   "loadIssuedTodayDataForRow"
 >;
 type WorkModalsParams = Parameters<typeof useContractorWorkModals>[0];
@@ -21,12 +21,12 @@ type WorkMaterialUiParams = Parameters<typeof useContractorWorkMaterialUi>[0];
 export function useContractorWorkModalController(params: {
   dataController: DataControllerParams;
   openModal: WorkModalOpenParams;
-  issuedPolling: IssuedPollingParams;
+  issuedRefresh: IssuedRefreshParams;
   workModals: WorkModalsParams;
   pdfActions: PdfActionsParams;
   workMaterialUi: WorkMaterialUiParams;
 }) {
-  const { dataController, openModal, issuedPolling, workModals, pdfActions, workMaterialUi } =
+  const { dataController, openModal, issuedRefresh, workModals, pdfActions, workMaterialUi } =
     params;
 
   const {
@@ -43,8 +43,8 @@ export function useContractorWorkModalController(params: {
     resolveContractorJobId,
   });
 
-  useContractorIssuedPolling({
-    ...issuedPolling,
+  useContractorIssuedRefresh({
+    ...issuedRefresh,
     loadIssuedTodayDataForRow,
   });
 
@@ -84,4 +84,3 @@ export function useContractorWorkModalController(params: {
     renderWorkStageItem,
   };
 }
-

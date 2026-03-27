@@ -178,12 +178,11 @@ async function loadAssistantActorContext(): Promise<AssistantActorContext | null
   const user = authResult.user;
   if (!user?.id) return null;
 
-  const sb = supabase as any;
   const [profileResult, membershipResult, ownedCompanyResult, listingCompanyResult] = await Promise.all([
-    sb.from("user_profiles").select("full_name").eq("user_id", user.id).maybeSingle(),
-    sb.from("company_members").select("company_id").eq("user_id", user.id).limit(1).maybeSingle(),
-    sb.from("companies").select("id").eq("owner_user_id", user.id).maybeSingle(),
-    sb
+    supabase.from("user_profiles").select("full_name").eq("user_id", user.id).maybeSingle(),
+    supabase.from("company_members").select("company_id").eq("user_id", user.id).limit(1).maybeSingle(),
+    supabase.from("companies").select("id").eq("owner_user_id", user.id).maybeSingle(),
+    supabase
       .from("market_listings")
       .select("company_id")
       .eq("user_id", user.id)
@@ -280,10 +279,10 @@ async function searchMarketListings(query: string, limit = 6): Promise<MarketSea
 
   const [companiesResult, profilesResult] = await Promise.all([
     companyIds.length
-      ? (supabase as any).from("companies").select("id,name").in("id", companyIds)
+      ? supabase.from("companies").select("id,name").in("id", companyIds)
       : Promise.resolve({ data: [] as { id: string; name: string | null }[] }),
     userIds.length
-      ? (supabase as any).from("user_profiles").select("user_id,full_name").in("user_id", userIds)
+      ? supabase.from("user_profiles").select("user_id,full_name").in("user_id", userIds)
       : Promise.resolve({ data: [] as { user_id: string; full_name: string | null }[] }),
   ]);
 

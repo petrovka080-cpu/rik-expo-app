@@ -43,6 +43,7 @@ import { useContractorHumanizers } from "../../src/screens/contractor/hooks/useC
 import { useContractorHomeController } from "../../src/screens/contractor/hooks/useContractorHomeController";
 import { useContractorWorkModalController } from "../../src/screens/contractor/hooks/useContractorWorkModalController";
 import { useContractorWorkModalProps } from "../../src/screens/contractor/hooks/useContractorWorkModalProps";
+import { useContractorProgressReliability } from "../../src/screens/contractor/hooks/useContractorProgressReliability";
 import { useContractorScreenState } from "../../src/screens/contractor/hooks/useContractorScreenState";
 
 const showErr = (e: any) =>
@@ -96,11 +97,15 @@ export default function ContractorScreen() {
     setWorkModalVisible,
     workModalRow,
     setWorkModalRow,
+    workModalStage,
     setWorkModalStage,
+    workModalComment,
     setWorkModalComment,
     workModalMaterials,
     setWorkModalMaterials,
     workModalSaving,
+    setWorkModalSaving,
+    workModalLocation,
     setWorkModalLocation,
     workModalReadOnly,
     setWorkModalReadOnly,
@@ -165,6 +170,29 @@ export default function ContractorScreen() {
     setWorkSearchVisible(false);
     clearSearchState();
   }, [clearSearchState, setWorkSearchVisible]);
+  const closeProgressModal = useCallback(() => {
+    workModalBootSeqRef.current += 1;
+    issuedLoadSeqRef.current += 1;
+    activeWorkModalProgressRef.current = "";
+    clearWorkSearchState();
+    setLinkedReqCards([]);
+    setWorkOverlayModal("none");
+    setActBuilderLoadState("init");
+    setLoadingIssued(false);
+    setWorkModalLoading(false);
+    setWorkModalVisible(false);
+  }, [
+    activeWorkModalProgressRef,
+    clearWorkSearchState,
+    issuedLoadSeqRef,
+    setActBuilderLoadState,
+    setLinkedReqCards,
+    setLoadingIssued,
+    setWorkModalLoading,
+    setWorkModalVisible,
+    setWorkOverlayModal,
+    workModalBootSeqRef,
+  ]);
 
   const {
     loadWorks,
@@ -215,6 +243,27 @@ export default function ContractorScreen() {
       const message = error instanceof Error ? error.message : String(error || "\u041e\u0448\u0438\u0431\u043a\u0430");
       Alert.alert("\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u0430\u043a\u0442\u0438\u0432\u0438\u0440\u043e\u0432\u0430\u0442\u044c \u043a\u043e\u0434", message);
     },
+  });
+  const contractorProgress = useContractorProgressReliability({
+    supabaseClient: supabase,
+    workModalVisible,
+    workModalRow,
+    jobHeader,
+    workModalReadOnly,
+    workModalLoading,
+    workModalMaterials,
+    setWorkModalMaterialsRaw: setWorkModalMaterials,
+    workModalStage,
+    setWorkModalStageRaw: setWorkModalStage,
+    workModalComment,
+    setWorkModalCommentRaw: setWorkModalComment,
+    workModalLocation,
+    setWorkModalLocationRaw: setWorkModalLocation,
+    setWorkModalSaving,
+    setWorkModalHint,
+    closeProgressModal,
+    reloadContractorScreenData,
+    pickFirstNonEmpty,
   });
 
   const {
@@ -274,7 +323,7 @@ export default function ContractorScreen() {
       setLinkedReqCards,
       setIssuedHint,
     },
-    issuedPolling: {
+    issuedRefresh: {
       issuedLoadSeqRef,
       activeWorkModalProgressRef,
       workModalRowRef,
@@ -309,9 +358,9 @@ export default function ContractorScreen() {
       showErr,
     },
     workMaterialUi: {
-      setWorkModalMaterials,
+      setWorkModalMaterials: contractorProgress.setWorkModalMaterials,
       clearWorkSearchState,
-      setWorkModalStage,
+      setWorkModalStage: contractorProgress.setWorkModalStage,
       setWorkOverlayModal,
       styles,
       TextComponent: Text,
@@ -440,6 +489,13 @@ export default function ContractorScreen() {
     workModalSaving,
     loadingIssued,
     workModalHint,
+    progressSyncLabel: contractorProgress.activeProgressStatus.label,
+    progressSyncDetail: contractorProgress.activeProgressStatus.detail,
+    progressSyncTone: contractorProgress.activeProgressStatus.tone,
+    canSubmitProgress: contractorProgress.canSubmitProgress,
+    canRetryProgress: contractorProgress.canRetryProgress,
+    onSubmitProgress: contractorProgress.submitProgressDraft,
+    onRetryProgress: contractorProgress.retryContractorProgressNow,
     onOpenContract: openContractDetailsModal,
     onOpenActBuilder: openActBuilder,
     historyOpen,
@@ -527,7 +583,7 @@ export default function ContractorScreen() {
         onClose={closeEstimateMaterialsModal}
         sheetHeaderTopPad={sheetHeaderTopPad}
         workModalMaterials={workModalMaterials}
-        setWorkModalMaterials={setWorkModalMaterials}
+        setWorkModalMaterials={contractorProgress.setWorkModalMaterials}
         workModalReadOnly={workModalReadOnly}
         workSearchVisible={workSearchVisible}
         workSearchQuery={workSearchQuery}

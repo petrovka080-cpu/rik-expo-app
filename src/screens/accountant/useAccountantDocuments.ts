@@ -58,10 +58,10 @@ export function useAccountantDocuments(params: Params) {
       busy: gbusy,
       supabase,
       key: `pdf:acc:prop:${pid}`,
-      label: "РћС‚РєСЂС‹РІР°СЋ PDFвЂ¦",
+      label: "Открываю PDF…",
       descriptor: {
         ...template,
-        title: `РџСЂРµРґР»РѕР¶РµРЅРёРµ ${pid.slice(0, 8)}`,
+        title: `Предложение ${pid.slice(0, 8)}`,
         fileName: buildPdfFileName({
           documentType: "proposal",
           title: "predlozhenie",
@@ -87,45 +87,48 @@ export function useAccountantDocuments(params: Params) {
       }
       await Share.share({ message: String(uriOrUrl) });
     } catch (e: unknown) {
-      safeAlert("РћС€РёР±РєР°", getErrorText(e));
+      safeAlert("Ошибка", getErrorText(e));
     }
   }, [current, getErrorText, safeAlert]);
 
-  const previewAttachment = useCallback(async (pid: string, groupKey: string, title: string, busyKey: string) => {
-    const att = await getLatestProposalAttachmentPreview(pid, groupKey);
-    if (!isPdfLike(att.fileName, att.url)) {
-      await openAppAttachment({ url: att.url, fileName: att.fileName });
-      return;
-    }
+  const previewAttachment = useCallback(
+    async (pid: string, groupKey: string, title: string, busyKey: string) => {
+      const att = await getLatestProposalAttachmentPreview(pid, groupKey);
+      if (!isPdfLike(att.fileName, att.url)) {
+        await openAppAttachment({ url: att.url, fileName: att.fileName });
+        return;
+      }
 
-    const template = createPdfDocumentDescriptor({
-      uri: att.url,
-      title,
-      fileName: att.fileName,
-      documentType: "attachment_pdf",
-      source: "attachment",
-      originModule: "accountant",
-      entityId: pid,
-    });
-    const doc = await preparePdfDocument({
-      busy: gbusy,
-      supabase,
-      key: busyKey,
-      label: "РћС‚РєСЂС‹РІР°СЋ РґРѕРєСѓРјРµРЅС‚вЂ¦",
-      descriptor: template,
-      getRemoteUrl: () => att.url,
-    });
-    await previewPdfDocument(doc, { router });
-  }, [gbusy, router]);
+      const template = createPdfDocumentDescriptor({
+        uri: att.url,
+        title,
+        fileName: att.fileName,
+        documentType: "attachment_pdf",
+        source: "attachment",
+        originModule: "accountant",
+        entityId: pid,
+      });
+      const doc = await preparePdfDocument({
+        busy: gbusy,
+        supabase,
+        key: busyKey,
+        label: "Открываю документ…",
+        descriptor: template,
+        getRemoteUrl: () => att.url,
+      });
+      await previewPdfDocument(doc, { router });
+    },
+    [gbusy, router],
+  );
 
   const onOpenProposalSource = useCallback(async () => {
     const pid = String(current?.proposal_id ?? "").trim();
     if (!pid) return;
 
     try {
-      await previewAttachment(pid, "proposal_pdf", "Р”РѕРєСѓРјРµРЅС‚ РїСЂРµРґР»РѕР¶РµРЅРёСЏ", `pdf:acc:proposal-src:${pid}`);
+      await previewAttachment(pid, "proposal_pdf", "Документ предложения", `pdf:acc:proposal-src:${pid}`);
     } catch (e: unknown) {
-      safeAlert("Р”РѕРєСѓРјРµРЅС‚ РїСЂРµРґР»РѕР¶РµРЅРёСЏ", getErrorText(e));
+      safeAlert("Документ предложения", getErrorText(e));
     }
   }, [current, getErrorText, previewAttachment, safeAlert]);
 
@@ -134,9 +137,9 @@ export function useAccountantDocuments(params: Params) {
     if (!pid) return;
 
     try {
-      await previewAttachment(pid, "invoice", "РЎС‡РµС‚", `pdf:acc:invoice:${pid}`);
+      await previewAttachment(pid, "invoice", "Счёт", `pdf:acc:invoice:${pid}`);
     } catch (e: unknown) {
-      safeAlert("РЎС‡РµС‚", getErrorText(e));
+      safeAlert("Счёт", getErrorText(e));
     }
   }, [current, getErrorText, previewAttachment, safeAlert]);
 

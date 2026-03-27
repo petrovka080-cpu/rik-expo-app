@@ -4,6 +4,11 @@ import { View, Text, Pressable, ActivityIndicator, FlatList } from "react-native
 import type { ProposalViewLine, ProposalHeadLite } from "../buyer.types";
 import { D, UI } from "../buyerUi";
 import type { StylesBag } from "./component.types";
+import {
+  buildProposalAnalyticSummary,
+  loadProposalAnalyticInsights,
+  type ProposalAnalyticInsight,
+} from "../../../features/ai/aiAnalyticInsights";
 import SectionBlock from "../../../ui/SectionBlock";
 
 type ProposalAttachmentLite = {
@@ -48,6 +53,52 @@ export function BuyerPropDetailsSheetBody({
   onOpenAccounting?: (pid: string) => void;
   onOpenRework?: (pid: string) => void;
 }) {
+  const [analyticInsights, setAnalyticInsights] = React.useState<ProposalAnalyticInsight[]>([]);
+  const [analyticInsightsLoading, setAnalyticInsightsLoading] = React.useState(false);
+  const analyticSummary = React.useMemo(
+    () => buildProposalAnalyticSummary(analyticInsights),
+    [analyticInsights],
+  );
+
+  const analyticSourceItems = React.useMemo(
+    () => (propViewLines || []).map((line, index) => ({
+      id: `${String(line?.request_item_id ?? "x")}:${index}`,
+      rikCode: line?.rik_code ?? null,
+      name: line?.name_human ?? null,
+      price: line?.price ?? null,
+      supplier: line?.supplier ?? null,
+    })),
+    [propViewLines],
+  );
+
+  React.useEffect(() => {
+    let cancelled = false;
+
+    if (!analyticSourceItems.length) {
+      setAnalyticInsights([]);
+      setAnalyticInsightsLoading(false);
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    setAnalyticInsightsLoading(true);
+    void loadProposalAnalyticInsights(analyticSourceItems)
+      .then((nextInsights) => {
+        if (!cancelled) setAnalyticInsights(nextInsights);
+      })
+      .catch(() => {
+        if (!cancelled) setAnalyticInsights([]);
+      })
+      .finally(() => {
+        if (!cancelled) setAnalyticInsightsLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [analyticSourceItems]);
+
   if (propViewBusy) {
     return (
       <View style={{ padding: 40, alignItems: "center" }}>
@@ -132,6 +183,85 @@ export function BuyerPropDetailsSheetBody({
                 </View>
               );
             })()}
+
+            {analyticInsightsLoading || analyticInsights.length ? (
+              <SectionBlock style={{ marginBottom: 12 }} contentStyle={{ gap: 10 }}>
+                <Text style={{ fontWeight: "900", color: D.text, fontSize: 16 }}>AI аналитика</Text>
+                {analyticSummary ? (
+                  <View
+                    style={{
+                      padding: 12,
+                      borderRadius: 12,
+                      backgroundColor: "rgba(255,255,255,0.05)",
+                      borderWidth: 1,
+                      borderColor:
+                        analyticSummary.tone === "good"
+                          ? "rgba(34,197,94,0.35)"
+                          : analyticSummary.tone === "expensive"
+                            ? "rgba(249,115,22,0.35)"
+                            : analyticSummary.tone === "average"
+                              ? "rgba(56,189,248,0.35)"
+                              : "rgba(255,255,255,0.08)",
+                      gap: 6,
+                    }}
+                  >
+                    <Text style={{ color: D.text, fontWeight: "900", fontSize: 13 }}>
+                      {analyticSummary.headline}
+                    </Text>
+                    <Text style={{ color: "rgba(255,255,255,0.8)", fontSize: 12, lineHeight: 17 }}>
+                      {analyticSummary.text}
+                    </Text>
+                  </View>
+                ) : null}
+                {analyticInsightsLoading ? (
+                  <View style={{ paddingVertical: 8, alignItems: "center" }}>
+                    <ActivityIndicator color={UI.accent} />
+                  </View>
+                ) : (
+                  analyticInsights.map((insight) => (
+                    <View
+                      key={insight.id}
+                      style={{
+                        padding: 12,
+                        borderRadius: 12,
+                        backgroundColor: "rgba(255,255,255,0.04)",
+                        borderWidth: 1,
+                        borderColor: "rgba(255,255,255,0.08)",
+                        gap: 6,
+                      }}
+                    >
+                      <Text style={{ color: D.text, fontWeight: "900", fontSize: 13 }} numberOfLines={2}>
+                        {insight.name}
+                      </Text>
+                      <Text
+                        style={{
+                          color:
+                            insight.priceInsightTone === "good"
+                              ? "#22C55E"
+                              : insight.priceInsightTone === "expensive"
+                                ? "#F97316"
+                                : insight.priceInsightTone === "average"
+                                  ? UI.accent
+                                  : D.sub,
+                          fontWeight: "900",
+                          fontSize: 12,
+                        }}
+                      >
+                        {insight.priceInsightLabel}
+                      </Text>
+                      <Text style={{ color: "rgba(255,255,255,0.82)", fontSize: 12, lineHeight: 17 }}>
+                        {insight.priceInsightText}
+                      </Text>
+                      {insight.supplierInsightText ? (
+                        <Text style={{ color: "rgba(255,255,255,0.68)", fontSize: 12, lineHeight: 17 }}>
+                          {insight.supplierInsightText}
+                        </Text>
+                      ) : null}
+                    </View>
+                  ))
+                )}
+              </SectionBlock>
+            ) : null}
 
             <View style={{ marginBottom: 12 }}>
               <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>

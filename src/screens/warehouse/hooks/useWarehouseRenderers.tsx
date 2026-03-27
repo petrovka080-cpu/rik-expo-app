@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useMemo } from "react";
 import {
   createWarehouseIncomingRenderer,
   createWarehouseReqHeadRenderer,
@@ -10,41 +10,36 @@ export function useWarehouseRenderers(params: {
   openReq: (row: ReqHeadRow) => void;
   fmtRuDate: (iso?: string | null) => string;
   openItemsModal: (row: IncomingRow) => void;
-  proposalNoByPurchase: Record<string, string | null | undefined>;
+  getReceiveStatusText: (incomingId: string) => string | null;
   getPickedQty: (codeRaw: string, uomId: string | null) => number;
   openStockIssue: (row: StockRow) => void;
 }) {
-  const reqRendererParams = {
-    openReq: params.openReq,
-    fmtRuDate: params.fmtRuDate,
-  };
-  const incomingRendererParams = {
-    openItemsModal: params.openItemsModal,
-    fmtRuDate: params.fmtRuDate,
-    proposalNoByPurchase: params.proposalNoByPurchase,
-  };
-  const stockRendererParams = {
-    getPickedQty: params.getPickedQty,
-    openStockIssue: params.openStockIssue,
-  };
-
-  const renderReqHeadItem = useCallback(
-    createWarehouseReqHeadRenderer(reqRendererParams),
-    [reqRendererParams.openReq, reqRendererParams.fmtRuDate],
+  const renderReqHeadItem = useMemo(
+    () =>
+      createWarehouseReqHeadRenderer({
+        openReq: params.openReq,
+        fmtRuDate: params.fmtRuDate,
+      }),
+    [params.openReq, params.fmtRuDate],
   );
 
-  const renderIncomingItem = useCallback(
-    createWarehouseIncomingRenderer(incomingRendererParams),
-    [
-      incomingRendererParams.openItemsModal,
-      incomingRendererParams.fmtRuDate,
-      incomingRendererParams.proposalNoByPurchase,
-    ],
+  const renderIncomingItem = useMemo(
+    () =>
+      createWarehouseIncomingRenderer({
+        openItemsModal: params.openItemsModal,
+        fmtRuDate: params.fmtRuDate,
+        getReceiveStatusText: params.getReceiveStatusText,
+      }),
+    [params.openItemsModal, params.fmtRuDate, params.getReceiveStatusText],
   );
 
-  const renderStockItem = useCallback(
-    createWarehouseStockRenderer(stockRendererParams),
-    [stockRendererParams.getPickedQty, stockRendererParams.openStockIssue],
+  const renderStockItem = useMemo(
+    () =>
+      createWarehouseStockRenderer({
+        getPickedQty: params.getPickedQty,
+        openStockIssue: params.openStockIssue,
+      }),
+    [params.getPickedQty, params.openStockIssue],
   );
 
   return { renderReqHeadItem, renderIncomingItem, renderStockItem };

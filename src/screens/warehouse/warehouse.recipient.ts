@@ -1,7 +1,8 @@
 // src/screens/warehouse/warehouse.recipient.ts
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import { loadJson, loadString, saveJson, saveString } from "./warehouse.utils";
 import type { Option } from "./warehouse.types";
+import { useWarehouseUiStore } from "./warehouseUi.store";
 
 const RECIPIENT_KEY = "wh:lastRecipient";
 const RECIPIENT_RECENT_KEY = "wh:recentRecipients";
@@ -12,9 +13,12 @@ export function useWarehouseRecipient(args: {
 }) {
   const { enabled, recipientList } = args;
 
-  const [recipientText, setRecipientText] = useState<string>("");
-  const [recipientSuggestOpen, setRecipientSuggestOpen] = useState(false);
-  const [recipientRecent, setRecipientRecent] = useState<string[]>([]);
+  const recipientText = useWarehouseUiStore((state) => state.recipientText);
+  const setRecipientText = useWarehouseUiStore((state) => state.setRecipientText);
+  const recipientSuggestOpen = useWarehouseUiStore((state) => state.recipientSuggestOpen);
+  const setRecipientSuggestOpen = useWarehouseUiStore((state) => state.setRecipientSuggestOpen);
+  const recipientRecent = useWarehouseUiStore((state) => state.recipientRecent);
+  const setRecipientRecent = useWarehouseUiStore((state) => state.setRecipientRecent);
 
 
   useEffect(() => {
@@ -33,7 +37,7 @@ export function useWarehouseRecipient(args: {
       }
     });
 
-  }, [enabled]);
+  }, [enabled, setRecipientRecent, setRecipientText]);
 
   const recipientSuggestions = useMemo(() => {
     const recent = recipientRecent || [];
@@ -61,7 +65,7 @@ export function useWarehouseRecipient(args: {
     });
 
     void saveString(RECIPIENT_KEY, t);
-  }, []);
+  }, [setRecipientRecent, setRecipientSuggestOpen, setRecipientText]);
 
   return {
     recipientText,

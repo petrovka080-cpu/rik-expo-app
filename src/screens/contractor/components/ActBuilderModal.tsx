@@ -1,5 +1,5 @@
 import React from "react";
-import { FlatList, Modal, Text, View, type ListRenderItemInfo } from "react-native";
+import { Modal, Text, View, type ListRenderItemInfo } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import type { ActBuilderItem, ActBuilderWorkItem } from "../types";
 import ModalSheetHeader from "./ModalSheetHeader";
@@ -8,6 +8,7 @@ import ActBuilderTotalsCard from "./ActBuilderTotalsCard";
 import ActBuilderFooter from "./ActBuilderFooter";
 import ActBuilderWorkRow from "./ActBuilderWorkRow";
 import ActBuilderMaterialRow from "./ActBuilderMaterialRow";
+import { FlashList } from "../../../ui/FlashList";
 
 type JobHeader = {
   contract_number?: string | null;
@@ -189,23 +190,7 @@ export default function ActBuilderModal(props: Props) {
           );
       }
     },
-    [
-      props.expandedMatId,
-      props.expandedWorkId,
-      props.onDecrementMat,
-      props.onIncrementMat,
-      props.onPriceChangeMat,
-      props.onPriceChangeWork,
-      props.onQtyChangeWork,
-      props.onToggleExpandedMat,
-      props.onToggleExpandedWork,
-      props.onToggleIncludeMat,
-      props.onToggleIncludeWork,
-      props.onUnitChangeWork,
-      props.resolvedObjectName,
-      props.selectedMatCount,
-      props.selectedWorkCount,
-    ],
+    [props],
   );
 
   return (
@@ -241,7 +226,7 @@ export default function ActBuilderModal(props: Props) {
           closeTextStyle={{ color: "#64748b", fontWeight: "800", fontSize: 20 }}
         />
 
-        <FlatList
+        <FlashList
           data={listData}
           style={{ flex: 1 }}
           contentContainerStyle={{ padding: 16, paddingBottom: 20 }}
@@ -250,10 +235,7 @@ export default function ActBuilderModal(props: Props) {
           renderItem={renderItem}
           ListHeaderComponent={listHeader}
           ListFooterComponent={listFooter}
-          initialNumToRender={10}
-          maxToRenderPerBatch={10}
-          windowSize={8}
-          removeClippedSubviews={false}
+          estimatedItemSize={102}
         />
 
         <ActBuilderFooter

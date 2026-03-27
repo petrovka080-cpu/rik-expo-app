@@ -1,17 +1,11 @@
 import type { Database } from "../database.types";
 import type { ReqItemRow as CatalogReqItemRow } from "../catalog_api";
 import { supabase } from "../supabaseClient";
-import { parseErr } from "./_core";
 import { mapRequestRow } from "./requests.parsers";
 import type { RequestMeta, RequestRecord } from "./types";
 
-type RequestDraftSyncArgs = Database["public"]["Functions"]["request_sync_draft_v1"]["Args"];
-type RequestDraftSyncReturns = Database["public"]["Functions"]["request_sync_draft_v1"]["Returns"];
 type RequestDraftSyncArgsV2 = Database["public"]["Functions"]["request_sync_draft_v2"]["Args"];
-type RequestDraftSyncRpcVersion = "v1" | "v2";
-
-const REQUEST_DRAFT_SYNC_RPC_V1_ENABLED =
-  String(process.env.EXPO_PUBLIC_REQUEST_DRAFT_SYNC_RPC_V1 ?? "").trim() !== "0";
+type RequestDraftSyncReturns = Database["public"]["Functions"]["request_sync_draft_v2"]["Returns"];
 
 const REQUEST_DRAFT_SYNC_RPC_V2_ENABLED =
   String(process.env.EXPO_PUBLIC_REQUEST_DRAFT_SYNC_RPC_V2 ?? "1").trim() !== "0";
@@ -31,14 +25,13 @@ export type RequestDraftSyncLineInput = {
 };
 
 export type RequestDraftSyncBranchMeta = {
-  sourceBranch: "rpc_v2" | "rpc_v1" | "legacy_fallback";
-  fallbackReason?: "disabled" | "rpc_error" | "invalid_payload";
-  rpcVersion?: "v1" | "v2";
+  sourceBranch: "rpc_v2";
+  rpcVersion: "v2";
 };
 
 type RequestDraftSyncEnvelope = {
   document_type: "request_draft_sync";
-  version: RequestDraftSyncRpcVersion;
+  version: "v2";
   request_payload: unknown;
   items_payload: unknown[];
   submitted: boolean;
@@ -191,19 +184,6 @@ const parseItemsPayload = (value: unknown): CatalogReqItemRow[] => {
   });
 };
 
-const getRpcName = (version: RequestDraftSyncRpcVersion) =>
-  version === "v2" ? "request_sync_draft_v2" : "request_sync_draft_v1";
-
-const isDraftSyncRpcMissingError = (error: unknown) => {
-  const message = parseErr(error).toLowerCase();
-  return (
-    message.includes("could not find the function") ||
-    message.includes("schema cache") ||
-    message.includes("404") ||
-    message.includes("not found")
-  );
-};
-
 const parseEnvelope = (value: RequestDraftSyncReturns): RequestDraftSyncEnvelope => {
   if (!isRecord(value)) {
     throw new Error("request_sync_draft returned non-object payload");
@@ -215,7 +195,7 @@ const parseEnvelope = (value: RequestDraftSyncReturns): RequestDraftSyncEnvelope
   }
 
   const version = asTrimmedString(value.version);
-  if (version !== "v1" && version !== "v2") {
+  if (version !== "v2") {
     throw new Error(`request_sync_draft invalid version: ${version || "<empty>"}`);
   }
 
@@ -225,7 +205,7 @@ const parseEnvelope = (value: RequestDraftSyncReturns): RequestDraftSyncEnvelope
 
   return {
     document_type: "request_draft_sync",
-    version,
+    version: "v2",
     request_payload: value.request_payload,
     items_payload: value.items_payload,
     submitted: value.submitted === true,
@@ -233,7 +213,7 @@ const parseEnvelope = (value: RequestDraftSyncReturns): RequestDraftSyncEnvelope
   };
 };
 
-export const isRequestDraftSyncRpcEnabled = () => REQUEST_DRAFT_SYNC_RPC_V1_ENABLED || REQUEST_DRAFT_SYNC_RPC_V2_ENABLED;
+export const isRequestDraftSyncRpcEnabled = () => REQUEST_DRAFT_SYNC_RPC_V2_ENABLED;
 
 export async function syncRequestDraftViaRpc(params: {
   requestId?: string | null;
@@ -248,7 +228,11 @@ export async function syncRequestDraftViaRpc(params: {
   systemName?: string | null;
   zoneName?: string | null;
 }): Promise<RequestDraftSyncResult> {
-  const argsV1: RequestDraftSyncArgs = {
+  if (!REQUEST_DRAFT_SYNC_RPC_V2_ENABLED) {
+    throw new Error("request_sync_draft_v2 is disabled");
+  }
+
+  const argsV2: RequestDraftSyncArgsV2 = {
     p_request_id: asTrimmedString(params.requestId) || null,
     p_submit: params.submit === true,
     p_foreman_name: params.meta?.foreman_name ?? null,
@@ -271,10 +255,6 @@ export async function syncRequestDraftViaRpc(params: {
     p_pending_delete_ids: Array.from(
       new Set((params.pendingDeleteIds || []).map((id) => asTrimmedString(id)).filter(Boolean)),
     ),
-  };
-
-  const argsV2: RequestDraftSyncArgsV2 = {
-    ...argsV1,
     p_subcontract_id: params.subcontractId ?? null,
     p_contractor_job_id: params.contractorJobId ?? null,
     p_object_name: params.objectName ?? null,
@@ -283,90 +263,55 @@ export async function syncRequestDraftViaRpc(params: {
     p_zone_name: params.zoneName ?? null,
   };
 
-  const versionsToTry: RequestDraftSyncRpcVersion[] =
-    REQUEST_DRAFT_SYNC_RPC_V2_ENABLED && REQUEST_DRAFT_SYNC_RPC_V1_ENABLED
-      ? ["v2", "v1"]
-      : REQUEST_DRAFT_SYNC_RPC_V2_ENABLED
-        ? ["v2"]
-        : ["v1"];
-
-  let lastError: Error | null = null;
-
-  for (const version of versionsToTry) {
-    const rpcName = getRpcName(version);
-    const { data, error } =
-      version === "v2"
-        ? await supabase.rpc("request_sync_draft_v2", argsV2)
-        : await supabase.rpc("request_sync_draft_v1", argsV1);
-
-    if (error) {
-      const rpcError = new Error(`${rpcName} failed: ${error.message}`);
-      lastError = rpcError;
-
-      if (version === "v2" && REQUEST_DRAFT_SYNC_RPC_V1_ENABLED && isDraftSyncRpcMissingError(rpcError)) {
-        console.warn("[draft-sync] request_sync_draft_v2 unavailable -> retrying v1", error);
-        continue;
-      }
-
-      throw rpcError;
-    }
-
-    const envelope = parseEnvelope(data);
-    const request = mapRequestRow(envelope.request_payload);
-    if (!request) {
-      throw new Error("request_sync_draft invalid request_payload");
-    }
-
-    const items = parseItemsPayload(envelope.items_payload);
-    console.log(`[draft-sync] source=rpc_${version}`);
-    console.info("[request-draft-sync]", {
-      sourceBranch: version === "v2" ? "rpc_v2" : "rpc_v1",
-      requestId: request.id,
-      submitted: envelope.submitted,
-      requestCreated: envelope.request_created,
-      lineCount: items.length,
-      requestedRpcVersion: REQUEST_DRAFT_SYNC_RPC_V2_ENABLED ? "v2" : "v1",
-      resolvedRpcVersion: version,
-    });
-
-    if (__DEV__ && params.submit === true) {
-      console.info("[submit]", {
-        requestId: request.id,
-        displayNo: request.display_no ?? null,
-        status: request.status ?? null,
-        sourceBranch: version === "v2" ? "rpc_v2" : "rpc_v1",
-        rpcVersion: version,
-      });
-    }
-
-    if (params.submit === true && envelope.submitted) {
-      await signalDirectorRequestSubmitted({
-        requestId: String(request.id ?? ""),
-        displayNo: request.display_no ?? null,
-        sourcePath: version === "v2" ? "foreman.requestDraftSync.rpc_v2_submit" : "foreman.requestDraftSync.rpc_v1_submit",
-      });
-    }
-
-    return {
-      request,
-      items,
-      submitted: envelope.submitted,
-      requestCreated: envelope.request_created,
-      branchMeta: {
-        sourceBranch: version === "v2" ? "rpc_v2" : "rpc_v1",
-        rpcVersion: version,
-      },
-    };
+  const { data, error } = await supabase.rpc("request_sync_draft_v2", argsV2);
+  if (error) {
+    throw new Error(`request_sync_draft_v2 failed: ${error.message}`);
   }
 
-  throw lastError ?? new Error("request_sync_draft failed without details");
-}
+  const envelope = parseEnvelope(data);
+  const request = mapRequestRow(envelope.request_payload);
+  if (!request) {
+    throw new Error("request_sync_draft invalid request_payload");
+  }
 
-export const toRequestDraftSyncFallbackReason = (
-  error: unknown,
-): RequestDraftSyncBranchMeta["fallbackReason"] => {
-  if (!isRequestDraftSyncRpcEnabled()) return "disabled";
-  const message = parseErr(error).toLowerCase();
-  if (message.includes("invalid")) return "invalid_payload";
-  return "rpc_error";
-};
+  const items = parseItemsPayload(envelope.items_payload);
+  console.log("[draft-sync] source=rpc_v2");
+  console.info("[request-draft-sync]", {
+    sourceBranch: "rpc_v2",
+    requestId: request.id,
+    submitted: envelope.submitted,
+    requestCreated: envelope.request_created,
+    lineCount: items.length,
+    requestedRpcVersion: "v2",
+    resolvedRpcVersion: "v2",
+  });
+
+  if (__DEV__ && params.submit === true) {
+    console.info("[submit]", {
+      requestId: request.id,
+      displayNo: request.display_no ?? null,
+      status: request.status ?? null,
+      sourceBranch: "rpc_v2",
+      rpcVersion: "v2",
+    });
+  }
+
+  if (params.submit === true && envelope.submitted) {
+    await signalDirectorRequestSubmitted({
+      requestId: String(request.id ?? ""),
+      displayNo: request.display_no ?? null,
+      sourcePath: "foreman.requestDraftSync.rpc_v2_submit",
+    });
+  }
+
+  return {
+    request,
+    items,
+    submitted: envelope.submitted,
+    requestCreated: envelope.request_created,
+    branchMeta: {
+      sourceBranch: "rpc_v2",
+      rpcVersion: "v2",
+    },
+  };
+}

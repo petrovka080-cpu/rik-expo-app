@@ -1,4 +1,5 @@
 import type { Database } from "../../lib/database.types";
+import type { BuyerInboxRow } from "../../lib/catalog_api";
 
 export type BuyerProposalBucketRow = {
   id: string;
@@ -7,6 +8,22 @@ export type BuyerProposalBucketRow = {
   total_sum?: number;
   sent_to_accountant_at?: string | null;
   items_cnt?: number;
+};
+
+export type BuyerSummaryBucketsScopeEnvelope = {
+  document_type: string;
+  version: string;
+  pending: BuyerProposalBucketRow[];
+  approved: BuyerProposalBucketRow[];
+  rejected: BuyerProposalBucketRow[];
+  meta: Record<string, unknown>;
+};
+
+export type BuyerSummaryInboxScopeEnvelope = {
+  document_type: string;
+  version: string;
+  rows: BuyerInboxRow[];
+  meta: Record<string, unknown>;
 };
 
 type ProposalSummaryRow = Pick<
@@ -21,6 +38,9 @@ type ProposalItemIdRow = Pick<Database["public"]["Tables"]["proposal_items"]["Ro
 
 const asText = (value: unknown): string => String(value ?? "").trim();
 
+const asRecord = (value: unknown): Record<string, unknown> | null =>
+  value && typeof value === "object" && !Array.isArray(value) ? (value as Record<string, unknown>) : null;
+
 const asMaybeText = (value: unknown): string | null => {
   const normalized = asText(value);
   return normalized || null;
@@ -31,12 +51,18 @@ const asNumber = (value: unknown): number => {
   return Number.isFinite(parsed) ? parsed : 0;
 };
 
+const asMaybeNumber = (value: unknown): number | undefined => {
+  if (value == null || value === "") return undefined;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : undefined;
+};
+
 export const mapProposalSummaryRows = (
   rows: ProposalSummaryRow[] | null | undefined,
 ): BuyerProposalBucketRow[] => {
   if (!Array.isArray(rows)) return [];
 
-  const mapped: Array<BuyerProposalBucketRow | null> = rows
+  const mapped: (BuyerProposalBucketRow | null)[] = rows
     .map((row) => {
       const id = asText(row.proposal_id);
       if (!id) return null;
@@ -100,3 +126,115 @@ export const filterProposalBucketsWithItems = (
   rows: BuyerProposalBucketRow[],
   itemCounts: ReadonlyMap<string, number>,
 ): BuyerProposalBucketRow[] => rows.filter((row) => (itemCounts.get(row.id) ?? 0) > 0);
+
+const mapScopeSummaryRows = (rows: unknown): BuyerProposalBucketRow[] => {
+  if (!Array.isArray(rows)) return [];
+
+  const mapped: (BuyerProposalBucketRow | null)[] = rows.map((raw) => {
+    const row = asRecord(raw);
+    if (!row) return null;
+
+    const id = asText(row.id);
+    if (!id) return null;
+
+    return {
+      id,
+      status: asText(row.status),
+      submitted_at: asMaybeText(row.submitted_at),
+      total_sum: asNumber(row.total_sum),
+      sent_to_accountant_at: asMaybeText(row.sent_to_accountant_at),
+      items_cnt: asNumber(row.items_cnt),
+    };
+  });
+
+  return mapped.filter((row): row is BuyerProposalBucketRow => row !== null);
+};
+
+const mapScopeRejectedRows = (rows: unknown): BuyerProposalBucketRow[] => {
+  if (!Array.isArray(rows)) return [];
+
+  const mapped: (BuyerProposalBucketRow | null)[] = rows.map((raw) => {
+    const row = asRecord(raw);
+    if (!row) return null;
+
+    const id = asText(row.id);
+    if (!id) return null;
+
+    const result: BuyerProposalBucketRow = {
+      id,
+      status: asText(row.status),
+      submitted_at: asMaybeText(row.submitted_at),
+    };
+    const totalSum = asMaybeNumber(row.total_sum);
+    if (typeof totalSum === "number") result.total_sum = totalSum;
+    const sentToAccountantAt = asMaybeText(row.sent_to_accountant_at);
+    if (sentToAccountantAt) result.sent_to_accountant_at = sentToAccountantAt;
+    const itemsCount = asMaybeNumber(row.items_cnt);
+    if (typeof itemsCount === "number") result.items_cnt = itemsCount;
+    return result;
+  });
+
+  return mapped.filter((row): row is BuyerProposalBucketRow => row !== null);
+};
+
+export const adaptBuyerSummaryBucketsScopeEnvelope = (
+  raw: unknown,
+): BuyerSummaryBucketsScopeEnvelope => {
+  const root = asRecord(raw) ?? {};
+  return {
+    document_type: asText(root.document_type),
+    version: asText(root.version),
+    pending: mapScopeSummaryRows(root.pending),
+    approved: mapScopeSummaryRows(root.approved),
+    rejected: mapScopeRejectedRows(root.rejected),
+    meta: asRecord(root.meta) ?? {},
+  };
+};
+
+const mapScopeInboxRows = (rows: unknown): BuyerInboxRow[] => {
+  if (!Array.isArray(rows)) return [];
+
+  const mapped: (BuyerInboxRow | null)[] = rows.map((raw) => {
+    const row = asRecord(raw);
+    if (!row) return null;
+
+    const requestId = asText(row.request_id);
+    const requestItemId = asText(row.request_item_id);
+    if (!requestId || !requestItemId) return null;
+
+    return {
+      request_id: requestId,
+      request_id_old: asMaybeNumber(row.request_id_old) ?? null,
+      request_item_id: requestItemId,
+      rik_code: asMaybeText(row.rik_code),
+      name_human: asText(row.name_human) || "\u2014",
+      qty: asMaybeNumber(row.qty) ?? 0,
+      uom: asMaybeText(row.uom),
+      app_code: asMaybeText(row.app_code),
+      note: asMaybeText(row.note),
+      object_name: asMaybeText(row.object_name),
+      status: asText(row.status),
+      created_at: asMaybeText(row.created_at) ?? undefined,
+      director_reject_note: asMaybeText(row.director_reject_note),
+      director_reject_at: asMaybeText(row.director_reject_at),
+      director_reject_reason: asMaybeText(row.director_reject_reason),
+      last_offer_supplier: asMaybeText(row.last_offer_supplier),
+      last_offer_price: asMaybeNumber(row.last_offer_price) ?? null,
+      last_offer_note: asMaybeText(row.last_offer_note),
+    };
+  });
+
+  return mapped.filter((row): row is BuyerInboxRow => row !== null);
+};
+
+export const adaptBuyerSummaryInboxScopeEnvelope = (
+  raw: unknown,
+): BuyerSummaryInboxScopeEnvelope => {
+  const root = asRecord(raw) ?? {};
+  return {
+    document_type: asText(root.document_type),
+    version: asText(root.version),
+    rows: mapScopeInboxRows(root.rows),
+    meta: asRecord(root.meta) ?? {},
+  };
+};

@@ -1,11 +1,12 @@
 import React, { useMemo } from "react";
-import { View, Text, FlatList, Platform } from "react-native";
+import { View, Text } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
 import WarehouseSheet from "./WarehouseSheet";
 import { UI } from "../warehouse.styles";
 import IconSquareButton from "../../../ui/IconSquareButton";
 import SectionBlock from "../../../ui/SectionBlock";
+import { FlashList } from "../../../ui/FlashList";
 
 type Props = {
   visible: boolean;
@@ -117,18 +118,15 @@ export default function IncomingDetailsSheet({
             <Text style={{ color: UI.sub, fontWeight: "800" }}>Загрузка…</Text>
           </SectionBlock>
         ) : (
-          <FlatList
+          <FlashList
             data={lines}
             renderItem={renderLine}
             keyExtractor={keyExtractor}
             style={{ flex: 1 }}
+            estimatedItemSize={88}
             contentContainerStyle={{ paddingBottom: 28 }}
             showsVerticalScrollIndicator
             keyboardShouldPersistTaps="handled"
-            initialNumToRender={12}
-            maxToRenderPerBatch={12}
-            windowSize={8}
-            removeClippedSubviews={Platform.OS === "android"}
             ListEmptyComponent={emptyState}
           />
         )}

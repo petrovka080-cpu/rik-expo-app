@@ -181,7 +181,7 @@ const logDirectorReportTransportScope = (
   result: DirectorReportTransportScopeResult,
   extra?: Record<string, unknown>,
 ) => {
-  if (!__DEV__) return;
+  if (typeof __DEV__ === "undefined" || !__DEV__) return;
   console.info("[director-report-transport]", {
     source: result.source,
     transportBranch: result.branchMeta.transportBranch,
@@ -370,7 +370,7 @@ async function buildDirectorReportTransportScopeFallback(args: {
     const canonical = await buildDirectorReportTransportCanonicalScope(args);
     if (canonical) return canonical;
   } catch (error) {
-    if (__DEV__) {
+    if (typeof __DEV__ !== "undefined" && __DEV__) {
       console.warn("[director-report-transport] canonical fallback failed", {
         errorMessage: error instanceof Error ? error.message : String(error),
         from: args.from,
@@ -470,7 +470,7 @@ async function loadDirectorReportTransportScopeLive(args: {
       directorReportTransportScopeRpcAvailability = "missing";
       directorReportTransportScopeLastErrorMessage = error.message;
     }
-    if (__DEV__) {
+    if (typeof __DEV__ !== "undefined" && __DEV__) {
       console.warn("[director-report-transport] scope rpc fallback", {
         fallbackReason,
         errorMessage: error instanceof Error ? error.message : String(error),

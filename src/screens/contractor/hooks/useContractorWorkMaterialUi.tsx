@@ -48,7 +48,7 @@ export function useContractorWorkMaterialUi(params: {
       const hasStock = (item.available || 0) > 0;
       return (
         <Pressable
-          onPress={() => addWorkMaterial(item as WorkMaterialRow)}
+          onPress={() => addWorkMaterial(item)}
           style={styles.searchItemRow}
         >
           <View style={styles.flex1}>

@@ -1,7 +1,8 @@
-﻿import React from "react";
-import { FlatList, Modal, Pressable, Text, TextInput, View } from "react-native";
+import React from "react";
+import { Modal, Pressable, Text, TextInput, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { WorkMaterialsEditor, type WorkMaterialRow } from "../../../components/WorkMaterialsEditor";
+import { FlashList } from "../../../ui/FlashList";
 
 type Props = {
   visible: boolean;
@@ -78,7 +79,7 @@ export default function EstimateMaterialsModal(props: Props) {
               <TextInput
                 value={props.workSearchQuery}
                 onChangeText={props.handleWorkSearchChange}
-                placeholder="Поиск по названию/коду..."
+                placeholder="Поиск по названию или коду..."
                 style={{
                   borderWidth: 1,
                   borderColor: "#e2e8f0",
@@ -87,10 +88,11 @@ export default function EstimateMaterialsModal(props: Props) {
                   paddingVertical: 8,
                 }}
               />
-              <FlatList
+              <FlashList
                 data={props.workSearchResults}
                 keyExtractor={(m: WorkMaterialRow) => String(m.mat_code)}
                 style={{ maxHeight: 220 }}
+                estimatedItemSize={62}
                 renderItem={props.renderWorkSearchItem}
                 ListEmptyComponent={<Text style={{ color: "#94a3b8" }}>Введите минимум 2 символа для поиска.</Text>}
               />

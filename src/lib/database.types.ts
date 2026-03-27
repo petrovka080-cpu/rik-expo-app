@@ -16357,6 +16357,10 @@ export type Database = {
         Args: { p_decision: string; p_request_id: string }
         Returns: undefined
       }
+      director_pending_proposals_scope_v1: {
+        Args: { p_limit_heads?: number; p_offset_heads?: number }
+        Returns: Json
+      }
       director_finance_fetch_summary_v1: {
         Args: {
           p_critical_days?: number
@@ -16385,6 +16389,18 @@ export type Database = {
         }
         Returns: Json
       }
+      director_finance_panel_scope_v3: {
+        Args: {
+          p_critical_days?: number
+          p_date_from?: string
+          p_date_to?: string
+          p_due_days?: number
+          p_limit?: number
+          p_object_id?: string
+          p_offset?: number
+        }
+        Returns: Json
+      }
       director_finance_summary_v2: {
         Args: { p_date_from?: string; p_date_to?: string; p_object_id?: string }
         Returns: Json
@@ -16397,6 +16413,18 @@ export type Database = {
           p_kind_name?: string
           p_supplier: string
           p_to?: string
+        }
+        Returns: Json
+      }
+      director_finance_supplier_scope_v2: {
+        Args: {
+          p_critical_days?: number
+          p_due_days?: number
+          p_from?: string | null
+          p_kind_name?: string | null
+          p_object_id?: string
+          p_supplier: string
+          p_to?: string | null
         }
         Returns: Json
       }
@@ -16930,6 +16958,10 @@ export type Database = {
       get_my_role: { Args: never; Returns: string }
       get_my_role_base: { Args: never; Returns: string }
       get_payment_order_data: { Args: { p_payment_id: number }; Returns: Json }
+      pdf_contractor_work_source_v1: {
+        Args: { p_log_id?: string | null; p_progress_id: string }
+        Returns: Json
+      }
       pdf_payment_source_v1: { Args: { p_payment_id: number }; Returns: Json }
       pdf_warehouse_incoming_source_v1: { Args: { p_incoming_id: string }; Returns: Json }
       pdf_warehouse_incoming_materials_source_v1: {
@@ -16999,6 +17031,20 @@ export type Database = {
         Returns: number
       }
       kb_swap: { Args: { s: string }; Returns: string }
+      accountant_history_scope_v1: {
+        Args: {
+          p_date_from?: string
+          p_date_to?: string
+          p_search?: string
+          p_offset?: number
+          p_limit?: number
+        }
+        Returns: Json
+      }
+      accountant_inbox_scope_v1: {
+        Args: { p_tab?: string; p_offset?: number; p_limit?: number }
+        Returns: Json
+      }
       list_accountant_inbox: {
         Args: { p_tab: string }
         Returns: {
@@ -19473,6 +19519,22 @@ export type Database = {
           p_work_name: string
         }
         Returns: number
+      }
+      warehouse_issue_queue_scope_v1: {
+        Args: { p_limit?: number; p_offset?: number }
+        Returns: Json
+      }
+      warehouse_issue_queue_scope_v2: {
+        Args: { p_limit?: number; p_offset?: number }
+        Returns: Json
+      }
+      warehouse_issue_queue_scope_v3: {
+        Args: { p_limit?: number; p_offset?: number }
+        Returns: Json
+      }
+      warehouse_issue_queue_scope_v4: {
+        Args: { p_limit?: number; p_offset?: number }
+        Returns: Json
       }
       wh_move_from_incoming_item: {
         Args: { p_delta: number; p_incoming_item_id: string }

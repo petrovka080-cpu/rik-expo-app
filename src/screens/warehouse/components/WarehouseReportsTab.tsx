@@ -1,13 +1,14 @@
 import React, { useMemo, useState } from "react";
-import { View, Text, Pressable, FlatList } from "react-native";
+import { View, Text, Pressable } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import TopRightActionBar from "../../../ui/TopRightActionBar";
 import SectionBlock from "../../../ui/SectionBlock";
-import StatusBadge from "../../../ui/StatusBadge";
+import { StatusBadge } from "../../../ui/StatusBadge";
 import RoleScreenLayout from "../../../components/layout/RoleScreenLayout";
 import ChevronIndicator from "../../../ui/ChevronIndicator";
+import { FlashList } from "../../../ui/FlashList";
 import type { TopRightAction } from "../../../ui/TopRightActionBar";
 import { UI, s } from "../warehouse.styles";
 import type { WarehouseReportRow } from "../warehouse.types";
@@ -341,7 +342,7 @@ export default function WarehouseReportsTab(props: Props) {
           </View>
         </View>
 
-        <FlatList
+        <FlashList
           data={activeDay.items}
           renderItem={renderActiveDayItem}
           keyExtractor={(item, index) => {
@@ -349,6 +350,7 @@ export default function WarehouseReportsTab(props: Props) {
             return `${activeDay.day}_${docId || index}_${index}`;
           }}
           style={{ flex: 1 }}
+          estimatedItemSize={92}
           contentContainerStyle={{
             paddingTop: 20,
             paddingHorizontal: 16,
@@ -364,18 +366,18 @@ export default function WarehouseReportsTab(props: Props) {
 
   return (
     <RoleScreenLayout>
-      <FlatList
+      <FlashList
         data={dayGroups}
         renderItem={renderDayGroupItem}
         keyExtractor={(item) => item.day}
         style={{ flex: 1 }}
+        estimatedItemSize={88}
         contentContainerStyle={{
           paddingTop: headerTopPad + 4,
           paddingBottom: Math.max(20, insets.bottom + 16),
         }}
         showsVerticalScrollIndicator
         keyboardShouldPersistTaps="handled"
-        removeClippedSubviews
         ListHeaderComponent={reportsListHeader}
         ListFooterComponent={<View style={{ height: 8 }} />}
       />

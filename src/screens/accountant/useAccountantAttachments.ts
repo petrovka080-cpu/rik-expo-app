@@ -12,6 +12,7 @@ import {
 import { openPaymentDocsOrUpload } from "./accountant.docs";
 
 type RowBase = { proposal_id?: string | number | null };
+const ATT_TTL_MS = 2 * 60 * 1000;
 
 export function useAccountantAttachments(params: {
   current: RowBase | null;
@@ -24,7 +25,6 @@ export function useAccountantAttachments(params: {
   const attPidRef = useRef<string | null>(null);
   const attLoadingRef = useRef(false);
   const attCacheRef = useRef<Record<string, { ts: number; rows: AttachmentRow[] }>>({});
-  const ATT_TTL_MS = 2 * 60 * 1000;
 
   const onOpenAttachments = useCallback(
     async (proposalId?: string, opts?: { silent?: boolean; force?: boolean }) => {
@@ -47,7 +47,7 @@ export function useAccountantAttachments(params: {
         attCacheRef.current[pid] = { ts: Date.now(), rows: out };
       } catch (e: unknown) {
         if (!opts?.silent) {
-          safeAlert("РћС€РёР±РєР° РІР»РѕР¶РµРЅРёР№", e instanceof Error ? e.message : String(e));
+          safeAlert("Ошибка вложений", e instanceof Error ? e.message : String(e));
         }
       } finally {
         attLoadingRef.current = false;
@@ -78,7 +78,7 @@ export function useAccountantAttachments(params: {
           );
         });
       } catch (e: unknown) {
-        safeAlert("РћС€РёР±РєР° РѕС‚РєСЂС‹С‚РёСЏ РІР»РѕР¶РµРЅРёСЏ", e instanceof Error ? e.message : String(e));
+        safeAlert("Ошибка открытия вложения", e instanceof Error ? e.message : String(e));
       }
     },
     [runAction, safeAlert],

@@ -1,6 +1,6 @@
 // src/screens/warehouse/components/ReqIssueModal.tsx
 import React, { useMemo } from "react";
-import { View, Text, Pressable, TextInput, FlatList, Platform } from "react-native";
+import { View, Text, Pressable, TextInput, Platform } from "react-native";
 import RNModal from "react-native-modal";
 import { Ionicons } from "@expo/vector-icons";
 import { uomLabelRu } from "../warehouse.uom";
@@ -10,6 +10,7 @@ import { nz } from "../warehouse.utils";
 import type { ReqHeadRow, ReqItemUiRow, ReqPickLine } from "../warehouse.types";
 
 import IconSquareButton from "../../../ui/IconSquareButton";
+import { FlashList } from "../../../ui/FlashList";
 
 type Props = {
   visible: boolean;
@@ -342,12 +343,13 @@ export default function ReqIssueModal(props: Props) {
         {reqItemsLoading ? (
           <Text style={{ color: UI.sub, fontWeight: "800" }}>Загрузка позиций…</Text>
         ) : (
-          <FlatList
+          <FlashList
             data={rows}
             // ✅ ключ “на всякий” тоже делаем устойчивый
             keyExtractor={(x, idx) => `${x.request_item_id}:${String(x.rik_code ?? "")}:${String(x.uom ?? "")}:${idx}`}
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}
+            estimatedItemSize={148}
             renderItem={({ item }) => {
               const canByStock = nz(item.qty_available, 0);
               const left = nz(item.qty_left, 0);

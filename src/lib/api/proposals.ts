@@ -45,8 +45,17 @@ type ProposalMutationMetaRow = {
   supplier?: string | null;
   note?: string | null;
 };
-
-const PROPOSAL_STATUS_PENDING = "На утверждении";
+type ProposalItemMetaUpsertInput = {
+  request_item_id: string;
+  name_human?: string | null;
+  uom?: string | null;
+  qty?: number | null;
+  app_code?: string | null;
+  rik_code?: string | null;
+  price?: number | null;
+  supplier?: string | null;
+  note?: string | null;
+};
 
 const PROPOSAL_STATUS_PENDING_CANONICAL = "\u041d\u0430 \u0443\u0442\u0432\u0435\u0440\u0436\u0434\u0435\u043d\u0438\u0438";
 
@@ -129,6 +138,26 @@ function buildProposalItemsSnapshotArgs(
     p_proposal_id: String(proposalId),
     p_meta: metaRows,
   };
+}
+
+function buildProposalItemMetaUpsert(
+  proposalId: string,
+  row: ProposalItemMetaUpsertInput,
+): ProposalItemInsert {
+  const payload: ProposalItemInsert = {
+    proposal_id: proposalId,
+    proposal_id_text: proposalId,
+    request_item_id: String(row.request_item_id || "").trim(),
+  };
+  if ("name_human" in row) payload.name_human = row.name_human ?? null;
+  if ("uom" in row) payload.uom = row.uom ?? null;
+  if ("qty" in row) payload.qty = row.qty ?? null;
+  if ("app_code" in row) payload.app_code = row.app_code ?? null;
+  if ("rik_code" in row) payload.rik_code = row.rik_code ?? null;
+  if (typeof row.price === "number" && Number.isFinite(row.price)) payload.price = row.price;
+  if ("supplier" in row) payload.supplier = row.supplier ?? null;
+  if ("note" in row) payload.note = row.note ?? null;
+  return payload;
 }
 
 // ============================== Boundary aggregators ==============================
@@ -307,7 +336,7 @@ export async function proposalSubmit(proposalId: number | string) {
   return 1;
 }
 
-export async function listDirectorProposalsPending(): Promise<Array<{ id: string; submitted_at: string | null }>> {
+export async function listDirectorProposalsPending(): Promise<{ id: string; submitted_at: string | null }[]> {
   const rowsFromTable = await client
     .from("proposals")
     .select("id, submitted_at")
@@ -394,8 +423,63 @@ export async function proposalSnapshotItems(
 }
 
 export async function proposalSetItemsMeta(
-  _proposalId: number | string,
-  _rows: { request_item_id: string; price?: string | null; supplier?: string | null; note?: string | null },
+  proposalId: number | string,
+  rows:
+    | ProposalItemMetaUpsertInput[]
+    | { request_item_id: string; price?: string | null; supplier?: string | null; note?: string | null },
 ) {
+  const pid = String(proposalId || "").trim();
+  if (!pid) return true;
+
+  const inputRows = Array.isArray(rows) ? rows : [rows];
+  const payload = inputRows
+    .map((row) => {
+      const requestItemId = String(row?.request_item_id || "").trim();
+      if (!requestItemId) return null;
+      const next: ProposalItemMetaUpsertInput = { request_item_id: requestItemId };
+      if ("name_human" in row) next.name_human = row.name_human ?? null;
+      if ("uom" in row) next.uom = row.uom ?? null;
+      if ("qty" in row) next.qty = row.qty ?? null;
+      if ("app_code" in row) next.app_code = row.app_code ?? null;
+      if ("rik_code" in row) next.rik_code = row.rik_code ?? null;
+      if (typeof row.price === "number" && Number.isFinite(row.price)) next.price = row.price;
+      if (typeof row.price === "string") {
+        const parsed = Number(row.price.replace(",", "."));
+        if (Number.isFinite(parsed)) next.price = parsed;
+      }
+      if ("supplier" in row) next.supplier = row.supplier ?? null;
+      if ("note" in row) next.note = row.note ?? null;
+      return buildProposalItemMetaUpsert(pid, next);
+    })
+    .filter((row): row is ProposalItemInsert => Boolean(row));
+
+  if (!payload.length) return true;
+
+  try {
+    const { error } = await client.from("proposal_items").upsert(payload, { onConflict: "proposal_id,request_item_id" });
+    if (!error) return true;
+    throw error;
+  } catch (error) {
+    logProposalsDebug("[proposalSetItemsMeta/upsert]", error instanceof Error ? error.message : String(error));
+  }
+
+  for (const row of payload) {
+    const updatePayload: Partial<ProposalItemInsert> = {
+      name_human: row.name_human ?? null,
+      uom: row.uom ?? null,
+      qty: row.qty ?? null,
+      app_code: row.app_code ?? null,
+      rik_code: row.rik_code ?? null,
+      price: row.price ?? null,
+      supplier: row.supplier ?? null,
+      note: row.note ?? null,
+    };
+    const { error } = await client
+      .from("proposal_items")
+      .update(updatePayload)
+      .eq("proposal_id", pid)
+      .eq("request_item_id", row.request_item_id);
+    if (error) throw error;
+  }
   return true;
 }

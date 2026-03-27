@@ -1,13 +1,18 @@
-import { useState } from "react";
+import { useWarehouseUiStore } from "../warehouseUi.store";
 
 export type WarehouseReportsMode = "choice" | "issue" | "incoming";
 
 export function useWarehouseModals() {
-  const [isRecipientModalVisible, setIsRecipientModalVisible] = useState(false);
-  const [reportsMode, setReportsMode] = useState<WarehouseReportsMode>("choice");
-  const [issueDetailsId, setIssueDetailsId] = useState<number | null>(null);
-  const [incomingDetailsId, setIncomingDetailsId] = useState<string | null>(null);
-  const [repPeriodOpen, setRepPeriodOpen] = useState(false);
+  const isRecipientModalVisible = useWarehouseUiStore((state) => state.isRecipientModalVisible);
+  const setIsRecipientModalVisible = useWarehouseUiStore((state) => state.setIsRecipientModalVisible);
+  const reportsMode = useWarehouseUiStore((state) => state.reportsMode);
+  const setReportsMode = useWarehouseUiStore((state) => state.setReportsMode);
+  const issueDetailsId = useWarehouseUiStore((state) => state.issueDetailsId);
+  const setIssueDetailsId = useWarehouseUiStore((state) => state.setIssueDetailsId);
+  const incomingDetailsId = useWarehouseUiStore((state) => state.incomingDetailsId);
+  const setIncomingDetailsId = useWarehouseUiStore((state) => state.setIncomingDetailsId);
+  const repPeriodOpen = useWarehouseUiStore((state) => state.repPeriodOpen);
+  const setRepPeriodOpen = useWarehouseUiStore((state) => state.setRepPeriodOpen);
 
   return {
     isRecipientModalVisible,

@@ -57,13 +57,13 @@ async function previewProposalAttachment(
 export async function openProposalSourceDoc(proposalId: string): Promise<void> {
   const pid = String(proposalId || "").trim();
   if (!pid) return;
-  await previewProposalAttachment(pid, "proposal_pdf", "Proposal document");
+  await previewProposalAttachment(pid, "proposal_pdf", "Документ предложения");
 }
 
 export async function openInvoiceDoc(proposalId: string): Promise<void> {
   const pid = String(proposalId || "").trim();
   if (!pid) return;
-  await previewProposalAttachment(pid, "invoice", "Invoice");
+  await previewProposalAttachment(pid, "invoice", "Счёт");
 }
 
 export async function openPaymentDocsOrUpload(p: {
@@ -74,14 +74,14 @@ export async function openPaymentDocsOrUpload(p: {
   if (!pid) return;
 
   try {
-    await previewProposalAttachment(pid, "payment", "Payment document");
+    await previewProposalAttachment(pid, "payment", "Платёжный документ");
     return;
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
     const low = msg.toLowerCase();
-    const notFound = low.includes("not found") || low.includes("РЅРµ РЅР°Р№РґРµРЅ");
+    const notFound = low.includes("not found") || low.includes("не найден");
     if (!notFound) {
-      safeAlert("Payment documents", msg);
+      safeAlert("Платёжные документы", msg);
       return;
     }
   }
@@ -94,8 +94,8 @@ export async function openPaymentDocsOrUpload(p: {
   await p.reload();
 
   try {
-    await previewProposalAttachment(pid, "payment", "Payment document");
+    await previewProposalAttachment(pid, "payment", "Платёжный документ");
   } catch {
-    safeAlert("Uploaded", "File uploaded, but preview could not be opened. Try again.");
+    safeAlert("Загружено", "Файл загружен, но предпросмотр открыть не удалось. Попробуйте ещё раз.");
   }
 }

@@ -49,6 +49,8 @@ export default function MarketHeaderBar({
           placeholderTextColor={MARKET_HOME_COLORS.textSoft}
           style={styles.input}
           returnKeyType="search"
+          testID="market_search_input"
+          accessibilityLabel="market:search"
         />
       </View>
 

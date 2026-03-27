@@ -25,8 +25,8 @@ export type DirectorSupplierSummaryPdfInputShared = {
   supplier: string;
   periodFrom?: string | null;
   periodTo?: string | null;
-  financeRows: unknown[];
-  spendRows?: unknown[];
+  financeRows?: unknown[] | null;
+  spendRows?: unknown[] | null;
   onlyOverpay?: boolean;
 };
 
@@ -102,6 +102,36 @@ function toText(value: unknown) {
   return String(value ?? "").trim();
 }
 
+type SupplierSummaryRecord = Record<string, unknown>;
+type SupplierSummaryRow = SupplierSummaryRecord & {
+  row?: SupplierSummaryRecord | null;
+  raw?: SupplierSummaryRecord | null;
+  proposals?: SupplierSummaryRecord | null;
+};
+
+type SupplierSummaryItem = {
+  title: string;
+  invoiceDate: string | null;
+  approvedAt: string | null;
+  dueDate: string | null;
+  paidFirstAt: string | null;
+  paidLastAt: string | null;
+  amount: number;
+  paid: number;
+  rest: number;
+  status: string;
+  overpay: number;
+};
+
+const isSupplierSummaryRecord = (value: unknown): value is SupplierSummaryRecord =>
+  Boolean(value) && typeof value === "object" && !Array.isArray(value);
+
+const asSupplierSummaryRow = (value: unknown): SupplierSummaryRow =>
+  (isSupplierSummaryRecord(value) ? value : {}) as SupplierSummaryRow;
+
+const asSupplierSummaryRows = (value: unknown[]): SupplierSummaryRow[] =>
+  (Array.isArray(value) ? value : []).map(asSupplierSummaryRow);
+
 function pickIso10(...vals: unknown[]) {
   for (const value of vals) {
     const text = toText(value);
@@ -111,19 +141,19 @@ function pickIso10(...vals: unknown[]) {
   return null;
 }
 
-function proposalPretty(row: any) {
-  const src = row?.row ?? row?.raw ?? row ?? {};
+function proposalPretty(row: SupplierSummaryRow) {
+  const src = asSupplierSummaryRow(row.row ?? row.raw ?? row);
   const proposalNo = toText(
-    src?.proposal_no ??
-      src?.proposalNo ??
-      src?.pretty ??
-      src?.proposals?.proposal_no ??
+    src.proposal_no ??
+      src.proposalNo ??
+      src.pretty ??
+      asSupplierSummaryRow(src.proposals).proposal_no ??
       "",
   );
 
   if (proposalNo) return proposalNo;
 
-  const proposalId = toText(src?.proposalId ?? src?.proposal_id ?? src?.id ?? "");
+  const proposalId = toText(src.proposalId ?? src.proposal_id ?? src.id ?? "");
   return proposalId ? `PR-${proposalId.slice(0, 8)}` : "";
 }
 
@@ -141,8 +171,8 @@ function kindNorm(name: unknown) {
   return "Другое";
 }
 
-function proposalIdOf(row: any) {
-  return toText(row?.proposalId ?? row?.proposal_id ?? row?.id ?? "");
+function proposalIdOf(row: SupplierSummaryRow) {
+  return toText(row.proposalId ?? row.proposal_id ?? row.id ?? "");
 }
 
 function buildSupplierDatesText(row: {
@@ -163,11 +193,11 @@ function buildSupplierDatesText(row: {
 }
 
 function mapSupplierSummaryItem(
-  row: any,
+  row: SupplierSummaryRow,
   overpayByProposal: Map<string, number>,
-) {
-  const amount = nnum(row?.amount);
-  const paid = nnum(row?.paidAmount);
+): SupplierSummaryItem {
+  const amount = nnum(row.amount);
+  const paid = nnum(row.paidAmount);
   const rest = Math.max(amount - paid, 0);
   const status =
     amount <= 0 ? "прочее" : paid <= 0 ? "не оплачено" : rest <= 0 ? "оплачено" : "частично";
@@ -175,7 +205,7 @@ function mapSupplierSummaryItem(
   const overpay = proposalId ? overpayByProposal.get(proposalId) ?? 0 : 0;
 
   return {
-    title: toText(row?.invoiceNumber ?? row?.invoice_number)
+    title: toText(row.invoiceNumber ?? row.invoice_number)
       ? `Счет №${toText(row?.invoiceNumber ?? row?.invoice_number)}`
       : proposalPretty(row)
         ? `Предложение ${proposalPretty(row)}`
@@ -247,8 +277,8 @@ export function filterDirectorSupplierSummarySpendRowsByKind(
 ) {
   const normalizedKind = toText(kindName);
   if (!normalizedKind) return Array.isArray(spendRows) ? spendRows : [];
-  return (Array.isArray(spendRows) ? spendRows : []).filter(
-    (row: any) => kindNorm(row?.kind_name ?? row?.kindName) === normalizedKind,
+  return asSupplierSummaryRows(spendRows).filter(
+    (row) => kindNorm(row.kind_name ?? row.kindName) === normalizedKind,
   );
 }
 
@@ -256,8 +286,8 @@ export function prepareDirectorSupplierSummaryPdfModelShared(
   input: DirectorSupplierSummaryPdfInputShared,
 ): DirectorSupplierSummaryPdfModelShared {
   const supplier = toText(input.supplier) || "—";
-  const financeRows = Array.isArray(input.financeRows) ? input.financeRows : [];
-  const spendRows = Array.isArray(input.spendRows) ? input.spendRows : [];
+  const financeRows = asSupplierSummaryRows(input.financeRows);
+  const spendRows = asSupplierSummaryRows(input.spendRows ?? []);
   const onlyOverpay = Boolean(input.onlyOverpay);
   const from = input.periodFrom ? String(input.periodFrom).slice(0, 10) : null;
   const to = input.periodTo ? String(input.periodTo).slice(0, 10) : null;
@@ -272,27 +302,27 @@ export function prepareDirectorSupplierSummaryPdfModelShared(
   };
 
   const spendForDetect = spendRows
-    .filter((row: any) => toText(row?.supplier) === supplier)
-    .filter((row: any) => inPeriod(row?.director_approved_at));
+    .filter((row) => toText(row.supplier) === supplier)
+    .filter((row) => inPeriod(row.director_approved_at));
 
   const kindSet = new Set<string>(
     spendForDetect
-      .map((row: any) => kindNorm(row?.kind_name ?? row?.kindName))
+      .map((row) => kindNorm(row.kind_name ?? row.kindName))
       .filter(Boolean),
   );
   const kindFilter = kindSet.size === 1 ? Array.from(kindSet)[0] : null;
 
   const spend = spendRows
-    .filter((row: any) => toText(row?.supplier) === supplier)
-    .filter((row: any) => inPeriod(row?.director_approved_at))
-    .filter((row: any) => !kindFilter || kindNorm(row?.kind_name ?? row?.kindName) === kindFilter)
-    .filter((row: any) => !onlyOverpay || nnum(row?.overpay_alloc) > 0);
+    .filter((row) => toText(row.supplier) === supplier)
+    .filter((row) => inPeriod(row.director_approved_at))
+    .filter((row) => !kindFilter || kindNorm(row.kind_name ?? row.kindName) === kindFilter)
+    .filter((row) => !onlyOverpay || nnum(row.overpay_alloc) > 0);
 
   const overpayByProposal = new Map<string, number>();
   for (const row of spend) {
-    const proposalId = toText((row as any)?.proposal_id);
+    const proposalId = toText(row.proposal_id);
     if (!proposalId) continue;
-    const overpay = nnum((row as any)?.overpay_alloc);
+    const overpay = nnum(row.overpay_alloc);
     if (overpay > 0) {
       overpayByProposal.set(proposalId, (overpayByProposal.get(proposalId) ?? 0) + overpay);
     }
@@ -305,37 +335,35 @@ export function prepareDirectorSupplierSummaryPdfModelShared(
 
   if (kindFilter) {
     const spendByKind = spendRows
-      .filter((row: any) => toText(row?.supplier) === supplier)
-      .filter((row: any) => inPeriod(row?.director_approved_at))
-      .filter((row: any) => kindNorm(row?.kind_name ?? row?.kindName) === kindFilter);
+      .filter((row) => toText(row.supplier) === supplier)
+      .filter((row) => inPeriod(row.director_approved_at))
+      .filter((row) => kindNorm(row.kind_name ?? row.kindName) === kindFilter);
 
-    totalApproved = spendByKind.reduce<number>((sum, row: any) => sum + nnum(row?.approved_alloc), 0);
+    totalApproved = spendByKind.reduce<number>((sum, row) => sum + nnum(row.approved_alloc), 0);
     totalPaid = spendByKind.reduce<number>(
-      (sum, row: any) => sum + nnum(row?.paid_alloc_cap ?? row?.paid_alloc),
+      (sum, row) => sum + nnum(row.paid_alloc_cap ?? row.paid_alloc),
       0,
     );
     totalRest = Math.max(totalApproved - totalPaid, 0);
 
-    const proposalIds = new Set<string>(
-      spendByKind.map((row: any) => proposalIdOf(row)).filter(Boolean),
-    );
+    const proposalIds = new Set<string>(spendByKind.map((row) => proposalIdOf(row)).filter(Boolean));
 
     const finance = financeRows
-      .filter((row: any) => toText(row?.supplier) === supplier)
-      .filter((row: any) => inPeriod(row?.approvedAtIso ?? row?.approved_at ?? row?.director_approved_at))
-      .filter((row: any) => {
+      .filter((row) => toText(row.supplier) === supplier)
+      .filter((row) => inPeriod(row.approvedAtIso ?? row.approved_at ?? row.director_approved_at))
+      .filter((row) => {
         const proposalId = proposalIdOf(row);
         return proposalId && proposalIds.has(proposalId);
       });
 
-    items = finance.map((row: any) => mapSupplierSummaryItem(row, overpayByProposal));
+    items = finance.map((row) => mapSupplierSummaryItem(row, overpayByProposal));
     if (onlyOverpay) items = items.filter((row) => nnum(row.overpay) > 0);
   } else {
     const finance = financeRows
-      .filter((row: any) => toText(row?.supplier) === supplier)
-      .filter((row: any) => inPeriod(row?.approvedAtIso ?? row?.approved_at ?? row?.director_approved_at));
+      .filter((row) => toText(row.supplier) === supplier)
+      .filter((row) => inPeriod(row.approvedAtIso ?? row.approved_at ?? row.director_approved_at));
 
-    items = finance.map((row: any) => mapSupplierSummaryItem(row, overpayByProposal));
+    items = finance.map((row) => mapSupplierSummaryItem(row, overpayByProposal));
     if (onlyOverpay) items = items.filter((row) => nnum(row.overpay) > 0);
 
     totalApproved = items.reduce((sum, row) => sum + nnum(row.amount), 0);
@@ -350,10 +378,10 @@ export function prepareDirectorSupplierSummaryPdfModelShared(
 
   const byKind = new Map<string, { approved: number; paid: number; overpay: number }>();
   for (const row of spend) {
-    const kind = kindNorm((row as any)?.kind_name ?? (row as any)?.kindName);
-    const approved = nnum((row as any)?.approved_alloc);
-    const paid = nnum((row as any)?.paid_alloc_cap ?? (row as any)?.paid_alloc);
-    const overpay = nnum((row as any)?.overpay_alloc);
+    const kind = kindNorm(row.kind_name ?? row.kindName);
+    const approved = nnum(row.approved_alloc);
+    const paid = nnum(row.paid_alloc_cap ?? row.paid_alloc);
+    const overpay = nnum(row.overpay_alloc);
     const current = byKind.get(kind) ?? { approved: 0, paid: 0, overpay: 0 };
     current.approved += approved;
     current.paid += paid;
@@ -372,8 +400,8 @@ export function prepareDirectorSupplierSummaryPdfModelShared(
       const leftWeight = left.status === "не оплачено" ? 0 : left.status === "частично" ? 1 : 2;
       const rightWeight = right.status === "не оплачено" ? 0 : right.status === "частично" ? 1 : 2;
       if (leftWeight !== rightWeight) return leftWeight - rightWeight;
-      const leftDate = toText((left as any).dueDate ?? (left as any).invoiceDate).slice(0, 10);
-      const rightDate = toText((right as any).dueDate ?? (right as any).invoiceDate).slice(0, 10);
+      const leftDate = toText(left.dueDate ?? left.invoiceDate).slice(0, 10);
+      const rightDate = toText(right.dueDate ?? right.invoiceDate).slice(0, 10);
       return leftDate.localeCompare(rightDate);
     })
     .slice(0, 80)

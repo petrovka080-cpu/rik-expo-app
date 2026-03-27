@@ -5,6 +5,9 @@ import type { BuyerProposalBucketRow } from "../buyer.fetchers";
 export function useBuyerState() {
   const [rows, setRows] = useState<BuyerInboxRow[]>([]);
   const [loadingInbox, setLoadingInbox] = useState(false);
+  const [loadingInboxMore, setLoadingInboxMore] = useState(false);
+  const [inboxHasMore, setInboxHasMore] = useState(false);
+  const [inboxTotalCount, setInboxTotalCount] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
 
   const [pending, setPending] = useState<BuyerProposalBucketRow[]>([]);
@@ -19,6 +22,12 @@ export function useBuyerState() {
     setRows,
     loadingInbox,
     setLoadingInbox,
+    loadingInboxMore,
+    setLoadingInboxMore,
+    inboxHasMore,
+    setInboxHasMore,
+    inboxTotalCount,
+    setInboxTotalCount,
     refreshing,
     setRefreshing,
     pending,
@@ -33,4 +42,3 @@ export function useBuyerState() {
     setSubcontractCount,
   };
 }
-

@@ -25,7 +25,7 @@ import type {
 } from "./marketHome.types";
 
 export const MARKET_HOME_SELECT =
-  "id,title,user_id,company_id,city,price,kind,side,description,contacts_phone,contacts_whatsapp,contacts_email,items_json,uom,status,created_at";
+  "id,title,user_id,company_id,city,price,kind,side,description,contacts_phone,contacts_whatsapp,contacts_email,items_json,uom,uom_code,rik_code,status,created_at";
 
 function toMaybeNumber(value: unknown): number | null {
   if (typeof value === "number" && Number.isFinite(value)) return value;
@@ -132,9 +132,16 @@ export function toMarketHomeListingCard(row: MarketListingRow): MarketHomeListin
     presentationCategory,
     imageSource: getFallbackImageForPresentation(presentationCategory, row.kind),
     items,
+    erpItems: [],
     itemsPreview: buildItemsPreview(items),
     searchText,
     isDemand: side === "demand",
+    sellerDisplayName: "Поставщик",
+    stockLabel: null,
+    stockQtyAvailable: null,
+    stockUom: null,
+    totalAvailableCount: null,
+    primaryRikCode: String(row.rik_code ?? "").trim() || null,
   };
 }
 
@@ -199,6 +206,10 @@ export async function loadMarketHomePayload(): Promise<MarketHomePayload> {
   return {
     listings: (rowsResult.data ?? []).map((row) => toMarketHomeListingCard(row as MarketListingRow)),
     activeDemandCount: demandCountResult.count ?? 0,
+    totalCount: rowsResult.count ?? (rowsResult.data ?? []).length,
+    pageOffset: 0,
+    pageSize: 120,
+    hasMore: false,
   };
 }
 

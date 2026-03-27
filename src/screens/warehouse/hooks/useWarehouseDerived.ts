@@ -38,7 +38,6 @@ export function useWarehouseDerived(params: {
       const hay = `${code} ${name} ${uom} `;
 
       if (matchQuerySmart(hay, qRaw)) out.push(r);
-      if (out.length >= 400) break;
     }
     return out;
   }, [stockRows, stockSearchDeb]);

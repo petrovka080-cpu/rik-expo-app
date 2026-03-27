@@ -54,6 +54,8 @@ type Props = {
   closeSheet: () => void;
   groups: Group[];
   propsHeads: ProposalHead[];
+  propsHasMore: boolean;
+  loadingPropsMore: boolean;
   loadingRows: boolean;
   loadingProps: boolean;
   foremanRequestsCount: number;
@@ -69,6 +71,7 @@ type Props = {
   ensureSignedIn: () => Promise<any>;
   fetchRows: (force?: boolean) => Promise<any>;
   fetchProps: (force?: boolean) => Promise<any>;
+  loadMoreProps: () => Promise<any> | void;
   rtToast: { visible: boolean; title: string; body: string; count: number };
   finLoading: boolean;
   finRows: FinanceRow[];
@@ -379,6 +382,22 @@ export default function DirectorDashboard(p: Props) {
               keyExtractor={(x, idx) => (x?.id ? `pp:${x.id}` : `pp:${idx}`)}
               renderItem={renderProposalHead}
               refreshControl={refreshPropsControl}
+              onEndReached={() => {
+                if (p.loadingPropsMore || !p.propsHasMore) return;
+                void p.loadMoreProps();
+              }}
+              onEndReachedThreshold={0.35}
+              ListFooterComponent={
+                p.loadingPropsMore ? (
+                  <Text style={{ opacity: 0.7, paddingHorizontal: 16, paddingBottom: 12, color: UI.sub }}>
+                    {"\u0417\u0430\u0433\u0440\u0443\u0437\u043a\u0430..."}
+                  </Text>
+                ) : p.propsHasMore ? (
+                  <Text style={{ opacity: 0.6, paddingHorizontal: 16, paddingBottom: 12, color: UI.sub }}>
+                    {"\u041f\u0440\u043e\u043a\u0440\u0443\u0442\u0438\u0442\u0435 \u0434\u043b\u044f \u0434\u043e\u0433\u0440\u0443\u0437\u043a\u0438"}
+                  </Text>
+                ) : null
+              }
               onScroll={p.onScroll}
               scrollEventThrottle={16}
               contentContainerStyle={{

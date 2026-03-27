@@ -19,6 +19,13 @@ import {
 import MarketFeedCard from "../market/components/MarketFeedCard";
 import { MARKET_HOME_COLORS } from "../market/marketHome.config";
 import { buildListingAssistantPrompt, buildMarketMapParams } from "../market/marketHome.data";
+import {
+  buildMarketProductRoute,
+  buildMarketSupplierMapRoute,
+  buildMarketSupplierShowcaseRoute,
+  MARKET_PROFILE_ROUTE,
+  MARKET_TAB_ROUTE,
+} from "../market/market.routes";
 import type { MarketHomeListingCard } from "../market/marketHome.types";
 import {
   EMPTY_CURRENT_PROFILE_IDENTITY,
@@ -131,17 +138,11 @@ export default function SupplierShowcaseScreen() {
         autoSend: "1",
         context: "profile",
       },
-    } as any);
+    });
   }, [payload]);
 
   const openShowcase = useCallback((item: Pick<MarketHomeListingCard, "sellerUserId" | "sellerCompanyId">) => {
-    router.push({
-      pathname: "/supplierShowcase",
-      params: {
-        userId: item.sellerUserId,
-        ...(item.sellerCompanyId ? { companyId: item.sellerCompanyId } : {}),
-      },
-    } as any);
+    router.push(buildMarketSupplierShowcaseRoute(item.sellerUserId, item.sellerCompanyId));
   }, []);
 
   const renderCard = useCallback(
@@ -149,23 +150,11 @@ export default function SupplierShowcaseScreen() {
       <View style={[styles.feedCell, { width: columnWidth }]}>
         <MarketFeedCard
           listing={item}
-          onOpen={() => router.push(`/product/${item.id}` as any)}
+          onOpen={() => router.push(buildMarketProductRoute(item.id))}
           onMapPress={() =>
-            router.push({
-              pathname: "/supplierMap",
-              params: buildMarketMapParams({ side: "all", kind: "all" }, { row: item }),
-            })
+            router.push(buildMarketSupplierMapRoute(buildMarketMapParams({ side: "all", kind: "all" }, { row: item })))
           }
           onShowcasePress={() => openShowcase(item)}
-          onChatPress={() =>
-            router.push({
-              pathname: "/chat",
-              params: {
-                listingId: item.id,
-                title: item.title,
-              },
-            } as any)
-          }
           onAssistantPress={() =>
             router.push({
               pathname: "/(tabs)/ai",
@@ -174,7 +163,7 @@ export default function SupplierShowcaseScreen() {
                 autoSend: "1",
                 context: "market",
               },
-            } as any)
+            })
           }
           onPhonePress={
             item.phone
@@ -253,24 +242,20 @@ export default function SupplierShowcaseScreen() {
         <View style={styles.actionRow}>
           <Pressable
             style={[styles.actionBtn, styles.secondaryBtn]}
-            onPress={() => router.push("/(tabs)/market" as any)}
+            onPress={() => router.push(MARKET_TAB_ROUTE)}
           >
             <Text style={styles.secondaryBtnText}>Маркет</Text>
           </Pressable>
-          <Pressable
-            style={[styles.actionBtn, styles.secondaryBtn]}
-            onPress={() => router.push("/auctions" as any)}
-          >
-            <Text style={styles.secondaryBtnText}>Торги</Text>
-          </Pressable>
+          <View style={[styles.actionBtn, styles.disabledBtn]}>
+            <Text style={styles.secondaryBtnText}>Торги — скоро</Text>
+          </View>
           {payload.listings[0] ? (
             <Pressable
               style={[styles.actionBtn, styles.secondaryBtn]}
               onPress={() =>
-                router.push({
-                  pathname: "/supplierMap",
-                  params: buildMarketMapParams({ side: "all", kind: "all" }, { row: payload.listings[0] }),
-                })
+                router.push(
+                  buildMarketSupplierMapRoute(buildMarketMapParams({ side: "all", kind: "all" }, { row: payload.listings[0] })),
+                )
               }
             >
               <Text style={styles.secondaryBtnText}>На карте</Text>
@@ -279,7 +264,7 @@ export default function SupplierShowcaseScreen() {
           {payload.isOwnerView ? (
             <Pressable
               style={[styles.actionBtn, styles.secondaryBtn]}
-              onPress={() => router.push("/(tabs)/profile" as any)}
+              onPress={() => router.push(MARKET_PROFILE_ROUTE)}
             >
               <Text style={styles.secondaryBtnText}>Профиль</Text>
             </Pressable>
@@ -548,6 +533,9 @@ const styles = StyleSheet.create({
     backgroundColor: "#F8FAFC",
     borderWidth: 1,
     borderColor: MARKET_HOME_COLORS.border,
+  },
+  disabledBtn: {
+    opacity: 0.72,
   },
   primaryBtnText: {
     color: "#FFFFFF",

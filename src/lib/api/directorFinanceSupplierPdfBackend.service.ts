@@ -29,7 +29,42 @@ type DirectorFinanceSupplierPdfBackendResponse = {
   storagePath?: string;
   fileName?: string;
   expiresInSeconds?: number;
+  telemetry?: {
+    documentKind?: string;
+    sourceKind?: string;
+    fetchSourceName?: string;
+    financeRows?: number;
+    spendRows?: number;
+    detailRows?: number;
+    kindRows?: number;
+    fetchDurationMs?: number;
+    renderDurationMs?: number;
+    totalDurationMs?: number;
+    htmlLengthEstimate?: number;
+    payloadSizeEstimate?: number;
+    fallbackUsed?: boolean;
+    openStrategy?: string;
+    materializationStrategy?: string;
+  } | null;
   error?: string;
+};
+
+export type DirectorFinanceSupplierPdfBackendTelemetry = {
+  documentKind: "director_finance_supplier_summary";
+  sourceKind: "remote-url";
+  fetchSourceName: "pdf_director_finance_source_v1";
+  financeRows: number;
+  spendRows: number;
+  detailRows: number;
+  kindRows: number;
+  fetchDurationMs: number | null;
+  renderDurationMs: number | null;
+  totalDurationMs: number | null;
+  htmlLengthEstimate: number | null;
+  payloadSizeEstimate: number | null;
+  fallbackUsed: false;
+  openStrategy: "remote-url";
+  materializationStrategy: "viewer_remote";
 };
 
 type DirectorFinanceSupplierPdfBackendResult = {
@@ -42,6 +77,7 @@ type DirectorFinanceSupplierPdfBackendResult = {
   renderer: "browserless_puppeteer" | "local_browser_puppeteer";
   fileName: string;
   expiresInSeconds: number | null;
+  telemetry: DirectorFinanceSupplierPdfBackendTelemetry | null;
 };
 
 class DirectorFinanceSupplierPdfBackendError extends Error {
@@ -90,6 +126,7 @@ function validateResponse(value: unknown): DirectorFinanceSupplierPdfBackendResu
   const storagePath = String(payload.storagePath ?? "").trim();
   const fileName = String(payload.fileName ?? "").trim();
   const expiresInSeconds = Number(payload.expiresInSeconds ?? NaN);
+  const telemetry = payload.telemetry;
 
   if (renderVersion !== "v1") {
     throw new DirectorFinanceSupplierPdfBackendError(
@@ -127,6 +164,38 @@ function validateResponse(value: unknown): DirectorFinanceSupplierPdfBackendResu
     renderer: renderer as "browserless_puppeteer" | "local_browser_puppeteer",
     fileName,
     expiresInSeconds: Number.isFinite(expiresInSeconds) ? Math.max(0, Math.trunc(expiresInSeconds)) : null,
+    telemetry:
+      telemetry &&
+      String(telemetry.documentKind ?? "").trim() === "director_finance_supplier_summary" &&
+      String(telemetry.sourceKind ?? "").trim() === "remote-url"
+        ? {
+            documentKind: "director_finance_supplier_summary",
+            sourceKind: "remote-url",
+            fetchSourceName: "pdf_director_finance_source_v1",
+            financeRows: Number.isFinite(Number(telemetry.financeRows)) ? Math.max(0, Math.trunc(Number(telemetry.financeRows))) : 0,
+            spendRows: Number.isFinite(Number(telemetry.spendRows)) ? Math.max(0, Math.trunc(Number(telemetry.spendRows))) : 0,
+            detailRows: Number.isFinite(Number(telemetry.detailRows)) ? Math.max(0, Math.trunc(Number(telemetry.detailRows))) : 0,
+            kindRows: Number.isFinite(Number(telemetry.kindRows)) ? Math.max(0, Math.trunc(Number(telemetry.kindRows))) : 0,
+            fetchDurationMs: Number.isFinite(Number(telemetry.fetchDurationMs))
+              ? Math.max(0, Math.trunc(Number(telemetry.fetchDurationMs)))
+              : null,
+            renderDurationMs: Number.isFinite(Number(telemetry.renderDurationMs))
+              ? Math.max(0, Math.trunc(Number(telemetry.renderDurationMs)))
+              : null,
+            totalDurationMs: Number.isFinite(Number(telemetry.totalDurationMs))
+              ? Math.max(0, Math.trunc(Number(telemetry.totalDurationMs)))
+              : null,
+            htmlLengthEstimate: Number.isFinite(Number(telemetry.htmlLengthEstimate))
+              ? Math.max(0, Math.trunc(Number(telemetry.htmlLengthEstimate)))
+              : null,
+            payloadSizeEstimate: Number.isFinite(Number(telemetry.payloadSizeEstimate))
+              ? Math.max(0, Math.trunc(Number(telemetry.payloadSizeEstimate)))
+              : null,
+            fallbackUsed: false,
+            openStrategy: "remote-url",
+            materializationStrategy: "viewer_remote",
+          }
+        : null,
   };
 }
 
@@ -246,6 +315,7 @@ export async function generateDirectorFinanceSupplierSummaryPdfViaBackend(
         signedUrl: result.signedUrl,
         bucketId: result.bucketId,
         storagePath: result.storagePath,
+        telemetry: result.telemetry,
       })}`,
     );
   }

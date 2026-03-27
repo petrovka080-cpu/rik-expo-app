@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Platform, Pressable, Text, TextInput, View } from "react-native";
 import { S, UI } from "../ui";
 import { supabase } from "../../../lib/supabaseClient";
+import { runNextTick } from "../helpers";
 
 type AllocRow = { proposal_item_id: string; amount: number };
 type Mode = "full" | "partial";
@@ -63,27 +64,6 @@ const nnum = (v: unknown) => {
   return Number.isFinite(n) ? n : 0;
 };
 const round2 = (v: number) => Math.round((Number(v) + Number.EPSILON) * 100) / 100;
-const NEXT_TICK_MS = 0;
-
-function allocProportional(totalAmount: number, weights: number[]) {
-  const total = Math.max(0, nnum(totalAmount));
-  const ws = (weights || []).map((x) => Math.max(0, nnum(x)));
-  const sumW = ws.reduce((a, b) => a + b, 0);
-  const out = ws.map(() => 0);
-  if (!total || sumW <= 0) return out;
-
-  let acc = 0;
-  for (let i = 0; i < ws.length; i++) {
-    if (i === ws.length - 1) out[i] = round2(total - acc);
-    else {
-      const v = round2((total * ws[i]) / sumW);
-      out[i] = v;
-      acc = round2(acc + v);
-    }
-  }
-  return out;
-}
-
 function fmt2(v: unknown) {
   const n = nnum(v);
   return n.toLocaleString("ru-RU", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -197,7 +177,7 @@ export default function ActivePaymentForm({
   useEffect(() => {
     setAllocRows([]);
     if (modeRef.current === "partial") setAmount("");
-  }, [proposalId]);
+  }, [proposalId, setAllocRows, setAmount]);
 
   const inv = Number(current?.invoice_amount ?? 0);
   const paid = Number(current?.total_paid ?? 0);
@@ -382,9 +362,11 @@ export default function ActivePaymentForm({
     setAllocRows(out);
   };
 
-  const clearAlloc = () => setAllocRows([]);
+  const clearAlloc = React.useCallback(() => {
+    setAllocRows([]);
+  }, [setAllocRows]);
 
-  const applyFullAlloc = () => {
+  const applyFullAlloc = React.useCallback(() => {
     if (!proposalId) return;
     if (!items.length) {
       // если вдруг нет строк — просто ставим сумму остатка
@@ -401,7 +383,7 @@ export default function ActivePaymentForm({
     }
     setAllocRows(out);
     setAmount(restProposal > 0 ? String(restProposal.toFixed(2)) : "");
-  };
+  }, [items, proposalId, remainByLine, restProposal, setAllocRows, setAmount]);
   useEffect(() => {
     if (modeRef.current !== "full") return;
     if (!allocRows?.length) return;
@@ -415,7 +397,7 @@ export default function ActivePaymentForm({
         applyFullAlloc();
       } catch { }
     }
-  }, [restProposal]);
+  }, [allocRows, applyFullAlloc, restProposal]);
 
   const segBtn = (active: boolean) => ({
     flex: 1,
@@ -469,11 +451,9 @@ export default function ActivePaymentForm({
         {/* ===== НОМЕР/ДАТА/ПОСТАВЩИК ===== */}
         {(() => {
           const invNoServer = String(current?.invoice_number ?? "").trim();
-          const invDtServer = String(current?.invoice_date ?? "").trim();
           const suppServer = String(current?.supplier ?? "").trim();
 
           const invNo0 = String((invoiceNo || invNoServer) ?? "").trim();
-          const invDt0 = String((invoiceDate || invDtServer) ?? "").trim();
           const supp0 = String((supplierName || suppServer) ?? "").trim();
 
           return (
@@ -572,7 +552,7 @@ export default function ActivePaymentForm({
                   onChangeText={(t) => {
                     const d = String(t || "").replace(/\D+/g, "").slice(0, 2);
                     setInvMM(d);
-                    if (d.length === 2) setTimeout(() => ddRef?.current?.focus?.(), NEXT_TICK_MS);
+                    if (d.length === 2) runNextTick(() => ddRef?.current?.focus?.());
                   }}
                   onBlur={() => setInvMM((x: string) => clamp2(x, 12))}
                   style={{
@@ -663,9 +643,9 @@ export default function ActivePaymentForm({
                   onPress={() => {
                     setMode("full");
                     setAllocRows([]);
-                    setTimeout(() => {
+                    runNextTick(() => {
                       try { applyFullAlloc(); } catch { }
-                    }, NEXT_TICK_MS);
+                    });
                   }}
 
                   style={segBtn(mode === "full")}

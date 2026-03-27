@@ -1,9 +1,12 @@
-﻿import type { WorkMaterialRow } from "../../components/WorkMaterialsEditor";
-import { generateActPdf, type ContractorPdfWork } from "./contractorPdf";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { WorkMaterialRow } from "../../components/WorkMaterialsEditor";
+import type { Database } from "../../lib/database.types";
 import { loadAggregatedWorkSummary } from "./contractor.data";
+import { generateActPdf, type ContractorPdfWork } from "./contractorPdf";
+import { loadContractorWorkPdfSourceViaRpc } from "./contractorPdfSource.service";
 import type { WorkLogRow } from "./types";
 
-type WorkRowLike = {
+export type ContractorPdfWorkRowLike = {
   progress_id: string;
   work_name?: string | null;
   work_code?: string | null;
@@ -13,13 +16,14 @@ type WorkRowLike = {
   qty_done?: number | null;
   qty_left?: number | null;
 };
-type AggregatedWorkBase = WorkRowLike & {
+
+type AggregatedWorkBase = ContractorPdfWorkRowLike & {
   qty_planned: number;
   qty_done: number;
   qty_left: number;
 };
 
-type JobHeaderLike = {
+export type ContractorPdfJobHeaderLike = {
   contractor_org?: string | null;
   contractor_inn?: string | null;
   contractor_phone?: string | null;
@@ -53,20 +57,66 @@ type SelectedWorkForPdf = {
   comment?: string;
 };
 
-const toPdfWork = (row: WorkRowLike, objectNameOverride?: string | null): ContractorPdfWork => ({
+const toPdfWork = (row: ContractorPdfWorkRowLike, objectNameOverride?: string | null): ContractorPdfWork => ({
   progress_id: String(row.progress_id || ""),
   work_code: row.work_code ?? null,
   work_name: row.work_name ?? null,
   object_name: objectNameOverride == null ? row.object_name ?? null : objectNameOverride,
 });
 
+const toPdfMaterials = (
+  rows: { mat_code: string; name: string; uom: string | null; qty_fact: number }[],
+): WorkMaterialRow[] =>
+  rows.map(
+    (row) =>
+      ({
+        material_id: null,
+        qty: row.qty_fact,
+        qty_fact: row.qty_fact,
+        mat_code: row.mat_code,
+        name: row.name,
+        uom: row.uom || "",
+        available: 0,
+      }) satisfies WorkMaterialRow,
+  );
+
 export async function generateSummaryPdfForWork(params: {
-  supabaseClient: any;
-  workModalRow: WorkRowLike;
-  jobHeader: JobHeaderLike | null;
+  supabaseClient: SupabaseClient<Database>;
+  workModalRow: ContractorPdfWorkRowLike;
+  jobHeader: ContractorPdfJobHeaderLike | null;
   pickFirstNonEmpty: (...vals: unknown[]) => string | null;
 }): Promise<void> {
   const { supabaseClient, workModalRow, jobHeader, pickFirstNonEmpty } = params;
+
+  try {
+    const source = await loadContractorWorkPdfSourceViaRpc({
+      supabaseClient,
+      progressId: String(workModalRow.progress_id || "").trim(),
+    });
+    const resolvedObj = pickFirstNonEmpty(source.work.object_name, source.header.object_name) || "";
+    await generateActPdf({
+      mode: "summary",
+      work: toPdfWork(source.work, resolvedObj || source.work.object_name || null),
+      materials: toPdfMaterials(source.materials),
+      contractorName: source.header.contractor_org,
+      contractorInn: source.header.contractor_inn,
+      contractorPhone: source.header.contractor_phone,
+      customerName: resolvedObj || source.work.object_name || "—",
+      customerInn: null,
+      contractNumber: source.header.contract_number,
+      contractDate: source.header.contract_date,
+      zoneText: `${source.header.zone || "—"} / ${source.header.level_name || "—"}`,
+      mainWorkName: source.header.work_type || source.work.work_name || source.work.work_code,
+      actNumber: String(source.work.progress_id || "").slice(0, 8),
+    });
+    return;
+  } catch (error) {
+    console.warn("[contractor.pdf] summary rpc source fallback", {
+      progressId: workModalRow.progress_id,
+      errorMessage: error instanceof Error ? error.message : String(error),
+    });
+  }
+
   const baseWork: AggregatedWorkBase = {
     ...workModalRow,
     qty_planned: Number(workModalRow.qty_planned ?? 0),
@@ -76,7 +126,7 @@ export async function generateSummaryPdfForWork(params: {
   const { work, materials } = await loadAggregatedWorkSummary(
     supabaseClient,
     workModalRow.progress_id,
-    baseWork
+    baseWork,
   );
   const resolvedObj = pickFirstNonEmpty(workModalRow?.object_name, jobHeader?.object_name) || "";
   const pdfWork = toPdfWork(work, resolvedObj || work.object_name || null);
@@ -99,14 +149,56 @@ export async function generateSummaryPdfForWork(params: {
 }
 
 export async function generateHistoryPdfForLog(params: {
-  supabaseClient: any;
-  workModalRow: WorkRowLike;
-  jobHeader: JobHeaderLike | null;
+  supabaseClient: SupabaseClient<Database>;
+  workModalRow: ContractorPdfWorkRowLike;
+  jobHeader: ContractorPdfJobHeaderLike | null;
   log: WorkLogRow;
   parseActMeta: (note: string | null | undefined) => { selectedWorks: string[]; visibleNote: string };
   pickFirstNonEmpty: (...vals: unknown[]) => string | null;
-}): Promise<void> {
+}) {
   const { supabaseClient, workModalRow, jobHeader, log, parseActMeta, pickFirstNonEmpty } = params;
+
+  try {
+    const source = await loadContractorWorkPdfSourceViaRpc({
+      supabaseClient,
+      progressId: String(workModalRow.progress_id || "").trim(),
+      logId: log.id,
+    });
+    const meta = parseActMeta(source.log?.note);
+    const selectedWorksForPdf: SelectedWorkForPdf[] = meta.selectedWorks.map((name) => ({
+      name,
+      unit: source.work.uom_id || "",
+      price: Number(source.header.unit_price || 0),
+      qty: 1,
+      comment: "",
+    }));
+    const resolvedObj = pickFirstNonEmpty(source.work.object_name, source.header.object_name) || "";
+
+    await generateActPdf({
+      mode: "normal",
+      work: toPdfWork(source.work, resolvedObj || source.work.object_name || null),
+      materials: toPdfMaterials(source.materials),
+      actDate: source.log?.created_at ?? log.created_at,
+      selectedWorks: selectedWorksForPdf,
+      contractorName: source.header.contractor_org,
+      contractorInn: source.header.contractor_inn,
+      contractorPhone: source.header.contractor_phone,
+      customerName: resolvedObj || source.work.object_name || "—",
+      customerInn: null,
+      contractNumber: source.header.contract_number,
+      contractDate: source.header.contract_date,
+      zoneText: `${source.header.zone || "—"} / ${source.header.level_name || "—"}`,
+      mainWorkName: source.header.work_type || source.work.work_name || source.work.work_code,
+      actNumber: String(source.log?.id || log.id || "").slice(0, 8),
+    });
+    return;
+  } catch (error) {
+    console.warn("[contractor.pdf] history rpc source fallback", {
+      progressId: workModalRow.progress_id,
+      logId: log.id,
+      errorMessage: error instanceof Error ? error.message : String(error),
+    });
+  }
 
   const { data: mats } = await supabaseClient
     .from("work_progress_log_materials")
@@ -136,19 +228,19 @@ export async function generateHistoryPdfForLog(params: {
   const matsRows: WorkMaterialRow[] = matsRowsRaw.map((m) => {
     const code = String(m.mat_code || "");
     const meta = namesMap[code];
-    const q = Number(m.qty_fact ?? 0);
+    const quantity = Number(m.qty_fact ?? 0);
     return {
       material_id: null,
-      qty: q,
+      qty: quantity,
       mat_code: code,
       name: meta?.name || code,
       uom: meta?.uom || m.uom_mat || "",
       available: 0,
-      qty_fact: q,
+      qty_fact: quantity,
     } satisfies WorkMaterialRow;
   });
 
-  const actWork: WorkRowLike = {
+  const actWork: ContractorPdfWorkRowLike = {
     ...workModalRow,
     qty_done: log.qty,
     qty_left: Math.max(0, Number(workModalRow.qty_planned || 0) - Number(log.qty || 0)),

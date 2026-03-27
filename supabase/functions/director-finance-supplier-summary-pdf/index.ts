@@ -202,6 +202,10 @@ function validateFinanceSourceEnvelope(value: unknown): Required<FinanceSourceEn
   };
 }
 
+function estimatePayloadSizeBytes(financeRows: unknown[], spendRows: unknown[]) {
+  return financeRows.length * 240 + spendRows.length * 180;
+}
+
 async function loadSupplierSummarySource(admin: ReturnType<typeof createClient>, payload: ReturnType<typeof normalizeDirectorFinanceSupplierSummaryPdfRequest>) {
   const { data, error } = await admin.rpc("pdf_director_finance_source_v1", {
     p_from: payload.periodFrom ?? null,
@@ -364,15 +368,20 @@ Deno.serve({ port: Number.isFinite(LOCAL_PORT) && LOCAL_PORT > 0 ? Math.trunc(LO
   });
 
   try {
+    const totalStartedAt = Date.now();
     console.info(`[${FUNCTION_NAME}] stage_auth_ok`, {
       supplier: payload.supplier,
       kindName: payload.kindName ?? null,
     });
+    const fetchStartedAt = Date.now();
     const source = await loadSupplierSummarySource(admin, payload);
+    const fetchDurationMs = Date.now() - fetchStartedAt;
     console.info(`[${FUNCTION_NAME}] stage_source_loaded`, {
       financeRows: source.finance_rows.length,
       spendRows: source.spend_rows.length,
+      fetchDurationMs,
     });
+    const renderStartedAt = Date.now();
     const spendRows = filterDirectorSupplierSummarySpendRowsByKind(source.spend_rows, payload.kindName);
     const model = prepareDirectorSupplierSummaryPdfModelShared({
       supplier: payload.supplier,
@@ -390,9 +399,28 @@ Deno.serve({ port: Number.isFinite(LOCAL_PORT) && LOCAL_PORT > 0 ? Math.trunc(LO
       htmlLength: html.length,
     });
     const { pdfBytes, renderer } = await renderPdfBytes(html);
+    const renderDurationMs = Date.now() - renderStartedAt;
+    const telemetry = {
+      documentKind: "director_finance_supplier_summary",
+      sourceKind: "remote-url",
+      fetchSourceName: "pdf_director_finance_source_v1",
+      financeRows: source.finance_rows.length,
+      spendRows: spendRows.length,
+      detailRows: model.detailRows.length,
+      kindRows: model.kindRows.length,
+      fetchDurationMs,
+      renderDurationMs,
+      totalDurationMs: Date.now() - totalStartedAt,
+      htmlLengthEstimate: html.length,
+      payloadSizeEstimate: estimatePayloadSizeBytes(source.finance_rows, spendRows),
+      fallbackUsed: false,
+      openStrategy: "remote-url",
+      materializationStrategy: "viewer_remote",
+    } as const;
     console.info(`[${FUNCTION_NAME}] stage_pdf_ready`, {
       renderer,
       sizeBytes: pdfBytes.byteLength,
+      renderDurationMs,
     });
     const fileName = buildFileName(payload);
     const uploaded = await uploadPdfAndSignUrl({
@@ -410,6 +438,7 @@ Deno.serve({ port: Number.isFinite(LOCAL_PORT) && LOCAL_PORT > 0 ? Math.trunc(LO
       storagePath: uploaded.storagePath,
       sizeBytes: pdfBytes.byteLength,
       renderer,
+      telemetry,
     });
 
     return json(200, {
@@ -421,6 +450,7 @@ Deno.serve({ port: Number.isFinite(LOCAL_PORT) && LOCAL_PORT > 0 ? Math.trunc(LO
       signedUrl: uploaded.signedUrl,
       fileName,
       expiresInSeconds: uploaded.expiresInSeconds,
+      telemetry,
     });
   } catch (error) {
     console.error(`[${FUNCTION_NAME}] render_failed`, {

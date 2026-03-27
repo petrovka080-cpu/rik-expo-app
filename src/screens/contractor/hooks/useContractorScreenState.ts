@@ -10,12 +10,12 @@ import type {
   ContractorUserProfile,
 } from "../contractor.profileService";
 import type { IssuedItemRow, LinkedReqCard, WorkLogRow } from "../types";
+import { useContractorUiStore } from "../contractorUi.store";
 
 type WorkRow = ContractorWorkRow;
 type UserProfile = ContractorUserProfile;
 type Contractor = ContractorProfileCard;
 type SubcontractLite = ContractorSubcontractCard;
-type WorkOverlayModal = "none" | "contract" | "estimate" | "stage";
 type ScreenLoadState = "init" | "loading" | "ready" | "error";
 
 type ContractorJobHeader = {
@@ -38,10 +38,32 @@ type ContractorJobHeader = {
 };
 
 export function useContractorScreenState() {
+  const code = useContractorUiStore((state) => state.code);
+  const setCode = useContractorUiStore((state) => state.setCode);
+  const workModalVisible = useContractorUiStore((state) => state.workModalVisible);
+  const setWorkModalVisible = useContractorUiStore((state) => state.setWorkModalVisible);
+  const workModalReadOnly = useContractorUiStore((state) => state.workModalReadOnly);
+  const setWorkModalReadOnly = useContractorUiStore((state) => state.setWorkModalReadOnly);
+  const workModalLoading = useContractorUiStore((state) => state.workModalLoading);
+  const setWorkModalLoading = useContractorUiStore((state) => state.setWorkModalLoading);
+  const workOverlayModal = useContractorUiStore((state) => state.workOverlayModal);
+  const setWorkOverlayModal = useContractorUiStore((state) => state.setWorkOverlayModal);
+  const historyOpen = useContractorUiStore((state) => state.historyOpen);
+  const setHistoryOpen = useContractorUiStore((state) => state.setHistoryOpen);
+  const issuedOpen = useContractorUiStore((state) => state.issuedOpen);
+  const setIssuedOpen = useContractorUiStore((state) => state.setIssuedOpen);
+  const actBuilderVisible = useContractorUiStore((state) => state.actBuilderVisible);
+  const setActBuilderVisible = useContractorUiStore((state) => state.setActBuilderVisible);
+  const actBuilderHint = useContractorUiStore((state) => state.actBuilderHint);
+  const setActBuilderHint = useContractorUiStore((state) => state.setActBuilderHint);
+  const workModalHint = useContractorUiStore((state) => state.workModalHint);
+  const setWorkModalHint = useContractorUiStore((state) => state.setWorkModalHint);
+  const workSearchVisible = useContractorUiStore((state) => state.workSearchVisible);
+  const setWorkSearchVisible = useContractorUiStore((state) => state.setWorkSearchVisible);
+
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [contractor, setContractor] = useState<Contractor | null>(null);
   const [loadingProfile, setLoadingProfile] = useState(true);
-  const [code, setCode] = useState("");
   const [rows, setRows] = useState<WorkRow[]>([]);
   const [manualClaimedJobIds] = useState<string[]>([]);
   const [subcontractCards, setSubcontractCards] = useState<SubcontractLite[]>([]);
@@ -59,35 +81,25 @@ export function useContractorScreenState() {
   const issuedLoadSeqRef = useRef(0);
   const activeWorkModalProgressRef = useRef<string>("");
 
-  const [workModalVisible, setWorkModalVisible] = useState(false);
   const [workModalRow, setWorkModalRow] = useState<WorkRow | null>(null);
-  const [, setWorkModalStage] = useState("");
-  const [, setWorkModalComment] = useState("");
+  const [workModalStage, setWorkModalStage] = useState("");
+  const [workModalComment, setWorkModalComment] = useState("");
   const [workModalMaterials, setWorkModalMaterials] = useState<WorkMaterialRow[]>([]);
-  const [workModalSaving] = useState(false);
-  const [, setWorkModalLocation] = useState("");
-  const [workModalReadOnly, setWorkModalReadOnly] = useState(false);
-  const [workModalLoading, setWorkModalLoading] = useState(false);
+  const [workModalSaving, setWorkModalSaving] = useState(false);
+  const [workModalLocation, setWorkModalLocation] = useState("");
   const [workLog, setWorkLog] = useState<WorkLogRow[]>([]);
   const [jobHeader, setJobHeader] = useState<ContractorJobHeader | null>(null);
-  const [workOverlayModal, setWorkOverlayModal] = useState<WorkOverlayModal>("none");
-  const [historyOpen, setHistoryOpen] = useState(false);
-  const [issuedOpen, setIssuedOpen] = useState(false);
-  const [actBuilderVisible, setActBuilderVisible] = useState(false);
   const [actBuilderState, dispatchActBuilder] = useReducer(
     actBuilderReducer,
     initialActBuilderState
   );
   const [actBuilderSaving, setActBuilderSaving] = useState(false);
-  const [actBuilderHint, setActBuilderHint] = useState("");
   const [actBuilderLoadState, setActBuilderLoadState] = useState<ScreenLoadState>("init");
-  const [workModalHint, setWorkModalHint] = useState("");
   const [issuedItems, setIssuedItems] = useState<IssuedItemRow[]>([]);
   const [loadingIssued, setLoadingIssued] = useState(false);
   const [issuedHint, setIssuedHint] = useState<string>("");
   const [linkedReqCards, setLinkedReqCards] = useState<LinkedReqCard[]>([]);
   const [workStageOptions, setWorkStageOptions] = useState<{ code: string; name: string }[]>([]);
-  const [workSearchVisible, setWorkSearchVisible] = useState(false);
 
   useEffect(() => {
     profileRef.current = profile;
@@ -136,11 +148,15 @@ export function useContractorScreenState() {
     setWorkModalVisible,
     workModalRow,
     setWorkModalRow,
+    workModalStage,
     setWorkModalStage,
+    workModalComment,
     setWorkModalComment,
     workModalMaterials,
     setWorkModalMaterials,
     workModalSaving,
+    setWorkModalSaving,
+    workModalLocation,
     setWorkModalLocation,
     workModalReadOnly,
     setWorkModalReadOnly,
@@ -190,4 +206,3 @@ export function useContractorScreenState() {
     activeWorkModalProgressRef,
   };
 }
-

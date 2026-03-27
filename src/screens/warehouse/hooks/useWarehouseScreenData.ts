@@ -29,10 +29,10 @@ import { useWarehouseIssueFlow } from "./useWarehouseIssueFlow";
 import { useWarehouseStockData } from "./useWarehouseStockData";
 import { useWarehouseReportState } from "./useWarehouseReportState";
 import { useWarehouseExpenseQueueSlice } from "./useWarehouseExpenseQueueSlice";
+import { useWarehouseUiStore } from "../warehouseUi.store";
 
 const ORG_NAME = "";
 const REQ_PAGE_SIZE = 80;
-const TAB_INCOMING = WAREHOUSE_TABS[0] ?? ("\u041A \u043F\u0440\u0438\u0445\u043E\u0434\u0443" as Tab);
 const TAB_STOCK_FACT = WAREHOUSE_TABS[1] ?? ("\u0421\u043A\u043B\u0430\u0434 \u0444\u0430\u043A\u0442" as Tab);
 const TAB_EXPENSE = WAREHOUSE_TABS[2] ?? ("\u0420\u0430\u0441\u0445\u043E\u0434" as Tab);
 const WAREHOUSE_NAME = "\u0421\u043A\u043B\u0430\u0434";
@@ -49,7 +49,8 @@ export function useWarehouseScreenData() {
   const notifyError = useCallback((title: string, message?: string) => {
     showToast.error(title, message);
   }, []);
-  const [tab, setTab] = useState<Tab>(TAB_INCOMING);
+  const tab = useWarehouseUiStore((state) => state.tab);
+  const setTab = useWarehouseUiStore((state) => state.setTab);
 
   const incoming = useWarehouseIncoming();
   const { stockSearch, setStockSearch, stockSearchDeb } = useWarehouseSearch();
@@ -93,7 +94,18 @@ export function useWarehouseScreenData() {
     receivingHeadId,
     setReceivingHeadId,
   } = useWarehouseIncomingItemsModal();
-  const { stock, stockSupported, stockCount, fetchStock } = useWarehouseStockData({ supabase });
+  const {
+    stock,
+    stockSupported,
+    stockCount,
+    stockHasMore,
+    stockLoadingMore,
+    fetchStock,
+    fetchStockNextPage,
+  } = useWarehouseStockData({
+    supabase,
+    search: stockSearchDeb,
+  });
   const matNameByCode = useMemo(() => {
     const map: Record<string, string> = {};
     for (const row of stock as WarehouseStockLike[]) {
@@ -176,7 +188,7 @@ export function useWarehouseScreenData() {
   const onTabChange = useCallback((nextTab: Tab) => {
     setTab(nextTab);
     if (isRecipientRequiredTab(nextTab)) setIsRecipientModalVisible(true);
-  }, [setIsRecipientModalVisible]);
+  }, [setIsRecipientModalVisible, setTab]);
 
   const availability = useStockAvailability(stock, matNameByCode);
   const getAvailableByCode = availability.getAvailableByCode;
@@ -240,7 +252,15 @@ export function useWarehouseScreenData() {
     onError: showErr,
   });
 
-  const { qtyInputByItem, setQtyInputByItem, receiveSelectedForHead } = useWarehouseReceiveFlow({
+  const {
+    qtyInputByItem,
+    setQtyInputByItem,
+    receiveSelectedForHead,
+    retryReceiveNow,
+    receiveStatusByIncomingId,
+    activeReceiveStatus,
+    canRetryActiveReceive,
+  } = useWarehouseReceiveFlow({
     supabase,
     itemsModalIncomingId: itemsModal?.incomingId,
     loadItemsForHead: incoming.loadItemsForHead,
@@ -261,6 +281,8 @@ export function useWarehouseScreenData() {
     onTabChange,
     incoming,
     stockCount,
+    stockHasMore,
+    stockLoadingMore,
     warehousemanFio,
     setIsFioConfirmVisible,
     headerApi,
@@ -273,6 +295,7 @@ export function useWarehouseScreenData() {
     callFetchStock,
     callFetchReports,
     fetchReports,
+    fetchStockNextPage,
     setReportsMode,
     setIsRecipientModalVisible,
     reportsMode,
@@ -280,6 +303,8 @@ export function useWarehouseScreenData() {
     repMov,
     repIncoming,
     reqHeadsLoading: expenseQueue.reqHeadsLoading,
+    reqHeadsFetchingPage: expenseQueue.reqHeadsFetchingPage,
+    reqHeadsHasMore: expenseQueue.reqHeadsHasMore,
     sortedReqHeads,
     stockSupported,
     stockFiltered,
@@ -321,6 +346,10 @@ export function useWarehouseScreenData() {
     setQtyInputByItem,
     receivingHeadId,
     onIncomingItemsSubmit: receiveSelectedForHead,
+    retryReceiveNow,
+    receiveStatusByIncomingId,
+    activeReceiveStatus,
+    canRetryActiveReceive,
     issueDetailsId,
     issueLinesLoadingId,
     issueLinesById,

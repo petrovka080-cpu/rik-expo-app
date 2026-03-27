@@ -4,6 +4,11 @@ import { FlashList } from "@/src/ui/FlashList";
 import DeleteAllButton from "../../ui/DeleteAllButton";
 import RejectItemButton from "../../ui/RejectItemButton";
 import SendPrimaryButton from "../../ui/SendPrimaryButton";
+import {
+  buildProposalAnalyticSummary,
+  loadProposalAnalyticInsights,
+  type ProposalAnalyticInsight,
+} from "../../features/ai/aiAnalyticInsights";
 import { UI, s } from "./director.styles";
 import { type ProposalAttachmentRow, type ProposalItem, type RequestMeta } from "./director.types";
 import DirectorProposalAttachments from "./DirectorProposalAttachments";
@@ -62,6 +67,51 @@ export default function DirectorProposalSheet({
   onExcel,
   onApprove,
 }: Props) {
+  const [analyticInsights, setAnalyticInsights] = React.useState<ProposalAnalyticInsight[]>([]);
+  const [analyticInsightsLoading, setAnalyticInsightsLoading] = React.useState(false);
+  const analyticSummary = React.useMemo(
+    () => buildProposalAnalyticSummary(analyticInsights),
+    [analyticInsights],
+  );
+
+  const analyticSourceItems = React.useMemo(
+    () => items.map((item) => ({
+      id: `director:${pidStr}:${item.id}`,
+      rikCode: item.rik_code ?? null,
+      name: item.name_human ?? null,
+      price: item.price ?? null,
+      supplier: null,
+    })),
+    [items, pidStr],
+  );
+
+  React.useEffect(() => {
+    let cancelled = false;
+
+    if (!analyticSourceItems.length) {
+      setAnalyticInsights([]);
+      setAnalyticInsightsLoading(false);
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    setAnalyticInsightsLoading(true);
+    void loadProposalAnalyticInsights(analyticSourceItems)
+      .then((nextInsights) => {
+        if (!cancelled) setAnalyticInsights(nextInsights);
+      })
+      .catch(() => {
+        if (!cancelled) setAnalyticInsights([]);
+      })
+      .finally(() => {
+        if (!cancelled) setAnalyticInsightsLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [analyticSourceItems]);
   if (!loaded) return <Text style={{ opacity: 0.7, color: UI.sub }}>Загружаю состав…</Text>;
   if (!items.length) {
     return (
@@ -88,6 +138,93 @@ export default function DirectorProposalSheet({
         onRefresh={onRefreshAttachments}
         onOpenAttachment={onOpenAttachment}
       />
+
+      {analyticInsightsLoading || analyticInsights.length ? (
+        <View
+          style={{
+            marginBottom: 12,
+            padding: 14,
+            borderRadius: 18,
+            backgroundColor: "rgba(255,255,255,0.04)",
+            borderWidth: 1,
+            borderColor: "rgba(255,255,255,0.08)",
+            gap: 10,
+          }}
+        >
+          <Text style={{ color: UI.text, fontWeight: "900", fontSize: 15 }}>AI аналитика</Text>
+          {analyticSummary ? (
+            <View
+              style={{
+                padding: 12,
+                borderRadius: 14,
+                backgroundColor: "rgba(255,255,255,0.04)",
+                borderWidth: 1,
+                borderColor:
+                  analyticSummary.tone === "good"
+                    ? "rgba(34,197,94,0.35)"
+                    : analyticSummary.tone === "expensive"
+                      ? "rgba(249,115,22,0.35)"
+                      : analyticSummary.tone === "average"
+                        ? "rgba(56,189,248,0.35)"
+                        : "rgba(255,255,255,0.08)",
+                gap: 6,
+              }}
+            >
+              <Text style={{ color: UI.text, fontWeight: "900", fontSize: 13 }}>
+                {analyticSummary.headline}
+              </Text>
+              <Text style={{ color: UI.sub, fontSize: 12, lineHeight: 17 }}>
+                {analyticSummary.text}
+              </Text>
+            </View>
+          ) : null}
+          {analyticInsightsLoading ? (
+            <Text style={{ color: UI.sub }}>Загружаю read-only срез по цене и поставщикам…</Text>
+          ) : (
+            analyticInsights.map((insight) => (
+              <View
+                key={insight.id}
+                style={{
+                  padding: 12,
+                  borderRadius: 14,
+                  backgroundColor: "rgba(255,255,255,0.03)",
+                  borderWidth: 1,
+                  borderColor: "rgba(255,255,255,0.08)",
+                  gap: 6,
+                }}
+              >
+                <Text style={{ color: UI.text, fontWeight: "900", fontSize: 13 }} numberOfLines={2}>
+                  {insight.name}
+                </Text>
+                <Text
+                  style={{
+                    color:
+                      insight.priceInsightTone === "good"
+                        ? "#22C55E"
+                        : insight.priceInsightTone === "expensive"
+                          ? "#F97316"
+                          : insight.priceInsightTone === "average"
+                            ? "#38BDF8"
+                            : UI.sub,
+                    fontWeight: "900",
+                    fontSize: 12,
+                  }}
+                >
+                  {insight.priceInsightLabel}
+                </Text>
+                <Text style={{ color: UI.sub, fontSize: 12, lineHeight: 17 }}>
+                  {insight.priceInsightText}
+                </Text>
+                {insight.supplierInsightText ? (
+                  <Text style={{ color: UI.sub, fontSize: 12, lineHeight: 17 }}>
+                    {insight.supplierInsightText}
+                  </Text>
+                ) : null}
+              </View>
+            ))
+          )}
+        </View>
+      ) : null}
 
       <FlashList
         data={items}
@@ -205,4 +342,3 @@ export default function DirectorProposalSheet({
     </>
   );
 }
-

@@ -55,16 +55,6 @@ export const parseQtySelected = (s: string | undefined | null, left: number) => 
   return Math.min(n, Math.max(0, left));
 };
 
-export function withTimeout<T>(p: PromiseLike<T>, ms: number, label: string): Promise<T> {
-  let t: ReturnType<typeof setTimeout> | undefined;
-  const timeout = new Promise<T>((_, reject) => {
-    t = setTimeout(() => reject(new Error(`Timeout ${ms}ms: ${label}`)), ms);
-  });
-  return Promise.race([p, timeout]).finally(() => {
-    if (t) clearTimeout(t);
-  });
-}
-
 export const isUuid = (s: string) =>
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
     String(s),

@@ -1,5 +1,4 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { JOB_QUEUE_ENABLED, enqueueSubmitJob } from "../../lib/infra/jobQueue";
 import { isUuid } from "./warehouse.utils";
 
 type UnknownRow = Record<string, unknown>;
@@ -29,6 +28,21 @@ const rpcWarehouseRefreshNameMapUi = (
     p_refresh_mode: WarehouseNameMapRefreshMode;
   },
 ) => supabase.rpc("warehouse_refresh_name_map_ui" as never, payload as never);
+
+const loadWarehouseNameMapQueueBoundary = async () => {
+  try {
+    const queue = await import("../../lib/infra/jobQueue");
+    return {
+      JOB_QUEUE_ENABLED: queue.JOB_QUEUE_ENABLED,
+      enqueueSubmitJob: queue.enqueueSubmitJob,
+    };
+  } catch {
+    return {
+      JOB_QUEUE_ENABLED: false,
+      enqueueSubmitJob: null,
+    };
+  }
+};
 
 export function normalizeWarehouseCodeList(values: unknown[]): string[] {
   return Array.from(new Set(values.map(normalizeCode).filter(Boolean)));
@@ -91,10 +105,12 @@ export async function scheduleWarehouseNameMapRefresh(params: {
   const codeList = normalizeWarehouseCodeList(params.codeList ?? []);
   if (refreshMode !== "full" && !codeList.length) return "noop";
 
-  if (JOB_QUEUE_ENABLED) {
+  const queueBoundary = await loadWarehouseNameMapQueueBoundary();
+
+  if (queueBoundary.JOB_QUEUE_ENABLED && queueBoundary.enqueueSubmitJob) {
     const entityIdCandidate =
       refreshMode === "full" ? null : String(codeList[0] ?? "").trim() || null;
-    await enqueueSubmitJob({
+    await queueBoundary.enqueueSubmitJob({
       jobType: "warehouse_refresh_name_map_ui",
       entityType: "warehouse_name_map_ui",
       entityId: entityIdCandidate && isUuid(entityIdCandidate) ? entityIdCandidate : null,

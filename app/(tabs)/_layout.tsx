@@ -189,7 +189,7 @@ export default function TabsLayout() {
             router.push({
               pathname: "/(tabs)/ai",
               params: { context: assistantContext },
-            } as any)
+            })
           }
         />
       ) : null}

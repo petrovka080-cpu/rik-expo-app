@@ -1,18 +1,20 @@
 import { useCallback, useMemo } from "react";
-import { generateHistoryPdfForLog, generateSummaryPdfForWork } from "../contractor.pdfService";
+import {
+  generateHistoryPdfForLog,
+  generateSummaryPdfForWork,
+  type ContractorPdfJobHeaderLike,
+  type ContractorPdfWorkRowLike,
+} from "../contractor.pdfService";
 import { parseActMeta, pickErr, pickFirstNonEmpty } from "../contractor.utils";
 import type { WorkLogRow } from "../types";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "../../../lib/database.types";
 
-type WorkRowLike = {
-  object_name?: string | null;
-} & Record<string, unknown>;
-
-type JobHeaderLike = {
-  object_name?: string | null;
-} & Record<string, unknown>;
+type WorkRowLike = ContractorPdfWorkRowLike;
+type JobHeaderLike = ContractorPdfJobHeaderLike;
 
 export function useContractorPdfActions(params: {
-  supabaseClient: any;
+  supabaseClient: SupabaseClient<Database>;
   workModalRow: WorkRowLike | null;
   jobHeader: JobHeaderLike | null;
   showErr: (error: unknown) => void;
@@ -29,8 +31,8 @@ export function useContractorPdfActions(params: {
     try {
       await generateSummaryPdfForWork({
         supabaseClient,
-        workModalRow: workModalRow as any,
-        jobHeader: jobHeader as any,
+        workModalRow,
+        jobHeader,
         pickFirstNonEmpty,
       });
     } catch (error) {
@@ -44,8 +46,8 @@ export function useContractorPdfActions(params: {
     try {
       await generateHistoryPdfForLog({
         supabaseClient,
-        workModalRow: workModalRow as any,
-        jobHeader: jobHeader as any,
+        workModalRow,
+        jobHeader,
         log,
         parseActMeta,
         pickFirstNonEmpty,

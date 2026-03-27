@@ -3,16 +3,41 @@ import {
   buildOfflineAssistantReply,
 } from "./assistantPrompts";
 import type { AssistantContext, AssistantMessage, AssistantRole } from "./assistant.types";
+import { loadAiConfig, saveAiReport } from "../../lib/ai_reports";
 import {
   isAiBackendAvailable,
   requestAiGeneratedText,
 } from "../../lib/ai/aiRepository";
 
 const DEFAULT_MODEL = "gemini-2.5-flash";
+const assistantConfigCache = new Map<string, string | null>();
 
 function getAssistantModel(): string {
   const model = String(process.env.EXPO_PUBLIC_GEMINI_MODEL || DEFAULT_MODEL).trim();
   return model || DEFAULT_MODEL;
+}
+
+async function loadAssistantPromptConfig(role: AssistantRole, context: AssistantContext): Promise<string | null> {
+  const configIds = [
+    `assistant_${role}_${context}_v1`,
+    `assistant_${role}_v1`,
+    "assistant_system_prompt_v1",
+    "procurement_system_prompt",
+  ];
+
+  for (const configId of configIds) {
+    if (assistantConfigCache.has(configId)) {
+      const cached = assistantConfigCache.get(configId) ?? null;
+      if (cached) return cached;
+      continue;
+    }
+
+    const loaded = await loadAiConfig(configId).catch(() => null);
+    assistantConfigCache.set(configId, loaded);
+    if (loaded) return loaded;
+  }
+
+  return null;
 }
 
 function messageToContent(message: AssistantMessage): {
@@ -34,8 +59,21 @@ export async function sendAssistantMessage(options: {
   context?: AssistantContext;
   message: string;
   history: AssistantMessage[];
+  scopedFactsSummary?: string | null;
+  scopeKey?: string | null;
+  sourceKinds?: string[] | null;
+  userId?: string | null;
 }): Promise<string> {
-  const { role, context = "unknown", message, history } = options;
+  const {
+    role,
+    context = "unknown",
+    message,
+    history,
+    scopedFactsSummary,
+    scopeKey,
+    sourceKinds,
+    userId,
+  } = options;
   const model = getAssistantModel();
 
   if (!isAiBackendAvailable()) {
@@ -43,11 +81,25 @@ export async function sendAssistantMessage(options: {
   }
 
   try {
+    const configPrompt = await loadAssistantPromptConfig(role, context);
+    const systemInstruction = [
+      buildAssistantSystemPrompt(role, context),
+      configPrompt ? `Дополнительная конфигурация роли:\n${configPrompt}` : null,
+      scopedFactsSummary
+        ? [
+          "Ниже backend/read-only факты текущего среза. Используй только их для цифр и выводов.",
+          `Scope key: ${String(scopeKey || "assistant_scope")}`,
+          `Source kinds: ${(sourceKinds || []).filter(Boolean).join(", ") || "unknown"}`,
+          scopedFactsSummary,
+        ].join("\n")
+        : null,
+    ].filter(Boolean).join("\n\n");
+
     const text = await requestAiGeneratedText({
       sourcePath: "assistant_chat",
       request: {
         model,
-        systemInstruction: buildAssistantSystemPrompt(role, context),
+        systemInstruction,
         contents: [
           ...history.slice(-10).map(messageToContent),
           { role: "user", parts: [{ text: message }] },
@@ -59,7 +111,22 @@ export async function sendAssistantMessage(options: {
         },
       },
     });
-    return text || buildOfflineAssistantReply(role, message, context);
+    const answer = text || buildOfflineAssistantReply(role, message, context);
+    void saveAiReport({
+      id: `assistant:${role}:${context}:${Date.now()}`,
+      userId: userId || null,
+      role,
+      context,
+      title: `assistant_chat:${role}:${context}`,
+      content: answer,
+      metadata: {
+        model,
+        scopeKey: scopeKey || null,
+        contextPresent: Boolean(scopedFactsSummary),
+        sourceKinds: Array.isArray(sourceKinds) ? sourceKinds : [],
+      },
+    });
+    return answer;
   } catch {
     return buildOfflineAssistantReply(role, message, context);
   }

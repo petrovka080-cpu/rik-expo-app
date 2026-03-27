@@ -60,6 +60,7 @@ export function BuyerInboxSheetBody({
   footer?: React.ReactNode;
 }) {
   const listRef = React.useRef<FlatList<InboxSheetRow> | null>(null);
+  const retryScrollFrameRef = React.useRef<number | null>(null);
   const footerBottomInset = 18;
   const footerReservedHeight = 86 + footerBottomInset;
   const bottomPadding = kbOpen ? 220 : 12 + footerReservedHeight;
@@ -104,6 +105,12 @@ export function BuyerInboxSheetBody({
     </View>
   );
 
+  React.useEffect(() => {
+    return () => {
+      if (retryScrollFrameRef.current != null) cancelAnimationFrame(retryScrollFrameRef.current);
+    };
+  }, []);
+
   return (
     <View style={s.sheetSection}>
       <FlatList
@@ -126,13 +133,15 @@ export function BuyerInboxSheetBody({
             offset: Math.max(0, info.averageItemLength * info.index),
             animated: true,
           });
-          setTimeout(() => {
-            listRef.current?.scrollToIndex?.({
-              index: info.index,
-              animated: true,
-              viewPosition: 0.18,
+          retryScrollFrameRef.current = requestAnimationFrame(() => {
+            retryScrollFrameRef.current = requestAnimationFrame(() => {
+              listRef.current?.scrollToIndex?.({
+                index: info.index,
+                animated: true,
+                viewPosition: 0.18,
+              });
             });
-          }, 80);
+          });
         }}
         ListHeaderComponent={
           <View>

@@ -19,10 +19,10 @@ import { supabase } from '../../src/lib/supabaseClient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTheme } from '../../src/context/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '../../../shared/i18n';
 import { useAuth } from '../../src/context/AuthContext';
 import { clearProfileCache } from '../../src/lib/rik_api';
-import { UI, RADIUS } from '../../src/styles/theme';
+import { UI } from '../../src/styles/theme';
 
 // Helper to decode base64 to Uint8Array for Storage upload
 const decode = (base64: string): Uint8Array => {
@@ -135,19 +135,7 @@ export default function ProfileScreen() {
   const [companyColumnKeys, setCompanyColumnKeys] = useState<string[]>([]);
 
   // Initialize state when profile loads
-  React.useEffect(() => {
-    if (profile && !editing) {
-      setName(profile.full_name || '');
-      setPhone(profile.phone || '');
-
-      // If user has a company_id, fetch company details separately
-      if (profile.company_id) {
-        fetchCompanyDetails(profile.company_id);
-      }
-    }
-  }, [profile, editing]);
-
-  const fetchCompanyDetails = async (companyId: string) => {
+  const fetchCompanyDetails = useCallback(async (companyId: string) => {
     try {
       const { data, error } = await supabase
         .from('companies')
@@ -171,9 +159,7 @@ export default function ProfileScreen() {
         setCompanyInviteCode(row.invite_code || null);
 
         // Backfill personal phone from company phone for old records where profile.phone is empty.
-        if (!phone && (row.phone || row.phone_main)) {
-          setPhone(row.phone || row.phone_main || '');
-        }
+        setPhone((currentPhone) => currentPhone || row.phone || row.phone_main || '');
 
         // Fallback: if requisites are not present in company row, use first object data.
         if (!row.address || !(row.phone || row.phone_main)) {
@@ -193,16 +179,26 @@ export default function ProfileScreen() {
             if (!row.name && obj.name) {
               setCompanyName(obj.name);
             }
-            if (!phone && !row.phone && !row.phone_main && obj.phone) {
-              setPhone(obj.phone);
-            }
+            setPhone((currentPhone) => currentPhone || row.phone || row.phone_main || obj.phone || '');
           }
         }
       }
     } catch (e) {
       console.error('Error fetching company:', e);
     }
-  };
+  }, []);
+
+  React.useEffect(() => {
+    if (profile && !editing) {
+      setName(profile.full_name || '');
+      setPhone(profile.phone || '');
+
+      // If user has a company_id, fetch company details separately
+      if (profile.company_id) {
+        fetchCompanyDetails(profile.company_id);
+      }
+    }
+  }, [editing, fetchCompanyDetails, profile]);
 
   const handlePickImage = async () => {
     try {
@@ -264,7 +260,7 @@ export default function ProfileScreen() {
             }
             filePath = `${userId}/${timestamp}.${extension}`;
 
-            const { data: uploadData, error: uploadError } = await supabase.storage
+            const { error: uploadError } = await supabase.storage
               .from('avatars')
               .upload(filePath, blob, {
                 contentType,
@@ -279,8 +275,6 @@ export default function ProfileScreen() {
           } else {
             // For native: read as base64 and upload
             const FileSystemModule = await import('expo-file-system/legacy');
-            // Access the default export for proper typing
-            const FS = FileSystemModule.default || FileSystemModule;
             const uriExtMatch = /\.(png|jpg|jpeg|webp)$/i.exec(tempAvatar);
             if (uriExtMatch?.[1]) {
               const ext = uriExtMatch[1].toLowerCase();
@@ -293,7 +287,7 @@ export default function ProfileScreen() {
                     : 'image/jpeg';
             }
             filePath = `${userId}/${timestamp}.${extension}`;
-            const base64 = await FS.readAsStringAsync(tempAvatar, {
+            const base64 = await FileSystemModule.readAsStringAsync(tempAvatar, {
               encoding: 'base64' as any,
             });
 
@@ -412,7 +406,7 @@ export default function ProfileScreen() {
         try {
           localStorage.removeItem('demo_mode');
           localStorage.removeItem('demo_role');
-        } catch (_e) { /* ignore localStorage errors */ }
+        } catch { /* ignore localStorage errors */ }
       }
       await supabase.auth.signOut();
       router.replace('/auth/login');

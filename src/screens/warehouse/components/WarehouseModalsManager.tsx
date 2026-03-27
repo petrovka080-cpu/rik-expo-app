@@ -28,13 +28,17 @@ export type WarehouseModalsManagerProps = {
 
   itemsModal: { incomingId: string; purchaseId: string; poNo: string | null; status: string } | null;
   onCloseItemsModal: () => void;
-  proposalNoByPurchase: Record<string, string | null | undefined>;
   itemsByHead: Record<string, ItemRow[]>;
   kbH: number;
   qtyInputByItem: Record<string, string>;
   setQtyInputByItem: React.Dispatch<React.SetStateAction<Record<string, string>>>;
   receivingHeadId: string | null;
   onIncomingItemsSubmit: (id: string) => void;
+  onRetryReceiveNow: (id: string) => void;
+  receiveStatusLabel: string;
+  receiveStatusDetail: string | null;
+  receiveStatusTone: "neutral" | "info" | "success" | "warning" | "danger";
+  canRetryReceive: boolean;
 
   issueDetailsId: number | null;
   issueLinesLoadingId: number | null;
@@ -106,16 +110,7 @@ export default function WarehouseModalsManager(props: WarehouseModalsManagerProp
         visible={!!props.itemsModal}
         onClose={props.onCloseItemsModal}
         title="Позиции прихода"
-        prText={
-          props.itemsModal
-            ? formatProposalBaseNo(
-                (props.itemsModal.purchaseId
-                  ? props.proposalNoByPurchase[props.itemsModal.purchaseId]
-                  : null) || (props.itemsModal.poNo ?? null),
-                props.itemsModal.purchaseId ?? "",
-              )
-            : ""
-        }
+        prText={props.itemsModal ? formatProposalBaseNo(props.itemsModal.poNo ?? null, props.itemsModal.purchaseId ?? "") : ""}
         roleLabel={roleBadgeLabel("S")}
         incomingId={props.itemsModal?.incomingId ?? ""}
         rows={props.itemsModal ? props.itemsByHead[props.itemsModal.incomingId] ?? [] : []}
@@ -124,6 +119,11 @@ export default function WarehouseModalsManager(props: WarehouseModalsManagerProp
         setQtyInputByItem={props.setQtyInputByItem}
         receivingHeadId={props.receivingHeadId}
         onSubmit={props.onIncomingItemsSubmit}
+        onRetryNow={props.onRetryReceiveNow}
+        receiveStatusLabel={props.receiveStatusLabel}
+        receiveStatusDetail={props.receiveStatusDetail}
+        receiveStatusTone={props.receiveStatusTone}
+        canRetryReceive={props.canRetryReceive}
       />
 
       <IssueDetailsSheet

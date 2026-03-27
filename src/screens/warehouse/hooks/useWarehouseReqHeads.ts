@@ -1,7 +1,17 @@
 import { useCallback, useRef, useState } from "react";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { apiFetchReqHeads, apiFetchReqHeadsStaged } from "../warehouse.api";
+import {
+  apiFetchReqHeadsWindow,
+  type WarehouseReqHeadsSourceMeta,
+  type WarehouseReqHeadsWindowMeta,
+} from "../warehouse.api";
 import type { ReqHeadRow } from "../warehouse.types";
+import { recordPlatformObservability } from "../../../lib/observability/platformObservability";
+import {
+  isPlatformGuardCoolingDown,
+  recordPlatformGuardSkip,
+} from "../../../lib/observability/platformGuardDiscipline";
+import { getPlatformNetworkSnapshot } from "../../../lib/offline/platformNetwork.service";
 
 const pickErrMessage = (error: unknown) => {
   if (error instanceof Error && error.message.trim()) return error.message.trim();
@@ -16,6 +26,14 @@ const logReqHeadsMetrics = (scope: string, details: Record<string, unknown>) => 
 type ReqHeadsSnapshot = {
   rows: ReqHeadRow[];
   pageSize: number;
+  hasMore: boolean;
+};
+
+type ReqHeadsFetchValue = {
+  rows: ReqHeadRow[];
+  hasMore: boolean;
+  meta: WarehouseReqHeadsWindowMeta;
+  sourceMeta: WarehouseReqHeadsSourceMeta;
 };
 
 export function useWarehouseReqHeads(params: {
@@ -29,6 +47,7 @@ export function useWarehouseReqHeads(params: {
   const [reqHeads, setReqHeads] = useState<ReqHeadRow[]>([]);
   const [reqHeadsLoading, setReqHeadsLoading] = useState(false);
   const [reqHeadsFetchingPage, setReqHeadsFetchingPage] = useState(false);
+  const [reqHeadsHasMore, setReqHeadsHasMore] = useState(true);
   const reqRefs = useRef({
     page: 0,
     hasMore: true,
@@ -38,14 +57,54 @@ export function useWarehouseReqHeads(params: {
     lastForceSkipLogAt: 0,
   });
   const cacheRef = useRef<ReqHeadsSnapshot | null>(null);
-  const inFlightRef = useRef(new Map<string, Promise<ReqHeadRow[]>>());
+  const inFlightRef = useRef(new Map<string, Promise<ReqHeadsFetchValue>>());
 
   const fetchReqHeads = useCallback(
     async (pageIndex: number = 0, forceRefresh: boolean = false) => {
       const now = Date.now();
+      const networkSnapshot = getPlatformNetworkSnapshot();
+      if (networkSnapshot.hydrated && networkSnapshot.networkKnownOffline) {
+        recordPlatformGuardSkip("network_known_offline", {
+          screen: "warehouse",
+          surface: "req_heads",
+          event: "fetch_req_heads",
+          trigger: forceRefresh ? "force_refresh" : pageIndex > 0 ? "scroll" : "focus",
+          extra: { pageIndex, forceRefresh, networkKnownOffline: true },
+        });
+        return;
+      }
       if (pageIndex === 0 && forceRefresh) {
-        if (now - reqRefs.current.lastForceStartAt < FORCE_REFRESH_MIN_INTERVAL_MS) return;
-        if (reqRefs.current.lastErrorAt > 0 && now - reqRefs.current.lastErrorAt < FORCE_REFRESH_ERROR_COOLDOWN_MS) {
+        if (
+          isPlatformGuardCoolingDown({
+            lastAt: reqRefs.current.lastForceStartAt,
+            minIntervalMs: FORCE_REFRESH_MIN_INTERVAL_MS,
+            now,
+          })
+        ) {
+          recordPlatformGuardSkip("recent_same_scope", {
+            screen: "warehouse",
+            surface: "req_heads",
+            event: "fetch_req_heads",
+            trigger: "force_refresh",
+            extra: { pageIndex, forceRefresh },
+          });
+          return;
+        }
+        if (
+          reqRefs.current.lastErrorAt > 0 &&
+          isPlatformGuardCoolingDown({
+            lastAt: reqRefs.current.lastErrorAt,
+            minIntervalMs: FORCE_REFRESH_ERROR_COOLDOWN_MS,
+            now,
+          })
+        ) {
+          recordPlatformGuardSkip("recent_error", {
+            screen: "warehouse",
+            surface: "req_heads",
+            event: "fetch_req_heads",
+            trigger: "force_refresh",
+            extra: { pageIndex, forceRefresh },
+          });
           if (now - reqRefs.current.lastForceSkipLogAt > 2000) {
             reqRefs.current.lastForceSkipLogAt = now;
             if (__DEV__) {
@@ -57,13 +116,33 @@ export function useWarehouseReqHeads(params: {
         reqRefs.current.lastForceStartAt = now;
       }
 
-      if (reqRefs.current.fetching) return;
-      if (pageIndex > 0 && !reqRefs.current.hasMore && !forceRefresh) return;
+      if (reqRefs.current.fetching) {
+        recordPlatformObservability({
+          screen: "warehouse",
+          surface: "req_heads",
+          category: "reload",
+          event: "fetch_req_heads",
+          result: "joined_inflight",
+          extra: { pageIndex, forceRefresh },
+        });
+        return;
+      }
+      if (pageIndex > 0 && !reqRefs.current.hasMore && !forceRefresh) {
+        recordPlatformGuardSkip("no_more_pages", {
+          screen: "warehouse",
+          surface: "req_heads",
+          event: "fetch_req_heads",
+          trigger: "scroll",
+          extra: { pageIndex, forceRefresh },
+        });
+        return;
+      }
       if (pageIndex === 0 && !forceRefresh) {
         const cached = cacheRef.current;
         if (cached && cached.pageSize === pageSize) {
           reqRefs.current.page = 0;
-          reqRefs.current.hasMore = cached.rows.length > 0;
+          reqRefs.current.hasMore = cached.hasMore;
+          setReqHeadsHasMore(reqRefs.current.hasMore);
           setReqHeads(cached.rows);
           return;
         }
@@ -77,56 +156,93 @@ export function useWarehouseReqHeads(params: {
         const requestKey = `${pageIndex}:${forceRefresh ? 1 : 0}:${pageSize}`;
         let request = inFlightRef.current.get(requestKey);
         if (!request) {
-          if (pageIndex === 0 && !forceRefresh) {
-            request = (async () => {
-              const staged = await apiFetchReqHeadsStaged(supabase, pageIndex, pageSize);
-              setReqHeads(staged.baseRows);
-              logReqHeadsMetrics("stage_a", {
-                pageIndex,
-                pageSize,
-                forceRefresh,
-                stageA_ms: staged.metrics.stage_a_ms,
-                base_rows_count: staged.baseRows.length,
-              });
-              const finalResult = await staged.finalRowsPromise;
-              logReqHeadsMetrics("stage_b", {
-                pageIndex,
-                pageSize,
-                forceRefresh,
-                stageA_ms: finalResult.metrics.stage_a_ms,
-                stageB_ms: finalResult.metrics.stage_b_ms,
-                fallback_missing_ids_count: finalResult.metrics.fallback_missing_ids_count,
-                enriched_rows_count: finalResult.metrics.enriched_rows_count,
-                page0_required_repair: finalResult.metrics.page0_required_repair,
-                final_rows_count: finalResult.rows.length,
-              });
-              return finalResult.rows;
-            })();
-          } else {
-            request = apiFetchReqHeads(supabase, pageIndex, pageSize);
-          }
+          request = apiFetchReqHeadsWindow(supabase, pageIndex, pageSize).then((result) => {
+            logReqHeadsMetrics("window_fetch", {
+              pageIndex,
+              pageSize,
+              forceRefresh,
+              rowCount: result.rows.length,
+              totalRowCount: result.meta.totalRowCount,
+              hasMore: result.meta.hasMore,
+              primaryOwner: result.sourceMeta.primaryOwner,
+              sourceKind: result.sourceMeta.sourceKind,
+              contractVersion: result.meta.contractVersion,
+              scopeKey: result.meta.scopeKey,
+              pageOffset: result.meta.pageOffset,
+              repairedMissingIdsCount: result.meta.repairedMissingIdsCount,
+            });
+            return {
+              rows: result.rows,
+              hasMore: result.meta.hasMore,
+              meta: result.meta,
+              sourceMeta: result.sourceMeta,
+            };
+          });
           inFlightRef.current.set(requestKey, request);
         }
-        const rows = await request;
+        const next = await request;
+        const rows = next.rows;
 
-        // apiFetchReqHeads applies status/view filtering, so page can be shorter than pageSize
-        // even when more rows exist in later ranges. Stop only when backend returns zero rows.
-        const hasNext = rows.length > 0;
+        const hasNext = next.hasMore;
         reqRefs.current.hasMore = hasNext;
         reqRefs.current.page = pageIndex;
+        setReqHeadsHasMore(hasNext);
 
         if (pageIndex === 0) {
-          cacheRef.current = { rows, pageSize };
+          cacheRef.current = { rows, pageSize, hasMore: hasNext };
           setReqHeads(rows);
+          recordPlatformObservability({
+            screen: "warehouse",
+            surface: "req_heads_list",
+            category: "ui",
+            event: "content_ready",
+            result: "success",
+            rowCount: rows.length,
+            sourceKind: next.sourceMeta.sourceKind,
+            fallbackUsed: next.sourceMeta.fallbackUsed,
+            extra: {
+              stage: "primary",
+              pageIndex,
+              pageOffset: next.meta.pageOffset,
+              scopeKey: next.meta.scopeKey,
+              primaryOwner: next.sourceMeta.primaryOwner,
+              contractVersion: next.meta.contractVersion,
+              totalRowCount: next.meta.totalRowCount,
+            },
+          });
         } else {
+          let appendedRowCount = 0;
+          let duplicateRowCount = 0;
           setReqHeads((prev) => {
             const exist = new Set(prev.map((r) => r.request_id));
             const toAdd = rows.filter((r) => !exist.has(r.request_id));
+            appendedRowCount = toAdd.length;
+            duplicateRowCount = rows.length - toAdd.length;
             return [...prev, ...toAdd];
+          });
+          recordPlatformObservability({
+            screen: "warehouse",
+            surface: "req_heads_list",
+            category: "ui",
+            event: "append_merge",
+            result: "success",
+            rowCount: appendedRowCount,
+            sourceKind: next.sourceMeta.sourceKind,
+            fallbackUsed: next.sourceMeta.fallbackUsed,
+            extra: {
+              pageIndex,
+              pageOffset: next.meta.pageOffset,
+              scopeKey: next.meta.scopeKey,
+              primaryOwner: next.sourceMeta.primaryOwner,
+              contractVersion: next.meta.contractVersion,
+              totalRowCount: next.meta.totalRowCount,
+              duplicateRowCount,
+            },
           });
         }
       } catch (e) {
         reqRefs.current.hasMore = false;
+        setReqHeadsHasMore(false);
         reqRefs.current.lastErrorAt = Date.now();
         if (pageIndex === 0) {
           cacheRef.current = null;
@@ -155,6 +271,7 @@ export function useWarehouseReqHeads(params: {
     reqHeads,
     reqHeadsLoading,
     reqHeadsFetchingPage,
+    reqHeadsHasMore,
     reqRefs,
     fetchReqHeads,
   };

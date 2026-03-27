@@ -1,20 +1,31 @@
-﻿import React from "react";
+import React from "react";
 import {
   ActivityIndicator,
-  FlatList,
-  Platform,
   RefreshControl,
   Text,
   View,
   type NativeScrollEvent,
   type NativeSyntheticEvent,
 } from "react-native";
+import { FlashList } from "../../../ui/FlashList";
 import type { HistoryRow } from "../types";
 
 type InboxRowBase = { proposal_id?: string | number };
-type ListItem<TInbox extends InboxRowBase> = { __kind: "history"; data: HistoryRow } | { __kind: "inbox"; data: TInbox };
+type ListItem<TInbox extends InboxRowBase> =
+  | { __kind: "history"; data: HistoryRow }
+  | { __kind: "inbox"; data: TInbox };
 
-export function AccountantEmptyState({ title, hint, titleColor, hintColor }: { title: string; hint: string; titleColor: string; hintColor: string }) {
+export function AccountantEmptyState({
+  title,
+  hint,
+  titleColor,
+  hintColor,
+}: {
+  title: string;
+  hint: string;
+  titleColor: string;
+  hintColor: string;
+}) {
   return (
     <View style={{ flex: 1, alignItems: "center", justifyContent: "center", padding: 24 }}>
       <Text style={{ fontSize: 28, marginBottom: 8, color: hintColor, opacity: 0.7 }}>...</Text>
@@ -33,8 +44,14 @@ export function AccountantListBlock<TInbox extends InboxRowBase>({
   loading,
   historyRefreshing,
   refreshing,
+  historyLoadingMore,
+  loadingMore,
+  historyHasMore,
+  hasMore,
   onRefreshHistory,
   onRefresh,
+  onEndReachedHistory,
+  onEndReached,
   onScroll,
   contentTopPad,
   onRenderHistory,
@@ -50,8 +67,14 @@ export function AccountantListBlock<TInbox extends InboxRowBase>({
   loading: boolean;
   historyRefreshing: boolean;
   refreshing: boolean;
+  historyLoadingMore: boolean;
+  loadingMore: boolean;
+  historyHasMore: boolean;
+  hasMore: boolean;
   onRefreshHistory: () => void;
   onRefresh: () => void;
+  onEndReachedHistory: () => void;
+  onEndReached: () => void;
   onScroll: (e: NativeSyntheticEvent<NativeScrollEvent>) => void;
   contentTopPad: number;
   onRenderHistory: (row: HistoryRow) => React.ReactElement | null;
@@ -60,17 +83,36 @@ export function AccountantListBlock<TInbox extends InboxRowBase>({
   uiSubColor: string;
 }) {
   const data: ListItem<TInbox>[] = isHistory
-    ? historyRows.map((r) => ({ __kind: "history" as const, data: r }))
-    : rows.map((r) => ({ __kind: "inbox" as const, data: r }));
+    ? historyRows.map((row) => ({ __kind: "history" as const, data: row }))
+    : rows.map((row) => ({ __kind: "inbox" as const, data: row }));
+
+  const footer = isHistory ? (
+    historyLoadingMore ? (
+      <View style={{ paddingVertical: 16, alignItems: "center" }}>
+        <ActivityIndicator />
+      </View>
+    ) : historyHasMore ? (
+      <View style={{ height: 16 }} />
+    ) : (
+      <View style={{ height: 8 }} />
+    )
+  ) : loadingMore ? (
+    <View style={{ paddingVertical: 16, alignItems: "center" }}>
+      <ActivityIndicator />
+    </View>
+  ) : hasMore ? (
+    <View style={{ height: 16 }} />
+  ) : (
+    <View style={{ height: 8 }} />
+  );
 
   return (
-    <FlatList<ListItem<TInbox>>
+    <FlashList<ListItem<TInbox>>
       style={{ flex: 1 }}
       data={data}
+      estimatedItemSize={isHistory ? 112 : 128}
       keyExtractor={(item) =>
-        item.__kind === "history"
-          ? String(item.data.payment_id)
-          : String(item.data.proposal_id ?? "")
+        item.__kind === "history" ? String(item.data.payment_id) : String(item.data.proposal_id ?? "")
       }
       ListHeaderComponent={isHistory ? historyHeader : null}
       renderItem={({ item }) => {
@@ -85,6 +127,8 @@ export function AccountantListBlock<TInbox extends InboxRowBase>({
           tintColor="transparent"
         />
       }
+      onEndReachedThreshold={0.45}
+      onEndReached={isHistory ? onEndReachedHistory : onEndReached}
       ListEmptyComponent={
         isHistory ? (
           historyLoading ? (
@@ -109,10 +153,10 @@ export function AccountantListBlock<TInbox extends InboxRowBase>({
           />
         )
       }
+      ListFooterComponent={footer}
       onScroll={onScroll}
       scrollEventThrottle={16}
       contentContainerStyle={{ paddingTop: contentTopPad, paddingBottom: 128 }}
-      removeClippedSubviews={Platform.OS === "web" ? false : true}
     />
   );
 }

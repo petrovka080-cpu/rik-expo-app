@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, TextInput, Platform, FlatList, Animated, Pressable } from "react-native";
+import { View, Text, TextInput, Platform, Pressable } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
 import WarehouseSheet from "./WarehouseSheet";
@@ -7,8 +7,7 @@ import { UI, s } from "../warehouse.styles";
 import type { ItemRow } from "../warehouse.types";
 
 import IconSquareButton from "../../../ui/IconSquareButton";
-
-const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
+import { FlashList } from "../../../ui/FlashList";
 
 type Props = {
   visible: boolean;
@@ -29,6 +28,19 @@ type Props = {
 
   receivingHeadId: string | null;
   onSubmit: (incomingId: string) => void;
+  onRetryNow: (incomingId: string) => void;
+  receiveStatusLabel: string;
+  receiveStatusDetail: string | null;
+  receiveStatusTone: "neutral" | "info" | "success" | "warning" | "danger";
+  canRetryReceive: boolean;
+};
+
+const statusColorMap: Record<Props["receiveStatusTone"], string> = {
+  neutral: "rgba(255,255,255,0.65)",
+  info: "rgba(125,211,252,0.95)",
+  success: "rgba(134,239,172,0.95)",
+  warning: "rgba(253,224,138,0.95)",
+  danger: "rgba(252,165,165,0.95)",
 };
 
 export default function IncomingItemsSheet({
@@ -44,6 +56,11 @@ export default function IncomingItemsSheet({
   setQtyInputByItem,
   receivingHeadId,
   onSubmit,
+  onRetryNow,
+  receiveStatusLabel,
+  receiveStatusDetail,
+  receiveStatusTone,
+  canRetryReceive,
 }: Props) {
   const submitDisabled = !incomingId || receivingHeadId === incomingId;
 
@@ -116,14 +133,50 @@ export default function IncomingItemsSheet({
           </Pressable>
         </View>
 
+        <View
+          style={{
+            marginTop: 10,
+            padding: 10,
+            borderRadius: 14,
+            borderWidth: 1,
+            borderColor: "rgba(255,255,255,0.12)",
+            backgroundColor: "rgba(255,255,255,0.04)",
+          }}
+        >
+          <Text style={{ color: statusColorMap[receiveStatusTone], fontWeight: "900" }}>{receiveStatusLabel}</Text>
+          {receiveStatusDetail ? (
+            <Text style={{ marginTop: 4, color: UI.sub, fontWeight: "800", fontSize: 12 }}>
+              {receiveStatusDetail}
+            </Text>
+          ) : null}
+
+          {canRetryReceive ? (
+            <Pressable
+              onPress={() => onRetryNow(incomingId)}
+              style={{
+                marginTop: 8,
+                alignSelf: "flex-start",
+                paddingVertical: 8,
+                paddingHorizontal: 12,
+                borderRadius: 999,
+                borderWidth: 1,
+                borderColor: "rgba(253,224,138,0.35)",
+                backgroundColor: "rgba(253,224,138,0.10)",
+              }}
+            >
+              <Text style={{ color: UI.text, fontWeight: "900" }}>Retry now</Text>
+            </Pressable>
+          ) : null}
+        </View>
+
         <Text style={{ marginTop: 10, color: UI.sub, fontWeight: "800", fontSize: 12 }}>
-          Введите кол-во только для нужных позиций (пусто — не трогаем).
+          Введите количество только для нужных позиций. Пустое поле не отправляется.
         </Text>
       </View>
 
-      <AnimatedFlatList
+      <FlashList
         data={rows || []}
-        keyExtractor={(r: ItemRow, idx: number) => String(r?.incoming_item_id ?? r?.purchase_item_id ?? idx)}
+        keyExtractor={(row: ItemRow, idx: number) => String(row?.purchase_item_id ?? row?.incoming_item_id ?? idx)}
         style={{ flex: 1 }}
         contentContainerStyle={{
           paddingTop: 12,
@@ -131,13 +184,14 @@ export default function IncomingItemsSheet({
         }}
         keyboardShouldPersistTaps={Platform.OS === "web" ? "handled" : "always"}
         keyboardDismissMode={Platform.OS === "ios" ? "interactive" : "on-drag"}
+        estimatedItemSize={132}
         renderItem={({ item }) => {
           const row = item as ItemRow;
           const exp = Number(row.qty_expected ?? 0) || 0;
           const rec = Number(row.qty_received ?? 0) || 0;
-          const left = Math.max(0, exp - rec);
+          const left = Math.max(0, Number(row.qty_left ?? exp - rec) || 0);
 
-          const inputKey = String(row.incoming_item_id ?? row.purchase_item_id ?? "");
+          const inputKey = String(row.purchase_item_id ?? row.incoming_item_id ?? "");
           const val = qtyInputByItem?.[inputKey] ?? "";
 
           return (
@@ -154,8 +208,8 @@ export default function IncomingItemsSheet({
 
                   <TextInput
                     value={val}
-                    onChangeText={(t) => {
-                      const cleaned = String(t ?? "").replace(",", ".").replace(/\s+/g, "");
+                    onChangeText={(text) => {
+                      const cleaned = String(text ?? "").replace(",", ".").replace(/\s+/g, "");
                       setQtyInputByItem((prev) => ({
                         ...(prev || {}),
                         [inputKey]: cleaned === "" || /^0+(\.0+)?$/.test(cleaned) ? "" : cleaned,
@@ -180,4 +234,3 @@ export default function IncomingItemsSheet({
     </WarehouseSheet>
   );
 }
-

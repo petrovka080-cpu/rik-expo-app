@@ -14,7 +14,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 
 import type { BuyerInboxRow } from "../../../lib/catalog_api";
-import StatusBadge from "../../../ui/StatusBadge";
+import { StatusBadge } from "../../../ui/StatusBadge";
 import type { LineMeta } from "../buyer.types";
 import { splitNote, mergeNote } from "../buyerUtils";
 import { P_LIST, P_SHEET } from "../buyerUi";
@@ -66,7 +66,7 @@ export const BuyerItemEditor = React.memo(function BuyerItemEditor(props: BuyerI
   const [isDropdownOpen, setIsDropdownOpen] = React.useState(false);
   const [isSupplierModalOpen, setIsSupplierModalOpen] = React.useState(false);
   const [supplierInputHeight, setSupplierInputHeight] = React.useState(46);
-  const blurCloseTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+  const blurCloseFrameRef = React.useRef<number | null>(null);
   const resetSelectionTaskRef = React.useRef<{ cancel?: () => void } | null>(null);
   const selectingOptionRef = React.useRef(false);
   const makeSupplierId = React.useCallback(
@@ -123,9 +123,9 @@ export const BuyerItemEditor = React.memo(function BuyerItemEditor(props: BuyerI
 
   const commitSelectedSupplier = React.useCallback(
     (rawName: string) => {
-      if (blurCloseTimerRef.current) {
-        clearTimeout(blurCloseTimerRef.current);
-        blurCloseTimerRef.current = null;
+      if (blurCloseFrameRef.current != null) {
+        cancelAnimationFrame(blurCloseFrameRef.current);
+        blurCloseFrameRef.current = null;
       }
       const selectedLabel = String(rawName || "").trim();
       if (!selectedLabel) return;
@@ -147,6 +147,7 @@ export const BuyerItemEditor = React.memo(function BuyerItemEditor(props: BuyerI
 
   React.useEffect(() => {
     return () => {
+      if (blurCloseFrameRef.current != null) cancelAnimationFrame(blurCloseFrameRef.current);
       resetSelectionTaskRef.current?.cancel?.();
       resetSelectionTaskRef.current = null;
     };
@@ -154,9 +155,9 @@ export const BuyerItemEditor = React.memo(function BuyerItemEditor(props: BuyerI
 
   const openPicker = React.useCallback(() => {
     if (!hasAnyCounterpartyOptions) return;
-    if (blurCloseTimerRef.current) {
-      clearTimeout(blurCloseTimerRef.current);
-      blurCloseTimerRef.current = null;
+    if (blurCloseFrameRef.current != null) {
+      cancelAnimationFrame(blurCloseFrameRef.current);
+      blurCloseFrameRef.current = null;
     }
     onFocusField?.();
     setSupplierQueryDraft(selectedSupplierLabel);
@@ -260,10 +261,14 @@ export const BuyerItemEditor = React.memo(function BuyerItemEditor(props: BuyerI
                 onFocus={openPicker}
                 onBlur={() => {
                   if (selectingOptionRef.current) return;
-                  blurCloseTimerRef.current = setTimeout(() => {
-                    setIsDropdownOpen(false);
-                    setSupplierQueryDraft("");
-                  }, 120);
+                  blurCloseFrameRef.current = requestAnimationFrame(() => {
+                    blurCloseFrameRef.current = requestAnimationFrame(() => {
+                      if (selectingOptionRef.current) return;
+                      setIsDropdownOpen(false);
+                      setSupplierQueryDraft("");
+                      blurCloseFrameRef.current = null;
+                    });
+                  });
                 }}
                 style={[s.fieldInput, { backgroundColor: P.inputBg, borderColor: P.inputBorder, color: P.text }]}
               />
@@ -294,9 +299,9 @@ export const BuyerItemEditor = React.memo(function BuyerItemEditor(props: BuyerI
                   <Pressable
                     onPressIn={() => {
                       selectingOptionRef.current = true;
-                      if (blurCloseTimerRef.current) {
-                        clearTimeout(blurCloseTimerRef.current);
-                        blurCloseTimerRef.current = null;
+                      if (blurCloseFrameRef.current != null) {
+                        cancelAnimationFrame(blurCloseFrameRef.current);
+                        blurCloseFrameRef.current = null;
                       }
                     }}
                     style={({ pressed }) => [

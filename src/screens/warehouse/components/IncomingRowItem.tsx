@@ -11,20 +11,20 @@ type Props = {
   row: IncomingRow;
   onPress: (row: IncomingRow) => void;
   fmtRuDate: (iso?: string | null) => string;
-  proposalNoByPurchase: Record<string, string | null | undefined>;
+  syncStatusText?: string | null;
 };
 
 export default function IncomingRowItem({
   row,
   onPress,
   fmtRuDate,
-  proposalNoByPurchase,
+  syncStatusText,
 }: Props) {
   const card = mapWarehouseIncomingToCardProps({
     row,
     fmtRuDate,
-    proposalNoByPurchase,
   });
+  const subtitle = syncStatusText ? `${card.subtitle} • ${syncStatusText}` : card.subtitle;
 
   return (
     <WarehouseCardShell
@@ -35,7 +35,7 @@ export default function IncomingRowItem({
     >
       <RoleCard
         title={card.title}
-        subtitle={card.subtitle}
+        subtitle={subtitle}
         style={[s.groupHeader, { marginBottom: 0 }]}
         titleStyle={{ fontSize: 16 }}
         subtitleStyle={s.incomingItemDate}

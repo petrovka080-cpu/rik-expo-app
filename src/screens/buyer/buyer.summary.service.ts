@@ -6,6 +6,7 @@ import {
   type BuyerBucketsLoadResult,
   type BuyerInboxLoadResult,
 } from "./buyer.fetchers";
+import { recordPlatformObservability } from "../../lib/observability/platformObservability";
 
 type LogFn = (msg: unknown, ...rest: unknown[]) => void;
 
@@ -57,6 +58,7 @@ type RefreshState<T> = {
 };
 
 type ScopeSlot<T> = {
+  surface: string;
   freshnessMs: number;
   cache: ScopeCache<T>;
   state: RefreshState<T>;
@@ -106,7 +108,8 @@ const normalizeScopes = (scopes?: BuyerSummaryScope[]): BuyerSummaryScope[] => {
 const isCacheFresh = <T,>(slot: ScopeSlot<T>) =>
   slot.cache.hasValue && Date.now() - slot.cache.fetchedAt < slot.freshnessMs;
 
-const createScopeSlot = <T,>(freshnessMs: number, load: () => Promise<T>): ScopeSlot<T> => ({
+const createScopeSlot = <T,>(surface: string, freshnessMs: number, load: () => Promise<T>): ScopeSlot<T> => ({
+  surface,
   freshnessMs,
   cache: createScopeCache<T>(),
   state: createRefreshState<T>(),
@@ -116,6 +119,13 @@ const createScopeSlot = <T,>(freshnessMs: number, load: () => Promise<T>): Scope
 const queueScopeRefresh = <T,>(slot: ScopeSlot<T>): Promise<T> => {
   const { state } = slot;
   if (state.inFlight) {
+    recordPlatformObservability({
+      screen: "buyer",
+      surface: slot.surface,
+      category: "reload",
+      event: "load_scope",
+      result: "queued_rerun",
+    });
     state.rerunQueued = true;
     return ensureRerunWaiter(state);
   }
@@ -161,10 +171,26 @@ const queueScopeRefresh = <T,>(slot: ScopeSlot<T>): Promise<T> => {
 
 const readScope = async <T,>(slot: ScopeSlot<T>, params: BuyerSummaryLoadParams): Promise<T> => {
   if (slot.state.inFlight) {
+    recordPlatformObservability({
+      screen: "buyer",
+      surface: slot.surface,
+      category: "reload",
+      event: "load_scope",
+      result: "joined_inflight",
+      trigger: params.reason,
+    });
     return queueScopeRefresh(slot);
   }
 
   if (!isForceRefresh(params) && isCacheFresh(slot) && slot.cache.value !== null) {
+    recordPlatformObservability({
+      screen: "buyer",
+      surface: slot.surface,
+      category: "reload",
+      event: "load_scope",
+      result: "cache_hit",
+      trigger: params.reason,
+    });
     return slot.cache.value;
   }
 
@@ -192,21 +218,21 @@ export function createBuyerSummaryService(params: BuyerSummaryServiceParams) {
     return null;
   };
 
-  const inboxSlot = createScopeSlot<BuyerInboxLoadResult>(kickMsInbox, async () =>
+  const inboxSlot = createScopeSlot<BuyerInboxLoadResult>("summary_inbox", kickMsInbox, async () =>
     loadBuyerInboxData({
       listBuyerInbox,
       log,
     })
   );
 
-  const bucketsSlot = createScopeSlot<BuyerBucketsLoadResult>(kickMsBuckets, async () =>
+  const bucketsSlot = createScopeSlot<BuyerBucketsLoadResult>("summary_buckets", kickMsBuckets, async () =>
     loadBuyerBucketsData({
       supabase,
       log,
     })
   );
 
-  const subcontractsSlot = createScopeSlot<BuyerSubcontractsLoadResult>(kickMsBuckets, async () => {
+  const subcontractsSlot = createScopeSlot<BuyerSubcontractsLoadResult>("summary_subcontracts", kickMsBuckets, async () => {
     const userId = await resolveUserId();
     if (!userId) return { count: null };
 

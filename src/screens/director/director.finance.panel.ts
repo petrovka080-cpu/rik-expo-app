@@ -3,15 +3,15 @@ import { useCallback, useMemo, useState } from "react";
 import { useRouter } from "expo-router";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { prepareAndPreviewGeneratedPdf } from "../../lib/pdf/pdf.runner";
+import { beginPlatformObservability } from "../../lib/observability/platformObservability";
 import type { DirectorFinanceSupportRowsResult } from "../../lib/api/directorFinanceScope.service";
 import {
   buildDirectorManagementReportPdfDescriptor,
   buildDirectorSupplierSummaryPdfDescriptor,
 } from "./director.finance.pdfService";
 import {
-  computeFinanceSupplierPanel,
   financeText,
-  fetchDirectorFinanceSupplierScopeViaRpc,
+  fetchDirectorFinanceSupplierScopeV2ViaRpc,
   normalizeFinSupplierInput,
   type FinKindSupplierRow,
   type FinanceRow,
@@ -24,7 +24,7 @@ import type { DirectorFinanceSupplierSelection } from "./directorUi.store";
 
 type BusyLike = { isBusy: (key: string) => boolean };
 
-const OVERPAY_KIND = "Переплаты / авансы";
+const OVERPAY_KIND = "РџРµСЂРµРїР»Р°С‚С‹ / Р°РІР°РЅСЃС‹";
 
 type Deps = {
   busy: BusyLike;
@@ -92,33 +92,6 @@ export function useDirectorFinancePanel({
     return finSpendSummary.kindRows.find((row) => row.kind === kindName)?.suppliers ?? [];
   }, [finKindName, finSpendSummary]);
 
-  const ensureSupportRows = useCallback(async (): Promise<DirectorFinanceSupportRowsResult> => {
-    if (finSupportRowsLoaded) {
-      return {
-        financeRows: finRows,
-        spendRows: finSpendRows,
-        issues: [],
-      };
-    }
-    return await loadFinanceSupportRows();
-  }, [finRows, finSpendRows, finSupportRowsLoaded, loadFinanceSupportRows]);
-
-  const computeSupplierFallback = useCallback(
-    async (selection: DirectorFinanceSupplierSelection) => {
-      const supportRows = await ensureSupportRows();
-      return computeFinanceSupplierPanel({
-        selection,
-        rows: supportRows.financeRows,
-        spendRows: supportRows.spendRows,
-        periodFromIso: finFrom,
-        periodToIso: finTo,
-        dueDaysDefault: FIN_DUE_DAYS_DEFAULT,
-        criticalDays: FIN_CRITICAL_DAYS,
-      });
-    },
-    [FIN_CRITICAL_DAYS, FIN_DUE_DAYS_DEFAULT, ensureSupportRows, finFrom, finTo],
-  );
-
   const loadSupplierScope = useCallback(
     async (selection: DirectorFinanceSupplierSelection, opts?: { suppressErrors?: boolean }) => {
       if (!selection) {
@@ -126,9 +99,16 @@ export function useDirectorFinancePanel({
         return;
       }
 
+      const observation = beginPlatformObservability({
+        screen: "director",
+        surface: "finance_supplier_scope",
+        category: "fetch",
+        event: "load_supplier_scope",
+        sourceKind: "rpc:director_finance_supplier_scope_v2",
+      });
       setFinSupplierLoading(true);
       try {
-        const payload = await fetchDirectorFinanceSupplierScopeViaRpc({
+        const payloadV2 = await fetchDirectorFinanceSupplierScopeV2ViaRpc({
           supplier: selection.supplier,
           kindName: selection.kindName,
           periodFromIso: finFrom,
@@ -136,21 +116,44 @@ export function useDirectorFinancePanel({
           dueDaysDefault: FIN_DUE_DAYS_DEFAULT,
           criticalDays: FIN_CRITICAL_DAYS,
         });
-        setFinSupplier(payload ?? (await computeSupplierFallback(selection)));
+        if (!payloadV2) {
+          throw new Error("director finance supplier scope v2 unavailable");
+        }
+
+        setFinSupplier(payloadV2);
+        observation.success({
+          rowCount: payloadV2.invoices.length,
+          sourceKind: "rpc:director_finance_supplier_scope_v2",
+          fallbackUsed: false,
+          extra: {
+            owner: "backend",
+            version: "v2",
+            supplier: selection.supplier,
+            kindName: selection.kindName ?? null,
+          },
+        });
       } catch (error) {
         if (__DEV__) {
           console.warn("[director.finance] supplier scope rpc failed", error);
         }
-        const fallback = await computeSupplierFallback(selection).catch(() => null);
-        setFinSupplier(fallback);
-        if (!opts?.suppressErrors && !fallback) {
-          Alert.alert("Финансы", "Не удалось открыть поставщика");
+        setFinSupplier(null);
+        observation.error(error, {
+          rowCount: 0,
+          sourceKind: "rpc:director_finance_supplier_scope_v2",
+          errorStage: "load_supplier_scope",
+          extra: {
+            supplier: selection.supplier,
+            kindName: selection.kindName ?? null,
+          },
+        });
+        if (!opts?.suppressErrors) {
+          Alert.alert("Р¤РёРЅР°РЅСЃС‹", "РќРµ СѓРґР°Р»РѕСЃСЊ РѕС‚РєСЂС‹С‚СЊ РїРѕСЃС‚Р°РІС‰РёРєР°");
         }
       } finally {
         setFinSupplierLoading(false);
       }
     },
-    [FIN_CRITICAL_DAYS, FIN_DUE_DAYS_DEFAULT, computeSupplierFallback, finFrom, finTo],
+    [FIN_CRITICAL_DAYS, FIN_DUE_DAYS_DEFAULT, finFrom, finTo],
   );
 
   const openSupplier = useCallback(
@@ -194,12 +197,12 @@ export function useDirectorFinancePanel({
   }, [setFinKindName, popFin]);
 
   const onFinancePdf = useCallback(async () => {
-    const supportRows = await ensureSupportRows();
     const template = await buildDirectorManagementReportPdfDescriptor({
       periodFrom: finFrom,
       periodTo: finTo,
-      financeRows: supportRows.financeRows,
-      spendRows: supportRows.spendRows,
+      financeRows: finSupportRowsLoaded ? finRows : undefined,
+      spendRows: finSupportRowsLoaded ? finSpendRows : undefined,
+      loadFallbackRows: finSupportRowsLoaded ? undefined : loadFinanceSupportRows,
       dueDaysDefault: FIN_DUE_DAYS_DEFAULT,
       criticalDays: FIN_CRITICAL_DAYS,
     });
@@ -207,20 +210,30 @@ export function useDirectorFinancePanel({
       busy,
       supabase,
       key: "pdf:director:finance",
-      label: "Открываю PDF...",
+      label: "РћС‚РєСЂС‹РІР°СЋ PDF...",
       descriptor: template,
       router,
     });
-  }, [FIN_CRITICAL_DAYS, FIN_DUE_DAYS_DEFAULT, busy, ensureSupportRows, finFrom, finTo, router, supabase]);
+  }, [
+    FIN_CRITICAL_DAYS,
+    FIN_DUE_DAYS_DEFAULT,
+    busy,
+    finFrom,
+    finRows,
+    finSpendRows,
+    finSupportRowsLoaded,
+    finTo,
+    loadFinanceSupportRows,
+    router,
+    supabase,
+  ]);
 
   const onSupplierPdf = useCallback(async () => {
     const supName = financeText(finSupplier?.supplier ?? finSupplierSelection?.supplier);
     if (!supName) {
-      Alert.alert("PDF", "Поставщик не выбран");
+      Alert.alert("PDF", "РџРѕСЃС‚Р°РІС‰РёРє РЅРµ РІС‹Р±СЂР°РЅ");
       return;
     }
-
-    const supportRows = await ensureSupportRows();
     const kindName = financeText(finSupplier?._kindName ?? finSupplierSelection?.kindName);
     const template = await buildDirectorSupplierSummaryPdfDescriptor({
       supplier: supName,
@@ -229,23 +242,38 @@ export function useDirectorFinancePanel({
       periodTo: finTo,
       dueDaysDefault: FIN_DUE_DAYS_DEFAULT,
       criticalDays: FIN_CRITICAL_DAYS,
-      financeRows: supportRows.financeRows,
-      spendRows: supportRows.spendRows,
+      financeRows: finSupportRowsLoaded ? finRows : undefined,
+      spendRows: finSupportRowsLoaded ? finSpendRows : undefined,
+      loadFallbackRows: finSupportRowsLoaded ? undefined : loadFinanceSupportRows,
     });
     await prepareAndPreviewGeneratedPdf({
       busy,
       supabase,
       key: `pdf:director:supplier:${supName}`,
-      label: "Открываю PDF...",
+      label: "РћС‚РєСЂС‹РІР°СЋ PDF...",
       descriptor: template,
       router,
     });
-  }, [FIN_CRITICAL_DAYS, FIN_DUE_DAYS_DEFAULT, busy, ensureSupportRows, finFrom, finSupplier, finSupplierSelection, finTo, router, supabase]);
+  }, [
+    FIN_CRITICAL_DAYS,
+    FIN_DUE_DAYS_DEFAULT,
+    busy,
+    finFrom,
+    finRows,
+    finSpendRows,
+    finSupplier,
+    finSupplierSelection,
+    finSupportRowsLoaded,
+    finTo,
+    loadFinanceSupportRows,
+    router,
+    supabase,
+  ]);
 
   const financePeriodShort = useMemo(() => {
     return finFrom || finTo
-      ? `${finFrom ? fmtDateOnly(finFrom) : "—"} - ${finTo ? fmtDateOnly(finTo) : "—"}`
-      : "Весь период";
+      ? `${finFrom ? fmtDateOnly(finFrom) : "вЂ”"} - ${finTo ? fmtDateOnly(finTo) : "вЂ”"}`
+      : "Р’РµСЃСЊ РїРµСЂРёРѕРґ";
   }, [finFrom, finTo, fmtDateOnly]);
 
   const financeSupplierName = useMemo(() => {
@@ -253,16 +281,16 @@ export function useDirectorFinancePanel({
   }, [finSupplier, finSupplierSelection]);
 
   const financeTitle = useMemo(() => {
-    if (finPage === "debt") return "Долги и риски";
-    if (finPage === "spend") return "Расходы (период)";
-    if (finPage === "kind") return finKindName ? `${finKindName}: Поставщики` : "Поставщики";
+    if (finPage === "debt") return "Р”РѕР»РіРё Рё СЂРёСЃРєРё";
+    if (finPage === "spend") return "Р Р°СЃС…РѕРґС‹ (РїРµСЂРёРѕРґ)";
+    if (finPage === "kind") return finKindName ? `${finKindName}: РџРѕСЃС‚Р°РІС‰РёРєРё` : "РџРѕСЃС‚Р°РІС‰РёРєРё";
     if (finPage === "supplier") {
       const supplierName = financeSupplierName;
-      if (!supplierName || supplierName === "—") return "Поставщик";
-      if (/^\d+$/.test(supplierName) || supplierName.length < 3) return `Поставщик: ${supplierName}`;
+      if (!supplierName || supplierName === "вЂ”") return "РџРѕСЃС‚Р°РІС‰РёРє";
+      if (/^\d+$/.test(supplierName) || supplierName.length < 3) return `РџРѕСЃС‚Р°РІС‰РёРє: ${supplierName}`;
       return supplierName;
     }
-    return "Финансы";
+    return "Р¤РёРЅР°РЅСЃС‹";
   }, [finPage, finKindName, financeSupplierName]);
 
   const financeTopPdfKey = useMemo(() => {

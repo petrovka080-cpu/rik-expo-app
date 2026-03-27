@@ -21,3 +21,15 @@ final_ts_errors.txt
 eas-cli-*.tgz
 package/
 
+artifacts/*.png
+artifacts/*.jpg
+artifacts/*.jpeg
+artifacts/*.xml
+artifacts/*.apk
+artifacts/*.html
+artifacts/*.txt
+artifacts/*chrome-profile/
+supabase/.temp/
+android/app/build/
+android/build/
+.gradle/

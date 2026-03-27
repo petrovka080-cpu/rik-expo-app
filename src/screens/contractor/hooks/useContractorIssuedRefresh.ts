@@ -1,8 +1,14 @@
 import { useCallback, useMemo } from "react";
 import type { Dispatch, MutableRefObject, SetStateAction } from "react";
-import { useIssuedPolling } from "../contractor.issuedPolling";
+import { useIssuedRefreshLifecycle } from "../contractor.issuedRefreshLifecycle";
 import type { ContractorWorkRow } from "../contractor.loadWorksService";
 import type { IssuedItemRow, LinkedReqCard } from "../types";
+
+type RefreshResult = {
+  issuedItemCount: number;
+  linkedRequestCount: number;
+  hasHint: boolean;
+};
 
 type Params = {
   loadIssuedTodayDataForRow: (row: ContractorWorkRow) => Promise<{
@@ -23,7 +29,7 @@ type Params = {
   setIssuedHint: Dispatch<SetStateAction<string>>;
 };
 
-export function useContractorIssuedPolling(params: Params) {
+export function useContractorIssuedRefresh(params: Params) {
   const {
     loadIssuedTodayDataForRow,
     issuedLoadSeqRef,
@@ -40,18 +46,41 @@ export function useContractorIssuedPolling(params: Params) {
   } = params;
 
   const refreshIssuedTodayForCurrentRow = useCallback(
-    async (row: ContractorWorkRow) => {
+    async (row: ContractorWorkRow): Promise<RefreshResult> => {
       const issueSeq = ++issuedLoadSeqRef.current;
       setLoadingIssued(true);
-      const data = await loadIssuedTodayDataForRow(row);
-      const isCurrent =
-        issueSeq === issuedLoadSeqRef.current &&
-        activeWorkModalProgressRef.current === String(row.progress_id || "").trim();
-      if (!isCurrent) return;
-      setIssuedItems(data.issuedItems);
-      setLinkedReqCards(data.linkedReqCards);
-      setIssuedHint(data.issuedHint || "");
-      setLoadingIssued(false);
+
+      try {
+        const data = await loadIssuedTodayDataForRow(row);
+        const isCurrent =
+          issueSeq === issuedLoadSeqRef.current &&
+          activeWorkModalProgressRef.current === String(row.progress_id || "").trim();
+
+        if (!isCurrent) {
+          return {
+            issuedItemCount: 0,
+            linkedRequestCount: 0,
+            hasHint: false,
+          };
+        }
+
+        setIssuedItems(data.issuedItems);
+        setLinkedReqCards(data.linkedReqCards);
+        setIssuedHint(data.issuedHint || "");
+
+        return {
+          issuedItemCount: data.issuedItems.length,
+          linkedRequestCount: data.linkedReqCards.length,
+          hasHint: Boolean(String(data.issuedHint || "").trim()),
+        };
+      } finally {
+        const isCurrent =
+          issueSeq === issuedLoadSeqRef.current &&
+          activeWorkModalProgressRef.current === String(row.progress_id || "").trim();
+        if (isCurrent) {
+          setLoadingIssued(false);
+        }
+      }
     },
     [
       issuedLoadSeqRef,
@@ -64,20 +93,18 @@ export function useContractorIssuedPolling(params: Params) {
     ],
   );
 
-  const issuedPollingProgressId = useMemo(() => {
+  const issuedRefreshProgressId = useMemo(() => {
     if (!workModalVisible || !issuedOpen) return "";
     return String(workModalRowProgressId || "").trim();
   }, [workModalVisible, issuedOpen, workModalRowProgressId]);
 
-  useIssuedPolling({
-    progressId: issuedPollingProgressId,
-    looksLikeUuid,
+  useIssuedRefreshLifecycle({
+    enabled: workModalVisible && issuedOpen,
+    progressId: issuedRefreshProgressId,
+    looksLikeUuid: (value) => looksLikeUuid(value),
     getCurrentRow: () => workModalRowRef.current,
     getRowProgressId: (row) => String(row?.progress_id || "").trim(),
-    onTick: async (row) => {
-      await refreshIssuedTodayForCurrentRow(row);
-    },
-    intervalMs: 25000,
+    onTick: async (row) => await refreshIssuedTodayForCurrentRow(row),
   });
 
   return { refreshIssuedTodayForCurrentRow };

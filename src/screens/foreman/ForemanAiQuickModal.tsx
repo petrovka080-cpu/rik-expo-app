@@ -4,6 +4,7 @@ import CloseIconButton from "../../ui/CloseIconButton";
 import DismissKeyboardView from "../../components/DismissKeyboardView";
 import type { CandidateOptionGroup, ClarifyQuestion, ForemanAiQuickItem } from "./foreman.ai";
 import type { ForemanAiOutcomeType } from "./foremanUi.store";
+import { useForemanVoiceInput } from "./hooks/useForemanVoiceInput";
 
 type Props = {
   visible: boolean;
@@ -19,7 +20,9 @@ type Props = {
   outcomeType: ForemanAiOutcomeType;
   candidateGroups: CandidateOptionGroup[];
   questions: ClarifyQuestion[];
+  sessionHint: string;
   aiUnavailableReason: string;
+  degradedMode: boolean;
   ui: { text: string; sub: string; cardBg: string; border: string; accent: string };
   styles: typeof import("./foreman.styles").s;
 };
@@ -32,10 +35,27 @@ const cardStyle = {
 };
 
 export default function ForemanAiQuickModal(props: Props) {
+  const voice = useForemanVoiceInput({
+    value: props.value,
+    onChangeText: props.onChangeText,
+  });
   const showPreview = props.preview.length > 0;
-  const showCandidates = props.outcomeType === "candidate_options" && props.candidateGroups.length > 0;
-  const showQuestions = props.outcomeType === "clarify_required" && props.questions.length > 0;
+  const showCandidates = props.candidateGroups.length > 0;
+  const showQuestions = props.questions.length > 0;
   const showUnavailable = props.outcomeType === "ai_unavailable" || !props.onlineConfigured;
+  const showDegradedMode = props.degradedMode;
+  const voiceLabel =
+    voice.status === "listening"
+      ? "Слушаю..."
+      : voice.status === "recognizing"
+        ? "Распознаю"
+        : voice.status === "denied"
+          ? "Доступ запрещён"
+          : voice.status === "failed"
+            ? "Повторить"
+            : voice.status === "unsupported"
+              ? "Микрофон недоступен"
+              : "Голос";
 
   return (
     <Modal
@@ -90,6 +110,81 @@ export default function ForemanAiQuickModal(props: Props) {
                 ) : null}
               </View>
             ) : null}
+
+            {showDegradedMode ? (
+              <View
+                style={{
+                  marginBottom: 12,
+                  padding: 12,
+                  borderRadius: 14,
+                  backgroundColor: "rgba(245,158,11,0.12)",
+                  borderWidth: 1,
+                  borderColor: "rgba(245,158,11,0.35)",
+                }}
+              >
+                <Text style={{ color: "#fde68a", fontWeight: "800", fontSize: 13 }}>
+                  {"\u041d\u0435\u0442 \u0441\u0435\u0442\u0438. AI \u0440\u0430\u0431\u043e\u0442\u0430\u0435\u0442 \u0432 degraded mode: \u043c\u043e\u0436\u043d\u043e \u0431\u0435\u0437\u043e\u043f\u0430\u0441\u043d\u043e \u043f\u043e\u0432\u0442\u043e\u0440\u044f\u0442\u044c \u0442\u043e\u043b\u044c\u043a\u043e \u043f\u043e\u0441\u043b\u0435\u0434\u043d\u044e\u044e \u043f\u043e\u0434\u0442\u0432\u0435\u0440\u0436\u0434\u0451\u043d\u043d\u0443\u044e \u043f\u043e\u0437\u0438\u0446\u0438\u044e \u0438\u043b\u0438 \u043e\u0442\u043a\u0440\u044b\u0442\u044c \u043a\u0430\u0442\u0430\u043b\u043e\u0433."}
+                </Text>
+              </View>
+            ) : null}
+
+            {props.sessionHint ? (
+              <View
+                style={{
+                  marginBottom: 12,
+                  padding: 12,
+                  borderRadius: 14,
+                  backgroundColor: "rgba(255,255,255,0.05)",
+                  borderWidth: 1,
+                  borderColor: "rgba(255,255,255,0.1)",
+                }}
+              >
+                <Text style={{ color: props.ui.text, fontWeight: "700", fontSize: 13 }}>
+                  {props.sessionHint}
+                </Text>
+              </View>
+            ) : null}
+
+            <View
+              style={{
+                marginBottom: 12,
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: 12,
+              }}
+            >
+              <View style={{ flex: 1, gap: 4 }}>
+                <Text style={{ color: props.ui.text, fontWeight: "700", fontSize: 13 }}>
+                  Голосовой ввод
+                </Text>
+                <Text style={{ color: props.ui.sub, fontSize: 12 }}>
+                  Распознанный текст только подставляется в поле ниже. Отправка остаётся ручной.
+                </Text>
+                {voice.error ? (
+                  <Text style={{ color: "#fdba74", fontSize: 12 }}>{voice.error}</Text>
+                ) : null}
+              </View>
+
+              <Pressable
+                onPress={voice.isActive ? voice.stop : voice.start}
+                disabled={props.loading || voice.status === "unsupported"}
+                style={{
+                  minWidth: 132,
+                  paddingHorizontal: 14,
+                  paddingVertical: 12,
+                  borderRadius: 14,
+                  borderWidth: 1,
+                  borderColor: voice.isActive ? props.ui.accent : "rgba(255,255,255,0.12)",
+                  backgroundColor: voice.isActive ? "rgba(245,158,11,0.16)" : "rgba(255,255,255,0.05)",
+                  opacity: props.loading || voice.status === "unsupported" ? 0.6 : 1,
+                }}
+              >
+                <Text style={{ color: props.ui.text, fontWeight: "800", fontSize: 13, textAlign: "center" }}>
+                  {voice.isActive ? "Стоп" : voiceLabel}
+                </Text>
+              </Pressable>
+            </View>
 
             <TextInput
               value={props.value}

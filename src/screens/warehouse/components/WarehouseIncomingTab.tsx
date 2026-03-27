@@ -1,7 +1,6 @@
 import React from "react";
 import {
-  Animated,
-  FlatList,
+  ActivityIndicator,
   Text,
   type ListRenderItem,
   type NativeScrollEvent,
@@ -9,6 +8,7 @@ import {
   type RefreshControlProps,
 } from "react-native";
 import RoleScreenLayout from "../../../components/layout/RoleScreenLayout";
+import { FlashList } from "../../../ui/FlashList";
 import {
   selectWarehouseEmptyTextStyle,
   selectWarehouseIncomingKey,
@@ -16,14 +16,14 @@ import {
 import { selectWarehouseIncomingEmptyText } from "../warehouse.tab.empty";
 import type { IncomingRow } from "../warehouse.types";
 
-const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
-
 type Props = {
   data: IncomingRow[];
   contentContainerStyle: { paddingTop: number; paddingBottom: number };
   onScroll: ((event: NativeSyntheticEvent<NativeScrollEvent>) => void) | undefined;
   scrollEventThrottle: number | undefined;
   onEndReached: () => void;
+  hasMore: boolean;
+  loadingMore: boolean;
   refreshControl: React.ReactElement<RefreshControlProps>;
   renderItem: ListRenderItem<IncomingRow>;
   emptyColor: string;
@@ -35,13 +35,15 @@ export default function WarehouseIncomingTab({
   onScroll,
   scrollEventThrottle,
   onEndReached,
+  hasMore,
+  loadingMore,
   refreshControl,
   renderItem,
   emptyColor,
 }: Props) {
   return (
     <RoleScreenLayout>
-      <AnimatedFlatList
+      <FlashList
         data={data}
         keyExtractor={selectWarehouseIncomingKey}
         contentContainerStyle={contentContainerStyle}
@@ -50,8 +52,15 @@ export default function WarehouseIncomingTab({
         ListHeaderComponent={null}
         onEndReached={onEndReached}
         onEndReachedThreshold={0.5}
-        ListFooterComponent={null}
+        ListFooterComponent={
+          loadingMore ? (
+            <ActivityIndicator style={{ paddingVertical: 16 }} />
+          ) : hasMore ? (
+            <Text style={selectWarehouseEmptyTextStyle(emptyColor)}> </Text>
+          ) : null
+        }
         renderItem={renderItem}
+        estimatedItemSize={104}
         ListEmptyComponent={
           <Text style={selectWarehouseEmptyTextStyle(emptyColor)}>
             {selectWarehouseIncomingEmptyText()}

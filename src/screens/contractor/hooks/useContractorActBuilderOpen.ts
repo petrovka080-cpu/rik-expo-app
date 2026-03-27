@@ -15,7 +15,9 @@ type ScreenLoadState = "init" | "loading" | "ready" | "error";
 
 type JobHeaderLike = {
   object_name?: string | null;
-} & Record<string, unknown>;
+  work_type?: string | null;
+  unit_price?: number | null;
+};
 
 type ActBuilderDispatch = (action: {
   type: "SET_ALL";
@@ -117,7 +119,7 @@ export function useContractorActBuilderOpen(params: {
       rowsForJob,
       (value) => toHumanWork(value),
       inferUnitByWorkName,
-      jobHeader as any,
+      jobHeader,
     );
 
     dispatchActBuilder({

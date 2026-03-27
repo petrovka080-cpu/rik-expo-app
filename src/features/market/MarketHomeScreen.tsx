@@ -2,7 +2,6 @@ import React, { useCallback, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
-  FlatList,
   Linking,
   ListRenderItemInfo,
   Pressable,
@@ -11,9 +10,11 @@ import {
   Text,
   useWindowDimensions,
   View,
+  type FlatList,
 } from "react-native";
 import { router, useFocusEffect } from "expo-router";
 
+import { FlashList } from "../../ui/FlashList";
 import MarketCategoryRail from "./components/MarketCategoryRail";
 import MarketAssistantBanner from "./components/MarketAssistantBanner";
 import MarketFeedCard from "./components/MarketFeedCard";
@@ -33,40 +34,80 @@ import {
   filterMarketHomeListings,
   getCategoryKind,
   getFeedHeading,
-  loadMarketHomePayload,
 } from "./marketHome.data";
-import type {
-  MarketHomeCategoryKey,
-  MarketHomeFilters,
-  MarketHomeListingCard,
-  MarketHomePayload,
-} from "./marketHome.types";
+import {
+  MARKET_PAGE_SIZE,
+  addMarketplaceListingToRequest,
+  createMarketplaceProposal,
+  loadMarketHomePage,
+  loadMarketRoleCapabilities,
+} from "./market.repository";
+import {
+  buildMarketProductRoute,
+  buildMarketSupplierMapRoute,
+  buildMarketSupplierShowcaseRoute,
+  MARKET_AI_ROUTE,
+  MARKET_PROFILE_ROUTE,
+} from "./market.routes";
+import type { MarketHomeListingCard, MarketRoleCapabilities } from "./marketHome.types";
 import { useMarketHeaderProfile } from "./useMarketHeaderProfile";
+import { useMarketUiStore } from "./marketUi.store";
 
-const DEFAULT_PAYLOAD: MarketHomePayload = {
-  listings: [],
-  activeDemandCount: 0,
+type FeedState = {
+  listings: MarketHomeListingCard[];
+  activeDemandCount: number;
+  totalCount: number;
+  hasMore: boolean;
+  offset: number;
 };
 
-function createInitialFilters(): MarketHomeFilters {
-  return {
-    query: "",
-    side: "all",
-    kind: "all",
-    category: "all",
-  };
-}
+const DEFAULT_FEED_STATE: FeedState = {
+  listings: [],
+  activeDemandCount: 0,
+  totalCount: 0,
+  hasMore: true,
+  offset: 0,
+};
+
+const DEFAULT_CAPABILITIES: MarketRoleCapabilities = {
+  role: null,
+  canAddToRequest: false,
+  canCreateProposal: false,
+};
 
 export default function MarketHomeScreen() {
   const { width } = useWindowDimensions();
   const listRef = useRef<FlatList<MarketHomeListingCard>>(null);
   const headerProfile = useMarketHeaderProfile();
-  const [payload, setPayload] = useState<MarketHomePayload>(DEFAULT_PAYLOAD);
+
+  const activeCategory = useMarketUiStore((state) => state.activeCategory);
+  const query = useMarketUiStore((state) => state.query);
+  const side = useMarketUiStore((state) => state.side);
+  const kind = useMarketUiStore((state) => state.kind);
+  const selectedItemId = useMarketUiStore((state) => state.selectedItemId);
+  const loadingMore = useMarketUiStore((state) => state.loadingMore);
+  const setActiveCategory = useMarketUiStore((state) => state.setActiveCategory);
+  const setQuery = useMarketUiStore((state) => state.setQuery);
+  const setSide = useMarketUiStore((state) => state.setSide);
+  const setKind = useMarketUiStore((state) => state.setKind);
+  const setSelectedItemId = useMarketUiStore((state) => state.setSelectedItemId);
+  const setLoadingMore = useMarketUiStore((state) => state.setLoadingMore);
+
+  const [feed, setFeed] = useState<FeedState>(DEFAULT_FEED_STATE);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [filters, setFilters] = useState<MarketHomeFilters>(() => createInitialFilters());
+  const [capabilities, setCapabilities] = useState<MarketRoleCapabilities>(DEFAULT_CAPABILITIES);
   const [feedAnchorOffset, setFeedAnchorOffset] = useState(640);
 
+  const filters = useMemo(
+    () => ({
+      query,
+      side,
+      kind,
+      category: activeCategory,
+    }),
+    [activeCategory, kind, query, side],
+  );
   const numColumns = width >= 1180 ? 3 : 2;
   const horizontalPadding = 20;
   const gap = 14;
@@ -74,33 +115,6 @@ export default function MarketHomeScreen() {
     const usableWidth = Math.min(width, 1240) - horizontalPadding * 2 - gap * (numColumns - 1);
     return Math.max(154, usableWidth / numColumns);
   }, [gap, horizontalPadding, numColumns, width]);
-
-  const loadPayload = useCallback(async (mode: "initial" | "refresh" = "initial") => {
-    if (mode === "refresh") setRefreshing(true);
-    else setLoading(true);
-
-    try {
-      const nextPayload = await loadMarketHomePayload();
-      setPayload(nextPayload);
-    } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : "Не удалось загрузить маркет.";
-      Alert.alert("Маркет", message);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  }, []);
-
-  useFocusEffect(
-    useCallback(() => {
-      void loadPayload();
-    }, [loadPayload]),
-  );
-
-  const filteredListings = useMemo(
-    () => filterMarketHomeListings(payload.listings, filters),
-    [payload.listings, filters],
-  );
 
   const openPhone = useCallback(async (phone: string | null) => {
     const cleaned = String(phone || "").replace(/[^\d+]/g, "");
@@ -135,31 +149,106 @@ export default function MarketHomeScreen() {
           side: sideOverride,
         },
       );
-      router.push({ pathname: "/supplierMap", params });
+      router.push(buildMarketSupplierMapRoute(params));
     },
     [filters.kind, filters.side],
   );
 
   const pushSupplierShowcase = useCallback((row: Pick<MarketHomeListingCard, "sellerUserId" | "sellerCompanyId">) => {
-    router.push({
-      pathname: "/supplierShowcase",
-      params: {
-        userId: row.sellerUserId,
-        ...(row.sellerCompanyId ? { companyId: row.sellerCompanyId } : {}),
-      },
-    } as any);
+    router.push(buildMarketSupplierShowcaseRoute(row.sellerUserId, row.sellerCompanyId));
   }, []);
 
-  const handleCategorySelect = useCallback((category: MarketHomeCategoryKey) => {
-    setFilters((prev) => {
-      const reset = prev.category === category;
-      return {
-        ...prev,
-        category: reset ? "all" : category,
-        kind: reset ? "all" : getCategoryKind(category),
-      };
-    });
+  const openAssistant = useCallback((prompt: string) => {
+    router.push(MARKET_AI_ROUTE(prompt));
   }, []);
+
+  const loadInitialPage = useCallback(
+    async (mode: "initial" | "refresh" = "initial") => {
+      if (mode === "refresh") setRefreshing(true);
+      else setLoading(true);
+
+      try {
+        const [page, nextCapabilities] = await Promise.all([
+          loadMarketHomePage({
+            offset: 0,
+            limit: MARKET_PAGE_SIZE,
+            filters: { side, kind },
+          }),
+          loadMarketRoleCapabilities(),
+        ]);
+        setFeed({
+          listings: page.listings,
+          activeDemandCount: page.activeDemandCount,
+          totalCount: page.totalCount,
+          hasMore: page.hasMore,
+          offset: page.listings.length,
+        });
+        setCapabilities(nextCapabilities);
+      } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : "Не удалось загрузить маркет.";
+        Alert.alert("Маркет", message);
+      } finally {
+        setLoading(false);
+        setRefreshing(false);
+      }
+    },
+    [kind, side],
+  );
+
+  const loadMore = useCallback(async () => {
+    if (loadingMore || loading || refreshing || !feed.hasMore) return;
+    setLoadingMore(true);
+    try {
+      const nextPage = await loadMarketHomePage({
+        offset: feed.offset,
+        limit: MARKET_PAGE_SIZE,
+        filters: { side, kind },
+      });
+      setFeed((prev) => {
+        const nextListings = [...prev.listings];
+        const seen = new Set(prev.listings.map((item) => item.id));
+        nextPage.listings.forEach((item) => {
+          if (!seen.has(item.id)) nextListings.push(item);
+        });
+        return {
+          listings: nextListings,
+          activeDemandCount: nextPage.activeDemandCount,
+          totalCount: nextPage.totalCount,
+          hasMore: nextPage.hasMore,
+          offset: nextListings.length,
+        };
+      });
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "Не удалось догрузить маркет.";
+      Alert.alert("Маркет", message);
+    } finally {
+      setLoadingMore(false);
+    }
+  }, [feed.hasMore, feed.offset, kind, loading, loadingMore, refreshing, setLoadingMore, side]);
+
+  useFocusEffect(
+    useCallback(() => {
+      void loadInitialPage("initial");
+    }, [loadInitialPage]),
+  );
+
+  const filteredListings = useMemo(
+    () => filterMarketHomeListings(feed.listings, filters),
+    [feed.listings, filters],
+  );
+
+  const handleCategorySelect = useCallback(
+    (category: typeof activeCategory) => {
+      if (activeCategory === category) {
+        setActiveCategory("all");
+        setKind("all");
+        return;
+      }
+      setActiveCategory(category);
+      setKind(getCategoryKind(category));
+    },
+    [activeCategory, setActiveCategory, setKind],
+  );
 
   const handleBannerPress = useCallback(
     (action: "scroll_feed" | "open_map" | "open_offer_map") => {
@@ -176,15 +265,27 @@ export default function MarketHomeScreen() {
     [feedAnchorOffset, pushSupplierMap],
   );
 
-  const openAssistant = useCallback((prompt: string) => {
-    router.push({
-      pathname: "/(tabs)/ai",
-      params: {
-        prompt,
-        autoSend: "1",
-        context: "market",
-      },
-    } as any);
+  const handleAddToRequest = useCallback(async (listing: MarketHomeListingCard) => {
+    try {
+      const result = await addMarketplaceListingToRequest(listing, 1);
+      Alert.alert("Маркет", `Добавлено в заявку: ${result.addedCount} поз. Черновик ${result.requestId}.`);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "Не удалось добавить товар в заявку.";
+      Alert.alert("Маркет", message);
+    }
+  }, []);
+
+  const handleCreateProposal = useCallback(async (listing: MarketHomeListingCard) => {
+    try {
+      const result = await createMarketplaceProposal(listing, 1);
+      Alert.alert(
+        "Маркет",
+        `Предложение создано${result.proposalNo ? `: ${result.proposalNo}` : ""}.`,
+      );
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "Не удалось создать предложение.";
+      Alert.alert("Маркет", message);
+    }
   }, []);
 
   const renderCard = useCallback(
@@ -192,34 +293,44 @@ export default function MarketHomeScreen() {
       <View style={[styles.feedCell, { width: columnWidth }]}>
         <MarketFeedCard
           listing={item}
-          onOpen={() => router.push(`/product/${item.id}` as any)}
+          onOpen={() => {
+            setSelectedItemId(item.id);
+            router.push(buildMarketProductRoute(item.id));
+          }}
           onMapPress={() => pushSupplierMap(item)}
           onShowcasePress={() => pushSupplierShowcase(item)}
-          onChatPress={() =>
-            router.push({
-              pathname: "/chat",
-              params: {
-                listingId: item.id,
-                title: item.title,
-              },
-            } as any)
-          }
           onAssistantPress={() => openAssistant(buildListingAssistantPrompt(item))}
           onPhonePress={item.phone ? () => void openPhone(item.phone) : undefined}
           onWhatsAppPress={item.whatsapp ? () => void openWhatsApp(item.whatsapp) : undefined}
+          onAddToRequestPress={capabilities.canAddToRequest && item.erpItems.length ? () => void handleAddToRequest(item) : undefined}
+          onCreateProposalPress={
+            capabilities.canCreateProposal && item.erpItems.length ? () => void handleCreateProposal(item) : undefined
+          }
         />
       </View>
     ),
-    [columnWidth, openAssistant, openPhone, openWhatsApp, pushSupplierMap, pushSupplierShowcase],
+    [
+      capabilities.canAddToRequest,
+      capabilities.canCreateProposal,
+      columnWidth,
+      handleAddToRequest,
+      handleCreateProposal,
+      openAssistant,
+      openPhone,
+      openWhatsApp,
+      pushSupplierMap,
+      pushSupplierShowcase,
+      setSelectedItemId,
+    ],
   );
 
   const header = (
     <View style={styles.headerContent}>
       <MarketHeaderBar
-        query={filters.query}
-        onChangeQuery={(value) => setFilters((prev) => ({ ...prev, query: value }))}
+        query={query}
+        onChangeQuery={setQuery}
         onMapPress={() => pushSupplierMap()}
-        onProfilePress={() => router.push("/(tabs)/profile" as any)}
+        onProfilePress={() => router.push(MARKET_PROFILE_ROUTE)}
         avatarText={headerProfile.avatarText}
         avatarLabel={headerProfile.fullName}
         avatarUrl={headerProfile.avatarUrl}
@@ -234,7 +345,11 @@ export default function MarketHomeScreen() {
         <Text style={styles.sectionTitle}>Категории</Text>
         <Pressable
           style={styles.sectionAction}
-          onPress={() => setFilters((prev) => ({ ...prev, category: "all", kind: "all" }))}
+          onPress={() => {
+            setActiveCategory("all");
+            setSide("all");
+            setKind("all");
+          }}
         >
           <Text style={styles.sectionActionText}>Смотреть все</Text>
         </Pressable>
@@ -242,11 +357,11 @@ export default function MarketHomeScreen() {
 
       <MarketCategoryRail
         categories={MARKET_HOME_CATEGORIES}
-        activeCategory={filters.category}
+        activeCategory={activeCategory}
         onSelect={handleCategorySelect}
       />
 
-      <MarketTenderBanner count={payload.activeDemandCount} onPress={() => router.push("/auctions" as any)} />
+      <MarketTenderBanner count={feed.activeDemandCount} comingSoon />
 
       <MarketAssistantBanner
         onOpenAssistant={() => openAssistant(buildMarketAssistantPrompt(filters))}
@@ -255,12 +370,15 @@ export default function MarketHomeScreen() {
 
       <View style={styles.feedHeader} onLayout={(event) => setFeedAnchorOffset(event.nativeEvent.layout.y)}>
         <View style={{ flex: 1 }}>
-          <Text style={styles.feedTitle}>{getFeedHeading(filters.category)}</Text>
+          <Text style={styles.feedTitle}>{getFeedHeading(activeCategory)}</Text>
           <Text style={styles.feedSubtitle}>
-            {filters.category === "all"
-              ? `${filteredListings.length} объявлений в маркетплейсе`
-              : `${getCategoryLabel(filters.category)} • ${filteredListings.length} объявлений`}
+            {activeCategory === "all"
+              ? `${filteredListings.length} объявлений из ${feed.totalCount.toLocaleString("ru-RU")}`
+              : `${getCategoryLabel(activeCategory)} • ${filteredListings.length} объявлений`}
           </Text>
+          {selectedItemId ? (
+            <Text style={styles.feedHint}>Открыта карточка: {selectedItemId}</Text>
+          ) : null}
         </View>
       </View>
     </View>
@@ -277,14 +395,22 @@ export default function MarketHomeScreen() {
 
   return (
     <View style={styles.root}>
-      <FlatList
+      <FlashList
         ref={listRef}
         data={filteredListings}
         key={numColumns}
         keyExtractor={(item) => item.id}
         renderItem={renderCard}
         numColumns={numColumns}
+        estimatedItemSize={360}
         ListHeaderComponent={header}
+        ListFooterComponent={
+          loadingMore ? (
+            <View style={styles.footerLoader}>
+              <ActivityIndicator color={MARKET_HOME_COLORS.accent} />
+            </View>
+          ) : null
+        }
         ListEmptyComponent={
           <View style={styles.emptyCard}>
             <Text style={styles.emptyTitle}>Ничего не найдено</Text>
@@ -296,11 +422,13 @@ export default function MarketHomeScreen() {
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
-            onRefresh={() => void loadPayload("refresh")}
+            onRefresh={() => void loadInitialPage("refresh")}
             tintColor={MARKET_HOME_COLORS.accent}
           />
         }
         showsVerticalScrollIndicator={false}
+        onEndReached={() => void loadMore()}
+        onEndReachedThreshold={0.35}
       />
     </View>
   );
@@ -365,12 +493,22 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "600",
   },
+  feedHint: {
+    marginTop: 6,
+    color: MARKET_HOME_COLORS.accentStrong,
+    fontSize: 12,
+    fontWeight: "700",
+  },
   feedRow: {
     justifyContent: "space-between",
     paddingHorizontal: 20,
   },
   feedCell: {
     marginBottom: 14,
+  },
+  footerLoader: {
+    paddingBottom: 12,
+    paddingTop: 4,
   },
   emptyCard: {
     marginHorizontal: 20,

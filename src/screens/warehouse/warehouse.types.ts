@@ -24,6 +24,7 @@ export type ItemRow = {
   uom: string | null;
   qty_expected: number;
   qty_received: number;
+  qty_left: number;
   sort_key: number;
 };
 

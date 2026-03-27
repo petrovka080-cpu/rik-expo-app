@@ -1,256 +1,188 @@
 // src/screens/warehouse/warehouse.incoming.ts
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { IncomingRow, ItemRow } from "./warehouse.types";
-import { nz, pickErr } from "./warehouse.utils";
 import {
-  fetchWarehouseIncomingHeadsPage,
-  fetchWarehouseIncomingItems,
-  fetchWarehouseProposalNos,
-  fetchWarehousePurchaseProposalLinks,
+  fetchWarehouseIncomingHeadsWindow,
+  fetchWarehouseIncomingItemsWindow,
 } from "./warehouse.incoming.repo";
+import {
+  beginPlatformObservability,
+  recordPlatformObservability,
+} from "../../lib/observability/platformObservability";
+import { recordPlatformGuardSkip } from "../../lib/observability/platformGuardDiscipline";
+import { getPlatformNetworkSnapshot } from "../../lib/offline/platformNetwork.service";
 
 // РјР°Р»РµРЅСЊРєРёРµ СѓС‚РёР»РёС‚С‹ (Р»РѕРєР°Р»СЊРЅРѕ РІ РјРѕРґСѓР»Рµ)
-const uniq = (arr: string[]) => Array.from(new Set(arr.filter(Boolean)));
-const chunk = <T,>(arr: T[], size: number) => {
-  const out: T[][] = [];
-  for (let i = 0; i < arr.length; i += size) out.push(arr.slice(i, i + size));
-  return out;
-};
-const PR_TTL_MS = 10 * 60 * 1000;
-
-type IncomingHeadRowDb = {
-  incoming_id?: string | null;
-  purchase_id?: string | null;
-  incoming_status?: string | null;
-  po_no?: string | null;
-  purchase_status?: string | null;
-  purchase_created_at?: string | null;
-  confirmed_at?: string | null;
-  qty_expected_sum?: number | null;
-  qty_received_sum?: number | null;
-  qty_left_sum?: number | null;
-  items_cnt?: number | null;
-  pending_cnt?: number | null;
-  partial_cnt?: number | null;
-};
-
-type IncomingItemRowDb = {
-  incoming_item_id?: string | null;
-  purchase_item_id?: string | null;
-  code?: string | null;
-  name?: string | null;
-  uom?: string | null;
-  qty_expected?: number | null;
-  qty_received?: number | null;
-  sort_key?: number | null;
-};
-
 export function useWarehouseIncoming() {
   const [toReceive, setToReceive] = useState<IncomingRow[]>([]);
   const [incomingCount, setIncomingCount] = useState(0);
-
-  // Pagination states
+  const [toReceiveLoading, setToReceiveLoading] = useState(false);
   const [toReceivePage, setToReceivePage] = useState(0);
   const [toReceiveHasMore, setToReceiveHasMore] = useState(true);
   const [toReceiveIsFetching, setToReceiveIsFetching] = useState(false);
+  const [toReceiveFetchingPage, setToReceiveFetchingPage] = useState(false);
   const toReceiveFetchMutexRef = useRef(false);
+  const toReceiveFetchTaskRef = useRef<Promise<void> | null>(null);
+  const toReceivePageRef = useRef(0);
+  const toReceiveHasMoreRef = useRef(true);
   const PAGE_SIZE = 30;
 
   const [itemsByHead, setItemsByHead] = useState<Record<string, ItemRow[]>>({});
   const itemsByHeadRef = useRef<Record<string, ItemRow[]>>({});
+  const toReceiveRef = useRef<IncomingRow[]>([]);
   useEffect(() => {
     itemsByHeadRef.current = itemsByHead || {};
   }, [itemsByHead]);
-
-  const [proposalNoByPurchase, setProposalNoByPurchase] = useState<Record<string, string>>({});
-  const proposalNoByPurchaseRef = useRef<Record<string, string>>({});
   useEffect(() => {
-    proposalNoByPurchaseRef.current = proposalNoByPurchase || {};
-  }, [proposalNoByPurchase]);
-
-  const prCacheMetaRef = useRef<Record<string, number>>({}); // purchase_id -> ts
-  const prInflightRef = useRef<Record<string, Promise<void>>>({});
-
-  const preloadProposalNosByPurchases = useCallback(async (purchaseIdsRaw: string[]) => {
-    const now = Date.now();
-    const purchaseIds = uniq((purchaseIdsRaw || []).map((x) => String(x || "").trim()).filter(Boolean));
-    if (!purchaseIds.length) return;
-
-    const need = purchaseIds.filter((pid) => {
-      const have = proposalNoByPurchaseRef.current?.[pid];
-      const ts = prCacheMetaRef.current?.[pid] ?? 0;
-      return !(have && (now - ts) < PR_TTL_MS);
-    });
-    if (!need.length) return;
-
-    const wait: Promise<void>[] = [];
-    const toFetch: string[] = [];
-
-    for (const pid of need) {
-      const infl = prInflightRef.current[pid];
-      if (infl) wait.push(infl);
-      else toFetch.push(pid);
-    }
-
-    if (toFetch.length) {
-      const p = (async () => {
-        try {
-          const purchaseToProposal = new Map<string, string>();
-
-          for (const part of chunk(toFetch, 250)) {
-            const r1 = await fetchWarehousePurchaseProposalLinks(part);
-            if (!r1?.error && Array.isArray(r1.data)) {
-              for (const row of r1.data) {
-                const pid = String(row?.id ?? "").trim();
-                const propId = String(row?.proposal_id ?? "").trim();
-                if (pid && propId) purchaseToProposal.set(pid, propId);
-              }
-            }
-          }
-
-          const propIds = uniq(Array.from(purchaseToProposal.values()));
-          if (!propIds.length) {
-            for (const pid of toFetch) prCacheMetaRef.current[pid] = Date.now();
-            return;
-          }
-
-          const propIdToNo = new Map<string, string>();
-          for (const part of chunk(propIds, 250)) {
-            const r2 = await fetchWarehouseProposalNos(part);
-            if (!r2?.error && Array.isArray(r2.data)) {
-              for (const row of r2.data) {
-                const id = String(row?.id ?? "").trim();
-                const no = String(row?.proposal_no ?? "").trim();
-                if (id && no) propIdToNo.set(id, no);
-              }
-            }
-          }
-
-          const patch: Record<string, string> = {};
-          for (const pid of toFetch) {
-            const propId = purchaseToProposal.get(pid);
-            const no = propId ? propIdToNo.get(propId) : null;
-            if (no) patch[pid] = no;
-            prCacheMetaRef.current[pid] = Date.now();
-          }
-
-          if (Object.keys(patch).length) {
-            setProposalNoByPurchase((prev) => ({ ...(prev || {}), ...patch }));
-          }
-        } catch (e) {
-          if (__DEV__) {
-            console.warn("[warehouse.incoming] preloadProposalNos failed:", pickErr(e));
-          }
-        }
-      })();
-
-      for (const pid of toFetch) prInflightRef.current[pid] = p;
-      wait.push(p);
-
-      p.finally(() => {
-        for (const pid of toFetch) {
-          if (prInflightRef.current[pid] === p) delete prInflightRef.current[pid];
-        }
-      });
-    }
-
-    if (wait.length) {
-      try {
-        await Promise.all(wait);
-      } catch (e) {
-        if (__DEV__) {
-          console.warn("[warehouse.incoming] preloadProposalNos wait failed:", pickErr(e));
-        }
-      }
-    }
-  }, []);
+    toReceiveRef.current = toReceive || [];
+  }, [toReceive]);
 
   const fetchToReceive = useCallback(async (pageIndex: number = 0, forceRefresh: boolean = false) => {
-    if (toReceiveFetchMutexRef.current) return;
-    if (pageIndex > 0 && !toReceiveHasMore && !forceRefresh) return;
-    toReceiveFetchMutexRef.current = true;
-    setToReceiveIsFetching(true);
+    const networkSnapshot = getPlatformNetworkSnapshot();
+    if (networkSnapshot.hydrated && networkSnapshot.networkKnownOffline) {
+      recordPlatformGuardSkip("network_known_offline", {
+        screen: "warehouse",
+        surface: "incoming_list",
+        event: "fetch_incoming",
+        trigger: forceRefresh ? "refresh" : pageIndex > 0 ? "append" : "initial",
+        extra: { pageIndex, forceRefresh, networkKnownOffline: true },
+      });
+      return;
+    }
 
-    try {
-      const q = await fetchWarehouseIncomingHeadsPage(pageIndex, PAGE_SIZE);
+    if (pageIndex > 0 && !toReceiveHasMoreRef.current && !forceRefresh) {
+      recordPlatformGuardSkip("no_more_pages", {
+        screen: "warehouse",
+        surface: "incoming_list",
+        event: "fetch_incoming",
+        trigger: "append",
+        extra: { pageIndex, forceRefresh },
+      });
+      return;
+    }
 
-      if (q.error || !Array.isArray(q.data)) {
+    if (toReceiveFetchMutexRef.current) {
+      recordPlatformObservability({
+        screen: "warehouse",
+        surface: "incoming_list",
+        category: "reload",
+        event: "fetch_incoming",
+        result: "joined_inflight",
+        extra: { pageIndex, forceRefresh },
+      });
+      await (toReceiveFetchTaskRef.current ?? Promise.resolve());
+      return;
+    }
+
+    const observation = beginPlatformObservability({
+      screen: "warehouse",
+      surface: "incoming_list",
+      category: "fetch",
+      event: "fetch_incoming",
+      sourceKind: "rpc:warehouse_incoming_queue_scope_v1",
+      trigger: forceRefresh ? "refresh" : pageIndex > 0 ? "append" : "initial",
+    });
+
+    const task = (async () => {
+      toReceiveFetchMutexRef.current = true;
+      setToReceiveIsFetching(true);
+      setToReceiveFetchingPage(pageIndex > 0);
+      if (pageIndex === 0) setToReceiveLoading(true);
+
+      try {
+        const result = await fetchWarehouseIncomingHeadsWindow(pageIndex, PAGE_SIZE);
+
+        const queue = (result?.rows ?? []) as IncomingRow[];
+        const hasNext = result?.meta.hasMore === true;
+        toReceiveHasMoreRef.current = hasNext;
+        toReceivePageRef.current = pageIndex;
+        setToReceiveHasMore(hasNext);
+        setToReceivePage(pageIndex);
+
+        if (pageIndex === 0) {
+          toReceiveRef.current = queue;
+          setToReceive(queue);
+          setIncomingCount(queue.length);
+        } else {
+          const prevRows = toReceiveRef.current;
+          const prevIds = new Set(prevRows.map((row) => String(row.incoming_id ?? "").trim()));
+          const next = queue.filter((row) => !prevIds.has(String(row.incoming_id ?? "").trim()));
+          const merged = [...prevRows, ...next];
+          toReceiveRef.current = merged;
+          setToReceive(merged);
+          setIncomingCount(merged.length);
+        }
+
+        observation.success({
+          rowCount: queue.length,
+          sourceKind: result?.sourceMeta.sourceKind,
+          fallbackUsed: false,
+          extra: {
+            pageIndex,
+            pageSize: PAGE_SIZE,
+            pageOffset: result?.meta.pageOffset,
+            rawWindowRowCount: result?.meta.rawWindowRowCount,
+            visibleRowCount: queue.length,
+            totalVisibleCount: result?.meta.totalVisibleCount ?? null,
+            hasMore: hasNext,
+            forceRefresh,
+            primaryOwner: result?.sourceMeta.primaryOwner,
+            contractVersion: result?.meta.contractVersion,
+            scopeKey: result?.meta.scopeKey,
+          },
+        });
+        recordPlatformObservability({
+          screen: "warehouse",
+          surface: "incoming_list",
+          category: "ui",
+          event: "content_ready",
+          result: "success",
+          rowCount: queue.length,
+          sourceKind: result?.sourceMeta.sourceKind,
+          fallbackUsed: result?.sourceMeta.fallbackUsed,
+          extra: {
+            pageIndex,
+            hasMore: hasNext,
+            append: pageIndex > 0,
+            primaryOwner: result?.sourceMeta.primaryOwner,
+            contractVersion: result?.meta.contractVersion,
+            scopeKey: result?.meta.scopeKey,
+          },
+        });
+      } catch (e) {
+        observation.error(e, {
+          errorStage: "fetch_incoming_page_rpc_v1",
+          rowCount: 0,
+          sourceKind: "rpc:warehouse_incoming_queue_scope_v1",
+          fallbackUsed: false,
+          extra: {
+            pageIndex,
+            pageSize: PAGE_SIZE,
+            pageOffset: pageIndex * PAGE_SIZE,
+            scopeKey: `warehouse_incoming_queue_scope_v1:${pageIndex * PAGE_SIZE}:${PAGE_SIZE}`,
+          },
+        });
         if (__DEV__) {
-          console.warn("[warehouse.incoming] v_wh_incoming_heads_ui error:", q.error?.message);
+          console.warn("[warehouse.incoming] warehouse_incoming_queue_scope_v1 failed:", e);
         }
         if (pageIndex === 0) {
           setToReceive([]);
           setIncomingCount(0);
+          setToReceiveHasMore(false);
+          toReceiveHasMoreRef.current = false;
         }
+      } finally {
+        toReceiveFetchMutexRef.current = false;
+        toReceiveFetchTaskRef.current = null;
         setToReceiveIsFetching(false);
-        return;
+        setToReceiveFetchingPage(false);
+        if (pageIndex === 0) setToReceiveLoading(false);
       }
+    })();
 
-      const rowsRaw = (q.data as IncomingHeadRowDb[]) || [];
-      const rows: IncomingRow[] = rowsRaw.map((x) => ({
-        incoming_id: String(x.incoming_id),
-        purchase_id: String(x.purchase_id),
-        incoming_status: String(x.incoming_status ?? "pending"),
-        po_no: x.po_no ?? null,
-        purchase_status: x.purchase_status ?? null,
-        purchase_created_at: x.purchase_created_at ?? null,
-        confirmed_at: x.confirmed_at ?? null,
-        qty_expected_sum: nz(x.qty_expected_sum, 0),
-        qty_received_sum: nz(x.qty_received_sum, 0),
-        qty_left_sum: nz(x.qty_left_sum, 0),
-        items_cnt: Number(x.items_cnt ?? 0),
-        pending_cnt: Number(x.pending_cnt ?? 0),
-        partial_cnt: Number(x.partial_cnt ?? 0),
-      }));
-
-      await preloadProposalNosByPurchases(rows.map((r) => String(r.purchase_id ?? "")));
-
-      const queue = rows
-        .map((r) => {
-          const exp = nz(r.qty_expected_sum, 0);
-          const rec = nz(r.qty_received_sum, 0);
-          const left = Math.max(0, exp - rec);
-          return { ...r, qty_expected_sum: exp, qty_received_sum: rec, qty_left_sum: left };
-        })
-        .filter((r) => Math.max(0, nz(r.qty_expected_sum, 0) - nz(r.qty_received_sum, 0)) > 0);
-
-      queue.sort((a, b) => {
-        const aLeft = Math.max(0, nz(a.qty_expected_sum, 0) - nz(a.qty_received_sum, 0));
-        const bLeft = Math.max(0, nz(b.qty_expected_sum, 0) - nz(b.qty_received_sum, 0));
-        const aIsPartial = nz(a.qty_received_sum, 0) > 0 && aLeft > 0;
-        const bIsPartial = nz(b.qty_received_sum, 0) > 0 && bLeft > 0;
-
-        if (aIsPartial !== bIsPartial) return (bIsPartial ? 1 : 0) - (aIsPartial ? 1 : 0);
-
-        const ad = a.purchase_created_at ? new Date(a.purchase_created_at).getTime() : 0;
-        const bd = b.purchase_created_at ? new Date(b.purchase_created_at).getTime() : 0;
-        return bd - ad;
-      });
-
-      const hasNext = rows.length === PAGE_SIZE;
-      setToReceiveHasMore(hasNext);
-      setToReceivePage(pageIndex);
-
-      if (pageIndex === 0) {
-        setToReceive(queue);
-        setIncomingCount(queue.length); // Assuming we just want to know how many we see, or we query exact count
-      } else {
-        setToReceive((prev) => [...prev, ...queue]);
-        setIncomingCount((prev) => prev + queue.length);
-      }
-    } catch (e) {
-      if (__DEV__) {
-        console.warn("[warehouse.incoming] fetchToReceive throw:", e);
-      }
-      if (pageIndex === 0) {
-        setToReceive([]);
-        setIncomingCount(0);
-      }
-    } finally {
-      toReceiveFetchMutexRef.current = false;
-      setToReceiveIsFetching(false);
-    }
-  }, [preloadProposalNosByPurchases, toReceiveHasMore]);
+    toReceiveFetchTaskRef.current = task;
+    await task;
+  }, []);
 
   const loadItemsForHead = useCallback(async (incomingId: string, force = false) => {
     if (!incomingId) return [] as ItemRow[];
@@ -260,49 +192,64 @@ export function useWarehouseIncoming() {
       if (cached) return cached;
     }
 
-    const q = await fetchWarehouseIncomingItems(incomingId);
+    const observation = beginPlatformObservability({
+      screen: "warehouse",
+      surface: "incoming_items",
+      category: "fetch",
+      event: "fetch_incoming_items",
+      sourceKind: "rpc:warehouse_incoming_items_scope_v1",
+      trigger: force ? "refresh" : "initial",
+    });
 
-    if (q.error) {
+    try {
+      const result = await fetchWarehouseIncomingItemsWindow(incomingId);
+
+      const rows = (result?.rows ?? []) as ItemRow[];
+      setItemsByHead((prev) => ({ ...(prev || {}), [incomingId]: rows }));
+
+      observation.success({
+        rowCount: rows.length,
+        sourceKind: result?.sourceMeta.sourceKind,
+        fallbackUsed: false,
+        extra: {
+          incomingId,
+          rowCount: result?.meta.rowCount,
+          scopeKey: result?.meta.scopeKey,
+          contractVersion: result?.meta.contractVersion,
+        },
+      });
+
+      return rows;
+    } catch (error) {
+      observation.error(error, {
+        errorStage: "fetch_incoming_items_rpc_v1",
+        rowCount: 0,
+        sourceKind: "rpc:warehouse_incoming_items_scope_v1",
+        fallbackUsed: false,
+        extra: {
+          incomingId,
+          scopeKey: `warehouse_incoming_items_scope_v1:${incomingId}`,
+        },
+      });
       if (__DEV__) {
-        console.warn("[warehouse.incoming] v_wh_incoming_items_ui error:", q.error.message);
+        console.warn("[warehouse.incoming] warehouse_incoming_items_scope_v1 failed:", error);
       }
       setItemsByHead((prev) => ({ ...(prev || {}), [incomingId]: [] }));
       return [] as ItemRow[];
     }
-
-    const rowsRaw = (q.data as IncomingItemRowDb[]) || [];
-    const rowsAll: ItemRow[] = rowsRaw.map((x) => ({
-      incoming_item_id: x.incoming_item_id ? String(x.incoming_item_id) : null,
-      purchase_item_id: String(x.purchase_item_id),
-      code: x.code ? String(x.code) : null,
-      name: String(x.name ?? x.code ?? ""),
-      uom: x.uom ? String(x.uom) : null,
-      qty_expected: nz(x.qty_expected, 0),
-      qty_received: nz(x.qty_received, 0),
-      sort_key: Number(x.sort_key ?? 1),
-    }));
-
-    const rows = rowsAll.filter((r) => {
-      const codeU = String(r.code ?? "").toUpperCase();
-      const isWarehouse = codeU.startsWith("MAT-") || codeU.startsWith("TOOL-");
-      const left = Math.max(0, nz(r.qty_expected, 0) - nz(r.qty_received, 0));
-      return isWarehouse && left > 0;
-    });
-
-    setItemsByHead((prev) => ({ ...(prev || {}), [incomingId]: rows }));
-    return rows;
   }, []);
 
   // РЅР°СЂСѓР¶Сѓ РѕС‚РґР°С‘Рј РІСЃС‘, С‡С‚Рѕ РЅСѓР¶РЅРѕ СЌРєСЂР°РЅСѓ
   return {
     toReceive,
     incomingCount,
-    proposalNoByPurchase,
+    toReceiveLoading,
 
     // pagination for incoming
     toReceivePage,
     toReceiveHasMore,
     toReceiveIsFetching,
+    toReceiveFetchingPage,
 
     itemsByHead,
     loadItemsForHead,

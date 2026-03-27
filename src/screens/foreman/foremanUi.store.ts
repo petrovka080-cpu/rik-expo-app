@@ -9,7 +9,16 @@ export type ForemanAiOutcomeType =
   | "resolved_items"
   | "candidate_options"
   | "clarify_required"
+  | "hard_fail_safe"
   | "ai_unavailable";
+
+export type ForemanAiSessionTurn = {
+  prompt: string;
+  items: ForemanAiQuickItem[];
+  createdAt: string;
+};
+
+const FOREMAN_AI_SESSION_HISTORY_LIMIT = 5;
 
 type ForemanUiStore = {
   isFioConfirmVisible: boolean;
@@ -26,6 +35,7 @@ type ForemanUiStore = {
   aiQuickCandidateGroups: CandidateOptionGroup[];
   aiQuickQuestions: ClarifyQuestion[];
   aiUnavailableReason: string;
+  aiQuickSessionHistory: ForemanAiSessionTurn[];
   headerAttention: ForemanHeaderAttentionState | null;
   selectedObjectName: string;
   foremanHistory: string[];
@@ -43,6 +53,8 @@ type ForemanUiStore = {
   setAiQuickCandidateGroups: (value: CandidateOptionGroup[]) => void;
   setAiQuickQuestions: (value: ClarifyQuestion[]) => void;
   setAiUnavailableReason: (value: string) => void;
+  pushAiQuickSessionTurn: (value: ForemanAiSessionTurn) => void;
+  clearAiQuickSessionHistory: () => void;
   setHeaderAttention: (value: SetStateAction<ForemanHeaderAttentionState | null>) => void;
   setSelectedObjectName: (value: string) => void;
   setForemanHistory: (value: string[]) => void;
@@ -67,6 +79,7 @@ export const useForemanUiStore = create<ForemanUiStore>((set) => ({
   aiQuickCandidateGroups: [],
   aiQuickQuestions: [],
   aiUnavailableReason: "",
+  aiQuickSessionHistory: [],
   headerAttention: null,
   selectedObjectName: "",
   foremanHistory: [],
@@ -85,6 +98,24 @@ export const useForemanUiStore = create<ForemanUiStore>((set) => ({
     set({ aiQuickCandidateGroups: Array.isArray(value) ? value : [] }),
   setAiQuickQuestions: (value) => set({ aiQuickQuestions: Array.isArray(value) ? value : [] }),
   setAiUnavailableReason: (value) => set({ aiUnavailableReason: value }),
+  pushAiQuickSessionTurn: (value) =>
+    set((state) => {
+      if (!value || typeof value.prompt !== "string" || !Array.isArray(value.items) || value.items.length === 0) {
+        return state;
+      }
+      const nextTurn: ForemanAiSessionTurn = {
+        prompt: value.prompt.trim(),
+        items: value.items,
+        createdAt: String(value.createdAt || new Date().toISOString()),
+      };
+      if (!nextTurn.prompt) return state;
+      return {
+        aiQuickSessionHistory: [...state.aiQuickSessionHistory, nextTurn].slice(
+          -FOREMAN_AI_SESSION_HISTORY_LIMIT,
+        ),
+      };
+    }),
+  clearAiQuickSessionHistory: () => set({ aiQuickSessionHistory: [] }),
   setHeaderAttention: (value) =>
     set((state) => ({ headerAttention: resolveUpdate(value, state.headerAttention) })),
   setSelectedObjectName: (value) => set({ selectedObjectName: value }),

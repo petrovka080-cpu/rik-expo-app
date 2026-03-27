@@ -25,33 +25,39 @@ export function createWarehouseReqHeadRenderer(params: {
   openReq: (row: ReqHeadRow) => void;
   fmtRuDate: (iso?: string | null) => string;
 }): ListRenderItem<ReqHeadRow> {
-  return ({ item }) => <ReqHeadRowItem row={item} onPress={params.openReq} fmtRuDate={params.fmtRuDate} />;
+  return function renderWarehouseReqHeadItem({ item }) {
+    return <ReqHeadRowItem row={item} onPress={params.openReq} fmtRuDate={params.fmtRuDate} />;
+  };
 }
 
 export function createWarehouseIncomingRenderer(params: {
   openItemsModal: (row: IncomingRow) => void;
   fmtRuDate: (iso?: string | null) => string;
-  proposalNoByPurchase: Record<string, string | null | undefined>;
+  getReceiveStatusText?: (incomingId: string) => string | null;
 }): ListRenderItem<IncomingRow> {
-  return ({ item }) => (
-    <IncomingRowItem
-      row={item}
-      onPress={params.openItemsModal}
-      fmtRuDate={params.fmtRuDate}
-      proposalNoByPurchase={params.proposalNoByPurchase}
-    />
-  );
+  return function renderWarehouseIncomingItem({ item }) {
+    return (
+      <IncomingRowItem
+        row={item}
+        onPress={params.openItemsModal}
+        fmtRuDate={params.fmtRuDate}
+        syncStatusText={params.getReceiveStatusText?.(String(item.incoming_id ?? "").trim()) ?? null}
+      />
+    );
+  };
 }
 
 export function createWarehouseStockRenderer(params: {
   getPickedQty: (codeRaw: string, uomId: string | null) => number;
   openStockIssue: (row: StockRow) => void;
 }): ListRenderItem<StockRow> {
-  return ({ item }) => (
-    <StockRowView
-      r={item}
-      pickedQty={selectWarehousePickedQty(item, params.getPickedQty)}
-      onPress={params.openStockIssue}
-    />
-  );
+  return function renderWarehouseStockItem({ item }) {
+    return (
+      <StockRowView
+        r={item}
+        pickedQty={selectWarehousePickedQty(item, params.getPickedQty)}
+        onPress={params.openStockIssue}
+      />
+    );
+  };
 }

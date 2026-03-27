@@ -13,11 +13,9 @@ import { pickFileAny } from "../../src/lib/filePick";
 import { Ionicons } from '@expo/vector-icons';
 import { UI, KICK_THROTTLE_MS, TOAST_DEFAULT_MS } from "../../src/screens/buyer/buyerUi";
 import type {
-  LineMeta,
   Attachment,
   ProposalHeadLite,
   ProposalViewLine,
-  BuyerTab,
 } from "../../src/screens/buyer/buyer.types";
 import ToastOverlay from "../../src/screens/buyer/ToastOverlay";
 import {
@@ -26,7 +24,6 @@ import {
   isDeadlineHoursActive as isDeadlineHoursActiveHelper,
   inferCountryCode as inferCountryCodeHelper,
 } from "../../src/screens/buyer/buyer.helpers";
-import type { BuyerProposalBucketRow } from "../../src/screens/buyer/buyer.fetchers";
 import {
   selectPickedIds,
 } from "../../src/screens/buyer/buyer.selectors";
@@ -40,10 +37,6 @@ import {
   selectBuyerDisableInboxFooterActions,
   selectBuyerShowInboxFooter,
 } from "../../src/screens/buyer/buyer.sheet.footer.selectors";
-import {
-  snapshotProposalItemsAction,
-  setProposalBuyerFioAction,
-} from "../../src/screens/buyer/buyer.actions";
 import { useGlobalBusy } from "../../src/ui/GlobalBusy";
 import { useBuyerDocuments } from "../../src/screens/buyer/useBuyerDocuments";
 
@@ -68,7 +61,6 @@ import {
   listBuyerInbox,
   proposalSubmit,
   buildProposalPdfHtml,
-  proposalItems,
   uploadProposalAttachment,
   proposalSendToAccountant,
   createProposalsBySupplier as apiCreateProposalsBySupplier,
@@ -110,9 +102,9 @@ import { useBuyerAlerts } from "../../src/screens/buyer/hooks/useBuyerAlerts";
 import { useBuyerScreenHeader } from "../../src/screens/buyer/hooks/useBuyerScreenHeader";
 import { useBuyerStore } from "../../src/screens/buyer/buyer.store";
 import RoleScreenLayout from "../../src/components/layout/RoleScreenLayout";
+import BuyerSubcontractTab from "../../src/screens/buyer/BuyerSubcontractTab";
 
 const isWeb = Platform.OS === 'web';
-import BuyerSubcontractTab from "../../src/screens/buyer/BuyerSubcontractTab";
 
 
 export default function BuyerScreen() {
@@ -239,6 +231,12 @@ export default function BuyerScreen() {
     setRows,
     loadingInbox,
     setLoadingInbox,
+    loadingInboxMore,
+    setLoadingInboxMore,
+    inboxHasMore,
+    setInboxHasMore,
+    inboxTotalCount,
+    setInboxTotalCount,
     refreshing,
     setRefreshing,
     pending,
@@ -299,13 +297,17 @@ export default function BuyerScreen() {
   useBuyerAutoFio({ supabase, buyerFio, setBuyerFio });
 
   useBuyerTabsAutoScroll(scrollTabsToStart);
-  const { fetchInbox, fetchBuckets, onRefresh } = useBuyerLoadingController({
+  const { fetchInbox, fetchInboxNextPage, fetchBuckets, onRefresh } = useBuyerLoadingController({
     supabase,
     activeTab: tab,
+    searchQuery,
     listBuyerInbox,
     preloadDisplayNos,
     preloadProposalTitles,
     setLoadingInbox,
+    setLoadingInboxMore,
+    setInboxHasMore,
+    setInboxTotalCount,
     setRows,
     setLoadingBuckets,
     setPending,
@@ -337,6 +339,7 @@ export default function BuyerScreen() {
     tabCounts,
   } = useBuyerDerived({
     rows,
+    inboxTotalCount,
     pickedIds,
     meta,
     attachments,
@@ -376,11 +379,11 @@ export default function BuyerScreen() {
     closeSheet,
     alertUser: screenAlertUser,
   });
-  const { lineTotal, requestSum, pickedTotal } = useBuyerTotals({ rows, pickedIds, meta });
+  const { lineTotal, requestSum } = useBuyerTotals({ rows, pickedIds, meta });
 
 
   const pickedRef = useLatest(picked);
-  const { togglePick, clearPick, setLineMeta, applyToPickedInGroup } = useBuyerSelectionActions({
+  const { togglePick, clearPick, setLineMeta } = useBuyerSelectionActions({
     setPicked,
     setMeta,
     pickedRef,
@@ -539,7 +542,6 @@ export default function BuyerScreen() {
     rwInvFile,
     setRwInvFile,
     rwInvUploadedName,
-    rwSource,
     openRework,
     rwSaveItems,
     rwPickInvoiceNative,
@@ -720,6 +722,11 @@ export default function BuyerScreen() {
           onRefresh={onRefresh}
           loadingInbox={loadingInbox}
           loadingBuckets={loadingBuckets}
+          loadingInboxMore={loadingInboxMore}
+          inboxHasMore={inboxHasMore}
+          onLoadMoreInbox={() => {
+            void fetchInboxNextPage();
+          }}
           scrollY={scrollY}
           renderGroupBlock={renderGroupBlock}
           renderProposalCard={renderProposalCard}

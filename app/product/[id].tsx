@@ -14,18 +14,35 @@ import {
 } from "react-native";
 
 import { MARKET_HOME_COLORS } from "../../src/features/market/marketHome.config";
+import { buildListingAssistantPrompt, buildMarketMapParams } from "../../src/features/market/marketHome.data";
 import {
-  buildListingAssistantPrompt,
-  buildMarketMapParams,
+  addMarketplaceListingToRequest,
+  createMarketplaceProposal,
   loadMarketListingById,
-} from "../../src/features/market/marketHome.data";
-import type { MarketHomeListingCard } from "../../src/features/market/marketHome.types";
+  loadMarketRoleCapabilities,
+} from "../../src/features/market/market.repository";
+import {
+  buildMarketSupplierMapRoute,
+  buildMarketSupplierShowcaseRoute,
+  MARKET_AI_ROUTE,
+  MARKET_TAB_ROUTE,
+} from "../../src/features/market/market.routes";
+import type { MarketHomeListingCard, MarketRoleCapabilities } from "../../src/features/market/marketHome.types";
+
+const DEFAULT_CAPABILITIES: MarketRoleCapabilities = {
+  role: null,
+  canAddToRequest: false,
+  canCreateProposal: false,
+};
 
 export default function ProductDetailsScreen() {
   const params = useLocalSearchParams<{ id?: string | string[] }>();
   const id = Array.isArray(params.id) ? params.id[0] : params.id;
   const [row, setRow] = useState<MarketHomeListingCard | null>(null);
   const [loading, setLoading] = useState(true);
+  const [capabilities, setCapabilities] = useState<MarketRoleCapabilities>(DEFAULT_CAPABILITIES);
+  const [qtyMultiplier, setQtyMultiplier] = useState(1);
+  const [actionBusy, setActionBusy] = useState<"request" | "proposal" | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -37,8 +54,13 @@ export default function ProductDetailsScreen() {
       }
 
       try {
-        const nextRow = await loadMarketListingById(id);
-        if (active) setRow(nextRow);
+        const [nextRow, nextCapabilities] = await Promise.all([
+          loadMarketListingById(id),
+          loadMarketRoleCapabilities(),
+        ]);
+        if (!active) return;
+        setRow(nextRow);
+        setCapabilities(nextCapabilities);
       } catch (error: unknown) {
         const message = error instanceof Error ? error.message : "Не удалось открыть объявление.";
         Alert.alert("Маркет", message);
@@ -60,6 +82,41 @@ export default function ProductDetailsScreen() {
       return;
     }
     await Linking.openURL(url);
+  };
+
+  const changeQty = (next: number) => {
+    setQtyMultiplier(Math.max(1, Math.min(999, Math.round(next))));
+  };
+
+  const handleAddToRequest = async () => {
+    if (!row) return;
+    setActionBusy("request");
+    try {
+      const result = await addMarketplaceListingToRequest(row, qtyMultiplier);
+      Alert.alert("Маркет", `Добавлено в заявку: ${result.addedCount} поз. Черновик ${result.requestId}.`);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "Не удалось добавить товар в заявку.";
+      Alert.alert("Маркет", message);
+    } finally {
+      setActionBusy(null);
+    }
+  };
+
+  const handleCreateProposal = async () => {
+    if (!row) return;
+    setActionBusy("proposal");
+    try {
+      const result = await createMarketplaceProposal(row, qtyMultiplier);
+      Alert.alert(
+        "Маркет",
+        `Предложение создано${result.proposalNo ? `: ${result.proposalNo}` : ""}.`,
+      );
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "Не удалось создать предложение.";
+      Alert.alert("Маркет", message);
+    } finally {
+      setActionBusy(null);
+    }
   };
 
   if (loading) {
@@ -97,36 +154,24 @@ export default function ProductDetailsScreen() {
       </View>
 
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.routeRow}>
-        <Pressable style={styles.routeChip} onPress={() => router.push("/(tabs)/market" as any)}>
+        <Pressable style={styles.routeChip} onPress={() => router.push(MARKET_TAB_ROUTE)}>
           <Text style={styles.routeChipText}>Маркет</Text>
         </Pressable>
         <Pressable
           style={styles.routeChip}
-          onPress={() =>
-            router.push({
-              pathname: "/supplierShowcase",
-              params: {
-                userId: row.sellerUserId,
-                ...(row.sellerCompanyId ? { companyId: row.sellerCompanyId } : {}),
-              },
-            } as any)
-          }
+          onPress={() => router.push(buildMarketSupplierShowcaseRoute(row.sellerUserId, row.sellerCompanyId))}
         >
           <Text style={styles.routeChipText}>Витрина</Text>
         </Pressable>
         <Pressable
           style={styles.routeChip}
           onPress={() =>
-            router.push({
-              pathname: "/supplierMap",
-              params: buildMarketMapParams({ side: "all", kind: "all" }, { row }),
-            })
+            router.push(
+              buildMarketSupplierMapRoute(buildMarketMapParams({ side: "all", kind: "all" }, { row })),
+            )
           }
         >
           <Text style={styles.routeChipText}>Карта</Text>
-        </Pressable>
-        <Pressable style={styles.routeChip} onPress={() => router.push("/auctions" as any)}>
-          <Text style={styles.routeChipText}>Торги</Text>
         </Pressable>
       </ScrollView>
 
@@ -147,7 +192,64 @@ export default function ProductDetailsScreen() {
               : "Цена по запросу"}
           </Text>
           <Text style={styles.meta}>{row.city || "Город не указан"}</Text>
+          <Text style={styles.metaStrong}>{row.sellerDisplayName}</Text>
+          {row.stockLabel ? (
+            <Text style={styles.stockText} testID="market_product_stock_label">
+              {row.stockLabel}
+            </Text>
+          ) : null}
           {row.description ? <Text style={styles.description}>{row.description}</Text> : null}
+        </View>
+
+        <View style={styles.card}>
+          <Text style={styles.sectionTitle}>ERP действия</Text>
+          <View style={styles.qtyRow}>
+            <Text style={styles.qtyLabel}>Количество</Text>
+            <View style={styles.qtyControls}>
+              <Pressable style={styles.qtyButton} onPress={() => changeQty(qtyMultiplier - 1)}>
+                <Text style={styles.qtyButtonText}>−</Text>
+              </Pressable>
+              <Text style={styles.qtyValue}>{qtyMultiplier}</Text>
+              <Pressable style={styles.qtyButton} onPress={() => changeQty(qtyMultiplier + 1)}>
+                <Text style={styles.qtyButtonText}>+</Text>
+              </Pressable>
+            </View>
+          </View>
+          <Text style={styles.erpHint}>
+            {row.erpItems.length
+              ? `ERP-позиций: ${row.erpItems.length}. Множитель применяется ко всем позициям объявления.`
+              : "Это объявление пока не связано с каталогом ERP."}
+          </Text>
+          <View style={styles.erpActions}>
+            {capabilities.canAddToRequest ? (
+              <Pressable
+                style={[styles.actionBtn, styles.callBtn, !row.erpItems.length ? styles.disabledBtn : null]}
+                onPress={() => void handleAddToRequest()}
+                disabled={!row.erpItems.length || actionBusy != null}
+                nativeID="market-product-add-to-request"
+                testID="market_product_add_to_request"
+                accessibilityLabel="market:product:add-to-request"
+              >
+                <Text style={styles.actionText}>
+                  {actionBusy === "request" ? "Добавляем..." : "Добавить в заявку"}
+                </Text>
+              </Pressable>
+            ) : null}
+            {capabilities.canCreateProposal ? (
+              <Pressable
+                style={[styles.actionBtn, styles.secondaryBtn, !row.erpItems.length ? styles.disabledBtn : null]}
+                onPress={() => void handleCreateProposal()}
+                disabled={!row.erpItems.length || actionBusy != null}
+                nativeID="market-product-create-proposal"
+                testID="market_product_create_proposal"
+                accessibilityLabel="market:product:create-proposal"
+              >
+                <Text style={styles.secondaryActionText}>
+                  {actionBusy === "proposal" ? "Создаем..." : "Создать предложение"}
+                </Text>
+              </Pressable>
+            ) : null}
+          </View>
         </View>
 
         {row.items.length ? (
@@ -173,6 +275,16 @@ export default function ProductDetailsScreen() {
         <View style={styles.card}>
           <Text style={styles.sectionTitle}>Контакты и действия</Text>
           <View style={styles.actions}>
+            {row.whatsapp ? (
+              <Pressable
+                style={[styles.actionBtn, styles.whatsBtn]}
+                onPress={() =>
+                  openUrl(`https://wa.me/${String(row.whatsapp).replace(/[^\d]/g, "")}`, "Не удалось открыть WhatsApp.")
+                }
+              >
+                <Text style={styles.actionText}>Связаться (WhatsApp)</Text>
+              </Pressable>
+            ) : null}
             {row.phone ? (
               <Pressable
                 style={[styles.actionBtn, styles.callBtn]}
@@ -181,16 +293,6 @@ export default function ProductDetailsScreen() {
                 }
               >
                 <Text style={styles.actionText}>Позвонить</Text>
-              </Pressable>
-            ) : null}
-            {row.whatsapp ? (
-              <Pressable
-                style={[styles.actionBtn, styles.whatsBtn]}
-                onPress={() =>
-                  openUrl(`https://wa.me/${String(row.whatsapp).replace(/[^\d]/g, "")}`, "Не удалось открыть WhatsApp.")
-                }
-              >
-                <Text style={styles.actionText}>WhatsApp</Text>
               </Pressable>
             ) : null}
             {row.email ? (
@@ -204,54 +306,20 @@ export default function ProductDetailsScreen() {
             <Pressable
               style={[styles.actionBtn, styles.secondaryBtn]}
               onPress={() =>
-                router.push({
-                  pathname: "/supplierMap",
-                  params: buildMarketMapParams({ side: "all", kind: "all" }, { row }),
-                })
+                router.push(buildMarketSupplierMapRoute(buildMarketMapParams({ side: "all", kind: "all" }, { row })))
               }
             >
               <Text style={styles.secondaryActionText}>На карте</Text>
             </Pressable>
             <Pressable
               style={[styles.actionBtn, styles.secondaryBtn]}
-              onPress={() =>
-                router.push({
-                  pathname: "/chat",
-                  params: {
-                    listingId: row.id,
-                    title: row.title,
-                  },
-                } as any)
-              }
-            >
-              <Text style={styles.secondaryActionText}>Чат</Text>
-            </Pressable>
-            <Pressable
-              style={[styles.actionBtn, styles.secondaryBtn]}
-              onPress={() =>
-                router.push({
-                  pathname: "/supplierShowcase",
-                  params: {
-                    userId: row.sellerUserId,
-                    ...(row.sellerCompanyId ? { companyId: row.sellerCompanyId } : {}),
-                  },
-                } as any)
-              }
+              onPress={() => router.push(buildMarketSupplierShowcaseRoute(row.sellerUserId, row.sellerCompanyId))}
             >
               <Text style={styles.secondaryActionText}>Витрина</Text>
             </Pressable>
             <Pressable
               style={[styles.actionBtn, styles.secondaryBtn]}
-              onPress={() =>
-                router.push({
-                  pathname: "/(tabs)/ai",
-                  params: {
-                    prompt: buildListingAssistantPrompt(row),
-                    autoSend: "1",
-                    context: "market",
-                  },
-                } as any)
-              }
+              onPress={() => router.push(MARKET_AI_ROUTE(buildListingAssistantPrompt(row)))}
             >
               <Text style={styles.secondaryActionText}>Спросить AI</Text>
             </Pressable>
@@ -386,6 +454,14 @@ const styles = StyleSheet.create({
     color: MARKET_HOME_COLORS.textSoft,
     fontWeight: "600",
   },
+  metaStrong: {
+    color: MARKET_HOME_COLORS.text,
+    fontWeight: "800",
+  },
+  stockText: {
+    color: MARKET_HOME_COLORS.emerald,
+    fontWeight: "800",
+  },
   description: {
     color: MARKET_HOME_COLORS.text,
     lineHeight: 22,
@@ -395,6 +471,55 @@ const styles = StyleSheet.create({
     color: MARKET_HOME_COLORS.text,
     fontSize: 18,
     fontWeight: "900",
+  },
+  qtyRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 12,
+  },
+  qtyLabel: {
+    color: MARKET_HOME_COLORS.text,
+    fontSize: 14,
+    fontWeight: "700",
+  },
+  qtyControls: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+  qtyButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 12,
+    backgroundColor: "#EFF6FF",
+    borderWidth: 1,
+    borderColor: "#BFDBFE",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  qtyButtonText: {
+    color: MARKET_HOME_COLORS.accentStrong,
+    fontSize: 20,
+    fontWeight: "900",
+  },
+  qtyValue: {
+    minWidth: 28,
+    textAlign: "center",
+    color: MARKET_HOME_COLORS.text,
+    fontSize: 16,
+    fontWeight: "900",
+  },
+  erpHint: {
+    color: MARKET_HOME_COLORS.textSoft,
+    fontSize: 13,
+    lineHeight: 18,
+    fontWeight: "600",
+  },
+  erpActions: {
+    flexDirection: "row",
+    gap: 8,
+    flexWrap: "wrap",
   },
   itemRow: {
     flexDirection: "row",
@@ -421,7 +546,7 @@ const styles = StyleSheet.create({
   },
   itemQty: {
     color: MARKET_HOME_COLORS.accentStrong,
-    fontWeight: "800",
+    fontWeight: "900",
   },
   actions: {
     flexDirection: "row",
@@ -429,9 +554,11 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
   },
   actionBtn: {
-    paddingHorizontal: 14,
-    paddingVertical: 11,
+    minHeight: 44,
+    paddingHorizontal: 16,
     borderRadius: 16,
+    alignItems: "center",
+    justifyContent: "center",
   },
   callBtn: {
     backgroundColor: MARKET_HOME_COLORS.accentStrong,
@@ -440,16 +567,19 @@ const styles = StyleSheet.create({
     backgroundColor: MARKET_HOME_COLORS.emerald,
   },
   secondaryBtn: {
-    backgroundColor: "#F8FAFC",
+    backgroundColor: "#EFF6FF",
     borderWidth: 1,
-    borderColor: MARKET_HOME_COLORS.border,
+    borderColor: "#BFDBFE",
+  },
+  disabledBtn: {
+    opacity: 0.45,
   },
   actionText: {
     color: "#FFFFFF",
     fontWeight: "800",
   },
   secondaryActionText: {
-    color: MARKET_HOME_COLORS.text,
+    color: MARKET_HOME_COLORS.accentStrong,
     fontWeight: "800",
   },
   center: {
@@ -458,24 +588,25 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     gap: 12,
-    padding: 24,
-  },
-  stateText: {
-    color: MARKET_HOME_COLORS.textSoft,
+    paddingHorizontal: 24,
   },
   stateTitle: {
     color: MARKET_HOME_COLORS.text,
     fontSize: 18,
-    fontWeight: "800",
+    fontWeight: "900",
+  },
+  stateText: {
+    color: MARKET_HOME_COLORS.textSoft,
+    fontSize: 14,
+    fontWeight: "600",
   },
   primaryBtn: {
-    minWidth: 120,
-    minHeight: 46,
+    minHeight: 44,
+    paddingHorizontal: 18,
     borderRadius: 16,
     backgroundColor: MARKET_HOME_COLORS.accentStrong,
     alignItems: "center",
     justifyContent: "center",
-    paddingHorizontal: 18,
   },
   primaryBtnText: {
     color: "#FFFFFF",

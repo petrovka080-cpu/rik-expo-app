@@ -1,10 +1,16 @@
 import { useCallback, useEffect, useRef } from "react";
 import { useFocusEffect } from "expo-router";
 import { WAREHOUSE_TABS, type Tab } from "../warehouse.types";
+import {
+  isPlatformGuardCoolingDown,
+  recordPlatformGuardSkip,
+} from "../../../lib/observability/platformGuardDiscipline";
+import { getPlatformNetworkSnapshot } from "../../../lib/offline/platformNetwork.service";
 
 const TAB_INCOMING = WAREHOUSE_TABS[0];
 const TAB_STOCK_FACT = WAREHOUSE_TABS[1];
 const TAB_REPORTS = WAREHOUSE_TABS[3];
+const WAREHOUSE_FOCUS_REFRESH_MIN_INTERVAL_MS = 1200;
 
 export function useWarehouseLifecycle(params: {
   tab: Tab;
@@ -28,6 +34,19 @@ export function useWarehouseLifecycle(params: {
   const lastFocusRefreshAtRef = useRef(0);
 
   const loadAll = useCallback(async () => {
+    const networkSnapshot = getPlatformNetworkSnapshot();
+    if (networkSnapshot.hydrated && networkSnapshot.networkKnownOffline) {
+      recordPlatformGuardSkip("network_known_offline", {
+        screen: "warehouse",
+        surface: "screen_root",
+        event: "bootstrap_load",
+        trigger: "initial",
+        extra: {
+          networkKnownOffline: true,
+        },
+      });
+      return;
+    }
     setLoading(true);
     try {
       const [incomingRes, stockRes] = await Promise.allSettled([fetchToReceive(), fetchStock()]);
@@ -67,8 +86,46 @@ export function useWarehouseLifecycle(params: {
   useFocusEffect(
     useCallback(() => {
       const now = Date.now();
-      if (now - lastFocusRefreshAtRef.current < 1200) return undefined;
-      if (focusRefreshInFlightRef.current) return undefined;
+      const networkSnapshot = getPlatformNetworkSnapshot();
+      if (networkSnapshot.hydrated && networkSnapshot.networkKnownOffline) {
+        recordPlatformGuardSkip("network_known_offline", {
+          screen: "warehouse",
+          surface: "screen_root",
+          event: "focus_refresh",
+          trigger: "focus",
+          extra: {
+            tab,
+            networkKnownOffline: true,
+          },
+        });
+        return undefined;
+      }
+      if (
+        isPlatformGuardCoolingDown({
+          lastAt: lastFocusRefreshAtRef.current,
+          minIntervalMs: WAREHOUSE_FOCUS_REFRESH_MIN_INTERVAL_MS,
+          now,
+        })
+      ) {
+        recordPlatformGuardSkip("recent_same_scope", {
+          screen: "warehouse",
+          surface: "screen_root",
+          event: "focus_refresh",
+          trigger: "focus",
+          extra: { tab },
+        });
+        return undefined;
+      }
+      if (focusRefreshInFlightRef.current) {
+        recordPlatformGuardSkip("recent_same_scope", {
+          screen: "warehouse",
+          surface: "screen_root",
+          event: "focus_refresh",
+          trigger: "focus",
+          extra: { tab, joinedInFlight: true },
+        });
+        return undefined;
+      }
 
       const task = refreshActiveTab()
         .catch((e) => onError(e))
@@ -80,6 +137,6 @@ export function useWarehouseLifecycle(params: {
       focusRefreshInFlightRef.current = task;
       lastFocusRefreshAtRef.current = now;
       return undefined;
-    }, [refreshActiveTab, onError]),
+    }, [refreshActiveTab, onError, tab]),
   );
 }

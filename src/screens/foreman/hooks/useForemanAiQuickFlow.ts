@@ -1,11 +1,11 @@
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import { Alert } from "react-native";
 
 import type { RequestDetails } from "../../../lib/catalog_api";
 import { ridStr, toErrorText } from "../foreman.helpers";
 import type { ForemanHeaderRequirementResult } from "../foreman.headerRequirements";
 import type { ForemanDraftAppendInput, ForemanLocalDraftSnapshot } from "../foreman.localDraft";
-import { resolveForemanQuickRequest } from "../foreman.ai";
+import { resolveForemanQuickLocalAssist, resolveForemanQuickRequest } from "../foreman.ai";
 import { useForemanUiStore } from "../foremanUi.store";
 import { FOREMAN_TEXT } from "../foreman.ui";
 
@@ -44,6 +44,19 @@ type Props = {
   labelForRequest: (rid?: string | number | null) => string;
   currentDisplayLabel: string;
   openDraft: () => void;
+  networkOnline: boolean | null;
+};
+
+const buildAiQuickSessionHint = (
+  sessionHistory: { prompt: string; items: { name: string; qty: number; unit: string }[] }[],
+): string => {
+  const latestTurn = sessionHistory[sessionHistory.length - 1] ?? null;
+  if (!latestTurn || !Array.isArray(latestTurn.items) || latestTurn.items.length === 0) return "";
+  if (latestTurn.items.length === 1) {
+    const latestItem = latestTurn.items[0];
+    return `\u041f\u043e\u0441\u043b\u0435\u0434\u043d\u044f\u044f \u043f\u043e\u0434\u0442\u0432\u0435\u0440\u0436\u0434\u0451\u043d\u043d\u0430\u044f \u043f\u043e\u0437\u0438\u0446\u0438\u044f: ${latestItem.name}, ${latestItem.qty} ${latestItem.unit}. \u041c\u043e\u0436\u043d\u043e \u0441\u043a\u0430\u0437\u0430\u0442\u044c "\u0435\u0449\u0451 \u0441\u0442\u043e\u043b\u044c\u043a\u043e \u0436\u0435".`;
+  }
+  return `\u041f\u043e\u0441\u043b\u0435\u0434\u043d\u0438\u0439 \u043f\u043e\u0434\u0442\u0432\u0435\u0440\u0436\u0434\u0451\u043d\u043d\u044b\u0439 \u043d\u0430\u0431\u043e\u0440: ${latestTurn.items.length} \u043f\u043e\u0437\u0438\u0446\u0438\u0439. \u0414\u043b\u044f \u043f\u043e\u0432\u0442\u043e\u0440\u0430 \u043b\u0443\u0447\u0448\u0435 \u0443\u0442\u043e\u0447\u043d\u0438\u0442\u044c, \u043a\u0430\u043a\u0443\u044e \u0438\u043c\u0435\u043d\u043d\u043e \u043f\u043e\u0437\u0438\u0446\u0438\u044e \u043d\u0443\u0436\u043d\u043e \u0434\u043e\u0431\u0430\u0432\u0438\u0442\u044c.`;
 };
 
 export function useForemanAiQuickFlow({
@@ -61,6 +74,7 @@ export function useForemanAiQuickFlow({
   labelForRequest,
   currentDisplayLabel,
   openDraft,
+  networkOnline,
 }: Props) {
   const aiQuickVisible = useForemanUiStore((state) => state.aiQuickVisible);
   const setAiQuickVisible = useForemanUiStore((state) => state.setAiQuickVisible);
@@ -82,7 +96,13 @@ export function useForemanAiQuickFlow({
   const setAiQuickQuestions = useForemanUiStore((state) => state.setAiQuickQuestions);
   const aiUnavailableReason = useForemanUiStore((state) => state.aiUnavailableReason);
   const setAiUnavailableReason = useForemanUiStore((state) => state.setAiUnavailableReason);
+  const aiQuickSessionHistory = useForemanUiStore((state) => state.aiQuickSessionHistory);
+  const pushAiQuickSessionTurn = useForemanUiStore((state) => state.pushAiQuickSessionTurn);
   const resetAiQuickUi = useForemanUiStore((state) => state.resetAiQuickUi);
+  const aiQuickSessionHint = useMemo(
+    () => buildAiQuickSessionHint(aiQuickSessionHistory),
+    [aiQuickSessionHistory],
+  );
 
   const openAiQuick = useCallback(() => {
     resetAiQuickUi();
@@ -141,15 +161,20 @@ export function useForemanAiQuickFlow({
     setAiUnavailableReason("");
 
     try {
-      const outcome = await resolveForemanQuickRequest(promptText);
+      const localAssistOutcome = resolveForemanQuickLocalAssist({
+        prompt: promptText,
+        lastResolvedItems: aiQuickSessionHistory[aiQuickSessionHistory.length - 1]?.items ?? [],
+        networkOnline,
+      });
+      const outcome = localAssistOutcome ?? await resolveForemanQuickRequest(promptText);
       setAiQuickNotice(outcome.message);
 
       if (outcome.type === "candidate_options") {
         setAiQuickOutcomeType("candidate_options");
         setAiQuickCandidateGroups(outcome.options);
-        setAiQuickQuestions([]);
+        setAiQuickQuestions(outcome.questions ?? []);
         setAiUnavailableReason("");
-        setAiQuickPreview([]);
+        setAiQuickPreview(outcome.resolvedItems ?? []);
         setAiQuickError("");
         return;
       }
@@ -157,10 +182,20 @@ export function useForemanAiQuickFlow({
       if (outcome.type === "clarify_required") {
         setAiQuickOutcomeType("clarify_required");
         setAiQuickQuestions(outcome.questions);
-        setAiQuickCandidateGroups([]);
+        setAiQuickCandidateGroups(outcome.options ?? []);
         setAiUnavailableReason("");
-        setAiQuickPreview([]);
+        setAiQuickPreview(outcome.resolvedItems ?? []);
         setAiQuickError(outcome.message || "Нужно уточнить позиции или количество.");
+        return;
+      }
+
+      if (outcome.type === "hard_fail_safe") {
+        setAiQuickOutcomeType("hard_fail_safe");
+        setAiQuickQuestions(outcome.questions ?? []);
+        setAiQuickCandidateGroups(outcome.options ?? []);
+        setAiUnavailableReason("");
+        setAiQuickPreview(outcome.resolvedItems ?? []);
+        setAiQuickError(outcome.message || "РќСѓР¶РЅРѕ СѓС‚РѕС‡РЅРёС‚СЊ РїРѕР·РёС†РёРё РёР»Рё РґРѕР±Р°РІРёС‚СЊ РёС… РІСЂСѓС‡РЅСѓСЋ.");
         return;
       }
 
@@ -176,6 +211,9 @@ export function useForemanAiQuickFlow({
 
       setAiQuickOutcomeType("resolved_items");
       setAiQuickPreview(outcome.items);
+      setAiQuickCandidateGroups([]);
+      setAiQuickQuestions([]);
+      setAiUnavailableReason("");
 
       if (outcome.items.length === 0) {
         setAiQuickError(outcome.message || "Нужно уточнить позиции или количество.");
@@ -196,6 +234,11 @@ export function useForemanAiQuickFlow({
 
       const beforeLineCount = itemsCount;
       const nextSnapshot = appendLocalDraftRows(prepared);
+      pushAiQuickSessionTurn({
+        prompt: promptText,
+        items: outcome.items,
+        createdAt: new Date().toISOString(),
+      });
 
       let syncedRequestId = ridStr(requestId);
       try {
@@ -231,6 +274,7 @@ export function useForemanAiQuickFlow({
   }, [
     activateHeaderAttention,
     aiQuickLoading,
+    aiQuickSessionHistory,
     aiQuickText,
     appendLocalDraftRows,
     clearHeaderAttention,
@@ -240,6 +284,7 @@ export function useForemanAiQuickFlow({
     itemsCount,
     labelForRequest,
     openDraft,
+    networkOnline,
     requestDetails,
     requestId,
     resetAiQuickUi,
@@ -252,6 +297,7 @@ export function useForemanAiQuickFlow({
     setAiQuickPreview,
     setAiQuickQuestions,
     setAiUnavailableReason,
+    pushAiQuickSessionTurn,
     showHint,
     syncLocalDraftNow,
   ]);
@@ -266,7 +312,9 @@ export function useForemanAiQuickFlow({
     aiQuickOutcomeType,
     aiQuickCandidateGroups,
     aiQuickQuestions,
+    aiQuickSessionHint,
     aiUnavailableReason,
+    aiQuickDegradedMode: networkOnline === false,
     openAiQuick,
     closeAiQuick,
     handleAiQuickTextChange,

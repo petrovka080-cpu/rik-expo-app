@@ -1,10 +1,10 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type React from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { listDirectorProposalsPending } from "../../lib/catalog_api";
 import type { Database } from "../../lib/database.types";
 import { REQUEST_PENDING_EN, REQUEST_PENDING_STATUS } from "../../lib/api/requests.status";
 import { shortId } from "./director.helpers";
+import { fetchDirectorPendingProposalWindow } from "./director.proposals.repo";
 import { fetchDirectorPendingRows } from "./director.repository";
 import { useDirectorUiStore } from "./directorUi.store";
 import type { PendingRow, ProposalHead, RequestMeta } from "./director.types";
@@ -59,6 +59,7 @@ const normalizeDirectorPendingRows = (rows: Record<string, unknown>[]): PendingR
 
 const DIRECTOR_PENDING_ITEM_STATUSES = new Set([REQUEST_PENDING_STATUS, "У директора", REQUEST_PENDING_EN]);
 const DIRECTOR_EXPECTED_REQUEST_STATUSES = [REQUEST_PENDING_STATUS, REQUEST_PENDING_EN] as const;
+const DIRECTOR_PROPOSALS_WINDOW_SIZE = 10;
 
 const logDirectorFetchFilters = (payload: Record<string, unknown>) => {
   if (!__DEV__) return;
@@ -70,6 +71,10 @@ export function useDirectorData({ supabase }: Deps) {
   const lastNonEmptyRows = useRef<PendingRow[]>([]);
   const lastFetchedRowsAt = useRef<number>(0);
   const lastFetchedPropsAt = useRef<number>(0);
+  const propsFetchSeqRef = useRef(0);
+  const propsAppendInFlightRef = useRef<Promise<void> | null>(null);
+  const propsLoadedHeadsRef = useRef(0);
+  const propsHasMoreRef = useRef(false);
 
   const [rows, setRows] = useState<PendingRow[]>([]);
   const loadingRows = useDirectorUiStore((state) => state.loadingRows);
@@ -81,6 +86,8 @@ export function useDirectorData({ supabase }: Deps) {
   const [propItemsCount, setPropItemsCount] = useState<Record<string, number>>({});
   const loadingProps = useDirectorUiStore((state) => state.loadingProps);
   const setLoadingProps = useDirectorUiStore((state) => state.setLoadingProps);
+  const [propsHasMore, setPropsHasMore] = useState(false);
+  const [loadingPropsMore, setLoadingPropsMore] = useState(false);
 
   const [displayNoByReq, setDisplayNoByReq] = useState<Record<string, string>>({});
   const [submittedAtByReq, setSubmittedAtByReq] = useState<Record<string, string>>({});
@@ -371,98 +378,75 @@ export function useDirectorData({ supabase }: Deps) {
     }
   }, [loadDirectorRowsFallback, preloadDisplayNos, rows.length, setLoadingRows, supabase]);
 
+  const applyProposalWindow = useCallback(
+    (result: Awaited<ReturnType<typeof fetchDirectorPendingProposalWindow>>, reset: boolean) => {
+      propsLoadedHeadsRef.current = result.meta.offsetHeads + result.meta.returnedHeadCount;
+      propsHasMoreRef.current = result.meta.hasMore;
+      setPropsHasMore(result.meta.hasMore);
+      setBuyerPropsCount(result.meta.totalHeadCount);
+      setBuyerPositionsCount(result.meta.totalPositionsCount);
+      setPropItemsCount((prev) => (reset ? result.itemCounts : { ...prev, ...result.itemCounts }));
+      setPropsHeads((prev) => {
+        if (reset) return result.heads;
+        const seen = new Set(prev.map((head) => String(head.id)));
+        const appended = result.heads.filter((head) => !seen.has(String(head.id)));
+        return appended.length ? [...prev, ...appended] : prev;
+      });
+    },
+    [],
+  );
+
   const fetchProps = useCallback(async (force = false) => {
     const now = Date.now();
-    // Skip if recently fetched and not forced (cache for 30s)
     if (!force && propsHeads.length > 0 && now - lastFetchedPropsAt.current < 30000) return;
 
+    const my = ++propsFetchSeqRef.current;
+    propsAppendInFlightRef.current = null;
+    setLoadingPropsMore(false);
     setLoadingProps(true);
     try {
-      // 1. Fetch pending proposals with basic info
-      const list = await listDirectorProposalsPending();
-      const heads: ProposalHead[] = (list ?? [])
-        .filter((x) => x && x.id != null && x.submitted_at != null)
-        .map((x) => ({ id: String(x.id), submitted_at: String(x.submitted_at), pretty: null }));
-
-      if (!heads.length) {
-        setPropsHeads([]);
-        setBuyerPropsCount(0);
-        setBuyerPositionsCount(0);
-        setPropItemsCount({});
-        return;
-      }
-
-      const propIds = heads.map((h) => h.id);
-
-      // 2. Parallel secondary data fetching: 
-      // a) Meta for titles (proposal_no, id_short)
-      // b) Counts per proposal (efficient grouping)
-      // c) Total positions count for KPI (head: true)
-      const [metaRes, countsRes, totalKpiRes] = await Promise.all([
-        supabase
-          .from("proposals")
-          .select("id, proposal_no, id_short, sent_to_accountant_at")
-          .in("id", propIds),
-
-        // Count items per proposal directly in DB
-        supabase
-          .from("proposal_items")
-          .select("proposal_id")
-          .in("proposal_id", propIds),
-        // Note: Ideally we'd use an RPC for grouped count, but for now we filter and count locally
-        // to maintain compatibility with the existing code structure while minimizing the logic change.
-        // However, we can at least parallelize it.
-
-        // Total positions count for KPI - HEAD only (returns count, not rows)
-        supabase
-          .from("proposal_items_view")
-          .select("id", { count: "exact", head: true })
-          .in("proposal_id", propIds),
-      ]);
-
-      // Process Meta
-      const prettyMap: Record<string, string> = {};
-      const okIds = new Set<string>();
-
-      if (!metaRes.error && Array.isArray(metaRes.data)) {
-        metaRes.data.forEach((r) => {
-          if (!r.sent_to_accountant_at) okIds.add(String(r.id));
-          const pn = String(r.proposal_no ?? "").trim();
-          const short = r.id_short;
-          const pretty = pn || (short != null ? `PR-${String(short)}` : "");
-          if (pretty) prettyMap[String(r.id)] = pretty;
-        });
-      }
-
-      // Process Counts per proposal (Request 3 & 4 combined into one in-memory map from countsRes)
-      const perPropCountMap: Record<string, number> = {};
-      const nonEmptyPids = new Set<string>();
-      if (!countsRes.error && Array.isArray(countsRes.data)) {
-        countsRes.data.forEach((r: { proposal_id?: string | null }) => {
-          const pid = String(r.proposal_id ?? "");
-          if (!pid) return;
-          perPropCountMap[pid] = (perPropCountMap[pid] || 0) + 1;
-          nonEmptyPids.add(pid);
-        });
-      }
-
-      // Final heads: filter sent and empty
-      const filtered = heads
-        .filter((h) => okIds.has(h.id) && nonEmptyPids.has(h.id))
-        .map((h) => ({ ...h, pretty: prettyMap[h.id] ?? null }));
-
-      setPropsHeads(filtered);
-      setPropItemsCount(perPropCountMap);
-      setBuyerPropsCount(filtered.length);
-      setBuyerPositionsCount(totalKpiRes.count ?? 0);
+      const result = await fetchDirectorPendingProposalWindow({
+        supabase,
+        offsetHeads: 0,
+        limitHeads: DIRECTOR_PROPOSALS_WINDOW_SIZE,
+      });
+      if (my !== propsFetchSeqRef.current) return;
+      applyProposalWindow(result, true);
       lastFetchedPropsAt.current = Date.now();
-
     } catch (e) {
       warnDirectorData("proposals list", e, "error");
     } finally {
-      setLoadingProps(false);
+      if (my === propsFetchSeqRef.current) setLoadingProps(false);
     }
-  }, [propsHeads.length, setLoadingProps, supabase]);
+  }, [applyProposalWindow, propsHeads.length, setLoadingProps, supabase]);
+
+  const loadMoreProps = useCallback(async () => {
+    if (loadingProps || loadingPropsMore) return propsAppendInFlightRef.current ?? undefined;
+    if (!propsHasMoreRef.current) return;
+    if (propsAppendInFlightRef.current) return propsAppendInFlightRef.current;
+
+    let currentPromise: Promise<void> | null = null;
+    setLoadingPropsMore(true);
+    currentPromise = (async () => {
+      try {
+        const result = await fetchDirectorPendingProposalWindow({
+          supabase,
+          offsetHeads: propsLoadedHeadsRef.current,
+          limitHeads: DIRECTOR_PROPOSALS_WINDOW_SIZE,
+        });
+        applyProposalWindow(result, false);
+      } catch (e) {
+        warnDirectorData("proposals list", e, "error");
+      } finally {
+        if (propsAppendInFlightRef.current === currentPromise) {
+          propsAppendInFlightRef.current = null;
+        }
+        setLoadingPropsMore(false);
+      }
+    })();
+    propsAppendInFlightRef.current = currentPromise;
+    return currentPromise;
+  }, [applyProposalWindow, loadingProps, loadingPropsMore, supabase]);
 
   return {
     rows,
@@ -472,6 +456,8 @@ export function useDirectorData({ supabase }: Deps) {
     buyerPropsCount,
     buyerPositionsCount,
     propItemsCount,
+    propsHasMore,
+    loadingPropsMore,
     loadingProps,
     submittedAtByReq,
     reqMetaByIdRef,
@@ -482,5 +468,6 @@ export function useDirectorData({ supabase }: Deps) {
     preloadProposalRequestIds,
     fetchRows,
     fetchProps,
+    loadMoreProps,
   };
 }

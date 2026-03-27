@@ -36,14 +36,51 @@ export type SaveAiReportInput = {
   metadata?: Record<string, unknown> | null;
 };
 
-function getSupabaseAny() {
-  return supabase as any;
-}
+type ProposalHistoryRow = {
+  price: number;
+  supplier: string;
+  createdAt: string;
+};
+
+const asRecord = (value: unknown): Record<string, unknown> | null =>
+  value && typeof value === "object" && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : null;
+
+const toTrimmedText = (value: unknown): string | null => {
+  const text = String(value ?? "").trim();
+  return text || null;
+};
+
+const toFiniteNumber = (value: unknown): number | null => {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+};
+
+const normalizeProposalHistoryRows = (rows: unknown): ProposalHistoryRow[] => {
+  if (!Array.isArray(rows)) return [];
+
+  return rows
+    .map((row) => {
+      const record = asRecord(row);
+      if (!record) return null;
+
+      const price = toFiniteNumber(record.price);
+      const createdAt = toTrimmedText(record.created_at);
+      if (price == null || !createdAt || price <= 0) return null;
+
+      return {
+        price,
+        supplier: toTrimmedText(record.supplier) || "",
+        createdAt,
+      } satisfies ProposalHistoryRow;
+    })
+    .filter((row): row is ProposalHistoryRow => Boolean(row));
+};
 
 export async function loadAiConfig(id = "procurement_system_prompt"): Promise<string | null> {
-  const sb = getSupabaseAny();
-  const { data, error } = await sb
-    .from("ai_configs")
+  const { data, error } = await supabase
+    .from("ai_configs" as never)
     .select("content")
     .eq("id", id)
     .maybeSingle();
@@ -53,12 +90,12 @@ export async function loadAiConfig(id = "procurement_system_prompt"): Promise<st
     return null;
   }
 
-  return typeof data?.content === "string" ? data.content : null;
+  const record = asRecord(data);
+  return record ? toTrimmedText(record.content) : null;
 }
 
 export async function saveAiReport(input: SaveAiReportInput): Promise<boolean> {
-  const sb = getSupabaseAny();
-  const { error } = await sb.from("ai_reports").upsert({
+  const { error } = await supabase.from("ai_reports" as never).upsert({
     id: input.id,
     company_id: input.companyId || null,
     user_id: input.userId || null,
@@ -68,7 +105,7 @@ export async function saveAiReport(input: SaveAiReportInput): Promise<boolean> {
     content: input.content,
     metadata: input.metadata || {},
     updated_at: new Date().toISOString(),
-  });
+  } as never);
 
   if (error) {
     console.warn("[saveAiReport]", error.message || error);
@@ -78,13 +115,11 @@ export async function saveAiReport(input: SaveAiReportInput): Promise<boolean> {
   return true;
 }
 
-export async function analyzePriceHistory(
+async function loadProposalHistoryRows(
   rikCode: string,
-  currentPrice: number,
   companyId?: string | null,
-): Promise<PriceAnalysis | null> {
-  const sb = getSupabaseAny();
-  let query = sb
+): Promise<ProposalHistoryRow[]> {
+  let query = supabase
     .from("proposal_items")
     .select("price, supplier, created_at, proposals!inner(company_id)")
     .eq("rik_code", rikCode)
@@ -97,25 +132,40 @@ export async function analyzePriceHistory(
   }
 
   const { data, error } = await query;
-  if (error || !Array.isArray(data) || data.length === 0) {
+  if (error) {
+    console.warn("[loadProposalHistoryRows]", error.message || error);
+    return [];
+  }
+
+  return normalizeProposalHistoryRows(data);
+}
+
+export async function analyzePriceHistory(
+  rikCode: string,
+  currentPrice: number,
+  companyId?: string | null,
+): Promise<PriceAnalysis | null> {
+  const normalizedRikCode = toTrimmedText(rikCode);
+  const normalizedCurrentPrice = toFiniteNumber(currentPrice);
+  if (!normalizedRikCode || normalizedCurrentPrice == null || normalizedCurrentPrice <= 0) {
     return null;
   }
 
-  const prices = data
-    .map((row: any) => Number(row.price))
-    .filter((price: number) => Number.isFinite(price) && price > 0);
+  const historyRows = await loadProposalHistoryRows(normalizedRikCode, companyId);
+  if (!historyRows.length) return null;
 
-  if (prices.length === 0) return null;
+  const prices = historyRows.map((row) => row.price).filter((price) => price > 0);
+  if (!prices.length) return null;
 
   const averagePrice = prices.reduce((sum, price) => sum + price, 0) / prices.length;
   const minPrice = Math.min(...prices);
   const maxPrice = Math.max(...prices);
-  const lastPrice = prices[0];
-  const priceChange = lastPrice > 0 ? ((currentPrice - lastPrice) / lastPrice) * 100 : 0;
+  const lastPrice = prices[0] ?? normalizedCurrentPrice;
+  const priceChange = lastPrice > 0 ? ((normalizedCurrentPrice - lastPrice) / lastPrice) * 100 : 0;
 
   let recommendation: PriceAnalysis["recommendation"] = "average";
-  if (currentPrice <= minPrice * 1.1) recommendation = "good";
-  else if (currentPrice >= maxPrice * 0.9) recommendation = "expensive";
+  if (normalizedCurrentPrice <= minPrice * 1.1) recommendation = "good";
+  else if (normalizedCurrentPrice >= maxPrice * 0.9) recommendation = "expensive";
 
   return {
     averagePrice,
@@ -124,10 +174,10 @@ export async function analyzePriceHistory(
     lastPrice,
     priceChange,
     recommendation,
-    history: data.slice(0, 5).map((row: any) => ({
-      date: row.created_at,
-      price: Number(row.price) || 0,
-      supplier: String(row.supplier || ""),
+    history: historyRows.slice(0, 5).map((row) => ({
+      date: row.createdAt,
+      price: row.price,
+      supplier: row.supplier,
     })),
   };
 }
@@ -137,23 +187,11 @@ export async function getSupplierRecommendations(
   limit = 5,
   companyId?: string | null,
 ): Promise<SupplierScore[]> {
-  const sb = getSupabaseAny();
-  let query = sb
-    .from("proposal_items")
-    .select("supplier, price, created_at, proposals!inner(company_id)")
-    .eq("rik_code", rikCode)
-    .not("supplier", "is", null)
-    .order("created_at", { ascending: false })
-    .limit(100);
+  const normalizedRikCode = toTrimmedText(rikCode);
+  if (!normalizedRikCode) return [];
 
-  if (companyId) {
-    query = query.eq("proposals.company_id", companyId);
-  }
-
-  const { data, error } = await query;
-  if (error || !Array.isArray(data) || data.length === 0) {
-    return [];
-  }
+  const historyRows = await loadProposalHistoryRows(normalizedRikCode, companyId);
+  if (!historyRows.length) return [];
 
   const supplierMap = new Map<
     string,
@@ -164,20 +202,20 @@ export async function getSupplierRecommendations(
     }
   >();
 
-  for (const row of data) {
-    const supplier = String(row.supplier || "").trim();
+  for (const row of historyRows) {
+    const supplier = toTrimmedText(row.supplier);
     if (!supplier) continue;
 
     const existing = supplierMap.get(supplier) || {
       orders: 0,
       totalPrice: 0,
-      lastDate: row.created_at,
+      lastDate: row.createdAt,
     };
 
     existing.orders += 1;
-    existing.totalPrice += Number(row.price) || 0;
-    if (row.created_at > existing.lastDate) {
-      existing.lastDate = row.created_at;
+    existing.totalPrice += row.price;
+    if (row.createdAt > existing.lastDate) {
+      existing.lastDate = row.createdAt;
     }
     supplierMap.set(supplier, existing);
   }
@@ -201,5 +239,5 @@ export async function getSupplierRecommendations(
     });
   }
 
-  return scores.sort((a, b) => b.score - a.score).slice(0, limit);
+  return scores.sort((a, b) => b.score - a.score).slice(0, Math.max(1, limit));
 }

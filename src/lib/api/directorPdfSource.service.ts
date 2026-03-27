@@ -20,8 +20,11 @@ import {
 import { adaptCanonicalMaterialsPayload, adaptCanonicalWorksPayload } from "./director_reports.adapters";
 import type { DirectorDisciplinePayload, DirectorReportPayload } from "./director_reports.shared";
 import {
+  fetchDirectorFinancePanelScopeV3ViaRpc,
+  fetchDirectorFinancePanelScopeV2ViaRpc,
   mapToFinanceRow,
   normalizeFinSpendRows,
+  type DirectorFinanceRowV2,
   type FinanceRow,
   type FinSpendRow,
 } from "../../screens/director/director.finance";
@@ -55,6 +58,7 @@ const DIRECTOR_PRODUCTION_PDF_RPC_MODE: PdfRpcRolloutMode = resolvePdfRpcRollout
 const DIRECTOR_SUBCONTRACT_PDF_RPC_MODE: PdfRpcRolloutMode = resolvePdfRpcRolloutMode(
   DIRECTOR_SUBCONTRACT_PDF_SOURCE_RPC_V1_MODE_RAW,
 );
+const DIRECTOR_PDF_SOURCE_IS_DEV = typeof __DEV__ !== "undefined" && __DEV__ === true;
 
 registerPdfRpcRolloutPath(DIRECTOR_FINANCE_PDF_RPC_ROLLOUT_ID, DIRECTOR_FINANCE_PDF_RPC_MODE);
 registerPdfRpcRolloutPath(DIRECTOR_PRODUCTION_PDF_RPC_ROLLOUT_ID, DIRECTOR_PRODUCTION_PDF_RPC_MODE);
@@ -207,7 +211,7 @@ const logDirectorPdfSourceBranch = (
     source,
     branchMeta,
   });
-  if (!__DEV__) return;
+  if (!DIRECTOR_PDF_SOURCE_IS_DEV) return;
   console.info("[director-pdf-source]", {
     id,
     source,
@@ -224,6 +228,63 @@ const coerceFinanceRows = (rawRows: unknown[]): FinanceRow[] =>
     .map(mapToFinanceRow)
     .filter((row) => !!row && !!row.id)
     .filter((row) => Number.isFinite(Number(row.amount)));
+
+const mapPanelScopeRowToFinanceRow = (
+  row: DirectorFinanceRowV2,
+  sourceRow: "director_finance_panel_scope_v2" | "director_finance_panel_scope_v3",
+): FinanceRow => ({
+  id: String(row.proposalId ?? `${row.supplierId}:${row.invoiceNumber || "no-invoice"}`),
+  supplier: String(row.supplierName ?? row.supplierId ?? "").trim() || "—",
+  amount: Number(row.amountTotal ?? 0),
+  paidAmount: Number(row.amountPaid ?? 0),
+  invoiceNumber: row.invoiceNumber ?? null,
+  invoiceDate: null,
+  approvedAtIso: null,
+  dueDate: row.dueDate ?? null,
+  proposalId: row.proposalId ?? null,
+  proposal_id: row.proposalId ?? null,
+  proposal_no: row.proposalId ? `PR-${String(row.proposalId).slice(0, 8)}` : null,
+  pretty: row.proposalId ? `PR-${String(row.proposalId).slice(0, 8)}` : null,
+  raw: {
+    source_row: sourceRow,
+    amount_debt: row.amountDebt,
+    overdue_days: row.overdueDays,
+    status: row.status,
+  },
+});
+
+async function loadDirectorFinanceRowsFromPanelScope(args: {
+  periodFrom?: string | null;
+  periodTo?: string | null;
+}): Promise<FinanceRow[]> {
+  try {
+    const scopeV3 = await fetchDirectorFinancePanelScopeV3ViaRpc({
+      periodFromIso: args.periodFrom,
+      periodToIso: args.periodTo,
+      dueDaysDefault: 7,
+      criticalDays: 14,
+      limit: 1000,
+      offset: 0,
+    });
+    if (Array.isArray(scopeV3?.rows) && scopeV3.rows.length > 0) {
+      return scopeV3.rows.map((row) => mapPanelScopeRowToFinanceRow(row, "director_finance_panel_scope_v3"));
+    }
+  } catch {}
+
+  try {
+    const scope = await fetchDirectorFinancePanelScopeV2ViaRpc({
+      periodFromIso: args.periodFrom,
+      periodToIso: args.periodTo,
+      limit: 1000,
+      offset: 0,
+    });
+    return Array.isArray(scope?.rows)
+      ? scope.rows.map((row) => mapPanelScopeRowToFinanceRow(row, "director_finance_panel_scope_v2"))
+      : [];
+  } catch {
+    return [];
+  }
+}
 
 const ensureDirectorReportPayload = (value: unknown): DirectorReportPayload => {
   const payload = value as DirectorReportPayload;
@@ -398,28 +459,61 @@ async function buildDirectorFinancePdfFallbackSource(
     periodTo?: string | null;
     fallbackFinanceRows?: FinanceRow[] | null;
     fallbackSpendRows?: FinSpendRow[] | null;
+    fallbackRowsLoader?: (() => Promise<{
+      financeRows: FinanceRow[];
+      spendRows: FinSpendRow[];
+    }>) | null;
   },
   fallbackReason: PdfRpcRolloutFallbackReason = "rpc_error",
 ): Promise<DirectorFinancePdfSource> {
+  const loadedFallbackRows =
+    !Array.isArray(args.fallbackFinanceRows) &&
+    !Array.isArray(args.fallbackSpendRows) &&
+    args.fallbackRowsLoader
+      ? await args.fallbackRowsLoader()
+      : null;
+
+  const panelScopeFallbackRows =
+    !Array.isArray(args.fallbackFinanceRows)
+      ? await loadDirectorFinanceRowsFromPanelScope({
+          periodFrom: args.periodFrom,
+          periodTo: args.periodTo,
+        })
+      : [];
+
   const financeRows =
     Array.isArray(args.fallbackFinanceRows)
       ? args.fallbackFinanceRows
+      : Array.isArray(loadedFallbackRows?.financeRows) && loadedFallbackRows.financeRows.length > 0
+        ? loadedFallbackRows.financeRows
+      : panelScopeFallbackRows.length > 0
+        ? panelScopeFallbackRows
       : coerceFinanceRows(await listAccountantInbox());
   const spendRows =
     Array.isArray(args.fallbackSpendRows)
       ? args.fallbackSpendRows
+      : Array.isArray(loadedFallbackRows?.spendRows)
+        ? loadedFallbackRows.spendRows
       : await loadLegacyDirectorFinanceSpendRows({
           periodFrom: args.periodFrom,
           periodTo: args.periodTo,
         });
 
+  const source =
+    Array.isArray(args.fallbackFinanceRows) || Array.isArray(args.fallbackSpendRows)
+      ? "legacy:director_finance_ui_payload"
+      : Array.isArray(loadedFallbackRows?.spendRows) && panelScopeFallbackRows.length > 0 && financeRows === panelScopeFallbackRows
+        ? "hybrid:director_finance_panel_scope+support_rows_loader"
+      : Array.isArray(loadedFallbackRows?.financeRows) || Array.isArray(loadedFallbackRows?.spendRows)
+        ? "legacy:director_finance_support_rows_loader"
+      : panelScopeFallbackRows.length > 0
+        ? "rpc:director_finance_panel_scope_rows"
+        : "legacy:listAccountantInbox";
+
   return {
     financeRows,
     spendRows,
-    source:
-      Array.isArray(args.fallbackFinanceRows) || Array.isArray(args.fallbackSpendRows)
-        ? "legacy:director_finance_ui_payload"
-        : "legacy:listAccountantInbox",
+    source,
     branchMeta: {
       sourceBranch: "legacy_fallback",
       fallbackReason,
@@ -435,6 +529,10 @@ export async function getDirectorFinancePdfSource(args: {
   criticalDays?: number;
   fallbackFinanceRows?: FinanceRow[] | null;
   fallbackSpendRows?: FinSpendRow[] | null;
+  fallbackRowsLoader?: (() => Promise<{
+    financeRows: FinanceRow[];
+    spendRows: FinSpendRow[];
+  }>) | null;
 }): Promise<DirectorFinancePdfSource> {
   const rpcMode = DIRECTOR_FINANCE_PDF_RPC_MODE;
 
@@ -482,7 +580,7 @@ export async function getDirectorFinancePdfSource(args: {
         errorMessage: error.message,
       });
     }
-    if (__DEV__) {
+    if (DIRECTOR_PDF_SOURCE_IS_DEV) {
       console.warn("[director-finance-pdf-source] rpc_v1 fallback", {
         fallbackReason,
         rpcMode,
@@ -723,7 +821,7 @@ export async function getDirectorProductionPdfSource(args: {
         errorMessage: error.message,
       });
     }
-    if (__DEV__) {
+    if (DIRECTOR_PDF_SOURCE_IS_DEV) {
       console.warn("[director-production-pdf-source] rpc_v1 fallback", {
         fallbackReason,
         rpcMode,
@@ -895,7 +993,7 @@ export async function getDirectorSubcontractPdfSource(args: {
         errorMessage: error.message,
       });
     }
-    if (__DEV__) {
+    if (DIRECTOR_PDF_SOURCE_IS_DEV) {
       console.warn("[director-subcontract-pdf-source] rpc_v1 fallback", {
         fallbackReason,
         rpcMode,

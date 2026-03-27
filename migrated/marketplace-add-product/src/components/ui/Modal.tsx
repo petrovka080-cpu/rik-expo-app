@@ -9,13 +9,12 @@ import {
     TouchableOpacity,
     TouchableWithoutFeedback,
     KeyboardAvoidingView,
-    Platform,
     ViewStyle,
     Dimensions,
     Animated,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import Theme from '../../styles/theme';
+import { Theme } from '../../styles/theme';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -68,7 +67,7 @@ export function Modal({
             scale.setValue(0.9);
             backdropOpacity.setValue(0);
         }
-    }, [visible]);
+    }, [backdropOpacity, scale, translateY, variant, visible]);
 
     const handleClose = () => {
         Animated.parallel([
@@ -86,10 +85,6 @@ export function Modal({
     };
 
     const variantStyles = getVariantStyles(variant);
-
-    const contentAnimatedStyle = variant === 'bottom'
-        ? { transform: [{ translateY }] }
-        : { transform: [{ translateY }, { scale }] };
 
     return (
         <RNModal
@@ -109,38 +104,75 @@ export function Modal({
                     <Animated.View style={[styles.backdrop, { opacity: backdropOpacity }]} />
                 </TouchableWithoutFeedback>
 
-                <Animated.View
-                    style={[
-                        styles.content,
-                        variantStyles.content,
-                        contentAnimatedStyle,
-                        contentStyle,
-                    ]}
-                >
-                    {(title || showCloseButton) && (
-                        <View style={styles.header}>
-                            {title && (
-                                <Text style={styles.title}>{title}</Text>
-                            )}
-                            {showCloseButton && (
-                                <TouchableOpacity
-                                    onPress={handleClose}
-                                    style={styles.closeButton}
-                                    hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-                                >
-                                    <Ionicons
-                                        name="close"
-                                        size={24}
-                                        color={Theme.colors.textSecondary}
-                                    />
-                                </TouchableOpacity>
-                            )}
+                {variant === 'bottom' ? (
+                    <Animated.View
+                        style={[
+                            styles.content,
+                            variantStyles.content,
+                            { transform: [{ translateY }] },
+                            contentStyle,
+                        ]}
+                    >
+                        {(title || showCloseButton) && (
+                            <View style={styles.header}>
+                                {title && (
+                                    <Text style={styles.title}>{title}</Text>
+                                )}
+                                {showCloseButton && (
+                                    <TouchableOpacity
+                                        onPress={handleClose}
+                                        style={styles.closeButton}
+                                        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                                    >
+                                        <Ionicons
+                                            name="close"
+                                            size={24}
+                                            color={Theme.colors.textSecondary}
+                                        />
+                                    </TouchableOpacity>
+                                )}
+                            </View>
+                        )}
+                        <View style={styles.body}>
+                            {children}
                         </View>
-                    )}
-                    <View style={styles.body}>
-                        {children}
-                    </View>
-                </Animated.View>
+                    </Animated.View>
+                ) : (
+                    <Animated.View
+                        style={[
+                            styles.content,
+                            variantStyles.content,
+                            { transform: [{ translateY }] },
+                            contentStyle,
+                        ]}
+                    >
+                        <Animated.View style={{ transform: [{ scale }] }}>
+                            {(title || showCloseButton) && (
+                                <View style={styles.header}>
+                                    {title && (
+                                        <Text style={styles.title}>{title}</Text>
+                                    )}
+                                    {showCloseButton && (
+                                        <TouchableOpacity
+                                            onPress={handleClose}
+                                            style={styles.closeButton}
+                                            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                                        >
+                                            <Ionicons
+                                                name="close"
+                                                size={24}
+                                                color={Theme.colors.textSecondary}
+                                            />
+                                        </TouchableOpacity>
+                                    )}
+                                </View>
+                            )}
+                            <View style={styles.body}>
+                                {children}
+                            </View>
+                        </Animated.View>
+                    </Animated.View>
+                )}
             </KeyboardAvoidingView>
         </RNModal>
     );

@@ -16,6 +16,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { supportsAssistantActionMode, tryRunAssistantAction } from "./assistantActions";
+import { loadAssistantScopedFacts, type AssistantScopedFacts } from "./assistantScopeContext";
 import { isAssistantConfigured, sendAssistantMessage } from "./assistantClient";
 import {
   getAssistantContextLabel,
@@ -26,6 +27,7 @@ import {
   normalizeAssistantRole,
 } from "./assistantPrompts";
 import type { AssistantContext, AssistantMessage, AssistantRole } from "./assistant.types";
+import { useAssistantVoiceInput } from "./useAssistantVoiceInput";
 import { loadCurrentProfileIdentity } from "../profile/currentProfileIdentity";
 
 const STORAGE_PREFIX = "gox.ai.chat.v1";
@@ -80,8 +82,15 @@ export default function AIAssistantScreen() {
   const [userId, setUserId] = useState<string | null>(null);
   const [messages, setMessages] = useState<AssistantMessage[]>([]);
   const [input, setInput] = useState("");
+  const [scopedFacts, setScopedFacts] = useState<AssistantScopedFacts | null>(null);
+  const [scopedFactsLoading, setScopedFactsLoading] = useState(false);
+  const [scopedFactsError, setScopedFactsError] = useState<string | null>(null);
   const handledPromptRef = useRef<string>("");
   const assistantContext = useMemo<AssistantContext>(() => normalizeAssistantContext(routeContext), [routeContext]);
+  const assistantVoiceScreen = useMemo(
+    () => (role === "buyer" || role === "director" || role === "foreman" ? role : null),
+    [role],
+  );
 
   const configured = isAssistantConfigured();
   const actionMode = useMemo(
@@ -101,6 +110,11 @@ export default function AIAssistantScreen() {
       return true;
     });
   }, [assistantContext, role]);
+  const assistantVoice = useAssistantVoiceInput({
+    screen: assistantVoiceScreen,
+    value: input,
+    onChangeText: setInput,
+  });
 
   const initialize = useCallback(async () => {
     setBooting(true);
@@ -144,6 +158,35 @@ export default function AIAssistantScreen() {
     void AsyncStorage.setItem(buildStorageKey(userId), JSON.stringify(messages.slice(-30)));
   }, [messages, userId]);
 
+  useEffect(() => {
+    if (booting) return;
+    let cancelled = false;
+
+    setScopedFactsLoading(true);
+    setScopedFactsError(null);
+
+    void loadAssistantScopedFacts({
+      role,
+      context: assistantContext,
+    })
+      .then((nextFacts) => {
+        if (cancelled) return;
+        setScopedFacts(nextFacts);
+      })
+      .catch((error: unknown) => {
+        if (cancelled) return;
+        setScopedFacts(null);
+        setScopedFactsError(error instanceof Error ? error.message : String(error ?? "load_failed"));
+      })
+      .finally(() => {
+        if (!cancelled) setScopedFactsLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [assistantContext, booting, role]);
+
   const send = useCallback(
     async (textParam?: string) => {
       const text = String(textParam ?? input).trim();
@@ -168,13 +211,17 @@ export default function AIAssistantScreen() {
             context: assistantContext,
             message: text,
             history: nextHistory.filter((item) => item.role !== "user" || item.id !== userMessage.id),
+            scopedFactsSummary: scopedFacts?.summary ?? null,
+            scopeKey: scopedFacts?.scopeKey ?? null,
+            sourceKinds: scopedFacts?.sourceKinds ?? null,
+            userId,
           });
         setMessages((prev) => [...prev, createMessage("assistant", answer)]);
       } finally {
         setLoading(false);
       }
     },
-    [assistantContext, input, loading, messages, role],
+    [assistantContext, input, loading, messages, role, scopedFacts, userId],
   );
 
   const clearChat = useCallback(async () => {
@@ -249,25 +296,47 @@ export default function AIAssistantScreen() {
           </Text>
         </View>
 
+        {scopedFactsLoading || scopedFacts || scopedFactsError ? (
+          <View style={styles.scopeCard}>
+            <View style={styles.scopeCardHeader}>
+              <Text style={styles.scopeCardTitle}>Data-aware context</Text>
+              {scopedFactsLoading ? <ActivityIndicator size="small" color="#2563EB" /> : null}
+            </View>
+            {scopedFacts ? (
+              <>
+                <Text style={styles.scopeCardText}>{scopedFacts.summary}</Text>
+                <Text style={styles.scopeCardMeta}>
+                  {`${scopedFacts.scopeKey} • ${scopedFacts.sourceKinds.join(", ")}`}
+                </Text>
+              </>
+            ) : null}
+            {!scopedFacts && scopedFactsError ? (
+              <Text style={styles.scopeCardError}>
+                {`Контекст не загружен: ${scopedFactsError}`}
+              </Text>
+            ) : null}
+          </View>
+        ) : null}
+
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.routeRow}>
           {assistantContext !== "unknown" ? (
             <View style={styles.routeChip}>
               <Text style={styles.routeChipText}>{getAssistantContextLabel(assistantContext)}</Text>
             </View>
           ) : null}
-          <Pressable style={styles.routeChip} onPress={() => router.push("/(tabs)/market" as any)}>
+          <Pressable style={styles.routeChip} onPress={() => router.push("/(tabs)/market")}>
             <Text style={styles.routeChipText}>Маркет</Text>
           </Pressable>
-          <Pressable style={styles.routeChip} onPress={() => router.push("/supplierShowcase" as any)}>
+          <Pressable style={styles.routeChip} onPress={() => router.push("/supplierShowcase")}>
             <Text style={styles.routeChipText}>Витрина</Text>
           </Pressable>
-          <Pressable style={styles.routeChip} onPress={() => router.push("/supplierMap" as any)}>
+          <Pressable style={styles.routeChip} onPress={() => router.push("/supplierMap")}>
             <Text style={styles.routeChipText}>Карта</Text>
           </Pressable>
-          <Pressable style={styles.routeChip} onPress={() => router.push("/auctions" as any)}>
+          <Pressable style={styles.routeChip} onPress={() => router.push("/auctions")}>
             <Text style={styles.routeChipText}>Торги</Text>
           </Pressable>
-          <Pressable style={styles.routeChip} onPress={() => router.push("/(tabs)/profile" as any)}>
+          <Pressable style={styles.routeChip} onPress={() => router.push("/(tabs)/profile")}>
             <Text style={styles.routeChipText}>Профиль</Text>
           </Pressable>
         </ScrollView>
@@ -308,6 +377,24 @@ export default function AIAssistantScreen() {
         </ScrollView>
 
         <View style={styles.composer}>
+          <Pressable
+            style={[
+              styles.voiceButton,
+              assistantVoice.isActive && styles.voiceButtonActive,
+              !assistantVoice.supported && styles.voiceButtonMuted,
+            ]}
+            onPress={() => (assistantVoice.isActive ? assistantVoice.stop() : assistantVoice.start())}
+            accessibilityRole="button"
+            accessibilityLabel="assistant_voice_button"
+            accessibilityHint="Вставляет распознанную речь в поле ввода без автосабмита"
+            testID="assistant_voice_button"
+          >
+            <Ionicons
+              name={assistantVoice.isActive ? "stop-circle" : "mic"}
+              size={18}
+              color={assistantVoice.isActive ? "#FFFFFF" : "#0F172A"}
+            />
+          </Pressable>
           <TextInput
             value={input}
             onChangeText={setInput}
@@ -315,15 +402,37 @@ export default function AIAssistantScreen() {
             placeholderTextColor="#94A3B8"
             multiline
             style={styles.input}
+            accessibilityLabel="assistant_input"
+            testID="assistant_input"
           />
           <Pressable
             style={[styles.sendButton, !input.trim() && styles.sendButtonDisabled]}
             onPress={() => void send()}
             disabled={!input.trim() || loading}
+            accessibilityRole="button"
+            accessibilityLabel="assistant_send_button"
+            testID="assistant_send_button"
           >
             <Ionicons name="send" size={18} color="#FFFFFF" />
           </Pressable>
         </View>
+        {assistantVoice.error || assistantVoice.status !== "ready" ? (
+          <View style={styles.voiceStatusRow}>
+            <Text style={[styles.voiceStatusText, assistantVoice.error ? styles.voiceStatusError : null]}>
+              {assistantVoice.error
+                ? assistantVoice.error
+                : assistantVoice.status === "listening"
+                  ? "Голосовой ввод слушает. Проверьте текст перед отправкой."
+                  : assistantVoice.status === "recognizing"
+                    ? "Голосовой ввод обрабатывает речь. Автоотправка отключена."
+                    : assistantVoice.status === "denied"
+                      ? "Доступ к микрофону не выдан. Остаётся текстовый ввод."
+                      : assistantVoice.status === "unsupported"
+                        ? "Голосовой ввод недоступен на этой платформе или в этой сборке."
+                        : "Голосовой ввод завершился ошибкой. Остаётся текстовый ввод."}
+            </Text>
+          </View>
+        ) : null}
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
@@ -402,6 +511,44 @@ const styles = StyleSheet.create({
   },
   noticeHidden: {
     display: "none",
+  },
+  scopeCard: {
+    marginHorizontal: 16,
+    marginTop: 10,
+    padding: 14,
+    borderRadius: 18,
+    backgroundColor: "#FFFFFF",
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+  },
+  scopeCardHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 12,
+  },
+  scopeCardTitle: {
+    fontSize: 13,
+    fontWeight: "800",
+    color: "#0F172A",
+  },
+  scopeCardText: {
+    marginTop: 8,
+    fontSize: 13,
+    lineHeight: 18,
+    color: "#334155",
+  },
+  scopeCardMeta: {
+    marginTop: 8,
+    fontSize: 11,
+    fontWeight: "700",
+    color: "#64748B",
+  },
+  scopeCardError: {
+    marginTop: 8,
+    fontSize: 12,
+    fontWeight: "700",
+    color: "#B91C1C",
   },
   routeRow: {
     paddingHorizontal: 16,
@@ -495,6 +642,23 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: "#E2E8F0",
   },
+  voiceButton: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#E2E8F0",
+    borderWidth: 1,
+    borderColor: "#CBD5E1",
+  },
+  voiceButtonActive: {
+    backgroundColor: "#2563EB",
+    borderColor: "#2563EB",
+  },
+  voiceButtonMuted: {
+    opacity: 0.72,
+  },
   input: {
     flex: 1,
     minHeight: 48,
@@ -519,5 +683,19 @@ const styles = StyleSheet.create({
   },
   sendButtonDisabled: {
     backgroundColor: "#94A3B8",
+  },
+  voiceStatusRow: {
+    paddingHorizontal: 16,
+    paddingBottom: 12,
+    backgroundColor: "#FFFFFF",
+  },
+  voiceStatusText: {
+    color: "#475569",
+    fontSize: 12,
+    lineHeight: 17,
+  },
+  voiceStatusError: {
+    color: "#B91C1C",
+    fontWeight: "700",
   },
 });

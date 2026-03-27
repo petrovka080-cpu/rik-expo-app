@@ -1,33 +1,28 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { Platform } from "react-native";
-
 import {
   clearLocalDraftId,
+  fetchRequestDetails,
   listRequestItems,
-  requestCreateDraft,
-  requestItemCancel,
-  requestItemUpdateQty,
   setLocalDraftId,
-  updateRequestMeta,
   type ReqItemRow,
   type RequestDetails,
 } from "../../lib/catalog_api";
-import { submitRequestToDirector } from "../../lib/api/request.repository";
-import {
-  isRequestDraftSyncRpcEnabled,
-  toRequestDraftSyncFallbackReason,
-} from "../../lib/api/requestDraftSync.service";
-import { supabase } from "../../lib/supabaseClient";
-import { isDraftLikeStatus, requestItemAddOrIncAndPatchMeta } from "./foreman.helpers";
+import { createDefaultOfflineStorage } from "../../lib/offline/offlineStorage";
+import { isDraftLikeStatus } from "./foreman.helpers";
 import {
   syncForemanAtomicDraft,
   type ForemanDraftSyncMutationKind,
 } from "./foreman.draftSync.repository";
+import {
+  clearForemanDurableDraftState,
+  getForemanDurableDraftState,
+  hydrateForemanDurableDraftStore,
+  replaceForemanDurableDraftSnapshot,
+} from "./foreman.durableDraft.store";
+import { FOREMAN_LOCAL_ONLY_REQUEST_ID } from "./foreman.localDraft.constants";
 import type { RequestDraftMeta } from "./foreman.types";
 
-const LOCAL_DRAFT_STORAGE_KEY = "foreman_materials_local_draft_v1";
-
-export const FOREMAN_LOCAL_ONLY_REQUEST_ID = "__foreman_local_draft__";
+const LEGACY_LOCAL_DRAFT_STORAGE_KEY = "foreman_materials_local_draft_v1";
+export { FOREMAN_LOCAL_ONLY_REQUEST_ID } from "./foreman.localDraft.constants";
 
 export type ForemanLocalDraftHeader = {
   foreman: string;
@@ -88,7 +83,7 @@ export type ForemanLocalDraftSyncResult = {
   rows: ReqItemRow[];
   submitted: unknown | null;
   branchMeta?: {
-    sourcePath: "rpc_v1" | "rpc_v2" | "legacy_fallback";
+    sourcePath: "rpc_v2";
   };
 };
 
@@ -121,43 +116,7 @@ const emptyHeader = (): ForemanLocalDraftHeader => ({
   zone: "",
 });
 
-const draftStorage = {
-  async get(): Promise<string | null> {
-    if (Platform.OS === "web") {
-      try {
-        if (typeof localStorage !== "undefined") return localStorage.getItem(LOCAL_DRAFT_STORAGE_KEY);
-      } catch {}
-      return null;
-    }
-    try {
-      return await AsyncStorage.getItem(LOCAL_DRAFT_STORAGE_KEY);
-    } catch {
-      return null;
-    }
-  },
-  async set(value: string): Promise<void> {
-    if (Platform.OS === "web") {
-      try {
-        if (typeof localStorage !== "undefined") localStorage.setItem(LOCAL_DRAFT_STORAGE_KEY, value);
-      } catch {}
-      return;
-    }
-    try {
-      await AsyncStorage.setItem(LOCAL_DRAFT_STORAGE_KEY, value);
-    } catch {}
-  },
-  async clear(): Promise<void> {
-    if (Platform.OS === "web") {
-      try {
-        if (typeof localStorage !== "undefined") localStorage.removeItem(LOCAL_DRAFT_STORAGE_KEY);
-      } catch {}
-      return;
-    }
-    try {
-      await AsyncStorage.removeItem(LOCAL_DRAFT_STORAGE_KEY);
-    } catch {}
-  },
-};
+const legacyDraftStorage = createDefaultOfflineStorage();
 
 const trim = (value: unknown): string => String(value ?? "").trim();
 
@@ -219,6 +178,58 @@ const normalizePendingDelete = (value: unknown): ForemanLocalDraftDelete | null 
 const serializeSnapshot = (snapshot: ForemanLocalDraftSnapshot | null): string =>
   JSON.stringify(snapshot ?? null);
 
+const parseForemanLocalDraftSnapshotRecord = (
+  parsed: Record<string, unknown> | null,
+): ForemanLocalDraftSnapshot | null => {
+  const row = asRecord(parsed);
+  if (!row) return null;
+
+  const requestId = trim(row.requestId);
+  const snapshot: ForemanLocalDraftSnapshot = {
+    version: 1,
+    requestId,
+    displayNo: trim(row.displayNo) || null,
+    status: trim(row.status) || "draft",
+    header: normalizeHeader(asRecord(row.header) ?? undefined),
+    items: Array.isArray(row.items)
+      ? row.items
+          .map((item) => normalizeLocalItem(item))
+          .filter((item): item is ForemanLocalDraftItem => Boolean(item))
+      : [],
+    qtyDrafts:
+      row.qtyDrafts && typeof row.qtyDrafts === "object" && !Array.isArray(row.qtyDrafts)
+        ? Object.fromEntries(
+            Object.entries(row.qtyDrafts as Record<string, unknown>).map(([key, value]) => [key, trim(value)]),
+          )
+        : {},
+    pendingDeletes: Array.isArray(row.pendingDeletes)
+      ? row.pendingDeletes
+          .map((item) => normalizePendingDelete(item))
+          .filter((item): item is ForemanLocalDraftDelete => Boolean(item))
+      : [],
+    submitRequested: row.submitRequested === true,
+    lastError: trim(row.lastError) || null,
+    updatedAt: trim(row.updatedAt) || new Date().toISOString(),
+  };
+
+  return hasForemanLocalDraftContent(snapshot) ? snapshot : null;
+};
+
+const loadLegacyForemanLocalDraftSnapshot = async (): Promise<ForemanLocalDraftSnapshot | null> => {
+  try {
+    const raw = await legacyDraftStorage.getItem(LEGACY_LOCAL_DRAFT_STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as Record<string, unknown> | null;
+    return parseForemanLocalDraftSnapshotRecord(parsed);
+  } catch {
+    return null;
+  }
+};
+
+const clearLegacyForemanLocalDraftSnapshot = async (): Promise<void> => {
+  await legacyDraftStorage.removeItem(LEGACY_LOCAL_DRAFT_STORAGE_KEY);
+};
+
 const normalizeSnapshotForCompare = (
   snapshot: ForemanLocalDraftSnapshot | null | undefined,
   options?: { ignoreUpdatedAt?: boolean; ignoreLastError?: boolean },
@@ -258,10 +269,10 @@ export const buildForemanDraftRequestDetails = (
   snapshot: ForemanLocalDraftSnapshot,
   previous: RequestDetails | null,
 ): RequestDetails => ({
-  ...(previous ?? { id: snapshot.requestId || FOREMAN_LOCAL_ONLY_REQUEST_ID }),
+  ...(snapshot.requestId ? (previous ?? { id: snapshot.requestId }) : { id: FOREMAN_LOCAL_ONLY_REQUEST_ID }),
   id: snapshot.requestId || FOREMAN_LOCAL_ONLY_REQUEST_ID,
   status: snapshot.status ?? previous?.status ?? "draft",
-  display_no: snapshot.displayNo ?? previous?.display_no ?? null,
+  display_no: snapshot.displayNo ?? (snapshot.requestId ? previous?.display_no ?? null : null),
   foreman_name: snapshot.header.foreman || previous?.foreman_name || null,
   comment: snapshot.header.comment || previous?.comment || null,
   object_type_code: snapshot.header.objectType || previous?.object_type_code || null,
@@ -317,20 +328,6 @@ export async function resolveForemanDraftBootstrap(params: {
   };
 }
 
-const patchRequestItemMetaBestEffort = async (itemId: string, item: ForemanLocalDraftItem) => {
-  const update = {
-    status: item.status ?? "Черновик",
-    note: item.note ?? null,
-    app_code: item.app_code ?? null,
-    kind: item.kind ?? null,
-    name_human: item.name_human,
-    uom: item.uom ?? null,
-  };
-  try {
-    await supabase.from("request_items").update(update).eq("id", itemId);
-  } catch {}
-};
-
 const rowMatchesSnapshotItem = (row: ReqItemRow, item: ForemanLocalDraftItem) => {
   const remoteId = trim(row.id);
   if (item.remote_item_id && remoteId === item.remote_item_id) return true;
@@ -380,57 +377,109 @@ export const hasForemanLocalDraftPendingSync = (snapshot: ForemanLocalDraftSnaps
 };
 
 export async function loadForemanLocalDraftSnapshot(): Promise<ForemanLocalDraftSnapshot | null> {
-  try {
-    const raw = await draftStorage.get();
-    if (!raw) return null;
-    const parsed = JSON.parse(raw) as Record<string, unknown> | null;
-    const row = asRecord(parsed);
-    if (!row) return null;
+  const durable = getForemanDurableDraftState();
+  const hydrated = durable.hydrated ? durable : await hydrateForemanDurableDraftStore();
+  if (hydrated.snapshot) {
+    return hasForemanLocalDraftContent(hydrated.snapshot) ? hydrated.snapshot : null;
+  }
 
-    const requestId = trim(row.requestId);
-    const snapshot: ForemanLocalDraftSnapshot = {
+  const legacySnapshot = await loadLegacyForemanLocalDraftSnapshot();
+    if (legacySnapshot) {
+      await replaceForemanDurableDraftSnapshot(legacySnapshot, {
+        syncStatus: "dirty_local",
+        pendingOperationsCount: 0,
+        lastError: legacySnapshot.lastError ?? null,
+      });
+    await clearLegacyForemanLocalDraftSnapshot();
+    return legacySnapshot;
+  }
+
+  return null;
+}
+
+export async function loadForemanRemoteDraftSnapshot(params: {
+  requestId: string;
+  localSnapshot?: ForemanLocalDraftSnapshot | null;
+}): Promise<{
+  snapshot: ForemanLocalDraftSnapshot | null;
+  details: RequestDetails | null;
+  isTerminal: boolean;
+}> {
+  const requestId = trim(params.requestId);
+  if (!requestId) {
+    return {
+      snapshot: null,
+      details: null,
+      isTerminal: false,
+    };
+  }
+
+  const details = await fetchRequestDetails(requestId);
+  if (!details) {
+    return {
+      snapshot: null,
+      details: null,
+      isTerminal: false,
+    };
+  }
+
+  if (!isDraftLikeStatus(details.status)) {
+    return {
+      snapshot: null,
+      details,
+      isTerminal: true,
+    };
+  }
+
+  const rows = await listRequestItems(requestId);
+  const localSnapshot = params.localSnapshot ?? null;
+  const items = rows.map((row) => {
+    const existing = localSnapshot?.items.find((item) => rowMatchesSnapshotItem(row, item)) ?? null;
+    return reqRowToLocalItem(row, existing);
+  });
+  const qtyDrafts = Object.fromEntries(
+    items.map((item) => [item.remote_item_id || item.local_id, String(item.qty)]),
+  );
+
+  return {
+    snapshot: {
       version: 1,
       requestId,
-      displayNo: trim(row.displayNo) || null,
-      status: trim(row.status) || "draft",
-      header: normalizeHeader(asRecord(row.header) ?? undefined),
-      items: Array.isArray(row.items)
-        ? row.items
-            .map((item) => normalizeLocalItem(item))
-            .filter((item): item is ForemanLocalDraftItem => Boolean(item))
-        : [],
-      qtyDrafts:
-        row.qtyDrafts && typeof row.qtyDrafts === "object" && !Array.isArray(row.qtyDrafts)
-          ? Object.fromEntries(
-              Object.entries(row.qtyDrafts as Record<string, unknown>).map(([key, value]) => [key, trim(value)]),
-            )
-          : {},
-      pendingDeletes: Array.isArray(row.pendingDeletes)
-        ? row.pendingDeletes
-            .map((item) => normalizePendingDelete(item))
-            .filter((item): item is ForemanLocalDraftDelete => Boolean(item))
-        : [],
-      submitRequested: row.submitRequested === true,
-      lastError: trim(row.lastError) || null,
-      updatedAt: trim(row.updatedAt) || new Date().toISOString(),
-    };
-
-    return hasForemanLocalDraftContent(snapshot) ? snapshot : null;
-  } catch {
-    return null;
-  }
+      displayNo: trim(details.display_no) || null,
+      status: trim(details.status) || "draft",
+      header: normalizeHeader({
+        foreman: details.foreman_name,
+        comment: details.comment,
+        objectType: details.object_type_code,
+        level: details.level_code,
+        system: details.system_code,
+        zone: details.zone_code,
+      }),
+      items,
+      qtyDrafts,
+      pendingDeletes: [],
+      submitRequested: false,
+      lastError: null,
+      updatedAt: new Date().toISOString(),
+    },
+    details,
+    isTerminal: false,
+  };
 }
 
 export async function saveForemanLocalDraftSnapshot(snapshot: ForemanLocalDraftSnapshot | null): Promise<void> {
   if (!snapshot || !hasForemanLocalDraftContent(snapshot)) {
-    await draftStorage.clear();
+    await clearForemanDurableDraftState();
+    await clearLegacyForemanLocalDraftSnapshot();
     return;
   }
-  await draftStorage.set(serializeSnapshot(snapshot));
+  await replaceForemanDurableDraftSnapshot(JSON.parse(serializeSnapshot(snapshot)) as ForemanLocalDraftSnapshot);
+  await clearLegacyForemanLocalDraftSnapshot();
 }
 
 export async function clearForemanLocalDraftSnapshot(): Promise<void> {
-  await draftStorage.clear();
+  await clearForemanDurableDraftState();
+  await clearLegacyForemanLocalDraftSnapshot();
 }
 
 export function snapshotToReqItems(snapshot: ForemanLocalDraftSnapshot | null | undefined): ReqItemRow[] {
@@ -657,10 +706,6 @@ export async function syncForemanLocalDraftSnapshot(params: {
   localBeforeCount?: number | null;
   localAfterCount?: number | null;
 }): Promise<ForemanLocalDraftSyncResult> {
-  if (!isRequestDraftSyncRpcEnabled()) {
-    return syncForemanLocalDraftSnapshotLegacy(params);
-  }
-
   const next = clone(params.snapshot);
   const localItems = next.items.filter((item) => Number.isFinite(item.qty) && item.qty > 0);
 
@@ -670,192 +715,67 @@ export async function syncForemanLocalDraftSnapshot(params: {
       rows: snapshotToReqItems(next),
       submitted: null,
       branchMeta: {
-        sourcePath: "legacy_fallback",
+        sourcePath: "rpc_v2",
       },
     };
   }
 
-  try {
-    const rpc = await syncForemanAtomicDraft({
-      mutationKind: params.mutationKind ?? (next.submitRequested ? "submit" : "background_sync"),
-      sourcePath: "foreman_materials",
-      requestId: next.requestId,
-      meta: params.headerMeta,
-      submit: next.submitRequested,
-      pendingDeleteIds: next.pendingDeletes.map((entry) => entry.remote_item_id),
-      lines: localItems.map((item) => ({
-        request_item_id: item.remote_item_id,
-        rik_code: item.rik_code,
-        qty: item.qty,
-        note: item.note,
-        app_code: item.app_code,
-        kind: item.kind,
-        name_human: item.name_human,
-        uom: item.uom,
-      })),
-      beforeLineCount: params.localBeforeCount ?? null,
-      afterLocalSnapshotLineCount: params.localAfterCount ?? localItems.length,
-    });
+  const rpc = await syncForemanAtomicDraft({
+    mutationKind: params.mutationKind ?? (next.submitRequested ? "submit" : "background_sync"),
+    sourcePath: "foreman_materials",
+    requestId: next.requestId,
+    meta: params.headerMeta,
+    submit: next.submitRequested,
+    pendingDeleteIds: next.pendingDeletes.map((entry) => entry.remote_item_id),
+    lines: localItems.map((item) => ({
+      request_item_id: item.remote_item_id,
+      rik_code: item.rik_code,
+      qty: item.qty,
+      note: item.note,
+      app_code: item.app_code,
+      kind: item.kind,
+      name_human: item.name_human,
+      uom: item.uom,
+    })),
+    beforeLineCount: params.localBeforeCount ?? null,
+    afterLocalSnapshotLineCount: params.localAfterCount ?? localItems.length,
+  });
 
-    next.requestId = trim(rpc.request.id);
-    next.displayNo = trim(rpc.request.display_no) || next.displayNo || null;
-    next.status = trim(rpc.request.status) || next.status || "draft";
+  next.requestId = trim(rpc.request.id);
+  next.displayNo = trim(rpc.request.display_no) || next.displayNo || null;
+  next.status = trim(rpc.request.status) || next.status || "draft";
 
-    if (next.requestId) {
-      setLocalDraftId(next.requestId);
-    }
-
-    if (rpc.submitted) {
-      clearLocalDraftId();
-      return {
-        snapshot: null,
-        rows: [],
-        submitted: rpc.request,
-        branchMeta: {
-          sourcePath: rpc.branchMeta.sourceBranch === "rpc_v2" ? "rpc_v2" : "rpc_v1",
-        },
-      };
-    }
-
-    next.items = rpc.items.map((row) => {
-      const existing = localItems.find((item) => rowMatchesSnapshotItem(row, item)) ?? null;
-      return reqRowToLocalItem(row, existing);
-    });
-    next.pendingDeletes = [];
-    next.submitRequested = false;
-    next.lastError = null;
-    next.updatedAt = new Date().toISOString();
-
-    return {
-      snapshot: next,
-      rows: rpc.items,
-      submitted: null,
-      branchMeta: {
-        sourcePath: rpc.branchMeta.sourceBranch === "rpc_v2" ? "rpc_v2" : "rpc_v1",
-      },
-    };
-  } catch (error) {
-    console.log("[draft-sync] source=fallback");
-    console.warn("[draft-sync] RPC failed -> fallback path used", error);
-    console.warn("[foreman.localDraft] request_sync_draft fallback", {
-      reason: toRequestDraftSyncFallbackReason(error),
-      error: error instanceof Error ? error.message : String(error),
-    });
-    return syncForemanLocalDraftSnapshotLegacy(params);
-  }
-}
-
-async function syncForemanLocalDraftSnapshotLegacy(params: {
-  snapshot: ForemanLocalDraftSnapshot;
-  headerMeta: RequestDraftMeta;
-}): Promise<ForemanLocalDraftSyncResult> {
-  const next = clone(params.snapshot);
-  const localItems = next.items.filter((item) => Number.isFinite(item.qty) && item.qty > 0);
-
-  if (!trim(next.requestId)) {
-    if (!localItems.length && !next.submitRequested) {
-      return {
-        snapshot: next,
-        rows: snapshotToReqItems(next),
-        submitted: null,
-        branchMeta: {
-          sourcePath: "legacy_fallback",
-        },
-      };
-    }
-    const created = await requestCreateDraft(params.headerMeta);
-    const requestId = trim(created?.id);
-    if (!requestId) throw new Error("Failed to create remote draft");
-    next.requestId = requestId;
-    next.displayNo = trim(created?.display_no) || next.displayNo || null;
-    next.status = trim(created?.status) || next.status || "draft";
-    setLocalDraftId(requestId);
+  if (next.requestId) {
+    setLocalDraftId(next.requestId);
   }
 
-  if (trim(next.requestId)) {
-    await updateRequestMeta(next.requestId, params.headerMeta).catch(() => false);
-  }
-
-  const remoteRowsBefore = trim(next.requestId) ? await listRequestItems(next.requestId) : [];
-  const remoteById = new Map<string, ReqItemRow>();
-  const remoteByCode = new Map<string, ReqItemRow[]>();
-  for (const row of remoteRowsBefore) {
-    const rowId = trim(row.id);
-    const rikCode = trim(row.rik_code);
-    if (rowId) remoteById.set(rowId, row);
-    if (rikCode) {
-      const list = remoteByCode.get(rikCode) ?? [];
-      list.push(row);
-      remoteByCode.set(rikCode, list);
-    }
-  }
-
-  for (const item of localItems) {
-    let remoteItem = item.remote_item_id ? remoteById.get(item.remote_item_id) ?? null : null;
-    if (!remoteItem && item.rik_code) {
-      const codeRows = remoteByCode.get(item.rik_code) ?? [];
-      remoteItem = codeRows.find((row) => !next.pendingDeletes.some((entry) => trim(entry.remote_item_id) === trim(row.id))) ?? null;
-    }
-
-    if (!remoteItem) {
-      const remoteId = await requestItemAddOrIncAndPatchMeta(next.requestId, trim(item.rik_code), item.qty, {
-        note: item.note,
-        app_code: item.app_code,
-        kind: item.kind,
-        name_human: item.name_human,
-        uom: item.uom,
-      });
-      item.remote_item_id = trim(remoteId) || null;
-      continue;
-    }
-
-    item.remote_item_id = trim(remoteItem.id) || item.remote_item_id;
-    if (Math.abs(Number(remoteItem.qty ?? 0) - item.qty) > 1e-9 && item.remote_item_id) {
-      await requestItemUpdateQty(item.remote_item_id, item.qty, next.requestId);
-    }
-    if (item.remote_item_id) {
-      await patchRequestItemMetaBestEffort(item.remote_item_id, item);
-    }
-  }
-
-  for (const pendingDelete of next.pendingDeletes) {
-    await requestItemCancel(pendingDelete.remote_item_id);
-  }
-  next.pendingDeletes = [];
-
-  if (next.submitRequested) {
-    const submitted = await submitRequestToDirector({
-      requestId: next.requestId,
-      sourcePath: "foreman.localDraft.legacySubmit",
-      draftScopeKey: next.requestId,
-    });
+  if (rpc.submitted) {
     clearLocalDraftId();
     return {
       snapshot: null,
       rows: [],
-      submitted,
+      submitted: rpc.request,
       branchMeta: {
-        sourcePath: "legacy_fallback",
+        sourcePath: "rpc_v2",
       },
     };
   }
 
-  const remoteRowsAfter = await listRequestItems(next.requestId);
-  next.items = remoteRowsAfter.map((row) => {
+  next.items = rpc.items.map((row) => {
     const existing = localItems.find((item) => rowMatchesSnapshotItem(row, item)) ?? null;
     return reqRowToLocalItem(row, existing);
   });
-  next.status = "draft";
+  next.pendingDeletes = [];
   next.submitRequested = false;
   next.lastError = null;
   next.updatedAt = new Date().toISOString();
 
   return {
     snapshot: next,
-    rows: remoteRowsAfter,
+    rows: rpc.items,
     submitted: null,
     branchMeta: {
-      sourcePath: "legacy_fallback",
+      sourcePath: "rpc_v2",
     },
   };
 }

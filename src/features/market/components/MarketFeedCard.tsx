@@ -10,10 +10,11 @@ type Props = {
   onOpen: () => void;
   onMapPress: () => void;
   onShowcasePress?: () => void;
-  onChatPress?: () => void;
   onAssistantPress?: () => void;
   onPhonePress?: () => void;
   onWhatsAppPress?: () => void;
+  onAddToRequestPress?: () => void;
+  onCreateProposalPress?: () => void;
 };
 
 export default function MarketFeedCard({
@@ -21,10 +22,11 @@ export default function MarketFeedCard({
   onOpen,
   onMapPress,
   onShowcasePress,
-  onChatPress,
   onAssistantPress,
   onPhonePress,
   onWhatsAppPress,
+  onAddToRequestPress,
+  onCreateProposalPress,
 }: Props) {
   return (
     <View style={styles.shell}>
@@ -50,11 +52,21 @@ export default function MarketFeedCard({
             {listing.city ? ` • ${listing.city}` : ""}
           </Text>
 
+          <Text style={styles.seller} numberOfLines={1}>
+            {listing.sellerDisplayName}
+          </Text>
+
           <Text style={styles.price} numberOfLines={1}>
             {listing.price != null
               ? `${listing.price.toLocaleString("ru-RU")} сом${listing.uom ? ` / ${listing.uom}` : ""}`
               : "Цена по запросу"}
           </Text>
+
+          {listing.stockLabel ? (
+            <Text style={styles.stockText} testID={`market_stock_${listing.id}`}>
+              {listing.stockLabel}
+            </Text>
+          ) : null}
 
           {listing.itemsPreview.length ? (
             <View style={styles.itemsBox}>
@@ -77,11 +89,6 @@ export default function MarketFeedCard({
             <Ionicons name="storefront" size={16} color={MARKET_HOME_COLORS.accentStrong} />
           </Pressable>
         ) : null}
-        {onChatPress ? (
-          <Pressable style={styles.iconActionSoft} onPress={onChatPress}>
-            <Ionicons name="chatbubble-ellipses" size={16} color={MARKET_HOME_COLORS.accentStrong} />
-          </Pressable>
-        ) : null}
         {onAssistantPress ? (
           <Pressable style={styles.iconActionSoft} onPress={onAssistantPress}>
             <Ionicons name="sparkles" size={16} color={MARKET_HOME_COLORS.accentStrong} />
@@ -98,6 +105,31 @@ export default function MarketFeedCard({
           </Pressable>
         ) : null}
       </View>
+
+      {onAddToRequestPress || onCreateProposalPress ? (
+        <View style={styles.erpActions}>
+          {onAddToRequestPress ? (
+            <Pressable
+              style={[styles.erpButton, styles.erpButtonPrimary]}
+              onPress={onAddToRequestPress}
+              testID={`market_add_to_request_${listing.id}`}
+              accessibilityLabel={`market:add-to-request:${listing.id}`}
+            >
+              <Text style={styles.erpButtonPrimaryText}>В заявку</Text>
+            </Pressable>
+          ) : null}
+          {onCreateProposalPress ? (
+            <Pressable
+              style={[styles.erpButton, styles.erpButtonSecondary]}
+              onPress={onCreateProposalPress}
+              testID={`market_create_proposal_${listing.id}`}
+              accessibilityLabel={`market:create-proposal:${listing.id}`}
+            >
+              <Text style={styles.erpButtonSecondaryText}>Создать предложение</Text>
+            </Pressable>
+          ) : null}
+        </View>
+      ) : null}
     </View>
   );
 }
@@ -169,10 +201,20 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: "600",
   },
+  seller: {
+    color: MARKET_HOME_COLORS.text,
+    fontSize: 13,
+    fontWeight: "700",
+  },
   price: {
     color: MARKET_HOME_COLORS.accentStrong,
     fontSize: 18,
     fontWeight: "900",
+  },
+  stockText: {
+    color: MARKET_HOME_COLORS.emerald,
+    fontSize: 12,
+    fontWeight: "800",
   },
   itemsBox: {
     borderRadius: 16,
@@ -190,7 +232,7 @@ const styles = StyleSheet.create({
   },
   actions: {
     paddingHorizontal: 16,
-    paddingBottom: 16,
+    paddingBottom: 12,
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
@@ -230,5 +272,37 @@ const styles = StyleSheet.create({
   },
   whatsAction: {
     backgroundColor: MARKET_HOME_COLORS.emerald,
+  },
+  erpActions: {
+    paddingHorizontal: 16,
+    paddingBottom: 16,
+    flexDirection: "row",
+    gap: 8,
+  },
+  erpButton: {
+    flex: 1,
+    minHeight: 42,
+    borderRadius: 14,
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+  },
+  erpButtonPrimary: {
+    backgroundColor: MARKET_HOME_COLORS.accentStrong,
+    borderColor: MARKET_HOME_COLORS.accentStrong,
+  },
+  erpButtonSecondary: {
+    backgroundColor: "#EFF6FF",
+    borderColor: "#BFDBFE",
+  },
+  erpButtonPrimaryText: {
+    color: "#FFFFFF",
+    fontSize: 13,
+    fontWeight: "900",
+  },
+  erpButtonSecondaryText: {
+    color: MARKET_HOME_COLORS.accentStrong,
+    fontSize: 13,
+    fontWeight: "900",
   },
 });

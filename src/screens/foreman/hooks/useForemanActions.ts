@@ -2,7 +2,6 @@ import { useCallback, type Dispatch, type SetStateAction } from "react";
 import { Alert, Platform } from "react-native";
 
 import type { ReqItemRow } from "../../../lib/catalog_api";
-import type { RequestRecord } from "../../../lib/api/types";
 import {
   aggCalcRows,
   aggPickedRows,
@@ -37,7 +36,6 @@ type UseForemanActionsProps = {
   qtyDrafts: Record<string, string>;
   ensureEditableContext: (opts?: { draftFirst?: boolean; draftMessage?: string }) => boolean;
   ensureCanSubmitToDirector: () => boolean;
-  applySubmittedRequestState: (rid: string, submitted: RequestRecord | null) => void;
   finalizeAfterSubmit: () => Promise<void>;
   showHint: (title: string, message: string) => void;
   setBusy: (busy: boolean) => void;
@@ -81,7 +79,6 @@ export function useForemanActions({
   qtyDrafts,
   ensureEditableContext,
   ensureCanSubmitToDirector,
-  applySubmittedRequestState,
   finalizeAfterSubmit,
   showHint,
   setBusy,
@@ -250,17 +247,13 @@ export function useForemanActions({
       ).trim();
       const submitted =
         result && typeof result === "object" && "submitted" in result
-          ? (result.submitted as RequestRecord | null | undefined) ?? null
+          ? (result.submitted as { display_no?: unknown } | null | undefined) ?? null
           : null;
       if (!rid || !submitted) {
         throw new Error("Не удалось синхронизировать черновик перед отправкой.");
       }
 
-      applySubmittedRequestState(rid, submitted);
-      const submittedLabel =
-        submitted && typeof submitted === "object" && "display_no" in submitted
-          ? String((submitted as { display_no?: unknown }).display_no ?? rid).trim() || rid
-          : rid;
+      const submittedLabel = String(submitted.display_no ?? rid).trim() || rid;
 
       showHint(
         FOREMAN_TEXT.submitSentTitle,
@@ -274,7 +267,6 @@ export function useForemanActions({
     }
   }, [
     alertError,
-    applySubmittedRequestState,
     ensureCanSubmitToDirector,
     finalizeAfterSubmit,
     items.length,

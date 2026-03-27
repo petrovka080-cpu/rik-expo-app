@@ -145,17 +145,29 @@ export const statusColors = (key: StatusKey) => {
 };
 
 export async function withTimeout<T>(p: Promise<T>, ms = 20000, label = "timeout") {
-  let t: ReturnType<typeof setTimeout> | null = null;
-  const killer = new Promise<never>((_, rej) => {
-    t = setTimeout(() => rej(new Error(`${label}: ${ms}ms`)), ms);
-  });
-  try {
-    return await Promise.race([p, killer]);
-  } finally {
-    try {
-      if (t != null) clearTimeout(t);
-    } catch {}
-  }
+  const killer =
+    typeof AbortSignal !== "undefined" && typeof AbortSignal.timeout === "function"
+      ? new Promise<never>((_, rej) => {
+          const signal = AbortSignal.timeout(ms);
+          const abort = () => rej(new Error(`${label}: ${ms}ms`));
+          if (signal.aborted) abort();
+          else signal.addEventListener("abort", abort, { once: true });
+        })
+      : new Promise<never>((_, rej) => {
+          let frameId = 0;
+          const deadline = Date.now() + ms;
+          const tick = () => {
+            if (Date.now() >= deadline) {
+              rej(new Error(`${label}: ${ms}ms`));
+              return;
+            }
+            frameId = requestAnimationFrame(tick);
+          };
+          frameId = requestAnimationFrame(tick);
+          void frameId;
+        });
+
+  return await Promise.race([p, killer]);
 }
 
 export function runNextTick(task: () => void) {

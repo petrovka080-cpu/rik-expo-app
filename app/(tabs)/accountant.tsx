@@ -1,9 +1,6 @@
-﻿import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   View,
-  Text,
-  Pressable,
-  TextInput,
   ScrollView,
   Platform,
   Animated,
@@ -24,7 +21,7 @@ import {
   type AccountantInboxRow,
 } from "../../src/lib/catalog_api";
 
-import { UI, S } from "../../src/screens/accountant/ui";
+import { UI } from "../../src/screens/accountant/ui";
 import type {
   AccountantInboxUiRow,
   Tab,
@@ -70,13 +67,13 @@ import { useAccountantInvoiceForm } from "../../src/screens/accountant/useAccoun
 import { useAccountantHistoryFlow } from "../../src/screens/accountant/useAccountantHistoryFlow";
 import { AccountantHeader } from "../../src/screens/accountant/components/AccountantHeader";
 import RoleScreenLayout from "../../src/components/layout/RoleScreenLayout";
+import { useAccountantUiStore } from "../../src/screens/accountant/accountantUi.store";
 
 const TAB_PAY: Tab = TABS[0];
 const TAB_PART: Tab = TABS[1];
 const TAB_PAID: Tab = TABS[2];
 const TAB_REWORK: Tab = TABS[3];
 const TAB_HISTORY: Tab = TABS[4];
-const HISTORY_SEARCH_DEBOUNCE_MS = 350;
 const ruText = (v: unknown, fallback = "") => normalizeRuText(String(v ?? fallback));
 const getErrorText = (e: unknown) => {
   const x = e as { message?: string; error_description?: string; details?: string };
@@ -91,7 +88,24 @@ export default function AccountantScreen() {
     onError: (e) => safeAlert("Ошибка", String(e?.message ?? e)),
   });
 
-  const [tab, setTab] = useState<Tab>(TAB_PAY);
+  const tab = useAccountantUiStore((state) => state.tab);
+  const setTab = useAccountantUiStore((state) => state.setTab);
+  const histSearchUi = useAccountantUiStore((state) => state.histSearchUi);
+  const setHistSearchUi = useAccountantUiStore((state) => state.setHistSearchUi);
+  const dateFrom = useAccountantUiStore((state) => state.dateFrom);
+  const setDateFrom = useAccountantUiStore((state) => state.setDateFrom);
+  const dateTo = useAccountantUiStore((state) => state.dateTo);
+  const setDateTo = useAccountantUiStore((state) => state.setDateTo);
+  const periodOpen = useAccountantUiStore((state) => state.periodOpen);
+  const setPeriodOpen = useAccountantUiStore((state) => state.setPeriodOpen);
+  const cardOpen = useAccountantUiStore((state) => state.cardOpen);
+  const setCardOpen = useAccountantUiStore((state) => state.setCardOpen);
+  const currentPaymentId = useAccountantUiStore((state) => state.currentPaymentId);
+  const setCurrentPaymentId = useAccountantUiStore((state) => state.setCurrentPaymentId);
+  const accountantFio = useAccountantUiStore((state) => state.accountantFio);
+  const setAccountantFio = useAccountantUiStore((state) => state.setAccountantFio);
+  const freezeWhileOpen = useAccountantUiStore((state) => state.freezeWhileOpen);
+  const setFreezeWhileOpen = useAccountantUiStore((state) => state.setFreezeWhileOpen);
   const cardScrollY = useRef(new Animated.Value(0)).current;
   const payFormReveal = useRevealSection(24);
   const cardScrollRef = useRef<ScrollView | null>(null);
@@ -122,23 +136,8 @@ export default function AccountantScreen() {
     cardScrollEvent(event);
   }, [cardScrollEvent]);
 
-  const [histSearchUi, setHistSearchUi] = useState<string>("");
-  const [histSearch, setHistSearch] = useState<string>("");
-  const [dateFrom, setDateFrom] = useState<string>('');
-  const [dateTo, setDateTo] = useState<string>('');
-
-  useEffect(() => {
-    const t = setTimeout(() => {
-      setHistSearch(histSearchUi);
-    }, HISTORY_SEARCH_DEBOUNCE_MS);
-    return () => clearTimeout(t);
-  }, [histSearchUi]);
-
-  const [periodOpen, setPeriodOpen] = useState(false);
+  const histSearch = React.useDeferredValue(histSearchUi);
   const [current, setCurrent] = useState<AccountantInboxUiRow | null>(null);
-  const [cardOpen, setCardOpen] = useState(false);
-  const [currentPaymentId, setCurrentPaymentId] = useState<number | null>(null);
-  const [accountantFio, setAccountantFio] = useState('');
 
   const {
     invoiceNo, setInvoiceNo,
@@ -149,7 +148,7 @@ export default function AccountantScreen() {
     note, setNote,
     allocRows, setAllocRows,
     allocOk, setAllocOk,
-    allocSum, setAllocSum,
+    setAllocSum,
     bankName, setBankName,
     bik, setBik,
     rs, setRs,
@@ -177,7 +176,11 @@ export default function AccountantScreen() {
   }, [amount]);
 
   const canPayUi = !isReadOnlyTab && !!current?.proposal_id && amountNum > 0 && !busyKey;
-  const [freezeWhileOpen, setFreezeWhileOpen] = useState(false);
+
+  useEffect(() => {
+    if (cardOpen || !freezeWhileOpen) return;
+    setFreezeWhileOpen(false);
+  }, [cardOpen, freezeWhileOpen, setFreezeWhileOpen]);
 
   const { kbOpen, kbdH, scrollInputIntoView } = useAccountantKeyboard(cardScrollRef as { current: unknown });
 
@@ -187,11 +190,21 @@ export default function AccountantScreen() {
     setRows,
     loading,
     refreshing,
+    inboxLoadingMore,
+    inboxHasMore,
+    inboxTotalCount,
     historyRows,
     historyLoading,
     historyRefreshing,
+    historyLoadingMore,
+    historyHasMore,
+    historyTotalCount,
+    historyTotalAmount,
+    historyCurrency,
     load,
+    loadMoreInbox,
     loadHistory,
+    loadMoreHistory,
     onRefresh,
     onRefreshHistory,
     setTabWithCachePreview,
@@ -354,6 +367,9 @@ export default function AccountantScreen() {
     () => (
       <HistoryHeader
         rows={historyRows}
+        totalCount={historyTotalCount}
+        totalAmount={historyTotalAmount}
+        totalCurrency={historyCurrency}
         dateFrom={dateFrom}
         dateTo={dateTo}
         searchValue={histSearchUi}
@@ -363,7 +379,18 @@ export default function AccountantScreen() {
         ui={{ text: UI.text, sub: UI.sub, cardBg: UI.cardBg }}
       />
     ),
-    [historyRows, dateFrom, dateTo, histSearchUi, loadHistory]
+    [
+      historyRows,
+      historyTotalCount,
+      historyTotalAmount,
+      historyCurrency,
+      dateFrom,
+      dateTo,
+      histSearchUi,
+      loadHistory,
+      setHistSearchUi,
+      setPeriodOpen,
+    ]
   );
 
   const renderHistoryItem = useCallback(
@@ -386,7 +413,7 @@ export default function AccountantScreen() {
         tab={tab}
         setTab={setTabWithCachePreview}
         unread={unread}
-        rowsCount={isHistoryTab ? historyRows.length : rows.length}
+        rowsCount={isHistoryTab ? historyTotalCount : inboxTotalCount}
         accountantFio={accountantFio}
         onOpenFioModal={() => setIsFioConfirmVisible(true)}
         onBell={() => { setBellOpen(true); void loadNotifs(); }}
@@ -405,8 +432,14 @@ export default function AccountantScreen() {
           loading={loading}
           historyRefreshing={historyRefreshing}
           refreshing={refreshing}
+          historyLoadingMore={historyLoadingMore}
+          loadingMore={inboxLoadingMore}
+          historyHasMore={historyHasMore}
+          hasMore={inboxHasMore}
           onRefreshHistory={onRefreshHistory}
           onRefresh={onRefresh}
+          onEndReachedHistory={loadMoreHistory}
+          onEndReached={loadMoreInbox}
           onScroll={onListScroll}
           contentTopPad={HEADER_MAX + 16}
           onRenderHistory={(row) => renderHistoryItem({ item: row })}

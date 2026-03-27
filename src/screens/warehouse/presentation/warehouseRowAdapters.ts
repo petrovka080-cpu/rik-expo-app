@@ -6,19 +6,15 @@ import type { IncomingRow, ReqHeadRow, StockRow } from "../warehouse.types";
 type IncomingCardParams = {
   row: IncomingRow;
   fmtRuDate: (iso?: string | null) => string;
-  proposalNoByPurchase: Record<string, string | null | undefined>;
 };
 
 export function mapWarehouseIncomingToCardProps(params: IncomingCardParams) {
-  const { row, fmtRuDate, proposalNoByPurchase } = params;
+  const { row, fmtRuDate } = params;
   const recSum = Math.round(nz(row.qty_received_sum, 0));
-  const leftSum = Math.round(nz(row.qty_expected_sum, 0) - nz(row.qty_received_sum, 0));
+  const leftSum = Math.round(nz(row.qty_left_sum, 0));
 
   return {
-    title: formatProposalBaseNo(
-      proposalNoByPurchase[row.purchase_id] || row.po_no,
-      row.purchase_id,
-    ),
+    title: formatProposalBaseNo(row.po_no, row.purchase_id),
     subtitle: fmtRuDate(row.purchase_created_at) || "—",
     receivedLabel: `Принято ${recSum}`,
     leftLabel: `Осталось ${leftSum}`,

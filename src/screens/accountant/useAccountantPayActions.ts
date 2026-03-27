@@ -27,23 +27,29 @@ type Params<T extends RowBase> = {
 export function useAccountantPayActions<T extends RowBase>(p: Params<T>) {
   const EPS = 0.01;
 
-  const showPaymentFailure = useCallback((title: string, e: unknown) => {
-    const msg = p.errText(e);
-    p.safeAlert(title, msg);
-    console.error("[accountant.payment]", msg);
-  }, [p]);
+  const showPaymentFailure = useCallback(
+    (title: string, e: unknown) => {
+      const msg = p.errText(e);
+      p.safeAlert(title, msg);
+      console.error("[accountant.payment]", msg);
+    },
+    [p],
+  );
 
-  const showPaymentSyncWarning = useCallback((e: unknown) => {
-    p.safeAlert(
-      "Оплата проведена с предупреждением",
-      `Платеж сохранен, но обновление экрана не завершилось: ${p.errText(e)}`,
-    );
-    console.error("[accountant.payment.sync]", e);
-  }, [p]);
+  const showPaymentSyncWarning = useCallback(
+    (e: unknown) => {
+      p.safeAlert(
+        "Оплата проведена с предупреждением",
+        `Платёж сохранён, но обновление экрана не завершилось: ${p.errText(e)}`,
+      );
+      console.error("[accountant.payment.sync]", e);
+    },
+    [p],
+  );
 
   const payRest = useCallback(async () => {
     if (!p.canAct) {
-      p.safeAlert("РќРµС‚ РїСЂР°РІ", "РќСѓР¶РЅР° СЂРѕР»СЊ В«accountantВ».");
+      p.safeAlert("Нет прав", "Нужна роль «accountant».");
       return;
     }
     if (!p.current?.proposal_id) return;
@@ -53,13 +59,13 @@ export function useAccountantPayActions<T extends RowBase>(p: Params<T>) {
       const paid = Number(p.current?.total_paid ?? 0);
       const rest = sum > 0 ? Math.max(0, sum - paid) : 0;
       if (!rest || rest <= 0) {
-        p.safeAlert("РћСЃС‚Р°С‚РѕРє", "РќРµС‚ СЃСѓРјРјС‹ Рє РѕРїР»Р°С‚Рµ.");
+        p.safeAlert("Остаток", "Нет суммы к оплате.");
         return;
       }
 
       const fio = p.accountantFio.trim();
       if (!fio) {
-        p.safeAlert("Р¤РРћ Р±СѓС…РіР°Р»С‚РµСЂР°", "РџРѕР»Рµ РѕР±СЏР·Р°С‚РµР»СЊРЅРѕ");
+        p.safeAlert("ФИО бухгалтера", "Поле обязательно");
         return;
       }
 
@@ -71,7 +77,7 @@ export function useAccountantPayActions<T extends RowBase>(p: Params<T>) {
         p_amount: rest,
         p_accountant_fio: fio,
         p_purpose: `${p.purposePrefix} ${p.note || ""}`.trim(),
-        p_method: p.payKind === "bank" ? "Р±Р°РЅРє" : "РЅР°Р»",
+        p_method: p.payKind === "bank" ? "банк" : "нал",
         p_note: p.note?.trim() ? p.note.trim() : null,
         p_allocations: p.allocRows,
       });
@@ -87,7 +93,7 @@ export function useAccountantPayActions<T extends RowBase>(p: Params<T>) {
       }
 
       if (pid) p.setRows((prev) => prev.filter((r) => String(r.proposal_id) !== pid));
-      p.safeAlert("Р“РѕС‚РѕРІРѕ", "РћРїР»Р°С‚Р° РїСЂРѕРІРµРґРµРЅР°.");
+      p.safeAlert("Готово", "Оплата проведена.");
       p.closeCard();
     } catch (e: unknown) {
       showPaymentFailure("Ошибка оплаты", e);
@@ -96,21 +102,21 @@ export function useAccountantPayActions<T extends RowBase>(p: Params<T>) {
 
   const addPayment = useCallback(async () => {
     if (!p.canAct) {
-      p.safeAlert("РќРµС‚ РїСЂР°РІ", "РќСѓР¶РЅР° СЂРѕР»СЊ В«accountantВ».");
+      p.safeAlert("Нет прав", "Нужна роль «accountant».");
       return;
     }
     if (!p.current?.proposal_id) return;
 
     const val = Number(String(p.amount).replace(",", "."));
     if (!val || val <= 0) {
-      p.safeAlert("Р’РІРµРґРёС‚Рµ СЃСѓРјРјСѓ", "РЎСѓРјРјР° РѕРїР»Р°С‚С‹ РґРѕР»Р¶РЅР° Р±С‹С‚СЊ Р±РѕР»СЊС€Рµ 0");
+      p.safeAlert("Введите сумму", "Сумма оплаты должна быть больше 0");
       return;
     }
 
     try {
       const fio = p.accountantFio.trim();
       if (!fio) {
-        p.safeAlert("Р¤РРћ Р±СѓС…РіР°Р»С‚РµСЂР°", "РџРѕР»Рµ РѕР±СЏР·Р°С‚РµР»СЊРЅРѕ");
+        p.safeAlert("ФИО бухгалтера", "Поле обязательно");
         return;
       }
 
@@ -121,14 +127,14 @@ export function useAccountantPayActions<T extends RowBase>(p: Params<T>) {
       if (rest0 > EPS && Math.abs(val - rest0) <= EPS) {
         const ok =
           Platform.OS === "web"
-            ? window.confirm("РЎСѓРјРјР° СЂР°РІРЅР° РѕСЃС‚Р°С‚РєСѓ. РџСЂРѕРІРµСЃС‚Рё РѕРїР»Р°С‚Сѓ РєР°Рє РџРћР›РќРЈР®?")
+            ? window.confirm("Сумма равна остатку. Провести оплату как ПОЛНУЮ?")
             : await new Promise<boolean>((resolve) => {
                 Alert.alert(
-                  "РџРѕС‡С‚Рё РїРѕР»РЅР°СЏ РѕРїР»Р°С‚Р°",
-                  "РЎСѓРјРјР° СЂР°РІРЅР° РѕСЃС‚Р°С‚РєСѓ. РџСЂРѕРІРµСЃС‚Рё РєР°Рє РїРѕР»РЅСѓСЋ РѕРїР»Р°С‚Сѓ?",
+                  "Почти полная оплата",
+                  "Сумма равна остатку. Провести как полную оплату?",
                   [
-                    { text: "РќРµС‚", style: "cancel", onPress: () => resolve(false) },
-                    { text: "Р”Р°", style: "default", onPress: () => resolve(true) },
+                    { text: "Нет", style: "cancel", onPress: () => resolve(false) },
+                    { text: "Да", style: "default", onPress: () => resolve(true) },
                   ],
                 );
               });
@@ -146,7 +152,7 @@ export function useAccountantPayActions<T extends RowBase>(p: Params<T>) {
         p_amount: val,
         p_accountant_fio: fio,
         p_purpose: `${p.purposePrefix} ${p.note || ""}`.trim(),
-        p_method: p.payKind === "bank" ? "Р±Р°РЅРє" : "РЅР°Р»",
+        p_method: p.payKind === "bank" ? "банк" : "нал",
         p_note: p.note?.trim() ? p.note.trim() : null,
         p_allocations: Array.isArray(p.allocRows) ? p.allocRows : [],
       });
@@ -162,37 +168,37 @@ export function useAccountantPayActions<T extends RowBase>(p: Params<T>) {
       }
 
       if (pid) p.setRows((prev) => prev.filter((r) => String(r.proposal_id) !== pid));
-      p.safeAlert("РћРїР»Р°С‚Р° РґРѕР±Р°РІР»РµРЅР°", "РЎС‚Р°С‚СѓСЃ РѕР±РЅРѕРІР»С‘РЅ РїРѕ С„Р°РєС‚Сѓ РѕРїР»Р°С‚С‹.");
+      p.safeAlert("Оплата добавлена", "Статус обновлён по факту оплаты.");
       p.closeCard();
     } catch (e: unknown) {
-      showPaymentFailure("РћС€РёР±РєР° РѕРїР»Р°С‚С‹", e);
+      showPaymentFailure("Ошибка оплаты", e);
     }
   }, [p, payRest, showPaymentFailure, showPaymentSyncWarning]);
 
   const onPayConfirm = useCallback(async () => {
     const v = Number(String(p.amount).replace(",", "."));
     if (!v || v <= 0) {
-      p.safeAlert("РћРїР»Р°С‚Р°", "Р’РІРµРґРёС‚Рµ СЃСѓРјРјСѓ РѕРїР»Р°С‚С‹");
+      p.safeAlert("Оплата", "Введите сумму оплаты");
       return;
     }
     if (!p.allocOk) {
       p.safeAlert(
-        "РћРїР»Р°С‚Р°",
-        "РЎРЅР°С‡Р°Р»Р° СЂР°СЃРїСЂРµРґРµР»РёС‚Рµ СЃСѓРјРјСѓ РїРѕ РїРѕР·РёС†РёСЏРј: СЂР°СЃРїСЂРµРґРµР»РµРЅРѕ РґРѕР»Р¶РЅРѕ Р±С‹С‚СЊ СЂР°РІРЅРѕ СЃСѓРјРјРµ РїР»Р°С‚РµР¶Р°.",
+        "Оплата",
+        "Сначала распределите сумму по позициям: распределено должно быть равно сумме платежа.",
       );
       return;
     }
 
     const ok =
       Platform.OS === "web"
-        ? window.confirm(`РџСЂРѕРІРµСЃС‚Рё РѕРїР»Р°С‚Сѓ РЅР° СЃСѓРјРјСѓ ${v}?`)
+        ? window.confirm(`Провести оплату на сумму ${v}?`)
         : await new Promise<boolean>((resolve) => {
             Alert.alert(
-              "РџРѕРґС‚РІРµСЂРґРёС‚Рµ РѕРїР»Р°С‚Сѓ",
-              `Р’С‹ РІРІРµР»Рё СЃСѓРјРјСѓ: ${v}. РџСЂРѕРІРµСЃС‚Рё РѕРїР»Р°С‚Сѓ?`,
+              "Подтвердите оплату",
+              `Вы ввели сумму: ${v}. Провести оплату?`,
               [
-                { text: "РћС‚РјРµРЅР°", style: "cancel", onPress: () => resolve(false) },
-                { text: "РџСЂРѕРІРµСЃС‚Рё", style: "default", onPress: () => resolve(true) },
+                { text: "Отмена", style: "cancel", onPress: () => resolve(false) },
+                { text: "Провести", style: "default", onPress: () => resolve(true) },
               ],
             );
           });

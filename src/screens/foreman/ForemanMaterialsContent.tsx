@@ -38,6 +38,7 @@ type Props = {
   onZoneChange: (value: string) => void;
   ensureHeaderReady: () => boolean;
   isDraftActive: boolean;
+  canStartDraftFlow: boolean;
   showHint: (title: string, message: string) => void;
   busy: boolean;
   onOpenCatalog: () => void;
@@ -46,6 +47,9 @@ type Props = {
   onOpenDraft: () => void;
   currentDisplayLabel: string;
   itemsCount: number;
+  draftSyncStatusLabel: string;
+  draftSyncStatusDetail: string | null;
+  draftSyncStatusTone: "neutral" | "info" | "success" | "warning" | "danger";
   headerAttention: ForemanHeaderAttentionState | null;
   onOpenRequestHistory: () => void;
   onOpenSubcontractHistory: () => void;
@@ -93,7 +97,9 @@ type Props = {
   aiQuickOutcomeType: import("./foremanUi.store").ForemanAiOutcomeType;
   aiQuickCandidateGroups: import("./foreman.ai").CandidateOptionGroup[];
   aiQuickQuestions: import("./foreman.ai").ClarifyQuestion[];
+  aiQuickSessionHint: string;
   aiUnavailableReason: string;
+  aiQuickDegradedMode: boolean;
   onlineConfigured: boolean;
   draftOpen: boolean;
   closeDraft: () => void;
@@ -110,6 +116,12 @@ type Props = {
   onPdf: () => Promise<void>;
   pdfBusy: boolean;
   onSendDraft: () => Promise<void>;
+  availableDraftRecoveryActions: import("../../lib/offline/foremanSyncRuntime").ForemanDraftRecoveryAction[];
+  onRetryDraftSync: () => Promise<void>;
+  onRehydrateDraftFromServer: () => Promise<void>;
+  onRestoreLocalDraft: () => Promise<void>;
+  onDiscardLocalDraft: () => Promise<void>;
+  onClearFailedQueueTail: () => Promise<void>;
   isFioConfirmVisible: boolean;
   handleFioConfirm: (fio: string) => Promise<void>;
   isFioLoading: boolean;
@@ -141,6 +153,7 @@ export default function ForemanMaterialsContent(props: Props) {
         onZoneChange={props.onZoneChange}
         ensureHeaderReady={props.ensureHeaderReady}
         isDraftActive={props.isDraftActive}
+        canStartDraftFlow={props.canStartDraftFlow}
         showHint={props.showHint}
         setCatalogVisible={(value) => {
           if (value) props.onOpenCatalog();
@@ -155,6 +168,9 @@ export default function ForemanMaterialsContent(props: Props) {
         }}
         currentDisplayLabel={props.currentDisplayLabel}
         itemsCount={props.itemsCount}
+        draftSyncStatusLabel={props.draftSyncStatusLabel}
+        draftSyncStatusDetail={props.draftSyncStatusDetail}
+        draftSyncStatusTone={props.draftSyncStatusTone}
         headerAttention={props.headerAttention}
         ui={props.ui}
         styles={props.styles}
@@ -234,7 +250,9 @@ export default function ForemanMaterialsContent(props: Props) {
         outcomeType={props.aiQuickOutcomeType}
         candidateGroups={props.aiQuickCandidateGroups}
         questions={props.aiQuickQuestions}
+        sessionHint={props.aiQuickSessionHint}
         aiUnavailableReason={props.aiUnavailableReason}
+        degradedMode={props.aiQuickDegradedMode}
         ui={props.ui}
         styles={props.styles}
       />
@@ -243,6 +261,9 @@ export default function ForemanMaterialsContent(props: Props) {
         visible={props.draftOpen}
         onClose={props.closeDraft}
         currentDisplayLabel={props.currentDisplayLabel}
+        draftSyncStatusLabel={props.draftSyncStatusLabel}
+        draftSyncStatusDetail={props.draftSyncStatusDetail}
+        draftSyncStatusTone={props.draftSyncStatusTone}
         objectName={props.objectName}
         levelName={props.levelName}
         systemName={props.systemName}
@@ -256,6 +277,12 @@ export default function ForemanMaterialsContent(props: Props) {
         onPdf={props.onPdf}
         pdfBusy={props.pdfBusy}
         onSend={props.onSendDraft}
+        availableRecoveryActions={props.availableDraftRecoveryActions}
+        onRetryNow={props.onRetryDraftSync}
+        onRehydrateFromServer={props.onRehydrateDraftFromServer}
+        onRestoreLocal={props.onRestoreLocalDraft}
+        onDiscardLocal={props.onDiscardLocalDraft}
+        onClearFailedQueue={props.onClearFailedQueueTail}
         ui={props.ui}
         styles={props.styles}
       />

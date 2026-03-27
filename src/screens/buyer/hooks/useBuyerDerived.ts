@@ -3,7 +3,7 @@ import { useMemo } from "react";
 import type { BuyerInboxRow } from "../../../lib/catalog_api";
 import type { BuyerProposalBucketRow } from "../buyer.fetchers";
 import { selectBuyerTabCounts } from "../buyer.screen.selectors";
-import type { BuyerGroup, BuyerSheetKind, DraftAttachmentMap, LineMeta } from "../buyer.types";
+import type { BuyerSheetKind, DraftAttachmentMap, LineMeta } from "../buyer.types";
 import {
   selectGroups,
   selectRfqPickedPreview,
@@ -18,6 +18,7 @@ import {
 
 type UseBuyerDerivedParams = {
   rows: BuyerInboxRow[];
+  inboxTotalCount?: number;
   pickedIds: string[];
   meta: Record<string, LineMeta>;
   attachments: DraftAttachmentMap;
@@ -74,6 +75,7 @@ function useBuyerAttachmentState(
 
 export function useBuyerDerived({
   rows,
+  inboxTotalCount,
   pickedIds,
   meta,
   attachments,
@@ -124,11 +126,12 @@ export function useBuyerDerived({
     () =>
       selectBuyerTabCounts({
         groups,
+        inboxTotalCount,
         pending,
         approved,
         rejected,
       }),
-    [groups, pending, approved, rejected]
+    [groups, inboxTotalCount, pending, approved, rejected]
   );
 
   return {

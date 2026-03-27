@@ -1,7 +1,6 @@
 import React from "react";
 import {
-  Animated,
-  FlatList,
+  ActivityIndicator,
   Text,
   type ListRenderItem,
   type NativeScrollEvent,
@@ -9,6 +8,7 @@ import {
 } from "react-native";
 import SectionBlock from "../../../ui/SectionBlock";
 import RoleScreenLayout from "../../../components/layout/RoleScreenLayout";
+import { FlashList } from "../../../ui/FlashList";
 import {
   selectWarehouseEmptyTextStyle,
   selectWarehouseStockKey,
@@ -19,14 +19,15 @@ import {
 } from "../warehouse.tab.empty";
 import type { StockRow } from "../warehouse.types";
 
-const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
-
 type Props = {
   stockSupported: boolean | null;
   data: StockRow[];
   contentContainerStyle: { paddingTop: number; paddingBottom: number };
   onScroll: ((event: NativeSyntheticEvent<NativeScrollEvent>) => void) | undefined;
   scrollEventThrottle: number | undefined;
+  onEndReached: () => void;
+  hasMore: boolean;
+  loadingMore: boolean;
   renderItem: ListRenderItem<StockRow>;
   header: React.ReactElement;
   emptyColor: string;
@@ -38,6 +39,9 @@ export default function WarehouseStockTab({
   contentContainerStyle,
   onScroll,
   scrollEventThrottle,
+  onEndReached,
+  hasMore,
+  loadingMore,
   renderItem,
   header,
   emptyColor,
@@ -57,7 +61,7 @@ export default function WarehouseStockTab({
 
   return (
     <RoleScreenLayout>
-      <AnimatedFlatList
+      <FlashList
         data={data}
         keyExtractor={selectWarehouseStockKey}
         contentContainerStyle={contentContainerStyle}
@@ -65,10 +69,20 @@ export default function WarehouseStockTab({
         scrollEventThrottle={scrollEventThrottle}
         renderItem={renderItem}
         ListHeaderComponent={header}
+        estimatedItemSize={88}
+        onEndReached={onEndReached}
+        onEndReachedThreshold={0.45}
         ListEmptyComponent={
           <Text style={selectWarehouseEmptyTextStyle(emptyColor)}>
             {selectWarehouseStockEmptyText()}
           </Text>
+        }
+        ListFooterComponent={
+          loadingMore ? (
+            <ActivityIndicator style={{ paddingVertical: 16 }} />
+          ) : hasMore ? (
+            <Text style={selectWarehouseEmptyTextStyle(emptyColor)}>Загрузка ещё...</Text>
+          ) : null
         }
       />
     </RoleScreenLayout>

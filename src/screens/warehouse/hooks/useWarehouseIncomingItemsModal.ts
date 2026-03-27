@@ -1,15 +1,10 @@
 import { useCallback, useState } from "react";
 import type { IncomingRow } from "../warehouse.types";
-
-type ItemsModalState = {
-  incomingId: string;
-  purchaseId: string;
-  poNo: string | null;
-  status: string;
-} | null;
+import { useWarehouseUiStore } from "../warehouseUi.store";
 
 export function useWarehouseIncomingItemsModal() {
-  const [itemsModal, setItemsModal] = useState<ItemsModalState>(null);
+  const itemsModal = useWarehouseUiStore((state) => state.itemsModal);
+  const setItemsModal = useWarehouseUiStore((state) => state.setItemsModal);
   const [receivingHeadId, setReceivingHeadId] = useState<string | null>(null);
 
   const openItemsModal = useCallback((head: Partial<IncomingRow> | null | undefined) => {
@@ -22,7 +17,7 @@ export function useWarehouseIncomingItemsModal() {
       poNo: head?.po_no ?? null,
       status: String(head?.incoming_status ?? ""),
     });
-  }, []);
+  }, [setItemsModal]);
 
   return {
     itemsModal,
@@ -32,4 +27,3 @@ export function useWarehouseIncomingItemsModal() {
     setReceivingHeadId,
   };
 }
-

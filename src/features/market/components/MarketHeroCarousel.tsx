@@ -41,7 +41,7 @@ export default function MarketHeroCarousel({ banners, onPressBanner }: Props) {
       >
         {banners.map((banner) => (
           <View key={banner.id} style={[styles.page, { width: pageWidth }]}>
-            <ImageBackground source={{ uri: banner.imageUri }} style={styles.card} imageStyle={styles.cardImage}>
+            <ImageBackground source={banner.imageSource} style={styles.card} imageStyle={styles.cardImage}>
               <View style={styles.overlay}>
                 <View style={styles.copy}>
                   <Text style={styles.title}>{banner.title}</Text>

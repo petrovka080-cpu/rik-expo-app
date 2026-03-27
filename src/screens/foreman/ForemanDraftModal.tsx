@@ -3,6 +3,7 @@ import { Alert, Platform, Pressable, Text, View } from "react-native";
 import { FlashList } from "@/src/ui/FlashList";
 import RNModal from "react-native-modal";
 import type { ReqItemRow } from "../../lib/catalog_api";
+import type { ForemanDraftRecoveryAction } from "../../lib/offline/foremanSyncRuntime";
 import CloseIconButton from "../../ui/CloseIconButton";
 import DeleteAllButton from "../../ui/DeleteAllButton";
 import SendPrimaryButton from "../../ui/SendPrimaryButton";
@@ -34,6 +35,9 @@ type Props = {
   visible: boolean;
   onClose: () => void;
   currentDisplayLabel: string;
+  draftSyncStatusLabel: string;
+  draftSyncStatusDetail: string | null;
+  draftSyncStatusTone: "neutral" | "info" | "success" | "warning" | "danger";
   objectName: string;
   levelName: string;
   systemName: string;
@@ -47,12 +51,31 @@ type Props = {
   onPdf: () => Promise<void>;
   pdfBusy: boolean;
   onSend: () => Promise<void>;
+  availableRecoveryActions: ForemanDraftRecoveryAction[];
+  onRetryNow: () => Promise<void>;
+  onRehydrateFromServer: () => Promise<void>;
+  onRestoreLocal: () => Promise<void>;
+  onDiscardLocal: () => Promise<void>;
+  onClearFailedQueue: () => Promise<void>;
   ui: { text: string; sub: string; btnNeutral: string };
   styles: typeof import("./foreman.styles").s;
 };
 
+const hasRecoveryAction = (actions: ForemanDraftRecoveryAction[], action: ForemanDraftRecoveryAction) =>
+  actions.includes(action);
+
 export default function ForemanDraftModal(p: Props) {
   const webUi = getWebUi();
+  const syncToneStyle =
+    p.draftSyncStatusTone === "success"
+      ? { bg: "rgba(34,197,94,0.16)", fg: "#86efac" }
+      : p.draftSyncStatusTone === "info"
+        ? { bg: "rgba(56,189,248,0.16)", fg: "#7dd3fc" }
+        : p.draftSyncStatusTone === "warning"
+          ? { bg: "rgba(245,158,11,0.16)", fg: "#fcd34d" }
+          : p.draftSyncStatusTone === "danger"
+            ? { bg: "rgba(248,113,113,0.16)", fg: "#fca5a5" }
+            : { bg: "rgba(148,163,184,0.16)", fg: "#cbd5e1" };
   return (
     <RNModal
       isVisible={p.visible}
@@ -75,6 +98,25 @@ export default function ForemanDraftModal(p: Props) {
         </View>
 
         <View style={p.styles.sheetMetaBox}>
+          <View
+            style={{
+              alignSelf: "flex-start",
+              marginBottom: 10,
+              paddingHorizontal: 10,
+              paddingVertical: 5,
+              borderRadius: 999,
+              backgroundColor: syncToneStyle.bg,
+            }}
+          >
+            <Text style={{ color: syncToneStyle.fg, fontWeight: "800", fontSize: 11 }}>
+              {p.draftSyncStatusLabel}
+            </Text>
+          </View>
+          {p.draftSyncStatusDetail ? (
+            <Text style={[p.styles.sheetMetaLine, { marginBottom: 8 }]} numberOfLines={2}>
+              <Text style={p.styles.sheetMetaValue}>{p.draftSyncStatusDetail}</Text>
+            </Text>
+          ) : null}
           {!!p.objectName ? (
             <Text style={p.styles.sheetMetaLine} numberOfLines={1}>
               Объект: <Text style={p.styles.sheetMetaValue}>{p.objectName}</Text>
@@ -96,6 +138,76 @@ export default function ForemanDraftModal(p: Props) {
             </Text>
           ) : null}
         </View>
+
+        {p.availableRecoveryActions.length ? (
+          <View style={[p.styles.sheetMetaBox, { marginTop: 10, gap: 8 }]}>
+            <Text style={[p.styles.sheetMetaLine, { fontWeight: "800" }]}>Recovery</Text>
+            <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
+              {hasRecoveryAction(p.availableRecoveryActions, "retry_now") ? (
+                <Pressable
+                  onPress={() => void p.onRetryNow()}
+                  style={[p.styles.actionBtnWide, { width: "48%", backgroundColor: p.ui.btnNeutral }]}
+                >
+                  <Text style={p.styles.actionText}>Retry now</Text>
+                </Pressable>
+              ) : null}
+              {hasRecoveryAction(p.availableRecoveryActions, "rehydrate_server") ? (
+                <Pressable
+                  onPress={() => void p.onRehydrateFromServer()}
+                  style={[p.styles.actionBtnWide, { width: "48%", backgroundColor: p.ui.btnNeutral }]}
+                >
+                  <Text style={p.styles.actionText}>Use server</Text>
+                </Pressable>
+              ) : null}
+              {hasRecoveryAction(p.availableRecoveryActions, "restore_local") ? (
+                <Pressable
+                  onPress={() => void p.onRestoreLocal()}
+                  style={[p.styles.actionBtnWide, { width: "48%", backgroundColor: p.ui.btnNeutral }]}
+                >
+                  <Text style={p.styles.actionText}>Restore local</Text>
+                </Pressable>
+              ) : null}
+              {hasRecoveryAction(p.availableRecoveryActions, "clear_failed_queue") ? (
+                <Pressable
+                  onPress={() => void p.onClearFailedQueue()}
+                  style={[p.styles.actionBtnWide, { width: "48%", backgroundColor: p.ui.btnNeutral }]}
+                >
+                  <Text style={p.styles.actionText}>Clear failed</Text>
+                </Pressable>
+              ) : null}
+              {hasRecoveryAction(p.availableRecoveryActions, "discard_local") ? (
+                <Pressable
+                  onPress={() => {
+                    const doDiscard = async () => {
+                      await p.onDiscardLocal();
+                    };
+
+                    if (Platform.OS === "web") {
+                      const ok = webUi.confirm(
+                        "Discard local draft?\n\nYou will lose local-only changes kept on this device.",
+                      );
+                      if (!ok) return;
+                      void doDiscard();
+                      return;
+                    }
+
+                    Alert.alert(
+                      "Discard local draft?",
+                      "You will lose local-only changes kept on this device.",
+                      [
+                        { text: "Cancel", style: "cancel" },
+                        { text: "Discard", style: "destructive", onPress: () => void doDiscard() },
+                      ],
+                    );
+                  }}
+                  style={[p.styles.actionBtnWide, { width: "48%", backgroundColor: "rgba(239,68,68,0.16)" }]}
+                >
+                  <Text style={p.styles.actionText}>Discard local</Text>
+                </Pressable>
+              ) : null}
+            </View>
+          </View>
+        ) : null}
 
         <View style={{ flex: 1, minHeight: 0 }}>
           <FlashList
@@ -202,4 +314,3 @@ export default function ForemanDraftModal(p: Props) {
     </RNModal>
   );
 }
-

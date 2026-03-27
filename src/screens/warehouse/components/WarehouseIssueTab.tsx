@@ -1,7 +1,6 @@
 import React from "react";
 import {
-  Animated,
-  FlatList,
+  ActivityIndicator,
   Text,
   type ListRenderItem,
   type NativeScrollEvent,
@@ -9,6 +8,7 @@ import {
   type RefreshControlProps,
 } from "react-native";
 import RoleScreenLayout from "../../../components/layout/RoleScreenLayout";
+import { FlashList } from "../../../ui/FlashList";
 import {
   selectWarehouseEmptyTextStyle,
   selectWarehouseReqHeadKey,
@@ -16,14 +16,14 @@ import {
 import { selectWarehouseIssueEmptyText } from "../warehouse.tab.empty";
 import type { ReqHeadRow } from "../warehouse.types";
 
-const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
-
 type Props = {
   data: ReqHeadRow[];
   contentContainerStyle: { paddingTop: number; paddingBottom: number };
   onScroll: ((event: NativeSyntheticEvent<NativeScrollEvent>) => void) | undefined;
   scrollEventThrottle: number | undefined;
   onEndReached: () => void;
+  hasMore: boolean;
+  loadingMore: boolean;
   refreshControl: React.ReactElement<RefreshControlProps>;
   listHeader: React.ReactElement;
   renderItem: ListRenderItem<ReqHeadRow>;
@@ -37,6 +37,8 @@ export default function WarehouseIssueTab({
   onScroll,
   scrollEventThrottle,
   onEndReached,
+  hasMore,
+  loadingMore,
   refreshControl,
   listHeader,
   renderItem,
@@ -45,7 +47,7 @@ export default function WarehouseIssueTab({
 }: Props) {
   return (
     <RoleScreenLayout>
-      <AnimatedFlatList
+      <FlashList
         data={data}
         keyExtractor={selectWarehouseReqHeadKey}
         contentContainerStyle={contentContainerStyle}
@@ -54,9 +56,16 @@ export default function WarehouseIssueTab({
         onEndReached={onEndReached}
         onEndReachedThreshold={0.5}
         refreshControl={refreshControl}
-        ListFooterComponent={null}
+        ListFooterComponent={
+          loadingMore ? (
+            <ActivityIndicator style={{ paddingVertical: 16 }} />
+          ) : hasMore ? (
+            <Text style={selectWarehouseEmptyTextStyle(emptyColor)}> </Text>
+          ) : null
+        }
         ListHeaderComponent={listHeader}
         renderItem={renderItem}
+        estimatedItemSize={104}
         ListEmptyComponent={
           <Text style={selectWarehouseEmptyTextStyle(emptyColor)}>
             {selectWarehouseIssueEmptyText(loading)}

@@ -12,6 +12,7 @@ import { supabase } from "../src/lib/supabaseClient";
 import { clearDocumentSessions } from "../src/lib/documents/pdfDocumentSessions";
 import { ensureMyProfile, getMyRole } from "../src/lib/rik_api";
 import { GlobalBusyProvider } from "../src/ui/GlobalBusy";
+import PlatformOfflineStatusHost from "../src/components/PlatformOfflineStatusHost";
 // --- WEB: тихо глушим шумные предупреждения (только в браузере) ---
 if (Platform.OS === "web") {
   LogBox.ignoreLogs([
@@ -20,7 +21,6 @@ if (Platform.OS === "web") {
   ]);
 
   const originalWarn = console.warn;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   console.warn = (...args: any[]) => {
     const msg = String(args?.[0] ?? "");
     if (
@@ -40,8 +40,8 @@ export default function RootLayout() {
   const [hasSession, setHasSession] = useState<boolean | null>(null);
 
   // роль сейчас напрямую не используется в _layout, но оставляем фоновой прогрев
-  const [roleLoaded, setRoleLoaded] = useState(false);
-  const [role, setRole] = useState<string | null>(null);
+  const [, setRoleLoaded] = useState(false);
+  const [, setRole] = useState<string | null>(null);
 
   const roleLoadingRef = useRef(false);
   const initStartedRef = useRef(false);
@@ -189,6 +189,7 @@ export default function RootLayout() {
             style={{ flex: 1, backgroundColor: APP_BG, paddingTop: 0 }}
             edges={Platform.OS === "web" ? [] : ["top"]}
           >
+            <PlatformOfflineStatusHost />
             <Slot />
           </SafeAreaView>
         </GlobalBusyProvider>

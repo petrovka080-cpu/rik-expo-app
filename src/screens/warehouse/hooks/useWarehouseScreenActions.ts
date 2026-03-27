@@ -113,11 +113,18 @@ export function useWarehouseScreenActions(data: WarehouseScreenData) {
     onPdfDayMaterials: data.onPdfDayMaterials,
   });
 
+  const getReceiveStatusText = useCallback((incomingId: string) => {
+    const status = data.receiveStatusByIncomingId[String(incomingId ?? "").trim()];
+    if (!status) return null;
+    if (status.tone === "neutral" || status.tone === "success") return null;
+    return status.label;
+  }, [data.receiveStatusByIncomingId]);
+
   const { renderReqHeadItem, renderIncomingItem, renderStockItem } = useWarehouseRenderers({
     openReq: data.openReq,
     fmtRuDate,
     openItemsModal: data.openItemsModal,
-    proposalNoByPurchase: data.incoming.proposalNoByPurchase,
+    getReceiveStatusText,
     getPickedQty: data.stockPickUi.getPickedQty,
     openStockIssue: data.stockPickUi.openStockIssue,
   });

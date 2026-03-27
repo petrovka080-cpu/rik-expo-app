@@ -1,4 +1,4 @@
-﻿import { client, rpcCompat } from "./_core";
+import { client, rpcCompat } from "./_core";
 import type { AccountantInboxRow } from "./types";
 import type { Database } from "../database.types";
 
@@ -94,10 +94,10 @@ export async function accountantReturnToBuyer(
   return true;
 }
 
-export async function listAccountantInbox(status?: string) {
+export const normalizeAccountantInboxRpcTab = (status?: string): string | null => {
   const s = (status || "").trim();
 
-  const norm =
+  return (
     !s
       ? null
       : /^на доработке/i.test(s)
@@ -106,7 +106,12 @@ export async function listAccountantInbox(status?: string) {
           ? "Частично оплачено"
           : /^оплачено/i.test(s)
             ? "Оплачено"
-            : "К оплате";
+            : "К оплате"
+  );
+};
+
+export async function listAccountantInbox(status?: string) {
+  const norm = normalizeAccountantInboxRpcTab(status);
 
   // 1) новый RPC с датами оплаты
   const n = await client.rpc("list_accountant_inbox_fact", norm ? { p_tab: norm } : {});

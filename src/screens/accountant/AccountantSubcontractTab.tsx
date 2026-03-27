@@ -2,13 +2,13 @@ import React, { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
-  FlatList,
   Pressable,
   RefreshControl,
   StyleSheet,
   Text,
   View,
 } from "react-native";
+import { FlashList } from "../../ui/FlashList";
 import {
   STATUS_CONFIG,
   fmtAmount,
@@ -31,8 +31,8 @@ export default function AccountantSubcontractTab({ contentTopPad }: Props) {
     try {
       const rows = await listAccountantSubcontracts();
       setItems(rows);
-    } catch (e) {
-      console.warn("[AccountantSubcontractTab] load error:", e);
+    } catch (error) {
+      console.warn("[AccountantSubcontractTab] load error:", error);
     } finally {
       setLoading(false);
     }
@@ -92,8 +92,9 @@ export default function AccountantSubcontractTab({ contentTopPad }: Props) {
 
   return (
     <View style={{ flex: 1, backgroundColor: "#0B0F14" }}>
-      <FlatList
+      <FlashList
         data={items}
+        estimatedItemSize={124}
         renderItem={renderCard}
         keyExtractor={(item) => item.id}
         contentContainerStyle={{ paddingTop: contentTopPad + 10, paddingHorizontal: 16, paddingBottom: 100 }}

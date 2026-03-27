@@ -39,8 +39,7 @@ export const MARKET_HOME_COLORS = {
 export const MARKET_HOME_BANNERS: MarketHomeBanner[] = [
   {
     id: "hero-materials",
-    imageUri:
-      "https://images.pexels.com/photos/157811/pexels-photo-157811.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
+    imageSource: materialsImage,
     title: "Все для стройки в один клик",
     description: "От фундамента до крыши. Самый большой выбор материалов и услуг в Кыргызстане.",
     ctaLabel: "Смотреть все",
@@ -48,8 +47,7 @@ export const MARKET_HOME_BANNERS: MarketHomeBanner[] = [
   },
   {
     id: "hero-map",
-    imageUri:
-      "https://images.unsplash.com/photo-1581094794329-c8112a89af12?q=80&w=1000&auto=format&fit=crop",
+    imageSource: transportImage,
     title: "Спрос и предложения на карте",
     description: "Откройте ближайшие заявки и активные предложения прямо на карте поставщиков.",
     ctaLabel: "Открыть карту",
@@ -57,8 +55,7 @@ export const MARKET_HOME_BANNERS: MarketHomeBanner[] = [
   },
   {
     id: "hero-offers",
-    imageUri:
-      "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?q=80&w=1000&auto=format&fit=crop",
+    imageSource: servicesImage,
     title: "Готовые предложения рядом",
     description: "Быстро переходите к активным объявлениям поставщиков и услуг в вашем городе.",
     ctaLabel: "К предложениям",

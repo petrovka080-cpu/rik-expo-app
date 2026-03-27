@@ -2,25 +2,28 @@
 // Extract object/level/system/zone picking + scope label logic.
 // No business-logic changes.
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import type { Option } from "./warehouse.types";
+import { useWarehouseUiStore } from "./warehouseUi.store";
 
 export function useWarehouseScope() {
-  const [objectOpt, setObjectOpt] = useState<Option | null>(null);
-  const [levelOpt, setLevelOpt] = useState<Option | null>(null);
-  const [systemOpt, setSystemOpt] = useState<Option | null>(null);
-  const [zoneOpt, setZoneOpt] = useState<Option | null>(null);
-
-  const [pickModal, setPickModal] = useState<{
-    what: "object" | "level" | "system" | "zone" | "recipient" | null;
-  }>({ what: null });
-
-  const [pickFilter, setPickFilter] = useState("");
+  const objectOpt = useWarehouseUiStore((state) => state.objectOpt);
+  const setObjectOpt = useWarehouseUiStore((state) => state.setObjectOpt);
+  const levelOpt = useWarehouseUiStore((state) => state.levelOpt);
+  const setLevelOpt = useWarehouseUiStore((state) => state.setLevelOpt);
+  const systemOpt = useWarehouseUiStore((state) => state.systemOpt);
+  const setSystemOpt = useWarehouseUiStore((state) => state.setSystemOpt);
+  const zoneOpt = useWarehouseUiStore((state) => state.zoneOpt);
+  const setZoneOpt = useWarehouseUiStore((state) => state.setZoneOpt);
+  const pickModal = useWarehouseUiStore((state) => state.pickModal);
+  const setPickModal = useWarehouseUiStore((state) => state.setPickModal);
+  const pickFilter = useWarehouseUiStore((state) => state.pickFilter);
+  const setPickFilter = useWarehouseUiStore((state) => state.setPickFilter);
 
   const closePick = useCallback(() => {
     setPickModal({ what: null });
     setPickFilter("");
-  }, []);
+  }, [setPickFilter, setPickModal]);
 
   const applyPick = useCallback(
     (opt: Option) => {
@@ -30,7 +33,7 @@ export function useWarehouseScope() {
       if (pickModal.what === "zone") setZoneOpt(opt);
       closePick();
     },
-    [pickModal.what, closePick],
+    [closePick, pickModal.what, setLevelOpt, setObjectOpt, setSystemOpt, setZoneOpt],
   );
 
   // Reset cascade: object -> level -> system/zone
@@ -40,14 +43,14 @@ export function useWarehouseScope() {
       if (systemOpt) setSystemOpt(null);
       if (zoneOpt) setZoneOpt(null);
     }
-  }, [objectOpt?.id, levelOpt, systemOpt, zoneOpt]);
+  }, [levelOpt, objectOpt?.id, setLevelOpt, setSystemOpt, setZoneOpt, systemOpt, zoneOpt]);
 
   useEffect(() => {
     if (!levelOpt?.id) {
       if (systemOpt) setSystemOpt(null);
       if (zoneOpt) setZoneOpt(null);
     }
-  }, [levelOpt?.id, systemOpt, zoneOpt]);
+  }, [levelOpt?.id, setSystemOpt, setZoneOpt, systemOpt, zoneOpt]);
 
   const scopeLabel = useMemo(() => {
     const lvl = String(levelOpt?.label ?? "").trim();
@@ -87,4 +90,3 @@ export function useWarehouseScope() {
     applyPick,
   };
 }
-

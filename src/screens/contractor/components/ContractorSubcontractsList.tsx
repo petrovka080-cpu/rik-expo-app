@@ -1,6 +1,7 @@
 import React from "react";
-import { FlatList, Pressable, RefreshControl, Text, View } from "react-native";
+import { Pressable, RefreshControl, Text, View } from "react-native";
 import { normalizeRuText } from "../../../lib/text/encoding";
+import { FlashList } from "../../../ui/FlashList";
 
 type JobCard = {
   id: string;
@@ -22,11 +23,12 @@ type Props = {
 export default function ContractorSubcontractsList(props: Props) {
   const { data, refreshing, loadingWorks, onRefresh, onOpen, styles } = props;
   return (
-    <FlatList
+    <FlashList
       style={{ flex: 1, marginTop: 12 }}
       contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 32 }}
       data={data}
       keyExtractor={(item) => String(item.id)}
+      estimatedItemSize={108}
       refreshControl={<RefreshControl refreshing={refreshing || loadingWorks} onRefresh={onRefresh} tintColor="#fff" />}
       ListEmptyComponent={
         <View style={[styles.card, styles.cardDark, { borderRadius: 18, padding: 20 }]}>

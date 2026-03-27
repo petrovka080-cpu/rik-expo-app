@@ -1,19 +1,10 @@
+import { type ReqItemRow } from "../../lib/catalog_api";
 import {
-  updateRequestMeta,
-  type ReqItemRow,
-  type RequestMetaPatch,
-} from "../../lib/catalog_api";
-import {
-  isRequestDraftSyncRpcEnabled,
   syncRequestDraftViaRpc,
   type RequestDraftSyncLineInput,
   type RequestDraftSyncResult,
 } from "../../lib/api/requestDraftSync.service";
 import type { RequestMeta } from "../../lib/api/types";
-import {
-  patchForemanRequestLink,
-  type ForemanRequestDirectPatch,
-} from "./foreman.requests";
 
 export type ForemanDraftSyncMutationKind =
   | "catalog_add"
@@ -28,11 +19,6 @@ export type ForemanDraftSyncMutationKind =
 type ForemanDraftSyncSourcePath = "foreman_materials" | "foreman_subcontract";
 
 export type { RequestDraftSyncLineInput };
-
-type ForemanDraftSyncCompatPatch = {
-  metaPatch?: RequestMetaPatch | null;
-  directPatch?: ForemanRequestDirectPatch | null;
-};
 
 export type ForemanAtomicDraftSyncCommand = {
   mutationKind: ForemanDraftSyncMutationKind;
@@ -51,7 +37,6 @@ export type ForemanAtomicDraftSyncCommand = {
   zoneName?: string | null;
   beforeLineCount?: number | null;
   afterLocalSnapshotLineCount?: number | null;
-  compatPatch?: ForemanDraftSyncCompatPatch | null;
 };
 
 const trim = (value: unknown) => String(value ?? "").trim();
@@ -70,46 +55,13 @@ const logForemanDraftRepository = (payload: Record<string, unknown>) => {
   console.info("[foreman.draft.repository]", payload);
 };
 
-const toCompatPatchErrorMessage = (patchError: {
-  message: string;
-  code: string;
-  details: string | null;
-  hint: string | null;
-}) => {
-  const message = trim(patchError.message);
-  if (message) return message;
-  return "Compatibility request link patch failed.";
-};
-
-async function applyCompatPatch(
-  requestId: string,
-  compatPatch: ForemanDraftSyncCompatPatch,
-): Promise<void> {
-  if (compatPatch.metaPatch) {
-    const metaOk = await updateRequestMeta(requestId, compatPatch.metaPatch);
-    if (!metaOk) {
-      throw new Error("Compatibility request meta patch failed.");
-    }
-  }
-
-  if (compatPatch.directPatch) {
-    const patchError = await patchForemanRequestLink(requestId, compatPatch.directPatch);
-    if (patchError) {
-      throw new Error(toCompatPatchErrorMessage(patchError));
-    }
-  }
-}
-
 const toRequestSyncErrorCategory = (error: unknown): string => {
   const message = trim(error instanceof Error ? error.message : error).toLowerCase();
   if (!message) return "unknown";
-  if (message.includes("compatibility")) return "compat_patch_error";
   if (message.includes("invalid")) return "invalid_payload";
   if (message.includes("not found") || message.includes("404")) return "rpc_missing";
   return "rpc_error";
 };
-
-export const isForemanAtomicDraftSyncEnabled = () => isRequestDraftSyncRpcEnabled();
 
 export const mapReqItemsToDraftSyncLines = (items: ReqItemRow[]): RequestDraftSyncLineInput[] =>
   (items || []).flatMap((item) => {
@@ -163,16 +115,6 @@ export async function syncForemanAtomicDraft(
     });
 
     const resolvedRequestId = trim(result.request.id);
-    let compatPatched = false;
-    if (
-      resolvedRequestId &&
-      result.branchMeta.rpcVersion === "v1" &&
-      command.compatPatch &&
-      (command.compatPatch.metaPatch || command.compatPatch.directPatch)
-    ) {
-      await applyCompatPatch(resolvedRequestId, command.compatPatch);
-      compatPatched = true;
-    }
 
     logForemanDraftRepository({
       phase: "result",
@@ -190,7 +132,6 @@ export async function syncForemanAtomicDraft(
       submitted: result.submitted,
       fallbackUsed: false,
       rpcVersion: result.branchMeta.rpcVersion ?? null,
-      compatPatched,
     });
 
     return result;

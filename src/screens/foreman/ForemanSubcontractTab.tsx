@@ -13,17 +13,12 @@ import WorkTypePicker from "../../components/foreman/WorkTypePicker";
 import CalcModal from "../../components/foreman/CalcModal";
 import {
   rikQuickSearch,
-  requestCreateDraft,
   updateRequestMeta,
   listRequestItems,
-  addRequestItemsFromRikBatch,
-  clearCachedDraftRequestId,
   type ReqItemRow,
   type RequestMetaPatch
 } from "../../lib/catalog_api";
-import { submitRequestToDirector } from "../../lib/api/request.repository";
 import {
-  isForemanAtomicDraftSyncEnabled,
   mapReqItemsToDraftSyncLines,
   syncForemanAtomicDraft,
   type ForemanDraftSyncMutationKind,
@@ -53,11 +48,7 @@ import {
 } from "../subcontracts/subcontracts.shared";
 import {
   fetchForemanRequestDisplayLabel,
-  type ForemanRequestDirectPatch,
-  fetchForemanRequestLink,
   findLatestDraftRequestByLink,
-  patchForemanRequestLink,
-  pickForemanRequestLinkId,
 } from "./foreman.requests";
 import { readForemanProfileName } from "./foreman.dicts.repo";
 import { useForemanHistory } from "./hooks/useForemanHistory";
@@ -681,14 +672,6 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
           zoneName: trim(form.zoneText) || null,
           beforeLineCount: params.localBeforeCount ?? draftItems.length,
           afterLocalSnapshotLineCount: params.localAfterCount ?? snapshotItems.length,
-          compatPatch: {
-            metaPatch: requestMetaPersistPatch,
-            directPatch: {
-              subcontract_id: subcontractId,
-              contractor_job_id: subcontractId,
-              object_name: objectNameForRequest || null,
-            },
-          },
         });
 
         const rid = String(res.request.id);
@@ -713,7 +696,6 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
       requestId,
       draftItems,
       requestMetaFromTemplate,
-      requestMetaPersistPatch,
       templateObjectName,
       objectName,
       templateContract?.object_name,
@@ -768,217 +750,54 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
     };
   }, [requestId]);
 
-  const ensureDraftOnly = useCallback(async (): Promise<string | null> => {
-    const subcontractId = ensureTemplateContractStrict();
-    if (!subcontractId) return null;
-
-    const scopeChanged = activeDraftScopeKeyRef.current !== draftScopeKey;
-
-    if (requestId && !scopeChanged) {
-      if (draftItems.length === 0) await loadDraftItems(requestId);
-      return requestId;
-    }
-
-    if (!userId) {
-      Alert.alert("Данные не загружены", "Профиль пользователя не найден.");
-      return null;
-    }
-
-    setSaving(true);
-    try {
-      const existingDraft = await findLatestDraftRequestByLink(subcontractId);
-      if (existingDraft?.id) {
-        const rid = String(existingDraft.id).trim();
-        const displayLabel = String(existingDraft.request_no || existingDraft.display_no || "").trim();
-        setRequestId(rid);
-        setDisplayNo(displayLabel);
-        activeDraftScopeKeyRef.current = draftScopeKey;
-        await loadDraftItems(rid);
-        return rid;
-      }
-
-      // Clear Rik draft cache to ensure autonomy from Materials tab
-      clearCachedDraftRequestId();
-      const res = await requestCreateDraft(requestMetaFromTemplate);
-      if (!res?.id) throw new Error("Не удалось создать черновик заявки.");
-      const rid = String(res.id);
-
-      const meta: RequestMetaPatch = requestMetaPersistPatch;
-      const metaOk = await updateRequestMeta(rid, meta);
-      if (!metaOk) {
-        throw new Error("Не удалось сохранить привязку заявки к подряду (subcontract_id).");
-      }
-
-      const objectNameForRequest = String(
-        templateObjectName || objectName || templateContract?.object_name || "",
-      ).trim();
-      const directPatch: ForemanRequestDirectPatch = {
-        subcontract_id: subcontractId,
-        contractor_job_id: subcontractId,
-      };
-      if (objectNameForRequest) {
-        directPatch.object_name = objectNameForRequest;
-      }
-      const directError = await patchForemanRequestLink(rid, directPatch);
-      if (directError) {
-        logForemanSubcontractDebug("[foreman.subcontract][requests.patch400.direct]", {
-          request_id: rid,
-          payload: directPatch,
-          error: directError,
-        });
-        const msg = String(directError.message || "");
-        if (msg.toLowerCase().includes("does not exist")) {
-          throw new Error("В таблице requests отсутствуют поля subcontract_id/contractor_job_id. Нужна миграция БД.");
-        }
-        throw new Error(directError.message || "Не удалось сохранить привязку заявки к подряду.");
-      }
-
-      const displayLabel = String(res?.display_no || "DRAFT").trim() || "DRAFT";
-      setRequestId(rid);
-      setDisplayNo(displayLabel || res.display_no || "DRAFT");
-      activeDraftScopeKeyRef.current = draftScopeKey;
-      return rid;
-    } catch (e) {
-      Alert.alert("Не удалось создать черновик", getErrorMessage(e, "Не удалось создать черновик заявки."));
-      return null;
-    } finally {
-      setSaving(false);
-    }
-  }, [
-    requestId,
-    userId,
-    draftScopeKey,
-    templateContract,
-    draftItems,
-    loadDraftItems,
-    requestMetaFromTemplate,
-    requestMetaPersistPatch,
-    templateObjectName,
-    objectName,
-    ensureTemplateContractStrict,
-  ]);
-
   const appendCatalogRows = useCallback(async (rows: CatalogPickedRow[]) => {
     if (!rows?.length) return;
-
-    if (isForemanAtomicDraftSyncEnabled()) {
-      const lineInputs: RequestDraftSyncLineInput[] = rows.map((r) => ({
-        rik_code: r.rik_code || "",
-        qty: toPositiveQty(r.qty, 1),
-        uom: r.uom || null,
-        name_human: r.name || "",
-        note: scopeNote || null,
-      }));
-      const nextItems = appendLineInputsToDraftItems(draftItems, lineInputs, requestId);
-      await saveDraftAtomic({
-        itemsSnapshot: nextItems,
-        mutationKind: "catalog_add",
-        localBeforeCount: draftItems.length,
-        localAfterCount: nextItems.length,
-      });
-      setSubcontractFlowScreen("draft");
-      return;
-    }
-
-    const rid = await ensureDraftOnly();
-    if (!rid) return;
-
-    setSaving(true);
-    try {
-      await addRequestItemsFromRikBatch(
-
-        rid,
-        rows.map((r) => ({
-          rik_code: r.rik_code || "",
-          qty: Math.max(1, Number(String(r.qty || "1").replace(",", ".")) || 1),
-          opts: {
-            name_human: r.name || "",
-            uom: r.uom || null,
-            note: scopeNote || null,
-          },
-        })),
-      );
-      await loadDraftItems(rid);
-      setSubcontractFlowScreen("draft");
-    } catch (e) {
-      Alert.alert("Не удалось обновить заявку", getErrorMessage(e, "Не удалось добавить позиции из каталога."));
-    } finally {
-      setSaving(false);
-    }
-  }, [ensureDraftOnly, loadDraftItems, saveDraftAtomic, scopeNote, draftItems, requestId, setSubcontractFlowScreen]);
+    const lineInputs: RequestDraftSyncLineInput[] = rows.map((r) => ({
+      rik_code: r.rik_code || "",
+      qty: toPositiveQty(r.qty, 1),
+      uom: r.uom || null,
+      name_human: r.name || "",
+      note: scopeNote || null,
+    }));
+    const nextItems = appendLineInputsToDraftItems(draftItems, lineInputs, requestId);
+    await saveDraftAtomic({
+      itemsSnapshot: nextItems,
+      mutationKind: "catalog_add",
+      localBeforeCount: draftItems.length,
+      localAfterCount: nextItems.length,
+    });
+    setSubcontractFlowScreen("draft");
+  }, [saveDraftAtomic, scopeNote, draftItems, requestId, setSubcontractFlowScreen]);
 
   const appendCalcRows = useCallback(async (rows: CalcPickedRow[]) => {
     if (!rows?.length) return;
-
-    if (isForemanAtomicDraftSyncEnabled()) {
-      const lineInputs: RequestDraftSyncLineInput[] = rows.map((r) => ({
-        rik_code: r.rik_code || "",
-        qty: toPositiveQty(r.qty, 1),
-        uom: r.uom_code || null,
-        name_human: r.item_name_ru || r.name_human || "Без названия",
-        note: scopeNote || null,
-      }));
-      const nextItems = appendLineInputsToDraftItems(draftItems, lineInputs, requestId);
-      await saveDraftAtomic({
-        itemsSnapshot: nextItems,
-        mutationKind: "calc_add",
-        localBeforeCount: draftItems.length,
-        localAfterCount: nextItems.length,
-      });
-      setSubcontractFlowScreen("draft");
-      return;
-    }
-
-    const rid = await ensureDraftOnly();
-    if (!rid) return;
-
-    setSaving(true);
-    try {
-      await addRequestItemsFromRikBatch(
-        rid,
-        rows.map((r) => ({
-          rik_code: r.rik_code || "",
-          qty: Math.max(1, Number(r.qty) || 1),
-          opts: {
-            name_human: r.item_name_ru || r.name_human || "Без названия",
-            uom: r.uom_code || null,
-            note: scopeNote || null,
-          },
-        })),
-      );
-      await loadDraftItems(rid);
-      setSubcontractFlowScreen("draft");
-    } catch (e) {
-      Alert.alert("Не удалось обновить заявку", getErrorMessage(e, "Не удалось добавить позиции из сметы."));
-    } finally {
-      setSaving(false);
-    }
-  }, [ensureDraftOnly, loadDraftItems, saveDraftAtomic, scopeNote, draftItems, requestId, setSubcontractFlowScreen]);
+    const lineInputs: RequestDraftSyncLineInput[] = rows.map((r) => ({
+      rik_code: r.rik_code || "",
+      qty: toPositiveQty(r.qty, 1),
+      uom: r.uom_code || null,
+      name_human: r.item_name_ru || r.name_human || "Без названия",
+      note: scopeNote || null,
+    }));
+    const nextItems = appendLineInputsToDraftItems(draftItems, lineInputs, requestId);
+    await saveDraftAtomic({
+      itemsSnapshot: nextItems,
+      mutationKind: "calc_add",
+      localBeforeCount: draftItems.length,
+      localAfterCount: nextItems.length,
+    });
+    setSubcontractFlowScreen("draft");
+  }, [saveDraftAtomic, scopeNote, draftItems, requestId, setSubcontractFlowScreen]);
 
   const removeDraftItem = useCallback(async (id: string) => {
-    if (isForemanAtomicDraftSyncEnabled()) {
-      const nextItems = draftItems.filter((item) => trim(item.id) !== trim(id));
-      await saveDraftAtomic({
-        itemsSnapshot: nextItems,
-        pendingDeleteIds: toRemoteDraftItemId(id) ? [id] : [],
-        mutationKind: "row_remove",
-        localBeforeCount: draftItems.length,
-        localAfterCount: nextItems.length,
-      });
-      return;
-    }
-
-    try {
-      setSaving(true);
-      const { error } = await supabase.from("request_items").delete().eq("id", id);
-      if (error) throw error;
-      await loadDraftItems(requestId);
-    } catch (e) {
-      Alert.alert("Не удалось обновить заявку", getErrorMessage(e, "Не удалось удалить позицию."));
-    } finally {
-      setSaving(false);
-    }
-  }, [loadDraftItems, requestId, saveDraftAtomic, draftItems]);
+    const nextItems = draftItems.filter((item) => trim(item.id) !== trim(id));
+    await saveDraftAtomic({
+      itemsSnapshot: nextItems,
+      pendingDeleteIds: toRemoteDraftItemId(id) ? [id] : [],
+      mutationKind: "row_remove",
+      localBeforeCount: draftItems.length,
+      localAfterCount: nextItems.length,
+    });
+  }, [saveDraftAtomic, draftItems]);
 
   const sendToDirector = useCallback(async () => {
     const subcontractId = ensureTemplateContractStrict();
@@ -994,48 +813,14 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
       return;
     }
 
-    if (isForemanAtomicDraftSyncEnabled()) {
-      const okId = await saveDraftAtomic({
-        submit: true,
-        itemsSnapshot: draftItems,
-        mutationKind: "submit",
-        localBeforeCount: draftItems.length,
-        localAfterCount: draftItems.length,
-      });
-      if (okId) {
-        Alert.alert("Успешно", "Заявка отправлена директору.");
-        await loadHistory(userId);
-        setRequestId("");
-        setDisplayNo("");
-        setDraftItems([]);
-        closeSubcontractFlow();
-        activeDraftScopeKeyRef.current = "";
-      }
-      return;
-    }
-
-    setSending(true);
-    try {
-      let linked = null;
-      try {
-        linked = await fetchForemanRequestLink(requestId);
-      } catch (error) {
-        const msg = getErrorMessage(error, "");
-        if (msg.toLowerCase().includes("does not exist")) {
-          throw new Error("В таблице requests отсутствуют поля subcontract_id/contractor_job_id. Нужна миграция БД.");
-        }
-        throw error;
-      }
-      const reqLink = pickForemanRequestLinkId(linked);
-      if (!reqLink || reqLink !== subcontractId) {
-        throw new Error("Текущая заявка привязана к другому подряду.");
-      }
-
-      await submitRequestToDirector({
-        requestId,
-        sourcePath: "foreman.subcontract.legacySubmit",
-        draftScopeKey,
-      });
+    const okId = await saveDraftAtomic({
+      submit: true,
+      itemsSnapshot: draftItems,
+      mutationKind: "submit",
+      localBeforeCount: draftItems.length,
+      localAfterCount: draftItems.length,
+    });
+    if (okId) {
       Alert.alert("Успешно", "Заявка отправлена директору.");
       await loadHistory(userId);
       setRequestId("");
@@ -1043,12 +828,8 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
       setDraftItems([]);
       closeSubcontractFlow();
       activeDraftScopeKeyRef.current = "";
-    } catch (e) {
-      Alert.alert("Не удалось отправить заявку", getErrorMessage(e, "Не удалось отправить заявку директору."));
-    } finally {
-      setSending(false);
     }
-  }, [closeSubcontractFlow, draftItems, draftScopeKey, ensureTemplateContractStrict, loadHistory, requestId, saveDraftAtomic, userId]);
+  }, [closeSubcontractFlow, draftItems, ensureTemplateContractStrict, loadHistory, requestId, saveDraftAtomic, userId]);
 
   const onPdf = useCallback(async () => {
     const rid = String(requestId || "").trim();
@@ -1108,27 +889,18 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
   }, [closeRequestHistory, openRequestHistoryPdf]);
 
   const clearDraft = useCallback(async () => {
-    if (isForemanAtomicDraftSyncEnabled()) {
-      const pendingDeleteIds = draftItems
-        .map((item) => toRemoteDraftItemId(item.id))
-        .filter((id): id is string => Boolean(id));
-      if (draftItems.length > 0 || pendingDeleteIds.length > 0) {
-        const cleared = await saveDraftAtomic({
-          itemsSnapshot: [],
-          pendingDeleteIds,
-          mutationKind: "whole_cancel",
-          localBeforeCount: draftItems.length,
-          localAfterCount: 0,
-        });
-        if (!cleared) return;
-      }
-    } else if (requestId) {
-      try {
-        await supabase.from("request_items").delete().eq("request_id", requestId);
-      } catch (e) {
-        Alert.alert("Не удалось очистить черновик", getErrorMessage(e, "Не удалось очистить черновик."));
-        return;
-      }
+    const pendingDeleteIds = draftItems
+      .map((item) => toRemoteDraftItemId(item.id))
+      .filter((id): id is string => Boolean(id));
+    if (draftItems.length > 0 || pendingDeleteIds.length > 0) {
+      const cleared = await saveDraftAtomic({
+        itemsSnapshot: [],
+        pendingDeleteIds,
+        mutationKind: "whole_cancel",
+        localBeforeCount: draftItems.length,
+        localAfterCount: 0,
+      });
+      if (!cleared) return;
     }
     setRequestId("");
     setDisplayNo("");
@@ -1136,7 +908,7 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
     setDraftItems([]);
     closeSubcontractFlow();
     activeDraftScopeKeyRef.current = "";
-  }, [requestId, draftItems, closeSubcontractFlow, saveDraftAtomic]);
+  }, [draftItems, closeSubcontractFlow, saveDraftAtomic]);
 
   const hydrateSelectedSubcontract = useCallback(
     async (it: Subcontract) => {

@@ -1,6 +1,7 @@
-﻿import React from "react";
-import { FlatList, Pressable, RefreshControl, Text, View } from "react-native";
+import React from "react";
+import { Pressable, RefreshControl, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { FlashList } from "../../../ui/FlashList";
 
 type WorkRowLite = {
   progress_id: string;
@@ -23,11 +24,12 @@ type Props = {
 export default function ContractorOtherWorksList(props: Props) {
   const { data, refreshing, loadingWorks, onRefresh, onOpenWork, toHumanWork, toHumanObject, styles } = props;
   return (
-    <FlatList
+    <FlashList
       style={{ flex: 1, marginTop: 12 }}
       contentContainerStyle={{ paddingTop: 8, paddingBottom: 8 }}
       data={data}
       keyExtractor={(item) => `other:${String(item.progress_id)}`}
+      estimatedItemSize={92}
       refreshControl={<RefreshControl refreshing={refreshing || loadingWorks} onRefresh={onRefresh} />}
       ListEmptyComponent={
         <View style={[styles.card, styles.cardDark, styles.cardSeparated]}>

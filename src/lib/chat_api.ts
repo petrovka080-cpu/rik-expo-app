@@ -36,9 +36,53 @@ type ChatActor = {
 export const CHAT_BACKEND_HINT =
   "Apply db/20260317_chat_backend_foundation.sql to the current Supabase project before using chat.";
 
-function getSupabaseAny() {
-  return supabase as any;
-}
+const asRecord = (value: unknown): Record<string, unknown> | null =>
+  value && typeof value === "object" && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : null;
+
+const toTrimmedText = (value: unknown): string | null => {
+  const text = String(value ?? "").trim();
+  return text || null;
+};
+
+const toStringArray = (value: unknown): string[] => {
+  if (!Array.isArray(value)) return [];
+  return value.map((item) => String(item ?? "").trim()).filter(Boolean);
+};
+
+const toChatMessage = (value: unknown): ChatMessage | null => {
+  const record = asRecord(value);
+  if (!record) return null;
+
+  const id = toTrimmedText(record.id);
+  const userId = toTrimmedText(record.user_id);
+  const createdAt = toTrimmedText(record.created_at);
+  const messageType = toTrimmedText(record.message_type) as ChatMessageType | null;
+  if (!id || !userId || !createdAt || !messageType) return null;
+
+  return {
+    id,
+    company_id: toTrimmedText(record.company_id),
+    object_id: toTrimmedText(record.object_id),
+    supplier_id: toTrimmedText(record.supplier_id),
+    user_id: userId,
+    message_type: messageType,
+    content: toTrimmedText(record.content),
+    mentions: toStringArray(record.mentions),
+    media_url: toTrimmedText(record.media_url),
+    media_thumbnail: toTrimmedText(record.media_thumbnail),
+    media_duration: typeof record.media_duration === "number" ? record.media_duration : null,
+    read_by: toStringArray(record.read_by),
+    reply_to_id: toTrimmedText(record.reply_to_id),
+    reactions: asRecord(record.reactions) as Record<string, string[]> | undefined,
+    is_pinned: record.is_pinned === true,
+    pinned_at: toTrimmedText(record.pinned_at),
+    pinned_by: toTrimmedText(record.pinned_by),
+    is_deleted: record.is_deleted === true,
+    created_at: createdAt,
+  };
+};
 
 function toChatError(error: unknown, fallback: string): Error {
   if (error instanceof Error) {
@@ -73,11 +117,10 @@ async function loadCurrentChatActor(): Promise<ChatActor> {
     throw new Error("User is not authenticated.");
   }
 
-  const sb = getSupabaseAny();
   const [profileResult, ownedCompanyResult, listingCompanyResult] = await Promise.all([
-    sb.from("user_profiles").select("full_name").eq("user_id", user.id).maybeSingle(),
-    sb.from("companies").select("id").eq("owner_user_id", user.id).maybeSingle(),
-    sb
+    supabase.from("user_profiles").select("full_name").eq("user_id", user.id).maybeSingle(),
+    supabase.from("companies").select("id").eq("owner_user_id", user.id).maybeSingle(),
+    supabase
       .from("market_listings")
       .select("company_id")
       .eq("user_id", user.id)
@@ -98,9 +141,8 @@ export async function fetchListingChatMessages(
   listingId: string,
   limit = 120,
 ): Promise<ChatMessage[]> {
-  const sb = getSupabaseAny();
-  const { data, error } = await sb
-    .from("chat_messages")
+  const { data, error } = await supabase
+    .from("chat_messages" as never)
     .select("*")
     .eq("supplier_id", listingId)
     .eq("is_deleted", false)
@@ -109,12 +151,12 @@ export async function fetchListingChatMessages(
 
   if (error) throw toChatError(error, "Failed to load chat messages.");
 
-  const rows = Array.isArray(data) ? (data as ChatMessage[]) : [];
+  const rows = Array.isArray(data) ? data.map(toChatMessage).filter((row): row is ChatMessage => Boolean(row)) : [];
   const userIds = Array.from(new Set(rows.map((row) => row.user_id).filter(Boolean)));
   const userMap = new Map<string, string>();
 
   if (userIds.length > 0) {
-    const { data: profiles } = await sb
+    const { data: profiles } = await supabase
       .from("user_profiles")
       .select("user_id, full_name")
       .in("user_id", userIds);
@@ -139,10 +181,9 @@ export async function sendListingChatMessage(
   content: string,
 ): Promise<ChatMessage> {
   const actor = await loadCurrentChatActor();
-  const sb = getSupabaseAny();
 
-  const { data, error } = await sb
-    .from("chat_messages")
+  const { data, error } = await supabase
+    .from("chat_messages" as never)
     .insert({
       company_id: actor.companyId,
       object_id: null,
@@ -151,14 +192,19 @@ export async function sendListingChatMessage(
       message_type: "text",
       content: content.trim(),
       mentions: [],
-    })
+    } as never)
     .select("*")
     .single();
 
   if (error) throw toChatError(error, "Failed to send message.");
 
+  const message = toChatMessage(data);
+  if (!message) {
+    throw new Error("Failed to normalize sent message.");
+  }
+
   return {
-    ...(data as ChatMessage),
+    ...message,
     user: { name: actor.fullName },
   };
 }
@@ -168,7 +214,6 @@ export async function markListingChatMessagesRead(messages: ChatMessage[]): Prom
   const currentUserId = authResult.user?.id;
   if (!currentUserId) return;
 
-  const sb = getSupabaseAny();
   const unread = messages.filter((message) => {
     if (message.user_id === currentUserId) return false;
     const readBy = Array.isArray(message.read_by) ? message.read_by : [];
@@ -177,9 +222,9 @@ export async function markListingChatMessagesRead(messages: ChatMessage[]): Prom
 
   for (const message of unread) {
     const readBy = Array.isArray(message.read_by) ? message.read_by : [];
-    const { error } = await sb
-      .from("chat_messages")
-      .update({ read_by: [...readBy, currentUserId] })
+    const { error } = await supabase
+      .from("chat_messages" as never)
+      .update({ read_by: [...readBy, currentUserId] } as never)
       .eq("id", message.id);
 
     if (error && !isChatBackendMissingError(error)) {
@@ -195,10 +240,9 @@ export async function deleteListingChatMessage(messageId: string): Promise<void>
     throw new Error("User is not authenticated.");
   }
 
-  const sb = getSupabaseAny();
-  const { error } = await sb
-    .from("chat_messages")
-    .update({ is_deleted: true })
+  const { error } = await supabase
+    .from("chat_messages" as never)
+    .update({ is_deleted: true } as never)
     .eq("id", messageId)
     .eq("user_id", currentUserId);
 

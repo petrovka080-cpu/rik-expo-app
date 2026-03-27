@@ -137,6 +137,8 @@ export default function DirectorScreen() {
         closeSheet={vm.closeSheet}
         groups={vm.groups as any}
         propsHeads={vm.data.propsHeads as any}
+        propsHasMore={vm.data.propsHasMore}
+        loadingPropsMore={vm.data.loadingPropsMore}
         loadingRows={vm.data.loadingRows}
         loadingProps={vm.data.loadingProps}
         foremanRequestsCount={vm.groups.length}
@@ -152,6 +154,7 @@ export default function DirectorScreen() {
         ensureSignedIn={ensureSignedIn}
         fetchRows={vm.data.fetchRows as any}
         fetchProps={vm.data.fetchProps as any}
+        loadMoreProps={vm.data.loadMoreProps as any}
         rtToast={vm.rtToast}
         finLoading={vm.finLoading}
         finRows={vm.finRows as any}

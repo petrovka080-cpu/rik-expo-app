@@ -54,6 +54,7 @@ import {
   getPdfFlowErrorMessage,
 } from "../../src/lib/documents/pdfDocumentActions";
 import { generateRequestPdfDocument } from "../../src/lib/documents/pdfDocumentGenerators";
+import { buildForemanSyncUiStatus } from "../../src/lib/offline/foremanSyncRuntime";
 import { prepareAndPreviewGeneratedPdf } from "../../src/lib/pdf/pdf.runner";
 
 import { useForemanHistory } from '../../src/screens/foreman/hooks/useForemanHistory';
@@ -140,17 +141,30 @@ export default function ForemanScreen() {
     setRowBusy,
     requestDetails,
     canEditRequestItem,
+    networkOnline,
     isDraftActive,
-    clearDraftCache,
-    resetDraftState,
+    localDraftBootstrapReady,
+    draftSyncStatus,
+    draftLastSyncAt,
+    draftLastErrorAt,
+    draftLastErrorStage,
+    draftConflictType,
+    draftRetryCount,
+    pendingOperationsCount,
+    draftSyncAttentionNeeded,
+    availableDraftRecoveryActions,
     syncLocalDraftNow,
+    retryDraftSyncNow,
+    rehydrateDraftFromServer,
+    restoreLocalDraftAfterConflict,
+    discardLocalDraftNow,
+    clearFailedQueueTailNow,
     discardWholeDraft,
     ensureRequestId,
     syncRequestHeaderMeta,
     appendLocalDraftRows,
     updateLocalDraftQty,
     removeLocalDraftRow,
-    applySubmittedRequestState,
     openRequestById,
     applyObjectTypeSelection,
     applyLevelSelection,
@@ -161,6 +175,30 @@ export default function ForemanScreen() {
     preloadDisplayNo,
     setDisplayNoByReq,
   });
+
+  const draftSyncUi = useMemo(
+    () =>
+      buildForemanSyncUiStatus({
+        status: draftSyncStatus,
+        conflictType: draftConflictType,
+        pendingOperationsCount,
+        lastSyncAt: draftLastSyncAt,
+        lastErrorAt: draftLastErrorAt,
+        attentionNeeded: draftSyncAttentionNeeded,
+        lastErrorStage: draftLastErrorStage,
+        retryCount: draftRetryCount,
+      }),
+    [
+      draftLastErrorAt,
+      draftLastErrorStage,
+      draftConflictType,
+      draftLastSyncAt,
+      draftRetryCount,
+      draftSyncAttentionNeeded,
+      draftSyncStatus,
+      pendingOperationsCount,
+    ],
+  );
 
   const { runRequestPdf } = useForemanPdf(gbusy);
 
@@ -290,14 +328,16 @@ export default function ForemanScreen() {
   }, [activateHeaderAttention, showHint]);
 
   const ensureEditableContext = useCallback((opts?: { draftMessage?: string; draftFirst?: boolean }) => {
+    if (!localDraftBootstrapReady) return false;
     const checkDraft = () => {
-      if (isDraftActive) return true;
+      const canStartFreshDraft = !requestDetails && !ridStr(requestId);
+      if (isDraftActive || canStartFreshDraft) return true;
       Alert.alert(FOREMAN_TEXT.readonlyTitle, opts?.draftMessage ?? FOREMAN_TEXT.readonlyHint);
       return false;
     };
     if (opts?.draftFirst) return checkDraft() && ensureHeaderReady();
     return ensureHeaderReady() && checkDraft();
-  }, [isDraftActive, ensureHeaderReady]);
+  }, [ensureHeaderReady, isDraftActive, localDraftBootstrapReady, requestDetails, requestId]);
 
   const resolveStatusInfo = useCallback((raw?: string | null) => resolveStatusHelper(raw, REQUEST_STATUS_STYLES), []);
 
@@ -317,11 +357,9 @@ export default function ForemanScreen() {
   }, []);
 
   const finalizeAfterSubmit = useCallback(async () => {
-    clearDraftCache();
     await saveForemanToHistory(foreman);
     await refreshForemanHistory();
-    resetDraftState();
-  }, [clearDraftCache, foreman, refreshForemanHistory, resetDraftState]);
+  }, [foreman, refreshForemanHistory]);
 
   const ensureCanSubmitToDirector = useCallback(() => {
     if (!ensureEditableContext({ draftFirst: true, draftMessage: FOREMAN_TEXT.submitNeedDraftHint })) return false;
@@ -425,10 +463,12 @@ export default function ForemanScreen() {
   }, [displayObjectName, objectType, contextResult, formUi, level, system, zone, filteredSysOptions, objOptions, objAllOptions, safeLevel, safeSystem, safeZone]);
   const scopeNote = useMemo(() => buildScopeNote(objectName, levelName, systemName, zoneName) || '—', [objectName, levelName, systemName, zoneName]);
 
+  const canStartDraftFlow = localDraftBootstrapReady && (isDraftActive || (!requestDetails && !ridStr(requestId)));
+
   const actions = useForemanActions({
     requestId, scopeNote,
     isDraftActive, canEditRequestItem, setQtyDrafts, setRowBusy, items, qtyDrafts,
-    ensureEditableContext, ensureCanSubmitToDirector, applySubmittedRequestState, finalizeAfterSubmit,
+    ensureEditableContext, ensureCanSubmitToDirector, finalizeAfterSubmit,
     showHint, setBusy, alertError,
     appendLocalDraftRows,
     updateLocalDraftQty,
@@ -688,7 +728,9 @@ export default function ForemanScreen() {
     aiQuickOutcomeType,
     aiQuickCandidateGroups,
     aiQuickQuestions,
+    aiQuickSessionHint,
     aiUnavailableReason,
+    aiQuickDegradedMode,
     openAiQuick,
     closeAiQuick,
     handleAiQuickTextChange,
@@ -708,6 +750,7 @@ export default function ForemanScreen() {
     labelForRequest,
     currentDisplayLabel,
     openDraft,
+    networkOnline,
   });
 
   const openDraftFromCatalog = useCallback(() => {
@@ -846,6 +889,7 @@ export default function ForemanScreen() {
             onZoneChange={handleZoneChange}
             ensureHeaderReady={ensureHeaderReady}
             isDraftActive={isDraftActive}
+            canStartDraftFlow={canStartDraftFlow}
             showHint={showHint}
             busy={busy}
             onOpenCatalog={openCatalog}
@@ -854,6 +898,9 @@ export default function ForemanScreen() {
             onOpenDraft={openDraftFromCatalog}
             currentDisplayLabel={currentDisplayLabel}
             itemsCount={items.length}
+            draftSyncStatusLabel={draftSyncUi.label}
+            draftSyncStatusDetail={draftSyncUi.detail}
+            draftSyncStatusTone={draftSyncUi.tone}
             headerAttention={headerAttention}
             onOpenRequestHistory={() => fetchHistory(foreman)}
             onOpenSubcontractHistory={() => void fetchSubcontractHistory()}
@@ -901,7 +948,9 @@ export default function ForemanScreen() {
             aiQuickOutcomeType={aiQuickOutcomeType}
             aiQuickCandidateGroups={aiQuickCandidateGroups}
             aiQuickQuestions={aiQuickQuestions}
+            aiQuickSessionHint={aiQuickSessionHint}
             aiUnavailableReason={aiUnavailableReason}
+            aiQuickDegradedMode={aiQuickDegradedMode}
             onlineConfigured={isForemanQuickRequestConfigured()}
             draftOpen={draftOpen}
             closeDraft={closeDraft}
@@ -918,6 +967,12 @@ export default function ForemanScreen() {
             onPdf={onPdf}
             pdfBusy={draftPdfBusy}
             onSendDraft={handleSendDraftFromSheet}
+            availableDraftRecoveryActions={availableDraftRecoveryActions}
+            onRetryDraftSync={retryDraftSyncNow}
+            onRehydrateDraftFromServer={rehydrateDraftFromServer}
+            onRestoreLocalDraft={restoreLocalDraftAfterConflict}
+            onDiscardLocalDraft={discardLocalDraftNow}
+            onClearFailedQueueTail={clearFailedQueueTailNow}
             isFioConfirmVisible={isFioConfirmVisible}
             handleFioConfirm={handleFioConfirm}
             isFioLoading={isFioLoading}

@@ -1,4 +1,4 @@
-﻿import React, { memo, useMemo } from "react";
+import React, { memo, useMemo } from "react";
 import { Pressable, Text, TextInput, View } from "react-native";
 import TopRightActionBar from "../../../ui/TopRightActionBar";
 import type { HistoryRow } from "../types";
@@ -12,6 +12,9 @@ type UiShape = {
 
 type HistoryHeaderProps = {
   rows: HistoryRow[];
+  totalCount?: number;
+  totalAmount?: number;
+  totalCurrency?: string;
   dateFrom: string;
   dateTo: string;
   searchValue: string;
@@ -23,6 +26,9 @@ type HistoryHeaderProps = {
 
 export const HistoryHeader = memo(function HistoryHeader({
   rows,
+  totalCount,
+  totalAmount,
+  totalCurrency,
   dateFrom,
   dateTo,
   searchValue,
@@ -31,11 +37,13 @@ export const HistoryHeader = memo(function HistoryHeader({
   onRefresh,
   ui,
 }: HistoryHeaderProps) {
-  const total = useMemo(() => (rows || []).reduce((s, r) => s + Number(r?.amount ?? 0), 0), [rows]);
-  const cur = rows?.[0]?.invoice_currency ?? "KGS";
+  const visibleTotal = useMemo(() => (rows || []).reduce((s, r) => s + Number(r?.amount ?? 0), 0), [rows]);
+  const total = typeof totalAmount === "number" ? totalAmount : visibleTotal;
+  const cur = totalCurrency ?? rows?.[0]?.invoice_currency ?? "KGS";
+  const count = typeof totalCount === "number" ? totalCount : rows.length;
   const periodTitle =
     String(dateFrom || "").trim() || String(dateTo || "").trim()
-      ? `${String(dateFrom || "—")} → ${String(dateTo || "—")}`
+      ? `${String(dateFrom || "—")} -> ${String(dateTo || "—")}`
       : "Весь период";
 
   return (
@@ -69,7 +77,7 @@ export const HistoryHeader = memo(function HistoryHeader({
       <View style={{ height: 10 }} />
       <View style={{ paddingBottom: 4 }}>
         <Text style={{ color: ui.sub, fontWeight: "500" }}>
-          Найдено: <Text style={{ fontWeight: "600", color: ui.text }}>{rows.length}</Text>
+          Найдено: <Text style={{ fontWeight: "600", color: ui.text }}>{count}</Text>
           {"  "}• Сумма: <Text style={{ fontWeight: "600", color: ui.text }}>{total.toFixed(2)} {cur}</Text>
         </Text>
       </View>
@@ -139,4 +147,3 @@ export const HistoryRowCard = memo(function HistoryRowCard({ item, onOpen, ui }:
     </Pressable>
   );
 });
-

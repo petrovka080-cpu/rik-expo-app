@@ -1,8 +1,9 @@
 import React from "react";
-import { View, Text, Pressable, TextInput, FlatList, Platform } from "react-native";
+import { View, Text, Pressable, TextInput, Platform } from "react-native";
 import RNModal from "react-native-modal";
 import { UI, s } from "../warehouse.styles";
 import type { Option } from "../warehouse.types";
+import { FlashList } from "../../../ui/FlashList";
 
 type Props = {
   visible: boolean;
@@ -85,11 +86,12 @@ export default function PickOptionSheet({
           autoCapitalize="none"
         />
 
-        <FlatList
+        <FlashList
           style={{ marginTop: 12 }}
           data={items}
           keyExtractor={(x) => x.id}
           keyboardShouldPersistTaps="handled"
+          estimatedItemSize={60}
           renderItem={({ item }) => (
             <Pressable
               onPress={() => onPick(item)}

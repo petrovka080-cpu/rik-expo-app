@@ -30,6 +30,7 @@ type Props = {
   onSystemChange: (v: string) => void;
   ensureHeaderReady: () => boolean;
   isDraftActive: boolean;
+  canStartDraftFlow: boolean;
   showHint: (title: string, text: string) => void;
   setCatalogVisible: (v: boolean) => void;
   busy: boolean;
@@ -38,6 +39,9 @@ type Props = {
   setDraftOpen: (v: boolean) => void;
   currentDisplayLabel: string;
   itemsCount: number;
+  draftSyncStatusLabel: string;
+  draftSyncStatusDetail: string | null;
+  draftSyncStatusTone: "neutral" | "info" | "success" | "warning" | "danger";
   headerAttention: ForemanHeaderAttentionState | null;
   ui: { text: string; sub: string };
   styles: typeof import("./foreman.styles").s;
@@ -47,6 +51,16 @@ export default function ForemanEditorSection(p: Props) {
   const isLowConfidence = p.contextResult?.confidence !== "high";
   const scrollRef = useRef<any>(null);
   const missingKeys = new Set(p.headerAttention?.missingKeys ?? []);
+  const syncToneStyle =
+    p.draftSyncStatusTone === "success"
+      ? { bg: "rgba(34,197,94,0.16)", fg: "#86efac" }
+      : p.draftSyncStatusTone === "info"
+        ? { bg: "rgba(56,189,248,0.16)", fg: "#7dd3fc" }
+        : p.draftSyncStatusTone === "warning"
+          ? { bg: "rgba(245,158,11,0.16)", fg: "#fcd34d" }
+          : p.draftSyncStatusTone === "danger"
+            ? { bg: "rgba(248,113,113,0.16)", fg: "#fca5a5" }
+            : { bg: "rgba(148,163,184,0.16)", fg: "#cbd5e1" };
 
   debugForemanLogLazy("[FOREMAN_EDITOR_4_FIELDS]", () => ({
     objectType: p.objectType,
@@ -177,7 +191,7 @@ export default function ForemanEditorSection(p: Props) {
             <Pressable
               onPress={() => {
                 if (!p.ensureHeaderReady()) return;
-                if (!p.isDraftActive) {
+                if (!p.canStartDraftFlow) {
                   p.showHint("Просмотр заявки", "Редактирование доступно только в текущем черновике.");
                   return;
                 }
@@ -234,6 +248,25 @@ export default function ForemanEditorSection(p: Props) {
                 ? "Открыть позиции и действия"
                 : "Пока пусто - добавь позиции из Каталога или Сметы."}
             </Text>
+            <View
+              style={{
+                alignSelf: "flex-start",
+                marginTop: 8,
+                paddingHorizontal: 10,
+                paddingVertical: 5,
+                borderRadius: 999,
+                backgroundColor: syncToneStyle.bg,
+              }}
+            >
+              <Text style={{ color: syncToneStyle.fg, fontWeight: "800", fontSize: 11 }}>
+                {p.draftSyncStatusLabel}
+              </Text>
+            </View>
+            {p.draftSyncStatusDetail ? (
+              <Text style={[p.styles.draftHint, { marginTop: 6 }]} numberOfLines={2}>
+                {p.draftSyncStatusDetail}
+              </Text>
+            ) : null}
           </View>
           <View style={{ alignItems: "flex-end", gap: 10 }}>
             <View style={p.styles.posPill}>

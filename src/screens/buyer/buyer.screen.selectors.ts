@@ -15,10 +15,11 @@ export function selectBuyerTabCounts(params: {
   approved: BuyerProposalBucketRow[];
   rejected: BuyerProposalBucketRow[];
   subcontractCount?: number | null;
+  inboxTotalCount?: number | null;
 }): BuyerTabCounts {
-  const { groups, pending, approved, rejected, subcontractCount } = params;
+  const { groups, pending, approved, rejected, subcontractCount, inboxTotalCount } = params;
   return {
-    inboxCount: groups.length,
+    inboxCount: Math.max(0, inboxTotalCount ?? groups.length),
     pendingCount: pending.length,
     approvedCount: approved.length,
     rejectedCount: rejected.length,

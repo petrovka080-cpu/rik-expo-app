@@ -1,4 +1,4 @@
-﻿import { normalizeRuText } from "../../lib/text/encoding";
+import { normalizeRuText } from "../../lib/text/encoding";
 
 const ACT_META_PREFIX = "ACT_META::";
 const EXCLUDED_WORK_CODE_PREFIXES = [
@@ -138,12 +138,3 @@ export const normText = (v: unknown): string => {
   textNormCache.set(raw, normalized);
   return normalized;
 };
-
-export function debounce<F extends (...args: unknown[]) => unknown>(fn: F, delay: number) {
-  let timer: ReturnType<typeof setTimeout> | null = null;
-  return (...args: Parameters<F>) => {
-    if (timer) clearTimeout(timer);
-    timer = setTimeout(() => fn(...args), delay);
-  };
-}
-

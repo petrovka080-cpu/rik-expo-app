@@ -26,15 +26,15 @@ function renderPaymentOrderAttachmentsHtml(attachments: PaymentOrderPdfAttachmen
   if (!attachments.length) {
     return `
     <div class="box">
-      <div class="lbl">Р’Р»РѕР¶РµРЅРёСЏ</div>
-      <div class="muted">РќРµС‚ РІР»РѕР¶РµРЅРёР№</div>
+      <div class="lbl">Вложения</div>
+      <div class="muted">Нет вложений</div>
     </div>
   `;
   }
 
   return `
     <div class="box">
-      <div class="lbl">Р’Р»РѕР¶РµРЅРёСЏ</div>
+      <div class="lbl">Вложения</div>
       <div class="attList">
         ${attachments
           .map((attachment) => {
@@ -48,13 +48,13 @@ function renderPaymentOrderAttachmentsHtml(attachments: PaymentOrderPdfAttachmen
           })
           .join("")}
       </div>
-      <div class="muted" style="margin-top:6px">РћС‚РєСЂС‹РІР°СЋС‚СЃСЏ РІ Р±СЂР°СѓР·РµСЂРµ РїРѕ СЃСЃС‹Р»РєРµ.</div>
+      <div class="muted" style="margin-top:6px">Открываются в браузере по ссылке.</div>
     </div>
   `;
 }
 
 function renderPaymentOrderCardsHtml(bills: PaymentOrderPdfBillGroup[], currency: string): string {
-  if (!bills.length) return `<div class="muted" style="margin-top:8px">РќРµС‚ СЃС‚СЂРѕРє</div>`;
+  if (!bills.length) return `<div class="muted" style="margin-top:8px">Нет строк</div>`;
 
   return bills
     .map((bill) => {
@@ -64,14 +64,14 @@ function renderPaymentOrderCardsHtml(bills: PaymentOrderPdfBillGroup[], currency
             .map((line) => `
               <div class="card">
                 <div class="cardTop">
-                  <div class="cardName">${esc(line.name || "вЂ”")}</div>
+                  <div class="cardName">${esc(line.name || "—")}</div>
                   <div class="cardSum">${esc(fmt2(line.sum))} ${esc(currency)}</div>
                 </div>
-                <div class="cardMeta">${esc(fmtQty(line.qty))} ${esc(line.uom)} Г— ${esc(fmt2(line.price))}</div>
+                <div class="cardMeta">${esc(fmtQty(line.qty))} ${esc(line.uom)} × ${esc(fmt2(line.price))}</div>
                 <div class="cardMeta">
-                  РћРїР»Р°С‡РµРЅРѕ РІСЃРµРіРѕ: <b>${esc(fmt2(line.paidAll))}</b> вЂў
-                  СЌС‚РёРј РїР»Р°С‚РµР¶РѕРј: <b>${esc(fmt2(line.paidThis))}</b> вЂў
-                  РѕСЃС‚Р°С‚РѕРє: <b>${esc(fmt2(line.rest))}</b> ${esc(currency)}
+                  Оплачено всего: <b>${esc(fmt2(line.paidAll))}</b> •
+                  этим платежом: <b>${esc(fmt2(line.paidThis))}</b> •
+                  остаток: <b>${esc(fmt2(line.rest))}</b> ${esc(currency)}
                 </div>
               </div>
             `)
@@ -84,10 +84,10 @@ function renderPaymentOrderCardsHtml(bills: PaymentOrderPdfBillGroup[], currency
             </div>
             ${cards}
             <div class="subTotalRow">
-              <div>РС‚РѕРіРѕ РїРѕ ${esc(String(group.typeName).toLowerCase())}</div>
+              <div>Итого по ${esc(String(group.typeName).toLowerCase())}</div>
               <div class="subTotalVal">
                 ${esc(fmt2(group.total))} ${esc(currency)}
-                <div class="muted">РѕРїР»Р°С‡РµРЅРѕ РІСЃРµРіРѕ: <b>${esc(fmt2(group.paidAll))}</b> вЂў СЌС‚РёРј РїР»Р°С‚РµР¶РѕРј: <b>${esc(fmt2(group.paidThis))}</b> вЂў РѕСЃС‚Р°С‚РѕРє: <b>${esc(fmt2(group.rest))}</b></div>
+                <div class="muted">оплачено всего: <b>${esc(fmt2(group.paidAll))}</b> • этим платежом: <b>${esc(fmt2(group.paidThis))}</b> • остаток: <b>${esc(fmt2(group.rest))}</b></div>
               </div>
             </div>
           `;
@@ -97,13 +97,13 @@ function renderPaymentOrderCardsHtml(bills: PaymentOrderPdfBillGroup[], currency
       return `
         <div class="billBox">
           <div class="billHead">
-            <div class="billTitle">РЎС‡С‘С‚: ${esc(bill.invoiceNumber || "вЂ”")} РѕС‚ ${esc(bill.invoiceDate || "вЂ”")}</div>
+            <div class="billTitle">Счёт: ${esc(bill.invoiceNumber || "—")} от ${esc(bill.invoiceDate || "—")}</div>
             <div class="billSum">${esc(fmt2(bill.total))} ${esc(currency)}</div>
           </div>
-          <div class="billSub">РџРѕСЃС‚Р°РІС‰РёРє: ${esc(bill.supplier || "вЂ”")}</div>
+          <div class="billSub">Поставщик: ${esc(bill.supplier || "—")}</div>
           ${groupsHtml}
           <div class="billTotalRow">
-            <div>РРўРћР“Рћ РџРћ РЎР§РЃРўРЈ</div>
+            <div>ИТОГ ПО СЧЁТУ</div>
             <div class="billTotalVal">${esc(fmt2(bill.total))} ${esc(currency)}</div>
           </div>
         </div>
@@ -116,12 +116,12 @@ function renderPaymentOrderSignHtml(accountantFio: string): string {
   return `
     <div class="signs">
       <div class="sign">
-        <div class="sign-label">Р‘СѓС…РіР°Р»С‚РµСЂ</div>
+        <div class="sign-label">Бухгалтер</div>
         <div class="sign-line"></div>
         <div class="sign-name">${esc(accountantFio || "")}</div>
       </div>
       <div class="sign">
-        <div class="sign-label">Р”РёСЂРµРєС‚РѕСЂ</div>
+        <div class="sign-label">Директор</div>
         <div class="sign-line"></div>
         <div class="sign-name">&nbsp;</div>
       </div>
@@ -136,7 +136,7 @@ export function renderPaymentOrderPdfHtml(contract: PaymentOrderPdfContract): st
   const signHtml = renderPaymentOrderSignHtml(header.accountant_fio);
 
   return normalizeRuTextForHtml(`<!doctype html><html lang="ru"><head><meta charset="utf-8"/>
-<title>РџР»Р°С‚С‘Р¶РЅС‹Р№ РѕС‚С‡С‘С‚ ${esc(header.payment_id)}</title>
+<title>Платёжный отчёт ${esc(header.payment_id)}</title>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <style>
   @page { margin: 14mm 12mm 16mm 12mm; }
@@ -144,7 +144,7 @@ export function renderPaymentOrderPdfHtml(contract: PaymentOrderPdfContract): st
   h1{font-size:18px;margin:0 0 10px 0}
   .pageFooter{position:fixed;left:0;right:0;bottom:0;padding:6px 12mm;font-size:11px;color:#64748b;border-top:1px solid #e5e7eb;background:#fff}
   .pageFooter .right{float:right}
-  .pageCounter:before{content:"РЎС‚СЂ. " counter(page) " РёР· " counter(pages);}
+  .pageCounter:before{content:"Стр. " counter(page) " из " counter(pages);}
   .box{border:1px solid #e5e7eb;border-radius:12px;padding:12px;margin:10px 0;background:#fff}
   .row{display:flex;gap:12px;flex-wrap:wrap}
   .cell{flex:1 1 260px}
@@ -187,29 +187,29 @@ export function renderPaymentOrderPdfHtml(contract: PaymentOrderPdfContract): st
 </style></head><body>
 
 <div class="pageFooter">
-  <span class="left">GOX BUILD вЂў РџР»Р°С‚С‘Р¶РЅС‹Р№ РѕС‚С‡С‘С‚</span>
+  <span class="left">GOX BUILD • Платёжный отчёт</span>
   <span class="right pageCounter"></span>
 </div>
 
-<h1>РџР»Р°С‚С‘Р¶РЅС‹Р№ РѕС‚С‡С‘С‚</h1>
-<div class="muted" style="margin:-6px 0 10px 0">Р’РЅСѓС‚СЂРµРЅРЅРёР№ РґРѕРєСѓРјРµРЅС‚. РќРµ СЏРІР»СЏРµС‚СЃСЏ Р±Р°РЅРєРѕРІСЃРєРёРј РїР»Р°С‚С‘Р¶РЅС‹Рј РїРѕСЂСѓС‡РµРЅРёРµРј.</div>
+<h1>Платёжный отчёт</h1>
+<div class="muted" style="margin:-6px 0 10px 0">Внутренний документ. Не является банковским платёжным поручением.</div>
 
 <div class="box">
   <div class="row">
-    <div class="cell"><div class="lbl">РџР»Р°С‚С‘Р¶ ID</div><div class="val">${esc(header.payment_id)}</div></div>
-    <div class="cell"><div class="lbl">Р”Р°С‚Р°/РІСЂРµРјСЏ РѕРїР»Р°С‚С‹</div><div class="val">${esc(header.paid_at)}</div></div>
-    <div class="cell"><div class="lbl">РЎСѓРјРјР°</div><div class="val">${esc(fmt2(header.amount))} ${esc(header.currency)}</div></div>
+    <div class="cell"><div class="lbl">Платёж ID</div><div class="val">${esc(header.payment_id)}</div></div>
+    <div class="cell"><div class="lbl">Дата/время оплаты</div><div class="val">${esc(header.paid_at)}</div></div>
+    <div class="cell"><div class="lbl">Сумма</div><div class="val">${esc(fmt2(header.amount))} ${esc(header.currency)}</div></div>
   </div>
 
   <div class="row" style="margin-top:8px">
     <div class="cell">
-      <div class="lbl">РћСЃРЅРѕРІР°РЅРёРµ</div>
-      <div class="val">РЎС‡С‘С‚: ${esc(header.invoice_number)} РѕС‚ ${esc(header.invoice_date)}</div>
+      <div class="lbl">Основание</div>
+      <div class="val">Счёт: ${esc(header.invoice_number)} от ${esc(header.invoice_date)}</div>
       <div class="muted" style="margin-top:6px">
-        РС‚РѕРіРѕ РїРѕ СЃС‡С‘С‚Сѓ: <b>${esc(fmt2(header.invoice_total))} ${esc(header.currency)}</b> вЂў
-        РћРїР»Р°С‡РµРЅРѕ РІСЃРµРіРѕ: <b>${esc(fmt2(header.total_paid))} ${esc(header.currency)}</b> вЂў
-        РћСЃС‚Р°С‚РѕРє: <b>${esc(fmt2(header.rest))} ${esc(header.currency)}</b>
-        ${header.overpay_all > 0 ? ` вЂў РџРµСЂРµРїР»Р°С‚Р°: <b>${esc(fmt2(header.overpay_all))} ${esc(header.currency)}</b>` : ``}
+        Итого по счёту: <b>${esc(fmt2(header.invoice_total))} ${esc(header.currency)}</b> •
+        Оплачено всего: <b>${esc(fmt2(header.total_paid))} ${esc(header.currency)}</b> •
+        Остаток: <b>${esc(fmt2(header.rest))} ${esc(header.currency)}</b>
+        ${header.overpay_all > 0 ? ` • Переплата: <b>${esc(fmt2(header.overpay_all))} ${esc(header.currency)}</b>` : ``}
       </div>
       <div class="muted" style="margin-top:6px">Proposal: ${esc(header.proposal_id)}</div>
     </div>
@@ -217,7 +217,7 @@ export function renderPaymentOrderPdfHtml(contract: PaymentOrderPdfContract): st
 
   <div class="row" style="margin-top:8px">
     <div class="cell">
-      <div class="lbl">РЎСѓРјРјР° РїСЂРѕРїРёСЃСЊСЋ</div>
+      <div class="lbl">Сумма прописью</div>
       <div class="val" style="font-size:13px">${esc(header.amount_words)}</div>
     </div>
   </div>
@@ -226,71 +226,71 @@ export function renderPaymentOrderPdfHtml(contract: PaymentOrderPdfContract): st
 </div>
 
 <div class="box">
-  <div class="lbl">РџР»Р°С‚РµР»СЊС‰РёРє (РЅР°С€Р° РєРѕРјРїР°РЅРёСЏ)</div>
+  <div class="lbl">Плательщик (наша компания)</div>
   <table>
-    <tr><td>РќР°Р·РІР°РЅРёРµ</td><td>${esc(company.company_name || "вЂ”")}</td></tr>
-    <tr><td>РРќРќ / РљРџРџ</td><td>${esc(company.inn || "вЂ”")} / ${esc(company.kpp || "вЂ”")}</td></tr>
-    <tr><td>РђРґСЂРµСЃ</td><td>${esc(company.address || "вЂ”")}</td></tr>
-    <tr><td>Р‘Р°РЅРє</td><td>${esc(company.bank_name || "вЂ”")}</td></tr>
-    <tr><td>Р‘РРљ</td><td>${esc(company.bik || "вЂ”")}</td></tr>
-    <tr><td>Р /СЃ</td><td>${esc(company.account || "вЂ”")}</td></tr>
-    <tr><td>Рљ/СЃ</td><td>${esc(company.corr_account || "вЂ”")}</td></tr>
-    <tr><td>РўРµР»/Email</td><td>${esc(company.phone || "вЂ”")} / ${esc(company.email || "вЂ”")}</td></tr>
+    <tr><td>Название</td><td>${esc(company.company_name || "—")}</td></tr>
+    <tr><td>ИНН / КПП</td><td>${esc(company.inn || "—")} / ${esc(company.kpp || "—")}</td></tr>
+    <tr><td>Адрес</td><td>${esc(company.address || "—")}</td></tr>
+    <tr><td>Банк</td><td>${esc(company.bank_name || "—")}</td></tr>
+    <tr><td>БИК</td><td>${esc(company.bik || "—")}</td></tr>
+    <tr><td>Р/с</td><td>${esc(company.account || "—")}</td></tr>
+    <tr><td>К/с</td><td>${esc(company.corr_account || "—")}</td></tr>
+    <tr><td>Тел/Email</td><td>${esc(company.phone || "—")} / ${esc(company.email || "—")}</td></tr>
   </table>
 </div>
 
 <div class="box">
-  <div class="lbl">РџРѕР»СѓС‡Р°С‚РµР»СЊ (РїРѕСЃС‚Р°РІС‰РёРє)</div>
+  <div class="lbl">Получатель (поставщик)</div>
   <table>
-    <tr><td>РџРѕСЃС‚Р°РІС‰РёРє</td><td>${esc(header.supplier || "вЂ”")}</td></tr>
-    <tr><td>РќР°Р·РЅР°С‡РµРЅРёРµ</td><td>${esc(header.purpose || "вЂ”")}</td></tr>
-    <tr><td>Р‘СѓС…РіР°Р»С‚РµСЂ</td><td>${esc(header.accountant_fio || "вЂ”")}</td></tr>
-    <tr><td>РЎРїРѕСЃРѕР±</td><td>${esc(header.method)}</td></tr>
+    <tr><td>Поставщик</td><td>${esc(header.supplier || "—")}</td></tr>
+    <tr><td>Назначение</td><td>${esc(header.purpose || "—")}</td></tr>
+    <tr><td>Бухгалтер</td><td>${esc(header.accountant_fio || "—")}</td></tr>
+    <tr><td>Способ</td><td>${esc(header.method)}</td></tr>
 
-    <tr><td colspan="2" style="background:#f8fafc;font-weight:900">Р РµРєРІРёР·РёС‚С‹ РґР»СЏ РѕРїР»Р°С‚С‹</td></tr>
-    <tr><td>Р‘Р°РЅРє</td><td>${esc(header.pay_bank)}</td></tr>
-    <tr><td>Р‘РРљ</td><td>${esc(header.pay_bik)}</td></tr>
-    <tr><td>Р /РЎ</td><td>${esc(header.pay_rs)}</td></tr>
-    <tr><td>РРќРќ</td><td>${esc(header.pay_inn)}</td></tr>
-    <tr><td>РљРџРџ</td><td>${esc(header.pay_kpp)}</td></tr>
+    <tr><td colspan="2" style="background:#f8fafc;font-weight:900">Реквизиты для оплаты</td></tr>
+    <tr><td>Банк</td><td>${esc(header.pay_bank)}</td></tr>
+    <tr><td>БИК</td><td>${esc(header.pay_bik)}</td></tr>
+    <tr><td>Р/с</td><td>${esc(header.pay_rs)}</td></tr>
+    <tr><td>ИНН</td><td>${esc(header.pay_inn)}</td></tr>
+    <tr><td>КПП</td><td>${esc(header.pay_kpp)}</td></tr>
   </table>
 </div>
 
 ${attachmentsHtml}
 
 <div class="box">
-  <div class="lbl">Р Р°СЃС€РёС„СЂРѕРІРєР° РїР»Р°С‚РµР¶Р°</div>
+  <div class="lbl">Расшифровка платежа</div>
 
   <div class="summaryRow">
-    <div>Р’СЃРµРіРѕ РїРѕР·РёС†РёР№: <b>${esc(String(header.total_lines))}</b></div>
+    <div>Всего позиций: <b>${esc(String(header.total_lines))}</b></div>
     <div><b>${esc(fmt2(header.invoice_total))} ${esc(header.currency)}</b></div>
   </div>
 
   <div class="summaryRow">
-    <div>РћРїР»Р°С‡РµРЅРѕ СЌС‚РёРј РїР»Р°С‚РµР¶РѕРј</div>
+    <div>Оплачено этим платежом</div>
     <div><b>${esc(fmt2(header.amount))} ${esc(header.currency)}</b></div>
   </div>
 
   <div class="summaryRow">
-    <div>РћРїР»Р°С‡РµРЅРѕ РІСЃРµРіРѕ РїРѕ СЃС‡С‘С‚Сѓ</div>
+    <div>Оплачено всего по счёту</div>
     <div><b>${esc(fmt2(header.total_paid))} ${esc(header.currency)}</b></div>
   </div>
 
   <div class="summaryRow">
-    <div>РћСЃС‚Р°С‚РѕРє РїРѕ СЃС‡С‘С‚Сѓ</div>
+    <div>Остаток по счёту</div>
     <div><b>${esc(fmt2(header.rest))} ${esc(header.currency)}</b></div>
   </div>
 
   ${header.this_overpay > 0 ? `
   <div class="summaryRow">
-    <div>РџРµСЂРµРїР»Р°С‚Р° СЌС‚РёРј РїР»Р°С‚РµР¶РѕРј</div>
+    <div>Переплата этим платежом</div>
     <div><b>${esc(fmt2(header.this_overpay))} ${esc(header.currency)}</b></div>
   </div>` : ``}
 
   ${cardsHtml}
 
   <div class="grandRow">
-    <div>РћР‘Р©РР™ РРўРћР“ (РїРѕР·РёС†РёРё)</div>
+    <div>ОБЩИЙ ИТОГ (позиции)</div>
     <div class="grandVal">${esc(fmt2(header.invoice_total))} ${esc(header.currency)}</div>
   </div>
 
@@ -300,5 +300,6 @@ ${attachmentsHtml}
 </body></html>`, {
     documentType: "payment_order",
     source: "payment_order_pdf",
+    maxLength: 200000,
   });
 }

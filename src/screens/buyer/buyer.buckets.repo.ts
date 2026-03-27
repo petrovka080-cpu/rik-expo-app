@@ -8,14 +8,14 @@ import {
   type BuyerRejectedProposalRow,
 } from "./buyer.buckets.repo.data";
 
-const BUYER_STATUS_PENDING = "На утверждении";
-const BUYER_STATUS_APPROVED = "Утверждено";
-const BUYER_STATUS_REWORK = "На доработке";
+const BUYER_STATUS_PENDING = "\u041d\u0430 \u0443\u0442\u0432\u0435\u0440\u0436\u0434\u0435\u043d\u0438\u0438";
+const BUYER_STATUS_APPROVED = "\u0423\u0442\u0432\u0435\u0440\u0436\u0434\u0435\u043d\u043e";
+const BUYER_STATUS_REWORK = "\u041d\u0430 \u0434\u043e\u0440\u0430\u0431\u043e\u0442\u043a\u0435";
 
 export async function fetchBuyerProposalSummaryByStatus(
   supabase: SupabaseClient,
   status: string,
-) : Promise<PostgrestResponse<BuyerProposalSummaryRow>> {
+): Promise<PostgrestResponse<BuyerProposalSummaryRow>> {
   return fetchBuyerProposalSummaryByStatuses(supabase, [status]);
 }
 
@@ -49,7 +49,7 @@ export async function fetchBuyerRejectedProposalRows(
 export async function fetchBuyerProposalItemIds(
   supabase: SupabaseClient,
   proposalIds: string[],
-) : Promise<PostgrestResponse<BuyerProposalItemIdRow>> {
+): Promise<PostgrestResponse<BuyerProposalItemIdRow>> {
   const query = supabase
     .from("proposal_items")
     .select(BUYER_PROPOSAL_ITEM_ID_SELECT)

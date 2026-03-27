@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useDeferredValue, useEffect, useRef, useState } from "react";
 import type { WorkMaterialRow } from "../../components/WorkMaterialsEditor";
 
 type Params = {
@@ -8,25 +8,18 @@ type Params = {
 };
 
 export function useContractorWorkSearchController(params: Params) {
-  const { supabaseClient, mapCatalogSearchToWorkMaterials, delayMs = 300 } = params;
+  const { supabaseClient, mapCatalogSearchToWorkMaterials } = params;
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<WorkMaterialRow[]>([]);
+  const deferredQuery = useDeferredValue(query);
 
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const seqRef = useRef(0);
-
-  const clearPendingTimer = useCallback(() => {
-    if (!timerRef.current) return;
-    clearTimeout(timerRef.current);
-    timerRef.current = null;
-  }, []);
 
   const clear = useCallback(() => {
     seqRef.current += 1;
-    clearPendingTimer();
     setQuery("");
     setResults([]);
-  }, [clearPendingTimer]);
+  }, []);
 
   const runSearch = useCallback(
     async (q: string, seq: number) => {
@@ -54,27 +47,23 @@ export function useContractorWorkSearchController(params: Params) {
   const onChange = useCallback(
     (text: string) => {
       setQuery(text);
-      const q = text.trim();
-      const seq = ++seqRef.current;
-      clearPendingTimer();
-      if (q.length < 2) {
-        setResults([]);
-        return;
-      }
-      timerRef.current = setTimeout(() => {
-        void runSearch(q, seq);
-      }, delayMs);
     },
-    [clearPendingTimer, delayMs, runSearch]
+    []
   );
 
-  useEffect(
-    () => () => {
-      seqRef.current += 1;
-      clearPendingTimer();
-    },
-    [clearPendingTimer]
-  );
+  useEffect(() => {
+    const q = deferredQuery.trim();
+    const seq = ++seqRef.current;
+    if (q.length < 2) {
+      setResults([]);
+      return;
+    }
+    void runSearch(q, seq);
+  }, [deferredQuery, runSearch]);
+
+  useEffect(() => () => {
+    seqRef.current += 1;
+  }, []);
 
   return {
     query,

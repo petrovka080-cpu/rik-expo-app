@@ -39,6 +39,13 @@ type Props = {
   workModalSaving: boolean;
   loadingIssued: boolean;
   workModalHint: string;
+  progressSyncLabel: string;
+  progressSyncDetail: string | null;
+  progressSyncTone: "neutral" | "info" | "success" | "warning" | "danger";
+  canSubmitProgress: boolean;
+  canRetryProgress: boolean;
+  onSubmitProgress: () => void;
+  onRetryProgress: () => void;
   onOpenContract: () => void;
   onOpenActBuilder: () => void;
   onOpenSummaryPdf: () => void;
@@ -104,9 +111,9 @@ export default function ContractorWorkModal(props: Props) {
           paddingBottom: 24,
         }}
       >
-        {props.workModalRow && (
+        {props.workModalRow ? (
           <>
-            {props.workModalLoading && (
+            {props.workModalLoading ? (
               <Text
                 style={{
                   fontSize: 12,
@@ -117,7 +124,7 @@ export default function ContractorWorkModal(props: Props) {
               >
                 Загрузка истории и материалов...
               </Text>
-            )}
+            ) : null}
 
             <WorkModalOverviewSection
               workName={props.workModalRow.work_name || ""}
@@ -136,6 +143,13 @@ export default function ContractorWorkModal(props: Props) {
               workModalSaving={props.workModalSaving}
               loadingIssued={props.loadingIssued}
               workModalHint={props.workModalHint}
+              progressSyncLabel={props.progressSyncLabel}
+              progressSyncDetail={props.progressSyncDetail}
+              progressSyncTone={props.progressSyncTone}
+              canSubmitProgress={props.canSubmitProgress}
+              canRetryProgress={props.canRetryProgress}
+              onSubmitProgress={props.onSubmitProgress}
+              onRetryProgress={props.onRetryProgress}
               onOpenContract={props.onOpenContract}
               onOpenActBuilder={props.onOpenActBuilder}
               onOpenSummaryPdf={props.onOpenSummaryPdf}
@@ -172,7 +186,7 @@ export default function ContractorWorkModal(props: Props) {
 
             <View style={{ height: 24 }} />
           </>
-        )}
+        ) : null}
       </ScrollView>
     </SafeAreaView>
   );

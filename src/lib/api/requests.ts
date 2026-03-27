@@ -60,6 +60,10 @@ type RequestItemBatchInput = {
   qty: number;
   opts?: RequestItemAddOpts;
 };
+type RequestItemAddResult = {
+  item_id: string;
+  rik_code: string;
+};
 type RequestDraftSelectRow = Pick<
   RequestsTable["Row"],
   | "id"
@@ -373,6 +377,16 @@ export async function addRequestItemFromRik(
   qty: number,
   opts?: RequestItemAddOpts,
 ): Promise<boolean> {
+  await addRequestItemFromRikDetailed(requestId, rik_code, qty, opts);
+  return true;
+}
+
+export async function addRequestItemFromRikDetailed(
+  requestId: number | string,
+  rik_code: string,
+  qty: number,
+  opts?: RequestItemAddOpts,
+): Promise<RequestItemAddResult> {
   if (!rik_code) throw new Error("rik_code required");
 
   const q = Number(qty);
@@ -399,13 +413,24 @@ export async function addRequestItemFromRik(
     logRequestsDebug("[addRequestItemFromRik/patch]", parseErr(e));
   }
 
-  return true;
+  return {
+    item_id: itemId,
+    rik_code,
+  };
 }
 
 export async function addRequestItemsFromRikBatch(
   requestId: number | string,
   items: RequestItemBatchInput[],
 ): Promise<number> {
+  const results = await addRequestItemsFromRikBatchDetailed(requestId, items);
+  return results.length;
+}
+
+export async function addRequestItemsFromRikBatchDetailed(
+  requestId: number | string,
+  items: RequestItemBatchInput[],
+): Promise<RequestItemAddResult[]> {
   const rid = normalizeRequestFilterId(requestId);
   if (!rid) throw new Error("request_id is empty");
 
@@ -414,7 +439,7 @@ export async function addRequestItemsFromRikBatch(
     qty: Number(item?.qty),
     opts: item?.opts,
   }));
-  if (!prepared.length) return 0;
+  if (!prepared.length) return [];
 
   for (const item of prepared) {
     if (!item.rik_code) throw new Error("rik_code required");
@@ -422,18 +447,18 @@ export async function addRequestItemsFromRikBatch(
   }
 
   const chunkSize = 8;
-  let okCount = 0;
+  const addedItems: RequestItemAddResult[] = [];
 
   for (let idx = 0; idx < prepared.length; idx += chunkSize) {
     const pack = prepared.slice(idx, idx + chunkSize);
     const results = await Promise.allSettled(
-      pack.map((item) => addRequestItemFromRik(rid, item.rik_code, item.qty, item.opts)),
+      pack.map((item) => addRequestItemFromRikDetailed(rid, item.rik_code, item.qty, item.opts)),
     );
 
     let firstError: unknown = null;
     for (const result of results) {
       if (result.status === "fulfilled") {
-        okCount += 1;
+        addedItems.push(result.value);
         continue;
       }
       if (firstError == null) firstError = result.reason;
@@ -441,7 +466,7 @@ export async function addRequestItemsFromRikBatch(
 
     if (firstError != null) {
       logRequestsDebug("[addRequestItemsFromRikBatch]", {
-        okCount,
+        okCount: addedItems.length,
         total: prepared.length,
         failedAt: idx,
         error: parseErr(firstError),
@@ -450,7 +475,7 @@ export async function addRequestItemsFromRikBatch(
     }
   }
 
-  return okCount;
+  return addedItems;
 }
 
 async function requestHasPostDraftItems(requestId: string): Promise<boolean> {

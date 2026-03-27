@@ -1,14 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
     View, Text, ScrollView, TextInput, Pressable, Alert, ActivityIndicator
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { supabase } from '@/src/lib/supabaseClient';
-import { getMyCompanyId } from '@/src/lib/rik_api';
-import { useTranslation } from 'react-i18next';
+import { supabase } from '../../src/lib/supabaseClient';
+import { getMyCompanyId } from '../../src/lib/rik_api';
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
-import { BackButton } from '@/src/components/ui/BackButton';
+import { BackButton } from '../../src/components/ui/BackButton';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // TYPES
@@ -174,7 +173,6 @@ const defaultEquipmentUsage: EquipmentUsage[] = [
 // ─────────────────────────────────────────────────────────────────────────────
 export default function FormC1Screen() {
     const router = useRouter();
-    const { t } = useTranslation();
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [exporting, setExporting] = useState(false);
@@ -216,11 +214,7 @@ export default function FormC1Screen() {
     // ─────────────────────────────────────────────────────────────────────────
     // LOAD DATA
     // ─────────────────────────────────────────────────────────────────────────
-    useEffect(() => {
-        loadInitialData();
-    }, []);
-
-    const loadInitialData = async () => {
+    const loadInitialData = useCallback(async () => {
         try {
             const cid = await getMyCompanyId();
             if (!cid) {
@@ -251,7 +245,11 @@ export default function FormC1Screen() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [router]);
+
+    useEffect(() => {
+        loadInitialData();
+    }, [loadInitialData]);
 
     // ─────────────────────────────────────────────────────────────────────────
     // AUTO-FILL FROM EXISTING DATA

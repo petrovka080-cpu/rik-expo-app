@@ -53,12 +53,12 @@ function ListRowInner({
           </Text>
 
           <Text style={{ fontSize: 14, lineHeight: 20, color: UI.sub, fontWeight: "500" }} numberOfLines={1}>
-            Счёт {row.invoiceNo} · {row.invoiceDate}
+            РЎС‡С‘С‚ {row.invoiceNo} В· {row.invoiceDate}
           </Text>
 
           {row.rest > 0 && (
             <Text style={{ fontSize: 12, fontWeight: "500", color: "#FBBF24", marginTop: 8 }}>
-              Остаток: {row.rest} {row.currency}
+              РћСЃС‚Р°С‚РѕРє: {row.rest} {row.currency}
             </Text>
           )}
         </View>

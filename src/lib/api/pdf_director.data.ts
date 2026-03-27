@@ -15,21 +15,25 @@ import {
 import { prepareDirectorProductionReportPdfModelShared } from "../pdf/directorProductionReport.shared";
 import { prepareDirectorSubcontractReportPdfModelShared } from "../pdf/directorSubcontractReport.shared";
 import { prepareDirectorSupplierSummaryPdfModelShared } from "../pdf/directorSupplierSummary.shared";
+import type {
+  FinanceRow,
+  FinSpendRow,
+} from "../../screens/director/director.finance";
 
 export type DirectorSupplierSummaryPdfInput = {
   supplier: string;
   periodFrom?: string | null;
   periodTo?: string | null;
-  financeRows: any[];
-  spendRows?: any[];
+  financeRows?: FinanceRow[] | null;
+  spendRows?: FinSpendRow[] | null;
   onlyOverpay?: boolean;
 };
 
 export type DirectorManagementReportPdfInput = {
   periodFrom?: string | null;
   periodTo?: string | null;
-  financeRows: any[];
-  spendRows: any[];
+  financeRows?: FinanceRow[] | null;
+  spendRows?: FinSpendRow[] | null;
   topN?: number;
   dueDaysDefault?: number;
   criticalDays?: number;
@@ -593,7 +597,7 @@ export function prepareDirectorManagementReportPdfModel(
     const approvedIso = clampIso(row?.director_approved_at ?? row?.approved_at ?? row?.approvedAtIso);
     if (!inPeriod(approvedIso)) continue;
 
-    const kind = kindNorm(row?.kind_name ?? row?.kindName ?? row?.kind);
+    const kind = kindNorm(row?.kind_name);
     const approved = nnum(row?.approved_alloc);
     const paid = nnum(row?.paid_alloc_cap ?? row?.paid_alloc);
     const overpay = nnum(row?.overpay_alloc);
@@ -662,8 +666,8 @@ export function prepareDirectorManagementReportPdfModel(
 
   for (const row of financeRows) {
     const supplier = pickSupplier(row);
-    const amount = nnum(row?.amount ?? row?.invoice_amount ?? row?.invoiceAmount ?? 0);
-    const paid = nnum(row?.paidAmount ?? row?.total_paid ?? row?.totalPaid ?? row?.paid_amount ?? 0);
+    const amount = nnum(row?.amount);
+    const paid = nnum(row?.paidAmount);
     const rest = Math.max(amount - paid, 0);
 
     if (amount <= 0 && rest <= 0) continue;
