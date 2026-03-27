@@ -1,7 +1,14 @@
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { Alert } from "react-native";
 
 import type { RequestDetails } from "../../../lib/catalog_api";
+import {
+  buildForemanAiQuickAppliedItems,
+  buildForemanAiQuickReviewGroups,
+  canApplyForemanAiQuickReview,
+  type ForemanAiQuickMode,
+  type ForemanAiQuickSelectionMap,
+} from "../foreman.aiQuickReview";
 import { ridStr, toErrorText } from "../foreman.helpers";
 import type { ForemanHeaderRequirementResult } from "../foreman.headerRequirements";
 import type { ForemanDraftAppendInput, ForemanLocalDraftSnapshot } from "../foreman.localDraft";
@@ -54,10 +61,33 @@ const buildAiQuickSessionHint = (
   if (!latestTurn || !Array.isArray(latestTurn.items) || latestTurn.items.length === 0) return "";
   if (latestTurn.items.length === 1) {
     const latestItem = latestTurn.items[0];
-    return `\u041f\u043e\u0441\u043b\u0435\u0434\u043d\u044f\u044f \u043f\u043e\u0434\u0442\u0432\u0435\u0440\u0436\u0434\u0451\u043d\u043d\u0430\u044f \u043f\u043e\u0437\u0438\u0446\u0438\u044f: ${latestItem.name}, ${latestItem.qty} ${latestItem.unit}. \u041c\u043e\u0436\u043d\u043e \u0441\u043a\u0430\u0437\u0430\u0442\u044c "\u0435\u0449\u0451 \u0441\u0442\u043e\u043b\u044c\u043a\u043e \u0436\u0435".`;
+    return `Последняя подтверждённая позиция: ${latestItem.name}, ${latestItem.qty} ${latestItem.unit}.`;
   }
-  return `\u041f\u043e\u0441\u043b\u0435\u0434\u043d\u0438\u0439 \u043f\u043e\u0434\u0442\u0432\u0435\u0440\u0436\u0434\u0451\u043d\u043d\u044b\u0439 \u043d\u0430\u0431\u043e\u0440: ${latestTurn.items.length} \u043f\u043e\u0437\u0438\u0446\u0438\u0439. \u0414\u043b\u044f \u043f\u043e\u0432\u0442\u043e\u0440\u0430 \u043b\u0443\u0447\u0448\u0435 \u0443\u0442\u043e\u0447\u043d\u0438\u0442\u044c, \u043a\u0430\u043a\u0443\u044e \u0438\u043c\u0435\u043d\u043d\u043e \u043f\u043e\u0437\u0438\u0446\u0438\u044e \u043d\u0443\u0436\u043d\u043e \u0434\u043e\u0431\u0430\u0432\u0438\u0442\u044c.`;
+  return `Последний подтверждённый набор: ${latestTurn.items.length} позиций.`;
 };
+
+const buildDraftAppendRows = (params: {
+  scopeNote: string;
+  items: {
+    rik_code: string;
+    qty: number;
+    kind: string;
+    name: string;
+    unit: string;
+    specs?: string | null;
+  }[];
+}): ForemanDraftAppendInput[] =>
+  params.items.map((item) => ({
+    rik_code: item.rik_code,
+    qty: item.qty,
+    meta: {
+      note: [params.scopeNote, item.specs].filter(Boolean).join(" | ") || params.scopeNote || item.specs || null,
+      app_code: null,
+      kind: item.kind,
+      name_human: item.name,
+      uom: item.unit,
+    },
+  }));
 
 export function useForemanAiQuickFlow({
   headerRequirements,
@@ -99,23 +129,38 @@ export function useForemanAiQuickFlow({
   const aiQuickSessionHistory = useForemanUiStore((state) => state.aiQuickSessionHistory);
   const pushAiQuickSessionTurn = useForemanUiStore((state) => state.pushAiQuickSessionTurn);
   const resetAiQuickUi = useForemanUiStore((state) => state.resetAiQuickUi);
+
+  const [aiQuickMode, setAiQuickMode] = useState<ForemanAiQuickMode>("compose");
+  const [aiQuickApplying, setAiQuickApplying] = useState(false);
+  const [selectedChoicesByGroupId, setSelectedChoicesByGroupId] =
+    useState<ForemanAiQuickSelectionMap>({});
+
   const aiQuickSessionHint = useMemo(
     () => buildAiQuickSessionHint(aiQuickSessionHistory),
     [aiQuickSessionHistory],
   );
+  const aiQuickReviewGroups = useMemo(
+    () => buildForemanAiQuickReviewGroups(aiQuickCandidateGroups, selectedChoicesByGroupId),
+    [aiQuickCandidateGroups, selectedChoicesByGroupId],
+  );
+  const aiQuickCanApply = useMemo(
+    () =>
+      canApplyForemanAiQuickReview({
+        outcomeType: aiQuickOutcomeType,
+        preview: aiQuickPreview,
+        reviewGroups: aiQuickReviewGroups,
+        questions: aiQuickQuestions,
+      }),
+    [aiQuickOutcomeType, aiQuickPreview, aiQuickQuestions, aiQuickReviewGroups],
+  );
 
-  const openAiQuick = useCallback(() => {
-    resetAiQuickUi();
-    setAiQuickVisible(true);
-  }, [resetAiQuickUi, setAiQuickVisible]);
+  const resetReviewState = useCallback(() => {
+    setAiQuickMode("compose");
+    setAiQuickApplying(false);
+    setSelectedChoicesByGroupId({});
+  }, []);
 
-  const closeAiQuick = useCallback(() => {
-    if (aiQuickLoading) return;
-    resetAiQuickUi();
-  }, [aiQuickLoading, resetAiQuickUi]);
-
-  const handleAiQuickTextChange = useCallback((value: string) => {
-    setAiQuickText(value);
+  const clearParsedState = useCallback(() => {
     setAiQuickError("");
     setAiQuickNotice("");
     setAiQuickPreview([]);
@@ -123,6 +168,8 @@ export function useForemanAiQuickFlow({
     setAiQuickCandidateGroups([]);
     setAiQuickQuestions([]);
     setAiUnavailableReason("");
+    setSelectedChoicesByGroupId({});
+    setAiQuickMode("compose");
   }, [
     setAiQuickCandidateGroups,
     setAiQuickError,
@@ -130,17 +177,52 @@ export function useForemanAiQuickFlow({
     setAiQuickOutcomeType,
     setAiQuickPreview,
     setAiQuickQuestions,
-    setAiQuickText,
     setAiUnavailableReason,
   ]);
 
-  const handleAiQuickSubmit = useCallback(async () => {
+  const openAiQuick = useCallback(() => {
+    resetAiQuickUi();
+    resetReviewState();
+    setAiQuickVisible(true);
+  }, [resetAiQuickUi, resetReviewState, setAiQuickVisible]);
+
+  const closeAiQuick = useCallback(() => {
+    if (aiQuickLoading || aiQuickApplying) return;
+    resetAiQuickUi();
+    resetReviewState();
+  }, [aiQuickApplying, aiQuickLoading, resetAiQuickUi, resetReviewState]);
+
+  const handleAiQuickTextChange = useCallback(
+    (value: string) => {
+      setAiQuickText(value);
+      clearParsedState();
+    },
+    [clearParsedState, setAiQuickText],
+  );
+
+  const handleAiQuickBackToCompose = useCallback(() => {
+    if (aiQuickLoading || aiQuickApplying) return;
+    setAiQuickMode("compose");
+  }, [aiQuickApplying, aiQuickLoading]);
+
+  const handleAiQuickSelectCandidate = useCallback((groupId: string, rikCode: string) => {
+    const normalizedGroupId = String(groupId || "").trim();
+    const normalizedRikCode = String(rikCode || "").trim();
+    if (!normalizedGroupId || !normalizedRikCode) return;
+    setSelectedChoicesByGroupId((current) => ({
+      ...current,
+      [normalizedGroupId]: normalizedRikCode,
+    }));
+  }, []);
+
+  const handleAiQuickParse = useCallback(async () => {
     const promptText = aiQuickText.trim();
-    if (!promptText || aiQuickLoading) return;
+    if (!promptText || aiQuickLoading || aiQuickApplying) return;
 
     if (headerRequirements.missing.length) {
       activateHeaderAttention(`${headerRequirements.message} Я перевёл вас к этим полям.`);
       resetAiQuickUi();
+      resetReviewState();
       showHint(
         FOREMAN_TEXT.fillHeaderTitle,
         `${headerRequirements.message} Я перевёл вас к этим полям сверху.`,
@@ -156,9 +238,11 @@ export function useForemanAiQuickFlow({
     setAiQuickError("");
     setAiQuickNotice("");
     setAiQuickOutcomeType("idle");
+    setAiQuickPreview([]);
     setAiQuickCandidateGroups([]);
     setAiQuickQuestions([]);
     setAiUnavailableReason("");
+    setSelectedChoicesByGroupId({});
 
     try {
       const localAssistOutcome = resolveForemanQuickLocalAssist({
@@ -166,7 +250,8 @@ export function useForemanAiQuickFlow({
         lastResolvedItems: aiQuickSessionHistory[aiQuickSessionHistory.length - 1]?.items ?? [],
         networkOnline,
       });
-      const outcome = localAssistOutcome ?? await resolveForemanQuickRequest(promptText);
+      const outcome = localAssistOutcome ?? (await resolveForemanQuickRequest(promptText));
+
       if (outcome.type === "candidate_options") {
         setAiQuickOutcomeType("candidate_options");
         setAiQuickCandidateGroups(outcome.options);
@@ -175,6 +260,7 @@ export function useForemanAiQuickFlow({
         setAiQuickPreview(outcome.resolvedItems ?? []);
         setAiQuickError("");
         setAiQuickNotice(outcome.message || "");
+        setAiQuickMode("review");
         return;
       }
 
@@ -184,7 +270,9 @@ export function useForemanAiQuickFlow({
         setAiQuickCandidateGroups(outcome.options ?? []);
         setAiUnavailableReason("");
         setAiQuickPreview(outcome.resolvedItems ?? []);
-        setAiQuickError(outcome.message || "Нужно уточнить позиции или количество.");
+        setAiQuickError("");
+        setAiQuickNotice(outcome.message || "Нужно уточнить позиции или количество.");
+        setAiQuickMode("review");
         return;
       }
 
@@ -194,7 +282,9 @@ export function useForemanAiQuickFlow({
         setAiQuickCandidateGroups(outcome.options ?? []);
         setAiUnavailableReason("");
         setAiQuickPreview(outcome.resolvedItems ?? []);
-        setAiQuickError(outcome.message || "Нужно уточнить позиции или добавить их вручную.");
+        setAiQuickError("");
+        setAiQuickNotice(outcome.message || "Нужно уточнить позиции или добавить их вручную.");
+        setAiQuickMode("review");
         return;
       }
 
@@ -205,6 +295,7 @@ export function useForemanAiQuickFlow({
         setAiQuickQuestions([]);
         setAiQuickPreview([]);
         setAiQuickError(outcome.message || "AI временно недоступен.");
+        setAiQuickMode("compose");
         return;
       }
 
@@ -213,82 +304,34 @@ export function useForemanAiQuickFlow({
       setAiQuickCandidateGroups([]);
       setAiQuickQuestions([]);
       setAiUnavailableReason("");
+      setAiQuickError("");
       setAiQuickNotice(outcome.message || "");
 
       if (outcome.items.length === 0) {
-        setAiQuickError(outcome.message || "Нужно уточнить позиции или количество.");
+        setAiQuickNotice("Нужно уточнить позиции или количество.");
+        setAiQuickMode("compose");
         return;
       }
 
-      const prepared: ForemanDraftAppendInput[] = outcome.items.map((item) => ({
-        rik_code: item.rik_code,
-        qty: item.qty,
-        meta: {
-          note: [scopeNote, item.specs].filter(Boolean).join(" | ") || scopeNote || item.specs || null,
-          app_code: null,
-          kind: item.kind,
-          name_human: item.name,
-          uom: item.unit,
-        },
-      }));
-
-      const beforeLineCount = itemsCount;
-      const nextSnapshot = appendLocalDraftRows(prepared);
-      pushAiQuickSessionTurn({
-        prompt: promptText,
-        items: outcome.items,
-        createdAt: new Date().toISOString(),
-      });
-
-      let syncedRequestId = ridStr(requestId);
-      try {
-        const syncResult = await syncLocalDraftNow({
-          context: "foremanAiQuickRequest",
-          overrideSnapshot: nextSnapshot,
-          mutationKind: "ai_local_add",
-          localBeforeCount: beforeLineCount,
-          localAfterCount: nextSnapshot?.items.length ?? 0,
-        });
-        syncedRequestId = ridStr(syncResult?.requestId) || syncedRequestId;
-      } catch {
-        setAiQuickNotice("Позиции сохранены локально. Когда сеть восстановится, черновик синхронизируется автоматически.");
-      }
-
-      const draftLabel = String(
-        (syncedRequestId && labelForRequest(syncedRequestId)) || currentDisplayLabel || syncedRequestId || "черновик",
-      ).trim() || "черновик";
-      setAiQuickNotice((prev) => prev || `Черновик ${draftLabel} сформирован. Проверьте позиции и отправьте его отдельно.`);
-      clearHeaderAttention();
-
-      resetAiQuickUi();
-      openDraft();
-      showHint(
-        "Черновик сформирован",
-        `Черновик ${draftLabel} создан. Проверьте позиции и отправьте его отдельно из карточки черновика.`,
-      );
+      setAiQuickMode("review");
     } catch (error) {
-      setAiQuickError(toErrorText(error, "Не удалось сформировать AI-заявку."));
+      setAiQuickError(toErrorText(error, "Не удалось разобрать AI-заявку."));
+      setAiQuickMode("compose");
     } finally {
       setAiQuickLoading(false);
     }
   }, [
     activateHeaderAttention,
+    aiQuickApplying,
     aiQuickLoading,
     aiQuickSessionHistory,
     aiQuickText,
-    appendLocalDraftRows,
-    clearHeaderAttention,
-    currentDisplayLabel,
     headerRequirements,
     isDraftActive,
-    itemsCount,
-    labelForRequest,
-    openDraft,
     networkOnline,
     requestDetails,
-    requestId,
     resetAiQuickUi,
-    scopeNote,
+    resetReviewState,
     setAiQuickCandidateGroups,
     setAiQuickError,
     setAiQuickLoading,
@@ -297,15 +340,116 @@ export function useForemanAiQuickFlow({
     setAiQuickPreview,
     setAiQuickQuestions,
     setAiUnavailableReason,
+    showHint,
+  ]);
+
+  const handleAiQuickApply = useCallback(async () => {
+    if (!aiQuickCanApply || aiQuickLoading || aiQuickApplying) return;
+
+    const promptText = aiQuickText.trim();
+    const appliedItems = buildForemanAiQuickAppliedItems({
+      preview: aiQuickPreview,
+      reviewGroups: aiQuickReviewGroups,
+    });
+    if (!promptText || appliedItems.length === 0) return;
+
+    if (requestDetails && !isDraftActive) {
+      Alert.alert(FOREMAN_TEXT.readonlyTitle, FOREMAN_TEXT.readonlyHint);
+      return;
+    }
+
+    setAiQuickApplying(true);
+    setAiQuickError("");
+
+    try {
+      const prepared = buildDraftAppendRows({
+        scopeNote,
+        items: appliedItems,
+      });
+
+      const beforeLineCount = itemsCount;
+      const nextSnapshot = appendLocalDraftRows(prepared);
+      pushAiQuickSessionTurn({
+        prompt: promptText,
+        items: appliedItems,
+        createdAt: new Date().toISOString(),
+      });
+
+      let syncedRequestId = ridStr(requestId);
+      let localOnly = false;
+      try {
+        const syncResult = await syncLocalDraftNow({
+          context: "applyAiResolutionToDraft",
+          overrideSnapshot: nextSnapshot,
+          mutationKind: "ai_local_add",
+          localBeforeCount: beforeLineCount,
+          localAfterCount: nextSnapshot?.items.length ?? 0,
+        });
+        syncedRequestId = ridStr(syncResult?.requestId) || syncedRequestId;
+      } catch {
+        localOnly = true;
+      }
+
+      const draftLabel = String(
+        (syncedRequestId && labelForRequest(syncedRequestId))
+          || currentDisplayLabel
+          || syncedRequestId
+          || "черновик",
+      ).trim() || "черновик";
+
+      clearHeaderAttention();
+      resetAiQuickUi();
+      resetReviewState();
+      openDraft();
+
+      if (localOnly) {
+        showHint(
+          "Черновик сохранён локально",
+          `Позиции добавлены в ${draftLabel}. Когда сеть восстановится, черновик синхронизируется автоматически.`,
+        );
+        return;
+      }
+
+      showHint(
+        "Позиции добавлены в черновик",
+        `Позиции добавлены в ${draftLabel}. Проверьте черновик перед отправкой.`,
+      );
+    } catch (error) {
+      setAiQuickError(toErrorText(error, "Не удалось добавить позиции в черновик."));
+    } finally {
+      setAiQuickApplying(false);
+    }
+  }, [
+    aiQuickApplying,
+    aiQuickCanApply,
+    aiQuickLoading,
+    aiQuickPreview,
+    aiQuickReviewGroups,
+    aiQuickText,
+    appendLocalDraftRows,
+    clearHeaderAttention,
+    currentDisplayLabel,
+    isDraftActive,
+    itemsCount,
+    labelForRequest,
+    openDraft,
     pushAiQuickSessionTurn,
+    requestDetails,
+    requestId,
+    resetAiQuickUi,
+    resetReviewState,
+    scopeNote,
+    setAiQuickError,
     showHint,
     syncLocalDraftNow,
   ]);
 
   return {
     aiQuickVisible,
+    aiQuickMode,
     aiQuickText,
     aiQuickLoading,
+    aiQuickApplying,
     aiQuickError,
     aiQuickNotice,
     aiQuickPreview,
@@ -315,9 +459,15 @@ export function useForemanAiQuickFlow({
     aiQuickSessionHint,
     aiUnavailableReason,
     aiQuickDegradedMode: networkOnline === false,
+    aiQuickReviewGroups,
+    aiQuickSelectedChoicesByGroupId: selectedChoicesByGroupId,
+    aiQuickCanApply,
     openAiQuick,
     closeAiQuick,
     handleAiQuickTextChange,
-    handleAiQuickSubmit,
+    handleAiQuickBackToCompose,
+    handleAiQuickSelectCandidate,
+    handleAiQuickParse,
+    handleAiQuickApply,
   };
 }

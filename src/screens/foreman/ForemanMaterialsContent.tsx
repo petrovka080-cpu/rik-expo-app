@@ -86,20 +86,26 @@ type Props = {
   selectedWorkType: { code: string; name: string } | null;
   onAddCalcToRequest: (rows: import("./foreman.types").CalcRow[]) => Promise<void>;
   aiQuickVisible: boolean;
+  aiQuickMode: import("./foreman.aiQuickReview").ForemanAiQuickMode;
   closeAiQuick: () => void;
   aiQuickText: string;
   onAiQuickTextChange: (value: string) => void;
-  onAiQuickSubmit: () => Promise<void>;
+  onAiQuickParse: () => Promise<void>;
+  onAiQuickApply: () => Promise<void>;
+  onAiQuickBackToCompose: () => void;
+  onAiQuickSelectCandidate: (groupId: string, rikCode: string) => void;
   aiQuickLoading: boolean;
+  aiQuickApplying: boolean;
   aiQuickError: string;
   aiQuickNotice: string;
   aiQuickPreview: import("./foreman.ai").ForemanAiQuickItem[];
   aiQuickOutcomeType: import("./foremanUi.store").ForemanAiOutcomeType;
-  aiQuickCandidateGroups: import("./foreman.ai").CandidateOptionGroup[];
+  aiQuickReviewGroups: import("./foreman.aiQuickReview").ForemanAiQuickReviewGroup[];
   aiQuickQuestions: import("./foreman.ai").ClarifyQuestion[];
   aiQuickSessionHint: string;
   aiUnavailableReason: string;
   aiQuickDegradedMode: boolean;
+  aiQuickCanApply: boolean;
   onlineConfigured: boolean;
   draftOpen: boolean;
   closeDraft: () => void;
@@ -239,16 +245,22 @@ export default function ForemanMaterialsContent(props: Props) {
       <ForemanAiQuickModal
         visible={props.aiQuickVisible}
         onClose={props.closeAiQuick}
+        mode={props.aiQuickMode}
         value={props.aiQuickText}
         onChangeText={props.onAiQuickTextChange}
-        onSubmit={props.onAiQuickSubmit}
-        loading={props.aiQuickLoading}
+        onParse={props.onAiQuickParse}
+        onApply={props.onAiQuickApply}
+        onBackToCompose={props.onAiQuickBackToCompose}
+        onSelectCandidate={props.onAiQuickSelectCandidate}
+        parseLoading={props.aiQuickLoading}
+        applying={props.aiQuickApplying}
+        canApply={props.aiQuickCanApply}
         onlineConfigured={props.onlineConfigured}
         error={props.aiQuickError}
         notice={props.aiQuickNotice}
         preview={props.aiQuickPreview}
         outcomeType={props.aiQuickOutcomeType}
-        candidateGroups={props.aiQuickCandidateGroups}
+        reviewGroups={props.aiQuickReviewGroups}
         questions={props.aiQuickQuestions}
         sessionHint={props.aiQuickSessionHint}
         aiUnavailableReason={props.aiUnavailableReason}

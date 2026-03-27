@@ -720,21 +720,27 @@ export default function ForemanScreen() {
 
   const {
     aiQuickVisible,
+    aiQuickMode,
     aiQuickText,
     aiQuickLoading,
+    aiQuickApplying,
     aiQuickError,
     aiQuickNotice,
     aiQuickPreview,
     aiQuickOutcomeType,
-    aiQuickCandidateGroups,
+    aiQuickReviewGroups,
     aiQuickQuestions,
     aiQuickSessionHint,
     aiUnavailableReason,
     aiQuickDegradedMode,
+    aiQuickCanApply,
     openAiQuick,
     closeAiQuick,
     handleAiQuickTextChange,
-    handleAiQuickSubmit,
+    handleAiQuickBackToCompose,
+    handleAiQuickSelectCandidate,
+    handleAiQuickParse,
+    handleAiQuickApply,
   } = useForemanAiQuickFlow({
     headerRequirements,
     activateHeaderAttention,
@@ -937,20 +943,26 @@ export default function ForemanScreen() {
             selectedWorkType={selectedWorkType}
             onAddCalcToRequest={handleCalcAddToRequest}
             aiQuickVisible={aiQuickVisible}
+            aiQuickMode={aiQuickMode}
             closeAiQuick={closeAiQuick}
             aiQuickText={aiQuickText}
             onAiQuickTextChange={handleAiQuickTextChange}
-            onAiQuickSubmit={handleAiQuickSubmit}
+            onAiQuickParse={handleAiQuickParse}
+            onAiQuickApply={handleAiQuickApply}
+            onAiQuickBackToCompose={handleAiQuickBackToCompose}
+            onAiQuickSelectCandidate={handleAiQuickSelectCandidate}
             aiQuickLoading={aiQuickLoading}
+            aiQuickApplying={aiQuickApplying}
             aiQuickError={aiQuickError}
             aiQuickNotice={aiQuickNotice}
             aiQuickPreview={aiQuickPreview}
             aiQuickOutcomeType={aiQuickOutcomeType}
-            aiQuickCandidateGroups={aiQuickCandidateGroups}
+            aiQuickReviewGroups={aiQuickReviewGroups}
             aiQuickQuestions={aiQuickQuestions}
             aiQuickSessionHint={aiQuickSessionHint}
             aiUnavailableReason={aiUnavailableReason}
             aiQuickDegradedMode={aiQuickDegradedMode}
+            aiQuickCanApply={aiQuickCanApply}
             onlineConfigured={isForemanQuickRequestConfigured()}
             draftOpen={draftOpen}
             closeDraft={closeDraft}
