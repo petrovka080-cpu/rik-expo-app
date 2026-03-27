@@ -1,0 +1,63 @@
+{
+  "artifact": "typed-boundary-burndown-v1",
+  "generatedAt": "2026-03-27T19:04:53.953Z",
+  "scope": "V12.4 P0",
+  "staticChecks": {
+    "tsc": "passed",
+    "eslint": "passed"
+  },
+  "burnDown": {
+    "baselineActiveAnyCount": 51,
+    "currentActiveAnyCount": 0,
+    "removedActiveAnyCount": 51,
+    "residualCommentedAnyCount": 38
+  },
+  "introducedContracts": [
+    "catalog row string/number normalizers and typed request item mapper",
+    "director finance/pdf source normalizers for unknown nested row payloads",
+    "director production/subcontract shared PDF prepared-model contracts",
+    "pdf runner auth/source/file-info adapters",
+    "storage upload payload/body guards for web/native",
+    "supabase auth storage and fetch boundary wrappers",
+    "typed expo file-system path adapter"
+  ],
+  "proof": {
+    "catalogBoundary": {
+      "moduleSmokePassed": true,
+      "detail": "getLocalDraftId/setLocalDraftId/clearLocalDraftId roundtrip passed via tsx import"
+    },
+    "pdfBoundary": {
+      "moduleSmokePassed": true,
+      "detail": "prepareDirectorFinancePreview/Management/Production/Subcontract model builders returned valid prepared models"
+    },
+    "pdfRunnerBoundary": {
+      "staticProofPassed": true,
+      "runtimeResidual": "Node/tsx smoke not executed because react-native/expo runner boundary is native-oriented; compile-time proof used here."
+    },
+    "storageBoundary": {
+      "staticProofPassed": true,
+      "runtimeResidual": "Direct tsx import hits react-native esbuild transform on this host; compile-time proof used without changing storage logic."
+    },
+    "supabaseBoundary": {
+      "staticProofPassed": true,
+      "detail": "typed auth storage/fetch wrappers compile and downstream client creation stays stable"
+    }
+  },
+  "residual": [
+    {
+      "file": "src/lib/api/pdf_director.data.ts",
+      "kind": "commented_legacy_any",
+      "risk": "low",
+      "reason": "38 commented-only any lines remain inside dead legacy branches after shared-return paths; active runtime code is clean.",
+      "nextAction": "Delete legacy commented fallback blocks in the next cleanup-only pass."
+    },
+    {
+      "file": "src/lib/api/storage.ts",
+      "kind": "rn_host_runtime_smoke_gap",
+      "risk": "low",
+      "reason": "Module-level runtime smoke via tsx is blocked by react-native transform on the Node host, but static proof is green.",
+      "nextAction": "Use Expo/Jest-native harness if a runtime smoke artifact is needed for RN-only boundaries."
+    }
+  ],
+  "status": "GREEN"
+}

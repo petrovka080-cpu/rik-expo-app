@@ -1,0 +1,271 @@
+[
+  {
+    "file": "src/lib/catalog_api.ts",
+    "scope": "P0",
+    "category": "catalog_api_boundary",
+    "treatment": "replace_with_adapter",
+    "notes": "Typed row mappers and string/number normalizers now localize unknown payloads before domain mapping.",
+    "baselineActiveCount": 19,
+    "baselineCommentedCount": 0,
+    "currentActiveCount": 0,
+    "currentCommentedCount": 0,
+    "removedActiveCount": 19,
+    "residualCommented": []
+  },
+  {
+    "file": "src/lib/api/pdf_director.data.ts",
+    "scope": "P0",
+    "category": "director_pdf_data_boundary",
+    "treatment": "replace_with_adapter",
+    "notes": "Active finance/pdf mapping any removed; remaining any lines live only in commented legacy branches after shared return paths.",
+    "baselineActiveCount": 13,
+    "baselineCommentedCount": 33,
+    "currentActiveCount": 0,
+    "currentCommentedCount": 38,
+    "removedActiveCount": 13,
+    "residualCommented": [
+      {
+        "line": 333,
+        "text": "const pickInvoiceNumber = (r: any) =>",
+        "comment": true
+      },
+      {
+        "line": 336,
+        "text": "const pickApprovedIso = (r: any) =>",
+        "comment": true
+      },
+      {
+        "line": 346,
+        "text": "const pickInvoiceIso = (r: any) =>",
+        "comment": true
+      },
+      {
+        "line": 356,
+        "text": "const pickDueIso = (r: any) =>",
+        "comment": true
+      },
+      {
+        "line": 363,
+        "text": "const invoiceTitle = (r: any) => {",
+        "comment": true
+      },
+      {
+        "line": 447,
+        "text": "row: any,",
+        "comment": true
+      },
+      {
+        "line": 598,
+        "text": "spendForDetect.map((row: any) => kindNorm(row?.kind_name ?? row?.kindName)).filter(Boolean),",
+        "comment": true
+      },
+      {
+        "line": 605,
+        "text": ".filter((row: any) => !kindFilter || kindNorm(row?.kind_name ?? row?.kindName) === kindFilter)",
+        "comment": true
+      },
+      {
+        "line": 606,
+        "text": ".filter((row: any) => !onlyOverpay || nnum(row?.overpay_alloc) > 0);",
+        "comment": true
+      },
+      {
+        "line": 628,
+        "text": ".filter((row: any) => kindNorm(row?.kind_name ?? row?.kindName) === kindFilter);",
+        "comment": true
+      },
+      {
+        "line": 630,
+        "text": "totalApproved = spendByKind.reduce((sum, row: any) => sum + nnum(row?.approved_alloc), 0);",
+        "comment": true
+      },
+      {
+        "line": 631,
+        "text": "totalPaid = spendByKind.reduce((sum, row: any) => sum + nnum(row?.paid_alloc_cap ?? row?.paid_alloc), 0);",
+        "comment": true
+      },
+      {
+        "line": 635,
+        "text": "spendByKind.map((row: any) => String(row?.proposal_id ?? \"\").trim()).filter(Boolean),",
+        "comment": true
+      },
+      {
+        "line": 646,
+        "text": "items = finance.map((row: any) => mapSupplierSummaryItem(row, overpayByProposal));",
+        "comment": true
+      },
+      {
+        "line": 653,
+        "text": "items = finance.map((row: any) => mapSupplierSummaryItem(row, overpayByProposal));",
+        "comment": true
+      },
+      {
+        "line": 991,
+        "text": "const worksSorted = [...works].sort((left: any, right: any) => nnum(right?.total_positions) - nnum(left?.total_positions));",
+        "comment": true
+      },
+      {
+        "line": 994,
+        "text": ".sort((left: any, right: any) => nnum(right?.qty_total) - nnum(left?.qty_total))",
+        "comment": true
+      },
+      {
+        "line": 996,
+        "text": ".map((row: any) => ({",
+        "comment": true
+      },
+      {
+        "line": 1009,
+        "text": "String((level as any)?.object_name ?? objectName ?? \"Без объекта\").trim() || \"Без объекта\";",
+        "comment": true
+      },
+      {
+        "line": 1011,
+        "text": "current.docs += nnum((level as any)?.total_docs);",
+        "comment": true
+      },
+      {
+        "line": 1012,
+        "text": "current.positions += nnum((level as any)?.total_positions);",
+        "comment": true
+      },
+      {
+        "line": 1013,
+        "text": "current.noReq += nnum((level as any)?.free_positions);",
+        "comment": true
+      },
+      {
+        "line": 1015,
+        "text": "current.noWork += nnum((level as any)?.total_positions);",
+        "comment": true
+      },
+      {
+        "line": 1026,
+        "text": ".filter((work: any) => String(work?.work_type_name ?? \"\").trim().toLowerCase() === \"без вида работ\")",
+        "comment": true
+      },
+      {
+        "line": 1027,
+        "text": ".reduce((sum: number, work: any) => sum + nnum(work?.total_positions), 0);",
+        "comment": true
+      },
+      {
+        "line": 1039,
+        "text": "worksRows: worksTop.map((work: any) => ({",
+        "comment": true
+      },
+      {
+        "line": 1093,
+        "text": "const rows: any[] = Array.isArray(rowsInput) ? rowsInput : [];",
+        "comment": true
+      },
+      {
+        "line": 1095,
+        "text": "const approvedLike = rows.filter((row: any) => [\"approved\", \"closed\"].includes(String(row?.status ?? \"\").trim()));",
+        "comment": true
+      },
+      {
+        "line": 1096,
+        "text": "const approved = rows.filter((row: any) => String(row?.status ?? \"\").trim() === \"approved\");",
+        "comment": true
+      },
+      {
+        "line": 1097,
+        "text": "const pending = rows.filter((row: any) => String(row?.status ?? \"\").trim() === \"pending\");",
+        "comment": true
+      },
+      {
+        "line": 1098,
+        "text": "const rejected = rows.filter((row: any) => String(row?.status ?? \"\").trim() === \"rejected\");",
+        "comment": true
+      },
+      {
+        "line": 1100,
+        "text": "const sumApproved = approvedLike.reduce((sum: number, row: any) => sum + nnum(row?.total_price), 0);",
+        "comment": true
+      },
+      {
+        "line": 1101,
+        "text": "const noAmount = approvedLike.filter((row: any) => nnum(row?.total_price) <= 0).length;",
+        "comment": true
+      },
+      {
+        "line": 1102,
+        "text": "const noWork = approvedLike.filter((row: any) => !String(row?.work_type ?? \"\").trim()).length;",
+        "comment": true
+      },
+      {
+        "line": 1103,
+        "text": "const noObject = approvedLike.filter((row: any) => !String(row?.object_name ?? \"\").trim()).length;",
+        "comment": true
+      },
+      {
+        "line": 1104,
+        "text": "const noContractor = approvedLike.filter((row: any) => !String(row?.contractor_org ?? \"\").trim()).length;",
+        "comment": true
+      },
+      {
+        "line": 1185,
+        "text": ".sort((left: any, right: any) => String(right?.approved_at ?? \"\").localeCompare(String(left?.approved_at ?? \"\")))",
+        "comment": true
+      },
+      {
+        "line": 1186,
+        "text": ".map((row: any) => ({",
+        "comment": true
+      }
+    ]
+  },
+  {
+    "file": "src/lib/pdfRunner.ts",
+    "scope": "P0",
+    "category": "pdf_runner_boundary",
+    "treatment": "replace_with_adapter",
+    "notes": "Typed PDF source/auth/file info helpers isolate native/web runner boundary and error messages.",
+    "baselineActiveCount": 7,
+    "baselineCommentedCount": 0,
+    "currentActiveCount": 0,
+    "currentCommentedCount": 0,
+    "removedActiveCount": 7,
+    "residualCommented": []
+  },
+  {
+    "file": "src/lib/api/storage.ts",
+    "scope": "P0",
+    "category": "storage_boundary",
+    "treatment": "replace_with_adapter",
+    "notes": "Upload body/file contracts normalized for web/native before calling Supabase storage.",
+    "baselineActiveCount": 3,
+    "baselineCommentedCount": 0,
+    "currentActiveCount": 0,
+    "currentCommentedCount": 0,
+    "removedActiveCount": 3,
+    "residualCommented": []
+  },
+  {
+    "file": "src/lib/supabaseClient.ts",
+    "scope": "P0",
+    "category": "supabase_postgrest_boundary",
+    "treatment": "replace_with_adapter",
+    "notes": "Runtime process/auth storage/fetch wrappers are typed; downstream client no longer receives any-based fetch/auth storage.",
+    "baselineActiveCount": 6,
+    "baselineCommentedCount": 0,
+    "currentActiveCount": 0,
+    "currentCommentedCount": 0,
+    "removedActiveCount": 6,
+    "residualCommented": []
+  },
+  {
+    "file": "src/lib/fileSystemPaths.ts",
+    "scope": "P0",
+    "category": "file_system_boundary",
+    "treatment": "replace_with_adapter",
+    "notes": "Expo file-system paths now use typed Paths and typed legacy fallback without any-casts.",
+    "baselineActiveCount": 3,
+    "baselineCommentedCount": 0,
+    "currentActiveCount": 0,
+    "currentCommentedCount": 0,
+    "removedActiveCount": 3,
+    "residualCommented": []
+  }
+]

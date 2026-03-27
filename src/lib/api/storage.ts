@@ -3,10 +3,12 @@ import * as FileSystemModule from "expo-file-system/legacy";
 import { getFileSystemPaths } from "../fileSystemPaths";
 import { supabase } from "../supabaseClient";
 import type { QueuedProposalAttachment } from "./queuedProposalAttachments";
-const FileSystemCompat = FileSystemModule as any;
+const FileSystemCompat = FileSystemModule;
 
 const FILES_BUCKET = "proposal_files";
 const TECHNICAL_ATTACHMENT_GROUPS = new Set(["proposal_html"]);
+type StorageBucketApi = ReturnType<typeof supabase.storage.from>;
+type StorageUploadBody = Parameters<StorageBucketApi["upload"]>[1];
 type NativeFileLike = {
   name?: string | null;
   uri?: string | null;
@@ -15,6 +17,11 @@ type NativeFileLike = {
   type?: string | null;
   size?: number | null;
   assets?: NativeFileLike[] | null;
+};
+type WebUploadFile = Blob & {
+  name?: string;
+  type?: string;
+  size?: number;
 };
 
 function inferContentType(filename: string, fallback?: string) {
@@ -93,6 +100,10 @@ function hasReadableBlob(value: unknown): value is Blob {
   );
 }
 
+function hasReadableWebUploadFile(value: unknown): value is WebUploadFile {
+  return hasReadableBlob(value);
+}
+
 function normalizeNativeFile(file: NativeFileLike | null | undefined, fallbackName: string) {
   const asset = file?.assets?.[0] ?? file;
   const uri = String(asset?.uri ?? asset?.fileCopyUri ?? "").trim();
@@ -157,7 +168,14 @@ async function ensureReadableFileUri(rawUri: string, safeName: string): Promise<
   return uri;
 }
 
-async function buildNativeUploadPayload(file: unknown, fallbackName: string) {
+async function buildNativeUploadPayload(
+  file: unknown,
+  fallbackName: string,
+): Promise<{
+  uploadBody: StorageUploadBody;
+  fileName: string;
+  contentType: string;
+}> {
   if (hasReadableBlob(file)) {
     const inferredName = ensureFilename(fallbackName, String((file as Blob).type || "").trim());
     const bytes = new Uint8Array(await file.arrayBuffer());
@@ -206,16 +224,17 @@ export async function uploadProposalAttachment(
 
   const requestedName = String(filename || "").trim() || `file_${Date.now()}`;
 
-  let uploadBody: Blob | File | Uint8Array;
+  let uploadBody: StorageUploadBody;
   let fileName = requestedName;
   let contentType = inferContentType(fileName);
 
   if (Platform.OS === "web") {
-    const webFile = file as File;
-    if (!webFile) throw new Error("uploadProposalAttachment: file пустой (web)");
-    fileName = ensureFilename(String(webFile.name || fileName).trim() || fileName, webFile.type || "");
-    uploadBody = webFile;
-    contentType = inferContentType(fileName, webFile.type || "");
+    if (!hasReadableWebUploadFile(file)) {
+      throw new Error("uploadProposalAttachment: file пустой (web)");
+    }
+    fileName = ensureFilename(String(file.name || fileName).trim() || fileName, file.type || "");
+    uploadBody = file;
+    contentType = inferContentType(fileName, file.type || "");
   } else {
     const nativePayload = await buildNativeUploadPayload(file, requestedName);
     uploadBody = nativePayload.uploadBody;
@@ -234,7 +253,7 @@ export async function uploadProposalAttachment(
 
   const { error: upErr } = await supabase.storage
     .from(FILES_BUCKET)
-    .upload(storagePath, uploadBody as any, {
+    .upload(storagePath, uploadBody, {
       contentType,
       upsert: false,
     });
@@ -274,18 +293,19 @@ export async function stageProposalAttachmentForQueue(
   const requestedName = String(filename || "").trim() || `file_${Date.now()}`;
   const supplierSegment = sanitizeFilename(String(supplierKey || "").trim() || "unknown_supplier");
 
-  let uploadBody: Blob | File | Uint8Array;
+  let uploadBody: StorageUploadBody;
   let fileName = requestedName;
   let contentType = inferContentType(fileName);
   let size: number | null = null;
 
   if (Platform.OS === "web") {
-    const webFile = file as File;
-    if (!webFile) throw new Error("stageProposalAttachmentForQueue: file пустой (web)");
-    fileName = ensureFilename(String(webFile.name || fileName).trim() || fileName, webFile.type || "");
-    uploadBody = webFile;
-    contentType = inferContentType(fileName, webFile.type || "");
-    size = typeof webFile.size === "number" ? webFile.size : null;
+    if (!hasReadableWebUploadFile(file)) {
+      throw new Error("stageProposalAttachmentForQueue: file пустой (web)");
+    }
+    fileName = ensureFilename(String(file.name || fileName).trim() || fileName, file.type || "");
+    uploadBody = file;
+    contentType = inferContentType(fileName, file.type || "");
+    size = typeof file.size === "number" ? file.size : null;
   } else {
     const nativePayload = await buildNativeUploadPayload(file, requestedName);
     uploadBody = nativePayload.uploadBody;
@@ -304,7 +324,7 @@ export async function stageProposalAttachmentForQueue(
 
   const { error: upErr } = await supabase.storage
     .from(FILES_BUCKET)
-    .upload(storagePath, uploadBody as any, {
+    .upload(storagePath, uploadBody, {
       contentType,
       upsert: false,
     });

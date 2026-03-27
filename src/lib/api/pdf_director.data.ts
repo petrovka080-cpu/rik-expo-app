@@ -12,7 +12,11 @@ import {
   nnum,
   todayIso10,
 } from "./pdf_director.format";
-import { prepareDirectorProductionReportPdfModelShared } from "../pdf/directorProductionReport.shared";
+import {
+  prepareDirectorProductionReportPdfModelShared,
+  type DirectorProductionDiscipline,
+  type DirectorProductionReportData,
+} from "../pdf/directorProductionReport.shared";
 import { prepareDirectorSubcontractReportPdfModelShared } from "../pdf/directorSubcontractReport.shared";
 import { prepareDirectorSupplierSummaryPdfModelShared } from "../pdf/directorSupplierSummary.shared";
 import type {
@@ -45,8 +49,8 @@ export type DirectorProductionPdfInput = {
   periodFrom?: string | null;
   periodTo?: string | null;
   objectName?: string | null;
-  repData?: any;
-  repDiscipline?: any;
+  repData?: DirectorProductionReportData | null;
+  repDiscipline?: DirectorProductionDiscipline | null;
   preferPriceStage?: "base" | "priced";
 };
 
@@ -230,7 +234,40 @@ export type DirectorSubcontractReportPdfModel = {
   rejectedCount: number;
 };
 
-const pickIso10 = (...vals: any[]) => {
+type PdfRecord = Record<string, unknown>;
+
+const asRecord = (value: unknown): PdfRecord =>
+  value && typeof value === "object" && !Array.isArray(value)
+    ? (value as PdfRecord)
+    : {};
+
+const getNestedRecord = (value: unknown, key: string): PdfRecord | null => {
+  const record = asRecord(value);
+  const nested = record[key];
+  return nested && typeof nested === "object" && !Array.isArray(nested)
+    ? (nested as PdfRecord)
+    : null;
+};
+
+const pickString = (...values: readonly unknown[]): string => {
+  for (const value of values) {
+    const normalized = String(value ?? "").trim();
+    if (normalized && normalized !== "вЂ”") return normalized;
+  }
+  return "";
+};
+
+const readPdfRowLayers = (value: unknown) => {
+  const record = asRecord(value);
+  return {
+    record,
+    raw: getNestedRecord(record, "raw"),
+    row: getNestedRecord(record, "row"),
+    proposals: getNestedRecord(record, "proposals"),
+  };
+};
+
+const pickIso10 = (...vals: readonly unknown[]) => {
   for (const v of vals) {
     const s = String(v ?? "").trim();
     if (!s || s === "—") continue;
@@ -239,23 +276,23 @@ const pickIso10 = (...vals: any[]) => {
   return null;
 };
 
-const proposalPretty = (r: any) => {
-  const src = r?.row ?? r?.raw ?? r ?? {};
-  const proposalNo = String(
-    src?.proposal_no ??
-      src?.proposalNo ??
-      src?.pretty ??
-      src?.proposals?.proposal_no ??
-      "",
-  ).trim();
+const proposalPretty = (value: unknown) => {
+  const { record, raw, row, proposals } = readPdfRowLayers(value);
+  const src = row ?? raw ?? record;
+  const proposalNo = pickString(
+    src.proposal_no,
+    src.proposalNo,
+    src.pretty,
+    proposals?.proposal_no,
+  );
 
   if (proposalNo) return proposalNo;
 
-  const proposalId = String(src?.proposalId ?? src?.proposal_id ?? src?.id ?? "").trim();
+  const proposalId = pickString(src.proposalId, src.proposal_id, src.id);
   return proposalId ? `PR-${proposalId.slice(0, 8)}` : "";
 };
 
-const kindNorm = (name: any) => {
+const kindNorm = (name: unknown) => {
   const kind = String(name ?? "").trim();
   if (!kind) return "Другое";
   if (kind === "Материалы" || kind === "Работы" || kind === "Услуги" || kind === "Другое") return kind;
@@ -267,7 +304,7 @@ const kindNorm = (name: any) => {
   return "Другое";
 };
 
-const topNWithOthers = <T,>(
+const topNWithOthers = <T extends Record<string, unknown>,>(
   rows: T[],
   n: number,
   sumFields: string[],
@@ -282,7 +319,7 @@ const topNWithOthers = <T,>(
 
   for (const row of rest) {
     for (const field of sumFields) {
-      const value = Number((row as any)?.[field] ?? 0);
+      const value = Number(row[field] ?? 0);
       agg[field] += Number.isFinite(value) ? value : 0;
     }
   }
@@ -290,7 +327,7 @@ const topNWithOthers = <T,>(
   return [...top, makeOthers(agg)];
 };
 
-const pickSupplier = (r: any) =>
+/* legacy untyped pdf row readers
   String(r?.supplier ?? r?.raw?.supplier ?? r?.row?.supplier ?? "").trim() || "—";
 
 const pickInvoiceNumber = (r: any) =>
@@ -334,6 +371,62 @@ const invoiceTitle = (r: any) => {
   return proposalId ? `Документ #${proposalId.slice(0, 8)}` : "Документ";
 };
 
+*/
+const pickSupplier = (value: unknown) => {
+  const { record, raw, row } = readPdfRowLayers(value);
+  return pickString(record.supplier, raw?.supplier, row?.supplier) || "вЂ”";
+};
+
+const pickInvoiceNumber = (value: unknown) => {
+  const { record } = readPdfRowLayers(value);
+  return pickString(record.invoiceNumber, record.invoice_number, record.invoiceNo);
+};
+
+const pickApprovedIso = (value: unknown) => {
+  const { record, raw, row } = readPdfRowLayers(value);
+  return pickIso10(
+    record.approvedAtIso,
+    record.director_approved_at,
+    record.approved_at,
+    raw?.director_approved_at,
+    raw?.approved_at,
+    row?.director_approved_at,
+  );
+};
+
+const pickInvoiceIso = (value: unknown) => {
+  const { record, raw } = readPdfRowLayers(value);
+  return pickIso10(
+    record.invoiceDate,
+    record.invoice_date,
+    record.invoice_at,
+    raw?.invoice_at,
+    raw?.created_at,
+    record.created_at,
+  );
+};
+
+const pickDueIso = (value: unknown) => {
+  const { record, raw } = readPdfRowLayers(value);
+  return pickIso10(
+    record.dueDate,
+    record.due_date,
+    raw?.due_at,
+  );
+};
+
+const invoiceTitle = (value: unknown) => {
+  const invoiceNo = pickInvoiceNumber(value);
+  if (invoiceNo) return `РЎС‡С‘С‚ в„–${invoiceNo}`;
+
+  const pretty = proposalPretty(value);
+  if (pretty) return `РџСЂРµРґР»РѕР¶РµРЅРёРµ ${pretty}`;
+
+  const { record } = readPdfRowLayers(value);
+  const proposalId = pickString(record.proposalId, record.proposal_id, record.id);
+  return proposalId ? `Р”РѕРєСѓРјРµРЅС‚ #${proposalId.slice(0, 8)}` : "Р”РѕРєСѓРјРµРЅС‚";
+};
+
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const buildSupplierDatesText = (row: {
   approvedAt: string | null;
@@ -350,7 +443,7 @@ const buildSupplierDatesText = (row: {
   ]) || "—";
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const mapSupplierSummaryItem = (
+/* legacy untyped supplier pdf mapper
   row: any,
   overpayByProposal: Map<string, number>,
 ) => {
@@ -405,6 +498,65 @@ const mapSupplierSummaryItem = (
   };
 };
 
+*/
+const mapSupplierSummaryItem = (
+  row: unknown,
+  overpayByProposal: Map<string, number>,
+) => {
+  const { record, raw } = readPdfRowLayers(row);
+  const amount = nnum(record.amount);
+  const paid = nnum(record.paidAmount);
+  const rest = Math.max(amount - paid, 0);
+  const status =
+    amount <= 0 ? "РїСЂРѕС‡РµРµ" : paid <= 0 ? "РЅРµ РѕРїР»Р°С‡РµРЅРѕ" : rest <= 0 ? "РѕРїР»Р°С‡РµРЅРѕ" : "С‡Р°СЃС‚РёС‡РЅРѕ";
+  const proposalId = pickString(record.proposalId, record.proposal_id, record.id);
+  const overpay = proposalId ? (overpayByProposal.get(proposalId) ?? 0) : 0;
+  const invoiceNo = pickInvoiceNumber(row);
+  const pretty = proposalPretty(row);
+
+  return {
+    title: invoiceNo
+      ? `РЎС‡С‘С‚ в„–${invoiceNo}`
+      : pretty
+        ? `РџСЂРµРґР»РѕР¶РµРЅРёРµ ${pretty}`
+        : "РЎС‡С‘С‚",
+    invoiceDate: pickIso10(
+      record.invoiceDate,
+      record.invoice_date,
+      raw?.invoice_at,
+      raw?.invoice_created_at,
+      raw?.created_at,
+    ),
+    approvedAt: pickIso10(
+      record.director_approved_at,
+      record.approvedAtIso,
+      record.approved_at,
+      raw?.director_approved_at,
+      raw?.approved_at,
+      raw?.approvedAtIso,
+      record.created_at,
+    ),
+    dueDate: pickIso10(
+      record.dueDate,
+      record.due_date,
+      raw?.due_at,
+    ),
+    paidFirstAt: pickIso10(
+      record.paid_first_at,
+      raw?.paid_first_at,
+    ),
+    paidLastAt: pickIso10(
+      record.paid_last_at,
+      raw?.paid_last_at,
+    ),
+    amount,
+    paid,
+    rest,
+    status,
+    overpay,
+  };
+};
+
 export function prepareDirectorFinancePreviewPdfModel(rows: unknown[]): DirectorFinancePreviewPdfModel {
   return {
     rowsJson: JSON.stringify(rows ?? [], null, 2),
@@ -429,7 +581,7 @@ export function prepareDirectorSupplierSummaryPdfModel(
   const from = p.periodFrom ? String(p.periodFrom).slice(0, 10) : null;
   const to = p.periodTo ? String(p.periodTo).slice(0, 10) : null;
 
-  const inPeriod = (iso: any) => {
+  const inPeriod = (iso: unknown) => {
     if (!from && !to) return true;
     const date = String(iso ?? "").slice(0, 10);
     if (!date) return true;
@@ -582,7 +734,7 @@ export function prepareDirectorManagementReportPdfModel(
   const to = p.periodTo ? iso10(p.periodTo) : "";
   const today = todayIso10();
 
-  const inPeriod = (iso: any) => {
+  const inPeriod = (iso: unknown) => {
     const date = iso10(iso);
     if (!date) return true;
     if (from && date < from) return false;
@@ -1062,7 +1214,7 @@ export async function loadDirectorSubcontractReportPdfModel(
   const objectName = String(p.objectName ?? "").trim() || null;
 
   let query = supabase
-    .from("subcontracts" as any)
+    .from("subcontracts")
     .select("id,display_no,status,object_name,work_type,contractor_org,total_price,approved_at,submitted_at,rejected_at,director_comment")
     .order("approved_at", { ascending: false, nullsFirst: false });
 

@@ -9,6 +9,7 @@ import {
   proposalSnapshotItems as rpcProposalSnapshotItems,
 } from "./api/proposals";
 import { requestCreateDraft as rpcRequestCreateDraft } from "./api/requests";
+import type { PaymentPdfDraft } from "./api/types";
 
 export {
   ensureRequestSmart,
@@ -366,27 +367,34 @@ const sanitizePostgrestOrTerm = (value: string): string =>
     .replace(/\s+/g, " ")
     .trim();
 
-const pickRefName = (ref: any) =>
-  norm(ref?.name_ru) ||
-  norm(ref?.name_human_ru) ||
-  norm(ref?.display_name) ||
-  norm(ref?.alias_ru) ||
-  norm(ref?.name) ||
-  norm(ref?.code) ||
-  null;
+const asLooseRecord = (value: unknown): Record<string, unknown> =>
+  isRecord(value) ? value : {};
 
-const pickFirstString = (...values: any[]): string | null => {
+const pickRefName = (ref: unknown) => {
+  const record = asLooseRecord(ref);
+  return (
+    norm(record.name_ru == null ? null : String(record.name_ru)) ||
+    norm(record.name_human_ru == null ? null : String(record.name_human_ru)) ||
+    norm(record.display_name == null ? null : String(record.display_name)) ||
+    norm(record.alias_ru == null ? null : String(record.alias_ru)) ||
+    norm(record.name == null ? null : String(record.name)) ||
+    norm(record.code == null ? null : String(record.code)) ||
+    null
+  );
+};
+
+const pickFirstString = (...values: readonly unknown[]): string | null => {
   for (const value of values) {
-    const s = norm(value);
+    const s = norm(value == null ? null : String(value));
     if (s) return s;
   }
   return null;
 };
 
-const isObjectLike = (val: any): val is Record<string, any> =>
+const isObjectLike = (val: unknown): val is Record<string, unknown> =>
   typeof val === "object" && val !== null;
 
-const parseNumberValue = (...values: any[]): number | null => {
+const parseNumberValue = (...values: readonly unknown[]): number | null => {
   for (const value of values) {
     if (typeof value === "number" && Number.isFinite(value)) return value;
     if (value != null) {
@@ -397,85 +405,90 @@ const parseNumberValue = (...values: any[]): number | null => {
   return null;
 };
 
-const buildRefShape = (row: any, keys: string[], code?: string | null) => {
-  const shape: Record<string, any> = {};
+const buildRefShape = (row: unknown, keys: string[], code?: string | null) => {
+  const source = asLooseRecord(row);
+  const shape: Record<string, unknown> = {};
   shape.name_ru = pickFirstString(
-    ...keys.map((key) => row?.[`${key}_name_ru`]),
-    ...keys.map((key) => row?.[`${key}NameRu`])
+    ...keys.map((key) => source[`${key}_name_ru`]),
+    ...keys.map((key) => source[`${key}NameRu`])
   );
   shape.name_human_ru = pickFirstString(
-    ...keys.map((key) => row?.[`${key}_name_human_ru`]),
-    ...keys.map((key) => row?.[`${key}NameHumanRu`])
+    ...keys.map((key) => source[`${key}_name_human_ru`]),
+    ...keys.map((key) => source[`${key}NameHumanRu`])
   );
   shape.display_name = pickFirstString(
-    ...keys.map((key) => row?.[`${key}_display_name`]),
-    ...keys.map((key) => row?.[`${key}DisplayName`]),
-    ...keys.map((key) => row?.[`${key}_label`]),
-    ...keys.map((key) => row?.[`${key}Label`])
+    ...keys.map((key) => source[`${key}_display_name`]),
+    ...keys.map((key) => source[`${key}DisplayName`]),
+    ...keys.map((key) => source[`${key}_label`]),
+    ...keys.map((key) => source[`${key}Label`])
   );
   shape.alias_ru = pickFirstString(
-    ...keys.map((key) => row?.[`${key}_alias_ru`]),
-    ...keys.map((key) => row?.[`${key}AliasRu`])
+    ...keys.map((key) => source[`${key}_alias_ru`]),
+    ...keys.map((key) => source[`${key}AliasRu`])
   );
   shape.name = pickFirstString(
-    ...keys.map((key) => row?.[`${key}_name`]),
-    ...keys.map((key) => row?.[`${key}Name`]),
-    ...keys.map((key) => row?.[key])
+    ...keys.map((key) => source[`${key}_name`]),
+    ...keys.map((key) => source[`${key}Name`]),
+    ...keys.map((key) => source[key])
   );
   shape.code =
     code ||
     pickFirstString(
-      ...keys.map((key) => row?.[`${key}_code`]),
-      ...keys.map((key) => row?.[`${key}Code`]),
-      ...keys.map((key) => row?.[key])
+      ...keys.map((key) => source[`${key}_code`]),
+      ...keys.map((key) => source[`${key}Code`]),
+      ...keys.map((key) => source[key])
     );
   return shape;
 };
 
-const readRefName = (row: any, keys: string[], code?: string | null): string | null => {
+const readRefName = (row: unknown, keys: string[], code?: string | null): string | null => {
+  const source = asLooseRecord(row);
   for (const key of keys) {
-    const val = row?.[key];
+    const val = source[key];
     if (isObjectLike(val)) return pickRefName(val);
   }
   return pickRefName(buildRefShape(row, keys, code));
 };
 
-const mapRequestItemRow = (raw: any, requestId: string): ReqItemRow | null => {
-  const rawId = raw?.id ?? raw?.request_item_id ?? null;
+const mapRequestItemRow = (raw: unknown, requestId: string): ReqItemRow | null => {
+  const row = asLooseRecord(raw);
+  const rawId = row.id ?? row.request_item_id ?? null;
   if (!rawId) return null;
-  const qtyVal = Number(raw?.qty ?? raw?.quantity ?? raw?.total_qty ?? 0);
+  const qtyVal = Number(row.qty ?? row.quantity ?? row.total_qty ?? 0);
   const qty = Number.isFinite(qtyVal) ? qtyVal : 0;
   const lineNo =
     parseNumberValue(
-      raw?.line_no,
-      raw?.row_no,
-      raw?.position_order,
-      raw?.rowno,
-      raw?.rowNo,
-      raw?.positionOrder,
+      row.line_no,
+      row.row_no,
+      row.position_order,
+      row.rowno,
+      row.rowNo,
+      row.positionOrder,
     ) ?? null;
 
   const nameHuman =
-    norm(raw?.name_human_ru) ||
-    norm(raw?.name_human) ||
-    norm(raw?.name_ru) ||
-    norm(raw?.name) ||
-    norm(raw?.display_name) ||
-    norm(raw?.alias_ru) ||
-    norm(raw?.best_name_display) ||
+    pickFirstString(
+      row.name_human_ru,
+      row.name_human,
+      row.name_ru,
+      row.name,
+      row.display_name,
+      row.alias_ru,
+      row.best_name_display,
+    ) ||
     "";
 
   return {
     id: String(rawId),
-    request_id: String(raw?.request_id ?? requestId),
+    request_id: String(row.request_id ?? requestId),
     name_human: nameHuman || '\u2014',
     qty,
-    uom: raw?.uom ?? raw?.uom_code ?? null,
-    status: raw?.status ?? null,
-    supplier_hint: raw?.supplier_hint ?? raw?.supplier ?? null,
-    app_code: raw?.app_code ?? null,
-    note: raw?.note ?? raw?.comment ?? null,
-    rik_code: raw?.rik_code ?? raw?.code ?? null,
+    uom: pickFirstString(row.uom, row.uom_code),
+    status: pickFirstString(row.status),
+    supplier_hint: pickFirstString(row.supplier_hint, row.supplier),
+    app_code: pickFirstString(row.app_code),
+    note: pickFirstString(row.note, row.comment),
+    rik_code: pickFirstString(row.rik_code, row.code),
     line_no: lineNo,
   };
 };
@@ -1057,8 +1070,11 @@ export async function getOrCreateDraftRequestId(): Promise<string> {
       setLocalDraftId(id);
       return id;
     }
-  } catch (e) {
-    console.warn("[catalog_api.getOrCreateDraftRequestId]", (e as any)?.message ?? e);
+  } catch (e: unknown) {
+    console.warn(
+      "[catalog_api.getOrCreateDraftRequestId]",
+      e instanceof Error ? e.message : e,
+    );
     throw e;
   }
 
@@ -1136,7 +1152,7 @@ export async function fetchRequestDisplayNo(requestId: string): Promise<string |
       const { data, error } = await runRequestDisplayRpc(fn, { p_request_id: id });
       if (!error && data != null) {
         if (typeof data === "string" || typeof data === "number") return String(data);
-        const obj = data as Record<string, any>;
+        const obj = asLooseRecord(data);
         const val = obj.display_no ?? obj.display ?? obj.label ?? null;
         if (val != null) return String(val);
       }
@@ -1171,66 +1187,73 @@ export async function fetchRequestDisplayNo(requestId: string): Promise<string |
   return null;
 }
 
-const mapDetailsFromRow = (row: any): RequestDetails | null => {
-  if (!row) return null;
-  const id = pickFirstString(row?.id, row?.request_id);
+const mapDetailsFromRow = (row: unknown): RequestDetails | null => {
+  const source = asLooseRecord(row);
+  const id = pickFirstString(source.id, source.request_id);
   if (!id) return null;
 
   const objectCode = pickFirstString(
-    row?.object_type_code,
-    row?.objectTypeCode,
-    row?.object_code,
-    row?.objectCode,
-    row?.objecttype_code,
-    row?.objecttypeCode,
-    row?.object
+    source.object_type_code,
+    source.objectTypeCode,
+    source.object_code,
+    source.objectCode,
+    source.objecttype_code,
+    source.objecttypeCode,
+    source.object
   );
-  const levelCode = pickFirstString(row?.level_code, row?.levelCode, row?.level);
-  const systemCode = pickFirstString(row?.system_code, row?.systemCode, row?.system);
-  const zoneCode = pickFirstString(row?.zone_code, row?.zoneCode, row?.zone, row?.zone_area, row?.area);
+  const levelCode = pickFirstString(source.level_code, source.levelCode, source.level);
+  const systemCode = pickFirstString(source.system_code, source.systemCode, source.system);
+  const zoneCode = pickFirstString(
+    source.zone_code,
+    source.zoneCode,
+    source.zone,
+    source.zone_area,
+    source.area,
+  );
 
-  const commentRaw = row?.comment ?? row?.request_comment ?? null;
-  const comment = typeof commentRaw === "string" ? commentRaw : norm(commentRaw);
+  const commentRaw = source.comment ?? source.request_comment ?? null;
+  const comment = typeof commentRaw === "string" ? commentRaw : norm(commentRaw == null ? null : String(commentRaw));
 
   return {
     id,
-    status: pickFirstString(row?.status, row?.request_status),
+    status: pickFirstString(source.status, source.request_status),
     display_no: pickFirstString(
-      row?.display_no,
-      row?.display,
-      row?.label,
-      row?.number,
-      row?.request_no
+      source.display_no,
+      source.display,
+      source.label,
+      source.number,
+      source.request_no
     ),
-    year: parseNumberValue(row?.year, row?.request_year, row?.requestYear),
-    seq: parseNumberValue(row?.seq, row?.request_seq, row?.requestSeq),
-    created_at: pickFirstString(row?.created_at, row?.created, row?.createdAt),
-    need_by: pickFirstString(row?.need_by, row?.need_by_date, row?.needBy),
+    year: parseNumberValue(source.year, source.request_year, source.requestYear),
+    seq: parseNumberValue(source.seq, source.request_seq, source.requestSeq),
+    created_at: pickFirstString(source.created_at, source.created, source.createdAt),
+    need_by: pickFirstString(source.need_by, source.need_by_date, source.needBy),
     comment: comment ?? null,
-    foreman_name: pickFirstString(row?.foreman_name, row?.foreman, row?.foremanName),
+    foreman_name: pickFirstString(source.foreman_name, source.foreman, source.foremanName),
     object_type_code: objectCode,
     level_code: levelCode,
     system_code: systemCode,
     zone_code: zoneCode,
     object_name_ru: readRefName(
-      row,
+      source,
       ["object", "object_type", "objecttype", "objectType", "object_ref"],
       objectCode,
     ),
-    level_name_ru: readRefName(row, ["level", "level_ref", "levelRef"], levelCode),
-    system_name_ru: readRefName(row, ["system", "system_type", "systemType", "system_ref"], systemCode),
-    zone_name_ru: readRefName(row, ["zone", "zone_area", "area", "zoneRef", "zone_ref"], zoneCode),
+    level_name_ru: readRefName(source, ["level", "level_ref", "levelRef"], levelCode),
+    system_name_ru: readRefName(source, ["system", "system_type", "systemType", "system_ref"], systemCode),
+    zone_name_ru: readRefName(source, ["zone", "zone_area", "area", "zoneRef", "zone_ref"], zoneCode),
   };
 };
 
-const mapSummaryFromRow = (row: any): ForemanRequestSummary | null => {
-  const details = mapDetailsFromRow(row);
+const mapSummaryFromRow = (row: unknown): ForemanRequestSummary | null => {
+  const source = asLooseRecord(row);
+  const details = mapDetailsFromRow(source);
   if (!details) return null;
 
   const rawHas =
-    row?.has_rejected ??
-    row?.hasRejected ??
-    row?.has_rej ??
+    source.has_rejected ??
+    source.hasRejected ??
+    source.has_rej ??
     null;
 
   return {
@@ -1602,11 +1625,11 @@ export async function generateProposalPdfDocument(
 
 export async function exportPaymentOrderPdf(
   paymentId: string | number,
-  modeOrDraft: "preview" | "share" | Record<string, unknown> = "preview",
+  modeOrDraft: "preview" | "share" | PaymentPdfDraft = "preview",
 ): Promise<string> {
   const mod = await import("./api/pdf_payment");
   const draft = typeof modeOrDraft === "string" ? undefined : modeOrDraft;
-  return await mod.exportPaymentOrderPdf(Number(paymentId), draft as any);
+  return await mod.exportPaymentOrderPdf(Number(paymentId), draft);
 }
 
 export async function generatePaymentOrderPdfDocument(
@@ -1619,7 +1642,7 @@ export async function generatePaymentOrderPdfDocument(
 
 export async function uploadProposalAttachment(
   proposalId: string,
-  file: any,
+  file: unknown,
   filename: string,
   kind: "invoice" | "payment" | "proposal_pdf" | string,
 ): Promise<void> {
@@ -1641,7 +1664,7 @@ export async function requestItemUpdateQty(
   }
 
   const rid = requestIdHint ? norm(requestIdHint) : '';
-  let lastErr: any = null;
+  let lastErr: unknown = null;
 
   try {
     const args: RequestItemUpdateQtyArgs = {
@@ -1765,7 +1788,7 @@ export async function listForemanRequests(
     return mapped; // Не ломаем выдачу, если агрегация статусов не удалась.
   }
 
-  const normSt = (s: any) => String(s ?? "").trim().toLowerCase();
+  const normSt = (s: unknown) => String(s ?? "").trim().toLowerCase();
   const isApproved = (st: string) =>
     st === "\u0443\u0442\u0432\u0435\u0440\u0436\u0434\u0435\u043d\u043e" ||
     st === "\u0443\u0442\u0432\u0435\u0440\u0436\u0434\u0435\u043d\u0430" ||
@@ -2013,7 +2036,7 @@ async function loadProposalItemsBindingColumns(): Promise<ProposalItemsBindingCo
   try {
     const q = await supabase.from("proposal_items").select("*").limit(1);
     if (q.error) throw q.error;
-    const row = Array.isArray(q.data) && q.data.length > 0 ? (q.data[0] as Record<string, any>) : null;
+    const row = Array.isArray(q.data) && q.data.length > 0 ? asUnknownRecord(q.data[0]) : null;
     const cols = row ? new Set(Object.keys(row)) : new Set<string>();
     proposalItemsBindingColumnsCache = {
       supplier_id: cols.has("supplier_id"),
@@ -2029,7 +2052,7 @@ async function loadProposalItemsBindingColumns(): Promise<ProposalItemsBindingCo
   return proposalItemsBindingColumnsCache;
 }
 
-async function loadRequestItemsForProposal(ids: string[]): Promise<any[]> {
+async function loadRequestItemsForProposal(ids: string[]): Promise<Record<string, unknown>[]> {
   const uniqIds = Array.from(new Set((ids || []).map((x) => String(x || "").trim()).filter(Boolean)));
   if (!uniqIds.length) return [];
 
@@ -2038,7 +2061,13 @@ async function loadRequestItemsForProposal(ids: string[]): Promise<any[]> {
       .from("request_items")
       .select("*")
       .in("id", uniqIds);
-    if (!q.error) return Array.isArray(q.data) ? q.data : [];
+    if (!q.error) {
+      return Array.isArray(q.data)
+        ? q.data
+            .map((row) => asUnknownRecord(row))
+            .filter((row): row is Record<string, unknown> => !!row)
+        : [];
+    }
     throw q.error;
   } catch (e: unknown) {
     throw e;
@@ -2054,11 +2083,12 @@ const parseProposalKind = (raw: unknown): ProposalItemKind => {
   return "unknown";
 };
 
-const isRejectedForBuyerRework = (row: any): boolean => {
-  const status = String(row?.status ?? "").trim().toLowerCase();
+const isRejectedForBuyerRework = (row: unknown): boolean => {
+  const source = asLooseRecord(row);
+  const status = String(source.status ?? "").trim().toLowerCase();
   if (status.includes("reject") || status.includes("отклон")) return true;
-  if (row?.director_reject_at) return true;
-  const note = String(row?.director_reject_note ?? "").trim();
+  if (source.director_reject_at) return true;
+  const note = String(source.director_reject_note ?? "").trim();
   return !!note;
 };
 

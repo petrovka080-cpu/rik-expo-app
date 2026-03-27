@@ -2,10 +2,29 @@
 import { createClient, SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "./database.types";
 
+type RuntimeProcessLike = {
+  env?: Record<string, string | undefined>;
+  versions?: {
+    node?: string;
+  };
+};
+
+type RuntimeRequire = (moduleName: string) => unknown;
+type SupabaseAuthStorage = {
+  getItem(key: string): string | null | Promise<string | null>;
+  setItem(key: string, value: string): void | Promise<void>;
+  removeItem(key: string): void | Promise<void>;
+};
+type FetchInput = Parameters<typeof fetch>[0];
+type FetchInit = Parameters<typeof fetch>[1];
+
+const runtimeProcess =
+  typeof globalThis === "object" && "process" in globalThis
+    ? (globalThis as typeof globalThis & { process?: RuntimeProcessLike }).process
+    : undefined;
 const isWeb = typeof window !== "undefined" && typeof document !== "undefined";
 const isNodeRuntime =
-  typeof process !== "undefined" &&
-  !!(process as any).versions?.node &&
+  !!runtimeProcess?.versions?.node &&
   typeof window === "undefined";
 
 if (!isNodeRuntime) {
@@ -17,11 +36,14 @@ if (!isNodeRuntime) {
   }
 }
 
-function tryLoadAsyncStorage(): any | undefined {
+function tryLoadAsyncStorage(): SupabaseAuthStorage | undefined {
   try {
     // Keep RN persistence in mobile runtime; avoid hard dependency in Node worker.
-    const req = (0, eval)("require") as (m: string) => any;
-    return req("@react-native-async-storage/async-storage").default;
+    const req = (0, eval)("require") as RuntimeRequire;
+    const mod = req("@react-native-async-storage/async-storage") as {
+      default?: SupabaseAuthStorage;
+    };
+    return mod.default;
   } catch {
     return undefined;
   }
@@ -110,12 +132,14 @@ function fixNakedTimestamp(urlStr: string): string {
 
 // ===== DEBUG: логируем REST-запросы Supabase (web + phone) =====
 const wrapFetchWithLog = (tag: string, baseFetch: typeof fetch): typeof fetch => {
-  return async (input: any, init: any = {}) => {
+  return async (input: FetchInput, init?: FetchInit) => {
     const originalUrl =
       typeof input === "string"
         ? input
-        : input?.url
-          ? String(input.url)
+        : input instanceof URL
+          ? input.toString()
+          : input instanceof Request
+            ? String(input.url)
           : String(input);
 
     const fixedUrl = fixNakedTimestamp(originalUrl);
@@ -135,8 +159,8 @@ const wrapFetchWithLog = (tag: string, baseFetch: typeof fetch): typeof fetch =>
 
 
     // если input был Request — пересоздаём Request с исправленным url
-    let patchedInput: any = fixedUrl;
-    if (typeof input !== "string" && input?.url) {
+    let patchedInput: FetchInput = fixedUrl;
+    if (input instanceof Request) {
       try {
         patchedInput = new Request(fixedUrl, input);
       } catch {
@@ -168,8 +192,8 @@ function assertEnv() {
 
 // WEB fetch: твоя логика headers + timeout, просто оборачиваем логом
 const supabaseFetch: typeof fetch | undefined = isWeb
-  ? wrapFetchWithLog("🌐", (input: any, init: any = {}) => {
-    const headers = new Headers(init.headers || {});
+  ? wrapFetchWithLog("🌐", (input: FetchInput, init?: FetchInit) => {
+    const headers = new Headers(init?.headers || {});
 
     if (resolvedSupabaseKey) {
       if (!headers.has("apikey")) headers.set("apikey", resolvedSupabaseKey);
@@ -183,7 +207,7 @@ const supabaseFetch: typeof fetch | undefined = isWeb
 
     return window
       .fetch(input, {
-        ...init,
+        ...(init ?? {}),
         headers,
         keepalive: false,
         cache: "no-store",
@@ -216,6 +240,7 @@ const authStorage = isWeb
   : isNodeRuntime
     ? undefined
     : tryLoadAsyncStorage();
+const supabaseClientFetch: typeof fetch = isWeb && supabaseFetch ? supabaseFetch : nativeFetch;
 export const supabase: SupabaseClient<Database> = isSupabaseEnvValid
   ? createClient<Database>(SUPABASE_URL, resolvedSupabaseKey, {
     auth: {
@@ -227,7 +252,7 @@ export const supabase: SupabaseClient<Database> = isSupabaseEnvValid
     realtime: { params: { eventsPerSecond: 5 } },
     global: {
       headers: { "x-client-info": "rik-expo-app" },
-      fetch: (isWeb ? supabaseFetch : nativeFetch) as any,
+      fetch: supabaseClientFetch,
     },
   })
   : createMissingSupabaseClient();
@@ -239,9 +264,10 @@ export async function ensureSignedIn(): Promise<boolean> {
   try {
     const sess = await supabase.auth.getSession();
     if (sess?.data?.session?.user) return true;
-  } catch (e) {
+  } catch (e: unknown) {
     if (process.env.NODE_ENV !== "production") {
-      console.warn("[ensureSignedIn] session check failed:", (e as any)?.message ?? e);
+      const message = e instanceof Error ? e.message : String(e ?? "");
+      console.warn("[ensureSignedIn] session check failed:", message || e);
     }
   }
 

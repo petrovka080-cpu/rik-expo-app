@@ -65,6 +65,17 @@ export type DirectorSubcontractReportPdfModelShared = {
   rejectedCount: number;
 };
 
+type DirectorSubcontractPdfRow = {
+  id: string | null;
+  display_no: string | null;
+  status: string | null;
+  object_name: string | null;
+  work_type: string | null;
+  contractor_org: string | null;
+  total_price: number;
+  approved_at: string | null;
+};
+
 const DEFAULT_COMPANY_NAME = "RIK Construction";
 const DEFAULT_GENERATED_BY = "\u0414\u0438\u0440\u0435\u043a\u0442\u043e\u0440";
 const DEFAULT_OBJECT_TEXT = "\u0412\u0441\u0435 \u043e\u0431\u044a\u0435\u043a\u0442\u044b";
@@ -74,6 +85,32 @@ const DEFAULT_NO_WORK = "\u0411\u0435\u0437 \u0432\u0438\u0434\u0430 \u0440\u043
 
 function toText(value: unknown) {
   return String(value ?? "").trim();
+}
+
+function asRecord(value: unknown): Record<string, unknown> | null {
+  return value && typeof value === "object" && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : null;
+}
+
+function parseDirectorSubcontractRows(rowsInput: unknown[]): DirectorSubcontractPdfRow[] {
+  if (!Array.isArray(rowsInput)) return [];
+  return rowsInput
+    .map((value) => {
+      const row = asRecord(value);
+      if (!row) return null;
+      return {
+        id: row.id == null ? null : toText(row.id),
+        display_no: row.display_no == null ? null : toText(row.display_no),
+        status: row.status == null ? null : toText(row.status),
+        object_name: row.object_name == null ? null : toText(row.object_name),
+        work_type: row.work_type == null ? null : toText(row.work_type),
+        contractor_org: row.contractor_org == null ? null : toText(row.contractor_org),
+        total_price: nnum(row.total_price),
+        approved_at: row.approved_at == null ? null : toText(row.approved_at),
+      };
+    })
+    .filter((row): row is DirectorSubcontractPdfRow => !!row);
 }
 
 export function normalizeDirectorSubcontractReportPdfRequest(
@@ -118,19 +155,19 @@ export function prepareDirectorSubcontractReportPdfModelShared(
   const objectName = toText(input.objectName) || null;
   const generatedAt = new Date().toLocaleString("ru-RU");
 
-  const rows: any[] = Array.isArray(rowsInput) ? rowsInput : [];
-  const approvedLike = rows.filter((row: any) =>
+  const rows = parseDirectorSubcontractRows(rowsInput);
+  const approvedLike = rows.filter((row) =>
     ["approved", "closed"].includes(toText(row?.status)),
   );
-  const approved = rows.filter((row: any) => toText(row?.status) === "approved");
-  const pending = rows.filter((row: any) => toText(row?.status) === "pending");
-  const rejected = rows.filter((row: any) => toText(row?.status) === "rejected");
+  const approved = rows.filter((row) => toText(row.status) === "approved");
+  const pending = rows.filter((row) => toText(row.status) === "pending");
+  const rejected = rows.filter((row) => toText(row.status) === "rejected");
 
-  const sumApproved = approvedLike.reduce((sum: number, row: any) => sum + nnum(row?.total_price), 0);
-  const noAmount = approvedLike.filter((row: any) => nnum(row?.total_price) <= 0).length;
-  const noWork = approvedLike.filter((row: any) => !toText(row?.work_type)).length;
-  const noObject = approvedLike.filter((row: any) => !toText(row?.object_name)).length;
-  const noContractor = approvedLike.filter((row: any) => !toText(row?.contractor_org)).length;
+  const sumApproved = approvedLike.reduce((sum, row) => sum + row.total_price, 0);
+  const noAmount = approvedLike.filter((row) => row.total_price <= 0).length;
+  const noWork = approvedLike.filter((row) => !toText(row.work_type)).length;
+  const noObject = approvedLike.filter((row) => !toText(row.object_name)).length;
+  const noContractor = approvedLike.filter((row) => !toText(row.contractor_org)).length;
 
   const byContractor = new Map<string, { count: number; amount: number; objects: Set<string>; works: Set<string> }>();
   const byObject = new Map<string, { count: number; amount: number; contractors: Set<string>; works: Set<string> }>();
@@ -211,17 +248,17 @@ export function prepareDirectorSubcontractReportPdfModelShared(
       }))
       .sort((left, right) => right.amount - left.amount),
     approvedRows: [...approvedLike]
-      .sort((left: any, right: any) =>
-        toText(right?.approved_at).localeCompare(toText(left?.approved_at)),
+      .sort((left, right) =>
+        toText(right.approved_at).localeCompare(toText(left.approved_at)),
       )
-      .map((row: any) => ({
-        displayNo: toText(row?.display_no ?? row?.id).slice(0, 20),
-        contractor: toText(row?.contractor_org) || "-",
-        objectName: toText(row?.object_name) || "-",
-        workType: toText(row?.work_type) || "-",
-        status: toText(row?.status) || "-",
-        totalPrice: nnum(row?.total_price),
-        approvedAt: fmtDateOnly(toText(row?.approved_at)),
+      .map((row) => ({
+        displayNo: toText(row.display_no ?? row.id).slice(0, 20),
+        contractor: toText(row.contractor_org) || "-",
+        objectName: toText(row.object_name) || "-",
+        workType: toText(row.work_type) || "-",
+        status: toText(row.status) || "-",
+        totalPrice: row.total_price,
+        approvedAt: fmtDateOnly(toText(row.approved_at)),
       })),
     workRows: Array.from(byWork.entries())
       .map(([workType, value]) => ({

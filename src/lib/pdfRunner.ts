@@ -16,7 +16,11 @@ import {
   type PdfSourceKind,
 } from "./pdfFileContract";
 import { SUPABASE_ANON_KEY } from "./supabaseClient";
-const FileSystemCompat = FileSystemModule as any;
+import type { Database } from "./database.types";
+import type { SupabaseClient } from "@supabase/supabase-js";
+
+const FileSystemCompat = FileSystemModule;
+type PdfSupabaseLike = Pick<SupabaseClient<Database>, "auth">;
 export type BusyLike = {
   run?: <T>(
     fn: () => Promise<T>,
@@ -29,6 +33,18 @@ export type BusyLike = {
 
 const urlToLocal = new Map<string, string>();
 const activeRuns = new Set<string>();
+
+function getErrorMessage(error: unknown, fallback: string): string {
+  if (error instanceof Error) {
+    const message = error.message.trim();
+    if (message) return message;
+  }
+  if (typeof error === "string") {
+    const message = error.trim();
+    if (message) return message;
+  }
+  return fallback;
+}
 
 const uiYield = async (ms = 0) => {
   await new Promise<void>((resolve) => setTimeout(resolve, ms));
@@ -69,6 +85,17 @@ function logPdfRunnerStage(
     sourceKind: payload.sourceKind,
     fileName: payload.fileName ?? null,
   });
+}
+
+function getFileInfoSize(
+  info:
+    | (Awaited<ReturnType<typeof FileSystemCompat.getInfoAsync>>)
+    | null
+    | undefined,
+): number | undefined {
+  if (!info || !("size" in info)) return undefined;
+  const value = Number(info.size);
+  return Number.isFinite(value) ? value : undefined;
 }
 
 function safeName(name?: string, stableSeed?: string) {
@@ -162,7 +189,7 @@ async function fileExists(uri: string) {
   }
 }
 
-async function getAuthHeader(supabase: any) {
+async function getAuthHeader(supabase: PdfSupabaseLike) {
   try {
     const { data } = await supabase.auth.getSession();
     const token = data?.session?.access_token;
@@ -176,7 +203,7 @@ async function getAuthHeader(supabase: any) {
 }
 
 export async function preparePdfExecutionSource(args: {
-  supabase: any;
+  supabase: PdfSupabaseLike;
   source?: PdfSource;
   resolveSource?: () => Promise<PdfSource> | PdfSource;
   getRemoteUrl?: () => Promise<string> | string;
@@ -221,7 +248,7 @@ export async function preparePdfExecutionSource(args: {
     logPdfRunnerStage("pdf_download_exists_yes", {
       uri: normalizedCachedUri,
       exists: Boolean(info?.exists),
-      size: Number.isFinite(Number(info?.size)) ? Number(info.size) : undefined,
+      size: getFileInfoSize(info),
       sourceKind: "local-file",
       fileName: args.fileName,
     });
@@ -262,7 +289,7 @@ export async function preparePdfExecutionSource(args: {
   logPdfRunnerStage(exists ? "pdf_download_exists_yes" : "pdf_download_exists_no", {
     uri,
     exists,
-    size: Number.isFinite(Number(info?.size)) ? Number(info.size) : undefined,
+    size: getFileInfoSize(info),
     sourceKind: "local-file",
     fileName: args.fileName,
   });
@@ -272,7 +299,7 @@ export async function preparePdfExecutionSource(args: {
 }
 
 export async function preparePdfLocalUri(args: {
-  supabase: any;
+  supabase: PdfSupabaseLike;
   source?: PdfSource;
   resolveSource?: () => Promise<PdfSource> | PdfSource;
   getRemoteUrl?: () => Promise<string> | string;
@@ -329,7 +356,7 @@ export async function openPdfExternal(localUri: string, fileName?: string) {
 
 export async function runPdfTop(args: {
   busy?: BusyLike;
-  supabase: any;
+  supabase: PdfSupabaseLike;
   key: string;
   label: string;
   mode: "preview" | "share";
@@ -386,7 +413,8 @@ export async function runPdfTop(args: {
       win.focus();
       cleanup();
       return;
-    } catch (error: any) {
+    } catch (caughtError: unknown) {
+      const error = { message: getErrorMessage(caughtError, "РќРµ СѓРґР°Р»РѕСЃСЊ РѕС‚РєСЂС‹С‚СЊ PDF") };
       try {
         win.close();
       } catch {}
@@ -426,7 +454,8 @@ export async function runPdfTop(args: {
     await uiYield(Platform.OS === "ios" ? 120 : 40);
     if (mode === "share") await openPdfShare(localUri, fileName);
     else await openPdfPreview(localUri, fileName);
-  } catch (error: any) {
+  } catch (caughtError: unknown) {
+    const error = { message: getErrorMessage(caughtError, "РќРµ СѓРґР°Р»РѕСЃСЊ РѕС‚РєСЂС‹С‚СЊ PDF") };
     Alert.alert("PDF", String(error?.message ?? "Не удалось открыть PDF"));
   } finally {
     setTimeout(cleanup, 500);
