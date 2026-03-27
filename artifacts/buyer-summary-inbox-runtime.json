@@ -1,0 +1,169 @@
+{
+  "web": {
+    "status": "passed",
+    "fioConfirmed": true,
+    "expectedGroupLabel": "REQ-0077/2026",
+    "inboxVisible": true,
+    "sheetOpened": true,
+    "firstItemVisible": true,
+    "consoleErrorsEmpty": true,
+    "pageErrorsEmpty": true,
+    "badResponsesEmpty": true,
+    "screenshot": "artifacts/buyer-summary-inbox-web-smoke.png",
+    "platformSpecificIssues": [],
+    "runtime": {
+      "console": [
+        {
+          "type": "info",
+          "text": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold"
+        },
+        {
+          "type": "log",
+          "text": "Running application \"main\" with appParams:\n {rootTag: #root, hydrate: undefined} \nDevelopment-level warnings: ON.\nPerformance optimizations: OFF."
+        },
+        {
+          "type": "warning",
+          "text": "\"shadow*\" style props are deprecated. Use \"boxShadow\"."
+        },
+        {
+          "type": "info",
+          "text": "[jobQueue.env] {EXPO_PUBLIC_JOB_QUEUE_ENABLED: true, JOB_QUEUE_ENABLED: true}"
+        },
+        {
+          "type": "info",
+          "text": "[flash-list.compat] legacy architecture fallback -> FlatList"
+        },
+        {
+          "type": "warning",
+          "text": "WebSocket connection to 'wss://nxrnjywzxxfdpqmzjorh.supabase.co/realtime/v1/websocket?apikey=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im54cm5qeXd6eHhmZHBxbXpqb3JoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ5MTY2NzcsImV4cCI6MjA4MDQ5MjY3N30.Ug7EYNXlN0Dsi8HjpDr3Ekb_q5uXuZWCilmqu1-5Wy0&eventsPerSecond=5&vsn=2.0.0' failed: WebSocket is closed before the connection is established."
+        },
+        {
+          "type": "info",
+          "text": "[platform.observability] {screen: buyer, surface: summary_inbox, event: load_inbox, result: success, durationMs: 759}"
+        },
+        {
+          "type": "info",
+          "text": "[buyer.suppliers] source=suppliers ok=true rows=11"
+        },
+        {
+          "type": "info",
+          "text": "[buyer.suppliers] source=contractors ok=true rows=0"
+        },
+        {
+          "type": "info",
+          "text": "[buyer.suppliers] source=subcontracts ok=true rows=0"
+        },
+        {
+          "type": "info",
+          "text": "[buyer.suppliers] source=proposal_items ok=true rows=0"
+        },
+        {
+          "type": "info",
+          "text": "[platform.observability] {screen: buyer, surface: summary_inbox, event: load_inbox, result: success, durationMs: 1036}"
+        },
+        {
+          "type": "info",
+          "text": "[platform.observability] {screen: buyer, surface: inbox_list, event: content_ready, result: success, durationMs: null}"
+        }
+      ],
+      "pageErrors": [],
+      "badResponses": [],
+      "screenshot": "artifacts/buyer-summary-inbox-web-smoke.png"
+    }
+  },
+  "android": {
+    "status": "failed",
+    "androidPreflight": {
+      "reverseConfigured": true,
+      "gmsCleared": false,
+      "appStateCleared": false
+    },
+    "environmentRecoveryUsed": false,
+    "gmsRecoveryUsed": false,
+    "anrRecoveryUsed": false,
+    "blankSurfaceRecovered": false,
+    "devClientBootstrapRecovered": false,
+    "fioConfirmed": false,
+    "inboxTabOpened": false,
+    "expectedGroupLabel": "REQ-0077/2026",
+    "inboxVisible": false,
+    "sheetOpened": false,
+    "openedGroupLabel": null,
+    "currentXml": "artifacts/android-buyer-summary-inbox-route-timeout.xml",
+    "currentPng": "artifacts/android-buyer-summary-inbox-route-timeout.png",
+    "inboxXml": "artifacts/android-buyer-summary-inbox-route-timeout.xml",
+    "inboxPng": "artifacts/android-buyer-summary-inbox-route-timeout.png",
+    "sheetXml": "artifacts/android-buyer-summary-inbox-route-timeout.xml",
+    "sheetPng": "artifacts/android-buyer-summary-inbox-route-timeout.png",
+    "platformSpecificIssues": [
+      "Inbox top tab was not found on Android buyer screen",
+      "Buyer inbox request groups were not visible after Android route/tab flow",
+      "Buyer inbox sheet did not open on Android after tapping the first request group"
+    ]
+  },
+  "ios": {
+    "status": "residual",
+    "iosResidual": "xcrun is unavailable on this host; iOS simulator cannot be started from Windows",
+    "platformSpecificIssues": [
+      "xcrun is unavailable on this host; iOS simulator cannot be started from Windows"
+    ]
+  },
+  "summary": {
+    "status": "failed",
+    "webPassed": true,
+    "androidPassed": false,
+    "iosPassed": false,
+    "iosResidual": "xcrun is unavailable on this host; iOS simulator cannot be started from Windows",
+    "environmentRecoveryUsed": false,
+    "gmsRecoveryUsed": false,
+    "anrRecoveryUsed": false,
+    "blankSurfaceRecovered": false,
+    "devClientBootstrapRecovered": false,
+    "runtimeVerified": false,
+    "scenariosPassed": {
+      "web": {
+        "initialOpen": true,
+        "inboxSurface": true,
+        "sheetInteraction": true
+      },
+      "android": {
+        "initialOpen": false,
+        "inboxSurface": false,
+        "sheetInteraction": false
+      },
+      "ios": {
+        "initialOpen": false,
+        "inboxSurface": false,
+        "sheetInteraction": false
+      }
+    },
+    "platformSpecificIssues": [
+      {
+        "platform": "android",
+        "issue": "Inbox top tab was not found on Android buyer screen"
+      },
+      {
+        "platform": "android",
+        "issue": "Buyer inbox request groups were not visible after Android route/tab flow"
+      },
+      {
+        "platform": "android",
+        "issue": "Buyer inbox sheet did not open on Android after tapping the first request group"
+      },
+      {
+        "platform": "ios",
+        "issue": "xcrun is unavailable on this host; iOS simulator cannot be started from Windows"
+      }
+    ],
+    "artifacts": {
+      "webSummary": "artifacts/buyer-summary-inbox-web-smoke.summary.json",
+      "webRuntime": "artifacts/buyer-summary-inbox-web-smoke.json",
+      "androidCurrentXml": "artifacts/android-buyer-summary-inbox-route-timeout.xml",
+      "androidCurrentPng": "artifacts/android-buyer-summary-inbox-route-timeout.png",
+      "androidInboxXml": "artifacts/android-buyer-summary-inbox-route-timeout.xml",
+      "androidInboxPng": "artifacts/android-buyer-summary-inbox-route-timeout.png",
+      "androidSheetXml": "artifacts/android-buyer-summary-inbox-route-timeout.xml",
+      "androidSheetPng": "artifacts/android-buyer-summary-inbox-route-timeout.png"
+    }
+  }
+}

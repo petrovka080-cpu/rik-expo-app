@@ -20,12 +20,19 @@ export function useForemanItemsState(formatQtyInput: (v?: number | null) => stri
     const [qtyDrafts, setQtyDrafts] = useState<Record<string, string>>({});
     const [qtyBusyMap, setQtyBusyMap] = useState<Record<string, boolean>>({});
     const localHydratedRef = useRef(false);
+    const requestIdRef = useRef("");
+    const loadItemsRequestSeqRef = useRef(0);
+
+    useEffect(() => {
+        requestIdRef.current = ridStr(requestId);
+    }, [requestId]);
 
     const loadItems = useCallback(async (
         ridOverride?: string | number | null,
         options?: { forceRemote?: boolean },
     ) => {
-        const target = ridOverride ?? requestId;
+        const requestSeq = ++loadItemsRequestSeqRef.current;
+        const target = ridOverride ?? requestIdRef.current;
         const key = ridStr(target);
         if (!key) {
             if (localHydratedRef.current && !options?.forceRemote) return;
@@ -34,13 +41,15 @@ export function useForemanItemsState(formatQtyInput: (v?: number | null) => stri
         }
         try {
             const rows = await listRequestItems(key);
+            if (requestSeq !== loadItemsRequestSeqRef.current) return;
             localHydratedRef.current = false;
             setItems(Array.isArray(rows) ? rows : []);
         } catch (e) {
+            if (requestSeq !== loadItemsRequestSeqRef.current) return;
             warnForemanItemsState(e);
             setItems([]);
         }
-    }, [requestId]);
+    }, []);
 
     // Update quantity drafts when items change
     useEffect(() => {
@@ -83,12 +92,23 @@ export function useForemanItemsState(formatQtyInput: (v?: number | null) => stri
         items: ReqItemRow[];
         qtyDrafts?: Record<string, string>;
     }) => {
+        loadItemsRequestSeqRef.current += 1;
         localHydratedRef.current = true;
         setRequestId(ridStr(payload.requestId));
         setItems(Array.isArray(payload.items) ? payload.items : []);
         if (payload.qtyDrafts) {
             setQtyDrafts({ ...payload.qtyDrafts });
         }
+    }, []);
+
+    const clearItemsState = useCallback(() => {
+        loadItemsRequestSeqRef.current += 1;
+        localHydratedRef.current = false;
+        requestIdRef.current = "";
+        setRequestId("");
+        setItems([]);
+        setQtyDrafts({});
+        setQtyBusyMap({});
     }, []);
 
     const ensureAndGetId = useCallback(async (meta: RequestDraftMeta, setDisplayNo?: (id: string, no: string) => void) => {
@@ -121,6 +141,7 @@ export function useForemanItemsState(formatQtyInput: (v?: number | null) => stri
         setRowBusy,
         removeRowLocal,
         hydrateLocalDraft,
+        clearItemsState,
         ensureAndGetId,
     };
 }

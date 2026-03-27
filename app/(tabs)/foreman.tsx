@@ -1,6 +1,6 @@
 // app/(tabs)/foreman.tsx
 
-import React, { useCallback, useEffect, useMemo, useRef } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useIsFocused } from "@react-navigation/native";
+import { Ionicons } from "@expo/vector-icons";
 import ForemanReqItemRow from "../../src/screens/foreman/ForemanReqItemRow";
 import ForemanMaterialsContent from "../../src/screens/foreman/ForemanMaterialsContent";
 import ForemanSubcontractTab from "../../src/screens/foreman/ForemanSubcontractTab";
@@ -67,6 +68,7 @@ import { useForemanBaseUi } from "../../src/screens/foreman/hooks/useForemanBase
 import { useForemanDraftUi } from "../../src/screens/foreman/hooks/useForemanDraftUi";
 import { useForemanHistoryUi } from "../../src/screens/foreman/hooks/useForemanHistoryUi";
 import { useForemanAiQuickFlow } from "../../src/screens/foreman/hooks/useForemanAiQuickFlow";
+import { withScreenErrorBoundary } from "../../src/shared/ui/ScreenErrorBoundary";
 
 type WebUiApi = {
   onZoneChange: (v: string) => void;
@@ -98,10 +100,19 @@ declare global {
   var webUi: WebUiApi;
 }
 
-export default function ForemanScreen() {
+function ForemanScreen() {
   const gbusy = useGlobalBusy();
   const router = useRouter();
   const isScreenFocused = useIsFocused();
+  const [authIdentity, setAuthIdentity] = useState<{
+    fullName: string;
+    email: string;
+    phone: string;
+  }>({
+    fullName: "",
+    email: "",
+    phone: "",
+  });
   // Safe global access for web-specific UI bridge
   const safeWebUi = typeof webUi !== 'undefined' ? webUi : undefined;
 
@@ -601,6 +612,15 @@ export default function ForemanScreen() {
     let active = true;
     (async () => {
       const authUserResult = await supabase.auth.getUser();
+      const authUser = authUserResult.data.user ?? null;
+      const nextIdentity = {
+        fullName: String(authUser?.user_metadata?.full_name ?? "").trim(),
+        email: String(authUser?.email ?? "").trim(),
+        phone: String(authUser?.phone ?? authUser?.user_metadata?.phone ?? "").trim(),
+      };
+      if (active) {
+        setAuthIdentity(nextIdentity);
+      }
       const scopeKey = buildFioBootstrapScopeKey(authUserResult.data.user?.id);
       if (!active || fioBootstrapScopeKey === scopeKey) return;
       const sixAM = new Date();
@@ -668,6 +688,24 @@ export default function ForemanScreen() {
     if (requestId) return labelForRequest(requestId);
     return 'будет создана автоматически';
   }, [labelForRequest, requestDetails?.display_no, requestId]);
+
+  const activeDraftDisplayLabel = requestId || requestDetails?.display_no ? currentDisplayLabel : "Новый черновик";
+
+  const headerIdentityPrimary = useMemo(() => {
+    return (
+      String(foreman || "").trim() ||
+      authIdentity.fullName ||
+      authIdentity.email ||
+      authIdentity.phone ||
+      "Прораб"
+    );
+  }, [authIdentity.email, authIdentity.fullName, authIdentity.phone, foreman]);
+
+  const headerIdentitySecondary = useMemo(() => {
+    const primary = headerIdentityPrimary.trim().toLowerCase();
+    const candidates = [authIdentity.email, authIdentity.phone].map((value) => String(value || "").trim());
+    return candidates.find((value) => value && value.toLowerCase() !== primary) || "";
+  }, [authIdentity.email, authIdentity.phone, headerIdentityPrimary]);
 
   const HEADER_MAX = 84;
   const HEADER_MIN = 64;
@@ -754,7 +792,7 @@ export default function ForemanScreen() {
     syncLocalDraftNow,
     requestId,
     labelForRequest,
-    currentDisplayLabel,
+    currentDisplayLabel: activeDraftDisplayLabel,
     openDraft,
     networkOnline,
   });
@@ -783,14 +821,54 @@ export default function ForemanScreen() {
         >
           <View style={{ paddingHorizontal: 16, paddingTop: 12 }}>
             <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
-              <View style={{ flex: 1 }}>
+              <View style={{ flex: 1, minWidth: 0 }}>
                 <Animated.Text
                   style={[s.cTitle, { fontSize: titleSize, color: UI.text }]}
                   numberOfLines={1}
                 >
                   {foremanMainTab === 'materials' ? 'Материалы' : foremanMainTab === 'subcontracts' ? 'Подряды' : 'Заявка'}
                 </Animated.Text>
-                {!!foreman && (
+                <Pressable
+                  onPress={() => setIsFioConfirmVisible(true)}
+                  style={{ marginTop: 6, minWidth: 0 }}
+                >
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, minWidth: 0 }}>
+                    <View
+                      style={{
+                        width: 28,
+                        height: 28,
+                        borderRadius: 14,
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        backgroundColor: 'rgba(255,255,255,0.08)',
+                        borderWidth: 1,
+                        borderColor: 'rgba(255,255,255,0.12)',
+                        flexShrink: 0,
+                      }}
+                    >
+                      <Ionicons name="person-outline" size={16} color={UI.sub} />
+                    </View>
+                    <View style={{ flex: 1, minWidth: 0 }}>
+                      <Text
+                        numberOfLines={1}
+                        ellipsizeMode="tail"
+                        style={{ color: UI.text, fontSize: 13, fontWeight: "700" }}
+                      >
+                        {headerIdentityPrimary}
+                      </Text>
+                      {headerIdentitySecondary ? (
+                        <Text
+                          numberOfLines={1}
+                          ellipsizeMode="tail"
+                          style={{ color: UI.sub, fontSize: 11, fontWeight: "600", marginTop: 2 }}
+                        >
+                          {headerIdentitySecondary}
+                        </Text>
+                      ) : null}
+                    </View>
+                  </View>
+                </Pressable>
+                {false && !!foreman && (
                   <Pressable onPress={() => setIsFioConfirmVisible(true)}>
                     <Text style={{ fontSize: 13, color: UI.sub, fontWeight: "500", marginTop: 4 }}>
                       👤 {foreman}
@@ -902,7 +980,7 @@ export default function ForemanScreen() {
             onCalcPress={handleCalcPress}
             onAiQuickPress={openAiQuick}
             onOpenDraft={openDraftFromCatalog}
-            currentDisplayLabel={currentDisplayLabel}
+            currentDisplayLabel={activeDraftDisplayLabel}
             itemsCount={items.length}
             draftSyncStatusLabel={draftSyncUi.label}
             draftSyncStatusDetail={draftSyncUi.detail}
@@ -997,3 +1075,8 @@ export default function ForemanScreen() {
     </KeyboardAvoidingView>
   );
 }
+
+export default withScreenErrorBoundary(ForemanScreen, {
+  screen: "foreman",
+  route: "/foreman",
+});

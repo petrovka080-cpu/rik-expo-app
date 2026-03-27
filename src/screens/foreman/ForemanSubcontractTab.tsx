@@ -342,6 +342,7 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
   const closeSubcontractFlowUi = useForemanSubcontractUiStore((state) => state.closeSubcontractFlow);
   const [requestId, setRequestId] = useState("");
   const activeDraftScopeKeyRef = useRef("");
+  const draftItemsLoadSeqRef = useRef(0);
 
   const templateContract = useMemo(
     () => history.find((row) => String(row.id || "").trim() === String(selectedTemplateId || "").trim()) ?? null,
@@ -579,6 +580,7 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
   }, [userId]);
 
   const loadDraftItems = useCallback(async (rid: string) => {
+    const requestSeq = ++draftItemsLoadSeqRef.current;
     const id = String(rid || "").trim();
     if (!id) {
       setDraftItems([]);
@@ -586,10 +588,23 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
     }
     try {
       const rows = await listRequestItems(id);
+      if (requestSeq !== draftItemsLoadSeqRef.current) return;
       setDraftItems(filterActiveDraftItems(rows || []));
     } catch (e) {
+      if (requestSeq !== draftItemsLoadSeqRef.current) return;
       logForemanSubcontractDebug("[loadDraftItems] error:", e);
       setDraftItems([]);
+    }
+  }, []);
+
+  const resetSubcontractDraftContext = useCallback((options?: { clearForm?: boolean }) => {
+    draftItemsLoadSeqRef.current += 1;
+    setRequestId("");
+    setDisplayNo("");
+    setDraftItems([]);
+    activeDraftScopeKeyRef.current = "";
+    if (options?.clearForm) {
+      setForm(EMPTY_FORM);
     }
   }, []);
 
@@ -823,13 +838,10 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
     if (okId) {
       Alert.alert("Успешно", "Заявка отправлена директору.");
       await loadHistory(userId);
-      setRequestId("");
-      setDisplayNo("");
-      setDraftItems([]);
+      resetSubcontractDraftContext({ clearForm: true });
       closeSubcontractFlow();
-      activeDraftScopeKeyRef.current = "";
     }
-  }, [closeSubcontractFlow, draftItems, ensureTemplateContractStrict, loadHistory, requestId, saveDraftAtomic, userId]);
+  }, [closeSubcontractFlow, draftItems, ensureTemplateContractStrict, loadHistory, requestId, resetSubcontractDraftContext, saveDraftAtomic, userId]);
 
   const onPdf = useCallback(async () => {
     const rid = String(requestId || "").trim();
@@ -902,13 +914,9 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
       });
       if (!cleared) return;
     }
-    setRequestId("");
-    setDisplayNo("");
-    setForm(EMPTY_FORM);
-    setDraftItems([]);
+    resetSubcontractDraftContext({ clearForm: true });
     closeSubcontractFlow();
-    activeDraftScopeKeyRef.current = "";
-  }, [draftItems, closeSubcontractFlow, saveDraftAtomic]);
+  }, [draftItems, closeSubcontractFlow, resetSubcontractDraftContext, saveDraftAtomic]);
 
   const hydrateSelectedSubcontract = useCallback(
     async (it: Subcontract) => {
@@ -933,10 +941,7 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
         activeDraftScopeKeyRef.current = nextScopeKey;
         await loadDraftItems(rid);
       } else {
-        setRequestId("");
-        setDisplayNo("");
-        setDraftItems([]);
-        activeDraftScopeKeyRef.current = "";
+        resetSubcontractDraftContext();
       }
 
       openSubcontractFlow("details");
@@ -948,6 +953,7 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
       form,
       loadDraftItems,
       openSubcontractFlow,
+      resetSubcontractDraftContext,
       setSelectedTemplateId,
     ],
   );

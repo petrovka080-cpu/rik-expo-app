@@ -4,7 +4,16 @@ type PlatformObservabilityScreen =
   | "accountant"
   | "buyer"
   | "director"
-  | "foreman";
+  | "foreman"
+  | "market"
+  | "ai"
+  | "profile"
+  | "security"
+  | "reports"
+  | "chat"
+  | "auctions"
+  | "supplier_map"
+  | "request";
 
 type PlatformObservabilityCategory = "fetch" | "ui" | "reload";
 

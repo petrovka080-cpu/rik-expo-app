@@ -4,6 +4,7 @@ import { execFileSync, spawn, spawnSync } from "node:child_process";
 
 import { createClient } from "@supabase/supabase-js";
 import { config as loadDotenv } from "dotenv";
+import { createAndroidHarness } from "./_shared/androidHarness";
 
 loadDotenv({ path: ".env.local", override: false });
 loadDotenv({ path: ".env", override: false });
@@ -73,6 +74,13 @@ const writeJson = (fullPath: string, payload: unknown) => {
   fs.mkdirSync(path.dirname(fullPath), { recursive: true });
   fs.writeFileSync(fullPath, `${JSON.stringify(payload, null, 2)}\n`);
 };
+
+const androidHarness = createAndroidHarness({
+  projectRoot,
+  devClientPort: androidDevClientPort,
+  devClientStdoutPath: androidDevClientStdoutPath,
+  devClientStderrPath: androidDevClientStderrPath,
+});
 
 async function poll<T>(
   label: string,
@@ -537,71 +545,16 @@ async function ensureAndroidDevClientLoaded(
 
 async function loginForemanAndroid(user: TempUser, packageName: string | null, devClientPort: number) {
   writeJson(path.join(projectRoot, "artifacts/android-foreman-request-sync-user.json"), user);
-  resetAndroidAppState(packageName);
-  let current = await ensureAndroidDevClientLoaded(packageName, devClientPort);
-  if (!isAndroidLoginScreenSafe(current.xml)) return current;
-
-  const nodes = parseAndroidNodes(current.xml);
-  const emailNode = findAndroidNode(
-    nodes,
-    (node) =>
-      node.enabled &&
-      /android\.widget\.EditText/i.test(node.className) &&
-      /email/i.test(`${node.text} ${node.hint}`),
-  );
-  if (!emailNode) throw new Error("Android foreman login email field not found");
-
-  tapAndroidBounds(emailNode.bounds);
-  await sleep(350);
-  execFileSync("adb", ["shell", "input", "text", escapeAndroidInputText(user.email)], { cwd: projectRoot, stdio: "pipe" });
-  await sleep(350);
-
-  const passwordNode =
-    findAndroidNode(
-      nodes,
-      (node) =>
-        node.enabled &&
-        /android\.widget\.EditText/i.test(node.className) &&
-        !/email/i.test(`${node.text} ${node.hint}`),
-    ) ?? nodes.find((node) => /android\.widget\.EditText/i.test(node.className) && node !== emailNode) ?? null;
-  if (!passwordNode) throw new Error("Android foreman login password field not found");
-
-  tapAndroidBounds(passwordNode.bounds);
-  await sleep(350);
-  execFileSync("adb", ["shell", "input", "text", escapeAndroidInputText(user.password)], { cwd: projectRoot, stdio: "pipe" });
-  await sleep(350);
-
-  const loginNode = findAndroidLoginNodeSafe(nodes);
-  if (!loginNode) throw new Error("Android foreman login button not found");
-  pressAndroidKey(4);
-  await sleep(250);
-  tapAndroidBounds(loginNode.bounds);
-  await sleep(250);
-  pressAndroidKey(66);
-
-  current = await poll(
-    "android:foreman_after_login",
-    async () => {
-      await sleep(1400);
-      const screen = dumpAndroidScreen("android-foreman-request-sync-after-login");
-      if (isAndroidLoginScreenSafe(screen.xml)) {
-        const retryLoginNode = findAndroidLoginNodeSafe(parseAndroidNodes(screen.xml));
-        if (retryLoginNode) {
-          pressAndroidKey(4);
-          await sleep(250);
-          tapAndroidBounds(retryLoginNode.bounds);
-          await sleep(250);
-          pressAndroidKey(66);
-        }
-        return null;
-      }
-      return screen;
-    },
-    60_000,
-    1200,
-  );
-
-  return current;
+  void devClientPort;
+  return androidHarness.loginAndroidWithProtectedRoute({
+    packageName,
+    user,
+    protectedRoute: "rik://foreman",
+    artifactBase: "android-foreman-request-sync",
+    successPredicate: isAndroidForemanHome,
+    renderablePredicate: isAndroidForemanRenderableScreen,
+    loginScreenPredicate: isAndroidLoginScreenSafe,
+  });
 }
 
 async function settleAndroidForemanRoute(
@@ -628,6 +581,18 @@ async function settleAndroidForemanRoute(
       await sleep(1200);
     }
 
+    const routed = await androidHarness.openAndroidRoute({
+      packageName,
+      routes: ["rik://foreman", "rik:///foreman", "rik:///%28tabs%29/foreman"],
+      artifactBase: "android-foreman-request-sync-route",
+      predicate: isAndroidForemanHome,
+      timeoutMs: 20_000,
+      delayMs: 1200,
+    }).catch(() => null);
+    if (routed) {
+      screen = routed;
+      continue;
+    }
     startAndroidForemanRoute(packageName);
     await sleep(1200);
     screen = dumpAndroidScreen(`android-foreman-request-sync-route-${attempt + 1}`);
@@ -724,16 +689,19 @@ async function runAndroidRuntime() {
   let user: TempUser | null = null;
   const devClient = await ensureAndroidDevClientServer();
   try {
-    ensureAndroidReverseProxy(devClient.port);
+    const packageName = detectAndroidPackage();
+    const preflight = androidHarness.runAndroidPreflight({ packageName });
     await warmAndroidDevClientBundle(devClient.port);
     user = await createTempUser(process.env.FOREMAN_ANDROID_ROLE || "foreman", "Foreman Android Runtime");
-    const packageName = detectAndroidPackage();
     const current = await loginForemanAndroid(user, packageName, devClient.port);
     const settled = await settleAndroidForemanRoute(packageName, current, devClient.port);
     const passed = isAndroidForemanHome(settled.xml);
+    const recovery = androidHarness.getRecoverySummary();
     return {
       status: passed ? "passed" : "failed",
       routeOpen: passed,
+      androidPreflight: preflight,
+      ...recovery,
       currentXml: settled.xmlPath,
       currentPng: settled.pngPath,
     };
@@ -757,7 +725,7 @@ async function run() {
       platform: "android",
       issue: error instanceof Error ? error.message : String(error),
     });
-    return { status: "failed" as const };
+    return { status: "failed" as const, ...androidHarness.getRecoverySummary() };
   });
   const iosResidual = xcrunAvailable()
     ? null
@@ -778,12 +746,25 @@ async function run() {
     platformSpecificIssues,
   };
 
+  const androidRecovery = android as {
+    environmentRecoveryUsed?: boolean;
+    gmsRecoveryUsed?: boolean;
+    anrRecoveryUsed?: boolean;
+    blankSurfaceRecovered?: boolean;
+    devClientBootstrapRecovered?: boolean;
+  };
+
   const summaryPayload = {
     status: web.status === "passed" && android.status === "passed" ? "passed" : "failed",
     webPassed: web.status === "passed",
     androidPassed: android.status === "passed",
     iosPassed: false,
     iosResidual,
+    environmentRecoveryUsed: androidRecovery.environmentRecoveryUsed === true,
+    gmsRecoveryUsed: androidRecovery.gmsRecoveryUsed === true,
+    anrRecoveryUsed: androidRecovery.anrRecoveryUsed === true,
+    blankSurfaceRecovered: androidRecovery.blankSurfaceRecovered === true,
+    devClientBootstrapRecovered: androidRecovery.devClientBootstrapRecovered === true,
     runtimeVerified: web.status === "passed" && android.status === "passed",
     scenariosPassed: {
       web: {

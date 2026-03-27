@@ -103,11 +103,12 @@ import { useBuyerScreenHeader } from "../../src/screens/buyer/hooks/useBuyerScre
 import { useBuyerStore } from "../../src/screens/buyer/buyer.store";
 import RoleScreenLayout from "../../src/components/layout/RoleScreenLayout";
 import BuyerSubcontractTab from "../../src/screens/buyer/BuyerSubcontractTab";
+import { withScreenErrorBoundary } from "../../src/shared/ui/ScreenErrorBoundary";
 
 const isWeb = Platform.OS === 'web';
 
 
-export default function BuyerScreen() {
+function BuyerScreen() {
   const busy = useGlobalBusy();
   const { alertUser: screenAlertUser } = useBuyerAlerts();
   const tab = useBuyerStore((state) => state.activeTab);
@@ -954,5 +955,10 @@ export default function BuyerScreen() {
   );
   return ScreenBody;
 }
+
+export default withScreenErrorBoundary(BuyerScreen, {
+  screen: "buyer",
+  route: "/buyer",
+});
 
 const s = buyerStyles;

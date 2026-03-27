@@ -5,8 +5,9 @@ import {
   View, Text, TextInput, Pressable, ScrollView, StyleSheet, Platform, Alert,
 } from 'react-native';
 import { supabase } from '../../src/lib/supabaseClient';
+import { withScreenErrorBoundary } from "../../src/shared/ui/ScreenErrorBoundary";
 
-export default function SecurityScreen() {
+function SecurityScreen() {
   const [enrolling, setEnrolling] = useState(false);
   const [verifying, setVerifying] = useState(false);
   const [unenrolling, setUnenrolling] = useState(false);
@@ -167,6 +168,11 @@ export default function SecurityScreen() {
     </ScrollView>
   );
 }
+
+export default withScreenErrorBoundary(SecurityScreen, {
+  screen: "security",
+  route: "/security",
+});
 
 const s = StyleSheet.create({
   wrap: { padding: 16, paddingBottom: 40, backgroundColor: '#fff' },

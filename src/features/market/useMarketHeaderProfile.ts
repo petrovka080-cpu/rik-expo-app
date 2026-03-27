@@ -1,6 +1,7 @@
 import { useCallback, useState } from "react";
 import { useFocusEffect } from "expo-router";
 
+import { recordPlatformObservability } from "../../lib/observability/platformObservability";
 import {
   EMPTY_CURRENT_PROFILE_IDENTITY,
   loadCurrentProfileIdentity,
@@ -41,7 +42,25 @@ export function useMarketHeaderProfile() {
             avatarText: toProfileAvatarText(identity.fullName, identity.userId),
             avatarUrl: identity.avatarUrl,
           });
-        } catch {
+        } catch (error) {
+          recordPlatformObservability({
+            screen: "market",
+            surface: "header_profile",
+            category: "ui",
+            event: "load_profile_failed",
+            result: "error",
+            fallbackUsed: true,
+            errorClass: error instanceof Error ? error.name : undefined,
+            errorMessage: error instanceof Error ? error.message : String(error ?? "load_profile_failed"),
+            extra: {
+              module: "market.useMarketHeaderProfile",
+              route: "/market",
+              role: "market",
+              owner: "header_profile",
+              action: "loadCurrentProfileIdentity",
+              severity: "error",
+            },
+          });
           if (active) setProfile(DEFAULT_PROFILE);
         }
       };

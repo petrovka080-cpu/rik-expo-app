@@ -1,10 +1,15 @@
 {
-  "status": "passed",
+  "status": "failed",
   "webPassed": true,
-  "androidPassed": true,
+  "androidPassed": false,
   "iosPassed": false,
   "iosResidual": "xcrun is unavailable on this host; iOS simulator cannot be started from Windows",
-  "runtimeVerified": true,
+  "environmentRecoveryUsed": true,
+  "gmsRecoveryUsed": false,
+  "anrRecoveryUsed": false,
+  "blankSurfaceRecovered": true,
+  "devClientBootstrapRecovered": true,
+  "runtimeVerified": false,
   "scenariosPassed": {
     "web": {
       "initialOpen": true,
@@ -13,9 +18,9 @@
       "refreshLifecycle": true
     },
     "android": {
-      "initialOpen": true,
-      "queueCorrectness": true,
-      "interactionSanity": true,
+      "initialOpen": false,
+      "queueCorrectness": false,
+      "interactionSanity": false,
       "refreshLifecycle": true
     },
     "ios": {
@@ -27,6 +32,10 @@
   },
   "platformSpecificIssues": [
     {
+      "platform": "android",
+      "issue": "Android login button not found"
+    },
+    {
       "platform": "ios",
       "issue": "xcrun is unavailable on this host; iOS simulator cannot be started from Windows"
     }
@@ -34,10 +43,10 @@
   "artifacts": {
     "webSummary": "artifacts/warehouse-issue-queue-web-smoke.summary.json",
     "webRuntime": "artifacts/warehouse-issue-queue-web-smoke.json",
-    "androidCurrentXml": "artifacts/android-warehouse-issue-queue-current.xml",
-    "androidCurrentPng": "artifacts/android-warehouse-issue-queue-current.png",
-    "androidAfterRecipientXml": "artifacts/android-warehouse-issue-queue-after-recipient.xml",
-    "androidAfterRecipientPng": "artifacts/android-warehouse-issue-queue-after-recipient.png",
+    "androidCurrentXml": null,
+    "androidCurrentPng": null,
+    "androidAfterRecipientXml": null,
+    "androidAfterRecipientPng": null,
     "androidModalXml": null,
     "androidModalPng": null
   }

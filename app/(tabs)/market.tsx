@@ -1,7 +1,13 @@
 import React from "react";
 
 import MarketHomeScreen from "../../src/features/market/MarketHomeScreen";
+import { withScreenErrorBoundary } from "../../src/shared/ui/ScreenErrorBoundary";
 
-export default function MarketTabScreen() {
+function MarketTabScreen() {
   return <MarketHomeScreen />;
 }
+
+export default withScreenErrorBoundary(MarketTabScreen, {
+  screen: "market",
+  route: "/market",
+});

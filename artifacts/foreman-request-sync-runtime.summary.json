@@ -1,16 +1,21 @@
 {
   "status": "failed",
-  "webPassed": false,
+  "webPassed": true,
   "androidPassed": false,
   "iosPassed": false,
   "iosResidual": "xcrun is unavailable on this host; iOS simulator cannot be started from Windows",
+  "environmentRecoveryUsed": true,
+  "gmsRecoveryUsed": false,
+  "anrRecoveryUsed": false,
+  "blankSurfaceRecovered": false,
+  "devClientBootstrapRecovered": true,
   "runtimeVerified": false,
   "scenariosPassed": {
     "web": {
-      "materialsCrud": false,
-      "submitPath": false,
-      "subcontractAtomic": false,
-      "directorHandoff": false
+      "materialsCrud": true,
+      "submitPath": true,
+      "subcontractAtomic": true,
+      "directorHandoff": true
     },
     "android": {
       "routeOpen": false

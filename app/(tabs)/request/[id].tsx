@@ -2,8 +2,9 @@ import { useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import { View, Text, ActivityIndicator } from "react-native";
 import { supabase } from "../../../src/lib/supabaseClient";
+import { withScreenErrorBoundary } from "../../../src/shared/ui/ScreenErrorBoundary";
 
-export default function RequestDetails() {
+function RequestDetails() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const [item, setItem] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -92,3 +93,8 @@ export default function RequestDetails() {
     </View>
   );
 }
+
+export default withScreenErrorBoundary(RequestDetails, {
+  screen: "request",
+  route: "/request/[id]",
+});

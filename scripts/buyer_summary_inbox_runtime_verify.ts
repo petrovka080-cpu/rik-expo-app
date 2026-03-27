@@ -2,27 +2,18 @@ import fs from "node:fs";
 import path from "node:path";
 import { execFileSync, spawnSync } from "node:child_process";
 
-import { chromium } from "playwright";
-import { createClient } from "@supabase/supabase-js";
-import { config as loadDotenv } from "dotenv";
-
-loadDotenv({ path: ".env.local", override: false });
-loadDotenv({ path: ".env", override: false });
+import { createAndroidHarness } from "./_shared/androidHarness";
+import { buildRuntimeSummary, createFailurePlatformResult, type RuntimeIssue } from "./_shared/runtimeSummary";
+import {
+  createTempUser as createRuntimeTempUser,
+  cleanupTempUser as cleanupRuntimeTempUser,
+  createVerifierAdmin,
+  type RuntimeTestUser,
+} from "./_shared/testUserDiscipline";
+import { baseUrl, launchWebRuntime } from "./_shared/webRuntimeHarness";
 
 const projectRoot = process.cwd();
-const supabaseUrl = String(process.env.EXPO_PUBLIC_SUPABASE_URL ?? "").trim();
-const supabaseKey = String(process.env.SUPABASE_SERVICE_ROLE_KEY ?? "").trim();
-const baseUrl = "http://localhost:8081";
-const password = "Pass1234";
-
-if (!supabaseUrl || !supabaseKey) {
-  throw new Error("Missing EXPO_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY");
-}
-
-const admin = createClient(supabaseUrl, supabaseKey, {
-  auth: { persistSession: false, autoRefreshToken: false },
-  global: { headers: { "x-client-info": "buyer-summary-inbox-runtime-verify" } },
-});
+const admin = createVerifierAdmin("buyer-summary-inbox-runtime-verify");
 
 const artifactBase = "artifacts/buyer-summary-inbox-runtime";
 const webArtifactBase = "artifacts/buyer-summary-inbox-web-smoke";
@@ -42,19 +33,9 @@ const LABELS = {
   rfq: "ТОРГИ",
 };
 
-type RuntimeIssue = {
-  platform: "web" | "android" | "ios";
-  issue: string;
-};
-
 const DEV_LAUNCHER_LABELS = ["Development Build", "DEVELOPMENT SERVERS"];
 
-type TempUser = {
-  id: string;
-  email: string;
-  password: string;
-  role: string;
-};
+type TempUser = RuntimeTestUser;
 
 type AndroidNode = {
   text: string;
@@ -80,6 +61,11 @@ const writeArtifact = (relativePath: string, payload: unknown) => {
   fs.mkdirSync(path.dirname(full), { recursive: true });
   fs.writeFileSync(full, `${JSON.stringify(payload, null, 2)}\n`);
 };
+
+const androidHarness = createAndroidHarness({
+  projectRoot,
+  devClientPort: androidDevClientPort,
+});
 
 async function poll<T>(
   label: string,
@@ -131,41 +117,15 @@ const extractCanonicalRequestLabel = (value: string): string => {
 };
 
 async function createTempUser(role: string, fullName: string): Promise<TempUser> {
-  const email = `buyer.inbox.${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}@e.com`;
-  const userResult = await admin.auth.admin.createUser({
-    email,
-    password,
-    email_confirm: true,
-    user_metadata: { full_name: fullName },
-    app_metadata: { role },
+  return createRuntimeTempUser(admin, {
+    role,
+    fullName,
+    emailPrefix: "buyer.inbox",
   });
-  if (userResult.error) throw userResult.error;
-  const user = userResult.data.user;
-
-  const profileResult = await admin
-    .from("profiles")
-    .upsert({ user_id: user.id, role, full_name: fullName }, { onConflict: "user_id" });
-  if (profileResult.error) throw profileResult.error;
-
-  const userProfileResult = await admin
-    .from("user_profiles")
-    .upsert({ user_id: user.id, full_name: fullName }, { onConflict: "user_id" });
-  if (userProfileResult.error) throw userProfileResult.error;
-
-  return { id: user.id, email, password, role };
 }
 
 async function cleanupTempUser(user: TempUser | null) {
-  if (!user) return;
-  try {
-    await admin.from("user_profiles").delete().eq("user_id", user.id);
-  } catch {}
-  try {
-    await admin.from("profiles").delete().eq("user_id", user.id);
-  } catch {}
-  try {
-    await admin.auth.admin.deleteUser(user.id);
-  } catch {}
+  await cleanupRuntimeTempUser(admin, user);
 }
 
 async function loadExpectedInboxGroup(): Promise<ExpectedInboxGroup | null> {
@@ -332,25 +292,12 @@ async function runWebRuntime(): Promise<Record<string, unknown>> {
     if (!expected) throw new Error("Buyer inbox scope returned no rows for runtime verification");
 
     user = await createTempUser(process.env.BUYER_WEB_ROLE || "buyer", "Buyer Summary Inbox Smoke");
-    browser = await chromium.launch({ headless: true });
-    const context = await browser.newContext();
-    const page = await context.newPage();
-
-    page.on("console", (message) => {
-      runtime.console.push({ type: message.type(), text: message.text() });
-    });
-    page.on("pageerror", (error) => {
-      runtime.pageErrors.push(String(error?.message ?? error));
-    });
-    page.on("response", (response) => {
-      if (response.status() >= 400) {
-        runtime.badResponses.push({
-          url: response.url(),
-          status: response.status(),
-          method: response.request().method(),
-        });
-      }
-    });
+    const session = await launchWebRuntime();
+    browser = session.browser;
+    const page = session.page;
+    runtime.console = session.runtime.console;
+    runtime.pageErrors = session.runtime.pageErrors;
+    runtime.badResponses = session.runtime.badResponses;
 
     await loginBuyer(page, user);
     await waitForBody(
@@ -816,9 +763,18 @@ async function confirmAndroidBuyerFio(current: ReturnType<typeof dumpAndroidScre
 
 async function loginBuyerAndroid(user: TempUser, packageName: string | null) {
   writeArtifact("artifacts/android-buyer-summary-inbox-user.json", user);
-  resetAndroidAppState(packageName);
-  let current = await ensureAndroidDevClientLoaded(packageName, androidDevClientPort);
-  if (isAndroidLoginScreen(current.xml)) {
+  let current = await androidHarness.loginAndroidWithProtectedRoute({
+    packageName,
+    user,
+    protectedRoute: "rik://buyer",
+    artifactBase: "android-buyer-summary-inbox",
+    successPredicate: (xml) => isAndroidBuyerHome(xml) || isAndroidInboxSurface(xml, "") || isAndroidFioModal(xml),
+    renderablePredicate: (xml) =>
+      isAndroidLoginScreen(xml) || isAndroidBuyerHome(xml) || isAndroidInboxSurface(xml, "") || isAndroidFioModal(xml),
+    loginScreenPredicate: isAndroidLoginScreen,
+  });
+  current = await dismissAndroidDevMenuIfPresent(current, "android-buyer-summary-inbox");
+  if (false) {
     const nodes = parseAndroidNodes(current.xml);
     const emailNode = findAndroidNode(
       nodes,
@@ -973,21 +929,15 @@ async function ensureAndroidInboxTab(current: ReturnType<typeof dumpAndroidScree
 
 async function runAndroidRuntime(): Promise<Record<string, unknown>> {
   let user: TempUser | null = null;
-  const devices = adb(["devices"]);
-  if (!devices.includes("\tdevice")) {
-    return {
-      status: "failed",
-      inboxVisible: false,
-      sheetOpened: false,
-      platformSpecificIssues: ["No Android emulator/device detected"],
-    };
-  }
-
+  let devClient: { cleanup: () => void } | null = null;
   try {
     const expected = await loadExpectedInboxGroup();
     if (!expected) throw new Error("Buyer inbox scope returned no rows for Android runtime verification");
 
-    const packageName = detectAndroidPackage();
+    const prepared = await androidHarness.prepareAndroidRuntime();
+    devClient = prepared.devClient;
+    const packageName = prepared.packageName;
+    const preflight = prepared.preflight;
     user = await createTempUser(process.env.BUYER_WEB_ROLE || "buyer", "Buyer Summary Inbox Android");
     let current = await loginBuyerAndroid(user, packageName);
     const platformSpecificIssues: string[] = [];
@@ -1051,8 +1001,11 @@ async function runAndroidRuntime(): Promise<Record<string, unknown>> {
       platformSpecificIssues.push("Buyer inbox sheet did not open on Android after tapping the first request group");
     }
 
+    const recovery = androidHarness.getRecoverySummary();
     return {
       status: inboxVisible && sheetOpened ? "passed" : "failed",
+      androidPreflight: preflight,
+      ...recovery,
       fioConfirmed: fioResult.fioConfirmed,
       inboxTabOpened: inbox.inboxTabOpened,
       expectedGroupLabel: expected.label,
@@ -1069,6 +1022,7 @@ async function runAndroidRuntime(): Promise<Record<string, unknown>> {
     };
   } finally {
     await cleanupTempUser(user);
+    devClient?.cleanup();
   }
 }
 
@@ -1097,6 +1051,7 @@ async function main() {
     status: "failed",
     inboxVisible: false,
     sheetOpened: false,
+    ...androidHarness.getRecoverySummary(),
     platformSpecificIssues: [error instanceof Error ? error.message : String(error ?? "unknown android error")],
   }));
   const ios = runIosRuntime();
@@ -1125,6 +1080,11 @@ async function main() {
     androidPassed: android.status === "passed",
     iosPassed: ios.status === "passed",
     iosResidual: typeof iosRecord.iosResidual === "string" ? (iosRecord.iosResidual as string) : null,
+    environmentRecoveryUsed: androidRecord.environmentRecoveryUsed === true,
+    gmsRecoveryUsed: androidRecord.gmsRecoveryUsed === true,
+    anrRecoveryUsed: androidRecord.anrRecoveryUsed === true,
+    blankSurfaceRecovered: androidRecord.blankSurfaceRecovered === true,
+    devClientBootstrapRecovered: androidRecord.devClientBootstrapRecovered === true,
     runtimeVerified: web.status === "passed" && android.status === "passed",
     scenariosPassed: {
       web: {

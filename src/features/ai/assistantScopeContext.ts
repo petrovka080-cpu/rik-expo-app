@@ -1,4 +1,5 @@
 import { supabase } from "../../lib/supabaseClient";
+import { recordPlatformObservability } from "../../lib/observability/platformObservability";
 import { listBuyerInbox } from "../../lib/catalog_api";
 import { loadDirectorFinanceScreenScope } from "../../lib/api/directorFinanceScope.service";
 import {
@@ -14,6 +15,30 @@ export type AssistantScopedFacts = {
   sourceKinds: string[];
   factCount: number;
 };
+
+const recordAssistantScopeFallback = (
+  event: string,
+  error: unknown,
+  extra?: Record<string, unknown>,
+) =>
+  recordPlatformObservability({
+    screen: "ai",
+    surface: "assistant_scope",
+    category: "ui",
+    event,
+    result: "error",
+    fallbackUsed: true,
+    errorClass: error instanceof Error ? error.name : undefined,
+    errorMessage: error instanceof Error ? error.message : String(error ?? "assistant_scope_failed"),
+    extra: {
+      module: "ai.assistantScopeContext",
+      route: "/ai",
+      role: "ai",
+      owner: "assistant_scope",
+      severity: "error",
+      ...extra,
+    },
+  });
 
 const formatAmount = (value: number): string =>
   Number(value || 0).toLocaleString("ru-RU", {
@@ -195,11 +220,25 @@ export async function loadAssistantScopedFacts(params: {
   const context = params.context;
 
   if (role === "buyer" || context === "buyer") {
-    return await loadBuyerScopedFacts().catch(() => null);
+    return await loadBuyerScopedFacts().catch((error) => {
+      recordAssistantScopeFallback("load_buyer_scoped_facts_failed", error, {
+        action: "loadBuyerScopedFacts",
+        scopeRole: role,
+        scopeContext: context,
+      });
+      return null;
+    });
   }
 
   if (role === "director" || context === "director" || context === "reports") {
-    return await loadDirectorScopedFactsGrounded().catch(() => null);
+    return await loadDirectorScopedFactsGrounded().catch((error) => {
+      recordAssistantScopeFallback("load_director_scoped_facts_failed", error, {
+        action: "loadDirectorScopedFactsGrounded",
+        scopeRole: role,
+        scopeContext: context,
+      });
+      return null;
+    });
   }
 
   return null;

@@ -5,6 +5,7 @@ import { execFileSync, spawn, spawnSync } from "node:child_process";
 import { chromium } from "playwright";
 import { createClient } from "@supabase/supabase-js";
 import { config as loadDotenv } from "dotenv";
+import { createAndroidHarness } from "./_shared/androidHarness";
 
 loadDotenv({ path: ".env.local", override: false });
 loadDotenv({ path: ".env", override: false });
@@ -37,6 +38,13 @@ const webAuthStorageKey = supabaseProjectRef ? `sb-${supabaseProjectRef}-auth-to
 const admin = createClient(supabaseUrl, supabaseKey, {
   auth: { persistSession: false, autoRefreshToken: false },
   global: { headers: { "x-client-info": "marketplace-integration-wave1" } },
+});
+
+const androidHarness = createAndroidHarness({
+  projectRoot,
+  devClientPort: androidDevClientPort,
+  devClientStdoutPath: androidStdoutPath,
+  devClientStderrPath: androidStderrPath,
 });
 
 type JsonRecord = Record<string, unknown>;
@@ -1608,6 +1616,7 @@ async function runAndroidRuntime(fixture: MarketFixture) {
     ensureAndroidReverseProxy(devClient.port);
     await warmAndroidDevClientBundle(devClient.port);
     const packageName = detectAndroidPackage();
+    const preflight = androidHarness.runAndroidPreflight({ packageName });
     foreman = await createTempUser("foreman", "Marketplace Android Foreman", "market.android.foreman");
     const foremanStartedAt = new Date().toISOString();
     await loginAndroid(foreman, packageName, devClient.port, "rik:///market");
@@ -1644,9 +1653,12 @@ async function runAndroidRuntime(fixture: MarketFixture) {
     const proposalEffect = await pollProposalSideEffect(buyer, fixture.noteTag, fixture.rikCode, buyerStartedAt);
     const postProposalScreen = dumpAndroidScreen("android-market-after-proposal");
     dismissAndroidOkIfPresent(postProposalScreen.xml);
+    const recovery = androidHarness.getRecoverySummary();
 
     return {
       status: requestEffect.itemCount > 0 && proposalEffect.itemCount > 0 ? "passed" : "failed",
+      androidPreflight: preflight,
+      ...recovery,
       marketHomeVisible: true,
       productVisible: true,
       addToRequestWorked: requestEffect.itemCount > 0,
@@ -1749,7 +1761,7 @@ async function main() {
       return await runAndroidRuntime(fixture);
     } catch (error) {
       platformSpecificIssues.push({ platform: "android", issue: error instanceof Error ? error.message : String(error) });
-      return { status: "failed" as const };
+      return { status: "failed" as const, ...androidHarness.getRecoverySummary() };
     }
   })();
 
@@ -1808,6 +1820,11 @@ async function main() {
     androidPassed: android.status === "passed",
     iosPassed: false,
     iosResidual,
+    environmentRecoveryUsed: (android as JsonRecord).environmentRecoveryUsed === true,
+    gmsRecoveryUsed: (android as JsonRecord).gmsRecoveryUsed === true,
+    anrRecoveryUsed: (android as JsonRecord).anrRecoveryUsed === true,
+    blankSurfaceRecovered: (android as JsonRecord).blankSurfaceRecovered === true,
+    devClientBootstrapRecovered: (android as JsonRecord).devClientBootstrapRecovered === true,
     runtimeGateOk: artifact.runtime.runtimeGateOk,
     tscPassed: artifact.staticChecks.tscPassed,
     eslintPassed: artifact.staticChecks.eslintPassed,

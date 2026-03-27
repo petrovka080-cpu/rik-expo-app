@@ -1,3 +1,4 @@
+import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import {
   ActivityIndicator,
@@ -69,9 +70,44 @@ const KIND_LABELS: Record<string, string> = {
 const getKindLabel = (value: string): string => KIND_LABELS[value] || value || "Позиция";
 
 const renderMetaLine = (params: { qty?: number; unit?: string | null; kind?: string | null; code?: string | null }) =>
-  [params.qty != null ? `${params.qty} ${params.unit || ""}`.trim() : params.unit || null, params.kind ? getKindLabel(params.kind) : null, params.code || null]
+  [
+    params.qty != null ? `${params.qty} ${params.unit || ""}`.trim() : params.unit || null,
+    params.kind ? getKindLabel(params.kind) : null,
+    params.code || null,
+  ]
     .filter(Boolean)
     .join(" • ");
+
+const NoticeCard = ({
+  backgroundColor,
+  borderColor,
+  titleColor,
+  title,
+  detail,
+}: {
+  backgroundColor: string;
+  borderColor: string;
+  titleColor: string;
+  title: string;
+  detail?: string | null;
+}) => (
+  <View
+    style={{
+      borderRadius: 14,
+      padding: 12,
+      backgroundColor,
+      borderWidth: 1,
+      borderColor,
+    }}
+  >
+    <Text style={{ color: titleColor, fontWeight: "800", fontSize: 13 }}>{title}</Text>
+    {detail ? (
+      <Text style={{ color: titleColor, fontSize: 12, marginTop: 6, opacity: 0.9 }}>
+        {detail}
+      </Text>
+    ) : null}
+  </View>
+);
 
 export default function ForemanAiQuickModal(props: Props) {
   const insets = useSafeAreaInsets();
@@ -90,16 +126,25 @@ export default function ForemanAiQuickModal(props: Props) {
     return promptKey && promptKey !== errorKey && promptKey !== noticeKey;
   });
 
-  const voiceLabel =
+  const micIcon =
+    voice.status === "listening"
+      ? "stop-circle-outline"
+      : voice.status === "recognizing"
+        ? "radio-outline"
+        : voice.status === "unsupported"
+          ? "mic-off-outline"
+          : "mic-outline";
+  const micLabel =
     voice.status === "listening"
       ? "Стоп"
       : voice.status === "recognizing"
-        ? "..."
+        ? "Слушаю"
         : voice.status === "denied" || voice.status === "failed"
-          ? "Повтор"
+          ? "Повторить"
           : voice.status === "unsupported"
-            ? "Нет"
-            : "Мик";
+            ? "Недоступно"
+            : "Микрофон";
+  const composerDisabled = props.parseLoading || voice.status === "unsupported";
 
   return (
     <Modal
@@ -148,10 +193,10 @@ export default function ForemanAiQuickModal(props: Props) {
           </View>
 
           {isComposeMode ? (
-            <View style={{ flex: 1 }}>
+            <View style={{ flex: 1, minHeight: 0 }}>
               <ScrollView
                 style={{ flex: 1 }}
-                contentContainerStyle={{ paddingBottom: 12, gap: 12 }}
+                contentContainerStyle={{ paddingBottom: 16, gap: 12 }}
                 keyboardShouldPersistTaps="handled"
                 keyboardDismissMode={Platform.OS === "ios" ? "interactive" : "on-drag"}
               >
@@ -188,177 +233,144 @@ export default function ForemanAiQuickModal(props: Props) {
                 ) : null}
 
                 {showUnavailable ? (
-                  <View
-                    style={{
-                      borderRadius: 14,
-                      padding: 12,
-                      backgroundColor: "#3f1d12",
-                      borderWidth: 1,
-                      borderColor: "rgba(251,146,60,0.45)",
-                    }}
-                  >
-                    <Text style={{ color: "#fdba74", fontWeight: "800", fontSize: 13 }}>
-                      AI временно недоступен. Используйте каталог, смету или ручное добавление позиций.
-                    </Text>
-                    {props.aiUnavailableReason ? (
-                      <Text style={{ color: "#fed7aa", fontSize: 12, marginTop: 6 }}>
-                        Причина: {props.aiUnavailableReason}
-                      </Text>
-                    ) : null}
-                  </View>
+                  <NoticeCard
+                    backgroundColor="#3f1d12"
+                    borderColor="rgba(251,146,60,0.45)"
+                    titleColor="#fdba74"
+                    title="AI временно недоступен. Используйте каталог, смету или ручное добавление."
+                    detail={props.aiUnavailableReason ? `Причина: ${props.aiUnavailableReason}` : null}
+                  />
                 ) : null}
 
                 {props.degradedMode ? (
-                  <View
-                    style={{
-                      borderRadius: 14,
-                      padding: 12,
-                      backgroundColor: "rgba(245,158,11,0.12)",
-                      borderWidth: 1,
-                      borderColor: "rgba(245,158,11,0.35)",
-                    }}
-                  >
-                    <Text style={{ color: "#fde68a", fontWeight: "700", fontSize: 13 }}>
-                      Нет сети. Можно безопасно повторить только последнюю подтверждённую позицию.
-                    </Text>
-                  </View>
+                  <NoticeCard
+                    backgroundColor="rgba(245,158,11,0.12)"
+                    borderColor="rgba(245,158,11,0.35)"
+                    titleColor="#fde68a"
+                    title="Нет сети. Можно повторить только последнюю подтверждённую позицию."
+                  />
                 ) : null}
 
-                <View style={{ gap: 10 }}>
-                  <View
-                    style={{
-                      flexDirection: "row",
-                      alignItems: "stretch",
-                      gap: 10,
-                    }}
-                  >
-                    <TextInput
-                      value={props.value}
-                      onChangeText={props.onChangeText}
-                      multiline
-                      textAlignVertical="top"
-                      placeholder="Что нужно добавить в заявку?"
-                      placeholderTextColor="rgba(255,255,255,0.35)"
-                      style={[
-                        props.styles.input,
-                        {
-                          flex: 1,
-                          minHeight: 196,
-                          maxHeight: 260,
-                          marginBottom: 0,
-                        },
-                      ]}
-                    />
-
-                    <Pressable
-                      onPress={voice.isActive ? voice.stop : voice.start}
-                      disabled={props.parseLoading || voice.status === "unsupported"}
-                      style={{
-                        width: 68,
-                        borderRadius: 16,
-                        borderWidth: 1,
-                        borderColor: voice.isActive ? props.ui.accent : "rgba(255,255,255,0.12)",
-                        backgroundColor: voice.isActive ? "rgba(245,158,11,0.16)" : "rgba(255,255,255,0.05)",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        paddingHorizontal: 8,
-                        paddingVertical: 14,
-                        opacity: props.parseLoading || voice.status === "unsupported" ? 0.55 : 1,
-                      }}
-                    >
-                      <Text style={{ color: props.ui.text, fontSize: 12, fontWeight: "800" }}>
-                        {voiceLabel}
-                      </Text>
-                    </Pressable>
-                  </View>
-
-                  {voice.error ? (
-                    <Text style={{ color: "#fdba74", fontSize: 12 }}>{voice.error}</Text>
-                  ) : null}
-
-                  {props.error ? (
-                    <View
-                      style={{
-                        borderRadius: 14,
-                        padding: 12,
-                        backgroundColor: "rgba(239,68,68,0.12)",
-                        borderWidth: 1,
-                        borderColor: "rgba(239,68,68,0.35)",
-                      }}
-                    >
-                      <Text style={{ color: "#fecaca", fontWeight: "700", fontSize: 13 }}>
-                        {props.error}
-                      </Text>
-                    </View>
-                  ) : null}
-
-                </View>
+                {props.error ? (
+                  <NoticeCard
+                    backgroundColor="rgba(239,68,68,0.12)"
+                    borderColor="rgba(239,68,68,0.35)"
+                    titleColor="#fecaca"
+                    title={props.error}
+                  />
+                ) : null}
               </ScrollView>
 
               <View
                 style={{
-                  paddingTop: 12,
-                  borderTopWidth: 1,
-                  borderTopColor: "rgba(255,255,255,0.08)",
+                  marginTop: 8,
+                  borderRadius: 20,
+                  borderWidth: 1,
+                  borderColor: "rgba(255,255,255,0.10)",
+                  backgroundColor: "rgba(255,255,255,0.04)",
+                  padding: 12,
+                  gap: 12,
                 }}
               >
-                <Pressable
-                  onPress={() => void props.onParse()}
-                  disabled={props.parseLoading || !props.value.trim()}
+                <TextInput
+                  value={props.value}
+                  onChangeText={props.onChangeText}
+                  multiline
+                  textAlignVertical="top"
+                  placeholder="Что нужно добавить в заявку?"
+                  placeholderTextColor="rgba(255,255,255,0.35)"
                   style={[
-                    props.styles.actionBtnWide,
+                    props.styles.input,
                     {
-                      backgroundColor: props.ui.accent,
-                      opacity: props.parseLoading || !props.value.trim() ? 0.6 : 1,
-                      flexDirection: "row",
-                      gap: 8,
+                      minHeight: 128,
+                      maxHeight: 200,
+                      marginBottom: 0,
+                      paddingVertical: 0,
+                      paddingHorizontal: 0,
+                      borderWidth: 0,
+                      backgroundColor: "transparent",
                     },
                   ]}
-                >
-                  {props.parseLoading ? <ActivityIndicator size="small" color="#0B0F14" /> : null}
-                  <Text style={[props.styles.actionText, { color: "#0B0F14" }]}>
-                    {props.parseLoading ? "Разбираю..." : "Разобрать"}
+                />
+
+                {voice.error ? (
+                  <Text style={{ color: "#fdba74", fontSize: 12 }}>{voice.error}</Text>
+                ) : null}
+
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+                  <Pressable
+                    onPress={voice.isActive ? voice.stop : voice.start}
+                    disabled={composerDisabled}
+                    style={{
+                      width: 48,
+                      height: 48,
+                      borderRadius: 16,
+                      borderWidth: 1,
+                      borderColor: voice.isActive ? props.ui.accent : "rgba(255,255,255,0.12)",
+                      backgroundColor: voice.isActive ? "rgba(34,197,94,0.14)" : "rgba(255,255,255,0.05)",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      opacity: composerDisabled ? 0.55 : 1,
+                    }}
+                  >
+                    <Ionicons name={micIcon} size={22} color={props.ui.text} />
+                  </Pressable>
+
+                  <Text
+                    style={{ flex: 1, minWidth: 0, color: props.ui.sub, fontSize: 12, fontWeight: "600" }}
+                    numberOfLines={1}
+                    ellipsizeMode="tail"
+                  >
+                    {micLabel}
                   </Text>
-                </Pressable>
+
+                  <Pressable
+                    onPress={() => void props.onParse()}
+                    disabled={props.parseLoading || !props.value.trim()}
+                    style={[
+                      props.styles.actionBtnWide,
+                      {
+                        flex: 0,
+                        minWidth: 132,
+                        backgroundColor: props.ui.accent,
+                        opacity: props.parseLoading || !props.value.trim() ? 0.6 : 1,
+                        flexDirection: "row",
+                        gap: 8,
+                        paddingHorizontal: 18,
+                      },
+                    ]}
+                  >
+                    {props.parseLoading ? <ActivityIndicator size="small" color="#0B0F14" /> : null}
+                    <Text style={[props.styles.actionText, { color: "#0B0F14" }]}>
+                      {props.parseLoading ? "Разбираю..." : "Разобрать"}
+                    </Text>
+                  </Pressable>
+                </View>
               </View>
             </View>
           ) : (
-            <View style={{ flex: 1 }}>
+            <View style={{ flex: 1, minHeight: 0 }}>
               <ScrollView
                 style={{ flex: 1 }}
                 contentContainerStyle={{ paddingBottom: 12, gap: 12 }}
                 keyboardShouldPersistTaps="handled"
               >
                 {props.error ? (
-                  <View
-                    style={{
-                      borderRadius: 14,
-                      padding: 12,
-                      backgroundColor: "rgba(239,68,68,0.12)",
-                      borderWidth: 1,
-                      borderColor: "rgba(239,68,68,0.35)",
-                    }}
-                  >
-                    <Text style={{ color: "#fecaca", fontWeight: "700", fontSize: 13 }}>
-                      {props.error}
-                    </Text>
-                  </View>
+                  <NoticeCard
+                    backgroundColor="rgba(239,68,68,0.12)"
+                    borderColor="rgba(239,68,68,0.35)"
+                    titleColor="#fecaca"
+                    title={props.error}
+                  />
                 ) : null}
 
                 {props.notice ? (
-                  <View
-                    style={{
-                      borderRadius: 14,
-                      padding: 12,
-                      backgroundColor: "rgba(255,255,255,0.05)",
-                      borderWidth: 1,
-                      borderColor: "rgba(255,255,255,0.1)",
-                    }}
-                  >
-                    <Text style={{ color: props.ui.text, fontWeight: "700", fontSize: 13 }}>
-                      {props.notice}
-                    </Text>
-                  </View>
+                  <NoticeCard
+                    backgroundColor="rgba(255,255,255,0.05)"
+                    borderColor="rgba(255,255,255,0.1)"
+                    titleColor={props.ui.text}
+                    title={props.notice}
+                  />
                 ) : null}
 
                 {props.preview.length > 0 ? (

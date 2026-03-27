@@ -5,6 +5,7 @@ import { execFileSync, spawn, spawnSync } from "node:child_process";
 import { chromium } from "playwright";
 import { createClient } from "@supabase/supabase-js";
 import { config as loadDotenv } from "dotenv";
+import { createAndroidHarness } from "./_shared/androidHarness";
 
 loadDotenv({ path: ".env.local", override: false });
 loadDotenv({ path: ".env", override: false });
@@ -108,6 +109,13 @@ const writeJson = (fullPath: string, payload: unknown) => {
   fs.mkdirSync(path.dirname(fullPath), { recursive: true });
   fs.writeFileSync(fullPath, `${JSON.stringify(payload, null, 2)}\n`);
 };
+
+const androidHarness = createAndroidHarness({
+  projectRoot,
+  devClientPort: androidDevClientPort,
+  devClientStdoutPath: androidDevClientStdoutPath,
+  devClientStderrPath: androidDevClientStderrPath,
+});
 
 async function poll<T>(
   label: string,
@@ -772,6 +780,18 @@ async function dismissAndroidClosableOverlays(current: ReturnType<typeof dumpAnd
 
 async function loginDirectorAndroid(user: TempUser, packageName: string | null, devClientPort: number) {
   writeJson(path.join(projectRoot, "artifacts/android-director-finance-user.json"), user);
+  if (process.env.RIK_ANDROID_SHARED_HARNESS !== "0") {
+    const current = await androidHarness.loginAndroidWithProtectedRoute({
+      packageName,
+      user,
+      protectedRoute: "rik://director",
+      artifactBase: "android-director-finance",
+      successPredicate: (xml) => isAndroidFinanceHome(xml) || isAndroidDebtModal(xml),
+      renderablePredicate: (xml) => isAndroidLoginScreen(xml) || isAndroidFinanceHome(xml) || isAndroidDebtModal(xml),
+      loginScreenPredicate: isAndroidLoginScreen,
+    });
+    return dismissAndroidClosableOverlays(current);
+  }
   resetAndroidAppState(packageName);
   let current = await ensureAndroidDevClientLoaded(packageName, devClientPort);
   if (isAndroidDevMenuIntroScreen(current.xml)) {
@@ -951,6 +971,7 @@ async function runAndroidRuntime(): Promise<Record<string, unknown>> {
   try {
     const devClient = await ensureAndroidDevClientServer();
     const packageName = detectAndroidPackage();
+    const preflight = androidHarness.runAndroidPreflight({ packageName });
     user = await createTempUser(process.env.DIRECTOR_WEB_ROLE || "director", "Director Finance Android");
     try {
       await warmAndroidDevClientBundle(devClient.port);
@@ -1031,12 +1052,15 @@ async function runAndroidRuntime(): Promise<Record<string, unknown>> {
       platformSpecificIssues.push("Supplier detail modal did not open on Android finance screen");
     }
 
+    const recovery = androidHarness.getRecoverySummary();
     return {
       status:
         isAndroidFinanceHome(workingScreen.xml) && isAndroidDebtModal(debtModal.xml) && supplierDetailOpened
           ? "passed"
           : "failed",
       packageName,
+      androidPreflight: preflight,
+      ...recovery,
       financeTabOpened: financeTab.switched,
       financeHomeVisible: isAndroidFinanceHome(workingScreen.xml),
       debtModalOpened: isAndroidDebtModal(debtModal.xml),
@@ -1089,6 +1113,7 @@ async function main() {
     financeHomeVisible: false,
     debtModalOpened: false,
     supplierDetailOpened: false,
+    ...androidHarness.getRecoverySummary(),
     platformSpecificIssues: [error instanceof Error ? error.message : String(error ?? "unknown android error")],
   }));
   const ios = runIosRuntime();
@@ -1118,6 +1143,11 @@ async function main() {
     androidPassed: android.status === "passed",
     iosPassed: ios.status === "passed",
     iosResidual: typeof iosRecord.iosResidual === "string" ? (iosRecord.iosResidual as string) : null,
+    environmentRecoveryUsed: androidRecord.environmentRecoveryUsed === true,
+    gmsRecoveryUsed: androidRecord.gmsRecoveryUsed === true,
+    anrRecoveryUsed: androidRecord.anrRecoveryUsed === true,
+    blankSurfaceRecovered: androidRecord.blankSurfaceRecovered === true,
+    devClientBootstrapRecovered: androidRecord.devClientBootstrapRecovered === true,
     runtimeVerified: web.status === "passed" && android.status === "passed",
     scenariosPassed: {
       web: {

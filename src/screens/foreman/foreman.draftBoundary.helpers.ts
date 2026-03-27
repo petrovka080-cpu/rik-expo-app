@@ -254,17 +254,25 @@ export async function loadForemanRequestDetails(params: {
   setRequestDetails: SetRequestDetails;
   setDisplayNoByReq: SetDisplayNoByReq;
   syncHeaderFromDetails: (details: RequestDetails) => void;
+  shouldApply?: () => boolean;
 }): Promise<RequestDetails | null> {
   const key = params.requestId != null ? ridStr(params.requestId) : params.activeRequestId;
   if (!key || key === "__foreman_local_draft__") {
-    params.setRequestDetails(null);
+    if (params.shouldApply?.() ?? true) {
+      params.setRequestDetails(null);
+    }
     return null;
   }
   try {
     const details = await fetchRequestDetails(key);
     if (!details) {
-      params.setRequestDetails(null);
+      if (params.shouldApply?.() ?? true) {
+        params.setRequestDetails(null);
+      }
       return null;
+    }
+    if (!(params.shouldApply?.() ?? true)) {
+      return details;
     }
     params.setRequestDetails(details);
     if (details.display_no) {
@@ -655,7 +663,10 @@ export async function ensureForemanDraftRequestId(params: {
 export async function bootstrapForemanDraftBoundary(params: {
   cancelled?: () => boolean;
   patchBoundaryState: DraftBoundaryPatchState;
-  clearDraftCache: () => void | Promise<void>;
+  clearDraftCache: (options?: {
+    snapshot?: ForemanLocalDraftSnapshot | null;
+    requestId?: string | null;
+  }) => void | Promise<void>;
   applyLocalDraftSnapshotToBoundary: (
     snapshot: ForemanLocalDraftSnapshot | null,
     options?: {
@@ -679,9 +690,7 @@ export async function bootstrapForemanDraftBoundary(params: {
 
   const resolution = await resolveForemanDraftBootstrap({
     localDraftId: ridStr(getLocalDraftId()),
-    clearDraftCache: () => {
-      void params.clearDraftCache();
-    },
+    clearDraftCache: params.clearDraftCache,
     fetchDetails: async (requestId) => await fetchRequestDetails(requestId),
   });
   if (params.cancelled?.()) return;

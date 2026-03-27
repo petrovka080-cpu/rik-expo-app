@@ -1,0 +1,210 @@
+{
+  "marker": "RTWHREQ1774611347902",
+  "baseUrl": "http://localhost:8081",
+  "runtime": {
+    "console": [
+      {
+        "type": "info",
+        "text": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold"
+      },
+      {
+        "type": "log",
+        "text": "Running application \"main\" with appParams:\n {rootTag: #root, hydrate: undefined} \nDevelopment-level warnings: ON.\nPerformance optimizations: OFF."
+      },
+      {
+        "type": "warning",
+        "text": "\"shadow*\" style props are deprecated. Use \"boxShadow\"."
+      },
+      {
+        "type": "info",
+        "text": "[jobQueue.env] {EXPO_PUBLIC_JOB_QUEUE_ENABLED: true, JOB_QUEUE_ENABLED: true}"
+      },
+      {
+        "type": "info",
+        "text": "[flash-list.compat] legacy architecture fallback -> FlatList"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: warehouse, surface: req_heads, event: refresh_expense_queue, result: skipped, durationMs: null}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: warehouse, surface: req_heads, event: refresh_expense_queue, result: skipped, durationMs: null}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: warehouse, surface: screen_root, event: focus_refresh, result: skipped, durationMs: null}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: warehouse, surface: incoming_list, event: fetch_incoming, result: success, durationMs: 745}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: warehouse, surface: incoming_list, event: content_ready, result: success, durationMs: null}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: warehouse, surface: stock_list, event: fetch_stock_rpc, result: success, durationMs: 940}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: warehouse, surface: stock_list, event: fetch_stock, result: success, durationMs: 941}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: warehouse, surface: stock_list, event: content_ready, result: success, durationMs: null}"
+      },
+      {
+        "type": "info",
+        "text": "[fetchStock] window {projectionAvailable: true, projectionHitCount: 106, projectionMissCount: 0, projectionReadMs: 0, fallbackReadMs: 0}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: warehouse, surface: req_heads, event: refresh_expense_queue, result: skipped, durationMs: null}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: warehouse, surface: req_heads, event: refresh_expense_queue, result: skipped, durationMs: null}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: warehouse, surface: screen_root, event: focus_refresh, result: skipped, durationMs: null}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: warehouse, surface: realtime_channel, event: subscription_started, result: success, durationMs: null}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: warehouse, surface: screen_root, event: subscription_started, result: success, durationMs: null}"
+      },
+      {
+        "type": "info",
+        "text": "[warehouse.expenseQueue] refresh {force: false, reason: tab}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: warehouse, surface: screen_root, event: focus_refresh, result: skipped, durationMs: null}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: warehouse, surface: incoming_list, event: fetch_incoming, result: success, durationMs: 608}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: warehouse, surface: incoming_list, event: content_ready, result: success, durationMs: null}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: warehouse, surface: stock_list, event: fetch_stock_rpc, result: success, durationMs: 774}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: warehouse, surface: stock_list, event: fetch_stock, result: success, durationMs: 774}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: warehouse, surface: stock_list, event: content_ready, result: success, durationMs: null}"
+      },
+      {
+        "type": "info",
+        "text": "[fetchStock] window {projectionAvailable: true, projectionHitCount: 106, projectionMissCount: 0, projectionReadMs: 0, fallbackReadMs: 0}"
+      },
+      {
+        "type": "info",
+        "text": "[ref_object_types] err= undefined rows= 1"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: warehouse, surface: req_heads, event: fetch_req_heads, result: success, durationMs: 1162}"
+      },
+      {
+        "type": "info",
+        "text": "[warehouse.reqHeads] window_fetch {pageIndex: 0, pageSize: 80, forceRefresh: false, rowCount: 41, totalRowCount: 41}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: warehouse, surface: req_heads_list, event: content_ready, result: success, durationMs: null}"
+      },
+      {
+        "type": "info",
+        "text": "[warehouse.expenseQueue] refresh {force: false, reason: tab}"
+      }
+    ],
+    "pageErrors": [],
+    "badResponses": []
+  },
+  "events": [
+    {
+      "id": "obs-1",
+      "at": 1774611348464,
+      "screen": "warehouse",
+      "surface": "req_heads",
+      "category": "fetch",
+      "event": "fetch_req_heads",
+      "sourceKind": "rpc:warehouse_issue_queue_scope_v4",
+      "rowCount": 41,
+      "fallbackUsed": false,
+      "extra": {
+        "page": 0,
+        "pageSize": 80,
+        "pageOffset": 0,
+        "scopeKey": "warehouse_issue_queue_scope_v4:0:80",
+        "contractVersion": "v4",
+        "generatedAt": "2026-03-27T11:35:51.486734",
+        "append": false,
+        "refresh": true,
+        "primaryOwner": "rpc_scope_v4",
+        "totalRowCount": 41,
+        "hasMore": false,
+        "repairedMissingIdsCount": 13,
+        "enrichedRowsCount": 0
+      },
+      "result": "success",
+      "durationMs": 1162
+    },
+    {
+      "id": "obs-2",
+      "at": 1774611348465,
+      "screen": "warehouse",
+      "surface": "req_heads_list",
+      "category": "ui",
+      "event": "content_ready",
+      "result": "success",
+      "rowCount": 41,
+      "sourceKind": "rpc:warehouse_issue_queue_scope_v4",
+      "fallbackUsed": false,
+      "extra": {
+        "stage": "primary",
+        "pageIndex": 0,
+        "pageOffset": 0,
+        "scopeKey": "warehouse_issue_queue_scope_v4:0:80",
+        "primaryOwner": "rpc_scope_v4",
+        "contractVersion": "v4",
+        "totalRowCount": 41
+      }
+    }
+  ],
+  "summary": {
+    "gate": "V12.3 selective realtime warehouse",
+    "status": "failed",
+    "webPassed": false,
+    "androidPassed": false,
+    "iosPassed": false,
+    "iosResidual": "Android/iOS realtime runtime proof not executed in this verifier on this host",
+    "subscriptionStarted": true,
+    "eventReceived": false,
+    "refreshTriggered": false,
+    "doubleFetchDetected": false,
+    "inflightGuardWorked": false,
+    "recentGuardWorked": false,
+    "backendOwnerPreserved": false,
+    "markerVisible": false,
+    "fetchCountAfterRealtime": 0,
+    "screenshot": "artifacts/warehouse-realtime.png",
+    "platformSpecificIssues": [
+      "poll timeout: warehouse:realtime_refresh"
+    ]
+  }
+}

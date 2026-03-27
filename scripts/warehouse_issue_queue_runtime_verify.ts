@@ -5,6 +5,7 @@ import { execFileSync, spawnSync } from "node:child_process";
 import { chromium } from "playwright";
 import { createClient } from "@supabase/supabase-js";
 import { config as loadDotenv } from "dotenv";
+import { createAndroidHarness } from "./_shared/androidHarness";
 
 loadDotenv({ path: ".env.local", override: false });
 loadDotenv({ path: ".env", override: false });
@@ -26,6 +27,7 @@ const admin = createClient(supabaseUrl, supabaseKey, {
 
 const artifactBase = "artifacts/warehouse-issue-queue-runtime";
 const webArtifactBase = "artifacts/warehouse-issue-queue-web-smoke";
+const androidDevClientPort = Number(process.env.WAREHOUSE_ANDROID_DEV_PORT ?? "8081");
 
 const LABELS = {
   tabs: ["К приходу", "Склад факт", "Расход", "Отчёты"],
@@ -72,6 +74,13 @@ const writeArtifact = (relativePath: string, payload: unknown) => {
   fs.mkdirSync(path.dirname(full), { recursive: true });
   fs.writeFileSync(full, `${JSON.stringify(payload, null, 2)}\n`);
 };
+
+const androidHarness = createAndroidHarness({
+  projectRoot,
+  devClientPort: androidDevClientPort,
+});
+
+const detectAndroidPackage = () => androidHarness.detectAndroidPackage();
 
 async function poll<T>(
   label: string,
@@ -488,6 +497,18 @@ async function ensureAndroidExpenseTab(current: ReturnType<typeof dumpAndroidScr
 
 async function loginWarehouseAndroid(user: TempUser) {
   writeArtifact("artifacts/android-warehouse-issue-queue-user.json", user);
+  if (process.env.RIK_ANDROID_SHARED_HARNESS !== "0") {
+    const packageName = detectAndroidPackage();
+    return androidHarness.loginAndroidWithProtectedRoute({
+      packageName,
+      user,
+      protectedRoute: "rik://warehouse",
+      artifactBase: "android-warehouse-issue-queue",
+      successPredicate: (xml) => isAndroidIssueQueueSurface(xml) || isAndroidFioModal(xml),
+      renderablePredicate: (xml) => isAndroidLoginScreen(xml) || isAndroidIssueQueueSurface(xml) || isAndroidFioModal(xml) || isAndroidIncomingSurface(xml),
+      loginScreenPredicate: isAndroidLoginScreen,
+    });
+  }
   execFileSync(
     "adb",
     ["shell", "am", "start", "-W", "-a", "android.intent.action.VIEW", "-d", "rik://warehouse", "com.azisbek_dzhantaev.rikexpoapp"],
@@ -655,7 +676,11 @@ async function runAndroidRuntime(): Promise<Record<string, unknown>> {
     };
   }
 
+  const devClient = await androidHarness.ensureAndroidDevClientServer();
   try {
+    const packageName = detectAndroidPackage();
+    const preflight = androidHarness.runAndroidPreflight({ packageName });
+    await androidHarness.warmAndroidDevClientBundle(androidDevClientPort);
     user = await createTempUser(process.env.WAREHOUSE_WAVE1_ROLE || "warehouse", "Warehouse Queue Android");
     const current = await loginWarehouseAndroid(user);
     const fioState = await confirmAndroidWarehouseFio(current);
@@ -739,8 +764,11 @@ async function runAndroidRuntime(): Promise<Record<string, unknown>> {
         if (!modalOpened) {
           platformSpecificIssues.push("Issue queue modal did not open after tapping first queue row");
         }
+        const recovery = androidHarness.getRecoverySummary();
         return {
           status: queueVisible && modalOpened ? "passed" : "failed",
+          androidPreflight: preflight,
+          ...recovery,
           recipientChosen,
           expenseTabOpened,
           queueVisible,
@@ -760,8 +788,11 @@ async function runAndroidRuntime(): Promise<Record<string, unknown>> {
   }
 
   if (emptyStateVisible) {
+    const recovery = androidHarness.getRecoverySummary();
     return {
       status: "passed",
+      androidPreflight: preflight,
+      ...recovery,
       recipientChosen,
       expenseTabOpened,
       queueVisible,
@@ -776,8 +807,11 @@ async function runAndroidRuntime(): Promise<Record<string, unknown>> {
     };
   }
 
+  const recovery = androidHarness.getRecoverySummary();
   return {
     status: "failed",
+    androidPreflight: preflight,
+    ...recovery,
     recipientChosen,
     expenseTabOpened,
     queueVisible,
@@ -792,6 +826,7 @@ async function runAndroidRuntime(): Promise<Record<string, unknown>> {
   };
   } finally {
     await cleanupTempUser(user);
+    devClient.cleanup();
   }
 }
 
@@ -821,6 +856,7 @@ async function main() {
     queueVisible: false,
     emptyStateVisible: false,
     modalOpened: false,
+    ...androidHarness.getRecoverySummary(),
     platformSpecificIssues: [error instanceof Error ? error.message : String(error ?? "unknown android error")],
   }));
   const ios = runIosRuntime();
@@ -850,6 +886,11 @@ async function main() {
       typeof (ios as Record<string, unknown>).iosResidual === "string"
         ? ((ios as Record<string, unknown>).iosResidual as string)
         : null,
+    environmentRecoveryUsed: (android as Record<string, unknown>).environmentRecoveryUsed === true,
+    gmsRecoveryUsed: (android as Record<string, unknown>).gmsRecoveryUsed === true,
+    anrRecoveryUsed: (android as Record<string, unknown>).anrRecoveryUsed === true,
+    blankSurfaceRecovered: (android as Record<string, unknown>).blankSurfaceRecovered === true,
+    devClientBootstrapRecovered: (android as Record<string, unknown>).devClientBootstrapRecovered === true,
     runtimeVerified: web.status === "passed" && android.status === "passed",
     scenariosPassed: {
       web: {

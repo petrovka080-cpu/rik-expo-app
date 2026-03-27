@@ -1,0 +1,167 @@
+{
+  "materials": {
+    "catalog_add": {
+      "passed": true,
+      "displayNo": "REQ-0078/2026",
+      "requestId": "fc2e32ce-23f4-4db8-8eac-0df960cd6f2e",
+      "itemCount": 1
+    },
+    "row_delete": {
+      "passed": true,
+      "displayNo": "REQ-0078/2026",
+      "requestId": "fc2e32ce-23f4-4db8-8eac-0df960cd6f2e",
+      "activeItemCount": 0,
+      "rows": [
+        {
+          "id": "bff6875c-7d13-4db6-80a8-8ca5874b2dbd",
+          "rik_code": "MAT-BOLT-M26X105-4.8-ГО-FLANGED",
+          "qty": 2,
+          "status": "cancelled"
+        }
+      ]
+    },
+    "cancel": {
+      "passed": true,
+      "displayNo": "REQ-0078/2026",
+      "requestId": "fc2e32ce-23f4-4db8-8eac-0df960cd6f2e",
+      "activeItemCount": 0
+    },
+    "history_visible": {
+      "passed": true,
+      "displayNo": "REQ-0078/2026"
+    },
+    "reopen": {
+      "passed": true,
+      "displayNo": "REQ-0078/2026",
+      "sameRequestId": true
+    },
+    "submit_after_reopen": {
+      "passed": false,
+      "error": "setInputByPlaceholderAny not found: Что ищем?",
+      "body": "Материалы\n×\nЗаполните шапку перед AI-заявкой\nСначала заполните обязательные поля: ФИО прораба, Объект / Блок, Секция / Блок.\nОбъект / Блок *\nАнгар\n*\n\nСначала выберите объект / блок.\nСекция / Блок *\n— Весь корпус —\n*\n\nСначала выберите секция / блок.\nРаздел / Вид работ\n— Не выбрано —\n\nУчасток внутри секции\n— Без детализации —\n\n\nКаталог\n\nСмета\n\nAI заявка\nЧЕРНОВИК\nREQ-0078/2026\nОткрыть позиции и действия\nLocal draft ready\n\nПозиции\n2\n\n\nИстория заявок\n\nИстория подрядов\n\n\nПрораб\n\n\nДиректор\n\n\nСнабженец\n\n\nБухгалтер\n\n\nСклад\n\n\nБезопасность\n\n\nМаркет\n\n\nКарта\n\n\nПрофиль\n\n\nОтчеты\n\n\nПодрядчик\n\nAI\nПредставьтесь\nВведите ваше ФИО для начала работы со складским экраном.\nПОСЛЕДНИЕ:\nSmoke Foreman\nСохранить"
+    }
+  },
+  "director": {
+    "handoff": {
+      "passed": false,
+      "error": "No submitted materials display number for director handoff",
+      "body": "Контроль\nЗаявки\nПодряды\nФинансы\nСклад\nОтчёты\nПрораб\nСнабженец\nЗаявки\nЗаявок\n0\nПозиций\n0\nНет ожидающих позиций\n\n\nПрораб\n\n\nДиректор\n\n\nСнабженец\n\n\nБухгалтер\n\n\nСклад\n\n\nБезопасность\n\n\nМаркет\n\n\nКарта\n\n\nПрофиль\n\n\nОтчеты\n\n\nПодрядчик\n\nAI"
+    },
+    "subcontractHandoff": {
+      "passed": true,
+      "displayNo": "REQ-0079/2026",
+      "withoutReload": true
+    }
+  },
+  "subcontract": {
+    "create": {
+      "passed": true,
+      "subcontractId": "19bebdec-2a36-43ce-98a1-4dd78e47eccd",
+      "contractorOrg": "Smoke Contractor 1774603314699"
+    },
+    "add": {
+      "passed": true,
+      "displayNo": "REQ-0079/2026",
+      "requestId": "cde21631-871a-44be-821e-f80480599b71",
+      "itemCount": 1,
+      "body": "Подряды\n×\nSmoke Contractor 1774603314699 · Административное здание\nЭлектроснабжение / освещение · 10 шт\n\n\nНажми на карточку подряда выше.\n\nИстория заявок\n\nИстория подрядов\n\n\nПрораб\n\n\nДиректор\n\n\nСнабженец\n\n\nБухгалтер\n\n\nСклад\n\n\nБезопасность\n\n\nМаркет\n\n\nКарта\n\n\nПрофиль\n\n\nОтчеты\n\n\nПодрядчик\n\nAI\nЧерновик REQ-0079/2026\n\nОбъект: Административное здание\nЭтаж/уровень: 1 этаж\nСистема: Электроснабжение / освещение\nЗона: —\nПодрядчик: Smoke Contractor 1774603314699\nТелефон: +996555000111\nОбъём: 10 шт\nБолт M12×185 кл.4.8, горячий цинк, CSK\n2 шт\nСтатус: Черновик\n×\n\nPDF\nExcel"
+    },
+    "delete": {
+      "passed": true,
+      "displayNo": "REQ-0079/2026",
+      "requestId": "cde21631-871a-44be-821e-f80480599b71",
+      "activeItemCount": 0
+    },
+    "reopen": {
+      "passed": true,
+      "displayNo": "REQ-0079/2026",
+      "requestId": "cde21631-871a-44be-821e-f80480599b71",
+      "sameRequestId": true,
+      "body": "Подряды\n×\nSmoke Contractor 1774603314699 · Административное здание\nЭлектроснабжение / освещение · 10 шт\n\n\nНажми на карточку подряда выше.\n\nИстория заявок\n\nИстория подрядов\n\n\nПрораб\n\n\nДиректор\n\n\nСнабженец\n\n\nБухгалтер\n\n\nСклад\n\n\nБезопасность\n\n\nМаркет\n\n\nКарта\n\n\nПрофиль\n\n\nОтчеты\n\n\nПодрядчик\n\nAI\nЧерновик REQ-0079/2026\n\nОбъект: Административное здание\nЭтаж/уровень: 1 этаж\nСистема: Электроснабжение / освещение\nЗона: —\nПодрядчик: Smoke Contractor 1774603314699\nТелефон: +996555000111\nОбъём: 10 шт\nБолт M12×185 кл.4.8, горячий цинк, CSK\n4 шт\nСтатус: Черновик\n×\n\nPDF\nExcel"
+    },
+    "submit": {
+      "passed": true,
+      "displayNo": "REQ-0079/2026",
+      "requestId": "cde21631-871a-44be-821e-f80480599b71",
+      "status": "pending",
+      "submittedAt": "2026-03-27T09:22:59.006368+00:00"
+    }
+  },
+  "runtime": {
+    "foremanConsole": [
+      "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold",
+      "Running application \"main\" with appParams:\n {rootTag: #root, hydrate: undefined} \nDevelopment-level warnings: ON.\nPerformance optimizations: OFF.",
+      "\"shadow*\" style props are deprecated. Use \"boxShadow\".",
+      "[jobQueue.env] {EXPO_PUBLIC_JOB_QUEUE_ENABLED: true, JOB_QUEUE_ENABLED: true}",
+      "[flash-list.compat] legacy architecture fallback -> FlatList",
+      "[foreman.draft.repository] {phase: request, mutationKind: catalog_add, sourcePath: foreman_materials, requestId: null, draftScopeKey: null}",
+      "[draft-sync] source=rpc_v2",
+      "[request-draft-sync] {sourceBranch: rpc_v2, requestId: fc2e32ce-23f4-4db8-8eac-0df960cd6f2e, submitted: false, requestCreated: true, lineCount: 1}",
+      "[foreman.draft.repository] {phase: result, mutationKind: catalog_add, sourcePath: foreman_materials, requestId: fc2e32ce-23f4-4db8-8eac-0df960cd6f2e, draftScopeKey: null}",
+      "Animated: `useNativeDriver` is not supported because the native animated module is missing. Falling back to JS-based animation. To resolve this, add `RCTAnimation` module to this app, or remove `useNativeDriver`. Make sure to run `bundle exec pod install` first. Read more about autolinking: https://github.com/react-native-community/cli/blob/master/docs/autolinking.md",
+      "TouchableWithoutFeedback is deprecated. Please use Pressable.",
+      "Accessing element.ref was removed in React 19. ref is now a regular prop. It will be removed from the JSX Element type in a future release.",
+      "[foreman.draft.repository] {phase: request, mutationKind: row_remove, sourcePath: foreman_materials, requestId: fc2e32ce-23f4-4db8-8eac-0df960cd6f2e, draftScopeKey: null}",
+      "[draft-sync] source=rpc_v2",
+      "[request-draft-sync] {sourceBranch: rpc_v2, requestId: fc2e32ce-23f4-4db8-8eac-0df960cd6f2e, submitted: false, requestCreated: false, lineCount: 0}",
+      "[foreman.draft.repository] {phase: result, mutationKind: row_remove, sourcePath: foreman_materials, requestId: fc2e32ce-23f4-4db8-8eac-0df960cd6f2e, draftScopeKey: null}",
+      "[foreman.draft.repository] {phase: request, mutationKind: catalog_add, sourcePath: foreman_materials, requestId: fc2e32ce-23f4-4db8-8eac-0df960cd6f2e, draftScopeKey: null}",
+      "[draft-sync] source=rpc_v2",
+      "[request-draft-sync] {sourceBranch: rpc_v2, requestId: fc2e32ce-23f4-4db8-8eac-0df960cd6f2e, submitted: false, requestCreated: false, lineCount: 1}",
+      "[foreman.draft.repository] {phase: result, mutationKind: catalog_add, sourcePath: foreman_materials, requestId: fc2e32ce-23f4-4db8-8eac-0df960cd6f2e, draftScopeKey: null}",
+      "[foreman.draft.repository] {phase: request, mutationKind: whole_cancel, sourcePath: foreman_materials, requestId: fc2e32ce-23f4-4db8-8eac-0df960cd6f2e, draftScopeKey: null}",
+      "[draft-sync] source=rpc_v2",
+      "[request-draft-sync] {sourceBranch: rpc_v2, requestId: fc2e32ce-23f4-4db8-8eac-0df960cd6f2e, submitted: false, requestCreated: false, lineCount: 0}",
+      "[foreman.draft.repository] {phase: result, mutationKind: whole_cancel, sourcePath: foreman_materials, requestId: fc2e32ce-23f4-4db8-8eac-0df960cd6f2e, draftScopeKey: null}",
+      "[request.repository] {phase: request, sourcePath: foreman.history.reopen, requestId: fc2e32ce-23f4-4db8-8eac-0df960cd6f2e, draftScopeKey: fc2e32ce-23f4-4db8-8eac-0df960cd6f2e, reopen: true}",
+      "[request.repository] {phase: result, sourcePath: foreman.history.reopen, requestId: fc2e32ce-23f4-4db8-8eac-0df960cd6f2e, draftScopeKey: fc2e32ce-23f4-4db8-8eac-0df960cd6f2e, reopen: true}",
+      "[foreman.draft.repository] {phase: request, mutationKind: catalog_add, sourcePath: foreman_subcontract, requestId: null, draftScopeKey: 19bebdec-2a36-43ce-98a1-4dd78e47eccd|BLD-ADMIN|LVL-01|SYS-MEP-EL|||}",
+      "[draft-sync] source=rpc_v2",
+      "[request-draft-sync] {sourceBranch: rpc_v2, requestId: cde21631-871a-44be-821e-f80480599b71, submitted: false, requestCreated: true, lineCount: 1}",
+      "[foreman.draft.repository] {phase: result, mutationKind: catalog_add, sourcePath: foreman_subcontract, requestId: cde21631-871a-44be-821e-f80480599b71, draftScopeKey: 19bebdec-2a36-43ce-98a1-4dd78e47eccd|BLD-ADMIN|LVL-01|SYS-MEP-EL|||}",
+      "[foreman.draft.repository] {phase: request, mutationKind: row_remove, sourcePath: foreman_subcontract, requestId: cde21631-871a-44be-821e-f80480599b71, draftScopeKey: 19bebdec-2a36-43ce-98a1-4dd78e47eccd|BLD-ADMIN|LVL-01|SYS-MEP-EL|||}",
+      "[draft-sync] source=rpc_v2",
+      "[request-draft-sync] {sourceBranch: rpc_v2, requestId: cde21631-871a-44be-821e-f80480599b71, submitted: false, requestCreated: false, lineCount: 0}",
+      "[foreman.draft.repository] {phase: result, mutationKind: row_remove, sourcePath: foreman_subcontract, requestId: cde21631-871a-44be-821e-f80480599b71, draftScopeKey: 19bebdec-2a36-43ce-98a1-4dd78e47eccd|BLD-ADMIN|LVL-01|SYS-MEP-EL|||}",
+      "[foreman.draft.repository] {phase: request, mutationKind: catalog_add, sourcePath: foreman_subcontract, requestId: cde21631-871a-44be-821e-f80480599b71, draftScopeKey: 19bebdec-2a36-43ce-98a1-4dd78e47eccd|BLD-ADMIN|LVL-01|SYS-MEP-EL|||}",
+      "[draft-sync] source=rpc_v2",
+      "[request-draft-sync] {sourceBranch: rpc_v2, requestId: cde21631-871a-44be-821e-f80480599b71, submitted: false, requestCreated: false, lineCount: 1}",
+      "[foreman.draft.repository] {phase: result, mutationKind: catalog_add, sourcePath: foreman_subcontract, requestId: cde21631-871a-44be-821e-f80480599b71, draftScopeKey: 19bebdec-2a36-43ce-98a1-4dd78e47eccd|BLD-ADMIN|LVL-01|SYS-MEP-EL|||}",
+      "[foreman.draft.repository] {phase: request, mutationKind: submit, sourcePath: foreman_subcontract, requestId: cde21631-871a-44be-821e-f80480599b71, draftScopeKey: 19bebdec-2a36-43ce-98a1-4dd78e47eccd|BLD-ADMIN|LVL-01|SYS-MEP-EL|||}",
+      "[draft-sync] source=rpc_v2",
+      "[request-draft-sync] {sourceBranch: rpc_v2, requestId: cde21631-871a-44be-821e-f80480599b71, submitted: true, requestCreated: false, lineCount: 1}",
+      "[submit] {requestId: cde21631-871a-44be-821e-f80480599b71, displayNo: REQ-0079/2026, status: pending, sourceBranch: rpc_v2, rpcVersion: v2}",
+      "[request-draft-sync.signal] {kind: broadcast, sourcePath: foreman.requestDraftSync.rpc_v2_submit, requestId: cde21631-871a-44be-821e-f80480599b71, displayNo: REQ-0079/2026, result: ok}",
+      "[request-draft-sync.signal] {kind: notification, sourcePath: foreman.requestDraftSync.rpc_v2_submit, requestId: cde21631-871a-44be-821e-f80480599b71, displayNo: REQ-0079/2026, error: null}",
+      "[foreman.draft.repository] {phase: result, mutationKind: submit, sourcePath: foreman_subcontract, requestId: cde21631-871a-44be-821e-f80480599b71, draftScopeKey: 19bebdec-2a36-43ce-98a1-4dd78e47eccd|BLD-ADMIN|LVL-01|SYS-MEP-EL|||}"
+    ],
+    "directorConsole": [
+      "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold",
+      "Running application \"main\" with appParams:\n {rootTag: #root, hydrate: undefined} \nDevelopment-level warnings: ON.\nPerformance optimizations: OFF.",
+      "\"shadow*\" style props are deprecated. Use \"boxShadow\".",
+      "[jobQueue.env] {EXPO_PUBLIC_JOB_QUEUE_ENABLED: true, JOB_QUEUE_ENABLED: true}",
+      "[flash-list.compat] legacy architecture fallback -> FlatList",
+      "[director.live] {sourcePath: director.lifecycle.realtime_auth, hasAccessToken: true}",
+      "[director.repository] {phase: request, sourcePath: director.repository.fetchPendingRows, primaryPath: list_director_items_stable, primaryRowCount: 0, expectedRequestStatuses: Array(2)}",
+      "[director.repository] {phase: request, sourcePath: director.repository.loadPendingRowsFallback, requestSelector: submitted_at:not_null, expectedRequestStatuses: Array(2), visibleItemStatuses: Array(3)}",
+      "[director.repository] {phase: result, sourcePath: director.repository.loadPendingRowsFallback, requestCount: 59, requestStatusesSample: Array(4), syncResultLineCount: 0}",
+      "[director.repository] {phase: contract_mismatch, sourcePath: director.repository.fetchPendingRows, primaryPath: list_director_items_stable, primaryRowCount: 0, fallbackRowCount: 0}",
+      "[director.live] {sourcePath: director.lifecycle.channel, status: SUBSCRIBED}",
+      "[director.live] {sourcePath: director.lifecycle.broadcast_channel, status: SUBSCRIBED}",
+      "[director.live] {sourcePath: director.lifecycle.broadcast_handoff, requestId: cde21631-871a-44be-821e-f80480599b71, displayNo: REQ-0079/2026}",
+      "[director.repository] {phase: request, sourcePath: director.repository.fetchPendingRows, primaryPath: list_director_items_stable, primaryRowCount: 1, expectedRequestStatuses: Array(2)}",
+      "[platform.observability] {screen: director, surface: request_rows, event: refresh_scope, result: queued_rerun, durationMs: null}"
+    ],
+    "foremanPageErrors": [],
+    "directorPageErrors": [],
+    "foremanHttpErrors": [],
+    "directorHttpErrors": [],
+    "foremanRelevantConsole": [
+      "Running application \"main\" with appParams:\n {rootTag: #root, hydrate: undefined} \nDevelopment-level warnings: ON.\nPerformance optimizations: OFF.",
+      "[request-draft-sync.signal] {kind: notification, sourcePath: foreman.requestDraftSync.rpc_v2_submit, requestId: cde21631-871a-44be-821e-f80480599b71, displayNo: REQ-0079/2026, error: null}"
+    ],
+    "directorRelevantConsole": [
+      "Running application \"main\" with appParams:\n {rootTag: #root, hydrate: undefined} \nDevelopment-level warnings: ON.\nPerformance optimizations: OFF."
+    ]
+  }
+}

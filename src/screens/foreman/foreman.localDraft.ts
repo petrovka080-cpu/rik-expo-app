@@ -18,6 +18,7 @@ import {
   hydrateForemanDurableDraftStore,
   replaceForemanDurableDraftSnapshot,
 } from "./foreman.durableDraft.store";
+import { recordPlatformObservability } from "../../lib/observability/platformObservability";
 import { FOREMAN_LOCAL_ONLY_REQUEST_ID } from "./foreman.localDraft.constants";
 import type { RequestDraftMeta } from "./foreman.types";
 
@@ -120,6 +121,39 @@ const legacyDraftStorage = createDefaultOfflineStorage();
 
 const trim = (value: unknown): string => String(value ?? "").trim();
 
+const recordForemanLocalDraftFallback = (
+  event: string,
+  error: unknown,
+  extra?: Record<string, unknown>,
+) => {
+  const details =
+    error instanceof Error
+      ? {
+          errorClass: trim(error.name) || "Error",
+          errorMessage: trim(error.message) || "foreman_local_draft_error",
+        }
+      : {
+          errorClass: "UnknownError",
+          errorMessage: trim(error) || "foreman_local_draft_error",
+        };
+  recordPlatformObservability({
+    screen: "foreman",
+    surface: "local_draft",
+    category: "ui",
+    event,
+    result: "error",
+    errorClass: details.errorClass,
+    errorMessage: details.errorMessage,
+    extra: {
+      module: "foreman",
+      action: event,
+      owner: "local_draft",
+      fallbackUsed: true,
+      ...extra,
+    },
+  });
+};
+
 const asRecord = (value: unknown): Record<string, unknown> | null =>
   value && typeof value === "object" && !Array.isArray(value) ? (value as Record<string, unknown>) : null;
 
@@ -221,7 +255,10 @@ const loadLegacyForemanLocalDraftSnapshot = async (): Promise<ForemanLocalDraftS
     if (!raw) return null;
     const parsed = JSON.parse(raw) as Record<string, unknown> | null;
     return parseForemanLocalDraftSnapshotRecord(parsed);
-  } catch {
+  } catch (error) {
+    recordForemanLocalDraftFallback("legacy_snapshot_load_failed", error, {
+      storageKey: LEGACY_LOCAL_DRAFT_STORAGE_KEY,
+    });
     return null;
   }
 };
@@ -283,11 +320,47 @@ export const buildForemanDraftRequestDetails = (
 
 export async function resolveForemanDraftBootstrap(params: {
   localDraftId?: string | null;
-  clearDraftCache: () => void;
+  clearDraftCache: (options?: {
+    snapshot?: ForemanLocalDraftSnapshot | null;
+    requestId?: string | null;
+  }) => void | Promise<void>;
   fetchDetails: (requestId: string) => Promise<RequestDetails | null>;
 }): Promise<ForemanDraftBootstrapResolution> {
   const snapshot = await loadForemanLocalDraftSnapshot();
   if (snapshot && hasForemanLocalDraftContent(snapshot)) {
+    const snapshotRequestId = trim(snapshot.requestId);
+    if (snapshotRequestId) {
+      try {
+        const details = await params.fetchDetails(snapshotRequestId);
+        if (details && !isDraftLikeStatus(details.status)) {
+          await params.clearDraftCache({
+            snapshot,
+            requestId: snapshotRequestId,
+          });
+          if (__DEV__) {
+            console.info("[foreman.bootstrap]", {
+              draftId: snapshotRequestId,
+              requestId: snapshotRequestId,
+              remoteStatus: details.status ?? null,
+              postSubmitAction: "entered_empty_state",
+              runtimeResult: "cleared_terminal_local_snapshot",
+            });
+          }
+          return {
+            kind: "none",
+            restoreSource: "none",
+            restoreIdentity: null,
+          };
+        }
+      } catch (error) {
+        recordForemanLocalDraftFallback("bootstrap_remote_validation_failed", error, {
+          requestId: snapshotRequestId,
+          action: "validate_remote_snapshot",
+        });
+        // Keep the durable snapshot when remote validation is unavailable.
+      }
+    }
+
     return {
       kind: "snapshot",
       snapshot,
@@ -316,9 +389,17 @@ export async function resolveForemanDraftBootstrap(params: {
         restoreIdentity: `remote:${localId}`,
       };
     }
-    params.clearDraftCache();
-  } catch {
-    params.clearDraftCache();
+    await params.clearDraftCache({
+      requestId: localId,
+    });
+  } catch (error) {
+    recordForemanLocalDraftFallback("bootstrap_remote_fetch_failed", error, {
+      requestId: localId,
+      action: "fetch_remote_draft",
+    });
+    await params.clearDraftCache({
+      requestId: localId,
+    });
   }
 
   return {

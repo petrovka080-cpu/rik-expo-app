@@ -1,0 +1,272 @@
+{
+  "web": {
+    "status": "passed",
+    "financeTabOpened": true,
+    "financeHomeCardsRendered": true,
+    "debtModalOpened": true,
+    "supplierToggleVisible": true,
+    "supplierRowVisible": true,
+    "supplierDetailOpened": true,
+    "consoleErrorsEmpty": true,
+    "pageErrorsEmpty": true,
+    "badResponsesEmpty": true,
+    "screenshot": "artifacts/director-finance-web-smoke.png",
+    "platformSpecificIssues": [],
+    "runtime": {
+      "console": [
+        {
+          "type": "info",
+          "text": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold"
+        },
+        {
+          "type": "log",
+          "text": "Running application \"main\" with appParams:\n {rootTag: #root, hydrate: undefined} \nDevelopment-level warnings: ON.\nPerformance optimizations: OFF."
+        },
+        {
+          "type": "warning",
+          "text": "\"shadow*\" style props are deprecated. Use \"boxShadow\"."
+        },
+        {
+          "type": "info",
+          "text": "[jobQueue.env] {EXPO_PUBLIC_JOB_QUEUE_ENABLED: true, JOB_QUEUE_ENABLED: true}"
+        },
+        {
+          "type": "info",
+          "text": "[flash-list.compat] legacy architecture fallback -> FlatList"
+        },
+        {
+          "type": "info",
+          "text": "[director.live] {sourcePath: director.lifecycle.channel, status: CLOSED}"
+        },
+        {
+          "type": "info",
+          "text": "[director.live] {sourcePath: director.lifecycle.channel, status: CLOSED}"
+        },
+        {
+          "type": "info",
+          "text": "[director.live] {sourcePath: director.lifecycle.broadcast_channel, status: CLOSED}"
+        },
+        {
+          "type": "info",
+          "text": "[director.live] {sourcePath: director.lifecycle.broadcast_channel, status: CLOSED}"
+        },
+        {
+          "type": "warning",
+          "text": "WebSocket connection to 'wss://nxrnjywzxxfdpqmzjorh.supabase.co/realtime/v1/websocket?apikey=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im54cm5qeXd6eHhmZHBxbXpqb3JoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ5MTY2NzcsImV4cCI6MjA4MDQ5MjY3N30.Ug7EYNXlN0Dsi8HjpDr3Ekb_q5uXuZWCilmqu1-5Wy0&eventsPerSecond=5&vsn=2.0.0' failed: WebSocket is closed before the connection is established."
+        },
+        {
+          "type": "info",
+          "text": "[platform.observability] {screen: director, surface: visible_scope, event: refresh_scope, result: skipped, durationMs: null}"
+        },
+        {
+          "type": "info",
+          "text": "[director.live] {sourcePath: director.lifecycle.realtime_auth, hasAccessToken: true}"
+        },
+        {
+          "type": "info",
+          "text": "[director.live] {sourcePath: director.lifecycle.channel, status: CLOSED}"
+        },
+        {
+          "type": "info",
+          "text": "[director.live] {sourcePath: director.lifecycle.channel, status: CLOSED}"
+        },
+        {
+          "type": "info",
+          "text": "[director.live] {sourcePath: director.lifecycle.broadcast_channel, status: CLOSED}"
+        },
+        {
+          "type": "info",
+          "text": "[director.live] {sourcePath: director.lifecycle.broadcast_channel, status: CLOSED}"
+        },
+        {
+          "type": "warning",
+          "text": "WebSocket connection to 'wss://nxrnjywzxxfdpqmzjorh.supabase.co/realtime/v1/websocket?apikey=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im54cm5qeXd6eHhmZHBxbXpqb3JoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ5MTY2NzcsImV4cCI6MjA4MDQ5MjY3N30.Ug7EYNXlN0Dsi8HjpDr3Ekb_q5uXuZWCilmqu1-5Wy0&eventsPerSecond=5&vsn=2.0.0' failed: WebSocket is closed before the connection is established."
+        },
+        {
+          "type": "info",
+          "text": "[director.live] {sourcePath: director.lifecycle.realtime_auth, hasAccessToken: true}"
+        },
+        {
+          "type": "info",
+          "text": "[director.repository] {phase: request, sourcePath: director.repository.fetchPendingRows, primaryPath: list_director_items_stable, primaryRowCount: 0, expectedRequestStatuses: Array(2)}"
+        },
+        {
+          "type": "info",
+          "text": "[director.repository] {phase: request, sourcePath: director.repository.loadPendingRowsFallback, requestSelector: submitted_at:not_null, expectedRequestStatuses: Array(2), visibleItemStatuses: Array(3)}"
+        },
+        {
+          "type": "info",
+          "text": "[platform.observability] {screen: director, surface: finance, event: finance_text_decode_failed, result: error, durationMs: null}"
+        },
+        {
+          "type": "info",
+          "text": "[platform.observability] {screen: director, surface: finance, event: finance_text_decode_failed, result: error, durationMs: null}"
+        },
+        {
+          "type": "info",
+          "text": "[platform.observability] {screen: director, surface: finance, event: finance_text_decode_failed, result: error, durationMs: null}"
+        },
+        {
+          "type": "info",
+          "text": "[platform.observability] {screen: director, surface: finance, event: finance_text_decode_failed, result: error, durationMs: null}"
+        },
+        {
+          "type": "info",
+          "text": "[platform.observability] {screen: director, surface: finance, event: finance_text_decode_failed, result: error, durationMs: null}"
+        },
+        {
+          "type": "info",
+          "text": "[platform.observability] {screen: director, surface: finance, event: finance_text_decode_failed, result: error, durationMs: null}"
+        },
+        {
+          "type": "info",
+          "text": "[platform.observability] {screen: director, surface: finance, event: finance_text_decode_failed, result: error, durationMs: null}"
+        },
+        {
+          "type": "info",
+          "text": "[platform.observability] {screen: director, surface: finance, event: finance_text_decode_failed, result: error, durationMs: null}"
+        },
+        {
+          "type": "info",
+          "text": "[platform.observability] {screen: director, surface: finance, event: finance_text_decode_failed, result: error, durationMs: null}"
+        },
+        {
+          "type": "info",
+          "text": "[platform.observability] {screen: director, surface: finance, event: finance_text_decode_failed, result: error, durationMs: null}"
+        },
+        {
+          "type": "info",
+          "text": "[platform.observability] {screen: director, surface: finance, event: finance_text_decode_failed, result: error, durationMs: null}"
+        },
+        {
+          "type": "info",
+          "text": "[platform.observability] {screen: director, surface: finance, event: finance_text_decode_failed, result: error, durationMs: null}"
+        },
+        {
+          "type": "info",
+          "text": "[platform.observability] {screen: director, surface: finance, event: finance_text_decode_failed, result: error, durationMs: null}"
+        },
+        {
+          "type": "info",
+          "text": "[platform.observability] {screen: director, surface: finance, event: finance_text_decode_failed, result: error, durationMs: null}"
+        },
+        {
+          "type": "info",
+          "text": "[platform.observability] {screen: director, surface: finance, event: finance_text_decode_failed, result: error, durationMs: null}"
+        },
+        {
+          "type": "info",
+          "text": "[platform.observability] {screen: director, surface: finance, event: finance_text_decode_failed, result: error, durationMs: null}"
+        },
+        {
+          "type": "info",
+          "text": "[platform.observability] {screen: director, surface: finance, event: finance_text_decode_failed, result: error, durationMs: null}"
+        },
+        {
+          "type": "info",
+          "text": "[platform.observability] {screen: director, surface: finance, event: finance_text_decode_failed, result: error, durationMs: null}"
+        },
+        {
+          "type": "info",
+          "text": "[platform.observability] {screen: director, surface: finance, event: finance_text_decode_failed, result: error, durationMs: null}"
+        },
+        {
+          "type": "info",
+          "text": "[platform.observability] {screen: director, surface: finance_panel, event: load_finance_scope, result: success, durationMs: 704}"
+        },
+        {
+          "type": "info",
+          "text": "[director.repository] {phase: result, sourcePath: director.repository.loadPendingRowsFallback, requestCount: 59, requestStatusesSample: Array(4), syncResultLineCount: 0}"
+        },
+        {
+          "type": "info",
+          "text": "[director.repository] {phase: contract_mismatch, sourcePath: director.repository.fetchPendingRows, primaryPath: list_director_items_stable, primaryRowCount: 0, fallbackRowCount: 0}"
+        },
+        {
+          "type": "info",
+          "text": "[platform.observability] {screen: director, surface: finance_supplier_scope, event: load_supplier_scope, result: success, durationMs: 865}"
+        }
+      ],
+      "pageErrors": [],
+      "badResponses": [],
+      "screenshot": "artifacts/director-finance-web-smoke.png"
+    }
+  },
+  "android": {
+    "status": "failed",
+    "financeHomeVisible": false,
+    "debtModalOpened": false,
+    "supplierDetailOpened": false,
+    "environmentRecoveryUsed": false,
+    "gmsRecoveryUsed": false,
+    "anrRecoveryUsed": false,
+    "blankSurfaceRecovered": false,
+    "devClientBootstrapRecovered": false,
+    "platformSpecificIssues": [
+      "Android login button not found"
+    ]
+  },
+  "ios": {
+    "status": "residual",
+    "iosResidual": "xcrun is unavailable on this host; iOS simulator cannot be started from Windows",
+    "platformSpecificIssues": [
+      "xcrun is unavailable on this host; iOS simulator cannot be started from Windows"
+    ]
+  },
+  "summary": {
+    "status": "failed",
+    "webPassed": true,
+    "androidPassed": false,
+    "iosPassed": false,
+    "iosResidual": "xcrun is unavailable on this host; iOS simulator cannot be started from Windows",
+    "environmentRecoveryUsed": false,
+    "gmsRecoveryUsed": false,
+    "anrRecoveryUsed": false,
+    "blankSurfaceRecovered": false,
+    "devClientBootstrapRecovered": false,
+    "runtimeVerified": false,
+    "scenariosPassed": {
+      "web": {
+        "initialOpen": true,
+        "financeSurface": true,
+        "debtModal": true,
+        "supplierDetail": true
+      },
+      "android": {
+        "initialOpen": false,
+        "financeSurface": false,
+        "debtModal": false,
+        "supplierDetail": false
+      },
+      "ios": {
+        "initialOpen": false,
+        "financeSurface": false,
+        "debtModal": false,
+        "supplierDetail": false
+      }
+    },
+    "platformSpecificIssues": [
+      {
+        "platform": "android",
+        "issue": "Android login button not found"
+      },
+      {
+        "platform": "ios",
+        "issue": "xcrun is unavailable on this host; iOS simulator cannot be started from Windows"
+      }
+    ],
+    "artifacts": {
+      "web": "artifacts/director-finance-web-smoke.png",
+      "android": {
+        "currentXml": null,
+        "currentPng": null,
+        "financeXml": null,
+        "financePng": null,
+        "debtModalXml": null,
+        "debtModalPng": null,
+        "supplierDetailXml": null,
+        "supplierDetailPng": null
+      }
+    }
+  }
+}

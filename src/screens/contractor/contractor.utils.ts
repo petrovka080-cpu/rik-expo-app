@@ -1,3 +1,4 @@
+import { recordPlatformObservability } from "../../lib/observability/platformObservability";
 import { normalizeRuText } from "../../lib/text/encoding";
 
 const ACT_META_PREFIX = "ACT_META::";
@@ -53,7 +54,26 @@ export const parseActMeta = (
       ? parsed.selectedWorks.map((x) => String(x || "")).filter(Boolean)
       : [];
     return { selectedWorks, visibleNote };
-  } catch {
+  } catch (error) {
+    recordPlatformObservability({
+      screen: "contractor",
+      surface: "contractor_utils",
+      category: "ui",
+      event: "parse_act_meta_failed",
+      result: "error",
+      fallbackUsed: true,
+      errorClass: error instanceof Error ? error.name : undefined,
+      errorMessage: error instanceof Error ? error.message : String(error ?? "parse_act_meta_failed"),
+      extra: {
+        module: "contractor.utils",
+        route: "/contractor",
+        role: "contractor",
+        owner: "contractor_utils",
+        action: "parseActMeta",
+        severity: "error",
+        noteLength: raw.length,
+      },
+    });
     return { selectedWorks: [], visibleNote };
   }
 };

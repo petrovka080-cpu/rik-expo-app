@@ -1,0 +1,186 @@
+{
+  "web": {
+    "status": "passed",
+    "fioConfirmed": true,
+    "expectedTitle": null,
+    "expectedHasRows": false,
+    "incomingRowsVisible": false,
+    "emptyStateVisible": true,
+    "modalOpened": false,
+    "consoleErrorsEmpty": true,
+    "pageErrorsEmpty": true,
+    "badResponsesEmpty": true,
+    "screenshot": "artifacts/warehouse-incoming-queue-web-smoke.png",
+    "platformSpecificIssues": [],
+    "runtime": {
+      "console": [
+        {
+          "type": "info",
+          "text": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold"
+        },
+        {
+          "type": "log",
+          "text": "Running application \"main\" with appParams:\n {rootTag: #root, hydrate: undefined} \nDevelopment-level warnings: ON.\nPerformance optimizations: OFF."
+        },
+        {
+          "type": "warning",
+          "text": "\"shadow*\" style props are deprecated. Use \"boxShadow\"."
+        },
+        {
+          "type": "info",
+          "text": "[jobQueue.env] {EXPO_PUBLIC_JOB_QUEUE_ENABLED: true, JOB_QUEUE_ENABLED: true}"
+        },
+        {
+          "type": "info",
+          "text": "[flash-list.compat] legacy architecture fallback -> FlatList"
+        },
+        {
+          "type": "info",
+          "text": "[platform.observability] {screen: warehouse, surface: req_heads, event: refresh_expense_queue, result: skipped, durationMs: null}"
+        },
+        {
+          "type": "info",
+          "text": "[platform.observability] {screen: warehouse, surface: req_heads, event: refresh_expense_queue, result: skipped, durationMs: null}"
+        },
+        {
+          "type": "info",
+          "text": "[platform.observability] {screen: warehouse, surface: screen_root, event: focus_refresh, result: skipped, durationMs: null}"
+        },
+        {
+          "type": "info",
+          "text": "[platform.observability] {screen: warehouse, surface: incoming_list, event: fetch_incoming, result: success, durationMs: 761}"
+        },
+        {
+          "type": "info",
+          "text": "[platform.observability] {screen: warehouse, surface: incoming_list, event: content_ready, result: success, durationMs: null}"
+        },
+        {
+          "type": "info",
+          "text": "[platform.observability] {screen: warehouse, surface: stock_list, event: fetch_stock_rpc, result: success, durationMs: 1003}"
+        },
+        {
+          "type": "info",
+          "text": "[platform.observability] {screen: warehouse, surface: stock_list, event: fetch_stock, result: success, durationMs: 1003}"
+        },
+        {
+          "type": "info",
+          "text": "[platform.observability] {screen: warehouse, surface: stock_list, event: content_ready, result: success, durationMs: null}"
+        },
+        {
+          "type": "info",
+          "text": "[fetchStock] window {projectionAvailable: true, projectionHitCount: 106, projectionMissCount: 0, projectionReadMs: 0, fallbackReadMs: 0}"
+        },
+        {
+          "type": "info",
+          "text": "[platform.observability] {screen: warehouse, surface: req_heads, event: refresh_expense_queue, result: skipped, durationMs: null}"
+        },
+        {
+          "type": "info",
+          "text": "[platform.observability] {screen: warehouse, surface: req_heads, event: refresh_expense_queue, result: skipped, durationMs: null}"
+        },
+        {
+          "type": "info",
+          "text": "[platform.observability] {screen: warehouse, surface: screen_root, event: focus_refresh, result: skipped, durationMs: null}"
+        },
+        {
+          "type": "info",
+          "text": "[platform.observability] {screen: warehouse, surface: incoming_list, event: fetch_incoming, result: success, durationMs: 612}"
+        },
+        {
+          "type": "info",
+          "text": "[platform.observability] {screen: warehouse, surface: incoming_list, event: content_ready, result: success, durationMs: null}"
+        },
+        {
+          "type": "info",
+          "text": "[platform.observability] {screen: warehouse, surface: stock_list, event: fetch_stock_rpc, result: success, durationMs: 830}"
+        },
+        {
+          "type": "info",
+          "text": "[platform.observability] {screen: warehouse, surface: stock_list, event: fetch_stock, result: success, durationMs: 830}"
+        },
+        {
+          "type": "info",
+          "text": "[platform.observability] {screen: warehouse, surface: stock_list, event: content_ready, result: success, durationMs: null}"
+        },
+        {
+          "type": "info",
+          "text": "[fetchStock] window {projectionAvailable: true, projectionHitCount: 106, projectionMissCount: 0, projectionReadMs: 0, fallbackReadMs: 0}"
+        }
+      ],
+      "pageErrors": [],
+      "badResponses": [],
+      "screenshot": "artifacts/warehouse-incoming-queue-web-smoke.png"
+    }
+  },
+  "android": {
+    "status": "failed",
+    "queueVisible": false,
+    "emptyStateVisible": false,
+    "modalOpened": false,
+    "environmentRecoveryUsed": true,
+    "gmsRecoveryUsed": false,
+    "anrRecoveryUsed": false,
+    "blankSurfaceRecovered": true,
+    "devClientBootstrapRecovered": true,
+    "platformSpecificIssues": [
+      "Android login button not found"
+    ]
+  },
+  "ios": {
+    "status": "residual",
+    "iosResidual": "xcrun is unavailable on this host; iOS simulator cannot be started from Windows",
+    "platformSpecificIssues": [
+      "xcrun is unavailable on this host; iOS simulator cannot be started from Windows"
+    ]
+  },
+  "summary": {
+    "status": "failed",
+    "webPassed": true,
+    "androidPassed": false,
+    "iosPassed": false,
+    "iosResidual": "xcrun is unavailable on this host; iOS simulator cannot be started from Windows",
+    "environmentRecoveryUsed": true,
+    "gmsRecoveryUsed": false,
+    "anrRecoveryUsed": false,
+    "blankSurfaceRecovered": true,
+    "devClientBootstrapRecovered": true,
+    "runtimeVerified": false,
+    "scenariosPassed": {
+      "web": {
+        "initialOpen": true,
+        "queueCorrectness": true,
+        "interactionSanity": true
+      },
+      "android": {
+        "initialOpen": false,
+        "queueCorrectness": false,
+        "interactionSanity": false
+      },
+      "ios": {
+        "initialOpen": false,
+        "queueCorrectness": false,
+        "interactionSanity": false
+      }
+    },
+    "platformSpecificIssues": [
+      {
+        "platform": "android",
+        "issue": "Android login button not found"
+      },
+      {
+        "platform": "ios",
+        "issue": "xcrun is unavailable on this host; iOS simulator cannot be started from Windows"
+      }
+    ],
+    "artifacts": {
+      "webSummary": "artifacts/warehouse-incoming-queue-web-smoke.summary.json",
+      "webRuntime": "artifacts/warehouse-incoming-queue-web-smoke.json",
+      "androidCurrentXml": null,
+      "androidCurrentPng": null,
+      "androidQueueXml": null,
+      "androidQueuePng": null,
+      "androidModalXml": null,
+      "androidModalPng": null
+    }
+  }
+}

@@ -1,6 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { asListingItems } from "../market/marketHome.data";
+import { recordPlatformObservability } from "../../lib/observability/platformObservability";
 import { supabase } from "../../lib/supabaseClient";
 import {
   clearLocalDraftId,
@@ -44,6 +45,30 @@ type MarketSearchResult = {
   city: string | null;
   supplier: string | null;
 };
+
+const recordAssistantActionFallback = (
+  event: string,
+  error: unknown,
+  extra?: Record<string, unknown>,
+) =>
+  recordPlatformObservability({
+    screen: "ai",
+    surface: "assistant_actions",
+    category: "ui",
+    event,
+    result: "error",
+    fallbackUsed: true,
+    errorClass: error instanceof Error ? error.name : undefined,
+    errorMessage: error instanceof Error ? error.message : String(error ?? "assistant_action_failed"),
+    extra: {
+      module: "ai.assistantActions",
+      route: "/ai",
+      role: "ai",
+      owner: "assistant_actions",
+      severity: "error",
+      ...extra,
+    },
+  });
 
 type ForemanAssistantSession = {
   draft_request_id: string | null;
@@ -224,7 +249,11 @@ async function loadForemanAssistantSession(userId: string): Promise<ForemanAssis
       draft_display_no: parsed.draft_display_no ?? null,
       pending_items: Array.isArray(parsed.pending_items) ? parsed.pending_items : [],
     };
-  } catch {
+  } catch (error) {
+    recordAssistantActionFallback("load_foreman_session_parse_failed", error, {
+      action: "loadForemanAssistantSession",
+      storageKey: buildForemanSessionKey(userId),
+    });
     return {
       draft_request_id: null,
       draft_display_no: null,
@@ -310,10 +339,24 @@ async function searchMarketListings(query: string, limit = 6): Promise<MarketSea
 }
 
 async function smartSearch(query: string, limit = 6): Promise<MarketSearchResult[]> {
-  const marketRows = await searchMarketListings(query, limit).catch(() => []);
+  const marketRows = await searchMarketListings(query, limit).catch((error) => {
+    recordAssistantActionFallback("search_market_listings_failed", error, {
+      action: "smartSearch",
+      query,
+      limit,
+    });
+    return [];
+  });
   if (marketRows.length > 0) return marketRows;
 
-  const catalogRows = await rikQuickSearch(query, limit).catch(() => []);
+  const catalogRows = await rikQuickSearch(query, limit).catch((error) => {
+    recordAssistantActionFallback("search_catalog_failed", error, {
+      action: "smartSearch",
+      query,
+      limit,
+    });
+    return [];
+  });
   return catalogRows.slice(0, limit).map((row) => ({
     source: "catalog",
     id: String(row.code || row.rik_code || ""),
@@ -419,7 +462,13 @@ function resolvePendingClarification(pendingItems: AssistantParsedItem[], messag
 
 async function resolveForemanItems(message: string): Promise<ForemanItemsResolution> {
   const heuristic = parseHeuristicItems(message);
-  const quick = await resolveForemanQuickRequest(message).catch(() => null);
+  const quick = await resolveForemanQuickRequest(message).catch((error) => {
+    recordAssistantActionFallback("resolve_foreman_quick_request_failed", error, {
+      action: "resolveForemanItems",
+      messageLength: message.length,
+    });
+    return null;
+  });
 
   if (quick?.type === "resolved_items" && quick.items.length > 0) {
     return {
@@ -449,7 +498,14 @@ async function createOrAppendForemanDraft(
 ): Promise<string> {
   const matches = await Promise.all(
     items.map(async (item) => {
-      const rows = await rikQuickSearch(item.name, 6).catch(() => []);
+      const rows = await rikQuickSearch(item.name, 6).catch((error) => {
+        recordAssistantActionFallback("match_catalog_item_failed", error, {
+          action: "createOrAppendForemanDraft",
+          itemName: item.name,
+          itemKind: item.kind,
+        });
+        return [];
+      });
       const best = rows[0] ?? null;
       return {
         item,
@@ -470,7 +526,13 @@ async function createOrAppendForemanDraft(
   await updateRequestMeta(rid, {
     foreman_name: actor.fullName || null,
     comment: sourceMessage,
-  }).catch(() => false);
+  }).catch((error) => {
+    recordAssistantActionFallback("update_request_meta_failed", error, {
+      action: "createOrAppendForemanDraft",
+      requestId: rid,
+    });
+    return false;
+  });
 
   for (const entry of matched) {
     await requestItemAddOrIncAndPatchMeta(rid, String(entry.match?.code), entry.item.qty, {
@@ -481,7 +543,13 @@ async function createOrAppendForemanDraft(
     });
   }
 
-  const draft = await fetchRequestDetails(rid).catch(() => null);
+  const draft = await fetchRequestDetails(rid).catch((error) => {
+    recordAssistantActionFallback("fetch_draft_details_failed", error, {
+      action: "createOrAppendForemanDraft",
+      requestId: rid,
+    });
+    return null;
+  });
   const draftLabel = String(draft?.display_no || session.draft_display_no || rid).trim() || rid;
 
   await saveForemanAssistantSession(actor.userId, {
@@ -517,7 +585,13 @@ async function submitForemanDraft(actor: AssistantActorContext, session: Foreman
     return "Сначала сформируй черновик. После этого я смогу отправить его на утверждение.";
   }
 
-  const currentDraft = await fetchRequestDetails(rid).catch(() => null);
+  const currentDraft = await fetchRequestDetails(rid).catch((error) => {
+    recordAssistantActionFallback("fetch_current_draft_failed", error, {
+      action: "submitForemanDraft",
+      requestId: rid,
+    });
+    return null;
+  });
   if (!currentDraft) {
     clearLocalDraftId();
     await clearForemanAssistantSession(actor.userId);
@@ -528,7 +602,13 @@ async function submitForemanDraft(actor: AssistantActorContext, session: Foreman
     requestId: rid,
     sourcePath: "assistant.foreman.submitDraft",
     draftScopeKey: rid,
-  }).catch(() => null);
+  }).catch((error) => {
+    recordAssistantActionFallback("submit_draft_to_director_failed", error, {
+      action: "submitForemanDraft",
+      requestId: rid,
+    });
+    return null;
+  });
   if (!submitted) {
     return `Не удалось отправить черновик ${currentDraft.display_no || rid}. Проверь позиции и попробуй отправить из экрана прораба.`;
   }
@@ -597,7 +677,12 @@ function wantsBuyerProposalFlow(message: string): boolean {
 }
 
 async function hasPendingForemanSession(): Promise<boolean> {
-  const actor = await loadAssistantActorContext().catch(() => null);
+  const actor = await loadAssistantActorContext().catch((error) => {
+    recordAssistantActionFallback("load_actor_context_failed", error, {
+      action: "hasPendingForemanSession",
+    });
+    return null;
+  });
   if (!actor) return false;
   const session = await loadForemanAssistantSession(actor.userId);
   return Boolean(session.pending_items.length || session.draft_request_id);
@@ -641,6 +726,11 @@ export async function tryRunAssistantAction(options: {
     }
   } catch (error) {
     const messageText = error instanceof Error ? error.message : "Не удалось выполнить AI-действие.";
+    recordAssistantActionFallback("assistant_action_failed", error, {
+      action: "tryRunAssistantAction",
+      assistantRole: role,
+      assistantContext: context,
+    });
     return { handled: true, reply: messageText };
   }
 

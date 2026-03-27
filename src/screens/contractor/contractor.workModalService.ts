@@ -7,6 +7,7 @@ import type { WorkMaterialRow } from "../../components/WorkMaterialsEditor";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { IssuedItemRow, LinkedReqCard } from "./types";
 import type { Database } from "../../lib/database.types";
+import { recordPlatformObservability } from "../../lib/observability/platformObservability";
 
 type WorkRowLike = {
   progress_id: string;
@@ -117,6 +118,30 @@ type CatalogMeta = {
   name: string;
   uom: string | null;
 };
+
+const recordContractorWorkModalFallback = (
+  event: string,
+  error: unknown,
+  extra?: Record<string, unknown>,
+) =>
+  recordPlatformObservability({
+    screen: "contractor",
+    surface: "work_modal_service",
+    category: "ui",
+    event,
+    result: "error",
+    fallbackUsed: true,
+    errorClass: error instanceof Error ? error.name : undefined,
+    errorMessage: error instanceof Error ? error.message : String(error ?? "contractor_work_modal_fallback"),
+    extra: {
+      module: "contractor.workModalService",
+      route: "/contractor",
+      role: "contractor",
+      owner: "work_modal_service",
+      severity: "error",
+      ...extra,
+    },
+  });
 
 const looksLikeUuid = (v: string): boolean =>
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(v);
@@ -416,7 +441,12 @@ export async function loadIssuedTodayData(
       if (probe.error) throw probe.error;
       const first = asArray(probe.data as RequestNoProbeRow[])[0];
       requestsHasRequestNoInWorkModalCache = !!first && "request_no" in first;
-    } catch {
+    } catch (error) {
+      recordContractorWorkModalFallback("request_no_probe_failed", error, {
+        action: "loadIssuedTodayData",
+        fallbackAction: "request_no_disabled",
+        progressId: String(row.progress_id || "").trim() || null,
+      });
       requestsHasRequestNoInWorkModalCache = false;
     }
   }

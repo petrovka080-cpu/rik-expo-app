@@ -45,6 +45,7 @@ import { useContractorWorkModalController } from "../../src/screens/contractor/h
 import { useContractorWorkModalProps } from "../../src/screens/contractor/hooks/useContractorWorkModalProps";
 import { useContractorProgressReliability } from "../../src/screens/contractor/hooks/useContractorProgressReliability";
 import { useContractorScreenState } from "../../src/screens/contractor/hooks/useContractorScreenState";
+import { withScreenErrorBoundary } from "../../src/shared/ui/ScreenErrorBoundary";
 
 const showErr = (e: any) =>
   Alert.alert(
@@ -63,7 +64,7 @@ const UI_TEXT = {
 } as const;
 
 // ---- MAIN SCREEN ----
-export default function ContractorScreen() {
+function ContractorScreen() {
   const insets = useSafeAreaInsets();
   const modalHeaderTopPad = Platform.OS === "web" ? 16 : (insets.top + 10);
   const sheetHeaderTopPad = Platform.OS === "web" ? 12 : 12 + Math.min(insets.top, 20);
@@ -604,6 +605,11 @@ export default function ContractorScreen() {
     </RoleScreenLayout>
   );
 }
+
+export default withScreenErrorBoundary(ContractorScreen, {
+  screen: "contractor",
+  route: "/contractor",
+});
 
 
 

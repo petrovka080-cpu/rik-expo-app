@@ -10,6 +10,7 @@ import {
   selectWarehouseScreenMode,
   selectWarehouseScreenStateText,
 } from "../../src/screens/warehouse/warehouse.screen.selectors";
+import { withScreenErrorBoundary } from "../../src/shared/ui/ScreenErrorBoundary";
 
 const ROOT_STYLE = { flex: 1, backgroundColor: UI.bg };
 const SCREEN_STYLE = { flex: 1 };
@@ -22,7 +23,7 @@ const WEB_STICKY_HEADER_STYLE = {
   overflow: "hidden",
 } as unknown as ViewStyle;
 
-export default function Warehouse() {
+function Warehouse() {
   const vm = useWarehouseScreenController();
   const screenMode = selectWarehouseScreenMode(vm);
   const headerProps = selectWarehouseHeaderProps(vm);
@@ -73,3 +74,8 @@ export default function Warehouse() {
     </View>
   );
 }
+
+export default withScreenErrorBoundary(Warehouse, {
+  screen: "warehouse",
+  route: "/warehouse",
+});

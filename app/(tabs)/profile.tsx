@@ -25,6 +25,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { supabase } from "../../src/lib/supabaseClient";
 import { getMyRole } from "../../src/lib/api/profile";
+import { withScreenErrorBoundary } from "../../src/shared/ui/ScreenErrorBoundary";
 
 if (
   Platform.OS === "android" &&
@@ -341,7 +342,7 @@ async function uploadProfileAvatar(userId: string, assetUri: string): Promise<st
   return data.publicUrl;
 }
 
-export default function ProfileScreen() {
+function ProfileScreen() {
   const router = useRouter();
 
   const [profileMode, setProfileMode] = useState<ProfileMode>(null);
@@ -3521,6 +3522,11 @@ export default function ProfileScreen() {
     </View>
   );
 }
+
+export default withScreenErrorBoundary(ProfileScreen, {
+  screen: "profile",
+  route: "/profile",
+});
 
 // ===== ВСПОМОГАТЕЛЬНЫЕ КОМПОНЕНТЫ =====
 

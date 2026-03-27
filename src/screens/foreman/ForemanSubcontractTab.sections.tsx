@@ -6,6 +6,7 @@ import type { ReqItemRow } from "../../lib/catalog_api";
 import DeleteAllButton from "../../ui/DeleteAllButton";
 import SendPrimaryButton from "../../ui/SendPrimaryButton";
 import CloseIconButton from "../../ui/CloseIconButton";
+import ForemanDraftSummaryCard from "./ForemanDraftSummaryCard";
 import ForemanDropdown from "./ForemanDropdown";
 import { s } from "./foreman.styles";
 import { UI } from "./foreman.ui";
@@ -260,7 +261,16 @@ export function SubcontractDetailsModalBody(props: {
           </Pressable>
         </View>
 
-        <Pressable style={s.draftCard} onPress={onOpenDraft}>
+        <ForemanDraftSummaryCard
+          requestLabel={displayNo}
+          itemsCount={draftItemsCount}
+          actionIcon="cube"
+          onPress={onOpenDraft}
+          ui={UI}
+          styles={s}
+        />
+
+        <Pressable style={[s.draftCard, { display: "none" }]} onPress={onOpenDraft}>
           <View style={{ flex: 1, minWidth: 0 }}>
             <Text style={s.draftTitle}>ЗАЯВКА НА МАТЕРИАЛЫ</Text>
             <Text style={s.draftNo}>{displayNo || "будет создана автоматически"}</Text>
@@ -439,4 +449,3 @@ export function DraftSheetBody(props: {
     </View>
   );
 }
-

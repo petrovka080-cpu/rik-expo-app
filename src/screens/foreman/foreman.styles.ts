@@ -394,6 +394,7 @@ export const s = StyleSheet.create({
   },
 
   draftRowStatus: {
+    display: "none",
     marginTop: 6,
     color: "rgba(255,255,255,0.78)",
     fontSize: 12,
@@ -421,7 +422,8 @@ export const s = StyleSheet.create({
   draftCard: {
     marginTop: 10,
     flexDirection: "row",
-    alignItems: "center",
+    alignItems: "flex-start",
+    justifyContent: "space-between",
     gap: 14,
 
     padding: 14,
@@ -436,6 +438,17 @@ export const s = StyleSheet.create({
     shadowRadius: 18,
     elevation: 6,
   },
+  draftCardBody: {
+    flex: 1,
+    minWidth: 0,
+    gap: 6,
+  },
+  draftCardActionColumn: {
+    alignItems: "flex-end",
+    justifyContent: "space-between",
+    gap: 12,
+    flexShrink: 0,
+  },
   draftTitle: {
     color: "rgba(255,255,255,0.55)",
     fontWeight: "900",
@@ -448,12 +461,43 @@ export const s = StyleSheet.create({
     fontWeight: "900",
     fontSize: 18,
   },
+  draftSummary: {
+    color: "rgba(255,255,255,0.88)",
+    fontWeight: "800",
+    fontSize: 14,
+    lineHeight: 18,
+  },
   draftHint: {
     marginTop: 8,
     color: "rgba(255,255,255,0.78)",
     fontWeight: "800",
     fontSize: 13,
     lineHeight: 18,
+  },
+  draftMetaRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    flexWrap: "wrap",
+    marginTop: 2,
+  },
+  draftMetaText: {
+    flex: 1,
+    minWidth: 0,
+    color: "rgba(255,255,255,0.62)",
+    fontWeight: "700",
+    fontSize: 12,
+    lineHeight: 16,
+  },
+  draftSyncBadge: {
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 999,
+    maxWidth: "100%",
+  },
+  draftSyncBadgeText: {
+    fontWeight: "800",
+    fontSize: 11,
   },
 
   posPill: {

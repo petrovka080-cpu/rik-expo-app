@@ -23,6 +23,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { enqueueSubmitJob, JOB_QUEUE_ENABLED } from "../../lib/infra/jobQueue";
 import { stageProposalAttachmentForQueue } from "../../lib/api/storage";
 import type { QueuedProposalAttachment } from "../../lib/api/queuedProposalAttachments";
+import { recordPlatformObservability } from "../../lib/observability/platformObservability";
 
 type AlertFn = (title: string, message: string) => void;
 type FileLike = File | Blob | {
@@ -196,11 +197,42 @@ const reportBuyerWriteFailure = (
   log?: (...args: unknown[]) => void,
 ) => {
   const message = errMessage(error, "Не удалось сохранить изменения.");
+  recordPlatformObservability({
+    screen: "buyer",
+    surface: "buyer_actions",
+    category: "ui",
+    event: "operation_failed",
+    result: "error",
+    errorClass: error instanceof Error ? error.name : "BuyerActionError",
+    errorMessage: message,
+    extra: {
+      module: "buyer",
+      action: title,
+      owner: "buyer_actions",
+      severity: "error",
+    },
+  });
   (log ?? console.warn)(`[buyer.write] ${title}: ${message}`);
   alert?.(title, message);
 };
 
 const logBuyerSecondaryPhaseWarning = (scope: string, error: unknown) => {
+  recordPlatformObservability({
+    screen: "buyer",
+    surface: "buyer_actions",
+    category: "ui",
+    event: "secondary_phase_failed",
+    result: "error",
+    errorClass: error instanceof Error ? error.name : "BuyerSecondaryError",
+    errorMessage: errMessage(error),
+    extra: {
+      module: "buyer",
+      action: scope,
+      owner: "buyer_actions",
+      fallbackUsed: true,
+      severity: "warning",
+    },
+  });
   if (!__DEV__) return;
   console.warn(`[buyer.secondary] ${scope}: ${errMessage(error)}`);
 };
@@ -973,7 +1005,8 @@ export async function openReworkAction(p: OpenReworkDeps) {
 
       if (!pr1.error && pr1.data) r = pr1.data;
       else if (pr1.error) throw pr1.error;
-    } catch {
+    } catch (error) {
+      logBuyerSecondaryPhaseWarning("openRework:load_extended_proposal", error);
       try {
         const pr2 = await p.supabase
           .from("proposals")
@@ -981,7 +1014,9 @@ export async function openReworkAction(p: OpenReworkDeps) {
           .eq("id", p.pid)
           .maybeSingle();
         if (!pr2.error && pr2.data) r = pr2.data;
-      } catch { }
+      } catch (fallbackError) {
+        logBuyerSecondaryPhaseWarning("openRework:load_fallback_proposal", fallbackError);
+      }
     }
 
     // 2) РёСЃС‚РѕС‡РЅРёРє
@@ -1308,7 +1343,8 @@ export async function preloadProposalTitlesAction(p: PreloadProposalTitlesDeps) 
     let map: Record<string, string> = {};
     try {
       map = await p.batchResolveRequestLabels(allReqIds);
-    } catch {
+    } catch (error) {
+      logBuyerSecondaryPhaseWarning("buildTitleByProposal:resolve_request_labels", error);
       map = {};
     }
 
@@ -1325,8 +1361,8 @@ export async function preloadProposalTitlesAction(p: PreloadProposalTitlesDeps) 
     });
 
     p.setTitleByPid((prev) => ({ ...prev, ...next }));
-  } catch {
-    // 1:1 no-op
+  } catch (error) {
+    logBuyerSecondaryPhaseWarning("buildTitleByProposal", error);
   }
 }
 // =====================================
@@ -1392,7 +1428,9 @@ export async function snapshotProposalItemsAction(opts: {
         .in("id", cleanIds);
 
       if (!ri.error && Array.isArray(ri.data)) riData = ri.data;
-    } catch { }
+    } catch (error) {
+      logBuyerSecondaryPhaseWarning("snapshotProposalItems:request_items_lookup", error);
+    }
 
     // 2) fallback РёР· С‚РµРєСѓС‰РµРіРѕ inbox rows (РєР°Рє Р±С‹Р»Рѕ)
     if (!riData.length) {

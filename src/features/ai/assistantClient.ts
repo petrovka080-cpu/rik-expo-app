@@ -4,6 +4,7 @@ import {
 } from "./assistantPrompts";
 import type { AssistantContext, AssistantMessage, AssistantRole } from "./assistant.types";
 import { loadAiConfig, saveAiReport } from "../../lib/ai_reports";
+import { recordPlatformObservability } from "../../lib/observability/platformObservability";
 import {
   isAiBackendAvailable,
   requestAiGeneratedText,
@@ -11,6 +12,30 @@ import {
 
 const DEFAULT_MODEL = "gemini-2.5-flash";
 const assistantConfigCache = new Map<string, string | null>();
+
+const recordAssistantClientFallback = (
+  event: string,
+  error: unknown,
+  extra?: Record<string, unknown>,
+) =>
+  recordPlatformObservability({
+    screen: "ai",
+    surface: "assistant_client",
+    category: "ui",
+    event,
+    result: "error",
+    fallbackUsed: true,
+    errorClass: error instanceof Error ? error.name : undefined,
+    errorMessage: error instanceof Error ? error.message : String(error ?? "assistant_client_failed"),
+    extra: {
+      module: "ai.assistantClient",
+      route: "/ai",
+      role: "ai",
+      owner: "assistant_client",
+      severity: "error",
+      ...extra,
+    },
+  });
 
 function getAssistantModel(): string {
   const model = String(process.env.EXPO_PUBLIC_GEMINI_MODEL || DEFAULT_MODEL).trim();
@@ -32,7 +57,13 @@ async function loadAssistantPromptConfig(role: AssistantRole, context: Assistant
       continue;
     }
 
-    const loaded = await loadAiConfig(configId).catch(() => null);
+    const loaded = await loadAiConfig(configId).catch((error) => {
+      recordAssistantClientFallback("load_prompt_config_failed", error, {
+        action: "loadAiConfig",
+        configId,
+      });
+      return null;
+    });
     assistantConfigCache.set(configId, loaded);
     if (loaded) return loaded;
   }
@@ -127,7 +158,14 @@ export async function sendAssistantMessage(options: {
       },
     });
     return answer;
-  } catch {
+  } catch (error) {
+    recordAssistantClientFallback("send_assistant_message_failed", error, {
+      action: "sendAssistantMessage",
+      assistantRole: role,
+      assistantContext: context,
+      scopeKey: scopeKey || null,
+      model,
+    });
     return buildOfflineAssistantReply(role, message, context);
   }
 }

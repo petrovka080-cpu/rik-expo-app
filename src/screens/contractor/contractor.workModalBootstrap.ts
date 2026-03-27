@@ -1,4 +1,5 @@
 import type { WorkMaterialRow } from "../../components/WorkMaterialsEditor";
+import { recordPlatformObservability } from "../../lib/observability/platformObservability";
 import type { ContractorWorkRow } from "./contractor.loadWorksService";
 import {
   loadContractorJobHeaderData,
@@ -60,6 +61,30 @@ type Params = {
 
 type HeaderLoadResult = { header: ContractorJobHeader | null; objectNameOverride: string | null };
 
+const recordContractorBootstrapFallback = (
+  event: string,
+  error: unknown,
+  extra?: Record<string, unknown>,
+) =>
+  recordPlatformObservability({
+    screen: "contractor",
+    surface: "work_modal_bootstrap",
+    category: "ui",
+    event,
+    result: "error",
+    fallbackUsed: true,
+    errorClass: error instanceof Error ? error.name : undefined,
+    errorMessage: error instanceof Error ? error.message : String(error ?? "contractor_bootstrap_fallback"),
+    extra: {
+      module: "contractor.workModalBootstrap",
+      route: "/contractor",
+      role: "contractor",
+      owner: "work_modal_bootstrap",
+      severity: "error",
+      ...extra,
+    },
+  });
+
 export async function bootstrapWorkModalData(params: Params): Promise<WorkModalBootstrapResult> {
   const {
     supabaseClient,
@@ -82,15 +107,35 @@ export async function bootstrapWorkModalData(params: Params): Promise<WorkModalB
         resolveContractorJobId,
         resolveRequestId,
         normText,
-      }).catch(() => ({ header: null, objectNameOverride: null })),
+      }).catch((error) => {
+        recordContractorBootstrapFallback("load_job_header_failed", error, {
+          action: "loadContractorJobHeaderData",
+          fallbackAction: "header_null",
+          progressId: String(row.progress_id || "").trim() || null,
+        });
+        return { header: null, objectNameOverride: null };
+      }),
       loadWorkLogData(String(row.progress_id || "")),
-      loadWorkStageOptions({ supabaseClient }).catch(() => [] as Array<{ code: string; name: string }>),
+      loadWorkStageOptions({ supabaseClient }).catch((error) => {
+        recordContractorBootstrapFallback("load_stage_options_failed", error, {
+          action: "loadWorkStageOptions",
+          fallbackAction: "empty_stage_options",
+        });
+        return [] as Array<{ code: string; name: string }>;
+      }),
       readOnly
         ? Promise.resolve([] as WorkMaterialRow[])
         : loadInitialWorkMaterialsForModal({
             supabaseClient,
             row,
-          }).catch(() => [] as WorkMaterialRow[]),
+          }).catch((error) => {
+            recordContractorBootstrapFallback("load_initial_materials_failed", error, {
+              action: "loadInitialWorkMaterialsForModal",
+              fallbackAction: "empty_initial_materials",
+              progressId: String(row.progress_id || "").trim() || null,
+            });
+            return [] as WorkMaterialRow[];
+          }),
       loadIssuedTodayData({
         supabaseClient,
         row,
@@ -100,18 +145,22 @@ export async function bootstrapWorkModalData(params: Params): Promise<WorkModalB
         isRejectedOrCancelledRequestStatus,
         toLocalDateKey,
         normText,
-      }).catch(
-        () =>
-          ({
-            issuedItems: [] as IssuedItemRow[],
-            linkedReqCards: [] as LinkedReqCard[],
-            issuedHint: "",
-          }) as {
-            issuedItems: IssuedItemRow[];
-            linkedReqCards: LinkedReqCard[];
-            issuedHint: string;
-          }
-      ),
+      }).catch((error) => {
+        recordContractorBootstrapFallback("load_issued_today_failed", error, {
+          action: "loadIssuedTodayData",
+          fallbackAction: "empty_issued_data",
+          progressId: String(row.progress_id || "").trim() || null,
+        });
+        return {
+          issuedItems: [] as IssuedItemRow[],
+          linkedReqCards: [] as LinkedReqCard[],
+          issuedHint: "",
+        } as {
+          issuedItems: IssuedItemRow[];
+          linkedReqCards: LinkedReqCard[];
+          issuedHint: string;
+        };
+      }),
     ]);
 
     const [headerResult, workLog, workStageOptions, initialMaterials, issuedData] = bundle as [
@@ -130,7 +179,12 @@ export async function bootstrapWorkModalData(params: Params): Promise<WorkModalB
       initialMaterials,
       issuedData,
     };
-  } catch {
+  } catch (error) {
+    recordContractorBootstrapFallback("bootstrap_work_modal_failed", error, {
+      action: "bootstrapWorkModalData",
+      fallbackAction: "error_state",
+      progressId: String(row.progress_id || "").trim() || null,
+    });
     return {
       loadState: "error",
       jobHeader: null,

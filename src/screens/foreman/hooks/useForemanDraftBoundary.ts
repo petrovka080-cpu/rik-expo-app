@@ -124,6 +124,7 @@ export function useForemanDraftBoundary({
     loadItems,
     setRowBusy,
     hydrateLocalDraft,
+    clearItemsState,
     ensureAndGetId,
   } = useForemanItemsState(formatQtyInput);
 
@@ -141,6 +142,7 @@ export function useForemanDraftBoundary({
   const networkOnlineRef = useRef<boolean | null>(null);
   const wasScreenFocusedRef = useRef(false);
   const skipRemoteHydrationRequestIdRef = useRef<string | null>(null);
+  const requestDetailsLoadSeqRef = useRef(0);
 
   useEffect(() => {
     localDraftSnapshotRef.current = localDraftSnapshot;
@@ -390,23 +392,33 @@ export function useForemanDraftBoundary({
 
   const loadDetails = useCallback(
     async (rid?: string | number | null) => {
+      const requestSeq = ++requestDetailsLoadSeqRef.current;
       return await loadForemanRequestDetails({
         requestId: rid,
         activeRequestId: requestId,
         setRequestDetails,
         setDisplayNoByReq,
         syncHeaderFromDetails,
+        shouldApply: () => requestSeq === requestDetailsLoadSeqRef.current,
       });
     },
     [requestId, setDisplayNoByReq, syncHeaderFromDetails],
   );
 
-  const clearDraftCache = useCallback(async () => {
-    const activeSnapshot = localDraftSnapshotRef.current;
+  const invalidateRequestDetailsLoads = useCallback(() => {
+    requestDetailsLoadSeqRef.current += 1;
+  }, []);
+
+  const clearDraftCache = useCallback(async (options?: {
+    snapshot?: ForemanLocalDraftSnapshot | null;
+    requestId?: string | null;
+  }) => {
+    const activeSnapshot = options?.snapshot ?? localDraftSnapshotRef.current;
+    const cleanupRequestId =
+      ridStr(options?.requestId) || ridStr(activeSnapshot?.requestId) || ridStr(requestId);
     const queueKeys = new Set<string>([
       FOREMAN_LOCAL_ONLY_REQUEST_ID,
-      getDraftQueueKey(activeSnapshot),
-      ridStr(requestId),
+      ...getDraftQueueKeys(activeSnapshot, cleanupRequestId),
     ]);
     await Promise.all(
       Array.from(queueKeys)
@@ -417,16 +429,14 @@ export function useForemanDraftBoundary({
     );
     await clearForemanDraftCacheState(persistLocalDraftSnapshot, patchBoundaryState);
     await refreshBoundarySyncState(null);
-  }, [getDraftQueueKey, patchBoundaryState, persistLocalDraftSnapshot, refreshBoundarySyncState, requestId]);
+  }, [getDraftQueueKeys, patchBoundaryState, persistLocalDraftSnapshot, refreshBoundarySyncState, requestId]);
 
   const resetDraftState = useCallback(() => {
-    setRequestIdState("");
+    invalidateRequestDetailsLoads();
+    clearItemsState();
     setRequestDetails(null);
-    setItems([]);
-    setQtyDrafts({});
-    setQtyBusyMap({});
     resetHeader();
-  }, [resetHeader, setItems, setQtyBusyMap, setQtyDrafts, setRequestIdState]);
+  }, [clearItemsState, invalidateRequestDetailsLoads, resetHeader]);
 
   const appendLocalDraftRows = useCallback(
     (rows: ForemanDraftAppendInput[]) => {
@@ -470,12 +480,10 @@ export function useForemanDraftBoundary({
       }
 
       skipRemoteHydrationRequestIdRef.current = null;
+      invalidateRequestDetailsLoads();
       persistLocalDraftSnapshot(null);
-      setRequestIdState("");
+      clearItemsState();
       setRequestDetails(null);
-      setItems([]);
-      setQtyDrafts({});
-      setQtyBusyMap({});
       setCommentState("");
 
       await patchForemanDurableDraftRecoveryState({
@@ -515,21 +523,69 @@ export function useForemanDraftBoundary({
       }
     },
     [
+      clearItemsState,
+      invalidateRequestDetailsLoads,
       persistLocalDraftSnapshot,
       refreshBoundarySyncState,
       requestId,
       setCommentState,
       setDisplayNoByReq,
-      setItems,
-      setQtyBusyMap,
-      setQtyDrafts,
-      setRequestIdState,
     ],
   );
 
   useEffect(() => {
     handlePostSubmitSuccessRef.current = handlePostSubmitSuccess;
   }, [handlePostSubmitSuccess]);
+
+  const clearTerminalLocalDraft = useCallback(
+    async (options: {
+      snapshot?: ForemanLocalDraftSnapshot | null;
+      requestId: string;
+      remoteStatus?: string | null;
+    }) => {
+      const snapshot = options.snapshot ?? localDraftSnapshotRef.current ?? getForemanDurableDraftState().snapshot;
+      await clearDraftCache({
+        snapshot,
+        requestId: options.requestId,
+      });
+      resetDraftState();
+      await patchForemanDurableDraftRecoveryState({
+        snapshot: null,
+        syncStatus: "idle",
+        pendingOperationsCount: 0,
+        queueDraftKey: null,
+        requestIdKnown: false,
+        attentionNeeded: false,
+        conflictType: "none",
+        lastConflictAt: null,
+        recoverableLocalSnapshot: null,
+        lastError: null,
+        lastErrorAt: null,
+        lastErrorStage: null,
+        retryCount: 0,
+        repeatedFailureStageCount: 0,
+        lastTriggerSource: "bootstrap_complete",
+        lastSyncAt: Date.now(),
+      });
+      await refreshBoundarySyncState(null);
+
+      if (__DEV__) {
+        console.info("[foreman.terminal-cleanup]", {
+          draftId: ridStr(snapshot?.requestId) || options.requestId,
+          requestId: options.requestId,
+          remoteStatus: options.remoteStatus ?? null,
+          submitSuccess: false,
+          postSubmitAction: "entered_empty_state",
+          staleBannerVisibleAfterSubmit: false,
+          activeDraftIdBefore: ridStr(snapshot?.requestId) || options.requestId,
+          activeDraftIdAfter: null,
+          freshDraftCreated: false,
+          runtimeResult: "cleared_terminal_local_snapshot",
+        });
+      }
+    },
+    [clearDraftCache, refreshBoundarySyncState, resetDraftState],
+  );
 
   const syncLocalDraftNow = useCallback(
     async (options?: {
@@ -1193,6 +1249,27 @@ export function useForemanDraftBoundary({
     isDraftActive,
     persistLocalDraftSnapshot,
     requestDetails,
+    requestId,
+  ]);
+
+  useEffect(() => {
+    if (!boundaryState.bootstrapReady) return;
+    if (boundaryState.conflictType !== "server_terminal_conflict") return;
+
+    const snapshot = localDraftSnapshotRef.current ?? getForemanDurableDraftState().snapshot;
+    const terminalRequestId = ridStr(snapshot?.requestId) || ridStr(requestId);
+    if (!snapshot || !hasForemanLocalDraftContent(snapshot) || !terminalRequestId) return;
+
+    void clearTerminalLocalDraft({
+      snapshot,
+      requestId: terminalRequestId,
+      remoteStatus: requestDetails?.status ?? null,
+    }).catch(() => undefined);
+  }, [
+    boundaryState.bootstrapReady,
+    boundaryState.conflictType,
+    clearTerminalLocalDraft,
+    requestDetails?.status,
     requestId,
   ]);
 

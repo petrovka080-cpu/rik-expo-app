@@ -2,6 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import React, { useEffect, useRef } from "react";
 import { Animated, Pressable, Text, View, type NativeScrollEvent, type NativeSyntheticEvent } from "react-native";
 
+import ForemanDraftSummaryCard from "./ForemanDraftSummaryCard";
 import { FOREMAN_DROPDOWN_FIELD_KEYS } from "./foreman.dropdown.constants";
 import { debugForemanLogLazy } from "./foreman.debug";
 import ForemanDropdown from "./ForemanDropdown";
@@ -51,16 +52,6 @@ export default function ForemanEditorSection(p: Props) {
   const isLowConfidence = p.contextResult?.confidence !== "high";
   const scrollRef = useRef<any>(null);
   const missingKeys = new Set(p.headerAttention?.missingKeys ?? []);
-  const syncToneStyle =
-    p.draftSyncStatusTone === "success"
-      ? { bg: "rgba(34,197,94,0.16)", fg: "#86efac" }
-      : p.draftSyncStatusTone === "info"
-        ? { bg: "rgba(56,189,248,0.16)", fg: "#7dd3fc" }
-        : p.draftSyncStatusTone === "warning"
-          ? { bg: "rgba(245,158,11,0.16)", fg: "#fcd34d" }
-          : p.draftSyncStatusTone === "danger"
-            ? { bg: "rgba(248,113,113,0.16)", fg: "#fca5a5" }
-            : { bg: "rgba(148,163,184,0.16)", fg: "#cbd5e1" };
 
   debugForemanLogLazy("[FOREMAN_EDITOR_4_FIELDS]", () => ({
     objectType: p.objectType,
@@ -96,190 +87,152 @@ export default function ForemanEditorSection(p: Props) {
   }, [p.headerAttention?.version]);
 
   return (
-    <>
-      <Animated.ScrollView
-        ref={scrollRef}
-        contentContainerStyle={[p.styles.pagePad, { paddingTop: p.contentTopPad }]}
-        keyboardShouldPersistTaps="handled"
-        scrollEventThrottle={16}
-        onScroll={p.onScroll}
-      >
-        {p.headerAttention ? (
-          <View style={p.styles.headerAttentionCard}>
-            <Text style={p.styles.headerAttentionTitle}>Заполните шапку перед AI-заявкой</Text>
-            <Text style={p.styles.headerAttentionText}>{p.headerAttention.message}</Text>
-          </View>
+    <Animated.ScrollView
+      ref={scrollRef}
+      contentContainerStyle={[p.styles.pagePad, { paddingTop: p.contentTopPad }]}
+      keyboardShouldPersistTaps="handled"
+      scrollEventThrottle={16}
+      onScroll={p.onScroll}
+    >
+      {p.headerAttention ? (
+        <View style={p.styles.headerAttentionCard}>
+          <Text style={p.styles.headerAttentionTitle}>Заполните шапку перед AI-заявкой</Text>
+          <Text style={p.styles.headerAttentionText}>{p.headerAttention.message}</Text>
+        </View>
+      ) : null}
+
+      <View style={{ marginTop: 10, gap: 6 }}>
+        <ForemanDropdown
+          label="Объект / Блок"
+          required
+          showLabel
+          fieldKey={FOREMAN_DROPDOWN_FIELD_KEYS.object}
+          options={p.objOptions}
+          value={p.objectType}
+          valueLabelOverride={p.objectDisplayName}
+          onChange={p.onObjectChange}
+          placeholder="Выбрать объект..."
+          width={360}
+          attentionActive={missingKeys.has("object")}
+          attentionHint={missingKeys.has("object") ? "Сначала выберите объект / блок." : null}
+          attentionToken={p.headerAttention?.focusKey === FOREMAN_DROPDOWN_FIELD_KEYS.object ? p.headerAttention.version : 0}
+          autoOpenOnAttention={p.headerAttention?.focusKey === FOREMAN_DROPDOWN_FIELD_KEYS.object}
+          ui={p.ui}
+          styles={p.styles}
+        />
+
+        {isLowConfidence && p.objectType ? (
+          <Text style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", marginLeft: 4, fontStyle: "italic" }}>
+            Контекст: {p.contextResult?.config.objectClass}. Проверьте {p.formUi.locator.label?.toLowerCase()}.
+          </Text>
         ) : null}
 
-        <View style={{ marginTop: 10, gap: 6 }}>
+        {!p.formUi.locator.isHidden ? (
           <ForemanDropdown
-            label="Объект / Блок"
+            key={`loc:${p.objectType}:${p.formUi.locator.label}`}
+            label={p.formUi.locator.label}
             required
             showLabel
-            fieldKey={FOREMAN_DROPDOWN_FIELD_KEYS.object}
-            options={p.objOptions}
-            value={p.objectType}
-            valueLabelOverride={p.objectDisplayName}
-            onChange={p.onObjectChange}
-            placeholder="Выбрать объект..."
+            fieldKey={FOREMAN_DROPDOWN_FIELD_KEYS.locator}
+            options={p.formUi.locator.options}
+            value={p.level}
+            onChange={p.onLevelChange}
+            placeholder={p.formUi.locator.placeholder}
             width={360}
-            attentionActive={missingKeys.has("object")}
-            attentionHint={missingKeys.has("object") ? "Сначала выберите объект / блок." : null}
-            attentionToken={p.headerAttention?.focusKey === FOREMAN_DROPDOWN_FIELD_KEYS.object ? p.headerAttention.version : 0}
-            autoOpenOnAttention={p.headerAttention?.focusKey === FOREMAN_DROPDOWN_FIELD_KEYS.object}
+            attentionActive={missingKeys.has("locator")}
+            attentionHint={missingKeys.has("locator") ? `Сначала выберите ${p.formUi.locator.label.toLowerCase()}.` : null}
+            attentionToken={p.headerAttention?.focusKey === FOREMAN_DROPDOWN_FIELD_KEYS.locator ? p.headerAttention.version : 0}
+            autoOpenOnAttention={p.headerAttention?.focusKey === FOREMAN_DROPDOWN_FIELD_KEYS.locator}
             ui={p.ui}
             styles={p.styles}
           />
+        ) : null}
 
-          {isLowConfidence && p.objectType ? (
-            <Text style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", marginLeft: 4, fontStyle: "italic" }}>
-              Контекст: {p.contextResult?.config.objectClass}. Проверьте {p.formUi.locator.label?.toLowerCase()}.
-            </Text>
-          ) : null}
+        <ForemanDropdown
+          label="Раздел / Вид работ"
+          showLabel
+          fieldKey={FOREMAN_DROPDOWN_FIELD_KEYS.system}
+          options={p.sysOptions}
+          value={p.system}
+          onChange={p.onSystemChange}
+          placeholder="Выбрать раздел..."
+          width={360}
+          ui={p.ui}
+          styles={p.styles}
+        />
 
-          {!p.formUi.locator.isHidden ? (
-            <ForemanDropdown
-              key={`loc:${p.objectType}:${p.formUi.locator.label}`}
-              label={p.formUi.locator.label}
-              required
-              showLabel
-              fieldKey={FOREMAN_DROPDOWN_FIELD_KEYS.locator}
-              options={p.formUi.locator.options}
-              value={p.level}
-              onChange={p.onLevelChange}
-              placeholder={p.formUi.locator.placeholder}
-              width={360}
-              attentionActive={missingKeys.has("locator")}
-              attentionHint={missingKeys.has("locator") ? `Сначала выберите ${p.formUi.locator.label.toLowerCase()}.` : null}
-              attentionToken={p.headerAttention?.focusKey === FOREMAN_DROPDOWN_FIELD_KEYS.locator ? p.headerAttention.version : 0}
-              autoOpenOnAttention={p.headerAttention?.focusKey === FOREMAN_DROPDOWN_FIELD_KEYS.locator}
-              ui={p.ui}
-              styles={p.styles}
-            />
-          ) : null}
+        <ForemanDropdown
+          key={`zone:${p.objectType}:${p.formUi.zone.label}`}
+          label={p.formUi.zone.label}
+          showLabel
+          fieldKey={FOREMAN_DROPDOWN_FIELD_KEYS.zone}
+          options={p.formUi.zone.options}
+          value={p.zone}
+          onChange={p.onZoneChange}
+          placeholder={p.formUi.zone.placeholder}
+          width={360}
+          ui={p.ui}
+          styles={p.styles}
+        />
+      </View>
 
-          <ForemanDropdown
-            label="Раздел / Вид работ"
-            showLabel
-            fieldKey={FOREMAN_DROPDOWN_FIELD_KEYS.system}
-            options={p.sysOptions}
-            value={p.system}
-            onChange={p.onSystemChange}
-            placeholder="Выбрать раздел..."
-            width={360}
-            ui={p.ui}
-            styles={p.styles}
-          />
-
-          <ForemanDropdown
-            key={`zone:${p.objectType}:${p.formUi.zone.label}`}
-            label={p.formUi.zone.label}
-            showLabel
-            fieldKey={FOREMAN_DROPDOWN_FIELD_KEYS.zone}
-            options={p.formUi.zone.options}
-            value={p.zone}
-            onChange={p.onZoneChange}
-            placeholder={p.formUi.zone.placeholder}
-            width={360}
-            ui={p.ui}
-            styles={p.styles}
-          />
-        </View>
-
-        <View style={p.styles.section}>
-          <View style={p.styles.pickTabsRow}>
-            <Pressable
-              onPress={() => {
-                if (!p.ensureHeaderReady()) return;
-                if (!p.canStartDraftFlow) {
-                  p.showHint("Просмотр заявки", "Редактирование доступно только в текущем черновике.");
-                  return;
-                }
-                p.setCatalogVisible(true);
-              }}
-              disabled={p.busy}
-              style={[p.styles.pickTabBtn, p.styles.pickTabCatalog, p.busy && { opacity: 0.5 }]}
-            >
-              <Ionicons name="list" size={18} color={p.ui.text} />
-              <Text style={p.styles.pickTabText}>Каталог</Text>
-            </Pressable>
-
-            <Pressable
-              onPress={p.onCalcPress}
-              disabled={p.busy}
-              style={[p.styles.pickTabBtn, p.styles.pickTabSoft, p.busy && { opacity: 0.5 }]}
-            >
-              <Ionicons name="calculator-outline" size={18} color={p.ui.text} />
-              <Text style={p.styles.pickTabText}>Смета</Text>
-            </Pressable>
-          </View>
+      <View style={p.styles.section}>
+        <View style={p.styles.pickTabsRow}>
+          <Pressable
+            onPress={() => {
+              if (!p.ensureHeaderReady()) return;
+              if (!p.canStartDraftFlow) {
+                p.showHint("Просмотр заявки", "Редактирование доступно только в текущем черновике.");
+                return;
+              }
+              p.setCatalogVisible(true);
+            }}
+            disabled={p.busy}
+            style={[p.styles.pickTabBtn, p.styles.pickTabCatalog, p.busy && { opacity: 0.5 }]}
+          >
+            <Ionicons name="list" size={18} color={p.ui.text} />
+            <Text style={p.styles.pickTabText}>Каталог</Text>
+          </Pressable>
 
           <Pressable
-            onPress={p.onAiQuickPress}
+            onPress={p.onCalcPress}
             disabled={p.busy}
-            style={[
-              p.styles.pickTabBtn,
-              p.styles.pickTabSoft,
-              {
-                marginTop: 10,
-                borderColor: "rgba(34,197,94,0.32)",
-                backgroundColor: "rgba(34,197,94,0.10)",
-              },
-              p.busy && { opacity: 0.5 },
-            ]}
+            style={[p.styles.pickTabBtn, p.styles.pickTabSoft, p.busy && { opacity: 0.5 }]}
           >
-            <Ionicons name="sparkles-outline" size={18} color={p.ui.text} />
-            <Text style={p.styles.pickTabText}>AI заявка</Text>
+            <Ionicons name="calculator-outline" size={18} color={p.ui.text} />
+            <Text style={p.styles.pickTabText}>Смета</Text>
           </Pressable>
         </View>
 
         <Pressable
-          onPress={() => p.setDraftOpen(true)}
-          style={p.styles.draftCard}
-          android_ripple={{ color: "rgba(255,255,255,0.06)" }}
+          onPress={p.onAiQuickPress}
+          disabled={p.busy}
+          style={[
+            p.styles.pickTabBtn,
+            p.styles.pickTabSoft,
+            {
+              marginTop: 10,
+              borderColor: "rgba(34,197,94,0.32)",
+              backgroundColor: "rgba(34,197,94,0.10)",
+            },
+            p.busy && { opacity: 0.5 },
+          ]}
         >
-          <View style={{ flex: 1, minWidth: 0 }}>
-            <Text style={p.styles.draftTitle}>ЧЕРНОВИК</Text>
-            <Text style={p.styles.draftNo} numberOfLines={1}>
-              {p.currentDisplayLabel}
-            </Text>
-            <Text style={p.styles.draftHint} numberOfLines={2}>
-              {p.itemsCount
-                ? "Открыть позиции и действия"
-                : "Пока пусто - добавь позиции из Каталога или Сметы."}
-            </Text>
-            <View
-              style={{
-                alignSelf: "flex-start",
-                marginTop: 8,
-                paddingHorizontal: 10,
-                paddingVertical: 5,
-                borderRadius: 999,
-                backgroundColor: syncToneStyle.bg,
-              }}
-            >
-              <Text style={{ color: syncToneStyle.fg, fontWeight: "800", fontSize: 11 }}>
-                {p.draftSyncStatusLabel}
-              </Text>
-            </View>
-            {p.draftSyncStatusDetail ? (
-              <Text style={[p.styles.draftHint, { marginTop: 6 }]} numberOfLines={2}>
-                {p.draftSyncStatusDetail}
-              </Text>
-            ) : null}
-          </View>
-          <View style={{ alignItems: "flex-end", gap: 10 }}>
-            <View style={p.styles.posPill}>
-              <Ionicons name="list" size={18} color={p.ui.text} />
-              <Text style={p.styles.posPillText}>Позиции</Text>
-              <View style={p.styles.posCountPill}>
-                <Text style={p.styles.posCountText}>{p.itemsCount}</Text>
-              </View>
-            </View>
-            <Ionicons name="chevron-forward" size={18} color="rgba(255,255,255,0.55)" />
-          </View>
+          <Ionicons name="sparkles-outline" size={18} color={p.ui.text} />
+          <Text style={p.styles.pickTabText}>AI заявка</Text>
         </Pressable>
-      </Animated.ScrollView>
-    </>
+      </View>
+
+      <ForemanDraftSummaryCard
+        requestLabel={p.currentDisplayLabel}
+        itemsCount={p.itemsCount}
+        syncLabel={p.draftSyncStatusLabel}
+        syncDetail={p.draftSyncStatusDetail}
+        syncTone={p.draftSyncStatusTone}
+        onPress={() => p.setDraftOpen(true)}
+        ui={p.ui}
+        styles={p.styles}
+      />
+    </Animated.ScrollView>
   );
 }

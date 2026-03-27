@@ -1,0 +1,25 @@
+{
+  "marker": "RTBUY1774611221161",
+  "webRuntime": "artifacts/buyer-realtime.web.json",
+  "summary": {
+    "gate": "V12.3 selective realtime buyer",
+    "status": "failed",
+    "webPassed": false,
+    "androidPassed": false,
+    "iosPassed": false,
+    "iosResidual": "Android/iOS realtime runtime proof not executed in this verifier on this host",
+    "subscriptionStarted": true,
+    "eventReceived": false,
+    "refreshTriggered": false,
+    "doubleFetchDetected": false,
+    "inflightGuardWorked": false,
+    "recentGuardWorked": false,
+    "backendOwnerPreserved": false,
+    "markerVisible": false,
+    "fetchCountAfterRealtime": 0,
+    "screenshot": "artifacts/buyer-realtime.png",
+    "platformSpecificIssues": [
+      "poll timeout: buyer:realtime_refresh"
+    ]
+  }
+}

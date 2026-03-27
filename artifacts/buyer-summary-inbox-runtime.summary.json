@@ -1,15 +1,20 @@
 {
   "status": "failed",
-  "webPassed": false,
+  "webPassed": true,
   "androidPassed": false,
   "iosPassed": false,
   "iosResidual": "xcrun is unavailable on this host; iOS simulator cannot be started from Windows",
+  "environmentRecoveryUsed": false,
+  "gmsRecoveryUsed": false,
+  "anrRecoveryUsed": false,
+  "blankSurfaceRecovered": false,
+  "devClientBootstrapRecovered": false,
   "runtimeVerified": false,
   "scenariosPassed": {
     "web": {
-      "initialOpen": false,
-      "inboxSurface": false,
-      "sheetInteraction": false
+      "initialOpen": true,
+      "inboxSurface": true,
+      "sheetInteraction": true
     },
     "android": {
       "initialOpen": false,
@@ -23,10 +28,6 @@
     }
   },
   "platformSpecificIssues": [
-    {
-      "platform": "web",
-      "issue": "poll timeout: body:REQ-0066/2026|/REQ-[A-Z0-9_-]+\\/\\d{4}/i|/#\\d+/"
-    },
     {
       "platform": "android",
       "issue": "Inbox top tab was not found on Android buyer screen"
@@ -47,11 +48,11 @@
   "artifacts": {
     "webSummary": "artifacts/buyer-summary-inbox-web-smoke.summary.json",
     "webRuntime": "artifacts/buyer-summary-inbox-web-smoke.json",
-    "androidCurrentXml": "artifacts/android-buyer-summary-inbox-home-timeout.xml",
-    "androidCurrentPng": "artifacts/android-buyer-summary-inbox-home-timeout.png",
-    "androidInboxXml": "artifacts/android-buyer-summary-inbox-home-timeout.xml",
-    "androidInboxPng": "artifacts/android-buyer-summary-inbox-home-timeout.png",
-    "androidSheetXml": "artifacts/android-buyer-summary-inbox-home-timeout.xml",
-    "androidSheetPng": "artifacts/android-buyer-summary-inbox-home-timeout.png"
+    "androidCurrentXml": "artifacts/android-buyer-summary-inbox-route-timeout.xml",
+    "androidCurrentPng": "artifacts/android-buyer-summary-inbox-route-timeout.png",
+    "androidInboxXml": "artifacts/android-buyer-summary-inbox-route-timeout.xml",
+    "androidInboxPng": "artifacts/android-buyer-summary-inbox-route-timeout.png",
+    "androidSheetXml": "artifacts/android-buyer-summary-inbox-route-timeout.xml",
+    "androidSheetPng": "artifacts/android-buyer-summary-inbox-route-timeout.png"
   }
 }

@@ -1,37 +1,46 @@
 {
-  "status": "passed",
+  "status": "failed",
   "webPassed": true,
-  "androidPassed": true,
+  "androidPassed": false,
   "iosPassed": false,
   "iosResidual": "xcrun is unavailable on this host; iOS simulator cannot be started from Windows",
-  "contractorCardVisible": true,
-  "modalOpened": true,
-  "issuedExpanded": true,
+  "environmentRecoveryUsed": true,
+  "gmsRecoveryUsed": false,
+  "anrRecoveryUsed": false,
+  "blankSurfaceRecovered": true,
+  "devClientBootstrapRecovered": true,
+  "contractorCardVisible": false,
+  "modalOpened": false,
+  "issuedExpanded": false,
   "platformSpecificIssues": [
+    {
+      "platform": "android",
+      "issue": "Android login button not found"
+    },
     {
       "platform": "ios",
       "issue": "xcrun is unavailable on this host; iOS simulator cannot be started from Windows"
     }
   ],
   "seed": {
-    "suffix": "mn7i7k9inlaz",
-    "contractorOrg": "Runtime Contractor mn7i7k9inlaz",
-    "objectName": "BLD-MN7I7K9INLAZ",
-    "workName": "Runtime Work mn7i7k9inlaz",
-    "subcontractId": "5e4a52d7-90ec-4b54-b4ee-25a677db8c68",
-    "requestId": "e69f5f9d-8bc5-455b-b2c3-19d2a077f91a",
-    "requestItemId": "c428bd86-0a5c-45eb-b27b-9000a5d7eb88",
-    "purchaseId": "5cf33f13-8e04-469d-bbcb-3cc43e818fda",
-    "purchaseItemId": "36d87cc0-9999-4c1e-89db-17466343ef87",
-    "progressId": "2e03446e-60b2-473c-9217-05af90d6cdb7"
+    "suffix": "mn8pvb4hwkpi",
+    "contractorOrg": "Runtime Contractor mn8pvb4hwkpi",
+    "objectName": "BLD-MN8PVB4HWKPI",
+    "workName": "Runtime Work mn8pvb4hwkpi",
+    "subcontractId": "5bcd5a21-0d1f-4ba5-bcff-75a3bc848cd0",
+    "requestId": "9c8b6646-d06e-43db-871e-3d63108cb939",
+    "requestItemId": "248d44c1-78fe-46b3-9b4c-eee36a0199ee",
+    "purchaseId": "656eada6-f95f-4fd2-bf07-d859059ceffa",
+    "purchaseItemId": "24b8b36e-91ec-4a52-8704-0e1e3ed8e901",
+    "progressId": "95992913-7ced-418a-a26a-e986a7ae659a"
   },
   "artifacts": {
     "webScreenshot": "artifacts/contractor-web-smoke.png",
-    "androidHomeXml": "artifacts/android-contractor-home.xml",
-    "androidHomePng": "artifacts/android-contractor-home.png",
-    "androidModalXml": "artifacts/android-contractor-modal.xml",
-    "androidModalPng": "artifacts/android-contractor-modal.png",
-    "androidIssuedXml": "artifacts/android-contractor-issued.xml",
-    "androidIssuedPng": "artifacts/android-contractor-issued.png"
+    "androidHomeXml": null,
+    "androidHomePng": null,
+    "androidModalXml": null,
+    "androidModalPng": null,
+    "androidIssuedXml": null,
+    "androidIssuedPng": null
   }
 }

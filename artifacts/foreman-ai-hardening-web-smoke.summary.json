@@ -1,9 +1,0 @@
-{
-    "status":  "passed",
-    "webPassed":  true,
-    "outcome":  "candidate_options",
-    "synonymFallbackObserved":  true,
-    "packagingFallbackObserved":  true,
-    "rpc404Observed":  true,
-    "artifact":  "artifacts/foreman-ai-hardening-web-smoke.json"
-}

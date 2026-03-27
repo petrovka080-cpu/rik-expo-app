@@ -29,8 +29,33 @@ import {
 import type { AssistantContext, AssistantMessage, AssistantRole } from "./assistant.types";
 import { useAssistantVoiceInput } from "./useAssistantVoiceInput";
 import { loadCurrentProfileIdentity } from "../profile/currentProfileIdentity";
+import { recordPlatformObservability } from "../../lib/observability/platformObservability";
 
 const STORAGE_PREFIX = "gox.ai.chat.v1";
+
+const recordAssistantScreenFallback = (
+  event: string,
+  error: unknown,
+  extra?: Record<string, unknown>,
+) =>
+  recordPlatformObservability({
+    screen: "ai",
+    surface: "assistant_screen",
+    category: "ui",
+    event,
+    result: "error",
+    fallbackUsed: true,
+    errorClass: error instanceof Error ? error.name : undefined,
+    errorMessage: error instanceof Error ? error.message : String(error ?? "assistant_screen_failed"),
+    extra: {
+      module: "ai.AIAssistantScreen",
+      route: "/ai",
+      role: "ai",
+      owner: "assistant_screen",
+      severity: "error",
+      ...extra,
+    },
+  });
 
 function createMessage(role: AssistantMessage["role"], content: string): AssistantMessage {
   return {
@@ -140,7 +165,11 @@ export default function AIAssistantScreen() {
       }
 
       setMessages([createMessage("assistant", getAssistantGreeting(nextRole, nextFullName, assistantContext))]);
-    } catch {
+    } catch (error) {
+      recordAssistantScreenFallback("initialize_assistant_failed", error, {
+        action: "initialize",
+        assistantContext,
+      });
       setMessages([createMessage("assistant", getAssistantGreeting("unknown", null, assistantContext))]);
     } finally {
       setBooting(false);
@@ -176,6 +205,11 @@ export default function AIAssistantScreen() {
       .catch((error: unknown) => {
         if (cancelled) return;
         setScopedFacts(null);
+        recordAssistantScreenFallback("load_scoped_facts_failed", error, {
+          action: "loadAssistantScopedFacts",
+          assistantRole: role,
+          assistantContext,
+        });
         setScopedFactsError(error instanceof Error ? error.message : String(error ?? "load_failed"));
       })
       .finally(() => {
@@ -217,6 +251,17 @@ export default function AIAssistantScreen() {
             userId,
           });
         setMessages((prev) => [...prev, createMessage("assistant", answer)]);
+      } catch (error) {
+        const messageText =
+          error instanceof Error && error.message.trim()
+            ? error.message.trim()
+            : "Не удалось выполнить действие. Попробуйте снова.";
+        recordAssistantScreenFallback("send_message_failed", error, {
+          action: "send",
+          assistantRole: role,
+          assistantContext,
+        });
+        setMessages((prev) => [...prev, createMessage("assistant", messageText)]);
       } finally {
         setLoading(false);
       }

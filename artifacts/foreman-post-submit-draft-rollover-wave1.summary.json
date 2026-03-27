@@ -10,7 +10,7 @@
     "failedSubmitPreservesLocal": true,
     "historyIntact": true,
     "noDuplicateResurrection": true,
-    "directorHandoff": true
+    "directorHandoff": false
   },
   "artifacts": {
     "proof": "artifacts/foreman-post-submit-draft-rollover-wave1.json",

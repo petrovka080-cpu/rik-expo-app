@@ -2,6 +2,7 @@ import { useCallback, useMemo, useState } from "react";
 import { Alert } from "react-native";
 
 import type { RequestDetails } from "../../../lib/catalog_api";
+import { recordPlatformObservability } from "../../../lib/observability/platformObservability";
 import {
   buildForemanAiQuickAppliedItems,
   buildForemanAiQuickReviewGroups,
@@ -53,6 +54,30 @@ type Props = {
   openDraft: () => void;
   networkOnline: boolean | null;
 };
+
+const recordForemanAiQuickFallback = (
+  event: string,
+  error: unknown,
+  extra?: Record<string, unknown>,
+) =>
+  recordPlatformObservability({
+    screen: "foreman",
+    surface: "ai_quick_flow",
+    category: "ui",
+    event,
+    result: "error",
+    fallbackUsed: true,
+    errorClass: error instanceof Error ? error.name : undefined,
+    errorMessage: error instanceof Error ? error.message : String(error ?? "foreman_ai_quick_failed"),
+    extra: {
+      module: "foreman.useForemanAiQuickFlow",
+      route: "/foreman",
+      role: "foreman",
+      owner: "ai_quick_flow",
+      severity: "error",
+      ...extra,
+    },
+  });
 
 const buildAiQuickSessionHint = (
   sessionHistory: { prompt: string; items: { name: string; qty: number; unit: string }[] }[],
@@ -386,7 +411,12 @@ export function useForemanAiQuickFlow({
           localAfterCount: nextSnapshot?.items.length ?? 0,
         });
         syncedRequestId = ridStr(syncResult?.requestId) || syncedRequestId;
-      } catch {
+      } catch (error) {
+        recordForemanAiQuickFallback("sync_local_draft_after_ai_apply_failed", error, {
+          action: "handleAiQuickApply",
+          fallbackAction: "kept_local_only",
+          requestId: ridStr(requestId) || null,
+        });
         localOnly = true;
       }
 

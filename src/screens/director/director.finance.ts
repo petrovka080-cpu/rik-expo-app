@@ -2,6 +2,7 @@
 // Logic-only finance helpers and normalized row contracts for the director layer.
 
 import type { Database } from "../../lib/database.types";
+import { recordPlatformObservability } from "../../lib/observability/platformObservability";
 import { supabase } from "../../lib/supabaseClient";
 
 const FINANCE_SUMMARY_RPC_NAME = "director_finance_fetch_summary_v1";
@@ -326,6 +327,31 @@ const encodeCp1251Byte = (char: string): number | null => {
   return CP1251_EXTRA_BYTES.get(code) ?? null;
 };
 
+const recordDirectorFinanceFallback = (
+  event: string,
+  error: unknown,
+  extra?: Record<string, unknown>,
+) =>
+  recordPlatformObservability({
+    screen: "director",
+    surface: "finance",
+    category: "ui",
+    event,
+    result: "error",
+    fallbackUsed: true,
+    errorClass: error instanceof Error ? error.name : undefined,
+    errorMessage: error instanceof Error ? error.message : String(error ?? "director_finance_fallback"),
+    extra: {
+      module: "director.finance",
+      route: "/director",
+      role: "director",
+      owner: "finance_text_decoder",
+      action: event,
+      severity: "error",
+      ...extra,
+    },
+  });
+
 const decodeFinanceMojibake = (value: string): string => {
   if (!value || !looksLikeFinanceMojibake(value) || typeof TextDecoder === "undefined") {
     return value;
@@ -343,7 +369,11 @@ const decodeFinanceMojibake = (value: string): string => {
     if (!decoded) return value;
     if (looksLikeFinanceMojibake(decoded) && decoded !== value) return value;
     return decoded;
-  } catch {
+  } catch (error) {
+    recordDirectorFinanceFallback("finance_text_decode_failed", error, {
+      fallbackUsed: "original_value_kept",
+      valueLength: value.length,
+    });
     return value;
   }
 };

@@ -6,6 +6,7 @@ import { randomUUID } from "node:crypto";
 import { chromium } from "playwright";
 import { createClient } from "@supabase/supabase-js";
 import { config as loadDotenv } from "dotenv";
+import { createAndroidHarness } from "./_shared/androidHarness";
 
 loadDotenv({ path: ".env.local", override: false });
 loadDotenv({ path: ".env", override: false });
@@ -27,6 +28,7 @@ const admin = createClient(supabaseUrl, supabaseKey, {
 
 const artifactBase = "artifacts/contractor-runtime";
 const webArtifactBase = "artifacts/contractor-web-smoke";
+const androidDevClientPort = Number(process.env.CONTRACTOR_ANDROID_DEV_PORT ?? "8081");
 
 const LABELS = {
   title: "Подрядчик",
@@ -80,6 +82,11 @@ const writeJson = (fullPath: string, payload: unknown) => {
   fs.mkdirSync(path.dirname(fullPath), { recursive: true });
   fs.writeFileSync(fullPath, `${JSON.stringify(payload, null, 2)}\n`);
 };
+
+const androidHarness = createAndroidHarness({
+  projectRoot,
+  devClientPort: androidDevClientPort,
+});
 
 async function poll<T>(
   label: string,
@@ -619,6 +626,17 @@ const findAndroidLoginNode = (nodes: AndroidNode[]): AndroidNode | null =>
 
 async function loginContractorAndroid(user: TempUser, packageName: string | null) {
   writeJson(path.join(projectRoot, "artifacts/android-contractor-user.json"), user);
+  if (process.env.RIK_ANDROID_SHARED_HARNESS !== "0") {
+    return androidHarness.loginAndroidWithProtectedRoute({
+      packageName,
+      user,
+      protectedRoute: "rik://contractor",
+      artifactBase: "android-contractor",
+      successPredicate: (xml) => !isAndroidLoginScreen(xml),
+      renderablePredicate: (xml) => isAndroidLoginScreen(xml) || isAndroidActivationScreen(xml) || xml.includes("Подрядчик") || xml.includes("РџРѕРґСЂСЏРґС‡РёРє"),
+      loginScreenPredicate: isAndroidLoginScreen,
+    });
+  }
   clearAndroidAppData(packageName);
   await sleep(1500);
   startAndroidLoginRoute(packageName);
@@ -747,7 +765,10 @@ async function runAndroidRuntime(user: TempUser, scope: SeededScope): Promise<Re
     };
   }
 
+  const devClient = await androidHarness.ensureAndroidDevClientServer();
   const packageName = detectAndroidPackage();
+  const preflight = androidHarness.runAndroidPreflight({ packageName });
+  await androidHarness.warmAndroidDevClientBundle(androidDevClientPort);
   const current = await loginContractorAndroid(user, packageName);
   const contractorTab = findAndroidLabelNode(parseAndroidNodes(current.xml), "Подрядчик");
   if (contractorTab) {
@@ -835,9 +856,13 @@ async function runAndroidRuntime(user: TempUser, scope: SeededScope): Promise<Re
     }
   }
 
+  const recovery = androidHarness.getRecoverySummary();
+  devClient.cleanup();
   return {
     status: contractorCardVisible && modalOpened && issuedExpanded ? "passed" : "failed",
     packageName,
+    androidPreflight: preflight,
+    ...recovery,
     contractorCardVisible,
     modalOpened,
     issuedExpanded,
@@ -887,6 +912,7 @@ async function main() {
       contractorCardVisible: false,
       modalOpened: false,
       issuedExpanded: false,
+      ...androidHarness.getRecoverySummary(),
       platformSpecificIssues: [error instanceof Error ? error.message : String(error ?? "unknown android error")],
     }));
     const ios = runIosRuntime();
@@ -917,6 +943,11 @@ async function main() {
         typeof (ios as Record<string, unknown>).iosResidual === "string"
           ? (ios as Record<string, unknown>).iosResidual
           : null,
+      environmentRecoveryUsed: androidRecord.environmentRecoveryUsed === true,
+      gmsRecoveryUsed: androidRecord.gmsRecoveryUsed === true,
+      anrRecoveryUsed: androidRecord.anrRecoveryUsed === true,
+      blankSurfaceRecovered: androidRecord.blankSurfaceRecovered === true,
+      devClientBootstrapRecovered: androidRecord.devClientBootstrapRecovered === true,
       contractorCardVisible: web.contractorCardVisible === true && android.contractorCardVisible === true,
       modalOpened: web.modalOpened === true && android.modalOpened === true,
       issuedExpanded: web.issuedExpanded === true && android.issuedExpanded === true,

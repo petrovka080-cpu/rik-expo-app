@@ -5,6 +5,7 @@ import { execFileSync, spawnSync } from "node:child_process";
 import { chromium } from "playwright";
 import { createClient } from "@supabase/supabase-js";
 import { config as loadDotenv } from "dotenv";
+import { createAndroidHarness } from "./_shared/androidHarness";
 
 loadDotenv({ path: ".env.local", override: false });
 loadDotenv({ path: ".env", override: false });
@@ -27,6 +28,7 @@ const admin = createClient(supabaseUrl, supabaseKey, {
 const runtimeOutPath = path.join(projectRoot, "artifacts/director-reports-runtime.json");
 const runtimeSummaryOutPath = path.join(projectRoot, "artifacts/director-reports-runtime.summary.json");
 const webArtifactBase = "artifacts/director-reports-web-smoke";
+const androidDevClientPort = Number(process.env.DIRECTOR_ANDROID_DEV_PORT ?? "8081");
 
 const WEB_LABELS = {
   email: "Email",
@@ -98,6 +100,11 @@ const writeJson = (fullPath: string, payload: unknown) => {
   fs.mkdirSync(path.dirname(fullPath), { recursive: true });
   fs.writeFileSync(fullPath, `${JSON.stringify(payload, null, 2)}\n`);
 };
+
+const androidHarness = createAndroidHarness({
+  projectRoot,
+  devClientPort: androidDevClientPort,
+});
 
 async function poll<T>(
   label: string,
@@ -562,6 +569,18 @@ async function dismissAndroidClosableOverlays(current: ReturnType<typeof dumpAnd
 
 async function loginDirectorAndroid(user: TempUser, packageName: string | null) {
   writeJson(path.join(projectRoot, "artifacts/android-director-reports-user.json"), user);
+  if (process.env.RIK_ANDROID_SHARED_HARNESS !== "0") {
+    const current = await androidHarness.loginAndroidWithProtectedRoute({
+      packageName,
+      user,
+      protectedRoute: "rik://director",
+      artifactBase: "android-director-reports",
+      successPredicate: (xml) => isAndroidReportsHome(xml) || isAndroidReportsModal(xml),
+      renderablePredicate: (xml) => isAndroidLoginScreen(xml) || isAndroidReportsHome(xml) || isAndroidReportsModal(xml),
+      loginScreenPredicate: isAndroidLoginScreen,
+    });
+    return dismissAndroidClosableOverlays(current);
+  }
   startAndroidDirectorRoute(packageName);
   await sleep(1500);
 
@@ -693,8 +712,11 @@ async function runAndroidRuntime(): Promise<Record<string, unknown>> {
     };
   }
 
+  const devClient = await androidHarness.ensureAndroidDevClientServer();
   try {
     const packageName = detectAndroidPackage();
+    const preflight = androidHarness.runAndroidPreflight({ packageName });
+    await androidHarness.warmAndroidDevClientBundle(androidDevClientPort);
     user = await createTempUser(process.env.DIRECTOR_WEB_ROLE || "director", "Director Reports Android");
     const current = await loginDirectorAndroid(user, packageName);
     const platformSpecificIssues: string[] = [];
@@ -776,12 +798,15 @@ async function runAndroidRuntime(): Promise<Record<string, unknown>> {
       platformSpecificIssues.push("Works tab content did not render on Android reports modal");
     }
 
+    const recovery = androidHarness.getRecoverySummary();
     return {
       status:
         reportsSurfaceVisible && isAndroidReportsModal(reportsModal.xml) && workTabRendered
           ? "passed"
           : "failed",
       packageName,
+      androidPreflight: preflight,
+      ...recovery,
       reportsTabOpened: reportsTab.switched,
       reportsHomeVisible: reportsSurfaceVisible,
       reportsModalOpened: isAndroidReportsModal(reportsModal.xml),
@@ -798,6 +823,7 @@ async function runAndroidRuntime(): Promise<Record<string, unknown>> {
     };
   } finally {
     await cleanupTempUser(user);
+    devClient.cleanup();
   }
 }
 
@@ -833,6 +859,7 @@ async function main() {
     reportsHomeVisible: false,
     reportsModalOpened: false,
     workTabRendered: false,
+    ...androidHarness.getRecoverySummary(),
     platformSpecificIssues: [error instanceof Error ? error.message : String(error ?? "unknown android error")],
   }));
   const ios = runIosRuntime();
@@ -862,6 +889,11 @@ async function main() {
     androidPassed: android.status === "passed",
     iosPassed: ios.status === "passed",
     iosResidual: typeof iosRecord.iosResidual === "string" ? (iosRecord.iosResidual as string) : null,
+    environmentRecoveryUsed: androidRecord.environmentRecoveryUsed === true,
+    gmsRecoveryUsed: androidRecord.gmsRecoveryUsed === true,
+    anrRecoveryUsed: androidRecord.anrRecoveryUsed === true,
+    blankSurfaceRecovered: androidRecord.blankSurfaceRecovered === true,
+    devClientBootstrapRecovered: androidRecord.devClientBootstrapRecovered === true,
     runtimeVerified: web.status === "passed" && android.status === "passed",
     scenariosPassed: {
       web: {

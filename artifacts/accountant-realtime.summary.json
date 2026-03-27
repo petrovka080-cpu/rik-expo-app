@@ -1,0 +1,21 @@
+{
+  "gate": "V12.3 selective realtime accountant",
+  "status": "failed",
+  "webPassed": false,
+  "androidPassed": false,
+  "iosPassed": false,
+  "iosResidual": "Android/iOS realtime runtime proof not executed in this verifier on this host",
+  "subscriptionStarted": true,
+  "eventReceived": false,
+  "refreshTriggered": false,
+  "doubleFetchDetected": false,
+  "inflightGuardWorked": false,
+  "recentGuardWorked": false,
+  "backendOwnerPreserved": false,
+  "markerVisible": false,
+  "fetchCountAfterRealtime": 0,
+  "screenshot": "artifacts/accountant-realtime.png",
+  "platformSpecificIssues": [
+    "poll timeout: accountant:realtime_refresh"
+  ]
+}

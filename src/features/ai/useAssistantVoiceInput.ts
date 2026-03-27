@@ -79,6 +79,35 @@ type NativeSpeechRecognitionModuleLike = {
   ) => NativeSpeechSubscription;
 };
 
+const recordAssistantVoiceFallback = (params: {
+  screen: AssistantVoiceScreen | null;
+  event: string;
+  error: unknown;
+  extra?: Record<string, unknown>;
+}) =>
+  params.screen
+    ? recordPlatformObservability({
+      screen: params.screen,
+      surface: "assistant_voice",
+      category: "ui",
+      event: params.event,
+      result: "error",
+      fallbackUsed: true,
+      errorClass: params.error instanceof Error ? params.error.name : undefined,
+      errorMessage:
+        params.error instanceof Error ? params.error.message : String(params.error ?? params.event),
+      extra: {
+        inputKind: "voice",
+        platform: Platform.OS,
+        manualSubmitRequired: true,
+        module: "ai.useAssistantVoiceInput",
+        owner: "assistant_voice",
+        severity: "error",
+        ...params.extra,
+      },
+    })
+    : null;
+
 const getWebSpeechRecognitionCtor = (): WebSpeechRecognitionCtor | null => {
   if (Platform.OS !== "web") return null;
   const root = globalThis as Record<string, unknown>;
@@ -86,7 +115,9 @@ const getWebSpeechRecognitionCtor = (): WebSpeechRecognitionCtor | null => {
   return typeof candidate === "function" ? (candidate as WebSpeechRecognitionCtor) : null;
 };
 
-const getNativeSpeechRecognitionModule = (): NativeSpeechRecognitionModuleLike | null => {
+const getNativeSpeechRecognitionModule = (
+  screen: AssistantVoiceScreen | null = null,
+): NativeSpeechRecognitionModuleLike | null => {
   if (Platform.OS === "web") return null;
   try {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -94,7 +125,15 @@ const getNativeSpeechRecognitionModule = (): NativeSpeechRecognitionModuleLike |
       ExpoSpeechRecognitionModule?: NativeSpeechRecognitionModuleLike;
     };
     return candidate?.ExpoSpeechRecognitionModule ?? null;
-  } catch {
+  } catch (error) {
+    recordAssistantVoiceFallback({
+      screen,
+      event: "voice_module_load_failed",
+      error,
+      extra: {
+        action: "getNativeSpeechRecognitionModule",
+      },
+    });
     return null;
   }
 };
@@ -182,7 +221,7 @@ export function useAssistantVoiceInput(params: {
   const supported =
     Platform.OS === "web"
       ? getWebSpeechRecognitionCtor() != null
-      : getNativeSpeechRecognitionModule() != null;
+      : getNativeSpeechRecognitionModule(params.screen) != null;
 
   const [status, setStatus] = useState<AssistantVoiceStatus>(supported ? "ready" : "unsupported");
   const [error, setError] = useState("");
@@ -191,16 +230,25 @@ export function useAssistantVoiceInput(params: {
     for (const subscription of nativeSubscriptionsRef.current) {
       try {
         subscription.remove();
-      } catch {}
+      } catch (error) {
+        recordAssistantVoiceFallback({
+          screen: params.screen,
+          event: "voice_subscription_remove_failed",
+          error,
+          extra: {
+            action: "removeNativeSubscriptions",
+          },
+        });
+      }
     }
     nativeSubscriptionsRef.current = [];
-  }, []);
+  }, [params.screen]);
 
   useEffect(() => {
     const nextSupported =
       Platform.OS === "web"
         ? getWebSpeechRecognitionCtor() != null
-        : getNativeSpeechRecognitionModule() != null;
+        : getNativeSpeechRecognitionModule(params.screen) != null;
     setStatus(nextSupported ? "ready" : "unsupported");
     if (!nextSupported) {
       recordAssistantVoice({
@@ -367,7 +415,7 @@ export function useAssistantVoiceInput(params: {
 
   const startNativeRecognition = useCallback(() => {
     void (async () => {
-      const module = getNativeSpeechRecognitionModule();
+      const module = getNativeSpeechRecognitionModule(params.screen);
       if (!module) {
         setStatus("unsupported");
         setError("Нативный voice input недоступен. Нужен development build с speech module.");
@@ -528,7 +576,7 @@ export function useAssistantVoiceInput(params: {
           maxAlternatives: 1,
           iosTaskHint: "search",
         });
-      } catch {
+      } catch (error) {
         removeNativeSubscriptions();
         nativeModuleRef.current = null;
         setStatus("failed");
@@ -537,7 +585,15 @@ export function useAssistantVoiceInput(params: {
           screen: params.screen,
           event: "voice_start_failed",
           result: "error",
-          errorMessage: "voice_start_failed",
+          errorMessage: error instanceof Error ? error.message : "voice_start_failed",
+        });
+        recordAssistantVoiceFallback({
+          screen: params.screen,
+          event: "voice_start_failed",
+          error,
+          extra: {
+            action: "startNativeRecognition",
+          },
         });
       }
     })();

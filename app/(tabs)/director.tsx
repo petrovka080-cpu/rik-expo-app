@@ -21,8 +21,9 @@ import { buildPdfFileName } from "../../src/lib/documents/pdfDocument";
 import { generateDirectorPdfDocument } from "../../src/lib/documents/pdfDocumentGenerators";
 import { prepareAndPreviewGeneratedPdf } from "../../src/lib/pdf/pdf.runner";
 import { exportDirectorSubcontractReportPdf } from "../../src/lib/api/pdf_director";
+import { withScreenErrorBoundary } from "../../src/shared/ui/ScreenErrorBoundary";
 
-export default function DirectorScreen() {
+function DirectorScreen() {
   const vm = useDirectorScreenController();
   const busy = useGlobalBusy();
   const router = useRouter();
@@ -291,3 +292,8 @@ export default function DirectorScreen() {
     </RoleScreenLayout>
   );
 }
+
+export default withScreenErrorBoundary(DirectorScreen, {
+  screen: "director",
+  route: "/director",
+});
