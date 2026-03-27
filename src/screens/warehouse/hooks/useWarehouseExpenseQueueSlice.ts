@@ -3,7 +3,6 @@ import { useFocusEffect } from "expo-router";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { WAREHOUSE_TABS, type ReqHeadRow, type Tab } from "../warehouse.types";
-import { useWarehouseExpenseRealtime } from "./useWarehouseExpenseRealtime";
 import { useWarehouseReqHeads } from "./useWarehouseReqHeads";
 import { useWarehouseReqItemsData } from "./useWarehouseReqItemsData";
 import { useWarehouseReqModalFlow } from "./useWarehouseReqModalFlow";
@@ -145,10 +144,6 @@ export function useWarehouseExpenseQueueSlice(params: {
     [fetchReqHeads],
   );
 
-  const fetchReqHeadsForce = useCallback(() => {
-    return refreshExpenseQueue({ force: true, reason: "realtime" });
-  }, [refreshExpenseQueue]);
-
   const onReqEndReached = useCallback(() => {
     if (!reqRefs.current.hasMore) {
       recordPlatformGuardSkip("no_more_pages", {
@@ -242,12 +237,6 @@ export function useWarehouseExpenseQueueSlice(params: {
     }, [onError, refreshExpenseQueue, tab]),
   );
 
-  useWarehouseExpenseRealtime({
-    supabase,
-    tab,
-    fetchReqHeadsForce,
-  });
-
   useEffect(() => {
     setReqModal((prev) => {
       if (!prev) return prev;
@@ -267,7 +256,6 @@ export function useWarehouseExpenseQueueSlice(params: {
     reqItems,
     reqItemsLoading,
     fetchReqHeads,
-    fetchReqHeadsForce,
     refreshExpenseQueue,
     fetchReqItems,
     openReq,

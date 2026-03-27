@@ -30,6 +30,7 @@ import { useWarehouseStockData } from "./useWarehouseStockData";
 import { useWarehouseReportState } from "./useWarehouseReportState";
 import { useWarehouseExpenseQueueSlice } from "./useWarehouseExpenseQueueSlice";
 import { useWarehouseUiStore } from "../warehouseUi.store";
+import { useWarehouseRealtimeLifecycle } from "../warehouse.realtime.lifecycle";
 
 const ORG_NAME = "";
 const REQ_PAGE_SIZE = 80;
@@ -242,6 +243,14 @@ export function useWarehouseScreenData() {
     fetchStock,
     fetchReqHeads: expenseQueue.fetchReqHeads,
     fetchReports,
+  });
+
+  useWarehouseRealtimeLifecycle({
+    tab,
+    refreshIncoming: () => incoming.fetchToReceive(0, true, "realtime"),
+    refreshExpense: () => expenseQueue.refreshExpenseQueue({ force: true, reason: "realtime" }),
+    isIncomingRefreshInFlight: () => incoming.toReceiveIsFetching,
+    isExpenseRefreshInFlight: () => expenseQueue.reqRefs.current.fetching,
   });
   const { loading, setLoading, refreshing, onRefresh } = useWarehouseState({
     tab,

@@ -1,8 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { Platform } from "react-native";
 import * as Haptics from "expo-haptics";
-import { useFocusEffect } from "expo-router";
-import { supabase } from "../../lib/supabaseClient";
 import { notifList, notifMarkRead } from "../../lib/catalog_api";
 import type { NotificationRow } from "./types";
 import { initDing, playDing as playDingSound, unloadDing } from "../../lib/notify";
@@ -15,10 +13,8 @@ const logAccountantNotificationsDebug = (...args: unknown[]) => {
 
 export function useAccountantNotifications(params: {
   focusedRef: React.MutableRefObject<boolean>;
-  freezeWhileOpen: boolean;
-  onNotifReloadList?: () => void;
 }) {
-  const { focusedRef, freezeWhileOpen, onNotifReloadList } = params;
+  const { focusedRef } = params;
   const [bellOpen, setBellOpen] = useState(false);
   const [notifs, setNotifs] = useState<NotificationRow[]>([]);
   const unread = notifs.length;
@@ -77,37 +73,14 @@ export function useAccountantNotifications(params: {
     setBellOpen(false);
   }, []);
 
-  useFocusEffect(
-    useCallback(() => {
-      const ch = supabase
-        .channel("notif-accountant-rt")
-        .on(
-          "postgres_changes",
-          { event: "INSERT", schema: "public", table: "notifications", filter: "role=eq.accountant" },
-          (payload: { new?: unknown }) => {
-            if (!focusedRef.current) return;
-            const n = (payload?.new ?? {}) as NotificationRow;
-            if (n?.role !== "accountant") return;
-
-            setNotifs((prev) => [n, ...prev].slice(0, 20));
-            void playDing();
-
-            if (Platform.OS !== "web" && !freezeWhileOpen) {
-              onNotifReloadList?.();
-            }
-          },
-        )
-        .subscribe();
-
-      return () => {
-        try {
-          supabase.removeChannel(ch);
-        } catch (e) {
-          logAccountantNotificationsDebug("[useAccountantNotifications] removeChannel failed", e);
-        }
-      };
-    }, [focusedRef, freezeWhileOpen, onNotifReloadList, playDing]),
-  );
+  const handleRealtimeNotification = useCallback((notification: NotificationRow) => {
+    if (!focusedRef.current) return;
+    if (notification?.role && notification.role !== "accountant") return;
+    setNotifs((prev) => [notification, ...prev].slice(0, 20));
+    if (Platform.OS !== "web") {
+      void playDing();
+    }
+  }, [focusedRef, playDing]);
 
   return {
     bellOpen,
@@ -116,5 +89,6 @@ export function useAccountantNotifications(params: {
     unread,
     loadNotifs,
     markAllRead,
+    handleRealtimeNotification,
   };
 }

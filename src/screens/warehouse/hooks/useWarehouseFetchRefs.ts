@@ -1,6 +1,10 @@
 import { useCallback, useEffect, useRef } from "react";
 
-type FetchToReceiveFn = (page?: number) => Promise<void>;
+type FetchToReceiveFn = (
+  page?: number,
+  forceRefresh?: boolean,
+  reason?: "initial" | "append" | "refresh" | "realtime",
+) => Promise<void>;
 type FetchStockFn = () => Promise<void>;
 type FetchReqHeadsFn = (pageIndex?: number, forceRefresh?: boolean) => Promise<void>;
 type FetchReportsFn = () => Promise<void>;
@@ -86,8 +90,8 @@ export function useWarehouseFetchRefs(params: {
   );
 
   const callFetchToReceive = useCallback((page?: number) => {
-    if ((page ?? 0) > 0) return fetchToReceiveRef.current(page);
-    return runRefresh(incomingRefreshRef, () => fetchToReceiveRef.current(0), { queueOnOverlap: true });
+    if ((page ?? 0) > 0) return fetchToReceiveRef.current(page, false, "append");
+    return runRefresh(incomingRefreshRef, () => fetchToReceiveRef.current(0, false, "refresh"), { queueOnOverlap: true });
   }, [runRefresh]);
   const callFetchStock = useCallback(() => {
     return runRefresh(stockRefreshRef, () => fetchStockRef.current(), { queueOnOverlap: true });

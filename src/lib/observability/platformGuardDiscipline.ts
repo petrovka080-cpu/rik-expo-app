@@ -8,6 +8,7 @@ export type PlatformGuardReason =
   | "bootstrap_not_ready"
   | "network_known_offline"
   | "not_focused"
+  | "in_flight"
   | "frozen_modal"
   | "recent_same_scope"
   | "recent_error"

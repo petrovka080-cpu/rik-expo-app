@@ -14,6 +14,7 @@ export type BuyerSummaryRefreshReason =
   | "initial"
   | "focus"
   | "manual"
+  | "realtime"
   | "subscription"
   | "mutation";
 
@@ -98,7 +99,7 @@ const ensureRerunWaiter = <T,>(state: RefreshState<T>) => {
 };
 
 const isForceRefresh = (params: BuyerSummaryLoadParams): boolean =>
-  params.force ?? (params.reason === "manual" || params.reason === "mutation");
+  params.force ?? (params.reason === "manual" || params.reason === "mutation" || params.reason === "realtime");
 
 const normalizeScopes = (scopes?: BuyerSummaryScope[]): BuyerSummaryScope[] => {
   const source = Array.isArray(scopes) && scopes.length ? scopes : ALL_SCOPES;

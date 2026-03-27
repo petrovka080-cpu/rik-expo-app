@@ -15,13 +15,13 @@ import {
   type BuyerSummaryRefreshReason,
   type BuyerSummaryScope,
 } from "../buyer.summary.service";
-import { attachBuyerSubscriptions } from "../buyer.subscriptions";
 import { recordPlatformObservability } from "../../../lib/observability/platformObservability";
 import {
   isPlatformGuardCoolingDown,
   recordPlatformGuardSkip,
 } from "../../../lib/observability/platformGuardDiscipline";
 import { getPlatformNetworkSnapshot } from "../../../lib/offline/platformNetwork.service";
+import { useBuyerRealtimeLifecycle } from "../buyer.realtime.lifecycle";
 
 type AlertFn = (title: string, message?: string) => void;
 type LogFn = (msg: unknown, ...rest: unknown[]) => void;
@@ -111,6 +111,7 @@ export function useBuyerLoadingController(params: {
   const inboxHasMoreRef = useRef(false);
   const inboxLoadInFlightRef = useRef<Promise<void> | null>(null);
   const queuedInboxResetRef = useRef<BuyerSummaryRefreshReason | null>(null);
+  const summaryRefreshInFlightRef = useRef(false);
   const searchKey = String(searchQuery ?? "").trim();
   const summaryService = useMemo(
     () =>
@@ -312,8 +313,11 @@ export function useBuyerLoadingController(params: {
     }
 
     if (options.reason === "manual") setRefreshReason?.("manual");
-    else if (options.reason === "mutation" || options.reason === "subscription") setRefreshReason?.("mutation");
-    else setRefreshReason?.("focus");
+    else if (options.reason === "mutation" || options.reason === "subscription" || options.reason === "realtime") {
+      setRefreshReason?.("mutation");
+    } else {
+      setRefreshReason?.("focus");
+    }
 
     const scopes = options.scopes ?? DEFAULT_SCOPES;
     const wantsInbox = scopes.includes("inbox");
@@ -334,6 +338,7 @@ export function useBuyerLoadingController(params: {
       return;
     }
 
+    summaryRefreshInFlightRef.current = true;
     if (options.showRefreshing) setRefreshing(true);
     if (showBucketsLoading) setLoadingBuckets(true);
 
@@ -367,6 +372,7 @@ export function useBuyerLoadingController(params: {
     } catch (e: unknown) {
       log?.("[buyer.summary] refresh failed:", e instanceof Error ? e.message : String(e));
     } finally {
+      summaryRefreshInFlightRef.current = false;
       if (showBucketsLoading) setLoadingBuckets(false);
       if (options.showRefreshing) setRefreshing(false);
     }
@@ -380,6 +386,16 @@ export function useBuyerLoadingController(params: {
     setSubcontractCount,
     summaryService,
   ]);
+
+  useBuyerRealtimeLifecycle({
+    activeTab,
+    focusedRef,
+    onNotification: alert,
+    onRefreshScopes: async (next) => {
+      await refreshSummary(next);
+    },
+    isRefreshInFlight: () => summaryRefreshInFlightRef.current || inboxLoadInFlightRef.current != null,
+  });
 
   const fetchInbox = useCallback(async () => {
     await refreshSummary({
@@ -441,30 +457,10 @@ export function useBuyerLoadingController(params: {
       });
       }
 
-      const detach = attachBuyerSubscriptions({
-        supabase,
-        focusedRef,
-        onNotif: (title, message) => alert(title, message),
-        onProposalsChanged: () => {
-          const scopes = getProposalChangeScopes(activeTab);
-          if (!scopes.length) return;
-          void refreshSummary({
-            reason: "subscription",
-            scopes,
-          });
-        },
-        log,
-      });
-
       return () => {
         focusedRef.current = false;
-        try {
-          detach();
-        } catch {
-          // no-op
-        }
       };
-    }, [activeTab, alert, log, refreshSummary, supabase]),
+    }, [activeTab, refreshSummary]),
   );
 
   useEffect(() => {

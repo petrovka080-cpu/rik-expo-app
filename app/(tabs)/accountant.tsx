@@ -50,6 +50,7 @@ import WarehouseFioModal from "../../src/screens/warehouse/components/WarehouseF
 import { useAccountantPersistedFields } from "../../src/screens/accountant/accountant.storage";
 import { useAccountantKeyboard } from "../../src/screens/accountant/useAccountantKeyboard";
 import { useAccountantNotifications } from "../../src/screens/accountant/useAccountantNotifications";
+import { useAccountantRealtimeLifecycle } from "../../src/screens/accountant/accountant.realtime.lifecycle";
 import { useAccountantAttachments } from "../../src/screens/accountant/useAccountantAttachments";
 import { useAccountantCardFlow } from "../../src/screens/accountant/useAccountantCardFlow";
 import { useAccountantDocuments } from "../../src/screens/accountant/useAccountantDocuments";
@@ -68,6 +69,7 @@ import { useAccountantHistoryFlow } from "../../src/screens/accountant/useAccoun
 import { AccountantHeader } from "../../src/screens/accountant/components/AccountantHeader";
 import RoleScreenLayout from "../../src/components/layout/RoleScreenLayout";
 import { useAccountantUiStore } from "../../src/screens/accountant/accountantUi.store";
+import { withScreenErrorBoundary } from "../../src/shared/ui/ScreenErrorBoundary";
 
 const TAB_PAY: Tab = TABS[0];
 const TAB_PART: Tab = TABS[1];
@@ -80,7 +82,7 @@ const getErrorText = (e: unknown) => {
   return x?.message ?? x?.error_description ?? x?.details ?? String(e);
 };
 
-export default function AccountantScreen() {
+function AccountantScreen() {
   const insets = useSafeAreaInsets();
   const gbusy = useGlobalBusy();
   const { busyKey, run: runAction } = useBusyAction({
@@ -207,6 +209,8 @@ export default function AccountantScreen() {
     loadMoreHistory,
     onRefresh,
     onRefreshHistory,
+    refreshCurrentVisibleScope,
+    isRealtimeRefreshInFlight,
     setTabWithCachePreview,
   } = useAccountantScreenController({
     tab,
@@ -237,10 +241,26 @@ export default function AccountantScreen() {
     setKpp,
   });
 
-  const { bellOpen, setBellOpen, notifs, unread, loadNotifs, markAllRead } = useAccountantNotifications({
+  const {
+    bellOpen,
+    setBellOpen,
+    notifs,
+    unread,
+    loadNotifs,
+    markAllRead,
+    handleRealtimeNotification,
+  } = useAccountantNotifications({
+    focusedRef,
+  });
+
+  useAccountantRealtimeLifecycle({
     focusedRef,
     freezeWhileOpen,
-    onNotifReloadList: () => void load(),
+    currentTab: tab,
+    historyTab: TAB_HISTORY,
+    refreshCurrentVisibleScope,
+    isRefreshInFlight: isRealtimeRefreshInFlight,
+    onRealtimeNotification: handleRealtimeNotification,
   });
 
   const {
@@ -579,3 +599,8 @@ export default function AccountantScreen() {
     </SafeView >
   );
 }
+
+export default withScreenErrorBoundary(AccountantScreen, {
+  screen: "accountant",
+  route: "/accountant",
+});

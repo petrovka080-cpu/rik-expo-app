@@ -198,13 +198,13 @@ export function useAccountantScreenController(params: {
   );
 
   const loadHistory = useCallback(
-    async (force?: boolean) => {
+    async (force?: boolean, trigger: HistoryLoadTrigger = force ? "manual" : "focus") => {
       if (!authReady) {
         recordPlatformGuardSkip("auth_not_ready", {
           screen: "accountant",
           surface: "history_list",
           event: "load_history",
-          trigger: force ? "manual" : "focus",
+          trigger,
         });
         return;
       }
@@ -213,7 +213,7 @@ export function useAccountantScreenController(params: {
           screen: "accountant",
           surface: "history_list",
           event: "load_history",
-          trigger: force ? "manual" : "focus",
+          trigger,
         });
         return;
       }
@@ -222,7 +222,7 @@ export function useAccountantScreenController(params: {
           screen: "accountant",
           surface: "history_list",
           event: "load_history",
-          trigger: force ? "manual" : "focus",
+          trigger,
         });
         return;
       }
@@ -231,7 +231,7 @@ export function useAccountantScreenController(params: {
           screen: "accountant",
           surface: "history_list",
           event: "load_history",
-          trigger: force ? "manual" : "focus",
+          trigger,
           extra: { tab: tabRef.current },
         });
         return;
@@ -242,7 +242,7 @@ export function useAccountantScreenController(params: {
           screen: "accountant",
           surface: "history_list",
           event: "load_history",
-          trigger: force ? "manual" : "focus",
+          trigger,
           extra: {
             key: buildHistoryKey(dateFrom, dateTo, histSearch),
             networkKnownOffline: true,
@@ -259,7 +259,7 @@ export function useAccountantScreenController(params: {
           category: "reload",
           event: "load_history",
           result: "queued_rerun",
-          trigger: force ? "manual" : "focus",
+          trigger,
         });
         historyQueuedRef.current = {
           force: Boolean(force) || historyQueuedRef.current?.force === true,
@@ -293,7 +293,7 @@ export function useAccountantScreenController(params: {
         category: "fetch",
         event: "load_history",
         sourceKind: "rpc:accountant_history_scope_v1",
-        trigger: force ? "manual" : "focus",
+        trigger,
       });
       try {
         const result = await loadAccountantHistoryWindowData({
@@ -476,21 +476,21 @@ export function useAccountantScreenController(params: {
   const onRefreshHistory = useCallback(async () => {
     setHistoryRefreshing(true);
     try {
-      await loadHistory(true);
+      await loadHistory(true, "manual");
     } finally {
       setHistoryRefreshing(false);
     }
   }, [loadHistory]);
 
   const load = useCallback(
-    async (force?: boolean, tabOverride?: Tab) => {
+    async (force?: boolean, tabOverride?: Tab, trigger: InboxLoadTrigger = force ? "manual" : "focus") => {
       const t = (tabOverride ?? tabRef.current) as Tab;
       if (!authReady) {
         recordPlatformGuardSkip("auth_not_ready", {
           screen: "accountant",
           surface: "inbox_list",
           event: "load_inbox",
-          trigger: force ? "manual" : "focus",
+          trigger,
           extra: { tab: t },
         });
         return;
@@ -500,7 +500,7 @@ export function useAccountantScreenController(params: {
           screen: "accountant",
           surface: "inbox_list",
           event: "load_inbox",
-          trigger: force ? "manual" : "focus",
+          trigger,
           extra: { tab: t },
         });
         return;
@@ -510,7 +510,7 @@ export function useAccountantScreenController(params: {
           screen: "accountant",
           surface: "inbox_list",
           event: "load_inbox",
-          trigger: force ? "manual" : "focus",
+          trigger,
           extra: { tab: t },
         });
         return;
@@ -521,7 +521,7 @@ export function useAccountantScreenController(params: {
           screen: "accountant",
           surface: "inbox_list",
           event: "load_inbox",
-          trigger: force ? "manual" : "focus",
+          trigger,
           extra: { tab: t, networkKnownOffline: true },
         });
         return;
@@ -546,7 +546,7 @@ export function useAccountantScreenController(params: {
           category: "reload",
           event: "load_inbox",
           result: "queued_rerun",
-          trigger: force ? "manual" : "focus",
+          trigger,
           extra: { tab: t },
         });
         queuedLoadRef.current = {
@@ -566,7 +566,7 @@ export function useAccountantScreenController(params: {
         category: "fetch",
         event: "load_inbox",
         sourceKind: "rpc:accountant_inbox_scope_v1",
-        trigger: force ? "manual" : "focus",
+        trigger,
       });
 
       try {
@@ -777,10 +777,10 @@ export function useAccountantScreenController(params: {
         }
       }
       if (tabRef.current === tabHistory) {
-        void loadHistory(true);
-      } else {
-        void load(true, tabRef.current);
-      }
+      void loadHistory(true, "focus");
+    } else {
+      void load(true, tabRef.current, "focus");
+    }
 
       return () => {
         focusedRef.current = false;
@@ -815,20 +815,39 @@ export function useAccountantScreenController(params: {
 
     if (tabRef.current === tabHistory) {
       observedHistKeyRef.current = "";
-      void loadHistory(true);
+        void loadHistory(true, "focus");
       return;
     }
-    void load(true, tabRef.current);
+    void load(true, tabRef.current, "focus");
   }, [authReady, authResolved, freezeWhileOpen, load, loadHistory, tabHistory]);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     try {
-      await load(true);
+      await load(true, undefined, "manual");
     } finally {
       setRefreshing(false);
     }
   }, [load]);
+
+  const refreshCurrentVisibleScope = useCallback(async () => {
+    if (tabRef.current === tabHistory) {
+      await loadHistory(true, "realtime");
+      return;
+    }
+    await load(true, tabRef.current, "realtime");
+  }, [load, loadHistory, tabHistory]);
+
+  const isRealtimeRefreshInFlight = useCallback(
+    () =>
+      Boolean(
+        inflightKeyRef.current ||
+        inboxAppendInflightKeyRef.current ||
+        historyInflightKeyRef.current ||
+        historyAppendInflightKeyRef.current,
+      ),
+    [],
+  );
 
   const setTabWithCachePreview = useCallback(
     (nextTab: Tab) => {
@@ -875,6 +894,10 @@ export function useAccountantScreenController(params: {
     loadMoreHistory,
     onRefresh,
     onRefreshHistory,
+    refreshCurrentVisibleScope,
+    isRealtimeRefreshInFlight,
     setTabWithCachePreview,
   };
 }
+  type InboxLoadTrigger = "focus" | "manual" | "realtime";
+  type HistoryLoadTrigger = "focus" | "manual" | "realtime";

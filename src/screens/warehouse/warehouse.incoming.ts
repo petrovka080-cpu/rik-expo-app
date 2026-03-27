@@ -37,14 +37,18 @@ export function useWarehouseIncoming() {
     toReceiveRef.current = toReceive || [];
   }, [toReceive]);
 
-  const fetchToReceive = useCallback(async (pageIndex: number = 0, forceRefresh: boolean = false) => {
+  const fetchToReceive = useCallback(async (
+    pageIndex: number = 0,
+    forceRefresh: boolean = false,
+    reason: "initial" | "append" | "refresh" | "realtime" = forceRefresh ? "refresh" : pageIndex > 0 ? "append" : "initial",
+  ) => {
     const networkSnapshot = getPlatformNetworkSnapshot();
     if (networkSnapshot.hydrated && networkSnapshot.networkKnownOffline) {
       recordPlatformGuardSkip("network_known_offline", {
         screen: "warehouse",
         surface: "incoming_list",
         event: "fetch_incoming",
-        trigger: forceRefresh ? "refresh" : pageIndex > 0 ? "append" : "initial",
+        trigger: reason,
         extra: { pageIndex, forceRefresh, networkKnownOffline: true },
       });
       return;
@@ -55,7 +59,7 @@ export function useWarehouseIncoming() {
         screen: "warehouse",
         surface: "incoming_list",
         event: "fetch_incoming",
-        trigger: "append",
+        trigger: reason,
         extra: { pageIndex, forceRefresh },
       });
       return;
@@ -80,7 +84,7 @@ export function useWarehouseIncoming() {
       category: "fetch",
       event: "fetch_incoming",
       sourceKind: "rpc:warehouse_incoming_queue_scope_v1",
-      trigger: forceRefresh ? "refresh" : pageIndex > 0 ? "append" : "initial",
+      trigger: reason,
     });
 
     const task = (async () => {
