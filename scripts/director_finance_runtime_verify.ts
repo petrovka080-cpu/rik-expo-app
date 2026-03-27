@@ -6,6 +6,7 @@ import { chromium } from "playwright";
 import { createClient } from "@supabase/supabase-js";
 import { config as loadDotenv } from "dotenv";
 import { createAndroidHarness } from "./_shared/androidHarness";
+import { buildRuntimeSummary, createFailurePlatformResult } from "./_shared/runtimeSummary";
 
 loadDotenv({ path: ".env.local", override: false });
 loadDotenv({ path: ".env", override: false });
@@ -72,11 +73,6 @@ const ANDROID_LABELS = {
   refresh: ["Обновить", "РћР±РЅРѕРІРёС‚СЊ"],
   close: ["Закрыть", "Р—Р°РєСЂС‹С‚СЊ"],
   debtSummary: ["К оплате", "Рљ РѕРїР»Р°С‚Рµ"],
-};
-
-type RuntimeIssue = {
-  platform: "web" | "android" | "ios";
-  issue: string;
 };
 
 type TempUser = {
@@ -780,14 +776,14 @@ async function dismissAndroidClosableOverlays(current: ReturnType<typeof dumpAnd
 
 async function loginDirectorAndroid(user: TempUser, packageName: string | null, devClientPort: number) {
   writeJson(path.join(projectRoot, "artifacts/android-director-finance-user.json"), user);
-  if (process.env.RIK_ANDROID_SHARED_HARNESS !== "0") {
+  {
     const current = await androidHarness.loginAndroidWithProtectedRoute({
       packageName,
       user,
       protectedRoute: "rik://director",
       artifactBase: "android-director-finance",
-      successPredicate: (xml) => isAndroidFinanceHome(xml) || isAndroidDebtModal(xml),
-      renderablePredicate: (xml) => isAndroidLoginScreen(xml) || isAndroidFinanceHome(xml) || isAndroidDebtModal(xml),
+      successPredicate: (xml) => isAndroidDirectorSurface(xml) || isAndroidDebtModal(xml),
+      renderablePredicate: (xml) => isAndroidLoginScreen(xml) || isAndroidDirectorSurface(xml) || isAndroidDebtModal(xml),
       loginScreenPredicate: isAndroidLoginScreen,
     });
     return dismissAndroidClosableOverlays(current);
@@ -1099,56 +1095,32 @@ function runIosRuntime(): Record<string, unknown> {
 }
 
 async function main() {
-  const web = await runWebRuntime().catch((error) => ({
-    status: "failed",
-    financeTabOpened: false,
-    financeHomeCardsRendered: false,
-    debtModalOpened: false,
-    supplierRowVisible: false,
-    supplierDetailOpened: false,
-    platformSpecificIssues: [error instanceof Error ? error.message : String(error ?? "unknown web error")],
-  }));
-  const android = await runAndroidRuntime().catch((error) => ({
-    status: "failed",
-    financeHomeVisible: false,
-    debtModalOpened: false,
-    supplierDetailOpened: false,
-    ...androidHarness.getRecoverySummary(),
-    platformSpecificIssues: [error instanceof Error ? error.message : String(error ?? "unknown android error")],
-  }));
+  const web = await runWebRuntime().catch((error) =>
+    createFailurePlatformResult("web", error, {
+      financeTabOpened: false,
+      financeHomeCardsRendered: false,
+      debtModalOpened: false,
+      supplierRowVisible: false,
+      supplierDetailOpened: false,
+    }),
+  );
+  const android = await runAndroidRuntime().catch((error) => {
+    const artifacts = androidHarness.captureFailureArtifacts("android-director-finance-failure");
+    return createFailurePlatformResult("android", error, {
+      financeHomeVisible: false,
+      debtModalOpened: false,
+      supplierDetailOpened: false,
+      ...androidHarness.getRecoverySummary(),
+      ...artifacts,
+    });
+  });
   const ios = runIosRuntime();
   const webRecord = web as Record<string, unknown>;
   const androidRecord = android as Record<string, unknown>;
-  const iosRecord = ios as Record<string, unknown>;
-
-  const platformSpecificIssues: RuntimeIssue[] = [];
-  for (const issue of (Array.isArray(web.platformSpecificIssues) ? web.platformSpecificIssues : []) as string[]) {
-    platformSpecificIssues.push({ platform: "web", issue });
-  }
-  for (const issue of (Array.isArray(android.platformSpecificIssues) ? android.platformSpecificIssues : []) as string[]) {
-    platformSpecificIssues.push({ platform: "android", issue });
-  }
-  for (const issue of (Array.isArray(ios.platformSpecificIssues) ? ios.platformSpecificIssues : []) as string[]) {
-    platformSpecificIssues.push({ platform: "ios", issue });
-  }
-
-  const summary = {
-    status:
-      web.status === "passed" &&
-      android.status === "passed" &&
-      (ios.status === "passed" || ios.status === "residual")
-        ? "passed"
-        : "failed",
-    webPassed: web.status === "passed",
-    androidPassed: android.status === "passed",
-    iosPassed: ios.status === "passed",
-    iosResidual: typeof iosRecord.iosResidual === "string" ? (iosRecord.iosResidual as string) : null,
-    environmentRecoveryUsed: androidRecord.environmentRecoveryUsed === true,
-    gmsRecoveryUsed: androidRecord.gmsRecoveryUsed === true,
-    anrRecoveryUsed: androidRecord.anrRecoveryUsed === true,
-    blankSurfaceRecovered: androidRecord.blankSurfaceRecovered === true,
-    devClientBootstrapRecovered: androidRecord.devClientBootstrapRecovered === true,
-    runtimeVerified: web.status === "passed" && android.status === "passed",
+  const summary = buildRuntimeSummary({
+    web,
+    android,
+    ios,
     scenariosPassed: {
       web: {
         initialOpen: web.financeTabOpened === true,
@@ -1169,7 +1141,6 @@ async function main() {
         supplierDetail: ios.status === "passed",
       },
     },
-    platformSpecificIssues,
     artifacts: {
       web: typeof webRecord.screenshot === "string" ? webRecord.screenshot : `${webArtifactBase}.png`,
       android: {
@@ -1183,7 +1154,10 @@ async function main() {
         supplierDetailPng: typeof androidRecord.supplierDetailPng === "string" ? androidRecord.supplierDetailPng : null,
       },
     },
-  };
+    extra: {
+      gate: "director_finance_runtime_verify",
+    },
+  });
 
   writeJson(runtimeOutPath, { web, android, ios, summary });
   writeJson(runtimeSummaryOutPath, summary);

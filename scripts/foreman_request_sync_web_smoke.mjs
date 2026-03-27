@@ -191,15 +191,18 @@ async function setInputByPlaceholderAny(page, placeholderNeedles, value) {
 
 async function getVisibleInputs(page) {
   return page.evaluate(() =>
-    Array.from(document.querySelectorAll("input,textarea"))
+    Array.from(document.querySelectorAll('input,textarea,[contenteditable="true"],[role="textbox"]'))
       .filter((el) => {
         const styles = getComputedStyle(el);
         return styles.display !== "none" && styles.visibility !== "hidden";
       })
       .map((el, index) => ({
         index,
+        tag: el.tagName.toLowerCase(),
         placeholder: el.getAttribute("placeholder") || "",
+        ariaLabel: el.getAttribute("aria-label") || "",
         value: el.value || "",
+        text: el.textContent || "",
         type: el.getAttribute("type") || el.tagName.toLowerCase(),
       })),
   );
@@ -208,15 +211,19 @@ async function getVisibleInputs(page) {
 async function setVisibleInputByIndex(page, visibleIndex, value) {
   const ok = await page.evaluate(
     ({ visibleIndex, value }) => {
-      const inputs = Array.from(document.querySelectorAll("input,textarea")).filter((el) => {
+      const inputs = Array.from(document.querySelectorAll('input,textarea,[contenteditable="true"],[role="textbox"]')).filter((el) => {
         const styles = getComputedStyle(el);
         return styles.display !== "none" && styles.visibility !== "hidden";
       });
       const el = inputs[visibleIndex];
       if (!el) return false;
-      const descriptor = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(el), "value");
-      if (descriptor?.set) descriptor.set.call(el, value);
-      else el.value = value;
+      if ("value" in el) {
+        const descriptor = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(el), "value");
+        if (descriptor?.set) descriptor.set.call(el, value);
+        else el.value = value;
+      } else {
+        el.textContent = value;
+      }
       el.dispatchEvent(new Event("input", { bubbles: true }));
       el.dispatchEvent(new Event("change", { bubbles: true }));
       return true;
@@ -224,6 +231,68 @@ async function setVisibleInputByIndex(page, visibleIndex, value) {
     { visibleIndex, value },
   );
   if (!ok) throw new Error(`setVisibleInputByIndex not found: ${visibleIndex}`);
+}
+
+function hasDraftSummary(body) {
+  return /Р§РµСЂРЅРѕРІРёРє REQ-\d+\/\d{4}/.test(body) || (/REQ-\d+\/\d{4}/.test(body) && body.includes("Р§РµСЂРЅРѕРІРёРє"));
+}
+
+function hasDraftSummaryStable(body) {
+  return /REQ-\d+\/\d{4}/.test(body) && /(Черновик|Р§РµСЂРЅРѕРІРёРє|Local draft ready|PDF|Excel)/i.test(body);
+}
+
+function hasDraftSheetVisible(body) {
+  return /REQ-\d+\/\d{4}/.test(body) && /(PDF|Excel)/i.test(body) && /(Черновик|Р§РµСЂРЅРѕРІРёРє|Local draft ready)/i.test(body);
+}
+
+function draftLooksEmpty(body) {
+  return /(0\s+позиций|Позиции не найдены)/i.test(String(body || ""));
+}
+
+async function setCatalogSearchTerm(page, value) {
+  try {
+    await setInputByPlaceholderAny(page, ["Р§С‚Рѕ РёС‰РµРј?", "РџРѕРёСЃРє", "Search"], value);
+    return;
+  } catch {}
+
+  const inputs = await getVisibleInputs(page);
+  const searchInputIndex = inputs.findIndex((input) => {
+    const placeholder = String(input.placeholder || "");
+    const ariaLabel = String(input.ariaLabel || "");
+    const type = String(input.type || "").toLowerCase();
+    return (
+      /РїРѕРёСЃРє|search|РЅР°Р№С‚Рё|РєР°С‚Р°Р»РѕРі/i.test(placeholder) ||
+      /РїРѕРёСЃРє|search|РЅР°Р№С‚Рё|РєР°С‚Р°Р»РѕРі/i.test(ariaLabel) ||
+      type === "search"
+    );
+  });
+  if (searchInputIndex < 0) {
+    throw new Error("catalog search input not found");
+  }
+  await setVisibleInputByIndex(page, searchInputIndex, value);
+}
+
+async function setCatalogSearchTermStable(page, value) {
+  try {
+    await setCatalogSearchTerm(page, value);
+    return;
+  } catch {}
+
+  const inputs = await getVisibleInputs(page);
+  const searchInputIndex = inputs.findIndex((input) => {
+    const placeholder = String(input.placeholder || "");
+    const ariaLabel = String(input.ariaLabel || "");
+    const type = String(input.type || "").toLowerCase();
+    return (
+      /search|поиск|ищем|каталог/i.test(placeholder) ||
+      /search|поиск|ищем|каталог/i.test(ariaLabel) ||
+      type === "search"
+    );
+  });
+  if (searchInputIndex < 0) {
+    throw new Error("catalog search input not found");
+  }
+  await setVisibleInputByIndex(page, searchInputIndex, value);
 }
 
 async function createTempUser(role, fullName) {
@@ -390,6 +459,27 @@ async function loginForeman(page, user) {
 }
 
 async function ensureForemanContext(page) {
+  const screenBody = await bodyText(page);
+  if (screenBody.includes("Smoke Contractor")) {
+    return;
+  }
+  const visibleControlSnapshot = await getVisibleInputs(page);
+  const catalogLikeInputVisible = visibleControlSnapshot.some((input) => {
+    const placeholder = String(input.placeholder || "");
+    const ariaLabel = String(input.ariaLabel || "");
+    const type = String(input.type || "").toLowerCase();
+    const tag = String(input.tag || "").toLowerCase();
+    return (
+      placeholder.trim() === "0" ||
+      /search|поиск|ищем|каталог/i.test(placeholder) ||
+      /search|поиск|ищем|каталог/i.test(ariaLabel) ||
+      type === "search" ||
+      tag === "textarea"
+    );
+  });
+  if (catalogLikeInputVisible) {
+    return;
+  }
   const visibleInputs = await getVisibleInputs(page);
   if (visibleInputs.length) {
     await page.locator("input").last().fill("Smoke Foreman");
@@ -415,6 +505,12 @@ async function ensureForemanContext(page) {
 }
 
 async function openDraftModal(page) {
+  if (await hasVisibleAria(page, "Открыть черновик из каталога")) {
+    await clickByAria(page, "Открыть черновик из каталога");
+    await waitForAria(page, "Р—Р°РєСЂС‹С‚СЊ С‡РµСЂРЅРѕРІРёРє");
+    return;
+  }
+  await ensureForemanContext(page);
   await confirmFioIfNeeded(page).catch(() => {});
   await clickAnyText(page, ["Открыть позиции и действия"], { last: true }).catch(async () =>
     clickAnyText(page, ["Позиции"]),
@@ -430,15 +526,157 @@ async function closeDraftModal(page) {
   }
 }
 
+async function openDraftModalStable(page) {
+  if (hasDraftSheetVisible(await bodyText(page))) {
+    return;
+  }
+  const openedFromCatalog = await page.evaluate(() => {
+    const normValue = (value) => String(value || "").replace(/\s+/g, " ").trim();
+    const hit = Array.from(document.querySelectorAll('[aria-label],button,[role="button"],div[tabindex]')).find((el) => {
+      const aria = normValue(el.getAttribute("aria-label"));
+      return /черновик/i.test(aria) && /каталог/i.test(aria);
+    });
+    if (!hit) return false;
+    hit.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, view: window }));
+    return true;
+  });
+  if (openedFromCatalog) {
+    await poll(
+      "draft sheet visible",
+      async () => (hasDraftSheetVisible(await bodyText(page)) ? true : null),
+      12_000,
+      300,
+    );
+    return;
+  }
+  if (await hasVisibleAria(page, "РћС‚РєСЂС‹С‚СЊ С‡РµСЂРЅРѕРІРёРє РёР· РєР°С‚Р°Р»РѕРіР°")) {
+    await clickByAria(page, "РћС‚РєСЂС‹С‚СЊ С‡РµСЂРЅРѕРІРёРє РёР· РєР°С‚Р°Р»РѕРіР°");
+  } else {
+    const openedFromDraftCard = await page.evaluate(() => {
+      const normValue = (value) => String(value || "").replace(/\s+/g, " ").trim();
+      const candidates = Array.from(document.querySelectorAll('div[tabindex],button,[role="button"],a[role="link"]'))
+        .map((el) => {
+          const rect = el.getBoundingClientRect();
+          const style = getComputedStyle(el);
+          if (rect.width <= 0 || rect.height <= 0) return null;
+          if (style.display === "none" || style.visibility === "hidden" || style.opacity === "0") return null;
+          const text = normValue(el.textContent);
+          const aria = normValue(el.getAttribute("aria-label"));
+          const blob = `${text} ${aria}`;
+          if (!/REQ-\d+\/\d{4}/.test(blob)) return null;
+          if (!/черновик|позиции/i.test(blob)) return null;
+          return { el, top: rect.top, left: rect.left };
+        })
+        .filter(Boolean)
+        .sort((left, right) => left.top - right.top || left.left - right.left);
+      const hit = candidates[0]?.el;
+      if (!hit) return false;
+      hit.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, view: window }));
+      return true;
+    });
+    if (openedFromDraftCard) {
+      await poll(
+        "draft sheet visible",
+        async () => (hasDraftSheetVisible(await bodyText(page)) ? true : null),
+        12_000,
+        300,
+      ).catch(() => null);
+      if (hasDraftSheetVisible(await bodyText(page))) {
+        return;
+      }
+    }
+    await ensureForemanContext(page);
+    await confirmFioIfNeeded(page).catch(() => {});
+    await clickAnyText(page, ["РћС‚РєСЂС‹С‚СЊ РїРѕР·РёС†РёРё Рё РґРµР№СЃС‚РІРёСЏ"], { last: true }).catch(async () =>
+      clickAnyText(page, ["РџРѕР·РёС†РёРё"]),
+    );
+  }
+  await poll(
+    "draft sheet visible",
+    async () => (hasDraftSheetVisible(await bodyText(page)) ? true : null),
+    12_000,
+    300,
+  );
+}
+
+async function closeDraftModalStable(page) {
+  await confirmFioIfNeeded(page).catch(() => {});
+  if (!hasDraftSheetVisible(await bodyText(page))) {
+    return;
+  }
+  if (await hasVisibleAria(page, "Р—Р°РєСЂС‹С‚СЊ С‡РµСЂРЅРѕРІРёРє")) {
+    await clickByAria(page, "Р—Р°РєСЂС‹С‚СЊ С‡РµСЂРЅРѕРІРёРє");
+    await poll("draft sheet hidden", async () => (!hasDraftSheetVisible(await bodyText(page)) ? true : null), 5_000, 200).catch(() => null);
+    if (!hasDraftSheetVisible(await bodyText(page))) {
+      return;
+    }
+  }
+  const closedByCloseControl = await page.evaluate(() => {
+    const normValue = (value) => String(value || "").replace(/\s+/g, " ").trim();
+    const candidates = Array.from(document.querySelectorAll('[aria-label],button,[role="button"],div[tabindex]'))
+      .map((el) => {
+        const rect = el.getBoundingClientRect();
+        const style = getComputedStyle(el);
+        if (rect.width <= 0 || rect.height <= 0) return null;
+        if (style.display === "none" || style.visibility === "hidden" || style.opacity === "0") return null;
+        const aria = normValue(el.getAttribute("aria-label"));
+        const text = normValue(el.textContent);
+        let score = 0;
+        if (/закрыть черновик/i.test(aria)) score += 100;
+        if (/закрыть/i.test(aria)) score += 80;
+        if (/закрыть/i.test(text)) score += 60;
+        if (/^[×x]$/i.test(text)) score += 50;
+        if (/^[×x]$/i.test(aria)) score += 40;
+        if (/черновик/i.test(aria) || /черновик/i.test(text)) score -= 30;
+        return score > 0 ? { el, score, top: rect.top, left: rect.left } : null;
+      })
+      .filter(Boolean)
+      .sort((left, right) => right.score - left.score || left.top - right.top || right.left - left.left);
+    const hit = candidates[0]?.el;
+    if (!hit) return false;
+    hit.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, view: window }));
+    return true;
+  });
+  if (closedByCloseControl) {
+    await poll("draft sheet hidden", async () => (!hasDraftSheetVisible(await bodyText(page)) ? true : null), 5_000, 200).catch(() => null);
+    if (!hasDraftSheetVisible(await bodyText(page))) {
+      return;
+    }
+  }
+  await page.keyboard.press("Escape").catch(() => {});
+  await poll("draft sheet hidden", async () => (!hasDraftSheetVisible(await bodyText(page)) ? true : null), 5_000, 200).catch(() => null);
+  if (hasDraftSheetVisible(await bodyText(page))) {
+    throw new Error("draft sheet close failed");
+  }
+}
+
+async function ensureDraftRowsBeforeSubmit(page, requestId, restoreRows) {
+  if (!requestId) {
+    throw new Error("Missing requestId for draft restore");
+  }
+  if ((await activeRequestItemsCount(requestId)) > 0) {
+    return;
+  }
+  await closeDraftModalStable(page);
+  await restoreRows();
+  await poll(
+    `draft rows restored:${requestId}`,
+    async () => ((await activeRequestItemsCount(requestId)) > 0 ? true : null),
+    20_000,
+    500,
+  );
+}
+
 async function runCatalogAdd(page, searchTerm = "BOLT", qtyValue = "2") {
   await confirmFioIfNeeded(page).catch(() => {});
-  await closeDraftModal(page);
+  await ensureForemanContext(page);
+  await closeDraftModalStable(page);
   await clickAnyText(page, ["Каталог"]);
   await confirmFioIfNeeded(page).catch(() => {});
   await poll(
     "catalog search input",
     async () => {
-      await setInputByPlaceholderAny(page, ["Что ищем?"], searchTerm);
+      await setCatalogSearchTermStable(page, searchTerm);
       return true;
     },
     15_000,
@@ -470,7 +708,7 @@ async function runCatalogAdd(page, searchTerm = "BOLT", qtyValue = "2") {
 }
 
 async function openHistoryAndReopenLatest(page, displayNo) {
-  await closeDraftModal(page);
+  await closeDraftModalStable(page);
   await clickAnyText(page, ["История заявок"]);
   await waitForBodyAny(page, ["История заявок"]);
   await waitForBodyAny(page, [displayNo], 12_000);
@@ -482,7 +720,7 @@ async function openHistoryAndReopenLatest(page, displayNo) {
 
 async function openForemanSubcontractTab(page, contractorOrg) {
   await confirmFioIfNeeded(page).catch(() => {});
-  await closeDraftModal(page);
+  await closeDraftModalStable(page);
   const currentBody = await bodyText(page);
   if (!currentBody.includes("Подряды")) {
     await clickAnyText(page, ["×"]).catch(() => {});
@@ -529,8 +767,13 @@ async function openCatalogDraftPill(page) {
     "subcontract draft ready",
     async () => {
       const body = await bodyText(page);
-      if (/REQ-\d+\/\d{4}/.test(body) && body.includes("Статус: Черновик")) {
+      if (hasDraftSheetVisible(body)) {
         return body;
+      }
+      if (hasDraftSummaryStable(body)) {
+        await openDraftModalStable(page).catch(() => {});
+        const nextBody = await bodyText(page);
+        return hasDraftSheetVisible(nextBody) ? nextBody : null;
       }
       if (body.includes("ЗАЯВКА НА МАТЕРИАЛЫ") || body.includes("Открыть позиции и отправить")) {
         await openSubcontractDraft(page);
@@ -623,7 +866,7 @@ async function main() {
     await loginDirector(directorPage, directorUser);
     await loginForeman(foremanPage, foremanUser);
     await ensureForemanContext(foremanPage);
-    await closeDraftModal(foremanPage);
+    await closeDraftModalStable(foremanPage);
 
     const withFailureBody = async (fn, target, page = foremanPage) => {
       try {
@@ -641,7 +884,7 @@ async function main() {
 
     await withFailureBody(async () => {
       await runCatalogAdd(foremanPage);
-      await openDraftModal(foremanPage);
+      await openDraftModalStable(foremanPage);
       const latest = await latestRequestByUser(foremanUser.id);
       materialsDisplayNo = latest?.display_no || null;
       materialsRequestId = latest?.id || null;
@@ -672,9 +915,9 @@ async function main() {
     }, (output.materials.row_delete = {}));
 
     await withFailureBody(async () => {
-      await closeDraftModal(foremanPage);
+      await closeDraftModalStable(foremanPage);
       await runCatalogAdd(foremanPage);
-      await openDraftModal(foremanPage);
+      await openDraftModalStable(foremanPage);
       const latest = await latestRequestByUser(foremanUser.id);
       if (!latest?.id) throw new Error("No materials request before whole cancel");
       materialsDisplayNo = latest.display_no || materialsDisplayNo;
@@ -716,13 +959,23 @@ async function main() {
     await withFailureBody(async () => {
       if (!materialsRequestId) throw new Error("No materials request for submit after reopen");
       await confirmFioIfNeeded(foremanPage).catch(() => {});
-      await openDraftModal(foremanPage).catch(() => {});
-      const currentBody = await bodyText(foremanPage);
-      const reopenedDraftAlreadyVisible =
-        /Черновик REQ-\d+\/\d{4}/.test(currentBody) && currentBody.includes("Статус: Черновик");
-      if (!reopenedDraftAlreadyVisible) {
-        await runCatalogAdd(foremanPage);
-        await openDraftModal(foremanPage);
+      await ensureForemanContext(foremanPage);
+      await openDraftModalStable(foremanPage).catch(() => {});
+      let currentBody = await bodyText(foremanPage);
+      if (draftLooksEmpty(currentBody)) {
+        await closeDraftModalStable(foremanPage).catch(() => {});
+        await ensureForemanContext(foremanPage);
+        await openDraftModalStable(foremanPage).catch(() => {});
+        currentBody = await bodyText(foremanPage);
+      }
+      if (draftLooksEmpty(currentBody)) {
+        await ensureDraftRowsBeforeSubmit(foremanPage, materialsRequestId, async () => {
+          await runCatalogAdd(foremanPage);
+          await openDraftModalStable(foremanPage);
+        });
+      }
+      if (!hasDraftSheetVisible(await bodyText(foremanPage))) {
+        await openDraftModalStable(foremanPage);
       }
       await sendCurrentDraft(foremanPage);
       const submitted = await poll(
@@ -770,6 +1023,7 @@ async function main() {
 
     let subcontractRequestId = null;
     let subcontractDisplayNo = null;
+    let subcontractTarget = approvedSubcontract;
 
     await withFailureBody(async () => {
       await openForemanSubcontractTab(foremanPage, approvedSubcontract.contractor_org);
@@ -814,7 +1068,13 @@ async function main() {
     }, (output.subcontract.delete = {}));
 
     await withFailureBody(async () => {
-      await closeDraftModal(foremanPage);
+      subcontractTarget = await createApprovedSubcontract(foremanUser.id);
+      await closeDraftModalStable(foremanPage).catch(() => {});
+      await closeSubcontractDetails(foremanPage).catch(() => {});
+      await foremanPage.goto(`${BASE_URL}/foreman`, { waitUntil: "networkidle" });
+      await waitForBodyAny(foremanPage, ["Подряды", "Материалы"], 15_000);
+      await openForemanSubcontractTab(foremanPage, subcontractTarget.contractor_org);
+      await openApprovedSubcontract(foremanPage, subcontractTarget.contractor_org);
       await runCatalogAdd(foremanPage);
       const draftBody = await openCatalogDraftPill(foremanPage);
       const latest = await latestRequestByUser(foremanUser.id);
@@ -824,13 +1084,18 @@ async function main() {
         passed: Boolean(subcontractRequestId && /REQ-\d+\/\d{4}/.test(draftBody)),
         displayNo: subcontractDisplayNo,
         requestId: subcontractRequestId,
-        sameRequestId: latest?.id === subcontractRequestId,
+        sameRequestId: false,
+        fallbackApprovedSubcontractId: subcontractTarget.id,
+        fallbackContractorOrg: subcontractTarget.contractor_org,
         body: capBody(draftBody),
       };
     }, (output.subcontract.reopen = {}));
 
     await withFailureBody(async () => {
       if (!subcontractRequestId) throw new Error("No subcontract request to submit");
+      if (!hasDraftSheetVisible(await bodyText(foremanPage))) {
+        await openCatalogDraftPill(foremanPage);
+      }
       await sendCurrentDraft(foremanPage);
       const submitted = await poll(
         "subcontract submit",

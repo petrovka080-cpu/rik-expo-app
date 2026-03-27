@@ -6,6 +6,7 @@ import { chromium } from "playwright";
 import { createClient } from "@supabase/supabase-js";
 import { config as loadDotenv } from "dotenv";
 import { createAndroidHarness } from "./_shared/androidHarness";
+import { buildRuntimeSummary, createFailurePlatformResult } from "./_shared/runtimeSummary";
 
 loadDotenv({ path: ".env.local", override: false });
 loadDotenv({ path: ".env", override: false });
@@ -45,11 +46,6 @@ const ANDROID_LABELS = {
 
 const INCOMING_EMPTY_TEXT = "Нет записей в очереди склада.";
 const ANDROID_INCOMING_EMPTY_LABELS = [INCOMING_EMPTY_TEXT, "Нет записей", "очереди склада"] as const;
-
-type RuntimeIssue = {
-  platform: "web" | "android" | "ios";
-  issue: string;
-};
 
 type TempUser = {
   id: string;
@@ -532,7 +528,7 @@ async function ensureAndroidIncomingTab(current: ReturnType<typeof dumpAndroidSc
 
 async function loginWarehouseAndroid(user: TempUser) {
   writeArtifact("artifacts/android-warehouse-incoming-queue-user.json", user);
-  if (process.env.RIK_ANDROID_SHARED_HARNESS !== "0") {
+  {
     const packageName = detectAndroidPackage();
     return androidHarness.loginAndroidWithProtectedRoute({
       packageName,
@@ -850,54 +846,30 @@ function runIosRuntime(): Record<string, unknown> {
 }
 
 async function main() {
-  const web = await runWebRuntime().catch((error) => ({
-    status: "failed",
-    incomingRowsVisible: false,
-    emptyStateVisible: false,
-    modalOpened: false,
-    expectedHasRows: true,
-    platformSpecificIssues: [error instanceof Error ? error.message : String(error ?? "unknown web error")],
-  }));
-  const android = await runAndroidRuntime().catch((error) => ({
-    status: "failed",
-    queueVisible: false,
-    emptyStateVisible: false,
-    modalOpened: false,
-    ...androidHarness.getRecoverySummary(),
-    platformSpecificIssues: [error instanceof Error ? error.message : String(error ?? "unknown android error")],
-  }));
+  const web = await runWebRuntime().catch((error) =>
+    createFailurePlatformResult("web", error, {
+      incomingRowsVisible: false,
+      emptyStateVisible: false,
+      modalOpened: false,
+      expectedHasRows: true,
+    }),
+  );
+  const android = await runAndroidRuntime().catch((error) => {
+    const artifacts = androidHarness.captureFailureArtifacts("android-warehouse-incoming-queue-failure");
+    return createFailurePlatformResult("android", error, {
+      queueVisible: false,
+      emptyStateVisible: false,
+      modalOpened: false,
+      ...androidHarness.getRecoverySummary(),
+      ...artifacts,
+    });
+  });
   const ios = runIosRuntime();
   const androidRecord = android as Record<string, unknown>;
-  const iosRecord = ios as Record<string, unknown>;
-
-  const platformSpecificIssues: RuntimeIssue[] = [];
-  for (const issue of (Array.isArray(web.platformSpecificIssues) ? web.platformSpecificIssues : []) as string[]) {
-    platformSpecificIssues.push({ platform: "web", issue });
-  }
-  for (const issue of (Array.isArray(android.platformSpecificIssues) ? android.platformSpecificIssues : []) as string[]) {
-    platformSpecificIssues.push({ platform: "android", issue });
-  }
-  for (const issue of (Array.isArray(ios.platformSpecificIssues) ? ios.platformSpecificIssues : []) as string[]) {
-    platformSpecificIssues.push({ platform: "ios", issue });
-  }
-
-  const summary = {
-    status:
-      web.status === "passed" &&
-      android.status === "passed" &&
-      (ios.status === "passed" || ios.status === "residual")
-        ? "passed"
-        : "failed",
-    webPassed: web.status === "passed",
-    androidPassed: android.status === "passed",
-    iosPassed: ios.status === "passed",
-    iosResidual: typeof iosRecord.iosResidual === "string" ? (iosRecord.iosResidual as string) : null,
-    environmentRecoveryUsed: androidRecord.environmentRecoveryUsed === true,
-    gmsRecoveryUsed: androidRecord.gmsRecoveryUsed === true,
-    anrRecoveryUsed: androidRecord.anrRecoveryUsed === true,
-    blankSurfaceRecovered: androidRecord.blankSurfaceRecovered === true,
-    devClientBootstrapRecovered: androidRecord.devClientBootstrapRecovered === true,
-    runtimeVerified: web.status === "passed" && android.status === "passed",
+  const summary = buildRuntimeSummary({
+    web,
+    android,
+    ios,
     scenariosPassed: {
       web: {
         initialOpen: web.incomingRowsVisible === true || web.emptyStateVisible === true,
@@ -916,7 +888,6 @@ async function main() {
         interactionSanity: ios.status === "passed",
       },
     },
-    platformSpecificIssues,
     artifacts: {
       webSummary: `${webArtifactBase}.summary.json`,
       webRuntime: `${webArtifactBase}.json`,
@@ -927,7 +898,10 @@ async function main() {
       androidModalXml: typeof androidRecord.modalXml === "string" ? androidRecord.modalXml : null,
       androidModalPng: typeof androidRecord.modalPng === "string" ? androidRecord.modalPng : null,
     },
-  };
+    extra: {
+      gate: "warehouse_incoming_queue_runtime_verify",
+    },
+  });
 
   writeArtifact(`${artifactBase}.json`, { web, android, ios, summary });
   writeArtifact(`${artifactBase}.summary.json`, summary);

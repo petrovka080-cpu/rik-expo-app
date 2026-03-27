@@ -53,10 +53,12 @@ const observeChannelStatus = (params: {
 }) => {
   const event =
     params.status === "SUBSCRIBED"
-      ? "subscription_started"
+      ? "subscription_connected"
       : params.status === "CLOSED"
-        ? "subscription_stopped"
-        : "realtime_channel_error";
+        ? "channel_closed"
+        : params.status === "TIMED_OUT"
+          ? "subscription_timed_out"
+          : "subscription_error";
   const ok = params.status === "SUBSCRIBED" || params.status === "CLOSED";
   recordPlatformObservability({
     screen: params.scope,
@@ -66,11 +68,11 @@ const observeChannelStatus = (params: {
     result: ok ? "success" : "error",
     trigger: "realtime",
     sourceKind: "supabase:realtime",
-    extra: {
-      route: params.route,
-      channelName: params.channelName,
-      status: params.status,
-      owner: "realtime_lifecycle",
+      extra: {
+        route: params.route,
+        channelName: params.channelName,
+        status: params.status,
+        owner: "realtime_lifecycle",
     },
   });
 };
@@ -88,7 +90,7 @@ const ensureRealtimeAuth = async (client: SupabaseClient, scope: RealtimeScope, 
           screen: scope,
           surface: "realtime_channel",
           category: "reload",
-          event: "subscription_started",
+          event: "realtime_auth_ready",
           result: "success",
           trigger: "realtime",
           sourceKind: "supabase:realtime",
@@ -155,6 +157,22 @@ export function subscribeChannel(params: SubscribeChannelParams) {
       });
     }
 
+    recordPlatformObservability({
+      screen: params.scope,
+      surface,
+      category: "reload",
+      event: "channel_created",
+      result: "success",
+      trigger: "realtime",
+      sourceKind: "supabase:realtime",
+      extra: {
+        route: params.route,
+        channelName: params.name,
+        bindingCount: params.bindings.length,
+        owner: "realtime_lifecycle",
+      },
+    });
+
     let channel = client.channel(params.name);
     for (const binding of params.bindings) {
       channel = channel.on(
@@ -191,6 +209,21 @@ export function subscribeChannel(params: SubscribeChannelParams) {
       );
     }
 
+    recordPlatformObservability({
+      screen: params.scope,
+      surface,
+      category: "reload",
+      event: "subscription_started",
+      result: "success",
+      trigger: "realtime",
+      sourceKind: "supabase:realtime",
+      extra: {
+        route: params.route,
+        channelName: params.name,
+        bindingCount: params.bindings.length,
+        owner: "realtime_lifecycle",
+      },
+    });
     channel.subscribe((status) => {
       observeChannelStatus({
         scope: params.scope,

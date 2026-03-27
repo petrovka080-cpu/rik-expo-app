@@ -1,37 +1,35 @@
-import fs from "node:fs";
-import path from "node:path";
+import * as fs from "node:fs";
+import * as path from "node:path";
 import { execFileSync, spawn, spawnSync } from "node:child_process";
 
-export type AndroidNode = {
+const DEFAULT_STDOUT_PATH = "artifacts/expo-dev-client.stdout.log";
+const DEFAULT_STDERR_PATH = "artifacts/expo-dev-client.stderr.log";
+const DEFAULT_PACKAGE = "com.azisbek_dzhantaev.rikexpoapp";
+const EXPO_PACKAGE = "host.exp.exponent";
+const DEV_LAUNCHER_LABELS = ["Development Build", "DEVELOPMENT SERVERS"];
+const LOGIN_LABEL_FALLBACK_RE = /Войти|Login|Р’РѕР№С‚Рё|Р’С…РѕРґ/i;
+const PASSWORD_LABEL_RE = /Пароль|password|РџР°СЂРѕР»СЊ|РїР°СЂРѕР»СЊ/i;
+const LOGIN_LABEL_RE = /Р’РѕР№С‚Рё|Login|ГђВ’ГђВѕГђВ№Г‘вЂљГђВё/i;
+
+type AndroidNode = {
   text: string;
   contentDesc: string;
   className: string;
   clickable: boolean;
   enabled: boolean;
+  focused: boolean;
   bounds: string;
   hint: string;
+  password: boolean;
 };
 
-export type AndroidScreen = {
+type DumpedAndroidScreen = {
   xmlPath: string;
   pngPath: string;
   xml: string;
 };
 
-export type AndroidUserCredentials = {
-  email: string;
-  password: string;
-};
-
-export type AndroidPreflightResult = {
-  deviceDetected: boolean;
-  reverseConfigured: boolean;
-  gmsCleared: boolean;
-  appStateCleared: boolean;
-  packageName: string | null;
-};
-
-export type AndroidRecoverySummary = {
+type RecoverySummary = {
   environmentRecoveryUsed: boolean;
   gmsRecoveryUsed: boolean;
   anrRecoveryUsed: boolean;
@@ -39,7 +37,18 @@ export type AndroidRecoverySummary = {
   devClientBootstrapRecovered: boolean;
 };
 
-export type AndroidFailureArtifacts = AndroidScreen & {
+export type AndroidPreflightResult = {
+  deviceDetected: boolean;
+  packageName: string | null;
+  reverseProxyReady: boolean;
+  appCleared: boolean;
+  gmsCleared: boolean;
+  devClientReachable: boolean;
+};
+
+export type AndroidFailureArtifacts = {
+  xmlPath: string | null;
+  pngPath: string | null;
   stdoutPath: string;
   stderrPath: string;
   stdoutTail: string;
@@ -47,39 +56,23 @@ export type AndroidFailureArtifacts = AndroidScreen & {
 };
 
 type AndroidHarnessOptions = {
-  projectRoot?: string;
+  projectRoot: string;
   devClientPort: number;
   devClientStdoutPath?: string;
   devClientStderrPath?: string;
-  defaultPackageCandidates?: string[];
-  appLabels?: string[];
 };
 
-type StartAndroidIntentOptions = {
-  packageName?: string | null;
-  forceStop?: boolean;
-};
-
-type EnsureAndroidDevClientLoadedOptions = {
+type LoginParams = {
   packageName: string | null;
-  artifactBase: string;
-  readyPredicate?: (xml: string) => boolean;
-  timeoutMs?: number;
-  delayMs?: number;
-};
-
-type LoginAndroidWithProtectedRouteOptions = {
-  packageName: string | null;
-  user: AndroidUserCredentials;
+  user: { email: string; password: string };
   protectedRoute: string;
   artifactBase: string;
   successPredicate: (xml: string) => boolean;
-  renderablePredicate?: (xml: string) => boolean;
+  renderablePredicate: (xml: string) => boolean;
   loginScreenPredicate?: (xml: string) => boolean;
-  resetAppStateBeforeLogin?: boolean;
 };
 
-type OpenAndroidRouteOptions = {
+type OpenRouteParams = {
   packageName: string | null;
   routes: string[];
   artifactBase: string;
@@ -88,17 +81,34 @@ type OpenAndroidRouteOptions = {
   delayMs?: number;
 };
 
-const DEFAULT_PACKAGE_CANDIDATES = [
-  "com.azisbek_dzhantaev.rikexpoapp",
-  "host.exp.exponent",
-];
-
-const DEFAULT_APP_LABELS = ["rik-expo-app", "RIK Expo App"];
-
-export const ANDROID_LOGIN_LABEL_RE =
-  /Р’РѕР№С‚Рё|Р вЂ™Р С•Р в„–РЎвЂљР С‘|Р В РІР‚в„ўР В РЎвЂўР В РІвЂћвЂ“Р РЋРІР‚С™Р В РЎвЂ|Login|ГђвЂ™ГђВѕГђВ№Г‘вЂљГђВё/i;
-
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+function tailText(fullPath: string, maxChars = 4000) {
+  if (!fs.existsSync(fullPath)) return "";
+  const text = fs.readFileSync(fullPath, "utf8");
+  return text.slice(Math.max(0, text.length - maxChars));
+}
+
+function decodeXmlEntities(value: string) {
+  return value
+    .replace(/&quot;/g, '"')
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&#10;/g, "\n")
+    .replace(/&#13;/g, "\r")
+    .replace(/&#39;/g, "'");
+}
+
+function parseBoundsCenter(bounds: string): { x: number; y: number } | null {
+  const match = bounds.match(/\[(\d+),(\d+)\]\[(\d+),(\d+)\]/);
+  if (!match) return null;
+  const left = Number(match[1]);
+  const top = Number(match[2]);
+  const right = Number(match[3]);
+  const bottom = Number(match[4]);
+  return { x: Math.round((left + right) / 2), y: Math.round((top + bottom) / 2) };
+}
 
 async function poll<T>(
   label: string,
@@ -121,385 +131,331 @@ async function poll<T>(
   throw new Error(`poll timeout: ${label}`);
 }
 
-const tailText = (fullPath: string, maxChars = 4000) => {
-  if (!fs.existsSync(fullPath)) return "";
-  const text = fs.readFileSync(fullPath, "utf8");
-  return text.slice(Math.max(0, text.length - maxChars));
-};
+function escapeAndroidShellLiteral(value: string) {
+  return `'${String(value ?? "")
+    .replace(/ /g, "%s")
+    .replace(/'/g, `'\"'\"'`)}'`;
+}
 
-const quoteAndroidShellArg = (value: string) => `'${String(value ?? "").replace(/'/g, `'\\''`)}'`;
-
-export const matchesAndroidLabel = (value: string, labels: readonly string[]) =>
-  labels.some((label) => value.includes(label));
-
-export const parseAndroidNodes = (xml: string): AndroidNode[] => {
-  const nodes: AndroidNode[] = [];
-  const nodeRegex = /<node\b([^>]*?)\/?>/g;
-  let match: RegExpExecArray | null = null;
-  while ((match = nodeRegex.exec(xml))) {
-    const attrs = match[1] ?? "";
-    const pick = (name: string) => {
-      const attrMatch = attrs.match(new RegExp(`${name}="([^"]*)"`, "i"));
-      return attrMatch?.[1] ?? "";
-    };
-    nodes.push({
-      text: pick("text"),
-      contentDesc: pick("content-desc"),
-      className: pick("class"),
-      clickable: pick("clickable") === "true",
-      enabled: pick("enabled") === "true",
-      bounds: pick("bounds"),
-      hint: pick("hint"),
-    });
-  }
-  return nodes;
-};
-
-export const parseBoundsCenter = (bounds: string): { x: number; y: number } | null => {
-  const match = bounds.match(/\[(\d+),(\d+)\]\[(\d+),(\d+)\]/);
-  if (!match) return null;
-  const left = Number(match[1]);
-  const top = Number(match[2]);
-  const right = Number(match[3]);
-  const bottom = Number(match[4]);
-  return { x: Math.round((left + right) / 2), y: Math.round((top + bottom) / 2) };
-};
-
-export const escapeAndroidInputText = (value: string) => String(value ?? "").replace(/ /g, "%s");
-
-export const findAndroidNode = (nodes: AndroidNode[], matcher: (node: AndroidNode) => boolean): AndroidNode | null =>
-  nodes.find((node) => matcher(node)) ?? null;
-
-export const findAndroidLabelNode = (
-  nodes: AndroidNode[],
-  label: string | readonly string[],
-  requireClickable = true,
-): AndroidNode | null =>
-  findAndroidNode(nodes, (node) => {
-    const haystack = `${node.contentDesc} ${node.text}`.trim();
-    const labels = Array.isArray(label) ? label : [label];
-    if (!matchesAndroidLabel(haystack, labels)) return false;
-    if (requireClickable && (!node.clickable || !node.enabled)) return false;
-    return true;
-  });
-
-export const findAndroidLoginNodeSafe = (nodes: AndroidNode[]) =>
-  findAndroidNode(
-    nodes,
-    (node) => node.clickable && node.enabled && ANDROID_LOGIN_LABEL_RE.test(`${node.text} ${node.contentDesc}`),
-  );
-
-export const isAndroidLoginScreenSafe = (xml: string) => xml.includes("Email") && ANDROID_LOGIN_LABEL_RE.test(xml);
-
-export const isAndroidDevLauncherHome = (xml: string) =>
-  xml.includes("Development Build") || xml.includes("DEVELOPMENT SERVERS");
-
-export const isAndroidDevLauncherErrorScreen = (xml: string) =>
-  xml.includes("There was a problem loading the project.")
-  || xml.includes("This development build encountered the following error.");
-
-export const isAndroidDevMenuIntroScreen = (xml: string) =>
-  xml.includes("This is the developer menu.") || xml.includes("This is the developer menu. It gives you access");
-
-export const isAndroidLauncherHome = (xml: string) =>
-  xml.includes("com.google.android.apps.nexuslauncher") || xml.includes("Search web and more");
-
-export const isAndroidGoogleServicesScreen = (xml: string) =>
-  xml.includes('package="com.google.android.gms"') || xml.includes("Sign in with ease") || xml.includes("Something went wrong");
-
-export const isAndroidSystemAnrDialog = (xml: string) =>
-  xml.includes("isn't responding") || xml.includes("Close app") || xml.includes("Wait");
-
-export const isAndroidBlankAppSurface = (xml: string, packageName: string | null) =>
-  !!packageName &&
-  xml.includes(`package="${packageName}"`) &&
-  !isAndroidLoginScreenSafe(xml) &&
-  !/text="[^"]+"/.test(xml) &&
-  !/content-desc="[^"]+"/.test(xml);
-
-export function createAndroidHarness(options: AndroidHarnessOptions) {
-  const projectRoot = options.projectRoot ?? process.cwd();
-  const devClientPort = options.devClientPort;
-  const devClientStdoutPath =
-    options.devClientStdoutPath ?? path.join(projectRoot, `artifacts/android-dev-client-${devClientPort}.stdout.log`);
-  const devClientStderrPath =
-    options.devClientStderrPath ?? path.join(projectRoot, `artifacts/android-dev-client-${devClientPort}.stderr.log`);
-  const packageCandidates = options.defaultPackageCandidates ?? DEFAULT_PACKAGE_CANDIDATES;
-  const appLabels = options.appLabels ?? DEFAULT_APP_LABELS;
-  const recovery: AndroidRecoverySummary = {
+function createRecoveryState(): RecoverySummary {
+  return {
     environmentRecoveryUsed: false,
     gmsRecoveryUsed: false,
     anrRecoveryUsed: false,
     blankSurfaceRecovered: false,
     devClientBootstrapRecovered: false,
   };
+}
+
+export function createAndroidHarness(options: AndroidHarnessOptions) {
+  const stdoutPath = options.devClientStdoutPath
+    ? path.join(options.projectRoot, options.devClientStdoutPath)
+    : path.join(options.projectRoot, DEFAULT_STDOUT_PATH);
+  const stderrPath = options.devClientStderrPath
+    ? path.join(options.projectRoot, options.devClientStderrPath)
+    : path.join(options.projectRoot, DEFAULT_STDERR_PATH);
+  const recoveryState = createRecoveryState();
 
   const adb = (args: string[], encoding: BufferEncoding | "buffer" = "utf8") => {
     const result = spawnSync("adb", args, {
-      cwd: projectRoot,
+      cwd: options.projectRoot,
       encoding: encoding === "buffer" ? undefined : encoding,
       timeout: 30_000,
     });
     if (result.status !== 0) {
-      throw new Error(`adb ${args.join(" ")} failed: ${String(result.stderr ?? result.stdout ?? "")}`.trim());
+      throw new Error(`adb ${args.join(" ")} failed: ${String(result.stderr ?? result.stdout ?? "").trim()}`);
     }
     return encoding === "buffer" ? (result.stdout as unknown as Buffer) : String(result.stdout ?? "");
   };
 
-  const buildAndroidDevClientUrl = (port: number) => `http://127.0.0.1:${port}`;
-  const buildAndroidDevClientDeepLink = (port: number) =>
-    `exp+rik-expo-app://expo-development-client/?url=${encodeURIComponent(buildAndroidDevClientUrl(port))}`;
+  const parseAndroidNodes = (xml: string): AndroidNode[] => {
+    const nodes: AndroidNode[] = [];
+    const nodeRegex = /<node\b([^>]*?)\/?>/g;
+    let match: RegExpExecArray | null = null;
+    while ((match = nodeRegex.exec(xml))) {
+      const attrs = match[1] ?? "";
+      const pick = (name: string) => {
+        const attrMatch = attrs.match(new RegExp(`${name}="([^"]*)"`, "i"));
+        return decodeXmlEntities(attrMatch?.[1] ?? "");
+      };
+      nodes.push({
+        text: pick("text"),
+        contentDesc: pick("content-desc"),
+        className: pick("class"),
+        clickable: pick("clickable") === "true",
+        enabled: pick("enabled") === "true",
+        focused: pick("focused") === "true",
+        bounds: pick("bounds"),
+        hint: pick("hint"),
+        password: pick("password") === "true",
+      });
+    }
+    return nodes;
+  };
 
-  const pressAndroidKey = (keyCode: string | number) => {
-    execFileSync("adb", ["shell", "input", "keyevent", String(keyCode)], {
-      cwd: projectRoot,
-      stdio: "pipe",
-    });
+  const dumpAndroidScreen = (name: string): DumpedAndroidScreen => {
+    const xmlDevicePath = `/sdcard/${name}.xml`;
+    const xmlArtifactPath = path.join(options.projectRoot, "artifacts", `${name}.xml`);
+    const pngDevicePath = `/sdcard/${name}.png`;
+    const pngArtifactPath = path.join(options.projectRoot, "artifacts", `${name}.png`);
+    fs.mkdirSync(path.dirname(xmlArtifactPath), { recursive: true });
+    let lastDumpError: unknown = null;
+    for (let attempt = 0; attempt < 3; attempt += 1) {
+      try {
+        execFileSync("adb", ["shell", "uiautomator", "dump", xmlDevicePath], {
+          cwd: options.projectRoot,
+          stdio: "pipe",
+        });
+        lastDumpError = null;
+        break;
+      } catch (error) {
+        lastDumpError = error;
+        Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 500);
+      }
+    }
+    if (lastDumpError) throw lastDumpError;
+    execFileSync("adb", ["pull", xmlDevicePath, xmlArtifactPath], { cwd: options.projectRoot, stdio: "pipe" });
+    try {
+      const screenshot = adb(["exec-out", "screencap", "-p"], "buffer") as Buffer;
+      fs.writeFileSync(pngArtifactPath, screenshot);
+    } catch {
+      try {
+        execFileSync("adb", ["shell", "screencap", "-p", pngDevicePath], { cwd: options.projectRoot, stdio: "pipe" });
+        execFileSync("adb", ["pull", pngDevicePath, pngArtifactPath], {
+          cwd: options.projectRoot,
+          stdio: "pipe",
+        });
+      } catch {
+        fs.writeFileSync(pngArtifactPath, "");
+      }
+    }
+    return {
+      xmlPath: path.relative(options.projectRoot, xmlArtifactPath).replace(/\\/g, "/"),
+      pngPath: path.relative(options.projectRoot, pngArtifactPath).replace(/\\/g, "/"),
+      xml: fs.readFileSync(xmlArtifactPath, "utf8"),
+    };
   };
 
   const tapAndroidBounds = (bounds: string) => {
     const center = parseBoundsCenter(bounds);
     if (!center) return false;
     execFileSync("adb", ["shell", "input", "tap", String(center.x), String(center.y)], {
-      cwd: projectRoot,
+      cwd: options.projectRoot,
       stdio: "pipe",
     });
     return true;
   };
 
-  const dumpAndroidScreen = (name: string): AndroidScreen => {
-    const xmlDevicePath = `/sdcard/${name}.xml`;
-    const xmlArtifactPath = path.join(projectRoot, "artifacts", `${name}.xml`);
-    const pngDevicePath = `/sdcard/${name}.png`;
-    const pngArtifactPath = path.join(projectRoot, "artifacts", `${name}.png`);
-    fs.mkdirSync(path.dirname(xmlArtifactPath), { recursive: true });
-    try {
-      execFileSync("adb", ["shell", "uiautomator", "dump", xmlDevicePath], { cwd: projectRoot, stdio: "pipe" });
-      execFileSync("adb", ["pull", xmlDevicePath, xmlArtifactPath], { cwd: projectRoot, stdio: "pipe" });
-    } catch {
-      execFileSync("adb", ["shell", "uiautomator", "dump"], { cwd: projectRoot, stdio: "pipe" });
-      execFileSync("adb", ["pull", "/sdcard/window_dump.xml", xmlArtifactPath], { cwd: projectRoot, stdio: "pipe" });
+  const pressAndroidKey = (keyCode: number) => {
+    execFileSync("adb", ["shell", "input", "keyevent", String(keyCode)], {
+      cwd: options.projectRoot,
+      stdio: "pipe",
+    });
+  };
+
+  const typeAndroidText = (value: string) => {
+    const text = String(value ?? "");
+    const chunkSize = 16;
+    for (let index = 0; index < text.length; index += chunkSize) {
+      const chunk = text.slice(index, index + chunkSize);
+      execFileSync("adb", ["shell", `input text ${escapeAndroidShellLiteral(chunk)}`], {
+        cwd: options.projectRoot,
+        stdio: "pipe",
+      });
     }
-    try {
-      const screenshot = adb(["exec-out", "screencap", "-p"], "buffer") as Buffer;
-      fs.writeFileSync(pngArtifactPath, screenshot);
-    } catch {
-      try {
-        execFileSync("adb", ["shell", "screencap", "-p", pngDevicePath], { cwd: projectRoot, stdio: "pipe" });
-        execFileSync("adb", ["pull", pngDevicePath, pngArtifactPath], { cwd: projectRoot, stdio: "pipe" });
-      } catch {
-        fs.writeFileSync(pngArtifactPath, "");
-      }
-    }
-    return {
-      xmlPath: `artifacts/${name}.xml`,
-      pngPath: `artifacts/${name}.png`,
-      xml: fs.readFileSync(xmlArtifactPath, "utf8"),
-    };
+  };
+
+  const ensureAndroidReverseProxy = (port: number) => {
+    execFileSync("adb", ["reverse", `tcp:${port}`, `tcp:${port}`], {
+      cwd: options.projectRoot,
+      stdio: "pipe",
+    });
   };
 
   const detectAndroidPackage = (): string | null => {
     const packages = adb(["shell", "pm", "list", "packages"]);
-    for (const candidate of packageCandidates) {
-      if (packages.includes(`package:${candidate}`)) return candidate;
-    }
+    if (packages.includes(`package:${DEFAULT_PACKAGE}`)) return DEFAULT_PACKAGE;
+    if (packages.includes(`package:${EXPO_PACKAGE}`)) return EXPO_PACKAGE;
     return null;
   };
 
   const resetAndroidAppState = (packageName: string | null) => {
     if (!packageName) return;
-    execFileSync("adb", ["shell", "am", "force-stop", packageName], { cwd: projectRoot, stdio: "pipe" });
-    execFileSync("adb", ["shell", "pm", "clear", packageName], { cwd: projectRoot, stdio: "pipe" });
-  };
-
-  const ensureAndroidReverseProxy = (port: number) => {
-    execFileSync("adb", ["reverse", `tcp:${port}`, `tcp:${port}`], {
-      cwd: projectRoot,
+    execFileSync("adb", ["shell", "am", "force-stop", packageName], {
+      cwd: options.projectRoot,
+      stdio: "pipe",
+    });
+    execFileSync("adb", ["shell", "pm", "clear", packageName], {
+      cwd: options.projectRoot,
       stdio: "pipe",
     });
   };
 
-  const startAndroidIntentView = (route: string, intentOptions?: StartAndroidIntentOptions) => {
-    const packageArg = intentOptions?.packageName ? ` ${quoteAndroidShellArg(intentOptions.packageName)}` : "";
-    const forceStopFlag = intentOptions?.forceStop ? "-S " : "";
-    execFileSync(
-      "adb",
-      [
-        "shell",
-        "sh",
-        "-c",
-        `am start ${forceStopFlag}-W -a android.intent.action.VIEW -d ${quoteAndroidShellArg(route)}${packageArg}`,
-      ],
-      { cwd: projectRoot, stdio: "pipe" },
-    );
-  };
+  const buildAndroidDevClientUrl = (port: number) => `http://127.0.0.1:${port}`;
 
-  const startAndroidDevClientProject = (packageName: string | null, port = devClientPort) => {
-    const args = [
-      "shell",
-      "am",
-      "start",
-      "-S",
-      "-W",
-      "-a",
-      "android.intent.action.VIEW",
-      "-d",
-      buildAndroidDevClientDeepLink(port),
-    ];
-    if (packageName) args.push(packageName);
-    execFileSync("adb", args, { cwd: projectRoot, stdio: "pipe" });
-  };
+  const buildAndroidDevClientDeepLink = (port: number) =>
+    `exp+rik-expo-app://expo-development-client/?url=${encodeURIComponent(buildAndroidDevClientUrl(port))}`;
 
-  const startAndroidRouteSafe = (packageName: string | null, route: string) => {
-    const encodedRoute = route.replace(/\(/g, "%28").replace(/\)/g, "%29");
-    const candidates = Array.from(new Set([route, encodedRoute]));
-    let lastError: unknown = null;
-    for (const candidate of candidates) {
-      try {
-        if (/[()%\s]/.test(candidate)) {
-          startAndroidIntentView(candidate, { packageName });
-        } else {
-          const args = ["shell", "am", "start", "-W", "-a", "android.intent.action.VIEW", "-d", candidate];
-          if (packageName) args.push(packageName);
-          execFileSync("adb", args, { cwd: projectRoot, stdio: "pipe" });
-        }
-        return;
-      } catch (error) {
-        lastError = error;
-      }
+  const startAndroidDevClientProject = (
+    packageName: string | null,
+    port = options.devClientPort,
+    startOptions: { stopApp?: boolean } = {},
+  ) => {
+    const args = ["shell", "am", "start"];
+    if (startOptions.stopApp !== false) {
+      args.push("-S");
     }
-    throw lastError instanceof Error ? lastError : new Error(`Failed to open Android route: ${route}`);
+    args.push("-W", "-a", "android.intent.action.VIEW", "-d", buildAndroidDevClientDeepLink(port));
+    if (packageName) args.push(packageName);
+    execFileSync("adb", args, { cwd: options.projectRoot, stdio: "pipe" });
   };
 
   const startAndroidRoute = (packageName: string | null, route: string) => {
-    startAndroidRouteSafe(packageName, route);
+    const args = ["shell", "am", "start", "-W", "-a", "android.intent.action.VIEW", "-d", route];
+    if (packageName) args.push(packageName);
+    execFileSync("adb", args, { cwd: options.projectRoot, stdio: "pipe" });
   };
 
-  const launchAndroidPackage = (packageName: string | null) => {
-    if (!packageName) return false;
-    execFileSync("adb", ["shell", "monkey", "-p", packageName, "-c", "android.intent.category.LAUNCHER", "1"], {
-      cwd: projectRoot,
-      stdio: "pipe",
-    });
-    return true;
+  const startAndroidRouteSafe = (packageName: string | null, route: string) => {
+    startAndroidRoute(packageName, route);
   };
 
-  const findAndroidDevServerNode = (nodes: AndroidNode[], preferredPort: number): AndroidNode | null => {
-    const candidates = nodes
+  const isAndroidDevLauncherHome = (xml: string) => DEV_LAUNCHER_LABELS.every((label) => xml.includes(label));
+  const isAndroidLauncherHome = (xml: string) =>
+    (/com\.google\.android\.apps\.nexuslauncher|com\.android\.launcher3/i.test(xml) ||
+      /content-desc="Home"|Search web and more|All apps/i.test(xml)) &&
+    !xml.includes("Email") &&
+    !isAndroidDevLauncherHome(xml);
+  const isAndroidBlankAppSurface = (xml: string) =>
+    !xml.includes("<node") || (!xml.includes("Email") && !xml.includes("TextView") && !xml.includes("Button"));
+  const isAndroidGoogleServicesScreen = (xml: string) =>
+    /google play services|services keeps stopping|google services/i.test(xml);
+  const isAndroidSystemAnrDialog = (xml: string) =>
+    /isn't responding|keeps stopping|close app|wait/i.test(xml);
+  const isAndroidDevMenuIntroScreen = (xml: string) =>
+    xml.includes("This is the developer menu.") || xml.includes("This is the developer menu. It gives you access");
+  const isAndroidFullDevMenuScreen = (xml: string) =>
+    xml.includes("Connected to:") &&
+    xml.includes("Reload") &&
+    (xml.includes("Go home") || xml.includes("Performance monitor") || xml.includes("Fast Refresh"));
+  const isAndroidDevClientErrorScreen = (xml: string) =>
+    xml.includes("There was a problem loading the project.") ||
+    xml.includes("This development build encountered the following error.") ||
+    (xml.includes("Render Error") && xml.includes("Call Stack")) ||
+    xml.includes("ReferenceError: Property 'WeakRef' doesn't exist");
+
+  const findAndroidNode = (nodes: AndroidNode[], matcher: (node: AndroidNode) => boolean): AndroidNode | null =>
+    nodes.find((node) => matcher(node)) ?? null;
+
+  const findAndroidLoginNode = (nodes: AndroidNode[]) =>
+    findAndroidNode(
+      nodes,
+      (node) =>
+        node.clickable &&
+        node.enabled &&
+        (LOGIN_LABEL_RE.test(`${node.text} ${node.contentDesc}`) ||
+          LOGIN_LABEL_FALLBACK_RE.test(`${node.text} ${node.contentDesc}`)),
+    );
+
+  const findAndroidDevServerNode = (nodes: AndroidNode[]) =>
+    nodes
       .filter((node) => node.enabled && /http:\/\/(?:10\.0\.2\.2|127\.0\.0\.1|localhost):\d+/i.test(node.text))
       .sort((left, right) => {
         const leftPort = Number(left.text.match(/:(\d+)/)?.[1] ?? 0);
         const rightPort = Number(right.text.match(/:(\d+)/)?.[1] ?? 0);
-        if (leftPort === preferredPort && rightPort !== preferredPort) return -1;
-        if (rightPort === preferredPort && leftPort !== preferredPort) return 1;
+        if (leftPort === options.devClientPort && rightPort !== options.devClientPort) return -1;
+        if (rightPort === options.devClientPort && leftPort !== options.devClientPort) return 1;
         return rightPort - leftPort;
-      });
-    return candidates[0] ?? null;
-  };
+      })[0] ?? null;
 
   const dismissAndroidDevMenuIntro = (xml: string) => {
     const nodes = parseAndroidNodes(xml);
-    const closeNode = findAndroidNode(nodes, (node) => node.enabled && /Close|Continue/i.test(`${node.text} ${node.contentDesc}`));
-    if (closeNode && tapAndroidBounds(closeNode.bounds)) return true;
-    pressAndroidKey(4);
-    return true;
-  };
-
-  const dismissAndroidSystemAnrDialog = (xml: string) => {
-    const nodes = parseAndroidNodes(xml);
-    const shouldPreferClose = /Process system isn't responding|system isn't responding/i.test(xml);
-    if (shouldPreferClose) {
-      const closeNode = findAndroidNode(nodes, (node) => node.enabled && /Close app/i.test(`${node.text} ${node.contentDesc}`));
-      if (closeNode && tapAndroidBounds(closeNode.bounds)) return true;
-    }
-    const waitNode = findAndroidNode(nodes, (node) => node.enabled && /Wait/i.test(`${node.text} ${node.contentDesc}`));
-    if (waitNode && tapAndroidBounds(waitNode.bounds)) return true;
-    const closeNode = findAndroidNode(nodes, (node) => node.enabled && /Close app/i.test(`${node.text} ${node.contentDesc}`));
-    if (closeNode && tapAndroidBounds(closeNode.bounds)) return true;
-    return false;
-  };
-
-  const dismissAndroidGoogleServicesScreen = (xml: string) => {
-    const nodes = parseAndroidNodes(xml);
-    const actionNode = findAndroidNode(
+    const closeNode = findAndroidNode(
       nodes,
-      (node) =>
-        node.enabled &&
-        /skip|cancel|close|ok|done|back|РїСЂРѕРїСѓСЃС‚РёС‚СЊ|РѕС‚РјРµРЅР°|Р·Р°РєСЂС‹С‚СЊ|РѕРє/i.test(`${node.text} ${node.contentDesc}`),
+      (node) => node.enabled && /Close|Continue/i.test(`${node.text} ${node.contentDesc}`),
     );
-    if (actionNode && tapAndroidBounds(actionNode.bounds)) return true;
+    if (closeNode && tapAndroidBounds(closeNode.bounds)) return true;
     pressAndroidKey(4);
     return true;
   };
 
-  const markRecovery = (key: keyof AndroidRecoverySummary) => {
-    recovery[key] = true;
-    recovery.environmentRecoveryUsed = true;
+  const dismissAndroidLauncherSearch = (xml: string) => {
+    const nodes = parseAndroidNodes(xml);
+    const clearNode = findAndroidNode(
+      nodes,
+      (node) => node.clickable && node.enabled && /clear search box|clear search|close search/i.test(`${node.text} ${node.contentDesc}`),
+    );
+    if (clearNode && tapAndroidBounds(clearNode.bounds)) {
+      return true;
+    }
+    pressAndroidKey(4);
+    return true;
   };
 
-  const recoverAndroidEnvironment = async (
-    screen: AndroidScreen,
-    context: {
-      packageName: string | null;
-      artifactBase: string;
-      relaunch: () => void;
-      port?: number;
-    },
-  ) => {
-    if (isAndroidDevMenuIntroScreen(screen.xml)) {
-      markRecovery("devClientBootstrapRecovered");
-      dismissAndroidDevMenuIntro(screen.xml);
-      return true;
-    }
-    if (isAndroidGoogleServicesScreen(screen.xml)) {
-      markRecovery("gmsRecoveryUsed");
-      dismissAndroidGoogleServicesScreen(screen.xml);
-      await sleep(800);
-      context.relaunch();
-      return true;
-    }
-    if (isAndroidSystemAnrDialog(screen.xml)) {
-      markRecovery("anrRecoveryUsed");
-      dismissAndroidSystemAnrDialog(screen.xml);
-      await sleep(800);
-      context.relaunch();
-      return true;
-    }
-    if (isAndroidLauncherHome(screen.xml)) {
-      markRecovery("devClientBootstrapRecovered");
-      const appNode = findAndroidLabelNode(parseAndroidNodes(screen.xml), appLabels);
-      if (appNode) {
-        tapAndroidBounds(appNode.bounds);
-      } else {
-        launchAndroidPackage(context.packageName);
-      }
-      await sleep(1200);
-      context.relaunch();
-      return true;
-    }
-    if (isAndroidDevLauncherHome(screen.xml)) {
-      markRecovery("devClientBootstrapRecovered");
-      const serverNode = findAndroidDevServerNode(parseAndroidNodes(screen.xml), context.port ?? devClientPort);
-      if (serverNode && tapAndroidBounds(serverNode.bounds)) {
+  const dismissInterruptions = async (screen: DumpedAndroidScreen, label: string): Promise<DumpedAndroidScreen> => {
+    let current = screen;
+    for (let attempt = 0; attempt < 4; attempt += 1) {
+      if (isAndroidGoogleServicesScreen(current.xml)) {
+        recoveryState.environmentRecoveryUsed = true;
+        recoveryState.gmsRecoveryUsed = true;
+        const nodes = parseAndroidNodes(current.xml);
+        const dismissNode = findAndroidNode(
+          nodes,
+          (node) => node.clickable && node.enabled && /ok|close|dismiss|continue/i.test(`${node.text} ${node.contentDesc}`),
+        );
+        if (dismissNode) {
+          tapAndroidBounds(dismissNode.bounds);
+        } else {
+          pressAndroidKey(4);
+        }
         await sleep(1200);
-      } else {
-        context.relaunch();
+        current = dumpAndroidScreen(`${label}-gms-${attempt + 1}`);
+        continue;
       }
-      return true;
+
+      if (isAndroidSystemAnrDialog(current.xml)) {
+        recoveryState.environmentRecoveryUsed = true;
+        recoveryState.anrRecoveryUsed = true;
+        const nodes = parseAndroidNodes(current.xml);
+        const waitNode = findAndroidNode(
+          nodes,
+          (node) => node.clickable && node.enabled && /wait/i.test(`${node.text} ${node.contentDesc}`),
+        );
+        const closeNode = findAndroidNode(
+          nodes,
+          (node) => node.clickable && node.enabled && /close app|close/i.test(`${node.text} ${node.contentDesc}`),
+        );
+        if (waitNode) {
+          tapAndroidBounds(waitNode.bounds);
+        } else if (closeNode) {
+          tapAndroidBounds(closeNode.bounds);
+        } else {
+          pressAndroidKey(4);
+        }
+        await sleep(1500);
+        current = dumpAndroidScreen(`${label}-anr-${attempt + 1}`);
+        continue;
+      }
+
+      if (isAndroidDevMenuIntroScreen(current.xml)) {
+        recoveryState.environmentRecoveryUsed = true;
+        dismissAndroidDevMenuIntro(current.xml);
+        await sleep(1200);
+        current = dumpAndroidScreen(`${label}-devmenu-${attempt + 1}`);
+        continue;
+      }
+
+      if (isAndroidFullDevMenuScreen(current.xml)) {
+        recoveryState.environmentRecoveryUsed = true;
+        pressAndroidKey(4);
+        await sleep(1200);
+        current = dumpAndroidScreen(`${label}-devmenu-full-${attempt + 1}`);
+        continue;
+      }
+
+      break;
     }
-    if (isAndroidBlankAppSurface(screen.xml, context.packageName)) {
-      markRecovery("blankSurfaceRecovered");
-      await sleep(800);
-      context.relaunch();
-      return true;
-    }
-    if (screen.xml.includes("Reloading...")) {
-      return true;
-    }
-    if (isAndroidDevLauncherErrorScreen(screen.xml)) {
-      throw new Error(`android dev client error screen: ${screen.xml.replace(/\s+/g, " ").slice(0, 1500)}`);
-    }
-    return false;
+    return current;
   };
 
   async function isAndroidDevClientServerReachable(port: number) {
@@ -514,7 +470,7 @@ export function createAndroidHarness(options: AndroidHarnessOptions) {
     }
   }
 
-  async function warmAndroidDevClientBundle(port = devClientPort) {
+  async function warmAndroidDevClientBundle(port = options.devClientPort) {
     const candidates = [
       `http://127.0.0.1:${port}/status`,
       `http://127.0.0.1:${port}/node_modules/expo-router/entry.bundle?platform=android&dev=true&minify=false`,
@@ -536,76 +492,34 @@ export function createAndroidHarness(options: AndroidHarnessOptions) {
     }
   }
 
-  const runAndroidPreflight = (preflightOptions?: {
-    packageName?: string | null;
-    clearGooglePlayServices?: boolean;
-    clearAppState?: boolean;
-  }): AndroidPreflightResult => {
-    const devices = adb(["devices"]);
-    ensureAndroidReverseProxy(devClientPort);
-    let gmsCleared = false;
-    let appStateCleared = false;
-    if (preflightOptions?.clearGooglePlayServices) {
-      execFileSync("adb", ["shell", "pm", "clear", "com.google.android.gms"], {
-        cwd: projectRoot,
-        stdio: "pipe",
-      });
-      gmsCleared = true;
-      markRecovery("gmsRecoveryUsed");
-    }
-    if (preflightOptions?.clearAppState && preflightOptions.packageName) {
-      resetAndroidAppState(preflightOptions.packageName);
-      appStateCleared = true;
-      markRecovery("devClientBootstrapRecovered");
-    }
-    return {
-      deviceDetected: devices.includes("\tdevice"),
-      reverseConfigured: true,
-      gmsCleared,
-      appStateCleared,
-      packageName: preflightOptions?.packageName ?? null,
-    };
-  };
-
-  const captureFailureArtifacts = (artifactBase: string): AndroidFailureArtifacts => {
-    const screen = dumpAndroidScreen(`${artifactBase}-failure`);
-    return {
-      ...screen,
-      stdoutPath: devClientStdoutPath,
-      stderrPath: devClientStderrPath,
-      stdoutTail: tailText(devClientStdoutPath),
-      stderrTail: tailText(devClientStderrPath),
-    };
-  };
-
   async function ensureAndroidDevClientServer() {
-    if (await isAndroidDevClientServerReachable(devClientPort)) {
+    if (await isAndroidDevClientServerReachable(options.devClientPort)) {
       return {
-        port: devClientPort,
+        port: options.devClientPort,
         startedByScript: false,
         cleanup: () => undefined,
       };
     }
 
-    fs.mkdirSync(path.dirname(devClientStdoutPath), { recursive: true });
-    fs.writeFileSync(devClientStdoutPath, "");
-    fs.writeFileSync(devClientStderrPath, "");
+    fs.mkdirSync(path.dirname(stdoutPath), { recursive: true });
+    fs.writeFileSync(stdoutPath, "");
+    fs.writeFileSync(stderrPath, "");
 
     const child = spawn(
       process.execPath,
       [
-        path.join(projectRoot, "node_modules", "expo", "bin", "cli"),
+        path.join(options.projectRoot, "node_modules", "expo", "bin", "cli"),
         "start",
         "--dev-client",
         "--host",
         "localhost",
         "--non-interactive",
         "--port",
-        String(devClientPort),
+        String(options.devClientPort),
         "--clear",
       ],
       {
-        cwd: projectRoot,
+        cwd: options.projectRoot,
         env: {
           ...process.env,
           BROWSER: "none",
@@ -616,25 +530,23 @@ export function createAndroidHarness(options: AndroidHarnessOptions) {
     );
 
     child.stdout.on("data", (chunk) => {
-      fs.appendFileSync(devClientStdoutPath, chunk);
+      fs.appendFileSync(stdoutPath, chunk);
     });
     child.stderr.on("data", (chunk) => {
-      fs.appendFileSync(devClientStderrPath, chunk);
+      fs.appendFileSync(stderrPath, chunk);
     });
 
     try {
       await poll(
         "android:dev_client_manifest_ready",
-        async () => ((await isAndroidDevClientServerReachable(devClientPort)) ? true : null),
+        async () => ((await isAndroidDevClientServerReachable(options.devClientPort)) ? true : null),
         180_000,
         1500,
       );
     } catch (error) {
-      const stdoutTail = tailText(devClientStdoutPath);
-      const stderrTail = tailText(devClientStderrPath);
       if (child.pid) {
         spawnSync("taskkill", ["/PID", String(child.pid), "/T", "/F"], {
-          cwd: projectRoot,
+          cwd: options.projectRoot,
           encoding: "utf8",
           timeout: 15_000,
         });
@@ -642,8 +554,8 @@ export function createAndroidHarness(options: AndroidHarnessOptions) {
       throw new Error(
         [
           error instanceof Error ? error.message : String(error),
-          stdoutTail ? `dev-client stdout tail:\n${stdoutTail}` : null,
-          stderrTail ? `dev-client stderr tail:\n${stderrTail}` : null,
+          tailText(stdoutPath) ? `dev-client stdout tail:\n${tailText(stdoutPath)}` : null,
+          tailText(stderrPath) ? `dev-client stderr tail:\n${tailText(stderrPath)}` : null,
         ]
           .filter(Boolean)
           .join("\n\n"),
@@ -651,12 +563,12 @@ export function createAndroidHarness(options: AndroidHarnessOptions) {
     }
 
     return {
-      port: devClientPort,
+      port: options.devClientPort,
       startedByScript: true,
       cleanup: () => {
         if (!child.pid) return;
         spawnSync("taskkill", ["/PID", String(child.pid), "/T", "/F"], {
-          cwd: projectRoot,
+          cwd: options.projectRoot,
           encoding: "utf8",
           timeout: 15_000,
         });
@@ -664,227 +576,408 @@ export function createAndroidHarness(options: AndroidHarnessOptions) {
     };
   }
 
-  const prepareAndroidRuntime = async (preflightOptions?: {
-    clearGooglePlayServices?: boolean;
-    clearAppState?: boolean;
-  }) => {
+  const runAndroidPreflight = (params: { packageName?: string | null; clearApp?: boolean; clearGms?: boolean } = {}) => {
+    const packageName = params.packageName ?? detectAndroidPackage();
     const devices = adb(["devices"]);
-    if (!devices.includes("\tdevice")) {
-      throw new Error("No Android emulator/device detected");
+    const deviceDetected = devices.includes("\tdevice");
+    if (!deviceDetected) {
+      return {
+        deviceDetected: false,
+        packageName,
+        reverseProxyReady: false,
+        appCleared: false,
+        gmsCleared: false,
+        devClientReachable: false,
+      } satisfies AndroidPreflightResult;
     }
-    const devClient = await ensureAndroidDevClientServer();
-    const packageName = detectAndroidPackage();
-    const preflight = runAndroidPreflight({
-      packageName,
-      clearGooglePlayServices: preflightOptions?.clearGooglePlayServices,
-      clearAppState: preflightOptions?.clearAppState,
+
+    ensureAndroidReverseProxy(options.devClientPort);
+    if (params.clearApp === true) {
+      resetAndroidAppState(packageName);
+      recoveryState.environmentRecoveryUsed = true;
+    }
+    if (params.clearGms === true) {
+      try {
+        execFileSync("adb", ["shell", "pm", "clear", "com.google.android.gms"], {
+          cwd: options.projectRoot,
+          stdio: "pipe",
+        });
+        recoveryState.environmentRecoveryUsed = true;
+        recoveryState.gmsRecoveryUsed = true;
+      } catch {
+        // best effort
+      }
+    }
+
+    const reachabilityResult = spawnSync("curl", ["-fsS", `http://127.0.0.1:${options.devClientPort}/status`], {
+      cwd: options.projectRoot,
+      encoding: "utf8",
+      timeout: 5000,
     });
-    await warmAndroidDevClientBundle(devClient.port);
-    return { devClient, packageName, preflight };
+
+    return {
+      deviceDetected,
+      packageName,
+      reverseProxyReady: true,
+      appCleared: params.clearApp === true,
+      gmsCleared: params.clearGms === true,
+      devClientReachable: reachabilityResult.status === 0,
+    } satisfies AndroidPreflightResult;
   };
 
-  const defaultReadyPredicate = (xml: string, packageName: string | null) =>
-    isAndroidLoginScreenSafe(xml)
-    || (!!packageName && xml.includes(`package="${packageName}"`) && !isAndroidBlankAppSurface(xml, packageName));
+  const getDevClientLogPaths = () => ({
+    stdoutPath: path.relative(options.projectRoot, stdoutPath).replace(/\\/g, "/"),
+    stderrPath: path.relative(options.projectRoot, stderrPath).replace(/\\/g, "/"),
+  });
 
-  const waitForReadySurface = async (
-    label: string,
-    options: {
-      packageName: string | null;
-      artifactBase: string;
-      readyPredicate: (xml: string) => boolean;
-      relaunch: () => void;
-      timeoutMs: number;
-      delayMs: number;
-    },
-  ) =>
-    poll(
-      label,
+  const getDevClientLogTails = () => ({
+    stdoutTail: tailText(stdoutPath),
+    stderrTail: tailText(stderrPath),
+  });
+
+  const getRecoverySummary = () => ({ ...recoveryState });
+
+  async function ensureRenderableSurface(
+    packageName: string | null,
+    artifactBase: string,
+    renderablePredicate: (xml: string) => boolean,
+  ) {
+    ensureAndroidReverseProxy(options.devClientPort);
+    startAndroidDevClientProject(packageName, options.devClientPort, { stopApp: true });
+    let blankSurfaceStreak = 0;
+
+    let screen = await poll(
+      "android:dev_client_loaded",
       async () => {
-        await sleep(options.delayMs);
-        const screen = dumpAndroidScreen(options.artifactBase);
-        if (await recoverAndroidEnvironment(screen, {
-          packageName: options.packageName,
-          artifactBase: options.artifactBase,
-          relaunch: options.relaunch,
-          port: devClientPort,
-        })) {
+        await sleep(2500);
+        const next = dumpAndroidScreen(`${artifactBase}-dev-client-loading`);
+        const cleaned = await dismissInterruptions(next, `${artifactBase}-interrupt`);
+        if (renderablePredicate(cleaned.xml)) return cleaned;
+        if (isAndroidDevLauncherHome(cleaned.xml)) return cleaned;
+        if (isAndroidLauncherHome(cleaned.xml)) return cleaned;
+        if (isAndroidBlankAppSurface(cleaned.xml)) {
+          blankSurfaceStreak += 1;
+          if (blankSurfaceStreak >= 3) return cleaned;
           return null;
         }
-        return options.readyPredicate(screen.xml) ? screen : null;
+        blankSurfaceStreak = 0;
+        if (isAndroidDevClientErrorScreen(cleaned.xml)) {
+          throw new Error(`android dev client error screen: ${cleaned.xml.replace(/\s+/g, " ").slice(0, 2000)}`);
+        }
+        return null;
       },
-      options.timeoutMs,
-      options.delayMs,
+      180_000,
+      2500,
     );
 
-  const ensureAndroidDevClientLoaded = async ({
-    packageName,
-    artifactBase,
-    readyPredicate,
-    timeoutMs = 180_000,
-    delayMs = 2500,
-  }: EnsureAndroidDevClientLoadedOptions) => {
-    ensureAndroidReverseProxy(devClientPort);
-    startAndroidDevClientProject(packageName, devClientPort);
-    return waitForReadySurface("android:dev_client_loaded", {
-      packageName,
-      artifactBase,
-      readyPredicate: readyPredicate ?? ((xml) => defaultReadyPredicate(xml, packageName)),
-      relaunch: () => startAndroidDevClientProject(packageName, devClientPort),
-      timeoutMs,
-      delayMs,
-    });
-  };
+    for (let attempt = 0; attempt < 3; attempt += 1) {
+      screen = await dismissInterruptions(screen, `${artifactBase}-surface-check-${attempt + 1}`);
+      if (isAndroidDevClientErrorScreen(screen.xml)) {
+        throw new Error(`android dev client error screen: ${screen.xml.replace(/\s+/g, " ").slice(0, 2000)}`);
+      }
+      if (renderablePredicate(screen.xml)) return screen;
+      if (isAndroidDevLauncherHome(screen.xml)) {
+        recoveryState.environmentRecoveryUsed = true;
+        recoveryState.devClientBootstrapRecovered = true;
+        const serverNode = findAndroidDevServerNode(parseAndroidNodes(screen.xml));
+        if (serverNode) {
+          tapAndroidBounds(serverNode.bounds);
+        } else {
+          startAndroidDevClientProject(packageName, options.devClientPort, { stopApp: false });
+        }
+        await sleep(2500);
+        screen = dumpAndroidScreen(`${artifactBase}-dev-launcher-${attempt + 1}`);
+        continue;
+      }
+      if (isAndroidLauncherHome(screen.xml)) {
+        recoveryState.environmentRecoveryUsed = true;
+        dismissAndroidLauncherSearch(screen.xml);
+        await sleep(600);
+        startAndroidDevClientProject(packageName, options.devClientPort, { stopApp: true });
+        await sleep(2500);
+        screen = dumpAndroidScreen(`${artifactBase}-launcher-home-${attempt + 1}`);
+        continue;
+      }
+      if (isAndroidBlankAppSurface(screen.xml)) {
+        recoveryState.environmentRecoveryUsed = true;
+        recoveryState.blankSurfaceRecovered = true;
+        startAndroidDevClientProject(packageName, options.devClientPort, { stopApp: false });
+        await sleep(2500);
+        screen = dumpAndroidScreen(`${artifactBase}-blank-surface-${attempt + 1}`);
+        continue;
+      }
+    }
 
-  const submitAndroidLoginFromNodes = async (nodes: AndroidNode[], user: AndroidUserCredentials) => {
-    const emailNode = findAndroidNode(
-      nodes,
-      (node) =>
-        node.enabled &&
-        /android\.widget\.EditText/i.test(node.className) &&
-        /email/i.test(`${node.text} ${node.hint}`),
-    );
-    if (!emailNode) throw new Error("Android login email field not found");
+    return screen;
+  }
 
-    tapAndroidBounds(emailNode.bounds);
-    await sleep(350);
-    execFileSync("adb", ["shell", "input", "text", escapeAndroidInputText(user.email)], { cwd: projectRoot, stdio: "pipe" });
-    await sleep(350);
+  async function openAndroidRoute(
+    params: OpenRouteParams & {
+      renderablePredicate?: (xml: string) => boolean;
+      loginScreenPredicate?: (xml: string) => boolean;
+    },
+  ) {
+    for (let index = 0; index < params.routes.length; index += 1) {
+      const route = params.routes[index];
+      let blankSurfaceStreak = 0;
+      startAndroidRouteSafe(params.packageName, route);
+      const routed = await poll(
+        `android:route_open:${route}`,
+        async () => {
+          await sleep(params.delayMs ?? 1200);
+          const next = dumpAndroidScreen(`${params.artifactBase}-route-${index + 1}`);
+          const cleaned = await dismissInterruptions(next, `${params.artifactBase}-route-interrupt`);
+          if (isAndroidLauncherHome(cleaned.xml) || isAndroidDevLauncherHome(cleaned.xml)) {
+            recoveryState.environmentRecoveryUsed = true;
+            if (isAndroidLauncherHome(cleaned.xml)) {
+              dismissAndroidLauncherSearch(cleaned.xml);
+              await sleep(600);
+            }
+            startAndroidDevClientProject(params.packageName, options.devClientPort, {
+              stopApp: isAndroidLauncherHome(cleaned.xml),
+            });
+            return null;
+          }
+          if (isAndroidDevClientErrorScreen(cleaned.xml)) {
+            throw new Error(`android dev client error screen: ${cleaned.xml.replace(/\s+/g, " ").slice(0, 2000)}`);
+          }
+          if (isAndroidBlankAppSurface(cleaned.xml)) {
+            blankSurfaceStreak += 1;
+            if (blankSurfaceStreak < 4) {
+              return null;
+            }
+            recoveryState.environmentRecoveryUsed = true;
+            recoveryState.blankSurfaceRecovered = true;
+            startAndroidDevClientProject(params.packageName, options.devClientPort, { stopApp: false });
+            return null;
+          }
+          blankSurfaceStreak = 0;
+          return params.predicate(cleaned.xml) ? cleaned : null;
+        },
+        params.timeoutMs ?? 20_000,
+        params.delayMs ?? 1200,
+      ).catch(() => null);
+      if (routed) return routed;
+      const timeoutScreen = await dismissInterruptions(
+        dumpAndroidScreen(`${params.artifactBase}-route-timeout`),
+        `${params.artifactBase}-route-timeout-interrupt`,
+      );
+      if (isAndroidDevClientErrorScreen(timeoutScreen.xml)) {
+        throw new Error(`android dev client error screen: ${timeoutScreen.xml.replace(/\s+/g, " ").slice(0, 2000)}`);
+      }
+      if (params.loginScreenPredicate?.(timeoutScreen.xml) || params.renderablePredicate?.(timeoutScreen.xml)) {
+        return timeoutScreen;
+      }
+    }
+    throw new Error(`android route did not settle for ${params.routes.join(", ")}`);
+  }
 
-    const passwordNode =
-      findAndroidNode(
-        nodes,
+  async function loginAndroidWithProtectedRoute(params: LoginParams) {
+    let current = await ensureRenderableSurface(params.packageName, params.artifactBase, params.renderablePredicate);
+    const isLoginScreen =
+      params.loginScreenPredicate ??
+      ((xml: string) => xml.includes("Email") && (LOGIN_LABEL_RE.test(xml) || LOGIN_LABEL_FALLBACK_RE.test(xml)));
+
+    if (isLoginScreen(current.xml)) {
+      const nodes = parseAndroidNodes(current.xml);
+      const editTextNodes = nodes.filter(
+        (node) => node.enabled && /android\.widget\.EditText/i.test(node.className),
+      );
+      const emailNode = findAndroidNode(editTextNodes, (node) => /email/i.test(`${node.text} ${node.hint}`));
+      const passwordNode = findAndroidNode(
+        editTextNodes,
         (node) =>
           node.enabled &&
           /android\.widget\.EditText/i.test(node.className) &&
-          !/email/i.test(`${node.text} ${node.hint}`),
-      ) ?? nodes.find((node) => /android\.widget\.EditText/i.test(node.className) && node !== emailNode) ?? null;
-    if (!passwordNode) throw new Error("Android login password field not found");
+          /password|пароль/i.test(`${node.text} ${node.hint}`.toLowerCase()),
+      );
+      const loginNode = findAndroidLoginNode(nodes);
 
-    tapAndroidBounds(passwordNode.bounds);
-    await sleep(350);
-    execFileSync("adb", ["shell", "input", "text", escapeAndroidInputText(user.password)], { cwd: projectRoot, stdio: "pipe" });
-    await sleep(350);
+      if ((!emailNode && editTextNodes.length === 0) || (!passwordNode && editTextNodes.length < 2) || !loginNode) {
+        throw new Error("Android login controls were not found");
+      }
+      const resolvedEmailNode = emailNode ?? editTextNodes[0] ?? null;
+      const resolvedPasswordNode =
+        passwordNode ??
+        findAndroidNode(editTextNodes, (node) => node.password || PASSWORD_LABEL_RE.test(`${node.text} ${node.hint}`)) ??
+        editTextNodes.find((node) => node !== resolvedEmailNode) ??
+        null;
+      if (!resolvedEmailNode || !resolvedPasswordNode) {
+        throw new Error("Android login controls were not found");
+      }
 
-    const loginNode = findAndroidLoginNodeSafe(nodes);
-    if (!loginNode) throw new Error("Android login button not found");
-    pressAndroidKey(4);
-    await sleep(250);
-    tapAndroidBounds(loginNode.bounds);
-    await sleep(250);
-    pressAndroidKey(66);
-  };
+      tapAndroidBounds(resolvedEmailNode.bounds);
+      await sleep(400);
+      typeAndroidText(params.user.email);
+      await sleep(400);
 
-  const loginAndroidWithProtectedRoute = async ({
-    packageName,
-    user,
-    protectedRoute,
-    artifactBase,
-    successPredicate,
-    renderablePredicate,
-    loginScreenPredicate = isAndroidLoginScreenSafe,
-    resetAppStateBeforeLogin = true,
-  }: LoginAndroidWithProtectedRouteOptions) => {
-    if (resetAppStateBeforeLogin) {
-      resetAndroidAppState(packageName);
+      const passwordScreen = dumpAndroidScreen(`${params.artifactBase}-email-filled`);
+      if (!isLoginScreen(passwordScreen.xml)) {
+        throw new Error("Android login screen lost focus after email entry");
+      }
+      const passwordNodes = parseAndroidNodes(passwordScreen.xml);
+      const refreshedPasswordNode =
+        findAndroidNode(
+          passwordNodes,
+          (node) =>
+            node.enabled &&
+            /android\.widget\.EditText/i.test(node.className) &&
+            (node.password || PASSWORD_LABEL_RE.test(`${node.text} ${node.hint}`)),
+        ) ?? resolvedPasswordNode;
+
+      pressAndroidKey(61);
+      await sleep(250);
+      const passwordFocusScreen = dumpAndroidScreen(`${params.artifactBase}-password-focus`);
+      if (!isLoginScreen(passwordFocusScreen.xml)) {
+        throw new Error("Android login screen lost focus while focusing the password field");
+      }
+      const focusedPasswordNode = findAndroidNode(
+        parseAndroidNodes(passwordFocusScreen.xml),
+        (node) =>
+          node.enabled &&
+          node.focused &&
+          /android\.widget\.EditText/i.test(node.className) &&
+          (node.password || PASSWORD_LABEL_RE.test(`${node.text} ${node.hint}`)),
+      );
+      if (!focusedPasswordNode) {
+        tapAndroidBounds(refreshedPasswordNode.bounds);
+        await sleep(400);
+      }
+
+      await sleep(400);
+      typeAndroidText(params.user.password);
+      await sleep(400);
+
+      pressAndroidKey(4);
+      await sleep(400);
+
+      const loginScreen = dumpAndroidScreen(`${params.artifactBase}-password-filled`);
+      if (!isLoginScreen(loginScreen.xml)) {
+        throw new Error("Android login screen lost focus after password entry");
+      }
+      const refreshedLoginNode = findAndroidLoginNode(parseAndroidNodes(loginScreen.xml)) ?? loginNode;
+
+      tapAndroidBounds(refreshedLoginNode.bounds);
+      let blankSurfaceStreak = 0;
+
+      current = await poll(
+        "android:login_complete",
+        async () => {
+          await sleep(1500);
+          const next = dumpAndroidScreen(`${params.artifactBase}-after-login`);
+          const cleaned = await dismissInterruptions(next, `${params.artifactBase}-after-login-interrupt`);
+          if (isLoginScreen(cleaned.xml)) {
+            const retryLoginNode = findAndroidLoginNode(parseAndroidNodes(cleaned.xml));
+            if (retryLoginNode) {
+              pressAndroidKey(4);
+              await sleep(250);
+              tapAndroidBounds(retryLoginNode.bounds);
+            }
+            return null;
+          }
+          if (isAndroidLauncherHome(cleaned.xml) || isAndroidDevLauncherHome(cleaned.xml)) {
+            recoveryState.environmentRecoveryUsed = true;
+            if (isAndroidLauncherHome(cleaned.xml)) {
+              dismissAndroidLauncherSearch(cleaned.xml);
+              await sleep(600);
+            }
+            startAndroidDevClientProject(params.packageName, options.devClientPort, {
+              stopApp: isAndroidLauncherHome(cleaned.xml),
+            });
+            return null;
+          }
+          if (isAndroidDevClientErrorScreen(cleaned.xml)) {
+            throw new Error(`android dev client error screen: ${cleaned.xml.replace(/\s+/g, " ").slice(0, 2000)}`);
+          }
+          if (isAndroidBlankAppSurface(cleaned.xml)) {
+            blankSurfaceStreak += 1;
+            if (blankSurfaceStreak < 4) {
+              return null;
+            }
+            recoveryState.environmentRecoveryUsed = true;
+            recoveryState.blankSurfaceRecovered = true;
+            startAndroidDevClientProject(params.packageName, options.devClientPort, { stopApp: false });
+            return null;
+          }
+          blankSurfaceStreak = 0;
+          return cleaned;
+        },
+        45_000,
+        1500,
+      );
     }
 
-    let current = await ensureAndroidDevClientLoaded({
-      packageName,
-      artifactBase: `${artifactBase}-dev-client-loading`,
-      readyPredicate: (xml) =>
-        loginScreenPredicate(xml) || successPredicate(xml) || (renderablePredicate ? renderablePredicate(xml) : false),
-    });
-
-    if (!loginScreenPredicate(current.xml) && !successPredicate(current.xml) && !(renderablePredicate?.(current.xml) ?? false)) {
-      startAndroidRouteSafe(packageName, protectedRoute);
-      current = await waitForReadySurface("android:protected_route_visible", {
-        packageName,
-        artifactBase: `${artifactBase}-login`,
-        readyPredicate: (xml) =>
-          loginScreenPredicate(xml) || successPredicate(xml) || (renderablePredicate ? renderablePredicate(xml) : false),
-        relaunch: () => startAndroidRouteSafe(packageName, protectedRoute),
-        timeoutMs: 60_000,
+    for (let attempt = 0; attempt < 3; attempt += 1) {
+      if (params.successPredicate(current.xml)) return current;
+      if (isAndroidLauncherHome(current.xml) || isAndroidDevLauncherHome(current.xml) || isAndroidBlankAppSurface(current.xml)) {
+        if (isAndroidLauncherHome(current.xml)) {
+          recoveryState.environmentRecoveryUsed = true;
+          dismissAndroidLauncherSearch(current.xml);
+          await sleep(600);
+        }
+        current = await ensureRenderableSurface(
+          params.packageName,
+          `${params.artifactBase}-post-login-${attempt + 1}`,
+          params.renderablePredicate,
+        );
+        continue;
+      }
+      const tabRoute = params.protectedRoute.split("://")[1] ?? "";
+      current = await openAndroidRoute({
+        packageName: params.packageName,
+        routes: [params.protectedRoute, params.protectedRoute.replace("://", ":///"), `rik:///%28tabs%29/${tabRoute}`],
+        artifactBase: params.artifactBase,
+        predicate: params.successPredicate,
+        renderablePredicate: params.renderablePredicate,
+        loginScreenPredicate: isLoginScreen,
+        timeoutMs: 30_000,
         delayMs: 1200,
       });
     }
 
-    if (successPredicate(current.xml) || ((renderablePredicate?.(current.xml) ?? false) && !loginScreenPredicate(current.xml))) {
+    if (params.successPredicate(current.xml) || params.renderablePredicate(current.xml) || isLoginScreen(current.xml)) {
       return current;
     }
 
-    if (!loginScreenPredicate(current.xml)) {
-      throw new Error(`Android protected route did not reach login or target surface: ${protectedRoute}`);
+    throw new Error(`android protected route did not settle into renderable surface for ${params.protectedRoute}`);
+  }
+
+  async function prepareAndroidRuntime(params: { clearApp?: boolean; clearGms?: boolean } = {}) {
+    const devClient = await ensureAndroidDevClientServer();
+    const packageName = detectAndroidPackage();
+    const preflight = runAndroidPreflight({
+      packageName,
+      clearApp: params.clearApp,
+      clearGms: params.clearGms,
+    });
+    await warmAndroidDevClientBundle(options.devClientPort);
+    return {
+      devClient,
+      packageName,
+      preflight,
+    };
+  }
+
+  const captureFailureArtifacts = (artifactBase: string): AndroidFailureArtifacts => {
+    let xmlPath: string | null = null;
+    let pngPath: string | null = null;
+    try {
+      const capture = dumpAndroidScreen(artifactBase);
+      xmlPath = capture.xmlPath;
+      pngPath = capture.pngPath;
+    } catch {
+      // artifact best effort
     }
-
-    await submitAndroidLoginFromNodes(parseAndroidNodes(current.xml), user);
-
-    let latest = current;
-    for (let attempt = 0; attempt < 12; attempt += 1) {
-      await sleep(1400);
-      const screen = dumpAndroidScreen(`${artifactBase}-after-login`);
-      latest = screen;
-      if (await recoverAndroidEnvironment(screen, {
-        packageName,
-        artifactBase: `${artifactBase}-after-login`,
-        relaunch: () => startAndroidRouteSafe(packageName, protectedRoute),
-        port: devClientPort,
-      })) {
-        continue;
-      }
-      if (loginScreenPredicate(screen.xml)) {
-        const retry = findAndroidLoginNodeSafe(parseAndroidNodes(screen.xml));
-        if (retry) {
-          pressAndroidKey(4);
-          await sleep(250);
-          tapAndroidBounds(retry.bounds);
-          await sleep(250);
-          pressAndroidKey(66);
-        }
-        continue;
-      }
-      if (successPredicate(screen.xml) || (renderablePredicate?.(screen.xml) ?? false)) {
-        return screen;
-      }
-      startAndroidRouteSafe(packageName, protectedRoute);
-    }
-
-    throw new Error(`Android login never settled on protected route: ${protectedRoute}\n${latest.xml.slice(0, 1500)}`);
-  };
-
-  const openAndroidRoute = async ({
-    packageName,
-    routes,
-    artifactBase,
-    predicate,
-    timeoutMs = 30_000,
-    delayMs = 1200,
-  }: OpenAndroidRouteOptions) => {
-    for (let attempt = 0; attempt < 6; attempt += 1) {
-      for (const route of routes) {
-        startAndroidRouteSafe(packageName, route);
-        await sleep(delayMs);
-        const screen = await poll(
-          `${artifactBase}:${attempt + 1}`,
-          async () => {
-            const next = dumpAndroidScreen(`${artifactBase}-${attempt + 1}`);
-            if (await recoverAndroidEnvironment(next, {
-              packageName,
-              artifactBase: `${artifactBase}-${attempt + 1}`,
-              relaunch: () => startAndroidRouteSafe(packageName, route),
-              port: devClientPort,
-            })) {
-              return null;
-            }
-            return predicate(next.xml) ? next : null;
-          },
-          timeoutMs,
-          delayMs,
-        ).catch(() => null);
-        if (screen && predicate(screen.xml)) return screen;
-      }
-    }
-    throw new Error(`Android route did not settle: ${routes.join(", ")}`);
+    const logPaths = getDevClientLogPaths();
+    const logTails = getDevClientLogTails();
+    return {
+      xmlPath,
+      pngPath,
+      stdoutPath: logPaths.stdoutPath,
+      stderrPath: logPaths.stderrPath,
+      stdoutTail: logTails.stdoutTail,
+      stderrTail: logTails.stderrTail,
+    };
   };
 
   return {
@@ -893,50 +986,31 @@ export function createAndroidHarness(options: AndroidHarnessOptions) {
     parseAndroidNodes,
     tapAndroidBounds,
     pressAndroidKey,
+    typeAndroidText,
     startAndroidDevClientProject,
-    startAndroidRoute,
+    startAndroidRoute: startAndroidRouteSafe,
     startAndroidRouteSafe,
     ensureAndroidReverseProxy,
     warmAndroidDevClientBundle,
     detectAndroidPackage,
     resetAndroidAppState,
-    ensureAndroidDevClientServer,
-    prepareAndroidRuntime,
-    ensureAndroidDevClientLoaded,
     runAndroidPreflight,
-    captureFailureArtifacts,
+    ensureAndroidDevClientServer,
     loginAndroidWithProtectedRoute,
     openAndroidRoute,
-    startAndroidIntentView,
-    launchAndroidPackage,
-    submitAndroidLoginFromNodes,
-    findAndroidDevServerNode,
-    findAndroidNode,
-    findAndroidLabelNode,
-    escapeAndroidInputText,
-    parseBoundsCenter,
-    matchesAndroidLabel,
-    isAndroidLoginScreenSafe,
-    findAndroidLoginNodeSafe,
+    dismissAndroidInterruptions: dismissInterruptions,
+    prepareAndroidRuntime,
+    captureFailureArtifacts,
+    getRecoverySummary,
+    getDevClientLogPaths,
+    getDevClientLogTails,
     isAndroidDevLauncherHome,
     isAndroidLauncherHome,
     isAndroidBlankAppSurface,
     isAndroidGoogleServicesScreen,
     isAndroidSystemAnrDialog,
     isAndroidDevMenuIntroScreen,
-    dismissAndroidDevMenuIntro,
-    dismissAndroidGoogleServicesScreen,
-    dismissAndroidSystemAnrDialog,
-    getDevClientLogPaths: () => ({
-      stdoutPath: devClientStdoutPath,
-      stderrPath: devClientStderrPath,
-    }),
-    getDevClientLogTails: () => ({
-      stdoutTail: tailText(devClientStdoutPath),
-      stderrTail: tailText(devClientStderrPath),
-    }),
-    getRecoverySummary: () => ({ ...recovery }),
+    isAndroidFullDevMenuScreen,
+    isAndroidDevClientErrorScreen,
   };
 }
-
-export type AndroidHarness = ReturnType<typeof createAndroidHarness>;

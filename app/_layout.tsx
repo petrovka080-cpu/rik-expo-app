@@ -1,6 +1,7 @@
 // app/_layout.tsx  (PROD, чистый)
 
 
+import "../src/lib/runtime/installWeakRefPolyfill";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Platform, LogBox } from "react-native";
 import { Slot, router, useSegments } from "expo-router";

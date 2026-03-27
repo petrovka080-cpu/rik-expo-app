@@ -1,15 +1,22 @@
 {
-  "status": "failed",
+  "status": "passed",
   "webPassed": true,
-  "androidPassed": false,
+  "androidPassed": true,
   "iosPassed": false,
-  "iosResidual": "xcrun is unavailable on this host; iOS simulator cannot be started from Windows",
+  "runtimeVerified": true,
   "environmentRecoveryUsed": false,
   "gmsRecoveryUsed": false,
   "anrRecoveryUsed": false,
   "blankSurfaceRecovered": false,
   "devClientBootstrapRecovered": false,
-  "runtimeVerified": false,
+  "platformSpecificIssues": [
+    {
+      "platform": "ios",
+      "issue": "xcrun is unavailable on this host; iOS simulator cannot be started from Windows"
+    }
+  ],
+  "iosResidual": "xcrun is unavailable on this host; iOS simulator cannot be started from Windows",
+  "failureKind": "unknown",
   "scenariosPassed": {
     "web": {
       "initialOpen": true,
@@ -17,9 +24,9 @@
       "sheetInteraction": true
     },
     "android": {
-      "initialOpen": false,
-      "inboxSurface": false,
-      "sheetInteraction": false
+      "initialOpen": true,
+      "inboxSurface": true,
+      "sheetInteraction": true
     },
     "ios": {
       "initialOpen": false,
@@ -27,32 +34,22 @@
       "sheetInteraction": false
     }
   },
-  "platformSpecificIssues": [
-    {
-      "platform": "android",
-      "issue": "Inbox top tab was not found on Android buyer screen"
-    },
-    {
-      "platform": "android",
-      "issue": "Buyer inbox request groups were not visible after Android route/tab flow"
-    },
-    {
-      "platform": "android",
-      "issue": "Buyer inbox sheet did not open on Android after tapping the first request group"
-    },
-    {
-      "platform": "ios",
-      "issue": "xcrun is unavailable on this host; iOS simulator cannot be started from Windows"
-    }
-  ],
   "artifacts": {
     "webSummary": "artifacts/buyer-summary-inbox-web-smoke.summary.json",
     "webRuntime": "artifacts/buyer-summary-inbox-web-smoke.json",
-    "androidCurrentXml": "artifacts/android-buyer-summary-inbox-route-timeout.xml",
-    "androidCurrentPng": "artifacts/android-buyer-summary-inbox-route-timeout.png",
-    "androidInboxXml": "artifacts/android-buyer-summary-inbox-route-timeout.xml",
-    "androidInboxPng": "artifacts/android-buyer-summary-inbox-route-timeout.png",
-    "androidSheetXml": "artifacts/android-buyer-summary-inbox-route-timeout.xml",
-    "androidSheetPng": "artifacts/android-buyer-summary-inbox-route-timeout.png"
-  }
+    "androidCurrentXml": "artifacts/android-buyer-summary-inbox-after-fio.xml",
+    "androidCurrentPng": "artifacts/android-buyer-summary-inbox-after-fio.png",
+    "androidInboxXml": "artifacts/android-buyer-summary-inbox-after-fio.xml",
+    "androidInboxPng": "artifacts/android-buyer-summary-inbox-after-fio.png",
+    "androidSheetXml": "artifacts/android-buyer-summary-inbox-sheet.xml",
+    "androidSheetPng": "artifacts/android-buyer-summary-inbox-sheet.png"
+  },
+  "gate": "buyer_summary_inbox_runtime_verify",
+  "subscriptionStarted": null,
+  "eventReceived": null,
+  "refreshTriggered": null,
+  "doubleFetchDetected": null,
+  "inflightGuardWorked": null,
+  "recentGuardWorked": null,
+  "backendOwnerPreserved": null
 }

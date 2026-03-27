@@ -34,7 +34,7 @@
     },
     {
       "type": "info",
-      "text": "[platform.observability] {screen: warehouse, surface: incoming_list, event: fetch_incoming, result: success, durationMs: 761}"
+      "text": "[platform.observability] {screen: warehouse, surface: incoming_list, event: fetch_incoming, result: success, durationMs: 874}"
     },
     {
       "type": "info",
@@ -42,11 +42,11 @@
     },
     {
       "type": "info",
-      "text": "[platform.observability] {screen: warehouse, surface: stock_list, event: fetch_stock_rpc, result: success, durationMs: 1003}"
+      "text": "[platform.observability] {screen: warehouse, surface: stock_list, event: fetch_stock_rpc, result: success, durationMs: 1135}"
     },
     {
       "type": "info",
-      "text": "[platform.observability] {screen: warehouse, surface: stock_list, event: fetch_stock, result: success, durationMs: 1003}"
+      "text": "[platform.observability] {screen: warehouse, surface: stock_list, event: fetch_stock, result: success, durationMs: 1136}"
     },
     {
       "type": "info",
@@ -70,7 +70,15 @@
     },
     {
       "type": "info",
-      "text": "[platform.observability] {screen: warehouse, surface: incoming_list, event: fetch_incoming, result: success, durationMs: 612}"
+      "text": "[platform.observability] {screen: warehouse, surface: realtime_channel, event: subscription_started, result: success, durationMs: null}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: warehouse, surface: screen_root, event: subscription_started, result: success, durationMs: null}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: warehouse, surface: incoming_list, event: fetch_incoming, result: success, durationMs: 605}"
     },
     {
       "type": "info",
@@ -78,11 +86,11 @@
     },
     {
       "type": "info",
-      "text": "[platform.observability] {screen: warehouse, surface: stock_list, event: fetch_stock_rpc, result: success, durationMs: 830}"
+      "text": "[platform.observability] {screen: warehouse, surface: stock_list, event: fetch_stock_rpc, result: success, durationMs: 804}"
     },
     {
       "type": "info",
-      "text": "[platform.observability] {screen: warehouse, surface: stock_list, event: fetch_stock, result: success, durationMs: 830}"
+      "text": "[platform.observability] {screen: warehouse, surface: stock_list, event: fetch_stock, result: success, durationMs: 804}"
     },
     {
       "type": "info",

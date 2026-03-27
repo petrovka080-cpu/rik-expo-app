@@ -21,12 +21,8 @@
       "text": "[flash-list.compat] legacy architecture fallback -> FlatList"
     },
     {
-      "type": "warning",
-      "text": "WebSocket connection to 'wss://nxrnjywzxxfdpqmzjorh.supabase.co/realtime/v1/websocket?apikey=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im54cm5qeXd6eHhmZHBxbXpqb3JoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ5MTY2NzcsImV4cCI6MjA4MDQ5MjY3N30.Ug7EYNXlN0Dsi8HjpDr3Ekb_q5uXuZWCilmqu1-5Wy0&eventsPerSecond=5&vsn=2.0.0' failed: WebSocket is closed before the connection is established."
-    },
-    {
       "type": "info",
-      "text": "[platform.observability] {screen: buyer, surface: summary_inbox, event: load_inbox, result: success, durationMs: 759}"
+      "text": "[platform.observability] {screen: buyer, surface: summary_inbox, event: load_inbox, result: success, durationMs: 838}"
     },
     {
       "type": "info",
@@ -46,11 +42,19 @@
     },
     {
       "type": "info",
-      "text": "[platform.observability] {screen: buyer, surface: summary_inbox, event: load_inbox, result: success, durationMs: 1036}"
+      "text": "[platform.observability] {screen: buyer, surface: realtime_channel, event: subscription_started, result: success, durationMs: null}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: buyer, surface: summary_inbox, event: load_inbox, result: success, durationMs: 1126}"
     },
     {
       "type": "info",
       "text": "[platform.observability] {screen: buyer, surface: inbox_list, event: content_ready, result: success, durationMs: null}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: buyer, surface: summary_root, event: subscription_started, result: success, durationMs: null}"
     }
   ],
   "pageErrors": [],

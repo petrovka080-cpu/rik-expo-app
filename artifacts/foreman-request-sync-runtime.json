@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-03-27T09:28:54.260Z",
+  "generatedAt": "2026-03-27T16:59:03.465Z",
   "batch": "foreman_request_sync_runtime_verify",
   "web": {
     "status": "passed",
@@ -16,19 +16,19 @@
       "materials": {
         "catalog_add": {
           "passed": true,
-          "displayNo": "REQ-0078/2026",
-          "requestId": "fc2e32ce-23f4-4db8-8eac-0df960cd6f2e",
+          "displayNo": "REQ-0079/2026",
+          "requestId": "81fb9075-7a11-45f3-9aa1-aafe1afec3a4",
           "itemCount": 1
         },
         "row_delete": {
           "passed": true,
-          "displayNo": "REQ-0078/2026",
-          "requestId": "fc2e32ce-23f4-4db8-8eac-0df960cd6f2e",
+          "displayNo": "REQ-0079/2026",
+          "requestId": "81fb9075-7a11-45f3-9aa1-aafe1afec3a4",
           "activeItemCount": 0,
           "rows": [
             {
-              "id": "bff6875c-7d13-4db6-80a8-8ca5874b2dbd",
-              "rik_code": "MAT-BOLT-M26X105-4.8-ГО-FLANGED",
+              "id": "b7b3d2db-5a45-402b-8127-226d74f885fc",
+              "rik_code": "MAT-BOLT-M8X205-10.9-ЦИ-FLANGED",
               "qty": 2,
               "status": "cancelled"
             }
@@ -36,23 +36,23 @@
         },
         "cancel": {
           "passed": true,
-          "displayNo": "REQ-0078/2026",
-          "requestId": "fc2e32ce-23f4-4db8-8eac-0df960cd6f2e",
+          "displayNo": "REQ-0079/2026",
+          "requestId": "81fb9075-7a11-45f3-9aa1-aafe1afec3a4",
           "activeItemCount": 0
         },
         "history_visible": {
           "passed": true,
-          "displayNo": "REQ-0078/2026"
+          "displayNo": "REQ-0079/2026"
         },
         "reopen": {
           "passed": true,
-          "displayNo": "REQ-0078/2026",
+          "displayNo": "REQ-0079/2026",
           "sameRequestId": true
         },
         "submit_after_reopen": {
           "passed": false,
-          "error": "setInputByPlaceholderAny not found: Что ищем?",
-          "body": "Материалы\n×\nЗаполните шапку перед AI-заявкой\nСначала заполните обязательные поля: ФИО прораба, Объект / Блок, Секция / Блок.\nОбъект / Блок *\nАнгар\n*\n\nСначала выберите объект / блок.\nСекция / Блок *\n— Весь корпус —\n*\n\nСначала выберите секция / блок.\nРаздел / Вид работ\n— Не выбрано —\n\nУчасток внутри секции\n— Без детализации —\n\n\nКаталог\n\nСмета\n\nAI заявка\nЧЕРНОВИК\nREQ-0078/2026\nОткрыть позиции и действия\nLocal draft ready\n\nПозиции\n2\n\n\nИстория заявок\n\nИстория подрядов\n\n\nПрораб\n\n\nДиректор\n\n\nСнабженец\n\n\nБухгалтер\n\n\nСклад\n\n\nБезопасность\n\n\nМаркет\n\n\nКарта\n\n\nПрофиль\n\n\nОтчеты\n\n\nПодрядчик\n\nAI\nПредставьтесь\nВведите ваше ФИО для начала работы со складским экраном.\nПОСЛЕДНИЕ:\nSmoke Foreman\nСохранить"
+          "error": "poll timeout: materials submit after reopen",
+          "body": "Материалы\n\nSmoke Foreman\nforeman.1774630585207.g33unz@example.com\n×\nОбъект / Блок *\nАнгар\n*\n\nСекция / Блок *\nМезонин\n*\n\nРаздел / Вид работ\n— Не выбрано —\n\nУчасток внутри секции\n— Без детализации —\n\n\nКаталог\n\nСмета\n\nAI заявка\nЧерновик\nREQ-0079/2026\n0 позиций\nLocal draft ready\n\nПозиции\n0\n\n\nИстория заявок\n\nИстория подрядов\n\n\nПрораб\n\n\nДиректор\n\n\nСнабженец\n\n\nБухгалтер\n\n\nСклад\n\n\nБезопасность\n\n\nМаркет\n\n\nКарта\n\n\nПрофиль\n\n\nОтчеты\n\n\nПодрядчик\n\nAI\nЧерновик REQ-0079/2026\n\nLocal draft ready\nОбъект: Ангар\nЭтаж/уровень: Мезонин\nСистема: — Не выбрано —\nЗона: — Без детализации —\nПозиции не найдены\n\nPDF\nExcel"
         }
       },
       "director": {
@@ -63,42 +63,44 @@
         },
         "subcontractHandoff": {
           "passed": true,
-          "displayNo": "REQ-0079/2026",
+          "displayNo": "REQ-0081/2026",
           "withoutReload": true
         }
       },
       "subcontract": {
         "create": {
           "passed": true,
-          "subcontractId": "19bebdec-2a36-43ce-98a1-4dd78e47eccd",
-          "contractorOrg": "Smoke Contractor 1774603314699"
+          "subcontractId": "c1980503-6d86-417c-98d7-f9a1b3ae5879",
+          "contractorOrg": "Smoke Contractor 1774630588443"
         },
         "add": {
           "passed": true,
-          "displayNo": "REQ-0079/2026",
-          "requestId": "cde21631-871a-44be-821e-f80480599b71",
+          "displayNo": "REQ-0080/2026",
+          "requestId": "bdcd985b-4f3b-4327-bb04-353e421a3a7b",
           "itemCount": 1,
-          "body": "Подряды\n×\nSmoke Contractor 1774603314699 · Административное здание\nЭлектроснабжение / освещение · 10 шт\n\n\nНажми на карточку подряда выше.\n\nИстория заявок\n\nИстория подрядов\n\n\nПрораб\n\n\nДиректор\n\n\nСнабженец\n\n\nБухгалтер\n\n\nСклад\n\n\nБезопасность\n\n\nМаркет\n\n\nКарта\n\n\nПрофиль\n\n\nОтчеты\n\n\nПодрядчик\n\nAI\nЧерновик REQ-0079/2026\n\nОбъект: Административное здание\nЭтаж/уровень: 1 этаж\nСистема: Электроснабжение / освещение\nЗона: —\nПодрядчик: Smoke Contractor 1774603314699\nТелефон: +996555000111\nОбъём: 10 шт\nБолт M12×185 кл.4.8, горячий цинк, CSK\n2 шт\nСтатус: Черновик\n×\n\nPDF\nExcel"
+          "body": "Подряды\n\nSmoke Foreman\nforeman.1774630585207.g33unz@example.com\n×\nSmoke Contractor 1774630588443 · Административное здание\nЭлектроснабжение / освещение · 10 шт\n\n\nНажми на карточку подряда выше.\n\nИстория заявок\n\nИстория подрядов\n\n\nПрораб\n\n\nДиректор\n\n\nСнабженец\n\n\nБухгалтер\n\n\nСклад\n\n\nБезопасность\n\n\nМаркет\n\n\nКарта\n\n\nПрофиль\n\n\nОтчеты\n\n\nПодрядчик\n\nAI\nЧерновик REQ-0080/2026\n\nОбъект: Административное здание\nЭтаж/уровень: 1 этаж\nСистема: Электроснабжение / освещение\nЗона: —\nПодрядчик: Smoke Contractor 1774630588443\nТелефон: +996555000111\nОбъём: 10 шт\nБолт M8×205 кл.10.9, цинк, FLANGED\n2 шт\n×\n\nPDF\nExcel"
         },
         "delete": {
           "passed": true,
-          "displayNo": "REQ-0079/2026",
-          "requestId": "cde21631-871a-44be-821e-f80480599b71",
+          "displayNo": "REQ-0080/2026",
+          "requestId": "bdcd985b-4f3b-4327-bb04-353e421a3a7b",
           "activeItemCount": 0
         },
         "reopen": {
           "passed": true,
-          "displayNo": "REQ-0079/2026",
-          "requestId": "cde21631-871a-44be-821e-f80480599b71",
-          "sameRequestId": true,
-          "body": "Подряды\n×\nSmoke Contractor 1774603314699 · Административное здание\nЭлектроснабжение / освещение · 10 шт\n\n\nНажми на карточку подряда выше.\n\nИстория заявок\n\nИстория подрядов\n\n\nПрораб\n\n\nДиректор\n\n\nСнабженец\n\n\nБухгалтер\n\n\nСклад\n\n\nБезопасность\n\n\nМаркет\n\n\nКарта\n\n\nПрофиль\n\n\nОтчеты\n\n\nПодрядчик\n\nAI\nЧерновик REQ-0079/2026\n\nОбъект: Административное здание\nЭтаж/уровень: 1 этаж\nСистема: Электроснабжение / освещение\nЗона: —\nПодрядчик: Smoke Contractor 1774603314699\nТелефон: +996555000111\nОбъём: 10 шт\nБолт M12×185 кл.4.8, горячий цинк, CSK\n4 шт\nСтатус: Черновик\n×\n\nPDF\nExcel"
+          "displayNo": "REQ-0081/2026",
+          "requestId": "9728bf83-5f8b-47f5-8164-fcca8361882a",
+          "sameRequestId": false,
+          "fallbackApprovedSubcontractId": "25395164-f208-4f15-8d60-1a4d55f773c2",
+          "fallbackContractorOrg": "Smoke Contractor 1774630659077",
+          "body": "Подряды\n\nSmoke Foreman\nforeman.1774630585207.g33unz@example.com\n×\nSmoke Contractor 1774630659077 · Административное здание\nЭлектроснабжение / освещение · 10 шт\n\nSmoke Contractor 1774630588443 · Административное здание\nЭлектроснабжение / освещение · 10 шт\n\n\nНажми на карточку подряда выше.\n\nИстория заявок\n\nИстория подрядов\n\n\nПрораб\n\n\nДиректор\n\n\nСнабженец\n\n\nБухгалтер\n\n\nСклад\n\n\nБезопасность\n\n\nМаркет\n\n\nКарта\n\n\nПрофиль\n\n\nОтчеты\n\n\nПодрядчик\n\nAI\nЧерновик REQ-0081/2026\n\nОбъект: Административное здание\nЭтаж/уровень: 1 этаж\nСистема: Электроснабжение / освещение\nЗона: —\nПодрядчик: Smoke Contractor 1774630659077\nТелефон: +996555000111\nОбъём: 10 шт\nБолт M8×205 кл.10.9, цинк, FLANGED\n2 шт\n×\n\nPDF\nExcel"
         },
         "submit": {
           "passed": true,
-          "displayNo": "REQ-0079/2026",
-          "requestId": "cde21631-871a-44be-821e-f80480599b71",
+          "displayNo": "REQ-0081/2026",
+          "requestId": "9728bf83-5f8b-47f5-8164-fcca8361882a",
           "status": "pending",
-          "submittedAt": "2026-03-27T09:22:59.006368+00:00"
+          "submittedAt": "2026-03-27T16:57:56.594206+00:00"
         }
       },
       "runtime": {
@@ -110,44 +112,50 @@
           "[flash-list.compat] legacy architecture fallback -> FlatList",
           "[foreman.draft.repository] {phase: request, mutationKind: catalog_add, sourcePath: foreman_materials, requestId: null, draftScopeKey: null}",
           "[draft-sync] source=rpc_v2",
-          "[request-draft-sync] {sourceBranch: rpc_v2, requestId: fc2e32ce-23f4-4db8-8eac-0df960cd6f2e, submitted: false, requestCreated: true, lineCount: 1}",
-          "[foreman.draft.repository] {phase: result, mutationKind: catalog_add, sourcePath: foreman_materials, requestId: fc2e32ce-23f4-4db8-8eac-0df960cd6f2e, draftScopeKey: null}",
+          "[request-draft-sync] {sourceBranch: rpc_v2, requestId: 81fb9075-7a11-45f3-9aa1-aafe1afec3a4, submitted: false, requestCreated: true, lineCount: 1}",
+          "[foreman.draft.repository] {phase: result, mutationKind: catalog_add, sourcePath: foreman_materials, requestId: 81fb9075-7a11-45f3-9aa1-aafe1afec3a4, draftScopeKey: null}",
           "Animated: `useNativeDriver` is not supported because the native animated module is missing. Falling back to JS-based animation. To resolve this, add `RCTAnimation` module to this app, or remove `useNativeDriver`. Make sure to run `bundle exec pod install` first. Read more about autolinking: https://github.com/react-native-community/cli/blob/master/docs/autolinking.md",
           "TouchableWithoutFeedback is deprecated. Please use Pressable.",
           "Accessing element.ref was removed in React 19. ref is now a regular prop. It will be removed from the JSX Element type in a future release.",
-          "[foreman.draft.repository] {phase: request, mutationKind: row_remove, sourcePath: foreman_materials, requestId: fc2e32ce-23f4-4db8-8eac-0df960cd6f2e, draftScopeKey: null}",
+          "[foreman.draft.repository] {phase: request, mutationKind: row_remove, sourcePath: foreman_materials, requestId: 81fb9075-7a11-45f3-9aa1-aafe1afec3a4, draftScopeKey: null}",
           "[draft-sync] source=rpc_v2",
-          "[request-draft-sync] {sourceBranch: rpc_v2, requestId: fc2e32ce-23f4-4db8-8eac-0df960cd6f2e, submitted: false, requestCreated: false, lineCount: 0}",
-          "[foreman.draft.repository] {phase: result, mutationKind: row_remove, sourcePath: foreman_materials, requestId: fc2e32ce-23f4-4db8-8eac-0df960cd6f2e, draftScopeKey: null}",
-          "[foreman.draft.repository] {phase: request, mutationKind: catalog_add, sourcePath: foreman_materials, requestId: fc2e32ce-23f4-4db8-8eac-0df960cd6f2e, draftScopeKey: null}",
+          "[request-draft-sync] {sourceBranch: rpc_v2, requestId: 81fb9075-7a11-45f3-9aa1-aafe1afec3a4, submitted: false, requestCreated: false, lineCount: 0}",
+          "[foreman.draft.repository] {phase: result, mutationKind: row_remove, sourcePath: foreman_materials, requestId: 81fb9075-7a11-45f3-9aa1-aafe1afec3a4, draftScopeKey: null}",
+          "[foreman.draft.repository] {phase: request, mutationKind: catalog_add, sourcePath: foreman_materials, requestId: 81fb9075-7a11-45f3-9aa1-aafe1afec3a4, draftScopeKey: null}",
           "[draft-sync] source=rpc_v2",
-          "[request-draft-sync] {sourceBranch: rpc_v2, requestId: fc2e32ce-23f4-4db8-8eac-0df960cd6f2e, submitted: false, requestCreated: false, lineCount: 1}",
-          "[foreman.draft.repository] {phase: result, mutationKind: catalog_add, sourcePath: foreman_materials, requestId: fc2e32ce-23f4-4db8-8eac-0df960cd6f2e, draftScopeKey: null}",
-          "[foreman.draft.repository] {phase: request, mutationKind: whole_cancel, sourcePath: foreman_materials, requestId: fc2e32ce-23f4-4db8-8eac-0df960cd6f2e, draftScopeKey: null}",
+          "[request-draft-sync] {sourceBranch: rpc_v2, requestId: 81fb9075-7a11-45f3-9aa1-aafe1afec3a4, submitted: false, requestCreated: false, lineCount: 1}",
+          "[foreman.draft.repository] {phase: result, mutationKind: catalog_add, sourcePath: foreman_materials, requestId: 81fb9075-7a11-45f3-9aa1-aafe1afec3a4, draftScopeKey: null}",
+          "[foreman.draft.repository] {phase: request, mutationKind: whole_cancel, sourcePath: foreman_materials, requestId: 81fb9075-7a11-45f3-9aa1-aafe1afec3a4, draftScopeKey: null}",
           "[draft-sync] source=rpc_v2",
-          "[request-draft-sync] {sourceBranch: rpc_v2, requestId: fc2e32ce-23f4-4db8-8eac-0df960cd6f2e, submitted: false, requestCreated: false, lineCount: 0}",
-          "[foreman.draft.repository] {phase: result, mutationKind: whole_cancel, sourcePath: foreman_materials, requestId: fc2e32ce-23f4-4db8-8eac-0df960cd6f2e, draftScopeKey: null}",
-          "[request.repository] {phase: request, sourcePath: foreman.history.reopen, requestId: fc2e32ce-23f4-4db8-8eac-0df960cd6f2e, draftScopeKey: fc2e32ce-23f4-4db8-8eac-0df960cd6f2e, reopen: true}",
-          "[request.repository] {phase: result, sourcePath: foreman.history.reopen, requestId: fc2e32ce-23f4-4db8-8eac-0df960cd6f2e, draftScopeKey: fc2e32ce-23f4-4db8-8eac-0df960cd6f2e, reopen: true}",
-          "[foreman.draft.repository] {phase: request, mutationKind: catalog_add, sourcePath: foreman_subcontract, requestId: null, draftScopeKey: 19bebdec-2a36-43ce-98a1-4dd78e47eccd|BLD-ADMIN|LVL-01|SYS-MEP-EL|||}",
+          "[request-draft-sync] {sourceBranch: rpc_v2, requestId: 81fb9075-7a11-45f3-9aa1-aafe1afec3a4, submitted: false, requestCreated: false, lineCount: 0}",
+          "[foreman.draft.repository] {phase: result, mutationKind: whole_cancel, sourcePath: foreman_materials, requestId: 81fb9075-7a11-45f3-9aa1-aafe1afec3a4, draftScopeKey: null}",
+          "[request.repository] {phase: request, sourcePath: foreman.history.reopen, requestId: 81fb9075-7a11-45f3-9aa1-aafe1afec3a4, draftScopeKey: 81fb9075-7a11-45f3-9aa1-aafe1afec3a4, reopen: true}",
+          "[request.repository] {phase: result, sourcePath: foreman.history.reopen, requestId: 81fb9075-7a11-45f3-9aa1-aafe1afec3a4, draftScopeKey: 81fb9075-7a11-45f3-9aa1-aafe1afec3a4, reopen: true}",
+          "[foreman.draft.repository] {phase: request, mutationKind: catalog_add, sourcePath: foreman_subcontract, requestId: null, draftScopeKey: c1980503-6d86-417c-98d7-f9a1b3ae5879|BLD-ADMIN|LVL-01|SYS-MEP-EL|||}",
           "[draft-sync] source=rpc_v2",
-          "[request-draft-sync] {sourceBranch: rpc_v2, requestId: cde21631-871a-44be-821e-f80480599b71, submitted: false, requestCreated: true, lineCount: 1}",
-          "[foreman.draft.repository] {phase: result, mutationKind: catalog_add, sourcePath: foreman_subcontract, requestId: cde21631-871a-44be-821e-f80480599b71, draftScopeKey: 19bebdec-2a36-43ce-98a1-4dd78e47eccd|BLD-ADMIN|LVL-01|SYS-MEP-EL|||}",
-          "[foreman.draft.repository] {phase: request, mutationKind: row_remove, sourcePath: foreman_subcontract, requestId: cde21631-871a-44be-821e-f80480599b71, draftScopeKey: 19bebdec-2a36-43ce-98a1-4dd78e47eccd|BLD-ADMIN|LVL-01|SYS-MEP-EL|||}",
+          "[request-draft-sync] {sourceBranch: rpc_v2, requestId: bdcd985b-4f3b-4327-bb04-353e421a3a7b, submitted: false, requestCreated: true, lineCount: 1}",
+          "[foreman.draft.repository] {phase: result, mutationKind: catalog_add, sourcePath: foreman_subcontract, requestId: bdcd985b-4f3b-4327-bb04-353e421a3a7b, draftScopeKey: c1980503-6d86-417c-98d7-f9a1b3ae5879|BLD-ADMIN|LVL-01|SYS-MEP-EL|||}",
+          "[foreman.draft.repository] {phase: request, mutationKind: row_remove, sourcePath: foreman_subcontract, requestId: bdcd985b-4f3b-4327-bb04-353e421a3a7b, draftScopeKey: c1980503-6d86-417c-98d7-f9a1b3ae5879|BLD-ADMIN|LVL-01|SYS-MEP-EL|||}",
           "[draft-sync] source=rpc_v2",
-          "[request-draft-sync] {sourceBranch: rpc_v2, requestId: cde21631-871a-44be-821e-f80480599b71, submitted: false, requestCreated: false, lineCount: 0}",
-          "[foreman.draft.repository] {phase: result, mutationKind: row_remove, sourcePath: foreman_subcontract, requestId: cde21631-871a-44be-821e-f80480599b71, draftScopeKey: 19bebdec-2a36-43ce-98a1-4dd78e47eccd|BLD-ADMIN|LVL-01|SYS-MEP-EL|||}",
-          "[foreman.draft.repository] {phase: request, mutationKind: catalog_add, sourcePath: foreman_subcontract, requestId: cde21631-871a-44be-821e-f80480599b71, draftScopeKey: 19bebdec-2a36-43ce-98a1-4dd78e47eccd|BLD-ADMIN|LVL-01|SYS-MEP-EL|||}",
+          "[request-draft-sync] {sourceBranch: rpc_v2, requestId: bdcd985b-4f3b-4327-bb04-353e421a3a7b, submitted: false, requestCreated: false, lineCount: 0}",
+          "[foreman.draft.repository] {phase: result, mutationKind: row_remove, sourcePath: foreman_subcontract, requestId: bdcd985b-4f3b-4327-bb04-353e421a3a7b, draftScopeKey: c1980503-6d86-417c-98d7-f9a1b3ae5879|BLD-ADMIN|LVL-01|SYS-MEP-EL|||}",
+          "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold",
+          "Running application \"main\" with appParams:\n {rootTag: #root, hydrate: undefined} \nDevelopment-level warnings: ON.\nPerformance optimizations: OFF.",
+          "\"shadow*\" style props are deprecated. Use \"boxShadow\".",
+          "[jobQueue.env] {EXPO_PUBLIC_JOB_QUEUE_ENABLED: true, JOB_QUEUE_ENABLED: true}",
+          "[flash-list.compat] legacy architecture fallback -> FlatList",
+          "[foreman.draft.repository] {phase: request, mutationKind: catalog_add, sourcePath: foreman_subcontract, requestId: null, draftScopeKey: 25395164-f208-4f15-8d60-1a4d55f773c2|BLD-ADMIN|LVL-01|SYS-MEP-EL|||}",
+          "Animated: `useNativeDriver` is not supported because the native animated module is missing. Falling back to JS-based animation. To resolve this, add `RCTAnimation` module to this app, or remove `useNativeDriver`. Make sure to run `bundle exec pod install` first. Read more about autolinking: https://github.com/react-native-community/cli/blob/master/docs/autolinking.md",
           "[draft-sync] source=rpc_v2",
-          "[request-draft-sync] {sourceBranch: rpc_v2, requestId: cde21631-871a-44be-821e-f80480599b71, submitted: false, requestCreated: false, lineCount: 1}",
-          "[foreman.draft.repository] {phase: result, mutationKind: catalog_add, sourcePath: foreman_subcontract, requestId: cde21631-871a-44be-821e-f80480599b71, draftScopeKey: 19bebdec-2a36-43ce-98a1-4dd78e47eccd|BLD-ADMIN|LVL-01|SYS-MEP-EL|||}",
-          "[foreman.draft.repository] {phase: request, mutationKind: submit, sourcePath: foreman_subcontract, requestId: cde21631-871a-44be-821e-f80480599b71, draftScopeKey: 19bebdec-2a36-43ce-98a1-4dd78e47eccd|BLD-ADMIN|LVL-01|SYS-MEP-EL|||}",
+          "[request-draft-sync] {sourceBranch: rpc_v2, requestId: 9728bf83-5f8b-47f5-8164-fcca8361882a, submitted: false, requestCreated: true, lineCount: 1}",
+          "[foreman.draft.repository] {phase: result, mutationKind: catalog_add, sourcePath: foreman_subcontract, requestId: 9728bf83-5f8b-47f5-8164-fcca8361882a, draftScopeKey: 25395164-f208-4f15-8d60-1a4d55f773c2|BLD-ADMIN|LVL-01|SYS-MEP-EL|||}",
+          "[foreman.draft.repository] {phase: request, mutationKind: submit, sourcePath: foreman_subcontract, requestId: 9728bf83-5f8b-47f5-8164-fcca8361882a, draftScopeKey: 25395164-f208-4f15-8d60-1a4d55f773c2|BLD-ADMIN|LVL-01|SYS-MEP-EL|||}",
           "[draft-sync] source=rpc_v2",
-          "[request-draft-sync] {sourceBranch: rpc_v2, requestId: cde21631-871a-44be-821e-f80480599b71, submitted: true, requestCreated: false, lineCount: 1}",
-          "[submit] {requestId: cde21631-871a-44be-821e-f80480599b71, displayNo: REQ-0079/2026, status: pending, sourceBranch: rpc_v2, rpcVersion: v2}",
-          "[request-draft-sync.signal] {kind: broadcast, sourcePath: foreman.requestDraftSync.rpc_v2_submit, requestId: cde21631-871a-44be-821e-f80480599b71, displayNo: REQ-0079/2026, result: ok}",
-          "[request-draft-sync.signal] {kind: notification, sourcePath: foreman.requestDraftSync.rpc_v2_submit, requestId: cde21631-871a-44be-821e-f80480599b71, displayNo: REQ-0079/2026, error: null}",
-          "[foreman.draft.repository] {phase: result, mutationKind: submit, sourcePath: foreman_subcontract, requestId: cde21631-871a-44be-821e-f80480599b71, draftScopeKey: 19bebdec-2a36-43ce-98a1-4dd78e47eccd|BLD-ADMIN|LVL-01|SYS-MEP-EL|||}"
+          "[request-draft-sync] {sourceBranch: rpc_v2, requestId: 9728bf83-5f8b-47f5-8164-fcca8361882a, submitted: true, requestCreated: false, lineCount: 1}",
+          "[submit] {requestId: 9728bf83-5f8b-47f5-8164-fcca8361882a, displayNo: REQ-0081/2026, status: pending, sourceBranch: rpc_v2, rpcVersion: v2}",
+          "[request-draft-sync.signal] {kind: broadcast, sourcePath: foreman.requestDraftSync.rpc_v2_submit, requestId: 9728bf83-5f8b-47f5-8164-fcca8361882a, displayNo: REQ-0081/2026, result: ok}",
+          "[request-draft-sync.signal] {kind: notification, sourcePath: foreman.requestDraftSync.rpc_v2_submit, requestId: 9728bf83-5f8b-47f5-8164-fcca8361882a, displayNo: REQ-0081/2026, error: null}",
+          "[foreman.draft.repository] {phase: result, mutationKind: submit, sourcePath: foreman_subcontract, requestId: 9728bf83-5f8b-47f5-8164-fcca8361882a, draftScopeKey: 25395164-f208-4f15-8d60-1a4d55f773c2|BLD-ADMIN|LVL-01|SYS-MEP-EL|||}"
         ],
         "directorConsole": [
           "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold",
@@ -156,13 +164,13 @@
           "[jobQueue.env] {EXPO_PUBLIC_JOB_QUEUE_ENABLED: true, JOB_QUEUE_ENABLED: true}",
           "[flash-list.compat] legacy architecture fallback -> FlatList",
           "[director.live] {sourcePath: director.lifecycle.realtime_auth, hasAccessToken: true}",
-          "[director.repository] {phase: request, sourcePath: director.repository.fetchPendingRows, primaryPath: list_director_items_stable, primaryRowCount: 0, expectedRequestStatuses: Array(2)}",
-          "[director.repository] {phase: request, sourcePath: director.repository.loadPendingRowsFallback, requestSelector: submitted_at:not_null, expectedRequestStatuses: Array(2), visibleItemStatuses: Array(3)}",
-          "[director.repository] {phase: result, sourcePath: director.repository.loadPendingRowsFallback, requestCount: 59, requestStatusesSample: Array(4), syncResultLineCount: 0}",
-          "[director.repository] {phase: contract_mismatch, sourcePath: director.repository.fetchPendingRows, primaryPath: list_director_items_stable, primaryRowCount: 0, fallbackRowCount: 0}",
           "[director.live] {sourcePath: director.lifecycle.channel, status: SUBSCRIBED}",
           "[director.live] {sourcePath: director.lifecycle.broadcast_channel, status: SUBSCRIBED}",
-          "[director.live] {sourcePath: director.lifecycle.broadcast_handoff, requestId: cde21631-871a-44be-821e-f80480599b71, displayNo: REQ-0079/2026}",
+          "[director.repository] {phase: request, sourcePath: director.repository.fetchPendingRows, primaryPath: list_director_items_stable, primaryRowCount: 0, expectedRequestStatuses: Array(2)}",
+          "[director.repository] {phase: request, sourcePath: director.repository.loadPendingRowsFallback, requestSelector: submitted_at:not_null, expectedRequestStatuses: Array(2), visibleItemStatuses: Array(3)}",
+          "[director.repository] {phase: result, sourcePath: director.repository.loadPendingRowsFallback, requestCount: 60, requestStatusesSample: Array(4), syncResultLineCount: 0}",
+          "[director.repository] {phase: contract_mismatch, sourcePath: director.repository.fetchPendingRows, primaryPath: list_director_items_stable, primaryRowCount: 0, fallbackRowCount: 0}",
+          "[director.live] {sourcePath: director.lifecycle.broadcast_handoff, requestId: 9728bf83-5f8b-47f5-8164-fcca8361882a, displayNo: REQ-0081/2026}",
           "[director.repository] {phase: request, sourcePath: director.repository.fetchPendingRows, primaryPath: list_director_items_stable, primaryRowCount: 1, expectedRequestStatuses: Array(2)}",
           "[platform.observability] {screen: director, surface: request_rows, event: refresh_scope, result: queued_rerun, durationMs: null}"
         ],
@@ -172,7 +180,8 @@
         "directorHttpErrors": [],
         "foremanRelevantConsole": [
           "Running application \"main\" with appParams:\n {rootTag: #root, hydrate: undefined} \nDevelopment-level warnings: ON.\nPerformance optimizations: OFF.",
-          "[request-draft-sync.signal] {kind: notification, sourcePath: foreman.requestDraftSync.rpc_v2_submit, requestId: cde21631-871a-44be-821e-f80480599b71, displayNo: REQ-0079/2026, error: null}"
+          "Running application \"main\" with appParams:\n {rootTag: #root, hydrate: undefined} \nDevelopment-level warnings: ON.\nPerformance optimizations: OFF.",
+          "[request-draft-sync.signal] {kind: notification, sourcePath: foreman.requestDraftSync.rpc_v2_submit, requestId: 9728bf83-5f8b-47f5-8164-fcca8361882a, displayNo: REQ-0081/2026, error: null}"
         ],
         "directorRelevantConsole": [
           "Running application \"main\" with appParams:\n {rootTag: #root, hydrate: undefined} \nDevelopment-level warnings: ON.\nPerformance optimizations: OFF."
@@ -181,29 +190,29 @@
     }
   },
   "android": {
-    "status": "failed",
-    "routeOpen": false,
+    "status": "passed",
+    "routeOpen": true,
     "androidPreflight": {
-      "reverseConfigured": true,
+      "deviceDetected": true,
+      "packageName": "com.azisbek_dzhantaev.rikexpoapp",
+      "reverseProxyReady": true,
+      "appCleared": false,
       "gmsCleared": false,
-      "appStateCleared": false
+      "devClientReachable": true
     },
-    "environmentRecoveryUsed": true,
+    "environmentRecoveryUsed": false,
     "gmsRecoveryUsed": false,
     "anrRecoveryUsed": false,
     "blankSurfaceRecovered": false,
-    "devClientBootstrapRecovered": true,
-    "currentXml": "artifacts/android-foreman-request-sync-route-6.xml",
-    "currentPng": "artifacts/android-foreman-request-sync-route-6.png"
+    "devClientBootstrapRecovered": false,
+    "currentXml": "artifacts/android-foreman-request-sync-route-1.xml",
+    "currentPng": "artifacts/android-foreman-request-sync-route-1.png"
   },
   "ios": {
     "status": "residual",
-    "residual": "xcrun is unavailable on this host; iOS simulator cannot be started from Windows"
-  },
-  "platformSpecificIssues": [
-    {
-      "platform": "ios",
-      "issue": "xcrun is unavailable on this host; iOS simulator cannot be started from Windows"
-    }
-  ]
+    "iosResidual": "xcrun is unavailable on this host; iOS simulator cannot be started from Windows",
+    "platformSpecificIssues": [
+      "xcrun is unavailable on this host; iOS simulator cannot be started from Windows"
+    ]
+  }
 }

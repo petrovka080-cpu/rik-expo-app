@@ -6,6 +6,7 @@ import { chromium } from "playwright";
 import { createClient } from "@supabase/supabase-js";
 import { config as loadDotenv } from "dotenv";
 import { createAndroidHarness } from "./_shared/androidHarness";
+import { buildRuntimeSummary, createFailurePlatformResult } from "./_shared/runtimeSummary";
 
 loadDotenv({ path: ".env.local", override: false });
 loadDotenv({ path: ".env", override: false });
@@ -57,11 +58,6 @@ const ANDROID_LABELS = {
   positionsLabel: ["Позиции", "РџРѕР·РёС†РёРё"],
   locationsLabel: ["Локации", "Р›РѕРєР°С†РёРё"],
   close: ["Закрыть", "Р—Р°РєСЂС‹С‚СЊ"],
-};
-
-type RuntimeIssue = {
-  platform: "web" | "android" | "ios";
-  issue: string;
 };
 
 type TempUser = {
@@ -539,6 +535,9 @@ const isAndroidLoginScreen = (xml: string) =>
 const isAndroidReportsHome = (xml: string) =>
   matchesAndroidLabel(xml, ANDROID_LABELS.cardTitle) && matchesAndroidLabel(xml, ANDROID_LABELS.open);
 
+const isAndroidDirectorControlHome = (xml: string) =>
+  /Контроль|РљРѕРЅС‚СЂРѕР»СЊ/i.test(xml) && matchesAndroidLabel(xml, ANDROID_LABELS.reportsTab);
+
 const isAndroidReportsModal = (xml: string) =>
   matchesAndroidLabel(xml, ANDROID_LABELS.materialsTab) &&
   matchesAndroidLabel(xml, ANDROID_LABELS.worksTab) &&
@@ -569,14 +568,14 @@ async function dismissAndroidClosableOverlays(current: ReturnType<typeof dumpAnd
 
 async function loginDirectorAndroid(user: TempUser, packageName: string | null) {
   writeJson(path.join(projectRoot, "artifacts/android-director-reports-user.json"), user);
-  if (process.env.RIK_ANDROID_SHARED_HARNESS !== "0") {
+  {
     const current = await androidHarness.loginAndroidWithProtectedRoute({
       packageName,
       user,
       protectedRoute: "rik://director",
       artifactBase: "android-director-reports",
-      successPredicate: (xml) => isAndroidReportsHome(xml) || isAndroidReportsModal(xml),
-      renderablePredicate: (xml) => isAndroidLoginScreen(xml) || isAndroidReportsHome(xml) || isAndroidReportsModal(xml),
+      successPredicate: (xml) => isAndroidDirectorControlHome(xml) || isAndroidReportsModal(xml),
+      renderablePredicate: (xml) => isAndroidLoginScreen(xml) || isAndroidDirectorControlHome(xml) || isAndroidReportsModal(xml),
       loginScreenPredicate: isAndroidLoginScreen,
     });
     return dismissAndroidClosableOverlays(current);
@@ -842,59 +841,35 @@ function runIosRuntime(): Record<string, unknown> {
 }
 
 async function main() {
-  const web = await runWebRuntime().catch((error) => ({
-    status: "failed",
-    reportsHomeOpened: false,
-    reportsModalOpened: false,
-    reportScopeRequested: false,
-    disciplineScopeRequested: false,
-    reportScope200: false,
-    disciplineScope200: false,
-    reportsControlsRendered: false,
-    workTabRendered: false,
-    platformSpecificIssues: [error instanceof Error ? error.message : String(error ?? "unknown web error")],
-  }));
-  const android = await runAndroidRuntime().catch((error) => ({
-    status: "failed",
-    reportsHomeVisible: false,
-    reportsModalOpened: false,
-    workTabRendered: false,
-    ...androidHarness.getRecoverySummary(),
-    platformSpecificIssues: [error instanceof Error ? error.message : String(error ?? "unknown android error")],
-  }));
+  const web = await runWebRuntime().catch((error) =>
+    createFailurePlatformResult("web", error, {
+      reportsHomeOpened: false,
+      reportsModalOpened: false,
+      reportScopeRequested: false,
+      disciplineScopeRequested: false,
+      reportScope200: false,
+      disciplineScope200: false,
+      reportsControlsRendered: false,
+      workTabRendered: false,
+    }),
+  );
+  const android = await runAndroidRuntime().catch((error) => {
+    const artifacts = androidHarness.captureFailureArtifacts("android-director-reports-failure");
+    return createFailurePlatformResult("android", error, {
+      reportsHomeVisible: false,
+      reportsModalOpened: false,
+      workTabRendered: false,
+      ...androidHarness.getRecoverySummary(),
+      ...artifacts,
+    });
+  });
   const ios = runIosRuntime();
   const webRecord = web as Record<string, unknown>;
   const androidRecord = android as Record<string, unknown>;
-  const iosRecord = ios as Record<string, unknown>;
-
-  const platformSpecificIssues: RuntimeIssue[] = [];
-  for (const issue of (Array.isArray(web.platformSpecificIssues) ? web.platformSpecificIssues : []) as string[]) {
-    platformSpecificIssues.push({ platform: "web", issue });
-  }
-  for (const issue of (Array.isArray(android.platformSpecificIssues) ? android.platformSpecificIssues : []) as string[]) {
-    platformSpecificIssues.push({ platform: "android", issue });
-  }
-  for (const issue of (Array.isArray(ios.platformSpecificIssues) ? ios.platformSpecificIssues : []) as string[]) {
-    platformSpecificIssues.push({ platform: "ios", issue });
-  }
-
-  const summary = {
-    status:
-      web.status === "passed" &&
-      android.status === "passed" &&
-      (ios.status === "passed" || ios.status === "residual")
-        ? "passed"
-        : "failed",
-    webPassed: web.status === "passed",
-    androidPassed: android.status === "passed",
-    iosPassed: ios.status === "passed",
-    iosResidual: typeof iosRecord.iosResidual === "string" ? (iosRecord.iosResidual as string) : null,
-    environmentRecoveryUsed: androidRecord.environmentRecoveryUsed === true,
-    gmsRecoveryUsed: androidRecord.gmsRecoveryUsed === true,
-    anrRecoveryUsed: androidRecord.anrRecoveryUsed === true,
-    blankSurfaceRecovered: androidRecord.blankSurfaceRecovered === true,
-    devClientBootstrapRecovered: androidRecord.devClientBootstrapRecovered === true,
-    runtimeVerified: web.status === "passed" && android.status === "passed",
+  const summary = buildRuntimeSummary({
+    web,
+    android,
+    ios,
     scenariosPassed: {
       web: {
         initialOpen: web.reportsHomeOpened === true,
@@ -914,7 +889,6 @@ async function main() {
         workTab: ios.status === "passed",
       },
     },
-    platformSpecificIssues,
     artifacts: {
       web: typeof webRecord.screenshot === "string" ? webRecord.screenshot : `${webArtifactBase}.png`,
       android: {
@@ -928,7 +902,10 @@ async function main() {
         worksPng: typeof androidRecord.worksPng === "string" ? androidRecord.worksPng : null,
       },
     },
-  };
+    extra: {
+      gate: "director_reports_runtime_verify",
+    },
+  });
 
   writeJson(runtimeOutPath, { web, android, ios, summary });
   writeJson(runtimeSummaryOutPath, summary);

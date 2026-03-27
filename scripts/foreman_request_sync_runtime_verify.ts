@@ -5,6 +5,7 @@ import { execFileSync, spawn, spawnSync } from "node:child_process";
 import { createClient } from "@supabase/supabase-js";
 import { config as loadDotenv } from "dotenv";
 import { createAndroidHarness } from "./_shared/androidHarness";
+import { buildRuntimeSummary, createFailurePlatformResult } from "./_shared/runtimeSummary";
 
 loadDotenv({ path: ".env.local", override: false });
 loadDotenv({ path: ".env", override: false });
@@ -29,11 +30,6 @@ const webArtifactOutPath = path.join(projectRoot, "artifacts/foreman-request-syn
 const androidDevClientPort = Number(process.env.FOREMAN_ANDROID_DEV_PORT ?? "8081");
 const androidDevClientStdoutPath = path.join(projectRoot, `artifacts/expo-dev-client-${androidDevClientPort}.stdout.log`);
 const androidDevClientStderrPath = path.join(projectRoot, `artifacts/expo-dev-client-${androidDevClientPort}.stderr.log`);
-
-type RuntimeIssue = {
-  platform: "web" | "android" | "ios";
-  issue: string;
-};
 
 type TempUser = {
   id: string;
@@ -646,11 +642,15 @@ async function runWebRuntime() {
     typeof subcontract.add === "object" && subcontract.add != null
       ? String((subcontract.add as Record<string, unknown>).body ?? "")
       : "";
-  const subcontractDraftVisibleOk = subcontractDraftBody.includes("Статус: Черновик");
+  const subcontractDraftVisibleOk =
+    /REQ-\d+\/\d{4}/.test(subcontractDraftBody) &&
+    /Черновик|Р§РµСЂРЅРѕРІРёРє/i.test(subcontractDraftBody) &&
+    /PDF/i.test(subcontractDraftBody) &&
+    /Excel/i.test(subcontractDraftBody);
   const subcontractDraftVisible =
     typeof subcontract.add === "object" &&
     subcontract.add != null &&
-    String((subcontract.add as Record<string, unknown>).body ?? "").includes("Статус: Черновик");
+    /REQ-\d+\/\d{4}/.test(String((subcontract.add as Record<string, unknown>).body ?? ""));
   void subcontractDraftVisible;
   const noLegacyConsolePath = foremanConsole.every(
     (line) =>
@@ -712,60 +712,39 @@ async function runAndroidRuntime() {
 }
 
 async function run() {
-  const platformSpecificIssues: RuntimeIssue[] = [];
-  const web = await runWebRuntime().catch((error) => {
-    platformSpecificIssues.push({
-      platform: "web",
-      issue: error instanceof Error ? error.message : String(error),
-    });
-    return { status: "failed" as const };
-  });
+  const web = await runWebRuntime().catch((error) => createFailurePlatformResult("web", error));
   const android = await runAndroidRuntime().catch((error) => {
-    platformSpecificIssues.push({
-      platform: "android",
-      issue: error instanceof Error ? error.message : String(error),
+    const artifacts = androidHarness.captureFailureArtifacts("android-foreman-request-sync-failure");
+    return createFailurePlatformResult("android", error, {
+      ...androidHarness.getRecoverySummary(),
+      ...artifacts,
     });
-    return { status: "failed" as const, ...androidHarness.getRecoverySummary() };
   });
-  const iosResidual = xcrunAvailable()
-    ? null
-    : "xcrun is unavailable on this host; iOS simulator cannot be started from Windows";
-  if (iosResidual) {
-    platformSpecificIssues.push({ platform: "ios", issue: iosResidual });
-  }
+  const ios = xcrunAvailable()
+    ? ({
+        status: "failed",
+        platformSpecificIssues: [
+          "xcrun is available but automated foreman iOS runtime is not implemented in this host flow",
+        ],
+      } as const)
+    : ({
+        status: "residual",
+        iosResidual: "xcrun is unavailable on this host; iOS simulator cannot be started from Windows",
+        platformSpecificIssues: ["xcrun is unavailable on this host; iOS simulator cannot be started from Windows"],
+      } as const);
 
   const runtimePayload = {
     generatedAt: new Date().toISOString(),
     batch: "foreman_request_sync_runtime_verify",
     web,
     android,
-    ios: {
-      status: iosResidual ? "residual" : "not_run",
-      residual: iosResidual,
-    },
-    platformSpecificIssues,
+    ios,
   };
 
-  const androidRecovery = android as {
-    environmentRecoveryUsed?: boolean;
-    gmsRecoveryUsed?: boolean;
-    anrRecoveryUsed?: boolean;
-    blankSurfaceRecovered?: boolean;
-    devClientBootstrapRecovered?: boolean;
-  };
-
-  const summaryPayload = {
-    status: web.status === "passed" && android.status === "passed" ? "passed" : "failed",
-    webPassed: web.status === "passed",
-    androidPassed: android.status === "passed",
-    iosPassed: false,
-    iosResidual,
-    environmentRecoveryUsed: androidRecovery.environmentRecoveryUsed === true,
-    gmsRecoveryUsed: androidRecovery.gmsRecoveryUsed === true,
-    anrRecoveryUsed: androidRecovery.anrRecoveryUsed === true,
-    blankSurfaceRecovered: androidRecovery.blankSurfaceRecovered === true,
-    devClientBootstrapRecovered: androidRecovery.devClientBootstrapRecovered === true,
-    runtimeVerified: web.status === "passed" && android.status === "passed",
+  const summaryPayload = buildRuntimeSummary({
+    web,
+    android,
+    ios,
     scenariosPassed: {
       web: {
         materialsCrud: web.status === "passed" ? (web as { materialsCrudOk?: boolean }).materialsCrudOk === true : false,
@@ -782,7 +761,6 @@ async function run() {
         routeOpen: false,
       },
     },
-    platformSpecificIssues,
     artifacts: {
       web: path.relative(projectRoot, webArtifactOutPath).replace(/\\/g, "/"),
       android:
@@ -793,7 +771,10 @@ async function run() {
             }
           : null,
     },
-  };
+    extra: {
+      gate: "foreman_request_sync_runtime_verify",
+    },
+  });
 
   writeJson(runtimeOutPath, runtimePayload);
   writeJson(runtimeSummaryOutPath, summaryPayload);

@@ -46,7 +46,7 @@
         },
         {
           "type": "info",
-          "text": "[platform.observability] {screen: warehouse, surface: incoming_list, event: fetch_incoming, result: success, durationMs: 776}"
+          "text": "[platform.observability] {screen: warehouse, surface: incoming_list, event: fetch_incoming, result: success, durationMs: 988}"
         },
         {
           "type": "info",
@@ -54,11 +54,11 @@
         },
         {
           "type": "info",
-          "text": "[platform.observability] {screen: warehouse, surface: stock_list, event: fetch_stock_rpc, result: success, durationMs: 1617}"
+          "text": "[platform.observability] {screen: warehouse, surface: stock_list, event: fetch_stock_rpc, result: success, durationMs: 1213}"
         },
         {
           "type": "info",
-          "text": "[platform.observability] {screen: warehouse, surface: stock_list, event: fetch_stock, result: success, durationMs: 1617}"
+          "text": "[platform.observability] {screen: warehouse, surface: stock_list, event: fetch_stock, result: success, durationMs: 1213}"
         },
         {
           "type": "info",
@@ -82,6 +82,10 @@
         },
         {
           "type": "info",
+          "text": "[platform.observability] {screen: warehouse, surface: realtime_channel, event: subscription_started, result: success, durationMs: null}"
+        },
+        {
+          "type": "info",
           "text": "[warehouse.expenseQueue] refresh {force: false, reason: tab}"
         },
         {
@@ -90,7 +94,7 @@
         },
         {
           "type": "info",
-          "text": "[platform.observability] {screen: warehouse, surface: incoming_list, event: fetch_incoming, result: success, durationMs: 559}"
+          "text": "[platform.observability] {screen: warehouse, surface: incoming_list, event: fetch_incoming, result: success, durationMs: 684}"
         },
         {
           "type": "info",
@@ -98,11 +102,11 @@
         },
         {
           "type": "info",
-          "text": "[platform.observability] {screen: warehouse, surface: stock_list, event: fetch_stock_rpc, result: success, durationMs: 772}"
+          "text": "[platform.observability] {screen: warehouse, surface: stock_list, event: fetch_stock_rpc, result: success, durationMs: 951}"
         },
         {
           "type": "info",
-          "text": "[platform.observability] {screen: warehouse, surface: stock_list, event: fetch_stock, result: success, durationMs: 773}"
+          "text": "[platform.observability] {screen: warehouse, surface: stock_list, event: fetch_stock, result: success, durationMs: 951}"
         },
         {
           "type": "info",
@@ -118,11 +122,11 @@
         },
         {
           "type": "info",
-          "text": "[platform.observability] {screen: warehouse, surface: req_heads, event: fetch_req_heads, result: success, durationMs: 820}"
+          "text": "[platform.observability] {screen: warehouse, surface: req_heads, event: fetch_req_heads, result: success, durationMs: 840}"
         },
         {
           "type": "info",
-          "text": "[warehouse.reqHeads] window_fetch {pageIndex: 0, pageSize: 80, forceRefresh: false, rowCount: 40, totalRowCount: 40}"
+          "text": "[warehouse.reqHeads] window_fetch {pageIndex: 0, pageSize: 80, forceRefresh: false, rowCount: 41, totalRowCount: 41}"
         },
         {
           "type": "info",
@@ -131,6 +135,10 @@
         {
           "type": "info",
           "text": "[warehouse.expenseQueue] refresh {force: false, reason: tab}"
+        },
+        {
+          "type": "info",
+          "text": "[platform.observability] {screen: warehouse, surface: screen_root, event: subscription_started, result: success, durationMs: null}"
         },
         {
           "type": "warning",
@@ -147,18 +155,31 @@
     }
   },
   "android": {
-    "status": "failed",
-    "queueVisible": false,
-    "emptyStateVisible": false,
-    "modalOpened": false,
-    "environmentRecoveryUsed": true,
+    "status": "passed",
+    "androidPreflight": {
+      "deviceDetected": true,
+      "packageName": "com.azisbek_dzhantaev.rikexpoapp",
+      "reverseProxyReady": true,
+      "appCleared": false,
+      "gmsCleared": false,
+      "devClientReachable": true
+    },
+    "environmentRecoveryUsed": false,
     "gmsRecoveryUsed": false,
     "anrRecoveryUsed": false,
-    "blankSurfaceRecovered": true,
-    "devClientBootstrapRecovered": true,
-    "platformSpecificIssues": [
-      "Android login button not found"
-    ]
+    "blankSurfaceRecovered": false,
+    "devClientBootstrapRecovered": false,
+    "recipientChosen": false,
+    "expenseTabOpened": true,
+    "queueVisible": false,
+    "emptyStateVisible": true,
+    "modalOpened": false,
+    "openedRequestId": null,
+    "currentXml": "artifacts/android-warehouse-issue-queue-route-1.xml",
+    "currentPng": "artifacts/android-warehouse-issue-queue-route-1.png",
+    "afterRecipientXml": "artifacts/android-warehouse-issue-queue-after-recipient.xml",
+    "afterRecipientPng": "artifacts/android-warehouse-issue-queue-after-recipient.png",
+    "platformSpecificIssues": []
   },
   "ios": {
     "status": "residual",
@@ -168,17 +189,24 @@
     ]
   },
   "summary": {
-    "status": "failed",
+    "status": "passed",
     "webPassed": true,
-    "androidPassed": false,
+    "androidPassed": true,
     "iosPassed": false,
-    "iosResidual": "xcrun is unavailable on this host; iOS simulator cannot be started from Windows",
-    "environmentRecoveryUsed": true,
+    "runtimeVerified": true,
+    "environmentRecoveryUsed": false,
     "gmsRecoveryUsed": false,
     "anrRecoveryUsed": false,
-    "blankSurfaceRecovered": true,
-    "devClientBootstrapRecovered": true,
-    "runtimeVerified": false,
+    "blankSurfaceRecovered": false,
+    "devClientBootstrapRecovered": false,
+    "platformSpecificIssues": [
+      {
+        "platform": "ios",
+        "issue": "xcrun is unavailable on this host; iOS simulator cannot be started from Windows"
+      }
+    ],
+    "iosResidual": "xcrun is unavailable on this host; iOS simulator cannot be started from Windows",
+    "failureKind": "unknown",
     "scenariosPassed": {
       "web": {
         "initialOpen": true,
@@ -187,9 +215,9 @@
         "refreshLifecycle": true
       },
       "android": {
-        "initialOpen": false,
-        "queueCorrectness": false,
-        "interactionSanity": false,
+        "initialOpen": true,
+        "queueCorrectness": true,
+        "interactionSanity": true,
         "refreshLifecycle": true
       },
       "ios": {
@@ -199,25 +227,16 @@
         "refreshLifecycle": false
       }
     },
-    "platformSpecificIssues": [
-      {
-        "platform": "android",
-        "issue": "Android login button not found"
-      },
-      {
-        "platform": "ios",
-        "issue": "xcrun is unavailable on this host; iOS simulator cannot be started from Windows"
-      }
-    ],
     "artifacts": {
       "webSummary": "artifacts/warehouse-issue-queue-web-smoke.summary.json",
       "webRuntime": "artifacts/warehouse-issue-queue-web-smoke.json",
-      "androidCurrentXml": null,
-      "androidCurrentPng": null,
-      "androidAfterRecipientXml": null,
-      "androidAfterRecipientPng": null,
+      "androidCurrentXml": "artifacts/android-warehouse-issue-queue-route-1.xml",
+      "androidCurrentPng": "artifacts/android-warehouse-issue-queue-route-1.png",
+      "androidAfterRecipientXml": "artifacts/android-warehouse-issue-queue-after-recipient.xml",
+      "androidAfterRecipientPng": "artifacts/android-warehouse-issue-queue-after-recipient.png",
       "androidModalXml": null,
       "androidModalPng": null
-    }
+    },
+    "gate": "warehouse_issue_queue_runtime_verify"
   }
 }

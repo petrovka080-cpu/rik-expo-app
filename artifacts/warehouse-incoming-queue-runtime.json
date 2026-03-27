@@ -48,7 +48,7 @@
         },
         {
           "type": "info",
-          "text": "[platform.observability] {screen: warehouse, surface: incoming_list, event: fetch_incoming, result: success, durationMs: 761}"
+          "text": "[platform.observability] {screen: warehouse, surface: incoming_list, event: fetch_incoming, result: success, durationMs: 874}"
         },
         {
           "type": "info",
@@ -56,11 +56,11 @@
         },
         {
           "type": "info",
-          "text": "[platform.observability] {screen: warehouse, surface: stock_list, event: fetch_stock_rpc, result: success, durationMs: 1003}"
+          "text": "[platform.observability] {screen: warehouse, surface: stock_list, event: fetch_stock_rpc, result: success, durationMs: 1135}"
         },
         {
           "type": "info",
-          "text": "[platform.observability] {screen: warehouse, surface: stock_list, event: fetch_stock, result: success, durationMs: 1003}"
+          "text": "[platform.observability] {screen: warehouse, surface: stock_list, event: fetch_stock, result: success, durationMs: 1136}"
         },
         {
           "type": "info",
@@ -84,7 +84,15 @@
         },
         {
           "type": "info",
-          "text": "[platform.observability] {screen: warehouse, surface: incoming_list, event: fetch_incoming, result: success, durationMs: 612}"
+          "text": "[platform.observability] {screen: warehouse, surface: realtime_channel, event: subscription_started, result: success, durationMs: null}"
+        },
+        {
+          "type": "info",
+          "text": "[platform.observability] {screen: warehouse, surface: screen_root, event: subscription_started, result: success, durationMs: null}"
+        },
+        {
+          "type": "info",
+          "text": "[platform.observability] {screen: warehouse, surface: incoming_list, event: fetch_incoming, result: success, durationMs: 605}"
         },
         {
           "type": "info",
@@ -92,11 +100,11 @@
         },
         {
           "type": "info",
-          "text": "[platform.observability] {screen: warehouse, surface: stock_list, event: fetch_stock_rpc, result: success, durationMs: 830}"
+          "text": "[platform.observability] {screen: warehouse, surface: stock_list, event: fetch_stock_rpc, result: success, durationMs: 804}"
         },
         {
           "type": "info",
-          "text": "[platform.observability] {screen: warehouse, surface: stock_list, event: fetch_stock, result: success, durationMs: 830}"
+          "text": "[platform.observability] {screen: warehouse, surface: stock_list, event: fetch_stock, result: success, durationMs: 804}"
         },
         {
           "type": "info",
@@ -113,18 +121,30 @@
     }
   },
   "android": {
-    "status": "failed",
-    "queueVisible": false,
-    "emptyStateVisible": false,
-    "modalOpened": false,
-    "environmentRecoveryUsed": true,
+    "status": "passed",
+    "androidPreflight": {
+      "deviceDetected": true,
+      "packageName": "com.azisbek_dzhantaev.rikexpoapp",
+      "reverseProxyReady": true,
+      "appCleared": false,
+      "gmsCleared": false,
+      "devClientReachable": true
+    },
+    "environmentRecoveryUsed": false,
     "gmsRecoveryUsed": false,
     "anrRecoveryUsed": false,
-    "blankSurfaceRecovered": true,
-    "devClientBootstrapRecovered": true,
-    "platformSpecificIssues": [
-      "Android login button not found"
-    ]
+    "blankSurfaceRecovered": false,
+    "devClientBootstrapRecovered": false,
+    "incomingTabOpened": true,
+    "queueVisible": false,
+    "emptyStateVisible": true,
+    "modalOpened": false,
+    "openedRowId": null,
+    "currentXml": "artifacts/android-warehouse-incoming-queue-route-1.xml",
+    "currentPng": "artifacts/android-warehouse-incoming-queue-route-1.png",
+    "queueXml": "artifacts/android-warehouse-incoming-queue-after-fio.xml",
+    "queuePng": "artifacts/android-warehouse-incoming-queue-after-fio.png",
+    "platformSpecificIssues": []
   },
   "ios": {
     "status": "residual",
@@ -134,17 +154,24 @@
     ]
   },
   "summary": {
-    "status": "failed",
+    "status": "passed",
     "webPassed": true,
-    "androidPassed": false,
+    "androidPassed": true,
     "iosPassed": false,
-    "iosResidual": "xcrun is unavailable on this host; iOS simulator cannot be started from Windows",
-    "environmentRecoveryUsed": true,
+    "runtimeVerified": true,
+    "environmentRecoveryUsed": false,
     "gmsRecoveryUsed": false,
     "anrRecoveryUsed": false,
-    "blankSurfaceRecovered": true,
-    "devClientBootstrapRecovered": true,
-    "runtimeVerified": false,
+    "blankSurfaceRecovered": false,
+    "devClientBootstrapRecovered": false,
+    "platformSpecificIssues": [
+      {
+        "platform": "ios",
+        "issue": "xcrun is unavailable on this host; iOS simulator cannot be started from Windows"
+      }
+    ],
+    "iosResidual": "xcrun is unavailable on this host; iOS simulator cannot be started from Windows",
+    "failureKind": "unknown",
     "scenariosPassed": {
       "web": {
         "initialOpen": true,
@@ -152,9 +179,9 @@
         "interactionSanity": true
       },
       "android": {
-        "initialOpen": false,
-        "queueCorrectness": false,
-        "interactionSanity": false
+        "initialOpen": true,
+        "queueCorrectness": true,
+        "interactionSanity": true
       },
       "ios": {
         "initialOpen": false,
@@ -162,25 +189,16 @@
         "interactionSanity": false
       }
     },
-    "platformSpecificIssues": [
-      {
-        "platform": "android",
-        "issue": "Android login button not found"
-      },
-      {
-        "platform": "ios",
-        "issue": "xcrun is unavailable on this host; iOS simulator cannot be started from Windows"
-      }
-    ],
     "artifacts": {
       "webSummary": "artifacts/warehouse-incoming-queue-web-smoke.summary.json",
       "webRuntime": "artifacts/warehouse-incoming-queue-web-smoke.json",
-      "androidCurrentXml": null,
-      "androidCurrentPng": null,
-      "androidQueueXml": null,
-      "androidQueuePng": null,
+      "androidCurrentXml": "artifacts/android-warehouse-incoming-queue-route-1.xml",
+      "androidCurrentPng": "artifacts/android-warehouse-incoming-queue-route-1.png",
+      "androidQueueXml": "artifacts/android-warehouse-incoming-queue-after-fio.xml",
+      "androidQueuePng": "artifacts/android-warehouse-incoming-queue-after-fio.png",
       "androidModalXml": null,
       "androidModalPng": null
-    }
+    },
+    "gate": "warehouse_incoming_queue_runtime_verify"
   }
 }

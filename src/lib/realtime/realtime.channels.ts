@@ -51,7 +51,6 @@ export const ACCOUNTANT_REALTIME_BINDINGS: readonly RealtimeChannelBinding[] = [
     key: "accountant_proposals_sent",
     table: "proposals",
     event: "UPDATE",
-    filter: "sent_to_accountant_at=not.is.null",
     schema: "public",
     owner: "table:proposals",
   },

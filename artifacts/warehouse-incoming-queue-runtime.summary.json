@@ -1,15 +1,22 @@
 {
-  "status": "failed",
+  "status": "passed",
   "webPassed": true,
-  "androidPassed": false,
+  "androidPassed": true,
   "iosPassed": false,
-  "iosResidual": "xcrun is unavailable on this host; iOS simulator cannot be started from Windows",
-  "environmentRecoveryUsed": true,
+  "runtimeVerified": true,
+  "environmentRecoveryUsed": false,
   "gmsRecoveryUsed": false,
   "anrRecoveryUsed": false,
-  "blankSurfaceRecovered": true,
-  "devClientBootstrapRecovered": true,
-  "runtimeVerified": false,
+  "blankSurfaceRecovered": false,
+  "devClientBootstrapRecovered": false,
+  "platformSpecificIssues": [
+    {
+      "platform": "ios",
+      "issue": "xcrun is unavailable on this host; iOS simulator cannot be started from Windows"
+    }
+  ],
+  "iosResidual": "xcrun is unavailable on this host; iOS simulator cannot be started from Windows",
+  "failureKind": "unknown",
   "scenariosPassed": {
     "web": {
       "initialOpen": true,
@@ -17,9 +24,9 @@
       "interactionSanity": true
     },
     "android": {
-      "initialOpen": false,
-      "queueCorrectness": false,
-      "interactionSanity": false
+      "initialOpen": true,
+      "queueCorrectness": true,
+      "interactionSanity": true
     },
     "ios": {
       "initialOpen": false,
@@ -27,24 +34,15 @@
       "interactionSanity": false
     }
   },
-  "platformSpecificIssues": [
-    {
-      "platform": "android",
-      "issue": "Android login button not found"
-    },
-    {
-      "platform": "ios",
-      "issue": "xcrun is unavailable on this host; iOS simulator cannot be started from Windows"
-    }
-  ],
   "artifacts": {
     "webSummary": "artifacts/warehouse-incoming-queue-web-smoke.summary.json",
     "webRuntime": "artifacts/warehouse-incoming-queue-web-smoke.json",
-    "androidCurrentXml": null,
-    "androidCurrentPng": null,
-    "androidQueueXml": null,
-    "androidQueuePng": null,
+    "androidCurrentXml": "artifacts/android-warehouse-incoming-queue-route-1.xml",
+    "androidCurrentPng": "artifacts/android-warehouse-incoming-queue-route-1.png",
+    "androidQueueXml": "artifacts/android-warehouse-incoming-queue-after-fio.xml",
+    "androidQueuePng": "artifacts/android-warehouse-incoming-queue-after-fio.png",
     "androidModalXml": null,
     "androidModalPng": null
-  }
+  },
+  "gate": "warehouse_incoming_queue_runtime_verify"
 }

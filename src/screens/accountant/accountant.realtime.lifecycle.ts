@@ -63,6 +63,32 @@ export function useAccountantRealtimeLifecycle(params: {
           return;
         }
 
+        if (binding.key === "accountant_proposals_sent") {
+          const next = payload.new;
+          const sentToAccountantAt =
+            next && typeof next === "object"
+              ? String((next as Record<string, unknown>).sent_to_accountant_at ?? "").trim()
+              : "";
+          if (!sentToAccountantAt) {
+            recordPlatformObservability({
+              screen: "accountant",
+              surface: "screen_root",
+              category: "reload",
+              event: "realtime_refresh_skipped_hidden",
+              result: "skipped",
+              trigger: "realtime",
+              sourceKind: "supabase:postgres_changes",
+              extra: {
+                bindingKey: binding.key,
+                table: binding.table,
+                owner: "realtime_lifecycle",
+                reason: "proposal_not_sent_to_accountant",
+              },
+            });
+            return;
+          }
+        }
+
         if (!params.focusedRef.current) {
           recordPlatformGuardSkip("not_focused", {
             screen: "accountant",

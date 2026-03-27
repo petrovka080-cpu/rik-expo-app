@@ -3,7 +3,7 @@ import path from "node:path";
 import { execFileSync, spawnSync } from "node:child_process";
 
 import { createAndroidHarness } from "./_shared/androidHarness";
-import { buildRuntimeSummary, createFailurePlatformResult, type RuntimeIssue } from "./_shared/runtimeSummary";
+import { buildRuntimeSummary, createFailurePlatformResult } from "./_shared/runtimeSummary";
 import {
   createTempUser as createRuntimeTempUser,
   cleanupTempUser as cleanupRuntimeTempUser,
@@ -680,13 +680,19 @@ async function dismissAndroidDevMenuIfPresent(
   current: ReturnType<typeof dumpAndroidScreen>,
   artifactBase: string,
 ) {
-  if (!isAndroidDevMenuIntroScreen(current.xml)) return current;
-  dismissAndroidDevMenuIntro(current.xml);
+  if (!isAndroidDevMenuIntroScreen(current.xml) && !androidHarness.isAndroidFullDevMenuScreen(current.xml)) {
+    return current;
+  }
+  if (isAndroidDevMenuIntroScreen(current.xml)) {
+    dismissAndroidDevMenuIntro(current.xml);
+  } else {
+    androidHarness.pressAndroidKey(4);
+  }
   return await poll(
     `android:${artifactBase}:dev_menu_closed`,
     async () => {
       const next = dumpAndroidScreen(`${artifactBase}-dev-menu-closed`);
-      if (isAndroidDevMenuIntroScreen(next.xml)) return null;
+      if (isAndroidDevMenuIntroScreen(next.xml) || androidHarness.isAndroidFullDevMenuScreen(next.xml)) return null;
       return next;
     },
     15_000,
@@ -699,9 +705,25 @@ async function settleAndroidBuyerRoute(
   current: ReturnType<typeof dumpAndroidScreen>,
   artifactBase: string,
 ) {
-  let screen = await dismissAndroidDevMenuIfPresent(current, artifactBase);
-  if (isAndroidDevLauncherHome(screen.xml)) {
-    screen = await ensureAndroidDevClientLoaded(packageName, androidDevClientPort);
+  let screen = await androidHarness.dismissAndroidInterruptions(current, `${artifactBase}-interrupt`);
+  screen = await dismissAndroidDevMenuIfPresent(screen, artifactBase);
+  if (
+    isAndroidDevLauncherHome(screen.xml) ||
+    androidHarness.isAndroidLauncherHome(screen.xml) ||
+    androidHarness.isAndroidBlankAppSurface(screen.xml)
+  ) {
+    screen = await androidHarness.openAndroidRoute({
+      packageName,
+      routes: ["rik://buyer", "rik:///buyer", "rik:///%28tabs%29/buyer"],
+      artifactBase,
+      predicate: (xml) => isAndroidBuyerHome(xml) || isAndroidInboxSurface(xml, "") || isAndroidFioModal(xml),
+      renderablePredicate: (xml) =>
+        isAndroidLoginScreen(xml) || isAndroidBuyerHome(xml) || isAndroidInboxSurface(xml, "") || isAndroidFioModal(xml),
+      loginScreenPredicate: isAndroidLoginScreen,
+      timeoutMs: 30_000,
+      delayMs: 1200,
+    });
+    screen = await androidHarness.dismissAndroidInterruptions(screen, `${artifactBase}-settled-interrupt`);
     screen = await dismissAndroidDevMenuIfPresent(screen, `${artifactBase}-settled`);
   }
   return screen;
@@ -720,10 +742,7 @@ async function confirmAndroidBuyerFio(current: ReturnType<typeof dumpAndroidScre
 
   tapAndroidBounds(inputNode.bounds);
   await sleep(400);
-  execFileSync("adb", ["shell", "input", "text", escapeAndroidInputText("Buyer Inbox Android")], {
-    cwd: projectRoot,
-    stdio: "pipe",
-  });
+  androidHarness.typeAndroidText("Buyer Inbox Android");
   await sleep(500);
   execFileSync("adb", ["shell", "input", "keyevent", "4"], {
     cwd: projectRoot,
@@ -863,21 +882,19 @@ async function loginBuyerAndroid(user: TempUser, packageName: string | null) {
     return dismissAndroidDevMenuIfPresent(current, "android-buyer-summary-inbox");
   }
 
-  startAndroidBuyerRoute(packageName);
-  await sleep(1500);
-  current = await poll(
-    "android:buyer_route_visible",
-    async () => {
-      const next = await settleAndroidBuyerRoute(
-        packageName,
-        dumpAndroidScreen("android-buyer-summary-inbox-current"),
-        "android-buyer-summary-inbox-route",
-      );
-      return isAndroidLoginScreen(next.xml) ? null : next;
-    },
-    20_000,
-    1000,
-  ).catch(() => dumpAndroidScreen("android-buyer-summary-inbox-route-timeout"));
+  current = await androidHarness
+    .openAndroidRoute({
+      packageName,
+      routes: ["rik://buyer", "rik:///buyer", "rik:///%28tabs%29/buyer"],
+      artifactBase: "android-buyer-summary-inbox-route",
+      predicate: (xml) => isAndroidBuyerHome(xml) || isAndroidInboxSurface(xml, "") || isAndroidFioModal(xml),
+      renderablePredicate: (xml) =>
+        isAndroidLoginScreen(xml) || isAndroidBuyerHome(xml) || isAndroidInboxSurface(xml, "") || isAndroidFioModal(xml),
+      loginScreenPredicate: isAndroidLoginScreen,
+      timeoutMs: 30_000,
+      delayMs: 1200,
+    })
+    .catch(() => dumpAndroidScreen("android-buyer-summary-inbox-route-timeout"));
   return dismissAndroidDevMenuIfPresent(current, "android-buyer-summary-inbox");
 }
 
@@ -1041,51 +1058,27 @@ function runIosRuntime(): Record<string, unknown> {
 }
 
 async function main() {
-  const web = await runWebRuntime().catch((error) => ({
-    status: "failed",
-    inboxVisible: false,
-    sheetOpened: false,
-    platformSpecificIssues: [error instanceof Error ? error.message : String(error ?? "unknown web error")],
-  }));
-  const android = await runAndroidRuntime().catch((error) => ({
-    status: "failed",
-    inboxVisible: false,
-    sheetOpened: false,
-    ...androidHarness.getRecoverySummary(),
-    platformSpecificIssues: [error instanceof Error ? error.message : String(error ?? "unknown android error")],
-  }));
+  const web = await runWebRuntime().catch((error) =>
+    createFailurePlatformResult("web", error, {
+      inboxVisible: false,
+      sheetOpened: false,
+    }),
+  );
+  const android = await runAndroidRuntime().catch((error) => {
+    const artifacts = androidHarness.captureFailureArtifacts("android-buyer-summary-inbox-failure");
+    return createFailurePlatformResult("android", error, {
+      inboxVisible: false,
+      sheetOpened: false,
+      ...androidHarness.getRecoverySummary(),
+      ...artifacts,
+    });
+  });
   const ios = runIosRuntime();
   const androidRecord = android as Record<string, unknown>;
-  const iosRecord = ios as Record<string, unknown>;
-
-  const platformSpecificIssues: RuntimeIssue[] = [];
-  for (const issue of (Array.isArray(web.platformSpecificIssues) ? web.platformSpecificIssues : []) as string[]) {
-    platformSpecificIssues.push({ platform: "web", issue });
-  }
-  for (const issue of (Array.isArray(android.platformSpecificIssues) ? android.platformSpecificIssues : []) as string[]) {
-    platformSpecificIssues.push({ platform: "android", issue });
-  }
-  for (const issue of (Array.isArray(ios.platformSpecificIssues) ? ios.platformSpecificIssues : []) as string[]) {
-    platformSpecificIssues.push({ platform: "ios", issue });
-  }
-
-  const summary = {
-    status:
-      web.status === "passed" &&
-      android.status === "passed" &&
-      (ios.status === "passed" || ios.status === "residual")
-        ? "passed"
-        : "failed",
-    webPassed: web.status === "passed",
-    androidPassed: android.status === "passed",
-    iosPassed: ios.status === "passed",
-    iosResidual: typeof iosRecord.iosResidual === "string" ? (iosRecord.iosResidual as string) : null,
-    environmentRecoveryUsed: androidRecord.environmentRecoveryUsed === true,
-    gmsRecoveryUsed: androidRecord.gmsRecoveryUsed === true,
-    anrRecoveryUsed: androidRecord.anrRecoveryUsed === true,
-    blankSurfaceRecovered: androidRecord.blankSurfaceRecovered === true,
-    devClientBootstrapRecovered: androidRecord.devClientBootstrapRecovered === true,
-    runtimeVerified: web.status === "passed" && android.status === "passed",
+  const summary = buildRuntimeSummary({
+    web,
+    android,
+    ios,
     scenariosPassed: {
       web: {
         initialOpen: web.inboxVisible === true,
@@ -1103,7 +1096,6 @@ async function main() {
         sheetInteraction: ios.status === "passed",
       },
     },
-    platformSpecificIssues,
     artifacts: {
       webSummary: `${webArtifactBase}.summary.json`,
       webRuntime: `${webArtifactBase}.json`,
@@ -1114,7 +1106,17 @@ async function main() {
       androidSheetXml: typeof androidRecord.sheetXml === "string" ? androidRecord.sheetXml : null,
       androidSheetPng: typeof androidRecord.sheetPng === "string" ? androidRecord.sheetPng : null,
     },
-  };
+    extra: {
+      gate: "buyer_summary_inbox_runtime_verify",
+      subscriptionStarted: null,
+      eventReceived: null,
+      refreshTriggered: null,
+      doubleFetchDetected: null,
+      inflightGuardWorked: null,
+      recentGuardWorked: null,
+      backendOwnerPreserved: null,
+    },
+  });
 
   writeArtifact(`${artifactBase}.json`, { web, android, ios, summary });
   writeArtifact(`${artifactBase}.summary.json`, summary);

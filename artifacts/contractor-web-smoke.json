@@ -46,11 +46,11 @@
     },
     {
       "type": "warning",
-      "text": "[ensureMyProfile] TypeError: Failed to fetch"
+      "text": "[getMyRole] TypeError: Failed to fetch"
     },
     {
       "type": "warning",
-      "text": "[getMyRole] TypeError: Failed to fetch"
+      "text": "[ensureMyProfile] TypeError: Failed to fetch"
     },
     {
       "type": "warning",
@@ -74,11 +74,7 @@
     },
     {
       "type": "info",
-      "text": "[platform.observability] {screen: contractor, surface: profile_card, event: load_contractor_profile, result: success, durationMs: 1400}"
-    },
-    {
-      "type": "info",
-      "text": "[platform.observability] {screen: contractor, surface: profile_card, event: load_user_profile, result: success, durationMs: 1402}"
+      "text": "[platform.observability] {screen: contractor, surface: profile_card, event: load_user_profile, result: success, durationMs: 1922}"
     },
     {
       "type": "info",
@@ -86,7 +82,11 @@
     },
     {
       "type": "info",
-      "text": "[platform.observability] {screen: contractor, surface: works_bundle, event: load_works_bundle, result: success, durationMs: 516}"
+      "text": "[platform.observability] {screen: contractor, surface: profile_card, event: load_contractor_profile, result: success, durationMs: 1933}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: contractor, surface: works_bundle, event: load_works_bundle, result: success, durationMs: 667}"
     },
     {
       "type": "log",
@@ -98,7 +98,7 @@
     },
     {
       "type": "debug",
-      "text": "[contractor.cards] card:5bcd5a21-0d1f-4ba5-bcff-75a3bc848cd0 platform:web {hasSubcontract: true, subcontractId: 5bcd5a21-0d1f-4ba5-bcff-75a3bc848cd0, source: subcontract.contractor_org, rawContractorOrg: Runtime Contractor mn8pvb4hwkpi, finalContractorTitle: Runtime Contractor mn8pvb4hwkpi}"
+      "text": "[contractor.cards] card:8d467694-7525-4e47-bf2b-c28093bbb990 platform:web {hasSubcontract: true, subcontractId: 8d467694-7525-4e47-bf2b-c28093bbb990, source: subcontract.contractor_org, rawContractorOrg: Runtime Contractor mn91bv9lqe44, finalContractorTitle: Runtime Contractor mn91bv9lqe44}"
     },
     {
       "type": "debug",
@@ -198,31 +198,15 @@
     },
     {
       "type": "debug",
-      "text": "[contractor.handleOpenUnifiedCard] {id: 5bcd5a21-0d1f-4ba5-bcff-75a3bc848cd0, found: true, progressId: 95992913-7ced-418a-a26a-e986a7ae659a, contractorJobId: 5bcd5a21-0d1f-4ba5-bcff-75a3bc848cd0, requestId: 9c8b6646-d06e-43db-871e-3d63108cb939}"
+      "text": "[contractor.handleOpenUnifiedCard] {id: 8d467694-7525-4e47-bf2b-c28093bbb990, found: true, progressId: 057acf8e-c963-482a-9f4d-10a337667da7, contractorJobId: 8d467694-7525-4e47-bf2b-c28093bbb990, requestId: ba349a0f-ddc8-49a9-b7ac-1f660f44d902}"
     },
     {
       "type": "debug",
-      "text": "[contractor.openWorkInOneClick] {progressId: 95992913-7ced-418a-a26a-e986a7ae659a, contractorJobId: 5bcd5a21-0d1f-4ba5-bcff-75a3bc848cd0, requestId: 9c8b6646-d06e-43db-871e-3d63108cb939}"
+      "text": "[contractor.openWorkInOneClick] {progressId: 057acf8e-c963-482a-9f4d-10a337667da7, contractorJobId: 8d467694-7525-4e47-bf2b-c28093bbb990, requestId: ba349a0f-ddc8-49a9-b7ac-1f660f44d902}"
     },
     {
       "type": "info",
       "text": "[platform.observability] {screen: contractor, surface: issued_section, event: refresh_issued_today, result: joined_inflight, durationMs: null}"
-    },
-    {
-      "type": "info",
-      "text": "[platform.observability] {screen: contractor, surface: issued_section, event: refresh_issued_today, result: joined_inflight, durationMs: null}"
-    },
-    {
-      "type": "info",
-      "text": "[platform.observability] {screen: contractor, surface: issued_section, event: refresh_issued_today, result: success, durationMs: 3401}"
-    },
-    {
-      "type": "info",
-      "text": "[platform.observability] {screen: contractor, surface: issued_section, event: refresh_issued_today, result: joined_inflight, durationMs: null}"
-    },
-    {
-      "type": "info",
-      "text": "[platform.observability] {screen: contractor, surface: issued_section, event: refresh_issued_today, result: success, durationMs: 2856}"
     },
     {
       "type": "info",
@@ -282,27 +266,12 @@
       "method": "GET"
     },
     {
-      "url": "https://nxrnjywzxxfdpqmzjorh.supabase.co/rest/v1/rpc/ensure_my_profile",
-      "status": 204,
-      "method": "POST"
-    },
-    {
       "url": "https://nxrnjywzxxfdpqmzjorh.supabase.co/rest/v1/ref_systems?select=code%2Cname%2Cname_ru&order=name.asc",
       "status": 200,
       "method": "GET"
     },
     {
-      "url": "https://nxrnjywzxxfdpqmzjorh.supabase.co/rest/v1/ref_levels?select=code%2Cname%2Cname_ru%2Csort&order=sort.asc",
-      "status": 200,
-      "method": "GET"
-    },
-    {
-      "url": "https://nxrnjywzxxfdpqmzjorh.supabase.co/rest/v1/ref_object_types?select=code%2Cname%2Cname_ru&order=name.asc",
-      "status": 200,
-      "method": "GET"
-    },
-    {
-      "url": "https://nxrnjywzxxfdpqmzjorh.supabase.co/auth/v1/user",
+      "url": "https://nxrnjywzxxfdpqmzjorh.supabase.co/rest/v1/ref_zones?select=code%2Cname%2Cname_ru&order=name.asc",
       "status": 200,
       "method": "GET"
     },
@@ -312,7 +281,22 @@
       "method": "GET"
     },
     {
-      "url": "https://nxrnjywzxxfdpqmzjorh.supabase.co/rest/v1/ref_zones?select=code%2Cname%2Cname_ru&order=name.asc",
+      "url": "https://nxrnjywzxxfdpqmzjorh.supabase.co/rest/v1/ref_object_types?select=code%2Cname%2Cname_ru&order=name.asc",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "url": "https://nxrnjywzxxfdpqmzjorh.supabase.co/rest/v1/rpc/ensure_my_profile",
+      "status": 204,
+      "method": "POST"
+    },
+    {
+      "url": "https://nxrnjywzxxfdpqmzjorh.supabase.co/rest/v1/ref_levels?select=code%2Cname%2Cname_ru%2Csort&order=sort.asc",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "url": "https://nxrnjywzxxfdpqmzjorh.supabase.co/auth/v1/user",
       "status": 200,
       "method": "GET"
     },
@@ -327,12 +311,12 @@
       "method": "GET"
     },
     {
-      "url": "https://nxrnjywzxxfdpqmzjorh.supabase.co/rest/v1/contractors?select=*&user_id=eq.5bdbc919-fb8f-4985-9368-0d798f5fca1b",
+      "url": "https://nxrnjywzxxfdpqmzjorh.supabase.co/rest/v1/user_profiles?select=*&user_id=eq.e599dddc-03ce-4266-b5c8-fdd62c356fe5",
       "status": 200,
       "method": "GET"
     },
     {
-      "url": "https://nxrnjywzxxfdpqmzjorh.supabase.co/rest/v1/user_profiles?select=*&user_id=eq.5bdbc919-fb8f-4985-9368-0d798f5fca1b",
+      "url": "https://nxrnjywzxxfdpqmzjorh.supabase.co/rest/v1/contractors?select=*&user_id=eq.e599dddc-03ce-4266-b5c8-fdd62c356fe5",
       "status": 200,
       "method": "GET"
     },
@@ -342,12 +326,7 @@
       "method": "POST"
     },
     {
-      "url": "https://nxrnjywzxxfdpqmzjorh.supabase.co/rest/v1/subcontracts?select=contractor_org%2Ccontractor_inn%2Ccontractor_rep%2Ccontractor_phone%2Ccontract_number%2Ccontract_date%2Cobject_name%2Cwork_type%2Cwork_zone%2Cqty_planned%2Cuom%2Cprice_per_unit%2Ctotal_price%2Cdate_start%2Cdate_end&id=eq.5bcd5a21-0d1f-4ba5-bcff-75a3bc848cd0",
-      "status": 200,
-      "method": "GET"
-    },
-    {
-      "url": "https://nxrnjywzxxfdpqmzjorh.supabase.co/rest/v1/requests?select=id%2Cstatus&subcontract_id=eq.5bcd5a21-0d1f-4ba5-bcff-75a3bc848cd0",
+      "url": "https://nxrnjywzxxfdpqmzjorh.supabase.co/rest/v1/subcontracts?select=contractor_org%2Ccontractor_inn%2Ccontractor_rep%2Ccontractor_phone%2Ccontract_number%2Ccontract_date%2Cobject_name%2Cwork_type%2Cwork_zone%2Cqty_planned%2Cuom%2Cprice_per_unit%2Ctotal_price%2Cdate_start%2Cdate_end&id=eq.8d467694-7525-4e47-bf2b-c28093bbb990",
       "status": 200,
       "method": "GET"
     },
@@ -357,17 +336,27 @@
       "method": "GET"
     },
     {
-      "url": "https://nxrnjywzxxfdpqmzjorh.supabase.co/rest/v1/work_progress_log?select=id%2Cqty%2Cwork_uom%2Cstage_note%2Cnote&progress_id=eq.95992913-7ced-418a-a26a-e986a7ae659a&order=created_at.desc&limit=1",
+      "url": "https://nxrnjywzxxfdpqmzjorh.supabase.co/rest/v1/requests?select=id%2Cstatus&subcontract_id=eq.8d467694-7525-4e47-bf2b-c28093bbb990",
       "status": 200,
       "method": "GET"
     },
     {
-      "url": "https://nxrnjywzxxfdpqmzjorh.supabase.co/rest/v1/work_progress_log?select=id%2Ccreated_at%2Cqty%2Cwork_uom%2Cstage_note%2Cnote&progress_id=eq.95992913-7ced-418a-a26a-e986a7ae659a&order=created_at.asc",
+      "url": "https://nxrnjywzxxfdpqmzjorh.supabase.co/rest/v1/work_progress_log?select=id%2Ccreated_at%2Cqty%2Cwork_uom%2Cstage_note%2Cnote&progress_id=eq.057acf8e-c963-482a-9f4d-10a337667da7&order=created_at.asc",
       "status": 200,
       "method": "GET"
     },
     {
-      "url": "https://nxrnjywzxxfdpqmzjorh.supabase.co/rest/v1/requests?select=id%2Cstatus&subcontract_id=eq.5bcd5a21-0d1f-4ba5-bcff-75a3bc848cd0",
+      "url": "https://nxrnjywzxxfdpqmzjorh.supabase.co/rest/v1/work_progress_log?select=id%2Cqty%2Cwork_uom%2Cstage_note%2Cnote&progress_id=eq.057acf8e-c963-482a-9f4d-10a337667da7&order=created_at.desc&limit=1",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "url": "https://nxrnjywzxxfdpqmzjorh.supabase.co/rest/v1/requests?select=id%2Cstatus&subcontract_id=eq.8d467694-7525-4e47-bf2b-c28093bbb990",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "url": "https://nxrnjywzxxfdpqmzjorh.supabase.co/rest/v1/work_default_materials?select=mat_code%2Cuom&work_code=eq.RUNTIME-MN91BV9LQE44&limit=100",
       "status": 200,
       "method": "GET"
     },
@@ -377,22 +366,12 @@
       "method": "GET"
     },
     {
-      "url": "https://nxrnjywzxxfdpqmzjorh.supabase.co/rest/v1/work_default_materials?select=mat_code%2Cuom&work_code=eq.RUNTIME-MN8PVB4HWKPI&limit=100",
-      "status": 200,
-      "method": "GET"
-    },
-    {
       "url": "https://nxrnjywzxxfdpqmzjorh.supabase.co/rest/v1/requests?select=id%2Crequest_no&limit=1",
       "status": 200,
       "method": "GET"
     },
     {
-      "url": "https://nxrnjywzxxfdpqmzjorh.supabase.co/rest/v1/requests?select=id%2Cdisplay_no%2Crequest_no%2Cstatus&id=in.%289c8b6646-d06e-43db-871e-3d63108cb939%29",
-      "status": 200,
-      "method": "GET"
-    },
-    {
-      "url": "https://nxrnjywzxxfdpqmzjorh.supabase.co/rest/v1/requests?select=id%2Cdisplay_no%2Crequest_no%2Cstatus&id=in.%289c8b6646-d06e-43db-871e-3d63108cb939%29",
+      "url": "https://nxrnjywzxxfdpqmzjorh.supabase.co/rest/v1/requests?select=id%2Cdisplay_no%2Crequest_no%2Cstatus&id=in.%28ba349a0f-ddc8-49a9-b7ac-1f660f44d902%29",
       "status": 200,
       "method": "GET"
     },
@@ -402,77 +381,47 @@
       "method": "POST"
     },
     {
-      "url": "https://nxrnjywzxxfdpqmzjorh.supabase.co/rest/v1/warehouse_issues?select=id%2Crequest_id%2Cbase_no&request_id=in.%289c8b6646-d06e-43db-871e-3d63108cb939%29",
+      "url": "https://nxrnjywzxxfdpqmzjorh.supabase.co/rest/v1/requests?select=id%2Cdisplay_no%2Crequest_no%2Cstatus&id=in.%28ba349a0f-ddc8-49a9-b7ac-1f660f44d902%29",
       "status": 200,
       "method": "GET"
     },
     {
-      "url": "https://nxrnjywzxxfdpqmzjorh.supabase.co/rest/v1/warehouse_issues?select=id%2Crequest_id%2Cbase_no&request_id=in.%289c8b6646-d06e-43db-871e-3d63108cb939%29",
+      "url": "https://nxrnjywzxxfdpqmzjorh.supabase.co/rest/v1/work_default_materials?select=mat_code%2Cuom&work_code=eq.RUNTIME-MN91BV9LQE44&limit=100",
       "status": 200,
       "method": "GET"
     },
     {
-      "url": "https://nxrnjywzxxfdpqmzjorh.supabase.co/rest/v1/work_default_materials?select=mat_code%2Cuom&work_code=eq.RUNTIME-MN8PVB4HWKPI&limit=100",
+      "url": "https://nxrnjywzxxfdpqmzjorh.supabase.co/rest/v1/warehouse_issues?select=id%2Crequest_id%2Cbase_no&request_id=in.%28ba349a0f-ddc8-49a9-b7ac-1f660f44d902%29",
       "status": 200,
       "method": "GET"
     },
     {
-      "url": "https://nxrnjywzxxfdpqmzjorh.supabase.co/rest/v1/v_wh_issue_req_heads_ui?select=request_id%2Csubmitted_at%2Cissue_status%2Cqty_issued_sum&request_id=in.%289c8b6646-d06e-43db-871e-3d63108cb939%29",
+      "url": "https://nxrnjywzxxfdpqmzjorh.supabase.co/rest/v1/warehouse_issues?select=id%2Crequest_id%2Cbase_no&request_id=in.%28ba349a0f-ddc8-49a9-b7ac-1f660f44d902%29",
       "status": 200,
       "method": "GET"
     },
     {
-      "url": "https://nxrnjywzxxfdpqmzjorh.supabase.co/rest/v1/v_wh_issue_req_heads_ui?select=request_id%2Csubmitted_at%2Cissue_status%2Cqty_issued_sum&request_id=in.%289c8b6646-d06e-43db-871e-3d63108cb939%29",
+      "url": "https://nxrnjywzxxfdpqmzjorh.supabase.co/rest/v1/v_wh_issue_req_heads_ui?select=request_id%2Csubmitted_at%2Cissue_status%2Cqty_issued_sum&request_id=in.%28ba349a0f-ddc8-49a9-b7ac-1f660f44d902%29",
       "status": 200,
       "method": "GET"
     },
     {
-      "url": "https://nxrnjywzxxfdpqmzjorh.supabase.co/rest/v1/v_wh_issue_req_items_ui?select=*&request_id=in.%289c8b6646-d06e-43db-871e-3d63108cb939%29",
+      "url": "https://nxrnjywzxxfdpqmzjorh.supabase.co/rest/v1/v_wh_issue_req_heads_ui?select=request_id%2Csubmitted_at%2Cissue_status%2Cqty_issued_sum&request_id=in.%28ba349a0f-ddc8-49a9-b7ac-1f660f44d902%29",
       "status": 200,
       "method": "GET"
     },
     {
-      "url": "https://nxrnjywzxxfdpqmzjorh.supabase.co/rest/v1/v_wh_issue_req_items_ui?select=*&request_id=in.%289c8b6646-d06e-43db-871e-3d63108cb939%29",
+      "url": "https://nxrnjywzxxfdpqmzjorh.supabase.co/rest/v1/v_wh_issue_req_items_ui?select=*&request_id=in.%28ba349a0f-ddc8-49a9-b7ac-1f660f44d902%29",
       "status": 200,
       "method": "GET"
     },
     {
-      "url": "https://nxrnjywzxxfdpqmzjorh.supabase.co/rest/v1/work_progress_log?select=id&progress_id=eq.95992913-7ced-418a-a26a-e986a7ae659a",
+      "url": "https://nxrnjywzxxfdpqmzjorh.supabase.co/rest/v1/v_wh_issue_req_items_ui?select=*&request_id=in.%28ba349a0f-ddc8-49a9-b7ac-1f660f44d902%29",
       "status": 200,
       "method": "GET"
     },
     {
-      "url": "https://nxrnjywzxxfdpqmzjorh.supabase.co/rest/v1/work_progress_log?select=id&progress_id=eq.95992913-7ced-418a-a26a-e986a7ae659a",
-      "status": 200,
-      "method": "GET"
-    },
-    {
-      "url": "https://nxrnjywzxxfdpqmzjorh.supabase.co/rest/v1/requests?select=id%2Cstatus&subcontract_id=eq.5bcd5a21-0d1f-4ba5-bcff-75a3bc848cd0",
-      "status": 200,
-      "method": "GET"
-    },
-    {
-      "url": "https://nxrnjywzxxfdpqmzjorh.supabase.co/rest/v1/requests?select=id%2Cdisplay_no%2Crequest_no%2Cstatus&id=in.%289c8b6646-d06e-43db-871e-3d63108cb939%29",
-      "status": 200,
-      "method": "GET"
-    },
-    {
-      "url": "https://nxrnjywzxxfdpqmzjorh.supabase.co/rest/v1/warehouse_issues?select=id%2Crequest_id%2Cbase_no&request_id=in.%289c8b6646-d06e-43db-871e-3d63108cb939%29",
-      "status": 200,
-      "method": "GET"
-    },
-    {
-      "url": "https://nxrnjywzxxfdpqmzjorh.supabase.co/rest/v1/v_wh_issue_req_heads_ui?select=request_id%2Csubmitted_at%2Cissue_status%2Cqty_issued_sum&request_id=in.%289c8b6646-d06e-43db-871e-3d63108cb939%29",
-      "status": 200,
-      "method": "GET"
-    },
-    {
-      "url": "https://nxrnjywzxxfdpqmzjorh.supabase.co/rest/v1/v_wh_issue_req_items_ui?select=*&request_id=in.%289c8b6646-d06e-43db-871e-3d63108cb939%29",
-      "status": 200,
-      "method": "GET"
-    },
-    {
-      "url": "https://nxrnjywzxxfdpqmzjorh.supabase.co/rest/v1/work_progress_log?select=id&progress_id=eq.95992913-7ced-418a-a26a-e986a7ae659a",
+      "url": "https://nxrnjywzxxfdpqmzjorh.supabase.co/rest/v1/work_progress_log?select=id&progress_id=eq.057acf8e-c963-482a-9f4d-10a337667da7",
       "status": 200,
       "method": "GET"
     }

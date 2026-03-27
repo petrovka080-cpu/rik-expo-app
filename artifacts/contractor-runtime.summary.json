@@ -1,46 +1,62 @@
 {
-  "status": "failed",
+  "status": "passed",
   "webPassed": true,
-  "androidPassed": false,
+  "androidPassed": true,
   "iosPassed": false,
-  "iosResidual": "xcrun is unavailable on this host; iOS simulator cannot be started from Windows",
-  "environmentRecoveryUsed": true,
+  "runtimeVerified": true,
+  "environmentRecoveryUsed": false,
   "gmsRecoveryUsed": false,
   "anrRecoveryUsed": false,
-  "blankSurfaceRecovered": true,
-  "devClientBootstrapRecovered": true,
-  "contractorCardVisible": false,
-  "modalOpened": false,
-  "issuedExpanded": false,
+  "blankSurfaceRecovered": false,
+  "devClientBootstrapRecovered": false,
   "platformSpecificIssues": [
-    {
-      "platform": "android",
-      "issue": "Android login button not found"
-    },
     {
       "platform": "ios",
       "issue": "xcrun is unavailable on this host; iOS simulator cannot be started from Windows"
     }
   ],
-  "seed": {
-    "suffix": "mn8pvb4hwkpi",
-    "contractorOrg": "Runtime Contractor mn8pvb4hwkpi",
-    "objectName": "BLD-MN8PVB4HWKPI",
-    "workName": "Runtime Work mn8pvb4hwkpi",
-    "subcontractId": "5bcd5a21-0d1f-4ba5-bcff-75a3bc848cd0",
-    "requestId": "9c8b6646-d06e-43db-871e-3d63108cb939",
-    "requestItemId": "248d44c1-78fe-46b3-9b4c-eee36a0199ee",
-    "purchaseId": "656eada6-f95f-4fd2-bf07-d859059ceffa",
-    "purchaseItemId": "24b8b36e-91ec-4a52-8704-0e1e3ed8e901",
-    "progressId": "95992913-7ced-418a-a26a-e986a7ae659a"
+  "iosResidual": "xcrun is unavailable on this host; iOS simulator cannot be started from Windows",
+  "failureKind": "unknown",
+  "scenariosPassed": {
+    "web": {
+      "contractorCardVisible": true,
+      "modalOpened": true,
+      "issuedExpanded": true
+    },
+    "android": {
+      "contractorCardVisible": true,
+      "modalOpened": true,
+      "issuedExpanded": true
+    },
+    "ios": {
+      "contractorCardVisible": false,
+      "modalOpened": false,
+      "issuedExpanded": false
+    }
   },
   "artifacts": {
     "webScreenshot": "artifacts/contractor-web-smoke.png",
-    "androidHomeXml": null,
-    "androidHomePng": null,
-    "androidModalXml": null,
-    "androidModalPng": null,
-    "androidIssuedXml": null,
-    "androidIssuedPng": null
+    "androidHomeXml": "artifacts/android-contractor-home.xml",
+    "androidHomePng": "artifacts/android-contractor-home.png",
+    "androidModalXml": "artifacts/android-contractor-modal.xml",
+    "androidModalPng": "artifacts/android-contractor-modal.png",
+    "androidIssuedXml": "artifacts/android-contractor-issued.xml",
+    "androidIssuedPng": "artifacts/android-contractor-issued.png"
+  },
+  "gate": "contractor_runtime_verify",
+  "contractorCardVisible": true,
+  "modalOpened": true,
+  "issuedExpanded": true,
+  "seed": {
+    "suffix": "mn91bv9lqe44",
+    "contractorOrg": "Runtime Contractor mn91bv9lqe44",
+    "objectName": "BLD-MN91BV9LQE44",
+    "workName": "Runtime Work mn91bv9lqe44",
+    "subcontractId": "8d467694-7525-4e47-bf2b-c28093bbb990",
+    "requestId": "ba349a0f-ddc8-49a9-b7ac-1f660f44d902",
+    "requestItemId": "c4d75dd4-0fe6-48f9-be3b-1a44c7c70f81",
+    "purchaseId": "8a6110bd-0746-444b-ba4c-f0f340d53c20",
+    "purchaseItemId": "35ca65f6-a752-4127-b08a-5ad915f93d65",
+    "progressId": "057acf8e-c963-482a-9f4d-10a337667da7"
   }
 }

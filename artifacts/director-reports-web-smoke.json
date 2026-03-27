@@ -1,0 +1,201 @@
+{
+  "console": [
+    {
+      "type": "info",
+      "text": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold"
+    },
+    {
+      "type": "log",
+      "text": "Running application \"main\" with appParams:\n {rootTag: #root, hydrate: undefined} \nDevelopment-level warnings: ON.\nPerformance optimizations: OFF."
+    },
+    {
+      "type": "warning",
+      "text": "\"shadow*\" style props are deprecated. Use \"boxShadow\"."
+    },
+    {
+      "type": "info",
+      "text": "[jobQueue.env] {EXPO_PUBLIC_JOB_QUEUE_ENABLED: true, JOB_QUEUE_ENABLED: true}"
+    },
+    {
+      "type": "info",
+      "text": "[flash-list.compat] legacy architecture fallback -> FlatList"
+    },
+    {
+      "type": "info",
+      "text": "[director.live] {sourcePath: director.lifecycle.channel, status: CLOSED}"
+    },
+    {
+      "type": "info",
+      "text": "[director.live] {sourcePath: director.lifecycle.channel, status: CLOSED}"
+    },
+    {
+      "type": "info",
+      "text": "[director.live] {sourcePath: director.lifecycle.broadcast_channel, status: CLOSED}"
+    },
+    {
+      "type": "info",
+      "text": "[director.live] {sourcePath: director.lifecycle.broadcast_channel, status: CLOSED}"
+    },
+    {
+      "type": "warning",
+      "text": "WebSocket connection to 'wss://nxrnjywzxxfdpqmzjorh.supabase.co/realtime/v1/websocket?apikey=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im54cm5qeXd6eHhmZHBxbXpqb3JoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ5MTY2NzcsImV4cCI6MjA4MDQ5MjY3N30.Ug7EYNXlN0Dsi8HjpDr3Ekb_q5uXuZWCilmqu1-5Wy0&eventsPerSecond=5&vsn=2.0.0' failed: WebSocket is closed before the connection is established."
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: director, surface: visible_scope, event: refresh_scope, result: skipped, durationMs: null}"
+    },
+    {
+      "type": "info",
+      "text": "[director.live] {sourcePath: director.lifecycle.realtime_auth, hasAccessToken: true}"
+    },
+    {
+      "type": "info",
+      "text": "[director.live] {sourcePath: director.lifecycle.channel, status: CLOSED}"
+    },
+    {
+      "type": "info",
+      "text": "[director.live] {sourcePath: director.lifecycle.channel, status: CLOSED}"
+    },
+    {
+      "type": "info",
+      "text": "[director.live] {sourcePath: director.lifecycle.broadcast_channel, status: CLOSED}"
+    },
+    {
+      "type": "info",
+      "text": "[director.live] {sourcePath: director.lifecycle.broadcast_channel, status: CLOSED}"
+    },
+    {
+      "type": "warning",
+      "text": "WebSocket connection to 'wss://nxrnjywzxxfdpqmzjorh.supabase.co/realtime/v1/websocket?apikey=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im54cm5qeXd6eHhmZHBxbXpqb3JoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ5MTY2NzcsImV4cCI6MjA4MDQ5MjY3N30.Ug7EYNXlN0Dsi8HjpDr3Ekb_q5uXuZWCilmqu1-5Wy0&eventsPerSecond=5&vsn=2.0.0' failed: WebSocket is closed before the connection is established."
+    },
+    {
+      "type": "info",
+      "text": "[director.live] {sourcePath: director.lifecycle.realtime_auth, hasAccessToken: true}"
+    },
+    {
+      "type": "info",
+      "text": "[director_works] click:open_reports"
+    },
+    {
+      "type": "info",
+      "text": "[director_works] open_reports_dispatch: 1ms"
+    },
+    {
+      "type": "info",
+      "text": "[director.repository] {phase: request, sourcePath: director.repository.fetchPendingRows, primaryPath: list_director_items_stable, primaryRowCount: 0, expectedRequestStatuses: Array(2)}"
+    },
+    {
+      "type": "info",
+      "text": "[director.repository] {phase: request, sourcePath: director.repository.loadPendingRowsFallback, requestSelector: submitted_at:not_null, expectedRequestStatuses: Array(2), visibleItemStatuses: Array(3)}"
+    },
+    {
+      "type": "info",
+      "text": "[director-report-transport] {source: transport:director_report_scope_rpc_v1, transportBranch: rpc_scope_v1, fallbackReason: null, rpcVersion: v1, pricedStage: null}"
+    },
+    {
+      "type": "info",
+      "text": "[director-report-transport] {source: transport:director_report_scope_rpc_v1, transportBranch: rpc_scope_v1, fallbackReason: null, rpcVersion: v1, pricedStage: null}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: director, surface: reports_scope, event: load_report_scope, result: success, durationMs: 639}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: director, surface: reports_scope, event: load_report_scope, result: success, durationMs: 586}"
+    },
+    {
+      "type": "info",
+      "text": "[director_reports] options.branch: branch=transport_rpc chain=transport_rpc -> canonical_rpc cache=none"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: director, surface: reports_summary, event: content_ready, result: success, durationMs: null}"
+    },
+    {
+      "type": "info",
+      "text": "[director_reports] report.branch: branch=transport_rpc chain=transport_rpc -> canonical_rpc cache=none"
+    },
+    {
+      "type": "info",
+      "text": "[director.live] {sourcePath: director.lifecycle.channel, status: SUBSCRIBED}"
+    },
+    {
+      "type": "info",
+      "text": "[director.live] {sourcePath: director.lifecycle.broadcast_channel, status: SUBSCRIBED}"
+    },
+    {
+      "type": "info",
+      "text": "[director_works] tab_switch_to_works: 0ms"
+    },
+    {
+      "type": "info",
+      "text": "[director-report-transport] {source: transport:director_report_scope_rpc_v1, transportBranch: rpc_scope_v1, fallbackReason: null, rpcVersion: v1, pricedStage: priced}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: director, surface: reports_scope, event: load_report_scope, result: success, durationMs: 665}"
+    },
+    {
+      "type": "info",
+      "text": "[director_reports] options.branch: branch=transport_rpc chain=transport_rpc -> canonical_rpc cache=none"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: director, surface: reports_summary, event: content_ready, result: success, durationMs: null}"
+    },
+    {
+      "type": "info",
+      "text": "[director_reports] report.branch: branch=transport_rpc chain=transport_rpc -> canonical_rpc cache=none"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: director, surface: reports_discipline, event: content_ready, result: success, durationMs: null}"
+    },
+    {
+      "type": "info",
+      "text": "[director_reports] discipline.branch: branch=transport_rpc chain=transport_rpc -> canonical_rpc cache=none priced_stage=priced"
+    }
+  ],
+  "pageErrors": [],
+  "badResponses": [],
+  "reportRequests": [
+    {
+      "method": "POST",
+      "url": "https://nxrnjywzxxfdpqmzjorh.supabase.co/rest/v1/rpc/director_report_transport_scope_v1",
+      "postData": {
+        "p_from": null,
+        "p_to": null,
+        "p_object_name": null,
+        "p_include_discipline": false,
+        "p_include_costs": false
+      }
+    },
+    {
+      "method": "POST",
+      "url": "https://nxrnjywzxxfdpqmzjorh.supabase.co/rest/v1/rpc/director_report_transport_scope_v1",
+      "postData": {
+        "p_from": null,
+        "p_to": null,
+        "p_object_name": null,
+        "p_include_discipline": true,
+        "p_include_costs": true
+      }
+    }
+  ],
+  "reportResponses": [
+    {
+      "url": "https://nxrnjywzxxfdpqmzjorh.supabase.co/rest/v1/rpc/director_report_transport_scope_v1",
+      "status": 200,
+      "ok": true,
+      "includeDiscipline": false
+    },
+    {
+      "url": "https://nxrnjywzxxfdpqmzjorh.supabase.co/rest/v1/rpc/director_report_transport_scope_v1",
+      "status": 200,
+      "ok": true,
+      "includeDiscipline": true
+    }
+  ],
+  "screenshot": "artifacts/director-reports-web-smoke.png"
+}

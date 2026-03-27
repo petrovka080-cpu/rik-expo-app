@@ -1,5 +1,5 @@
 {
-  "marker": "RTHIST1774611284330",
+  "marker": "RTACCT1774635177295",
   "baseUrl": "http://localhost:8081",
   "runtime": {
     "console": [
@@ -49,11 +49,11 @@
       },
       {
         "type": "info",
-        "text": "[platform.observability] {screen: accountant, surface: realtime_channel, event: subscription_started, result: success, durationMs: null}"
+        "text": "[platform.observability] {screen: accountant, surface: realtime_channel, event: realtime_auth_ready, result: success, durationMs: null}"
       },
       {
         "type": "info",
-        "text": "[platform.observability] {screen: accountant, surface: history_list, event: load_history_page, result: skipped, durationMs: null}"
+        "text": "[platform.observability] {screen: accountant, surface: screen_root, event: channel_created, result: success, durationMs: null}"
       },
       {
         "type": "info",
@@ -61,11 +61,59 @@
       },
       {
         "type": "info",
-        "text": "[platform.observability] {screen: accountant, surface: history_list, event: content_ready, result: success, durationMs: null}"
+        "text": "[platform.observability] {screen: accountant, surface: screen_root, event: subscription_connected, result: success, durationMs: null}"
       },
       {
         "type": "info",
-        "text": "[platform.observability] {screen: accountant, surface: history_list, event: load_history, result: success, durationMs: 489}"
+        "text": "[platform.observability] {screen: accountant, surface: inbox_list, event: content_ready, result: success, durationMs: null}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: accountant, surface: inbox_list, event: load_inbox, result: success, durationMs: 548}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: accountant, surface: inbox_list, event: content_ready, result: success, durationMs: null}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: accountant, surface: inbox_list, event: load_inbox, result: success, durationMs: 563}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: accountant, surface: screen_root, event: realtime_event_received, result: success, durationMs: null}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: accountant, surface: screen_root, event: realtime_refresh_triggered, result: success, durationMs: null}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: accountant, surface: screen_root, event: realtime_event_received, result: success, durationMs: null}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: accountant, surface: inbox_list, event: content_ready, result: success, durationMs: null}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: accountant, surface: inbox_list, event: load_inbox, result: success, durationMs: 564}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: accountant, surface: screen_root, event: realtime_event_received, result: success, durationMs: null}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: accountant, surface: screen_root, event: realtime_refresh_skipped_recent, result: skipped, durationMs: null}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: accountant, surface: screen_root, event: realtime_event_received, result: success, durationMs: null}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: accountant, surface: screen_root, event: realtime_refresh_skipped_recent, result: skipped, durationMs: null}"
       }
     ],
     "pageErrors": [],
@@ -74,79 +122,162 @@
   "events": [
     {
       "id": "obs-1",
-      "at": 1774611284651,
+      "at": 1774635178745,
       "screen": "accountant",
       "surface": "screen_root",
       "category": "reload",
-      "event": "subscription_started",
+      "event": "realtime_event_received",
       "result": "success",
       "trigger": "realtime",
-      "sourceKind": "supabase:realtime",
+      "sourceKind": "supabase:postgres_changes",
       "extra": {
         "route": "/accountant",
         "channelName": "accountant:screen:realtime",
-        "status": "SUBSCRIBED",
+        "bindingKey": "accountant_proposals_sent",
+        "table": "proposals",
+        "eventType": "UPDATE",
         "owner": "realtime_lifecycle"
       }
     },
     {
       "id": "obs-2",
-      "at": 1774611284790,
+      "at": 1774635178746,
       "screen": "accountant",
-      "surface": "history_list",
-      "category": "ui",
-      "event": "content_ready",
+      "surface": "screen_root",
+      "category": "reload",
+      "event": "realtime_refresh_triggered",
       "result": "success",
-      "rowCount": 3,
+      "trigger": "realtime",
+      "sourceKind": "supabase:postgres_changes",
       "extra": {
-        "totalRowCount": 3,
-        "totalAmount": 280
+        "bindingKey": "accountant_proposals_sent",
+        "table": "proposals",
+        "owner": "table:proposals",
+        "eventType": "UPDATE",
+        "scopeKey": "inbox:К оплате",
+        "lifecycleOwner": "realtime_lifecycle"
       }
     },
     {
       "id": "obs-3",
-      "at": 1774611284790,
+      "at": 1774635178747,
       "screen": "accountant",
-      "surface": "history_list",
+      "surface": "screen_root",
+      "category": "reload",
+      "event": "realtime_event_received",
+      "result": "success",
+      "trigger": "realtime",
+      "sourceKind": "supabase:postgres_changes",
+      "extra": {
+        "route": "/accountant",
+        "channelName": "accountant:screen:realtime",
+        "bindingKey": "accountant_notifications",
+        "table": "notifications",
+        "eventType": "INSERT",
+        "owner": "realtime_lifecycle"
+      }
+    },
+    {
+      "id": "obs-4",
+      "at": 1774635179310,
+      "screen": "accountant",
+      "surface": "inbox_list",
+      "category": "ui",
+      "event": "content_ready",
+      "result": "success",
+      "rowCount": 40,
+      "extra": {
+        "tab": "К оплате",
+        "totalRowCount": 90
+      }
+    },
+    {
+      "id": "obs-5",
+      "at": 1774635179310,
+      "screen": "accountant",
+      "surface": "inbox_list",
       "category": "fetch",
-      "event": "load_history",
-      "sourceKind": "rpc:accountant_history_scope_v1",
-      "trigger": "manual",
-      "rowCount": 3,
+      "event": "load_inbox",
+      "sourceKind": "rpc:accountant_inbox_scope_v1",
+      "trigger": "realtime",
+      "rowCount": 40,
       "fallbackUsed": false,
       "extra": {
+        "tab": "К оплате",
         "primaryOwner": "rpc_scope_v1",
         "backendFirstPrimary": true,
         "offsetRows": 0,
-        "limitRows": 50,
-        "returnedRowCount": 3,
-        "totalRowCount": 3,
-        "totalAmount": 280,
-        "hasMore": false
+        "limitRows": 40,
+        "returnedRowCount": 40,
+        "totalRowCount": 90,
+        "hasMore": true
       },
       "result": "success",
-      "durationMs": 489
+      "durationMs": 564
+    },
+    {
+      "id": "obs-6",
+      "at": 1774635179866,
+      "screen": "accountant",
+      "surface": "screen_root",
+      "category": "reload",
+      "event": "realtime_event_received",
+      "result": "success",
+      "trigger": "realtime",
+      "sourceKind": "supabase:postgres_changes",
+      "extra": {
+        "route": "/accountant",
+        "channelName": "accountant:screen:realtime",
+        "bindingKey": "accountant_proposals_sent",
+        "table": "proposals",
+        "eventType": "UPDATE",
+        "owner": "realtime_lifecycle"
+      }
+    },
+    {
+      "id": "obs-7",
+      "at": 1774635179866,
+      "screen": "accountant",
+      "surface": "screen_root",
+      "category": "reload",
+      "event": "realtime_refresh_skipped_recent",
+      "result": "skipped",
+      "trigger": "realtime",
+      "extra": {
+        "guardReason": "recent_same_scope",
+        "scopeKey": "inbox:К оплате",
+        "joinedInflight": false,
+        "recentScopeHit": false,
+        "networkKnownOffline": false,
+        "authReady": true,
+        "bootstrapReady": true,
+        "refreshScope": null,
+        "bindingKey": "accountant_proposals_sent",
+        "table": "proposals",
+        "owner": "realtime_lifecycle"
+      }
     }
   ],
   "summary": {
     "gate": "V12.3 selective realtime accountant",
-    "status": "failed",
-    "webPassed": false,
+    "status": "passed",
+    "webPassed": true,
     "androidPassed": false,
     "iosPassed": false,
+    "runtimeVerified": true,
     "iosResidual": "Android/iOS realtime runtime proof not executed in this verifier on this host",
     "subscriptionStarted": true,
-    "eventReceived": false,
-    "refreshTriggered": false,
+    "subscriptionConnected": true,
+    "eventReceived": true,
+    "refreshTriggered": true,
     "doubleFetchDetected": false,
     "inflightGuardWorked": false,
-    "recentGuardWorked": false,
-    "backendOwnerPreserved": false,
-    "markerVisible": false,
-    "fetchCountAfterRealtime": 0,
+    "recentGuardWorked": true,
+    "backendOwnerPreserved": true,
+    "uiUpdated": true,
+    "fetchCountAfterRealtime": 1,
+    "failureStage": "unknown",
     "screenshot": "artifacts/accountant-realtime.png",
-    "platformSpecificIssues": [
-      "poll timeout: accountant:realtime_refresh"
-    ]
+    "platformSpecificIssues": []
   }
 }

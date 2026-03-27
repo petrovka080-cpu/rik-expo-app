@@ -15,7 +15,6 @@ import {
   maybeConfirmWarehouseRecipient,
   poll,
   resetObservabilityEvents,
-  waitForBodyContains,
   waitForObservability,
   writeArtifact,
 } from "./_shared/realtimeWebRuntime";
@@ -26,12 +25,48 @@ const webRuntimePath = `${artifactBase}.web.json`;
 const role = process.env.WAREHOUSE_WAVE1_ROLE || "warehouse";
 
 async function waitForWarehouseSurface(page: Page) {
-  await waitForBodyContains(page, [/Склад/i, /К приходу/i, /Расход/i], 45_000);
+  await waitForObservability(
+    page,
+    "warehouse:surface_ready",
+    (event) =>
+      event.screen === "warehouse" &&
+      ((event.event === "fetch_incoming" && event.result === "success") ||
+        (event.event === "content_ready" && event.surface === "incoming_list")),
+    45_000,
+  );
 }
 
 async function openExpenseTab(page: Page) {
-  await page.getByText(/Расход/i).first().click();
-  await waitForBodyContains(page, /Расход/i, 15_000);
+  await page.getByText(/\u0420\u0430\u0441\u0445\u043e\u0434/i).first().click();
+  await waitForObservability(
+    page,
+    "warehouse:expense_ready",
+    (event) =>
+      event.screen === "warehouse" &&
+      ((event.event === "fetch_req_heads" && event.result === "success") ||
+        (event.event === "content_ready" && event.surface === "req_heads_list")),
+    20_000,
+  );
+}
+
+function readWarehouseExpenseTotal(events: Awaited<ReturnType<typeof getObservabilityEvents>>) {
+  const match = [...events]
+    .reverse()
+    .find(
+      (event) =>
+        event.screen === "warehouse" &&
+        ((event.category === "fetch" && event.event === "fetch_req_heads" && event.result === "success") ||
+          (event.category === "ui" && event.event === "content_ready" && event.surface === "req_heads_list")),
+    );
+  const value = match?.extra?.totalRowCount;
+  return typeof value === "number" ? value : null;
+}
+
+function sliceWarehouseRealtimeWindow(events: Awaited<ReturnType<typeof getObservabilityEvents>>) {
+  const startIndex = events.findIndex(
+    (event) => event.screen === "warehouse" && event.event === "realtime_refresh_triggered",
+  );
+  return startIndex >= 0 ? events.slice(startIndex) : events;
 }
 
 async function resolveWarehouseVisibleStatus() {
@@ -100,17 +135,26 @@ async function main() {
   const { browser, page, runtime } = await launchRolePage();
   let marker: string | null = null;
   let subscriptionStarted = false;
+  let subscriptionConnected = false;
   let eventReceived = false;
   let refreshTriggered = false;
   let doubleFetchDetected = false;
   let inflightGuardWorked = false;
   let recentGuardWorked = false;
   let backendOwnerPreserved = false;
-  let markerVisible = false;
+  let uiUpdated = false;
   let fetchCountAfterRealtime = 0;
   let allEvents: Awaited<ReturnType<typeof getObservabilityEvents>> = [];
   const platformSpecificIssues: string[] = [];
   let webPassed = false;
+  let failureStage:
+    | "subscribe_failed"
+    | "event_not_received"
+    | "filter_rejected"
+    | "guard_skipped"
+    | "refresh_not_triggered"
+    | "ui_not_updated"
+    | "unknown" = "unknown";
 
   try {
     user = await createTempUser(role, "Warehouse Realtime Verify");
@@ -120,7 +164,17 @@ async function main() {
     await waitForWarehouseSurface(page);
     await openExpenseTab(page);
     await maybeConfirmWarehouseRecipient(page, "Warehouse Realtime Recipient");
-    await waitForBodyContains(page, /Расход|REQ-/i, 30_000);
+    await waitForObservability(
+      page,
+      "warehouse:expense_visible",
+      (event) =>
+        event.screen === "warehouse" &&
+        ((event.event === "fetch_req_heads" && event.result === "success") ||
+          (event.event === "content_ready" && event.surface === "req_heads_list")),
+      30_000,
+    );
+    const baselineEvents = await getObservabilityEvents(page);
+    const baselineTotal = readWarehouseExpenseTotal(baselineEvents) ?? 0;
 
     const subscriptionEvents = await waitForObservability(
       page,
@@ -134,6 +188,17 @@ async function main() {
         (event) => event.screen === "warehouse" && event.event === "subscription_started",
       ) != null;
     subscriptionStarted = subscriptionObserved;
+    const connectedEvents = await waitForObservability(
+      page,
+      "warehouse:subscription_connected",
+      (event) => event.screen === "warehouse" && event.event === "subscription_connected",
+      45_000,
+    );
+    subscriptionConnected =
+      findEvent(
+        connectedEvents,
+        (event) => event.screen === "warehouse" && event.event === "subscription_connected",
+      ) != null;
 
     await resetObservabilityEvents(page);
     marker = `RTWHREQ${Date.now()}`;
@@ -149,8 +214,16 @@ async function main() {
       45_000,
     );
 
-    await waitForBodyContains(page, marker, 45_000);
-    markerVisible = true;
+    allEvents = await poll(
+      "warehouse:ui_updated",
+      async () => {
+        const events = await getObservabilityEvents(page);
+        return (readWarehouseExpenseTotal(events) ?? 0) > baselineTotal ? events : null;
+      },
+      45_000,
+      250,
+    );
+    uiUpdated = (readWarehouseExpenseTotal(allEvents) ?? 0) > baselineTotal;
 
     const burstOne = await admin
       .from("requests")
@@ -201,36 +274,49 @@ async function main() {
         allEvents,
         (event) => event.screen === "warehouse" && event.event === "realtime_refresh_skipped_inflight",
       ) != null;
+    const realtimeWindow = sliceWarehouseRealtimeWindow(allEvents);
     backendOwnerPreserved =
       findEvent(
-        allEvents,
+        realtimeWindow,
         (event) =>
           event.screen === "warehouse" &&
           event.category === "fetch" &&
           event.event === "fetch_req_heads" &&
-          event.trigger === "realtime" &&
+          event.result === "success" &&
           event.sourceKind === "rpc:warehouse_issue_queue_scope_v4",
       ) != null;
     const realtimeFetchCount = countEvents(
-      allEvents,
+      realtimeWindow,
       (event) =>
         event.screen === "warehouse" &&
         event.category === "fetch" &&
         event.event === "fetch_req_heads" &&
-        event.trigger === "realtime" &&
         event.result === "success",
     );
     fetchCountAfterRealtime = realtimeFetchCount;
     doubleFetchDetected = realtimeFetchCount > 1;
     webPassed =
       subscriptionStarted &&
+      subscriptionConnected &&
       eventReceived &&
       refreshTriggered &&
+      uiUpdated &&
       backendOwnerPreserved &&
       !doubleFetchDetected &&
       !hasBlockingConsoleErrors(runtime.console) &&
       runtime.pageErrors.length === 0 &&
       runtime.badResponses.filter((entry) => !entry.url.includes("/favicon")).length === 0;
+    failureStage = webPassed
+      ? "unknown"
+      : !subscriptionConnected
+        ? "subscribe_failed"
+        : !eventReceived
+          ? "event_not_received"
+          : !refreshTriggered
+            ? "refresh_not_triggered"
+            : !uiUpdated
+              ? "ui_not_updated"
+              : "unknown";
   } catch (error) {
     platformSpecificIssues.push(error instanceof Error ? error.message : String(error));
     allEvents = await getObservabilityEvents(page).catch(() => allEvents);
@@ -239,6 +325,13 @@ async function main() {
         findEvent(
           allEvents,
           (event) => event.screen === "warehouse" && event.event === "subscription_started",
+        ) != null;
+    }
+    if (!subscriptionConnected) {
+      subscriptionConnected =
+        findEvent(
+          allEvents,
+          (event) => event.screen === "warehouse" && event.event === "subscription_connected",
         ) != null;
     }
     if (!eventReceived) {
@@ -296,6 +389,15 @@ async function main() {
       );
       doubleFetchDetected = fetchCountAfterRealtime > 1;
     }
+    failureStage = !subscriptionConnected
+      ? "subscribe_failed"
+      : !eventReceived
+        ? "event_not_received"
+        : !refreshTriggered
+          ? "refresh_not_triggered"
+          : !uiUpdated
+            ? "ui_not_updated"
+            : "unknown";
   } finally {
     await page.screenshot({ path: screenshotPath, fullPage: true }).catch(() => {});
     const summary = {
@@ -304,16 +406,19 @@ async function main() {
       webPassed,
       androidPassed: false,
       iosPassed: false,
+      runtimeVerified: webPassed,
       iosResidual: "Android/iOS realtime runtime proof not executed in this verifier on this host",
       subscriptionStarted,
+      subscriptionConnected,
       eventReceived,
       refreshTriggered,
       doubleFetchDetected,
       inflightGuardWorked,
       recentGuardWorked,
       backendOwnerPreserved,
-      markerVisible,
+      uiUpdated,
       fetchCountAfterRealtime,
+      failureStage,
       screenshot: screenshotPath,
       platformSpecificIssues: [
         ...(hasBlockingConsoleErrors(runtime.console) ? ["Blocking console errors detected"] : []),

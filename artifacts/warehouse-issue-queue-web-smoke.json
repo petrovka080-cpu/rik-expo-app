@@ -34,7 +34,7 @@
     },
     {
       "type": "info",
-      "text": "[platform.observability] {screen: warehouse, surface: incoming_list, event: fetch_incoming, result: success, durationMs: 776}"
+      "text": "[platform.observability] {screen: warehouse, surface: incoming_list, event: fetch_incoming, result: success, durationMs: 988}"
     },
     {
       "type": "info",
@@ -42,11 +42,11 @@
     },
     {
       "type": "info",
-      "text": "[platform.observability] {screen: warehouse, surface: stock_list, event: fetch_stock_rpc, result: success, durationMs: 1617}"
+      "text": "[platform.observability] {screen: warehouse, surface: stock_list, event: fetch_stock_rpc, result: success, durationMs: 1213}"
     },
     {
       "type": "info",
-      "text": "[platform.observability] {screen: warehouse, surface: stock_list, event: fetch_stock, result: success, durationMs: 1617}"
+      "text": "[platform.observability] {screen: warehouse, surface: stock_list, event: fetch_stock, result: success, durationMs: 1213}"
     },
     {
       "type": "info",
@@ -70,6 +70,10 @@
     },
     {
       "type": "info",
+      "text": "[platform.observability] {screen: warehouse, surface: realtime_channel, event: subscription_started, result: success, durationMs: null}"
+    },
+    {
+      "type": "info",
       "text": "[warehouse.expenseQueue] refresh {force: false, reason: tab}"
     },
     {
@@ -78,7 +82,7 @@
     },
     {
       "type": "info",
-      "text": "[platform.observability] {screen: warehouse, surface: incoming_list, event: fetch_incoming, result: success, durationMs: 559}"
+      "text": "[platform.observability] {screen: warehouse, surface: incoming_list, event: fetch_incoming, result: success, durationMs: 684}"
     },
     {
       "type": "info",
@@ -86,11 +90,11 @@
     },
     {
       "type": "info",
-      "text": "[platform.observability] {screen: warehouse, surface: stock_list, event: fetch_stock_rpc, result: success, durationMs: 772}"
+      "text": "[platform.observability] {screen: warehouse, surface: stock_list, event: fetch_stock_rpc, result: success, durationMs: 951}"
     },
     {
       "type": "info",
-      "text": "[platform.observability] {screen: warehouse, surface: stock_list, event: fetch_stock, result: success, durationMs: 773}"
+      "text": "[platform.observability] {screen: warehouse, surface: stock_list, event: fetch_stock, result: success, durationMs: 951}"
     },
     {
       "type": "info",
@@ -106,11 +110,11 @@
     },
     {
       "type": "info",
-      "text": "[platform.observability] {screen: warehouse, surface: req_heads, event: fetch_req_heads, result: success, durationMs: 820}"
+      "text": "[platform.observability] {screen: warehouse, surface: req_heads, event: fetch_req_heads, result: success, durationMs: 840}"
     },
     {
       "type": "info",
-      "text": "[warehouse.reqHeads] window_fetch {pageIndex: 0, pageSize: 80, forceRefresh: false, rowCount: 40, totalRowCount: 40}"
+      "text": "[warehouse.reqHeads] window_fetch {pageIndex: 0, pageSize: 80, forceRefresh: false, rowCount: 41, totalRowCount: 41}"
     },
     {
       "type": "info",
@@ -119,6 +123,10 @@
     {
       "type": "info",
       "text": "[warehouse.expenseQueue] refresh {force: false, reason: tab}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: warehouse, surface: screen_root, event: subscription_started, result: success, durationMs: null}"
     },
     {
       "type": "warning",

@@ -6,6 +6,7 @@ import { chromium } from "playwright";
 import { createClient } from "@supabase/supabase-js";
 import { config as loadDotenv } from "dotenv";
 import { createAndroidHarness } from "./_shared/androidHarness";
+import { buildRuntimeSummary, createFailurePlatformResult } from "./_shared/runtimeSummary";
 
 loadDotenv({ path: ".env.local", override: false });
 loadDotenv({ path: ".env", override: false });
@@ -43,11 +44,6 @@ const isBlockingWebConsoleError = (entry: { type: string; text: string }) =>
 const ANDROID_LABELS = {
   expenseTab: ["Р Р°СЃС…РѕРґ", "Расход"],
   recipientPrompt: ["РљС‚Рѕ РїРѕР»СѓС‡Р°РµС‚?", "Кто получает?"],
-};
-
-type RuntimeIssue = {
-  platform: "web" | "android" | "ios";
-  issue: string;
 };
 
 type TempUser = {
@@ -497,7 +493,7 @@ async function ensureAndroidExpenseTab(current: ReturnType<typeof dumpAndroidScr
 
 async function loginWarehouseAndroid(user: TempUser) {
   writeArtifact("artifacts/android-warehouse-issue-queue-user.json", user);
-  if (process.env.RIK_ANDROID_SHARED_HARNESS !== "0") {
+  {
     const packageName = detectAndroidPackage();
     return androidHarness.loginAndroidWithProtectedRoute({
       packageName,
@@ -845,53 +841,29 @@ function runIosRuntime(): Record<string, unknown> {
 }
 
 async function main() {
-  const web = await runWebRuntime().catch((error) => ({
-    status: "failed",
-    queueRowsVisible: false,
-    modalOpened: false,
-    platformSpecificIssues: [error instanceof Error ? error.message : String(error ?? "unknown web error")],
-  }));
-  const android = await runAndroidRuntime().catch((error) => ({
-    status: "failed",
-    queueVisible: false,
-    emptyStateVisible: false,
-    modalOpened: false,
-    ...androidHarness.getRecoverySummary(),
-    platformSpecificIssues: [error instanceof Error ? error.message : String(error ?? "unknown android error")],
-  }));
+  const web = await runWebRuntime().catch((error) =>
+    createFailurePlatformResult("web", error, {
+      queueRowsVisible: false,
+      modalOpened: false,
+    }),
+  );
+  const android = await runAndroidRuntime().catch((error) => {
+    const artifacts = androidHarness.captureFailureArtifacts("android-warehouse-issue-queue-failure");
+    return createFailurePlatformResult("android", error, {
+      queueVisible: false,
+      emptyStateVisible: false,
+      modalOpened: false,
+      ...androidHarness.getRecoverySummary(),
+      ...artifacts,
+    });
+  });
   const ios = runIosRuntime();
+  const androidRecord = android as Record<string, unknown>;
 
-  const platformSpecificIssues: RuntimeIssue[] = [];
-  for (const issue of (Array.isArray(web.platformSpecificIssues) ? web.platformSpecificIssues : []) as string[]) {
-    platformSpecificIssues.push({ platform: "web", issue });
-  }
-  for (const issue of (Array.isArray(android.platformSpecificIssues) ? android.platformSpecificIssues : []) as string[]) {
-    platformSpecificIssues.push({ platform: "android", issue });
-  }
-  for (const issue of (Array.isArray(ios.platformSpecificIssues) ? ios.platformSpecificIssues : []) as string[]) {
-    platformSpecificIssues.push({ platform: "ios", issue });
-  }
-
-  const summary = {
-    status:
-      web.status === "passed" &&
-      android.status === "passed" &&
-      (ios.status === "passed" || ios.status === "residual")
-        ? "passed"
-        : "failed",
-    webPassed: web.status === "passed",
-    androidPassed: android.status === "passed",
-    iosPassed: ios.status === "passed",
-    iosResidual:
-      typeof (ios as Record<string, unknown>).iosResidual === "string"
-        ? ((ios as Record<string, unknown>).iosResidual as string)
-        : null,
-    environmentRecoveryUsed: (android as Record<string, unknown>).environmentRecoveryUsed === true,
-    gmsRecoveryUsed: (android as Record<string, unknown>).gmsRecoveryUsed === true,
-    anrRecoveryUsed: (android as Record<string, unknown>).anrRecoveryUsed === true,
-    blankSurfaceRecovered: (android as Record<string, unknown>).blankSurfaceRecovered === true,
-    devClientBootstrapRecovered: (android as Record<string, unknown>).devClientBootstrapRecovered === true,
-    runtimeVerified: web.status === "passed" && android.status === "passed",
+  const summary = buildRuntimeSummary({
+    web,
+    android,
+    ios,
     scenariosPassed: {
       web: {
         initialOpen: web.queueRowsVisible === true,
@@ -912,18 +884,20 @@ async function main() {
         refreshLifecycle: ios.status === "passed",
       },
     },
-    platformSpecificIssues,
     artifacts: {
       webSummary: `${webArtifactBase}.summary.json`,
       webRuntime: `${webArtifactBase}.json`,
-      androidCurrentXml: (android as Record<string, unknown>).currentXml ?? null,
-      androidCurrentPng: (android as Record<string, unknown>).currentPng ?? null,
-      androidAfterRecipientXml: (android as Record<string, unknown>).afterRecipientXml ?? null,
-      androidAfterRecipientPng: (android as Record<string, unknown>).afterRecipientPng ?? null,
-      androidModalXml: (android as Record<string, unknown>).modalXml ?? null,
-      androidModalPng: (android as Record<string, unknown>).modalPng ?? null,
+      androidCurrentXml: androidRecord.currentXml ?? null,
+      androidCurrentPng: androidRecord.currentPng ?? null,
+      androidAfterRecipientXml: androidRecord.afterRecipientXml ?? null,
+      androidAfterRecipientPng: androidRecord.afterRecipientPng ?? null,
+      androidModalXml: androidRecord.modalXml ?? null,
+      androidModalPng: androidRecord.modalPng ?? null,
     },
-  };
+    extra: {
+      gate: "warehouse_issue_queue_runtime_verify",
+    },
+  });
 
   writeArtifact(`${artifactBase}.json`, { web, android, ios, summary });
   writeArtifact(`${artifactBase}.summary.json`, summary);

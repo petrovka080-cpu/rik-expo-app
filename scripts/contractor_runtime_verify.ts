@@ -7,6 +7,7 @@ import { chromium } from "playwright";
 import { createClient } from "@supabase/supabase-js";
 import { config as loadDotenv } from "dotenv";
 import { createAndroidHarness } from "./_shared/androidHarness";
+import { buildRuntimeSummary, createFailurePlatformResult } from "./_shared/runtimeSummary";
 
 loadDotenv({ path: ".env.local", override: false });
 loadDotenv({ path: ".env", override: false });
@@ -39,11 +40,6 @@ const LABELS = {
   issuedSection: "Выдачи со склада",
   emptyIssued: "По этой работе еще не подтверждены выдачи материалов.",
   noApprovedHint: "Нет утвержденных заявок для подтягивания материалов.",
-};
-
-type RuntimeIssue = {
-  platform: "web" | "android" | "ios";
-  issue: string;
 };
 
 type TempUser = {
@@ -626,7 +622,7 @@ const findAndroidLoginNode = (nodes: AndroidNode[]): AndroidNode | null =>
 
 async function loginContractorAndroid(user: TempUser, packageName: string | null) {
   writeJson(path.join(projectRoot, "artifacts/android-contractor-user.json"), user);
-  if (process.env.RIK_ANDROID_SHARED_HARNESS !== "0") {
+  {
     return androidHarness.loginAndroidWithProtectedRoute({
       packageName,
       user,
@@ -900,59 +896,47 @@ async function main() {
     user = await createTempUser(process.env.CONTRACTOR_WEB_ROLE || "foreman", "Contractor Runtime Smoke");
     scope = await seedContractorScope(user);
 
-    const web = await runWebRuntime(user, scope).catch((error) => ({
-      status: "failed",
-      contractorCardVisible: false,
-      modalOpened: false,
-      issuedExpanded: false,
-      platformSpecificIssues: [error instanceof Error ? error.message : String(error ?? "unknown web error")],
-    }));
-    const android = await runAndroidRuntime(user, scope).catch((error) => ({
-      status: "failed",
-      contractorCardVisible: false,
-      modalOpened: false,
-      issuedExpanded: false,
-      ...androidHarness.getRecoverySummary(),
-      platformSpecificIssues: [error instanceof Error ? error.message : String(error ?? "unknown android error")],
-    }));
+    const web = await runWebRuntime(user, scope).catch((error) =>
+      createFailurePlatformResult("web", error, {
+        contractorCardVisible: false,
+        modalOpened: false,
+        issuedExpanded: false,
+      }),
+    );
+    const android = await runAndroidRuntime(user, scope).catch((error) => {
+      const artifacts = androidHarness.captureFailureArtifacts("android-contractor-failure");
+      return createFailurePlatformResult("android", error, {
+        contractorCardVisible: false,
+        modalOpened: false,
+        issuedExpanded: false,
+        ...androidHarness.getRecoverySummary(),
+        ...artifacts,
+      });
+    });
     const ios = runIosRuntime();
     const androidRecord = android as Record<string, unknown>;
 
-    const platformSpecificIssues: RuntimeIssue[] = [];
-    for (const issue of (Array.isArray(web.platformSpecificIssues) ? web.platformSpecificIssues : []) as string[]) {
-      platformSpecificIssues.push({ platform: "web", issue });
-    }
-    for (const issue of (Array.isArray(android.platformSpecificIssues) ? android.platformSpecificIssues : []) as string[]) {
-      platformSpecificIssues.push({ platform: "android", issue });
-    }
-    for (const issue of (Array.isArray(ios.platformSpecificIssues) ? ios.platformSpecificIssues : []) as string[]) {
-      platformSpecificIssues.push({ platform: "ios", issue });
-    }
-
-    const summary = {
-      status:
-        web.status === "passed" &&
-        android.status === "passed" &&
-        (ios.status === "passed" || ios.status === "residual")
-          ? "passed"
-          : "failed",
-      webPassed: web.status === "passed",
-      androidPassed: android.status === "passed",
-      iosPassed: ios.status === "passed",
-      iosResidual:
-        typeof (ios as Record<string, unknown>).iosResidual === "string"
-          ? (ios as Record<string, unknown>).iosResidual
-          : null,
-      environmentRecoveryUsed: androidRecord.environmentRecoveryUsed === true,
-      gmsRecoveryUsed: androidRecord.gmsRecoveryUsed === true,
-      anrRecoveryUsed: androidRecord.anrRecoveryUsed === true,
-      blankSurfaceRecovered: androidRecord.blankSurfaceRecovered === true,
-      devClientBootstrapRecovered: androidRecord.devClientBootstrapRecovered === true,
-      contractorCardVisible: web.contractorCardVisible === true && android.contractorCardVisible === true,
-      modalOpened: web.modalOpened === true && android.modalOpened === true,
-      issuedExpanded: web.issuedExpanded === true && android.issuedExpanded === true,
-      platformSpecificIssues,
-      seed: scope,
+    const summary = buildRuntimeSummary({
+      web,
+      android,
+      ios,
+      scenariosPassed: {
+        web: {
+          contractorCardVisible: web.contractorCardVisible === true,
+          modalOpened: web.modalOpened === true,
+          issuedExpanded: web.issuedExpanded === true,
+        },
+        android: {
+          contractorCardVisible: android.contractorCardVisible === true,
+          modalOpened: android.modalOpened === true,
+          issuedExpanded: android.issuedExpanded === true,
+        },
+        ios: {
+          contractorCardVisible: ios.status === "passed",
+          modalOpened: ios.status === "passed",
+          issuedExpanded: ios.status === "passed",
+        },
+      },
       artifacts: {
         webScreenshot: `${webArtifactBase}.png`,
         androidHomeXml: typeof androidRecord.homeXml === "string" ? androidRecord.homeXml : null,
@@ -962,7 +946,14 @@ async function main() {
         androidIssuedXml: typeof androidRecord.issuedXml === "string" ? androidRecord.issuedXml : null,
         androidIssuedPng: typeof androidRecord.issuedPng === "string" ? androidRecord.issuedPng : null,
       },
-    };
+      extra: {
+        gate: "contractor_runtime_verify",
+        contractorCardVisible: web.contractorCardVisible === true && android.contractorCardVisible === true,
+        modalOpened: web.modalOpened === true && android.modalOpened === true,
+        issuedExpanded: web.issuedExpanded === true && android.issuedExpanded === true,
+        seed: scope,
+      },
+    });
 
     writeJson(path.join(projectRoot, `${artifactBase}.json`), {
       web,
@@ -979,13 +970,9 @@ async function main() {
       process.exitCode = 1;
     }
   } catch (error) {
-    const failure = {
-      status: "failed",
-      error:
-        error instanceof Error
-          ? { name: error.name, message: error.message, stack: error.stack ?? null }
-          : error,
-    };
+    const failure = createFailurePlatformResult("web", error, {
+      gate: "contractor_runtime_verify",
+    });
     writeJson(path.join(projectRoot, `${artifactBase}.json`), failure);
     writeJson(path.join(projectRoot, `${artifactBase}.summary.json`), failure);
     console.error(JSON.stringify(failure, null, 2));

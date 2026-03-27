@@ -14,7 +14,6 @@ import {
   maybeConfirmFio,
   poll,
   resetObservabilityEvents,
-  waitForBodyContains,
   waitForObservability,
   writeArtifact,
 } from "./_shared/realtimeWebRuntime";
@@ -25,7 +24,36 @@ const webRuntimePath = `${artifactBase}.web.json`;
 const role = process.env.BUYER_WEB_ROLE || "buyer";
 
 async function waitForBuyerSurface(page: Page) {
-  await waitForBodyContains(page, [/Снабженец/i, /Вход/i, /Контроль/i], 45_000);
+  await waitForObservability(
+    page,
+    "buyer:surface_ready",
+    (event) =>
+      event.screen === "buyer" &&
+      ((event.event === "load_inbox" && event.result === "success") ||
+        (event.event === "content_ready" &&
+          (event.surface === "inbox_list" || event.surface === "bucket_lists"))),
+    45_000,
+  );
+}
+
+function readBuyerVisibleTotal(events: Awaited<ReturnType<typeof getObservabilityEvents>>) {
+  const match = [...events]
+    .reverse()
+    .find(
+      (event) =>
+        event.screen === "buyer" &&
+        ((event.category === "fetch" && event.event === "load_inbox" && event.result === "success") ||
+          (event.category === "ui" && event.event === "content_ready" && event.surface === "inbox_list")),
+    );
+  const value = match?.extra?.totalGroupCount;
+  return typeof value === "number" ? value : null;
+}
+
+function sliceBuyerRealtimeWindow(events: Awaited<ReturnType<typeof getObservabilityEvents>>) {
+  const startIndex = events.findIndex(
+    (event) => event.screen === "buyer" && event.event === "realtime_refresh_triggered",
+  );
+  return startIndex >= 0 ? events.slice(startIndex) : events;
 }
 
 async function resolveApprovedRequestStatus() {
@@ -95,17 +123,26 @@ async function main() {
   const { browser, page, runtime } = await launchRolePage();
   let marker: string | null = null;
   let subscriptionStarted = false;
+  let subscriptionConnected = false;
   let eventReceived = false;
   let refreshTriggered = false;
   let doubleFetchDetected = false;
   let inflightGuardWorked = false;
   let recentGuardWorked = false;
   let backendOwnerPreserved = false;
-  let markerVisible = false;
+  let uiUpdated = false;
   let fetchCountAfterRealtime = 0;
   let allEvents: Awaited<ReturnType<typeof getObservabilityEvents>> = [];
   const platformSpecificIssues: string[] = [];
   let webPassed = false;
+  let failureStage:
+    | "subscribe_failed"
+    | "event_not_received"
+    | "filter_rejected"
+    | "guard_skipped"
+    | "refresh_not_triggered"
+    | "ui_not_updated"
+    | "unknown" = "unknown";
 
   try {
     user = await createTempUser(role, "Buyer Realtime Verify");
@@ -113,6 +150,8 @@ async function main() {
     await waitForBuyerSurface(page);
     await maybeConfirmFio(page, "Buyer Realtime Verify");
     await waitForBuyerSurface(page);
+    const baselineEvents = await getObservabilityEvents(page);
+    const baselineTotal = readBuyerVisibleTotal(baselineEvents) ?? 0;
 
     const subscriptionEvents = await waitForObservability(
       page,
@@ -126,6 +165,17 @@ async function main() {
         (event) => event.screen === "buyer" && event.event === "subscription_started",
       ) != null;
     subscriptionStarted = subscriptionObserved;
+    const connectedEvents = await waitForObservability(
+      page,
+      "buyer:subscription_connected",
+      (event) => event.screen === "buyer" && event.event === "subscription_connected",
+      45_000,
+    );
+    subscriptionConnected =
+      findEvent(
+        connectedEvents,
+        (event) => event.screen === "buyer" && event.event === "subscription_connected",
+      ) != null;
 
     await resetObservabilityEvents(page);
     marker = `RTBUY${Date.now()}`;
@@ -147,8 +197,16 @@ async function main() {
       45_000,
     );
 
-    await waitForBodyContains(page, marker, 45_000);
-    markerVisible = true;
+    allEvents = await poll(
+      "buyer:ui_updated",
+      async () => {
+        const events = await getObservabilityEvents(page);
+        return (readBuyerVisibleTotal(events) ?? 0) > baselineTotal ? events : null;
+      },
+      45_000,
+      250,
+    );
+    uiUpdated = (readBuyerVisibleTotal(allEvents) ?? 0) > baselineTotal;
 
     const burstOne = await admin
       .from("requests")
@@ -199,36 +257,49 @@ async function main() {
         allEvents,
         (event) => event.screen === "buyer" && event.event === "realtime_refresh_skipped_inflight",
       ) != null;
+    const realtimeWindow = sliceBuyerRealtimeWindow(allEvents);
     backendOwnerPreserved =
       findEvent(
-        allEvents,
+        realtimeWindow,
         (event) =>
           event.screen === "buyer" &&
           event.category === "fetch" &&
           event.event === "load_inbox" &&
-          event.trigger === "realtime" &&
+          event.result === "success" &&
           event.sourceKind === "rpc:buyer_summary_inbox_scope_v1",
       ) != null;
     const realtimeFetchCount = countEvents(
-      allEvents,
+      realtimeWindow,
       (event) =>
         event.screen === "buyer" &&
         event.category === "fetch" &&
         event.event === "load_inbox" &&
-        event.trigger === "realtime" &&
         event.result === "success",
     );
     fetchCountAfterRealtime = realtimeFetchCount;
     doubleFetchDetected = realtimeFetchCount > 1;
     webPassed =
       subscriptionStarted &&
+      subscriptionConnected &&
       eventReceived &&
       refreshTriggered &&
+      uiUpdated &&
       backendOwnerPreserved &&
       !doubleFetchDetected &&
       !hasBlockingConsoleErrors(runtime.console) &&
       runtime.pageErrors.length === 0 &&
       runtime.badResponses.filter((entry) => !entry.url.includes("/favicon")).length === 0;
+    failureStage = webPassed
+      ? "unknown"
+      : !subscriptionConnected
+        ? "subscribe_failed"
+        : !eventReceived
+          ? "event_not_received"
+          : !refreshTriggered
+            ? "refresh_not_triggered"
+            : !uiUpdated
+              ? "ui_not_updated"
+              : "unknown";
   } catch (error) {
     platformSpecificIssues.push(error instanceof Error ? error.message : String(error));
     allEvents = await getObservabilityEvents(page).catch(() => allEvents);
@@ -237,6 +308,13 @@ async function main() {
         findEvent(
           allEvents,
           (event) => event.screen === "buyer" && event.event === "subscription_started",
+        ) != null;
+    }
+    if (!subscriptionConnected) {
+      subscriptionConnected =
+        findEvent(
+          allEvents,
+          (event) => event.screen === "buyer" && event.event === "subscription_connected",
         ) != null;
     }
     if (!eventReceived) {
@@ -294,6 +372,15 @@ async function main() {
       );
       doubleFetchDetected = fetchCountAfterRealtime > 1;
     }
+    failureStage = !subscriptionConnected
+      ? "subscribe_failed"
+      : !eventReceived
+        ? "event_not_received"
+        : !refreshTriggered
+          ? "refresh_not_triggered"
+          : !uiUpdated
+            ? "ui_not_updated"
+            : "unknown";
   } finally {
     await page.screenshot({ path: screenshotPath, fullPage: true }).catch(() => {});
     const summary = {
@@ -302,16 +389,19 @@ async function main() {
       webPassed,
       androidPassed: false,
       iosPassed: false,
+      runtimeVerified: webPassed,
       iosResidual: "Android/iOS realtime runtime proof not executed in this verifier on this host",
       subscriptionStarted,
+      subscriptionConnected,
       eventReceived,
       refreshTriggered,
       doubleFetchDetected,
       inflightGuardWorked,
       recentGuardWorked,
       backendOwnerPreserved,
-      markerVisible,
+      uiUpdated,
       fetchCountAfterRealtime,
+      failureStage,
       screenshot: screenshotPath,
       platformSpecificIssues: [
         ...(hasBlockingConsoleErrors(runtime.console) ? ["Blocking console errors detected"] : []),

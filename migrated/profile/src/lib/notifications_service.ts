@@ -3,14 +3,14 @@ import * as Notifications from "expo-notifications";
 
 export async function initializePushNotifications(): Promise<string | null> {
   const existing = await Notifications.getPermissionsAsync();
-  let status = existing.status;
+  let granted = existing.granted;
 
-  if (status !== "granted") {
+  if (!granted) {
     const requested = await Notifications.requestPermissionsAsync();
-    status = requested.status;
+    granted = requested.granted;
   }
 
-  if (status !== "granted") {
+  if (!granted) {
     return null;
   }
 

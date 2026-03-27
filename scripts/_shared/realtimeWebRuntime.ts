@@ -12,6 +12,13 @@ export const projectRoot = process.cwd();
 export const baseUrl = "http://localhost:8081";
 export const password = "Pass1234";
 
+const LOGIN_BUTTON_RE = /\u0412\u043e\u0439\u0442\u0438|Login/i;
+const FIO_PLACEHOLDER = "\u0424\u0430\u043c\u0438\u043b\u0438\u044f \u0418\u043c\u044f \u041e\u0442\u0447\u0435\u0441\u0442\u0432\u043e";
+const FIO_CONFIRM_RE = /\u0421\u043e\u0445\u0440\u0430\u043d\u0438\u0442\u044c|\u041f\u043e\u0434\u0442\u0432\u0435\u0440\u0434\u0438\u0442\u044c/i;
+const WAREHOUSE_RECIPIENT_PLACEHOLDER = "\u041f\u043e\u0438\u0441\u043a \u0438\u043b\u0438 \u043d\u043e\u0432\u044b\u0439 \u0424\u0418\u041e...";
+const WAREHOUSE_RECIPIENT_CONFIRM_RE =
+  /\u041f\u043e\u0434\u0442\u0432\u0435\u0440\u0434\u0438\u0442\u044c \u0432\u0432\u043e\u0434|\u041f\u043e\u0434\u0442\u0432\u0435\u0440\u0434\u0438\u0442\u044c/i;
+
 const supabaseUrl = String(process.env.EXPO_PUBLIC_SUPABASE_URL ?? "").trim();
 const serviceRoleKey = String(process.env.SUPABASE_SERVICE_ROLE_KEY ?? "").trim();
 
@@ -30,6 +37,48 @@ export type TempUser = {
   password: string;
   role: string;
 };
+
+function buildRealtimeRoleSeed(role: string) {
+  const normalizedRole = String(role || "").trim().toLowerCase();
+  if (normalizedRole === "buyer") {
+    return {
+      profile: { role: "buyer" },
+      userProfile: {
+        usage_market: true,
+        usage_build: false,
+        is_contractor: false,
+      },
+      appMetadata: { role: "buyer" },
+    };
+  }
+  if (normalizedRole === "warehouse") {
+    return {
+      profile: { role: "warehouse" },
+      userProfile: {
+        usage_market: false,
+        usage_build: true,
+        is_contractor: false,
+      },
+      appMetadata: { role: "warehouse" },
+    };
+  }
+  if (normalizedRole === "accountant") {
+    return {
+      profile: { role: "accountant" },
+      userProfile: {
+        usage_market: false,
+        usage_build: true,
+        is_contractor: false,
+      },
+      appMetadata: { role: "accountant" },
+    };
+  }
+  return {
+    profile: { role },
+    userProfile: {},
+    appMetadata: role ? { role } : {},
+  };
+}
 
 export type PlatformObservabilityEvent = {
   screen?: string;
@@ -83,24 +132,25 @@ export const writeArtifact = (relativePath: string, payload: unknown) => {
 
 export async function createTempUser(role: string, fullName: string): Promise<TempUser> {
   const email = `${role}.rt.${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}@e.com`;
+  const seed = buildRealtimeRoleSeed(role);
   const userResult = await admin.auth.admin.createUser({
     email,
     password,
     email_confirm: true,
     user_metadata: { full_name: fullName },
-    app_metadata: { role },
+    app_metadata: seed.appMetadata,
   });
   if (userResult.error) throw userResult.error;
   const user = userResult.data.user;
 
   const profileResult = await admin
     .from("profiles")
-    .upsert({ user_id: user.id, role, full_name: fullName }, { onConflict: "user_id" });
+    .upsert({ user_id: user.id, full_name: fullName, ...seed.profile }, { onConflict: "user_id" });
   if (profileResult.error) throw profileResult.error;
 
   const userProfileResult = await admin
     .from("user_profiles")
-    .upsert({ user_id: user.id, full_name: fullName }, { onConflict: "user_id" });
+    .upsert({ user_id: user.id, full_name: fullName, ...seed.userProfile }, { onConflict: "user_id" });
   if (userProfileResult.error) throw userProfileResult.error;
 
   return { id: user.id, email, password, role };
@@ -183,26 +233,59 @@ export async function loginWithTempUser(page: Page, route: string, user: TempUse
   if ((await emailInput.count()) > 0) {
     await emailInput.fill(user.email);
     await page.locator('input[type="password"]').fill(user.password);
-    const loginButton = page.getByText(/Войти|Login/i).first();
+    const loginButton = page.getByText(LOGIN_BUTTON_RE).first();
     if ((await loginButton.count()) > 0) {
       await loginButton.click();
     } else {
-      await page.locator('button,[role="button"],div[tabindex="0"]').first().click();
+      await page.locator('input[type="password"]').first().press("Enter").catch(() => {});
     }
     await page.waitForURL((url) => !url.pathname.startsWith("/auth/"), { timeout: 30_000 }).catch(() => {});
+    await poll(
+      `auth_settled:${route}`,
+      async () => {
+        const pathname = new URL(page.url()).pathname;
+        const authVisible = (await page.locator('input[placeholder="Email"]').count()) > 0;
+        return !pathname.startsWith("/auth/") && !authVisible ? true : null;
+      },
+      30_000,
+      250,
+    );
   }
 }
 
 export async function maybeConfirmFio(page: Page, fullName: string): Promise<boolean> {
-  const fioInput = page.locator('input[placeholder="Фамилия Имя Отчество"]').first();
-  if ((await fioInput.count()) === 0) return false;
-  await fioInput.fill(fullName);
-  const confirm = page.getByText(/Сохранить|Подтвердить/i).first();
-  if ((await confirm.count()) > 0) {
-    await confirm.click();
-  } else {
-    await page.locator('button,[role="button"],div[tabindex="0"]').last().click();
-  }
+  const fioAppeared = await poll(
+    "fio_modal_present",
+    async () => {
+      const count = await page.getByPlaceholder(FIO_PLACEHOLDER).first().count();
+      return count > 0 ? true : null;
+    },
+    3_000,
+    150,
+  ).catch(() => false);
+  if (!fioAppeared) return false;
+  const fioInput = page.getByPlaceholder(FIO_PLACEHOLDER).first();
+  await poll(
+    "fio_modal_confirmed",
+    async () => {
+      const input = page.getByPlaceholder(FIO_PLACEHOLDER).first();
+      if ((await input.count()) === 0) return true;
+      try {
+        await input.fill(fullName, { timeout: 1500 });
+      } catch {
+        return null;
+      }
+      const confirm = page.getByText(FIO_CONFIRM_RE).first();
+      if ((await confirm.count()) > 0) {
+        await confirm.click().catch(() => {});
+      } else {
+        await input.press("Enter").catch(() => {});
+      }
+      return (await input.count()) === 0 ? true : null;
+    },
+    15_000,
+    250,
+  );
   await poll(
     "fio_modal_closed",
     async () => ((await fioInput.count()) === 0 ? true : null),
@@ -213,12 +296,33 @@ export async function maybeConfirmFio(page: Page, fullName: string): Promise<boo
 }
 
 export async function maybeConfirmWarehouseRecipient(page: Page, recipient: string): Promise<boolean> {
-  const recipientInput = page.locator('input[placeholder*="ФИО"]').first();
-  if ((await recipientInput.count()) === 0) return false;
-  const placeholder = await recipientInput.getAttribute("placeholder");
-  if (!placeholder || !/Поиск|ФИО/i.test(placeholder)) return false;
-  await recipientInput.fill(recipient);
-  const confirm = page.getByText(/Подтвердить/i).first();
+  const recipientAppeared = await poll(
+    "warehouse_recipient_present",
+    async () => {
+      const count = await page.getByPlaceholder(WAREHOUSE_RECIPIENT_PLACEHOLDER).first().count();
+      return count > 0 ? true : null;
+    },
+    3_000,
+    150,
+  ).catch(() => false);
+  if (!recipientAppeared) return false;
+  const recipientInput = page.getByPlaceholder(WAREHOUSE_RECIPIENT_PLACEHOLDER).first();
+  await poll(
+    "warehouse_recipient_filled",
+    async () => {
+      const input = page.getByPlaceholder(WAREHOUSE_RECIPIENT_PLACEHOLDER).first();
+      if ((await input.count()) === 0) return true;
+      try {
+        await input.fill(recipient, { timeout: 1500 });
+        return true;
+      } catch {
+        return null;
+      }
+    },
+    10_000,
+    250,
+  );
+  const confirm = page.getByText(WAREHOUSE_RECIPIENT_CONFIRM_RE).first();
   if ((await confirm.count()) > 0) {
     await confirm.click();
     await poll(
