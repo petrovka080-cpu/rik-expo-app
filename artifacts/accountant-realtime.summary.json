@@ -2,10 +2,10 @@
   "gate": "V12.3 selective realtime accountant",
   "status": "passed",
   "webPassed": true,
-  "androidPassed": false,
+  "androidPassed": true,
   "iosPassed": false,
   "runtimeVerified": true,
-  "iosResidual": "Android/iOS realtime runtime proof not executed in this verifier on this host",
+  "iosResidual": "iOS realtime runtime proof not executed on this Windows host",
   "subscriptionStarted": true,
   "subscriptionConnected": true,
   "eventReceived": true,
@@ -15,8 +15,59 @@
   "recentGuardWorked": true,
   "backendOwnerPreserved": true,
   "uiUpdated": true,
-  "fetchCountAfterRealtime": 1,
+  "fetchCountAfterRealtime": {
+    "web": 1,
+    "android": 1
+  },
   "failureStage": "unknown",
   "screenshot": "artifacts/accountant-realtime.png",
-  "platformSpecificIssues": []
+  "platformSpecificIssues": [],
+  "artifacts": {
+    "webRuntime": "artifacts/accountant-realtime.web.json",
+    "androidRuntime": "artifacts/accountant-realtime.android.json",
+    "webScreenshot": "artifacts/accountant-realtime.png",
+    "androidScreenshot": "artifacts/android-accountant-realtime-final.png"
+  },
+  "web": {
+    "subscriptionStarted": true,
+    "subscriptionConnected": true,
+    "eventReceived": true,
+    "refreshTriggered": true,
+    "doubleFetchDetected": false,
+    "inflightGuardWorked": false,
+    "recentGuardWorked": true,
+    "backendOwnerPreserved": true,
+    "uiUpdated": true,
+    "fetchCountAfterRealtime": 1,
+    "failureStage": "unknown"
+  },
+  "android": {
+    "subscriptionStarted": true,
+    "subscriptionConnected": true,
+    "eventReceived": true,
+    "refreshTriggered": true,
+    "doubleFetchDetected": false,
+    "inflightGuardWorked": false,
+    "recentGuardWorked": true,
+    "backendOwnerPreserved": true,
+    "uiUpdated": true,
+    "fetchCountAfterRealtime": 1,
+    "failureStage": "unknown",
+    "preflight": {
+      "deviceDetected": true,
+      "packageName": "com.azisbek_dzhantaev.rikexpoapp",
+      "reverseProxyReady": true,
+      "appCleared": false,
+      "gmsCleared": false,
+      "devClientReachable": true
+    },
+    "recovery": {
+      "environmentRecoveryUsed": true,
+      "gmsRecoveryUsed": false,
+      "anrRecoveryUsed": false,
+      "blankSurfaceRecovered": false,
+      "devClientBootstrapRecovered": false
+    },
+    "fioConfirmed": true
+  }
 }

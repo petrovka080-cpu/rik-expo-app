@@ -1,0 +1,114 @@
+{
+  "marker": "RTBUY1774692670713",
+  "events": [
+    {
+      "screen": "buyer",
+      "surface": "summary_root",
+      "event": "realtime_event_received",
+      "result": "success",
+      "durationMs": null,
+      "rowCount": null,
+      "sourceKind": "supabase:postgres_changes",
+      "raw": "I/ReactNativeJS( 8165): '[platform.observability]', { screen: 'buyer',\nI/ReactNativeJS( 8165):   surface: 'summary_root',\nI/ReactNativeJS( 8165):   event: 'realtime_event_received',\nI/ReactNativeJS( 8165):   result: 'success',\nI/ReactNativeJS( 8165):   durationMs: null,\nI/ReactNativeJS( 8165):   rowCount: null,\nI/ReactNativeJS( 8165):   sourceKind: 'supabase:postgres_changes',\nI/ReactNativeJS( 8165):   errorStage: null }"
+    },
+    {
+      "screen": "buyer",
+      "surface": "summary_root",
+      "event": "realtime_refresh_triggered",
+      "result": "success",
+      "durationMs": null,
+      "rowCount": null,
+      "sourceKind": "supabase:postgres_changes",
+      "raw": "I/ReactNativeJS( 8165): '[platform.observability]', { screen: 'buyer',\nI/ReactNativeJS( 8165):   surface: 'summary_root',\nI/ReactNativeJS( 8165):   event: 'realtime_refresh_triggered',\nI/ReactNativeJS( 8165):   result: 'success',\nI/ReactNativeJS( 8165):   durationMs: null,\nI/ReactNativeJS( 8165):   rowCount: null,\nI/ReactNativeJS( 8165):   sourceKind: 'supabase:postgres_changes',\nI/ReactNativeJS( 8165):   errorStage: null }"
+    },
+    {
+      "screen": "buyer",
+      "surface": "summary_inbox",
+      "event": "load_inbox",
+      "result": "success",
+      "durationMs": 606,
+      "rowCount": 36,
+      "sourceKind": "rpc:buyer_summary_inbox_scope_v1",
+      "raw": "I/ReactNativeJS( 8165): '[platform.observability]', { screen: 'buyer',\nI/ReactNativeJS( 8165):   surface: 'summary_inbox',\nI/ReactNativeJS( 8165):   event: 'load_inbox',\nI/ReactNativeJS( 8165):   result: 'success',\nI/ReactNativeJS( 8165):   durationMs: 606,\nI/ReactNativeJS( 8165):   rowCount: 36,\nI/ReactNativeJS( 8165):   sourceKind: 'rpc:buyer_summary_inbox_scope_v1',\nI/ReactNativeJS( 8165):   errorStage: null }"
+    },
+    {
+      "screen": "buyer",
+      "surface": "inbox_list",
+      "event": "content_ready",
+      "result": "success",
+      "durationMs": null,
+      "rowCount": 36,
+      "sourceKind": "rpc:buyer_summary_inbox_scope_v1",
+      "raw": "I/ReactNativeJS( 8165): '[platform.observability]', { screen: 'buyer',\nI/ReactNativeJS( 8165):   surface: 'inbox_list',\nI/ReactNativeJS( 8165):   event: 'content_ready',\nI/ReactNativeJS( 8165):   result: 'success',\nI/ReactNativeJS( 8165):   durationMs: null,\nI/ReactNativeJS( 8165):   rowCount: 36,\nI/ReactNativeJS( 8165):   sourceKind: 'rpc:buyer_summary_inbox_scope_v1',\nI/ReactNativeJS( 8165):   errorStage: null }"
+    },
+    {
+      "screen": "buyer",
+      "surface": "summary_root",
+      "event": "realtime_event_received",
+      "result": "success",
+      "durationMs": null,
+      "rowCount": null,
+      "sourceKind": "supabase:postgres_changes",
+      "raw": "I/ReactNativeJS( 8165): '[platform.observability]', { screen: 'buyer',\nI/ReactNativeJS( 8165):   surface: 'summary_root',\nI/ReactNativeJS( 8165):   event: 'realtime_event_received',\nI/ReactNativeJS( 8165):   result: 'success',\nI/ReactNativeJS( 8165):   durationMs: null,\nI/ReactNativeJS( 8165):   rowCount: null,\nI/ReactNativeJS( 8165):   sourceKind: 'supabase:postgres_changes',\nI/ReactNativeJS( 8165):   errorStage: null }"
+    },
+    {
+      "screen": "buyer",
+      "surface": "summary_root",
+      "event": "realtime_refresh_triggered",
+      "result": "success",
+      "durationMs": null,
+      "rowCount": null,
+      "sourceKind": "supabase:postgres_changes",
+      "raw": "I/ReactNativeJS( 8165): '[platform.observability]', { screen: 'buyer',\nI/ReactNativeJS( 8165):   surface: 'summary_root',\nI/ReactNativeJS( 8165):   event: 'realtime_refresh_triggered',\nI/ReactNativeJS( 8165):   result: 'success',\nI/ReactNativeJS( 8165):   durationMs: null,\nI/ReactNativeJS( 8165):   rowCount: null,\nI/ReactNativeJS( 8165):   sourceKind: 'supabase:postgres_changes',\nI/ReactNativeJS( 8165):   errorStage: null }"
+    },
+    {
+      "screen": "buyer",
+      "surface": "summary_root",
+      "event": "realtime_event_received",
+      "result": "success",
+      "durationMs": null,
+      "rowCount": null,
+      "sourceKind": "supabase:postgres_changes",
+      "raw": "I/ReactNativeJS( 8165): '[platform.observability]', { screen: 'buyer',\nI/ReactNativeJS( 8165):   surface: 'summary_root',\nI/ReactNativeJS( 8165):   event: 'realtime_event_received',\nI/ReactNativeJS( 8165):   result: 'success',\nI/ReactNativeJS( 8165):   durationMs: null,\nI/ReactNativeJS( 8165):   rowCount: null,\nI/ReactNativeJS( 8165):   sourceKind: 'supabase:postgres_changes',\nI/ReactNativeJS( 8165):   errorStage: null }"
+    },
+    {
+      "screen": "buyer",
+      "surface": "summary_root",
+      "event": "realtime_refresh_skipped_inflight",
+      "result": "skipped",
+      "durationMs": null,
+      "rowCount": null,
+      "sourceKind": null,
+      "raw": "I/ReactNativeJS( 8165): '[platform.observability]', { screen: 'buyer',\nI/ReactNativeJS( 8165):   surface: 'summary_root',\nI/ReactNativeJS( 8165):   event: 'realtime_refresh_skipped_inflight',\nI/ReactNativeJS( 8165):   result: 'skipped',\nI/ReactNativeJS( 8165):   durationMs: null,\nI/ReactNativeJS( 8165):   rowCount: null,\nI/ReactNativeJS( 8165):   sourceKind: null,\nI/ReactNativeJS( 8165):   errorStage: null }"
+    },
+    {
+      "screen": "buyer",
+      "surface": "summary_inbox",
+      "event": "load_inbox",
+      "result": "success",
+      "durationMs": 783,
+      "rowCount": 36,
+      "sourceKind": "rpc:buyer_summary_inbox_scope_v1",
+      "raw": "I/ReactNativeJS( 8165): '[platform.observability]', { screen: 'buyer',\nI/ReactNativeJS( 8165):   surface: 'summary_inbox',\nI/ReactNativeJS( 8165):   event: 'load_inbox',\nI/ReactNativeJS( 8165):   result: 'success',\nI/ReactNativeJS( 8165):   durationMs: 783,\nI/ReactNativeJS( 8165):   rowCount: 36,\nI/ReactNativeJS( 8165):   sourceKind: 'rpc:buyer_summary_inbox_scope_v1',\nI/ReactNativeJS( 8165):   errorStage: null }"
+    }
+  ],
+  "preflight": {
+    "deviceDetected": true,
+    "packageName": "com.azisbek_dzhantaev.rikexpoapp",
+    "reverseProxyReady": true,
+    "appCleared": false,
+    "gmsCleared": false,
+    "devClientReachable": true
+  },
+  "recovery": {
+    "environmentRecoveryUsed": true,
+    "gmsRecoveryUsed": false,
+    "anrRecoveryUsed": false,
+    "blankSurfaceRecovered": false,
+    "devClientBootstrapRecovered": false
+  },
+  "fioConfirmed": true,
+  "artifacts": {
+    "screenshot": "artifacts/android-buyer-realtime-final.png"
+  }
+}

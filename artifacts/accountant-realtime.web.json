@@ -1,5 +1,5 @@
 {
-  "marker": "RTACCT1774635177295",
+  "marker": "RTACCT1774692723170",
   "baseUrl": "http://localhost:8081",
   "runtime": {
     "console": [
@@ -33,6 +33,66 @@
       },
       {
         "type": "info",
+        "text": "[platform.observability] {screen: profile, surface: session_role, event: resolve_session_role, result: success, durationMs: 0}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: profile, surface: session_role, event: resolve_session_role, result: cache_hit, durationMs: null}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: accountant, surface: inbox_list, event: load_inbox, result: skipped, durationMs: null}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: accountant, surface: inbox_list, event: load_inbox_page, result: skipped, durationMs: null}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: accountant, surface: inbox_list, event: load_inbox, result: queued_rerun, durationMs: null}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: accountant, surface: realtime_channel, event: realtime_auth_ready, result: success, durationMs: null}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: accountant, surface: screen_root, event: channel_created, result: success, durationMs: null}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: accountant, surface: screen_root, event: subscription_started, result: success, durationMs: null}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: accountant, surface: inbox_list, event: load_inbox_page, result: skipped, durationMs: null}"
+      },
+      {
+        "type": "warning",
+        "text": "[getMyRole] TypeError: Failed to fetch"
+      },
+      {
+        "type": "info",
+        "text": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold"
+      },
+      {
+        "type": "log",
+        "text": "Running application \"main\" with appParams:\n {rootTag: #root, hydrate: undefined} \nDevelopment-level warnings: ON.\nPerformance optimizations: OFF."
+      },
+      {
+        "type": "warning",
+        "text": "\"shadow*\" style props are deprecated. Use \"boxShadow\"."
+      },
+      {
+        "type": "info",
+        "text": "[jobQueue.env] {EXPO_PUBLIC_JOB_QUEUE_ENABLED: true, JOB_QUEUE_ENABLED: true}"
+      },
+      {
+        "type": "info",
+        "text": "[flash-list.compat] legacy architecture fallback -> FlatList"
+      },
+      {
+        "type": "info",
         "text": "[platform.observability] {screen: accountant, surface: inbox_list, event: load_inbox, result: skipped, durationMs: null}"
       },
       {
@@ -61,6 +121,14 @@
       },
       {
         "type": "info",
+        "text": "[platform.observability] {screen: profile, surface: session_role, event: warm_session_profile, result: joined_inflight, durationMs: null}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: profile, surface: session_role, event: warm_session_profile, result: success, durationMs: 492}"
+      },
+      {
+        "type": "info",
         "text": "[platform.observability] {screen: accountant, surface: screen_root, event: subscription_connected, result: success, durationMs: null}"
       },
       {
@@ -69,7 +137,7 @@
       },
       {
         "type": "info",
-        "text": "[platform.observability] {screen: accountant, surface: inbox_list, event: load_inbox, result: success, durationMs: 548}"
+        "text": "[platform.observability] {screen: accountant, surface: inbox_list, event: load_inbox, result: success, durationMs: 558}"
       },
       {
         "type": "info",
@@ -77,7 +145,7 @@
       },
       {
         "type": "info",
-        "text": "[platform.observability] {screen: accountant, surface: inbox_list, event: load_inbox, result: success, durationMs: 563}"
+        "text": "[platform.observability] {screen: accountant, surface: inbox_list, event: load_inbox, result: success, durationMs: 562}"
       },
       {
         "type": "info",
@@ -97,7 +165,7 @@
       },
       {
         "type": "info",
-        "text": "[platform.observability] {screen: accountant, surface: inbox_list, event: load_inbox, result: success, durationMs: 564}"
+        "text": "[platform.observability] {screen: accountant, surface: inbox_list, event: load_inbox, result: success, durationMs: 560}"
       },
       {
         "type": "info",
@@ -121,8 +189,8 @@
   },
   "events": [
     {
-      "id": "obs-1",
-      "at": 1774635178745,
+      "id": "obs-15",
+      "at": 1774692724437,
       "screen": "accountant",
       "surface": "screen_root",
       "category": "reload",
@@ -140,8 +208,8 @@
       }
     },
     {
-      "id": "obs-2",
-      "at": 1774635178746,
+      "id": "obs-16",
+      "at": 1774692724438,
       "screen": "accountant",
       "surface": "screen_root",
       "category": "reload",
@@ -159,8 +227,8 @@
       }
     },
     {
-      "id": "obs-3",
-      "at": 1774635178747,
+      "id": "obs-17",
+      "at": 1774692724439,
       "screen": "accountant",
       "surface": "screen_root",
       "category": "reload",
@@ -178,8 +246,8 @@
       }
     },
     {
-      "id": "obs-4",
-      "at": 1774635179310,
+      "id": "obs-18",
+      "at": 1774692724998,
       "screen": "accountant",
       "surface": "inbox_list",
       "category": "ui",
@@ -192,8 +260,8 @@
       }
     },
     {
-      "id": "obs-5",
-      "at": 1774635179310,
+      "id": "obs-19",
+      "at": 1774692724998,
       "screen": "accountant",
       "surface": "inbox_list",
       "category": "fetch",
@@ -213,11 +281,11 @@
         "hasMore": true
       },
       "result": "success",
-      "durationMs": 564
+      "durationMs": 560
     },
     {
-      "id": "obs-6",
-      "at": 1774635179866,
+      "id": "obs-20",
+      "at": 1774692725854,
       "screen": "accountant",
       "surface": "screen_root",
       "category": "reload",
@@ -235,8 +303,8 @@
       }
     },
     {
-      "id": "obs-7",
-      "at": 1774635179866,
+      "id": "obs-21",
+      "at": 1774692725855,
       "screen": "accountant",
       "surface": "screen_root",
       "category": "reload",
@@ -257,27 +325,5 @@
         "owner": "realtime_lifecycle"
       }
     }
-  ],
-  "summary": {
-    "gate": "V12.3 selective realtime accountant",
-    "status": "passed",
-    "webPassed": true,
-    "androidPassed": false,
-    "iosPassed": false,
-    "runtimeVerified": true,
-    "iosResidual": "Android/iOS realtime runtime proof not executed in this verifier on this host",
-    "subscriptionStarted": true,
-    "subscriptionConnected": true,
-    "eventReceived": true,
-    "refreshTriggered": true,
-    "doubleFetchDetected": false,
-    "inflightGuardWorked": false,
-    "recentGuardWorked": true,
-    "backendOwnerPreserved": true,
-    "uiUpdated": true,
-    "fetchCountAfterRealtime": 1,
-    "failureStage": "unknown",
-    "screenshot": "artifacts/accountant-realtime.png",
-    "platformSpecificIssues": []
-  }
+  ]
 }

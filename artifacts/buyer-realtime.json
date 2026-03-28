@@ -1,26 +1,81 @@
 {
-  "marker": "RTBUY1774635157188",
+  "marker": {
+    "web": "RTBUY1774692505868",
+    "android": "RTBUY1774692670713"
+  },
   "webRuntime": "artifacts/buyer-realtime.web.json",
+  "androidRuntime": "artifacts/buyer-realtime.android.json",
   "summary": {
     "gate": "V12.3 selective realtime buyer",
     "status": "passed",
     "webPassed": true,
-    "androidPassed": false,
+    "androidPassed": true,
     "iosPassed": false,
     "runtimeVerified": true,
-    "iosResidual": "Android/iOS realtime runtime proof not executed in this verifier on this host",
+    "iosResidual": "iOS realtime runtime proof not executed on this Windows host",
     "subscriptionStarted": true,
     "subscriptionConnected": true,
     "eventReceived": true,
     "refreshTriggered": true,
     "doubleFetchDetected": false,
-    "inflightGuardWorked": false,
-    "recentGuardWorked": true,
+    "inflightGuardWorked": true,
+    "recentGuardWorked": false,
     "backendOwnerPreserved": true,
     "uiUpdated": true,
-    "fetchCountAfterRealtime": 1,
+    "fetchCountAfterRealtime": {
+      "web": 1,
+      "android": 1
+    },
     "failureStage": "unknown",
     "screenshot": "artifacts/buyer-realtime.png",
-    "platformSpecificIssues": []
+    "platformSpecificIssues": [],
+    "artifacts": {
+      "webRuntime": "artifacts/buyer-realtime.web.json",
+      "androidRuntime": "artifacts/buyer-realtime.android.json",
+      "webScreenshot": "artifacts/buyer-realtime.png",
+      "androidScreenshot": "artifacts/android-buyer-realtime-final.png"
+    },
+    "web": {
+      "subscriptionStarted": true,
+      "subscriptionConnected": true,
+      "eventReceived": true,
+      "refreshTriggered": true,
+      "doubleFetchDetected": false,
+      "inflightGuardWorked": true,
+      "recentGuardWorked": false,
+      "backendOwnerPreserved": true,
+      "uiUpdated": true,
+      "fetchCountAfterRealtime": 1,
+      "failureStage": "unknown"
+    },
+    "android": {
+      "subscriptionStarted": true,
+      "subscriptionConnected": true,
+      "eventReceived": true,
+      "refreshTriggered": true,
+      "doubleFetchDetected": false,
+      "inflightGuardWorked": true,
+      "recentGuardWorked": false,
+      "backendOwnerPreserved": true,
+      "uiUpdated": true,
+      "fetchCountAfterRealtime": 1,
+      "failureStage": "unknown",
+      "preflight": {
+        "deviceDetected": true,
+        "packageName": "com.azisbek_dzhantaev.rikexpoapp",
+        "reverseProxyReady": true,
+        "appCleared": false,
+        "gmsCleared": false,
+        "devClientReachable": true
+      },
+      "recovery": {
+        "environmentRecoveryUsed": true,
+        "gmsRecoveryUsed": false,
+        "anrRecoveryUsed": false,
+        "blankSurfaceRecovered": false,
+        "devClientBootstrapRecovered": false
+      },
+      "fioConfirmed": true
+    }
   }
 }

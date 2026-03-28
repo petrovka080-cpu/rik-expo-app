@@ -35,7 +35,15 @@
         },
         {
           "type": "info",
-          "text": "[platform.observability] {screen: buyer, surface: summary_inbox, event: load_inbox, result: success, durationMs: 838}"
+          "text": "[platform.observability] {screen: buyer, surface: summary_inbox, event: load_inbox, result: success, durationMs: 923}"
+        },
+        {
+          "type": "info",
+          "text": "[platform.observability] {screen: profile, surface: session_role, event: resolve_session_role, result: success, durationMs: 0}"
+        },
+        {
+          "type": "info",
+          "text": "[platform.observability] {screen: profile, surface: session_role, event: resolve_session_role, result: cache_hit, durationMs: null}"
         },
         {
           "type": "info",
@@ -55,19 +63,27 @@
         },
         {
           "type": "info",
-          "text": "[platform.observability] {screen: buyer, surface: realtime_channel, event: subscription_started, result: success, durationMs: null}"
+          "text": "[platform.observability] {screen: profile, surface: session_role, event: warm_session_profile, result: success, durationMs: 604}"
         },
         {
           "type": "info",
-          "text": "[platform.observability] {screen: buyer, surface: summary_inbox, event: load_inbox, result: success, durationMs: 1126}"
+          "text": "[platform.observability] {screen: buyer, surface: realtime_channel, event: realtime_auth_ready, result: success, durationMs: null}"
         },
         {
           "type": "info",
-          "text": "[platform.observability] {screen: buyer, surface: inbox_list, event: content_ready, result: success, durationMs: null}"
+          "text": "[platform.observability] {screen: buyer, surface: summary_root, event: channel_created, result: success, durationMs: null}"
         },
         {
           "type": "info",
           "text": "[platform.observability] {screen: buyer, surface: summary_root, event: subscription_started, result: success, durationMs: null}"
+        },
+        {
+          "type": "info",
+          "text": "[platform.observability] {screen: buyer, surface: summary_inbox, event: load_inbox, result: success, durationMs: 1105}"
+        },
+        {
+          "type": "info",
+          "text": "[platform.observability] {screen: buyer, surface: inbox_list, event: content_ready, result: success, durationMs: null}"
         }
       ],
       "pageErrors": [],
@@ -76,7 +92,7 @@
     }
   },
   "android": {
-    "status": "passed",
+    "status": "failed",
     "androidPreflight": {
       "deviceDetected": true,
       "packageName": "com.azisbek_dzhantaev.rikexpoapp",
@@ -85,24 +101,28 @@
       "gmsCleared": false,
       "devClientReachable": true
     },
-    "environmentRecoveryUsed": false,
-    "gmsRecoveryUsed": false,
+    "environmentRecoveryUsed": true,
+    "gmsRecoveryUsed": true,
     "anrRecoveryUsed": false,
     "blankSurfaceRecovered": false,
     "devClientBootstrapRecovered": false,
-    "fioConfirmed": true,
-    "inboxTabOpened": true,
+    "fioConfirmed": false,
+    "inboxTabOpened": false,
     "expectedGroupLabel": "REQ-0078/2026",
-    "inboxVisible": true,
-    "sheetOpened": true,
-    "openedGroupLabel": "REQ-0078/2026, 1 поз., 1 позиций, ",
-    "currentXml": "artifacts/android-buyer-summary-inbox-after-fio.xml",
-    "currentPng": "artifacts/android-buyer-summary-inbox-after-fio.png",
-    "inboxXml": "artifacts/android-buyer-summary-inbox-after-fio.xml",
-    "inboxPng": "artifacts/android-buyer-summary-inbox-after-fio.png",
-    "sheetXml": "artifacts/android-buyer-summary-inbox-sheet.xml",
-    "sheetPng": "artifacts/android-buyer-summary-inbox-sheet.png",
-    "platformSpecificIssues": []
+    "inboxVisible": false,
+    "sheetOpened": false,
+    "openedGroupLabel": null,
+    "currentXml": "artifacts/android-buyer-summary-inbox-after-login.xml",
+    "currentPng": "artifacts/android-buyer-summary-inbox-after-login.png",
+    "inboxXml": "artifacts/android-buyer-summary-inbox-after-login.xml",
+    "inboxPng": "artifacts/android-buyer-summary-inbox-after-login.png",
+    "sheetXml": "artifacts/android-buyer-summary-inbox-after-login.xml",
+    "sheetPng": "artifacts/android-buyer-summary-inbox-after-login.png",
+    "platformSpecificIssues": [
+      "Inbox top tab was not found on Android buyer screen",
+      "Buyer inbox request groups were not visible after Android route/tab flow",
+      "Buyer inbox sheet did not open on Android after tapping the first request group"
+    ]
   },
   "ios": {
     "status": "residual",
@@ -112,24 +132,36 @@
     ]
   },
   "summary": {
-    "status": "passed",
+    "status": "failed",
     "webPassed": true,
-    "androidPassed": true,
+    "androidPassed": false,
     "iosPassed": false,
-    "runtimeVerified": true,
-    "environmentRecoveryUsed": false,
-    "gmsRecoveryUsed": false,
+    "runtimeVerified": false,
+    "environmentRecoveryUsed": true,
+    "gmsRecoveryUsed": true,
     "anrRecoveryUsed": false,
     "blankSurfaceRecovered": false,
     "devClientBootstrapRecovered": false,
     "platformSpecificIssues": [
+      {
+        "platform": "android",
+        "issue": "Inbox top tab was not found on Android buyer screen"
+      },
+      {
+        "platform": "android",
+        "issue": "Buyer inbox request groups were not visible after Android route/tab flow"
+      },
+      {
+        "platform": "android",
+        "issue": "Buyer inbox sheet did not open on Android after tapping the first request group"
+      },
       {
         "platform": "ios",
         "issue": "xcrun is unavailable on this host; iOS simulator cannot be started from Windows"
       }
     ],
     "iosResidual": "xcrun is unavailable on this host; iOS simulator cannot be started from Windows",
-    "failureKind": "unknown",
+    "failureKind": "route",
     "scenariosPassed": {
       "web": {
         "initialOpen": true,
@@ -137,9 +169,9 @@
         "sheetInteraction": true
       },
       "android": {
-        "initialOpen": true,
-        "inboxSurface": true,
-        "sheetInteraction": true
+        "initialOpen": false,
+        "inboxSurface": false,
+        "sheetInteraction": false
       },
       "ios": {
         "initialOpen": false,
@@ -150,12 +182,12 @@
     "artifacts": {
       "webSummary": "artifacts/buyer-summary-inbox-web-smoke.summary.json",
       "webRuntime": "artifacts/buyer-summary-inbox-web-smoke.json",
-      "androidCurrentXml": "artifacts/android-buyer-summary-inbox-after-fio.xml",
-      "androidCurrentPng": "artifacts/android-buyer-summary-inbox-after-fio.png",
-      "androidInboxXml": "artifacts/android-buyer-summary-inbox-after-fio.xml",
-      "androidInboxPng": "artifacts/android-buyer-summary-inbox-after-fio.png",
-      "androidSheetXml": "artifacts/android-buyer-summary-inbox-sheet.xml",
-      "androidSheetPng": "artifacts/android-buyer-summary-inbox-sheet.png"
+      "androidCurrentXml": "artifacts/android-buyer-summary-inbox-after-login.xml",
+      "androidCurrentPng": "artifacts/android-buyer-summary-inbox-after-login.png",
+      "androidInboxXml": "artifacts/android-buyer-summary-inbox-after-login.xml",
+      "androidInboxPng": "artifacts/android-buyer-summary-inbox-after-login.png",
+      "androidSheetXml": "artifacts/android-buyer-summary-inbox-after-login.xml",
+      "androidSheetPng": "artifacts/android-buyer-summary-inbox-after-login.png"
     },
     "gate": "buyer_summary_inbox_runtime_verify",
     "subscriptionStarted": null,

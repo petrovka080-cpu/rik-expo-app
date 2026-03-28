@@ -10,7 +10,7 @@ loadDotenv({ path: ".env", override: false });
 
 export const projectRoot = process.cwd();
 export const baseUrl = "http://localhost:8081";
-export const password = "Pass1234";
+export const password = "pass1234";
 
 const LOGIN_BUTTON_RE = /\u0412\u043e\u0439\u0442\u0438|Login/i;
 const FIO_PLACEHOLDER = "\u0424\u0430\u043c\u0438\u043b\u0438\u044f \u0418\u043c\u044f \u041e\u0442\u0447\u0435\u0441\u0442\u0432\u043e";
@@ -21,15 +21,39 @@ const WAREHOUSE_RECIPIENT_CONFIRM_RE =
 
 const supabaseUrl = String(process.env.EXPO_PUBLIC_SUPABASE_URL ?? "").trim();
 const serviceRoleKey = String(process.env.SUPABASE_SERVICE_ROLE_KEY ?? "").trim();
+const anonKey = String(process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? "").trim();
 
-if (!supabaseUrl || !serviceRoleKey) {
-  throw new Error("Missing EXPO_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY");
+if (!supabaseUrl || !serviceRoleKey || !anonKey) {
+  throw new Error("Missing EXPO_PUBLIC_SUPABASE_URL, EXPO_PUBLIC_SUPABASE_ANON_KEY or SUPABASE_SERVICE_ROLE_KEY");
 }
 
 export const admin = createClient(supabaseUrl, serviceRoleKey, {
   auth: { persistSession: false, autoRefreshToken: false },
   global: { headers: { "x-client-info": "realtime-web-runtime" } },
 });
+
+async function waitForTempUserLoginReady(email: string, passwordValue: string) {
+  await poll(
+    `temp-user-login-ready:${email}`,
+    async () => {
+      const probe = createClient(supabaseUrl, anonKey, {
+        auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
+        global: { headers: { "x-client-info": "realtime-web-runtime-auth-probe" } },
+      });
+      const result = await probe.auth.signInWithPassword({
+        email,
+        password: passwordValue,
+      });
+      if (result.error || !result.data.session) {
+        return null;
+      }
+      await probe.auth.signOut().catch(() => {});
+      return true;
+    },
+    30_000,
+    750,
+  );
+}
 
 export type TempUser = {
   id: string;
@@ -152,6 +176,8 @@ export async function createTempUser(role: string, fullName: string): Promise<Te
     .from("user_profiles")
     .upsert({ user_id: user.id, full_name: fullName, ...seed.userProfile }, { onConflict: "user_id" });
   if (userProfileResult.error) throw userProfileResult.error;
+
+  await waitForTempUserLoginReady(email, password);
 
   return { id: user.id, email, password, role };
 }

@@ -6,12 +6,13 @@ loadDotenv({ path: ".env", override: false });
 
 const supabaseUrl = String(process.env.EXPO_PUBLIC_SUPABASE_URL ?? "").trim();
 const supabaseKey = String(process.env.SUPABASE_SERVICE_ROLE_KEY ?? "").trim();
+const anonKey = String(process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? "").trim();
 
-if (!supabaseUrl || !supabaseKey) {
-  throw new Error("Missing EXPO_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY");
+if (!supabaseUrl || !supabaseKey || !anonKey) {
+  throw new Error("Missing EXPO_PUBLIC_SUPABASE_URL, EXPO_PUBLIC_SUPABASE_ANON_KEY or SUPABASE_SERVICE_ROLE_KEY");
 }
 
-export const runtimePassword = String(process.env.RIK_RUNTIME_TEST_PASSWORD ?? "Pass1234");
+export const runtimePassword = String(process.env.RIK_RUNTIME_TEST_PASSWORD ?? "pass1234");
 
 export type RuntimeTestUser = {
   id: string;
@@ -20,6 +21,29 @@ export type RuntimeTestUser = {
   role: string;
   displayLabel: string;
 };
+
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+async function poll<T>(
+  label: string,
+  fn: () => Promise<T | null> | T | null,
+  timeoutMs = 30_000,
+  delayMs = 250,
+): Promise<T> {
+  const startedAt = Date.now();
+  let lastError: unknown = null;
+  while (Date.now() - startedAt < timeoutMs) {
+    try {
+      const value = await fn();
+      if (value != null) return value;
+    } catch (error) {
+      lastError = error;
+    }
+    await sleep(delayMs);
+  }
+  if (lastError) throw lastError;
+  throw new Error(`poll timeout: ${label}`);
+}
 
 function buildRuntimeRoleSeed(role: string) {
   const normalizedRole = String(role || "").trim().toLowerCase();
@@ -68,6 +92,26 @@ export function createVerifierAdmin(clientInfo: string): SupabaseClient {
     auth: { persistSession: false, autoRefreshToken: false },
     global: { headers: { "x-client-info": clientInfo } },
   });
+}
+
+async function waitForRuntimeUserLoginReady(email: string, password: string) {
+  await poll(
+    `runtime-user-login-ready:${email}`,
+    async () => {
+      const probe = createClient(supabaseUrl, anonKey, {
+        auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
+        global: { headers: { "x-client-info": "runtime-test-user-auth-probe" } },
+      });
+      const result = await probe.auth.signInWithPassword({ email, password });
+      if (result.error || !result.data.session) {
+        return null;
+      }
+      await probe.auth.signOut().catch(() => {});
+      return true;
+    },
+    30_000,
+    750,
+  );
 }
 
 type CreateTempUserParams = {
@@ -134,6 +178,8 @@ export async function createTempUser(
       { onConflict: "user_id" },
     );
   if (userProfileResult.error) throw userProfileResult.error;
+
+  await waitForRuntimeUserLoginReady(email, runtimePassword);
 
   return {
     id: user.id,

@@ -134,6 +134,7 @@ async function poll<T>(
 function escapeAndroidInputText(value: string) {
   return String(value ?? "")
     .replace(/ /g, "%s")
+    .replace(/@/g, "\\@")
     .replace(/&/g, "\\&")
     .replace(/\(/g, "\\(")
     .replace(/\)/g, "\\)")
@@ -281,14 +282,24 @@ export function createAndroidHarness(options: AndroidHarnessOptions) {
 
   const typeAndroidText = (value: string) => {
     const text = String(value ?? "");
-    const chunkSize = 16;
-    for (let index = 0; index < text.length; index += chunkSize) {
-      const chunk = text.slice(index, index + chunkSize);
-      execFileSync("adb", ["shell", "input", "text", escapeAndroidInputText(chunk)], {
+    let buffered = "";
+    const flushBuffered = () => {
+      if (!buffered) return;
+      execFileSync("adb", ["shell", "input", "text", escapeAndroidInputText(buffered)], {
         cwd: options.projectRoot,
         stdio: "pipe",
       });
+      buffered = "";
+    };
+    for (const chunk of text) {
+      if (chunk === "@") {
+        flushBuffered();
+        pressAndroidKey(77);
+        continue;
+      }
+      buffered += chunk;
     }
+    flushBuffered();
   };
   const replaceAndroidFieldText = async (node: AndroidNode, value: string) => {
     tapAndroidBounds(node.bounds);
@@ -862,6 +873,13 @@ export function createAndroidHarness(options: AndroidHarnessOptions) {
             return null;
           }
           if (isAndroidBlankAppSurface(cleaned.xml)) {
+            recoveryState.environmentRecoveryUsed = true;
+            recoveryState.blankSurfaceRecovered = true;
+            startAndroidDevClientProject(params.packageName, options.devClientPort, {
+              stopApp: false,
+            });
+            await sleep(1200);
+            startAndroidRouteSafe(params.packageName, params.protectedRoute);
             return null;
           }
           return isLoginScreen(cleaned.xml) ? cleaned : null;
@@ -869,6 +887,17 @@ export function createAndroidHarness(options: AndroidHarnessOptions) {
         timeoutMs,
         1000,
       );
+
+    const getStableLoginScreen = async (stage: string, timeoutMs = 12_000) => {
+      try {
+        return await waitForStableLoginScreen(stage, timeoutMs);
+      } catch {
+        return await dismissInterruptions(
+          dumpAndroidScreen(`${params.artifactBase}-${stage}-fallback`),
+          `${params.artifactBase}-${stage}-fallback-interrupt`,
+        );
+      }
+    };
 
     if (isLoginScreen(current.xml)) {
       const nodes = parseAndroidNodes(current.xml);
@@ -900,7 +929,7 @@ export function createAndroidHarness(options: AndroidHarnessOptions) {
 
       await replaceAndroidFieldText(resolvedEmailNode, params.user.email);
 
-      let passwordScreen = await waitForStableLoginScreen("email-filled");
+      let passwordScreen = await getStableLoginScreen("email-filled");
       let passwordNodes = parseAndroidNodes(passwordScreen.xml);
       const refreshedEmailNode =
         findAndroidNode(
@@ -912,7 +941,7 @@ export function createAndroidHarness(options: AndroidHarnessOptions) {
         ) ?? resolvedEmailNode;
       if (String(refreshedEmailNode?.text ?? "").trim() !== params.user.email) {
         await replaceAndroidFieldText(refreshedEmailNode, params.user.email);
-        passwordScreen = await waitForStableLoginScreen("email-refilled");
+        passwordScreen = await getStableLoginScreen("email-refilled");
         passwordNodes = parseAndroidNodes(passwordScreen.xml);
       }
       const refreshedPasswordNode =
@@ -926,7 +955,7 @@ export function createAndroidHarness(options: AndroidHarnessOptions) {
 
       pressAndroidKey(61);
       await sleep(250);
-      const passwordFocusScreen = await waitForStableLoginScreen("password-focus");
+      const passwordFocusScreen = await getStableLoginScreen("password-focus");
       const focusedPasswordNode = findAndroidNode(
         parseAndroidNodes(passwordFocusScreen.xml),
         (node) =>
@@ -942,7 +971,7 @@ export function createAndroidHarness(options: AndroidHarnessOptions) {
 
       await replaceAndroidFieldText(refreshedPasswordNode, params.user.password);
 
-      const loginScreen = await waitForStableLoginScreen("password-filled");
+      const loginScreen = await getStableLoginScreen("password-filled");
       const refreshedLoginNode = findAndroidLoginNode(parseAndroidNodes(loginScreen.xml)) ?? loginNode;
 
       await submitLoginAction(refreshedLoginNode);
