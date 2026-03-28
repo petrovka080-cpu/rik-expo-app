@@ -1,8 +1,8 @@
 import {
-  addRequestItemsFromRikBatch,
   addRequestItemsFromRikBatchDetailed,
   getOrCreateDraftRequestId,
 } from "../../lib/api/requests";
+import { appendMarketplaceItemsToDraft } from "../../lib/api/request.repository";
 import {
   proposalAddItems,
   proposalCreateFull,
@@ -12,31 +12,29 @@ import {
 } from "../../lib/api/proposals";
 import { ensureMyProfile, getMyRole } from "../../lib/api/profile";
 import type { Database } from "../../lib/database.types";
+import { ensurePlatformNetworkService, getPlatformNetworkSnapshot } from "../../lib/offline/platformNetwork.service";
+import {
+  beginPlatformObservability,
+  recordPlatformObservability,
+} from "../../lib/observability/platformObservability";
 import { supabase } from "../../lib/supabaseClient";
-import { MARKET_HOME_SELECT, asListingItems, toMarketHomeListingCard } from "./marketHome.data";
+import { asListingItems, toMarketHomeListingCard } from "./marketHome.data";
+import {
+  buildMarketplaceNoteTag,
+  MARKETPLACE_SOURCE_APP_CODE,
+} from "./market.contracts";
 import type {
   MarketHomeFilters,
   MarketHomeListingCard,
   MarketHomePayload,
   MarketListingErpItem,
-  MarketListingItem,
   MarketListingRow,
+  MarketMarketplaceScopePageRow,
+  MarketMarketplaceScopeRow,
   MarketRoleCapabilities,
 } from "./marketHome.types";
 
-type CatalogRow = Database["public"]["Views"]["v_catalog_marketplace"]["Row"];
-type StockRow = Database["public"]["Views"]["v_marketplace_catalog_stock"]["Row"];
-type CompanyRow = Pick<Database["public"]["Tables"]["companies"]["Row"], "id" | "name">;
-type ProfileRow = Pick<Database["public"]["Tables"]["user_profiles"]["Row"], "user_id" | "full_name">;
-
 export const MARKET_PAGE_SIZE = 24;
-
-type ListingSupplementMaps = {
-  catalogByCode: Map<string, CatalogRow>;
-  stockByCode: Map<string, StockRow>;
-  companyById: Map<string, CompanyRow>;
-  profileByUserId: Map<string, ProfileRow>;
-};
 
 type LoadMarketHomePageParams = {
   offset?: number;
@@ -53,6 +51,17 @@ type MarketProposalResult = {
 
 const MARKET_ROLE_FOREMAN = "foreman";
 const MARKET_ROLE_BUYER = "buyer";
+const MARKET_HOME_READ_SOURCE_KIND = "rpc:marketplace_items_scope_page_v1";
+const MARKET_PRODUCT_READ_SOURCE_KIND = "rpc:marketplace_item_scope_detail_v1";
+const MARKET_HOME_SURFACE = "home_feed";
+const MARKET_PRODUCT_SURFACE = "product_details";
+const MARKET_NETWORK_OFFLINE_ERROR = "Нет сети. Проверьте интернет и повторите действие.";
+
+const trim = (value: unknown) => String(value ?? "").trim();
+
+const normalizeCode = (value: unknown): string => trim(value);
+
+const normalizeName = (value: unknown): string => trim(value);
 
 const positiveNumberOrNull = (value: unknown): number | null => {
   if (typeof value === "number" && Number.isFinite(value) && value > 0) return value;
@@ -63,272 +72,213 @@ const positiveNumberOrNull = (value: unknown): number | null => {
   return null;
 };
 
-const normalizeCode = (value: unknown): string => String(value ?? "").trim();
+const nonNegativeNumberOrNull = (value: unknown): number | null => {
+  if (typeof value === "number" && Number.isFinite(value) && value >= 0) return value;
+  if (typeof value === "string" && value.trim()) {
+    const parsed = Number(value.replace(",", "."));
+    return Number.isFinite(parsed) && parsed >= 0 ? parsed : null;
+  }
+  return null;
+};
 
-const normalizeName = (value: string | null | undefined) => String(value ?? "").trim();
+const asRecord = (value: unknown): Record<string, unknown> | null =>
+  value != null && typeof value === "object" && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : null;
+
+const asMarketplaceScopeErpItems = (value: unknown): MarketListingErpItem[] => {
+  if (!Array.isArray(value)) return [];
+  return value
+    .map((entry) => {
+      const row = asRecord(entry);
+      if (!row) return null;
+      const rikCode = normalizeCode(row.rikCode);
+      const qty = positiveNumberOrNull(row.qty) ?? 1;
+      if (!rikCode || qty <= 0) return null;
+      return {
+        rikCode,
+        nameHuman: normalizeName(row.nameHuman) || rikCode,
+        uom: normalizeName(row.uom) || null,
+        qty,
+        price: positiveNumberOrNull(row.price),
+        kind: normalizeName(row.kind) || null,
+      } satisfies MarketListingErpItem;
+    })
+    .filter((item): item is MarketListingErpItem => Boolean(item));
+};
+
+const buildFallbackErpItems = (
+  row: Pick<MarketMarketplaceScopeRow, "items_json" | "rik_code" | "title" | "uom" | "uom_code" | "price" | "kind">,
+): MarketListingErpItem[] => {
+  const rawItems = asListingItems(row.items_json);
+  const fallbackItems = rawItems.length
+    ? rawItems
+    : row.rik_code
+      ? [
+          {
+            rik_code: row.rik_code,
+            name: row.title,
+            uom: row.uom_code ?? row.uom ?? null,
+            qty: 1,
+            price: row.price ?? null,
+            city: null,
+            kind: row.kind ?? null,
+          },
+        ]
+      : [];
+
+  const byCode = new Map<string, MarketListingErpItem>();
+  fallbackItems.forEach((item) => {
+    const rikCode = normalizeCode(item.rik_code);
+    if (!rikCode) return;
+    const qty = positiveNumberOrNull(item.qty) ?? 1;
+    const prev = byCode.get(rikCode);
+    byCode.set(rikCode, {
+      rikCode,
+      nameHuman: normalizeName(item.name) || normalizeName(row.title) || rikCode,
+      uom: normalizeName(item.uom) || normalizeName(row.uom_code) || normalizeName(row.uom) || null,
+      qty: (prev?.qty ?? 0) + qty,
+      price: positiveNumberOrNull(item.price) ?? prev?.price ?? positiveNumberOrNull(row.price),
+      kind: normalizeName(item.kind) || normalizeName(row.kind) || null,
+    });
+  });
+  return Array.from(byCode.values());
+};
+
+const buildStockSummaryFromScope = (
+  row: Pick<
+    MarketMarketplaceScopeRow,
+    "stock_match_count" | "stock_qty_available" | "stock_uom" | "total_available_count" | "primary_rik_code"
+  >,
+) => {
+  const stockMatchCount = nonNegativeNumberOrNull(row.stock_match_count) ?? 0;
+  const singleAvailable = nonNegativeNumberOrNull(row.stock_qty_available);
+  const totalAvailableCount = nonNegativeNumberOrNull(row.total_available_count);
+  const stockUom = normalizeName(row.stock_uom) || null;
+
+  if (stockMatchCount <= 0) {
+    return {
+      stockLabel: null,
+      stockQtyAvailable: null,
+      stockUom: null,
+      totalAvailableCount: null,
+      primaryRikCode: normalizeCode(row.primary_rik_code) || null,
+    };
+  }
+
+  if (stockMatchCount === 1) {
+    const qty = singleAvailable ?? totalAvailableCount ?? 0;
+    return {
+      stockLabel: `На складе: ${qty.toLocaleString("ru-RU")}${stockUom ? ` ${stockUom}` : ""}`,
+      stockQtyAvailable: qty,
+      stockUom,
+      totalAvailableCount: qty,
+      primaryRikCode: normalizeCode(row.primary_rik_code) || null,
+    };
+  }
+
+  const qty = totalAvailableCount ?? 0;
+  return {
+    stockLabel:
+      qty > 0
+        ? `На складе: ${qty.toLocaleString("ru-RU")} ед. по ${stockMatchCount} поз.`
+        : `На складе: ${stockMatchCount} поз.`,
+    stockQtyAvailable: null,
+    stockUom: null,
+    totalAvailableCount: qty || null,
+    primaryRikCode: normalizeCode(row.primary_rik_code) || null,
+  };
+};
+
+const toScopeBaseRow = (row: MarketMarketplaceScopeRow): MarketListingRow => ({
+  catalog_item_id: null,
+  catalog_kind: row.category ?? null,
+  city: row.city,
+  company_id: row.company_id,
+  contacts_email: row.contacts_email,
+  contacts_phone: row.contacts_phone,
+  contacts_whatsapp: row.contacts_whatsapp,
+  created_at: row.created_at,
+  currency: "KGS",
+  description: row.description,
+  id: row.id,
+  items_json: row.items_json,
+  kind: normalizeName(row.kind) || "material",
+  lat: null,
+  lng: null,
+  price: row.price,
+  rik_code: row.rik_code,
+  side: row.side === "demand" ? "demand" : "offer",
+  status: normalizeName(row.status) || "active",
+  tender_id: null,
+  title: normalizeName(row.title) || normalizeName(row.name) || "Объявление",
+  uom: row.uom,
+  uom_code: row.uom_code,
+  updated_at: row.updated_at,
+  user_id: normalizeCode(row.user_id),
+});
+
+const toMarketHomeListingCardFromScope = (row: MarketMarketplaceScopeRow): MarketHomeListingCard => {
+  const base = toMarketHomeListingCard(toScopeBaseRow(row));
+  const erpItems = asMarketplaceScopeErpItems(row.erp_items_json);
+  const nextErpItems = erpItems.length ? erpItems : buildFallbackErpItems(row);
+  const stockSummary = buildStockSummaryFromScope(row);
+
+  return {
+    ...base,
+    title: normalizeName(row.title) || normalizeName(row.name) || base.title,
+    sellerUserId: normalizeCode(row.user_id),
+    sellerCompanyId: normalizeCode(row.company_id) || null,
+    supplierId: normalizeCode(row.supplier_id) || normalizeCode(row.company_id) || null,
+    sellerDisplayName:
+      normalizeName(row.seller_display_name)
+      || normalizeName(row.supplier_name)
+      || base.sellerDisplayName,
+    price: positiveNumberOrNull(row.price),
+    priceKnown: positiveNumberOrNull(row.price) != null,
+    uom: normalizeName(row.uom) || null,
+    unit:
+      normalizeName(row.unit)
+      || normalizeName(row.uom_code)
+      || normalizeName(row.uom)
+      || null,
+    imageUrl: normalizeName(row.image_url) || null,
+    erpItems: nextErpItems,
+    inStock: row.in_stock === true || (nonNegativeNumberOrNull(row.total_available_count) ?? 0) > 0,
+    stockLabel: stockSummary.stockLabel,
+    stockQtyAvailable: stockSummary.stockQtyAvailable,
+    stockUom: stockSummary.stockUom,
+    totalAvailableCount: stockSummary.totalAvailableCount,
+    primaryRikCode: stockSummary.primaryRikCode ?? base.primaryRikCode,
+    source: "marketplace",
+  };
+};
+
+const toScopeFilterValue = (value?: string | null) => {
+  const next = trim(value);
+  return next && next !== "all" ? next : null;
+};
+
+const resolveRoleFromSession = async (): Promise<string | null> => {
+  try {
+    const { data } = await supabase.auth.getSession();
+    const authUser = data.session?.user ?? null;
+    const authRole =
+      trim(authUser?.app_metadata?.role).toLowerCase()
+      || trim(authUser?.user_metadata?.role).toLowerCase();
+    return authRole || null;
+  } catch {
+    return null;
+  }
+};
 
 const getCurrentBuyerName = async (): Promise<string | null> => {
   const { data } = await supabase.auth.getUser();
   const user = data?.user;
   const fullName =
-    String(user?.user_metadata?.full_name ?? "").trim()
-    || String(user?.user_metadata?.name ?? "").trim();
+    trim(user?.user_metadata?.full_name)
+    || trim(user?.user_metadata?.name);
   return fullName || null;
-};
-
-const collectCodes = (row: MarketListingRow): string[] => {
-  const items = asListingItems(row.items_json);
-  const codes = new Set<string>();
-  const primary = normalizeCode(row.rik_code);
-  if (primary) codes.add(primary);
-  items.forEach((item) => {
-    const code = normalizeCode(item.rik_code);
-    if (code) codes.add(code);
-  });
-  return Array.from(codes);
-};
-
-const collectAllCodes = (rows: MarketListingRow[]) =>
-  Array.from(new Set(rows.flatMap((row) => collectCodes(row)).filter(Boolean)));
-
-const collectCompanyIds = (rows: MarketListingRow[]) =>
-  Array.from(new Set(rows.map((row) => normalizeCode(row.company_id)).filter(Boolean)));
-
-const collectSellerUserIds = (rows: MarketListingRow[]) =>
-  Array.from(new Set(rows.map((row) => normalizeCode(row.user_id)).filter(Boolean)));
-
-const buildCatalogByCode = (rows: CatalogRow[]) => {
-  const byCode = new Map<string, CatalogRow>();
-  rows.forEach((row) => {
-    const sourceCode = normalizeCode(row.source_code);
-    const canonCode = normalizeCode(row.canon_code);
-    if (sourceCode && !byCode.has(sourceCode)) byCode.set(sourceCode, row);
-    if (canonCode && !byCode.has(canonCode)) byCode.set(canonCode, row);
-  });
-  return byCode;
-};
-
-const loadListingSupplements = async (rows: MarketListingRow[]): Promise<ListingSupplementMaps> => {
-  const codes = collectAllCodes(rows);
-  const companyIds = collectCompanyIds(rows);
-  const sellerUserIds = collectSellerUserIds(rows);
-
-  const empty = {
-    catalogByCode: new Map<string, CatalogRow>(),
-    stockByCode: new Map<string, StockRow>(),
-    companyById: new Map<string, CompanyRow>(),
-    profileByUserId: new Map<string, ProfileRow>(),
-  };
-
-  if (!rows.length) return empty;
-
-  const catalogBySourcePromise = codes.length
-    ? supabase
-        .from("v_catalog_marketplace")
-        .select("source_code,canon_code,name_human,name_human_ru,uom_code,kind")
-        .in("source_code", codes)
-    : Promise.resolve({ data: [], error: null });
-
-  const catalogByCanonPromise = codes.length
-    ? supabase
-        .from("v_catalog_marketplace")
-        .select("source_code,canon_code,name_human,name_human_ru,uom_code,kind")
-        .in("canon_code", codes)
-    : Promise.resolve({ data: [], error: null });
-
-  const stockPromise = codes.length
-    ? supabase
-        .from("v_marketplace_catalog_stock")
-        .select("code,qty_available,qty_on_hand,qty_reserved,uom_code,stock_updated_at")
-        .in("code", codes)
-    : Promise.resolve({ data: [], error: null });
-
-  const companiesPromise = companyIds.length
-    ? supabase.from("companies").select("id,name").in("id", companyIds)
-    : Promise.resolve({ data: [], error: null });
-
-  const profilesPromise = sellerUserIds.length
-    ? supabase.from("user_profiles").select("user_id,full_name").in("user_id", sellerUserIds)
-    : Promise.resolve({ data: [], error: null });
-
-  const [catalogBySource, catalogByCanon, stock, companies, profiles] = await Promise.all([
-    catalogBySourcePromise,
-    catalogByCanonPromise,
-    stockPromise,
-    companiesPromise,
-    profilesPromise,
-  ]);
-
-  if (catalogBySource.error) throw catalogBySource.error;
-  if (catalogByCanon.error) throw catalogByCanon.error;
-  if (stock.error) throw stock.error;
-  if (companies.error) throw companies.error;
-  if (profiles.error) throw profiles.error;
-
-  return {
-    catalogByCode: buildCatalogByCode([
-      ...((catalogBySource.data ?? []) as CatalogRow[]),
-      ...((catalogByCanon.data ?? []) as CatalogRow[]),
-    ]),
-    stockByCode: new Map(
-      ((stock.data ?? []) as StockRow[])
-        .map((row) => [normalizeCode(row.code), row] as const)
-        .filter(([code]) => Boolean(code)),
-    ),
-    companyById: new Map(
-      ((companies.data ?? []) as CompanyRow[]).map((row) => [normalizeCode(row.id), row] as const),
-    ),
-    profileByUserId: new Map(
-      ((profiles.data ?? []) as ProfileRow[]).map((row) => [normalizeCode(row.user_id), row] as const),
-    ),
-  };
-};
-
-const resolveSellerDisplayName = (row: MarketListingRow, supplements: ListingSupplementMaps) => {
-  const companyName = supplements.companyById.get(normalizeCode(row.company_id))?.name ?? null;
-  const profileName = supplements.profileByUserId.get(normalizeCode(row.user_id))?.full_name ?? null;
-  return normalizeName(companyName) || normalizeName(profileName) || "Поставщик";
-};
-
-const buildFallbackItem = (row: MarketListingRow): MarketListingItem[] => {
-  const rikCode = normalizeCode(row.rik_code);
-  if (!rikCode) return [];
-  return [
-    {
-      rik_code: rikCode,
-      name: row.title,
-      uom: row.uom ?? row.uom_code ?? null,
-      qty: 1,
-      price: positiveNumberOrNull(row.price),
-      city: row.city,
-      kind: row.kind ?? null,
-    },
-  ];
-};
-
-const buildErpItems = (
-  row: MarketListingRow,
-  supplements: ListingSupplementMaps,
-): MarketListingErpItem[] => {
-  const rawItems = asListingItems(row.items_json);
-  const sourceItems = rawItems.length ? rawItems : buildFallbackItem(row);
-  const aggregated = new Map<string, MarketListingErpItem>();
-
-  sourceItems.forEach((item) => {
-    const rikCode = normalizeCode(item.rik_code || (sourceItems.length === 1 ? row.rik_code : null));
-    if (!rikCode) return;
-    const catalog = supplements.catalogByCode.get(rikCode);
-    const qty = positiveNumberOrNull(item.qty) ?? 1;
-    const price = positiveNumberOrNull(item.price) ?? positiveNumberOrNull(row.price);
-    const prev = aggregated.get(rikCode);
-    aggregated.set(rikCode, {
-      rikCode,
-      nameHuman:
-        normalizeName(catalog?.name_human_ru)
-        || normalizeName(catalog?.name_human)
-        || normalizeName(item.name)
-        || row.title,
-      uom: catalog?.uom_code ?? item.uom ?? row.uom_code ?? row.uom ?? null,
-      qty: (prev?.qty ?? 0) + qty,
-      price: price ?? prev?.price ?? null,
-      kind: item.kind ?? catalog?.kind ?? row.kind ?? null,
-    });
-  });
-
-  return Array.from(aggregated.values());
-};
-
-const buildStockSummary = (erpItems: MarketListingErpItem[], supplements: ListingSupplementMaps) => {
-  if (!erpItems.length) {
-    return {
-      stockLabel: null,
-      stockQtyAvailable: null,
-      stockUom: null,
-      totalAvailableCount: null,
-      primaryRikCode: null,
-    };
-  }
-
-  const stockRows = erpItems
-    .map((item) => ({ item, row: supplements.stockByCode.get(item.rikCode) ?? null }))
-    .filter((entry) => !!entry.row);
-
-  const primaryRikCode = erpItems[0]?.rikCode ?? null;
-  if (!stockRows.length) {
-    return {
-      stockLabel: null,
-      stockQtyAvailable: null,
-      stockUom: null,
-      totalAvailableCount: null,
-      primaryRikCode,
-    };
-  }
-
-  if (stockRows.length === 1) {
-    const entry = stockRows[0];
-    const qty = positiveNumberOrNull(entry.row?.qty_available) ?? 0;
-    const uom = entry.row?.uom_code ?? entry.item.uom ?? null;
-    return {
-      stockLabel: `На складе: ${qty.toLocaleString("ru-RU")}${uom ? ` ${uom}` : ""}`,
-      stockQtyAvailable: qty,
-      stockUom: uom,
-      totalAvailableCount: qty,
-      primaryRikCode,
-    };
-  }
-
-  const totalAvailable = stockRows.reduce(
-    (sum, entry) => sum + (positiveNumberOrNull(entry.row?.qty_available) ?? 0),
-    0,
-  );
-  return {
-    stockLabel:
-      totalAvailable > 0
-        ? `На складе: ${totalAvailable.toLocaleString("ru-RU")} ед. по ${stockRows.length} поз.`
-        : `На складе: ${stockRows.length} поз.`,
-    stockQtyAvailable: totalAvailable || null,
-    stockUom: null,
-    totalAvailableCount: totalAvailable || null,
-    primaryRikCode,
-  };
-};
-
-const enrichMarketListingCard = (
-  row: MarketListingRow,
-  supplements: ListingSupplementMaps,
-): MarketHomeListingCard => {
-  const base = toMarketHomeListingCard(row);
-  const erpItems = buildErpItems(row, supplements);
-  const stockSummary = buildStockSummary(erpItems, supplements);
-
-  return {
-    ...base,
-    sellerDisplayName: resolveSellerDisplayName(row, supplements),
-    erpItems,
-    stockLabel: stockSummary.stockLabel,
-    stockQtyAvailable: stockSummary.stockQtyAvailable,
-    stockUom: stockSummary.stockUom,
-    totalAvailableCount: stockSummary.totalAvailableCount,
-    primaryRikCode: stockSummary.primaryRikCode,
-  };
-};
-
-const buildListingQuery = (
-  filters?: Pick<MarketHomeFilters, "side" | "kind">,
-) => {
-  let query = supabase.from("market_listings").select(MARKET_HOME_SELECT).eq("status", "active");
-  if (filters?.side && filters.side !== "all") query = query.eq("side", filters.side);
-  if (filters?.kind && filters.kind !== "all") query = query.eq("kind", filters.kind);
-  return query;
-};
-
-const buildListingCountQuery = (
-  filters?: Pick<MarketHomeFilters, "side" | "kind">,
-) => {
-  let query = supabase.from("market_listings").select("id", { count: "exact", head: true }).eq("status", "active");
-  if (filters?.side && filters.side !== "all") query = query.eq("side", filters.side);
-  if (filters?.kind && filters.kind !== "all") query = query.eq("kind", filters.kind);
-  return query;
 };
 
 const resolveProposalSupplier = (listing: MarketHomeListingCard) => {
@@ -347,39 +297,39 @@ const scaleErpItems = (listing: MarketHomeListingCard, multiplier: number): Mark
 const ensureActionableErpItems = (listing: MarketHomeListingCard, multiplier: number) => {
   const items = scaleErpItems(listing, multiplier);
   if (!items.length) {
-    throw new Error("Объявление не связано с каталогом ERP.");
+    throw new Error("Объявление не связано с ERP-каталогом.");
   }
   return items;
 };
 
+const ensureMarketNetworkAvailable = async (surface: string, event: string) => {
+  await ensurePlatformNetworkService();
+  const networkSnapshot = getPlatformNetworkSnapshot();
+  if (networkSnapshot.hydrated && networkSnapshot.networkKnownOffline) {
+    recordPlatformObservability({
+      screen: "market",
+      surface,
+      category: "ui",
+      event,
+      result: "skipped",
+      errorStage: "network_offline",
+      errorMessage: MARKET_NETWORK_OFFLINE_ERROR,
+      extra: {
+        networkKnownOffline: true,
+      },
+    });
+    throw new Error(MARKET_NETWORK_OFFLINE_ERROR);
+  }
+};
+
 export async function loadMarketRoleCapabilities(): Promise<MarketRoleCapabilities> {
-  let role = (await getMyRole())?.trim().toLowerCase() ?? null;
+  let role = await resolveRoleFromSession();
   if (!role) {
-    const authUser = (await supabase.auth.getUser()).data.user ?? null;
-    const authRole =
-      String(authUser?.app_metadata?.role ?? "").trim().toLowerCase()
-      || String(authUser?.user_metadata?.role ?? "").trim().toLowerCase()
-      || null;
-    if (authRole) {
-      role = authRole;
-    }
+    role = trim(await getMyRole()).toLowerCase() || null;
   }
   if (!role) {
     await ensureMyProfile().catch(() => false);
-    for (let attempt = 0; attempt < 3 && !role; attempt += 1) {
-      await new Promise((resolve) => setTimeout(resolve, 250 * (attempt + 1)));
-      role = (await getMyRole())?.trim().toLowerCase() ?? null;
-      if (!role) {
-        const authUser = (await supabase.auth.getUser()).data.user ?? null;
-        const authRole =
-          String(authUser?.app_metadata?.role ?? "").trim().toLowerCase()
-          || String(authUser?.user_metadata?.role ?? "").trim().toLowerCase()
-          || null;
-        if (authRole) {
-          role = authRole;
-        }
-      }
-    }
+    role = trim(await getMyRole()).toLowerCase() || (await resolveRoleFromSession()) || null;
   }
   return {
     role,
@@ -393,166 +343,362 @@ export async function loadMarketHomePage(
 ): Promise<MarketHomePayload> {
   const offset = Math.max(0, Number(params.offset ?? 0));
   const limit = Math.max(1, Number(params.limit ?? MARKET_PAGE_SIZE));
-  const [rowsResult, totalCountResult, demandCountResult] = await Promise.all([
-    buildListingQuery(params.filters)
-      .order("created_at", { ascending: false })
-      .range(offset, offset + limit - 1),
-    buildListingCountQuery(params.filters),
-    supabase
-      .from("market_listings")
-      .select("id", { count: "exact", head: true })
-      .eq("status", "active")
-      .eq("side", "demand"),
-  ]);
+  const observation = beginPlatformObservability({
+    screen: "market",
+    surface: MARKET_HOME_SURFACE,
+    category: "fetch",
+    event: "market_fetch_page",
+    sourceKind: MARKET_HOME_READ_SOURCE_KIND,
+    extra: {
+      offset,
+      limit,
+      side: params.filters?.side ?? "all",
+      kind: params.filters?.kind ?? "all",
+    },
+  });
 
-  if (rowsResult.error) throw rowsResult.error;
-  if (totalCountResult.error) throw totalCountResult.error;
-  if (demandCountResult.error) throw demandCountResult.error;
+  try {
+    await ensureMarketNetworkAvailable(MARKET_HOME_SURFACE, "market_fetch_page");
 
-  const rawRows = (rowsResult.data ?? []) as MarketListingRow[];
-  const supplements = await loadListingSupplements(rawRows);
-  const listings = rawRows.map((row) => enrichMarketListingCard(row, supplements));
-  const totalCount = totalCountResult.count ?? listings.length;
+    const rowsResult = await supabase.rpc(
+      "marketplace_items_scope_page_v1" as never,
+      {
+        p_offset: offset,
+        p_limit: limit,
+        p_side: toScopeFilterValue(params.filters?.side),
+        p_kind: toScopeFilterValue(params.filters?.kind),
+      } as never,
+    );
 
-  return {
-    listings,
-    activeDemandCount: demandCountResult.count ?? 0,
-    totalCount,
-    pageOffset: offset,
-    pageSize: limit,
-    hasMore: offset + listings.length < totalCount,
-  };
+    if (rowsResult.error) throw rowsResult.error;
+
+    const rawRows = (rowsResult.data ?? []) as MarketMarketplaceScopePageRow[];
+    const listings = rawRows.map((row) => toMarketHomeListingCardFromScope(row));
+    const totalCount = nonNegativeNumberOrNull(rawRows[0]?.total_count) ?? listings.length;
+    const activeDemandCount = nonNegativeNumberOrNull(rawRows[0]?.active_demand_count) ?? 0;
+    const payload: MarketHomePayload = {
+      listings,
+      activeDemandCount,
+      totalCount,
+      pageOffset: offset,
+      pageSize: limit,
+      hasMore: offset + listings.length < totalCount,
+    };
+
+    observation.success({
+      rowCount: listings.length,
+      extra: {
+        offset,
+        limit,
+        totalCount,
+        hasMore: payload.hasMore,
+        activeDemandCount,
+      },
+    });
+    return payload;
+  } catch (error) {
+    observation.error(error, {
+      rowCount: 0,
+      errorStage: "market_fetch_page",
+      extra: {
+        offset,
+        limit,
+      },
+    });
+    throw error;
+  }
 }
 
 export async function loadMarketListingById(id: string): Promise<MarketHomeListingCard | null> {
-  const result = await supabase
-    .from("market_listings")
-    .select(MARKET_HOME_SELECT)
-    .eq("id", id)
-    .maybeSingle();
+  const listingId = trim(id);
+  if (!listingId) return null;
+  const observation = beginPlatformObservability({
+    screen: "market",
+    surface: MARKET_PRODUCT_SURFACE,
+    category: "fetch",
+    event: "market_fetch_item",
+    sourceKind: MARKET_PRODUCT_READ_SOURCE_KIND,
+    extra: {
+      listingId,
+    },
+  });
 
-  if (result.error) throw result.error;
-  if (!result.data) return null;
+  try {
+    await ensureMarketNetworkAvailable(MARKET_PRODUCT_SURFACE, "market_fetch_item");
+    const result = await supabase
+      .rpc("marketplace_item_scope_detail_v1" as never, { p_listing_id: listingId } as never)
+      .maybeSingle();
 
-  const row = result.data as MarketListingRow;
-  const supplements = await loadListingSupplements([row]);
-  return enrichMarketListingCard(row, supplements);
+    const rawData = result.data as unknown;
+    if (result.error) throw result.error;
+    if (!rawData) {
+      observation.success({
+        rowCount: 0,
+      });
+      return null;
+    }
+
+    const card = toMarketHomeListingCardFromScope(rawData as MarketMarketplaceScopeRow);
+    observation.success({
+      rowCount: 1,
+      extra: {
+        listingId,
+        erpItemCount: card.erpItems.length,
+      },
+    });
+    return card;
+  } catch (error) {
+    observation.error(error, {
+      rowCount: 0,
+      errorStage: "market_fetch_item",
+      extra: {
+        listingId,
+      },
+    });
+    throw error;
+  }
 }
 
 export async function addMarketplaceListingToRequest(
   listing: MarketHomeListingCard,
   multiplier = 1,
 ): Promise<{ requestId: string; addedCount: number }> {
-  const requestId = String(await getOrCreateDraftRequestId()).trim();
-  const noteTag = `marketplace:${listing.id}`;
-  if (!requestId) throw new Error("Не удалось получить черновик заявки.");
-
-  const items = ensureActionableErpItems(listing, multiplier).map((item) => ({
-    rik_code: item.rikCode,
-    qty: item.qty,
-    opts: {
-      kind: item.kind ?? undefined,
-      name_human: item.nameHuman,
-      uom: item.uom,
-      note: noteTag,
+  const noteTag = buildMarketplaceNoteTag(listing.id);
+  const items = ensureActionableErpItems(listing, multiplier);
+  const observation = beginPlatformObservability({
+    screen: "market",
+    surface: MARKET_PRODUCT_SURFACE,
+    category: "ui",
+    event: "market_add_to_request",
+    extra: {
+      listingId: listing.id,
+      erpItemCount: items.length,
     },
-  }));
+  });
 
-  await addRequestItemsFromRikBatch(requestId, items);
-  return { requestId, addedCount: items.length };
+  try {
+    await ensureMarketNetworkAvailable(MARKET_PRODUCT_SURFACE, "market_add_to_request");
+    const result = await appendMarketplaceItemsToDraft({
+      sourcePath: "marketplace:add_to_request",
+      listingId: listing.id,
+      items: items.map((item) => ({
+        rikCode: item.rikCode,
+        qty: item.qty,
+        kind: item.kind,
+        nameHuman: item.nameHuman,
+        uom: item.uom,
+        note: noteTag,
+        appCode: MARKETPLACE_SOURCE_APP_CODE,
+      })),
+    });
+    observation.success({
+      rowCount: result.addedCount,
+      extra: {
+        requestId: result.requestId,
+        addedCount: result.addedCount,
+      },
+    });
+    return result;
+  } catch (error) {
+    observation.error(error, {
+      rowCount: 0,
+      errorStage: "market_add_to_request",
+      extra: {
+        listingId: listing.id,
+      },
+    });
+    throw error;
+  }
 }
 
 export async function createMarketplaceProposal(
   listing: MarketHomeListingCard,
   multiplier = 1,
 ): Promise<MarketProposalResult> {
-  const requestId = String(await getOrCreateDraftRequestId()).trim();
-  const noteTag = `marketplace:${listing.id}`;
+  const requestId = trim(await getOrCreateDraftRequestId());
+  const noteTag = buildMarketplaceNoteTag(listing.id);
   if (!requestId) throw new Error("Не удалось получить черновик заявки.");
 
-  const items = ensureActionableErpItems(listing, multiplier);
-  const proposalItems = items.map((item) => {
-    const price = positiveNumberOrNull(item.price);
-    if (!(price && price > 0)) {
-      throw new Error("Для создания предложения нужна цена по каждой позиции.");
-    }
-    return {
-      ...item,
-      price,
-    };
+  const observation = beginPlatformObservability({
+    screen: "market",
+    surface: MARKET_PRODUCT_SURFACE,
+    category: "ui",
+    event: "market_create_proposal",
+    extra: {
+      listingId: listing.id,
+      requestId,
+    },
   });
 
-  const addedRequestItems = await addRequestItemsFromRikBatchDetailed(
-    requestId,
-    proposalItems.map((item) => ({
-      rik_code: item.rikCode,
-      qty: item.qty,
-      opts: {
-        kind: item.kind ?? undefined,
+  try {
+    await ensureMarketNetworkAvailable(MARKET_PRODUCT_SURFACE, "market_create_proposal");
+    const items = ensureActionableErpItems(listing, multiplier);
+    const proposalItems = items.map((item) => {
+      const price = positiveNumberOrNull(item.price);
+      if (!(price && price > 0)) {
+        throw new Error("Для создания предложения нужна цена по каждой позиции.");
+      }
+      return {
+        ...item,
+        price,
+      };
+    });
+
+    const addedRequestItems = await addRequestItemsFromRikBatchDetailed(
+      requestId,
+      proposalItems.map((item) => ({
+        rik_code: item.rikCode,
+        qty: item.qty,
+        opts: {
+          app_code: MARKETPLACE_SOURCE_APP_CODE,
+          kind: item.kind ?? undefined,
+          name_human: item.nameHuman,
+          uom: item.uom,
+          note: noteTag,
+        },
+      })),
+    );
+    const requestItemIdByCode = new Map<string, string>();
+
+    addedRequestItems.forEach((row) => {
+      const code = normalizeCode(row.rik_code);
+      const id = normalizeCode(row.item_id);
+      if (code && id) requestItemIdByCode.set(code, id);
+    });
+
+    const requestItemIds = proposalItems
+      .map((item) => requestItemIdByCode.get(item.rikCode) ?? null)
+      .filter((value): value is string => Boolean(value));
+
+    if (requestItemIds.length !== proposalItems.length) {
+      throw new Error("Не удалось связать позиции маркетплейса с ERP-заявкой.");
+    }
+
+    const createdProposal = await proposalCreateFull();
+    const proposalId = trim(createdProposal.id);
+    if (!proposalId) throw new Error("Не удалось создать предложение.");
+
+    const buyerFio = await getCurrentBuyerName();
+    const headPatch: Database["public"]["Tables"]["proposals"]["Update"] = {
+      request_id: requestId,
+      supplier: resolveProposalSupplier(listing),
+    };
+    if (buyerFio) headPatch.buyer_fio = buyerFio;
+    const patchResult = await supabase.from("proposals").update(headPatch).eq("id", proposalId);
+    if (patchResult.error) throw patchResult.error;
+
+    await proposalAddItems(proposalId, requestItemIds);
+    await proposalSetItemsMeta(
+      proposalId,
+      proposalItems.map((item) => ({
+        request_item_id: requestItemIdByCode.get(item.rikCode) ?? "",
         name_human: item.nameHuman,
         uom: item.uom,
+        qty: item.qty,
+        app_code: MARKETPLACE_SOURCE_APP_CODE,
+        rik_code: item.rikCode,
+        price: item.price,
+        supplier: resolveProposalSupplier(listing),
         note: noteTag,
+      })),
+    );
+    await proposalSnapshotItems(
+      proposalId,
+      proposalItems.map((item) => ({
+        request_item_id: requestItemIdByCode.get(item.rikCode) ?? "",
+        price: String(item.price),
+        supplier: resolveProposalSupplier(listing),
+        note: noteTag,
+      })),
+    );
+    await proposalSubmit(proposalId);
+
+    const result: MarketProposalResult = {
+      proposalId,
+      proposalNo: createdProposal.proposal_no,
+      requestId,
+      requestItemIds,
+    };
+    observation.success({
+      rowCount: proposalItems.length,
+      extra: {
+        proposalId,
+        requestId,
       },
-    })),
-  );
-  const requestItemIdByCode = new Map<string, string>();
+    });
+    return result;
+  } catch (error) {
+    observation.error(error, {
+      rowCount: 0,
+      errorStage: "market_create_proposal",
+      extra: {
+        listingId: listing.id,
+        requestId,
+      },
+    });
+    throw error;
+  }
+}
 
-  addedRequestItems.forEach((row) => {
-    const code = normalizeCode(row.rik_code);
-    const id = normalizeCode(row.item_id);
-    if (code && id) requestItemIdByCode.set(code, id);
-  });
-
-  const requestItemIds = proposalItems
-    .map((item) => requestItemIdByCode.get(item.rikCode) ?? null)
-    .filter((value): value is string => Boolean(value));
-
-  if (requestItemIds.length !== proposalItems.length) {
-    throw new Error("Не удалось связать позиции маркетплейса с ERP-заявкой.");
+export async function contactMarketplaceSupplier(params: {
+  listing: MarketHomeListingCard;
+  message: string;
+}): Promise<{ messageId: string }> {
+  const listing = params.listing;
+  const message = trim(params.message);
+  const supplierId = normalizeCode(listing.supplierId) || normalizeCode(listing.sellerCompanyId) || null;
+  const supplierUserId = normalizeCode(listing.sellerUserId) || null;
+  if (!message) {
+    throw new Error("Введите сообщение поставщику.");
+  }
+  if (!supplierId && !supplierUserId) {
+    throw new Error("У объявления нет доступного поставщика для связи.");
   }
 
-  const createdProposal = await proposalCreateFull();
-  const proposalId = String(createdProposal.id).trim();
-  if (!proposalId) throw new Error("Не удалось создать предложение.");
+  const observation = beginPlatformObservability({
+    screen: "market",
+    surface: MARKET_PRODUCT_SURFACE,
+    category: "ui",
+    event: "market_contact_supplier",
+    extra: {
+      listingId: listing.id,
+      supplierId,
+      supplierUserId,
+    },
+  });
 
-  const buyerFio = await getCurrentBuyerName();
-  const headPatch: Database["public"]["Tables"]["proposals"]["Update"] = {
-    request_id: requestId,
-    supplier: resolveProposalSupplier(listing),
-  };
-  if (buyerFio) headPatch.buyer_fio = buyerFio;
-  const patchResult = await supabase.from("proposals").update(headPatch).eq("id", proposalId);
-  if (patchResult.error) throw patchResult.error;
+  try {
+    await ensureMarketNetworkAvailable(MARKET_PRODUCT_SURFACE, "market_contact_supplier");
+    const result = await supabase
+      .from("supplier_messages" as never)
+      .insert({
+        supplier_id: supplierId,
+        supplier_user_id: supplierUserId,
+        marketplace_item_id: listing.id,
+        message,
+      } as never)
+      .select("id")
+      .single();
 
-  await proposalAddItems(proposalId, requestItemIds);
-  await proposalSetItemsMeta(
-    proposalId,
-    proposalItems.map((item) => ({
-      request_item_id: requestItemIdByCode.get(item.rikCode) ?? "",
-      name_human: item.nameHuman,
-      uom: item.uom,
-      qty: item.qty,
-      rik_code: item.rikCode,
-      price: item.price,
-      supplier: resolveProposalSupplier(listing),
-      note: noteTag,
-    })),
-  );
-  await proposalSnapshotItems(
-    proposalId,
-    proposalItems.map((item) => ({
-      request_item_id: requestItemIdByCode.get(item.rikCode) ?? "",
-      price: String(item.price),
-      supplier: resolveProposalSupplier(listing),
-      note: `marketplace:${listing.id}`,
-    })),
-  );
-  await proposalSubmit(proposalId);
+    if (result.error) throw result.error;
+    const messageId = trim((result.data as { id?: string | null } | null)?.id);
+    if (!messageId) throw new Error("Не удалось зафиксировать обращение к поставщику.");
 
-  return {
-    proposalId,
-    proposalNo: createdProposal.proposal_no,
-    requestId,
-    requestItemIds,
-  };
+    observation.success({
+      rowCount: 1,
+      extra: {
+        messageId,
+      },
+    });
+    return { messageId };
+  } catch (error) {
+    observation.error(error, {
+      rowCount: 0,
+      errorStage: "market_contact_supplier",
+      extra: {
+        listingId: listing.id,
+      },
+    });
+    throw error;
+  }
 }

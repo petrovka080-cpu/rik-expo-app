@@ -26,6 +26,7 @@ export type ProposalHeadLite = {
 
 export type ProposalViewLine = {
   request_item_id?: string | number | null;
+  app_code?: string | null;
   note?: string | null;
   supplier?: string | null;
   name_human?: string | null;
@@ -40,4 +41,3 @@ export type BuyerGroup = {
   request_id_old?: number | null;
   items: BuyerInboxRow[];
 };
-

@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import React from "react";
-import { Image, Pressable, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, Image, Pressable, StyleSheet, Text, View } from "react-native";
 
 import { MARKET_HOME_COLORS } from "../marketHome.config";
 import type { MarketHomeListingCard } from "../marketHome.types";
@@ -13,8 +13,13 @@ type Props = {
   onAssistantPress?: () => void;
   onPhonePress?: () => void;
   onWhatsAppPress?: () => void;
+  onContactSupplierPress?: () => void;
   onAddToRequestPress?: () => void;
   onCreateProposalPress?: () => void;
+  contactBusy?: boolean;
+  addToRequestBusy?: boolean;
+  createProposalBusy?: boolean;
+  actionsDisabled?: boolean;
 };
 
 export default function MarketFeedCard({
@@ -25,12 +30,17 @@ export default function MarketFeedCard({
   onAssistantPress,
   onPhonePress,
   onWhatsAppPress,
+  onContactSupplierPress,
   onAddToRequestPress,
   onCreateProposalPress,
+  contactBusy = false,
+  addToRequestBusy = false,
+  createProposalBusy = false,
+  actionsDisabled = false,
 }: Props) {
   return (
     <View style={styles.shell}>
-      <Pressable style={styles.cardPress} onPress={onOpen}>
+      <Pressable style={styles.cardPress} onPress={onOpen} disabled={actionsDisabled}>
         <Image source={listing.imageSource} style={styles.image} resizeMode="cover" />
 
         <View style={styles.body}>
@@ -58,7 +68,7 @@ export default function MarketFeedCard({
 
           <Text style={styles.price} numberOfLines={1}>
             {listing.price != null
-              ? `${listing.price.toLocaleString("ru-RU")} сом${listing.uom ? ` / ${listing.uom}` : ""}`
+              ? `${listing.price.toLocaleString("ru-RU")} сом${listing.unit ? ` / ${listing.unit}` : ""}`
               : "Цена по запросу"}
           </Text>
 
@@ -81,51 +91,88 @@ export default function MarketFeedCard({
       </Pressable>
 
       <View style={styles.actions}>
-        <Pressable style={styles.mapAction} onPress={onMapPress}>
+        <Pressable style={styles.mapAction} onPress={onMapPress} disabled={actionsDisabled}>
           <Text style={styles.mapActionText}>На карте</Text>
         </Pressable>
         {onShowcasePress ? (
-          <Pressable style={styles.iconActionSoft} onPress={onShowcasePress}>
+          <Pressable style={styles.iconActionSoft} onPress={onShowcasePress} disabled={actionsDisabled}>
             <Ionicons name="storefront" size={16} color={MARKET_HOME_COLORS.accentStrong} />
           </Pressable>
         ) : null}
         {onAssistantPress ? (
-          <Pressable style={styles.iconActionSoft} onPress={onAssistantPress}>
+          <Pressable style={styles.iconActionSoft} onPress={onAssistantPress} disabled={actionsDisabled}>
             <Ionicons name="sparkles" size={16} color={MARKET_HOME_COLORS.accentStrong} />
           </Pressable>
         ) : null}
         {onPhonePress ? (
-          <Pressable style={styles.iconAction} onPress={onPhonePress}>
+          <Pressable style={styles.iconAction} onPress={onPhonePress} disabled={actionsDisabled}>
             <Ionicons name="call" size={16} color="#FFFFFF" />
           </Pressable>
         ) : null}
         {onWhatsAppPress ? (
-          <Pressable style={[styles.iconAction, styles.whatsAction]} onPress={onWhatsAppPress}>
+          <Pressable style={[styles.iconAction, styles.whatsAction]} onPress={onWhatsAppPress} disabled={actionsDisabled}>
             <Ionicons name="logo-whatsapp" size={16} color="#FFFFFF" />
           </Pressable>
         ) : null}
       </View>
 
-      {onAddToRequestPress || onCreateProposalPress ? (
+      {onContactSupplierPress || onAddToRequestPress || onCreateProposalPress ? (
         <View style={styles.erpActions}>
+          {onContactSupplierPress ? (
+            <Pressable
+              style={[
+                styles.erpButton,
+                styles.erpButtonSecondary,
+                (actionsDisabled || contactBusy) ? styles.buttonDisabled : null,
+              ]}
+              onPress={onContactSupplierPress}
+              disabled={actionsDisabled || contactBusy}
+              testID={`market_contact_supplier_${listing.id}`}
+              accessibilityLabel={`market:contact-supplier:${listing.id}`}
+            >
+              {contactBusy ? (
+                <ActivityIndicator color={MARKET_HOME_COLORS.accentStrong} size="small" />
+              ) : (
+                <Text style={styles.erpButtonSecondaryText}>Связаться</Text>
+              )}
+            </Pressable>
+          ) : null}
           {onAddToRequestPress ? (
             <Pressable
-              style={[styles.erpButton, styles.erpButtonPrimary]}
+              style={[
+                styles.erpButton,
+                styles.erpButtonPrimary,
+                (actionsDisabled || addToRequestBusy) ? styles.buttonDisabled : null,
+              ]}
               onPress={onAddToRequestPress}
+              disabled={actionsDisabled || addToRequestBusy}
               testID={`market_add_to_request_${listing.id}`}
               accessibilityLabel={`market:add-to-request:${listing.id}`}
             >
-              <Text style={styles.erpButtonPrimaryText}>В заявку</Text>
+              {addToRequestBusy ? (
+                <ActivityIndicator color="#FFFFFF" size="small" />
+              ) : (
+                <Text style={styles.erpButtonPrimaryText}>В заявку</Text>
+              )}
             </Pressable>
           ) : null}
           {onCreateProposalPress ? (
             <Pressable
-              style={[styles.erpButton, styles.erpButtonSecondary]}
+              style={[
+                styles.erpButton,
+                styles.erpButtonSecondary,
+                (actionsDisabled || createProposalBusy) ? styles.buttonDisabled : null,
+              ]}
               onPress={onCreateProposalPress}
+              disabled={actionsDisabled || createProposalBusy}
               testID={`market_create_proposal_${listing.id}`}
               accessibilityLabel={`market:create-proposal:${listing.id}`}
             >
-              <Text style={styles.erpButtonSecondaryText}>Создать предложение</Text>
+              {createProposalBusy ? (
+                <ActivityIndicator color={MARKET_HOME_COLORS.accentStrong} size="small" />
+              ) : (
+                <Text style={styles.erpButtonSecondaryText}>Создать предложение</Text>
+              )}
             </Pressable>
           ) : null}
         </View>
@@ -304,5 +351,8 @@ const styles = StyleSheet.create({
     color: MARKET_HOME_COLORS.accentStrong,
     fontSize: 13,
     fontWeight: "900",
+  },
+  buttonDisabled: {
+    opacity: 0.5,
   },
 });

@@ -13,10 +13,12 @@ import {
   View,
 } from "react-native";
 
+import MarketContactSupplierModal from "../../src/features/market/components/MarketContactSupplierModal";
 import { MARKET_HOME_COLORS } from "../../src/features/market/marketHome.config";
 import { buildListingAssistantPrompt, buildMarketMapParams } from "../../src/features/market/marketHome.data";
 import {
   addMarketplaceListingToRequest,
+  contactMarketplaceSupplier,
   createMarketplaceProposal,
   loadMarketListingById,
   loadMarketRoleCapabilities,
@@ -28,12 +30,16 @@ import {
   MARKET_TAB_ROUTE,
 } from "../../src/features/market/market.routes";
 import type { MarketHomeListingCard, MarketRoleCapabilities } from "../../src/features/market/marketHome.types";
+import { recordPlatformObservability } from "../../src/lib/observability/platformObservability";
 
 const DEFAULT_CAPABILITIES: MarketRoleCapabilities = {
   role: null,
   canAddToRequest: false,
   canCreateProposal: false,
 };
+
+const MARKET_PRODUCT_SURFACE = "product_details";
+const MARKET_ALERT_TITLE = "Маркет";
 
 export default function ProductDetailsScreen() {
   const params = useLocalSearchParams<{ id?: string | string[] }>();
@@ -42,7 +48,10 @@ export default function ProductDetailsScreen() {
   const [loading, setLoading] = useState(true);
   const [capabilities, setCapabilities] = useState<MarketRoleCapabilities>(DEFAULT_CAPABILITIES);
   const [qtyMultiplier, setQtyMultiplier] = useState(1);
-  const [actionBusy, setActionBusy] = useState<"request" | "proposal" | null>(null);
+  const [actionBusy, setActionBusy] = useState<"request" | "proposal" | "contact" | null>(null);
+  const [contactVisible, setContactVisible] = useState(false);
+  const [contactMessage, setContactMessage] = useState("");
+  const [contactErrorText, setContactErrorText] = useState<string | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -61,9 +70,23 @@ export default function ProductDetailsScreen() {
         if (!active) return;
         setRow(nextRow);
         setCapabilities(nextCapabilities);
+        if (nextRow) {
+          recordPlatformObservability({
+            screen: "market",
+            surface: MARKET_PRODUCT_SURFACE,
+            category: "ui",
+            event: "market_open_item",
+            result: "success",
+            extra: {
+              listingId: nextRow.id,
+              source: nextRow.source,
+              directRoute: true,
+            },
+          });
+        }
       } catch (error: unknown) {
         const message = error instanceof Error ? error.message : "Не удалось открыть объявление.";
-        Alert.alert("Маркет", message);
+        Alert.alert(MARKET_ALERT_TITLE, message);
       } finally {
         if (active) setLoading(false);
       }
@@ -78,7 +101,7 @@ export default function ProductDetailsScreen() {
   const openUrl = async (url: string, fallback: string) => {
     const supported = await Linking.canOpenURL(url);
     if (!supported) {
-      Alert.alert("Маркет", fallback);
+      Alert.alert(MARKET_ALERT_TITLE, fallback);
       return;
     }
     await Linking.openURL(url);
@@ -88,15 +111,29 @@ export default function ProductDetailsScreen() {
     setQtyMultiplier(Math.max(1, Math.min(999, Math.round(next))));
   };
 
+  const handleOpenContact = () => {
+    if (!row) return;
+    setContactErrorText(null);
+    setContactMessage(`Здравствуйте. Хочу уточнить условия по позиции "${row.title}".`);
+    setContactVisible(true);
+  };
+
+  const handleCloseContact = () => {
+    if (actionBusy === "contact") return;
+    setContactVisible(false);
+    setContactMessage("");
+    setContactErrorText(null);
+  };
+
   const handleAddToRequest = async () => {
     if (!row) return;
     setActionBusy("request");
     try {
       const result = await addMarketplaceListingToRequest(row, qtyMultiplier);
-      Alert.alert("Маркет", `Добавлено в заявку: ${result.addedCount} поз. Черновик ${result.requestId}.`);
+      Alert.alert(MARKET_ALERT_TITLE, `Добавлено в заявку: ${result.addedCount} поз. Черновик ${result.requestId}.`);
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : "Не удалось добавить товар в заявку.";
-      Alert.alert("Маркет", message);
+      Alert.alert(MARKET_ALERT_TITLE, message);
     } finally {
       setActionBusy(null);
     }
@@ -108,12 +145,33 @@ export default function ProductDetailsScreen() {
     try {
       const result = await createMarketplaceProposal(row, qtyMultiplier);
       Alert.alert(
-        "Маркет",
+        MARKET_ALERT_TITLE,
         `Предложение создано${result.proposalNo ? `: ${result.proposalNo}` : ""}.`,
       );
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : "Не удалось создать предложение.";
-      Alert.alert("Маркет", message);
+      Alert.alert(MARKET_ALERT_TITLE, message);
+    } finally {
+      setActionBusy(null);
+    }
+  };
+
+  const handleSubmitContact = async () => {
+    if (!row || actionBusy) return;
+    setActionBusy("contact");
+    setContactErrorText(null);
+    try {
+      await contactMarketplaceSupplier({
+        listing: row,
+        message: contactMessage,
+      });
+      Alert.alert(MARKET_ALERT_TITLE, "Сообщение поставщику отправлено.");
+      setContactVisible(false);
+      setContactMessage("");
+    } catch (error: unknown) {
+      setContactErrorText(
+        error instanceof Error ? error.message : "Не удалось отправить сообщение поставщику.",
+      );
     } finally {
       setActionBusy(null);
     }
@@ -275,12 +333,28 @@ export default function ProductDetailsScreen() {
         <View style={styles.card}>
           <Text style={styles.sectionTitle}>Контакты и действия</Text>
           <View style={styles.actions}>
+            {(row.supplierId || row.sellerUserId) ? (
+              <Pressable
+                style={[styles.actionBtn, styles.secondaryBtn]}
+                onPress={handleOpenContact}
+                disabled={actionBusy != null}
+                testID="market_product_contact_supplier"
+                accessibilityLabel="market:product:contact-supplier"
+              >
+                {actionBusy === "contact" ? (
+                  <ActivityIndicator color={MARKET_HOME_COLORS.accentStrong} size="small" />
+                ) : (
+                  <Text style={styles.secondaryActionText}>Связаться с поставщиком</Text>
+                )}
+              </Pressable>
+            ) : null}
             {row.whatsapp ? (
               <Pressable
                 style={[styles.actionBtn, styles.whatsBtn]}
                 onPress={() =>
                   openUrl(`https://wa.me/${String(row.whatsapp).replace(/[^\d]/g, "")}`, "Не удалось открыть WhatsApp.")
                 }
+                disabled={actionBusy != null}
               >
                 <Text style={styles.actionText}>Связаться (WhatsApp)</Text>
               </Pressable>
@@ -291,6 +365,7 @@ export default function ProductDetailsScreen() {
                 onPress={() =>
                   openUrl(`tel:${String(row.phone).replace(/[^\d+]/g, "")}`, "Не удалось открыть звонок.")
                 }
+                disabled={actionBusy != null}
               >
                 <Text style={styles.actionText}>Позвонить</Text>
               </Pressable>
@@ -299,6 +374,7 @@ export default function ProductDetailsScreen() {
               <Pressable
                 style={[styles.actionBtn, styles.secondaryBtn]}
                 onPress={() => openUrl(`mailto:${row.email}`, "Не удалось открыть email.")}
+                disabled={actionBusy != null}
               >
                 <Text style={styles.secondaryActionText}>Email</Text>
               </Pressable>
@@ -308,24 +384,38 @@ export default function ProductDetailsScreen() {
               onPress={() =>
                 router.push(buildMarketSupplierMapRoute(buildMarketMapParams({ side: "all", kind: "all" }, { row })))
               }
+              disabled={actionBusy != null}
             >
               <Text style={styles.secondaryActionText}>На карте</Text>
             </Pressable>
             <Pressable
               style={[styles.actionBtn, styles.secondaryBtn]}
               onPress={() => router.push(buildMarketSupplierShowcaseRoute(row.sellerUserId, row.sellerCompanyId))}
+              disabled={actionBusy != null}
             >
               <Text style={styles.secondaryActionText}>Витрина</Text>
             </Pressable>
             <Pressable
               style={[styles.actionBtn, styles.secondaryBtn]}
               onPress={() => router.push(MARKET_AI_ROUTE(buildListingAssistantPrompt(row)))}
+              disabled={actionBusy != null}
             >
               <Text style={styles.secondaryActionText}>Спросить AI</Text>
             </Pressable>
           </View>
         </View>
       </ScrollView>
+
+      <MarketContactSupplierModal
+        visible={contactVisible}
+        supplierName={row.sellerDisplayName}
+        message={contactMessage}
+        busy={actionBusy === "contact"}
+        errorText={contactErrorText}
+        onChangeMessage={setContactMessage}
+        onClose={handleCloseContact}
+        onSubmit={() => void handleSubmitContact()}
+      />
     </View>
   );
 }

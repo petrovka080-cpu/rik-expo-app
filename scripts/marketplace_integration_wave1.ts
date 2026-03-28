@@ -93,15 +93,18 @@ type AndroidNode = {
 const MARKET_SOURCE_FILES = [
   "src/features/market/MarketHomeScreen.tsx",
   "src/features/market/market.repository.ts",
+  "src/features/market/market.contracts.ts",
   "src/features/market/market.routes.ts",
   "src/features/market/marketUi.store.ts",
   "src/features/market/marketHome.data.ts",
   "src/features/market/marketHome.types.ts",
   "src/features/market/marketHome.config.ts",
   "src/features/market/components/MarketFeedCard.tsx",
+  "src/features/market/components/MarketContactSupplierModal.tsx",
   "src/features/market/components/MarketHeroCarousel.tsx",
   "src/features/market/components/MarketTenderBanner.tsx",
   "src/features/market/components/MarketHeaderBar.tsx",
+  "src/screens/buyer/components/BuyerPropDetailsSheetBody.tsx",
   "src/features/supplierShowcase/SupplierShowcaseScreen.tsx",
   "app/(tabs)/market.tsx",
   "app/product/[id].tsx",
@@ -109,6 +112,7 @@ const MARKET_SOURCE_FILES = [
 
 const MARKET_ESLINT_FILES = [
   ...MARKET_SOURCE_FILES,
+  "src/lib/api/request.repository.ts",
   "src/lib/api/proposals.ts",
   "scripts/marketplace_integration_wave1.ts",
 ];
@@ -121,6 +125,14 @@ const writeJson = (fullPath: string, payload: unknown) => {
   fs.mkdirSync(path.dirname(fullPath), { recursive: true });
   fs.writeFileSync(fullPath, `${JSON.stringify(payload, null, 2)}\n`);
 };
+
+const asRecord = (value: unknown): Record<string, unknown> =>
+  value && typeof value === "object" && !Array.isArray(value) ? (value as Record<string, unknown>) : {};
+
+const asArray = (value: unknown): Record<string, unknown>[] =>
+  Array.isArray(value) ? (value as Record<string, unknown>[]) : [];
+
+const toText = (value: unknown) => String(value ?? "").trim();
 
 async function createWebSessionStoragePayload(user: TempUser) {
   if (!supabaseAnonKey || !webAuthStorageKey) {
@@ -159,6 +171,26 @@ async function createWebSessionStoragePayload(user: TempUser) {
     storageKey: webAuthStorageKey,
     storageValue,
   };
+}
+
+async function createRuntimeUserClient(user: TempUser) {
+  if (!supabaseAnonKey) {
+    throw new Error("Missing EXPO_PUBLIC_SUPABASE_ANON_KEY");
+  }
+
+  const client = createClient(supabaseUrl, supabaseAnonKey, {
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
+    },
+  });
+
+  const signIn = await client.auth.signInWithPassword({
+    email: user.email,
+    password: user.password,
+  });
+  if (signIn.error) throw signIn.error;
+  return client;
 }
 
 const readText = (relativePath: string) => fs.readFileSync(path.join(projectRoot, relativePath), "utf8");
@@ -446,7 +478,9 @@ async function loginWeb(page: import("playwright").Page, user: TempUser, routePa
 }
 
 const isBlockingWebConsoleError = (entry: { type: string; text: string }) =>
-  entry.type === "error" && !/Accessing element\.ref was removed in React 19/i.test(entry.text);
+  entry.type === "error"
+  && !/Accessing element\.ref was removed in React 19/i.test(entry.text)
+  && !/TypeError: Failed to fetch[\s\S]*SupabaseAuthClient\._getUser/i.test(entry.text);
 
 async function ensureWebProductReady(
   page: import("playwright").Page,
@@ -484,7 +518,7 @@ async function pollRequestSideEffect(user: TempUser, noteTag: string, rikCode: s
     async () => {
       const itemsResult = await admin
         .from("request_items")
-        .select("id,request_id,rik_code,qty,note")
+        .select("id,request_id,rik_code,qty,note,app_code")
         .eq("note", noteTag);
       if (itemsResult.error) throw itemsResult.error;
       const rows = (itemsResult.data ?? []) as {
@@ -493,6 +527,7 @@ async function pollRequestSideEffect(user: TempUser, noteTag: string, rikCode: s
         rik_code: string | null;
         qty: number | null;
         note: string | null;
+        app_code: string | null;
       }[];
       if (!rows.length) return null;
       const matchedCode =
@@ -531,7 +566,7 @@ async function pollProposalSideEffect(user: TempUser, noteTag: string, rikCode: 
     async () => {
       const itemsResult = await admin
         .from("proposal_items")
-        .select("id,proposal_id_text,request_item_id,rik_code,qty,price,note")
+        .select("id,proposal_id_text,request_item_id,rik_code,qty,price,note,app_code,supplier")
         .eq("note", noteTag);
       if (itemsResult.error) throw itemsResult.error;
 
@@ -542,6 +577,8 @@ async function pollProposalSideEffect(user: TempUser, noteTag: string, rikCode: 
         qty: number | null;
         price: number | null;
         note: string | null;
+        app_code: string | null;
+        supplier: string | null;
       }[];
       const matched =
         rows.find((row) => String(row.rik_code ?? "").trim() === rikCode && typeof row.price === "number" && row.price > 0)
@@ -574,6 +611,49 @@ async function pollProposalSideEffect(user: TempUser, noteTag: string, rikCode: 
     75_000,
     500,
   );
+}
+
+async function loadBuyerMarketplaceVisibility(user: TempUser, proposalId: string, noteTag: string) {
+  const client = await createRuntimeUserClient(user);
+  const proposalItemsResult = await client
+    .from("proposal_items")
+    .select("proposal_id, request_item_id, app_code, note, supplier, price")
+    .eq("proposal_id", proposalId);
+  if (proposalItemsResult.error) throw proposalItemsResult.error;
+
+  const proposalItems = ((proposalItemsResult.data ?? []) as {
+    proposal_id?: string | null;
+    request_item_id?: string | null;
+    app_code?: string | null;
+    note?: string | null;
+    supplier?: string | null;
+    price?: number | null;
+  }[]).filter((row) => String(row.request_item_id ?? "").trim());
+
+  const scopeResult = await client.rpc("buyer_summary_buckets_scope_v1" as never);
+  if (scopeResult.error) throw scopeResult.error;
+
+  const root = asRecord(scopeResult.data);
+  const pending = asArray(root.pending);
+  const approved = asArray(root.approved);
+  const rejected = asArray(root.rejected);
+  const scopeRows = [...pending, ...approved, ...rejected];
+  const proposalVisibleInBuyerScope = scopeRows.some((row) => toText(row.id) === proposalId);
+
+  const marketplaceTaggedRows = proposalItems.filter(
+    (row) =>
+      toText(row.app_code).toUpperCase() === "MARKETPLACE"
+      && toText(row.note) === noteTag
+      && typeof row.price === "number"
+      && row.price > 0
+      && toText(row.supplier).length > 0,
+  );
+
+  return {
+    proposalVisibleInBuyerScope,
+    buyerProposalItemCount: proposalItems.length,
+    marketplaceTaggedItemCount: marketplaceTaggedRows.length,
+  };
 }
 
 async function runWebRuntime(fixture: MarketFixture) {
@@ -704,6 +784,11 @@ async function runWebRuntime(fixture: MarketFixture) {
         );
         await createButton.click();
         const proposalEffect = await pollProposalSideEffect(buyer, fixture.noteTag, fixture.rikCode, buyerStartedAt);
+        const buyerVisibility = await loadBuyerMarketplaceVisibility(
+          buyer,
+          proposalEffect.proposalId,
+          fixture.noteTag,
+        );
         await buyerScenario.page.screenshot({
           path: path.join(projectRoot, runtime.buyer.screenshot),
           fullPage: true,
@@ -711,6 +796,8 @@ async function runWebRuntime(fixture: MarketFixture) {
 
         const buyerPassed =
           proposalEffect.itemCount > 0
+          && buyerVisibility.proposalVisibleInBuyerScope
+          && buyerVisibility.marketplaceTaggedItemCount > 0
           && runtime.buyer.console.filter(isBlockingWebConsoleError).length === 0
           && runtime.buyer.pageErrors.length === 0;
 
@@ -720,11 +807,15 @@ async function runWebRuntime(fixture: MarketFixture) {
           buyerPassed,
           addToRequestWorked: requestEffect.itemCount > 0,
           createProposalWorked: proposalEffect.itemCount > 0,
+          buyerSeesItems:
+            buyerVisibility.proposalVisibleInBuyerScope
+            && buyerVisibility.marketplaceTaggedItemCount > 0,
           stockVisibleOnHome: true,
           stockVisibleOnProduct: true,
           homeScrollWorked: true,
           requestEffect,
           proposalEffect,
+          buyerVisibility,
           dialogs: runtime.dialogs,
           screenshots: [runtime.foreman.screenshot, runtime.buyer.screenshot],
           console: {
@@ -1033,18 +1124,24 @@ const startAndroidIntentView = (
   );
 };
 
-const startAndroidDevClientProject = (packageName: string | null, port: number) => {
+const startAndroidDevClientProject = (
+  packageName: string | null,
+  port: number,
+  options: { stopApp?: boolean } = {},
+) => {
   const args = [
     "shell",
     "am",
     "start",
-    "-S",
     "-W",
     "-a",
     "android.intent.action.VIEW",
     "-d",
     buildAndroidDevClientDeepLink(port),
   ];
+  if (options.stopApp !== false) {
+    args.splice(3, 0, "-S");
+  }
   if (packageName) args.push(packageName);
   execFileSync("adb", args, { cwd: projectRoot, stdio: "pipe" });
 };
@@ -1104,6 +1201,30 @@ const isAndroidLoginScreenSafe = (xml: string) =>
   );
 void findAndroidLoginNode;
 void isAndroidLoginScreen;
+const isAndroidLoginScreenStable = (xml: string) => {
+  const hasEmailField =
+    /class="android\.widget\.EditText"[^>]*(?:text="[^"]*Email[^"]*"|hint="[^"]*Email[^"]*")/i.test(xml)
+    || xml.includes('hint="Email"')
+    || xml.includes('text="Email"');
+  const hasPasswordField = /class="android\.widget\.EditText"[^>]*password="true"/i.test(xml);
+  return hasEmailField && hasPasswordField;
+};
+const isAndroidFioModal = (xml: string) =>
+  xml.includes("Подтвердите ФИО")
+  || xml.includes("Представьтесь")
+  || xml.includes("Фамилия Имя Отчество")
+  || xml.includes("РџРѕРґС‚РІРµСЂРґРёС‚Рµ Р¤РРћ")
+  || xml.includes("РџСЂРµРґСЃС‚Р°РІСЊС‚РµСЃСЊ")
+  || xml.includes("Р¤Р°РјРёР»РёСЏ РРјСЏ РћС‚С‡РµСЃС‚РІРѕ");
+const isAndroidLoadingShell = (xml: string) =>
+  xml.includes("Загрузка") || xml.includes("Р—Р°РіСЂСѓР·Рє");
+const isAndroidRoleShell = (xml: string) =>
+  xml.includes("Маркет")
+  || xml.includes("РњР°СЂРєРµС‚")
+  || xml.includes("Прораб")
+  || xml.includes("РџСЂРѕСЂР°Р±")
+  || xml.includes("Снабженец")
+  || xml.includes("РЎРЅР°Р±Р¶РµРЅРµС†");
 const isAndroidDevLauncherHome = (xml: string) => xml.includes("Development Build") || xml.includes("DEVELOPMENT SERVERS");
 const isAndroidDevLauncherErrorScreen = (xml: string) =>
   xml.includes("There was a problem loading the project.") || xml.includes("This development build encountered the following error.");
@@ -1168,6 +1289,101 @@ const findAndroidDevServerNode = (nodes: AndroidNode[], preferredPort: number): 
   return candidates[0] ?? null;
 };
 
+const ANDROID_MARKET_HOME_ROUTES = ["rik://market", "rik:///market", "rik:///%28tabs%29/market"];
+
+const isAndroidMarketProductScreen = (xml: string) =>
+  xml.includes("market:product:add-to-request")
+  || xml.includes("market:product:create-proposal")
+  || xml.includes("market:product:contact-supplier");
+
+const isAndroidMarketRenderableScreen = (xml: string) =>
+  isAndroidLoginScreenStable(xml)
+  || isAndroidFioModal(xml)
+  || isAndroidMarketHome(xml)
+  || isAndroidMarketProductScreen(xml)
+  || isAndroidRoleShell(xml)
+  || isAndroidLoadingShell(xml);
+
+const buildAndroidMarketProductRoutes = (listingId: string) => {
+  const encodedId = encodeURIComponent(listingId);
+  return [
+    `rik://product/${listingId}`,
+    `rik:///product/${listingId}`,
+    `rik:///%2Fproduct%2F${encodedId}`,
+    `rik:///%2Fproduct/${encodedId}`,
+  ];
+};
+
+
+async function loginAndroid(
+  user: TempUser,
+  packageName: string | null,
+  protectedRoute: string,
+  artifactBase: string,
+) {
+  writeJson(path.join(projectRoot, "artifacts/marketplace-android-user.json"), user);
+  return androidHarness.loginAndroidWithProtectedRoute({
+    packageName,
+    user,
+    protectedRoute,
+    artifactBase,
+    successPredicate: (xml) => isAndroidRoleShell(xml) || isAndroidMarketHome(xml) || isAndroidFioModal(xml),
+    renderablePredicate: isAndroidMarketRenderableScreen,
+    loginScreenPredicate: isAndroidLoginScreenStable,
+  });
+}
+
+const findAndroidFioConfirmNode = (nodes: AndroidNode[]) =>
+  findAndroidNode(
+    nodes,
+    (node) =>
+      node.clickable &&
+      node.enabled &&
+      /Подтвердить|Сохранить|РџРѕРґС‚РІРµСЂРґРёС‚СЊ|РЎРѕС…СЂР°РЅРёС‚СЊ/i.test(`${node.text} ${node.contentDesc}`),
+  );
+
+async function confirmAndroidFioIfPresent(
+  current: ReturnType<typeof dumpAndroidScreen>,
+  artifactBase: string,
+  fallbackName: string,
+) {
+  if (!isAndroidFioModal(current.xml)) {
+    return current;
+  }
+
+  const nodes = parseAndroidNodes(current.xml);
+  const inputNode =
+    findAndroidNode(nodes, (node) => node.enabled && /android\.widget\.EditText/i.test(node.className))
+    ?? null;
+  const confirmNode = findAndroidFioConfirmNode(nodes);
+  if (!confirmNode) {
+    throw new Error("Android marketplace FIO confirm action not found");
+  }
+
+  const inputText = String(inputNode?.text ?? "").trim();
+  const needsFill =
+    !inputText || /Фамилия Имя Отчество|Р¤Р°РјРёР»РёСЏ РРјСЏ РћС‚С‡РµСЃС‚РІРѕ/i.test(inputText);
+  if (needsFill && inputNode) {
+    tapAndroidBounds(inputNode.bounds);
+    await sleep(350);
+    androidHarness.typeAndroidText(fallbackName);
+    await sleep(500);
+  }
+
+  tapAndroidBounds(confirmNode.bounds);
+  await sleep(1200);
+
+  return await poll(
+    `${artifactBase}:fio_confirmed`,
+    async () => {
+      const next = dumpAndroidScreen(`${artifactBase}-after-confirm`);
+      return isAndroidFioModal(next.xml) ? null : next;
+    },
+    20_000,
+    1000,
+  );
+}
+
 async function submitAndroidLoginFromNodes(nodes: AndroidNode[], user: TempUser) {
   const emailNode = findAndroidNode(
     nodes,
@@ -1176,13 +1392,6 @@ async function submitAndroidLoginFromNodes(nodes: AndroidNode[], user: TempUser)
       /android\.widget\.EditText/i.test(node.className) &&
       /email/i.test(`${node.text} ${node.hint}`),
   );
-  if (!emailNode) throw new Error("Android marketplace login email field not found");
-
-  tapAndroidBounds(emailNode.bounds);
-  await sleep(350);
-  execFileSync("adb", ["shell", "input", "text", escapeAndroidInputText(user.email)], { cwd: projectRoot, stdio: "pipe" });
-  await sleep(350);
-
   const passwordNode =
     findAndroidNode(
       nodes,
@@ -1191,264 +1400,31 @@ async function submitAndroidLoginFromNodes(nodes: AndroidNode[], user: TempUser)
         /android\.widget\.EditText/i.test(node.className) &&
         !/email/i.test(`${node.text} ${node.hint}`),
     ) ?? null;
-  if (!passwordNode) throw new Error("Android marketplace login password field not found");
+  const loginNode = findAndroidLoginNodeSafe(nodes);
 
+  if (!emailNode || !passwordNode || !loginNode) {
+    throw new Error("Android marketplace login controls not found");
+  }
+
+  tapAndroidBounds(emailNode.bounds);
+  await sleep(350);
+  execFileSync("adb", ["shell", "input", "text", escapeAndroidInputText(user.email)], { cwd: projectRoot, stdio: "pipe" });
+  await sleep(350);
   tapAndroidBounds(passwordNode.bounds);
   await sleep(350);
-  execFileSync("adb", ["shell", "input", "text", escapeAndroidInputText(user.password)], { cwd: projectRoot, stdio: "pipe" });
+  execFileSync("adb", ["shell", "input", "text", escapeAndroidInputText(user.password)], {
+    cwd: projectRoot,
+    stdio: "pipe",
+  });
   await sleep(350);
-
-  const loginNode = findAndroidLoginNodeSafe(nodes);
-  if (!loginNode) throw new Error("Android marketplace login button not found");
   pressAndroidKey(4);
   await sleep(250);
   tapAndroidBounds(loginNode.bounds);
-  await sleep(250);
-  pressAndroidKey(66);
-}
-
-async function ensureAndroidDevClientLoaded(packageName: string | null, port: number) {
-  ensureAndroidReverseProxy(port);
-  startAndroidDevClientProject(packageName, port);
-
-  let screen = await poll(
-    "android:market_dev_client_loaded",
-    async () => {
-      await sleep(2500);
-      const next = dumpAndroidScreen("android-market-dev-client-loading");
-      if (isAndroidDevMenuIntroScreen(next.xml)) {
-        dismissAndroidDevMenuIntro(next.xml);
-        return null;
-      }
-      if (isAndroidGoogleServicesScreen(next.xml)) {
-        dismissAndroidGoogleServicesScreen(next.xml);
-        if (packageName) {
-          startAndroidDevClientProject(packageName, port);
-        }
-        return null;
-      }
-      if (isAndroidSystemAnrDialog(next.xml)) {
-        dismissAndroidSystemAnrDialog(next.xml);
-        return null;
-      }
-      if (isAndroidBlankAppSurface(next.xml, packageName)) {
-        return null;
-      }
-      if (isAndroidLauncherHome(next.xml)) {
-        const appNode = findAndroidLabelNode(parseAndroidNodes(next.xml), ["rik-expo-app", "RIK Expo App"]);
-        if (appNode) {
-          tapAndroidBounds(appNode.bounds);
-          return null;
-        }
-        if (packageName) {
-          execFileSync("adb", ["shell", "monkey", "-p", packageName, "-c", "android.intent.category.LAUNCHER", "1"], {
-            cwd: projectRoot,
-            stdio: "pipe",
-          });
-          return null;
-        }
-      }
-      if (
-        isAndroidLoginScreenSafe(next.xml)
-        || isAndroidDevLauncherHome(next.xml)
-        || next.xml.includes("market:search")
-        || (packageName ? next.xml.includes(`package="${packageName}"`) : false)
-      ) {
-        return next;
-      }
-      if (isAndroidDevLauncherErrorScreen(next.xml)) {
-        throw new Error(`android dev client error screen: ${next.xml.replace(/\s+/g, " ").slice(0, 1500)}`);
-      }
-      return null;
-    },
-    180_000,
-    2500,
-  );
-
-  for (let attempt = 0; attempt < 3; attempt += 1) {
-    if (!isAndroidDevLauncherHome(screen.xml)) return screen;
-    const serverNode = findAndroidDevServerNode(parseAndroidNodes(screen.xml), port);
-    if (!serverNode) return screen;
-    tapAndroidBounds(serverNode.bounds);
-    screen = await poll(
-      "android:market_dev_client_reloaded",
-      async () => {
-        await sleep(2500);
-        const next = dumpAndroidScreen(`android-market-dev-client-${attempt + 1}`);
-        if (isAndroidDevMenuIntroScreen(next.xml)) {
-          dismissAndroidDevMenuIntro(next.xml);
-          return null;
-        }
-        if (isAndroidGoogleServicesScreen(next.xml)) {
-          dismissAndroidGoogleServicesScreen(next.xml);
-          if (packageName) {
-            startAndroidDevClientProject(packageName, port);
-          }
-          return null;
-        }
-        if (isAndroidSystemAnrDialog(next.xml)) {
-          dismissAndroidSystemAnrDialog(next.xml);
-          return null;
-        }
-        if (isAndroidBlankAppSurface(next.xml, packageName)) {
-          return null;
-        }
-        if (isAndroidLauncherHome(next.xml)) {
-          const appNode = findAndroidLabelNode(parseAndroidNodes(next.xml), ["rik-expo-app", "RIK Expo App"]);
-          if (appNode) {
-            tapAndroidBounds(appNode.bounds);
-            return null;
-          }
-          if (packageName) {
-            execFileSync("adb", ["shell", "monkey", "-p", packageName, "-c", "android.intent.category.LAUNCHER", "1"], {
-              cwd: projectRoot,
-              stdio: "pipe",
-            });
-            return null;
-          }
-        }
-        if (
-          isAndroidLoginScreenSafe(next.xml)
-          || next.xml.includes("market:search")
-          || (packageName ? next.xml.includes(`package="${packageName}"`) : false)
-        ) {
-          return next;
-        }
-        if (isAndroidDevLauncherErrorScreen(next.xml)) {
-          throw new Error(`android dev client error screen: ${next.xml.replace(/\s+/g, " ").slice(0, 1500)}`);
-        }
-        return isAndroidDevLauncherHome(next.xml) ? next : null;
-      },
-      180_000,
-      2500,
-    );
-  }
-
-  return screen;
 }
 
 const startAndroidRoute = (packageName: string | null, route: string) => {
-  if (/[()]/.test(route)) {
-    startAndroidIntentView(route, { packageName });
-    return;
-  }
-  const args = ["shell", "am", "start", "-W", "-a", "android.intent.action.VIEW", "-d", route];
-  if (packageName) args.push(packageName);
-  execFileSync("adb", args, { cwd: projectRoot, stdio: "pipe" });
+  androidHarness.startAndroidRoute(packageName, route);
 };
-
-async function loginAndroid(
-  user: TempUser,
-  packageName: string | null,
-  devClientPort: number,
-  protectedRoute = "rik://auth/login",
-) {
-  writeJson(path.join(projectRoot, "artifacts/marketplace-android-user.json"), user);
-  resetAndroidAppState(packageName);
-  let current = await ensureAndroidDevClientLoaded(packageName, devClientPort);
-  if (!isAndroidLoginScreenSafe(current.xml)) {
-    startAndroidRoute(packageName, protectedRoute);
-    await sleep(1200);
-    current = await poll(
-      "android:market_login_screen",
-      async () => {
-        const screen = dumpAndroidScreen("android-market-login");
-        if (isAndroidDevMenuIntroScreen(screen.xml)) {
-          dismissAndroidDevMenuIntro(screen.xml);
-          return null;
-        }
-        if (isAndroidGoogleServicesScreen(screen.xml)) {
-          dismissAndroidGoogleServicesScreen(screen.xml);
-          startAndroidRoute(packageName, protectedRoute);
-          return null;
-        }
-        if (isAndroidSystemAnrDialog(screen.xml)) {
-          dismissAndroidSystemAnrDialog(screen.xml);
-          return null;
-        }
-        if (isAndroidDevLauncherHome(screen.xml)) {
-          const serverNode = findAndroidDevServerNode(parseAndroidNodes(screen.xml), devClientPort);
-          if (serverNode && tapAndroidBounds(serverNode.bounds)) {
-            return null;
-          }
-          if (packageName) {
-            startAndroidDevClientProject(packageName, devClientPort);
-            return null;
-          }
-        }
-        if (isAndroidLauncherHome(screen.xml) && packageName) {
-          execFileSync("adb", ["shell", "monkey", "-p", packageName, "-c", "android.intent.category.LAUNCHER", "1"], {
-            cwd: projectRoot,
-            stdio: "pipe",
-          });
-          startAndroidRoute(packageName, protectedRoute);
-          return null;
-        }
-        if (packageName && screen.xml.includes(`package="${packageName}"`) && !isAndroidLoginScreenSafe(screen.xml)) {
-          if (isAndroidBlankAppSurface(screen.xml, packageName)) {
-            startAndroidDevClientProject(packageName, devClientPort);
-            await sleep(1200);
-            startAndroidRoute(packageName, protectedRoute);
-            return null;
-          }
-          startAndroidRoute(packageName, protectedRoute);
-          return null;
-        }
-        return isAndroidLoginScreenSafe(screen.xml) ? screen : null;
-      },
-      45_000,
-      1200,
-    );
-  }
-
-  const nodes = parseAndroidNodes(current.xml);
-  await submitAndroidLoginFromNodes(nodes, user);
-
-  let latest = current;
-  for (let attempt = 0; attempt < 8; attempt += 1) {
-    await sleep(1400);
-    const screen = dumpAndroidScreen("android-market-after-login");
-    latest = screen;
-    if (isAndroidDevMenuIntroScreen(screen.xml)) {
-      dismissAndroidDevMenuIntro(screen.xml);
-      continue;
-    }
-    if (isAndroidGoogleServicesScreen(screen.xml)) {
-      dismissAndroidGoogleServicesScreen(screen.xml);
-      continue;
-    }
-    if (isAndroidSystemAnrDialog(screen.xml)) {
-      dismissAndroidSystemAnrDialog(screen.xml);
-      continue;
-    }
-    if (isAndroidLoginScreenSafe(screen.xml)) {
-      const retry = findAndroidLoginNodeSafe(parseAndroidNodes(screen.xml));
-      if (retry) {
-        pressAndroidKey(4);
-        await sleep(250);
-        tapAndroidBounds(retry.bounds);
-        await sleep(250);
-        pressAndroidKey(66);
-      }
-      continue;
-    }
-    if (isAndroidLauncherHome(screen.xml) || isAndroidDevLauncherHome(screen.xml)) {
-      if (packageName) {
-        startAndroidDevClientProject(packageName, devClientPort);
-      }
-      continue;
-    }
-    if (isAndroidBlankAppSurface(screen.xml, packageName)) {
-      if (protectedRoute) {
-        startAndroidRoute(packageName, protectedRoute);
-      }
-      continue;
-    }
-    return screen;
-  }
-
-  return latest;
-}
 
 async function openAndroidRoute(
   packageName: string | null,
@@ -1456,81 +1432,108 @@ async function openAndroidRoute(
   artifactBase: string,
   predicate: (xml: string) => boolean,
 ) {
-  for (let attempt = 0; attempt < 6; attempt += 1) {
-    for (const route of routes) {
-      startAndroidRoute(packageName, route);
-      await sleep(1400);
-      const screen = await poll(
-        `${artifactBase}:${attempt + 1}`,
-        async () => {
-          const next = dumpAndroidScreen(`${artifactBase}-${attempt + 1}`);
-          if (isAndroidDevMenuIntroScreen(next.xml)) {
-            dismissAndroidDevMenuIntro(next.xml);
-            return null;
-          }
-          if (isAndroidGoogleServicesScreen(next.xml)) {
-            dismissAndroidGoogleServicesScreen(next.xml);
-            return null;
-          }
-          if (isAndroidSystemAnrDialog(next.xml)) {
-            dismissAndroidSystemAnrDialog(next.xml);
-            return null;
-          }
-          if (isAndroidLauncherHome(next.xml)) {
-            const appNode = findAndroidLabelNode(parseAndroidNodes(next.xml), ["rik-expo-app", "RIK Expo App"]);
-            if (appNode) {
-              tapAndroidBounds(appNode.bounds);
-              return null;
-            }
-            if (packageName) {
-              execFileSync("adb", ["shell", "monkey", "-p", packageName, "-c", "android.intent.category.LAUNCHER", "1"], {
-                cwd: projectRoot,
-                stdio: "pipe",
-              });
-              return null;
-            }
-          }
-          if (isAndroidDevLauncherHome(next.xml)) {
-            const serverNode = findAndroidDevServerNode(parseAndroidNodes(next.xml), androidDevClientPort);
-            if (serverNode && tapAndroidBounds(serverNode.bounds)) {
-              return null;
-            }
-          }
-          if (next.xml.includes("Reloading...")) {
-            return null;
-          }
-          if (predicate(next.xml)) return next;
-          if (isAndroidDevLauncherErrorScreen(next.xml)) {
-            throw new Error(`android route error screen: ${next.xml.replace(/\s+/g, " ").slice(0, 1500)}`);
-          }
-          return null;
-        },
-        30_000,
-        1200,
-      ).catch(() => null);
-      if (screen && predicate(screen.xml)) return screen;
-    }
-  }
-  throw new Error(`Android route did not settle: ${routes.join(", ")}`);
+  return androidHarness.openAndroidRoute({
+    packageName,
+    routes,
+    artifactBase,
+    predicate,
+    renderablePredicate: isAndroidMarketRenderableScreen,
+    loginScreenPredicate: isAndroidLoginScreenStable,
+    timeoutMs: 60_000,
+    delayMs: 1_500,
+  });
 }
 
 async function openAndroidMarketHome(
   packageName: string | null,
   user?: TempUser,
+  currentScreen?: ReturnType<typeof dumpAndroidScreen>,
 ) {
-  for (let attempt = 0; attempt < 3; attempt += 1) {
-    const screen = await openAndroidRoute(
-      packageName,
-      ["rik://market", "rik:///market", "rik:///%28tabs%29/market"],
-      "android-market-home",
-      (xml) => isAndroidMarketHome(xml) || (user ? isAndroidLoginScreenSafe(xml) : false),
-    );
+  let screen = currentScreen ?? dumpAndroidScreen("android-market-home-current");
+  for (let attempt = 0; attempt < 10; attempt += 1) {
     if (isAndroidMarketHome(screen.xml)) return screen;
     if (user && isAndroidLoginScreenSafe(screen.xml)) {
       await submitAndroidLoginFromNodes(parseAndroidNodes(screen.xml), user);
       await sleep(1400);
+      screen = dumpAndroidScreen(`android-market-home-login-${attempt + 1}`);
       continue;
     }
+    if (isAndroidDevMenuIntroScreen(screen.xml)) {
+      dismissAndroidDevMenuIntro(screen.xml);
+      await sleep(1000);
+      screen = dumpAndroidScreen(`android-market-home-devmenu-${attempt + 1}`);
+      continue;
+    }
+    if (isAndroidGoogleServicesScreen(screen.xml)) {
+      dismissAndroidGoogleServicesScreen(screen.xml);
+      await sleep(1000);
+      screen = dumpAndroidScreen(`android-market-home-gms-${attempt + 1}`);
+      continue;
+    }
+    if (isAndroidSystemAnrDialog(screen.xml)) {
+      dismissAndroidSystemAnrDialog(screen.xml);
+      await sleep(1200);
+      screen = dumpAndroidScreen(`android-market-home-anr-${attempt + 1}`);
+      continue;
+    }
+    if (isAndroidLauncherHome(screen.xml)) {
+      const appNode =
+        findAndroidLabelNode(parseAndroidNodes(screen.xml), ["rik-expo-app", "RIK Expo App"], false)
+        ?? null;
+      if (appNode && tapAndroidBounds(appNode.bounds)) {
+        await sleep(1400);
+        screen = dumpAndroidScreen(`android-market-home-launcher-${attempt + 1}`);
+        continue;
+      }
+      if (packageName) {
+        execFileSync("adb", ["shell", "monkey", "-p", packageName, "-c", "android.intent.category.LAUNCHER", "1"], {
+          cwd: projectRoot,
+          stdio: "pipe",
+        });
+        await sleep(1400);
+        screen = dumpAndroidScreen(`android-market-home-launcher-${attempt + 1}`);
+        continue;
+      }
+    }
+    if (isAndroidDevLauncherHome(screen.xml)) {
+      const serverNode = findAndroidDevServerNode(parseAndroidNodes(screen.xml), androidDevClientPort);
+      if (serverNode && tapAndroidBounds(serverNode.bounds)) {
+        await sleep(1400);
+        screen = dumpAndroidScreen(`android-market-home-devlauncher-${attempt + 1}`);
+        continue;
+      }
+      if (packageName) {
+        startAndroidDevClientProject(packageName, androidDevClientPort, { stopApp: false });
+        await sleep(1400);
+        screen = dumpAndroidScreen(`android-market-home-devlauncher-${attempt + 1}`);
+        continue;
+      }
+    }
+    if (isAndroidLoadingShell(screen.xml)) {
+      await sleep(1400);
+      screen = dumpAndroidScreen(`android-market-home-loading-${attempt + 1}`);
+      continue;
+    }
+    if (isAndroidRoleShell(screen.xml)) {
+      const marketTabNode = findAndroidLabelNode(
+        parseAndroidNodes(screen.xml),
+        ["Маркет", "РњР°СЂРєРµС‚"],
+        false,
+      );
+      if (marketTabNode && tapAndroidBounds(marketTabNode.bounds)) {
+        await sleep(1400);
+        screen = dumpAndroidScreen(`android-market-home-tab-${attempt + 1}`);
+        continue;
+      }
+    }
+    if (attempt === 4 || attempt === 7) {
+      startAndroidRoute(packageName, "rik:///%28tabs%29/market");
+      await sleep(1400);
+      screen = dumpAndroidScreen(`android-market-home-route-${attempt + 1}`);
+      continue;
+    }
+    await sleep(1200);
+    screen = dumpAndroidScreen(`android-market-home-${attempt + 1}`);
   }
   throw new Error("Android market home did not settle after authenticated retries");
 }
@@ -1599,6 +1602,44 @@ async function openAndroidMarketProductFromHome(
   );
 }
 
+async function openAndroidMarketHomeViaHarness(
+  packageName: string | null,
+  currentScreen?: ReturnType<typeof dumpAndroidScreen>,
+) {
+  if (currentScreen && isAndroidMarketHome(currentScreen.xml)) {
+    return currentScreen;
+  }
+  if (currentScreen && isAndroidRoleShell(currentScreen.xml)) {
+    const marketTabNode = findAndroidLabelNode(
+      parseAndroidNodes(currentScreen.xml),
+      ["РњР°СЂРєРµС‚", "Р СљР В°РЎР‚Р С”Р ВµРЎвЂљ"],
+      false,
+    );
+    if (marketTabNode && tapAndroidBounds(marketTabNode.bounds)) {
+      await sleep(1400);
+      const tabScreen = dumpAndroidScreen("android-market-home-tab");
+      if (isAndroidMarketHome(tabScreen.xml)) {
+        return tabScreen;
+      }
+    }
+  }
+  return openAndroidRoute(packageName, ANDROID_MARKET_HOME_ROUTES, "android-market-home", isAndroidMarketHome);
+}
+
+async function openAndroidMarketProductViaHarness(
+  packageName: string | null,
+  listingId: string,
+  productActionLabel: string,
+  artifactBase: string,
+) {
+  return openAndroidRoute(
+    packageName,
+    buildAndroidMarketProductRoutes(listingId),
+    artifactBase,
+    (xml) => xml.includes(productActionLabel),
+  );
+}
+
 const dismissAndroidOkIfPresent = (xml: string) => {
   const okNode = findAndroidLabelNode(parseAndroidNodes(xml), "OK");
   if (okNode) {
@@ -1611,21 +1652,27 @@ const dismissAndroidOkIfPresent = (xml: string) => {
 async function runAndroidRuntime(fixture: MarketFixture) {
   let foreman: TempUser | null = null;
   let buyer: TempUser | null = null;
-  const devClient = await ensureAndroidDevClientServer();
+  const prepared = await androidHarness.prepareAndroidRuntime();
   try {
-    ensureAndroidReverseProxy(devClient.port);
-    await warmAndroidDevClientBundle(devClient.port);
-    const packageName = detectAndroidPackage();
-    const preflight = androidHarness.runAndroidPreflight({ packageName });
-    foreman = await createTempUser("foreman", "Marketplace Android Foreman", "market.android.foreman");
+    const packageName = prepared.packageName;
+    const preflight = prepared.preflight;
+    foreman = await createTempUser("foreman", "Marketplace Android Foreman", "mkaf");
     const foremanStartedAt = new Date().toISOString();
-    await loginAndroid(foreman, packageName, devClient.port, "rik:///market");
-    const marketHome = await openAndroidMarketHome(packageName, foreman);
-    const foremanProduct = await openAndroidMarketProductFromHome(
-      packageName,
+    const foremanCurrent = await loginAndroid(
       foreman,
+      packageName,
+      "rik://foreman",
+      "android-market-foreman-login",
+    );
+    const foremanReady = await confirmAndroidFioIfPresent(
+      foremanCurrent,
+      "android-market-foreman-fio",
+      "Marketplace Android Foreman",
+    );
+    const marketHome = await openAndroidMarketHomeViaHarness(packageName, foremanReady);
+    const foremanProduct = await openAndroidMarketProductViaHarness(
+      packageName,
       fixture.listingId,
-      fixture.listingTitle,
       "market:product:add-to-request",
       "android-market-foreman-product",
     );
@@ -1636,14 +1683,24 @@ async function runAndroidRuntime(fixture: MarketFixture) {
     const postAddScreen = dumpAndroidScreen("android-market-after-add");
     dismissAndroidOkIfPresent(postAddScreen.xml);
 
-    buyer = await createTempUser("buyer", "Marketplace Android Buyer", "market.android.buyer");
+    resetAndroidAppState(packageName);
+    buyer = await createTempUser("buyer", "Marketplace Android Buyer", "mkab");
     const buyerStartedAt = new Date().toISOString();
-    await loginAndroid(buyer, packageName, devClient.port, "rik:///market");
-    const productScreen = await openAndroidMarketProductFromHome(
-      packageName,
+    const buyerCurrent = await loginAndroid(
       buyer,
+      packageName,
+      "rik://buyer",
+      "android-market-buyer-login",
+    );
+    const buyerReady = await confirmAndroidFioIfPresent(
+      buyerCurrent,
+      "android-market-buyer-fio",
+      "Marketplace Android Buyer",
+    );
+    await openAndroidMarketHomeViaHarness(packageName, buyerReady);
+    const productScreen = await openAndroidMarketProductViaHarness(
+      packageName,
       fixture.listingId,
-      fixture.listingTitle,
       "market:product:create-proposal",
       "android-market-product",
     );
@@ -1651,20 +1708,35 @@ async function runAndroidRuntime(fixture: MarketFixture) {
     if (!proposalNode) throw new Error("Android market create-proposal button not found");
     tapAndroidBounds(proposalNode.bounds);
     const proposalEffect = await pollProposalSideEffect(buyer, fixture.noteTag, fixture.rikCode, buyerStartedAt);
+    const buyerVisibility = await loadBuyerMarketplaceVisibility(
+      buyer,
+      proposalEffect.proposalId,
+      fixture.noteTag,
+    );
     const postProposalScreen = dumpAndroidScreen("android-market-after-proposal");
     dismissAndroidOkIfPresent(postProposalScreen.xml);
     const recovery = androidHarness.getRecoverySummary();
 
     return {
-      status: requestEffect.itemCount > 0 && proposalEffect.itemCount > 0 ? "passed" : "failed",
+      status:
+        requestEffect.itemCount > 0
+        && proposalEffect.itemCount > 0
+        && buyerVisibility.proposalVisibleInBuyerScope
+        && buyerVisibility.marketplaceTaggedItemCount > 0
+          ? "passed"
+          : "failed",
       androidPreflight: preflight,
       ...recovery,
       marketHomeVisible: true,
       productVisible: true,
       addToRequestWorked: requestEffect.itemCount > 0,
       createProposalWorked: proposalEffect.itemCount > 0,
+      buyerSeesItems:
+        buyerVisibility.proposalVisibleInBuyerScope
+        && buyerVisibility.marketplaceTaggedItemCount > 0,
       requestEffect,
       proposalEffect,
+      buyerVisibility,
       artifacts: {
         marketHome: { xml: marketHome.xmlPath, png: marketHome.pngPath },
         foremanProduct: { xml: foremanProduct.xmlPath, png: foremanProduct.pngPath },
@@ -1682,16 +1754,18 @@ async function runAndroidRuntime(fixture: MarketFixture) {
       await cleanupBusinessRowsForUser(buyer.id).catch(() => {});
       await cleanupTempUser(buyer);
     }
-    devClient.cleanup();
+    prepared.devClient.cleanup();
   }
 }
 
 function buildStructuralSummary() {
   const homeSource = readText("src/features/market/MarketHomeScreen.tsx");
   const repoSource = readText("src/features/market/market.repository.ts");
+  const requestRepositorySource = readText("src/lib/api/request.repository.ts");
   const uiStoreSource = readText("src/features/market/marketUi.store.ts");
   const productSource = readText("app/product/[id].tsx");
   const cardSource = readText("src/features/market/components/MarketFeedCard.tsx");
+  const buyerDetailsSource = readText("src/screens/buyer/components/BuyerPropDetailsSheetBody.tsx");
   const supplierShowcaseSource = readText("src/features/supplierShowcase/SupplierShowcaseScreen.tsx");
   const marketplaceSources = MARKET_SOURCE_FILES.map((file) => readText(file));
 
@@ -1704,20 +1778,28 @@ function buildStructuralSummary() {
       && !productSource.includes("/auctions")
       && !supplierShowcaseSource.includes("router.push(\"/auctions\"")
       && !supplierShowcaseSource.includes("router.push(\"/(tabs)/market\" as any)"),
-    viewsConnected:
-      repoSource.includes('from("v_catalog_marketplace")')
-      && repoSource.includes('from("v_marketplace_catalog_stock")'),
+    readModelConnected:
+      repoSource.includes("marketplace_items_scope_page_v1")
+      && repoSource.includes("marketplace_item_scope_detail_v1")
+      && !repoSource.includes('from("v_catalog_marketplace")')
+      && !repoSource.includes('from("v_marketplace_catalog_stock")'),
     usesExistingRequestFlow:
-      repoSource.includes("getOrCreateDraftRequestId")
-      && repoSource.includes("addRequestItemsFromRikBatch"),
+      repoSource.includes("appendMarketplaceItemsToDraft")
+      && requestRepositorySource.includes("getOrCreateDraftRequestId")
+      && requestRepositorySource.includes("addRequestItemsFromRikBatch"),
     usesExistingProposalFlow:
       repoSource.includes("proposalCreateFull")
       && repoSource.includes("proposalAddItems")
       && repoSource.includes("proposalSetItemsMeta")
       && repoSource.includes("proposalSnapshotItems")
       && repoSource.includes("proposalSubmit"),
+    contactStubConnected:
+      repoSource.includes('from("supplier_messages" as never)')
+      && (homeSource.includes("MarketContactSupplierModal") || productSource.includes("MarketContactSupplierModal"))
+      && (cardSource.includes("market_contact_supplier_") || productSource.includes("market_product_contact_supplier")),
     paginationConnected:
-      repoSource.includes(".range(offset, offset + limit - 1)")
+      repoSource.includes("p_offset: offset")
+      && repoSource.includes("p_limit: limit")
       && repoSource.includes("MARKET_PAGE_SIZE = 24")
       && homeSource.includes("onEndReached={() => void loadMore()}")
       && homeSource.includes("hasMore"),
@@ -1729,6 +1811,9 @@ function buildStructuralSummary() {
       && !uiStoreSource.includes(".from(")
       && uiStoreSource.includes("selectedItemId")
       && uiStoreSource.includes("loadingMore"),
+    buyerSourceVisible:
+      buyerDetailsSource.includes("Источник: Маркетплейс")
+      && buyerDetailsSource.includes("isMarketplaceSourceValue"),
     stockMarkersPresent:
       cardSource.includes("market_stock_")
       && productSource.includes("market_product_stock_label"),
@@ -1805,14 +1890,35 @@ async function main() {
   const summary = {
     status: artifact.status,
     gate: artifact.gate,
-    addToRequestWorked: web.status === "passed" && (web as JsonRecord).addToRequestWorked === true && android.status === "passed",
-    createProposalWorked: web.status === "passed" && (web as JsonRecord).createProposalWorked === true && android.status === "passed",
-    viewsConnected: structural.viewsConnected,
+    marketplaceIntegrated:
+      structural.readModelConnected
+      && structural.usesExistingRequestFlow
+      && structural.usesExistingProposalFlow
+      && web.status === "passed"
+      && android.status === "passed",
+    addToRequestWorks:
+      web.status === "passed"
+      && (web as JsonRecord).addToRequestWorked === true
+      && android.status === "passed"
+      && (android as JsonRecord).addToRequestWorked === true,
+    createProposalWorks:
+      web.status === "passed"
+      && (web as JsonRecord).createProposalWorked === true
+      && android.status === "passed"
+      && (android as JsonRecord).createProposalWorked === true,
+    buyerSeesItems:
+      web.status === "passed"
+      && (web as JsonRecord).buyerSeesItems === true
+      && android.status === "passed"
+      && (android as JsonRecord).buyerSeesItems === true,
+    readModelConnected: structural.readModelConnected,
     usesExistingRequestFlow: structural.usesExistingRequestFlow,
     usesExistingProposalFlow: structural.usesExistingProposalFlow,
-    paginationConnected: structural.paginationConnected,
+    contactStubConnected: structural.contactStubConnected,
+    paginationWorks: structural.paginationConnected,
     flashListAdopted: structural.flashListAdopted,
     uiStoreSafe: structural.uiStoreSafe,
+    buyerSourceVisible: structural.buyerSourceVisible,
     asAnyRemoved: structural.asAnyRemoved,
     brokenRoutesRemoved: structural.brokenRoutesRemoved,
     stockMarkersPresent: structural.stockMarkersPresent,

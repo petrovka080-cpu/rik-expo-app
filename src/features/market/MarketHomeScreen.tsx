@@ -15,8 +15,10 @@ import {
 import { router, useFocusEffect } from "expo-router";
 
 import { FlashList } from "../../ui/FlashList";
+import { recordPlatformObservability } from "../../lib/observability/platformObservability";
 import MarketCategoryRail from "./components/MarketCategoryRail";
 import MarketAssistantBanner from "./components/MarketAssistantBanner";
+import MarketContactSupplierModal from "./components/MarketContactSupplierModal";
 import MarketFeedCard from "./components/MarketFeedCard";
 import MarketHeaderBar from "./components/MarketHeaderBar";
 import MarketHeroCarousel from "./components/MarketHeroCarousel";
@@ -36,6 +38,7 @@ import {
   getFeedHeading,
 } from "./marketHome.data";
 import {
+  contactMarketplaceSupplier,
   MARKET_PAGE_SIZE,
   addMarketplaceListingToRequest,
   createMarketplaceProposal,
@@ -74,6 +77,11 @@ const DEFAULT_CAPABILITIES: MarketRoleCapabilities = {
   canAddToRequest: false,
   canCreateProposal: false,
 };
+const MARKET_HOME_SURFACE = "home_feed";
+
+const trim = (value: unknown) => String(value ?? "").trim();
+const buildActionKey = (action: "contact" | "request" | "proposal", listingId: string) =>
+  `${action}:${trim(listingId)}`;
 
 export default function MarketHomeScreen() {
   const { width } = useWindowDimensions();
@@ -98,6 +106,10 @@ export default function MarketHomeScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [capabilities, setCapabilities] = useState<MarketRoleCapabilities>(DEFAULT_CAPABILITIES);
   const [feedAnchorOffset, setFeedAnchorOffset] = useState(640);
+  const [busyActionKey, setBusyActionKey] = useState<string | null>(null);
+  const [contactListing, setContactListing] = useState<MarketHomeListingCard | null>(null);
+  const [contactMessage, setContactMessage] = useState("");
+  const [contactErrorText, setContactErrorText] = useState<string | null>(null);
 
   const filters = useMemo(
     () => ({
@@ -168,13 +180,26 @@ export default function MarketHomeScreen() {
       else setLoading(true);
 
       try {
+        const capabilitiesPromise = loadMarketRoleCapabilities().catch((error: unknown) => {
+          recordPlatformObservability({
+            screen: "market",
+            surface: MARKET_HOME_SURFACE,
+            category: "fetch",
+            event: "market_load_capabilities",
+            result: "error",
+            errorStage: "role_capabilities",
+            errorMessage: error instanceof Error ? error.message : String(error ?? "unknown"),
+          });
+          return DEFAULT_CAPABILITIES;
+        });
+
         const [page, nextCapabilities] = await Promise.all([
           loadMarketHomePage({
             offset: 0,
             limit: MARKET_PAGE_SIZE,
             filters: { side, kind },
           }),
-          loadMarketRoleCapabilities(),
+          capabilitiesPromise,
         ]);
         setFeed({
           listings: page.listings,
@@ -265,17 +290,41 @@ export default function MarketHomeScreen() {
     [feedAnchorOffset, pushSupplierMap],
   );
 
+  const handleOpenListing = useCallback((listing: MarketHomeListingCard) => {
+    recordPlatformObservability({
+      screen: "market",
+      surface: MARKET_HOME_SURFACE,
+      category: "ui",
+      event: "market_open_item",
+      result: "success",
+      extra: {
+        listingId: listing.id,
+        source: listing.source,
+      },
+    });
+    setSelectedItemId(listing.id);
+    router.push(buildMarketProductRoute(listing.id));
+  }, [setSelectedItemId]);
+
   const handleAddToRequest = useCallback(async (listing: MarketHomeListingCard) => {
+    const actionKey = buildActionKey("request", listing.id);
+    if (busyActionKey) return;
+    setBusyActionKey(actionKey);
     try {
       const result = await addMarketplaceListingToRequest(listing, 1);
       Alert.alert("Маркет", `Добавлено в заявку: ${result.addedCount} поз. Черновик ${result.requestId}.`);
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : "Не удалось добавить товар в заявку.";
       Alert.alert("Маркет", message);
+    } finally {
+      setBusyActionKey(null);
     }
-  }, []);
+  }, [busyActionKey]);
 
   const handleCreateProposal = useCallback(async (listing: MarketHomeListingCard) => {
+    const actionKey = buildActionKey("proposal", listing.id);
+    if (busyActionKey) return;
+    setBusyActionKey(actionKey);
     try {
       const result = await createMarketplaceProposal(listing, 1);
       Alert.alert(
@@ -285,42 +334,89 @@ export default function MarketHomeScreen() {
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : "Не удалось создать предложение.";
       Alert.alert("Маркет", message);
+    } finally {
+      setBusyActionKey(null);
     }
+  }, [busyActionKey]);
+
+  const handleOpenContactSupplier = useCallback((listing: MarketHomeListingCard) => {
+    setContactListing(listing);
+    setContactMessage(`Здравствуйте. Хочу уточнить условия по позиции "${listing.title}".`);
+    setContactErrorText(null);
   }, []);
+
+  const handleCloseContactSupplier = useCallback(() => {
+    if (busyActionKey?.startsWith("contact:")) return;
+    setContactListing(null);
+    setContactMessage("");
+    setContactErrorText(null);
+  }, [busyActionKey]);
+
+  const handleSubmitContactSupplier = useCallback(async () => {
+    if (!contactListing) return;
+    const actionKey = buildActionKey("contact", contactListing.id);
+    if (busyActionKey) return;
+    setBusyActionKey(actionKey);
+    setContactErrorText(null);
+    try {
+      await contactMarketplaceSupplier({
+        listing: contactListing,
+        message: contactMessage,
+      });
+      Alert.alert("Маркет", "Сообщение поставщику отправлено.");
+      setContactListing(null);
+      setContactMessage("");
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "Не удалось отправить сообщение поставщику.";
+      setContactErrorText(message);
+    } finally {
+      setBusyActionKey(null);
+    }
+  }, [busyActionKey, contactListing, contactMessage]);
 
   const renderCard = useCallback(
     ({ item }: ListRenderItemInfo<MarketHomeListingCard>) => (
       <View style={[styles.feedCell, { width: columnWidth }]}>
         <MarketFeedCard
           listing={item}
-          onOpen={() => {
-            setSelectedItemId(item.id);
-            router.push(buildMarketProductRoute(item.id));
-          }}
+          onOpen={() => handleOpenListing(item)}
           onMapPress={() => pushSupplierMap(item)}
           onShowcasePress={() => pushSupplierShowcase(item)}
           onAssistantPress={() => openAssistant(buildListingAssistantPrompt(item))}
           onPhonePress={item.phone ? () => void openPhone(item.phone) : undefined}
           onWhatsAppPress={item.whatsapp ? () => void openWhatsApp(item.whatsapp) : undefined}
-          onAddToRequestPress={capabilities.canAddToRequest && item.erpItems.length ? () => void handleAddToRequest(item) : undefined}
-          onCreateProposalPress={
-            capabilities.canCreateProposal && item.erpItems.length ? () => void handleCreateProposal(item) : undefined
+          onContactSupplierPress={(item.supplierId || item.sellerUserId) ? () => handleOpenContactSupplier(item) : undefined}
+          onAddToRequestPress={
+            capabilities.canAddToRequest && item.erpItems.length
+              ? () => void handleAddToRequest(item)
+              : undefined
           }
+          onCreateProposalPress={
+            capabilities.canCreateProposal && item.erpItems.length
+              ? () => void handleCreateProposal(item)
+              : undefined
+          }
+          contactBusy={busyActionKey === buildActionKey("contact", item.id)}
+          addToRequestBusy={busyActionKey === buildActionKey("request", item.id)}
+          createProposalBusy={busyActionKey === buildActionKey("proposal", item.id)}
+          actionsDisabled={busyActionKey != null}
         />
       </View>
     ),
     [
+      busyActionKey,
       capabilities.canAddToRequest,
       capabilities.canCreateProposal,
       columnWidth,
       handleAddToRequest,
       handleCreateProposal,
+      handleOpenContactSupplier,
+      handleOpenListing,
       openAssistant,
       openPhone,
       openWhatsApp,
       pushSupplierMap,
       pushSupplierShowcase,
-      setSelectedItemId,
     ],
   );
 
@@ -429,6 +525,17 @@ export default function MarketHomeScreen() {
         showsVerticalScrollIndicator={false}
         onEndReached={() => void loadMore()}
         onEndReachedThreshold={0.35}
+      />
+
+      <MarketContactSupplierModal
+        visible={contactListing != null}
+        supplierName={contactListing?.sellerDisplayName ?? "Поставщик"}
+        message={contactMessage}
+        busy={busyActionKey?.startsWith("contact:") === true}
+        errorText={contactErrorText}
+        onChangeMessage={setContactMessage}
+        onClose={handleCloseContactSupplier}
+        onSubmit={() => void handleSubmitContactSupplier()}
       />
     </View>
   );

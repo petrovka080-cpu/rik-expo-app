@@ -1,4 +1,6 @@
 import {
+  addRequestItemsFromRikBatch,
+  getOrCreateDraftRequestId,
   requestReopen,
   requestSubmitMutation,
   type RequestSubmitMutationResult,
@@ -16,6 +18,20 @@ export type ReopenRequestCommand = {
   requestId: number | string;
   sourcePath: string;
   draftScopeKey?: string | null;
+};
+
+export type AppendMarketplaceItemsCommand = {
+  sourcePath: string;
+  listingId: string;
+  items: {
+    rikCode: string;
+    qty: number;
+    kind?: string | null;
+    nameHuman?: string | null;
+    uom?: string | null;
+    note?: string | null;
+    appCode?: string | null;
+  }[];
 };
 
 const trim = (value: unknown) => String(value ?? "").trim();
@@ -126,6 +142,73 @@ const toSubmitErrorCategory = (error: unknown): string => {
   if (message.includes("invalid")) return "invalid_payload";
   return "submit_error";
 };
+
+const toAppendMarketplaceErrorCategory = (error: unknown): string => {
+  const message = trim(error instanceof Error ? error.message : error).toLowerCase();
+  if (!message) return "unknown";
+  if (message.includes("offline") || message.includes("network")) return "offline";
+  if (message.includes("permission") || message.includes("rls")) return "permission_denied";
+  if (message.includes("rik_code") || message.includes("qty")) return "invalid_payload";
+  return "append_error";
+};
+
+export async function appendMarketplaceItemsToDraft(
+  command: AppendMarketplaceItemsCommand,
+): Promise<{ requestId: string; addedCount: number }> {
+  const preparedItems = (command.items ?? [])
+    .map((item) => ({
+      rik_code: trim(item.rikCode),
+      qty: Number(item.qty),
+      opts: {
+        app_code: trim(item.appCode) || null,
+        kind: trim(item.kind) || null,
+        name_human: trim(item.nameHuman) || null,
+        note: trim(item.note) || null,
+        uom: trim(item.uom) || null,
+      },
+    }))
+    .filter((item) => item.rik_code && Number.isFinite(item.qty) && item.qty > 0);
+
+  logRequestRepository({
+    phase: "request",
+    sourcePath: command.sourcePath,
+    appendMarketplace: true,
+    listingId: trim(command.listingId) || null,
+    requestedItemCount: preparedItems.length,
+  });
+
+  if (!preparedItems.length) {
+    throw new Error("Marketplace payload has no ERP items to append.");
+  }
+
+  try {
+    const requestId = trim(await getOrCreateDraftRequestId());
+    if (!requestId) {
+      throw new Error("Failed to resolve active draft request.");
+    }
+    const addedCount = await addRequestItemsFromRikBatch(requestId, preparedItems);
+    logRequestRepository({
+      phase: "result",
+      sourcePath: command.sourcePath,
+      appendMarketplace: true,
+      listingId: trim(command.listingId) || null,
+      requestId,
+      addedCount,
+    });
+    return { requestId, addedCount };
+  } catch (error) {
+    logRequestRepository({
+      phase: "error",
+      sourcePath: command.sourcePath,
+      appendMarketplace: true,
+      listingId: trim(command.listingId) || null,
+      requestedItemCount: preparedItems.length,
+      errorCategory: toAppendMarketplaceErrorCategory(error),
+      errorMessage: error instanceof Error ? error.message : String(error),
+    });
+    throw error;
+  }
+}
 
 export async function submitRequestToDirector(
   command: SubmitRequestCommand,

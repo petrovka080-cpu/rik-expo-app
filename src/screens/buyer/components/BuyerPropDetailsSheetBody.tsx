@@ -9,6 +9,7 @@ import {
   loadProposalAnalyticInsights,
   type ProposalAnalyticInsight,
 } from "../../../features/ai/aiAnalyticInsights";
+import { isMarketplaceSourceValue } from "../../../features/market/market.contracts";
 import SectionBlock from "../../../ui/SectionBlock";
 
 type ProposalAttachmentLite = {
@@ -19,6 +20,12 @@ type ProposalAttachmentLite = {
 
 // We extend head to support items_cnt and sent_to_accountant_at
 type FullHead = ProposalHeadLite & { items_cnt?: number };
+
+const isMarketplaceProposalLine = (line: ProposalViewLine | null | undefined) =>
+  isMarketplaceSourceValue({
+    appCode: line?.app_code,
+    note: line?.note,
+  });
 
 export function BuyerPropDetailsSheetBody({
   s,
@@ -163,11 +170,17 @@ export function BuyerPropDetailsSheetBody({
               const raw = String(anyLine?.note ?? "").trim();
               const ctxLines = raw && isReqContextNote(raw) ? extractReqContextLines(raw, 5) : [];
               const supplier = String((propViewLines || []).find((x) => x?.supplier)?.supplier ?? "").trim();
+              const marketplaceSourceVisible = (propViewLines || []).some((x) => isMarketplaceProposalLine(x));
 
-              if (!ctxLines.length && !supplier) return null;
+              if (!ctxLines.length && !supplier && !marketplaceSourceVisible) return null;
 
               return (
                 <View style={[s.reqNoteBox, { marginBottom: 16, backgroundColor: 'rgba(255,255,255,0.04)', borderColor: 'rgba(255,255,255,0.1)' }]}>
+                  {marketplaceSourceVisible ? (
+                    <Text style={[s.reqNoteLine, { fontSize: 13, color: UI.accent, fontWeight: "900" }]} numberOfLines={1}>
+                      Источник: Маркетплейс
+                    </Text>
+                  ) : null}
                   {ctxLines.map((t, idx) => (
                     <Text key={idx} style={[s.reqNoteLine, { fontSize: 13, color: 'rgba(255,255,255,0.9)' }]} numberOfLines={1}>
                       {t}
@@ -329,7 +342,7 @@ export function BuyerPropDetailsSheetBody({
         contentContainerStyle={{ paddingBottom: 40 }}
         renderItem={({ item: ln }) => {
           const noteRaw = String(ln?.note ?? "").trim();
-          const hideNote = isReqContextNote(noteRaw);
+          const hideNote = isReqContextNote(noteRaw) || isMarketplaceProposalLine(ln);
 
           return (
             <View style={[s.dirMobCard, { marginHorizontal: 16, padding: 14 }]}>

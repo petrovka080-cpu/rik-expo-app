@@ -309,5 +309,71 @@
       "stdout": "\nC:\\dev\\rik-expo-app\\scripts\\marketplace_integration_wave1.ts\n   897:7   warning  'ensureAndroidReverseProxy' is assigned a value but never used        @typescript-eslint/no-unused-vars\n   904:16  warning  'warmAndroidDevClientBundle' is defined but never used                @typescript-eslint/no-unused-vars\n   926:16  warning  'ensureAndroidDevClientServer' is defined but never used              @typescript-eslint/no-unused-vars\n  1091:7   warning  'detectAndroidPackage' is assigned a value but never used             @typescript-eslint/no-unused-vars\n  1106:7   warning  'startAndroidIntentView' is assigned a value but never used           @typescript-eslint/no-unused-vars\n  1229:7   warning  'isAndroidDevLauncherErrorScreen' is assigned a value but never used  @typescript-eslint/no-unused-vars\n  1241:7   warning  'isAndroidBlankAppSurface' is assigned a value but never used         @typescript-eslint/no-unused-vars\n  1555:16  warning  'openAndroidMarketProductFromHome' is defined but never used          @typescript-eslint/no-unused-vars\n\n✖ 8 problems (0 errors, 8 warnings)\n\n",
       "stderr": ""
     }
+  },
+  "summary": {
+    "status": "passed",
+    "gate": "GREEN",
+    "marketplaceIntegrated": true,
+    "addToRequestWorks": true,
+    "createProposalWorks": true,
+    "buyerSeesItems": true,
+    "readModelConnected": true,
+    "usesExistingRequestFlow": true,
+    "usesExistingProposalFlow": true,
+    "contactStubConnected": true,
+    "paginationWorks": true,
+    "flashListAdopted": true,
+    "uiStoreSafe": true,
+    "buyerSourceVisible": true,
+    "asAnyRemoved": true,
+    "brokenRoutesRemoved": true,
+    "stockMarkersPresent": true,
+    "webPassed": true,
+    "androidPassed": true,
+    "iosPassed": false,
+    "iosResidual": "xcrun is unavailable on this host; iOS simulator cannot be started from Windows",
+    "environmentRecoveryUsed": true,
+    "gmsRecoveryUsed": false,
+    "anrRecoveryUsed": false,
+    "blankSurfaceRecovered": false,
+    "devClientBootstrapRecovered": false,
+    "runtimeGateOk": true,
+    "tscPassed": true,
+    "eslintPassed": true,
+    "artifacts": {
+      "webScreenshots": [
+        "artifacts/marketplace-web-foreman.png",
+        "artifacts/marketplace-web-buyer.png"
+      ],
+      "androidArtifacts": {
+        "marketHome": {
+          "xml": "artifacts/android-market-home-route-1.xml",
+          "png": "artifacts/android-market-home-route-1.png"
+        },
+        "foremanProduct": {
+          "xml": "artifacts/android-market-foreman-product-route-1.xml",
+          "png": "artifacts/android-market-foreman-product-route-1.png"
+        },
+        "product": {
+          "xml": "artifacts/android-market-product-route-1.xml",
+          "png": "artifacts/android-market-product-route-1.png"
+        },
+        "postAdd": {
+          "xml": "artifacts/android-market-after-add.xml",
+          "png": "artifacts/android-market-after-add.png"
+        },
+        "postProposal": {
+          "xml": "artifacts/android-market-after-proposal.xml",
+          "png": "artifacts/android-market-after-proposal.png"
+        }
+      }
+    }
+  },
+  "sourceScript": "scripts/marketplace_integration_wave1.ts",
+  "wrapperScript": "scripts/marketplace_integration_wave2.ts",
+  "spawned": {
+    "status": 0,
+    "stdout": "{\n  \"status\": \"passed\",\n  \"gate\": \"GREEN\",\n  \"marketplaceIntegrated\": true,\n  \"addToRequestWorks\": true,\n  \"createProposalWorks\": true,\n  \"buyerSeesItems\": true,\n  \"readModelConnected\": true,\n  \"usesExistingRequestFlow\": true,\n  \"usesExistingProposalFlow\": true,\n  \"contactStubConnected\": true,\n  \"paginationWorks\": true,\n  \"flashListAdopted\": true,\n  \"uiStoreSafe\": true,\n  \"buyerSourceVisible\": true,\n  \"asAnyRemoved\": true,\n  \"brokenRoutesRemoved\": true,\n  \"stockMarkersPresent\": true,\n  \"webPassed\": true,\n  \"androidPassed\": true,\n  \"iosPassed\": false,\n  \"iosResidual\": \"xcrun is unavailable on this host; iOS simulator cannot be started from Windows\",\n  \"environmentRecoveryUsed\": true,\n  \"gmsRecoveryUsed\": false,\n  \"anrRecoveryUsed\": false,\n  \"blankSurfaceRecovered\": false,\n  \"devClientBootstrapRecovered\": false,\n  \"runtimeGateOk\": true,\n  \"tscPassed\": true,\n  \"eslintPassed\": true,\n  \"artifacts\": {\n    \"webScreenshots\": [\n      \"artifacts/marketplace-web-foreman.png\",\n      \"artifacts/marketplace-web-buyer.png\"\n    ],\n    \"androidArtifacts\": {\n      \"marketHome\": {\n        \"xml\": \"artifacts/android-market-home-route-1.xml\",\n        \"png\": \"artifacts/android-market-home-route-1.png\"\n      },\n      \"foremanProduct\": {\n        \"xml\": \"artifacts/android-market-foreman-product-route-1.xml\",\n        \"png\": \"artifacts/android-market-foreman-product-route-1.png\"\n      },\n      \"product\": {\n        \"xml\": \"artifacts/android-market-product-route-1.xml\",\n        \"png\": \"artifacts/android-market-product-route-1.png\"\n      },\n      \"postAdd\": {\n        \"xml\": \"artifacts/android-market-after-add.xml\",\n        \"png\": \"artifacts/android-market-after-add.png\"\n      },\n      \"postProposal\": {\n        \"xml\": \"artifacts/android-market-after-proposal.xml\",\n        \"png\": \"artifacts/android-market-after-proposal.png\"\n      }\n    }\n  }\n}\n",
+    "stderr": ""
   }
 }
