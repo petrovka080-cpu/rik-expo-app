@@ -1,0 +1,59 @@
+{
+  "batch": "F1",
+  "files": [
+    {
+      "file": "src/screens/director/DirectorDashboard.tsx",
+      "label": "DirectorDashboard",
+      "expectedMode": "migrated_flashlist",
+      "beforeListType": "mixed",
+      "afterListType": "flashlist_only",
+      "estimatedMarkers": [
+        "estimatedItemSize={112}",
+        "estimatedItemSize={108}",
+        "estimatedItemSize={160}",
+        "estimatedItemSize={132}"
+      ],
+      "estimatedConfigured": true,
+      "keyMarkers": [
+        "keyExtractor={(item) => item.key}",
+        "keyExtractor={(g, idx)",
+        "keyExtractor={(x, idx)",
+        "keyExtractor={(x) => x.key}"
+      ],
+      "keyStrategyOk": true,
+      "checkedStates": [
+        "loading",
+        "populated",
+        "refresh",
+        "modal open"
+      ],
+      "notes": null,
+      "status": "GREEN"
+    },
+    {
+      "file": "src/screens/director/DirectorFinanceCardModal.tsx",
+      "label": "DirectorFinanceCardModal",
+      "expectedMode": "no_active_list",
+      "beforeListType": "no_active_list",
+      "afterListType": "no_active_list",
+      "estimatedMarkers": [],
+      "estimatedConfigured": true,
+      "keyMarkers": [],
+      "keyStrategyOk": true,
+      "checkedStates": [
+        "modal container",
+        "loading overlay",
+        "close"
+      ],
+      "notes": "Container-only modal; no active FlatList/FlashList body in current source.",
+      "status": "GREEN"
+    }
+  ],
+  "smoke": {
+    "directorFinanceRuntimePassed": true,
+    "webPassed": true,
+    "androidPassed": true
+  },
+  "perfProofMode": "engine_contract + director runtime smoke",
+  "regressionStatus": "GREEN"
+}

@@ -1,7 +1,8 @@
 import React from "react";
-import { View, Text, FlatList } from "react-native";
+import { View, Text, type FlatList } from "react-native";
 
 import type { BuyerInboxRow } from "../../../lib/catalog_api";
+import { FlashList, type FlashListProps } from "../../../ui/FlashList";
 import type { DraftAttachmentMap } from "../buyer.types";
 import { BuyerAttachmentsSticky } from "./BuyerReworkSheetBody";
 import type { StateSetter, StylesBag } from "./component.types";
@@ -82,7 +83,7 @@ export function BuyerInboxSheetBody({
     });
   }, []);
 
-  const renderCell: React.ComponentProps<typeof FlatList<InboxSheetRow>>["CellRendererComponent"] = ({
+  const renderCell: FlashListProps<InboxSheetRow>["CellRendererComponent"] = ({
     children,
     style,
     index,
@@ -113,11 +114,13 @@ export function BuyerInboxSheetBody({
 
   return (
     <View style={s.sheetSection}>
-      <FlatList
+      <FlashList
         ref={listRef}
         data={sheetData}
         CellRendererComponent={renderCell}
         stickyHeaderIndices={[1]}
+        estimatedItemSize={184}
+        getItemType={(item) => ("__kind" in item && item.__kind === "attachments" ? "attachments" : "line")}
         keyExtractor={(item, idx: number) => {
           if ("__kind" in item && item.__kind === "attachments") return "hdr:attachments";
           const row = item as BuyerLineLite;

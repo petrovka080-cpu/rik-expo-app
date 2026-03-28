@@ -5,14 +5,15 @@ import {
   Pressable,
   StyleSheet,
   PanResponder,
-  FlatList,
   Dimensions,
   Platform,
   useWindowDimensions,
   type GestureResponderEvent,
+  type FlatList,
   type ViewToken,
 } from "react-native";
 import type { ListingItemJson } from "./mapContracts";
+import { FlashList } from "../../ui/FlashList";
 
 const UI = {
   bgSolid: "#020617",
@@ -256,12 +257,13 @@ export default function ResultsBottomSheet({
           </Pressable>
         </View>
 
-        <FlatList
+        <FlashList
           ref={(ref) => {
             listRef.current = ref;
           }}
           data={rows}
           keyExtractor={(item) => item.id}
+          estimatedItemSize={cardW + 12}
           horizontal
           showsHorizontalScrollIndicator={false}
           snapToInterval={cardW + 12}

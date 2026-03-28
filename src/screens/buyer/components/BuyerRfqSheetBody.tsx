@@ -1,7 +1,8 @@
 import React from "react";
-import { View, Text, Pressable, TextInput, ScrollView, FlatList } from "react-native";
+import { View, Text, Pressable, TextInput, ScrollView } from "react-native";
 
 import { D } from "../buyerUi";
+import { FlashList } from "../../../ui/FlashList";
 import type { StateSetter, StylesBag } from "./component.types";
 
 type RfqPreviewItem = { id: string; title: string; qty: number; uom: string };
@@ -223,10 +224,11 @@ export function BuyerRfqSheetBody({
 
         {rfqShowItems ? (
           <View style={{ marginTop: 8 }}>
-            <FlatList
+            <FlashList
               data={rfqPickedPreview}
               renderItem={renderPickedPreviewItem}
               keyExtractor={keyExtractor}
+              estimatedItemSize={28}
               scrollEnabled={false}
               removeClippedSubviews={false}
               initialNumToRender={8}

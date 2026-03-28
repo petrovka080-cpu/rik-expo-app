@@ -3,11 +3,11 @@ import React from "react";
 import {
   View,
   Text,
-  FlatList,
   Pressable,
   RefreshControl,
   Platform,
   Animated,
+  type FlatList,
 } from "react-native";
 import { FlashList } from "@/src/ui/FlashList";
 import { StatusBar } from "expo-status-bar";
@@ -184,10 +184,11 @@ export default function DirectorDashboard(p: Props) {
         {headerTitle}
       </Animated.Text>
 
-      <FlatList
+      <FlashList
         ref={topTabsRef}
         data={DIRECTOR_TOP_TABS}
         keyExtractor={(item) => item.key}
+        estimatedItemSize={112}
         horizontal
         showsHorizontalScrollIndicator={false}
         bounces={false}
@@ -361,6 +362,7 @@ export default function DirectorDashboard(p: Props) {
             <FlashList
               data={p.groups}
               keyExtractor={(g, idx) => (g?.request_id ? `req:${String(g.request_id)}` : `g:${idx}`)}
+              estimatedItemSize={108}
               keyboardShouldPersistTaps="handled"
               renderItem={renderForemanGroup}
               ListEmptyComponent={
@@ -377,6 +379,7 @@ export default function DirectorDashboard(p: Props) {
             <FlashList
               data={p.propsHeads}
               keyExtractor={(x, idx) => (x?.id ? `pp:${x.id}` : `pp:${idx}`)}
+              estimatedItemSize={160}
               renderItem={renderProposalHead}
               refreshControl={refreshPropsControl}
               onEndReached={() => {
@@ -406,9 +409,11 @@ export default function DirectorDashboard(p: Props) {
           )}
         </>
       ) : String(p.dirTab) === "Финансы" ? (
-        <FlatList
+        <FlashList
           data={[{ key: "debt" }, { key: "spend" }]}
           keyExtractor={(x) => x.key}
+          estimatedItemSize={132}
+          getItemType={(item) => item.key}
           renderItem={({ item }) => {
             if (item.key === "debt") {
               return (

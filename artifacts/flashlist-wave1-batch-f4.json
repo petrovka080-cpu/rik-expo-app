@@ -1,0 +1,57 @@
+{
+  "batch": "F4",
+  "files": [
+    {
+      "file": "src/components/map/ResultsBottomSheet.tsx",
+      "label": "ResultsBottomSheet",
+      "expectedMode": "migrated_flashlist",
+      "beforeListType": "flatlist_only",
+      "afterListType": "flashlist_only",
+      "estimatedMarkers": [
+        "estimatedItemSize={cardW + 12}"
+      ],
+      "estimatedConfigured": true,
+      "keyMarkers": [
+        "keyExtractor={(item) => item.id}"
+      ],
+      "keyStrategyOk": true,
+      "checkedStates": [
+        "horizontal scroll",
+        "selection",
+        "viewability",
+        "bottom sheet gestures"
+      ],
+      "notes": null,
+      "status": "GREEN"
+    },
+    {
+      "file": "src/features/market/MarketHomeScreen.tsx",
+      "label": "MarketHomeScreen",
+      "expectedMode": "already_flashlist",
+      "beforeListType": "flashlist_only",
+      "afterListType": "flashlist_only",
+      "estimatedMarkers": [
+        "estimatedItemSize={360}"
+      ],
+      "estimatedConfigured": true,
+      "keyMarkers": [
+        "keyExtractor={(item) => item.id}"
+      ],
+      "keyStrategyOk": true,
+      "checkedStates": [
+        "refresh",
+        "infinite scroll",
+        "selection",
+        "detail open"
+      ],
+      "notes": "Already migrated before this batch; retained as wave1 inventory target.",
+      "status": "GREEN"
+    }
+  ],
+  "smoke": {
+    "priorMarketWave2Green": true,
+    "marketHomeAlreadyMigrated": true
+  },
+  "perfProofMode": "engine_contract + prior market integration proof",
+  "regressionStatus": "GREEN"
+}

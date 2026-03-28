@@ -1,0 +1,251 @@
+{
+  "gate": "FlashList Migration — Wave 1 Heavy Screens",
+  "status": "GREEN",
+  "scope": {
+    "migratedThisBatch": [
+      "src/screens/director/DirectorDashboard.tsx",
+      "src/screens/buyer/components/BuyerInboxSheetBody.tsx",
+      "src/screens/buyer/components/BuyerPropDetailsSheetBody.tsx",
+      "src/screens/buyer/components/BuyerRfqSheetBody.tsx",
+      "src/components/map/CatalogSearchModal.tsx",
+      "src/components/map/ResultsBottomSheet.tsx"
+    ],
+    "alreadyFlashList": [
+      "src/features/market/MarketHomeScreen.tsx"
+    ],
+    "noActiveList": [
+      "src/screens/director/DirectorFinanceCardModal.tsx"
+    ],
+    "deferred": [
+      "src/features/chat/ChatScreen.tsx"
+    ]
+  },
+  "batches": {
+    "f1": {
+      "status": "GREEN",
+      "files": [
+        "src/screens/director/DirectorDashboard.tsx",
+        "src/screens/director/DirectorFinanceCardModal.tsx"
+      ],
+      "perfProofMode": "engine_contract + director runtime smoke"
+    },
+    "f2": {
+      "status": "GREEN",
+      "files": [
+        "src/screens/buyer/components/BuyerInboxSheetBody.tsx",
+        "src/screens/buyer/components/BuyerPropDetailsSheetBody.tsx"
+      ],
+      "perfProofMode": "engine_contract + buyer web sheet smoke"
+    },
+    "f3": {
+      "status": "GREEN",
+      "files": [
+        "src/screens/buyer/components/BuyerRfqSheetBody.tsx",
+        "src/components/map/CatalogSearchModal.tsx"
+      ],
+      "perfProofMode": "engine_contract"
+    },
+    "f4": {
+      "status": "GREEN",
+      "files": [
+        "src/components/map/ResultsBottomSheet.tsx",
+        "src/features/market/MarketHomeScreen.tsx"
+      ],
+      "perfProofMode": "engine_contract + prior market integration proof"
+    }
+  },
+  "smokeSources": {
+    "directorFinanceRuntime": "artifacts/director-finance-runtime.summary.json",
+    "buyerInboxWebSmoke": "artifacts/buyer-summary-inbox-web-smoke.summary.json",
+    "marketWave2HeadBaseline": "HEAD:artifacts/marketplace-integration-wave2.summary.json"
+  },
+  "targets": [
+    {
+      "file": "src/screens/director/DirectorDashboard.tsx",
+      "label": "DirectorDashboard",
+      "expectedMode": "migrated_flashlist",
+      "beforeListType": "mixed",
+      "afterListType": "flashlist_only",
+      "estimatedMarkers": [
+        "estimatedItemSize={112}",
+        "estimatedItemSize={108}",
+        "estimatedItemSize={160}",
+        "estimatedItemSize={132}"
+      ],
+      "estimatedConfigured": true,
+      "keyMarkers": [
+        "keyExtractor={(item) => item.key}",
+        "keyExtractor={(g, idx)",
+        "keyExtractor={(x, idx)",
+        "keyExtractor={(x) => x.key}"
+      ],
+      "keyStrategyOk": true,
+      "checkedStates": [
+        "loading",
+        "populated",
+        "refresh",
+        "modal open"
+      ],
+      "notes": null,
+      "status": "GREEN"
+    },
+    {
+      "file": "src/screens/director/DirectorFinanceCardModal.tsx",
+      "label": "DirectorFinanceCardModal",
+      "expectedMode": "no_active_list",
+      "beforeListType": "no_active_list",
+      "afterListType": "no_active_list",
+      "estimatedMarkers": [],
+      "estimatedConfigured": true,
+      "keyMarkers": [],
+      "keyStrategyOk": true,
+      "checkedStates": [
+        "modal container",
+        "loading overlay",
+        "close"
+      ],
+      "notes": "Container-only modal; no active FlatList/FlashList body in current source.",
+      "status": "GREEN"
+    },
+    {
+      "file": "src/screens/buyer/components/BuyerInboxSheetBody.tsx",
+      "label": "BuyerInboxSheetBody",
+      "expectedMode": "migrated_flashlist",
+      "beforeListType": "flatlist_only",
+      "afterListType": "flashlist_only",
+      "estimatedMarkers": [
+        "estimatedItemSize={184}"
+      ],
+      "estimatedConfigured": true,
+      "keyMarkers": [
+        "request_item_id ? `ri:${row.request_item_id}`",
+        "hdr:attachments"
+      ],
+      "keyStrategyOk": true,
+      "checkedStates": [
+        "loading",
+        "populated",
+        "sticky header",
+        "scrollToIndex fallback",
+        "footer"
+      ],
+      "notes": null,
+      "status": "GREEN"
+    },
+    {
+      "file": "src/screens/buyer/components/BuyerPropDetailsSheetBody.tsx",
+      "label": "BuyerPropDetailsSheetBody",
+      "expectedMode": "migrated_flashlist",
+      "beforeListType": "flatlist_only",
+      "afterListType": "flashlist_only",
+      "estimatedMarkers": [
+        "estimatedItemSize={148}"
+      ],
+      "estimatedConfigured": true,
+      "keyMarkers": [
+        "keyExtractor={(ln, idx) => `${String(ln?.request_item_id ?? \"x\")}:${idx}`}",
+        "ListHeaderComponent"
+      ],
+      "keyStrategyOk": true,
+      "checkedStates": [
+        "loading",
+        "attachments",
+        "analytics header",
+        "populated"
+      ],
+      "notes": null,
+      "status": "GREEN"
+    },
+    {
+      "file": "src/screens/buyer/components/BuyerRfqSheetBody.tsx",
+      "label": "BuyerRfqSheetBody",
+      "expectedMode": "migrated_flashlist",
+      "beforeListType": "flatlist_only",
+      "afterListType": "flashlist_only",
+      "estimatedMarkers": [
+        "estimatedItemSize={28}"
+      ],
+      "estimatedConfigured": true,
+      "keyMarkers": [
+        "keyExtractor={keyExtractor}"
+      ],
+      "keyStrategyOk": true,
+      "checkedStates": [
+        "collapsed items",
+        "expanded preview",
+        "form scroll"
+      ],
+      "notes": null,
+      "status": "GREEN"
+    },
+    {
+      "file": "src/components/map/CatalogSearchModal.tsx",
+      "label": "CatalogSearchModal",
+      "expectedMode": "migrated_flashlist",
+      "beforeListType": "flatlist_only",
+      "afterListType": "flashlist_only",
+      "estimatedMarkers": [
+        "estimatedItemSize={76}"
+      ],
+      "estimatedConfigured": true,
+      "keyMarkers": [
+        "keyExtractor={(it) => it.id}"
+      ],
+      "keyStrategyOk": true,
+      "checkedStates": [
+        "loading",
+        "empty",
+        "populated",
+        "pick item"
+      ],
+      "notes": null,
+      "status": "GREEN"
+    },
+    {
+      "file": "src/components/map/ResultsBottomSheet.tsx",
+      "label": "ResultsBottomSheet",
+      "expectedMode": "migrated_flashlist",
+      "beforeListType": "flatlist_only",
+      "afterListType": "flashlist_only",
+      "estimatedMarkers": [
+        "estimatedItemSize={cardW + 12}"
+      ],
+      "estimatedConfigured": true,
+      "keyMarkers": [
+        "keyExtractor={(item) => item.id}"
+      ],
+      "keyStrategyOk": true,
+      "checkedStates": [
+        "horizontal scroll",
+        "selection",
+        "viewability",
+        "bottom sheet gestures"
+      ],
+      "notes": null,
+      "status": "GREEN"
+    },
+    {
+      "file": "src/features/market/MarketHomeScreen.tsx",
+      "label": "MarketHomeScreen",
+      "expectedMode": "already_flashlist",
+      "beforeListType": "flashlist_only",
+      "afterListType": "flashlist_only",
+      "estimatedMarkers": [
+        "estimatedItemSize={360}"
+      ],
+      "estimatedConfigured": true,
+      "keyMarkers": [
+        "keyExtractor={(item) => item.id}"
+      ],
+      "keyStrategyOk": true,
+      "checkedStates": [
+        "refresh",
+        "infinite scroll",
+        "selection",
+        "detail open"
+      ],
+      "notes": "Already migrated before this batch; retained as wave1 inventory target.",
+      "status": "GREEN"
+    }
+  ]
+}

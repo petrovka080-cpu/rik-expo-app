@@ -1,8 +1,9 @@
 import React from "react";
-import { View, Text, Pressable, ActivityIndicator, FlatList } from "react-native";
+import { View, Text, Pressable, ActivityIndicator } from "react-native";
 
 import type { ProposalViewLine, ProposalHeadLite } from "../buyer.types";
 import { D, UI } from "../buyerUi";
+import { FlashList } from "../../../ui/FlashList";
 import type { StylesBag } from "./component.types";
 import {
   buildProposalAnalyticSummary,
@@ -156,9 +157,10 @@ export function BuyerPropDetailsSheetBody({
         )}
       </View>
 
-      <FlatList
+      <FlashList
         data={propViewLines}
         keyExtractor={(ln, idx) => `${String(ln?.request_item_id ?? "x")}:${idx}`}
+        estimatedItemSize={148}
         keyboardShouldPersistTaps="handled"
         keyboardDismissMode="on-drag"
         nestedScrollEnabled

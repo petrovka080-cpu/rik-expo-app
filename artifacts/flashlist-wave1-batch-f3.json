@@ -1,0 +1,55 @@
+{
+  "batch": "F3",
+  "files": [
+    {
+      "file": "src/screens/buyer/components/BuyerRfqSheetBody.tsx",
+      "label": "BuyerRfqSheetBody",
+      "expectedMode": "migrated_flashlist",
+      "beforeListType": "flatlist_only",
+      "afterListType": "flashlist_only",
+      "estimatedMarkers": [
+        "estimatedItemSize={28}"
+      ],
+      "estimatedConfigured": true,
+      "keyMarkers": [
+        "keyExtractor={keyExtractor}"
+      ],
+      "keyStrategyOk": true,
+      "checkedStates": [
+        "collapsed items",
+        "expanded preview",
+        "form scroll"
+      ],
+      "notes": null,
+      "status": "GREEN"
+    },
+    {
+      "file": "src/components/map/CatalogSearchModal.tsx",
+      "label": "CatalogSearchModal",
+      "expectedMode": "migrated_flashlist",
+      "beforeListType": "flatlist_only",
+      "afterListType": "flashlist_only",
+      "estimatedMarkers": [
+        "estimatedItemSize={76}"
+      ],
+      "estimatedConfigured": true,
+      "keyMarkers": [
+        "keyExtractor={(it) => it.id}"
+      ],
+      "keyStrategyOk": true,
+      "checkedStates": [
+        "loading",
+        "empty",
+        "populated",
+        "pick item"
+      ],
+      "notes": null,
+      "status": "GREEN"
+    }
+  ],
+  "smoke": {
+    "componentContractOnly": true
+  },
+  "perfProofMode": "engine_contract",
+  "regressionStatus": "GREEN"
+}

@@ -5,12 +5,12 @@ import {
   Text,
   TextInput,
   Pressable,
-  FlatList,
   ActivityIndicator,
   Platform,
   StatusBar,
 } from "react-native";
 import { supabase } from "../../lib/supabaseClient";
+import { FlashList } from "../../ui/FlashList";
 import type { CatalogItem } from "./types";
 
 const UI = {
@@ -164,9 +164,11 @@ export default function CatalogSearchModal({
               <Text style={{ marginTop: 10, color: UI.sub }}>Поиск…</Text>
             </View>
           ) : (
-            <FlatList
+            <FlashList
               data={rows}
               keyExtractor={(it) => it.id}
+              estimatedItemSize={76}
+              keyboardShouldPersistTaps="handled"
               contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 16 }}
               renderItem={({ item }) => (
                 <Pressable

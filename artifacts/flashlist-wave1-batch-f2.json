@@ -1,0 +1,62 @@
+{
+  "batch": "F2",
+  "files": [
+    {
+      "file": "src/screens/buyer/components/BuyerInboxSheetBody.tsx",
+      "label": "BuyerInboxSheetBody",
+      "expectedMode": "migrated_flashlist",
+      "beforeListType": "flatlist_only",
+      "afterListType": "flashlist_only",
+      "estimatedMarkers": [
+        "estimatedItemSize={184}"
+      ],
+      "estimatedConfigured": true,
+      "keyMarkers": [
+        "request_item_id ? `ri:${row.request_item_id}`",
+        "hdr:attachments"
+      ],
+      "keyStrategyOk": true,
+      "checkedStates": [
+        "loading",
+        "populated",
+        "sticky header",
+        "scrollToIndex fallback",
+        "footer"
+      ],
+      "notes": null,
+      "status": "GREEN"
+    },
+    {
+      "file": "src/screens/buyer/components/BuyerPropDetailsSheetBody.tsx",
+      "label": "BuyerPropDetailsSheetBody",
+      "expectedMode": "migrated_flashlist",
+      "beforeListType": "flatlist_only",
+      "afterListType": "flashlist_only",
+      "estimatedMarkers": [
+        "estimatedItemSize={148}"
+      ],
+      "estimatedConfigured": true,
+      "keyMarkers": [
+        "keyExtractor={(ln, idx) => `${String(ln?.request_item_id ?? \"x\")}:${idx}`}",
+        "ListHeaderComponent"
+      ],
+      "keyStrategyOk": true,
+      "checkedStates": [
+        "loading",
+        "attachments",
+        "analytics header",
+        "populated"
+      ],
+      "notes": null,
+      "status": "GREEN"
+    }
+  ],
+  "smoke": {
+    "buyerWebInboxSheetPassed": true,
+    "inboxVisible": true,
+    "sheetOpened": true,
+    "firstItemVisible": true
+  },
+  "perfProofMode": "engine_contract + buyer web sheet smoke",
+  "regressionStatus": "GREEN"
+}
