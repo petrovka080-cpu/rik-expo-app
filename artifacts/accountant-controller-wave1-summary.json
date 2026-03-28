@@ -1,0 +1,58 @@
+{
+  "status": "GREEN",
+  "before": {
+    "controllerLines": 904
+  },
+  "after": {
+    "controllerLines": 274,
+    "newFiles": [
+      "src/screens/accountant/accountant.actions.ts",
+      "src/screens/accountant/accountant.repository.ts",
+      "src/screens/accountant/accountant.selectors.ts",
+      "src/screens/accountant/useAccountantInboxController.ts",
+      "src/screens/accountant/useAccountantHistoryController.ts"
+    ],
+    "retainedUiStore": "src/screens/accountant/accountantUi.store.ts"
+  },
+  "extractedBlocks": {
+    "store": [
+      "tab",
+      "filters/date range",
+      "sheet/modal state",
+      "fio"
+    ],
+    "repository": [
+      "accountant inbox/history page loads",
+      "page-size constants"
+    ],
+    "selectors": [
+      "history key",
+      "snapshot builders",
+      "cache preview",
+      "dedupe append"
+    ],
+    "actions": [
+      "manual refresh",
+      "history refresh",
+      "visible-scope realtime refresh",
+      "tab preview"
+    ],
+    "controller": [
+      "auth gate",
+      "focus orchestration",
+      "public contract wiring"
+    ]
+  },
+  "checks": {
+    "controllerUsesSplitLayers": true,
+    "controllerUsesServicesDirectly": false,
+    "storeUiOnly": true,
+    "windowingPassed": true,
+    "realtimeWebPassed": true
+  },
+  "preservedFlows": {
+    "loadMoreInboxWired": true,
+    "loadMoreHistoryWired": true,
+    "refreshCurrentVisibleScopeWired": true
+  }
+}

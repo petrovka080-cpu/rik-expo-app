@@ -1,0 +1,19 @@
+Accountant Controller Wave 1
+before_lines=904
+after_lines=274
+delta=630
+
+moved:
+- repository: inbox/history page loading
+- selectors: history key, snapshot/dedupe/cache preview
+- actions: refresh, tab preview, realtime visible-scope refresh
+- hooks: inbox orchestration, history orchestration
+
+remaining_in_controller:
+- auth gate
+- focus/auth/tab orchestration
+- composition of inbox/history hooks
+- public screen contract
+
+windowing_passed=true
+realtime_web_passed=true
