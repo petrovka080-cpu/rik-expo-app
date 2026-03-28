@@ -208,6 +208,55 @@ async function getVisibleInputs(page) {
   );
 }
 
+async function getVisibleClickTexts(page) {
+  return page.evaluate(() => {
+    const normValue = (value) => String(value || "").replace(/\s+/g, " ").trim();
+    const seen = new Set();
+    return Array.from(
+      document.querySelectorAll('div[tabindex],button,[role="button"],a[role="link"],input[type="button"],input[type="submit"]'),
+    )
+      .filter((el) => {
+        const rect = el.getBoundingClientRect();
+        const styles = getComputedStyle(el);
+        return (
+          rect.width > 0 &&
+          rect.height > 0 &&
+          styles.display !== "none" &&
+          styles.visibility !== "hidden" &&
+          styles.opacity !== "0"
+        );
+      })
+      .map((el) => normValue(el.textContent))
+      .filter((text) => {
+        if (!text || seen.has(text)) return false;
+        seen.add(text);
+        return true;
+      });
+  });
+}
+
+async function selectFreshDropdownOption(page, triggerNeedles, preferredNeedles = [], excludeNeedles = []) {
+  const before = await getVisibleClickTexts(page);
+  await clickAnyText(page, triggerNeedles);
+  await sleep(500);
+  const after = await getVisibleClickTexts(page);
+  const candidates = after.filter((text) => {
+    if (!text || before.includes(text)) return false;
+    return !excludeNeedles.some((needle) => text.includes(needle));
+  });
+  const preferred = preferredNeedles.find((needle) => candidates.some((text) => text.includes(needle)));
+  if (preferred) {
+    await clickAnyText(page, [preferred]);
+    return preferred;
+  }
+  const fallback = candidates[0];
+  if (!fallback) {
+    throw new Error(`No dropdown option available after trigger: ${triggerNeedles.join("|")}`);
+  }
+  await clickAnyText(page, [fallback]);
+  return fallback;
+}
+
 async function setVisibleInputByIndex(page, visibleIndex, value) {
   const ok = await page.evaluate(
     ({ visibleIndex, value }) => {
@@ -489,17 +538,32 @@ async function ensureForemanContext(page) {
 
   const body = await bodyText(page);
   if (!body.includes("Ангар")) {
-    await clickAnyText(page, ["Выбрать объект..."]);
-    await sleep(500);
-    await clickAnyText(page, ["Ангар"]);
+    await selectFreshDropdownOption(
+      page,
+      ["Выбрать объект..."],
+      ["Ангар", "Административное здание", "Склад", "Корпус"],
+      ["Сохранить", "Каталог", "Смета", "AI заявка", "Позиции"],
+    );
     await sleep(700);
   }
 
   const bodyAfterObject = await bodyText(page);
   if (!bodyAfterObject.includes("Мезонин")) {
-    await clickAnyText(page, ["Весь корпус"], { last: true }).catch(async () => clickAnyText(page, ["Весь корпус"]));
-    await sleep(500);
-    await clickAnyText(page, ["Мезонин"]);
+    await selectFreshDropdownOption(
+      page,
+      ["Весь корпус"],
+      ["Мезонин", "1 этаж", "2 этаж", "Этаж", "Секция"],
+      ["Сохранить", "Каталог", "Смета", "AI заявка", "Позиции", "Выбрать объект"],
+    ).catch(async () => {
+      await clickAnyText(page, ["Весь корпус"], { last: true });
+      await sleep(500);
+      await selectFreshDropdownOption(
+        page,
+        ["Весь корпус"],
+        ["Мезонин", "1 этаж", "2 этаж", "Этаж", "Секция"],
+        ["Сохранить", "Каталог", "Смета", "AI заявка", "Позиции", "Выбрать объект"],
+      );
+    });
     await sleep(700);
   }
 }

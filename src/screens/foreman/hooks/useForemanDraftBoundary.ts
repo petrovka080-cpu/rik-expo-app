@@ -92,6 +92,16 @@ type UseForemanDraftBoundaryProps = {
   setDisplayNoByReq: Dispatch<SetStateAction<Record<string, string>>>;
 };
 
+type ForemanDraftSyncResultPayload = {
+  requestId: string | null;
+  submitted: RequestRecord | null;
+};
+
+const createEphemeralForemanDraftOwnerId = () =>
+  `fdo-boundary-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+
+const normalizeDraftOwnerId = (value: string | null | undefined) => String(value || "").trim();
+
 export function useForemanDraftBoundary({
   isScreenFocused,
   preloadDisplayNo,
@@ -136,7 +146,13 @@ export function useForemanDraftBoundary({
   const [networkOnline, setNetworkOnline] = useState<boolean | null>(null);
 
   const localDraftSnapshotRef = useRef<ForemanLocalDraftSnapshot | null>(null);
-  const draftSyncInFlightRef = useRef<Promise<unknown> | null>(null);
+  const draftSyncInFlightRef = useRef<Promise<ForemanDraftSyncResultPayload> | null>(null);
+  const activeDraftOwnerIdRef = useRef(createEphemeralForemanDraftOwnerId());
+  const [activeDraftOwnerId, setActiveDraftOwnerIdState] = useState<string | null>(
+    activeDraftOwnerIdRef.current,
+  );
+  const submitInFlightOwnerIdRef = useRef<string | null>(null);
+  const lastSubmittedOwnerIdRef = useRef<string | null>(null);
   const handlePostSubmitSuccessRef = useRef<
     (rid: string, submitted: RequestRecord | null) => Promise<void>
   >(async () => undefined);
@@ -149,6 +165,16 @@ export function useForemanDraftBoundary({
   useEffect(() => {
     localDraftSnapshotRef.current = localDraftSnapshot;
   }, [localDraftSnapshot]);
+
+  const setActiveDraftOwnerId = useCallback((ownerId?: string | null, options?: { resetSubmitted?: boolean }) => {
+    const nextOwnerId = normalizeDraftOwnerId(ownerId) || createEphemeralForemanDraftOwnerId();
+    if (options?.resetSubmitted) {
+      lastSubmittedOwnerIdRef.current = null;
+    }
+    activeDraftOwnerIdRef.current = nextOwnerId;
+    setActiveDraftOwnerIdState(nextOwnerId);
+    return nextOwnerId;
+  }, []);
 
   const patchBoundaryState = useCallback((patch: Partial<ForemanDraftBoundaryState>) => {
     setBoundaryState((prev) => ({ ...prev, ...patch }));
@@ -246,11 +272,14 @@ export function useForemanDraftBoundary({
 
   const persistLocalDraftSnapshot = useCallback(
     (snapshot: ForemanLocalDraftSnapshot | null) => {
+      if (snapshot?.ownerId) {
+        setActiveDraftOwnerId(snapshot.ownerId);
+      }
       localDraftSnapshotRef.current = snapshot;
       setLocalDraftSnapshot(snapshot);
       void persistForemanLocalDraftSnapshot(snapshot).then(() => refreshBoundarySyncState(snapshot));
     },
-    [refreshBoundarySyncState],
+    [refreshBoundarySyncState, setActiveDraftOwnerId],
   );
 
   const getActiveLocalDraftSnapshot = useCallback(
@@ -315,6 +344,7 @@ export function useForemanDraftBoundary({
   const buildCurrentLocalDraftSnapshot = useCallback(() => {
     return buildForemanLocalDraftSnapshot({
       base: localDraftSnapshotRef.current,
+      ownerId: activeDraftOwnerIdRef.current,
       requestId,
       displayNo: requestDetails?.display_no ?? null,
       status: requestDetails?.status ?? (items.length ? "draft" : null),
@@ -477,6 +507,13 @@ export function useForemanDraftBoundary({
   const handlePostSubmitSuccess = useCallback(
     async (rid: string, submitted: RequestRecord | null) => {
       const activeDraftIdBefore = ridStr(localDraftSnapshotRef.current?.requestId) || ridStr(requestId) || rid || null;
+      const submittedOwnerId =
+        normalizeDraftOwnerId(localDraftSnapshotRef.current?.ownerId)
+        || normalizeDraftOwnerId(activeDraftOwnerIdRef.current)
+        || null;
+      if (submittedOwnerId) {
+        lastSubmittedOwnerIdRef.current = submittedOwnerId;
+      }
       const freshDraftSnapshot = buildFreshForemanLocalDraftSnapshot({
         base: localDraftSnapshotRef.current,
         header: {
@@ -488,6 +525,7 @@ export function useForemanDraftBoundary({
           zone,
         },
       });
+      setActiveDraftOwnerId(freshDraftSnapshot.ownerId);
       if (submitted?.display_no) {
         setDisplayNoByReq((prev) => ({ ...prev, [rid]: String(submitted.display_no) }));
       }
@@ -534,6 +572,7 @@ export function useForemanDraftBoundary({
             durableState.conflictType !== "none" || durableState.availableRecoveryActions.length > 0,
           activeDraftIdBefore,
           activeDraftIdAfter: FOREMAN_LOCAL_ONLY_REQUEST_ID,
+          activeDraftOwnerIdAfter: freshDraftSnapshot.ownerId,
           freshDraftCreated: true,
           runtimeResult: "post_submit_fresh_draft_state",
         });
@@ -548,6 +587,7 @@ export function useForemanDraftBoundary({
       objectType,
       refreshBoundarySyncState,
       requestId,
+      setActiveDraftOwnerId,
       setDisplayNoByReq,
       system,
       zone,
@@ -569,6 +609,7 @@ export function useForemanDraftBoundary({
         snapshot,
         requestId: options.requestId,
       });
+      setActiveDraftOwnerId(undefined, { resetSubmitted: true });
       resetDraftState();
       await patchForemanDurableDraftRecoveryState({
         snapshot: null,
@@ -605,7 +646,7 @@ export function useForemanDraftBoundary({
         });
       }
     },
-    [clearDraftCache, refreshBoundarySyncState, resetDraftState],
+    [clearDraftCache, refreshBoundarySyncState, resetDraftState, setActiveDraftOwnerId],
   );
 
   const syncLocalDraftNow = useCallback(
@@ -629,6 +670,8 @@ export function useForemanDraftBoundary({
       if (options?.submit) {
         snapshot = markForemanLocalDraftSubmitRequested(snapshot);
       }
+      const submitOwnerId =
+        options?.submit === true ? normalizeDraftOwnerId(snapshot?.ownerId) || activeDraftOwnerIdRef.current : null;
       const triggerSource = normalizeForemanSyncTriggerSource(
         options?.context,
         mutationKind,
@@ -638,6 +681,15 @@ export function useForemanDraftBoundary({
       if (!snapshot || !hasForemanLocalDraftContent(snapshot)) {
         await refreshBoundarySyncState(snapshot ?? null);
         return { requestId: ridStr(requestId) || null, submitted: null };
+      }
+
+      if (options?.submit === true && submitOwnerId) {
+        if (lastSubmittedOwnerIdRef.current === submitOwnerId) {
+          throw new Error("Этот черновик уже отправлен. Откройте новый активный черновик.");
+        }
+        if (submitInFlightOwnerIdRef.current === submitOwnerId && draftSyncInFlightRef.current) {
+          return await draftSyncInFlightRef.current;
+        }
       }
 
       const pendingOperationsCount = await getForemanPendingMutationCountForDraftKeys(
@@ -703,6 +755,10 @@ export function useForemanDraftBoundary({
         await draftSyncInFlightRef.current;
       }
 
+      if (options?.submit === true && submitOwnerId) {
+        submitInFlightOwnerIdRef.current = submitOwnerId;
+      }
+
       const run = flushForemanMutationQueue({
         getSnapshot: () => localDraftSnapshotRef.current,
         buildRequestDraftMeta,
@@ -729,6 +785,9 @@ export function useForemanDraftBoundary({
         if (result.failed) {
           throw new Error(result.errorMessage || "Foreman mutation queue flush failed.");
         }
+        if (options?.submit === true && submitOwnerId && result.submitted) {
+          lastSubmittedOwnerIdRef.current = submitOwnerId;
+        }
         return {
           requestId: result.requestId,
           submitted: result.submitted,
@@ -739,6 +798,9 @@ export function useForemanDraftBoundary({
       try {
         return await run;
       } finally {
+        if (options?.submit === true && submitOwnerId && submitInFlightOwnerIdRef.current === submitOwnerId) {
+          submitInFlightOwnerIdRef.current = null;
+        }
         draftSyncInFlightRef.current = null;
       }
     },
@@ -808,6 +870,7 @@ export function useForemanDraftBoundary({
     await clearForemanMutationsForDraft(targetRequestId);
 
     if (remote.snapshot) {
+      setActiveDraftOwnerId(remote.snapshot.ownerId, { resetSubmitted: true });
       applyLocalDraftSnapshotToBoundary(remote.snapshot, {
         restoreHeader: true,
         clearWhenEmpty: true,
@@ -834,6 +897,7 @@ export function useForemanDraftBoundary({
       });
       await refreshBoundarySyncState(remote.snapshot);
     } else {
+      setActiveDraftOwnerId(undefined, { resetSubmitted: true });
       persistLocalDraftSnapshot(null);
       setRequestIdState(targetRequestId);
       setRequestDetails(remote.details);
@@ -874,6 +938,7 @@ export function useForemanDraftBoundary({
     pushRecoveryTelemetry,
     refreshBoundarySyncState,
     requestId,
+    setActiveDraftOwnerId,
     setRequestIdState,
     syncHeaderFromDetails,
   ]);
@@ -882,6 +947,7 @@ export function useForemanDraftBoundary({
     const durableState = getForemanDurableDraftState();
     const recoverableSnapshot = durableState.recoverableLocalSnapshot;
     if (!recoverableSnapshot || !hasForemanLocalDraftContent(recoverableSnapshot)) return;
+    setActiveDraftOwnerId(recoverableSnapshot.ownerId, { resetSubmitted: true });
 
     await pushRecoveryTelemetry({
       recoveryAction: "restore_local",
@@ -913,7 +979,7 @@ export function useForemanDraftBoundary({
       result: "success",
       conflictType: recoverableSnapshot.requestId ? "stale_local_snapshot" : "retryable_sync_failure",
     });
-  }, [applyLocalDraftSnapshotToBoundary, pushRecoveryTelemetry, refreshBoundarySyncState]);
+  }, [applyLocalDraftSnapshotToBoundary, pushRecoveryTelemetry, refreshBoundarySyncState, setActiveDraftOwnerId]);
 
   const discardLocalDraftNow = useCallback(async () => {
     const durableState = getForemanDurableDraftState();
@@ -937,6 +1003,7 @@ export function useForemanDraftBoundary({
         localSnapshot: currentSnapshot,
       });
       if (remote.snapshot) {
+        setActiveDraftOwnerId(remote.snapshot.ownerId, { resetSubmitted: true });
         applyLocalDraftSnapshotToBoundary(remote.snapshot, {
           restoreHeader: true,
           clearWhenEmpty: true,
@@ -963,6 +1030,7 @@ export function useForemanDraftBoundary({
         });
         await refreshBoundarySyncState(remote.snapshot);
       } else {
+        setActiveDraftOwnerId(undefined, { resetSubmitted: true });
         persistLocalDraftSnapshot(null);
         setRequestIdState(targetRequestId);
         setRequestDetails(remote.details);
@@ -1027,6 +1095,7 @@ export function useForemanDraftBoundary({
     refreshBoundarySyncState,
     requestId,
     resetDraftState,
+    setActiveDraftOwnerId,
     setRequestIdState,
     syncHeaderFromDetails,
   ]);
@@ -1138,11 +1207,12 @@ export function useForemanDraftBoundary({
     (targetId: string | number | null | undefined) => {
       const id = ridStr(targetId);
       if (!id) return;
+      setActiveDraftOwnerId(undefined, { resetSubmitted: true });
       setRequestDetails(null);
       setRequestIdState(id);
       void loadItems(id, { forceRemote: true });
     },
-    [loadItems, setRequestIdState],
+    [loadItems, setActiveDraftOwnerId, setRequestIdState],
   );
 
   const bootstrapDraft = useCallback(
@@ -1164,6 +1234,11 @@ export function useForemanDraftBoundary({
       if (options?.cancelled?.()) return;
 
       const durableSnapshot = getForemanDurableDraftState().snapshot;
+      if (durableSnapshot?.ownerId) {
+        setActiveDraftOwnerId(durableSnapshot.ownerId, { resetSubmitted: true });
+      } else if (!ridStr(requestId)) {
+        setActiveDraftOwnerId(undefined, { resetSubmitted: true });
+      }
       if (durableSnapshot && hasForemanLocalDraftContent(durableSnapshot)) {
         await pushForemanDurableDraftTelemetry({
           stage: "hydrate",
@@ -1223,6 +1298,7 @@ export function useForemanDraftBoundary({
       patchBoundaryState,
       refreshBoundarySyncState,
       setDisplayNoByReq,
+      setActiveDraftOwnerId,
       setRequestIdState,
       syncHeaderFromDetails,
     ],
@@ -1377,6 +1453,7 @@ export function useForemanDraftBoundary({
     system,
     zone,
     requestId,
+    activeDraftOwnerId,
     items,
     qtyDrafts,
     setQtyDrafts,

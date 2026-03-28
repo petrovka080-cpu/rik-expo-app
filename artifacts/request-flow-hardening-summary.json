@@ -3,6 +3,7 @@
   "directorRequestScroll": true,
   "foremanDraftRollover": true,
   "foremanAiDraftOwner": true,
+  "duplicateSubmitGuard": true,
   "directorWorkInclusion": true,
   "foremanRuntimeVerified": true,
   "green": true,

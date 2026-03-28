@@ -71,6 +71,42 @@ const writeJson = (fullPath: string, payload: unknown) => {
   fs.writeFileSync(fullPath, `${JSON.stringify(payload, null, 2)}\n`);
 };
 
+const sanitizeRuntimeArtifact = (value: unknown, pathSegments: string[] = []): unknown => {
+  if (Array.isArray(value)) {
+    return value.map((item, index) => sanitizeRuntimeArtifact(item, pathSegments.concat(String(index))));
+  }
+  if (value && typeof value === "object") {
+    return Object.fromEntries(
+      Object.entries(value as Record<string, unknown>).map(([key, nestedValue]) => [
+        key,
+        sanitizeRuntimeArtifact(nestedValue, pathSegments.concat(key)),
+      ]),
+    );
+  }
+  if (typeof value !== "string") {
+    return value;
+  }
+
+  const key = pathSegments[pathSegments.length - 1] ?? "";
+  if (key === "body") {
+    return `[redacted-body:${value.length}]`;
+  }
+  if (/phone/i.test(key)) {
+    return "[redacted-phone]";
+  }
+  if (/password/i.test(key)) {
+    return "[redacted-password]";
+  }
+  if (/email/i.test(key)) {
+    return "[redacted-email]";
+  }
+
+  return value
+    .replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi, "[redacted-email]")
+    .replace(/Smoke (Foreman|Director)(?:\s+[0-9A-Za-z._-]+)?/gi, "Smoke [redacted-user]")
+    .replace(/Smoke Contractor(?:\s+\d+)?/gi, "Smoke [redacted-contractor]");
+};
+
 const androidHarness = createAndroidHarness({
   projectRoot,
   devClientPort: androidDevClientPort,
@@ -614,7 +650,7 @@ async function runWebRuntime() {
 
   const stdout = String(result.stdout ?? "").trim();
   const payload = JSON.parse(stdout) as Record<string, unknown>;
-  writeJson(webArtifactOutPath, payload);
+  writeJson(webArtifactOutPath, sanitizeRuntimeArtifact(payload));
 
   const materials = (payload.materials ?? {}) as Record<string, { passed?: boolean }>;
   const director = (payload.director ?? {}) as Record<string, { passed?: boolean }>;
@@ -685,7 +721,7 @@ async function runWebRuntime() {
     noLegacyConsolePath,
     pageErrorsEmpty: foremanPageErrors.length === 0,
     httpErrorsEmpty: foremanHttpErrors.length === 0,
-    payload,
+    payload: sanitizeRuntimeArtifact(payload),
   };
 }
 
@@ -780,7 +816,7 @@ async function run() {
     },
   });
 
-  writeJson(runtimeOutPath, runtimePayload);
+  writeJson(runtimeOutPath, sanitizeRuntimeArtifact(runtimePayload));
   writeJson(runtimeSummaryOutPath, summaryPayload);
   console.log(JSON.stringify(summaryPayload, null, 2));
 

@@ -69,10 +69,12 @@ export default function DirectorProposalSheet({
 }: Props) {
   const [analyticInsights, setAnalyticInsights] = React.useState<ProposalAnalyticInsight[]>([]);
   const [analyticInsightsLoading, setAnalyticInsightsLoading] = React.useState(false);
+  const [footerHeight, setFooterHeight] = React.useState(0);
   const analyticSummary = React.useMemo(
     () => buildProposalAnalyticSummary(analyticInsights),
     [analyticInsights],
   );
+  const bodyBottomInset = Math.max(footerHeight + 12, 24);
 
   const analyticSourceItems = React.useMemo(
     () =>
@@ -239,7 +241,7 @@ export default function DirectorProposalSheet({
             layout.size = 88;
           }}
           style={s.sheetScrollableBody}
-          contentContainerStyle={{ paddingBottom: 16 }}
+          contentContainerStyle={{ paddingBottom: bodyBottomInset }}
           keyboardShouldPersistTaps="handled"
           nestedScrollEnabled
           scrollEnabled
@@ -304,7 +306,15 @@ export default function DirectorProposalSheet({
         />
       </View>
 
-      <View style={s.sheetFooter}>
+      <View
+        style={s.sheetFooter}
+        onLayout={(event) => {
+          const nextHeight = Math.round(event.nativeEvent.layout.height || 0);
+          if (nextHeight > 0 && nextHeight !== footerHeight) {
+            setFooterHeight(nextHeight);
+          }
+        }}
+      >
         <View style={s.reqActionsBottom}>
           <View style={s.actionBtnSquare}>
             <DeleteAllButton

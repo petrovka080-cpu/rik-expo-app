@@ -88,6 +88,7 @@ const buildSnapshot = (params?: {
   submitRequested?: boolean;
 }): ForemanLocalDraftSnapshot => ({
   version: 1,
+  ownerId: `test-owner:${params?.requestId ?? "local"}:${(params?.items ?? []).length}`,
   requestId: params?.requestId ?? "",
   displayNo: params?.displayNo ?? null,
   status: "draft",

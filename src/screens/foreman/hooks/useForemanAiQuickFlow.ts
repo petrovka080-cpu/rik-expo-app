@@ -48,6 +48,7 @@ type Props = {
     localBeforeCount?: number | null;
     localAfterCount?: number | null;
   }) => Promise<SyncLocalDraftResult>;
+  activeDraftOwnerId: string | null;
   requestId: string;
   labelForRequest: (rid?: string | number | null) => string;
   currentDisplayLabel: string;
@@ -125,6 +126,7 @@ export function useForemanAiQuickFlow({
   itemsCount,
   appendLocalDraftRows,
   syncLocalDraftNow,
+  activeDraftOwnerId,
   requestId,
   labelForRequest,
   currentDisplayLabel,
@@ -160,7 +162,7 @@ export function useForemanAiQuickFlow({
   const [aiQuickApplying, setAiQuickApplying] = useState(false);
   const [selectedChoicesByGroupId, setSelectedChoicesByGroupId] =
     useState<ForemanAiQuickSelectionMap>({});
-  const openedDraftRequestIdRef = useRef("");
+  const openedDraftOwnerIdRef = useRef("");
 
   const aiQuickSessionHint = useMemo(
     () => buildAiQuickSessionHint(aiQuickSessionHistory),
@@ -209,12 +211,12 @@ export function useForemanAiQuickFlow({
 
   const rebindAiQuickToActiveDraft = useCallback(
     (operation: "lifecycle" | "parse" | "apply") => {
-      const nextRequestId = ridStr(requestId);
+      const nextOwnerId = ridStr(activeDraftOwnerId);
       clearParsedState();
       clearAiQuickSessionHistory();
       setAiQuickNotice("Активный черновик сменился. Повторите разбор для нового черновика.");
       setAiQuickMode("compose");
-      openedDraftRequestIdRef.current = nextRequestId;
+      openedDraftOwnerIdRef.current = nextOwnerId;
       recordPlatformObservability({
         screen: "foreman",
         surface: "ai_quick_flow",
@@ -227,42 +229,43 @@ export function useForemanAiQuickFlow({
           role: "foreman",
           owner: "ai_quick_flow",
           operation,
-          activeRequestId: nextRequestId || null,
+          activeRequestId: ridStr(requestId) || null,
+          activeDraftOwnerId: nextOwnerId || null,
         },
       });
     },
-    [clearAiQuickSessionHistory, clearParsedState, requestId, setAiQuickNotice],
+    [activeDraftOwnerId, clearAiQuickSessionHistory, clearParsedState, requestId, setAiQuickNotice],
   );
 
   const ensureActiveAiQuickDraftOwner = useCallback(
     (operation: "parse" | "apply") => {
-      const openedRequestId = openedDraftRequestIdRef.current;
-      const activeRequestId = ridStr(requestId);
-      if (!openedRequestId || openedRequestId === activeRequestId) return true;
+      const openedOwnerId = openedDraftOwnerIdRef.current;
+      const currentOwnerId = ridStr(activeDraftOwnerId);
+      if (!openedOwnerId || openedOwnerId === currentOwnerId) return true;
       rebindAiQuickToActiveDraft(operation);
       return false;
     },
-    [rebindAiQuickToActiveDraft, requestId],
+    [activeDraftOwnerId, rebindAiQuickToActiveDraft],
   );
 
   useEffect(() => {
     if (!aiQuickVisible) return;
-    const openedRequestId = openedDraftRequestIdRef.current;
-    const activeRequestId = ridStr(requestId);
-    if (!openedRequestId || openedRequestId === activeRequestId) return;
+    const openedOwnerId = openedDraftOwnerIdRef.current;
+    const currentOwnerId = ridStr(activeDraftOwnerId);
+    if (!openedOwnerId || openedOwnerId === currentOwnerId) return;
     rebindAiQuickToActiveDraft("lifecycle");
-  }, [aiQuickVisible, rebindAiQuickToActiveDraft, requestId]);
+  }, [activeDraftOwnerId, aiQuickVisible, rebindAiQuickToActiveDraft]);
 
   const openAiQuick = useCallback(() => {
     resetAiQuickUi();
     resetReviewState();
-    openedDraftRequestIdRef.current = ridStr(requestId);
+    openedDraftOwnerIdRef.current = ridStr(activeDraftOwnerId);
     setAiQuickVisible(true);
-  }, [requestId, resetAiQuickUi, resetReviewState, setAiQuickVisible]);
+  }, [activeDraftOwnerId, resetAiQuickUi, resetReviewState, setAiQuickVisible]);
 
   const closeAiQuick = useCallback(() => {
     if (aiQuickLoading || aiQuickApplying) return;
-    openedDraftRequestIdRef.current = "";
+    openedDraftOwnerIdRef.current = "";
     resetAiQuickUi();
     resetReviewState();
   }, [aiQuickApplying, aiQuickLoading, resetAiQuickUi, resetReviewState]);

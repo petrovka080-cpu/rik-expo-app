@@ -181,6 +181,7 @@ function ForemanScreen() {
     applyLevelSelection,
     applySystemSelection,
     applyZoneSelection,
+    activeDraftOwnerId,
   } = useForemanDraftBoundary({
     isScreenFocused,
     preloadDisplayNo,
@@ -790,6 +791,7 @@ function ForemanScreen() {
     itemsCount: items.length,
     appendLocalDraftRows,
     syncLocalDraftNow,
+    activeDraftOwnerId,
     requestId,
     labelForRequest,
     currentDisplayLabel: activeDraftDisplayLabel,

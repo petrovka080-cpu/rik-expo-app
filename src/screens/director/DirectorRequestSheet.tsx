@@ -59,6 +59,8 @@ export default function DirectorRequestSheet({
         .filter(Boolean)
         .slice(0, 8)
     : [];
+  const [footerHeight, setFooterHeight] = React.useState(0);
+  const bodyBottomInset = Math.max(footerHeight + 12, 24);
 
   return (
     <View style={s.sheetContent}>
@@ -71,7 +73,7 @@ export default function DirectorRequestSheet({
             layout.size = 88;
           }}
           style={s.sheetScrollableBody}
-          contentContainerStyle={{ paddingBottom: 16 }}
+          contentContainerStyle={{ paddingBottom: bodyBottomInset }}
           keyboardShouldPersistTaps="handled"
           nestedScrollEnabled
           scrollEnabled
@@ -126,7 +128,15 @@ export default function DirectorRequestSheet({
         />
       </View>
 
-      <View style={s.sheetFooter}>
+      <View
+        style={s.sheetFooter}
+        onLayout={(event) => {
+          const nextHeight = Math.round(event.nativeEvent.layout.height || 0);
+          if (nextHeight > 0 && nextHeight !== footerHeight) {
+            setFooterHeight(nextHeight);
+          }
+        }}
+      >
         <View style={s.reqActionsBottom}>
           <View style={s.actionBtnSquare}>
             <DeleteAllButton

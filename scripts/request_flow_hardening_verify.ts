@@ -47,21 +47,31 @@ const foremanRequestSyncRuntimeSummary = readJson<JsonRecord>("artifacts/foreman
 const directorRequestScrollSmoke = {
   requestSheetUsesScrollableBody: includesAll(requestSheetSource, [
     "style={s.sheetScrollableBody}",
-    "<View style={s.sheetFooter}>",
+    "style={s.sheetFooter}",
     "ListHeaderComponent",
+  ]),
+  requestSheetMeasuresFooterInset: includesAll(requestSheetSource, [
+    "const [footerHeight, setFooterHeight] = React.useState(0);",
+    "contentContainerStyle={{ paddingBottom: bodyBottomInset }}",
+    "onLayout={(event) => {",
   ]),
   requestSheetFooterOutsideList:
     requestSheetSource.indexOf("ListHeaderComponent") >= 0 &&
-    requestSheetSource.indexOf("<View style={s.sheetFooter}>") >
+    requestSheetSource.indexOf("style={s.sheetFooter}") >
       requestSheetSource.indexOf("ListHeaderComponent"),
   proposalSheetUsesScrollableBody: includesAll(proposalSheetSource, [
     "style={s.sheetScrollableBody}",
-    "<View style={s.sheetFooter}>",
+    "style={s.sheetFooter}",
     "ListHeaderComponent={listHeader}",
+  ]),
+  proposalSheetMeasuresFooterInset: includesAll(proposalSheetSource, [
+    "const [footerHeight, setFooterHeight] = React.useState(0);",
+    "contentContainerStyle={{ paddingBottom: bodyBottomInset }}",
+    "onLayout={(event) => {",
   ]),
   proposalSheetFooterOutsideList:
     proposalSheetSource.indexOf("ListHeaderComponent={listHeader}") >= 0 &&
-    proposalSheetSource.indexOf("<View style={s.sheetFooter}>") >
+    proposalSheetSource.indexOf("style={s.sheetFooter}") >
       proposalSheetSource.indexOf("ListHeaderComponent={listHeader}"),
   sheetModalOwnsBodyFrame: sheetModalSource.includes("<View style={s.sheetContent}>"),
   stylesProvideSheetDiscipline: includesAll(directorStylesSource, [
@@ -77,7 +87,13 @@ const foremanDraftRolloverSmoke = {
   freshSnapshotBuilderExported: foremanLocalDraftSource.includes(
     "export function buildFreshForemanLocalDraftSnapshot",
   ),
+  localDraftCarriesOwnerId: includesAll(foremanLocalDraftSource, [
+    "ownerId: string;",
+    "ownerId: makeDraftOwnerId()",
+    "ownerId: resolveDraftOwnerId(base?.ownerId ?? params.ownerId, requestId)",
+  ]),
   freshSnapshotResetsOwnerAndRows: includesAll(foremanLocalDraftSource, [
+    "ownerId: makeDraftOwnerId()",
     'requestId: ""',
     "displayNo: null",
     "items: []",
@@ -92,8 +108,14 @@ const foremanDraftRolloverSmoke = {
     "resetAiQuickUi()",
     "clearAiQuickSessionHistory()",
   ]),
+  boundaryTracksActiveOwner: includesAll(foremanDraftBoundarySource, [
+    "const activeDraftOwnerIdRef = useRef(createEphemeralForemanDraftOwnerId());",
+    "const [activeDraftOwnerId, setActiveDraftOwnerIdState] = useState<string | null>(",
+    "activeDraftOwnerId,",
+  ]),
   postSubmitRebindsToLocalOwner: includesAll(foremanDraftBoundarySource, [
     'activeDraftIdAfter: FOREMAN_LOCAL_ONLY_REQUEST_ID',
+    "activeDraftOwnerIdAfter: freshDraftSnapshot.ownerId",
     'runtimeResult: "post_submit_fresh_draft_state"',
   ]),
   draftModalUsesVisualModel: includesAll(foremanDraftModalSource, [
@@ -107,10 +129,15 @@ const foremanDraftRolloverSmoke = {
   Object.values(foremanDraftRolloverSmoke).every((value) => value === true);
 
 const foremanAiDraftOwnerSmoke = {
-  tracksOpenedDraftOwner: foremanAiQuickFlowSource.includes("openedDraftRequestIdRef"),
+  tracksOpenedDraftOwner: foremanAiQuickFlowSource.includes("openedDraftOwnerIdRef"),
+  aiUsesCanonicalActiveOwner: foremanAiQuickFlowSource.includes("activeDraftOwnerId: string | null;"),
   lifecycleRebindsOnOwnerChange: foremanAiQuickFlowSource.includes(
     'rebindAiQuickToActiveDraft("lifecycle")',
   ),
+  ownerComparisonUsesCanonicalOwner: includesAll(foremanAiQuickFlowSource, [
+    "const currentOwnerId = ridStr(activeDraftOwnerId);",
+    "if (!openedOwnerId || openedOwnerId === currentOwnerId) return true;",
+  ]),
   parseGuardPresent: foremanAiQuickFlowSource.includes('ensureActiveAiQuickDraftOwner("parse")'),
   applyGuardPresent: foremanAiQuickFlowSource.includes('ensureActiveAiQuickDraftOwner("apply")'),
   sessionHistoryClearedOnRebind: foremanAiQuickFlowSource.includes("clearAiQuickSessionHistory()"),
@@ -152,6 +179,11 @@ const summary = {
   directorRequestScroll: (directorRequestScrollSmoke as JsonRecord).passed === true,
   foremanDraftRollover: (foremanDraftRolloverSmoke as JsonRecord).passed === true,
   foremanAiDraftOwner: (foremanAiDraftOwnerSmoke as JsonRecord).passed === true,
+  duplicateSubmitGuard: includesAll(foremanDraftBoundarySource, [
+    "lastSubmittedOwnerIdRef.current === submitOwnerId",
+    "submitInFlightOwnerIdRef.current === submitOwnerId && draftSyncInFlightRef.current",
+    'throw new Error("Этот черновик уже отправлен. Откройте новый активный черновик.");',
+  ]),
   directorWorkInclusion: (directorWorkInclusionAudit as JsonRecord).passed === true,
   foremanRuntimeVerified:
     foremanRequestSyncRuntimeSummary?.runtimeVerified === true ||
@@ -160,6 +192,11 @@ const summary = {
     (directorRequestScrollSmoke as JsonRecord).passed === true &&
     (foremanDraftRolloverSmoke as JsonRecord).passed === true &&
     (foremanAiDraftOwnerSmoke as JsonRecord).passed === true &&
+    includesAll(foremanDraftBoundarySource, [
+      "lastSubmittedOwnerIdRef.current === submitOwnerId",
+      "submitInFlightOwnerIdRef.current === submitOwnerId && draftSyncInFlightRef.current",
+      'throw new Error("Этот черновик уже отправлен. Откройте новый активный черновик.");',
+    ]) &&
     (directorWorkInclusionAudit as JsonRecord).passed === true &&
     (foremanRequestSyncRuntimeSummary?.runtimeVerified === true ||
       foremanRequestSyncRuntimeSummary?.status === "passed"),
@@ -167,6 +204,11 @@ const summary = {
     (directorRequestScrollSmoke as JsonRecord).passed === true &&
     (foremanDraftRolloverSmoke as JsonRecord).passed === true &&
     (foremanAiDraftOwnerSmoke as JsonRecord).passed === true &&
+    includesAll(foremanDraftBoundarySource, [
+      "lastSubmittedOwnerIdRef.current === submitOwnerId",
+      "submitInFlightOwnerIdRef.current === submitOwnerId && draftSyncInFlightRef.current",
+      'throw new Error("Этот черновик уже отправлен. Откройте новый активный черновик.");',
+    ]) &&
     (directorWorkInclusionAudit as JsonRecord).passed === true &&
     (foremanRequestSyncRuntimeSummary?.runtimeVerified === true ||
       foremanRequestSyncRuntimeSummary?.status === "passed")

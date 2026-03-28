@@ -55,6 +55,7 @@ export type ForemanLocalDraftDelete = {
 
 export type ForemanLocalDraftSnapshot = {
   version: 1;
+  ownerId: string;
   requestId: string;
   displayNo: string | null;
   status: string | null;
@@ -160,6 +161,14 @@ const asRecord = (value: unknown): Record<string, unknown> | null =>
 const clone = <T,>(value: T): T => JSON.parse(JSON.stringify(value)) as T;
 
 const makeLocalItemId = () => `fld-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+const makeDraftOwnerId = () => `fdo-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+const resolveDraftOwnerId = (value: unknown, requestId?: unknown): string => {
+  const explicit = trim(value);
+  if (explicit) return explicit;
+  const requestKey = trim(requestId);
+  if (requestKey) return `srv:${requestKey}`;
+  return makeDraftOwnerId();
+};
 
 const normalizeDraftRowId = (value: string | number | null | undefined) => trim(value);
 
@@ -221,6 +230,7 @@ const parseForemanLocalDraftSnapshotRecord = (
   const requestId = trim(row.requestId);
   const snapshot: ForemanLocalDraftSnapshot = {
     version: 1,
+    ownerId: resolveDraftOwnerId(row.ownerId, requestId),
     requestId,
     displayNo: trim(row.displayNo) || null,
     status: trim(row.status) || "draft",
@@ -291,8 +301,8 @@ export const buildForemanDraftRestoreId = (
   snapshot: ForemanLocalDraftSnapshot | null | undefined,
 ): string | null => {
   if (!snapshot) return null;
-  const requestKey = trim(snapshot.requestId) || FOREMAN_LOCAL_ONLY_REQUEST_ID;
-  return `snapshot:${requestKey}:${snapshot.updatedAt}`;
+  const ownerKey = trim(snapshot.ownerId) || trim(snapshot.requestId) || FOREMAN_LOCAL_ONLY_REQUEST_ID;
+  return `snapshot:${ownerKey}:${snapshot.updatedAt}`;
 };
 
 export const countForemanDraftSnapshotLines = (
@@ -525,6 +535,7 @@ export async function loadForemanRemoteDraftSnapshot(params: {
   return {
     snapshot: {
       version: 1,
+      ownerId: resolveDraftOwnerId(null, requestId),
       requestId,
       displayNo: trim(details.display_no) || null,
       status: trim(details.status) || "draft",
@@ -585,6 +596,7 @@ export function snapshotToReqItems(snapshot: ForemanLocalDraftSnapshot | null | 
 
 export function buildForemanLocalDraftSnapshot(params: {
   base: ForemanLocalDraftSnapshot | null;
+  ownerId?: string | null;
   requestId: string;
   displayNo?: string | null;
   status?: string | null;
@@ -609,6 +621,7 @@ export function buildForemanLocalDraftSnapshot(params: {
 
   const next: ForemanLocalDraftSnapshot = {
     version: 1,
+    ownerId: resolveDraftOwnerId(base?.ownerId ?? params.ownerId, requestId),
     requestId,
     displayNo: trim(params.displayNo) || base?.displayNo || null,
     status: trim(params.status) || base?.status || "draft",
@@ -634,6 +647,7 @@ export function buildFreshForemanLocalDraftSnapshot(params: {
   const base = params.base ? clone(params.base) : null;
   return {
     version: 1,
+    ownerId: makeDraftOwnerId(),
     requestId: "",
     displayNo: null,
     status: "draft",
@@ -661,6 +675,7 @@ export function appendRowsToForemanLocalDraft(
       ? clone(snapshot)
       : {
           version: 1,
+          ownerId: makeDraftOwnerId(),
           requestId: "",
           displayNo: null,
           status: "draft",

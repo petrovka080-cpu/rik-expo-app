@@ -1,6 +1,8 @@
 {
   "tracksOpenedDraftOwner": true,
+  "aiUsesCanonicalActiveOwner": true,
   "lifecycleRebindsOnOwnerChange": true,
+  "ownerComparisonUsesCanonicalOwner": true,
   "parseGuardPresent": true,
   "applyGuardPresent": true,
   "sessionHistoryClearedOnRebind": true,
