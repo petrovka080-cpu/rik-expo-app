@@ -97,12 +97,6 @@ const PACKAGING_UNITS = new Set([
   "рулон",
   "упаковка",
   "комплект",
-  "РєРѕСЂРѕР±РєР°",
-  "РїР°С‡РєР°",
-  "РјРµС€РѕРє",
-  "СЂСѓР»РѕРЅ",
-  "СѓРїР°РєРѕРІРєР°",
-  "РєРѕРјРїР»РµРєС‚",
 ]);
 PACKAGING_UNITS.add("\u043b\u0438\u0441\u0442");
 PACKAGING_UNITS.add("\u0431\u0430\u043d\u043a\u0430");
@@ -214,14 +208,14 @@ const normalizeResolveUnit = (rawUnit?: string | null): string => {
 
 const normalizeResolveUnitCanonical = (rawUnit?: string | null): string => {
   const normalized = normalizeResolveUnit(rawUnit);
-  if (["коробка", "короб", "РєРѕСЂРѕР±РєР°", "РєРѕСЂРѕР±", "box"].includes(normalized)) return "коробка";
-  if (["пачка", "пач", "РїР°С‡РєР°", "РїР°С‡", "pack"].includes(normalized)) return "пачка";
-  if (["мешок", "РјРµС€РѕРє", "bag"].includes(normalized)) return "мешок";
-  if (["рулон", "СЂСѓР»РѕРЅ", "roll"].includes(normalized)) return "рулон";
-  if (["упаковка", "упак", "СѓРїР°РєРѕРІРєР°", "СѓРїР°Рє", "package", "pkg"].includes(normalized)) {
+  if (["коробка", "короб", "box"].includes(normalized)) return "коробка";
+  if (["пачка", "пач", "pack"].includes(normalized)) return "пачка";
+  if (["мешок", "bag"].includes(normalized)) return "мешок";
+  if (["рулон", "roll"].includes(normalized)) return "рулон";
+  if (["упаковка", "упак", "package", "pkg"].includes(normalized)) {
     return "упаковка";
   }
-  if (["комплект", "РєРѕРјРїР»РµРєС‚", "set"].includes(normalized)) return "комплект";
+  if (["комплект", "set"].includes(normalized)) return "комплект";
   if (["\u043b\u0438\u0441\u0442", "\u043b\u0438\u0441\u0442\u0430", "\u043b\u0438\u0441\u0442\u043e\u0432", "sheet"].includes(normalized)) {
     return "\u043b\u0438\u0441\u0442";
   }
@@ -991,7 +985,7 @@ const finalizeResolvedQuickResult = async (
       options: resolved.candidateGroups,
       resolvedItems: resolved.items,
       partialFailure: resolved.items.length > 0,
-      message: "РЈС‚РѕС‡РЅРёС‚Рµ СѓРїР°РєРѕРІРєСѓ РёР»Рё РµРґРёРЅРёС†Сѓ РёР·РјРµСЂРµРЅРёСЏ РґР»СЏ РЅРµРѕРґРЅРѕР·РЅР°С‡РЅС‹С… РїРѕР·РёС†РёР№.",
+      message: "Уточните упаковку или единицу измерения для неоднозначных позиций.",
     };
   }
 
@@ -1011,7 +1005,7 @@ const finalizeResolvedQuickResult = async (
     return {
       type: "clarify_required",
       questions: resolved.clarifyQuestions,
-      message: "РЈС‚РѕС‡РЅРёС‚Рµ СѓРїР°РєРѕРІРєСѓ РёР»Рё РµРґРёРЅРёС†Сѓ РёР·РјРµСЂРµРЅРёСЏ РґР»СЏ РЅРµРѕРґРЅРѕР·РЅР°С‡РЅС‹С… РїРѕР·РёС†РёР№.",
+      message: "Уточните упаковку или единицу измерения для неоднозначных позиций.",
     };
   }
 

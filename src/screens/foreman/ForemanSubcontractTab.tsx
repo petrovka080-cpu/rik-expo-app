@@ -478,7 +478,7 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
     level_code: form.levelCode || templateLevelCode || null,
     system_code: form.systemCode || templateSystemCode || null,
     zone_code: null,
-    foreman_name: foremanName || "РџСЂРѕСЂР°Р±",
+    foreman_name: foremanName || "Прораб",
     object_name: objectName || templateObjectName || null,
     comment: (requestMetaFromTemplate.comment ?? scopeNote) || null,
   }), [
@@ -824,7 +824,7 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
     }
 
     if (draftItems.length === 0) {
-      Alert.alert("Р’РЅРёРјР°РЅРёРµ", "Р’ С‡РµСЂРЅРѕРІРёРєРµ РЅРµС‚ РїРѕР·РёС†РёР№ РґР»СЏ РѕС‚РїСЂР°РІРєРё.");
+      Alert.alert("Внимание", "В черновике нет позиций для отправки.");
       return;
     }
 
@@ -1153,7 +1153,6 @@ export default function ForemanSubcontractTab({ contentTopPad, onScroll, dicts }
     </View>
   );
 }
-
 
 
 
