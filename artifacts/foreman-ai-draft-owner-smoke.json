@@ -1,0 +1,9 @@
+{
+  "tracksOpenedDraftOwner": true,
+  "lifecycleRebindsOnOwnerChange": true,
+  "parseGuardPresent": true,
+  "applyGuardPresent": true,
+  "sessionHistoryClearedOnRebind": true,
+  "observabilityEventPresent": true,
+  "passed": true
+}

@@ -41,6 +41,7 @@ import {
 } from "../foreman.helpers";
 import {
   FOREMAN_LOCAL_ONLY_REQUEST_ID,
+  buildFreshForemanLocalDraftSnapshot,
   buildForemanLocalDraftSnapshot,
   hasForemanLocalDraftContent,
   hasForemanLocalDraftPendingSync,
@@ -81,6 +82,7 @@ import {
   patchForemanDurableDraftRecoveryState,
   pushForemanDurableDraftTelemetry,
 } from "../foreman.durableDraft.store";
+import { useForemanUiStore } from "../foremanUi.store";
 import { useForemanHeader } from "./useForemanHeader";
 import { useForemanItemsState } from "./useForemanItemsState";
 
@@ -475,19 +477,34 @@ export function useForemanDraftBoundary({
   const handlePostSubmitSuccess = useCallback(
     async (rid: string, submitted: RequestRecord | null) => {
       const activeDraftIdBefore = ridStr(localDraftSnapshotRef.current?.requestId) || ridStr(requestId) || rid || null;
+      const freshDraftSnapshot = buildFreshForemanLocalDraftSnapshot({
+        base: localDraftSnapshotRef.current,
+        header: {
+          foreman,
+          comment: "",
+          objectType,
+          level,
+          system,
+          zone,
+        },
+      });
       if (submitted?.display_no) {
         setDisplayNoByReq((prev) => ({ ...prev, [rid]: String(submitted.display_no) }));
       }
 
       skipRemoteHydrationRequestIdRef.current = null;
       invalidateRequestDetailsLoads();
-      persistLocalDraftSnapshot(null);
-      clearItemsState();
-      setRequestDetails(null);
-      setCommentState("");
+      useForemanUiStore.getState().resetAiQuickUi();
+      useForemanUiStore.getState().clearAiQuickSessionHistory();
+      applyLocalDraftSnapshotToBoundary(freshDraftSnapshot, {
+        restoreHeader: true,
+        clearWhenEmpty: true,
+        restoreSource: "snapshot",
+        restoreIdentity: `post-submit:fresh:${freshDraftSnapshot.updatedAt}`,
+      });
 
       await patchForemanDurableDraftRecoveryState({
-        snapshot: null,
+        snapshot: freshDraftSnapshot,
         syncStatus: "idle",
         pendingOperationsCount: 0,
         queueDraftKey: null,
@@ -504,7 +521,7 @@ export function useForemanDraftBoundary({
         lastTriggerSource: "submit",
         lastSyncAt: Date.now(),
       });
-      await refreshBoundarySyncState(null);
+      await refreshBoundarySyncState(freshDraftSnapshot);
 
       if (__DEV__) {
         const durableState = getForemanDurableDraftState();
@@ -512,24 +529,28 @@ export function useForemanDraftBoundary({
           draftId: activeDraftIdBefore,
           requestId: rid,
           submitSuccess: true,
-          postSubmitAction: "entered_empty_state",
+          postSubmitAction: "promoted_fresh_local_draft",
           staleBannerVisibleAfterSubmit:
             durableState.conflictType !== "none" || durableState.availableRecoveryActions.length > 0,
           activeDraftIdBefore,
-          activeDraftIdAfter: null,
-          freshDraftCreated: false,
-          runtimeResult: "post_submit_clean_state",
+          activeDraftIdAfter: FOREMAN_LOCAL_ONLY_REQUEST_ID,
+          freshDraftCreated: true,
+          runtimeResult: "post_submit_fresh_draft_state",
         });
       }
     },
     [
-      clearItemsState,
+      applyLocalDraftSnapshotToBoundary,
+      comment,
+      foreman,
       invalidateRequestDetailsLoads,
-      persistLocalDraftSnapshot,
+      level,
+      objectType,
       refreshBoundarySyncState,
       requestId,
-      setCommentState,
       setDisplayNoByReq,
+      system,
+      zone,
     ],
   );
 

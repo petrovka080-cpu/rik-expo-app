@@ -1,0 +1,8 @@
+{
+  "freshSnapshotBuilderExported": true,
+  "freshSnapshotResetsOwnerAndRows": true,
+  "postSubmitPromotesFreshSnapshot": true,
+  "postSubmitClearsAiUi": true,
+  "postSubmitRebindsToLocalOwner": true,
+  "passed": true
+}

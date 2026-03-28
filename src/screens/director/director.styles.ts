@@ -254,7 +254,9 @@ export const s = StyleSheet.create({
   sheet: {
     minHeight: "78%",
     maxHeight: "94%",
+    width: "100%",
     flexShrink: 1,
+    overflow: "hidden",
     backgroundColor: UI.cardBg,
     borderTopLeftRadius: 22,
     borderTopRightRadius: 22,
@@ -277,6 +279,19 @@ export const s = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     marginBottom: 10,
+    flexShrink: 0,
+  },
+  sheetContent: {
+    flex: 1,
+    minHeight: 0,
+  },
+  sheetScrollableBody: {
+    flex: 1,
+    minHeight: 0,
+  },
+  sheetFooter: {
+    flexShrink: 0,
+    backgroundColor: UI.cardBg,
   },
   sheetTitle: {
     flex: 1,

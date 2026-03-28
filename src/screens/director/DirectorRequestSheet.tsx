@@ -47,168 +47,170 @@ export default function DirectorRequestSheet({
     reqDeleteId === sheetRequest.request_id ||
     reqSendId === sheetRequest.request_id ||
     (sheetRequest.items?.length ?? 0) === 0;
+  const headerNote =
+    (sheetRequest.items || [])
+      .map((row) => String(row.note || "").trim())
+      .filter(Boolean)
+      .sort((left, right) => right.split(";").length - left.split(";").length)[0] || null;
+  const headerNoteLines = headerNote
+    ? headerNote
+        .split(";")
+        .map((line) => line.trim())
+        .filter(Boolean)
+        .slice(0, 8)
+    : [];
 
   return (
-    <View style={{ flex: 1, minHeight: 0 }}>
-      {(() => {
-        const headerNote =
-          (sheetRequest.items || [])
-            .map((x) => String(x.note || "").trim())
-            .filter(Boolean)
-            .sort((a, b) => b.split(";").length - a.split(";").length)[0] || null;
-        if (!headerNote) return null;
+    <View style={s.sheetContent}>
+      <View style={s.sheetScrollableBody}>
+        <FlashList
+          data={sheetRequest.items}
+          keyExtractor={(it, idx) => (it.request_item_id ? `mri:${it.request_item_id}` : `mri:${idx}`)}
+          estimatedItemSize={88}
+          overrideItemLayout={(layout: { size?: number }) => {
+            layout.size = 88;
+          }}
+          style={s.sheetScrollableBody}
+          contentContainerStyle={{ paddingBottom: 16 }}
+          keyboardShouldPersistTaps="handled"
+          nestedScrollEnabled
+          scrollEnabled
+          showsVerticalScrollIndicator={false}
+          ListHeaderComponent={
+            headerNoteLines.length ? (
+              <View style={s.reqNoteBox}>
+                {headerNoteLines.map((line, idx) => (
+                  <Text key={idx} style={s.reqNoteLine} numberOfLines={1}>
+                    {line}
+                  </Text>
+                ))}
+              </View>
+            ) : null
+          }
+          renderItem={({ item: it }) => (
+            <View style={s.mobCard}>
+              <View style={s.mobMain}>
+                <View style={{ flexDirection: "row", alignItems: "center", flexWrap: "wrap" }}>
+                  <Text style={[s.mobTitle, { marginRight: 8 }]} numberOfLines={3}>
+                    {it.name_human}
+                  </Text>
 
-        const lines = headerNote
-          .split(";")
-          .map((x) => x.trim())
-          .filter(Boolean)
-          .slice(0, 8);
+                  {it.item_kind ? (
+                    <View style={[s.kindPill, { marginTop: 4 }]}>
+                      <Text style={s.kindPillText}>
+                        {it.item_kind === "material"
+                          ? "Материал"
+                          : it.item_kind === "work"
+                            ? "Работа"
+                            : it.item_kind === "service"
+                              ? "Услуга"
+                              : it.item_kind}
+                      </Text>
+                    </View>
+                  ) : null}
+                </View>
 
-        if (!lines.length) return null;
-
-        return (
-          <View style={s.reqNoteBox}>
-            {lines.map((line, idx) => (
-              <Text key={idx} style={s.reqNoteLine} numberOfLines={1}>
-                {line}
-              </Text>
-            ))}
-          </View>
-        );
-      })()}
-
-      <FlashList
-        data={sheetRequest.items}
-        keyExtractor={(it, idx) => (it.request_item_id ? `mri:${it.request_item_id}` : `mri:${idx}`)}
-        overrideItemLayout={(layout: any) => {
-          layout.size = 88;
-        }}
-        contentContainerStyle={{ paddingBottom: 12 }}
-        keyboardShouldPersistTaps="handled"
-        nestedScrollEnabled
-        scrollEnabled
-        showsVerticalScrollIndicator={false}
-        renderItem={({ item: it }) => (
-          <View style={s.mobCard}>
-            <View style={s.mobMain}>
-              <View style={{ flexDirection: "row", alignItems: "center", flexWrap: "wrap" }}>
-                <Text style={[s.mobTitle, { marginRight: 8 }]} numberOfLines={3}>
-                  {it.name_human}
+                <Text style={s.mobMeta} numberOfLines={2}>
+                  {`${it.qty} ${it.uom || ""}`.trim()}
+                  {it.app_code ? ` · ${it.app_code}` : ""}
                 </Text>
-
-                {it.item_kind ? (
-                  <View style={[s.kindPill, { marginTop: 4 }]}>
-                    <Text style={s.kindPillText}>
-                      {it.item_kind === "material"
-                        ? "Материал"
-                        : it.item_kind === "work"
-                          ? "Работа"
-                          : it.item_kind === "service"
-                            ? "Услуга"
-                            : it.item_kind}
-                    </Text>
-                  </View>
-                ) : null}
               </View>
 
-              <Text style={s.mobMeta} numberOfLines={2}>
-                {`${it.qty} ${it.uom || ""}`.trim()}
-                {it.app_code ? ` · ${it.app_code}` : ""}
-              </Text>
+              <RejectItemButton
+                disabled={!it.request_item_id || actingId === it.request_item_id}
+                loading={actingId === it.request_item_id}
+                onPress={() => void onRejectItem(it)}
+              />
             </View>
+          )}
+        />
+      </View>
 
-            <RejectItemButton
-              disabled={!it.request_item_id || actingId === it.request_item_id}
-              loading={actingId === it.request_item_id}
-              onPress={() => void onRejectItem(it)}
+      <View style={s.sheetFooter}>
+        <View style={s.reqActionsBottom}>
+          <View style={s.actionBtnSquare}>
+            <DeleteAllButton
+              disabled={screenLock || reqDeleteId === sheetRequest.request_id || reqSendId === sheetRequest.request_id}
+              loading={reqDeleteId === sheetRequest.request_id}
+              accessibilityLabel="Удалить заявку"
+              onPress={() => {
+                const doIt = async () => {
+                  await onDeleteAll(sheetRequest);
+                };
+
+                if (Platform.OS === "web") {
+                  const ok =
+                    webUi.confirm?.("Удалить заявку?\n\nОтклонить ВСЮ заявку вместе со всеми позициями?") ?? false;
+                  if (!ok) return;
+                  void doIt();
+                  return;
+                }
+
+                Alert.alert(
+                  "Удалить заявку?",
+                  "Вы уверены, что хотите отклонить ВСЮ заявку вместе со всеми позициями?",
+                  [
+                    { text: "Отмена", style: "cancel" },
+                    { text: "Да, удалить", style: "destructive", onPress: () => void doIt() },
+                  ],
+                );
+              }}
             />
           </View>
-        )}
-      />
 
-      <View style={s.reqActionsBottom}>
-        <View style={s.actionBtnSquare}>
-          <DeleteAllButton
-            disabled={screenLock || reqDeleteId === sheetRequest.request_id || reqSendId === sheetRequest.request_id}
-            loading={reqDeleteId === sheetRequest.request_id}
-            accessibilityLabel="Удалить заявку"
-            onPress={() => {
-              const doIt = async () => {
-                await onDeleteAll(sheetRequest);
-              };
+          <View style={s.sp8} />
 
-              if (Platform.OS === "web") {
-                const ok = webUi.confirm?.("Удалить заявку?\n\nОтклонить ВСЮ заявку вместе со всеми позициями?") ?? false;
-                if (!ok) return;
-                void doIt();
-                return;
+          <Pressable
+            disabled={!rid || pdfBusy || screenLock}
+            onPress={async () => {
+              if (!rid || pdfBusy || screenLock) return;
+              try {
+                await onOpenPdf(sheetRequest);
+              } catch (error) {
+                const message =
+                  error && typeof error === "object" && "message" in error
+                    ? String((error as { message?: unknown }).message ?? "")
+                    : String(error ?? "");
+                if (message.toLowerCase().includes("busy")) return;
+                Alert.alert("Ошибка", message || "PDF не сформирован");
               }
-
-              Alert.alert(
-                "Удалить заявку?",
-                "Вы уверены, что хотите отклонить ВСЮ заявку вместе со всеми позициями?",
-                [
-                  { text: "Отмена", style: "cancel" },
-                  { text: "Да, удалить", style: "destructive", onPress: () => void doIt() },
-                ],
-              );
             }}
-          />
-        </View>
+            style={[
+              s.actionBtnWide,
+              { backgroundColor: UI.btnNeutral, opacity: !rid || pdfBusy || screenLock ? 0.6 : 1 },
+            ]}
+          >
+            <Text style={s.actionText}>{pdfBusy ? "PDF..." : "PDF"}</Text>
+          </Pressable>
 
-        <View style={s.sp8} />
+          <View style={s.sp8} />
 
-        <Pressable
-          disabled={!rid || pdfBusy || screenLock}
-          onPress={async () => {
-            if (!rid || pdfBusy || screenLock) return;
-            try {
-              await onOpenPdf(sheetRequest);
-            } catch (e) {
-              const message =
-                e && typeof e === "object" && "message" in e
-                  ? String((e as { message?: unknown }).message ?? "")
-                  : String(e ?? "");
-              if (message.toLowerCase().includes("busy")) return;
-              Alert.alert("Ошибка", message || "PDF не сформирован");
-            }
-          }}
-          style={[
-            s.actionBtnWide,
-            { backgroundColor: UI.btnNeutral, opacity: !rid || pdfBusy || screenLock ? 0.6 : 1 },
-          ]}
-        >
-          <Text style={s.actionText}>{pdfBusy ? "PDF..." : "PDF"}</Text>
-        </Pressable>
+          <Pressable
+            disabled={screenLock}
+            onPress={() => {
+              if (screenLock) return;
+              onExportExcel(sheetRequest);
+            }}
+            style={[
+              s.actionBtnWide,
+              { backgroundColor: UI.btnNeutral, opacity: screenLock ? 0.6 : 1 },
+            ]}
+          >
+            <Text style={s.actionText}>Excel</Text>
+          </Pressable>
 
-        <View style={s.sp8} />
+          <View style={s.sp8} />
 
-        <Pressable
-          disabled={screenLock}
-          onPress={() => {
-            if (screenLock) return;
-            onExportExcel(sheetRequest);
-          }}
-          style={[
-            s.actionBtnWide,
-            { backgroundColor: UI.btnNeutral, opacity: screenLock ? 0.6 : 1 },
-          ]}
-        >
-          <Text style={s.actionText}>Excel</Text>
-        </Pressable>
-
-        <View style={s.sp8} />
-
-        <View style={s.actionBtnSquare}>
-          <SendPrimaryButton
-            variant="green"
-            disabled={approveDisabled}
-            loading={reqSendId === sheetRequest.request_id}
-            onPress={() => void onApproveAndSend(sheetRequest)}
-          />
+          <View style={s.actionBtnSquare}>
+            <SendPrimaryButton
+              variant="green"
+              disabled={approveDisabled}
+              loading={reqSendId === sheetRequest.request_id}
+              onPress={() => void onApproveAndSend(sheetRequest)}
+            />
+          </View>
         </View>
       </View>
     </View>
   );
 }
-

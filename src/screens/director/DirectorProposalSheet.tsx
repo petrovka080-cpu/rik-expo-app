@@ -75,13 +75,14 @@ export default function DirectorProposalSheet({
   );
 
   const analyticSourceItems = React.useMemo(
-    () => items.map((item) => ({
-      id: `director:${pidStr}:${item.id}`,
-      rikCode: item.rik_code ?? null,
-      name: item.name_human ?? null,
-      price: item.price ?? null,
-      supplier: null,
-    })),
+    () =>
+      items.map((item) => ({
+        id: `director:${pidStr}:${item.id}`,
+        rikCode: item.rik_code ?? null,
+        name: item.name_human ?? null,
+        price: item.price ?? null,
+        supplier: null,
+      })),
     [items, pidStr],
   );
 
@@ -112,16 +113,15 @@ export default function DirectorProposalSheet({
       cancelled = true;
     };
   }, [analyticSourceItems]);
-  if (!loaded) return <Text style={{ opacity: 0.7, color: UI.sub }}>Загружаю состав…</Text>;
+
+  if (!loaded) {
+    return <Text style={{ opacity: 0.7, color: UI.sub }}>Загружаю состав…</Text>;
+  }
   if (!items.length) {
-    return (
-      <Text style={{ opacity: 0.75, color: UI.sub }}>
-        Состав пуст — утвердить нельзя
-      </Text>
-    );
+    return <Text style={{ opacity: 0.75, color: UI.sub }}>Состав пуст — утвердить нельзя</Text>;
   }
 
-  return (
+  const listHeader = (
     <>
       <DirectorProposalRequestContext
         pidStr={pidStr}
@@ -225,120 +225,134 @@ export default function DirectorProposalSheet({
           )}
         </View>
       ) : null}
+    </>
+  );
 
-      <FlashList
-        data={items}
-        keyExtractor={(it, idx) => `pi:${pidStr}:${it.id}:${idx}`}
-        overrideItemLayout={(layout: any) => {
-          layout.size = 88;
-        }}
-        contentContainerStyle={{ paddingBottom: 12 }}
-        keyboardShouldPersistTaps="handled"
-        nestedScrollEnabled
-        scrollEnabled
-        showsVerticalScrollIndicator={false}
-        renderItem={({ item: it }) => (
-          <View style={s.mobCard}>
-            <View style={s.mobMain}>
-              <View style={{ flexDirection: "row", alignItems: "center", flexWrap: "wrap" }}>
-                <Text style={[s.mobTitle, { marginRight: 8 }]} numberOfLines={3}>
-                  {it.name_human}
+  return (
+    <View style={s.sheetContent}>
+      <View style={s.sheetScrollableBody}>
+        <FlashList
+          data={items}
+          keyExtractor={(it, idx) => `pi:${pidStr}:${it.id}:${idx}`}
+          estimatedItemSize={88}
+          overrideItemLayout={(layout: { size?: number }) => {
+            layout.size = 88;
+          }}
+          style={s.sheetScrollableBody}
+          contentContainerStyle={{ paddingBottom: 16 }}
+          keyboardShouldPersistTaps="handled"
+          nestedScrollEnabled
+          scrollEnabled
+          showsVerticalScrollIndicator={false}
+          ListHeaderComponent={listHeader}
+          ListFooterComponent={() => (
+            <View style={{ paddingTop: 10, paddingBottom: 6, alignItems: "flex-end" }}>
+              <View
+                style={{
+                  paddingVertical: 6,
+                  paddingHorizontal: 12,
+                  borderRadius: 999,
+                  backgroundColor: "rgba(255,255,255,0.06)",
+                  borderWidth: 1,
+                  borderColor: "rgba(255,255,255,0.12)",
+                }}
+              >
+                <Text style={{ fontWeight: "900", color: UI.text, fontSize: 14 }}>
+                  ИТОГО: {Math.round(totalSum)}
                 </Text>
-
-                {it.item_kind ? (
-                  <View style={[s.kindPill, { marginTop: 4 }]}>
-                    <Text style={s.kindPillText}>
-                      {it.item_kind === "material" ? "Материал"
-                        : it.item_kind === "work" ? "Работа"
-                          : it.item_kind === "service" ? "Услуга"
-                            : it.item_kind}
-                    </Text>
-                  </View>
-                ) : null}
               </View>
-              <Text style={s.mobMeta}>
-                {`${it.total_qty} ${it.uom || ""}`.trim()}
-                {it.price != null ? ` · цена ${it.price}` : ""}
-                {it.price != null ? ` · сумма ${Math.round(Number(it.price) * Number(it.total_qty || 0))}` : ""}
-                {it.app_code ? ` · ${it.app_code}` : ""}
-              </Text>
             </View>
-            <View style={{ marginLeft: 10 }}>
-              <RejectItemButton
-                disabled={decidingId === pidStr || actingPropItemId === Number(it.id)}
-                loading={actingPropItemId === Number(it.id)}
-                onPress={() => void onRejectItem(it)}
-              />
+          )}
+          renderItem={({ item: it }) => (
+            <View style={s.mobCard}>
+              <View style={s.mobMain}>
+                <View style={{ flexDirection: "row", alignItems: "center", flexWrap: "wrap" }}>
+                  <Text style={[s.mobTitle, { marginRight: 8 }]} numberOfLines={3}>
+                    {it.name_human}
+                  </Text>
+
+                  {it.item_kind ? (
+                    <View style={[s.kindPill, { marginTop: 4 }]}>
+                      <Text style={s.kindPillText}>
+                        {it.item_kind === "material"
+                          ? "Материал"
+                          : it.item_kind === "work"
+                            ? "Работа"
+                            : it.item_kind === "service"
+                              ? "Услуга"
+                              : it.item_kind}
+                      </Text>
+                    </View>
+                  ) : null}
+                </View>
+                <Text style={s.mobMeta}>
+                  {`${it.total_qty} ${it.uom || ""}`.trim()}
+                  {it.price != null ? ` · цена ${it.price}` : ""}
+                  {it.price != null ? ` · сумма ${Math.round(Number(it.price) * Number(it.total_qty || 0))}` : ""}
+                  {it.app_code ? ` · ${it.app_code}` : ""}
+                </Text>
+              </View>
+              <View style={{ marginLeft: 10 }}>
+                <RejectItemButton
+                  disabled={decidingId === pidStr || actingPropItemId === Number(it.id)}
+                  loading={actingPropItemId === Number(it.id)}
+                  onPress={() => void onRejectItem(it)}
+                />
+              </View>
             </View>
+          )}
+        />
+      </View>
+
+      <View style={s.sheetFooter}>
+        <View style={s.reqActionsBottom}>
+          <View style={s.actionBtnSquare}>
+            <DeleteAllButton
+              disabled={screenLock || propReturnId === pidStr || propApproveId === pidStr}
+              loading={propReturnId === pidStr}
+              accessibilityLabel="Вернуть или отклонить"
+              onPress={onReturn}
+            />
           </View>
-        )}
-        ListFooterComponent={() => (
-          <View style={{ paddingTop: 10, paddingBottom: 6, alignItems: "flex-end" }}>
-            <View
-              style={{
-                paddingVertical: 6,
-                paddingHorizontal: 12,
-                borderRadius: 999,
-                backgroundColor: "rgba(255,255,255,0.06)",
-                borderWidth: 1,
-                borderColor: "rgba(255,255,255,0.12)",
-              }}
-            >
-              <Text style={{ fontWeight: "900", color: UI.text, fontSize: 14 }}>
-                ИТОГО: {Math.round(totalSum)}
-              </Text>
-            </View>
+
+          <View style={s.sp8} />
+
+          <Pressable
+            disabled={isPdfBusy || screenLock}
+            style={[
+              s.actionBtnWide,
+              { backgroundColor: UI.btnNeutral, opacity: isPdfBusy || screenLock ? 0.6 : 1 },
+            ]}
+            onPress={() => void onPdf()}
+          >
+            <Text style={s.actionText}>{isPdfBusy ? "PDF..." : "PDF"}</Text>
+          </Pressable>
+
+          <View style={s.sp8} />
+
+          <Pressable
+            disabled={screenLock}
+            style={[
+              s.actionBtnWide,
+              { backgroundColor: UI.btnNeutral, opacity: screenLock ? 0.6 : 1 },
+            ]}
+            onPress={() => void onExcel()}
+          >
+            <Text style={s.actionText}>Excel</Text>
+          </Pressable>
+
+          <View style={s.sp8} />
+
+          <View style={s.actionBtnSquare}>
+            <SendPrimaryButton
+              variant="green"
+              disabled={approveDisabled}
+              loading={propApproveId === pidStr}
+              onPress={() => void onApprove()}
+            />
           </View>
-        )}
-      />
-
-      <View style={s.reqActionsBottom}>
-        <View style={s.actionBtnSquare}>
-          <DeleteAllButton
-            disabled={screenLock || propReturnId === pidStr || propApproveId === pidStr}
-            loading={propReturnId === pidStr}
-            accessibilityLabel="Вернуть/Отклонить"
-            onPress={onReturn}
-          />
-        </View>
-
-        <View style={s.sp8} />
-
-        <Pressable
-          disabled={isPdfBusy || screenLock}
-          style={[
-            s.actionBtnWide,
-            { backgroundColor: UI.btnNeutral, opacity: (isPdfBusy || screenLock) ? 0.6 : 1 },
-          ]}
-          onPress={() => void onPdf()}
-        >
-          <Text style={s.actionText}>{isPdfBusy ? "PDF…" : "PDF"}</Text>
-        </Pressable>
-
-        <View style={s.sp8} />
-
-        <Pressable
-          disabled={screenLock}
-          style={[
-            s.actionBtnWide,
-            { backgroundColor: UI.btnNeutral, opacity: screenLock ? 0.6 : 1 },
-          ]}
-          onPress={() => void onExcel()}
-        >
-          <Text style={s.actionText}>Excel</Text>
-        </Pressable>
-
-        <View style={s.sp8} />
-
-        <View style={s.actionBtnSquare}>
-          <SendPrimaryButton
-            variant="green"
-            disabled={approveDisabled}
-            loading={propApproveId === pidStr}
-            onPress={() => void onApprove()}
-          />
         </View>
       </View>
-    </>
+    </View>
   );
 }

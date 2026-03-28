@@ -1,0 +1,9 @@
+{
+  "gate": "request_flow_hardening_verify",
+  "directorRequestScroll": true,
+  "foremanDraftRollover": true,
+  "foremanAiDraftOwner": true,
+  "directorWorkInclusion": true,
+  "green": true,
+  "status": "GREEN"
+}

@@ -1,0 +1,9 @@
+{
+  "requestSheetUsesScrollableBody": true,
+  "requestSheetFooterOutsideList": true,
+  "proposalSheetUsesScrollableBody": true,
+  "proposalSheetFooterOutsideList": true,
+  "sheetModalOwnsBodyFrame": true,
+  "stylesProvideSheetDiscipline": true,
+  "passed": true
+}

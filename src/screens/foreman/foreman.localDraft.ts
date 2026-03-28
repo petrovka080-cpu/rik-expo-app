@@ -627,6 +627,31 @@ export function buildForemanLocalDraftSnapshot(params: {
   return hasForemanLocalDraftContent(next) ? next : null;
 }
 
+export function buildFreshForemanLocalDraftSnapshot(params: {
+  base: ForemanLocalDraftSnapshot | null;
+  header: Partial<ForemanLocalDraftHeader>;
+}): ForemanLocalDraftSnapshot {
+  const base = params.base ? clone(params.base) : null;
+  return {
+    version: 1,
+    requestId: "",
+    displayNo: null,
+    status: "draft",
+    header: normalizeHeader({
+      ...emptyHeader(),
+      ...base?.header,
+      ...params.header,
+      comment: trim(params.header.comment),
+    }),
+    items: [],
+    qtyDrafts: {},
+    pendingDeletes: [],
+    submitRequested: false,
+    lastError: null,
+    updatedAt: new Date().toISOString(),
+  };
+}
+
 export function appendRowsToForemanLocalDraft(
   snapshot: ForemanLocalDraftSnapshot | null,
   rows: ForemanDraftAppendInput[],

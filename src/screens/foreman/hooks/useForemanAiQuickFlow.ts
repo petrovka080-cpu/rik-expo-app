@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Alert } from "react-native";
 
 import type { RequestDetails } from "../../../lib/catalog_api";
@@ -153,12 +153,14 @@ export function useForemanAiQuickFlow({
   const setAiUnavailableReason = useForemanUiStore((state) => state.setAiUnavailableReason);
   const aiQuickSessionHistory = useForemanUiStore((state) => state.aiQuickSessionHistory);
   const pushAiQuickSessionTurn = useForemanUiStore((state) => state.pushAiQuickSessionTurn);
+  const clearAiQuickSessionHistory = useForemanUiStore((state) => state.clearAiQuickSessionHistory);
   const resetAiQuickUi = useForemanUiStore((state) => state.resetAiQuickUi);
 
   const [aiQuickMode, setAiQuickMode] = useState<ForemanAiQuickMode>("compose");
   const [aiQuickApplying, setAiQuickApplying] = useState(false);
   const [selectedChoicesByGroupId, setSelectedChoicesByGroupId] =
     useState<ForemanAiQuickSelectionMap>({});
+  const openedDraftRequestIdRef = useRef("");
 
   const aiQuickSessionHint = useMemo(
     () => buildAiQuickSessionHint(aiQuickSessionHistory),
@@ -205,14 +207,62 @@ export function useForemanAiQuickFlow({
     setAiUnavailableReason,
   ]);
 
+  const rebindAiQuickToActiveDraft = useCallback(
+    (operation: "lifecycle" | "parse" | "apply") => {
+      const nextRequestId = ridStr(requestId);
+      clearParsedState();
+      clearAiQuickSessionHistory();
+      setAiQuickNotice("Активный черновик сменился. Повторите разбор для нового черновика.");
+      setAiQuickMode("compose");
+      openedDraftRequestIdRef.current = nextRequestId;
+      recordPlatformObservability({
+        screen: "foreman",
+        surface: "ai_quick_flow",
+        category: "ui",
+        event: "stale_draft_owner_rebound",
+        result: "skipped",
+        extra: {
+          module: "foreman.useForemanAiQuickFlow",
+          route: "/foreman",
+          role: "foreman",
+          owner: "ai_quick_flow",
+          operation,
+          activeRequestId: nextRequestId || null,
+        },
+      });
+    },
+    [clearAiQuickSessionHistory, clearParsedState, requestId, setAiQuickNotice],
+  );
+
+  const ensureActiveAiQuickDraftOwner = useCallback(
+    (operation: "parse" | "apply") => {
+      const openedRequestId = openedDraftRequestIdRef.current;
+      const activeRequestId = ridStr(requestId);
+      if (!openedRequestId || openedRequestId === activeRequestId) return true;
+      rebindAiQuickToActiveDraft(operation);
+      return false;
+    },
+    [rebindAiQuickToActiveDraft, requestId],
+  );
+
+  useEffect(() => {
+    if (!aiQuickVisible) return;
+    const openedRequestId = openedDraftRequestIdRef.current;
+    const activeRequestId = ridStr(requestId);
+    if (!openedRequestId || openedRequestId === activeRequestId) return;
+    rebindAiQuickToActiveDraft("lifecycle");
+  }, [aiQuickVisible, rebindAiQuickToActiveDraft, requestId]);
+
   const openAiQuick = useCallback(() => {
     resetAiQuickUi();
     resetReviewState();
+    openedDraftRequestIdRef.current = ridStr(requestId);
     setAiQuickVisible(true);
-  }, [resetAiQuickUi, resetReviewState, setAiQuickVisible]);
+  }, [requestId, resetAiQuickUi, resetReviewState, setAiQuickVisible]);
 
   const closeAiQuick = useCallback(() => {
     if (aiQuickLoading || aiQuickApplying) return;
+    openedDraftRequestIdRef.current = "";
     resetAiQuickUi();
     resetReviewState();
   }, [aiQuickApplying, aiQuickLoading, resetAiQuickUi, resetReviewState]);
@@ -243,6 +293,7 @@ export function useForemanAiQuickFlow({
   const handleAiQuickParse = useCallback(async () => {
     const promptText = aiQuickText.trim();
     if (!promptText || aiQuickLoading || aiQuickApplying) return;
+    if (!ensureActiveAiQuickDraftOwner("parse")) return;
 
     if (headerRequirements.missing.length) {
       activateHeaderAttention(`${headerRequirements.message} Я перевёл вас к этим полям.`);
@@ -351,6 +402,7 @@ export function useForemanAiQuickFlow({
     aiQuickLoading,
     aiQuickSessionHistory,
     aiQuickText,
+    ensureActiveAiQuickDraftOwner,
     headerRequirements,
     isDraftActive,
     networkOnline,
@@ -370,6 +422,7 @@ export function useForemanAiQuickFlow({
 
   const handleAiQuickApply = useCallback(async () => {
     if (!aiQuickCanApply || aiQuickLoading || aiQuickApplying) return;
+    if (!ensureActiveAiQuickDraftOwner("apply")) return;
 
     const promptText = aiQuickText.trim();
     const appliedItems = buildForemanAiQuickAppliedItems({
@@ -458,6 +511,7 @@ export function useForemanAiQuickFlow({
     aiQuickText,
     appendLocalDraftRows,
     clearHeaderAttention,
+    ensureActiveAiQuickDraftOwner,
     currentDisplayLabel,
     isDraftActive,
     itemsCount,

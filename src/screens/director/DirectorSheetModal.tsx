@@ -79,49 +79,51 @@ export default function DirectorSheetModal(props: Props) {
             </Pressable>
           </View>
 
-          {props.sheetKind === "request" && props.sheetRequest ? (
-            <DirectorRequestSheet
-              sheetRequest={props.sheetRequest}
-              screenLock={props.screenLock}
-              actingId={props.actingId}
-              reqDeleteId={props.reqDeleteId}
-              reqSendId={props.reqSendId}
-              isRequestPdfBusy={props.isRequestPdfBusy}
-              onRejectItem={props.onRejectItem}
-              onDeleteAll={props.onDeleteAll}
-              onOpenPdf={props.onOpenPdf}
-              onExportExcel={props.onExportExcel}
-              onApproveAndSend={props.onApproveAndSend}
-            />
-          ) : null}
+          <View style={s.sheetContent}>
+            {props.sheetKind === "request" && props.sheetRequest ? (
+              <DirectorRequestSheet
+                sheetRequest={props.sheetRequest}
+                screenLock={props.screenLock}
+                actingId={props.actingId}
+                reqDeleteId={props.reqDeleteId}
+                reqSendId={props.reqSendId}
+                isRequestPdfBusy={props.isRequestPdfBusy}
+                onRejectItem={props.onRejectItem}
+                onDeleteAll={props.onDeleteAll}
+                onOpenPdf={props.onOpenPdf}
+                onExportExcel={props.onExportExcel}
+                onApproveAndSend={props.onApproveAndSend}
+              />
+            ) : null}
 
-          {props.sheetKind === "proposal" && props.sheetProposalId ? (
-            <DirectorProposalContainer
-              sheetProposalId={String(props.sheetProposalId)}
-              loadedByProp={props.loadedByProp}
-              itemsByProp={props.itemsByProp}
-              propsHeads={props.propsHeads}
-              screenLock={props.screenLock}
-              propApproveId={props.propApproveId}
-              propReturnId={props.propReturnId}
-              decidingId={props.decidingId}
-              actingPropItemId={props.actingPropItemId}
-              propAttByProp={props.propAttByProp}
-              propAttBusyByProp={props.propAttBusyByProp}
-              propAttErrByProp={props.propAttErrByProp}
-              reqItemNoteById={props.reqItemNoteById}
-              propReqIdsByProp={props.propReqIdsByProp}
-              reqMetaById={props.reqMetaById}
-              isProposalPdfBusy={props.isProposalPdfBusy}
-              loadProposalAttachments={props.loadProposalAttachments}
-              onOpenAttachment={props.onOpenAttachment}
-              rejectProposalItem={props.rejectProposalItem}
-              onDirectorReturn={props.onDirectorReturn}
-              openProposalPdf={props.openProposalPdf}
-              exportProposalExcel={props.exportProposalExcel}
-              approveProposal={props.approveProposal}
-            />
-          ) : null}
+            {props.sheetKind === "proposal" && props.sheetProposalId ? (
+              <DirectorProposalContainer
+                sheetProposalId={String(props.sheetProposalId)}
+                loadedByProp={props.loadedByProp}
+                itemsByProp={props.itemsByProp}
+                propsHeads={props.propsHeads}
+                screenLock={props.screenLock}
+                propApproveId={props.propApproveId}
+                propReturnId={props.propReturnId}
+                decidingId={props.decidingId}
+                actingPropItemId={props.actingPropItemId}
+                propAttByProp={props.propAttByProp}
+                propAttBusyByProp={props.propAttBusyByProp}
+                propAttErrByProp={props.propAttErrByProp}
+                reqItemNoteById={props.reqItemNoteById}
+                propReqIdsByProp={props.propReqIdsByProp}
+                reqMetaById={props.reqMetaById}
+                isProposalPdfBusy={props.isProposalPdfBusy}
+                loadProposalAttachments={props.loadProposalAttachments}
+                onOpenAttachment={props.onOpenAttachment}
+                rejectProposalItem={props.rejectProposalItem}
+                onDirectorReturn={props.onDirectorReturn}
+                openProposalPdf={props.openProposalPdf}
+                exportProposalExcel={props.exportProposalExcel}
+                approveProposal={props.approveProposal}
+              />
+            ) : null}
+          </View>
         </Pressable>
       </Pressable>
     </Modal>
