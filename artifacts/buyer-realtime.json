@@ -1,7 +1,7 @@
 {
   "marker": {
-    "web": "RTBUY1774692505868",
-    "android": "RTBUY1774692670713"
+    "web": "RTBUY1774706758825",
+    "android": "RTBUY1774706959161"
   },
   "webRuntime": "artifacts/buyer-realtime.web.json",
   "androidRuntime": "artifacts/buyer-realtime.android.json",
@@ -19,7 +19,7 @@
     "refreshTriggered": true,
     "doubleFetchDetected": false,
     "inflightGuardWorked": true,
-    "recentGuardWorked": false,
+    "recentGuardWorked": true,
     "backendOwnerPreserved": true,
     "uiUpdated": true,
     "fetchCountAfterRealtime": {
@@ -41,8 +41,8 @@
       "eventReceived": true,
       "refreshTriggered": true,
       "doubleFetchDetected": false,
-      "inflightGuardWorked": true,
-      "recentGuardWorked": false,
+      "inflightGuardWorked": false,
+      "recentGuardWorked": true,
       "backendOwnerPreserved": true,
       "uiUpdated": true,
       "fetchCountAfterRealtime": 1,
@@ -75,7 +75,7 @@
         "blankSurfaceRecovered": false,
         "devClientBootstrapRecovered": false
       },
-      "fioConfirmed": true
+      "fioConfirmed": false
     }
   }
 }

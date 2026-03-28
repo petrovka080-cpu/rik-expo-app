@@ -832,6 +832,11 @@ export function createAndroidHarness(options: AndroidHarnessOptions) {
     const isLoginScreen =
       params.loginScreenPredicate ??
       ((xml: string) => xml.includes("Email") && (LOGIN_LABEL_RE.test(xml) || LOGIN_LABEL_FALLBACK_RE.test(xml)));
+    const isLoginSubmitPending = (xml: string) =>
+      isLoginScreen(xml) &&
+      (/android\.widget\.ProgressBar/i.test(xml) ||
+        /enabled="false"[^>]*content-desc="(?:Войти|Login)/i.test(xml) ||
+        /content-desc="(?:Войти|Login)"[^>]*enabled="false"/i.test(xml));
     const submitLoginAction = async (loginNode: AndroidNode | null) => {
       pressAndroidKey(66);
       await sleep(300);
@@ -972,7 +977,20 @@ export function createAndroidHarness(options: AndroidHarnessOptions) {
       await replaceAndroidFieldText(refreshedPasswordNode, params.user.password);
 
       const loginScreen = await getStableLoginScreen("password-filled");
-      const refreshedLoginNode = findAndroidLoginNode(parseAndroidNodes(loginScreen.xml)) ?? loginNode;
+      const loginNodes = parseAndroidNodes(loginScreen.xml);
+      const refreshedLoginNode = findAndroidLoginNode(loginNodes) ?? loginNode;
+      const readyEmailNode =
+        findAndroidNode(
+          loginNodes,
+          (node) =>
+            node.enabled &&
+            /android\.widget\.EditText/i.test(node.className) &&
+            /email/i.test(`${node.text} ${node.hint}`),
+        ) ?? refreshedEmailNode;
+      const readyEmailText = String(readyEmailNode?.text ?? "").trim();
+      if (readyEmailNode && (!readyEmailText || /^email$/i.test(readyEmailText) || readyEmailText !== params.user.email)) {
+        await replaceAndroidFieldText(readyEmailNode, params.user.email);
+      }
 
       await submitLoginAction(refreshedLoginNode);
       let blankSurfaceStreak = 0;
@@ -985,6 +1003,9 @@ export function createAndroidHarness(options: AndroidHarnessOptions) {
           const next = dumpAndroidScreen(`${params.artifactBase}-after-login`);
           const cleaned = await dismissInterruptions(next, `${params.artifactBase}-after-login-interrupt`);
           if (isLoginScreen(cleaned.xml)) {
+            if (isLoginSubmitPending(cleaned.xml)) {
+              return null;
+            }
             const retryNodes = parseAndroidNodes(cleaned.xml);
             const retryEmailNode =
               findAndroidNode(
@@ -1009,9 +1030,10 @@ export function createAndroidHarness(options: AndroidHarnessOptions) {
             } else if (retryEmailNode && emailText !== params.user.email) {
               await replaceAndroidFieldText(retryEmailNode, params.user.email);
             }
-            if (passwordNeedsFill && retryPasswordNode) {
+            if (retryPasswordNode) {
               await replaceAndroidFieldText(retryPasswordNode, params.user.password);
             }
+            await sleep(250);
             await submitLoginAction(retryLoginNode);
             return null;
           }

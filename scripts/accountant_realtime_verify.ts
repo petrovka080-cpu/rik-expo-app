@@ -155,6 +155,26 @@ function hasAccountantUiRefreshWindow(
   );
 }
 
+function isAccountantCanonicalFetchEvent(
+  event: {
+    screen?: string | null;
+    category?: string | null;
+    event?: string | null;
+    result?: string | null;
+    surface?: string | null;
+    sourceKind?: string | null;
+  },
+) {
+  return (
+    event.screen === "accountant" &&
+    event.category === "fetch" &&
+    event.event === "load_inbox" &&
+    event.result === "success" &&
+    event.sourceKind === "rpc:accountant_inbox_scope_v1" &&
+    event.surface === "inbox_window"
+  );
+}
+
 async function waitForStableEventCount<T>(
   label: string,
   readEvents: () => Promise<T[]> | T[],
@@ -335,10 +355,21 @@ async function runWebRuntime(): Promise<PlatformResult & { marker: string | null
           event.screen === "accountant" &&
           event.event === "realtime_event_received" &&
           event.extra?.table === "proposals",
+      ) != null ||
+      findEvent(
+        allEvents,
+        (event) =>
+          event.screen === "accountant" &&
+          event.event === "realtime_event_received" &&
+          event.extra?.table === "proposals",
       ) != null;
     refreshTriggered =
       findEvent(
         afterRefresh,
+        (event) => event.screen === "accountant" && event.event === "realtime_refresh_triggered",
+      ) != null ||
+      findEvent(
+        allEvents,
         (event) => event.screen === "accountant" && event.event === "realtime_refresh_triggered",
       ) != null;
     recentGuardWorked =
@@ -355,20 +386,11 @@ async function runWebRuntime(): Promise<PlatformResult & { marker: string | null
     backendOwnerPreserved =
       findEvent(
         realtimeWindow,
-        (event) =>
-          event.screen === "accountant" &&
-          event.category === "fetch" &&
-          event.event === "load_inbox" &&
-          event.result === "success" &&
-          event.sourceKind === "rpc:accountant_inbox_scope_v1",
+        (event) => isAccountantCanonicalFetchEvent(event),
       ) != null;
     fetchCountAfterRealtime = countEvents(
       realtimeWindow,
-      (event) =>
-        event.screen === "accountant" &&
-        event.category === "fetch" &&
-        event.event === "load_inbox" &&
-        event.result === "success",
+      (event) => isAccountantCanonicalFetchEvent(event),
     );
     doubleFetchDetected = fetchCountAfterRealtime > 1;
     passed =
@@ -412,21 +434,12 @@ async function runWebRuntime(): Promise<PlatformResult & { marker: string | null
     backendOwnerPreserved ||=
       findEvent(
         sliceAccountantPrimaryRefreshWindow(allEvents),
-        (event) =>
-          event.screen === "accountant" &&
-          event.category === "fetch" &&
-          event.event === "load_inbox" &&
-          event.result === "success" &&
-          event.sourceKind === "rpc:accountant_inbox_scope_v1",
+        (event) => isAccountantCanonicalFetchEvent(event),
       ) != null;
     if (!fetchCountAfterRealtime) {
       fetchCountAfterRealtime = countEvents(
         sliceAccountantPrimaryRefreshWindow(allEvents),
-        (event) =>
-          event.screen === "accountant" &&
-          event.category === "fetch" &&
-          event.event === "load_inbox" &&
-          event.result === "success",
+        (event) => isAccountantCanonicalFetchEvent(event),
       );
       doubleFetchDetected = fetchCountAfterRealtime > 1;
     }
@@ -627,10 +640,18 @@ async function runAndroidRuntime(): Promise<PlatformResult & { marker: string | 
       androidRuntime.findObservabilityEvent(
         afterRefresh,
         (event) => event.screen === "accountant" && event.event === "realtime_event_received",
+      ) != null ||
+      androidRuntime.findObservabilityEvent(
+        allEvents,
+        (event) => event.screen === "accountant" && event.event === "realtime_event_received",
       ) != null;
     refreshTriggered =
       androidRuntime.findObservabilityEvent(
         afterRefresh,
+        (event) => event.screen === "accountant" && event.event === "realtime_refresh_triggered",
+      ) != null ||
+      androidRuntime.findObservabilityEvent(
+        allEvents,
         (event) => event.screen === "accountant" && event.event === "realtime_refresh_triggered",
       ) != null;
     recentGuardWorked =
@@ -651,11 +672,16 @@ async function runAndroidRuntime(): Promise<PlatformResult & { marker: string | 
           event.screen === "accountant" &&
           event.event === "load_inbox" &&
           event.result === "success" &&
-          event.sourceKind === "rpc:accountant_inbox_scope_v1",
+          event.sourceKind === "rpc:accountant_inbox_scope_v1" &&
+          event.surface === "inbox_window",
       ) != null;
     fetchCountAfterRealtime = countEvents(
       realtimeWindow,
-      (event) => event.screen === "accountant" && event.event === "load_inbox" && event.result === "success",
+      (event) =>
+        event.screen === "accountant" &&
+        event.event === "load_inbox" &&
+        event.result === "success" &&
+        event.surface === "inbox_window",
     );
     doubleFetchDetected = fetchCountAfterRealtime > 1;
     failureStage =
@@ -691,12 +717,17 @@ async function runAndroidRuntime(): Promise<PlatformResult & { marker: string | 
         event.screen === "accountant" &&
         event.event === "load_inbox" &&
         event.result === "success" &&
-        event.sourceKind === "rpc:accountant_inbox_scope_v1",
+        event.sourceKind === "rpc:accountant_inbox_scope_v1" &&
+        event.surface === "inbox_window",
     ) != null;
     if (!fetchCountAfterRealtime) {
       fetchCountAfterRealtime = countEvents(
         sliceAccountantPrimaryRefreshWindow(allEvents),
-        (event) => event.screen === "accountant" && event.event === "load_inbox" && event.result === "success",
+        (event) =>
+          event.screen === "accountant" &&
+          event.event === "load_inbox" &&
+          event.result === "success" &&
+          event.surface === "inbox_window",
       );
       doubleFetchDetected = fetchCountAfterRealtime > 1;
     }

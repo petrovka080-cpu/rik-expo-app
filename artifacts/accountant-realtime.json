@@ -1,7 +1,7 @@
 {
   "marker": {
-    "web": "RTACCT1774692723170",
-    "android": "RTACCT1774692868139"
+    "web": "RTACCT1774707487849",
+    "android": "RTACCT1774707626995"
   },
   "webRuntime": "artifacts/accountant-realtime.web.json",
   "androidRuntime": "artifacts/accountant-realtime.android.json",
@@ -18,7 +18,7 @@
     "eventReceived": true,
     "refreshTriggered": true,
     "doubleFetchDetected": false,
-    "inflightGuardWorked": false,
+    "inflightGuardWorked": true,
     "recentGuardWorked": true,
     "backendOwnerPreserved": true,
     "uiUpdated": true,
@@ -54,8 +54,8 @@
       "eventReceived": true,
       "refreshTriggered": true,
       "doubleFetchDetected": false,
-      "inflightGuardWorked": false,
-      "recentGuardWorked": true,
+      "inflightGuardWorked": true,
+      "recentGuardWorked": false,
       "backendOwnerPreserved": true,
       "uiUpdated": true,
       "fetchCountAfterRealtime": 1,
@@ -75,7 +75,7 @@
         "blankSurfaceRecovered": false,
         "devClientBootstrapRecovered": false
       },
-      "fioConfirmed": true
+      "fioConfirmed": false
     }
   }
 }

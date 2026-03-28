@@ -1,5 +1,5 @@
 {
-  "marker": "RTACCT1774692868139",
+  "marker": "RTACCT1774707626995",
   "events": [
     {
       "screen": "accountant",
@@ -9,7 +9,7 @@
       "durationMs": null,
       "rowCount": null,
       "sourceKind": "supabase:postgres_changes",
-      "raw": "I/ReactNativeJS( 9647): '[platform.observability]', { screen: 'accountant',\nI/ReactNativeJS( 9647):   surface: 'screen_root',\nI/ReactNativeJS( 9647):   event: 'realtime_event_received',\nI/ReactNativeJS( 9647):   result: 'success',\nI/ReactNativeJS( 9647):   durationMs: null,\nI/ReactNativeJS( 9647):   rowCount: null,\nI/ReactNativeJS( 9647):   sourceKind: 'supabase:postgres_changes',\nI/ReactNativeJS( 9647):   errorStage: null }"
+      "raw": "I/ReactNativeJS(19813): '[platform.observability]', { screen: 'accountant',\nI/ReactNativeJS(19813):   surface: 'screen_root',\nI/ReactNativeJS(19813):   event: 'realtime_event_received',\nI/ReactNativeJS(19813):   result: 'success',\nI/ReactNativeJS(19813):   durationMs: null,\nI/ReactNativeJS(19813):   rowCount: null,\nI/ReactNativeJS(19813):   sourceKind: 'supabase:postgres_changes',\nI/ReactNativeJS(19813):   errorStage: null }"
     },
     {
       "screen": "accountant",
@@ -19,7 +19,7 @@
       "durationMs": null,
       "rowCount": null,
       "sourceKind": "supabase:postgres_changes",
-      "raw": "I/ReactNativeJS( 9647): '[platform.observability]', { screen: 'accountant',\nI/ReactNativeJS( 9647):   surface: 'screen_root',\nI/ReactNativeJS( 9647):   event: 'realtime_refresh_triggered',\nI/ReactNativeJS( 9647):   result: 'success',\nI/ReactNativeJS( 9647):   durationMs: null,\nI/ReactNativeJS( 9647):   rowCount: null,\nI/ReactNativeJS( 9647):   sourceKind: 'supabase:postgres_changes',\nI/ReactNativeJS( 9647):   errorStage: null }"
+      "raw": "I/ReactNativeJS(19813): '[platform.observability]', { screen: 'accountant',\nI/ReactNativeJS(19813):   surface: 'screen_root',\nI/ReactNativeJS(19813):   event: 'realtime_refresh_triggered',\nI/ReactNativeJS(19813):   result: 'success',\nI/ReactNativeJS(19813):   durationMs: null,\nI/ReactNativeJS(19813):   rowCount: null,\nI/ReactNativeJS(19813):   sourceKind: 'supabase:postgres_changes',\nI/ReactNativeJS(19813):   errorStage: null }"
     },
     {
       "screen": "accountant",
@@ -29,7 +29,17 @@
       "durationMs": null,
       "rowCount": null,
       "sourceKind": "supabase:postgres_changes",
-      "raw": "I/ReactNativeJS( 9647): '[platform.observability]', { screen: 'accountant',\nI/ReactNativeJS( 9647):   surface: 'screen_root',\nI/ReactNativeJS( 9647):   event: 'realtime_event_received',\nI/ReactNativeJS( 9647):   result: 'success',\nI/ReactNativeJS( 9647):   durationMs: null,\nI/ReactNativeJS( 9647):   rowCount: null,\nI/ReactNativeJS( 9647):   sourceKind: 'supabase:postgres_changes',\nI/ReactNativeJS( 9647):   errorStage: null }"
+      "raw": "I/ReactNativeJS(19813): '[platform.observability]', { screen: 'accountant',\nI/ReactNativeJS(19813):   surface: 'screen_root',\nI/ReactNativeJS(19813):   event: 'realtime_event_received',\nI/ReactNativeJS(19813):   result: 'success',\nI/ReactNativeJS(19813):   durationMs: null,\nI/ReactNativeJS(19813):   rowCount: null,\nI/ReactNativeJS(19813):   sourceKind: 'supabase:postgres_changes',\nI/ReactNativeJS(19813):   errorStage: null }"
+    },
+    {
+      "screen": "accountant",
+      "surface": "inbox_window",
+      "event": "load_inbox",
+      "result": "success",
+      "durationMs": 757,
+      "rowCount": 40,
+      "sourceKind": "rpc:accountant_inbox_scope_v1",
+      "raw": "I/ReactNativeJS(19813): '[platform.observability]', { screen: 'accountant',\nI/ReactNativeJS(19813):   surface: 'inbox_window',\nI/ReactNativeJS(19813):   event: 'load_inbox',\nI/ReactNativeJS(19813):   result: 'success',\nI/ReactNativeJS(19813):   durationMs: 757,\nI/ReactNativeJS(19813):   rowCount: 40,\nI/ReactNativeJS(19813):   sourceKind: 'rpc:accountant_inbox_scope_v1',\nI/ReactNativeJS(19813):   errorStage: null }"
     },
     {
       "screen": "accountant",
@@ -39,17 +49,17 @@
       "durationMs": null,
       "rowCount": 40,
       "sourceKind": null,
-      "raw": "I/ReactNativeJS( 9647): '[platform.observability]', { screen: 'accountant',\nI/ReactNativeJS( 9647):   surface: 'inbox_list',\nI/ReactNativeJS( 9647):   event: 'content_ready',\nI/ReactNativeJS( 9647):   result: 'success',\nI/ReactNativeJS( 9647):   durationMs: null,\nI/ReactNativeJS( 9647):   rowCount: 40,\nI/ReactNativeJS( 9647):   sourceKind: null,\nI/ReactNativeJS( 9647):   errorStage: null }"
+      "raw": "I/ReactNativeJS(19813): '[platform.observability]', { screen: 'accountant',\nI/ReactNativeJS(19813):   surface: 'inbox_list',\nI/ReactNativeJS(19813):   event: 'content_ready',\nI/ReactNativeJS(19813):   result: 'success',\nI/ReactNativeJS(19813):   durationMs: null,\nI/ReactNativeJS(19813):   rowCount: 40,\nI/ReactNativeJS(19813):   sourceKind: null,\nI/ReactNativeJS(19813):   errorStage: null }"
     },
     {
       "screen": "accountant",
       "surface": "inbox_list",
       "event": "load_inbox",
       "result": "success",
-      "durationMs": 1515,
+      "durationMs": 1471,
       "rowCount": 40,
       "sourceKind": "rpc:accountant_inbox_scope_v1",
-      "raw": "I/ReactNativeJS( 9647): '[platform.observability]', { screen: 'accountant',\nI/ReactNativeJS( 9647):   surface: 'inbox_list',\nI/ReactNativeJS( 9647):   event: 'load_inbox',\nI/ReactNativeJS( 9647):   result: 'success',\nI/ReactNativeJS( 9647):   durationMs: 1515,\nI/ReactNativeJS( 9647):   rowCount: 40,\nI/ReactNativeJS( 9647):   sourceKind: 'rpc:accountant_inbox_scope_v1',\nI/ReactNativeJS( 9647):   errorStage: null }"
+      "raw": "I/ReactNativeJS(19813): '[platform.observability]', { screen: 'accountant',\nI/ReactNativeJS(19813):   surface: 'inbox_list',\nI/ReactNativeJS(19813):   event: 'load_inbox',\nI/ReactNativeJS(19813):   result: 'success',\nI/ReactNativeJS(19813):   durationMs: 1471,\nI/ReactNativeJS(19813):   rowCount: 40,\nI/ReactNativeJS(19813):   sourceKind: 'rpc:accountant_inbox_scope_v1',\nI/ReactNativeJS(19813):   errorStage: null }"
     },
     {
       "screen": "accountant",
@@ -59,7 +69,7 @@
       "durationMs": null,
       "rowCount": null,
       "sourceKind": "supabase:postgres_changes",
-      "raw": "I/ReactNativeJS( 9647): '[platform.observability]', { screen: 'accountant',\nI/ReactNativeJS( 9647):   surface: 'screen_root',\nI/ReactNativeJS( 9647):   event: 'realtime_event_received',\nI/ReactNativeJS( 9647):   result: 'success',\nI/ReactNativeJS( 9647):   durationMs: null,\nI/ReactNativeJS( 9647):   rowCount: null,\nI/ReactNativeJS( 9647):   sourceKind: 'supabase:postgres_changes',\nI/ReactNativeJS( 9647):   errorStage: null }"
+      "raw": "I/ReactNativeJS(19813): '[platform.observability]', { screen: 'accountant',\nI/ReactNativeJS(19813):   surface: 'screen_root',\nI/ReactNativeJS(19813):   event: 'realtime_event_received',\nI/ReactNativeJS(19813):   result: 'success',\nI/ReactNativeJS(19813):   durationMs: null,\nI/ReactNativeJS(19813):   rowCount: null,\nI/ReactNativeJS(19813):   sourceKind: 'supabase:postgres_changes',\nI/ReactNativeJS(19813):   errorStage: null }"
     },
     {
       "screen": "accountant",
@@ -69,27 +79,7 @@
       "durationMs": null,
       "rowCount": null,
       "sourceKind": "supabase:postgres_changes",
-      "raw": "I/ReactNativeJS( 9647): '[platform.observability]', { screen: 'accountant',\nI/ReactNativeJS( 9647):   surface: 'screen_root',\nI/ReactNativeJS( 9647):   event: 'realtime_refresh_triggered',\nI/ReactNativeJS( 9647):   result: 'success',\nI/ReactNativeJS( 9647):   durationMs: null,\nI/ReactNativeJS( 9647):   rowCount: null,\nI/ReactNativeJS( 9647):   sourceKind: 'supabase:postgres_changes',\nI/ReactNativeJS( 9647):   errorStage: null }"
-    },
-    {
-      "screen": "accountant",
-      "surface": "inbox_list",
-      "event": "content_ready",
-      "result": "success",
-      "durationMs": null,
-      "rowCount": 40,
-      "sourceKind": null,
-      "raw": "I/ReactNativeJS( 9647): '[platform.observability]', { screen: 'accountant',\nI/ReactNativeJS( 9647):   surface: 'inbox_list',\nI/ReactNativeJS( 9647):   event: 'content_ready',\nI/ReactNativeJS( 9647):   result: 'success',\nI/ReactNativeJS( 9647):   durationMs: null,\nI/ReactNativeJS( 9647):   rowCount: 40,\nI/ReactNativeJS( 9647):   sourceKind: null,\nI/ReactNativeJS( 9647):   errorStage: null }"
-    },
-    {
-      "screen": "accountant",
-      "surface": "inbox_list",
-      "event": "load_inbox",
-      "result": "success",
-      "durationMs": 595,
-      "rowCount": 40,
-      "sourceKind": "rpc:accountant_inbox_scope_v1",
-      "raw": "I/ReactNativeJS( 9647): '[platform.observability]', { screen: 'accountant',\nI/ReactNativeJS( 9647):   surface: 'inbox_list',\nI/ReactNativeJS( 9647):   event: 'load_inbox',\nI/ReactNativeJS( 9647):   result: 'success',\nI/ReactNativeJS( 9647):   durationMs: 595,\nI/ReactNativeJS( 9647):   rowCount: 40,\nI/ReactNativeJS( 9647):   sourceKind: 'rpc:accountant_inbox_scope_v1',\nI/ReactNativeJS( 9647):   errorStage: null }"
+      "raw": "I/ReactNativeJS(19813): '[platform.observability]', { screen: 'accountant',\nI/ReactNativeJS(19813):   surface: 'screen_root',\nI/ReactNativeJS(19813):   event: 'realtime_refresh_triggered',\nI/ReactNativeJS(19813):   result: 'success',\nI/ReactNativeJS(19813):   durationMs: null,\nI/ReactNativeJS(19813):   rowCount: null,\nI/ReactNativeJS(19813):   sourceKind: 'supabase:postgres_changes',\nI/ReactNativeJS(19813):   errorStage: null }"
     },
     {
       "screen": "accountant",
@@ -99,17 +89,47 @@
       "durationMs": null,
       "rowCount": null,
       "sourceKind": "supabase:postgres_changes",
-      "raw": "I/ReactNativeJS( 9647): '[platform.observability]', { screen: 'accountant',\nI/ReactNativeJS( 9647):   surface: 'screen_root',\nI/ReactNativeJS( 9647):   event: 'realtime_event_received',\nI/ReactNativeJS( 9647):   result: 'success',\nI/ReactNativeJS( 9647):   durationMs: null,\nI/ReactNativeJS( 9647):   rowCount: null,\nI/ReactNativeJS( 9647):   sourceKind: 'supabase:postgres_changes',\nI/ReactNativeJS( 9647):   errorStage: null }"
+      "raw": "I/ReactNativeJS(19813): '[platform.observability]', { screen: 'accountant',\nI/ReactNativeJS(19813):   surface: 'screen_root',\nI/ReactNativeJS(19813):   event: 'realtime_event_received',\nI/ReactNativeJS(19813):   result: 'success',\nI/ReactNativeJS(19813):   durationMs: null,\nI/ReactNativeJS(19813):   rowCount: null,\nI/ReactNativeJS(19813):   sourceKind: 'supabase:postgres_changes',\nI/ReactNativeJS(19813):   errorStage: null }"
     },
     {
       "screen": "accountant",
       "surface": "screen_root",
-      "event": "realtime_refresh_skipped_recent",
+      "event": "realtime_refresh_skipped_inflight",
       "result": "skipped",
       "durationMs": null,
       "rowCount": null,
       "sourceKind": null,
-      "raw": "I/ReactNativeJS( 9647): '[platform.observability]', { screen: 'accountant',\nI/ReactNativeJS( 9647):   surface: 'screen_root',\nI/ReactNativeJS( 9647):   event: 'realtime_refresh_skipped_recent',\nI/ReactNativeJS( 9647):   result: 'skipped',\nI/ReactNativeJS( 9647):   durationMs: null,\nI/ReactNativeJS( 9647):   rowCount: null,\nI/ReactNativeJS( 9647):   sourceKind: null,\nI/ReactNativeJS( 9647):   errorStage: null }"
+      "raw": "I/ReactNativeJS(19813): '[platform.observability]', { screen: 'accountant',\nI/ReactNativeJS(19813):   surface: 'screen_root',\nI/ReactNativeJS(19813):   event: 'realtime_refresh_skipped_inflight',\nI/ReactNativeJS(19813):   result: 'skipped',\nI/ReactNativeJS(19813):   durationMs: null,\nI/ReactNativeJS(19813):   rowCount: null,\nI/ReactNativeJS(19813):   sourceKind: null,\nI/ReactNativeJS(19813):   errorStage: null }"
+    },
+    {
+      "screen": "accountant",
+      "surface": "inbox_window",
+      "event": "load_inbox",
+      "result": "success",
+      "durationMs": 637,
+      "rowCount": 40,
+      "sourceKind": "rpc:accountant_inbox_scope_v1",
+      "raw": "I/ReactNativeJS(19813): '[platform.observability]', { screen: 'accountant',\nI/ReactNativeJS(19813):   surface: 'inbox_window',\nI/ReactNativeJS(19813):   event: 'load_inbox',\nI/ReactNativeJS(19813):   result: 'success',\nI/ReactNativeJS(19813):   durationMs: 637,\nI/ReactNativeJS(19813):   rowCount: 40,\nI/ReactNativeJS(19813):   sourceKind: 'rpc:accountant_inbox_scope_v1',\nI/ReactNativeJS(19813):   errorStage: null }"
+    },
+    {
+      "screen": "accountant",
+      "surface": "inbox_list",
+      "event": "content_ready",
+      "result": "success",
+      "durationMs": null,
+      "rowCount": 40,
+      "sourceKind": null,
+      "raw": "I/ReactNativeJS(19813): '[platform.observability]', { screen: 'accountant',\nI/ReactNativeJS(19813):   surface: 'inbox_list',\nI/ReactNativeJS(19813):   event: 'content_ready',\nI/ReactNativeJS(19813):   result: 'success',\nI/ReactNativeJS(19813):   durationMs: null,\nI/ReactNativeJS(19813):   rowCount: 40,\nI/ReactNativeJS(19813):   sourceKind: null,\nI/ReactNativeJS(19813):   errorStage: null }"
+    },
+    {
+      "screen": "accountant",
+      "surface": "inbox_list",
+      "event": "load_inbox",
+      "result": "success",
+      "durationMs": 638,
+      "rowCount": 40,
+      "sourceKind": "rpc:accountant_inbox_scope_v1",
+      "raw": "I/ReactNativeJS(19813): '[platform.observability]', { screen: 'accountant',\nI/ReactNativeJS(19813):   surface: 'inbox_list',\nI/ReactNativeJS(19813):   event: 'load_inbox',\nI/ReactNativeJS(19813):   result: 'success',\nI/ReactNativeJS(19813):   durationMs: 638,\nI/ReactNativeJS(19813):   rowCount: 40,\nI/ReactNativeJS(19813):   sourceKind: 'rpc:accountant_inbox_scope_v1',\nI/ReactNativeJS(19813):   errorStage: null }"
     }
   ],
   "preflight": {
@@ -127,7 +147,7 @@
     "blankSurfaceRecovered": false,
     "devClientBootstrapRecovered": false
   },
-  "fioConfirmed": true,
+  "fioConfirmed": false,
   "artifacts": {
     "screenshot": "artifacts/android-accountant-realtime-final.png"
   }

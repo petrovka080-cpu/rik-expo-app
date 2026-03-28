@@ -31,16 +31,63 @@ let activeChannelSeq = 0;
 let realtimeAuthPromise: Promise<void> | null = null;
 let realtimeAuthToken = "";
 
-const cleanupRealtimeChannel = (client: SupabaseClient, channel: RealtimeChannel) => {
+const recordCleanupError = (params: {
+  scope: RealtimeScope;
+  route: string;
+  surface: string;
+  channelName: string;
+  stage: "unsubscribe" | "remove_channel";
+  error: unknown;
+}) => {
+  recordPlatformObservability({
+    screen: params.scope,
+    surface: params.surface,
+    category: "reload",
+    event: "realtime_channel_error",
+    result: "error",
+    trigger: "realtime",
+    sourceKind: "supabase:realtime",
+    errorStage: params.stage,
+    extra: {
+      route: params.route,
+      channelName: params.channelName,
+      owner: "realtime_lifecycle",
+      errorMessage: params.error instanceof Error ? params.error.message : String(params.error),
+    },
+  });
+};
+
+const cleanupRealtimeChannel = (params: {
+  client: SupabaseClient;
+  channel: RealtimeChannel;
+  scope: RealtimeScope;
+  route: string;
+  surface: string;
+  channelName: string;
+}) => {
   try {
-    channel.unsubscribe();
-  } catch {
-    // no-op
+    params.channel.unsubscribe();
+  } catch (error) {
+    recordCleanupError({
+      scope: params.scope,
+      route: params.route,
+      surface: params.surface,
+      channelName: params.channelName,
+      stage: "unsubscribe",
+      error,
+    });
   }
   try {
-    client.removeChannel(channel);
-  } catch {
-    // no-op
+    params.client.removeChannel(params.channel);
+  } catch (error) {
+    recordCleanupError({
+      scope: params.scope,
+      route: params.route,
+      surface: params.surface,
+      channelName: params.channelName,
+      stage: "remove_channel",
+      error,
+    });
   }
 };
 
@@ -138,7 +185,14 @@ export function subscribeChannel(params: SubscribeChannelParams) {
 
     const previous = activeChannels.get(params.name);
     if (previous) {
-      cleanupRealtimeChannel(client, previous.channel);
+      cleanupRealtimeChannel({
+        client,
+        channel: previous.channel,
+        scope: params.scope,
+        route: params.route,
+        surface,
+        channelName: params.name,
+      });
       activeChannels.delete(params.name);
       recordPlatformObservability({
         screen: params.scope,
@@ -235,7 +289,14 @@ export function subscribeChannel(params: SubscribeChannelParams) {
     });
 
     if (disposed) {
-      cleanupRealtimeChannel(client, channel);
+      cleanupRealtimeChannel({
+        client,
+        channel,
+        scope: params.scope,
+        route: params.route,
+        surface,
+        channelName: params.name,
+      });
       return;
     }
 
@@ -250,7 +311,14 @@ export function subscribeChannel(params: SubscribeChannelParams) {
     const current = activeChannels.get(params.name);
     if (!current || current.token !== token) return;
     activeChannels.delete(params.name);
-    cleanupRealtimeChannel(client, current.channel);
+    cleanupRealtimeChannel({
+      client,
+      channel: current.channel,
+      scope: params.scope,
+      route: params.route,
+      surface,
+      channelName: params.name,
+    });
     recordPlatformObservability({
       screen: params.scope,
       surface,

@@ -12,7 +12,7 @@
   "refreshTriggered": true,
   "doubleFetchDetected": false,
   "inflightGuardWorked": true,
-  "recentGuardWorked": false,
+  "recentGuardWorked": true,
   "backendOwnerPreserved": true,
   "uiUpdated": true,
   "fetchCountAfterRealtime": {
@@ -34,8 +34,8 @@
     "eventReceived": true,
     "refreshTriggered": true,
     "doubleFetchDetected": false,
-    "inflightGuardWorked": true,
-    "recentGuardWorked": false,
+    "inflightGuardWorked": false,
+    "recentGuardWorked": true,
     "backendOwnerPreserved": true,
     "uiUpdated": true,
     "fetchCountAfterRealtime": 1,
@@ -68,6 +68,6 @@
       "blankSurfaceRecovered": false,
       "devClientBootstrapRecovered": false
     },
-    "fioConfirmed": true
+    "fioConfirmed": false
   }
 }
