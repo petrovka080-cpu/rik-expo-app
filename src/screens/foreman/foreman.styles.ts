@@ -421,16 +421,12 @@ export const s = StyleSheet.create({
   // ===== draft card (entry)
   draftCard: {
     marginTop: 10,
-    flexDirection: "row",
-    alignItems: "flex-start",
-    justifyContent: "space-between",
-    gap: 14,
-
     padding: 14,
     borderRadius: 18,
     borderWidth: 1.25,
     borderColor: "rgba(255,255,255,0.16)",
     backgroundColor: "rgba(16,24,38,0.92)",
+    gap: 10,
 
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 10 },
@@ -438,15 +434,21 @@ export const s = StyleSheet.create({
     shadowRadius: 18,
     elevation: 6,
   },
+  draftCardTopRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 12,
+  },
   draftCardBody: {
     flex: 1,
     minWidth: 0,
-    gap: 6,
+    gap: 4,
   },
   draftCardActionColumn: {
+    flexDirection: "row",
     alignItems: "flex-end",
-    justifyContent: "space-between",
-    gap: 12,
+    gap: 8,
     flexShrink: 0,
   },
   draftTitle: {
@@ -456,16 +458,17 @@ export const s = StyleSheet.create({
     letterSpacing: 0.6,
   },
   draftNo: {
-    marginTop: 6,
     color: UI.text,
     fontWeight: "900",
-    fontSize: 18,
+    fontSize: 20,
+    lineHeight: 24,
   },
   draftSummary: {
     color: "rgba(255,255,255,0.88)",
     fontWeight: "800",
     fontSize: 14,
     lineHeight: 18,
+    flexShrink: 0,
   },
   draftHint: {
     marginTop: 8,
@@ -477,15 +480,19 @@ export const s = StyleSheet.create({
   draftMetaRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 8,
-    flexWrap: "wrap",
-    marginTop: 2,
+    gap: 6,
+    minWidth: 0,
   },
   draftMetaText: {
-    flex: 1,
+    flexShrink: 1,
     minWidth: 0,
-    color: "rgba(255,255,255,0.62)",
     fontWeight: "700",
+    fontSize: 12,
+    lineHeight: 16,
+  },
+  draftMetaDivider: {
+    color: "rgba(255,255,255,0.38)",
+    fontWeight: "800",
     fontSize: 12,
     lineHeight: 16,
   },
@@ -503,9 +510,9 @@ export const s = StyleSheet.create({
   posPill: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 10,
-    paddingVertical: 12,
-    paddingHorizontal: 14,
+    gap: 8,
+    paddingVertical: 9,
+    paddingHorizontal: 12,
     borderRadius: 999,
     backgroundColor: "rgba(255,255,255,0.08)",
     borderWidth: 1,
@@ -514,13 +521,13 @@ export const s = StyleSheet.create({
   posPillText: {
     color: UI.text,
     fontWeight: "900",
-    fontSize: 14,
+    fontSize: 13,
     letterSpacing: 0.2,
   },
   posCountPill: {
-    minWidth: 28,
-    height: 24,
-    paddingHorizontal: 10,
+    minWidth: 24,
+    height: 22,
+    paddingHorizontal: 8,
     borderRadius: 999,
     alignItems: "center",
     justifyContent: "center",

@@ -37,7 +37,6 @@ export default function ForemanDraftSummaryCard({
   emptyLabel = "Новый черновик",
   itemsCount,
   syncLabel,
-  syncDetail,
   syncTone = "neutral",
   actionLabel = "Позиции",
   actionIcon = "list",
@@ -48,6 +47,7 @@ export default function ForemanDraftSummaryCard({
   const toneStyle = useMemo(() => resolveToneStyle(syncTone), [syncTone]);
   const displayLabel = String(requestLabel || "").trim() || emptyLabel;
   const itemsLabel = `${itemsCount} позиций`;
+  const statusLabel = String(syncLabel || "").trim() || (itemsCount === 0 ? "Черновик пуст" : "");
 
   return (
     <Pressable
@@ -55,47 +55,48 @@ export default function ForemanDraftSummaryCard({
       style={styles.draftCard}
       android_ripple={{ color: "rgba(255,255,255,0.06)" }}
     >
-      <View style={styles.draftCardBody}>
+      <View style={styles.draftCardTopRow}>
         <Text style={styles.draftTitle}>Черновик</Text>
-        <Text style={styles.draftNo} numberOfLines={1} ellipsizeMode="tail">
-          {displayLabel}
-        </Text>
-        <Text style={styles.draftSummary} numberOfLines={1}>
-          {itemsLabel}
-        </Text>
-
-        {syncLabel ? (
-          <View style={styles.draftMetaRow}>
-            <View
-              style={[
-                styles.draftSyncBadge,
-                {
-                  backgroundColor: toneStyle.bg,
-                },
-              ]}
-            >
-              <Text style={[styles.draftSyncBadgeText, { color: toneStyle.fg }]} numberOfLines={1}>
-                {syncLabel}
-              </Text>
+        <View style={styles.draftCardActionColumn}>
+          <View style={styles.posPill}>
+            <Ionicons name={actionIcon} size={16} color={ui.text} />
+            <Text style={styles.posPillText}>{actionLabel}</Text>
+            <View style={styles.posCountPill}>
+              <Text style={styles.posCountText}>{itemsCount}</Text>
             </View>
-            {syncDetail ? (
-              <Text style={styles.draftMetaText} numberOfLines={1} ellipsizeMode="tail">
-                {syncDetail}
-              </Text>
-            ) : null}
           </View>
-        ) : null}
+          <Ionicons name="chevron-forward" size={16} color="rgba(255,255,255,0.48)" />
+        </View>
       </View>
 
-      <View style={styles.draftCardActionColumn}>
-        <View style={styles.posPill}>
-          <Ionicons name={actionIcon} size={18} color={ui.text} />
-          <Text style={styles.posPillText}>{actionLabel}</Text>
-          <View style={styles.posCountPill}>
-            <Text style={styles.posCountText}>{itemsCount}</Text>
-          </View>
+      <View style={styles.draftCardBody}>
+        <Text
+          style={styles.draftNo}
+          numberOfLines={1}
+          ellipsizeMode="tail"
+          adjustsFontSizeToFit
+          minimumFontScale={0.88}
+        >
+          {displayLabel}
+        </Text>
+
+        <View style={styles.draftMetaRow}>
+          <Text style={styles.draftSummary} numberOfLines={1}>
+            {itemsLabel}
+          </Text>
+          {statusLabel ? (
+            <>
+              <Text style={styles.draftMetaDivider}>•</Text>
+              <Text
+                style={[styles.draftMetaText, { color: toneStyle.fg }]}
+                numberOfLines={1}
+                ellipsizeMode="tail"
+              >
+                {statusLabel}
+              </Text>
+            </>
+          ) : null}
         </View>
-        <Ionicons name="chevron-forward" size={18} color="rgba(255,255,255,0.55)" />
       </View>
     </Pressable>
   );

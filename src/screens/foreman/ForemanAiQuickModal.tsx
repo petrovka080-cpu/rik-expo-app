@@ -134,17 +134,23 @@ export default function ForemanAiQuickModal(props: Props) {
         : voice.status === "unsupported"
           ? "mic-off-outline"
           : "mic-outline";
-  const micLabel =
-    voice.status === "listening"
-      ? "Стоп"
-      : voice.status === "recognizing"
-        ? "Слушаю"
-        : voice.status === "denied" || voice.status === "failed"
-          ? "Повторить"
-          : voice.status === "unsupported"
-            ? "Недоступно"
-            : "Микрофон";
   const composerDisabled = props.parseLoading || voice.status === "unsupported";
+  const voiceHelperText = voice.error
+    ? voice.error
+    : voice.status === "listening"
+      ? "Слушаю. Нажмите ещё раз, чтобы остановить запись."
+      : voice.status === "recognizing"
+        ? "Распознаю речь и подставляю текст в поле."
+        : voice.status === "denied" || voice.status === "failed"
+          ? "Нажмите на микрофон, чтобы повторить попытку."
+          : voice.status === "unsupported"
+            ? "Голосовой ввод недоступен на этом устройстве."
+            : "Можно напечатать заявку или надиктовать её через микрофон.";
+  const voiceHelperColor =
+    voice.error || voice.status === "denied" || voice.status === "failed" || voice.status === "unsupported"
+      ? "#fdba74"
+      : props.ui.sub;
+  const canParse = !!props.value.trim() && !props.parseLoading;
 
   return (
     <Modal
@@ -264,79 +270,99 @@ export default function ForemanAiQuickModal(props: Props) {
               <View
                 style={{
                   marginTop: 8,
-                  borderRadius: 20,
+                  borderRadius: 22,
                   borderWidth: 1,
                   borderColor: "rgba(255,255,255,0.10)",
-                  backgroundColor: "rgba(255,255,255,0.04)",
+                  backgroundColor: "rgba(255,255,255,0.05)",
                   padding: 12,
-                  gap: 12,
+                  gap: 10,
                 }}
               >
-                <TextInput
-                  value={props.value}
-                  onChangeText={props.onChangeText}
-                  multiline
-                  textAlignVertical="top"
-                  placeholder="Что нужно добавить в заявку?"
-                  placeholderTextColor="rgba(255,255,255,0.35)"
-                  style={[
-                    props.styles.input,
-                    {
-                      minHeight: 128,
-                      maxHeight: 200,
-                      marginBottom: 0,
-                      paddingVertical: 0,
-                      paddingHorizontal: 0,
-                      borderWidth: 0,
-                      backgroundColor: "transparent",
-                    },
-                  ]}
-                />
+                <View
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "flex-end",
+                    gap: 10,
+                    borderRadius: 18,
+                    borderWidth: 1,
+                    borderColor: "rgba(255,255,255,0.08)",
+                    backgroundColor: "rgba(11,15,20,0.28)",
+                    paddingHorizontal: 14,
+                    paddingVertical: 12,
+                  }}
+                >
+                  <TextInput
+                    value={props.value}
+                    onChangeText={props.onChangeText}
+                    multiline
+                    textAlignVertical="top"
+                    placeholder="Что нужно добавить в заявку?"
+                    placeholderTextColor="rgba(255,255,255,0.35)"
+                    style={[
+                      props.styles.input,
+                      {
+                        flex: 1,
+                        minHeight: 104,
+                        maxHeight: 180,
+                        marginBottom: 0,
+                        paddingVertical: 0,
+                        paddingHorizontal: 0,
+                        borderWidth: 0,
+                        backgroundColor: "transparent",
+                      },
+                    ]}
+                  />
 
-                {voice.error ? (
-                  <Text style={{ color: "#fdba74", fontSize: 12 }}>{voice.error}</Text>
-                ) : null}
-
-                <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
                   <Pressable
                     onPress={voice.isActive ? voice.stop : voice.start}
                     disabled={composerDisabled}
                     style={{
                       width: 48,
                       height: 48,
-                      borderRadius: 16,
+                      borderRadius: 24,
                       borderWidth: 1,
                       borderColor: voice.isActive ? props.ui.accent : "rgba(255,255,255,0.12)",
                       backgroundColor: voice.isActive ? "rgba(34,197,94,0.14)" : "rgba(255,255,255,0.05)",
                       alignItems: "center",
                       justifyContent: "center",
                       opacity: composerDisabled ? 0.55 : 1,
+                      flexShrink: 0,
                     }}
+                    accessibilityLabel={voice.isActive ? "Остановить голосовой ввод" : "Запустить голосовой ввод"}
                   >
                     <Ionicons name={micIcon} size={22} color={props.ui.text} />
                   </Pressable>
+                </View>
 
+                <View
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    gap: 10,
+                  }}
+                >
                   <Text
-                    style={{ flex: 1, minWidth: 0, color: props.ui.sub, fontSize: 12, fontWeight: "600" }}
-                    numberOfLines={1}
+                    style={{ flex: 1, minWidth: 0, color: voiceHelperColor, fontSize: 12, fontWeight: "600" }}
+                    numberOfLines={2}
                     ellipsizeMode="tail"
                   >
-                    {micLabel}
+                    {voiceHelperText}
                   </Text>
-
                   <Pressable
                     onPress={() => void props.onParse()}
-                    disabled={props.parseLoading || !props.value.trim()}
+                    disabled={!canParse}
                     style={[
                       props.styles.actionBtnWide,
                       {
                         flex: 0,
-                        minWidth: 132,
+                        minWidth: 128,
                         backgroundColor: props.ui.accent,
-                        opacity: props.parseLoading || !props.value.trim() ? 0.6 : 1,
+                        opacity: canParse ? 1 : 0.6,
                         flexDirection: "row",
                         gap: 8,
                         paddingHorizontal: 18,
+                        paddingVertical: 11,
                       },
                     ]}
                   >
