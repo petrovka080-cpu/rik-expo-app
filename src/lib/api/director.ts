@@ -2,11 +2,52 @@ import { supabase } from "../supabaseClient";
 import type { Database } from "../database.types";
 import { client, toRpcId, parseErr } from "./_core";
 import type { DirectorPendingRow, DirectorInboxRow } from "./types";
+import { recordPlatformObservability } from "../observability/platformObservability";
 
 const logDirectorApiDebug = (...args: unknown[]) => {
   if (__DEV__) {
     console.warn(...args);
   }
+};
+
+const getDirectorApiErrorMessage = (error: unknown, fallback: string) => {
+  if (error instanceof Error) {
+    const message = error.message.trim();
+    if (message) return message;
+  }
+  if (error && typeof error === "object") {
+    const record = error as Record<string, unknown>;
+    const message = String(record.message ?? "").trim();
+    if (message) return message;
+  }
+  const raw = String(error ?? "").trim();
+  return raw || fallback;
+};
+
+const recordDirectorApiWarning = (
+  event: string,
+  error: unknown,
+  extra?: Record<string, unknown>,
+) => {
+  const message = getDirectorApiErrorMessage(error, event);
+  logDirectorApiDebug("[director.api]", { event, message, ...extra });
+  recordPlatformObservability({
+    screen: "director",
+    surface: "inbox_api",
+    category: "fetch",
+    event,
+    result: "error",
+    fallbackUsed: true,
+    errorStage: event,
+    errorClass: error instanceof Error ? error.name : undefined,
+    errorMessage: message,
+    extra: {
+      module: "director.api",
+      owner: "director_api",
+      severity: "warn",
+      ...extra,
+    },
+  });
 };
 
 type RequestStatus = Database["public"]["Enums"]["request_status_enum"];
@@ -125,7 +166,11 @@ export async function approve(approvalId: number | string) {
   try {
     const rpc = await client.rpc("approve_one", { p_proposal_id: toRpcId(approvalId) });
     if (!rpc.error) return true;
-  } catch {}
+  } catch (error) {
+    recordDirectorApiWarning("approve_rpc_failed", error, {
+      approvalId: String(approvalId),
+    });
+  }
 
   const upd = await client
     .from("proposals")
@@ -143,7 +188,11 @@ export async function reject(approvalId: number | string, _reason = "Без пр
   try {
     const rpc = await client.rpc("reject_one", { p_proposal_id: toRpcId(approvalId) });
     if (!rpc.error) return true;
-  } catch {}
+  } catch (error) {
+    recordDirectorApiWarning("reject_rpc_failed", error, {
+      approvalId: String(approvalId),
+    });
+  }
 
   const upd = await client
     .from("proposals")

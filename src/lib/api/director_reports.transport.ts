@@ -77,9 +77,50 @@ import {
   looksLikeMaterialCode,
   probeNameSources,
 } from "./director_reports.naming";
+import { recordPlatformObservability } from "../observability/platformObservability";
 
 let requestsSelectPlanCache: string | null = null;
 let requestsDisciplineSelectPlanCache: string | null = null;
+
+const getDirectorReportsTransportErrorMessage = (error: unknown, fallback: string) => {
+  if (error instanceof Error) {
+    const message = error.message.trim();
+    if (message) return message;
+  }
+  if (error && typeof error === "object") {
+    const record = error as Record<string, unknown>;
+    const message = String(record.message ?? "").trim();
+    if (message) return message;
+  }
+  const raw = String(error ?? "").trim();
+  return raw || fallback;
+};
+
+const recordDirectorReportsTransportWarning = (
+  event: string,
+  error: unknown,
+  extra?: Record<string, unknown>,
+) => {
+  const message = getDirectorReportsTransportErrorMessage(error, event);
+  console.warn("[director_reports.transport]", { event, message, ...extra });
+  recordPlatformObservability({
+    screen: "director",
+    surface: "reports_transport",
+    category: "fetch",
+    event,
+    result: "error",
+    fallbackUsed: true,
+    errorStage: event,
+    errorClass: error instanceof Error ? error.name : undefined,
+    errorMessage: message,
+    extra: {
+      module: "director_reports.transport",
+      owner: "reports_transport",
+      severity: "warn",
+      ...extra,
+    },
+  });
+};
 
 async function runTypedRpc<TRow>(
   fnName:
@@ -1137,7 +1178,13 @@ async function fetchIssuePriceMapByCode(opts?: {
           }
         }
       }
-    } catch { }
+    } catch (error) {
+      recordDirectorReportsTransportWarning("issue_price_map_purchase_items_failed", error, {
+        hasScopedCodes,
+        scopedCodeCount: scopedCodes.length,
+        skipPurchaseItems: !!opts?.skipPurchaseItems,
+      });
+    }
   }
 
   if (!weighted.size && !DIRECTOR_REPORTS_STRICT_FACT_SOURCES) {
@@ -1168,7 +1215,12 @@ async function fetchIssuePriceMapByCode(opts?: {
           }
         }
       }
-    } catch { }
+    } catch (error) {
+      recordDirectorReportsTransportWarning("issue_price_map_proposal_items_failed", error, {
+        hasScopedCodes,
+        scopedCodeCount: scopedCodes.length,
+      });
+    }
   }
 
   const out = new Map<string, number>();
@@ -1222,7 +1274,11 @@ async function fetchDirectorReportCanonicalMaterials(p: {
         return { ...r, name_human_ru: best };
       }),
     };
-  } catch {
+  } catch (error) {
+    recordDirectorReportsTransportWarning("canonical_materials_name_resolution_failed", error, {
+      codeCount: codesToResolve.length,
+      objectName: p.objectName,
+    });
     return adapted;
   }
 }
@@ -1285,7 +1341,12 @@ async function fetchPriceByRequestItemId(requestItemIds: string[]): Promise<Map<
       for (const [id, v] of agg.entries()) {
         if (v.w > 0) out.set(id, v.sum / v.w);
       }
-    } catch { }
+    } catch (error) {
+      recordDirectorReportsTransportWarning("request_item_price_lookup_failed", error, {
+        chunkSize: part.length,
+        totalIds: ids.length,
+      });
+    }
   }
 
   return out;
@@ -1305,7 +1366,14 @@ async function fetchFactRowsForDiscipline(p: {
     chain.push("acc_rpc");
     rows = await fetchDirectorFactViaAccRpc({ from: p.from, to: p.to, objectName });
     if (rows.length) return { rows, source: "acc_rpc", chain };
-  } catch { }
+  } catch (error) {
+    recordDirectorReportsTransportWarning("discipline_rows_acc_rpc_failed", error, {
+      chain: [...chain],
+      from: p.from,
+      to: p.to,
+      objectName,
+    });
+  }
   if (!rows.length) {
     if (canUseDisciplineSourceRpc()) {
       try {
@@ -1328,7 +1396,14 @@ async function fetchFactRowsForDiscipline(p: {
       chain.push("view");
       rows = await fetchAllFactRowsFromView({ from: p.from, to: p.to, objectName });
       if (rows.length) return { rows, source: "view", chain };
-    } catch { }
+    } catch (error) {
+      recordDirectorReportsTransportWarning("discipline_rows_view_failed", error, {
+        chain: [...chain],
+        from: p.from,
+        to: p.to,
+        objectName,
+      });
+    }
   }
   if (!rows.length) {
     try {
@@ -1340,7 +1415,15 @@ async function fetchFactRowsForDiscipline(p: {
         skipMaterialNameResolve: p.skipMaterialNameResolve,
       });
       if (rows.length) return { rows, source: "tables", chain };
-    } catch { }
+    } catch (error) {
+      recordDirectorReportsTransportWarning("discipline_rows_tables_failed", error, {
+        chain: [...chain],
+        from: p.from,
+        to: p.to,
+        objectName,
+        skipMaterialNameResolve: !!p.skipMaterialNameResolve,
+      });
+    }
   }
   return { rows: [], source: "none", chain };
 }

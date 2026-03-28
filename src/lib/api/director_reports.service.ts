@@ -61,6 +61,7 @@ import {
   hasCanonicalWorksDetailLevels,
   shouldRejectAllObjectsEmptyMaterialsPayload,
 } from "./director_reports.fallbacks";
+import { recordPlatformObservability } from "../observability/platformObservability";
 
 const summarizeDisciplinePayload = (payload: DirectorDisciplinePayload | null) => {
   const works = Array.isArray(payload?.works) ? payload.works : [];
@@ -110,6 +111,46 @@ const trackedResult = <T,>(payload: T, meta: DirectorReportFetchMeta): DirectorR
   payload,
   meta,
 });
+
+const getDirectorReportsServiceErrorMessage = (error: unknown, fallback: string) => {
+  if (error instanceof Error) {
+    const message = error.message.trim();
+    if (message) return message;
+  }
+  if (error && typeof error === "object") {
+    const record = error as Record<string, unknown>;
+    const message = String(record.message ?? "").trim();
+    if (message) return message;
+  }
+  const raw = String(error ?? "").trim();
+  return raw || fallback;
+};
+
+const recordDirectorReportsServiceWarning = (
+  event: string,
+  error: unknown,
+  extra?: Record<string, unknown>,
+) => {
+  const message = getDirectorReportsServiceErrorMessage(error, event);
+  console.warn("[director_reports.service]", { event, message, ...extra });
+  recordPlatformObservability({
+    screen: "director",
+    surface: "reports_service",
+    category: "fetch",
+    event,
+    result: "error",
+    fallbackUsed: true,
+    errorStage: event,
+    errorClass: error instanceof Error ? error.name : undefined,
+    errorMessage: message,
+    extra: {
+      module: "director_reports.service",
+      owner: "reports_service",
+      severity: "warn",
+      ...extra,
+    },
+  });
+};
 
 const branchFromDisciplineSource = (source: DisciplineRowsSource): DirectorReportFetchBranch => {
   switch (source) {
@@ -173,19 +214,37 @@ export async function fetchDirectorWarehouseReportOptionsTracked(p: {
   chain.push("tables");
   try {
     rows = await fetchAllFactRowsFromTables({ from: pFrom, to: pTo, objectName: null });
-  } catch { }
+  } catch (error) {
+    recordDirectorReportsServiceWarning("options_tables_failed", error, {
+      chain: [...chain],
+      from: pFrom,
+      to: pTo,
+    });
+  }
   if (!rows.length) {
     chain.push("acc_rpc");
     try {
       rows = await fetchDirectorFactViaAccRpc({ from: pFrom, to: pTo, objectName: null });
-    } catch { }
+    } catch (error) {
+      recordDirectorReportsServiceWarning("options_acc_rpc_failed", error, {
+        chain: [...chain],
+        from: pFrom,
+        to: pTo,
+      });
+    }
   }
 
   if (!rows.length) {
     chain.push("view");
     try {
       rows = await fetchAllFactRowsFromView({ from: pFrom, to: pTo, objectName: null });
-    } catch { }
+    } catch (error) {
+      recordDirectorReportsServiceWarning("options_view_failed", error, {
+        chain: [...chain],
+        from: pFrom,
+        to: pTo,
+      });
+    }
   }
 
   if (!rows.length) {
@@ -317,7 +376,14 @@ export async function fetchDirectorWarehouseReportTracked(p: {
   try {
     rows = await fetchDirectorFactViaAccRpc({ from: pFrom, to: pTo, objectName });
     if (rows.length) rowBranch = "acc_rpc";
-  } catch { }
+  } catch (error) {
+    recordDirectorReportsServiceWarning("report_acc_rpc_failed", error, {
+      chain: [...chain],
+      from: pFrom,
+      to: pTo,
+      objectName,
+    });
+  }
   if (!rows.length) {
     if (canUseDisciplineSourceRpc()) {
       const tSource = nowMs();
@@ -343,30 +409,61 @@ export async function fetchDirectorWarehouseReportTracked(p: {
     try {
       rows = await fetchAllFactRowsFromView({ from: pFrom, to: pTo, objectName });
       if (rows.length) rowBranch = "view";
-    } catch { }
+    } catch (error) {
+      recordDirectorReportsServiceWarning("report_view_failed", error, {
+        chain: [...chain],
+        from: pFrom,
+        to: pTo,
+        objectName,
+      });
+    }
   }
   if (!rows.length) {
     chain.push("tables");
     try {
       rows = await fetchDisciplineFactRowsFromTables({ from: pFrom, to: pTo, objectName });
       if (rows.length) rowBranch = "tables";
-    } catch { }
+    } catch (error) {
+      recordDirectorReportsServiceWarning("report_discipline_tables_failed", error, {
+        chain: [...chain],
+        from: pFrom,
+        to: pTo,
+        objectName,
+      });
+    }
   }
   if (!rows.length) {
     chain.push("tables");
     try {
       rows = await fetchAllFactRowsFromTables({ from: pFrom, to: pTo, objectName });
       if (rows.length) rowBranch = "tables";
-    } catch { }
+    } catch (error) {
+      recordDirectorReportsServiceWarning("report_tables_failed", error, {
+        chain: [...chain],
+        from: pFrom,
+        to: pTo,
+        objectName,
+      });
+    }
   }
 
   if (rows.length) {
     try {
       rows = await enrichFactRowsMaterialNames(rows);
-    } catch { }
+    } catch (error) {
+      recordDirectorReportsServiceWarning("report_enrich_material_names_failed", error, {
+        branch: rowBranch ?? "tables",
+        rowCount: rows.length,
+      });
+    }
     try {
       rows = await enrichFactRowsLevelNames(rows);
-    } catch { }
+    } catch (error) {
+      recordDirectorReportsServiceWarning("report_enrich_level_names_failed", error, {
+        branch: rowBranch ?? "tables",
+        rowCount: rows.length,
+      });
+    }
     const payload = buildPayloadFromFactRows({
       from: pFrom,
       to: pTo,
@@ -568,7 +665,13 @@ export async function fetchDirectorWarehouseReportDisciplineTracked(p: {
         `[director_reports] discipline.enrich_material_names: skipped_${opts?.skipPrices ? "in_first_stage" : "for_tables_source"}`,
       );
     }
-  } catch { }
+  } catch (error) {
+    recordDirectorReportsServiceWarning("discipline_enrich_material_names_failed", error, {
+      rowCount: rows.length,
+      rowsSource: rowsResult.source,
+      skipPrices: !!opts?.skipPrices,
+    });
+  }
   try {
     if (!opts?.skipPrices) {
       const tLevels = nowMs();
@@ -577,7 +680,13 @@ export async function fetchDirectorWarehouseReportDisciplineTracked(p: {
     } else if (REPORTS_TIMING) {
       console.info("[director_reports] discipline.enrich_level_names: skipped_in_first_stage");
     }
-  } catch { }
+  } catch (error) {
+    recordDirectorReportsServiceWarning("discipline_enrich_level_names_failed", error, {
+      rowCount: rows.length,
+      rowsSource: rowsResult.source,
+      skipPrices: !!opts?.skipPrices,
+    });
+  }
 
   if (opts?.skipPrices) {
     const payload = buildDisciplinePayloadFromFactRows(rows, {
