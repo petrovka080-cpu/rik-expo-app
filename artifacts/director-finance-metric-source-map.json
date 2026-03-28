@@ -1,0 +1,81 @@
+{
+  "gate": "director_finance_consistency_metric_source_map",
+  "mode": "fallback_legacy",
+  "metrics": [
+    {
+      "key": "obligations_approved",
+      "label": "Утверждено по предложениям",
+      "semantics": "invoice_level_obligations",
+      "source": "summary_legacy",
+      "sourcePath": "summary.approved",
+      "materials": "conditional",
+      "works": "conditional",
+      "services": "conditional"
+    },
+    {
+      "key": "obligations_paid",
+      "label": "Оплачено",
+      "semantics": "invoice_level_obligations",
+      "source": "summary_legacy",
+      "sourcePath": "summary.paid",
+      "materials": "conditional",
+      "works": "conditional",
+      "services": "conditional"
+    },
+    {
+      "key": "obligations_debt",
+      "label": "Долг по предложениям",
+      "semantics": "invoice_level_obligations",
+      "source": "summary_legacy",
+      "sourcePath": "summary.toPay",
+      "materials": "conditional",
+      "works": "conditional",
+      "services": "conditional"
+    },
+    {
+      "key": "spend_approved",
+      "label": "Аллоцировано",
+      "semantics": "allocation_level_spend",
+      "source": "panel_spend_header",
+      "sourcePath": "spend.header.approved",
+      "materials": "included",
+      "works": "included",
+      "services": "included"
+    },
+    {
+      "key": "spend_paid",
+      "label": "Оплачено по аллокациям",
+      "semantics": "allocation_level_spend",
+      "source": "panel_spend_header",
+      "sourcePath": "spend.header.paid",
+      "materials": "included",
+      "works": "included",
+      "services": "included"
+    },
+    {
+      "key": "spend_to_pay",
+      "label": "К оплате по аллокациям",
+      "semantics": "allocation_level_spend",
+      "source": "panel_spend_header",
+      "sourcePath": "spend.header.toPay",
+      "materials": "included",
+      "works": "included",
+      "services": "included"
+    },
+    {
+      "key": "spend_overpay",
+      "label": "Переплата",
+      "semantics": "allocation_level_spend",
+      "source": "panel_spend_header",
+      "sourcePath": "spend.header.overpay",
+      "materials": "included",
+      "works": "included",
+      "services": "included"
+    }
+  ],
+  "generatedFrom": {
+    "sourceVersion": "director_finance_panel_scope_v3",
+    "payloadShapeVersion": "v3"
+  },
+  "green": true
+}

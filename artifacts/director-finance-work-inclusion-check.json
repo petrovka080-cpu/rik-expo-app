@@ -1,0 +1,21 @@
+{
+  "gate": "director_finance_consistency_work_inclusion",
+  "displayMode": "fallback_legacy",
+  "financeRowsSource": "list_accountant_inbox_fact",
+  "spendRowsSource": "v_director_finance_spend_kinds_v3",
+  "observedKinds": [
+    "Материалы",
+    "Работы",
+    "Услуги",
+    "Другое"
+  ],
+  "workKindSupportedBySql": true,
+  "workKindPresentInPayload": true,
+  "materialsPresentInPayload": true,
+  "servicesPresentInPayload": true,
+  "scopeCarriesKindDimension": true,
+  "obligationsWorkInclusion": "conditional_when_proposal_or_invoice_exists",
+  "spendWorkInclusion": "included_by_kind_rows",
+  "explanation": "Работы и материалы в allocation-level spend идут через kind rows. В invoice-level obligations они попадают только после proposal/invoice chain.",
+  "green": true
+}

@@ -87,6 +87,165 @@ const trimText = (value: unknown): string => {
   return text;
 };
 
+const DIRECTOR_FINANCE_OBLIGATIONS_DEBT_HINT =
+  "\u0414\u043e\u043b\u0433 \u0441\u0447\u0438\u0442\u0430\u0435\u0442\u0441\u044f \u043f\u043e \u043a\u0430\u0436\u0434\u043e\u043c\u0443 \u043f\u0440\u0435\u0434\u043b\u043e\u0436\u0435\u043d\u0438\u044e \u043e\u0442\u0434\u0435\u043b\u044c\u043d\u043e. \u041f\u0435\u0440\u0435\u043f\u043b\u0430\u0442\u0430 \u043f\u043e \u043e\u0434\u043d\u043e\u043c\u0443 \u043f\u043e\u0441\u0442\u0430\u0432\u0449\u0438\u043a\u0443 \u043d\u0435 \u0443\u043c\u0435\u043d\u044c\u0448\u0430\u0435\u0442 \u0434\u043e\u043b\u0433 \u043f\u043e \u0434\u0440\u0443\u0433\u043e\u043c\u0443.";
+const DIRECTOR_FINANCE_SPEND_COVERAGE_HINT =
+  "\u0420\u0430\u0441\u0445\u043e\u0434\u044b \u0441\u0447\u0438\u0442\u0430\u044e\u0442\u0441\u044f \u043f\u043e \u0430\u043b\u043b\u043e\u043a\u0430\u0446\u0438\u044f\u043c \u0438 \u043f\u043e\u043a\u0430\u0437\u044b\u0432\u0430\u044e\u0442 \u043e\u0442\u0434\u0435\u043b\u044c\u043d\u044b\u0439 allocation-level \u043a\u043e\u043d\u0442\u0443\u0440, \u0430 \u043d\u0435 \u0434\u043e\u043b\u0433 \u043f\u043e \u043f\u0440\u0435\u0434\u043b\u043e\u0436\u0435\u043d\u0438\u044f\u043c.";
+const DIRECTOR_FINANCE_OBLIGATIONS_WORK_NOTE =
+  "\u0412 \u043e\u0431\u044f\u0437\u0430\u0442\u0435\u043b\u044c\u0441\u0442\u0432\u0430 \u043f\u043e\u043f\u0430\u0434\u0430\u044e\u0442 \u0442\u0435 \u043c\u0430\u0442\u0435\u0440\u0438\u0430\u043b\u044b, \u0440\u0430\u0431\u043e\u0442\u044b \u0438 \u0443\u0441\u043b\u0443\u0433\u0438, \u043a\u043e\u0442\u043e\u0440\u044b\u0435 \u0443\u0436\u0435 \u0432\u043e\u0448\u043b\u0438 \u0432 proposal/invoice chain. \u042d\u0442\u043e \u043d\u0435 allocation-level \u0441\u0440\u0435\u0437.";
+const DIRECTOR_FINANCE_SPEND_WORK_NOTE =
+  "\u0420\u0430\u0441\u0445\u043e\u0434\u044b \u0431\u0435\u0440\u0443\u0442\u0441\u044f \u0438\u0437 allocation kind rows. \u041c\u0430\u0442\u0435\u0440\u0438\u0430\u043b\u044b, \u0440\u0430\u0431\u043e\u0442\u044b \u0438 \u0443\u0441\u043b\u0443\u0433\u0438 \u0443\u0447\u0438\u0442\u044b\u0432\u0430\u044e\u0442\u0441\u044f \u043f\u043e \u0432\u0438\u0434\u0430\u043c, \u0435\u0441\u043b\u0438 \u043e\u043d\u0438 \u043f\u0440\u0438\u0448\u043b\u0438 \u0432 v3 scope.";
+
+const normalizeFinanceKind = (value: unknown): string => trimText(value).toLowerCase();
+
+const isMaterialKind = (value: unknown): boolean => {
+  const normalized = normalizeFinanceKind(value);
+  return normalized.includes("\u043c\u0430\u0442\u0435\u0440\u0438\u0430\u043b") || normalized.includes("material");
+};
+
+const isWorkKind = (value: unknown): boolean => {
+  const normalized = normalizeFinanceKind(value);
+  return normalized.includes("\u0440\u0430\u0431\u043e\u0442") || normalized.includes("work");
+};
+
+const isServiceKind = (value: unknown): boolean => {
+  const normalized = normalizeFinanceKind(value);
+  return normalized.includes("\u0443\u0441\u043b\u0443\u0433") || normalized.includes("service");
+};
+
+const buildFinanceMetricSourceMap = (
+  mode: DirectorFinanceCanonicalScope["mode"],
+): DirectorFinanceCanonicalScope["metricSourceMap"] => {
+  const obligationsSource = mode === "canonical" ? "summary_v3" : "summary_legacy";
+  const obligationsBasePath = mode === "canonical" ? "summaryV3" : "summary";
+
+  return [
+    {
+      key: "obligations_approved",
+      label: "\u0423\u0442\u0432\u0435\u0440\u0436\u0434\u0435\u043d\u043e \u043f\u043e \u043f\u0440\u0435\u0434\u043b\u043e\u0436\u0435\u043d\u0438\u044f\u043c",
+      semantics: "invoice_level_obligations",
+      source: obligationsSource,
+      sourcePath: `${obligationsBasePath}.${mode === "canonical" ? "totalApproved" : "approved"}`,
+      inclusion: {
+        materials: "conditional",
+        works: "conditional",
+        services: "conditional",
+        note: DIRECTOR_FINANCE_OBLIGATIONS_WORK_NOTE,
+      },
+    },
+    {
+      key: "obligations_paid",
+      label: "\u041e\u043f\u043b\u0430\u0447\u0435\u043d\u043e",
+      semantics: "invoice_level_obligations",
+      source: obligationsSource,
+      sourcePath: `${obligationsBasePath}.${mode === "canonical" ? "totalPaid" : "paid"}`,
+      inclusion: {
+        materials: "conditional",
+        works: "conditional",
+        services: "conditional",
+        note: DIRECTOR_FINANCE_OBLIGATIONS_WORK_NOTE,
+      },
+    },
+    {
+      key: "obligations_debt",
+      label: "\u0414\u043e\u043b\u0433 \u043f\u043e \u043f\u0440\u0435\u0434\u043b\u043e\u0436\u0435\u043d\u0438\u044f\u043c",
+      semantics: "invoice_level_obligations",
+      source: obligationsSource,
+      sourcePath: `${obligationsBasePath}.${mode === "canonical" ? "totalDebt" : "toPay"}`,
+      inclusion: {
+        materials: "conditional",
+        works: "conditional",
+        services: "conditional",
+        note: DIRECTOR_FINANCE_OBLIGATIONS_WORK_NOTE,
+      },
+    },
+    {
+      key: "spend_approved",
+      label: "\u0410\u043b\u043b\u043e\u0446\u0438\u0440\u043e\u0432\u0430\u043d\u043e",
+      semantics: "allocation_level_spend",
+      source: "panel_spend_header",
+      sourcePath: "spend.header.approved",
+      inclusion: {
+        materials: "included",
+        works: "included",
+        services: "included",
+        note: DIRECTOR_FINANCE_SPEND_WORK_NOTE,
+      },
+    },
+    {
+      key: "spend_paid",
+      label: "\u041e\u043f\u043b\u0430\u0447\u0435\u043d\u043e \u043f\u043e \u0430\u043b\u043b\u043e\u043a\u0430\u0446\u0438\u044f\u043c",
+      semantics: "allocation_level_spend",
+      source: "panel_spend_header",
+      sourcePath: "spend.header.paid",
+      inclusion: {
+        materials: "included",
+        works: "included",
+        services: "included",
+        note: DIRECTOR_FINANCE_SPEND_WORK_NOTE,
+      },
+    },
+    {
+      key: "spend_to_pay",
+      label: "\u041a \u043e\u043f\u043b\u0430\u0442\u0435 \u043f\u043e \u0430\u043b\u043b\u043e\u043a\u0430\u0446\u0438\u044f\u043c",
+      semantics: "allocation_level_spend",
+      source: "panel_spend_header",
+      sourcePath: "spend.header.toPay",
+      inclusion: {
+        materials: "included",
+        works: "included",
+        services: "included",
+        note: DIRECTOR_FINANCE_SPEND_WORK_NOTE,
+      },
+    },
+    {
+      key: "spend_overpay",
+      label: "\u041f\u0435\u0440\u0435\u043f\u043b\u0430\u0442\u0430",
+      semantics: "allocation_level_spend",
+      source: "panel_spend_header",
+      sourcePath: "spend.header.overpay",
+      inclusion: {
+        materials: "included",
+        works: "included",
+        services: "included",
+        note: DIRECTOR_FINANCE_SPEND_WORK_NOTE,
+      },
+    },
+  ];
+};
+
+const buildFinanceWorkInclusionDiagnostics = (
+  panelScope: DirectorFinancePanelScopeV3,
+): DirectorFinanceCanonicalScope["workInclusion"] => {
+  const observedKinds = panelScope.spend.kindRows
+    .map((row) => trimText(row.kind))
+    .filter((value) => value.length > 0);
+
+  return {
+    spendRowsSource: "v_director_finance_spend_kinds_v3",
+    obligationsSource: "list_accountant_inbox_fact",
+    observedKinds,
+    workKindSupported: true,
+    workKindPresent: observedKinds.some((value) => isWorkKind(value)),
+    materialsPresent: observedKinds.some((value) => isMaterialKind(value)),
+    servicesPresent: observedKinds.some((value) => isServiceKind(value)),
+    obligationsWorkInclusion: "conditional_when_proposal_or_invoice_exists",
+    spendWorkInclusion: "included_by_kind_rows",
+    explanation:
+      "\u0420\u0430\u0431\u043e\u0442\u044b \u0438 \u043c\u0430\u0442\u0435\u0440\u0438\u0430\u043b\u044b \u0432\u0445\u043e\u0434\u044f\u0442 \u0432 allocation-level \u0440\u0430\u0441\u0445\u043e\u0434\u044b \u0447\u0435\u0440\u0435\u0437 kind rows. \u0412 invoice-level \u043e\u0431\u044f\u0437\u0430\u0442\u0435\u043b\u044c\u0441\u0442\u0432\u0430 \u043e\u043d\u0438 \u043f\u043e\u043f\u0430\u0434\u0430\u044e\u0442 \u0442\u043e\u043b\u044c\u043a\u043e \u043f\u043e\u0441\u043b\u0435 proposal/invoice chain.",
+  };
+};
+
+const buildFinanceUiExplainer = (): DirectorFinanceCanonicalScope["uiExplainer"] => ({
+  title: "\u041a\u0430\u043a \u0447\u0438\u0442\u0430\u0442\u044c \u0444\u0438\u043d\u0430\u043d\u0441\u044b",
+  obligationsSummary: DIRECTOR_FINANCE_OBLIGATIONS_DEBT_HINT,
+  spendSummary: DIRECTOR_FINANCE_SPEND_COVERAGE_HINT,
+  differenceSummary:
+    "\u0414\u043e\u043b\u0433 \u043d\u0435 \u043e\u0431\u044f\u0437\u0430\u043d \u0441\u0445\u043e\u0434\u0438\u0442\u044c\u0441\u044f \u0441 allocation-level \u0440\u0430\u0441\u0445\u043e\u0434\u0430\u043c\u0438: \u0437\u0434\u0435\u0441\u044c \u0436\u0438\u0432\u0443\u0442 \u0440\u0430\u0437\u043d\u044b\u0435 \u043c\u0435\u0442\u0440\u0438\u043a\u0438 \u0438 \u0440\u0430\u0437\u043d\u044b\u0435 source-of-truth.",
+  workSummary:
+    "\u0420\u0430\u0431\u043e\u0442\u044b \u0438 \u043c\u0430\u0442\u0435\u0440\u0438\u0430\u043b\u044b \u0432\u0445\u043e\u0434\u044f\u0442 \u0432 \u0440\u0430\u0441\u0445\u043e\u0434\u044b \u043f\u043e kind rows. \u0412 \u043e\u0431\u044f\u0437\u0430\u0442\u0435\u043b\u044c\u0441\u0442\u0432\u0430 \u043e\u043d\u0438 \u043f\u043e\u043f\u0430\u0434\u0430\u044e\u0442 \u0442\u043e\u043b\u044c\u043a\u043e \u043a\u043e\u0433\u0434\u0430 \u0443\u0436\u0435 \u0432\u043e\u0448\u043b\u0438 \u0432 proposal/invoice chain.",
+});
+
 const buildDirectorFinanceCanonicalScope = (
   panelScope: DirectorFinancePanelScopeV3,
 ): DirectorFinanceCanonicalScope => {
@@ -94,6 +253,9 @@ const buildDirectorFinanceCanonicalScope = (
     panelScope.displayMode === "canonical_v3" ? "canonical" : "fallback";
   const semantics: DirectorFinanceCanonicalSemantics = "invoice_level_obligations";
   const sourceVersion = trimText(panelScope.meta.payloadShapeVersion || panelScope.meta.sourceVersion) || "v3";
+  const metricSourceMap = buildFinanceMetricSourceMap(mode);
+  const workInclusion = buildFinanceWorkInclusionDiagnostics(panelScope);
+  const uiExplainer = buildFinanceUiExplainer();
   const obligationsDebtFormulaHint =
     "Долг считается по каждому предложению отдельно. Переплата по одному поставщику не уменьшает долг по другому.";
   const spendAllocationCoverageHint =
@@ -145,6 +307,9 @@ const buildDirectorFinanceCanonicalScope = (
         overpay: toFiniteNumber(panelScope.spend.header.overpay),
         allocationCoverageHint: spendAllocationCoverageHint,
       },
+      metricSourceMap,
+      workInclusion,
+      uiExplainer,
       diagnostics: {
         sourceVersion: trimText(panelScope.meta.sourceVersion) || "director_finance_panel_scope_v3",
         payloadShapeVersion: trimText(panelScope.meta.payloadShapeVersion) || "v3",
@@ -204,6 +369,9 @@ const buildDirectorFinanceCanonicalScope = (
       overpay: toFiniteNumber(panelScope.spend.header.overpay),
       allocationCoverageHint: spendAllocationCoverageHint,
     },
+    metricSourceMap,
+    workInclusion,
+    uiExplainer,
     diagnostics: {
       sourceVersion: trimText(panelScope.meta.sourceVersion) || "director_finance_panel_scope_v3",
       payloadShapeVersion: trimText(panelScope.meta.payloadShapeVersion) || "v3",

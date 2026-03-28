@@ -1,0 +1,12 @@
+{
+  "gate": "director_finance_consistency_verify",
+  "financeMode": "fallback_legacy",
+  "metricsMapped": true,
+  "workInclusionMapped": true,
+  "workKindPresentInPayload": true,
+  "uiExplainerVisible": true,
+  "backendOwnerPreserved": true,
+  "logicChanged": false,
+  "green": true,
+  "status": "GREEN"
+}

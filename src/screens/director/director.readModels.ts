@@ -1,6 +1,56 @@
 export type DirectorFinanceCanonicalMode = "canonical" | "fallback";
 export type DirectorFinanceCanonicalSemantics = "invoice_level_obligations";
 export type DirectorFinanceSpendSemantics = "allocation_level_spend";
+export type DirectorFinanceInclusionState = "included" | "conditional" | "excluded";
+export type DirectorFinanceMetricKey =
+  | "obligations_approved"
+  | "obligations_paid"
+  | "obligations_debt"
+  | "spend_approved"
+  | "spend_paid"
+  | "spend_to_pay"
+  | "spend_overpay";
+export type DirectorFinanceMetricSource =
+  | "summary_v3"
+  | "summary_legacy"
+  | "panel_spend_header";
+
+export type DirectorFinanceMetricInclusion = {
+  materials: DirectorFinanceInclusionState;
+  works: DirectorFinanceInclusionState;
+  services: DirectorFinanceInclusionState;
+  note: string;
+};
+
+export type DirectorFinanceMetricSourceMapEntry = {
+  key: DirectorFinanceMetricKey;
+  label: string;
+  semantics: DirectorFinanceCanonicalSemantics | DirectorFinanceSpendSemantics;
+  source: DirectorFinanceMetricSource;
+  sourcePath: string;
+  inclusion: DirectorFinanceMetricInclusion;
+};
+
+export type DirectorFinanceWorkInclusionDiagnostics = {
+  spendRowsSource: "v_director_finance_spend_kinds_v3";
+  obligationsSource: "list_accountant_inbox_fact";
+  observedKinds: string[];
+  workKindSupported: boolean;
+  workKindPresent: boolean;
+  materialsPresent: boolean;
+  servicesPresent: boolean;
+  obligationsWorkInclusion: "conditional_when_proposal_or_invoice_exists";
+  spendWorkInclusion: "included_by_kind_rows";
+  explanation: string;
+};
+
+export type DirectorFinanceUiExplainer = {
+  title: string;
+  obligationsSummary: string;
+  spendSummary: string;
+  differenceSummary: string;
+  workSummary: string;
+};
 
 export type DirectorFinanceCanonicalSummary = {
   approvedTotal: number;
@@ -55,6 +105,9 @@ export type DirectorFinanceCanonicalScope = {
   suppliers: DirectorFinanceCanonicalSupplierRow[];
   obligations: DirectorFinanceObligationsSummary;
   spend: DirectorFinanceSpendTruthSummary;
+  metricSourceMap: DirectorFinanceMetricSourceMapEntry[];
+  workInclusion: DirectorFinanceWorkInclusionDiagnostics;
+  uiExplainer: DirectorFinanceUiExplainer;
   diagnostics: {
     sourceVersion: string;
     payloadShapeVersion: string;

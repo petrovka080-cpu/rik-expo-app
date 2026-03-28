@@ -16,6 +16,7 @@ type Props = {
   sum: FinanceSummary | null | undefined;
   truth?: DirectorFinanceCanonicalScope["spend"] | null;
   diagnostics?: DirectorFinanceCanonicalScope["diagnostics"] | null;
+  workInclusion?: DirectorFinanceCanonicalScope["workInclusion"] | null;
   spendSummary: FinSpendSummary;
   money: (v: number) => string;
   onOpenKind?: (kindName: string, list: FinKindSupplierRow[]) => void;
@@ -25,6 +26,9 @@ const OVERPAY_KIND = "Переплаты / авансы";
 
 const modeLabel = (diagnostics: DirectorFinanceCanonicalScope["diagnostics"] | null | undefined) =>
   diagnostics?.displayMode === "canonical_v3" ? "canonical_v3" : "fallback_legacy";
+
+const SPEND_WORK_NOTE_PREFIX = "\u0421\u043e\u0441\u0442\u0430\u0432 \u0440\u0430\u0441\u0445\u043e\u0434\u043e\u0432";
+const SPEND_KINDS_LABEL = "\u0412\u0438\u0434\u044b \u0432 \u0440\u0430\u0441\u0445\u043e\u0434\u0430\u0445";
 
 export default function DirectorFinanceSpendModal(props: Props) {
   const [kindsOpen, setKindsOpen] = React.useState(false);
@@ -45,6 +49,12 @@ export default function DirectorFinanceSpendModal(props: Props) {
   const paid = props.truth?.paid ?? props.spendSummary.header.paid;
   const toPay = props.truth?.toPay ?? props.spendSummary.header.toPay;
   const overpay = props.truth?.overpay ?? props.spendSummary.header.overpay;
+  const observedKindsLabel = React.useMemo(() => {
+    const kinds = Array.isArray(props.workInclusion?.observedKinds)
+      ? props.workInclusion.observedKinds.filter((value) => String(value ?? "").trim().length > 0)
+      : [];
+    return kinds.join(" \u00b7 ");
+  }, [props.workInclusion]);
 
   return (
     <ScrollView
@@ -82,6 +92,18 @@ export default function DirectorFinanceSpendModal(props: Props) {
         <Text style={[s.mobMeta, { marginTop: 6 }]} numberOfLines={2}>
           {`Режим: ${modeLabel(props.diagnostics)} · Расходы: allocation-level · Источник: ${props.diagnostics?.spendSource ?? "panel_spend_header"}`}
         </Text>
+
+        {props.workInclusion ? (
+          <Text style={[s.mobMeta, { marginTop: 6 }]} numberOfLines={4}>
+            {`${SPEND_WORK_NOTE_PREFIX}: ${props.workInclusion.explanation}`}
+          </Text>
+        ) : null}
+
+        {observedKindsLabel ? (
+          <Text style={[s.mobMeta, { marginTop: 6 }]} numberOfLines={2}>
+            {`${SPEND_KINDS_LABEL}: ${observedKindsLabel}`}
+          </Text>
+        ) : null}
 
         <Pressable
           onPress={toggleKindsOpen}
