@@ -50,6 +50,7 @@ type Props = {
   draftSyncStatusLabel: string;
   draftSyncStatusDetail: string | null;
   draftSyncStatusTone: "neutral" | "info" | "success" | "warning" | "danger";
+  draftSendBusy: boolean;
   headerAttention: ForemanHeaderAttentionState | null;
   onOpenRequestHistory: () => void;
   onOpenSubcontractHistory: () => void;
@@ -117,7 +118,6 @@ type Props = {
   renderReqItem: ListRenderItem<ReqItemRow>;
   screenLock: boolean;
   draftDeleteBusy: boolean;
-  draftSendBusy: boolean;
   onDeleteDraft: () => Promise<void>;
   onPdf: () => Promise<void>;
   pdfBusy: boolean;
@@ -177,6 +177,7 @@ export default function ForemanMaterialsContent(props: Props) {
         draftSyncStatusLabel={props.draftSyncStatusLabel}
         draftSyncStatusDetail={props.draftSyncStatusDetail}
         draftSyncStatusTone={props.draftSyncStatusTone}
+        draftSendBusy={props.draftSendBusy}
         headerAttention={props.headerAttention}
         ui={props.ui}
         styles={props.styles}
@@ -265,6 +266,8 @@ export default function ForemanMaterialsContent(props: Props) {
         sessionHint={props.aiQuickSessionHint}
         aiUnavailableReason={props.aiUnavailableReason}
         degradedMode={props.aiQuickDegradedMode}
+        draftLabel={props.currentDisplayLabel}
+        draftItemsCount={props.itemsCount}
         ui={props.ui}
         styles={props.styles}
       />

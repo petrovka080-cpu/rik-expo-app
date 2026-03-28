@@ -1,8 +1,13 @@
 import { Ionicons } from "@expo/vector-icons";
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useMemo, useRef } from "react";
 import { Animated, Pressable, Text, View, type NativeScrollEvent, type NativeSyntheticEvent } from "react-native";
 
 import ForemanDraftSummaryCard from "./ForemanDraftSummaryCard";
+import {
+  buildForemanDraftVisualModel,
+  didForemanDraftRollOverToFreshState,
+  type ForemanDraftVisualSnapshot,
+} from "./foremanDraftVisualState";
 import { FOREMAN_DROPDOWN_FIELD_KEYS } from "./foreman.dropdown.constants";
 import { debugForemanLogLazy } from "./foreman.debug";
 import ForemanDropdown from "./ForemanDropdown";
@@ -43,6 +48,7 @@ type Props = {
   draftSyncStatusLabel: string;
   draftSyncStatusDetail: string | null;
   draftSyncStatusTone: "neutral" | "info" | "success" | "warning" | "danger";
+  draftSendBusy: boolean;
   headerAttention: ForemanHeaderAttentionState | null;
   ui: { text: string; sub: string };
   styles: typeof import("./foreman.styles").s;
@@ -51,7 +57,48 @@ type Props = {
 export default function ForemanEditorSection(p: Props) {
   const isLowConfidence = p.contextResult?.confidence !== "high";
   const scrollRef = useRef<any>(null);
+  const previousDraftVisualRef = useRef<ForemanDraftVisualSnapshot | null>(null);
+  const freshDraftAfterSubmitRef = useRef(false);
   const missingKeys = new Set(p.headerAttention?.missingKeys ?? []);
+
+  const draftVisualInput = useMemo<ForemanDraftVisualSnapshot>(
+    () => ({
+      requestLabel: p.currentDisplayLabel,
+      itemsCount: p.itemsCount,
+      syncLabel: p.draftSyncStatusLabel,
+      syncDetail: p.draftSyncStatusDetail,
+      syncTone: p.draftSyncStatusTone,
+      isSubmitting: p.draftSendBusy,
+    }),
+    [
+      p.currentDisplayLabel,
+      p.draftSendBusy,
+      p.draftSyncStatusDetail,
+      p.draftSyncStatusLabel,
+      p.draftSyncStatusTone,
+      p.itemsCount,
+    ],
+  );
+
+  const freshDraftAfterSubmit =
+    didForemanDraftRollOverToFreshState(previousDraftVisualRef.current, draftVisualInput)
+    || (
+      freshDraftAfterSubmitRef.current
+      && draftVisualInput.itemsCount === 0
+      && !draftVisualInput.isSubmitting
+      && draftVisualInput.syncTone !== "warning"
+      && draftVisualInput.syncTone !== "info"
+      && draftVisualInput.syncTone !== "danger"
+    );
+
+  const draftVisualModel = useMemo(
+    () =>
+      buildForemanDraftVisualModel({
+        ...draftVisualInput,
+        freshDraftAfterSubmit,
+      }),
+    [draftVisualInput, freshDraftAfterSubmit],
+  );
 
   debugForemanLogLazy("[FOREMAN_EDITOR_4_FIELDS]", () => ({
     objectType: p.objectType,
@@ -85,6 +132,11 @@ export default function ForemanEditorSection(p: Props) {
     if (!p.headerAttention?.version) return;
     scrollRef.current?.scrollTo?.({ y: 0, animated: true });
   }, [p.headerAttention?.version]);
+
+  useEffect(() => {
+    freshDraftAfterSubmitRef.current = freshDraftAfterSubmit;
+    previousDraftVisualRef.current = draftVisualInput;
+  }, [draftVisualInput, freshDraftAfterSubmit]);
 
   return (
     <Animated.ScrollView
@@ -224,11 +276,8 @@ export default function ForemanEditorSection(p: Props) {
       </View>
 
       <ForemanDraftSummaryCard
-        requestLabel={p.currentDisplayLabel}
-        itemsCount={p.itemsCount}
-        syncLabel={p.draftSyncStatusLabel}
-        syncDetail={p.draftSyncStatusDetail}
-        syncTone={p.draftSyncStatusTone}
+        model={draftVisualModel}
+        disabled={p.draftSendBusy}
         onPress={() => p.setDraftOpen(true)}
         ui={p.ui}
         styles={p.styles}

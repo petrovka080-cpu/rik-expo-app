@@ -7,6 +7,7 @@ import DeleteAllButton from "../../ui/DeleteAllButton";
 import SendPrimaryButton from "../../ui/SendPrimaryButton";
 import CloseIconButton from "../../ui/CloseIconButton";
 import ForemanDraftSummaryCard from "./ForemanDraftSummaryCard";
+import { buildForemanDraftVisualModel } from "./foremanDraftVisualState";
 import ForemanDropdown from "./ForemanDropdown";
 import { s } from "./foreman.styles";
 import { UI } from "./foreman.ui";
@@ -192,6 +193,16 @@ export function SubcontractDetailsModalBody(props: {
     onOpenDraft,
     displayNo,
   } = props;
+  const draftCardModel = useMemo(
+    () =>
+      buildForemanDraftVisualModel({
+        requestLabel: displayNo,
+        itemsCount: draftItemsCount,
+        syncTone: draftItemsCount > 0 ? "neutral" : "success",
+        syncLabel: draftItemsCount > 0 ? "Local draft ready" : "Synced",
+      }),
+    [displayNo, draftItemsCount],
+  );
 
   return (
     <View style={{ flex: 1, backgroundColor: UI.cardBg }}>
@@ -262,8 +273,7 @@ export function SubcontractDetailsModalBody(props: {
         </View>
 
         <ForemanDraftSummaryCard
-          requestLabel={displayNo}
-          itemsCount={draftItemsCount}
+          model={draftCardModel}
           actionIcon="cube"
           onPress={onOpenDraft}
           ui={UI}

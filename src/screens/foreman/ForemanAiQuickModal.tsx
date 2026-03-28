@@ -17,6 +17,7 @@ import DismissKeyboardView from "../../components/DismissKeyboardView";
 import CloseIconButton from "../../ui/CloseIconButton";
 import type { ClarifyQuestion, ForemanAiQuickItem } from "./foreman.ai";
 import type { ForemanAiQuickReviewGroup, ForemanAiQuickMode } from "./foreman.aiQuickReview";
+import { buildForemanDraftContextSummary } from "./foremanDraftVisualState";
 import type { ForemanAiOutcomeType } from "./foremanUi.store";
 import { useForemanVoiceInput } from "./hooks/useForemanVoiceInput";
 
@@ -43,6 +44,8 @@ type Props = {
   sessionHint: string;
   aiUnavailableReason: string;
   degradedMode: boolean;
+  draftLabel: string;
+  draftItemsCount: number;
   ui: { text: string; sub: string; cardBg: string; border: string; accent: string };
   styles: typeof import("./foreman.styles").s;
 };
@@ -151,6 +154,11 @@ export default function ForemanAiQuickModal(props: Props) {
       ? "#fdba74"
       : props.ui.sub;
   const canParse = !!props.value.trim() && !props.parseLoading;
+  const draftContext = buildForemanDraftContextSummary(
+    props.draftLabel,
+    props.draftItemsCount,
+    isComposeMode ? "compose" : "review",
+  );
 
   return (
     <Modal
@@ -238,6 +246,28 @@ export default function ForemanAiQuickModal(props: Props) {
                   </View>
                 ) : null}
 
+                <View
+                  style={{
+                    borderRadius: 14,
+                    paddingHorizontal: 12,
+                    paddingVertical: 10,
+                    backgroundColor: "rgba(255,255,255,0.04)",
+                    borderWidth: 1,
+                    borderColor: "rgba(255,255,255,0.08)",
+                    gap: 2,
+                  }}
+                >
+                  <Text style={{ color: props.ui.sub, fontSize: 11, fontWeight: "800", textTransform: "uppercase" }}>
+                    {draftContext.title}
+                  </Text>
+                  <Text style={{ color: props.ui.text, fontSize: 14, fontWeight: "800" }}>
+                    {draftContext.draftLabel}
+                  </Text>
+                  <Text style={{ color: props.ui.sub, fontSize: 12, fontWeight: "700" }}>
+                    {draftContext.meta}
+                  </Text>
+                </View>
+
                 {showUnavailable ? (
                   <NoticeCard
                     backgroundColor="#3f1d12"
@@ -269,12 +299,12 @@ export default function ForemanAiQuickModal(props: Props) {
 
               <View
                 style={{
-                  marginTop: 8,
+                  marginTop: 6,
                   borderRadius: 22,
                   borderWidth: 1,
                   borderColor: "rgba(255,255,255,0.10)",
                   backgroundColor: "rgba(255,255,255,0.05)",
-                  padding: 12,
+                  padding: 10,
                   gap: 10,
                 }}
               >
@@ -302,8 +332,8 @@ export default function ForemanAiQuickModal(props: Props) {
                       props.styles.input,
                       {
                         flex: 1,
-                        minHeight: 104,
-                        maxHeight: 180,
+                        minHeight: 84,
+                        maxHeight: 160,
                         marginBottom: 0,
                         paddingVertical: 0,
                         paddingHorizontal: 0,
@@ -398,6 +428,28 @@ export default function ForemanAiQuickModal(props: Props) {
                     title={props.notice}
                   />
                 ) : null}
+
+                <View
+                  style={{
+                    borderRadius: 14,
+                    paddingHorizontal: 12,
+                    paddingVertical: 10,
+                    backgroundColor: "rgba(255,255,255,0.04)",
+                    borderWidth: 1,
+                    borderColor: "rgba(255,255,255,0.08)",
+                    gap: 2,
+                  }}
+                >
+                  <Text style={{ color: props.ui.sub, fontSize: 11, fontWeight: "800", textTransform: "uppercase" }}>
+                    {draftContext.title}
+                  </Text>
+                  <Text style={{ color: props.ui.text, fontSize: 14, fontWeight: "800" }}>
+                    {draftContext.draftLabel}
+                  </Text>
+                  <Text style={{ color: props.ui.sub, fontSize: 12, fontWeight: "700" }}>
+                    {draftContext.meta}
+                  </Text>
+                </View>
 
                 {props.preview.length > 0 ? (
                   <View style={cardStyle}>
