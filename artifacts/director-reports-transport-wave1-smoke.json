@@ -1,0 +1,12 @@
+{
+  "facadeExportsCanonicalMaterials": true,
+  "facadeExportsCanonicalWorks": true,
+  "facadeExportsCanonicalOptions": true,
+  "facadeExportsPriceLookup": true,
+  "baseExportsTypedRpc": true,
+  "baseEmptyRequestLookupOk": true,
+  "baseEmptyDisciplineLookupOk": true,
+  "baseEmptyIssueLinesOk": true,
+  "productionEmptyRequestItemPriceOk": true,
+  "observabilityExportOk": true
+}

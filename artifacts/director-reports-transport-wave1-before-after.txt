@@ -1,0 +1,27 @@
+Director Reports Transport Wave 1
+before_lines=1460
+after_lines=977
+before_bytes=49845
+after_bytes=33750
+
+moved_to_observability:
+- recordDirectorReportsTransportWarning
+
+moved_to_transport_base:
+- runTypedRpc
+- fetchRequestsRowsSafe
+- fetchRequestsDisciplineRowsSafe
+- fetchIssueHeadsViaAccRpc
+- fetchIssueLinesViaAccRpc
+
+moved_to_transport_production:
+- fetchIssuePriceMapByCode
+- fetchDirectorReportCanonicalMaterials
+- fetchDirectorReportCanonicalWorks
+- fetchDirectorReportCanonicalOptions
+- fetchPriceByRequestItemId
+
+transport_facade_keeps:
+- fact source fallback chain
+- table/view/rpc orchestration
+- public compatibility exports

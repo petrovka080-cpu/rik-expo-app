@@ -16,6 +16,13 @@
       "missingMarkers": []
     },
     {
+      "path": "src/lib/api/director_reports.transport.base.ts",
+      "baselineSilentCount": 0,
+      "afterSilentCount": 0,
+      "markersPresent": true,
+      "missingMarkers": []
+    },
+    {
       "path": "src/lib/catalog_api.ts",
       "baselineSilentCount": 5,
       "afterSilentCount": 0,
@@ -70,7 +77,12 @@
     },
     {
       "file": "src/lib/api/director_reports.transport.ts",
-      "event": "issue_lines_acc_rpc_failed / request_lookup_chunk_failed / discipline_rows_joined_failed",
+      "event": "request_lookup_chunk_failed / discipline_rows_joined_failed",
+      "outcome": "degraded"
+    },
+    {
+      "file": "src/lib/api/director_reports.transport.base.ts",
+      "event": "issue_lines_acc_rpc_failed",
       "outcome": "degraded"
     },
     {

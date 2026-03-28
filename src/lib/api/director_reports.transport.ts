@@ -1,7 +1,5 @@
 import { supabase } from "../supabaseClient";
 import type {
-  AccIssueHead,
-  AccIssueLine,
   DirectorDisciplinePayload,
   DirectorFactContextResolved,
   DirectorDisciplineSourceRpcRow,
@@ -12,8 +10,8 @@ import type {
   DirectorReportWho,
   JoinedWarehouseIssueItemFactRow,
   RefSystemLookupRow,
-  RequestLookupRow,
   RequestItemRequestLinkRow,
+  RequestLookupRow,
   WarehouseIssueFactRow,
   WarehouseIssueItemFactRow,
   DisciplineRowsSource,
@@ -31,12 +29,8 @@ import {
   normalizeJoinedWarehouseIssueItemFactRow,
   normalizeLegacyByObjectRow,
   normalizeLegacyFastMaterialRow,
-  normalizeProposalItemPriceRow,
-  normalizePurchaseItemPriceRow,
-  normalizePurchaseItemRequestPriceRow,
   normalizeRefSystemLookupRow,
   normalizeRequestItemRequestLinkRow,
-  normalizeRequestLookupRow,
   normalizeWarehouseIssueFactRow,
   normalizeWarehouseIssueItemFactRow,
   extractJoinedWarehouseIssueFactRow,
@@ -51,293 +45,38 @@ import {
   DISCIPLINE_ROWS_CACHE_TTL_MS,
   DIRECTOR_REPORTS_STRICT_FACT_SOURCES,
   REPORTS_TIMING,
-  REQUESTS_DISCIPLINE_SELECT_PLANS,
-  REQUESTS_SELECT_PLANS,
   buildDisciplineSourceRowsRpcCacheKey,
   canUseDisciplineSourceRpc,
   disciplineSourceRowsRpcCache,
   filterDisciplineRowsByObject,
-  getFreshLookupValue,
   isMissingCanonicalRpcError,
   markDisciplineSourceRpcStatus,
-  requestLookupCache,
-  requestLookupInFlight,
-  setLookupValue,
   logTiming,
   nowMs,
   trimMap,
 } from "./director_reports.cache";
-import { adaptCanonicalMaterialsPayload, adaptCanonicalOptionsPayload, adaptCanonicalWorksPayload, unwrapRpcPayload } from "./director_reports.adapters";
 import {
-  fetchBestMaterialNamesByCode,
   fetchObjectsByIds,
   fetchObjectTypeNamesByCode,
   fetchRikNamesRuByCode,
   fetchSystemNamesByCode,
-  looksLikeMaterialCode,
   probeNameSources,
 } from "./director_reports.naming";
-import { recordPlatformObservability } from "../observability/platformObservability";
-
-let requestsSelectPlanCache: string | null = null;
-let requestsDisciplineSelectPlanCache: string | null = null;
-
-const getDirectorReportsTransportErrorMessage = (error: unknown, fallback: string) => {
-  if (error instanceof Error) {
-    const message = error.message.trim();
-    if (message) return message;
-  }
-  if (error && typeof error === "object") {
-    const record = error as Record<string, unknown>;
-    const message = String(record.message ?? "").trim();
-    if (message) return message;
-  }
-  const raw = String(error ?? "").trim();
-  return raw || fallback;
-};
-
-const recordDirectorReportsTransportWarning = (
-  event: string,
-  error: unknown,
-  extra?: Record<string, unknown>,
-) => {
-  const message = getDirectorReportsTransportErrorMessage(error, event);
-  console.warn("[director_reports.transport]", { event, message, ...extra });
-  recordPlatformObservability({
-    screen: "director",
-    surface: "reports_transport",
-    category: "fetch",
-    event,
-    result: "error",
-    fallbackUsed: true,
-    errorStage: event,
-    errorClass: error instanceof Error ? error.name : undefined,
-    errorMessage: message,
-    extra: {
-      module: "director_reports.transport",
-      owner: "reports_transport",
-      severity: "warn",
-      ...extra,
-    },
-  });
-};
-
-async function runTypedRpc<TRow>(
-  fnName:
-    | "acc_report_issues_v2"
-    | "acc_report_issue_lines"
-    | "wh_report_issued_summary_fast"
-    | "wh_report_issued_materials_fast"
-    | "wh_report_issued_by_object_fast"
-    | "director_report_fetch_options_v1"
-    | "director_report_fetch_discipline_source_rows_v1"
-    | "director_report_fetch_materials_v1"
-    | "director_report_fetch_works_v1"
-    | "director_report_fetch_summary_v1",
-  params: Record<string, unknown>,
-): Promise<{ data: TRow[] | null; error: { message?: string | null; details?: string | null; hint?: string | null; code?: string | null } | null }> {
-  const { data, error } = await supabase.rpc(fnName as never, params as never);
-  return {
-    data: Array.isArray(data) ? (data as TRow[]) : null,
-    error: error
-      ? {
-          message: error.message,
-          details: error.details,
-          hint: error.hint,
-          code: error.code,
-        }
-      : null,
-  };
-}
-
-async function fetchRequestsRowsSafe(ids: string[]): Promise<RequestLookupRow[]> {
-  const reqIds = Array.from(new Set((ids || []).map((x) => String(x ?? "").trim()).filter(Boolean)));
-  if (!reqIds.length) return [];
-
-  const cachedRows: RequestLookupRow[] = [];
-  const missingIds: string[] = [];
-  for (const id of reqIds) {
-    const cached = getFreshLookupValue(requestLookupCache, id);
-    if (cached !== undefined) {
-      if (cached) cachedRows.push(cached);
-      continue;
-    }
-    missingIds.push(id);
-  }
-  if (!missingIds.length) return cachedRows;
-
-  const runSelect = async (selectCols: string, idsPart: string[]) =>
-    await supabase
-      .from("requests" as never)
-      .select(selectCols)
-      .in("id", idsPart);
-
-  const loadMissing = async (): Promise<RequestLookupRow[]> => {
-    if (requestsSelectPlanCache) {
-      const cached = await runSelect(requestsSelectPlanCache, missingIds);
-      if (!cached.error) {
-        const rows = Array.isArray(cached.data)
-          ? cached.data.map(normalizeRequestLookupRow).filter((row): row is RequestLookupRow => !!row)
-          : [];
-        const seen = new Set(rows.map((row) => row.id));
-        for (const row of rows) setLookupValue(requestLookupCache, row.id, row);
-        for (const id of missingIds) if (!seen.has(id)) setLookupValue(requestLookupCache, id, null);
-        return rows;
-      }
-      requestsSelectPlanCache = null;
-    }
-
-    let lastError: unknown = null;
-    for (const selectCols of REQUESTS_SELECT_PLANS) {
-      const q = await runSelect(selectCols, missingIds);
-      if (!q.error) {
-        requestsSelectPlanCache = selectCols;
-        const rows = Array.isArray(q.data)
-          ? q.data.map(normalizeRequestLookupRow).filter((row): row is RequestLookupRow => !!row)
-          : [];
-        const seen = new Set(rows.map((row) => row.id));
-        for (const row of rows) setLookupValue(requestLookupCache, row.id, row);
-        for (const id of missingIds) if (!seen.has(id)) setLookupValue(requestLookupCache, id, null);
-        return rows;
-      }
-      lastError = q.error;
-    }
-
-    if (lastError) throw lastError;
-    return [];
-  };
-
-  const inFlightKey = missingIds.slice().sort().join("|");
-  let pending = requestLookupInFlight.get(inFlightKey);
-  if (!pending) {
-    pending = loadMissing();
-    requestLookupInFlight.set(inFlightKey, pending);
-  }
-
-  try {
-    const loaded = await pending;
-    return [...cachedRows, ...loaded];
-  } finally {
-    requestLookupInFlight.delete(inFlightKey);
-  }
-}
-
-async function fetchRequestsDisciplineRowsSafe(ids: string[]): Promise<RequestLookupRow[]> {
-  const reqIds = Array.from(new Set((ids || []).map((x) => String(x ?? "").trim()).filter(Boolean)));
-  if (!reqIds.length) return [];
-
-  const cachedRows: RequestLookupRow[] = [];
-  const missingIds: string[] = [];
-  for (const id of reqIds) {
-    const cached = getFreshLookupValue(requestLookupCache, id);
-    const hasDisciplineFields =
-      cached !== undefined &&
-      (!!cached?.level_code || !!cached?.system_code || cached?.level_code === null || cached?.system_code === null);
-    if (hasDisciplineFields) {
-      if (cached) cachedRows.push(cached);
-      continue;
-    }
-    missingIds.push(id);
-  }
-  if (!missingIds.length) return cachedRows;
-
-  const runSelect = async (selectCols: string) =>
-    await supabase
-      .from("requests" as never)
-      .select(selectCols)
-      .in("id", missingIds);
-
-  if (requestsDisciplineSelectPlanCache) {
-    const cached = await runSelect(requestsDisciplineSelectPlanCache);
-    if (!cached.error) {
-      const rows = Array.isArray(cached.data)
-        ? cached.data.map(normalizeRequestLookupRow).filter((row): row is RequestLookupRow => !!row)
-        : [];
-      const seen = new Set(rows.map((row) => row.id));
-      for (const row of rows) {
-        const prev = getFreshLookupValue(requestLookupCache, row.id);
-        setLookupValue(requestLookupCache, row.id, { ...(prev ?? { id: row.id, object_id: null, object_name: null, object_type_code: null, system_code: null, level_code: null, zone_code: null, object: null }), ...row });
-      }
-      for (const id of missingIds) if (!seen.has(id)) setLookupValue(requestLookupCache, id, null);
-      return [...cachedRows, ...rows];
-    }
-    requestsDisciplineSelectPlanCache = null;
-  }
-
-  let lastError: unknown = null;
-  for (const selectCols of REQUESTS_DISCIPLINE_SELECT_PLANS) {
-    const q = await runSelect(selectCols);
-    if (!q.error) {
-      requestsDisciplineSelectPlanCache = selectCols;
-      const rows = Array.isArray(q.data)
-        ? q.data.map(normalizeRequestLookupRow).filter((row): row is RequestLookupRow => !!row)
-        : [];
-      const seen = new Set(rows.map((row) => row.id));
-      for (const row of rows) {
-        const prev = getFreshLookupValue(requestLookupCache, row.id);
-        setLookupValue(requestLookupCache, row.id, { ...(prev ?? { id: row.id, object_id: null, object_name: null, object_type_code: null, system_code: null, level_code: null, zone_code: null, object: null }), ...row });
-      }
-      for (const id of missingIds) if (!seen.has(id)) setLookupValue(requestLookupCache, id, null);
-      return [...cachedRows, ...rows];
-    }
-    lastError = q.error;
-  }
-
-  if (lastError) throw lastError;
-  return [];
-}
-
-async function fetchIssueHeadsViaAccRpc(p: {
-  from: string;
-  to: string;
-}): Promise<AccIssueHead[]> {
-  const { data, error } = await runTypedRpc<AccIssueHead>("acc_report_issues_v2", {
-    p_from: p.from || "1970-01-01",
-    p_to: p.to || "2099-12-31",
-  });
-  if (error) throw error;
-  return Array.isArray(data) ? data : [];
-}
-
-async function fetchIssueLinesViaAccRpc(issueIds: string[]): Promise<AccIssueLine[]> {
-  const out: AccIssueLine[] = [];
-  const ids = issueIds.filter(id => String(id || "").trim() !== "");
-  if (!ids.length) return [];
-
-  // Уменьшаем размер пачки для параллельного исполнения, чтобы не вешать сеть на телефоне
-  const groups = chunk(ids, 20);
-
-  for (const g of groups) {
-    const settled = await Promise.all(
-      g.map(async (id) => {
-        try {
-          const numId = Number(id);
-          if (isNaN(numId)) return [] as AccIssueLine[];
-
-          const { data, error } = await runTypedRpc<AccIssueLine>("acc_report_issue_lines", {
-            p_issue_id: numId,
-          });
-          if (error) {
-            recordDirectorReportsTransportWarning("issue_lines_acc_rpc_failed", error, {
-              issueId: id,
-              source: "acc_report_issue_lines",
-            });
-            return [] as AccIssueLine[];
-          }
-          return Array.isArray(data) ? (data as AccIssueLine[]) : [];
-        } catch (e) {
-          recordDirectorReportsTransportWarning("issue_lines_acc_rpc_failed", e, {
-            issueId: id,
-            source: "acc_report_issue_lines",
-          });
-          return [] as AccIssueLine[];
-        }
-      })
-    );
-    for (const arr of settled) if (arr) out.push(...arr);
-  }
-  return out;
-}
+import { recordDirectorReportsTransportWarning } from "./director_reports.observability";
+import {
+  fetchIssueHeadsViaAccRpc,
+  fetchIssueLinesViaAccRpc,
+  fetchRequestsDisciplineRowsSafe,
+  fetchRequestsRowsSafe,
+  runTypedRpc,
+} from "./director_reports.transport.base";
+import {
+  fetchDirectorReportCanonicalMaterials,
+  fetchDirectorReportCanonicalOptions,
+  fetchDirectorReportCanonicalWorks,
+  fetchIssuePriceMapByCode,
+  fetchPriceByRequestItemId,
+} from "./director_reports.transport.production";
 
 async function fetchDirectorFactViaAccRpc(p: {
   from: string;
@@ -1144,229 +883,6 @@ async function fetchDisciplineFactRowsFromTables(p: {
   return out;
 }
 
-async function fetchIssuePriceMapByCode(opts?: {
-  skipPurchaseItems?: boolean;
-  codes?: string[];
-}): Promise<Map<string, number>> {
-  const weighted = new Map<string, { sum: number; w: number }>();
-  const scopedCodes = Array.from(
-    new Set((opts?.codes ?? []).map((x) => String(x ?? "").trim().toUpperCase()).filter(Boolean)),
-  );
-  const hasScopedCodes = scopedCodes.length > 0;
-
-  const push = (codeRaw: unknown, priceRaw: unknown, qtyRaw: unknown) => {
-    const code = String(codeRaw ?? "").trim().toUpperCase();
-    const price = toNum(priceRaw);
-    if (!code || !(price > 0)) return;
-    const qty = Math.max(1, toNum(qtyRaw));
-    const prev = weighted.get(code) ?? { sum: 0, w: 0 };
-    prev.sum += price * qty;
-    prev.w += qty;
-    weighted.set(code, prev);
-  };
-
-  if (!opts?.skipPurchaseItems) {
-    try {
-      if (hasScopedCodes) {
-        for (const part of chunk(scopedCodes, 500)) {
-          const q = await supabase
-            .from("purchase_items" as never)
-            .select("rik_code,code,price,qty")
-            .in("rik_code", part)
-            .limit(50000);
-          if (!q.error && Array.isArray(q.data)) {
-            for (const r of q.data) {
-              const row = normalizePurchaseItemPriceRow(r);
-              push(row.rik_code ?? row.code, row.price, row.qty);
-            }
-          }
-        }
-      } else {
-        const q = await supabase
-          .from("purchase_items" as never)
-          .select("rik_code,code,price,qty")
-          .limit(50000);
-        if (!q.error && Array.isArray(q.data)) {
-          for (const r of q.data) {
-            const row = normalizePurchaseItemPriceRow(r);
-            push(row.rik_code ?? row.code, row.price, row.qty);
-          }
-        }
-      }
-    } catch (error) {
-      recordDirectorReportsTransportWarning("issue_price_map_purchase_items_failed", error, {
-        hasScopedCodes,
-        scopedCodeCount: scopedCodes.length,
-        skipPurchaseItems: !!opts?.skipPurchaseItems,
-      });
-    }
-  }
-
-  if (!weighted.size && !DIRECTOR_REPORTS_STRICT_FACT_SOURCES) {
-    try {
-      if (hasScopedCodes) {
-        for (const part of chunk(scopedCodes, 500)) {
-          const q2 = await supabase
-            .from("proposal_items" as never)
-            .select("rik_code,price,qty")
-            .in("rik_code", part)
-            .limit(50000);
-          if (!q2.error && Array.isArray(q2.data)) {
-            for (const r of q2.data) {
-              const row = normalizeProposalItemPriceRow(r);
-              push(row.rik_code, row.price, row.qty);
-            }
-          }
-        }
-      } else {
-        const q2 = await supabase
-          .from("proposal_items" as never)
-          .select("rik_code,price,qty")
-          .limit(50000);
-        if (!q2.error && Array.isArray(q2.data)) {
-          for (const r of q2.data) {
-            const row = normalizeProposalItemPriceRow(r);
-            push(row.rik_code, row.price, row.qty);
-          }
-        }
-      }
-    } catch (error) {
-      recordDirectorReportsTransportWarning("issue_price_map_proposal_items_failed", error, {
-        hasScopedCodes,
-        scopedCodeCount: scopedCodes.length,
-      });
-    }
-  }
-
-  const out = new Map<string, number>();
-  for (const [code, a] of weighted.entries()) {
-    out.set(code, a.w > 0 ? a.sum / a.w : 0);
-  }
-  return out;
-}
-
-async function fetchDirectorReportCanonicalMaterials(p: {
-  from: string;
-  to: string;
-  objectName: string | null;
-}): Promise<DirectorReportPayload | null> {
-  const { data, error } = await runTypedRpc<Record<string, unknown>>("director_report_fetch_materials_v1", {
-    p_from: p.from || "1970-01-01",
-    p_to: p.to || "2099-12-31",
-    p_object_name: p.objectName ?? null,
-  });
-  if (error) throw error;
-  const payload = unwrapRpcPayload(data);
-  const adapted = adaptCanonicalMaterialsPayload(payload);
-  if (!adapted || !Array.isArray(adapted.rows) || !adapted.rows.length) return adapted;
-
-  const codesToResolve = Array.from(
-    new Set(
-      adapted.rows
-        .filter((r) => {
-          const code = String(r.rik_code ?? "").trim().toUpperCase();
-          if (!code) return false;
-          const nm = String(r.name_human_ru ?? "").trim();
-          return !nm || looksLikeMaterialCode(nm);
-        })
-        .map((r) => String(r.rik_code ?? "").trim().toUpperCase())
-        .filter(Boolean),
-    ),
-  );
-  if (!codesToResolve.length) return adapted;
-
-  try {
-    const nameByCode = await fetchBestMaterialNamesByCode(codesToResolve);
-    if (!nameByCode.size) return adapted;
-    return {
-      ...adapted,
-      rows: adapted.rows.map((r) => {
-        const code = String(r.rik_code ?? "").trim().toUpperCase();
-        const best = nameByCode.get(code);
-        if (!best) return r;
-        const curr = String(r.name_human_ru ?? "").trim();
-        if (curr && !looksLikeMaterialCode(curr)) return r;
-        return { ...r, name_human_ru: best };
-      }),
-    };
-  } catch (error) {
-    recordDirectorReportsTransportWarning("canonical_materials_name_resolution_failed", error, {
-      codeCount: codesToResolve.length,
-      objectName: p.objectName,
-    });
-    return adapted;
-  }
-}
-
-async function fetchDirectorReportCanonicalWorks(p: {
-  from: string;
-  to: string;
-  objectName: string | null;
-  includeCosts: boolean;
-}): Promise<DirectorDisciplinePayload | null> {
-  const { data, error } = await runTypedRpc<Record<string, unknown>>("director_report_fetch_works_v1", {
-    p_from: p.from || "1970-01-01",
-    p_to: p.to || "2099-12-31",
-    p_object_name: p.objectName ?? null,
-    p_include_costs: !!p.includeCosts,
-  });
-  if (error) throw error;
-  const payload = unwrapRpcPayload(data);
-  return adaptCanonicalWorksPayload(payload);
-}
-
-async function fetchDirectorReportCanonicalOptions(p: {
-  from: string;
-  to: string;
-}): Promise<DirectorReportOptions | null> {
-  const { data, error } = await runTypedRpc<Record<string, unknown>>("director_report_fetch_options_v1", {
-    p_from: p.from || "1970-01-01",
-    p_to: p.to || "2099-12-31",
-  });
-  if (error) throw error;
-  const payload = unwrapRpcPayload(data);
-  return adaptCanonicalOptionsPayload(payload);
-}
-
-async function fetchPriceByRequestItemId(requestItemIds: string[]): Promise<Map<string, number>> {
-  const out = new Map<string, number>();
-  const ids = Array.from(new Set((requestItemIds || []).map((x) => String(x || "").trim()).filter(Boolean)));
-  if (!ids.length) return out;
-
-  for (const part of chunk(ids, 500)) {
-    try {
-      const q = await supabase
-        .from("purchase_items" as never)
-        .select("request_item_id,price,qty")
-        .in("request_item_id", part);
-      if (q.error || !Array.isArray(q.data)) continue;
-
-      const agg = new Map<string, { sum: number; w: number }>();
-      for (const r of q.data) {
-        const row = normalizePurchaseItemRequestPriceRow(r);
-        const id = String(row.request_item_id ?? "").trim();
-        const price = toNum(row.price);
-        if (!id || !(price > 0)) continue;
-        const w = Math.max(1, toNum(row.qty));
-        const prev = agg.get(id) ?? { sum: 0, w: 0 };
-        prev.sum += price * w;
-        prev.w += w;
-        agg.set(id, prev);
-      }
-      for (const [id, v] of agg.entries()) {
-        if (v.w > 0) out.set(id, v.sum / v.w);
-      }
-    } catch (error) {
-      recordDirectorReportsTransportWarning("request_item_price_lookup_failed", error, {
-        chunkSize: part.length,
-        totalIds: ids.length,
-      });
-    }
-  }
-
-  return out;
-}
-
 async function fetchFactRowsForDiscipline(p: {
   from: string;
   to: string;
@@ -1457,3 +973,4 @@ export {
   fetchPriceByRequestItemId,
   fetchViaLegacyRpc,
 };
+

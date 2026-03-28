@@ -1,0 +1,43 @@
+{
+  "status": "GREEN",
+  "before": {
+    "transportLines": 1460,
+    "transportBytes": 49845
+  },
+  "after": {
+    "transportLines": 977,
+    "transportBytes": 33750,
+    "familyFiles": [
+      "src/lib/api/director_reports.observability.ts",
+      "src/lib/api/director_reports.transport.base.ts",
+      "src/lib/api/director_reports.transport.production.ts"
+    ],
+    "familyLines": {
+      "src/lib/api/director_reports.observability.ts": 47,
+      "src/lib/api/director_reports.transport.base.ts": 276,
+      "src/lib/api/director_reports.transport.production.ts": 262
+    }
+  },
+  "checks": {
+    "facadeImportsObservability": true,
+    "facadeImportsBase": true,
+    "facadeImportsProduction": true,
+    "oldBodiesRemoved": true,
+    "familyFilesPresent": true,
+    "baseCarriesAccRpcWarnings": true,
+    "productionCarriesCanonicalFetchers": true,
+    "observabilityCarriesTransportWarn": true
+  },
+  "smoke": {
+    "facadeExportsCanonicalMaterials": true,
+    "facadeExportsCanonicalWorks": true,
+    "facadeExportsCanonicalOptions": true,
+    "facadeExportsPriceLookup": true,
+    "baseExportsTypedRpc": true,
+    "baseEmptyRequestLookupOk": true,
+    "baseEmptyDisciplineLookupOk": true,
+    "baseEmptyIssueLinesOk": true,
+    "productionEmptyRequestItemPriceOk": true,
+    "observabilityExportOk": true
+  }
+}

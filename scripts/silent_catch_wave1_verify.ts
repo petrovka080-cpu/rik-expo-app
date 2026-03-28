@@ -44,9 +44,16 @@ const targetFiles: TargetFileConfig[] = [
     path: "src/lib/api/director_reports.transport.ts",
     baselineSilentCount: 3,
     requiredMarkers: [
-      "issue_lines_acc_rpc_failed",
       "request_lookup_chunk_failed",
       "discipline_rows_joined_failed",
+    ],
+  },
+  {
+    path: "src/lib/api/director_reports.transport.base.ts",
+    baselineSilentCount: 0,
+    requiredMarkers: [
+      "issue_lines_acc_rpc_failed",
+      "recordDirectorReportsTransportWarning",
     ],
   },
   {
@@ -102,7 +109,12 @@ const replacementClassification = [
   },
   {
     file: "src/lib/api/director_reports.transport.ts",
-    event: "issue_lines_acc_rpc_failed / request_lookup_chunk_failed / discipline_rows_joined_failed",
+    event: "request_lookup_chunk_failed / discipline_rows_joined_failed",
+    outcome: "degraded",
+  },
+  {
+    file: "src/lib/api/director_reports.transport.base.ts",
+    event: "issue_lines_acc_rpc_failed",
     outcome: "degraded",
   },
   {
