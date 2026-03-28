@@ -1,0 +1,15 @@
+Catalog API Wave 1
+before_lines=3059
+after_lines=2274
+before_bytes=105032
+after_bytes=79770
+
+moved:
+- catalog public types
+- search service
+- lookup service
+- transport, parsers, normalizers, observability
+
+catalog_api now keeps:
+- request/proposal/draft/business flows
+- compatibility facade re-exports for catalog family

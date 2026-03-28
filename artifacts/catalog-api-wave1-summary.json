@@ -1,0 +1,37 @@
+{
+  "status": "GREEN",
+  "before": {
+    "catalogApiLines": 3059,
+    "catalogApiBytes": 105032
+  },
+  "after": {
+    "catalogApiLines": 2274,
+    "catalogApiBytes": 79770,
+    "familyFiles": [
+      "src/lib/catalog/catalog.types.ts",
+      "src/lib/catalog/catalog.observability.ts",
+      "src/lib/catalog/catalog.parsers.ts",
+      "src/lib/catalog/catalog.normalizers.ts",
+      "src/lib/catalog/catalog.transport.ts",
+      "src/lib/catalog/catalog.search.service.ts",
+      "src/lib/catalog/catalog.lookup.service.ts",
+      "src/lib/catalog/catalog.facade.ts"
+    ]
+  },
+  "checks": {
+    "facadeBridgePresent": true,
+    "oldBodiesRemoved": true,
+    "familyFilesPresent": true,
+    "facadeExportsSearch": true,
+    "facadeExportsLookup": true
+  },
+  "smoke": {
+    "searchCatalogItemsOk": true,
+    "rikQuickSearchOk": true,
+    "listCatalogGroupsOk": true,
+    "listUomsOk": true,
+    "listIncomingItemsEmptyGuardOk": true,
+    "listSuppliersOk": true,
+    "listUnifiedCounterpartiesOk": true
+  }
+}

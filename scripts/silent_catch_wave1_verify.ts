@@ -51,15 +51,29 @@ const targetFiles: TargetFileConfig[] = [
   },
   {
     path: "src/lib/catalog_api.ts",
-    baselineSilentCount: 8,
+    baselineSilentCount: 5,
     requiredMarkers: [
-      "list_unified_counterparties_profile_lookup_failed",
-      "catalog_search_rpc_failed",
       "draft_storage_get_failed",
       "draft_storage_set_failed",
       "draft_storage_clear_failed",
       "request_header_lookup_view_failed",
       "request_items_set_status_rpc_failed",
+    ],
+  },
+  {
+    path: "src/lib/catalog/catalog.lookup.service.ts",
+    baselineSilentCount: 3,
+    requiredMarkers: [
+      "list_unified_counterparties_profile_lookup_failed",
+      "list_suppliers_rpc_failed",
+      "list_suppliers_table_failed",
+    ],
+  },
+  {
+    path: "src/lib/catalog/catalog.search.service.ts",
+    baselineSilentCount: 2,
+    requiredMarkers: [
+      "catalog_search_rpc_failed",
       "rik_quick_search_rpc_failed",
     ],
   },
@@ -93,7 +107,17 @@ const replacementClassification = [
   },
   {
     file: "src/lib/catalog_api.ts",
-    event: "profile lookup / search rpc / draft storage / request header view / request_items_set_status / rik search",
+    event: "draft storage / request header view / request_items_set_status",
+    outcome: "fallback",
+  },
+  {
+    file: "src/lib/catalog/catalog.lookup.service.ts",
+    event: "unified counterparty profile lookup / suppliers rpc / suppliers table",
+    outcome: "fallback",
+  },
+  {
+    file: "src/lib/catalog/catalog.search.service.ts",
+    event: "catalog search rpc / rik search rpc",
     outcome: "fallback",
   },
   {
