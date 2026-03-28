@@ -229,6 +229,11 @@ const warnDirectorNaming = (operation: string, source: string, error: unknown) =
   console.warn("[director_reports.naming]", { operation, source, message });
 };
 
+const isHealthyNameSourcesProbe = (probe: Pick<NameSourcesProbe, "statuses">): boolean =>
+  probe.statuses.vrr === "ok" &&
+  probe.statuses.overrides === "ok" &&
+  probe.statuses.ledger === "ok";
+
 const isMissingNamingSourceError = (error: unknown, sourceName: string): boolean => {
   const record = error && typeof error === "object" ? (error as Record<string, unknown>) : {};
   const message = String(record.message ?? error ?? "").toLowerCase();
@@ -267,11 +272,12 @@ const probeNamingSource = async (
 async function probeNameSources(): Promise<NameSourcesProbe> {
   const cached = nameSourcesProbeCache;
   if (cached) {
-    const ttl = cached.value.vrr ? NAME_SOURCES_PROBE_POSITIVE_TTL_MS : NAME_SOURCES_PROBE_NEGATIVE_TTL_MS;
+    const cacheHealthy = isHealthyNameSourcesProbe(cached.value);
+    const ttl = cacheHealthy ? NAME_SOURCES_PROBE_POSITIVE_TTL_MS : NAME_SOURCES_PROBE_NEGATIVE_TTL_MS;
     if (Date.now() - cached.ts < ttl) {
       return {
         ...cached.value,
-        probeCacheMode: cached.value.vrr ? "cached_positive" : "cached_negative",
+        probeCacheMode: cacheHealthy ? "cached_positive" : "cached_negative",
       };
     }
   }

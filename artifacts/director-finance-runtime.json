@@ -97,7 +97,7 @@
         },
         {
           "type": "info",
-          "text": "[platform.observability] {screen: profile, surface: session_role, event: warm_session_profile, result: success, durationMs: 611}"
+          "text": "[platform.observability] {screen: profile, surface: session_role, event: warm_session_profile, result: success, durationMs: 599}"
         },
         {
           "type": "info",
@@ -109,7 +109,7 @@
         },
         {
           "type": "info",
-          "text": "[platform.observability] {screen: director, surface: finance_panel, event: load_finance_scope, result: success, durationMs: 1252}"
+          "text": "[platform.observability] {screen: director, surface: finance_panel, event: load_finance_scope, result: success, durationMs: 1262}"
         },
         {
           "type": "info",

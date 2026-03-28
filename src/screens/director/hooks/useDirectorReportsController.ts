@@ -41,6 +41,35 @@ const getPerformance = (): PerformanceLike | null => {
   return null;
 };
 
+let directorReportsPerfFallbackWarned = false;
+
+const recordDirectorReportsWarning = (
+  event: string,
+  error: unknown,
+  extra?: Record<string, unknown>,
+) => {
+  const message = getErrorMessage(error, event);
+  console.warn("[director_reports.controller]", { event, message, ...extra });
+  recordPlatformObservability({
+    screen: "director",
+    surface: "reports",
+    category: "ui",
+    event,
+    result: "error",
+    fallbackUsed: true,
+    errorClass: error instanceof Error ? error.name : undefined,
+    errorMessage: message,
+    extra: {
+      module: "useDirectorReportsController",
+      route: "/director",
+      role: "director",
+      owner: "reports_controller",
+      severity: "warn",
+      ...extra,
+    },
+  });
+};
+
 const getErrorMessage = (error: unknown, fallback: string): string => {
   if (error instanceof Error) {
     const message = error.message.trim();
@@ -125,7 +154,13 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
     try {
       const perf = getPerformance();
       return typeof perf?.now === "function" ? perf.now() : Date.now();
-    } catch {
+    } catch (error) {
+      if (!directorReportsPerfFallbackWarned) {
+        directorReportsPerfFallbackWarned = true;
+        recordDirectorReportsWarning("reports_performance_clock_unavailable", error, {
+          fallbackUsed: "date_now",
+        });
+      }
       return Date.now();
     }
   }, []);
@@ -386,8 +421,12 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
                 fromCache: pricedScope.disciplineFromCache,
               });
             }
-          } catch {
-            // keep base payload rendered
+          } catch (error) {
+            recordDirectorReportsWarning("reports_priced_scope_refresh_failed", error, {
+              fallbackUsed: "base_payload_kept",
+              stage: "discipline_priced_refresh",
+              objectName: objectName ?? null,
+            });
           } finally {
             if (activeReqId === disciplineReqSeqRef.current) setRepDisciplinePriceLoading(false);
           }
