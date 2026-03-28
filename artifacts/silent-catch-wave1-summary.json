@@ -1,0 +1,94 @@
+{
+  "status": "GREEN",
+  "files": [
+    {
+      "path": "src/lib/api/director_reports.naming.ts",
+      "baselineSilentCount": 0,
+      "afterSilentCount": 0,
+      "markersPresent": true,
+      "missingMarkers": []
+    },
+    {
+      "path": "src/lib/api/director_reports.transport.ts",
+      "baselineSilentCount": 3,
+      "afterSilentCount": 0,
+      "markersPresent": true,
+      "missingMarkers": []
+    },
+    {
+      "path": "src/lib/catalog_api.ts",
+      "baselineSilentCount": 8,
+      "afterSilentCount": 0,
+      "markersPresent": true,
+      "missingMarkers": []
+    },
+    {
+      "path": "src/screens/buyer/buyer.fetchers.ts",
+      "baselineSilentCount": 1,
+      "afterSilentCount": 0,
+      "markersPresent": true,
+      "missingMarkers": []
+    },
+    {
+      "path": "src/screens/foreman/foreman.ai.ts",
+      "baselineSilentCount": 1,
+      "afterSilentCount": 0,
+      "markersPresent": true,
+      "missingMarkers": []
+    },
+    {
+      "path": "src/screens/accountant/accountant.inbox.service.ts",
+      "baselineSilentCount": 2,
+      "afterSilentCount": 0,
+      "markersPresent": true,
+      "missingMarkers": []
+    }
+  ],
+  "counts": {
+    "before": 15,
+    "after": 0
+  },
+  "replacements": [
+    {
+      "file": "src/lib/api/director_reports.naming.ts",
+      "event": "naming_probe / naming_fetch_source",
+      "outcome": "degraded"
+    },
+    {
+      "file": "src/lib/api/director_reports.transport.ts",
+      "event": "issue_lines_acc_rpc_failed / request_lookup_chunk_failed / discipline_rows_joined_failed",
+      "outcome": "degraded"
+    },
+    {
+      "file": "src/lib/catalog_api.ts",
+      "event": "profile lookup / search rpc / draft storage / request header view / request_items_set_status / rik search",
+      "outcome": "fallback"
+    },
+    {
+      "file": "src/screens/buyer/buyer.fetchers.ts",
+      "event": "load_buckets_rejected_overlay",
+      "outcome": "degraded"
+    },
+    {
+      "file": "src/screens/foreman/foreman.ai.ts",
+      "event": "error_stringify_failed",
+      "outcome": "degraded"
+    },
+    {
+      "file": "src/screens/foreman/foreman.ai.ts",
+      "event": "ai_response_json_parse_failed",
+      "outcome": "fail"
+    },
+    {
+      "file": "src/screens/accountant/accountant.inbox.service.ts",
+      "event": "load_inbox / load_inbox_primary_rpc",
+      "outcome": "fallback"
+    }
+  ],
+  "forcedFailureScenarios": {
+    "buyerInbox": true,
+    "catalogDraftStorage": true
+  },
+  "backendOwnerPreserved": true,
+  "logicChanged": false
+}

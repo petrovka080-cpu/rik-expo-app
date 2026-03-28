@@ -1,0 +1,11 @@
+No silent catch matches found in wave1 scope.
+Checked patterns:
+- catch\s*\{\s*\}
+- catch\s*\([^\)]*\)\s*\{\s*(// ignore|// no-op|return []|return null|return defaultValue)
+Files:
+- src/lib/api/director_reports.naming.ts
+- src/lib/api/director_reports.transport.ts
+- src/lib/catalog_api.ts
+- src/screens/buyer/buyer.fetchers.ts
+- src/screens/foreman/foreman.ai.ts
+- src/screens/accountant/accountant.inbox.service.ts

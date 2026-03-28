@@ -318,12 +318,18 @@ async function fetchIssueLinesViaAccRpc(issueIds: string[]): Promise<AccIssueLin
             p_issue_id: numId,
           });
           if (error) {
-            console.warn(`[fetchIssueLines] RPC Error for ${id}:`, error.message);
+            recordDirectorReportsTransportWarning("issue_lines_acc_rpc_failed", error, {
+              issueId: id,
+              source: "acc_report_issue_lines",
+            });
             return [] as AccIssueLine[];
           }
           return Array.isArray(data) ? (data as AccIssueLine[]) : [];
         } catch (e) {
-          console.warn(`[fetchIssueLines] catch for ${id}:`, e);
+          recordDirectorReportsTransportWarning("issue_lines_acc_rpc_failed", e, {
+            issueId: id,
+            source: "acc_report_issue_lines",
+          });
           return [] as AccIssueLine[];
         }
       })
@@ -357,7 +363,11 @@ async function fetchDirectorFactViaAccRpc(p: {
         const id = String(r?.id ?? "").trim();
         if (id) reqById.set(id, r);
       }
-    } catch {
+    } catch (error) {
+      recordDirectorReportsTransportWarning("request_lookup_chunk_failed", error, {
+        chunkSize: ids.length,
+        requestIdCount: requestIds.length,
+      });
       continue;
     }
   }
@@ -902,6 +912,11 @@ async function fetchDisciplineFactRowsFromTables(p: {
       if (REPORTS_TIMING) {
         console.info(`[director_reports] discipline.rows.light.joined.failed: ${(e as Error)?.message ?? e}`);
       }
+      recordDirectorReportsTransportWarning("discipline_rows_joined_failed", e, {
+        from: p.from,
+        to: p.to,
+        objectName: p.objectName,
+      });
       return null;
     }
   };

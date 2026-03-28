@@ -10,6 +10,7 @@ import {
 } from "./api/proposals";
 import { requestCreateDraft as rpcRequestCreateDraft } from "./api/requests";
 import type { PaymentPdfDraft } from "./api/types";
+import { recordPlatformObservability } from "./observability/platformObservability";
 
 export {
   ensureRequestSmart,
@@ -175,6 +176,59 @@ export type Supplier = {
   address?: string | null;
   contact_name?: string | null;
   notes?: string | null;
+};
+
+type CatalogObservabilityMode = "fail" | "degraded" | "fallback";
+
+const catalogOnceWarnings = new Set<string>();
+
+const getCatalogErrorMessage = (error: unknown, fallback: string) => {
+  if (error instanceof Error) {
+    const message = error.message.trim();
+    if (message) return message;
+  }
+  if (error && typeof error === "object") {
+    const record = error as Record<string, unknown>;
+    const message = String(record.message ?? "").trim();
+    if (message) return message;
+  }
+  const raw = String(error ?? "").trim();
+  return raw || fallback;
+};
+
+const recordCatalogWarning = (params: {
+  screen: "market" | "request";
+  event: string;
+  operation: string;
+  error: unknown;
+  mode: CatalogObservabilityMode;
+  extra?: Record<string, unknown>;
+  onceKey?: string;
+}) => {
+  const { screen, event, operation, error, mode, extra, onceKey } = params;
+  const message = getCatalogErrorMessage(error, operation);
+  const dedupeKey = onceKey ? `${onceKey}:${message}` : null;
+  if (dedupeKey && catalogOnceWarnings.has(dedupeKey)) return;
+  if (dedupeKey) catalogOnceWarnings.add(dedupeKey);
+
+  console.warn("[catalog_api]", { event, operation, mode, message, ...extra });
+  recordPlatformObservability({
+    screen,
+    surface: "catalog_api",
+    category: "fetch",
+    event,
+    result: "error",
+    fallbackUsed: mode !== "fail",
+    errorStage: operation,
+    errorClass: error instanceof Error ? error.name : undefined,
+    errorMessage: message || undefined,
+    extra: {
+      module: "catalog_api",
+      owner: "catalog_api",
+      mode,
+      ...extra,
+    },
+  });
 };
 
 const SUPPLIERS_TABLE_SELECT =
@@ -847,7 +901,18 @@ export async function listUnifiedCounterparties(search?: string): Promise<Unifie
           const rows = asProfileContractorRows(res.data);
           if (plan.withFilter) return rows;
           return rows.filter((r) => Boolean(r.is_contractor));
-        } catch { }
+        } catch (error) {
+          recordCatalogWarning({
+            screen: "request",
+            event: "list_unified_counterparties_profile_lookup_failed",
+            operation: "listUnifiedCounterparties.loadProfilesSafe",
+            error,
+            mode: "fallback",
+            extra: {
+              withFilter: plan.withFilter,
+            },
+          });
+        }
       }
       return [] as ProfileContractorCompatRow[];
     };
@@ -961,7 +1026,21 @@ export async function searchCatalogItems(
       if (data && data.length > 0) {
         return mapCatalogSearchRows(data.slice(0, pLimit));
       }
-    } catch { }
+    } catch (error) {
+      recordCatalogWarning({
+        screen: "market",
+        event: "catalog_search_rpc_failed",
+        operation: "searchCatalogItems.rpc",
+        error,
+        mode: "fallback",
+        extra: {
+          rpc: fn,
+          limit: pLimit,
+          queryLength: pQuery.length,
+          appsCount: Array.isArray(apps) ? apps.length : 0,
+        },
+      });
+    }
   }
 
   // 2) Fallback: Split tokens and search name in rik_items
@@ -1030,15 +1109,42 @@ const DRAFT_KEY = "foreman_draft_request_id";
 let memDraftId: string | null = null;
 const storage = {
   get(): string | null {
-    try { if (typeof localStorage !== "undefined") return localStorage.getItem(DRAFT_KEY); } catch { }
+    try { if (typeof localStorage !== "undefined") return localStorage.getItem(DRAFT_KEY); } catch (error) {
+      recordCatalogWarning({
+        screen: "request",
+        event: "draft_storage_get_failed",
+        operation: "draftStorage.get",
+        error,
+        mode: "degraded",
+        onceKey: "draft_storage_get_failed",
+      });
+    }
     return memDraftId;
   },
   set(v: string) {
-    try { if (typeof localStorage !== "undefined") localStorage.setItem(DRAFT_KEY, v); } catch { }
+    try { if (typeof localStorage !== "undefined") localStorage.setItem(DRAFT_KEY, v); } catch (error) {
+      recordCatalogWarning({
+        screen: "request",
+        event: "draft_storage_set_failed",
+        operation: "draftStorage.set",
+        error,
+        mode: "degraded",
+        onceKey: "draft_storage_set_failed",
+      });
+    }
     memDraftId = v;
   },
   clear() {
-    try { if (typeof localStorage !== "undefined") localStorage.removeItem(DRAFT_KEY); } catch { }
+    try { if (typeof localStorage !== "undefined") localStorage.removeItem(DRAFT_KEY); } catch (error) {
+      recordCatalogWarning({
+        screen: "request",
+        event: "draft_storage_clear_failed",
+        operation: "draftStorage.clear",
+        error,
+        mode: "degraded",
+        onceKey: "draft_storage_clear_failed",
+      });
+    }
     memDraftId = null;
   },
 };
@@ -1121,7 +1227,19 @@ export async function getRequestHeader(requestId: string): Promise<RequestHeader
       const { data, error } = await selectCatalogDynamicReadSingle(view.src, view.cols, id);
       const row = asRequestHeader(data);
       if (!error && row) return row;
-    } catch { }
+    } catch (error) {
+      recordCatalogWarning({
+        screen: "request",
+        event: "request_header_lookup_view_failed",
+        operation: "getRequestHeader.view_lookup",
+        error,
+        mode: "fallback",
+        extra: {
+          requestId: id,
+          source: view.src,
+        },
+      });
+    }
   }
 
   return { id };
@@ -2664,7 +2782,18 @@ async function syncProposalRequestItemStatusStage(
     const { error } = await supabase.rpc("request_items_set_status", args);
     if (error) throw error;
     return true;
-  } catch {
+  } catch (error) {
+    recordCatalogWarning({
+      screen: "request",
+      event: "request_items_set_status_rpc_failed",
+      operation: "syncProposalRequestItemStatusStage.rpc",
+      error,
+      mode: "fallback",
+      extra: {
+        requestItemCount: prepared.request_item_ids.length,
+        statusAfter: preconditions.statusAfter,
+      },
+    });
     runtime.dbCalls += 1;
     await supabase
       .from("request_items")
@@ -2867,7 +2996,20 @@ export async function rikQuickSearch(q: string, limit = 60) {
       if (data && data.length > 0) {
         return mapRikQuickSearchRpcRows(data);
       }
-    } catch { }
+    } catch (error) {
+      recordCatalogWarning({
+        screen: "market",
+        event: "rik_quick_search_rpc_failed",
+        operation: "rikQuickSearch.rpc",
+        error,
+        mode: "fallback",
+        extra: {
+          rpc: fn,
+          limit: pLimit,
+          queryLength: pQuery.length,
+        },
+      });
+    }
   }
 
   // Fallback: Smart ILIKE on rik_items

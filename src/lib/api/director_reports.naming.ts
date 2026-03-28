@@ -1,6 +1,7 @@
 import { supabase } from "../supabaseClient";
 import { normalizeRuText } from "../text/encoding";
 import type { DirectorNamingProbeCacheMode, DirectorNamingSourceStatus } from "../../screens/director/director.readModels";
+import { recordPlatformObservability } from "../observability/platformObservability";
 import type { CodeNameRow, DirectorFactRow, ObjectLookupRow, RikNameLookupRow } from "./director_reports.shared";
 import {
   WITHOUT_LEVEL,
@@ -227,6 +228,23 @@ const materialNameResolveSourceCache = new Map<string, MaterialNameResolutionSou
 const warnDirectorNaming = (operation: string, source: string, error: unknown) => {
   const message = error instanceof Error ? error.message : String(error ?? "unknown_error");
   console.warn("[director_reports.naming]", { operation, source, message });
+  recordPlatformObservability({
+    screen: "director",
+    surface: "reports_naming",
+    category: "fetch",
+    event: `naming_${operation}`,
+    result: "error",
+    fallbackUsed: true,
+    errorStage: operation,
+    errorClass: error instanceof Error ? error.name : undefined,
+    errorMessage: message || undefined,
+    extra: {
+      module: "director_reports.naming",
+      owner: "reports_naming",
+      source,
+      mode: "degraded",
+    },
+  });
 };
 
 const isHealthyNameSourcesProbe = (probe: Pick<NameSourcesProbe, "statuses">): boolean =>

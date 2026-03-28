@@ -1,0 +1,13 @@
+{
+  "forcedFailure": {
+    "buyerInboxObserved": true,
+    "catalogDraftStorageObserved": true
+  },
+  "happyPath": {
+    "catalogSearchOk": true,
+    "rikQuickSearchOk": true,
+    "buyerBucketsOk": true,
+    "accountantWindowOk": true,
+    "foremanEmptyPromptOk": true
+  }
+}

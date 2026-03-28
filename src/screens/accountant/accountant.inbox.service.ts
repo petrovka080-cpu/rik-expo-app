@@ -1,6 +1,10 @@
 import { supabase } from "../../lib/supabaseClient";
 import { listAccountantInbox } from "../../lib/catalog_api";
 import { normalizeAccountantInboxRpcTab } from "../../lib/api/accountant";
+import {
+  beginPlatformObservability,
+  recordPlatformObservability,
+} from "../../lib/observability/platformObservability";
 import type { AccountantInboxUiRow, Tab } from "./types";
 import { computePayStatus } from "./accountant.payment";
 import { filterRowsByTab, sortRowsByTab } from "./accountant.tabFilter";
@@ -152,19 +156,45 @@ export async function loadAccountantInboxViaRpc(params: {
     return { data: [], rpcFailed: false, nextTriedRpcOk: false };
   }
 
+  const observation = beginPlatformObservability({
+    screen: "accountant",
+    surface: "inbox_legacy_rpc",
+    category: "fetch",
+    event: "load_inbox",
+    sourceKind: "rpc:list_accountant_inbox",
+  });
+
   try {
     const list = await listAccountantInbox(tab);
-    return {
+    const result = {
       data: Array.isArray(list) ? list : [],
       rpcFailed: false,
       nextTriedRpcOk: true,
     };
+    observation.success({
+      rowCount: result.data.length,
+      extra: {
+        tab: normalizeAccountantInboxRpcTab(tab),
+      },
+    });
+    return result;
   } catch (e: unknown) {
     const msg = errorMessage(e);
+    const nextTriedRpcOk = shouldDisableInboxRpc(msg) ? false : triedRpcOk;
+    observation.error(e, {
+      rowCount: 0,
+      fallbackUsed: true,
+      errorStage: "list_accountant_inbox",
+      extra: {
+        tab: normalizeAccountantInboxRpcTab(tab),
+        nextTriedRpcOk,
+        mode: "fallback",
+      },
+    });
     return {
       data: [],
       rpcFailed: true,
-      nextTriedRpcOk: shouldDisableInboxRpc(msg) ? false : triedRpcOk,
+      nextTriedRpcOk,
     };
   }
 }
@@ -243,6 +273,13 @@ export async function loadAccountantInboxWindowData(params: {
   limitRows: number;
 }): Promise<AccountantInboxWindowLoadResult> {
   const { tab, triedRpcOk, offsetRows, limitRows } = params;
+  const observation = beginPlatformObservability({
+    screen: "accountant",
+    surface: "inbox_window",
+    category: "fetch",
+    event: "load_inbox",
+    sourceKind: ACCOUNTANT_INBOX_RPC_SOURCE_KIND,
+  });
 
   try {
     const { data, error } = await supabase.rpc("accountant_inbox_scope_v1", {
@@ -256,7 +293,7 @@ export async function loadAccountantInboxWindowData(params: {
     const totalRowCount = toInt(envelope.meta.total_row_count, 0);
     const returnedRowCount = toInt(envelope.meta.returned_row_count, envelope.rows.length);
 
-    return {
+    const result: AccountantInboxWindowLoadResult = {
       rows: envelope.rows,
       meta: {
         offsetRows: toInt(envelope.meta.offset_rows, Math.max(0, offsetRows)),
@@ -278,7 +315,37 @@ export async function loadAccountantInboxWindowData(params: {
       },
       nextTriedRpcOk: triedRpcOk,
     };
-  } catch {
+    observation.success({
+      rowCount: result.rows.length,
+      sourceKind: ACCOUNTANT_INBOX_RPC_SOURCE_KIND,
+      fallbackUsed: false,
+      extra: {
+        tab: result.meta.tab,
+        returnedRowCount: result.meta.returnedRowCount,
+        totalRowCount: result.meta.totalRowCount,
+      },
+    });
+    return result;
+  } catch (error) {
+    const fallbackReason = errorMessage(error);
+    recordPlatformObservability({
+      screen: "accountant",
+      surface: "inbox_window",
+      category: "fetch",
+      event: "load_inbox_primary_rpc",
+      result: "error",
+      sourceKind: ACCOUNTANT_INBOX_RPC_SOURCE_KIND,
+      fallbackUsed: true,
+      errorStage: "accountant_inbox_scope_v1",
+      errorClass: error instanceof Error ? error.name : undefined,
+      errorMessage: fallbackReason || undefined,
+      extra: {
+        tab: normalizeAccountantInboxRpcTab(tab),
+        offsetRows: Math.max(0, offsetRows),
+        limitRows: Math.max(1, limitRows),
+        mode: "fallback",
+      },
+    });
     const legacy = await loadAccountantInboxLegacyData({ tab, triedRpcOk });
     const fallback = sliceAccountantInboxRowsWindow({
       rows: legacy.rows,
@@ -288,7 +355,7 @@ export async function loadAccountantInboxWindowData(params: {
       sourceKind: legacy.sourceKind,
       nextTriedRpcOk: legacy.nextTriedRpcOk,
     });
-    return {
+    const result: AccountantInboxWindowLoadResult = {
       ...fallback,
       sourceMeta: {
         ...fallback.sourceMeta,
@@ -296,6 +363,18 @@ export async function loadAccountantInboxWindowData(params: {
         sourceKind: ACCOUNTANT_INBOX_LEGACY_SOURCE_KIND,
       },
     };
+    observation.success({
+      rowCount: result.rows.length,
+      sourceKind: result.sourceMeta.sourceKind,
+      fallbackUsed: true,
+      extra: {
+        tab: result.meta.tab,
+        returnedRowCount: result.meta.returnedRowCount,
+        totalRowCount: result.meta.totalRowCount,
+        mode: "fallback",
+      },
+    });
+    return result;
   }
 }
 

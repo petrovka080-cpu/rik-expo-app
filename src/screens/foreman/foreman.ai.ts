@@ -7,6 +7,7 @@ import {
   resolveCatalogSynonymMatchViaRpc,
 } from "../../lib/api/foremanAiResolve.service";
 import { rikQuickSearch } from "../../lib/catalog_api";
+import { recordPlatformObservability } from "../../lib/observability/platformObservability";
 
 type ForemanAiAction = "create_request" | "clarify";
 type ForemanAiKind = "material" | "work" | "service";
@@ -145,12 +146,46 @@ const logForemanAi = (payload: Record<string, unknown>) => {
   console.info("[foreman.ai]", payload);
 };
 
+const foremanAiWarnedErrors = new Set<string>();
+
+const recordForemanAiDegradedOnce = (
+  event: string,
+  error: unknown,
+  extra?: Record<string, unknown>,
+) => {
+  const message = error instanceof Error ? error.message : String(error ?? "unknown_error");
+  const key = `${event}:${message}`;
+  if (foremanAiWarnedErrors.has(key)) return;
+  foremanAiWarnedErrors.add(key);
+  console.warn("[foreman.ai]", { event, message, ...extra });
+  recordPlatformObservability({
+    screen: "ai",
+    surface: "foreman_quick_request",
+    category: "fetch",
+    event,
+    result: "error",
+    fallbackUsed: true,
+    errorStage: event,
+    errorClass: error instanceof Error ? error.name : undefined,
+    errorMessage: message || undefined,
+    extra: {
+      module: "foreman.ai",
+      owner: "foreman_ai",
+      mode: "degraded",
+      ...extra,
+    },
+  });
+};
+
 const toErrorMessage = (error: unknown): string => {
   if (error instanceof Error) return error.message;
   if (error && typeof error === "object") {
     try {
       return JSON.stringify(error);
-    } catch {
+    } catch (stringifyError) {
+      recordForemanAiDegradedOnce("error_stringify_failed", stringifyError, {
+        originalErrorType: error.constructor?.name ?? typeof error,
+      });
       return String(error);
     }
   }
@@ -430,7 +465,10 @@ const parseForemanAiResponse = (text: string): ParsedForemanAiQuickResult => {
   let parsed: RawForemanAiResponse;
   try {
     parsed = JSON.parse(cleanJsonText(text)) as RawForemanAiResponse;
-  } catch {
+  } catch (error) {
+    recordForemanAiDegradedOnce("ai_response_json_parse_failed", error, {
+      responseLength: String(text ?? "").length,
+    });
     throw new Error("AI вернул ответ не в JSON формате.");
   }
 

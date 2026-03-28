@@ -351,8 +351,26 @@ async function loadBuyerBucketsDataLegacyInternal(params: {
           );
         }
       }
-    } catch {
-      // no-op
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error ?? "");
+      log?.("[buyer] rejected overlay item-count fallback:", message);
+      recordPlatformObservability({
+        screen: "buyer",
+        surface: "summary_buckets",
+        category: "fetch",
+        event: "load_buckets_rejected_overlay",
+        result: "error",
+        sourceKind: BUYER_BUCKETS_LEGACY_SOURCE_KIND,
+        fallbackUsed: true,
+        errorStage: "rejected_overlay_item_count",
+        errorClass: error instanceof Error ? error.name : undefined,
+        errorMessage: message || undefined,
+        extra: {
+          primaryOwner: "legacy_client_stitch",
+          rejectedIds: rejectedIds.length,
+          mode: "degraded",
+        },
+      });
     }
 
     const result = {
