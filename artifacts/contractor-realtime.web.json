@@ -1,0 +1,162 @@
+{
+  "baseUrl": "http://localhost:8081",
+  "events": [
+    {
+      "id": "obs-12",
+      "at": 1774729091238,
+      "screen": "contractor",
+      "surface": "screen_root",
+      "category": "reload",
+      "event": "realtime_event_received",
+      "result": "success",
+      "trigger": "realtime",
+      "sourceKind": "supabase:postgres_changes",
+      "extra": {
+        "route": "/contractor",
+        "channelName": "contractor:screen:realtime",
+        "bindingKey": "contractor_registry",
+        "table": "contractors",
+        "eventType": "UPDATE",
+        "owner": "realtime_lifecycle"
+      }
+    },
+    {
+      "id": "obs-13",
+      "at": 1774729091238,
+      "screen": "contractor",
+      "surface": "screen_root",
+      "category": "reload",
+      "event": "realtime_refresh_triggered",
+      "result": "success",
+      "trigger": "realtime",
+      "sourceKind": "supabase:postgres_changes",
+      "extra": {
+        "bindingKey": "contractor_registry",
+        "table": "contractors",
+        "owner": "table:contractors",
+        "eventType": "UPDATE",
+        "scopes": [
+          "works_bundle",
+          "inbox_scope"
+        ],
+        "lifecycleOwner": "realtime_lifecycle"
+      }
+    },
+    {
+      "id": "obs-14",
+      "at": 1774729091798,
+      "screen": "contractor",
+      "surface": "works_bundle",
+      "category": "fetch",
+      "event": "load_works_bundle",
+      "sourceKind": "rpc:contractor_works_bundle_scope_v1",
+      "rowCount": 63,
+      "fallbackUsed": false,
+      "extra": {
+        "primaryOwner": "rpc_scope_v1",
+        "subcontractCards": 23
+      },
+      "result": "success",
+      "durationMs": 559
+    },
+    {
+      "id": "obs-15",
+      "at": 1774729091834,
+      "screen": "contractor",
+      "surface": "inbox_scope",
+      "category": "fetch",
+      "event": "load_inbox_scope",
+      "sourceKind": "rpc:contractor_inbox_scope_v1",
+      "rowCount": 1,
+      "extra": {
+        "readyRows": 1,
+        "invalidMissingContractor": 67,
+        "invalidMaterialOnly": 0
+      },
+      "result": "success",
+      "durationMs": 595
+    },
+    {
+      "id": "obs-16",
+      "at": 1774729091835,
+      "screen": "contractor",
+      "surface": "works_list",
+      "category": "ui",
+      "event": "content_ready",
+      "result": "success",
+      "rowCount": 63,
+      "extra": {
+        "canonicalReadyRows": 1,
+        "invalidMissingContractor": 67,
+        "invalidMaterialOnly": 0,
+        "subcontractCards": 23,
+        "primaryOwner": "rpc_scope_v1",
+        "fallbackUsed": false,
+        "sourceKind": "rpc:contractor_works_bundle_scope_v1"
+      }
+    },
+    {
+      "id": "obs-17",
+      "at": 1774729092594,
+      "screen": "contractor",
+      "surface": "screen_root",
+      "category": "reload",
+      "event": "realtime_event_received",
+      "result": "success",
+      "trigger": "realtime",
+      "sourceKind": "supabase:postgres_changes",
+      "extra": {
+        "route": "/contractor",
+        "channelName": "contractor:screen:realtime",
+        "bindingKey": "contractor_work_progress",
+        "table": "work_progress",
+        "eventType": "UPDATE",
+        "owner": "realtime_lifecycle"
+      }
+    },
+    {
+      "id": "obs-18",
+      "at": 1774729092594,
+      "screen": "contractor",
+      "surface": "screen_root",
+      "category": "reload",
+      "event": "realtime_refresh_skipped_recent",
+      "result": "skipped",
+      "trigger": "realtime",
+      "extra": {
+        "guardReason": "recent_same_scope",
+        "scopeKey": "contractor|screen_root|realtime_refresh_skipped_recent",
+        "joinedInflight": false,
+        "recentScopeHit": false,
+        "networkKnownOffline": false,
+        "authReady": true,
+        "bootstrapReady": true,
+        "refreshScope": null,
+        "bindingKey": "contractor_work_progress",
+        "table": "work_progress",
+        "scopes": [
+          "works_bundle",
+          "inbox_scope"
+        ],
+        "owner": "realtime_lifecycle"
+      }
+    },
+    {
+      "id": "obs-19",
+      "at": 1774729092655,
+      "screen": "contractor",
+      "surface": "fact_scope",
+      "category": "fetch",
+      "event": "load_fact_scope",
+      "sourceKind": "rpc:contractor_fact_scope_v1",
+      "rowCount": 1,
+      "extra": {
+        "workItemId": "progress:692a1795-94a1-4121-bcf9-fc38271b1c3f",
+        "warehouseIssuesStatus": "empty",
+        "linkedRequestCount": 1
+      },
+      "result": "success",
+      "durationMs": 618
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+warehouse/web subscription_connected
+warehouse/web realtime_event_received :: warehouse_requests | requests
+warehouse/web realtime_refresh_triggered :: warehouse_requests | requests | expense
+warehouse/web realtime_event_received :: warehouse_request_items | request_items
+warehouse/web realtime_refresh_skipped_inflight :: warehouse_request_items | request_items | expense
+warehouse/web realtime_event_received :: warehouse_requests | requests
+warehouse/web realtime_refresh_skipped_recent :: warehouse_requests | requests | expense
+warehouse/android realtime_event_received
+warehouse/android realtime_refresh_triggered
+warehouse/android realtime_event_received
+warehouse/android realtime_refresh_skipped_inflight
+warehouse/android realtime_event_received
+warehouse/android realtime_refresh_triggered
+contractor/web realtime_event_received :: contractor_registry | contractors
+contractor/web realtime_refresh_triggered :: contractor_registry | contractors | works_bundle,inbox_scope
+contractor/web realtime_event_received :: contractor_work_progress | work_progress
+contractor/web realtime_refresh_skipped_recent :: contractor_work_progress | work_progress | works_bundle,inbox_scope
+contractor/android realtime_event_received
+contractor/android realtime_refresh_triggered
+contractor/android realtime_event_received
+contractor/android realtime_refresh_triggered
+contractor/android realtime_event_received
+contractor/android realtime_refresh_skipped_inflight

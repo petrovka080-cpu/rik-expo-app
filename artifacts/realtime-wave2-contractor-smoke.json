@@ -1,0 +1,81 @@
+{
+  "role": "contractor",
+  "status": "passed",
+  "runtimeVerified": true,
+  "webPassed": true,
+  "androidPassed": true,
+  "channel": {
+    "name": "contractor:screen:realtime",
+    "bindings": [
+      {
+        "key": "contractor_work_progress",
+        "table": "work_progress",
+        "event": "*",
+        "filter": null
+      },
+      {
+        "key": "contractor_requests",
+        "table": "requests",
+        "event": "*",
+        "filter": null
+      },
+      {
+        "key": "contractor_request_items",
+        "table": "request_items",
+        "event": "*",
+        "filter": null
+      },
+      {
+        "key": "contractor_purchase_items",
+        "table": "purchase_items",
+        "event": "*",
+        "filter": null
+      },
+      {
+        "key": "contractor_subcontracts",
+        "table": "subcontracts",
+        "event": "*",
+        "filter": null
+      },
+      {
+        "key": "contractor_registry",
+        "table": "contractors",
+        "event": "*",
+        "filter": null
+      }
+    ]
+  },
+  "subscriptionsCreated": {
+    "web": 1,
+    "android": 1,
+    "total": 2
+  },
+  "refreshReasons": {
+    "web": {
+      "works_bundle,inbox_scope": 1
+    },
+    "android": {
+      "unknown_scope": 2
+    }
+  },
+  "coalescing": {
+    "recentGuardWorked": true,
+    "inflightGuardWorked": true,
+    "skippedRecentEvents": 1,
+    "skippedInflightEvents": 1
+  },
+  "subscriptionStarted": true,
+  "subscriptionConnected": true,
+  "eventReceived": true,
+  "refreshTriggered": true,
+  "backendOwnerPreserved": true,
+  "uiUpdated": true,
+  "detailUpdated": true,
+  "fetchCountAfterRealtime": {
+    "web": 1,
+    "android": 1
+  },
+  "doubleFetchDetected": false,
+  "failureStage": "unknown",
+  "platformSpecificIssues": []
+}

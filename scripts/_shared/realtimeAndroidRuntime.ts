@@ -117,7 +117,11 @@ export function createRealtimeAndroidRuntime(params: { projectRoot: string; devC
       label,
       async () => {
         const screen = harness.dumpAndroidScreen(label.replace(/[^a-z0-9_-]+/gi, "-"));
-        return predicate(screen.xml) ? screen : null;
+        const cleaned = await harness.dismissAndroidInterruptions(
+          screen,
+          label.replace(/[^a-z0-9_-]+/gi, "-"),
+        );
+        return predicate(cleaned.xml) ? cleaned : null;
       },
       timeoutMs,
       1_000,

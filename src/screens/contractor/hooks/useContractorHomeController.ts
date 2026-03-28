@@ -1,3 +1,4 @@
+import { useContractorRealtimeLifecycle } from "../contractor.realtime.lifecycle";
 import { useContractorRefreshLifecycle } from "./useContractorRefreshLifecycle";
 import { useContractorScreenData } from "./useContractorScreenData";
 import { useContractorWorkRows } from "./useContractorWorkRows";
@@ -16,13 +17,24 @@ export function useContractorHomeController(params: {
 }) {
   const { screenData, workRows, refresh } = params;
 
-  const { loadWorks, reloadContractorScreenData } = useContractorScreenData(screenData);
+  const {
+    loadWorks,
+    reloadContractorScreenData,
+    refreshVisibleContractorScopes,
+    isContractorRefreshInFlight,
+  } = useContractorScreenData(screenData);
 
   const { availableRows, myRows } = useContractorWorkRows(workRows);
 
   const { handleRefresh } = useContractorRefreshLifecycle({
     ...refresh,
     reloadContractorScreenData,
+  });
+
+  useContractorRealtimeLifecycle({
+    focusedRef: refresh.focusedRef,
+    refreshVisibleContractorScopes,
+    isRefreshInFlight: isContractorRefreshInFlight,
   });
 
   return {

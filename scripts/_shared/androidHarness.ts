@@ -392,6 +392,11 @@ export function createAndroidHarness(options: AndroidHarnessOptions) {
     xml.includes("This development build encountered the following error.") ||
     (xml.includes("Render Error") && xml.includes("Call Stack")) ||
     xml.includes("ReferenceError: Property 'WeakRef' doesn't exist");
+  const isAndroidAppInfoScreen = (xml: string) =>
+    /com\.android\.settings/i.test(xml) &&
+    /App info/i.test(xml) &&
+    (/rik-expo-app/i.test(xml) || /host\.exp\.exponent/i.test(xml)) &&
+    /(?:text|content-desc)="Open"/i.test(xml);
 
   const findAndroidNode = (nodes: AndroidNode[], matcher: (node: AndroidNode) => boolean): AndroidNode | null =>
     nodes.find((node) => matcher(node)) ?? null;
@@ -438,6 +443,19 @@ export function createAndroidHarness(options: AndroidHarnessOptions) {
       return true;
     }
     pressAndroidKey(4);
+    return true;
+  };
+
+  const openAndroidAppInfoTarget = (xml: string) => {
+    const nodes = parseAndroidNodes(xml);
+    const openNode = findAndroidNode(
+      nodes,
+      (node) => node.clickable && node.enabled && /open/i.test(`${node.text} ${node.contentDesc}`),
+    );
+    if (openNode && tapAndroidBounds(openNode.bounds)) {
+      return true;
+    }
+    pressAndroidKey(66);
     return true;
   };
 
@@ -504,6 +522,14 @@ export function createAndroidHarness(options: AndroidHarnessOptions) {
         pressAndroidKey(4);
         await sleep(1200);
         current = dumpAndroidScreen(`${label}-devmenu-full-${attempt + 1}`);
+        continue;
+      }
+
+      if (isAndroidAppInfoScreen(current.xml)) {
+        recoveryState.environmentRecoveryUsed = true;
+        openAndroidAppInfoTarget(current.xml);
+        await sleep(1500);
+        current = dumpAndroidScreen(`${label}-app-info-${attempt + 1}`);
         continue;
       }
 
@@ -904,6 +930,32 @@ export function createAndroidHarness(options: AndroidHarnessOptions) {
       }
     };
 
+    const ensureExactLoginFieldText = async (
+      stage: string,
+      node: AndroidNode | null,
+      expected: string,
+      matcher: (candidate: AndroidNode) => boolean,
+      maxAttempts = 3,
+    ) => {
+      if (!node) return { screen: await getStableLoginScreen(`${stage}-missing`), node: null as AndroidNode | null };
+      let currentNode: AndroidNode | null = node;
+      let screen = await getStableLoginScreen(`${stage}-baseline`);
+      for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
+        const currentValue = String(currentNode?.text ?? "").trim();
+        if (currentValue === expected) {
+          return { screen, node: currentNode };
+        }
+        await replaceAndroidFieldText(currentNode, expected);
+        screen = await getStableLoginScreen(`${stage}-typed-${attempt + 1}`);
+        const typedNodes = parseAndroidNodes(screen.xml);
+        currentNode = findAndroidNode(typedNodes, matcher) ?? currentNode;
+        if (String(currentNode?.text ?? "").trim() === expected) {
+          return { screen, node: currentNode };
+        }
+      }
+      return { screen, node: currentNode };
+    };
+
     if (isLoginScreen(current.xml)) {
       const nodes = parseAndroidNodes(current.xml);
       const editTextNodes = nodes.filter(
@@ -932,9 +984,16 @@ export function createAndroidHarness(options: AndroidHarnessOptions) {
         throw new Error("Android login controls were not found");
       }
 
-      await replaceAndroidFieldText(resolvedEmailNode, params.user.email);
-
-      let passwordScreen = await getStableLoginScreen("email-filled");
+      const emailSeed = await ensureExactLoginFieldText(
+        "email-fill",
+        resolvedEmailNode,
+        params.user.email,
+        (node) =>
+          node.enabled &&
+          /android\.widget\.EditText/i.test(node.className) &&
+          /email/i.test(`${node.text} ${node.hint}`),
+      );
+      let passwordScreen = emailSeed.screen;
       let passwordNodes = parseAndroidNodes(passwordScreen.xml);
       const refreshedEmailNode =
         findAndroidNode(
@@ -943,12 +1002,7 @@ export function createAndroidHarness(options: AndroidHarnessOptions) {
             node.enabled &&
             /android\.widget\.EditText/i.test(node.className) &&
             /email/i.test(`${node.text} ${node.hint}`),
-        ) ?? resolvedEmailNode;
-      if (String(refreshedEmailNode?.text ?? "").trim() !== params.user.email) {
-        await replaceAndroidFieldText(refreshedEmailNode, params.user.email);
-        passwordScreen = await getStableLoginScreen("email-refilled");
-        passwordNodes = parseAndroidNodes(passwordScreen.xml);
-      }
+        ) ?? emailSeed.node ?? resolvedEmailNode;
       const refreshedPasswordNode =
         findAndroidNode(
           passwordNodes,
@@ -977,7 +1031,7 @@ export function createAndroidHarness(options: AndroidHarnessOptions) {
       await replaceAndroidFieldText(refreshedPasswordNode, params.user.password);
 
       const loginScreen = await getStableLoginScreen("password-filled");
-      const loginNodes = parseAndroidNodes(loginScreen.xml);
+      let loginNodes = parseAndroidNodes(loginScreen.xml);
       const refreshedLoginNode = findAndroidLoginNode(loginNodes) ?? loginNode;
       const readyEmailNode =
         findAndroidNode(
@@ -987,10 +1041,16 @@ export function createAndroidHarness(options: AndroidHarnessOptions) {
             /android\.widget\.EditText/i.test(node.className) &&
             /email/i.test(`${node.text} ${node.hint}`),
         ) ?? refreshedEmailNode;
-      const readyEmailText = String(readyEmailNode?.text ?? "").trim();
-      if (readyEmailNode && (!readyEmailText || /^email$/i.test(readyEmailText) || readyEmailText !== params.user.email)) {
-        await replaceAndroidFieldText(readyEmailNode, params.user.email);
-      }
+      const confirmedEmail = await ensureExactLoginFieldText(
+        "email-confirm",
+        readyEmailNode,
+        params.user.email,
+        (node) =>
+          node.enabled &&
+          /android\.widget\.EditText/i.test(node.className) &&
+          /email/i.test(`${node.text} ${node.hint}`),
+      );
+      loginNodes = parseAndroidNodes(confirmedEmail.screen.xml);
 
       await submitLoginAction(refreshedLoginNode);
       let blankSurfaceStreak = 0;
@@ -1026,9 +1086,25 @@ export function createAndroidHarness(options: AndroidHarnessOptions) {
             const emailNeedsFill = !emailText || /^email$/i.test(emailText);
             const passwordNeedsFill = !passwordText || PASSWORD_LABEL_RE.test(passwordText);
             if (emailNeedsFill && retryEmailNode) {
-              await replaceAndroidFieldText(retryEmailNode, params.user.email);
+              await ensureExactLoginFieldText(
+                "retry-email-empty",
+                retryEmailNode,
+                params.user.email,
+                (node) =>
+                  node.enabled &&
+                  /android\.widget\.EditText/i.test(node.className) &&
+                  /email/i.test(`${node.text} ${node.hint}`),
+              );
             } else if (retryEmailNode && emailText !== params.user.email) {
-              await replaceAndroidFieldText(retryEmailNode, params.user.email);
+              await ensureExactLoginFieldText(
+                "retry-email-correct",
+                retryEmailNode,
+                params.user.email,
+                (node) =>
+                  node.enabled &&
+                  /android\.widget\.EditText/i.test(node.className) &&
+                  /email/i.test(`${node.text} ${node.hint}`),
+              );
             }
             if (retryPasswordNode) {
               await replaceAndroidFieldText(retryPasswordNode, params.user.password);

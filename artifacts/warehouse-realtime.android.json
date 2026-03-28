@@ -1,5 +1,5 @@
 {
-  "marker": "RTWHMNA61DSK",
+  "marker": "RTWHMNAQZFUC",
   "events": [
     {
       "screen": "warehouse",
@@ -9,7 +9,7 @@
       "durationMs": null,
       "rowCount": null,
       "sourceKind": "supabase:postgres_changes",
-      "raw": "I/ReactNativeJS( 6615): '[platform.observability]', { screen: 'warehouse',\nI/ReactNativeJS( 6615):   surface: 'screen_root',\nI/ReactNativeJS( 6615):   event: 'realtime_event_received',\nI/ReactNativeJS( 6615):   result: 'success',\nI/ReactNativeJS( 6615):   durationMs: null,\nI/ReactNativeJS( 6615):   rowCount: null,\nI/ReactNativeJS( 6615):   sourceKind: 'supabase:postgres_changes',\nI/ReactNativeJS( 6615):   errorStage: null }"
+      "raw": "I/ReactNativeJS(31430): '[platform.observability]', { screen: 'warehouse',\nI/ReactNativeJS(31430):   surface: 'screen_root',\nI/ReactNativeJS(31430):   event: 'realtime_event_received',\nI/ReactNativeJS(31430):   result: 'success',\nI/ReactNativeJS(31430):   durationMs: null,\nI/ReactNativeJS(31430):   rowCount: null,\nI/ReactNativeJS(31430):   sourceKind: 'supabase:postgres_changes',\nI/ReactNativeJS(31430):   errorStage: null }"
     },
     {
       "screen": "warehouse",
@@ -19,7 +19,7 @@
       "durationMs": null,
       "rowCount": null,
       "sourceKind": "supabase:postgres_changes",
-      "raw": "I/ReactNativeJS( 6615): '[platform.observability]', { screen: 'warehouse',\nI/ReactNativeJS( 6615):   surface: 'screen_root',\nI/ReactNativeJS( 6615):   event: 'realtime_refresh_triggered',\nI/ReactNativeJS( 6615):   result: 'success',\nI/ReactNativeJS( 6615):   durationMs: null,\nI/ReactNativeJS( 6615):   rowCount: null,\nI/ReactNativeJS( 6615):   sourceKind: 'supabase:postgres_changes',\nI/ReactNativeJS( 6615):   errorStage: null }"
+      "raw": "I/ReactNativeJS(31430): '[platform.observability]', { screen: 'warehouse',\nI/ReactNativeJS(31430):   surface: 'screen_root',\nI/ReactNativeJS(31430):   event: 'realtime_refresh_triggered',\nI/ReactNativeJS(31430):   result: 'success',\nI/ReactNativeJS(31430):   durationMs: null,\nI/ReactNativeJS(31430):   rowCount: null,\nI/ReactNativeJS(31430):   sourceKind: 'supabase:postgres_changes',\nI/ReactNativeJS(31430):   errorStage: null }"
     },
     {
       "screen": "warehouse",
@@ -29,7 +29,7 @@
       "durationMs": null,
       "rowCount": null,
       "sourceKind": "supabase:postgres_changes",
-      "raw": "I/ReactNativeJS( 6615): '[platform.observability]', { screen: 'warehouse',\nI/ReactNativeJS( 6615):   surface: 'screen_root',\nI/ReactNativeJS( 6615):   event: 'realtime_event_received',\nI/ReactNativeJS( 6615):   result: 'success',\nI/ReactNativeJS( 6615):   durationMs: null,\nI/ReactNativeJS( 6615):   rowCount: null,\nI/ReactNativeJS( 6615):   sourceKind: 'supabase:postgres_changes',\nI/ReactNativeJS( 6615):   errorStage: null }"
+      "raw": "I/ReactNativeJS(31430): '[platform.observability]', { screen: 'warehouse',\nI/ReactNativeJS(31430):   surface: 'screen_root',\nI/ReactNativeJS(31430):   event: 'realtime_event_received',\nI/ReactNativeJS(31430):   result: 'success',\nI/ReactNativeJS(31430):   durationMs: null,\nI/ReactNativeJS(31430):   rowCount: null,\nI/ReactNativeJS(31430):   sourceKind: 'supabase:postgres_changes',\nI/ReactNativeJS(31430):   errorStage: null }"
     },
     {
       "screen": "warehouse",
@@ -39,17 +39,17 @@
       "durationMs": null,
       "rowCount": null,
       "sourceKind": null,
-      "raw": "I/ReactNativeJS( 6615): '[platform.observability]', { screen: 'warehouse',\nI/ReactNativeJS( 6615):   surface: 'screen_root',\nI/ReactNativeJS( 6615):   event: 'realtime_refresh_skipped_inflight',\nI/ReactNativeJS( 6615):   result: 'skipped',\nI/ReactNativeJS( 6615):   durationMs: null,\nI/ReactNativeJS( 6615):   rowCount: null,\nI/ReactNativeJS( 6615):   sourceKind: null,\nI/ReactNativeJS( 6615):   errorStage: null }"
+      "raw": "I/ReactNativeJS(31430): '[platform.observability]', { screen: 'warehouse',\nI/ReactNativeJS(31430):   surface: 'screen_root',\nI/ReactNativeJS(31430):   event: 'realtime_refresh_skipped_inflight',\nI/ReactNativeJS(31430):   result: 'skipped',\nI/ReactNativeJS(31430):   durationMs: null,\nI/ReactNativeJS(31430):   rowCount: null,\nI/ReactNativeJS(31430):   sourceKind: null,\nI/ReactNativeJS(31430):   errorStage: null }"
     },
     {
       "screen": "warehouse",
       "surface": "req_heads",
       "event": "fetch_req_heads",
       "result": "success",
-      "durationMs": 1073,
-      "rowCount": 47,
+      "durationMs": 735,
+      "rowCount": 48,
       "sourceKind": "rpc:warehouse_issue_queue_scope_v4",
-      "raw": "I/ReactNativeJS( 6615): '[platform.observability]', { screen: 'warehouse',\nI/ReactNativeJS( 6615):   surface: 'req_heads',\nI/ReactNativeJS( 6615):   event: 'fetch_req_heads',\nI/ReactNativeJS( 6615):   result: 'success',\nI/ReactNativeJS( 6615):   durationMs: 1073,\nI/ReactNativeJS( 6615):   rowCount: 47,\nI/ReactNativeJS( 6615):   sourceKind: 'rpc:warehouse_issue_queue_scope_v4',\nI/ReactNativeJS( 6615):   errorStage: null }"
+      "raw": "I/ReactNativeJS(31430): '[platform.observability]', { screen: 'warehouse',\nI/ReactNativeJS(31430):   surface: 'req_heads',\nI/ReactNativeJS(31430):   event: 'fetch_req_heads',\nI/ReactNativeJS(31430):   result: 'success',\nI/ReactNativeJS(31430):   durationMs: 735,\nI/ReactNativeJS(31430):   rowCount: 48,\nI/ReactNativeJS(31430):   sourceKind: 'rpc:warehouse_issue_queue_scope_v4',\nI/ReactNativeJS(31430):   errorStage: null }"
     },
     {
       "screen": "warehouse",
@@ -57,9 +57,29 @@
       "event": "content_ready",
       "result": "success",
       "durationMs": null,
-      "rowCount": 47,
+      "rowCount": 48,
       "sourceKind": "rpc:warehouse_issue_queue_scope_v4",
-      "raw": "I/ReactNativeJS( 6615): '[platform.observability]', { screen: 'warehouse',\nI/ReactNativeJS( 6615):   surface: 'req_heads_list',\nI/ReactNativeJS( 6615):   event: 'content_ready',\nI/ReactNativeJS( 6615):   result: 'success',\nI/ReactNativeJS( 6615):   durationMs: null,\nI/ReactNativeJS( 6615):   rowCount: 47,\nI/ReactNativeJS( 6615):   sourceKind: 'rpc:warehouse_issue_queue_scope_v4',\nI/ReactNativeJS( 6615):   errorStage: null }"
+      "raw": "I/ReactNativeJS(31430): '[platform.observability]', { screen: 'warehouse',\nI/ReactNativeJS(31430):   surface: 'req_heads_list',\nI/ReactNativeJS(31430):   event: 'content_ready',\nI/ReactNativeJS(31430):   result: 'success',\nI/ReactNativeJS(31430):   durationMs: null,\nI/ReactNativeJS(31430):   rowCount: 48,\nI/ReactNativeJS(31430):   sourceKind: 'rpc:warehouse_issue_queue_scope_v4',\nI/ReactNativeJS(31430):   errorStage: null }"
+    },
+    {
+      "screen": "warehouse",
+      "surface": "screen_root",
+      "event": "realtime_event_received",
+      "result": "success",
+      "durationMs": null,
+      "rowCount": null,
+      "sourceKind": "supabase:postgres_changes",
+      "raw": "I/ReactNativeJS(31430): '[platform.observability]', { screen: 'warehouse',\nI/ReactNativeJS(31430):   surface: 'screen_root',\nI/ReactNativeJS(31430):   event: 'realtime_event_received',\nI/ReactNativeJS(31430):   result: 'success',\nI/ReactNativeJS(31430):   durationMs: null,\nI/ReactNativeJS(31430):   rowCount: null,\nI/ReactNativeJS(31430):   sourceKind: 'supabase:postgres_changes',\nI/ReactNativeJS(31430):   errorStage: null }"
+    },
+    {
+      "screen": "warehouse",
+      "surface": "screen_root",
+      "event": "realtime_refresh_triggered",
+      "result": "success",
+      "durationMs": null,
+      "rowCount": null,
+      "sourceKind": "supabase:postgres_changes",
+      "raw": "I/ReactNativeJS(31430): '[platform.observability]', { screen: 'warehouse',\nI/ReactNativeJS(31430):   surface: 'screen_root',\nI/ReactNativeJS(31430):   event: 'realtime_refresh_triggered',\nI/ReactNativeJS(31430):   result: 'success',\nI/ReactNativeJS(31430):   durationMs: null,\nI/ReactNativeJS(31430):   rowCount: null,\nI/ReactNativeJS(31430):   sourceKind: 'supabase:postgres_changes',\nI/ReactNativeJS(31430):   errorStage: null }"
     }
   ],
   "preflight": {

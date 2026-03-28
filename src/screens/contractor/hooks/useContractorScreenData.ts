@@ -40,6 +40,9 @@ type Params = {
   isApprovedForOtherStatus: (status: unknown) => boolean;
 };
 
+export type ContractorReloadTrigger = "focus" | "manual" | "activation" | "realtime";
+export type ContractorVisibleScope = "works_bundle" | "inbox_scope";
+
 const loadEmptyInboxRows = (): ContractorInboxRow[] => [];
 
 export function useContractorScreenData(params: Params) {
@@ -66,6 +69,7 @@ export function useContractorScreenData(params: Params) {
 
   const loadWorksSeqRef = useRef(0);
   const screenReloadInFlightRef = useRef<Promise<void> | null>(null);
+  const visibleScopeReloadInFlightRef = useRef<Promise<void> | null>(null);
 
   const loadProfile = useCallback(async () => {
     if (!focusedRef.current) return;
@@ -189,7 +193,7 @@ export function useContractorScreenData(params: Params) {
     setInboxRows,
   ]);
 
-  const reloadContractorScreenData = useCallback(async (trigger: "focus" | "manual" | "activation" = "focus") => {
+  const reloadContractorScreenData = useCallback(async (trigger: ContractorReloadTrigger = "focus") => {
     if (!focusedRef.current) {
       recordPlatformGuardSkip("not_focused", {
         screen: "contractor",
@@ -252,5 +256,126 @@ export function useContractorScreenData(params: Params) {
     return currentPromise;
   }, [focusedRef, loadProfile, loadContractor, loadWorks, supabaseClient.auth]);
 
-  return { loadWorks, reloadContractorScreenData };
+  const refreshVisibleContractorScopes = useCallback(
+    async (params: {
+      trigger?: ContractorReloadTrigger;
+      scopes: readonly ContractorVisibleScope[];
+      force?: boolean;
+    }) => {
+      const trigger = params.trigger ?? "realtime";
+      const force = params.force === true;
+
+      if (!focusedRef.current) {
+        recordPlatformGuardSkip("not_focused", {
+          screen: "contractor",
+          surface: "visible_scope_reload",
+          event: "reload_visible_scope",
+          trigger,
+          extra: {
+            scopes: [...params.scopes],
+            force,
+          },
+        });
+        return;
+      }
+
+      if (screenReloadInFlightRef.current) {
+        recordPlatformObservability({
+          screen: "contractor",
+          surface: "visible_scope_reload",
+          category: "reload",
+          event: "reload_visible_scope",
+          result: "joined_inflight",
+          trigger,
+          extra: {
+            scopes: [...params.scopes],
+            owner: "visible_scope_reload",
+            joinedOwner: "screen_reload",
+            force,
+          },
+        });
+        return screenReloadInFlightRef.current;
+      }
+
+      if (visibleScopeReloadInFlightRef.current) {
+        recordPlatformObservability({
+          screen: "contractor",
+          surface: "visible_scope_reload",
+          category: "reload",
+          event: "reload_visible_scope",
+          result: "joined_inflight",
+          trigger,
+          extra: {
+            scopes: [...params.scopes],
+            owner: "visible_scope_reload",
+            joinedOwner: "visible_scope_reload",
+            force,
+          },
+        });
+        return visibleScopeReloadInFlightRef.current;
+      }
+
+      const networkSnapshot = getPlatformNetworkSnapshot();
+      if (networkSnapshot.hydrated && networkSnapshot.networkKnownOffline) {
+        recordPlatformGuardSkip("network_known_offline", {
+          screen: "contractor",
+          surface: "visible_scope_reload",
+          event: "reload_visible_scope",
+          trigger,
+          extra: {
+            scopes: [...params.scopes],
+            networkKnownOffline: true,
+            force,
+          },
+        });
+        return;
+      }
+
+      const { data: sessionData } = await supabaseClient.auth.getSession();
+      if (!sessionData.session?.user) {
+        recordPlatformGuardSkip("auth_not_ready", {
+          screen: "contractor",
+          surface: "visible_scope_reload",
+          event: "reload_visible_scope",
+          trigger,
+          extra: {
+            scopes: [...params.scopes],
+            force,
+          },
+        });
+        return;
+      }
+
+      if (!profileRef.current && !contractorRef.current) {
+        return reloadContractorScreenData(trigger);
+      }
+
+      let currentPromise: Promise<void> | null = null;
+      currentPromise = (async () => {
+        try {
+          await loadWorks();
+        } finally {
+          if (visibleScopeReloadInFlightRef.current === currentPromise) {
+            visibleScopeReloadInFlightRef.current = null;
+          }
+        }
+      })();
+
+      visibleScopeReloadInFlightRef.current = currentPromise;
+      return currentPromise;
+    },
+    [focusedRef, loadWorks, profileRef, contractorRef, reloadContractorScreenData, supabaseClient.auth],
+  );
+
+  const isContractorRefreshInFlight = useCallback(
+    () => Boolean(screenReloadInFlightRef.current || visibleScopeReloadInFlightRef.current),
+    [],
+  );
+
+  return {
+    loadWorks,
+    reloadContractorScreenData,
+    refreshVisibleContractorScopes,
+    isContractorRefreshInFlight,
+  };
 }

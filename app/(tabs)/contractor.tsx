@@ -221,6 +221,7 @@ function ContractorScreen() {
       isActiveWork,
     },
     refresh: {
+      supabaseClient: supabase,
       focusedRef,
       lastKickRef,
       setRefreshing,

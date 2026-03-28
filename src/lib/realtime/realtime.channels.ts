@@ -1,4 +1,4 @@
-export type RealtimeScope = "buyer" | "accountant" | "warehouse";
+export type RealtimeScope = "buyer" | "accountant" | "warehouse" | "contractor";
 
 export type RealtimeChannelBinding = {
   key: string;
@@ -12,6 +12,7 @@ export type RealtimeChannelBinding = {
 export const BUYER_REALTIME_CHANNEL_NAME = "buyer:screen:realtime";
 export const ACCOUNTANT_REALTIME_CHANNEL_NAME = "accountant:screen:realtime";
 export const WAREHOUSE_REALTIME_CHANNEL_NAME = "warehouse:screen:realtime";
+export const CONTRACTOR_REALTIME_CHANNEL_NAME = "contractor:screen:realtime";
 
 export const BUYER_REALTIME_BINDINGS: readonly RealtimeChannelBinding[] = [
   {
@@ -91,5 +92,50 @@ export const WAREHOUSE_REALTIME_BINDINGS: readonly RealtimeChannelBinding[] = [
     event: "*",
     schema: "public",
     owner: "table:request_items",
+  },
+];
+
+export const CONTRACTOR_REALTIME_BINDINGS: readonly RealtimeChannelBinding[] = [
+  {
+    key: "contractor_work_progress",
+    table: "work_progress",
+    event: "*",
+    schema: "public",
+    owner: "table:work_progress",
+  },
+  {
+    key: "contractor_requests",
+    table: "requests",
+    event: "*",
+    schema: "public",
+    owner: "table:requests",
+  },
+  {
+    key: "contractor_request_items",
+    table: "request_items",
+    event: "*",
+    schema: "public",
+    owner: "table:request_items",
+  },
+  {
+    key: "contractor_purchase_items",
+    table: "purchase_items",
+    event: "*",
+    schema: "public",
+    owner: "table:purchase_items",
+  },
+  {
+    key: "contractor_subcontracts",
+    table: "subcontracts",
+    event: "*",
+    schema: "public",
+    owner: "table:subcontracts",
+  },
+  {
+    key: "contractor_registry",
+    table: "contractors",
+    event: "*",
+    schema: "public",
+    owner: "table:contractors",
   },
 ];
