@@ -2,8 +2,8 @@
 import { ActivityIndicator, View, Text, StyleSheet } from 'react-native';
 import { router } from 'expo-router';
 import { supabase } from '../src/lib/supabaseClient';
-import { getMyRole } from '../src/lib/api/profile';
 import { pathForRole, FALLBACK_TAB } from '../src/lib/authRouting';
+import { resolveCurrentSessionRole } from '../src/lib/sessionRole';
 
 export default function Index() {
   const [checking, setChecking] = useState(true);
@@ -25,14 +25,19 @@ export default function Index() {
 
         let href = FALLBACK_TAB;
         try {
-          href = pathForRole(await getMyRole());
+          const roleResolution = await resolveCurrentSessionRole({
+            user: session.user,
+            trigger: 'index_bootstrap',
+            joinInflight: false,
+          });
+          href = pathForRole(roleResolution.role);
         } catch {
           href = FALLBACK_TAB;
         }
         router.replace(href);
       } catch (e) {
         if (__DEV__) {
-          console.warn('[index] session bootstrap failed:', (e as any)?.message ?? e);
+          console.warn('[index] session bootstrap failed:', e instanceof Error ? e.message : e);
         }
         router.replace('/auth/login');
       } finally {

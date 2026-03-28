@@ -10,13 +10,13 @@ import {
   proposalSnapshotItems,
   proposalSubmit,
 } from "../../lib/api/proposals";
-import { ensureMyProfile, getMyRole } from "../../lib/api/profile";
 import type { Database } from "../../lib/database.types";
 import { ensurePlatformNetworkService, getPlatformNetworkSnapshot } from "../../lib/offline/platformNetwork.service";
 import {
   beginPlatformObservability,
   recordPlatformObservability,
 } from "../../lib/observability/platformObservability";
+import { resolveCurrentSessionRole } from "../../lib/sessionRole";
 import { supabase } from "../../lib/supabaseClient";
 import { asListingItems, toMarketHomeListingCard } from "./marketHome.data";
 import {
@@ -259,19 +259,6 @@ const toScopeFilterValue = (value?: string | null) => {
   return next && next !== "all" ? next : null;
 };
 
-const resolveRoleFromSession = async (): Promise<string | null> => {
-  try {
-    const { data } = await supabase.auth.getSession();
-    const authUser = data.session?.user ?? null;
-    const authRole =
-      trim(authUser?.app_metadata?.role).toLowerCase()
-      || trim(authUser?.user_metadata?.role).toLowerCase();
-    return authRole || null;
-  } catch {
-    return null;
-  }
-};
-
 const getCurrentBuyerName = async (): Promise<string | null> => {
   const { data } = await supabase.auth.getUser();
   const user = data?.user;
@@ -323,14 +310,12 @@ const ensureMarketNetworkAvailable = async (surface: string, event: string) => {
 };
 
 export async function loadMarketRoleCapabilities(): Promise<MarketRoleCapabilities> {
-  let role = await resolveRoleFromSession();
-  if (!role) {
-    role = trim(await getMyRole()).toLowerCase() || null;
-  }
-  if (!role) {
-    await ensureMyProfile().catch(() => false);
-    role = trim(await getMyRole()).toLowerCase() || (await resolveRoleFromSession()) || null;
-  }
+  const roleResolution = await resolveCurrentSessionRole({
+    ensureProfile: true,
+    trigger: "market_role_capabilities",
+    joinInflight: false,
+  });
+  const role = roleResolution.role;
   return {
     role,
     canAddToRequest: role === MARKET_ROLE_FOREMAN,

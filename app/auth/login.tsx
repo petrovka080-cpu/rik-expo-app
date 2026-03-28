@@ -11,8 +11,8 @@ import {
 } from 'react-native';
 import { Link, router } from 'expo-router';
 import { supabase } from '../../src/lib/supabaseClient';
-import { getMyRole } from '../../src/lib/rik_api';
 import { pathForRole, FALLBACK_TAB } from '../../src/lib/authRouting';
+import { resolveCurrentSessionRole } from '../../src/lib/sessionRole';
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
@@ -36,13 +36,18 @@ export default function LoginScreen() {
 
       let href = FALLBACK_TAB;
       try {
-        href = pathForRole(await getMyRole());
+        const roleResolution = await resolveCurrentSessionRole({
+          user: data.session.user,
+          trigger: 'login_submit',
+          joinInflight: false,
+        });
+        href = pathForRole(roleResolution.role);
       } catch {
         href = FALLBACK_TAB;
       }
       router.replace(href);
-    } catch (e: any) {
-      setError(e?.message ?? 'Не удалось войти.');
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'Не удалось войти.');
     } finally {
       setLoading(false);
     }

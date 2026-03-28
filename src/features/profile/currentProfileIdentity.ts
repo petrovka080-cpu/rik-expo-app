@@ -1,4 +1,4 @@
-import { getMyRole } from "../../lib/api/profile";
+import { resolveCurrentSessionRole } from "../../lib/sessionRole";
 import { supabase } from "../../lib/supabaseClient";
 
 export type CurrentProfileIdentity = {
@@ -29,12 +29,15 @@ export function toProfileAvatarText(
 }
 
 export async function loadCurrentProfileIdentity(): Promise<CurrentProfileIdentity> {
-  const authResult = await supabase.auth.getUser();
-  const user = authResult.data.user ?? null;
+  const sessionResult = await supabase.auth.getSession();
+  const user = sessionResult.data.session?.user ?? null;
   if (!user) return EMPTY_CURRENT_PROFILE_IDENTITY;
 
-  const [role, profileResult] = await Promise.all([
-    getMyRole(),
+  const [roleResolution, profileResult] = await Promise.all([
+    resolveCurrentSessionRole({
+      user,
+      trigger: "current_profile_identity",
+    }),
     supabase.from("user_profiles").select("full_name").eq("user_id", user.id).maybeSingle(),
   ]);
 
@@ -50,7 +53,7 @@ export async function loadCurrentProfileIdentity(): Promise<CurrentProfileIdenti
     userId: user.id,
     fullName,
     email: user.email ?? null,
-    role,
+    role: roleResolution.role,
     avatarUrl,
   };
 }

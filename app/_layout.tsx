@@ -11,7 +11,7 @@ import { Host } from "react-native-portalize";
 import { clearAppCache } from "../src/lib/cache/clearAppCache";
 import { supabase } from "../src/lib/supabaseClient";
 import { clearDocumentSessions } from "../src/lib/documents/pdfDocumentSessions";
-import { ensureMyProfile, getMyRole } from "../src/lib/rik_api";
+import { clearCurrentSessionRoleCache, warmCurrentSessionProfile } from "../src/lib/sessionRole";
 import { GlobalBusyProvider } from "../src/ui/GlobalBusy";
 import PlatformOfflineStatusHost from "../src/components/PlatformOfflineStatusHost";
 // --- WEB: тихо глушим шумные предупреждения (только в браузере) ---
@@ -41,10 +41,6 @@ export default function RootLayout() {
   const [hasSession, setHasSession] = useState<boolean | null>(null);
 
   // роль сейчас напрямую не используется в _layout, но оставляем фоновой прогрев
-  const [, setRoleLoaded] = useState(false);
-  const [, setRole] = useState<string | null>(null);
-
-  const roleLoadingRef = useRef(false);
   const initStartedRef = useRef(false);
   // --- WEB: нормальный контейнер/скролл + leaflet css (если нужен) ---
   useEffect(() => {
@@ -78,33 +74,12 @@ export default function RootLayout() {
   // --- роль/профиль грузим в фоне, НЕ блокируя вход ---
   const loadRoleForCurrentSession = useCallback(async () => {
     if (!supabase) return;
-    if (roleLoadingRef.current) return;
-    roleLoadingRef.current = true;
-
     try {
-      setRoleLoaded(false);
-
-      await Promise.race([
-        ensureMyProfile(),
-        new Promise((_, rej) =>
-          setTimeout(() => rej(new Error("ensureMyProfile TIMEOUT")), 8000),
-        ),
-      ]);
-
-      const r = await Promise.race([
-        getMyRole(),
-        new Promise((_, rej) => setTimeout(() => rej(new Error("getMyRole TIMEOUT")), 8000)),
-      ]);
-
-      setRole(typeof r === "string" ? r : null);
-    } catch (e: any) {
+      await warmCurrentSessionProfile("root_layout");
+    } catch (e: unknown) {
       if (__DEV__) {
-        console.warn("[RootLayout] role load failed:", e?.message ?? e);
+        console.warn("[RootLayout] role load failed:", e instanceof Error ? e.message : e);
       }
-      setRole(null);
-    } finally {
-      roleLoadingRef.current = false;
-      setRoleLoaded(true);
     }
   }, []);
 
@@ -128,18 +103,16 @@ export default function RootLayout() {
         if (has) loadRoleForCurrentSession();
         else {
           clearDocumentSessions();
-          setRole(null);
-          setRoleLoaded(true);
+          clearCurrentSessionRoleCache();
         }
-      } catch (e: any) {
+      } catch (e: unknown) {
         if (__DEV__) {
-          console.warn("[RootLayout] session load failed:", e?.message ?? e);
+          console.warn("[RootLayout] session load failed:", e instanceof Error ? e.message : e);
         }
         if (!active) return;
         setHasSession(false);
         clearDocumentSessions();
-        setRole(null);
-        setRoleLoaded(true);
+        clearCurrentSessionRoleCache();
         setSessionLoaded(true);
       }
     })();
@@ -151,8 +124,7 @@ export default function RootLayout() {
 
       if (!has) {
         clearDocumentSessions();
-        setRole(null);
-        setRoleLoaded(true);
+        clearCurrentSessionRoleCache();
         router.replace("/auth/login");
         return;
       }
