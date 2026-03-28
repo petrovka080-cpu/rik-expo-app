@@ -32,8 +32,8 @@ export default function ContractorSubcontractsList(props: Props) {
       refreshControl={<RefreshControl refreshing={refreshing || loadingWorks} onRefresh={onRefresh} tintColor="#fff" />}
       ListEmptyComponent={
         <View style={[styles.card, styles.cardDark, { borderRadius: 18, padding: 20 }]}>
-          <Text style={[styles.cardMetaDark, { textAlign: 'center' }]}>
-            {loadingWorks ? "Загрузка..." : "Нет назначенных подрядов."}
+          <Text style={[styles.cardMetaDark, { textAlign: "center" }]}>
+            {loadingWorks ? "Загрузка..." : "Нет назначенных подрядных работ."}
           </Text>
         </View>
       }
@@ -44,25 +44,35 @@ export default function ContractorSubcontractsList(props: Props) {
             styles.card,
             styles.cardDark,
             styles.cardSeparated,
-            { borderRadius: 18, overflow: 'hidden', padding: 14 },
-            { transform: [{ scale: pressed ? 0.98 : 1 }], opacity: pressed ? 0.9 : 1 }
+            { borderRadius: 18, overflow: "hidden", padding: 14 },
+            { transform: [{ scale: pressed ? 0.98 : 1 }], opacity: pressed ? 0.9 : 1 },
           ]}
         >
           <View style={{ flex: 1, minWidth: 0 }}>
-            <Text style={[styles.cardCompany, styles.cardCompanyDark, { fontSize: 18, marginBottom: 4 }]} numberOfLines={1}>
-              {normalizeRuText(item.contractor || "Подрядчик")}
+            <Text
+              style={[styles.cardCompany, styles.cardCompanyDark, { fontSize: 18, marginBottom: 4 }]}
+              numberOfLines={1}
+            >
+              {normalizeRuText(item.contractor)}
             </Text>
 
-            <Text style={[styles.cardWork, styles.cardWorkDark, { fontWeight: '700', fontSize: 14 }]} numberOfLines={1}>
-              {normalizeRuText(item.workType || "Вид работ")}
+            <Text style={[styles.cardWork, styles.cardWorkDark, { fontWeight: "700", fontSize: 14 }]} numberOfLines={1}>
+              {normalizeRuText(item.workType)}
             </Text>
 
-            <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 8, gap: 6 }}>
-              <View style={{ backgroundColor: 'rgba(59,130,246,0.15)', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6 }}>
-                <Text style={{ color: '#60A5FA', fontSize: 11, fontWeight: '900' }}>ОБЪЕКТ</Text>
+            <View style={{ flexDirection: "row", alignItems: "center", marginTop: 8, gap: 6 }}>
+              <View
+                style={{
+                  backgroundColor: "rgba(59,130,246,0.15)",
+                  paddingHorizontal: 8,
+                  paddingVertical: 4,
+                  borderRadius: 6,
+                }}
+              >
+                <Text style={{ color: "#60A5FA", fontSize: 11, fontWeight: "900" }}>ОБЪЕКТ</Text>
               </View>
               <Text style={[styles.cardObject, styles.cardObjectDark, { marginTop: 0, flex: 1 }]} numberOfLines={1}>
-                {normalizeRuText(item.objectName || "—")}
+                {normalizeRuText(item.objectName)}
               </Text>
             </View>
           </View>

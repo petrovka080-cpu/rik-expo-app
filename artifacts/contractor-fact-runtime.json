@@ -1,0 +1,101 @@
+{
+  "summary": {
+    "gate": "contractor_fact_runtime_verify",
+    "contractorResolved": true,
+    "objectResolved": true,
+    "workResolved": true,
+    "detailHeaderComplete": true,
+    "warehouseIssuesPanelStatus": "ready",
+    "warehouseIssuesPanelResolved": true,
+    "warehouseIssueRowCount": 1,
+    "linkedRequestCount": 1,
+    "materialLeakToContractor": false,
+    "invalidRowsVisible": false,
+    "status": "passed"
+  },
+  "factScope": {
+    "row": {
+      "workItemId": "subcontract:bb2a7439-9951-4a8f-b9b4-6b505a930219",
+      "progressId": null,
+      "publicationState": "ready",
+      "identity": {
+        "contractorId": "8d2e4304-6221-48a1-bbe0-5b965bdf40a7",
+        "contractorName": "Runtime Contractor mna1an0543zt",
+        "contractorInn": "123456784377",
+        "contractNumber": "CTR-BUY-MNA1AN0543ZT",
+        "contractDate": "2026-03-28"
+      },
+      "origin": {
+        "sourceKind": "buyer_subcontract",
+        "sourceRequestId": "75c1df30-e3b0-4d27-b9e0-c348b8966f61",
+        "sourceProposalId": null,
+        "sourceSubcontractId": "bb2a7439-9951-4a8f-b9b4-6b505a930219",
+        "directorApprovedAt": "2026-03-28 07:54:07.217+00"
+      },
+      "work": {
+        "workItemId": "subcontract:bb2a7439-9951-4a8f-b9b4-6b505a930219",
+        "workName": "Р¤Р°СЃР°РґРЅС‹Рµ СЂР°Р±РѕС‚С‹ mna1an0543zt",
+        "workNameSource": "snapshot",
+        "quantity": 10,
+        "uom": "Рј2",
+        "unitPrice": 2500,
+        "totalAmount": 25000,
+        "isMaterial": false
+      },
+      "location": {
+        "objectId": "75c1df30-e3b0-4d27-b9e0-c348b8966f61",
+        "objectName": "Р–Рљ РЎРµРІРµСЂ mna1an0543zt",
+        "systemName": null,
+        "zoneName": "Зона пример",
+        "floorName": null,
+        "locationDisplay": "Р–Рљ РЎРµРІРµСЂ mna1an0543zt / Зона пример"
+      },
+      "diagnostics": {
+        "sourceVersion": "v1"
+      }
+    },
+    "warehouseIssuesPanel": {
+      "status": "ready",
+      "rows": [
+        {
+          "issueItemId": "40545c0b-926f-40a2-b624-5ec503e3c0d9",
+          "matCode": "MAT-BUY-MNA1AN0543ZT",
+          "requestId": "75c1df30-e3b0-4d27-b9e0-c348b8966f61",
+          "title": "Р“СЂСѓРЅС‚РѕРІРєР° mna1an0543zt",
+          "unit": "Р»",
+          "qty": 0,
+          "qtyLeft": 0,
+          "qtyUsed": 0,
+          "price": null,
+          "sum": null
+        }
+      ],
+      "linkedRequestCards": [
+        {
+          "requestId": "75c1df30-e3b0-4d27-b9e0-c348b8966f61",
+          "reqNo": "REQ-0088/2026",
+          "status": "WAITING_STOCK",
+          "issueNos": []
+        }
+      ]
+    },
+    "meta": {
+      "sourceVersion": "v1",
+      "candidateView": "v_contractor_publication_candidates_v1",
+      "linkedRequestCount": 1,
+      "issuedRowCount": 1
+    }
+  },
+  "scenario": {
+    "key": "buyer_subcontract",
+    "sourceKind": "buyer_subcontract",
+    "requestId": "75c1df30-e3b0-4d27-b9e0-c348b8966f61",
+    "subcontractId": "bb2a7439-9951-4a8f-b9b4-6b505a930219",
+    "workItemId": "subcontract:bb2a7439-9951-4a8f-b9b4-6b505a930219",
+    "workName": "Р¤Р°СЃР°РґРЅС‹Рµ СЂР°Р±РѕС‚С‹ mna1an0543zt",
+    "objectName": "Р–Рљ РЎРµРІРµСЂ mna1an0543zt",
+    "materialTitle": "Р“СЂСѓРЅС‚РѕРІРєР° mna1an0543zt",
+    "warehouseIssueExpected": false
+  },
+  "generatedAt": "2026-03-28T07:54:17.449Z"
+}

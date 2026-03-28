@@ -83,13 +83,11 @@ export default function WorkModalOverviewSection(props: Props) {
       </View>
 
       <View style={props.styles.workModalWorkCard}>
-        <Text style={props.styles.workModalWorkTitle}>
-          {workName || workCode || "Работа"}
-        </Text>
+        <Text style={props.styles.workModalWorkTitle}>{workName || workCode || "Работа"}</Text>
 
         <Text style={[props.styles.workModalObjectText, !objectName && props.styles.workModalObjectTextError]}>
           <Text style={props.styles.workModalObjectLabel}>Объект: </Text>
-          {objectName || "Объект не указан (проверьте привязку)."}
+          {objectName || "Объект не указан. Проверьте привязку к approved lineage."}
         </Text>
       </View>
 
@@ -109,9 +107,7 @@ export default function WorkModalOverviewSection(props: Props) {
             {props.progressSyncLabel}
           </Text>
           {props.progressSyncDetail ? (
-            <Text style={{ fontSize: 12, color: "#64748b" }}>
-              {normalizeRuText(props.progressSyncDetail)}
-            </Text>
+            <Text style={{ fontSize: 12, color: "#64748b" }}>{normalizeRuText(props.progressSyncDetail)}</Text>
           ) : null}
           <View style={{ flexDirection: "row", gap: 8, flexWrap: "wrap" }}>
             <Pressable
@@ -144,17 +140,13 @@ export default function WorkModalOverviewSection(props: Props) {
             (props.workModalSaving || props.loadingIssued) && props.styles.workModalMainActionBtnDisabled,
           ]}
         >
-          <Text style={props.styles.workModalActionText}>
-            Сформировать акт выполненных работ
-          </Text>
+          <Text style={props.styles.workModalActionText}>Сформировать акт выполненных работ</Text>
         </Pressable>
         <Pressable onPress={props.onOpenSummaryPdf} style={props.styles.workModalSecondaryActionBtn}>
           <Text style={props.styles.workModalActionText}>Итоговый PDF</Text>
         </Pressable>
         {!!props.workModalHint && (
-          <Text style={props.styles.workModalHintText}>
-            {normalizeRuText(props.workModalHint)}
-          </Text>
+          <Text style={props.styles.workModalHintText}>{normalizeRuText(props.workModalHint)}</Text>
         )}
       </View>
     </>

@@ -1,9 +1,11 @@
 import { useCallback } from "react";
 import type { Dispatch, MutableRefObject, SetStateAction } from "react";
 import type { WorkMaterialRow } from "../../../components/WorkMaterialsEditor";
+import type { WarehouseIssuesPanelState } from "../../../lib/api/contractor.scope.service";
 import { bootstrapWorkModalData } from "../contractor.workModalBootstrap";
 import type { ContractorWorkRow } from "../contractor.loadWorksService";
-import type { IssuedItemRow, LinkedReqCard, WorkLogRow } from "../types";
+import type { ContractorProfileCard, ContractorUserProfile } from "../contractor.profileService";
+import type { WorkLogRow } from "../types";
 
 type WorkOverlayModal = "none" | "contract" | "estimate" | "stage";
 type ScreenLoadState = "init" | "loading" | "ready" | "error";
@@ -29,14 +31,8 @@ type ContractorJobHeader = {
 
 type Params = {
   supabaseClient: any;
-  rows: ContractorWorkRow[];
   clearSearchState: () => void;
-  resolveContractorJobId: (row: ContractorWorkRow) => Promise<string>;
-  resolveRequestId: (row: ContractorWorkRow) => Promise<string>;
   loadWorkLogData: (progressId: string) => Promise<WorkLogRow[]>;
-  isRejectedOrCancelledRequestStatus: (status: unknown) => boolean;
-  toLocalDateKey: (value: unknown) => string;
-  normText: (value: unknown) => string;
   workModalBootSeqRef: MutableRefObject<number>;
   activeWorkModalProgressRef: MutableRefObject<string>;
   setWorkModalRow: Dispatch<SetStateAction<ContractorWorkRow | null>>;
@@ -50,7 +46,6 @@ type Params = {
   setActBuilderLoadState: Dispatch<SetStateAction<ScreenLoadState>>;
   setWorkModalVisible: Dispatch<SetStateAction<boolean>>;
   setWorkModalLoading: Dispatch<SetStateAction<boolean>>;
-  setLoadingIssued: Dispatch<SetStateAction<boolean>>;
   setHistoryOpen: Dispatch<SetStateAction<boolean>>;
   setIssuedOpen: Dispatch<SetStateAction<boolean>>;
   setWorkOverlayModal: Dispatch<SetStateAction<WorkOverlayModal>>;
@@ -58,22 +53,16 @@ type Params = {
   setWorkLog: Dispatch<SetStateAction<WorkLogRow[]>>;
   setWorkStageOptions: Dispatch<SetStateAction<{ code: string; name: string }[]>>;
   setWorkModalMaterials: Dispatch<SetStateAction<WorkMaterialRow[]>>;
-  setIssuedItems: Dispatch<SetStateAction<IssuedItemRow[]>>;
-  setLinkedReqCards: Dispatch<SetStateAction<LinkedReqCard[]>>;
-  setIssuedHint: Dispatch<SetStateAction<string>>;
+  setWarehouseIssuesState: Dispatch<SetStateAction<WarehouseIssuesPanelState>>;
+  contractorRef: MutableRefObject<ContractorProfileCard | null>;
+  profileRef: MutableRefObject<ContractorUserProfile | null>;
 };
 
 export function useContractorWorkModalOpen(params: Params) {
   const {
     supabaseClient,
-    rows,
     clearSearchState,
-    resolveContractorJobId,
-    resolveRequestId,
     loadWorkLogData,
-    isRejectedOrCancelledRequestStatus,
-    toLocalDateKey,
-    normText,
     workModalBootSeqRef,
     activeWorkModalProgressRef,
     setWorkModalRow,
@@ -87,7 +76,6 @@ export function useContractorWorkModalOpen(params: Params) {
     setActBuilderLoadState,
     setWorkModalVisible,
     setWorkModalLoading,
-    setLoadingIssued,
     setHistoryOpen,
     setIssuedOpen,
     setWorkOverlayModal,
@@ -95,9 +83,9 @@ export function useContractorWorkModalOpen(params: Params) {
     setWorkLog,
     setWorkStageOptions,
     setWorkModalMaterials,
-    setIssuedItems,
-    setLinkedReqCards,
-    setIssuedHint,
+    setWarehouseIssuesState,
+    contractorRef,
+    profileRef,
   } = params;
 
   const openWorkAddModal = useCallback(
@@ -116,7 +104,6 @@ export function useContractorWorkModalOpen(params: Params) {
       setActBuilderLoadState("init");
       setWorkModalVisible(true);
       setWorkModalLoading(true);
-      setLoadingIssued(true);
       setHistoryOpen(false);
       setIssuedOpen(false);
       setWorkOverlayModal("none");
@@ -124,9 +111,7 @@ export function useContractorWorkModalOpen(params: Params) {
       setWorkLog([]);
       setWorkStageOptions([]);
       setWorkModalMaterials([]);
-      setIssuedItems([]);
-      setLinkedReqCards([]);
-      setIssuedHint("");
+      setWarehouseIssuesState({ status: "loading" });
 
       (async () => {
         try {
@@ -134,13 +119,9 @@ export function useContractorWorkModalOpen(params: Params) {
             supabaseClient,
             row,
             readOnly,
-            allRows: rows,
-            resolveContractorJobId,
-            resolveRequestId,
             loadWorkLogData,
-            isRejectedOrCancelledRequestStatus,
-            toLocalDateKey,
-            normText,
+            myContractorId: String(contractorRef.current?.id || "").trim() || null,
+            isStaff: profileRef.current?.is_contractor === false,
           });
 
           const isCurrent =
@@ -157,9 +138,7 @@ export function useContractorWorkModalOpen(params: Params) {
           setWorkLog(bundle.workLog);
           setWorkStageOptions(bundle.workStageOptions);
           if (!readOnly) setWorkModalMaterials(bundle.initialMaterials as WorkMaterialRow[]);
-          setIssuedItems(bundle.issuedData.issuedItems || []);
-          setLinkedReqCards(bundle.issuedData.linkedReqCards || []);
-          setIssuedHint(String(bundle.issuedData.issuedHint || ""));
+          setWarehouseIssuesState(bundle.warehouseIssuesState);
           if (bundle.loadState !== "ready") {
             setWorkModalHint("\u0414\u0430\u043d\u043d\u044b\u0435 \u043f\u043e\u0434\u0440\u044f\u0434\u0430 \u0437\u0430\u0433\u0440\u0443\u0436\u0435\u043d\u044b \u043d\u0435 \u043f\u043e\u043b\u043d\u043e\u0441\u0442\u044c\u044e.");
           }
@@ -168,7 +147,6 @@ export function useContractorWorkModalOpen(params: Params) {
             openSeq === workModalBootSeqRef.current &&
             activeWorkModalProgressRef.current === String(row.progress_id || "").trim();
           if (!isCurrent) return;
-          setLoadingIssued(false);
           setWorkModalLoading(false);
         }
       })();
@@ -188,7 +166,6 @@ export function useContractorWorkModalOpen(params: Params) {
       setActBuilderLoadState,
       setWorkModalVisible,
       setWorkModalLoading,
-      setLoadingIssued,
       setHistoryOpen,
       setIssuedOpen,
       setWorkOverlayModal,
@@ -196,17 +173,11 @@ export function useContractorWorkModalOpen(params: Params) {
       setWorkLog,
       setWorkStageOptions,
       setWorkModalMaterials,
-      setIssuedItems,
-      setLinkedReqCards,
-      setIssuedHint,
+      setWarehouseIssuesState,
+      contractorRef,
+      profileRef,
       supabaseClient,
-      rows,
-      resolveContractorJobId,
-      resolveRequestId,
       loadWorkLogData,
-      isRejectedOrCancelledRequestStatus,
-      toLocalDateKey,
-      normText,
     ],
   );
 

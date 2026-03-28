@@ -1,0 +1,282 @@
+{
+  "summary": {
+    "gate": "contractor_read_model_proof",
+    "backendOwnerPreserved": true,
+    "readyRowsVisible": 3,
+    "readyScenarioKeys": [
+      "buyer_subcontract",
+      "foreman_subcontract_request",
+      "foreman_material_request"
+    ],
+    "invalidScenarioKeysHidden": [
+      "invalid_missing_contractor",
+      "invalid_material_only"
+    ],
+    "sourceKinds": [
+      "foreman_material_request",
+      "foreman_subcontract_request",
+      "buyer_subcontract"
+    ],
+    "materialLeakToContractor": false,
+    "invalidRowsVisible": false,
+    "publicationStateCounts": {
+      "ready": 3,
+      "invalidMissingContractor": 1,
+      "invalidMaterialOnly": 1
+    },
+    "status": "passed"
+  },
+  "candidates": [
+    {
+      "work_item_id": "progress:bf8c24c5-b102-466f-9b6b-0f995147d685",
+      "source_kind": "foreman_material_request",
+      "source_request_id": "6a93648e-8789-4780-b8c1-dbc2e791c31d",
+      "source_subcontract_id": null,
+      "publication_state": "ready",
+      "contractor_name": "Runtime Contractor mna1829xvxq5",
+      "object_name": "РЎРµРєС†РёСЏ C mna1829xvxq5",
+      "work_name": "РћС‚РґРµР»РєР° СѓР·Р»Р° mna1829xvxq5",
+      "location_display": "РЎРµРєС†РёСЏ C mna1829xvxq5 / Система пример / Зона пример / Этаж 1",
+      "is_material": false
+    },
+    {
+      "work_item_id": "progress:b297eed5-bcfa-40b8-a9b0-41d15d791506",
+      "source_kind": "foreman_material_request",
+      "source_request_id": "d205eec4-0b4c-48d2-a48b-9a28f1dc5cc2",
+      "source_subcontract_id": null,
+      "publication_state": "invalid_missing_contractor",
+      "contractor_name": null,
+      "object_name": "РћР±СЉРµРєС‚ D mna1829xvxq5",
+      "work_name": "РќРµРІР°Р»РёРґРЅР°СЏ СЂР°Р±РѕС‚Р° mna1829xvxq5",
+      "location_display": "РћР±СЉРµРєС‚ D mna1829xvxq5 / Система пример / Зона пример / Этаж 1",
+      "is_material": false
+    },
+    {
+      "work_item_id": "progress:754f43bd-140d-47c2-89db-56f499bc36e0",
+      "source_kind": "foreman_material_request",
+      "source_request_id": "94a4ec2b-de15-48a0-ab37-05e834d109a7",
+      "source_subcontract_id": null,
+      "publication_state": "invalid_material_only",
+      "contractor_name": "Runtime Contractor mna1829xvxq5",
+      "object_name": "РЎРєР»Р°РґСЃРєРѕР№ РѕР±СЉРµРєС‚ mna1829xvxq5",
+      "work_name": "РњР°С‚РµСЂРёР°Р» leak mna1829xvxq5",
+      "location_display": "РЎРєР»Р°РґСЃРєРѕР№ РѕР±СЉРµРєС‚ mna1829xvxq5 / Система пример / Зона пример / Этаж 1",
+      "is_material": true
+    },
+    {
+      "work_item_id": "subcontract:b763b8ee-89d4-4f51-ad81-9fc265a6082f",
+      "source_kind": "foreman_subcontract_request",
+      "source_request_id": "8715a289-8d2f-495c-857c-62246ac94f09",
+      "source_subcontract_id": "b763b8ee-89d4-4f51-ad81-9fc265a6082f",
+      "publication_state": "ready",
+      "contractor_name": "Runtime Contractor mna1829xvxq5",
+      "object_name": "Р‘Р»РѕРє B mna1829xvxq5",
+      "work_name": "РњРѕРЅС‚Р°Р¶ РїРµСЂРµРіРѕСЂРѕРґРѕРє mna1829xvxq5",
+      "location_display": "Р‘Р»РѕРє B mna1829xvxq5 / Зона пример",
+      "is_material": false
+    },
+    {
+      "work_item_id": "subcontract:0539224e-172f-4b32-bcaf-17265d21c157",
+      "source_kind": "buyer_subcontract",
+      "source_request_id": "e1d5154c-fbc4-4bee-8298-4962ae861d8b",
+      "source_subcontract_id": "0539224e-172f-4b32-bcaf-17265d21c157",
+      "publication_state": "ready",
+      "contractor_name": "Runtime Contractor mna1829xvxq5",
+      "object_name": "Р–Рљ РЎРµРІРµСЂ mna1829xvxq5",
+      "work_name": "Р¤Р°СЃР°РґРЅС‹Рµ СЂР°Р±РѕС‚С‹ mna1829xvxq5",
+      "location_display": "Р–Рљ РЎРµРІРµСЂ mna1829xvxq5 / Зона пример",
+      "is_material": false
+    }
+  ],
+  "inboxScope": {
+    "rows": [
+      {
+        "workItemId": "progress:bf8c24c5-b102-466f-9b6b-0f995147d685",
+        "progressId": "bf8c24c5-b102-466f-9b6b-0f995147d685",
+        "publicationState": "ready",
+        "identity": {
+          "contractorId": "891665a3-94e5-4a83-923d-40a220b894e3",
+          "contractorName": "Runtime Contractor mna1829xvxq5",
+          "contractorInn": "123456787775",
+          "contractNumber": null,
+          "contractDate": null
+        },
+        "origin": {
+          "sourceKind": "foreman_material_request",
+          "sourceRequestId": "6a93648e-8789-4780-b8c1-dbc2e791c31d",
+          "sourceProposalId": null,
+          "sourceSubcontractId": null,
+          "directorApprovedAt": "2026-03-28 07:52:09.28+00"
+        },
+        "work": {
+          "workItemId": "progress:bf8c24c5-b102-466f-9b6b-0f995147d685",
+          "workName": "РћС‚РґРµР»РєР° СѓР·Р»Р° mna1829xvxq5",
+          "workNameSource": "snapshot",
+          "quantity": 3,
+          "uom": "СѓСЃР»",
+          "unitPrice": 9000,
+          "totalAmount": 27000,
+          "isMaterial": false
+        },
+        "location": {
+          "objectId": "6a93648e-8789-4780-b8c1-dbc2e791c31d",
+          "objectName": "РЎРµРєС†РёСЏ C mna1829xvxq5",
+          "systemName": "Система пример",
+          "zoneName": "Зона пример",
+          "floorName": "Этаж 1",
+          "locationDisplay": "РЎРµРєС†РёСЏ C mna1829xvxq5 / Система пример / Зона пример / Этаж 1"
+        },
+        "diagnostics": {
+          "sourceVersion": "v1"
+        }
+      },
+      {
+        "workItemId": "subcontract:b763b8ee-89d4-4f51-ad81-9fc265a6082f",
+        "progressId": null,
+        "publicationState": "ready",
+        "identity": {
+          "contractorId": "891665a3-94e5-4a83-923d-40a220b894e3",
+          "contractorName": "Runtime Contractor mna1829xvxq5",
+          "contractorInn": "123456787775",
+          "contractNumber": "CTR-FOR-MNA1829XVXQ5",
+          "contractDate": "2026-03-28"
+        },
+        "origin": {
+          "sourceKind": "foreman_subcontract_request",
+          "sourceRequestId": "8715a289-8d2f-495c-857c-62246ac94f09",
+          "sourceProposalId": null,
+          "sourceSubcontractId": "b763b8ee-89d4-4f51-ad81-9fc265a6082f",
+          "directorApprovedAt": "2026-03-28 07:52:08.461+00"
+        },
+        "work": {
+          "workItemId": "subcontract:b763b8ee-89d4-4f51-ad81-9fc265a6082f",
+          "workName": "РњРѕРЅС‚Р°Р¶ РїРµСЂРµРіРѕСЂРѕРґРѕРє mna1829xvxq5",
+          "workNameSource": "snapshot",
+          "quantity": 5,
+          "uom": "СѓСЃР»",
+          "unitPrice": 3600,
+          "totalAmount": 18000,
+          "isMaterial": false
+        },
+        "location": {
+          "objectId": "8715a289-8d2f-495c-857c-62246ac94f09",
+          "objectName": "Р‘Р»РѕРє B mna1829xvxq5",
+          "systemName": null,
+          "zoneName": "Зона пример",
+          "floorName": null,
+          "locationDisplay": "Р‘Р»РѕРє B mna1829xvxq5 / Зона пример"
+        },
+        "diagnostics": {
+          "sourceVersion": "v1"
+        }
+      },
+      {
+        "workItemId": "subcontract:0539224e-172f-4b32-bcaf-17265d21c157",
+        "progressId": null,
+        "publicationState": "ready",
+        "identity": {
+          "contractorId": "891665a3-94e5-4a83-923d-40a220b894e3",
+          "contractorName": "Runtime Contractor mna1829xvxq5",
+          "contractorInn": "123456787775",
+          "contractNumber": "CTR-BUY-MNA1829XVXQ5",
+          "contractDate": "2026-03-28"
+        },
+        "origin": {
+          "sourceKind": "buyer_subcontract",
+          "sourceRequestId": "e1d5154c-fbc4-4bee-8298-4962ae861d8b",
+          "sourceProposalId": null,
+          "sourceSubcontractId": "0539224e-172f-4b32-bcaf-17265d21c157",
+          "directorApprovedAt": "2026-03-28 07:52:06.891+00"
+        },
+        "work": {
+          "workItemId": "subcontract:0539224e-172f-4b32-bcaf-17265d21c157",
+          "workName": "Р¤Р°СЃР°РґРЅС‹Рµ СЂР°Р±РѕС‚С‹ mna1829xvxq5",
+          "workNameSource": "snapshot",
+          "quantity": 10,
+          "uom": "Рј2",
+          "unitPrice": 2500,
+          "totalAmount": 25000,
+          "isMaterial": false
+        },
+        "location": {
+          "objectId": "e1d5154c-fbc4-4bee-8298-4962ae861d8b",
+          "objectName": "Р–Рљ РЎРµРІРµСЂ mna1829xvxq5",
+          "systemName": null,
+          "zoneName": "Зона пример",
+          "floorName": null,
+          "locationDisplay": "Р–Рљ РЎРµРІРµСЂ mna1829xvxq5 / Зона пример"
+        },
+        "diagnostics": {
+          "sourceVersion": "v1"
+        }
+      }
+    ],
+    "meta": {
+      "rowsSource": "contractor_inbox_scope_v1",
+      "candidateView": "v_contractor_publication_candidates_v1",
+      "readyRows": 3,
+      "invalidMissingContractor": 68,
+      "invalidMissingWorkSnapshot": 0,
+      "invalidMissingObjectSnapshot": 0,
+      "invalidMaterialOnly": 1
+    }
+  },
+  "scenarios": [
+    {
+      "key": "buyer_subcontract",
+      "sourceKind": "buyer_subcontract",
+      "requestId": "e1d5154c-fbc4-4bee-8298-4962ae861d8b",
+      "subcontractId": "0539224e-172f-4b32-bcaf-17265d21c157",
+      "workItemId": "subcontract:0539224e-172f-4b32-bcaf-17265d21c157",
+      "workName": "Р¤Р°СЃР°РґРЅС‹Рµ СЂР°Р±РѕС‚С‹ mna1829xvxq5",
+      "objectName": "Р–Рљ РЎРµРІРµСЂ mna1829xvxq5",
+      "materialTitle": "Р“СЂСѓРЅС‚РѕРІРєР° mna1829xvxq5",
+      "warehouseIssueExpected": false
+    },
+    {
+      "key": "foreman_subcontract_request",
+      "sourceKind": "foreman_subcontract_request",
+      "requestId": "8715a289-8d2f-495c-857c-62246ac94f09",
+      "subcontractId": "b763b8ee-89d4-4f51-ad81-9fc265a6082f",
+      "workItemId": "subcontract:b763b8ee-89d4-4f51-ad81-9fc265a6082f",
+      "workName": "РњРѕРЅС‚Р°Р¶ РїРµСЂРµРіРѕСЂРѕРґРѕРє mna1829xvxq5",
+      "objectName": "Р‘Р»РѕРє B mna1829xvxq5",
+      "materialTitle": null,
+      "warehouseIssueExpected": false
+    },
+    {
+      "key": "foreman_material_request",
+      "sourceKind": "foreman_material_request",
+      "requestId": "6a93648e-8789-4780-b8c1-dbc2e791c31d",
+      "subcontractId": null,
+      "workItemId": "progress:bf8c24c5-b102-466f-9b6b-0f995147d685",
+      "workName": "РћС‚РґРµР»РєР° СѓР·Р»Р° mna1829xvxq5",
+      "objectName": "РЎРµРєС†РёСЏ C mna1829xvxq5",
+      "materialTitle": null,
+      "warehouseIssueExpected": false
+    },
+    {
+      "key": "invalid_missing_contractor",
+      "sourceKind": "invalid_missing_contractor",
+      "requestId": "d205eec4-0b4c-48d2-a48b-9a28f1dc5cc2",
+      "subcontractId": null,
+      "workItemId": "progress:bf8c24c5-b102-466f-9b6b-0f995147d685",
+      "workName": "РќРµРІР°Р»РёРґРЅР°СЏ СЂР°Р±РѕС‚Р° mna1829xvxq5",
+      "objectName": "РћР±СЉРµРєС‚ D mna1829xvxq5",
+      "materialTitle": null,
+      "warehouseIssueExpected": false
+    },
+    {
+      "key": "invalid_material_only",
+      "sourceKind": "invalid_material_only",
+      "requestId": "94a4ec2b-de15-48a0-ab37-05e834d109a7",
+      "subcontractId": null,
+      "workItemId": "progress:bf8c24c5-b102-466f-9b6b-0f995147d685",
+      "workName": "РњР°С‚РµСЂРёР°Р» leak mna1829xvxq5",
+      "objectName": "РЎРєР»Р°РґСЃРєРѕР№ РѕР±СЉРµРєС‚ mna1829xvxq5",
+      "materialTitle": null,
+      "warehouseIssueExpected": false
+    }
+  ],
+  "generatedAt": "2026-03-28T07:52:17.310Z"
+}

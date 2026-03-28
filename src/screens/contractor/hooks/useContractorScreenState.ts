@@ -1,6 +1,10 @@
 import { useEffect, useReducer, useRef, useState } from "react";
 import type { WorkMaterialRow } from "../../../components/WorkMaterialsEditor";
 import type {
+  ContractorInboxRow,
+  WarehouseIssuesPanelState,
+} from "../../../lib/api/contractor.scope.service";
+import type {
   ContractorSubcontractCard,
   ContractorWorkRow,
 } from "../contractor.loadWorksService";
@@ -9,7 +13,7 @@ import type {
   ContractorProfileCard,
   ContractorUserProfile,
 } from "../contractor.profileService";
-import type { IssuedItemRow, LinkedReqCard, WorkLogRow } from "../types";
+import type { WorkLogRow } from "../types";
 import { useContractorUiStore } from "../contractorUi.store";
 
 type WorkRow = ContractorWorkRow;
@@ -65,6 +69,7 @@ export function useContractorScreenState() {
   const [contractor, setContractor] = useState<Contractor | null>(null);
   const [loadingProfile, setLoadingProfile] = useState(true);
   const [rows, setRows] = useState<WorkRow[]>([]);
+  const [inboxRows, setInboxRows] = useState<ContractorInboxRow[]>([]);
   const [manualClaimedJobIds] = useState<string[]>([]);
   const [subcontractCards, setSubcontractCards] = useState<SubcontractLite[]>([]);
   const [loadingWorks, setLoadingWorks] = useState(false);
@@ -95,10 +100,9 @@ export function useContractorScreenState() {
   );
   const [actBuilderSaving, setActBuilderSaving] = useState(false);
   const [actBuilderLoadState, setActBuilderLoadState] = useState<ScreenLoadState>("init");
-  const [issuedItems, setIssuedItems] = useState<IssuedItemRow[]>([]);
-  const [loadingIssued, setLoadingIssued] = useState(false);
-  const [issuedHint, setIssuedHint] = useState<string>("");
-  const [linkedReqCards, setLinkedReqCards] = useState<LinkedReqCard[]>([]);
+  const [warehouseIssuesState, setWarehouseIssuesState] = useState<WarehouseIssuesPanelState>({
+    status: "idle",
+  });
   const [workStageOptions, setWorkStageOptions] = useState<{ code: string; name: string }[]>([]);
 
   useEffect(() => {
@@ -129,6 +133,8 @@ export function useContractorScreenState() {
     setCode,
     rows,
     setRows,
+    inboxRows,
+    setInboxRows,
     manualClaimedJobIds,
     subcontractCards,
     setSubcontractCards,
@@ -188,14 +194,8 @@ export function useContractorScreenState() {
     actBuilderWorks,
     actBuilderExpandedWork,
     actBuilderExpandedMat,
-    issuedItems,
-    setIssuedItems,
-    loadingIssued,
-    setLoadingIssued,
-    issuedHint,
-    setIssuedHint,
-    linkedReqCards,
-    setLinkedReqCards,
+    warehouseIssuesState,
+    setWarehouseIssuesState,
     workStageOptions,
     setWorkStageOptions,
     workSearchVisible,

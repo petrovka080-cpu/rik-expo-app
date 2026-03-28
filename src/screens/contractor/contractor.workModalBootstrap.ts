@@ -1,13 +1,17 @@
 import type { WorkMaterialRow } from "../../components/WorkMaterialsEditor";
+import {
+  contractorWarehouseIssuesErrorState,
+  loadContractorFactScope,
+  type ContractorFactScope,
+  type WarehouseIssuesPanelState,
+} from "../../lib/api/contractor.scope.service";
 import { recordPlatformObservability } from "../../lib/observability/platformObservability";
 import type { ContractorWorkRow } from "./contractor.loadWorksService";
 import {
-  loadContractorJobHeaderData,
   loadInitialWorkMaterialsForModal,
-  loadIssuedTodayData,
   loadWorkStageOptions,
 } from "./contractor.workModalService";
-import type { IssuedItemRow, LinkedReqCard, WorkLogRow } from "./types";
+import type { WorkLogRow } from "./types";
 
 type WorkRowLike = ContractorWorkRow;
 
@@ -39,27 +43,42 @@ export type WorkModalBootstrapResult = {
   workLog: WorkLogRow[];
   workStageOptions: Array<{ code: string; name: string }>;
   initialMaterials: WorkMaterialRow[];
-  issuedData: {
-    issuedItems: IssuedItemRow[];
-    linkedReqCards: LinkedReqCard[];
-    issuedHint: string;
-  };
+  warehouseIssuesState: WarehouseIssuesPanelState;
 };
 
 type Params = {
   supabaseClient: any;
   row: WorkRowLike;
   readOnly: boolean;
-  allRows: WorkRowLike[];
-  resolveContractorJobId: (row: WorkRowLike) => Promise<string>;
-  resolveRequestId: (row: WorkRowLike) => Promise<string>;
   loadWorkLogData: (progressId: string) => Promise<WorkLogRow[]>;
-  isRejectedOrCancelledRequestStatus: (status: string | null | undefined) => boolean;
-  toLocalDateKey: (value: string | Date | null | undefined) => string;
-  normText: (value: any) => string;
+  myContractorId: string | null;
+  isStaff: boolean;
 };
 
 type HeaderLoadResult = { header: ContractorJobHeader | null; objectNameOverride: string | null };
+
+const toJobHeader = (scope: ContractorFactScope): ContractorJobHeader => ({
+  contractor_org: scope.row.identity.contractorName,
+  contractor_inn: scope.row.identity.contractorInn,
+  contractor_rep: null,
+  contractor_phone: null,
+  contract_number: scope.row.identity.contractNumber,
+  contract_date: scope.row.identity.contractDate,
+  object_name: scope.row.location.objectName,
+  work_type: scope.row.work.workName,
+  zone: scope.row.location.zoneName,
+  level_name: scope.row.location.floorName,
+  qty_planned: scope.row.work.quantity,
+  uom: scope.row.work.uom,
+  unit_price: scope.row.work.unitPrice,
+  total_price: scope.row.work.totalAmount,
+  date_start: null,
+  date_end: null,
+});
+
+const resolveCanonicalWorkItemId = (row: WorkRowLike): string =>
+  String((row as WorkRowLike & { canonical_work_item_id?: string | null }).canonical_work_item_id || row.progress_id || "")
+    .trim();
 
 const recordContractorBootstrapFallback = (
   event: string,
@@ -90,30 +109,25 @@ export async function bootstrapWorkModalData(params: Params): Promise<WorkModalB
     supabaseClient,
     row,
     readOnly,
-    allRows,
-    resolveContractorJobId,
-    resolveRequestId,
     loadWorkLogData,
-    isRejectedOrCancelledRequestStatus,
-    toLocalDateKey,
-    normText,
+    myContractorId,
+    isStaff,
   } = params;
 
   try {
     const bundle = await Promise.all([
-      loadContractorJobHeaderData({
+      loadContractorFactScope({
         supabaseClient,
-        row,
-        resolveContractorJobId,
-        resolveRequestId,
-        normText,
+        workItemId: resolveCanonicalWorkItemId(row),
+        myContractorId,
+        isStaff,
       }).catch((error) => {
-        recordContractorBootstrapFallback("load_job_header_failed", error, {
-          action: "loadContractorJobHeaderData",
-          fallbackAction: "header_null",
+        recordContractorBootstrapFallback("load_fact_scope_failed", error, {
+          action: "loadContractorFactScope",
+          fallbackAction: "fact_error_state",
           progressId: String(row.progress_id || "").trim() || null,
         });
-        return { header: null, objectNameOverride: null };
+        return null as ContractorFactScope | null;
       }),
       loadWorkLogData(String(row.progress_id || "")),
       loadWorkStageOptions({ supabaseClient }).catch((error) => {
@@ -136,48 +150,30 @@ export async function bootstrapWorkModalData(params: Params): Promise<WorkModalB
             });
             return [] as WorkMaterialRow[];
           }),
-      loadIssuedTodayData({
-        supabaseClient,
-        row,
-        allRows,
-        resolveContractorJobId,
-        resolveRequestId,
-        isRejectedOrCancelledRequestStatus,
-        toLocalDateKey,
-        normText,
-      }).catch((error) => {
-        recordContractorBootstrapFallback("load_issued_today_failed", error, {
-          action: "loadIssuedTodayData",
-          fallbackAction: "empty_issued_data",
-          progressId: String(row.progress_id || "").trim() || null,
-        });
-        return {
-          issuedItems: [] as IssuedItemRow[],
-          linkedReqCards: [] as LinkedReqCard[],
-          issuedHint: "",
-        } as {
-          issuedItems: IssuedItemRow[];
-          linkedReqCards: LinkedReqCard[];
-          issuedHint: string;
-        };
-      }),
     ]);
 
-    const [headerResult, workLog, workStageOptions, initialMaterials, issuedData] = bundle as [
-      HeaderLoadResult,
+    const [factScope, workLog, workStageOptions, initialMaterials] = bundle as [
+      ContractorFactScope | null,
       WorkLogRow[],
       Array<{ code: string; name: string }>,
       WorkMaterialRow[],
-      { issuedItems: IssuedItemRow[]; linkedReqCards: LinkedReqCard[]; issuedHint: string },
     ];
+    const headerResult: HeaderLoadResult = factScope
+      ? {
+          header: toJobHeader(factScope),
+          objectNameOverride: factScope.row.location.objectName,
+        }
+      : { header: null, objectNameOverride: null };
     return {
-      loadState: "ready",
+      loadState: factScope ? "ready" : "error",
       jobHeader: headerResult?.header || null,
       objectNameOverride: String(headerResult?.objectNameOverride || "").trim() || null,
       workLog,
       workStageOptions,
       initialMaterials,
-      issuedData,
+      warehouseIssuesState:
+        factScope?.warehouseIssuesPanel ??
+        contractorWarehouseIssuesErrorState("Не удалось загрузить выдачи со склада."),
     };
   } catch (error) {
     recordContractorBootstrapFallback("bootstrap_work_modal_failed", error, {
@@ -192,7 +188,9 @@ export async function bootstrapWorkModalData(params: Params): Promise<WorkModalB
       workLog: [],
       workStageOptions: [],
       initialMaterials: [],
-      issuedData: { issuedItems: [], linkedReqCards: [], issuedHint: "" },
+      warehouseIssuesState: contractorWarehouseIssuesErrorState(
+        "Не удалось загрузить выдачи со склада.",
+      ),
     };
   }
 }

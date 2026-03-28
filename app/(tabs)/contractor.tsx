@@ -79,6 +79,8 @@ function ContractorScreen() {
     setCode,
     rows,
     setRows,
+    inboxRows,
+    setInboxRows,
     manualClaimedJobIds,
     subcontractCards,
     setSubcontractCards,
@@ -138,14 +140,8 @@ function ContractorScreen() {
     actBuilderWorks,
     actBuilderExpandedWork,
     actBuilderExpandedMat,
-    issuedItems,
-    setIssuedItems,
-    loadingIssued,
-    setLoadingIssued,
-    issuedHint,
-    setIssuedHint,
-    linkedReqCards,
-    setLinkedReqCards,
+    warehouseIssuesState,
+    setWarehouseIssuesState,
     workStageOptions,
     setWorkStageOptions,
     workSearchVisible,
@@ -156,7 +152,7 @@ function ContractorScreen() {
     activeWorkModalProgressRef,
   } = useContractorScreenState();
 
-  const { toHumanObject, toHumanWork } = useContractorHumanizers();
+  const { toHumanWork } = useContractorHumanizers();
   const {
     query: workSearchQuery,
     results: workSearchResults,
@@ -176,10 +172,9 @@ function ContractorScreen() {
     issuedLoadSeqRef.current += 1;
     activeWorkModalProgressRef.current = "";
     clearWorkSearchState();
-    setLinkedReqCards([]);
+    setWarehouseIssuesState({ status: "idle" });
     setWorkOverlayModal("none");
     setActBuilderLoadState("init");
-    setLoadingIssued(false);
     setWorkModalLoading(false);
     setWorkModalVisible(false);
   }, [
@@ -187,8 +182,7 @@ function ContractorScreen() {
     clearWorkSearchState,
     issuedLoadSeqRef,
     setActBuilderLoadState,
-    setLinkedReqCards,
-    setLoadingIssued,
+    setWarehouseIssuesState,
     setWorkModalLoading,
     setWorkModalVisible,
     setWorkOverlayModal,
@@ -198,8 +192,6 @@ function ContractorScreen() {
   const {
     loadWorks,
     reloadContractorScreenData,
-    availableRows,
-    myRows,
     handleRefresh,
   } = useContractorHomeController({
     screenData: {
@@ -215,6 +207,7 @@ function ContractorScreen() {
       setSubcontractsReady,
       setSubcontractCards,
       setRows,
+      setInboxRows,
       normText,
       looksLikeUuid,
       pickWorkProgressRow,
@@ -266,6 +259,23 @@ function ContractorScreen() {
     reloadContractorScreenData,
     pickFirstNonEmpty,
   });
+  const loadingIssued = warehouseIssuesState.status === "loading";
+  const issuedItems =
+    warehouseIssuesState.status === "ready"
+      ? warehouseIssuesState.rows.map((row) => ({
+          issue_item_id: row.issueItemId,
+          mat_code: row.matCode,
+          request_id: row.requestId,
+          title: row.title,
+          unit: row.unit,
+          qty: row.qty,
+          qty_left: row.qtyLeft,
+          qty_used: row.qtyUsed,
+          price: row.price,
+          sum: row.sum,
+          qty_fact: row.qty,
+        }))
+      : [];
 
   const {
     openWorkAddModal,
@@ -294,11 +304,7 @@ function ContractorScreen() {
     },
     openModal: {
       supabaseClient: supabase,
-      rows,
       clearSearchState,
-      isRejectedOrCancelledRequestStatus,
-      toLocalDateKey,
-      normText,
       workModalBootSeqRef,
       activeWorkModalProgressRef,
       setWorkModalRow,
@@ -312,7 +318,6 @@ function ContractorScreen() {
       setActBuilderLoadState,
       setWorkModalVisible,
       setWorkModalLoading,
-      setLoadingIssued,
       setHistoryOpen,
       setIssuedOpen,
       setWorkOverlayModal,
@@ -320,32 +325,18 @@ function ContractorScreen() {
       setWorkLog,
       setWorkStageOptions,
       setWorkModalMaterials,
-      setIssuedItems,
-      setLinkedReqCards,
-      setIssuedHint,
-    },
-    issuedRefresh: {
-      issuedLoadSeqRef,
-      activeWorkModalProgressRef,
-      workModalRowRef,
-      workModalVisible,
-      issuedOpen,
-      workModalRowProgressId: workModalRow?.progress_id,
-      looksLikeUuid,
-      setLoadingIssued,
-      setIssuedItems,
-      setLinkedReqCards,
-      setIssuedHint,
+      setWarehouseIssuesState,
+      contractorRef,
+      profileRef,
     },
     workModals: {
       workModalBootSeqRef,
       issuedLoadSeqRef,
       activeWorkModalProgressRef,
       clearWorkSearchState,
-      setLinkedReqCards,
+      setWarehouseIssuesState,
       setWorkOverlayModal,
       setActBuilderLoadState,
-      setLoadingIssued,
       setWorkModalLoading,
       setWorkModalVisible,
       workModalVisible,
@@ -444,14 +435,8 @@ function ContractorScreen() {
   });
 
   const { unifiedSubcontractCards, handleOpenUnifiedCard } = useContractorCards({
+    inboxRows,
     rows,
-    myRows,
-    availableRows,
-    subcontractCards,
-    rowsReady,
-    subcontractsReady,
-    toHumanObject,
-    toHumanWork,
     openWorkAddModal,
   });
   const actBuilderModalProps = useContractorActBuilderModalProps({
@@ -502,9 +487,7 @@ function ContractorScreen() {
     historyOpen,
     workLog,
     issuedOpen,
-    linkedReqCards,
-    issuedItems,
-    issuedHint,
+    warehouseIssuesState,
     onOpenEstimate: openEstimateMaterialsModal,
     styles,
     textOrDash,
@@ -610,10 +593,3 @@ export default withScreenErrorBoundary(ContractorScreen, {
   screen: "contractor",
   route: "/contractor",
 });
-
-
-
-
-
-
-

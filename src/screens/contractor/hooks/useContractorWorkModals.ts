@@ -1,6 +1,6 @@
 import { useCallback } from "react";
 import type { Dispatch, MutableRefObject, SetStateAction } from "react";
-import type { LinkedReqCard } from "../types";
+import type { WarehouseIssuesPanelState } from "../../../lib/api/contractor.scope.service";
 import { useContractorModalFlow } from "../contractor.modalFlow";
 
 type WorkOverlayModal = "none" | "contract" | "estimate" | "stage";
@@ -11,10 +11,9 @@ export function useContractorWorkModals(params: {
   issuedLoadSeqRef: MutableRefObject<number>;
   activeWorkModalProgressRef: MutableRefObject<string>;
   clearWorkSearchState: () => void;
-  setLinkedReqCards: Dispatch<SetStateAction<LinkedReqCard[]>>;
+  setWarehouseIssuesState: Dispatch<SetStateAction<WarehouseIssuesPanelState>>;
   setWorkOverlayModal: Dispatch<SetStateAction<WorkOverlayModal>>;
   setActBuilderLoadState: Dispatch<SetStateAction<ScreenLoadState>>;
-  setLoadingIssued: Dispatch<SetStateAction<boolean>>;
   setWorkModalLoading: Dispatch<SetStateAction<boolean>>;
   setWorkModalVisible: Dispatch<SetStateAction<boolean>>;
   workModalVisible: boolean;
@@ -26,10 +25,9 @@ export function useContractorWorkModals(params: {
     issuedLoadSeqRef,
     activeWorkModalProgressRef,
     clearWorkSearchState,
-    setLinkedReqCards,
+    setWarehouseIssuesState,
     setWorkOverlayModal,
     setActBuilderLoadState,
-    setLoadingIssued,
     setWorkModalLoading,
     setWorkModalVisible,
     workModalVisible,
@@ -42,10 +40,9 @@ export function useContractorWorkModals(params: {
     issuedLoadSeqRef.current += 1;
     activeWorkModalProgressRef.current = "";
     clearWorkSearchState();
-    setLinkedReqCards([]);
+    setWarehouseIssuesState({ status: "idle" });
     setWorkOverlayModal("none");
     setActBuilderLoadState("init");
-    setLoadingIssued(false);
     setWorkModalLoading(false);
     setWorkModalVisible(false);
   }, [
@@ -53,10 +50,9 @@ export function useContractorWorkModals(params: {
     issuedLoadSeqRef,
     activeWorkModalProgressRef,
     clearWorkSearchState,
-    setLinkedReqCards,
+    setWarehouseIssuesState,
     setWorkOverlayModal,
     setActBuilderLoadState,
-    setLoadingIssued,
     setWorkModalLoading,
     setWorkModalVisible,
   ]);

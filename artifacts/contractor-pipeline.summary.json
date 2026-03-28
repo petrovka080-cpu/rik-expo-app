@@ -1,0 +1,20 @@
+{
+  "gate": "contractor_pipeline_verify",
+  "directorApproved": true,
+  "contractorVisible": true,
+  "contractorResolved": true,
+  "objectResolved": true,
+  "workResolved": true,
+  "detailHeaderComplete": true,
+  "materialLeakToContractor": false,
+  "invalidRowsVisible": false,
+  "warehouseIssuesPanelResolved": true,
+  "webPassed": true,
+  "runtimeVerified": true,
+  "backendOwnerPreserved": true,
+  "contractorCardCount": 3,
+  "pageErrors": [],
+  "badResponses": [],
+  "blockingConsoleErrors": [],
+  "status": "passed"
+}

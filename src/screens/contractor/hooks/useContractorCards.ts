@@ -1,133 +1,121 @@
-import { useCallback, useMemo, useRef } from "react";
-import { Alert, Platform } from "react-native";
-import type { ContractorSubcontractCard, ContractorWorkRow } from "../contractor.loadWorksService";
-import { buildJobCards, buildUnifiedCardsFromJobsAndOthers, groupWorksByJob } from "../contractor.viewModels";
-import { resolveWorkRowFromUnifiedCard } from "../contractor.openCard";
-import { looksLikeUuid, normText, pickWorkProgressRow } from "../contractor.utils";
+import { useCallback, useMemo } from "react";
+import { Alert } from "react-native";
+import type { ContractorInboxRow } from "../../../lib/api/contractor.scope.service";
+import type { ContractorWorkRow } from "../contractor.loadWorksService";
+import { looksLikeUuid } from "../contractor.utils";
 
 type Params = {
+  inboxRows: ContractorInboxRow[];
   rows: ContractorWorkRow[];
-  myRows: ContractorWorkRow[];
-  availableRows: ContractorWorkRow[];
-  subcontractCards: ContractorSubcontractCard[];
-  rowsReady: boolean;
-  subcontractsReady: boolean;
-  toHumanObject: (raw: string | null | undefined) => string;
-  toHumanWork: (raw: string | null | undefined) => string;
   openWorkAddModal: (row: ContractorWorkRow, readOnly?: boolean) => void;
 };
 
+type JobCard = {
+  id: string;
+  contractor: string;
+  contractorInn?: string | null;
+  objectName: string;
+  workType: string;
+};
+
+const buildLegacyFallbackRow = (item: ContractorInboxRow): ContractorWorkRow => ({
+  progress_id: item.progressId ?? item.workItemId,
+  canonical_work_item_id: item.workItemId,
+  canonical_source_kind: item.origin.sourceKind,
+  created_at: item.origin.directorApprovedAt,
+  purchase_item_id: null,
+  work_code: item.work.workNameSource === "raw_code" ? item.work.workName : null,
+  work_name: item.work.workNameSource === "raw_code" ? null : item.work.workName,
+  object_name: item.location.objectName || item.location.locationDisplay,
+  contractor_org: item.identity.contractorName,
+  contractor_inn: item.identity.contractorInn,
+  contractor_phone: null,
+  request_id: item.origin.sourceRequestId,
+  request_status: null,
+  contractor_job_id: item.origin.sourceSubcontractId,
+  uom_id: item.work.uom,
+  qty_planned: Number(item.work.quantity ?? 0),
+  qty_done: 0,
+  qty_left: Number(item.work.quantity ?? 0),
+  unit_price: item.work.unitPrice,
+  work_status: "ready",
+  contractor_id: item.identity.contractorId,
+  started_at: null,
+  finished_at: null,
+});
+
 export function useContractorCards(params: Params) {
-  const {
-    rows,
-    myRows,
-    availableRows,
-    subcontractCards,
-    rowsReady,
-    subcontractsReady,
-    toHumanObject,
-    toHumanWork,
-    openWorkAddModal,
-  } = params;
+  const { inboxRows, rows, openWorkAddModal } = params;
 
-  const openingWorkRef = useRef(false);
-
-  const unifiedRows = useMemo(() => {
-    const ownSet = new Set(myRows.map((r) => String(r.progress_id)));
-    const availableOnly = availableRows.filter((r) => !ownSet.has(String(r.progress_id)));
-    return [...myRows, ...availableOnly];
-  }, [myRows, availableRows]);
-
-  const groupedWorksByJob = useMemo(() => groupWorksByJob(rows), [rows]);
-
-  const otherRows = useMemo(
-    () => unifiedRows.filter((r) => !String(r.contractor_job_id || "").trim()),
-    [unifiedRows],
+  const cardById = useMemo(
+    () =>
+      new Map(
+        inboxRows.map((row) => [
+          row.workItemId,
+          {
+            id: row.workItemId,
+            contractor: row.identity.contractorName,
+            contractorInn: row.identity.contractorInn,
+            objectName: row.location.objectName || row.location.locationDisplay,
+            workType: row.work.workName,
+          } satisfies JobCard,
+        ]),
+      ),
+    [inboxRows],
   );
 
-  const jobCards = useMemo(() => {
-    if (!rowsReady || !subcontractsReady) return [];
-    return buildJobCards({
-      subcontractCards,
-      groupedWorksByJob,
-      toHumanObject,
-      toHumanWork,
-      normalizeText: normText,
-      debugCompanySource: true,
-      debugPlatform: Platform.OS,
-    });
-  }, [subcontractCards, groupedWorksByJob, toHumanObject, toHumanWork, rowsReady, subcontractsReady]);
-
-  const { cards: unifiedSubcontractCards, rowByCardId: otherRowByCardId } = useMemo(() => {
-    return buildUnifiedCardsFromJobsAndOthers({
-      jobCards,
-      otherRows,
-      toHumanObject,
-      toHumanWork,
-      normalizeText: normText,
-      debugCompanySource: true,
-      debugPlatform: Platform.OS,
-    });
-  }, [jobCards, otherRows, toHumanObject, toHumanWork]);
-
-  const openWorkInOneClick = useCallback((row: ContractorWorkRow) => {
-    if (openingWorkRef.current) return;
-    const rpcProgressId = pickWorkProgressRow(row);
-    if (__DEV__) {
-      console.debug("[contractor.openWorkInOneClick]", {
-        progressId: rpcProgressId,
-        contractorJobId: String(row.contractor_job_id || "").trim() || null,
-        requestId: String(row.request_id || "").trim() || null,
-      });
-    }
-    if (!looksLikeUuid(rpcProgressId)) {
-      if (__DEV__) {
-        console.debug("[contractor.openWorkInOneClick.invalidProgress]", {
-          progressId: rpcProgressId,
+  const workRowByCardId = useMemo(() => {
+    const map = new Map<string, ContractorWorkRow>();
+    for (const item of inboxRows) {
+      const matchedLegacyRow =
+        rows.find((row) => String(row.progress_id || "").trim() === String(item.progressId || "").trim()) ?? null;
+      if (matchedLegacyRow) {
+        map.set(item.workItemId, {
+          ...matchedLegacyRow,
+          canonical_work_item_id: item.workItemId,
+          canonical_source_kind: item.origin.sourceKind,
+          contractor_org: item.identity.contractorName,
+          contractor_inn: item.identity.contractorInn,
+          object_name: item.location.objectName || item.location.locationDisplay,
+          work_name:
+            item.work.workNameSource === "raw_code"
+              ? matchedLegacyRow.work_name
+              : item.work.workName,
+          work_code:
+            item.work.workNameSource === "raw_code"
+              ? item.work.workName
+              : matchedLegacyRow.work_code,
+          request_id: item.origin.sourceRequestId ?? matchedLegacyRow.request_id,
+          contractor_job_id: item.origin.sourceSubcontractId ?? matchedLegacyRow.contractor_job_id,
+          contractor_id: item.identity.contractorId,
+          unit_price: item.work.unitPrice ?? matchedLegacyRow.unit_price ?? null,
+          qty_planned: Number(item.work.quantity ?? matchedLegacyRow.qty_planned ?? 0),
         });
+        continue;
       }
-      Alert.alert(
-        "\u041E\u0448\u0438\u0431\u043A\u0430 \u0434\u0430\u043D\u043D\u044B\u0445",
-        "\u0414\u043B\u044F \u0432\u044B\u0431\u0440\u0430\u043D\u043D\u043E\u0439 \u0440\u0430\u0431\u043E\u0442\u044B \u043E\u0442\u0441\u0443\u0442\u0441\u0442\u0432\u0443\u0435\u0442 \u043A\u043E\u0440\u0440\u0435\u043A\u0442\u043D\u044B\u0439 \u0438\u0434\u0435\u043D\u0442\u0438\u0444\u0438\u043A\u0430\u0442\u043E\u0440 progress_id.",
-      );
-      return;
+      map.set(item.workItemId, buildLegacyFallbackRow(item));
     }
-    openingWorkRef.current = true;
-    try {
-      openWorkAddModal(row);
-    } finally {
-      openingWorkRef.current = false;
-    }
-  }, [openWorkAddModal]);
+    return map;
+  }, [inboxRows, rows]);
 
-  const handleOpenUnifiedCard = useCallback((id: string) => {
-    const targetRow = resolveWorkRowFromUnifiedCard({
-      id,
-      otherRowByCardId,
-      groupedWorksByJob,
-      subcontractCards,
-      rows,
-      looksLikeUuid,
-      pickWorkProgressRow,
-    });
-    if (__DEV__) {
-      console.debug("[contractor.handleOpenUnifiedCard]", {
-        id,
-        found: !!targetRow,
-        progressId: targetRow ? pickWorkProgressRow(targetRow) : null,
-        contractorJobId: targetRow ? String(targetRow.contractor_job_id || "").trim() || null : null,
-        requestId: targetRow ? String(targetRow.request_id || "").trim() || null : null,
-      });
-    }
-    if (targetRow) {
-      openWorkInOneClick(targetRow);
-      return;
-    }
-    Alert.alert(
-      "\u041D\u0435\u0442 \u0440\u0430\u0431\u043E\u0442 \u0434\u043B\u044F \u043E\u0442\u043A\u0440\u044B\u0442\u0438\u044F",
-      "\u0421\u043D\u0430\u0447\u0430\u043B\u0430 \u043D\u0430\u0437\u043D\u0430\u0447\u044C\u0442\u0435 \u0440\u0430\u0431\u043E\u0442\u0443 \u043D\u0430 \u043F\u043E\u0434\u0440\u044F\u0434 \u0438\u043B\u0438 \u0434\u043E\u0436\u0434\u0438\u0442\u0435\u0441\u044C \u0441\u0438\u043D\u0445\u0440\u043E\u043D\u0438\u0437\u0430\u0446\u0438\u0438.",
-    );
-  }, [otherRowByCardId, groupedWorksByJob, subcontractCards, rows, openWorkInOneClick]);
+  const unifiedSubcontractCards = useMemo(
+    () => inboxRows.map((row) => cardById.get(row.workItemId)!).filter(Boolean),
+    [cardById, inboxRows],
+  );
+
+  const handleOpenUnifiedCard = useCallback(
+    (id: string) => {
+      const row = workRowByCardId.get(String(id || "").trim()) ?? null;
+      if (!row) {
+        Alert.alert("Данные недоступны", "Не удалось открыть подрядную работу.");
+        return;
+      }
+      const progressId = String(row.progress_id || "").trim();
+      const readOnly = !looksLikeUuid(progressId);
+      openWorkAddModal(row, readOnly);
+    },
+    [openWorkAddModal, workRowByCardId],
+  );
 
   return { unifiedSubcontractCards, handleOpenUnifiedCard };
 }

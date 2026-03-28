@@ -2,7 +2,8 @@ import React from "react";
 import { Modal, Platform, Pressable, ScrollView, Text, View, type ViewStyle } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
-import type { WorkLogRow, LinkedReqCard, IssuedItemRow } from "../types";
+import type { WarehouseIssuesPanelState } from "../../../lib/api/contractor.scope.service";
+import type { WorkLogRow } from "../types";
 import WorkModalOverviewSection from "./WorkModalOverviewSection";
 import ActsHistorySection from "./ActsHistorySection";
 import IssuedSection from "./IssuedSection";
@@ -56,9 +57,7 @@ type Props = {
   getVisibleNote: (note: string | null | undefined) => string;
   issuedOpen: boolean;
   onToggleIssued: () => void;
-  linkedReqCards: LinkedReqCard[];
-  issuedItems: IssuedItemRow[];
-  issuedHint: string;
+  warehouseIssuesState: WarehouseIssuesPanelState;
   onOpenEstimate: () => void;
   styles: any;
 };
@@ -122,7 +121,7 @@ export default function ContractorWorkModal(props: Props) {
                   marginTop: 6,
                 }}
               >
-                Загрузка истории и материалов...
+                Загрузка данных работы...
               </Text>
             ) : null}
 
@@ -169,10 +168,7 @@ export default function ContractorWorkModal(props: Props) {
             <IssuedSection
               issuedOpen={props.issuedOpen}
               onToggle={props.onToggleIssued}
-              loadingIssued={props.loadingIssued}
-              linkedReqCards={props.linkedReqCards}
-              issuedItems={props.issuedItems}
-              issuedHint={props.issuedHint}
+              state={props.warehouseIssuesState}
               styles={props.styles}
             />
 

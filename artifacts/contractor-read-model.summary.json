@@ -1,0 +1,27 @@
+{
+  "gate": "contractor_read_model_proof",
+  "backendOwnerPreserved": true,
+  "readyRowsVisible": 3,
+  "readyScenarioKeys": [
+    "buyer_subcontract",
+    "foreman_subcontract_request",
+    "foreman_material_request"
+  ],
+  "invalidScenarioKeysHidden": [
+    "invalid_missing_contractor",
+    "invalid_material_only"
+  ],
+  "sourceKinds": [
+    "foreman_material_request",
+    "foreman_subcontract_request",
+    "buyer_subcontract"
+  ],
+  "materialLeakToContractor": false,
+  "invalidRowsVisible": false,
+  "publicationStateCounts": {
+    "ready": 3,
+    "invalidMissingContractor": 1,
+    "invalidMaterialOnly": 1
+  },
+  "status": "passed"
+}

@@ -1,9 +1,9 @@
-﻿import React from "react";
+import React from "react";
 import { ActivityIndicator, Pressable, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { normalizeRuText } from "../../../lib/text/encoding";
+import type { WarehouseIssuesPanelState } from "../../../lib/api/contractor.scope.service";
 import { StatusBadge } from "../../../ui/StatusBadge";
-import type { IssuedItemRow, LinkedReqCard } from "../types";
 
 type IssuedStyles = {
   workModalSectionBtn: any;
@@ -22,14 +22,16 @@ type IssuedStyles = {
 type Props = {
   issuedOpen: boolean;
   onToggle: () => void;
-  loadingIssued: boolean;
-  linkedReqCards: LinkedReqCard[];
-  issuedItems: IssuedItemRow[];
-  issuedHint: string;
+  state: WarehouseIssuesPanelState;
   styles: IssuedStyles;
 };
 
 export default function IssuedSection(props: Props) {
+  const linkedRequestCards =
+    props.state.status === "ready" || props.state.status === "empty" || props.state.status === "error"
+      ? props.state.linkedRequestCards
+      : [];
+
   return (
     <>
       <Pressable
@@ -42,43 +44,43 @@ export default function IssuedSection(props: Props) {
 
       {props.issuedOpen && (
         <View style={{ marginTop: 8, marginBottom: 8 }}>
-          {props.loadingIssued && <ActivityIndicator size="small" />}
+          {props.state.status === "loading" ? <ActivityIndicator size="small" /> : null}
 
-          {!props.loadingIssued && props.linkedReqCards.length > 0 && (
+          {linkedRequestCards.length > 0 && (
             <View style={{ marginBottom: 8 }}>
-              {props.linkedReqCards.map((card) => (
-                <View key={card.request_id} style={props.styles.workModalLinkedReqCard}>
-                  <Text style={props.styles.workModalLinkedReqTitle}>{normalizeRuText(card.req_no)}</Text>
+              {linkedRequestCards.map((card) => (
+                <View key={card.requestId} style={props.styles.workModalLinkedReqCard}>
+                  <Text style={props.styles.workModalLinkedReqTitle}>{normalizeRuText(card.reqNo)}</Text>
                   <StatusBadge label={`Статус: ${normalizeRuText(card.status || "—")}`} tone="neutral" compact />
                   <Text style={props.styles.workModalLinkedReqMeta}>
-                    Номера выдач: {card.issue_nos.length ? card.issue_nos.map((x) => normalizeRuText(x)).join(", ") : "нет выдач"}
+                    Номера выдач: {card.issueNos.length ? card.issueNos.map((value) => normalizeRuText(value)).join(", ") : "нет выдач"}
                   </Text>
                 </View>
               ))}
             </View>
           )}
 
-          {!props.loadingIssued && props.issuedItems.length === 0 && (
-            <Text style={props.styles.workModalEmptyText}>
-              По этой работе еще не подтверждены выдачи материалов.
-            </Text>
-          )}
+          {props.state.status === "ready"
+            ? props.state.rows.map((item) => (
+                <View key={item.issueItemId} style={props.styles.workModalIssuedCard}>
+                  <Text style={props.styles.workModalIssuedTitle}>{normalizeRuText(item.title)}</Text>
+                  <Text style={props.styles.workModalIssuedMeta}>
+                    Выдано: {Number(item.qty || 0).toLocaleString("ru-RU")} {normalizeRuText(item.unit || "—")} ·
+                    Остаток: {Number(item.qtyLeft || 0).toLocaleString("ru-RU")} {normalizeRuText(item.unit || "—")}
+                  </Text>
+                </View>
+              ))
+            : null}
 
-          {!props.loadingIssued && !!props.issuedHint && (
+          {props.state.status === "empty" ? (
+            <Text style={props.styles.workModalEmptyText}>{normalizeRuText(props.state.message)}</Text>
+          ) : null}
+
+          {props.state.status === "error" ? (
             <Text style={[props.styles.workModalLinkedReqMeta, props.styles.workModalHintMeta]}>
-              {normalizeRuText(props.issuedHint)}
+              {normalizeRuText(props.state.message)}
             </Text>
-          )}
-
-          {props.issuedItems.map((it) => (
-            <View key={it.issue_item_id} style={props.styles.workModalIssuedCard}>
-              <Text style={props.styles.workModalIssuedTitle}>{normalizeRuText(it.title)}</Text>
-              <Text style={props.styles.workModalIssuedMeta}>
-                Выдано: {Number(it.qty || 0).toLocaleString("ru-RU")} {normalizeRuText(it.unit || "—")} · Остаток:{" "}
-                {Number(it.qty_left || 0).toLocaleString("ru-RU")} {normalizeRuText(it.unit || "—")}
-              </Text>
-            </View>
-          ))}
+          ) : null}
         </View>
       )}
     </>

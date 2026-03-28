@@ -12,6 +12,8 @@ import {
 
 export type ContractorWorkRow = {
   progress_id: string;
+  canonical_work_item_id?: string | null;
+  canonical_source_kind?: string | null;
   created_at?: string | null;
   purchase_item_id?: string | null;
   work_code: string | null;

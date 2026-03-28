@@ -11,6 +11,10 @@ import {
   type ContractorSubcontractCard,
   type ContractorWorkRow,
 } from "../contractor.loadWorksService";
+import {
+  loadContractorInboxScope,
+  type ContractorInboxRow,
+} from "../../../lib/api/contractor.scope.service";
 import { recordPlatformObservability } from "../../../lib/observability/platformObservability";
 import { getPlatformNetworkSnapshot } from "../../../lib/offline/platformNetwork.service";
 import { recordPlatformGuardSkip } from "../../../lib/observability/platformGuardDiscipline";
@@ -28,12 +32,15 @@ type Params = {
   setSubcontractsReady: Dispatch<SetStateAction<boolean>>;
   setSubcontractCards: Dispatch<SetStateAction<ContractorSubcontractCard[]>>;
   setRows: Dispatch<SetStateAction<ContractorWorkRow[]>>;
+  setInboxRows: Dispatch<SetStateAction<ContractorInboxRow[]>>;
   normText: (value: unknown) => string;
   looksLikeUuid: (value: unknown) => boolean;
   pickWorkProgressRow: (row: ContractorWorkRow) => string;
   isExcludedWorkCode: (code: unknown) => boolean;
   isApprovedForOtherStatus: (status: unknown) => boolean;
 };
+
+const loadEmptyInboxRows = (): ContractorInboxRow[] => [];
 
 export function useContractorScreenData(params: Params) {
   const {
@@ -49,6 +56,7 @@ export function useContractorScreenData(params: Params) {
     setSubcontractsReady,
     setSubcontractCards,
     setRows,
+    setInboxRows,
     normText,
     looksLikeUuid,
     pickWorkProgressRow,
@@ -106,24 +114,33 @@ export function useContractorScreenData(params: Params) {
     try {
       const isStaff = profileRef.current?.is_contractor === false;
       const myContractorId = String(contractorRef.current?.id || "").trim();
-      const bundle = await loadContractorWorksBundle({
-        supabaseClient,
-        normText,
-        looksLikeUuid,
-        pickWorkProgressRow,
-        myContractorId,
-        isStaff,
-        isExcludedWorkCode,
-        isApprovedForOtherStatus,
-      });
+      const [bundle, inboxScope] = await Promise.all([
+        loadContractorWorksBundle({
+          supabaseClient,
+          normText,
+          looksLikeUuid,
+          pickWorkProgressRow,
+          myContractorId,
+          isStaff,
+          isExcludedWorkCode,
+          isApprovedForOtherStatus,
+        }),
+        loadContractorInboxScope({
+          supabaseClient,
+          myContractorId: myContractorId || null,
+          isStaff,
+        }),
+      ]);
       if (reqSeq !== loadWorksSeqRef.current) return;
 
       setSubcontractCards(bundle.subcontractCards);
+      setInboxRows(inboxScope.rows);
       if (__DEV__) {
         console.log("[contractor.loadWorks] debug-filter", {
           isStaff: bundle.debug.isStaff,
           subcontractsFound: bundle.debug.subcontractsFound,
           totalApproved: bundle.debug.totalApproved,
+          canonicalReadyRows: inboxScope.meta.readyRows,
         });
       }
       setRows(bundle.rows);
@@ -137,6 +154,9 @@ export function useContractorScreenData(params: Params) {
         result: "success",
         rowCount: bundle.rows.length,
         extra: {
+          canonicalReadyRows: inboxScope.meta.readyRows,
+          invalidMissingContractor: inboxScope.meta.invalidMissingContractor,
+          invalidMaterialOnly: inboxScope.meta.invalidMaterialOnly,
           subcontractCards: bundle.subcontractCards.length,
           primaryOwner: bundle.sourceMeta.primaryOwner,
           fallbackUsed: bundle.sourceMeta.fallbackUsed,
@@ -146,6 +166,7 @@ export function useContractorScreenData(params: Params) {
     } catch (error) {
       if (reqSeq !== loadWorksSeqRef.current) return;
       console.error("loadWorks exception:", error);
+      setInboxRows(loadEmptyInboxRows());
     } finally {
       if (reqSeq !== loadWorksSeqRef.current) return;
       setLoadingWorks(false);
@@ -165,6 +186,7 @@ export function useContractorScreenData(params: Params) {
     isApprovedForOtherStatus,
     setSubcontractCards,
     setRows,
+    setInboxRows,
   ]);
 
   const reloadContractorScreenData = useCallback(async (trigger: "focus" | "manual" | "activation" = "focus") => {
