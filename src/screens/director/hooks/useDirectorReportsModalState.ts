@@ -190,7 +190,7 @@ export function useDirectorReportsModalState({
   const issueCost = Number(disSummary?.issue_cost_total ?? 0);
   const purchaseCost = Number(disSummary?.purchase_cost_total ?? 0);
   const hasCostBase = purchaseCost > 0;
-  const ratioText = hasCostBase ? `${ratioPct}%` : "Н/Д";
+  const ratioText = hasCostBase ? `${ratioPct}%` : "н/д";
 
   const resetDetailOverlays = React.useCallback(() => {
     detailOpenTraceRef.current = null;

@@ -6,6 +6,7 @@
     "debtModalOpened": true,
     "supplierToggleVisible": true,
     "supplierRowVisible": true,
+    "supplierEmptyStateVisible": false,
     "supplierDetailOpened": true,
     "consoleErrorsEmpty": true,
     "pageErrorsEmpty": true,
@@ -60,6 +61,14 @@
         },
         {
           "type": "info",
+          "text": "[platform.observability] {screen: profile, surface: session_role, event: resolve_session_role, result: success, durationMs: 0}"
+        },
+        {
+          "type": "info",
+          "text": "[platform.observability] {screen: profile, surface: session_role, event: resolve_session_role, result: cache_hit, durationMs: null}"
+        },
+        {
+          "type": "info",
           "text": "[director.live] {sourcePath: director.lifecycle.realtime_auth, hasAccessToken: true}"
         },
         {
@@ -88,6 +97,10 @@
         },
         {
           "type": "info",
+          "text": "[platform.observability] {screen: profile, surface: session_role, event: warm_session_profile, result: success, durationMs: 588}"
+        },
+        {
+          "type": "info",
           "text": "[director.repository] {phase: request, sourcePath: director.repository.fetchPendingRows, primaryPath: list_director_items_stable, primaryRowCount: 0, expectedRequestStatuses: Array(2)}"
         },
         {
@@ -96,91 +109,7 @@
         },
         {
           "type": "info",
-          "text": "[director.live] {sourcePath: director.lifecycle.channel, status: SUBSCRIBED}"
-        },
-        {
-          "type": "info",
-          "text": "[director.live] {sourcePath: director.lifecycle.broadcast_channel, status: SUBSCRIBED}"
-        },
-        {
-          "type": "info",
-          "text": "[platform.observability] {screen: director, surface: finance, event: finance_text_decode_failed, result: error, durationMs: null}"
-        },
-        {
-          "type": "info",
-          "text": "[platform.observability] {screen: director, surface: finance, event: finance_text_decode_failed, result: error, durationMs: null}"
-        },
-        {
-          "type": "info",
-          "text": "[platform.observability] {screen: director, surface: finance, event: finance_text_decode_failed, result: error, durationMs: null}"
-        },
-        {
-          "type": "info",
-          "text": "[platform.observability] {screen: director, surface: finance, event: finance_text_decode_failed, result: error, durationMs: null}"
-        },
-        {
-          "type": "info",
-          "text": "[platform.observability] {screen: director, surface: finance, event: finance_text_decode_failed, result: error, durationMs: null}"
-        },
-        {
-          "type": "info",
-          "text": "[platform.observability] {screen: director, surface: finance, event: finance_text_decode_failed, result: error, durationMs: null}"
-        },
-        {
-          "type": "info",
-          "text": "[platform.observability] {screen: director, surface: finance, event: finance_text_decode_failed, result: error, durationMs: null}"
-        },
-        {
-          "type": "info",
-          "text": "[platform.observability] {screen: director, surface: finance, event: finance_text_decode_failed, result: error, durationMs: null}"
-        },
-        {
-          "type": "info",
-          "text": "[platform.observability] {screen: director, surface: finance, event: finance_text_decode_failed, result: error, durationMs: null}"
-        },
-        {
-          "type": "info",
-          "text": "[platform.observability] {screen: director, surface: finance, event: finance_text_decode_failed, result: error, durationMs: null}"
-        },
-        {
-          "type": "info",
-          "text": "[platform.observability] {screen: director, surface: finance, event: finance_text_decode_failed, result: error, durationMs: null}"
-        },
-        {
-          "type": "info",
-          "text": "[platform.observability] {screen: director, surface: finance, event: finance_text_decode_failed, result: error, durationMs: null}"
-        },
-        {
-          "type": "info",
-          "text": "[platform.observability] {screen: director, surface: finance, event: finance_text_decode_failed, result: error, durationMs: null}"
-        },
-        {
-          "type": "info",
-          "text": "[platform.observability] {screen: director, surface: finance, event: finance_text_decode_failed, result: error, durationMs: null}"
-        },
-        {
-          "type": "info",
-          "text": "[platform.observability] {screen: director, surface: finance, event: finance_text_decode_failed, result: error, durationMs: null}"
-        },
-        {
-          "type": "info",
-          "text": "[platform.observability] {screen: director, surface: finance, event: finance_text_decode_failed, result: error, durationMs: null}"
-        },
-        {
-          "type": "info",
-          "text": "[platform.observability] {screen: director, surface: finance, event: finance_text_decode_failed, result: error, durationMs: null}"
-        },
-        {
-          "type": "info",
-          "text": "[platform.observability] {screen: director, surface: finance, event: finance_text_decode_failed, result: error, durationMs: null}"
-        },
-        {
-          "type": "info",
-          "text": "[platform.observability] {screen: director, surface: finance, event: finance_text_decode_failed, result: error, durationMs: null}"
-        },
-        {
-          "type": "info",
-          "text": "[platform.observability] {screen: director, surface: finance_panel, event: load_finance_scope, result: success, durationMs: 647}"
+          "text": "[platform.observability] {screen: director, surface: finance_panel, event: load_finance_scope, result: success, durationMs: 645}"
         },
         {
           "type": "info",
@@ -192,7 +121,7 @@
         },
         {
           "type": "info",
-          "text": "[platform.observability] {screen: director, surface: finance_supplier_scope, event: load_supplier_scope, result: success, durationMs: 1184}"
+          "text": "[platform.observability] {screen: director, surface: finance_supplier_scope, event: load_supplier_scope, result: success, durationMs: 820}"
         }
       ],
       "pageErrors": [],
@@ -211,7 +140,7 @@
       "gmsCleared": false,
       "devClientReachable": true
     },
-    "environmentRecoveryUsed": false,
+    "environmentRecoveryUsed": true,
     "gmsRecoveryUsed": false,
     "anrRecoveryUsed": false,
     "blankSurfaceRecovered": false,
@@ -220,6 +149,7 @@
     "financeHomeVisible": true,
     "debtModalOpened": true,
     "supplierRowsVisible": true,
+    "supplierEmptyStateVisible": false,
     "supplierDetailOpened": true,
     "currentXml": "artifacts/android-director-finance-route-1.xml",
     "currentPng": "artifacts/android-director-finance-route-1.png",
@@ -244,7 +174,7 @@
     "androidPassed": true,
     "iosPassed": false,
     "runtimeVerified": true,
-    "environmentRecoveryUsed": false,
+    "environmentRecoveryUsed": true,
     "gmsRecoveryUsed": false,
     "anrRecoveryUsed": false,
     "blankSurfaceRecovered": false,

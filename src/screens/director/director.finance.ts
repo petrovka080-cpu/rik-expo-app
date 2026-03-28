@@ -295,6 +295,7 @@ export type DirectorFinancePanelScopeV3 = DirectorFinancePanelScope & {
   summaryV3: DirectorFinanceSummaryV3;
   supplierRows: DirectorFinanceSupplierRowV3[];
   meta: DirectorFinanceMetaV3;
+  displayMode: "canonical_v3" | "fallback_legacy";
 };
 
 export type FinanceSummary = FinRep["summary"];
@@ -314,9 +315,6 @@ const CP1251_EXTRA_BYTES = new Map<number, number>([
   [0x2021, 0x87], [0x2022, 0x95], [0x2026, 0x85], [0x2030, 0x89], [0x2039, 0x8b], [0x203a, 0x9b],
   [0x20ac, 0x88], [0x2116, 0xb9], [0x2122, 0x99],
 ]);
-
-const looksLikeFinanceMojibake = (value: string): boolean =>
-  /[¤¦§Ё©«¬®°±¶·ЂЃ‚„…†‡€‰Љ‹ЊЋЏђ‘’“”•–—™љ›њћџ]|вЂ|в–/.test(value);
 
 const encodeCp1251Byte = (char: string): number | null => {
   const code = char.codePointAt(0);
@@ -352,8 +350,33 @@ const recordDirectorFinanceFallback = (
     },
   });
 
+const FINANCE_MOJIBAKE_PATTERN_SET = [
+  /\u0420[\u0403\u201a\u201e\u2020\u2021\u20ac\u2030\u0409\u040a\u040b\u040f\u0452\u201c\u201d\u2014\u2122\u0459\u045a\u045b\u045f\u040e\u045e\u0400\u0402\u00a6\u00a7\u0403\u00a9\u0404\u00ab\u00ac\u00ae\u0407\u00b0\u00b1\u0406\u2013\u0451\u00b5\u00b6\u00b7\u2018\u2116\u00bb]/,
+  /\u0421[\u0403\u201a\u201e\u2020\u2021\u20ac\u2030\u0409\u040a\u040b\u040f\u0452\u201c\u201d\u2014\u2122\u0459\u045a\u045b\u045f\u040e\u045e\u0400\u0402\u00a6\u00a7\u0403\u00a9\u0404\u00ab\u00ac\u00ae\u0407\u00b0\u00b1\u0406\u2013\u0451\u00b5\u00b6\u00b7\u2018\u2116\u00bb]/,
+  /(?:\u0420\u0406\u0420\u201a\u00a6|\u0420\u0406\u0420\u201a\u201d|\u0420\u0406\u0420\u201a\u201c|\u0420\u0406\u201e\u2013|\u0420\u2019\u00b7|\u0420\u00a0\u0420\u2020\u0420\u201a|\u0420\u00a0\u0420\u2020\u0420\u0406\u0420\u201a\u201c)/,
+] as const;
+const financeDecodeFailureSamples = new Set<string>();
+const MAX_FINANCE_DECODE_FAILURE_SAMPLES = 20;
+
+const isProbablyFinanceMojibake = (value: string): boolean => {
+  if (!value) return false;
+  return FINANCE_MOJIBAKE_PATTERN_SET.some((pattern) => pattern.test(value));
+};
+
+const recordDirectorFinanceDecodeFailureOnce = (value: string, error: unknown) => {
+  const sample = value.slice(0, 120);
+  if (!sample || financeDecodeFailureSamples.has(sample)) return;
+  if (financeDecodeFailureSamples.size >= MAX_FINANCE_DECODE_FAILURE_SAMPLES) return;
+  financeDecodeFailureSamples.add(sample);
+  recordDirectorFinanceFallback("finance_text_decode_failed", error, {
+    fallbackUsed: "original_value_kept",
+    valueLength: value.length,
+    valueSample: sample,
+  });
+};
+
 const decodeFinanceMojibake = (value: string): string => {
-  if (!value || !looksLikeFinanceMojibake(value) || typeof TextDecoder === "undefined") {
+  if (!value || !isProbablyFinanceMojibake(value) || typeof TextDecoder === "undefined") {
     return value;
   }
 
@@ -367,13 +390,10 @@ const decodeFinanceMojibake = (value: string): string => {
   try {
     const decoded = new TextDecoder("utf-8", { fatal: true }).decode(Uint8Array.from(bytes)).trim();
     if (!decoded) return value;
-    if (looksLikeFinanceMojibake(decoded) && decoded !== value) return value;
+    if (isProbablyFinanceMojibake(decoded) && decoded !== value) return value;
     return decoded;
   } catch (error) {
-    recordDirectorFinanceFallback("finance_text_decode_failed", error, {
-      fallbackUsed: "original_value_kept",
-      valueLength: value.length,
-    });
+    recordDirectorFinanceDecodeFailureOnce(value, error);
     return value;
   }
 };
@@ -718,6 +738,46 @@ const normalizeDirectorFinanceSupplierRowV3 = (value: unknown): DirectorFinanceS
     criticalCount: nnum(row.criticalCount ?? row.critical_count),
   };
 };
+
+const buildDirectorFinanceCanonicalSummary = (
+  summary: DirectorFinanceSummaryV3,
+): FinRep["summary"] => ({
+  approved: nnum(summary.totalApproved),
+  paid: nnum(summary.totalPaid),
+  partialPaid: nnum(summary.partialPaid),
+  toPay: nnum(summary.totalDebt),
+  overdueCount: nnum(summary.overdueCount),
+  overdueAmount: nnum(summary.overdueAmount),
+  criticalCount: nnum(summary.criticalCount),
+  criticalAmount: nnum(summary.criticalAmount),
+  partialCount: nnum(summary.partialCount),
+  debtCount: nnum(summary.debtCount),
+});
+
+const buildDirectorFinanceCanonicalSuppliers = (
+  supplierRows: DirectorFinanceSupplierRowV3[],
+): FinSupplierDebt[] =>
+  [...supplierRows]
+    .map((row) => ({
+      supplier: financeTextOrFallback(row.supplierName, DASH),
+      count: nnum(row.invoiceCount),
+      approved: nnum(row.payable),
+      paid: nnum(row.paid),
+      toPay: nnum(row.debt),
+      overdueCount: nnum(row.overdueCount),
+      criticalCount: nnum(row.criticalCount),
+    }))
+    .sort((left, right) => right.toPay - left.toPay);
+
+const buildDirectorFinanceCanonicalRep = (
+  summary: DirectorFinanceSummaryV3,
+  supplierRows: DirectorFinanceSupplierRowV3[],
+): FinRep => ({
+  summary: buildDirectorFinanceCanonicalSummary(summary),
+  report: {
+    suppliers: buildDirectorFinanceCanonicalSuppliers(supplierRows),
+  },
+});
 
 const adaptDirectorFinanceMetaV3Payload = (value: unknown): DirectorFinanceMetaV3 => {
   const payload = asFinanceRecord(value);
@@ -1094,8 +1154,26 @@ const adaptDirectorFinancePanelScopeV3Payload = (value: unknown): DirectorFinanc
   const payload = asFinanceRecord(value);
   const pagination = asFinanceRecord(payload.pagination);
   const supplierRowsPayload = payload.supplierRows ?? payload.supplier_rows;
+  const legacyPanelScope = adaptDirectorFinancePanelScopePayload(payload);
+  const summaryV3 = adaptDirectorFinanceSummaryV3Payload(payload.summary_v3 ?? payload.summaryV3);
+  const supplierRows = Array.isArray(supplierRowsPayload)
+    ? supplierRowsPayload.map(normalizeDirectorFinanceSupplierRowV3)
+    : [];
+  const hasCanonicalSummary =
+    summaryV3.supplierRowCount > 0 ||
+    summaryV3.rowCount > 0 ||
+    summaryV3.totalApproved > 0 ||
+    summaryV3.totalPaid > 0 ||
+    summaryV3.totalDebt > 0 ||
+    summaryV3.totalOverpayment > 0 ||
+    supplierRows.length > 0;
+  const displayFinRep = hasCanonicalSummary
+    ? buildDirectorFinanceCanonicalRep(summaryV3, supplierRows)
+    : legacyPanelScope;
   return {
-    ...adaptDirectorFinancePanelScopePayload(payload),
+    ...legacyPanelScope,
+    summary: displayFinRep.summary,
+    report: displayFinRep.report,
     rows: Array.isArray(payload.rows) ? payload.rows.map(normalizeDirectorFinanceRowV2) : [],
     pagination: {
       limit: nnum(pagination.limit),
@@ -1103,11 +1181,10 @@ const adaptDirectorFinancePanelScopeV3Payload = (value: unknown): DirectorFinanc
       total: nnum(pagination.total),
     },
     summaryV2: adaptDirectorFinanceSummaryV2Payload(payload.summary_v2 ?? payload.summaryV2),
-    summaryV3: adaptDirectorFinanceSummaryV3Payload(payload.summary_v3 ?? payload.summaryV3),
-    supplierRows: Array.isArray(supplierRowsPayload)
-      ? supplierRowsPayload.map(normalizeDirectorFinanceSupplierRowV3)
-      : [],
+    summaryV3,
+    supplierRows,
     meta: adaptDirectorFinanceMetaV3Payload(payload.meta),
+    displayMode: hasCanonicalSummary ? "canonical_v3" : "fallback_legacy",
   };
 };
 

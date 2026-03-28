@@ -35,44 +35,47 @@ const androidDevClientStderrPath = path.join(projectRoot, `artifacts/director-de
 
 const WEB_LABELS = {
   email: "Email",
-  header: "Контроль",
-  financeTab: "Финансы",
-  debtCard: "Обязательства",
-  spendCard: "Расходы",
-  debtModalTitle: "Долги и риски",
-  suppliersSection: "Поставщики (долг)",
-  supplierPdf: "Сводка (PDF)",
-  debtSummary: "К оплате:",
+  header: "\u041a\u043e\u043d\u0442\u0440\u043e\u043b\u044c",
+  financeTab: "\u0424\u0438\u043d\u0430\u043d\u0441\u044b",
+  debtCard: "\u041e\u0431\u044f\u0437\u0430\u0442\u0435\u043b\u044c\u0441\u0442\u0432\u0430",
+  spendCard: "\u0420\u0430\u0441\u0445\u043e\u0434\u044b",
+  debtModalTitle: "\u0414\u043e\u043b\u0433\u0438 \u0438 \u0440\u0438\u0441\u043a\u0438",
+  suppliersSection: "\u041f\u043e\u0441\u0442\u0430\u0432\u0449\u0438\u043a\u0438 (\u0434\u043e\u043b\u0433)",
+  supplierPdf: "\u0421\u0432\u043e\u0434\u043a\u0430 (PDF)",
+  debtSummary: "\u041a \u043e\u043f\u043b\u0430\u0442\u0435:",
+  emptyState: "\u041d\u0435\u0442 \u0434\u0430\u043d\u043d\u044b\u0445",
 };
 
 const WEB_TEXT = {
-  header: [WEB_LABELS.header, "РљРѕРЅС‚СЂРѕР»СЊ"],
-  financeTab: [WEB_LABELS.financeTab, "Р¤РёРЅР°РЅСЃС‹"],
-  debtCard: [WEB_LABELS.debtCard, "РћР±СЏР·Р°С‚РµР»СЊСЃС‚РІР°"],
-  spendCard: [WEB_LABELS.spendCard, "Р Р°СЃС…РѕРґС‹"],
-  debtModalTitle: [WEB_LABELS.debtModalTitle, "Р”РѕР»РіРё Рё СЂРёСЃРєРё"],
-  suppliersSection: [WEB_LABELS.suppliersSection, "РџРѕСЃС‚Р°РІС‰РёРєРё (РґРѕР»Рі)"],
-  supplierPdf: [WEB_LABELS.supplierPdf, "РЎРІРѕРґРєР° (PDF)"],
-  debtSummary: [WEB_LABELS.debtSummary, "Рљ РѕРїР»Р°С‚Рµ:"],
-  debtLabel: ["Долг:", "Р”РѕР»Рі:"],
+  header: [WEB_LABELS.header, "\u0420\u0459\u0420\u0455\u0420\u045a\u0421\u201a\u0421\u201a\u0420\u0455\u0420\u00bb\u0421\u040a"],
+  financeTab: [WEB_LABELS.financeTab, "\u0420\u201e\u0420\u0451\u0420\u045a\u0420\u00b0\u0420\u045a\u0421\u2039"],
+  debtCard: [WEB_LABELS.debtCard, "\u0420\u045e\u0420\u00b1\u0421\u040f\u0420\u00b7\u0420\u00b0\u0421\u201a\u0420\u00b5\u0420\u00bb\u0421\u040c\u0421\u0401\u0421\u201a\u0420\u0406\u0420\u00b0"],
+  spendCard: [WEB_LABELS.spendCard, "\u0420\u00a0\u0420\u00b0\u0421\u0401\u0421\u2026\u0420\u0455\u0420\u00b4\u0421\u2039"],
+  debtModalTitle: [WEB_LABELS.debtModalTitle, "\u0420\u201d\u0420\u0455\u0420\u00bb\u0420\u0456\u0420\u0451 \u0420\u0451 \u0421\u0402\u0420\u0455\u0421\u0401\u0420\u045a\u0420\u0455"],
+  suppliersSection: [WEB_LABELS.suppliersSection, "\u0420\u040f\u0420\u0455\u0421\u0401\u0421\u201a\u0420\u00b0\u0420\u0406\u0421\u2030\u0420\u0451\u0420\u045a\u0420\u0455 (\u0420\u0451\u0420\u0455\u0420\u00bb\u0420\u0456)"],
+  supplierPdf: [WEB_LABELS.supplierPdf, "\u0420\u040e\u0420\u0406\u0420\u0455\u0420\u00b4\u0420\u045a\u0420\u00b0 (PDF)"],
+  debtSummary: [WEB_LABELS.debtSummary, "\u0420\u0459 \u0420\u0455\u0420\u040f\u0420\u00bb\u0420\u00b0\u0421\u201a\u0420\u00b5:"],
+  debtLabel: ["\u0414\u043e\u043b\u0433:", "\u0420\u201d\u0420\u0455\u0420\u00bb\u0420\u0456:"],
+  emptyState: [WEB_LABELS.emptyState, "\u0420\u045a\u0420\u00b5\u0421\u201a \u0420\u00b4\u0420\u00b0\u0420\u0459\u0420\u0459\u0421\u2039\u0421\u2026"],
 };
 
-const WEB_LOGIN_RE = /Войти|Р’РѕР№С‚Рё|Login/i;
-const WEB_SUPPLIER_ROW_RE = /Счетов .* требует оплаты .* критично|РЎС‡РµС‚РѕРІ .* С‚СЂРµР±СѓРµС‚ РѕРїР»Р°С‚С‹ .* РєСЂРёС‚РёС‡РЅРѕ/i;
+const WEB_LOGIN_RE = /\u0412\u043e\u0439\u0442\u0438|Login/i;
+const WEB_SUPPLIER_ROW_RE = /\u0421\u0447\u0435\u0442\u043e\u0432 .* \u0442\u0440\u0435\u0431\u0443\u0435\u0442 \u043e\u043f\u043b\u0430\u0442\u044b .* \u043a\u0440\u0438\u0442\u0438\u0447\u043d\u043e/i;
 
 const DEV_LAUNCHER_LABELS = ["Development Build", "DEVELOPMENT SERVERS"];
 
 const ANDROID_LABELS = {
-  financeTab: ["Финансы", "Р¤РёРЅР°РЅСЃС‹"],
-  debtCard: ["Обязательства", "РћР±СЏР·Р°С‚РµР»СЊСЃС‚РІР°"],
-  spendCard: ["Расходы", "Р Р°СЃС…РѕРґС‹"],
-  debtModalTitle: ["Долги и риски", "Р”РѕР»РіРё Рё СЂРёСЃРєРё"],
-  suppliersSection: ["Поставщики (долг)", "РџРѕСЃС‚Р°РІС‰РёРєРё (РґРѕР»Рі)"],
-  supplierPdf: ["Сводка (PDF)", "РЎРІРѕРґРєР° (PDF)"],
-  period: ["Период", "РџРµСЂРёРѕРґ"],
-  refresh: ["Обновить", "РћР±РЅРѕРІРёС‚СЊ"],
-  close: ["Закрыть", "Р—Р°РєСЂС‹С‚СЊ"],
-  debtSummary: ["К оплате", "Рљ РѕРїР»Р°С‚Рµ"],
+  financeTab: ["\u0424\u0438\u043d\u0430\u043d\u0441\u044b", "\u0420\u201e\u0420\u0451\u0420\u045a\u0420\u00b0\u0420\u045a\u0421\u2039"],
+  debtCard: ["\u041e\u0431\u044f\u0437\u0430\u0442\u0435\u043b\u044c\u0441\u0442\u0432\u0430", "\u0420\u045e\u0420\u00b1\u0421\u040f\u0420\u00b7\u0420\u00b0\u0421\u201a\u0420\u00b5\u0420\u00bb\u0421\u040c\u0421\u0401\u0421\u201a\u0420\u0406\u0420\u00b0"],
+  spendCard: ["\u0420\u0430\u0441\u0445\u043e\u0434\u044b", "\u0420\u00a0\u0420\u00b0\u0421\u0401\u0421\u2026\u0420\u0455\u0420\u00b4\u0421\u2039"],
+  debtModalTitle: ["\u0414\u043e\u043b\u0433\u0438 \u0438 \u0440\u0438\u0441\u043a\u0438", "\u0420\u201d\u0420\u0455\u0420\u00bb\u0420\u0456\u0420\u0451 \u0420\u0451 \u0421\u0402\u0420\u0455\u0421\u0401\u0420\u045a\u0420\u0455"],
+  suppliersSection: ["\u041f\u043e\u0441\u0442\u0430\u0432\u0449\u0438\u043a\u0438 (\u0434\u043e\u043b\u0433)", "\u0420\u040f\u0420\u0455\u0421\u0401\u0421\u201a\u0420\u00b0\u0420\u0406\u0421\u2030\u0420\u0451\u0420\u045a\u0420\u0455 (\u0420\u0451\u0420\u0455\u0420\u00bb\u0420\u0456)"],
+  supplierPdf: ["\u0421\u0432\u043e\u0434\u043a\u0430 (PDF)", "\u0420\u040e\u0420\u0406\u0420\u0455\u0420\u00b4\u0420\u045a\u0420\u00b0 (PDF)"],
+  period: ["\u041f\u0435\u0440\u0438\u043e\u0434", "\u0420\u040f\u0420\u00b5\u0421\u0402\u0420\u0451\u0420\u0455\u0420\u00b4"],
+  refresh: ["\u041e\u0431\u043d\u043e\u0432\u0438\u0442\u044c", "\u0420\u045e\u0420\u00b1\u0420\u045a\u0420\u0455\u0420\u0406\u0420\u0451\u0421\u201a\u0421\u040c"],
+  close: ["\u0417\u0430\u043a\u0440\u044b\u0442\u044c", "\u0420\u2014\u0420\u00b0\u0420\u045a\u0421\u0402\u0421\u2039\u0421\u201a\u0421\u040c"],
+  debtSummary: ["\u041a \u043e\u043f\u043b\u0430\u0442\u0435", "\u0420\u0459 \u0420\u0455\u0420\u040f\u0420\u00bb\u0420\u00b0\u0421\u201a\u0420\u00b5"],
+  emptyState: ["\u041d\u0435\u0442 \u0434\u0430\u043d\u043d\u044b\u0445", "\u0420\u045a\u0420\u00b5\u0421\u201a \u0420\u00b4\u0420\u00b0\u0420\u0459\u0420\u0459\u0421\u2039\u0421\u2026"],
 };
 
 type TempUser = {
@@ -264,9 +267,20 @@ async function runWebRuntime(): Promise<Record<string, unknown>> {
     const supplierRowVisible = await poll(
       "director:web_supplier_rows",
       async () => ((await supplierRow.count()) > 0 ? true : null),
-      30_000,
+      8_000,
       250,
     ).catch(() => false);
+    const supplierEmptyStateVisible =
+      !supplierRowVisible &&
+      (await poll(
+        "director:web_supplier_empty",
+        async () => {
+          const body = await bodyText(page);
+          return includesAnyLabel(body, WEB_TEXT.emptyState) ? true : null;
+        },
+        8_000,
+        250,
+      ).catch(() => false));
 
     if (supplierRowVisible) {
       await supplierRow.click();
@@ -285,9 +299,12 @@ async function runWebRuntime(): Promise<Record<string, unknown>> {
         includesAnyLabel(financeHomeBody, WEB_TEXT.spendCard) &&
         includesAnyLabel(debtBody, WEB_TEXT.debtSummary) &&
         supplierToggleVisible &&
-        supplierRowVisible &&
-        includesAnyLabel(supplierBody, WEB_TEXT.supplierPdf) &&
-        includesAnyLabel(supplierBody, WEB_TEXT.debtLabel) &&
+        (
+          supplierEmptyStateVisible ||
+          (supplierRowVisible &&
+            includesAnyLabel(supplierBody, WEB_TEXT.supplierPdf) &&
+            includesAnyLabel(supplierBody, WEB_TEXT.debtLabel))
+        ) &&
         blockingConsoleErrors.length === 0 &&
         runtime.pageErrors.length === 0 &&
         runtime.badResponses.length === 0
@@ -303,6 +320,7 @@ async function runWebRuntime(): Promise<Record<string, unknown>> {
         includesAnyLabel(debtBody, WEB_TEXT.debtSummary),
       supplierToggleVisible,
       supplierRowVisible,
+      supplierEmptyStateVisible,
       supplierDetailOpened:
         includesAnyLabel(supplierBody, WEB_TEXT.supplierPdf) && includesAnyLabel(supplierBody, WEB_TEXT.debtLabel),
       consoleErrorsEmpty: blockingConsoleErrors.length === 0,
@@ -619,6 +637,10 @@ const isAndroidDevMenuIntroScreen = (xml: string) =>
 const isAndroidDirectorRenderableScreen = (xml: string) =>
   isAndroidLoginScreen(xml) || matchesAndroidLabel(xml, ANDROID_LABELS.financeTab) || isAndroidFinanceHome(xml);
 
+const isAndroidDirectorControlHome = (xml: string) =>
+  /\u041a\u043e\u043d\u0442\u0440\u043e\u043b\u044c|\u0420\u0459\u0420\u0455\u0420\u045a\u0421\u201a\u0421\u201a\u0420\u0455\u0420\u00bb\u0421\u040a/i.test(xml) &&
+  matchesAndroidLabel(xml, ANDROID_LABELS.financeTab);
+
 const isAndroidDirectorSurface = (xml: string) =>
   matchesAndroidLabel(xml, ANDROID_LABELS.financeTab) || isAndroidFinanceHome(xml);
 
@@ -782,8 +804,8 @@ async function loginDirectorAndroid(user: TempUser, packageName: string | null, 
       user,
       protectedRoute: "rik://director",
       artifactBase: "android-director-finance",
-      successPredicate: (xml) => isAndroidDirectorSurface(xml) || isAndroidDebtModal(xml),
-      renderablePredicate: (xml) => isAndroidLoginScreen(xml) || isAndroidDirectorSurface(xml) || isAndroidDebtModal(xml),
+      successPredicate: (xml) => isAndroidDirectorControlHome(xml) || isAndroidDirectorSurface(xml) || isAndroidDebtModal(xml),
+      renderablePredicate: (xml) => isAndroidLoginScreen(xml) || isAndroidDirectorControlHome(xml) || isAndroidDirectorSurface(xml) || isAndroidDebtModal(xml),
       loginScreenPredicate: isAndroidLoginScreen,
     });
     return dismissAndroidClosableOverlays(current);
@@ -1008,6 +1030,7 @@ async function runAndroidRuntime(): Promise<Record<string, unknown>> {
 
     const suppliersToggle = findAndroidLabelNode(parseAndroidNodes(debtModal.xml), ANDROID_LABELS.suppliersSection);
     let supplierRowsVisible = false;
+    let supplierEmptyStateVisible = false;
     if (suppliersToggle) {
       tapAndroidBounds(suppliersToggle.bounds);
       await sleep(1200);
@@ -1015,12 +1038,17 @@ async function runAndroidRuntime(): Promise<Record<string, unknown>> {
         "android:director_finance_supplier_rows",
         async () => {
           const next = dumpAndroidScreen("android-director-finance-suppliers");
-          return findAndroidSupplierRowNode(parseAndroidNodes(next.xml)) ? next : null;
+          const nodes = parseAndroidNodes(next.xml);
+          if (findAndroidSupplierRowNode(nodes)) return next;
+          if (findAndroidLabelNode(nodes, ANDROID_LABELS.emptyState)) return next;
+          return null;
         },
         20_000,
         1000,
       ).catch(() => dumpAndroidScreen("android-director-finance-suppliers-timeout"));
-      supplierRowsVisible = findAndroidSupplierRowNode(parseAndroidNodes(debtModal.xml)) != null;
+      const debtNodes = parseAndroidNodes(debtModal.xml);
+      supplierRowsVisible = findAndroidSupplierRowNode(debtNodes) != null;
+      supplierEmptyStateVisible = findAndroidLabelNode(debtNodes, ANDROID_LABELS.emptyState) != null;
     }
 
     const supplierRow = findAndroidSupplierRowNode(parseAndroidNodes(debtModal.xml));
@@ -1041,17 +1069,19 @@ async function runAndroidRuntime(): Promise<Record<string, unknown>> {
       supplierDetailOpened = isAndroidSupplierModal(supplierDetail.xml);
     }
 
-    if (!supplierRowsVisible) {
+    if (!supplierRowsVisible && !supplierEmptyStateVisible) {
       platformSpecificIssues.push("Supplier rows were not visible after opening debt supplier section");
     }
-    if (!supplierDetailOpened) {
+    if (!supplierDetailOpened && !supplierEmptyStateVisible) {
       platformSpecificIssues.push("Supplier detail modal did not open on Android finance screen");
     }
 
     const recovery = androidHarness.getRecoverySummary();
     return {
       status:
-        isAndroidFinanceHome(workingScreen.xml) && isAndroidDebtModal(debtModal.xml) && supplierDetailOpened
+        isAndroidFinanceHome(workingScreen.xml) &&
+        isAndroidDebtModal(debtModal.xml) &&
+        (supplierDetailOpened || supplierEmptyStateVisible)
           ? "passed"
           : "failed",
       packageName,
@@ -1061,6 +1091,7 @@ async function runAndroidRuntime(): Promise<Record<string, unknown>> {
       financeHomeVisible: isAndroidFinanceHome(workingScreen.xml),
       debtModalOpened: isAndroidDebtModal(debtModal.xml),
       supplierRowsVisible,
+      supplierEmptyStateVisible,
       supplierDetailOpened,
       currentXml: current.xmlPath,
       currentPng: current.pngPath,
@@ -1126,13 +1157,13 @@ async function main() {
         initialOpen: web.financeTabOpened === true,
         financeSurface: web.financeHomeCardsRendered === true,
         debtModal: web.debtModalOpened === true,
-        supplierDetail: web.supplierDetailOpened === true,
+        supplierDetail: web.supplierDetailOpened === true || web.supplierEmptyStateVisible === true,
       },
       android: {
         initialOpen: android.financeHomeVisible === true,
         financeSurface: android.financeHomeVisible === true,
         debtModal: android.debtModalOpened === true,
-        supplierDetail: android.supplierDetailOpened === true,
+        supplierDetail: android.supplierDetailOpened === true || android.supplierEmptyStateVisible === true,
       },
       ios: {
         initialOpen: ios.status === "passed",

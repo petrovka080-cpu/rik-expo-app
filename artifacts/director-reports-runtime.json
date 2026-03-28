@@ -7,14 +7,14 @@
     "disciplineScopeRequested": true,
     "reportScope200": true,
     "disciplineScope200": true,
-    "reportsControlsRendered": true,
+    "reportsControlsRendered": false,
     "workTabRendered": true,
     "pageErrorsEmpty": true,
     "consoleErrorsEmpty": true,
     "badResponsesEmpty": true,
     "screenshot": "artifacts/director-reports-web-smoke.png",
     "platformSpecificIssues": [],
-    "bodySample": "Контроль\nЗаявки\nПодряды\nФинансы\nСклад\nОтчёты\nФакт выдачи (склад)\nПериод: Весь период\nОткрыть\nОтчёт показывает факт выдачи со склада и дисциплину без заявки и без объекта.\n\n\nПрораб\n\n\nДиректор\n\n\nСнабженец\n\n\nБухгалтер\n\n\nСклад\n\n\nБезопасность\n\n\nМаркет\n\n\nКарта\n\n\nПрофиль\n\n\nОтчеты\n\n\nПодрядчик\n\nAI\nВесь период\n\n\n\n\n\nОбновление...\nВесь период (даты)\nГотовим файл...\nСклад\nВсе\nОбъекты · 8\n…\nМатериалы\nРаботы\nРасход / Закупки (%)\nРасход / Закупки: Н/Д\nПо стоимости за период\nРасход: 0 KGS · Закупки: 0 KGS\nНедостаточно цен для расчета базы закупок.\nExcel\nВсе объекты",
+    "bodySample": "Контроль\nЗаявки\nПодряды\nФинансы\nСклад\nОтчёты\nФакт выдачи (склад)\nПериод: Весь период\nОткрыть\nОтчёт показывает факт подтверждённых выдач со склада и дисциплину без заявки и без объекта.\n\n\nПрораб\n\n\nДиректор\n\n\nСнабженец\n\n\nБухгалтер\n\n\nСклад\n\n\nБезопасность\n\n\nМаркет\n\n\nКарта\n\n\nПрофиль\n\n\nОтчеты\n\n\nПодрядчик\n\nAI\nВесь период\n\n\n\n\n\nОбновление...\nВесь период (даты)\nГотовим файл...\nСклад\nВсе\nОбъекты по выдачам · 8\n…\nМатериалы\nРаботы\nРасход / Закупки (%)\nРасход / Закупки: н/д\nПо стоимости за период\nРасход: 0 KGS · Закупки: 0 KGS\nНедостаточно цен для расчёта базы закупок.\nExcel\nВсе объекты по выдачам",
     "runtime": {
       "console": [
         {
@@ -63,6 +63,14 @@
         },
         {
           "type": "info",
+          "text": "[platform.observability] {screen: profile, surface: session_role, event: resolve_session_role, result: success, durationMs: 0}"
+        },
+        {
+          "type": "info",
+          "text": "[platform.observability] {screen: profile, surface: session_role, event: resolve_session_role, result: cache_hit, durationMs: null}"
+        },
+        {
+          "type": "info",
           "text": "[director.live] {sourcePath: director.lifecycle.realtime_auth, hasAccessToken: true}"
         },
         {
@@ -95,7 +103,11 @@
         },
         {
           "type": "info",
-          "text": "[director_works] open_reports_dispatch: 1ms"
+          "text": "[director_works] open_reports_dispatch: 0ms"
+        },
+        {
+          "type": "info",
+          "text": "[platform.observability] {screen: profile, surface: session_role, event: warm_session_profile, result: success, durationMs: 614}"
         },
         {
           "type": "info",
@@ -115,11 +127,11 @@
         },
         {
           "type": "info",
-          "text": "[platform.observability] {screen: director, surface: reports_scope, event: load_report_scope, result: success, durationMs: 639}"
+          "text": "[platform.observability] {screen: director, surface: reports_scope, event: load_report_scope, result: success, durationMs: 545}"
         },
         {
           "type": "info",
-          "text": "[platform.observability] {screen: director, surface: reports_scope, event: load_report_scope, result: success, durationMs: 586}"
+          "text": "[platform.observability] {screen: director, surface: reports_scope, event: load_report_scope, result: success, durationMs: 487}"
         },
         {
           "type": "info",
@@ -135,14 +147,6 @@
         },
         {
           "type": "info",
-          "text": "[director.live] {sourcePath: director.lifecycle.channel, status: SUBSCRIBED}"
-        },
-        {
-          "type": "info",
-          "text": "[director.live] {sourcePath: director.lifecycle.broadcast_channel, status: SUBSCRIBED}"
-        },
-        {
-          "type": "info",
           "text": "[director_works] tab_switch_to_works: 0ms"
         },
         {
@@ -151,7 +155,7 @@
         },
         {
           "type": "info",
-          "text": "[platform.observability] {screen: director, surface: reports_scope, event: load_report_scope, result: success, durationMs: 665}"
+          "text": "[platform.observability] {screen: director, surface: reports_scope, event: load_report_scope, result: success, durationMs: 562}"
         },
         {
           "type": "info",
@@ -228,7 +232,7 @@
       "gmsCleared": false,
       "devClientReachable": true
     },
-    "environmentRecoveryUsed": false,
+    "environmentRecoveryUsed": true,
     "gmsRecoveryUsed": false,
     "anrRecoveryUsed": false,
     "blankSurfaceRecovered": false,
@@ -243,8 +247,8 @@
     "reportsPng": "artifacts/android-director-reports-tab-2.png",
     "modalXml": "artifacts/android-director-reports-modal.xml",
     "modalPng": "artifacts/android-director-reports-modal.png",
-    "worksXml": "artifacts/android-director-reports-modal.xml",
-    "worksPng": "artifacts/android-director-reports-modal.png",
+    "worksXml": "artifacts/android-director-reports-works.xml",
+    "worksPng": "artifacts/android-director-reports-works.png",
     "platformSpecificIssues": []
   },
   "ios": {
@@ -260,7 +264,7 @@
     "androidPassed": true,
     "iosPassed": false,
     "runtimeVerified": true,
-    "environmentRecoveryUsed": false,
+    "environmentRecoveryUsed": true,
     "gmsRecoveryUsed": false,
     "anrRecoveryUsed": false,
     "blankSurfaceRecovered": false,
@@ -301,8 +305,8 @@
         "reportsPng": "artifacts/android-director-reports-tab-2.png",
         "modalXml": "artifacts/android-director-reports-modal.xml",
         "modalPng": "artifacts/android-director-reports-modal.png",
-        "worksXml": "artifacts/android-director-reports-modal.xml",
-        "worksPng": "artifacts/android-director-reports-modal.png"
+        "worksXml": "artifacts/android-director-reports-works.xml",
+        "worksPng": "artifacts/android-director-reports-works.png"
       }
     },
     "gate": "director_reports_runtime_verify"

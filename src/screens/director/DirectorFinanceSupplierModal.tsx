@@ -19,6 +19,8 @@ type Props = {
   fmtDateOnly: (iso?: string | null) => string;
 };
 
+type FlashListLayout = { size?: number };
+
 export default function DirectorFinanceSupplierModal(props: Props) {
   const supplier = props.supplier;
   const amount = Number(supplier?.amount ?? supplier?.toPay ?? 0);
@@ -54,7 +56,7 @@ export default function DirectorFinanceSupplierModal(props: Props) {
           {props.money(Number(invoice.amount ?? 0))} KGS
           {invoice.isCritical ? " · критично" : invoice.isOverdue ? " · требует оплаты" : ""}
           {invoice.approvedIso ? ` · утв. ${props.fmtDateOnly(invoice.approvedIso)}` : ""}
-          {invoice.invoiceIso ? ` · счет ${props.fmtDateOnly(invoice.invoiceIso)}` : ""}
+          {invoice.invoiceIso ? ` · счёт ${props.fmtDateOnly(invoice.invoiceIso)}` : ""}
           {invoice.dueIso ? ` · срок ${props.fmtDateOnly(invoice.dueIso)}` : ""}
         </Text>
       </View>
@@ -118,7 +120,7 @@ export default function DirectorFinanceSupplierModal(props: Props) {
       data={invoices}
       renderItem={renderInvoiceRow}
       keyExtractor={invoiceKeyExtractor}
-      overrideItemLayout={(layout: any) => {
+      overrideItemLayout={(layout: FlashListLayout) => {
         layout.size = 96;
       }}
       ListHeaderComponent={listHeader}

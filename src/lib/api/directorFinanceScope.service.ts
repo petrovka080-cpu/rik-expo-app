@@ -12,6 +12,8 @@ import {
   type FinanceRow,
 } from "../../screens/director/director.finance";
 
+type DirectorFinanceDisplayMode = DirectorFinancePanelScopeV3["displayMode"];
+
 export type DirectorFinanceScreenScopeIssueScope =
   | "finance_rows"
   | "spend_rows"
@@ -28,6 +30,7 @@ export type DirectorFinanceScreenScopeResult = {
   finRep: FinRep;
   finSpendSummary: FinSpendSummary;
   panelScope: DirectorFinancePanelScopeV3 | null;
+  financeDisplayMode: DirectorFinanceDisplayMode;
   issues: DirectorFinanceScreenScopeIssue[];
   supportRowsLoaded: boolean;
   cutoverMeta: {
@@ -43,6 +46,7 @@ export type DirectorFinanceScreenScopeResult = {
     financeRows: "legacy_accountant_inbox" | "not_loaded";
     spendRows: "legacy_spend_view" | "not_loaded";
     panelScope: "rpc_v3";
+    financeDisplayMode: DirectorFinanceDisplayMode;
   };
 };
 
@@ -238,6 +242,7 @@ export async function loadDirectorFinanceScreenScope(
     panelScope: resolvedPanelScope,
     finRep: { summary: resolvedPanelScope.summary, report: resolvedPanelScope.report },
     finSpendSummary: resolvedPanelScope.spend,
+    financeDisplayMode: resolvedPanelScope.displayMode,
     issues: primaryScope.issues,
     supportRowsLoaded,
     cutoverMeta: {
@@ -253,6 +258,7 @@ export async function loadDirectorFinanceScreenScope(
       financeRows: supportRowsLoaded ? "legacy_accountant_inbox" : "not_loaded",
       spendRows: supportRowsLoaded ? "legacy_spend_view" : "not_loaded",
       panelScope: "rpc_v3",
+      financeDisplayMode: resolvedPanelScope.displayMode,
     },
   };
   observation.success({
@@ -266,6 +272,7 @@ export async function loadDirectorFinanceScreenScope(
       financeRows: financeRows.length,
       spendRows: spendRows.length,
       financeSummary: result.sourceMeta.financeSummary,
+      financeDisplayMode: result.financeDisplayMode,
       spendSummary: result.sourceMeta.spendSummary,
       primaryOwner: result.cutoverMeta.primaryOwner,
       contractVersion: result.cutoverMeta.contractVersion,

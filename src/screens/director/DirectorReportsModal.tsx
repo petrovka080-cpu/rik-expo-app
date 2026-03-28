@@ -134,8 +134,8 @@ export default function DirectorReportsModal({
         <View style={s.mobMain}>
           <Text style={s.mobTitle} numberOfLines={2}>{item.name_human_ru || item.rik_code}</Text>
           <Text style={s.mobMeta} numberOfLines={2}>
-            {`Выдано: ${qAll} ${item.uom} · Док ${docs}`}
-            {qNoReq > 0 ? ` · Без заявки: ${qNoReq} (${docsNoReq} док)` : ""}
+            {`Выдано: ${qAll} ${item.uom} · Док. ${docs}`}
+            {qNoReq > 0 ? ` · Без заявки: ${qNoReq} (${docsNoReq} док.)` : ""}
           </Text>
         </View>
       </View>
@@ -177,6 +177,11 @@ export default function DirectorReportsModal({
           <Text style={s.mobMeta} numberOfLines={1}>{`Позиции: ${item.total_positions} · Локации: ${Number(item.location_count ?? locations.length)}`}</Text>
           <Text style={s.mobMeta} numberOfLines={1}>{`По заявке: ${item.req_positions} · Свободно: ${item.free_positions}`}</Text>
           {preview ? <Text style={s.mobMeta} numberOfLines={2}>{preview}</Text> : null}
+          {isMissingWork ? (
+            <Text style={[s.mobMeta, { color: "#FCA5A5" }]} numberOfLines={2}>
+              Позиции без заполненного work_name в подтверждённых выдачах.
+            </Text>
+          ) : null}
         </View>
       </Pressable>
     );
@@ -247,7 +252,7 @@ export default function DirectorReportsModal({
           <Text style={s.mobMeta}>{`Неоценено: ${Number(disSummary?.unpriced_issue_pct ?? 0)}%`}</Text>
         ) : null}
         {!repDisciplinePriceLoading && !hasCostBase ? (
-          <Text style={s.mobMeta}>Недостаточно цен для расчета базы закупок.</Text>
+          <Text style={s.mobMeta}>Недостаточно цен для расчёта базы закупок.</Text>
         ) : null}
       </View>
     </View>
@@ -342,7 +347,7 @@ export default function DirectorReportsModal({
               <Pressable onPress={() => {}} style={s.sheet}>
                 <View style={s.sheetHandle} />
                 <View style={{ flexDirection: "row", justifyContent: "space-between", paddingHorizontal: 14, paddingBottom: 10 }}>
-                  <Text style={{ color: UI.text, fontWeight: "900", fontSize: 16 }}>{`Объекты (${repOptObjects?.length ?? 0})`}</Text>
+                  <Text style={{ color: UI.text, fontWeight: "900", fontSize: 16 }}>{`Объекты по подтверждённым выдачам (${repOptObjects?.length ?? 0})`}</Text>
                   <Pressable onPress={onCloseRepObj}><Text style={{ color: UI.sub, fontWeight: "900" }}>Закрыть</Text></Pressable>
                 </View>
                 <FlashList
@@ -415,7 +420,7 @@ export default function DirectorReportsModal({
             <Text style={{ color: !repObjectName ? UI.text : UI.sub, fontWeight: "900" }}>Все</Text>
           </Pressable>
           <Pressable onPress={onOpenRepObj} style={[s.tab, repObjectName && s.tabActive, { marginRight: 8, marginBottom: 8 }]}>
-            <Text style={{ color: repObjectName ? UI.text : UI.sub, fontWeight: "900" }}>{`Объекты · ${(repOptObjects?.length ?? 0)}`}</Text>
+            <Text style={{ color: repObjectName ? UI.text : UI.sub, fontWeight: "900" }}>{`Объекты по выдачам · ${(repOptObjects?.length ?? 0)}`}</Text>
           </Pressable>
           {repObjectName ? (
             <Pressable onPress={onOpenRepObj} style={[s.tab, s.tabActive, { marginRight: 8, marginBottom: 8 }]}>
@@ -434,7 +439,7 @@ export default function DirectorReportsModal({
               <Text style={s.kpiValue}>{repLoading ? "…" : String(issuesTotal)}</Text>
             </View>
             <View style={[s.kpiPillHalf, { flex: 1 }]}>
-              <Text style={s.kpiLabel}>Позиции</Text>
+              <Text style={s.kpiLabel}>Позиций</Text>
               <Text style={s.kpiValue}>{repLoading ? "…" : String(itemsTotal)}</Text>
             </View>
           </View>
@@ -508,10 +513,9 @@ export default function DirectorReportsModal({
           onPress={() => void applyObjectFilter(null)}
           style={[s.openBtn, { paddingVertical: 10, paddingHorizontal: 14, backgroundColor: "rgba(255,255,255,0.06)" }]}
         >
-          <Text style={[s.openBtnText, { fontSize: 12 }]}>Все объекты</Text>
+          <Text style={[s.openBtnText, { fontSize: 12 }]}>Все объекты по выдачам</Text>
         </Pressable>
       </View>
     </DirectorFinanceCardModal>
   );
 }
-

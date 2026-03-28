@@ -5,6 +5,7 @@
   "debtModalOpened": true,
   "supplierToggleVisible": true,
   "supplierRowVisible": true,
+  "supplierEmptyStateVisible": false,
   "supplierDetailOpened": true,
   "consoleErrorsEmpty": true,
   "pageErrorsEmpty": true,

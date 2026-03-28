@@ -333,13 +333,13 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
         });
       } catch (e: unknown) {
         if (reqId !== reportReqSeqRef.current) return;
-        const message = getErrorMessage(e, "Не удалось получить отчет");
+        const message = getErrorMessage(e, "Не удалось получить отчёт");
         if (__DEV__) {
           console.warn("[director] fetchReport:", message);
         }
         if (!opts?.background) {
           setRepData(null);
-          Alert.alert("Не удалось получить отчет", message);
+          Alert.alert("Не удалось получить отчёт", message);
         }
       } finally {
         inFlightReportRef.current.delete(key);
@@ -528,12 +528,12 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
       }
     } catch (e: unknown) {
       if (scopeReqId !== scopeLoadSeqRef.current) return;
-      const message = getErrorMessage(e, "РќРµ СѓРґР°Р»РѕСЃСЊ РїРµСЂРµСЃС‡РёС‚Р°С‚СЊ РѕС‚С‡РµС‚");
+      const message = getErrorMessage(e, "Не удалось пересчитать отчёт");
       if (__DEV__) {
         console.warn("[director] syncScopeBothModes:", message);
       }
       setRepData(null);
-      Alert.alert("РќРµ СѓРґР°Р»РѕСЃСЊ РїРµСЂРµСЃС‡РёС‚Р°С‚СЊ РѕС‚С‡РµС‚", message);
+      Alert.alert("Не удалось пересчитать отчёт", message);
     } finally {
       if (scopeReqId === scopeLoadSeqRef.current) {
         setRepOptLoading(false);
@@ -576,7 +576,7 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
       } catch (e: unknown) {
         if (reqId !== optionsReqSeqRef.current) return;
         if (__DEV__) {
-          console.warn("[director] fetchReportOptions:", getErrorMessage(e, "Не удалось получить опции отчетов"));
+          console.warn("[director] fetchReportOptions:", getErrorMessage(e, "Не удалось получить опции отчётов"));
         }
         setRepOptObjects([]);
         setRepOptObjectIdByName({});
@@ -618,14 +618,14 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
       }
     } catch (e: unknown) {
       if (scopeReqId !== scopeLoadSeqRef.current) return;
-      const message = getErrorMessage(e, "Не удалось пересчитать отчет");
+      const message = getErrorMessage(e, "Не удалось пересчитать отчёт");
       if (__DEV__) {
         console.warn("[director] applyReportPeriod:", message);
       }
       setRepData(null);
       setRepOptObjects([]);
       setRepOptObjectIdByName({});
-      Alert.alert("Не удалось пересчитать отчет", message);
+      Alert.alert("Не удалось пересчитать отчёт", message);
     } finally {
       if (scopeReqId === scopeLoadSeqRef.current) {
         setRepOptLoading(false);
@@ -669,12 +669,12 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
       }
     } catch (e: unknown) {
       if (scopeReqId !== scopeLoadSeqRef.current) return;
-      const message = getErrorMessage(e, "Не удалось обновить отчет");
+      const message = getErrorMessage(e, "Не удалось обновить отчёт");
       if (__DEV__) {
         console.warn("[director] refreshReports:", message);
       }
       setRepData(null);
-      Alert.alert("Не удалось обновить отчет", message);
+      Alert.alert("Не удалось обновить отчёт", message);
     } finally {
       if (scopeReqId === scopeLoadSeqRef.current) {
         setRepOptLoading(false);
@@ -732,12 +732,12 @@ export function useDirectorReportsController({ fmtDateOnly }: Deps) {
         commitLoadedScope(scopeLoad, { includeDiscipline: false });
       } catch (e: unknown) {
         if (scopeReqId !== scopeLoadSeqRef.current) return;
-        const message = getErrorMessage(e, "РќРµ СѓРґР°Р»РѕСЃСЊ РїРѕР»СѓС‡РёС‚СЊ РѕС‚С‡РµС‚");
+        const message = getErrorMessage(e, "Не удалось получить отчёт");
         if (__DEV__) {
           console.warn("[director] openReports:", message);
         }
         setRepData(null);
-        Alert.alert("РќРµ СѓРґР°Р»РѕСЃСЊ РїРѕР»СѓС‡РёС‚СЊ РѕС‚С‡РµС‚", message);
+        Alert.alert("Не удалось получить отчёт", message);
       } finally {
         if (scopeReqId === scopeLoadSeqRef.current) {
           setRepOptLoading(false);

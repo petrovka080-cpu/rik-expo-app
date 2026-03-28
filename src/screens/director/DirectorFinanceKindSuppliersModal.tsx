@@ -1,5 +1,5 @@
 import React from "react";
-import { Text, Pressable } from "react-native";
+import { Pressable, Text } from "react-native";
 import { FlashList } from "@/src/ui/FlashList";
 import { UI, s } from "./director.styles";
 import type { FinKindSupplierRow, FinSupplierInput } from "./director.finance";
@@ -17,6 +17,8 @@ type Props = {
   money: (v: number) => string;
   onOpenSupplier: (payload: FinSupplierInput) => void;
 };
+
+type FlashListLayout = { size?: number };
 
 export default function DirectorFinanceKindSuppliersModal(props: Props) {
   if (!props.kindName) {
@@ -68,7 +70,7 @@ export default function DirectorFinanceKindSuppliersModal(props: Props) {
       data={props.list}
       renderItem={renderSupplierRow}
       keyExtractor={(item, index) => `${props.kindName}:${String(item.supplier || "—")}:${index}`}
-      overrideItemLayout={(layout: any) => {
+      overrideItemLayout={(layout: FlashListLayout) => {
         layout.size = 92;
       }}
       contentContainerStyle={{ paddingBottom: 24 }}

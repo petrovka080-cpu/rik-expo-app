@@ -4,7 +4,7 @@
   "androidPassed": true,
   "iosPassed": false,
   "runtimeVerified": true,
-  "environmentRecoveryUsed": false,
+  "environmentRecoveryUsed": true,
   "gmsRecoveryUsed": false,
   "anrRecoveryUsed": false,
   "blankSurfaceRecovered": false,
@@ -45,8 +45,8 @@
       "reportsPng": "artifacts/android-director-reports-tab-2.png",
       "modalXml": "artifacts/android-director-reports-modal.xml",
       "modalPng": "artifacts/android-director-reports-modal.png",
-      "worksXml": "artifacts/android-director-reports-modal.xml",
-      "worksPng": "artifacts/android-director-reports-modal.png"
+      "worksXml": "artifacts/android-director-reports-works.xml",
+      "worksPng": "artifacts/android-director-reports-works.png"
     }
   },
   "gate": "director_reports_runtime_verify"

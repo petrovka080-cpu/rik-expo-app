@@ -18,6 +18,8 @@ type Props = {
   openSupplier: (supplierRow: FinSupplierDebt) => void;
 };
 
+type FlashListLayout = { size?: number };
+
 const pct = (num: number, den: number) => {
   const a = Number(num ?? 0);
   const b = Number(den ?? 0);
@@ -154,7 +156,7 @@ export default function DirectorFinanceDebtModal(props: Props) {
       data={suppliersOpen ? suppliers : []}
       renderItem={renderSupplierRow}
       keyExtractor={keyExtractor}
-      overrideItemLayout={(layout: any) => {
+      overrideItemLayout={(layout: FlashListLayout) => {
         layout.size = 88;
       }}
       ListHeaderComponent={listHeader}

@@ -89,8 +89,7 @@ type Props = {
 };
 
 export default function DirectorDashboard(p: Props) {
-  const finRep = p.finRep;
-  const rep = finRep?.report;
+  const finSummary = p.finRep?.summary;
 
   const headerTitle = "Контроль";
   const headerPadTop = Platform.OS === "web" ? 10 : 0;
@@ -390,11 +389,11 @@ export default function DirectorDashboard(p: Props) {
               ListFooterComponent={
                 p.loadingPropsMore ? (
                   <Text style={{ opacity: 0.7, paddingHorizontal: 16, paddingBottom: 12, color: UI.sub }}>
-                    {"\u0417\u0430\u0433\u0440\u0443\u0437\u043a\u0430..."}
+                    {"Загрузка..."}
                   </Text>
                 ) : p.propsHasMore ? (
                   <Text style={{ opacity: 0.6, paddingHorizontal: 16, paddingBottom: 12, color: UI.sub }}>
-                    {"\u041f\u0440\u043e\u043a\u0440\u0443\u0442\u0438\u0442\u0435 \u0434\u043b\u044f \u0434\u043e\u0433\u0440\u0443\u0437\u043a\u0438"}
+                    {"Прокрутите для догрузки"}
                   </Text>
                 ) : null
               }
@@ -439,17 +438,17 @@ export default function DirectorDashboard(p: Props) {
           }}
           ListHeaderComponent={
             <View style={{ paddingHorizontal: 16, paddingBottom: 10 }}>
-              {rep?.debtCount != null ? (
+              {finSummary?.debtCount != null ? (
                 <View style={[s.mobCard, { marginBottom: 12 }]}>
                   <Text style={{ color: UI.text, fontWeight: "600" }} numberOfLines={1}>
                     К оплате:{" "}
                     <Text style={{ color: UI.sub, fontWeight: "600" }}>
-                      {p.money(rep?.debtAmount ?? 0)} KGS · {String(rep?.debtCount ?? 0)} сч.
+                      {p.money(finSummary.toPay ?? 0)} KGS · {String(finSummary.debtCount ?? 0)} сч.
                     </Text>
                   </Text>
-                  {rep?.overdueCount ? (
+                  {finSummary?.overdueCount ? (
                     <Text style={{ color: UI.sub, fontWeight: "600", marginTop: 6 }} numberOfLines={1}>
-                      Требует оплаты: {String(rep?.overdueCount ?? 0)} · критично: {String(rep?.criticalCount ?? 0)}
+                      Требует оплаты: {String(finSummary.overdueCount ?? 0)} · критично: {String(finSummary.criticalCount ?? 0)}
                     </Text>
                   ) : null}
                 </View>
@@ -494,7 +493,7 @@ export default function DirectorDashboard(p: Props) {
           </Pressable>
 
           <Text style={{ color: UI.sub, fontWeight: "600", opacity: 0.85 }}>
-            Отчёт показывает факт выдачи со склада и дисциплину без заявки и без объекта.
+            Отчёт показывает факт подтверждённых выдач со склада и дисциплину без заявки и без объекта.
           </Text>
         </View>
       )}

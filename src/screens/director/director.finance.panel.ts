@@ -24,7 +24,7 @@ import type { DirectorFinanceSupplierSelection } from "./directorUi.store";
 
 type BusyLike = { isBusy: (key: string) => boolean };
 
-const OVERPAY_KIND = "РџРµСЂРµРїР»Р°С‚С‹ / Р°РІР°РЅСЃС‹";
+const OVERPAY_KIND = "Переплаты / авансы";
 
 type Deps = {
   busy: BusyLike;
@@ -147,7 +147,7 @@ export function useDirectorFinancePanel({
           },
         });
         if (!opts?.suppressErrors) {
-          Alert.alert("Р¤РёРЅР°РЅСЃС‹", "РќРµ СѓРґР°Р»РѕСЃСЊ РѕС‚РєСЂС‹С‚СЊ РїРѕСЃС‚Р°РІС‰РёРєР°");
+          Alert.alert("Финансы", "Не удалось открыть поставщика");
         }
       } finally {
         setFinSupplierLoading(false);
@@ -210,7 +210,7 @@ export function useDirectorFinancePanel({
       busy,
       supabase,
       key: "pdf:director:finance",
-      label: "РћС‚РєСЂС‹РІР°СЋ PDF...",
+      label: "Открываю PDF...",
       descriptor: template,
       router,
     });
@@ -231,7 +231,7 @@ export function useDirectorFinancePanel({
   const onSupplierPdf = useCallback(async () => {
     const supName = financeText(finSupplier?.supplier ?? finSupplierSelection?.supplier);
     if (!supName) {
-      Alert.alert("PDF", "РџРѕСЃС‚Р°РІС‰РёРє РЅРµ РІС‹Р±СЂР°РЅ");
+      Alert.alert("PDF", "Поставщик не выбран");
       return;
     }
     const kindName = financeText(finSupplier?._kindName ?? finSupplierSelection?.kindName);
@@ -250,7 +250,7 @@ export function useDirectorFinancePanel({
       busy,
       supabase,
       key: `pdf:director:supplier:${supName}`,
-      label: "РћС‚РєСЂС‹РІР°СЋ PDF...",
+      label: "Открываю PDF...",
       descriptor: template,
       router,
     });
@@ -272,8 +272,8 @@ export function useDirectorFinancePanel({
 
   const financePeriodShort = useMemo(() => {
     return finFrom || finTo
-      ? `${finFrom ? fmtDateOnly(finFrom) : "вЂ”"} - ${finTo ? fmtDateOnly(finTo) : "вЂ”"}`
-      : "Р’РµСЃСЊ РїРµСЂРёРѕРґ";
+      ? `${finFrom ? fmtDateOnly(finFrom) : "—"} - ${finTo ? fmtDateOnly(finTo) : "—"}`
+      : "Весь период";
   }, [finFrom, finTo, fmtDateOnly]);
 
   const financeSupplierName = useMemo(() => {
@@ -281,16 +281,16 @@ export function useDirectorFinancePanel({
   }, [finSupplier, finSupplierSelection]);
 
   const financeTitle = useMemo(() => {
-    if (finPage === "debt") return "Р”РѕР»РіРё Рё СЂРёСЃРєРё";
-    if (finPage === "spend") return "Р Р°СЃС…РѕРґС‹ (РїРµСЂРёРѕРґ)";
-    if (finPage === "kind") return finKindName ? `${finKindName}: РџРѕСЃС‚Р°РІС‰РёРєРё` : "РџРѕСЃС‚Р°РІС‰РёРєРё";
+    if (finPage === "debt") return "Долги и риски";
+    if (finPage === "spend") return "Расходы (период)";
+    if (finPage === "kind") return finKindName ? `${finKindName}: Поставщики` : "Поставщики";
     if (finPage === "supplier") {
       const supplierName = financeSupplierName;
-      if (!supplierName || supplierName === "вЂ”") return "РџРѕСЃС‚Р°РІС‰РёРє";
-      if (/^\d+$/.test(supplierName) || supplierName.length < 3) return `РџРѕСЃС‚Р°РІС‰РёРє: ${supplierName}`;
+      if (!supplierName || supplierName === "—") return "Поставщик";
+      if (/^\d+$/.test(supplierName) || supplierName.length < 3) return `Поставщик: ${supplierName}`;
       return supplierName;
     }
-    return "Р¤РёРЅР°РЅСЃС‹";
+    return "Финансы";
   }, [finPage, finKindName, financeSupplierName]);
 
   const financeTopPdfKey = useMemo(() => {

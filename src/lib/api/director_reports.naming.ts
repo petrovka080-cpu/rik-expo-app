@@ -196,13 +196,39 @@ type NameSourcesProbe = {
   vrr: boolean;
 };
 
-let nameSourcesProbeCache: NameSourcesProbe | null = null;
+type NameSourcesProbeCacheEntry = {
+  value: NameSourcesProbe;
+  ts: number;
+};
+
+type MaterialNameResolutionSource =
+  | "catalog_name_overrides"
+  | "v_rik_names_ru"
+  | "balance_ledger"
+  | "unresolved_code_fallback";
+
+const NAME_SOURCES_PROBE_POSITIVE_TTL_MS = 5 * 60 * 1000;
+const NAME_SOURCES_PROBE_NEGATIVE_TTL_MS = 60 * 1000;
+
+let nameSourcesProbeCache: NameSourcesProbeCacheEntry | null = null;
 const materialNameResolveCache = new Map<string, string>();
 const materialNameResolveMissCache = new Set<string>();
 const materialNameResolveInFlight = new Map<string, Promise<Map<string, string>>>();
+const materialNameResolveSourceCache = new Map<string, MaterialNameResolutionSource>();
+
+const warnDirectorNaming = (operation: string, source: string, error: unknown) => {
+  const message = error instanceof Error ? error.message : String(error ?? "unknown_error");
+  console.warn("[director_reports.naming]", { operation, source, message });
+};
 
 async function probeNameSources(): Promise<NameSourcesProbe> {
-  if (nameSourcesProbeCache) return nameSourcesProbeCache;
+  const cached = nameSourcesProbeCache;
+  if (cached) {
+    const ttl = cached.value.vrr ? NAME_SOURCES_PROBE_POSITIVE_TTL_MS : NAME_SOURCES_PROBE_NEGATIVE_TTL_MS;
+    if (Date.now() - cached.ts < ttl) {
+      return cached.value;
+    }
+  }
 
   let vrr = false;
 
@@ -212,10 +238,18 @@ async function probeNameSources(): Promise<NameSourcesProbe> {
       .select("code,name_ru")
       .limit(1);
     vrr = !r.error;
-  } catch { }
+    if (r.error) {
+      warnDirectorNaming("probe", "v_rik_names_ru", r.error);
+    }
+  } catch (error) {
+    warnDirectorNaming("probe", "v_rik_names_ru", error);
+  }
 
-  nameSourcesProbeCache = { vrr };
-  return nameSourcesProbeCache;
+  nameSourcesProbeCache = {
+    value: { vrr },
+    ts: Date.now(),
+  };
+  return nameSourcesProbeCache.value;
 }
 
 const looksLikeMaterialCode = (v: unknown): boolean => {
@@ -306,13 +340,19 @@ async function fetchBestMaterialNamesByCode(codesRaw: string[]): Promise<Map<str
             .from(table)
             .select(selectCols)
             .in(codeField, part);
-          if (!q.error && Array.isArray(q.data)) {
+          if (q.error) {
+            warnDirectorNaming("fetch_source", table, q.error);
+            continue;
+          }
+          if (Array.isArray(q.data)) {
             for (const rowValue of q.data as unknown[]) {
               const row = asRecord(rowValue);
               put(sourceMap, row[codeField], row[nameField]);
             }
           }
-        } catch { }
+        } catch (error) {
+          warnDirectorNaming("fetch_source", table, error);
+        }
       }
       return sourceMap;
     };
@@ -326,9 +366,18 @@ async function fetchBestMaterialNamesByCode(codesRaw: string[]): Promise<Map<str
     ]);
 
     const resolved = new Map<string, string>();
-    for (const [code, name] of ledgerMap.entries()) resolved.set(code, name);
-    for (const [code, name] of rikMap.entries()) resolved.set(code, name);
-    for (const [code, name] of overrideMap.entries()) resolved.set(code, name);
+    for (const [code, name] of ledgerMap.entries()) {
+      resolved.set(code, name);
+      materialNameResolveSourceCache.set(code, "balance_ledger");
+    }
+    for (const [code, name] of rikMap.entries()) {
+      resolved.set(code, name);
+      materialNameResolveSourceCache.set(code, "v_rik_names_ru");
+    }
+    for (const [code, name] of overrideMap.entries()) {
+      resolved.set(code, name);
+      materialNameResolveSourceCache.set(code, "catalog_name_overrides");
+    }
     return resolved;
   };
 
@@ -347,11 +396,19 @@ async function fetchBestMaterialNamesByCode(codesRaw: string[]): Promise<Map<str
     materialNameResolveMissCache.delete(code);
   }
   for (const code of missingCodes) {
-    if (!resolvedMissing.has(code)) materialNameResolveMissCache.add(code);
+    if (!resolvedMissing.has(code)) {
+      materialNameResolveMissCache.add(code);
+      materialNameResolveSourceCache.set(code, "unresolved_code_fallback");
+    }
   }
 
   return out;
 }
+
+const getMaterialNameResolutionSource = (codeRaw: string): MaterialNameResolutionSource => {
+  const code = String(codeRaw ?? "").trim().toUpperCase();
+  return materialNameResolveSourceCache.get(code) ?? "unresolved_code_fallback";
+};
 
 async function enrichFactRowsMaterialNames(rows: DirectorFactRow[]): Promise<DirectorFactRow[]> {
   if (!Array.isArray(rows) || !rows.length) return rows;
@@ -437,6 +494,7 @@ export {
   looksLikeLevelCode,
   normMaterialName,
   fetchBestMaterialNamesByCode,
+  getMaterialNameResolutionSource,
   enrichFactRowsMaterialNames,
   fetchLevelNamesByCode,
   enrichFactRowsLevelNames,
