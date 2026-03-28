@@ -24,6 +24,38 @@ const writeJson = (targetPath: string, payload: unknown) => {
 };
 
 const countLines = (text: string) => text.split(/\r?\n/).length;
+const controllerSplitMarkers = [
+  "./accountant.actions",
+  "./accountant.repository",
+  "./useAccountantInboxController",
+  "./useAccountantHistoryController",
+];
+
+function resolveBaselineControllerRevision() {
+  const revisions = execSync(`git rev-list HEAD -- "${controllerPath}"`, {
+    cwd: projectRoot,
+    encoding: "utf8",
+  })
+    .split(/\r?\n/)
+    .map((value) => value.trim())
+    .filter(Boolean);
+
+  for (const revision of revisions) {
+    const text = execSync(`git show ${revision}:${controllerPath}`, {
+      cwd: projectRoot,
+      encoding: "utf8",
+    });
+    const usesSplitLayers = controllerSplitMarkers.every((marker) => text.includes(marker));
+    if (!usesSplitLayers) {
+      return { revision, text };
+    }
+  }
+
+  return {
+    revision: "HEAD",
+    text: readText(controllerPath),
+  };
+}
 
 const findAfterRealtimeFetch = (events: JsonRecord[]) => {
   const startIndex = events.findIndex(
@@ -41,10 +73,7 @@ const findAfterRealtimeFetch = (events: JsonRecord[]) => {
 };
 
 const currentController = readText(controllerPath);
-const previousController = execSync(`git show HEAD:${controllerPath}`, {
-  cwd: projectRoot,
-  encoding: "utf8",
-});
+const baselineController = resolveBaselineControllerRevision();
 const currentStore = readText(storePath);
 const windowingSummary = JSON.parse(
   readText("artifacts/accountant-windowing-wave1.summary.json"),
@@ -54,7 +83,7 @@ const realtimeWebArtifact = JSON.parse(
 ) as { events?: JsonRecord[] };
 const realtimeEvents = Array.isArray(realtimeWebArtifact.events) ? realtimeWebArtifact.events : [];
 
-const controllerBeforeLines = countLines(previousController);
+const controllerBeforeLines = countLines(baselineController.text);
 const controllerAfterLines = countLines(currentController);
 const controllerLineDelta = controllerBeforeLines - controllerAfterLines;
 const controllerUsesServicesDirectly =
@@ -88,6 +117,7 @@ const summary = {
       ? "GREEN"
       : "NOT GREEN",
   before: {
+    baselineRevision: baselineController.revision,
     controllerLines: controllerBeforeLines,
   },
   after: {

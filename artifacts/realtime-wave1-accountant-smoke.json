@@ -54,7 +54,7 @@
   "coalescing": {
     "recentGuardWorked": true,
     "inflightGuardWorked": true,
-    "skippedRecentEvents": 2,
+    "skippedRecentEvents": 1,
     "skippedInflightEvents": 1
   },
   "subscriptionStarted": true,

@@ -38,11 +38,12 @@ export function useAccountantScreenController(params: {
   }, [tab]);
 
   const [authReady, setAuthReady] = useState(false);
-  const [authResolved, setAuthResolved] = useState(false);
 
   const focusedRef = useRef(false);
   const lastFocusRefreshAtRef = useRef(0);
+  const lastHandledFocusEpochRef = useRef(0);
   const lastTabLoadRef = useRef<Tab | null>(null);
+  const [focusEpoch, setFocusEpoch] = useState(0);
 
   useEffect(() => {
     let alive = true;
@@ -52,7 +53,6 @@ export function useAccountantScreenController(params: {
         const { data } = await supabase.auth.getSession();
         if (!alive) return;
         setAuthReady(Boolean(data?.session?.user));
-        setAuthResolved(true);
       } catch (error) {
         recordPlatformObservability({
           screen: "accountant",
@@ -66,7 +66,6 @@ export function useAccountantScreenController(params: {
         });
         if (!alive) return;
         setAuthReady(false);
-        setAuthResolved(true);
       }
     };
 
@@ -75,7 +74,6 @@ export function useAccountantScreenController(params: {
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
       if (!alive) return;
       setAuthReady(Boolean(session?.user));
-      setAuthResolved(true);
     });
 
     return () => {
@@ -136,22 +134,38 @@ export function useAccountantScreenController(params: {
   useFocusEffect(
     useCallback(() => {
       focusedRef.current = true;
-      lastTabLoadRef.current = tabRef.current;
-      const surface = tabRef.current === tabHistory ? "history_list" : "inbox_list";
-      const event = tabRef.current === tabHistory ? "load_history" : "load_inbox";
+      setFocusEpoch((value) => value + 1);
+
+      return () => {
+        focusedRef.current = false;
+      };
+    }, []),
+  );
+
+  useEffect(() => {
+    syncHistoryFilterLoad();
+  }, [syncHistoryFilterLoad]);
+
+  useEffect(() => {
+    if (!focusedRef.current) return;
+
+    const surface = tabRef.current === tabHistory ? "history_list" : "inbox_list";
+    const event = tabRef.current === tabHistory ? "load_history" : "load_inbox";
+    if (!authReady) {
+      recordPlatformGuardSkip("auth_not_ready", {
+        screen: "accountant",
+        surface,
+        event,
+        trigger: "focus",
+        extra: { tab: tabRef.current },
+      });
+      return;
+    }
+    if (freezeWhileOpen) return;
+
+    const isNewFocus = lastHandledFocusEpochRef.current !== focusEpoch;
+    if (isNewFocus) {
       const now = Date.now();
-      if (!authReady) {
-        recordPlatformGuardSkip("auth_not_ready", {
-          screen: "accountant",
-          surface,
-          event,
-          trigger: "focus",
-          extra: { tab: tabRef.current },
-        });
-        return () => {
-          focusedRef.current = false;
-        };
-      }
       if (
         isPlatformGuardCoolingDown({
           lastAt: lastFocusRefreshAtRef.current,
@@ -166,30 +180,22 @@ export function useAccountantScreenController(params: {
           trigger: "focus",
           extra: { tab: tabRef.current },
         });
-        return () => {
-          focusedRef.current = false;
-        };
+        return;
       }
-
       lastFocusRefreshAtRef.current = now;
-      if (tabRef.current !== tabHistory) {
-        primeInboxPreviewForTab(tabRef.current);
-      }
-      if (tabRef.current === tabHistory) {
-        void loadHistory(true, "focus");
-      } else {
-        void loadInbox(true, tabRef.current, "focus");
-      }
+      lastHandledFocusEpochRef.current = focusEpoch;
+    }
 
-      return () => {
-        focusedRef.current = false;
-      };
-    }, [authReady, loadHistory, loadInbox, primeInboxPreviewForTab, tabHistory]),
-  );
-
-  useEffect(() => {
-    syncHistoryFilterLoad();
-  }, [syncHistoryFilterLoad]);
+    lastTabLoadRef.current = tabRef.current;
+    if (tabRef.current !== tabHistory) {
+      primeInboxPreviewForTab(tabRef.current);
+    }
+    if (tabRef.current === tabHistory) {
+      void loadHistory(true, "focus");
+      return;
+    }
+    void loadInbox(true, tabRef.current, "focus");
+  }, [authReady, focusEpoch, freezeWhileOpen, loadHistory, loadInbox, primeInboxPreviewForTab, tabHistory]);
 
   useEffect(() => {
     if (!authReady) return;
@@ -206,19 +212,6 @@ export function useAccountantScreenController(params: {
     }
     void loadInbox(true, tab);
   }, [authReady, freezeWhileOpen, loadHistory, loadInbox, resetObservedHistoryKey, tab, tabHistory]);
-
-  useEffect(() => {
-    if (!authResolved || !authReady) return;
-    if (!focusedRef.current) return;
-    if (freezeWhileOpen) return;
-
-    if (tabRef.current === tabHistory) {
-      resetObservedHistoryKey();
-      void loadHistory(true, "focus");
-      return;
-    }
-    void loadInbox(true, tabRef.current, "focus");
-  }, [authReady, authResolved, freezeWhileOpen, loadHistory, loadInbox, resetObservedHistoryKey, tabHistory]);
 
   const { onRefresh, onRefreshHistory, refreshCurrentVisibleScope } = createAccountantRefreshHandlers({
     loadInbox,

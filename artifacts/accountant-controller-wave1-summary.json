@@ -1,10 +1,11 @@
 {
   "status": "GREEN",
   "before": {
+    "baselineRevision": "3ff4660ec22b6e4c093ac2ab8c4d8ebd85c548aa",
     "controllerLines": 904
   },
   "after": {
-    "controllerLines": 274,
+    "controllerLines": 267,
     "newFiles": [
       "src/screens/accountant/accountant.actions.ts",
       "src/screens/accountant/accountant.repository.ts",

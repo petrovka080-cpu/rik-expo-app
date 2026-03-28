@@ -3,6 +3,7 @@ import type { Page } from "playwright";
 import {
   admin,
   baseUrl,
+  bodyText,
   cleanupTempUser,
   countEvents,
   createTempUser,
@@ -57,16 +58,35 @@ type PlatformResult = {
   fioConfirmed?: boolean;
 };
 
+function normalizeSurfaceText(value: string) {
+  return value.replace(/\s+/g, " ").trim();
+}
+
 async function waitForAccountantSurface(page: Page) {
-  await waitForObservability(
-    page,
+  await poll(
     "accountant:surface_ready",
-    (event) =>
-      event.screen === "accountant" &&
-      ((event.event === "load_inbox" && event.result === "success") ||
-        (event.event === "content_ready" &&
-          (event.surface === "inbox_list" || event.surface === "history_list"))),
+    async () => {
+      const events = await getObservabilityEvents(page).catch(() => []);
+      const observedSurface = events.some(
+        (event) =>
+          event.screen === "accountant" &&
+          ((event.event === "load_inbox" && event.result === "success") ||
+            (event.event === "content_ready" &&
+              (event.surface === "inbox_list" || event.surface === "history_list"))),
+      );
+      if (observedSurface) return true;
+
+      const text = normalizeSurfaceText(await bodyText(page).catch(() => ""));
+      const hasRoleMarker = text.includes("Бухгалтер");
+      const hasTabMarker =
+        text.includes("К оплате") ||
+        text.includes("История") ||
+        text.includes("Подряды") ||
+        text.includes("На доработке");
+      return hasRoleMarker && hasTabMarker ? true : null;
+    },
     45_000,
+    250,
   );
 }
 

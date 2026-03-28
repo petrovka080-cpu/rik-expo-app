@@ -1,7 +1,7 @@
 Accountant Controller Wave 1
 before_lines=904
-after_lines=274
-delta=630
+after_lines=267
+delta=637
 
 moved:
 - repository: inbox/history page loading

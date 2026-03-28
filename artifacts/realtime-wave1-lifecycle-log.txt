@@ -16,8 +16,6 @@ accountant/web realtime_refresh_triggered :: accountant_proposals_sent | proposa
 accountant/web realtime_event_received :: accountant_notifications | notifications
 accountant/web realtime_event_received :: accountant_proposals_sent | proposals
 accountant/web realtime_refresh_skipped_recent :: accountant_proposals_sent | proposals | inbox:К оплате
-accountant/web realtime_event_received :: accountant_proposals_sent | proposals
-accountant/web realtime_refresh_skipped_recent :: accountant_proposals_sent | proposals | inbox:К оплате
 accountant/android realtime_event_received
 accountant/android realtime_refresh_triggered
 accountant/android realtime_event_received
