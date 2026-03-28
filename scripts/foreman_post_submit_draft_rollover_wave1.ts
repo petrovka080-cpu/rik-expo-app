@@ -28,8 +28,6 @@ const artifactOutPath = path.join(projectRoot, "artifacts/foreman-post-submit-dr
 const summaryOutPath = path.join(projectRoot, "artifacts/foreman-post-submit-draft-rollover-wave1.summary.json");
 const webSuccessPng = path.join(projectRoot, "artifacts/foreman-post-submit-draft-rollover-wave1.web-success.png");
 const webFailurePng = path.join(projectRoot, "artifacts/foreman-post-submit-draft-rollover-wave1.web-failure.png");
-const lastGoodWebPath = path.join(projectRoot, "artifacts/foreman-post-submit-draft-rollover-wave1.web-last-good.json");
-const lastGoodAndroidPath = path.join(projectRoot, "artifacts/foreman-post-submit-draft-rollover-wave1.android-last-good.json");
 
 type TempUser = {
   id: string;
@@ -1242,15 +1240,6 @@ async function run() {
         };
       });
 
-  if (web.status === "passed") {
-    writeJson(lastGoodWebPath, web);
-  } else {
-    const cachedWeb = readJsonFile<typeof web>(lastGoodWebPath);
-    if (cachedWeb?.status === "passed") {
-      web = cachedWeb;
-    }
-  }
-
   let androidSupport = skipAndroid
     ? ({
         status: "skipped" as const,
@@ -1282,15 +1271,6 @@ async function run() {
           platformSpecificIssues: [],
         };
       });
-
-  if (androidSupport.androidPassed) {
-    writeJson(lastGoodAndroidPath, androidSupport);
-  } else {
-    const cachedAndroid = readJsonFile<typeof androidSupport>(lastGoodAndroidPath);
-    if (cachedAndroid?.androidPassed === true) {
-      androidSupport = cachedAndroid;
-    }
-  }
 
   const iosResidual =
     androidSupport.iosResidual ||

@@ -22,8 +22,6 @@ const artifactOutPath = path.join(projectRoot, "artifacts/foreman-post-submit-dr
 const summaryOutPath = path.join(projectRoot, "artifacts/foreman-post-submit-draft-rollover-wave1.summary.json");
 const webSuccessPng = path.join(projectRoot, "artifacts/foreman-post-submit-draft-rollover-wave1.web-success.png");
 const webFailurePng = path.join(projectRoot, "artifacts/foreman-post-submit-draft-rollover-wave1.web-failure.png");
-const lastGoodWebPath = path.join(projectRoot, "artifacts/foreman-post-submit-draft-rollover-wave1.web-last-good.json");
-const lastGoodAndroidPath = path.join(projectRoot, "artifacts/foreman-post-submit-draft-rollover-wave1.android-last-good.json");
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 const quoteWindowsArg = (value) => /[\s"]/u.test(value) ? `"${value.replace(/"/g, '\\"')}"` : value;
 const delegatedRunFlag = "FOREMAN_POST_SUBMIT_PROOF_COMPILED";
@@ -932,14 +930,6 @@ async function run() {
       error: error instanceof Error ? error.message : String(error)
     };
   });
-  if (web.status === "passed") {
-    writeJson(lastGoodWebPath, web);
-  } else {
-    const cachedWeb = readJsonFile(lastGoodWebPath);
-    if (cachedWeb?.status === "passed") {
-      web = cachedWeb;
-    }
-  }
   let androidSupport = skipAndroid ? {
     status: "skipped",
     error: "skipped by FOREMAN_POST_SUBMIT_SKIP_ANDROID",
@@ -969,14 +959,6 @@ async function run() {
       platformSpecificIssues: []
     };
   });
-  if (androidSupport.androidPassed) {
-    writeJson(lastGoodAndroidPath, androidSupport);
-  } else {
-    const cachedAndroid = readJsonFile(lastGoodAndroidPath);
-    if (cachedAndroid?.androidPassed === true) {
-      androidSupport = cachedAndroid;
-    }
-  }
   const iosResidual = androidSupport.iosResidual || (process.platform === "win32" ? "xcrun is unavailable on Windows host; iOS simulator cannot be started here" : null);
   const fullPayload = {
     generatedAt: (/* @__PURE__ */ new Date()).toISOString(),

@@ -1,16 +1,16 @@
 {
-  "status": "failed",
+  "status": "passed",
   "webPassed": true,
-  "androidPassed": false,
+  "androidPassed": true,
   "iosPassed": false,
   "iosResidual": "xcrun is unavailable on this host; iOS simulator cannot be started from Windows",
-  "proofPassed": false,
+  "proofPassed": true,
   "scenariosPassed": {
     "submitSuccessCleanState": true,
     "failedSubmitPreservesLocal": true,
     "historyIntact": true,
     "noDuplicateResurrection": true,
-    "directorHandoff": false
+    "directorHandoff": true
   },
   "artifacts": {
     "proof": "artifacts/foreman-post-submit-draft-rollover-wave1.json",
@@ -22,7 +22,10 @@
     "android": {
       "supportSummary": "artifacts/foreman-request-sync-runtime.summary.json",
       "supportPayload": "artifacts/foreman-request-sync-runtime.json",
-      "android": null
+      "android": {
+        "currentXml": "artifacts/android-foreman-request-sync-route-1.xml",
+        "currentPng": "artifacts/android-foreman-request-sync-route-1.png"
+      }
     }
   }
 }
