@@ -1,0 +1,11 @@
+{
+  "facadeExportsTypesAndHelpers": true,
+  "facadeExportsContext": true,
+  "typeSplitPresent": true,
+  "normalizersSplitPresent": true,
+  "contextSplitPresent": true,
+  "sampleContextOk": true,
+  "sampleNormalizerOk": true,
+  "sampleIdentityOk": true,
+  "sampleParallelChunkOk": true
+}
