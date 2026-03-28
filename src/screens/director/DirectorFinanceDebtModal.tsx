@@ -1,8 +1,11 @@
 import React from "react";
 import { Pressable, Text, View } from "react-native";
+
 import { FlashList } from "@/src/ui/FlashList";
-import { UI, s } from "./director.styles";
+
+import type { DirectorFinanceCanonicalScope } from "./director.readModels";
 import type { FinRep, FinSupplierDebt } from "./director.finance";
+import { UI, s } from "./director.styles";
 
 type Props = {
   visible?: boolean;
@@ -13,6 +16,8 @@ type Props = {
   onRefresh?: () => void;
   onPdf?: () => void;
   rep?: FinRep | null;
+  truth?: DirectorFinanceCanonicalScope["obligations"] | null;
+  diagnostics?: DirectorFinanceCanonicalScope["diagnostics"] | null;
   money: (v: number) => string;
   FIN_CRITICAL_DAYS: number;
   openSupplier: (supplierRow: FinSupplierDebt) => void;
@@ -26,6 +31,9 @@ const pct = (num: number, den: number) => {
   if (!b || b <= 0) return 0;
   return Math.round((a / b) * 100);
 };
+
+const modeLabel = (diagnostics: DirectorFinanceCanonicalScope["diagnostics"] | null | undefined) =>
+  diagnostics?.displayMode === "canonical_v3" ? "canonical_v3" : "fallback_legacy";
 
 export default function DirectorFinanceDebtModal(props: Props) {
   const rep = props.rep;
@@ -45,9 +53,12 @@ export default function DirectorFinanceDebtModal(props: Props) {
   const criticalCount = rep?.summary?.criticalCount ?? 0;
   const criticalAmount = rep?.summary?.criticalAmount ?? 0;
   const debtCount = rep?.summary?.debtCount ?? 0;
-  const debtAmount = rep?.summary?.toPay ?? 0;
+  const approvedAmount = props.truth?.approved ?? rep?.summary?.approved ?? 0;
+  const paidAmount = props.truth?.paid ?? rep?.summary?.paid ?? 0;
+  const debtAmount = props.truth?.debt ?? rep?.summary?.toPay ?? 0;
   const overduePct = pct(overdueAmount, debtAmount);
   const criticalPct = pct(criticalAmount, debtAmount);
+
   const keyExtractor = React.useCallback(
     (item: FinSupplierDebt, index: number) => `${String(item.supplier ?? "supplier")}:${index}`,
     [],
@@ -90,7 +101,33 @@ export default function DirectorFinanceDebtModal(props: Props) {
   const listHeader = React.useMemo(
     () => (
       <View>
-        <Text style={{ color: "#F59E0B", fontWeight: "900" }} numberOfLines={2}>
+        <Text style={{ color: UI.text, fontWeight: "900" }} numberOfLines={2}>
+          Утверждено по предложениям:{" "}
+          <Text style={{ color: UI.sub }}>{props.loading ? "..." : `${props.money(approvedAmount)} KGS`}</Text>
+        </Text>
+
+        <Text style={{ color: UI.text, fontWeight: "900", marginTop: 8 }} numberOfLines={2}>
+          Оплачено:{" "}
+          <Text style={{ color: UI.sub }}>{props.loading ? "..." : `${props.money(paidAmount)} KGS`}</Text>
+        </Text>
+
+        <Text style={{ color: UI.text, fontWeight: "900", marginTop: 8 }} numberOfLines={2}>
+          Долг по предложениям:{" "}
+          <Text style={{ color: UI.sub }}>
+            {props.loading ? "..." : `${debtCount} сч.`} · {props.loading ? "..." : `${props.money(debtAmount)} KGS`}
+          </Text>
+        </Text>
+
+        <Text style={[s.mobMeta, { marginTop: 8 }]} numberOfLines={3}>
+          {props.truth?.debtFormulaHint ??
+            "Долг считается по каждому предложению отдельно. Переплата по одному поставщику не уменьшает долг по другому."}
+        </Text>
+
+        <Text style={[s.mobMeta, { marginTop: 6 }]} numberOfLines={2}>
+          {`Режим: ${modeLabel(props.diagnostics)} · Обязательства: invoice-level · Источник: ${props.diagnostics?.financeSummarySource ?? "summary_legacy"}`}
+        </Text>
+
+        <Text style={{ color: "#F59E0B", fontWeight: "900", marginTop: 14 }} numberOfLines={2}>
           Требует оплаты:{" "}
           <Text style={{ color: UI.sub }}>
             {props.loading ? "..." : `${overdueCount} сч.`} · {props.loading ? "..." : `${props.money(overdueAmount)} KGS`}
@@ -107,13 +144,6 @@ export default function DirectorFinanceDebtModal(props: Props) {
             </Text>
           </Text>
         ) : null}
-
-        <Text style={{ color: UI.text, fontWeight: "900", marginTop: 10 }} numberOfLines={2}>
-          К оплате:{" "}
-          <Text style={{ color: UI.sub }}>
-            {props.loading ? "..." : `${debtCount} сч.`} · {props.loading ? "..." : `${props.money(debtAmount)} KGS`}
-          </Text>
-        </Text>
 
         <Pressable
           onPress={() => setSuppliersOpen((current) => !current)}
@@ -147,7 +177,7 @@ export default function DirectorFinanceDebtModal(props: Props) {
         </Pressable>
       </View>
     ),
-    [criticalAmount, criticalCount, criticalPct, debtAmount, debtCount, overdueAmount, overdueCount, overduePct, props, suppliers, suppliersOpen],
+    [approvedAmount, criticalAmount, criticalCount, criticalPct, debtAmount, debtCount, overdueAmount, overdueCount, overduePct, paidAmount, props, suppliers, suppliersOpen],
   );
 
   return (

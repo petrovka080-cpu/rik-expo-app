@@ -199,6 +199,7 @@ function DirectorScreen() {
           finPage={vm.finPage}
           finLoading={vm.finLoading}
           finRep={vm.finRep}
+          finScope={vm.finScope}
           finSpendSummary={vm.finSpendSummary}
           finKindName={vm.finKindName}
           finKindList={vm.finKindList}

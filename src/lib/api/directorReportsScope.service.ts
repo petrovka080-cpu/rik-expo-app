@@ -6,6 +6,8 @@ import { beginPlatformObservability } from "../observability/platformObservabili
 import type {
   DirectorReportsCanonicalDiagnostics,
   DirectorReportsCanonicalSummary,
+  DirectorNamingHealthStatus,
+  DirectorNamingSourceStatus,
 } from "../../screens/director/director.readModels";
 
 export type DirectorReportScopeOptionsState = {
@@ -134,6 +136,22 @@ const normalizeKey = (value: unknown): string => String(value ?? "").trim().toLo
 
 const isWithoutWorkBucket = (workTypeName: unknown): boolean =>
   normalizeKey(workTypeName).startsWith(normalizeKey(WITHOUT_WORK));
+
+const toNamingHealthStatus = (
+  status: DirectorNamingSourceStatus,
+): DirectorNamingHealthStatus => {
+  if (status === "ok") return "ok";
+  if (status === "missing") return "degraded";
+  return "failed";
+};
+
+const toCompositeNamingHealthStatus = (
+  statuses: DirectorNamingSourceStatus[],
+): DirectorNamingHealthStatus => {
+  if (statuses.some((status) => status === "ok")) return "ok";
+  if (statuses.some((status) => status === "missing")) return "degraded";
+  return "failed";
+};
 
 const normalizeOptionsState = (value: unknown): DirectorReportScopeOptionsState => {
   const record = asRecord(value);
@@ -297,10 +315,18 @@ const buildDirectorReportCanonicalDecorations = async (args: {
 
   const missingWorks = works.filter((work) => isWithoutWorkBucket(work.work_type_name));
   const itemsWithoutWorkName = missingWorks.reduce((sum, work) => sum + toFiniteNumber(work.total_positions), 0);
+  const totalWorkPositions = works.reduce((sum, work) => sum + toFiniteNumber(work.total_positions), 0);
   const locationsWithoutWorkName = missingWorks.reduce(
     (sum, work) => sum + Math.max(toFiniteNumber(work.location_count), Array.isArray(work.levels) ? work.levels.length : 0),
     0,
   );
+  const noWorkShare =
+    totalWorkPositions > 0
+      ? Math.round((itemsWithoutWorkName / totalWorkPositions) * 10000) / 100
+      : 0;
+  const objectCountExplanation = "Счётчик построен по подтверждённым выдачам со склада за выбранный период.";
+  const noWorkNameExplanation =
+    "Вид работ не был указан при подтверждённой выдаче. Это пробел исходных данных, а не ошибка интерфейса.";
 
   return {
     summary: {
@@ -308,8 +334,11 @@ const buildDirectorReportCanonicalDecorations = async (args: {
       objectCountLabel: "Объекты по подтверждённым выдачам",
       confirmedWarehouseObjectCount: objectCount,
       displayObjectCount: objectCount,
+      objectCountExplanation,
+      displayObjectCountExplanation: objectCountExplanation,
       displayObjectCountLabel: "Объекты по подтверждённым выдачам",
       noWorkNameCount: itemsWithoutWorkName,
+      noWorkNameExplanation: noWorkNameExplanation,
       unresolvedNamesCount: unresolvedCodes.size,
     },
     diagnostics: {
@@ -317,6 +346,19 @@ const buildDirectorReportCanonicalDecorations = async (args: {
         vrr: namingProbe.statuses.vrr,
         overrides: namingProbe.statuses.overrides,
         ledger: namingProbe.statuses.ledger,
+        objectNamingSourceStatus: toCompositeNamingHealthStatus([
+          namingProbe.statuses.vrr,
+          namingProbe.statuses.overrides,
+          namingProbe.statuses.ledger,
+        ]),
+        workNamingSourceStatus: toCompositeNamingHealthStatus([
+          namingProbe.statuses.vrr,
+          namingProbe.statuses.overrides,
+          namingProbe.statuses.ledger,
+        ]),
+        balanceViewStatus: toNamingHealthStatus(namingProbe.statuses.ledger),
+        namesViewStatus: toNamingHealthStatus(namingProbe.statuses.vrr),
+        overridesStatus: toNamingHealthStatus(namingProbe.statuses.overrides),
         resolvedNames: resolvedCodes.size,
         unresolvedCodes: toUniqueSortedList(unresolvedCodes),
         lastProbeAt: namingProbe.lastProbeAt,
@@ -328,7 +370,11 @@ const buildDirectorReportCanonicalDecorations = async (args: {
         workNameResolvedCount: Math.max(works.length - missingWorks.length, 0),
         itemsWithoutWorkName,
         locationsWithoutWorkName,
+        share: noWorkShare,
+        source: "warehouse_issues",
+        fallbackApplied: false,
         canResolveFromSource: false,
+        explanation: noWorkNameExplanation,
       },
       backendOwnerPreserved: true,
       transportBranch: args.transportBranch,

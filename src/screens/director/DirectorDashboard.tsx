@@ -419,6 +419,9 @@ export default function DirectorDashboard(p: Props) {
                   <Text style={{ color: UI.text, fontWeight: "600", fontSize: 14 }} numberOfLines={1}>
                     Обязательства
                   </Text>
+                  <Text style={{ color: UI.sub, fontWeight: "700", fontSize: 12, marginTop: 4 }} numberOfLines={2}>
+                    По предложениям и счетам. Долг считается отдельно по каждому предложению.
+                  </Text>
                 </Pressable>
               );
             }
@@ -431,15 +434,21 @@ export default function DirectorDashboard(p: Props) {
                 <Text style={{ color: UI.text, fontWeight: "600", fontSize: 14 }} numberOfLines={1}>
                   Расходы
                 </Text>
+                <Text style={{ color: UI.sub, fontWeight: "700", fontSize: 12, marginTop: 4 }} numberOfLines={2}>
+                  По аллокациям расходов. Этот блок не пересчитывает долг по предложениям.
+                </Text>
               </Pressable>
             );
           }}
           ListHeaderComponent={
             <View style={{ paddingHorizontal: 16, paddingBottom: 10 }}>
+              <Text style={[s.mobMeta, { marginBottom: 10 }]} numberOfLines={2}>
+                {`Режим: ${p.finScope?.mode === "canonical" ? "canonical_v3" : "fallback_legacy"} · Обязательства: invoice-level · Расходы: allocation-level`}
+              </Text>
               {finSummary?.debtCount != null ? (
                 <View style={[s.mobCard, { marginBottom: 12 }]}>
                   <Text style={{ color: UI.text, fontWeight: "600" }} numberOfLines={1}>
-                    К оплате:{" "}
+                    Долг по предложениям:{" "}
                     <Text style={{ color: UI.sub, fontWeight: "600" }}>
                       {p.money(finSummary.debtTotal ?? 0)} KGS · {String(finSummary.debtCount ?? 0)} сч.
                     </Text>

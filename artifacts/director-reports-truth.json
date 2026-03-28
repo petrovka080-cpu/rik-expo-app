@@ -1,0 +1,12 @@
+{
+  "gate": "director_reports_truth_verify",
+  "objectCountSource": "warehouse_confirmed_issues",
+  "objectCountValue": 8,
+  "objectCountSourceExplained": true,
+  "noWorkNameCount": 118,
+  "noWorkNameExplained": true,
+  "unresolvedNamesCount": 100,
+  "namingDiagnosticsVisible": true,
+  "backendOwnerPreserved": true,
+  "logicChanged": false
+}

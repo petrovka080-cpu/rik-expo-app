@@ -80,12 +80,14 @@ export default function DirectorReportsModal({
     objectOptions,
     objectCount,
     objectCountLabel,
+    objectCountExplanation,
     issuesTotal,
     issuesNoObj,
     itemsTotal,
     itemsNoReq,
     unresolvedNamesCount,
     noWorkNameCount,
+    noWorkNameExplanation,
     reportDiagnostics,
     sortedWorks,
     sortedWorkLevels,
@@ -143,6 +145,21 @@ export default function DirectorReportsModal({
             {qNoReq > 0 ? ` · Без заявки: ${qNoReq} (${docsNoReq} док.)` : ""}
           </Text>
         </View>
+        {noWorkNameCount > 0 ? (
+          <Text style={[s.mobMeta, { marginTop: 4 }]} numberOfLines={3}>
+            {`Без вида работ: ${noWorkNameCount}${reportDiagnostics ? ` (${reportDiagnostics.noWorkName.share}% позиций)` : ""} · ${noWorkNameExplanation}`}
+          </Text>
+        ) : null}
+        {unresolvedNamesCount > 0 ? (
+          <Text style={[s.mobMeta, { marginTop: 4, color: "#FBBF24" }]} numberOfLines={3}>
+            {`Неразрешённых кодов: ${unresolvedNamesCount}. Именование частично деградировало, но экран сохраняет backend-owned truth.`}
+          </Text>
+        ) : null}
+        {reportDiagnostics ? (
+          <Text style={[s.mobMeta, { marginTop: 4 }]} numberOfLines={3}>
+            {`Именование: объекты ${reportDiagnostics.naming.objectNamingSourceStatus} · работы ${reportDiagnostics.naming.workNamingSourceStatus} · names ${reportDiagnostics.naming.namesViewStatus} · overrides ${reportDiagnostics.naming.overridesStatus} · ledger ${reportDiagnostics.naming.balanceViewStatus}`}
+          </Text>
+        ) : null}
       </View>
     );
   }, []);
@@ -435,14 +452,20 @@ export default function DirectorReportsModal({
           {repOptLoading ? <Text style={{ color: UI.sub, fontWeight: "800", marginLeft: 4, marginTop: 8 }}>…</Text> : null}
         </View>
         <Text style={[s.mobMeta, { marginTop: 6 }]} numberOfLines={2}>{objectCountLabel}</Text>
-        {unresolvedNamesCount > 0 || noWorkNameCount > 0 ? (
-          <Text style={[s.mobMeta, { marginTop: 4 }]} numberOfLines={2}>
-            {`Неразрешённых кодов: ${unresolvedNamesCount} · Без вида работ: ${noWorkNameCount}`}
+        <Text style={[s.mobMeta, { marginTop: 4 }]} numberOfLines={3}>{objectCountExplanation}</Text>
+        {noWorkNameCount > 0 ? (
+          <Text style={[s.mobMeta, { marginTop: 4 }]} numberOfLines={3}>
+            {`Без вида работ: ${noWorkNameCount}${reportDiagnostics ? ` (${reportDiagnostics.noWorkName.share}% позиций)` : ""} · ${noWorkNameExplanation}`}
+          </Text>
+        ) : null}
+        {unresolvedNamesCount > 0 ? (
+          <Text style={[s.mobMeta, { marginTop: 4, color: "#FBBF24" }]} numberOfLines={3}>
+            {`Неразрешённых кодов: ${unresolvedNamesCount}. Именование частично деградировало, но экран сохраняет backend-owned truth.`}
           </Text>
         ) : null}
         {reportDiagnostics ? (
-          <Text style={[s.mobMeta, { marginTop: 4 }]} numberOfLines={2}>
-            {`Naming: v_rik_names_ru ${reportDiagnostics.naming.vrr} · overrides ${reportDiagnostics.naming.overrides} · ledger ${reportDiagnostics.naming.ledger}`}
+          <Text style={[s.mobMeta, { marginTop: 4 }]} numberOfLines={3}>
+            {`Именование: объекты ${reportDiagnostics.naming.objectNamingSourceStatus} · работы ${reportDiagnostics.naming.workNamingSourceStatus} · names ${reportDiagnostics.naming.namesViewStatus} · overrides ${reportDiagnostics.naming.overridesStatus} · ledger ${reportDiagnostics.naming.balanceViewStatus}`}
           </Text>
         ) : null}
       </View>

@@ -82,31 +82,23 @@
     },
     {
       "type": "info",
-      "text": "[platform.observability] {screen: profile, surface: session_role, event: warm_session_profile, result: success, durationMs: 599}"
+      "text": "[platform.observability] {screen: profile, surface: session_role, event: warm_session_profile, result: success, durationMs: 630}"
     },
     {
       "type": "info",
-      "text": "[director.repository] {phase: request, sourcePath: director.repository.fetchPendingRows, primaryPath: list_director_items_stable, primaryRowCount: 0, expectedRequestStatuses: Array(2)}"
+      "text": "[director.repository] {phase: request, sourcePath: director.repository.fetchPendingRows, primaryPath: list_director_items_stable, primaryRowCount: 6, expectedRequestStatuses: Array(2)}"
     },
     {
       "type": "info",
-      "text": "[director.repository] {phase: request, sourcePath: director.repository.loadPendingRowsFallback, requestSelector: submitted_at:not_null, expectedRequestStatuses: Array(2), visibleItemStatuses: Array(3)}"
+      "text": "[platform.observability] {screen: director, surface: finance_panel, event: load_finance_scope, result: success, durationMs: 670}"
     },
     {
       "type": "info",
-      "text": "[platform.observability] {screen: director, surface: finance_panel, event: load_finance_scope, result: success, durationMs: 1262}"
+      "text": "[director.live] {sourcePath: director.lifecycle.channel, status: TIMED_OUT}"
     },
     {
       "type": "info",
-      "text": "[director.repository] {phase: result, sourcePath: director.repository.loadPendingRowsFallback, requestCount: 60, requestStatusesSample: Array(4), syncResultLineCount: 0}"
-    },
-    {
-      "type": "info",
-      "text": "[director.repository] {phase: contract_mismatch, sourcePath: director.repository.fetchPendingRows, primaryPath: list_director_items_stable, primaryRowCount: 0, fallbackRowCount: 0}"
-    },
-    {
-      "type": "info",
-      "text": "[platform.observability] {screen: director, surface: finance_supplier_scope, event: load_supplier_scope, result: success, durationMs: 848}"
+      "text": "[director.live] {sourcePath: director.lifecycle.broadcast_channel, status: TIMED_OUT}"
     }
   ],
   "pageErrors": [],

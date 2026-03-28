@@ -1,24 +1,20 @@
 import React from "react";
 import { Pressable, Text, View } from "react-native";
+
+import type { DirectorFinanceCanonicalScope } from "./director.readModels";
+import { money, type FinKindSupplierRow, type FinRep, type FinSpendSummary, type FinSupplierInput, type FinSupplierPanelState } from "./director.finance";
 import { UI, s } from "./director.styles";
-import type { FinPage } from "./director.types";
-import type {
-  FinKindSupplierRow,
-  FinRep,
-  FinSpendSummary,
-  FinSupplierInput,
-  FinSupplierPanelState,
-} from "./director.finance";
-import { money } from "./director.finance";
 import DirectorFinanceDebtModal from "./DirectorFinanceDebtModal";
-import DirectorFinanceSpendModal from "./DirectorFinanceSpendModal";
 import DirectorFinanceKindSuppliersModal from "./DirectorFinanceKindSuppliersModal";
+import DirectorFinanceSpendModal from "./DirectorFinanceSpendModal";
 import DirectorFinanceSupplierModal from "./DirectorFinanceSupplierModal";
+import type { FinPage } from "./director.types";
 
 type Props = {
   finPage: FinPage;
   finLoading: boolean;
   finRep: FinRep;
+  finScope: DirectorFinanceCanonicalScope | null;
   finSpendSummary: FinSpendSummary;
   finKindName: string;
   finKindList: FinKindSupplierRow[];
@@ -33,10 +29,14 @@ type Props = {
   fmtDateOnly: (iso?: string | null) => string;
 };
 
+const getModeLabel = (scope: DirectorFinanceCanonicalScope | null): string =>
+  scope?.mode === "canonical" ? "canonical_v3" : "fallback_legacy";
+
 export default function DirectorFinanceContent({
   finPage,
   finLoading,
   finRep,
+  finScope,
   finSpendSummary,
   finKindName,
   finKindList,
@@ -55,11 +55,27 @@ export default function DirectorFinanceContent({
       <View>
         <Pressable onPress={() => pushFin("debt")} style={[s.mobCard, { marginBottom: 10 }]}>
           <Text style={{ color: UI.text, fontWeight: "900" }}>Обязательства</Text>
+          <Text style={{ color: UI.sub, fontWeight: "800", marginTop: 4 }} numberOfLines={2}>
+            По предложениям и счетам. Долг считается по каждому предложению отдельно.
+          </Text>
+          <Text style={{ color: UI.sub, fontWeight: "700", marginTop: 6 }} numberOfLines={1}>
+            {`Утверждено ${money(finScope?.obligations.approved ?? finRep?.summary?.approved ?? 0)} · Долг ${money(finScope?.obligations.debt ?? finRep?.summary?.toPay ?? 0)}`}
+          </Text>
         </Pressable>
 
         <Pressable onPress={() => pushFin("spend")} style={[s.mobCard, { marginBottom: 10 }]}>
           <Text style={{ color: UI.text, fontWeight: "900" }}>Расходы</Text>
+          <Text style={{ color: UI.sub, fontWeight: "800", marginTop: 4 }} numberOfLines={2}>
+            По аллокациям расходов. Этот блок не пересчитывает долг по предложениям.
+          </Text>
+          <Text style={{ color: UI.sub, fontWeight: "700", marginTop: 6 }} numberOfLines={1}>
+            {`Аллоцировано ${money(finScope?.spend.approved ?? finSpendSummary.header.approved)} · К оплате ${money(finScope?.spend.toPay ?? finSpendSummary.header.toPay)}`}
+          </Text>
         </Pressable>
+
+        <Text style={[s.mobMeta, { marginTop: 2 }]} numberOfLines={2}>
+          {`Режим: ${getModeLabel(finScope)} · Обязательства: invoice-level · Расходы: allocation-level`}
+        </Text>
       </View>
     );
   }
@@ -69,6 +85,8 @@ export default function DirectorFinanceContent({
       <DirectorFinanceDebtModal
         loading={finLoading}
         rep={finRep}
+        truth={finScope?.obligations ?? null}
+        diagnostics={finScope?.diagnostics ?? null}
         money={money}
         FIN_CRITICAL_DAYS={FIN_CRITICAL_DAYS}
         openSupplier={openSupplier}
@@ -82,6 +100,8 @@ export default function DirectorFinanceContent({
         visible={true}
         loading={finLoading}
         sum={finRep?.summary}
+        truth={finScope?.spend ?? null}
+        diagnostics={finScope?.diagnostics ?? null}
         spendSummary={finSpendSummary}
         money={money}
         onOpenKind={openFinKind}

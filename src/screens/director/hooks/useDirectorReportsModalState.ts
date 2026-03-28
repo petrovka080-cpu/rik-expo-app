@@ -97,6 +97,14 @@ export function useDirectorReportsModalState({
   const objectCountLabel = textOrFallback(summary?.displayObjectCountLabel, "Объекты по подтверждённым выдачам");
   const unresolvedNamesCount = toFiniteNumber(summary?.unresolvedNamesCount);
   const noWorkNameCount = toFiniteNumber(summary?.noWorkNameCount);
+  const objectCountExplanation = textOrFallback(
+    summary?.displayObjectCountExplanation ?? summary?.objectCountExplanation,
+    "Счётчик построен по подтверждённым выдачам со склада.",
+  );
+  const noWorkNameExplanation = textOrFallback(
+    summary?.noWorkNameExplanation ?? diagnostics?.noWorkName.explanation,
+    "Вид работ не был указан при подтверждённой выдаче.",
+  );
 
   React.useEffect(() => {
     workDetailCacheRef.current.clear();
@@ -249,12 +257,14 @@ export function useDirectorReportsModalState({
     objectOptions,
     objectCount,
     objectCountLabel,
+    objectCountExplanation,
     issuesTotal,
     issuesNoObj,
     itemsTotal,
     itemsNoReq,
     unresolvedNamesCount,
     noWorkNameCount,
+    noWorkNameExplanation,
     reportDiagnostics: diagnostics,
     sortedWorks,
     sortedWorkLevels,

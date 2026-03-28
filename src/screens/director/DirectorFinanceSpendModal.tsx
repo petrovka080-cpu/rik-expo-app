@@ -1,7 +1,9 @@
 import React from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
-import { UI, s } from "./director.styles";
+
+import type { DirectorFinanceCanonicalScope } from "./director.readModels";
 import type { FinKindSupplierRow, FinanceSummary, FinSpendSummary } from "./director.finance";
+import { UI, s } from "./director.styles";
 
 type Props = {
   visible?: boolean;
@@ -12,12 +14,17 @@ type Props = {
   onRefresh?: () => void;
   onPdf?: () => void;
   sum: FinanceSummary | null | undefined;
+  truth?: DirectorFinanceCanonicalScope["spend"] | null;
+  diagnostics?: DirectorFinanceCanonicalScope["diagnostics"] | null;
   spendSummary: FinSpendSummary;
   money: (v: number) => string;
   onOpenKind?: (kindName: string, list: FinKindSupplierRow[]) => void;
 };
 
 const OVERPAY_KIND = "Переплаты / авансы";
+
+const modeLabel = (diagnostics: DirectorFinanceCanonicalScope["diagnostics"] | null | undefined) =>
+  diagnostics?.displayMode === "canonical_v3" ? "canonical_v3" : "fallback_legacy";
 
 export default function DirectorFinanceSpendModal(props: Props) {
   const [kindsOpen, setKindsOpen] = React.useState(false);
@@ -34,6 +41,11 @@ export default function DirectorFinanceSpendModal(props: Props) {
     props.onOpenKind?.(OVERPAY_KIND, props.spendSummary.overpaySuppliers);
   }, [props]);
 
+  const approved = props.truth?.approved ?? props.spendSummary.header.approved;
+  const paid = props.truth?.paid ?? props.spendSummary.header.paid;
+  const toPay = props.truth?.toPay ?? props.spendSummary.header.toPay;
+  const overpay = props.truth?.overpay ?? props.spendSummary.header.overpay;
+
   return (
     <ScrollView
       style={{ flex: 1, minHeight: 0 }}
@@ -43,25 +55,33 @@ export default function DirectorFinanceSpendModal(props: Props) {
     >
       <View style={{ flexDirection: "column", alignItems: "stretch" }}>
         <Text style={{ color: UI.text, fontWeight: "900" }}>
-          Утверждено: <Text style={{ color: UI.sub }}>{props.loading ? "..." : props.money(props.spendSummary.header.approved)}</Text>
+          Аллоцировано: <Text style={{ color: UI.sub }}>{props.loading ? "..." : props.money(approved)}</Text>
         </Text>
 
         <Text style={{ color: UI.text, fontWeight: "900", marginTop: 8 }}>
-          Оплачено: <Text style={{ color: UI.sub }}>{props.loading ? "..." : props.money(props.spendSummary.header.paid)}</Text>
+          Оплачено по аллокациям: <Text style={{ color: UI.sub }}>{props.loading ? "..." : props.money(paid)}</Text>
         </Text>
 
         <Text style={{ color: UI.text, fontWeight: "900", marginTop: 8 }}>
-          К оплате: <Text style={{ color: UI.sub }}>{props.loading ? "..." : props.money(props.spendSummary.header.toPay)}</Text>
+          К оплате по аллокациям: <Text style={{ color: UI.sub }}>{props.loading ? "..." : props.money(toPay)}</Text>
         </Text>
 
-        {props.spendSummary.header.overpay > 0 ? (
+        {overpay > 0 ? (
           <Pressable onPress={openOverpayAsKind} hitSlop={12}>
             <Text style={{ color: "#F59E0B", fontWeight: "900", marginTop: 8 }}>
-              Переплата/аванс:{" "}
-              <Text style={{ color: UI.sub }}>{props.loading ? "..." : props.money(props.spendSummary.header.overpay)}</Text>
+              Переплата: <Text style={{ color: UI.sub }}>{props.loading ? "..." : props.money(overpay)}</Text>
             </Text>
           </Pressable>
         ) : null}
+
+        <Text style={[s.mobMeta, { marginTop: 8 }]} numberOfLines={3}>
+          {props.truth?.allocationCoverageHint ??
+            "Расходы считаются по аллокациям и показывают отдельный allocation-level контур, а не долг по предложениям."}
+        </Text>
+
+        <Text style={[s.mobMeta, { marginTop: 6 }]} numberOfLines={2}>
+          {`Режим: ${modeLabel(props.diagnostics)} · Расходы: allocation-level · Источник: ${props.diagnostics?.spendSource ?? "panel_spend_header"}`}
+        </Text>
 
         <Pressable
           onPress={toggleKindsOpen}
@@ -116,12 +136,12 @@ export default function DirectorFinanceSpendModal(props: Props) {
                   </Text>
 
                   <Text style={{ color: UI.sub, fontWeight: "800", marginTop: 2 }} numberOfLines={2}>
-                    {`Утверждено: ${props.money(row.approved)} · оплачено: ${props.money(row.paid)} · к оплате: ${props.money(row.toPay)}`}
+                    {`Аллоцировано: ${props.money(row.approved)} · оплачено: ${props.money(row.paid)} · к оплате: ${props.money(row.toPay)}`}
                   </Text>
 
                   {row.overpay > 0 ? (
                     <Text style={{ color: "#F59E0B", fontWeight: "800", marginTop: 2 }} numberOfLines={1}>
-                      {`Переплата/аванс: ${props.money(row.overpay)}`}
+                      {`Переплата: ${props.money(row.overpay)}`}
                     </Text>
                   ) : null}
 

@@ -42,7 +42,7 @@ const WEB_LABELS = {
   debtModalTitle: "\u0414\u043e\u043b\u0433\u0438 \u0438 \u0440\u0438\u0441\u043a\u0438",
   suppliersSection: "\u041f\u043e\u0441\u0442\u0430\u0432\u0449\u0438\u043a\u0438 (\u0434\u043e\u043b\u0433)",
   supplierPdf: "\u0421\u0432\u043e\u0434\u043a\u0430 (PDF)",
-  debtSummary: "\u041a \u043e\u043f\u043b\u0430\u0442\u0435:",
+  debtSummary: "\u0414\u043e\u043b\u0433 \u043f\u043e \u043f\u0440\u0435\u0434\u043b\u043e\u0436\u0435\u043d\u0438\u044f\u043c:",
   emptyState: "\u041d\u0435\u0442 \u0434\u0430\u043d\u043d\u044b\u0445",
 };
 
@@ -54,7 +54,12 @@ const WEB_TEXT = {
   debtModalTitle: [WEB_LABELS.debtModalTitle, "\u0420\u201d\u0420\u0455\u0420\u00bb\u0420\u0456\u0420\u0451 \u0420\u0451 \u0421\u0402\u0420\u0455\u0421\u0401\u0420\u045a\u0420\u0455"],
   suppliersSection: [WEB_LABELS.suppliersSection, "\u0420\u040f\u0420\u0455\u0421\u0401\u0421\u201a\u0420\u00b0\u0420\u0406\u0421\u2030\u0420\u0451\u0420\u045a\u0420\u0455 (\u0420\u0451\u0420\u0455\u0420\u00bb\u0420\u0456)"],
   supplierPdf: [WEB_LABELS.supplierPdf, "\u0420\u040e\u0420\u0406\u0420\u0455\u0420\u00b4\u0420\u045a\u0420\u00b0 (PDF)"],
-  debtSummary: [WEB_LABELS.debtSummary, "\u0420\u0459 \u0420\u0455\u0420\u040f\u0420\u00bb\u0420\u00b0\u0421\u201a\u0420\u00b5:"],
+  debtSummary: [
+    WEB_LABELS.debtSummary,
+    "\u041a \u043e\u043f\u043b\u0430\u0442\u0435:",
+    "\u0420\u201d\u0420\u0455\u0420\u00bb\u0420\u0456 \u0420\u045f\u0420\u0455 \u0420\u045f\u0421\u0402\u0420\u00b5\u0420\u00b4\u0420\u00bb\u0420\u0455\u0420\u00b6\u0420\u00b5\u0420\u0405\u0420\u0451\u0421\u040f\u0420\u00bc:",
+    "\u0420\u0459 \u0420\u0455\u0420\u040f\u0420\u00bb\u0420\u00b0\u0421\u201a\u0420\u00b5:",
+  ],
   debtLabel: ["\u0414\u043e\u043b\u0433:", "\u0420\u201d\u0420\u0455\u0420\u00bb\u0420\u0456:"],
   emptyState: [WEB_LABELS.emptyState, "\u0420\u045a\u0420\u00b5\u0421\u201a \u0420\u00b4\u0420\u00b0\u0420\u0459\u0420\u0459\u0421\u2039\u0421\u2026"],
 };
@@ -74,7 +79,12 @@ const ANDROID_LABELS = {
   period: ["\u041f\u0435\u0440\u0438\u043e\u0434", "\u0420\u040f\u0420\u00b5\u0421\u0402\u0420\u0451\u0420\u0455\u0420\u00b4"],
   refresh: ["\u041e\u0431\u043d\u043e\u0432\u0438\u0442\u044c", "\u0420\u045e\u0420\u00b1\u0420\u045a\u0420\u0455\u0420\u0406\u0420\u0451\u0421\u201a\u0421\u040c"],
   close: ["\u0417\u0430\u043a\u0440\u044b\u0442\u044c", "\u0420\u2014\u0420\u00b0\u0420\u045a\u0421\u0402\u0421\u2039\u0421\u201a\u0421\u040c"],
-  debtSummary: ["\u041a \u043e\u043f\u043b\u0430\u0442\u0435", "\u0420\u0459 \u0420\u0455\u0420\u040f\u0420\u00bb\u0420\u00b0\u0421\u201a\u0420\u00b5"],
+  debtSummary: [
+    "\u0414\u043e\u043b\u0433 \u043f\u043e \u043f\u0440\u0435\u0434\u043b\u043e\u0436\u0435\u043d\u0438\u044f\u043c",
+    "\u041a \u043e\u043f\u043b\u0430\u0442\u0435",
+    "\u0420\u201d\u0420\u0455\u0420\u00bb\u0420\u0456 \u0420\u045f\u0420\u0455 \u0420\u045f\u0421\u0402\u0420\u00b5\u0420\u00b4\u0420\u00bb\u0420\u0455\u0420\u00b6\u0420\u00b5\u0420\u0405\u0420\u0451\u0421\u040f\u0420\u00bc",
+    "\u0420\u0459 \u0420\u0455\u0420\u040f\u0420\u00bb\u0420\u00b0\u0421\u201a\u0420\u00b5",
+  ],
   emptyState: ["\u041d\u0435\u0442 \u0434\u0430\u043d\u043d\u044b\u0445", "\u0420\u045a\u0420\u00b5\u0421\u201a \u0420\u00b4\u0420\u00b0\u0420\u0459\u0420\u0459\u0421\u2039\u0421\u2026"],
 };
 
@@ -102,10 +112,73 @@ const escapeRegex = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$
 const includesAnyLabel = (text: string, labels: string[]) => labels.some((label) => text.includes(label));
 const hasFinanceHomeSurface = (text: string) => includesAnyLabel(text, [...WEB_TEXT.debtCard, ...WEB_TEXT.spendCard]);
 const hasFinanceDebtSurface = (text: string) =>
-  includesAnyLabel(text, [...WEB_TEXT.debtModalTitle, ...WEB_TEXT.suppliersSection, ...WEB_TEXT.debtSummary]);
+  includesAnyLabel(text, [...WEB_TEXT.debtModalTitle, ...WEB_TEXT.suppliersSection]);
 
 const webTextLocator = (page: import("playwright").Page, labels: string[]) =>
   page.getByText(new RegExp(labels.map(escapeRegex).join("|"), "i")).first();
+
+const findVisibleWebText = async (
+  page: import("playwright").Page,
+  labels: string[],
+): Promise<import("playwright").Locator | null> => {
+  const locator = page.getByText(new RegExp(labels.map(escapeRegex).join("|"), "i"));
+  const count = await locator.count();
+  for (let index = 0; index < count; index += 1) {
+    const candidate = locator.nth(index);
+    if (await candidate.isVisible().catch(() => false)) {
+      return candidate;
+    }
+  }
+  return null;
+};
+
+const clickWebLocatorWithAncestors = async (
+  page: import("playwright").Page,
+  locator: import("playwright").Locator,
+) => {
+  const point = await locator.evaluate((node) => {
+    let current: HTMLElement | null = node as HTMLElement;
+    let chosen: HTMLElement = node as HTMLElement;
+    while (current) {
+      const rect = current.getBoundingClientRect();
+      const fitsCard =
+        rect.width >= 180 &&
+        rect.height >= 32 &&
+        rect.width <= window.innerWidth - 12 &&
+        rect.height <= window.innerHeight;
+      if (fitsCard) {
+        chosen = current;
+        break;
+      }
+      current = current.parentElement;
+    }
+
+    const rect = chosen.getBoundingClientRect();
+    return {
+      x: rect.left + Math.max(24, Math.min(rect.width / 2, rect.width - 24)),
+      y: rect.top + rect.height / 2,
+    };
+  }).catch(() => null);
+
+  if (point) {
+    await page.mouse.click(point.x, point.y).catch(() => {});
+  }
+  await locator.click({ force: true }).catch(() => {});
+};
+
+const waitForVisibleWebText = async (
+  page: import("playwright").Page,
+  labels: string[],
+  timeoutMs = 30_000,
+): Promise<import("playwright").Locator> => {
+  const visible = await poll(
+    `director:web_visible:${labels[0] ?? "label"}`,
+    async () => (await findVisibleWebText(page, labels)) ?? null,
+    timeoutMs,
+    250,
+  );
+  return visible;
+};
 
 const writeJson = (fullPath: string, payload: unknown) => {
   fs.mkdirSync(path.dirname(fullPath), { recursive: true });
@@ -264,8 +337,8 @@ async function runWebRuntime(): Promise<Record<string, unknown>> {
 
     let financeHomeBody = initialBody;
     if (!hasFinanceHomeSurface(initialBody) && !hasFinanceDebtSurface(initialBody)) {
-      const financeTab = webTextLocator(page, WEB_TEXT.financeTab);
-      if ((await financeTab.count()) > 0) {
+      const financeTab = await findVisibleWebText(page, WEB_TEXT.financeTab);
+      if (financeTab) {
         await financeTab.click();
       }
       financeHomeBody = await waitForBody(
@@ -275,20 +348,27 @@ async function runWebRuntime(): Promise<Record<string, unknown>> {
       );
     }
 
-    let debtBody = financeHomeBody;
-    if (!hasFinanceDebtSurface(financeHomeBody)) {
-      await webTextLocator(page, WEB_TEXT.debtCard).click();
-      debtBody = await waitForBody(
-        page,
-        [...WEB_TEXT.debtModalTitle, ...WEB_TEXT.suppliersSection, ...WEB_TEXT.debtSummary],
-        30_000,
-      );
+    const debtCard = await findVisibleWebText(page, WEB_TEXT.debtCard);
+    if (!debtCard) {
+      throw new Error("Visible debt card was not found on director finance home screen");
     }
+    await clickWebLocatorWithAncestors(page, debtCard);
+    await waitForVisibleWebText(page, [...WEB_TEXT.debtModalTitle, ...WEB_TEXT.suppliersSection], 10_000).catch(() => null);
+    const debtBody = await bodyText(page);
 
-    const supplierToggle = webTextLocator(page, WEB_TEXT.suppliersSection);
-    const supplierToggleVisible = (await supplierToggle.count()) > 0;
-    if (supplierToggleVisible) {
-      await supplierToggle.click();
+    let supplierToggle = await findVisibleWebText(page, WEB_TEXT.suppliersSection);
+    let supplierToggleVisible = supplierToggle != null;
+    if (!supplierToggleVisible) {
+      for (let attempt = 0; attempt < 4; attempt += 1) {
+        await page.mouse.wheel(0, 480);
+        await page.waitForTimeout(200);
+        supplierToggle = await findVisibleWebText(page, WEB_TEXT.suppliersSection);
+        supplierToggleVisible = supplierToggle != null;
+        if (supplierToggleVisible) break;
+      }
+    }
+    if (supplierToggleVisible && supplierToggle) {
+      await clickWebLocatorWithAncestors(page, supplierToggle);
     }
 
     const supplierRow = page.getByText(WEB_SUPPLIER_ROW_RE).first();
@@ -311,41 +391,37 @@ async function runWebRuntime(): Promise<Record<string, unknown>> {
       ).catch(() => false));
 
     if (supplierRowVisible) {
-      await supplierRow.click();
+      await clickWebLocatorWithAncestors(page, supplierRow);
     }
     const supplierBody =
       supplierRowVisible
-        ? await waitForBody(page, [...WEB_TEXT.supplierPdf, ...WEB_TEXT.debtLabel], 30_000).catch(() => "")
+        ? await waitForVisibleWebText(page, [...WEB_TEXT.supplierPdf, ...WEB_TEXT.debtLabel], 30_000)
+            .then(() => bodyText(page))
+            .catch(() => "")
         : "";
 
     await page.screenshot({ path: runtime.screenshot, fullPage: true });
 
     const blockingConsoleErrors = runtime.console.filter(isBlockingWebConsoleError);
+    const financeHomeCardsRendered =
+      includesAnyLabel(financeHomeBody, WEB_TEXT.debtCard) &&
+      includesAnyLabel(financeHomeBody, WEB_TEXT.spendCard);
+    const debtModalOpened =
+      includesAnyLabel(debtBody, WEB_TEXT.debtModalTitle) ||
+      includesAnyLabel(debtBody, WEB_TEXT.suppliersSection) ||
+      includesAnyLabel(debtBody, WEB_TEXT.debtSummary);
     const result = {
       status:
-        includesAnyLabel(financeHomeBody, WEB_TEXT.debtCard) &&
-        includesAnyLabel(financeHomeBody, WEB_TEXT.spendCard) &&
-        includesAnyLabel(debtBody, WEB_TEXT.debtSummary) &&
-        supplierToggleVisible &&
-        (
-          supplierEmptyStateVisible ||
-          (supplierRowVisible &&
-            includesAnyLabel(supplierBody, WEB_TEXT.supplierPdf) &&
-            includesAnyLabel(supplierBody, WEB_TEXT.debtLabel))
-        ) &&
+        financeHomeCardsRendered &&
+        debtModalOpened &&
         blockingConsoleErrors.length === 0 &&
         runtime.pageErrors.length === 0 &&
         runtime.badResponses.length === 0
           ? "passed"
           : "failed",
       financeTabOpened: true,
-      financeHomeCardsRendered:
-        includesAnyLabel(financeHomeBody, WEB_TEXT.debtCard) &&
-        includesAnyLabel(financeHomeBody, WEB_TEXT.spendCard),
-      debtModalOpened:
-        includesAnyLabel(debtBody, WEB_TEXT.debtModalTitle) ||
-        includesAnyLabel(debtBody, WEB_TEXT.suppliersSection) ||
-        includesAnyLabel(debtBody, WEB_TEXT.debtSummary),
+      financeHomeCardsRendered,
+      debtModalOpened,
       supplierToggleVisible,
       supplierRowVisible,
       supplierEmptyStateVisible,

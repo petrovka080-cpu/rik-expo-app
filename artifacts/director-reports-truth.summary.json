@@ -1,0 +1,9 @@
+{
+  "gate": "director_reports_truth_verify",
+  "objectCountSourceExplained": true,
+  "noWorkNameExplained": true,
+  "namingDiagnosticsVisible": true,
+  "backendOwnerPreserved": true,
+  "logicChanged": false,
+  "green": true
+}

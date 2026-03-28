@@ -92,8 +92,12 @@ const buildDirectorFinanceCanonicalScope = (
 ): DirectorFinanceCanonicalScope => {
   const mode: DirectorFinanceCanonicalScope["mode"] =
     panelScope.displayMode === "canonical_v3" ? "canonical" : "fallback";
-  const semantics: DirectorFinanceCanonicalSemantics = mode === "canonical" ? "allocation" : "invoice";
+  const semantics: DirectorFinanceCanonicalSemantics = "invoice_level_obligations";
   const sourceVersion = trimText(panelScope.meta.payloadShapeVersion || panelScope.meta.sourceVersion) || "v3";
+  const obligationsDebtFormulaHint =
+    "Долг считается по каждому предложению отдельно. Переплата по одному поставщику не уменьшает долг по другому.";
+  const spendAllocationCoverageHint =
+    "Расходы считаются по аллокациям и показывают отдельный allocation-level контур, а не долг по предложениям.";
 
   if (mode === "canonical") {
     return {
@@ -125,6 +129,22 @@ const buildDirectorFinanceCanonicalScope = (
         semanticsMode: semantics,
         sourceVersion,
       })),
+      obligations: {
+        semantics: "invoice_level_obligations",
+        approved: toFiniteNumber(panelScope.summaryV3.totalApproved),
+        paid: toFiniteNumber(panelScope.summaryV3.totalPaid),
+        debt: toFiniteNumber(panelScope.summaryV3.totalDebt),
+        overpaymentCompensationApplied: false,
+        debtFormulaHint: obligationsDebtFormulaHint,
+      },
+      spend: {
+        semantics: "allocation_level_spend",
+        approved: toFiniteNumber(panelScope.spend.header.approved),
+        paid: toFiniteNumber(panelScope.spend.header.paid),
+        toPay: toFiniteNumber(panelScope.spend.header.toPay),
+        overpay: toFiniteNumber(panelScope.spend.header.overpay),
+        allocationCoverageHint: spendAllocationCoverageHint,
+      },
       diagnostics: {
         sourceVersion: trimText(panelScope.meta.sourceVersion) || "director_finance_panel_scope_v3",
         payloadShapeVersion: trimText(panelScope.meta.payloadShapeVersion) || "v3",
@@ -132,6 +152,9 @@ const buildDirectorFinanceCanonicalScope = (
         displayMode: panelScope.displayMode,
         owner: trimText(panelScope.meta.owner) || "backend",
         generatedAt: trimText(panelScope.meta.generatedAt) || null,
+        financeSummarySource: "summary_v3",
+        supplierSource: "supplier_rows_v3",
+        spendSource: "panel_spend_header",
       },
     };
   }
@@ -165,6 +188,22 @@ const buildDirectorFinanceCanonicalScope = (
       semanticsMode: semantics,
       sourceVersion,
     })),
+    obligations: {
+      semantics: "invoice_level_obligations",
+      approved: toFiniteNumber(panelScope.summary.approved),
+      paid: toFiniteNumber(panelScope.summary.paid),
+      debt: toFiniteNumber(panelScope.summary.toPay),
+      overpaymentCompensationApplied: false,
+      debtFormulaHint: obligationsDebtFormulaHint,
+    },
+    spend: {
+      semantics: "allocation_level_spend",
+      approved: toFiniteNumber(panelScope.spend.header.approved),
+      paid: toFiniteNumber(panelScope.spend.header.paid),
+      toPay: toFiniteNumber(panelScope.spend.header.toPay),
+      overpay: toFiniteNumber(panelScope.spend.header.overpay),
+      allocationCoverageHint: spendAllocationCoverageHint,
+    },
     diagnostics: {
       sourceVersion: trimText(panelScope.meta.sourceVersion) || "director_finance_panel_scope_v3",
       payloadShapeVersion: trimText(panelScope.meta.payloadShapeVersion) || "v3",
@@ -172,6 +211,9 @@ const buildDirectorFinanceCanonicalScope = (
       displayMode: panelScope.displayMode,
       owner: trimText(panelScope.meta.owner) || "backend",
       generatedAt: trimText(panelScope.meta.generatedAt) || null,
+      financeSummarySource: "summary_legacy",
+      supplierSource: "report_suppliers_legacy",
+      spendSource: "panel_spend_header",
     },
   };
 };

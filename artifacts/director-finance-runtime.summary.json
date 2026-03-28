@@ -22,7 +22,7 @@
       "initialOpen": true,
       "financeSurface": true,
       "debtModal": true,
-      "supplierDetail": true
+      "supplierDetail": false
     },
     "android": {
       "initialOpen": true,

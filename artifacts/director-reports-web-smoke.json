@@ -90,15 +90,11 @@
     },
     {
       "type": "info",
-      "text": "[director.repository] {phase: request, sourcePath: director.repository.fetchPendingRows, primaryPath: list_director_items_stable, primaryRowCount: 0, expectedRequestStatuses: Array(2)}"
+      "text": "[platform.observability] {screen: profile, surface: session_role, event: warm_session_profile, result: success, durationMs: 575}"
     },
     {
       "type": "info",
-      "text": "[director.repository] {phase: request, sourcePath: director.repository.loadPendingRowsFallback, requestSelector: submitted_at:not_null, expectedRequestStatuses: Array(2), visibleItemStatuses: Array(3)}"
-    },
-    {
-      "type": "info",
-      "text": "[platform.observability] {screen: profile, surface: session_role, event: warm_session_profile, result: success, durationMs: 596}"
+      "text": "[director.repository] {phase: request, sourcePath: director.repository.fetchPendingRows, primaryPath: list_director_items_stable, primaryRowCount: 6, expectedRequestStatuses: Array(2)}"
     },
     {
       "type": "info",
@@ -110,19 +106,7 @@
     },
     {
       "type": "info",
-      "text": "[director.repository] {phase: result, sourcePath: director.repository.loadPendingRowsFallback, requestCount: 60, requestStatusesSample: Array(4), syncResultLineCount: 0}"
-    },
-    {
-      "type": "info",
-      "text": "[director.repository] {phase: contract_mismatch, sourcePath: director.repository.fetchPendingRows, primaryPath: list_director_items_stable, primaryRowCount: 0, fallbackRowCount: 0}"
-    },
-    {
-      "type": "info",
-      "text": "[platform.observability] {screen: director, surface: reports_scope, event: load_report_scope, result: success, durationMs: 1807}"
-    },
-    {
-      "type": "info",
-      "text": "[platform.observability] {screen: director, surface: reports_scope, event: load_report_scope, result: success, durationMs: 1811}"
+      "text": "[platform.observability] {screen: director, surface: reports_scope, event: load_report_scope, result: success, durationMs: 1197}"
     },
     {
       "type": "info",
@@ -138,6 +122,10 @@
     },
     {
       "type": "info",
+      "text": "[platform.observability] {screen: director, surface: reports_scope, event: load_report_scope, result: success, durationMs: 1277}"
+    },
+    {
+      "type": "info",
       "text": "[director_works] tab_switch_to_works: 0ms"
     },
     {
@@ -146,7 +134,7 @@
     },
     {
       "type": "info",
-      "text": "[platform.observability] {screen: director, surface: reports_scope, event: load_report_scope, result: success, durationMs: 549}"
+      "text": "[platform.observability] {screen: director, surface: reports_scope, event: load_report_scope, result: success, durationMs: 547}"
     },
     {
       "type": "info",
