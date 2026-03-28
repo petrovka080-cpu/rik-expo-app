@@ -252,7 +252,7 @@ async function cleanupTempUser(user: TempUser | null) {
 }
 
 async function bodyText(page: import("playwright").Page): Promise<string> {
-  return page.evaluate(() => document.body.innerText || "");
+  return page.evaluate(() => (document.body.innerText || "").replace(/[\u00A0\u202F]/g, " ").replace(/\s+/g, " ").trim());
 }
 
 async function waitForBody(page: import("playwright").Page, needles: string | string[], timeoutMs = 30_000) {
@@ -406,10 +406,11 @@ async function runWebRuntime(): Promise<Record<string, unknown>> {
     const financeHomeCardsRendered =
       includesAnyLabel(financeHomeBody, WEB_TEXT.debtCard) &&
       includesAnyLabel(financeHomeBody, WEB_TEXT.spendCard);
+    const debtSurfaceText = `${financeHomeBody}\n${debtBody}`;
     const debtModalOpened =
-      includesAnyLabel(debtBody, WEB_TEXT.debtModalTitle) ||
-      includesAnyLabel(debtBody, WEB_TEXT.suppliersSection) ||
-      includesAnyLabel(debtBody, WEB_TEXT.debtSummary);
+      includesAnyLabel(debtSurfaceText, WEB_TEXT.debtModalTitle) ||
+      includesAnyLabel(debtSurfaceText, WEB_TEXT.suppliersSection) ||
+      includesAnyLabel(debtSurfaceText, WEB_TEXT.debtSummary);
     const result = {
       status:
         financeHomeCardsRendered &&

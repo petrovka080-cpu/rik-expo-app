@@ -2,7 +2,14 @@ import React from "react";
 import { Pressable, Text, View } from "react-native";
 
 import type { DirectorFinanceCanonicalScope } from "./director.readModels";
-import { money, type FinKindSupplierRow, type FinRep, type FinSpendSummary, type FinSupplierInput, type FinSupplierPanelState } from "./director.finance";
+import {
+  money,
+  type FinKindSupplierRow,
+  type FinRep,
+  type FinSpendSummary,
+  type FinSupplierInput,
+  type FinSupplierPanelState,
+} from "./director.finance";
 import { UI, s } from "./director.styles";
 import DirectorFinanceDebtModal from "./DirectorFinanceDebtModal";
 import DirectorFinanceKindSuppliersModal from "./DirectorFinanceKindSuppliersModal";
@@ -54,23 +61,27 @@ export default function DirectorFinanceContent({
     return (
       <View>
         <Pressable onPress={() => pushFin("debt")} style={[s.mobCard, { marginBottom: 10 }]}>
-          <Text style={{ color: UI.text, fontWeight: "900" }}>Обязательства</Text>
-          <Text style={{ color: UI.sub, fontWeight: "800", marginTop: 4 }} numberOfLines={2}>
-            По предложениям и счетам. Долг считается по каждому предложению отдельно.
-          </Text>
-          <Text style={{ color: UI.sub, fontWeight: "700", marginTop: 6 }} numberOfLines={1}>
-            {`Утверждено ${money(finScope?.obligations.approved ?? finRep?.summary?.approved ?? 0)} · Долг ${money(finScope?.obligations.debt ?? finRep?.summary?.toPay ?? 0)}`}
-          </Text>
+          <View style={s.mobMain}>
+            <Text style={{ color: UI.text, fontWeight: "900" }}>Обязательства</Text>
+            <Text style={{ color: UI.sub, fontWeight: "800", marginTop: 4 }} numberOfLines={2}>
+              По предложениям и счетам. Долг считается по каждому предложению отдельно.
+            </Text>
+            <Text style={{ color: UI.sub, fontWeight: "700", marginTop: 6 }} numberOfLines={1}>
+              {`Утверждено ${money(finScope?.obligations.approved ?? finRep?.summary?.approved ?? 0)} · Долг ${money(finScope?.obligations.debt ?? finRep?.summary?.toPay ?? 0)}`}
+            </Text>
+          </View>
         </Pressable>
 
         <Pressable onPress={() => pushFin("spend")} style={[s.mobCard, { marginBottom: 10 }]}>
-          <Text style={{ color: UI.text, fontWeight: "900" }}>Расходы</Text>
-          <Text style={{ color: UI.sub, fontWeight: "800", marginTop: 4 }} numberOfLines={2}>
-            По аллокациям расходов. Этот блок не пересчитывает долг по предложениям.
-          </Text>
-          <Text style={{ color: UI.sub, fontWeight: "700", marginTop: 6 }} numberOfLines={1}>
-            {`Аллоцировано ${money(finScope?.spend.approved ?? finSpendSummary.header.approved)} · К оплате ${money(finScope?.spend.toPay ?? finSpendSummary.header.toPay)}`}
-          </Text>
+          <View style={s.mobMain}>
+            <Text style={{ color: UI.text, fontWeight: "900" }}>Расходы</Text>
+            <Text style={{ color: UI.sub, fontWeight: "800", marginTop: 4 }} numberOfLines={2}>
+              По аллокациям расходов. Этот блок не пересчитывает долг по предложениям.
+            </Text>
+            <Text style={{ color: UI.sub, fontWeight: "700", marginTop: 6 }} numberOfLines={1}>
+              {`Аллоцировано ${money(finScope?.spend.approved ?? finSpendSummary.header.approved)} · К оплате ${money(finScope?.spend.toPay ?? finSpendSummary.header.toPay)}`}
+            </Text>
+          </View>
         </Pressable>
 
         <Text style={[s.mobMeta, { marginTop: 2 }]} numberOfLines={2}>
