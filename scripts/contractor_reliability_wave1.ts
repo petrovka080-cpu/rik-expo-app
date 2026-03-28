@@ -24,6 +24,11 @@ import {
   markContractorProgressQueueInflight,
 } from "../src/lib/offline/contractorProgressQueue";
 import { flushContractorProgressQueue } from "../src/lib/offline/contractorProgressWorker";
+import {
+  getOfflineMutationTelemetryEvents,
+  resetOfflineMutationTelemetryEvents,
+  summarizeOfflineMutationTelemetryEvents,
+} from "../src/lib/offline/mutation.telemetry";
 
 type TestResult = {
   passed: boolean;
@@ -248,7 +253,11 @@ const seedDraft = async (progressId: string, overrides?: {
 };
 
 const queueProgress = async (progressId: string) => {
-  await enqueueContractorProgress(progressId);
+  const draft = getContractorProgressDraft(progressId);
+  await enqueueContractorProgress(progressId, {
+    baseVersion: draft?.updatedAt != null ? String(draft.updatedAt) : null,
+    serverVersionHint: draft?.pendingLogId ?? null,
+  });
 };
 
 const flushQueue = async (
@@ -266,6 +275,7 @@ const flushQueue = async (
 
 const run = async () => {
   const tests: Record<string, TestResult> = {};
+  resetOfflineMutationTelemetryEvents();
 
   await resetEnvironment();
   const offlineProgressId = makeProgressId("1");
@@ -426,25 +436,97 @@ const run = async () => {
   const terminalFlush = await flushQueue("manual_retry");
   const terminalDraft = getContractorProgressDraft(terminalProgressId);
   const terminalQueue = await loadContractorProgressQueue();
+  const terminalHistory = await loadContractorProgressQueue({ includeFinal: true });
+  const terminalHistoryEntry =
+    terminalHistory.find((entry) => entry.progressId === terminalProgressId) ?? null;
   tests.terminal_failure = {
     passed:
       terminalFlush.failed === true &&
-      terminalFlush.failureClass === "failed_terminal" &&
+      terminalFlush.failureClass === "conflicted" &&
       terminalDraft?.syncStatus === "failed_terminal" &&
+      terminalDraft?.failureClass === "conflicted" &&
       terminalDraft?.lastErrorStage === "sync_materials" &&
-      terminalQueue.length === 0,
+      terminalQueue.length === 0 &&
+      terminalHistoryEntry?.lifecycleStatus === "conflicted",
     details: {
       failureClass: terminalFlush.failureClass,
       finalStatus: terminalDraft?.syncStatus ?? null,
+      finalFailureClass: terminalDraft?.failureClass ?? null,
       lastErrorStage: terminalDraft?.lastErrorStage ?? null,
       queueLength: terminalQueue.length,
+      historyLifecycleStatus: terminalHistoryEntry?.lifecycleStatus ?? null,
       logInsertCount: serverState.logInsertCount,
       materialsInsertCount: serverState.materialsInsertCount,
     },
   };
 
+  await resetEnvironment();
+  const conflictProgressId = makeProgressId("7");
+  await seedDraft(conflictProgressId);
+  await queueProgress(conflictProgressId);
+  networkOnline = true;
+  serverState.terminalMaterialsError = "stale_progress_state";
+  const conflictFlush = await flushQueue("manual_retry");
+  const conflictDraft = getContractorProgressDraft(conflictProgressId);
+  const conflictQueueActive = await loadContractorProgressQueue();
+  const conflictQueueHistory = await loadContractorProgressQueue({ includeFinal: true });
+  const conflictHistoryEntry =
+    conflictQueueHistory.find((entry) => entry.progressId === conflictProgressId) ?? null;
+  tests.conflict_state = {
+    passed:
+      conflictFlush.failed === true &&
+      conflictFlush.failureClass === "conflicted" &&
+      conflictDraft?.syncStatus === "failed_terminal" &&
+      conflictDraft?.failureClass === "conflicted" &&
+      conflictDraft?.conflictType === "stale_progress_state" &&
+      conflictQueueActive.length === 0 &&
+      conflictHistoryEntry?.lifecycleStatus === "conflicted",
+    details: {
+      failureClass: conflictFlush.failureClass,
+      syncStatus: conflictDraft?.syncStatus ?? null,
+      draftFailureClass: conflictDraft?.failureClass ?? null,
+      conflictType: conflictDraft?.conflictType ?? null,
+      activeQueueLength: conflictQueueActive.length,
+      historyLifecycleStatus: conflictHistoryEntry?.lifecycleStatus ?? null,
+    },
+  };
+
+  await resetEnvironment();
+  const exhaustedProgressId = makeProgressId("8");
+  await seedDraft(exhaustedProgressId);
+  await queueProgress(exhaustedProgressId);
+  networkOnline = true;
+  serverState.failNextMaterialsCount = 8;
+  const exhaustionAttempts = [];
+  for (let index = 0; index < 5; index += 1) {
+    exhaustionAttempts.push(await flushQueue("manual_retry"));
+  }
+  const exhaustedDraft = getContractorProgressDraft(exhaustedProgressId);
+  const exhaustedQueueActive = await loadContractorProgressQueue();
+  const exhaustedQueueHistory = await loadContractorProgressQueue({ includeFinal: true });
+  const exhaustedHistoryEntry =
+    exhaustedQueueHistory.find((entry) => entry.progressId === exhaustedProgressId) ?? null;
+  tests.retry_exhaustion = {
+    passed:
+      exhaustionAttempts[0]?.failureClass === "retryable_sync_failure" &&
+      exhaustionAttempts[4]?.failureClass === "failed_terminal" &&
+      exhaustedDraft?.syncStatus === "failed_terminal" &&
+      exhaustedDraft?.failureClass === "failed_terminal" &&
+      exhaustedQueueActive.length === 0 &&
+      exhaustedHistoryEntry?.lifecycleStatus === "failed_non_retryable",
+    details: {
+      failureClasses: exhaustionAttempts.map((entry) => entry.failureClass),
+      finalStatus: exhaustedDraft?.syncStatus ?? null,
+      finalFailureClass: exhaustedDraft?.failureClass ?? null,
+      activeQueueLength: exhaustedQueueActive.length,
+      historyLifecycleStatus: exhaustedHistoryEntry?.lifecycleStatus ?? null,
+      retryCount: exhaustedDraft?.retryCount ?? null,
+    },
+  };
+
   const summary = {
     status: Object.values(tests).every((test) => test.passed) ? "passed" : "failed",
+    mutationTelemetry: summarizeOfflineMutationTelemetryEvents(),
     ...tests,
   };
 
@@ -457,6 +539,7 @@ const run = async () => {
         ...summary,
         logs: serverState.logs,
         materialsByLogId: Object.fromEntries(serverState.materialsByLogId.entries()),
+        mutationTelemetryEvents: getOfflineMutationTelemetryEvents(),
         storage: storage.dump(),
       },
       null,

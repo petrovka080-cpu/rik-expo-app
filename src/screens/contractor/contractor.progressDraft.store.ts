@@ -14,7 +14,15 @@ export type ContractorProgressFailureClass =
   | "none"
   | "offline_wait"
   | "retryable_sync_failure"
+  | "conflicted"
   | "failed_terminal";
+
+export type ContractorProgressConflictType =
+  | "none"
+  | "server_terminal_conflict"
+  | "validation_conflict"
+  | "stale_progress_state"
+  | "remote_divergence_requires_attention";
 
 export type ContractorProgressDraftMaterial = {
   id: string | null;
@@ -51,12 +59,16 @@ export type ContractorProgressDraftRecord = {
   pendingLogId: string | null;
   syncStatus: ContractorProgressSyncStatus;
   failureClass: ContractorProgressFailureClass;
+  conflictType: ContractorProgressConflictType;
   retryCount: number;
   pendingCount: number;
   lastSyncAt: number | null;
   lastErrorAt: number | null;
   lastErrorStage: string | null;
   lastError: string | null;
+  lastErrorKind: string | null;
+  lastErrorCode: string | null;
+  nextRetryAt: number | null;
   updatedAt: number | null;
 };
 
@@ -66,7 +78,7 @@ type ContractorProgressDraftStoreState = {
 };
 
 type PersistedContractorProgressDraftStore = {
-  version: 1;
+  version: 2;
   drafts: Record<string, ContractorProgressDraftRecord>;
 };
 
@@ -76,7 +88,8 @@ export type ContractorProgressSyncUiStatus = {
   tone: "neutral" | "info" | "success" | "warning" | "danger";
 };
 
-const STORAGE_KEY = "contractor_progress_draft_store_v1";
+const STORAGE_KEY = "contractor_progress_draft_store_v2";
+const LEGACY_STORAGE_KEY = "contractor_progress_draft_store_v1";
 
 const initialState: ContractorProgressDraftStoreState = {
   hydrated: false,
@@ -142,12 +155,16 @@ const createBaseDraft = (progressId: string): ContractorProgressDraftRecord => (
   pendingLogId: null,
   syncStatus: "idle",
   failureClass: "none",
+  conflictType: "none",
   retryCount: 0,
   pendingCount: 0,
   lastSyncAt: null,
   lastErrorAt: null,
   lastErrorStage: null,
   lastError: null,
+  lastErrorKind: null,
+  lastErrorCode: null,
+  nextRetryAt: null,
   updatedAt: null,
 });
 
@@ -177,6 +194,7 @@ const normalizeDraft = (
   const base = createBaseDraft(trim(progressId));
   const nextStatus = trim(value?.syncStatus) as ContractorProgressSyncStatus;
   const nextFailureClass = trim(value?.failureClass) as ContractorProgressFailureClass;
+  const nextConflictType = trim(value?.conflictType) as ContractorProgressConflictType;
 
   return {
     ...base,
@@ -199,8 +217,16 @@ const normalizeDraft = (
     failureClass:
       nextFailureClass === "offline_wait" ||
       nextFailureClass === "retryable_sync_failure" ||
+      nextFailureClass === "conflicted" ||
       nextFailureClass === "failed_terminal"
         ? nextFailureClass
+        : "none",
+    conflictType:
+      nextConflictType === "server_terminal_conflict" ||
+      nextConflictType === "validation_conflict" ||
+      nextConflictType === "stale_progress_state" ||
+      nextConflictType === "remote_divergence_requires_attention"
+        ? nextConflictType
         : "none",
     retryCount: Number.isFinite(Number(value?.retryCount)) ? Number(value?.retryCount) : 0,
     pendingCount: Number.isFinite(Number(value?.pendingCount)) ? Number(value?.pendingCount) : 0,
@@ -208,13 +234,16 @@ const normalizeDraft = (
     lastErrorAt: normalizeNullableNumber(value?.lastErrorAt),
     lastErrorStage: trim(value?.lastErrorStage) || null,
     lastError: trim(value?.lastError) || null,
+    lastErrorKind: trim(value?.lastErrorKind) || null,
+    lastErrorCode: trim(value?.lastErrorCode) || null,
+    nextRetryAt: normalizeNullableNumber(value?.nextRetryAt),
     updatedAt: normalizeNullableNumber(value?.updatedAt),
   };
 };
 
 const persistState = async (state: ContractorProgressDraftStoreState) => {
   const payload: PersistedContractorProgressDraftStore = {
-    version: 1,
+    version: 2,
     drafts: state.drafts,
   };
 
@@ -247,7 +276,13 @@ export const hydrateContractorProgressDraftStore = async (): Promise<ContractorP
     storageAdapter,
     STORAGE_KEY,
   );
-  const draftsRaw = loaded?.drafts ?? {};
+  const legacyLoaded =
+    loaded ??
+    (await readJsonFromStorage<Partial<PersistedContractorProgressDraftStore>>(
+      storageAdapter,
+      LEGACY_STORAGE_KEY,
+    ));
+  const draftsRaw = legacyLoaded?.drafts ?? {};
   const drafts = Object.fromEntries(
     Object.entries(draftsRaw).map(([progressId, record]) => [
       trim(progressId),
@@ -348,7 +383,11 @@ export const setContractorProgressDraftFields = async (
         : hasLocalContent
           ? "none"
           : previous?.failureClass ?? "none",
+    conflictType: previous?.syncStatus === "syncing" ? previous.conflictType : "none",
     lastError: previous?.syncStatus === "syncing" ? previous.lastError : null,
+    lastErrorKind: previous?.syncStatus === "syncing" ? previous.lastErrorKind : null,
+    lastErrorCode: previous?.syncStatus === "syncing" ? previous.lastErrorCode : null,
+    nextRetryAt: previous?.syncStatus === "syncing" ? previous.nextRetryAt : null,
   });
 };
 
@@ -365,7 +404,11 @@ export const setContractorProgressDraftMaterials = async (
     pendingLogId: previous?.syncStatus === "syncing" ? previous.pendingLogId : null,
     syncStatus: resolveDirtyStatus(previous, hasLocalContent),
     failureClass: previous?.syncStatus === "syncing" ? previous.failureClass : "none",
+    conflictType: previous?.syncStatus === "syncing" ? previous.conflictType : "none",
     lastError: previous?.syncStatus === "syncing" ? previous.lastError : null,
+    lastErrorKind: previous?.syncStatus === "syncing" ? previous.lastErrorKind : null,
+    lastErrorCode: previous?.syncStatus === "syncing" ? previous.lastErrorCode : null,
+    nextRetryAt: previous?.syncStatus === "syncing" ? previous.nextRetryAt : null,
   });
 };
 
@@ -384,10 +427,14 @@ export const markContractorProgressQueued = async (
   await replaceContractorProgressDraft(progressId, {
     syncStatus: pendingCount > 0 ? "queued" : "dirty_local",
     failureClass: "none",
+    conflictType: "none",
     pendingCount,
     lastError: null,
     lastErrorAt: null,
     lastErrorStage: null,
+    lastErrorKind: null,
+    lastErrorCode: null,
+    nextRetryAt: null,
   });
 
 export const markContractorProgressSyncing = async (
@@ -397,6 +444,7 @@ export const markContractorProgressSyncing = async (
   await replaceContractorProgressDraft(progressId, {
     syncStatus: pendingCount > 0 ? "syncing" : "idle",
     pendingCount,
+    nextRetryAt: null,
   });
 
 export const markContractorProgressSynced = async (
@@ -414,12 +462,16 @@ export const markContractorProgressSynced = async (
     pendingLogId: null,
     syncStatus: "synced",
     failureClass: "none",
+    conflictType: "none",
     retryCount: 0,
     pendingCount: options?.pendingCount ?? 0,
     lastSyncAt: Date.now(),
     lastErrorAt: null,
     lastErrorStage: null,
     lastError: null,
+    lastErrorKind: null,
+    lastErrorCode: null,
+    nextRetryAt: null,
   });
 };
 
@@ -431,6 +483,9 @@ export const markContractorProgressRetryWait = async (
     pendingCount: number;
     failureClass: Extract<ContractorProgressFailureClass, "offline_wait" | "retryable_sync_failure">;
     pendingLogId?: string | null;
+    errorKind?: string | null;
+    errorCode?: string | null;
+    nextRetryAt?: number | null;
   },
 ): Promise<ContractorProgressDraftRecord | null> => {
   const previous = getContractorProgressDraft(progressId);
@@ -439,11 +494,15 @@ export const markContractorProgressRetryWait = async (
       params.pendingLogId !== undefined ? trim(params.pendingLogId) || null : previous?.pendingLogId ?? null,
     syncStatus: "retry_wait",
     failureClass: params.failureClass,
+    conflictType: "none",
     retryCount: (previous?.retryCount ?? 0) + 1,
     pendingCount: params.pendingCount,
     lastErrorAt: Date.now(),
     lastErrorStage: trim(params.errorStage) || null,
     lastError: trim(params.errorMessage) || null,
+    lastErrorKind: trim(params.errorKind) || null,
+    lastErrorCode: trim(params.errorCode) || null,
+    nextRetryAt: params.nextRetryAt ?? null,
   });
 };
 
@@ -453,16 +512,24 @@ export const markContractorProgressFailedTerminal = async (
     errorMessage: string;
     errorStage: string;
     pendingLogId?: string | null;
+    failureClass?: Extract<ContractorProgressFailureClass, "conflicted" | "failed_terminal">;
+    conflictType?: ContractorProgressConflictType;
+    errorKind?: string | null;
+    errorCode?: string | null;
   },
 ): Promise<ContractorProgressDraftRecord | null> =>
   await replaceContractorProgressDraft(progressId, {
     pendingLogId: params.pendingLogId !== undefined ? trim(params.pendingLogId) || null : null,
     syncStatus: "failed_terminal",
-    failureClass: "failed_terminal",
+    failureClass: params.failureClass ?? "failed_terminal",
+    conflictType: params.conflictType ?? "none",
     pendingCount: 0,
     lastErrorAt: Date.now(),
     lastErrorStage: trim(params.errorStage) || null,
     lastError: trim(params.errorMessage) || null,
+    lastErrorKind: trim(params.errorKind) || null,
+    lastErrorCode: trim(params.errorCode) || null,
+    nextRetryAt: null,
   });
 
 const formatSyncTime = (value: number | null) =>

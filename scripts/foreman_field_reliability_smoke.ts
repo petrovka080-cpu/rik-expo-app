@@ -27,6 +27,11 @@ import {
 import { createMemoryOfflineStorage } from "../src/lib/offline/offlineStorage";
 import { buildForemanSyncUiStatus } from "../src/lib/offline/foremanSyncRuntime";
 import { clearForemanMutationQueueTail, flushForemanMutationQueue } from "../src/lib/offline/mutationWorker";
+import {
+  getOfflineMutationTelemetryEvents,
+  resetOfflineMutationTelemetryEvents,
+  summarizeOfflineMutationTelemetryEvents,
+} from "../src/lib/offline/mutation.telemetry";
 import type { ReqItemRow } from "../src/lib/catalog_api";
 import type { RequestDraftMeta } from "../src/screens/foreman/foreman.types";
 
@@ -341,7 +346,7 @@ const enqueueSnapshotMutation = async (
   });
 };
 
-const flushQueue = async () =>
+const flushQueue = async (triggerSource: "bootstrap_complete" | "app_active" | "network_back" | "manual_retry" | "submit" | "focus" | "unknown" = "manual_retry") =>
   await flushForemanMutationQueue({
     getSnapshot: () => runtimeSnapshot,
     buildRequestDraftMeta,
@@ -358,7 +363,7 @@ const flushQueue = async () =>
     },
     syncSnapshot,
     onSubmitted,
-  });
+  }, triggerSource);
 
 const rehydrateFromServer = async () => {
   const durableState = getForemanDurableDraftState();
@@ -486,6 +491,7 @@ const simulateRestart = async () => {
 
 const run = async () => {
   const testResults: Record<string, TestResult> = {};
+  resetOfflineMutationTelemetryEvents();
 
   await resetEnvironment();
   const noisySnapshots = [1, 2, 3, 4, 5].map((qty) =>
@@ -716,6 +722,9 @@ const run = async () => {
   const terminalConflictFlush = await flushQueue();
   forcedFailureMode = "none";
   const terminalConflictState = getForemanDurableDraftState();
+  const terminalConflictQueueHistory = await loadForemanMutationQueue();
+  const terminalConflictEntry =
+    terminalConflictQueueHistory.find((entry) => entry.payload.draftKey === "REQ-CONFLICT") ?? null;
   const terminalPendingBeforeClear = await getForemanPendingMutationCountForDraftKeys([
     FOREMAN_LOCAL_ONLY_REQUEST_ID,
     "REQ-CONFLICT",
@@ -737,7 +746,8 @@ const run = async () => {
       terminalConflictState.syncStatus === "failed_terminal" &&
       terminalConflictState.availableRecoveryActions.includes("rehydrate_server") &&
       terminalConflictState.availableRecoveryActions.includes("discard_local") &&
-      terminalPendingBeforeClear >= 1 &&
+      terminalPendingBeforeClear === 0 &&
+      terminalConflictEntry?.lifecycleStatus === "conflicted" &&
       terminalPendingAfterClear === 0 &&
       afterClearConflictState.syncStatus === "dirty_local",
     details: {
@@ -745,6 +755,7 @@ const run = async () => {
       syncStatus: terminalConflictState.syncStatus,
       pendingBeforeClear: terminalPendingBeforeClear,
       pendingAfterClear: terminalPendingAfterClear,
+      historyLifecycleStatus: terminalConflictEntry?.lifecycleStatus ?? null,
       actions: terminalConflictState.availableRecoveryActions,
     },
   };
@@ -799,6 +810,41 @@ const run = async () => {
       firstConflictType: retryNowMidState.conflictType,
       finalStatus: retryNowFinalState.syncStatus,
       actions: retryNowMidState.availableRecoveryActions,
+    },
+  };
+
+  await resetEnvironment();
+  const exhaustedSnapshot = buildSnapshot({
+    requestId: "REQ-EXHAUSTED",
+    displayNo: "PR-EXHAUSTED",
+    items: [createItem(1, 7, "REQ-EXHAUSTED")],
+  });
+  await enqueueSnapshotMutation(exhaustedSnapshot, "qty_update", { triggerSource: "manual_retry" });
+  serverOnline = true;
+  failNextSyncCount = 8;
+  const exhaustionRuns = [];
+  for (let index = 0; index < 5; index += 1) {
+    exhaustionRuns.push(await flushQueue("manual_retry"));
+  }
+  const exhaustedState = getForemanDurableDraftState();
+  const exhaustedQueueHistory = await loadForemanMutationQueue();
+  const exhaustedEntry =
+    exhaustedQueueHistory.find((entry) => entry.payload.draftKey === "REQ-EXHAUSTED") ?? null;
+  testResults.retry_exhaustion = {
+    passed:
+      exhaustionRuns[0]?.failed === true &&
+      exhaustionRuns[4]?.failed === true &&
+      exhaustedState.syncStatus === "failed_terminal" &&
+      exhaustedState.conflictType === "retryable_sync_failure" &&
+      exhaustedState.availableRecoveryActions.includes("retry_now") &&
+      exhaustedEntry?.lifecycleStatus === "failed_non_retryable",
+    details: {
+      failureMessages: exhaustionRuns.map((entry) => entry.errorMessage),
+      finalStatus: exhaustedState.syncStatus,
+      finalConflictType: exhaustedState.conflictType,
+      retryCount: exhaustedState.retryCount,
+      actions: exhaustedState.availableRecoveryActions,
+      historyLifecycleStatus: exhaustedEntry?.lifecycleStatus ?? null,
     },
   };
 
@@ -872,6 +918,7 @@ const run = async () => {
 
   const summary = {
     status: Object.values(testResults).every((test) => test.passed) ? "passed" : "failed",
+    mutationTelemetry: summarizeOfflineMutationTelemetryEvents(),
     ...testResults,
   };
 
@@ -885,6 +932,7 @@ const run = async () => {
         syncCallLog,
         submitLog,
         durableState: getForemanDurableDraftState(),
+        mutationTelemetryEvents: getOfflineMutationTelemetryEvents(),
         storage: memoryStorage.dump(),
       },
       null,

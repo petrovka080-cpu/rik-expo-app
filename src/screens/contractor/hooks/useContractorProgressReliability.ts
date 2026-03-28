@@ -418,7 +418,10 @@ export function useContractorProgressReliability(params: {
       setWorkModalSaving(true);
       const draft = await upsertCurrentDraftSnapshot();
       if (!draft) return;
-      const queue = await enqueueContractorProgress(activeProgressId);
+      const queue = await enqueueContractorProgress(activeProgressId, {
+        baseVersion: draft.updatedAt != null ? String(draft.updatedAt) : null,
+        serverVersionHint: draft.pendingLogId,
+      });
       const queuedEntry = queue.find((entry) => entry.progressId === activeProgressId) ?? null;
       const pendingCount = await getContractorProgressPendingCount(activeProgressId);
       await markContractorProgressQueued(activeProgressId, pendingCount);
@@ -478,7 +481,11 @@ export function useContractorProgressReliability(params: {
       });
       const queued = await getContractorProgressQueueEntry(activeProgressId);
       if (!queued) {
-        const queue = await enqueueContractorProgress(activeProgressId);
+        const latestDraft = getContractorProgressDraft(activeProgressId);
+        const queue = await enqueueContractorProgress(activeProgressId, {
+          baseVersion: latestDraft?.updatedAt != null ? String(latestDraft.updatedAt) : null,
+          serverVersionHint: latestDraft?.pendingLogId ?? null,
+        });
         const queuedEntry = queue.find((entry) => entry.progressId === activeProgressId) ?? null;
         const pendingCount = await getContractorProgressPendingCount(activeProgressId);
         await markContractorProgressQueued(activeProgressId, pendingCount);

@@ -1,0 +1,116 @@
+{
+  "scope": "Offline Reliability Hardening - Conflict Resolution Wave 1 (Foreman + Contractor)",
+  "statusModel": [
+    "queued",
+    "processing",
+    "succeeded",
+    "retry_scheduled",
+    "conflicted",
+    "failed_non_retryable",
+    "discarded_by_policy"
+  ],
+  "foreman": {
+    "status": "GREEN",
+    "retryPolicy": {
+      "name": "foreman_default",
+      "maxAttempts": 5,
+      "baseDelayMs": 5000,
+      "maxDelayMs": 60000
+    },
+    "conflictGate": {
+      "passed": true,
+      "details": {
+        "conflictType": "server_terminal_conflict",
+        "syncStatus": "failed_terminal",
+        "pendingBeforeClear": 0,
+        "pendingAfterClear": 0,
+        "historyLifecycleStatus": "conflicted",
+        "actions": [
+          "rehydrate_server",
+          "restore_local",
+          "clear_failed_queue",
+          "discard_local"
+        ]
+      }
+    },
+    "retryGate": {
+      "passed": true,
+      "details": {
+        "failureMessages": [
+          "offline",
+          "offline",
+          "offline",
+          "offline",
+          "offline"
+        ],
+        "finalStatus": "failed_terminal",
+        "finalConflictType": "retryable_sync_failure",
+        "retryCount": 5,
+        "actions": [
+          "retry_now",
+          "restore_local",
+          "clear_failed_queue",
+          "discard_local"
+        ],
+        "historyLifecycleStatus": "failed_non_retryable"
+      }
+    }
+  },
+  "contractor": {
+    "status": "GREEN",
+    "retryPolicy": {
+      "name": "contractor_default",
+      "maxAttempts": 5,
+      "baseDelayMs": 5000,
+      "maxDelayMs": 60000
+    },
+    "conflictGate": {
+      "passed": true,
+      "details": {
+        "failureClass": "conflicted",
+        "syncStatus": "failed_terminal",
+        "draftFailureClass": "conflicted",
+        "conflictType": "stale_progress_state",
+        "activeQueueLength": 0,
+        "historyLifecycleStatus": "conflicted"
+      }
+    },
+    "retryGate": {
+      "passed": true,
+      "details": {
+        "failureClasses": [
+          "retryable_sync_failure",
+          "retryable_sync_failure",
+          "retryable_sync_failure",
+          "retryable_sync_failure",
+          "failed_terminal"
+        ],
+        "finalStatus": "failed_terminal",
+        "finalFailureClass": "failed_terminal",
+        "activeQueueLength": 0,
+        "historyLifecycleStatus": "failed_non_retryable",
+        "retryCount": 4
+      }
+    }
+  },
+  "runtimeSmoke": {
+    "gateMode": "informational",
+    "foremanRequestSync": "failed",
+    "contractorRuntime": "passed"
+  },
+  "nonBlockingChecks": {
+    "foremanRequestSync": "outside_offline_scope",
+    "contractorRuntime": "clean"
+  },
+  "dedupeStrategy": {
+    "foreman": {
+      "scope": "draftKey + mutationKind + snapshotUpdatedAt + submitRequested",
+      "coalescing": "same draft keeps latest snapshot, duplicate dedupeKey suppressed"
+    },
+    "contractor": {
+      "scope": "progressId + draft.updatedAt + pendingLogId",
+      "coalescing": "same progress reuses single active queue entry, duplicate dedupeKey suppressed"
+    }
+  },
+  "overallStatus": "GREEN"
+}

@@ -703,7 +703,7 @@ export function useForemanDraftBoundary({
         onSubmitted: (rid, submitted) => {
           return handlePostSubmitSuccessRef.current(rid, submitted);
         },
-      }).then(async (result) => {
+      }, triggerSource).then(async (result) => {
         await refreshBoundarySyncState(localDraftSnapshotRef.current);
         if (result.failed) {
           throw new Error(result.errorMessage || "Foreman mutation queue flush failed.");

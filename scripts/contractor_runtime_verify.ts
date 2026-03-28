@@ -51,6 +51,8 @@ type TempUser = {
 
 type SeededScope = {
   suffix: string;
+  contractorId: string;
+  contractorInn: string;
   contractorOrg: string;
   objectName: string;
   workName: string;
@@ -145,8 +147,23 @@ async function createTempUser(role: string, fullName: string): Promise<TempUser>
 async function seedContractorScope(user: TempUser): Promise<SeededScope> {
   const suffix = `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
   const contractorOrg = `Runtime Contractor ${suffix}`;
+  const contractorInn = `12345678${suffix.slice(-4).replace(/\D/g, "7").padEnd(4, "7")}`;
   const objectName = `BLD-${suffix.toUpperCase()}`;
   const workName = `Runtime Work ${suffix}`;
+  const contractorResult = await admin
+    .from("contractors")
+    .insert({
+      user_id: user.id,
+      full_name: "Contractor Runtime Smoke",
+      company_name: contractorOrg,
+      phone: "+996555000111",
+      email: user.email,
+      inn: contractorInn,
+    })
+    .select("id")
+    .single();
+  if (contractorResult.error) throw contractorResult.error;
+  const contractorId = String(contractorResult.data.id);
 
   const subcontractResult = await admin
     .from("subcontracts")
@@ -155,7 +172,7 @@ async function seedContractorScope(user: TempUser): Promise<SeededScope> {
       status: "approved",
       foreman_name: "Runtime Foreman",
       contractor_org: contractorOrg,
-      contractor_inn: "12345678901234",
+      contractor_inn: contractorInn,
       contractor_rep: "Runtime Rep",
       contractor_phone: "+996555000111",
       contract_number: `CTR-${suffix.toUpperCase()}`,
@@ -189,6 +206,8 @@ async function seedContractorScope(user: TempUser): Promise<SeededScope> {
       object_name: objectName,
       subcontract_id: subcontractId,
       contractor_job_id: subcontractId,
+      company_name_snapshot: contractorOrg,
+      company_inn_snapshot: contractorInn,
       status: "Утверждено",
       submitted_at: new Date().toISOString(),
       date: new Date().toISOString().slice(0, 10),
@@ -248,6 +267,7 @@ async function seedContractorScope(user: TempUser): Promise<SeededScope> {
     .insert({
       id: progressId,
       purchase_item_id: purchaseItemId,
+      contractor_id: contractorId,
       contractor_name: contractorOrg,
       qty_planned: 1,
       qty_done: 0,
@@ -264,15 +284,15 @@ async function seedContractorScope(user: TempUser): Promise<SeededScope> {
   await poll(
     "contractor_scope_row",
     async () => {
-      const { data, error } = await admin.rpc("contractor_works_bundle_scope_v1" as never, {
-        p_my_contractor_id: null,
+      const { data, error } = await admin.rpc("contractor_inbox_scope_v1" as never, {
+        p_my_contractor_id: contractorId,
         p_is_staff: false,
       } as never);
       if (error) throw error;
       const rows = Array.isArray((data as Record<string, unknown> | null)?.rows)
         ? ((data as Record<string, unknown>).rows as Record<string, unknown>[])
         : [];
-      const found = rows.find((row) => String(row.progress_id ?? "").trim() === progressId) ?? null;
+      const found = rows.find((row) => String(row.progressId ?? "").trim() === progressId) ?? null;
       return found ? true : null;
     },
     20_000,
@@ -281,6 +301,8 @@ async function seedContractorScope(user: TempUser): Promise<SeededScope> {
 
   return {
     suffix,
+    contractorId,
+    contractorInn,
     contractorOrg,
     objectName,
     workName,
@@ -318,6 +340,9 @@ async function cleanupSeededScope(scope: SeededScope | null) {
   } catch {}
   try {
     await admin.from("subcontracts").delete().eq("id", scope.subcontractId);
+  } catch {}
+  try {
+    await admin.from("contractors").delete().eq("id", scope.contractorId);
   } catch {}
 }
 

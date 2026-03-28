@@ -30,13 +30,24 @@ import {
   clearForemanMutationsForDraft,
   getForemanMutationQueueSummary,
   getForemanPendingMutationCountForDraftKeys,
-  markForemanMutationFailed,
+  markForemanMutationConflicted,
+  markForemanMutationFailedNonRetryable,
   markForemanMutationInflight,
+  markForemanMutationRetryScheduled,
   peekNextForemanMutation,
   rekeyForemanMutations,
   removeForemanMutationById,
   resetInflightForemanMutations,
 } from "./mutationQueue";
+import {
+  classifyOfflineMutationErrorKind,
+  isOfflineMutationConflictKind,
+} from "./mutation.conflict";
+import {
+  getOfflineMutationRetryPolicy,
+  resolveOfflineMutationFailureDecision,
+} from "./mutation.retryPolicy";
+import { recordOfflineMutationEvent } from "./mutation.telemetry";
 
 type ForemanMutationWorkerResult = {
   processedCount: number;
@@ -90,6 +101,7 @@ type ForemanMutationWorkerDeps = {
 const toErrorText = (error: unknown) => (error instanceof Error ? error.message : String(error));
 
 let flushInFlight: Promise<ForemanMutationWorkerResult> | null = null;
+const FOREMAN_RETRY_POLICY = getOfflineMutationRetryPolicy("foreman_default");
 
 const getDraftKeyFromSnapshot = (snapshot: ForemanLocalDraftSnapshot | null) =>
   String(snapshot?.requestId ?? FOREMAN_LOCAL_ONLY_REQUEST_ID).trim() || FOREMAN_LOCAL_ONLY_REQUEST_ID;
@@ -217,6 +229,7 @@ const deriveConflictFromFailure = async (params: {
   requestId: string | null;
   error: unknown;
 }) => {
+  const normalized = classifyOfflineMutationErrorKind(params.error);
   const classified = classifyForemanSyncError(params.error);
   let conflictType = classified.conflictType;
   let remoteSnapshot: ForemanLocalDraftSnapshot | null = null;
@@ -256,13 +269,18 @@ const deriveConflictFromFailure = async (params: {
 
   return {
     ...classified,
+    errorKind: normalized.errorKind,
+    message: normalized.message,
     conflictType,
     remoteSnapshot,
     remoteStatus,
   };
 };
 
-const runFlush = async (deps: ForemanMutationWorkerDeps): Promise<ForemanMutationWorkerResult> => {
+const runFlush = async (
+  deps: ForemanMutationWorkerDeps,
+  triggerSourceOverride?: ForemanDraftSyncTriggerSource | null,
+): Promise<ForemanMutationWorkerResult> => {
   await resetInflightForemanMutations();
 
   let processedCount = 0;
@@ -270,7 +288,9 @@ const runFlush = async (deps: ForemanMutationWorkerDeps): Promise<ForemanMutatio
   let latestSubmitted: RequestRecord | null = null;
 
   while (true) {
-    const entry = await peekNextForemanMutation();
+    const entry = await peekNextForemanMutation({
+      triggerSource: triggerSourceOverride ?? null,
+    });
     if (!entry) {
       return {
         processedCount,
@@ -290,12 +310,13 @@ const runFlush = async (deps: ForemanMutationWorkerDeps): Promise<ForemanMutatio
     const snapshot = deps.getSnapshot() ?? getForemanDurableDraftState().snapshot;
     const queueSummaryBefore = await getForemanMutationQueueSummary([entry.payload.draftKey]);
     const pendingBefore = await getPendingCountForSnapshot(snapshot);
-    const attemptNumber = inflight.retryCount + 1;
+    const attemptNumber = inflight.attemptCount;
     const offlineState = toOfflineState(deps.getNetworkOnline?.());
+    const effectiveTriggerSource = triggerSourceOverride ?? entry.payload.triggerSource;
 
     await markForemanDurableDraftSyncStarted(pendingBefore, {
       queueDraftKey: entry.payload.draftKey,
-      triggerSource: entry.payload.triggerSource,
+      triggerSource: effectiveTriggerSource,
     });
     await pushStageTelemetry({
       stage: "flush_start",
@@ -308,14 +329,32 @@ const runFlush = async (deps: ForemanMutationWorkerDeps): Promise<ForemanMutatio
       queueSizeAfter: null,
       coalescedCount: inflight.coalescedCount,
       offlineState,
-      triggerSource: entry.payload.triggerSource,
+      triggerSource: effectiveTriggerSource,
     });
 
     if (!snapshot) {
+      recordOfflineMutationEvent({
+        owner: "foreman",
+        entityId: inflight.entityId,
+        mutationId: inflight.id,
+        dedupeKey: inflight.dedupeKey,
+        lifecycleStatus: "succeeded",
+        action: "succeeded",
+        attemptCount: inflight.attemptCount,
+        retryCount: inflight.retryCount,
+        triggerSource: effectiveTriggerSource,
+        errorKind: inflight.lastErrorKind,
+        errorCode: inflight.lastErrorCode,
+        nextRetryAt: null,
+        coalescedCount: inflight.coalescedCount,
+        extra: {
+          reason: "missing_snapshot_cleanup",
+        },
+      });
       await removeForemanMutationById(entry.id);
       await markForemanDurableDraftSyncSucceeded(null, 0, {
         queueDraftKey: null,
-        triggerSource: entry.payload.triggerSource,
+        triggerSource: effectiveTriggerSource,
       });
       await pushStageTelemetry({
         stage: "cleanup",
@@ -328,7 +367,7 @@ const runFlush = async (deps: ForemanMutationWorkerDeps): Promise<ForemanMutatio
         queueSizeAfter: 0,
         coalescedCount: inflight.coalescedCount,
         offlineState,
-        triggerSource: entry.payload.triggerSource,
+        triggerSource: effectiveTriggerSource,
       });
       continue;
     }
@@ -343,21 +382,58 @@ const runFlush = async (deps: ForemanMutationWorkerDeps): Promise<ForemanMutatio
         requestId,
         error,
       });
-      await markForemanMutationFailed(entry.id, message);
+      const decision = resolveOfflineMutationFailureDecision({
+        policy: FOREMAN_RETRY_POLICY,
+        attemptCount: inflight.attemptCount,
+        retryable: errorInfo.retryable,
+        conflicted:
+          errorInfo.conflictType !== "retryable_sync_failure" &&
+          (isOfflineMutationConflictKind(errorInfo.errorKind) ||
+            errorInfo.conflictType === "server_terminal_conflict" ||
+            errorInfo.conflictType === "validation_conflict" ||
+            errorInfo.conflictType === "remote_divergence_requires_attention" ||
+            errorInfo.conflictType === "stale_local_snapshot"),
+        errorKind: errorInfo.errorKind,
+      });
+      if (decision.lifecycleStatus === "retry_scheduled") {
+        await markForemanMutationRetryScheduled({
+          mutationId: entry.id,
+          errorMessage: message,
+          errorCode: errorInfo.errorCode,
+          errorKind: errorInfo.errorKind,
+          nextRetryAt: decision.nextRetryAt,
+        });
+      } else if (decision.lifecycleStatus === "conflicted") {
+        await markForemanMutationConflicted({
+          mutationId: entry.id,
+          errorMessage: message,
+          errorCode: errorInfo.errorCode,
+          errorKind: errorInfo.errorKind,
+          serverVersionHint: errorInfo.remoteStatus,
+        });
+      } else {
+        await markForemanMutationFailedNonRetryable({
+          mutationId: entry.id,
+          errorMessage: message,
+          errorCode: errorInfo.errorCode,
+          errorKind: errorInfo.errorKind,
+          exhausted: decision.retryExhausted,
+        });
+      }
       const failedSnapshot = deps.getSnapshot() ?? getForemanDurableDraftState().snapshot ?? snapshot;
       const pendingCount = await getPendingCountForSnapshot(failedSnapshot);
       await markForemanDurableDraftSyncFailed(failedSnapshot, message, pendingCount, {
         stage,
-        retryable: errorInfo.retryable,
+        retryable: decision.lifecycleStatus === "retry_scheduled",
         conflictType: errorInfo.conflictType,
         queueDraftKey: entry.payload.draftKey,
-        triggerSource: entry.payload.triggerSource,
+        triggerSource: effectiveTriggerSource,
         recoverableLocalSnapshot:
           errorInfo.conflictType === "retryable_sync_failure" ? null : failedSnapshot,
       });
       await pushStageTelemetry({
         stage,
-        result: errorInfo.retryable ? "retryable_failure" : "terminal_failure",
+        result: decision.lifecycleStatus === "retry_scheduled" ? "retryable_failure" : "terminal_failure",
         draftKey: entry.payload.draftKey,
         requestId: String(failedSnapshot?.requestId ?? entry.payload.requestId ?? "").trim() || null,
         localOnlyDraftKey: entry.payload.draftKey === FOREMAN_LOCAL_ONLY_REQUEST_ID,
@@ -367,13 +443,14 @@ const runFlush = async (deps: ForemanMutationWorkerDeps): Promise<ForemanMutatio
         coalescedCount: inflight.coalescedCount,
         conflictType: errorInfo.conflictType,
         offlineState,
-        triggerSource: entry.payload.triggerSource,
-        errorClass: errorInfo.errorClass,
+        triggerSource: effectiveTriggerSource,
+        errorClass:
+          decision.retryExhausted === true ? `${errorInfo.errorClass}:retry_exhausted` : errorInfo.errorClass,
         errorCode: errorInfo.errorCode,
       });
       await pushStageTelemetry({
         stage: "finalize",
-        result: errorInfo.retryable ? "retryable_failure" : "terminal_failure",
+        result: decision.lifecycleStatus === "retry_scheduled" ? "retryable_failure" : "terminal_failure",
         draftKey: entry.payload.draftKey,
         requestId: String(failedSnapshot?.requestId ?? entry.payload.requestId ?? "").trim() || null,
         localOnlyDraftKey: entry.payload.draftKey === FOREMAN_LOCAL_ONLY_REQUEST_ID,
@@ -383,8 +460,9 @@ const runFlush = async (deps: ForemanMutationWorkerDeps): Promise<ForemanMutatio
         coalescedCount: inflight.coalescedCount,
         conflictType: errorInfo.conflictType,
         offlineState,
-        triggerSource: entry.payload.triggerSource,
-        errorClass: errorInfo.errorClass,
+        triggerSource: effectiveTriggerSource,
+        errorClass:
+          decision.retryExhausted === true ? `${errorInfo.errorClass}:retry_exhausted` : errorInfo.errorClass,
         errorCode: errorInfo.errorCode,
       });
       return {
@@ -411,7 +489,7 @@ const runFlush = async (deps: ForemanMutationWorkerDeps): Promise<ForemanMutatio
         coalescedCount: inflight.coalescedCount,
         conflictType: "none",
         offlineState,
-        triggerSource: entry.payload.triggerSource,
+        triggerSource: effectiveTriggerSource,
       });
 
       await pushStageTelemetry({
@@ -426,7 +504,7 @@ const runFlush = async (deps: ForemanMutationWorkerDeps): Promise<ForemanMutatio
         coalescedCount: inflight.coalescedCount,
         conflictType: "none",
         offlineState,
-        triggerSource: entry.payload.triggerSource,
+        triggerSource: effectiveTriggerSource,
       });
       const result = await syncSnapshotWithWorker(deps, snapshot, entry);
       latestRequestId = String(result.snapshot?.requestId ?? snapshot.requestId ?? "").trim() || latestRequestId;
@@ -450,7 +528,7 @@ const runFlush = async (deps: ForemanMutationWorkerDeps): Promise<ForemanMutatio
           coalescedCount: inflight.coalescedCount,
           conflictType: "none",
           offlineState,
-          triggerSource: entry.payload.triggerSource,
+          triggerSource: effectiveTriggerSource,
         });
       }
 
@@ -460,6 +538,25 @@ const runFlush = async (deps: ForemanMutationWorkerDeps): Promise<ForemanMutatio
         await deps.persistSnapshot(null);
       }
 
+      recordOfflineMutationEvent({
+        owner: "foreman",
+        entityId: inflight.entityId,
+        mutationId: inflight.id,
+        dedupeKey: inflight.dedupeKey,
+        lifecycleStatus: "succeeded",
+        action: "succeeded",
+        attemptCount: inflight.attemptCount,
+        retryCount: inflight.retryCount,
+        triggerSource: effectiveTriggerSource,
+        errorKind: "none",
+        errorCode: null,
+        nextRetryAt: null,
+        coalescedCount: inflight.coalescedCount,
+        extra: {
+          submitted: Boolean(result.submitted),
+          requestId: latestRequestId,
+        },
+      });
       await removeForemanMutationById(entry.id);
 
       const requestKeyForCleanup =
@@ -474,7 +571,7 @@ const runFlush = async (deps: ForemanMutationWorkerDeps): Promise<ForemanMutatio
       const remainingCount = await getPendingCountForSnapshot(result.snapshot ?? null);
       await markForemanDurableDraftSyncSucceeded(result.snapshot ?? null, remainingCount, {
         queueDraftKey: remainingCount > 0 ? latestRequestId ?? entry.payload.draftKey : null,
-        triggerSource: entry.payload.triggerSource,
+        triggerSource: effectiveTriggerSource,
       });
 
         const queueSummaryAfter = await getForemanMutationQueueSummary(
@@ -492,7 +589,7 @@ const runFlush = async (deps: ForemanMutationWorkerDeps): Promise<ForemanMutatio
         coalescedCount: inflight.coalescedCount,
         conflictType: "none",
         offlineState,
-        triggerSource: entry.payload.triggerSource,
+        triggerSource: effectiveTriggerSource,
       });
       await pushStageTelemetry({
         stage: "finalize",
@@ -506,7 +603,7 @@ const runFlush = async (deps: ForemanMutationWorkerDeps): Promise<ForemanMutatio
         coalescedCount: inflight.coalescedCount,
         conflictType: "none",
         offlineState,
-        triggerSource: entry.payload.triggerSource,
+        triggerSource: effectiveTriggerSource,
       });
 
       if (!result.snapshot && latestRequestId && latestSubmitted) {
@@ -525,12 +622,13 @@ const runFlush = async (deps: ForemanMutationWorkerDeps): Promise<ForemanMutatio
 
 export const flushForemanMutationQueue = async (
   deps: ForemanMutationWorkerDeps,
+  triggerSource?: ForemanDraftSyncTriggerSource | null,
 ): Promise<ForemanMutationWorkerResult> => {
   if (flushInFlight) {
     return await flushInFlight;
   }
 
-  flushInFlight = runFlush(deps).finally(() => {
+  flushInFlight = runFlush(deps, triggerSource).finally(() => {
     flushInFlight = null;
   });
 

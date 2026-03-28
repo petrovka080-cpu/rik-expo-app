@@ -1,0 +1,196 @@
+{
+  "status": "passed",
+  "mutationTelemetry": {
+    "totalEvents": 35,
+    "byOwner": {
+      "foreman": 35
+    },
+    "byAction": {
+      "enqueue": 11,
+      "dedupe_suppressed": 5,
+      "succeeded": 7,
+      "retry_scheduled": 8,
+      "inflight_restored": 1,
+      "conflict_detected": 2,
+      "retry_exhausted": 1
+    },
+    "latestLifecycleByOwner": {
+      "foreman": "queued"
+    },
+    "conflictCount": 2,
+    "retryScheduledCount": 8,
+    "retryExhaustedCount": 1,
+    "dedupeSuppressedCount": 5
+  },
+  "noisy_local_editing": {
+    "passed": true,
+    "details": {
+      "queueLengthBeforeFlush": 1,
+      "coalescedCount": 4,
+      "finalQty": 5,
+      "syncStatus": "synced"
+    }
+  },
+  "first_sync_concurrent_mutation": {
+    "passed": true,
+    "details": {
+      "restoredSyncStatus": "retry_wait",
+      "restoredPendingCount": 1,
+      "requestId": "REQ-1",
+      "remainingCount": 0,
+      "lastSyncAt": 1774716078823,
+      "syncedItemCount": 5,
+      "localPendingAfterSync": 0,
+      "requestPendingAfterSync": 0,
+      "combinedPendingAfterSync": 0,
+      "syncCallsDuringOnline": 2
+    }
+  },
+  "kill_reopen_recovery": {
+    "passed": true,
+    "details": {
+      "recoveredItemCount": 6,
+      "remainingCount": 0,
+      "requestId": "REQ-1"
+    }
+  },
+  "retry_after_flaky_network": {
+    "passed": true,
+    "details": {
+      "firstRetryStatus": "retry_wait",
+      "secondRetryStatus": "retry_wait",
+      "finalStatus": "synced",
+      "retryCount": 0,
+      "retryFailureEvents": 4,
+      "finalizeSuccessEvents": 1,
+      "telemetryStages": [
+        "flush_start:progress",
+        "prepare_snapshot:progress",
+        "sync_rpc:progress",
+        "sync_rpc:retryable_failure",
+        "finalize:retryable_failure",
+        "flush_start:progress",
+        "prepare_snapshot:progress",
+        "sync_rpc:progress",
+        "sync_rpc:retryable_failure",
+        "finalize:retryable_failure",
+        "flush_start:progress",
+        "prepare_snapshot:progress",
+        "sync_rpc:progress",
+        "cleanup:success",
+        "finalize:success"
+      ]
+    }
+  },
+  "stuck_heuristic": {
+    "passed": true,
+    "details": {
+      "syncStatus": "retry_wait",
+      "attentionNeeded": true,
+      "retryCount": 2,
+      "lastErrorStage": "sync_rpc",
+      "uiLabel": "Need attention",
+      "uiDetail": "Retry 2, stage sync_rpc"
+    }
+  },
+  "terminal_submit_cleanup": {
+    "passed": true,
+    "details": {
+      "queueLengthBeforeFlush": 1,
+      "coalescedCount": 1,
+      "remainingCount": 0,
+      "pendingAfterSubmit": 0,
+      "finalStatus": "idle",
+      "submitLogCount": 2
+    }
+  },
+  "server_terminal_conflict": {
+    "passed": true,
+    "details": {
+      "conflictType": "server_terminal_conflict",
+      "syncStatus": "failed_terminal",
+      "pendingBeforeClear": 0,
+      "pendingAfterClear": 0,
+      "historyLifecycleStatus": "conflicted",
+      "actions": [
+        "rehydrate_server",
+        "restore_local",
+        "clear_failed_queue",
+        "discard_local"
+      ]
+    }
+  },
+  "validation_conflict": {
+    "passed": true,
+    "details": {
+      "conflictType": "validation_conflict",
+      "syncStatus": "failed_terminal",
+      "actions": [
+        "rehydrate_server",
+        "restore_local",
+        "clear_failed_queue",
+        "discard_local"
+      ]
+    }
+  },
+  "retry_now_success": {
+    "passed": true,
+    "details": {
+      "firstStatus": "retry_wait",
+      "firstConflictType": "retryable_sync_failure",
+      "finalStatus": "synced",
+      "actions": [
+        "retry_now",
+        "restore_local",
+        "clear_failed_queue",
+        "discard_local"
+      ]
+    }
+  },
+  "retry_exhaustion": {
+    "passed": true,
+    "details": {
+      "failureMessages": [
+        "offline",
+        "offline",
+        "offline",
+        "offline",
+        "offline"
+      ],
+      "finalStatus": "failed_terminal",
+      "finalConflictType": "retryable_sync_failure",
+      "retryCount": 5,
+      "actions": [
+        "retry_now",
+        "restore_local",
+        "clear_failed_queue",
+        "discard_local"
+      ],
+      "historyLifecycleStatus": "failed_non_retryable"
+    }
+  },
+  "rehydrate_from_server": {
+    "passed": true,
+    "details": {
+      "finalStatus": "synced",
+      "currentItemCount": 2,
+      "recoverableItemQty": 2
+    }
+  },
+  "restore_local_after_conflict": {
+    "passed": true,
+    "details": {
+      "restoredQty": 2,
+      "status": "dirty_local",
+      "conflictType": "stale_local_snapshot"
+    }
+  },
+  "discard_local_draft": {
+    "passed": true,
+    "details": {
+      "finalStatus": "idle",
+      "actions": [],
+      "snapshotPresent": false
+    }
+  }
+}

@@ -3,8 +3,10 @@ import {
   enqueueContractorProgress,
   getContractorProgressPendingCount,
   loadContractorProgressQueue,
-  markContractorProgressQueueFailed,
+  markContractorProgressQueueConflicted,
+  markContractorProgressQueueFailedNonRetryable,
   markContractorProgressQueueInflight,
+  markContractorProgressQueueRetryScheduled,
   peekNextContractorProgressQueueEntry,
   removeContractorProgressQueueEntry,
   resetInflightContractorProgressQueue,
@@ -24,9 +26,20 @@ import {
   markContractorProgressSynced,
   markContractorProgressSyncing,
   setContractorProgressPendingLogId,
+  type ContractorProgressConflictType,
   type ContractorProgressDraftRecord,
   type ContractorProgressFailureClass,
 } from "../../screens/contractor/contractor.progressDraft.store";
+import {
+  classifyOfflineMutationErrorKind,
+  isOfflineMutationConflictKind,
+} from "./mutation.conflict";
+import {
+  getOfflineMutationRetryPolicy,
+  resolveOfflineMutationFailureDecision,
+} from "./mutation.retryPolicy";
+import { recordOfflineMutationEvent } from "./mutation.telemetry";
+import type { OfflineMutationErrorKind } from "./mutation.types";
 
 type ContractorProgressWorkerTriggerSource = PlatformOfflineRetryTriggerSource;
 
@@ -48,7 +61,18 @@ type ContractorProgressWorkerDeps = {
   getNetworkOnline?: () => boolean | null;
 };
 
+type ContractorProgressFailureAssessment = {
+  retryable: boolean;
+  failureClass: ContractorProgressFailureClass;
+  conflictType: ContractorProgressConflictType;
+  errorMessage: string;
+  errorKind: OfflineMutationErrorKind;
+  errorCode: string;
+};
+
 let flushInFlight: Promise<ContractorProgressWorkerResult> | null = null;
+
+const CONTRACTOR_RETRY_POLICY = getOfflineMutationRetryPolicy("contractor_default");
 
 const trim = (value: unknown) => String(value ?? "").trim();
 
@@ -65,36 +89,68 @@ const serializeDraft = (draft: ContractorProgressDraftRecord | null) =>
     context: draft?.context ?? null,
   });
 
-const toErrorText = (error: unknown) => {
-  if (error instanceof Error) return trim(error.message) || "progress_submit_failed";
-  if (error && typeof error === "object" && "message" in error) {
-    return trim((error as { message?: unknown }).message) || "progress_submit_failed";
-  }
-  return trim(error) || "progress_submit_failed";
-};
+const classifyContractorProgressFailure = (error: unknown): ContractorProgressFailureAssessment => {
+  const normalized = classifyOfflineMutationErrorKind(error);
+  const lower = normalized.message.toLowerCase();
 
-const classifyRetryableError = (errorMessage: string): Extract<
-  ContractorProgressFailureClass,
-  "offline_wait" | "retryable_sync_failure" | "failed_terminal"
-> => {
-  const text = trim(errorMessage).toLowerCase();
-  if (!text) return "failed_terminal";
-  if (text === "offline" || text.includes("network request failed") || text.includes("internet")) {
-    return "offline_wait";
-  }
-  if (
-    text.includes("timeout") ||
-    text.includes("temporar") ||
-    text.includes("fetch") ||
-    text.includes("network") ||
-    text.includes("connection")
+  let failureClass: ContractorProgressFailureClass = "failed_terminal";
+  let retryable = false;
+  let conflictType: ContractorProgressConflictType = "none";
+
+  if (normalized.errorKind === "network_unreachable") {
+    failureClass = "offline_wait";
+    retryable = true;
+  } else if (
+    normalized.errorKind === "timeout" ||
+    normalized.errorKind === "transient_server" ||
+    normalized.errorKind === "transport" ||
+    normalized.errorKind === "runtime"
   ) {
-    return "retryable_sync_failure";
+    failureClass = "retryable_sync_failure";
+    retryable = true;
+  } else if (
+    lower.includes("submitted") ||
+    lower.includes("finalized") ||
+    lower.includes("closed") ||
+    lower.includes("cancelled") ||
+    lower.includes("canceled")
+  ) {
+    failureClass = "conflicted";
+    conflictType = "server_terminal_conflict";
+  } else if (normalized.errorKind === "stale_state") {
+    failureClass = "conflicted";
+    conflictType = "stale_progress_state";
+  } else if (normalized.errorKind === "remote_divergence") {
+    failureClass = "conflicted";
+    conflictType = "remote_divergence_requires_attention";
+  } else if (
+    normalized.errorKind === "conflict" ||
+    (normalized.errorKind === "contract_validation" &&
+      (lower.includes("conflict") || lower.includes("stale") || lower.includes("version")))
+  ) {
+    failureClass = "conflicted";
+    conflictType = lower.includes("stale") || lower.includes("version")
+      ? "stale_progress_state"
+      : "validation_conflict";
+  } else if (isOfflineMutationConflictKind(normalized.errorKind)) {
+    failureClass = "conflicted";
+    conflictType = "remote_divergence_requires_attention";
   }
-  return "failed_terminal";
+
+  return {
+    retryable,
+    failureClass,
+    conflictType,
+    errorMessage: normalized.message,
+    errorKind: normalized.errorKind,
+    errorCode: normalized.errorCode,
+  };
 };
 
-const resolvedObjectNameMissing = (draft: ContractorProgressDraftRecord | null, deps: ContractorProgressWorkerDeps) => {
+const resolvedObjectNameMissing = (
+  draft: ContractorProgressDraftRecord | null,
+  deps: ContractorProgressWorkerDeps,
+) => {
   if (!draft) return true;
   const resolvedObjectName =
     deps.pickFirstNonEmpty(draft.context.rowObjectName, draft.context.jobObjectName) || "";
@@ -105,7 +161,9 @@ const runFlush = async (
   deps: ContractorProgressWorkerDeps,
   triggerSource: ContractorProgressWorkerTriggerSource,
 ): Promise<ContractorProgressWorkerResult> => {
-  const inflightBeforeReset = (await loadContractorProgressQueue()).filter((entry) => entry.status === "inflight").length;
+  const inflightBeforeReset = (await loadContractorProgressQueue({ includeFinal: true })).filter(
+    (entry) => entry.lifecycleStatus === "processing",
+  ).length;
   await resetInflightContractorProgressQueue();
   const restoredInflightCount = inflightBeforeReset;
   if (restoredInflightCount > 0) {
@@ -131,7 +189,9 @@ const runFlush = async (
   let lastErrorStage: string | null = null;
 
   while (true) {
-    const entry = await peekNextContractorProgressQueueEntry();
+    const entry = await peekNextContractorProgressQueueEntry({
+      triggerSource,
+    });
     if (!entry) {
       return {
         processedCount,
@@ -149,22 +209,57 @@ const runFlush = async (
     if (!inflight) continue;
 
     if (deps.getNetworkOnline?.() === false) {
-      await markContractorProgressQueueFailed(entry.id, "offline");
-      await markContractorProgressRetryWait(entry.progressId, {
-        errorMessage: "offline",
-        errorStage: "sync_rpc",
-        pendingCount: await getContractorProgressPendingCount(entry.progressId),
-        failureClass: "offline_wait",
+      const decision = resolveOfflineMutationFailureDecision({
+        policy: CONTRACTOR_RETRY_POLICY,
+        attemptCount: inflight.attemptCount,
+        retryable: true,
+        conflicted: false,
+        errorKind: "network_unreachable",
       });
+      if (decision.lifecycleStatus === "retry_scheduled") {
+        await markContractorProgressQueueRetryScheduled({
+          queueId: entry.id,
+          errorMessage: "offline",
+          errorCode: "offline",
+          errorKind: "network_unreachable",
+          nextRetryAt: decision.nextRetryAt,
+        });
+        await markContractorProgressRetryWait(entry.progressId, {
+          errorMessage: "offline",
+          errorStage: "sync_rpc",
+          pendingCount: await getContractorProgressPendingCount(entry.progressId),
+          failureClass: "offline_wait",
+          errorKind: "network_unreachable",
+          errorCode: "offline",
+          nextRetryAt: decision.nextRetryAt,
+        });
+      } else {
+        await markContractorProgressQueueFailedNonRetryable({
+          queueId: entry.id,
+          errorMessage: "offline",
+          errorCode: "offline",
+          errorKind: "network_unreachable",
+          exhausted: decision.retryExhausted,
+        });
+        await markContractorProgressFailedTerminal(entry.progressId, {
+          errorMessage: "offline",
+          errorStage: "sync_rpc",
+          failureClass: "failed_terminal",
+          errorKind: "network_unreachable",
+          errorCode: "offline",
+        });
+      }
       recordPlatformOfflineTelemetry({
         contourKey: "contractor_progress",
         entityKey: entry.progressId,
-        syncStatus: "retry_wait",
-        queueAction: "sync_retry_wait",
+        syncStatus: decision.lifecycleStatus === "retry_scheduled" ? "retry_wait" : "failed_terminal",
+        queueAction: decision.lifecycleStatus === "retry_scheduled" ? "sync_retry_wait" : "sync_failed_terminal",
         coalesced: inflight.coalescedCount > 0,
-        retryCount: inflight.retryCount + 1,
+        retryCount:
+          decision.lifecycleStatus === "retry_scheduled" ? inflight.retryCount + 1 : inflight.retryCount,
         pendingCount: await getContractorProgressPendingCount(entry.progressId),
-        failureClass: "offline_wait",
+        failureClass:
+          decision.lifecycleStatus === "retry_scheduled" ? "offline_wait" : "failed_terminal",
         triggerKind: triggerSource,
         networkKnownOffline: true,
         restoredAfterReopen: false,
@@ -176,7 +271,7 @@ const runFlush = async (
         remainingCount: await getContractorProgressPendingCount(),
         failed: true,
         errorMessage: "offline",
-        failureClass: "offline_wait",
+        failureClass: decision.lifecycleStatus === "retry_scheduled" ? "offline_wait" : "failed_terminal",
         lastProgressId,
         lastErrorStage: "sync_rpc",
         triggerSource,
@@ -185,6 +280,24 @@ const runFlush = async (
 
     const draftBefore = getContractorProgressDraft(entry.progressId);
     if (!draftBefore) {
+      recordOfflineMutationEvent({
+        owner: "contractor",
+        entityId: inflight.entityId,
+        mutationId: inflight.id,
+        dedupeKey: inflight.dedupeKey,
+        lifecycleStatus: "discarded_by_policy",
+        action: "discarded_by_policy",
+        attemptCount: inflight.attemptCount,
+        retryCount: inflight.retryCount,
+        triggerSource,
+        errorKind: inflight.lastErrorKind,
+        errorCode: inflight.lastErrorCode,
+        nextRetryAt: null,
+        coalescedCount: inflight.coalescedCount,
+        extra: {
+          reason: "draft_missing",
+        },
+      });
       await removeContractorProgressQueueEntry(entry.id);
       await clearContractorProgressQueueForProgress(entry.progressId);
       await markContractorProgressSynced(entry.progressId, { pendingCount: 0 });
@@ -192,11 +305,19 @@ const runFlush = async (
     }
 
     if (resolvedObjectNameMissing(draftBefore, deps)) {
-      await removeContractorProgressQueueEntry(entry.id);
+      await markContractorProgressQueueFailedNonRetryable({
+        queueId: entry.id,
+        errorMessage: "missing_object",
+        errorCode: "missing_object",
+        errorKind: "contract_validation",
+      });
       await markContractorProgressFailedTerminal(entry.progressId, {
         errorMessage: "Не удалось определить объект для сохранения факта.",
         errorStage: "prepare_snapshot",
         pendingLogId: draftBefore.pendingLogId,
+        failureClass: "failed_terminal",
+        errorKind: "contract_validation",
+        errorCode: "missing_object",
       });
       return {
         processedCount,
@@ -230,6 +351,115 @@ const runFlush = async (
     });
     const startedAt = Date.now();
 
+    const finalizeFailure = async (
+      error: unknown,
+      stage: "sync_rpc" | "sync_log" | "sync_materials" | "prepare_snapshot",
+      pendingLogId?: string | null,
+    ) => {
+      const failure = classifyContractorProgressFailure(error);
+      const decision = resolveOfflineMutationFailureDecision({
+        policy: CONTRACTOR_RETRY_POLICY,
+        attemptCount: inflight.attemptCount,
+        retryable: failure.retryable,
+        conflicted: failure.conflictType !== "none",
+        errorKind: failure.errorKind as any,
+      });
+
+      if (decision.lifecycleStatus === "retry_scheduled") {
+        await markContractorProgressQueueRetryScheduled({
+          queueId: entry.id,
+          errorMessage: failure.errorMessage,
+          errorCode: failure.errorCode,
+          errorKind: failure.errorKind,
+          nextRetryAt: decision.nextRetryAt,
+        });
+        await markContractorProgressRetryWait(entry.progressId, {
+          errorMessage: failure.errorMessage,
+          errorStage: stage,
+          pendingCount: await getContractorProgressPendingCount(entry.progressId),
+          failureClass: failure.failureClass === "offline_wait" ? "offline_wait" : "retryable_sync_failure",
+          pendingLogId,
+          errorKind: failure.errorKind,
+          errorCode: failure.errorCode,
+          nextRetryAt: decision.nextRetryAt,
+        });
+      } else if (decision.lifecycleStatus === "conflicted") {
+        await markContractorProgressQueueConflicted({
+          queueId: entry.id,
+          errorMessage: failure.errorMessage,
+          errorCode: failure.errorCode,
+          errorKind: failure.errorKind,
+          serverVersionHint: pendingLogId ?? null,
+        });
+        await markContractorProgressFailedTerminal(entry.progressId, {
+          errorMessage: failure.errorMessage,
+          errorStage: stage,
+          pendingLogId,
+          failureClass: "conflicted",
+          conflictType: failure.conflictType,
+          errorKind: failure.errorKind,
+          errorCode: failure.errorCode,
+        });
+      } else {
+        await markContractorProgressQueueFailedNonRetryable({
+          queueId: entry.id,
+          errorMessage: failure.errorMessage,
+          errorCode: failure.errorCode,
+          errorKind: failure.errorKind,
+          exhausted: decision.retryExhausted,
+        });
+        await markContractorProgressFailedTerminal(entry.progressId, {
+          errorMessage: failure.errorMessage,
+          errorStage: stage,
+          pendingLogId,
+          failureClass: failure.failureClass === "conflicted" ? "conflicted" : "failed_terminal",
+          conflictType: failure.conflictType,
+          errorKind: failure.errorKind,
+          errorCode: failure.errorCode,
+        });
+      }
+
+      recordPlatformOfflineTelemetry({
+        contourKey: "contractor_progress",
+        entityKey: entry.progressId,
+        syncStatus: decision.lifecycleStatus === "retry_scheduled" ? "retry_wait" : "failed_terminal",
+        queueAction: decision.lifecycleStatus === "retry_scheduled" ? "sync_retry_wait" : "sync_failed_terminal",
+        coalesced: inflight.coalescedCount > 0,
+        retryCount:
+          decision.lifecycleStatus === "retry_scheduled" ? inflight.retryCount + 1 : inflight.retryCount,
+        pendingCount: await getContractorProgressPendingCount(entry.progressId),
+        failureClass:
+          decision.lifecycleStatus === "retry_scheduled"
+            ? failure.failureClass === "offline_wait"
+              ? "offline_wait"
+              : "retryable_sync_failure"
+            : "failed_terminal",
+        triggerKind: triggerSource,
+        networkKnownOffline: deps.getNetworkOnline?.() === false,
+        restoredAfterReopen: false,
+        manualRetry: triggerSource === "manual_retry",
+        durationMs: Date.now() - startedAt,
+      });
+
+      return {
+        processedCount,
+        remainingCount: await getContractorProgressPendingCount(),
+        failed: true,
+        errorMessage: failure.errorMessage,
+        failureClass:
+          decision.lifecycleStatus === "retry_scheduled"
+            ? failure.failureClass === "offline_wait"
+              ? "offline_wait"
+              : "retryable_sync_failure"
+            : failure.failureClass === "conflicted"
+              ? "conflicted"
+              : "failed_terminal",
+        lastProgressId,
+        lastErrorStage: stage,
+        triggerSource,
+      } satisfies ContractorProgressWorkerResult;
+    };
+
     try {
       const submitResult = await ensureWorkProgressSubmission({
         supabaseClient: deps.supabaseClient,
@@ -243,57 +473,34 @@ const runFlush = async (
       });
 
       if (submitResult.ok === false) {
-        const errorMessage = toErrorText(submitResult.error);
-        const failureClass = classifyRetryableError(errorMessage);
-        lastErrorStage = submitResult.stage === "log" ? "sync_log" : "sync_materials";
-
-        if (failureClass === "failed_terminal") {
-          await removeContractorProgressQueueEntry(entry.id);
-          await markContractorProgressFailedTerminal(entry.progressId, {
-            errorMessage,
-            errorStage: lastErrorStage,
-            pendingLogId: submitResult.logId ?? draftBefore.pendingLogId,
-          });
-        } else {
-          await markContractorProgressQueueFailed(entry.id, errorMessage);
-          await markContractorProgressRetryWait(entry.progressId, {
-            errorMessage,
-            errorStage: lastErrorStage,
-            pendingCount: await getContractorProgressPendingCount(entry.progressId),
-            failureClass,
-            pendingLogId: submitResult.logId ?? draftBefore.pendingLogId,
-          });
-        }
-
-        recordPlatformOfflineTelemetry({
-          contourKey: "contractor_progress",
-          entityKey: entry.progressId,
-          syncStatus: failureClass === "failed_terminal" ? "failed_terminal" : "retry_wait",
-          queueAction: failureClass === "failed_terminal" ? "sync_failed_terminal" : "sync_retry_wait",
-          coalesced: inflight.coalescedCount > 0,
-          retryCount: inflight.retryCount + (failureClass === "failed_terminal" ? 0 : 1),
-          pendingCount: await getContractorProgressPendingCount(entry.progressId),
-          failureClass,
-          triggerKind: triggerSource,
-          networkKnownOffline: deps.getNetworkOnline?.() === false,
-          restoredAfterReopen: false,
-          manualRetry: triggerSource === "manual_retry",
-          durationMs: Date.now() - startedAt,
-        });
-
-        return {
-          processedCount,
-          remainingCount: await getContractorProgressPendingCount(),
-          failed: true,
-          errorMessage,
-          failureClass,
-          lastProgressId,
-          lastErrorStage,
-          triggerSource,
-        };
+        const submitFailureStage = submitResult.stage === "log" ? "sync_log" : "sync_materials";
+        lastErrorStage = submitFailureStage;
+        return await finalizeFailure(
+          submitResult.error,
+          submitFailureStage,
+          submitResult.logId ?? draftBefore.pendingLogId,
+        );
       }
 
       await setContractorProgressPendingLogId(entry.progressId, submitResult.logId);
+      recordOfflineMutationEvent({
+        owner: "contractor",
+        entityId: inflight.entityId,
+        mutationId: inflight.id,
+        dedupeKey: inflight.dedupeKey,
+        lifecycleStatus: "succeeded",
+        action: "succeeded",
+        attemptCount: inflight.attemptCount,
+        retryCount: inflight.retryCount,
+        triggerSource,
+        errorKind: "none",
+        errorCode: null,
+        nextRetryAt: null,
+        coalescedCount: inflight.coalescedCount,
+        extra: {
+          logId: submitResult.logId,
+        },
+      });
       await removeContractorProgressQueueEntry(entry.id);
       processedCount += 1;
       lastProgressId = entry.progressId;
@@ -302,11 +509,17 @@ const runFlush = async (
       const snapshotChangedWhileSyncing =
         draftAfter != null &&
         serializeDraft(draftAfter) !== snapshotKey &&
-        (draftAfter.materials.length > 0 || trim(draftAfter.fields.selectedStage) || trim(draftAfter.fields.comment) || trim(draftAfter.fields.location));
+        (draftAfter.materials.length > 0 ||
+          trim(draftAfter.fields.selectedStage) ||
+          trim(draftAfter.fields.comment) ||
+          trim(draftAfter.fields.location));
 
       if (snapshotChangedWhileSyncing) {
         await setContractorProgressPendingLogId(entry.progressId, null);
-        await enqueueContractorProgress(entry.progressId);
+        await enqueueContractorProgress(entry.progressId, {
+          baseVersion: draftAfter?.updatedAt != null ? String(draftAfter.updatedAt) : null,
+          serverVersionHint: submitResult.logId,
+        });
         await markContractorProgressQueued(
           entry.progressId,
           await getContractorProgressPendingCount(entry.progressId),
@@ -336,56 +549,13 @@ const runFlush = async (
       if (deps.refreshAfterSuccess) {
         try {
           await deps.refreshAfterSuccess(entry.progressId);
-        } catch {
-          // Submit already succeeded; refresh can recover on next screen lifecycle.
+        } catch (error) {
+          console.warn("[contractor.offline] refreshAfterSuccess failed", error);
         }
       }
     } catch (error) {
-      const errorMessage = toErrorText(error);
-      const failureClass = classifyRetryableError(errorMessage);
       lastErrorStage = "sync_rpc";
-      if (failureClass === "failed_terminal") {
-        await removeContractorProgressQueueEntry(entry.id);
-        await markContractorProgressFailedTerminal(entry.progressId, {
-          errorMessage,
-          errorStage: "sync_rpc",
-          pendingLogId: draftBefore.pendingLogId,
-        });
-      } else {
-        await markContractorProgressQueueFailed(entry.id, errorMessage);
-        await markContractorProgressRetryWait(entry.progressId, {
-          errorMessage,
-          errorStage: "sync_rpc",
-          pendingCount: await getContractorProgressPendingCount(entry.progressId),
-          failureClass,
-          pendingLogId: draftBefore.pendingLogId,
-        });
-      }
-      recordPlatformOfflineTelemetry({
-        contourKey: "contractor_progress",
-        entityKey: entry.progressId,
-        syncStatus: failureClass === "failed_terminal" ? "failed_terminal" : "retry_wait",
-        queueAction: failureClass === "failed_terminal" ? "sync_failed_terminal" : "sync_retry_wait",
-        coalesced: inflight.coalescedCount > 0,
-        retryCount: inflight.retryCount + (failureClass === "failed_terminal" ? 0 : 1),
-        pendingCount: await getContractorProgressPendingCount(entry.progressId),
-        failureClass,
-        triggerKind: triggerSource,
-        networkKnownOffline: deps.getNetworkOnline?.() === false,
-        restoredAfterReopen: false,
-        manualRetry: triggerSource === "manual_retry",
-        durationMs: Date.now() - startedAt,
-      });
-      return {
-        processedCount,
-        remainingCount: await getContractorProgressPendingCount(),
-        failed: true,
-        errorMessage,
-        failureClass,
-        lastProgressId,
-        lastErrorStage,
-        triggerSource,
-      };
+      return await finalizeFailure(error, "sync_rpc", draftBefore.pendingLogId);
     }
   }
 };

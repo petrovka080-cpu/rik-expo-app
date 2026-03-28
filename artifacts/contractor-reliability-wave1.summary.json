@@ -1,0 +1,117 @@
+{
+  "status": "passed",
+  "mutationTelemetry": {
+    "totalEvents": 25,
+    "byOwner": {
+      "contractor": 25
+    },
+    "byAction": {
+      "enqueue": 7,
+      "retry_scheduled": 6,
+      "succeeded": 4,
+      "inflight_restored": 1,
+      "dedupe_suppressed": 4,
+      "conflict_detected": 2,
+      "retry_exhausted": 1
+    },
+    "latestLifecycleByOwner": {
+      "contractor": "failed_non_retryable"
+    },
+    "conflictCount": 2,
+    "retryScheduledCount": 6,
+    "retryExhaustedCount": 1,
+    "dedupeSuppressedCount": 4
+  },
+  "offline_draft": {
+    "passed": true,
+    "details": {
+      "restoredStatus": "dirty_local",
+      "restoredMaterialCount": 2,
+      "restoredStage": "Подготовка",
+      "restoredComment": "Черновик офлайн",
+      "restoredLocation": "Секция 1"
+    }
+  },
+  "online_recovery": {
+    "passed": true,
+    "details": {
+      "offlineStatus": "retry_wait",
+      "recoveryStatus": "synced",
+      "remainingCount": 0,
+      "logInsertCount": 1,
+      "materialsInsertCount": 1
+    }
+  },
+  "kill_reopen": {
+    "passed": true,
+    "details": {
+      "queueLengthBeforeFlush": 1,
+      "queueStatusBeforeFlush": "inflight",
+      "finalStatus": "synced",
+      "logInsertCount": 1
+    }
+  },
+  "retry_path": {
+    "passed": true,
+    "details": {
+      "failedStatus": "retry_wait",
+      "pendingLogIdAfterFail": "log-1",
+      "queueLengthAfterFail": 1,
+      "finalStatus": "synced",
+      "logInsertCount": 1,
+      "materialsInsertCount": 1
+    }
+  },
+  "coalescing": {
+    "passed": true,
+    "details": {
+      "coalescedCount": 4,
+      "finalStatus": "synced",
+      "finalQtyFact": 5,
+      "queueLengthAfterSync": 0,
+      "logInsertCount": 1,
+      "materialsInsertCount": 1
+    }
+  },
+  "terminal_failure": {
+    "passed": true,
+    "details": {
+      "failureClass": "conflicted",
+      "finalStatus": "failed_terminal",
+      "finalFailureClass": "conflicted",
+      "lastErrorStage": "sync_materials",
+      "queueLength": 0,
+      "historyLifecycleStatus": "conflicted",
+      "logInsertCount": 1,
+      "materialsInsertCount": 0
+    }
+  },
+  "conflict_state": {
+    "passed": true,
+    "details": {
+      "failureClass": "conflicted",
+      "syncStatus": "failed_terminal",
+      "draftFailureClass": "conflicted",
+      "conflictType": "stale_progress_state",
+      "activeQueueLength": 0,
+      "historyLifecycleStatus": "conflicted"
+    }
+  },
+  "retry_exhaustion": {
+    "passed": true,
+    "details": {
+      "failureClasses": [
+        "retryable_sync_failure",
+        "retryable_sync_failure",
+        "retryable_sync_failure",
+        "retryable_sync_failure",
+        "failed_terminal"
+      ],
+      "finalStatus": "failed_terminal",
+      "finalFailureClass": "failed_terminal",
+      "activeQueueLength": 0,
+      "historyLifecycleStatus": "failed_non_retryable",
+      "retryCount": 4
+    }
+  }
+}

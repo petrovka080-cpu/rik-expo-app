@@ -1,0 +1,926 @@
+{
+  "status": "passed",
+  "mutationTelemetry": {
+    "totalEvents": 35,
+    "byOwner": {
+      "foreman": 35
+    },
+    "byAction": {
+      "enqueue": 11,
+      "dedupe_suppressed": 5,
+      "succeeded": 7,
+      "retry_scheduled": 8,
+      "inflight_restored": 1,
+      "conflict_detected": 2,
+      "retry_exhausted": 1
+    },
+    "latestLifecycleByOwner": {
+      "foreman": "queued"
+    },
+    "conflictCount": 2,
+    "retryScheduledCount": 8,
+    "retryExhaustedCount": 1,
+    "dedupeSuppressedCount": 5
+  },
+  "noisy_local_editing": {
+    "passed": true,
+    "details": {
+      "queueLengthBeforeFlush": 1,
+      "coalescedCount": 4,
+      "finalQty": 5,
+      "syncStatus": "synced"
+    }
+  },
+  "first_sync_concurrent_mutation": {
+    "passed": true,
+    "details": {
+      "restoredSyncStatus": "retry_wait",
+      "restoredPendingCount": 1,
+      "requestId": "REQ-1",
+      "remainingCount": 0,
+      "lastSyncAt": 1774716078823,
+      "syncedItemCount": 5,
+      "localPendingAfterSync": 0,
+      "requestPendingAfterSync": 0,
+      "combinedPendingAfterSync": 0,
+      "syncCallsDuringOnline": 2
+    }
+  },
+  "kill_reopen_recovery": {
+    "passed": true,
+    "details": {
+      "recoveredItemCount": 6,
+      "remainingCount": 0,
+      "requestId": "REQ-1"
+    }
+  },
+  "retry_after_flaky_network": {
+    "passed": true,
+    "details": {
+      "firstRetryStatus": "retry_wait",
+      "secondRetryStatus": "retry_wait",
+      "finalStatus": "synced",
+      "retryCount": 0,
+      "retryFailureEvents": 4,
+      "finalizeSuccessEvents": 1,
+      "telemetryStages": [
+        "flush_start:progress",
+        "prepare_snapshot:progress",
+        "sync_rpc:progress",
+        "sync_rpc:retryable_failure",
+        "finalize:retryable_failure",
+        "flush_start:progress",
+        "prepare_snapshot:progress",
+        "sync_rpc:progress",
+        "sync_rpc:retryable_failure",
+        "finalize:retryable_failure",
+        "flush_start:progress",
+        "prepare_snapshot:progress",
+        "sync_rpc:progress",
+        "cleanup:success",
+        "finalize:success"
+      ]
+    }
+  },
+  "stuck_heuristic": {
+    "passed": true,
+    "details": {
+      "syncStatus": "retry_wait",
+      "attentionNeeded": true,
+      "retryCount": 2,
+      "lastErrorStage": "sync_rpc",
+      "uiLabel": "Need attention",
+      "uiDetail": "Retry 2, stage sync_rpc"
+    }
+  },
+  "terminal_submit_cleanup": {
+    "passed": true,
+    "details": {
+      "queueLengthBeforeFlush": 1,
+      "coalescedCount": 1,
+      "remainingCount": 0,
+      "pendingAfterSubmit": 0,
+      "finalStatus": "idle",
+      "submitLogCount": 2
+    }
+  },
+  "server_terminal_conflict": {
+    "passed": true,
+    "details": {
+      "conflictType": "server_terminal_conflict",
+      "syncStatus": "failed_terminal",
+      "pendingBeforeClear": 0,
+      "pendingAfterClear": 0,
+      "historyLifecycleStatus": "conflicted",
+      "actions": [
+        "rehydrate_server",
+        "restore_local",
+        "clear_failed_queue",
+        "discard_local"
+      ]
+    }
+  },
+  "validation_conflict": {
+    "passed": true,
+    "details": {
+      "conflictType": "validation_conflict",
+      "syncStatus": "failed_terminal",
+      "actions": [
+        "rehydrate_server",
+        "restore_local",
+        "clear_failed_queue",
+        "discard_local"
+      ]
+    }
+  },
+  "retry_now_success": {
+    "passed": true,
+    "details": {
+      "firstStatus": "retry_wait",
+      "firstConflictType": "retryable_sync_failure",
+      "finalStatus": "synced",
+      "actions": [
+        "retry_now",
+        "restore_local",
+        "clear_failed_queue",
+        "discard_local"
+      ]
+    }
+  },
+  "retry_exhaustion": {
+    "passed": true,
+    "details": {
+      "failureMessages": [
+        "offline",
+        "offline",
+        "offline",
+        "offline",
+        "offline"
+      ],
+      "finalStatus": "failed_terminal",
+      "finalConflictType": "retryable_sync_failure",
+      "retryCount": 5,
+      "actions": [
+        "retry_now",
+        "restore_local",
+        "clear_failed_queue",
+        "discard_local"
+      ],
+      "historyLifecycleStatus": "failed_non_retryable"
+    }
+  },
+  "rehydrate_from_server": {
+    "passed": true,
+    "details": {
+      "finalStatus": "synced",
+      "currentItemCount": 2,
+      "recoverableItemQty": 2
+    }
+  },
+  "restore_local_after_conflict": {
+    "passed": true,
+    "details": {
+      "restoredQty": 2,
+      "status": "dirty_local",
+      "conflictType": "stale_local_snapshot"
+    }
+  },
+  "discard_local_draft": {
+    "passed": true,
+    "details": {
+      "finalStatus": "idle",
+      "actions": [],
+      "snapshotPresent": false
+    }
+  },
+  "syncCallLog": [],
+  "submitLog": [],
+  "durableState": {
+    "version": 2,
+    "hydrated": true,
+    "snapshot": null,
+    "syncStatus": "idle",
+    "lastSyncAt": 1774716078854,
+    "lastError": null,
+    "lastErrorAt": null,
+    "lastErrorStage": null,
+    "conflictType": "none",
+    "lastConflictAt": null,
+    "retryCount": 0,
+    "repeatedFailureStageCount": 0,
+    "pendingOperationsCount": 0,
+    "queueDraftKey": null,
+    "requestIdKnown": true,
+    "attentionNeeded": false,
+    "availableRecoveryActions": [],
+    "recoverableLocalSnapshot": null,
+    "lastTriggerSource": "manual_retry",
+    "telemetry": [],
+    "updatedAt": 1774716078854
+  },
+  "mutationTelemetryEvents": [
+    {
+      "id": "mut-1",
+      "at": 1774716078815,
+      "owner": "foreman",
+      "entityId": "__foreman_local_draft__",
+      "mutationId": "mq-mnak4qfz-1udpqd",
+      "dedupeKey": "foreman_draft:__foreman_local_draft__:qty_update:2026-03-28T16:41:18.813Z:sync",
+      "lifecycleStatus": "queued",
+      "action": "enqueue",
+      "attemptCount": 0,
+      "retryCount": 0,
+      "triggerSource": "manual_retry",
+      "errorKind": "none",
+      "errorCode": null,
+      "nextRetryAt": null,
+      "coalescedCount": 0,
+      "extra": {
+        "mutationKind": "qty_update",
+        "submitRequested": false
+      }
+    },
+    {
+      "id": "mut-2",
+      "at": 1774716078816,
+      "owner": "foreman",
+      "entityId": "__foreman_local_draft__",
+      "mutationId": "mq-mnak4qfz-1udpqd",
+      "dedupeKey": "foreman_draft:__foreman_local_draft__:qty_update:2026-03-28T16:41:18.814Z:sync",
+      "lifecycleStatus": "queued",
+      "action": "dedupe_suppressed",
+      "attemptCount": 0,
+      "retryCount": 0,
+      "triggerSource": "manual_retry",
+      "errorKind": "none",
+      "errorCode": null,
+      "nextRetryAt": null,
+      "coalescedCount": 1,
+      "extra": {
+        "mutationKind": "qty_update",
+        "submitRequested": false
+      }
+    },
+    {
+      "id": "mut-3",
+      "at": 1774716078816,
+      "owner": "foreman",
+      "entityId": "__foreman_local_draft__",
+      "mutationId": "mq-mnak4qfz-1udpqd",
+      "dedupeKey": "foreman_draft:__foreman_local_draft__:qty_update:2026-03-28T16:41:18.814Z:sync",
+      "lifecycleStatus": "queued",
+      "action": "dedupe_suppressed",
+      "attemptCount": 0,
+      "retryCount": 0,
+      "triggerSource": "manual_retry",
+      "errorKind": "none",
+      "errorCode": null,
+      "nextRetryAt": null,
+      "coalescedCount": 2,
+      "extra": {
+        "mutationKind": "qty_update"
+      }
+    },
+    {
+      "id": "mut-4",
+      "at": 1774716078816,
+      "owner": "foreman",
+      "entityId": "__foreman_local_draft__",
+      "mutationId": "mq-mnak4qfz-1udpqd",
+      "dedupeKey": "foreman_draft:__foreman_local_draft__:qty_update:2026-03-28T16:41:18.814Z:sync",
+      "lifecycleStatus": "queued",
+      "action": "dedupe_suppressed",
+      "attemptCount": 0,
+      "retryCount": 0,
+      "triggerSource": "manual_retry",
+      "errorKind": "none",
+      "errorCode": null,
+      "nextRetryAt": null,
+      "coalescedCount": 3,
+      "extra": {
+        "mutationKind": "qty_update"
+      }
+    },
+    {
+      "id": "mut-5",
+      "at": 1774716078816,
+      "owner": "foreman",
+      "entityId": "__foreman_local_draft__",
+      "mutationId": "mq-mnak4qfz-1udpqd",
+      "dedupeKey": "foreman_draft:__foreman_local_draft__:qty_update:2026-03-28T16:41:18.814Z:sync",
+      "lifecycleStatus": "queued",
+      "action": "dedupe_suppressed",
+      "attemptCount": 0,
+      "retryCount": 0,
+      "triggerSource": "manual_retry",
+      "errorKind": "none",
+      "errorCode": null,
+      "nextRetryAt": null,
+      "coalescedCount": 4,
+      "extra": {
+        "mutationKind": "qty_update"
+      }
+    },
+    {
+      "id": "mut-6",
+      "at": 1774716078819,
+      "owner": "foreman",
+      "entityId": "__foreman_local_draft__",
+      "mutationId": "mq-mnak4qfz-1udpqd",
+      "dedupeKey": "foreman_draft:__foreman_local_draft__:qty_update:2026-03-28T16:41:18.814Z:sync",
+      "lifecycleStatus": "succeeded",
+      "action": "succeeded",
+      "attemptCount": 1,
+      "retryCount": 0,
+      "triggerSource": "manual_retry",
+      "errorKind": "none",
+      "errorCode": null,
+      "nextRetryAt": null,
+      "coalescedCount": 4,
+      "extra": {
+        "submitted": false,
+        "requestId": "REQ-1"
+      }
+    },
+    {
+      "id": "mut-7",
+      "at": 1774716078820,
+      "owner": "foreman",
+      "entityId": "__foreman_local_draft__",
+      "mutationId": "mq-mnak4qg4-y5dkls",
+      "dedupeKey": "foreman_draft:__foreman_local_draft__:catalog_add:2026-03-28T16:41:18.820Z:sync",
+      "lifecycleStatus": "queued",
+      "action": "enqueue",
+      "attemptCount": 0,
+      "retryCount": 0,
+      "triggerSource": "manual_retry",
+      "errorKind": "none",
+      "errorCode": null,
+      "nextRetryAt": null,
+      "coalescedCount": 0,
+      "extra": {
+        "mutationKind": "catalog_add",
+        "submitRequested": false
+      }
+    },
+    {
+      "id": "mut-8",
+      "at": 1774716078821,
+      "owner": "foreman",
+      "entityId": "__foreman_local_draft__",
+      "mutationId": "mq-mnak4qg4-y5dkls",
+      "dedupeKey": "foreman_draft:__foreman_local_draft__:catalog_add:2026-03-28T16:41:18.820Z:sync",
+      "lifecycleStatus": "retry_scheduled",
+      "action": "retry_scheduled",
+      "attemptCount": 1,
+      "retryCount": 1,
+      "triggerSource": "manual_retry",
+      "errorKind": "network_unreachable",
+      "errorCode": "offline",
+      "nextRetryAt": 1774716083821,
+      "coalescedCount": 0,
+      "extra": null
+    },
+    {
+      "id": "mut-9",
+      "at": 1774716078822,
+      "owner": "foreman",
+      "entityId": "__foreman_local_draft__",
+      "mutationId": "mq-mnak4qg6-rkog3h",
+      "dedupeKey": "foreman_draft:__foreman_local_draft__:background_sync:2026-03-28T16:41:18.820Z:sync",
+      "lifecycleStatus": "queued",
+      "action": "enqueue",
+      "attemptCount": 0,
+      "retryCount": 0,
+      "triggerSource": "unknown",
+      "errorKind": "none",
+      "errorCode": null,
+      "nextRetryAt": null,
+      "coalescedCount": 0,
+      "extra": {
+        "mutationKind": "background_sync",
+        "submitRequested": false
+      }
+    },
+    {
+      "id": "mut-10",
+      "at": 1774716078822,
+      "owner": "foreman",
+      "entityId": "__foreman_local_draft__",
+      "mutationId": "mq-mnak4qg4-y5dkls",
+      "dedupeKey": "foreman_draft:__foreman_local_draft__:catalog_add:2026-03-28T16:41:18.820Z:sync",
+      "lifecycleStatus": "succeeded",
+      "action": "succeeded",
+      "attemptCount": 2,
+      "retryCount": 1,
+      "triggerSource": "manual_retry",
+      "errorKind": "none",
+      "errorCode": null,
+      "nextRetryAt": null,
+      "coalescedCount": 0,
+      "extra": {
+        "submitted": false,
+        "requestId": "REQ-1"
+      }
+    },
+    {
+      "id": "mut-11",
+      "at": 1774716078823,
+      "owner": "foreman",
+      "entityId": "REQ-1",
+      "mutationId": "mq-mnak4qg6-rkog3h",
+      "dedupeKey": "foreman_draft:REQ-1:background_sync:2026-03-28T16:41:18.820Z:sync",
+      "lifecycleStatus": "succeeded",
+      "action": "succeeded",
+      "attemptCount": 1,
+      "retryCount": 0,
+      "triggerSource": "manual_retry",
+      "errorKind": "none",
+      "errorCode": null,
+      "nextRetryAt": null,
+      "coalescedCount": 0,
+      "extra": {
+        "submitted": false,
+        "requestId": "REQ-1"
+      }
+    },
+    {
+      "id": "mut-12",
+      "at": 1774716078823,
+      "owner": "foreman",
+      "entityId": "REQ-1",
+      "mutationId": "mq-mnak4qg7-0554wj",
+      "dedupeKey": "foreman_draft:REQ-1:catalog_add:2026-03-28T16:41:18.823Z:sync",
+      "lifecycleStatus": "queued",
+      "action": "enqueue",
+      "attemptCount": 0,
+      "retryCount": 0,
+      "triggerSource": "manual_retry",
+      "errorKind": "none",
+      "errorCode": null,
+      "nextRetryAt": null,
+      "coalescedCount": 0,
+      "extra": {
+        "mutationKind": "catalog_add",
+        "submitRequested": false
+      }
+    },
+    {
+      "id": "mut-13",
+      "at": 1774716078823,
+      "owner": "foreman",
+      "entityId": "REQ-1",
+      "mutationId": "mq-mnak4qg7-0554wj",
+      "dedupeKey": "foreman_draft:REQ-1:catalog_add:2026-03-28T16:41:18.823Z:sync",
+      "lifecycleStatus": "queued",
+      "action": "inflight_restored",
+      "attemptCount": 1,
+      "retryCount": 0,
+      "triggerSource": "manual_retry",
+      "errorKind": "none",
+      "errorCode": null,
+      "nextRetryAt": 0,
+      "coalescedCount": 0,
+      "extra": null
+    },
+    {
+      "id": "mut-14",
+      "at": 1774716078824,
+      "owner": "foreman",
+      "entityId": "REQ-1",
+      "mutationId": "mq-mnak4qg7-0554wj",
+      "dedupeKey": "foreman_draft:REQ-1:catalog_add:2026-03-28T16:41:18.823Z:sync",
+      "lifecycleStatus": "succeeded",
+      "action": "succeeded",
+      "attemptCount": 2,
+      "retryCount": 0,
+      "triggerSource": "manual_retry",
+      "errorKind": "none",
+      "errorCode": null,
+      "nextRetryAt": null,
+      "coalescedCount": 0,
+      "extra": {
+        "submitted": false,
+        "requestId": "REQ-1"
+      }
+    },
+    {
+      "id": "mut-15",
+      "at": 1774716078824,
+      "owner": "foreman",
+      "entityId": "REQ-RETRY",
+      "mutationId": "mq-mnak4qg8-z6cypp",
+      "dedupeKey": "foreman_draft:REQ-RETRY:catalog_add:2026-03-28T16:41:18.824Z:sync",
+      "lifecycleStatus": "queued",
+      "action": "enqueue",
+      "attemptCount": 0,
+      "retryCount": 0,
+      "triggerSource": "manual_retry",
+      "errorKind": "none",
+      "errorCode": null,
+      "nextRetryAt": null,
+      "coalescedCount": 0,
+      "extra": {
+        "mutationKind": "catalog_add",
+        "submitRequested": false
+      }
+    },
+    {
+      "id": "mut-16",
+      "at": 1774716078824,
+      "owner": "foreman",
+      "entityId": "REQ-RETRY",
+      "mutationId": "mq-mnak4qg8-z6cypp",
+      "dedupeKey": "foreman_draft:REQ-RETRY:catalog_add:2026-03-28T16:41:18.824Z:sync",
+      "lifecycleStatus": "retry_scheduled",
+      "action": "retry_scheduled",
+      "attemptCount": 1,
+      "retryCount": 1,
+      "triggerSource": "manual_retry",
+      "errorKind": "network_unreachable",
+      "errorCode": "offline",
+      "nextRetryAt": 1774716083824,
+      "coalescedCount": 0,
+      "extra": null
+    },
+    {
+      "id": "mut-17",
+      "at": 1774716078825,
+      "owner": "foreman",
+      "entityId": "REQ-RETRY",
+      "mutationId": "mq-mnak4qg8-z6cypp",
+      "dedupeKey": "foreman_draft:REQ-RETRY:catalog_add:2026-03-28T16:41:18.824Z:sync",
+      "lifecycleStatus": "retry_scheduled",
+      "action": "retry_scheduled",
+      "attemptCount": 2,
+      "retryCount": 2,
+      "triggerSource": "manual_retry",
+      "errorKind": "network_unreachable",
+      "errorCode": "offline",
+      "nextRetryAt": 1774716088825,
+      "coalescedCount": 0,
+      "extra": null
+    },
+    {
+      "id": "mut-18",
+      "at": 1774716078842,
+      "owner": "foreman",
+      "entityId": "REQ-RETRY",
+      "mutationId": "mq-mnak4qg8-z6cypp",
+      "dedupeKey": "foreman_draft:REQ-RETRY:catalog_add:2026-03-28T16:41:18.824Z:sync",
+      "lifecycleStatus": "succeeded",
+      "action": "succeeded",
+      "attemptCount": 3,
+      "retryCount": 2,
+      "triggerSource": "manual_retry",
+      "errorKind": "none",
+      "errorCode": null,
+      "nextRetryAt": null,
+      "coalescedCount": 0,
+      "extra": {
+        "submitted": false,
+        "requestId": "REQ-RETRY"
+      }
+    },
+    {
+      "id": "mut-19",
+      "at": 1774716078843,
+      "owner": "foreman",
+      "entityId": "REQ-SUBMIT",
+      "mutationId": "mq-mnak4qgr-bf6eoz",
+      "dedupeKey": "foreman_draft:REQ-SUBMIT:qty_update:2026-03-28T16:41:18.843Z:sync",
+      "lifecycleStatus": "queued",
+      "action": "enqueue",
+      "attemptCount": 0,
+      "retryCount": 0,
+      "triggerSource": "manual_retry",
+      "errorKind": "none",
+      "errorCode": null,
+      "nextRetryAt": null,
+      "coalescedCount": 0,
+      "extra": {
+        "mutationKind": "qty_update",
+        "submitRequested": false
+      }
+    },
+    {
+      "id": "mut-20",
+      "at": 1774716078844,
+      "owner": "foreman",
+      "entityId": "REQ-SUBMIT",
+      "mutationId": "mq-mnak4qgs-rrlfv2",
+      "dedupeKey": "foreman_draft:REQ-SUBMIT:submit:2026-03-28T16:41:18.843Z:submit",
+      "lifecycleStatus": "queued",
+      "action": "dedupe_suppressed",
+      "attemptCount": 0,
+      "retryCount": 0,
+      "triggerSource": "submit",
+      "errorKind": "none",
+      "errorCode": null,
+      "nextRetryAt": null,
+      "coalescedCount": 1,
+      "extra": {
+        "mutationKind": "submit",
+        "submitRequested": true
+      }
+    },
+    {
+      "id": "mut-21",
+      "at": 1774716078844,
+      "owner": "foreman",
+      "entityId": "REQ-SUBMIT",
+      "mutationId": "mq-mnak4qgs-rrlfv2",
+      "dedupeKey": "foreman_draft:REQ-SUBMIT:submit:2026-03-28T16:41:18.843Z:submit",
+      "lifecycleStatus": "succeeded",
+      "action": "succeeded",
+      "attemptCount": 1,
+      "retryCount": 0,
+      "triggerSource": "manual_retry",
+      "errorKind": "none",
+      "errorCode": null,
+      "nextRetryAt": null,
+      "coalescedCount": 1,
+      "extra": {
+        "submitted": true,
+        "requestId": "REQ-SUBMIT"
+      }
+    },
+    {
+      "id": "mut-22",
+      "at": 1774716078845,
+      "owner": "foreman",
+      "entityId": "REQ-CONFLICT",
+      "mutationId": "mq-mnak4qgt-kdrzli",
+      "dedupeKey": "foreman_draft:REQ-CONFLICT:qty_update:2026-03-28T16:41:18.845Z:sync",
+      "lifecycleStatus": "queued",
+      "action": "enqueue",
+      "attemptCount": 0,
+      "retryCount": 0,
+      "triggerSource": "manual_retry",
+      "errorKind": "none",
+      "errorCode": null,
+      "nextRetryAt": null,
+      "coalescedCount": 0,
+      "extra": {
+        "mutationKind": "qty_update",
+        "submitRequested": false
+      }
+    },
+    {
+      "id": "mut-23",
+      "at": 1774716078846,
+      "owner": "foreman",
+      "entityId": "REQ-CONFLICT",
+      "mutationId": "mq-mnak4qgt-kdrzli",
+      "dedupeKey": "foreman_draft:REQ-CONFLICT:qty_update:2026-03-28T16:41:18.845Z:sync",
+      "lifecycleStatus": "conflicted",
+      "action": "conflict_detected",
+      "attemptCount": 1,
+      "retryCount": 0,
+      "triggerSource": "manual_retry",
+      "errorKind": "conflict",
+      "errorCode": "server_terminal_conflict",
+      "nextRetryAt": null,
+      "coalescedCount": 0,
+      "extra": {
+        "serverVersionHint": "submitted"
+      }
+    },
+    {
+      "id": "mut-24",
+      "at": 1774716078846,
+      "owner": "foreman",
+      "entityId": "REQ-VALID",
+      "mutationId": "mq-mnak4qgu-71dj56",
+      "dedupeKey": "foreman_draft:REQ-VALID:qty_update:2026-03-28T16:41:18.846Z:sync",
+      "lifecycleStatus": "queued",
+      "action": "enqueue",
+      "attemptCount": 0,
+      "retryCount": 0,
+      "triggerSource": "manual_retry",
+      "errorKind": "none",
+      "errorCode": null,
+      "nextRetryAt": null,
+      "coalescedCount": 0,
+      "extra": {
+        "mutationKind": "qty_update",
+        "submitRequested": false
+      }
+    },
+    {
+      "id": "mut-25",
+      "at": 1774716078847,
+      "owner": "foreman",
+      "entityId": "REQ-VALID",
+      "mutationId": "mq-mnak4qgu-71dj56",
+      "dedupeKey": "foreman_draft:REQ-VALID:qty_update:2026-03-28T16:41:18.846Z:sync",
+      "lifecycleStatus": "conflicted",
+      "action": "conflict_detected",
+      "attemptCount": 1,
+      "retryCount": 0,
+      "triggerSource": "manual_retry",
+      "errorKind": "conflict",
+      "errorCode": "validation_conflict",
+      "nextRetryAt": null,
+      "coalescedCount": 0,
+      "extra": {
+        "serverVersionHint": null
+      }
+    },
+    {
+      "id": "mut-26",
+      "at": 1774716078847,
+      "owner": "foreman",
+      "entityId": "REQ-RETRY-NOW",
+      "mutationId": "mq-mnak4qgv-tdhm82",
+      "dedupeKey": "foreman_draft:REQ-RETRY-NOW:qty_update:2026-03-28T16:41:18.847Z:sync",
+      "lifecycleStatus": "queued",
+      "action": "enqueue",
+      "attemptCount": 0,
+      "retryCount": 0,
+      "triggerSource": "manual_retry",
+      "errorKind": "none",
+      "errorCode": null,
+      "nextRetryAt": null,
+      "coalescedCount": 0,
+      "extra": {
+        "mutationKind": "qty_update",
+        "submitRequested": false
+      }
+    },
+    {
+      "id": "mut-27",
+      "at": 1774716078848,
+      "owner": "foreman",
+      "entityId": "REQ-RETRY-NOW",
+      "mutationId": "mq-mnak4qgv-tdhm82",
+      "dedupeKey": "foreman_draft:REQ-RETRY-NOW:qty_update:2026-03-28T16:41:18.847Z:sync",
+      "lifecycleStatus": "retry_scheduled",
+      "action": "retry_scheduled",
+      "attemptCount": 1,
+      "retryCount": 1,
+      "triggerSource": "manual_retry",
+      "errorKind": "network_unreachable",
+      "errorCode": "offline",
+      "nextRetryAt": 1774716083848,
+      "coalescedCount": 0,
+      "extra": null
+    },
+    {
+      "id": "mut-28",
+      "at": 1774716078849,
+      "owner": "foreman",
+      "entityId": "REQ-RETRY-NOW",
+      "mutationId": "mq-mnak4qgv-tdhm82",
+      "dedupeKey": "foreman_draft:REQ-RETRY-NOW:qty_update:2026-03-28T16:41:18.847Z:sync",
+      "lifecycleStatus": "succeeded",
+      "action": "succeeded",
+      "attemptCount": 2,
+      "retryCount": 1,
+      "triggerSource": "manual_retry",
+      "errorKind": "none",
+      "errorCode": null,
+      "nextRetryAt": null,
+      "coalescedCount": 0,
+      "extra": {
+        "submitted": false,
+        "requestId": "REQ-RETRY-NOW"
+      }
+    },
+    {
+      "id": "mut-29",
+      "at": 1774716078850,
+      "owner": "foreman",
+      "entityId": "REQ-EXHAUSTED",
+      "mutationId": "mq-mnak4qgy-4eirgz",
+      "dedupeKey": "foreman_draft:REQ-EXHAUSTED:qty_update:2026-03-28T16:41:18.850Z:sync",
+      "lifecycleStatus": "queued",
+      "action": "enqueue",
+      "attemptCount": 0,
+      "retryCount": 0,
+      "triggerSource": "manual_retry",
+      "errorKind": "none",
+      "errorCode": null,
+      "nextRetryAt": null,
+      "coalescedCount": 0,
+      "extra": {
+        "mutationKind": "qty_update",
+        "submitRequested": false
+      }
+    },
+    {
+      "id": "mut-30",
+      "at": 1774716078850,
+      "owner": "foreman",
+      "entityId": "REQ-EXHAUSTED",
+      "mutationId": "mq-mnak4qgy-4eirgz",
+      "dedupeKey": "foreman_draft:REQ-EXHAUSTED:qty_update:2026-03-28T16:41:18.850Z:sync",
+      "lifecycleStatus": "retry_scheduled",
+      "action": "retry_scheduled",
+      "attemptCount": 1,
+      "retryCount": 1,
+      "triggerSource": "manual_retry",
+      "errorKind": "network_unreachable",
+      "errorCode": "offline",
+      "nextRetryAt": 1774716083850,
+      "coalescedCount": 0,
+      "extra": null
+    },
+    {
+      "id": "mut-31",
+      "at": 1774716078850,
+      "owner": "foreman",
+      "entityId": "REQ-EXHAUSTED",
+      "mutationId": "mq-mnak4qgy-4eirgz",
+      "dedupeKey": "foreman_draft:REQ-EXHAUSTED:qty_update:2026-03-28T16:41:18.850Z:sync",
+      "lifecycleStatus": "retry_scheduled",
+      "action": "retry_scheduled",
+      "attemptCount": 2,
+      "retryCount": 2,
+      "triggerSource": "manual_retry",
+      "errorKind": "network_unreachable",
+      "errorCode": "offline",
+      "nextRetryAt": 1774716088850,
+      "coalescedCount": 0,
+      "extra": null
+    },
+    {
+      "id": "mut-32",
+      "at": 1774716078851,
+      "owner": "foreman",
+      "entityId": "REQ-EXHAUSTED",
+      "mutationId": "mq-mnak4qgy-4eirgz",
+      "dedupeKey": "foreman_draft:REQ-EXHAUSTED:qty_update:2026-03-28T16:41:18.850Z:sync",
+      "lifecycleStatus": "retry_scheduled",
+      "action": "retry_scheduled",
+      "attemptCount": 3,
+      "retryCount": 3,
+      "triggerSource": "manual_retry",
+      "errorKind": "network_unreachable",
+      "errorCode": "offline",
+      "nextRetryAt": 1774716098851,
+      "coalescedCount": 0,
+      "extra": null
+    },
+    {
+      "id": "mut-33",
+      "at": 1774716078852,
+      "owner": "foreman",
+      "entityId": "REQ-EXHAUSTED",
+      "mutationId": "mq-mnak4qgy-4eirgz",
+      "dedupeKey": "foreman_draft:REQ-EXHAUSTED:qty_update:2026-03-28T16:41:18.850Z:sync",
+      "lifecycleStatus": "retry_scheduled",
+      "action": "retry_scheduled",
+      "attemptCount": 4,
+      "retryCount": 4,
+      "triggerSource": "manual_retry",
+      "errorKind": "network_unreachable",
+      "errorCode": "offline",
+      "nextRetryAt": 1774716118852,
+      "coalescedCount": 0,
+      "extra": null
+    },
+    {
+      "id": "mut-34",
+      "at": 1774716078853,
+      "owner": "foreman",
+      "entityId": "REQ-EXHAUSTED",
+      "mutationId": "mq-mnak4qgy-4eirgz",
+      "dedupeKey": "foreman_draft:REQ-EXHAUSTED:qty_update:2026-03-28T16:41:18.850Z:sync",
+      "lifecycleStatus": "failed_non_retryable",
+      "action": "retry_exhausted",
+      "attemptCount": 5,
+      "retryCount": 4,
+      "triggerSource": "manual_retry",
+      "errorKind": "network_unreachable",
+      "errorCode": "offline",
+      "nextRetryAt": null,
+      "coalescedCount": 0,
+      "extra": null
+    },
+    {
+      "id": "mut-35",
+      "at": 1774716078854,
+      "owner": "foreman",
+      "entityId": "REQ-REMOTE",
+      "mutationId": "mq-mnak4qh2-81ley9",
+      "dedupeKey": "foreman_draft:REQ-REMOTE:qty_update:2026-03-28T16:41:18.854Z:sync",
+      "lifecycleStatus": "queued",
+      "action": "enqueue",
+      "attemptCount": 0,
+      "retryCount": 0,
+      "triggerSource": "manual_retry",
+      "errorKind": "none",
+      "errorCode": null,
+      "nextRetryAt": null,
+      "coalescedCount": 0,
+      "extra": {
+        "mutationKind": "qty_update",
+        "submitRequested": false
+      }
+    }
+  ],
+  "storage": {
+    "foreman_durable_draft_store_v2": "{\"version\":2,\"snapshot\":null,\"syncStatus\":\"idle\",\"lastSyncAt\":1774716078854,\"lastError\":null,\"lastErrorAt\":null,\"lastErrorStage\":null,\"conflictType\":\"none\",\"lastConflictAt\":null,\"retryCount\":0,\"repeatedFailureStageCount\":0,\"pendingOperationsCount\":0,\"queueDraftKey\":null,\"requestIdKnown\":true,\"attentionNeeded\":false,\"availableRecoveryActions\":[],\"recoverableLocalSnapshot\":null,\"lastTriggerSource\":\"manual_retry\",\"telemetry\":[],\"updatedAt\":1774716078854}"
+  }
+}
