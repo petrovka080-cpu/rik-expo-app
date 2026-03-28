@@ -540,7 +540,11 @@ async function ensureAndroidDevClientLoaded(
 }
 
 async function loginForemanAndroid(user: TempUser, packageName: string | null, devClientPort: number) {
-  writeJson(path.join(projectRoot, "artifacts/android-foreman-request-sync-user.json"), user);
+  writeJson(path.join(projectRoot, "artifacts/android-foreman-request-sync-user.json"), {
+    role: user.role,
+    user: "[redacted]",
+    password: "[redacted]",
+  });
   void devClientPort;
   return androidHarness.loginAndroidWithProtectedRoute({
     packageName,

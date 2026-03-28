@@ -4,6 +4,7 @@
   "foremanDraftRollover": true,
   "foremanAiDraftOwner": true,
   "directorWorkInclusion": true,
+  "foremanRuntimeVerified": true,
   "green": true,
   "status": "GREEN"
 }

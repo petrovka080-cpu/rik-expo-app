@@ -33,6 +33,7 @@ const directorStylesSource = readText("src/screens/director/director.styles.ts")
 const foremanDraftBoundarySource = readText("src/screens/foreman/hooks/useForemanDraftBoundary.ts");
 const foremanLocalDraftSource = readText("src/screens/foreman/foreman.localDraft.ts");
 const foremanAiQuickFlowSource = readText("src/screens/foreman/hooks/useForemanAiQuickFlow.ts");
+const foremanDraftModalSource = readText("src/screens/foreman/ForemanDraftModal.tsx");
 const directorReportsScopeSource = readText("src/lib/api/directorReportsScope.service.ts");
 const directorReportsTransportScopeSource = readText("src/lib/api/directorReportsTransport.service.ts");
 const directorFinanceScopeSource = readText("src/lib/api/directorFinanceScope.service.ts");
@@ -41,6 +42,7 @@ const directorPdfDataSource = readText("src/lib/api/pdf_director.data.ts");
 
 const directorReportsTruthSummary = readJson<JsonRecord>("artifacts/director-reports-truth.summary.json");
 const directorFinanceTruthSummary = readJson<JsonRecord>("artifacts/director-finance-truth.summary.json");
+const foremanRequestSyncRuntimeSummary = readJson<JsonRecord>("artifacts/foreman-request-sync-runtime.summary.json");
 
 const directorRequestScrollSmoke = {
   requestSheetUsesScrollableBody: includesAll(requestSheetSource, [
@@ -94,6 +96,12 @@ const foremanDraftRolloverSmoke = {
     'activeDraftIdAfter: FOREMAN_LOCAL_ONLY_REQUEST_ID',
     'runtimeResult: "post_submit_fresh_draft_state"',
   ]),
+  draftModalUsesVisualModel: includesAll(foremanDraftModalSource, [
+    "buildForemanDraftVisualModel",
+    "draftVisualModel.statusLabel",
+    "draftVisualModel.helperText",
+    "Черновик {draftVisualModel.requestLabel}",
+  ]),
 };
 (foremanDraftRolloverSmoke as JsonRecord).passed =
   Object.values(foremanDraftRolloverSmoke).every((value) => value === true);
@@ -145,16 +153,23 @@ const summary = {
   foremanDraftRollover: (foremanDraftRolloverSmoke as JsonRecord).passed === true,
   foremanAiDraftOwner: (foremanAiDraftOwnerSmoke as JsonRecord).passed === true,
   directorWorkInclusion: (directorWorkInclusionAudit as JsonRecord).passed === true,
+  foremanRuntimeVerified:
+    foremanRequestSyncRuntimeSummary?.runtimeVerified === true ||
+    foremanRequestSyncRuntimeSummary?.status === "passed",
   green:
     (directorRequestScrollSmoke as JsonRecord).passed === true &&
     (foremanDraftRolloverSmoke as JsonRecord).passed === true &&
     (foremanAiDraftOwnerSmoke as JsonRecord).passed === true &&
-    (directorWorkInclusionAudit as JsonRecord).passed === true,
+    (directorWorkInclusionAudit as JsonRecord).passed === true &&
+    (foremanRequestSyncRuntimeSummary?.runtimeVerified === true ||
+      foremanRequestSyncRuntimeSummary?.status === "passed"),
   status:
     (directorRequestScrollSmoke as JsonRecord).passed === true &&
     (foremanDraftRolloverSmoke as JsonRecord).passed === true &&
     (foremanAiDraftOwnerSmoke as JsonRecord).passed === true &&
-    (directorWorkInclusionAudit as JsonRecord).passed === true
+    (directorWorkInclusionAudit as JsonRecord).passed === true &&
+    (foremanRequestSyncRuntimeSummary?.runtimeVerified === true ||
+      foremanRequestSyncRuntimeSummary?.status === "passed")
       ? "GREEN"
       : "NOT GREEN",
 };

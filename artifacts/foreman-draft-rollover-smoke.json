@@ -4,5 +4,6 @@
   "postSubmitPromotesFreshSnapshot": true,
   "postSubmitClearsAiUi": true,
   "postSubmitRebindsToLocalOwner": true,
+  "draftModalUsesVisualModel": true,
   "passed": true
 }

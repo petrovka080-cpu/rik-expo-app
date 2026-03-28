@@ -1,6 +1,5 @@
 {
-  "id": "5fd1a8c9-0103-4cf9-a102-77719a0e34af",
-  "email": "foreman.runtime.mn9segc1qpe2@e.com",
-  "password": "Pass1234",
-  "role": "foreman"
+  "role": "foreman",
+  "user": "[redacted]",
+  "password": "[redacted]"
 }

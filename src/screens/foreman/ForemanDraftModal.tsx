@@ -1,12 +1,14 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { Alert, Platform, Pressable, Text, View } from "react-native";
 import { FlashList } from "@/src/ui/FlashList";
 import RNModal from "react-native-modal";
+
 import type { ReqItemRow } from "../../lib/catalog_api";
 import type { ForemanDraftRecoveryAction } from "../../lib/offline/foremanSyncRuntime";
 import CloseIconButton from "../../ui/CloseIconButton";
 import DeleteAllButton from "../../ui/DeleteAllButton";
 import SendPrimaryButton from "../../ui/SendPrimaryButton";
+import { buildForemanDraftVisualModel } from "./foremanDraftVisualState";
 
 type WebUiApi = {
   confirm: (message?: string) => boolean;
@@ -64,18 +66,45 @@ type Props = {
 const hasRecoveryAction = (actions: ForemanDraftRecoveryAction[], action: ForemanDraftRecoveryAction) =>
   actions.includes(action);
 
+const resolveToneStyle = (tone: Props["draftSyncStatusTone"]) => {
+  if (tone === "success") {
+    return { bg: "rgba(34,197,94,0.16)", fg: "#86efac" };
+  }
+  if (tone === "info") {
+    return { bg: "rgba(56,189,248,0.16)", fg: "#7dd3fc" };
+  }
+  if (tone === "warning") {
+    return { bg: "rgba(245,158,11,0.16)", fg: "#fcd34d" };
+  }
+  if (tone === "danger") {
+    return { bg: "rgba(248,113,113,0.16)", fg: "#fca5a5" };
+  }
+  return { bg: "rgba(148,163,184,0.16)", fg: "#cbd5e1" };
+};
+
 export default function ForemanDraftModal(p: Props) {
   const webUi = getWebUi();
-  const syncToneStyle =
-    p.draftSyncStatusTone === "success"
-      ? { bg: "rgba(34,197,94,0.16)", fg: "#86efac" }
-      : p.draftSyncStatusTone === "info"
-        ? { bg: "rgba(56,189,248,0.16)", fg: "#7dd3fc" }
-        : p.draftSyncStatusTone === "warning"
-          ? { bg: "rgba(245,158,11,0.16)", fg: "#fcd34d" }
-          : p.draftSyncStatusTone === "danger"
-            ? { bg: "rgba(248,113,113,0.16)", fg: "#fca5a5" }
-            : { bg: "rgba(148,163,184,0.16)", fg: "#cbd5e1" };
+  const draftVisualModel = useMemo(
+    () =>
+      buildForemanDraftVisualModel({
+        requestLabel: p.currentDisplayLabel,
+        itemsCount: p.items.length,
+        syncLabel: p.draftSyncStatusLabel,
+        syncDetail: p.draftSyncStatusDetail,
+        syncTone: p.draftSyncStatusTone,
+        isSubmitting: p.draftSendBusy,
+      }),
+    [
+      p.currentDisplayLabel,
+      p.draftSendBusy,
+      p.draftSyncStatusDetail,
+      p.draftSyncStatusLabel,
+      p.draftSyncStatusTone,
+      p.items.length,
+    ],
+  );
+  const syncToneStyle = useMemo(() => resolveToneStyle(draftVisualModel.tone), [draftVisualModel.tone]);
+
   return (
     <RNModal
       isVisible={p.visible}
@@ -92,7 +121,7 @@ export default function ForemanDraftModal(p: Props) {
 
         <View style={p.styles.sheetTopBar}>
           <Text style={p.styles.sheetTitle} numberOfLines={1}>
-            Черновик {p.currentDisplayLabel}
+            Черновик {draftVisualModel.requestLabel}
           </Text>
           <CloseIconButton onPress={p.onClose} accessibilityLabel="Закрыть черновик" size={24} color={p.ui.text} />
         </View>
@@ -109,12 +138,12 @@ export default function ForemanDraftModal(p: Props) {
             }}
           >
             <Text style={{ color: syncToneStyle.fg, fontWeight: "800", fontSize: 11 }}>
-              {p.draftSyncStatusLabel}
+              {draftVisualModel.statusLabel}
             </Text>
           </View>
-          {p.draftSyncStatusDetail ? (
+          {draftVisualModel.helperText ? (
             <Text style={[p.styles.sheetMetaLine, { marginBottom: 8 }]} numberOfLines={2}>
-              <Text style={p.styles.sheetMetaValue}>{p.draftSyncStatusDetail}</Text>
+              <Text style={p.styles.sheetMetaValue}>{draftVisualModel.helperText}</Text>
             </Text>
           ) : null}
           {!!p.objectName ? (
@@ -124,7 +153,7 @@ export default function ForemanDraftModal(p: Props) {
           ) : null}
           {!!p.levelName ? (
             <Text style={p.styles.sheetMetaLine} numberOfLines={1}>
-              Этаж/уровень: <Text style={p.styles.sheetMetaValue}>{p.levelName}</Text>
+              Этаж / уровень: <Text style={p.styles.sheetMetaValue}>{p.levelName}</Text>
             </Text>
           ) : null}
           {!!p.systemName ? (
@@ -141,14 +170,14 @@ export default function ForemanDraftModal(p: Props) {
 
         {p.availableRecoveryActions.length ? (
           <View style={[p.styles.sheetMetaBox, { marginTop: 10, gap: 8 }]}>
-            <Text style={[p.styles.sheetMetaLine, { fontWeight: "800" }]}>Recovery</Text>
+            <Text style={[p.styles.sheetMetaLine, { fontWeight: "800" }]}>Восстановление</Text>
             <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
               {hasRecoveryAction(p.availableRecoveryActions, "retry_now") ? (
                 <Pressable
                   onPress={() => void p.onRetryNow()}
                   style={[p.styles.actionBtnWide, { width: "48%", backgroundColor: p.ui.btnNeutral }]}
                 >
-                  <Text style={p.styles.actionText}>Retry now</Text>
+                  <Text style={p.styles.actionText}>Повторить</Text>
                 </Pressable>
               ) : null}
               {hasRecoveryAction(p.availableRecoveryActions, "rehydrate_server") ? (
@@ -156,7 +185,7 @@ export default function ForemanDraftModal(p: Props) {
                   onPress={() => void p.onRehydrateFromServer()}
                   style={[p.styles.actionBtnWide, { width: "48%", backgroundColor: p.ui.btnNeutral }]}
                 >
-                  <Text style={p.styles.actionText}>Use server</Text>
+                  <Text style={p.styles.actionText}>Взять с сервера</Text>
                 </Pressable>
               ) : null}
               {hasRecoveryAction(p.availableRecoveryActions, "restore_local") ? (
@@ -164,7 +193,7 @@ export default function ForemanDraftModal(p: Props) {
                   onPress={() => void p.onRestoreLocal()}
                   style={[p.styles.actionBtnWide, { width: "48%", backgroundColor: p.ui.btnNeutral }]}
                 >
-                  <Text style={p.styles.actionText}>Restore local</Text>
+                  <Text style={p.styles.actionText}>Вернуть локальную</Text>
                 </Pressable>
               ) : null}
               {hasRecoveryAction(p.availableRecoveryActions, "clear_failed_queue") ? (
@@ -172,7 +201,7 @@ export default function ForemanDraftModal(p: Props) {
                   onPress={() => void p.onClearFailedQueue()}
                   style={[p.styles.actionBtnWide, { width: "48%", backgroundColor: p.ui.btnNeutral }]}
                 >
-                  <Text style={p.styles.actionText}>Clear failed</Text>
+                  <Text style={p.styles.actionText}>Очистить очередь</Text>
                 </Pressable>
               ) : null}
               {hasRecoveryAction(p.availableRecoveryActions, "discard_local") ? (
@@ -184,7 +213,7 @@ export default function ForemanDraftModal(p: Props) {
 
                     if (Platform.OS === "web") {
                       const ok = webUi.confirm(
-                        "Discard local draft?\n\nYou will lose local-only changes kept on this device.",
+                        "Удалить локальную версию черновика?\n\nНесинхронизированные изменения на этом устройстве будут потеряны.",
                       );
                       if (!ok) return;
                       void doDiscard();
@@ -192,17 +221,17 @@ export default function ForemanDraftModal(p: Props) {
                     }
 
                     Alert.alert(
-                      "Discard local draft?",
-                      "You will lose local-only changes kept on this device.",
+                      "Удалить локальную версию черновика?",
+                      "Несинхронизированные изменения на этом устройстве будут потеряны.",
                       [
-                        { text: "Cancel", style: "cancel" },
-                        { text: "Discard", style: "destructive", onPress: () => void doDiscard() },
+                        { text: "Отмена", style: "cancel" },
+                        { text: "Удалить", style: "destructive", onPress: () => void doDiscard() },
                       ],
                     );
                   }}
                   style={[p.styles.actionBtnWide, { width: "48%", backgroundColor: "rgba(239,68,68,0.16)" }]}
                 >
-                  <Text style={p.styles.actionText}>Discard local</Text>
+                  <Text style={p.styles.actionText}>Удалить локальную</Text>
                 </Pressable>
               ) : null}
             </View>
@@ -239,7 +268,7 @@ export default function ForemanDraftModal(p: Props) {
 
                 if (Platform.OS === "web") {
                   const ok = webUi.confirm(
-                    "Удалить черновик?\n\nВесь черновик будет отменен и очищен.",
+                    "Удалить черновик?\n\nВесь черновик будет отменён и очищен.",
                   );
                   if (!ok) return;
                   void doIt();
@@ -248,7 +277,7 @@ export default function ForemanDraftModal(p: Props) {
 
                 Alert.alert(
                   "Удалить черновик?",
-                  "Весь черновик будет отменен и очищен.",
+                  "Весь черновик будет отменён и очищен.",
                   [
                     { text: "Отмена", style: "cancel" },
                     { text: "Да, удалить", style: "destructive", onPress: () => void doIt() },
@@ -289,7 +318,7 @@ export default function ForemanDraftModal(p: Props) {
             disabled={p.screenLock}
             onPress={() => {
               if (p.screenLock) return;
-              Alert.alert("Excel", "Экспорт Excel будет добавлен позже (UI уже готов).");
+              Alert.alert("Excel", "Экспорт Excel будет добавлен позже. UI для этого уже готов.");
             }}
             style={[p.styles.actionBtnWide, { backgroundColor: p.ui.btnNeutral, opacity: p.screenLock ? 0.6 : 1 }]}
           >
@@ -301,10 +330,10 @@ export default function ForemanDraftModal(p: Props) {
           <View style={p.styles.actionBtnSquare}>
             <SendPrimaryButton
               variant="green"
-              disabled={p.screenLock || (p.items?.length ?? 0) === 0}
+              disabled={p.screenLock || p.items.length === 0}
               loading={p.draftSendBusy}
               onPress={async () => {
-                if (p.screenLock || (p.items?.length ?? 0) === 0) return;
+                if (p.screenLock || p.items.length === 0) return;
                 await p.onSend();
               }}
             />
