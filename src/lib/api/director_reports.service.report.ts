@@ -135,7 +135,14 @@ export async function fetchDirectorWarehouseReportTracked(p: {
         chain: [...chain],
         cacheLayer: "none",
       });
-    } catch {
+    } catch (error) {
+      recordDirectorReportsServiceWarning("report_fast_rpc_failed", error, {
+        chain: [...chain],
+        from: pFrom,
+        to: pTo,
+        objectName,
+        selectedObjectId,
+      });
       logTiming("report.fast_rpc_failed_fallback", t0);
     }
   }

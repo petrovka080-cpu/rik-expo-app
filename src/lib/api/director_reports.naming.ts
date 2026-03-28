@@ -6,7 +6,7 @@ import type { CodeNameRow, DirectorFactRow, ObjectLookupRow, RikNameLookupRow } 
 import {
   WITHOUT_LEVEL,
   asRecord,
-  chunk,
+  forEachChunkParallel,
   firstNonEmpty,
   normalizeCodeNameRow,
   normalizeObjectLookupRow,
@@ -47,7 +47,7 @@ async function fetchObjectsByIds(idsRaw: string[]): Promise<Map<string, string>>
   if (!pending) {
     pending = (async () => {
       const loaded = new Map<string, string>();
-      for (const part of chunk(missingIds, 500)) {
+      await forEachChunkParallel(missingIds, 500, 4, async (part) => {
         const { data, error } = await supabase
           .from("objects" as never)
           .select("id,name")
@@ -66,7 +66,7 @@ async function fetchObjectsByIds(idsRaw: string[]): Promise<Map<string, string>>
         for (const id of part) {
           if (!seen.has(id)) setLookupValue(objectLookupCache, id, null);
         }
-      }
+      });
       return loaded;
     })();
     objectLookupInFlight.set(inFlightKey, pending);
@@ -113,7 +113,7 @@ async function fetchCodeLookupByCodes(
   if (!pending) {
     pending = (async () => {
       const loaded = new Map<string, string>();
-      for (const part of chunk(missingCodes, 500)) {
+      await forEachChunkParallel(missingCodes, 500, 4, async (part) => {
         const { data, error } = await supabase
           .from(table as never)
           .select(selectCols)
@@ -136,7 +136,7 @@ async function fetchCodeLookupByCodes(
         for (const code of part) {
           if (!seen.has(code)) setLookupValue(cache, code, null);
         }
-      }
+      });
       return loaded;
     })();
     inFlight.set(inFlightKey, pending);
@@ -404,7 +404,7 @@ async function fetchBestMaterialNamesByCode(codesRaw: string[]): Promise<Map<str
       nameField: string,
     ): Promise<Map<string, string>> => {
       const sourceMap = new Map<string, string>();
-      for (const part of chunk(missingCodes, 500)) {
+      await forEachChunkParallel(missingCodes, 500, 4, async (part) => {
         try {
           const sb = supabase as unknown as DynamicQueryClient;
           const q = await sb
@@ -413,7 +413,7 @@ async function fetchBestMaterialNamesByCode(codesRaw: string[]): Promise<Map<str
             .in(codeField, part);
           if (q.error) {
             warnDirectorNaming("fetch_source", table, q.error);
-            continue;
+            return;
           }
           if (Array.isArray(q.data)) {
             for (const rowValue of q.data as unknown[]) {
@@ -424,7 +424,7 @@ async function fetchBestMaterialNamesByCode(codesRaw: string[]): Promise<Map<str
         } catch (error) {
           warnDirectorNaming("fetch_source", table, error);
         }
-      }
+      });
       return sourceMap;
     };
 

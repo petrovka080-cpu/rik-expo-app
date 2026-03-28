@@ -6,6 +6,7 @@ import type {
 } from "./director_reports.shared";
 import {
   chunk,
+  forEachChunkParallel,
   normalizeRequestLookupRow,
 } from "./director_reports.shared";
 import {
@@ -25,6 +26,7 @@ async function runTypedRpc<TRow>(
   fnName:
     | "acc_report_issues_v2"
     | "acc_report_issue_lines"
+    | "director_report_fetch_acc_issue_lines_v1"
     | "wh_report_issued_summary_fast"
     | "wh_report_issued_materials_fast"
     | "wh_report_issued_by_object_fast"
@@ -228,15 +230,48 @@ async function fetchIssueHeadsViaAccRpc(p: {
 }
 
 async function fetchIssueLinesViaAccRpc(issueIds: string[]): Promise<AccIssueLine[]> {
-  const out: AccIssueLine[] = [];
-  const ids = issueIds.filter((id) => String(id || "").trim() !== "");
+  const ids = Array.from(
+    new Set(
+      issueIds
+        .map((id) => String(id || "").trim())
+        .filter(Boolean),
+    ),
+  );
   if (!ids.length) return [];
 
-  const groups = chunk(ids, 20);
+  const numericIds = Array.from(
+    new Set(
+      ids
+        .map((id) => Number(id))
+        .filter((id) => Number.isFinite(id)),
+    ),
+  );
+  if (numericIds.length) {
+    try {
+      const batched: AccIssueLine[] = [];
+      await forEachChunkParallel(numericIds, 500, 4, async (part) => {
+        const { data, error } = await runTypedRpc<AccIssueLine>("director_report_fetch_acc_issue_lines_v1", {
+          p_issue_ids: part,
+        });
+        if (error) throw error;
+        if (Array.isArray(data)) batched.push(...data);
+      });
+      return batched;
+    } catch (error) {
+      recordDirectorReportsTransportWarning("issue_lines_acc_batch_rpc_failed", error, {
+        issueIdCount: numericIds.length,
+        source: "director_report_fetch_acc_issue_lines_v1",
+        fallbackTarget: "acc_report_issue_lines",
+      });
+    }
+  }
 
-  for (const g of groups) {
+  const out: AccIssueLine[] = [];
+  const groups = chunk(ids, 20);
+  await forEachChunkParallel(groups, 1, 3, async (groupPart) => {
+    const group = groupPart[0] ?? [];
     const settled = await Promise.all(
-      g.map(async (id) => {
+      group.map(async (id) => {
         try {
           const numId = Number(id);
           if (isNaN(numId)) return [] as AccIssueLine[];
@@ -252,8 +287,8 @@ async function fetchIssueLinesViaAccRpc(issueIds: string[]): Promise<AccIssueLin
             return [] as AccIssueLine[];
           }
           return Array.isArray(data) ? (data as AccIssueLine[]) : [];
-        } catch (e) {
-          recordDirectorReportsTransportWarning("issue_lines_acc_rpc_failed", e, {
+        } catch (error) {
+          recordDirectorReportsTransportWarning("issue_lines_acc_rpc_failed", error, {
             issueId: id,
             source: "acc_report_issue_lines",
           });
@@ -261,8 +296,8 @@ async function fetchIssueLinesViaAccRpc(issueIds: string[]): Promise<AccIssueLin
         }
       }),
     );
-    for (const arr of settled) if (arr) out.push(...arr);
-  }
+    for (const rows of settled) if (rows) out.push(...rows);
+  });
   return out;
 }
 

@@ -10,9 +10,12 @@ const beforeAfterPath = path.join(artifactDir, "director-reports-transport-wave1
 
 const transportPath = "src/lib/api/director_reports.transport.ts";
 const familyFiles = [
-  "src/lib/api/director_reports.observability.ts",
   "src/lib/api/director_reports.transport.base.ts",
   "src/lib/api/director_reports.transport.production.ts",
+  "src/lib/api/director_reports.transport.facts.ts",
+  "src/lib/api/director_reports.transport.discipline.ts",
+  "src/lib/api/director_reports.transport.legacy.ts",
+  "src/lib/api/director_reports.transport.lookups.ts",
 ];
 
 const readText = (relativePath: string) => fs.readFileSync(path.join(projectRoot, relativePath), "utf8").replace(/^\uFEFF/, "");
@@ -30,7 +33,10 @@ async function main() {
   const currentSource = readText(transportPath);
   const baseSource = readText("src/lib/api/director_reports.transport.base.ts");
   const productionSource = readText("src/lib/api/director_reports.transport.production.ts");
-  const observabilitySource = readText("src/lib/api/director_reports.observability.ts");
+  const factsSource = readText("src/lib/api/director_reports.transport.facts.ts");
+  const disciplineSource = readText("src/lib/api/director_reports.transport.discipline.ts");
+  const legacySource = readText("src/lib/api/director_reports.transport.legacy.ts");
+  const lookupsSource = readText("src/lib/api/director_reports.transport.lookups.ts");
 
   const removedBodies = [
     "async function runTypedRpc<TRow>(",
@@ -43,11 +49,21 @@ async function main() {
     "async function fetchDirectorReportCanonicalWorks(",
     "async function fetchDirectorReportCanonicalOptions(",
     "async function fetchPriceByRequestItemId(",
+    "async function fetchDirectorFactViaAccRpc(",
+    "async function fetchAllFactRowsFromView(",
+    "async function fetchDirectorDisciplineSourceRowsViaRpc(",
+    "async function fetchAllFactRowsFromTables(",
+    "async function fetchDisciplineFactRowsFromTables(",
+    "async function fetchFactRowsForDiscipline(",
+    "async function fetchViaLegacyRpc(",
   ];
 
   const transport = await import("../src/lib/api/director_reports.transport");
   const transportBase = await import("../src/lib/api/director_reports.transport.base");
   const transportProduction = await import("../src/lib/api/director_reports.transport.production");
+  const transportFacts = await import("../src/lib/api/director_reports.transport.facts");
+  const transportDiscipline = await import("../src/lib/api/director_reports.transport.discipline");
+  const transportLegacy = await import("../src/lib/api/director_reports.transport.legacy");
   const observability = await import("../src/lib/api/director_reports.observability");
 
   const smoke = {
@@ -62,19 +78,28 @@ async function main() {
     productionEmptyRequestItemPriceOk:
       (await transportProduction.fetchPriceByRequestItemId([])) instanceof Map
       && (await transportProduction.fetchPriceByRequestItemId([])).size === 0,
+    factsFacadeExportOk: typeof transportFacts.fetchDirectorFactViaAccRpc === "function",
+    disciplineFacadeExportOk: typeof transportDiscipline.fetchFactRowsForDiscipline === "function",
+    legacyFacadeExportOk: typeof transportLegacy.fetchViaLegacyRpc === "function",
     observabilityExportOk: typeof observability.recordDirectorReportsTransportWarning === "function",
   };
 
   const summary = {
     status:
-      currentSource.includes('from "./director_reports.observability"')
-      && currentSource.includes('from "./director_reports.transport.base"')
+      currentSource.includes('from "./director_reports.transport.base"')
       && currentSource.includes('from "./director_reports.transport.production"')
+      && currentSource.includes('from "./director_reports.transport.facts"')
+      && currentSource.includes('from "./director_reports.transport.discipline"')
+      && currentSource.includes('from "./director_reports.transport.legacy"')
       && removedBodies.every((marker) => !currentSource.includes(marker))
       && familyFiles.every((file) => fs.existsSync(path.join(projectRoot, file)))
       && baseSource.includes("issue_lines_acc_rpc_failed")
+      && baseSource.includes("director_report_fetch_acc_issue_lines_v1")
       && productionSource.includes("fetchDirectorReportCanonicalMaterials")
-      && observabilitySource.includes("recordDirectorReportsTransportWarning")
+      && factsSource.includes("fetchDirectorFactViaAccRpc")
+      && disciplineSource.includes("fetchFactRowsForDiscipline")
+      && legacySource.includes("fetchViaLegacyRpc")
+      && lookupsSource.includes("loadDirectorRequestContextLookups")
       && Object.values(smoke).every(Boolean)
         ? "GREEN"
         : "NOT GREEN",
@@ -91,14 +116,20 @@ async function main() {
       ),
     },
     checks: {
-      facadeImportsObservability: currentSource.includes('from "./director_reports.observability"'),
       facadeImportsBase: currentSource.includes('from "./director_reports.transport.base"'),
       facadeImportsProduction: currentSource.includes('from "./director_reports.transport.production"'),
+      facadeImportsFacts: currentSource.includes('from "./director_reports.transport.facts"'),
+      facadeImportsDiscipline: currentSource.includes('from "./director_reports.transport.discipline"'),
+      facadeImportsLegacy: currentSource.includes('from "./director_reports.transport.legacy"'),
       oldBodiesRemoved: removedBodies.every((marker) => !currentSource.includes(marker)),
       familyFilesPresent: familyFiles.every((file) => fs.existsSync(path.join(projectRoot, file))),
       baseCarriesAccRpcWarnings: baseSource.includes("issue_lines_acc_rpc_failed"),
+      baseCarriesBatchRpc: baseSource.includes("director_report_fetch_acc_issue_lines_v1"),
       productionCarriesCanonicalFetchers: productionSource.includes("fetchDirectorReportCanonicalMaterials"),
-      observabilityCarriesTransportWarn: observabilitySource.includes("recordDirectorReportsTransportWarning"),
+      factsCarriesAccRpcPath: factsSource.includes("fetchDirectorFactViaAccRpc"),
+      disciplineCarriesFallbackChain: disciplineSource.includes("fetchFactRowsForDiscipline"),
+      legacyCarriesFastRpc: legacySource.includes("fetchViaLegacyRpc"),
+      lookupsCarrySharedPromiseAll: lookupsSource.includes("Promise.all(["),
     },
     smoke,
   };
@@ -127,9 +158,23 @@ async function main() {
     "- fetchDirectorReportCanonicalOptions",
     "- fetchPriceByRequestItemId",
     "",
+    "moved_to_transport_facts:",
+    "- fetchDirectorFactViaAccRpc",
+    "- fetchAllFactRowsFromView",
+    "",
+    "moved_to_transport_discipline:",
+    "- fetchDirectorDisciplineSourceRowsViaRpc",
+    "- fetchAllFactRowsFromTables",
+    "- fetchDisciplineFactRowsFromTables",
+    "- fetchFactRowsForDiscipline",
+    "",
+    "moved_to_transport_legacy:",
+    "- fetchViaLegacyRpc",
+    "",
+    "moved_to_transport_lookups:",
+    "- loadDirectorRequestContextLookups",
+    "",
     "transport_facade_keeps:",
-    "- fact source fallback chain",
-    "- table/view/rpc orchestration",
     "- public compatibility exports",
   ].join("\n");
 

@@ -1,32 +1,44 @@
 {
   "status": "GREEN",
   "before": {
-    "transportLines": 1460,
-    "transportBytes": 49845
+    "transportLines": 977,
+    "transportBytes": 32968
   },
   "after": {
-    "transportLines": 977,
-    "transportBytes": 33750,
+    "transportLines": 26,
+    "transportBytes": 801,
     "familyFiles": [
-      "src/lib/api/director_reports.observability.ts",
       "src/lib/api/director_reports.transport.base.ts",
-      "src/lib/api/director_reports.transport.production.ts"
+      "src/lib/api/director_reports.transport.production.ts",
+      "src/lib/api/director_reports.transport.facts.ts",
+      "src/lib/api/director_reports.transport.discipline.ts",
+      "src/lib/api/director_reports.transport.legacy.ts",
+      "src/lib/api/director_reports.transport.lookups.ts"
     ],
     "familyLines": {
-      "src/lib/api/director_reports.observability.ts": 47,
-      "src/lib/api/director_reports.transport.base.ts": 276,
-      "src/lib/api/director_reports.transport.production.ts": 262
+      "src/lib/api/director_reports.transport.base.ts": 311,
+      "src/lib/api/director_reports.transport.production.ts": 262,
+      "src/lib/api/director_reports.transport.facts.ts": 169,
+      "src/lib/api/director_reports.transport.discipline.ts": 690,
+      "src/lib/api/director_reports.transport.legacy.ts": 91,
+      "src/lib/api/director_reports.transport.lookups.ts": 51
     }
   },
   "checks": {
-    "facadeImportsObservability": true,
     "facadeImportsBase": true,
     "facadeImportsProduction": true,
+    "facadeImportsFacts": true,
+    "facadeImportsDiscipline": true,
+    "facadeImportsLegacy": true,
     "oldBodiesRemoved": true,
     "familyFilesPresent": true,
     "baseCarriesAccRpcWarnings": true,
+    "baseCarriesBatchRpc": true,
     "productionCarriesCanonicalFetchers": true,
-    "observabilityCarriesTransportWarn": true
+    "factsCarriesAccRpcPath": true,
+    "disciplineCarriesFallbackChain": true,
+    "legacyCarriesFastRpc": true,
+    "lookupsCarrySharedPromiseAll": true
   },
   "smoke": {
     "facadeExportsCanonicalMaterials": true,
@@ -38,6 +50,9 @@
     "baseEmptyDisciplineLookupOk": true,
     "baseEmptyIssueLinesOk": true,
     "productionEmptyRequestItemPriceOk": true,
+    "factsFacadeExportOk": true,
+    "disciplineFacadeExportOk": true,
+    "legacyFacadeExportOk": true,
     "observabilityExportOk": true
   }
 }

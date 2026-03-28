@@ -8,5 +8,8 @@
   "baseEmptyDisciplineLookupOk": true,
   "baseEmptyIssueLinesOk": true,
   "productionEmptyRequestItemPriceOk": true,
+  "factsFacadeExportOk": true,
+  "disciplineFacadeExportOk": true,
+  "legacyFacadeExportOk": true,
   "observabilityExportOk": true
 }

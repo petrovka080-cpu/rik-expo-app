@@ -5,7 +5,7 @@ import type {
   DirectorReportPayload,
 } from "./director_reports.shared";
 import {
-  chunk,
+  forEachChunkParallel,
   normalizeProposalItemPriceRow,
   normalizePurchaseItemPriceRow,
   normalizePurchaseItemRequestPriceRow,
@@ -51,7 +51,7 @@ async function fetchIssuePriceMapByCode(opts?: {
   if (!opts?.skipPurchaseItems) {
     try {
       if (hasScopedCodes) {
-        for (const part of chunk(scopedCodes, 500)) {
+        await forEachChunkParallel(scopedCodes, 500, 4, async (part) => {
           const q = await supabase
             .from("purchase_items" as never)
             .select("rik_code,code,price,qty")
@@ -63,7 +63,7 @@ async function fetchIssuePriceMapByCode(opts?: {
               push(row.rik_code ?? row.code, row.price, row.qty);
             }
           }
-        }
+        });
       } else {
         const q = await supabase
           .from("purchase_items" as never)
@@ -88,7 +88,7 @@ async function fetchIssuePriceMapByCode(opts?: {
   if (!weighted.size && !DIRECTOR_REPORTS_STRICT_FACT_SOURCES) {
     try {
       if (hasScopedCodes) {
-        for (const part of chunk(scopedCodes, 500)) {
+        await forEachChunkParallel(scopedCodes, 500, 4, async (part) => {
           const q2 = await supabase
             .from("proposal_items" as never)
             .select("rik_code,price,qty")
@@ -100,7 +100,7 @@ async function fetchIssuePriceMapByCode(opts?: {
               push(row.rik_code, row.price, row.qty);
             }
           }
-        }
+        });
       } else {
         const q2 = await supabase
           .from("proposal_items" as never)
@@ -218,13 +218,13 @@ async function fetchPriceByRequestItemId(requestItemIds: string[]): Promise<Map<
   );
   if (!ids.length) return out;
 
-  for (const part of chunk(ids, 500)) {
+  await forEachChunkParallel(ids, 500, 4, async (part) => {
     try {
       const q = await supabase
         .from("purchase_items" as never)
         .select("request_item_id,price,qty")
         .in("request_item_id", part);
-      if (q.error || !Array.isArray(q.data)) continue;
+      if (q.error || !Array.isArray(q.data)) return;
 
       const agg = new Map<string, { sum: number; w: number }>();
       for (const r of q.data) {
@@ -247,7 +247,7 @@ async function fetchPriceByRequestItemId(requestItemIds: string[]): Promise<Map<
         totalIds: ids.length,
       });
     }
-  }
+  });
 
   return out;
 }

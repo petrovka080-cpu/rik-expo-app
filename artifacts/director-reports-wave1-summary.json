@@ -1,0 +1,31 @@
+{
+  "status": "GREEN",
+  "files": [
+    "src/lib/api/director_reports.transport.ts",
+    "src/lib/api/director_reports.transport.facts.ts",
+    "src/lib/api/director_reports.transport.discipline.ts",
+    "src/lib/api/director_reports.transport.legacy.ts",
+    "src/lib/api/director_reports.transport.lookups.ts",
+    "src/lib/api/director_reports.transport.base.ts",
+    "src/lib/api/director_reports.transport.production.ts",
+    "src/lib/api/director_reports.naming.ts",
+    "src/lib/api/director_reports.service.report.ts",
+    "supabase/migrations/20260329060000_director_report_acc_issue_lines_batch_v1.sql"
+  ],
+  "checks": {
+    "transportFacadeSplit": true,
+    "lookupWaterfallReduced": true,
+    "sequentialChunkLoopsReduced": true,
+    "batchRpcPresent": true,
+    "fallbackTraceable": true,
+    "noSequentialChunkLoopsInNamingOrProduction": true,
+    "migrationPresent": true
+  },
+  "smoke": {
+    "transportFacadeExportsFacts": true,
+    "transportFacadeExportsDiscipline": true,
+    "transportFacadeExportsLegacy": true,
+    "baseEmptyIssueLinesOk": true,
+    "lookupHelperEmptyOk": true
+  }
+}

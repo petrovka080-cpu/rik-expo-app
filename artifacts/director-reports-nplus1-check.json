@@ -1,0 +1,10 @@
+{
+  "status": "GREEN",
+  "accIssueLinesBatchRpcEnabled": true,
+  "accIssueLinesFallbackTraceable": true,
+  "serviceFastRpcFallbackTraceable": true,
+  "productionChunkLoopsSequential": false,
+  "namingChunkLoopsSequential": false,
+  "migrationPresent": true,
+  "migrationWrapsLegacyRpc": true
+}
