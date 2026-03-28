@@ -1,0 +1,11 @@
+{
+  "facadeExportsMaterialBuilder": true,
+  "facadeExportsDisciplineBuilder": true,
+  "facadeExportsLegacyDisciplineBuilder": true,
+  "facadeExportsSnapshots": true,
+  "facadeExportsPct": true,
+  "materialRowsOk": true,
+  "disciplineWorksOk": true,
+  "priceInputsOk": true,
+  "snapshotsOk": true
+}

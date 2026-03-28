@@ -567,7 +567,12 @@ async function dismissAndroidClosableOverlays(current: ReturnType<typeof dumpAnd
 }
 
 async function loginDirectorAndroid(user: TempUser, packageName: string | null) {
-  writeJson(path.join(projectRoot, "artifacts/android-director-reports-user.json"), user);
+  writeJson(path.join(projectRoot, "artifacts/android-director-reports-user.json"), {
+    id: "<redacted>",
+    email: "<redacted>",
+    password: "<redacted>",
+    role: user.role,
+  });
   {
     const current = await androidHarness.loginAndroidWithProtectedRoute({
       packageName,

@@ -90,7 +90,15 @@
     },
     {
       "type": "info",
-      "text": "[platform.observability] {screen: profile, surface: session_role, event: warm_session_profile, result: success, durationMs: 575}"
+      "text": "[platform.observability] {screen: profile, surface: session_role, event: warm_session_profile, result: success, durationMs: 641}"
+    },
+    {
+      "type": "info",
+      "text": "[director-report-transport] {source: transport:director_report_scope_rpc_v1, transportBranch: rpc_scope_v1, fallbackReason: null, rpcVersion: v1, pricedStage: null}"
+    },
+    {
+      "type": "info",
+      "text": "[director-report-transport] {source: transport:director_report_scope_rpc_v1, transportBranch: rpc_scope_v1, fallbackReason: null, rpcVersion: v1, pricedStage: null}"
     },
     {
       "type": "info",
@@ -98,15 +106,11 @@
     },
     {
       "type": "info",
-      "text": "[director-report-transport] {source: transport:director_report_scope_rpc_v1, transportBranch: rpc_scope_v1, fallbackReason: null, rpcVersion: v1, pricedStage: null}"
+      "text": "[platform.observability] {screen: director, surface: reports_scope, event: load_report_scope, result: success, durationMs: 2259}"
     },
     {
       "type": "info",
-      "text": "[director-report-transport] {source: transport:director_report_scope_rpc_v1, transportBranch: rpc_scope_v1, fallbackReason: null, rpcVersion: v1, pricedStage: null}"
-    },
-    {
-      "type": "info",
-      "text": "[platform.observability] {screen: director, surface: reports_scope, event: load_report_scope, result: success, durationMs: 1197}"
+      "text": "[platform.observability] {screen: director, surface: reports_scope, event: load_report_scope, result: success, durationMs: 2210}"
     },
     {
       "type": "info",
@@ -122,10 +126,6 @@
     },
     {
       "type": "info",
-      "text": "[platform.observability] {screen: director, surface: reports_scope, event: load_report_scope, result: success, durationMs: 1277}"
-    },
-    {
-      "type": "info",
       "text": "[director_works] tab_switch_to_works: 0ms"
     },
     {
@@ -134,7 +134,7 @@
     },
     {
       "type": "info",
-      "text": "[platform.observability] {screen: director, surface: reports_scope, event: load_report_scope, result: success, durationMs: 547}"
+      "text": "[platform.observability] {screen: director, surface: reports_scope, event: load_report_scope, result: success, durationMs: 559}"
     },
     {
       "type": "info",

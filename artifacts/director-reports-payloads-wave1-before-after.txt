@@ -1,0 +1,21 @@
+Director Reports Payloads Wave 1
+before_lines=642
+after_lines=14
+before_bytes=21234
+after_bytes=379
+
+moved_to_payloads_materials:
+- buildPayloadFromFactRows
+
+moved_to_payloads_discipline:
+- pct
+- buildDisciplinePayloadFromFactRowsLegacy
+- buildDisciplinePayloadFromFactRows
+- collectDisciplinePriceInputs
+
+moved_to_payloads_snapshots:
+- materialSnapshotFromPayload
+- worksSnapshotFromPayload
+
+payloads_facade_keeps:
+- compatibility exports only
