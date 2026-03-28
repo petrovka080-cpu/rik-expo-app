@@ -14,7 +14,7 @@
     "badResponsesEmpty": true,
     "screenshot": "artifacts/director-reports-web-smoke.png",
     "platformSpecificIssues": [],
-    "bodySample": "Контроль\nЗаявки\nПодряды\nФинансы\nСклад\nОтчёты\nФакт выдачи (склад)\nПериод: Весь период\nОткрыть\nОтчёт показывает факт подтверждённых выдач со склада и дисциплину без заявки и без объекта.\n\n\nПрораб\n\n\nДиректор\n\n\nСнабженец\n\n\nБухгалтер\n\n\nСклад\n\n\nБезопасность\n\n\nМаркет\n\n\nКарта\n\n\nПрофиль\n\n\nОтчеты\n\n\nПодрядчик\n\nAI\nВесь период\n\n\n\n\n\nОбновление...\nВесь период (даты)\nГотовим файл...\nСклад\nВсе\nОбъекты по выдачам · 8\n…\nМатериалы\nРаботы\nРасход / Закупки (%)\nРасход / Закупки: н/д\nПо стоимости за период\nРасход: 0 KGS · Закупки: 0 KGS\nНедостаточно цен для расчёта базы закупок.\nExcel\nВсе объекты по выдачам",
+    "bodySample": "Контроль\nЗаявки\nПодряды\nФинансы\nСклад\nОтчёты\nФакт выдачи (склад)\nПериод: Весь период\nОткрыть\nОтчёт показывает факт подтверждённых выдач со склада и дисциплину без заявки и без объекта.\n\n\nПрораб\n\n\nДиректор\n\n\nСнабженец\n\n\nБухгалтер\n\n\nСклад\n\n\nБезопасность\n\n\nМаркет\n\n\nКарта\n\n\nПрофиль\n\n\nОтчеты\n\n\nПодрядчик\n\nAI\nВесь период\n\n\n\n\n\nОбновление...\nВесь период (даты)\nГотовим файл...\nСклад\nВсе\nОбъекты по подтверждённым выдачам · 8\n…\nОбъекты по подтверждённым выдачам\nНеразрешённых кодов: 100 · Без вида работ: 0\nNaming: v_rik_names_ru ok · overrides ok · ledger ok\nМатериалы\nРаботы\nРасход / Закупки (%)\nРасход / Закупки: н/д\nПо стоимости за период\nРасход: 0 KGS · Закупки: 0 KGS\nНедостаточно цен для расчёта базы закупок.\nExcel\nВсе объекты по подтверждённым выдачам",
     "runtime": {
       "console": [
         {
@@ -107,7 +107,7 @@
         },
         {
           "type": "info",
-          "text": "[platform.observability] {screen: profile, surface: session_role, event: warm_session_profile, result: success, durationMs: 614}"
+          "text": "[platform.observability] {screen: profile, surface: session_role, event: warm_session_profile, result: success, durationMs: 586}"
         },
         {
           "type": "info",
@@ -127,11 +127,15 @@
         },
         {
           "type": "info",
-          "text": "[platform.observability] {screen: director, surface: reports_scope, event: load_report_scope, result: success, durationMs: 545}"
+          "text": "[director.repository] {phase: result, sourcePath: director.repository.loadPendingRowsFallback, requestCount: 60, requestStatusesSample: Array(4), syncResultLineCount: 0}"
         },
         {
           "type": "info",
-          "text": "[platform.observability] {screen: director, surface: reports_scope, event: load_report_scope, result: success, durationMs: 487}"
+          "text": "[director.repository] {phase: contract_mismatch, sourcePath: director.repository.fetchPendingRows, primaryPath: list_director_items_stable, primaryRowCount: 0, fallbackRowCount: 0}"
+        },
+        {
+          "type": "info",
+          "text": "[platform.observability] {screen: director, surface: reports_scope, event: load_report_scope, result: success, durationMs: 6660}"
         },
         {
           "type": "info",
@@ -147,6 +151,10 @@
         },
         {
           "type": "info",
+          "text": "[platform.observability] {screen: director, surface: reports_scope, event: load_report_scope, result: success, durationMs: 6741}"
+        },
+        {
+          "type": "info",
           "text": "[director_works] tab_switch_to_works: 0ms"
         },
         {
@@ -155,7 +163,7 @@
         },
         {
           "type": "info",
-          "text": "[platform.observability] {screen: director, surface: reports_scope, event: load_report_scope, result: success, durationMs: 562}"
+          "text": "[platform.observability] {screen: director, surface: reports_scope, event: load_report_scope, result: success, durationMs: 581}"
         },
         {
           "type": "info",

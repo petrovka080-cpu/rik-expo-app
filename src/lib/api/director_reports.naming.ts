@@ -1,5 +1,6 @@
 import { supabase } from "../supabaseClient";
 import { normalizeRuText } from "../text/encoding";
+import type { DirectorNamingProbeCacheMode, DirectorNamingSourceStatus } from "../../screens/director/director.readModels";
 import type { CodeNameRow, DirectorFactRow, ObjectLookupRow, RikNameLookupRow } from "./director_reports.shared";
 import {
   WITHOUT_LEVEL,
@@ -194,6 +195,13 @@ async function fetchRikNamesRuByCode(codes: string[]): Promise<Map<string, strin
 
 type NameSourcesProbe = {
   vrr: boolean;
+  statuses: {
+    vrr: DirectorNamingSourceStatus;
+    overrides: DirectorNamingSourceStatus;
+    ledger: DirectorNamingSourceStatus;
+  };
+  lastProbeAt: string | null;
+  probeCacheMode: DirectorNamingProbeCacheMode;
 };
 
 type NameSourcesProbeCacheEntry = {
@@ -221,35 +229,74 @@ const warnDirectorNaming = (operation: string, source: string, error: unknown) =
   console.warn("[director_reports.naming]", { operation, source, message });
 };
 
+const isMissingNamingSourceError = (error: unknown, sourceName: string): boolean => {
+  const record = error && typeof error === "object" ? (error as Record<string, unknown>) : {};
+  const message = String(record.message ?? error ?? "").toLowerCase();
+  const details = String(record.details ?? "").toLowerCase();
+  const hint = String(record.hint ?? "").toLowerCase();
+  const code = String(record.code ?? "").toLowerCase();
+  const source = sourceName.toLowerCase();
+  const text = `${message} ${details} ${hint}`;
+  return (
+    code === "42p01" ||
+    code === "pgrst205" ||
+    (text.includes(source) && (text.includes("does not exist") || text.includes("relation") || text.includes("missing")))
+  );
+};
+
+const probeNamingSource = async (
+  source: "v_rik_names_ru" | "catalog_name_overrides" | "v_wh_balance_ledger_ui",
+  selectCols: string,
+): Promise<DirectorNamingSourceStatus> => {
+  try {
+    const result = await supabase
+      .from(source as never)
+      .select(selectCols)
+      .limit(1);
+    if (!result.error) {
+      return "ok";
+    }
+    warnDirectorNaming("probe", source, result.error);
+    return isMissingNamingSourceError(result.error, source) ? "missing" : "failed";
+  } catch (error) {
+    warnDirectorNaming("probe", source, error);
+    return isMissingNamingSourceError(error, source) ? "missing" : "failed";
+  }
+};
+
 async function probeNameSources(): Promise<NameSourcesProbe> {
   const cached = nameSourcesProbeCache;
   if (cached) {
     const ttl = cached.value.vrr ? NAME_SOURCES_PROBE_POSITIVE_TTL_MS : NAME_SOURCES_PROBE_NEGATIVE_TTL_MS;
     if (Date.now() - cached.ts < ttl) {
-      return cached.value;
+      return {
+        ...cached.value,
+        probeCacheMode: cached.value.vrr ? "cached_positive" : "cached_negative",
+      };
     }
   }
 
-  let vrr = false;
-
-  try {
-    const r = await supabase
-      .from("v_rik_names_ru" as never)
-      .select("code,name_ru")
-      .limit(1);
-    vrr = !r.error;
-    if (r.error) {
-      warnDirectorNaming("probe", "v_rik_names_ru", r.error);
-    }
-  } catch (error) {
-    warnDirectorNaming("probe", "v_rik_names_ru", error);
-  }
+  const [vrrStatus, overridesStatus, ledgerStatus] = await Promise.all([
+    probeNamingSource("v_rik_names_ru", "code,name_ru"),
+    probeNamingSource("catalog_name_overrides", "code,name_ru"),
+    probeNamingSource("v_wh_balance_ledger_ui", "code,name"),
+  ]);
+  const nextValue: NameSourcesProbe = {
+    vrr: vrrStatus === "ok",
+    statuses: {
+      vrr: vrrStatus,
+      overrides: overridesStatus,
+      ledger: ledgerStatus,
+    },
+    lastProbeAt: new Date().toISOString(),
+    probeCacheMode: "live",
+  };
 
   nameSourcesProbeCache = {
-    value: { vrr },
+    value: nextValue,
     ts: Date.now(),
   };
-  return nameSourcesProbeCache.value;
+  return nextValue;
 }
 
 const looksLikeMaterialCode = (v: unknown): boolean => {

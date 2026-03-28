@@ -90,7 +90,7 @@
     },
     {
       "type": "info",
-      "text": "[platform.observability] {screen: profile, surface: session_role, event: warm_session_profile, result: success, durationMs: 614}"
+      "text": "[platform.observability] {screen: profile, surface: session_role, event: warm_session_profile, result: success, durationMs: 586}"
     },
     {
       "type": "info",
@@ -110,11 +110,15 @@
     },
     {
       "type": "info",
-      "text": "[platform.observability] {screen: director, surface: reports_scope, event: load_report_scope, result: success, durationMs: 545}"
+      "text": "[director.repository] {phase: result, sourcePath: director.repository.loadPendingRowsFallback, requestCount: 60, requestStatusesSample: Array(4), syncResultLineCount: 0}"
     },
     {
       "type": "info",
-      "text": "[platform.observability] {screen: director, surface: reports_scope, event: load_report_scope, result: success, durationMs: 487}"
+      "text": "[director.repository] {phase: contract_mismatch, sourcePath: director.repository.fetchPendingRows, primaryPath: list_director_items_stable, primaryRowCount: 0, fallbackRowCount: 0}"
+    },
+    {
+      "type": "info",
+      "text": "[platform.observability] {screen: director, surface: reports_scope, event: load_report_scope, result: success, durationMs: 6660}"
     },
     {
       "type": "info",
@@ -130,6 +134,10 @@
     },
     {
       "type": "info",
+      "text": "[platform.observability] {screen: director, surface: reports_scope, event: load_report_scope, result: success, durationMs: 6741}"
+    },
+    {
+      "type": "info",
       "text": "[director_works] tab_switch_to_works: 0ms"
     },
     {
@@ -138,7 +146,7 @@
     },
     {
       "type": "info",
-      "text": "[platform.observability] {screen: director, surface: reports_scope, event: load_report_scope, result: success, durationMs: 562}"
+      "text": "[platform.observability] {screen: director, surface: reports_scope, event: load_report_scope, result: success, durationMs: 581}"
     },
     {
       "type": "info",

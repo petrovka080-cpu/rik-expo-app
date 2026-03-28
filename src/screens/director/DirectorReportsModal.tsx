@@ -78,10 +78,15 @@ export default function DirectorReportsModal({
   const {
     rows,
     objectOptions,
+    objectCount,
+    objectCountLabel,
     issuesTotal,
     issuesNoObj,
     itemsTotal,
     itemsNoReq,
+    unresolvedNamesCount,
+    noWorkNameCount,
+    reportDiagnostics,
     sortedWorks,
     sortedWorkLevels,
     topWorkMaterials,
@@ -179,7 +184,7 @@ export default function DirectorReportsModal({
           {preview ? <Text style={s.mobMeta} numberOfLines={2}>{preview}</Text> : null}
           {isMissingWork ? (
             <Text style={[s.mobMeta, { color: "#FCA5A5" }]} numberOfLines={2}>
-              Позиции без заполненного work_name в подтверждённых выдачах.
+              Позиции без заполненного work_name в подтверждённых выдачах. Это пробел данных, а не ошибка интерфейса.
             </Text>
           ) : null}
         </View>
@@ -347,7 +352,7 @@ export default function DirectorReportsModal({
               <Pressable onPress={() => {}} style={s.sheet}>
                 <View style={s.sheetHandle} />
                 <View style={{ flexDirection: "row", justifyContent: "space-between", paddingHorizontal: 14, paddingBottom: 10 }}>
-                  <Text style={{ color: UI.text, fontWeight: "900", fontSize: 16 }}>{`Объекты по подтверждённым выдачам (${repOptObjects?.length ?? 0})`}</Text>
+                  <Text style={{ color: UI.text, fontWeight: "900", fontSize: 16 }}>{`${objectCountLabel} (${objectCount})`}</Text>
                   <Pressable onPress={onCloseRepObj}><Text style={{ color: UI.sub, fontWeight: "900" }}>Закрыть</Text></Pressable>
                 </View>
                 <FlashList
@@ -420,7 +425,7 @@ export default function DirectorReportsModal({
             <Text style={{ color: !repObjectName ? UI.text : UI.sub, fontWeight: "900" }}>Все</Text>
           </Pressable>
           <Pressable onPress={onOpenRepObj} style={[s.tab, repObjectName && s.tabActive, { marginRight: 8, marginBottom: 8 }]}>
-            <Text style={{ color: repObjectName ? UI.text : UI.sub, fontWeight: "900" }}>{`Объекты по выдачам · ${(repOptObjects?.length ?? 0)}`}</Text>
+            <Text style={{ color: repObjectName ? UI.text : UI.sub, fontWeight: "900" }}>{`${objectCountLabel} · ${objectCount}`}</Text>
           </Pressable>
           {repObjectName ? (
             <Pressable onPress={onOpenRepObj} style={[s.tab, s.tabActive, { marginRight: 8, marginBottom: 8 }]}>
@@ -429,6 +434,17 @@ export default function DirectorReportsModal({
           ) : null}
           {repOptLoading ? <Text style={{ color: UI.sub, fontWeight: "800", marginLeft: 4, marginTop: 8 }}>…</Text> : null}
         </View>
+        <Text style={[s.mobMeta, { marginTop: 6 }]} numberOfLines={2}>{objectCountLabel}</Text>
+        {unresolvedNamesCount > 0 || noWorkNameCount > 0 ? (
+          <Text style={[s.mobMeta, { marginTop: 4 }]} numberOfLines={2}>
+            {`Неразрешённых кодов: ${unresolvedNamesCount} · Без вида работ: ${noWorkNameCount}`}
+          </Text>
+        ) : null}
+        {reportDiagnostics ? (
+          <Text style={[s.mobMeta, { marginTop: 4 }]} numberOfLines={2}>
+            {`Naming: v_rik_names_ru ${reportDiagnostics.naming.vrr} · overrides ${reportDiagnostics.naming.overrides} · ledger ${reportDiagnostics.naming.ledger}`}
+          </Text>
+        ) : null}
       </View>
 
       {repTab === "materials" ? (
@@ -513,7 +529,7 @@ export default function DirectorReportsModal({
           onPress={() => void applyObjectFilter(null)}
           style={[s.openBtn, { paddingVertical: 10, paddingHorizontal: 14, backgroundColor: "rgba(255,255,255,0.06)" }]}
         >
-          <Text style={[s.openBtnText, { fontSize: 12 }]}>Все объекты по выдачам</Text>
+          <Text style={[s.openBtnText, { fontSize: 12 }]}>{`Все ${objectCountLabel.toLowerCase()}`}</Text>
         </Pressable>
       </View>
     </DirectorFinanceCardModal>

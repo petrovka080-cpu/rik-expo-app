@@ -1,0 +1,39 @@
+{
+  "owner": "rpc:director_finance_panel_scope_v3",
+  "mode": "fallback",
+  "semantics": "invoice",
+  "displayMode": "fallback_legacy",
+  "summarySourceFields": [
+    "summary.approved",
+    "summary.paid",
+    "summary.toPay"
+  ],
+  "supplierSourceFields": [
+    "report.suppliers[].approved",
+    "report.suppliers[].paid",
+    "report.suppliers[].toPay"
+  ],
+  "headerTotals": {
+    "approvedTotal": 431658,
+    "paidTotal": 280,
+    "debtTotal": 431378
+  },
+  "supplierTotals": {
+    "approvedTotal": 431658,
+    "paidTotal": 280,
+    "debtTotal": 431378
+  },
+  "parityDelta": {
+    "approved": 0,
+    "paid": 0,
+    "debt": 0
+  },
+  "mixedSourceRenderingRemoved": true,
+  "diagnostics": {
+    "sourceVersion": "director_finance_panel_scope_v3",
+    "payloadShapeVersion": "v3",
+    "owner": "backend",
+    "generatedAt": "2026-03-28T03:28:35.285Z",
+    "supplierRowCount": 22
+  }
+}

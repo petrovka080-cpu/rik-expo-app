@@ -100,6 +100,9 @@ const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 const escapeRegex = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 const includesAnyLabel = (text: string, labels: string[]) => labels.some((label) => text.includes(label));
+const hasFinanceHomeSurface = (text: string) => includesAnyLabel(text, [...WEB_TEXT.debtCard, ...WEB_TEXT.spendCard]);
+const hasFinanceDebtSurface = (text: string) =>
+  includesAnyLabel(text, [...WEB_TEXT.debtModalTitle, ...WEB_TEXT.suppliersSection, ...WEB_TEXT.debtSummary]);
 
 const webTextLocator = (page: import("playwright").Page, labels: string[]) =>
   page.getByText(new RegExp(labels.map(escapeRegex).join("|"), "i")).first();
@@ -245,17 +248,42 @@ async function runWebRuntime(): Promise<Record<string, unknown>> {
     });
 
     await loginDirector(page, user);
-    await waitForBody(page, [...WEB_TEXT.header, ...WEB_TEXT.financeTab], 45_000);
-
-    await webTextLocator(page, WEB_TEXT.financeTab).click();
-    const financeHomeBody = await waitForBody(page, [...WEB_TEXT.debtCard, ...WEB_TEXT.spendCard], 30_000);
-
-    await webTextLocator(page, WEB_TEXT.debtCard).click();
-    const debtBody = await waitForBody(
+    const initialBody = await waitForBody(
       page,
-      [...WEB_TEXT.debtModalTitle, ...WEB_TEXT.suppliersSection, ...WEB_TEXT.debtSummary],
-      30_000,
+      [
+        ...WEB_TEXT.header,
+        ...WEB_TEXT.financeTab,
+        ...WEB_TEXT.debtCard,
+        ...WEB_TEXT.spendCard,
+        ...WEB_TEXT.debtModalTitle,
+        ...WEB_TEXT.suppliersSection,
+        ...WEB_TEXT.debtSummary,
+      ],
+      45_000,
     );
+
+    let financeHomeBody = initialBody;
+    if (!hasFinanceHomeSurface(initialBody) && !hasFinanceDebtSurface(initialBody)) {
+      const financeTab = webTextLocator(page, WEB_TEXT.financeTab);
+      if ((await financeTab.count()) > 0) {
+        await financeTab.click();
+      }
+      financeHomeBody = await waitForBody(
+        page,
+        [...WEB_TEXT.debtCard, ...WEB_TEXT.spendCard, ...WEB_TEXT.debtModalTitle, ...WEB_TEXT.debtSummary],
+        30_000,
+      );
+    }
+
+    let debtBody = financeHomeBody;
+    if (!hasFinanceDebtSurface(financeHomeBody)) {
+      await webTextLocator(page, WEB_TEXT.debtCard).click();
+      debtBody = await waitForBody(
+        page,
+        [...WEB_TEXT.debtModalTitle, ...WEB_TEXT.suppliersSection, ...WEB_TEXT.debtSummary],
+        30_000,
+      );
+    }
 
     const supplierToggle = webTextLocator(page, WEB_TEXT.suppliersSection);
     const supplierToggleVisible = (await supplierToggle.count()) > 0;

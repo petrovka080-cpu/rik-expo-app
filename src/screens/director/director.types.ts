@@ -1,4 +1,8 @@
 import type { FinSupplierPanelState } from "./director.finance";
+import type {
+  DirectorReportsCanonicalDiagnostics,
+  DirectorReportsCanonicalSummary,
+} from "./director.readModels";
 
 // src/screens/director/director.types.ts
 export type Tab = "foreman" | "buyer";
@@ -145,6 +149,8 @@ export type RepPayload = {
   kpi?: RepKpi;
   rows?: RepRow[];
   discipline?: RepDisciplinePayload;
+  summary?: DirectorReportsCanonicalSummary;
+  diagnostics?: DirectorReportsCanonicalDiagnostics;
 };
 
 export type FinSupplierDebt = FinSupplierPanelState;

@@ -844,6 +844,19 @@ export function createAndroidHarness(options: AndroidHarnessOptions) {
             if (isAndroidLauncherHome(cleaned.xml)) {
               dismissAndroidLauncherSearch(cleaned.xml);
               await sleep(600);
+              startAndroidDevClientProject(params.packageName, options.devClientPort, {
+                stopApp: true,
+              });
+            } else {
+              const serverNode = findAndroidDevServerNode(parseAndroidNodes(cleaned.xml));
+              if (serverNode) {
+                tapAndroidBounds(serverNode.bounds);
+                await sleep(1200);
+              } else {
+                startAndroidDevClientProject(params.packageName, options.devClientPort, {
+                  stopApp: false,
+                });
+              }
             }
             startAndroidRouteSafe(params.packageName, params.protectedRoute);
             return null;

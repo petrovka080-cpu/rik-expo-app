@@ -159,7 +159,7 @@ function DirectorScreen() {
         rtToast={vm.rtToast}
         finLoading={vm.finLoading}
         finRows={vm.finRows as any}
-        finRep={vm.finRep as any}
+        finScope={vm.finScope}
         finSpendRows={vm.finSpendRows as any}
         money={vm.money}
         FIN_DUE_DAYS_DEFAULT={7}

@@ -29,6 +29,7 @@ import {
     type FinSpendRow,
     type FinSpendSummary,
 } from "./director.finance";
+import type { DirectorFinanceCanonicalScope } from "./director.readModels";
 import { useIsFocused } from "@react-navigation/native";
 import { useDirectorUiStore } from "./directorUi.store";
 
@@ -91,6 +92,7 @@ export function useDirectorScreenController() {
     const finStackRef = useRef<FinPage[]>(["home"]);
     const [finRows, setFinRows] = useState<FinanceRow[]>([]);
     const [finSpendRows, setFinSpendRows] = useState<FinSpendRow[]>([]);
+    const [finScope, setFinScope] = useState<DirectorFinanceCanonicalScope | null>(null);
     const [finRep, setFinRep] = useState<FinRep>(EMPTY_FIN_REP);
     const [finSpendSummary, setFinSpendSummary] = useState<FinSpendSummary>(EMPTY_FIN_SPEND_SUMMARY);
     const [finSupportRowsLoaded, setFinSupportRowsLoaded] = useState(false);
@@ -130,6 +132,7 @@ export function useDirectorScreenController() {
 
             setFinRows(scope.financeRows);
             setFinSpendRows(scope.spendRows);
+            setFinScope(scope.canonicalScope);
             setFinRep(scope.finRep);
             setFinSpendSummary(scope.finSpendSummary);
             setFinSupportRowsLoaded(scope.supportRowsLoaded);
@@ -383,6 +386,7 @@ export function useDirectorScreenController() {
         finOpen,
         finPage,
         finRows,
+        finScope,
         finSpendRows,
         finSpendSummary,
         finRep,

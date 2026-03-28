@@ -1,6 +1,12 @@
 import { type DirectorReportFetchMeta } from "./director_reports";
 import { loadDirectorReportTransportScope } from "./directorReportsTransport.service";
+import { getMaterialNameResolutionSource, probeNameSources } from "./director_reports.naming";
+import { WITHOUT_WORK } from "./director_reports.shared";
 import { beginPlatformObservability } from "../observability/platformObservability";
+import type {
+  DirectorReportsCanonicalDiagnostics,
+  DirectorReportsCanonicalSummary,
+} from "../../screens/director/director.readModels";
 
 export type DirectorReportScopeOptionsState = {
   objects: string[];
@@ -86,6 +92,8 @@ export type DirectorReportScopePayload = {
   kpi?: DirectorReportScopeKpi;
   rows?: DirectorReportScopeRow[];
   discipline?: DirectorReportScopeDisciplinePayload;
+  summary?: DirectorReportsCanonicalSummary;
+  diagnostics?: DirectorReportsCanonicalDiagnostics;
 };
 
 export type DirectorReportScopeLoadResult = {
@@ -116,6 +124,16 @@ const textOrUndefined = (value: unknown): string | undefined => {
   const text = String(value ?? "").trim();
   return text || undefined;
 };
+
+const toUniqueSortedList = (values: Iterable<string>): string[] =>
+  Array.from(new Set(Array.from(values).map((value) => String(value ?? "").trim()).filter(Boolean))).sort((left, right) =>
+    left.localeCompare(right, "ru"),
+  );
+
+const normalizeKey = (value: unknown): string => String(value ?? "").trim().toLowerCase();
+
+const isWithoutWorkBucket = (workTypeName: unknown): boolean =>
+  normalizeKey(workTypeName).startsWith(normalizeKey(WITHOUT_WORK));
 
 const normalizeOptionsState = (value: unknown): DirectorReportScopeOptionsState => {
   const record = asRecord(value);
@@ -248,6 +266,77 @@ const normalizeReportPayload = (payload: unknown): DirectorReportScopePayload | 
   };
 };
 
+const buildDirectorReportCanonicalDecorations = async (args: {
+  optionsState: DirectorReportScopeOptionsState;
+  report: DirectorReportScopePayload | null;
+  discipline: DirectorReportScopeDisciplinePayload | null;
+  transportBranch: "rpc_scope_v1" | "canonical_scope_fallback" | "legacy_scope_fallback";
+  pricedStage: "base" | "priced" | null;
+}): Promise<{
+  summary: DirectorReportsCanonicalSummary;
+  diagnostics: DirectorReportsCanonicalDiagnostics;
+}> => {
+  const rows = Array.isArray(args.report?.rows) ? args.report.rows : [];
+  const works = Array.isArray(args.discipline?.works) ? args.discipline.works : [];
+  const objectCount = args.optionsState.objects.length;
+  const namingProbe = await probeNameSources();
+
+  const unresolvedCodes = new Set<string>();
+  const resolvedCodes = new Set<string>();
+  for (const row of rows) {
+    const code = String(row.rik_code ?? "").trim().toUpperCase();
+    if (!code) continue;
+    const resolvedName = String(row.name_human_ru ?? "").trim();
+    const source = getMaterialNameResolutionSource(code);
+    if (!resolvedName || resolvedName.toUpperCase() === code || source === "unresolved_code_fallback") {
+      unresolvedCodes.add(code);
+      continue;
+    }
+    resolvedCodes.add(code);
+  }
+
+  const missingWorks = works.filter((work) => isWithoutWorkBucket(work.work_type_name));
+  const itemsWithoutWorkName = missingWorks.reduce((sum, work) => sum + toFiniteNumber(work.total_positions), 0);
+  const locationsWithoutWorkName = missingWorks.reduce(
+    (sum, work) => sum + Math.max(toFiniteNumber(work.location_count), Array.isArray(work.levels) ? work.levels.length : 0),
+    0,
+  );
+
+  return {
+    summary: {
+      objectCount,
+      objectCountLabel: "Объекты по подтверждённым выдачам",
+      confirmedWarehouseObjectCount: objectCount,
+      displayObjectCount: objectCount,
+      displayObjectCountLabel: "Объекты по подтверждённым выдачам",
+      noWorkNameCount: itemsWithoutWorkName,
+      unresolvedNamesCount: unresolvedCodes.size,
+    },
+    diagnostics: {
+      naming: {
+        vrr: namingProbe.statuses.vrr,
+        overrides: namingProbe.statuses.overrides,
+        ledger: namingProbe.statuses.ledger,
+        resolvedNames: resolvedCodes.size,
+        unresolvedCodes: toUniqueSortedList(unresolvedCodes),
+        lastProbeAt: namingProbe.lastProbeAt,
+        probeCacheMode: namingProbe.probeCacheMode,
+      },
+      objectCountSource: "warehouse_confirmed_issues",
+      noWorkName: {
+        workNameMissingCount: missingWorks.length,
+        workNameResolvedCount: Math.max(works.length - missingWorks.length, 0),
+        itemsWithoutWorkName,
+        locationsWithoutWorkName,
+        canResolveFromSource: false,
+      },
+      backendOwnerPreserved: true,
+      transportBranch: args.transportBranch,
+      pricedStage: args.pricedStage,
+    },
+  };
+};
+
 const buildOptionsKey = (from: string, to: string) => `${from}|${to}`;
 
 const buildScopeKey = (
@@ -286,6 +375,23 @@ export async function loadDirectorReportUiScope(args: {
       bypassCache: args.bypassCache,
     });
     const optionsState = normalizeOptionsState(transportResult.options);
+    const normalizedReport = normalizeReportPayload(transportResult.report);
+    const normalizedDiscipline = normalizeDisciplinePayload(transportResult.discipline);
+    const canonicalDecorations = await buildDirectorReportCanonicalDecorations({
+      optionsState,
+      report: normalizedReport,
+      discipline: normalizedDiscipline,
+      transportBranch: transportResult.branchMeta.transportBranch,
+      pricedStage: transportResult.branchMeta.pricedStage ?? null,
+    });
+    const reportWithCanonicalMeta =
+      normalizedReport == null
+        ? null
+        : {
+            ...normalizedReport,
+            summary: canonicalDecorations.summary,
+            diagnostics: canonicalDecorations.diagnostics,
+          };
     const result = {
       optionsKey: buildOptionsKey(args.from, args.to),
       optionsState,
@@ -293,9 +399,9 @@ export async function loadDirectorReportUiScope(args: {
       optionsFromCache: transportResult.fromCache,
       key: buildScopeKey(args.from, args.to, args.objectName, optionsState.objectIdByName),
       objectName: args.objectName,
-      report: normalizeReportPayload(transportResult.report),
+      report: reportWithCanonicalMeta,
       reportMeta: transportResult.reportMeta,
-      discipline: normalizeDisciplinePayload(transportResult.discipline),
+      discipline: normalizedDiscipline,
       disciplineMeta: transportResult.disciplineMeta,
       reportFromCache: transportResult.fromCache,
       disciplineFromCache: transportResult.fromCache,
@@ -313,6 +419,13 @@ export async function loadDirectorReportUiScope(args: {
         optionsObjects: result.optionsState.objects.length,
         disciplineWorks: result.discipline?.works?.length ?? 0,
         pricedStage: transportResult.branchMeta.pricedStage ?? null,
+        objectCountLabel: canonicalDecorations.summary.displayObjectCountLabel,
+        unresolvedNamesCount: canonicalDecorations.summary.unresolvedNamesCount,
+        noWorkNameCount: canonicalDecorations.summary.noWorkNameCount,
+        objectCountSource: canonicalDecorations.diagnostics.objectCountSource,
+        namingVrr: canonicalDecorations.diagnostics.naming.vrr,
+        namingOverrides: canonicalDecorations.diagnostics.naming.overrides,
+        namingLedger: canonicalDecorations.diagnostics.naming.ledger,
       },
     });
     return result;

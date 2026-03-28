@@ -78,6 +78,8 @@ export function useDirectorReportsModalState({
 }: Params) {
   const data = repData;
   const kpi: DirectorReportsKpiCompat | null = data?.kpi ?? null;
+  const summary = data?.summary ?? null;
+  const diagnostics = data?.diagnostics ?? null;
   const rows: RepRow[] = Array.isArray(data?.rows) ? data.rows : [];
   const discipline: RepDisciplinePayload | null = repDiscipline ?? data?.discipline ?? null;
   const objectOptions = React.useMemo(() => (Array.isArray(repOptObjects) ? repOptObjects : []), [repOptObjects]);
@@ -91,6 +93,10 @@ export function useDirectorReportsModalState({
   const issuesNoObj = toFiniteNumber(kpi?.issues_without_object ?? kpi?.issues_no_obj);
   const itemsTotal = toFiniteNumber(kpi?.items_total);
   const itemsNoReq = toFiniteNumber(kpi?.items_without_request ?? kpi?.items_free);
+  const objectCount = toFiniteNumber(summary?.displayObjectCount ?? objectOptions.length);
+  const objectCountLabel = textOrFallback(summary?.displayObjectCountLabel, "Объекты по подтверждённым выдачам");
+  const unresolvedNamesCount = toFiniteNumber(summary?.unresolvedNamesCount);
+  const noWorkNameCount = toFiniteNumber(summary?.noWorkNameCount);
 
   React.useEffect(() => {
     workDetailCacheRef.current.clear();
@@ -241,10 +247,15 @@ export function useDirectorReportsModalState({
     rows,
     discipline,
     objectOptions,
+    objectCount,
+    objectCountLabel,
     issuesTotal,
     issuesNoObj,
     itemsTotal,
     itemsNoReq,
+    unresolvedNamesCount,
+    noWorkNameCount,
+    reportDiagnostics: diagnostics,
     sortedWorks,
     sortedWorkLevels,
     topWorkMaterials,

@@ -12,14 +12,13 @@ import {
 import { FlashList } from "@/src/ui/FlashList";
 import { StatusBar } from "expo-status-bar";
 import { UI, s } from "./director.styles";
-import type { DirTopTab } from "./director.types";
+import type { DirTopTab, FinPage, Group, ProposalHead } from "./director.types";
+import type { DirectorFinanceCanonicalScope } from "./director.readModels";
 import DirectorSubcontractTab from "./DirectorSubcontractTab";
 
 type Tab = "foreman" | "buyer";
 type TopTabItem = { key: DirTopTab; label: string };
 
-type Group = { request_id: number | string; items: any[] };
-type ProposalHead = { id: string; submitted_at?: string | null; pretty?: string | null };
 type TopTabsListRef = { scrollToOffset?: (params: { offset: number; animated?: boolean }) => void };
 type ReportsOpenProps = Props & {
   openReports?: () => void;
@@ -35,7 +34,6 @@ const DIRECTOR_TOP_TABS: TopTabItem[] = [
 ];
 
 type FinanceRow = any;
-type FinPage = "home" | "debt" | "spend" | "kind" | "supplier";
 
 type Props = {
   HEADER_MAX: number;
@@ -75,7 +73,7 @@ type Props = {
   rtToast: { visible: boolean; title: string; body: string; count: number };
   finLoading: boolean;
   finRows: FinanceRow[];
-  finRep: any;
+  finScope: DirectorFinanceCanonicalScope | null;
   finSpendRows: any[];
   money: (v: number) => string;
   FIN_DUE_DAYS_DEFAULT: number;
@@ -89,7 +87,7 @@ type Props = {
 };
 
 export default function DirectorDashboard(p: Props) {
-  const finSummary = p.finRep?.summary;
+  const finSummary = p.finScope?.summary;
 
   const headerTitle = "Контроль";
   const headerPadTop = Platform.OS === "web" ? 10 : 0;
@@ -443,7 +441,7 @@ export default function DirectorDashboard(p: Props) {
                   <Text style={{ color: UI.text, fontWeight: "600" }} numberOfLines={1}>
                     К оплате:{" "}
                     <Text style={{ color: UI.sub, fontWeight: "600" }}>
-                      {p.money(finSummary.toPay ?? 0)} KGS · {String(finSummary.debtCount ?? 0)} сч.
+                      {p.money(finSummary.debtTotal ?? 0)} KGS · {String(finSummary.debtCount ?? 0)} сч.
                     </Text>
                   </Text>
                   {finSummary?.overdueCount ? (
