@@ -1,0 +1,30 @@
+{
+  "scope": "reports",
+  "status": "passed",
+  "channelName": "director:reports:realtime",
+  "bindings": [
+    {
+      "key": "director_reports_requests",
+      "table": "requests",
+      "event": "*",
+      "filter": null
+    },
+    {
+      "key": "director_reports_request_items",
+      "table": "request_items",
+      "event": "*",
+      "filter": null
+    }
+  ],
+  "subscriptionStarted": true,
+  "subscriptionConnected": true,
+  "eventReceived": true,
+  "refreshTriggered": true,
+  "canonicalFetchPreserved": true,
+  "uiSurfaceReady": true,
+  "noCrossScopeReload": true,
+  "doubleFetchDetected": false,
+  "coalescedObserved": false,
+  "fetchCountAfterRealtime": 1,
+  "failureStage": "unknown"
+}

@@ -10,6 +10,8 @@ import { useDirectorProposalActions } from "./director.proposal";
 import { useDirectorProposalDetail } from "./director.proposal.detail";
 import { useDirectorProposalRow } from "./director.proposal.row";
 import { useDirectorLifecycle } from "./director.lifecycle";
+import { useDirectorFinanceRealtimeLifecycle } from "./director.finance.realtime.lifecycle";
+import { useDirectorReportsRealtimeLifecycle } from "./director.reports.realtime.lifecycle";
 import { useGlobalBusy } from "../../ui/GlobalBusy";
 import { fmtDateOnly } from "./director.helpers";
 import {
@@ -72,9 +74,14 @@ const EMPTY_FIN_SPEND_SUMMARY: FinSpendSummary = {
     overpaySuppliers: [],
 };
 
+const DIRECTOR_FINANCE_TAB = "\u0424\u0438\u043d\u0430\u043d\u0441\u044b";
+const DIRECTOR_REPORTS_TAB = "\u041e\u0442\u0447\u0451\u0442\u044b";
+
 export function useDirectorScreenController() {
     const busy = useGlobalBusy();
     const isScreenFocused = useIsFocused();
+    const screenFocusedRef = useRef(isScreenFocused);
+    screenFocusedRef.current = isScreenFocused;
 
     // Tabs
     const tab = useDirectorUiStore((state) => state.requestTab);
@@ -106,6 +113,7 @@ export function useDirectorScreenController() {
     const setFinKindName = useDirectorUiStore((state) => state.setFinKindName);
     const finSupplierSelection = useDirectorUiStore((state) => state.finSupplierSelection);
     const setFinSupplierSelection = useDirectorUiStore((state) => state.setFinSupplierSelection);
+    const setRefreshReason = useDirectorUiStore((state) => state.setRefreshReason);
     const FIN_DUE_DAYS_DEFAULT = 7;
     const FIN_CRITICAL_DAYS = 14;
 
@@ -286,6 +294,31 @@ export function useDirectorScreenController() {
         setFinSupplierSelection, setFinKindName, setFinFrom, setFinTo,
         setFinPeriodOpen, fetchFinance, loadFinanceSupportRows,
         FIN_DUE_DAYS_DEFAULT, FIN_CRITICAL_DAYS
+    });
+
+    const refreshFinanceRealtimeScope = useCallback(async () => {
+        setRefreshReason("realtime:director:finance");
+        await fetchFinance();
+    }, [fetchFinance, setRefreshReason]);
+
+    const refreshReportsRealtimeScope = useCallback(async () => {
+        setRefreshReason("realtime:director:reports");
+        await reports.refreshReports();
+    }, [reports, setRefreshReason]);
+
+    useDirectorFinanceRealtimeLifecycle({
+        focusedRef: screenFocusedRef,
+        visible: isScreenFocused && dirTab === DIRECTOR_FINANCE_TAB,
+        refreshFinanceScope: refreshFinanceRealtimeScope,
+        isRefreshInFlight: () => finLoading,
+    });
+
+    useDirectorReportsRealtimeLifecycle({
+        focusedRef: screenFocusedRef,
+        visible: isScreenFocused && dirTab === DIRECTOR_REPORTS_TAB && reports.repOpen,
+        refreshReportsScope: refreshReportsRealtimeScope,
+        isRefreshInFlight: () =>
+            reports.repLoading || reports.repOptLoading || reports.repDisciplinePriceLoading,
     });
 
     // Lifecycle

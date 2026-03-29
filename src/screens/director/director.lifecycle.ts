@@ -253,6 +253,18 @@ export function useDirectorLifecycle({
     }
   }, [dirTab, refreshFinanceScoped, refreshReportScoped, refreshRequestsScoped]);
 
+  const dirTabRef = useRef(dirTab);
+  const requestTabRef = useRef(requestTab);
+  const showRtToastRef = useRef(showRtToast);
+  const refreshCurrentVisibleScopeRef = useRef(refreshCurrentVisibleScope);
+  const refreshRowsHandlerRef = useRef(refreshRows);
+
+  dirTabRef.current = dirTab;
+  requestTabRef.current = requestTab;
+  showRtToastRef.current = showRtToast;
+  refreshCurrentVisibleScopeRef.current = refreshCurrentVisibleScope;
+  refreshRowsHandlerRef.current = refreshRows;
+
   const runLifecycleScopedRefresh = useCallback((reasonBase: string, trigger: string) => {
     if (!didInit.current) {
       recordPlatformGuardSkip("bootstrap_not_ready", {
@@ -469,8 +481,8 @@ export function useDirectorLifecycle({
             const next = payload.new;
             const notification =
               next && typeof next === "object" ? (next as { title?: string; body?: string }) : {};
-            showRtToast(notification.title, notification.body);
-            refreshCurrentVisibleScope("realtime:notifications", true);
+            showRtToastRef.current(notification.title, notification.body);
+            refreshCurrentVisibleScopeRef.current("realtime:notifications", true);
           },
         )
         .on(
@@ -481,7 +493,12 @@ export function useDirectorLifecycle({
             table: "requests",
           },
           (payload) => {
-            if (dirTab !== DIRECTOR_TAB_REQUESTS || requestTab === DIRECTOR_REQUEST_TAB_BUYER) return;
+            if (
+              dirTabRef.current !== DIRECTOR_TAB_REQUESTS ||
+              requestTabRef.current === DIRECTOR_REQUEST_TAB_BUYER
+            ) {
+              return;
+            }
             if (!shouldRefreshDirectorRowsForRequestChange(payload)) return;
             logDirectorLive({
               sourcePath: "director.lifecycle.requests",
@@ -491,7 +508,7 @@ export function useDirectorLifecycle({
               nextStatus: String(getRecordValue(payload.new, "status") ?? "").trim() || null,
               prevStatus: String(getRecordValue(payload.old, "status") ?? "").trim() || null,
             });
-            void refreshRows("realtime:requests", true);
+            void refreshRowsHandlerRef.current("realtime:requests", true);
           },
         )
         .on(
@@ -502,7 +519,12 @@ export function useDirectorLifecycle({
             table: "request_items",
           },
           (payload) => {
-            if (dirTab !== DIRECTOR_TAB_REQUESTS || requestTab === DIRECTOR_REQUEST_TAB_BUYER) return;
+            if (
+              dirTabRef.current !== DIRECTOR_TAB_REQUESTS ||
+              requestTabRef.current === DIRECTOR_REQUEST_TAB_BUYER
+            ) {
+              return;
+            }
             if (!shouldRefreshDirectorRowsForItemChange(payload)) return;
             logDirectorLive({
               sourcePath: "director.lifecycle.request_items",
@@ -514,7 +536,7 @@ export function useDirectorLifecycle({
               nextStatus: String(getRecordValue(payload.new, "status") ?? "").trim() || null,
               prevStatus: String(getRecordValue(payload.old, "status") ?? "").trim() || null,
             });
-            void refreshRows("realtime:request_items", true);
+            void refreshRowsHandlerRef.current("realtime:request_items", true);
           },
         )
         .subscribe((status) => {
@@ -536,13 +558,18 @@ export function useDirectorLifecycle({
           },
         })
         .on("broadcast", { event: DIRECTOR_HANDOFF_BROADCAST_EVENT }, (payload) => {
-          if (dirTab !== DIRECTOR_TAB_REQUESTS || requestTab === DIRECTOR_REQUEST_TAB_BUYER) return;
+          if (
+            dirTabRef.current !== DIRECTOR_TAB_REQUESTS ||
+            requestTabRef.current === DIRECTOR_REQUEST_TAB_BUYER
+          ) {
+            return;
+          }
           logDirectorLive({
             sourcePath: "director.lifecycle.broadcast_handoff",
             requestId: String(getRecordValue(payload.payload, "request_id") ?? "").trim() || null,
             displayNo: String(getRecordValue(payload.payload, "display_no") ?? "").trim() || null,
           });
-          void refreshRows("broadcast:foreman_submit", true);
+          void refreshRowsHandlerRef.current("broadcast:foreman_submit", true);
         })
         .subscribe((status) => {
           logDirectorLive({
@@ -583,5 +610,5 @@ export function useDirectorLifecycle({
         if (handoffChannelRef.current === handoffChannel) handoffChannelRef.current = null;
       }
     };
-  }, [dirTab, isScreenFocused, refreshCurrentVisibleScope, refreshRows, requestTab, showRtToast]);
+  }, [isScreenFocused]);
 }
