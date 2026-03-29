@@ -12,8 +12,8 @@ import {
   toProposalAttachmentLegacyRow,
 } from "../../lib/api/proposalAttachments.service";
 import { isPdfLike } from "../../lib/files";
-import { attachFileToProposalAction } from "./buyer.attachments.actions";
-import type { PickedFile } from "./buyer.attachments.actions";
+import { attachFileToProposalAction } from "./buyer.attachments.mutation";
+import type { PickedFile } from "./buyer.attachments.mutation";
 import type { PropAttachmentRow } from "./buyer.repo";
 
 const errText = (error: unknown): string => {

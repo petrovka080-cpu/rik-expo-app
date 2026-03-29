@@ -72,7 +72,7 @@ const isProposalDirectorVisible = (row: {
 
 const proposalsApiPath = "src/lib/api/proposals.ts";
 const proposalServicePath = "src/lib/catalog/catalog.proposalCreation.service.ts";
-const buyerActionsPath = "src/screens/buyer/buyer.actions.ts";
+const buyerSubmitPath = "src/screens/buyer/buyer.submit.mutation.ts";
 const workerPath = "src/workers/processBuyerSubmitJob.ts";
 const directorRepoPath = "src/screens/director/director.proposals.repo.ts";
 const directorLifecyclePath = "src/screens/director/director.lifecycle.ts";
@@ -81,7 +81,7 @@ const directorScopeMigrationPath =
 
 const proposalsApi = readText(proposalsApiPath);
 const proposalService = readText(proposalServicePath);
-const buyerActions = readText(buyerActionsPath);
+const buyerSubmit = readText(buyerSubmitPath);
 const worker = readText(workerPath);
 const directorRepo = readText(directorRepoPath);
 const directorLifecycle = readText(directorLifecyclePath);
@@ -124,8 +124,8 @@ const checks = {
       "submit_source: \"rpc:proposal_submit\" | \"rpc:proposal_submit_text_v1\" | null;",
     ),
   buyerFailsClosedOnInvisible:
-    buyerActions.includes("director.visibility.mismatch") &&
-    buyerActions.includes("visible_to_director !== true"),
+    buyerSubmit.includes("director.visibility.mismatch") &&
+    buyerSubmit.includes("visible_to_director !== true"),
   workerFailsClosedOnInvisible:
     worker.includes("visible_to_director !== true") &&
     worker.includes("not visible to director"),

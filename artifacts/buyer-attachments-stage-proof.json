@@ -1,0 +1,16 @@
+{
+  "attachment_happy_path": {
+    "test": "buyer attachments mutation owner > keeps attach-file happy path inside the attachments owner",
+    "status": "passed"
+  },
+  "attachment_failure_path": {
+    "test": "buyer attachments mutation owner > surfaces the exact attachment stage when reload fails",
+    "status": "passed",
+    "expectedFailedStage": "reload_attachments"
+  },
+  "supplier_attachment_partial_success": {
+    "test": "buyer attachments mutation owner > does not hide partial supplier attachment upload success",
+    "status": "passed",
+    "expectedWarningStage": "upload_supplier_attachments"
+  }
+}

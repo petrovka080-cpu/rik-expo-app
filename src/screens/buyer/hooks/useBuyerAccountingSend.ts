@@ -2,18 +2,12 @@ import { useCallback } from "react";
 import type { Dispatch, SetStateAction } from "react";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-import { sendToAccountingAction } from "../buyer.actions";
-import { openInvoicePickerWebAction, pickInvoiceFileAction } from "../buyer.attachments.actions";
+import { openInvoicePickerWebAction, pickInvoiceFileAction } from "../buyer.attachments.mutation";
+import { sendToAccountingAction } from "../buyer.status.mutation";
 import type { Attachment } from "../buyer.types";
 
 type AlertFn = (title: string, message?: string) => void;
 type FileLike = File | Blob | { name?: string | null; uri?: string | null; mimeType?: string | null; size?: number | null };
-const warnBuyerAccountingSend = (...args: unknown[]) => {
-  if (__DEV__) {
-    console.warn(...args);
-  }
-};
-
 export function useBuyerAccountingSend<TApproved extends { id?: string | number | null }>(params: {
   acctProposalId: string | number | null;
   invNumber: string;
@@ -103,7 +97,6 @@ export function useBuyerAccountingSend<TApproved extends { id?: string | number 
       setApproved,
       setBusy: setAcctBusy,
       alert: alertUser,
-      log: warnBuyerAccountingSend,
     });
   }, [
     acctProposalId,

@@ -1,7 +1,7 @@
 import { useCallback, useRef, useState } from "react";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-import { handleCreateProposalsBySupplierAction } from "../buyer.actions";
+import { handleCreateProposalsBySupplierAction } from "../buyer.submit.mutation";
 
 type AlertFn = (title: string, message?: string) => void;
 type FileLike = File | Blob | { name?: string | null; uri?: string | null; mimeType?: string | null; size?: number | null };

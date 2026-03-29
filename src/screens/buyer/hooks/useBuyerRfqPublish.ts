@@ -1,7 +1,7 @@
 import { useCallback } from "react";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-import { publishRfqAction } from "../buyer.actions";
+import { publishRfqAction } from "../buyer.rfq.mutation";
 
 type AlertFn = (title: string, message?: string) => void;
 
@@ -74,4 +74,3 @@ export function useBuyerRfqPublish(params: {
 
   return { publishRfq };
 }
-
