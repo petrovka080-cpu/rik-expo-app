@@ -2,6 +2,7 @@ import type React from "react";
 import { Alert, Platform } from "react-native";
 import { useCallback } from "react";
 import { proposalItems } from "../../lib/api/proposals";
+import { recordCatchDiscipline } from "../../lib/observability/catchDiscipline";
 import DirectorProposalRow from "./DirectorProposalRow";
 import type { ProposalHead, ProposalItem } from "./director.types";
 
@@ -56,6 +57,25 @@ export function useDirectorProposalRow({
   openProposalSheet,
   fmtDateOnly,
 }: Deps) {
+  const recordDirectorProposalRowCatch = (
+    kind: "critical_fail" | "soft_failure" | "cleanup_only" | "degraded_fallback",
+    event: string,
+    error: unknown,
+    extra?: Record<string, unknown>,
+  ) => {
+    recordCatchDiscipline({
+      screen: "director",
+      surface: "proposal_row",
+      event,
+      kind,
+      error,
+      category: "ui",
+      sourceKind: "proposal:director_row",
+      errorStage: event,
+      extra,
+    });
+  };
+
   const toggleExpand = useCallback(async (pid: string) => {
     const pidStr = String(pid);
 
@@ -119,18 +139,30 @@ export function useDirectorProposalRow({
                 }
               }
             }
-          } catch { }
+          } catch (error) {
+            recordDirectorProposalRowCatch("degraded_fallback", "proposal_item_enrichment_failed", error, {
+              proposalId: pidStr,
+            });
+          }
 
           setItemsByProp((prev) => ({ ...prev, [pidStr]: norm }));
 
           try {
             const reqItemIds = norm.map((x) => x.request_item_id);
             await preloadProposalRequestIds(pidStr, reqItemIds);
-          } catch { }
+          } catch (error) {
+            recordDirectorProposalRowCatch("degraded_fallback", "proposal_request_preload_failed", error, {
+              proposalId: pidStr,
+            });
+          }
 
           try {
             await loadProposalAttachments(pidStr);
-          } catch { }
+          } catch (error) {
+            recordDirectorProposalRowCatch("degraded_fallback", "proposal_attachments_preload_failed", error, {
+              proposalId: pidStr,
+            });
+          }
         } finally {
           setLoadedByProp((prev) => ({ ...prev, [pidStr]: true }));
         }
@@ -143,10 +175,18 @@ export function useDirectorProposalRow({
             const { buildProposalPdfHtml } = await import("../../lib/rik_api");
             const html = await buildProposalPdfHtml(pidStr);
             setPdfHtmlByProp((prev) => ({ ...prev, [pidStr]: html }));
-          } catch { }
+          } catch (error) {
+            recordDirectorProposalRowCatch("soft_failure", "proposal_pdf_preload_failed", error, {
+              proposalId: pidStr,
+              platform: Platform.OS,
+            });
+          }
         })();
       }
     } catch (e: unknown) {
+      recordDirectorProposalRowCatch("critical_fail", "proposal_row_expand_failed", e, {
+        proposalId: pidStr,
+      });
       Alert.alert(
         "Не удалось загрузить строки предложения",
         errText(e) || "Попробуйте еще раз.",

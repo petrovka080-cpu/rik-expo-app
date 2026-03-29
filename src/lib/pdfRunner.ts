@@ -6,6 +6,8 @@ import * as FileSystemModule from "expo-file-system/legacy";
 
 import { normalizePdfFileName } from "./documents/pdfDocument";
 import { getFileSystemPaths } from "./fileSystemPaths";
+import { recordCatchDiscipline } from "./observability/catchDiscipline";
+import { beginPlatformObservability } from "./observability/platformObservability";
 import {
   createPdfSource,
   getUriScheme,
@@ -86,6 +88,27 @@ function logPdfRunnerStage(
     fileName: payload.fileName ?? null,
   });
 }
+
+const recordPdfRunnerCatch = (params: {
+  kind: "critical_fail" | "soft_failure" | "cleanup_only" | "degraded_fallback";
+  event: string;
+  error: unknown;
+  category?: "fetch" | "ui" | "reload";
+  sourceKind?: string;
+  errorStage?: string;
+  extra?: Record<string, unknown>;
+}) =>
+  recordCatchDiscipline({
+    screen: "reports",
+    surface: "pdf_runner",
+    event: params.event,
+    kind: params.kind,
+    error: params.error,
+    category: params.category,
+    sourceKind: params.sourceKind ?? "pdf:runner",
+    errorStage: params.errorStage ?? params.event,
+    extra: params.extra,
+  });
 
 function getFileInfoSize(
   info:
@@ -184,7 +207,17 @@ async function fileExists(uri: string) {
   try {
     const info = await FileSystemCompat.getInfoAsync(uri);
     return !!info?.exists;
-  } catch {
+  } catch (error) {
+    recordPdfRunnerCatch({
+      kind: "cleanup_only",
+      event: "pdf_file_exists_probe_failed",
+      error,
+      category: "reload",
+      sourceKind: "local-file",
+      extra: {
+        uri,
+      },
+    });
     return false;
   }
 }
@@ -197,7 +230,17 @@ async function getAuthHeader(supabase: PdfSupabaseLike) {
     if (SUPABASE_ANON_KEY) headers.apikey = SUPABASE_ANON_KEY;
     if (token) headers.Authorization = `Bearer ${token}`;
     return Object.keys(headers).length ? headers : undefined;
-  } catch {
+  } catch (error) {
+    recordPdfRunnerCatch({
+      kind: "degraded_fallback",
+      event: "pdf_auth_header_fallback",
+      error,
+      category: "fetch",
+      sourceKind: "supabase:auth",
+      extra: {
+        hasAnonKey: Boolean(SUPABASE_ANON_KEY),
+      },
+    });
     return SUPABASE_ANON_KEY ? { apikey: SUPABASE_ANON_KEY } : undefined;
   }
 }
@@ -364,6 +407,13 @@ export async function runPdfTop(args: {
   getRemoteUrl: () => Promise<string> | string;
 }) {
   const { busy, supabase, key, label, mode, fileName, getRemoteUrl } = args;
+  const observation = beginPlatformObservability({
+    screen: "reports",
+    surface: "pdf_runner",
+    category: "ui",
+    event: mode === "share" ? "share_pdf" : "preview_pdf",
+    sourceKind: "pdf:runner",
+  });
 
   if (activeRuns.has(key)) return;
   activeRuns.add(key);
@@ -376,11 +426,41 @@ export async function runPdfTop(args: {
     let win: Window | null = null;
     try {
       win = window.open("", "_blank");
-    } catch {
+    } catch (error) {
+      recordPdfRunnerCatch({
+        kind: "soft_failure",
+        event: "pdf_window_open_failed",
+        error,
+        category: "ui",
+        extra: {
+          key,
+          mode,
+        },
+      });
       win = null;
     }
 
     if (!win) {
+      const popupError = new Error("PDF popup window was blocked");
+      recordPdfRunnerCatch({
+        kind: "critical_fail",
+        event: "pdf_popup_blocked",
+        error: popupError,
+        category: "ui",
+        extra: {
+          key,
+          mode,
+        },
+      });
+      observation.error(popupError, {
+        sourceKind: "pdf:web_popup",
+        errorStage: "window_open",
+        extra: {
+          key,
+          mode,
+          publishState: "error",
+        },
+      });
       Alert.alert("PDF", "Разреши всплывающие окна (pop-up).");
       cleanup();
       return;
@@ -395,7 +475,18 @@ export async function runPdfTop(args: {
           <div style="opacity:.7;margin-top:6px">Если долго, проверь соединение.</div>
         </body>`);
       win.document.close();
-    } catch {}
+    } catch (error) {
+      recordPdfRunnerCatch({
+        kind: "cleanup_only",
+        event: "pdf_placeholder_render_failed",
+        error,
+        category: "ui",
+        extra: {
+          key,
+          mode,
+        },
+      });
+    }
 
     try {
       const remote = await withTimeout(
@@ -407,17 +498,66 @@ export async function runPdfTop(args: {
       if (!url) throw new Error("PDF URL is empty");
       try {
         win.location.replace(url);
-      } catch {
+      } catch (error) {
+        recordPdfRunnerCatch({
+          kind: "degraded_fallback",
+          event: "pdf_window_replace_failed",
+          error,
+          category: "ui",
+          extra: {
+            key,
+            mode,
+            url,
+          },
+        });
         win.location.href = url;
       }
       win.focus();
+      observation.success({
+        sourceKind: "remote-url",
+        extra: {
+          key,
+          mode,
+          publishState: "ready",
+        },
+      });
       cleanup();
       return;
     } catch (caughtError: unknown) {
       const error = { message: getErrorMessage(caughtError, "Не удалось открыть PDF") };
+      recordPdfRunnerCatch({
+        kind: "critical_fail",
+        event: "pdf_web_open_failed",
+        error: caughtError,
+        category: "ui",
+        extra: {
+          key,
+          mode,
+        },
+      });
+      observation.error(caughtError, {
+        sourceKind: "pdf:web_open",
+        errorStage: "open_remote_url",
+        extra: {
+          key,
+          mode,
+          publishState: "error",
+        },
+      });
       try {
         win.close();
-      } catch {}
+      } catch (closeError) {
+        recordPdfRunnerCatch({
+          kind: "cleanup_only",
+          event: "pdf_window_close_failed",
+          error: closeError,
+          category: "reload",
+          extra: {
+            key,
+            mode,
+          },
+        });
+      }
       Alert.alert("PDF", error?.message ?? "Не удалось открыть PDF");
       cleanup();
       return;
@@ -456,6 +596,25 @@ export async function runPdfTop(args: {
     else await openPdfPreview(localUri, fileName);
   } catch (caughtError: unknown) {
     const error = { message: getErrorMessage(caughtError, "Не удалось открыть PDF") };
+    recordPdfRunnerCatch({
+      kind: "critical_fail",
+      event: "pdf_prepare_or_open_failed",
+      error: caughtError,
+      category: "ui",
+      extra: {
+        key,
+        mode,
+      },
+    });
+    observation.error(caughtError, {
+      sourceKind: "pdf:native_open",
+      errorStage: "prepare_or_open",
+      extra: {
+        key,
+        mode,
+        publishState: "error",
+      },
+    });
     Alert.alert("PDF", String(error?.message ?? "Не удалось открыть PDF"));
   } finally {
     setTimeout(cleanup, 500);

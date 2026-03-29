@@ -8,6 +8,7 @@ import {
   type PdfRpcRolloutId,
   type PdfRpcRolloutMode,
 } from "../documents/pdfRpcRollout";
+import { recordCatchDiscipline } from "../observability/catchDiscipline";
 import { supabase } from "../supabaseClient";
 import type { PaymentPdfDraft } from "./types";
 
@@ -504,8 +505,20 @@ export async function fetchPaymentPdfSourceFallback(
     if (!result.error && Array.isArray(result.data)) {
       allocations = result.data.map(asRecord);
     }
-  } catch {
-    // Legacy path stays usable even if allocations query fails.
+  } catch (error) {
+    recordCatchDiscipline({
+      screen: "accountant",
+      surface: "payment_pdf_source",
+      event: "payment_pdf_allocations_lookup_failed",
+      kind: "degraded_fallback",
+      error,
+      sourceKind: "table:proposal_payment_allocations",
+      errorStage: "legacy_allocations_lookup",
+      extra: {
+        paymentId: pid,
+        publishState: "degraded",
+      },
+    });
   }
 
   return {
@@ -549,6 +562,22 @@ export async function getPaymentPdfSource(paymentId: number): Promise<PaymentOrd
     return rpcSource;
   } catch (error) {
     const fallbackReason = getFallbackReasonForRpcError(error);
+    recordCatchDiscipline({
+      screen: "accountant",
+      surface: "payment_pdf_source",
+      event: "payment_pdf_rpc_source_failed",
+      kind: "degraded_fallback",
+      error,
+      sourceKind: "rpc:pdf_payment_source_v1",
+      errorStage: "rpc_source",
+      extra: {
+        paymentId: pid,
+        fallbackReason,
+        rpcMode,
+        rpcAvailability: getPdfRpcRolloutAvailability(PAYMENT_PDF_RPC_ROLLOUT_ID),
+        publishState: "degraded",
+      },
+    });
     if (rpcMode === "auto" && error instanceof PaymentPdfSourceRpcError && error.disableForSession) {
       setPdfRpcRolloutAvailability(PAYMENT_PDF_RPC_ROLLOUT_ID, "missing", {
         errorMessage: error.message,

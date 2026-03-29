@@ -4,6 +4,7 @@ import {
   getLatestCanonicalProposalAttachment,
 } from "../../lib/api/proposalAttachments.service";
 import { ensureProposalRequestItemsIntegrity } from "../../lib/api/integrity.guards";
+import { recordCatchDiscipline } from "../../lib/observability/catchDiscipline";
 
 export type PropAttachmentRow = {
   id: string;
@@ -40,7 +41,19 @@ export async function repoGetLatestProposalPdfAttachment(supabase: SupabaseClien
       id: latest.row.attachmentId,
       file_name: latest.row.fileName,
     };
-  } catch {
+  } catch (error) {
+    recordCatchDiscipline({
+      screen: "buyer",
+      surface: "buyer_repo",
+      event: "latest_proposal_pdf_attachment_lookup_failed",
+      kind: "degraded_fallback",
+      error,
+      sourceKind: "canonical:proposal_attachments",
+      errorStage: "load_latest_pdf_attachment",
+      extra: {
+        proposalId: pidStr,
+      },
+    });
     return null;
   }
 }
@@ -107,7 +120,23 @@ export async function repoListProposalAttachments(supabase: SupabaseClient, prop
         try {
           const s = await supabase.storage.from(bucket).createSignedUrl(path, 60 * 60); // 1h
           url = String(s?.data?.signedUrl || "").trim();
-        } catch {}
+        } catch (error) {
+          recordCatchDiscipline({
+            screen: "buyer",
+            surface: "buyer_repo",
+            event: "proposal_attachment_signed_url_failed",
+            kind: "degraded_fallback",
+            error,
+            sourceKind: "supabase:storage_signed_url",
+            errorStage: "create_signed_url",
+            extra: {
+              proposalId: pid,
+              attachmentId: String(r?.id ?? ""),
+              bucket,
+              storagePath: path,
+            },
+          });
+        }
       }
     }
 
@@ -280,6 +309,19 @@ export async function repoUpdateProposalItems(
       return;
     } catch (e) {
       const message = e instanceof Error ? e.message : String(e ?? "");
+      recordCatchDiscipline({
+        screen: "buyer",
+        surface: "buyer_repo",
+        event: "proposal_items_bulk_upsert_failed",
+        kind: "degraded_fallback",
+        error: e,
+        sourceKind: "table:proposal_items",
+        errorStage: "bulk_upsert",
+        extra: {
+          proposalId: pid,
+          rowCount: payloads.length,
+        },
+      });
       if (__DEV__) {
         console.warn("[buyer.repo] proposal_items bulk upsert fallback:", message);
       }

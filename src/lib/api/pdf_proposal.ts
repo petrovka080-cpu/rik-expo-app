@@ -1,5 +1,6 @@
 import { supabase } from "../supabaseClient";
 import type { Database } from "../database.types";
+import { recordCatchDiscipline } from "../observability/catchDiscipline";
 import { client, normStr } from "./_core";
 import { renderPdfHtmlToUri } from "../pdf/pdf.runner";
 import { renderProposalPdfErrorHtml, renderProposalPdfHtml } from "../pdf/pdf.proposal";
@@ -136,19 +137,15 @@ function pickRefName(row: { data?: RefNameRow | null } | RefNameRow | null | und
 
 function formatDate(value: unknown, locale: string) {
   if (!value) return "";
-  try {
-    const date = new Date(String(value));
-    if (!Number.isNaN(date.getTime())) return date.toLocaleDateString(locale);
-  } catch {}
+  const date = new Date(String(value));
+  if (!Number.isNaN(date.getTime())) return date.toLocaleDateString(locale);
   return String(value ?? "").trim();
 }
 
 function formatDateTime(value: unknown, locale: string) {
   if (!value) return "";
-  try {
-    const date = new Date(String(value));
-    if (!Number.isNaN(date.getTime())) return date.toLocaleString(locale);
-  } catch {}
+  const date = new Date(String(value));
+  if (!Number.isNaN(date.getTime())) return date.toLocaleString(locale);
   return String(value ?? "").trim();
 }
 
@@ -301,7 +298,20 @@ export async function buildProposalPdfHtml(proposalId: number | string): Promise
           ]),
         );
       }
-    } catch {}
+    } catch (error) {
+      recordCatchDiscipline({
+        screen: "reports",
+        surface: "proposal_pdf",
+        event: "proposal_pdf_app_names_lookup_failed",
+        kind: "degraded_fallback",
+        error,
+        sourceKind: "table:rik_apps",
+        errorStage: "load_app_names",
+        extra: {
+          proposalId: pid,
+        },
+      });
+    }
 
     const includeSupplier = pi.some((r) => String(r.supplier ?? "").trim() !== "");
     const total = pi.reduce((acc, r) => acc + num(r.qty) * num(r.price), 0);
@@ -368,6 +378,19 @@ export async function buildProposalPdfHtml(proposalId: number | string): Promise
 
     return renderProposalPdfHtml(model);
   } catch (e: unknown) {
+    recordCatchDiscipline({
+      screen: "reports",
+      surface: "proposal_pdf",
+      event: "proposal_pdf_build_failed",
+      kind: "critical_fail",
+      error: e,
+      sourceKind: "pdf:proposal_html",
+      errorStage: "build_html",
+      extra: {
+        proposalId: pid,
+        publishState: "error",
+      },
+    });
     return renderProposalPdfErrorHtml(String(getObjectField<string>(e, "message") || e));
   }
 }

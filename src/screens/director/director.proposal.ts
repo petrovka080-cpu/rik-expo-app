@@ -7,6 +7,7 @@ import * as XLSX from "xlsx";
 import { generateProposalPdfDocument } from "../../lib/catalog_api";
 import { buildPdfFileName } from "../../lib/documents/pdfDocument";
 import type { Database } from "../../lib/database.types";
+import { recordCatchDiscipline } from "../../lib/observability/catchDiscipline";
 import { prepareAndPreviewGeneratedPdf } from "../../lib/pdf/pdf.runner";
 import type { ProposalItem } from "./director.types";
 
@@ -64,6 +65,24 @@ export function useDirectorProposalActions({
   const approveInFlightRef = useRef<Record<string, boolean>>({});
   const approveDoneAtRef = useRef<Record<string, number>>({});
   const APPROVE_DONE_COOLDOWN_MS = 15_000;
+  const recordDirectorProposalCatch = (
+    kind: "critical_fail" | "soft_failure" | "cleanup_only" | "degraded_fallback",
+    event: string,
+    error: unknown,
+    extra?: Record<string, unknown>,
+  ) => {
+    recordCatchDiscipline({
+      screen: "director",
+      surface: "proposal_actions",
+      event,
+      kind,
+      error,
+      category: "ui",
+      sourceKind: "proposal:director_actions",
+      errorStage: event,
+      extra,
+    });
+  };
 
   const proposalSentToAccountant = useCallback(async (proposalId: string): Promise<boolean> => {
     const plans = [
@@ -81,7 +100,12 @@ export function useDirectorProposalActions({
           .maybeSingle();
         if (q.error) continue;
         if (hasSentToAccountant(q.data)) return true;
-      } catch {}
+      } catch (error) {
+        recordDirectorProposalCatch("soft_failure", "proposal_sent_to_accountant_probe_failed", error, {
+          proposalId,
+          columns: cols,
+        });
+      }
     }
     return false;
   }, [supabase]);
@@ -97,7 +121,10 @@ export function useDirectorProposalActions({
         .maybeSingle();
       if (q.error) return null;
       return pickMaybeId(q.data);
-    } catch {
+    } catch (error) {
+      recordDirectorProposalCatch("degraded_fallback", "proposal_purchase_lookup_failed", error, {
+        proposalId,
+      });
       return null;
     }
   }, [supabase]);
@@ -111,7 +138,10 @@ export function useDirectorProposalActions({
         .limit(1);
       if (q.error) return false;
       return Array.isArray(q.data) && q.data.length > 0;
-    } catch {
+    } catch (error) {
+      recordDirectorProposalCatch("degraded_fallback", "proposal_incoming_lookup_failed", error, {
+        purchaseId,
+      });
       return false;
     }
   }, [supabase]);
@@ -129,6 +159,7 @@ export function useDirectorProposalActions({
   }, [busy]);
 
   const rejectProposalItem = useCallback(async (pidStr: string, it: ProposalItem, items: ProposalItem[]) => {
+    let requestItemIdForError: string | null = null;
     try {
       setDecidingId(pidStr);
       setActingPropItemId(Number(it.id));
@@ -142,6 +173,7 @@ export function useDirectorProposalActions({
       if (q.error) throw q.error;
 
       const rid = String(q.data?.request_item_id || "").trim();
+      requestItemIdForError = rid || null;
       if (!rid) {
         Alert.alert("Данные не найдены", "В строке предложения отсутствует request_item_id.");
         return;
@@ -170,6 +202,10 @@ export function useDirectorProposalActions({
         closeSheet();
       }
     } catch (e: unknown) {
+      recordDirectorProposalCatch("critical_fail", "proposal_item_reject_failed", e, {
+        proposalId: pidStr,
+        requestItemId: requestItemIdForError,
+      });
       Alert.alert("Не удалось отклонить позицию", errText(e) || "Попробуйте еще раз.");
     } finally {
       setActingPropItemId(null);
@@ -204,7 +240,15 @@ export function useDirectorProposalActions({
         router,
       });
     } catch (e: unknown) {
-      if (String(errText(e) || "").toLowerCase().includes("busy")) return;
+      if (String(errText(e) || "").toLowerCase().includes("busy")) {
+        recordDirectorProposalCatch("soft_failure", "proposal_pdf_open_busy", e, {
+          proposalId: pidStr,
+        });
+        return;
+      }
+      recordDirectorProposalCatch("critical_fail", "proposal_pdf_open_failed", e, {
+        proposalId: pidStr,
+      });
       Alert.alert("Не удалось открыть PDF", errText(e) || "Попробуйте еще раз.");
     } finally {
       delete pdfTapLockRef.current[pdfKey];
@@ -251,6 +295,10 @@ export function useDirectorProposalActions({
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
     } catch (e: unknown) {
+      recordDirectorProposalCatch("critical_fail", "proposal_excel_export_failed", e, {
+        proposalId: pidStr,
+        itemCount: items.length,
+      });
       Alert.alert("Не удалось сформировать Excel", errText(e) || "Попробуйте еще раз.");
     }
   }, []);
@@ -312,6 +360,10 @@ export function useDirectorProposalActions({
         }
       } catch (e: unknown) {
         workSeedErrorMessage = errText(e) || "Не удалось подготовить работы по закупке.";
+        recordDirectorProposalCatch("soft_failure", "proposal_work_seed_failed", e, {
+          proposalId: pid,
+          purchaseId: ensuredPurchaseId,
+        });
       }
 
       if (!alreadySent) {
@@ -337,6 +389,9 @@ export function useDirectorProposalActions({
         showSuccess("Утверждено -> бухгалтер -> склад/подрядчики");
       }
     } catch (e: unknown) {
+      recordDirectorProposalCatch("critical_fail", "proposal_approve_failed", e, {
+        proposalId: pid,
+      });
       Alert.alert("Не удалось утвердить", errText(e) || "Попробуйте еще раз.");
     } finally {
       delete approveInFlightRef.current[pid];

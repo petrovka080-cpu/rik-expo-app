@@ -1,0 +1,67 @@
+{
+  "generatedAt": "2026-03-29T18:24:46.602Z",
+  "noSilentCatchInTargetFiles": true,
+  "checks": [
+    {
+      "name": "payment_fail_visible",
+      "passed": true,
+      "evidence": [
+        "src/screens/accountant/components/ActivePaymentForm.test.tsx",
+        "src/screens/accountant/components/ActivePaymentForm.tsx"
+      ]
+    },
+    {
+      "name": "proposal_fail_observable",
+      "passed": true,
+      "evidence": [
+        "src/lib/api/proposals.silentCatch.test.ts",
+        "src/lib/api/proposals.ts"
+      ]
+    },
+    {
+      "name": "submit_fail_observable",
+      "passed": true,
+      "evidence": [
+        "src/lib/api/proposals.silentCatch.test.ts",
+        "src/lib/api/proposals.ts"
+      ]
+    },
+    {
+      "name": "realtime_cleanup_fail_observable",
+      "passed": true,
+      "evidence": [
+        "src/screens/buyer/buyer.subscriptions.test.ts",
+        "src/screens/buyer/buyer.subscriptions.ts"
+      ]
+    },
+    {
+      "name": "pdf_fail_not_silent",
+      "passed": true,
+      "evidence": [
+        "src/lib/pdfRunner.silentCatch.test.ts",
+        "src/lib/pdfRunner.ts"
+      ]
+    },
+    {
+      "name": "ui_not_hanging_on_payment_failure",
+      "passed": true,
+      "evidence": [
+        "src/screens/accountant/components/ActivePaymentForm.test.tsx",
+        "src/screens/accountant/components/ActivePaymentForm.tsx"
+      ]
+    }
+  ],
+  "targetFilesWithoutEmptyCatch": [
+    "src/screens/accountant/components/ActivePaymentForm.tsx",
+    "src/screens/buyer/buyer.subscriptions.ts",
+    "src/screens/buyer/buyer.repo.ts",
+    "src/lib/api/proposals.ts",
+    "src/screens/director/director.proposal.row.tsx",
+    "src/screens/director/director.proposal.ts",
+    "src/screens/director/director.proposal.detail.ts",
+    "src/lib/pdfRunner.ts",
+    "src/lib/pdf/pdf.builder.ts",
+    "src/lib/api/pdf_proposal.ts",
+    "src/lib/api/paymentPdf.service.ts"
+  ]
+}

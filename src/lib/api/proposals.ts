@@ -1,6 +1,7 @@
 import { supabase } from "../supabaseClient";
 import type { Database } from "../database.types";
 import { beginPlatformObservability } from "../observability/platformObservability";
+import { recordCatchDiscipline } from "../observability/catchDiscipline";
 import { classifyRpcCompatError, client } from "./_core";
 import {
   ensureProposalRequestItemsIntegrity,
@@ -13,6 +14,27 @@ const logProposalsDebug = (...args: unknown[]) => {
     console.warn(...args);
   }
 };
+
+const recordProposalCatch = (params: {
+  screen: "buyer" | "director";
+  surface: string;
+  event: string;
+  kind: "critical_fail" | "soft_failure" | "cleanup_only" | "degraded_fallback";
+  error: unknown;
+  sourceKind: string;
+  errorStage: string;
+  extra?: Record<string, unknown>;
+}) =>
+  recordCatchDiscipline({
+    screen: params.screen,
+    surface: params.surface,
+    event: params.event,
+    kind: params.kind,
+    error: params.error,
+    sourceKind: params.sourceKind,
+    errorStage: params.errorStage,
+    extra: params.extra,
+  });
 
 type ProposalRow = Pick<
   Database["public"]["Tables"]["proposals"]["Row"],
@@ -404,6 +426,19 @@ async function insertProposalItemsFallbackBulk(
       continue;
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
+      recordProposalCatch({
+        screen: "buyer",
+        surface: "proposal_add_items",
+        event: "proposal_items_bulk_insert_failed",
+        kind: "degraded_fallback",
+        error: e,
+        sourceKind: "table:proposal_items",
+        errorStage: "fallback_bulk_insert",
+        extra: {
+          proposalId: proposalIdText,
+          batchSize: pack.length,
+        },
+      });
       logProposalsDebug("[proposalAddItems/fallback/bulk]", msg);
     }
 
@@ -411,9 +446,37 @@ async function insertProposalItemsFallbackBulk(
       try {
         const ins = await insertProposalItemFallback(proposalIdText, requestItemId);
         if (!ins.error) ok++;
-        else logProposalsDebug("[proposalAddItems/fallback/insert]", ins.error.message);
+        else {
+          recordProposalCatch({
+            screen: "buyer",
+            surface: "proposal_add_items",
+            event: "proposal_item_insert_failed",
+            kind: "degraded_fallback",
+            error: ins.error,
+            sourceKind: "table:proposal_items",
+            errorStage: "fallback_single_insert",
+            extra: {
+              proposalId: proposalIdText,
+              requestItemId,
+            },
+          });
+          logProposalsDebug("[proposalAddItems/fallback/insert]", ins.error.message);
+        }
       } catch (e) {
         const msg = e instanceof Error ? e.message : String(e);
+        recordProposalCatch({
+          screen: "buyer",
+          surface: "proposal_add_items",
+          event: "proposal_item_insert_failed",
+          kind: "degraded_fallback",
+          error: e,
+          sourceKind: "table:proposal_items",
+          errorStage: "fallback_single_insert",
+          extra: {
+            proposalId: proposalIdText,
+            requestItemId,
+          },
+        });
         logProposalsDebug("[proposalAddItems/fallback/insert ex]", msg);
       }
     }
@@ -574,17 +637,86 @@ export async function proposalCreate(): Promise<number | string> {
 
 export async function proposalAddItems(proposalId: number | string, requestItemIds: string[]) {
   const proposalIdText = String(proposalId);
+  const observation = beginPlatformObservability({
+    screen: "buyer",
+    surface: "proposal_add_items",
+    category: "fetch",
+    event: "add_proposal_items",
+    sourceKind: "rpc:proposal_add_items",
+  });
   await ensureProposalRequestItemsIntegrity(client, proposalIdText, requestItemIds, {
     screen: "buyer",
     surface: "proposal_add_items",
     sourceKind: "mutation:proposal_items",
   });
   try {
-    const { data, error } = await runProposalAddItemsRpc(proposalId, requestItemIds);
-    if (error) throw error;
-    return parseProposalAddItemsResult(data);
-  } catch {
-    return await insertProposalItemsFallbackBulk(proposalIdText, requestItemIds);
+    try {
+      const { data, error } = await runProposalAddItemsRpc(proposalId, requestItemIds);
+      if (error) throw error;
+      const inserted = parseProposalAddItemsResult(data);
+      observation.success({
+        sourceKind: "rpc:proposal_add_items",
+        rowCount: inserted,
+        extra: {
+          proposalId: proposalIdText,
+          requestItemCount: requestItemIds.length,
+          publishState: "ready",
+        },
+      });
+      return inserted;
+    } catch (error) {
+      recordProposalCatch({
+        screen: "buyer",
+        surface: "proposal_add_items",
+        event: "proposal_add_items_rpc_failed",
+        kind: "degraded_fallback",
+        error,
+        sourceKind: "rpc:proposal_add_items",
+        errorStage: "rpc_primary",
+        extra: {
+          proposalId: proposalIdText,
+          requestItemCount: requestItemIds.length,
+        },
+      });
+    }
+
+    const inserted = await insertProposalItemsFallbackBulk(proposalIdText, requestItemIds);
+    if (inserted > 0 || requestItemIds.length === 0) {
+      observation.success({
+        sourceKind: "table:proposal_items",
+        fallbackUsed: true,
+        rowCount: inserted,
+        extra: {
+          proposalId: proposalIdText,
+          requestItemCount: requestItemIds.length,
+          publishState: "degraded",
+        },
+      });
+    } else {
+      observation.error(new Error("proposal_add_items fallback inserted zero rows"), {
+        sourceKind: "table:proposal_items",
+        errorStage: "fallback_bulk_insert",
+        fallbackUsed: true,
+        extra: {
+          proposalId: proposalIdText,
+          requestItemCount: requestItemIds.length,
+          publishState: "error",
+        },
+      });
+    }
+    return inserted;
+  } catch (error) {
+    observation.error(error, {
+      sourceKind: "table:proposal_items",
+      errorStage: "fallback_insert",
+      fallbackUsed: true,
+      extra: {
+        proposalId: proposalIdText,
+        requestItemCount: requestItemIds.length,
+        publishState: "error",
+      },
+    });
+    throw error;
   }
 }
 
@@ -632,6 +764,13 @@ export async function proposalSubmit(
 }
 
 export async function listDirectorProposalsPending(): Promise<{ id: string; submitted_at: string | null }[]> {
+  const observation = beginPlatformObservability({
+    screen: "director",
+    surface: "pending_proposals",
+    category: "fetch",
+    event: "list_pending_proposals",
+    sourceKind: "table:proposals",
+  });
   const rowsFromTable = await client
     .from("proposals")
     .select("id, status, submitted_at, sent_to_accountant_at")
@@ -640,22 +779,77 @@ export async function listDirectorProposalsPending(): Promise<{ id: string; subm
     .order("submitted_at", { ascending: false });
 
   if (rowsFromTable.error || !rowsFromTable.data) {
+    recordProposalCatch({
+      screen: "director",
+      surface: "pending_proposals",
+      event: "pending_proposals_table_read_failed",
+      kind: "degraded_fallback",
+      error: rowsFromTable.error ?? new Error("pending proposals table returned no data"),
+      sourceKind: "table:proposals",
+      errorStage: "table_primary",
+    });
     try {
       const rpc = await client.rpc("list_director_proposals_pending");
       if (!rpc.error && Array.isArray(rpc.data)) {
-        return (rpc.data as ProposalPendingRpcRow[])
+        const rows = (rpc.data as ProposalPendingRpcRow[])
           .map((x) => ({ id: String(x.id), submitted_at: x.submitted_at ?? null }))
           .filter((x) => x.submitted_at != null);
+        observation.success({
+          sourceKind: "rpc:list_director_proposals_pending",
+          fallbackUsed: true,
+          rowCount: rows.length,
+          extra: {
+            publishState: "degraded",
+          },
+        });
+        return rows;
       }
-    } catch {}
+      if (rpc.error) {
+        recordProposalCatch({
+          screen: "director",
+          surface: "pending_proposals",
+          event: "pending_proposals_rpc_failed",
+          kind: "soft_failure",
+          error: rpc.error,
+          sourceKind: "rpc:list_director_proposals_pending",
+          errorStage: "rpc_fallback",
+        });
+      }
+    } catch (error) {
+      recordProposalCatch({
+        screen: "director",
+        surface: "pending_proposals",
+        event: "pending_proposals_rpc_failed",
+        kind: "critical_fail",
+        error,
+        sourceKind: "rpc:list_director_proposals_pending",
+        errorStage: "rpc_fallback",
+      });
+    }
+    observation.error(rowsFromTable.error ?? new Error("pending proposals fallback exhausted"), {
+      sourceKind: "rpc:list_director_proposals_pending",
+      errorStage: "fallback_exhausted",
+      fallbackUsed: true,
+      extra: {
+        publishState: "error",
+      },
+    });
     logProposalsDebug("[listDirectorProposalsPending] error:", rowsFromTable.error?.message);
     return [];
   }
 
-  return rowsFromTable.data
+  const rows = rowsFromTable.data
     .filter((row) => isProposalDirectorVisibleRow(row))
     .map((x) => ({ id: String(x.id), submitted_at: x.submitted_at ?? null }))
     .filter((x) => x.submitted_at != null);
+  observation.success({
+    sourceKind: "table:proposals",
+    rowCount: rows.length,
+    extra: {
+      publishState: rows.length > 0 ? "ready" : "empty",
+    },
+  });
+  return rows;
 }
 
 export async function proposalItems(proposalId: string | number): Promise<ProposalItemRow[]> {
@@ -697,6 +891,18 @@ export async function proposalItems(proposalId: string | number): Promise<Propos
       return guarded.rows;
     } catch (error) {
       lastError = error;
+      recordProposalCatch({
+        screen: "buyer",
+        surface: "proposal_items",
+        event: "proposal_items_source_failed",
+        kind: "degraded_fallback",
+        error,
+        sourceKind,
+        errorStage: "source_chain_step",
+        extra: {
+          proposalId: pid,
+        },
+      });
       logProposalsDebug(`[proposalItems/${sourceKind}]`, error instanceof Error ? error.message : String(error));
     }
   }
@@ -735,6 +941,13 @@ export async function proposalSetItemsMeta(
 ) {
   const pid = String(proposalId || "").trim();
   if (!pid) return true;
+  const observation = beginPlatformObservability({
+    screen: "buyer",
+    surface: "proposal_set_items_meta",
+    category: "fetch",
+    event: "set_proposal_items_meta",
+    sourceKind: "table:proposal_items",
+  });
 
   const inputRows = Array.isArray(rows) ? rows : [rows];
   const payload = inputRows
@@ -772,30 +985,76 @@ export async function proposalSetItemsMeta(
   );
 
   try {
-    const { error } = await client.from("proposal_items").upsert(payload, { onConflict: "proposal_id,request_item_id" });
-    if (!error) return true;
-    throw error;
-  } catch (error) {
-    logProposalsDebug("[proposalSetItemsMeta/upsert]", error instanceof Error ? error.message : String(error));
-  }
+    try {
+      const { error } = await client.from("proposal_items").upsert(payload, { onConflict: "proposal_id,request_item_id" });
+      if (!error) {
+        observation.success({
+          sourceKind: "table:proposal_items",
+          rowCount: payload.length,
+          extra: {
+            proposalId: pid,
+            publishState: "ready",
+          },
+        });
+        return true;
+      }
+      throw error;
+    } catch (error) {
+      recordProposalCatch({
+        screen: "buyer",
+        surface: "proposal_set_items_meta",
+        event: "proposal_items_meta_upsert_failed",
+        kind: "degraded_fallback",
+        error,
+        sourceKind: "table:proposal_items",
+        errorStage: "upsert",
+        extra: {
+          proposalId: pid,
+          rowCount: payload.length,
+        },
+      });
+      logProposalsDebug("[proposalSetItemsMeta/upsert]", error instanceof Error ? error.message : String(error));
+    }
 
-  for (const row of payload) {
-    const updatePayload: Partial<ProposalItemInsert> = {
-      name_human: row.name_human ?? null,
-      uom: row.uom ?? null,
-      qty: row.qty ?? null,
-      app_code: row.app_code ?? null,
-      rik_code: row.rik_code ?? null,
-      price: row.price ?? null,
-      supplier: row.supplier ?? null,
-      note: row.note ?? null,
-    };
-    const { error } = await client
-      .from("proposal_items")
-      .update(updatePayload)
-      .eq("proposal_id", pid)
-      .eq("request_item_id", row.request_item_id);
-    if (error) throw error;
+    for (const row of payload) {
+      const updatePayload: Partial<ProposalItemInsert> = {
+        name_human: row.name_human ?? null,
+        uom: row.uom ?? null,
+        qty: row.qty ?? null,
+        app_code: row.app_code ?? null,
+        rik_code: row.rik_code ?? null,
+        price: row.price ?? null,
+        supplier: row.supplier ?? null,
+        note: row.note ?? null,
+      };
+      const { error } = await client
+        .from("proposal_items")
+        .update(updatePayload)
+        .eq("proposal_id", pid)
+        .eq("request_item_id", row.request_item_id);
+      if (error) throw error;
+    }
+    observation.success({
+      sourceKind: "table:proposal_items",
+      fallbackUsed: true,
+      rowCount: payload.length,
+      extra: {
+        proposalId: pid,
+        publishState: "degraded",
+      },
+    });
+    return true;
+  } catch (error) {
+    observation.error(error, {
+      sourceKind: "table:proposal_items",
+      errorStage: "row_update",
+      fallbackUsed: true,
+      extra: {
+        proposalId: pid,
+        rowCount: payload.length,
+        publishState: "error",
+      },
+    });
+    throw error;
   }
-  return true;
 }

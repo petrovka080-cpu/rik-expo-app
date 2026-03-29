@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "../database.types";
+import { recordCatchDiscipline } from "../observability/catchDiscipline";
 import { supabase } from "../supabaseClient";
 import {
   loadDirectorFinancePreviewPdfModel,
@@ -158,19 +159,15 @@ function pickRefName(row: { data?: RefNameRow | null } | RefNameRow | null | und
 
 function formatDate(value: unknown, locale: string) {
   if (!value) return "";
-  try {
-    const date = new Date(String(value));
-    if (!Number.isNaN(date.getTime())) return date.toLocaleDateString(locale);
-  } catch {}
+  const date = new Date(String(value));
+  if (!Number.isNaN(date.getTime())) return date.toLocaleDateString(locale);
   return String(value ?? "").trim();
 }
 
 function formatDateTime(value: unknown, locale: string) {
   if (!value) return "";
-  try {
-    const date = new Date(String(value));
-    if (!Number.isNaN(date.getTime())) return date.toLocaleString(locale);
-  } catch {}
+  const date = new Date(String(value));
+  if (!Number.isNaN(date.getTime())) return date.toLocaleString(locale);
   return String(value ?? "").trim();
 }
 
@@ -210,6 +207,18 @@ export async function resolveRequestLabel(rid: string | number): Promise<string>
       if (displayNo) return displayNo;
     }
   } catch (error: unknown) {
+    recordCatchDiscipline({
+      screen: "reports",
+      surface: "pdf_builder",
+      event: "request_label_lookup_failed",
+      kind: "degraded_fallback",
+      error,
+      sourceKind: "table:requests",
+      errorStage: "single_request_label",
+      extra: {
+        requestId: id,
+      },
+    });
     logPdfRequestDebug("[resolveRequestLabel]", getObjectField<string>(error, "message") ?? error);
   }
   return /^\d+$/.test(id) ? `#${id}` : `#${id.slice(0, 8)}`;
@@ -232,7 +241,19 @@ export async function batchResolveRequestLabels(ids: Array<string | number>): Pr
       if (id && displayNo) mapped[id] = displayNo;
     }
     return mapped;
-  } catch {
+  } catch (error) {
+    recordCatchDiscipline({
+      screen: "reports",
+      surface: "pdf_builder",
+      event: "batch_request_label_lookup_failed",
+      kind: "degraded_fallback",
+      error,
+      sourceKind: "table:requests",
+      errorStage: "batch_request_labels",
+      extra: {
+        requestIdCount: uniqueIds.length,
+      },
+    });
     return {};
   }
 }

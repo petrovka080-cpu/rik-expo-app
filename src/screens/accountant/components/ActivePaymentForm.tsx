@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Platform, Pressable, Text, TextInput, View } from "react-native";
 import { S, UI } from "../ui";
+import { recordCatchDiscipline } from "../../../lib/observability/catchDiscipline";
 import { supabase } from "../../../lib/supabaseClient";
 import { runNextTick } from "../helpers";
 
@@ -111,6 +112,20 @@ const normalizePaidAllocRow = (
   };
 };
 
+const getPaymentErrorMessage = (error: unknown, fallback: string) => {
+  if (error instanceof Error) {
+    const message = error.message.trim();
+    if (message) return message;
+  }
+  if (typeof error === "string") {
+    const message = error.trim();
+    if (message) return message;
+  }
+  const record = asRecord(error);
+  const message = String(record.message ?? record.error ?? record.details ?? "").trim();
+  return message || fallback;
+};
+
 function kindOf(it: Item) {
   const c = String(it?.rik_code ?? "").toUpperCase();
   if (c.startsWith("MAT-")) return "Материалы";
@@ -173,10 +188,38 @@ export default function ActivePaymentForm({
 }: Props) {
   const proposalId = String(current?.proposal_id ?? "").trim();
   const cur = current?.invoice_currency || "KGS";
+  const [itemsError, setItemsError] = useState<string | null>(null);
+  const [allocationsError, setAllocationsError] = useState<string | null>(null);
+  const [allocationUiError, setAllocationUiError] = useState<string | null>(null);
+
+  const recordPaymentFormCatch = (
+    kind: "critical_fail" | "soft_failure" | "cleanup_only" | "degraded_fallback",
+    event: string,
+    error: unknown,
+    extra?: Record<string, unknown>,
+  ) => {
+    recordCatchDiscipline({
+      screen: "accountant",
+      surface: "active_payment_form",
+      event,
+      kind,
+      error,
+      category: event.includes("callback") ? "ui" : "fetch",
+      sourceKind: proposalId ? "proposal:payment_allocation_form" : "payment:manual_form",
+      errorStage: event,
+      extra: {
+        proposalId: proposalId || null,
+        ...extra,
+      },
+    });
+  };
 
   useEffect(() => {
     setAllocRows([]);
     if (modeRef.current === "partial") setAmount("");
+    setItemsError(null);
+    setAllocationsError(null);
+    setAllocationUiError(null);
   }, [proposalId, setAllocRows, setAmount]);
 
   const inv = Number(current?.invoice_amount ?? 0);
@@ -197,6 +240,7 @@ export default function ActivePaymentForm({
     const pid = proposalId;
     if (!pid) {
       setItems([]);
+      setItemsError(null);
       return;
     }
     if (lastPidRef.current === pid) return;
@@ -204,6 +248,7 @@ export default function ActivePaymentForm({
 
     (async () => {
       setItemsLoading(true);
+      setItemsError(null);
       try {
         const q = await supabase
           .from("proposal_items")
@@ -213,8 +258,14 @@ export default function ActivePaymentForm({
 
         if (q.error) throw q.error;
         setItems(Array.isArray(q.data) ? q.data.map(normalizeItem).filter((row): row is Item => !!row) : []);
-      } catch {
+        setItemsError(null);
+      } catch (error) {
+        const message = getPaymentErrorMessage(error, "Не удалось загрузить позиции счета.");
+        recordPaymentFormCatch("critical_fail", "proposal_items_load_failed", error, {
+          publishState: "error",
+        });
         setItems([]);
+        setItemsError(message);
       } finally {
         setItemsLoading(false);
       }
@@ -229,10 +280,12 @@ export default function ActivePaymentForm({
     if (!pid) {
       setPaidByLineMap(new Map());
       setPaidKnownSum(0);
+      setAllocationsError(null);
       return;
     }
 
     (async () => {
+      setAllocationsError(null);
       try {
         // allocations -> payments (inner) -> proposal_id
         const q = await supabase
@@ -256,9 +309,15 @@ export default function ActivePaymentForm({
 
         setPaidByLineMap(m);
         setPaidKnownSum(sum);
-      } catch {
+        setAllocationsError(null);
+      } catch (error) {
+        const message = getPaymentErrorMessage(error, "Не удалось загрузить ранее проведенные распределения.");
+        recordPaymentFormCatch("critical_fail", "proposal_allocations_load_failed", error, {
+          publishState: "error",
+        });
         setPaidByLineMap(new Map());
         setPaidKnownSum(0);
+        setAllocationsError(message);
       }
     })();
   }, [proposalId]);
@@ -284,6 +343,10 @@ export default function ActivePaymentForm({
 
     return round2(Math.max(0, paidTotalProposal - paidKnownSum));
   }, [paidTotalProposal, paidKnownSum]);
+
+  const paymentDataErrorMessage = useMemo(() => {
+    return allocationUiError || allocationsError || itemsError || null;
+  }, [allocationUiError, allocationsError, itemsError]);
 
   const remainByLine = useMemo(() => {
     return lineTotals.map((t, i) => round2(Math.max(0, t - nnum(paidBeforeByLine[i]))));
@@ -318,6 +381,7 @@ export default function ActivePaymentForm({
   const allocOk = useMemo(() => {
     if (!proposalId) return true;
     if (itemsLoading) return false;
+    if (paymentDataErrorMessage) return false;
 
     if (mode === "full") {
       // полный платёж: всё что осталось должно распределиться полностью
@@ -333,12 +397,17 @@ export default function ActivePaymentForm({
     if (allocSum <= 0) return false;
     if (allocSum - remainTotal > 0.01) return false;
     return true;
-  }, [proposalId, mode, restProposal, itemsLoading, items.length, allocRows, allocSum, remainTotal]);
+  }, [proposalId, mode, restProposal, itemsLoading, items.length, allocRows, allocSum, remainTotal, paymentDataErrorMessage]);
 
   useEffect(() => {
     try {
       onAllocStatus?.(allocOk, allocSum);
-    } catch { }
+    } catch (error) {
+      recordPaymentFormCatch("soft_failure", "alloc_status_callback_failed", error, {
+        allocOk,
+        allocSum,
+      });
+    }
   }, [allocOk, allocSum, onAllocStatus]);
 
   // ===== helpers: set line allocation with clamp =====
@@ -384,6 +453,20 @@ export default function ActivePaymentForm({
     setAllocRows(out);
     setAmount(restProposal > 0 ? String(restProposal.toFixed(2)) : "");
   }, [items, proposalId, remainByLine, restProposal, setAllocRows, setAmount]);
+
+  const applyFullAllocSafely = React.useCallback((trigger: string) => {
+    try {
+      applyFullAlloc();
+      setAllocationUiError(null);
+    } catch (error) {
+      const message = getPaymentErrorMessage(error, "Не удалось пересчитать распределение оплаты.");
+      recordPaymentFormCatch("critical_fail", "allocation_recalculation_failed", error, {
+        trigger,
+      });
+      setAllocationUiError(message);
+    }
+  }, [applyFullAlloc]);
+
   useEffect(() => {
     if (modeRef.current !== "full") return;
     if (!allocRows?.length) return;
@@ -393,11 +476,9 @@ export default function ActivePaymentForm({
     );
 
     if (Math.abs(sum - restProposal) > 0.01) {
-      try {
-        applyFullAlloc();
-      } catch { }
+      applyFullAllocSafely("full_mode_reconcile");
     }
-  }, [allocRows, applyFullAlloc, restProposal]);
+  }, [allocRows, applyFullAllocSafely, restProposal]);
 
   const segBtn = (active: boolean) => ({
     flex: 1,
@@ -634,6 +715,26 @@ export default function ActivePaymentForm({
             </View>
           ) : null}
 
+          {proposalId && paymentDataErrorMessage ? (
+            <View
+              style={{
+                marginBottom: 10,
+                padding: 12,
+                borderRadius: 14,
+                borderWidth: 1,
+                borderColor: "rgba(255,99,99,0.45)",
+                backgroundColor: "rgba(255,99,99,0.08)",
+              }}
+            >
+              <Text style={{ color: UI.text, fontWeight: "900" }}>
+                Не удалось подготовить данные для оплаты
+              </Text>
+              <Text style={{ color: UI.sub, fontWeight: "800", marginTop: 6 }}>
+                {paymentDataErrorMessage}
+              </Text>
+            </View>
+          ) : null}
+
           {/* Режим: полностью / частично */}
           {proposalId ? (
             <>
@@ -643,8 +744,9 @@ export default function ActivePaymentForm({
                   onPress={() => {
                     setMode("full");
                     setAllocRows([]);
+                    setAllocationUiError(null);
                     runNextTick(() => {
-                      try { applyFullAlloc(); } catch { }
+                      applyFullAllocSafely("full_mode_press");
                     });
                   }}
 
@@ -659,6 +761,7 @@ export default function ActivePaymentForm({
                     setMode("partial");
                     setAmount("");
                     setAllocRows([]);
+                    setAllocationUiError(null);
                   }}
                   style={segBtn(mode === "partial")}
                 >
@@ -734,6 +837,10 @@ export default function ActivePaymentForm({
 
                 {itemsLoading ? (
                   <Text style={{ color: UI.sub, fontWeight: "800" }}>Загружаю позиции…</Text>
+                ) : paymentDataErrorMessage ? (
+                  <Text style={{ color: UI.text, fontWeight: "800" }}>
+                    Распределение временно недоступно: {paymentDataErrorMessage}
+                  </Text>
                 ) : !items.length ? (
                   <Text style={{ color: UI.sub, fontWeight: "800" }}>Нет позиций у счёта</Text>
                 ) : (

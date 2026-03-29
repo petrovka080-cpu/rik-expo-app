@@ -6,6 +6,7 @@ import {
   listCanonicalProposalAttachments,
   toProposalAttachmentLegacyRow,
 } from "../../lib/api/proposalAttachments.service";
+import { recordCatchDiscipline } from "../../lib/observability/catchDiscipline";
 import type { ProposalAttachmentRow, ProposalItem } from "./director.types";
 
 type Deps = {
@@ -40,7 +41,18 @@ const errText = (error: unknown): string => {
     try {
       const json = JSON.stringify(error);
       if (json && json !== "{}") return json;
-    } catch {}
+    } catch (jsonError) {
+      recordCatchDiscipline({
+        screen: "director",
+        surface: "proposal_detail",
+        event: "proposal_detail_error_stringify_failed",
+        kind: "soft_failure",
+        error: jsonError,
+        category: "ui",
+        sourceKind: "proposal:director_detail",
+        errorStage: "stringify_error",
+      });
+    }
   }
   return "";
 };
@@ -58,6 +70,25 @@ export function useDirectorProposalDetail({
   fetchProps,
   closeSheet,
 }: Deps) {
+  const recordDirectorProposalDetailCatch = (
+    kind: "critical_fail" | "soft_failure" | "cleanup_only" | "degraded_fallback",
+    event: string,
+    error: unknown,
+    extra?: Record<string, unknown>,
+  ) => {
+    recordCatchDiscipline({
+      screen: "director",
+      surface: "proposal_detail",
+      event,
+      kind,
+      error,
+      category: "ui",
+      sourceKind: "proposal:director_detail",
+      errorStage: event,
+      extra,
+    });
+  };
+
   const loadProposalAttachments = useCallback(async (pidStr: string) => {
     const pid = String(pidStr || "").trim();
     if (!pid) return;
@@ -82,6 +113,10 @@ export function useDirectorProposalDetail({
       }));
     } catch (e: unknown) {
       const message = errText(e) || "Не удалось загрузить вложения предложения";
+      recordDirectorProposalDetailCatch("critical_fail", "proposal_attachments_load_failed", e, {
+        proposalId: pid,
+        publishState: "error",
+      });
       if (__DEV__) console.warn("[director] loadProposalAttachments:", message);
       setPropAttErrByProp((prev) => ({ ...prev, [pid]: message }));
       setPropAttByProp((prev) => ({ ...prev, [pid]: [] }));
@@ -160,6 +195,9 @@ export function useDirectorProposalDetail({
       await fetchProps(true);
       closeSheet();
     } catch (e: unknown) {
+      recordDirectorProposalDetailCatch("critical_fail", "proposal_return_failed", e, {
+        proposalId: pidStr,
+      });
       Alert.alert("Не удалось вернуть предложение", errText(e) || "Попробуйте ещё раз.");
     } finally {
       setPropReturnId(null);
