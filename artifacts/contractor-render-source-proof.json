@@ -1,0 +1,48 @@
+{
+  "generatedAt": "2026-03-29T12:18:45.015Z",
+  "contractorId": "88a832d4-099f-4f9a-8fce-ae6e086fc107",
+  "screenContract": {
+    "state": "ready",
+    "source": "canonical",
+    "renderState": "ready_current",
+    "hasCanonicalRows": true,
+    "hasCompatibilityRows": true,
+    "message": "Canonical source filtered legacy or historical subcontract rows out of the primary list."
+  },
+  "bundleSourceMeta": {
+    "primaryOwner": "legacy_client_enrich",
+    "fallbackUsed": true,
+    "sourceKind": "legacy:view:v_works_fact+relational_enrich",
+    "rowParityStatus": "not_checked"
+  },
+  "effectiveCardContractKeys": [
+    "workId",
+    "title",
+    "objectName",
+    "systemName",
+    "zoneName",
+    "contractorName",
+    "contractorInn",
+    "status",
+    "qualityState",
+    "isCanonical",
+    "sourceKind",
+    "progressId"
+  ],
+  "effectiveTechnicalRowSample": {
+    "workItemId": "subcontract:b4eb5e62-79ac-41a8-b2d6-0c2924c5c39f",
+    "progressId": "subcontract:b4eb5e62-79ac-41a8-b2d6-0c2924c5c39f",
+    "workName": "Блоки (унив.) — длина",
+    "workCode": null,
+    "objectName": "КНС / ИТП / ЦТП / насосная",
+    "canonicalWorkItemId": "subcontract:b4eb5e62-79ac-41a8-b2d6-0c2924c5c39f",
+    "canonicalSourceKind": "foreman_subcontract_request"
+  },
+  "canonicalRowSample": {
+    "workItemId": "subcontract:b4eb5e62-79ac-41a8-b2d6-0c2924c5c39f",
+    "title": "Блоки (унив.) — длина",
+    "objectName": "КНС / ИТП / ЦТП / насосная",
+    "sourceVersion": "v2"
+  },
+  "uiContractPreserved": true
+}

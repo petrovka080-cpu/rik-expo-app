@@ -1,5 +1,5 @@
 {
-  "marker": "RTBUY1774706959161",
+  "marker": "RTBUY1774748666221",
   "events": [
     {
       "screen": "buyer",
@@ -9,7 +9,7 @@
       "durationMs": null,
       "rowCount": null,
       "sourceKind": "supabase:postgres_changes",
-      "raw": "I/ReactNativeJS(14490): '[platform.observability]', { screen: 'buyer',\nI/ReactNativeJS(14490):   surface: 'summary_root',\nI/ReactNativeJS(14490):   event: 'realtime_event_received',\nI/ReactNativeJS(14490):   result: 'success',\nI/ReactNativeJS(14490):   durationMs: null,\nI/ReactNativeJS(14490):   rowCount: null,\nI/ReactNativeJS(14490):   sourceKind: 'supabase:postgres_changes',\nI/ReactNativeJS(14490):   errorStage: null }"
+      "raw": "I/ReactNativeJS( 7815): '[platform.observability]', { screen: 'buyer',\nI/ReactNativeJS( 7815):   surface: 'summary_root',\nI/ReactNativeJS( 7815):   event: 'realtime_event_received',\nI/ReactNativeJS( 7815):   result: 'success',\nI/ReactNativeJS( 7815):   durationMs: null,\nI/ReactNativeJS( 7815):   rowCount: null,\nI/ReactNativeJS( 7815):   sourceKind: 'supabase:postgres_changes',\nI/ReactNativeJS( 7815):   errorStage: null }"
     },
     {
       "screen": "buyer",
@@ -19,17 +19,17 @@
       "durationMs": null,
       "rowCount": null,
       "sourceKind": "supabase:postgres_changes",
-      "raw": "I/ReactNativeJS(14490): '[platform.observability]', { screen: 'buyer',\nI/ReactNativeJS(14490):   surface: 'summary_root',\nI/ReactNativeJS(14490):   event: 'realtime_refresh_triggered',\nI/ReactNativeJS(14490):   result: 'success',\nI/ReactNativeJS(14490):   durationMs: null,\nI/ReactNativeJS(14490):   rowCount: null,\nI/ReactNativeJS(14490):   sourceKind: 'supabase:postgres_changes',\nI/ReactNativeJS(14490):   errorStage: null }"
+      "raw": "I/ReactNativeJS( 7815): '[platform.observability]', { screen: 'buyer',\nI/ReactNativeJS( 7815):   surface: 'summary_root',\nI/ReactNativeJS( 7815):   event: 'realtime_refresh_triggered',\nI/ReactNativeJS( 7815):   result: 'success',\nI/ReactNativeJS( 7815):   durationMs: null,\nI/ReactNativeJS( 7815):   rowCount: null,\nI/ReactNativeJS( 7815):   sourceKind: 'supabase:postgres_changes',\nI/ReactNativeJS( 7815):   errorStage: null }"
     },
     {
       "screen": "buyer",
       "surface": "summary_inbox",
       "event": "load_inbox",
       "result": "success",
-      "durationMs": 1177,
+      "durationMs": 1959,
       "rowCount": 36,
       "sourceKind": "rpc:buyer_summary_inbox_scope_v1",
-      "raw": "I/ReactNativeJS(14490): '[platform.observability]', { screen: 'buyer',\nI/ReactNativeJS(14490):   surface: 'summary_inbox',\nI/ReactNativeJS(14490):   event: 'load_inbox',\nI/ReactNativeJS(14490):   result: 'success',\nI/ReactNativeJS(14490):   durationMs: 1177,\nI/ReactNativeJS(14490):   rowCount: 36,\nI/ReactNativeJS(14490):   sourceKind: 'rpc:buyer_summary_inbox_scope_v1',\nI/ReactNativeJS(14490):   errorStage: null }"
+      "raw": "I/ReactNativeJS( 7815): '[platform.observability]', { screen: 'buyer',\nI/ReactNativeJS( 7815):   surface: 'summary_inbox',\nI/ReactNativeJS( 7815):   event: 'load_inbox',\nI/ReactNativeJS( 7815):   result: 'success',\nI/ReactNativeJS( 7815):   durationMs: 1959,\nI/ReactNativeJS( 7815):   rowCount: 36,\nI/ReactNativeJS( 7815):   sourceKind: 'rpc:buyer_summary_inbox_scope_v1',\nI/ReactNativeJS( 7815):   errorStage: null }"
     },
     {
       "screen": "buyer",
@@ -39,7 +39,7 @@
       "durationMs": null,
       "rowCount": 36,
       "sourceKind": "rpc:buyer_summary_inbox_scope_v1",
-      "raw": "I/ReactNativeJS(14490): '[platform.observability]', { screen: 'buyer',\nI/ReactNativeJS(14490):   surface: 'inbox_list',\nI/ReactNativeJS(14490):   event: 'content_ready',\nI/ReactNativeJS(14490):   result: 'success',\nI/ReactNativeJS(14490):   durationMs: null,\nI/ReactNativeJS(14490):   rowCount: 36,\nI/ReactNativeJS(14490):   sourceKind: 'rpc:buyer_summary_inbox_scope_v1',\nI/ReactNativeJS(14490):   errorStage: null }"
+      "raw": "I/ReactNativeJS( 7815): '[platform.observability]', { screen: 'buyer',\nI/ReactNativeJS( 7815):   surface: 'inbox_list',\nI/ReactNativeJS( 7815):   event: 'content_ready',\nI/ReactNativeJS( 7815):   result: 'success',\nI/ReactNativeJS( 7815):   durationMs: null,\nI/ReactNativeJS( 7815):   rowCount: 36,\nI/ReactNativeJS( 7815):   sourceKind: 'rpc:buyer_summary_inbox_scope_v1',\nI/ReactNativeJS( 7815):   errorStage: null }"
     },
     {
       "screen": "buyer",
@@ -49,7 +49,7 @@
       "durationMs": null,
       "rowCount": null,
       "sourceKind": "supabase:postgres_changes",
-      "raw": "I/ReactNativeJS(14490): '[platform.observability]', { screen: 'buyer',\nI/ReactNativeJS(14490):   surface: 'summary_root',\nI/ReactNativeJS(14490):   event: 'realtime_event_received',\nI/ReactNativeJS(14490):   result: 'success',\nI/ReactNativeJS(14490):   durationMs: null,\nI/ReactNativeJS(14490):   rowCount: null,\nI/ReactNativeJS(14490):   sourceKind: 'supabase:postgres_changes',\nI/ReactNativeJS(14490):   errorStage: null }"
+      "raw": "I/ReactNativeJS( 7815): '[platform.observability]', { screen: 'buyer',\nI/ReactNativeJS( 7815):   surface: 'summary_root',\nI/ReactNativeJS( 7815):   event: 'realtime_event_received',\nI/ReactNativeJS( 7815):   result: 'success',\nI/ReactNativeJS( 7815):   durationMs: null,\nI/ReactNativeJS( 7815):   rowCount: null,\nI/ReactNativeJS( 7815):   sourceKind: 'supabase:postgres_changes',\nI/ReactNativeJS( 7815):   errorStage: null }"
     },
     {
       "screen": "buyer",
@@ -59,7 +59,7 @@
       "durationMs": null,
       "rowCount": null,
       "sourceKind": "supabase:postgres_changes",
-      "raw": "I/ReactNativeJS(14490): '[platform.observability]', { screen: 'buyer',\nI/ReactNativeJS(14490):   surface: 'summary_root',\nI/ReactNativeJS(14490):   event: 'realtime_refresh_triggered',\nI/ReactNativeJS(14490):   result: 'success',\nI/ReactNativeJS(14490):   durationMs: null,\nI/ReactNativeJS(14490):   rowCount: null,\nI/ReactNativeJS(14490):   sourceKind: 'supabase:postgres_changes',\nI/ReactNativeJS(14490):   errorStage: null }"
+      "raw": "I/ReactNativeJS( 7815): '[platform.observability]', { screen: 'buyer',\nI/ReactNativeJS( 7815):   surface: 'summary_root',\nI/ReactNativeJS( 7815):   event: 'realtime_refresh_triggered',\nI/ReactNativeJS( 7815):   result: 'success',\nI/ReactNativeJS( 7815):   durationMs: null,\nI/ReactNativeJS( 7815):   rowCount: null,\nI/ReactNativeJS( 7815):   sourceKind: 'supabase:postgres_changes',\nI/ReactNativeJS( 7815):   errorStage: null }"
     },
     {
       "screen": "buyer",
@@ -69,7 +69,7 @@
       "durationMs": null,
       "rowCount": null,
       "sourceKind": "supabase:postgres_changes",
-      "raw": "I/ReactNativeJS(14490): '[platform.observability]', { screen: 'buyer',\nI/ReactNativeJS(14490):   surface: 'summary_root',\nI/ReactNativeJS(14490):   event: 'realtime_event_received',\nI/ReactNativeJS(14490):   result: 'success',\nI/ReactNativeJS(14490):   durationMs: null,\nI/ReactNativeJS(14490):   rowCount: null,\nI/ReactNativeJS(14490):   sourceKind: 'supabase:postgres_changes',\nI/ReactNativeJS(14490):   errorStage: null }"
+      "raw": "I/ReactNativeJS( 7815): '[platform.observability]', { screen: 'buyer',\nI/ReactNativeJS( 7815):   surface: 'summary_root',\nI/ReactNativeJS( 7815):   event: 'realtime_event_received',\nI/ReactNativeJS( 7815):   result: 'success',\nI/ReactNativeJS( 7815):   durationMs: null,\nI/ReactNativeJS( 7815):   rowCount: null,\nI/ReactNativeJS( 7815):   sourceKind: 'supabase:postgres_changes',\nI/ReactNativeJS( 7815):   errorStage: null }"
     },
     {
       "screen": "buyer",
@@ -79,17 +79,17 @@
       "durationMs": null,
       "rowCount": null,
       "sourceKind": null,
-      "raw": "I/ReactNativeJS(14490): '[platform.observability]', { screen: 'buyer',\nI/ReactNativeJS(14490):   surface: 'summary_root',\nI/ReactNativeJS(14490):   event: 'realtime_refresh_skipped_inflight',\nI/ReactNativeJS(14490):   result: 'skipped',\nI/ReactNativeJS(14490):   durationMs: null,\nI/ReactNativeJS(14490):   rowCount: null,\nI/ReactNativeJS(14490):   sourceKind: null,\nI/ReactNativeJS(14490):   errorStage: null }"
+      "raw": "I/ReactNativeJS( 7815): '[platform.observability]', { screen: 'buyer',\nI/ReactNativeJS( 7815):   surface: 'summary_root',\nI/ReactNativeJS( 7815):   event: 'realtime_refresh_skipped_inflight',\nI/ReactNativeJS( 7815):   result: 'skipped',\nI/ReactNativeJS( 7815):   durationMs: null,\nI/ReactNativeJS( 7815):   rowCount: null,\nI/ReactNativeJS( 7815):   sourceKind: null,\nI/ReactNativeJS( 7815):   errorStage: null }"
     },
     {
       "screen": "buyer",
       "surface": "summary_inbox",
       "event": "load_inbox",
       "result": "success",
-      "durationMs": 935,
+      "durationMs": 755,
       "rowCount": 36,
       "sourceKind": "rpc:buyer_summary_inbox_scope_v1",
-      "raw": "I/ReactNativeJS(14490): '[platform.observability]', { screen: 'buyer',\nI/ReactNativeJS(14490):   surface: 'summary_inbox',\nI/ReactNativeJS(14490):   event: 'load_inbox',\nI/ReactNativeJS(14490):   result: 'success',\nI/ReactNativeJS(14490):   durationMs: 935,\nI/ReactNativeJS(14490):   rowCount: 36,\nI/ReactNativeJS(14490):   sourceKind: 'rpc:buyer_summary_inbox_scope_v1',\nI/ReactNativeJS(14490):   errorStage: null }"
+      "raw": "I/ReactNativeJS( 7815): '[platform.observability]', { screen: 'buyer',\nI/ReactNativeJS( 7815):   surface: 'summary_inbox',\nI/ReactNativeJS( 7815):   event: 'load_inbox',\nI/ReactNativeJS( 7815):   result: 'success',\nI/ReactNativeJS( 7815):   durationMs: 755,\nI/ReactNativeJS( 7815):   rowCount: 36,\nI/ReactNativeJS( 7815):   sourceKind: 'rpc:buyer_summary_inbox_scope_v1',\nI/ReactNativeJS( 7815):   errorStage: null }"
     }
   ],
   "preflight": {
@@ -107,7 +107,7 @@
     "blankSurfaceRecovered": false,
     "devClientBootstrapRecovered": false
   },
-  "fioConfirmed": false,
+  "fioConfirmed": true,
   "artifacts": {
     "screenshot": "artifacts/android-buyer-realtime-final.png"
   }

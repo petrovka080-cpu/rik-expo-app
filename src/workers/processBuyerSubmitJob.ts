@@ -112,6 +112,17 @@ export async function processBuyerSubmitJob(job: SubmitJobRow, deps: Deps): Prom
   if (!created.length) {
     throw new Error("createProposalsBySupplier returned empty proposals");
   }
+  const invisibleForDirector = created.filter(
+    (row) => row?.submitted !== true || row?.visible_to_director !== true,
+  );
+  if (invisibleForDirector.length) {
+    throw new Error(
+      `createProposalsBySupplier returned proposals not visible to director: ${invisibleForDirector
+        .map((row) => norm(row?.proposal_id))
+        .filter(Boolean)
+        .join(",")}`,
+    );
+  }
 
   const attachments = Array.isArray(payload.attachments) ? payload.attachments : [];
   if (attachments.length) {

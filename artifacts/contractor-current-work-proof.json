@@ -1,0 +1,117 @@
+{
+  "generatedAt": "2026-03-29T12:18:35.490Z",
+  "contractorId": "88a832d4-099f-4f9a-8fce-ae6e086fc107",
+  "screenSource": "canonical_current_work",
+  "canonicalRows": 40,
+  "readyCurrentRows": 40,
+  "readyCurrentDegradedTitle": 0,
+  "legacyFilteredOut": 0,
+  "historicalExcluded": 2,
+  "cardSourceKinds": {
+    "canonical": 40
+  },
+  "cardQualityStates": {
+    "current": 40
+  },
+  "canonicalTitlesCodeLike": 0,
+  "canonicalObjectsCodeLike": 0,
+  "canonicalCurrentRowsHumanized": true,
+  "cardsSample": [
+    {
+      "workId": "subcontract:b4eb5e62-79ac-41a8-b2d6-0c2924c5c39f",
+      "contractorName": "бакыт",
+      "title": "Блоки (унив.) — длина",
+      "objectName": "КНС / ИТП / ЦТП / насосная",
+      "qualityState": "current",
+      "sourceKind": "canonical"
+    },
+    {
+      "workId": "progress:2f1fa183-cd7a-4412-9e21-f2cfc5f4f03f",
+      "contractorName": "Джантаев",
+      "title": "Штробление/укладка гофры",
+      "objectName": "Административное здание",
+      "qualityState": "current",
+      "sourceKind": "canonical"
+    },
+    {
+      "workId": "subcontract:0cf366d9-2438-4acb-a8a9-c17be6102aae",
+      "contractorName": "ОсОО КУРУЛУШ",
+      "title": "Комплект: раковина (материалы)",
+      "objectName": "Административное здание",
+      "qualityState": "current",
+      "sourceKind": "canonical"
+    },
+    {
+      "workId": "progress:20142e7b-2fc8-458a-9604-31073faa2f54",
+      "contractorName": "ОсОО Омега",
+      "title": "Нанесение гидроизоляции",
+      "objectName": "Административное здание",
+      "qualityState": "current",
+      "sourceKind": "canonical"
+    },
+    {
+      "workId": "progress:1b3b13ff-8b8d-43a9-974e-bed8d7cd818f",
+      "contractorName": "вапвап",
+      "title": "Устройство наливного пола",
+      "objectName": "Общежитие / вахтовый городок",
+      "qualityState": "current",
+      "sourceKind": "canonical"
+    },
+    {
+      "workId": "progress:1fb6a055-9592-411d-a1bc-5358030f305a",
+      "contractorName": "вапвап",
+      "title": "Доставка",
+      "objectName": "Общежитие / вахтовый городок",
+      "qualityState": "current",
+      "sourceKind": "canonical"
+    },
+    {
+      "workId": "progress:6a839e8e-8183-4867-afbc-7d9ee91490bb",
+      "contractorName": "вапвап",
+      "title": "Автовышка",
+      "objectName": "Паркинг открытый наземный",
+      "qualityState": "current",
+      "sourceKind": "canonical"
+    },
+    {
+      "workId": "progress:6f12138e-996a-4012-8f15-301da937ee7a",
+      "contractorName": "вапвап",
+      "title": "Монтаж внутр./наруж. блоков",
+      "objectName": "Паркинг открытый наземный",
+      "qualityState": "current",
+      "sourceKind": "canonical"
+    },
+    {
+      "workId": "progress:809a98cf-abe8-4431-8a53-1a648c492c85",
+      "contractorName": "вапвап",
+      "title": "Монтаж воздуховодов/каналов",
+      "objectName": "Паркинг открытый наземный",
+      "qualityState": "current",
+      "sourceKind": "canonical"
+    },
+    {
+      "workId": "progress:ae203bbf-a75a-4215-8795-f4ab5db22a98",
+      "contractorName": "вапвап",
+      "title": "Доставка",
+      "objectName": "Паркинг открытый наземный",
+      "qualityState": "current",
+      "sourceKind": "canonical"
+    },
+    {
+      "workId": "progress:d3a7c509-001e-4032-9d26-ba93203f3d9a",
+      "contractorName": "вапвап",
+      "title": "Прокладка трасс/дренажа",
+      "objectName": "Паркинг открытый наземный",
+      "qualityState": "current",
+      "sourceKind": "canonical"
+    },
+    {
+      "workId": "progress:f46714b4-40ac-4932-9694-35b2545ebec7",
+      "contractorName": "вапвап",
+      "title": "Монтаж воздуховодов/решёток",
+      "objectName": "Паркинг открытый наземный",
+      "qualityState": "current",
+      "sourceKind": "canonical"
+    }
+  ]
+}

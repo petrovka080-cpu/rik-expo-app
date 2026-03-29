@@ -1,8 +1,8 @@
 import type { AccountantInboxRow } from "../../lib/rik_api";
 import type {
-  ProposalAttachmentLegacyRow,
   ProposalAttachmentViewState,
 } from "../../lib/api/proposalAttachments.service";
+import type { AccountantAttachment } from "./accountant.attachments";
 
 export type Tab = "К оплате" | "Частично" | "Оплачено" | "На доработке" | "История" | "Подряды";
 
@@ -27,7 +27,7 @@ export type HistoryRow = {
   purpose?: string | null;
 };
 
-export type AttachmentRow = ProposalAttachmentLegacyRow;
+export type AttachmentRow = AccountantAttachment;
 export type AttachmentState = ProposalAttachmentViewState;
 
 export type NotificationRow = {

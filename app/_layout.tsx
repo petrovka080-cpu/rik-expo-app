@@ -12,6 +12,7 @@ import { clearAppCache } from "../src/lib/cache/clearAppCache";
 import { supabase } from "../src/lib/supabaseClient";
 import { clearDocumentSessions } from "../src/lib/documents/pdfDocumentSessions";
 import { clearCurrentSessionRoleCache, warmCurrentSessionProfile } from "../src/lib/sessionRole";
+import { ensureQueueWorker, stopQueueWorker } from "../src/workers/queueBootstrap";
 import { GlobalBusyProvider } from "../src/ui/GlobalBusy";
 import PlatformOfflineStatusHost from "../src/components/PlatformOfflineStatusHost";
 // --- WEB: тихо глушим шумные предупреждения (только в браузере) ---
@@ -146,6 +147,15 @@ export default function RootLayout() {
     if (!hasSession && !inAuthStack) router.replace("/auth/login");
     else if (hasSession && inAuthStack) router.replace("/");
   }, [hasSession, sessionLoaded, segments]);
+
+  useEffect(() => {
+    if (!sessionLoaded) return;
+    if (hasSession) {
+      ensureQueueWorker();
+      return;
+    }
+    stopQueueWorker();
+  }, [hasSession, sessionLoaded]);
 
   const APP_BG = "#0B0F14";
   const UI = {

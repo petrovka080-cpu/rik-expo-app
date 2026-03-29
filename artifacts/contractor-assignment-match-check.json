@@ -5,7 +5,7 @@
   "contractorInn": null,
   "scopedSubcontractCount": 11,
   "creatorOwnedSubcontractCount": 11,
-  "canonicalReadyRows": 42,
+  "canonicalReadyRows": 40,
   "compatibilityReadyRows": 0,
   "recoverySource": "canonical",
   "recoveryUsed": false,

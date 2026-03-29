@@ -1,0 +1,75 @@
+{
+  "generatedAt": "2026-03-29T12:38:55.924Z",
+  "contractFields": [
+    "attachmentId",
+    "bucketId",
+    "createdAt",
+    "fileName",
+    "fileUrl",
+    "groupKey",
+    "isVisibleToAccountant",
+    "mimeType",
+    "ownerId",
+    "ownerType",
+    "proposalId",
+    "resolverKind",
+    "sourceDetailKind",
+    "sourceKind",
+    "storagePath"
+  ],
+  "statusIndependentSource": true,
+  "cases": [
+    {
+      "tab": "to_pay",
+      "proposalId": null,
+      "proposalNo": null,
+      "state": "empty",
+      "sourceKind": null,
+      "rowCount": 0,
+      "fields": []
+    },
+    {
+      "tab": "partial",
+      "proposalId": null,
+      "proposalNo": null,
+      "state": "empty",
+      "sourceKind": null,
+      "rowCount": 0,
+      "fields": []
+    },
+    {
+      "tab": "paid",
+      "proposalId": null,
+      "proposalNo": null,
+      "state": "empty",
+      "sourceKind": null,
+      "rowCount": 0,
+      "fields": []
+    },
+    {
+      "tab": "history",
+      "proposalId": "c7af0745-9509-4573-afaa-8d2685a399eb",
+      "proposalNo": null,
+      "state": "degraded",
+      "sourceKind": "rpc:proposal_attachments_list+generated_proposal_pdf",
+      "rowCount": 1,
+      "fields": [
+        "attachmentId",
+        "bucketId",
+        "createdAt",
+        "fileName",
+        "fileUrl",
+        "groupKey",
+        "isVisibleToAccountant",
+        "mimeType",
+        "ownerId",
+        "ownerType",
+        "proposalId",
+        "resolverKind",
+        "sourceDetailKind",
+        "sourceKind",
+        "storagePath"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,44 @@
+{
+  "status": "GREEN",
+  "generatedAt": "2026-03-29T13:05:36.003Z",
+  "proposal_id": "8d377f51-bf12-4b36-9a05-f3d7f5d1b7f8",
+  "repository_source": {
+    "primaryOwner": "rpc_scope_v1",
+    "fallbackUsed": false,
+    "sourceKind": "rpc:director_pending_proposals_scope_v1",
+    "rowParityStatus": "rpc_nonempty"
+  },
+  "list": [
+    {
+      "id": "8d377f51-bf12-4b36-9a05-f3d7f5d1b7f8",
+      "submitted_at": "2026-03-29T13:05:36.680374+00:00",
+      "pretty": "PR-0510/2026"
+    },
+    {
+      "id": "8cb29c5e-b2ff-4a6c-99e4-fed66187034b",
+      "submitted_at": "2026-03-29T13:01:40.034573+00:00",
+      "pretty": "PR-0509/2026"
+    },
+    {
+      "id": "1f793291-488c-41c8-a6f6-5fe4af9a0034",
+      "submitted_at": "2026-03-29T13:01:32.553354+00:00",
+      "pretty": "PR-0508/2026"
+    },
+    {
+      "id": "34cbb2c5-52e2-4a9e-ae5a-85a898e5038d",
+      "submitted_at": "2026-03-29T13:01:32.490578+00:00",
+      "pretty": "PR-0507/2026"
+    },
+    {
+      "id": "88e79152-777c-4bdf-83dc-e22adef653a2",
+      "submitted_at": "2026-03-29T13:01:32.002324+00:00",
+      "pretty": "PR-0506/2026"
+    }
+  ],
+  "badgeCount": 5,
+  "createdProposalHead": {
+    "id": "8d377f51-bf12-4b36-9a05-f3d7f5d1b7f8",
+    "submitted_at": "2026-03-29T13:05:36.680374+00:00",
+    "pretty": "PR-0510/2026"
+  }
+}

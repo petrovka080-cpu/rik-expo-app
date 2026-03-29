@@ -2,10 +2,10 @@
   "contractorId": "88a832d4-099f-4f9a-8fce-ae6e086fc107",
   "contractorUserId": "9adc5ab1-31fa-41be-8a00-17eadbb37c39",
   "rawRowCount": 42,
-  "canonicalRowCount": 42,
+  "canonicalRowCount": 40,
   "compatibilityRowCount": 0,
-  "effectiveRowCount": 42,
-  "filteredRowCount": 0,
+  "effectiveRowCount": 40,
+  "filteredRowCount": 2,
   "filterReasons": {
     "ready": 42
   },

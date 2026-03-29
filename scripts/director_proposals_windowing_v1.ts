@@ -5,7 +5,6 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { config as loadDotenv } from "dotenv";
 
 import type { Database } from "../src/lib/database.types";
-import { fetchDirectorPendingProposalWindow } from "../src/screens/director/director.proposals.repo";
 
 type ProposalHeadLegacy = {
   id: string;
@@ -151,6 +150,7 @@ const headSignature = (head: ProposalHeadLegacy, itemCounts: Record<string, numb
   [head.id, head.submitted_at ?? "", head.pretty ?? "", itemCounts[head.id] ?? 0].join("|");
 
 async function main() {
+  const { fetchDirectorPendingProposalWindow } = await import("../src/screens/director/director.proposals.repo");
   const PAGE_SIZE = 10;
   const windowOffset = 1;
   const windowLimit = 1;

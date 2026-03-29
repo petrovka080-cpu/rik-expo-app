@@ -437,7 +437,7 @@ export function ReadOnlyPaymentReceipt({
           <View style={{ gap: 8 }}>
             {files.map((file) => (
               <Pressable
-                key={String(file.id)}
+                key={String(file.attachmentId)}
                 disabled={!!busyKey}
                 onPress={() => onOpenFile(file)}
                 style={{
@@ -451,7 +451,7 @@ export function ReadOnlyPaymentReceipt({
                 }}
               >
                 <Text style={{ color: UI.text, fontWeight: "900" }} numberOfLines={1}>
-                  📎 {String(file.file_name ?? "file")}
+                  📎 {String(file.fileName ?? "file")}
                 </Text>
               </Pressable>
             ))}

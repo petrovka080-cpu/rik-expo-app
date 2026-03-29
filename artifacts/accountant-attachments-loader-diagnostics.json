@@ -1,0 +1,65 @@
+{
+  "generatedAt": "2026-03-29T12:38:55.924Z",
+  "proposalNo": "PR-0381/2026",
+  "proposalId": "c7af0745-9509-4573-afaa-8d2685a399eb",
+  "requestSuccess": true,
+  "canonicalBase": {
+    "state": "empty",
+    "sourceKind": "rpc:proposal_attachments_list",
+    "fallbackUsed": false,
+    "rawCount": 0,
+    "mappedCount": 0,
+    "filteredCount": 0,
+    "errorMessage": null,
+    "rowGroups": []
+  },
+  "accountantReadModel": {
+    "state": "degraded",
+    "sourceKind": "rpc:proposal_attachments_list+generated_proposal_pdf",
+    "fallbackUsed": false,
+    "rawCount": 0,
+    "mappedCount": 0,
+    "filteredCount": 0,
+    "errorMessage": "Persisted accountant-visible attachments not found; proposal source document was recovered from proposal owner.",
+    "diagnostics": {
+      "proposalId": "c7af0745-9509-4573-afaa-8d2685a399eb",
+      "rawCount": 0,
+      "mappedCount": 0,
+      "filteredCount": 0,
+      "filterReasons": {
+        "screen_hidden_group": 0,
+        "missing_locator": 0
+      },
+      "explicitRowCount": 0,
+      "visibleExplicitRowCount": 0,
+      "generatedProposalDocumentInjected": true,
+      "proposalAttachmentGroups": {},
+      "ownerChain": {
+        "proposalNo": "PR-0381/2026",
+        "hasInvoiceMeta": true,
+        "hasSentToAccountant": true,
+        "paymentCount": 1
+      }
+    },
+    "rows": [
+      {
+        "attachmentId": "generated:proposal_pdf:c7af0745-9509-4573-afaa-8d2685a399eb",
+        "proposalId": "c7af0745-9509-4573-afaa-8d2685a399eb",
+        "ownerType": "proposal",
+        "ownerId": "c7af0745-9509-4573-afaa-8d2685a399eb",
+        "fileName": "PR-0381/2026.pdf",
+        "fileUrl": null,
+        "mimeType": "application/pdf",
+        "isVisibleToAccountant": true,
+        "sourceKind": "canonical",
+        "sourceDetailKind": "generated_proposal_pdf",
+        "resolverKind": "generated_proposal_pdf",
+        "bucketId": null,
+        "storagePath": null,
+        "groupKey": "proposal_pdf",
+        "createdAt": "2026-03-12T08:28:41.163305+00:00"
+      }
+    ]
+  },
+  "exactFailurePoint": "base canonical attachment query returned zero persisted rows; accountant wrapper recovered proposal owner document"
+}

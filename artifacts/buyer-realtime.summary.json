@@ -68,6 +68,6 @@
       "blankSurfaceRecovered": false,
       "devClientBootstrapRecovered": false
     },
-    "fioConfirmed": false
+    "fioConfirmed": true
   }
 }

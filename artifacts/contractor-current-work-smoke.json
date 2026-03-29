@@ -1,0 +1,48 @@
+{
+  "generatedAt": "2026-03-29T12:18:45.015Z",
+  "smoke1": {
+    "name": "approved contractor works render from canonical source",
+    "pass": true,
+    "details": {
+      "contractorId": "88a832d4-099f-4f9a-8fce-ae6e086fc107",
+      "canonicalRows": 40,
+      "compatibilityRows": 11,
+      "chosenSource": "canonical"
+    }
+  },
+  "smoke2": {
+    "name": "canonical rows win when canonical and compat both exist",
+    "pass": true,
+    "details": {
+      "contractorId": "88a832d4-099f-4f9a-8fce-ae6e086fc107",
+      "canonicalRows": 40,
+      "compatibilityRows": 11,
+      "chosenSource": "canonical",
+      "renderState": "ready_current"
+    }
+  },
+  "smoke3": {
+    "name": "compat fallback is explicit degraded mode when canonical is empty",
+    "pass": true,
+    "details": {
+      "contractorId": "7253bc49-0eb6-474a-99ab-8b195b68dd63",
+      "canonicalRows": 0,
+      "compatibilityRows": 4,
+      "chosenSource": "compatibility_recovery",
+      "renderState": "ready_compat_degraded"
+    }
+  },
+  "smoke4": {
+    "name": "card model is built from current contract, not first-version label path",
+    "pass": true,
+    "details": {
+      "contractorId": "88a832d4-099f-4f9a-8fce-ae6e086fc107",
+      "cardTitle": "Блоки (унив.) — длина",
+      "canonicalTitle": "Блоки (унив.) — длина",
+      "technicalRowTitle": "Блоки (унив.) — длина",
+      "cardObjectName": "КНС / ИТП / ЦТП / насосная",
+      "canonicalObjectName": "КНС / ИТП / ЦТП / насосная",
+      "technicalRowObjectName": "КНС / ИТП / ЦТП / насосная"
+    }
+  }
+}

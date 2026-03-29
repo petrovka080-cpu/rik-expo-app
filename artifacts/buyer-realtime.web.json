@@ -1,5 +1,5 @@
 {
-  "marker": "RTBUY1774706758825",
+  "marker": "RTBUY1774748283515",
   "baseUrl": "http://localhost:8081",
   "runtime": {
     "console": [
@@ -25,7 +25,7 @@
       },
       {
         "type": "info",
-        "text": "[platform.observability] {screen: buyer, surface: summary_inbox, event: load_inbox, result: success, durationMs: 3534}"
+        "text": "[platform.observability] {screen: buyer, surface: summary_inbox, event: load_inbox, result: success, durationMs: 1488}"
       },
       {
         "type": "info",
@@ -53,7 +53,7 @@
       },
       {
         "type": "info",
-        "text": "[platform.observability] {screen: profile, surface: session_role, event: warm_session_profile, result: success, durationMs: 624}"
+        "text": "[platform.observability] {screen: profile, surface: session_role, event: warm_session_profile, result: success, durationMs: 621}"
       },
       {
         "type": "info",
@@ -69,15 +69,15 @@
       },
       {
         "type": "info",
-        "text": "[platform.observability] {screen: buyer, surface: summary_inbox, event: load_inbox, result: success, durationMs: 1726}"
+        "text": "[platform.observability] {screen: buyer, surface: summary_root, event: subscription_connected, result: success, durationMs: null}"
+      },
+      {
+        "type": "info",
+        "text": "[platform.observability] {screen: buyer, surface: summary_inbox, event: load_inbox, result: success, durationMs: 1132}"
       },
       {
         "type": "info",
         "text": "[platform.observability] {screen: buyer, surface: inbox_list, event: content_ready, result: success, durationMs: null}"
-      },
-      {
-        "type": "info",
-        "text": "[platform.observability] {screen: buyer, surface: summary_root, event: subscription_connected, result: success, durationMs: null}"
       },
       {
         "type": "info",
@@ -89,7 +89,7 @@
       },
       {
         "type": "info",
-        "text": "[platform.observability] {screen: buyer, surface: summary_inbox, event: load_inbox, result: success, durationMs: 557}"
+        "text": "[platform.observability] {screen: buyer, surface: summary_inbox, event: load_inbox, result: success, durationMs: 546}"
       },
       {
         "type": "info",
@@ -113,7 +113,7 @@
       },
       {
         "type": "info",
-        "text": "[platform.observability] {screen: buyer, surface: summary_inbox, event: load_inbox, result: success, durationMs: 546}"
+        "text": "[platform.observability] {screen: buyer, surface: summary_inbox, event: load_inbox, result: success, durationMs: 548}"
       },
       {
         "type": "info",
@@ -126,23 +126,23 @@
   "events": [
     {
       "id": "obs-4",
-      "at": 1774706755211,
+      "at": 1774748282334,
       "screen": "profile",
       "surface": "session_role",
       "category": "fetch",
       "event": "warm_session_profile",
       "extra": {
         "trigger": "root_layout",
-        "userId": "5a6a7630-c269-4854-8a22-8e619a1920aa",
+        "userId": "b43722bc-6978-4551-9d01-0cb4d1e306e9",
         "source": "rpc",
         "profileEnsured": false
       },
       "result": "success",
-      "durationMs": 624
+      "durationMs": 621
     },
     {
       "id": "obs-5",
-      "at": 1774706755807,
+      "at": 1774748282340,
       "screen": "buyer",
       "surface": "realtime_channel",
       "category": "reload",
@@ -159,7 +159,7 @@
     },
     {
       "id": "obs-6",
-      "at": 1774706755807,
+      "at": 1774748282340,
       "screen": "buyer",
       "surface": "summary_root",
       "category": "reload",
@@ -176,7 +176,7 @@
     },
     {
       "id": "obs-7",
-      "at": 1774706755808,
+      "at": 1774748282341,
       "screen": "buyer",
       "surface": "summary_root",
       "category": "reload",
@@ -193,7 +193,24 @@
     },
     {
       "id": "obs-8",
-      "at": 1774706756372,
+      "at": 1774748282840,
+      "screen": "buyer",
+      "surface": "summary_root",
+      "category": "reload",
+      "event": "subscription_connected",
+      "result": "success",
+      "trigger": "realtime",
+      "sourceKind": "supabase:realtime",
+      "extra": {
+        "route": "/buyer",
+        "channelName": "buyer:screen:realtime",
+        "status": "SUBSCRIBED",
+        "owner": "realtime_lifecycle"
+      }
+    },
+    {
+      "id": "obs-9",
+      "at": 1774748282902,
       "screen": "buyer",
       "surface": "summary_inbox",
       "category": "fetch",
@@ -213,11 +230,11 @@
         "search": null
       },
       "result": "success",
-      "durationMs": 1726
+      "durationMs": 1132
     },
     {
-      "id": "obs-9",
-      "at": 1774706756373,
+      "id": "obs-10",
+      "at": 1774748282902,
       "screen": "buyer",
       "surface": "inbox_list",
       "category": "ui",
@@ -239,25 +256,8 @@
       }
     },
     {
-      "id": "obs-10",
-      "at": 1774706758142,
-      "screen": "buyer",
-      "surface": "summary_root",
-      "category": "reload",
-      "event": "subscription_connected",
-      "result": "success",
-      "trigger": "realtime",
-      "sourceKind": "supabase:realtime",
-      "extra": {
-        "route": "/buyer",
-        "channelName": "buyer:screen:realtime",
-        "status": "SUBSCRIBED",
-        "owner": "realtime_lifecycle"
-      }
-    },
-    {
       "id": "obs-11",
-      "at": 1774706761452,
+      "at": 1774748286057,
       "screen": "buyer",
       "surface": "summary_root",
       "category": "reload",
@@ -276,7 +276,7 @@
     },
     {
       "id": "obs-12",
-      "at": 1774706761452,
+      "at": 1774748286058,
       "screen": "buyer",
       "surface": "summary_root",
       "category": "reload",
@@ -297,7 +297,7 @@
     },
     {
       "id": "obs-13",
-      "at": 1774706762010,
+      "at": 1774748286604,
       "screen": "buyer",
       "surface": "summary_inbox",
       "category": "fetch",
@@ -317,11 +317,11 @@
         "search": null
       },
       "result": "success",
-      "durationMs": 557
+      "durationMs": 546
     },
     {
       "id": "obs-14",
-      "at": 1774706762010,
+      "at": 1774748286604,
       "screen": "buyer",
       "surface": "inbox_list",
       "category": "ui",
@@ -344,7 +344,7 @@
     },
     {
       "id": "obs-15",
-      "at": 1774706763272,
+      "at": 1774748287894,
       "screen": "buyer",
       "surface": "summary_root",
       "category": "reload",
@@ -363,7 +363,7 @@
     },
     {
       "id": "obs-16",
-      "at": 1774706763272,
+      "at": 1774748287895,
       "screen": "buyer",
       "surface": "summary_root",
       "category": "reload",

@@ -40,6 +40,11 @@ export type QueueWorkerHandle = {
 const queueErrorText = (error: unknown): string =>
   error instanceof Error ? error.message : String(error ?? "unknown");
 
+const queueVerbose =
+  ((typeof globalThis !== "undefined" && (globalThis as { __DEV__?: unknown }).__DEV__ === true) ||
+    process.env.NODE_ENV !== "production") &&
+  String(process.env.EXPO_PUBLIC_QUEUE_VERBOSE ?? "").trim().toLowerCase() === "true";
+
 async function markCompactedDuplicatesCompleted(groups: ReturnType<typeof compactJobsByEntity>, workerId: string) {
   let duplicateCount = 0;
   let failedCount = 0;
@@ -169,13 +174,14 @@ export function startQueueWorker(options: QueueWorkerOptions = {}): QueueWorkerH
 
   void (async () => {
     console.info("[queue.worker] started", { workerId, batchSize, concurrency });
-    console.info("[queue.worker] polling loop entered", { workerId });
     while (!stopped) {
       let loopPhase = "recover";
       try {
         recoveryTick += 1;
         if (recoveryTick % 10 === 0) {
-          console.info("[queue.worker] recover tick", { workerId, recoveryTick });
+          if (queueVerbose) {
+            console.info("[queue.worker] recover tick", { workerId, recoveryTick });
+          }
           const recovered = await recoverStuckSubmitJobs();
           if (recovered > 0) {
             console.warn("[queue.worker] recovered stuck jobs", { recovered, workerId });
@@ -183,19 +189,21 @@ export function startQueueWorker(options: QueueWorkerOptions = {}): QueueWorkerH
         }
 
         loopPhase = "claim";
-        console.info("[queue.worker] claiming jobs", { workerId, batchSize });
         const claimed = await claimSubmitJobs(workerId, batchSize);
-        console.info("[queue.worker] claim result", { workerId, claimed: claimed.length });
+        if (claimed.length > 0 || queueVerbose) {
+          console.info("[queue.worker] claim result", { workerId, claimed: claimed.length });
+        }
         if (!claimed.length) {
           loopPhase = "idle_sleep";
-          console.info("[queue.worker] idle sleep", { workerId, pollIdleMs });
           await sleep(pollIdleMs);
           continue;
         }
 
         // Small debounce window to compact burst submits for same entity.
         loopPhase = "compaction_delay";
-        console.info("[queue.worker] compaction delay", { workerId, COMPACTION_DELAY_MS });
+        if (queueVerbose) {
+          console.info("[queue.worker] compaction delay", { workerId, COMPACTION_DELAY_MS });
+        }
         await sleep(COMPACTION_DELAY_MS);
 
         // Batch processing path.

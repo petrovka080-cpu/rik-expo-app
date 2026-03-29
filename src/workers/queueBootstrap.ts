@@ -1,7 +1,7 @@
-import { startQueueWorker } from "./queueWorker";
+import { startQueueWorker, type QueueWorkerHandle } from "./queueWorker";
 import { JOB_QUEUE_ENABLED } from "../lib/infra/jobQueue";
 
-let workerStarted = false;
+let workerHandle: QueueWorkerHandle | null = null;
 
 export function ensureQueueWorker() {
   console.info("[queue.bootstrap] ensure called", { JOB_QUEUE_ENABLED });
@@ -11,12 +11,22 @@ export function ensureQueueWorker() {
     return;
   }
 
-  if (workerStarted) {
+  if (workerHandle) {
     console.info("[queue.bootstrap] already started");
     return;
   }
 
-  workerStarted = true;
   console.info("[queue.bootstrap] starting queue worker");
-  startQueueWorker();
+  workerHandle = startQueueWorker();
+}
+
+export function stopQueueWorker() {
+  if (!workerHandle) {
+    console.info("[queue.bootstrap] stop skipped: not running");
+    return;
+  }
+
+  console.info("[queue.bootstrap] stopping queue worker");
+  workerHandle.stop();
+  workerHandle = null;
 }

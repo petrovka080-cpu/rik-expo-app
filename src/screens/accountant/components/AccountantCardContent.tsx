@@ -198,7 +198,7 @@ export const AccountantCardContent = memo(function AccountantCardContent({
             <View style={{ flexDirection: "row", flexWrap: "wrap", marginTop: 8 }}>
               {files.map((file) => (
                 <Pressable
-                  key={String(file.id)}
+                  key={String(file.attachmentId)}
                   disabled={!!busyKey}
                   onPress={() => void onOpenFile(file)}
                   style={{
@@ -214,7 +214,7 @@ export const AccountantCardContent = memo(function AccountantCardContent({
                   }}
                 >
                   <Text style={{ color: UI.text, fontWeight: "900" }} numberOfLines={1}>
-                    {(file.group_key ? `${file.group_key}: ` : "") + String(file.file_name ?? "file")}
+                    {(file.groupKey ? `${file.groupKey}: ` : "") + String(file.fileName ?? "file")}
                   </Text>
                 </Pressable>
               ))}

@@ -128,6 +128,7 @@ async function selectRecoverableContractor() {
           });
     const screenContract = resolveContractorScreenContract({
       canonicalRows: canonical.rows,
+      canonicalMeta: canonical.meta,
       compatibilityRows,
       hasContractorIdentity: true,
       loadError: null,
@@ -230,12 +231,14 @@ async function main() {
 
   const errorContract = resolveContractorScreenContract({
     canonicalRows: [],
+    canonicalMeta: null,
     compatibilityRows: [],
     hasContractorIdentity: true,
     loadError: new Error("contractor_scope_failed"),
   });
   const degradedContract = resolveContractorScreenContract({
     canonicalRows: [],
+    canonicalMeta: null,
     compatibilityRows: [],
     hasContractorIdentity: false,
     loadError: null,

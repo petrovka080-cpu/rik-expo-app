@@ -18,7 +18,10 @@ type ProposalRow = Pick<
   Database["public"]["Tables"]["proposals"]["Row"],
   "id" | "proposal_no" | "id_short"
 >;
-type ProposalInsert = Database["public"]["Tables"]["proposals"]["Insert"];
+type ProposalSubmitVerificationRow = Pick<
+  Database["public"]["Tables"]["proposals"]["Row"],
+  "id" | "status" | "submitted_at" | "sent_to_accountant_at"
+>;
 type ProposalItemInsert = Database["public"]["Tables"]["proposal_items"]["Insert"];
 type ProposalItemTableRow = Pick<
   Database["public"]["Tables"]["proposal_items"]["Row"],
@@ -47,6 +50,7 @@ type ProposalAddItemsRpcArgsCompat =
   | { p_proposal_id_text: string; p_request_item_ids: string[] };
 type ProposalAddItemsRpcResult = Database["public"]["Functions"]["proposal_add_items"]["Returns"];
 type ProposalSubmitRpcArgsCompat = { p_proposal_id: string };
+type ProposalSubmitTextRpcArgsCompat = { p_proposal_id_text: string };
 type ProposalItemsSnapshotRpcArgs = Database["public"]["Functions"]["proposal_items_snapshot"]["Args"];
 type ProposalMutationMetaRow = {
   request_item_id: string;
@@ -66,13 +70,32 @@ type ProposalItemMetaUpsertInput = {
   note?: string | null;
 };
 
-const PROPOSAL_STATUS_PENDING_CANONICAL = "\u041d\u0430 \u0443\u0442\u0432\u0435\u0440\u0436\u0434\u0435\u043d\u0438\u0438";
-type ProposalCreatePath = "rpc_primary" | "compat_insert_fallback";
+const PROPOSAL_STATUS_PENDING_RU = "\u041d\u0430 \u0443\u0442\u0432\u0435\u0440\u0436\u0434\u0435\u043d\u0438\u0438";
+const PROPOSAL_STATUS_DRAFT_EN = "draft";
+const PROPOSAL_STATUS_PENDING_EN = "pending";
+const PROPOSAL_STATUS_SUBMITTED_EN = "submitted";
+const PROPOSAL_STATUS_APPROVED_EN = "approved";
+const PROPOSAL_STATUS_REJECTED_EN = "rejected";
+type ProposalCreatePath = "rpc_primary";
 type ProposalItemsSourceKind =
   | "view:proposal_snapshot_items"
   | "view:proposal_items_view"
   | "table:proposal_items"
   | "rpc:proposal_items_for_web";
+
+export type ProposalStatus = "draft" | "submitted" | "approved" | "rejected";
+export type ProposalSubmitSourceKind =
+  | "rpc:proposal_submit"
+  | "rpc:proposal_submit_text_v1";
+
+export type ProposalSubmitVerificationResult = {
+  proposalId: string;
+  rawStatus: string | null;
+  status: ProposalStatus;
+  submittedAt: string | null;
+  visibleToDirector: boolean;
+  sourceKind: ProposalSubmitSourceKind;
+};
 
 // ============================== Boundary parsers ==============================
 function normalizeProposalMeta(row: ProposalRow | null | undefined, fallbackId: string) {
@@ -96,10 +119,6 @@ function normalizeProposalItems(rows: ProposalItemsRpcRow[]): ProposalItemRow[] 
     note: r.note ?? null,
     supplier: r.supplier ?? null,
   }));
-}
-
-function buildProposalCreateFallbackInsert(): ProposalInsert {
-  return {};
 }
 
 function parseProposalCreateResult(data: ProposalCreateRpcResult): string | null {
@@ -141,8 +160,8 @@ function buildProposalSubmitArgs(proposalId: string): ProposalSubmitRpcArgsCompa
   return { p_proposal_id: proposalId };
 }
 
-function buildProposalSubmitFallbackUpdate() {
-  return { status: PROPOSAL_STATUS_PENDING_CANONICAL, submitted_at: new Date().toISOString() };
+function buildProposalSubmitTextArgs(proposalId: string): ProposalSubmitTextRpcArgsCompat {
+  return { p_proposal_id_text: proposalId };
 }
 
 function buildProposalSubmitCleanupUpdate() {
@@ -228,8 +247,25 @@ function aggregateTableProposalItems(rows: ProposalItemTableRow[]): ProposalItem
   return Array.from(agg.values());
 }
 
-async function runProposalSubmitRpc(proposalId: string) {
-  return client.rpc("proposal_submit", buildProposalSubmitArgs(proposalId));
+async function runProposalSubmitRpc(
+  proposalId: string,
+): Promise<{ sourceKind: ProposalSubmitSourceKind }> {
+  const primary = await client.rpc(
+    "proposal_submit_text_v1" as never,
+    buildProposalSubmitTextArgs(proposalId) as never,
+  );
+  if (!primary.error) {
+    return { sourceKind: "rpc:proposal_submit_text_v1" };
+  }
+
+  const decision = classifyRpcCompatError(primary.error);
+  if (!decision.allowNextVariant) {
+    throw primary.error;
+  }
+
+  const compatibility = await client.rpc("proposal_submit", buildProposalSubmitArgs(proposalId));
+  if (compatibility.error) throw compatibility.error;
+  return { sourceKind: "rpc:proposal_submit" };
 }
 
 // ============================== Low-level proposal helpers ==============================
@@ -245,8 +281,12 @@ async function selectProposalMetaById(proposalId: string) {
     .maybeSingle();
 }
 
-async function insertProposalHeadFallback(payload: ProposalInsert) {
-  return client.from("proposals").insert(payload).select("id,proposal_no,id_short").single();
+async function selectProposalSubmitVerificationById(proposalId: string) {
+  return client
+    .from("proposals")
+    .select("id,status,submitted_at,sent_to_accountant_at")
+    .eq("id", proposalId)
+    .maybeSingle<ProposalSubmitVerificationRow>();
 }
 
 async function selectProposalItemsSnapshot(proposalId: string) {
@@ -382,20 +422,111 @@ async function insertProposalItemsFallbackBulk(
   return ok;
 }
 
-async function updateProposalPendingFallback(proposalId: string) {
-  return client
-    .from("proposals")
-    .update(buildProposalSubmitFallbackUpdate())
-    .eq("id", proposalId)
-    .select("id")
-    .maybeSingle();
-}
-
 async function cleanupProposalSubmission(proposalId: string) {
   return client
     .from("proposals")
     .update(buildProposalSubmitCleanupUpdate())
     .eq("id", proposalId);
+}
+
+async function countProposalItems(proposalId: string): Promise<number> {
+  const result = await client
+    .from("proposal_items")
+    .select("id", { count: "exact", head: true })
+    .eq("proposal_id", proposalId);
+  if (result.error) throw result.error;
+  return Number(result.count ?? 0);
+}
+
+const normalizeProposalStatusToken = (raw: unknown): string =>
+  String(raw ?? "")
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, " ");
+
+export function normalizeProposalStatus(raw: unknown): ProposalStatus {
+  const normalized = normalizeProposalStatusToken(raw);
+  if (
+    !normalized ||
+    normalized === PROPOSAL_STATUS_DRAFT_EN ||
+    normalized.includes("\u0447\u0435\u0440\u043d\u043e\u0432")
+  ) {
+    return "draft";
+  }
+  if (
+    normalized === PROPOSAL_STATUS_PENDING_EN ||
+    normalized === PROPOSAL_STATUS_SUBMITTED_EN ||
+    normalized.includes("\u043d\u0430 \u0443\u0442\u0432\u0435\u0440\u0436\u0434\u0435\u043d\u0438\u0438")
+  ) {
+    return "submitted";
+  }
+  if (
+    normalized === PROPOSAL_STATUS_APPROVED_EN ||
+    normalized.includes("\u0443\u0442\u0432\u0435\u0440\u0436\u0434\u0435\u043d")
+  ) {
+    return "approved";
+  }
+  if (
+    normalized === PROPOSAL_STATUS_REJECTED_EN ||
+    normalized.includes("\u043e\u0442\u043a\u043b\u043e\u043d") ||
+    normalized.includes("\u0434\u043e\u0440\u0430\u0431\u043e\u0442") ||
+    normalized.includes("rework")
+  ) {
+    return "rejected";
+  }
+  return "draft";
+}
+
+export function isProposalDirectorVisibleRow(row: {
+  status?: unknown;
+  submitted_at?: unknown;
+  sent_to_accountant_at?: unknown;
+} | null | undefined): boolean {
+  if (!row) return false;
+  if (!String(row.submitted_at ?? "").trim()) return false;
+  if (String(row.sent_to_accountant_at ?? "").trim()) return false;
+  return normalizeProposalStatus(row.status) === "submitted";
+}
+
+async function verifySubmittedProposal(
+  proposalId: string,
+  sourceKind: ProposalSubmitSourceKind,
+): Promise<ProposalSubmitVerificationResult> {
+  const result = await selectProposalSubmitVerificationById(proposalId);
+  if (result.error) throw result.error;
+  if (!result.data?.id) {
+    throw new Error(`[proposalSubmit/rpc_submit] proposal missing after submit: ${proposalId}`);
+  }
+
+  const itemsCount = await countProposalItems(proposalId);
+  if (itemsCount <= 0) {
+    throw new Error(`[proposalSubmit/rpc_submit] proposal has no linked items: ${proposalId}`);
+  }
+
+  const row = result.data;
+  const normalizedStatus = normalizeProposalStatus(row.status);
+  if (normalizedStatus !== "submitted") {
+    throw new Error(
+      `[proposalSubmit/rpc_submit] proposal status mismatch: expected submitted, got ${String(
+        row.status ?? "null",
+      )}`,
+    );
+  }
+  if (!row.submitted_at) {
+    throw new Error(`[proposalSubmit/rpc_submit] proposal submitted_at missing: ${proposalId}`);
+  }
+  if (String(row.sent_to_accountant_at ?? "").trim()) {
+    throw new Error(`[proposalSubmit/rpc_submit] proposal still sent_to_accountant_at: ${proposalId}`);
+  }
+
+  return {
+    proposalId,
+    rawStatus: row.status ?? null,
+    status: normalizedStatus,
+    submittedAt: row.submitted_at,
+    visibleToDirector: isProposalDirectorVisibleRow(row),
+    sourceKind,
+  };
 }
 
 export async function proposalCreateFull(): Promise<{ id: string; proposal_no: string | null; id_short: number | null }> {
@@ -422,61 +553,18 @@ export async function proposalCreateFull(): Promise<{ id: string; proposal_no: s
     return normalized;
   } catch (error) {
     const decision = classifyRpcCompatError(error);
-    if (!decision.allowNextVariant) {
-      observation.error(error, {
-        sourceKind: "rpc:proposal_create",
-        errorStage: "rpc_primary",
-        fallbackUsed: false,
-        extra: {
-          path: "rpc_primary",
-          compatDecision: decision.kind,
-          compatReason: decision.reason,
-        },
-      });
-      throw error;
-    }
-
-    logProposalsDebug("[proposalCreateFull/fallback]", decision.reason);
-  }
-
-  const insertPayload = buildProposalCreateFallbackInsert();
-  const ins = await insertProposalHeadFallback(insertPayload);
-  if (ins.error) {
-    observation.error(ins.error, {
-      sourceKind: "table:proposals",
-      errorStage: "compat_insert_fallback",
-      fallbackUsed: true,
-      extra: {
-        path: "compat_insert_fallback",
-      },
-    });
-    throw ins.error;
-  }
-
-  const inserted = normalizeProposalMeta(ins.data, "");
-  if (!inserted.id) {
-    const error = new Error("[proposalCreateFull:compat_insert_fallback] insert returned empty id");
     observation.error(error, {
-      sourceKind: "table:proposals",
-      errorStage: "compat_insert_fallback",
-      fallbackUsed: true,
+      sourceKind: "rpc:proposal_create",
+      errorStage: "rpc_primary",
+      fallbackUsed: false,
       extra: {
-        path: "compat_insert_fallback",
+        path: "rpc_primary",
+        compatDecision: decision.kind,
+        compatReason: decision.reason,
       },
     });
     throw error;
   }
-
-  const verified = await verifyCreatedProposalMeta(inserted.id, "compat_insert_fallback");
-  observation.success({
-    sourceKind: "table:proposals",
-    fallbackUsed: true,
-    extra: {
-      path: "compat_insert_fallback",
-      postCreateVerified: true,
-    },
-  });
-  return verified;
 }
 
 export async function proposalCreate(): Promise<number | string> {
@@ -500,29 +588,55 @@ export async function proposalAddItems(proposalId: number | string, requestItemI
   }
 }
 
-export async function proposalSubmit(proposalId: number | string) {
+export async function proposalSubmit(
+  proposalId: number | string,
+): Promise<ProposalSubmitVerificationResult> {
   const pid = String(proposalId);
+  const observation = beginPlatformObservability({
+    screen: "buyer",
+    surface: "proposal_submit",
+    category: "fetch",
+    event: "submit_proposal",
+    sourceKind: "rpc:proposal_submit",
+  });
 
+  let submitSourceKind: ProposalSubmitSourceKind = "rpc:proposal_submit_text_v1";
   try {
-    const { error } = await runProposalSubmitRpc(pid);
-    if (error) throw error;
-  } catch {
-    const upd = await updateProposalPendingFallback(pid);
-    if (upd.error) throw upd.error;
-    if (!upd.data?.id) return 0;
+    const submitRpc = await runProposalSubmitRpc(pid);
+    submitSourceKind = submitRpc.sourceKind;
+    const cleanup = await cleanupProposalSubmission(pid);
+    if (cleanup.error) throw cleanup.error;
+    const verified = await verifySubmittedProposal(pid, submitSourceKind);
+    observation.success({
+      sourceKind: submitSourceKind,
+      rowCount: verified.visibleToDirector ? 1 : 0,
+      extra: {
+        proposalId: pid,
+        normalizedStatus: verified.status,
+        rawStatus: verified.rawStatus,
+        visibleToDirector: verified.visibleToDirector,
+      },
+    });
+    return verified;
+  } catch (error) {
+    observation.error(error, {
+      sourceKind: submitSourceKind,
+      errorStage: "rpc_submit_or_verify",
+      fallbackUsed: false,
+      extra: {
+        proposalId: pid,
+      },
+    });
+    throw error;
   }
-
-  await cleanupProposalSubmission(pid);
-
-  return 1;
 }
 
 export async function listDirectorProposalsPending(): Promise<{ id: string; submitted_at: string | null }[]> {
   const rowsFromTable = await client
     .from("proposals")
-    .select("id, submitted_at")
-    .eq("status", PROPOSAL_STATUS_PENDING_CANONICAL)
+    .select("id, status, submitted_at, sent_to_accountant_at")
     .not("submitted_at", "is", null)
+    .is("sent_to_accountant_at", null)
     .order("submitted_at", { ascending: false });
 
   if (rowsFromTable.error || !rowsFromTable.data) {
@@ -539,6 +653,7 @@ export async function listDirectorProposalsPending(): Promise<{ id: string; subm
   }
 
   return rowsFromTable.data
+    .filter((row) => isProposalDirectorVisibleRow(row))
     .map((x) => ({ id: String(x.id), submitted_at: x.submitted_at ?? null }))
     .filter((x) => x.submitted_at != null);
 }

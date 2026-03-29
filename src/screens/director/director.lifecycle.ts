@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef } from "react";
 import { AppState } from "react-native";
+import { isProposalDirectorVisibleRow } from "../../lib/api/proposals";
 import { REQUEST_PENDING_EN, REQUEST_PENDING_STATUS, normalizeStatus } from "../../lib/api/requests.status";
 import { logError } from "../../lib/logError";
 import { ensureSignedIn, supabase } from "../../lib/supabaseClient";
@@ -77,6 +78,19 @@ const shouldRefreshDirectorRowsForItemChange = (payload: { new?: unknown; old?: 
   const nextStatus = normalizeStatus(getRecordValue(payload.new, "status"));
   const prevStatus = normalizeStatus(getRecordValue(payload.old, "status"));
   return DIRECTOR_LIVE_ITEM_STATUSES.has(nextStatus) || DIRECTOR_LIVE_ITEM_STATUSES.has(prevStatus);
+};
+
+const shouldRefreshDirectorPropsForProposalChange = (payload: { new?: unknown; old?: unknown }) => {
+  const nextVisible = isProposalDirectorVisibleRow(
+    payload.new as { status?: unknown; submitted_at?: unknown; sent_to_accountant_at?: unknown } | null | undefined,
+  );
+  const prevVisible = isProposalDirectorVisibleRow(
+    payload.old as { status?: unknown; submitted_at?: unknown; sent_to_accountant_at?: unknown } | null | undefined,
+  );
+  if (nextVisible || prevVisible) return true;
+  const nextSubmittedAt = String(getRecordValue(payload.new, "submitted_at") ?? "").trim();
+  const prevSubmittedAt = String(getRecordValue(payload.old, "submitted_at") ?? "").trim();
+  return !!nextSubmittedAt || !!prevSubmittedAt;
 };
 
 const logDirectorLive = (payload: Record<string, unknown>) => {
@@ -258,12 +272,14 @@ export function useDirectorLifecycle({
   const showRtToastRef = useRef(showRtToast);
   const refreshCurrentVisibleScopeRef = useRef(refreshCurrentVisibleScope);
   const refreshRowsHandlerRef = useRef(refreshRows);
+  const refreshPropsHandlerRef = useRef(refreshProps);
 
   dirTabRef.current = dirTab;
   requestTabRef.current = requestTab;
   showRtToastRef.current = showRtToast;
   refreshCurrentVisibleScopeRef.current = refreshCurrentVisibleScope;
   refreshRowsHandlerRef.current = refreshRows;
+  refreshPropsHandlerRef.current = refreshProps;
 
   const runLifecycleScopedRefresh = useCallback((reasonBase: string, trigger: string) => {
     if (!didInit.current) {
@@ -483,6 +499,32 @@ export function useDirectorLifecycle({
               next && typeof next === "object" ? (next as { title?: string; body?: string }) : {};
             showRtToastRef.current(notification.title, notification.body);
             refreshCurrentVisibleScopeRef.current("realtime:notifications", true);
+          },
+        )
+        .on(
+          "postgres_changes",
+          {
+            event: "*",
+            schema: "public",
+            table: "proposals",
+          },
+          (payload) => {
+            if (
+              dirTabRef.current !== DIRECTOR_TAB_REQUESTS ||
+              requestTabRef.current !== DIRECTOR_REQUEST_TAB_BUYER
+            ) {
+              return;
+            }
+            if (!shouldRefreshDirectorPropsForProposalChange(payload)) return;
+            logDirectorLive({
+              sourcePath: "director.lifecycle.proposals",
+              eventType: payload.eventType,
+              proposalId:
+                String(getRecordValue(payload.new, "id") ?? getRecordValue(payload.old, "id") ?? "").trim() || null,
+              nextStatus: String(getRecordValue(payload.new, "status") ?? "").trim() || null,
+              prevStatus: String(getRecordValue(payload.old, "status") ?? "").trim() || null,
+            });
+            void refreshPropsHandlerRef.current("realtime:proposals", true);
           },
         )
         .on(

@@ -1,0 +1,19 @@
+{
+  "status": "passed",
+  "primaryOwner": "rpc_scope_v1",
+  "fallbackUsed": false,
+  "sourceKind": "rpc:director_pending_proposals_scope_v1",
+  "legacyDurationMs": 747,
+  "primaryDurationMs": 1519,
+  "page0ParityOk": true,
+  "page1ParityOk": true,
+  "totalHeadCountParityOk": true,
+  "totalPositionsParityOk": true,
+  "hasMoreParityOk": true,
+  "windowScenario": {
+    "offsetHeads": 1,
+    "limitHeads": 1,
+    "legacyCount": 0,
+    "rpcCount": 0
+  }
+}

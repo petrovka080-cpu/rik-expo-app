@@ -1,0 +1,28 @@
+{
+  "generatedAt": "2026-03-29T12:38:55.924Z",
+  "smoke1_pr0381_recovered": {
+    "proposalNo": "PR-0381/2026",
+    "rowCount": 1,
+    "state": "degraded",
+    "generatedProposalDocumentInjected": true,
+    "pass": true
+  },
+  "smoke2_explicit_rows_visible": {
+    "proposalId": "3da6cb7f-8454-48e6-be10-b6e9f5889b89",
+    "rowCount": 2,
+    "hasExplicitRow": true,
+    "state": "ready",
+    "pass": true
+  },
+  "smoke3_request_success_vs_data_success": {
+    "baseRawCount": 0,
+    "baseMappedCount": 0,
+    "accountantRowCount": 1,
+    "pass": true
+  },
+  "smoke4_card_contract_shared": {
+    "caseCount": 1,
+    "allCasesUseCanonicalRows": true,
+    "pass": true
+  }
+}

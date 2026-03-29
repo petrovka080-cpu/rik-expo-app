@@ -6,6 +6,8 @@ import {
   proposalCreateFull as rpcProposalCreateFull,
   proposalSnapshotItems as rpcProposalSnapshotItems,
   proposalSubmit as rpcProposalSubmit,
+  type ProposalStatus,
+  type ProposalSubmitVerificationResult,
 } from "../api/proposals";
 import { recordCatalogWarning } from "./catalog.observability";
 import {
@@ -40,6 +42,12 @@ export type CreateProposalsResult = {
     proposal_no: string | null;
     supplier: string;
     request_item_ids: string[];
+    status: ProposalStatus;
+    raw_status: string | null;
+    submitted: boolean;
+    submitted_at: string | null;
+    visible_to_director: boolean;
+    submit_source: "rpc:proposal_submit" | "rpc:proposal_submit_text_v1" | null;
   }>;
 };
 
@@ -89,7 +97,12 @@ type ProposalCreationBucketMutationResult = {
   request_item_ids: string[];
   linked_request_item_ids: string[];
   resolved_bindings: ProposalCreationBindingResolved[];
+  status: ProposalStatus;
+  raw_status: string | null;
   submitted: boolean;
+  submitted_at: string | null;
+  visible_to_director: boolean;
+  submit_source: "rpc:proposal_submit" | "rpc:proposal_submit_text_v1" | null;
   request_item_status_synced: boolean;
 };
 
@@ -105,7 +118,7 @@ type ProposalCreationHeadCreated = {
 
 type ProposalCreationCompletionResult = {
   resolved_bindings: ProposalCreationBindingResolved[];
-  submitted: boolean;
+  submitVerification: ProposalSubmitVerificationResult | null;
 };
 
 type ProposalCreationRuntime = {
@@ -769,20 +782,15 @@ async function completeProposalCreationStage(
     }
   }
 
-  let submitted = false;
+  let submitVerification: ProposalSubmitVerificationResult | null = null;
   if (preconditions.shouldSubmit) {
-    try {
-      runtime.dbCalls += 1;
-      await rpcProposalSubmit(proposalId);
-      submitted = true;
-    } catch (error: unknown) {
-      console.warn("[catalog_api.createProposalsBySupplier] proposalSubmit:", (error as Error)?.message ?? error);
-    }
+    runtime.dbCalls += 1;
+    submitVerification = await rpcProposalSubmit(proposalId);
   }
 
   return {
     resolved_bindings: rowsForUpdate,
-    submitted,
+    submitVerification,
   };
 }
 
@@ -831,6 +839,12 @@ function mapProposalCreationMutationResult(
       proposal_no: proposal.proposal_no,
       supplier: proposal.supplier,
       request_item_ids: proposal.request_item_ids,
+      status: proposal.status,
+      raw_status: proposal.raw_status,
+      submitted: proposal.submitted,
+      submitted_at: proposal.submitted_at,
+      visible_to_director: proposal.visible_to_director,
+      submit_source: proposal.submit_source,
     })),
   };
 }
@@ -964,7 +978,12 @@ export async function createProposalsBySupplier(
       request_item_ids: prepared.request_item_ids,
       linked_request_item_ids,
       resolved_bindings: completion.resolved_bindings,
-      submitted: completion.submitted,
+      status: completion.submitVerification?.status ?? "draft",
+      raw_status: completion.submitVerification?.rawStatus ?? null,
+      submitted: completion.submitVerification != null,
+      submitted_at: completion.submitVerification?.submittedAt ?? null,
+      visible_to_director: completion.submitVerification?.visibleToDirector ?? false,
+      submit_source: completion.submitVerification?.sourceKind ?? null,
       request_item_status_synced,
     });
   }

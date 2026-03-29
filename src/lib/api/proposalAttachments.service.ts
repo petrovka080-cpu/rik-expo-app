@@ -48,6 +48,7 @@ export type CanonicalProposalAttachmentLoadResult = {
   sourceKind: string;
   fallbackUsed: boolean;
   rawCount: number;
+  mappedCount: number;
   filteredCount: number;
   errorMessage: string | null;
 };
@@ -227,15 +228,16 @@ export async function listCanonicalProposalAttachments(
 ): Promise<CanonicalProposalAttachmentLoadResult> {
   const proposalId = text(proposalIdInput);
   if (!proposalId) {
-    return {
-      rows: [],
-      state: "error",
-      sourceKind: CANONICAL_SOURCE_KIND,
-      fallbackUsed: false,
-      rawCount: 0,
-      filteredCount: 0,
-      errorMessage: "proposalId is empty",
-    };
+      return {
+        rows: [],
+        state: "error",
+        sourceKind: CANONICAL_SOURCE_KIND,
+        fallbackUsed: false,
+        rawCount: 0,
+        mappedCount: 0,
+        filteredCount: 0,
+        errorMessage: "proposalId is empty",
+      };
   }
 
   const signedUrlTtlSec = opts?.signedUrlTtlSec ?? 60 * 60;
@@ -276,6 +278,7 @@ export async function listCanonicalProposalAttachments(
         sourceKind: CANONICAL_SOURCE_KIND,
         fallbackUsed: false,
         rawCount: primaryRawCount,
+        mappedCount: primaryRows.length,
         filteredCount: filtered.filteredCount,
         errorMessage: null,
       };
@@ -317,6 +320,7 @@ export async function listCanonicalProposalAttachments(
       sourceKind: emptyAfterCanonicalSuccess ? CANONICAL_SOURCE_KIND : COMPATIBILITY_SOURCE_KIND,
       fallbackUsed: !emptyAfterCanonicalSuccess,
       rawCount: emptyAfterCanonicalSuccess ? primaryRawCount : rawRows.length,
+      mappedCount: compatibilityRows.length,
       filteredCount: filtered.filteredCount,
       errorMessage,
     };
@@ -341,6 +345,7 @@ export async function listCanonicalProposalAttachments(
       sourceKind: CANONICAL_SOURCE_KIND,
       fallbackUsed: false,
       rawCount: primaryRawCount,
+      mappedCount: 0,
       filteredCount: 0,
       errorMessage: null,
     };
@@ -365,6 +370,7 @@ export async function listCanonicalProposalAttachments(
     sourceKind: COMPATIBILITY_SOURCE_KIND,
     fallbackUsed: true,
     rawCount: 0,
+    mappedCount: 0,
     filteredCount: 0,
     errorMessage,
   };

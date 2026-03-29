@@ -1,0 +1,77 @@
+{
+  "summary": {
+    "status": "passed",
+    "primaryOwner": "rpc_scope_v1",
+    "fallbackUsed": false,
+    "sourceKind": "rpc:director_pending_proposals_scope_v1",
+    "legacyDurationMs": 747,
+    "primaryDurationMs": 1519,
+    "page0ParityOk": true,
+    "page1ParityOk": true,
+    "totalHeadCountParityOk": true,
+    "totalPositionsParityOk": true,
+    "hasMoreParityOk": true,
+    "windowScenario": {
+      "offsetHeads": 1,
+      "limitHeads": 1,
+      "legacyCount": 0,
+      "rpcCount": 0
+    }
+  },
+  "legacy": {
+    "page0DurationMs": 747,
+    "page1DurationMs": 418,
+    "page0": {
+      "heads": [],
+      "itemCounts": {},
+      "totalHeadCount": 0,
+      "totalPositionsCount": 0
+    },
+    "page1": {
+      "heads": [],
+      "itemCounts": {},
+      "totalHeadCount": 0,
+      "totalPositionsCount": 0
+    }
+  },
+  "primary": {
+    "page0DurationMs": 1519,
+    "page1DurationMs": 1248,
+    "page0": {
+      "heads": [],
+      "itemCounts": {},
+      "meta": {
+        "offsetHeads": 0,
+        "limitHeads": 10,
+        "returnedHeadCount": 0,
+        "totalHeadCount": 0,
+        "totalPositionsCount": 0,
+        "hasMore": false
+      },
+      "sourceMeta": {
+        "primaryOwner": "rpc_scope_v1",
+        "fallbackUsed": false,
+        "sourceKind": "rpc:director_pending_proposals_scope_v1",
+        "rowParityStatus": "rpc_empty_legacy_match_empty"
+      }
+    },
+    "page1": {
+      "heads": [],
+      "itemCounts": {},
+      "meta": {
+        "offsetHeads": 1,
+        "limitHeads": 1,
+        "returnedHeadCount": 0,
+        "totalHeadCount": 0,
+        "totalPositionsCount": 0,
+        "hasMore": false
+      },
+      "sourceMeta": {
+        "primaryOwner": "rpc_scope_v1",
+        "fallbackUsed": false,
+        "sourceKind": "rpc:director_pending_proposals_scope_v1",
+        "rowParityStatus": "rpc_empty_legacy_match_empty"
+      }
+    }
+  }
+}

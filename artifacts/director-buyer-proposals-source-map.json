@@ -1,0 +1,48 @@
+{
+  "status": "GREEN",
+  "generatedAt": "2026-03-29T13:05:36.003Z",
+  "marker": "DIR-PROP-MNBRUXCO",
+  "created_proposal": {
+    "id": "8d377f51-bf12-4b36-9a05-f3d7f5d1b7f8",
+    "proposal_no": "PR-0510/2026",
+    "submitted": true,
+    "visible_to_director": true
+  },
+  "source_chain": {
+    "controller": "src/screens/director/director.data.ts::fetchProps",
+    "repository": "src/screens/director/director.proposals.repo.ts::fetchDirectorPendingProposalWindow",
+    "canonical_rpc": "public.director_pending_proposals_scope_v1",
+    "render_contract": "src/screens/director/DirectorDashboard.tsx::propsHeads+buyerPropsCount"
+  },
+  "raw_rpc": {
+    "headCount": 5,
+    "meta": {
+      "has_more": false,
+      "limit_heads": 50,
+      "rows_source": "director_pending_proposals_scope_v1",
+      "offset_heads": 0,
+      "primary_owner": "rpc_scope_v1",
+      "total_head_count": 5,
+      "returned_head_count": 5,
+      "total_positions_count": 5
+    },
+    "createdProposalVisible": true
+  },
+  "repository_result": {
+    "sourceMeta": {
+      "primaryOwner": "rpc_scope_v1",
+      "fallbackUsed": false,
+      "sourceKind": "rpc:director_pending_proposals_scope_v1",
+      "rowParityStatus": "rpc_nonempty"
+    },
+    "headCount": 5,
+    "badgeCount": 5,
+    "positionsCount": 5,
+    "createdProposalVisible": true
+  },
+  "legacy_client_source": {
+    "invoked": false,
+    "rowCount": 0,
+    "createdProposalVisible": null
+  }
+}

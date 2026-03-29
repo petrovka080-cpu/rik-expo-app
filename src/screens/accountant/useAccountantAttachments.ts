@@ -92,19 +92,23 @@ export function useAccountantAttachments(params: {
 
   const openOneAttachment = useCallback(
     async (f: AttachmentRow) => {
-      const id = String(f?.id ?? "");
-      const nameRaw = String(f?.file_name ?? "file");
+      const id = String(f?.attachmentId ?? "");
+      const nameRaw = String(f?.fileName ?? "file");
       try {
         const ready = await ensureAttachmentSignedUrl(supabase, f);
         setAttRows((prev) =>
-          prev.map((x) => (String(x.id) === id && !String(x.url ?? "").trim() ? { ...x, url: ready } : x)),
+          prev.map((x) =>
+            String(x.attachmentId) === id && !String(x.fileUrl ?? "").trim()
+              ? { ...x, fileUrl: ready }
+              : x,
+          ),
         );
         await runAction("acc_open_att", async () => {
           await withTimeout(
             openAppAttachment({
               url: ready,
-              bucketId: f.bucket_id,
-              storagePath: f.storage_path,
+              bucketId: f.bucketId,
+              storagePath: f.storagePath,
               fileName: nameRaw,
             }),
             25000,

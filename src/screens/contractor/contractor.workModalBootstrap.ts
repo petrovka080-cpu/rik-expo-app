@@ -57,6 +57,14 @@ type Params = {
 
 type HeaderLoadResult = { header: ContractorJobHeader | null; objectNameOverride: string | null };
 
+const firstNonEmpty = (...values: Array<unknown>): string | null => {
+  for (const value of values) {
+    const normalized = String(value || "").trim();
+    if (normalized) return normalized;
+  }
+  return null;
+};
+
 const toJobHeader = (scope: ContractorFactScope): ContractorJobHeader => ({
   contractor_org: scope.row.identity.contractorName,
   contractor_inn: scope.row.identity.contractorInn,
@@ -98,6 +106,22 @@ const toFallbackJobHeader = (row: WorkRowLike): ContractorJobHeader => ({
         : null,
   date_start: null,
   date_end: null,
+});
+
+const mergeCanonicalHeader = (header: ContractorJobHeader, row: WorkRowLike): ContractorJobHeader => ({
+  ...header,
+  contractor_org: firstNonEmpty(row.contractor_org, header.contractor_org),
+  contractor_inn: firstNonEmpty(row.contractor_inn, header.contractor_inn),
+  contractor_phone: firstNonEmpty(row.contractor_phone, header.contractor_phone),
+  object_name: firstNonEmpty(row.object_name, header.object_name),
+  work_type: firstNonEmpty(row.work_name, row.work_code, header.work_type),
+  qty_planned: Number.isFinite(Number(row.qty_planned ?? NaN)) ? Number(row.qty_planned) : header.qty_planned,
+  uom: firstNonEmpty(row.uom_id, header.uom),
+  unit_price: row.unit_price ?? header.unit_price,
+  total_price:
+    row.unit_price != null && Number.isFinite(Number(row.qty_planned ?? NaN))
+      ? Number(row.unit_price) * Number(row.qty_planned)
+      : header.total_price,
 });
 
 const resolveCanonicalWorkItemId = (row: WorkRowLike): string =>
@@ -184,8 +208,8 @@ export async function bootstrapWorkModalData(params: Params): Promise<WorkModalB
     ];
     const headerResult: HeaderLoadResult = factScope
       ? {
-          header: toJobHeader(factScope),
-          objectNameOverride: factScope.row.location.objectName,
+          header: mergeCanonicalHeader(toJobHeader(factScope), row),
+          objectNameOverride: firstNonEmpty(row.object_name, factScope.row.location.objectName),
         }
       : {
           header: toFallbackJobHeader(row),

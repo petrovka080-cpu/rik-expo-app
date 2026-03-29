@@ -319,21 +319,25 @@ export async function enqueueSubmitJob(input: EnqueueSubmitJobInput): Promise<Su
 }
 
 export async function claimSubmitJobs(workerId: string, limit = WORKER_BATCH_SIZE, jobType?: string): Promise<SubmitJobRow[]> {
-  const first = await queueRpcCompat.rpc("submit_jobs_claim", buildSubmitJobsClaimLegacyArgs(workerId, limit, jobType));
-  if (!first.error) return normalizeSubmitJobRows(first.data);
+  const primary = await supabase.rpc("submit_jobs_claim", buildSubmitJobsClaimArgs(workerId, limit));
+  if (!primary.error) return normalizeSubmitJobRows(primary.data);
 
-  const msg = String(first.error.message || "");
-  const isOldSignature =
-    msg.includes("submit_jobs_claim") &&
-    (msg.includes("p_job_type") || msg.includes("schema cache"));
-  if (!isOldSignature) throw first.error;
+  const primaryMsg = String(primary.error.message || "");
+  const tryLegacyCompat =
+    primaryMsg.includes("submit_jobs_claim") &&
+    (primaryMsg.includes("p_worker") || primaryMsg.includes("schema cache"));
 
-  const second = await supabase.rpc("submit_jobs_claim", buildSubmitJobsClaimArgs(workerId, limit));
-  if (!second.error) return normalizeSubmitJobRows(second.data);
+  if (tryLegacyCompat) {
+    const legacy = await queueRpcCompat.rpc("submit_jobs_claim", buildSubmitJobsClaimLegacyArgs(workerId, limit, jobType));
+    if (!legacy.error) return normalizeSubmitJobRows(legacy.data);
 
-  const secondMsg = String(second.error.message || "");
-  const missingClaimRpc = secondMsg.includes("submit_jobs_claim") && secondMsg.includes("schema cache");
-  if (!missingClaimRpc) throw second.error;
+    const legacyMsg = String(legacy.error.message || "");
+    const missingClaimRpc = legacyMsg.includes("submit_jobs_claim") && legacyMsg.includes("schema cache");
+    if (!missingClaimRpc) throw legacy.error;
+  } else {
+    const missingClaimRpc = primaryMsg.includes("submit_jobs_claim") && primaryMsg.includes("schema cache");
+    if (!missingClaimRpc) throw primary.error;
+  }
 
   // Legacy schema fallback when claim RPC is absent/incompatible in runtime DB.
   let selectQ = supabase

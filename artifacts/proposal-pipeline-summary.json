@@ -1,0 +1,53 @@
+{
+  "status": "GREEN",
+  "checks": {
+    "createRpcOnly": true,
+    "createReadBackVerification": true,
+    "submitRpcOnly": true,
+    "submitReadBackVerification": true,
+    "servicePropagatesSubmitVerification": true,
+    "resultCarriesVisibility": true,
+    "buyerFailsClosedOnInvisible": true,
+    "workerFailsClosedOnInvisible": true,
+    "directorPrimarySourceRpc": true,
+    "directorRealtimeOnProposals": true,
+    "directorScopeAcceptsSubmittedStates": true
+  },
+  "sourceMap": {
+    "buyerWrite": {
+      "create": {
+        "file": "src/lib/api/proposals.ts",
+        "contract": "proposal_create RPC only",
+        "fallbackRemoved": true,
+        "readBackVerification": true
+      },
+      "submit": {
+        "file": "src/lib/api/proposals.ts",
+        "contract": "proposal_submit RPC with read-back verification",
+        "fallbackRemoved": true,
+        "readBackVerification": true
+      },
+      "orchestration": {
+        "file": "src/lib/catalog/catalog.proposalCreation.service.ts",
+        "requiresVisibleToDirector": true
+      }
+    },
+    "directorRead": {
+      "file": "src/screens/director/director.proposals.repo.ts",
+      "primarySource": "director_pending_proposals_scope_v1",
+      "primaryOwner": "rpc_scope_v1",
+      "fallbackOwner": "legacy_client_fallback",
+      "primaryRpcConfirmed": true
+    },
+    "directorRealtime": {
+      "file": "src/screens/director/director.lifecycle.ts",
+      "table": "proposals",
+      "refreshTarget": "proposal_heads",
+      "confirmed": true
+    }
+  },
+  "smoke": {
+    "scenariosPassed": 6,
+    "scenariosTotal": 6
+  }
+}

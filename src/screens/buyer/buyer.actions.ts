@@ -59,6 +59,12 @@ type CreatedProposalRow = {
   proposal_id?: string | null;
   request_item_ids?: string[] | null;
   supplier?: string | null;
+  status?: string | null;
+  raw_status?: string | null;
+  submitted?: boolean | null;
+  submitted_at?: string | null;
+  visible_to_director?: boolean | null;
+  submit_source?: string | null;
 };
 type ProposalRowLite = { id?: string | null; supplier?: string | null };
 type ProposalItemLinkRow = { proposal_id?: string | null; request_item_id?: string | null };
@@ -546,6 +552,24 @@ export async function handleCreateProposalsBySupplierAction(p: CreateProposalsDe
     if (!created.length) {
       p.alert("Внимание", "Не удалось сформировать предложения");
       return;
+    }
+
+    const invisibleForDirector = created.filter(
+      (row) => row?.submitted !== true || row?.visible_to_director !== true,
+    );
+    if (invisibleForDirector.length) {
+      logBuyerActionDebug("warn", "[buyer.submit] director.visibility.mismatch", {
+        invisibleCount: invisibleForDirector.length,
+        proposals: invisibleForDirector.map((row) => ({
+          proposalId: String(row?.proposal_id ?? row?.id ?? "").trim() || null,
+          status: row?.status ?? null,
+          rawStatus: row?.raw_status ?? null,
+          submitted: row?.submitted ?? null,
+          visibleToDirector: row?.visible_to_director ?? null,
+          submitSource: row?.submit_source ?? null,
+        })),
+      });
+      throw new Error("Предложение не дошло до директора после отправки");
     }
 
     // Upload supplier_quote in parallel to avoid long sequential wait on many proposals.
@@ -1480,5 +1504,3 @@ export async function snapshotProposalItemsAction(opts: {
     reportBuyerWriteFailure(alert, "Не удалось сохранить позиции предложения", e, log ?? warn);
   }
 }
-
-

@@ -74,6 +74,9 @@ export function useContractorScreenState() {
   const [screenContract, setScreenContract] = useState<ContractorScreenContract>({
     state: "empty",
     source: "none",
+    renderState: "empty",
+    hasCanonicalRows: false,
+    hasCompatibilityRows: false,
     message: "Нет назначенных подрядных работ.",
   });
   const [manualClaimedJobIds] = useState<string[]>([]);

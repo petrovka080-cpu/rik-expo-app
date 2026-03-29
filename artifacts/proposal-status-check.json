@@ -1,0 +1,68 @@
+{
+  "status": "GREEN",
+  "contract": {
+    "typedStatus": [
+      "draft",
+      "submitted",
+      "approved",
+      "rejected"
+    ],
+    "directorVisibleRule": "normalized_status=submitted && submitted_at!=null && sent_to_accountant_at is null && items_count>0"
+  },
+  "samples": [
+    {
+      "name": "submitted_en_visible",
+      "rawStatus": "submitted",
+      "normalizedStatus": "submitted",
+      "visibleToDirector": true,
+      "expectedStatus": "submitted",
+      "expectedVisible": true,
+      "passed": true
+    },
+    {
+      "name": "pending_en_visible",
+      "rawStatus": "pending",
+      "normalizedStatus": "submitted",
+      "visibleToDirector": true,
+      "expectedStatus": "submitted",
+      "expectedVisible": true,
+      "passed": true
+    },
+    {
+      "name": "pending_ru_visible",
+      "rawStatus": "На утверждении",
+      "normalizedStatus": "submitted",
+      "visibleToDirector": true,
+      "expectedStatus": "submitted",
+      "expectedVisible": true,
+      "passed": true
+    },
+    {
+      "name": "draft_hidden",
+      "rawStatus": "draft",
+      "normalizedStatus": "draft",
+      "visibleToDirector": false,
+      "expectedStatus": "draft",
+      "expectedVisible": false,
+      "passed": true
+    },
+    {
+      "name": "approved_not_in_pending_inbox",
+      "rawStatus": "approved",
+      "normalizedStatus": "approved",
+      "visibleToDirector": false,
+      "expectedStatus": "approved",
+      "expectedVisible": false,
+      "passed": true
+    },
+    {
+      "name": "sent_to_accountant_hidden",
+      "rawStatus": "submitted",
+      "normalizedStatus": "submitted",
+      "visibleToDirector": false,
+      "expectedStatus": "submitted",
+      "expectedVisible": false,
+      "passed": true
+    }
+  ]
+}

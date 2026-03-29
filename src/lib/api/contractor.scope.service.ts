@@ -19,6 +19,28 @@ export type ContractorSourceKind =
   | "foreman_material_request";
 
 export type ContractorWorkNameSource = "snapshot" | "resolver" | "raw_code";
+export type ContractorCanonicalCurrentWorkState =
+  | "ready_current"
+  | "ready_current_degraded_title"
+  | "legacy_filtered_out"
+  | "historical_excluded";
+export type ContractorContractorNameSource =
+  | "subcontract_snapshot"
+  | "request_snapshot"
+  | "canonical_view";
+export type ContractorObjectNameSource =
+  | "request_snapshot"
+  | "subcontract_snapshot"
+  | "canonical_view"
+  | "resolver"
+  | "raw_code";
+export type ContractorCanonicalEligibility = {
+  isApprovedWork: boolean;
+  isCurrentVisibleWork: boolean;
+  isLegacyHistoricalRow: boolean;
+  hasHumanTitle: boolean;
+  hasCurrentObjectContext: boolean;
+};
 
 export type ContractorIdentitySnapshot = {
   contractorId: string;
@@ -66,6 +88,10 @@ export type ContractorInboxRow = {
   location: ContractorLocationSnapshot;
   diagnostics: {
     sourceVersion: string;
+    currentWorkState: ContractorCanonicalCurrentWorkState;
+    contractorNameSource: ContractorContractorNameSource;
+    objectNameSource: ContractorObjectNameSource;
+    eligibility: ContractorCanonicalEligibility;
   };
 };
 
@@ -75,6 +101,11 @@ export type ContractorInboxScope = {
     rowsSource: string;
     candidateView: string;
     readyRows: number;
+    scopeReadyCandidates: number;
+    readyCurrentRows: number;
+    readyCurrentDegradedTitle: number;
+    legacyFilteredOut: number;
+    historicalExcluded: number;
     invalidMissingContractor: number;
     invalidMissingWorkSnapshot: number;
     invalidMissingObjectSnapshot: number;
@@ -222,6 +253,78 @@ const parseWorkNameSource = (value: unknown, scope: string): ContractorWorkNameS
   }
 };
 
+const parseCurrentWorkState = (
+  value: unknown,
+  fallback: ContractorCanonicalCurrentWorkState,
+): ContractorCanonicalCurrentWorkState => {
+  const normalized = asNullableString(value);
+  switch (normalized) {
+    case "ready_current":
+    case "ready_current_degraded_title":
+    case "legacy_filtered_out":
+    case "historical_excluded":
+      return normalized;
+    default:
+      return fallback;
+  }
+};
+
+const parseContractorNameSource = (
+  value: unknown,
+  fallback: ContractorContractorNameSource,
+): ContractorContractorNameSource => {
+  const normalized = asNullableString(value);
+  switch (normalized) {
+    case "subcontract_snapshot":
+    case "request_snapshot":
+    case "canonical_view":
+      return normalized;
+    default:
+      return fallback;
+  }
+};
+
+const parseObjectNameSource = (
+  value: unknown,
+  fallback: ContractorObjectNameSource,
+): ContractorObjectNameSource => {
+  const normalized = asNullableString(value);
+  switch (normalized) {
+    case "request_snapshot":
+    case "subcontract_snapshot":
+    case "canonical_view":
+    case "resolver":
+    case "raw_code":
+      return normalized;
+    default:
+      return fallback;
+  }
+};
+
+const parseEligibility = (
+  value: unknown,
+  fallbackState: ContractorCanonicalCurrentWorkState,
+): ContractorCanonicalEligibility => {
+  const record = value ? asRecord(value, "contractor_inbox_scope_v1.rows[].diagnostics.eligibility") : null;
+  return {
+    isApprovedWork: record?.isApprovedWork === true || record == null,
+    isCurrentVisibleWork:
+      record?.isCurrentVisibleWork === true ||
+      fallbackState === "ready_current" ||
+      fallbackState === "ready_current_degraded_title",
+    isLegacyHistoricalRow:
+      record?.isLegacyHistoricalRow === true ||
+      fallbackState === "legacy_filtered_out" ||
+      fallbackState === "historical_excluded",
+    hasHumanTitle:
+      record?.hasHumanTitle === true ||
+      (record?.hasHumanTitle !== false && fallbackState !== "legacy_filtered_out"),
+    hasCurrentObjectContext:
+      record?.hasCurrentObjectContext === true ||
+      (record?.hasCurrentObjectContext !== false && fallbackState !== "legacy_filtered_out"),
+  };
+};
+
 const parseIdentity = (value: unknown, scope: string): ContractorIdentitySnapshot => {
   const record = asRecord(value, scope);
   return {
@@ -281,16 +384,28 @@ const parseInboxRow = (value: unknown, scope: string): ContractorInboxRow => {
   if (publicationState !== "ready") {
     throw new Error(`${scope} must be ready for product inbox`);
   }
+  const work = parseWork(record.work, `${scope}.work`);
+  const diagnosticsRecord = asRecord(record.diagnostics ?? {}, `${scope}.diagnostics`);
+  const fallbackCurrentState =
+    work.workNameSource === "raw_code" ? "ready_current_degraded_title" : "ready_current";
+  const currentWorkState = parseCurrentWorkState(diagnosticsRecord.currentWorkState, fallbackCurrentState);
   return {
     workItemId: asString(record.workItemId, `${scope}.workItemId`),
     progressId: asNullableString(record.progressId),
     publicationState,
     identity: parseIdentity(record.identity, `${scope}.identity`),
     origin: parseOrigin(record.origin, `${scope}.origin`),
-    work: parseWork(record.work, `${scope}.work`),
+    work,
     location: parseLocation(record.location, `${scope}.location`),
     diagnostics: {
-      sourceVersion: asNullableString(asRecord(record.diagnostics ?? {}, `${scope}.diagnostics`).sourceVersion) ?? "v1",
+      sourceVersion: asNullableString(diagnosticsRecord.sourceVersion) ?? "v1",
+      currentWorkState,
+      contractorNameSource: parseContractorNameSource(
+        diagnosticsRecord.contractorNameSource,
+        "canonical_view",
+      ),
+      objectNameSource: parseObjectNameSource(diagnosticsRecord.objectNameSource, "canonical_view"),
+      eligibility: parseEligibility(diagnosticsRecord.eligibility, currentWorkState),
     },
   };
 };
@@ -340,6 +455,11 @@ const parseInboxScope = (value: unknown): ContractorInboxScope => {
       rowsSource: asString(meta.rowsSource, "contractor_inbox_scope_v1.meta.rowsSource"),
       candidateView: asString(meta.candidateView, "contractor_inbox_scope_v1.meta.candidateView"),
       readyRows: asNumber(meta.readyRows, 0),
+      scopeReadyCandidates: asNumber(meta.scopeReadyCandidates, 0),
+      readyCurrentRows: asNumber(meta.readyCurrentRows, 0),
+      readyCurrentDegradedTitle: asNumber(meta.readyCurrentDegradedTitle, 0),
+      legacyFilteredOut: asNumber(meta.legacyFilteredOut, 0),
+      historicalExcluded: asNumber(meta.historicalExcluded, 0),
       invalidMissingContractor: asNumber(meta.invalidMissingContractor, 0),
       invalidMissingWorkSnapshot: asNumber(meta.invalidMissingWorkSnapshot, 0),
       invalidMissingObjectSnapshot: asNumber(meta.invalidMissingObjectSnapshot, 0),
@@ -431,6 +551,10 @@ export async function loadContractorInboxScope(params: ScopeParams): Promise<Con
       sourceKind: "rpc:contractor_inbox_scope_v1",
       extra: {
         readyRows: scope.meta.readyRows,
+        readyCurrentRows: scope.meta.readyCurrentRows,
+        readyCurrentDegradedTitle: scope.meta.readyCurrentDegradedTitle,
+        legacyFilteredOut: scope.meta.legacyFilteredOut,
+        historicalExcluded: scope.meta.historicalExcluded,
         invalidMissingContractor: scope.meta.invalidMissingContractor,
         invalidMaterialOnly: scope.meta.invalidMaterialOnly,
       },

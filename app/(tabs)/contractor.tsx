@@ -438,7 +438,7 @@ function ContractorScreen() {
     },
   });
 
-  const { unifiedSubcontractCards, handleOpenUnifiedCard } = useContractorCards({
+  const { contractorWorkCards, handleOpenUnifiedCard } = useContractorCards({
     inboxRows,
     rows,
     openWorkAddModal,
@@ -534,7 +534,7 @@ function ContractorScreen() {
       </View>
 
       <ContractorSubcontractsList
-        data={unifiedSubcontractCards}
+        data={contractorWorkCards}
         screenContract={screenContract}
         refreshing={refreshing}
         loadingWorks={loadingWorks || !rowsReady || !subcontractsReady}

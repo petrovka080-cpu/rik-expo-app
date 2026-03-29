@@ -1,0 +1,253 @@
+{
+  "generatedAt": "2026-03-29T12:38:55.923Z",
+  "proposalNo": "PR-0381/2026",
+  "proposalId": "c7af0745-9509-4573-afaa-8d2685a399eb",
+  "ownerChain": {
+    "proposal": {
+      "id": "c7af0745-9509-4573-afaa-8d2685a399eb",
+      "proposal_no": "PR-0381/2026",
+      "status": "Утверждено",
+      "payment_status": "К оплате",
+      "sent_to_accountant_at": "2026-03-12T08:28:41.163305+00:00",
+      "invoice_number": null,
+      "invoice_date": "2026-03-11",
+      "created_at": "2026-03-11T10:21:39.728798+00:00"
+    },
+    "proposalAttachments": [],
+    "proposalAttachmentGroups": {},
+    "purchases": [
+      {
+        "id": "2092d304-c609-4c56-9677-c058885d626a",
+        "proposal_id": "c7af0745-9509-4573-afaa-8d2685a399eb",
+        "invoice_no": null,
+        "invoice_date": null,
+        "payment_status": "Не оплачено",
+        "attachments": []
+      }
+    ],
+    "proposalPayments": [
+      {
+        "id": 150,
+        "proposal_id": "c7af0745-9509-4573-afaa-8d2685a399eb",
+        "paid_at": "2026-03-13T01:09:27.529284+00:00",
+        "amount": 70,
+        "created_at": "2026-03-13T01:09:27.529284+00:00"
+      }
+    ],
+    "paymentRpc": [
+      {
+        "paymentId": 150,
+        "error": null,
+        "attachmentsMetaCount": 0,
+        "attachmentsMetaSample": []
+      }
+    ]
+  },
+  "sentToAccountantSummary": {
+    "totalSentToAccountant": 92,
+    "withAnyAttachments": 78,
+    "withFinanceAttachmentGroups": 0,
+    "sample": [
+      {
+        "proposalId": "3da6cb7f-8454-48e6-be10-b6e9f5889b89",
+        "proposalNo": "PR-0332/2026",
+        "paymentStatus": "К оплате",
+        "attachmentGroups": {
+          "supplier_quote": 1
+        }
+      },
+      {
+        "proposalId": "75be31aa-7da0-47b2-b1cb-73d6c3781257",
+        "proposalNo": "PR-0347/2026",
+        "paymentStatus": "К оплате",
+        "attachmentGroups": {
+          "supplier_quote": 1
+        }
+      },
+      {
+        "proposalId": "73766087-f2ed-49a8-8a66-c598a495a6ff",
+        "proposalNo": "PR-0323/2026",
+        "paymentStatus": "К оплате",
+        "attachmentGroups": {
+          "supplier_quote": 1
+        }
+      },
+      {
+        "proposalId": "cbc86ec2-fa61-4d5f-8782-e287aee72f7d",
+        "proposalNo": "PR-0346/2026",
+        "paymentStatus": "К оплате",
+        "attachmentGroups": {
+          "supplier_quote": 1
+        }
+      },
+      {
+        "proposalId": "1550985d-055a-4fb1-8bf5-782114adf1b8",
+        "proposalNo": "PR-0319/2026",
+        "paymentStatus": "К оплате",
+        "attachmentGroups": {
+          "supplier_quote": 1
+        }
+      },
+      {
+        "proposalId": "c8e9a1a5-1d78-40f4-999e-bfa55732da70",
+        "proposalNo": "PR-0349/2026",
+        "paymentStatus": "К оплате",
+        "attachmentGroups": {
+          "supplier_quote": 1
+        }
+      },
+      {
+        "proposalId": "e043b828-5805-4c87-a24b-6dfcb0272d32",
+        "proposalNo": "PR-0336/2026",
+        "paymentStatus": "К оплате",
+        "attachmentGroups": {
+          "supplier_quote": 1
+        }
+      },
+      {
+        "proposalId": "33a341fd-06cf-4afb-8689-342758e5f9e8",
+        "proposalNo": "PR-0345/2026",
+        "paymentStatus": "К оплате",
+        "attachmentGroups": {
+          "supplier_quote": 1
+        }
+      },
+      {
+        "proposalId": "5cad4a74-22f3-49a6-b378-580e45bb1f10",
+        "proposalNo": "PR-0320/2026",
+        "paymentStatus": "К оплате",
+        "attachmentGroups": {
+          "supplier_quote": 1
+        }
+      },
+      {
+        "proposalId": "0a767a00-da7d-45d9-b25c-05b68f4283af",
+        "proposalNo": "PR-0351/2026",
+        "paymentStatus": "К оплате",
+        "attachmentGroups": {
+          "supplier_quote": 1
+        }
+      },
+      {
+        "proposalId": "ae1cf6c4-0068-4133-b7ab-12db09583938",
+        "proposalNo": "PR-0350/2026",
+        "paymentStatus": "К оплате",
+        "attachmentGroups": {
+          "supplier_quote": 1
+        }
+      },
+      {
+        "proposalId": "8f3498aa-3188-4b18-8027-c43d375f40b8",
+        "proposalNo": "PR-0341/2026",
+        "paymentStatus": "К оплате",
+        "attachmentGroups": {
+          "supplier_quote": 1
+        }
+      },
+      {
+        "proposalId": "a58e43ac-f29b-4981-9fa8-043d98f5cafa",
+        "proposalNo": "PR-0322/2026",
+        "paymentStatus": "К оплате",
+        "attachmentGroups": {
+          "supplier_quote": 1
+        }
+      },
+      {
+        "proposalId": "f2100c91-d491-4bc5-8507-281f208708bd",
+        "proposalNo": "PR-0321/2026",
+        "paymentStatus": "К оплате",
+        "attachmentGroups": {
+          "supplier_quote": 1
+        }
+      },
+      {
+        "proposalId": "e44c302b-fd10-4b0d-918e-4a4cdf1cc474",
+        "proposalNo": "PR-0328/2026",
+        "paymentStatus": "К оплате",
+        "attachmentGroups": {
+          "supplier_quote": 1
+        }
+      },
+      {
+        "proposalId": "d06feacd-7eed-4245-86a0-77a3d426e860",
+        "proposalNo": "PR-0352/2026",
+        "paymentStatus": "К оплате",
+        "attachmentGroups": {
+          "supplier_quote": 1
+        }
+      },
+      {
+        "proposalId": "52bf1399-ec92-4e0a-b42a-8e1525e84470",
+        "proposalNo": "PR-0324/2026",
+        "paymentStatus": "К оплате",
+        "attachmentGroups": {
+          "supplier_quote": 1
+        }
+      },
+      {
+        "proposalId": "03aebf00-7119-4a5a-a13e-a610235076ff",
+        "proposalNo": "PR-0342/2026",
+        "paymentStatus": "К оплате",
+        "attachmentGroups": {
+          "supplier_quote": 1
+        }
+      },
+      {
+        "proposalId": "a3e7766d-fb1d-4e9a-8270-ea3e6544b07f",
+        "proposalNo": "PR-0327/2026",
+        "paymentStatus": "К оплате",
+        "attachmentGroups": {
+          "supplier_quote": 1
+        }
+      },
+      {
+        "proposalId": "7e1944c1-0bea-4033-a854-a7e19a68f345",
+        "proposalNo": "PR-0326/2026",
+        "paymentStatus": "К оплате",
+        "attachmentGroups": {
+          "supplier_quote": 1
+        }
+      },
+      {
+        "proposalId": "3993b75e-ce0c-490f-8470-35123f29f829",
+        "proposalNo": "PR-0325/2026",
+        "paymentStatus": "К оплате",
+        "attachmentGroups": {
+          "supplier_quote": 1
+        }
+      },
+      {
+        "proposalId": "70b76dc4-9322-4c00-a860-ebcaabc4e69b",
+        "proposalNo": "PR-0334/2026",
+        "paymentStatus": "К оплате",
+        "attachmentGroups": {
+          "supplier_quote": 1
+        }
+      },
+      {
+        "proposalId": "2ef4ff56-87b7-4751-9661-30fa7822acfd",
+        "proposalNo": "PR-0335/2026",
+        "paymentStatus": "К оплате",
+        "attachmentGroups": {
+          "supplier_quote": 1
+        }
+      },
+      {
+        "proposalId": "8697627f-da30-4d92-ae51-000bca7efe27",
+        "proposalNo": "PR-0330/2026",
+        "paymentStatus": "К оплате",
+        "attachmentGroups": {
+          "supplier_quote": 1
+        }
+      },
+      {
+        "proposalId": "97cf0844-6330-4db2-a064-ee29df2cb300",
+        "proposalNo": "PR-0333/2026",
+        "paymentStatus": "К оплате",
+        "attachmentGroups": {
+          "supplier_quote": 1
+        }
+      }
+    ]
+  }
+}

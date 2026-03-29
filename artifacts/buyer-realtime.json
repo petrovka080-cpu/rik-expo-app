@@ -1,7 +1,7 @@
 {
   "marker": {
-    "web": "RTBUY1774706758825",
-    "android": "RTBUY1774706959161"
+    "web": "RTBUY1774748283515",
+    "android": "RTBUY1774748666221"
   },
   "webRuntime": "artifacts/buyer-realtime.web.json",
   "androidRuntime": "artifacts/buyer-realtime.android.json",
@@ -75,7 +75,7 @@
         "blankSurfaceRecovered": false,
         "devClientBootstrapRecovered": false
       },
-      "fioConfirmed": false
+      "fioConfirmed": true
     }
   }
 }

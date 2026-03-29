@@ -30,7 +30,12 @@ export type DirectorProposalWindowSourceMeta = {
   primaryOwner: "rpc_scope_v1" | "legacy_client_fallback";
   fallbackUsed: boolean;
   sourceKind: "rpc:director_pending_proposals_scope_v1" | "legacy:proposals+proposal_items";
-  rowParityStatus: "not_checked";
+  rowParityStatus:
+    | "not_checked"
+    | "rpc_nonempty"
+    | "rpc_empty_legacy_match_empty"
+    | "rpc_empty_legacy_recovered"
+    | "rpc_empty_legacy_probe_failed";
 };
 
 export type DirectorProposalWindowResult = {
@@ -313,7 +318,7 @@ export async function fetchDirectorPendingProposalWindow(
     const envelope = adaptDirectorProposalScopeEnvelope(data);
     const adaptedHeads = adaptHeads(envelope.heads);
     const meta = adaptMeta(envelope.meta, offsetHeads, limitHeads);
-    const result: DirectorProposalWindowResult = {
+    const rpcResult: DirectorProposalWindowResult = {
       heads: adaptedHeads.heads,
       itemCounts: adaptedHeads.itemCounts,
       meta,
@@ -321,19 +326,88 @@ export async function fetchDirectorPendingProposalWindow(
         primaryOwner: "rpc_scope_v1",
         fallbackUsed: false,
         sourceKind: RPC_SOURCE_KIND,
-        rowParityStatus: "not_checked",
+        rowParityStatus: "rpc_nonempty",
+      },
+    };
+    if (meta.totalHeadCount > 0 || adaptedHeads.heads.length > 0) {
+      observation.success({
+        rowCount: rpcResult.heads.length,
+        extra: {
+          offsetHeads: meta.offsetHeads,
+          limitHeads: meta.limitHeads,
+          totalHeadCount: meta.totalHeadCount,
+          totalPositionsCount: meta.totalPositionsCount,
+          rowParityStatus: rpcResult.sourceMeta.rowParityStatus,
+        },
+      });
+      return rpcResult;
+    }
+
+    try {
+      const legacyResult = await loadDirectorProposalWindowLegacy(args);
+      if (legacyResult.meta.totalHeadCount > 0 || legacyResult.heads.length > 0) {
+        const recoveredResult: DirectorProposalWindowResult = {
+          ...legacyResult,
+          sourceMeta: {
+            ...legacyResult.sourceMeta,
+            rowParityStatus: "rpc_empty_legacy_recovered",
+          },
+        };
+        observation.success({
+          rowCount: recoveredResult.heads.length,
+          sourceKind: recoveredResult.sourceMeta.sourceKind,
+          fallbackUsed: true,
+          extra: {
+            offsetHeads: recoveredResult.meta.offsetHeads,
+            limitHeads: recoveredResult.meta.limitHeads,
+            totalHeadCount: recoveredResult.meta.totalHeadCount,
+            totalPositionsCount: recoveredResult.meta.totalPositionsCount,
+            rowParityStatus: recoveredResult.sourceMeta.rowParityStatus,
+          },
+        });
+        return recoveredResult;
+      }
+    } catch (legacyProbeError) {
+      const probeFailedResult: DirectorProposalWindowResult = {
+        ...rpcResult,
+        sourceMeta: {
+          ...rpcResult.sourceMeta,
+          rowParityStatus: "rpc_empty_legacy_probe_failed",
+        },
+      };
+      observation.success({
+        rowCount: 0,
+        extra: {
+          offsetHeads: meta.offsetHeads,
+          limitHeads: meta.limitHeads,
+          totalHeadCount: meta.totalHeadCount,
+          totalPositionsCount: meta.totalPositionsCount,
+          rowParityStatus: probeFailedResult.sourceMeta.rowParityStatus,
+          legacyProbeError:
+            legacyProbeError instanceof Error ? legacyProbeError.message : String(legacyProbeError ?? ""),
+        },
+      });
+      return probeFailedResult;
+    }
+
+    const emptyResult: DirectorProposalWindowResult = {
+      ...rpcResult,
+      sourceMeta: {
+        ...rpcResult.sourceMeta,
+        rowParityStatus: "rpc_empty_legacy_match_empty",
       },
     };
     observation.success({
-      rowCount: result.heads.length,
+      rowCount: 0,
       extra: {
         offsetHeads: meta.offsetHeads,
         limitHeads: meta.limitHeads,
         totalHeadCount: meta.totalHeadCount,
         totalPositionsCount: meta.totalPositionsCount,
+        rowParityStatus: emptyResult.sourceMeta.rowParityStatus,
       },
     });
-    return result;
+    return emptyResult;
   } catch (error) {
     observation.error(error, { errorStage: "load_proposals_window_rpc" });
     try {

@@ -149,17 +149,15 @@ export function useContractorScreenData(params: Params) {
       ]);
       if (reqSeq !== loadWorksSeqRef.current) return;
 
-      const compatibilityRows =
-        inboxScope.rows.length > 0
-          ? loadEmptyInboxRows()
-          : buildCompatibilityInboxRows({
-              rows: bundle.rows,
-              subcontractCards: bundle.subcontractCards,
-              contractor: contractorRef.current,
-            });
+      const compatibilityRows = buildCompatibilityInboxRows({
+        rows: bundle.rows,
+        subcontractCards: bundle.subcontractCards,
+        contractor: contractorRef.current,
+      });
       const effectiveInboxRows = inboxScope.rows.length > 0 ? inboxScope.rows : compatibilityRows;
       const screenContract = resolveContractorScreenContract({
         canonicalRows: inboxScope.rows,
+        canonicalMeta: inboxScope.meta,
         compatibilityRows,
         hasContractorIdentity: Boolean(myContractorId),
         loadError: null,
@@ -174,8 +172,13 @@ export function useContractorScreenData(params: Params) {
           subcontractsFound: bundle.debug.subcontractsFound,
           totalApproved: bundle.debug.totalApproved,
           canonicalReadyRows: inboxScope.meta.readyRows,
+          canonicalCurrentRows: inboxScope.meta.readyCurrentRows,
+          canonicalDegradedTitleRows: inboxScope.meta.readyCurrentDegradedTitle,
+          canonicalLegacyFilteredOut: inboxScope.meta.legacyFilteredOut,
+          canonicalHistoricalExcluded: inboxScope.meta.historicalExcluded,
           compatibilityReadyRows: compatibilityRows.length,
           screenState: screenContract.state,
+          renderState: screenContract.renderState,
           screenSource: screenContract.source,
         });
       }
@@ -191,6 +194,10 @@ export function useContractorScreenData(params: Params) {
         rowCount: bundle.rows.length,
         extra: {
           canonicalReadyRows: inboxScope.meta.readyRows,
+          canonicalCurrentRows: inboxScope.meta.readyCurrentRows,
+          canonicalDegradedTitleRows: inboxScope.meta.readyCurrentDegradedTitle,
+          canonicalLegacyFilteredOut: inboxScope.meta.legacyFilteredOut,
+          canonicalHistoricalExcluded: inboxScope.meta.historicalExcluded,
           effectiveReadyRows: effectiveInboxRows.length,
           compatibilityReadyRows: compatibilityRows.length,
           invalidMissingContractor: inboxScope.meta.invalidMissingContractor,
@@ -200,6 +207,7 @@ export function useContractorScreenData(params: Params) {
           fallbackUsed: bundle.sourceMeta.fallbackUsed,
           sourceKind: bundle.sourceMeta.sourceKind,
           screenState: screenContract.state,
+          renderState: screenContract.renderState,
           screenSource: screenContract.source,
         },
       });
@@ -212,6 +220,7 @@ export function useContractorScreenData(params: Params) {
       setScreenContract(
         resolveContractorScreenContract({
           canonicalRows: [],
+          canonicalMeta: null,
           compatibilityRows: [],
           hasContractorIdentity: Boolean(String(contractorRef.current?.id || "").trim()),
           loadError: error,

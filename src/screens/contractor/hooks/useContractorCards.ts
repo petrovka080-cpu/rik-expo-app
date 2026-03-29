@@ -1,9 +1,12 @@
 import { useCallback, useMemo } from "react";
 import { Alert } from "react-native";
 import type { ContractorInboxRow } from "../../../lib/api/contractor.scope.service";
+import {
+  buildContractorCardModels,
+  type ContractorWorkCardModel,
+} from "../contractor.cardModel";
 import type { ContractorWorkRow } from "../contractor.loadWorksService";
 import { looksLikeUuid } from "../contractor.utils";
-import { buildCompatibilityWorkRow } from "../contractor.visibilityRecovery";
 
 type Params = {
   inboxRows: ContractorInboxRow[];
@@ -11,86 +14,34 @@ type Params = {
   openWorkAddModal: (row: ContractorWorkRow, readOnly?: boolean) => void;
 };
 
-type JobCard = {
-  id: string;
-  contractor: string;
-  contractorInn?: string | null;
-  objectName: string;
-  workType: string;
-};
-
 export function useContractorCards(params: Params) {
   const { inboxRows, rows, openWorkAddModal } = params;
 
-  const cardById = useMemo(
+  const contractorCardModels = useMemo(
     () =>
-      new Map(
-        inboxRows.map((row) => [
-          row.workItemId,
-          {
-            id: row.workItemId,
-            contractor: row.identity.contractorName,
-            contractorInn: row.identity.contractorInn,
-            objectName: row.location.objectName || row.location.locationDisplay,
-            workType: row.work.workName,
-          } satisfies JobCard,
-        ]),
-      ),
-    [inboxRows],
-  );
-
-  const workRowByCardId = useMemo(() => {
-    const map = new Map<string, ContractorWorkRow>();
-    for (const item of inboxRows) {
-      const matchedLegacyRow =
-        rows.find((row) => String(row.progress_id || "").trim() === String(item.progressId || "").trim()) ?? null;
-      if (matchedLegacyRow) {
-        map.set(item.workItemId, {
-          ...matchedLegacyRow,
-          canonical_work_item_id: item.workItemId,
-          canonical_source_kind: item.origin.sourceKind,
-          contractor_org: item.identity.contractorName,
-          contractor_inn: item.identity.contractorInn,
-          object_name: item.location.objectName || item.location.locationDisplay,
-          work_name:
-            item.work.workNameSource === "raw_code"
-              ? matchedLegacyRow.work_name
-              : item.work.workName,
-          work_code:
-            item.work.workNameSource === "raw_code"
-              ? item.work.workName
-              : matchedLegacyRow.work_code,
-          request_id: item.origin.sourceRequestId ?? matchedLegacyRow.request_id,
-          contractor_job_id: item.origin.sourceSubcontractId ?? matchedLegacyRow.contractor_job_id,
-          contractor_id: item.identity.contractorId,
-          unit_price: item.work.unitPrice ?? matchedLegacyRow.unit_price ?? null,
-          qty_planned: Number(item.work.quantity ?? matchedLegacyRow.qty_planned ?? 0),
-        });
-        continue;
-      }
-      map.set(item.workItemId, buildCompatibilityWorkRow(item));
-    }
-    return map;
-  }, [inboxRows, rows]);
-
-  const unifiedSubcontractCards = useMemo(
-    () => inboxRows.map((row) => cardById.get(row.workItemId)!).filter(Boolean),
-    [cardById, inboxRows],
+      buildContractorCardModels({
+        inboxRows,
+        rows,
+      }),
+    [inboxRows, rows],
   );
 
   const handleOpenUnifiedCard = useCallback(
     (id: string) => {
-      const row = workRowByCardId.get(String(id || "").trim()) ?? null;
+      const row = contractorCardModels.workRowByCardId.get(String(id || "").trim()) ?? null;
       if (!row) {
-        Alert.alert("Данные недоступны", "Не удалось открыть подрядную работу.");
+        Alert.alert("Р”Р°РЅРЅС‹Рµ РЅРµРґРѕСЃС‚СѓРїРЅС‹", "РќРµ СѓРґР°Р»РѕСЃСЊ РѕС‚РєСЂС‹С‚СЊ РїРѕРґСЂСЏРґРЅСѓСЋ СЂР°Р±РѕС‚Сѓ.");
         return;
       }
       const progressId = String(row.progress_id || "").trim();
       const readOnly = !looksLikeUuid(progressId);
       openWorkAddModal(row, readOnly);
     },
-    [openWorkAddModal, workRowByCardId],
+    [contractorCardModels.workRowByCardId, openWorkAddModal],
   );
 
-  return { unifiedSubcontractCards, handleOpenUnifiedCard };
+  return {
+    contractorWorkCards: contractorCardModels.cards as ContractorWorkCardModel[],
+    handleOpenUnifiedCard,
+  };
 }

@@ -1,0 +1,25 @@
+{
+  "status": "GREEN",
+  "canonicalSource": {
+    "file": "src/screens/director/director.proposals.repo.ts",
+    "rpc": "director_pending_proposals_scope_v1",
+    "primaryOwner": "rpc_scope_v1",
+    "fallbackPresentAsDegraded": true
+  },
+  "statusPredicate": {
+    "file": "supabase/migrations/20260329173000_director_pending_proposals_scope_visibility_fix.sql",
+    "acceptsRawStates": [
+      "pending",
+      "submitted",
+      "На утверждении"
+    ],
+    "requiresSubmittedAt": true,
+    "excludesSentToAccountant": true,
+    "requiresItems": true
+  },
+  "realtime": {
+    "file": "src/screens/director/director.lifecycle.ts",
+    "proposalsChannelPresent": true,
+    "manualRefreshRequired": false
+  }
+}
