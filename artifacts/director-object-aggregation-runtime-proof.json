@@ -1,0 +1,33 @@
+{
+  "gate": "director_object_material_work_link_recovery",
+  "transport": {
+    "source": "transport:director_report_legacy_service",
+    "branch": "legacy_scope_fallback",
+    "fallbackReason": "invalid_payload",
+    "hasLinkedDetailLevels": true,
+    "objects": 8,
+    "documents": 28,
+    "positions": 119,
+    "works": 14,
+    "levels": 21,
+    "materials": 119,
+    "withoutWorkPositions": 0,
+    "selectedObject": "Общежитие / вахтовый городок",
+    "selectedObjectBranch": "legacy_scope_fallback",
+    "selectedObjectWorks": 3,
+    "selectedObjectLevels": 3,
+    "selectedObjectHasLinkedDetailLevels": true
+  },
+  "linkedSummary": {
+    "documentsCount": 28,
+    "positionsCount": 119,
+    "objectsCount": 8,
+    "worksCount": 14,
+    "levelsCount": 9,
+    "materialsCount": 119,
+    "linkedCount": 27,
+    "partialCount": 1,
+    "unlinkedCount": 0
+  },
+  "status": "GREEN"
+}

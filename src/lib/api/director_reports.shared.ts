@@ -11,6 +11,8 @@ export type {
   DirectorFactRowNormalized,
   DirectorFactContextResolved,
   DirectorObjectIdentityResolved,
+  DirectorObjectLinkedIssueLinkState,
+  DirectorObjectLinkedIssue,
   DirectorFactContextInput,
   DirectorFactRowNormalizeInput,
   DirectorFactRow,

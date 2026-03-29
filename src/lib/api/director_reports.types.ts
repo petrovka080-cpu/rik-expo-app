@@ -164,6 +164,25 @@ type DirectorFactRowNormalizeInput = {
 
 type DirectorFactRow = DirectorFactRowNormalized;
 
+type DirectorObjectLinkedIssueLinkState = "linked" | "partial" | "unlinked";
+
+type DirectorObjectLinkedIssue = {
+  issueId: string;
+  requestId: string | null;
+  requestItemId: string | null;
+  objectId: string | null;
+  objectName: string | null;
+  levelName: string | null;
+  systemName: string | null;
+  zoneName: string | null;
+  workId: string | null;
+  workName: string | null;
+  contractorId: string | null;
+  materialCount: number;
+  positionCount: number;
+  linkState: DirectorObjectLinkedIssueLinkState;
+};
+
 type CodeNameRow = {
   code?: string | null;
   name_human_ru?: string | null;
@@ -348,6 +367,8 @@ export type {
   DirectorFactContextInput,
   DirectorFactRowNormalizeInput,
   DirectorFactRow,
+  DirectorObjectLinkedIssueLinkState,
+  DirectorObjectLinkedIssue,
   CodeNameRow,
   RequestLookupRow,
   ObjectLookupRow,

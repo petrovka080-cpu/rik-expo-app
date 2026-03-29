@@ -24,6 +24,8 @@ import { trimMap } from "./director_reports.cache";
 import {
   hasCanonicalWorksDetailLevels,
   shouldRejectAllObjectsEmptyMaterialsPayload,
+  shouldRejectScopedEmptyMaterialsPayload,
+  shouldRejectTransportScopeDisciplinePayload,
 } from "./director_reports.fallbacks";
 
 const DIRECTOR_REPORT_TRANSPORT_SCOPE_RPC_V1_MODE_RAW = String(
@@ -271,6 +273,19 @@ async function fetchDirectorReportTransportScopeViaRpc(args: {
   if (!options || !report || (args.includeDiscipline && !discipline)) {
     throw new DirectorReportTransportScopeValidationError(
       "director_report_transport_scope_v1 payload adaptation failed",
+    );
+  }
+  if (shouldRejectScopedEmptyMaterialsPayload(report, args.objectName, options)) {
+    throw new DirectorReportTransportScopeValidationError(
+      "director_report_transport_scope_v1 scoped payload empty for canonical object",
+    );
+  }
+  if (
+    args.includeDiscipline &&
+    shouldRejectTransportScopeDisciplinePayload(discipline, report)
+  ) {
+    throw new DirectorReportTransportScopeValidationError(
+      "director_report_transport_scope_v1 discipline payload lost linked detail levels",
     );
   }
 
