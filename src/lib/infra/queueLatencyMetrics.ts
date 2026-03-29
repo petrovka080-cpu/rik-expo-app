@@ -1,3 +1,6 @@
+import type { SupabaseClient } from "@supabase/supabase-js";
+
+import type { Database } from "../database.types";
 import { supabase } from "../supabaseClient";
 
 export type QueueLatencyMetrics = {
@@ -6,8 +9,12 @@ export type QueueLatencyMetrics = {
   oldestPendingAt: string | null;
 };
 
-export async function fetchQueueLatencyMetrics(): Promise<QueueLatencyMetrics> {
-  const oldestQ = await supabase
+type QueueLatencySupabaseClient = Pick<SupabaseClient<Database>, "from">;
+
+export async function fetchQueueLatencyMetricsWithClient(
+  supabaseClient: QueueLatencySupabaseClient,
+): Promise<QueueLatencyMetrics> {
+  const oldestQ = await supabaseClient
     .from("submit_jobs" as any)
     .select("created_at", { head: false, count: "exact" })
     .eq("status", "pending")
@@ -29,4 +36,8 @@ export async function fetchQueueLatencyMetrics(): Promise<QueueLatencyMetrics> {
     queueDepth: depth,
     oldestPendingAt,
   };
+}
+
+export async function fetchQueueLatencyMetrics(): Promise<QueueLatencyMetrics> {
+  return fetchQueueLatencyMetricsWithClient(supabase);
 }

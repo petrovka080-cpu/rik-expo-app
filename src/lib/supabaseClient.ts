@@ -1,6 +1,13 @@
-// src/lib/supabaseClient.ts
-import { createClient, SupabaseClient } from "@supabase/supabase-js";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+
 import type { Database } from "./database.types";
+import {
+  SUPABASE_ANON_KEY,
+  SUPABASE_HOST,
+  SUPABASE_PROJECT_REF,
+  SUPABASE_URL,
+  isClientSupabaseEnvValid,
+} from "./env/clientSupabaseEnv";
 
 type RuntimeProcessLike = {
   env?: Record<string, string | undefined>;
@@ -24,21 +31,20 @@ const runtimeProcess =
     : undefined;
 const isWeb = typeof window !== "undefined" && typeof document !== "undefined";
 const isNodeRuntime =
-  !!runtimeProcess?.versions?.node &&
+  Boolean(runtimeProcess?.versions?.node) &&
   typeof window === "undefined";
 
 if (!isNodeRuntime) {
   try {
-    const req = (0, eval)("require") as (m: string) => unknown;
+    const req = (0, eval)("require") as (moduleName: string) => unknown;
     req("react-native-url-polyfill/auto");
   } catch {
-    // no-op
+    // Mobile/web runtime without the polyfill stays best-effort.
   }
 }
 
 function tryLoadAsyncStorage(): SupabaseAuthStorage | undefined {
   try {
-    // Keep RN persistence in mobile runtime; avoid hard dependency in Node worker.
     const req = (0, eval)("require") as RuntimeRequire;
     const mod = req("@react-native-async-storage/async-storage") as {
       default?: SupabaseAuthStorage;
@@ -49,88 +55,39 @@ function tryLoadAsyncStorage(): SupabaseAuthStorage | undefined {
   }
 }
 
-const DEBUG_SUPABASE_REST = false; // ⚠️ debug-флаг, НЕ влияет на логику
+const DEBUG_SUPABASE_REST = false;
 
-export const SUPABASE_PROJECT_REF = "nxrnjywzxxfdpqmzjorh";
+export { SUPABASE_ANON_KEY, SUPABASE_HOST, SUPABASE_PROJECT_REF, SUPABASE_URL };
+export const SUPABASE_KEY_KIND = "anon";
 
-// —–– ENV —––
-const rawUrl = String(process.env.EXPO_PUBLIC_SUPABASE_URL ?? "")
-  .trim()
-  .replace(/^['"]|['"]$/g, "");
-const rawKey = String(process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? "")
-  .trim()
-  .replace(/^['"]|['"]$/g, "");
-const rawServiceRoleKey = String(process.env.SUPABASE_SERVICE_ROLE_KEY ?? "")
-  .trim()
-  .replace(/^['"]|['"]$/g, "");
-const useServiceRoleInNodeWorker =
-  isNodeRuntime &&
-  process.env.RIK_QUEUE_WORKER_USE_SERVICE_ROLE === "true" &&
-  !!rawServiceRoleKey;
-const resolvedSupabaseKey = useServiceRoleInNodeWorker ? rawServiceRoleKey : rawKey;
-
-// нормализуем URL: убираем хвостовой слеш и сразу валидируем
-function normUrl(u: string): string {
-  if (!u) return "";
-  const url = new URL(u);
-  url.pathname = url.pathname.replace(/\/+$/, "");
-  return url.toString();
-}
-
-export const SUPABASE_URL = rawUrl ? normUrl(rawUrl) : "";
-export const SUPABASE_ANON_KEY = rawKey;
-export const SUPABASE_KEY_KIND = useServiceRoleInNodeWorker ? "service_role" : "anon";
-export const SUPABASE_HOST = (() => {
-  try {
-    return SUPABASE_URL ? new URL(SUPABASE_URL).host : "";
-  } catch {
-    return "";
-  }
-})();
-
-/**
- * Чиним "голые" timestamp-параметры, которые ломают PostgREST:
- *   ...?1767063864951
- *   ...&1767063864951
- * PostgREST воспринимает это как фильтр => PGRST100
- */
 function fixNakedTimestamp(urlStr: string): string {
-  let s = String(urlStr || "");
+  let value = String(urlStr || "");
 
-  // Быстрый выход
-  if (!/[?&]\d{13}([&]|$)/.test(s)) return s;
+  if (!/[?&]\d{13}([&]|$)/.test(value)) return value;
 
   try {
-    const u = new URL(s);
-
-    // URLSearchParams трактует "&1767..." как key="1767..." value=""
-    // Переносим такие ключи в нормальный параметр _ts
+    const url = new URL(value);
     const toMove: string[] = [];
-    u.searchParams.forEach((value, key) => {
-      if (/^\d{13}$/.test(key) && (value == null || value === "")) {
+    url.searchParams.forEach((paramValue, key) => {
+      if (/^\d{13}$/.test(key) && (paramValue == null || paramValue === "")) {
         toMove.push(key);
       }
     });
 
-    if (toMove.length) {
-      // оставим последний как _ts
+    if (toMove.length > 0) {
       const last = toMove[toMove.length - 1];
-      for (const k of toMove) u.searchParams.delete(k);
-      u.searchParams.set("_ts", last);
+      for (const key of toMove) url.searchParams.delete(key);
+      url.searchParams.set("_ts", last);
     }
 
-    s = u.toString();
+    value = url.toString();
   } catch {
-    // Fallback regex если URL() не распарсился
-    s = s.replace(/([?&])(\d{13})(?=(&|$))/g, "$1_ts=$2");
+    value = value.replace(/([?&])(\d{13})(?=(&|$))/g, "$1_ts=$2");
   }
 
-  // подчистим мусор типа "?&" и хвостовые
-  s = s.replace(/\?&/g, "?").replace(/[?&]$/g, "");
-  return s;
+  return value.replace(/\?&/g, "?").replace(/[?&]$/g, "");
 }
 
-// ===== DEBUG: логируем REST-запросы Supabase (web + phone) =====
 const wrapFetchWithLog = (tag: string, baseFetch: typeof fetch): typeof fetch => {
   return async (input: FetchInput, init?: FetchInit) => {
     const originalUrl =
@@ -140,11 +97,10 @@ const wrapFetchWithLog = (tag: string, baseFetch: typeof fetch): typeof fetch =>
           ? input.toString()
           : input instanceof Request
             ? String(input.url)
-          : String(input);
+            : String(input);
 
     const fixedUrl = fixNakedTimestamp(originalUrl);
 
-    // ✅ сначала предупреждение, если что-то починили
     if (DEBUG_SUPABASE_REST && fixedUrl !== originalUrl) {
       console.warn(`${tag} SUPABASE REST: fixed naked timestamp`, {
         before: originalUrl,
@@ -152,13 +108,10 @@ const wrapFetchWithLog = (tag: string, baseFetch: typeof fetch): typeof fetch =>
       });
     }
 
-    // ✅ потом лог запроса (только /rest/v1/)
-    if (DEBUG_SUPABASE_REST && String(fixedUrl).includes("/rest/v1/")) {
+    if (DEBUG_SUPABASE_REST && fixedUrl.includes("/rest/v1/")) {
       console.log(`${tag} SUPABASE REST:`, fixedUrl);
     }
 
-
-    // если input был Request — пересоздаём Request с исправленным url
     let patchedInput: FetchInput = fixedUrl;
     if (input instanceof Request) {
       try {
@@ -167,43 +120,44 @@ const wrapFetchWithLog = (tag: string, baseFetch: typeof fetch): typeof fetch =>
         patchedInput = fixedUrl;
       }
     }
+
     return baseFetch(patchedInput, init);
   };
 };
 
-// если env битые — не создаём клиент (чтобы не спамить сетевыми ошибками)
 function assertEnv() {
-  const ok =
-    SUPABASE_URL && /^https?:\/\//i.test(SUPABASE_URL) && resolvedSupabaseKey;
+  const ok = isClientSupabaseEnvValid();
   const looksLikeTargetProject = SUPABASE_HOST?.startsWith(`${SUPABASE_PROJECT_REF}.`);
 
   if (ok && !looksLikeTargetProject) {
     console.warn(
-      `[supabaseClient] SUPABASE_URL host ("${SUPABASE_HOST}") не совпадает с ref ${SUPABASE_PROJECT_REF}. Исправь .env.local и перезапусти bundler.`,
+      `[supabaseClient] SUPABASE_URL host ("${SUPABASE_HOST}") does not match ref ${SUPABASE_PROJECT_REF}.`,
     );
   }
+
   if (!ok) {
-    const msg =
-      "[supabaseClient] Missing/invalid EXPO_PUBLIC_SUPABASE_URL/_ANON_KEY. Проверь .env.local и перезапусти `expo start -c`.";
-    if (process.env.NODE_ENV !== "production") console.warn(msg);
+    const message =
+      "[supabaseClient] Missing/invalid EXPO_PUBLIC_SUPABASE_URL or EXPO_PUBLIC_SUPABASE_ANON_KEY.";
+    if (process.env.NODE_ENV !== "production") console.warn(message);
   }
+
   return ok;
 }
 
-// WEB fetch: твоя логика headers + timeout, просто оборачиваем логом
 const supabaseFetch: typeof fetch | undefined = isWeb
-  ? wrapFetchWithLog("🌐", (input: FetchInput, init?: FetchInit) => {
+  ? wrapFetchWithLog("web", (input: FetchInput, init?: FetchInit) => {
     const headers = new Headers(init?.headers || {});
 
-    if (resolvedSupabaseKey) {
-      if (!headers.has("apikey")) headers.set("apikey", resolvedSupabaseKey);
-      if (!headers.has("Authorization"))
-        headers.set("Authorization", `Bearer ${resolvedSupabaseKey}`);
+    if (SUPABASE_ANON_KEY) {
+      if (!headers.has("apikey")) headers.set("apikey", SUPABASE_ANON_KEY);
+      if (!headers.has("Authorization")) {
+        headers.set("Authorization", `Bearer ${SUPABASE_ANON_KEY}`);
+      }
     }
 
     const controller = new AbortController();
-    const timeoutMs = 20000;
-    const t = setTimeout(() => controller.abort(), timeoutMs);
+    const timeoutMs = 20_000;
+    const timeout = setTimeout(() => controller.abort(), timeoutMs);
 
     return window
       .fetch(input, {
@@ -213,12 +167,11 @@ const supabaseFetch: typeof fetch | undefined = isWeb
         cache: "no-store",
         signal: controller.signal,
       })
-      .finally(() => clearTimeout(t));
+      .finally(() => clearTimeout(timeout));
   })
   : undefined;
 
-// NATIVE fetch: логируем и чиним URL
-const nativeFetch: typeof fetch = wrapFetchWithLog("📱", fetch);
+const nativeFetch: typeof fetch = wrapFetchWithLog("native", fetch);
 
 function createMissingSupabaseClient(): SupabaseClient<Database> {
   const err =
@@ -233,7 +186,6 @@ function createMissingSupabaseClient(): SupabaseClient<Database> {
   ) as SupabaseClient<Database>;
 }
 
-// —–– CLIENT —––
 export const isSupabaseEnvValid = assertEnv();
 const authStorage = isWeb
   ? window.localStorage
@@ -241,11 +193,12 @@ const authStorage = isWeb
     ? undefined
     : tryLoadAsyncStorage();
 const supabaseClientFetch: typeof fetch = isWeb && supabaseFetch ? supabaseFetch : nativeFetch;
+
 export const supabase: SupabaseClient<Database> = isSupabaseEnvValid
-  ? createClient<Database>(SUPABASE_URL, resolvedSupabaseKey, {
+  ? createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, {
     auth: {
-      persistSession: !useServiceRoleInNodeWorker,
-      autoRefreshToken: !useServiceRoleInNodeWorker,
+      persistSession: true,
+      autoRefreshToken: true,
       detectSessionInUrl: isWeb,
       storage: authStorage,
     },
@@ -257,17 +210,16 @@ export const supabase: SupabaseClient<Database> = isSupabaseEnvValid
   })
   : createMissingSupabaseClient();
 
-// —–– HELPERS —––
 export async function ensureSignedIn(): Promise<boolean> {
   if (!supabase) return false;
 
   try {
-    const sess = await supabase.auth.getSession();
-    if (sess?.data?.session?.user) return true;
-  } catch (e: unknown) {
+    const session = await supabase.auth.getSession();
+    if (session?.data?.session?.user) return true;
+  } catch (error: unknown) {
     if (process.env.NODE_ENV !== "production") {
-      const message = e instanceof Error ? e.message : String(e ?? "");
-      console.warn("[ensureSignedIn] session check failed:", message || e);
+      const message = error instanceof Error ? error.message : String(error ?? "");
+      console.warn("[ensureSignedIn] session check failed:", message || error);
     }
   }
 
@@ -276,17 +228,19 @@ export async function ensureSignedIn(): Promise<boolean> {
       const mod = await import("expo-router");
       mod.router.replace("/auth/login");
     } catch {
-      // Node worker / non-router runtimes: no-op redirect.
+      // Non-router runtimes stay best-effort.
     }
   }
+
   return false;
 }
 
 export async function currentUserId(): Promise<string | null> {
   if (!supabase) return null;
+
   try {
-    const sess = await supabase.auth.getSession();
-    return sess?.data?.session?.user?.id ?? null;
+    const session = await supabase.auth.getSession();
+    return session?.data?.session?.user?.id ?? null;
   } catch {
     return null;
   }

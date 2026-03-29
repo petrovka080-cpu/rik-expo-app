@@ -1,16 +1,18 @@
-import { SUPABASE_HOST, SUPABASE_KEY_KIND, supabase } from "../lib/supabaseClient";
+import { supabase, SUPABASE_HOST, SUPABASE_KEY_KIND } from "../lib/supabaseClient";
 import {
   COMPACTION_DELAY_MS,
   JOB_QUEUE_ENABLED,
   WORKER_BATCH_SIZE,
   WORKER_CONCURRENCY,
   claimSubmitJobs,
+  fetchSubmitJobMetrics,
   markSubmitJobCompleted,
   markSubmitJobFailed,
   recoverStuckSubmitJobs,
   type SubmitJobRow,
 } from "../lib/infra/jobQueue";
 import { startQueueMetricsLoop } from "../lib/infra/queueMetrics";
+import { fetchQueueLatencyMetrics } from "../lib/infra/queueLatencyMetrics";
 import { compactJobsByEntity, dispatchJob } from "./jobDispatcher";
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -33,6 +35,27 @@ type QueueWorkerOptions = {
   pollIdleMs?: number;
 };
 
+type QueueWorkerDeps = {
+  supabaseClient?: typeof supabase;
+  queueApi?: {
+    claimSubmitJobs: (workerId: string, limit?: number, jobType?: string) => Promise<SubmitJobRow[]>;
+    recoverStuckSubmitJobs: () => Promise<number>;
+    markSubmitJobCompleted: (jobId: string) => Promise<void>;
+    markSubmitJobFailed: (jobId: string, message: string) => Promise<{ retryCount: number; status: string }>;
+    fetchSubmitJobMetrics: () => Promise<{
+      pending: number;
+      processing: number;
+      failed: number;
+      oldest_pending: string | null;
+    }>;
+  };
+  fetchQueueLatencyMetrics?: typeof fetchQueueLatencyMetrics;
+  sourceMeta?: {
+    SUPABASE_HOST: string;
+    SUPABASE_KEY_KIND: string;
+  };
+};
+
 export type QueueWorkerHandle = {
   stop: () => void;
 };
@@ -45,7 +68,29 @@ const queueVerbose =
     process.env.NODE_ENV !== "production") &&
   String(process.env.EXPO_PUBLIC_QUEUE_VERBOSE ?? "").trim().toLowerCase() === "true";
 
-async function markCompactedDuplicatesCompleted(groups: ReturnType<typeof compactJobsByEntity>, workerId: string) {
+const defaultQueueApi = {
+  claimSubmitJobs,
+  recoverStuckSubmitJobs,
+  markSubmitJobCompleted,
+  markSubmitJobFailed,
+  fetchSubmitJobMetrics,
+};
+
+const resolveQueueWorkerDeps = (deps: QueueWorkerDeps) => ({
+  supabaseClient: deps.supabaseClient ?? supabase,
+  queueApi: deps.queueApi ?? defaultQueueApi,
+  fetchQueueLatencyMetrics: deps.fetchQueueLatencyMetrics ?? fetchQueueLatencyMetrics,
+  sourceMeta: deps.sourceMeta ?? {
+    SUPABASE_HOST,
+    SUPABASE_KEY_KIND,
+  },
+});
+
+async function markCompactedDuplicatesCompleted(
+  groups: ReturnType<typeof compactJobsByEntity>,
+  workerId: string,
+  queueApi: ReturnType<typeof resolveQueueWorkerDeps>["queueApi"],
+) {
   let duplicateCount = 0;
   let failedCount = 0;
 
@@ -54,7 +99,7 @@ async function markCompactedDuplicatesCompleted(groups: ReturnType<typeof compac
     duplicateCount += dupIds.length;
     for (const id of dupIds) {
       try {
-        await markSubmitJobCompleted(id);
+        await queueApi.markSubmitJobCompleted(id);
       } catch (error: unknown) {
         failedCount += 1;
         console.warn("[queue.worker] compacted duplicate completion failed", {
@@ -70,12 +115,16 @@ async function markCompactedDuplicatesCompleted(groups: ReturnType<typeof compac
   return { duplicateCount, failedCount };
 }
 
-async function processOne(job: SubmitJobRow, workerId: string) {
+async function processOne(
+  job: SubmitJobRow,
+  workerId: string,
+  deps: ReturnType<typeof resolveQueueWorkerDeps>,
+) {
   const t0 = Date.now();
   try {
-    await dispatchJob(job, { supabase });
+    await dispatchJob(job, { supabase: deps.supabaseClient });
     try {
-      await markSubmitJobCompleted(job.id);
+      await deps.queueApi.markSubmitJobCompleted(job.id);
     } catch (completionError: unknown) {
       console.warn("[queue.worker] completion persistence failed after dispatch", {
         workerId,
@@ -97,7 +146,7 @@ async function processOne(job: SubmitJobRow, workerId: string) {
   } catch (error: unknown) {
     const message = queueErrorText(error);
     try {
-      const failed = await markSubmitJobFailed(job.id, message);
+      const failed = await deps.queueApi.markSubmitJobFailed(job.id, message);
       console.warn("[queue.worker] job failed", {
         workerId,
         jobId: job.id,
@@ -122,10 +171,14 @@ async function processOne(job: SubmitJobRow, workerId: string) {
   }
 }
 
-async function processBatch(jobs: SubmitJobRow[], workerId: string, concurrency: number) {
+async function processBatch(
+  jobs: SubmitJobRow[],
+  workerId: string,
+  concurrency: number,
+  deps: ReturnType<typeof resolveQueueWorkerDeps>,
+) {
   const compacted = compactJobsByEntity(jobs);
-  // Duplicate completion is a secondary integrity step; failed marking should stay observable.
-  const compactedDuplicates = await markCompactedDuplicatesCompleted(compacted, workerId);
+  const compactedDuplicates = await markCompactedDuplicatesCompleted(compacted, workerId, deps.queueApi);
   if (compactedDuplicates.duplicateCount > 0) {
     console.info("[queue.worker] compacted duplicates processed", {
       workerId,
@@ -134,28 +187,33 @@ async function processBatch(jobs: SubmitJobRow[], workerId: string, concurrency:
     });
   }
 
-  const queue = compacted.map((x) => x.job);
+  const queue = compacted.map((entry) => entry.job);
   let idx = 0;
 
   const workers = Array.from({ length: Math.max(1, concurrency) }).map(async () => {
     while (idx < queue.length) {
       const current = queue[idx++];
       if (!current) return;
-      await processOne(current, workerId);
+      await processOne(current, workerId, deps);
     }
   });
 
   await Promise.all(workers);
 }
 
-export function startQueueWorker(options: QueueWorkerOptions = {}): QueueWorkerHandle {
+export function startQueueWorker(
+  options: QueueWorkerOptions = {},
+  depsInput: QueueWorkerDeps = {},
+): QueueWorkerHandle {
+  const deps = resolveQueueWorkerDeps(depsInput);
+
   console.info("[queue.worker] init", {
     JOB_QUEUE_ENABLED,
     WORKER_BATCH_SIZE,
     WORKER_CONCURRENCY,
     COMPACTION_DELAY_MS,
-    SUPABASE_HOST,
-    SUPABASE_KEY_KIND,
+    SUPABASE_HOST: deps.sourceMeta.SUPABASE_HOST,
+    SUPABASE_KEY_KIND: deps.sourceMeta.SUPABASE_KEY_KIND,
   });
 
   if (!JOB_QUEUE_ENABLED) {
@@ -170,7 +228,10 @@ export function startQueueWorker(options: QueueWorkerOptions = {}): QueueWorkerH
 
   let stopped = false;
   let recoveryTick = 0;
-  const metrics = startQueueMetricsLoop(60_000);
+  const metrics = startQueueMetricsLoop(60_000, {
+    fetchSubmitJobMetrics: deps.queueApi.fetchSubmitJobMetrics,
+    fetchQueueLatencyMetrics: deps.fetchQueueLatencyMetrics,
+  });
 
   void (async () => {
     console.info("[queue.worker] started", { workerId, batchSize, concurrency });
@@ -182,14 +243,14 @@ export function startQueueWorker(options: QueueWorkerOptions = {}): QueueWorkerH
           if (queueVerbose) {
             console.info("[queue.worker] recover tick", { workerId, recoveryTick });
           }
-          const recovered = await recoverStuckSubmitJobs();
+          const recovered = await deps.queueApi.recoverStuckSubmitJobs();
           if (recovered > 0) {
             console.warn("[queue.worker] recovered stuck jobs", { recovered, workerId });
           }
         }
 
         loopPhase = "claim";
-        const claimed = await claimSubmitJobs(workerId, batchSize);
+        const claimed = await deps.queueApi.claimSubmitJobs(workerId, batchSize);
         if (claimed.length > 0 || queueVerbose) {
           console.info("[queue.worker] claim result", { workerId, claimed: claimed.length });
         }
@@ -199,21 +260,19 @@ export function startQueueWorker(options: QueueWorkerOptions = {}): QueueWorkerH
           continue;
         }
 
-        // Small debounce window to compact burst submits for same entity.
         loopPhase = "compaction_delay";
         if (queueVerbose) {
           console.info("[queue.worker] compaction delay", { workerId, COMPACTION_DELAY_MS });
         }
         await sleep(COMPACTION_DELAY_MS);
 
-        // Batch processing path.
         loopPhase = "process_batch";
         console.info("[queue.worker] processing batch", {
           workerId,
           claimed: claimed.length,
           concurrency,
         });
-        await processBatch(claimed, workerId, concurrency);
+        await processBatch(claimed, workerId, concurrency, deps);
       } catch (error: unknown) {
         console.warn("[queue.worker] loop error", {
           workerId,

@@ -1,3 +1,5 @@
+import type { SupabaseClient } from "@supabase/supabase-js";
+
 import type { Database, Json } from "../database.types";
 import { supabase } from "../supabaseClient";
 
@@ -82,8 +84,10 @@ type SubmitJobsRpcCompatBoundary = {
     error: { message?: string } | null;
   }>;
 };
+type JobQueueSupabaseClient = Pick<SupabaseClient<Database>, "from" | "rpc">;
 
-const queueRpcCompat = supabase as unknown as SubmitJobsRpcCompatBoundary;
+const toQueueRpcCompat = (supabaseClient: JobQueueSupabaseClient) =>
+  supabaseClient as unknown as SubmitJobsRpcCompatBoundary;
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null;
@@ -301,14 +305,17 @@ const buildSubmitJobsFailedFallbackUpdate = (
   locked_until: null,
 });
 
-export async function enqueueSubmitJob(input: EnqueueSubmitJobInput): Promise<SubmitJobRow> {
+async function enqueueSubmitJobWithClient(
+  supabaseClient: JobQueueSupabaseClient,
+  input: EnqueueSubmitJobInput,
+): Promise<SubmitJobRow> {
   const payload = buildSubmitJobInsert(input);
 
   if (!payload.job_type) {
     throw new Error("enqueueSubmitJob: jobType is required");
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await supabaseClient
     .from("submit_jobs")
     .insert(payload)
     .select(JOB_SELECT)
@@ -318,8 +325,14 @@ export async function enqueueSubmitJob(input: EnqueueSubmitJobInput): Promise<Su
   return normalizeSubmitJobRow(data);
 }
 
-export async function claimSubmitJobs(workerId: string, limit = WORKER_BATCH_SIZE, jobType?: string): Promise<SubmitJobRow[]> {
-  const primary = await supabase.rpc("submit_jobs_claim", buildSubmitJobsClaimArgs(workerId, limit));
+async function claimSubmitJobsWithClient(
+  supabaseClient: JobQueueSupabaseClient,
+  workerId: string,
+  limit = WORKER_BATCH_SIZE,
+  jobType?: string,
+): Promise<SubmitJobRow[]> {
+  const queueRpcCompat = toQueueRpcCompat(supabaseClient);
+  const primary = await supabaseClient.rpc("submit_jobs_claim", buildSubmitJobsClaimArgs(workerId, limit));
   if (!primary.error) return normalizeSubmitJobRows(primary.data);
 
   const primaryMsg = String(primary.error.message || "");
@@ -340,7 +353,7 @@ export async function claimSubmitJobs(workerId: string, limit = WORKER_BATCH_SIZ
   }
 
   // Legacy schema fallback when claim RPC is absent/incompatible in runtime DB.
-  let selectQ = supabase
+  let selectQ = supabaseClient
     .from("submit_jobs")
     .select(SUBMIT_JOBS_ID_SELECT)
     .eq("status", "pending")
@@ -353,7 +366,7 @@ export async function claimSubmitJobs(workerId: string, limit = WORKER_BATCH_SIZ
   if (!ids.length) return [];
 
   const lockedUntil = new Date(Date.now() + 5 * 60 * 1000).toISOString();
-  const upd = await supabase
+  const upd = await supabaseClient
     .from("submit_jobs")
     .update(buildSubmitJobsProcessingUpdate(workerId, lockedUntil))
     .in("id", ids)
@@ -363,16 +376,22 @@ export async function claimSubmitJobs(workerId: string, limit = WORKER_BATCH_SIZ
   return normalizeSubmitJobRows(upd.data);
 }
 
-export async function recoverStuckSubmitJobs(): Promise<number> {
-  const { data, error } = await supabase.rpc("submit_jobs_recover_stuck");
+async function recoverStuckSubmitJobsWithClient(
+  supabaseClient: JobQueueSupabaseClient,
+): Promise<number> {
+  const { data, error } = await supabaseClient.rpc("submit_jobs_recover_stuck");
   if (error) throw queueInfraError("recoverStuckSubmitJobs", error);
   return getNumberOrDefault(data as SubmitJobsRecoverStuckRpcReturns, 0);
 }
 
-export async function markSubmitJobCompleted(jobId: string): Promise<void> {
+async function markSubmitJobCompletedWithClient(
+  supabaseClient: JobQueueSupabaseClient,
+  jobId: string,
+): Promise<void> {
+  const queueRpcCompat = toQueueRpcCompat(supabaseClient);
   const first = await queueRpcCompat.rpc("submit_jobs_mark_completed", { p_job_id: jobId });
   if (!first.error) {
-    const normalize = await supabase
+    const normalize = await supabaseClient
       .from("submit_jobs")
       .update(buildSubmitJobsCompletedCleanupUpdate())
       .eq("id", jobId);
@@ -384,14 +403,19 @@ export async function markSubmitJobCompleted(jobId: string): Promise<void> {
   const fallbackNeeded = msg.includes("submit_jobs_mark_completed") && msg.includes("schema cache");
   if (!fallbackNeeded) throw queueInfraError("markSubmitJobCompleted.rpc", first.error);
 
-  const fallback = await supabase
+  const fallback = await supabaseClient
     .from("submit_jobs")
     .update(buildSubmitJobsCompletedFallbackUpdate())
     .eq("id", jobId);
   if (fallback.error) throw queueInfraError("markSubmitJobCompleted.fallbackUpdate", fallback.error);
 }
 
-export async function markSubmitJobFailed(jobId: string, message: string): Promise<{ retryCount: number; status: string }> {
+async function markSubmitJobFailedWithClient(
+  supabaseClient: JobQueueSupabaseClient,
+  jobId: string,
+  message: string,
+): Promise<{ retryCount: number; status: string }> {
+  const queueRpcCompat = toQueueRpcCompat(supabaseClient);
   const first = await queueRpcCompat.rpc("submit_jobs_mark_failed", {
     p_job_id: jobId,
     p_error: message,
@@ -404,7 +428,7 @@ export async function markSubmitJobFailed(jobId: string, message: string): Promi
   const fallbackNeeded = msg.includes("submit_jobs_mark_failed") && msg.includes("schema cache");
   if (!fallbackNeeded) throw queueInfraError("markSubmitJobFailed.rpc", first.error);
 
-  const current = await supabase
+  const current = await supabaseClient
     .from("submit_jobs")
     .select(SUBMIT_JOBS_RETRY_COUNT_SELECT)
     .eq("id", jobId)
@@ -413,7 +437,7 @@ export async function markSubmitJobFailed(jobId: string, message: string): Promi
   const retryCount = (parseSubmitJobRetryCountRow(current.data)?.retry_count ?? 0) + 1;
   const status = retryCount >= 5 ? "failed" : "pending";
   const nextRetryAt = status === "pending" ? new Date(Date.now() + 30_000).toISOString() : null;
-  const patch = await supabase
+  const patch = await supabaseClient
     .from("submit_jobs")
     .update(buildSubmitJobsFailedFallbackUpdate(retryCount, message, status, nextRetryAt))
     .eq("id", jobId);
@@ -425,8 +449,47 @@ export async function markSubmitJobFailed(jobId: string, message: string): Promi
   };
 }
 
-export async function fetchSubmitJobMetrics(): Promise<SubmitJobMetrics> {
-  const { data, error } = await supabase.rpc("submit_jobs_metrics");
+async function fetchSubmitJobMetricsWithClient(
+  supabaseClient: JobQueueSupabaseClient,
+): Promise<SubmitJobMetrics> {
+  const { data, error } = await supabaseClient.rpc("submit_jobs_metrics");
   if (error) throw error;
   return parseSubmitJobMetricsRow(data);
+}
+
+export function createJobQueueApi(supabaseClient: JobQueueSupabaseClient) {
+  return {
+    enqueueSubmitJob: (input: EnqueueSubmitJobInput) => enqueueSubmitJobWithClient(supabaseClient, input),
+    claimSubmitJobs: (workerId: string, limit = WORKER_BATCH_SIZE, jobType?: string) =>
+      claimSubmitJobsWithClient(supabaseClient, workerId, limit, jobType),
+    recoverStuckSubmitJobs: () => recoverStuckSubmitJobsWithClient(supabaseClient),
+    markSubmitJobCompleted: (jobId: string) => markSubmitJobCompletedWithClient(supabaseClient, jobId),
+    markSubmitJobFailed: (jobId: string, message: string) =>
+      markSubmitJobFailedWithClient(supabaseClient, jobId, message),
+    fetchSubmitJobMetrics: () => fetchSubmitJobMetricsWithClient(supabaseClient),
+  };
+}
+
+export async function enqueueSubmitJob(input: EnqueueSubmitJobInput): Promise<SubmitJobRow> {
+  return enqueueSubmitJobWithClient(supabase, input);
+}
+
+export async function claimSubmitJobs(workerId: string, limit = WORKER_BATCH_SIZE, jobType?: string): Promise<SubmitJobRow[]> {
+  return claimSubmitJobsWithClient(supabase, workerId, limit, jobType);
+}
+
+export async function recoverStuckSubmitJobs(): Promise<number> {
+  return recoverStuckSubmitJobsWithClient(supabase);
+}
+
+export async function markSubmitJobCompleted(jobId: string): Promise<void> {
+  return markSubmitJobCompletedWithClient(supabase, jobId);
+}
+
+export async function markSubmitJobFailed(jobId: string, message: string): Promise<{ retryCount: number; status: string }> {
+  return markSubmitJobFailedWithClient(supabase, jobId, message);
+}
+
+export async function fetchSubmitJobMetrics(): Promise<SubmitJobMetrics> {
+  return fetchSubmitJobMetricsWithClient(supabase);
 }

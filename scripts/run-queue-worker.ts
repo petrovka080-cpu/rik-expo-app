@@ -29,17 +29,17 @@ function loadEnvFile(filePath: string) {
 const root = process.cwd();
 loadEnvFile(path.join(root, ".env.local"));
 loadEnvFile(path.join(root, ".env"));
-process.env.RIK_QUEUE_WORKER_USE_SERVICE_ROLE = "true";
 
 ignoreBrokenPipe(process.stdout);
 ignoreBrokenPipe(process.stderr);
 
 async function main() {
+  const { SERVER_SUPABASE_KEY_KIND } = await import("../src/lib/server/serverSupabaseEnv");
+
   console.info("[queue.runner] starting", {
     JOB_QUEUE_ENABLED:
       process.env.EXPO_PUBLIC_JOB_QUEUE_ENABLED ?? process.env.JOB_QUEUE_ENABLED ?? null,
-    SUPABASE_KEY_KIND:
-      process.env.RIK_QUEUE_WORKER_USE_SERVICE_ROLE === "true" ? "service_role" : "anon",
+    SUPABASE_KEY_KIND: SERVER_SUPABASE_KEY_KIND,
   });
 
   let handle: { stop: () => void } | null = null;
@@ -61,8 +61,8 @@ async function main() {
 
   while (true) {
     try {
-      const { startQueueWorker } = await import("../src/workers/queueWorker");
-      handle = startQueueWorker({
+      const { startServerQueueWorker } = await import("../src/workers/queueWorker.server");
+      handle = startServerQueueWorker({
         workerId: `node:${Date.now().toString(36)}`,
       });
 
@@ -70,9 +70,10 @@ async function main() {
         // Keep process alive while the worker loop runs.
       });
     } catch (error: unknown) {
-      const message = error instanceof Error && error.message.trim()
-        ? error.message.trim()
-        : String(error ?? "unknown worker bootstrap error");
+      const message =
+        error instanceof Error && error.message.trim()
+          ? error.message.trim()
+          : String(error ?? "unknown worker bootstrap error");
       console.error("[queue.runner] crashed, restarting", { message });
       await sleep(5000);
     }

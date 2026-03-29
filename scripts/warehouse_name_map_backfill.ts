@@ -20,14 +20,13 @@ async function main() {
   const root = process.cwd();
   loadEnvFile(path.join(root, ".env.local"));
   loadEnvFile(path.join(root, ".env"));
-  process.env.RIK_QUEUE_WORKER_USE_SERVICE_ROLE = "true";
 
-  const [{ supabase }, { refreshWarehouseNameMapUiProjection }] = await Promise.all([
-    import("../src/lib/supabaseClient"),
+  const [{ getServerSupabaseClient }, { refreshWarehouseNameMapUiProjection }] = await Promise.all([
+    import("../src/lib/server/serverSupabaseClient"),
     import("../src/screens/warehouse/warehouse.nameMap.ui"),
   ]);
 
-  const updated = await refreshWarehouseNameMapUiProjection(supabase, {
+  const updated = await refreshWarehouseNameMapUiProjection(getServerSupabaseClient(), {
     refreshMode: "full",
   });
   console.log("[warehouse_name_map_backfill] refreshed rows:", updated);

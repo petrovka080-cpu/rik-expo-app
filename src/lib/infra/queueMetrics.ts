@@ -1,17 +1,28 @@
 import { fetchSubmitJobMetrics, JOB_QUEUE_ENABLED } from "./jobQueue";
-import { fetchQueueLatencyMetrics } from "./queueLatencyMetrics";
+import { fetchQueueLatencyMetrics, type QueueLatencyMetrics } from "./queueLatencyMetrics";
+import type { SubmitJobMetrics } from "./jobQueue";
 
 export type QueueMetricsLoopHandle = { stop: () => void };
 
-export function startQueueMetricsLoop(intervalMs = 60_000): QueueMetricsLoopHandle {
+type QueueMetricsDeps = {
+  fetchSubmitJobMetrics?: () => Promise<SubmitJobMetrics>;
+  fetchQueueLatencyMetrics?: () => Promise<QueueLatencyMetrics>;
+};
+
+export function startQueueMetricsLoop(
+  intervalMs = 60_000,
+  deps: QueueMetricsDeps = {},
+): QueueMetricsLoopHandle {
   let stopped = false;
   let timer: ReturnType<typeof setTimeout> | null = null;
+  const fetchSubmitMetrics = deps.fetchSubmitJobMetrics ?? fetchSubmitJobMetrics;
+  const fetchLatencyMetrics = deps.fetchQueueLatencyMetrics ?? fetchQueueLatencyMetrics;
 
   const tick = async () => {
     if (stopped || !JOB_QUEUE_ENABLED) return;
     try {
-      const m = await fetchSubmitJobMetrics();
-      const latency = await fetchQueueLatencyMetrics();
+      const m = await fetchSubmitMetrics();
+      const latency = await fetchLatencyMetrics();
       const oldestPendingMs = latency.oldestPendingAt
         ? Math.max(0, Date.now() - new Date(latency.oldestPendingAt).getTime())
         : 0;

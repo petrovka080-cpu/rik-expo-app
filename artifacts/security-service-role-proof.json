@@ -1,0 +1,43 @@
+{
+  "generatedAt": "2026-03-29T20:54:20.744Z",
+  "status": "GREEN",
+  "auditCompleted": true,
+  "export": {
+    "ok": true,
+    "exitCode": 0,
+    "error": null,
+    "command": "npx expo export --platform all --output-dir dist --clear"
+  },
+  "envBoundary": {
+    "serviceRolePresentLocally": true,
+    "serviceRoleFingerprint": "bc15aec6c9e8",
+    "serviceRoleInClientSafeEnv": false,
+    "serviceRoleInPublicConfig": false,
+    "sharedImportLeakageClosed": true,
+    "clientRiskOccurrences": [],
+    "serverImportLeaks": []
+  },
+  "bundleScan": {
+    "scannedFileCount": 112,
+    "identifierHits": [],
+    "literalSecretHits": [],
+    "serverModuleHits": []
+  },
+  "flows": {
+    "clientSafeSupabase": {
+      "ok": true,
+      "keyKind": "anon",
+      "envValid": true
+    },
+    "serverOnlySupabase": {
+      "ok": true,
+      "error": null,
+      "queueMetricsSample": {
+        "pending": 0,
+        "processing": 0,
+        "failed": 70,
+        "oldest_pending": null
+      }
+    }
+  }
+}

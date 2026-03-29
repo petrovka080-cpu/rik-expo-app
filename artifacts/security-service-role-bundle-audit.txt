@@ -1,0 +1,202 @@
+status=GREEN
+generatedAt=2026-03-29T20:54:20.744Z
+export.ok=true
+export.exitCode=0
+export.error=
+serviceRole.presentLocally=true
+serviceRole.fingerprint=bc15aec6c9e8
+clientSafeEnvLeak=false
+publicConfigLeak=false
+clientRiskOccurrences=0
+serverImportLeaks=0
+bundleFilesScanned=112
+bundleIdentifierHits=0
+bundleLiteralSecretHits=0
+bundleServerModuleHits=0
+clientFlowOk=true
+serverFlowOk=true
+
+[export.stdout]
+Starting Metro Bundler
+warning: Bundler cache is empty, rebuilding (this may take a minute)
+Web node_modules\expo-router\entry.js ▓▓░░░░░░░░░░░░░░ 16.0% (4/7)
+iOS node_modules\expo-router\entry.js ░░░░░░░░░░░░░░░░  1.0% (1/2)
+Android node_modules\expo-router\entry.js ▓▓░░░░░░░░░░░░░░ 16.0% ( 71/221)
+Web node_modules\expo-router\entry.js ▓▓▓▓░░░░░░░░░░░░ 27.7% (16/43)
+iOS node_modules\expo-router\entry.js ▓▓░░░░░░░░░░░░░░ 13.8% ( 59/189)
+Android node_modules\expo-router\entry.js ▓▓▓▓▓▓░░░░░░░░░░ 39.7% (307/487)
+Web node_modules\expo-router\entry.js ▓▓▓▓░░░░░░░░░░░░ 27.7% ( 84/252)
+iOS node_modules\expo-router\entry.js ▓▓▓░░░░░░░░░░░░░ 24.5% (206/442)
+Android node_modules\expo-router\entry.js ▓▓▓▓▓▓▓▓▓░░░░░░░ 56.5% (489/652)
+Web node_modules\expo-router\entry.js ▓▓▓▓░░░░░░░░░░░░ 27.7% (162/489)
+iOS node_modules\expo-router\entry.js ▓▓▓▓▓░░░░░░░░░░░ 33.9% (337/579)
+Android node_modules\expo-router\entry.js ▓▓▓▓▓▓▓▓▓▓░░░░░░ 65.0% (570/858)
+Web node_modules\expo-router\entry.js ▓▓▓▓░░░░░░░░░░░░ 27.7% (269/599)
+iOS node_modules\expo-router\entry.js ▓▓▓▓▓░░░░░░░░░░░ 35.4% (439/861)
+Android node_modules\expo-router\entry.js ▓▓▓▓▓▓▓▓▓▓░░░░░░ 65.0% (653/934)
+Web node_modules\expo-router\entry.js ▓▓▓▓░░░░░░░░░░░░ 27.7% (406/806)
+iOS node_modules\expo-router\entry.js ▓▓▓▓▓▓░░░░░░░░░░ 38.6% (575/925)
+Android node_modules\expo-router\entry.js ▓▓▓▓▓▓▓▓▓▓░░░░░░ 65.0% (661/947)
+Web node_modules\expo-router\entry.js ▓▓▓▓▓░░░░░░░░░░░ 31.4% (490/874)
+iOS node_modules\expo-router\entry.js ▓▓▓▓▓▓░░░░░░░░░░ 38.6% (575/925)
+Android node_modules\expo-router\entry.js ▓▓▓▓▓▓▓▓▓▓░░░░░░ 65.0% ( 849/1193)
+Web node_modules\expo-router\entry.js ▓▓▓▓▓░░░░░░░░░░░ 34.0% (536/919)
+iOS node_modules\expo-router\entry.js ▓▓▓▓▓▓▓░░░░░░░░░ 49.0% ( 876/1261)
+Android node_modules\expo-router\entry.js ▓▓▓▓▓▓▓▓▓▓░░░░░░ 65.0% ( 922/1271)
+Web node_modules\expo-router\entry.js ▓▓▓▓▓▓▓░░░░░░░░░ 45.9% ( 738/1090)
+iOS node_modules\expo-router\entry.js ▓▓▓▓▓▓▓▓░░░░░░░░ 51.4% ( 910/1269)
+Android node_modules\expo-router\entry.js ▓▓▓▓▓▓▓▓▓▓░░░░░░ 65.0% ( 948/1295)
+Web node_modules\expo-router\entry.js ▓▓▓▓▓▓▓▓░░░░░░░░ 51.0% ( 863/1209)
+iOS node_modules\expo-router\entry.js ▓▓▓▓▓▓▓▓░░░░░░░░ 51.4% ( 910/1269)
+Android node_modules\expo-router\entry.js ▓▓▓▓▓▓▓▓▓▓░░░░░░ 65.0% (1019/1363)
+Web node_modules\expo-router\entry.js ▓▓▓▓▓▓▓▓▓░░░░░░░ 58.1% ( 945/1240)
+iOS node_modules\expo-router\entry.js ▓▓▓▓▓▓▓▓░░░░░░░░ 51.4% ( 910/1269)
+Android node_modules\expo-router\entry.js ▓▓▓▓▓▓▓▓▓▓░░░░░░ 66.2% (1249/1535)
+Web node_modules\expo-router\entry.js ▓▓▓▓▓▓▓▓▓░░░░░░░ 58.3% ( 947/1240)
+iOS node_modules\expo-router\entry.js ▓▓▓▓▓▓▓▓▓▓░░░░░░ 66.9% (1258/1538)
+Android node_modules\expo-router\entry.js ▓▓▓▓▓▓▓▓▓▓░░░░░░ 66.2% (1249/1535)
+Web node_modules\expo-router\entry.js ▓▓▓▓▓▓▓▓▓▓▓░░░░░ 74.9% (1184/1368)
+iOS node_modules\expo-router\entry.js ▓▓▓▓▓▓▓▓▓▓░░░░░░ 68.3% (1285/1555)
+Android node_modules\expo-router\entry.js ▓▓▓▓▓▓▓▓▓▓░░░░░░ 68.2% (1284/1555)
+Web node_modules\expo-router\entry.js ▓▓▓▓▓▓▓▓▓▓▓▓░░░░ 78.3% (1236/1397)
+iOS node_modules\expo-router\entry.js ▓▓▓▓▓▓▓▓▓▓▓░░░░░ 71.1% (1334/1583)
+Android node_modules\expo-router\entry.js ▓▓▓▓▓▓▓▓▓▓▓▓░░░░ 76.1% (1528/1752)
+Web node_modules\expo-router\entry.js ▓▓▓▓▓▓▓▓▓▓▓▓▓░░░ 83.2% (1298/1423)
+iOS node_modules\expo-router\entry.js ▓▓▓▓▓▓▓▓▓▓▓▓░░░░ 76.0% (1541/1769)
+Android node_modules\expo-router\entry.js ▓▓▓▓▓▓▓▓▓▓▓▓░░░░ 77.0% (1552/1769)
+Web node_modules\expo-router\entry.js ▓▓▓▓▓▓▓▓▓▓▓▓▓░░░ 86.2% (1375/1485)
+iOS node_modules\expo-router\entry.js ▓▓▓▓▓▓▓▓▓▓▓▓░░░░ 76.4% (1548/1771)
+Android node_modules\expo-router\entry.js ▓▓▓▓▓▓▓▓▓▓▓▓░░░░ 79.2% (1593/1790)
+Web node_modules\expo-router\entry.js ▓▓▓▓▓▓▓▓▓▓▓▓▓░░░ 87.4% (1401/1499)
+iOS node_modules\expo-router\entry.js ▓▓▓▓▓▓▓▓▓▓▓▓░░░░ 79.6% (1598/1791)
+Android node_modules\expo-router\entry.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░ 87.7% (1766/1886)
+Web node_modules\expo-router\entry.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░ 91.3% (1488/1559)
+iOS node_modules\expo-router\entry.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░ 87.9% (1771/1894)
+Android node_modules\expo-router\entry.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░ 92.7% (1871/1943)
+Web node_modules\expo-router\entry.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░ 91.8% (1586/1662)
+iOS node_modules\expo-router\entry.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░ 93.5% (1891/1981)
+Android node_modules\expo-router\entry.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░ 94.3% (1972/2031)
+Web node_modules\expo-router\entry.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░ 99.9% (1710/1711)
+iOS node_modules\expo-router\entry.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░ 99.9% (2113/2113)
+Android node_modules\expo-router\entry.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░ 99.3% (2108/2115)
+Web Bundled 70015ms node_modules\expo-router\entry.js (1711 modules)
+iOS node_modules\expo-router\entry.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░ 99.9% (2113/2113)
+Android node_modules\expo-router\entry.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░ 99.3% (2108/2115)
+Android Bundled 76906ms node_modules\expo-router\entry.js (2115 modules)
+iOS node_modules\expo-router\entry.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░ 99.9% (2113/2113)
+Android node_modules\expo-router\entry.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░ 99.3% (2108/2115)
+iOS node_modules\expo-router\entry.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░ 99.9% (2113/2113)
+iOS Bundled 83751ms node_modules\expo-router\entry.js (2113 modules)
+iOS node_modules\expo-router\entry.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░ 99.9% (2113/2113)
+
+› Assets (101):
+assets\market-categories\delivery_3d.13788781b2b9072ddaec4157b96fee3a.jpg (582 kB)
+assets\market-categories\delivery_3d.jpg (582 kB)
+assets\market-categories\materials_3d.ff4dab2ed949f7b1d269127af815b8c1.jpg (488 kB)
+assets\market-categories\materials_3d.jpg (488 kB)
+assets\market-categories\misc_3d.412172e1475db44b5a7b75aa87b429d1.jpg (567 kB)
+assets\market-categories\misc_3d.jpg (567 kB)
+assets\market-categories\services_3d.5caad4380be01afbe2aec782ce5e2992.jpg (542 kB)
+assets\market-categories\services_3d.jpg (542 kB)
+assets\market-categories\tools_3d.550a7c217c9fca082327c3d68424ad88.jpg (490 kB)
+assets\market-categories\tools_3d.jpg (490 kB)
+assets\market-categories\transport_3d.13788781b2b9072ddaec4157b96fee3a.jpg (582 kB)
+assets\market-categories\works_3d.5d33a63db4688c4749bd2179618cb4cc.jpg (553 kB)
+assets\market-categories\works_3d.jpg (553 kB)
+assets\notify.mp3 (0 B)
+node_modules\@expo\vector-icons\build\vendor\react-native-vector-icons\Fonts\AntDesign.3f78af31cca60105799838a1a7a59fbd.ttf (130 kB)
+node_modules\@expo\vector-icons\build\vendor\react-native-vector-icons\Fonts\AntDesign.ttf (130 kB)
+node_modules\@expo\vector-icons\build\vendor\react-native-vector-icons\Fonts\Entypo.31b5ffea3daddc69dd01a1f3d6cf63c5.ttf (66.2 kB)
+node_modules\@expo\vector-icons\build\vendor\react-native-vector-icons\Fonts\Entypo.ttf (66.2 kB)
+node_modules\@expo\vector-icons\build\vendor\react-native-vector-icons\Fonts\EvilIcons.140c53a7643ea949007aa9a282153849.ttf (13.5 kB)
+node_modules\@expo\vector-icons\build\vendor\react-native-vector-icons\Fonts\EvilIcons.ttf (13.5 kB)
+node_modules\@expo\vector-icons\build\vendor\react-native-vector-icons\Fonts\Feather.ca4b48e04dc1ce10bfbddb262c8b835f.ttf (55.6 kB)
+node_modules\@expo\vector-icons\build\vendor\react-native-vector-icons\Fonts\Feather.ttf (55.6 kB)
+node_modules\@expo\vector-icons\build\vendor\react-native-vector-icons\Fonts\FontAwesome.b06871f281fee6b241d60582ae9369b9.ttf (166 kB)
+node_modules\@expo\vector-icons\build\vendor\react-native-vector-icons\Fonts\FontAwesome.ttf (166 kB)
+node_modules\@expo\vector-icons\build\vendor\react-native-vector-icons\Fonts\FontAwesome5_Brands.3b89dd103490708d19a95adcae52210e.ttf (134 kB)
+node_modules\@expo\vector-icons\build\vendor\react-native-vector-icons\Fonts\FontAwesome5_Brands.ttf (134 kB)
+node_modules\@expo\vector-icons\build\vendor\react-native-vector-icons\Fonts\FontAwesome5_Regular.1f77739ca9ff2188b539c36f30ffa2be.ttf (33.7 kB)
+node_modules\@expo\vector-icons\build\vendor\react-native-vector-icons\Fonts\FontAwesome5_Regular.ttf (33.7 kB)
+node_modules\@expo\vector-icons\build\vendor\react-native-vector-icons\Fonts\FontAwesome5_Solid.605ed7926cf39a2ad5ec2d1f9d391d3d.ttf (203 kB)
+node_modules\@expo\vector-icons\build\vendor\react-native-vector-icons\Fonts\FontAwesome5_Solid.ttf (203 kB)
+node_modules\@expo\vector-icons\build\vendor\react-native-vector-icons\Fonts\FontAwesome6_Brands.56c8d80832e37783f12c05db7c8849e2.ttf (209 kB)
+node_modules\@expo\vector-icons\build\vendor\react-native-vector-icons\Fonts\FontAwesome6_Brands.ttf (209 kB)
+node_modules\@expo\vector-icons\build\vendor\react-native-vector-icons\Fonts\FontAwesome6_Regular.370dd5af19f8364907b6e2c41f45dbbf.ttf (68 kB)
+node_modules\@expo\vector-icons\build\vendor\react-native-vector-icons\Fonts\FontAwesome6_Regular.ttf (68 kB)
+node_modules\@expo\vector-icons\build\vendor\react-native-vector-icons\Fonts\FontAwesome6_Solid.adec7d6f310bc577f05e8fe06a5daccf.ttf (424 kB)
+node_modules\@expo\vector-icons\build\vendor\react-native-vector-icons\Fonts\FontAwesome6_Solid.ttf (424 kB)
+node_modules\@expo\vector-icons\build\vendor\react-native-vector-icons\Fonts\Fontisto.b49ae8ab2dbccb02c4d11caaacf09eab.ttf (314 kB)
+node_modules\@expo\vector-icons\build\vendor\react-native-vector-icons\Fonts\Fontisto.ttf (314 kB)
+node_modules\@expo\vector-icons\build\vendor\react-native-vector-icons\Fonts\Foundation.e20945d7c929279ef7a6f1db184a4470.ttf (57 kB)
+node_modules\@expo\vector-icons\build\vendor\react-native-vector-icons\Fonts\Foundation.ttf (57 kB)
+node_modules\@expo\vector-icons\build\vendor\react-native-vector-icons\Fonts\Ionicons.b4eb097d35f44ed943676fd56f6bdc51.ttf (390 kB)
+node_modules\@expo\vector-icons\build\vendor\react-native-vector-icons\Fonts\Ionicons.ttf (390 kB)
+node_modules\@expo\vector-icons\build\vendor\react-native-vector-icons\Fonts\MaterialCommunityIcons.6e435534bd35da5fef04168860a9b8fa.ttf (1.31 MB)
+node_modules\@expo\vector-icons\build\vendor\react-native-vector-icons\Fonts\MaterialCommunityIcons.ttf (1.31 MB)
+node_modules\@expo\vector-icons\build\vendor\react-native-vector-icons\Fonts\MaterialIcons.4e85bc9ebe07e0340c9c4fc2f6c38908.ttf (357 kB)
+node_modules\@expo\vector-icons\build\vendor\react-native-vector-icons\Fonts\MaterialIcons.ttf (357 kB)
+node_modules\@expo\vector-icons\build\vendor\react-native-vector-icons\Fonts\Octicons.871378c6eab492a3e689a9385dc45a12.ttf (69.4 kB)
+node_modules\@expo\vector-icons\build\vendor\react-native-vector-icons\Fonts\Octicons.ttf (69.4 kB)
+node_modules\@expo\vector-icons\build\vendor\react-native-vector-icons\Fonts\SimpleLineIcons.d2285965fe34b05465047401b8595dd0.ttf (54.1 kB)
+node_modules\@expo\vector-icons\build\vendor\react-native-vector-icons\Fonts\SimpleLineIcons.ttf (54.1 kB)
+node_modules\@expo\vector-icons\build\vendor\react-native-vector-icons\Fonts\Zocial.1681f34aaca71b8dfb70756bca331eb2.ttf (25.8 kB)
+node_modules\@expo\vector-icons\build\vendor\react-native-vector-icons\Fonts\Zocial.ttf (25.8 kB)
+node_modules\@react-navigation\elements\lib\module\assets\back-icon-mask.0a328cd9c1afd0afe8e3b1ec5165b1b4.png (653 B)
+node_modules\@react-navigation\elements\lib\module\assets\back-icon-mask.png (653 B)
+node_modules\@react-navigation\elements\lib\module\assets\back-icon.35ba0eaec5a4f5ed12ca16fabeae451d.png (207 B)
+node_modules\@react-navigation\elements\lib\module\assets\back-icon.png (8 variations | 359 B)
+node_modules\@react-navigation\elements\lib\module\assets\clear-icon.c94f6478e7ae0cdd9f15de1fcb9e5e55.png (4 variations | 425 B)
+node_modules\@react-navigation\elements\lib\module\assets\clear-icon.png (4 variations | 425 B)
+node_modules\@react-navigation\elements\lib\module\assets\close-icon.808e1b1b9b53114ec2838071a7e6daa7.png (4 variations | 235 B)
+node_modules\@react-navigation\elements\lib\module\assets\close-icon.png (4 variations | 235 B)
+node_modules\@react-navigation\elements\lib\module\assets\search-icon.286d67d3f74808a60a78d3ebf1a5fb57.png (928 B)
+node_modules\@react-navigation\elements\lib\module\assets\search-icon.png (7 variations | 592 B)
+node_modules\expo-router\assets\arrow_down.017bc6ba3fc25503e5eb5e53826d48a8.png (9.46 kB)
+node_modules\expo-router\assets\arrow_down.png (9.46 kB)
+node_modules\expo-router\assets\error.d1ea1496f9057eb392d5bbf3732a61b7.png (469 B)
+node_modules\expo-router\assets\error.png (469 B)
+node_modules\expo-router\assets\file.19eeb73b9593a38f8e9f418337fc7d10.png (138 B)
+node_modules\expo-router\assets\file.png (138 B)
+node_modules\expo-router\assets\forward.d8b800c443b8972542883e0b9de2bdc6.png (188 B)
+node_modules\expo-router\assets\forward.png (188 B)
+node_modules\expo-router\assets\pkg.ab19f4cbc543357183a20571f68380a3.png (364 B)
+node_modules\expo-router\assets\pkg.png (364 B)
+node_modules\expo-router\assets\sitemap.412dd9275b6b48ad28f5e3d81bb1f626.png (465 B)
+node_modules\expo-router\assets\sitemap.png (465 B)
+node_modules\expo-router\assets\unmatched.20e71bdf79e3a97bf55fd9e164041578.png (4.75 kB)
+node_modules\expo-router\assets\unmatched.png (4.75 kB)
+
+› web bundles (6):
+_expo/static/css/global-64c04c8e3e66d1ea986c75bf4cebc57c.css (109 B)
+_expo/static/js/web/__common-0edea0a515bbbc95e7a99ad1a42a46c6.js (49 kB)
+_expo/static/js/web/__expo-metro-runtime-37844bfe9405ed99797bdb43820a0459.js (10.1 kB)
+_expo/static/js/web/entry-db05a2d897654759eb888c9a0ae37bd2.js (5.51 MB)
+_expo/static/js/web/index-b9a65758d63f03b724f7c3e9a66c7748.js (2.09 kB)
+_expo/static/js/web/rik_api-5b2b1d4f9d2de9d504ffdc2260955da7.js (9.56 kB)
+
+› android bundles (1):
+_expo/static/js/android/entry-dcdbd03d17c70a4589bd2238d13ede31.hbc (9.93 MB)
+
+› ios bundles (1):
+_expo/static/js/ios/entry-eceb5f96381461e09288cf4db5c61342.hbc (9.92 MB)
+
+› Files (2):
+index.html (1.57 kB)
+metadata.json (7.03 kB)
+
+Exported: dist
+
+
+[export.stderr]
+
+
+[clientRiskOccurrences]
+
+[serverImportLeaks]
+
+[bundleIdentifierHits]
+
+[bundleLiteralSecretHits]
+
+[bundleServerModuleHits]
