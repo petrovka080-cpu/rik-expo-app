@@ -84,6 +84,16 @@ async function selectRecoverableContractor() {
       .filter(Boolean),
   );
 
+  let compatibilityCandidate:
+    | {
+        contractor: ContractorRecord;
+        canonical: Awaited<ReturnType<typeof loadContractorInboxScope>>;
+        bundle: Awaited<ReturnType<typeof loadContractorWorksBundle>>;
+        compatibilityRows: ReturnType<typeof buildCompatibilityInboxRows>;
+        screenContract: ReturnType<typeof resolveContractorScreenContract>;
+      }
+    | null = null;
+
   for (const contractor of candidateContractors) {
     if (!contractorUserIds.has(String(contractor.user_id || "").trim())) continue;
 
@@ -123,8 +133,18 @@ async function selectRecoverableContractor() {
       loadError: null,
     });
 
-    if (compatibilityRows.length > 0 || canonical.rows.length > 0) {
+    if (canonical.rows.length > 0) {
       return {
+        contractor,
+        canonical,
+        bundle,
+        compatibilityRows,
+        screenContract,
+      };
+    }
+
+    if (!compatibilityCandidate && compatibilityRows.length > 0) {
+      compatibilityCandidate = {
         contractor,
         canonical,
         bundle,
@@ -134,7 +154,7 @@ async function selectRecoverableContractor() {
     }
   }
 
-  return null;
+  return compatibilityCandidate;
 }
 
 async function main() {
@@ -251,12 +271,17 @@ async function main() {
     screenState: target.screenContract.state,
     screenSource: target.screenContract.source,
     creatorOwnedSubcontractCount,
+    canonicalRecovered: target.canonical.rows.length > 0 && target.screenContract.source === "canonical",
     status:
+      target.canonical.rows.length > 0 &&
+      target.screenContract.state === "ready" &&
+      target.screenContract.source === "canonical" &&
       effectiveRows.length > 0 &&
       !screenStateProof.invalidMaterialVisible &&
       screenStateProof.emptyStateSeparatedFromError &&
       screenStateProof.degradedStateSeparatedFromEmpty &&
-      screenStateProof.detailHeaderMatches
+      screenStateProof.detailHeaderMatches &&
+      screenStateProof.detailLoadState === "ready"
         ? "GREEN"
         : "NOT GREEN",
   };
