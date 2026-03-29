@@ -43,6 +43,11 @@ const directorPdfDataSource = readText("src/lib/api/pdf_director.data.ts");
 const directorReportsTruthSummary = readJson<JsonRecord>("artifacts/director-reports-truth.summary.json");
 const directorFinanceTruthSummary = readJson<JsonRecord>("artifacts/director-finance-truth.summary.json");
 const foremanRequestSyncRuntimeSummary = readJson<JsonRecord>("artifacts/foreman-request-sync-runtime.summary.json");
+const foremanRuntimeGatePassed = Boolean(
+  foremanRequestSyncRuntimeSummary &&
+  (foremanRequestSyncRuntimeSummary.runtimeVerified === true ||
+    foremanRequestSyncRuntimeSummary.status === "passed"),
+);
 
 const directorRequestScrollSmoke = {
   requestSheetUsesScrollableBody: includesAll(requestSheetSource, [
@@ -185,9 +190,7 @@ const summary = {
     'throw new Error("Этот черновик уже отправлен. Откройте новый активный черновик.");',
   ]),
   directorWorkInclusion: (directorWorkInclusionAudit as JsonRecord).passed === true,
-  foremanRuntimeVerified:
-    foremanRequestSyncRuntimeSummary?.runtimeVerified === true ||
-    foremanRequestSyncRuntimeSummary?.status === "passed",
+  foremanRuntimeVerified: foremanRuntimeGatePassed,
   green:
     (directorRequestScrollSmoke as JsonRecord).passed === true &&
     (foremanDraftRolloverSmoke as JsonRecord).passed === true &&
@@ -198,8 +201,7 @@ const summary = {
       'throw new Error("Этот черновик уже отправлен. Откройте новый активный черновик.");',
     ]) &&
     (directorWorkInclusionAudit as JsonRecord).passed === true &&
-    (foremanRequestSyncRuntimeSummary?.runtimeVerified === true ||
-      foremanRequestSyncRuntimeSummary?.status === "passed"),
+    foremanRuntimeGatePassed,
   status:
     (directorRequestScrollSmoke as JsonRecord).passed === true &&
     (foremanDraftRolloverSmoke as JsonRecord).passed === true &&
@@ -210,8 +212,7 @@ const summary = {
       'throw new Error("Этот черновик уже отправлен. Откройте новый активный черновик.");',
     ]) &&
     (directorWorkInclusionAudit as JsonRecord).passed === true &&
-    (foremanRequestSyncRuntimeSummary?.runtimeVerified === true ||
-      foremanRequestSyncRuntimeSummary?.status === "passed")
+    foremanRuntimeGatePassed
       ? "GREEN"
       : "NOT GREEN",
 };

@@ -251,6 +251,27 @@ async function selectFreshDropdownOption(page, triggerNeedles, preferredNeedles 
   }
   const fallback = candidates[0];
   if (!fallback) {
+    const visiblePreferred = preferredNeedles.find((needle) =>
+      after.some((text) => {
+        if (!text || excludeNeedles.some((exclude) => text.includes(exclude))) return false;
+        if (triggerNeedles.some((trigger) => text.includes(trigger))) return false;
+        return text.includes(needle);
+      }),
+    );
+    if (visiblePreferred) {
+      await clickAnyText(page, [visiblePreferred]);
+      return visiblePreferred;
+    }
+
+    const visibleFallback = after.find((text) => {
+      if (!text || excludeNeedles.some((needle) => text.includes(needle))) return false;
+      return !triggerNeedles.some((trigger) => text.includes(trigger));
+    });
+    if (visibleFallback) {
+      await clickAnyText(page, [visibleFallback]);
+      return visibleFallback;
+    }
+
     throw new Error(`No dropdown option available after trigger: ${triggerNeedles.join("|")}`);
   }
   await clickAnyText(page, [fallback]);
@@ -296,6 +317,21 @@ function hasDraftSheetVisible(body) {
 
 function draftLooksEmpty(body) {
   return /(0\s+позиций|Позиции не найдены)/i.test(String(body || ""));
+}
+
+function hasDraftSummaryStableRobust(body) {
+  return /REQ-\d+\/\d{4}/.test(body)
+    && /(Черновик|Р§РµСЂРЅРѕРІРёРє|Р В§Р ВµРЎР‚Р Р…Р С•Р Р†Р С‘Р С”|Local draft ready|PDF|Excel)/i.test(body);
+}
+
+function hasDraftSheetVisibleRobust(body) {
+  return /REQ-\d+\/\d{4}/.test(body)
+    && /(PDF|Excel)/i.test(body)
+    && /(Черновик|Р§РµСЂРЅРѕРІРёРє|Р В§Р ВµРЎР‚Р Р…Р С•Р Р†Р С‘Р С”|Local draft ready)/i.test(body);
+}
+
+function draftLooksEmptyRobust(body) {
+  return /(0\s+позиций|0\s+РїРѕР·РёС†РёР№|Позиции не найдены|РџРѕР·РёС†РёРё РЅРµ РЅР°Р№РґРµРЅС‹|Черновик пуст)/i.test(String(body || ""));
 }
 
 async function setCatalogSearchTerm(page, value) {
@@ -440,6 +476,12 @@ async function requestItemsDebug(requestId) {
     .order("created_at", { ascending: true });
   if (result.error) throw result.error;
   return result.data || [];
+}
+
+async function requestItemsByRequestRpcCount(requestId) {
+  const result = await admin.rpc("request_items_by_request", { p_request_id: requestId });
+  if (result.error) throw result.error;
+  return Array.isArray(result.data) ? result.data.length : 0;
 }
 
 async function createApprovedSubcontract(userId) {
@@ -591,7 +633,7 @@ async function closeDraftModal(page) {
 }
 
 async function openDraftModalStable(page) {
-  if (hasDraftSheetVisible(await bodyText(page))) {
+  if (hasDraftSheetVisibleRobust(await bodyText(page))) {
     return;
   }
   const openedFromCatalog = await page.evaluate(() => {
@@ -607,7 +649,7 @@ async function openDraftModalStable(page) {
   if (openedFromCatalog) {
     await poll(
       "draft sheet visible",
-      async () => (hasDraftSheetVisible(await bodyText(page)) ? true : null),
+      async () => (hasDraftSheetVisibleRobust(await bodyText(page)) ? true : null),
       12_000,
       300,
     );
@@ -641,11 +683,11 @@ async function openDraftModalStable(page) {
     if (openedFromDraftCard) {
       await poll(
         "draft sheet visible",
-        async () => (hasDraftSheetVisible(await bodyText(page)) ? true : null),
+        async () => (hasDraftSheetVisibleRobust(await bodyText(page)) ? true : null),
         12_000,
         300,
       ).catch(() => null);
-      if (hasDraftSheetVisible(await bodyText(page))) {
+      if (hasDraftSheetVisibleRobust(await bodyText(page))) {
         return;
       }
     }
@@ -657,7 +699,7 @@ async function openDraftModalStable(page) {
   }
   await poll(
     "draft sheet visible",
-    async () => (hasDraftSheetVisible(await bodyText(page)) ? true : null),
+    async () => (hasDraftSheetVisibleRobust(await bodyText(page)) ? true : null),
     12_000,
     300,
   );
@@ -665,13 +707,13 @@ async function openDraftModalStable(page) {
 
 async function closeDraftModalStable(page) {
   await confirmFioIfNeeded(page).catch(() => {});
-  if (!hasDraftSheetVisible(await bodyText(page))) {
+  if (!hasDraftSheetVisibleRobust(await bodyText(page))) {
     return;
   }
   if (await hasVisibleAria(page, "Р—Р°РєСЂС‹С‚СЊ С‡РµСЂРЅРѕРІРёРє")) {
     await clickByAria(page, "Р—Р°РєСЂС‹С‚СЊ С‡РµСЂРЅРѕРІРёРє");
-    await poll("draft sheet hidden", async () => (!hasDraftSheetVisible(await bodyText(page)) ? true : null), 5_000, 200).catch(() => null);
-    if (!hasDraftSheetVisible(await bodyText(page))) {
+    await poll("draft sheet hidden", async () => (!hasDraftSheetVisibleRobust(await bodyText(page)) ? true : null), 5_000, 200).catch(() => null);
+    if (!hasDraftSheetVisibleRobust(await bodyText(page))) {
       return;
     }
   }
@@ -702,14 +744,14 @@ async function closeDraftModalStable(page) {
     return true;
   });
   if (closedByCloseControl) {
-    await poll("draft sheet hidden", async () => (!hasDraftSheetVisible(await bodyText(page)) ? true : null), 5_000, 200).catch(() => null);
-    if (!hasDraftSheetVisible(await bodyText(page))) {
+    await poll("draft sheet hidden", async () => (!hasDraftSheetVisibleRobust(await bodyText(page)) ? true : null), 5_000, 200).catch(() => null);
+    if (!hasDraftSheetVisibleRobust(await bodyText(page))) {
       return;
     }
   }
   await page.keyboard.press("Escape").catch(() => {});
-  await poll("draft sheet hidden", async () => (!hasDraftSheetVisible(await bodyText(page)) ? true : null), 5_000, 200).catch(() => null);
-  if (hasDraftSheetVisible(await bodyText(page))) {
+  await poll("draft sheet hidden", async () => (!hasDraftSheetVisibleRobust(await bodyText(page)) ? true : null), 5_000, 200).catch(() => null);
+  if (hasDraftSheetVisibleRobust(await bodyText(page))) {
     throw new Error("draft sheet close failed");
   }
 }
@@ -831,13 +873,13 @@ async function openCatalogDraftPill(page) {
     "subcontract draft ready",
     async () => {
       const body = await bodyText(page);
-      if (hasDraftSheetVisible(body)) {
+      if (hasDraftSheetVisibleRobust(body)) {
         return body;
       }
-      if (hasDraftSummaryStable(body)) {
+      if (hasDraftSummaryStableRobust(body)) {
         await openDraftModalStable(page).catch(() => {});
         const nextBody = await bodyText(page);
-        return hasDraftSheetVisible(nextBody) ? nextBody : null;
+        return hasDraftSheetVisibleRobust(nextBody) ? nextBody : null;
       }
       if (body.includes("ЗАЯВКА НА МАТЕРИАЛЫ") || body.includes("Открыть позиции и отправить")) {
         await openSubcontractDraft(page);
@@ -1014,6 +1056,8 @@ async function main() {
         passed: reopenedBody.includes(materialsDisplayNo),
         displayNo: materialsDisplayNo,
         sameRequestId: latest?.id === materialsRequestId,
+        activeItemCount: await activeRequestItemsCount(materialsRequestId),
+        rpcItemsCount: await requestItemsByRequestRpcCount(materialsRequestId),
       };
     }, (output.materials.history_visible = {}));
     if (!output.materials.reopen) {
@@ -1026,19 +1070,19 @@ async function main() {
       await ensureForemanContext(foremanPage);
       await openDraftModalStable(foremanPage).catch(() => {});
       let currentBody = await bodyText(foremanPage);
-      if (draftLooksEmpty(currentBody)) {
+      if (draftLooksEmptyRobust(currentBody)) {
         await closeDraftModalStable(foremanPage).catch(() => {});
         await ensureForemanContext(foremanPage);
         await openDraftModalStable(foremanPage).catch(() => {});
         currentBody = await bodyText(foremanPage);
       }
-      if (draftLooksEmpty(currentBody)) {
+      if (draftLooksEmptyRobust(currentBody)) {
         await ensureDraftRowsBeforeSubmit(foremanPage, materialsRequestId, async () => {
           await runCatalogAdd(foremanPage);
           await openDraftModalStable(foremanPage);
         });
       }
-      if (!hasDraftSheetVisible(await bodyText(foremanPage))) {
+      if (!hasDraftSheetVisibleRobust(await bodyText(foremanPage))) {
         await openDraftModalStable(foremanPage);
       }
       await sendCurrentDraft(foremanPage);
@@ -1157,7 +1201,7 @@ async function main() {
 
     await withFailureBody(async () => {
       if (!subcontractRequestId) throw new Error("No subcontract request to submit");
-      if (!hasDraftSheetVisible(await bodyText(foremanPage))) {
+      if (!hasDraftSheetVisibleRobust(await bodyText(foremanPage))) {
         await openCatalogDraftPill(foremanPage);
       }
       await sendCurrentDraft(foremanPage);

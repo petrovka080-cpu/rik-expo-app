@@ -667,12 +667,14 @@ async function runWebRuntime() {
     materials.cancel?.passed === true &&
     materials.reopen?.passed === true;
 
+  const materialsSubmitAfterReopenOk = materials.submit_after_reopen?.passed === true;
+  const directorMaterialsHandoffOk = director.handoff?.passed === true;
   const submitPathOk =
-    materials.submit_after_reopen?.passed === true ||
+    materialsSubmitAfterReopenOk &&
     (subcontract.submit as { passed?: boolean } | undefined)?.passed === true;
 
   const directorHandoffOk =
-    director.handoff?.passed === true ||
+    directorMaterialsHandoffOk &&
     director.subcontractHandoff?.passed === true;
 
   const subcontractAtomicObserved = foremanConsole.some(
@@ -713,7 +715,9 @@ async function runWebRuntime() {
         ? "passed"
         : "failed",
     materialsCrudOk,
+    materialsSubmitAfterReopenOk,
     submitPathOk,
+    directorMaterialsHandoffOk,
     directorHandoffOk,
     subcontractCreateOk: (subcontract.create as { passed?: boolean } | undefined)?.passed === true,
     subcontractAtomicObserved,
@@ -788,11 +792,20 @@ async function run() {
     scenariosPassed: {
       web: {
         materialsCrud: web.status === "passed" ? (web as { materialsCrudOk?: boolean }).materialsCrudOk === true : false,
-        submitPath: web.status === "passed" ? (web as { submitPathOk?: boolean }).submitPathOk === true : false,
+        submitPath:
+          web.status === "passed"
+            ? (web as { materialsSubmitAfterReopenOk?: boolean; submitPathOk?: boolean }).materialsSubmitAfterReopenOk ===
+                true &&
+              (web as { submitPathOk?: boolean }).submitPathOk === true
+            : false,
         subcontractAtomic:
           web.status === "passed" ? (web as { subcontractAtomicObserved?: boolean }).subcontractAtomicObserved === true : false,
         directorHandoff:
-          web.status === "passed" ? (web as { directorHandoffOk?: boolean }).directorHandoffOk === true : false,
+          web.status === "passed"
+            ? (web as { directorMaterialsHandoffOk?: boolean; directorHandoffOk?: boolean }).directorMaterialsHandoffOk ===
+                true &&
+              (web as { directorHandoffOk?: boolean }).directorHandoffOk === true
+            : false,
       },
       android: {
         routeOpen: android.status === "passed",

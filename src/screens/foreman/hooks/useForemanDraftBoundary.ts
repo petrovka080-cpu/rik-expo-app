@@ -287,6 +287,12 @@ export function useForemanDraftBoundary({
       const snapshot = localDraftSnapshotRef.current;
       if (!snapshot || !hasForemanLocalDraftContent(snapshot)) return null;
 
+      const snapshotOwnerId = normalizeDraftOwnerId(snapshot.ownerId);
+      const activeOwnerId = normalizeDraftOwnerId(activeDraftOwnerIdRef.current);
+      if (snapshotOwnerId && activeOwnerId && snapshotOwnerId !== activeOwnerId) {
+        return null;
+      }
+
       const currentRequestId = ridStr(targetRequestId ?? requestId);
       const snapshotRequestId = ridStr(snapshot.requestId);
 
@@ -1204,15 +1210,43 @@ export function useForemanDraftBoundary({
   );
 
   const openRequestById = useCallback(
-    (targetId: string | number | null | undefined) => {
+    async (targetId: string | number | null | undefined) => {
       const id = ridStr(targetId);
-      if (!id) return;
+      if (!id) return null;
       setActiveDraftOwnerId(undefined, { resetSubmitted: true });
       setRequestDetails(null);
+      const remote = await loadForemanRemoteDraftSnapshot({
+        requestId: id,
+        localSnapshot: localDraftSnapshotRef.current,
+      });
+      if (remote.snapshot) {
+        applyLocalDraftSnapshotToBoundary(remote.snapshot, {
+          restoreHeader: true,
+          clearWhenEmpty: true,
+          restoreSource: "remoteDraft",
+          restoreIdentity: `open:${id}`,
+        });
+        await refreshBoundarySyncState(remote.snapshot);
+        return id;
+      }
+      persistLocalDraftSnapshot(null);
       setRequestIdState(id);
-      void loadItems(id, { forceRemote: true });
+      setRequestDetails(remote.details);
+      if (remote.details) {
+        syncHeaderFromDetails(remote.details);
+      }
+      await loadItems(id, { forceRemote: true });
+      return id;
     },
-    [loadItems, setActiveDraftOwnerId, setRequestIdState],
+    [
+      applyLocalDraftSnapshotToBoundary,
+      loadItems,
+      persistLocalDraftSnapshot,
+      refreshBoundarySyncState,
+      setActiveDraftOwnerId,
+      setRequestIdState,
+      syncHeaderFromDetails,
+    ],
   );
 
   const bootstrapDraft = useCallback(

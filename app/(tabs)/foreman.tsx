@@ -554,8 +554,8 @@ function ForemanScreen() {
     }));
   }, [headerAttention, headerRequirements, setHeaderAttention]);
 
-  const handleHistorySelect = useCallback((request: ForemanRequestSummary) => {
-    openRequestById(request.id);
+  const handleHistorySelect = useCallback(async (request: ForemanRequestSummary) => {
+    await openRequestById(request.id);
     closeHistory();
     openDraft();
   }, [closeHistory, openDraft, openRequestById]);
@@ -570,7 +570,7 @@ function ForemanScreen() {
         sourcePath: "foreman.history.reopen",
         draftScopeKey: requestKey,
       });
-      openRequestById(requestKey);
+      await openRequestById(requestKey);
       closeHistory();
       openDraft();
     } catch (error) {
