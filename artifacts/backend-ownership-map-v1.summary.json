@@ -11,18 +11,17 @@
     "contractor"
   ],
   "allModulesCovered": true,
-  "residualClientTruthCount": 3,
+  "residualClientTruthCount": 2,
   "totalResidualP0": 0,
-  "totalResidualP1": 1,
+  "totalResidualP1": 0,
   "totalResidualP2": 2,
   "modulesAtRisk": [
-    "contractor",
     "accountant",
     "warehouse"
   ],
   "storesSafe": true,
   "criticalMoneyTruthOnClient": false,
-  "criticalOperationalTruthOnClient": true,
+  "criticalOperationalTruthOnClient": false,
   "criticalReportTruthOnClient": true,
   "roadmapDefined": true,
   "enforcementRulesExplicit": true,
@@ -30,5 +29,5 @@
   "noBroadRewritePerformed": true,
   "allRequiredArtifactsAccepted": false,
   "acceptedEnvironmentResidualCount": 2,
-  "nextPriorityBatch": "Contractor works bundle fallback burn-down"
+  "nextPriorityBatch": "PDF source family convergence"
 }

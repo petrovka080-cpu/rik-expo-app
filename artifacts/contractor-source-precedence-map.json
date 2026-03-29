@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-03-29T12:18:45.015Z",
-  "candidateContractorId": "88a832d4-099f-4f9a-8fce-ae6e086fc107",
+  "generatedAt": "2026-03-29T22:12:32.407Z",
+  "candidateContractorId": "481b5c0f-e9dc-4cf2-8959-43e25816a35a",
   "screen": {
     "route": "app/(tabs)/contractor.tsx",
     "primaryListComponent": "src/screens/contractor/components/ContractorSubcontractsList.tsx",
@@ -54,14 +54,15 @@
     "listRender": "ContractorSubcontractsList(data=contractorWorkCards)"
   },
   "bundleSourceMeta": {
-    "primaryOwner": "legacy_client_enrich",
-    "fallbackUsed": true,
-    "sourceKind": "legacy:view:v_works_fact+relational_enrich",
-    "rowParityStatus": "not_checked"
+    "primaryOwner": "rpc_scope_v1",
+    "fallbackUsed": false,
+    "sourceKind": "rpc:contractor_works_bundle_scope_v1",
+    "rowParityStatus": "not_checked",
+    "backendFirstPrimary": true
   },
-  "canonicalRows": 40,
-  "compatibilityRows": 11,
-  "effectiveRows": 40,
+  "canonicalRows": 4,
+  "compatibilityRows": 4,
+  "effectiveRows": 4,
   "chosenSource": "canonical",
   "renderState": "ready_current",
   "precedenceDecision": "canonical_inbox_scope",
@@ -75,7 +76,7 @@
     "hasCanonicalRows": true,
     "hasCompatibilityRows": true,
     "effectiveCardSourceKinds": {
-      "canonical": 40
+      "canonical": 4
     }
   }
 }

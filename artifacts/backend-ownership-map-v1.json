@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-03-29T21:06:28.632Z",
+  "generatedAt": "2026-03-29T22:12:40.801Z",
   "batch": "backend_ownership_map_v1",
   "documentSections": [
     "taxonomy",
@@ -516,8 +516,8 @@
           "proof": {
             "artifactKey": "contractor_works_bundle",
             "artifactPath": "artifacts/contractor-works-bundle-cutover-v1.summary.json",
-            "status": null,
-            "gate": null,
+            "status": "passed",
+            "gate": "GREEN",
             "ownershipMarkers": [
               "rpc.sourceMeta.primaryOwner=rpc_scope_v1",
               "rpc.sourceMeta.fallbackUsed=false"
@@ -556,30 +556,13 @@
         "visual status rendering",
         "retry button intent only"
       ],
-      "residualClientTruth": [
-        {
-          "id": "contractor_works_bundle_legacy_enrich_fallback",
-          "module": "contractor",
-          "contour": "Contractor works bundle legacy enrich fallback",
-          "exactFile": "src/screens/contractor/contractor.loadWorksService.ts",
-          "truthType": "operational",
-          "currentClientOwnership": "Works bundle load service still carries legacy_client_enrich beside rpc_scope_v1.",
-          "whyRisky": "Operational works truth is backend-owned primary already; legacy relational enrich remains a compatibility branch that keeps client composition alive.",
-          "requiredBackendContract": "contractor_works_bundle_scope_v1 hard cut without legacy enrich",
-          "priority": "P1",
-          "state": "legacy_branch",
-          "nextBatch": "Contractor works bundle fallback burn-down",
-          "evidencePaths": [
-            "src/screens/contractor/contractor.loadWorksService.ts",
-            "artifacts/contractor-works-bundle-cutover-v1.summary.json"
-          ]
-        }
-      ],
+      "residualClientTruth": [],
       "notes": [
-        "Contractor reliability is runtime-owned now; residual risk remains in the legacy works-bundle enrich branch."
+        "Contractor reliability is runtime-owned now and works-bundle truth is rpc-owned.",
+        "No contractor residual client-truth families remain in this ownership map."
       ],
-      "residualClientTruthCount": 1,
-      "highestResidualPriority": "P1"
+      "residualClientTruthCount": 0,
+      "highestResidualPriority": "none"
     }
   },
   "crossCuttingRules": {
@@ -832,35 +815,9 @@
         "src/screens/warehouse/warehouse.dayMaterialsReport.pdf.service.ts",
         "src/screens/warehouse/warehouse.objectWorkReport.pdf.service.ts"
       ]
-    },
-    {
-      "id": "contractor_works_bundle_legacy_enrich_fallback",
-      "module": "contractor",
-      "contour": "Contractor works bundle legacy enrich fallback",
-      "exactFile": "src/screens/contractor/contractor.loadWorksService.ts",
-      "truthType": "operational",
-      "currentClientOwnership": "Works bundle load service still carries legacy_client_enrich beside rpc_scope_v1.",
-      "whyRisky": "Operational works truth is backend-owned primary already; legacy relational enrich remains a compatibility branch that keeps client composition alive.",
-      "requiredBackendContract": "contractor_works_bundle_scope_v1 hard cut without legacy enrich",
-      "priority": "P1",
-      "state": "legacy_branch",
-      "nextBatch": "Contractor works bundle fallback burn-down",
-      "evidencePaths": [
-        "src/screens/contractor/contractor.loadWorksService.ts",
-        "artifacts/contractor-works-bundle-cutover-v1.summary.json"
-      ]
     }
   ],
   "priorityRoadmap": [
-    {
-      "priority": "P1",
-      "title": "Contractor works bundle fallback burn-down",
-      "module": "contractor",
-      "residualIds": [
-        "contractor_works_bundle_legacy_enrich_fallback"
-      ],
-      "reason": "Contractor runtime is reliable, but the legacy works enrich branch still keeps client composition semantics alive."
-    },
     {
       "priority": "P2",
       "title": "PDF source family convergence",
@@ -938,29 +895,27 @@
         "displayName": "Contractor",
         "backendOwnedContours": 2,
         "clientOwnedUiContours": 5,
-        "residualClientTruthCount": 1,
-        "highestResidualPriority": "P1"
+        "residualClientTruthCount": 0,
+        "highestResidualPriority": "none"
       }
     ],
     "globalSummary": {
       "totalResidualP0": 0,
-      "totalResidualP1": 1,
+      "totalResidualP1": 0,
       "totalResidualP2": 2,
       "modulesAtRisk": [
-        "contractor",
         "accountant",
         "warehouse"
       ],
       "storesSafe": true,
       "criticalMoneyTruthOnClient": false,
-      "criticalOperationalTruthOnClient": true,
+      "criticalOperationalTruthOnClient": false,
       "criticalReportTruthOnClient": true,
       "highestPriorityModules": [
-        "contractor",
         "accountant",
         "warehouse"
       ],
-      "nextPriorityBatch": "Contractor works bundle fallback burn-down"
+      "nextPriorityBatch": "PDF source family convergence"
     },
     "structuralAssertions": {
       "allRequiredArtifactsAccepted": false,
@@ -1188,7 +1143,7 @@
               {
                 "stageName": "summary_query",
                 "sourceOwner": "view:v_proposals_summary",
-                "durationMs": 655,
+                "durationMs": 1240,
                 "rowCount": 96,
                 "requiredForFirstPaint": true,
                 "canBeLazy": false,
@@ -1198,7 +1153,7 @@
               {
                 "stageName": "rejected_query",
                 "sourceOwner": "table:proposals",
-                "durationMs": 406,
+                "durationMs": 405,
                 "rowCount": 0,
                 "requiredForFirstPaint": true,
                 "canBeLazy": false,
@@ -1213,7 +1168,7 @@
             "lazySupportOnly": []
           },
           "legacy": {
-            "durationMs": 1062,
+            "durationMs": 1645,
             "pending": 4,
             "approved": 92,
             "rejected": 0,
@@ -1227,7 +1182,7 @@
             }
           },
           "rpc": {
-            "durationMs": 610,
+            "durationMs": 609,
             "pending": 4,
             "approved": 92,
             "rejected": 0,
@@ -1258,7 +1213,7 @@
             }
           },
           "primary": {
-            "durationMs": 416,
+            "durationMs": 415,
             "pending": 4,
             "approved": 92,
             "rejected": 0,
@@ -1329,8 +1284,8 @@
               "surface": "summary_buckets",
               "event": "load_buckets_rpc",
               "count": 1,
-              "avgDurationMs": 610,
-              "maxDurationMs": 610,
+              "avgDurationMs": 609,
+              "maxDurationMs": 609,
               "totalRowCount": 96,
               "lastSourceKind": "rpc:buyer_summary_buckets_scope_v1",
               "fallbackCount": 0
@@ -1340,8 +1295,8 @@
               "surface": "summary_buckets",
               "event": "load_buckets",
               "count": 1,
-              "avgDurationMs": 416,
-              "maxDurationMs": 416,
+              "avgDurationMs": 414,
+              "maxDurationMs": 414,
               "totalRowCount": 96,
               "lastSourceKind": "rpc:buyer_summary_buckets_scope_v1",
               "fallbackCount": 0
@@ -1599,12 +1554,100 @@
         "key": "contractor_works_bundle",
         "label": "Contractor Works Bundle Backend Cutover",
         "relativePath": "artifacts/contractor-works-bundle-cutover-v1.summary.json",
-        "exists": false,
-        "status": null,
-        "gate": null,
-        "accepted": false,
+        "exists": true,
+        "status": "passed",
+        "gate": "GREEN",
+        "accepted": true,
         "iosResidual": null,
-        "raw": null
+        "raw": {
+          "status": "passed",
+          "gate": "GREEN",
+          "profile": {
+            "isStaff": false,
+            "myContractorId": "88a832d4-099f-4f9a-8fce-ae6e086fc107",
+            "contractorProfileLoaded": true,
+            "userProfileLoaded": true
+          },
+          "legacy": {
+            "durationMs": 2065,
+            "rows": 51,
+            "subcontractCards": 11,
+            "sourceMeta": {
+              "primaryOwner": "legacy_client_enrich",
+              "fallbackUsed": true,
+              "sourceKind": "legacy:view:v_works_fact+relational_enrich",
+              "rowParityStatus": "not_checked",
+              "backendFirstPrimary": false
+            }
+          },
+          "rpc": {
+            "durationMs": 431,
+            "rows": 62,
+            "subcontractCards": 22,
+            "sourceMeta": {
+              "primaryOwner": "rpc_scope_v1",
+              "fallbackUsed": false,
+              "sourceKind": "rpc:contractor_works_bundle_scope_v1",
+              "rowParityStatus": "not_checked",
+              "backendFirstPrimary": true
+            }
+          },
+          "primary": {
+            "durationMs": 427,
+            "rows": 0,
+            "subcontractCards": 0,
+            "sourceMeta": {
+              "primaryOwner": "rpc_scope_v1",
+              "fallbackUsed": false,
+              "sourceKind": "rpc:contractor_works_bundle_scope_v1",
+              "rowParityStatus": "not_checked",
+              "backendFirstPrimary": true
+            }
+          },
+          "serviceBoundary": {
+            "rpcOnlyProductPath": true,
+            "legacyLoaderRetainedForProofOnly": true,
+            "backendFirstPrimary": true,
+            "scopeGuardRequired": true,
+            "parityDiagnosticOnly": true
+          },
+          "parity": {
+            "rpcRowParityOk": false,
+            "rpcSubcontractParityOk": false,
+            "primaryRowParityOk": false,
+            "primarySubcontractParityOk": false,
+            "legacyRowCount": 51,
+            "rpcRowCount": 62,
+            "primaryRowCount": 0,
+            "legacySubcontractCount": 11,
+            "rpcSubcontractCount": 22,
+            "primarySubcontractCount": 0
+          },
+          "topSlowFetches": [
+            {
+              "screen": "contractor",
+              "surface": "works_bundle",
+              "event": "load_works_bundle",
+              "count": 2,
+              "avgDurationMs": 1245,
+              "maxDurationMs": 2064,
+              "totalRowCount": 51,
+              "lastSourceKind": "rpc:contractor_works_bundle_scope_v1",
+              "fallbackCount": 1
+            },
+            {
+              "screen": "contractor",
+              "surface": "works_bundle",
+              "event": "load_works_bundle_rpc",
+              "count": 1,
+              "avgDurationMs": 431,
+              "maxDurationMs": 431,
+              "totalRowCount": 62,
+              "lastSourceKind": "rpc:contractor_works_bundle_scope_v1",
+              "fallbackCount": 0
+            }
+          ]
+        }
       },
       {
         "key": "contractor_reliability",

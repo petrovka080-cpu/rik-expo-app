@@ -416,25 +416,6 @@ const residuals: ResidualClientTruth[] = [
       "src/screens/warehouse/warehouse.objectWorkReport.pdf.service.ts",
     ],
   },
-  {
-    id: "contractor_works_bundle_legacy_enrich_fallback",
-    module: "contractor",
-    contour: "Contractor works bundle legacy enrich fallback",
-    exactFile: "src/screens/contractor/contractor.loadWorksService.ts",
-    truthType: "operational",
-    currentClientOwnership:
-      "Works bundle load service still carries legacy_client_enrich beside rpc_scope_v1.",
-    whyRisky:
-      "Operational works truth is backend-owned primary already; legacy relational enrich remains a compatibility branch that keeps client composition alive.",
-    requiredBackendContract: "contractor_works_bundle_scope_v1 hard cut without legacy enrich",
-    priority: "P1",
-    state: "legacy_branch",
-    nextBatch: "Contractor works bundle fallback burn-down",
-    evidencePaths: [
-      "src/screens/contractor/contractor.loadWorksService.ts",
-      "artifacts/contractor-works-bundle-cutover-v1.summary.json",
-    ],
-  },
 ];
 
 const moduleMap: Record<ModuleKey, ModuleOwnership> = {
@@ -771,7 +752,8 @@ const moduleMap: Record<ModuleKey, ModuleOwnership> = {
     ],
     residualClientTruth: residuals.filter((item) => item.module === "contractor"),
     notes: [
-      "Contractor reliability is runtime-owned now; residual risk remains in the legacy works-bundle enrich branch.",
+      "Contractor reliability is runtime-owned now and works-bundle truth is rpc-owned.",
+      "No contractor residual client-truth families remain in this ownership map.",
     ],
     residualClientTruthCount: 0,
     highestResidualPriority: "none",
@@ -996,13 +978,6 @@ const crossCuttingRules = {
 };
 
 const roadmap: RoadmapBatch[] = [
-  {
-    priority: "P1",
-    title: "Contractor works bundle fallback burn-down",
-    module: "contractor",
-    residualIds: ["contractor_works_bundle_legacy_enrich_fallback"],
-    reason: "Contractor runtime is reliable, but the legacy works enrich branch still keeps client composition semantics alive.",
-  },
   {
     priority: "P2",
     title: "PDF source family convergence",

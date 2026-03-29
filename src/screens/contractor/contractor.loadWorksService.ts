@@ -90,6 +90,7 @@ export type ContractorWorksBundleSourceMeta = {
   fallbackUsed: boolean;
   sourceKind: "rpc:contractor_works_bundle_scope_v1" | "legacy:view:v_works_fact+relational_enrich";
   rowParityStatus: "not_checked";
+  backendFirstPrimary?: boolean;
 };
 
 export type ContractorWorksBundleResult = {
@@ -97,6 +98,14 @@ export type ContractorWorksBundleResult = {
   subcontractCards: ContractorSubcontractCard[];
   debug: { isStaff: boolean; subcontractsFound: number; totalApproved: number };
   sourceMeta: ContractorWorksBundleSourceMeta;
+};
+
+type ContractorRpcScopeGuardResult = {
+  rows: ContractorWorkRow[];
+  subcontractCards: ContractorSubcontractCard[];
+  filteredOutRows: number;
+  filteredOutSubcontractCards: number;
+  scopeGuardApplied: boolean;
 };
 
 type LoadContractorWorksBundleParams = {
@@ -265,9 +274,16 @@ function adaptContractorWorksBundleScopeEnvelope(value: unknown): ContractorWork
 }
 
 function matchesContractorIdentity(
-  value: { contractor_org?: string | null; contractor_inn?: string | null },
-  params: Pick<LoadContractorWorksBundleParams, "myContractorInn" | "myContractorCompany" | "myContractorFullName">,
+  value: { contractor_org?: string | null; contractor_inn?: string | null; created_by?: string | null },
+  params: Pick<
+    LoadContractorWorksBundleParams,
+    "myUserId" | "myContractorInn" | "myContractorCompany" | "myContractorFullName"
+  >,
 ): boolean {
+  const createdBy = String(value.created_by || "").trim();
+  const myUserId = String(params.myUserId || "").trim();
+  if (createdBy && myUserId && createdBy === myUserId) return true;
+
   const cardInn = normalizeDigits(value.contractor_inn);
   const myInn = normalizeDigits(params.myContractorInn);
   if (cardInn && myInn && cardInn === myInn) return true;
@@ -283,7 +299,7 @@ function isRpcBundleScopedForContractor(
   result: ContractorWorksBundleResult,
   params: Pick<
     LoadContractorWorksBundleParams,
-    "myContractorId" | "myContractorInn" | "myContractorCompany" | "myContractorFullName"
+    "myContractorId" | "myUserId" | "myContractorInn" | "myContractorCompany" | "myContractorFullName"
   >,
 ): boolean {
   if (!result.subcontractCards.length) {
@@ -297,10 +313,67 @@ function isRpcBundleScopedForContractor(
       {
         contractor_org: card.contractor_org,
         contractor_inn: card.contractor_inn,
+        created_by: card.created_by,
       },
       params,
     ),
   );
+}
+
+function scopeRpcBundleForContractor(
+  result: ContractorWorksBundleResult,
+  params: Pick<
+    LoadContractorWorksBundleParams,
+    "isStaff" | "myContractorId" | "myUserId" | "myContractorInn" | "myContractorCompany" | "myContractorFullName"
+  >,
+): ContractorRpcScopeGuardResult {
+  if (params.isStaff) {
+    return {
+      rows: result.rows,
+      subcontractCards: result.subcontractCards,
+      filteredOutRows: 0,
+      filteredOutSubcontractCards: 0,
+      scopeGuardApplied: false,
+    };
+  }
+
+  const scopedSubcontractCards = result.subcontractCards.filter((card) =>
+    matchesContractorIdentity(
+      {
+        contractor_org: card.contractor_org,
+        contractor_inn: card.contractor_inn,
+        created_by: card.created_by,
+      },
+      params,
+    ),
+  );
+  const scopedJobIds = new Set(scopedSubcontractCards.map((card) => String(card.id || "").trim()).filter(Boolean));
+  const scopedRows = result.rows.filter((row) => {
+    const contractorId = String(row.contractor_id || "").trim();
+    if (contractorId && contractorId === params.myContractorId) return true;
+    if (
+      matchesContractorIdentity(
+        {
+          contractor_org: row.contractor_org,
+          contractor_inn: row.contractor_inn,
+        },
+        params,
+      )
+    ) {
+      return true;
+    }
+    const subcontractId = String(row.contractor_job_id || "").trim();
+    return subcontractId ? scopedJobIds.has(subcontractId) : false;
+  });
+
+  return {
+    rows: scopedRows,
+    subcontractCards: scopedSubcontractCards,
+    filteredOutRows: Math.max(0, result.rows.length - scopedRows.length),
+    filteredOutSubcontractCards: Math.max(0, result.subcontractCards.length - scopedSubcontractCards.length),
+    scopeGuardApplied:
+      scopedRows.length !== result.rows.length || scopedSubcontractCards.length !== result.subcontractCards.length,
+  };
 }
 
 export function mapWorksFactRows(
@@ -619,6 +692,7 @@ async function loadContractorWorksBundleLegacyInternal(
         fallbackUsed: true,
         sourceKind: LEGACY_SOURCE_KIND,
         rowParityStatus: "not_checked",
+        backendFirstPrimary: false,
       },
     };
 
@@ -682,6 +756,7 @@ async function loadContractorWorksBundleRpcInternal(
         fallbackUsed: false,
         sourceKind: RPC_SOURCE_KIND,
         rowParityStatus: "not_checked",
+        backendFirstPrimary: true,
       },
     };
 
@@ -732,49 +807,55 @@ export async function loadContractorWorksBundle(
 
   try {
     const rpcResult = await loadContractorWorksBundleRpcInternal(params, { observe: false });
-    if (
-      !params.isStaff &&
-      (
-        (rpcResult.rows.length === 0 && rpcResult.subcontractCards.length === 0) ||
-        !isRpcBundleScopedForContractor(rpcResult, params)
-      )
-    ) {
-      const legacyResult = await loadContractorWorksBundleLegacyInternal(params, { observe: false });
-      if (legacyResult.rows.length > 0 || legacyResult.subcontractCards.length > 0) {
-        observation.success({
-          rowCount: legacyResult.rows.length,
-          sourceKind: LEGACY_SOURCE_KIND,
-          fallbackUsed: true,
-          extra: {
-            primaryOwner: legacyResult.sourceMeta.primaryOwner,
-            subcontractCards: legacyResult.subcontractCards.length,
-            fallbackReason:
-              rpcResult.rows.length === 0 && rpcResult.subcontractCards.length === 0
-                ? "empty_rpc_scope"
-                : "unscoped_rpc_scope",
-          },
-        });
-        return {
-          ...legacyResult,
-          sourceMeta: {
-            ...legacyResult.sourceMeta,
-            fallbackUsed: true,
-          },
-        };
-      }
+    const scopedResult = scopeRpcBundleForContractor(rpcResult, params);
+    if (scopedResult.scopeGuardApplied) {
+      recordPlatformObservability({
+        screen: "contractor",
+        surface: "works_bundle",
+        category: "fetch",
+        event: "load_works_bundle_scope_guard",
+        result: "success",
+        sourceKind: RPC_SOURCE_KIND,
+        fallbackUsed: false,
+        rowCount: scopedResult.rows.length,
+        extra: {
+          primaryOwner: rpcResult.sourceMeta.primaryOwner,
+          subcontractCards: scopedResult.subcontractCards.length,
+          rawRows: rpcResult.rows.length,
+          rawSubcontractCards: rpcResult.subcontractCards.length,
+          filteredOutRows: scopedResult.filteredOutRows,
+          filteredOutSubcontractCards: scopedResult.filteredOutSubcontractCards,
+          scopeGuardApplied: true,
+        },
+      });
     }
+    const result: ContractorWorksBundleResult =
+      scopedResult.scopeGuardApplied || !isRpcBundleScopedForContractor(rpcResult, params)
+        ? {
+            ...rpcResult,
+            rows: scopedResult.rows,
+            subcontractCards: scopedResult.subcontractCards,
+            debug: {
+              ...rpcResult.debug,
+              subcontractsFound: scopedResult.subcontractCards.length,
+            },
+          }
+        : rpcResult;
     observation.success({
-      rowCount: rpcResult.rows.length,
-      sourceKind: rpcResult.sourceMeta.sourceKind,
+      rowCount: result.rows.length,
+      sourceKind: result.sourceMeta.sourceKind,
       fallbackUsed: false,
       extra: {
-        primaryOwner: rpcResult.sourceMeta.primaryOwner,
-        subcontractCards: rpcResult.subcontractCards.length,
+        primaryOwner: result.sourceMeta.primaryOwner,
+        subcontractCards: result.subcontractCards.length,
+        backendFirstPrimary: true,
+        scopeGuardApplied: scopedResult.scopeGuardApplied,
+        filteredOutRows: scopedResult.filteredOutRows,
+        filteredOutSubcontractCards: scopedResult.filteredOutSubcontractCards,
       },
     });
-    return rpcResult;
+    return result;
   } catch (error) {
-    const fallbackReason = toErrorMessage(error);
     recordPlatformObservability({
       screen: "contractor",
       surface: "works_bundle",
@@ -784,27 +865,15 @@ export async function loadContractorWorksBundle(
       sourceKind: RPC_SOURCE_KIND,
       errorStage: "load_works_bundle_rpc",
       errorClass: error instanceof Error ? error.name : undefined,
-      errorMessage: fallbackReason || undefined,
-      fallbackUsed: true,
+      errorMessage: toErrorMessage(error) || undefined,
+      fallbackUsed: false,
     });
-
-    const legacyResult = await loadContractorWorksBundleLegacyInternal(params, { observe: false });
-    observation.success({
-      rowCount: legacyResult.rows.length,
-      sourceKind: LEGACY_SOURCE_KIND,
-      fallbackUsed: true,
-      extra: {
-        primaryOwner: legacyResult.sourceMeta.primaryOwner,
-        subcontractCards: legacyResult.subcontractCards.length,
-        fallbackReason,
-      },
+    observation.error(error, {
+      rowCount: 0,
+      errorStage: "load_works_bundle_rpc",
+      sourceKind: RPC_SOURCE_KIND,
+      fallbackUsed: false,
     });
-    return {
-      ...legacyResult,
-      sourceMeta: {
-        ...legacyResult.sourceMeta,
-        fallbackUsed: true,
-      },
-    };
+    throw error;
   }
 }

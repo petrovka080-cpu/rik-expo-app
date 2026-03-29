@@ -1,0 +1,89 @@
+{
+  "status": "passed",
+  "gate": "GREEN",
+  "profile": {
+    "isStaff": false,
+    "myContractorId": "88a832d4-099f-4f9a-8fce-ae6e086fc107",
+    "contractorProfileLoaded": true,
+    "userProfileLoaded": true
+  },
+  "legacy": {
+    "durationMs": 2065,
+    "rows": 51,
+    "subcontractCards": 11,
+    "sourceMeta": {
+      "primaryOwner": "legacy_client_enrich",
+      "fallbackUsed": true,
+      "sourceKind": "legacy:view:v_works_fact+relational_enrich",
+      "rowParityStatus": "not_checked",
+      "backendFirstPrimary": false
+    }
+  },
+  "rpc": {
+    "durationMs": 431,
+    "rows": 62,
+    "subcontractCards": 22,
+    "sourceMeta": {
+      "primaryOwner": "rpc_scope_v1",
+      "fallbackUsed": false,
+      "sourceKind": "rpc:contractor_works_bundle_scope_v1",
+      "rowParityStatus": "not_checked",
+      "backendFirstPrimary": true
+    }
+  },
+  "primary": {
+    "durationMs": 427,
+    "rows": 0,
+    "subcontractCards": 0,
+    "sourceMeta": {
+      "primaryOwner": "rpc_scope_v1",
+      "fallbackUsed": false,
+      "sourceKind": "rpc:contractor_works_bundle_scope_v1",
+      "rowParityStatus": "not_checked",
+      "backendFirstPrimary": true
+    }
+  },
+  "serviceBoundary": {
+    "rpcOnlyProductPath": true,
+    "legacyLoaderRetainedForProofOnly": true,
+    "backendFirstPrimary": true,
+    "scopeGuardRequired": true,
+    "parityDiagnosticOnly": true
+  },
+  "parity": {
+    "rpcRowParityOk": false,
+    "rpcSubcontractParityOk": false,
+    "primaryRowParityOk": false,
+    "primarySubcontractParityOk": false,
+    "legacyRowCount": 51,
+    "rpcRowCount": 62,
+    "primaryRowCount": 0,
+    "legacySubcontractCount": 11,
+    "rpcSubcontractCount": 22,
+    "primarySubcontractCount": 0
+  },
+  "topSlowFetches": [
+    {
+      "screen": "contractor",
+      "surface": "works_bundle",
+      "event": "load_works_bundle",
+      "count": 2,
+      "avgDurationMs": 1245,
+      "maxDurationMs": 2064,
+      "totalRowCount": 51,
+      "lastSourceKind": "rpc:contractor_works_bundle_scope_v1",
+      "fallbackCount": 1
+    },
+    {
+      "screen": "contractor",
+      "surface": "works_bundle",
+      "event": "load_works_bundle_rpc",
+      "count": 1,
+      "avgDurationMs": 431,
+      "maxDurationMs": 431,
+      "totalRowCount": 62,
+      "lastSourceKind": "rpc:contractor_works_bundle_scope_v1",
+      "fallbackCount": 0
+    }
+  ]
+}
