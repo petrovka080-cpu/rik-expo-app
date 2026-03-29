@@ -1,0 +1,79 @@
+{
+  "status": "GREEN",
+  "generatedAt": "2026-03-29T20:01:16.085Z",
+  "checks": [
+    {
+      "name": "partial_state",
+      "passed": true,
+      "details": {
+        "cur": "KGS",
+        "restProposal": 110,
+        "lineTotals": [
+          100,
+          30
+        ],
+        "paidTotalProposal": 20,
+        "paidBeforeByLine": [
+          20,
+          0
+        ],
+        "paidUnassigned": 0,
+        "remainByLine": [
+          80,
+          30
+        ],
+        "remainTotal": 110,
+        "allocMap": {},
+        "allocSum": 40,
+        "allocOk": true
+      }
+    },
+    {
+      "name": "full_rows",
+      "passed": true,
+      "details": [
+        {
+          "proposal_item_id": "item-1",
+          "amount": 80
+        },
+        {
+          "proposal_item_id": "item-2",
+          "amount": 30
+        }
+      ]
+    },
+    {
+      "name": "clamp_to_residual",
+      "passed": true,
+      "details": [
+        {
+          "proposal_item_id": "item-1",
+          "amount": 80
+        }
+      ]
+    },
+    {
+      "name": "clear_path_invalidates_partial_apply",
+      "passed": true,
+      "details": {
+        "cur": "KGS",
+        "restProposal": 100,
+        "lineTotals": [
+          100
+        ],
+        "paidTotalProposal": 0,
+        "paidBeforeByLine": [
+          0
+        ],
+        "paidUnassigned": 0,
+        "remainByLine": [
+          100
+        ],
+        "remainTotal": 100,
+        "allocMap": {},
+        "allocSum": 0,
+        "allocOk": false
+      }
+    }
+  ]
+}
