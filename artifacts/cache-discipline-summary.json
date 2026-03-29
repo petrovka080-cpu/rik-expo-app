@@ -1,0 +1,19 @@
+{
+  "status": "GREEN",
+  "requestsReadCapabilities": {
+    "positiveTtlPresent": true,
+    "negativeTtlPresent": true,
+    "invalidateExportPresent": true,
+    "cacheModePresent": true
+  },
+  "foremanRequestNo": {
+    "positiveTtlPresent": true,
+    "negativeTtlPresent": true,
+    "invalidateExportPresent": true,
+    "cacheModePresent": true
+  },
+  "directorNaming": {
+    "positiveTtlPresent": true,
+    "negativeTtlPresent": true
+  }
+}

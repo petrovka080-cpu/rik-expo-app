@@ -1,0 +1,105 @@
+{
+  "status": "GREEN",
+  "structural": {
+    "readBackPresent": true,
+    "verifiedEventPresent": true,
+    "noEffectEventPresent": true,
+    "beforeAfterTracked": true,
+    "oldBlindReturnRemoved": true
+  },
+  "cases": [
+    {
+      "name": "all_draft",
+      "items": [
+        "Черновик",
+        "Черновик"
+      ],
+      "expectedMode": "all_draft",
+      "matchingHead": "Черновик",
+      "expectation": {
+        "mode": "all_draft",
+        "allowedHeadStatuses": [
+          "черновик",
+          "draft"
+        ],
+        "verifiable": true
+      },
+      "matches": true,
+      "passed": true
+    },
+    {
+      "name": "mixed_with_inflight",
+      "items": [
+        "На утверждении",
+        "Утверждено"
+      ],
+      "expectedMode": "mixed_with_inflight",
+      "matchingHead": "На утверждении",
+      "expectation": {
+        "mode": "mixed_with_inflight",
+        "allowedHeadStatuses": [
+          "на утверждении",
+          "pending"
+        ],
+        "verifiable": true
+      },
+      "matches": true,
+      "passed": true
+    },
+    {
+      "name": "all_approved",
+      "items": [
+        "Утверждено"
+      ],
+      "expectedMode": "all_approved",
+      "matchingHead": "Утверждено",
+      "expectation": {
+        "mode": "all_approved",
+        "allowedHeadStatuses": [
+          "утверждено",
+          "approved"
+        ],
+        "verifiable": true
+      },
+      "matches": true,
+      "passed": true
+    },
+    {
+      "name": "all_rejected",
+      "items": [
+        "Отклонено"
+      ],
+      "expectedMode": "all_rejected",
+      "matchingHead": "Отклонено",
+      "expectation": {
+        "mode": "all_rejected",
+        "allowedHeadStatuses": [
+          "отклонено",
+          "rejected"
+        ],
+        "verifiable": true
+      },
+      "matches": true,
+      "passed": true
+    },
+    {
+      "name": "mixed_terminal",
+      "items": [
+        "Утверждено",
+        "Отклонено"
+      ],
+      "expectedMode": "mixed_terminal",
+      "matchingHead": "Утверждено",
+      "expectation": {
+        "mode": "mixed_terminal",
+        "allowedHeadStatuses": [
+          "утверждено",
+          "отклонено"
+        ],
+        "verifiable": true
+      },
+      "matches": true,
+      "passed": true
+    }
+  ]
+}

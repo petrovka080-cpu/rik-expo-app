@@ -1,5 +1,6 @@
 import { supabase } from "../supabaseClient";
 import type { Database } from "../database.types";
+import { recordPlatformObservability } from "../observability/platformObservability";
 import { client, normalizeUuid, parseErr, rpcCompat, toFilterId } from "./_core";
 import {
   mapRequestRow,
@@ -10,9 +11,11 @@ import {
   buildRequestSelectSchemaSafe,
 } from "./requests.read-capabilities";
 import {
+  deriveRequestHeadExpectationFromItemStatuses,
+  matchesRequestHeadExpectation,
   REQUEST_DRAFT_STATUS,
+  REQUEST_PENDING_STATUS,
   REQUEST_PENDING_EN,
-  REQUEST_STATUS_MATCHERS,
   REQUEST_TERMINAL_ITEM_STATUS_FILTER,
   isDraftOrPendingStatus,
   normalizeStatus,
@@ -468,29 +471,97 @@ async function reconcileRequestHeadStatus(requestId: string): Promise<boolean> {
   const rid = normalizeUuid(requestId) ?? requestId;
   if (!rid) return false;
 
+  let beforeHeadStatus: string | null = null;
+  let expectation = deriveRequestHeadExpectationFromItemStatuses([]);
+  try {
+    beforeHeadStatus = await readRequestHeadStatus(rid);
+    const itemStatuses = await listRequestSubmitItemStatuses(rid);
+    expectation = deriveRequestHeadExpectationFromItemStatuses(
+      itemStatuses.map((row) => row.status ?? null),
+    );
+  } catch (error) {
+    recordPlatformObservability({
+      screen: "request",
+      surface: "reconcile_status",
+      category: "reload",
+      event: "reconcile_probe_failed",
+      result: "error",
+      sourceKind: "read_back",
+      errorStage: "before_probe",
+      errorClass: error instanceof Error ? error.name : undefined,
+      errorMessage: parseErr(error),
+    });
+    return false;
+  }
+
   const plans = [
-    () =>
+    {
+      name: "request_recalc_status" as const,
+      run: () =>
       rpcCompat([
         {
           fn: "request_recalc_status",
           args: { p_request_id: rid } satisfies RequestStatusRecalcArgsCompat,
         },
       ]),
-    () =>
+    },
+    {
+      name: "request_update_status_from_items" as const,
+      run: () =>
       rpcCompat([
         {
           fn: "request_update_status_from_items",
           args: { p_request_id: rid } satisfies RequestStatusRecalcArgsCompat,
         },
       ]),
+    },
   ] as const;
 
-  for (const run of plans) {
+  for (const plan of plans) {
     try {
-      await run();
-      return true;
+      await plan.run();
+      const afterHeadStatus = await readRequestHeadStatus(rid);
+      const verified = expectation.verifiable
+        ? matchesRequestHeadExpectation(afterHeadStatus, expectation)
+        : normalizeStatus(afterHeadStatus) !== normalizeStatus(beforeHeadStatus);
+
+      recordPlatformObservability({
+        screen: "request",
+        surface: "reconcile_status",
+        category: "reload",
+        event: verified ? "reconcile_plan_verified" : "reconcile_plan_no_effect",
+        result: verified ? "success" : "skipped",
+        sourceKind: `rpc:${plan.name}`,
+        extra: {
+          plan: plan.name,
+          beforeHeadStatus,
+          afterHeadStatus,
+          expectationMode: expectation.mode,
+          allowedHeadStatuses: expectation.allowedHeadStatuses,
+          expectationVerifiable: expectation.verifiable,
+        },
+      });
+
+      if (verified) return true;
     } catch (e) {
       logRequestsDebug("[reconcileRequestHeadStatus]", parseErr(e));
+      recordPlatformObservability({
+        screen: "request",
+        surface: "reconcile_status",
+        category: "reload",
+        event: "reconcile_plan_failed",
+        result: "error",
+        sourceKind: `rpc:${plan.name}`,
+        errorStage: "plan_run",
+        errorClass: e instanceof Error ? e.name : undefined,
+        errorMessage: parseErr(e),
+        extra: {
+          plan: plan.name,
+          beforeHeadStatus,
+          expectationMode: expectation.mode,
+          allowedHeadStatuses: expectation.allowedHeadStatuses,
+        },
+      });
     }
   }
 
@@ -498,10 +569,11 @@ async function reconcileRequestHeadStatus(requestId: string): Promise<boolean> {
 }
 
 type RequestSubmitItemStatusRow = Pick<RequestItemsTable["Row"], "id" | "status">;
+type RequestHeadStatusRow = Pick<RequestsTable["Row"], "status">;
 
 const isPendingRequestStatus = (raw: unknown): boolean => {
   const normalized = normalizeStatus(raw);
-  return normalized === REQUEST_PENDING_EN || normalized.includes(REQUEST_STATUS_MATCHERS.pendingFragment);
+  return normalized === REQUEST_PENDING_EN || normalized === normalizeStatus(REQUEST_PENDING_STATUS);
 };
 
 const isPendingOrTerminalItemStatus = (raw: unknown): boolean => {
@@ -520,6 +592,17 @@ async function listRequestSubmitItemStatuses(
 
   if (result.error) throw result.error;
   return Array.isArray(result.data) ? result.data : [];
+}
+
+async function readRequestHeadStatus(requestFilterId: string): Promise<string | null> {
+  const result = await client
+    .from("requests")
+    .select("status")
+    .eq("id", requestFilterId)
+    .maybeSingle<RequestHeadStatusRow>();
+
+  if (result.error) throw result.error;
+  return result.data?.status ?? null;
 }
 
 async function verifyAtomicRequestSubmitOutcome(

@@ -1,5 +1,6 @@
 import { supabase } from "../../lib/supabaseClient";
 import type { Database } from "../../lib/database.types";
+import { recordPlatformObservability } from "../../lib/observability/platformObservability";
 
 type RequestRow = Database["public"]["Tables"]["requests"]["Row"];
 type RequestUpdate = Database["public"]["Tables"]["requests"]["Update"];
@@ -36,16 +37,96 @@ const errText = (value: unknown): string => {
 };
 
 let requestsHasRequestNoCache: boolean | null = null;
+type RequestsHasRequestNoCacheEntry = {
+  value: boolean;
+  ts: number;
+  mode: "positive" | "negative";
+};
+
+const REQUEST_NO_CAPABILITY_POSITIVE_TTL_MS = 5 * 60 * 1000;
+const REQUEST_NO_CAPABILITY_NEGATIVE_TTL_MS = 60 * 1000;
+
+let requestsHasRequestNoCacheEntry: RequestsHasRequestNoCacheEntry | null = null;
+
+const isCapabilityCacheFresh = (entry: RequestsHasRequestNoCacheEntry | null) =>
+  !!entry &&
+  Date.now() - entry.ts <
+    (entry.mode === "positive"
+      ? REQUEST_NO_CAPABILITY_POSITIVE_TTL_MS
+      : REQUEST_NO_CAPABILITY_NEGATIVE_TTL_MS);
+
+const setRequestNoCapabilityCache = (value: boolean, mode: "positive" | "negative") => {
+  requestsHasRequestNoCache = value;
+  requestsHasRequestNoCacheEntry = {
+    value,
+    ts: Date.now(),
+    mode,
+  };
+};
+
+export function invalidateForemanRequestNoCapabilityCache() {
+  requestsHasRequestNoCache = null;
+  requestsHasRequestNoCacheEntry = null;
+  recordPlatformObservability({
+    screen: "foreman",
+    surface: "request_label",
+    category: "reload",
+    event: "invalidate_request_no_capability_cache",
+    result: "success",
+    sourceKind: "manual_invalidation",
+  });
+}
 
 export async function resolveRequestsHasRequestNo(): Promise<boolean> {
-  if (requestsHasRequestNoCache != null) return requestsHasRequestNoCache;
+  if (isCapabilityCacheFresh(requestsHasRequestNoCacheEntry)) {
+    recordPlatformObservability({
+      screen: "foreman",
+      surface: "request_label",
+      category: "fetch",
+      event: "resolve_request_no_capability",
+      result: "cache_hit",
+      sourceKind: "schema_probe",
+      fallbackUsed: requestsHasRequestNoCacheEntry?.mode === "negative",
+      extra: {
+        cacheMode: requestsHasRequestNoCacheEntry?.mode ?? "unknown",
+      },
+    });
+    return requestsHasRequestNoCacheEntry!.value;
+  }
   try {
     const q = await supabase.from("requests").select("request_no").limit(1);
     if (q.error) throw q.error;
-    requestsHasRequestNoCache = true;
+    setRequestNoCapabilityCache(true, "positive");
+    recordPlatformObservability({
+      screen: "foreman",
+      surface: "request_label",
+      category: "fetch",
+      event: "resolve_request_no_capability",
+      result: "success",
+      sourceKind: "schema_probe",
+      fallbackUsed: false,
+      extra: {
+        cacheMode: "positive",
+      },
+    });
     return true;
-  } catch {
-    requestsHasRequestNoCache = false;
+  } catch (error) {
+    setRequestNoCapabilityCache(false, "negative");
+    recordPlatformObservability({
+      screen: "foreman",
+      surface: "request_label",
+      category: "fetch",
+      event: "resolve_request_no_capability",
+      result: "error",
+      sourceKind: "schema_probe",
+      fallbackUsed: true,
+      errorStage: "request_no_probe",
+      errorClass: error instanceof Error ? error.name : undefined,
+      errorMessage: errText(error),
+      extra: {
+        cacheMode: "negative",
+      },
+    });
     return false;
   }
 }
@@ -68,14 +149,14 @@ export async function fetchForemanRequestDisplayLabel(requestId: string): Promis
 
     if (!requestNoMissing) throw query.error;
 
-    requestsHasRequestNoCache = false;
+    setRequestNoCapabilityCache(false, "negative");
     query = await supabase
       .from("requests")
       .select("display_no")
       .eq("id", requestId)
       .maybeSingle<RequestDisplayRow>();
   } else if (primarySelect.includes("request_no")) {
-    requestsHasRequestNoCache = true;
+    setRequestNoCapabilityCache(true, "positive");
   }
 
   if (query.error || !query.data) return null;
