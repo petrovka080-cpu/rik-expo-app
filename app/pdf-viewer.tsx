@@ -26,25 +26,15 @@ import {
   openPdfDocumentExternal,
   sharePdfDocument,
 } from "../src/lib/documents/pdfDocumentActions";
+import {
+  getReadAccessParentUri,
+  resolvePdfViewerResolution,
+  resolvePdfViewerState,
+  type PdfViewerResolution as ViewerResolution,
+  type PdfViewerState as ViewerState,
+} from "../src/lib/pdf/pdfViewerContract";
 import { openPdfPreview } from "../src/lib/pdfRunner";
-
-type ViewerState = "init" | "loading" | "ready" | "error" | "empty";
-type EmbeddedViewerSource = { uri: string } | { html: string; baseUrl?: string };
-
-type ViewerResolution =
-  | { kind: "missing-session" }
-  | { kind: "session-error"; errorMessage: string }
-  | { kind: "missing-asset" }
-  | { kind: "unsupported-mobile-source"; errorMessage: string }
-  | {
-      kind: "resolved-embedded";
-      asset: DocumentAsset;
-      source: EmbeddedViewerSource;
-      scheme: string;
-      sourceKind: DocumentAsset["sourceKind"];
-      renderer: "web-frame" | "native-webview" | "native-local-webview";
-      canonicalUri: string;
-    };
+import { recordCatchDiscipline } from "../src/lib/observability/catchDiscipline";
 
 type ViewerFileInfo = {
   exists: boolean;
@@ -69,157 +59,12 @@ const VIEWER_BORDER = "rgba(255,255,255,0.08)";
 const VIEWER_TEXT = "#F8FAFC";
 const VIEWER_SUBTLE = "rgba(255,255,255,0.72)";
 const VIEWER_DIM = "rgba(255,255,255,0.52)";
-
-function appendPdfViewerHash(uri: string) {
-  const value = String(uri || "").trim();
-  if (!value) return "";
-  const hashJoiner = value.includes("#") ? "&" : "#";
-  return `${value}${hashJoiner}page=1&view=FitH&toolbar=0&navpanes=0&scrollbar=0`;
-}
-
-function escapeHtmlAttr(value: string) {
-  return value
-    .replaceAll("&", "&amp;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;");
-}
-
-function buildAndroidLocalPdfShell(uri: string) {
-  const viewerUri = escapeHtmlAttr(appendPdfViewerHash(uri));
-  return `<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta
-    name="viewport"
-    content="width=device-width,height=device-height,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"
-  />
-  <style>
-    html, body {
-      margin: 0;
-      padding: 0;
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
-      background: ${VIEWER_BG};
-    }
-    body {
-      position: fixed;
-      inset: 0;
-    }
-    #viewport {
-      position: fixed;
-      inset: 0;
-      overflow: hidden;
-      background: ${VIEWER_BG};
-    }
-    #frame, #embed {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      margin: 0;
-      padding: 0;
-      border: 0;
-      background: ${VIEWER_BG};
-      display: block;
-    }
-  </style>
-</head>
-<body>
-  <div id="viewport">
-    <iframe id="frame" src="${viewerUri}" title="PDF" allowfullscreen></iframe>
-    <embed id="embed" src="${viewerUri}" type="application/pdf" />
-  </div>
-</body>
-</html>`;
-}
-
-function resolveViewerState(session: DocumentSession | null, asset: DocumentAsset | null): ViewerState {
-  const resolution = resolveViewerResolution(session, asset);
-  if (resolution.kind === "missing-session") return "empty";
-  if (resolution.kind === "session-error" || resolution.kind === "missing-asset") return "error";
-  return "loading";
-}
-
-function resolveViewerResolution(
-  session: DocumentSession | null,
-  asset: DocumentAsset | null,
-): ViewerResolution {
-  if (!session) return { kind: "missing-session" };
-  if (session.status === "error") {
-    return {
-      kind: "session-error",
-      errorMessage: session.errorMessage || "Preview failed to load.",
-    };
-  }
-  if (!asset?.uri) return { kind: "missing-asset" };
-
-  const scheme = getUriScheme(asset.uri);
-  const isPdf = String(asset.uri || "").toLowerCase().endsWith(".pdf");
-  const assetSourceKind = asset.sourceKind;
-
-  if (Platform.OS === "web") {
-    return {
-      kind: "resolved-embedded",
-      asset,
-      source: { uri: asset.uri },
-      scheme,
-      sourceKind: assetSourceKind,
-      renderer: "web-frame",
-      canonicalUri: asset.uri,
-    };
-  }
-
-  if ((assetSourceKind === "local-file" || scheme === "file") && isPdf) {
-    return {
-      kind: "resolved-embedded",
-      asset,
-      source:
-        Platform.OS === "android"
-          ? {
-              html: buildAndroidLocalPdfShell(asset.uri),
-              baseUrl: getReadAccessParentUri(asset.uri) ?? asset.uri,
-            }
-          : { uri: asset.uri },
-      scheme,
-      sourceKind: "local-file",
-      renderer: Platform.OS === "android" ? "native-local-webview" : "native-webview",
-      canonicalUri: asset.uri,
-    };
-  }
-
-  if ((assetSourceKind === "remote-url" || scheme === "http" || scheme === "https") && isPdf) {
-    return {
-      kind: "resolved-embedded",
-      asset,
-      source: { uri: asset.uri },
-      scheme,
-      sourceKind: "remote-url",
-      renderer: "native-webview",
-      canonicalUri: asset.uri,
-    };
-  }
-
-  return {
-    kind: "unsupported-mobile-source",
-    errorMessage: "Mobile preview supports remote http(s) PDFs or local file:// PDF assets.",
-  };
-}
+const VIEWER_PLATFORM = Platform.OS === "web" ? "web" : Platform.OS === "android" ? "android" : "ios";
 
 function getUriScheme(uri?: string | null) {
   const value = String(uri || "").trim();
   const match = value.match(/^([a-z0-9+.-]+):/i);
   return match?.[1]?.toLowerCase() || "";
-}
-
-function getReadAccessParentUri(uri?: string | null) {
-  const value = String(uri || "").trim();
-  if (!value.startsWith("file://")) return undefined;
-  const slashIndex = value.lastIndexOf("/");
-  if (slashIndex <= "file://".length) return undefined;
-  return value.slice(0, slashIndex);
 }
 
 async function inspectLocalPdfFile(uri: string): Promise<ViewerFileInfo | null> {
@@ -277,7 +122,9 @@ export default function PdfViewerScreen() {
   const snapshot = React.useMemo(() => getDocumentSessionSnapshot(sessionId), [sessionId]);
   const [session, setSession] = React.useState<DocumentSession | null>(snapshot.session);
   const [asset, setAsset] = React.useState<DocumentAsset | null>(snapshot.asset);
-  const [state, setState] = React.useState<ViewerState>(resolveViewerState(snapshot.session, snapshot.asset));
+  const [state, setState] = React.useState<ViewerState>(
+    resolvePdfViewerState(snapshot.session, snapshot.asset, VIEWER_PLATFORM),
+  );
   const [errorText, setErrorText] = React.useState(snapshot.session?.errorMessage || "");
   const [menuOpen, setMenuOpen] = React.useState(false);
   const [isReadyToRender, setIsReadyToRender] = React.useState(false);
@@ -293,7 +140,7 @@ export default function PdfViewerScreen() {
   const isMountedRef = React.useRef(true);
   const webRenderUriRef = React.useRef<string | null>(null);
   const resolvedSource = React.useMemo(
-    () => resolveViewerResolution(session, asset),
+    () => resolvePdfViewerResolution({ session, asset, platform: VIEWER_PLATFORM }),
     [asset, session],
   );
 
@@ -315,7 +162,21 @@ export default function PdfViewerScreen() {
     ) {
       try {
         URL.revokeObjectURL(current);
-      } catch {}
+      } catch (error) {
+        recordCatchDiscipline({
+          screen: "reports",
+          surface: "pdf_viewer",
+          event: "viewer_blob_revoke_failed",
+          kind: "cleanup_only",
+          error,
+          category: "reload",
+          sourceKind: "pdf:viewer",
+          errorStage: "open_view",
+          extra: {
+            sourceKind: "blob",
+          },
+        });
+      }
     }
     webRenderUriRef.current = null;
     setWebRenderUri(null);
@@ -342,7 +203,7 @@ export default function PdfViewerScreen() {
     setSession(next.session);
     setAsset(next.asset);
     setErrorText(next.session?.errorMessage || "");
-    setState(resolveViewerState(next.session, next.asset));
+    setState(resolvePdfViewerState(next.session, next.asset, VIEWER_PLATFORM));
     return next;
   }, [sessionId]);
 
@@ -500,11 +361,15 @@ export default function PdfViewerScreen() {
 
     touchDocumentSession(next.session.sessionId);
     setErrorText(next.session.errorMessage || "");
-    setState(resolveViewerState(next.session, next.asset));
+    setState(resolvePdfViewerState(next.session, next.asset, VIEWER_PLATFORM));
     let cancelled = false;
 
     const prepareViewer = async () => {
-      const resolution = resolveViewerResolution(next.session, next.asset);
+      const resolution = resolvePdfViewerResolution({
+        session: next.session,
+        asset: next.asset,
+        platform: VIEWER_PLATFORM,
+      });
       if (resolution.kind === "missing-session") {
         setState("empty");
         return;

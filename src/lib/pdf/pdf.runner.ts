@@ -11,6 +11,7 @@ import {
   previewPdfDocument,
   sharePdfDocument,
 } from "../documents/pdfDocumentActions";
+import { beginPdfLifecycleObservation } from "./pdfLifecycle";
 import { normalizeRuTextForHtml } from "../text/encoding";
 import type { BusyLike } from "../pdfRunner";
 
@@ -53,12 +54,70 @@ export async function renderPdfHtmlToSource(args: {
   maxLength?: number;
   share?: boolean;
 }): Promise<PdfSource> {
-  const html = normalizeRuTextForHtml(args.html, {
-    documentType: args.documentType,
-    source: args.source,
-    maxLength: args.maxLength ?? 500_000,
+  const templateObservation = beginPdfLifecycleObservation({
+    screen: "reports",
+    surface: "pdf_template",
+    event: "pdf_template_prepare",
+    stage: "template",
+    sourceKind: `pdf:${args.documentType}`,
+    context: {
+      documentFamily: args.documentType,
+      documentType: args.documentType,
+      source: args.source,
+    },
   });
-  return createPdfSource(await openHtmlAsPdfUniversal(html, { share: args.share === true }));
+  let normalizedHtml = "";
+  try {
+    normalizedHtml = normalizeRuTextForHtml(args.html, {
+      documentType: args.documentType,
+      source: args.source,
+      maxLength: args.maxLength ?? 500_000,
+    });
+    templateObservation.success({
+      extra: {
+        htmlLength: normalizedHtml.length,
+      },
+    });
+  } catch (error) {
+    throw templateObservation.error(error, {
+      fallbackMessage: `${args.documentType} template preparation failed`,
+      extra: {
+        htmlLength: String(args.html ?? "").length,
+      },
+    });
+  }
+
+  const renderObservation = beginPdfLifecycleObservation({
+    screen: "reports",
+    surface: "pdf_render",
+    event: "pdf_render_execute",
+    stage: "render",
+    sourceKind: `pdf:${args.documentType}`,
+    context: {
+      documentFamily: args.documentType,
+      documentType: args.documentType,
+      source: args.source,
+    },
+  });
+  try {
+    const source = createPdfSource(
+      await openHtmlAsPdfUniversal(normalizedHtml, { share: args.share === true }),
+    );
+    renderObservation.success({
+      sourceKind: source.kind,
+      extra: {
+        uriScheme: source.uri.match(/^([a-z0-9+.-]+):/i)?.[1]?.toLowerCase() ?? "",
+      },
+    });
+    return source;
+  } catch (error) {
+    throw renderObservation.error(error, {
+      fallbackMessage: `${args.documentType} PDF render failed`,
+      extra: {
+        htmlLength: normalizedHtml.length,
+      },
+    });
+  }
 }
 
 export function createGeneratedPdfDescriptor(args: {

@@ -9,23 +9,16 @@ import {
   type PdfRpcRolloutId,
   type PdfRpcRolloutMode,
 } from "../documents/pdfRpcRollout";
+import { recordCatchDiscipline } from "../observability/catchDiscipline";
+import { beginPdfLifecycleObservation } from "../pdf/pdfLifecycle";
 import { supabase } from "../supabaseClient";
-import { listAccountantInbox } from "./accountant";
-import {
-  fetchDirectorWarehouseReportDisciplineTracked,
-  fetchDirectorWarehouseReportOptionsTracked,
-  fetchDirectorWarehouseReportTracked,
-  type DirectorReportFetchMeta,
-} from "./director_reports";
+import type { DirectorReportFetchMeta } from "./director_reports";
 import { adaptCanonicalMaterialsPayload, adaptCanonicalWorksPayload } from "./director_reports.adapters";
 import { loadDirectorReportTransportScope } from "./directorReportsTransport.service";
 import type { DirectorDisciplinePayload, DirectorReportPayload } from "./director_reports.shared";
 import {
-  fetchDirectorFinancePanelScopeV3ViaRpc,
-  fetchDirectorFinancePanelScopeV2ViaRpc,
   mapToFinanceRow,
   normalizeFinSpendRows,
-  type DirectorFinanceRowV2,
   type FinanceRow,
   type FinSpendRow,
 } from "../../screens/director/director.finance";
@@ -248,6 +241,7 @@ const recordDirectorPdfRpcFailure = (
   extra: Record<string, unknown>,
   error: unknown,
 ) => {
+  const failureReason = getFallbackReasonForRpcError(error);
   if (
     rpcMode === "auto" &&
     error instanceof DirectorPdfSourceRpcError &&
@@ -257,8 +251,27 @@ const recordDirectorPdfRpcFailure = (
       errorMessage: error.message,
     });
   }
+  recordCatchDiscipline({
+    screen: "director",
+    surface: "director_pdf_source",
+    event: "director_pdf_source_failed",
+    kind: "critical_fail",
+    error,
+    sourceKind: `rpc:${id}`,
+    errorStage: "source_load",
+    extra: {
+      pdfSourceFamily: id,
+      failureReason,
+      rpcMode,
+      rpcAvailability: getPdfRpcRolloutAvailability(id),
+      publishState: "error",
+      fallbackUsed: false,
+      ...extra,
+    },
+  });
   if (!DIRECTOR_PDF_SOURCE_IS_DEV) return;
   console.warn(tag, {
+    failureReason,
     rpcMode,
     errorMessage: error instanceof Error ? error.message : String(error),
     ...extra,
@@ -270,85 +283,6 @@ const coerceFinanceRows = (rawRows: unknown[]): FinanceRow[] =>
     .map(mapToFinanceRow)
     .filter((row) => !!row && !!row.id)
     .filter((row) => Number.isFinite(Number(row.amount)));
-
-const mapPanelScopeRowToFinanceRow = (
-  row: DirectorFinanceRowV2,
-  sourceRow: "director_finance_panel_scope_v2" | "director_finance_panel_scope_v3",
-): FinanceRow => ({
-  id: String(row.proposalId ?? `${row.supplierId}:${row.invoiceNumber || "no-invoice"}`),
-  supplier: String(row.supplierName ?? row.supplierId ?? "").trim() || "—",
-  amount: Number(row.amountTotal ?? 0),
-  paidAmount: Number(row.amountPaid ?? 0),
-  invoiceNumber: row.invoiceNumber ?? null,
-  invoiceDate: null,
-  approvedAtIso: null,
-  dueDate: row.dueDate ?? null,
-  proposalId: row.proposalId ?? null,
-  proposal_id: row.proposalId ?? null,
-  proposal_no: row.proposalId ? `PR-${String(row.proposalId).slice(0, 8)}` : null,
-  pretty: row.proposalId ? `PR-${String(row.proposalId).slice(0, 8)}` : null,
-  raw: {
-    source_row: sourceRow,
-    amount_debt: row.amountDebt,
-    overdue_days: row.overdueDays,
-    status: row.status,
-  },
-});
-
-async function loadDirectorFinanceRowsFromPanelScope(args: {
-  periodFrom?: string | null;
-  periodTo?: string | null;
-}): Promise<FinanceRow[]> {
-  try {
-    const scopeV3 = await fetchDirectorFinancePanelScopeV3ViaRpc({
-      periodFromIso: args.periodFrom,
-      periodToIso: args.periodTo,
-      dueDaysDefault: 7,
-      criticalDays: 14,
-      limit: 1000,
-      offset: 0,
-    });
-    if (Array.isArray(scopeV3?.rows) && scopeV3.rows.length > 0) {
-      return scopeV3.rows.map((row) => mapPanelScopeRowToFinanceRow(row, "director_finance_panel_scope_v3"));
-    }
-  } catch {}
-
-  try {
-    const scope = await fetchDirectorFinancePanelScopeV2ViaRpc({
-      periodFromIso: args.periodFrom,
-      periodToIso: args.periodTo,
-      limit: 1000,
-      offset: 0,
-    });
-    return Array.isArray(scope?.rows)
-      ? scope.rows.map((row) => mapPanelScopeRowToFinanceRow(row, "director_finance_panel_scope_v2"))
-      : [];
-  } catch {
-    return [];
-  }
-}
-
-const ensureDirectorReportPayload = (value: unknown): DirectorReportPayload => {
-  const payload = value as DirectorReportPayload;
-  if (!payload || typeof payload !== "object" || !Array.isArray(payload.rows)) {
-    throw new DirectorPdfSourceValidationError(
-      "invalid_payload",
-      "director production fallback missing report rows",
-    );
-  }
-  return payload;
-};
-
-const ensureDirectorDisciplinePayload = (value: unknown): DirectorDisciplinePayload => {
-  const payload = value as DirectorDisciplinePayload;
-  if (!payload || typeof payload !== "object" || !Array.isArray(payload.works)) {
-    throw new DirectorPdfSourceValidationError(
-      "invalid_payload",
-      "director production fallback missing discipline works",
-    );
-  }
-  return payload;
-};
 
 function validateDirectorFinanceSourceV1(value: unknown): DirectorFinanceSourceEnvelopeV1 {
   const root = requireRecord(value, "root", "pdf_director_finance_source_v1");
@@ -437,23 +371,6 @@ function validateDirectorSubcontractSourceV1(value: unknown): DirectorSubcontrac
   };
 }
 
-async function loadLegacyDirectorFinanceSpendRows(args: {
-  periodFrom?: string | null;
-  periodTo?: string | null;
-}): Promise<FinSpendRow[]> {
-  let query = supabase
-    .from("v_director_finance_spend_kinds_v3" as never)
-    .select(
-      "proposal_id,proposal_no,supplier,kind_code,kind_name,approved_alloc,paid_alloc,paid_alloc_cap,overpay_alloc,director_approved_at",
-    );
-  if (args.periodFrom) query = query.gte("director_approved_at", args.periodFrom);
-  if (args.periodTo) query = query.lte("director_approved_at", args.periodTo);
-
-  const { data, error } = await query;
-  if (error) throw new Error(`v_director_finance_spend_kinds_v3 failed: ${error.message}`);
-  return normalizeFinSpendRows(data);
-}
-
 async function fetchDirectorFinancePdfSourceViaRpc(args: {
   periodFrom?: string | null;
   periodTo?: string | null;
@@ -495,75 +412,6 @@ async function fetchDirectorFinancePdfSourceViaRpc(args: {
   };
 }
 
-async function buildDirectorFinancePdfFallbackSource(
-  args: {
-    periodFrom?: string | null;
-    periodTo?: string | null;
-    fallbackFinanceRows?: FinanceRow[] | null;
-    fallbackSpendRows?: FinSpendRow[] | null;
-    fallbackRowsLoader?: (() => Promise<{
-      financeRows: FinanceRow[];
-      spendRows: FinSpendRow[];
-    }>) | null;
-  },
-  fallbackReason: PdfRpcRolloutFallbackReason = "rpc_error",
-): Promise<DirectorFinancePdfSource> {
-  const loadedFallbackRows =
-    !Array.isArray(args.fallbackFinanceRows) &&
-    !Array.isArray(args.fallbackSpendRows) &&
-    args.fallbackRowsLoader
-      ? await args.fallbackRowsLoader()
-      : null;
-
-  const panelScopeFallbackRows =
-    !Array.isArray(args.fallbackFinanceRows)
-      ? await loadDirectorFinanceRowsFromPanelScope({
-          periodFrom: args.periodFrom,
-          periodTo: args.periodTo,
-        })
-      : [];
-
-  const financeRows =
-    Array.isArray(args.fallbackFinanceRows)
-      ? args.fallbackFinanceRows
-      : Array.isArray(loadedFallbackRows?.financeRows) && loadedFallbackRows.financeRows.length > 0
-        ? loadedFallbackRows.financeRows
-      : panelScopeFallbackRows.length > 0
-        ? panelScopeFallbackRows
-      : coerceFinanceRows(await listAccountantInbox());
-  const spendRows =
-    Array.isArray(args.fallbackSpendRows)
-      ? args.fallbackSpendRows
-      : Array.isArray(loadedFallbackRows?.spendRows)
-        ? loadedFallbackRows.spendRows
-      : await loadLegacyDirectorFinanceSpendRows({
-          periodFrom: args.periodFrom,
-          periodTo: args.periodTo,
-        });
-
-  const source =
-    Array.isArray(args.fallbackFinanceRows) || Array.isArray(args.fallbackSpendRows)
-      ? "legacy:director_finance_ui_payload"
-      : Array.isArray(loadedFallbackRows?.spendRows) && panelScopeFallbackRows.length > 0 && financeRows === panelScopeFallbackRows
-        ? "hybrid:director_finance_panel_scope+support_rows_loader"
-      : Array.isArray(loadedFallbackRows?.financeRows) || Array.isArray(loadedFallbackRows?.spendRows)
-        ? "legacy:director_finance_support_rows_loader"
-      : panelScopeFallbackRows.length > 0
-        ? "rpc:director_finance_panel_scope_rows"
-        : "legacy:listAccountantInbox";
-
-  return {
-    financeRows,
-    spendRows,
-    source,
-    branchMeta: {
-      sourceBranch: "legacy_fallback",
-      fallbackReason,
-      payloadShapeVersion: "v1",
-    },
-  };
-}
-
 export async function getDirectorFinancePdfSource(args: {
   periodFrom?: string | null;
   periodTo?: string | null;
@@ -577,13 +425,24 @@ export async function getDirectorFinancePdfSource(args: {
   }>) | null;
 }): Promise<DirectorFinancePdfSource> {
   const rpcMode = DIRECTOR_FINANCE_PDF_RPC_MODE;
-  assertDirectorPdfRpcPrimary(
-    DIRECTOR_FINANCE_PDF_RPC_ROLLOUT_ID,
-    rpcMode,
-    "pdf_director_finance_source_v1",
-  );
-
+  const observation = beginPdfLifecycleObservation({
+    screen: "director",
+    surface: "director_pdf_source",
+    event: "director_finance_pdf_source_load",
+    stage: "source_load",
+    sourceKind: "rpc:pdf_director_finance_source_v1",
+    context: {
+      documentFamily: "director_finance_pdf",
+      documentType: "director_report",
+      source: "rpc:pdf_director_finance_source_v1",
+    },
+  });
   try {
+    assertDirectorPdfRpcPrimary(
+      DIRECTOR_FINANCE_PDF_RPC_ROLLOUT_ID,
+      rpcMode,
+      "pdf_director_finance_source_v1",
+    );
     const rpcSource = await fetchDirectorFinancePdfSourceViaRpc(args);
     if (rpcMode === "auto") {
       setPdfRpcRolloutAvailability(DIRECTOR_FINANCE_PDF_RPC_ROLLOUT_ID, "available");
@@ -593,6 +452,13 @@ export async function getDirectorFinancePdfSource(args: {
       periodTo: args.periodTo ?? null,
       financeRows: rpcSource.financeRows.length,
       spendRows: rpcSource.spendRows.length,
+    });
+    observation.success({
+      sourceKind: rpcSource.source,
+      rowCount: rpcSource.financeRows.length + rpcSource.spendRows.length,
+      extra: {
+        sourceBranch: rpcSource.branchMeta.sourceBranch,
+      },
     });
     return rpcSource;
   } catch (error) {
@@ -606,7 +472,15 @@ export async function getDirectorFinancePdfSource(args: {
       },
       error,
     );
-    throw error;
+    throw observation.error(error, {
+      fallbackMessage: "Director finance PDF source load failed",
+      extra: {
+        periodFrom: args.periodFrom ?? null,
+        periodTo: args.periodTo ?? null,
+        rpcMode,
+        fallbackUsed: false,
+      },
+    });
   }
 }
 
@@ -668,78 +542,6 @@ async function fetchDirectorProductionPdfSourceViaRpc(args: {
   };
 }
 
-async function buildDirectorProductionPdfFallbackSource(
-  args: {
-    periodFrom?: string | null;
-    periodTo?: string | null;
-    objectName?: string | null;
-    fallbackRepData?: unknown;
-    fallbackRepDiscipline?: unknown;
-    priceStage: DirectorPdfPriceStage;
-  },
-  fallbackReason: PdfRpcRolloutFallbackReason = "rpc_error",
-): Promise<DirectorProductionPdfSource> {
-  const fallbackRepData =
-    args.fallbackRepData != null ? ensureDirectorReportPayload(args.fallbackRepData) : null;
-  const fallbackRepDiscipline =
-    args.fallbackRepDiscipline != null
-      ? ensureDirectorDisciplinePayload(args.fallbackRepDiscipline)
-      : null;
-
-  if (fallbackRepData && fallbackRepDiscipline) {
-    return {
-      repData: fallbackRepData,
-      repDiscipline: fallbackRepDiscipline,
-      source: "legacy:director_reports_ui_payload",
-      branchMeta: {
-        sourceBranch: "legacy_fallback",
-        fallbackReason,
-        payloadShapeVersion: "v1",
-      },
-      priceStage: args.priceStage,
-      reportMeta: null,
-      disciplineMeta: null,
-    };
-  }
-
-  const optionsResult = await fetchDirectorWarehouseReportOptionsTracked({
-    from: args.periodFrom ?? "",
-    to: args.periodTo ?? "",
-  });
-  const objectIdByName = optionsResult.payload.objectIdByName ?? {};
-  const [reportResult, disciplineResult] = await Promise.all([
-    fetchDirectorWarehouseReportTracked({
-      from: args.periodFrom ?? "",
-      to: args.periodTo ?? "",
-      objectName: args.objectName ?? null,
-      objectIdByName,
-    }),
-    fetchDirectorWarehouseReportDisciplineTracked(
-      {
-        from: args.periodFrom ?? "",
-        to: args.periodTo ?? "",
-        objectName: args.objectName ?? null,
-        objectIdByName,
-      },
-      { skipPrices: args.priceStage === "base" },
-    ),
-  ]);
-
-  return {
-    repData: ensureDirectorReportPayload(reportResult.payload),
-    repDiscipline: ensureDirectorDisciplinePayload(disciplineResult.payload),
-    source: "legacy:director_reports_tracked",
-    branchMeta: {
-      sourceBranch: "legacy_fallback",
-      fallbackReason,
-      payloadShapeVersion: "v1",
-    },
-    priceStage: args.priceStage,
-    reportMeta: reportResult.meta,
-    disciplineMeta: disciplineResult.meta,
-  };
-}
-
 export async function getDirectorProductionPdfSource(args: {
   periodFrom?: string | null;
   periodTo?: string | null;
@@ -750,13 +552,24 @@ export async function getDirectorProductionPdfSource(args: {
 }): Promise<DirectorProductionPdfSource> {
   const priceStage = args.preferPriceStage === "base" ? "base" : "priced";
   const rpcMode = DIRECTOR_PRODUCTION_PDF_RPC_MODE;
-  assertDirectorPdfRpcPrimary(
-    DIRECTOR_PRODUCTION_PDF_RPC_ROLLOUT_ID,
-    rpcMode,
-    "pdf_director_production_source_v1",
-  );
-
+  const observation = beginPdfLifecycleObservation({
+    screen: "director",
+    surface: "director_pdf_source",
+    event: "director_production_pdf_source_load",
+    stage: "source_load",
+    sourceKind: "rpc:pdf_director_production_source_v1",
+    context: {
+      documentFamily: "director_production_pdf",
+      documentType: "director_report",
+      source: "rpc:pdf_director_production_source_v1",
+    },
+  });
   try {
+    assertDirectorPdfRpcPrimary(
+      DIRECTOR_PRODUCTION_PDF_RPC_ROLLOUT_ID,
+      rpcMode,
+      "pdf_director_production_source_v1",
+    );
     const transportSource = await loadDirectorReportTransportScope({
       from: args.periodFrom ?? "",
       to: args.periodTo ?? "",
@@ -800,6 +613,15 @@ export async function getDirectorProductionPdfSource(args: {
         disciplineWorks: rpcSource.repDiscipline.works?.length ?? 0,
       },
     );
+    observation.success({
+      sourceKind: rpcSource.source,
+      rowCount: (rpcSource.repData.rows?.length ?? 0) + (rpcSource.repDiscipline.works?.length ?? 0),
+      extra: {
+        sourceBranch: rpcSource.branchMeta.sourceBranch,
+        objectName: args.objectName ?? null,
+        priceStage,
+      },
+    });
     return rpcSource;
   } catch (error) {
     recordDirectorPdfRpcFailure(
@@ -814,7 +636,17 @@ export async function getDirectorProductionPdfSource(args: {
       },
       error,
     );
-    throw error;
+    throw observation.error(error, {
+      fallbackMessage: "Director production PDF source load failed",
+      extra: {
+        periodFrom: args.periodFrom ?? null,
+        periodTo: args.periodTo ?? null,
+        objectName: args.objectName ?? null,
+        priceStage,
+        rpcMode,
+        fallbackUsed: false,
+      },
+    });
   }
 }
 
@@ -855,52 +687,30 @@ async function fetchDirectorSubcontractPdfSourceViaRpc(args: {
   };
 }
 
-async function buildDirectorSubcontractPdfFallbackSource(
-  args: {
-    periodFrom?: string | null;
-    periodTo?: string | null;
-    objectName?: string | null;
-  },
-  fallbackReason: PdfRpcRolloutFallbackReason = "rpc_error",
-): Promise<DirectorSubcontractPdfSource> {
-  let query = supabase
-    .from("subcontracts" as never)
-    .select(
-      "id,display_no,status,object_name,work_type,contractor_org,total_price,approved_at,submitted_at,rejected_at,director_comment",
-    )
-    .order("approved_at", { ascending: false, nullsFirst: false });
-
-  if (args.periodFrom) query = query.gte("created_at", `${args.periodFrom}T00:00:00.000Z`);
-  if (args.periodTo) query = query.lte("created_at", `${args.periodTo}T23:59:59.999Z`);
-  if (args.objectName) query = query.eq("object_name", args.objectName);
-
-  const { data, error } = await query;
-  if (error) throw new Error(`subcontracts lookup failed: ${error.message}`);
-
-  return {
-    rows: asArrayOfRecords(data),
-    source: "legacy:subcontracts_query",
-    branchMeta: {
-      sourceBranch: "legacy_fallback",
-      fallbackReason,
-      payloadShapeVersion: "v1",
-    },
-  };
-}
-
 export async function getDirectorSubcontractPdfSource(args: {
   periodFrom?: string | null;
   periodTo?: string | null;
   objectName?: string | null;
 }): Promise<DirectorSubcontractPdfSource> {
   const rpcMode = DIRECTOR_SUBCONTRACT_PDF_RPC_MODE;
-  assertDirectorPdfRpcPrimary(
-    DIRECTOR_SUBCONTRACT_PDF_RPC_ROLLOUT_ID,
-    rpcMode,
-    "pdf_director_subcontract_source_v1",
-  );
-
+  const observation = beginPdfLifecycleObservation({
+    screen: "director",
+    surface: "director_pdf_source",
+    event: "director_subcontract_pdf_source_load",
+    stage: "source_load",
+    sourceKind: "rpc:pdf_director_subcontract_source_v1",
+    context: {
+      documentFamily: "director_subcontract_pdf",
+      documentType: "director_report",
+      source: "rpc:pdf_director_subcontract_source_v1",
+    },
+  });
   try {
+    assertDirectorPdfRpcPrimary(
+      DIRECTOR_SUBCONTRACT_PDF_RPC_ROLLOUT_ID,
+      rpcMode,
+      "pdf_director_subcontract_source_v1",
+    );
     const rpcSource = await fetchDirectorSubcontractPdfSourceViaRpc(args);
     if (rpcMode === "auto") {
       setPdfRpcRolloutAvailability(DIRECTOR_SUBCONTRACT_PDF_RPC_ROLLOUT_ID, "available");
@@ -916,6 +726,14 @@ export async function getDirectorSubcontractPdfSource(args: {
         rows: rpcSource.rows.length,
       },
     );
+    observation.success({
+      sourceKind: rpcSource.source,
+      rowCount: rpcSource.rows.length,
+      extra: {
+        sourceBranch: rpcSource.branchMeta.sourceBranch,
+        objectName: args.objectName ?? null,
+      },
+    });
     return rpcSource;
   } catch (error) {
     recordDirectorPdfRpcFailure(
@@ -929,6 +747,15 @@ export async function getDirectorSubcontractPdfSource(args: {
       },
       error,
     );
-    throw error;
+    throw observation.error(error, {
+      fallbackMessage: "Director subcontract PDF source load failed",
+      extra: {
+        periodFrom: args.periodFrom ?? null,
+        periodTo: args.periodTo ?? null,
+        objectName: args.objectName ?? null,
+        rpcMode,
+        fallbackUsed: false,
+      },
+    });
   }
 }

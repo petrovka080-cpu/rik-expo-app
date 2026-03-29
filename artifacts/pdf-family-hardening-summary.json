@@ -1,0 +1,73 @@
+{
+  "status": "passed",
+  "gate": "GREEN",
+  "inventory": {
+    "source_load": [
+      "src/lib/api/directorPdfSource.service.ts",
+      "src/lib/api/paymentPdf.service.ts"
+    ],
+    "data_shaping": [
+      "src/lib/api/pdf_director.data.ts",
+      "src/lib/api/paymentPdf.service.ts"
+    ],
+    "template": [
+      "src/lib/pdf/pdf.runner.ts"
+    ],
+    "render": [
+      "src/lib/pdf/pdf.runner.ts",
+      "src/lib/api/directorPdfRender.service.ts"
+    ],
+    "output_prepare": [
+      "src/lib/documents/pdfDocumentActions.ts",
+      "src/lib/pdfRunner.ts"
+    ],
+    "open_view": [
+      "src/lib/documents/pdfDocumentActions.ts",
+      "app/pdf-viewer.tsx"
+    ]
+  },
+  "checks": {
+    "jest": {
+      "success": true,
+      "numPassedTests": 14,
+      "numFailedTests": 0
+    },
+    "stageChecks": {
+      "templateStageSeparated": true,
+      "renderStageSeparated": true,
+      "sourceStageSeparated": true,
+      "shapingStageSeparated": true,
+      "outputStageSeparated": true,
+      "openStageSeparated": true
+    },
+    "sourceBoundaryChecks": {
+      "paymentPdfRpcOnly": true,
+      "directorPdfSourceRpcOnly": true
+    },
+    "silentCatchChecks": {
+      "pdfRunner": true,
+      "pdfDocumentActions": true,
+      "pdfHtmlRunner": true,
+      "paymentSource": true,
+      "directorSource": true,
+      "viewer": true
+    },
+    "scenarioChecks": {
+      "directorProductionPdfWorks": true,
+      "directorFinancePdfWorks": true,
+      "paymentPdfWorks": true,
+      "sourceFailVisible": true,
+      "renderFailVisible": true,
+      "openFailVisible": true,
+      "viewerRemoteUrlWorks": true,
+      "noSilentFail": true
+    },
+    "observabilityChecks": {
+      "lifecycleHelperPresent": true,
+      "viewerUsesSharedContract": true,
+      "documentActionsObservable": true,
+      "runnerObservable": true,
+      "sourceServicesObservable": true
+    }
+  }
+}

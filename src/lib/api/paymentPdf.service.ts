@@ -11,6 +11,7 @@ import {
   type PdfRpcRolloutMode,
 } from "../documents/pdfRpcRollout";
 import { recordCatchDiscipline } from "../observability/catchDiscipline";
+import { beginPdfLifecycleObservation } from "../pdf/pdfLifecycle";
 import { supabase } from "../supabaseClient";
 import type { PaymentPdfDraft } from "./types";
 
@@ -473,7 +474,7 @@ const recordPaymentPdfRpcFailure = (
     kind: "critical_fail",
     error,
     sourceKind: "rpc:pdf_payment_source_v1",
-    errorStage: "rpc_source",
+    errorStage: "source_load",
     extra: {
       paymentId,
       failureReason,
@@ -536,26 +537,24 @@ export async function fetchPaymentPdfSourceViaRpc(paymentId: number): Promise<Pa
   };
 }
 
-async function assertPaymentPdfLegacyFallbackRemoved(
-  paymentId: number,
-  fallbackReason: PaymentPdfSourceBranchMeta["fallbackReason"] = "rpc_error",
-): Promise<PaymentOrderPdfSource> {
-  void paymentId;
-  void fallbackReason;
-  const data = null as never;
-
-  throw new PaymentPdfSourceRpcError(
-    "payment PDF legacy fallback removed; source is rpc-only",
-  );
-  if (!data) throw new Error("Нет данных для платёжки");
-
-}
-
 export async function getPaymentPdfSource(paymentId: number): Promise<PaymentOrderPdfSource> {
   const pid = Number(paymentId);
   if (!Number.isFinite(pid) || pid <= 0) throw new Error("payment_id invalid");
 
   const rpcMode = PAYMENT_PDF_RPC_MODE;
+  const observation = beginPdfLifecycleObservation({
+    screen: "accountant",
+    surface: "payment_pdf_source",
+    event: "payment_pdf_source_load",
+    stage: "source_load",
+    sourceKind: "rpc:pdf_payment_source_v1",
+    context: {
+      documentFamily: "payment_order",
+      documentType: "payment_order",
+      entityId: pid,
+      source: "rpc:pdf_payment_source_v1",
+    },
+  });
 
   try {
     assertPaymentPdfRpcPrimary(rpcMode);
@@ -564,10 +563,24 @@ export async function getPaymentPdfSource(paymentId: number): Promise<PaymentOrd
       setPdfRpcRolloutAvailability(PAYMENT_PDF_RPC_ROLLOUT_ID, "available");
     }
     logPaymentPdfSourceBranch(pid, rpcSource.branchMeta, rpcSource.source);
+    observation.success({
+      sourceKind: rpcSource.source,
+      extra: {
+        sourceBranch: rpcSource.branchMeta.sourceBranch,
+        payloadShapeVersion: rpcSource.branchMeta.payloadShapeVersion ?? null,
+      },
+    });
     return rpcSource;
   } catch (error) {
     recordPaymentPdfRpcFailure(pid, rpcMode, error);
-    throw error;
+    throw observation.error(error, {
+      fallbackMessage: "Payment PDF source load failed",
+      extra: {
+        paymentId: pid,
+        rpcMode,
+        fallbackUsed: false,
+      },
+    });
   }
 }
 
@@ -812,15 +825,46 @@ export async function preparePaymentOrderPdf(args: {
   fileName?: string;
 }): Promise<PreparedPaymentOrderPdf> {
   const source = await getPaymentPdfSource(args.paymentId);
-  return {
-    source: source.source,
-    branchMeta: source.branchMeta,
-    contract: createPaymentPdfContractFromSource({
+  const observation = beginPdfLifecycleObservation({
+    screen: "accountant",
+    surface: "payment_pdf_shape",
+    event: "payment_pdf_shape",
+    stage: "data_shaping",
+    sourceKind: source.source,
+    context: {
+      documentFamily: "payment_order",
+      documentType: "payment_order",
+      entityId: args.paymentId,
+      source: source.source,
+      sourceBranch: source.branchMeta.sourceBranch,
+      fileName: args.fileName ?? null,
+    },
+  });
+  try {
+    const contract = createPaymentPdfContractFromSource({
       paymentId: args.paymentId,
       draft: args.draft,
       source,
       title: args.title,
       fileName: args.fileName,
-    }),
-  };
+    });
+    observation.success({
+      extra: {
+        billCount: contract.payload.bills.length,
+        attachmentCount: contract.payload.attachments.length,
+      },
+    });
+    return {
+      source: source.source,
+      branchMeta: source.branchMeta,
+      contract,
+    };
+  } catch (error) {
+    throw observation.error(error, {
+      fallbackMessage: "Payment PDF shaping failed",
+      extra: {
+        paymentId: args.paymentId,
+      },
+    });
+  }
 }

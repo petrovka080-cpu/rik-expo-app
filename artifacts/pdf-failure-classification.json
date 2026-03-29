@@ -1,0 +1,19 @@
+{
+  "status": "passed",
+  "failureClassification": {
+    "source_load": "source_load_fail",
+    "data_shaping": "shape_fail",
+    "template": "template_fail",
+    "render": "render_fail",
+    "output_prepare": "output_fail",
+    "open_view": "open_fail"
+  },
+  "classificationCoverage": {
+    "lifecycleHelperDefined": true,
+    "sourceLoadObserved": true,
+    "templateObserved": true,
+    "renderObserved": true,
+    "outputObserved": true,
+    "openObserved": true
+  }
+}

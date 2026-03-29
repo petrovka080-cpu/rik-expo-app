@@ -8,6 +8,7 @@ import {
   preparePdfExecutionSource,
   type BusyLike,
 } from "../pdfRunner";
+import { beginPdfLifecycleObservation } from "../pdf/pdfLifecycle";
 import { createPdfSource, type PdfSource } from "../pdfFileContract";
 
 export function getPdfFlowErrorMessage(error: unknown, fallback = "Could not open PDF"): string {
@@ -32,6 +33,21 @@ type PreparePdfDocumentArgs = {
 
 export async function preparePdfDocument(args: PreparePdfDocumentArgs): Promise<DocumentDescriptor> {
   const run = async () => {
+    const observation = beginPdfLifecycleObservation({
+      screen: "reports",
+      surface: "pdf_document_actions",
+      event: "pdf_output_prepare",
+      stage: "output_prepare",
+      sourceKind: "pdf:document",
+      context: {
+        documentFamily: args.descriptor.documentType,
+        documentType: args.descriptor.documentType,
+        originModule: args.descriptor.originModule,
+        entityId: args.descriptor.entityId ?? null,
+        fileName: args.descriptor.fileName,
+        source: args.descriptor.uri ?? args.descriptor.fileSource?.uri ?? null,
+      },
+    });
     try {
       console.info("[pdf-document-actions] prepare_requested", {
         stage: "prepare_requested",
@@ -62,9 +78,18 @@ export async function preparePdfDocument(args: PreparePdfDocumentArgs): Promise<
         finalSourceKind: preparedSource.kind,
         fileName: args.descriptor.fileName,
       });
+      observation.success({
+        sourceKind: preparedSource.kind,
+        extra: {
+          uri: uri,
+        },
+      });
       return { ...args.descriptor, uri, fileSource: preparedSource };
     } catch (error) {
-      const message = getPdfFlowErrorMessage(error, "PDF preparation failed");
+      const lifecycleError = observation.error(error, {
+        fallbackMessage: "PDF preparation failed",
+      });
+      const message = getPdfFlowErrorMessage(lifecycleError, "PDF preparation failed");
       console.error("[pdf-document-actions] prepare_failed", {
         stage: "prepare_failed",
         platform: Platform.OS,
@@ -74,7 +99,7 @@ export async function preparePdfDocument(args: PreparePdfDocumentArgs): Promise<
         errorName: error && typeof error === "object" && "name" in error ? String((error as { name?: unknown }).name || "") : "",
         errorMessage: message,
       });
-      throw new Error(message);
+      throw lifecycleError instanceof Error ? lifecycleError : new Error(message);
     }
   };
 
@@ -97,6 +122,36 @@ export async function previewPdfDocument(
     router?: { push: (href: { pathname: string; params: Record<string, string> }) => void };
   },
 ): Promise<void> {
+  const outputObservation = beginPdfLifecycleObservation({
+    screen: "reports",
+    surface: "pdf_document_actions",
+    event: "pdf_preview_output_prepare",
+    stage: "output_prepare",
+    sourceKind: doc.fileSource.kind,
+    context: {
+      documentFamily: doc.documentType,
+      documentType: doc.documentType,
+      originModule: doc.originModule,
+      entityId: doc.entityId ?? null,
+      fileName: doc.fileName,
+      source: doc.uri,
+    },
+  });
+  const openObservation = beginPdfLifecycleObservation({
+    screen: "reports",
+    surface: "pdf_document_actions",
+    event: "pdf_preview_open",
+    stage: "open_view",
+    sourceKind: doc.fileSource.kind,
+    context: {
+      documentFamily: doc.documentType,
+      documentType: doc.documentType,
+      originModule: doc.originModule,
+      entityId: doc.entityId ?? null,
+      fileName: doc.fileName,
+      source: doc.uri,
+    },
+  });
   try {
     const scheme = String(doc.uri || "").match(/^([a-z0-9+.-]+):/i)?.[1]?.toLowerCase() || "";
     console.info("[pdf-document-actions] preview", {
@@ -108,7 +163,22 @@ export async function previewPdfDocument(
       uri: doc.uri,
       fileName: doc.fileName,
     });
-    const { session, asset } = await createDocumentPreviewSession(doc);
+    const { session, asset } = await (async () => {
+      try {
+        return await createDocumentPreviewSession(doc);
+      } catch (error) {
+        throw outputObservation.error(error, {
+          fallbackMessage: "PDF preview asset preparation failed",
+        });
+      }
+    })();
+    outputObservation.success({
+      sourceKind: asset.sourceKind,
+      extra: {
+        sessionId: session.sessionId,
+        assetId: asset.assetId,
+      },
+    });
     console.info("[pdf-document-actions] preview_asset", {
       stage: "preview_asset_ready",
       sessionId: session.sessionId,
@@ -137,9 +207,22 @@ export async function previewPdfDocument(
           pathname: "/pdf-viewer",
           params: { sessionId: session.sessionId },
         });
+        openObservation.success({
+          sourceKind: asset.sourceKind,
+          extra: {
+            route: "/pdf-viewer",
+            sessionId: session.sessionId,
+          },
+        });
         return;
       } catch (error) {
-        const message = getPdfFlowErrorMessage(error, "Viewer navigation failed");
+        const lifecycleError = openObservation.error(error, {
+          fallbackMessage: "Viewer navigation failed",
+          extra: {
+            sessionId: session.sessionId,
+          },
+        });
+        const message = getPdfFlowErrorMessage(lifecycleError, "Viewer navigation failed");
         console.error("[pdf-document-actions] preview_navigation_failed", {
           stage: "navigation_failed",
           sessionId: session.sessionId,
@@ -148,7 +231,7 @@ export async function previewPdfDocument(
           errorName: error && typeof error === "object" && "name" in error ? String((error as { name?: unknown }).name || "") : "",
           errorMessage: message,
         });
-        throw new Error(message);
+        throw lifecycleError instanceof Error ? lifecycleError : new Error(message);
       }
     }
     console.warn("[pdf-document-actions] preview_without_router_fallback", {
@@ -156,9 +239,25 @@ export async function previewPdfDocument(
       originModule: asset.originModule,
       finalUri: asset.uri,
     });
-    await openPdfPreview(asset.uri);
+    try {
+      await openPdfPreview(asset.uri);
+      openObservation.success({
+        sourceKind: asset.sourceKind,
+        extra: {
+          openStrategy: "direct_preview",
+        },
+      });
+    } catch (error) {
+      throw openObservation.error(error, {
+        fallbackMessage: "PDF preview open failed",
+        extra: {
+          openStrategy: "direct_preview",
+        },
+      });
+    }
   } catch (error) {
-    const message = getPdfFlowErrorMessage(error, "PDF preview failed");
+    const lifecycleError = error;
+    const message = getPdfFlowErrorMessage(lifecycleError, "PDF preview failed");
     console.error("[pdf-document-actions] preview_failed", {
       stage: "preview_failed",
       platform: Platform.OS,
@@ -169,14 +268,72 @@ export async function previewPdfDocument(
       errorName: error && typeof error === "object" && "name" in error ? String((error as { name?: unknown }).name || "") : "",
       errorMessage: message,
     });
-    throw new Error(message);
+    throw lifecycleError instanceof Error ? lifecycleError : new Error(message);
   }
 }
 
 export async function sharePdfDocument(doc: DocumentDescriptor): Promise<void> {
-  await openPdfShare(doc.fileSource.uri, doc.fileName);
+  const observation = beginPdfLifecycleObservation({
+    screen: "reports",
+    surface: "pdf_document_actions",
+    event: "pdf_share_open",
+    stage: "open_view",
+    sourceKind: doc.fileSource.kind,
+    context: {
+      documentFamily: doc.documentType,
+      documentType: doc.documentType,
+      originModule: doc.originModule,
+      entityId: doc.entityId ?? null,
+      fileName: doc.fileName,
+      source: doc.uri,
+    },
+  });
+  try {
+    await openPdfShare(doc.fileSource.uri, doc.fileName);
+    observation.success({
+      extra: {
+        openStrategy: "share_sheet",
+      },
+    });
+  } catch (error) {
+    throw observation.error(error, {
+      fallbackMessage: "PDF share failed",
+      extra: {
+        openStrategy: "share_sheet",
+      },
+    });
+  }
 }
 
 export async function openPdfDocumentExternal(doc: DocumentDescriptor): Promise<void> {
-  await openPdfExternal(doc.fileSource.uri, doc.fileName);
+  const observation = beginPdfLifecycleObservation({
+    screen: "reports",
+    surface: "pdf_document_actions",
+    event: "pdf_external_open",
+    stage: "open_view",
+    sourceKind: doc.fileSource.kind,
+    context: {
+      documentFamily: doc.documentType,
+      documentType: doc.documentType,
+      originModule: doc.originModule,
+      entityId: doc.entityId ?? null,
+      fileName: doc.fileName,
+      source: doc.uri,
+    },
+  });
+  try {
+    await openPdfExternal(doc.fileSource.uri, doc.fileName);
+    observation.success({
+      extra: {
+        openStrategy: "external",
+      },
+    });
+  } catch (error) {
+    throw observation.error(error, {
+      fallbackMessage: "PDF external open failed",
+      extra: {
+        openStrategy: "external",
+      },
+    });
+  }
 }

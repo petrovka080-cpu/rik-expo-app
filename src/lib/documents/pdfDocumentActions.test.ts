@@ -1,0 +1,118 @@
+const mockPreparePdfExecutionSource = jest.fn();
+const mockOpenPdfPreview = jest.fn();
+const mockOpenPdfShare = jest.fn();
+const mockOpenPdfExternal = jest.fn();
+const mockCreateDocumentPreviewSession = jest.fn();
+
+jest.mock("react-native", () => ({
+  Platform: {
+    OS: "web",
+  },
+}));
+
+jest.mock("../pdfRunner", () => ({
+  preparePdfExecutionSource: (...args: unknown[]) => mockPreparePdfExecutionSource(...args),
+  openPdfPreview: (...args: unknown[]) => mockOpenPdfPreview(...args),
+  openPdfShare: (...args: unknown[]) => mockOpenPdfShare(...args),
+  openPdfExternal: (...args: unknown[]) => mockOpenPdfExternal(...args),
+}));
+
+jest.mock("./pdfDocumentSessions", () => ({
+  createDocumentPreviewSession: (...args: unknown[]) => mockCreateDocumentPreviewSession(...args),
+}));
+
+import {
+  getPlatformObservabilityEvents,
+  resetPlatformObservabilityEvents,
+} from "../observability/platformObservability";
+import {
+  preparePdfDocument,
+  previewPdfDocument,
+} from "./pdfDocumentActions";
+
+const baseDocument = {
+  uri: "https://example.com/payment.pdf",
+  fileSource: {
+    kind: "remote-url" as const,
+    uri: "https://example.com/payment.pdf",
+  },
+  title: "Payment PDF",
+  fileName: "payment.pdf",
+  mimeType: "application/pdf" as const,
+  documentType: "payment_order" as const,
+  originModule: "accountant" as const,
+  source: "generated" as const,
+};
+
+describe("pdfDocumentActions", () => {
+  beforeEach(() => {
+    mockPreparePdfExecutionSource.mockReset();
+    mockOpenPdfPreview.mockReset();
+    mockOpenPdfShare.mockReset();
+    mockOpenPdfExternal.mockReset();
+    mockCreateDocumentPreviewSession.mockReset();
+    resetPlatformObservabilityEvents();
+  });
+
+  it("prepares PDF output with typed execution source", async () => {
+    mockPreparePdfExecutionSource.mockResolvedValueOnce({
+      kind: "remote-url",
+      uri: "https://example.com/prepared.pdf",
+    });
+
+    const result = await preparePdfDocument({
+      supabase: {},
+      descriptor: baseDocument,
+    });
+
+    expect(result.uri).toBe("https://example.com/prepared.pdf");
+    expect(
+      getPlatformObservabilityEvents().some(
+        (event) => event.event === "pdf_output_prepare" && event.result === "success",
+      ),
+    ).toBe(true);
+  });
+
+  it("Open fail is visible during direct preview fallback", async () => {
+    mockCreateDocumentPreviewSession.mockResolvedValueOnce({
+      session: {
+        sessionId: "session-1",
+        assetId: "asset-1",
+        status: "ready",
+        createdAt: "2026-03-30T10:00:00.000Z",
+      },
+      asset: {
+        assetId: "asset-1",
+        uri: "https://example.com/payment.pdf",
+        fileSource: {
+          kind: "remote-url",
+          uri: "https://example.com/payment.pdf",
+        },
+        sourceKind: "remote-url",
+        fileName: "payment.pdf",
+        title: "Payment PDF",
+        mimeType: "application/pdf",
+        documentType: "payment_order",
+        originModule: "accountant",
+        source: "generated",
+        createdAt: "2026-03-30T10:00:00.000Z",
+      },
+    });
+    mockOpenPdfPreview.mockRejectedValueOnce(new Error("preview blocked"));
+
+    await expect(previewPdfDocument(baseDocument)).rejects.toMatchObject({
+      name: "PdfLifecycleError",
+      stage: "open_view",
+      failureType: "open_fail",
+    });
+
+    expect(
+      getPlatformObservabilityEvents().some(
+        (event) =>
+          event.event === "pdf_preview_open"
+          && event.result === "error"
+          && event.extra?.pdfFailureType === "open_fail",
+      ),
+    ).toBe(true);
+  });
+});

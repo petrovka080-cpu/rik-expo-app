@@ -177,7 +177,7 @@ describe("paymentPdf.service rpc-only boundary", () => {
         event: "payment_pdf_rpc_source_failed",
         kind: "critical_fail",
         sourceKind: "rpc:pdf_payment_source_v1",
-        errorStage: "rpc_source",
+        errorStage: "source_load",
         extra: expect.objectContaining({
           paymentId: 157,
           failureReason: "rpc_error",
