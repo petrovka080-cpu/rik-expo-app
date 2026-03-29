@@ -378,25 +378,6 @@ const taxonomy: TaxonomyEntry[] = [
 
 const residuals: ResidualClientTruth[] = [
   {
-    id: "buyer_inbox_legacy_window_fallback",
-    module: "buyer",
-    contour: "Buyer inbox legacy client window fallback",
-    exactFile: "src/screens/buyer/buyer.fetchers.ts",
-    truthType: "operational",
-    currentClientOwnership:
-      "Buyer inbox fetchers still allow legacy client grouping/window ownership beside rpc_scope_v1.",
-    whyRisky:
-      "Buyer inbox truth is backend-owned primary now; compatibility stitching paths leave room for list/status drift and heavier client recomposition.",
-    requiredBackendContract: "buyer_summary_inbox_scope_v1 hard cut with legacy window fallback removal",
-    priority: "P1",
-    state: "legacy_branch",
-    nextBatch: "Buyer inbox fallback burn-down",
-    evidencePaths: [
-      "src/screens/buyer/buyer.fetchers.ts",
-      "artifacts/buyer-summary-inbox-backend-cutover.summary.json",
-    ],
-  },
-  {
     id: "buyer_summary_buckets_legacy_stitch_fallback",
     module: "buyer",
     contour: "Buyer summary buckets legacy client stitch fallback",
@@ -1076,7 +1057,6 @@ const roadmap: RoadmapBatch[] = [
     title: "Buyer and Accountant compatibility fallback burn-down",
     module: "buyer",
     residualIds: [
-      "buyer_inbox_legacy_window_fallback",
       "buyer_summary_buckets_legacy_stitch_fallback",
       "accountant_inbox_legacy_window_fallback",
       "accountant_history_legacy_window_fallback",

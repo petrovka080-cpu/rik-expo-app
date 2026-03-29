@@ -70,6 +70,7 @@ function main() {
   const runtimeSummary = shouldReuseRuntimeSummary ? existingRuntimeSummary : readJson(runtimeSummaryPath);
   const fetchersSource = readText("src/screens/buyer/buyer.fetchers.ts");
   const fetchersDataSource = readText("src/screens/buyer/buyer.fetchers.data.ts");
+  const summaryServiceSource = readText("src/screens/buyer/buyer.summary.service.ts");
   const loadingControllerSource = readText("src/screens/buyer/hooks/useBuyerLoadingController.ts");
   const migrationSource = fs.existsSync(migrationPath) ? fs.readFileSync(migrationPath, "utf8") : "";
 
@@ -87,6 +88,15 @@ function main() {
   const fetchersDeclareRpcOwner =
     fetchersSource.includes('primaryOwner: "rpc_scope_v1"') &&
     fetchersSource.includes("backendFirstPrimary: true");
+  const legacyWindowTokensRemoved =
+    !fetchersSource.includes("legacy_client_group_window") &&
+    !fetchersSource.includes("BUYER_INBOX_LEGACY_SOURCE_KIND") &&
+    !fetchersSource.includes("rpc:list_buyer_inbox+client_group_window") &&
+    !fetchersSource.includes("sliceBuyerInboxRowsWindow");
+  const summaryServiceUsesRpcWrapper =
+    summaryServiceSource.includes("loadBuyerInboxData({") &&
+    summaryServiceSource.includes("supabase,") &&
+    !summaryServiceSource.includes("listBuyerInbox,");
   const loadingControllerUsesWindowScope =
     loadingControllerSource.includes("const BUYER_INBOX_GROUP_PAGE_SIZE = 12;") &&
     loadingControllerSource.includes("const inbox = await loadBuyerInboxWindowData({");
@@ -110,6 +120,8 @@ function main() {
     backendFirstPrimary &&
     fetchersUseRpcScope &&
     fetchersDeclareRpcOwner &&
+    legacyWindowTokensRemoved &&
+    summaryServiceUsesRpcWrapper &&
     loadingControllerUsesWindowScope &&
     typedAdapterPresent;
 
@@ -174,6 +186,8 @@ function main() {
     ownership: {
       fetchersUseRpcScope,
       fetchersDeclareRpcOwner,
+      legacyWindowTokensRemoved,
+      summaryServiceUsesRpcWrapper,
       loadingControllerUsesWindowScope,
       typedAdapterPresent,
     },

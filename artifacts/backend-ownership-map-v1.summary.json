@@ -11,9 +11,9 @@
     "contractor"
   ],
   "allModulesCovered": true,
-  "residualClientTruthCount": 7,
+  "residualClientTruthCount": 6,
   "totalResidualP0": 0,
-  "totalResidualP1": 5,
+  "totalResidualP1": 4,
   "totalResidualP2": 2,
   "modulesAtRisk": [
     "accountant",
@@ -30,6 +30,6 @@
   "artifactsGenerated": true,
   "noBroadRewritePerformed": true,
   "allRequiredArtifactsAccepted": false,
-  "acceptedEnvironmentResidualCount": 1,
+  "acceptedEnvironmentResidualCount": 2,
   "nextPriorityBatch": "Buyer and Accountant compatibility fallback burn-down"
 }

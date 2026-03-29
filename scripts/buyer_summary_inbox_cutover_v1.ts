@@ -57,6 +57,16 @@ type LegacyInboxDetailed = {
   chain: LegacyStage[];
 };
 
+type BuyerInboxParityWindow = Omit<BuyerInboxLoadResult, "sourceMeta"> & {
+  sourceMeta: {
+    primaryOwner: string;
+    fallbackUsed: boolean;
+    sourceKind: string;
+    parityStatus: "not_checked";
+    backendFirstPrimary: boolean;
+  };
+};
+
 const projectRoot = process.cwd();
 for (const file of [".env.local", ".env"]) {
   const full = path.join(projectRoot, file);
@@ -444,7 +454,7 @@ function sliceLegacyInboxWindow(params: {
   offsetGroups: number;
   limitGroups: number;
   search?: string | null;
-}): BuyerInboxLoadResult {
+}): BuyerInboxParityWindow {
   const { rows, offsetGroups, limitGroups, search } = params;
   const groups = selectGroups(rows);
   const filteredGroups = search?.trim()
@@ -500,7 +510,7 @@ const inboxRowSignature = (row: BuyerInboxRow) =>
   ].join("|");
 
 const compareInboxWindows = (
-  legacy: BuyerInboxLoadResult,
+  legacy: BuyerInboxParityWindow,
   primary: BuyerInboxLoadResult,
 ) => {
   const legacyGroups = selectGroups(legacy.rows).map((group) => String(group.request_id));

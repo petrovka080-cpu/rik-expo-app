@@ -21,18 +21,22 @@ import {
   mapRejectedProposalRows,
   type BuyerProposalBucketRow,
 } from "./buyer.fetchers.data";
-import { matchesBuyerSearchQuery } from "./buyer.list.selectors";
-import { selectGroups } from "./buyer.selectors";
 
 export type { BuyerProposalBucketRow } from "./buyer.fetchers.data";
 
 type LogFn = (msg: unknown, ...rest: unknown[]) => void;
+type BuyerInboxScopeClient = {
+  rpc: (fn: string, args?: Record<string, unknown>) => PromiseLike<{
+    data: unknown;
+    error: unknown;
+  }>;
+};
 
 const REWORK_STATUS_LOWER = BUYER_STATUS_REWORK.toLowerCase();
 const BUYER_BUCKETS_RPC_SOURCE_KIND = "rpc:buyer_summary_buckets_scope_v1";
 const BUYER_BUCKETS_LEGACY_SOURCE_KIND = "rest:v_proposals_summary+proposals+proposal_items";
 const BUYER_INBOX_RPC_SOURCE_KIND = "rpc:buyer_summary_inbox_scope_v1";
-const BUYER_INBOX_LEGACY_SOURCE_KIND = "rpc:list_buyer_inbox+client_group_window";
+const BUYER_INBOX_FULL_SCAN_GROUP_PAGE_SIZE = 100;
 const uniqIds = (values: (string | null | undefined)[]) =>
   Array.from(new Set((values || []).map((value) => String(value ?? "").trim()).filter(Boolean)));
 
@@ -56,7 +60,7 @@ export type BuyerInboxWindowMeta = {
 };
 
 export type BuyerInboxSourceMeta = {
-  primaryOwner: "rpc_scope_v1" | "legacy_client_group_window";
+  primaryOwner: "rpc_scope_v1";
   fallbackUsed: boolean;
   sourceKind: string;
   parityStatus: "not_checked";
@@ -86,105 +90,142 @@ export type BuyerBucketsLoadResult = {
 };
 
 export async function loadBuyerInboxData(params: {
-  listBuyerInbox: () => Promise<BuyerInboxRow[]>;
+  supabase: BuyerInboxScopeClient;
   log?: LogFn;
 }): Promise<BuyerInboxLoadResult> {
-  const { listBuyerInbox, log } = params;
+  const { supabase, log } = params;
   const observation = beginPlatformObservability({
     screen: "buyer",
     surface: "summary_inbox",
     category: "fetch",
-    event: "load_inbox",
-    sourceKind: "rpc:list_buyer_inbox",
+    event: "load_inbox_full",
+    sourceKind: BUYER_INBOX_RPC_SOURCE_KIND,
   });
 
-  let rows: BuyerInboxRow[] = [];
-  let loadError: unknown = null;
   try {
-    rows = await listBuyerInbox();
-  } catch (e: unknown) {
-    loadError = e;
-    log?.("[buyer] listBuyerInbox ex:", e instanceof Error ? e.message : String(e));
-  }
+    const rows: BuyerInboxRow[] = [];
+    let totalGroupCount = 0;
+    let returnedGroupCount = 0;
+    let pageCount = 0;
+    let offsetGroups = 0;
 
-  const result = {
-    rows: rows || [],
-    requestIds: uniqIds((rows || []).map((row) => row?.request_id)),
-    meta: {
-      offsetGroups: 0,
-      limitGroups: 0,
-      returnedGroupCount: 0,
-      totalGroupCount: 0,
-      hasMore: false,
-      search: null,
-    },
-    sourceMeta: {
-      primaryOwner: "legacy_client_group_window" as const,
+    while (true) {
+      const page = await loadBuyerInboxWindowScope({
+        supabase,
+        offsetGroups,
+        limitGroups: BUYER_INBOX_FULL_SCAN_GROUP_PAGE_SIZE,
+      });
+
+      rows.push(...page.rows);
+      totalGroupCount = page.meta.totalGroupCount;
+      returnedGroupCount += page.meta.returnedGroupCount;
+      pageCount += 1;
+
+      if (!page.meta.hasMore) {
+        const result = {
+          rows,
+          requestIds: uniqIds(rows.map((row) => row?.request_id)),
+          meta: {
+            offsetGroups: 0,
+            limitGroups: BUYER_INBOX_FULL_SCAN_GROUP_PAGE_SIZE,
+            returnedGroupCount,
+            totalGroupCount,
+            hasMore: false,
+            search: null,
+          },
+          sourceMeta: {
+            primaryOwner: "rpc_scope_v1" as const,
+            fallbackUsed: false,
+            sourceKind: BUYER_INBOX_RPC_SOURCE_KIND,
+            parityStatus: "not_checked" as const,
+            backendFirstPrimary: true,
+          },
+        };
+        observation.success({
+          rowCount: result.rows.length,
+          sourceKind: result.sourceMeta.sourceKind,
+          fallbackUsed: false,
+          extra: {
+            primaryOwner: result.sourceMeta.primaryOwner,
+            backendFirstPrimary: true,
+            requestIds: result.requestIds.length,
+            totalGroupCount,
+            returnedGroupCount,
+            pageCount,
+          },
+        });
+        return result;
+      }
+
+      if (page.meta.returnedGroupCount <= 0) {
+        throw new Error("buyer_summary_inbox_scope_v1 reported hasMore with empty page");
+      }
+
+      offsetGroups += page.meta.returnedGroupCount;
+    }
+  } catch (error) {
+    log?.("[buyer] loadBuyerInboxData rpc error:", error instanceof Error ? error.message : String(error));
+    observation.error(error, {
+      rowCount: 0,
+      errorStage: "load_inbox_full_scope_v1",
+      sourceKind: BUYER_INBOX_RPC_SOURCE_KIND,
       fallbackUsed: false,
-      sourceKind: BUYER_INBOX_LEGACY_SOURCE_KIND,
-      parityStatus: "not_checked" as const,
-      backendFirstPrimary: false,
-    },
-  };
-  if (loadError) {
-    observation.error(loadError, {
-      rowCount: result.rows.length,
-      errorStage: "rpc:list_buyer_inbox",
     });
-  } else {
-    observation.success({
-      rowCount: result.rows.length,
-      extra: {
-        requestIds: result.requestIds.length,
-      },
-    });
+    throw error;
   }
-  return result;
 }
 
-const sliceBuyerInboxRowsWindow = (params: {
-  rows: BuyerInboxRow[];
+const loadBuyerInboxWindowScope = async (params: {
+  supabase: BuyerInboxScopeClient;
   offsetGroups: number;
   limitGroups: number;
   search?: string | null;
-}): BuyerInboxLoadResult => {
-  const { rows, offsetGroups, limitGroups, search } = params;
-  const groups = selectGroups(rows);
-  const filteredGroups = search?.trim()
-    ? groups.filter((group) => matchesBuyerSearchQuery(group, search))
-    : groups;
-  const pageGroups = filteredGroups.slice(offsetGroups, offsetGroups + limitGroups);
-  const pageRows = pageGroups.flatMap((group) => group.items);
+}): Promise<BuyerInboxLoadResult> => {
+  const { supabase, offsetGroups, limitGroups, search } = params;
+  const { data, error } = await supabase.rpc("buyer_summary_inbox_scope_v1" as never, {
+    p_offset: Math.max(0, offsetGroups),
+    p_limit: Math.max(1, limitGroups),
+    p_search: search?.trim() || null,
+    p_company_id: null,
+  } as never);
+  if (error) throw error;
+
+  const envelope = adaptBuyerSummaryInboxScopeEnvelope(data);
+  const totalGroupCount = toInt(envelope.meta.total_group_count, 0);
+  const pageReturnedGroupCount = toInt(envelope.meta.returned_group_count, 0);
   return {
-    rows: pageRows,
-    requestIds: uniqIds(pageRows.map((row) => row?.request_id)),
+    rows: envelope.rows,
+    requestIds: uniqIds(envelope.rows.map((row) => row?.request_id)),
     meta: {
-      offsetGroups,
-      limitGroups,
-      returnedGroupCount: pageGroups.length,
-      totalGroupCount: filteredGroups.length,
-      hasMore: offsetGroups + pageGroups.length < filteredGroups.length,
-      search: search?.trim() ? search.trim() : null,
+      offsetGroups: toInt(envelope.meta.offset_groups, Math.max(0, offsetGroups)),
+      limitGroups: toInt(envelope.meta.limit_groups, Math.max(1, limitGroups)),
+      returnedGroupCount: pageReturnedGroupCount,
+      totalGroupCount,
+      hasMore:
+        typeof envelope.meta.has_more === "boolean"
+          ? Boolean(envelope.meta.has_more)
+          : Math.max(0, offsetGroups) + pageReturnedGroupCount < totalGroupCount,
+      search: toMaybeText(envelope.meta.search),
     },
     sourceMeta: {
-      primaryOwner: "legacy_client_group_window",
+      primaryOwner: "rpc_scope_v1",
       fallbackUsed: false,
-      sourceKind: BUYER_INBOX_LEGACY_SOURCE_KIND,
+      sourceKind: BUYER_INBOX_RPC_SOURCE_KIND,
       parityStatus: "not_checked",
-      backendFirstPrimary: false,
+      backendFirstPrimary: true,
     },
   };
 };
 
 export async function loadBuyerInboxWindowData(params: {
-  supabase: SupabaseClient;
-  listBuyerInbox: () => Promise<BuyerInboxRow[]>;
+  supabase: BuyerInboxScopeClient;
+  listBuyerInbox?: () => Promise<BuyerInboxRow[]>;
   offsetGroups: number;
   limitGroups: number;
   search?: string | null;
   log?: LogFn;
 }): Promise<BuyerInboxLoadResult> {
-  const { supabase, listBuyerInbox, offsetGroups, limitGroups, search, log } = params;
+  const { supabase, offsetGroups, limitGroups, search, log } = params;
   const observation = beginPlatformObservability({
     screen: "buyer",
     surface: "summary_inbox",
@@ -194,39 +235,12 @@ export async function loadBuyerInboxWindowData(params: {
   });
 
   try {
-    const { data, error } = await supabase.rpc("buyer_summary_inbox_scope_v1" as never, {
-      p_offset: Math.max(0, offsetGroups),
-      p_limit: Math.max(1, limitGroups),
-      p_search: search?.trim() || null,
-      p_company_id: null,
-    } as never);
-    if (error) throw error;
-
-    const envelope = adaptBuyerSummaryInboxScopeEnvelope(data);
-    const totalGroupCount = toInt(envelope.meta.total_group_count, 0);
-    const returnedGroupCount = toInt(envelope.meta.returned_group_count, 0);
-    const result: BuyerInboxLoadResult = {
-      rows: envelope.rows,
-      requestIds: uniqIds(envelope.rows.map((row) => row?.request_id)),
-      meta: {
-        offsetGroups: toInt(envelope.meta.offset_groups, Math.max(0, offsetGroups)),
-        limitGroups: toInt(envelope.meta.limit_groups, Math.max(1, limitGroups)),
-        returnedGroupCount,
-        totalGroupCount,
-        hasMore:
-          typeof envelope.meta.has_more === "boolean"
-            ? Boolean(envelope.meta.has_more)
-            : Math.max(0, offsetGroups) + returnedGroupCount < totalGroupCount,
-        search: toMaybeText(envelope.meta.search),
-      },
-      sourceMeta: {
-        primaryOwner: "rpc_scope_v1",
-        fallbackUsed: false,
-        sourceKind: BUYER_INBOX_RPC_SOURCE_KIND,
-        parityStatus: "not_checked",
-        backendFirstPrimary: true,
-      },
-    };
+    const result = await loadBuyerInboxWindowScope({
+      supabase,
+      offsetGroups,
+      limitGroups,
+      search,
+    });
 
     observation.success({
       rowCount: result.rows.length,
@@ -246,8 +260,8 @@ export async function loadBuyerInboxWindowData(params: {
     });
     return result;
   } catch (error) {
-    const fallbackReason = error instanceof Error ? error.message : String(error ?? "");
-    log?.("[buyer] loadBuyerInboxWindowData rpc error:", fallbackReason);
+    const failureReason = error instanceof Error ? error.message : String(error ?? "");
+    log?.("[buyer] loadBuyerInboxWindowData rpc error:", failureReason);
     recordPlatformObservability({
       screen: "buyer",
       surface: "summary_inbox",
@@ -257,50 +271,26 @@ export async function loadBuyerInboxWindowData(params: {
       sourceKind: BUYER_INBOX_RPC_SOURCE_KIND,
       errorStage: "load_inbox_rpc",
       errorClass: error instanceof Error ? error.name : undefined,
-      errorMessage: fallbackReason || undefined,
-      fallbackUsed: true,
+      errorMessage: failureReason || undefined,
+      fallbackUsed: false,
       extra: {
         offsetGroups,
         limitGroups,
+        search: search?.trim() || null,
       },
     });
-
-    const legacy = await loadBuyerInboxData({
-      listBuyerInbox,
-      log,
-    });
-    const fallback = sliceBuyerInboxRowsWindow({
-      rows: legacy.rows,
-      offsetGroups,
-      limitGroups,
-      search,
-    });
-
-    observation.success({
-      rowCount: fallback.rows.length,
-      sourceKind: fallback.sourceMeta.sourceKind,
-      fallbackUsed: true,
+    observation.error(error, {
+      rowCount: 0,
+      sourceKind: BUYER_INBOX_RPC_SOURCE_KIND,
+      fallbackUsed: false,
+      errorStage: "load_inbox_rpc",
       extra: {
-        primaryOwner: fallback.sourceMeta.primaryOwner,
-        backendFirstPrimary: false,
-        requestIds: fallback.requestIds.length,
-        offsetGroups: fallback.meta.offsetGroups,
-        limitGroups: fallback.meta.limitGroups,
-        returnedGroupCount: fallback.meta.returnedGroupCount,
-        totalGroupCount: fallback.meta.totalGroupCount,
-        hasMore: fallback.meta.hasMore,
-        fallbackReason,
-        search: fallback.meta.search,
+        offsetGroups,
+        limitGroups,
+        search: search?.trim() || null,
       },
     });
-
-    return {
-      ...fallback,
-      sourceMeta: {
-        ...fallback.sourceMeta,
-        fallbackUsed: true,
-      },
-    };
+    throw error;
   }
 }
 

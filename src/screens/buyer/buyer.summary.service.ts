@@ -199,7 +199,7 @@ const readScope = async <T,>(slot: ScopeSlot<T>, params: BuyerSummaryLoadParams)
 };
 
 export function createBuyerSummaryService(params: BuyerSummaryServiceParams) {
-  const { supabase, listBuyerInbox, kickMsInbox, kickMsBuckets, log } = params;
+  const { supabase, kickMsInbox, kickMsBuckets, log } = params;
   let cachedUserId: string | null = null;
 
   const resolveUserId = async (): Promise<string | null> => {
@@ -221,7 +221,7 @@ export function createBuyerSummaryService(params: BuyerSummaryServiceParams) {
 
   const inboxSlot = createScopeSlot<BuyerInboxLoadResult>("summary_inbox", kickMsInbox, async () =>
     loadBuyerInboxData({
-      listBuyerInbox,
+      supabase,
       log,
     })
   );

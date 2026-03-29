@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-03-29T17:30:24.589Z",
+  "generatedAt": "2026-03-29T19:20:41.592Z",
   "batch": "backend_ownership_map_v1",
   "documentSections": [
     "taxonomy",
@@ -262,8 +262,8 @@
           "proof": {
             "artifactKey": "buyer_inbox",
             "artifactPath": "artifacts/buyer-summary-inbox-backend-cutover.summary.json",
-            "status": null,
-            "gate": null,
+            "status": "passed",
+            "gate": "GREEN",
             "ownershipMarkers": [
               "primaryOwner=rpc_scope_v1",
               "clientOwnedInboxTruthMateriallyRemoved=true",
@@ -303,23 +303,6 @@
       ],
       "residualClientTruth": [
         {
-          "id": "buyer_inbox_legacy_window_fallback",
-          "module": "buyer",
-          "contour": "Buyer inbox legacy client window fallback",
-          "exactFile": "src/screens/buyer/buyer.fetchers.ts",
-          "truthType": "operational",
-          "currentClientOwnership": "Buyer inbox fetchers still allow legacy client grouping/window ownership beside rpc_scope_v1.",
-          "whyRisky": "Buyer inbox truth is backend-owned primary now; compatibility stitching paths leave room for list/status drift and heavier client recomposition.",
-          "requiredBackendContract": "buyer_summary_inbox_scope_v1 hard cut with legacy window fallback removal",
-          "priority": "P1",
-          "state": "legacy_branch",
-          "nextBatch": "Buyer inbox fallback burn-down",
-          "evidencePaths": [
-            "src/screens/buyer/buyer.fetchers.ts",
-            "artifacts/buyer-summary-inbox-backend-cutover.summary.json"
-          ]
-        },
-        {
           "id": "buyer_summary_buckets_legacy_stitch_fallback",
           "module": "buyer",
           "contour": "Buyer summary buckets legacy client stitch fallback",
@@ -340,7 +323,7 @@
       "notes": [
         "Buyer read-side contours are backend-primary; remaining risk sits in compatibility fallbacks inside fetchers."
       ],
-      "residualClientTruthCount": 2,
+      "residualClientTruthCount": 1,
       "highestResidualPriority": "P1"
     },
     "accountant": {
@@ -867,23 +850,6 @@
   },
   "residualClientTruthRegistry": [
     {
-      "id": "buyer_inbox_legacy_window_fallback",
-      "module": "buyer",
-      "contour": "Buyer inbox legacy client window fallback",
-      "exactFile": "src/screens/buyer/buyer.fetchers.ts",
-      "truthType": "operational",
-      "currentClientOwnership": "Buyer inbox fetchers still allow legacy client grouping/window ownership beside rpc_scope_v1.",
-      "whyRisky": "Buyer inbox truth is backend-owned primary now; compatibility stitching paths leave room for list/status drift and heavier client recomposition.",
-      "requiredBackendContract": "buyer_summary_inbox_scope_v1 hard cut with legacy window fallback removal",
-      "priority": "P1",
-      "state": "legacy_branch",
-      "nextBatch": "Buyer inbox fallback burn-down",
-      "evidencePaths": [
-        "src/screens/buyer/buyer.fetchers.ts",
-        "artifacts/buyer-summary-inbox-backend-cutover.summary.json"
-      ]
-    },
-    {
       "id": "buyer_summary_buckets_legacy_stitch_fallback",
       "module": "buyer",
       "contour": "Buyer summary buckets legacy client stitch fallback",
@@ -993,7 +959,6 @@
       "title": "Buyer and Accountant compatibility fallback burn-down",
       "module": "buyer",
       "residualIds": [
-        "buyer_inbox_legacy_window_fallback",
         "buyer_summary_buckets_legacy_stitch_fallback",
         "accountant_inbox_legacy_window_fallback",
         "accountant_history_legacy_window_fallback"
@@ -1062,7 +1027,7 @@
         "displayName": "Buyer",
         "backendOwnedContours": 2,
         "clientOwnedUiContours": 5,
-        "residualClientTruthCount": 2,
+        "residualClientTruthCount": 1,
         "highestResidualPriority": "P1"
       },
       {
@@ -1092,7 +1057,7 @@
     ],
     "globalSummary": {
       "totalResidualP0": 0,
-      "totalResidualP1": 5,
+      "totalResidualP1": 4,
       "totalResidualP2": 2,
       "modulesAtRisk": [
         "accountant",
@@ -1279,12 +1244,43 @@
         "key": "buyer_inbox",
         "label": "Buyer Summary Inbox Backend Cutover",
         "relativePath": "artifacts/buyer-summary-inbox-backend-cutover.summary.json",
-        "exists": false,
-        "status": null,
-        "gate": null,
-        "accepted": false,
-        "iosResidual": null,
-        "raw": null
+        "exists": true,
+        "status": "passed",
+        "gate": "GREEN",
+        "accepted": true,
+        "iosResidual": "xcrun is unavailable on this host; iOS simulator cannot be started from Windows",
+        "raw": {
+          "status": "passed",
+          "gate": "GREEN",
+          "primaryOwner": "rpc_scope_v1",
+          "fallbackUsed": false,
+          "backendFirstPrimary": true,
+          "requestGroupOrderParityOk": true,
+          "rowSignatureParityOk": true,
+          "totalGroupCountParityOk": true,
+          "returnedGroupCountParityOk": true,
+          "hasMoreParityOk": true,
+          "searchScenarioParityOk": true,
+          "clientOwnedInboxTruthMateriallyRemoved": true,
+          "backendContractPatchPresent": true,
+          "tscPassed": true,
+          "eslintPassed": true,
+          "cutoverPassed": true,
+          "webPassed": true,
+          "androidPassed": true,
+          "iosPassed": false,
+          "iosResidual": "xcrun is unavailable on this host; iOS simulator cannot be started from Windows",
+          "runtimeSummaryReused": true,
+          "runtimeGateOk": true,
+          "ownership": {
+            "fetchersUseRpcScope": true,
+            "fetchersDeclareRpcOwner": true,
+            "legacyWindowTokensRemoved": true,
+            "summaryServiceUsesRpcWrapper": true,
+            "loadingControllerUsesWindowScope": true,
+            "typedAdapterPresent": true
+          }
+        }
       },
       {
         "key": "buyer_buckets",
@@ -1808,6 +1804,10 @@
     "acceptedEnvironmentResiduals": [
       {
         "artifact": "artifacts/director-reports-backend-cutover.summary.json",
+        "iosResidual": "xcrun is unavailable on this host; iOS simulator cannot be started from Windows"
+      },
+      {
+        "artifact": "artifacts/buyer-summary-inbox-backend-cutover.summary.json",
         "iosResidual": "xcrun is unavailable on this host; iOS simulator cannot be started from Windows"
       }
     ]

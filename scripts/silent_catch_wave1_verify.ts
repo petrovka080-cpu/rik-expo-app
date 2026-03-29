@@ -207,17 +207,23 @@ async function main() {
 
   resetPlatformObservabilityEvents();
 
-  const forcedBuyerFailure = await loadBuyerInboxData({
-    listBuyerInbox: async () => {
-      throw new Error("forced_buyer_inbox_failure");
+  let forcedBuyerFailure: unknown = null;
+  await loadBuyerInboxData({
+    supabase: {
+      rpc: async () => ({
+        data: null,
+        error: new Error("forced_buyer_inbox_failure"),
+      }),
     },
     log: () => undefined,
+  }).catch((error) => {
+    forcedBuyerFailure = error;
   });
   const buyerFailureEvents = getPlatformObservabilityEvents().filter(
     (event) =>
       event.screen === "buyer"
       && event.surface === "summary_inbox"
-      && event.event === "load_inbox"
+      && (event.event === "load_inbox_full" || event.event === "load_inbox")
       && event.result === "error",
   );
 
@@ -269,9 +275,9 @@ async function main() {
   const smoke = {
     forcedFailure: {
       buyerInboxObserved:
-        forcedBuyerFailure.rows.length === 0
+        forcedBuyerFailure instanceof Error
         && buyerFailureEvents.length > 0
-        && buyerFailureEvents.some((event) => event.errorStage === "rpc:list_buyer_inbox"),
+        && buyerFailureEvents.some((event) => event.errorStage === "load_inbox_full_scope_v1"),
       catalogDraftStorageObserved:
         catalogStorageEvents.some((event) => event.event === "draft_storage_get_failed")
         && catalogStorageEvents.some((event) => event.event === "draft_storage_set_failed")

@@ -1,0 +1,32 @@
+{
+  "status": "passed",
+  "gate": "GREEN",
+  "primaryOwner": "rpc_scope_v1",
+  "fallbackUsed": false,
+  "backendFirstPrimary": true,
+  "requestGroupOrderParityOk": true,
+  "rowSignatureParityOk": true,
+  "totalGroupCountParityOk": true,
+  "returnedGroupCountParityOk": true,
+  "hasMoreParityOk": true,
+  "searchScenarioParityOk": true,
+  "clientOwnedInboxTruthMateriallyRemoved": true,
+  "backendContractPatchPresent": true,
+  "tscPassed": true,
+  "eslintPassed": true,
+  "cutoverPassed": true,
+  "webPassed": true,
+  "androidPassed": true,
+  "iosPassed": false,
+  "iosResidual": "xcrun is unavailable on this host; iOS simulator cannot be started from Windows",
+  "runtimeSummaryReused": true,
+  "runtimeGateOk": true,
+  "ownership": {
+    "fetchersUseRpcScope": true,
+    "fetchersDeclareRpcOwner": true,
+    "legacyWindowTokensRemoved": true,
+    "summaryServiceUsesRpcWrapper": true,
+    "loadingControllerUsesWindowScope": true,
+    "typedAdapterPresent": true
+  }
+}

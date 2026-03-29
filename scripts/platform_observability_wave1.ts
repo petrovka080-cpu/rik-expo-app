@@ -173,11 +173,7 @@ async function main() {
 
   await runScenario("buyer_summary", async () => {
     const inbox = await buyerFetchers.loadBuyerInboxData({
-      listBuyerInbox: async () => {
-        const { data, error } = await supabase.rpc("list_buyer_inbox", { p_company_id: null });
-        if (error) throw error;
-        return Array.isArray(data) ? (data as any[]) : [];
-      },
+      supabase,
     });
     const buckets = await buyerFetchers.loadBuyerBucketsData({ supabase });
     return {

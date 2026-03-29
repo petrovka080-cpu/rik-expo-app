@@ -1,0 +1,342 @@
+{
+  "status": "passed",
+  "gate": "GREEN",
+  "primaryOwner": "rpc_scope_v1",
+  "fallbackUsed": false,
+  "backendFirstPrimary": true,
+  "requestGroupOrderParityOk": true,
+  "rowSignatureParityOk": true,
+  "totalGroupCountParityOk": true,
+  "returnedGroupCountParityOk": true,
+  "hasMoreParityOk": true,
+  "searchScenarioParityOk": true,
+  "clientOwnedInboxTruthMateriallyRemoved": true,
+  "backendContractPatchPresent": true,
+  "ownership": {
+    "fetchersUseRpcScope": true,
+    "fetchersDeclareRpcOwner": true,
+    "legacyWindowTokensRemoved": true,
+    "summaryServiceUsesRpcWrapper": true,
+    "loadingControllerUsesWindowScope": true,
+    "typedAdapterPresent": true
+  },
+  "runtime": {
+    "reusedExistingSummary": true,
+    "webPassed": true,
+    "androidPassed": true,
+    "iosPassed": false,
+    "iosResidual": "xcrun is unavailable on this host; iOS simulator cannot be started from Windows",
+    "runtimeGateOk": true,
+    "runtimeRun": {
+      "status": 0,
+      "stdout": "Reused existing passed buyer summary inbox runtime summary artifact.",
+      "stderr": ""
+    },
+    "runtimeSummary": {
+      "status": "passed",
+      "webPassed": true,
+      "androidPassed": true,
+      "iosPassed": false,
+      "runtimeVerified": true,
+      "environmentRecoveryUsed": true,
+      "gmsRecoveryUsed": false,
+      "anrRecoveryUsed": false,
+      "blankSurfaceRecovered": false,
+      "devClientBootstrapRecovered": false,
+      "platformSpecificIssues": [
+        {
+          "platform": "ios",
+          "issue": "xcrun is unavailable on this host; iOS simulator cannot be started from Windows"
+        }
+      ],
+      "iosResidual": "xcrun is unavailable on this host; iOS simulator cannot be started from Windows",
+      "failureKind": "unknown",
+      "scenariosPassed": {
+        "web": {
+          "initialOpen": true,
+          "inboxSurface": true,
+          "sheetInteraction": true
+        },
+        "android": {
+          "initialOpen": true,
+          "inboxSurface": true,
+          "sheetInteraction": true
+        },
+        "ios": {
+          "initialOpen": false,
+          "inboxSurface": false,
+          "sheetInteraction": false
+        }
+      },
+      "artifacts": {
+        "webSummary": "artifacts/buyer-summary-inbox-web-smoke.summary.json",
+        "webRuntime": "artifacts/buyer-summary-inbox-web-smoke.json",
+        "androidCurrentXml": "artifacts/android-buyer-summary-inbox-after-fio.xml",
+        "androidCurrentPng": "artifacts/android-buyer-summary-inbox-after-fio.png",
+        "androidInboxXml": "artifacts/android-buyer-summary-inbox-after-fio.xml",
+        "androidInboxPng": "artifacts/android-buyer-summary-inbox-after-fio.png",
+        "androidSheetXml": "artifacts/android-buyer-summary-inbox-sheet.xml",
+        "androidSheetPng": "artifacts/android-buyer-summary-inbox-sheet.png",
+        "androidLogcat": "artifacts/android-buyer-summary-inbox-logcat.txt"
+      },
+      "gate": "buyer_summary_inbox_runtime_verify",
+      "subscriptionStarted": null,
+      "eventReceived": null,
+      "refreshTriggered": null,
+      "doubleFetchDetected": null,
+      "inflightGuardWorked": null,
+      "recentGuardWorked": null,
+      "backendOwnerPreserved": true,
+      "androidProofMode": "ui_interaction",
+      "androidObservabilityBacked": true,
+      "androidLoadInboxObserved": true,
+      "androidContentReadyObserved": true
+    }
+  },
+  "staticChecks": {
+    "tscPassed": true,
+    "eslintPassed": true,
+    "cutoverPassed": true,
+    "tscRun": {
+      "status": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    "eslintRun": {
+      "status": 0,
+      "stdout": "\nC:\\dev\\rik-expo-app\\scripts\\buyer_summary_inbox_runtime_verify.ts\n  477:7   warning  'detectAndroidPackage' is assigned a value but never used    @typescript-eslint/no-unused-vars\n  488:7   warning  'startAndroidBuyerRoute' is assigned a value but never used  @typescript-eslint/no-unused-vars\n  504:7   warning  'resetAndroidAppState' is assigned a value but never used    @typescript-eslint/no-unused-vars\n  661:16  warning  'ensureAndroidDevClientLoaded' is defined but never used     @typescript-eslint/no-unused-vars\n\nC:\\dev\\rik-expo-app\\src\\screens\\buyer\\hooks\\useBuyerLoadingController.ts\n  49:7  warning  'getProposalChangeScopes' is assigned a value but never used  @typescript-eslint/no-unused-vars\n\n✖ 5 problems (0 errors, 5 warnings)\n\n",
+      "stderr": ""
+    },
+    "cutoverRun": {
+      "status": 0,
+      "stdout": "{\n  \"status\": \"passed\",\n  \"primaryOwner\": \"rpc_scope_v1\",\n  \"fallbackUsed\": false,\n  \"legacyDurationMs\": 2330,\n  \"primaryDurationMs\": 431,\n  \"requestGroupOrderParityOk\": true,\n  \"rowSignatureParityOk\": true,\n  \"totalGroupCountParityOk\": true,\n  \"hasMoreParityOk\": true\n}\n",
+      "stderr": ""
+    }
+  },
+  "cutoverArtifact": {
+    "status": "passed",
+    "chainMap": {
+      "currentLegacyContour": [
+        {
+          "stageName": "base_rpc",
+          "sourceOwner": "rpc:list_buyer_inbox",
+          "durationMs": 682,
+          "rowCount": 137,
+          "requiredForFirstPaint": true,
+          "canBeLazy": false,
+          "fallbackCapable": true,
+          "duplicateOrOverlapping": false
+        },
+        {
+          "stageName": "request_status_gate",
+          "sourceOwner": "table:requests",
+          "durationMs": 417,
+          "rowCount": 44,
+          "requiredForFirstPaint": true,
+          "canBeLazy": false,
+          "fallbackCapable": false,
+          "duplicateOrOverlapping": false
+        },
+        {
+          "stageName": "proposal_lifecycle_links",
+          "sourceOwner": "view:proposal_items_view",
+          "durationMs": 411,
+          "rowCount": 16,
+          "requiredForFirstPaint": false,
+          "canBeLazy": true,
+          "fallbackCapable": false,
+          "duplicateOrOverlapping": false
+        },
+        {
+          "stageName": "proposal_lifecycle_summary",
+          "sourceOwner": "view:v_proposals_summary",
+          "durationMs": 413,
+          "rowCount": 16,
+          "requiredForFirstPaint": false,
+          "canBeLazy": true,
+          "fallbackCapable": false,
+          "duplicateOrOverlapping": false
+        },
+        {
+          "stageName": "reject_context",
+          "sourceOwner": "table:proposal_items",
+          "durationMs": 403,
+          "rowCount": 3,
+          "requiredForFirstPaint": false,
+          "canBeLazy": true,
+          "fallbackCapable": false,
+          "duplicateOrOverlapping": false
+        },
+        {
+          "stageName": "client_group_window",
+          "sourceOwner": "client:selectGroups+matchesBuyerSearchQuery",
+          "durationMs": 0,
+          "rowCount": 34,
+          "requiredForFirstPaint": true,
+          "canBeLazy": false,
+          "fallbackCapable": false,
+          "duplicateOrOverlapping": false
+        }
+      ],
+      "requiredForFirstPaint": [
+        "base_rpc",
+        "request_status_gate",
+        "client_group_window"
+      ],
+      "lazySupportOnly": [
+        "proposal_lifecycle_links",
+        "proposal_lifecycle_summary",
+        "reject_context"
+      ]
+    },
+    "legacy": {
+      "durationMs": 2330,
+      "loadDurationMs": 2330,
+      "windowDurationMs": 0,
+      "rows": 34,
+      "groups": 38,
+      "sourceMeta": {
+        "primaryOwner": "legacy_client_group_window",
+        "fallbackUsed": false,
+        "sourceKind": "rpc:list_buyer_inbox+client_group_window",
+        "parityStatus": "not_checked",
+        "backendFirstPrimary": false
+      },
+      "meta": {
+        "offsetGroups": 0,
+        "limitGroups": 12,
+        "returnedGroupCount": 12,
+        "totalGroupCount": 38,
+        "hasMore": true,
+        "search": null
+      }
+    },
+    "primary": {
+      "durationMs": 431,
+      "rows": 34,
+      "groups": 38,
+      "sourceMeta": {
+        "primaryOwner": "rpc_scope_v1",
+        "fallbackUsed": false,
+        "sourceKind": "rpc:buyer_summary_inbox_scope_v1",
+        "parityStatus": "not_checked",
+        "backendFirstPrimary": true
+      },
+      "meta": {
+        "offsetGroups": 0,
+        "limitGroups": 12,
+        "returnedGroupCount": 12,
+        "totalGroupCount": 38,
+        "hasMore": true,
+        "search": null
+      }
+    },
+    "parity": {
+      "requestGroupOrderParityOk": true,
+      "rowSignatureParityOk": true,
+      "totalGroupCountParityOk": true,
+      "returnedGroupCountParityOk": true,
+      "hasMoreParityOk": true,
+      "legacyGroupCount": 38,
+      "primaryGroupCount": 38,
+      "legacyReturnedGroups": 12,
+      "primaryReturnedGroups": 12,
+      "legacyRows": 34,
+      "primaryRows": 34
+    },
+    "searchScenario": {
+      "search": "MAT-RO",
+      "legacyDurationMs": 0,
+      "primaryDurationMs": 433,
+      "parity": {
+        "requestGroupOrderParityOk": true,
+        "rowSignatureParityOk": true,
+        "totalGroupCountParityOk": true,
+        "returnedGroupCountParityOk": true,
+        "hasMoreParityOk": true,
+        "legacyGroupCount": 6,
+        "primaryGroupCount": 6,
+        "legacyReturnedGroups": 6,
+        "primaryReturnedGroups": 6,
+        "legacyRows": 20,
+        "primaryRows": 20
+      },
+      "fallbackUsed": false
+    },
+    "events": [
+      {
+        "id": "obs-1",
+        "at": 1774812016617,
+        "screen": "buyer",
+        "surface": "summary_inbox",
+        "category": "fetch",
+        "event": "load_inbox",
+        "sourceKind": "rpc:buyer_summary_inbox_scope_v1",
+        "rowCount": 34,
+        "fallbackUsed": false,
+        "extra": {
+          "primaryOwner": "rpc_scope_v1",
+          "backendFirstPrimary": true,
+          "requestIds": 12,
+          "offsetGroups": 0,
+          "limitGroups": 12,
+          "returnedGroupCount": 12,
+          "totalGroupCount": 38,
+          "hasMore": true,
+          "search": null
+        },
+        "result": "success",
+        "durationMs": 431
+      },
+      {
+        "id": "obs-2",
+        "at": 1774812017051,
+        "screen": "buyer",
+        "surface": "summary_inbox",
+        "category": "fetch",
+        "event": "load_inbox",
+        "sourceKind": "rpc:buyer_summary_inbox_scope_v1",
+        "rowCount": 20,
+        "fallbackUsed": false,
+        "extra": {
+          "primaryOwner": "rpc_scope_v1",
+          "backendFirstPrimary": true,
+          "requestIds": 6,
+          "offsetGroups": 0,
+          "limitGroups": 12,
+          "returnedGroupCount": 6,
+          "totalGroupCount": 6,
+          "hasMore": false,
+          "search": "mat-ro"
+        },
+        "result": "success",
+        "durationMs": 433
+      }
+    ],
+    "summary": {
+      "totalEvents": 2,
+      "fetchEvents": 2,
+      "uiEvents": 0,
+      "reloadEvents": 0,
+      "errorCount": 0,
+      "cacheHitCount": 0,
+      "overlapCount": 0,
+      "skippedCount": 0,
+      "guardReasons": [],
+      "topSlowFetches": [
+        {
+          "screen": "buyer",
+          "surface": "summary_inbox",
+          "event": "load_inbox",
+          "count": 2,
+          "avgDurationMs": 432,
+          "maxDurationMs": 433,
+          "totalRowCount": 54,
+          "lastSourceKind": "rpc:buyer_summary_inbox_scope_v1",
+          "fallbackCount": 0
+        }
+      ],
+      "recentErrors": []
+    }
+  }
+}
