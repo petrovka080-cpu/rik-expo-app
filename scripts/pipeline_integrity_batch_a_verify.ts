@@ -217,20 +217,24 @@ writeFileSync(
   "utf8",
 );
 
+const batchSummary = {
+  status,
+  proposalCreateStatus,
+  proposalItemsStatus,
+  rpcCompatStatus,
+  requestSubmitStatus,
+  files: [proposalsPath, corePath, requestsPath, proposalTypesPath, directorProposalRowPath],
+};
+
 writeFileSync(
   join(artifactsDir, "pipeline-integrity-batch-a-summary.json"),
-  `${JSON.stringify(
-    {
-      status,
-      proposalCreateStatus,
-      proposalItemsStatus,
-      rpcCompatStatus,
-      requestSubmitStatus,
-      files: [proposalsPath, corePath, requestsPath, proposalTypesPath, directorProposalRowPath],
-    },
-    null,
-    2,
-  )}\n`,
+  `${JSON.stringify(batchSummary, null, 2)}\n`,
+  "utf8",
+);
+
+writeFileSync(
+  join(artifactsDir, "pipeline-batch-a-summary.json"),
+  `${JSON.stringify(batchSummary, null, 2)}\n`,
   "utf8",
 );
 
