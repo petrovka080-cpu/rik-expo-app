@@ -1,0 +1,100 @@
+{
+  "scopeTargets": [
+    "src/lib/api",
+    "src/lib/catalog_api.ts",
+    "src/screens/director/DirectorDashboard.tsx",
+    "src/lib/postgrest.ts"
+  ],
+  "files": [
+    {
+      "path": "src/lib/api/director.ts",
+      "before": 1,
+      "after": 0,
+      "changed": true
+    },
+    {
+      "path": "src/lib/api/pdf.ts",
+      "before": 1,
+      "after": 0,
+      "changed": true
+    },
+    {
+      "path": "src/lib/api/pdf_director.data.ts",
+      "before": 5,
+      "after": 0,
+      "changed": true
+    },
+    {
+      "path": "src/lib/postgrest.ts",
+      "before": 1,
+      "after": 0,
+      "changed": true
+    }
+  ],
+  "remainingOutsideScope": [
+    {
+      "path": "src/ui/IconSquareButton.tsx",
+      "after": 2
+    },
+    {
+      "path": "src/ui/icons/SendHomeIcon.tsx",
+      "after": 1
+    },
+    {
+      "path": "src/ui/CloseIconButton.tsx",
+      "after": 1
+    },
+    {
+      "path": "src/ui/AppButton.tsx",
+      "after": 2
+    },
+    {
+      "path": "src/dev/_webStyleGuard.tsx",
+      "after": 1
+    },
+    {
+      "path": "src/lib/useRole.ts",
+      "after": 1
+    },
+    {
+      "path": "src/features/reports/ReportsHubScreen.tsx",
+      "after": 1
+    },
+    {
+      "path": "src/features/reports/ReportsDashboardScreen.tsx",
+      "after": 1
+    },
+    {
+      "path": "src/components/BusyButton.tsx",
+      "after": 3
+    },
+    {
+      "path": "src/features/auctions/AuctionsScreen.tsx",
+      "after": 4
+    },
+    {
+      "path": "src/features/auctions/AuctionDetailScreen.tsx",
+      "after": 4
+    },
+    {
+      "path": "src/features/chat/ChatScreen.tsx",
+      "after": 6
+    },
+    {
+      "path": "src/lib/documents/pdfDocumentSessions.ts",
+      "after": 1
+    },
+    {
+      "path": "src/lib/pdf/pdf.warehouse.ts",
+      "after": 4
+    },
+    {
+      "path": "src/lib/infra/queueLatencyMetrics.ts",
+      "after": 1
+    },
+    {
+      "path": "src/lib/offline/contractorProgressWorker.ts",
+      "after": 1
+    }
+  ]
+}

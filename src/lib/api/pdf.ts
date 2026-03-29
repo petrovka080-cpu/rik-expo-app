@@ -1,5 +1,6 @@
 import { Platform } from "react-native";
 import * as Print from "expo-print";
+import type { FilePrintResult } from "expo-print";
 import { File, Paths } from "expo-file-system";
 import { normalizeLocalFileUri } from "../pdfFileContract";
 
@@ -26,6 +27,14 @@ const withTimeout = async <T,>(p: Promise<T>, ms: number, msg: string): Promise<
   }
 };
 
+const resolvePrintResultUri = (result: FilePrintResult): string => {
+  const uri = result.uri?.trim() ?? "";
+  if (!uri) {
+    throw new Error("printToFileAsync returned empty uri");
+  }
+  return uri;
+};
+
 export async function openHtmlAsPdfUniversal(
   html: string,
   _opts: OpenDocOpts = {},
@@ -49,8 +58,7 @@ export async function openHtmlAsPdfUniversal(
       "PDF generates too slowly. Try again.",
     );
 
-    const rawUri = (res as any)?.uri;
-    if (!rawUri) throw new Error("printToFileAsync returned empty uri");
+    const rawUri = resolvePrintResultUri(res);
 
     if ((Platform.OS as string) !== "web") {
       const sourceUri = normalizeLocalFileUri(rawUri);
@@ -59,7 +67,7 @@ export async function openHtmlAsPdfUniversal(
       const destinationFile = new File(Paths.cache, stableName);
       const copiedUri = destinationFile.uri;
 
-      let lastError: any;
+      let lastError: unknown;
       for (let attempt = 1; attempt <= 3; attempt++) {
         try {
           if (attempt > 1) await uiYield(200 * attempt);
@@ -91,7 +99,7 @@ export async function openHtmlAsPdfUniversal(
           });
         }
       }
-      throw lastError || new Error("Failed to materialize generated PDF into app cache");
+      throw lastError ?? new Error("Failed to materialize generated PDF into app cache");
     }
 
     return rawUri;

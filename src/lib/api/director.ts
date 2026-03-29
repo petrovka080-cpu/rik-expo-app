@@ -61,24 +61,108 @@ type PendingRpcName =
   | "list_pending"
   | "listpending";
 
+type DirectorPendingRpcRawRow = {
+  id?: unknown;
+  request_id?: unknown;
+  request_id_old?: unknown;
+  request?: unknown;
+  request_uuid?: unknown;
+  request_id_text?: unknown;
+  request_item_id?: unknown;
+  name_human?: unknown;
+  qty?: unknown;
+  uom?: unknown;
+};
+
+type DirectorRequestIdLookupRow = {
+  id?: unknown;
+  id_old?: unknown;
+};
+
+type DirectorRequestItemFallbackRow = {
+  id?: unknown;
+  request_id?: unknown;
+  name_human?: unknown;
+  qty?: unknown;
+  uom?: unknown;
+};
+
 const asRequestStatus = (value: string): RequestStatus => value as RequestStatus;
 
-function asDirectorPendingRows(value: unknown): DirectorPendingRow[] {
-  return Array.isArray(value) ? (value as DirectorPendingRow[]) : [];
+function asRecord(value: unknown): Record<string, unknown> | null {
+  return value && typeof value === "object" && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : null;
 }
 
-async function callPendingRpc(name: PendingRpcName): Promise<DirectorPendingRow[]> {
+function asDirectorPendingRpcRawRows(value: unknown): DirectorPendingRpcRawRow[] {
+  if (!Array.isArray(value)) return [];
+  return value.flatMap((row) => {
+    const record = asRecord(row);
+    return record
+      ? [
+          {
+            id: record.id,
+            request_id: record.request_id,
+            request_id_old: record.request_id_old,
+            request: record.request,
+            request_uuid: record.request_uuid,
+            request_id_text: record.request_id_text,
+            request_item_id: record.request_item_id,
+            name_human: record.name_human,
+            qty: record.qty,
+            uom: record.uom,
+          },
+        ]
+      : [];
+  });
+}
+
+function asDirectorRequestIdLookupRows(value: unknown): DirectorRequestIdLookupRow[] {
+  if (!Array.isArray(value)) return [];
+  return value.flatMap((row) => {
+    const record = asRecord(row);
+    return record
+      ? [
+          {
+            id: record.id,
+            id_old: record.id_old,
+          },
+        ]
+      : [];
+  });
+}
+
+function asDirectorRequestItemFallbackRows(value: unknown): DirectorRequestItemFallbackRow[] {
+  if (!Array.isArray(value)) return [];
+  return value.flatMap((row) => {
+    const record = asRecord(row);
+    return record
+      ? [
+          {
+            id: record.id,
+            request_id: record.request_id,
+            name_human: record.name_human,
+            qty: record.qty,
+            uom: record.uom,
+          },
+        ]
+      : [];
+  });
+}
+
+async function callPendingRpc(name: PendingRpcName): Promise<DirectorPendingRpcRawRow[]> {
   const rpc = await client.rpc(name);
   if (rpc.error) return [];
-  return asDirectorPendingRows(rpc.data);
+  return asDirectorPendingRpcRawRows(rpc.data);
 }
 
 export async function listPending(): Promise<DirectorPendingRow[]> {
   const ridMap = new Map<string, number>();
   let ridSeq = 1;
 
-  const normalize = (arr: any[]): DirectorPendingRow[] =>
-    (arr ?? []).map((r: any, i: number) => {
+  const normalize = (arr: DirectorPendingRpcRawRow[]): DirectorPendingRow[] =>
+    arr.map((r, i) => {
       const raw =
         r.request_id ?? r.request_id_old ?? r.request ?? r.request_uuid ?? r.request_id_text ?? "";
       let ridNum = Number(raw);
@@ -93,7 +177,7 @@ export async function listPending(): Promise<DirectorPendingRow[]> {
         request_item_id: String(r.request_item_id ?? r.id ?? ""),
         name_human: String(r.name_human ?? ""),
         qty: Number(r.qty ?? 0),
-        uom: r.uom ?? null,
+        uom: r.uom == null ? null : String(r.uom),
       };
     });
 
@@ -119,11 +203,12 @@ export async function listPending(): Promise<DirectorPendingRow[]> {
       .from("requests")
       .select("id, id_old")
       .eq("status", asRequestStatus("На утверждении"));
-    const ids = (reqs.data || []).map((r: any) => String(r.id));
+    const requestRows = asDirectorRequestIdLookupRows(reqs.data);
+    const ids = requestRows.map((r) => String(r.id ?? ""));
     if (!ids.length) return [];
 
     const idOldByUuid = new Map<string, number>();
-    (reqs.data || []).forEach((r: any) => {
+    requestRows.forEach((r) => {
       if (Number.isFinite(r.id_old)) idOldByUuid.set(String(r.id), Number(r.id_old));
     });
 
@@ -137,9 +222,10 @@ export async function listPending(): Promise<DirectorPendingRow[]> {
 
     if (ri.error) throw ri.error;
 
+    const requestItemRows = asDirectorRequestItemFallbackRows(ri.data);
     const out: DirectorPendingRow[] = [];
-    for (let i = 0; i < (ri.data || []).length; i++) {
-      const r: any = (ri.data as any[])[i];
+    for (let i = 0; i < requestItemRows.length; i++) {
+      const r = requestItemRows[i];
       const uuid = String(r.request_id);
       let ridNum = idOldByUuid.get(uuid);
       if (!Number.isFinite(ridNum)) {
@@ -152,7 +238,7 @@ export async function listPending(): Promise<DirectorPendingRow[]> {
         request_item_id: String(r.id ?? ""),
         name_human: String(r.name_human ?? ""),
         qty: Number(r.qty ?? 0),
-        uom: r.uom ?? null,
+        uom: r.uom == null ? null : String(r.uom),
       });
     }
     return out;

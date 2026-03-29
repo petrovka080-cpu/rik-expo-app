@@ -1006,13 +1006,13 @@ export function prepareDirectorProductionReportPdfModel(
     const levels = Array.isArray(work?.levels) ? work.levels : [];
     for (const level of levels) {
       const obj =
-        String((level as any)?.object_name ?? objectName ?? "Без объекта").trim() || "Без объекта";
+        String((level as { object_name?: unknown })?.object_name ?? objectName ?? "Без объекта").trim() || "Без объекта";
       const current = byObject.get(obj) ?? { docs: 0, positions: 0, noReq: 0, noWork: 0 };
-      current.docs += nnum((level as any)?.total_docs);
-      current.positions += nnum((level as any)?.total_positions);
-      current.noReq += nnum((level as any)?.free_positions);
+      current.docs += nnum((level as { total_docs?: unknown })?.total_docs);
+      current.positions += nnum((level as { total_positions?: unknown })?.total_positions);
+      current.noReq += nnum((level as { free_positions?: unknown })?.free_positions);
       if (String(work?.work_type_name ?? "").trim().toLowerCase() === "без вида работ") {
-        current.noWork += nnum((level as any)?.total_positions);
+        current.noWork += nnum((level as { total_positions?: unknown })?.total_positions);
       }
       byObject.set(obj, current);
     }

@@ -17,7 +17,11 @@ export function ensureSelect(url: string): string {
 
 export async function rest(url: string, init: RequestInit = {}) {
   const finalUrl = ensureSelect(url);
-  const headers = { ...PG_HEADERS, ...(init.headers as any) };
+  const headers = new Headers(PG_HEADERS);
+  const initHeaders = new Headers(init.headers ?? undefined);
+  initHeaders.forEach((value, key) => {
+    headers.set(key, value);
+  });
   const res = await fetch(finalUrl, { ...init, headers });
   if (!res.ok) {
     const text = await res.text().catch(() => "");
@@ -35,4 +39,3 @@ export async function restJson<T = any>(
 }
 
 export const REST_BASE = `${SB_URL}/rest/v1`;
-
