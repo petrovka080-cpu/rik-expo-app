@@ -8,6 +8,7 @@ import {
   requestLookupInFlight,
   setLookupValue,
 } from "./director_reports.cache";
+import { filterRequestLinkedRowsByExistingRequestLinks } from "./integrity.guards";
 import type { RequestLookupRow } from "./director_reports.shared";
 import { normalizeRequestLookupRow } from "./director_reports.shared";
 import {
@@ -363,7 +364,7 @@ export async function loadCanonicalRequestItemsByRequestId(
     throw error;
   }
 
-  return Array.isArray(data)
+  const rows = Array.isArray(data)
     ? (data as UnknownRow[]).map((row) => ({
         id: String(row.id ?? "").trim(),
         request_id: String(row.request_id ?? "").trim(),
@@ -378,4 +379,11 @@ export async function loadCanonicalRequestItemsByRequestId(
         created_at: row.created_at == null ? null : String(row.created_at),
       }))
     : [];
+  const guarded = await filterRequestLinkedRowsByExistingRequestLinks(supabase, rows, {
+    screen: "request",
+    surface: "canonical_request_items",
+    sourceKind: "table:request_items",
+    relation: "request_items.request_id->requests.id",
+  });
+  return guarded.rows;
 }

@@ -1,0 +1,100 @@
+{
+  "status": "GREEN",
+  "matrix": [
+    {
+      "link": "request_items.request_id -> requests.id",
+      "parent": "requests",
+      "child": "request_items",
+      "writeOwners": [
+        "src/lib/api/requests.ts:addRequestItemFromRikDetailed",
+        "src/screens/foreman/foreman.helpers.ts:requestItemAddOrIncAndPatchMeta"
+      ],
+      "readOwners": [
+        "src/lib/api/requestCanonical.read.ts:loadCanonicalRequestItemsByRequestId",
+        "src/lib/catalog/catalog.request.service.ts:listRequestItems"
+      ],
+      "guardBoundary": {
+        "write": "ensureRequestExists",
+        "read": "filterRequestLinkedRowsByExistingRequestLinks"
+      },
+      "validPass": true,
+      "invalidRejectCode": "missing_request"
+    },
+    {
+      "link": "proposal_items.request_item_id -> request_items.id",
+      "parent": "request_items",
+      "child": "proposal_items",
+      "writeOwners": [
+        "src/lib/api/proposals.ts:proposalAddItems",
+        "src/lib/api/proposals.ts:proposalSetItemsMeta",
+        "src/lib/catalog/catalog.proposalCreation.service.ts:linkProposalItemsStage",
+        "src/screens/buyer/buyer.repo.ts:repoUpdateProposalItems"
+      ],
+      "readOwners": [
+        "src/lib/api/proposals.ts:proposalItems"
+      ],
+      "guardBoundary": {
+        "write": "ensureProposalRequestItemsIntegrity",
+        "read": "filterProposalItemsByExistingRequestLinks"
+      },
+      "validPass": true,
+      "invalidRejectCode": "missing_request_items"
+    },
+    {
+      "link": "proposal_items.proposal_id -> proposals.id",
+      "parent": "proposals",
+      "child": "proposal_items",
+      "writeOwners": [
+        "src/lib/api/proposals.ts:proposalSetItemsMeta",
+        "src/lib/catalog/catalog.proposalCreation.service.ts:completeProposalCreationStage",
+        "src/screens/buyer/buyer.repo.ts:repoUpdateProposalItems"
+      ],
+      "readOwners": [
+        "src/screens/accountant/accountant.inbox.service.ts:loadAccountantInboxWindowData"
+      ],
+      "guardBoundary": {
+        "write": "ensureProposalExists / ensureProposalRequestItemsIntegrity",
+        "read": "filterProposalLinkedRowsByExistingProposalLinks"
+      },
+      "validPass": true,
+      "invalidRejectCode": "missing_proposal"
+    },
+    {
+      "link": "warehouse_issues.request_id -> requests.id",
+      "parent": "requests",
+      "child": "warehouse_issues",
+      "writeOwners": [
+        "src/screens/warehouse/warehouse.issue.repo.ts:createWarehouseIssue",
+        "src/screens/warehouse/warehouse.issue.ts:submitReqPick",
+        "src/screens/warehouse/warehouse.issue.ts:issueByRequestItem"
+      ],
+      "readOwners": [
+        "src/screens/warehouse/warehouse.requests.read.ts"
+      ],
+      "guardBoundary": {
+        "write": "ensureRequestExists / ensureRequestItemsBelongToRequest",
+        "read": "warehouse canonical read path"
+      },
+      "validPass": true,
+      "invalidRejectCode": "missing_request"
+    },
+    {
+      "link": "proposal_payment_allocations.proposal_item_id -> proposal_items.id / proposal_payments.proposal_id -> proposals.id",
+      "parent": "proposal_items + proposals",
+      "child": "proposal_payment_allocations + proposal_payments",
+      "writeOwners": [
+        "src/lib/api/accountant.ts:accountantAddPaymentWithAllocations",
+        "src/screens/accountant/useAccountantPayActions.ts"
+      ],
+      "readOwners": [
+        "src/screens/accountant/accountant.history.service.ts:loadAccountantHistoryWindowData"
+      ],
+      "guardBoundary": {
+        "write": "ensureProposalExists / ensureProposalItemIdsBelongToProposal",
+        "read": "filterPaymentRowsByExistingPaymentProposalLinks"
+      },
+      "validPass": true,
+      "invalidRejectCode": "mismatched_proposal_items"
+    }
+  ]
+}

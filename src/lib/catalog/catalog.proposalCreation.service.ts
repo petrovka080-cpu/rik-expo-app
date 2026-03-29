@@ -9,6 +9,7 @@ import {
   type ProposalStatus,
   type ProposalSubmitVerificationResult,
 } from "../api/proposals";
+import { ensureProposalRequestItemsIntegrity } from "../api/integrity.guards";
 import { recordCatalogWarning } from "./catalog.observability";
 import {
   SUPPLIER_NONE_LABEL,
@@ -658,6 +659,11 @@ async function linkProposalItemsStage(
   }
 
   if (!added) {
+    await ensureProposalRequestItemsIntegrity(supabase, proposalId, requestItemIds, {
+      screen: "buyer",
+      surface: "catalog_proposal_link_items_fallback",
+      sourceKind: "mutation:proposal_items_fallback",
+    });
     for (const pack of chunk(requestItemIds, 50)) {
       const rows: ProposalItemsInsert[] = pack.map((request_item_id) => ({
         proposal_id: proposalId,
@@ -679,6 +685,12 @@ async function completeProposalCreationStage(
   preconditions: ProposalCreationPreconditionsResolved,
   runtime: ProposalCreationRuntime,
 ): Promise<ProposalCreationCompletionResult> {
+  await ensureProposalRequestItemsIntegrity(supabase, proposalId, prepared.request_item_ids, {
+    screen: "buyer",
+    surface: "catalog_proposal_complete_bindings",
+    sourceKind: "mutation:proposal_items_bindings",
+  });
+
   if (prepared.metaRows.length) {
     try {
       runtime.dbCalls += 1;

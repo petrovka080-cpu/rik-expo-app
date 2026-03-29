@@ -4,6 +4,7 @@ import {
   clearCachedDraftRequestId,
   getOrCreateDraftRequestId as getOrCreateLowLevelDraftRequestId,
 } from "../api/requests";
+import { filterRequestLinkedRowsByExistingRequestLinks } from "../api/integrity.guards";
 import { recordCatalogWarning } from "./catalog.observability";
 import {
   asLooseRecord,
@@ -788,8 +789,14 @@ export async function listRequestItems(requestId: string): Promise<ReqItemRow[]>
     const mapped = rows
       .map((row) => mapRequestItemRow(row, id))
       .filter((row): row is ReqItemRow => !!row);
+    const guarded = await filterRequestLinkedRowsByExistingRequestLinks(supabase, mapped, {
+      screen: "request",
+      surface: "catalog_list_request_items",
+      sourceKind: "table:request_items",
+      relation: "request_items.request_id->requests.id",
+    });
 
-    return mapped.sort((a, b) => (a.line_no ?? 0) - (b.line_no ?? 0));
+    return guarded.rows.sort((a, b) => (a.line_no ?? 0) - (b.line_no ?? 0));
   } catch (error: unknown) {
     console.warn("[catalog_api.listRequestItems] request_items:", (error as Error)?.message ?? error);
     return [];

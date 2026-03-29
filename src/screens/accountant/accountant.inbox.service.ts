@@ -1,6 +1,7 @@
 import { supabase } from "../../lib/supabaseClient";
 import { listAccountantInbox } from "../../lib/catalog_api";
 import { normalizeAccountantInboxRpcTab } from "../../lib/api/accountant";
+import { filterProposalLinkedRowsByExistingProposalLinks } from "../../lib/api/integrity.guards";
 import {
   beginPlatformObservability,
   recordPlatformObservability,
@@ -222,7 +223,13 @@ export async function loadAccountantInboxLegacyData(params: {
     rows = await mapAccountantFallbackPropsToInboxRows(props);
   }
 
-  const filtered = filterRowsByTab(rows || [], tab);
+  const guarded = await filterProposalLinkedRowsByExistingProposalLinks(supabase, rows || [], {
+    screen: "accountant",
+    surface: "inbox_legacy_window",
+    sourceKind,
+    relation: "accountant_inbox.proposal_id->proposals.id",
+  });
+  const filtered = filterRowsByTab(guarded.rows, tab);
   const sorted = sortRowsByTab(filtered, tab);
 
   return {
@@ -290,11 +297,17 @@ export async function loadAccountantInboxWindowData(params: {
     if (error) throw error;
 
     const envelope = adaptAccountantInboxScopeEnvelope(data);
+    const guarded = await filterProposalLinkedRowsByExistingProposalLinks(supabase, envelope.rows, {
+      screen: "accountant",
+      surface: "inbox_window",
+      sourceKind: ACCOUNTANT_INBOX_RPC_SOURCE_KIND,
+      relation: "accountant_inbox.proposal_id->proposals.id",
+    });
     const totalRowCount = toInt(envelope.meta.total_row_count, 0);
-    const returnedRowCount = toInt(envelope.meta.returned_row_count, envelope.rows.length);
+    const returnedRowCount = toInt(envelope.meta.returned_row_count, guarded.rows.length);
 
     const result: AccountantInboxWindowLoadResult = {
-      rows: envelope.rows,
+      rows: guarded.rows,
       meta: {
         offsetRows: toInt(envelope.meta.offset_rows, Math.max(0, offsetRows)),
         limitRows: toInt(envelope.meta.limit_rows, Math.max(1, limitRows)),

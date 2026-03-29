@@ -1,4 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "../../lib/database.types";
+import { ensureRequestExists } from "../../lib/api/integrity.guards";
 
 const isMissingRpcFunctionError = (error: unknown): boolean => {
   const message = String((error as { message?: string } | null)?.message ?? error ?? "")
@@ -8,7 +10,7 @@ const isMissingRpcFunctionError = (error: unknown): boolean => {
 };
 
 export async function createWarehouseIssue(
-  supabase: SupabaseClient,
+  supabase: SupabaseClient<Database>,
   payload: {
     p_who: string;
     p_note: string;
@@ -17,6 +19,14 @@ export async function createWarehouseIssue(
     p_work_name: string | null;
   },
 ) {
+  const requestId = String(payload.p_request_id ?? "").trim();
+  if (requestId) {
+    await ensureRequestExists(supabase, requestId, {
+      screen: "warehouse",
+      surface: "create_warehouse_issue",
+      sourceKind: "mutation:warehouse_issue_repo",
+    });
+  }
   return await supabase.rpc("issue_via_ui", payload);
 }
 

@@ -1,6 +1,7 @@
 ﻿import { Platform } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { supabase } from "../../lib/supabaseClient";
+import { addRequestItemFromRikDetailed } from "../../lib/api/requests";
 import type { CalcRow, PickedRow } from "./foreman.types";
 
 export const FOREMAN_HISTORY_KEY = "foreman_name_history_v1";
@@ -72,39 +73,14 @@ export async function requestItemAddOrIncAndPatchMeta(
     uom?: string | null;
   },
 ): Promise<string> {
-  if (!rik_code) throw new Error("rik_code is empty");
-  const q = Number(qtyAdd);
-  if (!Number.isFinite(q) || q <= 0) throw new Error("qty must be > 0");
-
-  const { data: id, error } = await supabase.rpc("request_item_add_or_inc", {
-    p_request_id: rid,
-    p_rik_code: rik_code,
-    p_qty_add: q,
+  const result = await addRequestItemFromRikDetailed(rid, rik_code, qtyAdd, {
+    note: meta?.note ?? undefined,
+    app_code: meta?.app_code ?? undefined,
+    kind: meta?.kind ?? undefined,
+    name_human: meta?.name_human ?? undefined,
+    uom: meta?.uom ?? undefined,
   });
-
-  if (error) throw error;
-  const itemId = String(id ?? "").trim();
-  if (!itemId) throw new Error("request_item_add_or_inc returned empty id");
-
-  const patch: Record<string, string | number | null> = {};
-  if (meta) {
-    if (Object.prototype.hasOwnProperty.call(meta, "note")) patch.note = meta.note ?? null;
-    if (Object.prototype.hasOwnProperty.call(meta, "app_code")) patch.app_code = meta.app_code ?? null;
-    if (Object.prototype.hasOwnProperty.call(meta, "kind")) patch.kind = meta.kind ?? null;
-    if (Object.prototype.hasOwnProperty.call(meta, "name_human") && meta.name_human) patch.name_human = meta.name_human;
-    if (Object.prototype.hasOwnProperty.call(meta, "uom")) patch.uom = meta.uom ?? null;
-  }
-  patch.status = "Черновик";
-
-  if (Object.keys(patch).length) {
-    try {
-      await supabase.from("request_items").update(patch).eq("id", itemId);
-    } catch {
-      // no-op: metadata update is best-effort
-    }
-  }
-
-  return itemId;
+  return result.item_id;
 }
 
 export function aggCalcRows(rows: CalcRow[]) {

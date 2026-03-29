@@ -1,4 +1,5 @@
 import { supabase } from "../../lib/supabaseClient";
+import { filterPaymentRowsByExistingPaymentProposalLinks } from "../../lib/api/integrity.guards";
 import type { AccountantInboxUiRow, HistoryRow } from "./types";
 
 type AccountantHistoryScopeRow = {
@@ -184,11 +185,21 @@ export async function loadAccountantHistoryWindowData(params: {
     if (error) throw error;
 
     const envelope = adaptAccountantHistoryScopeEnvelope(data);
+    const guarded = await filterPaymentRowsByExistingPaymentProposalLinks(
+      supabase,
+      envelope.rows,
+      {
+        screen: "accountant",
+        surface: "history_window",
+        sourceKind: ACCOUNTANT_HISTORY_RPC_SOURCE_KIND,
+        relation: "proposal_payments.id+proposal_id",
+      },
+    );
     const totalRowCount = toInt(envelope.meta.total_row_count, 0);
-    const returnedRowCount = toInt(envelope.meta.returned_row_count, envelope.rows.length);
+    const returnedRowCount = toInt(envelope.meta.returned_row_count, guarded.rows.length);
 
     return {
-      rows: envelope.rows,
+      rows: guarded.rows,
       meta: {
         offsetRows: toInt(envelope.meta.offset_rows, Math.max(0, offsetRows)),
         limitRows: toInt(envelope.meta.limit_rows, Math.max(1, limitRows)),
@@ -218,8 +229,18 @@ export async function loadAccountantHistoryWindowData(params: {
       histSearch,
       toRpcDateOrNull,
     });
+    const guarded = await filterPaymentRowsByExistingPaymentProposalLinks(
+      supabase,
+      legacyRows,
+      {
+        screen: "accountant",
+        surface: "history_legacy_window",
+        sourceKind: ACCOUNTANT_HISTORY_LEGACY_SOURCE_KIND,
+        relation: "proposal_payments.id+proposal_id",
+      },
+    );
     const fallback = sliceAccountantHistoryRowsWindow({
-      rows: legacyRows,
+      rows: guarded.rows,
       offsetRows,
       limitRows,
       dateFrom,

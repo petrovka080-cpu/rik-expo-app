@@ -3,6 +3,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import {
   getLatestCanonicalProposalAttachment,
 } from "../../lib/api/proposalAttachments.service";
+import { ensureProposalRequestItemsIntegrity } from "../../lib/api/integrity.guards";
 
 export type PropAttachmentRow = {
   id: string;
@@ -260,6 +261,12 @@ export async function repoUpdateProposalItems(
     .filter((row): row is ProposalItemBulkMutationRow => !!row);
 
   if (!payloads.length) return;
+
+  await ensureProposalRequestItemsIntegrity(supabase, pid, payloads.map((row) => row.request_item_id), {
+    screen: "buyer",
+    surface: "repo_update_proposal_items",
+    sourceKind: "mutation:proposal_items_repo",
+  });
 
   if (proposalItemsBulkUpsertAvailable !== false) {
     try {

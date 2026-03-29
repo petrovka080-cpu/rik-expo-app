@@ -1,5 +1,5 @@
 import { client, rpcCompat } from "./_core";
-import { ensureProposalExists } from "./integrity.guards";
+import { ensureProposalExists, ensureProposalItemIdsBelongToProposal } from "./integrity.guards";
 import type { AccountantInboxRow } from "./types";
 import type { Database } from "../database.types";
 
@@ -18,6 +18,12 @@ type ReturnToBuyerInput = {
 
 type SendToAccountantRpcArgs =
   Database["public"]["Functions"]["proposal_send_to_accountant_min"]["Args"];
+type AccountantAddPaymentV3Args =
+  Database["public"]["Functions"]["acc_add_payment_v3_uuid"]["Args"];
+export type AccountantPaymentAllocationInput = {
+  proposal_item_id: string;
+  amount: number;
+};
 
 const isSendToAccountantInput = (v: unknown): v is SendToAccountantInput =>
   typeof v === "object" && v !== null && "proposalId" in v;
@@ -85,6 +91,59 @@ export async function accountantAddPayment(input: {
     { fn: "acc_add_payment_min_uuid", args: argsP },
   ]);
   return true;
+}
+
+export async function accountantAddPaymentWithAllocations(input: {
+  proposalId: string | number;
+  amount: number;
+  accountantFio: string;
+  purpose: string;
+  method: string;
+  note?: string | null;
+  allocations?: AccountantPaymentAllocationInput[];
+}): Promise<number | null> {
+  const pid = String(input.proposalId);
+  const proposal = await ensureProposalExists(client, pid, {
+    screen: "accountant",
+    surface: "add_payment_allocated",
+    sourceKind: "mutation:accounting_payments",
+  });
+
+  const allocations = (Array.isArray(input.allocations) ? input.allocations : [])
+    .map((row) => ({
+      proposal_item_id: String(row?.proposal_item_id ?? "").trim(),
+      amount: Number(row?.amount ?? 0),
+    }))
+    .filter((row) => row.proposal_item_id && Number.isFinite(row.amount) && row.amount > 0);
+
+  if (allocations.length) {
+    await ensureProposalItemIdsBelongToProposal(
+      client,
+      proposal.proposalId,
+      allocations.map((row) => row.proposal_item_id),
+      {
+        screen: "accountant",
+        surface: "add_payment_allocated",
+        sourceKind: "mutation:accounting_payments",
+      },
+    );
+  }
+
+  const args: AccountantAddPaymentV3Args = {
+    p_proposal_id: proposal.proposalId,
+    p_amount: Number(input.amount),
+    p_accountant_fio: String(input.accountantFio ?? "").trim(),
+    p_purpose: String(input.purpose ?? "").trim(),
+    p_method: String(input.method ?? "").trim(),
+    p_note: String(input.note ?? "").trim() || undefined,
+    p_allocations: allocations,
+  };
+
+  const { data, error } = await client.rpc("acc_add_payment_v3_uuid", args);
+  if (error) throw error;
+
+  const paymentId = Number(data);
+  return Number.isFinite(paymentId) ? paymentId : null;
 }
 
 export async function accountantReturnToBuyer(

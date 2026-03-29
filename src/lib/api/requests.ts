@@ -2,6 +2,7 @@ import { supabase } from "../supabaseClient";
 import type { Database } from "../database.types";
 import { recordPlatformObservability } from "../observability/platformObservability";
 import { client, normalizeUuid, parseErr, rpcCompat, toFilterId } from "./_core";
+import { ensureRequestExists } from "./integrity.guards";
 import {
   mapRequestRow,
   parseRequestItemsByRequestRows,
@@ -420,6 +421,11 @@ export async function listRequestItems(requestId: number | string): Promise<ReqI
   try {
     const raw = String(requestId ?? "").trim();
     if (!raw) return [];
+    await ensureRequestExists(client, raw, {
+      screen: "request",
+      surface: "list_request_items",
+      sourceKind: "read:request_items_by_request",
+    });
 
     const args: RequestItemsByRequestArgs = { p_request_id: raw };
     const { data, error } = await client.rpc("request_items_by_request", args);
@@ -565,6 +571,11 @@ export async function addRequestItemFromRikDetailed(
 
   const rid = normalizeRequestFilterId(requestId);
   if (!rid) throw new Error("request_id is empty");
+  await ensureRequestExists(client, rid, {
+    screen: "request",
+    surface: "add_request_item",
+    sourceKind: "mutation:request_item_add_or_inc",
+  });
 
   const { data, error } = await supabase.rpc(
     "request_item_add_or_inc",
