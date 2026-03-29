@@ -2,13 +2,14 @@
   "status": "GREEN",
   "scope": [
     "C1",
-    "C2"
+    "C2",
+    "C3"
   ],
   "canonicalizationStatus": "GREEN",
   "cooldownRedesignStatus": "GREEN",
+  "draftGcStatus": "GREEN",
   "runtimeSmokeStatus": "GREEN",
   "fullBatchCPendingScopes": [
-    "C3",
     "C4"
   ],
   "fullBatchCStatus": "NOT_GREEN"

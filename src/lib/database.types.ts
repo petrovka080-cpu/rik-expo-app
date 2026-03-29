@@ -18369,6 +18369,14 @@ export type Database = {
         Returns: undefined
       }
       request_pdf_html: { Args: { p_request_id: string }; Returns: string }
+      request_find_reusable_empty_draft_v1: {
+        Args: { p_user_id?: string | null }
+        Returns: string | null
+      }
+      request_gc_empty_drafts_v1: {
+        Args: { p_limit?: number | null; p_older_than_days?: number | null }
+        Returns: Json
+      }
       request_recalc_status:
         | {
             Args: { p_request_id: number }

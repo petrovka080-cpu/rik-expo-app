@@ -84,6 +84,8 @@ type RequestDraftSelectRow = Pick<
 type RequestItemAddOrIncArgs = Database["public"]["Functions"]["request_item_add_or_inc"]["Args"];
 type RequestItemAddOrIncResult = Database["public"]["Functions"]["request_item_add_or_inc"]["Returns"];
 type RequestItemsByRequestArgs = Database["public"]["Functions"]["request_items_by_request"]["Args"];
+type RequestFindReusableEmptyDraftArgs =
+  Database["public"]["Functions"]["request_find_reusable_empty_draft_v1"]["Args"];
 type RequestSubmitArgs = Database["public"]["Functions"]["request_submit"]["Args"];
 type RequestStatusRecalcArgsCompat = { p_request_id: number | string };
 type RequestIdLookupRow = Pick<RequestsTable["Row"], "id">;
@@ -193,6 +195,68 @@ function buildRequestItemsRestorePatch(): RequestItemRestorePatch {
 
 export function clearCachedDraftRequestId() {
   _draftRequestIdAny = null;
+}
+
+async function resolveDraftOwnerUserId(): Promise<string | null> {
+  try {
+    const session = await supabase.auth.getSession();
+    const userId = String(session.data.session?.user?.id ?? "").trim();
+    return userId || null;
+  } catch (error) {
+    recordPlatformObservability({
+      screen: "request",
+      surface: "draft",
+      category: "reload",
+      event: "draft_owner_resolve_failed",
+      result: "error",
+      sourceKind: "auth_session",
+      errorStage: "session_lookup",
+      errorClass: error instanceof Error ? error.name : undefined,
+      errorMessage: parseErr(error),
+    });
+    return null;
+  }
+}
+
+async function findReusableEmptyDraftRequestId(): Promise<string | null> {
+  const userId = await resolveDraftOwnerUserId();
+  if (!userId) return null;
+
+  try {
+    const args: RequestFindReusableEmptyDraftArgs = { p_user_id: userId };
+    const { data, error } = await client.rpc("request_find_reusable_empty_draft_v1", args);
+    if (error) throw error;
+
+    const reusableId = normalizeRequestFilterId(String(data ?? ""));
+    if (!reusableId) return null;
+
+    _draftRequestIdAny = reusableId;
+    recordPlatformObservability({
+      screen: "request",
+      surface: "draft",
+      category: "reload",
+      event: "draft_reused_existing",
+      result: "success",
+      sourceKind: "rpc:request_find_reusable_empty_draft_v1",
+      extra: {
+        requestId: reusableId,
+      },
+    });
+    return reusableId;
+  } catch (error) {
+    recordPlatformObservability({
+      screen: "request",
+      surface: "draft",
+      category: "reload",
+      event: "draft_reuse_probe_failed",
+      result: "error",
+      sourceKind: "rpc:request_find_reusable_empty_draft_v1",
+      errorStage: "rpc_probe",
+      errorClass: error instanceof Error ? error.name : undefined,
+      errorMessage: parseErr(error),
+    });
+    return null;
+  }
 }
 
 // ============================== Low-level request helpers ==============================
@@ -318,6 +382,8 @@ export async function ensureRequestSmart(currentId?: number | string, meta?: Req
 
 export async function getOrCreateDraftRequestId(): Promise<string | number> {
   if (_draftRequestIdAny != null) return _draftRequestIdAny;
+  const reusableId = await findReusableEmptyDraftRequestId();
+  if (reusableId) return reusableId;
   const created = await requestCreateDraft();
   if (created?.id) return created.id;
   throw new Error("requestCreateDraft returned invalid id");

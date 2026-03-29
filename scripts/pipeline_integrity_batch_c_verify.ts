@@ -17,6 +17,7 @@ const hookPath = "src/screens/warehouse/hooks/useWarehouseReqHeads.ts";
 const issueTabPath = "src/screens/warehouse/components/WarehouseIssueTab.tsx";
 const emptyTextPath = "src/screens/warehouse/warehouse.tab.empty.ts";
 const runtimeSummaryPath = "artifacts/warehouse-issue-queue-runtime.summary.json";
+const draftGcSummaryPath = "artifacts/draft-gc-summary.json";
 
 const warehouseApiText = readText(warehouseApiPath);
 const repairText = readText(repairPath);
@@ -29,6 +30,21 @@ const runtimeSummary = readJson<{
   webPassed?: boolean;
   androidPassed?: boolean;
 }>(runtimeSummaryPath);
+const draftGcSummary = readJson<{
+  status?: string;
+  structural?: {
+    reuseRpcPresent?: boolean;
+    reusePathPresent?: boolean;
+    gcMigrationPresent?: boolean;
+  };
+  runtime?: {
+    reusedExistingDraft?: boolean;
+    noNewDraftCreatedOnReuse?: boolean;
+    gcDeletedOldEmpty?: boolean;
+    gcPreservedRecentEmpty?: boolean;
+    gcPreservedNonEmptyDraft?: boolean;
+  };
+}>(draftGcSummaryPath);
 
 const canonicalization = {
   status:
@@ -81,6 +97,23 @@ const runtimeSmoke = {
   artifact: runtimeSummaryPath,
 };
 
+const draftGc = {
+  available: draftGcSummary != null,
+  status:
+    draftGcSummary?.status === "GREEN" &&
+    draftGcSummary.structural?.reuseRpcPresent === true &&
+    draftGcSummary.structural?.reusePathPresent === true &&
+    draftGcSummary.structural?.gcMigrationPresent === true &&
+    draftGcSummary.runtime?.reusedExistingDraft === true &&
+    draftGcSummary.runtime?.noNewDraftCreatedOnReuse === true &&
+    draftGcSummary.runtime?.gcDeletedOldEmpty === true &&
+    draftGcSummary.runtime?.gcPreservedRecentEmpty === true &&
+    draftGcSummary.runtime?.gcPreservedNonEmptyDraft === true
+      ? "GREEN"
+      : "NOT_GREEN",
+  artifact: draftGcSummaryPath,
+};
+
 mkdirSync(artifactsDir, { recursive: true });
 
 writeFileSync(
@@ -96,18 +129,23 @@ writeFileSync(
 );
 
 const scopeStatus =
-  canonicalization.status === "GREEN" && cooldownRedesign.status === "GREEN" ? "GREEN" : "NOT_GREEN";
+  canonicalization.status === "GREEN" &&
+  cooldownRedesign.status === "GREEN" &&
+  draftGc.status === "GREEN"
+    ? "GREEN"
+    : "NOT_GREEN";
 
 writeFileSync(
   join(artifactsDir, "pipeline-batch-c-summary.json"),
   `${JSON.stringify(
     {
       status: scopeStatus,
-      scope: ["C1", "C2"],
+      scope: ["C1", "C2", "C3"],
       canonicalizationStatus: canonicalization.status,
       cooldownRedesignStatus: cooldownRedesign.status,
+      draftGcStatus: draftGc.status,
       runtimeSmokeStatus: runtimeSmoke.status,
-      fullBatchCPendingScopes: ["C3", "C4"],
+      fullBatchCPendingScopes: ["C4"],
       fullBatchCStatus: "NOT_GREEN",
     },
     null,
@@ -122,8 +160,9 @@ console.log(
       status: scopeStatus,
       canonicalizationStatus: canonicalization.status,
       cooldownRedesignStatus: cooldownRedesign.status,
+      draftGcStatus: draftGc.status,
       runtimeSmokeStatus: runtimeSmoke.status,
-      fullBatchCPendingScopes: ["C3", "C4"],
+      fullBatchCPendingScopes: ["C4"],
       fullBatchCStatus: "NOT_GREEN",
     },
     null,
