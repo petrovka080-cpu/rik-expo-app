@@ -8,6 +8,7 @@ import type {
   ContractorSubcontractCard,
   ContractorWorkRow,
 } from "../contractor.loadWorksService";
+import type { ContractorScreenContract } from "../contractor.visibilityRecovery";
 import { actBuilderReducer, initialActBuilderState } from "../contractor.actBuilderReducer";
 import type {
   ContractorProfileCard,
@@ -70,6 +71,11 @@ export function useContractorScreenState() {
   const [loadingProfile, setLoadingProfile] = useState(true);
   const [rows, setRows] = useState<WorkRow[]>([]);
   const [inboxRows, setInboxRows] = useState<ContractorInboxRow[]>([]);
+  const [screenContract, setScreenContract] = useState<ContractorScreenContract>({
+    state: "empty",
+    source: "none",
+    message: "Нет назначенных подрядных работ.",
+  });
   const [manualClaimedJobIds] = useState<string[]>([]);
   const [subcontractCards, setSubcontractCards] = useState<SubcontractLite[]>([]);
   const [loadingWorks, setLoadingWorks] = useState(false);
@@ -135,6 +141,8 @@ export function useContractorScreenState() {
     setRows,
     inboxRows,
     setInboxRows,
+    screenContract,
+    setScreenContract,
     manualClaimedJobIds,
     subcontractCards,
     setSubcontractCards,

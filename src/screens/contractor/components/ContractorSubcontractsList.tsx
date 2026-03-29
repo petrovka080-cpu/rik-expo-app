@@ -2,6 +2,7 @@ import React from "react";
 import { Pressable, RefreshControl, Text, View } from "react-native";
 import { normalizeRuText } from "../../../lib/text/encoding";
 import { FlashList } from "../../../ui/FlashList";
+import type { ContractorScreenContract } from "../contractor.visibilityRecovery";
 
 type JobCard = {
   id: string;
@@ -13,6 +14,7 @@ type JobCard = {
 
 type Props = {
   data: JobCard[];
+  screenContract: ContractorScreenContract;
   refreshing: boolean;
   loadingWorks: boolean;
   onRefresh: () => void;
@@ -21,7 +23,11 @@ type Props = {
 };
 
 export default function ContractorSubcontractsList(props: Props) {
-  const { data, refreshing, loadingWorks, onRefresh, onOpen, styles } = props;
+  const { data, screenContract, refreshing, loadingWorks, onRefresh, onOpen, styles } = props;
+  const emptyMessage = loadingWorks
+    ? "Загрузка..."
+    : screenContract.message || "Нет назначенных подрядных работ.";
+
   return (
     <FlashList
       style={{ flex: 1, marginTop: 12 }}
@@ -30,11 +36,18 @@ export default function ContractorSubcontractsList(props: Props) {
       keyExtractor={(item) => String(item.id)}
       estimatedItemSize={108}
       refreshControl={<RefreshControl refreshing={refreshing || loadingWorks} onRefresh={onRefresh} tintColor="#fff" />}
+      ListHeaderComponent={
+        !loadingWorks && data.length > 0 && screenContract.state === "degraded" && screenContract.message ? (
+          <View style={[styles.card, styles.cardDark, { borderRadius: 18, padding: 16, marginBottom: 12 }]}>
+            <Text style={[styles.cardMetaDark, { textAlign: "center" }]}>
+              {normalizeRuText(screenContract.message)}
+            </Text>
+          </View>
+        ) : null
+      }
       ListEmptyComponent={
         <View style={[styles.card, styles.cardDark, { borderRadius: 18, padding: 20 }]}>
-          <Text style={[styles.cardMetaDark, { textAlign: "center" }]}>
-            {loadingWorks ? "Загрузка..." : "Нет назначенных подрядных работ."}
-          </Text>
+          <Text style={[styles.cardMetaDark, { textAlign: "center" }]}>{normalizeRuText(emptyMessage)}</Text>
         </View>
       }
       renderItem={({ item }) => (

@@ -1,0 +1,15 @@
+{
+  "gate": "contractor_visibility_recovery",
+  "contractorId": "88a832d4-099f-4f9a-8fce-ae6e086fc107",
+  "contractorUserId": "9adc5ab1-31fa-41be-8a00-17eadbb37c39",
+  "contractorCompanyName": "мон",
+  "canonicalRows": 0,
+  "compatibilityRows": 11,
+  "effectiveRows": 11,
+  "rawRows": 49,
+  "filteredRows": 38,
+  "screenState": "degraded",
+  "screenSource": "compatibility_recovery",
+  "creatorOwnedSubcontractCount": 11,
+  "status": "GREEN"
+}

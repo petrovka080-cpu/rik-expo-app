@@ -18,6 +18,11 @@ import {
 import { recordPlatformObservability } from "../../../lib/observability/platformObservability";
 import { getPlatformNetworkSnapshot } from "../../../lib/offline/platformNetwork.service";
 import { recordPlatformGuardSkip } from "../../../lib/observability/platformGuardDiscipline";
+import {
+  buildCompatibilityInboxRows,
+  resolveContractorScreenContract,
+  type ContractorScreenContract,
+} from "../contractor.visibilityRecovery";
 
 type Params = {
   supabaseClient: any;
@@ -33,6 +38,7 @@ type Params = {
   setSubcontractCards: Dispatch<SetStateAction<ContractorSubcontractCard[]>>;
   setRows: Dispatch<SetStateAction<ContractorWorkRow[]>>;
   setInboxRows: Dispatch<SetStateAction<ContractorInboxRow[]>>;
+  setScreenContract: Dispatch<SetStateAction<ContractorScreenContract>>;
   normText: (value: unknown) => string;
   looksLikeUuid: (value: unknown) => boolean;
   pickWorkProgressRow: (row: ContractorWorkRow) => string;
@@ -60,6 +66,7 @@ export function useContractorScreenData(params: Params) {
     setSubcontractCards,
     setRows,
     setInboxRows,
+    setScreenContract,
     normText,
     looksLikeUuid,
     pickWorkProgressRow,
@@ -117,6 +124,7 @@ export function useContractorScreenData(params: Params) {
     setSubcontractsReady(false);
     try {
       const isStaff = profileRef.current?.is_contractor === false;
+      const myUserId = String(profileRef.current?.id || "").trim();
       const myContractorId = String(contractorRef.current?.id || "").trim();
       const [bundle, inboxScope] = await Promise.all([
         loadContractorWorksBundle({
@@ -125,6 +133,10 @@ export function useContractorScreenData(params: Params) {
           looksLikeUuid,
           pickWorkProgressRow,
           myContractorId,
+          myUserId,
+          myContractorInn: contractorRef.current?.inn ?? null,
+          myContractorCompany: contractorRef.current?.company_name ?? null,
+          myContractorFullName: contractorRef.current?.full_name ?? null,
           isStaff,
           isExcludedWorkCode,
           isApprovedForOtherStatus,
@@ -137,14 +149,34 @@ export function useContractorScreenData(params: Params) {
       ]);
       if (reqSeq !== loadWorksSeqRef.current) return;
 
+      const compatibilityRows =
+        inboxScope.rows.length > 0
+          ? loadEmptyInboxRows()
+          : buildCompatibilityInboxRows({
+              rows: bundle.rows,
+              subcontractCards: bundle.subcontractCards,
+              contractor: contractorRef.current,
+            });
+      const effectiveInboxRows = inboxScope.rows.length > 0 ? inboxScope.rows : compatibilityRows;
+      const screenContract = resolveContractorScreenContract({
+        canonicalRows: inboxScope.rows,
+        compatibilityRows,
+        hasContractorIdentity: Boolean(myContractorId),
+        loadError: null,
+      });
+
       setSubcontractCards(bundle.subcontractCards);
-      setInboxRows(inboxScope.rows);
+      setInboxRows(effectiveInboxRows);
+      setScreenContract(screenContract);
       if (__DEV__) {
         console.log("[contractor.loadWorks] debug-filter", {
           isStaff: bundle.debug.isStaff,
           subcontractsFound: bundle.debug.subcontractsFound,
           totalApproved: bundle.debug.totalApproved,
           canonicalReadyRows: inboxScope.meta.readyRows,
+          compatibilityReadyRows: compatibilityRows.length,
+          screenState: screenContract.state,
+          screenSource: screenContract.source,
         });
       }
       setRows(bundle.rows);
@@ -159,18 +191,34 @@ export function useContractorScreenData(params: Params) {
         rowCount: bundle.rows.length,
         extra: {
           canonicalReadyRows: inboxScope.meta.readyRows,
+          effectiveReadyRows: effectiveInboxRows.length,
+          compatibilityReadyRows: compatibilityRows.length,
           invalidMissingContractor: inboxScope.meta.invalidMissingContractor,
           invalidMaterialOnly: inboxScope.meta.invalidMaterialOnly,
           subcontractCards: bundle.subcontractCards.length,
           primaryOwner: bundle.sourceMeta.primaryOwner,
           fallbackUsed: bundle.sourceMeta.fallbackUsed,
           sourceKind: bundle.sourceMeta.sourceKind,
+          screenState: screenContract.state,
+          screenSource: screenContract.source,
         },
       });
     } catch (error) {
       if (reqSeq !== loadWorksSeqRef.current) return;
       console.error("loadWorks exception:", error);
+      setRows([]);
+      setSubcontractCards([]);
       setInboxRows(loadEmptyInboxRows());
+      setScreenContract(
+        resolveContractorScreenContract({
+          canonicalRows: [],
+          compatibilityRows: [],
+          hasContractorIdentity: Boolean(String(contractorRef.current?.id || "").trim()),
+          loadError: error,
+        }),
+      );
+      setRowsReady(true);
+      setSubcontractsReady(true);
     } finally {
       if (reqSeq !== loadWorksSeqRef.current) return;
       setLoadingWorks(false);
@@ -191,6 +239,7 @@ export function useContractorScreenData(params: Params) {
     setSubcontractCards,
     setRows,
     setInboxRows,
+    setScreenContract,
   ]);
 
   const reloadContractorScreenData = useCallback(async (trigger: ContractorReloadTrigger = "focus") => {

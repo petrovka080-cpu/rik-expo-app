@@ -1,0 +1,12 @@
+{
+  "contractorId": "88a832d4-099f-4f9a-8fce-ae6e086fc107",
+  "screenState": "degraded",
+  "screenSource": "compatibility_recovery",
+  "screenMessage": "Работы восстановлены через совместимый подрядный scope. Детали могут загружаться частично.",
+  "visibleRowCount": 11,
+  "invalidMaterialVisible": false,
+  "emptyStateSeparatedFromError": true,
+  "degradedStateSeparatedFromEmpty": true,
+  "detailHeaderMatches": true,
+  "detailLoadState": "error"
+}

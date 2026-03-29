@@ -1,0 +1,15 @@
+{
+  "contractorId": "88a832d4-099f-4f9a-8fce-ae6e086fc107",
+  "contractorUserId": "9adc5ab1-31fa-41be-8a00-17eadbb37c39",
+  "rawRowCount": 49,
+  "canonicalRowCount": 0,
+  "compatibilityRowCount": 11,
+  "effectiveRowCount": 11,
+  "filteredRowCount": 38,
+  "filterReasons": {
+    "invalid_missing_contractor": 49
+  },
+  "sourceKinds": {
+    "foreman_subcontract_request": 49
+  }
+}

@@ -3,6 +3,7 @@ import { Alert } from "react-native";
 import type { ContractorInboxRow } from "../../../lib/api/contractor.scope.service";
 import type { ContractorWorkRow } from "../contractor.loadWorksService";
 import { looksLikeUuid } from "../contractor.utils";
+import { buildCompatibilityWorkRow } from "../contractor.visibilityRecovery";
 
 type Params = {
   inboxRows: ContractorInboxRow[];
@@ -17,32 +18,6 @@ type JobCard = {
   objectName: string;
   workType: string;
 };
-
-const buildLegacyFallbackRow = (item: ContractorInboxRow): ContractorWorkRow => ({
-  progress_id: item.progressId ?? item.workItemId,
-  canonical_work_item_id: item.workItemId,
-  canonical_source_kind: item.origin.sourceKind,
-  created_at: item.origin.directorApprovedAt,
-  purchase_item_id: null,
-  work_code: item.work.workNameSource === "raw_code" ? item.work.workName : null,
-  work_name: item.work.workNameSource === "raw_code" ? null : item.work.workName,
-  object_name: item.location.objectName || item.location.locationDisplay,
-  contractor_org: item.identity.contractorName,
-  contractor_inn: item.identity.contractorInn,
-  contractor_phone: null,
-  request_id: item.origin.sourceRequestId,
-  request_status: null,
-  contractor_job_id: item.origin.sourceSubcontractId,
-  uom_id: item.work.uom,
-  qty_planned: Number(item.work.quantity ?? 0),
-  qty_done: 0,
-  qty_left: Number(item.work.quantity ?? 0),
-  unit_price: item.work.unitPrice,
-  work_status: "ready",
-  contractor_id: item.identity.contractorId,
-  started_at: null,
-  finished_at: null,
-});
 
 export function useContractorCards(params: Params) {
   const { inboxRows, rows, openWorkAddModal } = params;
@@ -93,7 +68,7 @@ export function useContractorCards(params: Params) {
         });
         continue;
       }
-      map.set(item.workItemId, buildLegacyFallbackRow(item));
+      map.set(item.workItemId, buildCompatibilityWorkRow(item));
     }
     return map;
   }, [inboxRows, rows]);

@@ -76,6 +76,30 @@ const toJobHeader = (scope: ContractorFactScope): ContractorJobHeader => ({
   date_end: null,
 });
 
+const toFallbackJobHeader = (row: WorkRowLike): ContractorJobHeader => ({
+  contractor_org: row.contractor_org ?? null,
+  contractor_inn: row.contractor_inn ?? null,
+  contractor_rep: null,
+  contractor_phone: row.contractor_phone ?? null,
+  contract_number: null,
+  contract_date: null,
+  object_name: row.object_name ?? null,
+  work_type: row.work_name ?? row.work_code ?? null,
+  zone: null,
+  level_name: null,
+  qty_planned: Number(row.qty_planned ?? 0),
+  uom: row.uom_id ?? null,
+  unit_price: row.unit_price ?? null,
+  total_price:
+    row.unit_price == null
+      ? null
+      : Number.isFinite(Number(row.qty_planned ?? 0))
+        ? Number(row.unit_price) * Number(row.qty_planned ?? 0)
+        : null,
+  date_start: null,
+  date_end: null,
+});
+
 const resolveCanonicalWorkItemId = (row: WorkRowLike): string =>
   String((row as WorkRowLike & { canonical_work_item_id?: string | null }).canonical_work_item_id || row.progress_id || "")
     .trim();
@@ -163,7 +187,10 @@ export async function bootstrapWorkModalData(params: Params): Promise<WorkModalB
           header: toJobHeader(factScope),
           objectNameOverride: factScope.row.location.objectName,
         }
-      : { header: null, objectNameOverride: null };
+      : {
+          header: toFallbackJobHeader(row),
+          objectNameOverride: String(row.object_name || "").trim() || null,
+        };
     return {
       loadState: factScope ? "ready" : "error",
       jobHeader: headerResult?.header || null,

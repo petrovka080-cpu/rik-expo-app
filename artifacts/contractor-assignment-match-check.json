@@ -1,0 +1,25 @@
+{
+  "contractorId": "88a832d4-099f-4f9a-8fce-ae6e086fc107",
+  "contractorUserId": "9adc5ab1-31fa-41be-8a00-17eadbb37c39",
+  "contractorCompanyName": "мон",
+  "contractorInn": null,
+  "scopedSubcontractCount": 11,
+  "creatorOwnedSubcontractCount": 11,
+  "canonicalReadyRows": 0,
+  "compatibilityReadyRows": 11,
+  "recoverySource": "compatibility_recovery",
+  "recoveryUsed": true,
+  "scopedSubcontractIds": [
+    "b4eb5e62-79ac-41a8-b2d6-0c2924c5c39f",
+    "366a8781-bf0e-4cc7-9de1-8fea03d6cea7",
+    "0cf366d9-2438-4acb-a8a9-c17be6102aae",
+    "5a9f593e-69d5-485c-b01a-068b8dc144bd",
+    "e776e77e-6dfb-4071-b62e-b3f2a6ddbc43",
+    "a9e0686b-f032-458c-842f-4c200fde914e",
+    "153f2648-5d00-45ac-b8c0-4d1858f98d3a",
+    "7b470ab3-b5a2-416e-86dc-f45c187a058e",
+    "253e9a48-36b5-49e4-b4e5-55823f190cb9",
+    "70ae668e-ffec-40d7-9ff0-ee8fa499c093",
+    "e707ee1c-1bfe-48e5-8242-dfd95d718e39"
+  ]
+}

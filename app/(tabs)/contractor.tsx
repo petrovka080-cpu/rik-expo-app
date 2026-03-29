@@ -81,6 +81,8 @@ function ContractorScreen() {
     setRows,
     inboxRows,
     setInboxRows,
+    screenContract,
+    setScreenContract,
     manualClaimedJobIds,
     subcontractCards,
     setSubcontractCards,
@@ -208,6 +210,7 @@ function ContractorScreen() {
       setSubcontractCards,
       setRows,
       setInboxRows,
+      setScreenContract,
       normText,
       looksLikeUuid,
       pickWorkProgressRow,
@@ -532,6 +535,7 @@ function ContractorScreen() {
 
       <ContractorSubcontractsList
         data={unifiedSubcontractCards}
+        screenContract={screenContract}
         refreshing={refreshing}
         loadingWorks={loadingWorks || !rowsReady || !subcontractsReady}
         onRefresh={handleRefresh}

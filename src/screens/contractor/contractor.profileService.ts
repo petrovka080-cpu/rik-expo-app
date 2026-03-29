@@ -14,6 +14,7 @@ export type ContractorProfileCard = {
   company_name: string | null;
   full_name: string | null;
   phone: string | null;
+  inn: string | null;
 };
 
 export async function loadCurrentContractorUserProfile(params: {
@@ -102,6 +103,7 @@ export async function loadCurrentContractorProfile(params: {
     company_name: normText(data.company_name) || null,
     full_name: normText(data.full_name) || null,
     phone: normText(data.phone) || null,
+    inn: String(data.inn || "").replace(/\D+/g, "") || null,
   };
   observation.success({ rowCount: 1 });
   return result;

@@ -30,6 +30,9 @@ type SubcontractLiteLike = {
   uom?: string | null;
   contractor_org?: string | null;
   contractor_inn?: string | null;
+  contract_number?: string | null;
+  contract_date?: string | null;
+  created_by?: string | null;
 };
 
 type LookupMaps = {
@@ -42,6 +45,8 @@ const normalizeKeyPart = (v: any) =>
     .trim()
     .toLowerCase()
     .replace(/\s+/g, " ");
+
+const normalizeDigits = (value: unknown) => String(value || "").replace(/\D+/g, "").trim();
 
 const keyByObjWork = (obj: any, work: any) => `${normalizeKeyPart(obj)}|${normalizeKeyPart(work)}`;
 
@@ -168,8 +173,31 @@ export function buildSyntheticSubcontractRows(subcontractsByOrg: SubcontractLite
 
 export function selectScopedApprovedSubcontracts(params: {
   allApproved: SubcontractLiteLike[];
+  isStaff?: boolean;
+  myUserId?: string | null;
+  myContractorInn?: string | null;
+  myContractorNames?: string[];
 }): SubcontractLiteLike[] {
-  const { allApproved } = params;
-  // Contractor cards must be built from approved subcontracts first.
-  return allApproved;
+  const { allApproved, isStaff, myUserId, myContractorInn, myContractorNames } = params;
+  if (isStaff) return allApproved;
+
+  const scoped = allApproved.filter((entry) => {
+    const createdBy = String(entry.created_by || "").trim();
+    if (createdBy && myUserId && createdBy === myUserId) {
+      return true;
+    }
+
+    const subcontractInnDigits = normalizeDigits(entry.contractor_inn);
+    if (subcontractInnDigits && myContractorInn && subcontractInnDigits === normalizeDigits(myContractorInn)) {
+      return true;
+    }
+
+    const subcontractName = normalizeKeyPart(entry.contractor_org);
+    if (!subcontractName || !Array.isArray(myContractorNames) || !myContractorNames.length) {
+      return false;
+    }
+    return myContractorNames.some((candidate) => normalizeKeyPart(candidate) === subcontractName);
+  });
+
+  return scoped;
 }

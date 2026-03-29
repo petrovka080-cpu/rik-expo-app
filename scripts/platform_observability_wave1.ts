@@ -232,13 +232,25 @@ async function main() {
   });
 
   await runScenario("contractor_works_bundle", async () => {
+    const userProfile = await contractorProfileService.loadCurrentContractorUserProfile({
+      supabaseClient: supabase,
+      normText: contractorUtils.normText,
+    });
+    const contractorProfile = await contractorProfileService.loadCurrentContractorProfile({
+      supabaseClient: supabase,
+      normText: contractorUtils.normText,
+    });
     const result = await contractorLoadWorksService.loadContractorWorksBundle({
       supabaseClient: supabase,
       normText: contractorUtils.normText,
       looksLikeUuid: contractorUtils.looksLikeUuid,
       pickWorkProgressRow: contractorUtils.pickWorkProgressRow,
-      myContractorId: "",
-      isStaff: true,
+      myContractorId: String(contractorProfile?.id ?? "").trim(),
+      myUserId: String(userProfile?.id ?? "").trim(),
+      myContractorInn: contractorProfile?.inn ?? null,
+      myContractorCompany: contractorProfile?.company_name ?? null,
+      myContractorFullName: contractorProfile?.full_name ?? null,
+      isStaff: userProfile?.is_contractor === false,
       isExcludedWorkCode: contractorUtils.isExcludedWorkCode,
       isApprovedForOtherStatus: contractorStatus.isApprovedForOtherStatus,
     });

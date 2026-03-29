@@ -77,7 +77,10 @@ type SubcontractLiteLike = {
   contractor_org?: string | null;
   contractor_inn?: string | null;
   contractor_phone?: string | null;
+  contract_number?: string | null;
+  contract_date?: string | null;
   created_at?: string | null;
+  created_by?: string | null;
 };
 
 export type ContractorSubcontractCard = SubcontractLiteLike;
@@ -102,6 +105,10 @@ type LoadContractorWorksBundleParams = {
   looksLikeUuid: (v: string) => boolean;
   pickWorkProgressRow: (row: WorkProgressRawRow) => string;
   myContractorId: string;
+  myUserId: string;
+  myContractorInn: string | null;
+  myContractorCompany: string | null;
+  myContractorFullName: string | null;
   isStaff: boolean;
   isExcludedWorkCode: (code: string) => boolean;
   isApprovedForOtherStatus: (status: string | null | undefined) => boolean;
@@ -139,6 +146,14 @@ const pickNonEmptyString = (value: unknown): string | null => {
   const normalized = String(value ?? "").trim();
   return normalized || null;
 };
+
+const normalizeKeyPart = (value: unknown) =>
+  String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, " ");
+
+const normalizeDigits = (value: unknown) => String(value || "").replace(/\D+/g, "").trim();
 
 const requireRecord = (value: unknown, scope: string): Record<string, unknown> => {
   if (!value || typeof value !== "object" || Array.isArray(value)) {
@@ -217,7 +232,10 @@ function adaptRpcSubcontractCards(value: unknown): ContractorSubcontractCard[] {
       contractor_org: toNullableString(card.contractor_org),
       contractor_inn: toNullableString(card.contractor_inn),
       contractor_phone: toNullableString(card.contractor_phone),
+      contract_number: toNullableString(card.contract_number),
+      contract_date: toNullableString(card.contract_date),
       created_at: toNullableString(card.created_at),
+      created_by: toNullableString(card.created_by),
     };
   });
 }
@@ -244,6 +262,45 @@ function adaptContractorWorksBundleScopeEnvelope(value: unknown): ContractorWork
     subcontract_cards: adaptRpcSubcontractCards(root.subcontract_cards),
     meta,
   };
+}
+
+function matchesContractorIdentity(
+  value: { contractor_org?: string | null; contractor_inn?: string | null },
+  params: Pick<LoadContractorWorksBundleParams, "myContractorInn" | "myContractorCompany" | "myContractorFullName">,
+): boolean {
+  const cardInn = normalizeDigits(value.contractor_inn);
+  const myInn = normalizeDigits(params.myContractorInn);
+  if (cardInn && myInn && cardInn === myInn) return true;
+
+  const cardName = normalizeKeyPart(value.contractor_org);
+  const allowedNames = [params.myContractorCompany, params.myContractorFullName]
+    .map((entry) => normalizeKeyPart(entry))
+    .filter(Boolean);
+  return Boolean(cardName && allowedNames.some((entry) => entry === cardName));
+}
+
+function isRpcBundleScopedForContractor(
+  result: ContractorWorksBundleResult,
+  params: Pick<
+    LoadContractorWorksBundleParams,
+    "myContractorId" | "myContractorInn" | "myContractorCompany" | "myContractorFullName"
+  >,
+): boolean {
+  if (!result.subcontractCards.length) {
+    return result.rows.every((row) => {
+      const rowContractorId = String(row.contractor_id || "").trim();
+      return !rowContractorId || rowContractorId === params.myContractorId;
+    });
+  }
+  return result.subcontractCards.every((card) =>
+    matchesContractorIdentity(
+      {
+        contractor_org: card.contractor_org,
+        contractor_inn: card.contractor_inn,
+      },
+      params,
+    ),
+  );
 }
 
 export function mapWorksFactRows(
@@ -445,6 +502,10 @@ async function loadContractorWorksBundleLegacyInternal(
     looksLikeUuid,
     pickWorkProgressRow,
     myContractorId,
+    myUserId,
+    myContractorInn,
+    myContractorCompany,
+    myContractorFullName,
     isStaff,
     isExcludedWorkCode,
     isApprovedForOtherStatus,
@@ -465,7 +526,7 @@ async function loadContractorWorksBundleLegacyInternal(
     const sqApprovedPromise = supabaseClient
       .from("subcontracts")
       .select(
-        "id, status, work_type, object_name, qty_planned, uom, contractor_org, contractor_inn, contractor_phone, created_at",
+        "id, status, work_type, object_name, qty_planned, uom, contractor_org, contractor_inn, contractor_phone, contract_number, contract_date, created_at, created_by",
       )
       .eq("status", "approved")
       .order("created_at", { ascending: false })
@@ -495,6 +556,12 @@ async function loadContractorWorksBundleLegacyInternal(
     const allApproved = Array.isArray(sqApproved.data) ? (sqApproved.data as SubcontractLiteLike[]) : [];
     const subcontractCards = selectScopedApprovedSubcontracts({
       allApproved,
+      isStaff,
+      myUserId,
+      myContractorInn,
+      myContractorNames: [myContractorCompany, myContractorFullName].filter(
+        (value): value is string => Boolean(String(value || "").trim()),
+      ),
     });
 
     const lookupMaps = buildSubcontractLookups(subcontractCards);
@@ -665,6 +732,37 @@ export async function loadContractorWorksBundle(
 
   try {
     const rpcResult = await loadContractorWorksBundleRpcInternal(params, { observe: false });
+    if (
+      !params.isStaff &&
+      (
+        (rpcResult.rows.length === 0 && rpcResult.subcontractCards.length === 0) ||
+        !isRpcBundleScopedForContractor(rpcResult, params)
+      )
+    ) {
+      const legacyResult = await loadContractorWorksBundleLegacyInternal(params, { observe: false });
+      if (legacyResult.rows.length > 0 || legacyResult.subcontractCards.length > 0) {
+        observation.success({
+          rowCount: legacyResult.rows.length,
+          sourceKind: LEGACY_SOURCE_KIND,
+          fallbackUsed: true,
+          extra: {
+            primaryOwner: legacyResult.sourceMeta.primaryOwner,
+            subcontractCards: legacyResult.subcontractCards.length,
+            fallbackReason:
+              rpcResult.rows.length === 0 && rpcResult.subcontractCards.length === 0
+                ? "empty_rpc_scope"
+                : "unscoped_rpc_scope",
+          },
+        });
+        return {
+          ...legacyResult,
+          sourceMeta: {
+            ...legacyResult.sourceMeta,
+            fallbackUsed: true,
+          },
+        };
+      }
+    }
     observation.success({
       rowCount: rpcResult.rows.length,
       sourceKind: rpcResult.sourceMeta.sourceKind,
