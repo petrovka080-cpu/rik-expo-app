@@ -3,29 +3,89 @@ import React from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { MARKET_HOME_COLORS } from "../marketHome.config";
+import type { MarketplaceAuctionSummary } from "../marketplace.auctions.service";
 
 type Props = {
-  count: number;
+  summary: MarketplaceAuctionSummary | null;
+  loading?: boolean;
   onPress?: () => void;
-  comingSoon?: boolean;
 };
 
-export default function MarketTenderBanner({ count, onPress, comingSoon = false }: Props) {
-  if (count <= 0) return null;
+const getVisualState = (summary: MarketplaceAuctionSummary | null, loading: boolean) => {
+  if (loading || summary == null) {
+    return {
+      title: "Торги снабженца",
+      subtitle: "Подключаем сводку торгов и актуальные переходы.",
+      icon: "sync-outline" as const,
+      tone: "loading" as const,
+    };
+  }
 
-  const title = comingSoon ? "Торги ERP скоро" : `${count} активных торгов`;
-  const subtitle = comingSoon
-    ? "Интеграция с торгами готовится, текущий маркет уже работает через ERP-действия."
-    : "Смотреть позиции и откликнуться";
+  if (summary.state === "ready") {
+    return {
+      title:
+        summary.activeCount > 0
+          ? `${summary.activeCount} активных торгов`
+          : summary.pendingCount > 0
+            ? `${summary.pendingCount} ждут публикации`
+            : "Торги снабженца",
+      subtitle: summary.message ?? "Откройте торги снабженца и перейдите к позициям.",
+      icon: "arrow-forward" as const,
+      tone: "ready" as const,
+    };
+  }
+
+  if (summary.state === "empty") {
+    return {
+      title: "Торги снабженца",
+      subtitle: summary.message ?? "Сейчас активных торгов нет.",
+      icon: "layers-outline" as const,
+      tone: "empty" as const,
+    };
+  }
+
+  if (summary.state === "degraded") {
+    return {
+      title: "Торги снабженца",
+      subtitle: summary.message ?? "Сводка торгов частично недоступна. Откройте раздел торгов.",
+      icon: "warning-outline" as const,
+      tone: "attention" as const,
+    };
+  }
+
+  return {
+    title: "Торги снабженца",
+    subtitle: summary.message ?? "Сводка торгов временно недоступна. Откройте раздел торгов.",
+    icon: "alert-circle-outline" as const,
+    tone: "attention" as const,
+  };
+};
+
+export default function MarketTenderBanner({ summary, loading = false, onPress }: Props) {
+  const visual = getVisualState(summary, loading);
 
   return (
-    <Pressable style={[styles.banner, comingSoon ? styles.bannerSoon : null]} onPress={onPress} disabled={!onPress}>
+    <Pressable
+      style={[
+        styles.banner,
+        visual.tone === "ready"
+          ? styles.bannerReady
+          : visual.tone === "loading"
+            ? styles.bannerLoading
+            : visual.tone === "empty"
+              ? styles.bannerEmpty
+              : styles.bannerAttention,
+      ]}
+      onPress={onPress}
+      disabled={!onPress}
+    >
       <View style={styles.copy}>
-        <Text style={styles.title}>{title}</Text>
-        <Text style={styles.subtitle}>{subtitle}</Text>
+        <Text style={styles.eyebrow}>Market x Buyer Auctions</Text>
+        <Text style={styles.title}>{visual.title}</Text>
+        <Text style={styles.subtitle}>{visual.subtitle}</Text>
       </View>
       <View style={styles.arrow}>
-        <Ionicons name={comingSoon ? "time-outline" : "arrow-forward"} size={24} color="#FFFFFF" />
+        <Ionicons name={visual.icon} size={24} color="#FFFFFF" />
       </View>
     </Pressable>
   );
@@ -35,25 +95,43 @@ const styles = StyleSheet.create({
   banner: {
     marginHorizontal: 20,
     borderRadius: 28,
-    backgroundColor: MARKET_HOME_COLORS.orange,
     paddingHorizontal: 22,
     paddingVertical: 20,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    shadowColor: MARKET_HOME_COLORS.orangeDeep,
     shadowOpacity: 0.24,
     shadowRadius: 20,
     shadowOffset: { width: 0, height: 10 },
     elevation: 5,
   },
-  bannerSoon: {
-    backgroundColor: MARKET_HOME_COLORS.text,
+  bannerReady: {
+    backgroundColor: MARKET_HOME_COLORS.orange,
+    shadowColor: MARKET_HOME_COLORS.orangeDeep,
+  },
+  bannerLoading: {
+    backgroundColor: "#1E293B",
+    shadowColor: "#0F172A",
+  },
+  bannerEmpty: {
+    backgroundColor: "#0F172A",
+    shadowColor: "#020617",
+  },
+  bannerAttention: {
+    backgroundColor: "#7C2D12",
+    shadowColor: "#431407",
   },
   copy: {
     gap: 6,
     flex: 1,
     paddingRight: 12,
+  },
+  eyebrow: {
+    color: "rgba(255,255,255,0.76)",
+    fontSize: 11,
+    fontWeight: "800",
+    letterSpacing: 0.9,
+    textTransform: "uppercase",
   },
   title: {
     color: "#FFFFFF",

@@ -4,6 +4,7 @@ import type { MarketMapParams } from "./marketHome.types";
 
 export const MARKET_TAB_ROUTE = "/(tabs)/market" satisfies Href;
 export const MARKET_PROFILE_ROUTE = "/(tabs)/profile" satisfies Href;
+export const MARKET_AUCTIONS_ROUTE = "/auctions" satisfies Href;
 export const MARKET_AI_ROUTE = (prompt: string): Href => ({
   pathname: "/(tabs)/ai",
   params: {

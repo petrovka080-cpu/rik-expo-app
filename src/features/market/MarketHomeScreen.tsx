@@ -24,6 +24,10 @@ import MarketHeaderBar from "./components/MarketHeaderBar";
 import MarketHeroCarousel from "./components/MarketHeroCarousel";
 import MarketTenderBanner from "./components/MarketTenderBanner";
 import {
+  loadMarketplaceAuctionSummary,
+  type MarketplaceAuctionSummary,
+} from "./marketplace.auctions.service";
+import {
   MARKET_HOME_BANNERS,
   MARKET_HOME_CATEGORIES,
   MARKET_HOME_COLORS,
@@ -46,6 +50,7 @@ import {
   loadMarketRoleCapabilities,
 } from "./market.repository";
 import {
+  MARKET_AUCTIONS_ROUTE,
   buildMarketProductRoute,
   buildMarketSupplierMapRoute,
   buildMarketSupplierShowcaseRoute,
@@ -105,6 +110,8 @@ export default function MarketHomeScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [capabilities, setCapabilities] = useState<MarketRoleCapabilities>(DEFAULT_CAPABILITIES);
+  const [auctionsSummary, setAuctionsSummary] = useState<MarketplaceAuctionSummary | null>(null);
+  const [auctionsLoading, setAuctionsLoading] = useState(true);
   const [feedAnchorOffset, setFeedAnchorOffset] = useState(640);
   const [busyActionKey, setBusyActionKey] = useState<string | null>(null);
   const [contactListing, setContactListing] = useState<MarketHomeListingCard | null>(null);
@@ -172,6 +179,37 @@ export default function MarketHomeScreen() {
 
   const openAssistant = useCallback((prompt: string) => {
     router.push(MARKET_AI_ROUTE(prompt));
+  }, []);
+
+  const loadAuctionsSummary = useCallback(async () => {
+    setAuctionsLoading(true);
+    try {
+      const summary = await loadMarketplaceAuctionSummary();
+      setAuctionsSummary(summary);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "Не удалось загрузить сводку торгов.";
+      recordPlatformObservability({
+        screen: "market",
+        surface: "auctions_entry",
+        category: "fetch",
+        event: "marketplace_auctions_summary_set_state",
+        result: "error",
+        errorStage: "screen_state",
+        errorMessage: message,
+      });
+      setAuctionsSummary({
+        activeCount: 0,
+        pendingCount: 0,
+        hasVisibleAuctions: false,
+        primaryCtaRoute: MARKET_AUCTIONS_ROUTE,
+        updatedAt: null,
+        state: "error",
+        message,
+        sourceKind: "canonical:auctions.summary",
+      });
+    } finally {
+      setAuctionsLoading(false);
+    }
   }, []);
 
   const loadInitialPage = useCallback(
@@ -254,7 +292,8 @@ export default function MarketHomeScreen() {
   useFocusEffect(
     useCallback(() => {
       void loadInitialPage("initial");
-    }, [loadInitialPage]),
+      void loadAuctionsSummary();
+    }, [loadAuctionsSummary, loadInitialPage]),
   );
 
   const filteredListings = useMemo(
@@ -289,6 +328,23 @@ export default function MarketHomeScreen() {
     },
     [feedAnchorOffset, pushSupplierMap],
   );
+
+  const handleOpenAuctions = useCallback(() => {
+    const route = auctionsSummary?.primaryCtaRoute ?? MARKET_AUCTIONS_ROUTE;
+    recordPlatformObservability({
+      screen: "market",
+      surface: "auctions_entry",
+      category: "ui",
+      event: "marketplace_auctions_open",
+      result: "success",
+      extra: {
+        state: auctionsSummary?.state ?? "loading",
+        activeCount: auctionsSummary?.activeCount ?? 0,
+        pendingCount: auctionsSummary?.pendingCount ?? 0,
+      },
+    });
+    router.push(route);
+  }, [auctionsSummary]);
 
   const handleOpenListing = useCallback((listing: MarketHomeListingCard) => {
     recordPlatformObservability({
@@ -457,7 +513,11 @@ export default function MarketHomeScreen() {
         onSelect={handleCategorySelect}
       />
 
-      <MarketTenderBanner count={feed.activeDemandCount} comingSoon />
+      <MarketTenderBanner
+        summary={auctionsSummary}
+        loading={auctionsLoading}
+        onPress={handleOpenAuctions}
+      />
 
       <MarketAssistantBanner
         onOpenAssistant={() => openAssistant(buildMarketAssistantPrompt(filters))}
@@ -518,7 +578,10 @@ export default function MarketHomeScreen() {
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
-            onRefresh={() => void loadInitialPage("refresh")}
+            onRefresh={() => {
+              void loadInitialPage("refresh");
+              void loadAuctionsSummary();
+            }}
             tintColor={MARKET_HOME_COLORS.accent}
           />
         }
