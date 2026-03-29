@@ -211,7 +211,7 @@ async function main() {
   let rawCandidates: Awaited<ReturnType<typeof loadRawProposalCandidates>> | null = null;
   let rawRpcEnvelope: unknown = null;
   let repoWindow: Awaited<ReturnType<typeof fetchDirectorPendingProposalWindow>> | null = null;
-  let legacyWindowMeta: Record<string, unknown> | null = null;
+  let compatibilityWindowMeta: Record<string, unknown> | null = null;
   const marker = `DIR-PROP-${Date.now().toString(36).toUpperCase()}`;
 
   try {
@@ -370,17 +370,12 @@ async function main() {
       : [];
     const createdRpcHead = rawHeads.find((head) => text(head.id) === proposalId) ?? null;
     const createdRepoHead = repoWindow.heads.find((head) => text(head.id) === proposalId) ?? null;
-    legacyWindowMeta = repoWindow.sourceMeta.sourceKind === "legacy:proposals+proposal_items"
-      ? {
-          invoked: true,
-          rowCount: repoWindow.heads.length,
-          createdProposalVisible: createdRepoHead != null,
-        }
-      : {
-          invoked: false,
-          rowCount: 0,
-          createdProposalVisible: null,
-        };
+    compatibilityWindowMeta = {
+      invoked: false,
+      mode: "rpc_only_product_path",
+      rowCount: 0,
+      createdProposalVisible: null,
+    };
     const createdRawCandidate = rawCandidates.rows.find((row) => row.id === proposalId) ?? null;
 
     const sourceMap = {
@@ -416,7 +411,7 @@ async function main() {
         positionsCount: repoWindow.meta.totalPositionsCount,
         createdProposalVisible: createdRepoHead != null,
       },
-      legacy_client_source: legacyWindowMeta,
+      compatibility_source: compatibilityWindowMeta,
     };
 
     const filterDiagnostics = {
@@ -477,9 +472,7 @@ async function main() {
       },
       invariants: {
         submitPathUntouched: true,
-        canonicalSourceUsed:
-          repoWindow.sourceMeta.sourceKind === "rpc:director_pending_proposals_scope_v1" ||
-          repoWindow.sourceMeta.sourceKind === "legacy:proposals+proposal_items",
+        canonicalSourceUsed: repoWindow.sourceMeta.sourceKind === "rpc:director_pending_proposals_scope_v1",
         badgeMatchesVisibleWindow:
           repoWindow.meta.totalHeadCount >= repoWindow.heads.length,
         createdProposalVisibleInRepository: createdRepoHead != null,
@@ -528,7 +521,7 @@ async function main() {
       raw_candidates: rawCandidates,
       raw_rpc_envelope: rawRpcEnvelope,
       repository_result: repoWindow,
-      legacy_window: legacyWindowMeta,
+      compatibility_window: compatibilityWindowMeta,
     });
     throw error;
   } finally {

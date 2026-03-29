@@ -3,8 +3,9 @@
   "primaryOwner": "rpc_scope_v1",
   "fallbackUsed": false,
   "sourceKind": "rpc:director_pending_proposals_scope_v1",
-  "legacyDurationMs": 747,
-  "primaryDurationMs": 1519,
+  "rpcOnlyProductPath": true,
+  "legacyDurationMs": 1185,
+  "primaryDurationMs": 420,
   "page0ParityOk": true,
   "page1ParityOk": true,
   "totalHeadCountParityOk": true,
@@ -13,7 +14,7 @@
   "windowScenario": {
     "offsetHeads": 1,
     "limitHeads": 1,
-    "legacyCount": 0,
-    "rpcCount": 0
+    "legacyCount": 1,
+    "rpcCount": 1
   }
 }

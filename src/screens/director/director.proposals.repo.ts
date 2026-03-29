@@ -1,7 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import type { Database } from "../../lib/database.types";
-import { listDirectorProposalsPending } from "../../lib/catalog_api";
 import { beginPlatformObservability } from "../../lib/observability/platformObservability";
 import type { ProposalHead } from "./director.types";
 
@@ -27,15 +26,10 @@ export type DirectorProposalWindowMeta = {
 };
 
 export type DirectorProposalWindowSourceMeta = {
-  primaryOwner: "rpc_scope_v1" | "legacy_client_fallback";
-  fallbackUsed: boolean;
-  sourceKind: "rpc:director_pending_proposals_scope_v1" | "legacy:proposals+proposal_items";
-  rowParityStatus:
-    | "not_checked"
-    | "rpc_nonempty"
-    | "rpc_empty_legacy_match_empty"
-    | "rpc_empty_legacy_recovered"
-    | "rpc_empty_legacy_probe_failed";
+  primaryOwner: "rpc_scope_v1";
+  fallbackUsed: false;
+  sourceKind: "rpc:director_pending_proposals_scope_v1";
+  rowParityStatus: "rpc_nonempty" | "rpc_empty";
 };
 
 export type DirectorProposalWindowResult = {
@@ -53,8 +47,6 @@ type FetchDirectorProposalWindowArgs = {
 
 const RPC_SOURCE_KIND: DirectorProposalWindowSourceMeta["sourceKind"] =
   "rpc:director_pending_proposals_scope_v1";
-const LEGACY_SOURCE_KIND: DirectorProposalWindowSourceMeta["sourceKind"] =
-  "legacy:proposals+proposal_items";
 
 class DirectorProposalScopeValidationError extends Error {
   constructor(message: string) {
@@ -162,138 +154,6 @@ const adaptMeta = (meta: Record<string, unknown>, offsetHeads: number, limitHead
   };
 };
 
-async function loadDirectorProposalWindowLegacy(
-  args: FetchDirectorProposalWindowArgs,
-): Promise<DirectorProposalWindowResult> {
-  const observation = beginPlatformObservability({
-    screen: "director",
-    surface: "buyer_proposals",
-    category: "fetch",
-    event: "load_proposals_window",
-    sourceKind: LEGACY_SOURCE_KIND,
-  });
-  try {
-    const list = await listDirectorProposalsPending();
-    const allHeads = (list ?? [])
-      .filter((row) => row && row.id != null && row.submitted_at != null)
-      .map((row) => ({
-        id: String(row.id),
-        submitted_at: row.submitted_at ? String(row.submitted_at) : null,
-      }));
-
-    const proposalIds = allHeads.map((head) => head.id);
-    if (!proposalIds.length) {
-      const emptyResult: DirectorProposalWindowResult = {
-        heads: [],
-        itemCounts: {},
-        meta: {
-          offsetHeads: args.offsetHeads,
-          limitHeads: args.limitHeads,
-          returnedHeadCount: 0,
-          totalHeadCount: 0,
-          totalPositionsCount: 0,
-          hasMore: false,
-        },
-        sourceMeta: {
-          primaryOwner: "legacy_client_fallback",
-          fallbackUsed: true,
-          sourceKind: LEGACY_SOURCE_KIND,
-          rowParityStatus: "not_checked",
-        },
-      };
-      observation.success({ rowCount: 0, fallbackUsed: true, extra: { totalHeadCount: 0, totalPositionsCount: 0 } });
-      return emptyResult;
-    }
-
-    const [metaRes, countsRes, totalKpiRes] = await Promise.all([
-      args.supabase
-        .from("proposals")
-        .select("id, proposal_no, id_short, sent_to_accountant_at")
-        .in("id", proposalIds),
-      args.supabase
-        .from("proposal_items")
-        .select("proposal_id")
-        .in("proposal_id", proposalIds),
-      args.supabase
-        .from("proposal_items_view")
-        .select("id", { count: "exact", head: true })
-        .in("proposal_id", proposalIds),
-    ]);
-
-    if (metaRes.error) throw metaRes.error;
-    if (countsRes.error) throw countsRes.error;
-    if (totalKpiRes.error) throw totalKpiRes.error;
-
-    const metaRows = Array.isArray(metaRes.data) ? metaRes.data : [];
-    const countsRows = Array.isArray(countsRes.data) ? countsRes.data : [];
-
-    const okIds = new Set<string>();
-    const prettyById: Record<string, string | null> = {};
-    for (const rawRow of metaRows) {
-      const row = asRecord(rawRow);
-      const id = String(row.id ?? "").trim();
-      if (!id) continue;
-      if (!toNullableString(row.sent_to_accountant_at)) okIds.add(id);
-      const proposalNo = toNullableString(row.proposal_no);
-      const idShort = toNullableString(row.id_short);
-      prettyById[id] = proposalNo || (idShort ? `PR-${idShort}` : null);
-    }
-
-    const itemCounts: Record<string, number> = {};
-    const nonEmptyIds = new Set<string>();
-    for (const rawRow of countsRows) {
-      const row = asRecord(rawRow);
-      const proposalId = String(row.proposal_id ?? "").trim();
-      if (!proposalId) continue;
-      itemCounts[proposalId] = (itemCounts[proposalId] ?? 0) + 1;
-      nonEmptyIds.add(proposalId);
-    }
-
-    const filtered = allHeads
-      .filter((head) => okIds.has(head.id) && nonEmptyIds.has(head.id))
-      .map((head) => ({
-        id: head.id,
-        submitted_at: head.submitted_at,
-        pretty: prettyById[head.id] ?? null,
-      }));
-
-    const offset = Math.max(0, args.offsetHeads);
-    const windowHeads = filtered.slice(offset, offset + args.limitHeads);
-    const result: DirectorProposalWindowResult = {
-      heads: windowHeads,
-      itemCounts: Object.fromEntries(windowHeads.map((head) => [head.id, itemCounts[head.id] ?? 0])),
-      meta: {
-        offsetHeads: offset,
-        limitHeads: args.limitHeads,
-        returnedHeadCount: windowHeads.length,
-        totalHeadCount: filtered.length,
-        totalPositionsCount: totalKpiRes.count ?? 0,
-        hasMore: offset + windowHeads.length < filtered.length,
-      },
-      sourceMeta: {
-        primaryOwner: "legacy_client_fallback",
-        fallbackUsed: true,
-        sourceKind: LEGACY_SOURCE_KIND,
-        rowParityStatus: "not_checked",
-      },
-    };
-    observation.success({
-      rowCount: result.heads.length,
-      fallbackUsed: true,
-      extra: {
-        offsetHeads: result.meta.offsetHeads,
-        limitHeads: result.meta.limitHeads,
-        totalHeadCount: result.meta.totalHeadCount,
-        totalPositionsCount: result.meta.totalPositionsCount,
-      },
-    });
-    return result;
-  } catch (error) {
-    observation.error(error, { errorStage: "load_proposals_window_legacy" });
-    throw error;
-  }
-}
-
 export async function fetchDirectorPendingProposalWindow(
   args: FetchDirectorProposalWindowArgs,
 ): Promise<DirectorProposalWindowResult> {
@@ -318,6 +178,7 @@ export async function fetchDirectorPendingProposalWindow(
     const envelope = adaptDirectorProposalScopeEnvelope(data);
     const adaptedHeads = adaptHeads(envelope.heads);
     const meta = adaptMeta(envelope.meta, offsetHeads, limitHeads);
+    const hasWindowTruth = meta.totalHeadCount > 0 || adaptedHeads.heads.length > 0;
     const rpcResult: DirectorProposalWindowResult = {
       heads: adaptedHeads.heads,
       itemCounts: adaptedHeads.itemCounts,
@@ -326,95 +187,22 @@ export async function fetchDirectorPendingProposalWindow(
         primaryOwner: "rpc_scope_v1",
         fallbackUsed: false,
         sourceKind: RPC_SOURCE_KIND,
-        rowParityStatus: "rpc_nonempty",
-      },
-    };
-    if (meta.totalHeadCount > 0 || adaptedHeads.heads.length > 0) {
-      observation.success({
-        rowCount: rpcResult.heads.length,
-        extra: {
-          offsetHeads: meta.offsetHeads,
-          limitHeads: meta.limitHeads,
-          totalHeadCount: meta.totalHeadCount,
-          totalPositionsCount: meta.totalPositionsCount,
-          rowParityStatus: rpcResult.sourceMeta.rowParityStatus,
-        },
-      });
-      return rpcResult;
-    }
-
-    try {
-      const legacyResult = await loadDirectorProposalWindowLegacy(args);
-      if (legacyResult.meta.totalHeadCount > 0 || legacyResult.heads.length > 0) {
-        const recoveredResult: DirectorProposalWindowResult = {
-          ...legacyResult,
-          sourceMeta: {
-            ...legacyResult.sourceMeta,
-            rowParityStatus: "rpc_empty_legacy_recovered",
-          },
-        };
-        observation.success({
-          rowCount: recoveredResult.heads.length,
-          sourceKind: recoveredResult.sourceMeta.sourceKind,
-          fallbackUsed: true,
-          extra: {
-            offsetHeads: recoveredResult.meta.offsetHeads,
-            limitHeads: recoveredResult.meta.limitHeads,
-            totalHeadCount: recoveredResult.meta.totalHeadCount,
-            totalPositionsCount: recoveredResult.meta.totalPositionsCount,
-            rowParityStatus: recoveredResult.sourceMeta.rowParityStatus,
-          },
-        });
-        return recoveredResult;
-      }
-    } catch (legacyProbeError) {
-      const probeFailedResult: DirectorProposalWindowResult = {
-        ...rpcResult,
-        sourceMeta: {
-          ...rpcResult.sourceMeta,
-          rowParityStatus: "rpc_empty_legacy_probe_failed",
-        },
-      };
-      observation.success({
-        rowCount: 0,
-        extra: {
-          offsetHeads: meta.offsetHeads,
-          limitHeads: meta.limitHeads,
-          totalHeadCount: meta.totalHeadCount,
-          totalPositionsCount: meta.totalPositionsCount,
-          rowParityStatus: probeFailedResult.sourceMeta.rowParityStatus,
-          legacyProbeError:
-            legacyProbeError instanceof Error ? legacyProbeError.message : String(legacyProbeError ?? ""),
-        },
-      });
-      return probeFailedResult;
-    }
-
-    const emptyResult: DirectorProposalWindowResult = {
-      ...rpcResult,
-      sourceMeta: {
-        ...rpcResult.sourceMeta,
-        rowParityStatus: "rpc_empty_legacy_match_empty",
+        rowParityStatus: hasWindowTruth ? "rpc_nonempty" : "rpc_empty",
       },
     };
     observation.success({
-      rowCount: 0,
+      rowCount: rpcResult.heads.length,
       extra: {
         offsetHeads: meta.offsetHeads,
         limitHeads: meta.limitHeads,
         totalHeadCount: meta.totalHeadCount,
         totalPositionsCount: meta.totalPositionsCount,
-        rowParityStatus: emptyResult.sourceMeta.rowParityStatus,
+        rowParityStatus: rpcResult.sourceMeta.rowParityStatus,
       },
     });
-    return emptyResult;
+    return rpcResult;
   } catch (error) {
     observation.error(error, { errorStage: "load_proposals_window_rpc" });
-    try {
-      const fallback = await loadDirectorProposalWindowLegacy(args);
-      return fallback;
-    } catch (fallbackError) {
-      throw fallbackError ?? error;
-    }
+    throw error;
   }
 }

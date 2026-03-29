@@ -417,25 +417,6 @@ const residuals: ResidualClientTruth[] = [
     ],
   },
   {
-    id: "director_pending_proposals_legacy_fallback",
-    module: "director",
-    contour: "Director pending proposals compatibility fallback",
-    exactFile: "src/screens/director/director.proposals.repo.ts",
-    truthType: "operational",
-    currentClientOwnership:
-      "Pending proposals scope still keeps legacy fallback ownership branches beside rpc_scope_v1.",
-    whyRisky:
-      "Request/proposal queue truth is already backend-first; retaining a legacy primary candidate makes future regressions cheaper to reintroduce.",
-    requiredBackendContract: "director_pending_proposals_scope_v1 hard cut without legacy fallback",
-    priority: "P1",
-    state: "legacy_branch",
-    nextBatch: "Director pending proposals fallback removal",
-    evidencePaths: [
-      "src/screens/director/director.proposals.repo.ts",
-      "artifacts/director-proposals-windowing-v1.summary.json",
-    ],
-  },
-  {
     id: "buyer_inbox_legacy_window_fallback",
     module: "buyer",
     contour: "Buyer inbox legacy client window fallback",
@@ -1136,7 +1117,6 @@ const roadmap: RoadmapBatch[] = [
     residualIds: [
       "director_pdf_source_legacy_fallback",
       "director_reports_transport_legacy_scope_fallback",
-      "director_pending_proposals_legacy_fallback",
     ],
     reason: "Director report/export truth is backend-primary, but legacy fallback families still inflate the proof surface.",
   },

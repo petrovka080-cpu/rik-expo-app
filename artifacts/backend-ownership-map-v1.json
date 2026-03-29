@@ -1,0 +1,1807 @@
+{
+  "generatedAt": "2026-03-29T16:11:06.199Z",
+  "batch": "backend_ownership_map_v1",
+  "documentSections": [
+    "taxonomy",
+    "perModuleBackendOwned",
+    "perModuleClientOwnedAllowed",
+    "perModuleResidualClientTruth",
+    "crossCuttingRules",
+    "priorityRoadmap",
+    "enforcementRules",
+    "proofSummary"
+  ],
+  "taxonomy": [
+    {
+      "key": "business_truth",
+      "owner": "backend",
+      "description": "Business-correct meaning of entity state and accepted outcomes.",
+      "examples": [
+        "request submit outcome",
+        "proposal status truth",
+        "payment status truth"
+      ],
+      "rule": "Client must not invent or repair business semantics after the contract boundary."
+    },
+    {
+      "key": "operational_truth",
+      "owner": "backend",
+      "description": "Queues, process visibility, canonical rows, operational statuses and ordering.",
+      "examples": [
+        "warehouse issue queue rows",
+        "incoming queue heads",
+        "supplier request heads"
+      ],
+      "rule": "Client may paginate and render operational rows, but must not merge or normalize them as primary truth."
+    },
+    {
+      "key": "money_truth",
+      "owner": "backend",
+      "description": "Money totals, balances, debt/overpayment split, overdue and critical amounts.",
+      "examples": [
+        "director finance totals",
+        "accountant totals",
+        "payment aggregates"
+      ],
+      "rule": "Money facts and their semantics belong to typed backend contracts, never to selectors or screens."
+    },
+    {
+      "key": "report_truth",
+      "owner": "backend",
+      "description": "Grouped report rows, export/PDF source rows, summary buckets and aggregates.",
+      "examples": [
+        "director report transport scope",
+        "buyer summary buckets",
+        "PDF source datasets"
+      ],
+      "rule": "If a screen or PDF consumes grouped or aggregated facts, backend owns that dataset."
+    },
+    {
+      "key": "queue_worker_truth",
+      "owner": "platform_runtime",
+      "description": "Durable pending/inflight/retry/terminal lifecycle for offline-capable work.",
+      "examples": [
+        "foreman durable draft sync",
+        "warehouse receive draft queue",
+        "contractor progress sync"
+      ],
+      "rule": "Queue/worker state may live locally, but never as ad hoc UI-owned orchestration."
+    },
+    {
+      "key": "ui_orchestration",
+      "owner": "client_allowed",
+      "description": "Pure UI control state that does not alter business meaning.",
+      "examples": [
+        "activeTab",
+        "selectedId",
+        "modal state",
+        "sheet mode"
+      ],
+      "rule": "UI-only stores may own orchestration, but not truth-bearing rows, totals or statuses."
+    },
+    {
+      "key": "presentation_only_shaping",
+      "owner": "client_allowed",
+      "description": "Formatting or color/label mapping that does not mutate the underlying truth.",
+      "examples": [
+        "date formatting",
+        "local display labels",
+        "purely visual sort toggle"
+      ],
+      "rule": "Presentation shaping is allowed only when it does not recalculate or reinterpret business facts."
+    }
+  ],
+  "perModule": {
+    "director": {
+      "module": "director",
+      "displayName": "Director",
+      "currentState": "backend_primary_with_narrow_fallbacks",
+      "backendOwnedNow": [
+        {
+          "contour": "Director Finance panel scope",
+          "owner": "rpc_v3",
+          "contractVersion": "director_finance_panel_scope_v3",
+          "currentState": "backend_primary",
+          "proof": {
+            "artifactKey": "director_finance",
+            "artifactPath": "artifacts/director-finance-backend-cutover.summary.json",
+            "status": null,
+            "gate": null,
+            "ownershipMarkers": [
+              "primaryOwner=rpc_v3",
+              "clientOwnedFinanceTruthRemoved=true",
+              "fallbackUsed=false"
+            ]
+          }
+        },
+        {
+          "contour": "Director reports transport scope",
+          "owner": "transport_scope_v1",
+          "contractVersion": "director_report_transport_scope_v1",
+          "currentState": "backend_primary",
+          "proof": {
+            "artifactKey": "director_reports",
+            "artifactPath": "artifacts/director-reports-backend-cutover.summary.json",
+            "status": null,
+            "gate": null,
+            "ownershipMarkers": [
+              "primaryOwner=transport_scope_v1",
+              "clientOwnedReportTruthRemoved=true",
+              "fallbackUsed=false"
+            ]
+          }
+        },
+        {
+          "contour": "Director reports PDF source",
+          "owner": "backend_production_report_v1 + backend_subcontract_report_v1",
+          "contractVersion": "director_reports_pdf_backend_v1",
+          "currentState": "backend_primary",
+          "proof": {
+            "artifactKey": "director_reports_pdf",
+            "artifactPath": "artifacts/director-reports-pdf-backend-cutover.summary.json",
+            "status": null,
+            "gate": null,
+            "ownershipMarkers": [
+              "primaryOwnerProduction=backend_production_report_v1",
+              "primaryOwnerSubcontract=backend_subcontract_report_v1",
+              "fallbackUsedProduction=false",
+              "fallbackUsedSubcontract=false"
+            ]
+          }
+        },
+        {
+          "contour": "Director pending proposals scope",
+          "owner": "rpc_scope_v1",
+          "contractVersion": "director_pending_proposals_scope_v1",
+          "currentState": "backend_primary",
+          "proof": {
+            "artifactKey": "director_proposals_windowing",
+            "artifactPath": "artifacts/director-proposals-windowing-v1.summary.json",
+            "status": "failed",
+            "gate": null,
+            "ownershipMarkers": [
+              "primaryOwner=rpc_scope_v1",
+              "fallbackUsed=false"
+            ]
+          }
+        }
+      ],
+      "mandatoryBackendOwned": [
+        "finance totals, debt, overpayment, overdue and critical amounts",
+        "supplier finance aggregates and period/object-scoped finance facts",
+        "report summary rows and grouped facts",
+        "PDF/export source rows and canonical render datasets",
+        "pending proposal queue truth and deterministic ordering"
+      ],
+      "clientOwnedAllowed": [
+        "active tab and finance page mode",
+        "selected request/proposal/supplier ids",
+        "sheet open/close state",
+        "local presentation sort/filter that does not recalculate truth",
+        "file open/progress UI around PDF generation"
+      ],
+      "residualClientTruth": [
+        {
+          "id": "director_pdf_source_legacy_fallback",
+          "module": "director",
+          "contour": "Director PDF source branch legacy fallback",
+          "exactFile": "src/lib/api/directorPdfSource.service.ts",
+          "truthType": "report",
+          "currentClientOwnership": "PDF source rows still allow legacy_fallback branches for finance/report payload construction.",
+          "whyRisky": "Export truth can drift from canonical backend report/finance scopes if UI-payload-derived fallbacks stay available.",
+          "requiredBackendContract": "director PDF source contract v2 with legacy payload branches removed",
+          "priority": "P1",
+          "state": "legacy_branch",
+          "nextBatch": "Director PDF source fallback removal",
+          "evidencePaths": [
+            "src/lib/api/directorPdfSource.service.ts",
+            "artifacts/director-reports-pdf-backend-cutover.summary.json",
+            "artifacts/director-finance-backend-cutover.summary.json"
+          ]
+        },
+        {
+          "id": "director_reports_transport_legacy_scope_fallback",
+          "module": "director",
+          "contour": "Director reports transport legacy scope fallback",
+          "exactFile": "src/lib/api/directorReportsTransport.service.ts",
+          "truthType": "report",
+          "currentClientOwnership": "Report transport still exposes canonical_scope_fallback and legacy_scope_fallback branches beside rpc_scope_v1.",
+          "whyRisky": "Report grouping truth is backend-owned primary, but keeping parallel legacy scope families raises future drift and maintenance cost.",
+          "requiredBackendContract": "director_report_transport_scope_v1 hard remove fallback branches",
+          "priority": "P1",
+          "state": "legacy_branch",
+          "nextBatch": "Director Reports fallback branch burn-down",
+          "evidencePaths": [
+            "src/lib/api/directorReportsTransport.service.ts",
+            "artifacts/director-reports-backend-cutover.summary.json"
+          ]
+        }
+      ],
+      "notes": [
+        "Director primary ownership is already backend-first on finance, report scope and report PDF contours.",
+        "Residual risk is now compatibility fallback burn-down, not broad read-model redesign."
+      ],
+      "residualClientTruthCount": 2,
+      "highestResidualPriority": "P1"
+    },
+    "foreman": {
+      "module": "foreman",
+      "displayName": "Foreman",
+      "currentState": "runtime_primary_with_narrow_fallbacks",
+      "backendOwnedNow": [
+        {
+          "contour": "Foreman request draft sync boundary",
+          "owner": "rpc_v2",
+          "contractVersion": "request_sync_draft_v2",
+          "currentState": "backend_primary",
+          "proof": {
+            "artifactKey": "foreman_field_reliability",
+            "artifactPath": "artifacts/foreman-field-reliability.summary.json",
+            "status": "passed",
+            "gate": null,
+            "ownershipMarkers": [
+              "field reliability scenarios passed",
+              "kill/reopen recovery passed",
+              "retry/terminal conflict semantics passed"
+            ]
+          }
+        },
+        {
+          "contour": "Foreman durable draft queue/runtime",
+          "owner": "platform runtime + durable draft store",
+          "contractVersion": "foreman_durable_draft_store_v2",
+          "currentState": "platform_runtime_primary",
+          "proof": {
+            "artifactKey": "platform_offline",
+            "artifactPath": "artifacts/platform-offline-wave1.summary.json",
+            "status": null,
+            "gate": null,
+            "ownershipMarkers": [
+              "sharedStatuses aligned",
+              "sharedTriggers aligned",
+              "foremanAligned=true"
+            ]
+          }
+        }
+      ],
+      "mandatoryBackendOwned": [
+        "canonical request draft sync result",
+        "submitted request truth",
+        "line acceptance and reconciliation result",
+        "request submit outcome",
+        "server conflict classification"
+      ],
+      "clientOwnedAllowed": [
+        "temporary form values before durable sync",
+        "selected template/object ids",
+        "history modal open/details selection",
+        "AI helper UI state and preview orchestration",
+        "local editing UX state"
+      ],
+      "residualClientTruth": [],
+      "notes": [
+        "Foreman is primarily a write/runtime contour: durable local workflow state is allowed, but business submit truth belongs to RPC results and runtime classification."
+      ],
+      "residualClientTruthCount": 0,
+      "highestResidualPriority": "none"
+    },
+    "buyer": {
+      "module": "buyer",
+      "displayName": "Buyer",
+      "currentState": "backend_primary_with_narrow_fallbacks",
+      "backendOwnedNow": [
+        {
+          "contour": "Buyer summary inbox scope",
+          "owner": "rpc_scope_v1",
+          "contractVersion": "buyer_summary_inbox_scope_v1",
+          "currentState": "backend_primary",
+          "proof": {
+            "artifactKey": "buyer_inbox",
+            "artifactPath": "artifacts/buyer-summary-inbox-backend-cutover.summary.json",
+            "status": null,
+            "gate": null,
+            "ownershipMarkers": [
+              "primaryOwner=rpc_scope_v1",
+              "clientOwnedInboxTruthMateriallyRemoved=true",
+              "fallbackUsed=false"
+            ]
+          }
+        },
+        {
+          "contour": "Buyer summary buckets scope",
+          "owner": "rpc_scope_v1",
+          "contractVersion": "buyer_summary_buckets_scope_v1",
+          "currentState": "backend_primary",
+          "proof": {
+            "artifactKey": "buyer_buckets",
+            "artifactPath": "artifacts/buyer-summary-buckets-cutover-v1.summary.json",
+            "status": null,
+            "gate": null,
+            "ownershipMarkers": [
+              "rpc.sourceMeta.primaryOwner=rpc_scope_v1",
+              "rpc.sourceMeta.backendFirstPrimary=true"
+            ]
+          }
+        }
+      ],
+      "mandatoryBackendOwned": [
+        "inbox rows and next-page window data",
+        "grouped request/proposal statuses",
+        "summary counts/totals used by the business UI",
+        "supplier-facing proposal truth"
+      ],
+      "clientOwnedAllowed": [
+        "active tab",
+        "selected request/supplier/proposal id",
+        "modal mode",
+        "local UI filters and pure presentation sort mode",
+        "expanded section state"
+      ],
+      "residualClientTruth": [
+        {
+          "id": "buyer_inbox_legacy_window_fallback",
+          "module": "buyer",
+          "contour": "Buyer inbox legacy client window fallback",
+          "exactFile": "src/screens/buyer/buyer.fetchers.ts",
+          "truthType": "operational",
+          "currentClientOwnership": "Buyer inbox fetchers still allow legacy client grouping/window ownership beside rpc_scope_v1.",
+          "whyRisky": "Buyer inbox truth is backend-owned primary now; compatibility stitching paths leave room for list/status drift and heavier client recomposition.",
+          "requiredBackendContract": "buyer_summary_inbox_scope_v1 hard cut with legacy window fallback removal",
+          "priority": "P1",
+          "state": "legacy_branch",
+          "nextBatch": "Buyer inbox fallback burn-down",
+          "evidencePaths": [
+            "src/screens/buyer/buyer.fetchers.ts",
+            "artifacts/buyer-summary-inbox-backend-cutover.summary.json"
+          ]
+        },
+        {
+          "id": "buyer_summary_buckets_legacy_stitch_fallback",
+          "module": "buyer",
+          "contour": "Buyer summary buckets legacy client stitch fallback",
+          "exactFile": "src/screens/buyer/buyer.fetchers.ts",
+          "truthType": "report",
+          "currentClientOwnership": "Buyer summary buckets still keep a legacy_client_stitch compatibility branch in the fetch layer.",
+          "whyRisky": "Summary/report truth should not be restitched on device after the backend-first bucket scope already exists and is green.",
+          "requiredBackendContract": "buyer_summary_buckets_scope_v1 hard cut with legacy stitch removal",
+          "priority": "P1",
+          "state": "legacy_branch",
+          "nextBatch": "Buyer summary buckets fallback burn-down",
+          "evidencePaths": [
+            "src/screens/buyer/buyer.fetchers.ts",
+            "artifacts/buyer-summary-buckets-cutover-v1.summary.json"
+          ]
+        }
+      ],
+      "notes": [
+        "Buyer read-side contours are backend-primary; remaining risk sits in compatibility fallbacks inside fetchers."
+      ],
+      "residualClientTruthCount": 2,
+      "highestResidualPriority": "P1"
+    },
+    "accountant": {
+      "module": "accountant",
+      "displayName": "Accountant",
+      "currentState": "backend_primary_with_narrow_fallbacks",
+      "backendOwnedNow": [
+        {
+          "contour": "Accountant inbox window scopes",
+          "owner": "rpc_scope_v1",
+          "contractVersion": "accountant_inbox_scope_v1",
+          "currentState": "backend_primary",
+          "proof": {
+            "artifactKey": "accountant_windowing",
+            "artifactPath": "artifacts/accountant-windowing-wave1.summary.json",
+            "status": "passed",
+            "gate": null,
+            "ownershipMarkers": [
+              "inboxChecks[*].primaryOwner=rpc_scope_v1",
+              "inboxChecks[*].fallbackUsed=false",
+              "backendFirstPrimary=true"
+            ]
+          }
+        },
+        {
+          "contour": "Accountant history window scope",
+          "owner": "rpc_scope_v1",
+          "contractVersion": "accountant_history_scope_v1",
+          "currentState": "backend_primary",
+          "proof": {
+            "artifactKey": "accountant_windowing",
+            "artifactPath": "artifacts/accountant-windowing-wave1.summary.json",
+            "status": "passed",
+            "gate": null,
+            "ownershipMarkers": [
+              "history.primaryOwner=rpc_scope_v1",
+              "history.fallbackUsed=false",
+              "history.backendFirstPrimary=true"
+            ]
+          }
+        }
+      ],
+      "mandatoryBackendOwned": [
+        "payment status truth",
+        "inbox/history rows and totals",
+        "page/window meta for accounting lists",
+        "any visible payment aggregation",
+        "payment PDF source rows"
+      ],
+      "clientOwnedAllowed": [
+        "active tab",
+        "selected payment id",
+        "local period/search UI state",
+        "screen-only filter controls",
+        "modal/card open state"
+      ],
+      "residualClientTruth": [
+        {
+          "id": "accountant_inbox_legacy_window_fallback",
+          "module": "accountant",
+          "contour": "Accountant inbox legacy client window fallback",
+          "exactFile": "src/screens/accountant/accountant.inbox.service.ts",
+          "truthType": "money",
+          "currentClientOwnership": "Accountant inbox service still supports legacy_client_window beside rpc_scope_v1.",
+          "whyRisky": "Payment inbox truth and totals are backend-owned primary, but compatibility window logic keeps money-bearing list truth partially reopenable on client.",
+          "requiredBackendContract": "accountant inbox scope hard cut without legacy_client_window",
+          "priority": "P1",
+          "state": "legacy_branch",
+          "nextBatch": "Accountant inbox fallback removal",
+          "evidencePaths": [
+            "src/screens/accountant/accountant.inbox.service.ts",
+            "artifacts/accountant-windowing-wave1.summary.json"
+          ]
+        },
+        {
+          "id": "accountant_history_legacy_window_fallback",
+          "module": "accountant",
+          "contour": "Accountant history legacy client window fallback",
+          "exactFile": "src/screens/accountant/accountant.history.service.ts",
+          "truthType": "money",
+          "currentClientOwnership": "Accountant history service still carries legacy_client_window compatibility beside rpc_scope_v1.",
+          "whyRisky": "History totals and row ordering are already backend-windowed; keeping legacy client window logic increases drift and proof surface.",
+          "requiredBackendContract": "accountant history scope hard cut without legacy_client_window",
+          "priority": "P1",
+          "state": "legacy_branch",
+          "nextBatch": "Accountant history fallback removal",
+          "evidencePaths": [
+            "src/screens/accountant/accountant.history.service.ts",
+            "artifacts/accountant-windowing-wave1.summary.json"
+          ]
+        },
+        {
+          "id": "accountant_payment_pdf_legacy_fallback",
+          "module": "accountant",
+          "contour": "Accountant payment PDF legacy fallback",
+          "exactFile": "src/lib/api/paymentPdf.service.ts",
+          "truthType": "report",
+          "currentClientOwnership": "Payment PDF source branches still allow legacy_fallback alongside rpc_v1.",
+          "whyRisky": "PDF/export truth should follow the same backend-owned source discipline as the interactive list contours.",
+          "requiredBackendContract": "payment PDF source contract with rpc-only data branch",
+          "priority": "P2",
+          "state": "legacy_branch",
+          "nextBatch": "Accountant PDF source fallback removal",
+          "evidencePaths": [
+            "src/lib/api/paymentPdf.service.ts",
+            "artifacts/accountant-windowing-wave1.summary.json"
+          ]
+        }
+      ],
+      "notes": [
+        "Accountant is backend-first for lists and totals; residual debt is limited to compatibility windows and PDF fallback paths."
+      ],
+      "residualClientTruthCount": 3,
+      "highestResidualPriority": "P1"
+    },
+    "warehouse": {
+      "module": "warehouse",
+      "displayName": "Warehouse",
+      "currentState": "backend_primary_with_narrow_fallbacks",
+      "backendOwnedNow": [
+        {
+          "contour": "Warehouse issue queue scope",
+          "owner": "rpc_scope_v4",
+          "contractVersion": "warehouse_issue_queue_scope_v4",
+          "currentState": "backend_primary",
+          "proof": {
+            "artifactKey": "warehouse_issue",
+            "artifactPath": "artifacts/warehouse-issue-queue-backend-cutover.summary.json",
+            "status": null,
+            "gate": null,
+            "ownershipMarkers": [
+              "primaryOwner=rpc_scope_v4",
+              "clientOwnedIssueTruthRemoved=true",
+              "fallbackUsed=false"
+            ]
+          }
+        },
+        {
+          "contour": "Warehouse incoming queue/items scopes",
+          "owner": "rpc_scope_v1",
+          "contractVersion": "warehouse_incoming_queue_scope_v1 + warehouse_incoming_items_scope_v1",
+          "currentState": "backend_primary",
+          "proof": {
+            "artifactKey": "warehouse_incoming",
+            "artifactPath": "artifacts/warehouse-incoming-queue-backend-cutover.summary.json",
+            "status": null,
+            "gate": null,
+            "ownershipMarkers": [
+              "primaryOwner=rpc_scope_v1",
+              "clientOwnedIncomingTruthRemoved=true",
+              "fallbackUsed=false"
+            ]
+          }
+        },
+        {
+          "contour": "Warehouse stock scope",
+          "owner": "rpc_scope_v2",
+          "contractVersion": "warehouse_stock_scope_v2",
+          "currentState": "backend_primary",
+          "proof": {
+            "artifactKey": "warehouse_stock_windowing",
+            "artifactPath": "artifacts/warehouse-stock-windowing-v2.summary.json",
+            "status": null,
+            "gate": null,
+            "ownershipMarkers": [
+              "primary.primaryOwner=rpc_scope_v2",
+              "appendUniqueOk=true",
+              "hasMoreOk=true"
+            ]
+          }
+        },
+        {
+          "contour": "Warehouse receive queue/runtime",
+          "owner": "platform runtime + durable receive draft store",
+          "contractVersion": "warehouse_receive_draft_store_v1",
+          "currentState": "platform_runtime_primary",
+          "proof": {
+            "artifactKey": "warehouse_receive_reliability",
+            "artifactPath": "artifacts/warehouse-receive-wave1.summary.json",
+            "status": null,
+            "gate": null,
+            "ownershipMarkers": [
+              "offline_receive passed",
+              "kill_reopen passed",
+              "coalescing passed"
+            ]
+          }
+        }
+      ],
+      "mandatoryBackendOwned": [
+        "stock rows truth and canonical ordering",
+        "issue queue truth",
+        "incoming queue truth",
+        "request/issue/incoming head shaping",
+        "business-visible summary counters and PDF source rows"
+      ],
+      "clientOwnedAllowed": [
+        "active warehouse tab",
+        "selected row/request/head id",
+        "modal/sheet state",
+        "local list expansion state",
+        "purely visual sort/filter toggles"
+      ],
+      "residualClientTruth": [
+        {
+          "id": "warehouse_pdf_legacy_fallbacks",
+          "module": "warehouse",
+          "contour": "Warehouse PDF source legacy fallback branches",
+          "exactFile": "src/screens/warehouse/warehouse.incomingForm.pdf.service.ts",
+          "truthType": "report",
+          "currentClientOwnership": "Warehouse PDF services still keep rpc_v1 | legacy_fallback source branches for report payloads.",
+          "whyRisky": "Export/report source rows should converge on the same backend-owned scope discipline as queue and stock read models.",
+          "requiredBackendContract": "warehouse PDF source family rpc-only cut",
+          "priority": "P2",
+          "state": "legacy_branch",
+          "nextBatch": "Warehouse PDF source fallback removal",
+          "evidencePaths": [
+            "src/screens/warehouse/warehouse.incomingForm.pdf.service.ts",
+            "src/screens/warehouse/warehouse.dayMaterialsReport.pdf.service.ts",
+            "src/screens/warehouse/warehouse.objectWorkReport.pdf.service.ts"
+          ]
+        }
+      ],
+      "notes": [
+        "Warehouse primary read contours are backend-owned and window-aware.",
+        "Residual work is about burning down legacy view/client-shaping compatibility branches, not reworking pagination or UI modernization."
+      ],
+      "residualClientTruthCount": 1,
+      "highestResidualPriority": "P2"
+    },
+    "contractor": {
+      "module": "contractor",
+      "displayName": "Contractor",
+      "currentState": "runtime_primary_with_narrow_fallbacks",
+      "backendOwnedNow": [
+        {
+          "contour": "Contractor works bundle scope",
+          "owner": "rpc_scope_v1",
+          "contractVersion": "contractor_works_bundle_scope_v1",
+          "currentState": "backend_primary",
+          "proof": {
+            "artifactKey": "contractor_works_bundle",
+            "artifactPath": "artifacts/contractor-works-bundle-cutover-v1.summary.json",
+            "status": null,
+            "gate": null,
+            "ownershipMarkers": [
+              "rpc.sourceMeta.primaryOwner=rpc_scope_v1",
+              "rpc.sourceMeta.fallbackUsed=false"
+            ]
+          }
+        },
+        {
+          "contour": "Contractor progress/issued reliability lifecycle",
+          "owner": "platform runtime worker lifecycle",
+          "contractVersion": "contractor_reliability_wave1",
+          "currentState": "platform_runtime_primary",
+          "proof": {
+            "artifactKey": "contractor_reliability",
+            "artifactPath": "artifacts/contractor-reliability-cleanup.summary.json",
+            "status": null,
+            "gate": null,
+            "ownershipMarkers": [
+              "eventDrivenRefreshPresent=true",
+              "issuedTimerDebtRemoved=true",
+              "guardDisciplinePresent=true"
+            ]
+          }
+        }
+      ],
+      "mandatoryBackendOwned": [
+        "progress submission truth",
+        "issued/progress operational status truth",
+        "retryable vs terminal classification",
+        "canonical works bundle rows",
+        "reopen/network recovery semantics"
+      ],
+      "clientOwnedAllowed": [
+        "selected work/progress item id",
+        "modal open/close",
+        "local UX state and hints",
+        "visual status rendering",
+        "retry button intent only"
+      ],
+      "residualClientTruth": [
+        {
+          "id": "contractor_works_bundle_legacy_enrich_fallback",
+          "module": "contractor",
+          "contour": "Contractor works bundle legacy enrich fallback",
+          "exactFile": "src/screens/contractor/contractor.loadWorksService.ts",
+          "truthType": "operational",
+          "currentClientOwnership": "Works bundle load service still carries legacy_client_enrich beside rpc_scope_v1.",
+          "whyRisky": "Operational works truth is backend-owned primary already; legacy relational enrich remains a compatibility branch that keeps client composition alive.",
+          "requiredBackendContract": "contractor_works_bundle_scope_v1 hard cut without legacy enrich",
+          "priority": "P1",
+          "state": "legacy_branch",
+          "nextBatch": "Contractor works bundle fallback burn-down",
+          "evidencePaths": [
+            "src/screens/contractor/contractor.loadWorksService.ts",
+            "artifacts/contractor-works-bundle-cutover-v1.summary.json"
+          ]
+        }
+      ],
+      "notes": [
+        "Contractor reliability is runtime-owned now; residual risk remains in the legacy works-bundle enrich branch."
+      ],
+      "residualClientTruthCount": 1,
+      "highestResidualPriority": "P1"
+    }
+  },
+  "crossCuttingRules": {
+    "offlineSemantics": {
+      "owner": "platform_runtime",
+      "proof": {
+        "artifactKey": "platform_offline",
+        "artifactPath": "artifacts/platform-offline-wave1.summary.json",
+        "status": null,
+        "gate": null,
+        "ownershipMarkers": [
+          "sharedStatuses",
+          "sharedTriggers",
+          "foremanAligned=true",
+          "warehouseAligned=true",
+          "contractorAligned=true"
+        ]
+      },
+      "sharedStatuses": [],
+      "sharedTriggers": [],
+      "rule": "Offline sync vocabulary and retry triggers are platform-owned runtime truth, not UI-owned logic."
+    },
+    "guards": {
+      "owner": "platform_runtime",
+      "proof": {
+        "artifactKey": "unified_guards",
+        "artifactPath": "artifacts/unified-guards-hardening.summary.json",
+        "status": null,
+        "gate": null,
+        "ownershipMarkers": [
+          "guardContractReady=true",
+          "buyerAligned=true",
+          "accountantAligned=true",
+          "warehouseAligned=true",
+          "contractorAligned=true",
+          "directorAligned=true"
+        ]
+      },
+      "rule": "Guard decisions and skip reasons are shared platform behavior; screens consume them but do not redefine them."
+    },
+    "paginationWindowing": {
+      "owner": "backend + client orchestration",
+      "proof": {
+        "artifactKey": "pagination_windowing",
+        "artifactPath": "artifacts/pagination-windowing-hardening.summary.json",
+        "status": null,
+        "gate": null,
+        "ownershipMarkers": [
+          "incomingUsesRangeQuery=true",
+          "issueUsesRpcPrimary=true",
+          "appendUniqueOk=true",
+          "GREEN_WITH_NARROW_ENVIRONMENT_RESIDUAL accepted"
+        ]
+      },
+      "rule": "Backend owns page/window truth and meta; client owns loadMore wiring, appendUnique discipline and render lifecycle only."
+    },
+    "observability": {
+      "owner": "platform_runtime",
+      "proof": {
+        "artifactKey": "platform_observability",
+        "artifactPath": "artifacts/platform-observability-wave2.summary.json",
+        "status": null,
+        "gate": null,
+        "ownershipMarkers": [
+          "targetedCutovers ownerChanged=true",
+          "ownership deltas captured in observability summaries"
+        ]
+      },
+      "rule": "Ownership changes must stay machine-readable through observability artifacts; telemetry is platform discipline, not ad hoc screen logging."
+    },
+    "stores": {
+      "allowed": [
+        "activeTab",
+        "modal/sheet state",
+        "selectedId",
+        "expanded sections",
+        "local filter inputs",
+        "local refresh reason"
+      ],
+      "forbidden": [
+        "backend rows as truth",
+        "totals, balances or debt fields",
+        "queue truth and retry classification",
+        "source meta duplicated in UI stores",
+        "business status truth"
+      ],
+      "uiStoreAudits": [
+        {
+          "storePath": "src/screens/director/directorUi.store.ts",
+          "module": "director",
+          "kind": "ui_store",
+          "safe": true,
+          "forbiddenMatches": []
+        },
+        {
+          "storePath": "src/screens/warehouse/warehouseUi.store.ts",
+          "module": "warehouse",
+          "kind": "ui_store",
+          "safe": true,
+          "forbiddenMatches": []
+        },
+        {
+          "storePath": "src/screens/buyer/buyer.store.ts",
+          "module": "buyer",
+          "kind": "ui_store",
+          "safe": true,
+          "forbiddenMatches": []
+        },
+        {
+          "storePath": "src/screens/accountant/accountantUi.store.ts",
+          "module": "accountant",
+          "kind": "ui_store",
+          "safe": true,
+          "forbiddenMatches": []
+        },
+        {
+          "storePath": "src/screens/contractor/contractorUi.store.ts",
+          "module": "contractor",
+          "kind": "ui_store",
+          "safe": true,
+          "forbiddenMatches": []
+        },
+        {
+          "storePath": "src/screens/foreman/foremanUi.store.ts",
+          "module": "foreman",
+          "kind": "ui_store",
+          "safe": true,
+          "forbiddenMatches": []
+        }
+      ],
+      "durableWorkflowStoreAudits": [
+        {
+          "storePath": "src/screens/foreman/foreman.durableDraft.store.ts",
+          "module": "foreman",
+          "owner": "platform_runtime",
+          "purpose": "durable local draft + sync/runtime telemetry, not UI orchestration",
+          "safe": true
+        },
+        {
+          "storePath": "src/screens/contractor/contractor.progressDraft.store.ts",
+          "module": "contractor",
+          "owner": "platform_runtime",
+          "purpose": "durable progress draft + retry/runtime state, not UI store",
+          "safe": true
+        },
+        {
+          "storePath": "src/screens/warehouse/warehouse.receiveDraft.store.ts",
+          "module": "warehouse",
+          "owner": "platform_runtime",
+          "purpose": "durable receive queue/runtime state, not UI store",
+          "safe": true
+        }
+      ],
+      "rule": "Zustand UI stores are allowed only for orchestration. Durable workflow stores are runtime-owned and must not be treated as UI stores."
+    },
+    "hooksControllers": {
+      "allowed": [
+        "lifecycle wiring",
+        "triggering typed services/repositories",
+        "combining UI params with scope params",
+        "render-ready non-semantic adaptation"
+      ],
+      "forbidden": [
+        "money math",
+        "operational reconcile as primary truth",
+        "report aggregate recompute",
+        "retry classification in UI"
+      ],
+      "rule": "Hooks/controllers orchestrate; they do not become business compute nodes."
+    },
+    "repositoriesServices": {
+      "required": [
+        "typed boundary",
+        "strict adapter",
+        "versioned contract handling",
+        "fallback visibility",
+        "scope-level fetch entry point"
+      ],
+      "forbidden": [
+        "new client compute layer for business truth",
+        "silent fallback as primary",
+        "loose shape guessing"
+      ],
+      "rule": "Service/repository boundaries may adapt contracts narrowly, but cannot become new ownership islands for truth recompute."
+    },
+    "backendContracts": {
+      "required": [
+        "canonical rows",
+        "canonical aggregates and statuses",
+        "stable ids",
+        "pagination meta",
+        "versioning",
+        "null-safe typed shape"
+      ],
+      "forbidden": [
+        "half-ready payloads that expect client recompute",
+        "display formatting mixed with truth",
+        "fallback-shaped contracts"
+      ],
+      "rule": "Critical read contracts must be versioned and sufficient for their screen or export contour."
+    },
+    "pdfExportFlows": {
+      "backendOwnedRequired": [
+        "source rows",
+        "grouped export/report facts",
+        "money/summary truth used in PDF",
+        "canonical dataset for render"
+      ],
+      "clientAllowed": [
+        "initiate export",
+        "pass typed payload",
+        "open file/URL",
+        "show progress/error state"
+      ],
+      "rule": "PDF/export truth belongs to backend source families; client only orchestrates the render/open experience."
+    }
+  },
+  "residualClientTruthRegistry": [
+    {
+      "id": "director_pdf_source_legacy_fallback",
+      "module": "director",
+      "contour": "Director PDF source branch legacy fallback",
+      "exactFile": "src/lib/api/directorPdfSource.service.ts",
+      "truthType": "report",
+      "currentClientOwnership": "PDF source rows still allow legacy_fallback branches for finance/report payload construction.",
+      "whyRisky": "Export truth can drift from canonical backend report/finance scopes if UI-payload-derived fallbacks stay available.",
+      "requiredBackendContract": "director PDF source contract v2 with legacy payload branches removed",
+      "priority": "P1",
+      "state": "legacy_branch",
+      "nextBatch": "Director PDF source fallback removal",
+      "evidencePaths": [
+        "src/lib/api/directorPdfSource.service.ts",
+        "artifacts/director-reports-pdf-backend-cutover.summary.json",
+        "artifacts/director-finance-backend-cutover.summary.json"
+      ]
+    },
+    {
+      "id": "director_reports_transport_legacy_scope_fallback",
+      "module": "director",
+      "contour": "Director reports transport legacy scope fallback",
+      "exactFile": "src/lib/api/directorReportsTransport.service.ts",
+      "truthType": "report",
+      "currentClientOwnership": "Report transport still exposes canonical_scope_fallback and legacy_scope_fallback branches beside rpc_scope_v1.",
+      "whyRisky": "Report grouping truth is backend-owned primary, but keeping parallel legacy scope families raises future drift and maintenance cost.",
+      "requiredBackendContract": "director_report_transport_scope_v1 hard remove fallback branches",
+      "priority": "P1",
+      "state": "legacy_branch",
+      "nextBatch": "Director Reports fallback branch burn-down",
+      "evidencePaths": [
+        "src/lib/api/directorReportsTransport.service.ts",
+        "artifacts/director-reports-backend-cutover.summary.json"
+      ]
+    },
+    {
+      "id": "buyer_inbox_legacy_window_fallback",
+      "module": "buyer",
+      "contour": "Buyer inbox legacy client window fallback",
+      "exactFile": "src/screens/buyer/buyer.fetchers.ts",
+      "truthType": "operational",
+      "currentClientOwnership": "Buyer inbox fetchers still allow legacy client grouping/window ownership beside rpc_scope_v1.",
+      "whyRisky": "Buyer inbox truth is backend-owned primary now; compatibility stitching paths leave room for list/status drift and heavier client recomposition.",
+      "requiredBackendContract": "buyer_summary_inbox_scope_v1 hard cut with legacy window fallback removal",
+      "priority": "P1",
+      "state": "legacy_branch",
+      "nextBatch": "Buyer inbox fallback burn-down",
+      "evidencePaths": [
+        "src/screens/buyer/buyer.fetchers.ts",
+        "artifacts/buyer-summary-inbox-backend-cutover.summary.json"
+      ]
+    },
+    {
+      "id": "buyer_summary_buckets_legacy_stitch_fallback",
+      "module": "buyer",
+      "contour": "Buyer summary buckets legacy client stitch fallback",
+      "exactFile": "src/screens/buyer/buyer.fetchers.ts",
+      "truthType": "report",
+      "currentClientOwnership": "Buyer summary buckets still keep a legacy_client_stitch compatibility branch in the fetch layer.",
+      "whyRisky": "Summary/report truth should not be restitched on device after the backend-first bucket scope already exists and is green.",
+      "requiredBackendContract": "buyer_summary_buckets_scope_v1 hard cut with legacy stitch removal",
+      "priority": "P1",
+      "state": "legacy_branch",
+      "nextBatch": "Buyer summary buckets fallback burn-down",
+      "evidencePaths": [
+        "src/screens/buyer/buyer.fetchers.ts",
+        "artifacts/buyer-summary-buckets-cutover-v1.summary.json"
+      ]
+    },
+    {
+      "id": "accountant_inbox_legacy_window_fallback",
+      "module": "accountant",
+      "contour": "Accountant inbox legacy client window fallback",
+      "exactFile": "src/screens/accountant/accountant.inbox.service.ts",
+      "truthType": "money",
+      "currentClientOwnership": "Accountant inbox service still supports legacy_client_window beside rpc_scope_v1.",
+      "whyRisky": "Payment inbox truth and totals are backend-owned primary, but compatibility window logic keeps money-bearing list truth partially reopenable on client.",
+      "requiredBackendContract": "accountant inbox scope hard cut without legacy_client_window",
+      "priority": "P1",
+      "state": "legacy_branch",
+      "nextBatch": "Accountant inbox fallback removal",
+      "evidencePaths": [
+        "src/screens/accountant/accountant.inbox.service.ts",
+        "artifacts/accountant-windowing-wave1.summary.json"
+      ]
+    },
+    {
+      "id": "accountant_history_legacy_window_fallback",
+      "module": "accountant",
+      "contour": "Accountant history legacy client window fallback",
+      "exactFile": "src/screens/accountant/accountant.history.service.ts",
+      "truthType": "money",
+      "currentClientOwnership": "Accountant history service still carries legacy_client_window compatibility beside rpc_scope_v1.",
+      "whyRisky": "History totals and row ordering are already backend-windowed; keeping legacy client window logic increases drift and proof surface.",
+      "requiredBackendContract": "accountant history scope hard cut without legacy_client_window",
+      "priority": "P1",
+      "state": "legacy_branch",
+      "nextBatch": "Accountant history fallback removal",
+      "evidencePaths": [
+        "src/screens/accountant/accountant.history.service.ts",
+        "artifacts/accountant-windowing-wave1.summary.json"
+      ]
+    },
+    {
+      "id": "accountant_payment_pdf_legacy_fallback",
+      "module": "accountant",
+      "contour": "Accountant payment PDF legacy fallback",
+      "exactFile": "src/lib/api/paymentPdf.service.ts",
+      "truthType": "report",
+      "currentClientOwnership": "Payment PDF source branches still allow legacy_fallback alongside rpc_v1.",
+      "whyRisky": "PDF/export truth should follow the same backend-owned source discipline as the interactive list contours.",
+      "requiredBackendContract": "payment PDF source contract with rpc-only data branch",
+      "priority": "P2",
+      "state": "legacy_branch",
+      "nextBatch": "Accountant PDF source fallback removal",
+      "evidencePaths": [
+        "src/lib/api/paymentPdf.service.ts",
+        "artifacts/accountant-windowing-wave1.summary.json"
+      ]
+    },
+    {
+      "id": "warehouse_pdf_legacy_fallbacks",
+      "module": "warehouse",
+      "contour": "Warehouse PDF source legacy fallback branches",
+      "exactFile": "src/screens/warehouse/warehouse.incomingForm.pdf.service.ts",
+      "truthType": "report",
+      "currentClientOwnership": "Warehouse PDF services still keep rpc_v1 | legacy_fallback source branches for report payloads.",
+      "whyRisky": "Export/report source rows should converge on the same backend-owned scope discipline as queue and stock read models.",
+      "requiredBackendContract": "warehouse PDF source family rpc-only cut",
+      "priority": "P2",
+      "state": "legacy_branch",
+      "nextBatch": "Warehouse PDF source fallback removal",
+      "evidencePaths": [
+        "src/screens/warehouse/warehouse.incomingForm.pdf.service.ts",
+        "src/screens/warehouse/warehouse.dayMaterialsReport.pdf.service.ts",
+        "src/screens/warehouse/warehouse.objectWorkReport.pdf.service.ts"
+      ]
+    },
+    {
+      "id": "contractor_works_bundle_legacy_enrich_fallback",
+      "module": "contractor",
+      "contour": "Contractor works bundle legacy enrich fallback",
+      "exactFile": "src/screens/contractor/contractor.loadWorksService.ts",
+      "truthType": "operational",
+      "currentClientOwnership": "Works bundle load service still carries legacy_client_enrich beside rpc_scope_v1.",
+      "whyRisky": "Operational works truth is backend-owned primary already; legacy relational enrich remains a compatibility branch that keeps client composition alive.",
+      "requiredBackendContract": "contractor_works_bundle_scope_v1 hard cut without legacy enrich",
+      "priority": "P1",
+      "state": "legacy_branch",
+      "nextBatch": "Contractor works bundle fallback burn-down",
+      "evidencePaths": [
+        "src/screens/contractor/contractor.loadWorksService.ts",
+        "artifacts/contractor-works-bundle-cutover-v1.summary.json"
+      ]
+    }
+  ],
+  "priorityRoadmap": [
+    {
+      "priority": "P1",
+      "title": "Director report/PDF fallback removal",
+      "module": "director",
+      "residualIds": [
+        "director_pdf_source_legacy_fallback",
+        "director_reports_transport_legacy_scope_fallback"
+      ],
+      "reason": "Director report/export truth is backend-primary, but legacy fallback families still inflate the proof surface."
+    },
+    {
+      "priority": "P1",
+      "title": "Buyer and Accountant compatibility fallback burn-down",
+      "module": "buyer",
+      "residualIds": [
+        "buyer_inbox_legacy_window_fallback",
+        "buyer_summary_buckets_legacy_stitch_fallback",
+        "accountant_inbox_legacy_window_fallback",
+        "accountant_history_legacy_window_fallback"
+      ],
+      "reason": "These contours are already backend-primary; the remaining work is removing legacy client window/stitch branches."
+    },
+    {
+      "priority": "P1",
+      "title": "Contractor works bundle fallback burn-down",
+      "module": "contractor",
+      "residualIds": [
+        "contractor_works_bundle_legacy_enrich_fallback"
+      ],
+      "reason": "Contractor runtime is reliable, but the legacy works enrich branch still keeps client composition semantics alive."
+    },
+    {
+      "priority": "P2",
+      "title": "PDF source family convergence",
+      "module": "warehouse",
+      "residualIds": [
+        "warehouse_pdf_legacy_fallbacks",
+        "accountant_payment_pdf_legacy_fallback"
+      ],
+      "reason": "PDF/report fallback branches are narrower than live read contours, but should still converge on rpc-only source families."
+    }
+  ],
+  "enforcementRules": {
+    "intakeQuestions": [
+      "Is this business truth, operational truth, money truth, report truth, queue/runtime truth, or only UI orchestration?",
+      "If it is truth-bearing, why is it not already on a backend-owned versioned contract?",
+      "Is there a typed boundary and explicit primary owner?",
+      "Does the change introduce new client-side aggregate, grouping, normalize, merge or reconcile logic?",
+      "If fallback exists, is it telemetry-visible and non-primary?",
+      "Is parity/runtime proof part of the batch?",
+      "Does any UI store start holding truth-bearing rows, totals or statuses?"
+    ],
+    "forbiddenNewClientComputes": [
+      "client-side money math",
+      "client-side report aggregate as primary truth",
+      "client-side operational merge as primary truth",
+      "client-side queue/retry truth in UI hooks or stores",
+      "silent fallback-as-primary"
+    ],
+    "developmentRule": "New backend-first batches must reference this ownership map and declare whether they burn down an existing residual or introduce only UI orchestration."
+  },
+  "proofSummary": {
+    "moduleSummary": [
+      {
+        "module": "director",
+        "displayName": "Director",
+        "backendOwnedContours": 4,
+        "clientOwnedUiContours": 5,
+        "residualClientTruthCount": 2,
+        "highestResidualPriority": "P1"
+      },
+      {
+        "module": "foreman",
+        "displayName": "Foreman",
+        "backendOwnedContours": 2,
+        "clientOwnedUiContours": 5,
+        "residualClientTruthCount": 0,
+        "highestResidualPriority": "none"
+      },
+      {
+        "module": "buyer",
+        "displayName": "Buyer",
+        "backendOwnedContours": 2,
+        "clientOwnedUiContours": 5,
+        "residualClientTruthCount": 2,
+        "highestResidualPriority": "P1"
+      },
+      {
+        "module": "accountant",
+        "displayName": "Accountant",
+        "backendOwnedContours": 2,
+        "clientOwnedUiContours": 5,
+        "residualClientTruthCount": 3,
+        "highestResidualPriority": "P1"
+      },
+      {
+        "module": "warehouse",
+        "displayName": "Warehouse",
+        "backendOwnedContours": 4,
+        "clientOwnedUiContours": 5,
+        "residualClientTruthCount": 1,
+        "highestResidualPriority": "P2"
+      },
+      {
+        "module": "contractor",
+        "displayName": "Contractor",
+        "backendOwnedContours": 2,
+        "clientOwnedUiContours": 5,
+        "residualClientTruthCount": 1,
+        "highestResidualPriority": "P1"
+      }
+    ],
+    "globalSummary": {
+      "totalResidualP0": 0,
+      "totalResidualP1": 7,
+      "totalResidualP2": 2,
+      "modulesAtRisk": [
+        "accountant",
+        "director",
+        "buyer",
+        "contractor",
+        "warehouse"
+      ],
+      "storesSafe": true,
+      "criticalMoneyTruthOnClient": true,
+      "criticalOperationalTruthOnClient": true,
+      "criticalReportTruthOnClient": true,
+      "highestPriorityModules": [
+        "director",
+        "buyer",
+        "accountant",
+        "contractor",
+        "warehouse"
+      ],
+      "nextPriorityBatch": "Director report/PDF fallback removal"
+    },
+    "structuralAssertions": {
+      "allRequiredArtifactsAccepted": false,
+      "noForbiddenTruthInKnownUiStores": true,
+      "durableWorkflowStoresClassified": true,
+      "knownBackendOwnedFamiliesListed": true,
+      "knownResidualFamiliesListed": true,
+      "allModulesCovered": true,
+      "taxonomyFormalized": true,
+      "roadmapDefined": true,
+      "enforcementRulesExplicit": true,
+      "documentSectionsPresent": true
+    },
+    "artifactChecks": [
+      {
+        "key": "director_finance",
+        "label": "Director Finance Backend Cutover",
+        "relativePath": "artifacts/director-finance-backend-cutover.summary.json",
+        "exists": false,
+        "status": null,
+        "gate": null,
+        "accepted": false,
+        "iosResidual": null,
+        "raw": null
+      },
+      {
+        "key": "director_reports",
+        "label": "Director Reports Backend Cutover",
+        "relativePath": "artifacts/director-reports-backend-cutover.summary.json",
+        "exists": false,
+        "status": null,
+        "gate": null,
+        "accepted": false,
+        "iosResidual": null,
+        "raw": null
+      },
+      {
+        "key": "director_reports_pdf",
+        "label": "Director Reports PDF Backend Cutover",
+        "relativePath": "artifacts/director-reports-pdf-backend-cutover.summary.json",
+        "exists": false,
+        "status": null,
+        "gate": null,
+        "accepted": false,
+        "iosResidual": null,
+        "raw": null
+      },
+      {
+        "key": "director_proposals_windowing",
+        "label": "Director Pending Proposals Windowing",
+        "relativePath": "artifacts/director-proposals-windowing-v1.summary.json",
+        "exists": true,
+        "status": "failed",
+        "gate": null,
+        "accepted": false,
+        "iosResidual": null,
+        "raw": {
+          "status": "failed",
+          "primaryOwner": "rpc_scope_v1",
+          "fallbackUsed": false,
+          "sourceKind": "rpc:director_pending_proposals_scope_v1",
+          "rpcOnlyProductPath": true,
+          "legacyDurationMs": 978,
+          "primaryDurationMs": 622,
+          "page0ParityOk": false,
+          "page1ParityOk": false,
+          "totalHeadCountParityOk": false,
+          "totalPositionsParityOk": false,
+          "hasMoreParityOk": true,
+          "windowScenario": {
+            "offsetHeads": 1,
+            "limitHeads": 1,
+            "legacyCount": 0,
+            "rpcCount": 1
+          }
+        }
+      },
+      {
+        "key": "buyer_inbox",
+        "label": "Buyer Summary Inbox Backend Cutover",
+        "relativePath": "artifacts/buyer-summary-inbox-backend-cutover.summary.json",
+        "exists": false,
+        "status": null,
+        "gate": null,
+        "accepted": false,
+        "iosResidual": null,
+        "raw": null
+      },
+      {
+        "key": "buyer_buckets",
+        "label": "Buyer Summary Buckets Backend Cutover",
+        "relativePath": "artifacts/buyer-summary-buckets-cutover-v1.summary.json",
+        "exists": false,
+        "status": null,
+        "gate": null,
+        "accepted": false,
+        "iosResidual": null,
+        "raw": null
+      },
+      {
+        "key": "accountant_windowing",
+        "label": "Accountant Windowing Wave 1",
+        "relativePath": "artifacts/accountant-windowing-wave1.summary.json",
+        "exists": true,
+        "status": "passed",
+        "gate": null,
+        "accepted": true,
+        "iosResidual": null,
+        "raw": {
+          "status": "passed",
+          "inboxChecks": [
+            {
+              "tab": "К оплате",
+              "legacyDurationMs": 1424,
+              "primaryDurationMs": 437,
+              "primaryOwner": "rpc_scope_v1",
+              "fallbackUsed": false,
+              "rowParityOk": true,
+              "totalCountParityOk": true,
+              "hasMoreParityOk": true,
+              "backendFirstPrimary": true,
+              "returnedRowCount": 40,
+              "totalRowCount": 89
+            },
+            {
+              "tab": "Частично",
+              "legacyDurationMs": 1042,
+              "primaryDurationMs": 433,
+              "primaryOwner": "rpc_scope_v1",
+              "fallbackUsed": false,
+              "rowParityOk": true,
+              "totalCountParityOk": true,
+              "hasMoreParityOk": true,
+              "backendFirstPrimary": true,
+              "returnedRowCount": 1,
+              "totalRowCount": 1
+            },
+            {
+              "tab": "Оплачено",
+              "legacyDurationMs": 418,
+              "primaryDurationMs": 434,
+              "primaryOwner": "rpc_scope_v1",
+              "fallbackUsed": false,
+              "rowParityOk": true,
+              "totalCountParityOk": true,
+              "hasMoreParityOk": true,
+              "backendFirstPrimary": true,
+              "returnedRowCount": 2,
+              "totalRowCount": 2
+            },
+            {
+              "tab": "На доработке",
+              "legacyDurationMs": 418,
+              "primaryDurationMs": 614,
+              "primaryOwner": "rpc_scope_v1",
+              "fallbackUsed": false,
+              "rowParityOk": true,
+              "totalCountParityOk": true,
+              "hasMoreParityOk": true,
+              "backendFirstPrimary": true,
+              "returnedRowCount": 0,
+              "totalRowCount": 0
+            }
+          ],
+          "history": {
+            "legacyDurationMs": 410,
+            "primaryDurationMs": 423,
+            "primaryOwner": "rpc_scope_v1",
+            "fallbackUsed": false,
+            "backendFirstPrimary": true,
+            "rowParityOk": true,
+            "totalCountParityOk": true,
+            "totalAmountParityOk": true,
+            "hasMoreParityOk": true,
+            "returnedRowCount": 3,
+            "totalRowCount": 3,
+            "totalAmount": 280,
+            "hasMore": false,
+            "searchScenario": {
+              "search": "ОсОО",
+              "legacyDurationMs": 410,
+              "primaryDurationMs": 425,
+              "rowParityOk": true,
+              "totalCountParityOk": true,
+              "totalAmountParityOk": true
+            },
+            "windowScenario": {
+              "durationMs": 402,
+              "returnedRowCount": 1,
+              "totalRowCount": 3,
+              "hasMore": true,
+              "rowSignature": "149|2026-03-13T01:08:30.146478+00:00|a689ed65-8a34-4a3b-8b49-7d5d12ee352b|поролон||2026-03-11|0|KGS|110|банк||false|Барин|Оплата по счёту №без номера от 2026-03-11. Поставщик: поролон."
+            }
+          },
+          "wiring": {
+            "controllerHasLoadMoreInbox": true,
+            "controllerHasLoadMoreHistory": true,
+            "listHasOnEndReachedHistory": true,
+            "listHasFooter": true,
+            "screenWiresHistoryLoadingMore": true,
+            "screenWiresInboxLoadingMore": true
+          }
+        }
+      },
+      {
+        "key": "warehouse_issue",
+        "label": "Warehouse Issue Queue Backend Cutover",
+        "relativePath": "artifacts/warehouse-issue-queue-backend-cutover.summary.json",
+        "exists": false,
+        "status": null,
+        "gate": null,
+        "accepted": false,
+        "iosResidual": null,
+        "raw": null
+      },
+      {
+        "key": "warehouse_incoming",
+        "label": "Warehouse Incoming Queue Backend Cutover",
+        "relativePath": "artifacts/warehouse-incoming-queue-backend-cutover.summary.json",
+        "exists": false,
+        "status": null,
+        "gate": null,
+        "accepted": false,
+        "iosResidual": null,
+        "raw": null
+      },
+      {
+        "key": "warehouse_stock",
+        "label": "Warehouse Stock Backend Cutover",
+        "relativePath": "artifacts/warehouse-stock-cutover-v1.summary.json",
+        "exists": true,
+        "status": "passed",
+        "gate": "GREEN",
+        "accepted": true,
+        "iosResidual": null,
+        "raw": {
+          "status": "passed",
+          "gate": "GREEN",
+          "legacy": {
+            "durationMs": 3432,
+            "rows": 106,
+            "projectionAvailable": true,
+            "projectionMissCount": 12,
+            "sourceMeta": {
+              "primaryOwner": "legacy_client_shaping",
+              "fallbackUsed": true,
+              "sourceKind": "legacy:view:v_wh_balance_ledger_truth_ui+name_map"
+            }
+          },
+          "rpc": {
+            "durationMs": 974,
+            "rows": 106,
+            "sourceMeta": {
+              "primaryOwner": "rpc_scope_v1",
+              "fallbackUsed": false,
+              "sourceKind": "rpc:warehouse_stock_scope_v1"
+            }
+          },
+          "primary": {
+            "durationMs": 617,
+            "rows": 106,
+            "sourceMeta": {
+              "primaryOwner": "rpc_scope_v2",
+              "fallbackUsed": false,
+              "sourceKind": "rpc:warehouse_stock_scope_v2"
+            }
+          },
+          "parity": {
+            "rowParityOk": true,
+            "backendParityOk": true,
+            "legacyRowCount": 106,
+            "rpcRowCount": 106,
+            "primaryRowCount": 106
+          },
+          "serviceTypeHardCutOk": true,
+          "topSlowFetches": [
+            {
+              "screen": "warehouse",
+              "surface": "stock_list",
+              "event": "fetch_stock_legacy_script",
+              "count": 1,
+              "avgDurationMs": 3432,
+              "maxDurationMs": 3432,
+              "totalRowCount": 106,
+              "lastSourceKind": "legacy:view:v_wh_balance_ledger_truth_ui+name_map",
+              "fallbackCount": 1
+            },
+            {
+              "screen": "warehouse",
+              "surface": "stock_list",
+              "event": "fetch_stock_rpc_script",
+              "count": 1,
+              "avgDurationMs": 973,
+              "maxDurationMs": 973,
+              "totalRowCount": 106,
+              "lastSourceKind": "rpc:warehouse_stock_scope_v1",
+              "fallbackCount": 0
+            },
+            {
+              "screen": "warehouse",
+              "surface": "stock_list",
+              "event": "fetch_stock_rpc_v2_script",
+              "count": 1,
+              "avgDurationMs": 617,
+              "maxDurationMs": 617,
+              "totalRowCount": 106,
+              "lastSourceKind": "rpc:warehouse_stock_scope_v2",
+              "fallbackCount": 0
+            }
+          ]
+        }
+      },
+      {
+        "key": "warehouse_stock_windowing",
+        "label": "Warehouse Stock Windowing v2",
+        "relativePath": "artifacts/warehouse-stock-windowing-v2.summary.json",
+        "exists": false,
+        "status": null,
+        "gate": null,
+        "accepted": false,
+        "iosResidual": null,
+        "raw": null
+      },
+      {
+        "key": "warehouse_receive_reliability",
+        "label": "Warehouse Receive Wave 1",
+        "relativePath": "artifacts/warehouse-receive-wave1.summary.json",
+        "exists": false,
+        "status": null,
+        "gate": null,
+        "accepted": false,
+        "iosResidual": null,
+        "raw": null
+      },
+      {
+        "key": "contractor_works_bundle",
+        "label": "Contractor Works Bundle Backend Cutover",
+        "relativePath": "artifacts/contractor-works-bundle-cutover-v1.summary.json",
+        "exists": false,
+        "status": null,
+        "gate": null,
+        "accepted": false,
+        "iosResidual": null,
+        "raw": null
+      },
+      {
+        "key": "contractor_reliability",
+        "label": "Contractor Reliability Cleanup",
+        "relativePath": "artifacts/contractor-reliability-cleanup.summary.json",
+        "exists": false,
+        "status": null,
+        "gate": null,
+        "accepted": false,
+        "iosResidual": null,
+        "raw": null
+      },
+      {
+        "key": "foreman_field_reliability",
+        "label": "Foreman Field Reliability",
+        "relativePath": "artifacts/foreman-field-reliability.summary.json",
+        "exists": true,
+        "status": "passed",
+        "gate": null,
+        "accepted": true,
+        "iosResidual": null,
+        "raw": {
+          "status": "passed",
+          "mutationTelemetry": {
+            "totalEvents": 35,
+            "byOwner": {
+              "foreman": 35
+            },
+            "byAction": {
+              "enqueue": 11,
+              "dedupe_suppressed": 5,
+              "succeeded": 7,
+              "retry_scheduled": 8,
+              "inflight_restored": 1,
+              "conflict_detected": 2,
+              "retry_exhausted": 1
+            },
+            "latestLifecycleByOwner": {
+              "foreman": "queued"
+            },
+            "conflictCount": 2,
+            "retryScheduledCount": 8,
+            "retryExhaustedCount": 1,
+            "dedupeSuppressedCount": 5
+          },
+          "noisy_local_editing": {
+            "passed": true,
+            "details": {
+              "queueLengthBeforeFlush": 1,
+              "coalescedCount": 4,
+              "finalQty": 5,
+              "syncStatus": "synced"
+            }
+          },
+          "first_sync_concurrent_mutation": {
+            "passed": true,
+            "details": {
+              "restoredSyncStatus": "retry_wait",
+              "restoredPendingCount": 1,
+              "requestId": "REQ-1",
+              "remainingCount": 0,
+              "lastSyncAt": 1774716078823,
+              "syncedItemCount": 5,
+              "localPendingAfterSync": 0,
+              "requestPendingAfterSync": 0,
+              "combinedPendingAfterSync": 0,
+              "syncCallsDuringOnline": 2
+            }
+          },
+          "kill_reopen_recovery": {
+            "passed": true,
+            "details": {
+              "recoveredItemCount": 6,
+              "remainingCount": 0,
+              "requestId": "REQ-1"
+            }
+          },
+          "retry_after_flaky_network": {
+            "passed": true,
+            "details": {
+              "firstRetryStatus": "retry_wait",
+              "secondRetryStatus": "retry_wait",
+              "finalStatus": "synced",
+              "retryCount": 0,
+              "retryFailureEvents": 4,
+              "finalizeSuccessEvents": 1,
+              "telemetryStages": [
+                "flush_start:progress",
+                "prepare_snapshot:progress",
+                "sync_rpc:progress",
+                "sync_rpc:retryable_failure",
+                "finalize:retryable_failure",
+                "flush_start:progress",
+                "prepare_snapshot:progress",
+                "sync_rpc:progress",
+                "sync_rpc:retryable_failure",
+                "finalize:retryable_failure",
+                "flush_start:progress",
+                "prepare_snapshot:progress",
+                "sync_rpc:progress",
+                "cleanup:success",
+                "finalize:success"
+              ]
+            }
+          },
+          "stuck_heuristic": {
+            "passed": true,
+            "details": {
+              "syncStatus": "retry_wait",
+              "attentionNeeded": true,
+              "retryCount": 2,
+              "lastErrorStage": "sync_rpc",
+              "uiLabel": "Need attention",
+              "uiDetail": "Retry 2, stage sync_rpc"
+            }
+          },
+          "terminal_submit_cleanup": {
+            "passed": true,
+            "details": {
+              "queueLengthBeforeFlush": 1,
+              "coalescedCount": 1,
+              "remainingCount": 0,
+              "pendingAfterSubmit": 0,
+              "finalStatus": "idle",
+              "submitLogCount": 2
+            }
+          },
+          "server_terminal_conflict": {
+            "passed": true,
+            "details": {
+              "conflictType": "server_terminal_conflict",
+              "syncStatus": "failed_terminal",
+              "pendingBeforeClear": 0,
+              "pendingAfterClear": 0,
+              "historyLifecycleStatus": "conflicted",
+              "actions": [
+                "rehydrate_server",
+                "restore_local",
+                "clear_failed_queue",
+                "discard_local"
+              ]
+            }
+          },
+          "validation_conflict": {
+            "passed": true,
+            "details": {
+              "conflictType": "validation_conflict",
+              "syncStatus": "failed_terminal",
+              "actions": [
+                "rehydrate_server",
+                "restore_local",
+                "clear_failed_queue",
+                "discard_local"
+              ]
+            }
+          },
+          "retry_now_success": {
+            "passed": true,
+            "details": {
+              "firstStatus": "retry_wait",
+              "firstConflictType": "retryable_sync_failure",
+              "finalStatus": "synced",
+              "actions": [
+                "retry_now",
+                "restore_local",
+                "clear_failed_queue",
+                "discard_local"
+              ]
+            }
+          },
+          "retry_exhaustion": {
+            "passed": true,
+            "details": {
+              "failureMessages": [
+                "offline",
+                "offline",
+                "offline",
+                "offline",
+                "offline"
+              ],
+              "finalStatus": "failed_terminal",
+              "finalConflictType": "retryable_sync_failure",
+              "retryCount": 5,
+              "actions": [
+                "retry_now",
+                "restore_local",
+                "clear_failed_queue",
+                "discard_local"
+              ],
+              "historyLifecycleStatus": "failed_non_retryable"
+            }
+          },
+          "rehydrate_from_server": {
+            "passed": true,
+            "details": {
+              "finalStatus": "synced",
+              "currentItemCount": 2,
+              "recoverableItemQty": 2
+            }
+          },
+          "restore_local_after_conflict": {
+            "passed": true,
+            "details": {
+              "restoredQty": 2,
+              "status": "dirty_local",
+              "conflictType": "stale_local_snapshot"
+            }
+          },
+          "discard_local_draft": {
+            "passed": true,
+            "details": {
+              "finalStatus": "idle",
+              "actions": [],
+              "snapshotPresent": false
+            }
+          }
+        }
+      },
+      {
+        "key": "platform_offline",
+        "label": "Platform Offline Semantics Wave 1",
+        "relativePath": "artifacts/platform-offline-wave1.summary.json",
+        "exists": false,
+        "status": null,
+        "gate": null,
+        "accepted": false,
+        "iosResidual": null,
+        "raw": null
+      },
+      {
+        "key": "unified_guards",
+        "label": "Unified Guards Hardening",
+        "relativePath": "artifacts/unified-guards-hardening.summary.json",
+        "exists": false,
+        "status": null,
+        "gate": null,
+        "accepted": false,
+        "iosResidual": null,
+        "raw": null
+      },
+      {
+        "key": "pagination_windowing",
+        "label": "Pagination Windowing Hardening",
+        "relativePath": "artifacts/pagination-windowing-hardening.summary.json",
+        "exists": false,
+        "status": null,
+        "gate": null,
+        "accepted": false,
+        "iosResidual": null,
+        "raw": null
+      },
+      {
+        "key": "platform_observability",
+        "label": "Platform Observability Wave 2",
+        "relativePath": "artifacts/platform-observability-wave2.summary.json",
+        "exists": false,
+        "status": null,
+        "gate": null,
+        "accepted": false,
+        "iosResidual": null,
+        "raw": null
+      }
+    ],
+    "acceptedEnvironmentResiduals": []
+  },
+  "gate": "NOT_GREEN"
+}

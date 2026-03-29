@@ -36,7 +36,7 @@
       "file": "src/screens/director/director.proposals.repo.ts",
       "primarySource": "director_pending_proposals_scope_v1",
       "primaryOwner": "rpc_scope_v1",
-      "fallbackOwner": "legacy_client_fallback",
+      "fallbackOwner": null,
       "primaryRpcConfirmed": true
     },
     "directorRealtime": {

@@ -4,7 +4,7 @@
     "file": "src/screens/director/director.proposals.repo.ts",
     "rpc": "director_pending_proposals_scope_v1",
     "primaryOwner": "rpc_scope_v1",
-    "fallbackPresentAsDegraded": true
+    "fallbackPresentAsDegraded": false
   },
   "statusPredicate": {
     "file": "supabase/migrations/20260329173000_director_pending_proposals_scope_visibility_fix.sql",

@@ -1,10 +1,10 @@
 {
   "status": "GREEN",
-  "generatedAt": "2026-03-29T13:05:36.003Z",
-  "marker": "DIR-PROP-MNBRUXCO",
+  "generatedAt": "2026-03-29T16:11:18.172Z",
+  "marker": "DIR-PROP-MNBYHQMS",
   "created_proposal": {
-    "id": "8d377f51-bf12-4b36-9a05-f3d7f5d1b7f8",
-    "proposal_no": "PR-0510/2026",
+    "id": "fcbd97b6-f3d6-4adc-b9b2-8b02408781c6",
+    "proposal_no": "PR-0517/2026",
     "submitted": true,
     "visible_to_director": true
   },
@@ -40,8 +40,9 @@
     "positionsCount": 5,
     "createdProposalVisible": true
   },
-  "legacy_client_source": {
+  "compatibility_source": {
     "invoked": false,
+    "mode": "rpc_only_product_path",
     "rowCount": 0,
     "createdProposalVisible": null
   }

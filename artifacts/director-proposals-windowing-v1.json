@@ -4,8 +4,9 @@
     "primaryOwner": "rpc_scope_v1",
     "fallbackUsed": false,
     "sourceKind": "rpc:director_pending_proposals_scope_v1",
-    "legacyDurationMs": 747,
-    "primaryDurationMs": 1519,
+    "rpcOnlyProductPath": true,
+    "legacyDurationMs": 1185,
+    "primaryDurationMs": 420,
     "page0ParityOk": true,
     "page1ParityOk": true,
     "totalHeadCountParityOk": true,
@@ -14,63 +15,131 @@
     "windowScenario": {
       "offsetHeads": 1,
       "limitHeads": 1,
-      "legacyCount": 0,
-      "rpcCount": 0
+      "legacyCount": 1,
+      "rpcCount": 1
     }
   },
   "legacy": {
-    "page0DurationMs": 747,
-    "page1DurationMs": 418,
+    "page0DurationMs": 1185,
+    "page1DurationMs": 831,
     "page0": {
-      "heads": [],
-      "itemCounts": {},
-      "totalHeadCount": 0,
-      "totalPositionsCount": 0
+      "heads": [
+        {
+          "id": "8cb29c5e-b2ff-4a6c-99e4-fed66187034b",
+          "submitted_at": "2026-03-29T13:01:40.034573+00:00",
+          "pretty": "PR-0509/2026"
+        },
+        {
+          "id": "1f793291-488c-41c8-a6f6-5fe4af9a0034",
+          "submitted_at": "2026-03-29T13:01:32.553354+00:00",
+          "pretty": "PR-0508/2026"
+        },
+        {
+          "id": "34cbb2c5-52e2-4a9e-ae5a-85a898e5038d",
+          "submitted_at": "2026-03-29T13:01:32.490578+00:00",
+          "pretty": "PR-0507/2026"
+        },
+        {
+          "id": "88e79152-777c-4bdf-83dc-e22adef653a2",
+          "submitted_at": "2026-03-29T13:01:32.002324+00:00",
+          "pretty": "PR-0506/2026"
+        }
+      ],
+      "itemCounts": {
+        "8cb29c5e-b2ff-4a6c-99e4-fed66187034b": 1,
+        "1f793291-488c-41c8-a6f6-5fe4af9a0034": 1,
+        "34cbb2c5-52e2-4a9e-ae5a-85a898e5038d": 1,
+        "88e79152-777c-4bdf-83dc-e22adef653a2": 1
+      },
+      "totalHeadCount": 4,
+      "totalPositionsCount": 4
     },
     "page1": {
-      "heads": [],
-      "itemCounts": {},
-      "totalHeadCount": 0,
-      "totalPositionsCount": 0
+      "heads": [
+        {
+          "id": "1f793291-488c-41c8-a6f6-5fe4af9a0034",
+          "submitted_at": "2026-03-29T13:01:32.553354+00:00",
+          "pretty": "PR-0508/2026"
+        }
+      ],
+      "itemCounts": {
+        "1f793291-488c-41c8-a6f6-5fe4af9a0034": 1
+      },
+      "totalHeadCount": 4,
+      "totalPositionsCount": 4
     }
   },
   "primary": {
-    "page0DurationMs": 1519,
-    "page1DurationMs": 1248,
+    "page0DurationMs": 420,
+    "page1DurationMs": 501,
     "page0": {
-      "heads": [],
-      "itemCounts": {},
+      "heads": [
+        {
+          "id": "8cb29c5e-b2ff-4a6c-99e4-fed66187034b",
+          "submitted_at": "2026-03-29T13:01:40.034573+00:00",
+          "pretty": "PR-0509/2026"
+        },
+        {
+          "id": "1f793291-488c-41c8-a6f6-5fe4af9a0034",
+          "submitted_at": "2026-03-29T13:01:32.553354+00:00",
+          "pretty": "PR-0508/2026"
+        },
+        {
+          "id": "34cbb2c5-52e2-4a9e-ae5a-85a898e5038d",
+          "submitted_at": "2026-03-29T13:01:32.490578+00:00",
+          "pretty": "PR-0507/2026"
+        },
+        {
+          "id": "88e79152-777c-4bdf-83dc-e22adef653a2",
+          "submitted_at": "2026-03-29T13:01:32.002324+00:00",
+          "pretty": "PR-0506/2026"
+        }
+      ],
+      "itemCounts": {
+        "8cb29c5e-b2ff-4a6c-99e4-fed66187034b": 1,
+        "1f793291-488c-41c8-a6f6-5fe4af9a0034": 1,
+        "34cbb2c5-52e2-4a9e-ae5a-85a898e5038d": 1,
+        "88e79152-777c-4bdf-83dc-e22adef653a2": 1
+      },
       "meta": {
         "offsetHeads": 0,
         "limitHeads": 10,
-        "returnedHeadCount": 0,
-        "totalHeadCount": 0,
-        "totalPositionsCount": 0,
+        "returnedHeadCount": 4,
+        "totalHeadCount": 4,
+        "totalPositionsCount": 4,
         "hasMore": false
       },
       "sourceMeta": {
         "primaryOwner": "rpc_scope_v1",
         "fallbackUsed": false,
         "sourceKind": "rpc:director_pending_proposals_scope_v1",
-        "rowParityStatus": "rpc_empty_legacy_match_empty"
+        "rowParityStatus": "rpc_nonempty"
       }
     },
     "page1": {
-      "heads": [],
-      "itemCounts": {},
+      "heads": [
+        {
+          "id": "1f793291-488c-41c8-a6f6-5fe4af9a0034",
+          "submitted_at": "2026-03-29T13:01:32.553354+00:00",
+          "pretty": "PR-0508/2026"
+        }
+      ],
+      "itemCounts": {
+        "1f793291-488c-41c8-a6f6-5fe4af9a0034": 1
+      },
       "meta": {
         "offsetHeads": 1,
         "limitHeads": 1,
-        "returnedHeadCount": 0,
-        "totalHeadCount": 0,
-        "totalPositionsCount": 0,
-        "hasMore": false
+        "returnedHeadCount": 1,
+        "totalHeadCount": 4,
+        "totalPositionsCount": 4,
+        "hasMore": true
       },
       "sourceMeta": {
         "primaryOwner": "rpc_scope_v1",
         "fallbackUsed": false,
         "sourceKind": "rpc:director_pending_proposals_scope_v1",
-        "rowParityStatus": "rpc_empty_legacy_match_empty"
+        "rowParityStatus": "rpc_nonempty"
       }
     }
   }

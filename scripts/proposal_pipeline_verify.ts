@@ -132,7 +132,9 @@ const checks = {
   directorPrimarySourceRpc:
     directorRepo.includes('primaryOwner: "rpc_scope_v1"') &&
     directorRepo.includes('sourceKind: RPC_SOURCE_KIND') &&
-    directorRepo.includes('rpc("director_pending_proposals_scope_v1"'),
+    directorRepo.includes('rpc("director_pending_proposals_scope_v1"') &&
+    !directorRepo.includes("legacy_client_fallback") &&
+    !directorRepo.includes("legacy:proposals+proposal_items"),
   directorRealtimeOnProposals:
     directorLifecycle.includes('table: "proposals"') &&
     directorLifecycle.includes('refreshPropsHandlerRef.current("realtime:proposals", true)'),
@@ -227,7 +229,7 @@ const sourceMap = {
     file: directorRepoPath,
     primarySource: "director_pending_proposals_scope_v1",
     primaryOwner: "rpc_scope_v1",
-    fallbackOwner: "legacy_client_fallback",
+    fallbackOwner: null,
     primaryRpcConfirmed: checks.directorPrimarySourceRpc,
   },
   directorRealtime: {
@@ -271,7 +273,7 @@ const directorInboxProof = {
     file: directorRepoPath,
     rpc: "director_pending_proposals_scope_v1",
     primaryOwner: "rpc_scope_v1",
-    fallbackPresentAsDegraded: directorRepo.includes('primaryOwner: "legacy_client_fallback"'),
+    fallbackPresentAsDegraded: false,
   },
   statusPredicate: {
     file: directorScopeMigrationPath,

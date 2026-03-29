@@ -50,6 +50,8 @@ const writeArtifact = (relativePath: string, payload: unknown) => {
   fs.writeFileSync(full, `${JSON.stringify(payload, null, 2)}\n`);
 };
 
+const readText = (relativePath: string) => fs.readFileSync(path.join(projectRoot, relativePath), "utf8");
+
 const measure = async <T>(fn: () => Promise<T>): Promise<Measured<T>> => {
   const startedAt = Date.now();
   const result = await fn();
@@ -64,10 +66,10 @@ async function loadLegacyWindow(
   offsetHeads: number,
   limitHeads: number,
 ): Promise<LegacyWindowResult> {
+  const { normalizeProposalStatus } = await import("../src/lib/api/proposals");
   const rowsFromTable = await client
     .from("proposals")
-    .select("id, submitted_at")
-    .eq("status", "pending")
+    .select("id, submitted_at, proposal_no, id_short, sent_to_accountant_at, status")
     .not("submitted_at", "is", null)
     .order("submitted_at", { ascending: false });
   if (rowsFromTable.error) throw rowsFromTable.error;
@@ -75,6 +77,10 @@ async function loadLegacyWindow(
     .map((row) => ({
       id: String(row.id ?? "").trim(),
       submitted_at: row.submitted_at ? String(row.submitted_at) : null,
+      proposal_no: row.proposal_no ? String(row.proposal_no) : null,
+      id_short: row.id_short ? String(row.id_short) : null,
+      sent_to_accountant_at: row.sent_to_accountant_at ? String(row.sent_to_accountant_at) : null,
+      status: row.status ? String(row.status) : null,
     }))
     .filter((row) => !!row.id && row.submitted_at != null);
 
@@ -88,53 +94,33 @@ async function loadLegacyWindow(
   }
 
   const proposalIds = allHeads.map((head) => head.id);
-  const [metaRes, countsRes, totalKpiRes] = await Promise.all([
-    client
-      .from("proposals")
-      .select("id, proposal_no, id_short, sent_to_accountant_at")
-      .in("id", proposalIds),
-    client
-      .from("proposal_items")
-      .select("proposal_id")
-      .in("proposal_id", proposalIds),
-    client
-      .from("proposal_items_view")
-      .select("id", { count: "exact", head: true })
-      .in("proposal_id", proposalIds),
-  ]);
-
-  if (metaRes.error) throw metaRes.error;
+  const countsRes = await client
+    .from("proposal_items")
+    .select("proposal_id")
+    .in("proposal_id", proposalIds);
   if (countsRes.error) throw countsRes.error;
-  if (totalKpiRes.error) throw totalKpiRes.error;
-
-  const okIds = new Set<string>();
-  const prettyById: Record<string, string | null> = {};
-  for (const rawRow of metaRes.data ?? []) {
-    const row = rawRow as Record<string, unknown>;
-    const id = String(row.id ?? "").trim();
-    if (!id) continue;
-    if (!String(row.sent_to_accountant_at ?? "").trim()) okIds.add(id);
-    const proposalNo = String(row.proposal_no ?? "").trim();
-    const idShort = String(row.id_short ?? "").trim();
-    prettyById[id] = proposalNo || (idShort ? `PR-${idShort}` : null);
-  }
 
   const allCounts: Record<string, number> = {};
-  const nonEmptyIds = new Set<string>();
   for (const rawRow of countsRes.data ?? []) {
     const row = rawRow as Record<string, unknown>;
     const proposalId = String(row.proposal_id ?? "").trim();
     if (!proposalId) continue;
     allCounts[proposalId] = (allCounts[proposalId] ?? 0) + 1;
-    nonEmptyIds.add(proposalId);
   }
 
   const filtered = allHeads
-    .filter((head) => okIds.has(head.id) && nonEmptyIds.has(head.id))
+    .filter((head) => {
+      const itemsCount = allCounts[head.id] ?? 0;
+      return (
+        normalizeProposalStatus(head.status) === "submitted" &&
+        !head.sent_to_accountant_at &&
+        itemsCount > 0
+      );
+    })
     .map((head) => ({
       id: head.id,
       submitted_at: head.submitted_at,
-      pretty: prettyById[head.id] ?? null,
+      pretty: head.proposal_no || (head.id_short ? `PR-${head.id_short}` : null),
     }));
 
   const pageHeads = filtered.slice(offsetHeads, offsetHeads + limitHeads);
@@ -142,7 +128,7 @@ async function loadLegacyWindow(
     heads: pageHeads,
     itemCounts: Object.fromEntries(pageHeads.map((head) => [head.id, allCounts[head.id] ?? 0])),
     totalHeadCount: filtered.length,
-    totalPositionsCount: totalKpiRes.count ?? 0,
+    totalPositionsCount: filtered.reduce((sum, head) => sum + (allCounts[head.id] ?? 0), 0),
   };
 }
 
@@ -151,6 +137,7 @@ const headSignature = (head: ProposalHeadLegacy, itemCounts: Record<string, numb
 
 async function main() {
   const { fetchDirectorPendingProposalWindow } = await import("../src/screens/director/director.proposals.repo");
+  const repoText = readText("src/screens/director/director.proposals.repo.ts");
   const PAGE_SIZE = 10;
   const windowOffset = 1;
   const windowLimit = 1;
@@ -192,6 +179,10 @@ async function main() {
     primaryOwner: rpcPage0.result.sourceMeta.primaryOwner,
     fallbackUsed: rpcPage0.result.sourceMeta.fallbackUsed,
     sourceKind: rpcPage0.result.sourceMeta.sourceKind,
+    rpcOnlyProductPath:
+      !repoText.includes("legacy_client_fallback") &&
+      !repoText.includes("legacy:proposals+proposal_items") &&
+      !repoText.includes("rpc_empty_legacy"),
     legacyDurationMs: legacyPage0.durationMs,
     primaryDurationMs: rpcPage0.durationMs,
     page0ParityOk: JSON.stringify(legacyPage0Signatures) === JSON.stringify(rpcPage0Signatures),
@@ -227,6 +218,7 @@ async function main() {
   if (
     summary.primaryOwner !== "rpc_scope_v1"
     || summary.fallbackUsed
+    || !summary.rpcOnlyProductPath
     || !summary.page0ParityOk
     || !summary.page1ParityOk
     || !summary.totalHeadCountParityOk
