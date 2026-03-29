@@ -2,7 +2,7 @@
   "status": "GREEN",
   "proposalCreate": {
     "file": "src/lib/api/proposals.ts",
-    "beforeSilentCatchCount": 1,
+    "beforeSilentCatchCount": 0,
     "afterSilentCatchCount": 0,
     "compatibilityGuardPresent": true,
     "postCreateVerificationPresent": true

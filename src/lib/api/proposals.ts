@@ -18,7 +18,7 @@ type ProposalInsert = Database["public"]["Tables"]["proposals"]["Insert"];
 type ProposalItemInsert = Database["public"]["Tables"]["proposal_items"]["Insert"];
 type ProposalItemTableRow = Pick<
   Database["public"]["Tables"]["proposal_items"]["Row"],
-  "id" | "name_human" | "uom" | "qty" | "app_code" | "rik_code"
+  "id" | "request_item_id" | "name_human" | "uom" | "qty" | "app_code" | "rik_code" | "price" | "note" | "supplier"
 >;
 type ProposalItemViewRow = Database["public"]["Views"]["proposal_items_view"]["Row"];
 type ProposalSnapshotItemRow = Database["public"]["Views"]["proposal_snapshot_items"]["Row"];
@@ -27,11 +27,15 @@ type ProposalCreateCompatRow = { id: string | number };
 type ProposalPendingRpcRow = { id: string | number; submitted_at: string | null };
 type ProposalItemsRpcRow = {
   id: number | null;
+  request_item_id?: string | null;
   rik_code: string | null;
   name_human: string | null;
   uom: string | null;
   app_code: string | null;
   total_qty: number | null;
+  price?: number | null;
+  note?: string | null;
+  supplier?: string | null;
 };
 type ProposalAddItemsRpcArgsCompat =
   | { p_proposal_id: number; p_request_item_ids: string[] }
@@ -60,6 +64,11 @@ type ProposalItemMetaUpsertInput = {
 
 const PROPOSAL_STATUS_PENDING_CANONICAL = "\u041d\u0430 \u0443\u0442\u0432\u0435\u0440\u0436\u0434\u0435\u043d\u0438\u0438";
 type ProposalCreatePath = "rpc_primary" | "compat_insert_fallback";
+type ProposalItemsSourceKind =
+  | "view:proposal_snapshot_items"
+  | "view:proposal_items_view"
+  | "table:proposal_items"
+  | "rpc:proposal_items_for_web";
 
 // ============================== Boundary parsers ==============================
 function normalizeProposalMeta(row: ProposalRow | null | undefined, fallbackId: string) {
@@ -73,11 +82,15 @@ function normalizeProposalMeta(row: ProposalRow | null | undefined, fallbackId: 
 function normalizeProposalItems(rows: ProposalItemsRpcRow[]): ProposalItemRow[] {
   return rows.map((r, i) => ({
     id: Number(r.id ?? i),
+    request_item_id: r.request_item_id != null ? String(r.request_item_id) : null,
     rik_code: r.rik_code ?? null,
     name_human: String(r.name_human ?? ""),
     uom: r.uom ?? null,
     app_code: r.app_code ?? null,
     total_qty: Number(r.total_qty ?? 0),
+    price: typeof r.price === "number" && Number.isFinite(r.price) ? Number(r.price) : null,
+    note: r.note ?? null,
+    supplier: r.supplier ?? null,
   }));
 }
 
@@ -165,11 +178,28 @@ function buildProposalItemMetaUpsert(
 // ============================== Boundary aggregators ==============================
 function aggregateTableProposalItems(rows: ProposalItemTableRow[]): ProposalItemRow[] {
   const key = (r: ProposalItemTableRow) =>
-    [String(r.name_human ?? ""), String(r.uom ?? ""), String(r.app_code ?? ""), String(r.rik_code ?? "")].join("||");
+    [
+      String(r.request_item_id ?? ""),
+      String(r.name_human ?? ""),
+      String(r.uom ?? ""),
+      String(r.app_code ?? ""),
+      String(r.rik_code ?? ""),
+    ].join("||");
 
   const agg = new Map<
     string,
-    { id: number; name_human: string; uom: string | null; app_code: string | null; rik_code: string | null; total_qty: number }
+    {
+      id: number;
+      request_item_id: string | null;
+      name_human: string;
+      uom: string | null;
+      app_code: string | null;
+      rik_code: string | null;
+      total_qty: number;
+      price: number | null;
+      note: string | null;
+      supplier: string | null;
+    }
   >();
 
   rows.forEach((r, i) => {
@@ -177,11 +207,17 @@ function aggregateTableProposalItems(rows: ProposalItemTableRow[]): ProposalItem
     const prev = agg.get(k);
     agg.set(k, {
       id: prev?.id ?? Number(r.id ?? i),
+      request_item_id: prev?.request_item_id ?? (r.request_item_id != null ? String(r.request_item_id) : null),
       name_human: String(r.name_human ?? ""),
       uom: r.uom ?? null,
       app_code: r.app_code ?? null,
       rik_code: r.rik_code ?? null,
       total_qty: (prev?.total_qty ?? 0) + Number(r.qty ?? 0),
+      price:
+        prev?.price ??
+        (typeof r.price === "number" && Number.isFinite(r.price) ? Number(r.price) : null),
+      note: prev?.note ?? r.note ?? null,
+      supplier: prev?.supplier ?? r.supplier ?? null,
     });
   });
 
@@ -207,6 +243,65 @@ async function selectProposalMetaById(proposalId: string) {
 
 async function insertProposalHeadFallback(payload: ProposalInsert) {
   return client.from("proposals").insert(payload).select("id,proposal_no,id_short").single();
+}
+
+async function selectProposalItemsSnapshot(proposalId: string) {
+  return client
+    .from("proposal_snapshot_items")
+    .select("id, request_item_id, rik_code, name_human, uom, app_code, total_qty, price, note, supplier")
+    .eq("proposal_id", proposalId)
+    .order("id", { ascending: true });
+}
+
+async function selectProposalItemsView(proposalId: string) {
+  return client
+    .from("proposal_items_view")
+    .select("id, request_item_id, rik_code, name_human, uom, app_code, total_qty, price, note, supplier")
+    .eq("proposal_id", proposalId)
+    .order("id", { ascending: true });
+}
+
+async function selectProposalItemsTable(proposalId: string) {
+  return client
+    .from("proposal_items")
+    .select("id, request_item_id, rik_code, name_human, uom, app_code, qty, price, note, supplier")
+    .eq("proposal_id", proposalId)
+    .order("id", { ascending: true });
+}
+
+async function loadProposalItemsFromSource(
+  proposalId: string,
+  sourceKind: ProposalItemsSourceKind,
+): Promise<ProposalItemRow[] | null> {
+  if (sourceKind === "view:proposal_snapshot_items") {
+    const result = await selectProposalItemsSnapshot(proposalId);
+    if (result.error) throw result.error;
+    return Array.isArray(result.data) && result.data.length
+      ? normalizeProposalItems(result.data as ProposalSnapshotItemRow[] as ProposalItemsRpcRow[])
+      : null;
+  }
+
+  if (sourceKind === "view:proposal_items_view") {
+    const result = await selectProposalItemsView(proposalId);
+    if (result.error) throw result.error;
+    return Array.isArray(result.data) && result.data.length
+      ? normalizeProposalItems(result.data as ProposalItemViewRow[] as ProposalItemsRpcRow[])
+      : null;
+  }
+
+  if (sourceKind === "table:proposal_items") {
+    const result = await selectProposalItemsTable(proposalId);
+    if (result.error) throw result.error;
+    return Array.isArray(result.data) && result.data.length
+      ? aggregateTableProposalItems(result.data as ProposalItemTableRow[])
+      : null;
+  }
+
+  const result = await supabase.rpc("proposal_items_for_web", { p_id: proposalId });
+  if (result.error) throw result.error;
+  return Array.isArray(result.data) && result.data.length
+    ? normalizeProposalItems(result.data as ProposalItemsRpcRow[])
+    : null;
 }
 
 async function verifyCreatedProposalMeta(
@@ -441,51 +536,51 @@ export async function listDirectorProposalsPending(): Promise<{ id: string; subm
 
 export async function proposalItems(proposalId: string | number): Promise<ProposalItemRow[]> {
   const pid = String(proposalId);
+  const observation = beginPlatformObservability({
+    screen: "buyer",
+    surface: "proposal_items",
+    category: "fetch",
+    event: "load_proposal_items",
+    sourceKind: "view:proposal_snapshot_items",
+  });
 
-  try {
-    const q = await client
-      .from("proposal_items")
-      .select("id, name_human, uom, qty, app_code, rik_code")
-      .eq("proposal_id", pid)
-      .order("id", { ascending: true });
+  const sourcePlan: readonly ProposalItemsSourceKind[] = [
+    "view:proposal_snapshot_items",
+    "view:proposal_items_view",
+    "table:proposal_items",
+    "rpc:proposal_items_for_web",
+  ];
 
-    if (!q.error && Array.isArray(q.data) && q.data.length) {
-      return aggregateTableProposalItems(q.data as ProposalItemTableRow[]);
+  let lastError: unknown = null;
+  for (const sourceKind of sourcePlan) {
+    try {
+      const rows = await loadProposalItemsFromSource(pid, sourceKind);
+      if (!rows || rows.length === 0) continue;
+      observation.success({
+        sourceKind,
+        fallbackUsed: sourceKind !== "view:proposal_snapshot_items",
+        rowCount: rows.length,
+      });
+      return rows;
+    } catch (error) {
+      lastError = error;
+      logProposalsDebug(`[proposalItems/${sourceKind}]`, error instanceof Error ? error.message : String(error));
     }
-  } catch (e) {
-    const msg = e instanceof Error ? e.message : String(e);
-    logProposalsDebug("[proposalItems/table]", msg);
   }
 
-  try {
-    const snap = await client
-      .from("proposal_snapshot_items")
-      .select("id, rik_code, name_human, uom, app_code, total_qty")
-      .eq("proposal_id", pid)
-      .order("id", { ascending: true });
-    if (!snap.error && Array.isArray(snap.data) && snap.data.length) {
-      return normalizeProposalItems(snap.data as ProposalSnapshotItemRow[] as ProposalItemsRpcRow[]);
-    }
-  } catch {}
-
-  try {
-    const view = await client
-      .from("proposal_items_view")
-      .select("id, rik_code, name_human, uom, app_code, total_qty")
-      .eq("proposal_id", pid)
-      .order("id", { ascending: true });
-    if (!view.error && Array.isArray(view.data) && view.data.length) {
-      return normalizeProposalItems(view.data as ProposalItemViewRow[] as ProposalItemsRpcRow[]);
-    }
-  } catch {}
-
-  try {
-    const r = await supabase.rpc("proposal_items_for_web", { p_id: pid });
-    if (!r.error && Array.isArray(r.data) && r.data.length) {
-      return normalizeProposalItems(r.data as ProposalItemsRpcRow[]);
-    }
-  } catch {}
-
+  if (lastError) {
+    observation.error(lastError, {
+      sourceKind: "view:proposal_snapshot_items",
+      errorStage: "source_chain_exhausted",
+      fallbackUsed: true,
+    });
+  } else {
+    observation.success({
+      sourceKind: "view:proposal_snapshot_items",
+      fallbackUsed: false,
+      rowCount: 0,
+    });
+  }
   return [];
 }
 

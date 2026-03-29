@@ -81,11 +81,15 @@ export type BuyerInboxRow = {
 
 export type ProposalItemRow = {
   id: number;
+  request_item_id?: string | null;
   rik_code: string | null;
   name_human: string;
   uom: string | null;
   app_code: string | null;
   total_qty: number;
+  price?: number | null;
+  note?: string | null;
+  supplier?: string | null;
 };
 
 export type AccountantInboxRow = {

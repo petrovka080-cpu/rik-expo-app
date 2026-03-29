@@ -8,13 +8,14 @@ import {
 } from "./requests.parsers";
 import {
   buildRequestSelectSchemaSafe,
-  requestsSupportsSubmittedAt,
 } from "./requests.read-capabilities";
 import {
   REQUEST_DRAFT_STATUS,
-  REQUEST_PENDING_STATUS,
+  REQUEST_PENDING_EN,
+  REQUEST_STATUS_MATCHERS,
   REQUEST_TERMINAL_ITEM_STATUS_FILTER,
   isDraftOrPendingStatus,
+  normalizeStatus,
 } from "./requests.status";
 import type { ReqItemRow, RequestMeta, RequestRecord } from "./types";
 
@@ -46,7 +47,6 @@ type RequestItemMetaPatch = Pick<
   RequestItemsTable["Update"],
   "status" | "note" | "app_code" | "kind" | "name_human" | "uom"
 >;
-type RequestItemStatusPatch = Pick<RequestItemsTable["Update"], "status">;
 type RequestItemRestorePatch = Pick<RequestItemsTable["Update"], "status" | "cancelled_at">;
 type RequestItemAddOpts = {
   note?: string;
@@ -86,8 +86,7 @@ type RequestStatusRecalcArgsCompat = { p_request_id: number | string };
 type RequestIdLookupRow = Pick<RequestsTable["Row"], "id">;
 export type RequestSubmitPath =
   | "post_draft_short_circuit"
-  | "rpc_submit"
-  | "head_update_fallback";
+  | "rpc_submit";
 type RequestSubmitPreconditionsResolved = {
   request_id: string;
   request_filter_id: string;
@@ -185,17 +184,6 @@ function buildRequestSubmitArgs(requestId: string): RequestSubmitArgs {
   return { p_request_id: requestId };
 }
 
-function buildRequestSubmitFallbackUpdate(canWriteSubmittedAt: boolean): RequestHeadStatusUpdatePayload {
-  if (canWriteSubmittedAt) {
-    return { status: REQUEST_PENDING_STATUS, submitted_at: new Date().toISOString() };
-  }
-  return { status: REQUEST_PENDING_STATUS };
-}
-
-function buildRequestItemsPendingPatch(): RequestItemStatusPatch {
-  return { status: REQUEST_PENDING_STATUS };
-}
-
 function buildRequestItemsRestorePatch(): RequestItemRestorePatch {
   return { status: REQUEST_DRAFT_STATUS, cancelled_at: null };
 }
@@ -256,24 +244,6 @@ async function updateRequestHeadStatus(
 
   if (upd.error) throw upd.error;
   return upd.data ? mapRequestRow(upd.data) : null;
-}
-
-async function updateRequestItemsPendingStatus(requestFilterId: string): Promise<void> {
-  const pendingPayload = buildRequestItemsPendingPatch();
-
-  const nextStatus = await client
-    .from("request_items")
-    .update(pendingPayload)
-    .eq("request_id", requestFilterId)
-    .not("status", "in", REQUEST_TERMINAL_ITEM_STATUS_FILTER);
-  if (nextStatus.error) throw nextStatus.error;
-
-  const nullStatus = await client
-    .from("request_items")
-    .update(pendingPayload)
-    .eq("request_id", requestFilterId)
-    .is("status", null);
-  if (nullStatus.error) throw nullStatus.error;
 }
 
 async function restoreCancelledRequestItems(requestFilterId: string): Promise<void> {
@@ -527,6 +497,62 @@ async function reconcileRequestHeadStatus(requestId: string): Promise<boolean> {
   return false;
 }
 
+type RequestSubmitItemStatusRow = Pick<RequestItemsTable["Row"], "id" | "status">;
+
+const isPendingRequestStatus = (raw: unknown): boolean => {
+  const normalized = normalizeStatus(raw);
+  return normalized === REQUEST_PENDING_EN || normalized.includes(REQUEST_STATUS_MATCHERS.pendingFragment);
+};
+
+const isPendingOrTerminalItemStatus = (raw: unknown): boolean => {
+  if (raw == null) return false;
+  if (isPendingRequestStatus(raw)) return true;
+  return !isDraftOrPendingStatus(raw);
+};
+
+async function listRequestSubmitItemStatuses(
+  requestFilterId: string,
+): Promise<RequestSubmitItemStatusRow[]> {
+  const result = await client
+    .from("request_items")
+    .select("id, status")
+    .eq("request_id", requestFilterId);
+
+  if (result.error) throw result.error;
+  return Array.isArray(result.data) ? result.data : [];
+}
+
+async function verifyAtomicRequestSubmitOutcome(
+  preconditions: RequestSubmitPreconditionsResolved,
+): Promise<RequestRecord | null> {
+  const record = await selectRequestRecordById(
+    preconditions.request_filter_id,
+    preconditions.request_read_select,
+  );
+  if (!record) {
+    throw new Error("[requestSubmit/rpc_submit] request record missing after submit");
+  }
+  if (!isPendingRequestStatus(record.status ?? null)) {
+    throw new Error(
+      `[requestSubmit/rpc_submit] request head status mismatch: expected pending, got ${String(record.status ?? "null")}`,
+    );
+  }
+
+  const itemStatuses = await listRequestSubmitItemStatuses(preconditions.request_filter_id);
+  const invalidItems = itemStatuses.filter(
+    (row) => !isPendingOrTerminalItemStatus(row.status ?? null),
+  );
+  if (invalidItems.length > 0) {
+    throw new Error(
+      `[requestSubmit/rpc_submit] request items not transitioned from draft: ${invalidItems
+        .map((row) => String(row.id))
+        .join(",")}`,
+    );
+  }
+
+  return record;
+}
+
 async function resolveRequestSubmitPreconditions(
   requestId: number | string,
 ): Promise<RequestSubmitPreconditionsResolved> {
@@ -572,40 +598,9 @@ async function runRequestSubmitPrimaryStage(
     }
   } catch (e) {
     logRequestsDebug("[requestSubmit/rpc]", parseErr(e));
+    throw e;
   }
-
-  const canWriteSubmittedAt = await requestsSupportsSubmittedAt();
-  let fallback: RequestRecord | null = null;
-
-  try {
-    fallback = await updateRequestHeadStatus(
-      preconditions.request_filter_id,
-      buildRequestSubmitFallbackUpdate(canWriteSubmittedAt),
-      preconditions.request_read_select,
-    );
-  } catch (error) {
-    const msg = getErrorMessage(error).toLowerCase();
-    const submittedAtMismatch =
-      msg.includes("submitted_at") ||
-      msg.includes("column") ||
-      msg.includes("does not exist");
-    if (submittedAtMismatch) {
-      fallback = await updateRequestHeadStatus(
-        preconditions.request_filter_id,
-        buildRequestSubmitFallbackUpdate(false),
-        preconditions.request_read_select,
-      );
-    } else {
-      throw error;
-    }
-  }
-
-  return {
-    path: "head_update_fallback",
-    record: fallback,
-    request_items_pending_sync_needed: true,
-    cache_clear_candidate: !!fallback,
-  };
+  throw new Error("[requestSubmit] request_submit returned empty payload");
 }
 
 async function completeRequestSubmitStage(
@@ -613,25 +608,24 @@ async function completeRequestSubmitStage(
   primary: RequestSubmitPrimaryStageResult,
 ): Promise<RequestSubmitCompletionResult> {
   let request_items_pending_synced = false;
-  if (primary.request_items_pending_sync_needed) {
-    try {
-      await updateRequestItemsPendingStatus(preconditions.request_filter_id);
-      request_items_pending_synced = true;
-    } catch (e) {
-      logRequestsDebug("[requestSubmit/request_items fallback]", parseErr(e));
-    }
-  }
-
   let reconciled = false;
   if (primary.path === "rpc_submit") {
-    // rpc_submit is fully server-atomic, skip redundant client reconciliation
+    await verifyAtomicRequestSubmitOutcome(preconditions);
     reconciled = true;
   } else {
     reconciled = await reconcileRequestHeadStatus(preconditions.request_id);
+    if (!reconciled) {
+      throw new Error("[requestSubmit/post_draft_short_circuit] reconcile failed");
+    }
   }
 
   const record_override =
-    reconciled && primary.path === "post_draft_short_circuit"
+    primary.path === "rpc_submit"
+      ? await selectRequestRecordById(
+          preconditions.request_filter_id,
+          preconditions.request_read_select,
+        )
+      : reconciled && primary.path === "post_draft_short_circuit"
       ? await selectRequestRecordById(
           preconditions.request_filter_id,
           preconditions.request_read_select,

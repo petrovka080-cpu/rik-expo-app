@@ -1,0 +1,81 @@
+{
+  "status": "GREEN",
+  "file": "src/lib/api/_core.ts",
+  "cases": [
+    {
+      "name": "missing_function",
+      "input": {
+        "message": "Could not find the function public.acc_add_payment_min(args) in the schema cache",
+        "code": "PGRST302"
+      },
+      "expectedAllowNextVariant": true,
+      "expectedKind": "missing_function",
+      "decision": {
+        "kind": "missing_function",
+        "allowNextVariant": true,
+        "reason": "rpc_missing_or_incompatible"
+      },
+      "passed": true
+    },
+    {
+      "name": "permission_denied",
+      "input": {
+        "message": "permission denied for function acc_add_payment_min",
+        "code": "42501"
+      },
+      "expectedAllowNextVariant": false,
+      "expectedKind": "permission",
+      "decision": {
+        "kind": "permission",
+        "allowNextVariant": false,
+        "reason": "permission_denied"
+      },
+      "passed": true
+    },
+    {
+      "name": "auth_error",
+      "input": {
+        "message": "JWT expired",
+        "code": "PGRST301"
+      },
+      "expectedAllowNextVariant": false,
+      "expectedKind": "auth",
+      "decision": {
+        "kind": "auth",
+        "allowNextVariant": false,
+        "reason": "auth_error"
+      },
+      "passed": true
+    },
+    {
+      "name": "validation_error",
+      "input": {
+        "message": "null value in column violates not-null constraint",
+        "code": "23502"
+      },
+      "expectedAllowNextVariant": false,
+      "expectedKind": "validation",
+      "decision": {
+        "kind": "validation",
+        "allowNextVariant": false,
+        "reason": "validation_or_invariant_error"
+      },
+      "passed": true
+    },
+    {
+      "name": "transient_transport",
+      "input": {
+        "message": "network timeout while calling RPC",
+        "code": "08006"
+      },
+      "expectedAllowNextVariant": false,
+      "expectedKind": "transient",
+      "decision": {
+        "kind": "transient",
+        "allowNextVariant": false,
+        "reason": "transient_transport_error"
+      },
+      "passed": true
+    }
+  ]
+}

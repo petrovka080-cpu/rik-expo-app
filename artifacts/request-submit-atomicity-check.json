@@ -1,0 +1,9 @@
+{
+  "status": "GREEN",
+  "file": "src/lib/api/requests.ts",
+  "headUpdateFallbackRemoved": true,
+  "noClientHeadFallbackUpdate": true,
+  "noClientItemsPendingSyncFallback": true,
+  "atomicVerificationPresent": true,
+  "rpcSubmitEmptyPayloadFails": true
+}

@@ -1,6 +1,7 @@
 import type React from "react";
 import { Alert, Platform } from "react-native";
 import { useCallback } from "react";
+import { proposalItems } from "../../lib/api/proposals";
 import DirectorProposalRow from "./DirectorProposalRow";
 import type { ProposalHead, ProposalItem } from "./director.types";
 
@@ -29,18 +30,6 @@ type Deps = {
   loadProposalAttachments: (pidStr: string) => Promise<void>;
   openProposalSheet: (pid: string) => void;
   fmtDateOnly: (iso?: string | null) => string;
-};
-
-type ProposalRowRaw = {
-  id?: number | string | null;
-  request_item_id?: string | null;
-  rik_code?: string | null;
-  name_human?: string | null;
-  uom?: string | null;
-  app_code?: string | null;
-  total_qty?: number | string | null;
-  qty?: number | string | null;
-  price?: number | string | null;
 };
 
 const errText = (error: unknown): string => {
@@ -85,70 +74,17 @@ export function useDirectorProposalRow({
     try {
       await busy.run(async () => {
         try {
-          let base: ProposalRowRaw[] | null = null;
-          let plain: ProposalRowRaw[] | null = null;
-
-          const qSnap = await supabase
-            .from("proposal_snapshot_items")
-            .select("id, request_item_id, rik_code, name_human, uom, app_code, total_qty")
-            .eq("proposal_id", pidStr)
-            .order("id", { ascending: true });
-          if (!qSnap.error && Array.isArray(qSnap.data) && qSnap.data.length > 0) {
-            base = qSnap.data;
-          }
-
-          if (!base) {
-            const qView = await supabase
-              .from("proposal_items_view")
-              .select("id, request_item_id, rik_code, name_human, uom, app_code, total_qty")
-              .eq("proposal_id", pidStr)
-              .order("id", { ascending: true });
-            if (!qView.error && Array.isArray(qView.data) && qView.data.length > 0) {
-              base = qView.data;
-            }
-          }
-
-          const qPlain = await supabase
-            .from("proposal_items")
-            .select("id, request_item_id, rik_code, name_human, uom, app_code, qty, price")
-            .eq("proposal_id", pidStr)
-            .order("id", { ascending: true });
-          if (!qPlain.error && Array.isArray(qPlain.data) && qPlain.data.length > 0) {
-            plain = qPlain.data;
-          }
-
-          const priceByReqItemId: Record<string, number> = {};
-          if (plain) {
-            for (const r of plain) {
-              const rid = String(r.request_item_id ?? "").trim();
-              const pr = r.price;
-              if (rid && pr != null && !Number.isNaN(Number(pr))) {
-                priceByReqItemId[rid] = Number(pr);
-              }
-            }
-          }
-
-          const effective = base ?? (plain ? plain.map((r) => ({ ...r, total_qty: r.qty })) : []);
-
-          let norm = (effective ?? []).map((r, i: number) => {
-            const reqItemId = r.request_item_id != null ? String(r.request_item_id) : null;
-            const price =
-              r.price != null
-                ? Number(r.price)
-                : (reqItemId ? (priceByReqItemId[reqItemId] ?? null) : null);
-
-            return {
-              id: Number(r.id ?? i),
-              request_item_id: reqItemId,
-              rik_code: r.rik_code ?? null,
-              name_human: r.name_human ?? "",
-              uom: r.uom ?? null,
-              app_code: r.app_code ?? null,
-              total_qty: Number(r.total_qty ?? r.qty ?? 0),
-              price: price,
-              item_kind: null,
-            };
-          });
+          let norm: ProposalItem[] = (await proposalItems(pidStr)).map((row) => ({
+            id: Number(row.id),
+            request_item_id: row.request_item_id ?? null,
+            rik_code: row.rik_code ?? null,
+            name_human: row.name_human ?? "",
+            uom: row.uom ?? null,
+            app_code: row.app_code ?? null,
+            total_qty: Number(row.total_qty ?? 0),
+            price: row.price ?? null,
+            item_kind: null,
+          }));
 
           try {
             const ids = Array.from(
