@@ -5,6 +5,8 @@ import {
   registerPdfRpcRolloutPath,
   resolvePdfRpcRolloutMode,
   setPdfRpcRolloutAvailability,
+  type PdfRpcRolloutBranchMeta,
+  type PdfRpcRolloutFallbackReason,
   type PdfRpcRolloutId,
   type PdfRpcRolloutMode,
 } from "../documents/pdfRpcRollout";
@@ -64,15 +66,10 @@ type PaymentOrderPdfSource = {
   payload: PaymentOrderPdfRpcPayload;
   allocations: PaymentOrderPdfRecord[];
   branchMeta: PaymentPdfSourceBranchMeta;
-  source: "rpc:pdf_payment_source_v1" | "rpc:get_payment_order_data";
+  source: "rpc:pdf_payment_source_v1";
 };
 
-export type PaymentPdfSourceBranchMeta = {
-  sourceBranch: "rpc_v1" | "legacy_fallback";
-  fallbackReason?: "rpc_error" | "invalid_payload" | "disabled" | "missing_fields";
-  rpcVersion?: "v1";
-  payloadShapeVersion?: "v1";
-};
+export type PaymentPdfSourceBranchMeta = PdfRpcRolloutBranchMeta;
 
 export type PaymentOrderPdfAttachment = {
   name: string;
@@ -167,7 +164,7 @@ export type PaymentOrderPdfContract = {
 };
 
 export type PreparedPaymentOrderPdf = {
-  source: "rpc:pdf_payment_source_v1" | "rpc:get_payment_order_data";
+  source: "rpc:pdf_payment_source_v1";
   branchMeta: PaymentPdfSourceBranchMeta;
   contract: PaymentOrderPdfContract;
 };
@@ -364,7 +361,7 @@ const requireArray = (value: unknown, field: string) => {
   return value;
 };
 
-const getFallbackReasonForRpcError = (error: unknown): PaymentPdfSourceBranchMeta["fallbackReason"] => {
+const getPaymentPdfFailureReason = (error: unknown): PdfRpcRolloutFallbackReason => {
   if (error instanceof PaymentPdfSourceValidationError) return error.reason;
   return "rpc_error";
 };
@@ -447,6 +444,61 @@ function logPaymentPdfSourceBranch(paymentId: number, meta: PaymentPdfSourceBran
   });
 }
 
+const assertPaymentPdfRpcPrimary = (rpcMode: PdfRpcRolloutMode) => {
+  if (rpcMode === "force_off") {
+    throw new PaymentPdfSourceRpcError(
+      "pdf_payment_source_v1 is force_off but legacy fallback branches were removed",
+    );
+  }
+  if (
+    rpcMode === "auto"
+    && getPdfRpcRolloutAvailability(PAYMENT_PDF_RPC_ROLLOUT_ID) === "missing"
+  ) {
+    throw new PaymentPdfSourceRpcError(
+      "pdf_payment_source_v1 unavailable in this session and legacy fallback branches were removed",
+    );
+  }
+};
+
+const recordPaymentPdfRpcFailure = (
+  paymentId: number,
+  rpcMode: PdfRpcRolloutMode,
+  error: unknown,
+) => {
+  const failureReason = getPaymentPdfFailureReason(error);
+  recordCatchDiscipline({
+    screen: "accountant",
+    surface: "payment_pdf_source",
+    event: "payment_pdf_rpc_source_failed",
+    kind: "critical_fail",
+    error,
+    sourceKind: "rpc:pdf_payment_source_v1",
+    errorStage: "rpc_source",
+    extra: {
+      paymentId,
+      failureReason,
+      rpcMode,
+      rpcAvailability: getPdfRpcRolloutAvailability(PAYMENT_PDF_RPC_ROLLOUT_ID),
+      publishState: "error",
+      fallbackUsed: false,
+    },
+  });
+  if (rpcMode === "auto" && error instanceof PaymentPdfSourceRpcError && error.disableForSession) {
+    setPdfRpcRolloutAvailability(PAYMENT_PDF_RPC_ROLLOUT_ID, "missing", {
+      errorMessage: error.message,
+    });
+  }
+  if (__DEV__) {
+    console.warn("[payment-pdf-source] rpc_v1 hard-fail", {
+      paymentId,
+      failureReason,
+      rpcMode,
+      rpcAvailability: getPdfRpcRolloutAvailability(PAYMENT_PDF_RPC_ROLLOUT_ID),
+      errorMessage: error instanceof Error ? error.message : String(error),
+    });
+  }
+};
+
 export async function fetchPaymentPdfSourceViaRpc(paymentId: number): Promise<PaymentOrderPdfSource> {
   const pid = Number(paymentId);
   if (!Number.isFinite(pid) || pid <= 0) throw new Error("payment_id invalid");
@@ -484,53 +536,19 @@ export async function fetchPaymentPdfSourceViaRpc(paymentId: number): Promise<Pa
   };
 }
 
-export async function fetchPaymentPdfSourceFallback(
+async function assertPaymentPdfLegacyFallbackRemoved(
   paymentId: number,
   fallbackReason: PaymentPdfSourceBranchMeta["fallbackReason"] = "rpc_error",
 ): Promise<PaymentOrderPdfSource> {
-  const pid = Number(paymentId);
-  if (!Number.isFinite(pid) || pid <= 0) throw new Error("payment_id invalid");
+  void paymentId;
+  void fallbackReason;
+  const data = null as never;
 
-  const { data, error } = await supabase.rpc("get_payment_order_data", { p_payment_id: pid });
-  if (error) throw new Error(`get_payment_order_data failed: ${error.message}`);
+  throw new PaymentPdfSourceRpcError(
+    "payment PDF legacy fallback removed; source is rpc-only",
+  );
   if (!data) throw new Error("Нет данных для платёжки");
 
-  let allocations: PaymentOrderPdfRecord[] = [];
-  try {
-    const result = await supabase
-      .from("proposal_payment_allocations")
-      .select("proposal_item_id, amount")
-      .eq("payment_id", pid);
-
-    if (!result.error && Array.isArray(result.data)) {
-      allocations = result.data.map(asRecord);
-    }
-  } catch (error) {
-    recordCatchDiscipline({
-      screen: "accountant",
-      surface: "payment_pdf_source",
-      event: "payment_pdf_allocations_lookup_failed",
-      kind: "degraded_fallback",
-      error,
-      sourceKind: "table:proposal_payment_allocations",
-      errorStage: "legacy_allocations_lookup",
-      extra: {
-        paymentId: pid,
-        publishState: "degraded",
-      },
-    });
-  }
-
-  return {
-    payload: data as PaymentOrderPdfRpcPayload,
-    allocations,
-    branchMeta: {
-      sourceBranch: "legacy_fallback",
-      fallbackReason,
-      payloadShapeVersion: "v1",
-    },
-    source: "rpc:get_payment_order_data",
-  };
 }
 
 export async function getPaymentPdfSource(paymentId: number): Promise<PaymentOrderPdfSource> {
@@ -538,22 +556,9 @@ export async function getPaymentPdfSource(paymentId: number): Promise<PaymentOrd
   if (!Number.isFinite(pid) || pid <= 0) throw new Error("payment_id invalid");
 
   const rpcMode = PAYMENT_PDF_RPC_MODE;
-  if (rpcMode === "force_off") {
-    const legacySource = await fetchPaymentPdfSourceFallback(pid, "disabled");
-    logPaymentPdfSourceBranch(pid, legacySource.branchMeta, legacySource.source);
-    return legacySource;
-  }
-
-  if (
-    rpcMode === "auto" &&
-    getPdfRpcRolloutAvailability(PAYMENT_PDF_RPC_ROLLOUT_ID) === "missing"
-  ) {
-    const legacySource = await fetchPaymentPdfSourceFallback(pid, "disabled");
-    logPaymentPdfSourceBranch(pid, legacySource.branchMeta, legacySource.source);
-    return legacySource;
-  }
 
   try {
+    assertPaymentPdfRpcPrimary(rpcMode);
     const rpcSource = await fetchPaymentPdfSourceViaRpc(pid);
     if (rpcMode === "auto") {
       setPdfRpcRolloutAvailability(PAYMENT_PDF_RPC_ROLLOUT_ID, "available");
@@ -561,40 +566,8 @@ export async function getPaymentPdfSource(paymentId: number): Promise<PaymentOrd
     logPaymentPdfSourceBranch(pid, rpcSource.branchMeta, rpcSource.source);
     return rpcSource;
   } catch (error) {
-    const fallbackReason = getFallbackReasonForRpcError(error);
-    recordCatchDiscipline({
-      screen: "accountant",
-      surface: "payment_pdf_source",
-      event: "payment_pdf_rpc_source_failed",
-      kind: "degraded_fallback",
-      error,
-      sourceKind: "rpc:pdf_payment_source_v1",
-      errorStage: "rpc_source",
-      extra: {
-        paymentId: pid,
-        fallbackReason,
-        rpcMode,
-        rpcAvailability: getPdfRpcRolloutAvailability(PAYMENT_PDF_RPC_ROLLOUT_ID),
-        publishState: "degraded",
-      },
-    });
-    if (rpcMode === "auto" && error instanceof PaymentPdfSourceRpcError && error.disableForSession) {
-      setPdfRpcRolloutAvailability(PAYMENT_PDF_RPC_ROLLOUT_ID, "missing", {
-        errorMessage: error.message,
-      });
-    }
-    if (__DEV__) {
-      console.warn("[payment-pdf-source] rpc_v1 fallback", {
-        paymentId: pid,
-        fallbackReason,
-        rpcMode,
-        rpcAvailability: getPdfRpcRolloutAvailability(PAYMENT_PDF_RPC_ROLLOUT_ID),
-        errorMessage: error instanceof Error ? error.message : String(error),
-      });
-    }
-    const legacySource = await fetchPaymentPdfSourceFallback(pid, fallbackReason);
-    logPaymentPdfSourceBranch(pid, legacySource.branchMeta, legacySource.source);
-    return legacySource;
+    recordPaymentPdfRpcFailure(pid, rpcMode, error);
+    throw error;
   }
 }
 

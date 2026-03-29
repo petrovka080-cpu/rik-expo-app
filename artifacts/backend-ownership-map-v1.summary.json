@@ -11,12 +11,11 @@
     "contractor"
   ],
   "allModulesCovered": true,
-  "residualClientTruthCount": 2,
+  "residualClientTruthCount": 1,
   "totalResidualP0": 0,
   "totalResidualP1": 0,
-  "totalResidualP2": 2,
+  "totalResidualP2": 1,
   "modulesAtRisk": [
-    "accountant",
     "warehouse"
   ],
   "storesSafe": true,

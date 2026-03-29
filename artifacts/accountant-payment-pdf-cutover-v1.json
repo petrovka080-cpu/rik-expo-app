@@ -1,0 +1,423 @@
+{
+  "summary": {
+    "status": "passed",
+    "gate": "GREEN",
+    "primaryOwner": "rpc_v1",
+    "sourceKind": "rpc:pdf_payment_source_v1",
+    "fallbackUsed": false,
+    "sampledPaymentIds": [
+      157,
+      156,
+      150,
+      149,
+      148
+    ],
+    "parityPassedCount": 5,
+    "parityFailedCount": 0,
+    "sourceBoundary": {
+      "getterRpcOnly": true,
+      "fileLegacyMarkersRemoved": true,
+      "filePrimarySourceExplicit": true
+    },
+    "assertions": {
+      "no_pdf_fallback": true,
+      "paymentPdfRpcOnly": true,
+      "liveRpcSamplesOk": true,
+      "legacyParityOk": true
+    }
+  },
+  "sampledChecks": [
+    {
+      "paymentId": 157,
+      "proposalId": "67b6f220-470d-4310-b300-30d40e261b59",
+      "canonicalSummary": {
+        "amount": 8300,
+        "totalPaid": 8300,
+        "invoiceTotal": 8300,
+        "rest": 0,
+        "overpayAll": 0,
+        "invoiceNumber": null,
+        "invoiceDate": "2026-03-11",
+        "supplier": "вапвап",
+        "totalLines": 4,
+        "attachmentsCount": 0,
+        "allocationsCount": 4,
+        "rows": [
+          {
+            "itemKey": "1395",
+            "invoiceNumber": null,
+            "invoiceDate": "2026-03-11",
+            "supplier": "вапвап",
+            "rikCode": "MAT-ROOF-SHINGLE-RIDGE",
+            "name": "Конёк под ГЧ",
+            "uom": "м",
+            "qty": 52,
+            "price": 10,
+            "sum": 520
+          },
+          {
+            "itemKey": "1396",
+            "invoiceNumber": null,
+            "invoiceDate": "2026-03-11",
+            "supplier": "вапвап",
+            "rikCode": "MAT-ROOF-SHINGLE-CNTRBAT-40X50",
+            "name": "MAT-ROOF-SHINGLE-CNTRBAT-40x50",
+            "uom": "м",
+            "qty": 226,
+            "price": 10,
+            "sum": 2260
+          },
+          {
+            "itemKey": "1397",
+            "invoiceNumber": null,
+            "invoiceDate": "2026-03-11",
+            "supplier": "вапвап",
+            "rikCode": "MAT-ROOF-SHINGLE-RAFTER-50X150",
+            "name": "Стропильная доска 50×150 (ГЧ)",
+            "uom": "м",
+            "qty": 184,
+            "price": 10,
+            "sum": 1840
+          },
+          {
+            "itemKey": "1398",
+            "invoiceNumber": null,
+            "invoiceDate": "2026-03-11",
+            "supplier": "вапвап",
+            "rikCode": "MAT-ROOF-SHINGLE-LATH-25X100",
+            "name": "Обрешётка доска 25×100 (ГЧ)",
+            "uom": "м",
+            "qty": 368,
+            "price": 10,
+            "sum": 3680
+          }
+        ]
+      },
+      "legacySummary": {
+        "amount": 8300,
+        "totalPaid": 8300,
+        "invoiceTotal": 8300,
+        "rest": 0,
+        "overpayAll": 0,
+        "invoiceNumber": null,
+        "invoiceDate": "2026-03-11",
+        "supplier": "вапвап",
+        "totalLines": 4,
+        "attachmentsCount": 0,
+        "allocationsCount": 4,
+        "rows": [
+          {
+            "itemKey": "1395",
+            "invoiceNumber": null,
+            "invoiceDate": "2026-03-11",
+            "supplier": "вапвап",
+            "rikCode": "MAT-ROOF-SHINGLE-RIDGE",
+            "name": "Конёк под ГЧ",
+            "uom": "м",
+            "qty": 52,
+            "price": 10,
+            "sum": 520
+          },
+          {
+            "itemKey": "1396",
+            "invoiceNumber": null,
+            "invoiceDate": "2026-03-11",
+            "supplier": "вапвап",
+            "rikCode": "MAT-ROOF-SHINGLE-CNTRBAT-40X50",
+            "name": "MAT-ROOF-SHINGLE-CNTRBAT-40x50",
+            "uom": "м",
+            "qty": 226,
+            "price": 10,
+            "sum": 2260
+          },
+          {
+            "itemKey": "1397",
+            "invoiceNumber": null,
+            "invoiceDate": "2026-03-11",
+            "supplier": "вапвап",
+            "rikCode": "MAT-ROOF-SHINGLE-RAFTER-50X150",
+            "name": "Стропильная доска 50×150 (ГЧ)",
+            "uom": "м",
+            "qty": 184,
+            "price": 10,
+            "sum": 1840
+          },
+          {
+            "itemKey": "1398",
+            "invoiceNumber": null,
+            "invoiceDate": "2026-03-11",
+            "supplier": "вапвап",
+            "rikCode": "MAT-ROOF-SHINGLE-LATH-25X100",
+            "name": "Обрешётка доска 25×100 (ГЧ)",
+            "uom": "м",
+            "qty": 368,
+            "price": 10,
+            "sum": 3680
+          }
+        ]
+      },
+      "headerParityOk": true,
+      "rowsParityOk": true,
+      "attachmentsParityOk": true,
+      "allocationsParityOk": true,
+      "overallParityOk": true
+    },
+    {
+      "paymentId": 156,
+      "proposalId": "c7af0745-9509-4573-afaa-8d2685a399eb",
+      "canonicalSummary": {
+        "amount": 10,
+        "totalPaid": 80,
+        "invoiceTotal": 80,
+        "rest": 0,
+        "overpayAll": 0,
+        "invoiceNumber": null,
+        "invoiceDate": "2026-03-11",
+        "supplier": "ОсОО Омега",
+        "totalLines": 1,
+        "attachmentsCount": 0,
+        "allocationsCount": 1,
+        "rows": [
+          {
+            "itemKey": "1268",
+            "invoiceNumber": null,
+            "invoiceDate": "2026-03-11",
+            "supplier": "ОсОО Омега",
+            "rikCode": "SRV-WASTE-REMOVAL",
+            "name": "Вывоз строительного мусора",
+            "uom": "услуга",
+            "qty": 8,
+            "price": 10,
+            "sum": 80
+          }
+        ]
+      },
+      "legacySummary": {
+        "amount": 10,
+        "totalPaid": 80,
+        "invoiceTotal": 80,
+        "rest": 0,
+        "overpayAll": 0,
+        "invoiceNumber": null,
+        "invoiceDate": "2026-03-11",
+        "supplier": "ОсОО Омега",
+        "totalLines": 1,
+        "attachmentsCount": 0,
+        "allocationsCount": 1,
+        "rows": [
+          {
+            "itemKey": "1268",
+            "invoiceNumber": null,
+            "invoiceDate": "2026-03-11",
+            "supplier": "ОсОО Омега",
+            "rikCode": "SRV-WASTE-REMOVAL",
+            "name": "Вывоз строительного мусора",
+            "uom": "услуга",
+            "qty": 8,
+            "price": 10,
+            "sum": 80
+          }
+        ]
+      },
+      "headerParityOk": true,
+      "rowsParityOk": true,
+      "attachmentsParityOk": true,
+      "allocationsParityOk": true,
+      "overallParityOk": true
+    },
+    {
+      "paymentId": 150,
+      "proposalId": "c7af0745-9509-4573-afaa-8d2685a399eb",
+      "canonicalSummary": {
+        "amount": 70,
+        "totalPaid": 80,
+        "invoiceTotal": 80,
+        "rest": 0,
+        "overpayAll": 0,
+        "invoiceNumber": null,
+        "invoiceDate": "2026-03-11",
+        "supplier": "ОсОО Омега",
+        "totalLines": 1,
+        "attachmentsCount": 0,
+        "allocationsCount": 1,
+        "rows": [
+          {
+            "itemKey": "1268",
+            "invoiceNumber": null,
+            "invoiceDate": "2026-03-11",
+            "supplier": "ОсОО Омега",
+            "rikCode": "SRV-WASTE-REMOVAL",
+            "name": "Вывоз строительного мусора",
+            "uom": "услуга",
+            "qty": 8,
+            "price": 10,
+            "sum": 80
+          }
+        ]
+      },
+      "legacySummary": {
+        "amount": 70,
+        "totalPaid": 80,
+        "invoiceTotal": 80,
+        "rest": 0,
+        "overpayAll": 0,
+        "invoiceNumber": null,
+        "invoiceDate": "2026-03-11",
+        "supplier": "ОсОО Омега",
+        "totalLines": 1,
+        "attachmentsCount": 0,
+        "allocationsCount": 1,
+        "rows": [
+          {
+            "itemKey": "1268",
+            "invoiceNumber": null,
+            "invoiceDate": "2026-03-11",
+            "supplier": "ОсОО Омега",
+            "rikCode": "SRV-WASTE-REMOVAL",
+            "name": "Вывоз строительного мусора",
+            "uom": "услуга",
+            "qty": 8,
+            "price": 10,
+            "sum": 80
+          }
+        ]
+      },
+      "headerParityOk": true,
+      "rowsParityOk": true,
+      "attachmentsParityOk": true,
+      "allocationsParityOk": true,
+      "overallParityOk": true
+    },
+    {
+      "paymentId": 149,
+      "proposalId": "a689ed65-8a34-4a3b-8b49-7d5d12ee352b",
+      "canonicalSummary": {
+        "amount": 110,
+        "totalPaid": 110,
+        "invoiceTotal": 110,
+        "rest": 0,
+        "overpayAll": 0,
+        "invoiceNumber": null,
+        "invoiceDate": "2026-03-11",
+        "supplier": "поролон",
+        "totalLines": 1,
+        "attachmentsCount": 0,
+        "allocationsCount": 1,
+        "rows": [
+          {
+            "itemKey": "1266",
+            "invoiceNumber": null,
+            "invoiceDate": "2026-03-11",
+            "supplier": "поролон",
+            "rikCode": "SRV-DELIVERY",
+            "name": "Доставка",
+            "uom": "рейс",
+            "qty": 11,
+            "price": 10,
+            "sum": 110
+          }
+        ]
+      },
+      "legacySummary": {
+        "amount": 110,
+        "totalPaid": 110,
+        "invoiceTotal": 110,
+        "rest": 0,
+        "overpayAll": 0,
+        "invoiceNumber": null,
+        "invoiceDate": "2026-03-11",
+        "supplier": "поролон",
+        "totalLines": 1,
+        "attachmentsCount": 0,
+        "allocationsCount": 1,
+        "rows": [
+          {
+            "itemKey": "1266",
+            "invoiceNumber": null,
+            "invoiceDate": "2026-03-11",
+            "supplier": "поролон",
+            "rikCode": "SRV-DELIVERY",
+            "name": "Доставка",
+            "uom": "рейс",
+            "qty": 11,
+            "price": 10,
+            "sum": 110
+          }
+        ]
+      },
+      "headerParityOk": true,
+      "rowsParityOk": true,
+      "attachmentsParityOk": true,
+      "allocationsParityOk": true,
+      "overallParityOk": true
+    },
+    {
+      "paymentId": 148,
+      "proposalId": "d06feacd-7eed-4245-86a0-77a3d426e860",
+      "canonicalSummary": {
+        "amount": 100,
+        "totalPaid": 100,
+        "invoiceTotal": 100,
+        "rest": 0,
+        "overpayAll": 0,
+        "invoiceNumber": null,
+        "invoiceDate": null,
+        "supplier": "капитал строй 2",
+        "totalLines": 1,
+        "attachmentsCount": 0,
+        "allocationsCount": 1,
+        "rows": [
+          {
+            "itemKey": "1171",
+            "invoiceNumber": null,
+            "invoiceDate": null,
+            "supplier": "капитал строй 2",
+            "rikCode": "MAT-TAPE-MASK",
+            "name": "Лента малярная",
+            "uom": "рулон",
+            "qty": 10,
+            "price": 10,
+            "sum": 100
+          }
+        ]
+      },
+      "legacySummary": {
+        "amount": 100,
+        "totalPaid": 100,
+        "invoiceTotal": 100,
+        "rest": 0,
+        "overpayAll": 0,
+        "invoiceNumber": null,
+        "invoiceDate": null,
+        "supplier": "капитал строй 2",
+        "totalLines": 1,
+        "attachmentsCount": 0,
+        "allocationsCount": 1,
+        "rows": [
+          {
+            "itemKey": "1171",
+            "invoiceNumber": null,
+            "invoiceDate": null,
+            "supplier": "капитал строй 2",
+            "rikCode": "MAT-TAPE-MASK",
+            "name": "Лента малярная",
+            "uom": "рулон",
+            "qty": 10,
+            "price": 10,
+            "sum": 100
+          }
+        ]
+      },
+      "headerParityOk": true,
+      "rowsParityOk": true,
+      "attachmentsParityOk": true,
+      "allocationsParityOk": true,
+      "overallParityOk": true
+    }
+  ],
+  "sourceBoundary": {
+    "getterRpcOnly": true,
+    "fileLegacyMarkersRemoved": true,
+    "filePrimarySourceExplicit": true
+  }
+}

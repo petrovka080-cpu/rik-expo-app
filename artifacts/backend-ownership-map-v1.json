@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-03-29T22:12:40.801Z",
+  "generatedAt": "2026-03-29T23:02:22.262Z",
   "batch": "backend_ownership_map_v1",
   "documentSections": [
     "taxonomy",
@@ -347,6 +347,23 @@
               "history.backendFirstPrimary=true"
             ]
           }
+        },
+        {
+          "contour": "Accountant payment PDF source",
+          "owner": "rpc_v1",
+          "contractVersion": "pdf_payment_source_v1",
+          "currentState": "backend_primary",
+          "proof": {
+            "artifactKey": "accountant_payment_pdf",
+            "artifactPath": "artifacts/accountant-payment-pdf-cutover-v1.summary.json",
+            "status": "passed",
+            "gate": "GREEN",
+            "ownershipMarkers": [
+              "primaryOwner=rpc_v1",
+              "sourceKind=rpc:pdf_payment_source_v1",
+              "fallbackUsed=false"
+            ]
+          }
         }
       ],
       "mandatoryBackendOwned": [
@@ -363,30 +380,13 @@
         "screen-only filter controls",
         "modal/card open state"
       ],
-      "residualClientTruth": [
-        {
-          "id": "accountant_payment_pdf_legacy_fallback",
-          "module": "accountant",
-          "contour": "Accountant payment PDF legacy fallback",
-          "exactFile": "src/lib/api/paymentPdf.service.ts",
-          "truthType": "report",
-          "currentClientOwnership": "Payment PDF source branches still allow legacy_fallback alongside rpc_v1.",
-          "whyRisky": "PDF/export truth should follow the same backend-owned source discipline as the interactive list contours.",
-          "requiredBackendContract": "payment PDF source contract with rpc-only data branch",
-          "priority": "P2",
-          "state": "legacy_branch",
-          "nextBatch": "Accountant PDF source fallback removal",
-          "evidencePaths": [
-            "src/lib/api/paymentPdf.service.ts",
-            "artifacts/accountant-windowing-wave1.summary.json"
-          ]
-        }
-      ],
+      "residualClientTruth": [],
       "notes": [
-        "Accountant is backend-first for lists and totals; residual debt is now limited to payment PDF fallback paths."
+        "Accountant is backend-first for lists, totals, and payment PDF source rows.",
+        "No accountant residual client-truth families remain in this ownership map."
       ],
-      "residualClientTruthCount": 1,
-      "highestResidualPriority": "P2"
+      "residualClientTruthCount": 0,
+      "highestResidualPriority": "none"
     },
     "warehouse": {
       "module": "warehouse",
@@ -782,23 +782,6 @@
   },
   "residualClientTruthRegistry": [
     {
-      "id": "accountant_payment_pdf_legacy_fallback",
-      "module": "accountant",
-      "contour": "Accountant payment PDF legacy fallback",
-      "exactFile": "src/lib/api/paymentPdf.service.ts",
-      "truthType": "report",
-      "currentClientOwnership": "Payment PDF source branches still allow legacy_fallback alongside rpc_v1.",
-      "whyRisky": "PDF/export truth should follow the same backend-owned source discipline as the interactive list contours.",
-      "requiredBackendContract": "payment PDF source contract with rpc-only data branch",
-      "priority": "P2",
-      "state": "legacy_branch",
-      "nextBatch": "Accountant PDF source fallback removal",
-      "evidencePaths": [
-        "src/lib/api/paymentPdf.service.ts",
-        "artifacts/accountant-windowing-wave1.summary.json"
-      ]
-    },
-    {
       "id": "warehouse_pdf_legacy_fallbacks",
       "module": "warehouse",
       "contour": "Warehouse PDF source legacy fallback branches",
@@ -823,10 +806,9 @@
       "title": "PDF source family convergence",
       "module": "warehouse",
       "residualIds": [
-        "warehouse_pdf_legacy_fallbacks",
-        "accountant_payment_pdf_legacy_fallback"
+        "warehouse_pdf_legacy_fallbacks"
       ],
-      "reason": "PDF/report fallback branches are narrower than live read contours, but should still converge on rpc-only source families."
+      "reason": "Warehouse PDF/report fallback branches remain the last residual source family still carrying legacy branches."
     }
   ],
   "enforcementRules": {
@@ -877,10 +859,10 @@
       {
         "module": "accountant",
         "displayName": "Accountant",
-        "backendOwnedContours": 2,
+        "backendOwnedContours": 3,
         "clientOwnedUiContours": 5,
-        "residualClientTruthCount": 1,
-        "highestResidualPriority": "P2"
+        "residualClientTruthCount": 0,
+        "highestResidualPriority": "none"
       },
       {
         "module": "warehouse",
@@ -902,9 +884,8 @@
     "globalSummary": {
       "totalResidualP0": 0,
       "totalResidualP1": 0,
-      "totalResidualP2": 2,
+      "totalResidualP2": 1,
       "modulesAtRisk": [
-        "accountant",
         "warehouse"
       ],
       "storesSafe": true,
@@ -912,7 +893,6 @@
       "criticalOperationalTruthOnClient": false,
       "criticalReportTruthOnClient": true,
       "highestPriorityModules": [
-        "accountant",
         "warehouse"
       ],
       "nextPriorityBatch": "PDF source family convergence"
@@ -1417,6 +1397,43 @@
             "inboxServiceRpcOnly": true,
             "historyServiceRpcOnly": true,
             "controllerHasNoLegacyRetryFlag": true
+          }
+        }
+      },
+      {
+        "key": "accountant_payment_pdf",
+        "label": "Accountant Payment PDF Cutover",
+        "relativePath": "artifacts/accountant-payment-pdf-cutover-v1.summary.json",
+        "exists": true,
+        "status": "passed",
+        "gate": "GREEN",
+        "accepted": true,
+        "iosResidual": null,
+        "raw": {
+          "status": "passed",
+          "gate": "GREEN",
+          "primaryOwner": "rpc_v1",
+          "sourceKind": "rpc:pdf_payment_source_v1",
+          "fallbackUsed": false,
+          "sampledPaymentIds": [
+            157,
+            156,
+            150,
+            149,
+            148
+          ],
+          "parityPassedCount": 5,
+          "parityFailedCount": 0,
+          "sourceBoundary": {
+            "getterRpcOnly": true,
+            "fileLegacyMarkersRemoved": true,
+            "filePrimarySourceExplicit": true
+          },
+          "assertions": {
+            "no_pdf_fallback": true,
+            "paymentPdfRpcOnly": true,
+            "liveRpcSamplesOk": true,
+            "legacyParityOk": true
           }
         }
       },

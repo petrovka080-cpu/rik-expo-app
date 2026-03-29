@@ -207,6 +207,13 @@ const artifactSpecs: ArtifactSpec[] = [
     acceptedStatuses: ["passed", "GREEN"],
   },
   {
+    key: "accountant_payment_pdf",
+    label: "Accountant Payment PDF Cutover",
+    relativePath: "artifacts/accountant-payment-pdf-cutover-v1.summary.json",
+    acceptedStatuses: ["passed", "GREEN"],
+    acceptedGates: ["GREEN"],
+  },
+  {
     key: "warehouse_issue",
     label: "Warehouse Issue Queue Backend Cutover",
     relativePath: "artifacts/warehouse-issue-queue-backend-cutover.summary.json",
@@ -377,25 +384,6 @@ const taxonomy: TaxonomyEntry[] = [
 ];
 
 const residuals: ResidualClientTruth[] = [
-  {
-    id: "accountant_payment_pdf_legacy_fallback",
-    module: "accountant",
-    contour: "Accountant payment PDF legacy fallback",
-    exactFile: "src/lib/api/paymentPdf.service.ts",
-    truthType: "report",
-    currentClientOwnership:
-      "Payment PDF source branches still allow legacy_fallback alongside rpc_v1.",
-    whyRisky:
-      "PDF/export truth should follow the same backend-owned source discipline as the interactive list contours.",
-    requiredBackendContract: "payment PDF source contract with rpc-only data branch",
-    priority: "P2",
-    state: "legacy_branch",
-    nextBatch: "Accountant PDF source fallback removal",
-    evidencePaths: [
-      "src/lib/api/paymentPdf.service.ts",
-      "artifacts/accountant-windowing-wave1.summary.json",
-    ],
-  },
   {
     id: "warehouse_pdf_legacy_fallbacks",
     module: "warehouse",
@@ -615,6 +603,17 @@ const moduleMap: Record<ModuleKey, ModuleOwnership> = {
           "history.backendFirstPrimary=true",
         ]),
       },
+      {
+        contour: "Accountant payment PDF source",
+        owner: "rpc_v1",
+        contractVersion: "pdf_payment_source_v1",
+        currentState: "backend_primary",
+        proof: proofRef("accountant_payment_pdf", [
+          "primaryOwner=rpc_v1",
+          "sourceKind=rpc:pdf_payment_source_v1",
+          "fallbackUsed=false",
+        ]),
+      },
     ],
     mandatoryBackendOwned: [
       "payment status truth",
@@ -632,7 +631,8 @@ const moduleMap: Record<ModuleKey, ModuleOwnership> = {
     ],
     residualClientTruth: residuals.filter((item) => item.module === "accountant"),
     notes: [
-      "Accountant is backend-first for lists and totals; residual debt is now limited to payment PDF fallback paths.",
+      "Accountant is backend-first for lists, totals, and payment PDF source rows.",
+      "No accountant residual client-truth families remain in this ownership map.",
     ],
     residualClientTruthCount: 0,
     highestResidualPriority: "none",
@@ -982,8 +982,8 @@ const roadmap: RoadmapBatch[] = [
     priority: "P2",
     title: "PDF source family convergence",
     module: "warehouse",
-    residualIds: ["warehouse_pdf_legacy_fallbacks", "accountant_payment_pdf_legacy_fallback"],
-    reason: "PDF/report fallback branches are narrower than live read contours, but should still converge on rpc-only source families.",
+    residualIds: ["warehouse_pdf_legacy_fallbacks"],
+    reason: "Warehouse PDF/report fallback branches remain the last residual source family still carrying legacy branches.",
   },
 ];
 
