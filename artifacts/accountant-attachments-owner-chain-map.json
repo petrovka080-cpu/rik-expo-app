@@ -1,52 +1,49 @@
 {
-  "generatedAt": "2026-03-29T12:38:55.923Z",
-  "proposalNo": "PR-0381/2026",
-  "proposalId": "c7af0745-9509-4573-afaa-8d2685a399eb",
+  "generatedAt": "2026-03-29T13:21:15.817Z",
+  "proposalNo": "PR-0419/2026",
+  "proposalId": "67b6f220-470d-4310-b300-30d40e261b59",
   "ownerChain": {
     "proposal": {
-      "id": "c7af0745-9509-4573-afaa-8d2685a399eb",
-      "proposal_no": "PR-0381/2026",
+      "id": "67b6f220-470d-4310-b300-30d40e261b59",
+      "proposal_no": "PR-0419/2026",
       "status": "Утверждено",
       "payment_status": "К оплате",
-      "sent_to_accountant_at": "2026-03-12T08:28:41.163305+00:00",
+      "sent_to_accountant_at": "2026-03-23T04:20:31.542502+00:00",
       "invoice_number": null,
-      "invoice_date": "2026-03-11",
-      "created_at": "2026-03-11T10:21:39.728798+00:00"
+      "invoice_date": null,
+      "created_at": "2026-03-23T04:11:07.035597+00:00"
     },
-    "proposalAttachments": [],
-    "proposalAttachmentGroups": {},
+    "proposalAttachments": [
+      {
+        "id": 249,
+        "proposal_id": "67b6f220-470d-4310-b300-30d40e261b59",
+        "group_key": "supplier_quote",
+        "file_name": "прага1.docx",
+        "bucket_id": "proposal_files",
+        "storage_path": "queued/supplier_quote/file_1774239059693.bin/1774239059694-1.docx",
+        "created_at": "2026-03-23T04:11:26.430952+00:00"
+      }
+    ],
+    "proposalAttachmentGroups": {
+      "supplier_quote": 1
+    },
     "purchases": [
       {
-        "id": "2092d304-c609-4c56-9677-c058885d626a",
-        "proposal_id": "c7af0745-9509-4573-afaa-8d2685a399eb",
+        "id": "df9ee218-6009-4fdd-b643-06620eb1b71f",
+        "proposal_id": "67b6f220-470d-4310-b300-30d40e261b59",
         "invoice_no": null,
         "invoice_date": null,
         "payment_status": "Не оплачено",
         "attachments": []
       }
     ],
-    "proposalPayments": [
-      {
-        "id": 150,
-        "proposal_id": "c7af0745-9509-4573-afaa-8d2685a399eb",
-        "paid_at": "2026-03-13T01:09:27.529284+00:00",
-        "amount": 70,
-        "created_at": "2026-03-13T01:09:27.529284+00:00"
-      }
-    ],
-    "paymentRpc": [
-      {
-        "paymentId": 150,
-        "error": null,
-        "attachmentsMetaCount": 0,
-        "attachmentsMetaSample": []
-      }
-    ]
+    "proposalPayments": [],
+    "paymentRpc": []
   },
   "sentToAccountantSummary": {
     "totalSentToAccountant": 92,
     "withAnyAttachments": 78,
-    "withFinanceAttachmentGroups": 0,
+    "withCommercialAttachmentGroups": 78,
     "sample": [
       {
         "proposalId": "3da6cb7f-8454-48e6-be10-b6e9f5889b89",

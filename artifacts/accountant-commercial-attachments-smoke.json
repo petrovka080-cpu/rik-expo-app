@@ -1,0 +1,22 @@
+{
+  "generatedAt": "2026-03-29T13:19:12.686Z",
+  "checks": [
+    {
+      "name": "PR-0419 accountant shows only supplier commercial attachment",
+      "passed": true
+    },
+    {
+      "name": "surrogate proposal_pdf is not visible in accountant basis list",
+      "passed": true
+    },
+    {
+      "name": "PR-0381 stays empty when no commercial attachments exist",
+      "passed": true
+    },
+    {
+      "name": "canonical raw row count matches persisted proposal attachment rows",
+      "passed": true
+    }
+  ],
+  "allPassed": true
+}

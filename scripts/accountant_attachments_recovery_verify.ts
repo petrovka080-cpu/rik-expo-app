@@ -224,7 +224,7 @@ async function loadSentToAccountantSummary() {
     attachmentGroupsByProposal.set(proposalId, entry);
   }
 
-  const financeGroups = new Set(["proposal_html", "proposal_pdf", "invoice", "payment"]);
+  const commercialGroups = new Set(["supplier_quote", "commercial_doc", "invoice_source"]);
   const sample = ((proposals.data ?? []) as ProposalRow[]).slice(0, 25).map((proposal) => {
     const proposalId = text(proposal.id);
     return {
@@ -242,7 +242,7 @@ async function loadSentToAccountantSummary() {
       proposalId,
       proposalNo: text(proposal.proposal_no) || null,
       groups,
-      hasFinanceAttachmentGroup: Object.keys(groups).some((group) => financeGroups.has(group)),
+      hasCommercialAttachmentGroup: Object.keys(groups).some((group) => commercialGroups.has(group)),
       hasAnyAttachment: Object.keys(groups).length > 0,
     };
   });
@@ -250,13 +250,13 @@ async function loadSentToAccountantSummary() {
   return {
     totalSentToAccountant: sentRows.length,
     withAnyAttachments: sentRows.filter((row) => row.hasAnyAttachment).length,
-    withFinanceAttachmentGroups: sentRows.filter((row) => row.hasFinanceAttachmentGroup).length,
+    withCommercialAttachmentGroups: sentRows.filter((row) => row.hasCommercialAttachmentGroup).length,
     sample,
   };
 }
 
 async function main() {
-  const proposalNo = "PR-0381/2026";
+  const proposalNo = "PR-0419/2026";
   const targetProposal = await findProposalByNo(proposalNo);
   if (!targetProposal?.id) {
     throw new Error(`Target proposal not found: ${proposalNo}`);
@@ -348,10 +348,10 @@ async function main() {
       rows: accountantResult.rows,
     },
     exactFailurePoint:
-      baseCanonical.rows.length === 0 && accountantResult.rows.length > 0
-        ? "base canonical attachment query returned zero persisted rows; accountant wrapper recovered proposal owner document"
-        : baseCanonical.rows.length > 0 && accountantResult.rows.length === 0
+      baseCanonical.rows.length > 0 && accountantResult.rows.length === 0
           ? "accountant mapper/filter removed all rows"
+        : accountantResult.rows.some((row) => text(row.groupKey).toLowerCase() === "proposal_pdf")
+          ? "surrogate proposal_pdf leaked into accountant basis list"
           : "no mismatch",
   };
 
@@ -365,15 +365,16 @@ async function main() {
 
   const smoke = {
     generatedAt: new Date().toISOString(),
-    smoke1_pr0381_recovered: {
+    smoke1_pr0419_commercial_visible: {
       proposalNo,
       rowCount: accountantResult.rows.length,
       state: accountantResult.state,
       generatedProposalDocumentInjected: accountantResult.diagnostics.generatedProposalDocumentInjected,
       pass:
         accountantResult.rows.length > 0 &&
-        accountantResult.state === "degraded" &&
-        accountantResult.diagnostics.generatedProposalDocumentInjected,
+        accountantResult.state === "ready" &&
+        accountantResult.rows.some((row) => text(row.groupKey).toLowerCase() === "supplier_quote") &&
+        accountantResult.rows.every((row) => !["proposal_pdf", "proposal_html"].includes(text(row.groupKey).toLowerCase())),
     },
     smoke2_explicit_rows_visible: explicitSampleResult
       ? {
@@ -393,24 +394,29 @@ async function main() {
       baseMappedCount: baseCanonical.mappedCount,
       accountantRowCount: accountantResult.rows.length,
       pass:
-        baseCanonical.rawCount === 0 &&
-        baseCanonical.mappedCount === 0 &&
+        baseCanonical.rawCount > 0 &&
+        baseCanonical.mappedCount > 0 &&
         accountantResult.rows.length > 0,
     },
     smoke4_card_contract_shared: {
       caseCount: cardProofCases.filter((item) => item.proposalId).length,
-      allCasesUseCanonicalRows: cardProofCases
-        .filter((item) => item.proposalId)
-        .every((item) => item.fields.includes("attachmentId") && item.fields.includes("sourceDetailKind")),
-      pass: cardProofCases
-        .filter((item) => item.proposalId)
-        .every((item) => item.fields.includes("attachmentId") && item.fields.includes("sourceDetailKind")),
+      contractFields: accountantResult.rows[0] == null ? [] : Object.keys(accountantResult.rows[0]).sort(),
+      allCasesUseCanonicalRows:
+        accountantResult.rows[0] != null &&
+        ["attachmentId", "sourceDetailKind", "basisKind"].every((field) =>
+          Object.keys(accountantResult.rows[0] ?? {}).includes(field),
+        ),
+      pass:
+        accountantResult.rows[0] != null &&
+        ["attachmentId", "sourceDetailKind", "basisKind"].every((field) =>
+          Object.keys(accountantResult.rows[0] ?? {}).includes(field),
+        ),
     },
   };
 
   const summary = {
     status:
-      smoke.smoke1_pr0381_recovered.pass &&
+      smoke.smoke1_pr0419_commercial_visible.pass &&
       (smoke.smoke2_explicit_rows_visible == null || smoke.smoke2_explicit_rows_visible.pass) &&
       smoke.smoke3_request_success_vs_data_success.pass &&
       smoke.smoke4_card_contract_shared.pass
@@ -420,7 +426,7 @@ async function main() {
     targetProposalId: proposalId,
     targetState: accountantResult.state,
     targetRowCount: accountantResult.rows.length,
-    financeAttachmentGroupsInSentSet: sentSummary.withFinanceAttachmentGroups,
+    commercialAttachmentGroupsInSentSet: sentSummary.withCommercialAttachmentGroups,
   };
 
   writeJson("artifacts/accountant-attachments-owner-chain-map.json", ownerChainArtifact);

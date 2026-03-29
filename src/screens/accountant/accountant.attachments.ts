@@ -1,4 +1,6 @@
-import { supabase } from "../../lib/supabaseClient";
+import type { SupabaseClient } from "@supabase/supabase-js";
+
+import type { Database } from "../../lib/database.types";
 import {
   ensureProposalAttachmentUrl,
   listCanonicalProposalAttachments,
@@ -6,7 +8,7 @@ import {
   type ProposalAttachmentViewState,
 } from "../../lib/api/proposalAttachments.service";
 
-type SupabaseLike = typeof supabase;
+type SupabaseLike = SupabaseClient<Database>;
 
 type ProposalHeaderRow = {
   id?: string | null;
@@ -17,15 +19,18 @@ type ProposalHeaderRow = {
   sent_to_accountant_at?: string | null;
   invoice_number?: string | null;
   invoice_date?: string | null;
-  created_at?: string | null;
-  submitted_at?: string | null;
 };
 
-export type AccountantAttachmentOwnerType = "proposal" | "invoice" | "payment";
-export type AccountantAttachmentResolverKind = "signed_url" | "generated_proposal_pdf";
+export type AccountantAttachmentOwnerType = "proposal_commercial" | "invoice" | "payment";
+export type AccountantAttachmentResolverKind = "signed_url";
+export type AccountantAttachmentBasisKind =
+  | "supplier_quote"
+  | "invoice_source"
+  | "commercial_doc";
 export type AccountantAttachmentFilterReason =
-  | "screen_hidden_group"
-  | "missing_locator";
+  | "missing_locator"
+  | "non_basis_group"
+  | "surrogate_group";
 
 export type AccountantAttachment = {
   attachmentId: string;
@@ -36,8 +41,9 @@ export type AccountantAttachment = {
   fileUrl: string | null;
   mimeType: string | null;
   isVisibleToAccountant: boolean;
+  basisKind: AccountantAttachmentBasisKind;
   sourceKind: "canonical" | "compatibility";
-  sourceDetailKind: "proposal_attachments" | "generated_proposal_pdf";
+  sourceDetailKind: "proposal_attachments";
   resolverKind: AccountantAttachmentResolverKind;
   bucketId: string | null;
   storagePath: string | null;
@@ -52,9 +58,10 @@ export type AccountantAttachmentDiagnostics = {
   filteredCount: number;
   filterReasons: Record<AccountantAttachmentFilterReason, number>;
   explicitRowCount: number;
-  visibleExplicitRowCount: number;
+  visibleCommercialRowCount: number;
   generatedProposalDocumentInjected: boolean;
-  proposalAttachmentGroups: Record<string, number>;
+  basisGroupCounts: Record<string, number>;
+  surrogateGroupCounts: Record<string, number>;
   ownerChain: {
     proposalNo: string | null;
     hasInvoiceMeta: boolean;
@@ -75,21 +82,43 @@ export type AccountantAttachmentLoadResult = {
   diagnostics: AccountantAttachmentDiagnostics;
 };
 
+type CommercialGroupConfig = {
+  ownerType: AccountantAttachmentOwnerType;
+  basisKind: AccountantAttachmentBasisKind;
+};
+
 const text = (value: unknown) => String(value ?? "").trim();
 const lower = (value: unknown) => text(value).toLowerCase();
 
-const ACCOUNTANT_VISIBLE_GROUPS = new Set([
-  "supplier_quote",
-  "proposal_pdf",
-  "proposal_html",
-  "invoice",
-  "payment",
+const COMMERCIAL_GROUP_CONFIG = new Map<string, CommercialGroupConfig>([
+  [
+    "supplier_quote",
+    {
+      ownerType: "proposal_commercial",
+      basisKind: "supplier_quote",
+    },
+  ],
+  [
+    "commercial_doc",
+    {
+      ownerType: "proposal_commercial",
+      basisKind: "commercial_doc",
+    },
+  ],
+  [
+    "invoice_source",
+    {
+      ownerType: "proposal_commercial",
+      basisKind: "invoice_source",
+    },
+  ],
 ]);
-const PROPOSAL_SOURCE_GROUPS = new Set(["proposal_pdf", "proposal_html"]);
+const SURROGATE_GROUPS = new Set(["proposal_pdf", "proposal_html"]);
 
 const emptyFilterReasons = (): Record<AccountantAttachmentFilterReason, number> => ({
-  screen_hidden_group: 0,
   missing_locator: 0,
+  non_basis_group: 0,
+  surrogate_group: 0,
 });
 
 const incrementFilterReason = (
@@ -125,16 +154,7 @@ const inferMimeType = (fileName: string, groupKey: string | null): string | null
   return null;
 };
 
-const toOwnerType = (groupKey: string | null): AccountantAttachmentOwnerType | null => {
-  const normalized = lower(groupKey);
-  if (!normalized) return "proposal";
-  if (normalized === "invoice") return "invoice";
-  if (normalized === "payment") return "payment";
-  if (ACCOUNTANT_VISIBLE_GROUPS.has(normalized)) return "proposal";
-  return null;
-};
-
-const countGroups = (rows: CanonicalProposalAttachmentReadModel[]) => {
+const countGroups = (rows: Array<{ groupKey?: string | null }>) => {
   const counts: Record<string, number> = {};
   for (const row of rows) {
     const key = text(row.groupKey) || "ungrouped";
@@ -144,24 +164,18 @@ const countGroups = (rows: CanonicalProposalAttachmentReadModel[]) => {
 };
 
 const sortRows = (rows: AccountantAttachment[]) =>
-  rows
-    .slice()
-    .sort((left, right) => {
-      const leftGenerated = left.sourceDetailKind === "generated_proposal_pdf" ? 1 : 0;
-      const rightGenerated = right.sourceDetailKind === "generated_proposal_pdf" ? 1 : 0;
-      if (leftGenerated !== rightGenerated) return rightGenerated - leftGenerated;
-
-      const leftAt = left.createdAt ? Date.parse(left.createdAt) : 0;
-      const rightAt = right.createdAt ? Date.parse(right.createdAt) : 0;
-      if (leftAt !== rightAt) return rightAt - leftAt;
-      return right.attachmentId.localeCompare(left.attachmentId);
-    });
+  rows.slice().sort((left, right) => {
+    const leftAt = left.createdAt ? Date.parse(left.createdAt) : 0;
+    const rightAt = right.createdAt ? Date.parse(right.createdAt) : 0;
+    if (leftAt !== rightAt) return rightAt - leftAt;
+    return right.attachmentId.localeCompare(left.attachmentId);
+  });
 
 async function loadProposalHeader(client: SupabaseLike, proposalId: string): Promise<ProposalHeaderRow | null> {
   const query = await client
     .from("proposals")
     .select(
-      "id,proposal_no,id_short,status,payment_status,sent_to_accountant_at,invoice_number,invoice_date,created_at,submitted_at",
+      "id,proposal_no,id_short,status,payment_status,sent_to_accountant_at,invoice_number,invoice_date",
     )
     .eq("id", proposalId)
     .maybeSingle();
@@ -180,42 +194,19 @@ async function loadProposalPaymentCount(client: SupabaseLike, proposalId: string
   return Number(query.count ?? 0);
 }
 
-function buildGeneratedProposalDocument(
-  proposalId: string,
-  header: ProposalHeaderRow | null,
-): AccountantAttachment {
-  const proposalNo = text(header?.proposal_no);
-  const fileName = proposalNo ? `${proposalNo}.pdf` : `proposal_${proposalId.slice(0, 8)}.pdf`;
-  return {
-    attachmentId: `generated:proposal_pdf:${proposalId}`,
-    proposalId,
-    ownerType: "proposal",
-    ownerId: proposalId,
-    fileName,
-    fileUrl: null,
-    mimeType: "application/pdf",
-    isVisibleToAccountant: true,
-    sourceKind: "canonical",
-    sourceDetailKind: "generated_proposal_pdf",
-    resolverKind: "generated_proposal_pdf",
-    bucketId: null,
-    storagePath: null,
-    groupKey: "proposal_pdf",
-    createdAt:
-      text(header?.sent_to_accountant_at) ||
-      text(header?.submitted_at) ||
-      text(header?.created_at) ||
-      null,
-  };
-}
-
 function mapExplicitRow(
   row: CanonicalProposalAttachmentReadModel,
   reasons: Record<AccountantAttachmentFilterReason, number>,
 ): AccountantAttachment | null {
-  const ownerType = toOwnerType(row.groupKey);
-  if (!ownerType) {
-    incrementFilterReason(reasons, "screen_hidden_group");
+  const normalizedGroupKey = lower(row.groupKey);
+  if (SURROGATE_GROUPS.has(normalizedGroupKey)) {
+    incrementFilterReason(reasons, "surrogate_group");
+    return null;
+  }
+
+  const groupConfig = COMMERCIAL_GROUP_CONFIG.get(normalizedGroupKey);
+  if (!groupConfig) {
+    incrementFilterReason(reasons, "non_basis_group");
     return null;
   }
 
@@ -230,12 +221,13 @@ function mapExplicitRow(
   return {
     attachmentId: row.attachmentId,
     proposalId: row.proposalId,
-    ownerType,
+    ownerType: groupConfig.ownerType,
     ownerId: row.proposalId,
     fileName: row.fileName,
     fileUrl: row.fileUrl,
     mimeType: inferMimeType(row.fileName, row.groupKey),
     isVisibleToAccountant: true,
+    basisKind: groupConfig.basisKind,
     sourceKind: row.sourceKind,
     sourceDetailKind: "proposal_attachments",
     resolverKind: "signed_url",
@@ -259,9 +251,10 @@ export async function listProposalAttachments(
       filteredCount: 0,
       filterReasons: emptyFilterReasons(),
       explicitRowCount: 0,
-      visibleExplicitRowCount: 0,
+      visibleCommercialRowCount: 0,
       generatedProposalDocumentInjected: false,
-      proposalAttachmentGroups: {},
+      basisGroupCounts: {},
+      surrogateGroupCounts: {},
       ownerChain: {
         proposalNo: null,
         hasInvoiceMeta: false,
@@ -291,22 +284,14 @@ export async function listProposalAttachments(
   ]);
 
   const filterReasons = emptyFilterReasons();
-  const proposalAttachmentGroups = countGroups(canonicalResult.rows);
-  const visibleExplicitRows = canonicalResult.rows
+  const commercialRows = canonicalResult.rows
     .map((row) => mapExplicitRow(row, filterReasons))
     .filter((row): row is AccountantAttachment => !!row);
-
-  const hasProposalSourceRow = visibleExplicitRows.some((row) =>
-    PROPOSAL_SOURCE_GROUPS.has(lower(row.groupKey)),
+  const rows = sortRows(commercialRows);
+  const basisGroupCounts = countGroups(rows);
+  const surrogateGroupCounts = countGroups(
+    canonicalResult.rows.filter((row) => SURROGATE_GROUPS.has(lower(row.groupKey))),
   );
-  const generatedProposalDocumentInjected = Boolean(proposalHeader) && !hasProposalSourceRow;
-
-  const rows = sortRows([
-    ...(generatedProposalDocumentInjected
-      ? [buildGeneratedProposalDocument(proposalId, proposalHeader)]
-      : []),
-    ...visibleExplicitRows,
-  ]);
 
   const filteredCount =
     canonicalResult.filteredCount +
@@ -319,9 +304,10 @@ export async function listProposalAttachments(
     filteredCount,
     filterReasons,
     explicitRowCount: canonicalResult.rows.length,
-    visibleExplicitRowCount: visibleExplicitRows.length,
-    generatedProposalDocumentInjected,
-    proposalAttachmentGroups,
+    visibleCommercialRowCount: rows.length,
+    generatedProposalDocumentInjected: false,
+    basisGroupCounts,
+    surrogateGroupCounts,
     ownerChain: {
       proposalNo: text(proposalHeader?.proposal_no) || null,
       hasInvoiceMeta: Boolean(text(proposalHeader?.invoice_number) || text(proposalHeader?.invoice_date)),
@@ -330,44 +316,39 @@ export async function listProposalAttachments(
     },
   };
 
-  const syntheticOnlyRecovery = rows.length > 0 && visibleExplicitRows.length === 0 && generatedProposalDocumentInjected;
-  const recoveredFromFailure = rows.length > 0 && canonicalResult.state === "error";
-
   let state: ProposalAttachmentViewState = canonicalResult.state;
   let errorMessage = canonicalResult.errorMessage;
 
   if (rows.length > 0) {
-    if (syntheticOnlyRecovery) {
-      state = "degraded";
-      errorMessage =
-        "Persisted accountant-visible attachments not found; proposal source document was recovered from proposal owner.";
-    } else if (recoveredFromFailure) {
+    if (canonicalResult.state === "degraded") {
       state = "degraded";
       errorMessage =
         canonicalResult.errorMessage ||
-        "Canonical attachment source failed; using recovered accountant attachment owner chain.";
-    } else if (canonicalResult.state === "degraded") {
-      state = "degraded";
-      errorMessage =
-        canonicalResult.errorMessage ||
-        "Canonical attachment source returned compatibility rows.";
+        "Commercial accountant attachments were loaded through the compatibility path.";
     } else {
       state = "ready";
       errorMessage = null;
     }
-  } else if (canonicalResult.state === "ready") {
+  } else if (canonicalResult.state === "error") {
+    state = "error";
+    errorMessage = canonicalResult.errorMessage || "Commercial accountant attachments failed to load.";
+  } else if (Object.keys(surrogateGroupCounts).length > 0) {
+    state = "degraded";
+    errorMessage =
+      "Only technical proposal documents were found. Accountant basis attachments show commercial buyer files only.";
+  } else if (canonicalResult.rows.length > 0) {
+    state = "degraded";
+    errorMessage =
+      "Proposal attachments were found, but none matched accountant commercial-basis visibility rules.";
+  } else {
     state = "empty";
     errorMessage = null;
   }
 
-  const sourceKind = generatedProposalDocumentInjected
-    ? `${canonicalResult.sourceKind}+generated_proposal_pdf`
-    : canonicalResult.sourceKind;
-
   return {
     rows,
     state,
-    sourceKind,
+    sourceKind: canonicalResult.sourceKind,
     fallbackUsed: canonicalResult.fallbackUsed,
     rawCount: canonicalResult.rawCount,
     mappedCount: canonicalResult.mappedCount,
@@ -381,15 +362,10 @@ export async function ensureAttachmentSignedUrl(
   client: SupabaseLike,
   row: AccountantAttachment,
 ): Promise<string> {
-  if (row.resolverKind === "generated_proposal_pdf") {
-    const { exportProposalPdf } = await import("../../lib/catalog_api");
-    return exportProposalPdf(row.proposalId, "preview");
-  }
-
   return ensureProposalAttachmentUrl(client, {
     attachmentId: row.attachmentId,
     proposalId: row.proposalId,
-    ownerType: row.ownerType,
+    ownerType: row.ownerType === "proposal_commercial" ? "proposal" : row.ownerType,
     ownerId: row.ownerId,
     fileName: row.fileName,
     mimeType: row.mimeType,
