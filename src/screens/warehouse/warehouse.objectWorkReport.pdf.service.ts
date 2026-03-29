@@ -8,7 +8,7 @@ import {
   type PdfRpcRolloutId,
   type PdfRpcRolloutMode,
 } from "../../lib/documents/pdfRpcRollout";
-import { apiFetchIssuedByObjectReportFast } from "./warehouse.api";
+import { apiFetchIssuedByObjectReportFast } from "./warehouse.stock.read";
 
 const WAREHOUSE_OBJECT_WORK_PDF_SOURCE_RPC_V1_MODE_RAW = String(
   process.env.EXPO_PUBLIC_WAREHOUSE_OBJECT_WORK_PDF_SOURCE_RPC_V1 ?? "",

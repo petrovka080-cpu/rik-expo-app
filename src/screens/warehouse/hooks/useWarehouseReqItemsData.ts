@@ -1,7 +1,7 @@
 import { useCallback, useState } from "react";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-import { apiFetchReqItems } from "../warehouse.api";
+import { apiFetchReqItems } from "../warehouse.requests.read";
 import type { ReqItemUiRow } from "../warehouse.types";
 
 export function useWarehouseReqItemsData(params: { supabase: SupabaseClient }) {
@@ -30,4 +30,3 @@ export function useWarehouseReqItemsData(params: { supabase: SupabaseClient }) {
     fetchReqItems,
   };
 }
-

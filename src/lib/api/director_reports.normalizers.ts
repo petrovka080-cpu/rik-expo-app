@@ -54,6 +54,9 @@ const normalizeRequestLookupRow = (value: unknown): RequestLookupRow | null => {
   if (!id) return null;
   return {
     id,
+    request_no: row.request_no == null ? null : String(row.request_no).trim(),
+    display_no: row.display_no == null ? null : String(row.display_no).trim(),
+    status: row.status == null ? null : String(row.status),
     object_id: row.object_id == null ? null : String(row.object_id).trim(),
     object_name: row.object_name == null ? null : String(row.object_name),
     object_type_code: row.object_type_code == null ? null : String(row.object_type_code).trim(),
@@ -61,6 +64,14 @@ const normalizeRequestLookupRow = (value: unknown): RequestLookupRow | null => {
     level_code: row.level_code == null ? null : String(row.level_code).trim(),
     zone_code: row.zone_code == null ? null : String(row.zone_code).trim(),
     object: row.object == null ? null : String(row.object),
+    submitted_at: row.submitted_at == null ? null : String(row.submitted_at),
+    created_at: row.created_at == null ? null : String(row.created_at),
+    note: row.note == null ? null : String(row.note),
+    comment: row.comment == null ? null : String(row.comment),
+    item_count_total: row.item_count_total == null ? null : toNum(row.item_count_total),
+    item_count_active: row.item_count_active == null ? null : toNum(row.item_count_active),
+    item_qty_total: row.item_qty_total == null ? null : toNum(row.item_qty_total),
+    item_qty_active: row.item_qty_active == null ? null : toNum(row.item_qty_active),
   };
 };
 

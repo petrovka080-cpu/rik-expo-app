@@ -47,6 +47,8 @@ const ANDROID_LABELS = {
 const INCOMING_EMPTY_TEXT = "Нет записей в очереди склада.";
 const ANDROID_INCOMING_EMPTY_LABELS = [INCOMING_EMPTY_TEXT, "Нет записей", "очереди склада"] as const;
 
+const INCOMING_EMPTY_STATE_RE = /\u041d\u0435\u0442\s+\u0437\u0430\u043f\u0438\u0441\u0435\u0439\s+\u0432\s*\u043e\u0447\u0435\u0440\u0435\u0434\u0438\s+\u0441\u043a\u043b\u0430\u0434\u0430\./i;
+
 type TempUser = {
   id: string;
   email: string;
@@ -282,7 +284,7 @@ async function runWebRuntime(): Promise<Record<string, unknown>> {
       ? expected.title && expected.title.length > 0
         ? expected.title
         : /(PO|PR)-\d+\/\d{4}/
-      : INCOMING_EMPTY_TEXT;
+      : INCOMING_EMPTY_STATE_RE;
     const queueBody = await waitForBody(page, queueNeedle, 30_000);
 
     let modalBody = "";
@@ -302,7 +304,7 @@ async function runWebRuntime(): Promise<Record<string, unknown>> {
     const incomingRowsVisible = expected.hasRows
       ? (typeof queueNeedle === "string" ? queueBody.includes(queueNeedle) : queueNeedle.test(queueBody))
       : false;
-    const emptyStateVisible = !expected.hasRows && queueBody.includes(INCOMING_EMPTY_TEXT);
+    const emptyStateVisible = !expected.hasRows && INCOMING_EMPTY_STATE_RE.test(queueBody);
 
     const result = {
       status:
@@ -528,9 +530,9 @@ async function ensureAndroidIncomingTab(current: ReturnType<typeof dumpAndroidSc
 
 async function loginWarehouseAndroid(user: TempUser) {
   writeArtifact("artifacts/android-warehouse-incoming-queue-user.json", user);
-  {
-    const packageName = detectAndroidPackage();
-    return androidHarness.loginAndroidWithProtectedRoute({
+  const packageName = detectAndroidPackage();
+  try {
+    const harnessScreen = await androidHarness.loginAndroidWithProtectedRoute({
       packageName,
       user,
       protectedRoute: "rik://warehouse",
@@ -539,6 +541,11 @@ async function loginWarehouseAndroid(user: TempUser) {
       renderablePredicate: (xml) => isAndroidLoginScreen(xml) || isAndroidIncomingHome(xml) || isAndroidFioModal(xml) || isAndroidIncomingModal(xml),
       loginScreenPredicate: isAndroidLoginScreen,
     });
+    if (!isAndroidLoginScreen(harnessScreen.xml)) {
+      return harnessScreen;
+    }
+  } catch {
+    // Fall through to the local manual login flow when the shared harness stalls on auth.
   }
   execFileSync(
     "adb",

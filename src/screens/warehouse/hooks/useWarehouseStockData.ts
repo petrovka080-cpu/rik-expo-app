@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { apiEnrichStockNamesFromRikRu, apiFetchStock } from "../warehouse.api";
+import { apiEnrichStockNamesFromRikRu, apiFetchStock } from "../warehouse.stock.read";
 import { scheduleWarehouseNameMapRefresh } from "../warehouse.nameMap.ui";
 import type { StockRow } from "../warehouse.types";
 import { recordPlatformObservability } from "../../../lib/observability/platformObservability";

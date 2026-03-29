@@ -194,6 +194,9 @@ type CodeNameRow = {
 
 type RequestLookupRow = {
   id: string;
+  request_no: string | null;
+  display_no: string | null;
+  status: string | null;
   object_id: string | null;
   object_name: string | null;
   object_type_code: string | null;
@@ -201,6 +204,14 @@ type RequestLookupRow = {
   level_code: string | null;
   zone_code: string | null;
   object: string | null;
+  submitted_at: string | null;
+  created_at: string | null;
+  note: string | null;
+  comment: string | null;
+  item_count_total: number | null;
+  item_count_active: number | null;
+  item_qty_total: number | null;
+  item_qty_active: number | null;
 };
 
 type ObjectLookupRow = {

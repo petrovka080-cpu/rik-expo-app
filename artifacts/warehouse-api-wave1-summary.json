@@ -1,0 +1,140 @@
+{
+  "generatedAt": "2026-03-29T14:56:39.157Z",
+  "status": "GREEN",
+  "scope": {
+    "requestedWarehouseApiPath": "src/lib/api/warehouse.api.ts",
+    "actualWarehouseFacadePath": "src/screens/warehouse/warehouse.api.ts"
+  },
+  "split": {
+    "facade": {
+      "lines": 40,
+      "bytes": 961
+    },
+    "beforeFacade": {
+      "lines": 1306,
+      "bytes": 45109
+    },
+    "requestReader": {
+      "lines": 1446,
+      "bytes": 49147
+    },
+    "newModules": [
+      "src/lib/api/requestCanonical.read.ts",
+      "src/screens/warehouse/warehouse.requests.read.ts",
+      "src/screens/warehouse/warehouse.adapters.ts",
+      "src/screens/warehouse/warehouse.cache.ts",
+      "src/screens/warehouse/warehouse.stock.read.ts"
+    ]
+  },
+  "canonicalPath": {
+    "sharedLoader": "src/lib/api/requestCanonical.read.ts",
+    "warehouseReader": "src/screens/warehouse/warehouse.requests.read.ts",
+    "warehouseFacade": "src/screens/warehouse/warehouse.api.ts",
+    "stockReader": "src/screens/warehouse/warehouse.stock.read.ts",
+    "canonicalKinds": [
+      "table:requests",
+      "table:request_items",
+      "canonical:request_items_materialized"
+    ],
+    "compatibilityPaths": [
+      "rpc:warehouse_issue_queue_scope_v4",
+      "view:v_wh_issue_req_items_ui"
+    ],
+    "degradedPaths": [
+      "converged:req_heads",
+      "degraded:request_items"
+    ]
+  },
+  "inventory": {
+    "warehouseRequestHeadsReadPoints": [
+      "src/screens/warehouse/hooks/useWarehouseReqHeads.ts",
+      "src/screens/warehouse/hooks/useWarehouseReqModalFlow.ts",
+      "src/screens/warehouse/hooks/useWarehouseReqItemsData.ts"
+    ],
+    "warehouseRequestPrimarySourcesBefore": [
+      "rpc:warehouse_issue_queue_scope_v4",
+      "view:v_wh_issue_req_heads_ui",
+      "view:v_wh_issue_req_items_ui"
+    ],
+    "warehouseFallbackPathsBefore": [
+      "requests table fallback select",
+      "request_items direct fallback",
+      "fallback stock materialization"
+    ],
+    "warehouseRepairLayersBefore": [
+      "src/screens/warehouse/warehouse.reqHeads.repair.ts"
+    ],
+    "warehouseTruthBuildersBefore": [
+      "aggregate req-head truth from v_wh_issue_req_items_ui",
+      "materialize request items from request_items + stock",
+      "page0 repair merge against requests fallback"
+    ],
+    "desyncRisksBefore": [
+      "warehouse-owned ids/status visibility",
+      "warehouse view materialization lag",
+      "page0 repair reconstituting request heads outside shared reader"
+    ]
+  },
+  "checks": {
+    "tscNoEmit": {
+      "pass": true,
+      "exitCode": 0
+    },
+    "jest": {
+      "pass": true,
+      "exitCode": 0
+    },
+    "parity": {
+      "pass": true,
+      "comparedCount": 10,
+      "mismatchCount": 0
+    },
+    "requestListSmoke": {
+      "pass": true,
+      "rowCount": 10,
+      "sourcePath": "canonical",
+      "sourceKind": "table:requests",
+      "error": null
+    },
+    "requestDetailsSmoke": {
+      "pass": true,
+      "requestId": "0022c0cc-6dbb-40ed-8ae3-bd58e11bcc1e",
+      "rowCount": 1,
+      "sourcePath": "canonical",
+      "sourceKind": "canonical:request_items_materialized",
+      "error": null
+    },
+    "sortingSelectionRegression": {
+      "pass": true,
+      "uniqueRequestIds": 10,
+      "rowCount": 10
+    },
+    "issueFlowSmoke": {
+      "pass": true,
+      "summaryPath": "artifacts/warehouse-issue-queue-runtime.summary.json",
+      "status": "passed"
+    },
+    "receivingFlowSmoke": {
+      "pass": true,
+      "summaryPath": "artifacts/warehouse-incoming-queue-runtime.summary.json",
+      "status": "passed"
+    },
+    "sourceTraceProof": {
+      "pass": true,
+      "traceCount": 2,
+      "latest": {
+        "timestamp": "2026-03-29T14:56:38.706Z",
+        "operation": "req_items",
+        "result": "success",
+        "sourcePath": "canonical",
+        "sourceKind": "canonical:request_items_materialized",
+        "reason": "warehouse_view_missing_or_empty",
+        "requestId": "0022c0cc-6dbb-40ed-8ae3-bd58e11bcc1e",
+        "page": null,
+        "pageSize": null,
+        "rowCount": 1,
+        "contractVersion": "request_items_materialized_v1"
+      }
+    }
+  }
+}

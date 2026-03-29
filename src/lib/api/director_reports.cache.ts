@@ -128,11 +128,13 @@ const logTiming = (label: string, startedAt: number) => {
 };
 
 const REQUESTS_SELECT_PLANS = [
-  "id,object_id,object_name,object_type_code,system_code,level_code,zone_code,object",
-  "id,object_id,object_name,system_code,level_code,zone_code,object",
-  "id,object_id,object_name,object",
-  "id,object_id,object_name",
-  "id,object_name",
+  "id,request_no,display_no,status,object_id,object_name,object_type_code,system_code,level_code,zone_code,object,submitted_at,created_at,note,comment",
+  "id,display_no,status,object_id,object_name,object_type_code,system_code,level_code,zone_code,object,submitted_at,created_at,note,comment",
+  "id,display_no,status,object_id,object_name,system_code,level_code,zone_code,object,submitted_at,created_at,note,comment",
+  "id,display_no,status,object_id,object_name,object,submitted_at,created_at,note,comment",
+  "id,display_no,status,object_id,object_name,submitted_at,created_at,note,comment",
+  "id,display_no,status,object_name,submitted_at,created_at",
+  "id,display_no,status,object_name",
   "id",
 ] as const;
 

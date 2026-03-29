@@ -11,7 +11,7 @@ import {
 } from "../../lib/pdf/pdf.warehouse";
 import {
   apiFetchIssuedMaterialsReportFast,
-} from "./warehouse.api";
+} from "./warehouse.stock.read";
 import { getWarehouseDayMaterialsReportPdfSource } from "./warehouse.dayMaterialsReport.pdf.service";
 import { getWarehouseIncomingMaterialsReportPdfSource } from "./warehouse.incomingMaterialsReport.pdf.service";
 import { getWarehouseObjectWorkReportPdfSource } from "./warehouse.objectWorkReport.pdf.service";

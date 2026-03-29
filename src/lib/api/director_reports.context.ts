@@ -451,6 +451,9 @@ const normalizeDirectorDisciplineSourceRpcRow = (value: unknown): DirectorFactRo
     !issueWorkName && effectiveRequestId
       ? {
           id: effectiveRequestId,
+          request_no: null,
+          display_no: null,
+          status: null,
           object_id: null,
           object_name: null,
           object_type_code: null,
@@ -461,6 +464,14 @@ const normalizeDirectorDisciplineSourceRpcRow = (value: unknown): DirectorFactRo
           zone_code:
             row.request_zone_name == null ? null : String(row.request_zone_name).trim() || null,
           object: null,
+          submitted_at: null,
+          created_at: null,
+          note: null,
+          comment: null,
+          item_count_total: null,
+          item_count_active: null,
+          item_qty_total: null,
+          item_qty_active: null,
         }
       : null;
   const context = resolveDirectorFactContext({

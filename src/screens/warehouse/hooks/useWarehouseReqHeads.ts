@@ -5,7 +5,7 @@ import {
   type WarehouseReqHeadsFetchResult,
   type WarehouseReqHeadsSourceMeta,
   type WarehouseReqHeadsWindowMeta,
-} from "../warehouse.api";
+} from "../warehouse.requests.read";
 import type { ReqHeadRow, WarehouseReqHeadsIntegrityState } from "../warehouse.types";
 import { recordPlatformObservability } from "../../../lib/observability/platformObservability";
 import {

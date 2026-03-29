@@ -9,7 +9,7 @@ import {
   type PdfRpcRolloutMode,
 } from "../../lib/documents/pdfRpcRollout";
 import { isCorruptedText, normalizeRuText } from "../../lib/text/encoding";
-import { apiFetchIncomingMaterialsReportFast } from "./warehouse.api";
+import { apiFetchIncomingMaterialsReportFast } from "./warehouse.stock.read";
 
 const WAREHOUSE_INCOMING_MATERIALS_PDF_SOURCE_RPC_V1_MODE_RAW = String(
   process.env.EXPO_PUBLIC_WAREHOUSE_INCOMING_MATERIALS_PDF_SOURCE_RPC_V1 ?? "",

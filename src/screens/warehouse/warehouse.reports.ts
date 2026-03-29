@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from "react";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { apiFetchIncomingLines } from "./warehouse.api";
+import { apiFetchIncomingLines } from "./warehouse.stock.read";
 import { fetchWarehouseIssueLines } from "./warehouse.reports.repo";
 import {
   createWarehouseReportPdfService,

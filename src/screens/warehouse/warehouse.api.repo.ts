@@ -1,7 +1,32 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { isUuid } from "./warehouse.utils";
+import { isUuid } from "./warehouse.request.utils";
+import { resolveRequestsReadableColumns } from "../../lib/api/requests.read-capabilities";
 
 type UnknownRow = Record<string, unknown>;
+
+const WAREHOUSE_REQUEST_META_COLUMNS = [
+  "id",
+  "note",
+  "comment",
+  "contractor_name",
+  "contractor_org",
+  "subcontractor_name",
+  "subcontractor_org",
+  "contractor",
+  "supplier_name",
+  "contractor_phone",
+  "subcontractor_phone",
+  "phone",
+  "phone_number",
+  "phone_no",
+  "tel",
+  "planned_volume",
+  "qty_planned",
+  "planned_qty",
+  "volume",
+  "qty_plan",
+] as const;
+
 export async function fetchWarehouseRequestMetaRows(
   supabase: SupabaseClient,
   requestIds: string[],
@@ -10,11 +35,12 @@ export async function fetchWarehouseRequestMetaRows(
   if (!safeRequestIds.length) {
     return { data: [] as UnknownRow[], error: null };
   }
+  const readableColumns = await resolveRequestsReadableColumns();
+  const selectedColumns = WAREHOUSE_REQUEST_META_COLUMNS.filter((column) => readableColumns.has(column));
+  const selectClause = selectedColumns.length ? selectedColumns.join(",") : "id";
   return await supabase
     .from("requests")
-    .select(
-      "id,note,comment,contractor_name,contractor_org,subcontractor_name,subcontractor_org,contractor,supplier_name,contractor_phone,subcontractor_phone,phone,phone_number,phone_no,tel,planned_volume,qty_planned,planned_qty,volume,qty_plan",
-    )
+    .select(selectClause)
     .in("id", safeRequestIds);
 }
 

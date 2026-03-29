@@ -8,7 +8,8 @@ import {
   fetchWarehouseRequestFallbackRows,
   fetchWarehouseRequestItemsFallbackRows,
 } from "./warehouse.api.repo";
-import { isUuid, normMatCode, normUomId, parseNum, parseReqHeaderContext } from "./warehouse.utils";
+import { createWarehouseTimedRowsFallbackCache } from "./warehouse.cache";
+import { isUuid, normMatCode, normUomId, parseNum, parseReqHeaderContext } from "./warehouse.request.utils";
 import { normalizeRuText } from "../../lib/text/encoding";
 import { isRequestVisibleInWarehouseIssueQueue } from "../../lib/requestStatus";
 import { recordPlatformObservability } from "../../lib/observability/platformObservability";
@@ -137,11 +138,6 @@ const REQUESTS_FALLBACK_SELECT_PLANS = [
   "*",
 ] as const;
 
-let requestsFallbackLastHardFailAt = 0;
-let requestsFallbackLastSkipLogAt = 0;
-let requestsFallbackLastKnownGoodAt = 0;
-let requestsFallbackLastKnownGoodRows: RequestFallbackRow[] = [];
-
 const toTextOrNull = (value: unknown): string | null => {
   const normalized = String(value ?? "").trim();
   return normalized || null;
@@ -149,6 +145,12 @@ const toTextOrNull = (value: unknown): string | null => {
 
 const cloneRequestFallbackRows = (rows: RequestFallbackRow[]): RequestFallbackRow[] =>
   rows.map((row) => ({ ...row }));
+
+const requestsFallbackCache = createWarehouseTimedRowsFallbackCache<RequestFallbackRow>({
+  failCooldownMs: REQUESTS_FALLBACK_FAIL_COOLDOWN_MS,
+  lastGoodTtlMs: REQUESTS_FALLBACK_LAST_GOOD_TTL_MS,
+  cloneRows: cloneRequestFallbackRows,
+});
 
 const createIntegrityState = (
   mode: WarehouseReqHeadsIntegrityState["mode"],
@@ -402,10 +404,7 @@ const normalizePhone = (value: string) => {
 };
 
 const getLastKnownGoodRows = (): RequestFallbackRow[] => {
-  if (Date.now() - requestsFallbackLastKnownGoodAt > REQUESTS_FALLBACK_LAST_GOOD_TTL_MS) {
-    return [];
-  }
-  return cloneRequestFallbackRows(requestsFallbackLastKnownGoodRows);
+  return requestsFallbackCache.getLastKnownGoodRows();
 };
 
 const recordRepairEvent = (
@@ -435,13 +434,9 @@ async function loadWarehouseFallbackRequestRows(
 ): Promise<WarehouseFallbackRequestLoadResult> {
   const timestamp = Date.now();
   const limit = Math.max(pageSize * 6, 600);
-  if (
-    requestsFallbackLastHardFailAt > 0 &&
-    timestamp - requestsFallbackLastHardFailAt < REQUESTS_FALLBACK_FAIL_COOLDOWN_MS
-  ) {
+  if (requestsFallbackCache.isCoolingDown(timestamp)) {
     const cached = getLastKnownGoodRows();
-    if (__DEV__ && timestamp - requestsFallbackLastSkipLogAt > 5000) {
-      requestsFallbackLastSkipLogAt = timestamp;
+    if (__DEV__ && requestsFallbackCache.shouldEmitCooldownLog(timestamp)) {
       console.warn("[warehouse.reqHeads.repair] requests fallback select skipped by cooldown");
     }
     if (cached.length) {
@@ -471,10 +466,7 @@ async function loadWarehouseFallbackRequestRows(
     const result = await fetchWarehouseRequestFallbackRows(supabase, selectCols, limit);
     if (!result.error && Array.isArray(result.data)) {
       const rows = asUnknownRows(result.data).map(normalizeRequestFallbackRow);
-      requestsFallbackLastHardFailAt = 0;
-      requestsFallbackLastSkipLogAt = 0;
-      requestsFallbackLastKnownGoodAt = timestamp;
-      requestsFallbackLastKnownGoodRows = cloneRequestFallbackRows(rows);
+      requestsFallbackCache.recordLiveRows(rows, timestamp);
       const integrityState = createHealthyWarehouseReqHeadsIntegrityState();
       recordRepairEvent("req_heads_repair_fallback_live", integrityState, {
         rowCount: rows.length,
@@ -484,7 +476,7 @@ async function loadWarehouseFallbackRequestRows(
     lastError = result.error ?? lastError;
   }
 
-  requestsFallbackLastHardFailAt = timestamp;
+  requestsFallbackCache.recordHardFail(timestamp);
   const message = String((lastError as { message?: string } | null)?.message ?? lastError ?? "unknown");
   const cached = getLastKnownGoodRows();
   if (cached.length) {

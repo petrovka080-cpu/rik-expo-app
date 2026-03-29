@@ -43,7 +43,10 @@ export type StockRow = {
 
 export type ReqHeadRow = {
   request_id: string;
+  request_no?: string | null;
   display_no: string | null;
+  request_status?: string | null;
+  object_id?: string | null;
 
   // вњ… РєР°Рє Сѓ РґРёСЂРµРєС‚РѕСЂР° (РѕР±СЉРµРєС‚ РјРѕР¶РµС‚ Р±С‹С‚СЊ null, РїРѕРєР° requests.object_id РЅРµ РїРёС€РµС‚СЃСЏ)
   object_name: string | null;

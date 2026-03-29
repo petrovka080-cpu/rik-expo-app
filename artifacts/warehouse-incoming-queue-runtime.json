@@ -48,7 +48,11 @@
         },
         {
           "type": "info",
-          "text": "[platform.observability] {screen: warehouse, surface: incoming_list, event: fetch_incoming, result: success, durationMs: 874}"
+          "text": "[queue.bootstrap] stop skipped: not running"
+        },
+        {
+          "type": "info",
+          "text": "[platform.observability] {screen: warehouse, surface: incoming_list, event: fetch_incoming, result: success, durationMs: 877}"
         },
         {
           "type": "info",
@@ -56,11 +60,11 @@
         },
         {
           "type": "info",
-          "text": "[platform.observability] {screen: warehouse, surface: stock_list, event: fetch_stock_rpc, result: success, durationMs: 1135}"
+          "text": "[platform.observability] {screen: warehouse, surface: stock_list, event: fetch_stock_rpc, result: success, durationMs: 1064}"
         },
         {
           "type": "info",
-          "text": "[platform.observability] {screen: warehouse, surface: stock_list, event: fetch_stock, result: success, durationMs: 1136}"
+          "text": "[platform.observability] {screen: warehouse, surface: stock_list, event: fetch_stock, result: success, durationMs: 1064}"
         },
         {
           "type": "info",
@@ -69,6 +73,30 @@
         {
           "type": "info",
           "text": "[fetchStock] window {projectionAvailable: true, projectionHitCount: 106, projectionMissCount: 0, projectionReadMs: 0, fallbackReadMs: 0}"
+        },
+        {
+          "type": "info",
+          "text": "[platform.observability] {screen: profile, surface: session_role, event: resolve_session_role, result: success, durationMs: 0}"
+        },
+        {
+          "type": "info",
+          "text": "[queue.bootstrap] ensure called {JOB_QUEUE_ENABLED: true}"
+        },
+        {
+          "type": "info",
+          "text": "[queue.bootstrap] starting queue worker"
+        },
+        {
+          "type": "info",
+          "text": "[queue.worker] init {JOB_QUEUE_ENABLED: true, WORKER_BATCH_SIZE: 10, WORKER_CONCURRENCY: 4, COMPACTION_DELAY_MS: 500, SUPABASE_HOST: nxrnjywzxxfdpqmzjorh.supabase.co}"
+        },
+        {
+          "type": "info",
+          "text": "[queue.worker] started {workerId: web:mnbvqgcq:vfdd3p, batchSize: 10, concurrency: 4}"
+        },
+        {
+          "type": "info",
+          "text": "[platform.observability] {screen: profile, surface: session_role, event: resolve_session_role, result: cache_hit, durationMs: null}"
         },
         {
           "type": "info",
@@ -84,7 +112,11 @@
         },
         {
           "type": "info",
-          "text": "[platform.observability] {screen: warehouse, surface: realtime_channel, event: subscription_started, result: success, durationMs: null}"
+          "text": "[platform.observability] {screen: warehouse, surface: realtime_channel, event: realtime_auth_ready, result: success, durationMs: null}"
+        },
+        {
+          "type": "info",
+          "text": "[platform.observability] {screen: warehouse, surface: screen_root, event: channel_created, result: success, durationMs: null}"
         },
         {
           "type": "info",
@@ -92,7 +124,7 @@
         },
         {
           "type": "info",
-          "text": "[platform.observability] {screen: warehouse, surface: incoming_list, event: fetch_incoming, result: success, durationMs: 605}"
+          "text": "[platform.observability] {screen: warehouse, surface: incoming_list, event: fetch_incoming, result: success, durationMs: 630}"
         },
         {
           "type": "info",
@@ -100,11 +132,19 @@
         },
         {
           "type": "info",
-          "text": "[platform.observability] {screen: warehouse, surface: stock_list, event: fetch_stock_rpc, result: success, durationMs: 804}"
+          "text": "[platform.observability] {screen: profile, surface: session_role, event: warm_session_profile, result: success, durationMs: 683}"
         },
         {
           "type": "info",
-          "text": "[platform.observability] {screen: warehouse, surface: stock_list, event: fetch_stock, result: success, durationMs: 804}"
+          "text": "[platform.observability] {screen: warehouse, surface: screen_root, event: subscription_connected, result: success, durationMs: null}"
+        },
+        {
+          "type": "info",
+          "text": "[platform.observability] {screen: warehouse, surface: stock_list, event: fetch_stock_rpc, result: success, durationMs: 821}"
+        },
+        {
+          "type": "info",
+          "text": "[platform.observability] {screen: warehouse, surface: stock_list, event: fetch_stock, result: success, durationMs: 821}"
         },
         {
           "type": "info",
@@ -130,7 +170,7 @@
       "gmsCleared": false,
       "devClientReachable": true
     },
-    "environmentRecoveryUsed": false,
+    "environmentRecoveryUsed": true,
     "gmsRecoveryUsed": false,
     "anrRecoveryUsed": false,
     "blankSurfaceRecovered": false,
@@ -142,8 +182,8 @@
     "openedRowId": null,
     "currentXml": "artifacts/android-warehouse-incoming-queue-route-1.xml",
     "currentPng": "artifacts/android-warehouse-incoming-queue-route-1.png",
-    "queueXml": "artifacts/android-warehouse-incoming-queue-after-fio.xml",
-    "queuePng": "artifacts/android-warehouse-incoming-queue-after-fio.png",
+    "queueXml": "artifacts/android-warehouse-incoming-queue-route-1.xml",
+    "queuePng": "artifacts/android-warehouse-incoming-queue-route-1.png",
     "platformSpecificIssues": []
   },
   "ios": {
@@ -159,7 +199,7 @@
     "androidPassed": true,
     "iosPassed": false,
     "runtimeVerified": true,
-    "environmentRecoveryUsed": false,
+    "environmentRecoveryUsed": true,
     "gmsRecoveryUsed": false,
     "anrRecoveryUsed": false,
     "blankSurfaceRecovered": false,
@@ -194,8 +234,8 @@
       "webRuntime": "artifacts/warehouse-incoming-queue-web-smoke.json",
       "androidCurrentXml": "artifacts/android-warehouse-incoming-queue-route-1.xml",
       "androidCurrentPng": "artifacts/android-warehouse-incoming-queue-route-1.png",
-      "androidQueueXml": "artifacts/android-warehouse-incoming-queue-after-fio.xml",
-      "androidQueuePng": "artifacts/android-warehouse-incoming-queue-after-fio.png",
+      "androidQueueXml": "artifacts/android-warehouse-incoming-queue-route-1.xml",
+      "androidQueuePng": "artifacts/android-warehouse-incoming-queue-route-1.png",
       "androidModalXml": null,
       "androidModalPng": null
     },

@@ -1,7 +1,7 @@
 import { useCallback, useRef } from "react";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-import { apiFetchReqItems } from "../warehouse.api";
+import { apiFetchReqItems } from "../warehouse.requests.read";
 import type { ReqHeadRow, ReqItemUiRow } from "../warehouse.types";
 
 type ReqPickUiLike = {

@@ -387,6 +387,8 @@ const findAndroidFioActionNode = (nodes: AndroidNode[]): AndroidNode | null =>
 const matchesAndroidLabel = (value: string, labels: readonly string[]) =>
   labels.some((label) => value.includes(label));
 
+const ISSUE_EMPTY_STATE_RE = /\u041d\u0435\u0442\s+\u0437\u0430\u043f\u0438\u0441\u0435\u0439\s+\u0432\s*\u043e\u0447\u0435\u0440\u0435\u0434\u0438\s+\u0441\u043a\u043b\u0430\u0434\u0430\./i;
+
 const ISSUE_EMPTY_TEXT = "Нет записей в очереди склада.";
 const ANDROID_ISSUE_EMPTY_LABELS = [ISSUE_EMPTY_TEXT, "РќРµС‚ Р·Р°РїРёСЃРµР№ РІ РѕС‡РµСЂРµРґРё СЃРєР»Р°РґР°."] as const;
 
@@ -395,7 +397,8 @@ const isAndroidFioModal = (xml: string) =>
 
 const isAndroidIncomingSurface = (xml: string) => /PR-\d+\/\d{4}/.test(xml);
 
-const isAndroidIssueEmptyState = (xml: string) => matchesAndroidLabel(xml, ANDROID_ISSUE_EMPTY_LABELS);
+const isAndroidIssueEmptyState = (xml: string) =>
+  ISSUE_EMPTY_STATE_RE.test(xml) || matchesAndroidLabel(xml, ANDROID_ISSUE_EMPTY_LABELS);
 
 const isAndroidIssueQueueSurface = (xml: string) =>
   /REQ-\d+\/\d{4}/.test(xml) ||
@@ -493,9 +496,9 @@ async function ensureAndroidExpenseTab(current: ReturnType<typeof dumpAndroidScr
 
 async function loginWarehouseAndroid(user: TempUser) {
   writeArtifact("artifacts/android-warehouse-issue-queue-user.json", user);
-  {
-    const packageName = detectAndroidPackage();
-    return androidHarness.loginAndroidWithProtectedRoute({
+  const packageName = detectAndroidPackage();
+  try {
+    const harnessScreen = await androidHarness.loginAndroidWithProtectedRoute({
       packageName,
       user,
       protectedRoute: "rik://warehouse",
@@ -504,6 +507,11 @@ async function loginWarehouseAndroid(user: TempUser) {
       renderablePredicate: (xml) => isAndroidLoginScreen(xml) || isAndroidIssueQueueSurface(xml) || isAndroidFioModal(xml) || isAndroidIncomingSurface(xml),
       loginScreenPredicate: isAndroidLoginScreen,
     });
+    if (!isAndroidLoginScreen(harnessScreen.xml)) {
+      return harnessScreen;
+    }
+  } catch {
+    // Fall through to the local manual login flow when the shared harness stalls on auth.
   }
   execFileSync(
     "adb",

@@ -7,20 +7,9 @@ import type {
 import {
   chunk,
   forEachChunkParallel,
-  normalizeRequestLookupRow,
 } from "./director_reports.shared";
-import {
-  REQUESTS_DISCIPLINE_SELECT_PLANS,
-  REQUESTS_SELECT_PLANS,
-  getFreshLookupValue,
-  requestLookupCache,
-  requestLookupInFlight,
-  setLookupValue,
-} from "./director_reports.cache";
 import { recordDirectorReportsTransportWarning } from "./director_reports.observability";
-
-let requestsSelectPlanCache: string | null = null;
-let requestsDisciplineSelectPlanCache: string | null = null;
+import { loadCanonicalRequestsByIds } from "./requestCanonical.read";
 
 async function runTypedRpc<TRow>(
   fnName:
@@ -61,161 +50,17 @@ async function runTypedRpc<TRow>(
 }
 
 async function fetchRequestsRowsSafe(ids: string[]): Promise<RequestLookupRow[]> {
-  const reqIds = Array.from(new Set((ids || []).map((x) => String(x ?? "").trim()).filter(Boolean)));
-  if (!reqIds.length) return [];
-
-  const cachedRows: RequestLookupRow[] = [];
-  const missingIds: string[] = [];
-  for (const id of reqIds) {
-    const cached = getFreshLookupValue(requestLookupCache, id);
-    if (cached !== undefined) {
-      if (cached) cachedRows.push(cached);
-      continue;
-    }
-    missingIds.push(id);
-  }
-  if (!missingIds.length) return cachedRows;
-
-  const runSelect = async (selectCols: string, idsPart: string[]) =>
-    await supabase.from("requests" as never).select(selectCols).in("id", idsPart);
-
-  const loadMissing = async (): Promise<RequestLookupRow[]> => {
-    if (requestsSelectPlanCache) {
-      const cached = await runSelect(requestsSelectPlanCache, missingIds);
-      if (!cached.error) {
-        const rows = Array.isArray(cached.data)
-          ? cached.data.map(normalizeRequestLookupRow).filter((row): row is RequestLookupRow => !!row)
-          : [];
-        const seen = new Set(rows.map((row) => row.id));
-        for (const row of rows) setLookupValue(requestLookupCache, row.id, row);
-        for (const id of missingIds) if (!seen.has(id)) setLookupValue(requestLookupCache, id, null);
-        return rows;
-      }
-      requestsSelectPlanCache = null;
-    }
-
-    let lastError: unknown = null;
-    for (const selectCols of REQUESTS_SELECT_PLANS) {
-      const q = await runSelect(selectCols, missingIds);
-      if (!q.error) {
-        requestsSelectPlanCache = selectCols;
-        const rows = Array.isArray(q.data)
-          ? q.data.map(normalizeRequestLookupRow).filter((row): row is RequestLookupRow => !!row)
-          : [];
-        const seen = new Set(rows.map((row) => row.id));
-        for (const row of rows) setLookupValue(requestLookupCache, row.id, row);
-        for (const id of missingIds) if (!seen.has(id)) setLookupValue(requestLookupCache, id, null);
-        return rows;
-      }
-      lastError = q.error;
-    }
-
-    if (lastError) throw lastError;
-    return [];
-  };
-
-  const inFlightKey = missingIds.slice().sort().join("|");
-  let pending = requestLookupInFlight.get(inFlightKey);
-  if (!pending) {
-    pending = loadMissing();
-    requestLookupInFlight.set(inFlightKey, pending);
-  }
-
-  try {
-    const loaded = await pending;
-    return [...cachedRows, ...loaded];
-  } finally {
-    requestLookupInFlight.delete(inFlightKey);
-  }
+  const result = await loadCanonicalRequestsByIds(supabase, ids, {
+    includeItemCounts: false,
+  });
+  return result.rows;
 }
 
 async function fetchRequestsDisciplineRowsSafe(ids: string[]): Promise<RequestLookupRow[]> {
-  const reqIds = Array.from(new Set((ids || []).map((x) => String(x ?? "").trim()).filter(Boolean)));
-  if (!reqIds.length) return [];
-
-  const cachedRows: RequestLookupRow[] = [];
-  const missingIds: string[] = [];
-  for (const id of reqIds) {
-    const cached = getFreshLookupValue(requestLookupCache, id);
-    const hasDisciplineFields =
-      cached !== undefined &&
-      (!!cached?.level_code ||
-        !!cached?.system_code ||
-        cached?.level_code === null ||
-        cached?.system_code === null);
-    if (hasDisciplineFields) {
-      if (cached) cachedRows.push(cached);
-      continue;
-    }
-    missingIds.push(id);
-  }
-  if (!missingIds.length) return cachedRows;
-
-  const runSelect = async (selectCols: string) =>
-    await supabase.from("requests" as never).select(selectCols).in("id", missingIds);
-
-  if (requestsDisciplineSelectPlanCache) {
-    const cached = await runSelect(requestsDisciplineSelectPlanCache);
-    if (!cached.error) {
-      const rows = Array.isArray(cached.data)
-        ? cached.data.map(normalizeRequestLookupRow).filter((row): row is RequestLookupRow => !!row)
-        : [];
-      const seen = new Set(rows.map((row) => row.id));
-      for (const row of rows) {
-        const prev = getFreshLookupValue(requestLookupCache, row.id);
-        setLookupValue(requestLookupCache, row.id, {
-          ...(prev ?? {
-            id: row.id,
-            object_id: null,
-            object_name: null,
-            object_type_code: null,
-            system_code: null,
-            level_code: null,
-            zone_code: null,
-            object: null,
-          }),
-          ...row,
-        });
-      }
-      for (const id of missingIds) if (!seen.has(id)) setLookupValue(requestLookupCache, id, null);
-      return [...cachedRows, ...rows];
-    }
-    requestsDisciplineSelectPlanCache = null;
-  }
-
-  let lastError: unknown = null;
-  for (const selectCols of REQUESTS_DISCIPLINE_SELECT_PLANS) {
-    const q = await runSelect(selectCols);
-    if (!q.error) {
-      requestsDisciplineSelectPlanCache = selectCols;
-      const rows = Array.isArray(q.data)
-        ? q.data.map(normalizeRequestLookupRow).filter((row): row is RequestLookupRow => !!row)
-        : [];
-      const seen = new Set(rows.map((row) => row.id));
-      for (const row of rows) {
-        const prev = getFreshLookupValue(requestLookupCache, row.id);
-        setLookupValue(requestLookupCache, row.id, {
-          ...(prev ?? {
-            id: row.id,
-            object_id: null,
-            object_name: null,
-            object_type_code: null,
-            system_code: null,
-            level_code: null,
-            zone_code: null,
-            object: null,
-          }),
-          ...row,
-        });
-      }
-      for (const id of missingIds) if (!seen.has(id)) setLookupValue(requestLookupCache, id, null);
-      return [...cachedRows, ...rows];
-    }
-    lastError = q.error;
-  }
-
-  if (lastError) throw lastError;
-  return [];
+  const result = await loadCanonicalRequestsByIds(supabase, ids, {
+    includeItemCounts: false,
+  });
+  return result.rows;
 }
 
 async function fetchIssueHeadsViaAccRpc(p: {

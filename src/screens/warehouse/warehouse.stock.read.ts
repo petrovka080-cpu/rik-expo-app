@@ -1,28 +1,11 @@
 export type {
-  WarehouseReqHeadsFetchResult,
-  WarehouseReqHeadsSourceMeta,
-  WarehouseReqHeadsWindowMeta,
-  WarehouseReqItemsFetchResult,
-  WarehouseReqItemsSourceMeta,
-} from "./warehouse.requests.read";
-
-export {
-  apiFetchReqHeads,
-  apiFetchReqHeadsStaged,
-  apiFetchReqHeadsWindow,
-  apiFetchReqItems,
-  apiFetchReqItemsDetailed,
-  clearWarehouseRequestSourceTrace,
-} from "./warehouse.requests.read";
-
-export type {
   IncomingMaterialsFastRow,
   IssuedByObjectFastRow,
   IssuedMaterialsFastRow,
   WarehouseStockFetchResult,
   WarehouseStockSourceMeta,
   WarehouseStockWindowMeta,
-} from "./warehouse.stock.read";
+} from "./warehouse.stockReports.service";
 
 export {
   apiEnrichStockNamesFromRikRu,
@@ -36,4 +19,4 @@ export {
   apiFetchStock,
   apiFetchStockRpc,
   apiFetchStockRpcV2,
-} from "./warehouse.stock.read";
+} from "./warehouse.stockReports.service";

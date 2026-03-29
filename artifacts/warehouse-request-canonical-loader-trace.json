@@ -1,0 +1,47 @@
+{
+  "generatedAt": "2026-03-29T14:56:39.108Z",
+  "headsSourceMeta": {
+    "primaryOwner": "canonical_requests",
+    "sourcePath": "canonical",
+    "fallbackUsed": false,
+    "sourceKind": "table:requests",
+    "contractVersion": "request_lookup_v2",
+    "reason": null
+  },
+  "itemsSourceMeta": {
+    "primaryOwner": "canonical_requests",
+    "sourcePath": "canonical",
+    "fallbackUsed": false,
+    "sourceKind": "canonical:request_items_materialized",
+    "contractVersion": "request_items_materialized_v1",
+    "reason": "warehouse_view_missing_or_empty"
+  },
+  "trace": [
+    {
+      "timestamp": "2026-03-29T14:56:37.439Z",
+      "operation": "req_heads_window",
+      "result": "success",
+      "sourcePath": "canonical",
+      "sourceKind": "table:requests",
+      "reason": null,
+      "requestId": null,
+      "page": 0,
+      "pageSize": 10,
+      "rowCount": 10,
+      "contractVersion": "request_lookup_v2"
+    },
+    {
+      "timestamp": "2026-03-29T14:56:38.706Z",
+      "operation": "req_items",
+      "result": "success",
+      "sourcePath": "canonical",
+      "sourceKind": "canonical:request_items_materialized",
+      "reason": "warehouse_view_missing_or_empty",
+      "requestId": "0022c0cc-6dbb-40ed-8ae3-bd58e11bcc1e",
+      "page": null,
+      "pageSize": null,
+      "rowCount": 1,
+      "contractVersion": "request_items_materialized_v1"
+    }
+  ]
+}

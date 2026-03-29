@@ -1,7 +1,7 @@
 import { useCallback, useRef, useState } from "react";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-import { apiFetchIncomingReports, apiFetchReports } from "../warehouse.api";
+import { apiFetchIncomingReports, apiFetchReports } from "../warehouse.stock.read";
 import type { StockRow, WarehouseReportRow } from "../warehouse.types";
 
 const REPORTS_CACHE_TTL_MS = 60 * 1000;
@@ -88,4 +88,3 @@ export function useWarehouseReportsData(params: {
     fetchReports,
   };
 }
-
