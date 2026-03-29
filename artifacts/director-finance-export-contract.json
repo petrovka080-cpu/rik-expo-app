@@ -1,0 +1,49 @@
+{
+  "gate": "director_finance_export_contract",
+  "exports": [
+    {
+      "name": "financeText",
+      "present": true
+    },
+    {
+      "name": "money",
+      "present": true
+    },
+    {
+      "name": "mapToFinanceRow",
+      "present": true
+    },
+    {
+      "name": "normalizeFinSpendRows",
+      "present": true
+    },
+    {
+      "name": "computeFinanceRep",
+      "present": true
+    },
+    {
+      "name": "computeFinanceByKind",
+      "present": true
+    },
+    {
+      "name": "computeFinanceSpendSummary",
+      "present": true
+    },
+    {
+      "name": "computeFinanceSupplierPanel",
+      "present": true
+    },
+    {
+      "name": "fetchDirectorFinancePanelScopeV3ViaRpc",
+      "present": true
+    },
+    {
+      "name": "fetchDirectorFinanceSummaryViaRpc",
+      "present": true
+    },
+    {
+      "name": "fetchDirectorFinanceSupplierScopeV2ViaRpc",
+      "present": true
+    }
+  ]
+}
