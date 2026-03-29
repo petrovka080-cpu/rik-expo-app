@@ -1,8 +1,8 @@
 Catalog API Wave 1
-before_lines=3059
-after_lines=2274
-before_bytes=105032
-after_bytes=79770
+before_lines=2274
+after_lines=152
+before_bytes=79217
+after_bytes=4282
 
 moved:
 - catalog public types

@@ -1,12 +1,12 @@
 {
   "status": "GREEN",
   "before": {
-    "catalogApiLines": 3059,
-    "catalogApiBytes": 105032
+    "catalogApiLines": 2274,
+    "catalogApiBytes": 79217
   },
   "after": {
-    "catalogApiLines": 2274,
-    "catalogApiBytes": 79770,
+    "catalogApiLines": 152,
+    "catalogApiBytes": 4282,
     "familyFiles": [
       "src/lib/catalog/catalog.types.ts",
       "src/lib/catalog/catalog.observability.ts",
