@@ -13,6 +13,7 @@ import {
 import {
   deriveRequestHeadExpectationFromItemStatuses,
   matchesRequestHeadExpectation,
+  REQUEST_DRAFT_EN,
   REQUEST_DRAFT_STATUS,
   REQUEST_PENDING_STATUS,
   REQUEST_PENDING_EN,
@@ -89,6 +90,7 @@ type RequestFindReusableEmptyDraftArgs =
 type RequestSubmitArgs = Database["public"]["Functions"]["request_submit"]["Args"];
 type RequestStatusRecalcArgsCompat = { p_request_id: number | string };
 type RequestIdLookupRow = Pick<RequestsTable["Row"], "id">;
+type RequestDraftCacheProbeRow = Pick<RequestsTable["Row"], "id" | "status" | "created_by" | "submitted_at">;
 export type RequestSubmitPath =
   | "post_draft_short_circuit"
   | "rpc_submit";
@@ -197,6 +199,12 @@ export function clearCachedDraftRequestId() {
   _draftRequestIdAny = null;
 }
 
+const isDraftRequestStatusValue = (raw: unknown): boolean => {
+  const normalized = normalizeStatus(raw);
+  if (!normalized) return false;
+  return normalized === REQUEST_DRAFT_EN || normalized === normalizeStatus(REQUEST_DRAFT_STATUS);
+};
+
 async function resolveDraftOwnerUserId(): Promise<string | null> {
   try {
     const session = await supabase.auth.getSession();
@@ -216,6 +224,30 @@ async function resolveDraftOwnerUserId(): Promise<string | null> {
     });
     return null;
   }
+}
+
+async function isCachedDraftRequestIdValid(requestId: number | string): Promise<boolean> {
+  const requestFilterId = normalizeRequestFilterId(requestId);
+  if (!requestFilterId) return false;
+
+  const result = await client
+    .from("requests")
+    .select("id,status,created_by,submitted_at")
+    .eq("id", requestFilterId)
+    .maybeSingle<RequestDraftCacheProbeRow>();
+
+  if (result.error) throw result.error;
+
+  const row = result.data ?? null;
+  if (!row?.id) return false;
+  if (!isDraftRequestStatusValue(row.status ?? null)) return false;
+  if (row.submitted_at != null) return false;
+
+  const ownerUserId = await resolveDraftOwnerUserId();
+  const createdBy = String(row.created_by ?? "").trim();
+  if (ownerUserId && createdBy && createdBy !== ownerUserId) return false;
+
+  return true;
 }
 
 async function findReusableEmptyDraftRequestId(): Promise<string | null> {
@@ -257,6 +289,61 @@ async function findReusableEmptyDraftRequestId(): Promise<string | null> {
     });
     return null;
   }
+}
+
+async function reuseExistingDraftRequest(
+  requestId: number | string,
+  meta?: RequestMeta,
+): Promise<RequestRecord | null> {
+  const requestFilterId = normalizeRequestFilterId(requestId);
+  if (!requestFilterId) return null;
+
+  const payload = buildRequestDraftInsert(meta);
+  const result = await client
+    .from("requests")
+    .update(payload)
+    .eq("id", requestFilterId)
+    .select(REQUEST_DRAFT_SELECT)
+    .maybeSingle();
+
+  if (result.error) throw result.error;
+
+  const row = mapRequestRow(result.data as RequestDraftSelectRow | null);
+  if (!row?.id) return null;
+
+  _draftRequestIdAny = row.id;
+  return row;
+}
+
+async function insertDraftRequest(meta?: RequestMeta): Promise<RequestRecord | null> {
+  const payload = buildRequestDraftInsert(meta);
+
+  const { data, error } = await client
+    .from("requests")
+    .insert(payload)
+    .select(REQUEST_DRAFT_SELECT)
+    .single();
+
+  if (error) throw error;
+
+  const row = mapRequestRow(data as RequestDraftSelectRow | null);
+  if (!row?.id) {
+    throw new Error("requests.insert returned invalid payload");
+  }
+
+  _draftRequestIdAny = row.id;
+  recordPlatformObservability({
+    screen: "request",
+    surface: "draft",
+    category: "reload",
+    event: "draft_created_new",
+    result: "success",
+    sourceKind: "table:requests.insert",
+    extra: {
+      requestId: row.id,
+    },
+  });
+  return row;
 }
 
 // ============================== Low-level request helpers ==============================
@@ -346,27 +433,40 @@ export async function listRequestItems(requestId: number | string): Promise<ReqI
 }
 
 export async function requestCreateDraft(meta?: RequestMeta): Promise<RequestRecord | null> {
-  const payload = buildRequestDraftInsert(meta);
-
   try {
-    const { data, error } = await client
-      .from("requests")
-      .insert(payload)
-      .select(REQUEST_DRAFT_SELECT)
-      .single();
+    const reusableId = await findReusableEmptyDraftRequestId();
+    if (reusableId) {
+      try {
+        const reused = await reuseExistingDraftRequest(reusableId, meta);
+        if (reused?.id) return reused;
+      } catch (error) {
+        recordPlatformObservability({
+          screen: "request",
+          surface: "draft",
+          category: "reload",
+          event: "draft_reuse_prepare_failed",
+          result: "error",
+          sourceKind: "table:requests.update",
+          errorStage: "reuse_prepare",
+          errorClass: error instanceof Error ? error.name : undefined,
+          errorMessage: parseErr(error),
+          extra: {
+            requestId: reusableId,
+          },
+        });
+      }
+    }
 
-    if (error) throw error;
-    const row = mapRequestRow(data as RequestDraftSelectRow | null);
-    if (row) {
-      _draftRequestIdAny = row.id;
-      return row;
+    const created = await insertDraftRequest(meta);
+    if (created?.id) {
+      return created;
     }
   } catch (e) {
     logRequestsDebug("[requestCreateDraft]", parseErr(e));
     throw e;
   }
 
-  throw new Error("requests.insert returned invalid payload");
+  throw new Error("requestCreateDraft returned invalid payload");
 }
 
 export async function ensureRequestSmart(currentId?: number | string, meta?: RequestMeta): Promise<number | string> {
@@ -381,10 +481,42 @@ export async function ensureRequestSmart(currentId?: number | string, meta?: Req
 }
 
 export async function getOrCreateDraftRequestId(): Promise<string | number> {
-  if (_draftRequestIdAny != null) return _draftRequestIdAny;
+  if (_draftRequestIdAny != null) {
+    try {
+      const valid = await isCachedDraftRequestIdValid(_draftRequestIdAny);
+      if (valid) return _draftRequestIdAny;
+      recordPlatformObservability({
+        screen: "request",
+        surface: "draft",
+        category: "reload",
+        event: "draft_cached_id_invalidated",
+        result: "success",
+        sourceKind: "table:requests",
+        extra: {
+          requestId: String(_draftRequestIdAny),
+        },
+      });
+    } catch (error) {
+      recordPlatformObservability({
+        screen: "request",
+        surface: "draft",
+        category: "reload",
+        event: "draft_cached_id_validation_failed",
+        result: "error",
+        sourceKind: "table:requests",
+        errorStage: "cached_id_probe",
+        errorClass: error instanceof Error ? error.name : undefined,
+        errorMessage: parseErr(error),
+        extra: {
+          requestId: String(_draftRequestIdAny),
+        },
+      });
+    }
+    _draftRequestIdAny = null;
+  }
   const reusableId = await findReusableEmptyDraftRequestId();
   if (reusableId) return reusableId;
-  const created = await requestCreateDraft();
+  const created = await insertDraftRequest();
   if (created?.id) return created.id;
   throw new Error("requestCreateDraft returned invalid id");
 }

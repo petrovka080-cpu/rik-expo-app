@@ -1,6 +1,9 @@
 import { supabase } from "../supabaseClient";
 import type { Database } from "../database.types";
-import { requestCreateDraft as rpcRequestCreateDraft } from "../api/requests";
+import {
+  clearCachedDraftRequestId,
+  getOrCreateDraftRequestId as getOrCreateLowLevelDraftRequestId,
+} from "../api/requests";
 import { recordCatalogWarning } from "./catalog.observability";
 import {
   asLooseRecord,
@@ -490,12 +493,13 @@ export async function getOrCreateDraftRequestId(): Promise<string> {
     const valid = await isCachedDraftValid(cached);
     if (valid) return cached;
     clearLocalDraftId();
+    clearCachedDraftRequestId();
   }
 
   try {
-    const created = await rpcRequestCreateDraft();
-    if (created?.id) {
-      const id = String(created.id);
+    const resolved = await getOrCreateLowLevelDraftRequestId();
+    const id = String(resolved ?? "").trim();
+    if (id) {
       setLocalDraftId(id);
       return id;
     }
