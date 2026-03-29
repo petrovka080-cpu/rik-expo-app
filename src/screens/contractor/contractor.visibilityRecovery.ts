@@ -1,4 +1,5 @@
 import type { ContractorInboxRow } from "../../lib/api/contractor.scope.service";
+import { normalizeRuText } from "../../lib/text/encoding";
 import type { ContractorProfileCard } from "./contractor.profileService";
 import type {
   ContractorSubcontractCard,
@@ -22,6 +23,13 @@ const firstNonEmpty = (...values: Array<unknown>): string | null => {
     if (normalized) return normalized;
   }
   return null;
+};
+
+const firstNonEmptyText = (...values: Array<unknown>): string | null => {
+  const value = firstNonEmpty(...values);
+  if (!value) return null;
+  const normalized = String(normalizeRuText(value)).trim();
+  return normalized || null;
 };
 
 const inferSourceKind = (row: ContractorWorkRow): ContractorInboxRow["origin"]["sourceKind"] => {
@@ -78,16 +86,16 @@ export function buildCompatibilityInboxRows(params: {
       publicationState: "ready",
       identity: {
         contractorId: firstNonEmpty(contractor?.id, matchedRow?.contractor_id, subcontractId)!,
-        contractorName: firstNonEmpty(
+        contractorName: firstNonEmptyText(
           matchedRow?.contractor_org,
           card.contractor_org,
           contractor?.company_name,
           contractor?.full_name,
           "Подрядчик",
         )!,
-        contractorInn: firstNonEmpty(matchedRow?.contractor_inn, card.contractor_inn, contractor?.inn),
-        contractNumber: firstNonEmpty(card.contract_number),
-        contractDate: firstNonEmpty(card.contract_date),
+        contractorInn: firstNonEmptyText(matchedRow?.contractor_inn, card.contractor_inn, contractor?.inn),
+        contractNumber: firstNonEmptyText(card.contract_number),
+        contractDate: firstNonEmptyText(card.contract_date),
       },
       origin: {
         sourceKind: matchedRow ? inferSourceKind(matchedRow) : "foreman_subcontract_request",
@@ -98,21 +106,21 @@ export function buildCompatibilityInboxRows(params: {
       },
       work: {
         workItemId,
-        workName: firstNonEmpty(matchedRow?.work_name, matchedRow?.work_code, card.work_type, "Работа")!,
+        workName: firstNonEmptyText(matchedRow?.work_name, matchedRow?.work_code, card.work_type, "Работа")!,
         workNameSource: matchedRow?.work_name ? "snapshot" : matchedRow?.work_code ? "raw_code" : "snapshot",
         quantity: Number.isFinite(quantity) ? quantity : null,
-        uom: firstNonEmpty(matchedRow?.uom_id, card.uom),
+        uom: firstNonEmptyText(matchedRow?.uom_id, card.uom),
         unitPrice,
         totalAmount,
         isMaterial: false,
       },
       location: {
         objectId: firstNonEmpty(matchedRow?.request_id),
-        objectName: firstNonEmpty(matchedRow?.object_name, card.object_name, "Объект")!,
+        objectName: firstNonEmptyText(matchedRow?.object_name, card.object_name, "Объект")!,
         systemName: null,
         zoneName: null,
         floorName: null,
-        locationDisplay: firstNonEmpty(matchedRow?.object_name, card.object_name, "Объект")!,
+        locationDisplay: firstNonEmptyText(matchedRow?.object_name, card.object_name, "Объект")!,
       },
       diagnostics: {
         sourceVersion: "compat:contractor_visibility_recovery_v1",

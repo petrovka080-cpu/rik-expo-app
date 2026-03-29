@@ -1,5 +1,6 @@
 import { supabase } from "../../lib/supabaseClient";
 import type { Database } from "../../lib/database.types";
+import { normalizeRuText } from "../../lib/text/encoding";
 
 type SubcontractInsert = Database["public"]["Tables"]["subcontracts"]["Insert"];
 type SubcontractCreateDraftArgs = Database["public"]["Functions"]["subcontract_create_draft"]["Args"];
@@ -36,6 +37,16 @@ type SubcontractItemsBoundary = {
   from(relation: "subcontract_items"): SubcontractItemsTable;
 };
 
+const ru = (value: unknown, fallback = ""): string => {
+  const normalized = String(normalizeRuText(String(value ?? fallback)) ?? "").trim();
+  return normalized || fallback;
+};
+
+const ruOrNull = (value: unknown): string | null => {
+  if (value == null) return null;
+  const normalized = ru(value);
+  return normalized || null;
+};
 
 export type SubcontractStatus = "draft" | "pending" | "approved" | "rejected" | "closed";
 export type SubcontractWorkMode = "labor_only" | "turnkey" | "mixed";
@@ -97,22 +108,55 @@ export type NewSubcontractItem = {
   uom?: string | null;
 };
 
+const normalizeSubcontractPatch = (patch: Partial<Subcontract>): Partial<Subcontract> => ({
+  ...patch,
+  foreman_name: ruOrNull(patch.foreman_name),
+  contractor_org: ruOrNull(patch.contractor_org),
+  contractor_inn: ruOrNull(patch.contractor_inn),
+  contractor_rep: ruOrNull(patch.contractor_rep),
+  contractor_phone: ruOrNull(patch.contractor_phone),
+  contract_number: ruOrNull(patch.contract_number),
+  object_name: ruOrNull(patch.object_name),
+  work_zone: ruOrNull(patch.work_zone),
+  work_type: ruOrNull(patch.work_type),
+  uom: ruOrNull(patch.uom),
+  foreman_comment: ruOrNull(patch.foreman_comment),
+  director_comment: ruOrNull(patch.director_comment),
+});
+
+const normalizeSubcontractRow = (row: Subcontract): Subcontract => ({
+  ...row,
+  display_no: ruOrNull(row.display_no),
+  foreman_name: ruOrNull(row.foreman_name),
+  contractor_org: ruOrNull(row.contractor_org),
+  contractor_inn: ruOrNull(row.contractor_inn),
+  contractor_rep: ruOrNull(row.contractor_rep),
+  contractor_phone: ruOrNull(row.contractor_phone),
+  contract_number: ruOrNull(row.contract_number),
+  object_name: ruOrNull(row.object_name),
+  work_zone: ruOrNull(row.work_zone),
+  work_type: ruOrNull(row.work_type),
+  uom: ruOrNull(row.uom),
+  foreman_comment: ruOrNull(row.foreman_comment),
+  director_comment: ruOrNull(row.director_comment),
+});
+
 const asSubcontractItem = (value: unknown): SubcontractItem | null => {
   if (!value || typeof value !== "object") return null;
   const row = value as Record<string, unknown>;
   const id = String(row.id ?? "").trim();
-  const subcontract_id = String(row.subcontract_id ?? "").trim();
-  if (!id || !subcontract_id) return null;
+  const subcontractId = String(row.subcontract_id ?? "").trim();
+  if (!id || !subcontractId) return null;
   return {
     id,
     created_at: String(row.created_at ?? ""),
-    subcontract_id,
+    subcontract_id: subcontractId,
     created_by: row.created_by == null ? null : String(row.created_by),
     source: String(row.source ?? "catalog") === "smeta" ? "smeta" : "catalog",
     rik_code: row.rik_code == null ? null : String(row.rik_code),
-    name: String(row.name ?? "").trim() || "Позиция",
+    name: ru(row.name, "Позиция"),
     qty: Number.isFinite(Number(row.qty)) ? Number(row.qty) : 0,
-    uom: row.uom == null ? null : String(row.uom),
+    uom: ruOrNull(row.uom),
     status: String(row.status ?? "draft") === "canceled" ? "canceled" : "draft",
   };
 };
@@ -169,7 +213,7 @@ export async function listForemanSubcontracts(userId: string): Promise<Subcontra
     .eq("created_by", userId)
     .order("created_at", { ascending: false });
   if (error) throw error;
-  return (data ?? []) as Subcontract[];
+  return Array.isArray(data) ? (data as Subcontract[]).map(normalizeSubcontractRow) : [];
 }
 
 export async function listDirectorSubcontracts(): Promise<Subcontract[]> {
@@ -179,7 +223,7 @@ export async function listDirectorSubcontracts(): Promise<Subcontract[]> {
     .not("status", "eq", "draft")
     .order("created_at", { ascending: false });
   if (error) throw error;
-  return (data ?? []) as Subcontract[];
+  return Array.isArray(data) ? (data as Subcontract[]).map(normalizeSubcontractRow) : [];
 }
 
 export async function listAccountantSubcontracts(): Promise<Subcontract[]> {
@@ -189,7 +233,7 @@ export async function listAccountantSubcontracts(): Promise<Subcontract[]> {
     .eq("status", "approved")
     .order("approved_at", { ascending: false });
   if (error) throw error;
-  return (data ?? []) as Subcontract[];
+  return Array.isArray(data) ? (data as Subcontract[]).map(normalizeSubcontractRow) : [];
 }
 
 export async function createSubcontractDraft(userId: string, foremanName: string): Promise<string> {
@@ -202,7 +246,9 @@ export async function createSubcontractDraftWithPatch(
   foremanName: string,
   patch: Partial<Subcontract>,
 ): Promise<Pick<Subcontract, "id" | "display_no">> {
-  // Помощник: если пустая строка или чушь - шлем null, чтобы Postgres (date) не ругался
+  const normalizedPatch = normalizeSubcontractPatch(patch);
+  const normalizedForemanName = ruOrNull(foremanName);
+
   const asDate = (val: unknown) => {
     if (!val || typeof val !== "string" || val.trim() === "") return null;
     return val.trim();
@@ -210,25 +256,25 @@ export async function createSubcontractDraftWithPatch(
 
   const payload: SubcontractCreateDraftArgsCompat = {
     p_created_by: userId,
-    p_foreman_name: foremanName || null,
-    p_contractor_org: patch.contractor_org ?? null,
-    p_contractor_inn: patch.contractor_inn ?? null,
-    p_contractor_rep: patch.contractor_rep ?? null,
-    p_contractor_phone: patch.contractor_phone ?? null,
-    p_contract_number: patch.contract_number ?? null,
-    p_contract_date: asDate(patch.contract_date),
-    p_object_name: patch.object_name ?? null,
-    p_work_zone: patch.work_zone ?? null,
-    p_work_type: patch.work_type ?? null,
-    p_qty_planned: patch.qty_planned ?? null,
-    p_uom: patch.uom ?? null,
-    p_date_start: asDate(patch.date_start),
-    p_date_end: asDate(patch.date_end),
-    p_work_mode: patch.work_mode ?? null,
-    p_price_per_unit: patch.price_per_unit ?? null,
-    p_total_price: patch.total_price ?? null,
-    p_price_type: patch.price_type ?? null,
-    p_foreman_comment: patch.foreman_comment ?? null,
+    p_foreman_name: normalizedForemanName,
+    p_contractor_org: normalizedPatch.contractor_org ?? null,
+    p_contractor_inn: normalizedPatch.contractor_inn ?? null,
+    p_contractor_rep: normalizedPatch.contractor_rep ?? null,
+    p_contractor_phone: normalizedPatch.contractor_phone ?? null,
+    p_contract_number: normalizedPatch.contract_number ?? null,
+    p_contract_date: asDate(normalizedPatch.contract_date),
+    p_object_name: normalizedPatch.object_name ?? null,
+    p_work_zone: normalizedPatch.work_zone ?? null,
+    p_work_type: normalizedPatch.work_type ?? null,
+    p_qty_planned: normalizedPatch.qty_planned ?? null,
+    p_uom: normalizedPatch.uom ?? null,
+    p_date_start: asDate(normalizedPatch.date_start),
+    p_date_end: asDate(normalizedPatch.date_end),
+    p_work_mode: normalizedPatch.work_mode ?? null,
+    p_price_per_unit: normalizedPatch.price_per_unit ?? null,
+    p_total_price: normalizedPatch.total_price ?? null,
+    p_price_type: normalizedPatch.price_type ?? null,
+    p_foreman_comment: normalizedPatch.foreman_comment ?? null,
   };
 
   const parseRpcRow = (data: unknown): Pick<Subcontract, "id" | "display_no"> | null => {
@@ -263,7 +309,6 @@ export async function createSubcontractDraftWithPatch(
     p_foreman_comment: payload.p_foreman_comment,
   };
 
-  // 1) New RPC signature (with p_contractor_inn).
   {
     const { data, error } = await supabase.rpc("subcontract_create_draft", payload);
     if (!error) {
@@ -273,7 +318,6 @@ export async function createSubcontractDraftWithPatch(
     }
   }
 
-  // 2) Legacy RPC signature (without p_contractor_inn).
   {
     const { data, error } = await supabase.rpc("subcontract_create_draft", payloadLegacy);
     if (!error) {
@@ -283,29 +327,28 @@ export async function createSubcontractDraftWithPatch(
     }
   }
 
-  // 3) Hard fallback: direct insert (for envs where RPC is absent).
   const insertPayloadBase = {
     created_by: userId,
     status: "draft",
-    foreman_name: foremanName || null,
-    contractor_org: patch.contractor_org ?? null,
-    contractor_inn: patch.contractor_inn ?? null,
-    contractor_rep: patch.contractor_rep ?? null,
-    contractor_phone: patch.contractor_phone ?? null,
-    contract_number: patch.contract_number ?? null,
-    contract_date: asDate(patch.contract_date),
-    object_name: patch.object_name ?? null,
-    work_zone: patch.work_zone ?? null,
-    work_type: patch.work_type ?? null,
-    qty_planned: patch.qty_planned ?? null,
-    uom: patch.uom ?? null,
-    date_start: asDate(patch.date_start),
-    date_end: asDate(patch.date_end),
-    work_mode: patch.work_mode ?? null,
-    price_per_unit: patch.price_per_unit ?? null,
-    total_price: patch.total_price ?? null,
-    price_type: patch.price_type ?? null,
-    foreman_comment: patch.foreman_comment ?? null,
+    foreman_name: normalizedForemanName,
+    contractor_org: normalizedPatch.contractor_org ?? null,
+    contractor_inn: normalizedPatch.contractor_inn ?? null,
+    contractor_rep: normalizedPatch.contractor_rep ?? null,
+    contractor_phone: normalizedPatch.contractor_phone ?? null,
+    contract_number: normalizedPatch.contract_number ?? null,
+    contract_date: asDate(normalizedPatch.contract_date),
+    object_name: normalizedPatch.object_name ?? null,
+    work_zone: normalizedPatch.work_zone ?? null,
+    work_type: normalizedPatch.work_type ?? null,
+    qty_planned: normalizedPatch.qty_planned ?? null,
+    uom: normalizedPatch.uom ?? null,
+    date_start: asDate(normalizedPatch.date_start),
+    date_end: asDate(normalizedPatch.date_end),
+    work_mode: normalizedPatch.work_mode ?? null,
+    price_per_unit: normalizedPatch.price_per_unit ?? null,
+    total_price: normalizedPatch.total_price ?? null,
+    price_type: normalizedPatch.price_type ?? null,
+    foreman_comment: normalizedPatch.foreman_comment ?? null,
   } satisfies Partial<SubcontractInsert>;
 
   let ins = await supabase
@@ -314,7 +357,6 @@ export async function createSubcontractDraftWithPatch(
     .select("id, display_no")
     .single();
 
-  // Old schema fallback: table without contractor_inn column.
   if (ins.error && String(ins.error.message || "").toLowerCase().includes("contractor_inn")) {
     const retryPayload = { ...insertPayloadBase };
     delete retryPayload.contractor_inn;
@@ -335,7 +377,10 @@ export async function createSubcontractDraftWithPatch(
 }
 
 export async function updateSubcontract(id: string, patch: Partial<Subcontract>): Promise<void> {
-  const { error } = await supabase.from("subcontracts").update(patch).eq("id", id);
+  const { error } = await supabase
+    .from("subcontracts")
+    .update(normalizeSubcontractPatch(patch))
+    .eq("id", id);
   if (error) throw error;
 }
 
@@ -362,7 +407,7 @@ export async function rejectSubcontract(id: string, comment: string): Promise<vo
     .from("subcontracts")
     .update({
       status: "rejected",
-      director_comment: comment.trim() || null,
+      director_comment: ruOrNull(comment),
       rejected_at: new Date().toISOString(),
     })
     .eq("id", id)
@@ -394,9 +439,9 @@ export async function appendSubcontractItems(
     created_by: createdBy || null,
     source: it.source,
     rik_code: it.rik_code ?? null,
-    name: String(it.name || "").trim() || "Позиция",
+    name: ru(it.name, "Позиция"),
     qty: Number(it.qty) > 0 ? Number(it.qty) : 1,
-    uom: it.uom ?? null,
+    uom: ruOrNull(it.uom),
     status: "draft",
   }));
   const { data, error } = await subcontractItemsTable()

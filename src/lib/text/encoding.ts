@@ -119,6 +119,13 @@ const decodeCp1251Mojibake = (input: string): string => {
   return decoded;
 };
 
+export function isCorruptedText(value: unknown): boolean {
+  if (value == null) return false;
+  const src = String(value);
+  if (!src) return false;
+  return scoreMojibake(collapseBrokenMojibakeSpacing(src)) >= 4;
+}
+
 export function normalizeRuText<T>(value: T): T {
   if (value == null) return value;
   const src = String(value);

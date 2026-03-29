@@ -4,6 +4,7 @@ import {
   beginPlatformObservability,
   recordPlatformObservability,
 } from "../observability/platformObservability";
+import { normalizeRuText } from "../text/encoding";
 
 export type ContractorPublicationState =
   | "ready"
@@ -161,6 +162,17 @@ const asNullableString = (value: unknown): string | null => {
   return normalized || null;
 };
 
+const asRuText = (value: unknown, scope: string): string => {
+  const normalized = String(normalizeRuText(asString(value, scope)) ?? "").trim();
+  if (!normalized) throw new Error(`${scope} must be a non-empty string`);
+  return normalized;
+};
+
+const asNullableRuText = (value: unknown): string | null => {
+  const normalized = String(normalizeRuText(asNullableString(value)) ?? "").trim();
+  return normalized || null;
+};
+
 const asNumber = (value: unknown, fallback = 0): number => {
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : fallback;
@@ -214,10 +226,10 @@ const parseIdentity = (value: unknown, scope: string): ContractorIdentitySnapsho
   const record = asRecord(value, scope);
   return {
     contractorId: asString(record.contractorId, `${scope}.contractorId`),
-    contractorName: asString(record.contractorName, `${scope}.contractorName`),
-    contractorInn: asNullableString(record.contractorInn),
-    contractNumber: asNullableString(record.contractNumber),
-    contractDate: asNullableString(record.contractDate),
+    contractorName: asRuText(record.contractorName, `${scope}.contractorName`),
+    contractorInn: asNullableRuText(record.contractorInn),
+    contractNumber: asNullableRuText(record.contractNumber),
+    contractDate: asNullableRuText(record.contractDate),
   };
 };
 
@@ -236,10 +248,10 @@ const parseWork = (value: unknown, scope: string): ContractorWorkSnapshot => {
   const record = asRecord(value, scope);
   return {
     workItemId: asString(record.workItemId, `${scope}.workItemId`),
-    workName: asString(record.workName, `${scope}.workName`),
+    workName: asRuText(record.workName, `${scope}.workName`),
     workNameSource: parseWorkNameSource(record.workNameSource, `${scope}.workNameSource`),
     quantity: asNullableNumber(record.quantity),
-    uom: asNullableString(record.uom),
+    uom: asNullableRuText(record.uom),
     unitPrice: asNullableNumber(record.unitPrice),
     totalAmount: asNullableNumber(record.totalAmount),
     isMaterial: record.isMaterial === true,
@@ -248,17 +260,17 @@ const parseWork = (value: unknown, scope: string): ContractorWorkSnapshot => {
 
 const parseLocation = (value: unknown, scope: string): ContractorLocationSnapshot => {
   const record = asRecord(value, scope);
-  const objectName = asNullableString(record.objectName) ?? asNullableString(record.locationDisplay) ?? "";
-  const locationDisplay = asNullableString(record.locationDisplay) ?? objectName;
+  const objectName = asNullableRuText(record.objectName) ?? asNullableRuText(record.locationDisplay) ?? "";
+  const locationDisplay = asNullableRuText(record.locationDisplay) ?? objectName;
   if (!objectName || !locationDisplay) {
     throw new Error(`${scope} requires objectName/locationDisplay`);
   }
   return {
     objectId: asNullableString(record.objectId),
     objectName,
-    systemName: asNullableString(record.systemName),
-    zoneName: asNullableString(record.zoneName),
-    floorName: asNullableString(record.floorName),
+    systemName: asNullableRuText(record.systemName),
+    zoneName: asNullableRuText(record.zoneName),
+    floorName: asNullableRuText(record.floorName),
     locationDisplay,
   };
 };

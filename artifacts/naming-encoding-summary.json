@@ -1,0 +1,11 @@
+{
+  "encodingGuardFile": "src/lib/text/encoding.ts",
+  "normalizedBoundaries": [
+    "src/screens/subcontracts/subcontracts.shared.ts",
+    "src/lib/api/contractor.scope.service.ts",
+    "src/screens/contractor/contractor.visibilityRecovery.ts"
+  ],
+  "canonicalStatusFilterFile": "src/lib/api/director_reports.transport.discipline.ts",
+  "cleanSeedFile": "scripts/_shared/contractorCanonicalSeed.ts",
+  "sourceFilesWithCorruption": []
+}

@@ -414,7 +414,7 @@ export async function runPdfTop(args: {
       cleanup();
       return;
     } catch (caughtError: unknown) {
-      const error = { message: getErrorMessage(caughtError, "РќРµ СѓРґР°Р»РѕСЃСЊ РѕС‚РєСЂС‹С‚СЊ PDF") };
+      const error = { message: getErrorMessage(caughtError, "Не удалось открыть PDF") };
       try {
         win.close();
       } catch {}
@@ -455,7 +455,7 @@ export async function runPdfTop(args: {
     if (mode === "share") await openPdfShare(localUri, fileName);
     else await openPdfPreview(localUri, fileName);
   } catch (caughtError: unknown) {
-    const error = { message: getErrorMessage(caughtError, "РќРµ СѓРґР°Р»РѕСЃСЊ РѕС‚РєСЂС‹С‚СЊ PDF") };
+    const error = { message: getErrorMessage(caughtError, "Не удалось открыть PDF") };
     Alert.alert("PDF", String(error?.message ?? "Не удалось открыть PDF"));
   } finally {
     setTimeout(cleanup, 500);

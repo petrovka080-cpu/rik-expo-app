@@ -101,7 +101,7 @@ export default function DirectorProposalAttachments({
           }}
         >
           <Text style={{ color: "#FDE68A", fontWeight: "900" }}>
-            Р’Р»РѕР¶РµРЅРёСЏ Р·Р°РіСЂСѓР¶РµРЅС‹ РІ degraded mode
+            Вложения загружены в degraded mode
           </Text>
           <Text style={{ color: "#FDE68A", marginTop: 4 }}>
             {error}
@@ -157,7 +157,7 @@ export default function DirectorProposalAttachments({
                 </Text>
                 <Text style={{ color: UI.sub, marginTop: 4 }} numberOfLines={1}>
                   {corrupted ? "Attachment corrupted" : "Открыть / скачать"}
-                  {createdAt ? ` · ${createdAt}` : ""}
+                  {createdAt ? ` В· ${createdAt}` : ""}
                 </Text>
               </Pressable>
             );

@@ -8,6 +8,8 @@ import {
   Text,
   View,
 } from "react-native";
+
+import { normalizeRuText } from "../../lib/text/encoding";
 import { FlashList } from "../../ui/FlashList";
 import {
   STATUS_CONFIG,
@@ -19,6 +21,11 @@ import {
 
 type Props = {
   contentTopPad: number;
+};
+
+const ru = (value: unknown, fallback = "—") => {
+  const normalized = String(normalizeRuText(String(value ?? fallback)) ?? "").trim();
+  return normalized || fallback;
 };
 
 export default function AccountantSubcontractTab({ contentTopPad }: Props) {
@@ -60,11 +67,11 @@ export default function AccountantSubcontractTab({ contentTopPad }: Props) {
         onPress={() => {
           Alert.alert(
             "Детали подряда",
-            `Объект: ${item.object_name || "—"}\n` +
-              `Вид работ: ${item.work_type || "—"}\n` +
-              `Подрядчик: ${item.contractor_org || "—"}\n` +
-              `ИНН: ${item.contractor_inn || "—"}\n` +
-              `Договор: ${item.contract_number || "—"} от ${fmtDate(item.contract_date)}\n` +
+            `Объект: ${ru(item.object_name)}\n` +
+              `Вид работ: ${ru(item.work_type, "Без названия")}\n` +
+              `Подрядчик: ${ru(item.contractor_org)}\n` +
+              `ИНН: ${ru(item.contractor_inn)}\n` +
+              `Договор: ${ru(item.contract_number)} от ${fmtDate(item.contract_date)}\n` +
               `Сумма: ${fmtAmount(item.total_price)} сом\n` +
               `Срок: ${fmtDate(item.date_start)} - ${fmtDate(item.date_end)}\n` +
               `Статус: ${cfg.label}`,
@@ -72,14 +79,14 @@ export default function AccountantSubcontractTab({ contentTopPad }: Props) {
         }}
       >
         <View style={styles.cardHeader}>
-          <Text style={styles.cardTitle}>{item.work_type || "Без названия"}</Text>
+          <Text style={styles.cardTitle}>{ru(item.work_type, "Без названия")}</Text>
           <View style={[styles.badge, { backgroundColor: cfg.bg }]}>
             <Text style={[styles.badgeText, { color: cfg.fg }]}>{cfg.label}</Text>
           </View>
         </View>
 
         <Text style={styles.cardSubtitle}>
-          {item.object_name || "—"} · {item.contractor_org || "—"}
+          {ru(item.object_name)} · {ru(item.contractor_org)}
         </Text>
 
         <View style={styles.cardFooter}>

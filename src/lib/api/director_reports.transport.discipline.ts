@@ -121,7 +121,7 @@ async function fetchAllFactRowsFromTables(p: {
     let query = supabase
       .from("warehouse_issues" as never)
       .select("id,iss_date,object_name,work_name,request_id,status,note,target_object_id")
-      .eq("status", "РџРѕРґС‚РІРµСЂР¶РґРµРЅРѕ");
+      .eq("status", "Подтверждено");
 
     if (p.from) query = query.gte("iss_date", toRangeStart(p.from));
     if (p.to) query = query.lte("iss_date", toRangeEnd(p.to));
@@ -328,7 +328,7 @@ async function fetchDisciplineFactRowsFromTables(p: {
         let query = supabase
           .from("warehouse_issue_items" as never)
           .select("id,issue_id,rik_code,uom_id,qty,request_item_id,warehouse_issues!inner(id,iss_date,object_name,work_name,status,note)")
-          .eq("warehouse_issues.status", "РџРѕРґС‚РІРµСЂР¶РґРµРЅРѕ");
+          .eq("warehouse_issues.status", "Подтверждено");
         if (p.from) query = query.gte("warehouse_issues.iss_date", toRangeStart(p.from));
         if (p.to) query = query.lte("warehouse_issues.iss_date", toRangeEnd(p.to));
         if (p.objectName != null) query = query.eq("warehouse_issues.object_name", p.objectName);
@@ -413,7 +413,7 @@ async function fetchDisciplineFactRowsFromTables(p: {
     let query = supabase
       .from("warehouse_issues" as never)
       .select("id,iss_date,object_name,work_name,request_id,status,note")
-      .eq("status", "РџРѕРґС‚РІРµСЂР¶РґРµРЅРѕ");
+      .eq("status", "Подтверждено");
 
     if (p.from) query = query.gte("iss_date", toRangeStart(p.from));
     if (p.to) query = query.lte("iss_date", toRangeEnd(p.to));

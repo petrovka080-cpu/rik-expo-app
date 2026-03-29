@@ -332,7 +332,7 @@ const createWarehouseIssue = async (
       qty: params.qty,
       uom: params.uom,
       who: "Runtime Warehouse",
-      status: "РџРѕРґС‚РІРµСЂР¶РґРµРЅРѕ",
+      status: "Подтверждено",
       object_name: params.objectName,
       work_name: params.workName,
     })
@@ -434,8 +434,8 @@ export async function seedContractorCanonicalScenarios(adminInput?: AdminClient)
 
   const scenarios: ContractorScenarioSeed[] = [];
 
-  const buyerObjectName = `Р–Рљ РЎРµРІРµСЂ ${suffix}`;
-  const buyerWorkName = `Р¤Р°СЃР°РґРЅС‹Рµ СЂР°Р±РѕС‚С‹ ${suffix}`;
+  const buyerObjectName = `ЖК Север ${suffix}`;
+  const buyerWorkName = `Фасадные работы ${suffix}`;
   const buyerSubcontractId = await createApprovedSubcontract(
     admin,
     {
@@ -445,9 +445,9 @@ export async function seedContractorCanonicalScenarios(adminInput?: AdminClient)
       objectName: buyerObjectName,
       workType: buyerWorkName,
       contractNumber: `CTR-BUY-${suffix.toUpperCase()}`,
-      workZone: refs.zone?.name ?? "Р—РѕРЅР° 1",
+      workZone: refs.zone?.name ?? "Зона 1",
       qty: 10,
-      uom: "Рј2",
+      uom: "м2",
       totalPrice: 25000,
     },
     cleanup,
@@ -467,7 +467,7 @@ export async function seedContractorCanonicalScenarios(adminInput?: AdminClient)
     },
     cleanup,
   );
-  const buyerMaterialTitle = `Р“СЂСѓРЅС‚РѕРІРєР° ${suffix}`;
+  const buyerMaterialTitle = `Грунтовка ${suffix}`;
   const buyerMaterialCode = `MAT-BUY-${suffix.toUpperCase()}`;
   const buyerMaterialRequestItemId = await createRequestItem(
     admin,
@@ -477,7 +477,7 @@ export async function seedContractorCanonicalScenarios(adminInput?: AdminClient)
       nameHuman: buyerMaterialTitle,
       rikCode: buyerMaterialCode,
       qty: 12,
-      uom: "Р»",
+      uom: "л",
       kind: "material",
     },
     cleanup,
@@ -495,8 +495,8 @@ export async function seedContractorCanonicalScenarios(adminInput?: AdminClient)
     warehouseIssueExpected: false,
   });
 
-  const foremanObjectName = `Р‘Р»РѕРє B ${suffix}`;
-  const foremanWorkName = `РњРѕРЅС‚Р°Р¶ РїРµСЂРµРіРѕСЂРѕРґРѕРє ${suffix}`;
+  const foremanObjectName = `Блок B ${suffix}`;
+  const foremanWorkName = `Монтаж перегородок ${suffix}`;
   const foremanSubcontractId = await createApprovedSubcontract(
     admin,
     {
@@ -506,9 +506,9 @@ export async function seedContractorCanonicalScenarios(adminInput?: AdminClient)
       objectName: foremanObjectName,
       workType: foremanWorkName,
       contractNumber: `CTR-FOR-${suffix.toUpperCase()}`,
-      workZone: refs.zone?.name ?? "Р—РѕРЅР° 2",
+      workZone: refs.zone?.name ?? "Зона 2",
       qty: 5,
-      uom: "СѓСЃР»",
+      uom: "усл",
       totalPrice: 18000,
     },
     cleanup,
@@ -540,8 +540,8 @@ export async function seedContractorCanonicalScenarios(adminInput?: AdminClient)
     warehouseIssueExpected: false,
   });
 
-  const materialsObjectName = `РЎРµРєС†РёСЏ C ${suffix}`;
-  const materialsWorkName = `РћС‚РґРµР»РєР° СѓР·Р»Р° ${suffix}`;
+  const materialsObjectName = `Секция C ${suffix}`;
+  const materialsWorkName = `Отделка узла ${suffix}`;
   const materialsRequestId = await createRequest(
     admin,
     {
@@ -563,7 +563,7 @@ export async function seedContractorCanonicalScenarios(adminInput?: AdminClient)
       nameHuman: materialsWorkName,
       rikCode: `WRK-FRM-${suffix.toUpperCase()}`,
       qty: 3,
-      uom: "СѓСЃР»",
+      uom: "усл",
       kind: "service",
     },
     cleanup,
@@ -577,7 +577,7 @@ export async function seedContractorCanonicalScenarios(adminInput?: AdminClient)
       objectName: materialsObjectName,
       supplier: contractorRecord.companyName,
       itemName: materialsWorkName,
-      uom: "СѓСЃР»",
+      uom: "усл",
       qty: 3,
       unitPrice: 9000,
     },
@@ -590,7 +590,7 @@ export async function seedContractorCanonicalScenarios(adminInput?: AdminClient)
       contractorId: contractorRecord.id,
       contractorName: contractorRecord.companyName,
       qtyPlanned: 3,
-      uom: "СѓСЃР»",
+      uom: "усл",
       location: materialsObjectName,
     },
     cleanup,
@@ -607,14 +607,14 @@ export async function seedContractorCanonicalScenarios(adminInput?: AdminClient)
     warehouseIssueExpected: false,
   });
 
-  const invalidWorkName = `РќРµРІР°Р»РёРґРЅР°СЏ СЂР°Р±РѕС‚Р° ${suffix}`;
+  const invalidWorkName = `Невалидная работа ${suffix}`;
   const invalidRequestId = await createRequest(
     admin,
     {
       createdBy: foremanUser.id,
       role: "foreman",
       name: invalidWorkName,
-      objectName: `РћР±СЉРµРєС‚ D ${suffix}`,
+      objectName: `Объект D ${suffix}`,
       refs,
     },
     cleanup,
@@ -627,7 +627,7 @@ export async function seedContractorCanonicalScenarios(adminInput?: AdminClient)
       nameHuman: invalidWorkName,
       rikCode: `WRK-INV-${suffix.toUpperCase()}`,
       qty: 2,
-      uom: "СѓСЃР»",
+      uom: "усл",
       kind: "service",
     },
     cleanup,
@@ -638,10 +638,10 @@ export async function seedContractorCanonicalScenarios(adminInput?: AdminClient)
       createdBy: foremanUser.id,
       requestId: invalidRequestId,
       requestItemId: invalidRequestItemId,
-      objectName: `РћР±СЉРµРєС‚ D ${suffix}`,
+      objectName: `Объект D ${suffix}`,
       supplier: "Unknown Supplier",
       itemName: invalidWorkName,
-      uom: "СѓСЃР»",
+      uom: "усл",
       qty: 2,
       unitPrice: 7000,
     },
@@ -654,8 +654,8 @@ export async function seedContractorCanonicalScenarios(adminInput?: AdminClient)
       contractorId: null,
       contractorName: null,
       qtyPlanned: 2,
-      uom: "СѓСЃР»",
-      location: `РћР±СЉРµРєС‚ D ${suffix}`,
+      uom: "усл",
+      location: `Объект D ${suffix}`,
     },
     cleanup,
   );
@@ -666,19 +666,19 @@ export async function seedContractorCanonicalScenarios(adminInput?: AdminClient)
     subcontractId: null,
     workItemId: null,
     workName: invalidWorkName,
-    objectName: `РћР±СЉРµРєС‚ D ${suffix}`,
+    objectName: `Объект D ${suffix}`,
     materialTitle: null,
     warehouseIssueExpected: false,
   });
 
-  const leakWorkName = `РњР°С‚РµСЂРёР°Р» leak ${suffix}`;
+  const leakWorkName = `Материал leak ${suffix}`;
   const leakRequestId = await createRequest(
     admin,
     {
       createdBy: foremanUser.id,
       role: "foreman",
       name: leakWorkName,
-      objectName: `РЎРєР»Р°РґСЃРєРѕР№ РѕР±СЉРµРєС‚ ${suffix}`,
+      objectName: `Складской объект ${suffix}`,
       contractorCompanyName: contractorRecord.companyName,
       contractorInn: contractorRecord.inn,
       refs,
@@ -693,7 +693,7 @@ export async function seedContractorCanonicalScenarios(adminInput?: AdminClient)
       nameHuman: leakWorkName,
       rikCode: `MAT-LEAK-${suffix.toUpperCase()}`,
       qty: 20,
-      uom: "С€С‚",
+      uom: "шт",
       kind: "material",
     },
     cleanup,
@@ -704,10 +704,10 @@ export async function seedContractorCanonicalScenarios(adminInput?: AdminClient)
       createdBy: foremanUser.id,
       requestId: leakRequestId,
       requestItemId: leakRequestItemId,
-      objectName: `РЎРєР»Р°РґСЃРєРѕР№ РѕР±СЉРµРєС‚ ${suffix}`,
+      objectName: `Складской объект ${suffix}`,
       supplier: contractorRecord.companyName,
       itemName: leakWorkName,
-      uom: "С€С‚",
+      uom: "шт",
       qty: 20,
       unitPrice: 100,
     },
@@ -720,8 +720,8 @@ export async function seedContractorCanonicalScenarios(adminInput?: AdminClient)
       contractorId: contractorRecord.id,
       contractorName: contractorRecord.companyName,
       qtyPlanned: 20,
-      uom: "С€С‚",
-      location: `РЎРєР»Р°РґСЃРєРѕР№ РѕР±СЉРµРєС‚ ${suffix}`,
+      uom: "шт",
+      location: `Складской объект ${suffix}`,
     },
     cleanup,
   );
@@ -732,7 +732,7 @@ export async function seedContractorCanonicalScenarios(adminInput?: AdminClient)
     subcontractId: null,
     workItemId: null,
     workName: leakWorkName,
-    objectName: `РЎРєР»Р°РґСЃРєРѕР№ РѕР±СЉРµРєС‚ ${suffix}`,
+    objectName: `Складской объект ${suffix}`,
     materialTitle: null,
     warehouseIssueExpected: false,
   });

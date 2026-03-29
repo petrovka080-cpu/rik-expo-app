@@ -1,0 +1,78 @@
+{
+  "generatedAt": "2026-03-29T05:39:12.434Z",
+  "files": [
+    {
+      "file": "src/lib/text/encoding.ts",
+      "corruptedLiteralCount": 0,
+      "samples": []
+    },
+    {
+      "file": "src/screens/subcontracts/subcontracts.shared.ts",
+      "corruptedLiteralCount": 0,
+      "samples": []
+    },
+    {
+      "file": "src/screens/accountant/AccountantSubcontractTab.tsx",
+      "corruptedLiteralCount": 0,
+      "samples": []
+    },
+    {
+      "file": "src/lib/api/contractor.scope.service.ts",
+      "corruptedLiteralCount": 0,
+      "samples": []
+    },
+    {
+      "file": "src/screens/contractor/contractor.visibilityRecovery.ts",
+      "corruptedLiteralCount": 0,
+      "samples": []
+    },
+    {
+      "file": "src/screens/director/DirectorProposalAttachments.tsx",
+      "corruptedLiteralCount": 0,
+      "samples": []
+    },
+    {
+      "file": "src/lib/pdfRunner.ts",
+      "corruptedLiteralCount": 0,
+      "samples": []
+    },
+    {
+      "file": "src/lib/api/director_reports.transport.discipline.ts",
+      "corruptedLiteralCount": 0,
+      "samples": []
+    },
+    {
+      "file": "scripts/_shared/contractorCanonicalSeed.ts",
+      "corruptedLiteralCount": 0,
+      "samples": []
+    }
+  ],
+  "totalCorruptedLiterals": 0,
+  "tables": [
+    {
+      "table": "subcontracts",
+      "scannedRows": 49,
+      "corruptedFieldCount": 0,
+      "samples": []
+    },
+    {
+      "table": "requests",
+      "scannedRows": 86,
+      "corruptedFieldCount": 0,
+      "samples": []
+    },
+    {
+      "table": "request_items",
+      "scannedRows": 534,
+      "corruptedFieldCount": 0,
+      "samples": []
+    },
+    {
+      "table": "warehouse_issues",
+      "scannedRows": 30,
+      "corruptedFieldCount": 0,
+      "samples": []
+    }
+  ],
+  "totalCorruptedDbFields": 0
+}
