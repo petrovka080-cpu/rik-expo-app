@@ -1,0 +1,133 @@
+{
+  "status": "passed",
+  "gate": "GREEN",
+  "legacy": {
+    "durationMs": 3432,
+    "rows": 106,
+    "projectionAvailable": true,
+    "projectionMissCount": 12,
+    "sourceMeta": {
+      "primaryOwner": "legacy_client_shaping",
+      "fallbackUsed": true,
+      "sourceKind": "legacy:view:v_wh_balance_ledger_truth_ui+name_map"
+    }
+  },
+  "rpc": {
+    "durationMs": 974,
+    "rows": 106,
+    "sourceMeta": {
+      "primaryOwner": "rpc_scope_v1",
+      "fallbackUsed": false,
+      "sourceKind": "rpc:warehouse_stock_scope_v1"
+    }
+  },
+  "primary": {
+    "durationMs": 617,
+    "rows": 106,
+    "sourceMeta": {
+      "primaryOwner": "rpc_scope_v2",
+      "fallbackUsed": false,
+      "sourceKind": "rpc:warehouse_stock_scope_v2"
+    }
+  },
+  "parity": {
+    "rowParityOk": true,
+    "backendParityOk": true,
+    "legacyRowCount": 106,
+    "rpcRowCount": 106,
+    "primaryRowCount": 106
+  },
+  "serviceTypeHardCutOk": true,
+  "events": [
+    {
+      "id": "obs-1",
+      "at": 1774770667264,
+      "screen": "warehouse",
+      "surface": "stock_list",
+      "category": "fetch",
+      "event": "fetch_stock_legacy_script",
+      "result": "success",
+      "durationMs": 3432,
+      "rowCount": 106,
+      "sourceKind": "legacy:view:v_wh_balance_ledger_truth_ui+name_map",
+      "fallbackUsed": true,
+      "extra": {
+        "projectionAvailable": true,
+        "projectionMissCount": 12
+      }
+    },
+    {
+      "id": "obs-2",
+      "at": 1774770668238,
+      "screen": "warehouse",
+      "surface": "stock_list",
+      "category": "fetch",
+      "event": "fetch_stock_rpc_script",
+      "result": "success",
+      "durationMs": 973,
+      "rowCount": 106,
+      "sourceKind": "rpc:warehouse_stock_scope_v1",
+      "fallbackUsed": false
+    },
+    {
+      "id": "obs-3",
+      "at": 1774770668855,
+      "screen": "warehouse",
+      "surface": "stock_list",
+      "category": "fetch",
+      "event": "fetch_stock_rpc_v2_script",
+      "result": "success",
+      "durationMs": 617,
+      "rowCount": 106,
+      "sourceKind": "rpc:warehouse_stock_scope_v2",
+      "fallbackUsed": false
+    }
+  ],
+  "summary": {
+    "totalEvents": 3,
+    "fetchEvents": 3,
+    "uiEvents": 0,
+    "reloadEvents": 0,
+    "errorCount": 0,
+    "cacheHitCount": 0,
+    "overlapCount": 0,
+    "skippedCount": 0,
+    "guardReasons": [],
+    "topSlowFetches": [
+      {
+        "screen": "warehouse",
+        "surface": "stock_list",
+        "event": "fetch_stock_legacy_script",
+        "count": 1,
+        "avgDurationMs": 3432,
+        "maxDurationMs": 3432,
+        "totalRowCount": 106,
+        "lastSourceKind": "legacy:view:v_wh_balance_ledger_truth_ui+name_map",
+        "fallbackCount": 1
+      },
+      {
+        "screen": "warehouse",
+        "surface": "stock_list",
+        "event": "fetch_stock_rpc_script",
+        "count": 1,
+        "avgDurationMs": 973,
+        "maxDurationMs": 973,
+        "totalRowCount": 106,
+        "lastSourceKind": "rpc:warehouse_stock_scope_v1",
+        "fallbackCount": 0
+      },
+      {
+        "screen": "warehouse",
+        "surface": "stock_list",
+        "event": "fetch_stock_rpc_v2_script",
+        "count": 1,
+        "avgDurationMs": 617,
+        "maxDurationMs": 617,
+        "totalRowCount": 106,
+        "lastSourceKind": "rpc:warehouse_stock_scope_v2",
+        "fallbackCount": 0
+      }
+    ],
+    "recentErrors": []
+  }
+}

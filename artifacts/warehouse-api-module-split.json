@@ -1,0 +1,17 @@
+{
+  "before": {
+    "lines": 2365,
+    "bytes": 77238
+  },
+  "after": {
+    "lines": 1306,
+    "bytes": 45318
+  },
+  "service": {
+    "lines": 757,
+    "bytes": 23967
+  },
+  "newServicePresent": true,
+  "extractedBodiesRemoved": true,
+  "serviceBodiesPresent": true
+}

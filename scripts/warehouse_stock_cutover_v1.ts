@@ -297,11 +297,17 @@ async function main() {
     path.join(projectRoot, "src/screens/warehouse/warehouse.api.ts"),
     "utf8",
   );
+  const stockServiceSource = fs.readFileSync(
+    path.join(projectRoot, "src/screens/warehouse/warehouse.stockReports.service.ts"),
+    "utf8",
+  );
   const serviceTypeHardCutOk =
-    warehouseApiSource.includes('primaryOwner: "rpc_scope_v2" | "rpc_scope_v1";') &&
-    !warehouseApiSource.includes('primaryOwner: "rpc_scope_v2" | "rpc_scope_v1" | "legacy_client_shaping";') &&
+    warehouseApiSource.includes('from "./warehouse.stockReports.service";') &&
+    warehouseApiSource.includes("apiFetchStockRpcV2,") &&
+    stockServiceSource.includes('primaryOwner: "rpc_scope_v2" | "rpc_scope_v1";') &&
+    !stockServiceSource.includes('primaryOwner: "rpc_scope_v2" | "rpc_scope_v1" | "legacy_client_shaping";') &&
     !warehouseApiSource.includes("export async function apiFetchStockLegacy(") &&
-    !warehouseApiSource.includes("const result = await apiFetchStockLegacy(");
+    !stockServiceSource.includes("const result = await apiFetchStockLegacy(");
 
   const events = getPlatformObservabilityEvents();
   const summary = summarizePlatformObservabilityEvents(events);
