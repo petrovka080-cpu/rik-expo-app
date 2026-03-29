@@ -1,6 +1,7 @@
 import { supabase } from "../supabaseClient";
 import type { Database } from "../database.types";
-import { client } from "./_core";
+import { beginPlatformObservability } from "../observability/platformObservability";
+import { classifyRpcCompatError, client } from "./_core";
 import type { ProposalItemRow } from "./types";
 
 const logProposalsDebug = (...args: unknown[]) => {
@@ -58,6 +59,7 @@ type ProposalItemMetaUpsertInput = {
 };
 
 const PROPOSAL_STATUS_PENDING_CANONICAL = "\u041d\u0430 \u0443\u0442\u0432\u0435\u0440\u0436\u0434\u0435\u043d\u0438\u0438";
+type ProposalCreatePath = "rpc_primary" | "compat_insert_fallback";
 
 // ============================== Boundary parsers ==============================
 function normalizeProposalMeta(row: ProposalRow | null | undefined, fallbackId: string) {
@@ -207,6 +209,19 @@ async function insertProposalHeadFallback(payload: ProposalInsert) {
   return client.from("proposals").insert(payload).select("id,proposal_no,id_short").single();
 }
 
+async function verifyCreatedProposalMeta(
+  proposalId: string,
+  path: ProposalCreatePath,
+): Promise<{ id: string; proposal_no: string | null; id_short: number | null }> {
+  const verified = await selectProposalMetaById(proposalId);
+  if (verified.error) throw verified.error;
+  const normalized = normalizeProposalMeta(verified.data, proposalId);
+  if (!normalized.id) {
+    throw new Error(`[proposalCreateFull:${path}] post-create verification returned empty id`);
+  }
+  return normalized;
+}
+
 async function runProposalAddItemsRpc(
   proposalId: number | string,
   requestItemIds: string[],
@@ -285,22 +300,84 @@ async function cleanupProposalSubmission(proposalId: string) {
 }
 
 export async function proposalCreateFull(): Promise<{ id: string; proposal_no: string | null; id_short: number | null }> {
+  const observation = beginPlatformObservability({
+    screen: "buyer",
+    surface: "proposal_create",
+    category: "fetch",
+    event: "create_proposal",
+    sourceKind: "rpc:proposal_create",
+  });
+
   try {
     const { data, error } = await runProposalCreateRpc();
-    if (!error && data != null) {
-      const id = parseProposalCreateResult(data);
-      if (!id) throw new Error("proposal_create returned empty id");
-      const q = await selectProposalMetaById(id);
-
-      return normalizeProposalMeta(q.data, id);
+    if (error) throw error;
+    const id = parseProposalCreateResult(data);
+    if (!id) throw new Error("proposal_create returned empty id");
+    const normalized = await verifyCreatedProposalMeta(id, "rpc_primary");
+    observation.success({
+      sourceKind: "rpc:proposal_create",
+      extra: {
+        path: "rpc_primary",
+      },
+    });
+    return normalized;
+  } catch (error) {
+    const decision = classifyRpcCompatError(error);
+    if (!decision.allowNextVariant) {
+      observation.error(error, {
+        sourceKind: "rpc:proposal_create",
+        errorStage: "rpc_primary",
+        fallbackUsed: false,
+        extra: {
+          path: "rpc_primary",
+          compatDecision: decision.kind,
+          compatReason: decision.reason,
+        },
+      });
+      throw error;
     }
-  } catch {}
+
+    logProposalsDebug("[proposalCreateFull/fallback]", decision.reason);
+  }
 
   const insertPayload = buildProposalCreateFallbackInsert();
   const ins = await insertProposalHeadFallback(insertPayload);
-  if (ins.error) throw ins.error;
+  if (ins.error) {
+    observation.error(ins.error, {
+      sourceKind: "table:proposals",
+      errorStage: "compat_insert_fallback",
+      fallbackUsed: true,
+      extra: {
+        path: "compat_insert_fallback",
+      },
+    });
+    throw ins.error;
+  }
 
-  return normalizeProposalMeta(ins.data, "");
+  const inserted = normalizeProposalMeta(ins.data, "");
+  if (!inserted.id) {
+    const error = new Error("[proposalCreateFull:compat_insert_fallback] insert returned empty id");
+    observation.error(error, {
+      sourceKind: "table:proposals",
+      errorStage: "compat_insert_fallback",
+      fallbackUsed: true,
+      extra: {
+        path: "compat_insert_fallback",
+      },
+    });
+    throw error;
+  }
+
+  const verified = await verifyCreatedProposalMeta(inserted.id, "compat_insert_fallback");
+  observation.success({
+    sourceKind: "table:proposals",
+    fallbackUsed: true,
+    extra: {
+      path: "compat_insert_fallback",
+      postCreateVerified: true,
+    },
+  });
+  return verified;
 }
 
 export async function proposalCreate(): Promise<number | string> {

@@ -1,0 +1,15 @@
+{
+  "status": "GREEN",
+  "proposalCreate": {
+    "file": "src/lib/api/proposals.ts",
+    "beforeSilentCatchCount": 1,
+    "afterSilentCatchCount": 0,
+    "compatibilityGuardPresent": true,
+    "postCreateVerificationPresent": true
+  },
+  "rpcCompat": {
+    "file": "src/lib/api/_core.ts",
+    "stopRulesPresent": true,
+    "matrixPassed": true
+  }
+}

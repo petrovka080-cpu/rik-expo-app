@@ -21,6 +21,20 @@ type ErrorLike = {
 
 type RpcVariant<TName extends RpcName = RpcName> = RpcVariantMap[TName];
 
+export type RpcCompatErrorKind =
+  | "missing_function"
+  | "permission"
+  | "auth"
+  | "validation"
+  | "transient"
+  | "unknown";
+
+export type RpcCompatErrorDecision = {
+  kind: RpcCompatErrorKind;
+  allowNextVariant: boolean;
+  reason: string;
+};
+
 const asErrorLike = (value: unknown): ErrorLike | null =>
   value && typeof value === "object" ? (value as ErrorLike) : null;
 
@@ -62,6 +76,97 @@ export const toFilterId = (v: number | string) => {
 
 export const toRpcId = (id: number | string) => String(id);
 
+const errorMessageLower = (error: unknown) => parseErr(error).toLowerCase();
+
+const errorCodeLower = (error: unknown) =>
+  String(asErrorLike(error)?.code ?? "")
+    .trim()
+    .toLowerCase();
+
+export function classifyRpcCompatError(error: unknown): RpcCompatErrorDecision {
+  const msg = errorMessageLower(error);
+  const code = errorCodeLower(error);
+
+  if (
+    code === "pgrst302" ||
+    msg.includes("could not find") ||
+    (msg.includes("/rpc/") && msg.includes("404")) ||
+    (msg.includes("function") && msg.includes("does not exist")) ||
+    msg.includes("schema cache")
+  ) {
+    return {
+      kind: "missing_function",
+      allowNextVariant: true,
+      reason: "rpc_missing_or_incompatible",
+    };
+  }
+
+  if (
+    code === "42501" ||
+    msg.includes("permission denied") ||
+    msg.includes("row-level security")
+  ) {
+    return {
+      kind: "permission",
+      allowNextVariant: false,
+      reason: "permission_denied",
+    };
+  }
+
+  if (
+    code === "pgrst301" ||
+    msg.includes("jwt") ||
+    msg.includes("not authorized") ||
+    msg.includes("unauthorized") ||
+    msg.includes("invalid token") ||
+    msg.includes("auth")
+  ) {
+    return {
+      kind: "auth",
+      allowNextVariant: false,
+      reason: "auth_error",
+    };
+  }
+
+  if (
+    code.startsWith("22") ||
+    code.startsWith("23") ||
+    msg.includes("violates") ||
+    msg.includes("invalid input") ||
+    msg.includes("null value") ||
+    msg.includes("must not") ||
+    msg.includes("validation")
+  ) {
+    return {
+      kind: "validation",
+      allowNextVariant: false,
+      reason: "validation_or_invariant_error",
+    };
+  }
+
+  if (
+    code.startsWith("08") ||
+    msg.includes("network") ||
+    msg.includes("fetch failed") ||
+    msg.includes("failed to fetch") ||
+    msg.includes("timeout") ||
+    msg.includes("timed out") ||
+    msg.includes("connection")
+  ) {
+    return {
+      kind: "transient",
+      allowNextVariant: false,
+      reason: "transient_transport_error",
+    };
+  }
+
+  return {
+    kind: "unknown",
+    allowNextVariant: false,
+    reason: "semantic_or_unknown_error",
+  };
+}
+
 // rpcCompat как у тебя, но “в ядре”
 export async function rpcCompat<T = unknown>(
   variants: ReadonlyArray<RpcVariant>,
@@ -79,10 +184,14 @@ export async function rpcCompat<T = unknown>(
       const { data, error } = await runRpc(v);
       if (!error) return data as T;
       lastErr = error;
-      const msg = String(asErrorLike(error)?.message || "");
-      if (msg.includes("Could not find") || asErrorLike(error)?.code === "PGRST302") continue;
+      const decision = classifyRpcCompatError(error);
+      if (decision.allowNextVariant) continue;
+      throw error;
     } catch (e: unknown) {
       lastErr = e;
+      const decision = classifyRpcCompatError(e);
+      if (decision.allowNextVariant) continue;
+      throw e;
     }
   }
   if (lastErr) throw lastErr;
