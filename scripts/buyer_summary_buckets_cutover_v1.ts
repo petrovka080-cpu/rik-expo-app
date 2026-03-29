@@ -12,7 +12,6 @@ import {
 } from "../src/lib/observability/platformObservability";
 import {
   loadBuyerBucketsData,
-  loadBuyerBucketsDataLegacy,
   loadBuyerBucketsDataRpc,
   type BuyerProposalBucketRow,
 } from "../src/screens/buyer/buyer.fetchers";
@@ -98,7 +97,7 @@ const compareBucket = (
   };
 };
 
-async function buildLegacyChainMap() {
+async function buildLegacyBucketsForParity() {
   const chain: {
     stageName: string;
     sourceOwner: string;
@@ -164,10 +163,26 @@ async function buildLegacyChainMap() {
 
   return {
     chain,
-    buckets: {
+    result: {
       pending,
       approved,
       rejected,
+      proposalIds: Array.from(new Set([
+        ...pending.map((row) => row.id),
+        ...approved.map((row) => row.id),
+        ...rejected.map((row) => row.id),
+      ])),
+      meta: {
+        legacyStageCount: rejectedRaw.length ? 3 : 2,
+        rejectedOverlayApplied: rejectedRaw.length > 0,
+      },
+      sourceMeta: {
+        primaryOwner: "legacy_client_stitch",
+        fallbackUsed: false,
+        sourceKind: "rest:v_proposals_summary+proposals+proposal_items",
+        parityStatus: "not_checked",
+        backendFirstPrimary: false,
+      },
     },
   };
 }
@@ -175,21 +190,27 @@ async function buildLegacyChainMap() {
 async function main() {
   resetPlatformObservabilityEvents();
 
-  const legacyChain = await buildLegacyChainMap();
-  const legacy = await measure(() => loadBuyerBucketsDataLegacy({ supabase }));
+  const buyerFetchersSource = fs.readFileSync(
+    path.join(projectRoot, "src/screens/buyer/buyer.fetchers.ts"),
+    "utf8",
+  );
+  const legacy = await measure(() => buildLegacyBucketsForParity());
   const rpc = await measure(() => loadBuyerBucketsDataRpc({ supabase }));
   const primary = await measure(() => loadBuyerBucketsData({ supabase }));
 
-  const pendingParity = compareBucket(legacy.result.pending, rpc.result.pending);
-  const approvedParity = compareBucket(legacy.result.approved, rpc.result.approved);
-  const rejectedParity = compareBucket(legacy.result.rejected, rpc.result.rejected);
+  const legacyResult = legacy.result.result;
+  const pendingParity = compareBucket(legacyResult.pending, rpc.result.pending);
+  const approvedParity = compareBucket(legacyResult.approved, rpc.result.approved);
+  const rejectedParity = compareBucket(legacyResult.rejected, rpc.result.rejected);
   const proposalIdsParityOk =
-    legacy.result.proposalIds.slice().sort().join("|") === rpc.result.proposalIds.slice().sort().join("|");
+    legacyResult.proposalIds.slice().sort().join("|") === rpc.result.proposalIds.slice().sort().join("|");
 
   const artifact = {
     status:
       primary.result.sourceMeta.primaryOwner === "rpc_scope_v1" &&
       !primary.result.sourceMeta.fallbackUsed &&
+      !buyerFetchersSource.includes("legacy_client_stitch") &&
+      !buyerFetchersSource.includes("loadBuyerBucketsDataLegacy") &&
       pendingParity.signatureParityOk &&
       approvedParity.signatureParityOk &&
       rejectedParity.signatureParityOk &&
@@ -197,18 +218,25 @@ async function main() {
       primary.durationMs <= legacy.durationMs
         ? "passed"
         : "failed",
+    sourceBoundary: {
+      buyerFetchersRpcOnly:
+        !buyerFetchersSource.includes("legacy_client_stitch") &&
+        !buyerFetchersSource.includes("loadBuyerBucketsDataLegacy"),
+      rpcSourceKindPresent: buyerFetchersSource.includes("rpc:buyer_summary_buckets_scope_v1"),
+      legacySourceKindPresent: buyerFetchersSource.includes("rest:v_proposals_summary+proposals+proposal_items"),
+    },
     chainMap: {
-      currentLegacyContour: legacyChain.chain,
+      currentLegacyContour: legacy.result.chain,
       requiredForFirstPaint: ["summary_query", "rejected_query"],
-      lazySupportOnly: legacyChain.chain.filter((stage) => stage.canBeLazy).map((stage) => stage.stageName),
+      lazySupportOnly: legacy.result.chain.filter((stage) => stage.canBeLazy).map((stage) => stage.stageName),
     },
     legacy: {
       durationMs: legacy.durationMs,
-      pending: legacy.result.pending.length,
-      approved: legacy.result.approved.length,
-      rejected: legacy.result.rejected.length,
-      proposalIds: legacy.result.proposalIds.length,
-      sourceMeta: legacy.result.sourceMeta,
+      pending: legacyResult.pending.length,
+      approved: legacyResult.approved.length,
+      rejected: legacyResult.rejected.length,
+      proposalIds: legacyResult.proposalIds.length,
+      sourceMeta: legacyResult.sourceMeta,
     },
     rpc: {
       durationMs: rpc.durationMs,
@@ -246,6 +274,7 @@ async function main() {
   writeArtifact("artifacts/buyer-summary-buckets-cutover-v1.json", artifact);
   writeArtifact("artifacts/buyer-summary-buckets-cutover-v1.summary.json", {
     status: artifact.status,
+    sourceBoundary: artifact.sourceBoundary,
     chainMap: artifact.chainMap,
     legacy: artifact.legacy,
     rpc: artifact.rpc,
@@ -260,6 +289,7 @@ async function main() {
         status: artifact.status,
         primaryOwner: primary.result.sourceMeta.primaryOwner,
         fallbackUsed: primary.result.sourceMeta.fallbackUsed,
+        buyerFetchersRpcOnly: artifact.sourceBoundary.buyerFetchersRpcOnly,
         legacyDurationMs: legacy.durationMs,
         rpcDurationMs: rpc.durationMs,
         primaryDurationMs: primary.durationMs,

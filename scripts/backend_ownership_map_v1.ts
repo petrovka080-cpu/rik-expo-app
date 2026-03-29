@@ -378,25 +378,6 @@ const taxonomy: TaxonomyEntry[] = [
 
 const residuals: ResidualClientTruth[] = [
   {
-    id: "buyer_summary_buckets_legacy_stitch_fallback",
-    module: "buyer",
-    contour: "Buyer summary buckets legacy client stitch fallback",
-    exactFile: "src/screens/buyer/buyer.fetchers.ts",
-    truthType: "report",
-    currentClientOwnership:
-      "Buyer summary buckets still keep a legacy_client_stitch compatibility branch in the fetch layer.",
-    whyRisky:
-      "Summary/report truth should not be restitched on device after the backend-first bucket scope already exists and is green.",
-    requiredBackendContract: "buyer_summary_buckets_scope_v1 hard cut with legacy stitch removal",
-    priority: "P1",
-    state: "legacy_branch",
-    nextBatch: "Buyer summary buckets fallback burn-down",
-    evidencePaths: [
-      "src/screens/buyer/buyer.fetchers.ts",
-      "artifacts/buyer-summary-buckets-cutover-v1.summary.json",
-    ],
-  },
-  {
     id: "accountant_payment_pdf_legacy_fallback",
     module: "accountant",
     contour: "Accountant payment PDF legacy fallback",
@@ -620,7 +601,8 @@ const moduleMap: Record<ModuleKey, ModuleOwnership> = {
     ],
     residualClientTruth: residuals.filter((item) => item.module === "buyer"),
     notes: [
-      "Buyer read-side contours are backend-primary; remaining risk sits in compatibility fallbacks inside fetchers.",
+      "Buyer read-side contours are backend-primary for inbox and summary buckets.",
+      "No buyer residual client-truth families remain in this ownership map.",
     ],
     residualClientTruthCount: 0,
     highestResidualPriority: "none",
@@ -1014,13 +996,6 @@ const crossCuttingRules = {
 };
 
 const roadmap: RoadmapBatch[] = [
-  {
-    priority: "P1",
-    title: "Buyer summary buckets fallback burn-down",
-    module: "buyer",
-    residualIds: ["buyer_summary_buckets_legacy_stitch_fallback"],
-    reason: "Buyer summary buckets are already backend-primary; the remaining work is removing the legacy client stitch branch.",
-  },
   {
     priority: "P1",
     title: "Contractor works bundle fallback burn-down",

@@ -1,0 +1,172 @@
+{
+  "status": "passed",
+  "sourceBoundary": {
+    "buyerFetchersRpcOnly": true,
+    "rpcSourceKindPresent": true,
+    "legacySourceKindPresent": false
+  },
+  "chainMap": {
+    "currentLegacyContour": [
+      {
+        "stageName": "summary_query",
+        "sourceOwner": "view:v_proposals_summary",
+        "durationMs": 1240,
+        "rowCount": 96,
+        "requiredForFirstPaint": true,
+        "canBeLazy": false,
+        "fallbackCapable": true,
+        "duplicateOrOverlapping": false
+      },
+      {
+        "stageName": "rejected_query",
+        "sourceOwner": "table:proposals",
+        "durationMs": 405,
+        "rowCount": 0,
+        "requiredForFirstPaint": true,
+        "canBeLazy": false,
+        "fallbackCapable": true,
+        "duplicateOrOverlapping": false
+      }
+    ],
+    "requiredForFirstPaint": [
+      "summary_query",
+      "rejected_query"
+    ],
+    "lazySupportOnly": []
+  },
+  "legacy": {
+    "durationMs": 1645,
+    "pending": 4,
+    "approved": 92,
+    "rejected": 0,
+    "proposalIds": 96,
+    "sourceMeta": {
+      "primaryOwner": "legacy_client_stitch",
+      "fallbackUsed": false,
+      "sourceKind": "rest:v_proposals_summary+proposals+proposal_items",
+      "parityStatus": "not_checked",
+      "backendFirstPrimary": false
+    }
+  },
+  "rpc": {
+    "durationMs": 609,
+    "pending": 4,
+    "approved": 92,
+    "rejected": 0,
+    "proposalIds": 96,
+    "sourceMeta": {
+      "primaryOwner": "rpc_scope_v1",
+      "fallbackUsed": false,
+      "sourceKind": "rpc:buyer_summary_buckets_scope_v1",
+      "parityStatus": "not_checked",
+      "backendFirstPrimary": true
+    },
+    "meta": {
+      "rows_source": "buyer_summary_buckets_scope_v1",
+      "bucket_count": 3,
+      "pending_count": 4,
+      "primary_owner": "rpc_scope_v1",
+      "rework_status": "На доработке",
+      "approved_count": 92,
+      "pending_status": "На утверждении",
+      "rejected_count": 0,
+      "approved_status": "Утверждено",
+      "pending_total_sum": 2110,
+      "approved_total_sum": 431658,
+      "legacy_rows_source": "v_proposals_summary+proposals+proposal_items",
+      "proposal_ids_count": 96,
+      "rejected_total_sum": 0,
+      "payload_shape_version": "v1"
+    }
+  },
+  "primary": {
+    "durationMs": 415,
+    "pending": 4,
+    "approved": 92,
+    "rejected": 0,
+    "proposalIds": 96,
+    "sourceMeta": {
+      "primaryOwner": "rpc_scope_v1",
+      "fallbackUsed": false,
+      "sourceKind": "rpc:buyer_summary_buckets_scope_v1",
+      "parityStatus": "not_checked",
+      "backendFirstPrimary": true
+    },
+    "meta": {
+      "rows_source": "buyer_summary_buckets_scope_v1",
+      "bucket_count": 3,
+      "pending_count": 4,
+      "primary_owner": "rpc_scope_v1",
+      "rework_status": "На доработке",
+      "approved_count": 92,
+      "pending_status": "На утверждении",
+      "rejected_count": 0,
+      "approved_status": "Утверждено",
+      "pending_total_sum": 2110,
+      "approved_total_sum": 431658,
+      "legacy_rows_source": "v_proposals_summary+proposals+proposal_items",
+      "proposal_ids_count": 96,
+      "rejected_total_sum": 0,
+      "payload_shape_version": "v1"
+    }
+  },
+  "parity": {
+    "pending": {
+      "countParityOk": true,
+      "signatureParityOk": true,
+      "totalParityOk": true,
+      "legacyCount": 4,
+      "rpcCount": 4,
+      "legacyTotal": 2110,
+      "rpcTotal": 2110
+    },
+    "approved": {
+      "countParityOk": true,
+      "signatureParityOk": true,
+      "totalParityOk": true,
+      "legacyCount": 92,
+      "rpcCount": 92,
+      "legacyTotal": 431658,
+      "rpcTotal": 431658
+    },
+    "rejected": {
+      "countParityOk": true,
+      "signatureParityOk": true,
+      "totalParityOk": true,
+      "legacyCount": 0,
+      "rpcCount": 0,
+      "legacyTotal": 0,
+      "rpcTotal": 0
+    },
+    "proposalIdsParityOk": true,
+    "requiredBucketsPresent": {
+      "pending": true,
+      "approved": true,
+      "rejected": true
+    }
+  },
+  "topSlowFetches": [
+    {
+      "screen": "buyer",
+      "surface": "summary_buckets",
+      "event": "load_buckets_rpc",
+      "count": 1,
+      "avgDurationMs": 609,
+      "maxDurationMs": 609,
+      "totalRowCount": 96,
+      "lastSourceKind": "rpc:buyer_summary_buckets_scope_v1",
+      "fallbackCount": 0
+    },
+    {
+      "screen": "buyer",
+      "surface": "summary_buckets",
+      "event": "load_buckets",
+      "count": 1,
+      "avgDurationMs": 414,
+      "maxDurationMs": 414,
+      "totalRowCount": 96,
+      "lastSourceKind": "rpc:buyer_summary_buckets_scope_v1",
+      "fallbackCount": 0
+    }
+  ]
+}

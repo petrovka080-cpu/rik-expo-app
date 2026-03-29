@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-03-29T20:24:06.049Z",
+  "generatedAt": "2026-03-29T21:06:28.632Z",
   "batch": "backend_ownership_map_v1",
   "documentSections": [
     "taxonomy",
@@ -279,7 +279,7 @@
           "proof": {
             "artifactKey": "buyer_buckets",
             "artifactPath": "artifacts/buyer-summary-buckets-cutover-v1.summary.json",
-            "status": null,
+            "status": "passed",
             "gate": null,
             "ownershipMarkers": [
               "rpc.sourceMeta.primaryOwner=rpc_scope_v1",
@@ -301,30 +301,13 @@
         "local UI filters and pure presentation sort mode",
         "expanded section state"
       ],
-      "residualClientTruth": [
-        {
-          "id": "buyer_summary_buckets_legacy_stitch_fallback",
-          "module": "buyer",
-          "contour": "Buyer summary buckets legacy client stitch fallback",
-          "exactFile": "src/screens/buyer/buyer.fetchers.ts",
-          "truthType": "report",
-          "currentClientOwnership": "Buyer summary buckets still keep a legacy_client_stitch compatibility branch in the fetch layer.",
-          "whyRisky": "Summary/report truth should not be restitched on device after the backend-first bucket scope already exists and is green.",
-          "requiredBackendContract": "buyer_summary_buckets_scope_v1 hard cut with legacy stitch removal",
-          "priority": "P1",
-          "state": "legacy_branch",
-          "nextBatch": "Buyer summary buckets fallback burn-down",
-          "evidencePaths": [
-            "src/screens/buyer/buyer.fetchers.ts",
-            "artifacts/buyer-summary-buckets-cutover-v1.summary.json"
-          ]
-        }
-      ],
+      "residualClientTruth": [],
       "notes": [
-        "Buyer read-side contours are backend-primary; remaining risk sits in compatibility fallbacks inside fetchers."
+        "Buyer read-side contours are backend-primary for inbox and summary buckets.",
+        "No buyer residual client-truth families remain in this ownership map."
       ],
-      "residualClientTruthCount": 1,
-      "highestResidualPriority": "P1"
+      "residualClientTruthCount": 0,
+      "highestResidualPriority": "none"
     },
     "accountant": {
       "module": "accountant",
@@ -816,23 +799,6 @@
   },
   "residualClientTruthRegistry": [
     {
-      "id": "buyer_summary_buckets_legacy_stitch_fallback",
-      "module": "buyer",
-      "contour": "Buyer summary buckets legacy client stitch fallback",
-      "exactFile": "src/screens/buyer/buyer.fetchers.ts",
-      "truthType": "report",
-      "currentClientOwnership": "Buyer summary buckets still keep a legacy_client_stitch compatibility branch in the fetch layer.",
-      "whyRisky": "Summary/report truth should not be restitched on device after the backend-first bucket scope already exists and is green.",
-      "requiredBackendContract": "buyer_summary_buckets_scope_v1 hard cut with legacy stitch removal",
-      "priority": "P1",
-      "state": "legacy_branch",
-      "nextBatch": "Buyer summary buckets fallback burn-down",
-      "evidencePaths": [
-        "src/screens/buyer/buyer.fetchers.ts",
-        "artifacts/buyer-summary-buckets-cutover-v1.summary.json"
-      ]
-    },
-    {
       "id": "accountant_payment_pdf_legacy_fallback",
       "module": "accountant",
       "contour": "Accountant payment PDF legacy fallback",
@@ -886,15 +852,6 @@
     }
   ],
   "priorityRoadmap": [
-    {
-      "priority": "P1",
-      "title": "Buyer summary buckets fallback burn-down",
-      "module": "buyer",
-      "residualIds": [
-        "buyer_summary_buckets_legacy_stitch_fallback"
-      ],
-      "reason": "Buyer summary buckets are already backend-primary; the remaining work is removing the legacy client stitch branch."
-    },
     {
       "priority": "P1",
       "title": "Contractor works bundle fallback burn-down",
@@ -957,8 +914,8 @@
         "displayName": "Buyer",
         "backendOwnedContours": 2,
         "clientOwnedUiContours": 5,
-        "residualClientTruthCount": 1,
-        "highestResidualPriority": "P1"
+        "residualClientTruthCount": 0,
+        "highestResidualPriority": "none"
       },
       {
         "module": "accountant",
@@ -987,10 +944,9 @@
     ],
     "globalSummary": {
       "totalResidualP0": 0,
-      "totalResidualP1": 2,
+      "totalResidualP1": 1,
       "totalResidualP2": 2,
       "modulesAtRisk": [
-        "buyer",
         "contractor",
         "accountant",
         "warehouse"
@@ -1000,12 +956,11 @@
       "criticalOperationalTruthOnClient": true,
       "criticalReportTruthOnClient": true,
       "highestPriorityModules": [
-        "buyer",
         "contractor",
         "accountant",
         "warehouse"
       ],
-      "nextPriorityBatch": "Buyer summary buckets fallback burn-down"
+      "nextPriorityBatch": "Contractor works bundle fallback burn-down"
     },
     "structuralAssertions": {
       "allRequiredArtifactsAccepted": false,
@@ -1216,12 +1171,183 @@
         "key": "buyer_buckets",
         "label": "Buyer Summary Buckets Backend Cutover",
         "relativePath": "artifacts/buyer-summary-buckets-cutover-v1.summary.json",
-        "exists": false,
-        "status": null,
+        "exists": true,
+        "status": "passed",
         "gate": null,
-        "accepted": false,
+        "accepted": true,
         "iosResidual": null,
-        "raw": null
+        "raw": {
+          "status": "passed",
+          "sourceBoundary": {
+            "buyerFetchersRpcOnly": true,
+            "rpcSourceKindPresent": true,
+            "legacySourceKindPresent": false
+          },
+          "chainMap": {
+            "currentLegacyContour": [
+              {
+                "stageName": "summary_query",
+                "sourceOwner": "view:v_proposals_summary",
+                "durationMs": 655,
+                "rowCount": 96,
+                "requiredForFirstPaint": true,
+                "canBeLazy": false,
+                "fallbackCapable": true,
+                "duplicateOrOverlapping": false
+              },
+              {
+                "stageName": "rejected_query",
+                "sourceOwner": "table:proposals",
+                "durationMs": 406,
+                "rowCount": 0,
+                "requiredForFirstPaint": true,
+                "canBeLazy": false,
+                "fallbackCapable": true,
+                "duplicateOrOverlapping": false
+              }
+            ],
+            "requiredForFirstPaint": [
+              "summary_query",
+              "rejected_query"
+            ],
+            "lazySupportOnly": []
+          },
+          "legacy": {
+            "durationMs": 1062,
+            "pending": 4,
+            "approved": 92,
+            "rejected": 0,
+            "proposalIds": 96,
+            "sourceMeta": {
+              "primaryOwner": "legacy_client_stitch",
+              "fallbackUsed": false,
+              "sourceKind": "rest:v_proposals_summary+proposals+proposal_items",
+              "parityStatus": "not_checked",
+              "backendFirstPrimary": false
+            }
+          },
+          "rpc": {
+            "durationMs": 610,
+            "pending": 4,
+            "approved": 92,
+            "rejected": 0,
+            "proposalIds": 96,
+            "sourceMeta": {
+              "primaryOwner": "rpc_scope_v1",
+              "fallbackUsed": false,
+              "sourceKind": "rpc:buyer_summary_buckets_scope_v1",
+              "parityStatus": "not_checked",
+              "backendFirstPrimary": true
+            },
+            "meta": {
+              "rows_source": "buyer_summary_buckets_scope_v1",
+              "bucket_count": 3,
+              "pending_count": 4,
+              "primary_owner": "rpc_scope_v1",
+              "rework_status": "На доработке",
+              "approved_count": 92,
+              "pending_status": "На утверждении",
+              "rejected_count": 0,
+              "approved_status": "Утверждено",
+              "pending_total_sum": 2110,
+              "approved_total_sum": 431658,
+              "legacy_rows_source": "v_proposals_summary+proposals+proposal_items",
+              "proposal_ids_count": 96,
+              "rejected_total_sum": 0,
+              "payload_shape_version": "v1"
+            }
+          },
+          "primary": {
+            "durationMs": 416,
+            "pending": 4,
+            "approved": 92,
+            "rejected": 0,
+            "proposalIds": 96,
+            "sourceMeta": {
+              "primaryOwner": "rpc_scope_v1",
+              "fallbackUsed": false,
+              "sourceKind": "rpc:buyer_summary_buckets_scope_v1",
+              "parityStatus": "not_checked",
+              "backendFirstPrimary": true
+            },
+            "meta": {
+              "rows_source": "buyer_summary_buckets_scope_v1",
+              "bucket_count": 3,
+              "pending_count": 4,
+              "primary_owner": "rpc_scope_v1",
+              "rework_status": "На доработке",
+              "approved_count": 92,
+              "pending_status": "На утверждении",
+              "rejected_count": 0,
+              "approved_status": "Утверждено",
+              "pending_total_sum": 2110,
+              "approved_total_sum": 431658,
+              "legacy_rows_source": "v_proposals_summary+proposals+proposal_items",
+              "proposal_ids_count": 96,
+              "rejected_total_sum": 0,
+              "payload_shape_version": "v1"
+            }
+          },
+          "parity": {
+            "pending": {
+              "countParityOk": true,
+              "signatureParityOk": true,
+              "totalParityOk": true,
+              "legacyCount": 4,
+              "rpcCount": 4,
+              "legacyTotal": 2110,
+              "rpcTotal": 2110
+            },
+            "approved": {
+              "countParityOk": true,
+              "signatureParityOk": true,
+              "totalParityOk": true,
+              "legacyCount": 92,
+              "rpcCount": 92,
+              "legacyTotal": 431658,
+              "rpcTotal": 431658
+            },
+            "rejected": {
+              "countParityOk": true,
+              "signatureParityOk": true,
+              "totalParityOk": true,
+              "legacyCount": 0,
+              "rpcCount": 0,
+              "legacyTotal": 0,
+              "rpcTotal": 0
+            },
+            "proposalIdsParityOk": true,
+            "requiredBucketsPresent": {
+              "pending": true,
+              "approved": true,
+              "rejected": true
+            }
+          },
+          "topSlowFetches": [
+            {
+              "screen": "buyer",
+              "surface": "summary_buckets",
+              "event": "load_buckets_rpc",
+              "count": 1,
+              "avgDurationMs": 610,
+              "maxDurationMs": 610,
+              "totalRowCount": 96,
+              "lastSourceKind": "rpc:buyer_summary_buckets_scope_v1",
+              "fallbackCount": 0
+            },
+            {
+              "screen": "buyer",
+              "surface": "summary_buckets",
+              "event": "load_buckets",
+              "count": 1,
+              "avgDurationMs": 416,
+              "maxDurationMs": 416,
+              "totalRowCount": 96,
+              "lastSourceKind": "rpc:buyer_summary_buckets_scope_v1",
+              "fallbackCount": 0
+            }
+          ]
+        }
       },
       {
         "key": "accountant_windowing",

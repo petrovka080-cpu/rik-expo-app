@@ -11,12 +11,11 @@
     "contractor"
   ],
   "allModulesCovered": true,
-  "residualClientTruthCount": 4,
+  "residualClientTruthCount": 3,
   "totalResidualP0": 0,
-  "totalResidualP1": 2,
+  "totalResidualP1": 1,
   "totalResidualP2": 2,
   "modulesAtRisk": [
-    "buyer",
     "contractor",
     "accountant",
     "warehouse"
@@ -31,5 +30,5 @@
   "noBroadRewritePerformed": true,
   "allRequiredArtifactsAccepted": false,
   "acceptedEnvironmentResidualCount": 2,
-  "nextPriorityBatch": "Buyer summary buckets fallback burn-down"
+  "nextPriorityBatch": "Contractor works bundle fallback burn-down"
 }

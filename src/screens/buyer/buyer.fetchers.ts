@@ -5,36 +5,22 @@ import {
   recordPlatformObservability,
 } from "../../lib/observability/platformObservability";
 import {
-  BUYER_STATUS_APPROVED,
-  BUYER_STATUS_PENDING,
-  BUYER_STATUS_REWORK,
-  fetchBuyerProposalItemIds,
-  fetchBuyerProposalSummaryByStatuses,
-  fetchBuyerRejectedProposalRows,
-} from "./buyer.buckets.repo";
-import {
   adaptBuyerSummaryInboxScopeEnvelope,
   adaptBuyerSummaryBucketsScopeEnvelope,
-  buildProposalItemCountMap,
-  filterProposalBucketsWithItems,
-  mapProposalSummaryRows,
-  mapRejectedProposalRows,
   type BuyerProposalBucketRow,
 } from "./buyer.fetchers.data";
 
 export type { BuyerProposalBucketRow } from "./buyer.fetchers.data";
 
 type LogFn = (msg: unknown, ...rest: unknown[]) => void;
-type BuyerInboxScopeClient = {
+type BuyerRpcScopeClient = {
   rpc: (fn: string, args?: Record<string, unknown>) => PromiseLike<{
     data: unknown;
     error: unknown;
   }>;
 };
 
-const REWORK_STATUS_LOWER = BUYER_STATUS_REWORK.toLowerCase();
 const BUYER_BUCKETS_RPC_SOURCE_KIND = "rpc:buyer_summary_buckets_scope_v1";
-const BUYER_BUCKETS_LEGACY_SOURCE_KIND = "rest:v_proposals_summary+proposals+proposal_items";
 const BUYER_INBOX_RPC_SOURCE_KIND = "rpc:buyer_summary_inbox_scope_v1";
 const BUYER_INBOX_FULL_SCAN_GROUP_PAGE_SIZE = 100;
 const uniqIds = (values: (string | null | undefined)[]) =>
@@ -81,7 +67,7 @@ export type BuyerBucketsLoadResult = {
   proposalIds: string[];
   meta?: Record<string, unknown>;
   sourceMeta: {
-    primaryOwner: "rpc_scope_v1" | "legacy_client_stitch";
+    primaryOwner: "rpc_scope_v1";
     fallbackUsed: boolean;
     sourceKind: string;
     parityStatus: "not_checked";
@@ -90,7 +76,7 @@ export type BuyerBucketsLoadResult = {
 };
 
 export async function loadBuyerInboxData(params: {
-  supabase: BuyerInboxScopeClient;
+  supabase: BuyerRpcScopeClient;
   log?: LogFn;
 }): Promise<BuyerInboxLoadResult> {
   const { supabase, log } = params;
@@ -176,7 +162,7 @@ export async function loadBuyerInboxData(params: {
 }
 
 const loadBuyerInboxWindowScope = async (params: {
-  supabase: BuyerInboxScopeClient;
+  supabase: BuyerRpcScopeClient;
   offsetGroups: number;
   limitGroups: number;
   search?: string | null;
@@ -218,7 +204,7 @@ const loadBuyerInboxWindowScope = async (params: {
 };
 
 export async function loadBuyerInboxWindowData(params: {
-  supabase: BuyerInboxScopeClient;
+  supabase: BuyerRpcScopeClient;
   listBuyerInbox?: () => Promise<BuyerInboxRow[]>;
   offsetGroups: number;
   limitGroups: number;
@@ -294,134 +280,6 @@ export async function loadBuyerInboxWindowData(params: {
   }
 }
 
-async function loadBuyerBucketsDataLegacyInternal(params: {
-  supabase: SupabaseClient;
-  log?: LogFn;
-}, options?: {
-  observe?: boolean;
-}): Promise<BuyerBucketsLoadResult> {
-  const { supabase, log } = params;
-  const observation =
-    options?.observe !== false
-      ? beginPlatformObservability({
-          screen: "buyer",
-          surface: "summary_buckets",
-          category: "fetch",
-          event: "load_buckets_legacy",
-          sourceKind: BUYER_BUCKETS_LEGACY_SOURCE_KIND,
-        })
-      : null;
-
-  try {
-    const summaryPromise = fetchBuyerProposalSummaryByStatuses(supabase, [
-      BUYER_STATUS_PENDING,
-      BUYER_STATUS_APPROVED,
-    ]);
-    const rejectedPromise = fetchBuyerRejectedProposalRows(supabase);
-
-    const summaryResponse = await summaryPromise;
-    const summaryRows = !summaryResponse.error ? mapProposalSummaryRows(summaryResponse.data) : [];
-    const pending = summaryRows.filter((row) => row.status === BUYER_STATUS_PENDING);
-    const approved = summaryRows.filter((row) => row.status === BUYER_STATUS_APPROVED);
-
-    const rejectedResponse = await rejectedPromise;
-    const rejectedRaw = !rejectedResponse.error
-      ? mapRejectedProposalRows(rejectedResponse.data, REWORK_STATUS_LOWER)
-      : [];
-    const rejectedIds = rejectedRaw.map((row) => row.id);
-
-    let rejected = rejectedRaw;
-    try {
-      if (rejectedIds.length) {
-        const itemIdsResponse = await fetchBuyerProposalItemIds(supabase, rejectedIds);
-        if (!itemIdsResponse.error) {
-          rejected = filterProposalBucketsWithItems(
-            rejectedRaw,
-            buildProposalItemCountMap(itemIdsResponse.data),
-          );
-        }
-      }
-    } catch (error) {
-      const message = error instanceof Error ? error.message : String(error ?? "");
-      log?.("[buyer] rejected overlay item-count fallback:", message);
-      recordPlatformObservability({
-        screen: "buyer",
-        surface: "summary_buckets",
-        category: "fetch",
-        event: "load_buckets_rejected_overlay",
-        result: "error",
-        sourceKind: BUYER_BUCKETS_LEGACY_SOURCE_KIND,
-        fallbackUsed: true,
-        errorStage: "rejected_overlay_item_count",
-        errorClass: error instanceof Error ? error.name : undefined,
-        errorMessage: message || undefined,
-        extra: {
-          primaryOwner: "legacy_client_stitch",
-          rejectedIds: rejectedIds.length,
-          mode: "degraded",
-        },
-      });
-    }
-
-    const result = {
-      pending,
-      approved,
-      rejected,
-      proposalIds: uniqIds([
-        ...pending.map((row) => row.id),
-        ...approved.map((row) => row.id),
-        ...rejected.map((row) => row.id),
-      ]),
-      meta: {
-        legacyStageCount: rejectedIds.length ? 3 : 2,
-        rejectedOverlayApplied: rejectedIds.length > 0,
-      },
-      sourceMeta: {
-        primaryOwner: "legacy_client_stitch" as const,
-        fallbackUsed: false,
-        sourceKind: BUYER_BUCKETS_LEGACY_SOURCE_KIND,
-        parityStatus: "not_checked" as const,
-        backendFirstPrimary: false,
-      },
-    };
-    observation?.success({
-      rowCount: pending.length + approved.length + rejected.length,
-      sourceKind: BUYER_BUCKETS_LEGACY_SOURCE_KIND,
-      fallbackUsed: false,
-      extra: {
-        pending: pending.length,
-        approved: approved.length,
-        rejected: rejected.length,
-        proposalIds: result.proposalIds.length,
-        primaryOwner: "legacy_client_stitch",
-        bucketCount: [pending, approved, rejected].filter((rows) => rows.length > 0).length,
-        legacyStageCount: result.meta.legacyStageCount,
-      },
-    });
-    return result;
-  } catch (e: unknown) {
-    log?.("[buyer] loadBuyerBucketsData error:", e instanceof Error ? e.message : String(e));
-    observation?.error(e, {
-      rowCount: 0,
-      errorStage: "load_buckets_legacy",
-      sourceKind: BUYER_BUCKETS_LEGACY_SOURCE_KIND,
-    });
-    return {
-      pending: [],
-      approved: [],
-      rejected: [],
-      proposalIds: [],
-      sourceMeta: {
-        primaryOwner: "legacy_client_stitch",
-        fallbackUsed: false,
-        sourceKind: BUYER_BUCKETS_LEGACY_SOURCE_KIND,
-        parityStatus: "not_checked",
-        backendFirstPrimary: false,
-      },
-    };
-  }
-}
-
 async function loadBuyerBucketsDataRpcInternal(params: {
   supabase: SupabaseClient;
   log?: LogFn;
@@ -490,13 +348,6 @@ async function loadBuyerBucketsDataRpcInternal(params: {
   }
 }
 
-export async function loadBuyerBucketsDataLegacy(params: {
-  supabase: SupabaseClient;
-  log?: LogFn;
-}): Promise<BuyerBucketsLoadResult> {
-  return await loadBuyerBucketsDataLegacyInternal(params, { observe: true });
-}
-
 export async function loadBuyerBucketsDataRpc(params: {
   supabase: SupabaseClient;
   log?: LogFn;
@@ -533,7 +384,8 @@ export async function loadBuyerBucketsData(params: {
     });
     return result;
   } catch (error) {
-    const fallbackReason = error instanceof Error ? error.message : String(error ?? "");
+    const failureReason = error instanceof Error ? error.message : String(error ?? "");
+    params.log?.("[buyer] loadBuyerBucketsData rpc error:", failureReason);
     recordPlatformObservability({
       screen: "buyer",
       surface: "summary_buckets",
@@ -543,31 +395,15 @@ export async function loadBuyerBucketsData(params: {
       sourceKind: BUYER_BUCKETS_RPC_SOURCE_KIND,
       errorStage: "load_buckets_rpc",
       errorClass: error instanceof Error ? error.name : undefined,
-      errorMessage: fallbackReason || undefined,
-      fallbackUsed: true,
+      errorMessage: failureReason || undefined,
+      fallbackUsed: false,
     });
-
-    const fallback = await loadBuyerBucketsDataLegacyInternal(params, { observe: false });
-    observation.success({
-      rowCount: fallback.pending.length + fallback.approved.length + fallback.rejected.length,
-      sourceKind: fallback.sourceMeta.sourceKind,
-      fallbackUsed: true,
-      extra: {
-        pending: fallback.pending.length,
-        approved: fallback.approved.length,
-        rejected: fallback.rejected.length,
-        proposalIds: fallback.proposalIds.length,
-        primaryOwner: fallback.sourceMeta.primaryOwner,
-        backendFirstPrimary: false,
-        fallbackReason,
-      },
+    observation.error(error, {
+      rowCount: 0,
+      sourceKind: BUYER_BUCKETS_RPC_SOURCE_KIND,
+      fallbackUsed: false,
+      errorStage: "load_buckets_rpc",
     });
-    return {
-      ...fallback,
-      sourceMeta: {
-        ...fallback.sourceMeta,
-        fallbackUsed: true,
-      },
-    };
+    throw error;
   }
 }
