@@ -1,6 +1,11 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-import type { ReqHeadRow, ReqItemUiRow, WarehouseReqHeadsIntegrityState } from "./warehouse.types";
+import type {
+  ReqHeadRow,
+  ReqItemUiRow,
+  WarehouseReqHeadsFailureClass,
+  WarehouseReqHeadsIntegrityState,
+} from "./warehouse.types";
 import {
   asUnknownRows,
   fetchWarehouseFallbackStockRows,
@@ -10,6 +15,11 @@ import {
 } from "./warehouse.api.repo";
 import { createWarehouseTimedRowsFallbackCache } from "./warehouse.cache";
 import { isUuid, normMatCode, normUomId, parseNum, parseReqHeaderContext } from "./warehouse.request.utils";
+import { classifyWarehouseReqHeadsFailure } from "./warehouse.reqHeads.failure";
+import {
+  createHealthyWarehouseReqHeadsIntegrityState,
+  createWarehouseReqHeadsIntegrityState,
+} from "./warehouse.reqHeads.state";
 import { normalizeRuText } from "../../lib/text/encoding";
 import { isRequestVisibleInWarehouseIssueQueue } from "../../lib/requestStatus";
 import { recordPlatformObservability } from "../../lib/observability/platformObservability";
@@ -151,21 +161,7 @@ const requestsFallbackCache = createWarehouseTimedRowsFallbackCache<RequestFallb
   lastGoodTtlMs: REQUESTS_FALLBACK_LAST_GOOD_TTL_MS,
   cloneRows: cloneRequestFallbackRows,
 });
-
-const createIntegrityState = (
-  mode: WarehouseReqHeadsIntegrityState["mode"],
-  reason: string | null,
-  message: string | null,
-  cacheUsed: boolean,
-): WarehouseReqHeadsIntegrityState => ({
-  mode,
-  reason,
-  message,
-  cacheUsed,
-});
-
-export const createHealthyWarehouseReqHeadsIntegrityState = (): WarehouseReqHeadsIntegrityState =>
-  createIntegrityState("healthy", null, null, false);
+let requestsFallbackLastFailureClass: WarehouseReqHeadsFailureClass | null = null;
 
 const normalizeRequestFallbackRow = (row: UnknownRow): RequestFallbackRow => ({
   id: toTextOrNull(row.id),
@@ -440,23 +436,29 @@ async function loadWarehouseFallbackRequestRows(
       console.warn("[warehouse.reqHeads.repair] requests fallback select skipped by cooldown");
     }
     if (cached.length) {
-      const integrityState = createIntegrityState(
-        "stale_last_known_good",
-        "requests_fallback_cooldown",
-        "requests fallback cooldown; using last known good rows",
-        true,
-      );
+      const integrityState = createWarehouseReqHeadsIntegrityState({
+        mode: "stale_last_known_good",
+        failureClass: requestsFallbackLastFailureClass ?? "server_failure",
+        reason: "requests_fallback_cooldown",
+        message: "requests fallback cooldown; using last known good rows",
+        cacheUsed: true,
+        cooldownActive: true,
+        cooldownReason: "requests_fallback_backoff",
+      });
       recordRepairEvent("req_heads_repair_fallback_cooldown_cache", integrityState, {
         rowCount: cached.length,
       });
       return { rows: cached, integrityState };
     }
-    const integrityState = createIntegrityState(
-      "error",
-      "requests_fallback_cooldown",
-      "requests fallback cooldown without last known good rows",
-      false,
-    );
+    const integrityState = createWarehouseReqHeadsIntegrityState({
+      mode: "error",
+      failureClass: requestsFallbackLastFailureClass ?? "server_failure",
+      reason: "requests_fallback_cooldown",
+      message: "requests fallback cooldown without last known good rows",
+      cacheUsed: false,
+      cooldownActive: true,
+      cooldownReason: "requests_fallback_backoff",
+    });
     recordRepairEvent("req_heads_repair_fallback_cooldown_empty", integrityState);
     return { rows: [], integrityState };
   }
@@ -467,6 +469,7 @@ async function loadWarehouseFallbackRequestRows(
     if (!result.error && Array.isArray(result.data)) {
       const rows = asUnknownRows(result.data).map(normalizeRequestFallbackRow);
       requestsFallbackCache.recordLiveRows(rows, timestamp);
+      requestsFallbackLastFailureClass = null;
       const integrityState = createHealthyWarehouseReqHeadsIntegrityState();
       recordRepairEvent("req_heads_repair_fallback_live", integrityState, {
         rowCount: rows.length,
@@ -478,21 +481,30 @@ async function loadWarehouseFallbackRequestRows(
 
   requestsFallbackCache.recordHardFail(timestamp);
   const message = String((lastError as { message?: string } | null)?.message ?? lastError ?? "unknown");
+  const failure = classifyWarehouseReqHeadsFailure(lastError);
+  requestsFallbackLastFailureClass = failure.failureClass;
   const cached = getLastKnownGoodRows();
   if (cached.length) {
-    const integrityState = createIntegrityState(
-      "stale_last_known_good",
-      "requests_fallback_failed",
+    const integrityState = createWarehouseReqHeadsIntegrityState({
+      mode: "stale_last_known_good",
+      failureClass: failure.failureClass,
+      reason: "requests_fallback_failed",
       message,
-      true,
-    );
+      cacheUsed: true,
+    });
     recordRepairEvent("req_heads_repair_fallback_failed_cache", integrityState, {
       rowCount: cached.length,
     });
     return { rows: cached, integrityState };
   }
 
-  const integrityState = createIntegrityState("error", "requests_fallback_failed", message, false);
+  const integrityState = createWarehouseReqHeadsIntegrityState({
+    mode: "error",
+    failureClass: failure.failureClass,
+    reason: "requests_fallback_failed",
+    message,
+    cacheUsed: false,
+  });
   recordRepairEvent("req_heads_repair_fallback_failed_empty", integrityState);
   return { rows: [], integrityState };
 }
@@ -610,12 +622,15 @@ export async function repairWarehouseReqHeadsPage0(params: {
       page0RequiredRepair: false,
       integrityState:
         sortedViewRows.length > 0 && fallbackLoad.integrityState.mode === "error"
-          ? createIntegrityState(
-              "stale_last_known_good",
-              fallbackLoad.integrityState.reason,
-              fallbackLoad.integrityState.message,
-              fallbackLoad.integrityState.cacheUsed,
-            )
+          ? createWarehouseReqHeadsIntegrityState({
+              mode: "stale_last_known_good",
+              failureClass: fallbackLoad.integrityState.failureClass,
+              reason: fallbackLoad.integrityState.reason,
+              message: fallbackLoad.integrityState.message,
+              cacheUsed: fallbackLoad.integrityState.cacheUsed,
+              cooldownActive: fallbackLoad.integrityState.cooldownActive,
+              cooldownReason: fallbackLoad.integrityState.cooldownReason,
+            })
           : fallbackLoad.integrityState,
     };
   }

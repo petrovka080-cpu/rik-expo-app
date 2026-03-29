@@ -14,6 +14,7 @@ import type {
   StockRow,
   Tab,
   WarehouseReqHeadsIntegrityState,
+  WarehouseReqHeadsListState,
   WarehouseReportRow,
 } from "../warehouse.types";
 import {
@@ -75,6 +76,7 @@ export type WarehouseTabContentProps = {
   renderReqHeadItem: ListRenderItem<ReqHeadRow>;
   reqHeadsLoading: boolean;
   reqHeadsIntegrityState: WarehouseReqHeadsIntegrityState;
+  reqHeadsListState: WarehouseReqHeadsListState;
 
   reportsHeaderTopPad: number;
   reportsMode: "choice" | "issue" | "incoming";

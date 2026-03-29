@@ -43,9 +43,13 @@ import {
 } from "./warehouse.cache";
 import {
   compareWarehouseReqHeads as compareWarehouseReqHeadsRepair,
-  createHealthyWarehouseReqHeadsIntegrityState,
   repairWarehouseReqHeadsPage0,
 } from "./warehouse.reqHeads.repair";
+import { classifyWarehouseReqHeadsFailure } from "./warehouse.reqHeads.failure";
+import {
+  createHealthyWarehouseReqHeadsIntegrityState,
+  createWarehouseReqHeadsIntegrityState,
+} from "./warehouse.reqHeads.state";
 
 type ReqHeadsStageMetrics = {
   stage_a_ms: number;
@@ -608,12 +612,14 @@ async function loadReqHeadsConverged(
       integrityState = repaired.integrityState;
     } catch (error) {
       logWarehouseRequestReadFallback("req_heads_degraded/repair", error);
-      integrityState = {
+      const failure = classifyWarehouseReqHeadsFailure(error);
+      integrityState = createWarehouseReqHeadsIntegrityState({
         mode: mergedRows.length > 0 ? "stale_last_known_good" : "error",
+        failureClass: failure.failureClass,
         reason: "req_heads_repair_failed",
         message: error instanceof Error ? error.message : String(error ?? "unknown"),
         cacheUsed: mergedRows.length > 0,
-      };
+      });
     }
   }
 

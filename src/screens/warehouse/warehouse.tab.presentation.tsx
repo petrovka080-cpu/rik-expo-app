@@ -83,6 +83,7 @@ export function selectWarehouseIssueTabProps(props: WarehouseTabContentProps) {
     renderItem: props.renderReqHeadItem,
     loading: props.reqHeadsLoading,
     integrityState: props.reqHeadsIntegrityState,
+    listState: props.reqHeadsListState,
     emptyColor: props.emptyColor,
   };
 }

@@ -1,0 +1,27 @@
+{
+  "canonicalEmpty": {
+    "publishState": "empty",
+    "failureClass": null
+  },
+  "nonPrimaryEmptyWithoutSnapshot": {
+    "publishState": "error",
+    "failureClass": "schema_incompatibility",
+    "falseEmptyPrevented": true
+  },
+  "schemaFailure": {
+    "publishState": "error",
+    "failureClass": "schema_incompatibility"
+  },
+  "permissionFailure": {
+    "publishState": "error",
+    "failureClass": "permission_auth_failure"
+  },
+  "transientFailure": {
+    "publishState": "error",
+    "failureClass": "transport_transient_failure"
+  },
+  "serverFailure": {
+    "publishState": "error",
+    "failureClass": "server_failure"
+  }
+}

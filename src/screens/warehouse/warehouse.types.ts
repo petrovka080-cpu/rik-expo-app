@@ -146,11 +146,39 @@ export type WarehouseStockLike = StockRow & {
 
 export type ReqItemUiRowWithNote = ReqItemUiRow & { note?: string | null };
 
+export type WarehouseReqHeadsFailureClass =
+  | "schema_incompatibility"
+  | "permission_auth_failure"
+  | "transport_transient_failure"
+  | "server_failure";
+
+export type WarehouseReqHeadsPublishState = "ready" | "empty" | "error" | "degraded";
+
+export type WarehouseReqHeadsFreshness = "fresh" | "stale";
+
+export type WarehouseReqHeadsCooldownReason = "failure_backoff" | "requests_fallback_backoff";
+
 export type WarehouseReqHeadsIntegrityState = {
   mode: "healthy" | "stale_last_known_good" | "error";
+  failureClass: WarehouseReqHeadsFailureClass | null;
+  freshness: WarehouseReqHeadsFreshness;
   reason: string | null;
   message: string | null;
   cacheUsed: boolean;
+  cooldownActive: boolean;
+  cooldownReason: WarehouseReqHeadsCooldownReason | null;
+};
+
+export type WarehouseReqHeadsListState = {
+  publishState: WarehouseReqHeadsPublishState;
+  freshness: WarehouseReqHeadsFreshness;
+  failureClass: WarehouseReqHeadsFailureClass | null;
+  reason: string | null;
+  message: string | null;
+  rowCount: number;
+  lastKnownGoodUsed: boolean;
+  cooldownActive: boolean;
+  cooldownReason: WarehouseReqHeadsCooldownReason | null;
 };
 
 export type WarehouseReportRow = Record<string, unknown>;
